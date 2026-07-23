@@ -167,25 +167,25 @@ typedef enum {
 
 void ShowHudMessage(
     CDDrawSurfaceMgr* sink,
-    i32 text,
-    i32 rect,
-    i32 dur,
-    i32 a,
+    CString* text,
+    RECT* box,
+    i32 fontSel,
     i32 b,
     i32 c,
     i32 d,
-    i32 e
+    i32 e,
+    i32 f
 ); // 0x1154b0
 void ShowHudMessageAlt(
     CDDrawSurfaceMgr* sink,
-    i32 text,
-    i32 rect,
-    i32 dur,
-    i32 a,
+    CString* text,
+    RECT* box,
+    i32 fontSel,
     i32 b,
     i32 c,
     i32 d,
-    i32 e
+    i32 e,
+    i32 f
 ); // 0x115520
 
 // ===========================================================================
@@ -219,17 +219,7 @@ i32 CPlay::FrameSlot28(i32 arg) {
     r.bottom = m_mgr->m_modeH;
     r.left = 0;
     r.top = 0;
-    ShowHudMessage(
-        m_world,
-        reinterpret_cast<i32>(&s),
-        reinterpret_cast<i32>(&r),
-        0x78,
-        1,
-        0xff,
-        0xff,
-        0,
-        1
-    );
+    ShowHudMessage(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
     if (m_mgr && m_mgr->m_cmdGrid) {
         m_mgr->m_cmdGrid->ClearGridRange(5); // 0x41b0 -> CTriggerMgr::ClearGridRange @0x6bd40
@@ -2430,17 +2420,7 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
     }
 
     if (a3 != 0) {
-        ShowHudMessageAlt(
-            m_world,
-            reinterpret_cast<i32>(&m_cueText),
-            reinterpret_cast<i32>(&rect),
-            a2,
-            1,
-            a4,
-            a5,
-            a6,
-            a7
-        );
+        ShowHudMessageAlt(m_world, &m_cueText, &rect, a2, 1, a4, a5, a6, a7);
     } else {
         EngStr_DrawText(
             m_world,

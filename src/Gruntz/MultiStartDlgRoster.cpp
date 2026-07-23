@@ -823,7 +823,7 @@ void CMultiStartDlg::Watchdog() {
         i32 r = g_multiState->VerifyCustomLevel(h, g_multiState->m_5bc);
         EnableWindow(1);
         if (r != 0) {
-            M1bab37(1);
+            EndDialog(1);
             g_watchBusy = 0;
             return;
         }
@@ -920,7 +920,7 @@ void CMultiStartDlg::Watchdog() {
         return;
     }
     g_multiState->ReportVersionMsg(msg, 0);
-    M1bab37(0);
+    EndDialog(0);
     g_watchBusy = 0;
 }
 

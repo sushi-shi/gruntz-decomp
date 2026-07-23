@@ -1,4 +1,5 @@
 #include <Mfc.h>
+#include <stdio.h>  // sscanf (0x120900), the version parse
 #include <string.h> // strstr (0x120090), cmd-line flag scan
 #include <Wap32/Wap32.h>
 #include <Gruntz/Enums.h>
@@ -20,10 +21,6 @@ i32 StartupGate(i32 nReserved);
 // ActiveWait (0x13dfe0) - the timeGetTime busy-wait, used here as a brief
 // settle delay before the hot-key sample.
 void ActiveWait(u32 milliseconds);
-
-// VersionScan - an sscanf wrapper (parses "%d.%d.%d.%d" into the four
-// version ints). __cdecl variadic.
-i32 VersionScan(const char* pszVersion, const char* pszFormat, ...);
 
 // VERSION.DLL imports (GetFileVersionInfoSizeA/GetFileVersionInfoA/VerQueryValueA)
 // come from <windows.h> (winver, pulled by afx.h/MFC).
@@ -76,7 +73,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             &pValue,
             &uLen
         );
-        VersionScan(
+        sscanf(
             static_cast<const char*>(pValue),
             "%d, %d, %d, %d",
             &g_version0,

@@ -236,16 +236,7 @@ void CMapMgr::Reset() {
 // (retail pins x1 in ebx for the whole fn, reused at m_startX=x1) and the cell-clear
 // loop's reg/zero choice; no source spelling flips MSVC5's allocator here.
 RVA(0x0009eca0, 0x2bd)
-i32 CMapMgr::Search(
-    i32 x1,
-    i32 y1,
-    i32 x2,
-    i32 y2,
-    void* list,
-    i32 maskA,
-    i32 maskB,
-    i32 maskC
-) {
+i32 CMapMgr::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 maskB, i32 maskC) {
     i32 ox = m_bounds.left;
     if (static_cast<u32>((x1 - ox)) >= static_cast<u32>(m_gridW)) {
         return 0;
@@ -839,8 +830,8 @@ i32 CMapMgr::Load(CFileMemBase* ar) {
 
 RVA(0x0009fe10, 0x29)
 void SetVersionRect() {
-    g_versionRect.a = 5;
-    g_versionRect.b = 0x1c5;
-    g_versionRect.c = 0x27b;
-    g_versionRect.d = 0x1de;
+    g_versionRect.left = 5;
+    g_versionRect.top = 0x1c5;
+    g_versionRect.right = 0x27b;
+    g_versionRect.bottom = 0x1de;
 }

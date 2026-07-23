@@ -171,7 +171,8 @@ SIZE_UNKNOWN();
 class CBattlezDlgColors : public CDialog {
 public:
     CBattlezDlgColors(class CGruntzMgr* a0, i32 a1, i32 a2, CWnd* pParent);
-    virtual ~CBattlezDlgColors() OVERRIDE; // slot 1
+    // NO user dtor (binary fact): the retail slot-1 body IS ??1CDialog@@UAE@XZ
+    // (0x1ba51d) - a user dtor would emit a ??1CBattlezDlgColors COMDAT retail lacks.
     // MFC GetMessageMap override: returns &CBattlezDlgColors::messageMap (modeled
     // non-virtual so it does not perturb the compiler-emitted vtable/ctor stamp;
     // only its 6 own bytes `mov eax,OFFSET msgmap; ret` are matched).
@@ -302,10 +303,8 @@ public:
     void ReconcileChannel3(); // 0xc2a80  reconcile channel 3 then Drive
     // this-side MFC forwarders the net facet reaches (CWnd/CDialog methods,
     // reloc-masked; CDialog is modeled without its CWnd base so declare here).
-    void EnableWindow(i32 bEnable); // 0x1be6a7 (CWnd::EnableWindow on this)
     // (CDialog::OnOK @0x1bacc3 is the base body the slot-51 override above chains
     //  on success - reached as CDialog::OnOK(), no separate non-virtual decl.)
-    void M1bab37(i32); // 0x1bab37 (NAFXCW forwarder; the Watchdog abort/reshow)
 
     // Watchdog (0xc46b0): the per-timer multiplayer-session watchdog (body in
     // NetGameDlgWatch.cpp) - refresh the roster, advance the blink counters, then walk

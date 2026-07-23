@@ -6,9 +6,10 @@
 
 class CGruntzApp : public CGameApp {
 public:
-    CGruntzApp();                                      // ctor
-    virtual ~CGruntzApp() OVERRIDE;                    // vtbl +0x00
-    virtual void CloseResources() OVERRIDE;            // slot 4 (declared-only)
+    CGruntzApp();                   // ctor
+    virtual ~CGruntzApp() OVERRIDE; // vtbl +0x00
+    // slot 4 CloseResources: INHERITED (retail slot holds the CGameApp base body
+    // 0x1b8b thunk target; a CGruntzApp override never existed).
     virtual CGameWnd* InitializeGameWindow() OVERRIDE; // slot 13 (0x0809a0, GruntzApp.cpp)
     // Override of the base init virtual (CGameApp slot +0x08): forwards all 7
     // launch args to CGameApp::Init and normalises the result

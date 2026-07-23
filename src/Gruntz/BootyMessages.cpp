@@ -11,7 +11,7 @@
 
 #include <rva.h>
 #include <Gruntz/BootyWalkAnim.h> // ex Globals.h
-#include <Gruntz/SoundState.h> // ex Globals.h transitive
+#include <Gruntz/SoundState.h>    // ex Globals.h transitive
 
 DATA(0x001e8fe4)
 BzGeomPair g_idleGeom[4] = {
@@ -50,19 +50,19 @@ CString g_levelMsgStrings[8]; // 0x629ef8
 
 DATA(0x00229f30)
 SecretMsgRow g_secretMsgRows[24]; // 0x629f30  (0xa0 stride)
-char g_secretMsgA[0x20]; // 0x62ae30  encoded line A
-char g_secretMsgB[0x80]; // 0x62ae50  encoded line B (strB extent 0x80, not 0x20)
+char g_secretMsgA[0x20];          // 0x62ae30  encoded line A
+char g_secretMsgB[0x80];          // 0x62ae50  encoded line B (strB extent 0x80, not 0x20)
 
 void ShowHudMessage(
-    void* sink,
+    CDDrawSurfaceMgr* sink,
     CString* text,
-    RECT* rect,
-    i32 dur,
-    i32 a,
+    RECT* box,
+    i32 fontSel,
     i32 b,
     i32 c,
     i32 d,
-    i32 e
+    i32 e,
+    i32 f
 ); // 0x1154b0
 
 // ===========================================================================
@@ -159,8 +159,7 @@ void CBootyState::ShowLevelCompleteMessage() {
 // StateImages::InputVirtual binds to this canonical symbol structurally.
 RVA(0x00018f00, 0x4fb)
 i32 CBootyState::ShowSecretBonusMessage() {
-    if (m_secretBannerOnce != 0
-        && (g_gameReg->m_scoreHud)->AllRecordsInBounds()) {
+    if (m_secretBannerOnce != 0 && (g_gameReg->m_scoreHud)->AllRecordsInBounds()) {
         CString s;
         if (!FadeInTitle("multi", 0, 0, 0, 0, 1)) {
             return 0;
@@ -338,8 +337,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         }
     }
 
-    if (m_activation == 0xfffffffe
-        && (g_gameReg->m_scoreHud)->AllRecordsInBounds()
+    if (m_activation == 0xfffffffe && (g_gameReg->m_scoreHud)->AllRecordsInBounds()
         && m_secretBannerOnce == 0) {
         m_secretBannerOnce = 1;
         if (!ShowSecretBonusMessage()) {
@@ -365,4 +363,3 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
     }
     return 1;
 }
-

@@ -24,20 +24,19 @@
 #include <Gruntz/BattlezData.h> // CBattlezData::InBounds (CheckPerfectBonus frame-ready gate)
 #include <Gruntz/WwdGameReg.h>  // WwdGameReg (g_gameReg; CheckPerfectBonus/Vslot09/QueryGruntSlots)
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr / CDDrawSubMgrLeafScan (CState::m_c draw+cue context)
-#include <Io/MoviePlayer.h>      // CMoviePlayer (~; CMultiBootyState::ReleaseResources m_4->m_60)
+#include <Io/MoviePlayer.h> // CMoviePlayer (~; CMultiBootyState::ReleaseResources m_4->m_60)
 
-struct HudMsgSink;
 void ShowHudMessageAlt(
-    HudMsgSink* sink,
-    i32 rect,
-    i32 str,
-    i32 a4,
-    i32 a5,
-    i32 a6,
-    i32 a7,
-    i32 a8,
-    i32 a9
-);
+    CDDrawSurfaceMgr* sink,
+    CString* text,
+    RECT* box,
+    i32 fontSel,
+    i32 b,
+    i32 c,
+    i32 d,
+    i32 e,
+    i32 f
+); // 0x115520
 
 void operator delete(void*);
 
@@ -50,8 +49,8 @@ static const double kGlitterStartRadius = 350.0; // was g_5e93c8
 
 RVA(0x00018c90, 0x72)
 void CBootyState::ReleaseResources() {
-    SoundStream* r =
-        m_world->m_soundRegistry->m_2c; // CDDrawSubMgrLeafScan::m_2c is already the real SoundStream*
+    SoundStream* r = m_world->m_soundRegistry
+                         ->m_2c; // CDDrawSubMgrLeafScan::m_2c is already the real SoundStream*
     if (r) {
         r->Stop();
     }
@@ -497,8 +496,8 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(i32, i32, i32) {
 // the m_4 deref landing in eax vs retail's edx (single-register coin-flip).
 RVA(0x0001e520, 0x3e)
 void CMultiBootyState::ReleaseResources() {
-    SoundStream* r =
-        m_world->m_soundRegistry->m_2c; // CDDrawSubMgrLeafScan::m_2c is already the real SoundStream*
+    SoundStream* r = m_world->m_soundRegistry
+                         ->m_2c; // CDDrawSubMgrLeafScan::m_2c is already the real SoundStream*
     if (r) {
         r->Stop();
     }
@@ -814,17 +813,7 @@ i32 CMultiBootyState::Render() {
     } else {
         s.Format("%d:%2.2d", secs / 60, secs % 60);
     }
-    ShowHudMessageAlt(
-        reinterpret_cast<HudMsgSink*>(m_world),
-        reinterpret_cast<i32>(&s),
-        reinterpret_cast<i32>(&rc),
-        0x6e,
-        1,
-        0xff,
-        0xff,
-        0,
-        1
-    );
+    ShowHudMessageAlt(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
 
     CDDrawSubMgrPages* dt = m_world->m_drawTarget;
     dt->m_frontPair->m_surface->Flip(0);

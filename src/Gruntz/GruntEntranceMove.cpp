@@ -754,7 +754,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
             desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = elem[0x14 / 4];
         i32 idx = 3 * m_entranceCell.col + m_entranceCell.row;
-        char* buf = GruntStrGetBuffer(&m_cells[idx].m_walk, 0);
+        char* buf = m_cells[idx].m_walk.GetBuffer(0);
         m_38->ApplyLookupSprite(buf, frame);
         return 1;
     }
@@ -769,7 +769,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
             desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = elem[0x14 / 4];
         i32 idx = 3 * m_entranceCell.col + m_entranceCell.row;
-        char* buf = GruntStrGetBuffer(&m_cells[idx].m_idle, 0);
+        char* buf = m_cells[idx].m_idle.GetBuffer(0);
         m_38->ApplyLookupSprite(buf, frame);
     }
     return 1;

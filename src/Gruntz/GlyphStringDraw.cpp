@@ -1,4 +1,4 @@
-#include <Gruntz/GlyphStringDraw.h> // own header (the moved thunk-name decls)
+#include <Gruntz/GlyphStringDraw.h>       // own header (the moved thunk-name decls)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
 #include <Ints.h>
@@ -10,7 +10,7 @@
 #include <DDrawMgr/DDrawWorkerList.h> // CDDrawWorkerList - the +0x0c worker pump (Draw@slot10 = CreateWorkerB28)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSurfaceMgr / CDDrawSubMgrPages (SurfaceA/SurfaceB pages) - the 0x115300 blit host
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr - the CState::m_c render/resource holder (ctx/sink)
-#include <Image/CImage.h>        // CImage - the 0x115300 blit source + the CDDrawWorker frame element
+#include <Image/CImage.h> // CImage - the 0x115300 blit source + the CDDrawWorker frame element
 #include <Image/ImageSet.h> // CDDrawWorker - the glyph atlas (m_frames@+0x14, min/max frame index @+0x64/+0x68)
 
 RVA(0x00115220, 0xa4)
@@ -39,7 +39,9 @@ i32 DrawGlyphString(
         i32 c = static_cast<signed char>(str[i]);
         i32 glyph;
         if (c >= font->m_minIndex && c <= font->m_maxIndex) {
-            glyph = reinterpret_cast<i32>(static_cast<CImage*>(font->m_items.GetAt(c))); // the CImage* frame, as an opaque worker-factory handle
+            glyph = reinterpret_cast<i32>(
+                static_cast<CImage*>(font->m_items.GetAt(c))
+            ); // the CImage* frame, as an opaque worker-factory handle
         } else {
             glyph = 0;
         }
@@ -103,8 +105,8 @@ i32 LayerBlitFrame(CDDrawSurfaceMgr* host, CImage* src, i32 x, i32 y, i32 useFro
 RVA(0x001154b0, 0x45)
 void ShowHudMessage(
     CDDrawSurfaceMgr* sink,
-    i32 a2,
-    i32 a3,
+    CString* text,
+    RECT* box,
     i32 a4,
     i32 a5,
     i32 a6,
@@ -116,15 +118,15 @@ void ShowHudMessage(
     if (page == 0) {
         return;
     }
-    HudMsgPush(sink, a2, a3, page->m_surface, a4, a5, a6, a7, a8, a9);
+    HudMsgPush(sink, text, box, page->m_surface, a4, a5, a6, a7, a8, a9);
 }
 // @early-stop
 // same tail-merge wall as ShowHudMessage (twin; draw page m_14 vs present page m_18).
 RVA(0x00115520, 0x45)
 void ShowHudMessageAlt(
     CDDrawSurfaceMgr* sink,
-    i32 a2,
-    i32 a3,
+    CString* text,
+    RECT* box,
     i32 a4,
     i32 a5,
     i32 a6,
@@ -136,5 +138,5 @@ void ShowHudMessageAlt(
     if (page == 0) {
         return;
     }
-    HudMsgPush(sink, a2, a3, page->m_surface, a4, a5, a6, a7, a8, a9);
+    HudMsgPush(sink, text, box, page->m_surface, a4, a5, a6, a7, a8, a9);
 }

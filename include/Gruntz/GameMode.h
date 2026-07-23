@@ -23,12 +23,8 @@ extern "C" void __stdcall GM_SimpleAnim(i32 z); // (stdcall, 1 arg)
 
 #include <Gruntz/ChatBox.h>
 
-struct CGMVerRect {
-    i32 a, b, c, d;
-};
-SIZE_UNKNOWN();
-extern "C" CGMVerRect g_versionRect; // (the 4-int source @c8/cc/d0/d4)
-extern "C" i32 g_frameDelta;         // (last-frame delta, fed to Step)
+extern "C" tagRECT g_versionRect; // (the 4-int source @c8/cc/d0/d4)
+extern "C" i32 g_frameDelta;      // (last-frame delta, fed to Step)
 
 struct BzGeomPair {
     i32 m_y; // +0x00  onscreen y
@@ -44,9 +40,9 @@ extern RECT g_levelMsgRectsB[8];
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (the CState::m_c holder itself)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // its real sub-object classes (CDDrawSubMgrPages/CDDrawWorkerRegistry/CDDrawSubMgrLeafScan)
 
-struct LeafCue;     // CMenuState::m_1bc - the menu-music sound cue (Gruntz/LeafCue.h)
-class CMoviePlayer; // CCreditsState::m_videoHandle - real Smacker video player
-struct CGameObject; // CMultiBootyState::m_cursorLetter + the +0x1ec/+0x204 letter-sprite arrays
+struct LeafCue;        // CMenuState::m_1bc - the menu-music sound cue (Gruntz/LeafCue.h)
+class CMoviePlayer;    // CCreditsState::m_videoHandle - real Smacker video player
+struct CGameObject;    // CMultiBootyState::m_cursorLetter + the +0x1ec/+0x204 letter-sprite arrays
 class CWwdGameObjectA; // the created-sprite kind (sprite fields below hold it)
 
 class CMenuState : public CState {
@@ -56,19 +52,23 @@ public:
     CMenuState() {
         m_1b4 = 0;
     }
-    virtual i32 Vslot06() OVERRIDE; // slot 6  (+0x18) 0x0a0a30 (ex CAttract::Activate; defined in Attract.cpp)
+    virtual i32 Vslot06()
+        OVERRIDE; // slot 6  (+0x18) 0x0a0a30 (ex CAttract::Activate; defined in Attract.cpp)
     // slot 1  0x09fe50 (MenuStateAssets.cpp; retail ??_7CMenuState slot 1 = ILT
     // 0x32ec -> 0x9fe50, ex "LoadAssets") - the MENU asset loader: registers the
     // MENU IMAGEZ/SOUNDZ namespaces through the m_c (CDDrawSurfaceMgr) resource
     // facet, primes the state core, then builds the menu HUD object + wires its
     // keys/sound cues.
     virtual i32 LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) OVERRIDE;
-    virtual i32 Vslot07() OVERRIDE; // slot 7  (+0x1c) 0x0a0d40 (ex ReadyGate: the &&-chained ready/transition probe - IsActive() && CommitState() ? Vslot06())
-    virtual i32 InputVirtual() OVERRIDE; // slot 8  (+0x20) 0x0a09a0 (ex CImageState::LoadStateImages; defined in StateImages.cpp)
-    virtual i32 Vslot09(i32) OVERRIDE; // slot 9  (+0x24) 0x0a03f0 (ex CAttract::LoadTitleConfig; defined in Attract.cpp)
-    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
-    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
-    virtual i32 Vslot10(i32, i32, i32) OVERRIDE; // slot 16
+    virtual i32 Vslot07()
+        OVERRIDE; // slot 7  (+0x1c) 0x0a0d40 (ex ReadyGate: the &&-chained ready/transition probe - IsActive() && CommitState() ? Vslot06())
+    virtual i32 InputVirtual()
+        OVERRIDE; // slot 8  (+0x20) 0x0a09a0 (ex CImageState::LoadStateImages; defined in StateImages.cpp)
+    virtual i32 Vslot09(i32)
+        OVERRIDE; // slot 9  (+0x24) 0x0a03f0 (ex CAttract::LoadTitleConfig; defined in Attract.cpp)
+    virtual i32 Vslot0c(i32, i32) OVERRIDE;                  // slot 12
+    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE;             // slot 14
+    virtual i32 Vslot10(i32, i32, i32) OVERRIDE;             // slot 16
     virtual i32 SetBeginClearParams(i32, i32, i32) OVERRIDE; // slot 20
     // The ~CMenuState() destructor (EH-framed `??1` under /GX): it re-stamps the
     // CMenuState vtable, runs the slot-2 resource release (ReleaseResources,
@@ -113,7 +113,7 @@ public:
     // here is GONE: it was never CMenuState's. It is CBootyState::m_initOnce @+0x1d0, read
     // by FormatHudText - a CBootyState method.
 
-    void BuildVersionString(CGMVerRect r); // 0xa0d80 (RECT by value; Render's tail draw)
+    void BuildVersionString(tagRECT r); // 0xa0d80 (RECT by value; Render's tail draw)
 };
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();
@@ -161,7 +161,8 @@ public:
     virtual i32 InputVirtual()
         OVERRIDE;                      // slot 8  (+0x20) 0x0393b0 per-frame input poll (title gate)
     virtual i32 Vslot09(i32) OVERRIDE; // slot 9  (+0x24) 0x039120 (declared-only)
-    virtual i32 FrameSlot28(i32) OVERRIDE; // slot 10 (+0x28) 0x039160 (ex CAttract::RefreshTitle; defined in Attract.cpp)
+    virtual i32 FrameSlot28(i32)
+        OVERRIDE; // slot 10 (+0x28) 0x039160 (ex CAttract::RefreshTitle; defined in Attract.cpp)
     virtual i32 Vslot0c(i32, i32)
         OVERRIDE; // slot 12 (+0x30) 0x039440 (declared-only: ESC/SPC/ENTER cmd)
     virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14 (+0x38) 0x0394b0 (declared-only)
@@ -186,11 +187,11 @@ public:
     void LoadCreditzAssets();
 
     // --- CCreditsState members the Render path pins (placeholders) ---
-    i32 m_musicStarted; // +0x1b4 CREDITZ music one-shot latch
-    i32 m_flashColor; // +0x1b8 packed random RGB flash color
-    i32 m_flashTimer; // +0x1bc flash re-roll timer
+    i32 m_musicStarted;  // +0x1b4 CREDITZ music one-shot latch
+    i32 m_flashColor;    // +0x1b8 packed random RGB flash color
+    i32 m_flashTimer;    // +0x1bc flash re-roll timer
     i32 m_fadeCountdown; // +0x1c0 fade countdown ms (LoadCreditzAssets arms 3000 on the rising edge)
-    i32 m_fxEnabled; // +0x1c4 conditional-FX gate / credits-music toggle
+    i32 m_fxEnabled;     // +0x1c4 conditional-FX gate / credits-music toggle
     // The two 0x10-byte rect sub-objects the ctor Set-initialises to the full 640x480
     // screen (Set @0x08c380, 4 args). They are plain RECTs: SetupTitle SetRect()s the
     // master scroll rect and DrawTextA-measures into the working one; the per-frame
@@ -199,7 +200,7 @@ public:
     RECT m_drawRect;   // +0x1d8  working/scrolled caption rect (DrawTextA target)
     CRgn m_1e8;        // +0x1e8 embedded GDI region (RTTI .?AVCRgn@@; freed by ~CCreditsState)
     CString m_caption; // +0x1f0 credits caption CString (freed by ~CCreditsState)
-    i32 m_scrollReseedTimer;         // +0x1f4  scroll reseed timer (counts the frame delta down)
+    i32 m_scrollReseedTimer; // +0x1f4  scroll reseed timer (counts the frame delta down)
     // +0x1f8 / +0x200 are DOUBLES, not four ints: DrawScrollingCredits does
     // `fmul QWORD PTR [esi+0x200]` / `fadd|fstp QWORD PTR [esi+0x1f8]` and SetupTitle
     // seeds both through the x87 pipe. (The ctor's four zero-dword stores are how MSVC5
@@ -278,7 +279,8 @@ public:
     }
     virtual i32 Render() OVERRIDE;  // slot 5  (+0x14) 0x01c210 per-frame booty draw (stub)
     virtual i32 Vslot06() OVERRIDE; // slot 6  (+0x18) 0x01ce10 (declared-only)
-    virtual i32 Vslot07() OVERRIDE; // slot 7  (+0x1c) 0x01ce30 (ex ReadyAndPaint: ready-gate + per-frame paint; defined in BootyStateActivate.cpp)
+    virtual i32 Vslot07()
+        OVERRIDE; // slot 7  (+0x1c) 0x01ce30 (ex ReadyAndPaint: ready-gate + per-frame paint; defined in BootyStateActivate.cpp)
     virtual i32 InputVirtual() OVERRIDE;   // slot 8  (+0x20) 0x01c8a0 (declared-only; StateImages)
     virtual i32 Vslot09(i32) OVERRIDE;     // slot 9  (+0x24) 0x018d30 (declared-only; vfunc_9)
     virtual i32 FrameSlot28(i32) OVERRIDE; // slot 10 (+0x28) 0x018e40 (declared-only)
@@ -372,15 +374,15 @@ public:
     // +0x1d8..+0x1ec: the warp-stone glitter block BuildWarpStoneGlitterAnimation drives
     // (it landed in what was pure padding here; the same names its old CMultiBootyState
     // attribution used, which declares a parallel block at these very offsets).
-    i32 m_letterIdx;                // +0x1d8  active letter count / index
-    i32 m_radius;                   // +0x1dc  sine-spiral radius (loaded (float) for sin/cos)
-    i32 m_angleStep;                // +0x1e0  spiral angle/step counter (advances by 5)
-    i32 m_scratchX;                 // +0x1e4  computed scratch X
-    i32 m_scratchY;                      // +0x1e8  computed scratch Y
+    i32 m_letterIdx;                    // +0x1d8  active letter count / index
+    i32 m_radius;                       // +0x1dc  sine-spiral radius (loaded (float) for sin/cos)
+    i32 m_angleStep;                    // +0x1e0  spiral angle/step counter (advances by 5)
+    i32 m_scratchX;                     // +0x1e4  computed scratch X
+    i32 m_scratchY;                     // +0x1e8  computed scratch Y
     CWwdGameObjectA* m_trailSprites[4]; // +0x1ec  the 4 warp-letter glitter / trailing idle sprites
-                                    //         (the `(char*)this + 0x1ec` array of 0x19540)
+                                        //         (the `(char*)this + 0x1ec` array of 0x19540)
     CWwdGameObjectA* m_cursorLetter;    // +0x1fc  the trailing/cursor letter sprite
-    i32 m_levelCompleteGate;        // +0x200  level-complete gate
+    i32 m_levelCompleteGate;            // +0x200  level-complete gate
     // +0x204..+0x224: the 8 directional sprint sprites BuildGruntSprintAnimation builds -
     // exactly filling what was padding (8 pointers = 0x20 bytes).
     CWwdGameObjectA* m_sprintSprites[8]; // +0x204
@@ -392,15 +394,15 @@ public:
     // +0x284 / +0x2a4: the view called these m_shownA / m_shownB - the SAME two latches,
     // at the same offsets, that this class already named. Canonical names kept; the roles
     // LevelMsgHudDriver proves are recorded here.
-    i32 m_readyFlags[8];           // +0x284  per-slot "stat line (rectsB) shown" latch
-    i32 m_templateFlags[8];        // +0x2a4  per-slot "level message (rectsA) shown" latch
-    i32 m_slot;                    // +0x2c4  active reveal slot / phase counter (0..8)
+    i32 m_readyFlags[8];               // +0x284  per-slot "stat line (rectsB) shown" latch
+    i32 m_templateFlags[8];            // +0x2a4  per-slot "level message (rectsA) shown" latch
+    i32 m_slot;                        // +0x2c4  active reveal slot / phase counter (0..8)
     CWwdGameObjectA* m_visSprites[4];  // +0x2c8  per-player idle sprites (visibility)
     CWwdGameObjectA* m_animSprites[4]; // +0x2d8  per-player idle sprites (A-kind)
-    i32 m_stepIndex;               // +0x2e8  active-player step index
-    i32 m_walkStarted;             // +0x2ec  walk-animation-started gate
-    i32 m_soundStarted;            // +0x2f0  sound-started gate
-    i32 m_secretGate;              // +0x2f4  secret-message gate
+    i32 m_stepIndex;                   // +0x2e8  active-player step index
+    i32 m_walkStarted;                 // +0x2ec  walk-animation-started gate
+    i32 m_soundStarted;                // +0x2f0  sound-started gate
+    i32 m_secretGate;                  // +0x2f4  secret-message gate
     // +0x2f8  the BOOTY_PERFECT celebration sprite BuildBootyPerfectAnimation creates.
     // This is the LAST hole in the class, and it closes the third out-of-bounds
     // @identity-TODO: CMultiBootyState also declares a `m_bonusState` here, but that class
@@ -503,9 +505,9 @@ public:
     i32 m_radius;    // +0x1dc sine-spiral radius (loaded (float) for sin/cos; shrinks to 0)
     i32 m_angleStep; // +0x1e0 spiral angle/step counter (advances by 5)
     i32 m_scratchX;  // +0x1e4 computed scratch X (sin(ang)*r + tableX)
-    i32 m_scratchY;       // +0x1e8 computed scratch Y (cos(ang)*r + tableY)
+    i32 m_scratchY;  // +0x1e8 computed scratch Y (cos(ang)*r + tableY)
     CWwdGameObjectA* m_trailSprites[4]; // +0x1ec  the 4 warp-letter glitter / trailing idle
-                                    //         sprites (walked 0..m_letterIdx, %4-bounded)
+                                        //         sprites (walked 0..m_letterIdx, %4-bounded)
     CWwdGameObjectA* m_cursorLetter;    // +0x1fc the trailing/cursor letter sprite
     // ENDS AT 0x244 - the allocation-proven size (TransitionState @0x8c056:
     // `push 0x244; call ??2@YAPAXI@Z`, then the ??_7CMultiBootyState (0x5e9bdc) stamp).
@@ -514,7 +516,7 @@ public:
     // [this+0x2f8] off its own `this`, 0xb4 bytes past this class's end, and its only caller
     // is CBootyState::Render. This class is whole again - the fourth and last of the
     // out-of-bounds @identity-TODOs to close by the allocation-site bound.
-    i32 m_levelCompleteGate;         // +0x200  level-complete gate (mirrors CBootyState)
+    i32 m_levelCompleteGate;             // +0x200  level-complete gate (mirrors CBootyState)
     CWwdGameObjectA* m_sprintSprites[8]; // +0x204..+0x223  the 8 directional sprint sprites
     char m_pad224[0x244 - 0x224];
 };

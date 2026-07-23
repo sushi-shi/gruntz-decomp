@@ -87,7 +87,7 @@ public:
     // host, reseed RNG + frame timers, prime the per-slot config table, load the
     // level via CPlay::LoadByMode, re-arm the session.
     virtual i32 LoadByMode(i32 mode, i32 unused) OVERRIDE;
-    virtual void OnExit() OVERRIDE;        // slot 32 (CPlay; ex "Vslot20")
+    // slot 32 OnExit: INHERITED from CPlay (retail slot = the CPlay body; no override).
     virtual void TickStateMgrs() OVERRIDE; // slot 38 (CPlay; 0x0bd3c0, ex "Vslot26")
     // The owner back-ptr (CState::m_4) IS the real CGruntzMgr - the game-manager
     // singleton the lobby methods drive. No downcast: LogLine/RunDialog/... resolve to

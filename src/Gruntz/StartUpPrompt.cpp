@@ -1,6 +1,6 @@
 #include <Mfc.h>
 #include <Utils/WinAPICdRom.h> // IsGruntzCDInAnyDrive (ex .cpp extern)
-#include <Gruntz/HeapDiag.h> // FileExists (ex .cpp extern)
+#include <Gruntz/HeapDiag.h>   // FileExists (ex .cpp extern)
 #ifdef __clang__
 #undef _AFX_ENABLE_INLINES
 #endif
@@ -9,7 +9,7 @@
 
 #include <rva.h>
 #include <Gruntz/StartUpPrompt.h> // g_appResHandle decl
-#include <Gruntz/GruntzMgr.h> // ex Globals.h
+#include <Gruntz/GruntzMgr.h>     // ex Globals.h
 
 // g_appResHandle (0x00251618): HINSTANCE - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
@@ -44,7 +44,7 @@ int StartUpPrompt(HWND hWnd) {
     char szText[128];
     char szCaption[62];
 
-    if (!FileExists(strPath)) {
+    if (!FileExists(const_cast<char*>(static_cast<const char*>(strPath)))) {
         g_cdPromptResult = 0;
         for (;;) {
             strcpy(szText, "Please insert the game CD-ROM into the drive.");

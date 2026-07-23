@@ -7,7 +7,6 @@
 ??0CGruntCellRec@@QAE@XZ
 ??0CStringArray@@QAE@XZ
 ??0RezElem40@@QAE@XZ
-??1CBattlezDlgColors@@UAE@XZ
 ??1CBoomerang@@UAE@XZ
 ??1CButeRef5@@QAE@XZ
 ??1CButeRef6@@QAE@XZ
@@ -49,7 +48,6 @@
 ?ClickAt_ff9d0@CStatusBarMgr@@QAEHHHH@Z
 ?Close@CFileMem@@UAEXXZ
 ?Close@CFileMemBase@@UAEXXZ
-?CloseResources@CGruntzApp@@UAEXXZ
 ?CloseSettingsStore@@YAXXZ
 ?ColourBtn1753@CMultiStartDlg@@QAEPAVCWnd@@H@Z
 ?Command@CBattlezData@@QAEHHHHH@Z
@@ -79,7 +77,6 @@
 ?Effect374c@CBattlezMapConfig@@QAEXPAVCGrunt@@H@Z
 ?EmitMoveCueShort@CGrunt@@QAEXHHH@Z
 ?EmptyMsgHook@@YGXIJ@Z
-?EnableWindow@CMultiStartDlg@@QAEXH@Z
 ?EndWaitCursor@@YAXXZ
 ?Eng_BuildNotifyA@@YGXH@Z
 ?Eng_PostCmd@@YGXHHHH@Z
@@ -88,7 +85,6 @@
 ?EnterField2@CTeleporter@@QAEXXZ
 ?EntranceApplyFrame@@YGXPBDH@Z
 ?Fade@CAmbientSound@@QAEHHHH@Z
-?FileExists@@YAHPBD@Z
 ?Finalize@CStatusBarMgr@@QAEXXZ
 ?Finish3e4f@CBattlezMapConfig@@QAEXPAVCGrunt@@0@Z
 ?FinishAttackPowered@CGrunt@@QAEXXZ
@@ -132,7 +128,6 @@
 ?GruntDropReady029b40@@YGHPAVCGrunt@@@Z
 ?GruntNode_Delete@@YAXPAX@Z
 ?GruntPointVisible@@YAHHHH@Z
-?GruntStrGetBuffer@@YAPADPAXH@Z
 ?GruntTileSwitchImpl@@YGHHHHHHH@Z
 ?GutsStepB@CPlay@@QAEXXZ
 ?GutsStepC@CPlay@@QAEXXZ
@@ -173,7 +168,6 @@
 ?ListDtor@CWwdSpatialMgr@@QAEXXZ
 ?LoadGruntTypeTable@CGrunt@@QAEHHHHH@Z
 ?LoadSprite@CSpriteRefTable@@QAEPAXPAXH@Z
-?M1bab37@CMultiStartDlg@@QAEXH@Z
 ?MapCellIndex@zDArray@@QAEHHH@Z
 ?MapCellRecord2@zDArray@@QAEHHH@Z
 ?MapCellRecord@zDArray@@QAEHHH@Z
@@ -187,7 +181,6 @@
 ?NotifyAttackImpact@CGrunt@@QAEXXZ
 ?NotifyDrop@CGrunt@@QAEXXZ
 ?OnCoordCommit@CGrunt@@QAEXH@Z
-?OnExit@CMulti@@UAEXXZ
 ?OnFound@CWwdGrid@@UAEXPAUWwdRegion@@@Z
 ?OnMoveFinishA@CGrunt@@QAEXH@Z
 ?OnReanchor@CGrunt@@QAEXH@Z
@@ -273,10 +266,6 @@
 ?SetServiceName@CMulti@@QAEXVCString@@@Z
 ?SetupSprite@CInGameIcon@@QAEXPBD@Z
 ?ShowChatLine@CMulti@@QAEXPAXPBD@Z
-?ShowHudMessage@@YAXPAUHudMsgSink@@HHHHHHHH@Z
-?ShowHudMessage@@YAXPAVCDDrawSurfaceMgr@@PAUtagRECT@@PAVCString@@HHHHHH@Z
-?ShowHudMessage@@YAXPAXPAVCString@@PAUtagRECT@@HHHHHH@Z
-?ShowHudMessageAlt@@YAXPAUHudMsgSink@@HHHHHHHH@Z
 ?SnapPostMessage@CPlay@@QAEXH@Z
 ?SnapWalk@CPlay@@QAEXXZ
 ?Spawn@CGruntzCmdMgr@@QAEXHDHHHHHH@Z
@@ -311,7 +300,6 @@
 ?Unload@CResolveNode@@UAEXXZ
 ?UpdateCombatTimer@CGrunt@@QAEXXZ
 ?ValidateMainBlock@@YAHPAX@Z
-?VersionScan@@YAHPBD0ZZ
 ?Vslot15@CMulti@@UAEHXZ
 ?WantCreate@CFileMemBase@@UAEXXZ
 ?WantRead@CFileMemBase@@UAEHXZ

@@ -566,15 +566,15 @@ i32 CMulti::Vslot09(i32 arg) {
 }
 
 void ShowHudMessage(
-    void* sink,
+    CDDrawSurfaceMgr* sink,
     CString* text,
-    RECT* rect,
-    i32 dur,
-    i32 a,
+    RECT* box,
+    i32 fontSel,
     i32 b,
     i32 c,
     i32 d,
-    i32 e
+    i32 e,
+    i32 f
 ); // 0x1154b0
 
 // ===========================================================================

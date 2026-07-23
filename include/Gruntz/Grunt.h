@@ -48,8 +48,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-char* GruntStrGetBuffer(void* str, i32 minLen); // 0x1ba11c
-
 void __stdcall EntranceApplyFrame(const char* keyStr, i32 frameNum);
 
 #include <Gruntz/CurPlayer.h> // g_curPlayer (the current local player index)
@@ -790,7 +788,7 @@ public:
         struct {
             i32 m_idleWindowLo, m_idleWindowHi;
         };
-    };                        // +0x838 (= 0x3a98)
+    }; // +0x838 (= 0x3a98)
     i32 m_entranceClockLo;    // +0x840 (entrance: = g_frameTime game clock, low dword)
     i32 m_entranceClockHi;    // +0x844 (entrance: = 0, high dword)
     i32 m_entranceSafeTimeLo; // +0x848 (entrance: = EntranceSafeTime config)

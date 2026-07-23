@@ -1,4 +1,4 @@
-#include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (full def)
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -13,8 +13,8 @@
 #include <Gruntz/UserLogic.h>             // CGameObject (the created effect sprites)
 #include <Gruntz/WwdGameReg.h>
 #include <Gruntz/LightFxMgr.h> // m_78->m_tables (the glitter handle table)            // g_gameReg (GenMenuRandPos Rand/RandRange)
-#include <Gruntz/GameRegistry.h>          // CDDrawSurfaceMgr (the real m_world class)
-#include <Gruntz/Grunt.h>                 // GruntSoundCat full def (m_world->m_childGroup factory)
+#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (the real m_world class)
+#include <Gruntz/Grunt.h>        // GruntSoundCat full def (m_world->m_childGroup factory)
 #include <Gruntz/SoundCue.h> // CSndSubMgr/CDDrawSubMgrLeafScan/CSndFinder/DSoundCloneInst (LevelMsgHudDriver cue)
 #include <Gruntz/LeafCue.h> // LeafCue (PlayIfElapsed + m_10/m_14/m_18)
 #include <rva.h>
@@ -146,7 +146,8 @@ i32 CBootyState::LoadGruntEffectSprites() {
         return 0;
     }
     i32 tint = reinterpret_cast<i32>(
-        g_gameReg->m_logicPump->m_tables[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)]);
+        g_gameReg->m_logicPump->m_tables[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)]
+    );
     m_icons[7]->ApplyName("GAME_WORMHOLE");
     m_icons[7]->ApplyLookupGeometry("GAME_TELEPORTER", 0);
     CWwdGameObjectA* p318 = m_icons[7];
@@ -344,11 +345,11 @@ i32 CBootyState::LevelMsgHudDriver() {
             CopyRect(&box, &g_levelMsgRectsA[i]);
             CString text = g_levelMsgStrings[i];
             m_templateFlags[i] = 1;
-            ShowHudMessage(m_world, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
             CopyRect(&box, &g_levelMsgRectsB[i]);
             this->FormatHudText(&text, i);
             m_readyFlags[i] = 1;
-            ShowHudMessage(m_world, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
             if (i >= m_slot && (i != m_slot || m_expl[i]->m_1a0.m_14 == 0)) {
                 CWwdGameObjectA* e = m_expl[i];
                 e->m_stateFlags &= ~1;
@@ -392,7 +393,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             CopyRect(&box, &g_levelMsgRectsA[m_slot]);
             CString text = g_levelMsgStrings[m_slot];
             m_templateFlags[m_slot] = 1;
-            ShowHudMessage(m_world, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
         }
         s = m_slot;
         if (m_readyFlags[s] == 0 && g_levelMsgIconPos[s * 2] <= gx) {
@@ -417,7 +418,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             CopyRect(&box, &g_levelMsgRectsB[i]);
             this->FormatHudText(&text, i);
             m_readyFlags[i] = 1;
-            ShowHudMessage(m_world, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
             CWwdGameObjectA* e = m_expl[i];
             e->m_stateFlags &= ~1;
             e->ApplyLookupGeometry("GAME_EXPLOSION1", 0);
@@ -432,7 +433,8 @@ i32 CBootyState::LevelMsgHudDriver() {
                 host->m_10.Lookup("GAME_EXPLOSION1", cue_ob);
                 LeafCue* cue = static_cast<LeafCue*>(cue_ob);
                 if (cue != 0 && g_sndEnabled != 0
-                    && static_cast<u32>((g_killCueClock - cue->m_14)) >= static_cast<u32>(cue->m_18)) {
+                    && static_cast<u32>((g_killCueClock - cue->m_14))
+                           >= static_cast<u32>(cue->m_18)) {
                     cue->m_14 = g_killCueClock;
                     cue->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
                 }

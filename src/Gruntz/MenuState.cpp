@@ -27,7 +27,7 @@
 DATA(0x00245574)
 CFixedPtrArray32* g_actorList = 0;
 DATA(0x00245cc8)
-CGMVerRect g_versionRect; // .bss - zero at load
+tagRECT g_versionRect; // .bss - zero at load
 
 static inline CGruntzMgr* Owner(CState* s) {
     return s->m_mgr;
@@ -352,20 +352,19 @@ DATA(0x0025160c)
 i32 g_versionMid = 0; // decl in <Gruntz/GameMode.h>
 DATA(0x00251610)
 i32 g_versionMinor = 0; // decl in <Gruntz/GameMode.h>
-struct HudMsgSink;
 void ShowHudMessage(
-    HudMsgSink* sink,
-    i32 text,
-    i32 rect,
-    i32 dur,
-    i32 a,
+    CDDrawSurfaceMgr* sink,
+    CString* text,
+    RECT* box,
+    i32 fontSel,
     i32 b,
     i32 c,
     i32 d,
-    i32 e
+    i32 e,
+    i32 f
 ); // 0x1154b0
 RVA(0x000a0d80, 0xd7)
-void CMenuState::BuildVersionString(CGMVerRect r) {
+void CMenuState::BuildVersionString(tagRECT r) {
     CString str;
     if (g_versionMid == 0) {
         str.Format("Gruntz v%d.%d", g_versionMajor, g_versionMinor);
@@ -375,15 +374,5 @@ void CMenuState::BuildVersionString(CGMVerRect r) {
     if (g_cdPromptResult) {
         str += " (SPAWN MODE)";
     }
-    ShowHudMessage(
-        reinterpret_cast<HudMsgSink*>(m_world),
-        reinterpret_cast<i32>(&str),
-        reinterpret_cast<i32>(&r),
-        0x64,
-        1,
-        0xff,
-        0xff,
-        0,
-        0
-    );
+    ShowHudMessage(m_world, &str, &r, 0x64, 1, 0xff, 0xff, 0, 0);
 }
