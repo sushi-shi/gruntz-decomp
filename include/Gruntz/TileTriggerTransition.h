@@ -17,7 +17,6 @@ public:
 
     // per-class logic-type id (0x405); body out-of-line at 0x011730 in the leaf pool.
     virtual LogicTypeId GetTypeTag() OVERRIDE;
-    void Register(); // 0x10fc90
     virtual void FireActivation(i32 id)
         OVERRIDE;               // 0x10fd10 (vtable slot 4: per-coord PMF dispatch)
     static void RegisterActs(); // 0x10fe70  intern "A", bind Handler (static: no this)

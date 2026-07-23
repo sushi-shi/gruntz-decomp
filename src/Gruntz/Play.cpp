@@ -5973,9 +5973,6 @@ i32 CPlay::ResetPlayState() {
 DATA(0x002455f0)
 i32 g_levelBias100 = 0;
 
-DATA(0x0024553c)
-i32 g_areaHazardParam = 0;
-
 DATA(0x00245270)
 i32 g_areaPageSize; // owner def (zero-init .bss)
 

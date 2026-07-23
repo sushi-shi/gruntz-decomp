@@ -27,7 +27,6 @@ public:
     // act clusters were shifted one class down. RTTI: CBrickz[4] override -> 0x0012b2,
     // and 0x0012b2 -> jmp 0x10ea80 (sema xref).
     virtual void FireActivation(i32 id) OVERRIDE; // 0x10ea80
-    static void InitActReg();                     // 0x10ea00 (constructs g_brickzActReg @0x64e7c0)
     static void RegisterActs();                   // 0x10ebe0 (binds the "A" activation handler)
     i32 Trigger(); // 0x10ede0 (the activation handler; declared-only, used as a PMF)
     // Declared-only (body 0x810f0, Brickz.cpp): load the puzzle's tile attributes.

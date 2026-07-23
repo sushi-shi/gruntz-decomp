@@ -55,9 +55,10 @@
 #include <Gruntz/KitchenSlime.h> // ex Globals.h
 #include <Bute/ButeMgr.h>        // CButeMgr::GetDwordDef on g_buteMgr
 
-// g_rollingBallActReg (0x002461b0): CActReg - no provable static init (the type has no
+// CActRegPool<CRollingBall>::s_table (0x002461b0): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x002461b0, 0x0, ?g_rollingBallActReg@@3UCActReg@@A)
+template<> DATA(0x002461b0)
+CActReg CActRegPool<CRollingBall>::s_table(2000, 2010);
 
 VTBL(CRollingBall, 0x001e86fc);
 
@@ -170,18 +171,21 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_moveDeltaLo = 0;
 }
 
-RVA(0x000afd60, 0x15)
-void CRollingBall::InitActReg() {
-    g_rollingBallActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x000afd40, 0xa, _$E720192)
+RVA_COMPGEN(0x000afd60, 0x15, _$E720224)
+RVA_COMPGEN(0x000afd90, 0xe, _$E720272)
+RVA_COMPGEN(0x000afdb0, 0x1f, _$E720304)
 
 RVA(0x000afde0, 0x102)
 void CRollingBall::FireActivation(i32 id) {
-    CRollingBallActEntry* e =
-        reinterpret_cast<CRollingBallActEntry*>(g_rollingBallActReg.ResolveEntry(id));
+    CRollingBallActEntry* e = reinterpret_cast<CRollingBallActEntry*>(
+        CActRegPool<CRollingBall>::s_table.ResolveEntry(id)
+    );
     if (e->m_fn != 0) {
         (this
-             ->*(reinterpret_cast<CRollingBallActEntry*>(g_rollingBallActReg.ResolveEntry(id)))
+             ->*(reinterpret_cast<CRollingBallActEntry*>(
+                 CActRegPool<CRollingBall>::s_table.ResolveEntry(id)
+             ))
              ->m_fn)();
     }
 }
@@ -214,8 +218,8 @@ void CRollingBall::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CRollingBallActEntry*>(g_rollingBallActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CRollingBall::Update);
+    (reinterpret_cast<CRollingBallActEntry*>(CActRegPool<CRollingBall>::s_table.ResolveEntry(id)))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CRollingBall::Update);
 }
 
 // CRollingBall::Update - the per-tick rolling-ball state machine (__thiscall).

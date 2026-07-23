@@ -16,7 +16,6 @@ public:
     // 0x10f1e0/0x10f340 cluster (RTTI: its slot 4 override -> ILT 0x001366 -> jmp
     // 0x10f1e0); the 0x10ea00.. cluster it used to claim is CBrickz's. Bodies in
     // TileLogicPump.cpp.
-    static void InitActReg(); // 0x10f160 (constructs g_checkpointActReg @0x64e7e8)
     virtual void FireActivation(i32 id) OVERRIDE; // 0x10f1e0 (vtable slot 4 body)
     static void RegisterActs(); // 0x10f340 (binds the "A"/"B" activation handlers)
     i32 Act();        // 0x10f6a0 ("A" handler; @stub body pending leaf-first reconstruction)

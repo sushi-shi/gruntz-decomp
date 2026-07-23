@@ -10,6 +10,7 @@
 #include <Gruntz/WwdGameReg.h>    // the canonical WwdGameReg singleton (g_gameReg)
 #include <Gruntz/GruntzMgr.h>     // the m_38 manager back-ptr (CGruntzMgr) + m_world chain
 #include <Gruntz/GameLevel.h>     // CGameLevel (m_world->m_level: m_planeCtx + m_mainPlane)
+#include <Rez/RezSync.h>          // g_dlgVal_645538
 #include <rva.h>
 
 i32 __stdcall IsActive2(void* enable);
@@ -707,8 +708,6 @@ DATA(0x002452d0)
 i32 g_dlgVal_6452d0;
 DATA(0x002452d4)
 i32 g_dlgVal_6452d4;
-DATA(0x00245538)
-i32 g_dlgVal_645538;
 DATA(0x00245558)
 i32 g_dlgVal_645558;
 DATA(0x0024555c)

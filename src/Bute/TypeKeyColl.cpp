@@ -16,7 +16,7 @@
 #pragma function(memcpy)
 
 #include <Gruntz/StringNode.h>     // the type-name teardown slot
-#include <Gruntz/TypeKeyColl.h>    // CZErrSink/CZArrayRoot/CZArray2D/zDArray (one shape)
+#include <Gruntz/TypeKeyColl.h>    // the corrected _zvec/_zdvec/type-collection hierarchy
 #include <Gruntz/TypeKeyCollStr.h> // s_out_of_memory (owner-only decl header)
 #include <Gruntz/TypeNameEntry.h>  // the shared type-name-registry record (CString m_name)
 #include <Gruntz/XferArchive.h>    // canonical CXferArchive/CXferField (ProjTypeXfer arg)
@@ -31,13 +31,36 @@ void* g_retAddrBreadcrumb;
 DATA(0x002bf400)
 i32 g_helperRefCount; // owner def (zero-init .bss; C linkage via TypeKeyColl.h decl)
 
-// g_typeColl (0x002bf650): zDArray - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x002bf650, 0x0, ?g_typeColl@@3VzDArray@@A)
+inline CTypeCollRuntime::CTypeCollRuntime()
+    : _zdvec(sizeof(CString), 0x7d0, 0x7da, reinterpret_cast<void*>(1)) {
+    CString* item = reinterpret_cast<CString*>(m_alloc);
+    i32 count = m_grown;
+    if (item != 0 && count != 0) {
+        do {
+            item->CString::CString();
+            ++item;
+        } while (--count);
+    }
+}
+
+CTypeCollRuntime::~CTypeCollRuntime() {
+    CString* item = reinterpret_cast<CString*>(m_base);
+    i32 count = m_hi - m_lo + 1;
+    if (item != 0 && count != 0) {
+        do {
+            item->CString::~CString();
+            ++item;
+        } while (--count);
+    }
+}
+
+DATA(0x002bf650)
+CTypeCollRuntime g_typeColl;
 
 VTBL(zBitVec, 0x001f04c8);
-VTBL(zDArray, 0x001f04d0); // leaf ??_7CTypeKeyColl @0x5f04d0 (1-slot dtor vtable)
-VTBL(_zdvec, 0x001f04d4);  // ~_zdvec-entry vtable (0x5f04d4)
+VTBL(_zdvec, 0x001f04d0);
+VTBL(_zvec, 0x001f04d4);
+VTBL(CTypeCollRuntime, 0x001f04e4);
 
 VTBL(CButeNodeEntry, 0x001f04d8); // the entry member's own (base) vtable
 // @identity-TODO INTERIOR-OFFSET CLUSTER - do NOT "fix" these by defining them.
@@ -662,14 +685,15 @@ void* CButeTree::Insert(const char* key, void* value) {
 }
 
 RVA(0x0016dda0, 0x3c)
-zDArray::zDArray(i32 stride, i32 lo, i32 hi, void* scratch) : _zdvec(stride, lo, hi, scratch) {
+_zdvec::_zdvec(i32 stride, i32 lo, i32 hi, void* scratch) : _zvec(stride, lo, hi, scratch) {
     m_alloc = m_base;          // +0x1c  the fresh band base (was the m_cursor view)
     m_grown = m_hi - m_lo + 1; // +0x20  its slot count (was the m_count view)
 }
 
-// The implicit derived destructor has no standalone body: its vtable slot emits
-// this scalar-deleting thunk, which directly tears down the _zdvec base.
-RVA_COMPGEN(0x0016dde0, 0x1e, ??_GzDArray@@UAEPAXI@Z)
+RVA_COMPGEN(0x0016dde0, 0x1e, ??_G_zdvec@@UAEPAXI@Z)
+
+RVA(0x0016de00, 0x5)
+_zdvec::~_zdvec() {}
 
 // The dynamic-array 0x18-byte error slot, initialized by the retail helper at 0x16de20.
 // Its complete extent is 0x6bf468..0x6bf47f; the former u8 "tag" was only its
@@ -679,10 +703,8 @@ CVariantSlot g_dynamicArrayErrorSlot("Dynamic Array: ");
 RVA_COMPGEN(0x0016de20, 0x10, _$E1498656)
 
 // ===========================================================================
-// _zdvec::_zdvec (0x16de30) - the allocating vector ctor (this body was modelled
-// as `CZArray2D::CZArray2D` until the fold: CZArray2D IS _zdvec, one class under two
-// names - its vtable 0x1f04d4 is the datum VTBL(_zdvec) binds and its ??1 0x16df40 is
-// ~_zdvec, both right here in this TU). Builds the zErrHandling base (0x16d9c0, was
+// _zvec::_zvec (0x16de30) - the allocating vector ctor. Builds the
+// zErrHandling base (0x16d9c0, was
 // the duplicate `CZArrayRoot` model), records the [lo, hi] bounds + element stride,
 // allocates the (hi-lo+1)*stride element band (+ a scratch element when none was
 // supplied), and reports a fatal "Inconsistent bounds" / "out of memory" through the
@@ -699,9 +721,9 @@ RVA_COMPGEN(0x0016de20, 0x10, _$E1498656)
 // sinks it AFTER them, plus a minor regalloc swap in the lo/hi/stride/scratch
 // load sequence. Not source-steerable; deferred to the final sweep.
 RVA(0x0016de30, 0xe7)
-_zdvec::_zdvec(i32 stride, i32 lo, i32 hi, void* scratch)
-    : _zvec(&g_dynamicArrayErrorSlot) {    // -> the zErrHandling base ctor @0x16d9c0
-    m_spare = static_cast<char*>(scratch); // +0x14  scratch element (was the m_buf2 view)
+_zvec::_zvec(i32 stride, i32 lo, i32 hi, void* scratch)
+    : zErrHandling(&g_dynamicArrayErrorSlot) { // -> zErrHandling ctor @0x16d9c0
+    m_spare = static_cast<char*>(scratch);     // +0x14  scratch element (was the m_buf2 view)
     m_lo = lo;
     m_hi = hi;
     m_base = 0; // +0x10  element band (was the m_buf view)
@@ -729,13 +751,15 @@ _zdvec::_zdvec(i32 stride, i32 lo, i32 hi, void* scratch)
     m_errSink->Set(static_cast<void*>(this), reinterpret_cast<i32>("out of memory"), 0xc);
 }
 
+RVA_COMPGEN(0x0016df20, 0x1e, ??_G_zvec@@UAEPAXI@Z)
+
 RVA(0x0016df40, 0x22)
-_zdvec::~_zdvec() {
+_zvec::~_zvec() {
     char* p = m_base;
     if (p) {
         free(p);
     }
-    // ~_zvec() base destructor is chained in by the compiler (mov ecx,esi; call).
+    // ~zErrHandling() is chained in by the compiler.
 }
 
 // ===========================================================================
@@ -1112,57 +1136,10 @@ i32 ButeTreeAtexitDtor(void) {
     return 0;
 }
 
-inline void* operator new(u32, void* p) {
-    return p;
-}
-
-// ===========================================================================
-// `dynamic initializer for g_typeColl' (0x16e730) - construct the shared key
-// collection with the [0x7d0, 0x7da] id range, stamp its runtime vtable, then
-// free the (initially stale) node array. The construct is a placement-new of the
-// real zDArray ctor (0x16dda0) over the global; the runtime re-stamp swaps in
-// the live g_typeCollRunVtbl over the just-built construction vtable.
-// ===========================================================================
-// @early-stop
-// placement-new null-guard + count-down-induction wall (~70%). Two residues:
-// (1) constructing g_typeColl now goes through the REAL zDArray ctor via a
-// placement-new (the only way to invoke a ctor on the pre-pinned extern global);
-// MSVC5 emits the placement null-guard `mov eax,&g_typeColl; test eax,eax; je`
-// that retail's direct in-place build lacks - intrinsic to placement-new of a
-// non-trivial ctor, not source-steerable. (2) the node-free loop: retail
-// materializes the counter via the `ecx=cnt; eax=cnt-1; lea edi,[eax+1]`
-// strength-reduced idiom and shrink-wraps `push edi`; cl loads the count plainly.
-// Same not-source-steerable idiom as CKitchenSlime/CProjectile::RegisterType.
-// Deferred to the final sweep.
-RVA(0x0016e730, 0x51)
-void DynInitTypeColl() {
-    new (&g_typeColl) zDArray(4, 0x7d0, 0x7da, reinterpret_cast<void*>(1));
-    CStringNode* nodes = reinterpret_cast<CStringNode*>(g_typeColl.m_alloc);
-    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
-    if (nodes != 0) {
-        i32 cnt = g_typeColl.m_grown;
-        if (cnt != 0) {
-            do {
-                if (nodes != 0) {
-                    (reinterpret_cast<CString*>(nodes))->~CString();
-                }
-                ++nodes;
-            } while (--cnt);
-        }
-    }
-}
-
-// @early-stop
-// `atexit destructor for g_typeColl' (??__F, 0x16e7a0) - homed from GapFunctions.cpp
-// (matcher-5); the teardown thunk atexit-registered for DynInitTypeColl above. It restamps
-// g_typeColl's runtime vptr (0x5f04e4), frees the node array (the same count-down loop
-// calling the element dtor 0x1b8cde), then drains g_typeColl @0x6bf650 via 0x16cf40. A
-// COMPILER-GENERATED atexit thunk (same restructure blocker as ??__Fg_buteTree above);
-// homed pending g_typeColl defined with its real ~zDArray chain.
-RVA(0x0016e7a0, 0x48)
-i32 TypeCollAtexitDtor(void) {
-    return 0;
-}
+// MSVC emits the inlined g_typeColl constructor and its atexit wrapper as a pair.
+// The local `$E` number is unstable; compiler-generated matching binds it by content.
+RVA_COMPGEN(0x0016e730, 0x51, _$E1500976)
+RVA_COMPGEN(0x0016e7a0, 0x48, ??__Fg_typeColl@@YAXXZ)
 
 // ===========================================================================
 // CButeTree::`scalar deleting destructor' ??_GCButeTree (0x16e9c0) - the compiler-
@@ -1201,3 +1178,5 @@ RVA_COMPGEN(0x0016e9c0, 0x45, ??_GCButeTree@@UAEPAXI@Z)
 
 RVA(0x0016ea10, 0x1)
 void ButeTreeNopFree(void*) {}
+
+RVA_COMPGEN(0x0016ea20, 0x51, ??_GCTypeCollRuntime@@UAEPAXI@Z)

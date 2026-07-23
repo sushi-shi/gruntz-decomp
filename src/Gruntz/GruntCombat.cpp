@@ -33,7 +33,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
 #include <Gruntz/GameLevel.h> // canonical CGameLevel/CDDrawWorkerHost (m_world->m_level visible rect)
-#include <Gruntz/ActReg.h>    // CLookupColl/CActReg::ResolveEntry
+#include <Gruntz/ActReg.h>    // CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/SerialRecords.h>
@@ -52,6 +52,7 @@
 #include <Wap32/Rect.h> // canonical CRect: the 0x29ac0 direct-store ctor (ex the CScanRectInit Set34a4 carrier view)
 #include <new>             // placement CRect ctor  // the PathScan dirty-rect Set34a4 helper
 #include <Gruntz/Brickz.h> // canonical CMapMgr (SearchEdge)
+#include <Gruntz/BattlezMapConfig.h> // ListNodeAdvance
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/LightFx.h> // CLightFx::Activate (spell LightFx sprites; folded CSpriteRegistrar)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::Lookup (rehomed here)
@@ -246,7 +247,7 @@ void CGrunt::EntranceTileOffset(i32* out) {
 }
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-#include <Gruntz/GruntCombat.h>  // g_reg_644af0 decl
+#include <Gruntz/GruntCombat.h>  // CActRegPool<CGrunt>::s_table decl
 
 DATA(0x0020d7fc)
 char s_codeH[] = "H";
@@ -254,11 +255,10 @@ char s_codeH[] = "H";
 DATA(0x0020d2e8)
 char s_codeF[] = "F";
 
-// g_reg_644af0 (0x00244af0): CLookupColl - no provable static init (the type has no
+// CActRegPool<CGrunt>::s_table (0x00244af0): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x00244af0, 0x0, ?g_reg_644af0@@3UCLookupColl@@A)
-
-void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
+template<> DATA(0x00244af0)
+CActReg CActRegPool<CGrunt>::s_table(2000, 2010);
 
 #define SCAN_BOUNDS(grid)                                                                          \
     {                                                                                              \
@@ -321,7 +321,7 @@ void CGrunt::ComputeFacing(double dt) {
             (reinterpret_cast<CString*>(slot))->operator=(key);                                    \
             g_typeCounter++;                                                                       \
         }                                                                                          \
-        (reinterpret_cast<CGruntActEntry*>(g_reg_644af0.Resolve(id)))->m_fn =                      \
+        (reinterpret_cast<CGruntActEntry*>(CActRegPool<CGrunt>::s_table.Resolve(id)))->m_fn =      \
             reinterpret_cast<GruntActHandler>(handler);                                            \
     }
 
@@ -1889,16 +1889,19 @@ i32 GruntSpawnPump(CGameObject* owner) {
     return 1;
 }
 
-RVA(0x0005bc50, 0x15)
-void ConstructActRange_644af0() {
-    g_reg_644af0.Construct(0x7d0, 0x7da);
-}
+RVA_COMPGEN(0x0005bc30, 0xa, _$E375856)
+RVA_COMPGEN(0x0005bc50, 0x15, _$E375888)
+RVA_COMPGEN(0x0005bc80, 0xe, _$E375936)
+RVA_COMPGEN(0x0005bca0, 0x1f, _$E375968)
 
 RVA(0x0005bcd0, 0x102)
 void CGrunt::FireActivation(i32 id) {
-    CGruntActEntry* e = reinterpret_cast<CGruntActEntry*>(g_reg_644af0.ResolveEntry(id));
+    CGruntActEntry* e =
+        reinterpret_cast<CGruntActEntry*>(CActRegPool<CGrunt>::s_table.ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*(reinterpret_cast<CGruntActEntry*>(g_reg_644af0.ResolveEntry(id)))->m_fn)();
+        (this
+             ->*(reinterpret_cast<CGruntActEntry*>(CActRegPool<CGrunt>::s_table.ResolveEntry(id)))
+             ->m_fn)();
     }
 }
 

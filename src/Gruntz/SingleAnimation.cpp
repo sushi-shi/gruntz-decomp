@@ -7,6 +7,8 @@
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 VTBL(CSingleAnimation, 0x001e745c);
+template<> DATA(0x00245f70)
+CActReg CActRegPool<CSingleAnimation>::s_table(2000, 2010);
 
 RVA(0x000104a0, 0x47)
 i32 CSingleAnimation::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
@@ -36,18 +38,21 @@ CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(ob
     m_objAux->m_1c = g_buteTree.Find("A");
 }
 
-RVA(0x000ae9a0, 0x15)
-void CSingleAnimation::InitActReg() {
-    g_singleAnimActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x000ae980, 0xa, _$E715136)
+RVA_COMPGEN(0x000ae9a0, 0x15, _$E715168)
+RVA_COMPGEN(0x000ae9d0, 0xe, _$E715216)
+RVA_COMPGEN(0x000ae9f0, 0x1f, _$E715248)
 
 RVA(0x000aea20, 0x102)
 void CSingleAnimation::FireActivation(i32 id) {
-    CSingleAnimActEntry* e =
-        reinterpret_cast<CSingleAnimActEntry*>(g_singleAnimActReg.ResolveEntry(id));
+    CSingleAnimActEntry* e = reinterpret_cast<CSingleAnimActEntry*>(
+        CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id)
+    );
     if (e->m_fn != 0) {
         (this
-             ->*(reinterpret_cast<CSingleAnimActEntry*>(g_singleAnimActReg.ResolveEntry(id)))
+             ->*(reinterpret_cast<CSingleAnimActEntry*>(
+                 CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id)
+             ))
              ->m_fn)();
     }
 }
@@ -80,8 +85,10 @@ void CSingleAnimation::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CSingleAnimActEntry*>(g_singleAnimActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CSingleAnimation::AdvanceAnim);
+    (reinterpret_cast<CSingleAnimActEntry*>(
+         CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id)
+     ))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CSingleAnimation::AdvanceAnim);
 }
 
 RVA(0x000aed80, 0x39)
@@ -96,7 +103,3 @@ i32 CSingleAnimation::AdvanceAnim() {
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
-
-// g_singleAnimActReg (0x00245f70): CSingleAnimActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x00245f70, 0x0, ?g_singleAnimActReg@@3UCSingleAnimActReg@@A)

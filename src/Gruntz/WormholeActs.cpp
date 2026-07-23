@@ -6,29 +6,32 @@
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/WormholeActs.h> // g_exitTriggerActReg decl
+#include <Gruntz/WormholeActs.h> // CActRegPool<CExitTrigger>::s_table decl
 
-// g_exitTriggerActReg (0x002445c0): CActReg - no provable static init (the type has no
+// CActRegPool<CExitTrigger>::s_table (0x002445c0): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x002445c0, 0x0, ?g_exitTriggerActReg@@3UCActReg@@A)
+template<> DATA(0x002445c0)
+CActReg CActRegPool<CExitTrigger>::s_table(2000, 2010);
 
-RVA(0x0003f210, 0x15)
-void CExitTrigger::InitActReg() {
-    g_exitTriggerActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x0003f1f0, 0xa, _$E258544)
+RVA_COMPGEN(0x0003f210, 0x15, _$E258576)
+RVA_COMPGEN(0x0003f240, 0xe, _$E258624)
+RVA_COMPGEN(0x0003f260, 0x1f, _$E258656)
 
 // CWormhole::FireAct @0x03f290 [@identity-TODO: retail says this is CExitTrigger's
 // vtable slot 4 - ILT 0x42e6 `jmp 0x3f290` + CExitTrigger vtbl 0x1e822c slot 4 == 0x42e6;
 // see the note in <Gruntz/Wormhole.h>] - look the activation coordinate up in the
-// class registry (g_exitTriggerActReg); if the resolved entry carries a registered
+// class registry (CActRegPool<CExitTrigger>::s_table); if the resolved entry carries a registered
 // handler PMF, resolve it again and dispatch it __thiscall on `this`. Same
 // archetype as CParticlez::FireActivation (double ResolveEntry + PMF dispatch).
 RVA(0x0003f290, 0x102)
 void CExitTrigger::FireActivation(i32 coord) {
-    CExitActEntry* e = reinterpret_cast<CExitActEntry*>(g_exitTriggerActReg.ResolveEntry(coord));
+    CExitActEntry* e =
+        reinterpret_cast<CExitActEntry*>(CActRegPool<CExitTrigger>::s_table.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        CExitActEntry* e2 =
-            reinterpret_cast<CExitActEntry*>(g_exitTriggerActReg.ResolveEntry(coord));
+        CExitActEntry* e2 = reinterpret_cast<CExitActEntry*>(
+            CActRegPool<CExitTrigger>::s_table.ResolveEntry(coord)
+        );
         (this->*(e2->m_fn))();
     }
 }
@@ -61,6 +64,6 @@ void CExitTrigger::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CExitActEntry*>(g_exitTriggerActReg.ResolveEntry(id)))->m_fn =
+    (reinterpret_cast<CExitActEntry*>(CActRegPool<CExitTrigger>::s_table.ResolveEntry(id)))->m_fn =
         static_cast<i32 (CUserLogic::*)()>(&CExitTrigger::AdvanceAnim);
 }

@@ -41,7 +41,7 @@ from gruntz.cleanliness import board as cleanliness
 from gruntz.cleanliness import class_sizes
 from gruntz.core import class_meta
 from gruntz.core import library_labels
-from gruntz.build import canonicalize_data_symbols, labels
+from gruntz.build import canonicalize_data_symbols, labels, synth_pdb
 from gruntz.cleanliness import vtable_slot_binding as vsb
 from gruntz.match import high_water, status
 from gruntz.match import verify_unique_names as vun
@@ -108,6 +108,42 @@ class TestCompilerPrivateFunctionNames(unittest.TestCase):
             0, 1, canonicalize_data_symbols.FUNCTION_TYPE, 2, 0,
         )
         return header + section + raw + symbol + struct.pack("<I", 4)
+
+    def test_curated_body_name_propagates_through_leading_ilt_thunk(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            exe = Path(tmp) / "tiny.exe"
+            functions = Path(tmp) / "functions.csv"
+
+            image = bytearray(0x400)
+            struct.pack_into("<I", image, 0x3C, 0x80)
+            struct.pack_into("<H", image, 0x80 + 6, 1)
+            struct.pack_into("<H", image, 0x80 + 20, 0)
+            section = 0x80 + 24
+            image[section:section + 8] = b".text\0\0\0"
+            struct.pack_into("<IIII", image, section + 8, 0x200, 0x1000, 0x200, 0x200)
+            image[0x200] = 0xE9
+            struct.pack_into("<i", image, 0x201, 0x2000 - (0x1000 + 5))
+            exe.write_bytes(image)
+            functions.write_text(
+                "entry_rva,byte_size,name\n"
+                "0x1000,5,stale_ghidra_name\n"
+            )
+
+            saved_bounds = synth_pdb.TEXT_BASE, synth_pdb.TEXT_END
+            synth_pdb.TEXT_BASE, synth_pdb.TEXT_END = 0x1000, 0x3000
+            try:
+                names = synth_pdb.read_ilt_thunk_names(
+                    exe,
+                    functions,
+                    {0x2000: ("?CuratedCtor@@QAE@XZ", "owner", 0x15)},
+                )
+                self.assertEqual(names, {0x1000: "?CuratedCtor@@QAE@XZ"})
+                self.assertEqual(
+                    synth_pdb.read_functions(functions, thunk_names=names),
+                    [(0x1000, 5, "?CuratedCtor@@QAE@XZ")],
+                )
+            finally:
+                synth_pdb.TEXT_BASE, synth_pdb.TEXT_END = saved_bounds
 
     @staticmethod
     def _text_helper_alias_coff(parent_targets_alias):

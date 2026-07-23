@@ -371,7 +371,7 @@ def read_names_map(path):
     return overlay
 
 
-def read_functions(path, names_map=None):
+def read_functions(path, names_map=None, thunk_names=None):
     """Yield (rva, size, name) for .text functions with size > 0.
 
     If ``names_map`` (``{rva: (name, unit, size)}``) supplies an entry for an
@@ -387,6 +387,7 @@ def read_functions(path, names_map=None):
     stay byte-identical.
     """
     names_map = names_map or {}
+    thunk_names = thunk_names or {}
     out = []
     seen = set()
     with open(path, newline="") as f:
@@ -423,6 +424,12 @@ def read_functions(path, names_map=None):
                               "functions.csv=%d B, @size=%d B; using functions.csv "
                               "(Ghidra wins). Check the @size or the recovered boundary."
                               % (rva, name, size, at_size), file=sys.stderr)
+            elif rva in thunk_names:
+                # A retail incremental-link thunk is not part of the owning TU,
+                # but every reference through it denotes the body it forwards
+                # to. Give the thunk the body's curated symbol spelling while
+                # leaving its source-file attribution in the linker bucket.
+                name = thunk_names[rva]
             out.append((rva, size, name))
             seen.add(rva)
 
@@ -445,6 +452,53 @@ def read_functions(path, names_map=None):
               "matched RVAs absent from functions.csv" % synth, file=sys.stderr)
     out.sort()
     return out
+
+
+def read_ilt_thunk_names(exe_path, functions_path, names_map):
+    """Map 5-byte retail ILT forwarding thunks to curated body names.
+
+    The stripped Ghidra export commonly preserves an old semantic guess on the
+    thunk (for example ``Construct``) even after source evidence proves that its
+    target is a template constructor. The delinker can then define the body
+    under the curated name while leaving callers with an undefined relocation
+    to the stale thunk name. Parse only the mechanically recognizable
+    ``E9 rel32`` entries in the leading ILT band and inherit a name only when
+    their exact target RVA is already present in ``names_map``.
+    """
+    with open(exe_path, "rb") as f:
+        data = f.read()
+    pe_off = struct.unpack_from("<I", data, 0x3C)[0]
+    num_sec = struct.unpack_from("<H", data, pe_off + 6)[0]
+    opt_size = struct.unpack_from("<H", data, pe_off + 20)[0]
+    sec_off = pe_off + 24 + opt_size
+    text_rva = text_raw = text_raw_size = None
+    for i in range(num_sec):
+        b = sec_off + i * 40
+        name = data[b:b + 8].rstrip(b"\0")
+        if name != b".text":
+            continue
+        _vsize, text_rva, text_raw_size, text_raw = struct.unpack_from(
+            "<IIII", data, b + 8)
+        break
+    if text_rva is None:
+        raise ValueError("PE has no .text section")
+
+    aliases = {}
+    with open(functions_path, newline="") as f:
+        for row in csv.DictReader(f):
+            rva = int(row["entry_rva"], 16)
+            size = int(row["byte_size"])
+            if size != 5 or not TEXT_BASE <= rva < min(TEXT_END, 0x7C20):
+                continue
+            off = text_raw + rva - text_rva
+            if not text_raw <= off <= text_raw + text_raw_size - 5:
+                continue
+            if data[off] != 0xE9:
+                continue
+            target = rva + 5 + struct.unpack_from("<i", data, off + 1)[0]
+            if target in names_map:
+                aliases[rva] = names_map[target][0]
+    return aliases
 
 
 def read_data_symbols(path):
@@ -817,7 +871,11 @@ def main():
     # global-variable DATA symbols a matched global is referenced through.
     names_map = {rva: t[:3] for rva, t in overlay.items() if t[3] != "data"}
     data_names = {rva: t[0] for rva, t in overlay.items() if t[3] == "data"}
-    funcs = read_functions(args.functions, names_map)
+    thunk_names = read_ilt_thunk_names(args.exe, args.functions, names_map)
+    if thunk_names:
+        print("[synth_pdb] propagated %d curated body name(s) to ILT forwarding thunks"
+              % len(thunk_names), file=sys.stderr)
+    funcs = read_functions(args.functions, names_map, thunk_names)
     rdata_syms, data_syms = read_data_symbols(args.symbols)
     if data_names:
         ndat = apply_named_data(rdata_syms, data_syms, data_names)

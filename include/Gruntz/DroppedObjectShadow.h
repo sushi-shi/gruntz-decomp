@@ -24,7 +24,6 @@ public:
     // identity recovered: its registry construct 0xc76d0 sits right after this
     // class's ctor, and its per-frame Advance spawns the "DroppedObject" sprite
     // on the drop frame - the shadow IS the dropper's drop herald):
-    static void InitActReg();                     // 0xc76d0 (build g_shadowActReg over [2000,2010])
     virtual void FireActivation(i32 id) OVERRIDE; // 0xc7750 (look up + fire the registered handler)
     static void RegisterActs();                   // 0xc78b0 (bind Advance to the "A" key)
     i32 Advance(); // 0xc7ab0 (per-frame: advance anim; drop frame -> spawn)

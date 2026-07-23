@@ -3,7 +3,7 @@
 #include <Bute/ButeTree.h>
 #include <Gruntz/ToobSpikez.h>
 #include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
-#include <Gruntz/ActReg.h>      // CActReg (g_toobColl); ResolveEntry + GetRetAddr/g_projActCache
+#include <Gruntz/ActReg.h> // CActReg (CActRegPool<CToobSpikez>::s_table); ResolveEntry + GetRetAddr/g_projActCache
 #include <Gruntz/ActNameRegistry.h> // the shared name registry: g_typeColl/g_typeCounter/s_codeA/ActNameLookup/g_buteTree
 
 RVA_COMPGEN(0x00012c60, 0x44, ??1CToobSpikez@@UAE@XZ)
@@ -47,7 +47,8 @@ extern "C" i32 CreateToobSpikez(CGameObject* obj) {
 }
 
 VTBL(CToobSpikez, 0x001e7774);
-DATA_SYMBOL(0x0024e978, 0x24, ?g_toobColl@@3UCActReg@@A)
+template<> DATA(0x0024e978)
+CActReg CActRegPool<CToobSpikez>::s_table(2000, 2010);
 
 typedef void (CUserLogic::*ToobHandler)();
 
@@ -66,11 +67,6 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 }
 
-RVA(0x001147e0, 0x15)
-void CToobSpikez::Register() {
-    g_toobColl.Construct(0x7d0, 0x7da);
-}
-
 RVA(0x00012bc0, 0x47)
 i32 CToobSpikez::SerializeMove(CFileMemBase* a, i32 b, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
@@ -78,6 +74,11 @@ i32 CToobSpikez::SerializeMove(CFileMemBase* a, i32 b, i32 c, i32 d) {
     }
     return Chain(a, b, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
+
+RVA_COMPGEN(0x001147c0, 0xa, _$E1132480)
+RVA_COMPGEN(0x001147e0, 0x15, _$E1132512)
+RVA_COMPGEN(0x00114810, 0xe, _$E1132560)
+RVA_COMPGEN(0x00114830, 0x1f, _$E1132592)
 
 // CToobSpikez::~CToobSpikez @0x012c60 - the leaf adds no destructible members
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
@@ -94,15 +95,17 @@ i32 CToobSpikez::SerializeMove(CFileMemBase* a, i32 b, i32 c, i32 d) {
 
 RVA(0x00114860, 0x102)
 void CToobSpikez::FireActivation(i32 coord) {
-    ToobHandler* e = reinterpret_cast<ToobHandler*>(g_toobColl.ResolveEntry(coord));
+    ToobHandler* e =
+        reinterpret_cast<ToobHandler*>(CActRegPool<CToobSpikez>::s_table.ResolveEntry(coord));
     if (*e != 0) {
-        ToobHandler* e2 = reinterpret_cast<ToobHandler*>(g_toobColl.ResolveEntry(coord));
+        ToobHandler* e2 =
+            reinterpret_cast<ToobHandler*>(CActRegPool<CToobSpikez>::s_table.ResolveEntry(coord));
         (this->*(*e2))();
     }
 }
 
 // CToobSpikez::RegisterActs @0x1149c0 - bind the logic handler to the activation
-// key "A" in the toob-spikez's OWN registry (g_toobColl). See the registration
+// key "A" in the toob-spikez's OWN registry (CActRegPool<CToobSpikez>::s_table). See the registration
 // commentary above. The SAME archetype as CParticlez::RegisterActs.
 //
 // @early-stop
@@ -128,7 +131,7 @@ void CToobSpikez::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *reinterpret_cast<i32 (CUserLogic::**)()>(g_toobColl.ResolveEntry(id)) =
+    *reinterpret_cast<i32 (CUserLogic::**)()>(CActRegPool<CToobSpikez>::s_table.ResolveEntry(id)) =
         static_cast<i32 (CUserLogic::*)()>(&CToobSpikez::AdvanceAnim);
 }
 

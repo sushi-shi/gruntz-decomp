@@ -24,15 +24,15 @@
 #include <Gruntz/StatusBarUpdatersViews.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/HaznColl.h> // shared coordinate/activation-registry collection (CCoordColl)
+#include <Gruntz/HaznColl.h> // shared coordinate/activation-registry collection (CActReg)
 #include <Gruntz/TimeBomb.h>
 #include <Gruntz/SerialArchive.h>     // CFileMemBase (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialArchive.h>     // CFileMemBase (the inherited CWapX::Chain arg)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // the anim registry (m_10 Lookup; ex SerialObjRef.h pull)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // obj->m_0c world root (ex SerialObjRef.h pull)
 #include <Gruntz/ActName.h>           // CActName (shared)
-#include <Gruntz/ActReg.h> // CLogicActTable::ResolveEntry (0xade60 dispatcher's real table)
-#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Setup (0x15c2d0) for the m_1a0 forwarder
+#include <Gruntz/ActReg.h>            // CActReg::ResolveEntry (0xade60 dispatcher's real table)
+#include <Gruntz/AniAdvanceCursor.h>  // CAniAdvanceCursor::Setup (0x15c2d0) for the m_1a0 forwarder
 
 #include <Gruntz/FreeNodePool.h>  // the coord-node pool object @0x645540
 #include <Gruntz/SerialCounter.h> // g_serialCounter (SerializeMove's per-record bumps)
@@ -421,10 +421,11 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
 
 #include <Gruntz/TypeKeyColl.h>
 
-DATA_SYMBOL(0x0024c758, 0x24, ?g_projActColl@@3UCActReg@@A)
+template<> DATA(0x0024c758)
+CActReg CActRegPool<CProjectile>::s_table(2000, 2010);
 
 static inline CProjActEntry* ProjActLookup(i32 coord) {
-    return reinterpret_cast<CProjActEntry*>(g_projActColl.ResolveEntry(coord));
+    return reinterpret_cast<CProjActEntry*>(CActRegPool<CProjectile>::s_table.ResolveEntry(coord));
 }
 
 static inline CTypeNameEntry* ProjTypeLookup(i32 key) {
@@ -447,10 +448,10 @@ static inline CTypeNameEntry* ProjTypeLookup(i32 key) {
     ); // m_spare is the i32-typed slow-path slot
 }
 
-RVA(0x000df920, 0x15)
-void CProjectile::RegisterRange() {
-    g_projActColl.Construct(0x7d0, 0x7da);
-}
+RVA_COMPGEN(0x000df900, 0xa, _$E915712)
+RVA_COMPGEN(0x000df920, 0x15, _$E915744)
+RVA_COMPGEN(0x000df950, 0xe, _$E915792)
+RVA_COMPGEN(0x000df970, 0x1f, _$E915824)
 
 RVA(0x000df9a0, 0x102)
 void CProjectile::FireActivation(i32 coord) {
@@ -1079,15 +1080,16 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, i32 a4) {
     return 1;
 }
 
-DATA_SYMBOL(0x0024c780, 0x24, ?g_tbombColl@@3UCCoordColl@@A)
+template<> DATA(0x0024c780)
+CActReg CActRegPool<CTimeBomb>::s_table(2000, 2010);
 
-RVA(0x000e17b0, 0x15)
-void ConstructTBombRange() {
-    g_tbombColl.Construct(0x7d0, 0x7da);
-}
+RVA_COMPGEN(0x000e1790, 0xa, _$E923536)
+RVA_COMPGEN(0x000e17b0, 0x15, _$E923568)
+RVA_COMPGEN(0x000e17e0, 0xe, _$E923616)
+RVA_COMPGEN(0x000e1800, 0x1f, _$E923648)
 
 static inline CTBombEntry* TBombLookup(i32 coord) {
-    return reinterpret_cast<CTBombEntry*>(g_tbombColl.ResolveEntry(coord));
+    return reinterpret_cast<CTBombEntry*>(CActRegPool<CTimeBomb>::s_table.ResolveEntry(coord));
 }
 
 #include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
@@ -1120,7 +1122,7 @@ void CTimeBomb::FireActivation(i32 coord) {
 }
 
 // CTimeBomb::RegisterActs @0x0e1990 - bind the per-frame logic handler to the
-// activation key "A" in the timebomb's OWN registry (g_tbombColl). See the
+// activation key "A" in the timebomb's OWN registry (CActRegPool<CTimeBomb>::s_table). See the
 // registration commentary above. The SAME archetype as CParticlez::RegisterActs /
 // RegisterSimpleAnimLogic.
 //

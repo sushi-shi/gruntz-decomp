@@ -8,7 +8,7 @@
 #include <Bute/ButeMgr.h>        // CButeTree (the shared registration key store)
 #include <Mfc.h>                 // CString (the scratch name-vec element)
 #include <Wap32/ZVec.h>          // zDArray<member-fn-ptr> dispatch table + zvec accessors
-#include <Gruntz/LogicFnTable.h> // the shared CLogicActTable dispatch-table shape
+#include <Gruntz/LogicFnTable.h> // the shared CActReg dispatch-table shape
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
@@ -34,7 +34,8 @@ i32 CSimpleAnimation::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
 RVA_COMPGEN(0x0000f9d0, 0x44, ??1CSimpleAnimation@@UAE@XZ)
 
 VTBL(CSimpleAnimation, 0x001e8544);
-DATA_SYMBOL(0x00246038, 0x24, ?g_simpleAnimDispatch@@3UCLogicActTable@@A)
+template<> DATA(0x00246038)
+CActReg CActRegPool<CSimpleAnimation>::s_table(2000, 2010);
 
 static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     char* r;
@@ -60,7 +61,7 @@ static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     return r;
 }
 
-static inline char* ResolveSlot(_zvec* v, i32 idx) {
+static inline char* ResolveSlot(_zdvec* v, i32 idx) {
     i32 lo = v->m_lo;
     v->m_grown = 0;
     if (idx >= lo && idx <= v->m_hi) {
@@ -93,24 +94,25 @@ CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(ob
     }
 }
 
-RVA(0x000abb90, 0x15)
-void InitSimpleAnimDispatch() {
-    g_simpleAnimDispatch.Construct(0x7d0, 0x7da);
-}
+RVA_COMPGEN(0x000abb70, 0xa, _$E703344)
+RVA_COMPGEN(0x000abb90, 0x15, _$E703376)
+RVA_COMPGEN(0x000abbc0, 0xe, _$E703424)
+RVA_COMPGEN(0x000abbe0, 0x1f, _$E703456)
 
 typedef i32 (CUserLogic::*LogicFn)();
 
 RVA(0x000abc10, 0x102)
 void CSimpleAnimation::FireActivation(i32 idx) {
-    if (*reinterpret_cast<void**>(ResolveSlot(&g_simpleAnimDispatch, idx)) != 0) {
-        LogicFn fn = *reinterpret_cast<LogicFn*>(ResolveSlot(&g_simpleAnimDispatch, idx));
+    if (*reinterpret_cast<void**>(ResolveSlot(&CActRegPool<CSimpleAnimation>::s_table, idx)) != 0) {
+        LogicFn fn =
+            *reinterpret_cast<LogicFn*>(ResolveSlot(&CActRegPool<CSimpleAnimation>::s_table, idx));
         (this->*fn)();
     }
 }
 
 // ===========================================================================
 // RegisterSimpleAnimLogic  (0x0abd70)
-// Register the logic handler into g_simpleAnimDispatch: look the key up in the
+// Register the logic handler into CActRegPool<CSimpleAnimation>::s_table: look the key up in the
 // bute tree; if absent, Insert it under the running counter and cache the key name
 // into the scratch zDArray<CString> slot (growing it), then bump the counter.
 // Either way, resolve the dispatch-table slot for the key index and load it with
@@ -132,7 +134,7 @@ void RegisterSimpleAnimLogic() {
         *reinterpret_cast<CString*>(slot) = "A";
         g_typeCounter++;
     }
-    char* dslot = ResolveSlot(&g_simpleAnimDispatch, idx);
+    char* dslot = ResolveSlot(&CActRegPool<CSimpleAnimation>::s_table, idx);
     *reinterpret_cast<SimpleAnimHandler*>(dslot) =
         static_cast<SimpleAnimHandler>(&CSimpleAnimation::AdvanceAnim);
 }

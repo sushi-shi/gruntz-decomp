@@ -19,7 +19,7 @@
 #include <math.h>         // sin / cos (the Tick rotation)
 #include <rva.h>
 
-#include <Gruntz/SpotLightActReg.h> // g_actReg_646188 (ex .cpp extern)
+#include <Gruntz/SpotLightActReg.h> // CActRegPool<CSpotLight>::s_table (ex .cpp extern)
 #include <Gruntz/Random.h>          // ex Globals.h transitive
 VTBL(CSpotLight, 0x001e75bc);
 DATA(0x001ea3f0)
@@ -107,9 +107,14 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x000b1630, 0x102)
 void CSpotLight::FireActivation(i32 id) {
-    CSpotActEntry* e = reinterpret_cast<CSpotActEntry*>(g_actReg_646188.ResolveEntry(id));
+    CSpotActEntry* e =
+        reinterpret_cast<CSpotActEntry*>(CActRegPool<CSpotLight>::s_table.ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*(reinterpret_cast<CSpotActEntry*>(g_actReg_646188.ResolveEntry(id)))->m_fn)();
+        (this
+             ->*(reinterpret_cast<CSpotActEntry*>(
+                 CActRegPool<CSpotLight>::s_table.ResolveEntry(id)
+             ))
+             ->m_fn)();
     }
 }
 

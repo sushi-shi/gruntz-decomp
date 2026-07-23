@@ -16,7 +16,6 @@
 #include <Gruntz/TypeColl.h>         // the shared type-name collection
 #include <Gruntz/TypeKeyColl.h>
 
-void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
 #include <Gruntz/TypeKeyColl.h>
 
 #define STEP_DRAIN(g)                                                                              \

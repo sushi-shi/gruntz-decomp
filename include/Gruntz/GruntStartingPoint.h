@@ -37,6 +37,5 @@ extern "C" void ActReg4Handler(); // 0x4040a2
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 #include <Gruntz/ActReg.h> // CActReg (for the extern below)
-extern CActReg g_actReg4;
 
 #endif // GRUNTZ_CGRUNTSTARTINGPOINT_H

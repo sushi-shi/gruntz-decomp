@@ -6,7 +6,7 @@
 #include <Gruntz/LeafCue.h> // LeafCue::PlayIfElapsed (the stale-ecx cue pokes)
 #include <Gruntz/ToyPeek.h> // CToyPeek::FireActivation @0x97de0 (its slot 4 lives in this .text run)
 #include <Gruntz/ActReg.h>
-#include <Gruntz/InGameText.h>     // CInGameText + g_textDispatch (its TU folds in below, wave3-J)
+#include <Gruntz/InGameText.h> // CInGameText + CActRegPool<CInGameText>::s_table (its TU folds in below, wave3-J)
 #include <Gruntz/TypeKeyColl.h>    // g_typeCounter (the shared type-id counter)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
 #include <Gruntz/SerialArchive.h>  // CFileMemBase (Read +0x2c / Write +0x30) for SerializeMove
@@ -19,7 +19,7 @@
 #include <string.h>                   // inline strcmp: the ctor's icon-name dispatch chain
 #include <Bute/ButeMgr.h>             // CButeTree (the bute store Setup queries)
 #include <Wap32/ZVec.h>               // _zdvec (the command-dispatch tables)
-#include <Gruntz/LogicFnTable.h>      // the shared CLogicActTable dispatch-table shape
+#include <Gruntz/LogicFnTable.h>      // the shared CActReg dispatch-table shape
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 
 #include <Gruntz/Grunt.h>      // canonical CGrunt (LoadPickupSprites/LoadGruntTypeTable)
@@ -29,10 +29,12 @@
 
 VTBL(CInGameText, 0x001e7cac);
 VTBL(CInGameIcon, 0x001e7d04);
-DATA_SYMBOL(0x002458b0, 0x24, ?g_iconActionTable@@3UCLogicActTable@@A)
-DATA_SYMBOL(0x00245928, 0x24, ?g_iconStateTable@@3UCLogicActTable@@A)
-
-DATA(0x00245950)
+template<> DATA(0x002458b0)
+CActReg CActRegPool<CInGameIcon>::s_table(2000, 2010);
+template<> DATA(0x00245928)
+CActReg CActRegPool<CToyPeek>::s_table(2000, 2010);
+template<> DATA(0x00245950)
+CActReg CActRegPool<CInGameText>::s_table(2000, 2010);
 
 static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     char* r;
@@ -58,7 +60,7 @@ static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     return r;
 }
 
-static inline char* ResolveSlot(_zvec* v, i32 idx) {
+static inline char* ResolveSlot(_zdvec* v, i32 idx) {
     i32 lo = v->m_lo;
     v->m_grown = 0;
     if (idx >= lo && idx <= v->m_hi) {
@@ -533,22 +535,26 @@ i32 CInGameIcon::HandleInput() {
     return 1;
 }
 
+RVA_COMPGEN(0x000977e0, 0xa, _$E620512)
+RVA_COMPGEN(0x00097800, 0x15, _$E620544)
+RVA_COMPGEN(0x00097830, 0xe, _$E620592)
+RVA_COMPGEN(0x00097850, 0x1f, _$E620624)
+
 RVA(0x00097880, 0x102)
 void CInGameIcon::FireActivation(i32 id) {
-    if (*reinterpret_cast<IconActHandler*>(ResolveSlot(&g_iconActionTable, id)) != 0) {
-        (this->*(*reinterpret_cast<IconActHandler*>(ResolveSlot(&g_iconActionTable, id))))();
+    if (*reinterpret_cast<IconActHandler*>(ResolveSlot(&CActRegPool<CInGameIcon>::s_table, id))
+        != 0) {
+        (this
+             ->*(*reinterpret_cast<IconActHandler*>(
+                 ResolveSlot(&CActRegPool<CInGameIcon>::s_table, id)
+             )))();
     }
-}
-
-RVA(0x00097800, 0x15)
-void InitIconActionTable() {
-    g_iconActionTable.Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================
 // RegisterIconActions  (0x0979e0)
 // ===========================================================================
-// Register two icon-action handlers into g_iconActionTable: key A -> 0x4023d3,
+// Register two icon-action handlers into CActRegPool<CInGameIcon>::s_table: key A -> 0x4023d3,
 // key B -> 0x403c06. Each: bute-tree Find (Insert + cache the name into the
 // scratch zDArray<CString> when absent, bump the counter), resolve the table
 // slot for the key index, load the handler member-fn-ptr.
@@ -568,7 +574,7 @@ void RegisterIconActions() {
         *reinterpret_cast<CString*>(slot) = "A";
         g_typeCounter++;
     }
-    char* dslotA = ResolveSlot(&g_iconActionTable, idxA);
+    char* dslotA = ResolveSlot(&CActRegPool<CInGameIcon>::s_table, idxA);
     *reinterpret_cast<IconActHandler*>(dslotA) =
         static_cast<IconActHandler>(&CInGameIcon::PeekCycle);
 
@@ -579,27 +585,31 @@ void RegisterIconActions() {
         *reinterpret_cast<CString*>(slot) = "B";
         g_typeCounter++;
     }
-    char* dslotB = ResolveSlot(&g_iconActionTable, idxB);
+    char* dslotB = ResolveSlot(&CActRegPool<CInGameIcon>::s_table, idxB);
     *reinterpret_cast<IconActHandler*>(dslotB) =
         static_cast<IconActHandler>(&CInGameIcon::Reposition);
 }
 
-RVA(0x00097d60, 0x15)
-void InitIconStateTable() {
-    g_iconStateTable.Construct(0x7d0, 0x7da);
-}
+RVA_COMPGEN(0x00097d40, 0xa, _$E621888)
+RVA_COMPGEN(0x00097d60, 0x15, _$E621920)
+RVA_COMPGEN(0x00097d90, 0xe, _$E621968)
+RVA_COMPGEN(0x00097db0, 0x1f, _$E622000)
 
 RVA(0x00097de0, 0x102)
 void CToyPeek::FireActivation(i32 id) {
-    if (*reinterpret_cast<ToyPeekActHandler*>(ResolveSlot(&g_iconStateTable, id)) != 0) {
-        (this->*(*reinterpret_cast<ToyPeekActHandler*>(ResolveSlot(&g_iconStateTable, id))))();
+    if (*reinterpret_cast<ToyPeekActHandler*>(ResolveSlot(&CActRegPool<CToyPeek>::s_table, id))
+        != 0) {
+        (this
+             ->*(*reinterpret_cast<ToyPeekActHandler*>(
+                 ResolveSlot(&CActRegPool<CToyPeek>::s_table, id)
+             )))();
     }
 }
 
 // ===========================================================================
 // RegisterIconState  (0x097f40)
 // ===========================================================================
-// Register one icon-state handler into g_iconStateTable (key A -> 0x40370b):
+// Register one icon-state handler into CActRegPool<CToyPeek>::s_table (key A -> 0x40370b):
 // bute-tree Find (Insert + cache the name when absent, bump the counter),
 // resolve the table slot for the key index, load the handler member-fn-ptr.
 // ---------------------------------------------------------------------------
@@ -617,7 +627,7 @@ void RegisterIconState() {
         *reinterpret_cast<CString*>(slot) = "A";
         g_typeCounter++;
     }
-    char* dslot = ResolveSlot(&g_iconStateTable, idx);
+    char* dslot = ResolveSlot(&CActRegPool<CToyPeek>::s_table, idx);
     *reinterpret_cast<ToyPeekActHandler*>(dslot) =
         static_cast<ToyPeekActHandler>(&CInGameIcon::RefreshCell);
 }
@@ -1015,15 +1025,16 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_cachedSubId = -1;
 }
 
-RVA(0x000993e0, 0x15)
-void CInGameText::InitActReg() {
-    g_textDispatch.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x000993c0, 0xa, _$E627648)
+RVA_COMPGEN(0x000993e0, 0x15, _$E627680)
+RVA_COMPGEN(0x00099410, 0xe, _$E627728)
+RVA_COMPGEN(0x00099430, 0x1f, _$E627760)
 
 RVA(0x00099460, 0x102)
 void CInGameText::FireActivation(i32 idx) {
-    if (*reinterpret_cast<void**>(ResolveSlot(&g_textDispatch, idx)) != 0) {
-        LogicFn fn = *reinterpret_cast<LogicFn*>(ResolveSlot(&g_textDispatch, idx));
+    if (*reinterpret_cast<void**>(ResolveSlot(&CActRegPool<CInGameText>::s_table, idx)) != 0) {
+        LogicFn fn =
+            *reinterpret_cast<LogicFn*>(ResolveSlot(&CActRegPool<CInGameText>::s_table, idx));
         (this->*fn)();
     }
 }
@@ -1053,7 +1064,7 @@ void RegisterTextLogic() {
         *reinterpret_cast<CString*>(slot) = "A";
         g_typeCounter++;
     }
-    char* dslot = ResolveSlot(&g_textDispatch, idx);
+    char* dslot = ResolveSlot(&CActRegPool<CInGameText>::s_table, idx);
     *reinterpret_cast<IconActHandler*>(dslot) = static_cast<IconActHandler>(&CInGameText::Update);
 }
 

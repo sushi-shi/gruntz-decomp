@@ -78,9 +78,6 @@ i32 g_enableTrueColor = 0; // "Enable TrueColor"
 DATA(0x002455e4)
 i32 g_enableEmulation = 0; // "Enable Emulation"
 
-DATA(0x00245534)
-i32 g_attractStateCount = 0; // 0x645534
-
 DATA(0x00245210)
 i32 g_appHInstance;
 

@@ -28,7 +28,6 @@ public:
     CTeleporter(CGameObject* obj); // 0x41020 (base init + name/state setup; body in UserLogic.cpp)
     // InitActReg (0x414a0): construct the class's activation-coordinate registry
     // singleton (g_teleporterActReg @0x6446b0) over the fixed [2000, 2010] range.
-    static void InitActReg();
     // FireActivation (0x41520): per-coordinate activation dispatcher - look coord up
     // in g_teleporterActReg; if the entry has a registered handler, dispatch it on
     // `this`. Same archetype as CParticlez::FireActivation (double ResolveEntry).

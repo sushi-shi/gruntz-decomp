@@ -8,25 +8,6 @@
 #include <stdlib.h> // realloc (0x125180), free (0x120c30)
 #include <string.h> // memcpy (0x121960), memset (rep stos)
 
-// ---------------------------------------------------------------------------
-// _zdvec::Destroy() - re-stamp the live vtable, then run ~_zdvec. 0x8750.
-// @interleaver _zdvec::Destroy emitted-in <boundary: ZDArrayDerived.cpp Construct
-// @0x8710 (before) + crt ??_G__non_rtti_object @0x8780 (after)>. A template-accessor
-// COMDAT the /Gy linker placed by first-use between two OTHER units, not this TU block.
-// @early-stop
-// 21B dead-store oddity: retail reserves a stack slot (push ecx; mov [esp],
-// m_base) for a discarded local then `call ~_zdvec`; cl folds our local into a
-// callee-saved reg (i32 form) or tail-jmps (void form). The spilled-but-unread
-// m_base local is not source-recoverable. Logic (re-stamp + run ~_zdvec) exact.
-RVA(0x00008750, 0x15)
-i32 _zdvec::Destroy() {
-    i32 tmp = reinterpret_cast<i32>(m_base);
-    *reinterpret_cast<void**>(this) =
-        const_cast<void**>(&zDArrayLiveTable); // re-stamp LIVE vtable (non-dtor wall)
-    this->~_zdvec();
-    return tmp;
-}
-
 RVA(0x000310f0, 0x8d)
 char* _zdvec::IndexToPtr(i32 i) {
     char* r;

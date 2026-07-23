@@ -75,11 +75,9 @@ typedef i32 (CUserLogic::*IconActHandler)();
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 
-#include <Gruntz/LogicFnTable.h> // CLogicActTable (the dispatch-table shell)
+#include <Gruntz/LogicFnTable.h> // CActReg (the dispatch-table shell)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-extern CLogicActTable g_iconActionTable;
-extern CLogicActTable g_iconStateTable;
 
 #endif // GRUNTZ_GRUNTZ_CINGAMEICON_H

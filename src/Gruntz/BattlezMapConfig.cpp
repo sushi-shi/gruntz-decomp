@@ -38,8 +38,6 @@
 #include <Wap32/Rect.h> // canonical CRect (0x29ac0 direct-store ctor, was local QuadIntRecord)
 #include <Gruntz/TileTriggerContainer.h> // canonical CTileTriggerContainer (FindInLists12 0x116f20)
 
-void* __stdcall ListNodeAdvance(void** pos);
-
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 
 DATA(0x001e96ec)

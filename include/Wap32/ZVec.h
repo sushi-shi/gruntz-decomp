@@ -9,13 +9,12 @@ struct CVariantSlot; // fwd (pointer member m_err; full def at the overflow call
 
 class _zvec : public zErrHandling {
 public:
-    // Pass-through to the error-sink base ctor (0x16d9c0): retail's allocating ctor
-    // opens with exactly that one base call, so this stays inline (no _zvec body of
-    // its own exists in the image).
-    _zvec(CVariantSlot* errSink) : zErrHandling(errSink) {}
+    // 0x16de30: allocate the [lo, hi] element band and scratch slot.
+    _zvec(i32 stride, i32 lo, i32 hi, void* scratch);
 
     void* GrowTo(i32 idx, i32 at); // 0x16da80
     char* IndexToPtr(i32 idx);     // 0x312a0  (the plain base accessor)
+    virtual ~_zvec() OVERRIDE;     // 0x16df40
 
     // vptr @+0x00 and the error sink @+0x04 come from zErrHandling (which names the
     // sink m_errSink; this class's code still reads it under that name).
@@ -24,26 +23,28 @@ public:
     char* m_base;  // +0x10  element band (byte-addressed: base + (idx-lo)*stride)
     char* m_spare; // +0x14  scratch element / error-path result
     i32 m_stride;  // +0x18
-    char* m_alloc; // +0x1c  raw realloc base / per-element-fixup start
-    i32 m_grown;   // +0x20
+    char* m_alloc; // +0x1c  raw realloc base / per-element construction cursor
+    i32 m_grown;   // +0x20  number of elements constructed by the last grow
 };
-SIZE_UNKNOWN(); // dynamic-vector base (partial: no true base chain)
+SIZE(0x24);
 
 class _zdvec : public _zvec {
 public:
-    // The allocating ctor (0x16de30, body in src/Bute/TypeKeyColl.cpp): records
-    // [lo,hi] + the element stride, allocates the (hi-lo+1)*stride band (+ a scratch
-    // element when none is supplied) and reports a fatal bounds/OOM through the
-    // inherited error sink. /GX (the half-built zErrHandling base unwinds).
+    // 0x16dda0: construct the allocating base, then seed the element cursor/count.
     _zdvec(i32 stride, i32 lo, i32 hi, void* scratch);
-    i32 Destroy();              // 0x8750  (re-stamp live vtable + run ~_zdvec)
-    char* IndexToPtr(i32 i);    // 0x310f0 (base accessor + per-slot member-ptr init)
-    virtual ~_zdvec() OVERRIDE; // 0x16df40 (cl auto-stamps ??_7zDArray at entry)
+    char* IndexToPtr(i32 i);    // 0x310f0 (base accessor + per-slot construction)
+    virtual ~_zdvec() OVERRIDE; // 0x16de00
 };
-SIZE_UNKNOWN(); // derived; adds override, no storage
+SIZE(0x24);
 
-// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
-// VAs are reloc-masked at use) ---
-extern void* const zDArrayLiveTable; // 0x5e70fc
+template<class T> class zDArray : public _zdvec {
+public:
+    zDArray(i32 lo, i32 hi);
+    virtual ~zDArray() OVERRIDE;
+
+    char* Resolve(i32 id);
+    char* ResolveEntry(i32 id);
+};
+SIZE_UNKNOWN();
 
 #endif // GRUNTZ_WAP32_ZVEC_H

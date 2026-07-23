@@ -9,8 +9,6 @@ rva,name,lib,confidence,source
 0x007b80,__inc,LIBCMT,LOW,anchored
 0x007bd0,__inc,LIBCMT,LOW,anchored
 0x7c20,??_H@YGXPAXIHP6EX0@Z@Z,NAFXCW,HIGH,vector-ctor-iterator
-0x008090,___inittime,LIBCMT,LOW,anchored
-0x008780,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x008dc0,__inc,LIBCMT,LOW,anchored
 0x008e10,__inc,LIBCMT,LOW,anchored
 0x008e60,__inc,LIBCMT,LOW,anchored
@@ -325,7 +323,6 @@ rva,name,lib,confidence,source
 0x038c30,__inc,LIBCMT,LOW,anchored
 0x038c80,__inc,LIBCMT,LOW,anchored
 0x038cd0,__inc,LIBCMT,LOW,anchored
-0x03a560,___inittime,LIBCMT,LOW,anchored
 0x03a940,__inc,LIBCMT,LOW,anchored
 0x03a990,__inc,LIBCMT,LOW,anchored
 0x03a9e0,__inc,LIBCMT,LOW,anchored
@@ -365,18 +362,8 @@ rva,name,lib,confidence,source
 0x03d1c0,__inc,LIBCMT,LOW,anchored
 0x03d210,__inc,LIBCMT,LOW,anchored
 0x03d260,__inc,LIBCMT,LOW,anchored
-0x03e150,___inittime,LIBCMT,LOW,anchored
 0x03e500,___init_collate,LIBCMT,LOW,anchored
-0x03e910,___inittime,LIBCMT,LOW,anchored
-0x03f240,___inittime,LIBCMT,LOW,anchored
-0x040000,___inittime,LIBCMT,LOW,anchored
-0x040700,___inittime,LIBCMT,LOW,anchored
 0x040c10,___init_collate,LIBCMT,LOW,anchored
-0x0414d0,___inittime,LIBCMT,LOW,anchored
-0x042100,___inittime,LIBCMT,LOW,anchored
-0x042710,___inittime,LIBCMT,LOW,anchored
-0x0445f0,___inittime,LIBCMT,LOW,anchored
-0x046030,___inittime,LIBCMT,LOW,anchored
 0x046580,__inc,LIBCMT,LOW,anchored
 0x0465d0,__inc,LIBCMT,LOW,anchored
 0x046620,__inc,LIBCMT,LOW,anchored
@@ -386,8 +373,6 @@ rva,name,lib,confidence,source
 0x046760,__inc,LIBCMT,LOW,anchored
 0x0467b0,__inc,LIBCMT,LOW,anchored
 0x046800,__inc,LIBCMT,LOW,anchored
-0x046ce0,___inittime,LIBCMT,LOW,anchored
-0x047300,___inittime,LIBCMT,LOW,anchored
 0x047740,__inc,LIBCMT,LOW,anchored
 0x047790,__inc,LIBCMT,LOW,anchored
 0x0477e0,__inc,LIBCMT,LOW,anchored
@@ -416,7 +401,6 @@ rva,name,lib,confidence,source
 0x05ba00,__inc,LIBCMT,LOW,anchored
 0x05ba50,__inc,LIBCMT,LOW,anchored
 0x05baa0,__inc,LIBCMT,LOW,anchored
-0x05bc80,___inittime,LIBCMT,LOW,anchored
 0x06b370,__inc,LIBCMT,LOW,anchored
 0x06b3c0,__inc,LIBCMT,LOW,anchored
 0x06b410,__inc,LIBCMT,LOW,anchored
@@ -435,10 +419,6 @@ rva,name,lib,confidence,source
 0x07da30,__inc,LIBCMT,LOW,anchored
 0x07da80,__inc,LIBCMT,LOW,anchored
 0x07dad0,__inc,LIBCMT,LOW,anchored
-0x07e610,___inittime,LIBCMT,LOW,anchored
-0x07ed20,___inittime,LIBCMT,LOW,anchored
-0x07f570,___inittime,LIBCMT,LOW,anchored
-0x07ffd0,___inittime,LIBCMT,LOW,anchored
 0x080580,__inc,LIBCMT,LOW,anchored
 0x0805d0,__inc,LIBCMT,LOW,anchored
 0x080620,__inc,LIBCMT,LOW,anchored
@@ -469,7 +449,6 @@ rva,name,lib,confidence,source
 0x0828d0,__inc,LIBCMT,LOW,anchored
 0x082920,__inc,LIBCMT,LOW,anchored
 0x082a30,___inittime,LIBCMT,LOW,anchored
-0x082ac0,___inittime,LIBCMT,LOW,anchored
 0x082b40,___inittime,LIBCMT,LOW,anchored
 0x082bc0,___inittime,LIBCMT,LOW,anchored
 0x082c40,___inittime,LIBCMT,LOW,anchored
@@ -520,9 +499,6 @@ rva,name,lib,confidence,source
 0x095660,__inc,LIBCMT,LOW,anchored
 0x0956b0,__inc,LIBCMT,LOW,anchored
 0x095700,__inc,LIBCMT,LOW,anchored
-0x097830,___inittime,LIBCMT,LOW,anchored
-0x097d90,___inittime,LIBCMT,LOW,anchored
-0x099410,___inittime,LIBCMT,LOW,anchored
 0x09a4a0,__inc,LIBCMT,LOW,anchored
 0x09b4a0,__inc,LIBCMT,LOW,anchored
 0x09b4f0,__inc,LIBCMT,LOW,anchored
@@ -542,7 +518,6 @@ rva,name,lib,confidence,source
 0x09ccd0,__inc,LIBCMT,LOW,anchored
 0x09cd20,__inc,LIBCMT,LOW,anchored
 0x09cd70,__inc,LIBCMT,LOW,anchored
-0x09d170,___inittime,LIBCMT,LOW,anchored
 0x09d800,__inc,LIBCMT,LOW,anchored
 0x09d850,__inc,LIBCMT,LOW,anchored
 0x09d8a0,__inc,LIBCMT,LOW,anchored
@@ -601,14 +576,6 @@ rva,name,lib,confidence,source
 0x0a9950,__inc,LIBCMT,LOW,anchored
 0x0a99a0,__inc,LIBCMT,LOW,anchored
 0x0a99f0,__inc,LIBCMT,LOW,anchored
-0x0aaf30,___inittime,LIBCMT,LOW,anchored
-0x0ab560,___inittime,LIBCMT,LOW,anchored
-0x0abbc0,___inittime,LIBCMT,LOW,anchored
-0x0acb60,___inittime,LIBCMT,LOW,anchored
-0x0ad160,___inittime,LIBCMT,LOW,anchored
-0x0ad800,___inittime,LIBCMT,LOW,anchored
-0x0ade10,___inittime,LIBCMT,LOW,anchored
-0x0ae9d0,___inittime,LIBCMT,LOW,anchored
 0x0aedd0,__inc,LIBCMT,LOW,anchored
 0x0aee20,__inc,LIBCMT,LOW,anchored
 0x0aee70,__inc,LIBCMT,LOW,anchored
@@ -618,10 +585,6 @@ rva,name,lib,confidence,source
 0x0aefb0,__inc,LIBCMT,LOW,anchored
 0x0af000,__inc,LIBCMT,LOW,anchored
 0x0af050,__inc,LIBCMT,LOW,anchored
-0x0afd90,___inittime,LIBCMT,LOW,anchored
-0x0b15e0,___inittime,LIBCMT,LOW,anchored
-0x0b28f0,___inittime,LIBCMT,LOW,anchored
-0x0b3b10,___inittime,LIBCMT,LOW,anchored
 0x0b5090,__inc,LIBCMT,LOW,anchored
 0x0b50e0,__inc,LIBCMT,LOW,anchored
 0x0b5130,__inc,LIBCMT,LOW,anchored
@@ -691,9 +654,6 @@ rva,name,lib,confidence,source
 0x0c5540,__inc,LIBCMT,LOW,anchored
 0x0c5590,__inc,LIBCMT,LOW,anchored
 0x0c55e0,__inc,LIBCMT,LOW,anchored
-0x0c5f30,___inittime,LIBCMT,LOW,anchored
-0x0c6b80,___inittime,LIBCMT,LOW,anchored
-0x0c7700,___inittime,LIBCMT,LOW,anchored
 0x0c7bf0,__inc,LIBCMT,LOW,anchored
 0x0c7c40,__inc,LIBCMT,LOW,anchored
 0x0c7c90,__inc,LIBCMT,LOW,anchored
@@ -740,8 +700,6 @@ rva,name,lib,confidence,source
 0x0de7b0,__inc,LIBCMT,LOW,anchored
 0x0de800,__inc,LIBCMT,LOW,anchored
 0x0de850,__inc,LIBCMT,LOW,anchored
-0x0df950,___inittime,LIBCMT,LOW,anchored
-0x0e17e0,___inittime,LIBCMT,LOW,anchored
 0x0e3320,__inc,LIBCMT,LOW,anchored
 0x0e3370,__inc,LIBCMT,LOW,anchored
 0x0e33c0,__inc,LIBCMT,LOW,anchored
@@ -1023,7 +981,6 @@ rva,name,lib,confidence,source
 0x0fb570,__inc,LIBCMT,LOW,anchored
 0x0fb5c0,__inc,LIBCMT,LOW,anchored
 0x0fb610,__inc,LIBCMT,LOW,anchored
-0x0fbba0,___inittime,LIBCMT,LOW,anchored
 0x0fc6f0,__inc,LIBCMT,LOW,anchored
 0x0fc740,__inc,LIBCMT,LOW,anchored
 0x0fc790,__inc,LIBCMT,LOW,anchored
@@ -1062,7 +1019,6 @@ rva,name,lib,confidence,source
 0x10beb0,__inc,LIBCMT,LOW,anchored
 0x10bf00,__inc,LIBCMT,LOW,anchored
 0x10bf50,__inc,LIBCMT,LOW,anchored
-0x10c460,___inittime,LIBCMT,LOW,anchored
 0x10c840,__inc,LIBCMT,LOW,anchored
 0x10c890,__inc,LIBCMT,LOW,anchored
 0x10c8e0,__inc,LIBCMT,LOW,anchored
@@ -1072,12 +1028,6 @@ rva,name,lib,confidence,source
 0x10ca20,__inc,LIBCMT,LOW,anchored
 0x10ca70,__inc,LIBCMT,LOW,anchored
 0x10cac0,__inc,LIBCMT,LOW,anchored
-0x10d870,___inittime,LIBCMT,LOW,anchored
-0x10de50,___inittime,LIBCMT,LOW,anchored
-0x10e450,___inittime,LIBCMT,LOW,anchored
-0x10ea30,___inittime,LIBCMT,LOW,anchored
-0x10f190,___inittime,LIBCMT,LOW,anchored
-0x10fcc0,___inittime,LIBCMT,LOW,anchored
 0x110160,__inc,LIBCMT,LOW,anchored
 0x1101b0,__inc,LIBCMT,LOW,anchored
 0x110200,__inc,LIBCMT,LOW,anchored
@@ -1096,7 +1046,6 @@ rva,name,lib,confidence,source
 0x114390,__inc,LIBCMT,LOW,anchored
 0x1143e0,__inc,LIBCMT,LOW,anchored
 0x114430,__inc,LIBCMT,LOW,anchored
-0x114810,___inittime,LIBCMT,LOW,anchored
 0x114bf0,__inc,LIBCMT,LOW,anchored
 0x114c40,__inc,LIBCMT,LOW,anchored
 0x114c90,__inc,LIBCMT,LOW,anchored
@@ -1139,8 +1088,6 @@ rva,name,lib,confidence,source
 0x119580,__inc,LIBCMT,LOW,anchored
 0x1195d0,__inc,LIBCMT,LOW,anchored
 0x119ab0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x119df0,___inittime,LIBCMT,LOW,anchored
-0x11a350,___inittime,LIBCMT,LOW,anchored
 0x11aaf0,__inc,LIBCMT,LOW,anchored
 0x11ab40,__inc,LIBCMT,LOW,anchored
 0x11ab90,__inc,LIBCMT,LOW,anchored
@@ -1830,9 +1777,7 @@ rva,name,lib,confidence,source
 0x16d6f0,__inc,LIBCMT,LOW,anchored
 0x16d9a0,__inc,LIBCMT,LOW,anchored
 0x16da40,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x16de00,__inc,LIBCMT,LOW,anchored
 0x16de10,__inc,LIBCMT,LOW,anchored
-0x16df20,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x16dfa0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x16dfd0,__inc,LIBCMT,LOW,anchored
 0x16e180,__inc,LIBCMT,LOW,anchored

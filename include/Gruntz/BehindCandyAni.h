@@ -15,7 +15,6 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE;
     // Construct the class's activation-coordinate registry (g_behindCandyActReg
     // @0x645f98) over the fixed [2000,2010] range; free init thunk, reloc-masked.
-    static void InitActReg(); // 0x0ad7d0
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry (the same archetype as CSecretLevelTrigger::RegisterActs).
     static void RegisterActs(); // 0x0ad9b0
@@ -38,7 +37,6 @@ struct CBehindCandyActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h>                     // CBehindCandyActReg (extern below)
-extern CBehindCandyActReg g_behindCandyActReg; // 0x00245f98
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 #endif // GRUNTZ_CBEHINDCANDYANI_H

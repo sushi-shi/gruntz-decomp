@@ -22,11 +22,14 @@
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 #include <Image/CImage.h>         // the +0x198 cached frame (ex CGameObjLayer view)
 
-// g_vtrigActReg (0x00251500): CActReg - no provable static init (the type has no
+// CActRegPool<CVoiceTrigger>::s_table (0x00251500): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
-#include <Gruntz/GruntVoiceActReg.h> // g_actReg_6514d8 (ex .cpp extern)
+#include <Gruntz/GruntVoiceActReg.h> // CActRegPool<CGruntVoice>::s_table (ex .cpp extern)
 #include <Wap32/zBitVec.h>           // ex Globals.h
-DATA_SYMBOL(0x00251500, 0x0, ?g_vtrigActReg@@3UCActReg@@A)
+template<> DATA(0x002514d8)
+CActReg CActRegPool<CGruntVoice>::s_table(2000, 2010);
+template<> DATA(0x00251500)
+CActReg CActRegPool<CVoiceTrigger>::s_table(2000, 2010);
 
 VTBL(CVoiceTrigger, 0x001e885c);
 VTBL(CGruntVoice, 0x001eaf6c);
@@ -34,7 +37,7 @@ VTBL(CGruntVoice, 0x001eaf6c);
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
 static inline CVActEntry* VActLookup(i32 coord) {
-    return reinterpret_cast<CVActEntry*>(g_actReg_6514d8.ResolveEntry(coord));
+    return reinterpret_cast<CVActEntry*>(CActRegPool<CGruntVoice>::s_table.ResolveEntry(coord));
 }
 
 static inline char* ActNameLookup(i32 id) {
@@ -258,10 +261,10 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_area.bottom = m_object->m_screenY + (m_object->m_extent.bottom << 5) + 7;
 }
 
-RVA(0x00119dc0, 0x15)
-void CGruntVoice::InitActReg() {
-    g_actReg_6514d8.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x00119da0, 0xa, _$E1154464)
+RVA_COMPGEN(0x00119dc0, 0x15, _$E1154496)
+RVA_COMPGEN(0x00119df0, 0xe, _$E1154544)
+RVA_COMPGEN(0x00119e10, 0x1f, _$E1154576)
 
 RVA(0x00119e40, 0x102)
 void CGruntVoice::FireActivation(i32 coord) {
@@ -272,16 +275,18 @@ void CGruntVoice::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x0011a320, 0x15)
-void CVoiceTrigger::InitActReg() {
-    g_vtrigActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x0011a300, 0xa, _$E1155840)
+RVA_COMPGEN(0x0011a320, 0x15, _$E1155872)
+RVA_COMPGEN(0x0011a350, 0xe, _$E1155920)
+RVA_COMPGEN(0x0011a370, 0x1f, _$E1155952)
 
 RVA(0x0011a3a0, 0x102)
 void CVoiceTrigger::FireActivation(i32 coord) {
-    CVTrigEntry* e = reinterpret_cast<CVTrigEntry*>(g_vtrigActReg.ResolveEntry(coord));
+    CVTrigEntry* e =
+        reinterpret_cast<CVTrigEntry*>(CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        CVTrigEntry* e2 = reinterpret_cast<CVTrigEntry*>(g_vtrigActReg.ResolveEntry(coord));
+        CVTrigEntry* e2 =
+            reinterpret_cast<CVTrigEntry*>(CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -313,7 +318,7 @@ void CVoiceTrigger::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *reinterpret_cast<VActHandler*>(g_vtrigActReg.ResolveEntry(id)) =
+    *reinterpret_cast<VActHandler*>(CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(id)) =
         reinterpret_cast<VActHandler>(static_cast<i32 (CUserLogic::*)()>(&CVoiceTrigger::Tick));
 }
 

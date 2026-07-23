@@ -14,7 +14,6 @@ public:
     CTileTriggerSwitch(CGameObject* obj); // 0x10dc40
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
-    static void InitActReg(); // 0x10de20
     virtual void FireActivation(i32 id)
         OVERRIDE;               // 0x10dea0 (vtable slot 4 body: per-coord PMF dispatch)
     static void RegisterActs(); // 0x10e000

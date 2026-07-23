@@ -12,7 +12,6 @@ public:
     CFortressFlag(CGameObject* obj); // 0x045d30
     // Construct the class's activation-coordinate registry (g_fortressFlagActReg
     // @0x644638) over the fixed [2000,2010] range; free init thunk, reloc-masked.
-    static void InitActReg(); // 0x046000
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry (the same archetype as CBehindCandyAni::RegisterActs).
     static void RegisterActs();                   // 0x0461e0
@@ -38,11 +37,9 @@ struct CFortressFlagActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h>           // CActReg (extern below)
-extern CActReg g_fortressFlagActReg; // 0x00244638
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
-#include <Gruntz/ActReg.h>                  // CLogicActTable (extern below)
-extern CLogicActTable g_logicActReg_6447f8; // 0x002447f8
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
@@ -50,6 +47,5 @@ extern "C" void FortressFlagAct(); // thunk 0x4041ec -> 0x466b0
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-extern CActReg g_partColl;
 
 #endif // GRUNTZ_CFORTRESSFLAG_H

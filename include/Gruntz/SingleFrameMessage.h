@@ -15,7 +15,6 @@ public:
     CSingleFrameMessage(CGameObject* obj); // 0x0ab310 (ctor body in UserLogic.cpp)
     // Construct the class's activation-coordinate registry singleton
     // (g_singleFrameActReg @0x645ef0) over the fixed [2000, 2010] range. Static.
-    static void InitActReg(); // 0x0ab530
     // Resolve the registry entry for id; run its bound handler as a PMF on this
     // (ResolveEntry inlined twice). 0x0ab5b0.
     virtual void FireActivation(i32 id) OVERRIDE;
@@ -37,7 +36,6 @@ struct CSingleFrameActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h>          // CActReg (extern below)
-extern CActReg g_singleFrameActReg; // 0x00245ef0
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 #endif // GRUNTZ_CSINGLEFRAMEMESSAGE_H

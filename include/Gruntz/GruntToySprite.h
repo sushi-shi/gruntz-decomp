@@ -18,7 +18,6 @@ public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
-    static void InitActReg(); // 0x07f540 (construct g_toyActReg over [2000,2010])
     virtual void FireActivation(i32 id)
         OVERRIDE;               // 0x07f5c0 (resolve the id's registered handler + dispatch it)
     static void RegisterActs(); // 0x07f720 (register the class's activation handlers)
@@ -43,7 +42,6 @@ struct CToyActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg (extern below)
-extern CIndicatorActReg g_toyActReg;     // 0x00244d58
+#include <Gruntz/GruntIndicatorSprite.h> // CActReg (extern below)
 
 #endif // GRUNTZ_CGRUNTTOYSPRITE_H

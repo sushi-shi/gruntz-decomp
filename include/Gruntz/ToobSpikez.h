@@ -21,9 +21,8 @@ public:
         return LOGIC_TOOBSPIKEZ;
     }
     virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
-    void Register();                              // 0x1147e0 (reserve the activation range)
-    virtual void FireActivation(i32 id) OVERRIDE; // 0x114860 (vtable slot 4)
-    static void RegisterActs();                   // 0x1149c0 (binds the logic handler to key "A";
+    virtual void FireActivation(i32 id) OVERRIDE;                     // 0x114860 (vtable slot 4)
+    static void RegisterActs(); // 0x1149c0 (binds the logic handler to key "A";
     //  static: no this, called this-less by the factory)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
@@ -36,6 +35,5 @@ SIZE(0x54);
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 #include <Gruntz/ActReg.h> // CActReg (for the extern below)
-extern CActReg g_toobColl;
 
 #endif // GRUNTZ_CTOOBSPIKEZ_H

@@ -14,7 +14,6 @@ GameText	1
 GameWnd	3
 GruntzApp	4
 GruntzMgr	22
-InGameIcon	1
 KeyedList	1
 KitchenSlime	1
 LevelPreview	1
@@ -33,10 +32,9 @@ SpotLightCtor	1
 SpriteLoaders	1
 SpriteRefTable	2
 StateImages	1
-StaticHazard	1
 StatusBarSpriteActs	1
 SymTab	1
 ToobSpikez	1
 WwdFactoryObject	1
 WwdGrid	1
-(interleave-pairs)	8671
+(interleave-pairs)	8613

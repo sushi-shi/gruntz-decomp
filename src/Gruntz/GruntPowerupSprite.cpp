@@ -19,9 +19,10 @@ VTBL(CGruntPowerupSprite, 0x001e76c4); // vtable_names -> code (RTTI game class)
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 #include <rva.h>
 
-// g_powerupActReg (0x00244d30): CIndicatorActReg - no provable static init (the type has no
+// CActRegPool<CGruntPowerupSprite>::s_table (0x00244d30): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x00244d30, 0x0, ?g_powerupActReg@@3UCIndicatorActReg@@A)
+template<> DATA(0x00244d30)
+CActReg CActRegPool<CGruntPowerupSprite>::s_table(2000, 2010);
 RVA_COMPGEN(0x00012370, 0x44, ??1CGruntPowerupSprite@@UAE@XZ)
 
 RVA(0x0007fdb0, 0x166)
@@ -36,15 +37,23 @@ CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj), CW
     m_38->m_stateFlags |= 1;
 }
 
-RVA(0x0007ffa0, 0x15)
-void CGruntPowerupSprite::InitActReg() {
-    g_powerupActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x0007ff80, 0xa, _$E524160)
+RVA_COMPGEN(0x0007ffa0, 0x15, _$E524192)
+RVA_COMPGEN(0x0007ffd0, 0xe, _$E524240)
+RVA_COMPGEN(0x0007fff0, 0x1f, _$E524272)
 
 RVA(0x00080020, 0x102)
 void CGruntPowerupSprite::FireActivation(i32 id) {
-    if ((reinterpret_cast<CPowerupActEntry*>(g_powerupActReg.ResolveEntry(id)))->m_fn != 0) {
-        (this->*(reinterpret_cast<CPowerupActEntry*>(g_powerupActReg.ResolveEntry(id)))->m_fn)();
+    if ((reinterpret_cast<CPowerupActEntry*>(
+             CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)
+         ))
+            ->m_fn
+        != 0) {
+        (this
+             ->*(reinterpret_cast<CPowerupActEntry*>(
+                 CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)
+             ))
+             ->m_fn)();
     }
 }
 
@@ -76,8 +85,10 @@ void CGruntPowerupSprite::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CPowerupActEntry*>(g_powerupActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CGruntPowerupSprite::Update);
+    (reinterpret_cast<CPowerupActEntry*>(
+         CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)
+     ))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CGruntPowerupSprite::Update);
 }
 
 RVA(0x00080380, 0x6c)

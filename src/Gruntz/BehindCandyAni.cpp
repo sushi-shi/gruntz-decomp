@@ -9,6 +9,8 @@
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 VTBL(CBehindCandyAni, 0x001e838c);
+template<> DATA(0x00245f98)
+CActReg CActRegPool<CBehindCandyAni>::s_table(2000, 2010);
 
 RVA(0x00010050, 0x47)
 i32 CBehindCandyAni::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
@@ -56,18 +58,21 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
     }
 }
 
-RVA(0x000ad7d0, 0x15)
-void CBehindCandyAni::InitActReg() {
-    g_behindCandyActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x000ad7b0, 0xa, _$E710576)
+RVA_COMPGEN(0x000ad7d0, 0x15, _$E710608)
+RVA_COMPGEN(0x000ad800, 0xe, _$E710656)
+RVA_COMPGEN(0x000ad820, 0x1f, _$E710688)
 
 RVA(0x000ad850, 0x102)
 void CBehindCandyAni::FireActivation(i32 id) {
-    CBehindCandyActEntry* e =
-        reinterpret_cast<CBehindCandyActEntry*>(g_behindCandyActReg.ResolveEntry(id));
+    CBehindCandyActEntry* e = reinterpret_cast<CBehindCandyActEntry*>(
+        CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id)
+    );
     if (e->m_fn != 0) {
         (this
-             ->*(reinterpret_cast<CBehindCandyActEntry*>(g_behindCandyActReg.ResolveEntry(id)))
+             ->*(reinterpret_cast<CBehindCandyActEntry*>(
+                 CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id)
+             ))
              ->m_fn)();
     }
 }
@@ -100,8 +105,10 @@ void CBehindCandyAni::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CBehindCandyActEntry*>(g_behindCandyActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CBehindCandyAni::AdvanceAnim);
+    (reinterpret_cast<CBehindCandyActEntry*>(
+         CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id)
+     ))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CBehindCandyAni::AdvanceAnim);
 }
 
 RVA(0x000adbb0, 0x17)
@@ -113,7 +120,3 @@ i32 CBehindCandyAni::AdvanceAnim() {
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
-
-// g_behindCandyActReg (0x00245f98): CBehindCandyActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x00245f98, 0x0, ?g_behindCandyActReg@@3UCBehindCandyActReg@@A)

@@ -13,7 +13,6 @@ public:
     } // slot 2
 public:
     CSingleAnimation(CGameObject* obj); // 0x0ae7f0 (ctor body in UserLogic.cpp)
-    static void InitActReg(); // 0x0ae9a0 (construct the activation registry over [2000,2010])
     virtual void FireActivation(i32 id)
         OVERRIDE;               // 0x0aea20 (resolve+dispatch the bound handler PMF on this)
     static void RegisterActs(); // 0x0aeb80 (bind the per-frame handler to key "A")
@@ -39,7 +38,6 @@ struct CSingleAnimActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h>                   // CSingleAnimActReg (extern below)
-extern CSingleAnimActReg g_singleAnimActReg; // 0x00245f70
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 #endif // GRUNTZ_CSINGLEANIMATION_H

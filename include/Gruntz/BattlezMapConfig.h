@@ -4,6 +4,8 @@
 #include <Gruntz/MapMgr.h> // CMapMgr IS CMapMgr (a typedef now - a fwd decl
 #include <rva.h>
 
+void* __stdcall ListNodeAdvance(void** pos);
+
 #include <Mfc.h> // CPtrArray, CDWordArray (real afxcoll, 0x14 layout); DWORD
 
 class CTriggerMgr;

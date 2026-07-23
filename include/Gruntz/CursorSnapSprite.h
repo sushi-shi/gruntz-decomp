@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-#include <Gruntz/ActReg.h>        // CLogicActTable (the slot-4 activation-dispatch table)
+#include <Gruntz/ActReg.h>        // CActReg (the slot-4 activation-dispatch table)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/UserLogic.h>     // CUserLogic base (CCursorSnapSprite : CUserLogic)
 
@@ -28,8 +28,6 @@ public:
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 };
 SIZE(0x54);
-
-extern CLogicActTable g_logicActReg_62bfa0;
 
 typedef i32 (CUserLogic::*SnapActHandler)();
 struct CSnapActEntry {

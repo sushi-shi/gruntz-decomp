@@ -1563,11 +1563,7 @@ flags = "base"
 unit = "zdarrayderived"
 source = "src/Gruntz/ZDArrayDerived.cpp"
 flags = "base"
-
-[[unit]]
-unit = "typecollruntime"
-source = "src/Bute/TypeCollRuntime.cpp"
-flags = "base"
+extra = ["/GR"]
 
 [[unit]]
 unit = "trirecordserialize"

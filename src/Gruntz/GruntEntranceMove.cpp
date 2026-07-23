@@ -25,7 +25,7 @@
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
 #include <Gruntz/GameLevel.h> // canonical CGameLevel/CDDrawWorkerHost (m_world->m_level visible rect)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
-#include <Gruntz/ActReg.h>      // CLookupColl/CActReg::ResolveEntry
+#include <Gruntz/ActReg.h>      // CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniAdvanceCursor.h>  // CAniAdvanceCursor::Advance (0x15c360)
 #include <Gruntz/TriggerMgr.h>        // CTriggerMgr::NotifyCell (0x79fb0) + CellDispatch (0x6bcb0)

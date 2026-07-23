@@ -17,7 +17,6 @@ public:
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     // Construct the class's activation-coordinate registry (g_actColl @0x644688)
     // over the fixed [2000,2010] range; a free init thunk, reloc-masked.
-    static void InitActReg(); // 0x0420d0
     // Bind SpawnTeleporter to the activation key "A" via the shared name registry
     // (the same archetype as CSecretLevelTrigger::RegisterActs).
     static void RegisterActs(); // 0x0422b0
@@ -40,11 +39,9 @@ struct CTelActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h>     // CActReg (extern below)
-extern CActReg g_secretActReg; // 0x00244598
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-extern CActReg g_actColl; // the WHOLE 0x24-byte registry object (ex 8 exploded per-field scalars)
 
 #endif // GRUNTZ_CSECRETTELEPORTERTRIGGER_H

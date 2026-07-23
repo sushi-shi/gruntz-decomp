@@ -4,7 +4,6 @@
 
 #include <Ints.h>
 
-#include <Gruntz/ActReg.h>          // CActReg (extern below)
-extern CActReg g_exitTriggerActReg; // 0x002445c0
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 #endif // GRUNTZ_GRUNTZ_WORMHOLEACTS_H

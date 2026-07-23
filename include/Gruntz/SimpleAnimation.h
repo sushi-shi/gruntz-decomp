@@ -30,7 +30,6 @@ typedef i32 (CUserLogic::*SimpleAnimHandler)();
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-#include <Gruntz/LogicFnTable.h> // CLogicActTable (for the extern below)
-extern CLogicActTable g_simpleAnimDispatch;
+#include <Gruntz/LogicFnTable.h> // CActReg (for the extern below)
 
 #endif // GRUNTZ_CSIMPLEANIMATION_H

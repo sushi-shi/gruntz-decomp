@@ -137,3 +137,49 @@ four-helper families, so the labels were pruned. Use this in reverse on other
 LOW `___inittime` rows, but require the adjacent wrapper, ctor, guarded dtor,
 shared object relocation, and `atexit` edge; the short body alone is not enough
 to reclassify an RVA.
+
+## Activation-table reverse audit
+
+The activation-table sweep supplied a much larger control. Fifty retail
+families all have the same four boundaries relative to the constructor helper
+at `X`:
+
+- wrapper at `X - 0x20`, size `0xa`;
+- constructor helper at `X`, size `0x15`;
+- `atexit` registrar at `X + 0x30`, size `0xe`;
+- guarded destructor helper at `X + 0x50`, size `0x1f`.
+
+All fifty raw families were checked before changing source. Modeling each datum
+as an explicit specialization of `CActRegPool<Tag>::s_table` made the 200
+helpers compiler-emitted and removed the corresponding fake globals and
+hand-written 21-byte initializer functions. This also invalidated 52 more LOW
+`___inittime` rows. Three adjacent container-family library aliases and the
+source-emitted `zDArray<CActHandler>` vtable carve-out were false for the same
+reason. This is the safe reverse-use signature: do not bulk-reclassify a short
+registrar without the other three boundaries and their common object
+relocations.
+
+The sweep exposed a second normalization dependency. Retail calls to a curated
+body can go through a five-byte leading-band `E9 rel32` ILT thunk that still has
+a stale Ghidra name. Content hashes then disagree even though the body name,
+instructions, and target are correct. Propagate a curated exact-body name to
+such forwarding thunks before hashing relocation targets; do not TU-attribute
+the thunk itself. A recognizer test for the body name does not exercise this
+failure mode.
+
+One nearby object is an important negative control. `g_typeColl` is a real
+`CTypeCollRuntime` global, not another activation-table specialization. Giving
+it real storage and its `_zdvec`/`_zvec` hierarchy removes the undefined global
+and the fake lookup declarations. VC5 emits its constructor helper, vtable, and
+scalar-deleting destructor from the corrected owner TU, but the source shape
+with a separately materialized virtual destructor does not emit the retail
+`??__F` atexit wrapper at `0x0016e7a0`. Leave that compiler-generated body
+unnamed until its emission trigger is recovered; manually writing a destructor
+wrapper would repeat the original modeling error.
+
+These structural corrections can lower the current aggregate fuzzy percentage:
+the helper families enlarge the named-function denominator, and a previously
+masked relocation alias can stop pairing even while many new functions become
+exact. Preserve the MAX high-water mark, compare the exact affected helpers and
+ordered relocations, and record the cause. Do not undo the object model merely
+to restore the current percentage.

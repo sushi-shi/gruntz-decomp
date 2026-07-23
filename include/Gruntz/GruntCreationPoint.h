@@ -15,7 +15,6 @@ public:
     CGruntCreationPoint(CGameObject* obj); // 0x3e520 (folds CUserLogic(obj) + tail)
     // Construct the class's activation-coordinate registry (g_creationPointActReg
     // @0x644700) over the fixed [2000,2010] range; free init thunk, reloc-masked.
-    static void InitActReg(); // 0x03e8e0
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry (the same archetype as CBehindCandyAni::RegisterActs).
     static void RegisterActs(); // 0x03eac0
@@ -32,7 +31,6 @@ public:
 };
 SIZE(0x54);
 
-#include <Gruntz/ActReg.h>            // CActReg (extern below)
-extern CActReg g_creationPointActReg; // 0x00244700
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 #endif // GRUNTZ_CGRUNTCREATIONPOINT_H

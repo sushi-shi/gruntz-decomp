@@ -21,9 +21,10 @@ CGruntHealthSprite::CGruntHealthSprite() {}
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 #include <rva.h>
 
-// g_healthActReg (0x00244d80): CIndicatorActReg - no provable static init (the type has no
+// CActRegPool<CGruntHealthSprite>::s_table (0x00244d80): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x00244d80, 0x0, ?g_healthActReg@@3UCIndicatorActReg@@A)
+template<> DATA(0x00244d80)
+CActReg CActRegPool<CGruntHealthSprite>::s_table(2000, 2010);
 RVA_COMPGEN(0x00011fb0, 0x44, ??1CGruntHealthSprite@@UAE@XZ)
 
 RVA(0x0007eb00, 0x170)
@@ -39,15 +40,23 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj), CWap
     m_60 = -0x19;
 }
 
-RVA(0x0007ecf0, 0x15)
-void CGruntHealthSprite::InitActReg() {
-    g_healthActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x0007ecd0, 0xa, _$E519376)
+RVA_COMPGEN(0x0007ecf0, 0x15, _$E519408)
+RVA_COMPGEN(0x0007ed20, 0xe, _$E519456)
+RVA_COMPGEN(0x0007ed40, 0x1f, _$E519488)
 
 RVA(0x0007ed70, 0x102)
 void CGruntHealthSprite::FireActivation(i32 id) {
-    if ((reinterpret_cast<CHealthActEntry*>(g_healthActReg.ResolveEntry(id)))->m_fn != 0) {
-        (this->*(reinterpret_cast<CHealthActEntry*>(g_healthActReg.ResolveEntry(id)))->m_fn)();
+    if ((reinterpret_cast<CHealthActEntry*>(
+             CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)
+         ))
+            ->m_fn
+        != 0) {
+        (this
+             ->*(reinterpret_cast<CHealthActEntry*>(
+                 CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)
+             ))
+             ->m_fn)();
     }
 }
 
@@ -90,8 +99,8 @@ void CGruntHealthSprite::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CHealthActEntry*>(g_healthActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CGruntHealthSprite::HealthUpdate);
+    (reinterpret_cast<CHealthActEntry*>(CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CGruntHealthSprite::HealthUpdate);
 }
 
 RVA(0x0007f0d0, 0x6e)

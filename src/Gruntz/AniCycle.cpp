@@ -5,6 +5,8 @@
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 VTBL(CAniCycle, 0x001e86a4);
+template<> DATA(0x00246088)
+CActReg CActRegPool<CAniCycle>::s_table(2000, 2010);
 
 RVA(0x0000f470, 0x47)
 i32 CAniCycle::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
@@ -35,16 +37,21 @@ CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_1c = g_buteTree.Find("A");
 }
 
-RVA(0x000aaf00, 0x15)
-void CAniCycle::InitActReg() {
-    g_aniCycleActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x000aaee0, 0xa, _$E700128)
+RVA_COMPGEN(0x000aaf00, 0x15, _$E700160)
+RVA_COMPGEN(0x000aaf30, 0xe, _$E700208)
+RVA_COMPGEN(0x000aaf50, 0x1f, _$E700240)
 
 RVA(0x000aaf80, 0x102)
 void CAniCycle::FireActivation(i32 id) {
-    CAniCycleActEntry* e = reinterpret_cast<CAniCycleActEntry*>(g_aniCycleActReg.ResolveEntry(id));
+    CAniCycleActEntry* e =
+        reinterpret_cast<CAniCycleActEntry*>(CActRegPool<CAniCycle>::s_table.ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*(reinterpret_cast<CAniCycleActEntry*>(g_aniCycleActReg.ResolveEntry(id)))->m_fn)();
+        (this
+             ->*(reinterpret_cast<CAniCycleActEntry*>(
+                 CActRegPool<CAniCycle>::s_table.ResolveEntry(id)
+             ))
+             ->m_fn)();
     }
 }
 
@@ -76,7 +83,7 @@ void CAniCycle::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CAniCycleActEntry*>(g_aniCycleActReg.ResolveEntry(id)))->m_fn =
+    (reinterpret_cast<CAniCycleActEntry*>(CActRegPool<CAniCycle>::s_table.ResolveEntry(id)))->m_fn =
         static_cast<i32 (CUserLogic::*)()>(&CAniCycle::AdvanceAnim);
 }
 
@@ -84,9 +91,6 @@ void CAniCycle::RegisterActs() {
 #include <Wap32/ZVec.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
-// g_aniCycleActReg (0x00246088): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x00246088, 0x0, ?g_aniCycleActReg@@3UCActReg@@A)
 RVA(0x000ab2e0, 0x17)
 i32 CAniCycle::AdvanceAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);

@@ -5,7 +5,8 @@
 
 #include <Mfc.h> // CObject base + <windows.h>
 
-#include <Gruntz/UserLogic.h>     // CUserLogic : CUserBase, CGameObject
+#include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, CGameObject
+#include <Gruntz/ActReg.h>
 #include <Wap32/ZVec.h>           // zDArray<member-fn-ptr> (the dispatch table)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
@@ -23,7 +24,6 @@ public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
-    static void InitActReg();                     // 0x0993e0
     virtual void FireActivation(i32 id) OVERRIDE; // 0x099460
     i32 Update();                                 // 0x0997c0
 
@@ -32,9 +32,6 @@ public:
     i32 m_cachedSubId;  // +0x58  Update: cached hit-test sub id; serialized scalar
 };
 SIZE_UNKNOWN();
-
-struct CActReg;
-extern CActReg g_textDispatch; // 0x245950 (registry archetype; zDArray<T> instantiation)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

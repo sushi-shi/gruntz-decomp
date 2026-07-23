@@ -44,7 +44,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // g_gameReg->m_world (the world root)
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup/CDDrawGroupNode (the object chain)
 #include <Wap32/ZVec.h> // zDArray<member-fn-ptr> dispatch table + the shared registration infra
-#include <Gruntz/LogicFnTable.h>   // the shared CLogicActTable dispatch-table shape
+#include <Gruntz/LogicFnTable.h>   // the shared CActReg dispatch-table shape
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/Grunt.h>         // CGrunt (Teleporter::Update's hit-test target)
@@ -61,18 +61,17 @@
 #include <rva.h>
 #include <Wap32/zBitVec.h> // ex Globals.h
 
-// g_teleporterActReg (0x002446b0): CTeleporterActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x002446b0, 0x0, ?g_teleporterActReg@@3UCTeleporterActReg@@A)
+template<> DATA(0x00244660)
+CActReg CActRegPool<CWormhole>::s_table(2000, 2010);
+template<> DATA(0x002445e8)
+CActReg CActRegPool<CGruntPuddle>::s_table(2000, 2010);
+template<> DATA(0x002446b0)
+CActReg CActRegPool<CTeleporter>::s_table(2000, 2010);
 
 VTBL(CGruntPuddle, 0x001e8124);
 VTBL(CWormhole, 0x001e817c);
 DATA(0x0020c1c0)
 char g_puddleSpriteKey[] = "GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2";
-
-DATA_SYMBOL(0x002445e8, 0x24, ?g_logicDispatch_6445e8@@3UCLogicActTable@@A)
-
-DATA_SYMBOL(0x00244660, 0x24, ?g_wormholeDispatch@@3UCLogicActTable@@A)
 
 static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     char* r;
@@ -100,7 +99,7 @@ static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
     return r;
 }
 
-static inline char* ResolveSlot(_zvec* v, i32 idx) {
+static inline char* ResolveSlot(_zdvec* v, i32 idx) {
     i32 lo = v->m_lo;
     v->m_grown = 0;
     if (idx >= lo && idx <= v->m_hi) {
@@ -236,22 +235,23 @@ i32 CWormhole::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     return 1;
 }
 
-RVA(0x0003ffd0, 0x15)
-void InitWormholeDispatch() {
-    g_wormholeDispatch.Construct(0x7d0, 0x7da);
-}
+RVA_COMPGEN(0x0003ffb0, 0xa, _$E262064)
+RVA_COMPGEN(0x0003ffd0, 0x15, _$E262096)
+RVA_COMPGEN(0x00040000, 0xe, _$E262144)
+RVA_COMPGEN(0x00040020, 0x1f, _$E262176)
 
 RVA(0x00040050, 0x102)
 void CWormhole::FireActivation(i32 idx) {
-    if (*reinterpret_cast<void**>(ResolveSlot(&g_wormholeDispatch, idx)) != 0) {
-        LogicFn fn = *reinterpret_cast<LogicFn*>(ResolveSlot(&g_wormholeDispatch, idx));
+    if (*reinterpret_cast<void**>(ResolveSlot(&CActRegPool<CWormhole>::s_table, idx)) != 0) {
+        LogicFn fn =
+            *reinterpret_cast<LogicFn*>(ResolveSlot(&CActRegPool<CWormhole>::s_table, idx));
         (this->*fn)();
     }
 }
 
 // ===========================================================================
 // RegisterWormholeLogic  (0x0401b0)
-// Register the wormhole-logic handler into g_wormholeDispatch: look the key up in
+// Register the wormhole-logic handler into CActRegPool<CWormhole>::s_table: look the key up in
 // the bute tree; if absent, Insert it under the running counter and cache the key
 // name into the scratch zDArray<CString> slot (growing it), then bump the counter.
 // Either way, resolve the dispatch-table slot for the key index and load it with
@@ -273,7 +273,7 @@ void RegisterWormholeLogic() {
         *reinterpret_cast<CString*>(slot) = "A";
         g_typeCounter++;
     }
-    char* dslot = ResolveSlot(&g_wormholeDispatch, idx);
+    char* dslot = ResolveSlot(&CActRegPool<CWormhole>::s_table, idx);
     *reinterpret_cast<WormholeActHandler*>(dslot) =
         static_cast<WormholeActHandler>(&CWormhole::SpawnPartners);
 }
@@ -363,18 +363,18 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_placed = 0;
 }
 
-RVA(0x000406d0, 0x15)
-void InitLogicDispatch_6445e8() {
-    g_logicDispatch_6445e8.Construct(0x7d0, 0x7da);
-}
+RVA_COMPGEN(0x000406b0, 0xa, _$E263856)
+RVA_COMPGEN(0x000406d0, 0x15, _$E263888)
+RVA_COMPGEN(0x00040700, 0xe, _$E263936)
+RVA_COMPGEN(0x00040720, 0x1f, _$E263968)
 
 RVA(0x00040750, 0x102)
 void CGruntPuddle::FireActivation(i32 id) {
     CPuddleActEntry* e =
-        reinterpret_cast<CPuddleActEntry*>(g_logicDispatch_6445e8.ResolveEntry(id));
+        reinterpret_cast<CPuddleActEntry*>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id));
     if (e->m_fn != 0) {
         CPuddleActEntry* e2 =
-            reinterpret_cast<CPuddleActEntry*>(g_logicDispatch_6445e8.ResolveEntry(id));
+            reinterpret_cast<CPuddleActEntry*>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id));
         (this->*(e2->m_fn))();
     }
 }
@@ -397,7 +397,7 @@ void RegisterLogic() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_logicDispatch_6445e8.ResolveEntry(id)) =
+    *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id)) =
         static_cast<void*>(&PuddleActA);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
@@ -409,7 +409,7 @@ void RegisterLogic() {
         (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_logicDispatch_6445e8.ResolveEntry(id2)) =
+    *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id2)) =
         static_cast<void*>(&PuddleActB);
 }
 
@@ -674,25 +674,27 @@ i32 CTeleporter::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     return 1;
 }
 
-RVA(0x000414a0, 0x15)
-void CTeleporter::InitActReg() {
-    g_teleporterActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x00041480, 0xa, _$E267392)
+RVA_COMPGEN(0x000414a0, 0x15, _$E267424)
+RVA_COMPGEN(0x000414d0, 0xe, _$E267472)
+RVA_COMPGEN(0x000414f0, 0x1f, _$E267504)
 
 RVA(0x00041520, 0x102)
 void CTeleporter::FireActivation(i32 coord) {
-    CTeleporterActEntry* e =
-        reinterpret_cast<CTeleporterActEntry*>(g_teleporterActReg.ResolveEntry(coord));
+    CTeleporterActEntry* e = reinterpret_cast<CTeleporterActEntry*>(
+        CActRegPool<CTeleporter>::s_table.ResolveEntry(coord)
+    );
     if (e->m_fn != 0) {
-        CTeleporterActEntry* e2 =
-            reinterpret_cast<CTeleporterActEntry*>(g_teleporterActReg.ResolveEntry(coord));
+        CTeleporterActEntry* e2 = reinterpret_cast<CTeleporterActEntry*>(
+            CActRegPool<CTeleporter>::s_table.ResolveEntry(coord)
+        );
         (this->*(e2->m_fn))();
     }
 }
 
 // ===========================================================================
 // CTeleporter::RegisterActs @0x041680 - bind handler "A" (0x40187a) and handler
-// "B" (0x403846) into CTeleporter's activation registry (g_teleporterActReg
+// "B" (0x403846) into CTeleporter's activation registry (CActRegPool<CTeleporter>::s_table
 // @0x6446b0; built by CTeleporter::InitActReg @0x414a0). (Moved from
 // LogicActRegistrars.cpp - text-contained in this TU.)
 // ===========================================================================
@@ -709,7 +711,7 @@ void CTeleporter_RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_teleporterActReg.ResolveEntry(id)) =
+    *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntry(id)) =
         static_cast<void*>(&TeleporterActA);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
@@ -721,7 +723,7 @@ void CTeleporter_RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_teleporterActReg.ResolveEntry(id2)) =
+    *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntry(id2)) =
         static_cast<void*>(&TeleporterActB);
 }
 

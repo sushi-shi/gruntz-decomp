@@ -4,7 +4,6 @@
 
 #include <Ints.h>
 
-#include <Gruntz/ActReg.h>              // CActReg (extern below)
-extern CActReg g_statusBarSpriteActReg; // 0x0024e670
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 #endif // GRUNTZ_GRUNTZ_STATUSBARSPRITEACTS_H

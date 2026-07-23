@@ -20,7 +20,7 @@
 //   * the archetype matches the sibling leaves exactly: CBehindCandyAni keeps its own
 //     RegisterActs (0xad9b0) beside its AdvanceAnim (0xadbb0) in BehindCandyAni.cpp,
 //     and CKitchenSlime::RegisterType is the cited ordering archetype.
-// So g_logicActReg_646010 is CMenuSparkle's per-class activation table.
+// So CActRegPool<CMenuSparkle>::s_table is CMenuSparkle's per-class activation table.
 //
 // The slot-1 SerializeMove (0xae1c0) still lives in MenuSparkleSerial.cpp under the
 // Grunt.h-world serialize view (documented dual-model; never coexist in a TU) - it is
@@ -33,6 +33,9 @@
 #include <Gruntz/ActNameRegistry.h>  // the shared action-name registry archetype
 #include <Gruntz/ActReg.h>           // the shared activation-registrar archetype
 #include <stdlib.h>                  // rand (0x11fee0; flicker-timer seed)
+
+template<> DATA(0x00246010)
+CActReg CActRegPool<CMenuSparkle>::s_table(2000, 2010);
 
 RVA_COMPGEN(0x000101b0, 0x44, ??1CMenuSparkle@@UAE@XZ)
 
@@ -79,18 +82,18 @@ static inline i32 RegisterActionName() {
     return id;
 }
 
-RVA(0x000adde0, 0x15)
-void ConstructLogicActRange_646010() {
-    g_logicActReg_646010.Construct(0x7d0, 0x7da);
-}
+RVA_COMPGEN(0x000addc0, 0xa, _$E712128)
+RVA_COMPGEN(0x000adde0, 0x15, _$E712160)
+RVA_COMPGEN(0x000ade10, 0xe, _$E712208)
+RVA_COMPGEN(0x000ade30, 0x1f, _$E712240)
 
 typedef void (CUserLogic::*MenuSparkleActHandler)();
 
 RVA(0x000ade60, 0x102)
 void CMenuSparkle::FireActivation(i32 coord) {
-    char* e = g_logicActReg_646010.ResolveEntry(coord);
+    char* e = CActRegPool<CMenuSparkle>::s_table.ResolveEntry(coord);
     if (*reinterpret_cast<void**>(e) != 0) {
-        char* e2 = g_logicActReg_646010.ResolveEntry(coord);
+        char* e2 = CActRegPool<CMenuSparkle>::s_table.ResolveEntry(coord);
         MenuSparkleActHandler h = *reinterpret_cast<MenuSparkleActHandler*>(e2);
         (this->*h)();
     }
@@ -104,7 +107,7 @@ void CMenuSparkle::FireActivation(i32 coord) {
 RVA(0x000adfc0, 0x18d)
 void RegisterXLogic_646010() {
     i32 id = RegisterActionName();
-    *reinterpret_cast<void**>(g_logicActReg_646010.ResolveEntry(id)) =
+    *reinterpret_cast<void**>(CActRegPool<CMenuSparkle>::s_table.ResolveEntry(id)) =
         static_cast<void*>(&MenuSparkleAct);
 }
 
@@ -143,7 +146,3 @@ i32 CMenuSparkle::AdvanceAnim() {
 }
 
 #include <rva.h>
-
-// g_logicActReg_646010 (0x00246010): CLogicActTable - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x00246010, 0x0, ?g_logicActReg_646010@@3UCLogicActTable@@A)

@@ -19,9 +19,10 @@ VTBL(CGruntToySprite, 0x001e7b4c); // vtable_names -> code (RTTI game class)
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 #include <rva.h>
 
-// g_toyActReg (0x00244d58): CIndicatorActReg - no provable static init (the type has no
+// CActRegPool<CGruntToySprite>::s_table (0x00244d58): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x00244d58, 0x0, ?g_toyActReg@@3UCIndicatorActReg@@A)
+template<> DATA(0x00244d58)
+CActReg CActRegPool<CGruntToySprite>::s_table(2000, 2010);
 RVA_COMPGEN(0x000122b0, 0x44, ??1CGruntToySprite@@UAE@XZ)
 
 RVA(0x0007f350, 0x16a)
@@ -37,15 +38,21 @@ CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
     m_lastLayer = 0;
 }
 
-RVA(0x0007f540, 0x15)
-void CGruntToySprite::InitActReg() {
-    g_toyActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x0007f520, 0xa, _$E521504)
+RVA_COMPGEN(0x0007f540, 0x15, _$E521536)
+RVA_COMPGEN(0x0007f570, 0xe, _$E521584)
+RVA_COMPGEN(0x0007f590, 0x1f, _$E521616)
 
 RVA(0x0007f5c0, 0x102)
 void CGruntToySprite::FireActivation(i32 id) {
-    if ((reinterpret_cast<CToyActEntry*>(g_toyActReg.ResolveEntry(id)))->m_fn != 0) {
-        (this->*(reinterpret_cast<CToyActEntry*>(g_toyActReg.ResolveEntry(id)))->m_fn)();
+    if ((reinterpret_cast<CToyActEntry*>(CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))
+            ->m_fn
+        != 0) {
+        (this
+             ->*(reinterpret_cast<CToyActEntry*>(
+                 CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)
+             ))
+             ->m_fn)();
     }
 }
 
@@ -77,8 +84,8 @@ void CGruntToySprite::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CToyActEntry*>(g_toyActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CGruntToySprite::Update);
+    (reinterpret_cast<CToyActEntry*>(CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CGruntToySprite::Update);
 }
 
 RVA(0x0007f920, 0x21)

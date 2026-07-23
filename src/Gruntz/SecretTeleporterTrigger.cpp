@@ -18,16 +18,17 @@
 #include <rva.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
-// g_secretActReg (0x00244598): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x00244598, 0x0, ?g_secretActReg@@3UCActReg@@A)
-
 VTBL(CSecretTeleporterTrigger, 0x001e7564);
 VTBL(CSecretLevelTrigger, 0x001e8804);
-DATA_SYMBOL(0x00244688, 0x24, ?g_actColl@@3UCActReg@@A)
+template<> DATA(0x00244688)
+CActReg CActRegPool<CSecretTeleporterTrigger>::s_table(2000, 2010);
+template<> DATA(0x00244598)
+CActReg CActRegPool<CSecretLevelTrigger>::s_table(2000, 2010);
 
 static inline CActEntry* ActLookup(i32 coord) {
-    return reinterpret_cast<CActEntry*>(g_actColl.ResolveEntry(coord));
+    return reinterpret_cast<CActEntry*>(
+        CActRegPool<CSecretTeleporterTrigger>::s_table.ResolveEntry(coord)
+    );
 }
 
 RVA(0x00010a10, 0x47)
@@ -92,10 +93,10 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
     }
 }
 
-RVA(0x000420d0, 0x15)
-void CSecretTeleporterTrigger::InitActReg() {
-    g_actColl.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x000420b0, 0xa, _$E270512)
+RVA_COMPGEN(0x000420d0, 0x15, _$E270544)
+RVA_COMPGEN(0x00042100, 0xe, _$E270592)
+RVA_COMPGEN(0x00042120, 0x1f, _$E270624)
 
 RVA(0x00042150, 0x102)
 void CSecretTeleporterTrigger::FireActivation(i32 coord) {
@@ -109,7 +110,7 @@ void CSecretTeleporterTrigger::FireActivation(i32 coord) {
 // --- CSecretTeleporterTrigger::RegisterActs (0x0422b0) ---
 // Bind the per-point handler (SpawnTeleporter @0x042b80) to the activation key
 // "A" via the shared name registry, then bind id->entry in the class's own
-// coordinate registry (g_actColl). The SAME archetype as
+// coordinate registry (CActRegPool<CSecretTeleporterTrigger>::s_table). The SAME archetype as
 // CSecretLevelTrigger::RegisterActs.
 //
 // @early-stop
@@ -158,17 +159,20 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj), CW
     }
 }
 
-RVA(0x000426e0, 0x15)
-void CSecretLevelTrigger::InitActReg() {
-    g_secretActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x000426c0, 0xa, _$E272064)
+RVA_COMPGEN(0x000426e0, 0x15, _$E272096)
+RVA_COMPGEN(0x00042710, 0xe, _$E272144)
+RVA_COMPGEN(0x00042730, 0x1f, _$E272176)
 
 RVA(0x00042760, 0x102)
 void CSecretLevelTrigger::FireActivation(i32 coord) {
-    CSecretActEntry* e = reinterpret_cast<CSecretActEntry*>(g_secretActReg.ResolveEntry(coord));
+    CSecretActEntry* e = reinterpret_cast<CSecretActEntry*>(
+        CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(coord)
+    );
     if (e->m_fn != 0) {
-        CSecretActEntry* e2 =
-            reinterpret_cast<CSecretActEntry*>(g_secretActReg.ResolveEntry(coord));
+        CSecretActEntry* e2 = reinterpret_cast<CSecretActEntry*>(
+            CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(coord)
+        );
         (this->*(e2->m_fn))();
     }
 }
@@ -201,8 +205,8 @@ void CSecretLevelTrigger::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CSecretActEntry*>(g_secretActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CSecretLevelTrigger::Tick);
+    (reinterpret_cast<CSecretActEntry*>(CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(id)))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CSecretLevelTrigger::Tick);
 }
 
 RVA(0x00042ac0, 0x90)

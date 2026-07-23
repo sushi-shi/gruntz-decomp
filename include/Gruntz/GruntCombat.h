@@ -4,8 +4,7 @@
 
 #include <Ints.h>
 
-#include <Gruntz/ActReg.h>       // CLookupColl (extern below)
-extern CLookupColl g_reg_644af0; // 0x00244af0
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
@@ -16,6 +15,5 @@ extern "C" float g_tanC0;              // DAT_005e99a0
 extern "C" float g_tanC1;              // DAT_005e99a4
 extern "C" double g_tanC2;             // DAT_005e99a8
 extern "C" double g_tanC3;             // DAT_005e99b0
-extern CLookupColl g_reg_644af0;       // 0x644af0  (CGrunt's per-class activation registry)
 
 #endif // GRUNTZ_GRUNTZ_GRUNTCOMBAT_H

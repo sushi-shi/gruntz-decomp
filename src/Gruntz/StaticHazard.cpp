@@ -22,14 +22,10 @@
 struct CHaznEntry; // an entry: first dword is the registered handler
 
 VTBL(CStaticHazard, 0x001e7824);
-DATA_SYMBOL(0x0024e3d0, 0x24, ?g_haznColl@@3UCCoordColl@@A)
+template<> DATA(0x0024e3d0)
+CActReg CActRegPool<CStaticHazard>::s_table(2000, 2010);
 
 RVA_COMPGEN(0x00012b30, 0x44, ??1CStaticHazard@@UAE@XZ)
-
-RVA(0x000fbb70, 0x15)
-void ConstructHaznRange() {
-    g_haznColl.Construct(0x7d0, 0x7da);
-}
 
 #include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
@@ -57,7 +53,7 @@ static inline char* ActNameLookup(i32 id) {
 }
 
 static inline CHaznEntry* HaznLookup(i32 coord) {
-    return reinterpret_cast<CHaznEntry*>(g_haznColl.ResolveEntry(coord));
+    return reinterpret_cast<CHaznEntry*>(CActRegPool<CStaticHazard>::s_table.ResolveEntry(coord));
 }
 
 // ---------------------------------------------------------------------------
@@ -140,6 +136,11 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_idleWindow = m_activeWindow;
     }
 }
+
+RVA_COMPGEN(0x000fbb50, 0xa, _$E1030992)
+RVA_COMPGEN(0x000fbb70, 0x15, _$E1031024)
+RVA_COMPGEN(0x000fbba0, 0xe, _$E1031072)
+RVA_COMPGEN(0x000fbbc0, 0x1f, _$E1031104)
 
 RVA(0x000fbbf0, 0x102)
 void CStaticHazard::FireActivation(i32 coord) {

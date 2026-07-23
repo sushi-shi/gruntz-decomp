@@ -11,7 +11,7 @@
 #include <Gruntz/GameLevel.h> // CGameLevel (holder->m_24) + CDDrawWorkerHost (its m_mainPlane wrap extent)
 #include <Gruntz/TypeKeyColl.h>
 #include <Bute/ButeTree.h>
-#include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CSiblingActReg)
+#include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CActReg)
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/TriggerMgr.h>        // canonical CTriggerMgr (m_cmdGrid; FindGruntAt @0x75c60)
@@ -32,6 +32,13 @@ DATA(0x001ea9f0)
 const double g_objDropDiv = 32.0; // 0x5ea9f0  m_speed = g_objDropDiv / time
 DATA(0x001eaa00)
 double g_dropFallBias = -0.5; // 0x5eaa00  landed = m_fallY - g_dropFallBias
+
+template<> DATA(0x0024be90)
+CActReg CActRegPool<CObjectDropper>::s_table(2000, 2010);
+template<> DATA(0x0024bed8)
+CActReg CActRegPool<CDroppedObject>::s_table(2000, 2010);
+template<> DATA(0x0024bf00)
+CActReg CActRegPool<CDroppedObjectShadow>::s_table(2000, 2010);
 
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
@@ -56,7 +63,7 @@ static inline char* ActNameLookup(i32 id) {
 }
 
 static inline CDropEntry* DropLookup(i32 coord) {
-    return reinterpret_cast<CDropEntry*>(g_dropColl.ResolveEntry(coord));
+    return reinterpret_cast<CDropEntry*>(CActRegPool<CDroppedObject>::s_table.ResolveEntry(coord));
 }
 
 #include <Gruntz/XferArchive.h>
@@ -290,16 +297,22 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     o->m_area.bottom = 1;
 }
 
-RVA(0x000c5f00, 0x15)
-void CObjectDropper::InitActReg() {
-    g_dropperActReg.Construct(0x7d0, 0x7da);
-}
+RVA_COMPGEN(0x000c5ee0, 0xa, _$E810720)
+RVA_COMPGEN(0x000c5f00, 0x15, _$E810752)
+RVA_COMPGEN(0x000c5f30, 0xe, _$E810800)
+RVA_COMPGEN(0x000c5f50, 0x1f, _$E810832)
 
 RVA(0x000c5f80, 0x102)
 void CObjectDropper::FireActivation(i32 actId) {
-    if ((reinterpret_cast<CDropperActEntry*>(g_dropperActReg.ResolveEntry(actId)))->m_fn != 0) {
+    if ((reinterpret_cast<CDropperActEntry*>(
+             CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId)
+         ))
+            ->m_fn
+        != 0) {
         (this
-             ->*((reinterpret_cast<CDropperActEntry*>(g_dropperActReg.ResolveEntry(actId)))
+             ->*((reinterpret_cast<CDropperActEntry*>(
+                      CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId)
+                  ))
                      ->m_fn))();
     }
 }
@@ -334,8 +347,8 @@ void CObjectDropper::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CDropperActEntry*>(g_dropperActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CObjectDropper::Update);
+    (reinterpret_cast<CDropperActEntry*>(CActRegPool<CObjectDropper>::s_table.ResolveEntry(id)))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CObjectDropper::Update);
 }
 
 RVA(0x000c62e0, 0x2dd)
@@ -530,10 +543,10 @@ CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         );
 }
 
-RVA(0x000c6b50, 0x15)
-void CDroppedObject::RegisterRange() {
-    g_dropColl.Construct(0x7d0, 0x7da);
-}
+RVA_COMPGEN(0x000c6b30, 0xa, _$E813872)
+RVA_COMPGEN(0x000c6b50, 0x15, _$E813904)
+RVA_COMPGEN(0x000c6b80, 0xe, _$E813952)
+RVA_COMPGEN(0x000c6ba0, 0x1f, _$E813984)
 
 RVA(0x000c6bd0, 0x102)
 void CDroppedObject::FireActivation(i32 coord) {
@@ -760,15 +773,23 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), 
     }
 }
 
-RVA(0x000c76d0, 0x15)
-void CDroppedObjectShadow::InitActReg() {
-    g_shadowActReg.Construct(0x7d0, 0x7da);
-}
+RVA_COMPGEN(0x000c76b0, 0xa, _$E816816)
+RVA_COMPGEN(0x000c76d0, 0x15, _$E816848)
+RVA_COMPGEN(0x000c7700, 0xe, _$E816896)
+RVA_COMPGEN(0x000c7720, 0x1f, _$E816928)
 
 RVA(0x000c7750, 0x102)
 void CDroppedObjectShadow::FireActivation(i32 coord) {
-    if ((reinterpret_cast<CShadowActEntry*>(g_shadowActReg.ResolveEntry(coord)))->m_fn != 0) {
-        (this->*((reinterpret_cast<CShadowActEntry*>(g_shadowActReg.ResolveEntry(coord)))->m_fn))();
+    if ((reinterpret_cast<CShadowActEntry*>(
+             CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord)
+         ))
+            ->m_fn
+        != 0) {
+        (this
+             ->*((reinterpret_cast<CShadowActEntry*>(
+                      CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord)
+                  ))
+                     ->m_fn))();
     }
 }
 
@@ -798,8 +819,10 @@ void CDroppedObjectShadow::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CShadowActEntry*>(g_shadowActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CDroppedObjectShadow::Advance);
+    (reinterpret_cast<CShadowActEntry*>(
+         CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(id)
+     ))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CDroppedObjectShadow::Advance);
 }
 
 // CDroppedObjectShadow::Advance (0xc7ab0): the per-frame act handler - advance
@@ -853,17 +876,6 @@ i32 CDroppedObjectShadow::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, i32 d
 
 #include <rva.h>
 
-// g_shadowActReg (0x0024bf00): CSiblingActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x0024bf00, 0x0, ?g_shadowActReg@@3UCSiblingActReg@@A)
-
-// g_dropperActReg (0x0024be90): CSiblingActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x0024be90, 0x0, ?g_dropperActReg@@3UCSiblingActReg@@A)
-
-// g_dropColl (0x0024bed8): CSiblingActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x0024bed8, 0x0, ?g_dropColl@@3UCSiblingActReg@@A)
 RVA(0x000c7be0, 0x5)
 i32 CDroppedObject::ActB() {
     return UserLogicVfunc5(); // retail: the bare `jmp [vtbl+0x1c]` tail-dispatch

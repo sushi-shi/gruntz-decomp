@@ -58,10 +58,6 @@ public:
     // body lands in this obj and is pinned by RVA_COMPGEN there.
     // docs/patterns/eh-dtor-vptr-restamp-presence.md
 
-    // construct the file-static per-action handler table (g_actionTable @0x644610)
-    // over the fixed [2000, 2010] range via the shared registry ctor (0x408710).
-    static void InitActReg(); // 0x445c0
-
     // slot-4 override of an inherited CUserLogic virtual: the animation-state
     // dispatcher over the file-static table.
     virtual void FireActivation(i32 id) OVERRIDE; // 0x44640 (homed by RVA; non-virtual to keep the
@@ -143,8 +139,7 @@ public:
 };
 SIZE(0xb0);
 
-#include <Gruntz/ActReg.h>    // CActReg (extern below)
-extern CActReg g_actionTable; // 0x00244610
+#include <Gruntz/ActReg.h>
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).

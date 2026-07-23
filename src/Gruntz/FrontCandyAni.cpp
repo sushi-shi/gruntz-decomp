@@ -4,13 +4,17 @@
 #include <Wap32/ZVec.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h>       // the shared CActReg coordinate-registry archetype
-#include <Gruntz/LogicFnTable.h> // g_eyeCandyDispatch's canonical CLogicActTable type
+#include <Gruntz/LogicFnTable.h> // CActRegPool<CEyeCandy>::s_table's canonical CActReg type
 #include <Gruntz/FrontCandy.h> // 0xfa60 is CFrontCandy's slot-1 (??_7CFrontCandy+0x4), not CFrontCandyAni's
 #include <Gruntz/FrontCandyAni.h>
+#include <Gruntz/EyeCandy.h>
 #include <Gruntz/EyeCandyAni.h> // CEyeCandyAni (its TU folds in below, wave3-J)
 
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+
+template<> DATA(0x002460b0)
+CActReg CActRegPool<CFrontCandyAni>::s_table(2000, 2010);
 
 RVA(0x0000fa60, 0x47)
 i32 CFrontCandy::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
@@ -120,17 +124,19 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 RVA(0x000acbb0, 0x102)
 void CEyeCandyAni::FireActivation(i32 id) {
     CEyeCandyActEntry* e =
-        reinterpret_cast<CEyeCandyActEntry*>(g_eyeCandyDispatch.ResolveEntry(id));
+        reinterpret_cast<CEyeCandyActEntry*>(CActRegPool<CEyeCandy>::s_table.ResolveEntry(id));
     if (e->m_fn != 0) {
         (this
-             ->*(reinterpret_cast<CEyeCandyActEntry*>(g_eyeCandyDispatch.ResolveEntry(id)))
+             ->*(reinterpret_cast<CEyeCandyActEntry*>(
+                 CActRegPool<CEyeCandy>::s_table.ResolveEntry(id)
+             ))
              ->m_fn)();
     }
 }
 
 // CEyeCandyAni::RegisterActs @0x0acd10 - bind the class's per-frame handler
 // (AdvanceAnim @0x0acf10) to the activation key "A" via the shared name registry,
-// then bind id->entry in the class's coordinate registry (g_eyeCandyDispatch
+// then bind id->entry in the class's coordinate registry (CActRegPool<CEyeCandy>::s_table
 // @0x646060, CActReg facet). The SAME archetype as CFrontCandyAni::RegisterActs (0x0ad310).
 //
 // @early-stop
@@ -157,7 +163,7 @@ void CEyeCandyAni::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CEyeCandyActEntry*>(g_eyeCandyDispatch.ResolveEntry(id)))->m_fn =
+    (reinterpret_cast<CEyeCandyActEntry*>(CActRegPool<CEyeCandy>::s_table.ResolveEntry(id)))->m_fn =
         static_cast<i32 (CUserLogic::*)()>(&CEyeCandyAni::AdvanceAnim);
 }
 
@@ -185,18 +191,20 @@ VTBL(CEyeCandyAni, 0x001e8334);
 VTBL(CFrontCandyAni, 0x001e83e4);
 VTBL(CFrontCandy, 0x001e84ec);
 
-RVA(0x000ad130, 0x15)
-void CFrontCandyAni::InitActReg() {
-    g_frontCandyActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x000ad110, 0xa, _$E708880)
+RVA_COMPGEN(0x000ad130, 0x15, _$E708912)
+RVA_COMPGEN(0x000ad160, 0xe, _$E708960)
+RVA_COMPGEN(0x000ad180, 0x1f, _$E708992)
 
 RVA(0x000ad1b0, 0x102)
 void CFrontCandyAni::FireActivation(i32 coord) {
-    CFrontCandyActEntry* e =
-        reinterpret_cast<CFrontCandyActEntry*>(g_frontCandyActReg.ResolveEntry(coord));
+    CFrontCandyActEntry* e = reinterpret_cast<CFrontCandyActEntry*>(
+        CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(coord)
+    );
     if (e->m_fn != 0) {
-        CFrontCandyActEntry* e2 =
-            reinterpret_cast<CFrontCandyActEntry*>(g_frontCandyActReg.ResolveEntry(coord));
+        CFrontCandyActEntry* e2 = reinterpret_cast<CFrontCandyActEntry*>(
+            CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(coord)
+        );
         (this->*(e2->m_fn))();
     }
 }
@@ -229,8 +237,8 @@ void CFrontCandyAni::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CFrontCandyActEntry*>(g_frontCandyActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CFrontCandyAni::AdvanceAnim);
+    (reinterpret_cast<CFrontCandyActEntry*>(CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(id)))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CFrontCandyAni::AdvanceAnim);
 }
 
 RVA(0x000ad510, 0x17)
@@ -242,7 +250,3 @@ i32 CFrontCandyAni::AdvanceAnim() {
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
-
-// g_frontCandyActReg (0x002460b0): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x002460b0, 0x0, ?g_frontCandyActReg@@3UCActReg@@A)

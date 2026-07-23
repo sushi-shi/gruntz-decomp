@@ -23,9 +23,8 @@ public:
     // xref); the cluster's band (0x3f210..0x3f77d) also continues this class's own
     // ExitTrigger.cpp band (0x3ecf0..0x3f187) contiguously.
     virtual void FireActivation(i32 id) OVERRIDE; // 0x3f290
-    static void InitActReg();   // 0x03f210 (constructs g_exitTriggerActReg @0x6445c0)
-    static void RegisterActs(); // 0x03f3f0 (binds the "A" activation handler)
-    i32 AdvanceAnim();          // 0x03f5f0 (the per-frame handler PMF; declared-only)
+    static void RegisterActs();                   // 0x03f3f0 (binds the "A" activation handler)
+    i32 AdvanceAnim(); // 0x03f5f0 (the per-frame handler PMF; declared-only)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     CUserLogic* m_warlordLogic; // +0x54  the resolved warlord's bound logic (obj->m_7c->m_logic)

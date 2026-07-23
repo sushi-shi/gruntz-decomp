@@ -10,7 +10,7 @@
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Wap32/ZVec.h>
 #include <rva.h>
-#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype (g_actReg4)
+#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype (CActRegPool<CGruntStartingPoint>::s_table)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 
 RVA(0x000105d0, 0x47)
@@ -49,12 +49,13 @@ CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj) : CUserLogic(obj), CW
 }
 
 VTBL(CGruntStartingPoint, 0x001e8284);
-DATA_SYMBOL(0x002446d8, 0x24, ?g_actReg4@@3UCActReg@@A)
+template<> DATA(0x002446d8)
+CActReg CActRegPool<CGruntStartingPoint>::s_table(2000, 2010);
 
-RVA(0x0003e120, 0x15)
-void Register6446d8Range() {
-    g_actReg4.Construct(0x7d0, 0x7da);
-}
+RVA_COMPGEN(0x0003e100, 0xa, _$E254208)
+RVA_COMPGEN(0x0003e120, 0x15, _$E254240)
+RVA_COMPGEN(0x0003e150, 0xe, _$E254288)
+RVA_COMPGEN(0x0003e170, 0x1f, _$E254320)
 
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
@@ -83,7 +84,9 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
 }
 
 static inline StartActEntry* R4Lookup(i32 coord) {
-    return reinterpret_cast<StartActEntry*>(g_actReg4.ResolveEntry(coord));
+    return reinterpret_cast<StartActEntry*>(
+        CActRegPool<CGruntStartingPoint>::s_table.ResolveEntry(coord)
+    );
 }
 
 RVA(0x0003e1a0, 0x102)

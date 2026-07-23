@@ -5,7 +5,7 @@
 
 #include <Mfc.h> // CObject base + <windows.h>
 
-#include <Gruntz/ActReg.h>    // CLogicActTable (the slot-4 activation-dispatch table)
+#include <Gruntz/ActReg.h>    // CActReg (the slot-4 activation-dispatch table)
 #include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
 
 class CFileMemBase;
@@ -72,8 +72,6 @@ public:
                       //         it, the resurrect passes it through as PlaceObject a6)
 };
 SIZE_UNKNOWN();
-
-extern CLogicActTable g_logicDispatch_6445e8;
 
 typedef i32 (CUserLogic::*PuddleActHandler)();
 struct CPuddleActEntry {

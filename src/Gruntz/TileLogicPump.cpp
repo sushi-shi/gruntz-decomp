@@ -48,27 +48,18 @@
 #include <rva.h>
 #include <DDrawMgr/AniAdvance.h>  // CAniDesc (the descriptor record)
 #include <Image/CImage.h>         // the +0x198 cached frame (ex CGameObjLayer view)
-#include <Gruntz/TileLogicPump.h> // g_brickzActReg decl
+#include <Gruntz/TileLogicPump.h> // CActRegPool<CBrickz>::s_table decl
 
-// g_warpStonePadActReg (0x0024e6a0): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x0024e6a0, 0x0, ?g_warpStonePadActReg@@3UCActReg@@A)
-
-// g_tileTriggerSwitchActReg (0x0024e798): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x0024e798, 0x0, ?g_tileTriggerSwitchActReg@@3UCActReg@@A)
-
-// g_tileTriggerActReg (0x0024e810): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x0024e810, 0x0, ?g_tileTriggerActReg@@3UCActReg@@A)
-
-// g_checkpointActReg (0x0024e7e8): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x0024e7e8, 0x0, ?g_checkpointActReg@@3UCActReg@@A)
-
-// g_brickzActReg (0x0024e7c0): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x0024e7c0, 0x0, ?g_brickzActReg@@3UCActReg@@A)
+template<> DATA(0x0024e6a0)
+CActReg CActRegPool<CWarpStonePad>::s_table(2000, 2010);
+template<> DATA(0x0024e798)
+CActReg CActRegPool<CTileTriggerSwitch>::s_table(2000, 2010);
+template<> DATA(0x0024e810)
+CActReg CActRegPool<CTileTrigger>::s_table(2000, 2010);
+template<> DATA(0x0024e7c0)
+CActReg CActRegPool<CBrickz>::s_table(2000, 2010);
+template<> DATA(0x0024e7e8)
+CActReg CActRegPool<CCheckpointTrigger>::s_table(2000, 2010);
 
 VTBL(CWarpStonePad, 0x001e71ac); // vtable_names -> code (RTTI game class)
 VTBL(CBrickz, 0x001e7c54);
@@ -80,7 +71,8 @@ VTBL(CCheckpointTrigger, 0x001e7ebc);
 VTBL(CTileTrigger, 0x001e7f14);
 VTBL(CTileTriggerSwitch, 0x001e7f6c); // vtable_names -> code (RTTI game class)
 
-DATA_SYMBOL(0x0024e720, 0x24, ?g_tileActReg@@3UCActReg@@A)
+template<> DATA(0x0024e720)
+CActReg CActRegPool<CTileTriggerTransition>::s_table(2000, 2010);
 
 #define TILE_LOGIC_WORKER_PUMP(LEAF)                                                               \
     AnimWorkerObj* ctl = obj->m_7c;                                                                \
@@ -364,18 +356,20 @@ CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_1c = g_buteTree.Find("A");
 }
 
-RVA(0x0010d840, 0x15)
-void CWarpStonePad::InitActReg() {
-    g_warpStonePadActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x0010d820, 0xa, _$E1103904)
+RVA_COMPGEN(0x0010d840, 0x15, _$E1103936)
+RVA_COMPGEN(0x0010d870, 0xe, _$E1103984)
+RVA_COMPGEN(0x0010d890, 0x1f, _$E1104016)
 
 RVA(0x0010d8c0, 0x102)
 void CWarpStonePad::FireActivation(i32 coord) {
-    CWarpStonePadActEntry* e =
-        reinterpret_cast<CWarpStonePadActEntry*>(g_warpStonePadActReg.ResolveEntry(coord));
+    CWarpStonePadActEntry* e = reinterpret_cast<CWarpStonePadActEntry*>(
+        CActRegPool<CWarpStonePad>::s_table.ResolveEntry(coord)
+    );
     if (e->m_fn != 0) {
-        CWarpStonePadActEntry* e2 =
-            reinterpret_cast<CWarpStonePadActEntry*>(g_warpStonePadActReg.ResolveEntry(coord));
+        CWarpStonePadActEntry* e2 = reinterpret_cast<CWarpStonePadActEntry*>(
+            CActRegPool<CWarpStonePad>::s_table.ResolveEntry(coord)
+        );
         (this->*(e2->m_fn))();
     }
 }
@@ -404,8 +398,8 @@ void CWarpStonePad::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CWarpStonePadActEntry*>(g_warpStonePadActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CWarpStonePad::AdvanceAnim);
+    (reinterpret_cast<CWarpStonePadActEntry*>(CActRegPool<CWarpStonePad>::s_table.ResolveEntry(id)))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CWarpStonePad::AdvanceAnim);
 }
 
 RVA(0x0010dc20, 0x3)
@@ -422,19 +416,19 @@ CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj), CWap
     m_38->m_stateFlags |= 1;
 }
 
-RVA(0x0010de20, 0x15)
-void CTileTriggerSwitch::InitActReg() {
-    g_tileTriggerSwitchActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x0010de00, 0xa, _$E1105408)
+RVA_COMPGEN(0x0010de20, 0x15, _$E1105440)
+RVA_COMPGEN(0x0010de50, 0xe, _$E1105488)
+RVA_COMPGEN(0x0010de70, 0x1f, _$E1105520)
 
 RVA(0x0010dea0, 0x102)
 void CTileTriggerSwitch::FireActivation(i32 coord) {
     CTileTriggerSwitchActEntry* e = reinterpret_cast<CTileTriggerSwitchActEntry*>(
-        g_tileTriggerSwitchActReg.ResolveEntry(coord)
+        CActRegPool<CTileTriggerSwitch>::s_table.ResolveEntry(coord)
     );
     if (e->m_fn != 0) {
         CTileTriggerSwitchActEntry* e2 = reinterpret_cast<CTileTriggerSwitchActEntry*>(
-            g_tileTriggerSwitchActReg.ResolveEntry(coord)
+            CActRegPool<CTileTriggerSwitch>::s_table.ResolveEntry(coord)
         );
         (this->*(e2->m_fn))();
     }
@@ -463,7 +457,9 @@ void CTileTriggerSwitch::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CTileTriggerSwitchActEntry*>(g_tileTriggerSwitchActReg.ResolveEntry(id)))
+    (reinterpret_cast<CTileTriggerSwitchActEntry*>(
+         CActRegPool<CTileTriggerSwitch>::s_table.ResolveEntry(id)
+     ))
         ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CTileTriggerSwitch::AdvanceAnim);
 }
 
@@ -484,18 +480,20 @@ CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_id = (m_object->m_164 << 8) + m_object->m_168;
 }
 
-RVA(0x0010e420, 0x15)
-void CTileTrigger::InitActReg() {
-    g_tileTriggerActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x0010e400, 0xa, _$E1106944)
+RVA_COMPGEN(0x0010e420, 0x15, _$E1106976)
+RVA_COMPGEN(0x0010e450, 0xe, _$E1107024)
+RVA_COMPGEN(0x0010e470, 0x1f, _$E1107056)
 
 RVA(0x0010e4a0, 0x102)
 void CTileTrigger::FireActivation(i32 coord) {
-    CTileTriggerActEntry* e =
-        reinterpret_cast<CTileTriggerActEntry*>(g_tileTriggerActReg.ResolveEntry(coord));
+    CTileTriggerActEntry* e = reinterpret_cast<CTileTriggerActEntry*>(
+        CActRegPool<CTileTrigger>::s_table.ResolveEntry(coord)
+    );
     if (e->m_fn != 0) {
-        CTileTriggerActEntry* e2 =
-            reinterpret_cast<CTileTriggerActEntry*>(g_tileTriggerActReg.ResolveEntry(coord));
+        CTileTriggerActEntry* e2 = reinterpret_cast<CTileTriggerActEntry*>(
+            CActRegPool<CTileTrigger>::s_table.ResolveEntry(coord)
+        );
         (this->*(e2->m_fn))();
     }
 }
@@ -523,8 +521,8 @@ void CTileTrigger::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CTileTriggerActEntry*>(g_tileTriggerActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CTileTrigger::AdvanceAnim);
+    (reinterpret_cast<CTileTriggerActEntry*>(CActRegPool<CTileTrigger>::s_table.ResolveEntry(id)))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CTileTrigger::AdvanceAnim);
 }
 
 // CBrickz::CBrickz @0x10e800 (the cbrickz stray, folded waveM-strays) - the 1-arg leaf ctor:
@@ -549,7 +547,7 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 // RE-ATTRIBUTED (the ex @identity-TODO shift-by-one, executed): this cluster
 // (InitActReg 0x10ea00 / FireActivation 0x10ea80 / RegisterActs 0x10ebe0 +
-// g_brickzActReg + CBrickzActEntry + Trigger 0x10ede0) is CBRICKZ's, and the NEXT
+// CActRegPool<CBrickz>::s_table + CBrickzActEntry + Trigger 0x10ede0) is CBRICKZ's, and the NEXT
 // cluster (0x10f160/0x10f1e0/0x10f340) is CCHECKPOINTTRIGGER's. Retail proof, read
 // two independent ways that agree:
 //   vtable_hierarchy (RTTI):  CBrickz[4] override -> 0x0012b2 ; CCheckpointTrigger[4]
@@ -560,18 +558,19 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // So CTileSecretTrigger has NO own slot-4 body at all. MSVC5 has no /OPT:ICF, so each
 // body has exactly one owner.
 //
-// CBrickz::InitActReg @0x10ea00 - construct g_brickzActReg over [2000,2010].
-RVA(0x0010ea00, 0x15)
-void CBrickz::InitActReg() {
-    g_brickzActReg.Construct(2000, 2010);
-}
+// CBrickz::InitActReg @0x10ea00 - construct CActRegPool<CBrickz>::s_table over [2000,2010].
+RVA_COMPGEN(0x0010e9e0, 0xa, _$E1108448)
+RVA_COMPGEN(0x0010ea00, 0x15, _$E1108480)
+RVA_COMPGEN(0x0010ea30, 0xe, _$E1108528)
+RVA_COMPGEN(0x0010ea50, 0x1f, _$E1108560)
 
 RVA(0x0010ea80, 0x102)
 void CBrickz::FireActivation(i32 coord) {
-    CBrickzActEntry* e = reinterpret_cast<CBrickzActEntry*>(g_brickzActReg.ResolveEntry(coord));
+    CBrickzActEntry* e =
+        reinterpret_cast<CBrickzActEntry*>(CActRegPool<CBrickz>::s_table.ResolveEntry(coord));
     if (e->m_fn != 0) {
         CBrickzActEntry* e2 =
-            reinterpret_cast<CBrickzActEntry*>(g_brickzActReg.ResolveEntry(coord));
+            reinterpret_cast<CBrickzActEntry*>(CActRegPool<CBrickz>::s_table.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -601,7 +600,7 @@ void CBrickz::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CBrickzActEntry*>(g_brickzActReg.ResolveEntry(id)))->m_fn =
+    (reinterpret_cast<CBrickzActEntry*>(CActRegPool<CBrickz>::s_table.ResolveEntry(id)))->m_fn =
         static_cast<i32 (CUserLogic::*)()>(&CBrickz::Trigger);
 }
 
@@ -668,18 +667,20 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWap
     }
 }
 
-RVA(0x0010f160, 0x15)
-void CCheckpointTrigger::InitActReg() {
-    g_checkpointActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x0010f140, 0xa, _$E1110336)
+RVA_COMPGEN(0x0010f160, 0x15, _$E1110368)
+RVA_COMPGEN(0x0010f190, 0xe, _$E1110416)
+RVA_COMPGEN(0x0010f1b0, 0x1f, _$E1110448)
 
 RVA(0x0010f1e0, 0x102)
 void CCheckpointTrigger::FireActivation(i32 coord) {
-    CCheckpointActEntry* e =
-        reinterpret_cast<CCheckpointActEntry*>(g_checkpointActReg.ResolveEntry(coord));
+    CCheckpointActEntry* e = reinterpret_cast<CCheckpointActEntry*>(
+        CActRegPool<CCheckpointTrigger>::s_table.ResolveEntry(coord)
+    );
     if (e->m_fn != 0) {
-        CCheckpointActEntry* e2 =
-            reinterpret_cast<CCheckpointActEntry*>(g_checkpointActReg.ResolveEntry(coord));
+        CCheckpointActEntry* e2 = reinterpret_cast<CCheckpointActEntry*>(
+            CActRegPool<CCheckpointTrigger>::s_table.ResolveEntry(coord)
+        );
         (this->*(e2->m_fn))();
     }
 }
@@ -709,8 +710,10 @@ void CCheckpointTrigger::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CCheckpointActEntry*>(g_checkpointActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act);
+    (reinterpret_cast<CCheckpointActEntry*>(
+         CActRegPool<CCheckpointTrigger>::s_table.ResolveEntry(id)
+     ))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
@@ -728,8 +731,10 @@ void CCheckpointTrigger::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    (reinterpret_cast<CCheckpointActEntry*>(g_checkpointActReg.ResolveEntry(id2)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act_10f970);
+    (reinterpret_cast<CCheckpointActEntry*>(
+         CActRegPool<CCheckpointTrigger>::s_table.ResolveEntry(id2)
+     ))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act_10f970);
 }
 
 // @confidence: high
@@ -796,16 +801,20 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(ob
     }
 }
 
-RVA(0x0010fc90, 0x15)
-void CTileTriggerTransition::Register() {
-    g_tileActReg.Construct(0x7d0, 0x7da);
-}
+RVA_COMPGEN(0x0010fc70, 0xa, _$E1113200)
+RVA_COMPGEN(0x0010fc90, 0x15, _$E1113232)
+RVA_COMPGEN(0x0010fcc0, 0xe, _$E1113280)
+RVA_COMPGEN(0x0010fce0, 0x1f, _$E1113312)
 
 RVA(0x0010fd10, 0x102)
 void CTileTriggerTransition::FireActivation(i32 coord) {
-    TileActEntry* e = reinterpret_cast<TileActEntry*>(g_tileActReg.ResolveEntry(coord));
+    TileActEntry* e = reinterpret_cast<TileActEntry*>(
+        CActRegPool<CTileTriggerTransition>::s_table.ResolveEntry(coord)
+    );
     if (e->m_fn != 0) {
-        TileActEntry* e2 = reinterpret_cast<TileActEntry*>(g_tileActReg.ResolveEntry(coord));
+        TileActEntry* e2 = reinterpret_cast<TileActEntry*>(
+            CActRegPool<CTileTriggerTransition>::s_table.ResolveEntry(coord)
+        );
         (this->*(e2->m_fn))();
     }
 }
@@ -836,8 +845,8 @@ void CTileTriggerTransition::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<TileActEntry*>(g_tileActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CTileTriggerTransition::TransitionAct);
+    (reinterpret_cast<TileActEntry*>(CActRegPool<CTileTriggerTransition>::s_table.ResolveEntry(id)))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CTileTriggerTransition::TransitionAct);
 }
 
 RVA(0x00110070, 0x71)

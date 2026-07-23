@@ -13,15 +13,18 @@
 #include <Wap32/ZVec.h>
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
-#include <Gruntz/HaznColl.h> // CCoordColl - the shared _zvec-based registry-collection address-view
+#include <Gruntz/HaznColl.h> // CActReg - the shared _zvec-based registry-collection address-view
 
 VTBL(CActionArea, 0x001e7004);
 VTBL(CUserLogic, 0x001e705c); // vtable_names -> code (RTTI game class)
 VTBL(CUserBase, 0x001e70b4);  // ??_7CUserBase@@6B@ (the RTTI base vtable; catalog only,
-DATA_SYMBOL(0x00229388, 0x24, ?g_projReg@@3UCCoordColl@@A)
+template<> DATA(0x00229388)
+CActReg CActRegPool<CActionArea>::s_table(2000, 2010);
 
 static inline CActionAreaActEntry* R3Lookup(i32 coord) {
-    return reinterpret_cast<CActionAreaActEntry*>(g_projReg.ResolveEntry(coord));
+    return reinterpret_cast<CActionAreaActEntry*>(
+        CActRegPool<CActionArea>::s_table.ResolveEntry(coord)
+    );
 }
 
 #include <Gruntz/TypeKeyColl.h>
@@ -112,10 +115,10 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 RVA_COMPGEN(0x00007fa0, 0x1e, ??_GCActionArea@@UAEPAXI@Z)
 RVA_COMPGEN(0x00007fd0, 0x44, ??1CActionArea@@UAE@XZ)
 
-RVA(0x00008060, 0x15)
-void ProjActRegisterDefaults() {
-    g_projReg.Construct(0x7d0, 0x7da);
-}
+RVA_COMPGEN(0x00008040, 0xa, _$E32832)
+RVA_COMPGEN(0x00008060, 0x15, _$E32864)
+RVA_COMPGEN(0x00008090, 0xe, _$E32912)
+RVA_COMPGEN(0x000080b0, 0x1f, _$E32944)
 
 RVA(0x000080e0, 0x102)
 void CActionArea::FireActivation(i32 coord) {

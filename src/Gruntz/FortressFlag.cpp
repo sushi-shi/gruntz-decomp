@@ -30,10 +30,15 @@ VTBL(CFortressFlag, 0x001e725c);
 VTBL(CParticlez, 0x001e7614);
 VTBL(CExplosion, 0x001e766c);
 
-DATA_SYMBOL(0x00244870, 0x24, ?g_partColl@@3UCActReg@@A)
+template<> DATA(0x00244638)
+CActReg CActRegPool<CFortressFlag>::s_table(2000, 2010);
+template<> DATA(0x00244870)
+CActReg CActRegPool<CParticlez>::s_table(2000, 2010);
+template<> DATA(0x002447f8)
+CActReg CActRegPool<CExplosion>::s_table(2000, 2010);
 
 static inline CPartEntry* PartLookup(i32 coord) {
-    return reinterpret_cast<CPartEntry*>(g_partColl.ResolveEntry(coord));
+    return reinterpret_cast<CPartEntry*>(CActRegPool<CParticlez>::s_table.ResolveEntry(coord));
 }
 
 static inline i32 RegisterActionName() {
@@ -161,18 +166,20 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     spr->m_drawFillArg = sel;
 }
 
-RVA(0x00046000, 0x15)
-void CFortressFlag::InitActReg() {
-    g_fortressFlagActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x00045fe0, 0xa, _$E286688)
+RVA_COMPGEN(0x00046000, 0x15, _$E286720)
+RVA_COMPGEN(0x00046030, 0xe, _$E286768)
+RVA_COMPGEN(0x00046050, 0x1f, _$E286800)
 
 RVA(0x00046080, 0x102)
 void CFortressFlag::FireActivation(i32 coord) {
-    CFortressFlagActEntry* e =
-        reinterpret_cast<CFortressFlagActEntry*>(g_fortressFlagActReg.ResolveEntry(coord));
+    CFortressFlagActEntry* e = reinterpret_cast<CFortressFlagActEntry*>(
+        CActRegPool<CFortressFlag>::s_table.ResolveEntry(coord)
+    );
     if (e->m_fn != 0) {
-        CFortressFlagActEntry* e2 =
-            reinterpret_cast<CFortressFlagActEntry*>(g_fortressFlagActReg.ResolveEntry(coord));
+        CFortressFlagActEntry* e2 = reinterpret_cast<CFortressFlagActEntry*>(
+            CActRegPool<CFortressFlag>::s_table.ResolveEntry(coord)
+        );
         (this->*(e2->m_fn))();
     }
 }
@@ -205,8 +212,8 @@ void CFortressFlag::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CFortressFlagActEntry*>(g_fortressFlagActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CFortressFlag::AdvanceAnim);
+    (reinterpret_cast<CFortressFlagActEntry*>(CActRegPool<CFortressFlag>::s_table.ResolveEntry(id)))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CFortressFlag::AdvanceAnim);
 }
 
 RVA(0x000463e0, 0x17)
@@ -242,7 +249,7 @@ i32 CFortressFlag::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
 // byte-for-byte the same fast-range -> GrowTo -> breadcrumb+Set slot resolver.
 // The two big act-register fns CALL it via ILT thunk 0x3544 (their size exhausts
 // cl's inline budget) - RegisterWarlordActions on g_actionTable@0x644610,
-// RegisterActs_644af0 on g_reg_644af0@0x644af0, both CActReg registries - where
+// RegisterActs_644af0 on CActRegPool<CGrunt>::s_table@0x644af0, both CActReg registries - where
 // the small per-class dispatchers inline ResolveEntry. Ex fake view
 // "CTypeColl464" (its m_4/m_buf/m_buf2/m_20 were CActReg's canonical
 // m_coll2/m_base/m_cur/m_scratch).
@@ -250,8 +257,8 @@ i32 CFortressFlag::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
 // esi/edi regalloc wall: cl assigns this->esi, key->edi; retail swaps (key->esi,
 // this->edi). Full fast-range/GrowTo/breadcrumb logic + offsets byte-faithful;
 // not steerable.
-RVA(0x000464e0, 0x74)
-char* CActReg::Resolve(i32 id) {
+template<> RVA(0x000464e0, 0x74)
+char* zDArray<CActHandler>::Resolve(i32 id) {
     m_grown = 0;
     if (id >= m_lo && id <= m_hi) {
         return m_base + (id - m_lo) * m_stride;
@@ -353,10 +360,10 @@ CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_dirtyArmed = 0;
 }
 
-RVA(0x00046cb0, 0x15)
-void CParticlez::InitActReg() {
-    g_partColl.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x00046c90, 0xa, _$E289936)
+RVA_COMPGEN(0x00046cb0, 0x15, _$E289968)
+RVA_COMPGEN(0x00046ce0, 0xe, _$E290016)
+RVA_COMPGEN(0x00046d00, 0x1f, _$E290048)
 
 RVA(0x00046d30, 0x102)
 void CParticlez::FireActivation(i32 coord) {
@@ -369,7 +376,7 @@ void CParticlez::FireActivation(i32 coord) {
 
 // CParticlez::RegisterActs @0x046e90 - bind the per-frame handler (Update
 // @0x047090) to the activation key "A" via the shared name registry, then bind
-// id->entry in the class's own coordinate registry (g_partColl). The SAME
+// id->entry in the class's own coordinate registry (CActRegPool<CParticlez>::s_table). The SAME
 // archetype as CSecretTeleporterTrigger::RegisterActs.
 //
 // @early-stop
@@ -433,18 +440,19 @@ CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_dirtyArmed = 0;
 }
 
-RVA(0x000472d0, 0x15)
-void InitLogicDispatch_6447f8() {
-    g_logicActReg_6447f8.Construct(0x7d0, 0x7da);
-}
+RVA_COMPGEN(0x000472b0, 0xa, _$E291504)
+RVA_COMPGEN(0x000472d0, 0x15, _$E291536)
+RVA_COMPGEN(0x00047300, 0xe, _$E291584)
+RVA_COMPGEN(0x00047320, 0x1f, _$E291616)
 
 RVA(0x00047350, 0x102)
 void CExplosion::FireActivation(i32 id) {
     CExplosionActEntry* e =
-        reinterpret_cast<CExplosionActEntry*>(g_logicActReg_6447f8.ResolveEntry(id));
+        reinterpret_cast<CExplosionActEntry*>(CActRegPool<CExplosion>::s_table.ResolveEntry(id));
     if (e->m_fn != 0) {
-        CExplosionActEntry* e2 =
-            reinterpret_cast<CExplosionActEntry*>(g_logicActReg_6447f8.ResolveEntry(id));
+        CExplosionActEntry* e2 = reinterpret_cast<CExplosionActEntry*>(
+            CActRegPool<CExplosion>::s_table.ResolveEntry(id)
+        );
         (this->*(e2->m_fn))();
     }
 }
@@ -459,19 +467,12 @@ void CExplosion::FireActivation(i32 id) {
 RVA(0x000474b0, 0x18d)
 void RegisterXLogic_6447f8() {
     i32 id = RegisterActionName();
-    *reinterpret_cast<void**>(g_logicActReg_6447f8.ResolveEntry(id)) =
+    *reinterpret_cast<void**>(CActRegPool<CExplosion>::s_table.ResolveEntry(id)) =
         static_cast<void*>(&FortressFlagAct);
 }
 
 #include <rva.h>
 
-// g_logicActReg_6447f8 (0x002447f8): CLogicActTable - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x002447f8, 0x0, ?g_logicActReg_6447f8@@3UCLogicActTable@@A)
-
-// g_fortressFlagActReg (0x00244638): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x00244638, 0x0, ?g_fortressFlagActReg@@3UCActReg@@A)
 // (CFortressFlagActEntry/CPartEntry/CPartEntryI32 SIZE_UNKNOWN live beside their
 //  CActReg.) The ex-WwdRefSlot "+0x158 ref-index array" view is DISSOLVED: it was
 //  m_options[i].m_008 - the per-player sprite descriptor (stride 0x238, base +0x150+8).

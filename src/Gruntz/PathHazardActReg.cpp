@@ -2,11 +2,13 @@
 #include <Gruntz/TypeKeyColl.h>     // s_codeA/s_actKeyB registration keys
 #include <Wap32/ZVec.h>
 #include <Gruntz/ActReg.h>           // the shared activation-registrar archetype (CActReg)
-#include <Gruntz/PathHazardActReg.h> // g_actReg_646250 decl
+#include <Gruntz/PathHazardActReg.h> // CActRegPool<CPathHazard>::s_table decl
+#include <Gruntz/PathHazard.h>
 
-// g_actReg_646250 (0x00246250): CActReg - no provable static init (the type has no
+// CActRegPool<CPathHazard>::s_table (0x00246250): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x00246250, 0x0, ?g_actReg_646250@@3UCActReg@@A)
+template<> DATA(0x00246250)
+CActReg CActRegPool<CPathHazard>::s_table(2000, 2010);
 
 static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;
@@ -19,10 +21,10 @@ static inline void FreeNameSlotNodes() {
     }
 }
 
-RVA(0x000b3ae0, 0x15)
-void ConstructActRange_646250() {
-    g_actReg_646250.Construct(0x7d0, 0x7da);
-}
+RVA_COMPGEN(0x000b3ac0, 0xa, _$E735936)
+RVA_COMPGEN(0x000b3ae0, 0x15, _$E735968)
+RVA_COMPGEN(0x000b3b10, 0xe, _$E736016)
+RVA_COMPGEN(0x000b3b30, 0x1f, _$E736048)
 
 // ===========================================================================
 // RegisterActs_646250 @0x0b3cc0 - bind handler "A" (0x4021d5) and handler "B"
@@ -41,7 +43,7 @@ void RegisterActs_646250() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_actReg_646250.ResolveEntry(id)) =
+    *reinterpret_cast<void**>(CActRegPool<CPathHazard>::s_table.ResolveEntry(id)) =
         static_cast<void*>(&PathHazardActA);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
@@ -53,6 +55,6 @@ void RegisterActs_646250() {
         (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_actReg_646250.ResolveEntry(id2)) =
+    *reinterpret_cast<void**>(CActRegPool<CPathHazard>::s_table.ResolveEntry(id2)) =
         static_cast<void*>(&PathHazardActB);
 }

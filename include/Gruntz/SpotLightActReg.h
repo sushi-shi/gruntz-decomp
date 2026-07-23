@@ -4,8 +4,7 @@
 
 #include <Ints.h>
 
-#include <Gruntz/ActReg.h>      // CActReg (extern below)
-extern CActReg g_actReg_646188; // 0x00246188
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).

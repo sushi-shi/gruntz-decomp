@@ -22,7 +22,6 @@ public:
     // serialize helper on `this`, then the +0x34 sub-object's chain.
     // Construct the class's activation-coordinate registry singleton over the
     // fixed [2000, 2010] range via the shared registry ctor (0x408710).
-    static void InitActReg(); // 0x0aaf00
     // Look up the activation-registry entry for id and, if a handler is bound, run
     // it as a PMF on this (the same ResolveEntry archetype inlined twice, once for
     // the null-check, once for the dispatch). 0x0aaf80.
@@ -45,7 +44,6 @@ struct CAniCycleActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h>       // CActReg (extern below)
-extern CActReg g_aniCycleActReg; // 0x00246088
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 #endif // GRUNTZ_CANICYCLE_H

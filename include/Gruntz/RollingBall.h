@@ -25,7 +25,6 @@ public:
 
     // Construct the class's activation-coordinate registry (g_rollingBallActReg
     // @0x6461b0) over the fixed [2000,2010] range; free init thunk, reloc-masked.
-    static void InitActReg(); // 0x0afd60
     // Resolve the registry entry for id; run its bound handler as a PMF on this
     // (ResolveEntry inlined twice). 0x0afde0.
     virtual void FireActivation(i32 id) OVERRIDE;
@@ -61,8 +60,7 @@ struct CRollingBallActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h>          // CActReg (extern below)
-extern CActReg g_rollingBallActReg; // 0x002461b0
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).

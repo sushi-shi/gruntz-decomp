@@ -17,9 +17,8 @@ public:
     } // slot 2
     virtual i32 UserLogicVfunc5() OVERRIDE; // slot 7
 public:
-    CDroppedObject(CGameObject* obj); // 0x0c68b0 (1-arg leaf ctor)
-    static void RegisterRange();      // 0x0c6b50 (seed the activation table's fast range)
-    static void RegisterActs();       // 0x0c6d30
+    CDroppedObject(CGameObject* obj);             // 0x0c68b0 (1-arg leaf ctor)
+    static void RegisterActs();                   // 0x0c6d30
     virtual void FireActivation(i32 id) OVERRIDE; // 0x0c6bd0
     i32 ActA();                                   // 0x0c7090 (per-frame "A" activation handler)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
@@ -40,12 +39,7 @@ struct CDropEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h>        // CSiblingActReg (extern below)
-extern CSiblingActReg g_dropColl; // 0x0024bed8
-
-extern CSiblingActReg g_dropperActReg; // 0x0024be90
-
-extern CSiblingActReg g_shadowActReg; // 0x0024bf00
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).

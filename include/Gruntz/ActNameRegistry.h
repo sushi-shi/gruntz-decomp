@@ -14,9 +14,6 @@ struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/Type
 #include <Bute/ButeMgr.h> // CButeTree::Find / Insert
 #include <Gruntz/ActReg.h>
 
-DATA(0x002bf650)
-extern zDArray g_typeColl; // 0x6bf650
-
 #include <Mfc.h> // real CString (CActName was a fake view over it)
 
 static inline char* ActNameLookup(i32 id) {

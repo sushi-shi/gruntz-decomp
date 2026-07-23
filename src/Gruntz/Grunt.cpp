@@ -14,7 +14,7 @@
 #include <Gruntz/GruntToySprite.h>      // CGruntToySprite::SetCell
 #include <Gruntz/GruntPowerupSprite.h>  // CGruntPowerupSprite::SetCell
 #include <Gruntz/GruntSelectedSprite.h> // CGruntSelectedSprite::SetCell
-#include <Gruntz/ActReg.h> // CLookupColl/CActReg::ResolveEntry (g_reg_644af0 dispatch, RunAct)
+#include <Gruntz/ActReg.h> // CActReg::ResolveEntry (CActRegPool<CGrunt>::s_table dispatch, RunAct)
 #include <Gruntz/AniElement.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/SerialRecords.h>

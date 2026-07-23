@@ -17,11 +17,13 @@
 // (proximity: CEyeCandy | CFrontCandyAni; frag i513 @0xacb10 sits in the
 // frontcandyani region 0xabfa0-0xad527).
 #include <Wap32/ZVec.h>          // _zdvec base
-#include <Gruntz/LogicFnTable.h> // the shared CLogicActTable dispatch-table shape
+#include <Gruntz/LogicFnTable.h> // the shared CActReg dispatch-table shape
+#include <Gruntz/EyeCandy.h>
 
-DATA_SYMBOL(0x00246060, 0x24, ?g_eyeCandyDispatch@@3UCLogicActTable@@A)
+template<> DATA(0x00246060)
+CActReg CActRegPool<CEyeCandy>::s_table(2000, 2010);
 
-RVA(0x000acb30, 0x15)
-void InitLogicDispatch_646060() {
-    g_eyeCandyDispatch.Construct(0x7d0, 0x7da);
-}
+RVA_COMPGEN(0x000acb10, 0xa, _$E707344)
+RVA_COMPGEN(0x000acb30, 0x15, _$E707376)
+RVA_COMPGEN(0x000acb60, 0xe, _$E707424)
+RVA_COMPGEN(0x000acb80, 0x1f, _$E707456)

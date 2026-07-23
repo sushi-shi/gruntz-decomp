@@ -14,8 +14,7 @@ public:
         return LOGIC_KITCHENSLIME;
     } // slot 2
 public:
-    static void RegisterRange(); // 0x0b28c0 (seed the activation table's fast range)
-    static void RegisterType();  // 0x0b2aa0 (level-load class registrar)
+    static void RegisterType(); // 0x0b2aa0 (level-load class registrar)
     virtual void FireActivation(i32 id) OVERRIDE;
     i32 Tick();
     i32 LoadSprites();
@@ -68,7 +67,6 @@ extern "C" void KSlimeActivationHandler(); // 0x40180c
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 #include <Gruntz/ActReg.h> // CActReg (for the extern below)
-extern CActReg g_kslimeColl;
 
 extern const double g_slimeSpeedNum;
 #endif // GRUNTZ_CKITCHENSLIME_H

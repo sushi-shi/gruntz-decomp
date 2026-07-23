@@ -1,7 +1,15 @@
+#include <Mfc.h>
+#ifdef __clang__
+#undef _AFX_ENABLE_INLINES
+#endif
+#include <afxwin.h>
 #include <Gruntz/GameText.h>
 #include <rva.h>
 #include <Bute/ButeMgr.h>        // the one CButeMgr (its 0x170210 ctor; the 0x82b20 in-place init)
+#include <Gruntz/Attract.h>      // g_attractStateCount C-linkage declaration
 #include <Gruntz/FreeNodePool.h> // g_coordPool (the 0x82fa0/0x82ff0 coord-pool reset/clear tail)
+#include <Gruntz/Play.h>         // g_areaHazardParam C-linkage declaration
+#include <Rez/RezSync.h>         // g_dlgVal_645538 declaration
 
 // ---------------------------------------------------------------------------
 // The two name tables are file-scope arrays of CString with brace-initializers.
@@ -36,13 +44,13 @@ static CString g_worldName[8] = {
     "Gruntz in Space",
 };
 
-#include <Gruntz/ActReg.h>      // CActReg - the shared registry-cell archetype
 VTBL(zErrHandling, 0x001f04cc); // ??_7CContainerErr@@6B@ - ONE slot (the dtor)
-DATA_SYMBOL(0x002451a8, 0x24, ?g_actRegCaption@@3UCActReg@@A)
-RVA(0x00082aa0, 0x10)
-void Register() {
-    g_actRegCaption.Construct(reinterpret_cast<i32>(const_cast<char*>("Gruntz")), 0);
-}
+DATA(0x002451a8)
+CWinApp g_gruntzWinApp("Gruntz");
+RVA_COMPGEN(0x00082a80, 0xa, _$E535168)
+RVA_COMPGEN(0x00082aa0, 0x10, _$E535200)
+RVA_COMPGEN(0x00082ac0, 0xe, _$E535232)
+RVA_COMPGEN(0x00082ae0, 0xa, _$E535264)
 
 // The resource-config bute manager @0x6453d8 (RVA 0x2453d8). Tree-wide it is the
 // CButeMgr singleton g_buteMgr (?g_buteMgr@@3VCButeMgr@@A, DATA-bound in FontConfig.cpp,
@@ -108,6 +116,13 @@ RVA(0x00082f20, 0xa)
 void InitStr645520() {
     g_str645520.CString::CString();
 }
+
+DATA(0x00245534)
+i32 g_attractStateCount = 0;
+DATA(0x00245538)
+i32 g_dlgVal_645538;
+DATA(0x0024553c)
+i32 g_areaHazardParam = 0;
 
 DATA(0x00245540)
 FreeNodePool g_coordPool;

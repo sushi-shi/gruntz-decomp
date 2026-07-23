@@ -47,9 +47,8 @@ static const char s_keyF[] = "F";
 #include <stdlib.h> // rand (CRT PRNG, reloc-masked)
 #include <Wap32/ZVec.h>
 
-// g_actionTable (0x00244610): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x00244610, 0x0, ?g_actionTable@@3UCActReg@@A)
+template<> DATA(0x00244610)
+CActReg CActRegPool<CWarlord>::s_table(2000, 2010);
 
 // ===========================================================================
 // RegisterWarlordActions  (0x0447a0)  - a free function, NOT a CWarlord method
@@ -90,7 +89,7 @@ DATA_SYMBOL(0x00244610, 0x0, ?g_actionTable@@3UCActReg@@A)
             *slot_ = key;                                                                          \
             ++g_typeCounter;                                                                       \
         }                                                                                          \
-        void** aslot_ = reinterpret_cast<void**>(g_actionTable.Resolve(id_));                      \
+        void** aslot_ = reinterpret_cast<void**>(CActRegPool<CWarlord>::s_table.Resolve(id_));     \
         *aslot_ = reinterpret_cast<void*>(handler);                                                \
     } while (0)
 // ===========================================================================
@@ -323,19 +322,20 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
 
 VTBL(CWarlord, 0x001e7404);
 
-RVA(0x000445c0, 0x15)
-void CWarlord::InitActReg() {
-    g_actionTable.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x000445a0, 0xa, _$E279968)
+RVA_COMPGEN(0x000445c0, 0x15, _$E280000)
+RVA_COMPGEN(0x000445f0, 0xe, _$E280048)
+RVA_COMPGEN(0x00044610, 0x1f, _$E280080)
 
 RVA(0x00044640, 0x102)
 void CWarlord::FireActivation(i32 key) {
-    void** slot = reinterpret_cast<void**>(g_actionTable.ResolveEntry(key));
+    void** slot = reinterpret_cast<void**>(CActRegPool<CWarlord>::s_table.ResolveEntry(key));
     if (*slot != 0) {
         // the handler is a __thiscall dispatched on this warlord (`mov ecx,this;
         // call [slot2]`); a complete-class PMF gives the plain 4-byte code-ptr call.
         typedef i32 (CUserLogic::*StateHandler)();
-        StateHandler h = *reinterpret_cast<StateHandler*>(g_actionTable.ResolveEntry(key));
+        StateHandler h =
+            *reinterpret_cast<StateHandler*>(CActRegPool<CWarlord>::s_table.ResolveEntry(key));
         (this->*h)();
     }
 }

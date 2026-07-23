@@ -6,7 +6,7 @@
 #include <Io/FileMem.h>    // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/TypeKeyColl.h>
 #include <Wap32/ZVec.h>
-#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype (g_kslimeColl)
+#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype (CActRegPool<CKitchenSlime>::s_table)
 #include <Bute/ButeTree.h>
 #include <rva.h>
 #include <math.h>   // floor (0x120580) / ceil (0x120480) / fabs (inline d9 e1)
@@ -33,10 +33,11 @@ VTBL(CKitchenSlime, 0x001e750c);
 DATA(0x001ea3e0)
 const double g_slimeSpeedNum = 32.0;
 
-DATA_SYMBOL(0x00246228, 0x24, ?g_kslimeColl@@3UCActReg@@A)
+template<> DATA(0x00246228)
+CActReg CActRegPool<CKitchenSlime>::s_table(2000, 2010);
 
 static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
-    return reinterpret_cast<CKSlimeEntry*>(g_kslimeColl.ResolveEntry(coord));
+    return reinterpret_cast<CKSlimeEntry*>(CActRegPool<CKitchenSlime>::s_table.ResolveEntry(coord));
 }
 
 // CKitchenSlime::~CKitchenSlime @0x013100 - the leaf adds no destructible members
@@ -160,6 +161,11 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
 // edi), reads the node count into ebp via the `ecx=cnt; eax=cnt-1; lea ebp,[eax+1]`
 // count-down idiom (mine a plain --cnt), and orders the `id=key` store before the
 // scratch=0. Not source-steerable (regalloc/strength-reduction wall); deferred.
+RVA_COMPGEN(0x000b28a0, 0xa, _$E731296)
+RVA_COMPGEN(0x000b28c0, 0x15, _$E731328)
+RVA_COMPGEN(0x000b28f0, 0xe, _$E731376)
+RVA_COMPGEN(0x000b2910, 0x1f, _$E731408)
+
 RVA(0x000b2aa0, 0x18d)
 void CKitchenSlime::RegisterType() {
     i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
@@ -182,11 +188,6 @@ void CKitchenSlime::RegisterType() {
         g_typeCounter++;
     }
     *reinterpret_cast<void**>(KSlimeLookup(id)) = static_cast<void*>(&KSlimeActivationHandler);
-}
-
-RVA(0x000b28c0, 0x15)
-void CKitchenSlime::RegisterRange() {
-    g_kslimeColl.Construct(0x7d0, 0x7da);
 }
 
 RVA(0x000b2940, 0x102)

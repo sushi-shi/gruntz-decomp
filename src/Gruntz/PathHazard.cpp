@@ -15,7 +15,7 @@
 #include <Rez/FrameClock.h> // g_timer200 (strike/leg deadline threshold)
 #include <Image/CImage.h>   // the +0x198 cached frame (ex CGameObjLayer view)
 
-#include <Gruntz/PathHazardActReg.h> // g_actReg_646250 (ex .cpp extern)
+#include <Gruntz/PathHazardActReg.h> // CActRegPool<CPathHazard>::s_table (ex .cpp extern)
 RVA(0x00013170, 0x7b)
 CPathHazard::CPathHazard() {
     m_legDeadline = 0;
@@ -141,9 +141,13 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 RVA(0x000b3b60, 0x102)
 void CPathHazard::FireActivation(i32 id) {
     CPathHazardActEntry* e =
-        reinterpret_cast<CPathHazardActEntry*>(g_actReg_646250.ResolveEntry(id));
+        reinterpret_cast<CPathHazardActEntry*>(CActRegPool<CPathHazard>::s_table.ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*(reinterpret_cast<CPathHazardActEntry*>(g_actReg_646250.ResolveEntry(id)))->m_fn)();
+        (this
+             ->*(reinterpret_cast<CPathHazardActEntry*>(
+                 CActRegPool<CPathHazard>::s_table.ResolveEntry(id)
+             ))
+             ->m_fn)();
     }
 }
 

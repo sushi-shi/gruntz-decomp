@@ -237,7 +237,6 @@ public:
 public:
     CTileTrigger();                 // 0x011160 (no-arg)
     CTileTrigger(CGameObject* obj); // 0x10e220 (1-arg)
-    static void InitActReg();       // 0x10e420
     virtual void FireActivation(i32 id)
         OVERRIDE;               // 0x10e4a0 (vtable slot 4 body: per-coord PMF dispatch)
     static void RegisterActs(); // 0x10e600

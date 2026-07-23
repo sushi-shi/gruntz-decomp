@@ -10,11 +10,12 @@
 
 #include <Gruntz/StatusBarSprite.h>
 #include <Gruntz/SerialArchive.h>       // the serialize stream (== the real CFileMemBase)
-#include <Gruntz/StatusBarSpriteActs.h> // g_statusBarSpriteActReg decl
+#include <Gruntz/StatusBarSpriteActs.h> // CActRegPool<CStatusBarSprite>::s_table decl
 
-// g_statusBarSpriteActReg (0x0024e670): CActReg - no provable static init (the type has no
+// CActRegPool<CStatusBarSprite>::s_table (0x0024e670): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x0024e670, 0x0, ?g_statusBarSpriteActReg@@3UCActReg@@A)
+template<> DATA(0x0024e670)
+CActReg CActRegPool<CStatusBarSprite>::s_table(2000, 2010);
 
 VTBL(CStatusBarSprite, 0x001e7fc4);
 
@@ -84,18 +85,19 @@ CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj), CWapX(ob
     }
 }
 
-RVA(0x0010c430, 0x15)
-void CStatusBarSprite::InitActReg() {
-    g_statusBarSpriteActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x0010c410, 0xa, _$E1098768)
+RVA_COMPGEN(0x0010c430, 0x15, _$E1098800)
+RVA_COMPGEN(0x0010c460, 0xe, _$E1098848)
+RVA_COMPGEN(0x0010c480, 0x1f, _$E1098880)
 
 RVA(0x0010c4b0, 0x102)
 void CStatusBarSprite::FireActivation(i32 coord) {
-    CStatusBarSpriteActEntry* e =
-        reinterpret_cast<CStatusBarSpriteActEntry*>(g_statusBarSpriteActReg.ResolveEntry(coord));
+    CStatusBarSpriteActEntry* e = reinterpret_cast<CStatusBarSpriteActEntry*>(
+        CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(coord)
+    );
     if (e->m_fn != 0) {
         CStatusBarSpriteActEntry* e2 = reinterpret_cast<CStatusBarSpriteActEntry*>(
-            g_statusBarSpriteActReg.ResolveEntry(coord)
+            CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(coord)
         );
         (this->*(e2->m_fn))();
     }
@@ -129,8 +131,10 @@ void CStatusBarSprite::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CStatusBarSpriteActEntry*>(g_statusBarSpriteActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CStatusBarSprite::AdvanceAnim);
+    (reinterpret_cast<CStatusBarSpriteActEntry*>(
+         CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(id)
+     ))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CStatusBarSprite::AdvanceAnim);
 }
 
 RVA(0x0010c810, 0x17)

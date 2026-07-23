@@ -2,7 +2,7 @@
 #define GRUNTZ_CGRUNTHEALTHSPRITE_H
 
 #include <rva.h>
-#include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg + g_healthActReg
+#include <Gruntz/GruntIndicatorSprite.h> // CActReg + g_healthActReg
 #include <Gruntz/UserLogic.h>            // CUserLogic base (CGruntHealthSprite : CUserLogic)
 #include <Gruntz/SerialArchive.h>        // shared CFileMemBase (Read +0x2c / Write +0x30)
 
@@ -16,7 +16,6 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTHEALTHSPRITE;
     } // slot 2
-    static void InitActReg(); // 0x07ecf0 (construct g_healthActReg over [2000,2010])
     virtual void FireActivation(i32 id)
         OVERRIDE;               // 0x07ed70 (resolve the id's registered handler + dispatch it)
     static void RegisterActs(); // 0x07eed0 (register the class's activation handlers)
@@ -50,7 +49,5 @@ struct CHealthActEntry {
     HealthActHandler m_fn;
 };
 SIZE_UNKNOWN();
-
-extern CIndicatorActReg g_healthActReg; // 0x00244d80
 
 #endif // GRUNTZ_CGRUNTHEALTHSPRITE_H

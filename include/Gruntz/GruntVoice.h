@@ -20,7 +20,6 @@ public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
-    static void InitActReg(); // 0x119dc0 (construct g_actReg_6514d8 over [2000,2010])
     virtual void FireActivation(i32 id) OVERRIDE;    // 0x119e40
     i32 Setup(i32 a0, void* sample, i32 a2, i32 a3); // 0x11a7e0
     void Reset();                                    // 0x11a870
@@ -47,8 +46,7 @@ struct CVActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h>    // CActReg (extern below)
-extern CActReg g_vtrigActReg; // 0x00251500
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).

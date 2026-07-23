@@ -23,7 +23,6 @@ public:
     // the effect into the logic pump. (definition uses the slot-1 virtual below)
     // 0x9d140  InitActReg - construct the class's coordinate registry singleton
     // (g_lightFxActReg @0x645ad0) over the fixed [2000, 2010] range. Static.
-    static void InitActReg();
     // 0x9d320  RegisterActs - intern the activation key "A" and bind the per-frame
     // handler (AdvanceAnim) into the class's coordinate registry. Static.
     static void RegisterActs();
@@ -55,7 +54,6 @@ struct CLightFxActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h>      // CActReg (extern below)
-extern CActReg g_lightFxActReg; // 0x00245ad0
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 #endif // GRUNTZ_GRUNTZ_CLIGHTFX_H

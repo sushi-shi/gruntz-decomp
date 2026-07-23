@@ -26,8 +26,7 @@ public:
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h>                   // CTeleporterActReg (extern below)
-extern CTeleporterActReg g_teleporterActReg; // 0x002446b0
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 // The act-table slot type (the registry stores CUserLogic member pointers).
 typedef void (CUserLogic::*WormholeActHandler)();
@@ -41,8 +40,6 @@ extern "C" void PuddleActA();     // 0x4021f8 (puddle "A")
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-extern CLogicActTable g_logicDispatch_6445e8; // owner-TU definition; its 0x24-byte CActReg
-#include <Gruntz/LogicFnTable.h>              // CLogicActTable (for the extern below)
-extern CLogicActTable g_wormholeDispatch;
+#include <Gruntz/LogicFnTable.h> // CActReg (for the extern below)
 
 #endif // GRUNTZ_CWORMHOLE_H

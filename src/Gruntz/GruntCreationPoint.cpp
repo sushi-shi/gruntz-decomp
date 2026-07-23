@@ -79,9 +79,10 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 #include <Gruntz/Play.h>          // ChannelSlots_FindFree (ex .cpp extern)
 
-// g_creationPointActReg (0x00244700): CActReg - no provable static init (the type has no
+// CActRegPool<CGruntCreationPoint>::s_table (0x00244700): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x00244700, 0x0, ?g_creationPointActReg@@3UCActReg@@A)
+template<> DATA(0x00244700)
+CActReg CActRegPool<CGruntCreationPoint>::s_table(2000, 2010);
 
 // CGruntCreationPoint::Serialize @0x03e7a0 - chain the shared CUserLogic serialize
 // helper, then the +0x34 sub-object's chain; on the post-load tag (tag == 8),
@@ -124,18 +125,20 @@ i32 CGruntCreationPoint::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) 
     return 1;
 }
 
-RVA(0x0003e8e0, 0x15)
-void CGruntCreationPoint::InitActReg() {
-    g_creationPointActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x0003e8c0, 0xa, _$E256192)
+RVA_COMPGEN(0x0003e8e0, 0x15, _$E256224)
+RVA_COMPGEN(0x0003e910, 0xe, _$E256272)
+RVA_COMPGEN(0x0003e930, 0x1f, _$E256304)
 
 RVA(0x0003e960, 0x102)
 void CGruntCreationPoint::FireActivation(i32 coord) {
-    CreationPointHandler* e =
-        reinterpret_cast<CreationPointHandler*>(g_creationPointActReg.ResolveEntry(coord));
+    CreationPointHandler* e = reinterpret_cast<CreationPointHandler*>(
+        CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(coord)
+    );
     if (*e != 0) {
-        CreationPointHandler* e2 =
-            reinterpret_cast<CreationPointHandler*>(g_creationPointActReg.ResolveEntry(coord));
+        CreationPointHandler* e2 = reinterpret_cast<CreationPointHandler*>(
+            CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(coord)
+        );
         (this->*(*e2))();
     }
 }
@@ -168,8 +171,9 @@ void CGruntCreationPoint::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *reinterpret_cast<CreationPointHandler*>(g_creationPointActReg.ResolveEntry(id)) =
-        static_cast<i32 (CUserLogic::*)()>(&CGruntCreationPoint::AdvanceAnim);
+    *reinterpret_cast<CreationPointHandler*>(
+        CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(id)
+    ) = static_cast<i32 (CUserLogic::*)()>(&CGruntCreationPoint::AdvanceAnim);
 }
 
 RVA(0x0003ecc0, 0x17)

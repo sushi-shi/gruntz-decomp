@@ -23,9 +23,10 @@ VTBL(CGruntSelectedSprite, 0x001e7bfc); // vtable_names -> code (RTTI game class
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 #include <rva.h>
 
-// g_selectedActReg (0x00244da8): CIndicatorActReg - no provable static init (the type has no
+// CActRegPool<CGruntSelectedSprite>::s_table (0x00244da8): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x00244da8, 0x0, ?g_selectedActReg@@3UCIndicatorActReg@@A)
+template<> DATA(0x00244da8)
+CActReg CActRegPool<CGruntSelectedSprite>::s_table(2000, 2010);
 RVA_COMPGEN(0x00011e80, 0x44, ??1CGruntSelectedSprite@@UAE@XZ)
 
 RVA(0x0007e3e0, 0x178)
@@ -41,15 +42,23 @@ CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj), 
     }
 }
 
-RVA(0x0007e5e0, 0x15)
-void CGruntSelectedSprite::InitActReg() {
-    g_selectedActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x0007e5c0, 0xa, _$E517568)
+RVA_COMPGEN(0x0007e5e0, 0x15, _$E517600)
+RVA_COMPGEN(0x0007e610, 0xe, _$E517648)
+RVA_COMPGEN(0x0007e630, 0x1f, _$E517680)
 
 RVA(0x0007e660, 0x102)
 void CGruntSelectedSprite::FireActivation(i32 id) {
-    if ((reinterpret_cast<CSelectedActEntry*>(g_selectedActReg.ResolveEntry(id)))->m_fn != 0) {
-        (this->*(reinterpret_cast<CSelectedActEntry*>(g_selectedActReg.ResolveEntry(id)))->m_fn)();
+    if ((reinterpret_cast<CSelectedActEntry*>(
+             CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)
+         ))
+            ->m_fn
+        != 0) {
+        (this
+             ->*(reinterpret_cast<CSelectedActEntry*>(
+                 CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)
+             ))
+             ->m_fn)();
     }
 }
 
@@ -81,8 +90,10 @@ void CGruntSelectedSprite::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CSelectedActEntry*>(g_selectedActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CGruntSelectedSprite::Update);
+    (reinterpret_cast<CSelectedActEntry*>(
+         CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)
+     ))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CGruntSelectedSprite::Update);
 }
 
 RVA(0x0007e9c0, 0x16)

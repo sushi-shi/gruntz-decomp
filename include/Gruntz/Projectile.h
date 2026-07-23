@@ -35,7 +35,6 @@ public:
     virtual i32
     LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1); // 0xdf050
 
-    static void RegisterRange(); // 0xdf920 (seed the activation-table fast range)
     // slot-4 (UserLogicVfunc2) per-coordinate activation dispatch @0xdf9a0. The fat
     // base models slot 4 with the no-arg UserLogicVfunc2() placeholder, so the int-arg
     // real shape is a plain method (the leaf vtable slot stays base-attributed).
@@ -101,11 +100,8 @@ extern "C" void ProjActivationHandler(); // 0x403896
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-struct CActReg;
-struct CCoordColl;
-extern CActReg
-    g_projActColl; // the WHOLE 0x24-byte registry object (ex 8 exploded per-field scalars)
-extern CCoordColl g_tbombColl;
+#include <Gruntz/ActReg.h>
+#include <Gruntz/HaznColl.h>
 
 extern const double g_projPhase1;
 #endif // GRUNTZ_PROJECTILE_H

@@ -20,9 +20,10 @@
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sink; Advance)
 #include <Wap32/ZVec.h>
 
-// g_lightFxActReg (0x00245ad0): CActReg - no provable static init (the type has no
+// CActRegPool<CLightFx>::s_table (0x00245ad0): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x00245ad0, 0x0, ?g_lightFxActReg@@3UCActReg@@A)
+template<> DATA(0x00245ad0)
+CActReg CActRegPool<CLightFx>::s_table(2000, 2010);
 
 VTBL(CLightFx, 0x001e7af4);
 
@@ -38,16 +39,21 @@ VTBL(CLightFx, 0x001e7af4);
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00012430, 0x44, ??1CLightFx@@UAE@XZ)
 
-RVA(0x0009d140, 0x15)
-void CLightFx::InitActReg() {
-    g_lightFxActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x0009d120, 0xa, _$E643360)
+RVA_COMPGEN(0x0009d140, 0x15, _$E643392)
+RVA_COMPGEN(0x0009d170, 0xe, _$E643440)
+RVA_COMPGEN(0x0009d190, 0x1f, _$E643472)
 
 RVA(0x0009d1c0, 0x102)
 void CLightFx::FireActivation(i32 id) {
-    CLightFxActEntry* e = reinterpret_cast<CLightFxActEntry*>(g_lightFxActReg.ResolveEntry(id));
+    CLightFxActEntry* e =
+        reinterpret_cast<CLightFxActEntry*>(CActRegPool<CLightFx>::s_table.ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*(reinterpret_cast<CLightFxActEntry*>(g_lightFxActReg.ResolveEntry(id)))->m_fn)();
+        (this
+             ->*(reinterpret_cast<CLightFxActEntry*>(
+                 CActRegPool<CLightFx>::s_table.ResolveEntry(id)
+             ))
+             ->m_fn)();
     }
 }
 
@@ -79,7 +85,7 @@ void CLightFx::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CLightFxActEntry*>(g_lightFxActReg.ResolveEntry(id)))->m_fn =
+    (reinterpret_cast<CLightFxActEntry*>(CActRegPool<CLightFx>::s_table.ResolveEntry(id)))->m_fn =
         static_cast<i32 (CUserLogic::*)()>(&CLightFx::AdvanceAnim);
 }
 

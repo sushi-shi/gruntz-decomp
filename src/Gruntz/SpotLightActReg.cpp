@@ -2,11 +2,13 @@
 #include <Gruntz/TypeKeyColl.h>     // s_codeA/s_actKeyB registration keys
 #include <Wap32/ZVec.h>
 #include <Gruntz/ActReg.h>          // the shared activation-registrar archetype (CActReg)
-#include <Gruntz/SpotLightActReg.h> // g_actReg_646188 decl
+#include <Gruntz/SpotLightActReg.h> // CActRegPool<CSpotLight>::s_table decl
+#include <Gruntz/SpotLight.h>
 
-// g_actReg_646188 (0x00246188): CActReg - no provable static init (the type has no
+// CActRegPool<CSpotLight>::s_table (0x00246188): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x00246188, 0x0, ?g_actReg_646188@@3UCActReg@@A)
+template<> DATA(0x00246188)
+CActReg CActRegPool<CSpotLight>::s_table(2000, 2010);
 
 static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;
@@ -19,10 +21,10 @@ static inline void FreeNameSlotNodes() {
     }
 }
 
-RVA(0x000b15b0, 0x15)
-void ConstructActRange_646188() {
-    g_actReg_646188.Construct(0x7d0, 0x7da);
-}
+RVA_COMPGEN(0x000b1590, 0xa, _$E726416)
+RVA_COMPGEN(0x000b15b0, 0x15, _$E726448)
+RVA_COMPGEN(0x000b15e0, 0xe, _$E726496)
+RVA_COMPGEN(0x000b1600, 0x1f, _$E726528)
 
 // ===========================================================================
 // RegisterActs_646188 @0x0b1790 - bind handler "A" (0x4025db) and handler "B"
@@ -45,7 +47,7 @@ void RegisterActs_646188() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_actReg_646188.ResolveEntry(id)) =
+    *reinterpret_cast<void**>(CActRegPool<CSpotLight>::s_table.ResolveEntry(id)) =
         static_cast<void*>(&SpotLightActA);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
@@ -57,6 +59,6 @@ void RegisterActs_646188() {
         (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_actReg_646188.ResolveEntry(id2)) =
+    *reinterpret_cast<void**>(CActRegPool<CSpotLight>::s_table.ResolveEntry(id2)) =
         static_cast<void*>(&SpotLightActB);
 }

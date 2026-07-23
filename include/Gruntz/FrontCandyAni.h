@@ -21,7 +21,6 @@ public:
     // here; the vtable read proves it is CFrontCandy::Serialize.)
     // Construct the class's activation-coordinate registry (g_frontCandyActReg
     // @0x6460b0) over the fixed [2000,2010] range; free init thunk, reloc-masked.
-    static void InitActReg(); // 0x0ad130
     // Look the activation coordinate up in the class registry; if its entry has a
     // bound handler, look it up again and dispatch it __thiscall on this. The SAME
     // archetype as CParticlez::FireActivation (0x046d30).
@@ -39,7 +38,6 @@ struct CFrontCandyActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h>         // CActReg (extern below)
-extern CActReg g_frontCandyActReg; // 0x002460b0
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 #endif // GRUNTZ_CFRONTCANDYANI_H

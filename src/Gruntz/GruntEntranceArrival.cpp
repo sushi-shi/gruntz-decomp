@@ -35,7 +35,7 @@
 #include <Wap32/Wap32.h>      // CGameWnd (m_hwnd - StepWarpExit's level-switch post target)
 #include <Gruntz/GameLevel.h> // canonical CGameLevel/CDDrawWorkerHost (m_world->m_level visible rect)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
-#include <Gruntz/ActReg.h>      // CLookupColl/CActReg::ResolveEntry
+#include <Gruntz/ActReg.h>      // CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (value member of the warp/decay views)
 #include <Gruntz/FreeNodePool.h>

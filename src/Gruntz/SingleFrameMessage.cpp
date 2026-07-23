@@ -8,6 +8,9 @@
 #include <Gruntz/WwdGameReg.h>    // g_gameReg->GetRect (on-screen message bounds)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
+template<> DATA(0x00245ef0)
+CActReg CActRegPool<CSingleFrameMessage>::s_table(2000, 2010);
+
 RVA(0x0000f5a0, 0x47)
 i32 CSingleFrameMessage::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -39,18 +42,21 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj), CW
 
 VTBL(CSingleFrameMessage, 0x001e864c);
 
-RVA(0x000ab530, 0x15)
-void CSingleFrameMessage::InitActReg() {
-    g_singleFrameActReg.Construct(2000, 2010);
-}
+RVA_COMPGEN(0x000ab510, 0xa, _$E701712)
+RVA_COMPGEN(0x000ab530, 0x15, _$E701744)
+RVA_COMPGEN(0x000ab560, 0xe, _$E701792)
+RVA_COMPGEN(0x000ab580, 0x1f, _$E701824)
 
 RVA(0x000ab5b0, 0x102)
 void CSingleFrameMessage::FireActivation(i32 id) {
-    CSingleFrameActEntry* e =
-        reinterpret_cast<CSingleFrameActEntry*>(g_singleFrameActReg.ResolveEntry(id));
+    CSingleFrameActEntry* e = reinterpret_cast<CSingleFrameActEntry*>(
+        CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id)
+    );
     if (e->m_fn != 0) {
         (this
-             ->*(reinterpret_cast<CSingleFrameActEntry*>(g_singleFrameActReg.ResolveEntry(id)))
+             ->*(reinterpret_cast<CSingleFrameActEntry*>(
+                 CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id)
+             ))
              ->m_fn)();
     }
 }
@@ -83,17 +89,16 @@ void CSingleFrameMessage::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CSingleFrameActEntry*>(g_singleFrameActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CSingleFrameMessage::AdvanceAnim);
+    (reinterpret_cast<CSingleFrameActEntry*>(
+         CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id)
+     ))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CSingleFrameMessage::AdvanceAnim);
 }
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
-// g_singleFrameActReg (0x00245ef0): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x00245ef0, 0x0, ?g_singleFrameActReg@@3UCActReg@@A)
 RVA(0x000ab910, 0x12)
 i32 CSingleFrameMessage::AdvanceAnim() {
     m_38->m_flags |= 0x10000;

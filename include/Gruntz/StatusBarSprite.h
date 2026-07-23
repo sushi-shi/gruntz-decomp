@@ -14,7 +14,6 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE;                        // slot 2
 public:
     CStatusBarSprite(CGameObject* obj); // 0x10c230
-    static void InitActReg();           // 0x10c430
     virtual void FireActivation(i32 id)
         OVERRIDE;               // 0x10c4b0 (vtable slot 4 body: per-coord PMF dispatch)
     static void RegisterActs(); // 0x10c610

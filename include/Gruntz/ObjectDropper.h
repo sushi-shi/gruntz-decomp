@@ -29,7 +29,6 @@ public:
     // Construct the class's activation-coordinate registry (g_dropperActReg
     // @0x64be90) over the fixed [2000,2010] range; free init thunk (ex the
     // "NetConfigureBe90" parking name), reloc-masked.
-    static void InitActReg(); // 0xc5f00
     // Bind the per-frame handler (Update) to the activation key "A" via the
     // shared name registry; the CCheckpointTrigger::RegisterActs archetype.
     static void RegisterActs(); // 0xc60e0
