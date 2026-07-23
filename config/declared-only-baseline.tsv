@@ -20,7 +20,6 @@
 ?AdvanceAnim@CExitTrigger@@QAEHXZ
 ?Apply13@CGrunt@@QAEXHH@Z
 ?ApplyBox@CGrunt@@QAEHHHHHHH@Z
-?ApplyGameOptions@@YAXXZ
 ?Ar_WriteId@@YAXPAXH0@Z
 ?Arm@CUserLogic@@QAEXPBD0HH@Z
 ?BaseConstruct@zDArray@@QAEPAV1@HHHPAX@Z
@@ -37,13 +36,11 @@
 ?CommitMoveA@CGrunt@@QAEXHHH@Z
 ?Construct@CButeTree@@QAEXPAXH@Z
 ?Construct@CGameObject@@QAEXPAXHH@Z
-?CreateWorldObjects@@YAXPAX@Z
 ?CreditsRectSet@@YAXPAXHHHH@Z
 ?Cue1@CGruntSpawnConfig@@QAEXH@Z
 ?Cue@CGruntSpawnConfig@@QAEXHHHHH@Z
 ?CuePrep@CGruntzMgr@@QAEXXZ
 ?CueVisible@@YAHHHH@Z
-?DeleteSaveSlot@@YAXPAUHWND__@@PAVCSaveGame@@@Z
 ?Deserialize@CTimer@@QAEHPAVCFileMemBase@@@Z
 ?Disarm@CGrunt@@QAEHHH@Z
 ?Dispatch@CGrunt@@QAEHHH@Z
@@ -132,8 +129,6 @@
 ?Probe@zDArray@@QAEHHH@Z
 ?ProbeCell@CTriggerMgr@@QAEHHHPAXH0HHHH@Z
 ?RaiseBattleAlert@CWarlord@@QAEXXZ
-?Rand@CGruntzMgr@@QAEHXZ
-?RandRange@CGruntzMgr@@QAEHHH@Z
 ?RbClearCell@@YAXPAXHHH@Z
 ?ReadCurve@@YAXAAVistream@@AAVCMotionState@@@Z
 ?ReadIdent@CButeMgr@@QAEHHD@Z
@@ -143,10 +138,8 @@
 ?RefreshDecay@CGruntBehaviorLeaf@@QAEXXZ
 ?RegCue@CPlay@@QAEXPAXH@Z
 ?RemoveAt@CObjList@@QAEXPAUCObjListNode@@@Z
-?ReportError@@YAXPBDHHH@Z
 ?Reserve@zDArray@@QAEHPAVCAnimNameRecord@@H@Z
 ?Reset3@CTriggerMgr@@QAEHHHH@Z
-?ResetNetSlots@@YAXXZ
 ?ResetTabWidgets2b44@CStatusBarMgr@@QAEXXZ
 ?ResolveSlot_46e0c0@CActReg@@QAEPAPADH@Z
 ?RezAlloc@@YAPAXH@Z

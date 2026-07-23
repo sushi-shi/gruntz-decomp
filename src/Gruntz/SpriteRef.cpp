@@ -246,9 +246,6 @@ void CSpriteRef::Free() {
 
 DATA(0x0024c86c)
 i32 g_dlg64c86c = 0; // DAT_0064c86c (the active save-sink; owner-TU definition)
-class CSaveGame;
-i32 DrawSaveGameMenu(HWND hDlg, i32 wParam, CSaveGame* cur); // 0xe3f40 (savegame)
-void FillSaveDialog(HWND hDlg, CSaveGame* sg);               // 0xe3c60 (savegame)
 RVA(0x000e35f0, 0x77)
 i32 CALLBACK winapi_0e35f0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {

@@ -118,8 +118,7 @@ DATA(0x0024556c)
 CGruntzMgr* g_gameReg = 0;
 
 #include <Gruntz/PlayStateView.h>
-
-void CreateWorldObjects(void* world);
+#include <Gruntz/GameObjectFactory.h>
 
 // ResetWorldState's MFC wait-cursor pair. Retail inlines the global ::Begin/
 // EndWaitCursor (AfxGetApp()->...); modeled as reloc-masked free fns here (only
@@ -1700,7 +1699,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     CGameLevel* view = m_world->m_level;
     view->m_maxStepX = 0xe;
     view->m_maxStepY = 0xe;
-    CreateWorldObjects(m_world);
+    RegisterGameObjectTypes(m_world);
     if (MakeRezPath() == 0) { // 0x91670 (RezMgr.cpp; ex the RezMgr facet cast)
         return 0;
     }

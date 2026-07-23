@@ -95,4 +95,7 @@ extern char* g_areaNames[];
 class CImagePool;
 extern CImagePool* g_previewMgr;
 extern void* g_previewImage;
-#endif // SRC_IO_SAVEGAME_H
+
+void FillSaveDialog(HWND hDlg, CSaveGame* saveGame);               // 0x0e3c60
+i32 DrawSaveGameMenu(HWND hDlg, i32 command, CSaveGame* saveGame); // 0x0e3f40
+#endif                                                             // SRC_IO_SAVEGAME_H

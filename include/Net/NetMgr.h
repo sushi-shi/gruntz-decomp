@@ -525,8 +525,6 @@ class CFontConfig; // <Gruntz/FontConfig.h> (the deref TUs include the real head
 // m_isEffectsEnabled, m_114, m_12c custom-level flag, m_options). Multi.h's
 // NetGameMgr() now returns the typed CGruntzMgr*.)
 
-void ResetNetSlots(); // 0x004db1d0
-
 extern "C" char g_recvBuffer[]; // 0x6467d8
 
 extern u8 g_chanStat422_flag; // 0x646fd8

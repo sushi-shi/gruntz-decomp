@@ -91,7 +91,6 @@ void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32 code, i32 pos); // 0x
 void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos);               // 0x037260
 void DialogInit(HWND hDlg);                                                // 0x037870
 void SaveVideoCheckboxes(HWND hDlg);                                       // 0x0378c0
-void ApplyGameOptions(); // the dlgproc's free-call shape of ?ApplyGameOptions@CPlay@@ (0x036be0)
 namespace ApiCallerStubs {
     void winapi_0371e0_GetDlgItem_SetScrollInfo(HWND hDlg, i32 id, i32 pos, i32 max); // 0x0371e0
     i32 winapi_036ec0_GetDlgItem_GetScrollInfo(HWND hDlg, i32 id);                    // 0x036ec0
@@ -148,7 +147,7 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     if (g_gameReg->m_curState->Update() == GAMESTATE_NONE) {
                         (static_cast<CMulti*>(g_gameReg->m_curState))->SendChannelStat423();
                     }
-                    ApplyGameOptions();
+                    static_cast<CPlay*>(g_gameReg->m_curState)->ApplyGameOptions();
                     EndDialog(hDlg, 0);
                     return TRUE;
                 case 1: { // IDOK: commit

@@ -2600,7 +2600,7 @@ i32 CMulti::ParseChannelTable(void* packet) {
         return 0;
     }
     if (m_isHost == 0) {
-        ResetNetSlots();
+        ChannelSlots_InitAll();
     }
 
     char* rec = reinterpret_cast<char*>(packet) + 9;

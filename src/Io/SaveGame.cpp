@@ -28,7 +28,6 @@ void* g_previewImage;                     // 0x64c868  (CRezImage* previewed DIB
 i32 __stdcall CloseTempFile(SaveSlot* r); // defined below (0x0e5550)
 void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);
 void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev);
-void DeleteSaveSlot(HWND hDlg, CSaveGame* obj);
 
 // LevelPreviewDlgProc (0x0e3690) - the level-select preview dialog proc. WM_INITDIALOG
 // builds the g_previewMgr image pool + the level title; WM_COMMAND (IDOK/IDCANCEL)
@@ -401,7 +400,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         if (ok == 0) {
             return 0;
         }
-        DeleteSaveSlot(hDlg, obj);
+        FillSaveDialog(hDlg, obj);
         return 0;
     }
 

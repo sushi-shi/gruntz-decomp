@@ -10,7 +10,7 @@
 #include <Gruntz/UserLogic.h> // CUserBase (real base of CAmbientSound)
 
 #include <math.h>          // sqrt intrinsic (UpdateAt's positional falloff) - inline fsqrt
-#include <Gruntz/Random.h> // Rng::Next (defined HERE @0xcd00) + the g_randSeed* LCG state
+#include <Gruntz/Random.h> // the g_randSeed* primary LCG state
 
 VTBL(CAmbientSound, 0x001e710c);
 VTBL(CAmbientPosSound, 0x001e7124);
@@ -961,9 +961,9 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
         i32 span = hi - lo + 1;
         i32 r;
         if (span == 0) {
-            r = (Rng::Next() & 1) ? lo : hi;
+            r = (g_gameReg->Rand() & 1) ? lo : hi;
         } else {
-            r = Rng::Next() % span + lo;
+            r = g_gameReg->Rand() % span + lo;
         }
         m_countdownMs = r;
         i32 half = static_cast<u32>(r) >> 1; // logical shr (retail), not arithmetic sar
@@ -977,9 +977,9 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
         i32 span = hi - lo + 1;
         i32 r;
         if (span == 0) {
-            r = (Rng::Next() & 1) ? lo : hi;
+            r = (g_gameReg->Rand() & 1) ? lo : hi;
         } else {
-            r = Rng::Next() % span + lo;
+            r = g_gameReg->Rand() % span + lo;
         }
         m_countdownMs = r;
         i32 half = static_cast<u32>(r) >> 1; // logical shr (retail), not arithmetic sar
@@ -990,11 +990,11 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
     }
 }
 
-// __cdecl rand(): lazily seed the primary LCG from timeGetTime, advance it, and
-// return the top 15 bits (the classic MS rand()). The TU's random source (the
-// Update re-roll paths above call it); declared in <Gruntz/Random.h>.
+// Lazily seed the manager's primary LCG from timeGetTime, advance it, and return
+// the top 15 bits (the classic MS rand()). Ambient-sound callers load g_gameReg
+// into ecx before reaching this body, matching the other retail call sites.
 RVA(0x0000cd00, 0x46)
-i32 Rng::Next() {
+i32 CGruntzMgr::Rand() {
     i32 seed;
     if (!(g_randSeeded & 1)) {
         g_randSeeded |= 1;

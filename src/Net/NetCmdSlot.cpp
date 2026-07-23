@@ -48,8 +48,6 @@ char g_idListBuf[0x40]; // 0x24b6b0
 
 void NoopSync(CGruntzCommand* p); // 0xbfb20 (empty)
 
-void ReportError(const char* file, i32 line, i32 code, i32 extra); // 0x1776a0
-
 RVA(0x000bef80, 0x51)
 i32 CNetSession::Init(void* a1, CMulti* a2, void* a3) {
     if (a1 == 0) {
@@ -208,7 +206,7 @@ i32 CNetSession::Poll(i32 delta) {
             reinterpret_cast<LPDWORD>(&len)
         );
         if (st != 0) {
-            ReportError("c:\\proj\\incs\\netmgr.h", 0x141, st, 0);
+            CNetMgr::ReportError(const_cast<char*>("c:\\proj\\incs\\netmgr.h"), 0x141, st, 0);
             if (st != 0) {
                 break;
             }
