@@ -768,8 +768,11 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             i32 m380 = m_moveVariant;
             if (m380 != 0) {
                 i32 tier = cueTier + m380 - 1;
-                i32 anchor = reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX);
-                if (GruntPointVisible(m_object->m_screenY, m_object->m_screenX, anchor) != 0) {
+                const LevelCoordRect* bounds = reinterpret_cast<const LevelCoordRect*>(
+                    &g->m_world->m_level->m_mainPlane->m_originX
+                );
+                if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
+                    != 0) {
                     g->m_cueSink
                         ->SpawnVoiceDriver(reinterpret_cast<i32>(this), tier, 0, -1, -1, -1);
                 }
@@ -779,8 +782,11 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
                     m_moveKind = rand() % md + 1;
                 }
                 i32 tier = cueTier + m_moveKind - 1;
-                i32 anchor = reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX);
-                if (GruntPointVisible(m_object->m_screenY, m_object->m_screenX, anchor) != 0) {
+                const LevelCoordRect* bounds = reinterpret_cast<const LevelCoordRect*>(
+                    &g->m_world->m_level->m_mainPlane->m_originX
+                );
+                if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
+                    != 0) {
                     g->m_cueSink
                         ->SpawnVoiceDriver(reinterpret_cast<i32>(this), tier, 0, -1, -1, -1);
                 }
@@ -1082,8 +1088,10 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
             g->CuePrep();
             i32 focused = (m_tileOwnerHi == g_curPlayer);
             if (focused && idx > 0x5a) {
-                if (CueVisible(
-                        reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
+                if (CGameLevel::PointInBounds(
+                        reinterpret_cast<const LevelCoordRect*>(
+                            &g->m_world->m_level->m_mainPlane->m_originX
+                        ),
                         m_object->m_screenX,
                         m_object->m_screenY
                     )) {
@@ -1091,16 +1099,20 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                 }
             } else if (focused || m_entranceReason != 0) {
                 if (idx == 1) {
-                    if (CueVisible(
-                            reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
+                    if (CGameLevel::PointInBounds(
+                            reinterpret_cast<const LevelCoordRect*>(
+                                &g->m_world->m_level->m_mainPlane->m_originX
+                            ),
                             m_object->m_screenX,
                             m_object->m_screenY
                         )) {
                         g->m_cueSink->Cue(reinterpret_cast<i32>(this), 5, -1, -1, -1);
                     }
                 } else if (idx == 2) {
-                    if (CueVisible(
-                            reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
+                    if (CGameLevel::PointInBounds(
+                            reinterpret_cast<const LevelCoordRect*>(
+                                &g->m_world->m_level->m_mainPlane->m_originX
+                            ),
                             m_object->m_screenX,
                             m_object->m_screenY
                         )) {
@@ -1630,8 +1642,10 @@ i32 CGrunt::BuildGruntExitAnimation() {
             m_38->OwnerMgr()->m_animRegistry->LookupValue(s_GRUNTZ_EXITZ_ONE)
         );
         CGruntzMgr* g = g_gameReg;
-        if (GruntPointVisible(
-                reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
+        if (CGameLevel::PointInBounds(
+                reinterpret_cast<const LevelCoordRect*>(
+                    &g->m_world->m_level->m_mainPlane->m_originX
+                ),
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {
@@ -1642,8 +1656,10 @@ i32 CGrunt::BuildGruntExitAnimation() {
             m_38->OwnerMgr()->m_animRegistry->LookupValue(s_GRUNTZ_EXITZ_TWO)
         );
         CGruntzMgr* g = g_gameReg;
-        if (GruntPointVisible(
-                reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
+        if (CGameLevel::PointInBounds(
+                reinterpret_cast<const LevelCoordRect*>(
+                    &g->m_world->m_level->m_mainPlane->m_originX
+                ),
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {
@@ -1654,8 +1670,10 @@ i32 CGrunt::BuildGruntExitAnimation() {
             m_38->OwnerMgr()->m_animRegistry->LookupValue(s_GRUNTZ_EXITZ_THREE)
         );
         CGruntzMgr* g = g_gameReg;
-        if (GruntPointVisible(
-                reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
+        if (CGameLevel::PointInBounds(
+                reinterpret_cast<const LevelCoordRect*>(
+                    &g->m_world->m_level->m_mainPlane->m_originX
+                ),
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {
@@ -2047,10 +2065,9 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     } else {
         CWwdGameObjectA* h = m_object;
         CGruntzMgr* g = g_gameReg;
-        i32* rect = reinterpret_cast<i32*>(
-            (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX))
-        );
-        if (GruntPointVisible(reinterpret_cast<i32>(rect), h->m_screenX, h->m_screenY)) {
+        const LevelCoordRect* bounds =
+            reinterpret_cast<const LevelCoordRect*>(&g->m_world->m_level->m_mainPlane->m_originX);
+        if (CGameLevel::PointInBounds(bounds, h->m_screenX, h->m_screenY)) {
             g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 8, -1, -1, -1);
         }
     }

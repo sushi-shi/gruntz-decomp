@@ -50,6 +50,24 @@ Two consequences, both load-bearing:
 - `gruntz sema xref` prints these as `(thunk-band)` when chasing callers.
 - The delinker announces the band: `[delink] incremental-link thunk table: 2695 entries`.
 
+## Reverse use: collapse invented helper declarations
+
+An unresolved source call can carry any invented name and signature while its
+retail call site still resolves to an ILT entry. Before preserving such a
+declaration, chase that entry to its body and compare the real mangled
+signature. Several differently named placeholders may be one existing
+function.
+
+The Grunt voice gates demonstrated this directly: calls spelled `CueVisible`,
+`GruntPointVisible`, and `BoardTest` all target ILT `0x00001127`, which jumps to
+the already exact
+`CGameLevel::PointInBounds(const LevelCoordRect*, i32, i32)` at `0x0006b330`.
+Replacing the placeholders at all call sites removed two declared-only
+functions and one misleading extern without adding a reconstruction target.
+The odd `GruntPointVisible(y, x, rect)` spelling had only preserved the cdecl
+push order; restoring `PointInBounds(rect, x, y)` emits the same pushes with the
+real semantics.
+
 ## Trap: FID false-positives on the destinations
 
 The ILT-reached bodies are often 1-6 byte defaults (`c3`, `33 c0 c3`, `b8 01 00 00 00 c3`).

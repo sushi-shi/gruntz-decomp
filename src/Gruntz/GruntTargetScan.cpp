@@ -296,8 +296,8 @@ i32 CGrunt::ScanNearestTarget() {
             m_arrivalRow = best->m_tileOwnerLo;
             m_defenderState = 1;
             {
-                if (BoardTest(
-                        reinterpret_cast<CCueRect*>(
+                if (CGameLevel::PointInBounds(
+                        reinterpret_cast<const LevelCoordRect*>(
                             &g_gameReg->m_world->m_level->m_mainPlane->m_originX
                         ),
                         m_object->m_screenX,

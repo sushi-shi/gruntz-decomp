@@ -40,8 +40,6 @@ extern "C" i32 GruntRand(); // stub
 
 class CGrunt; // fwd (CueA/CueSpawn first arg; the resolvers below)
 
-i32 CueVisible(i32 viewport, i32 x, i32 y);
-
 class CGruntCell {
 public:
     // GetName @0x310f0 IS _zdvec::IndexToPtr; cast at each call.
@@ -129,8 +127,6 @@ struct CGruntLiveNode {
     CGruntPuddle* m_entry; // +0x08  placed puddle (tile x/y + pending gate)
 };
 SIZE_UNKNOWN();
-
-i32 GruntPointVisible(i32 px, i32 py, i32 cmp);
 
 i32 __stdcall GruntDropReady029b40(CGrunt* g);
 
@@ -1180,10 +1176,6 @@ extern i32 g_gruntDefEntranceCell[3]; // 0x6448e8 (default entrance-cell record)
 // VAs are reloc-masked at use) ---
 extern "C" i32 CellTargetable(i32 col, i32 row); // 0x40107d -> 0xf0db0 (MgrListFind)
 extern "C" i32 GameRand();                       // 0x51fee0 (__cdecl)
-
-// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
-// VAs are reloc-masked at use) ---
-extern "C" i32 BoardTest(CCueRect* board, i32 x, i32 y); // 0x401127
 
 // Command-step cue thunks (ILT VAs; reloc-masked at use).
 extern "C" void __stdcall GruntCue(CGrunt* g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x4039f4

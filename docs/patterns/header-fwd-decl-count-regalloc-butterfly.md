@@ -102,3 +102,15 @@ The experiment isolates the block, not an individual declaration or a simple num
 do not claim that a particular letter is the lever without a finer A/B. Preserve the authentic
 declaration set and use missing or spurious data declarations as a reverse-search dimension for
 similar unexplained scheduling residues.
+
+SEVENTH FIRING (2026-07-23, ILT-proven helper-alias cleanup): removing the unused
+`CueVisible`, `GruntPointVisible`, and `BoardTest` declarations from `Grunt.h` after
+their calls were proven to target the existing
+`CGameLevel::PointInBounds` body moved source-identical `CSpotLight::Tick`
+53.5444→52.0887. Its source fingerprint did not change; the value is the same
+lower compiler-state coloring observed before the sixth firing's declaration
+cleanup. `CGrunt::ArrivalScanC` also moved 47.2696→47.2280, but that function
+directly changed its call relocation from the placeholder to the real mangled
+target and is not an unrelated butterfly control. Keep the real destination and
+the two-symbol declared-only reduction; MAX preserves both prior scores while
+later authentic `Grunt.h` declaration recovery can reverse the TU-state change.

@@ -18,7 +18,6 @@
 ?Cue1@CGruntSpawnConfig@@QAEXH@Z
 ?Cue@CGruntSpawnConfig@@QAEXHHHHH@Z
 ?CuePrep@CGruntzMgr@@QAEXXZ
-?CueVisible@@YAHHHH@Z
 ?Deserialize@CTimer@@QAEHPAVCFileMemBase@@@Z
 ?Disarm@CGrunt@@QAEHHH@Z
 ?Dispatch@CGrunt@@QAEHHH@Z
@@ -37,7 +36,6 @@
 ?GetNameRecords@zDArray@@QAEPAVCAnimNameRecord@@PAX@Z
 ?GruntDropReady029b40@@YGHPAVCGrunt@@@Z
 ?GruntNode_Delete@@YAXPAX@Z
-?GruntPointVisible@@YAHHHH@Z
 ?GruntTileSwitchImpl@@YGHHHHHHH@Z
 ?HiTabB@CStatusBarMgr@@QAEXHH@Z
 ?Hit5@CTriggerMgr@@QAEPAVCGrunt@@HHHHH@Z

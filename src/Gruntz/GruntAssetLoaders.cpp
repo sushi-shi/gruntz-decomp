@@ -72,8 +72,10 @@ enum GruntDeathType {
 #define DEATH_CUE(tag)                                                                             \
     do {                                                                                           \
         CGruntzMgr* _g = g_gameReg;                                                                \
-        if (GruntPointVisible(                                                                     \
-                reinterpret_cast<i32>(&_g->m_world->m_level->m_mainPlane->m_originX),              \
+        if (CGameLevel::PointInBounds(                                                             \
+                reinterpret_cast<const LevelCoordRect*>(                                           \
+                    &_g->m_world->m_level->m_mainPlane->m_originX                                  \
+                ),                                                                                 \
                 m_object->m_screenX,                                                               \
                 m_object->m_screenY                                                                \
             )) {                                                                                   \
@@ -393,8 +395,10 @@ pathA:
     m_38->ApplyName(*reinterpret_cast<char**>(&m_44c));
     {
         CGruntzMgr* g = g_gameReg;
-        if (GruntPointVisible(
-                reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX),
+        if (CGameLevel::PointInBounds(
+                reinterpret_cast<const LevelCoordRect*>(
+                    &g->m_world->m_level->m_mainPlane->m_originX
+                ),
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {

@@ -544,8 +544,8 @@ i32 CGrunt::WanderStep() {
                             m_arrivalCol = g->m_tileOwnerHi;
                             m_arrivalRow = g->m_tileOwnerLo;
                             m_defenderState = 1;
-                            if (GruntPointVisible(
-                                    reinterpret_cast<i32>(
+                            if (CGameLevel::PointInBounds(
+                                    reinterpret_cast<const LevelCoordRect*>(
                                         &g_gameReg->m_world->m_level->m_mainPlane->m_originX
                                     ),
                                     m_object->m_screenX,
@@ -992,8 +992,8 @@ i32 CGrunt::UpdateArrival() {
                             this->m_arrivalCol = g->m_tileOwnerHi;
                             this->m_arrivalRow = g->m_tileOwnerLo;
                             this->m_defenderState = 1;
-                            i32 r = GruntPointVisible(
-                                reinterpret_cast<i32>(
+                            i32 r = CGameLevel::PointInBounds(
+                                reinterpret_cast<const LevelCoordRect*>(
                                     &g_gameReg->m_world->m_level->m_mainPlane->m_originX
                                 ),
                                 this->m_object->m_screenX,
@@ -1264,10 +1264,10 @@ L_ed006b:
             if (m_390 != 0) {
                 i32 x = m_object->m_screenX;
                 i32 y = m_object->m_screenY;
-                if (GruntPointVisible(
-                        reinterpret_cast<i32>((reinterpret_cast<CCueRect*>(
+                if (CGameLevel::PointInBounds(
+                        reinterpret_cast<const LevelCoordRect*>(
                             &g_gameReg->m_world->m_level->m_mainPlane->m_originX
-                        ))),
+                        ),
                         x,
                         y
                     )
@@ -1906,7 +1906,12 @@ i32 CGrunt::StepArrivalDefense() {
                 CWwdGameObjectA* h = m_object;
                 i32* rect =
                     &g_gameReg->m_world->m_level->m_mainPlane->m_originX; // the +0x40 visible rect
-                if (CueVisible(reinterpret_cast<i32>(rect), h->m_screenX, h->m_screenY) == 0) {
+                if (CGameLevel::PointInBounds(
+                        reinterpret_cast<const LevelCoordRect*>(rect),
+                        h->m_screenX,
+                        h->m_screenY
+                    )
+                    == 0) {
                     goto L_f318a;
                 }
                 g_gameReg->m_cueSink
@@ -2371,8 +2376,10 @@ state0: {
     if (m_390 == 0) {
         goto common;
     }
-    if (GruntPointVisible(
-            reinterpret_cast<i32>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX),
+    if (CGameLevel::PointInBounds(
+            reinterpret_cast<const LevelCoordRect*>(
+                &g_gameReg->m_world->m_level->m_mainPlane->m_originX
+            ),
             m_object->m_screenX,
             m_object->m_screenY
         )
@@ -2686,8 +2693,10 @@ i32 CGrunt::SeekTarget() {
             return 1;
         }
         if (this->m_390 != 0) {
-            i32 r = GruntPointVisible(
-                reinterpret_cast<i32>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX),
+            i32 r = CGameLevel::PointInBounds(
+                reinterpret_cast<const LevelCoordRect*>(
+                    &g_gameReg->m_world->m_level->m_mainPlane->m_originX
+                ),
                 this->m_object->m_screenX,
                 this->m_object->m_screenY
             );
