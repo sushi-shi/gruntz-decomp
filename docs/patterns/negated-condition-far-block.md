@@ -55,7 +55,7 @@ bodyB. When a body ends in `return`/a terminal jump, MSVC folds the inner
 
 Rewrite each such dispatch as the negated-outer form. It is behaviourally identical
 to `if(x==A)else if(x==B)` but matches retail's block layout. Applied to all four
-kind-4/kind-7 dispatches in `CTriggerMgr::RebuildOverlay` (0x7a5e0): 88% → **100%**
+kind-4/kind-7 dispatches in `CTriggerMgr::Serialize` (0x7a5e0): 88% → **100%**
 (after also fixing the 4-arg prototype, the probe polarity, and the virtual
 GetA/GetB dispatch). The same negation works whether a body falls through (pose
 blocks) or returns (the probe guards + the final pose block's `return 1`).

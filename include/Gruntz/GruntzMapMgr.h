@@ -15,7 +15,7 @@ public:
     // grid cleanup. The dtor runs the same teardown inline.
     virtual void Reset() OVERRIDE;
     // slot 1 (0x082430): stream the node table + m_90 through the archive, then chain
-    // the base probe. CGruntzMgr::BroadcastCmd drives it as a 4-arg command dispatch
+    // the base probe. CGruntzMgr::BroadcastCmd drives it as a 4-arg serialization dispatch
     // (`mov eax,[ecx]; call [eax+4]`).
     virtual i32 Visit(CFileMemBase* ar, i32 b, i32 c, i32 d) OVERRIDE;
 

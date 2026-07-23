@@ -1182,8 +1182,8 @@ i32 CTriggerMgr::ClearRowAndRefresh(i32 startRow) {
 }
 
 RVA(0x0007a5e0, 0x121)
-i32 CTriggerMgr::RebuildOverlay(void* obj, i32 kind, i32 /*unusedC*/, i32 /*unusedD*/) {
-    if (obj == 0) {
+i32 CTriggerMgr::Serialize(CFileMemBase* ar, i32 kind, i32 /*unusedC*/, i32 /*unusedD*/) {
+    if (ar == 0) {
         return 0;
     }
     // Negated outer test (kind!=4 ... else kind==4): reproduces retail's block layout
@@ -1191,53 +1191,50 @@ i32 CTriggerMgr::RebuildOverlay(void* obj, i32 kind, i32 /*unusedC*/, i32 /*unus
     // The kind-7/kind-4 self-probes ARE this manager's own (de)serialize entry
     // points reused as boolean probes: retail dispatches kind 7 -> Load (0x7abc0,
     // via ILT thunk 0x2644) and kind 4 -> ScanGroup (0x7a760, via thunk 0x2351),
-    // both passing `obj` as the archive. (Were the fake Probe7/Probe4 decls; the
+    // both passing `ar` as the archive. (Were the fake Probe7/Probe4 decls; the
     // real callees are the in-unit round-trip pair.)
     if (kind != 4) {
         if (kind == 7) {
-            if (this->Load(static_cast<CFileMemBase*>(obj)) == 0) {
+            if (this->Load(ar) == 0) {
                 return 0;
             }
         }
     } else {
-        if (this->ScanGroup(static_cast<CFileMemBase*>(obj)) == 0) {
+        if (this->ScanGroup(ar) == 0) {
             return 0;
         }
     }
-    CFileMemBase* src = static_cast<CFileMemBase*>(
-        obj
-    ); // slots +0x2c/+0x30 ARE Read/Write (the ex-CTmOverlaySrc 13-slot view was the CFileMemBase scheme)
     // The three i64 timer pairs, snapshotted as raw 8-byte blocks (the GetA/GetB
     // getters copy bytes); (char*)& keeps retail's one-lea + biased-second-push shape.
     char* blk0 = reinterpret_cast<char*>(&m_timerBase);
     if (kind != 4) {
         if (kind == 7) {
-            src->Read(blk0, 8);
-            src->Read(blk0 + 8, 8);
+            ar->Read(blk0, 8);
+            ar->Read(blk0 + 8, 8);
         }
     } else {
-        src->Write(blk0, 8);
-        src->Write(blk0 + 8, 8);
+        ar->Write(blk0, 8);
+        ar->Write(blk0 + 8, 8);
     }
     char* blk1 = reinterpret_cast<char*>(&m_gooTimerBase);
     if (kind != 4) {
         if (kind == 7) {
-            src->Read(blk1, 8);
-            src->Read(blk1 + 8, 8);
+            ar->Read(blk1, 8);
+            ar->Read(blk1 + 8, 8);
         }
     } else {
-        src->Write(blk1, 8);
-        src->Write(blk1 + 8, 8);
+        ar->Write(blk1, 8);
+        ar->Write(blk1 + 8, 8);
     }
     char* blk2 = reinterpret_cast<char*>(&m_resourceTimerBase);
     if (kind != 4) {
         if (kind == 7) {
-            src->Read(blk2, 8);
-            src->Read(blk2 + 8, 8);
+            ar->Read(blk2, 8);
+            ar->Read(blk2 + 8, 8);
         }
     } else {
-        src->Write(blk2, 8);
-        src->Write(blk2 + 8, 8);
+        ar->Write(blk2, 8);
+        ar->Write(blk2 + 8, 8);
         return 1;
     }
     return 1;

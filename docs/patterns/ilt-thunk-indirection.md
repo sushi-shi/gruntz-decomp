@@ -92,6 +92,20 @@ member is disproved even when the source-inferred name looked plausible.
 `CGrunt::TileSwitch` exposed `CGrunt::StepArrivalDrop` this way: restoring the
 real `i32` return type removed the fake `GruntTileSwitchImpl` alias.
 
+Command names are especially weak placeholder evidence. In
+`CGruntzMgr::BroadcastCmd`, the supposed `PrepCmd4`/`PrepCmd7` siblings resolve
+through distinct ILT entries to the already exact `SaveState`/`LoadState`
+methods, while the shared supposed `CGruntSpawnConfig::Tick` call resolves to
+`ClearSprites`. The complete fan-out proves the first argument is
+`CFileMemBase*`: the caller has just used its Read/Write virtual slots and every
+destination is an existing serializer. Retyping that boundary also exposes
+`CBattlezData::Command` as an alias for `CBattlezData::Serialize`. The argument
+push, receiver, consumed EAX, and command arm together recover the real
+operation. A similar per-frame placeholder, `CGruntzCmdMgr::Step20b3`,
+resolves to the existing `ScanTargets`. Use the caller's dataflow and receiver
+to interpret each thunk; do not promote a temporary command-role label into a
+new API.
+
 ## Trap: FID false-positives on the destinations
 
 The ILT-reached bodies are often 1-6 byte defaults (`c3`, `33 c0 c3`, `b8 01 00 00 00 c3`).

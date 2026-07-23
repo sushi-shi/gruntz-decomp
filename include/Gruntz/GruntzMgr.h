@@ -43,7 +43,6 @@ namespace Utils {
     class RegistryHelper;
 }
 class CFontConfig; // +0x5c chat/message log (AddItem @0x21c60 - FontConfig.h)
-struct TimerObj;   // +0x60 per-frame timer/poll (m_inputMirror/Stop/Tick)
 class CTriggerMgr;
 class CPlay;        // PickPlayOrPausedState's concrete return (the PLAY state; Play.h)
 class CBattlezData; // +0x7c HUD/score accumulator + command sink (BattlezData.h)
@@ -199,7 +198,6 @@ public:
     // Ported from the (dying) CGameRegistry view - same object, same RVAs.
     // Retail callers load g_gameReg into ecx before both RNG calls, including the
     // ambient-sound TU whose bodies own the primary LCG state.
-    void CuePrep();
     i32 Rand();
     i32 RandRange(i32 lo, i32 hi);
     i32 SetVoiceVolume(i32 v);  // @0x091a10 (store m_voiceVolume, mirror to m_timer->m_2c)
@@ -221,7 +219,6 @@ public:
     // object for `stateId` (switch/new + ctor + vtable), install it, run its
     // slot-1 activate; ret 1 (0 on new/activate failure). Lives in an eh sibling TU.
     i32 TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4);
-    void FlushStateStack(); // @0x090a50 (scalar-delete + drain the pushed state stack)
     // @0x08ef10 - suspend the world and pop the modal message screen carrying `msg`
     // (m_owner->RunModal(msg, hwnd), which strcpy's it into the g_644ea0 message buffer).
     void EnterModalUI(const char* msg);
@@ -245,11 +242,9 @@ public:
     // 4-arg CGameRegistry decl dropped it, which is why CSaveGame::Register's local
     // CString looked like an unexplained un-destroyed temp (its ~45% "EH-frame wall").
     i32 BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString name);
-    void UpdateScoreHud();                             // @0x0860b0
-    i32 BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3); // @0x093460
-    void RecomputeViewScale();                         // @0x08f7f0
-    i32 PrepCmd4(i32 a0);                              // reloc-masked sibling (cmd-4 arm gate)
-    i32 PrepCmd7(i32 a0);                              // reloc-masked sibling (cmd-7 arm gate)
+    void UpdateScoreHud();                                       // @0x0860b0
+    i32 BroadcastCmd(CFileMemBase* ar, i32 cmd, i32 a2, i32 a3); // @0x093460
+    void RecomputeViewScale();                                   // @0x08f7f0
     // A sibling state-transition pusher reached by PassClickToPlayState's reloc-
     // masked 4-arg call (deferred body / matched elsewhere).
     // SwitchToNextState's helpers fold onto the real bound methods: MakeNextState ==
@@ -368,8 +363,8 @@ public:
     CSaveGame* m_saveSink;        // +0x58  the save game (Quicksave/Quickload/warp cheats;
                                   //         0x8174 restarts at its m_maxLevel)
     CFontConfig* m_chatLog;       // +0x5c  chat/message log (CFontConfig::AddItem @0x21c60)
-    CGruntSpawnConfig* m_cueSink; // +0x60  the spawn-config / cue-sink / per-frame poll object
-    //         (ONE class; ex "m_timer"/"TimerObj"; Stop/Tick; m_2c mirror)
+    CGruntSpawnConfig* m_cueSink; // +0x60  spawn-config / cue-sink / per-frame poll object
+    //         (ONE class; ex "m_timer"/"TimerObj"; Stop/ClearSprites; m_2c mirror)
     i32 m_64;                         // +0x64
     CTriggerMgr* m_cmdGrid;           // +0x68  world command/trigger grid (CTriggerMgr)
     CGruntzCmdMgr* m_cmdSubMgr;       // +0x6c  command sub-manager (REAL class CGruntzCmdMgr)

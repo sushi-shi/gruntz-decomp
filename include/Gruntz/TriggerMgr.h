@@ -284,10 +284,9 @@ public:
     // Recall the cell's sub-objects, clear its tile-attr bits, decrement the per-row count,
     // and re-arm. (__stdcall: ret 0xc.) (was a stub; now reconstructed.)
 
-    // 0x7a5e0: RebuildOverlay(kind) - for the overlay sub-object (+0x290..+0x2c0 in 0x8
-    // strides), copy two descriptor fields via its vtable getter/setter per kind. ret 1.
-    // (__thiscall: ret 0x10.)
-    i32 RebuildOverlay(void* obj, i32 kind, i32 unusedC, i32 unusedD);
+    // 0x7a5e0: serialize the trigger grid's timer blocks and overlay records.
+    // kind 4 writes, kind 7 reads. (__thiscall: ret 0x10.)
+    i32 Serialize(CFileMemBase* ar, i32 kind, i32 unusedC, i32 unusedD);
 
     // 0x7a760: ScanGroup - the magic-group scanner/applier; for each live cell of the
     // group, dispatch its logic and tally. Reconstructed to plateau. (__thiscall.)
@@ -516,7 +515,7 @@ public:
     // +0x290..+0x2c8: the three 64-bit timer pairs (base tick, window). PROVEN i64 by
     // 0x6eb80's 64-bit subtract/compare chains ((i64)g_frameTime - base >= window). The
     // finish-level driver writes them as (lo, hi=0) pairs - spell those stores as u32
-    // zero-extends. RebuildOverlay (0x7a5e0) snapshots the same three pairs in 8-byte
+    // zero-extends. Serialize (0x7a5e0) snapshots the same three pairs in 8-byte
     // strides through the overlay source's GetA/GetB getters. The first pair is
     // multi-role (same storage, mode-dependent client): the battlez match-over
     // countdown (0x6eb80), the finish-level cue timer (0x7c3d0, base=g_frameTime,

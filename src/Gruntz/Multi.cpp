@@ -844,7 +844,7 @@ i32 CMulti::PumpA() {
             m_ambientInitDone = 1;
         }
     }
-    Mgr()->m_cmdSubMgr->Step20b3(m_curSlotId % 128);
+    Mgr()->m_cmdSubMgr->ScanTargets(m_curSlotId % 128); // 0x20b3 -> 0x23a10
     m_session->Checksum();
     g_frameTicks++;
     u32 t1 = g_timer32 ? g_timer32 : 0x32;

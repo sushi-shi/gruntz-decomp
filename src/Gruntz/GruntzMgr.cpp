@@ -308,11 +308,11 @@ i32 CGruntzMgr::TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4) {
                 delete m_curState;
             }
             m_curState = 0;
-            FlushStateStack();
+            ClearStateStack(); // 0x2bd5 -> 0x90a50
             m_curState = 0;
         }
     } else if (keepCurrent == 0) {
-        FlushStateStack();
+        ClearStateStack(); // 0x2bd5 -> 0x90a50
     }
 
     if (m_a4 != 0) {
@@ -2330,81 +2330,74 @@ void CGruntzMgr::RecomputeViewScale() {
 }
 
 // -------------------------------------------------------------------------
-// CGruntzMgr::BroadcastCmd (0x093460; ret 0x10). Fans a 4-arg game command out to
-// every subsystem, short-circuiting (return 0) on the first that rejects it. For
-// command id 4 it first arms via PrepCmd4 and for id 7 via PrepCmd7 (each must
-// succeed), both then ticking the +0x60 controller; other ids skip straight to
-// the broadcast. The fan-out order: the four options slots, the +0x68 grid, the
-// live source object (GetSaveSource), the +0x6c sub-mgr, the +0x70 object (vtbl
-// slot 1) and a free command hook, finishing with the +0x7c HUD whose result
+// CGruntzMgr::BroadcastCmd (0x093460; ret 0x10). Fans a 4-arg archive operation out
+// to every serializable subsystem, short-circuiting (return 0) on the first that
+// rejects it. Kind 4 first runs SaveState and kind 7 first runs LoadState (each must
+// succeed), both then clearing the +0x60 spawn-config sprite pair; other kinds skip
+// straight to the fan-out. Order: the four player slots, the +0x68 trigger grid, the
+// live play state, the +0x6c command manager, the +0x70 map object (vtbl slot 1), a
+// free map serializer, and finally the +0x7c battle-data object, whose result
 // (normalized to 0/1) is returned.
 // @early-stop
 // ~78% block-layout wall: logic is exact and the cmd==7 arm + the whole fan-out
-// (options loop, m_cmdGrid/source/m_cmdSubMgr/m_tileGrid/hook/m_scoreHud) match byte for byte. Retail
+// (options loop, m_cmdGrid/source/m_cmdSubMgr/m_tileGrid/hook/m_scoreHud) match byte
+// for byte. Retail
 // emits the cmd==4 arm OUT-OF-LINE at the function tail (`cmp 4; je <end>`; the
-// 4-block jmps back into the shared m_cueSink->Tick), but MSVC here keeps it inline
-// between the gate and the cmd==7 test, shifting that one block. Pure basic-block
+// 4-block jmps back into the shared m_cueSink->ClearSprites), but MSVC here keeps it
+// inline between the gate and the cmd==7 test, shifting that one block. Pure basic-block
 // placement; case reorder doesn't move it (see docs/patterns/switch-cases-source-order.md).
 // NOTE: the trace size was 0x124 but the real function runs to 0x15c (the cmd==4
 // tail + the bool-normalizing HUD epilogue past the under-counted Ghidra bound).
 RVA(0x00093460, 0x15c)
-i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
-    if (a0 == 0) {
+i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, i32 cmd, i32 a2, i32 a3) {
+    if (ar == 0) {
         return 0;
     }
     switch (cmd) {
         case 4:
-            if (PrepCmd4(a0) == 0) {
+            if (SaveState(ar) == 0) {
                 return 0;
             }
-            m_cueSink->Tick();
+            m_cueSink->ClearSprites();
             break;
         case 7:
-            if (PrepCmd7(a0) == 0) {
+            if (LoadState(ar) == 0) {
                 return 0;
             }
-            m_cueSink->Tick();
+            m_cueSink->ClearSprites();
             break;
     }
 
     GruntzPlayer* slot = m_options;
     for (i32 i = 0; i < 4; i++) {
-        if (slot == 0
-            || (reinterpret_cast<CTriggerMgr*>(slot))
-                       ->RebuildOverlay(reinterpret_cast<void*>(a0), cmd, a2, a3)
-                   == 0) {
+        if (slot == 0 || slot->Serialize(ar, cmd, a2, a3) == 0) {
             return 0;
         }
         slot++;
     }
 
-    if (m_cmdGrid->RebuildOverlay(reinterpret_cast<void*>(a0), cmd, a2, a3) == 0) {
+    if (m_cmdGrid->Serialize(ar, cmd, a2, a3) == 0) {
         return 0;
     }
-    if ((reinterpret_cast<CTriggerMgr*>(PickPlayOrPausedState()))
-            ->RebuildOverlay(reinterpret_cast<void*>(a0), cmd, a2, a3)
-        == 0) {
+    if (PickPlayOrPausedState()->SyncState(ar, cmd, a2, a3) == 0) {
         return 0;
     }
-    if ((reinterpret_cast<CTriggerMgr*>(m_cmdSubMgr))
-            ->RebuildOverlay(reinterpret_cast<void*>(a0), cmd, a2, a3)
-        == 0) {
+    if (m_cmdSubMgr->Serialize(ar, cmd, a2, a3) == 0) {
         return 0;
     }
     // slot 1 (0x82430 = the derived "SerializeNodes"): the base's Visit slot, whose base
     // body (CMapMgr::Visit @0x9f7f0) proves the first arg is the CFileMemBase* it hands
-    // to its own Save/Load slots. BroadcastCmd carries it as an i32 - hence the cast; the
-    // arg's REAL type is the archive.
-    if (m_tileGrid->Visit(reinterpret_cast<CFileMemBase*>(a0), cmd, a2, a3) == 0) {
+    // to its own Save/Load slots.
+    if (m_tileGrid->Visit(ar, cmd, a2, a3) == 0) {
         return 0;
     }
     // 0x93570: `push ebx/ebp/esi/edi; call 0x17da; add esp,0x10` - the __cdecl
     // scroll-state serializer 0x0ec230 (MapLogic.cpp). This 4-push/`add esp,0x10` site
     // is what PROVES its arity is 4; the callee reads only the first two.
-    if (MapSerializeCurve(reinterpret_cast<CFileMemBase*>(a0), cmd, a2, a3) == 0) {
+    if (MapSerializeCurve(ar, cmd, a2, a3) == 0) {
         return 0;
     }
-    return m_scoreHud->Command(a0, cmd, a2, a3) != 0;
+    return m_scoreHud->Serialize(ar, cmd, a2, a3) != 0;
 }
 
 // -------------------------------------------------------------------------

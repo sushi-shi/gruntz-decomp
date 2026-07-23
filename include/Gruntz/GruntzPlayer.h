@@ -35,6 +35,7 @@
 #include <rva.h>
 
 #include <Gruntz/BattlezMapConfig.h> // the REAL +0x38 sub-object (0x1e8 B; ctor 0x24dc0)
+#include <Gruntz/SerialArchive.h>    // CFileMemBase - the Serialize stream
 #include <Mfc.h>                     // CString (real MFC, 4-byte m_pchData)
 
 class GruntzPlayer {
@@ -56,7 +57,7 @@ public:
     CString GetName() {
         return m_name;
     }
-    i32 Serialize(void* ar, i32 kind, i32 a3, i32 a4); // 0x0dace0
+    i32 Serialize(CFileMemBase* ar, i32 kind, i32 a3, i32 a4); // 0x0dace0
     i32 Deactivate(); // 0x0db2f0 (ex "Cdb2f0::Finalize"; clears the board bundle + m_020)
     static CString GetDefaultName(); // 0x0dafb0 (/GX, returns "Player")
 

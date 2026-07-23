@@ -171,3 +171,38 @@ dips and recoveries are useful evidence that authentic class/member declaration
 state can reverse earlier compiler-state colorings; they are not a reason to
 restore the disproved placeholder. The owner fold itself is documented in
 `pmf-registry-collapses-placeholder-owner.md`.
+
+ELEVENTH FIRING (2026-07-23, command-role alias collapse): deleting seven fake
+member declarations from `GruntzMgr.h`, `GruntzCmdMgr.h`,
+`GruntSpawnConfig.h`, and `BattlezData.h` after their ILT targets proved to be
+existing methods recolored a wide shared-header closure. Retyping the archive
+fan-out from integer/`void*` placeholders to `CFileMemBase*` then removed the
+wrong receiver casts without changing that set. Eight unrelated,
+source-identical rows newly dipped: `CNetSession::Verify(i32)` 100→89.5349,
+`CSBI_GruntMachine::Render` 92.8205→88.5897,
+`CGrunt::LoadWingzGruntSprites` 76.6337→75.2651,
+`CLightFxRender::Shape1` 73.5357→73.4969,
+`Shape6` 77.0497→77.0015, `CSBI_Image::Render` 74.0714→74.0357,
+`CLightFxRender::Shape2` 73.1042→73.0785, and
+`Shape4` 69.0179→68.9935. Four earlier dips reversed without body edits:
+`CSpotLight::Tick`, `CGrunt::StepGruntMovement`, and
+`CGrunt::ArrivalScanA`/`ArrivalScanB` returned to their saved MAX values.
+The directly edited functions retained their rounded fuzzy scores because
+objdiff masks their corrected relocation targets, while overall current fuzzy
+still rose 73.69→73.72. This is the clearest bidirectional sample yet: removing
+false declarations can both create and repair register-coloring residues in
+unrelated consumers, so the full declaration-state delta is a useful reverse
+search dimension and the per-function MAX must remain intact.
+
+The same batch then supplied a controlled second stage: removing the unused
+placeholder forward declaration `struct TimerObj;` (the +0x60 member was already
+proved to be `CGruntSpawnConfig*`) changed no executable statement, field, or
+function signature. Nevertheless, `CSBI_ImageSet::Render` newly moved
+98.5790→86.7368, `CSpriteRef::Build` 77.9927→74.7273, and
+`CGrunt::ArrivalScanA` 50.2333→50.2182; meanwhile
+`CSBI_GruntMachine::Render` and `CLightFxRender::Shape4` returned to MAX, and
+`Shape1`/`Shape6` partially recovered to 73.5202/77.0196. Overall current fuzzy
+settled at 73.71 while MAX remained 73.73. Therefore even an unused class
+forward declaration participates in this MSVC 5 compiler-state butterfly.
+When reversing a similar dip, replay both member/API declaration deltas and
+apparently inert type-forward deltas in their original order.

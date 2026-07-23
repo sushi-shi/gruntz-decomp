@@ -1083,7 +1083,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         i32 idx = GruntRand() % count + 1;
         if (cue != 0) {
             CGruntzMgr* g = g_gameReg;
-            g->CuePrep();
+            g->Rand(); // 0x39ae -> CGruntzMgr::Rand
             i32 focused = (m_tileOwnerHi == g_curPlayer);
             if (focused && idx > 0x5a) {
                 if (CGameLevel::PointInBounds(

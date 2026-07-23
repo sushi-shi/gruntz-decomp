@@ -17,37 +17,36 @@ SIZE_UNKNOWN();
 
 class CBattlezData {
 public:
-    i32 InitWithRecords(void* records);      // 0xfc9c0
-    ~CBattlezData();                         // 0xfc9f0
-    void Init();                             // 0xfca10
-    void SetCount(i32 count);                // 0xfcad0
-    i32 Command(i32 a, i32 b, i32 c, i32 d); // reloc-masked (BroadcastCmd, via m_scoreHud)
-    void MarkFlag(i32 y, i32 x);             // 0xfcb50
-    void ClearFlags();                       // 0xfcb90
-    i32 SumFlags(i32 y);                     // 0xfcbc0
-    i32 GetFlag(i32 x, i32 y);               // 0x0fcc10 (out-of-line: bounds-checked m_flags[x][y])
-    void BumpWin(i32 y, i32 x);              // 0xfcc50
-    void ClearWins();                        // 0xfcc90
-    i32 SumWinRow(i32 y);                    // 0xfccb0
-    i32 InBounds(i32 unused);                // 0xfcd70
-    i32 AllRecordsInBounds();                // 0xfccf0
-    float GroupRatio();                      // 0xfce00
-    i32 GroupAllScored();                    // 0xfce80
-    i32 SumGroupField0c();                   // 0xfcf20
-    i32 SumGroupField2c();                   // 0xfcf70
-    i32 SumGroupField10();                   // 0xfcfc0
-    i32 SumGroupField30();                   // 0xfd010
-    i32 SumGroupField1c();                   // 0xfd060
-    i32 SumGroupField34();                   // 0xfd0b0
-    i32 SumGroupField20();                   // 0xfd100
-    i32 SumGroupField38();                   // 0xfd150
-    i32 SumGroupField24();                   // 0xfd1a0
-    i32 SumGroupField3c();                   // 0xfd1f0
-    i32 SumGroupField18();                   // 0xfd240
-    i32 SumGroupField14();                   // 0xfd290
-    i32 SumGroupField08();                   // 0xfd2e0
-    i32 GetRecordValue(i32 b);               // 0xfced0
-    void FillRecord(i32 index, i32 phase);   // 0xfd330
+    i32 InitWithRecords(void* records);    // 0xfc9c0
+    ~CBattlezData();                       // 0xfc9f0
+    void Init();                           // 0xfca10
+    void SetCount(i32 count);              // 0xfcad0
+    void MarkFlag(i32 y, i32 x);           // 0xfcb50
+    void ClearFlags();                     // 0xfcb90
+    i32 SumFlags(i32 y);                   // 0xfcbc0
+    i32 GetFlag(i32 x, i32 y);             // 0x0fcc10 (out-of-line: bounds-checked m_flags[x][y])
+    void BumpWin(i32 y, i32 x);            // 0xfcc50
+    void ClearWins();                      // 0xfcc90
+    i32 SumWinRow(i32 y);                  // 0xfccb0
+    i32 InBounds(i32 unused);              // 0xfcd70
+    i32 AllRecordsInBounds();              // 0xfccf0
+    float GroupRatio();                    // 0xfce00
+    i32 GroupAllScored();                  // 0xfce80
+    i32 SumGroupField0c();                 // 0xfcf20
+    i32 SumGroupField2c();                 // 0xfcf70
+    i32 SumGroupField10();                 // 0xfcfc0
+    i32 SumGroupField30();                 // 0xfd010
+    i32 SumGroupField1c();                 // 0xfd060
+    i32 SumGroupField34();                 // 0xfd0b0
+    i32 SumGroupField20();                 // 0xfd100
+    i32 SumGroupField38();                 // 0xfd150
+    i32 SumGroupField24();                 // 0xfd1a0
+    i32 SumGroupField3c();                 // 0xfd1f0
+    i32 SumGroupField18();                 // 0xfd240
+    i32 SumGroupField14();                 // 0xfd290
+    i32 SumGroupField08();                 // 0xfd2e0
+    i32 GetRecordValue(i32 b);             // 0xfced0
+    void FillRecord(i32 index, i32 phase); // 0xfd330
     i32 Serialize(CFileMemBase* s, i32 op, i32 a2, i32 a3); // 0xfd3f0
 
     BattlezRecord* m_records; // +0x00

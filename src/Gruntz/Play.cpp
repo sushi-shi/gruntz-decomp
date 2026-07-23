@@ -3385,8 +3385,7 @@ i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
 }
 
 RVA(0x000dace0, 0x239)
-i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
-    CFileMemBase* ar = static_cast<CFileMemBase*>(arArg);
+i32 GruntzPlayer::Serialize(CFileMemBase* ar, i32 kind, i32 a3, i32 a4) {
     char tmp[0x80];
     // Retail lays the kind==4 (Save, [+0x30]) arm out of line and keeps the
     // kind==7 (Load, [+0x2c]) arm inline: `cmp 4; je SAVE / cmp 7; jne TAIL`.
