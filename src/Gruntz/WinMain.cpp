@@ -17,9 +17,9 @@ i32 CheckExePath(char* pszPath, i32 nCount, void* pReserved);
 // resource/CD/launch validation, returns nonzero to proceed.
 i32 StartupGate(i32 nReserved);
 
-// SettleDelay - a GetTickCount busy-wait used as a brief settle delay
-// before the hot-key sample. __cdecl 1 arg (ms).
-i32 SettleDelay(i32 nMs);
+// ActiveWait (0x13dfe0) - the timeGetTime busy-wait, used here as a brief
+// settle delay before the hot-key sample.
+void ActiveWait(u32 milliseconds);
 
 // VersionScan - an sscanf wrapper (parses "%d.%d.%d.%d" into the four
 // version ints). __cdecl variadic.
@@ -70,7 +70,12 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         GetFileVersionInfoA(szModulePath, 0, dwSize, pInfo);
         void* pValue;
         UINT uLen;
-        VerQueryValueA(pInfo, const_cast<LPSTR>("\\StringFileInfo\\040904B0\\FileVersion"), &pValue, &uLen);
+        VerQueryValueA(
+            pInfo,
+            const_cast<LPSTR>("\\StringFileInfo\\040904B0\\FileVersion"),
+            &pValue,
+            &uLen
+        );
         VersionScan(
             static_cast<const char*>(pValue),
             "%d, %d, %d, %d",
@@ -100,7 +105,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     //     scheduled here (the target interleaves it with the settle-delay call).
     g_hInstance = hInstance;
     i32 bAdvanced = 0;
-    SettleDelay(0x64); // busy-wait, ~100ms
+    ActiveWait(0x64); // busy-wait, ~100ms
     if (static_cast<i16>(GetAsyncKeyState(VK_CONTROL)) & 0x80000000) {
         bAdvanced = 1;
     }
@@ -135,13 +140,8 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     // 3e. If requested, run the Advanced Options modal; on it returning 0 (the
     //     "do not launch the game" result) tear the app down and exit.
     if (bAdvanced != 0) {
-        i32 nDlgResult = DialogBoxParamA(
-            g_hInstance,
-            "CONFIG_ADVANCED",
-            0,
-            &AdvancedOptionsDialogProc,
-            0
-        );
+        i32 nDlgResult =
+            DialogBoxParamA(g_hInstance, "CONFIG_ADVANCED", 0, &AdvancedOptionsDialogProc, 0);
         if (nDlgResult == 0) {
             if (g_pApp != 0) {
                 delete g_pApp;

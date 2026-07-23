@@ -4,11 +4,12 @@
 // (SymParser.cpp) units were text-A-B-A-woven slices of this file and are folded
 // in, in retail-RVA order: CParseSource (the positioned byte-reader / parse
 // slot), CParseSource, CSymRec (the leaf record), CSymTab (the scope tree)
-// and CSymParser (the parser/owner) - plus two stray fns that carry Rez names
+// and CSymParser (the parser/owner) - plus one stray fn that carries a Rez name
 // but whose text AND private .data cells sit inside this obj's band
-// (Load@CRezDirNode 0x13a0f0, FindEntry@CRezDir 0x13c080; @identity-TODO).
+// (Load@CRezDirNode 0x13a0f0; @identity-TODO). 0x13c080 is Classify@CSymParser
+// (its callers ParseBuffer/LoadEntry pass ecx=this; ex the FindEntry@CRezDir guess).
 #include <Bute/SymTab.h> // own extern surface
-#include <Mfc.h> // afx-first (RezMgr.h below pulls MFC/Win32 for the two Rez strays)
+#include <Mfc.h>         // afx-first (RezMgr.h below pulls MFC/Win32 for the two Rez strays)
 #include <rva.h>
 #include <io.h>     // _finddata_t / _findfirst / _findnext / _findclose (ParseRecords)
 #include <stdlib.h> // _splitpath (0x18c530) / atoi (0x11ff10)
@@ -18,9 +19,9 @@
 #include <Bute/SymParser.h>     // full CSymParser + CSymTab/CSymRec via SymTab.h
 #include <Gruntz/ParseSource.h> // canonical CParseSource (the 0x3c parse-slot record)
 #include <Rez/RezMgr.h>         // CRezDirNode/CRezDir/RezSrc (the two stray fns)
-#include <Rez/RezFile.h> // g_wildcard (ex .cpp extern)
+#include <Rez/RezFile.h>        // g_wildcard (ex .cpp extern)
 
-#include <Dsndmgr/SoundBankLoad.h> // g_dot (ex .cpp extern)
+#include <Dsndmgr/SoundBankLoad.h>     // g_dot (ex .cpp extern)
 #include <Gruntz/CustomWorldInfoDlg.h> // g_dotDot (ex .cpp extern)
 inline void* operator new(u32, void* p) {
     return p;
@@ -1576,7 +1577,7 @@ i32 CSymParser::ReParse() {
 }
 
 RVA(0x0013c080, 0x3c)
-i32 CRezDir::FindEntry(char* name) {
+i32 CSymParser::Classify(char* name) {
     RezFindRec rec;
     if (_stat(name, &rec) != 0) {
         return 0;
@@ -1644,4 +1645,3 @@ void CSymParser::AddNode(void* rec) {
         m_hash.Insert(&(static_cast<CParseSource*>(rec))->m_node1c);
     }
 }
-

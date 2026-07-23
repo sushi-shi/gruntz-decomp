@@ -49,10 +49,8 @@ struct CWwdSpatialMgr {
     // all three Setups + the bbox), p3/p4/p5 are the three Setup size pairs, p6/p7/p8 the
     // three rect/origin dim pairs. Called by CDDrawWorkerHost::RebuildPlanes.
     i32 Init(void* src, RECT* rc, i32* p3, i32* p4, i32* p5, i32* p6, i32* p7, i32* p8); // 0x168080
-    i32 SetTargetA(i32 a, i32 b); // 0x168340  (the plane's CenterScrollA target)
-    i32 SetTargetB(i32 a, i32 b); // 0x168500  (the plane's CenterScrollB target)
-    void FreeGrids();             // 0x1682f0
-    void ListDtor();              // 0x163a10  the m_iter member teardown
+    void FreeGrids();                                                                    // 0x1682f0
+    void ListDtor(); // 0x163a10  the m_iter member teardown
     i32 ScrollTo(i32 dx, i32 dy);
     i32 GetSize(); // 0x168430
     i32 CountInRect(CWwdGrid* grid);

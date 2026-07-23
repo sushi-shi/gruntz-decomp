@@ -19,7 +19,7 @@
 #include <DDrawMgr/DDrawSurfacePair.h>    // m_drawTarget->m_frontPair geometry (m_width/m_height)
 #include <DDrawMgr/DDrawPtrCollections.h> // real +0x1c pool type (non-virtual dtor 0x141d50)
 #include <Dsndmgr/SoundStream.h>          // real +0x20 stream type (Stop 0x137a80 / Free 0x137740)
-#include <Wwd/WwdObjMgr.h> // ex Globals.h
+#include <Wwd/WwdObjMgr.h>                // ex Globals.h
 
 RVA(0x00155840, 0x41)
 CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
@@ -176,7 +176,7 @@ RVA(0x00155f60, 0x56)
 i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, i32 flags) {
     CDDrawSurfacePair* child = m_drawTarget->m_frontPair;
     if (child->m_width != x || child->m_height != y) {
-        if (CreateChildSurface(x, y, flags) == 0) {
+        if (m_drawTarget->ResizePages(x, y, flags) == 0) {
             return 0;
         }
     }
@@ -336,7 +336,8 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     }
     g_wwdObjIdCounter = *reinterpret_cast<u32*>((header + 0x114));
     m_childGroup->DestroyChildren_159ef0();
-    if (m_childGroup->LoadObjects(&S, *reinterpret_cast<unsigned int*>((header + 0x110)), arg3) == 0) {
+    if (m_childGroup->LoadObjects(&S, *reinterpret_cast<unsigned int*>((header + 0x110)), arg3)
+        == 0) {
         return 0;
     }
     if (m_callback == 0 || m_callback(this, &S, 6, arg3, reinterpret_cast<i32>(header)) == 0) {
@@ -351,7 +352,8 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_callback == 0 || m_callback(this, &S, 7, arg3, reinterpret_cast<i32>(header)) == 0) {
         return 0;
     }
-    if (m_childGroup->Deserialize(&S, *reinterpret_cast<unsigned int*>((header + 0x110)), arg3) == 0) {
+    if (m_childGroup->Deserialize(&S, *reinterpret_cast<unsigned int*>((header + 0x110)), arg3)
+        == 0) {
         return 0;
     }
     if (m_level->EditDispatch(static_cast<void*>(&S), 7, 0, 0) == 0) {

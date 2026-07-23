@@ -401,7 +401,7 @@ i32 CDDrawPtrCollections::CreateDevice(
     SetupCaps();
 
     if (width > 0 && height > 0) {
-        hr = SetVideoMode(width, height, bpp, 0, 0);
+        hr = ConfigureSurface(width, height, bpp, 0, 0);
         if (hr != 0) {
             CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0xc2, hr);
             if (m_lastError == 0) {
@@ -601,7 +601,10 @@ i32 CDDrawPtrCollections::CreateRange(
         sprintf(buf, "%s%i", baseName, i);
         if (suffix != 0) {
             if (suffix[0] != '.') {
-                strcpy(buf, g_dot); // 0x5ee8ec IS "." (the old extern's ".."/g_dotDot label was wrong)
+                strcpy(
+                    buf,
+                    g_dot
+                ); // 0x5ee8ec IS "." (the old extern's ".."/g_dotDot label was wrong)
             }
             strcat(buf, suffix);
         }
@@ -1070,7 +1073,7 @@ void* CDDrawPtrCollections::CreatePoolItem(void* arg0v, void* arg1) {
         delete item;
         return 0;
     }
-    AddPoolItem(item);
+    AddItemA(item);
     return item;
 }
 
@@ -1358,4 +1361,3 @@ i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a
     }
     return hr;
 }
-

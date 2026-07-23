@@ -34,7 +34,7 @@ static const i32 TILE_CLEAR = -1;
         if (px_ < 0) {                                                                             \
             px_ = 0;                                                                               \
         } else {                                                                                   \
-            CDDrawWorkerHost* pc_ = (LVL)->m_mainPlane;                                                 \
+            CDDrawWorkerHost* pc_ = (LVL)->m_mainPlane;                                            \
             if (px_ >= pc_->m_wrapW) {                                                             \
                 px_ = pc_->m_wrapW - 1;                                                            \
             }                                                                                      \
@@ -42,12 +42,12 @@ static const i32 TILE_CLEAR = -1;
         if (py_ < 0) {                                                                             \
             py_ = 0;                                                                               \
         } else {                                                                                   \
-            CDDrawWorkerHost* pc_ = (LVL)->m_mainPlane;                                                 \
+            CDDrawWorkerHost* pc_ = (LVL)->m_mainPlane;                                            \
             if (py_ >= pc_->m_wrapH) {                                                             \
                 py_ = pc_->m_wrapH - 1;                                                            \
             }                                                                                      \
         }                                                                                          \
-        CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                     \
+        CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                \
         i32 qx_ = px_ >> pl_->m_shiftX;                                                            \
         i32 qy_ = py_ >> pl_->m_shiftY;                                                            \
         i32 col_ = qx_;                                                                            \
@@ -350,11 +350,12 @@ public:
     CObArray m_array20;        // +0x20  ::CObArray (ctor 0x1b55e9; EH state 0)
     CObArray
         m_planes; // +0x34  ::CObArray of CDDrawWorkerHost* (m_size293550x3c == m_planeCount; EH state 1)
-    CObArray m_imageSets;          // +0x48  ::CObArray of CTileImageSet* (EH state 2)
-    CDDrawWorkerHost* m_mainPlane;      // +0x5C  (typed full plane view; same object as CDDrawWorkerHost)
-    i32 m_mainIndex;               // +0x60
-    i32 m_maxStepX;                // +0x64  per-frame max move step (MoveToward; 0x40)
-    i32 m_maxStepY;                // +0x68
+    CObArray m_imageSets; // +0x48  ::CObArray of CTileImageSet* (EH state 2)
+    CDDrawWorkerHost*
+        m_mainPlane; // +0x5C  (typed full plane view; same object as CDDrawWorkerHost)
+    i32 m_mainIndex; // +0x60
+    i32 m_maxStepX;  // +0x64  per-frame max move step (MoveToward; 0x40)
+    i32 m_maxStepY;  // +0x68
     char m_levelName[0xac - 0x6c]; // +0x6C  copy of WwdHeader::levelName
     u32 m_checksum;                // +0xAC  == WwdHeader::checksum
     // +0xB0..+0xDC  default parameter block, stamped identically by the ctor +
@@ -384,7 +385,6 @@ i32 __stdcall ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c);
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 // (EditSink is GameLevel.cpp's CFileMemBase typedef; spell the underlying type here)
-extern i32 __stdcall ResolveLevelName(class CFileMemBase* sink, i32 a, i32 b, i32 c);
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

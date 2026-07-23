@@ -61,23 +61,26 @@ i32 CSBI_WarlordHead::ShowFrames(i32 show, ShadeDescr* palDescr) {
         return 0;
     }
 
-    CImage* f = (cfg->m_minIndex <= 1 && cfg->m_maxIndex >= 1) ? static_cast<CImage*>(cfg->m_items.GetAt(1)) : 0;
+    CImage* f = (cfg->m_minIndex <= 1 && cfg->m_maxIndex >= 1)
+                    ? static_cast<CImage*>(cfg->m_items.GetAt(1))
+                    : 0;
     if (f == 0) {
         return 0;
     }
     if (f->m_owned) {
-        WhShowItem(show, 0);
+        f->m_owned->Select(show, 0);
     }
     if (palDescr && f->m_owned) {
         f->m_owned->m_palDescr = palDescr;
     }
 
-    f = (cfg->m_minIndex <= 2 && cfg->m_maxIndex >= 2) ? static_cast<CImage*>(cfg->m_items.GetAt(2)) : 0;
+    f = (cfg->m_minIndex <= 2 && cfg->m_maxIndex >= 2) ? static_cast<CImage*>(cfg->m_items.GetAt(2))
+                                                       : 0;
     if (f == 0) {
         return 0;
     }
     if (f->m_owned) {
-        WhShowItem(show, 0);
+        f->m_owned->Select(show, 0);
     }
     if (palDescr && f->m_owned) {
         f->m_owned->m_palDescr = palDescr;
@@ -118,9 +121,13 @@ i32 CSBI_WarlordHead::Render() {
     CDDrawWorker* cfg = m_34;
     CImage* f;
     if (m_direction == 1) {
-        f = (cfg->m_minIndex > 3 || cfg->m_maxIndex < 3) ? 0 : static_cast<CImage*>(cfg->m_items.GetAt(3));
+        f = (cfg->m_minIndex > 3 || cfg->m_maxIndex < 3)
+                ? 0
+                : static_cast<CImage*>(cfg->m_items.GetAt(3));
     } else {
-        f = (cfg->m_minIndex > 4 || cfg->m_maxIndex < 4) ? 0 : static_cast<CImage*>(cfg->m_items.GetAt(4));
+        f = (cfg->m_minIndex > 4 || cfg->m_maxIndex < 4)
+                ? 0
+                : static_cast<CImage*>(cfg->m_items.GetAt(4));
     }
     if (f) {
         f->RenderFrame(
@@ -133,7 +140,9 @@ i32 CSBI_WarlordHead::Render() {
 
     cfg = m_34;
     i32 idx = m_38;
-    CImage* g = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : static_cast<CImage*>(cfg->m_items.GetAt(idx));
+    CImage* g = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex)
+                    ? 0
+                    : static_cast<CImage*>(cfg->m_items.GetAt(idx));
     m_frame = g;
     if (g) {
         g->RenderFrame(

@@ -88,12 +88,10 @@ public:
 
     // Internal setup helpers reached from CreateDevice (defined in other DDrawMgr
     // TUs; modeled as no-body externs so their rel32 calls are reloc-masked).
-    void SetupCaps();                                                 // 0x143240
-    void* CreatePoolItem(void* arg0, void* arg1);                     // 0x143630
-    i32 SetVideoMode(i32 width, i32 height, i32 bpp, i32 a4, i32 a5); // 0x143c20
+    void SetupCaps();                             // 0x143240
+    void* CreatePoolItem(void* arg0, void* arg1); // 0x143630
     // Pool/mode comparator - the selection-sort predicate (free __stdcall, no this).
     static i32 __stdcall Compare(void* a, void* b); // 0x1433d0
-    void AddPoolItem(void* item);                   // 0x142100  pool publisher (reloc-masked)
 
     // Display-mode pool searches over m_poolItems (m_pData[i] == a CDdMode*). FindIndex
     // = exact 3-key match; FindLast = >= range match; FindFwd/FindBack = nearest same-m_54
@@ -185,11 +183,11 @@ public:
     i32 GetCapsChecked(); // 0x08dd80
 
     IDirectDraw2* m_device; // +0x00  the held IDirectDraw2 device (Release on Clear)
-                           //         NOTE (wave4-K): +0x00/+0x04 mirror CDDrawPtrCollections's
-                           //         m_device/m_dd1 - CDDrawPtrCollections and
-                           //         CDDrawPtrCollections are two views of ONE DDRAWMGR.CPP
-                           //         manager class (shared +0x4b4 array, +0x93c..+0x944
-                           //         tail); flagged for a canonical-class unification.
+                            //         NOTE (wave4-K): +0x00/+0x04 mirror CDDrawPtrCollections's
+                            //         m_device/m_dd1 - CDDrawPtrCollections and
+                            //         CDDrawPtrCollections are two views of ONE DDRAWMGR.CPP
+                            //         manager class (shared +0x4b4 array, +0x93c..+0x944
+                            //         tail); flagged for a canonical-class unification.
     IDirectDraw* m_dd1;     // +0x04  the raw pre-QI IDirectDraw (Release on Clear)
     // +0x008/+0x184: the driver + HEL DDCAPS blocks (0x17c B each; the SDK DDCAPS'
     // sizeof differs across DX versions, so raw dword storage + LPDDCAPS casts at
@@ -197,9 +195,10 @@ public:
     i32 m_driverCaps[0x5f]; // +0x008  driver DDCAPS (GetCapsChecked fills)
     i32 m_helCaps[0x5f];    // +0x184  HEL DDCAPS (GetCapsChecked fills)
     char _pad300[0x47c - 0x300];
-    CPtrList m_poolA;  // +0x47c  (block size 0xa) - CFileImageSurface* (pool-A items)
-    CPtrList m_poolB;  // +0x498  (block size 0xa) - CDDPalette*
-    CPtrArray m_poolItems; // +0x4b4  the display-mode/pool-item array (m_pData@+0x4b8 / m_nSize@+0x4bc)
+    CPtrList m_poolA; // +0x47c  (block size 0xa) - CFileImageSurface* (pool-A items)
+    CPtrList m_poolB; // +0x498  (block size 0xa) - CDDPalette*
+    CPtrArray
+        m_poolItems; // +0x4b4  the display-mode/pool-item array (m_pData@+0x4b8 / m_nSize@+0x4bc)
     char _pad4C8[0x534 - 0x4c8];
     i32 m_bltCaps; // +0x534  caps flag (& 0x8000000); zeroed in ctor / Clear
     // Display palette context (+0x538..+0x944). This IS the "palette source" the

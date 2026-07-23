@@ -22,9 +22,11 @@ public:
 };
 SIZE(0x54);
 
+// The act-table slot type (the registry stores CUserLogic member pointers).
+typedef i32 (CUserLogic::*SimpleAnimHandler)();
+
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
-extern i32 SimpleAnimLogic_4028b0();
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

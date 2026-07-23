@@ -32,8 +32,8 @@ public:
     // 0x13c500/0x13c520, [2..7] __purecall). CRezItm / CRezDir / CRezFile each
     // override all six stream slots; every retail call into the family dispatches
     // (no direct .text callers of any slot body - xref-verified).
-    virtual void Noop(); // [0] 0x13c530 (empty body; original role unrecovered)
-    virtual ~CRezItmBase();       // [1] ??1 0x13c520 (clears m_parent)
+    virtual void Noop();    // [0] 0x13c530 (empty body; original role unrecovered)
+    virtual ~CRezItmBase(); // [1] ??1 0x13c520 (clears m_parent)
     virtual i32 Read(i32 off, i32 base, u32 count, void* buf) = 0;  // [2]
     virtual i32 Write(i32 base, i32 off, u32 count, void* buf) = 0; // [3]
     virtual i32 Open(char* name, i32 readonly, i32 write) = 0;      // [4]
@@ -45,8 +45,8 @@ public:
     // CRezList::AddHead (0x1851e0) when the node is enrolled in an owner's child
     // list (see CRezFile in <Rez/RezFile.h>). The ctors here never touch them;
     // typed as the node base rather than left as raw void*.
-    CRezItmBase* m_next;    // +0x04
-    CRezItmBase* m_prev;    // +0x08
+    CRezItmBase* m_next;  // +0x04
+    CRezItmBase* m_prev;  // +0x08
     CSymParser* m_parent; // +0x0c  the owning parser CRezItm polls via Retry() (slot 2)
 };
 SIZE(0x10); // "16 bytes" base (derived fields start at +0x10)
@@ -91,11 +91,12 @@ public:
     // <Mfc.h> (included above) already pulls <stdio.h>, so FILE is in scope here; the
     // handle is the real CRT FILE* (a pointer-type change is matching-neutral - void*
     // and FILE* are both 4 bytes and m_fp is only touched in RezFile.cpp):
-    FILE* m_fp;      // +0x10  CRT FILE* (= 0); passed to fseek/fread/... by value
-    char* m_readBuf; // +0x14  owned filename copy (= 0); operator new(strlen+1)'d, strcpy'd, re-Open'd
-    i32 m_readonly;        // +0x18  readonly flag (Open stores its readonly arg here)
-    i32 m_1c;        // +0x1c  (set by the virtual load, not this TU; role unproven)
-    i32 m_pos;       // +0x20  position cursor (= -1)
+    FILE* m_fp; // +0x10  CRT FILE* (= 0); passed to fseek/fread/... by value
+    char*
+        m_readBuf; // +0x14  owned filename copy (= 0); operator new(strlen+1)'d, strcpy'd, re-Open'd
+    i32 m_readonly; // +0x18  readonly flag (Open stores its readonly arg here)
+    i32 m_1c;       // +0x1c  (set by the virtual load, not this TU; role unproven)
+    i32 m_pos;      // +0x20  position cursor (= -1)
 };
 SIZE(0x24); // operator new leaf size 0x24
 
@@ -118,7 +119,6 @@ public:
     virtual i32 Flush() OVERRIDE; // [6] 0x13caa0 -> 1
     virtual i32 Check() OVERRIDE; // [7] 0x13cab0 -> 1
 
-    i32 FindEntry(char* name);
     // OpenSub is NOT matched in this TU - see RezMgr.cpp note.
 
     // Exactly 0x38 bytes (verified: CSymParser::ParseBuffer does `push 0x38; new;
@@ -141,7 +141,7 @@ struct RezSrc {
     char m_pad0[0x08];
     i32 m_8; // +0x08  (must be nonzero)
     char m_padc[0x1c - 0x0c];
-    i32 m_1c;            // +0x1c  (must be <= 1)
+    i32 m_1c;              // +0x1c  (must be <= 1)
     CRezItmBase* m_stream; // +0x20  the polymorphic read stream (family item)
 };
 SIZE_UNKNOWN(); // partial view of the foreign archive-source object
@@ -150,12 +150,12 @@ class CRezDirNode {
 public:
     i32 Load(i32 childFlag);
 
-    char _vft0[4];  // +0x00 engine vptr (reduced view; not dispatched by Load)
+    char _vft0[4];             // +0x00 engine vptr (reduced view; not dispatched by Load)
     char m_pad04[0x0c - 0x04]; // +0x04..+0x0b (untouched by Load; roles unrecovered)
-    i32 m_off;      // +0x0c  (payload offset)
-    u32 m_size;     // +0x10  (payload size)
-    CRezDirNode* m_subdir; // +0x14  child sub-dir (the recursion target; unused on `this`)
-    RezSrc* m_src;  // +0x18  (archive source object)
+    i32 m_off;                 // +0x0c  (payload offset)
+    u32 m_size;                // +0x10  (payload size)
+    CRezDirNode* m_subdir;     // +0x14  child sub-dir (the recursion target; unused on `this`)
+    RezSrc* m_src;             // +0x18  (archive source object)
     char m_pad1c[0x38 - 0x1c];
     CHashBase m_kids; // +0x38..+0x3f  (8-byte engine child collection)
     char m_pad40[8];  // +0x40..+0x47

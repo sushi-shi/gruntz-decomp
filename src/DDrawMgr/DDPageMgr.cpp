@@ -1,5 +1,5 @@
 #include <DDrawMgr/DDPageMgr.h> // C-linkage carriers for the GUID defs
-#include <Mfc.h> // CString + windows.h (afx-first)
+#include <Mfc.h>                // CString + windows.h (afx-first)
 #ifdef __clang__
 #undef _AFX_ENABLE_INLINES
 #endif
@@ -95,7 +95,8 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     Snapshot(static_cast<HWND>(window));
 
     if (mode->bpp == 8) {
-        if (m_dd2->CreatePalette(4, static_cast<LPPALETTEENTRY>(m_palEntries), &m_palette, 0) != 0) {
+        if (m_dd2->CreatePalette(4, static_cast<LPPALETTEENTRY>(m_palEntries), &m_palette, 0)
+            != 0) {
             HandleError();
             return 0;
         }
@@ -257,7 +258,7 @@ void CMoviePlayer::Teardown() {
 }
 
 RVA(0x0017c570, 0xc0)
-i32 CMoviePlayer::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
+i32 CMoviePlayer::OpenLo(i32 src, i32 a2, i32 useDS, POINT* origin, RECT* rect) {
     if (!m_initialized) {
         return 0;
     }
@@ -277,7 +278,7 @@ i32 CMoviePlayer::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
         return 0;
     }
     m_streamOpen = 1;
-    i32 r = Begin(a2, useDS, a4, a5);
+    i32 r = Configure(a2, useDS, origin, rect);
     if (r) {
         return r;
     }
@@ -294,7 +295,7 @@ i32 CMoviePlayer::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
 }
 
 RVA(0x0017c630, 0xc0)
-i32 CMoviePlayer::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
+i32 CMoviePlayer::OpenHi(i32 src, i32 a2, i32 useDS, POINT* origin, RECT* rect) {
     if (!m_initialized) {
         return 0;
     }
@@ -314,7 +315,7 @@ i32 CMoviePlayer::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
         return 0;
     }
     m_streamOpen = 1;
-    i32 r = Begin(a2, useDS, a4, a5);
+    i32 r = Configure(a2, useDS, origin, rect);
     if (r) {
         return r;
     }
@@ -331,7 +332,7 @@ i32 CMoviePlayer::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
 }
 
 RVA(0x0017c6f0, 0x9c)
-i32 CMoviePlayer::Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
+i32 CMoviePlayer::Open(i32 a1, i32 a2, i32 a3, i32 a4, POINT* origin, RECT* rect) {
     if (m_initialized == 0) {
         return 0;
     }
@@ -347,7 +348,7 @@ i32 CMoviePlayer::Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
         m_decodeStore.Close();
         return 0;
     }
-    if (!OpenHi(hi, a3, a4, a5, a6)) {
+    if (!OpenHi(hi, a3, a4, origin, rect)) {
         m_decodeStore.Close();
         return 0;
     }
@@ -462,7 +463,15 @@ i32 CMoviePlayer::Frame() {
         hr = m_srcSurf->Lock(0, &m_srcDesc, 1, 0);
     }
     if (hr == 0) {
-        SmackToBuffer(m_smackHandle, 0, 0, m_srcDesc.lPitch, m_smackHandle->Height, m_srcDesc.lpSurface, m_smackBufMode);
+        SmackToBuffer(
+            m_smackHandle,
+            0,
+            0,
+            m_srcDesc.lPitch,
+            m_smackHandle->Height,
+            m_srcDesc.lpSurface,
+            m_smackBufMode
+        );
         SmackDoFrame(m_smackHandle);
         m_50c = 1;
         m_srcSurf->Unlock(m_srcDesc.lpSurface);
@@ -471,11 +480,11 @@ afterLock:
     if (m_514 != 1) {
         while (SmackToBufferRect(m_smackHandle, 0) != 0) {
             BlitRegion(
-                    m_smackHandle->LastRectx,
-                    m_smackHandle->LastRecty,
-                    m_smackHandle->LastRectw,
-                    m_smackHandle->LastRecth
-                );
+                m_smackHandle->LastRectx,
+                m_smackHandle->LastRecty,
+                m_smackHandle->LastRectw,
+                m_smackHandle->LastRecth
+            );
         }
     } else {
         BlitRegion(0, 0, m_smackHandle->Width, m_smackHandle->Height);
@@ -806,13 +815,13 @@ i32 CMoviePlayer::RemoveAt(i32 idx) {
         ::operator delete(reinterpret_cast<void*>(rec->m_src));
         rec->m_src = 0;
     }
-    if (rec->m_10) {
-        ::operator delete(reinterpret_cast<void*>(rec->m_10));
-        rec->m_10 = 0;
+    if (rec->m_origin) {
+        ::operator delete(rec->m_origin);
+        rec->m_origin = 0;
     }
-    if (rec->m_14) {
-        ::operator delete(reinterpret_cast<void*>(rec->m_14));
-        rec->m_14 = 0;
+    if (rec->m_rect) {
+        ::operator delete(rec->m_rect);
+        rec->m_rect = 0;
     }
     // the tail shuffle + count decrement retail emits IS CArray::RemoveAt inlined
     // (memmove(m_pData+i, m_pData+i+1, ...); m_nSize -= 1).
@@ -852,7 +861,8 @@ i32 CMoviePlayer::PlayList(i32 loops) {
                 return 0;
             }
             if (clip->m_openArg == 0) {
-                if (OpenLo(clip->m_src, clip->m_08, clip->m_useDS, clip->m_10, clip->m_14) == 0) {
+                if (OpenLo(clip->m_src, clip->m_08, clip->m_useDS, clip->m_origin, clip->m_rect)
+                    == 0) {
                     return 0;
                 }
             } else {
@@ -861,8 +871,8 @@ i32 CMoviePlayer::PlayList(i32 loops) {
                         clip->m_openArg,
                         clip->m_08,
                         clip->m_useDS,
-                        clip->m_10,
-                        clip->m_14
+                        clip->m_origin,
+                        clip->m_rect
                     )
                     == 0) {
                     return 0;
@@ -879,7 +889,8 @@ i32 CMoviePlayer::PlayList(i32 loops) {
                 memset(&fx, 0, sizeof(fx));
                 fx.dwSize = sizeof(fx);
                 fx.dwROP = 0x42;
-                i32 hr = (static_cast<IDirectDrawSurface*>(m_primary))->Blt(0, 0, 0, 0x1020000, &fx);
+                i32 hr =
+                    (static_cast<IDirectDrawSurface*>(m_primary))->Blt(0, 0, 0, 0x1020000, &fx);
                 if (hr != 0) {
                     memset(&fx, 0, sizeof(fx));
                     fx.dwSize = sizeof(fx);

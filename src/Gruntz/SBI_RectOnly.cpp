@@ -38,13 +38,13 @@
 #include <math.h>   // sqrt - intrinsified to inline fsqrt under VC5 /O2 (warpstone fly)
 #include <string.h> // strlen / memset (inlined repne scas / rep stos; CMgrSettings::Serialize)
 #include <Gruntz/SoundState.h> // ex Globals.h transitive
-#include <Gruntz/Random.h> // ex Globals.h transitive
+#include <Gruntz/Random.h>     // ex Globals.h transitive
 
 DATA(0x00244c54)
 i32 g_curPlayer = 0; // owner def (C linkage from StatusBarItem.h)
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-#include <Gruntz/SBI_WellGoo.h> // CSBI_WellGoo - m_gaugeSink's real type (m_fillScale @+0x44)
+#include <Gruntz/SBI_WellGoo.h>  // CSBI_WellGoo - m_gaugeSink's real type (m_fillScale @+0x44)
 
 void Tm_DestroyArray(void* base, i32 stride, i32 count, void* dtor); // 0x11f640
 
@@ -1030,9 +1030,9 @@ noChange:;
     }
     if (changed) {
         if (m_gaugeSink && m_gaugeNotify) {
-            m_gaugeNotify->SetSubtype(); // slot 10
+            m_gaugeNotify->SetSubtype();        // slot 10
             m_gaugeSink->m_fillScale = m_gauge; // +0x44
-            m_gaugeSink->SetSubtype(); // slot 10
+            m_gaugeSink->SetSubtype();          // slot 10
         }
     }
 }
@@ -3085,10 +3085,10 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                     CDDrawSubMgrPages* l1 =
                         g_gameReg->m_world
                             ->m_drawTarget; // the real pages (ex the CSbiMainL1 facet)
-                    MainBarDrawFrame(
+                    entry->RenderFrame(
                         l1->m_backPair,
-                        entry->m_anchorX + m_10,
-                        entry->m_anchorY + m_rect14.m_0,
+                        reinterpret_cast<void*>(entry->m_anchorX + m_10),
+                        reinterpret_cast<void*>(entry->m_anchorY + m_rect14.m_0),
                         0
                     );
                 }
@@ -3121,7 +3121,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
         CStatusBarItem* p = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(k));
         if (p) {
             p->SetSubtype(); // slot 10 (the view called it "Refresh")
-            p->Render();      // slot 5
+            p->Render();     // slot 5
         }
     }
     return 1;

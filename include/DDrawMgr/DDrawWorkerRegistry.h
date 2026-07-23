@@ -8,9 +8,9 @@
 #include <rva.h>
 
 class CDDrawWorker; // 0x6c-byte keyed worker (canonical def <DDrawMgr/DDrawWorker.h>);
-class CDDrawWorker;             // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
-class CImage; // the frame element (AnyValueMatches probes each set for it)
+class CImage;  // the frame element (AnyValueMatches probes each set for it)
 class CSymTab; // Bute/SymTab.h (the dir-tree cursor InstallTree/LoadNamespace walk)
 
 class CDDrawWorkerRegistry : public CLoadable {
@@ -31,7 +31,7 @@ public:
     virtual i32 Forward34(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4);          // [15] 0x154f00
     virtual i32 DispatchKeyed34(i32 a1, const char* key, i32 a3, i32 a4);         // [16] 0x154be0
     // [17] 0x156e80 (DDrawSubMgr.cpp) - probe a resolved sub-key, install its tree.
-    virtual i32 ProbeWorkerKey(CSymTab* arg1, i32 arg2);
+    virtual i32 ProbeWorkerKey(class CSymParser* arg1, i32 arg2);
     // [18] 0x154f80 - install a resolved symbol TREE under a (name, separator) prefix;
     // recurses over child scopes through THIS slot (virtual self-dispatch). The
     // ex-CDDrawWorkerRegistry/ObjImageRegistry "Install"/"LoadTree"/"InsertWorkerKey" names
@@ -43,7 +43,7 @@ public:
     // [20] 0x155280 - drop a worker from the registry by its +0x24 key and destroy it.
     virtual void RemoveWorker(CDDrawWorker* worker);
     virtual void RemoveByKey(const char* key); // [21] 0x156ec0 (DDrawSubMgr.cpp)
-    virtual void MapTeardown();         // [22] 0x1552b0 (destroy every map value)
+    virtual void MapTeardown();                // [22] 0x1552b0 (destroy every map value)
 
     CMapStringToOb m_10map; // +0x10  the name -> worker/sprite hash table
 

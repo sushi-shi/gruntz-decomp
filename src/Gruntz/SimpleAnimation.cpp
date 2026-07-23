@@ -1,6 +1,6 @@
 #include <Gruntz/SimpleAnimation.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
-#include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
+#include <Image/CImage.h>       // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Wap32/zBitVec.h>      // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Gruntz/TypeKeyColl.h> // g_typeCounter (the shared type-id counter)
 #include <Gruntz/AniAdvanceCursor.h>
@@ -133,7 +133,8 @@ void RegisterSimpleAnimLogic() {
         g_typeCounter++;
     }
     char* dslot = ResolveSlot(&g_simpleAnimDispatch, idx);
-    *reinterpret_cast<void**>(dslot) = static_cast<void*>(&SimpleAnimLogic_4028b0);
+    *reinterpret_cast<SimpleAnimHandler*>(dslot) =
+        static_cast<SimpleAnimHandler>(&CSimpleAnimation::AdvanceAnim);
 }
 
 RVA(0x000abf70, 0x17)

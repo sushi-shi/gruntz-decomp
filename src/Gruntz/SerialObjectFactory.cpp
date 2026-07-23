@@ -1,19 +1,18 @@
 #include <Gruntz/SerialCounter.h> // own extern surface
-#include <Gruntz/GruntzMgr.h> // the mgr's real type
+#include <Gruntz/GruntzMgr.h>     // the mgr's real type
 #include <Ints.h>
 #include <string.h>
 
 #include <Gruntz/GameRegistry.h> // CGameRegistry (mgr->m_world)
 
 #include <rva.h>
-#include <Io/GameSave.h> // g_saveBuf (ex .cpp extern)
+#include <Io/GameSave.h>              // g_saveBuf (ex .cpp extern)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // RestoreChildren + HP_Callback (the parse dispatch)
 
-int __stdcall Parse156530(void* table, char* s, int z); // 0x156530
+// fwd: the (de)serialize dispatch this TU defines below (0xd2a0); ParseSerial hands
+// it to RestoreChildren as the parse callback (retail wires the ILT thunk 0x4024e6).
+i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void** ppObj);
 
-// @early-stop
-// 97.55% - regalloc wall: the test-only mgr->m_world temp lands in eax; retail uses
-// ecx (both are 0/free after the rep-stosd). Logic + the inline strlen/memset + the
-// parse-callback dispatch are byte-exact; the single reg pick is not source-steerable.
 RVA(0x0000d210, 0x65)
 i32 ParseSerial(CGruntzMgr* mgr, char* s) {
     if (mgr == 0) {
@@ -30,7 +29,8 @@ i32 ParseSerial(CGruntzMgr* mgr, char* s) {
     if (mgr->m_world == 0) {
         return 0;
     }
-    return Parse156530(static_cast<void*>(&Lab4024e6), s, 0) != 0;
+    return mgr->m_world->RestoreChildren(reinterpret_cast<HP_Callback>(&SerialObjectFactory), s, 0)
+           != 0;
 }
 
 // SerialObjectFactory (0xd2a0, __cdecl, ends 0xec24): the game's (de)serialize object

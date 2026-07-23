@@ -59,10 +59,10 @@ struct CSbiHlRow {
 SIZE(0x18);
 // The machine-phase readers walk the SAME 0x18 record under this name.
 
-class CSBI_SideTab; // <Gruntz/SBI_SideTab.h> - the m_hitRects element
-class CSBI_StatzTabArrow;  // <Gruntz/SBI_ImageSetAni.h> - the m_statObj element
-class CSBI_WarlordHead;    // <Gruntz/SBI_WarlordHead.h> - the m_warlordHead element
-class CWarpStoneFly;       // <Gruntz/WarpStoneFly.h> - the +0x54c retab-fly child
+class CSBI_SideTab;       // <Gruntz/SBI_SideTab.h> - the m_hitRects element
+class CSBI_StatzTabArrow; // <Gruntz/SBI_ImageSetAni.h> - the m_statObj element
+class CSBI_WarlordHead;   // <Gruntz/SBI_WarlordHead.h> - the m_warlordHead element
+class CWarpStoneFly;      // <Gruntz/WarpStoneFly.h> - the +0x54c retab-fly child
 
 // (CSbiStatObj DISSOLVED; m_statObj IDENTITY CORRECTED 2026-07-22: the elements
 // are the CSBI_StatzTabArrow toggle-arrow widgets (LoadTabSprites ctor stamp
@@ -182,13 +182,13 @@ public:
 
     // ----- siblings the tab-highlight dispatcher (0xfe910) drives (reloc-masked ILT) -----
     CStatusBarItem* HiResolve(i32 a, i32 b); // 0x2dc4 (resolve the hit widget - a tab-list item)
-    void HiRefreshResource();                     // 0x3d91 (call 0x3d91)
-    void HiSelectStat(i32 idx);                   // 0x264e (call 0x264e, 1 arg)
-    void HiTabA(i32 idx);                         // 0x4179 (1 arg)
-    void HiTabB(i32 idx, i32 flag);               // 0x20b8 (2 args)
-    void HiGrunt0(i32 idx);                       // 0x42a5 (1 arg)
-    void HiGrunt1(i32 idx);                       // 0x4151 (1 arg)
-    void HiGrunt2(i32 idx);                       // 0x37ce (1 arg)
+    void HiRefreshResource();                // 0x3d91 (call 0x3d91)
+    void HiSelectStat(i32 idx);              // 0x264e (call 0x264e, 1 arg)
+    void HiTabA(i32 idx);                    // 0x4179 (1 arg)
+    void HiTabB(i32 idx, i32 flag);          // 0x20b8 (2 args)
+    void HiGrunt0(i32 idx);                  // 0x42a5 (1 arg)
+    void HiGrunt1(i32 idx);                  // 0x4151 (1 arg)
+    void HiGrunt2(i32 idx);                  // 0x37ce (1 arg)
     i32 LoadGooCookingSprite(i32);
     void UpdateRezConveyorStatusBar();
     void LoadRezMachineConfig();
@@ -358,8 +358,8 @@ public:
     CSBI_MenuItem* m_tabSprite14; // +0x200
     // +0x204: the five slot notifiers (ArmSlot indexes `[ecx+eax*4+0x204]`, idx 0..4).
     CSBI_ImageSet* m_slotNotify[5]; // +0x204 .. +0x218
-    CStatusBarItem* m_gaugeNotify; // +0x218  gauge notifier (the WELL CSBI_Image; slot 10)
-    CSBI_WellGoo* m_gaugeSink;     // +0x21c  gauge value sink (m_fillScale = gauge; slot 10)
+    CStatusBarItem* m_gaugeNotify;  // +0x218  gauge notifier (the WELL CSBI_Image; slot 10)
+    CSBI_WellGoo* m_gaugeSink;      // +0x21c  gauge value sink (m_fillScale = gauge; slot 10)
     // +0x220: the five 0x18-byte slot records. ArmSlot: `lea edx,[eax+eax*2];
     // lea edx,[ecx+edx*8]; mov [edx+0x220],0; mov [edx+0x224],1` => base 0x220, stride
     // 0x18, five elements ending exactly at m_gauge (0x220 + 5*0x18 == 0x298).
@@ -391,8 +391,8 @@ public:
     char m_pad314[0x318 - 0x314];
     // +0x318/+0x330: the two rez-machine phase slots (ex the "HUD-rect group B/A"
     // flat-dword mis-model; LoadRezMachineConfig drives them as SbiPhaseSlots).
-    CSbiHlRow m_machineB;             // +0x318  right machine phase slot
-    CSbiHlRow m_machineA;             // +0x330  left machine phase slot
+    CSbiHlRow m_machineB;                // +0x318  right machine phase slot
+    CSbiHlRow m_machineA;                // +0x330  left machine phase slot
     CSBI_GruntMachine* m_machineDisplay; // +0x348  the Resource-tab MACHINE widget (SetFrames)
     i32 m_34c;                           // +0x34c
     i32 m_350;                           // +0x350
@@ -452,7 +452,7 @@ public:
     // +0x61c  the four multiplayer player-HEAD widgets (BuildMultiplayerTab news
     // each CSBI_WarlordHead and caches it here; SetState/ShowFrames drive them).
     CSBI_WarlordHead* m_warlordHead[4];
-    i32 m_tabCycle;       // +0x62c  4-state highlight cursor (AdvanceTab cycles 0..3)
+    i32 m_tabCycle; // +0x62c  4-state highlight cursor (AdvanceTab cycles 0..3)
 };
 SIZE(0x630);
 
@@ -500,8 +500,6 @@ SIZE_UNKNOWN();
 // (CSbiMainBarCfg/CSbiFrameEntry DISSOLVED 2026-07-21: the stored element is the
 // main-bar CDDrawWorker strip - +0x14/+0x64 were m_items.m_pData/m_minIndex and
 // the "frame entry" +0x18/+0x1c were CImage::m_anchorX/m_anchorY.)
-class CDDrawSurfacePair; // the real main-bar draw receiver (ex the CSbiMainL2 facet)
-void __stdcall MainBarDrawFrame(CDDrawSurfacePair* obj, i32 x, i32 y, i32 flag); // 0x153790 (NOTE:
 
 // (CSbiHiWidget DISSOLVED 2026-07-22: it was a never-constructed dispatch view of the
 // CStatusBarItem-family hit widget HiResolve returns. UpdateStatusBarTabHighlight now

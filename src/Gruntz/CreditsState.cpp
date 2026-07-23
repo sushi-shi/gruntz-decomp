@@ -1,4 +1,4 @@
-#include <Bute/SymParser.h>     // CSymParser::ResolvePath (LoadCreditz / InitAttractTitle)
+#include <Bute/SymParser.h> // CSymParser::ResolvePath (LoadCreditz / InitAttractTitle)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Bute/SymTab.h>        // CSymTab Insert/FindSub/ResolvePath (LoadCreditz / SetupTitle)
 #include <Bute/ButeMgr.h>       // CButeMgr GetIntDef (InitAttractTitle brightness)
@@ -6,12 +6,12 @@
 #include <Gruntz/BankMgr.h>     // CSymTab (InitAttractTitle m_2c state store)
 #include <Gruntz/ParseSource.h> // CParseSource (the resolved MIDIZ sub-entry: BeginParse/m_length)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ReleaseResources / LoadCreditz keys)
-#include <DDrawMgr/DDrawSubMgrLeaf.h>  // CDDrawSubMgrLeaf (m_animRegistry RemoveKeysEqual)
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (the m_c->m_drawTarget page pump)
+#include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf (m_animRegistry RemoveKeysEqual)
+#include <DDrawMgr/DDrawSubMgrPages.h>    // CDDrawSubMgrPages (the m_c->m_drawTarget page pump)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (was GameMode.cpp local view)
 #include <DDrawMgr/DDSurface.h>           // CDDSurface (Render Draw / InitAttractTitle ShadeRect)
-#include <DinMgr2/DirectInputMgr2.h> // CInputDevBase (Poll/m_currentKeys press-edge flags)
-#include <Gruntz/GameMode.h>              // CCreditsState : CState (ex CGMOwner/CGMSound views dissolved to CGruntzMgr/CGruntzSoundZ)
+#include <DinMgr2/DirectInputMgr2.h>      // CInputDevBase (Poll/m_currentKeys press-edge flags)
+#include <Gruntz/GameMode.h> // CCreditsState : CState (ex CGMOwner/CGMSound views dissolved to CGruntzMgr/CGruntzSoundZ)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr (CState::m_4 owner; m_sound @+0x48, m_numRuns @+0x80)
 #include <Rez/RezMgr.h>       // RezFree (ReleaseResources video-handle teardown)
 #include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ::CreateBank (0x138670) - credits sound-bank loader
@@ -73,7 +73,8 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         if (e) {
             i32 val = e->BeginParse();
             if (val) {
-                m_mgr->m_sound->CreateBank(reinterpret_cast<void*>(val), e->m_length, "CREDITZ"); // 0x138670
+                m_mgr->m_sound
+                    ->CreateBank(reinterpret_cast<void*>(val), e->m_length, "CREDITZ"); // 0x138670
             }
         }
     }
@@ -85,7 +86,11 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         if (e2) {
             i32 val = e2->BeginParse();
             if (val) {
-                m_mgr->m_sound->CreateBank(reinterpret_cast<void*>(val), e2->m_length, "MONOLITH"); // 0x138670
+                m_mgr->m_sound->CreateBank(
+                    reinterpret_cast<void*>(val),
+                    e2->m_length,
+                    "MONOLITH"
+                ); // 0x138670
             }
         }
     }
@@ -182,7 +187,7 @@ i32 CCreditsState::Render() {
 
     // draw: cache m_c->m_drawTarget (the target keeps it in esi for the three derefs).
     CDDrawSubMgrPages* v4 = m_world->m_drawTarget;
-    v4->m_frontPair->m_surface->Draw(0);
+    v4->m_frontPair->m_surface->Flip(0);
     v4->m_backPair->BltSelf(
         v4->m_overlayPair
     ); // SurfaceB::Blit WAS CDDrawSurfacePair::BltSelf @0x3a1d0 (thunk 0x1564)
@@ -439,7 +444,8 @@ i32 CCreditsState::SetupTitle() {
     }
     m_scrollAccum = 0.0;
     m_scrollReseedTimer = static_cast<i32>((kScreenH / kScrollRate));
-    m_scrollStep = (kScreenH * kStepScale) / static_cast<double>(static_cast<unsigned>(m_scrollReseedTimer));
+    m_scrollStep =
+        (kScreenH * kStepScale) / static_cast<double>(static_cast<unsigned>(m_scrollReseedTimer));
     return 1;
 }
 

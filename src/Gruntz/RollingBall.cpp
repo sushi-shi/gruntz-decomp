@@ -39,19 +39,21 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/GameRegMfcPtr.h>   // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>    // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
+#include <Io/FileMem.h>              // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Gruntz/ActReg.h>           // the shared CActReg coordinate-registry archetype
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sub-update Advance)
 #include <Gruntz/RollingBall.h>      // CRollingBall : CUserLogic (+ the /GX CString temps)
 #include <Gruntz/GameRegistry.h>     // the canonical *0x24556c singleton (g_gameReg typed)
 
 #include <rva.h>
 #include <Gruntz/GameLevel.h> // CTileImageSet (the tile-descriptor the resolver dispatches on)
+#include <math.h>             // ceil/floor (the sub-step rounding, ex Rb aliases)
 #include <string.h>           // inline strcmp for the ctor's direction-name match
 #include <Wap32/ZVec.h>
-#include <Rez/FrameClock.h>    // g_frameTime/g_frameDelta/g_engineFrameDelta (frame-clock band)
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (m_rollingballWanted)
+#include <Rez/FrameClock.h>      // g_frameTime/g_frameDelta/g_engineFrameDelta (frame-clock band)
+#include <Gruntz/TriggerMgr.h>   // CTriggerMgr - m_cmdGrid (m_rollingballWanted)
 #include <Gruntz/KitchenSlime.h> // ex Globals.h
+#include <Bute/ButeMgr.h>        // CButeMgr::GetDwordDef on g_buteMgr
 
 // g_rollingBallActReg (0x002461b0): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
@@ -61,31 +63,7 @@ VTBL(CRollingBall, 0x001e86fc);
 
 static const double kMsPerSecond = 1000.0; // ms -> tiles/second divisor
 
-void RbCacheFirst(
-    void* anim,
-    const char* name
-); // 0x150540 = CGameObject::ApplyName (thiscall; free-fn shape kept with the parked carcass)
-void RbApplyLookup(
-    void* anim,
-    const char* name,
-    i32 z
-);                                          // 0x1505b0 = CGameObject::ApplyLookupGeometry (ditto)
-void RbStrAssign(void* str, const char* s); // 0x1b9e74 CString::operator=(LPCSTR)
-i32 RbGetDwordDef(const char* sec, const char* key, i32 def); // 0x1721e0 CButeMgr::GetDwordDef
-double RbCeil(double x);                                      // 0x120480 ceil
-double RbFloor(double x);                                     // 0x120580 floor
-
-i32 RbProbeRect(
-    void* obj,
-    i32 cx,
-    i32 cy,
-    RECT* rect,
-    i32* outA,
-    i32* outB,
-    i32 z
-);                                                           // 0x32ce (the object's m_area box)
-void RbMarkRect(void* obj, i32 a, i32 b, i32 mode, i32 neg); // 0x2e96
-void RbClearCell(void* obj, i32 a, i32 b, i32 z);            // 0x26df
+void RbClearCell(void* obj, i32 a, i32 b, i32 z); // 0x26df (ILT thunk; target unresolved)
 
 static i32 VtblResolve(void* ent) {
     return static_cast<CTileImageSet*>(ent)->GetCollisionAt(0, 0);
@@ -269,9 +247,9 @@ i32 CRollingBall::Update() {
         i32 hi = 0 - m_explodeStartHi;
         i32 lim = m_explodeWindowHi;
         if (hi < lim || (hi == lim && static_cast<u32>(lo) < static_cast<u32>(m_explodeWindowLo))) {
-            RbCacheFirst(m_38, "LEVEL_ROLLINGBALL_EXPLOSION");
+            m_38->ApplyName("LEVEL_ROLLINGBALL_EXPLOSION");
             m_value = m_38->m_1a0.m_14;
-            RbApplyLookup(m_38, "LEVEL_ROLLINGBALLEXPLOSION", 0);
+            m_38->ApplyLookupGeometry("LEVEL_ROLLINGBALLEXPLOSION", 0);
             CMapMgr* map = g_gameReg->m_tileGrid;
             i32 cx = logic->m_screenX >> 5;
             i32 cy = logic->m_screenY >> 5;
@@ -295,8 +273,7 @@ i32 CRollingBall::Update() {
         }
         CWwdGameObjectA* logic2 = m_object;
         i32 outA, outB;
-        if (RbProbeRect(
-                g_gameReg->m_cmdGrid,
+        if (g_gameReg->m_cmdGrid->FindGruntAt(
                 logic2->m_screenX,
                 logic2->m_screenY,
                 &logic2->m_area,
@@ -304,7 +281,7 @@ i32 CRollingBall::Update() {
                 &outA,
                 0
             )) {
-            RbMarkRect(g_gameReg->m_cmdGrid, outA, outB, 2, -1);
+            g_gameReg->m_cmdGrid->CellDispatch(outA, outB, 2, -1);
         }
     }
 
@@ -368,24 +345,24 @@ i32 CRollingBall::Update() {
             switch (obj) {
                 case 0xa: // FALL group
                 case 0x24:
-                    RbStrAssign(&fall, "LEVEL_ROLLINGBALL_FALL");
-                    RbStrAssign(&explosion, "LEVEL_ROLLINGBALLFALL");
+                    fall = "LEVEL_ROLLINGBALL_FALL";
+                    explosion = "LEVEL_ROLLINGBALLFALL";
                     break;
                 case 0x10: // EXPLOSION
-                    RbStrAssign(&fall, "LEVEL_ROLLINGBALL_EXPLOSION");
-                    RbStrAssign(&explosion, "LEVEL_ROLLINGBALLEXPLOSION");
+                    fall = "LEVEL_ROLLINGBALL_EXPLOSION";
+                    explosion = "LEVEL_ROLLINGBALLEXPLOSION";
                     obj = 1;
                     break;
                 default: // SINK and the rest collapse onto the sink temps
-                    RbStrAssign(&fall, "LEVEL_ROLLINGBALL_SINK");
-                    RbStrAssign(&explosion, "LEVEL_ROLLINGBALLSINKDEATH");
+                    fall = "LEVEL_ROLLINGBALL_SINK";
+                    explosion = "LEVEL_ROLLINGBALLSINKDEATH";
                     break;
             }
-            RbCacheFirst(m_38, explosion);
+            m_38->ApplyName(explosion);
             m_value = m_38->m_1a0.m_14;
-            RbApplyLookup(m_38, fall, 0);
+            m_38->ApplyLookupGeometry(fall, 0);
             if (obj == 4) {
-                i32 t = RbGetDwordDef("Hazardz", "RollingBallTimePerTile", 0x3e8);
+                i32 t = g_buteMgr.GetDwordDef("Hazardz", "RollingBallTimePerTile", 0x3e8);
                 m_moveSpeed = kMsPerSecond / static_cast<double>(t);
             }
         }
@@ -441,38 +418,38 @@ i32 CRollingBall::Update() {
     if (m_stepDirX > 0) {
         double v = dt + m_subX;
         m_subX = v;
-        nx = __ftol(RbCeil(v));
+        nx = __ftol(ceil(v));
         if (nx >= (m_targetX >> 5)) {
             nx = m_targetX >> 5;
         }
     } else if (m_stepDirX < 0) {
         double v = m_subX - dt;
         m_subX = v;
-        nx = __ftol(RbFloor(v));
+        nx = __ftol(floor(v));
         if (nx < (m_targetX >> 5)) {
             nx = m_targetX >> 5;
         }
     } else {
-        nx = __ftol(RbFloor(m_subX));
+        nx = __ftol(floor(m_subX));
     }
 
     i32 ny = m_targetY >> 5;
     if (m_stepDirY > 0) {
         double v = dt + m_subY;
         m_subY = v;
-        ny = __ftol(RbCeil(v));
+        ny = __ftol(ceil(v));
         if (ny >= (m_targetY >> 5)) {
             ny = m_targetY >> 5;
         }
     } else if (m_stepDirY < 0) {
         double v = m_subY - dt;
         m_subY = v;
-        ny = __ftol(RbFloor(v));
+        ny = __ftol(floor(v));
         if (ny < (m_targetY >> 5)) {
             ny = m_targetY >> 5;
         }
     } else {
-        ny = __ftol(RbFloor(m_subY));
+        ny = __ftol(floor(m_subY));
     }
 
     CWwdGameObjectA* out = m_object;

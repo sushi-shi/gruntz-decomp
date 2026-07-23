@@ -137,9 +137,6 @@ public:
     // already has the key (0x13a530, __thiscall(rec, found)). Reloc-masked extern.
     i32 AddNodeSubEntry(void* rec, void* found); // 0x13a530
 
-    // Walk m_subTabs (+0x38) for `name`, forwarding m_owner->m_68 == 0 (0x13a230).
-    class CSymTab*
-    Get_13b900(); // 0x13b900 (unnamed CSymTab sub-tab getter, in the 0x13axxx CSymTab region)
     void* FindSub(const char* name);
 
     // Resolve/insert a dotted path under this scope (0x13bae0): tokenize the first
@@ -148,7 +145,8 @@ public:
 
     // Resolve a fully-qualified name by its last delimiter (0x13be40): split off
     // the trailing key, resolve the leading scope, then dispatch.
-    struct CParseSource* ResolveQualified(const char* name, void* arg); // returns the leaf parse record
+    struct CParseSource*
+    ResolveQualified(const char* name, void* arg); // returns the leaf parse record
 
     // Insert/resolve `key` directly into this scope's leaf table (+0x40), passing
     // m_owner->m_68 == 0 (0x13a000; the ResolveQualified tail). __thiscall extern,
@@ -187,11 +185,11 @@ public:
     // COUNT - `::operator new(a2)`, `stream->Read(a1, 0, a2, buf)`, `end = buf + a2`.
     // They arrive as two raw dwords of the sub-scope record ({tag, fA, fB, fC, name}).
     // The void* was what forced the `(i32)sub->m_04` / `(i32)sub->m_08` reads.
-    i32 m_dataOff;       // +0x04  sub-scope data offset in the stream
-    i32 m_dataSize;      // +0x08  sub-scope data byte count
-    i32 m_baseOffset;    // +0x0c  the scope's base file offset (ApplyRange min-accumulates it,
-                         //        seed -1; the parse-stream side reads it as the mapped-window base)
-    i32 m_10;            // +0x10  sum-accumulator in ApplyRange
+    i32 m_dataOff;    // +0x04  sub-scope data offset in the stream
+    i32 m_dataSize;   // +0x08  sub-scope data byte count
+    i32 m_baseOffset; // +0x0c  the scope's base file offset (ApplyRange min-accumulates it,
+                      //        seed -1; the parse-stream side reads it as the mapped-window base)
+    i32 m_10;         // +0x10  sum-accumulator in ApplyRange
     // +0x14 the name-keyed clock seed: every construction site passes
     // `(void*)owner->MakeSeed()`, and MakeSeed (0x13ba70) returns i32 - the cast existed
     // only to squeeze an int through a void* slot. (Never read back in this TU; its
@@ -201,7 +199,7 @@ public:
     // +0x1c the PARENT scope. All three construction sites say so: the root
     // (CSymParser::ParseBuffer) passes 0 - it has no parent - and both child sites
     // (CreateSub 0x13a330 / the ApplyRange sub-scope arm) pass `this`, a CSymTab*.
-    CSymTab* m_parent;   // +0x1c
+    CSymTab* m_parent; // +0x1c
     // +0x20 the scope's OWN hash-node - the element the PARENT splices into its
     // m_subTabs (CreateSub/AddNodeEntry do `m_subTabs.Insert(&child->m_node20)`).
     // The ex model spelled this a `void* m_node20` vtable slot + a 12-byte pad +

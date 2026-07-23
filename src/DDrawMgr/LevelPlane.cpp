@@ -24,22 +24,22 @@
 #include <DDrawMgr/LevelPlane.h> // own extern surface
 #include <Mfc.h>
 #include <Gruntz/WwdGameObject.h> // complete CWwdGameObject: the CGameObject downcast is static
-#include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
-#include <Gruntz/GameLevel.h>    // CDDrawWorkerHost + LevelCoordRect + CDDrawWorker view (+ WwdFile.h)
-#include <Gruntz/UserLogic.h>    // the shared CGameObject (ReadPlaneObjects' 0x1dc object)
-#include <Image/CImage.h>        // CImage m_gridW/m_gridH (SetTileSizeFromImageSet)
+#include <DDrawMgr/PixelShift.h>  // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
+#include <Gruntz/GameLevel.h> // CDDrawWorkerHost + LevelCoordRect + CDDrawWorker view (+ WwdFile.h)
+#include <Gruntz/UserLogic.h> // the shared CGameObject (ReadPlaneObjects' 0x1dc object)
+#include <Image/CImage.h>     // CImage m_gridW/m_gridH (SetTileSizeFromImageSet)
 #include <Image/ImageSet.h> // the REAL CDDrawWorker (0x6c frame collection): SetTileSizeFromImageSet's
 #include <DDrawMgr/DDSurface.h>       // CDDSurface::BltEx/BltFast (the Draw blit callees)
 #include <DDrawMgr/DDrawWorkerHost.h> // canonical CDDrawWorkerHost (ctor + RegisterNamed here)
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>  // m_imageRegistry->m_10map
-#include <DDrawMgr/DDrawWorkerCache.h>     // m_workerCache->m_10
-#include <DDrawMgr/DDrawWorkerMapSmall.h>  // m_workerMap->m_palOwner
-#include <DDrawMgr/DDrawSubMgrPages.h>     // m_drawTarget->m_frontPair
-#include <DDrawMgr/DDrawSurfacePair.h>     // ->m_bpp (the ex CPlaneSurfDesc::m_format)
-#include <DDrawMgr/DDrawChildGroup.h>      // m_childGroup (the worker source)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry->m_10map
+#include <DDrawMgr/DDrawWorkerCache.h>    // m_workerCache->m_10
+#include <DDrawMgr/DDrawWorkerMapSmall.h> // m_workerMap->m_palOwner
+#include <DDrawMgr/DDrawSubMgrPages.h>    // m_drawTarget->m_frontPair
+#include <DDrawMgr/DDrawSurfacePair.h>    // ->m_bpp (the ex CPlaneSurfDesc::m_format)
+#include <DDrawMgr/DDrawChildGroup.h>     // m_childGroup (the worker source)
 #include <Io/FileMem.h> // the REAL serialize-stream base CFileMemBase (Save/Load's Read@+0x2c/Write@+0x30)
-#include <Wwd/WwdSpatialMgr.h>       // the canonical spatial/scroll worker (m_scroll)
+#include <Wwd/WwdSpatialMgr.h> // the canonical spatial/scroll worker (m_scroll)
 #include <rva.h>
 
 #include <stdio.h>  // sprintf (ValidateTiles diagnostics)
@@ -67,7 +67,8 @@ RVA(0x001615a0, 0x9a)
 CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags) {
     m_id = field04;
     m_flags = flags;
-    m_ownerCtx = reinterpret_cast<i32>(mapData); // (fused CLoadable ctor stores - the CResolveNode shape)
+    m_ownerCtx =
+        reinterpret_cast<i32>(mapData); // (fused CLoadable ctor stores - the CResolveNode shape)
     // m_frameSets (::CObArray) default-constructed here (0x1b55e9).
     m_tileGrid = 0;
     m_colOffsets = 0;
@@ -412,16 +413,16 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
 
 #define DRAW_CELL(handle, xp, yp, srcp)                                                            \
     do {                                                                                           \
-        u32 h_ = static_cast<u32>(handle);                                                                    \
+        u32 h_ = static_cast<u32>(handle);                                                         \
         if (h_ == 0xeeeeeeee) {                                                                    \
             dr.left = (xp);                                                                        \
             dr.top = (yp);                                                                         \
             dr.right = (xp) + ((srcp)->right - (srcp)->left);                                      \
             dr.bottom = (yp) + ((srcp)->bottom - (srcp)->top);                                     \
-            surf->BltEx(&dr, 0, 0, 0x1000400, &m_bltFx);                                         \
+            surf->BltEx(&dr, 0, 0, 0x1000400, &m_bltFx);                                           \
         } else if (h_ != 0xffffffff) {                                                             \
-            CPlaneFrame* fr_ = (reinterpret_cast<CPlaneFrame**>(m_frameSets.GetData()))[h_ >> 16];                   \
-            i32 idx_ = static_cast<i32>(h_ & 0xffff);                                                         \
+            CPlaneFrame* fr_ = (reinterpret_cast<CPlaneFrame**>(m_frameSets.GetData()))[h_ >> 16]; \
+            i32 idx_ = static_cast<i32>(h_ & 0xffff);                                              \
             CPlaneTile* e_;                                                                        \
             if (idx_ >= fr_->m_lo && idx_ <= fr_->m_hi) {                                          \
                 e_ = fr_->m_frames[idx_];                                                          \
@@ -747,7 +748,9 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // Grid bounds check on x/y; failure deletes the object and returns the bytes
     // consumed so far (so the caller still advances over the bad record).
     if (x < 0 || x >= m_wrapW || y < 0 || y >= m_wrapH) {
-        reinterpret_cast<WwdRetailSlot16Facet*>(obj)->Delete(1); // retail BARE scalar-delete call (no null guard - plain `delete` adds one)
+        reinterpret_cast<WwdRetailSlot16Facet*>(obj)->Delete(
+            1
+        ); // retail BARE scalar-delete call (no null guard - plain `delete` adds one)
         return static_cast<i32>((strCursor - reinterpret_cast<const char*>(src)));
     }
 
@@ -756,18 +759,23 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     if (imageSet.GetLength() != 0) {
         void* found = 0;
         CObject* foundOb = 0;
-        loaded = OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(imageSet), foundOb);
+        loaded =
+            OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(imageSet), foundOb);
         found = foundOb;
     }
 
     if (!loaded) {
-        reinterpret_cast<WwdRetailSlot16Facet*>(obj)->Delete(1); // retail BARE scalar-delete call (no null guard - plain `delete` adds one)
+        reinterpret_cast<WwdRetailSlot16Facet*>(obj)->Delete(
+            1
+        ); // retail BARE scalar-delete call (no null guard - plain `delete` adds one)
         return static_cast<i32>((strCursor - reinterpret_cast<const char*>(src)));
     }
 
     // Run the object's load virtual (reads the fixed record into the object).
     if (obj->Setup(static_cast<i32>(logicLen), id, reinterpret_cast<i32>(strCursor), id) == 0) {
-        reinterpret_cast<WwdRetailSlot16Facet*>(obj)->Delete(1); // retail BARE scalar-delete call (no null guard - plain `delete` adds one)
+        reinterpret_cast<WwdRetailSlot16Facet*>(obj)->Delete(
+            1
+        ); // retail BARE scalar-delete call (no null guard - plain `delete` adds one)
         return 0;
     }
 
@@ -775,7 +783,9 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
 
     AnimWorkerObj* anim = obj->m_7c;
     if (anim == 0) {
-        reinterpret_cast<WwdRetailSlot16Facet*>(obj)->Delete(1); // retail BARE scalar-delete call (no null guard - plain `delete` adds one)
+        reinterpret_cast<WwdRetailSlot16Facet*>(obj)->Delete(
+            1
+        ); // retail BARE scalar-delete call (no null guard - plain `delete` adds one)
         return 0;
     }
 
@@ -806,8 +816,8 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     const i32* p = &src[10]; // record +0x28 (skip addFlags @+0x24)
 
     obj->m_flags |= static_cast<u32>(*p++); // dynamicFlags       (+0x08)
-    obj->m_stateFlags = *p++;  // drawFlags          (+0x40)
-    sub[0x28 / 4] = *p++;      // userFlags
+    obj->m_stateFlags = *p++;               // drawFlags          (+0x40)
+    sub[0x28 / 4] = *p++;                   // userFlags
     // The six-int "user-value" union (+0x114..+0x128). These are the WWD object
     // record's canonical Score/Points/Powerup/Damage/Smarts/Health fields (the
     // names the Gruntz Level Editor's Edit-Objects "Attributes" dialog uses), each
@@ -817,28 +827,28 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // megaphone order. Same physical fields, different views (this is why UserLogic.h
     // labels them by their spotlight/teleporter meaning). Authoritative field
     // semantics + the id spaces: docs/domain/README.md.
-    obj->m_114 = *p++;       // score              (+0x114)
-    obj->m_118 = *p++;       // points  (enemy AI type / megaphone tool id)   (+0x118)
-    obj->m_11c = *p++;       // powerup (CoveredPowerup id 0-99 / carried tool) (+0x11c)
-    obj->m_120 = *p++;       // damage             (+0x120)
-    obj->m_124 = *p++;       // smarts  (enemy team 0-3 / revealed tile)       (+0x124)
-    obj->m_placeMode = *p++; // health             (+0x128)
-    obj->m_extent.left = *p++;   // moveRect.l         (+0x134)
-    obj->m_extent.top = *p++;   // moveRect.t         (+0x138)
-    obj->m_extent.right = *p++;   // moveRect.r         (+0x13c)
-    obj->m_extent.bottom = *p++;   // moveRect.b         (+0x140)
-    obj->m_area.left = *p++;     // hitRect.l          (+0x144)
-    obj->m_area.top = *p++;     // hitRect.t          (+0x148)
-    obj->m_area.right = *p++;     // hitRect.r          (+0x14c)
-    obj->m_area.bottom = *p++;     // hitRect.b          (+0x150)
-    obj->m_switchRect.left = *p++;       // attackRect.l       (+0x154)
-    obj->m_switchRect.top = *p++;       // attackRect.t       (+0x158)
-    obj->m_switchRect.right = *p++;       // attackRect.r       (+0x15c)
-    obj->m_switchRect.bottom = *p++;       // attackRect.b       (+0x160)
-    obj->m_clip.left = *p++;        // clipRect.l         (+0x64)
-    obj->m_clip.top = *p++;        // clipRect.t         (+0x68)
+    obj->m_114 = *p++;               // score              (+0x114)
+    obj->m_118 = *p++;               // points  (enemy AI type / megaphone tool id)   (+0x118)
+    obj->m_11c = *p++;               // powerup (CoveredPowerup id 0-99 / carried tool) (+0x11c)
+    obj->m_120 = *p++;               // damage             (+0x120)
+    obj->m_124 = *p++;               // smarts  (enemy team 0-3 / revealed tile)       (+0x124)
+    obj->m_placeMode = *p++;         // health             (+0x128)
+    obj->m_extent.left = *p++;       // moveRect.l         (+0x134)
+    obj->m_extent.top = *p++;        // moveRect.t         (+0x138)
+    obj->m_extent.right = *p++;      // moveRect.r         (+0x13c)
+    obj->m_extent.bottom = *p++;     // moveRect.b         (+0x140)
+    obj->m_area.left = *p++;         // hitRect.l          (+0x144)
+    obj->m_area.top = *p++;          // hitRect.t          (+0x148)
+    obj->m_area.right = *p++;        // hitRect.r          (+0x14c)
+    obj->m_area.bottom = *p++;       // hitRect.b          (+0x150)
+    obj->m_switchRect.left = *p++;   // attackRect.l       (+0x154)
+    obj->m_switchRect.top = *p++;    // attackRect.t       (+0x158)
+    obj->m_switchRect.right = *p++;  // attackRect.r       (+0x15c)
+    obj->m_switchRect.bottom = *p++; // attackRect.b       (+0x160)
+    obj->m_clip.left = *p++;         // clipRect.l         (+0x64)
+    obj->m_clip.top = *p++;          // clipRect.t         (+0x68)
     obj->m_clip.right = *p++;        // clipRect.r         (+0x6c)
-    obj->m_clip.bottom = *p++;        // clipRect.b         (+0x70)
+    obj->m_clip.bottom = *p++;       // clipRect.b         (+0x70)
 
     if (obj->m_area.left == 0 && obj->m_area.right == 0) {
         obj->m_area.left = static_cast<i32>(0x80000000);
@@ -942,10 +952,10 @@ i32 CDDrawWorkerHost::CenterScrollA() {
     i32 y;
     if (flags & 0x8) {
         y = static_cast<i32>(m_scaledY);
-        return scroll->SetTargetA(x, y);
+        return scroll->ScrollTo(x, y);
     }
     y = (m_originY + m_extentY) / 2 + 1;
-    return scroll->SetTargetA(x, y);
+    return scroll->ScrollTo(x, y);
 }
 
 // @early-stop
@@ -969,10 +979,10 @@ i32 CDDrawWorkerHost::CenterScrollB() {
     i32 y;
     if (flags & 0x8) {
         y = static_cast<i32>(m_scaledY);
-        return scroll->SetTargetB(x, y);
+        return scroll->Relocate(x, y);
     }
     y = (m_extentY + m_originY) / 2 + 1;
-    return scroll->SetTargetB(x, y);
+    return scroll->Relocate(x, y);
 }
 
 RVA(0x001633e0, 0x12)
@@ -1056,7 +1066,9 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
             if (handle == -1 || static_cast<u32>(handle) == 0xeeeeeeee) {
                 continue;
             }
-            CPlaneFrame* frame = (reinterpret_cast<CPlaneFrame**>(m_frameSets.GetData()))[static_cast<u32>(handle) >> 16];
+            CPlaneFrame* frame = (reinterpret_cast<CPlaneFrame**>(
+                m_frameSets.GetData()
+            ))[static_cast<u32>(handle) >> 16];
             if (frame == 0) {
                 result = 0;
                 if (errOut != 0) {
@@ -1134,7 +1146,8 @@ void CDDrawWorkerHost::ResolveColorKey() {
     // is the flagged @identity-TODO tail of the cascade: the slot's element type is
     // the map's CObject*, and this worker's concrete palette-bearing class is the one
     // link no caller/new-site names (see <Wwd/WwdFile.h>).
-    CPlanePalOwner* owner = reinterpret_cast<CPlanePalOwner*>(OwnerMgr()->m_workerMap->m_cachedWorker);
+    CPlanePalOwner* owner =
+        reinterpret_cast<CPlanePalOwner*>(OwnerMgr()->m_workerMap->m_cachedWorker);
     if (owner == 0) {
         return;
     }
@@ -1143,9 +1156,12 @@ void CDDrawWorkerHost::ResolveColorKey() {
         return;
     }
 
-    m_bltFx.dwFillColor = static_cast<u16>(((static_cast<u8>((static_cast<u8>(rgb[idx * 4 + 0]) >> static_cast<u8>(g_rDown))) << g_rUp)
-                       | (static_cast<u8>((static_cast<u8>(rgb[idx * 4 + 1]) >> static_cast<u8>(g_gDown))) << g_gUp)
-                       | static_cast<u8>((static_cast<u8>(rgb[idx * 4 + 2]) >> static_cast<u8>(g_bDown)))));
+    m_bltFx.dwFillColor = static_cast<u16>(
+        ((static_cast<u8>((static_cast<u8>(rgb[idx * 4 + 0]) >> static_cast<u8>(g_rDown))) << g_rUp)
+         | (static_cast<u8>((static_cast<u8>(rgb[idx * 4 + 1]) >> static_cast<u8>(g_gDown)))
+            << g_gUp)
+         | static_cast<u8>((static_cast<u8>(rgb[idx * 4 + 2]) >> static_cast<u8>(g_bDown))))
+    );
 }
 
 // @early-stop

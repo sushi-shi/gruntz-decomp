@@ -12,10 +12,10 @@
 
 #define DSNDMGSR_FILE "C:\\Proj\\Dsndmgr\\DSndMgSR.cpp"
 
-VTBL(StreamVoice, 0x001ef6d8); // 1-slot ??_7StreamVoice (slot 0 = ??_G 0x137630)
+VTBL(StreamVoice, 0x001ef6d8);       // 1-slot ??_7StreamVoice (slot 0 = ??_G 0x137630)
 VTBL(StreamVoiceFeeder, 0x001ef6e0); // cl-emitted ??_7StreamVoiceFeeder@@6B@ (derived override)
-VTBL(SoundStream, 0x001ef6ec); // cl-emitted ??_7SoundStream@@6B@ (virtual dtor override)
-VTBL(StreamFeeder, 0x001ef6f0); // cl-emitted ??_7StreamFeeder@@6B@ (3-slot base)
+VTBL(SoundStream, 0x001ef6ec);       // cl-emitted ??_7SoundStream@@6B@ (virtual dtor override)
+VTBL(StreamFeeder, 0x001ef6f0);      // cl-emitted ??_7StreamFeeder@@6B@ (3-slot base)
 DATA(0x00253c4c)
 i32 g_ssLogEnabled;
 DATA(0x00253c50)
@@ -197,19 +197,12 @@ RVA(0x00137710, 0xb)
 SoundStream::~SoundStream() {}
 
 // SoundStream::PlaySoundDefaulted (0x137720, __thiscall - `this`/ecx is unused): thin
-// wrapper defaulting the 3rd flag arg to 0 over the shared play helper (0x136550). The
-// sole caller (CDDrawSurfaceMgr::PlayDefaultSound) dispatches it on m_soundStream
-// (`mov ecx,eax; push 1; push [hWnd]; call 0x137720`), so it is a real SoundStream
-// method, not the free __stdcall it was modelled as (byte-identical either way since
-// ecx is dead; the thiscall name binds the caller's reloc to the real 0x137720).
-// @early-stop
-// regalloc free-list-pick wall (docs/patterns/select-zero-mask-dest-register.md):
-// body byte-exact except retail loads the hWnd arg into edx while cl picks ecx after
-// eax is taken by flag - a single free-list register pick, not source-steerable (~98.6%).
-i32 __stdcall PlaySound3_136550(i32 a, i32 b, i32 flag); // RVA 0x136550
+// wrapper defaulting the 3rd flag arg to 0 over the inherited SoundDevice::Create
+// (0x136550): retail passes ecx (this) straight through - the call is on the
+// SoundDevice base at offset 0.
 RVA(0x00137720, 0x14)
 i32 SoundStream::PlaySoundDefaulted(void* hWnd, i32 flag) {
-    return PlaySound3_136550(reinterpret_cast<i32>(hWnd), flag, 0);
+    return Create(hWnd, flag, 0);
 }
 
 RVA(0x00137740, 0x3e)

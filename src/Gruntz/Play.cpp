@@ -9,7 +9,7 @@
 #include <DDrawMgr/DDrawWorkerList.h> // CDDrawWorkerList (renderer B: PruneWorkers/ClearWorkers)
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (renderer A: TickKillCues/DestroyChildren_159ef0)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
-#include <DDrawMgr/DirectDrawMgr.h>    // CDDrawPtrCollections::GetErrorString (cursor-draw fail path)
+#include <DDrawMgr/DirectDrawMgr.h> // CDDrawPtrCollections::GetErrorString (cursor-draw fail path)
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
@@ -55,7 +55,7 @@
 #include <DinMgr2/DirectInputMgr2.h>  // DirectInputMgr2::ReadAll
 #include <DinMgr2/InputMgrPtr.h>      // g_inputMgr (DirectInputMgr2* view; the one decl)
 
-#include <Gruntz/GameText.h> // g_brickText1 (ex .cpp extern)
+#include <Gruntz/GameText.h>   // g_brickText1 (ex .cpp extern)
 #include <Gruntz/SoundState.h> // ex Globals.h transitive
 inline void* operator new(u32, void* p) {
     return p;
@@ -680,7 +680,7 @@ CAreaMgr* g_pAreaMgr = &g_areaMgr;
 void Cmd_ResetScroll();            // 0x2bd0  YAXXZ
 i32 QueryToken(i32 a);             // 0x39a4  QueryToken(int)
 i32 ValidateMainBlock(void* cstr); // 0x2c8e  static WwdFile (CString byval)
-void ActiveWait(i32 ms);           // 0x13dfe0 busy-wait
+void ActiveWait(u32 ms);           // 0x13dfe0 busy-wait
 void* RezAlloc(i32 sz);            // 0x1b9b46 operator new
 void RezFree(void* p);             // 0x1b9b82 operator delete
 
@@ -717,7 +717,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     // tear down the old grid (self->m_c->m_soundRegistry->m_2c) / map / sound sub-objects
-    SoundStream* grid = self->m_world->m_soundRegistry->m_2c; // the CDDrawSubMgrLeafScan-held DSound stream
+    SoundStream* grid =
+        self->m_world->m_soundRegistry->m_2c; // the CDDrawSubMgrLeafScan-held DSound stream
     if (grid != 0) {
         grid->Stop();
     }
@@ -4201,7 +4202,7 @@ mode_36c:
         i32 out28[2] = {0, 0};
         i32 col = 0;
         CGrunt* p = g_gameReg->m_cmdGrid
-                         ->FindGruntAt(wx, wy, reinterpret_cast<RECT*>(out28), &col, &y, &box);
+                        ->FindGruntAt(wx, wy, reinterpret_cast<RECT*>(out28), &col, &y, &box);
         if (p == 0 || g_curPlayer != p->m_tileOwnerHi) {
             goto waypoint_cancel;
         }
@@ -5310,8 +5311,7 @@ i32 CPlay::LoadGameImages(i32 force) {
     if (!self->m_world) {
         return 0;
     }
-    if ((static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
-            ->HasKeyEqual("GAME")) {
+    if ((static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))->HasKeyEqual("GAME")) {
         return 1;
     }
 
@@ -5331,8 +5331,7 @@ i32 CPlay::LoadGameSounds(i32 force) {
     if (!self->m_world) {
         return 0;
     }
-    if ((static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))
-            ->HasKeyEqual("GAME")) {
+    if ((static_cast<CDDrawSubMgrLeafScan*>(self->m_world->m_soundRegistry))->HasKeyEqual("GAME")) {
         return 1;
     }
 
@@ -5578,8 +5577,7 @@ i32 CState::BuildAssetNamespacePrefixes(
                 result = 0;
                 goto done;
             }
-            m_world->m_animRegistry
-                ->ScanTree(static_cast<CSymTab*>(tree), "GRUNTZ_" + name, "_");
+            m_world->m_animRegistry->ScanTree(static_cast<CSymTab*>(tree), "GRUNTZ_" + name, "_");
         }
         result = 1;
         goto done;
@@ -5712,8 +5710,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_world->m_animRegistry
-            ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_DEATHZ", "_");
+        self->m_world->m_animRegistry->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_DEATHZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -5723,8 +5720,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_world->m_animRegistry
-            ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_ENTRANCEZ", "_");
+        self->m_world->m_animRegistry->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -5734,8 +5730,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_world->m_animRegistry
-            ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_EXITZ", "_");
+        self->m_world->m_animRegistry->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_EXITZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -5756,8 +5751,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_world->m_animRegistry
-            ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_PICKUPS", "_");
+        self->m_world->m_animRegistry->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_PICKUPS", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -5767,8 +5761,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        self->m_world->m_animRegistry
-            ->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_BOMBGRUNT", "_");
+        self->m_world->m_animRegistry->ScanTree(static_cast<CSymTab*>(s), "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
             notify->AckJoinFailure();
         }

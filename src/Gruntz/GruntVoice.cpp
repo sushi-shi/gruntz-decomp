@@ -25,7 +25,7 @@
 // g_vtrigActReg (0x00251500): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
 #include <Gruntz/GruntVoiceActReg.h> // g_actReg_6514d8 (ex .cpp extern)
-#include <Wap32/zBitVec.h> // ex Globals.h
+#include <Wap32/zBitVec.h>           // ex Globals.h
 DATA_SYMBOL(0x00251500, 0x0, ?g_vtrigActReg@@3UCActReg@@A)
 
 VTBL(CVoiceTrigger, 0x001e885c);
@@ -309,8 +309,8 @@ void CVoiceTrigger::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_vtrigActReg.ResolveEntry(id)) =
-        static_cast<void*>(&VTrigLogic_11a700);
+    *reinterpret_cast<VActHandler*>(g_vtrigActReg.ResolveEntry(id)) =
+        reinterpret_cast<VActHandler>(static_cast<i32 (CUserLogic::*)()>(&CVoiceTrigger::Tick));
 }
 
 RVA(0x0011a700, 0xae)

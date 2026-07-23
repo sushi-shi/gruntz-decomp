@@ -60,17 +60,17 @@
 #include <string.h>               // engine strstr (reloc-masked) for the Battlez header probe
 #include <Utils/RegistryHelper.h> // Utils::RegistryHelper (the settings/registry writer)
 #include <Gruntz/GruntzCmdMgr.h>  // CGruntzCmdMgr - the REAL +0x6c sub-manager (~ @0x85bd0)
-#include <DinMgr2/DirectInputMgr2.h>      // the REAL g_inputMgr input singleton
-#include <Bute/SymParser.h>               // CSymParser - the REAL m_symParser (+0x34)
-#include <Image/ImageSet.h>               // the REAL CDDrawWorker (config/color rows: m_frames/+0x14,
-#include <Net/NetMgr.h>                   // the ONE CNetMgr (ReportError is its static member)
-#include <Gruntz/StatusBarMgr.h>          // CStatusBarMgr - the REAL CPlay::m_guts (+0x2dc)
-#include <DDrawMgr/DDrawSurfaceMgr.h>     // CDDrawWorkerRegistry - the REAL m_world->m_imageRegistry
+#include <DinMgr2/DirectInputMgr2.h>  // the REAL g_inputMgr input singleton
+#include <Bute/SymParser.h>           // CSymParser - the REAL m_symParser (+0x34)
+#include <Image/ImageSet.h>           // the REAL CDDrawWorker (config/color rows: m_frames/+0x14,
+#include <Net/NetMgr.h>               // the ONE CNetMgr (ReportError is its static member)
+#include <Gruntz/StatusBarMgr.h>      // CStatusBarMgr - the REAL CPlay::m_guts (+0x2dc)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawWorkerRegistry - the REAL m_world->m_imageRegistry
 #include <DDrawMgr/DDrawWorkerRegistry.h> // the class that OWNS the registry key helpers (0x1554xx)
-#include <Gruntz/MgrAutoScroll.h> // ex Globals.h
-#include <Rez/RezSync.h> // ex Globals.h
-#include <Wap32/GameApp.h> // ex Globals.h
-#include <Gruntz/SoundState.h> // ex Globals.h transitive
+#include <Gruntz/MgrAutoScroll.h>         // ex Globals.h
+#include <Rez/RezSync.h>                  // ex Globals.h
+#include <Wap32/GameApp.h>                // ex Globals.h
+#include <Gruntz/SoundState.h>            // ex Globals.h transitive
 
 char GetGruntzDriveLetter();  // 0x1ffe0 (WinAPICdRom.cpp)
 i32 FileExists(char* szPath); // 0x1189c0 (HeapDiag.cpp)
@@ -104,7 +104,7 @@ INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
 DATA(0x002455e8)
 i32 g_monologoShown;
 
-VTBL(CGruntzMgr, 0x001e9b64); // vtable_names -> code (RTTI game class)
+VTBL(CGruntzMgr, 0x001e9b64);   // vtable_names -> code (RTTI game class)
 VTBL(CSplashState, 0x001e9d74); // was placeholder CEngObj_1e9d74
 VTBL(CMenuState, 0x001e9e84);
 
@@ -115,8 +115,6 @@ i32 g_sndCueTag = 100; // 0x61ab24  the cue-item id (retail .data init = 100)
 
 DATA(0x0024556c)
 CGruntzMgr* g_gameReg = 0;
-
-void RedrawMapIndex(i32 idx); // FUN_00558c70
 
 #include <Gruntz/PlayStateView.h>
 
@@ -399,7 +397,7 @@ install:
 }
 
 VTBL(CHelpState, 0x001e9dfc); // vtable_names -> code (RTTI game class)
-VTBL(CMulti, 0x001e9fe4); // vtable_names -> code (RTTI game class)
+VTBL(CMulti, 0x001e9fe4);     // vtable_names -> code (RTTI game class)
 
 VTBL(CPlay, 0x001ea0bc);
 
@@ -772,8 +770,9 @@ i32 CGruntzMgr::ToggleBaseLayer() {
     if (IsActive() && m_world) {
         CGameLevel* view = m_world->m_level;
         if (view) {
-            CDDrawWorkerHost* layer =
-                (view->m_planes.GetSize() > 0) ? static_cast<CDDrawWorkerHost*>(view->m_planes[0]) : 0;
+            CDDrawWorkerHost* layer = (view->m_planes.GetSize() > 0)
+                                          ? static_cast<CDDrawWorkerHost*>(view->m_planes[0])
+                                          : 0;
             if (layer && !(layer->m_flags & 1)) {
                 layer->m_flags ^= 2;
                 return 1;
@@ -1249,7 +1248,8 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     }
     i32 geoA = e->m_width;
     i32 geoB = e->m_height;
-    CDDrawWorkerHost* found = static_cast<CDDrawWorkerHost*>(m_world->m_level->FindPlaneByName("MONOLITH"));
+    CDDrawWorkerHost* found =
+        static_cast<CDDrawWorkerHost*>(m_world->m_level->FindPlaneByName("MONOLITH"));
     if (found == 0) {
         CDDrawWorkerHost* spr = m_world->m_level->ReadObjectPlane(
             0x20,
@@ -2680,7 +2680,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
         m_cueSink->Stop();
     }
     if (m_world) {
-        RedrawMapIndex(reinterpret_cast<i32>(m_world->m_drawTarget->m_backPair));
+        m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
         m_world->m_ptrColl->m_device->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
 

@@ -34,7 +34,8 @@
 #include <Gruntz/StateId.h>  // StateId (GetStateId return type)
 #include <Gruntz/Loadable.h> // CLoadable - the 9-slot loadable base (3-arg ctor def below)
 #include <Mfc.h>             // real MFC CMapStringToPtr / CString / POSITION
-#include <Bute/SymTab.h>     // CSymTab (ProbeWorkerKey's probe chain)
+#include <Bute/SymParser.h>  // CSymParser::GetRoot (ProbeWorkerKey's probe chain)
+#include <Bute/SymTab.h>     // CSymTab::FindSub
 #include <string.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>    // single-source CDDrawSurfacePair
@@ -51,7 +52,7 @@
 #include <Gruntz/GameLevel.h>         // CGameLevel::m_mainPlane (the m_ctx geometry chain)
 #include <DDrawMgr/AniAdvance.h>      // CAniBlitTrigger (the per-frame sound trigger)
 #include <Wap32/WapObj.h>             // CWapObj : CObject
-#include <Gruntz/SoundState.h> // ex Globals.h transitive
+#include <Gruntz/SoundState.h>        // ex Globals.h transitive
 
 void operator delete(void*);
 
@@ -63,14 +64,14 @@ void operator delete(void*);
 // retail, and RVA_COMPGEN-bound as the REAL ??_GCLoadable/??1CLoadable in
 // DDrawWorkerRegistry.cpp.
 
-VTBL(CLoadable, 0x001efc30); // ??_7CLoadable (the shared 9-slot loadable-base vtable)
-VTBL(CDDrawSubMgrLeaf, 0x001efc78); // ??_7CDDrawSubMgrLeaf (was g_catalogVtbl)
+VTBL(CLoadable, 0x001efc30);            // ??_7CLoadable (the shared 9-slot loadable-base vtable)
+VTBL(CDDrawSubMgrLeaf, 0x001efc78);     // ??_7CDDrawSubMgrLeaf (was g_catalogVtbl)
 VTBL(CDDrawSubMgrLeafScan, 0x001efca0); // ??_7 (9-slot, LeafScanBase-derived)
 VTBL(CDDrawWorkerMapSmall, 0x001efcc8); // ??_7CDDrawWorkerMapSmall @0x5efcc8
 VTBL(CDDrawWorkerCache, 0x001efd00);
 VTBL(CDDrawWorkerRegistry, 0x001efd28); // ??_7CDDrawWorkerRegistry@@6B@ (23 slots)
-VTBL(CDDrawWorkerList, 0x001efd88); // ??_7CDDrawWorkerList@@6B@ (14-slot vtable)
-VTBL(CDDrawChildGroup, 0x001efdc0); // ??_7CDDrawChildGroup@@6B@ (17-slot vtable)
+VTBL(CDDrawWorkerList, 0x001efd88);     // ??_7CDDrawWorkerList@@6B@ (14-slot vtable)
+VTBL(CDDrawChildGroup, 0x001efdc0);     // ??_7CDDrawChildGroup@@6B@ (17-slot vtable)
 VTBL(CDDrawSubMgrPages, 0x001efe08); // ??_7CDDrawSubMgrPages@@6B@ (10-slot CWapObj-derived vtable)
 VTBL(CFileMem, 0x001efe30);
 VTBL(CFileMemBase, 0x001efe68);
@@ -81,7 +82,7 @@ DATA(0x001eff2c)
 float g_sndPanScale = 0.009999999776482582f;
 VTBL(CDDrawSurfacePair, 0x001eff30);
 VTBL(CDDrawSurfaceChildA, 0x001eff70); // ??_7CDDrawSurfaceChildA@@6B@ (11 slots)
-VTBL(CDrawSubWorker, 0x001effa0); // ??_7CDrawSubWorker (11-slot CLoadable leaf)
+VTBL(CDrawSubWorker, 0x001effa0);      // ??_7CDrawSubWorker (11-slot CLoadable leaf)
 
 void* operator new(u32 n);
 void operator delete(void* p);
@@ -188,8 +189,8 @@ CDDrawWorkerRegistry::~CDDrawWorkerRegistry() {
 }
 
 RVA(0x00156e80, 0x38)
-i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymTab* arg1, i32 arg2) {
-    void* result = arg1->Get_13b900()->FindSub(reinterpret_cast<const char*>(arg2));
+i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymParser* arg1, i32 arg2) {
+    void* result = arg1->GetRoot()->FindSub(reinterpret_cast<const char*>(arg2));
     // retail: the InstallTree path is the fall-through, return 0 out-of-line at the tail.
     if (result != 0) {
         return InstallTree(result, g_emptyString, "_"); // slot-18 self-dispatch
@@ -901,8 +902,7 @@ i32 CDDrawSubMgrLeafScan::Fire(const char* key, i32 pos, i32 range1, i32 range2)
         void* val = 0;
         m_10.Lookup(key, val);
         if (val != 0) {
-            return (static_cast<CAniBlitTrigger*>(val))
-                ->TriggerBlit(pos, -1, range1, range2);
+            return (static_cast<CAniBlitTrigger*>(val))->TriggerBlit(pos, -1, range1, range2);
         }
     }
     return 0;

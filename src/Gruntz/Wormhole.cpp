@@ -273,7 +273,8 @@ void RegisterWormholeLogic() {
         g_typeCounter++;
     }
     char* dslot = ResolveSlot(&g_wormholeDispatch, idx);
-    *reinterpret_cast<void**>(dslot) = static_cast<void*>(&WormholeLogic_40181b);
+    *reinterpret_cast<WormholeActHandler*>(dslot) =
+        static_cast<WormholeActHandler>(&CWormhole::SpawnPartners);
 }
 
 // ---------------------------------------------------------------------------

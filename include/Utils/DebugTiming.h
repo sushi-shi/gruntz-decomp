@@ -4,6 +4,6 @@
 
 #include <Ints.h>
 
-void ActiveWait(i32 phase);
+void ActiveWait(u32 milliseconds);
 
 #endif // GRUNTZ_UTILS_DEBUGTIMING_H

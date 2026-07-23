@@ -24,7 +24,7 @@
 #include <Gruntz/Grunt.h>      // canonical CGrunt (LoadPickupSprites/LoadGruntTypeTable)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells; ex CIconRecord)
 #include <Gruntz/SoundState.h> // ex Globals.h transitive
-#include <Gruntz/Random.h> // ex Globals.h transitive
+#include <Gruntz/Random.h>     // ex Globals.h transitive
 
 VTBL(CInGameText, 0x001e7cac);
 VTBL(CInGameIcon, 0x001e7d04);
@@ -568,7 +568,8 @@ void RegisterIconActions() {
         g_typeCounter++;
     }
     char* dslotA = ResolveSlot(&g_iconActionTable, idxA);
-    *reinterpret_cast<void**>(dslotA) = static_cast<void*>(&IconAction_4023d3);
+    *reinterpret_cast<IconActHandler*>(dslotA) =
+        static_cast<IconActHandler>(&CInGameIcon::PeekCycle);
 
     i32 idxB = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (idxB == 0) {
@@ -578,7 +579,8 @@ void RegisterIconActions() {
         g_typeCounter++;
     }
     char* dslotB = ResolveSlot(&g_iconActionTable, idxB);
-    *reinterpret_cast<void**>(dslotB) = static_cast<void*>(&IconAction_403c06);
+    *reinterpret_cast<IconActHandler*>(dslotB) =
+        static_cast<IconActHandler>(&CInGameIcon::Reposition);
 }
 
 RVA(0x00097d60, 0x15)
@@ -615,7 +617,8 @@ void RegisterIconState() {
         g_typeCounter++;
     }
     char* dslot = ResolveSlot(&g_iconStateTable, idx);
-    *reinterpret_cast<void**>(dslot) = static_cast<void*>(&IconState_40370b);
+    *reinterpret_cast<ToyPeekActHandler*>(dslot) =
+        static_cast<ToyPeekActHandler>(&CInGameIcon::RefreshCell);
 }
 
 RVA(0x00098340, 0x71)
@@ -1046,7 +1049,7 @@ void RegisterTextLogic() {
         g_typeCounter++;
     }
     char* dslot = ResolveSlot(&g_textDispatch, idx);
-    *reinterpret_cast<void**>(dslot) = static_cast<void*>(&TextLogic_402013);
+    *reinterpret_cast<IconActHandler*>(dslot) = static_cast<IconActHandler>(&CInGameText::Update);
 }
 
 RVA(0x00099a30, 0xaa)
@@ -1083,4 +1086,3 @@ void CInGameIcon::SetField54(i32 v) {
     }
     m_cmapId = reinterpret_cast<i32>(found);
 }
-

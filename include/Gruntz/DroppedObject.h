@@ -37,7 +37,7 @@ struct CDropEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h> // CSiblingActReg (extern below)
+#include <Gruntz/ActReg.h>        // CSiblingActReg (extern below)
 extern CSiblingActReg g_dropColl; // 0x0024bed8
 
 extern CSiblingActReg g_dropperActReg; // 0x0024be90
@@ -47,7 +47,6 @@ extern CSiblingActReg g_shadowActReg; // 0x0024bf00
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern i32 DropActB_c7be0();
-extern i32 DropActA_c7090();
 
 extern const double g_objDropDiv;
 extern double g_dropFallBias;

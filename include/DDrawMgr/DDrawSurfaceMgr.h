@@ -20,7 +20,7 @@ class CDDrawWorkerMapSmall; // +0x18 the polymorphic sprite/palette registry (: 
 class CDDrawSubMgrLeafScan; // (class, not struct - the PAU/PAV fwd-mangling trap)
 class CDDrawSubMgrLeaf;     // +0x2c the label sub-manager (KeyOfValue / m_10 map)
 class CDDrawPtrCollections; // the +0x1c surface pool (heap object)
-struct SoundStream;          // the +0x20 foreign Dsndmgr sound stream
+struct SoundStream;         // the +0x20 foreign Dsndmgr sound stream
 
 typedef i32(__cdecl* HP_Callback)(void*, void*, i32, i32, i32);
 
@@ -48,7 +48,7 @@ public:
     // CGruntzMgr::LoadWorldMode dispatches it as its "SetVideoMode" (slot 6, +0x18).
     virtual i32 Init(void* hWnd, i32 w, i32 h, i32 bpp, i32 flags);
     virtual void Cleanup(); // slot 7  0x155e20 (owned-child teardown; ~ calls it;
-                                   //         LoadWorldMode's pre-Init "Notify" dispatch)
+                            //         LoadWorldMode's pre-Init "Notify" dispatch)
 
     // Non-virtual methods (census-proven OFF the retail vtable - plain, not slots):
     void FreeContext();                                           // 0x155fc0
@@ -80,9 +80,10 @@ public:
     SoundStream* m_soundStream;            // +0x20  foreign Dsndmgr sound stream
     // +0x24: "CDDrawResolveSubMgr" IS the canonical CGameLevel - PROVEN: Init news
     // it with new(0x6d4) + ctor 0x15ccd0 == SIZE(CGameLevel, 0x6d4) + ??0CGameLevel.
-    class CGameLevel* m_level;             // (ex "m_level" - the canonical CGameLevel)
-    CDDrawSubMgrLeafScan* m_soundRegistry; // +0x28  sound/cue registry (CDDrawSubMgrLeafScan typedef;
-                                           //        ex "m_soundRegistry")
+    class CGameLevel* m_level; // (ex "m_level" - the canonical CGameLevel)
+    CDDrawSubMgrLeafScan*
+        m_soundRegistry; // +0x28  sound/cue registry (CDDrawSubMgrLeafScan typedef;
+                         //        ex "m_soundRegistry")
     CDDrawSubMgrLeaf*
         m_animRegistry;     // +0x2c  the ANI catalog / anim registry (ex "m_animRegistry";
                             //        KeyOfValue + the ANI factory set)
@@ -100,6 +101,5 @@ extern void __cdecl RelayHwnd(i32(__cdecl* callback)());
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-extern i32 __stdcall CreateChildSurface(i32 x, i32 y, i32 flags);
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSURFACEMGR_H

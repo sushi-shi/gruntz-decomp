@@ -33,7 +33,7 @@ extern CVariantSlot* g_vactColl2;    // 0x2514dc
 class CGruntVoice : public CUserLogic, public CWapX {
 public:
 public:
-    CGruntVoice(CGameObject* obj);   // 0x1198a0 (folds CUserLogic(obj) + the voice tail)
+    CGruntVoice(CGameObject* obj); // 0x1198a0 (folds CUserLogic(obj) + the voice tail)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
@@ -78,11 +78,10 @@ static inline CVActEntry* VActLookup(i32 coord) {
     return g_vactCur;
 }
 
-#include <Gruntz/ActReg.h> // CActReg (extern below)
+#include <Gruntz/ActReg.h>    // CActReg (extern below)
 extern CActReg g_vtrigActReg; // 0x00251500
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
-extern i32 VTrigLogic_11a700();
 
 #endif // GRUNTZ_GRUNTZ_CGRUNTVOICE_H

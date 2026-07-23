@@ -1,5 +1,5 @@
 #include <Gruntz/ObjectDropper.h> // CObjectDropper : CUserLogic (ctor 0xc59f0)
-#include <Rez/FrameClock.h>        // frame-clock band (g_frameDelta/g_engineFrameDelta)
+#include <Rez/FrameClock.h>       // frame-clock band (g_frameDelta/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Wap32/zBitVec.h>        // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
@@ -19,7 +19,7 @@
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/SerialArchive.h>     // CFileMemBase (Read @+0x2c / Write @+0x30)
 #include <Gruntz/UserLogic.h>         // canonical CGameObject / CGameObjLayer (the bound object)
-#include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
+#include <Image/CImage.h>             // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Gruntz/Brickz.h>            // canonical BrickzCell (the 0x1c-byte tile-grid cell)
 #include <Gruntz/State.h> // canonical CState (g_gameReg->m_curState; m_levelType @+0x20)
 
@@ -40,10 +40,14 @@ struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/Type
 static inline char* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
-        return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
+        return reinterpret_cast<char*>(
+            (g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride)
+        );
     }
     if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0))) {
-        return reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
+        return reinterpret_cast<char*>(
+            (g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride)
+        );
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
@@ -294,7 +298,9 @@ void CObjectDropper::InitActReg() {
 RVA(0x000c5f80, 0x102)
 void CObjectDropper::FireActivation(i32 actId) {
     if ((reinterpret_cast<CDropperActEntry*>(g_dropperActReg.ResolveEntry(actId)))->m_fn != 0) {
-        (this->*((reinterpret_cast<CDropperActEntry*>(g_dropperActReg.ResolveEntry(actId)))->m_fn))();
+        (this
+             ->*((reinterpret_cast<CDropperActEntry*>(g_dropperActReg.ResolveEntry(actId)))
+                     ->m_fn))();
     }
 }
 
@@ -328,7 +334,8 @@ void CObjectDropper::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CDropperActEntry*>(g_dropperActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CObjectDropper::Update);
+    (reinterpret_cast<CDropperActEntry*>(g_dropperActReg.ResolveEntry(id)))->m_fn =
+        static_cast<i32 (CUserLogic::*)()>(&CObjectDropper::Update);
 }
 
 RVA(0x000c62e0, 0x2dd)
@@ -364,7 +371,9 @@ i32 CObjectDropper::Update() {
                             // the canonical 0x1c-byte BrickzCell (its m_0 = packed terrain
                             // flags). @fold-TODO in MapMgr.h tracks retyping m_8 to
                             // BrickzCell** tree-wide.
-                            flags = static_cast<u32>((reinterpret_cast<BrickzCell*>(plane->m_rows[cy]))[cx].m_0);
+                            flags = static_cast<u32>(
+                                (reinterpret_cast<BrickzCell*>(plane->m_rows[cy]))[cx].m_0
+                            );
                         }
                         if ((flags & 2) == 0) {
                             g_gameReg->m_world->m_childGroup
@@ -564,7 +573,8 @@ void CDroppedObject::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(DropLookup(id)) = static_cast<void*>(&DropActA_c7090);
+    *reinterpret_cast<DropHandler*>(DropLookup(id)) =
+        reinterpret_cast<DropHandler>(static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::ActA));
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
@@ -620,7 +630,8 @@ i32 CDroppedObject::ActA() {
             i32 cy = m_landY >> 5;
             if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
                 && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
-                cell = *reinterpret_cast<i32*>((reinterpret_cast<char*>(g->m_rows[cy]) + cx * 0x1c));
+                cell =
+                    *reinterpret_cast<i32*>((reinterpret_cast<char*>(g->m_rows[cy]) + cx * 0x1c));
             } else {
                 cell = 1;
             }
@@ -663,8 +674,9 @@ i32 CDroppedObject::ActA() {
         } else {
             if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
                 && m_landY < g_gameReg->m_viewOriginB && m_landY >= g_gameReg->m_viewOriginT) {
-                CWwdGameObjectA* s = g_gameReg->m_world->m_childGroup
-                                     ->CreateSprite(0, x, m_landY, 0xcf84f, "Particlez", 0x40003);
+                CWwdGameObjectA* s =
+                    g_gameReg->m_world->m_childGroup
+                        ->CreateSprite(0, x, m_landY, 0xcf84f, "Particlez", 0x40003);
                 if (s != 0) {
                     s->ApplyName("GAME_WATER");
                     s->ApplyLookupGeometry("GAME_WATER", 0);
@@ -785,7 +797,8 @@ void CDroppedObjectShadow::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CShadowActEntry*>(g_shadowActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CDroppedObjectShadow::Advance);
+    (reinterpret_cast<CShadowActEntry*>(g_shadowActReg.ResolveEntry(id)))->m_fn =
+        static_cast<i32 (CUserLogic::*)()>(&CDroppedObjectShadow::Advance);
 }
 
 // CDroppedObjectShadow::Advance (0xc7ab0): the per-frame act handler - advance
@@ -816,7 +829,12 @@ i32 CDroppedObjectShadow::Advance() {
 
 RVA(0x000c7b40, 0x76)
 i32 CDroppedObjectShadow::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, i32 d) {
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))), mode, c, d)) {
+    if (!CUserLogic::SerializeMove(
+            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
+            mode,
+            c,
+            d
+        )) {
         return 0;
     }
     if (!Chain(static_cast<CFileMemBase*>(ar), mode, c, reinterpret_cast<CGameObject*>(d))) {

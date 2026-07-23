@@ -76,6 +76,4 @@ public:
 };
 SIZE_UNKNOWN();
 
-void WhShowItem(i32 handle, i32 flag);
-
 #endif // SBI_WARLORDHEAD_H

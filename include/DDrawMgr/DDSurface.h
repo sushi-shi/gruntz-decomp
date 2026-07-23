@@ -94,9 +94,8 @@ public:
     i32 SetPalette(CDDPalette* pal, i32 unused); // 0x13e690
     i32 Restore(void* arg1, i32 arg2);           // 0x13e7d0 (BoundaryUpper2.cpp)
     i32 Flip(CDDSurface* target);                // 0x13e850
-    void Draw(i32 z);                      // credits draw-target draw (thiscall; reloc-masked)
-    void* GetElementAt(i32 i);             // 0x13ea70  m_elements[i] (bounds-checked)
-    i32 SetColorKey(u32 flags, void* key); // 0x13eaa0
+    void* GetElementAt(i32 i);                   // 0x13ea70  m_elements[i] (bounds-checked)
+    i32 SetColorKey(u32 flags, void* key);       // 0x13eaa0
     // Convenience SetColorKey overloads that build a DDCOLORKEY on the stack + forward.
     i32 SetColorKeyVal(u32 flags, u32 key);          // 0x13eae0  key={v,v}
     i32 SetColorKeyRange(u32 flags, u32 lo, u32 hi); // 0x13eb10  key={lo,hi}
@@ -258,7 +257,7 @@ public:
     // --- layout (0xc0 bytes; the OFFSETS are load-bearing) ---------------------
     // vptr @+0x00 (implicit, polymorphic; the compiler emits the ctor/dtor vptr stamp).
     POSITION m_pos; // +0x04  cached CPtrList POSITION (the pool-A item slot); pad otherwise
-    IDirectDrawSurface* m_ddSurface; // +0x08  held DirectDraw surface (released via Release)
+    IDirectDrawSurface* m_ddSurface;     // +0x08  held DirectDraw surface (released via Release)
     IDirectDrawSurface* m_ddSurfaceBack; // +0x0c  held back/secondary surface (also released)
     // +0x10..+0x7c: the surface's embedded DDSURFACEDESC scratch (0x6c). AUDITED
     // 2026-07-21 - the i32-typed arms are LOAD-BEARING and must NOT become a real
@@ -282,25 +281,25 @@ public:
             i32 m_lockBits;            // +0x34  desc lpSurface (locked bits pointer; returned by
                                        //         Lock, used as the pixel buffer by Fill/BlitDirect)
             char m_pad38[0x64 - 0x38]; // +0x38
-            i32 m_srcBitDepth;                  // +0x64  pixel-format bit depth / colour-key colour
+            i32 m_srcBitDepth;         // +0x64  pixel-format bit depth / colour-key colour
             i32 m_rMask;               // +0x68  DDPIXELFORMAT R channel bitmask
             i32 m_gMask;               // +0x6c  DDPIXELFORMAT G channel bitmask
             i32 m_bMask;               // +0x70  DDPIXELFORMAT B channel bitmask
             char m_pad74[0x7c - 0x74]; // +0x74
         };
     };
-    i32 m_dontOwn;        // +0x7c  don't-own flag (bit0 => surfaces not released)
+    i32 m_dontOwn; // +0x7c  don't-own flag (bit0 => surfaces not released)
     // +0x80  the full-surface blit RECT {left=0, top=0, right=width, bottom=height};
     // Refresh caches it, Blt hands &m_fullRect to IDirectDrawSurface::Blt, IsValid
     // reads right/bottom as the width/height.
     RECT m_fullRect;      // +0x80..+0x8f
-    i32 m_imageBytes;             // +0x90  bytes-per-row * height
+    i32 m_imageBytes;     // +0x90  bytes-per-row * height
     CPtrArray m_elements; // +0x94  owned element array (m_pData@+0x98 / m_nSize@+0x9c);
                           //         FreeSurfaces scalar-dtor-deletes each then RemoveAll
     i32 m_bitDepth;       // +0xa8  raw bit depth (8/16/24; the SaveDispatch selector)
-    i32 m_bytesPerRow;             // +0xac  bytes-per-row factor
-    i32 m_bytesPerPixel;             // +0xb0  pixels-per-unit divisor
-    i32 m_pixelsPerRow;             // +0xb4  lPitch/divisor
+    i32 m_bytesPerRow;    // +0xac  bytes-per-row factor
+    i32 m_bytesPerPixel;  // +0xb0  pixels-per-unit divisor
+    i32 m_pixelsPerRow;   // +0xb4  lPitch/divisor
     // +0xb8  per-surface restore callback (__cdecl fn-ptr taking `this`); RestoreLost
     // (slot 7) tail-dispatches through it. A fn-ptr is 4 bytes = layout-identical to the
     // former i32 slot; cleared by the surface teardown.
