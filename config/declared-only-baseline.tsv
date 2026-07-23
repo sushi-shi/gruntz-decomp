@@ -29,12 +29,8 @@
 ?IsDropReady@CGrunt@@QAEHH@Z
 ?ListDtor@CWwdSpatialMgr@@QAEXXZ
 ?LoadSprite@CSpriteRefTable@@QAEPAXPAXH@Z
-?MapCellIndex@zDArray@@QAEHHH@Z
-?MapCellRecord2@zDArray@@QAEHHH@Z
-?MapCellRecord@zDArray@@QAEHHH@Z
 ?MapLookup@@YAHPAX0AAPAX@Z
 ?OnRegion5@CPlay@@QAEXXZ
-?PinCellIndex@zDArray@@QAEHXZ
 ?Place@CUserLogic@@QAEHHHHHHHHHHHHH@Z
 ?Plan293c@CBattlezMapConfig@@QAEXPAVCGrunt@@HHHHH@Z
 ?Probe1a4b@CBattlezMapConfig@@QAEHPAVCGrunt@@HH@Z
@@ -77,10 +73,6 @@
 ?g_behindCandyActReg@@3UCBehindCandyActReg@@A
 ?g_brickzActReg@@3UCActReg@@A
 ?g_buteMgr@@3VCButeMgr@@A
-?g_cellHi@@3HA
-?g_cellLo@@3HA
-?g_cellRecordBase@@3HA
-?g_cellRecordRet@@3HA
 ?g_checkpointActReg@@3UCActReg@@A
 ?g_creationPointActReg@@3UCActReg@@A
 ?g_dirDescTable@@3PAUDirDesc@@A

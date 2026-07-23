@@ -10,4 +10,3 @@
 0x002becf8	g_rasterVtxCount	ImagePolyClip.cpp	WarpTextureBlit.cpp	bss
 0x002bf218	g_blendDescr	DDrawShadeBlit.cpp	ShadeDescrTable.cpp	bss
 0x002bf464	g_projActCache	GruntStartingPoint.cpp	TypeKeyColl.cpp	bss
-0x002bf464	g_zvecErrSentinel	GruntStartingPoint.cpp	TypeKeyColl.cpp	bss

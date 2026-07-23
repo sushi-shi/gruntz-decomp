@@ -30,8 +30,6 @@ struct StartActEntry {
 };
 SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
-extern u32 g_zvecErrSentinel; // 0x002bf464
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern "C" void ActReg4Handler(); // 0x4040a2
@@ -41,5 +39,4 @@ extern "C" void ActReg4Handler(); // 0x4040a2
 #include <Gruntz/ActReg.h> // CActReg (for the extern below)
 extern CActReg g_actReg4;
 
-extern u32 g_zvecErrSentinel;
 #endif // GRUNTZ_CGRUNTSTARTINGPOINT_H

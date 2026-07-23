@@ -219,6 +219,30 @@ controlled reverse sample: when a residue appeared after a declaration batch,
 later removal of false member names and restoration of the authentic receiver
 signature can undo it without touching the affected function.
 
+THIRTEENTH FIRING (2026-07-23, shredded `g_typeColl` recovery): replacing five
+fake `g_cell*` field names with the inherited `_zvec` fields of the real
+`g_typeColl`, replacing two more globals with the existing
+`g_projActCache`/`g_retAddrBreadcrumb`, and removing four fake `zDArray`
+methods changed both `Grunt.h` and `TypeKeyColl.h`. Seven source-identical
+functions newly moved below their saved values:
+`CGruntPowerupSprite::Update` 100→89.8214,
+`CPlay::StepScroll` 71.6207→63.5172,
+`CGruntHealthSprite::HealthUpdate` 99.6377→96.6667,
+`CGrunt::RectContains` 61.6774→59.0564,
+`CLightFxRender::Resize` 48.6176→47.3824,
+`CTriggerMgr::HitTestCell` 39.7921→39.7723, and
+`CGrunt::ArrivalScanB` 41.1545→41.1407. Conversely,
+`CGrunt::PhaseStep` recovered 38.5960→39.7717 without a body edit.
+`CGrunt::ArrivalRecycle` changed directly and is not a butterfly control. The
+full field map and callee relocations prove the cleanup, so retain it and the
+saved MAX values. The same rebuild raised two high-water marks:
+`zBitVec::SetSize` 85.2979→98.7234 and
+`CTriggerMgr::PlaceObjectFull` 18.3538→18.3988. Thus the authentic declaration
+state both repaired and displaced schedules; the rounded overall MAX remained
+73.73. This firing is especially useful in reverse: an unexplained schedule in
+a `Grunt.h`/`TypeKeyColl.h` consumer may respond to completing the authentic
+vector API or removing another interior-field alias.
+
 THIRTEENTH FIRING (2026-07-23, constructed-global type recovery): replacing
 `char[]`, `u8`, and `void*` placeholder globals with four real
 `CVariantSlot` objects, and changing the shared `zErrHandling` boundary from

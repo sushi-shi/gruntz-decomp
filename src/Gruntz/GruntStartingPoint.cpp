@@ -60,8 +60,6 @@ void Register6446d8Range() {
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 DATA(0x002bf464)
-u32 g_zvecErrSentinel; // owner def (zero-init .bss)
-DATA(0x002bf464)
 void* g_projActCache;
 
 static inline CTypeNameEntry* TypeLookup(i32 key) {

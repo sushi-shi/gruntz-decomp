@@ -48,15 +48,6 @@ SIZE_UNKNOWN();
 
 #include <Gruntz/CurPlayer.h> // g_curPlayer (the current local player index)
 
-extern i32 g_cellLo;    // DAT_006bf658
-extern i32 g_cellHi;    // DAT_006bf65c
-extern i32 g_cellBase;  // DAT_006bf660
-extern i32 g_cellRet;   // DAT_006bf664
-extern i32 g_cellScale; // DAT_006bf668
-
-extern i32 g_cellRecordBase; // DAT_006bf464
-extern i32 g_cellRecordRet;  // DAT_006bf428
-
 struct GruntDirectionCell {
     GruntDirectionCell(i32 row_, i32 column_, i32 direction_)
         : row(row_), column(column_), direction(direction_) {}

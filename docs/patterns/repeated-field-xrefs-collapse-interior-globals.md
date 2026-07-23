@@ -48,6 +48,26 @@ the proven interior aliases can still be removed.
 Use this pattern in reverse when auditing other dense data bands. A cluster of
 word-spaced declared-only names is a strong candidate when multiple consumers
 repeat the same bounds check, stride calculation, grow call, error path, and
-spare-entry return. `g_typeColl` is another registry-shaped example: its
-members should be modeled through the shared object rather than reintroduced
-as globals at their individual addresses.
+spare-entry return.
+
+Applying that reverse search to `CGrunt::ArrivalRecycle` found a second form.
+The labels at `0x006bf658..0x006bf668` were not a separate "cell" collection:
+they are `g_typeColl`'s inherited `m_lo`, `m_hi`, `m_base`, `m_spare`, and
+`m_stride` fields at `+0x08..+0x18`. Four placeholder `zDArray` methods in the
+same sequence also hid existing operations:
+
+```text
+MapCellIndex   -> _zvec::GrowTo
+MapCellRecord  -> zErrHandling::Report
+PinCellIndex   -> GetRetAddr
+MapCellRecord2 -> CVariantSlot::Set through m_errSink
+```
+
+Two remaining "cell record" globals were aliases of already modeled storage,
+not fields: `0x006bf464` is `g_projActCache`, and `0x006bf428` is
+`g_retAddrBreadcrumb`. The latter two addresses are confirmed by the slow
+path's relocation order: load the cache, obtain the return address, store the
+breadcrumb, then call `m_errSink->Set(&g_typeColl, cache, 0xc)`. Modeling the
+real fields, methods, and globals removed four false function declarations and
+four declared-only data names. It also removed the overlapping
+`g_zvecErrSentinel` definition at the same address as `g_projActCache`.

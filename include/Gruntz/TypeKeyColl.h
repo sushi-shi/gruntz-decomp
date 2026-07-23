@@ -36,10 +36,6 @@ public:
     CAnimNameRecord* ScratchResolve(void* node); // thunk 0x403864
     i32 Probe(i32 a, i32 b);                     // 0x16da80 (_zvec::GrowTo base grow)
     i32 Reserve(CAnimNameRecord* rec, i32 n);    // 0x034960
-    i32 MapCellIndex(i32 coord, i32 flag);       // 0x56da80 (ret 8)
-    i32 MapCellRecord(i32 base, i32 size);       // 0x034960 (ret 8; block-1 fallback)
-    i32 MapCellRecord2(i32 base, i32 size);      // 0x56d850 (ret 0xc; block-2 fallback)
-    i32 PinCellIndex();                          // 0x56d990 (ret 0; pop/push/ret stub)
 
     // NO OWN FIELDS: the "m_cursor @+0x1c / m_count @+0x20" this class used to declare
     // ARE the inherited _zvec::m_alloc / _zvec::m_grown at those exact offsets - the ctor

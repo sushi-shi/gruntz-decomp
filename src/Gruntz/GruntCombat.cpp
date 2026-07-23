@@ -1086,15 +1086,19 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         i32 coord = reinterpret_cast<i32>(m_objAux->m_1c);
         g_typeColl.m_grown = 0;
         i32 rec;
-        if (coord < g_cellLo || coord > g_cellHi) {
-            if (g_typeColl.MapCellIndex(coord, 0) != 0) {
-                rec = (coord - g_cellLo) * g_cellScale + g_cellBase;
+        if (coord < g_typeColl.m_lo || coord > g_typeColl.m_hi) {
+            if (reinterpret_cast<i32>(g_typeColl.GrowTo(coord, 0)) != 0) {
+                rec = reinterpret_cast<i32>(
+                    g_typeColl.m_base + (coord - g_typeColl.m_lo) * g_typeColl.m_stride
+                );
             } else {
-                g_typeColl.MapCellRecord(g_cellRecordBase, 0xc);
-                rec = g_cellRet;
+                g_typeColl.Report(reinterpret_cast<i32>(g_projActCache), 0xc);
+                rec = reinterpret_cast<i32>(g_typeColl.m_spare);
             }
         } else {
-            rec = (coord - g_cellLo) * g_cellScale + g_cellBase;
+            rec = reinterpret_cast<i32>(
+                g_typeColl.m_base + (coord - g_typeColl.m_lo) * g_typeColl.m_stride
+            );
         }
         GruntScratchTeardown();
         static_cast<void>(rec);
@@ -1107,17 +1111,21 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         i32 coord = reinterpret_cast<i32>(m_objAux->m_1c);
         g_typeColl.m_grown = 0;
         i32 rec;
-        if (coord < g_cellLo || coord > g_cellHi) {
-            if (g_typeColl.MapCellIndex(coord, 0) != 0) {
-                rec = (coord - g_cellLo) * g_cellScale + g_cellBase;
+        if (coord < g_typeColl.m_lo || coord > g_typeColl.m_hi) {
+            if (reinterpret_cast<i32>(g_typeColl.GrowTo(coord, 0)) != 0) {
+                rec = reinterpret_cast<i32>(
+                    g_typeColl.m_base + (coord - g_typeColl.m_lo) * g_typeColl.m_stride
+                );
             } else {
-                i32 pin = g_typeColl.PinCellIndex();
-                g_cellRecordRet = g_typeColl.MapCellRecord2(g_cellRecordBase, 0xc);
-                rec = g_cellRet;
-                static_cast<void>(pin);
+                void* item = g_projActCache;
+                g_retAddrBreadcrumb = GetRetAddr();
+                g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
+                rec = reinterpret_cast<i32>(g_typeColl.m_spare);
             }
         } else {
-            rec = (coord - g_cellLo) * g_cellScale + g_cellBase;
+            rec = reinterpret_cast<i32>(
+                g_typeColl.m_base + (coord - g_typeColl.m_lo) * g_typeColl.m_stride
+            );
         }
         GruntScratchTeardown();
         static_cast<void>(rec);
