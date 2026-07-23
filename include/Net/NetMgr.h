@@ -705,7 +705,6 @@ public:
     // reloc-masks). Retail thunk 0x35e4 -> 0xbc420.
     void AckJoinFailure(); // 0xbc420
     void DropTimeout();    // 0xbc2d0 (drop a timed-out player)
-    i32 GetAmbientId();    // 0xda200 (current ambient-track index for the "AMBIENT%d" cue)
 
     // (WaitForOtherPlayers @0xbb700 moved to CMulti in the netmgr-vs-cmulti split.)
 
@@ -757,9 +756,6 @@ public:
     // in a sibling stub TU (ApiCallers.cpp), declared here no-body so the call
     // reloc-masks.
     void HandleSpriteMsg(CNetCtrlMsg* msg); // 0xba620
-    // The "rejoin/reconnect" finalizer fired from OnPlayerLeft when the channel
-    // selector is set; external (the 0xba810 backlog method), no body here.
-    void RejoinIfNeeded(i32 flag); // 0xba810
     // The version-report diagnostic (logs a message string + zero) and the
     // 4-arg stat-packet dispatcher AnnounceVersion fires. Both __thiscall engine
     // routines reached through incremental-link thunks; no body here.

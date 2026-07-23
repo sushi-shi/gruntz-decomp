@@ -977,12 +977,8 @@ i32 CGrunt::StepEntranceRelatchA() {
 // structure are byte-faithful in shape/order. Residue = the x87 register-stack
 // scheduling + which spill slot holds each interpolation operand (source-invariant
 // on this leaf). Deferred to the final sweep.
-// reloc-fidelity: 0x62b70 IS CGrunt::RectSegProbe - CGrunt's rect/seg-probe caller
-// (winapi_04a9f0) invokes it thiscall-style (mov ecx,this ignored; 3 pushed args) so it
-// emits ?RectSegProbe@CGrunt@@. SYMBOL exports it under that name so those 4 calls bind;
-// the body stays the byte-matched __stdcall leaf (it ignores ecx / uses pure stack args).
-// retail identity: ?RectSegProbe@CGrunt@@QAEHPAX00@Z (byte-matched as the __stdcall leaf
-// CGrunt_SegBoxOverlap, which ignores ecx; the fold onto CGrunt is deferred)
+// (0x62b70 below IS CGrunt::RectSegProbe - a thiscall leaf that never touches
+// `this`; retail loads ecx=this at every call site, byte-proven.)
 RVA(0x00062b40, 0x11)
 i32 CGrunt::UserLogicVfunc6() {
     m_438 = g_frameTicks;
@@ -990,48 +986,48 @@ i32 CGrunt::UserLogicVfunc6() {
 }
 
 RVA(0x00062b70, 0x205)
-i32 __stdcall CGrunt_SegBoxOverlap(GruntBox* p, GruntSegEnd* e1, GruntSegEnd* e2) {
-    i32 e1y = e1->m_4;
-    i32 e2y = e2->m_4;
+i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
+    i32 e1y = e1->y;
+    i32 e2y = e2->y;
 
-    // Top edge (y = p->m_4): straddle in y, interpolate x.
-    i32 py = p->m_4;
+    // Top edge (y = p->top): straddle in y, interpolate x.
+    i32 py = p->top;
     if ((e1y < py) != (e2y < py)) {
         float t = static_cast<float>((py - e1y)) / static_cast<float>((e2y - e1y));
-        float ix = static_cast<float>(e1->m_0) + t * static_cast<float>((e2->m_0 - e1->m_0));
-        if (static_cast<float>(p->m_0) <= ix && ix <= static_cast<float>(p->m_8)) {
+        float ix = static_cast<float>(e1->x) + t * static_cast<float>((e2->x - e1->x));
+        if (static_cast<float>(p->left) <= ix && ix <= static_cast<float>(p->right)) {
             return 1;
         }
     }
 
-    // Bottom edge (y = p->m_c).
-    i32 pyc = p->m_c;
+    // Bottom edge (y = p->bottom).
+    i32 pyc = p->bottom;
     if ((e1y < pyc) != (e2y < pyc)) {
         float t = static_cast<float>((pyc - e1y)) / static_cast<float>((e2y - e1y));
-        float ix = static_cast<float>(e1->m_0) + t * static_cast<float>((e2->m_0 - e1->m_0));
-        if (static_cast<float>(p->m_0) <= ix && ix <= static_cast<float>(p->m_8)) {
+        float ix = static_cast<float>(e1->x) + t * static_cast<float>((e2->x - e1->x));
+        if (static_cast<float>(p->left) <= ix && ix <= static_cast<float>(p->right)) {
             return 1;
         }
     }
 
-    // Left edge (x = p->m_0): straddle in x, interpolate y.
-    i32 e1x = e1->m_0;
-    i32 e2x = e2->m_0;
-    i32 px = p->m_0;
+    // Left edge (x = p->left): straddle in x, interpolate y.
+    i32 e1x = e1->x;
+    i32 e2x = e2->x;
+    i32 px = p->left;
     if ((e1x > px) != (e2x > px)) {
         float t = static_cast<float>((e2x - px)) / static_cast<float>((e2x - e1x));
         float iy = static_cast<float>(e1y) + t * static_cast<float>((e2y - e1y));
-        if (static_cast<float>(p->m_4) <= iy && iy <= static_cast<float>(p->m_c)) {
+        if (static_cast<float>(p->top) <= iy && iy <= static_cast<float>(p->bottom)) {
             return 1;
         }
     }
 
-    // Right edge (x = p->m_8).
-    i32 pxr = p->m_8;
+    // Right edge (x = p->right).
+    i32 pxr = p->right;
     if ((e1x > pxr) != (e2x > pxr)) {
         float t = static_cast<float>((e2x - pxr)) / static_cast<float>((e2x - e1x));
         float iy = static_cast<float>(e1y) + t * static_cast<float>((e2y - e1y));
-        if (static_cast<float>(p->m_4) <= iy && iy <= static_cast<float>(p->m_c)) {
+        if (static_cast<float>(p->top) <= iy && iy <= static_cast<float>(p->bottom)) {
             return 1;
         }
     }

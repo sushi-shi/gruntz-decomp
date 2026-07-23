@@ -4,17 +4,12 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (SnapshotChildren @0x156020)
 #include <Io/GameSave.h>              // CGameSaveHost (the g_gameReg/CGruntzMgr save-host facet)
 
-// The recursive snapshot run-callback handed to SnapshotChildren; modeled NO-body
-// so the call/address-of reloc-mask. Its type is the canonical HP_Callback.
-// reloc-fidelity: the real body is SerialObjectFactory @0xd2a0
-// (?SerialObjectFactory@@YAHPAX0HHPAPAX@Z, SerialObjectFactory.cpp), but retail's
-// /INCREMENTAL link routes this address-of through the ILT jmp-THUNK 0x24e6 (jmp
-// 0xd2a0), so the DIR32 stored here is 0x24e6, NOT 0xd2a0. Bind the address-taken
-// symbol to the THUNK rva (same idiom as GruntzApp's _ErrorDialogProcThunk @0x33c8):
-// the DIR32 target IS the thunk, so have==want==0x24e6 -> CORRECT (no MISBOUND).
-DATA_SYMBOL(0x000024e6, 0x0, ?SaveRunCallback@@YAHPAX0HHH@Z)
+// The recursive snapshot run-callback handed to SnapshotChildren IS
+// SerialObjectFactory @0xd2a0 (SerialObjectFactory.cpp); retail's /INCREMENTAL
+// link routes the address-of through the ILT jmp-thunk 0x24e6 (reloc-masked).
+i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void** ppObj);
 
-DATA(0x00229930) // C linkage inherited from GameSave.h's extern "C" decl (as g_mapCurve)
+DATA(0x00229930)     // C linkage inherited from GameSave.h's extern "C" decl (as g_mapCurve)
 i32 g_saveBuf[0x24]; // the OWNER DEFINITION (zero-init, matching the retail datum)
 
 RVA(0x0000d170, 0x74)
@@ -35,6 +30,11 @@ i32 SaveGame(CGameSaveHost* host, char* name) {
     if (mgr == 0) {
         return 0;
     }
-    return mgr->SnapshotChildren(SaveRunCallback, reinterpret_cast<i32>(name), "Gruntz Save Game", 0) != 0;
+    return mgr->SnapshotChildren(
+               reinterpret_cast<HP_Callback>(&SerialObjectFactory),
+               reinterpret_cast<i32>(name),
+               "Gruntz Save Game",
+               0
+           )
+           != 0;
 }
-

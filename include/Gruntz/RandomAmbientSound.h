@@ -11,21 +11,8 @@
 
 extern "C" i32 g_frameDelta;
 
-extern "C" i32 winapi_00cd00_timeGetTime();
-
 extern "C" i32 __ftol(double v);
 
-struct AmbientPoint {
-    i32 x; // +0x00
-    i32 y; // +0x04
-};
-SIZE_UNKNOWN();
-
-struct AmbSoundMapHolder {
-    char m_pad00[0x10];
-    CMapStringToPtr m_map; // +0x10  the key -> AmbSoundRecord* table
-};
-SIZE_UNKNOWN();
 struct AmbSoundRecord {
     char m_pad00[0x10];
     DirectSoundMgr* m_mgr; // +0x10
@@ -37,34 +24,17 @@ public:
     // Inline: the Create* factories inline the vptr stamp (??_7CRandomAmbientSound)
     // directly (no OOL ctor call), so this must be inline to collapse into them.
     CRandomAmbientSound() {}
-    // Setup(world, a2, a3, box, a5): seed the mgr handle + play params, copy/clear
-    // the primary box, clear the secondary box. Returns 1 (0 on a null world).
-    i32 Setup(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* box, i32 a5); // 0x00be50
-    // 0xbdd0: resolve a mgr record for `key` from a1's embedded CMapStringToOb (+0x10),
-    // then Setup(record->m_10, a3, a4, box, a6). Null return on a miss. (This is the
-    // real home of the old CObj_bdd0::Dispatch placeholder - `this` is a CRandomAmbientSound,
-    // proven by the tail-call into Setup @0xbe50.)
-    void*
-    Dispatch(AmbSoundMapHolder* a1, const char* key, i32 a3, i32 a4, AmbientBox* box, i32 a6);
+    // (The one-time inits are the INHERITED CAmbientSound::Init6/Init5 @0xbdd0/0xbe50
+    // - the box factories call them on this class - plus Init2 below.)
     // Update(playFlag, pos, kind): start or stop the sound this frame. 0x00c2a0.
     // 0x00c2a0 is NOT the slot-3 virtual (no retail vtable holds it) - a plain
     // random-cue driver, self-called qualified from the Update override.
-    void PlayRandom(i32 playFlag, i32 pos, i32 kind); // 0x00c2a0
+    void PlayRandom(i32 playFlag, i32 pos, i32 kind);      // 0x00c2a0
     virtual void Update(i32 x, i32 y, i32 force) OVERRIDE; // slot 3 - 0xcb30 (ex Step)
-    // The positional variant's entry points (same CAmbientSound base layout, but
-    // m_40/m_44 hold an anchor position instead of the interval roller):
-    void
-    SetupFromMap(
-        AmbSoundMapHolder* holder,
-        const char* key,
-        i32 a3,
-        i32 a4,
-        AmbientPoint* pos,
-        i32 a5
-    );
-    i32 SetupPos(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientPoint* pos, i32 a5);
-    void StopPos(i32 obj);                  // 0x00c9d0  request stop via slot 2
-    i32 TickObj(i32 obj);                   // 0x00ca00  per-object placement tick
+    // (The positional variant's entry points are CAmbientPosSound::Init6/Init5
+    // @0xc4b0/0xc530 - <Gruntz/AmbientSound.h>.)
+    void StopPos(i32 obj); // 0x00c9d0  request stop via slot 2
+    i32 TickObj(i32 obj);  // 0x00ca00  per-object placement tick
 
     // Step(x, y, force): the per-frame tick (vtable slot 3). 0x00cb30.
     // Inline leaf dtor: inlines the (inline) base ~CAmbientSound, collapsing to the
@@ -73,9 +43,9 @@ public:
     // ctor; it is really ??1, called by the scalar-deleting-dtor 0xbb10 = vtable slot
     // 0) and is pinned by RVA_COMPGEN in WorldSoundSet.cpp.
     virtual ~CRandomAmbientSound() OVERRIDE {}
-    // Init2(lo, hi, lo2, hi2): the interval-roller seed run by the box factory
-    // (CWorldSoundSet::CreateRandomBox; unreconstructed, reloc-masked).
-    void Init2(i32 a0, i32 a1, i32 a2, i32 a3);
+    // Init2(lo, hi, lo2, hi2): the interval-roller seed run by the Create* factories
+    // right after Init6/Init5 (0xcd70, ex the Rng::RangeBox::Roll view).
+    void Init2(i32 lo, i32 hi, i32 a3, i32 a4); // 0x0000cd70
 
     // --- layout (sizeof 0x58) -------------------------------------------------
     // +0x00..+0x3f come from the CAmbientSound base (vptr, m_voice, m_level,

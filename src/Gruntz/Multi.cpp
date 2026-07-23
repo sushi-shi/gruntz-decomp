@@ -660,7 +660,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
             e->m_038.Clear();
         }
     }
-    this->RefreshSlotTable();
+    ResetPlayState(); // inherited CPlay::ResetPlayState (0xd60b0; call site byte-proven)
     srand(m_rngSeed);
     g_frameDelta = 0;
     g_lastNow = 0;
@@ -2471,7 +2471,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
         Peer()->RemovePlayerObj(blob);
     }
     if (m_isHost != 0 && m_connected == 0) {
-        RejoinIfNeeded(0);
+        BroadcastChannelTable(0);
         g_playerLeftFlag = 1;
     }
     return 1;
@@ -3000,13 +3000,13 @@ namespace NetLobby {
 // up in the peer (GetPlayerData by the channel's +0x18 id); when the channel's
 // +0x14 "active" gate is set it reports the player-left to the rest (stat 0x3fb
 // via SendStatPair when the data is present, else just clears below). Removes the
-// channel (RemoveChannel(idx)) and, on success, fires the rejoin finalizer
-// (RejoinIfNeeded(0)) and latches the player-left flag. Returns 1 when a channel
-// was dropped, else 0.
+// channel (RemoveChannel(idx)) and, on success, rebroadcasts the channel table
+// (BroadcastChannelTable(0)) and latches the player-left flag. Returns 1 when a
+// channel was dropped, else 0.
 // @early-stop
 // regalloc wall (~98%): the whole body is byte-aligned (index guard, m_528 gate,
 // channel-record lea, GetPlayerData probe, m_14-gated SendStatTo, RemoveChannel +
-// RejoinIfNeeded + g_playerLeftFlag tail) but retail pins the "active" flag
+// BroadcastChannelTable + g_playerLeftFlag tail) but retail pins the "active" flag
 // (ch->m_014) in edi (callee-saved across the calls) where cl keeps it in ecx, and
 // shares the failure epilogue one instruction tighter. Final sweep.
 RVA(0x000bb510, 0x9d)
@@ -3036,7 +3036,7 @@ i32 CMulti::DropChannelPlayer(i32 idx) {
     if (RemoveChannel(idx) == 0) {
         return 0;
     }
-    RejoinIfNeeded(0);
+    BroadcastChannelTable(0);
     g_playerLeftFlag = 1;
     return 1;
 }

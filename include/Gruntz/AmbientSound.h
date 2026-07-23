@@ -21,6 +21,14 @@ struct AmbientBox {
 };
 SIZE_UNKNOWN();
 
+struct AmbientPoint {
+    i32 x; // +0x00
+    i32 y; // +0x04
+};
+SIZE_UNKNOWN();
+
+struct CRandomAmbientWorld; // <Gruntz/WorldSoundSet.h> (m_map @+0x10, the Init6 cue lookup)
+
 class CAmbientSound : public CUserBase {
 public:
     // Inline ctor: the CWorldSoundSet::Create* factories use `new CAmbientSound`
@@ -69,9 +77,18 @@ public:
     void Recompute(i32 master); // 0xbf10
 
     // One-time inits run by the CWorldSoundSet::Create* factories right after
-    // construction (unreconstructed; declared NO-body so the `call` reloc-masks).
-    i32 Init6(void* world, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5);
-    i32 Init5(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
+    // construction. Init6 (0xbdd0, ex "Dispatch") resolves the mgr record for
+    // `key` from the world's cue map, then seeds via Init5 (0xbe50, ex "Setup"):
+    // mgr handle + play params, copy/clear the primary box, clear the secondary.
+    void* Init6(
+        CRandomAmbientWorld* world,
+        const char* key,
+        i32 a3,
+        i32 a4,
+        AmbientBox* box,
+        i32 a6
+    );                                                                       // 0xbdd0
+    i32 Init5(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* box, i32 a5); // 0xbe50
 
     // +0x00  vptr provided by CUserBase base
     DirectSoundMgr* m_voice; // +0x04  the sound-mgr voice handle it drives
@@ -98,11 +115,26 @@ public:
     // the same bytes (stamp ??_7CUserBase, clear m_voice/m_listNode). Its own OOL
     // COMDAT (0xb940) is pinned by RVA_COMPGEN in WorldSoundSet.cpp. m_40/m_44 are
     // plain ints (no cleanup).
-    virtual ~CAmbientPosSound() OVERRIDE {}               // slot 0
-    virtual void Update(i32 x, i32 y, i32 force) OVERRIDE; // slot 3 - 0xc5b0 (ex CRandomAmbientSound::UpdateAt; position-driven volume/pan)
+    virtual ~CAmbientPosSound() OVERRIDE {} // slot 0
+    virtual void Update(i32 x, i32 y, i32 force)
+        OVERRIDE; // slot 3 - 0xc5b0 (ex CRandomAmbientSound::UpdateAt; position-driven volume/pan)
 
-    i32 m_40; // +0x40  anchor position x (seeded by Init6/Init5; role by analogy
-    i32 m_44; // +0x44  anchor position y  with CRandomAmbientSound's +0x40/+0x44)
+    // The positional one-time inits (name-hide the base AmbientBox pair): Init6
+    // (0xc4b0, ex "SetupFromMap") resolves the mgr record for `key` then seeds via
+    // Init5 (0xc530, ex "SetupPos"): play params + the (x,y) anchor into m_40/m_44.
+    // Init6's miss path returns Lookup's 0 (the factory tests it - byte-proven).
+    i32 Init6(
+        CRandomAmbientWorld* world,
+        const char* key,
+        i32 a3,
+        i32 a4,
+        AmbientPoint* pos,
+        i32 a5
+    );                                                                         // 0xc4b0
+    i32 Init5(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientPoint* pos, i32 a5); // 0xc530
+
+    i32 m_40; // +0x40  anchor position x (seeded by Init5)
+    i32 m_44; // +0x44  anchor position y
 };
 SIZE(0x48);
 

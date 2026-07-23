@@ -20,9 +20,4 @@ extern "C" i32 g_saveBuf[0x24]; // 0x229930  the 0x90-byte save header scratch
 
 extern i32 g_savedMenuCmd; // 0x00213a9c (-1; the deferred menu WM_COMMAND)
 
-// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
-// VAs are reloc-masked at use) ---
-extern i32 __cdecl
-SaveRunCallback(void* mgr, void* ser, i32 mode, i32, i32); // ILT thunk 0x24e6 -> 0xd2a0
-
 #endif // GRUNTZ_IO_GAMESAVE_H

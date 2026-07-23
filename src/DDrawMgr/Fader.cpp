@@ -236,6 +236,11 @@ i32 CFaderMesh::GetFrameCount() {
     return 0x1f4;
 }
 
+RVA(0x0017fda0, 0x8)
+i32 CFaderRadial::GetFrameCount() {
+    return m_maxRadius;
+}
+
 RVA(0x0017fdb0, 0x1a)
 CFaderSine::CFaderSine() {
     m_elemCount = 0;
@@ -328,6 +333,11 @@ fail:
 RVA(0x0017f530, 0x19)
 CFaderFlat::CFaderFlat() {
     m_frames = 0;
+}
+
+RVA(0x00180400, 0xa)
+i32 CFaderSine::GetFrameCount() {
+    return m_scaledMag + m_frameCount;
 }
 
 RVA(0x00180410, 0x19)

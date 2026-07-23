@@ -98,6 +98,8 @@ DATA_SYMBOL(0x00001041, 0x0, _GruntzSaveGameDlgProc)
 DATA_SYMBOL(0x000011d1, 0x0, _GruntzSaveMsgDlgProc)
 DATA_SYMBOL(0x00002ab8, 0x0, _LevelNumberDialogProcThunk)
 INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK
+    LevelNumberDialogProc8e8c0(HWND, UINT, WPARAM, LPARAM); // DEBUG_SETSKILL proc (thunk 0x1947)
 
 #include <Net/NetLobby.h> // NetLobby::g_curDlg
 DATA(0x002455e8)
@@ -1905,13 +1907,12 @@ i32 CGruntzMgr::IsLobbyHostReady() {
 
 // ---------------------------------------------------------------------------
 // 0x08e880 - when in the PLAY state, register the DEBUG_SETSKILL cheat command.
-// The DEBUG_SETSKILL dialog proc, address-taken through its ILT thunk (0x1947);
-// bound to the thunk rva (the reference is a reloc-masked DIR32 push).
-DATA_SYMBOL(0x00001947, 0x0, ?Lab401947@@YAXXZ)
+// The DEBUG_SETSKILL dialog proc (0x8e8c0, defined below); retail's DIR32 push
+// routes through the ILT thunk 0x1947 (reloc-masked).
 RVA(0x0008e880, 0x27)
 i32 CGruntzMgr::RegisterSetSkillDebugCmd() {
     if (m_curState->Update() == GAMESTATE_PLAY) {
-        RunModalDialog("DEBUG_SETSKILL", static_cast<void*>(&Lab401947), 1);
+        RunModalDialog("DEBUG_SETSKILL", reinterpret_cast<void*>(&LevelNumberDialogProc8e8c0), 1);
     }
     return 0;
 }

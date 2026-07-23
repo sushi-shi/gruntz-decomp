@@ -13,8 +13,7 @@ CSaveGame* g_dlgLoadSink = 0; // DAT_00645ca4  (owner-TU definition)
 
 void FillGameInfoDialog(HWND hDlg, CSaveGame* dlg);
 void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6);
-struct SaveTempRec;
-int TempFileExists(SaveTempRec* p);
+int TempFileExists(SaveSlot* p); // 0x0e5700 (SaveGame.cpp)
 
 i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg); // 0x9e390 (WM_COMMAND handler)
 
@@ -68,7 +67,7 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
 RVA(0x0009e2d0, 0x84)
 void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
     i32 flag;
-    if (TempFileExists(reinterpret_cast<SaveTempRec*>(item))) {
+    if (TempFileExists(item)) {
         SetDlgItemTextA(hWnd, id3, item->m_name);
         flag = 1;
     } else {

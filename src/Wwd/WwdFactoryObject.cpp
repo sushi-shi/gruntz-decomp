@@ -382,6 +382,16 @@ i32 CWwdGameObjectC::GetClassId() {
     return CLASSID_WWDOBJC;
 }
 
+RVA(0x0015c030, 0x7)
+u8 CWwdGameObjectC::GetDotColor() {
+    return m_dotColor;
+}
+
+RVA(0x0015c040, 0xb)
+void CWwdGameObjectC::SetDotColor(u8 c8) {
+    m_dotColor = c8;
+}
+
 RVA(0x0015c070, 0x159)
 CWwdGameObjectC::~CWwdGameObjectC() {
     Unload(); // devirtualized -> the inline C pass (byte clear + E release)

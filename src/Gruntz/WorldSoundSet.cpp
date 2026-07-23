@@ -9,7 +9,8 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserBase (real base of CAmbientSound)
 
-#include <math.h> // sqrt intrinsic (UpdateAt's positional falloff) - inline fsqrt
+#include <math.h>          // sqrt intrinsic (UpdateAt's positional falloff) - inline fsqrt
+#include <Gruntz/Random.h> // Rng::Next (defined HERE @0xcd00) + the g_randSeed* LCG state
 
 VTBL(CAmbientSound, 0x001e710c);
 VTBL(CAmbientPosSound, 0x001e7124);
@@ -79,12 +80,13 @@ void CWorldSoundSet::Teardown() {
 }
 
 RVA(0x0000b6a0, 0x83)
-CAmbientSound* CWorldSoundSet::CreateAmbient6(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
+CAmbientSound*
+CWorldSoundSet::CreateAmbient6(const char* key, i32 a1, AmbientBox* box, i32 a3, i32 a4) {
     CAmbientSound* obj = new CAmbientSound;
     if (obj == 0) {
         return 0;
     }
-    if (obj->Init6(m_world, a0, a1, m_volume, a2, a3) == 0) {
+    if (obj->Init6(m_world, key, a1, m_volume, box, a3) == 0) {
         delete obj;
         return 0;
     }
@@ -98,12 +100,13 @@ CAmbientSound* CWorldSoundSet::CreateAmbient6(i32 a0, i32 a1, i32 a2, i32 a3, i3
 RVA_COMPGEN(0x0000b790, 0xf, ??1CAmbientSound@@UAE@XZ)
 
 RVA(0x0000b7b0, 0x80)
-CAmbientSound* CWorldSoundSet::CreateAmbient5(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
+CAmbientSound*
+CWorldSoundSet::CreateAmbient5(DirectSoundMgr* mgr, i32 a1, AmbientBox* box, i32 a3, i32 a4) {
     CAmbientSound* obj = new CAmbientSound;
     if (obj == 0) {
         return 0;
     }
-    if (obj->Init5(a0, a1, m_volume, a2, a3) == 0) {
+    if (obj->Init5(mgr, a1, m_volume, box, a3) == 0) {
         delete obj;
         return 0;
     }
@@ -112,12 +115,13 @@ CAmbientSound* CWorldSoundSet::CreateAmbient5(i32 a0, i32 a1, i32 a2, i32 a3, i3
 }
 
 RVA(0x0000b850, 0x83)
-CAmbientPosSound* CWorldSoundSet::CreatePos6(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
+CAmbientPosSound*
+CWorldSoundSet::CreatePos6(const char* key, i32 a1, AmbientPoint* pos, i32 a3, i32 a4) {
     CAmbientPosSound* obj = new CAmbientPosSound;
     if (obj == 0) {
         return 0;
     }
-    if (obj->Init6(m_world, a0, a1, m_volume, a2, a3) == 0) {
+    if (obj->Init6(m_world, key, a1, m_volume, pos, a3) == 0) {
         delete obj;
         return 0;
     }
@@ -131,12 +135,13 @@ CAmbientPosSound* CWorldSoundSet::CreatePos6(i32 a0, i32 a1, i32 a2, i32 a3, i32
 RVA_COMPGEN(0x0000b940, 0xf, ??1CAmbientPosSound@@UAE@XZ)
 
 RVA(0x0000b960, 0x80)
-CAmbientPosSound* CWorldSoundSet::CreatePos5(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
+CAmbientPosSound*
+CWorldSoundSet::CreatePos5(DirectSoundMgr* mgr, i32 a1, AmbientPoint* pos, i32 a3, i32 a4) {
     CAmbientPosSound* obj = new CAmbientPosSound;
     if (obj == 0) {
         return 0;
     }
-    if (obj->Init5(a0, a1, m_volume, a2, a3) == 0) {
+    if (obj->Init5(mgr, a1, m_volume, pos, a3) == 0) {
         delete obj;
         return 0;
     }
@@ -149,8 +154,17 @@ CAmbientPosSound* CWorldSoundSet::CreatePos5(i32 a0, i32 a1, i32 a2, i32 a3, i32
 // which inlines the ctor's vptr stamp + seed stores), 6-arg Init, the Init2 box roll,
 // append, return. (a8 unused.)
 RVA(0x0000ba00, 0xc6)
-CRandomAmbientSound* CWorldSoundSet::
-    CreateRandomBox(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8) {
+CRandomAmbientSound* CWorldSoundSet::CreateRandomBox(
+    const char* key,
+    i32 a1,
+    AmbientBox* box,
+    i32 a3,
+    i32 a4,
+    i32 a5,
+    i32 a6,
+    i32 a7,
+    i32 a8
+) {
     if (static_cast<u32>(a5) < static_cast<u32>(a4)) {
         return 0;
     }
@@ -161,7 +175,7 @@ CRandomAmbientSound* CWorldSoundSet::
     if (obj == 0) {
         return 0;
     }
-    if (obj->Init6(m_world, a0, a1, m_volume, a2, a3) == 0) {
+    if (obj->Init6(m_world, key, a1, m_volume, box, a3) == 0) {
         delete obj;
         return 0;
     }
@@ -179,13 +193,22 @@ CRandomAmbientSound* CWorldSoundSet::
 RVA_COMPGEN(0x0000bb40, 0xf, ??1CRandomAmbientSound@@UAE@XZ)
 
 RVA(0x0000bb60, 0x9b)
-CRandomAmbientSound* CWorldSoundSet::
-    CreateRandom(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8) {
+CRandomAmbientSound* CWorldSoundSet::CreateRandom(
+    DirectSoundMgr* mgr,
+    i32 a1,
+    AmbientBox* box,
+    i32 a3,
+    i32 a4,
+    i32 a5,
+    i32 a6,
+    i32 a7,
+    i32 a8
+) {
     CRandomAmbientSound* obj = new CRandomAmbientSound;
     if (obj == 0) {
         return 0;
     }
-    if (obj->Init5(a0, a1, m_volume, a2, a3) == 0) {
+    if (obj->Init5(mgr, a1, m_volume, box, a3) == 0) {
         delete obj;
         return 0;
     }
@@ -285,8 +308,8 @@ void CWorldSoundSet::Retune(i32 x, i32 y) {
 }
 
 RVA(0x0000bdd0, 0x53)
-void* CRandomAmbientSound::Dispatch(
-    AmbSoundMapHolder* a1,
+void* CAmbientSound::Init6(
+    CRandomAmbientWorld* world,
     const char* key,
     i32 a3,
     i32 a4,
@@ -294,16 +317,16 @@ void* CRandomAmbientSound::Dispatch(
     i32 a6
 ) {
     void* out_ob = 0; // CMapStringToPtr's value slot (Lookup 0x1b8438 takes void*&)
-    a1->m_map.Lookup(key, out_ob);
+    world->m_map.Lookup(key, out_ob);
     AmbSoundRecord* out = static_cast<AmbSoundRecord*>(out_ob);
     if (out == 0) {
         return static_cast<void*>(out);
     }
-    return reinterpret_cast<void*>(Setup(out->m_mgr, a3, a4, box, a6));
+    return reinterpret_cast<void*>(Init5(out->m_mgr, a3, a4, box, a6));
 }
 
 RVA(0x0000be50, 0x8f)
-i32 CRandomAmbientSound::Setup(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* box, i32 a5) {
+i32 CAmbientSound::Init5(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* box, i32 a5) {
     if (mgr == 0) {
         return 0;
     }
@@ -606,9 +629,10 @@ void CRandomAmbientSound::PlayRandom(i32 playFlag, i32 pos, i32 kind) {
 }
 
 // ---------------------------------------------------------------------------
-// SetupFromMap (0x00c4b0, __thiscall, 5 args): resolve the mgr record for `key`
-// out of holder->m_map (a CMapPtrToPtr); when found, seed this object via
-// SetupPos(record->m_mgr, a3, a4, pos, a5). No-op when the key is absent.
+// CAmbientPosSound::Init6 (0x00c4b0, __thiscall, 6 args): resolve the mgr record
+// for `key` out of world->m_map; when found, seed this object via
+// Init5(record->m_mgr, a3, a4, pos, a5). The miss path returns Lookup's 0
+// (CreatePos6 tests the return - byte-proven).
 // ---------------------------------------------------------------------------
 // @early-stop
 // CODE BYTE-EXACT - residual is the reloc-naming scoring artifact: retail's two
@@ -617,8 +641,8 @@ void CRandomAmbientSound::PlayRandom(i32 playFlag, i32 pos, i32 kind) {
 // differently-named symbols (~88.75%). Every instruction byte matches the
 // delinked target (verified by base-vs-target objdump). Effectively matched.
 RVA(0x0000c4b0, 0x53)
-void CRandomAmbientSound::SetupFromMap(
-    AmbSoundMapHolder* holder,
+i32 CAmbientPosSound::Init6(
+    CRandomAmbientWorld* world,
     const char* key,
     i32 a3,
     i32 a4,
@@ -626,14 +650,15 @@ void CRandomAmbientSound::SetupFromMap(
     i32 a5
 ) {
     void* found = 0;
-    holder->m_map.Lookup(key, found);
+    i32 r = world->m_map.Lookup(key, found);
     if (found != 0) {
-        SetupPos((static_cast<AmbSoundRecord*>(found))->m_mgr, a3, a4, pos, a5);
+        return Init5((static_cast<AmbSoundRecord*>(found))->m_mgr, a3, a4, pos, a5);
     }
+    return r;
 }
 
 RVA(0x0000c530, 0x51)
-i32 CRandomAmbientSound::SetupPos(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientPoint* pos, i32 a5) {
+i32 CAmbientPosSound::Init5(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientPoint* pos, i32 a5) {
     if (mgr == 0) {
         return 0;
     }
@@ -936,9 +961,9 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
         i32 span = hi - lo + 1;
         i32 r;
         if (span == 0) {
-            r = (winapi_00cd00_timeGetTime() & 1) ? lo : hi;
+            r = (Rng::Next() & 1) ? lo : hi;
         } else {
-            r = winapi_00cd00_timeGetTime() % span + lo;
+            r = Rng::Next() % span + lo;
         }
         m_countdownMs = r;
         i32 half = static_cast<u32>(r) >> 1; // logical shr (retail), not arithmetic sar
@@ -952,9 +977,9 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
         i32 span = hi - lo + 1;
         i32 r;
         if (span == 0) {
-            r = (winapi_00cd00_timeGetTime() & 1) ? lo : hi;
+            r = (Rng::Next() & 1) ? lo : hi;
         } else {
-            r = winapi_00cd00_timeGetTime() % span + lo;
+            r = Rng::Next() % span + lo;
         }
         m_countdownMs = r;
         i32 half = static_cast<u32>(r) >> 1; // logical shr (retail), not arithmetic sar
@@ -965,8 +990,62 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
     }
 }
 
+// __cdecl rand(): lazily seed the primary LCG from timeGetTime, advance it, and
+// return the top 15 bits (the classic MS rand()). The TU's random source (the
+// Update re-roll paths above call it); declared in <Gruntz/Random.h>.
+RVA(0x0000cd00, 0x46)
+i32 Rng::Next() {
+    i32 seed;
+    if (!(g_randSeeded & 1)) {
+        g_randSeeded |= 1;
+        seed = timeGetTime();
+    } else {
+        seed = g_randSeed;
+    }
+    g_randSeed = seed * 214013 + 2531011;
+    return (g_randSeed >> 0x10) & 0x7fff;
+}
+
+// Init2(lo, hi, lo2, hi2): seed the interval roller (phase-A bounds into
+// m_40/m_44, phase-B into +0x48/+0x4c) and roll the first countdown in [lo,hi]
+// (lazily-seeded LCG; coin-flip endpoints when the span is empty).
+RVA(0x0000cd70, 0xe5)
+void CRandomAmbientSound::Init2(i32 lo, i32 hi, i32 a3, i32 a4) {
+    i32 span = hi - lo + 1;
+    m_40 = lo;
+    m_44 = hi;
+    m_intervalLoB = a3;
+    m_intervalHiB = a4;
+    i32 seed;
+    if (span == 0) {
+        if (!(g_randSeeded & 1)) {
+            g_randSeeded |= 1;
+            seed = timeGetTime();
+        } else {
+            seed = g_randSeed;
+        }
+        g_randSeed = seed * 214013 + 2531011;
+        if (g_randSeed & 0x10000) {
+            m_phase = 1;
+            m_countdownMs = lo;
+        } else {
+            m_phase = 1;
+            m_countdownMs = hi;
+        }
+        return;
+    }
+    if (!(g_randSeeded & 1)) {
+        g_randSeeded |= 1;
+        seed = timeGetTime();
+    } else {
+        seed = g_randSeed;
+    }
+    g_randSeed = seed * 214013 + 2531011;
+    m_phase = 1;
+    m_countdownMs = lo + ((g_randSeed >> 0x10) & 0x7fff) % span;
+}
+
 RVA(0x00085ed0, 0x4a)
 CWorldSoundSet::~CWorldSoundSet() {
     Deactivate();
 }
-

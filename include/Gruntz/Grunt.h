@@ -436,11 +436,9 @@ public:
     // its HUD origin, then test 4 segments (vertical / horizontal / two diagonals,
     // +-1000 px) through the grunt's own HUD center; return 1 on the first hit.
     i32 winapi_04a9f0_CopyRect_OffsetRect();
-    // The seg/box probe @0x62b70 is called __THISCALL here (retail loads ecx=this before
-    // the call - removing it misaligns the body by 2B/call). 0x62b70's bound symbol
-    // CGrunt_SegBoxOverlap is mangled __stdcall (YG) in gruntentrancearrival, so no
-    // thiscall-named symbol exists to bind to; this stays a correct-convention UNBOUND.
-    i32 RectSegProbe(void* r, void* a, void* b); // call 0x4138 -> 0x62b70 (__thiscall, 3 args)
+    // The rect/segment intersection probe (a thiscall leaf that never touches
+    // `this` - byte-proven; body in GruntEntranceArrival.cpp).
+    i32 RectSegProbe(RECT* r, POINT* e1, POINT* e2); // 0x62b70 (call thunk 0x4138)
 
     // Data members. vptr(+0), m_10(+0x10), m_14(+0x14) are in CUserBase; the +0x18
     // EngStr link is CUserLogic::m_18. CGrunt's own members begin at +0x34.
@@ -1144,20 +1142,6 @@ struct CGruntActEntry {
     GruntActHandler m_fn;
 };
 SIZE(0x4);
-
-struct GruntBox {
-    i32 m_0; // +0x00 x0
-    i32 m_4; // +0x04 y0
-    i32 m_8; // +0x08 x1
-    i32 m_c; // +0x0c y1
-};
-SIZE_UNKNOWN();
-struct GruntSegEnd {
-    i32 m_0; // +0x00 x
-    i32 m_4; // +0x04 y
-};
-SIZE_UNKNOWN();
-i32 __stdcall CGrunt_SegBoxOverlap(GruntBox* p, GruntSegEnd* e1, GruntSegEnd* e2);
 
 bool CGrunt_IsSameType(CGrunt* a, CGrunt* b);
 

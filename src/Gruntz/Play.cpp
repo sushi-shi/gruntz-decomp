@@ -2,6 +2,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr; ex the CGameRegistry view)
 #include <Rez/FrameClock.h>       // g_lastNow / g_frameTicks (frame-clock band)
+#include <Gruntz/Random.h>        // the g_randSeed* LCG + g_coin* pair (GetAmbientId)
 #include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/AreaMgr.h>       // CAreaMgr (g_pAreaMgr; CPlayLevelLoad::LoadByMode)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // CDDrawWorkerRegistry (InstallTree slot 18, +0x48)
@@ -3097,6 +3098,30 @@ i32 CPlay::ClearPlacedObjects() {
         static_cast<void>(restart);
     }
     return -1;
+}
+
+// Current ambient-track index for the "AMBIENT%d" cue: deterministic
+// ((m_levelIndex + 1) % 2) in replay mode, otherwise a once-per-frame random bit
+// lazily seeded from timeGetTime (the g_coin* pair caches the roll).
+RVA(0x000da200, 0x9b)
+i32 CPlay::GetAmbientId() {
+    CGruntzMgr* gr = g_gameReg;
+    if (gr->m_134 == 1 && gr->m_130 == 0) {
+        return (m_levelIndex + 1) % 2;
+    }
+    if (!(g_coinRolled & 1)) {
+        i32 seed;
+        g_coinRolled |= 1;
+        if (!(g_randSeeded & 1)) {
+            g_randSeeded |= 1;
+            seed = timeGetTime();
+        } else {
+            seed = g_randSeed;
+        }
+        g_randSeed = seed * 214013 + 2531011;
+        g_coinValue = ((g_randSeed >> 0x10) & 0x7fff) % 2;
+    }
+    return g_coinValue;
 }
 
 RVA(0x000da2d0, 0xa5)

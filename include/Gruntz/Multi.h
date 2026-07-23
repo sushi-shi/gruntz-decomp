@@ -195,11 +195,10 @@ public:
     // to the hWnd chat edit (the lobby DlgProcs' chat submit path).
     i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd); // 0x0bb190
     i32 ReadGroupSel();                                                     // 0x0b76a0
-    i32 PumpA();             // 0x0b6b40  (timeGetTime/wsprintf helper)
-    void PumpB();            // PumpA idle reset (thiscall) 0x??
-    i32 PumpAIndex();        // PumpA ambient index (thiscall) 0x??
-    void OnOutOfSync();      // 0x0bae40
-    void RefreshSlotTable(); // 0x021bd0  (free fn-ish thiscall on this)
+    i32 PumpA();        // 0x0b6b40  (timeGetTime/wsprintf helper)
+    void PumpB();       // PumpA idle reset (thiscall) 0x??
+    i32 PumpAIndex();   // PumpA ambient index (thiscall) 0x??
+    void OnOutOfSync(); // 0x0bae40
     // (The ex "LoadLevelByMode" @0xca200 alias is GONE - that body is the inherited
     // CPlay::LoadByMode slot-30 default, reached with the qualified CPlay:: spelling
     // since CMulti overrides the slot. The ex "LoadTitleScreen" @0xfa350 alias is
@@ -275,7 +274,6 @@ public:
     i32 WriteCmdDelay(i32 flag); // persist m_5a4/m_drainReload (returns int; tail-returned)
     void ShowChatLine(void* hWnd, const char* text);           // 0xbb3e0 (external)
     void HandleSpriteMsg(CNetCtrlMsg* msg);                    // 0xba620 (external)
-    void RejoinIfNeeded(i32 flag);                             // 0xba810 (external)
     i32 DispatchServices(const char* cmd, i32 flag, void* cb); // 0xbc250 (external)
     void ApplyDynSetting(CString s);                           // 0xb76c0 (external)
     void SetServiceName(CString s);                            // 0xb7730 (external)
