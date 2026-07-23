@@ -92,7 +92,7 @@ ddrawsurfacepair	45	26
 ddrawworkerhost	4	3
 ddrawworkerregistry	27	20
 ddsurface	60	40
-debugprintf	14	11
+debugprintf	17	10
 debugtiming	2	2
 deflate	15	15
 demo	26	20
@@ -1279,16 +1279,19 @@ ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	63.6909	63.6909	6	4b8f6d7ef
 ddsurface	?Tile@CDDSurface@@QAEXPAV1@H@Z	100.0000	100.0000	2	0d9b3e0f3b6c	0x13f990
 ddsurface	?UnlockThunk@CDDSurface@@QAEXXZ	100.0000	100.0000	2	1cba59666bcf	0x1413b0
 ddsurface	?WaitFlip@CDDSurface@@QAEXXZ	100.0000	100.0000	2	05eed5eee876	0x13ee30
+debugprintf	$anon_data_3421c3ebd7886029cc03dc6041257343ac30fe1c4fa5857ad9fb3559612cee6f_0	0.0000	0.0000	1	cpp:0a4051b3dfca
+debugprintf	$anon_data_70ec9fa823d16e46386b2d1e49e4b150efe77829dcac2f73172c5f83d036ae84_0	0.0000	0.0000	1	cpp:0a4051b3dfca
+debugprintf	$anon_data_c44bc7ef994ba368471f765db4d472fd62a44857c68db20ca16405a35815b23e_0	0.0000	0.0000	1	cpp:0a4051b3dfca
+debugprintf	$anon_data_ccb1f2d70d6208830cb40d81a520acdb3493676887defd9d55f04c1ffcb1d344_0	0.0000	0.0000	1	cpp:0a4051b3dfca
+debugprintf	??0CDebugConfig@@QAE@XZ	100.0000	100.0000	1	2bcf35846192	0x185000
+debugprintf	??1CDebugConfig@@QAE@XZ	100.0000	100.0000	1	e5fd0daeb879	0x1851b0
 debugprintf	?AddFromString@CRangeSet@@QAEXPAD@Z	92.1466	92.1466	1	e26f492b32aa	0x184c10
 debugprintf	?AddRange@CRangeSet@@QAEXII@Z	100.0000	100.0000	1	37eb845462f8	0x184be0
 debugprintf	?Contains@CRangeSet@@QAE_NI@Z	100.0000	100.0000	1	657817a9193c	0x184ba0
-debugprintf	?DebugClose@@YAXXZ	100.0000	100.0000	3	fafbe360bead	0x1851b0
 debugprintf	?DebugSetCursor@@YAXHHH@Z	100.0000	100.0000	1	127300bd103f	0x184fd0
 debugprintf	?DebugSetCursorXY@@YAXHH@Z	100.0000	100.0000	1	d063bc7512f3	0x184fb0
-debugprintf	?InitFromEnv@CDebugConfig@@QAEPAV1@XZ	100.0000	100.0000	3	0ebc0f37a210	0x185000
 debugprintf	?MonoClear@@YAXXZ	60.5000	60.5000	2	04a40b21f84c	0x184db0
 debugprintf	?MonoNewline@@YAXXZ	90.9524	90.9524	3	08196530e266	0x184d50
-debugprintf	?RezDebugInit@@YAXXZ	100.0000	100.0000	1	b24f25ad6ccf	0x184b70
 debugprintf	_RezAssertFail	100.0000	100.0000	5	7e4a0a86b33b	0x184e00
 debugprintf	_RezDebugPrintfCh	100.0000	100.0000	4	d3b0d2fcef55	0x184ed0
 debugprintf	_RezDebugPrintfChXY	100.0000	100.0000	5	6242d14bf936	0x184f30

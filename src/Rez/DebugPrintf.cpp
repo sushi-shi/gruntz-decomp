@@ -25,10 +25,10 @@ void DebugSetCursor(i32, i32, i32); // 0x184fd0
 DATA(0x002bf848)
 CDebugConfig g_debugConfig;
 
-RVA(0x00184b70, 0xa)
-void RezDebugInit() {
-    g_debugConfig.InitFromEnv();
-}
+RVA_COMPGEN(0x00184b60, 0xa, _$E1592160)
+RVA_COMPGEN(0x00184b70, 0xa, _$E1592176)
+RVA_COMPGEN(0x00184b80, 0xe, _$E1592192)
+RVA_COMPGEN(0x00184b90, 0xa, _$E1592208)
 
 RVA(0x00184ba0, 0x33)
 bool CRangeSet::Contains(u32 value) {
@@ -223,7 +223,7 @@ RVA(0x00184fd0, 0x1)
 void DebugSetCursor(i32, i32, i32) {}
 
 RVA(0x00185000, 0x1a6)
-CDebugConfig* CDebugConfig::InitFromEnv() {
+CDebugConfig::CDebugConfig() {
     char buf[256];
     g_debugChannels.m_count = 0;
     g_debugPrintMode = 1;
@@ -261,11 +261,10 @@ CDebugConfig* CDebugConfig::InitFromEnv() {
         g_debugChannels.AddFromString(buf);
     }
     g_debugPrintMode = 2;
-    return this;
 }
 
 RVA(0x001851b0, 0x23)
-void DebugClose() {
+CDebugConfig::~CDebugConfig() {
     if (g_debugPrintMode == 5 || (g_debugPrintMode > 7 && g_debugPrintMode <= 10)) {
         fclose(g_debugLogFile);
     }

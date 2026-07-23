@@ -5,8 +5,9 @@
 
 class CDebugConfig {
 public:
-    CDebugConfig* InitFromEnv(); // 0x185000
+    CDebugConfig();
+    ~CDebugConfig();
 };
-SIZE_UNKNOWN();
+SIZE(0x1);
 
 #endif // GRUNTZ_REZ_DEBUGCONFIG_H

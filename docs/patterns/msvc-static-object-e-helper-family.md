@@ -234,6 +234,17 @@ instructions and semantic relocations, but the normalized target cannot always
 pair the private data referent. Do not make a real `static` object external, add
 an overlapping global, or change the class model to improve that score.
 
+An empty constructed BSS object has a related signature. `g_debugConfig` has
+size one at `0x002bf848`, followed by three alignment bytes and
+`g_monoBuffer` at `0x002bf84c`. Retail's constructor and destructor helpers
+load `0x002bf848`, but the delinked relocation is expressed as
+`g_monoBuffer - 4` because no independent data definition survives at the
+empty object's address. VC5 instead relocates directly to `g_debugConfig`.
+When the raw immediate, constructor/destructor target, and complete four-helper
+family agree, this relocation-name difference is evidence of a missing private
+BSS symbol, not evidence that the object should be renamed, overlapped, or
+replaced by a hand-written initializer.
+
 Data RVAs do not follow function-style 16-byte alignment. Each object is placed
 according to its own alignment and the linker/COFF BSS allocator, so a gap to
 the next symbol can include padding rather than fields. The `Font` globals prove
