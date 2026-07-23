@@ -1,4 +1,4 @@
-#include <Mfc.h>        // real MFC CString/CObArray/CMapStringToOb (NAFXCW, reloc-masked)
+#include <Mfc.h>            // real MFC CString/CObArray/CMapStringToOb (NAFXCW, reloc-masked)
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/BoundaryUpperViews.h>
@@ -14,8 +14,8 @@
 #include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/WwdGameObject.h>
 #include <Ints.h>
-#include <Wap32/Object.h>       // CObject - the shared engine grand-base
-#include <Gruntz/ParseSource.h> // CParseSource value records (m_name/GetEntryTag) - MUST
+#include <Wap32/Object.h>                 // CObject - the shared engine grand-base
+#include <Gruntz/ParseSource.h>           // CParseSource value records (m_name/GetEntryTag) - MUST
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (mgr+0x28 reader)
 #include <Wwd/WwdGameObjectFamily.h>      // the CGameObject/A/F/B/C dtor-family hierarchy
 #include <Gruntz/UserLogic.h>             // CGameObject (the sprite-resource/worker leaves)
@@ -172,8 +172,16 @@ void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32
     i32 rc[4]; // reused src+dst blit rect buffer
     if (m_dirtyArmed != -1 && m_d8 != -1) {
         RECT ir;
-        if (IntersectRect(&ir, reinterpret_cast<RECT*>(&m_dirtyRect.left), reinterpret_cast<RECT*>(&m_c0))) {
-            UnionRect(&ir, reinterpret_cast<RECT*>(&m_dirtyRect.left), reinterpret_cast<RECT*>(&m_c0));
+        if (IntersectRect(
+                &ir,
+                reinterpret_cast<RECT*>(&m_dirtyRect.left),
+                reinterpret_cast<RECT*>(&m_c0)
+            )) {
+            UnionRect(
+                &ir,
+                reinterpret_cast<RECT*>(&m_dirtyRect.left),
+                reinterpret_cast<RECT*>(&m_c0)
+            );
             i32 w = ir.right - ir.left + 1;
             i32 h = ir.bottom - ir.top + 1;
             rc[0] = ir.left;
@@ -225,8 +233,16 @@ RVA(0x001508a0, 0x117)
 void CWwdGameObjectA::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
     if (m_dirtyArmed != -1 && m_d8 != -1) {
         RECT ir;
-        if (IntersectRect(&ir, reinterpret_cast<RECT*>(&m_dirtyRect.left), reinterpret_cast<RECT*>(&m_c0))) {
-            UnionRect(&ir, reinterpret_cast<RECT*>(&m_dirtyRect.left), reinterpret_cast<RECT*>(&m_c0));
+        if (IntersectRect(
+                &ir,
+                reinterpret_cast<RECT*>(&m_dirtyRect.left),
+                reinterpret_cast<RECT*>(&m_c0)
+            )) {
+            UnionRect(
+                &ir,
+                reinterpret_cast<RECT*>(&m_dirtyRect.left),
+                reinterpret_cast<RECT*>(&m_c0)
+            );
             i32 pos[2];
             i32 size[2];
             pos[0] = ir.left;
@@ -268,7 +284,9 @@ i32 CWwdGameObjectA::Test() {
     if (m_flags & 0x40000) {
         // The camera cull rect is the main plane's +0x40 Win32 RECT (the level's +0x24
         // CGameLevel -> +0x5c CDDrawWorkerHost == the former WwdCamHolder->m_5c camera object).
-        RECT* r = reinterpret_cast<RECT*>((reinterpret_cast<char*>(OwnerMgr()->m_level->m_mainPlane) + 0x40));
+        RECT* r = reinterpret_cast<RECT*>(
+            (reinterpret_cast<char*>(OwnerMgr()->m_level->m_mainPlane) + 0x40)
+        );
         if (right < r->left) {
             return 0;
         }
@@ -301,7 +319,8 @@ i32 CWwdGameObjectA::Play(i32 a1, i32 type, i32 a3, void* self) {
     if (a1 == 0) {
         return 0;
     }
-    if (m_1a0.Find(reinterpret_cast<CFileMemBase*>(a1), type, a3, reinterpret_cast<i32>(self)) == 0) {
+    if (m_1a0.Find(reinterpret_cast<CFileMemBase*>(a1), type, a3, reinterpret_cast<i32>(self))
+        == 0) {
         return 0;
     }
     switch (type) {
@@ -343,7 +362,8 @@ i32 CWwdGameObjectA::ReadState(i32 src) {
     }
     ar->Write(&flag, 4);
 
-    char tmp[0x100]; // 256-byte name scratch (only 0x80 written; cf. SerializeSpriteName's name[0x100])
+    char tmp
+        [0x100]; // 256-byte name scratch (only 0x80 written; cf. SerializeSpriteName's name[0x100])
     memset(tmp, 0, 0x80);
     if (m_sprite != 0) {
         strcpy(tmp, m_sprite->m_name); // CDDrawWorker::m_name IS the +0x24 the raw read used
@@ -445,7 +465,11 @@ i32 CGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     // its +0x10 is the notify fn passed to the worker's Init, its +0x08 the frame stamp.
     // The offset access is the deliberate foreign-object read (only the offsets are load-bearing).
     char* src = reinterpret_cast<char*>(a4);
-    if (w->Init(reinterpret_cast<GameObjNotifyFn>(* reinterpret_cast<i32*>((src + 0x10))), *reinterpret_cast<i32*>((src + 0x08))) == 0) {
+    if (w->Init(
+            reinterpret_cast<GameObjNotifyFn>(*reinterpret_cast<i32*>((src + 0x10))),
+            *reinterpret_cast<i32*>((src + 0x08))
+        )
+        == 0) {
         return 0;
     }
     m_80 = 0;
@@ -707,11 +731,13 @@ i32 CGameObject::Play(i32 a1, i32 type, i32 a3, void* self) {
             node = m_184;
             if (node != 0) {
                 void* found = 0;
-                if (OwnerMgr()->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(node), found) == 0) {
+                if (OwnerMgr()->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(node), found)
+                    == 0) {
                     m_carrier = 0;
                 } else {
-                    m_carrier =
-                        static_cast<CWwdGameObject*>(found); // CMapPtrToPtr value (void*) -> the linked object
+                    m_carrier = static_cast<CWwdGameObject*>(
+                        found
+                    ); // CMapPtrToPtr value (void*) -> the linked object
                 }
             } else {
                 m_carrier = 0;
@@ -927,7 +953,8 @@ i32 CGameObject::ResolveLinkedObject(i32 gate) {
             m_carrier = 0;
             return 1;
         }
-        m_carrier = static_cast<CWwdGameObject*>(found); // CMapPtrToPtr value (void*) -> the linked object
+        m_carrier =
+            static_cast<CWwdGameObject*>(found); // CMapPtrToPtr value (void*) -> the linked object
         return 1;
     }
     m_carrier = 0;
@@ -1016,6 +1043,16 @@ i32 CGameObject::NotifyHooked(void* arg) {
 // vptr restamp) is byte-exact, but the retail /GX frame (push -1 / fs:0 / trylevel)
 // comes from a non-trivial CObject base subobject the manual-vptr non-polymorphic
 // model can't emit. Defer to the final sweep once the base + full vtable are modeled.
+RVA(0x00151d60, 0xb)
+i32 AnimWorkerObj::IsLoaded() {
+    return m_notify != 0;
+}
+
+RVA(0x00151d70, 0x6)
+i32 AnimWorkerObj::GetClassId() {
+    return CLASSID_ANIMWORKER;
+}
+
 RVA(0x00151da0, 0x80)
 AnimWorkerObj::~AnimWorkerObj() {
     m_notify = 0;
@@ -1112,8 +1149,9 @@ CImage* CDDrawWorker::InsertFrame(void* src, i32 n, i32 mode) {
     // (The ex `(CImageParent*)m_c` cast is GONE: this IS CDDrawWorker slot 14 and +0x0c is
     //  reached through the typed Owner() accessor - the note that predicted "type that
     //  member and this falls out" was right, and it did.)
-    CImage* worker = new CImage(n, Owner());         // real frame ctor (vptr interleaved)
-    if (!worker->Resolve(static_cast<CParseSource*>(src), mode)) { // slot 11 @+0x2c  CImage::Resolve
+    CImage* worker = new CImage(n, Owner()); // real frame ctor (vptr interleaved)
+    if (!worker
+             ->Resolve(static_cast<CParseSource*>(src), mode)) { // slot 11 @+0x2c  CImage::Resolve
         if (worker) {
             delete worker; // slot 1 @+0x04  scalar-deleting dtor
         }
@@ -1152,7 +1190,8 @@ CImage* CDDrawWorker::CreateFrame30(i32 a0, i32 index, i32 a2) {
 
     CImage* nf = new CImage(index, Owner()); // real frame ctor (vptr interleaved)
 
-    if (nf->Create(reinterpret_cast<CImageFrameDesc*>(a0), a2) == 0) { // slot 12 @+0x30  CImage::Create
+    if (nf->Create(reinterpret_cast<CImageFrameDesc*>(a0), a2)
+        == 0) { // slot 12 @+0x30  CImage::Create
         if (nf != 0) {
             delete nf; // slot 1 @+0x04  scalar-deleting dtor
         }
@@ -1182,7 +1221,13 @@ CImage* CDDrawWorker::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
     CImage* nf = new CImage(index, Owner()); // real frame ctor (vptr interleaved)
 
     // slot 10 @+0x28  CImage::LoadDispatch
-    if (nf->LoadDispatch(reinterpret_cast<CImageFrameDesc*>(a0), static_cast<u32>(a1), reinterpret_cast<void*>(a3), 1) == 0) {
+    if (nf->LoadDispatch(
+            reinterpret_cast<CImageFrameDesc*>(a0),
+            static_cast<u32>(a1),
+            reinterpret_cast<void*>(a3),
+            1
+        )
+        == 0) {
         if (nf != 0) {
             delete nf; // slot 1 @+0x04  scalar-deleting dtor
         }
@@ -1211,7 +1256,8 @@ CImage* CDDrawWorker::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
 
     CImage* nf = new CImage(index, Owner()); // real frame ctor (vptr interleaved)
 
-    if (nf->Create24(reinterpret_cast<CImageFrameDesc*>(a0), a1, a3) == 0) { // slot 9 @+0x24  CImage::Create24
+    if (nf->Create24(reinterpret_cast<CImageFrameDesc*>(a0), a1, a3)
+        == 0) { // slot 9 @+0x24  CImage::Create24
         if (nf != 0) {
             delete nf; // slot 1 @+0x04  scalar-deleting dtor
         }
@@ -1458,4 +1504,3 @@ i32 CDDrawWorker::FindFrame(CImage* frame, char* outName, i32* outIndex) {
 
 DATA(0x002bf674)
 i32 g_logicTypesRegistered;
-

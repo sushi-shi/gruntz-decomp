@@ -167,6 +167,14 @@ i32 CDDrawWorkerMapSmall::IsReady() {
     return 1;
 }
 
+RVA(0x00156dc0, 0x13)
+i32 CDDrawWorkerRegistry::IsLoaded() {
+    if (m_ownerCtx != 0 && m_id != -1) {
+        return 1;
+    }
+    return 0;
+}
+
 RVA(0x00156de0, 0x6)
 i32 CDDrawWorkerRegistry::GetClassId() {
     return CLASSID_WORKERREGISTRY; // 0x12
@@ -584,6 +592,11 @@ CFileMemBase::~CFileMemBase() {
     Reset();
 }
 
+RVA(0x00157910, 0x5)
+void CFileMemBase::Close() {
+    Reset(); // retail: a bare `jmp [vptr+0xc]` self-dispatch of slot 3
+}
+
 RVA(0x00157920, 0x20)
 CString CFileMemBase::GetName() {
     return m_name;
@@ -596,11 +609,31 @@ CString CFileMemBase::GetName() {
 // EH-dtor scheduling wall (~59%): the teardown logic is byte-faithful, but the
 // virtual-dtor auto vtable restamps + the /GX trylevel store sequencing + the
 // member-dtor dispatch differ from retail's manual sequence.
+RVA(0x00157940, 0x4)
+i32 CFileMemBase::WantRead() {
+    return m_mode;
+}
+
+RVA(0x00157950, 0xb)
+i32 CFileMemBase::WantCreate() {
+    return m_mode == 0;
+}
+
 RVA(0x00157980, 0x74)
 CFileMem::~CFileMem() {
     Reset();
     m_file.~CFile();
     CFileMemBase::Reset();
+}
+
+RVA(0x00157a00, 0x4)
+i32 CFileMem::GetLength() {
+    return m_length;
+}
+
+RVA(0x00157a10, 0x4)
+i32 CFileMem::GetOffset() {
+    return m_offset;
 }
 
 RVA(0x00157a40, 0x10)
@@ -617,6 +650,11 @@ void CFileMem::Reset() {
     m_4 = 0;
     m_mode = 0;
     m_name.Empty();
+}
+
+RVA(0x00157a70, 0x5)
+void CFileMem::Close() {
+    Reset(); // retail: the same `jmp [vptr+0xc]` slot-3 self-dispatch as the base
 }
 
 RVA(0x00157a80, 0x51)
@@ -1484,6 +1522,22 @@ CDrawSubWorker::CDrawSubWorker(i32 a1, i32 a2, i32 a3) {
     m_ownerCtx = a1;
     m_width = 0;
 }
+RVA(0x00158f60, 0x1c)
+i32 CDrawSubWorker::IsLoaded() {
+    if (m_width <= 0) {
+        return 0;
+    }
+    if (m_ownerCtx != 0 && m_id != -1) {
+        return 1;
+    }
+    return 0;
+}
+
+RVA(0x00158f80, 0x6)
+i32 CDrawSubWorker::GetClassId() {
+    return CLASSID_SUBWORKER;
+}
+
 RVA_COMPGEN(0x00158f90, 0x1e, ??_GCDrawSubWorker@@UAEPAXI@Z)
 // The inline ~CDrawSubWorker's linker-kept out-of-line COMDAT copy + its
 // cl-generated scalar-deleting dtor (vtable slot 1):
@@ -1535,12 +1589,22 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
+RVA(0x00159080, 0x8)
+void CDrawSubWorker::Unload() {
+    m_width = 0;
+}
+
 RVA(0x00159090, 0x24)
 i32 CDDrawSurfacePair::IsLoaded() {
     if (m_surface != 0 && m_width > 0 && m_ownerCtx != 0 && m_id != -1) {
         return 1;
     }
     return 0;
+}
+
+RVA(0x001590c0, 0x6)
+i32 CDDrawSurfacePair::GetClassId() {
+    return CLASSID_SURFACEPAIR;
 }
 
 RVA(0x001590f0, 0x56)
@@ -1564,8 +1628,17 @@ i32 CDDrawSurfaceChildA::IsLoaded() {
 // resets (+0x04/-1, +0x10/0, +0x08/0, +0x0c/0) are the inlined ~CDrawSubWorker
 // (m_width = 0) + ~CLoadable (header resets), and the entry own-vptr stamp is
 // dead-stored into the final CObject grand-base re-stamp.
+RVA(0x00159180, 0x6)
+i32 CDDrawSurfaceChildA::GetClassId() {
+    return CLASSID_SURFACECHILDA;
+}
+
 RVA_COMPGEN(0x00159190, 0x1e, ??_GCDDrawSurfaceChildA@@UAEPAXI@Z)
 RVA(0x001591b0, 0x19)
 CDDrawSurfaceChildA::~CDDrawSurfaceChildA() {
     // empty: ~CDrawSubWorker + ~CLoadable fold the resets + the grand-base stamp.
+}
+RVA(0x001591d0, 0x8)
+void CDDrawSurfaceChildA::Unload() {
+    m_surface = 0;
 }

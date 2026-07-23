@@ -2815,6 +2815,11 @@ static __inline i32 WapRand(i32 range) {
 // 3-register solution (flag in cl, call [ptr] indirect) and a `mov ecx,[m_134];cmp`
 // vs retail's `cmp [m_134],1` direct memory compare. Plus the ?g_gameReg vs
 // _g_mgrSettings shared-global DIR32 naming tail. Not source-steerable under /O2.
+RVA(0x00100510, 0x6)
+i32 CStatusBarItem::Render() {
+    return 1;
+}
+
 RVA(0x00107d00, 0x591)
 i32 CStatusBarMgr::winapi_107d00_SetRect() {
     i32 result;

@@ -62,6 +62,11 @@ i32 CHelpState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     return 1;
 }
 
+RVA(0x00095120, 0x5)
+void CHelpState::ReleaseResources() {
+    CState::ReleaseResources(); // retail: a bare `jmp` to the CState body
+}
+
 RVA(0x00095140, 0x6e)
 i32 CHelpState::Vslot09(i32 arg) {
     m_mgr->RestoreVideoMode(0);

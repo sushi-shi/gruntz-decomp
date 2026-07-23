@@ -6,19 +6,29 @@
 #include <Wap32/WapObj.h> // CWapObj : CObject - slots 0..6 (IsLoaded/IsReady)
 
 enum LoadableClassId {
-    CLASSID_NONE = 0,         // base default @0x154a00 (xor eax,eax; ret)
-    CLASSID_WORKERNODE = 8,   // CDDrawWorkerBase::GetClassId @0x157210 (mov eax,8)
-    CLASSID_IMAGE = 10,       // CImage::GetClassId @0xd5de0 (mov eax,0xa)
-    CLASSID_WORKER = 14,      // CDDrawWorker::GetClassId @0x155770 (mov eax,0xe)
+    CLASSID_NONE = 0,          // base default @0x154a00 (xor eax,eax; ret)
+    CLASSID_SUBWORKER = 1,     // CDrawSubWorker::GetClassId @0x158f80
+    CLASSID_SURFACECHILDA = 2, // CDDrawSurfaceChildA::GetClassId @0x159180
+    CLASSID_SURFACEPAIR = 3,   // CDDrawSurfacePair::GetClassId @0x1590c0
+    CLASSID_WWDOBJA = 5,       // CWwdGameObjectA::GetClassId @0x15b760
+    CLASSID_WWDOBJC = 6,       // CWwdGameObjectC::GetClassId @0x15c020
+    CLASSID_ANIMWORKER = 9,    // AnimWorkerObj::GetClassId @0x151d70
+    CLASSID_WWDOBJF = 0x16,    // CWwdGameObjectF::GetClassId @0x15ba60
+    CLASSID_WWDOBJB = 0x1b,    // CWwdGameObject::GetClassId @0x15bce0 (the B kind)
+    CLASSID_WORKERNODE = 8,    // CDDrawWorkerBase::GetClassId @0x157210 (mov eax,8)
+    CLASSID_IMAGE = 10,        // CImage::GetClassId @0xd5de0 (mov eax,0xa)
+    CLASSID_WORKER = 14,       // CDDrawWorker::GetClassId @0x155770 (mov eax,0xe)
     // The DDraw sub-manager kinds (<Gruntz/StateId.h> still spells the not-yet-
     // rebased holdouts' ids in the SAME one retail id space - slot 8 is
     // GetClassId family-wide).
     CLASSID_SUBMGRPAGES = 0xf, // CDDrawSubMgrPages::GetClassId @0x1574a0 (ex STATE_SUBMGRPAGES)
     CLASSID_CHILDGROUP = 0x10, // CDDrawChildGroup::GetClassId @0x157600 (ex STATE_CHILDGROUP)
     CLASSID_WORKERLIST = 0x11, // CDDrawWorkerList::GetClassId @0x156f20 (ex STATE_WORKERLIST)
-    CLASSID_WORKERREGISTRY = 0x12, // CDDrawWorkerRegistry::GetClassId @0x156de0 (ex STATE_WORKERREGISTRY)
+    CLASSID_WORKERREGISTRY =
+        0x12, // CDDrawWorkerRegistry::GetClassId @0x156de0 (ex STATE_WORKERREGISTRY)
     CLASSID_WORKERCACHE = 0x13, // CDDrawWorkerCache::GetClassId @0x1576f0 (ex STATE_WORKERCACHE)
-    CLASSID_WORKERMAPSMALL = 0x14, // CDDrawWorkerMapSmall::GetClassId @0x156cf0 (ex STATE_WORKERMAPSMALL)
+    CLASSID_WORKERMAPSMALL =
+        0x14, // CDDrawWorkerMapSmall::GetClassId @0x156cf0 (ex STATE_WORKERMAPSMALL)
     CLASSID_GAMELEVEL = 0x19,  // CGameLevel::GetClassId @0x1611b0 (mov eax,0x19)
     CLASSID_WORKERHOST = 0x1a, // CDDrawWorkerHost::GetClassId @0x163ab0 (mov eax,0x1a)
     // Id 5 = CWwdGameObjectA's OWN class id (the CreateSprite kind): its slot 8
@@ -46,10 +56,10 @@ public:
     virtual i32 IsLoaded() OVERRIDE; // [5] @+0x14  0x155700
     // slot 6 IsReady INHERITED from CWapObj (its `return 1` default @0xd5da0, now a
     // real body); not redeclared here (the redeclaration was a declared-only phantom).
-    virtual void Unload(); // [7] @+0x1c  0x155740 (reset/unload hook; bare-ret no-op -
-                       // the bare c3 PROVES the slot is void: cl 5.0 hard-errors
-                       // (C2561) on a return-less non-void function)
-    virtual i32 GetClassId();       // [8] @+0x20  0x154a00 -> CLASSID_NONE
+    virtual void Unload();    // [7] @+0x1c  0x155740 (reset/unload hook; bare-ret no-op -
+                              // the bare c3 PROVES the slot is void: cl 5.0 hard-errors
+                              // (C2561) on a return-less non-void function)
+    virtual i32 GetClassId(); // [8] @+0x20  0x154a00 -> CLASSID_NONE
 
     // +0x04  per-child id/index (Init hands 0; the page pairs 1/2; the planes their
     // index) doubling as the liveness latch: teardown resets -1, every family

@@ -354,7 +354,6 @@ rva,name,lib,confidence,source
 0x03beb0,__inc,LIBCMT,LOW,anchored
 0x03bf00,__inc,LIBCMT,LOW,anchored
 0x03bf50,__inc,LIBCMT,LOW,anchored
-0x03c010,__inc,LIBCMT,LOW,anchored
 0x03c520,__inc,LIBCMT,LOW,anchored
 0x03c570,__inc,LIBCMT,LOW,anchored
 0x03c5c0,__inc,LIBCMT,LOW,anchored
@@ -520,7 +519,6 @@ rva,name,lib,confidence,source
 0x094fa0,__inc,LIBCMT,LOW,anchored
 0x094ff0,__inc,LIBCMT,LOW,anchored
 0x095040,__inc,LIBCMT,LOW,anchored
-0x095120,__inc,LIBCMT,LOW,anchored
 0x095480,__inc,LIBCMT,LOW,anchored
 0x0954d0,__inc,LIBCMT,LOW,anchored
 0x095520,__inc,LIBCMT,LOW,anchored
@@ -646,7 +644,6 @@ rva,name,lib,confidence,source
 0x0b5420,___inittime,LIBCMT,LOW,anchored
 0x0b5fd0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x0b6310,__inc,LIBCMT,LOW,anchored
-0x0b6560,__inc,LIBCMT,LOW,anchored
 0x0b8af0,__fpclear,LIBCMT,LOW,anchored
 0x0bd500,__inc,LIBCMT,LOW,anchored
 0x0bd550,__inc,LIBCMT,LOW,anchored
@@ -1062,7 +1059,6 @@ rva,name,lib,confidence,source
 0x0fdb60,__inc,LIBCMT,LOW,anchored
 0x0fdbb0,__inc,LIBCMT,LOW,anchored
 0x0ff9d0,_DllMain@12,LIBCMT,LOW,anchored
-0x100510,?length@charNode@@UBEHXZ,LIBCMT,LOW,anchored
 0x1006d0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x1007a0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x100900,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
@@ -1094,13 +1090,9 @@ rva,name,lib,confidence,source
 0x10ca70,__inc,LIBCMT,LOW,anchored
 0x10cac0,__inc,LIBCMT,LOW,anchored
 0x10d870,___inittime,LIBCMT,LOW,anchored
-0x10dc20,___init_collate,LIBCMT,LOW,anchored
 0x10de50,___inittime,LIBCMT,LOW,anchored
-0x10e200,___init_collate,LIBCMT,LOW,anchored
 0x10e450,___inittime,LIBCMT,LOW,anchored
 0x10ea30,___inittime,LIBCMT,LOW,anchored
-0x10ede0,___init_collate,LIBCMT,LOW,anchored
-0x10ee00,___init_collate,LIBCMT,LOW,anchored
 0x10f190,___inittime,LIBCMT,LOW,anchored
 0x10fcc0,___inittime,LIBCMT,LOW,anchored
 0x110160,__inc,LIBCMT,LOW,anchored
@@ -1771,7 +1763,6 @@ rva,name,lib,confidence,source
 0x1329a0,___crtsetenv,LIBCMT,HIGH,anchored
 0x132bb0,_findenv,LIBCMT,HIGH,anchored
 0x132c30,_copy_environ,LIBCMT,HIGH,anchored
-0x138a20,?length@charNode@@UBEHXZ,LIBCMT,LOW,anchored
 0x138a30,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x139c70,__inc,LIBCMT,LOW,anchored
 0x139dd0,__inc,LIBCMT,LOW,anchored
@@ -1794,7 +1785,6 @@ rva,name,lib,confidence,source
 0x157220,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x157960,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x157a20,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x158f80,?length@charNode@@UBEHXZ,LIBCMT,LOW,anchored
 0x1590d0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x15b4c0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x15b6b0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored

@@ -118,6 +118,17 @@ i32 AnimWorkerObj::Consume(i32 amount) {
 // `::operator new`+placement REGRESSED (57.2%), a declared worker dtor is neutral,
 // out-of-lining the worker ctor would mismatch retail's inline stores.
 // docs/patterns/eh-state-numbering-base.md + throwing-operator-new-eh-state-transition.md.
+RVA(0x0015b370, 0x1a)
+i32 CGameObject::IsLoaded() {
+    if (m_7c == 0) {
+        return 0;
+    }
+    if (m_ownerCtx != 0 && m_id != -1) {
+        return 1;
+    }
+    return 0;
+}
+
 RVA(0x0015b390, 0x128)
 CWwdGameObjBaseCtor::CWwdGameObjBaseCtor(int a, int b, int c) : WwdCtorBase(a, b, c) {
     // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
@@ -155,6 +166,13 @@ CResolveNode::~CResolveNode() {
 // zero-register-pinning regalloc wall (docs/patterns/zero-register-pinning.md):
 // logic + /GX trylevel chain (3->2) byte-exact, residual is the callee-saved
 // zero/0x80000000/-1 register coloring (edi/ebx/ebp vs retail ebp/edi/ebx).
+RVA(0x00154a80, 0x13)
+void CResolveNode::Unload() {
+    m_screenX = static_cast<i32>(0x80000000);
+    m_dirtyRect.left = static_cast<i32>(0x80000000);
+    m_dirtyArmed = -1;
+}
+
 RVA(0x0015b4f0, 0xde)
 CGameObject::~CGameObject() {
     Unload(); // devirtualized in the dtor -> the inline E pass
@@ -185,6 +203,11 @@ void CGameObject::Notify(void* p) {
             h->m_notify(this);
         }
     }
+}
+
+RVA(0x0015b6a0, 0xb)
+i32 CAniAdvanceCursor::IsLoaded() {
+    return m_10 != 0;
 }
 
 RVA(0x0015b6d0, 0x5b)
@@ -224,6 +247,11 @@ CAniAdvanceCursor::CAniAdvanceCursor(i32 owner, i32 field04, i32 field08) {
 // zero-register-pinning regalloc wall: three-level fold (A -> WwdSubA member ->
 // Mid -> wap-object base) + trylevel chain reproduced; residual is the callee-saved
 // const register coloring across the two worker passes.
+RVA(0x0015b760, 0x6)
+i32 CWwdGameObjectA::GetClassId() {
+    return CLASSID_WWDOBJA;
+}
+
 RVA(0x0015b790, 0x1a6)
 CWwdGameObjectA::~CWwdGameObjectA() {
     Unload(); // devirtualized -> the inline A pass (geometry cache + E release)
@@ -238,7 +266,23 @@ i32 CWwdGameObjectA::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     return CGameObject::Setup(a1, a2, a3, a4);
 }
 
+RVA(0x0015ba40, 0x1a)
+i32 CWwdGameObjectF::IsLoaded() {
+    if (m_7c == 0) {
+        return 0;
+    }
+    if (m_ownerCtx != 0 && m_id != -1) {
+        return 1;
+    }
+    return 0;
+}
+
 // The F kind draws nothing: all four draw slots (11-14) are empty defaults.
+RVA(0x0015ba60, 0x6)
+i32 CWwdGameObjectF::GetClassId() {
+    return CLASSID_WWDOBJF;
+}
+
 RVA(0x0015ba70, 0x3)
 void CWwdGameObjectF::Render(CDDrawSurfacePair*) {}
 
@@ -267,6 +311,11 @@ i32 CWwdGameObjectF::SetupDeferred(i32 a3, i32 a4) {
     return CGameObject::Setup(0, 0, a3, a4);
 }
 
+RVA(0x0015bcd0, 0xb)
+i32 CWwdGameObject::IsLoaded() {
+    return m_7c != 0;
+}
+
 // ---------------------------------------------------------------------------
 // 0x15bd10 - the CResolveNode-derived variant (extra +0x1dc CObList, leading init
 // call 0x166810, trailing base CResolveNode dtor 0x429b): the 4-level polymorphic
@@ -277,6 +326,11 @@ i32 CWwdGameObjectF::SetupDeferred(i32 a3, i32 a4) {
 // WwdSub/CObList member folds; residual is the /GX trylevel numbering across the four
 // destruct phases (the same zero-register-pinning const coloring as the A/C/F
 // variants) - not source-steerable.
+RVA(0x0015bce0, 0x6)
+i32 CWwdGameObject::GetClassId() {
+    return CLASSID_WWDOBJB;
+}
+
 RVA(0x0015bd10, 0x1ef)
 CWwdGameObject::~CWwdGameObject() {
     Unload(); // devirtualized -> the inline B pass (Clear + geometry + E release)
@@ -305,6 +359,22 @@ i32 __stdcall RectsOverlap(CDDrawRect* a, CDDrawRect* b) {
 // @early-stop
 // zero-register-pinning regalloc wall: two-level fold + byte-flag clear + double
 // worker pass + trylevel chain reproduced; residual is callee-saved const coloring.
+RVA(0x0015c000, 0x1a)
+i32 CWwdGameObjectC::IsLoaded() {
+    if (m_7c == 0) {
+        return 0;
+    }
+    if (m_ownerCtx != 0 && m_id != -1) {
+        return 1;
+    }
+    return 0;
+}
+
+RVA(0x0015c020, 0x6)
+i32 CWwdGameObjectC::GetClassId() {
+    return CLASSID_WWDOBJC;
+}
+
 RVA(0x0015c070, 0x159)
 CWwdGameObjectC::~CWwdGameObjectC() {
     Unload(); // devirtualized -> the inline C pass (byte clear + E release)

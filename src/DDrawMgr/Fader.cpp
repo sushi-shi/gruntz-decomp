@@ -231,6 +231,11 @@ void CFaderMesh::RenderFrame(i32 frame) {
     m_flipTarget->Flip(0);
 }
 
+RVA(0x0017f120, 0x6)
+i32 CFaderMesh::GetFrameCount() {
+    return 0x1f4;
+}
+
 RVA(0x0017fdb0, 0x1a)
 CFaderSine::CFaderSine() {
     m_elemCount = 0;

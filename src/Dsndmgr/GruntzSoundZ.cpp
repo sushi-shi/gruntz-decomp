@@ -268,6 +268,16 @@ i32 CGruntzSoundZ::GetXMidiVolume() {
     return v * 100 / 127;
 }
 
+RVA(0x00138a10, 0xb)
+i32 CGruntzSoundInnerZ::IsStarted() {
+    return m_seqHandle != 0;
+}
+
+RVA(0x00138a20, 0x6)
+i32 CGruntzSoundInnerZ::IsMidi() {
+    return 1;
+}
+
 RVA(0x00138a50, 0x46)
 CGruntzSoundInnerZ::~CGruntzSoundInnerZ() {
     ReleaseHandle();

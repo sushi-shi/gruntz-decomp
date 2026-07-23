@@ -7,7 +7,7 @@
 #include <Gruntz/Loadable.h> // CLoadable - the real base (slot scheme 5-8)
 #include <Gruntz/MapStringToOb.h>
 
-class CDDrawWorker;             // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
 // (B)-form re-base 2026-07-22: vtbl 0x5efd00 slots 5-8 are the CLoadable scheme;
 // the +0x04..+0x0c trio is the INHERITED CLoadable header (ex the "merged

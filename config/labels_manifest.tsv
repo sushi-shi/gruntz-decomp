@@ -2,7 +2,7 @@
 # floor for the build-integrity denominator gate (labels.py). A unit whose
 # count DROPS fails the build; see check_labels_manifest(). Regenerate a
 # deliberate drop with GRUNTZ_LABELS_ACK=1.
-# units: 366  functions: 4261
+# units: 366  functions: 4296
 actionarea	16
 actionoptionsmenubar	12
 adler32	1
@@ -49,14 +49,14 @@ chatboxowner	7
 cheatmgr	7
 checkpointdlg	6
 checkpointswitchbuild	1
-cimage	28
+cimage	29
 circleshadeblit	1
 cmdscrollapply	2
 colorhsv	1
 connslotlist	3
 creditsstate	36
 creditzassets	1
-cremusnode	2
+cremusnode	3
 cspawnentry	1
 cursorsnapactreg	2
 cursorsnapsprite	6
@@ -69,7 +69,7 @@ ddrawblterrthunk	1
 ddrawpolyfill	1
 ddrawptrcollections	10
 ddrawshadeblit	10
-ddrawsubmgr	106
+ddrawsubmgr	119
 ddrawsubmgrleaf	13
 ddrawsurfacemgr	13
 ddrawsurfacepair	44
@@ -79,7 +79,7 @@ ddsurface	56
 debugprintf	14
 debugtiming	2
 deflate	15
-demo	25
+demo	26
 destructbutton	1
 dialogs	59
 directdrawmgr	66
@@ -93,7 +93,7 @@ engstr	1
 engstrrendertext	1
 exittrigger	4
 eyecandy	4
-fader	49
+fader	50
 fadermgr	10
 feccrypt	10
 fileimage	19
@@ -163,12 +163,12 @@ gruntzmgr	160
 gruntzmgr2	1
 gruntzmgrcmd	1
 gruntzrandom	5
-gruntzsoundz	31
+gruntzsoundz	33
 gruntzwnd	18
 guardpoint	4
 hash	10
 heapdiag	8
-helpstate	32
+helpstate	33
 iconloaders	2
 imageowned	8
 imagepolyclip	2
@@ -226,7 +226,7 @@ modeobjinit	2
 motionstate	6
 movieplayer	2
 movinglogic	7
-multi	106
+multi	107
 multistartdlg	17
 multistartdlgroster	32
 namerecord	4
@@ -273,7 +273,7 @@ sbi_image	6
 sbi_imageset	7
 sbi_imagesetani	6
 sbi_menuitem	12
-sbi_rectonly	83
+sbi_rectonly	84
 sbi_rectonlybase	4
 sbi_rectonlydtor_eh	2
 sbi_sidetab_build	1
@@ -312,7 +312,7 @@ statemgrbz	7
 statereleaseresources	1
 statichazard	9
 statusbargamemenu	1
-statusbaritem	4
+statusbaritem	5
 statusbarmgr	1
 statusbarspriteacts	9
 statusbartabbuilders	17
@@ -359,9 +359,9 @@ worldlevelpath	2
 worldsoundset	31
 wormhole	28
 wormholeacts	3
-wwdfactoryobject	37
+wwdfactoryobject	47
 wwdfile	3
-wwdgameobject	43
+wwdgameobject	45
 wwdgameobjectrender	15
 wwdgrid	14
 wwdobjmgr	50

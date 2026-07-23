@@ -21,8 +21,8 @@ struct AnimWorkerObj : public CWapObj {
     virtual i32 IsLoaded() OVERRIDE;   // slot 5  0x151d60 (overrides CWapObj)
     // slot 6 IsReady INHERITED from CWapObj (its `return 1` default @0xd5da0, reached
     // via the 0x001c08 thunk); not redeclared (that was a phantom own "IsValidImage").
-    virtual void Clear();              // slot 7  0x151e70 (reset/reuse hook)
-    virtual void GetClassId();      // slot 8  0x151d70
+    virtual void Clear();     // slot 7  0x151e70 (reset/reuse hook)
+    virtual i32 GetClassId(); // slot 8  0x151d70 (CLASSID_ANIMWORKER)
     // slot 9 - bind the fire callback + frame stamp, zero the working fields
     // (was BOTH "Vfunc24(i32,i32)" and "CLogicRecord::Init" - one body 0x151e20).
     virtual i32 Init(GameObjNotifyFn callback, i32 frame); // slot 9  0x151e20
@@ -52,8 +52,8 @@ struct AnimWorkerObj : public CWapObj {
     i32 Consume(i32 amount);                         // 0x15b340 (kill-cue budget m_20)
     i32 Dispatch(i32 a, i32 mode, void* c, void* d); // 0x164830
     i32 CacheTargetId(void* a);                      // 0x164920 (Dispatch case 3)
-    i32 Save(CFileMemBase* ar);                    // 0x164960 (writes, slot 12 +0x30)
-    i32 Load(CFileMemBase* ar);                    // 0x164d80 (reads, slot 11 +0x2c;
+    i32 Save(CFileMemBase* ar);                      // 0x164960 (writes, slot 12 +0x30)
+    i32 Load(CFileMemBase* ar);                      // 0x164d80 (reads, slot 11 +0x2c;
                                                      //   allocates the m_payload blob)
     i32 ResolveTarget(void* a);                      // 0x1651b0 (Dispatch case 8)
 
@@ -67,23 +67,23 @@ struct AnimWorkerObj : public CWapObj {
     // `obj->m_collideWorker->m_notify(obj)` - a raw fn-ptr load off the worker,
     // NOT a vtable dispatch; zero-stamped at worker build = "no callback".
     GameObjNotifyFn m_notify;
-    u8* m_payload;                  // +0x14  owned serialized payload blob (RezFree'd in Clear/dtor)
-    CUserLogic* m_logic;       // +0x18  the owned bound-logic leaf (CUserBase slot-0
-                               //        scalar dtor via plain `delete`; slot-1
-                               //        SerializeMove is the per-frame Step)
-    void* m_1c;                // +0x1c  a genuine int|ptr role-union (no union per the
-                               //        toolchain, kept void* with casts at the int sites):
-                               //        the record/play state tag (0 = unbuilt, 0x1d/0x1e +
-                               //        0x50..0x53 = the play-state dance keys, 0x3e8 =
-                               //        built/idle, 0x1c = error latch) AND the bute-tree
-                               //        animset node the eyecandy leaves save/restore.
-    i32 m_20;                  // +0x20  kill-cue remaining budget (Consume debits it)
-    i32 m_24;                  // +0x24  kill-cue refcount (TickKillCues decrements)
-    i32 m_28;                  // +0x28  (zeroed by Init)
-    i32 m_2c;                  // +0x2c  spawn-record param A / projectile lo bound A (0 => default MIN)
-    i32 m_30;                  // +0x30  spawn-record param B / projectile hi bound A (0 => default MAX)
-    i32 m_34;                  // +0x34  projectile lo bound B (zeroed by Init)
-    i32 m_38;                  // +0x38  projectile hi bound B (zeroed by Init)
+    u8* m_payload;       // +0x14  owned serialized payload blob (RezFree'd in Clear/dtor)
+    CUserLogic* m_logic; // +0x18  the owned bound-logic leaf (CUserBase slot-0
+                         //        scalar dtor via plain `delete`; slot-1
+                         //        SerializeMove is the per-frame Step)
+    void* m_1c;          // +0x1c  a genuine int|ptr role-union (no union per the
+                         //        toolchain, kept void* with casts at the int sites):
+                         //        the record/play state tag (0 = unbuilt, 0x1d/0x1e +
+                         //        0x50..0x53 = the play-state dance keys, 0x3e8 =
+                         //        built/idle, 0x1c = error latch) AND the bute-tree
+                         //        animset node the eyecandy leaves save/restore.
+    i32 m_20;            // +0x20  kill-cue remaining budget (Consume debits it)
+    i32 m_24;            // +0x24  kill-cue refcount (TickKillCues decrements)
+    i32 m_28;            // +0x28  (zeroed by Init)
+    i32 m_2c;            // +0x2c  spawn-record param A / projectile lo bound A (0 => default MIN)
+    i32 m_30;            // +0x30  spawn-record param B / projectile hi bound A (0 => default MAX)
+    i32 m_34;            // +0x34  projectile lo bound B (zeroed by Init)
+    i32 m_38;            // +0x38  projectile hi bound B (zeroed by Init)
     char m_pad3c[0x4c - 0x3c]; // +0x3c  flat serialized state (Save/Load stream it)
     i32 m_scrollTargetX;       // +0x4c  demo auto-scroll per-axis target (DemoAutoScrollStep,
     i32 m_scrollTargetY;       // +0x50  Demo.cpp; part of the flat serialized band)
@@ -99,11 +99,11 @@ struct AnimWorkerObj : public CWapObj {
     char m_pad110[0x130 - 0x110];
     i32 m_130; // +0x130
     char m_pad134[0x168 - 0x134];
-    i32 m_168;          // +0x168 (zeroed by Init)
-    i32 m_16c;          // +0x16c (zeroed by Init)
+    i32 m_168;             // +0x168 (zeroed by Init)
+    i32 m_16c;             // +0x16c (zeroed by Init)
     CGameObject* m_target; // +0x170  resolved target object (ResolveTarget; id = its m_188)
-    i32 m_targetId;          // +0x174  cached target id (from m_target->m_188)
-    u32 m_payloadSize;          // +0x178  payload byte count for the m_payload block
+    i32 m_targetId;        // +0x174  cached target id (from m_target->m_188)
+    u32 m_payloadSize;     // +0x178  payload byte count for the m_payload block
 }; // size = 0x17c
 SIZE(0x17c);
 VTBL(AnimWorkerObj, 0x001efb80); // ??_7AnimWorkerObj@@6B@ (10-slot vtable; the +0x7c worker/record)

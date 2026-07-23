@@ -18,3 +18,10 @@ RVA(0x00154a00, 0x3)
 i32 CLoadable::GetClassId() {
     return CLASSID_NONE;
 }
+RVA(0x00154a10, 0x13)
+i32 CResolveNode::IsLoaded() {
+    if (m_ownerCtx != 0 && m_id != -1) {
+        return 1;
+    }
+    return 0;
+}

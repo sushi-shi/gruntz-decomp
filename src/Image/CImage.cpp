@@ -381,6 +381,13 @@ i32 CImage::SetOrigin(CImageFrameDesc* desc, i32 mode) {
     return 1;
 }
 
+RVA(0x00153370, 0xf)
+void CImage::FlipVertical(void*) {
+    if (m_surface) {
+        m_surface->FlipVertical();
+    }
+}
+
 RVA(0x00153380, 0xeb)
 i32 CImage::Reload(CParseSource* src, i32 arg) {
     if (m_surface == 0) {

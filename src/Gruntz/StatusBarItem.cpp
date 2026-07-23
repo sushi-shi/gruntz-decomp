@@ -27,6 +27,11 @@ CStatusBarItem::CStatusBarItem() {
 // 0x10bfc0 in SBI_MenuItem.cpp. No anchor is needed - MSVC has no key-function rule, and
 // the out-of-line ctor at 0x1005d0 below stamps the vptr, which is what references ??_7
 // and forces the COMDAT out in this TU.)
+RVA(0x00100600, 0x8)
+i32 CStatusBarItem::Refresh(i32) {
+    return 1;
+}
+
 RVA_COMPGEN(0x00100620, 0x24, ??_GCStatusBarItem@@UAEPAXI@Z)
 
 // ---------------------------------------------------------------------------
@@ -47,7 +52,15 @@ RVA_COMPGEN(0x00100620, 0x24, ??_GCStatusBarItem@@UAEPAXI@Z)
 // finds no operand fix - same non-steerable coin-flip as its 0xe86e0 sibling. Final sweep.
 // ---------------------------------------------------------------------------
 RVA(0x00100660, 0x50)
-i32 CStatusBarItem::Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10) {
+i32 CStatusBarItem::Setup(
+    CStatusBarMgr* owner,
+    CDDrawSurfaceMgr* host,
+    i32 a3,
+    i32 a4,
+    SbiRect rc,
+    i32 a9,
+    i32 a10
+) {
     if (host == 0 || owner == 0) {
         return 0;
     }

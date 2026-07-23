@@ -16,7 +16,7 @@
 #include <Gruntz/SerialRecords.h>     // CTriRecord
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup shape (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>         // the dispatched CUserLogic leaves' slot layout
-#include <Gruntz/GameLevel.h>         // m_world->m_level (CGameLevel; ex-CWorldState view dissolved)
+#include <Gruntz/GameLevel.h> // m_world->m_level (CGameLevel; ex-CWorldState view dissolved)
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Ints.h>
 #include <stdlib.h> // rand (0x11fee0, the engine LCG)
@@ -40,6 +40,11 @@ i32 CDemo::LoadGameAssetNamespaces(i32 ctx, i32 a1, i32 a2) {
     }
     m_520 = 0x124f80;
     return 1;
+}
+
+RVA(0x0003c010, 0x5)
+void CDemo::ReleaseResources() {
+    CPlay::ReleaseResources(); // retail: a bare `jmp` to the CPlay body
 }
 
 RVA(0x0003c030, 0x22)
@@ -755,4 +760,3 @@ extern "C" i32 CreateSecretLevelTrigger(CGameObject* owner) {
     }
     return 1;
 }
-

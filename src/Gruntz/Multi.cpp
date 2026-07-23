@@ -613,6 +613,11 @@ i32 CMulti::FrameSlot28(i32 arg) {
     return 1;
 }
 
+RVA(0x000b6560, 0x5)
+i32 CMulti::Vslot15() {
+    return CPlay::Vslot15(); // retail: a bare `jmp` to the CPlay body (the base delegation)
+}
+
 RVA(0x000b6580, 0x1eb)
 i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     g_optionsCursor = 0;
