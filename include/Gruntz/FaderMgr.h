@@ -40,10 +40,6 @@ public:
     void FreeAll();                                                // 0x17d9a0
     CFader* Add(i32 nFaderType, class CFxModeDesc* pInit);         // 0x17d9c0 (pInit = the
     // per-type transition descriptor)
-    RVA(0x0017e160, 0x8)
-    i32 Flush() {
-        return (reinterpret_cast<CFaderMgr*>(&m_sharedPtrColl))->Flush();
-    }
     void Remove(CFader* pFader); // 0x17e170
     void DeleteAll();            // 0x17e1d0
 

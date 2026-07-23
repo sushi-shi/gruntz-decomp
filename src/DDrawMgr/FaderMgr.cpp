@@ -245,6 +245,10 @@ append:
     return fader;
 }
 
+// The stack CFxModeT1 in Add makes VC5 materialize its otherwise implicit
+// destructor out of line: destroy the CString member at +0x24.
+RVA_COMPGEN(0x0017e160, 0x8, ??1CFxModeT1@@QAE@XZ)
+
 // ===========================================================================
 // 0x17e170 - Remove(pFader): find pFader in the array; on hit, memmove the tail
 // down one slot, drop the count, and delete the fader (its scalar-deleting dtor).
