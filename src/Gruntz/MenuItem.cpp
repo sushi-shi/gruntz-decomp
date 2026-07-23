@@ -166,6 +166,16 @@ i32 CMenuItem::NotifyCmd() {
 // retail pins the cmp operand m_44 in ebp, the recompile in ebx. The two are
 // interchangeable and the choice is not source-steerable (operand/decl reorderings
 // all canonicalize to the same pick). Logic complete; deferred to the final sweep.
+RVA(0x001855d0, 0x6)
+i32 CMenuItem::Detach() {
+    return 1;
+}
+
+RVA(0x001855e0, 0x8)
+i32 CMenuItem::Notify(void*) {
+    return 1;
+}
+
 RVA(0x001855f0, 0x94)
 i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
     CDDrawWorker* page = static_cast<CDDrawWorker*>(m_sprite);
@@ -202,16 +212,6 @@ i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
     m_hitBottom = px + row->m_anchorY;
     return 1;
 }
-RVA(0x001855d0, 0x6)
-i32 CMenuItem::Detach() {
-    return 1;
-}
-
-RVA(0x001855e0, 0x8)
-i32 CMenuItem::Notify(void*) {
-    return 1;
-}
-
 RVA(0x00185690, 0x25)
 i32 CMenuItem::Configure(void* notify) {
     if (notify) {
