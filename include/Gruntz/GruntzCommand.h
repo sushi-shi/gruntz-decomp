@@ -101,19 +101,6 @@ public:
     i32 SetParamsEx(char a0, char a1, char a2, i16 a3, i16 a4, char a5, char a6); // 0x023e60
     i32 SetMaskFromList(char a0, char a1, char a2, i16 a3, i16 a4, i32 count,
                         u8* buf); // 0x023ed0
-
-    // Two out-of-line base-vftable stamps (0x0242f0 / 0x024430): each is a bare
-    // `mov [this],&??_7CGruntzCommand; ret` (void __thiscall, no eax-return, no
-    // null guard). Byte-for-byte the non-deleting base dtor body (??1CGruntzCommand
-    // = `mov [ecx],&vtbl; ret`, verified), materialized twice: retail's
-    // CGruntzSingleCommand/CGruntzMultiCommand scalar-deleting dtors (??_G @0x242c0/
-    // 0x24400) each CALL a distinct out-of-line copy of the base-vtable restore. A
-    // plain empty derived dtor emits 11 B (own-vtable stamp + jmp base); the retail
-    // copies stamp ONLY the base vtable, so they are modeled as two void methods
-    // whose body is an explicit inline base-dtor call (emits the exact 7-B stamp).
-    // Defined out-of-line in the .cpp (an unreferenced inline member would not emit).
-    void CGruntzCommand_0242f0();
-    void CGruntzCommand_024430();
 };
 SIZE(0x14);
 
@@ -121,7 +108,9 @@ extern const u16 g_cmdBitTable[16]; // 0x1e9608
 
 class CGruntzSingleCommand : public CGruntzCommand {
 public:
-    virtual ~CGruntzSingleCommand() OVERRIDE;
+    // Destructor is implicit. Retail's compiler-generated body at 0x0242f0
+    // restores only CGruntzCommand's vftable; an explicit empty destructor
+    // introduces an extra derived-vftable store.
     // slots 1/2/3 (0x0244d0 / 0x024520 / 0x0245f0) - the serialize dispatcher and
     // the single-target network Save/Load (the base declares them pure; the leaves
     // provide the bodies).
@@ -147,7 +136,8 @@ SIZE(0x14);
 
 class CGruntzMultiCommand : public CGruntzCommand {
 public:
-    virtual ~CGruntzMultiCommand() OVERRIDE;
+    // Destructor is implicit; it has the same base-vftable-only shape at
+    // 0x024430 as the single-command twin.
     // slots 1/2/3 (0x0246c0 / 0x024710 / 0x0247d0) - the multi-target overrides of
     // the serialize dispatcher and the network Save/Load (the +0x10 flag word as a
     // single 16-bit unit vs the base's m_10/m_11 byte pair).

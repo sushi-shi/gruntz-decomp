@@ -2,20 +2,12 @@
 # references that NO base obj defines and retail's namespace never names -
 # fabricated aliases / phantom externs. RATCHET: new rows are FATAL; fix rows
 # (rename to the real symbol / define the owner), then --update. Drive to 0.
-??0CDDSurface@@QAE@XZ
 ??0CDDrawSurfacePair@@QAE@HHH@Z
-??0CGruntCellRec@@QAE@XZ
 ??0RezElem40@@QAE@XZ
-??1CBoomerang@@UAE@XZ
 ??1CButeRef5@@QAE@XZ
 ??1CButeRef6@@QAE@XZ
 ??1CButeRef7@@QAE@XZ
 ??1CButeRef8@@QAE@XZ
-??1CFaderFlat@@UAE@XZ
-??1CGruntCellRec@@QAE@XZ
-??1CGruntzMultiCommand@@UAE@XZ
-??1CGruntzSingleCommand@@UAE@XZ
-??1DSoundVoice@@UAE@XZ
 ??1zDArray@@UAE@XZ
 ?AdvanceAnim@CExitTrigger@@QAEHXZ
 ?Apply13@CGrunt@@QAEXHH@Z

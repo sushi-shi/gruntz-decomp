@@ -9,7 +9,8 @@ public:
     CBoomerang(CGameObject* owner); // 0xe0650 (chains CProjectile(owner))
     // The five slots CBoomerang overrides over CProjectile's vtable (declared-only
     // unless a body is bound below; their vftable references reloc-mask).
-    virtual ~CBoomerang() OVERRIDE; // slot 0  (origin CUserBase)
+    // The destructor is implicit: retail's compiler-generated body is only a
+    // tail jump to CProjectile::~CProjectile, with no derived-vptr restamp.
     virtual i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4)
         OVERRIDE; // slot 1 @0xe15d0
     RVA(0x000129b0, 0x6)

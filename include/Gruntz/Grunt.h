@@ -151,20 +151,44 @@ public:
 SIZE_UNKNOWN();
 
 struct CGruntCellRec {
-    CString m_attack; // +0x00  "GRUNTZ_<name>_<DIR>_ATTACK"
-    CString m_struck; // +0x04  "GRUNTZ_<name>_<DIR>_STRUCK"
-    CString m_walk;   // +0x08  "GRUNTZ_<name>_<DIR>_WALK" / "GRUNTZ_<name>_<DIR>"
-    CString m_idle;   // +0x0c  "GRUNTZ_<name>_<DIR>_IDLE"
-    CString m_item;   // +0x10  "GRUNTZ_<name>_<DIR>_ITEM"
-    i32 m_14;         // +0x14  (serialized record dword)
-    i32 m_18;         // +0x18  (serialized record dword)
-    i32 m_1c;         // +0x1c  (serialized record dword)
-    i32 m_20;         // +0x20  (serialized record dword)
-    i32 m_24;         // +0x24  (serialized record dword)
-    i32 m_28;         // +0x28  (serialized record dword)
-    i32 m_2c;         // +0x2c  (serialized record dword)
-    i32 m_30;         // +0x30  (serialized record dword)
-    i32 m_34;         // +0x34  (serialized record dword)
+    enum NameSlot {
+        NAME_ATTACK,
+        NAME_STRUCK,
+        NAME_WALK,
+        NAME_IDLE,
+        NAME_ITEM,
+        NAME_COUNT
+    };
+
+    // The single __ehvec_ctor/__ehvec_dtor pair in the element callbacks proves
+    // these five adjacent CStrings are one array member, not five declarations.
+    CString m_names[NAME_COUNT]; // +0x00..+0x13
+
+    CString& AttackName() {
+        return m_names[NAME_ATTACK];
+    }
+    CString& StruckName() {
+        return m_names[NAME_STRUCK];
+    }
+    CString& WalkName() {
+        return m_names[NAME_WALK];
+    }
+    CString& IdleName() {
+        return m_names[NAME_IDLE];
+    }
+    CString& ItemName() {
+        return m_names[NAME_ITEM];
+    }
+
+    i32 m_14; // +0x14  (serialized record dword)
+    i32 m_18; // +0x18  (serialized record dword)
+    i32 m_1c; // +0x1c  (serialized record dword)
+    i32 m_20; // +0x20  (serialized record dword)
+    i32 m_24; // +0x24  (serialized record dword)
+    i32 m_28; // +0x28  (serialized record dword)
+    i32 m_2c; // +0x2c  (serialized record dword)
+    i32 m_30; // +0x30  (serialized record dword)
+    i32 m_34; // +0x34  (serialized record dword)
     char m_pad38[0x40 - 0x38];
     i32 m_40; // +0x40  (serialized record dword)
     i32 m_44; // +0x44  (serialized record dword)
@@ -178,10 +202,10 @@ struct CGruntCellRec {
     double m_dirY;    // +0x50  unit direction Y
     double m_stepX;   // +0x58  half-tile step X (+-0.5)
     double m_stepY;   // +0x60  half-tile step Y (+-0.5)
-    CGruntCellRec();  // 0x401e9c (per-element ctor; the __ehvec_ctor callback)
-    ~CGruntCellRec(); // 0x4023a6 (per-element dtor; reloc-masked)
+    CGruntCellRec();  // 0x00f400 (ILT 0x401e9c; five-CString __ehvec_ctor callback)
+    ~CGruntCellRec(); // 0x00f430 (ILT 0x4023a6; five-CString __ehvec_dtor callback)
 };
-SIZE_UNKNOWN();
+SIZE(0x68);
 struct GruntStrSub { // +0x44c / +0x448 / +0x1c0  (~CString 0x1b9cde)
     void CtorImpl(); // 0x1b9b93 (CString default ctor)
     void Dtor();

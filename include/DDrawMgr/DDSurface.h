@@ -310,6 +310,15 @@ SIZE(0xc0);
 SIZE(0xc0); // DIRSURF.CPP surface item (both surface ctors 0x13e9a0/0x1421a0
 SIZE_UNKNOWN();
 
+inline CDDSurface::CDDSurface() {
+    m_ddSurface = 0;
+    m_ddSurfaceBack = 0;
+    m_pos = 0;
+    m_dontOwn = 0;
+    m_bitDepth = 0;
+    m_b8 = 0;
+}
+
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern "C" const GUID IID_IDirectDrawSurface3; // 0x5ef888

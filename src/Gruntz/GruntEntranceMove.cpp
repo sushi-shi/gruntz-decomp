@@ -186,7 +186,7 @@ i32 CGrunt::RunEntranceMove() {
         GruntEntranceCell cell = m_entranceCell;
         i32 col = cell.row + cell.col * 2;
         i32 base = cell.col + col;
-        char* nm = m_cells[base].m_walk.GetBuffer(0);
+        char* nm = m_cells[base].WalkName().GetBuffer(0);
         m_38->ApplyName(nm);
     } else {
         ResetEntranceAnimation(1, 0, 0);
@@ -508,7 +508,7 @@ void CGrunt::RearmEntranceDrop() {
         // (the two classes share the head layout); the old (3col+row+0xb)*0x68 spelling
         // was the m_cells base folded into the index - array form proven byte-identical.
         const char* name = reinterpret_cast<const char*>(
-            reinterpret_cast<_zdvec*>(&m_cells[3 * col + row].m_item)->IndexToPtr(0)
+            reinterpret_cast<_zdvec*>(&m_cells[3 * col + row].ItemName())->IndexToPtr(0)
         );
         m_38->ApplyLookupSprite(name, frame);
     }
@@ -624,7 +624,7 @@ i32 CGrunt::StartBombGruntRun() {
     GruntEntranceCell cell = m_entranceCell;
     i32 col = cell.row + cell.col * 2;
     i32 base = cell.col + col; // (the old +0xb folded the m_cells base into the index)
-    char* cn = m_cells[base].m_item.GetBuffer(0);
+    char* cn = m_cells[base].ItemName().GetBuffer(0);
     m_38->ApplyName(cn);
     return 0;
 }
@@ -659,24 +659,24 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_wingzClockHi = 0;
         CreateWingzTimeSprite();
 
-        m_cells[0].m_idle = s_NW_ITEM;
-        m_cells[1].m_idle = s_N_ITEM;
-        m_cells[2].m_idle = s_NE_ITEM;
-        m_cells[3].m_idle = s_W_ITEM;
-        m_cells[4].m_idle = s_N_ITEM;
-        m_cells[5].m_idle = s_E_ITEM;
-        m_cells[6].m_idle = s_SW_ITEM;
-        m_cells[7].m_idle = s_S_ITEM;
-        m_cells[8].m_idle = s_SE_ITEM;
-        m_cells[0].m_walk = s_NW_ITEM;
-        m_cells[1].m_walk = s_N_ITEM;
-        m_cells[2].m_walk = s_NE_ITEM;
-        m_cells[3].m_walk = s_W_ITEM;
-        m_cells[4].m_walk = s_N_ITEM;
-        m_cells[5].m_walk = s_E_ITEM;
-        m_cells[6].m_walk = s_SW_ITEM;
-        m_cells[7].m_walk = s_S_ITEM;
-        m_cells[8].m_walk = s_SE_ITEM;
+        m_cells[0].IdleName() = s_NW_ITEM;
+        m_cells[1].IdleName() = s_N_ITEM;
+        m_cells[2].IdleName() = s_NE_ITEM;
+        m_cells[3].IdleName() = s_W_ITEM;
+        m_cells[4].IdleName() = s_N_ITEM;
+        m_cells[5].IdleName() = s_E_ITEM;
+        m_cells[6].IdleName() = s_SW_ITEM;
+        m_cells[7].IdleName() = s_S_ITEM;
+        m_cells[8].IdleName() = s_SE_ITEM;
+        m_cells[0].WalkName() = s_NW_ITEM;
+        m_cells[1].WalkName() = s_N_ITEM;
+        m_cells[2].WalkName() = s_NE_ITEM;
+        m_cells[3].WalkName() = s_W_ITEM;
+        m_cells[4].WalkName() = s_N_ITEM;
+        m_cells[5].WalkName() = s_E_ITEM;
+        m_cells[6].WalkName() = s_SW_ITEM;
+        m_cells[7].WalkName() = s_S_ITEM;
+        m_cells[8].WalkName() = s_SE_ITEM;
 
         _out = 0;
         m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_WG_ITEM, reinterpret_cast<void*&>(_out));
@@ -705,24 +705,24 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
             m_wingzTimeSprite = 0;
         }
 
-        m_cells[0].m_walk = s_NW_WALK;
-        m_cells[1].m_walk = s_N_WALK;
-        m_cells[2].m_walk = s_NE_WALK;
-        m_cells[3].m_walk = s_W_WALK;
-        m_cells[4].m_walk = s_N_WALK;
-        m_cells[5].m_walk = s_E_WALK;
-        m_cells[6].m_walk = s_SW_WALK;
-        m_cells[7].m_walk = s_S_WALK;
-        m_cells[8].m_walk = s_SE_WALK;
-        m_cells[0].m_idle = s_NW_IDLE;
-        m_cells[1].m_idle = s_N_IDLE;
-        m_cells[2].m_idle = s_NE_IDLE;
-        m_cells[3].m_idle = s_W_IDLE;
-        m_cells[4].m_idle = s_N_IDLE;
-        m_cells[5].m_idle = s_E_IDLE;
-        m_cells[6].m_idle = s_SW_IDLE;
-        m_cells[7].m_idle = s_S_IDLE;
-        m_cells[8].m_idle = s_SE_IDLE;
+        m_cells[0].WalkName() = s_NW_WALK;
+        m_cells[1].WalkName() = s_N_WALK;
+        m_cells[2].WalkName() = s_NE_WALK;
+        m_cells[3].WalkName() = s_W_WALK;
+        m_cells[4].WalkName() = s_N_WALK;
+        m_cells[5].WalkName() = s_E_WALK;
+        m_cells[6].WalkName() = s_SW_WALK;
+        m_cells[7].WalkName() = s_S_WALK;
+        m_cells[8].WalkName() = s_SE_WALK;
+        m_cells[0].IdleName() = s_NW_IDLE;
+        m_cells[1].IdleName() = s_N_IDLE;
+        m_cells[2].IdleName() = s_NE_IDLE;
+        m_cells[3].IdleName() = s_W_IDLE;
+        m_cells[4].IdleName() = s_N_IDLE;
+        m_cells[5].IdleName() = s_E_IDLE;
+        m_cells[6].IdleName() = s_SW_IDLE;
+        m_cells[7].IdleName() = s_S_IDLE;
+        m_cells[8].IdleName() = s_SE_IDLE;
 
         _out = 0;
         m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_WG_WALK, reinterpret_cast<void*&>(_out));
@@ -755,7 +755,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
             desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = elem[0x14 / 4];
         i32 idx = 3 * m_entranceCell.col + m_entranceCell.row;
-        char* buf = m_cells[idx].m_walk.GetBuffer(0);
+        char* buf = m_cells[idx].WalkName().GetBuffer(0);
         m_38->ApplyLookupSprite(buf, frame);
         return 1;
     }
@@ -770,7 +770,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
             desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = elem[0x14 / 4];
         i32 idx = 3 * m_entranceCell.col + m_entranceCell.row;
-        char* buf = m_cells[idx].m_idle.GetBuffer(0);
+        char* buf = m_cells[idx].IdleName().GetBuffer(0);
         m_38->ApplyLookupSprite(buf, frame);
     }
     return 1;
@@ -962,7 +962,7 @@ i32 CGrunt::StepArrivalCommit() {
             GruntEntranceCell cell = m_entranceCell;
             i32 colv = cell.row + cell.col * 2;
             i32 base = cell.col + colv;
-            char* nm = m_cells[base].m_walk.GetBuffer(0);
+            char* nm = m_cells[base].WalkName().GetBuffer(0);
             m_38->ApplyName(nm);
         } else {
             ResetEntranceAnimation(1, 0, 0);
@@ -1471,7 +1471,7 @@ i32 CGrunt::StepAnimDispatchB() {
         GruntEntranceCell cell = m_entranceCell;
         i32 col = cell.row + cell.col * 2;
         i32 base = cell.col + col;
-        char* nm = m_cells[base].m_walk.GetBuffer(0);
+        char* nm = m_cells[base].WalkName().GetBuffer(0);
         m_38->ApplyName(nm);
         goto modeDispatch;
     } else {

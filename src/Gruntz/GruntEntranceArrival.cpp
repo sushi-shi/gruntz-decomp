@@ -441,7 +441,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     i32 cc = cell.col;
     i32 cr = cell.row;
     i32 base = cc + (cr + 2 * cc);
-    char* buf = m_cells[base].m_attack.GetBuffer(0);
+    char* buf = m_cells[base].AttackName().GetBuffer(0);
     m_38->ApplyLookupSprite(buf, frame);
     m_214 = 1;
     return 0;
@@ -476,7 +476,7 @@ i32 CGrunt::RearmAttackAnim2() {
     i32 col = cell.col;
     i32 row = cell.row;
     i32 base = col + (row + 2 * col);
-    char* buf = m_cells[base].m_attack.GetBuffer(0);
+    char* buf = m_cells[base].AttackName().GetBuffer(0);
     m_38->ApplyLookupSprite(buf, frame);
     m_214 = 1;
     return 0;
@@ -812,7 +812,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         GruntEntranceCell cell = m_entranceCell;
         i32 colv = cell.row + cell.col * 2;
         i32 basev = cell.col + colv;
-        char* nm = m_cells[basev].m_walk.GetBuffer(0);
+        char* nm = m_cells[basev].WalkName().GetBuffer(0);
         m_38->ApplyName(nm);
 
         DWORD tt = g_buteMgr.GetDword(*reinterpret_cast<char**>(&m_animSetName), s_ToyTime);
@@ -1152,7 +1152,7 @@ latch:
         }
     }
 
-    CString key = reinterpret_cast<const char*>(&m_cells[3 * col + row].m_idle);
+    CString key = reinterpret_cast<const char*>(&m_cells[3 * col + row].IdleName());
 
     CAniElement* desc = m_38->m_1a0.m_14;
     i32* elem =
@@ -1334,10 +1334,10 @@ i32 CGrunt::StepEntranceReinit() {
     GruntEntranceCell cell = m_entranceCell;
     i32 col = cell.row + cell.col * 2;
     i32 base = cell.col + col;
-    // &m_cells[base].m_walk == this + base*0x68 + 0x470: cl strength-reduces base*0x68
+    // &m_cells[base].WalkName() == this + base*0x68 + 0x470: cl strength-reduces base*0x68
     // (sizeof CGruntCellRec) to the same lea chain the raw offset produced (verified
     // byte-identical) - no imul, so the real member access is faithful.
-    char* nm = m_cells[base].m_walk.GetBuffer(0);
+    char* nm = m_cells[base].WalkName().GetBuffer(0);
     m_38->ApplyName(nm);
     return 0;
 }
@@ -1790,7 +1790,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
             GruntEntranceCell cell = m_entranceCell;
             i32 col = cell.row + cell.col * 2;
             i32 base = cell.col + col;
-            char* cn = m_cells[base].m_walk.GetBuffer(0);
+            char* cn = m_cells[base].WalkName().GetBuffer(0);
             m_38->ApplyName(cn);
         } else {
             ResetEntranceAnimation(1, 0, 0);
@@ -1913,7 +1913,7 @@ tail:
         GruntEntranceCell cell = m_entranceCell;
         i32 col = cell.row + cell.col * 2;
         i32 base = cell.col + col;
-        char* cn = m_cells[base].m_struck.GetBuffer(0);
+        char* cn = m_cells[base].StruckName().GetBuffer(0);
         m_38->ApplyLookupSprite(cn, frame);
     }
     {
@@ -2124,7 +2124,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     GruntEntranceCell cell = m_entranceCell;
     i32 col = cell.row + cell.col * 2;
     i32 base = cell.col + col; // (the old +0xb folded the m_cells base into the index)
-    char* name = m_cells[base].m_item.GetBuffer(0);
+    char* name = m_cells[base].ItemName().GetBuffer(0);
     m_38->ApplyName(name);
 }
 

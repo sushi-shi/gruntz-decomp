@@ -114,7 +114,6 @@ rva,name,lib,confidence,source
 0x012640,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x012980,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x0129d0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x012a00,__inc,LIBCMT,LOW,anchored
 0x012a40,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x012b00,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x012c30,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
@@ -3255,7 +3254,6 @@ rva,name,lib,confidence,source
 0x169be0,CButeMgrHelper_FuncA,MSVC-THUNK,HIGH,asm-carveout
 0x169be0,??1iostream@@UAE@XZ,LIBCIMT,HIGH,vbase-adjust-0x14
 0x1915a8,_DirectSoundCreate@12,MSVC-THUNK,HIGH,dsound-import-thunk
-0x17f570,Dtor_17f570,GAME-ASM,HIGH,asm-carveout
 0x1d4a18,FreeLibHost_Dtor,GAME-ASM,HIGH,asm-carveout
 0x1c7e6d,Dtor_1c7e6d,GAME-ASM,HIGH,asm-carveout
 0x18c1f5,IntegerScale,GAME-ASM,HIGH,asm-carveout

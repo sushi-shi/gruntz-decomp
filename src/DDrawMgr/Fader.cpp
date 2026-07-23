@@ -15,6 +15,8 @@
 #include <string.h>                       // rep-movs / memset element copies
 #include <rva.h>
 
+void __cdecl operator delete(void* p); // ??3@YAXPAX@Z (0x1b9b82)
+
 VTBL(CFader, 0x001f07a8);
 VTBL(CFaderMesh, 0x001f07c0);
 VTBL(CRezBufferObject, 0x001f07d8); // ??_7CRezBufferObject@@6B@ (5-slot CObject-derived)
@@ -333,6 +335,14 @@ fail:
 RVA(0x0017f530, 0x19)
 CFaderFlat::CFaderFlat() {
     m_frames = 0;
+}
+
+RVA(0x0017f570, 0x61)
+CFaderFlat::~CFaderFlat() {
+    if (m_frames) {
+        operator delete(m_frames);
+        m_frames = 0;
+    }
 }
 
 RVA(0x00180400, 0xa)
@@ -1037,8 +1047,6 @@ void CFaderRadial::RenderFrame(i32 frame) {
     dst->m_ddSurface->Unlock(0);
     RezFree(scratch);
 }
-
-void __cdecl operator delete(void* p); // ??3@YAXPAX@Z (0x1b9b82)
 
 RVA(0x00181720, 0xb3)
 CFaderShape::~CFaderShape() {

@@ -996,12 +996,12 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(m_poseWalk);
-        // Stamp the first entrance-cell frame from m_cells[base].m_walk. The by-value
+        // Stamp the first entrance-cell frame from m_cells[base].WalkName(). The by-value
         // cell copy dead-spills `reason` (esp+0x1c) -> `sub esp,0xc`; base = 3*col+row.
         GruntEntranceCell cell = m_entranceCell;
         i32 col = cell.row + cell.col * 2;
         i32 base = cell.col + col;
-        char* nm = m_cells[base].m_walk.GetBuffer(0);
+        char* nm = m_cells[base].WalkName().GetBuffer(0);
         m_38->ApplyName(nm);
         goto modeDispatch;
     } else {

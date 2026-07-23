@@ -8,12 +8,11 @@
 class DirectSoundMgr; // the cloned DirectSound buffer this voice drives
 
 struct DSoundVoice : public PureSoundElem {
-    // Slots 0/1 (Tick/Stop) are defined in DSoundVoice.cpp overriding the pure base,
-    // so cl emits ??_7DSoundVoice@@6B@ (0x5ef6d0) referencing them + the external
-    // slot 2.
+    // The retail vtable has exactly the two PureSoundElem slots. Voice teardown
+    // deliberately deletes through PureSoundElem, so this leaf has no virtual
+    // destructor slot.
     virtual i32 Tick(i32 now) OVERRIDE; // vtbl slot 0  0x137060
     virtual i32 Stop() OVERRIDE;        // vtbl slot 1  0x1370d0
-    virtual ~DSoundVoice(); // vtbl slot 2  (scalar-deleting dtor; defined in the ctor's TU)
 
     DSoundLink m_link;        // +0x04  intrusive list-anchor {next@+4, prev@+8}
     i32 m_live;               // +0x0c  live flag (set by the ctor)

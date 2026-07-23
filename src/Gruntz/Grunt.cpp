@@ -182,6 +182,12 @@ CGrunt::~CGrunt() {
     UserLogicVfunc9();
 }
 
+RVA(0x0000f400, 0x1b)
+CGruntCellRec::CGruntCellRec() {}
+
+RVA(0x0000f430, 0x10)
+CGruntCellRec::~CGruntCellRec() {}
+
 static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 
 // @early-stop
@@ -585,62 +591,62 @@ static const char s_d48_BREAK[] = "_BREAK";
 RVA(0x00048470, 0x131b)
 void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     if (kind == 0) {
-        m_cells[0].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_WALK;
-        m_cells[1].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_WALK;
-        m_cells[2].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_WALK;
-        m_cells[3].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_WEST_WALK;
-        m_cells[4].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_WALK;
-        m_cells[5].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_EAST_WALK;
-        m_cells[6].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_WALK;
-        m_cells[7].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_WALK;
-        m_cells[8].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_WALK;
-        m_cells[0].m_struck = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_STRUCK;
-        m_cells[1].m_struck = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_STRUCK;
-        m_cells[2].m_struck = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_STRUCK;
-        m_cells[3].m_struck = s_GRUNTZ_ + m_animSetName + s_d48_WEST_STRUCK;
-        m_cells[4].m_struck = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_STRUCK;
-        m_cells[5].m_struck = s_GRUNTZ_ + m_animSetName + s_d48_EAST_STRUCK;
-        m_cells[6].m_struck = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_STRUCK;
-        m_cells[7].m_struck = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_STRUCK;
-        m_cells[8].m_struck = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_STRUCK;
-        m_cells[0].m_attack = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_ATTACK;
-        m_cells[1].m_attack = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ATTACK;
-        m_cells[2].m_attack = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_ATTACK;
-        m_cells[3].m_attack = s_GRUNTZ_ + m_animSetName + s_d48_WEST_ATTACK;
-        m_cells[4].m_attack = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ATTACK;
-        m_cells[5].m_attack = s_GRUNTZ_ + m_animSetName + s_d48_EAST_ATTACK;
-        m_cells[6].m_attack = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_ATTACK;
-        m_cells[7].m_attack = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_ATTACK;
-        m_cells[8].m_attack = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_ATTACK;
-        m_cells[0].m_idle = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_IDLE;
-        m_cells[1].m_idle = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_IDLE;
-        m_cells[2].m_idle = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_IDLE;
-        m_cells[3].m_idle = s_GRUNTZ_ + m_animSetName + s_d48_WEST_IDLE;
-        m_cells[4].m_idle = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_IDLE;
-        m_cells[5].m_idle = s_GRUNTZ_ + m_animSetName + s_d48_EAST_IDLE;
-        m_cells[6].m_idle = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_IDLE;
-        m_cells[7].m_idle = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_IDLE;
-        m_cells[8].m_idle = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_IDLE;
-        m_cells[0].m_item = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_ITEM;
-        m_cells[1].m_item = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ITEM;
-        m_cells[2].m_item = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_ITEM;
-        m_cells[3].m_item = s_GRUNTZ_ + m_animSetName + s_d48_WEST_ITEM;
-        m_cells[4].m_item = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ITEM;
-        m_cells[5].m_item = s_GRUNTZ_ + m_animSetName + s_d48_EAST_ITEM;
-        m_cells[6].m_item = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_ITEM;
-        m_cells[7].m_item = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_ITEM;
-        m_cells[8].m_item = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_ITEM;
+        m_cells[0].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_WALK;
+        m_cells[1].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_WALK;
+        m_cells[2].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_WALK;
+        m_cells[3].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_WEST_WALK;
+        m_cells[4].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_WALK;
+        m_cells[5].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_EAST_WALK;
+        m_cells[6].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_WALK;
+        m_cells[7].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_WALK;
+        m_cells[8].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_WALK;
+        m_cells[0].StruckName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_STRUCK;
+        m_cells[1].StruckName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_STRUCK;
+        m_cells[2].StruckName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_STRUCK;
+        m_cells[3].StruckName() = s_GRUNTZ_ + m_animSetName + s_d48_WEST_STRUCK;
+        m_cells[4].StruckName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_STRUCK;
+        m_cells[5].StruckName() = s_GRUNTZ_ + m_animSetName + s_d48_EAST_STRUCK;
+        m_cells[6].StruckName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_STRUCK;
+        m_cells[7].StruckName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_STRUCK;
+        m_cells[8].StruckName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_STRUCK;
+        m_cells[0].AttackName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_ATTACK;
+        m_cells[1].AttackName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ATTACK;
+        m_cells[2].AttackName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_ATTACK;
+        m_cells[3].AttackName() = s_GRUNTZ_ + m_animSetName + s_d48_WEST_ATTACK;
+        m_cells[4].AttackName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ATTACK;
+        m_cells[5].AttackName() = s_GRUNTZ_ + m_animSetName + s_d48_EAST_ATTACK;
+        m_cells[6].AttackName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_ATTACK;
+        m_cells[7].AttackName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_ATTACK;
+        m_cells[8].AttackName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_ATTACK;
+        m_cells[0].IdleName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_IDLE;
+        m_cells[1].IdleName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_IDLE;
+        m_cells[2].IdleName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_IDLE;
+        m_cells[3].IdleName() = s_GRUNTZ_ + m_animSetName + s_d48_WEST_IDLE;
+        m_cells[4].IdleName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_IDLE;
+        m_cells[5].IdleName() = s_GRUNTZ_ + m_animSetName + s_d48_EAST_IDLE;
+        m_cells[6].IdleName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_IDLE;
+        m_cells[7].IdleName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_IDLE;
+        m_cells[8].IdleName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_IDLE;
+        m_cells[0].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_ITEM;
+        m_cells[1].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ITEM;
+        m_cells[2].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_ITEM;
+        m_cells[3].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_WEST_ITEM;
+        m_cells[4].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ITEM;
+        m_cells[5].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_EAST_ITEM;
+        m_cells[6].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_ITEM;
+        m_cells[7].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_ITEM;
+        m_cells[8].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_ITEM;
         m_44c = s_GRUNTZ_ + m_animSetName + s_d48_DEATH;
     } else if (dirOnly != 0) {
-        m_cells[0].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST;
-        m_cells[1].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTH;
-        m_cells[2].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST;
-        m_cells[3].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_WEST;
-        m_cells[4].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTH;
-        m_cells[5].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_EAST;
-        m_cells[6].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST;
-        m_cells[7].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH;
-        m_cells[8].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST;
+        m_cells[0].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST;
+        m_cells[1].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH;
+        m_cells[2].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST;
+        m_cells[3].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_WEST;
+        m_cells[4].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH;
+        m_cells[5].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_EAST;
+        m_cells[6].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST;
+        m_cells[7].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH;
+        m_cells[8].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST;
         m_448 = s_GRUNTZ_ + m_animSetName + s_d48_BREAK;
     } else {
         m_448 = s_GRUNTZ_ + m_animSetName;
@@ -843,7 +849,7 @@ idle:
         i32 row = rec.m_4;
         i32 index = 3 * col + row;
         const char* nm = reinterpret_cast<const char*>(
-            (reinterpret_cast<_zdvec*>(&m_cells[index].m_idle))->IndexToPtr(0)
+            (reinterpret_cast<_zdvec*>(&m_cells[index].IdleName()))->IndexToPtr(0)
         );
         m_38->ApplyLookupSprite(nm, frame);
     }
@@ -859,7 +865,7 @@ walk:
         i32 row = rec.m_4;
         i32 index = 3 * col + row;
         const char* nm = reinterpret_cast<const char*>(
-            (reinterpret_cast<_zdvec*>(&m_cells[index].m_walk))->IndexToPtr(0)
+            (reinterpret_cast<_zdvec*>(&m_cells[index].WalkName()))->IndexToPtr(0)
         );
         m_38->ApplyName(nm);
     }

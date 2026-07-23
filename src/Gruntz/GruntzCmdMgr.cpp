@@ -398,10 +398,7 @@ void CGruntzSingleCommand::Deselect() {
     g_singleCmdList.AddHead(this); // retire onto the single-command recycle list
 }
 
-RVA(0x000242f0, 0x7)
-void CGruntzCommand::CGruntzCommand_0242f0() {
-    this->CGruntzCommand::~CGruntzCommand();
-}
+RVA_COMPGEN(0x000242f0, 0x7, ??1CGruntzSingleCommand@@UAE@XZ)
 
 RVA(0x00024310, 0x6)
 i32 CGruntzCommand::Vslot05() {
@@ -434,10 +431,7 @@ void CGruntzMultiCommand::Deselect() {
     g_multiCmdList.AddHead(this); // retire onto the multi-command recycle list
 }
 
-RVA(0x00024430, 0x7)
-void CGruntzCommand::CGruntzCommand_024430() {
-    this->CGruntzCommand::~CGruntzCommand();
-}
+RVA_COMPGEN(0x00024430, 0x7, ??1CGruntzMultiCommand@@UAE@XZ)
 
 RVA(0x00024450, 0x29)
 void CGruntzSingleCommand::FreeAll() {

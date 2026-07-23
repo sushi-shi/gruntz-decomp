@@ -419,13 +419,9 @@ i32 ReloadImageCache(void) {
 // real <ddraw.h> IDirectDrawSurface COM interface whose slot 0 is IUnknown::QueryInterface)
 // the QI probe builds on QI == S_OK (retail).
 // @early-stop
-// ~62%: complete + correct reconstruction (QI slot 0, `new CDDSurface`, slot-1 Refresh,
-// SetAtGrow/delete, ret 0xc all disasm-verified). Residual is (a) `new CDDSurface` here
-// emits an EXTERNAL ctor call because CDDSurface's inline ctor body lives in
-// DirectDrawMgr.cpp (not DDSurface.h), while retail INLINES the ctor at this new-site;
-// (b) the /GX ctor-in-flight EH-state index (the Create7f0_1/CreateA factory-EH family
-// wall). Fix for (a) = move CDDSurface::CDDSurface() inline into DDSurface.h (touches a
-// widely-included header - deferred to avoid the butterfly mid-cleanup).
+// ~62%: complete + correct reconstruction (QI slot 0, inlined `new CDDSurface`, slot-1
+// Refresh, SetAtGrow/delete, ret 0xc all disasm-verified). Residual is the /GX
+// ctor-in-flight EH-state index (the Create7f0_1/CreateA factory-EH family wall).
 RVA(0x0013e9a0, 0xcc)
 i32 __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* desc, void* ctx) {
     void* payload = 0;
