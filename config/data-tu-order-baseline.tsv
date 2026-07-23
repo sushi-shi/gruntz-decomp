@@ -5,12 +5,6 @@
 0x001efb18	g_rasterScale	WarpTextureBlit.cpp	WallProject.cpp	rdata
 0x001efb1c	g_rasterScaleNeg	WarpTextureBlit.cpp	WallProject.cpp	rdata
 0x0020b8b8	g_levelMsgIconPos	GameMode.cpp	BootyMessages.cpp	data
-0x0024dacc	g_sfCfgA0	SoundFontPath.cpp	SFSelectDevice.cpp	bss
-0x0024dace	g_sfCfgA2	SoundFontPath.cpp	SFSelectDevice.cpp	bss
-0x0024dad0	g_sfCfgB0	SoundFontPath.cpp	SFSelectDevice.cpp	bss
-0x0024dad4	g_sfCurPath	SoundFontPath.cpp	SFSelectDevice.cpp	bss
-0x0024dadc	g_sfCfgB12	SoundFontPath.cpp	SFSelectDevice.cpp	bss
-0x0024dd28	g_sfDeviceId	SoundFontPath.cpp	SFSelectDevice.cpp	bss
 0x00283ee4	g_ddCreateCtx	DirectDrawMgr.cpp	FileImage.cpp	bss
 0x00283ee8	g_DirectDraw	DirectDrawMgr.cpp	FileImage.cpp	bss
 0x002becf8	g_rasterVtxCount	ImagePolyClip.cpp	WarpTextureBlit.cpp	bss

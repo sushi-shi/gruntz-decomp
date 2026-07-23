@@ -258,8 +258,7 @@ i32 CMultiStartDlg::UpdateSlot() {
 //     the log-edit HWND and re-drive the connect state.
 //   SAVE  (m_bSaveAndValidate != 0): read the world name (host: persist Last/Custom
 //     MultiMap) and each slot's name-edit text back into the m_host slot array.
-// SendMessageA is hoisted through the engine's cached USER32 fn-ptr global (pSend);
-// GetWindow is the uncached g_pGetWindow global. /GX EH frame for the CString temps.
+// SendMessageA is hoisted into pSend; /GX EH frame for the CString temps.
 // @early-stop
 // ~95.6%: complete + correct (LOAD/SAVE both align by shape, arg-eval order matched
 // by pre-loading each control's HWND before the SendMessage constant args). Residual is
@@ -267,8 +266,6 @@ i32 CMultiStartDlg::UpdateSlot() {
 // the persistent 0 constant to ebx, our cl to esi - cascading through every null-compare
 // / ehstate store - plus the eax/ecx/edx colouring of the per-control HWND reads and the
 // save loop's induction-variable choice (typed slots[i] base-hoist vs retail's byte off).
-// Not source-steerable; g_pGetWindow/g_pSendMessageA reloc-mask UNBOUND (the whole
-// 0x2c44xx USER32 fn-ptr table is unbound infra, same as g_pPostMessageA).
 RVA(0x000c20a0, 0x45a)
 void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
     Utils::RegistryHelper* reg = static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings);
@@ -281,7 +278,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         if (!BuildSlotList()) {
             return;
         }
-        WapSendMessageA pSend = g_pSendMessageA;
+        WapSendMessageA pSend = ::SendMessageA;
         i32 i;
         for (i = 0; i < NUM_PLAYER_SLOTS; i++) {
             HWND kc;
@@ -316,7 +313,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
                 FILE* f = fopen(path, "rb");
                 if (f != 0) {
                     HWND worldCombo = GetDlgItem(0x4ff)->m_hWnd;
-                    CWnd* child = CWnd::FromHandle(g_pGetWindow(worldCombo, GW_CHILD));
+                    CWnd* child = CWnd::FromHandle(::GetWindow(worldCombo, GW_CHILD));
                     if (child == 0) {
                         return;
                     }
@@ -327,7 +324,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
                     fclose(f);
                 }
             } else {
-                CWnd* child = CWnd::FromHandle(g_pGetWindow(GetDlgItem(0x4ff)->m_hWnd, GW_CHILD));
+                CWnd* child = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, GW_CHILD));
                 if (child == 0) {
                     return;
                 }
@@ -354,7 +351,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         }
     } else {
         HWND worldCombo = GetDlgItem(0x4ff)->m_hWnd;
-        CWnd* child = CWnd::FromHandle(g_pGetWindow(worldCombo, GW_CHILD));
+        CWnd* child = CWnd::FromHandle(::GetWindow(worldCombo, GW_CHILD));
         if (child == 0) {
             return;
         }

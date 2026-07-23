@@ -17,9 +17,6 @@ struct tagDRAWITEMSTRUCT;    // windows.h owner-draw item    (CWnd::OnDrawItem a
 #include <Net/NetLobby.h>
 extern "C" i32 g_sharedFlag;
 typedef LRESULT(WINAPI* WapSendMessageA)(HWND, UINT, WPARAM, LPARAM);
-typedef HWND(WINAPI* WapGetWindow)(HWND, UINT);
-extern "C" WapSendMessageA g_pSendMessageA; // 0x2c44a4
-extern WapGetWindow g_pGetWindow;           // 0x2c44d8
 
 #include <Gruntz/String.h>
 

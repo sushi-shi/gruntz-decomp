@@ -11,9 +11,8 @@
 #include <Gruntz/StartUpPrompt.h> // g_appResHandle decl
 #include <Gruntz/GruntzMgr.h>     // ex Globals.h
 
-// g_appResHandle (0x00251618): HINSTANCE - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x00251618, 0x0, _g_appResHandle)
+DATA(0x00251618)
+HINSTANCE g_appResHandle;
 
 DATA(0x002455ec)
 i32 g_cdPromptResult = 0;

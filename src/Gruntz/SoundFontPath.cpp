@@ -9,28 +9,6 @@
 #include <string.h>                // strlen (inline repne scas)
 #include <Gruntz/SFSelectDevice.h> // ex Globals.h
 
-DATA(0x0024dacc)
-WORD g_sfCfgA0 = 0; // config block A +0 (runtime =1)
-DATA(0x0024dace)
-WORD g_sfCfgA2 = 0; // config block A +2 (runtime =0)
-DATA(0x0024dad0)
-u32 g_sfCfgB0 = 0; // config block B +0 (runtime =0x80)
-
-DATA(0x0024dad4)
-char* g_sfCurPath = 0; // the path currently being tried
-DATA(0x0024dadc)
-u16 g_sfCfgB12 = 0; // config block B +0xc
-DATA_SYMBOL(0x0024dae0, 0x0, ?g_sfMusic4@@3PADA)
-DATA_SYMBOL(0x0024dc28, 0x0, ?g_sfLocal4@@3PADA)
-DATA(0x0024dd28)
-WORD g_sfDeviceId;
-DATA_SYMBOL(0x0024dd30, 0x0, ?g_sfMusic@@3PADA)
-DATA_SYMBOL(0x0024de30, 0x0, ?g_sfLocal@@3PADA)
-DATA_SYMBOL(0x0024dfa0, 0x0, ?g_sfDir@@3PADA)
-
-i32 SfDeviceInitKeys();
-i32 FileExistsCopyF90F0(char* szPath);
-
 RVA(0x000f8e20, 0x56)
 void CloseSoundFontDevice() {
     if (g_sfReady != 0 && g_sfDevice != 0 && g_sfDeviceCount != 0) {
@@ -47,15 +25,15 @@ i32 SfDeviceInitKeys() {
     if (g_sfReady == 0) {
         return 0;
     }
-    g_sfCfgA2 = 0;
+    g_sfMidiLocation.m_PresetIndex = 0;
     for (i32 i = 1; i <= 0x7f; i++) {
-        g_sfCfgA0 = static_cast<WORD>(i);
+        g_sfMidiLocation.m_BankIndex = static_cast<WORD>(i);
         (reinterpret_cast<SfGetLoadedBankPathname2>(g_sfDevice->SF_GetLoadedBankPathname))(
             g_sfDeviceId,
-            reinterpret_cast<PSFMIDILOCATION>(&g_sfCfgA0)
+            &g_sfMidiLocation
         );
     }
-    g_sfCfgA0 = 1;
+    g_sfMidiLocation.m_BankIndex = 1;
     return 1;
 }
 
@@ -76,30 +54,22 @@ i32 BuildSoundFontPath(char drive) {
     sprintf(g_sfMusic, "%c:\\MUSIC\\Gruntz.SF2", drive);
     SfDeviceInitKeys();
 
-    g_sfCfgA0 = 1;
-    g_sfCfgA2 = 0;
-    g_sfCfgB0 = 0x80;
-    g_sfCfgB12 = 0;
+    g_sfMidiLocation.m_BankIndex = 1;
+    g_sfMidiLocation.m_PresetIndex = 0;
+    g_sfBufferObject.m_Size = 0x80;
+    g_sfBufferObject.m_Flag = 0;
     int hiVer = 0;
     i32 res = 0x6b;
     if (g_sfVer >= 0x37115c) {
         hiVer = 1;
     }
-    g_sfCurPath = hiVer ? g_sfLocal4 : g_sfLocal;
-    if (FileExistsCopyF90F0(g_sfCurPath)) {
-        res = g_sfDevice->SF_LoadBank(
-            g_sfDeviceId,
-            reinterpret_cast<PSFMIDILOCATION>(&g_sfCfgA0),
-            reinterpret_cast<PSFBUFFEROBJECT>(&g_sfCfgB0)
-        );
+    g_sfBufferObject.m_Buffer = hiVer ? g_sfLocal4 : g_sfLocal;
+    if (FileExistsCopyF90F0(g_sfBufferObject.m_Buffer)) {
+        res = g_sfDevice->SF_LoadBank(g_sfDeviceId, &g_sfMidiLocation, &g_sfBufferObject);
     }
     if (res != 0) {
-        g_sfCurPath = hiVer ? g_sfMusic4 : g_sfMusic;
-        res = g_sfDevice->SF_LoadBank(
-            g_sfDeviceId,
-            reinterpret_cast<PSFMIDILOCATION>(&g_sfCfgA0),
-            reinterpret_cast<PSFBUFFEROBJECT>(&g_sfCfgB0)
-        );
+        g_sfBufferObject.m_Buffer = hiVer ? g_sfMusic4 : g_sfMusic;
+        res = g_sfDevice->SF_LoadBank(g_sfDeviceId, &g_sfMidiLocation, &g_sfBufferObject);
     }
     return res == 0;
 }

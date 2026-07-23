@@ -21,19 +21,37 @@ char g_id3_613e02 = 0;
 DATA(0x0024da80)
 u16 g_idx_64da80 = 0; // current device index
 DATA(0x0024da84)
-u32 g_ratingRaw_64da84 = 0;
+DWORD g_ratingRaw_64da84 = 0;
 DATA(0x0024da88)
 i32 g_factoryRc_64da88 = 0;
+DATA(0x0024da90)
+char g_traceBuf_64da90[0x3c];
+DATA(0x0024dacc)
+CSFMIDILocation g_sfMidiLocation;
+DATA(0x0024dad0)
+CSFBufferObject g_sfBufferObject;
+DATA(0x0024dae0)
+char g_sfMusic4[0x100];
+DATA(0x0024dbe0)
+DWORD g_staticSampleBytes = 0;
+DATA(0x0024dc28)
+char g_sfLocal4[0x100];
+DATA(0x0024dd28)
+u16 g_sfDeviceId = 0;
+DATA(0x0024dd30)
+char g_sfMusic[0x100];
+DATA(0x0024de30)
+char g_sfLocal[0x100];
 DATA(0x0024df30)
-u16 g_caps_64df30 = 0; // caps query buffer base / size field
-DATA(0x0024df36)
-u32 g_capsFlags_64df36 = 0; // caps flags (caps + 6)
+CSFCapsObject g_sfCaps;
 DATA(0x0024df98)
 u16 g_remaining_64df98 = 0;
 DATA(0x0024df9c)
 u32 g_id_64df9c = 0; // packed device id
+DATA(0x0024dfa0)
+char g_sfDir[0x100];
 DATA(0x0024e0a0)
-u32 g_sfVer = 0; // build/version selector
+DWORD g_sfVer = 0; // build/version selector
 DATA(0x0024e0a4)
 u16 g_sfDeviceCount = 0; // SFMAN32 device count
 DATA(0x0024e0a8)
@@ -84,20 +102,20 @@ i32 SFManager_SelectBestDevice() {
     }
 
     for (g_idx_64da80 = 0; g_idx_64da80 < g_sfDeviceCount; g_idx_64da80++) {
-        memset(&g_caps_64df30, 0, 0x66);
-        g_caps_64df30 = 0x66;
-        g_sfDevice->SF_GetDevCaps(g_idx_64da80, reinterpret_cast<PSFCAPSOBJECT>(&g_caps_64df30));
-        sprintf(g_traceBuf_64da90, "Querying %s", &g_capsName_64df46);
-        if (g_capsFlags_64df36 & 0x40000000) {
+        memset(&g_sfCaps, 0, sizeof(g_sfCaps));
+        g_sfCaps.m_SizeOf = sizeof(g_sfCaps);
+        g_sfDevice->SF_GetDevCaps(g_idx_64da80, &g_sfCaps);
+        sprintf(g_traceBuf_64da90, "Querying %s", g_sfCaps.m_DevName);
+        if (g_sfCaps.m_DevCaps & 0x40000000) {
             g_ratings_64e0c0[g_idx_64da80] = 0x20;
-        } else if (g_capsFlags_64df36 & 0x80000000) {
+        } else if (g_sfCaps.m_DevCaps & 0x80000000) {
             g_ratings_64e0c0[g_idx_64da80] = 0x80;
         } else {
             g_sfDevice->SF_Open(g_idx_64da80);
             g_sfDevice->SF_QueryStaticSampleMemorySize(
                 g_idx_64da80,
-                reinterpret_cast<PDWORD>(&g_ratingBuf_64dbe0),
-                reinterpret_cast<PDWORD>(&g_ratingRaw_64da84)
+                &g_staticSampleBytes,
+                &g_ratingRaw_64da84
             );
             u8 r = static_cast<u8>(((g_ratingRaw_64da84 >> 0x13) + 0x40));
             g_ratings_64e0c0[g_idx_64da80] = r;
@@ -139,17 +157,13 @@ i32 SFManager_SelectBestDevice() {
         return 0;
     }
 
-    memset(&g_caps_64df30, 0, 0x66);
-    g_caps_64df30 = 0x66;
-    g_sfDevice->SF_GetDevCaps(g_sfDeviceId, reinterpret_cast<PSFCAPSOBJECT>(&g_caps_64df30));
-    if (g_capsFlags_64df36 & 0x80000000) {
-        g_sfVer = static_cast<u32>(-1);
+    memset(&g_sfCaps, 0, sizeof(g_sfCaps));
+    g_sfCaps.m_SizeOf = sizeof(g_sfCaps);
+    g_sfDevice->SF_GetDevCaps(g_sfDeviceId, &g_sfCaps);
+    if (g_sfCaps.m_DevCaps & 0x80000000) {
+        g_sfVer = static_cast<DWORD>(-1);
     } else {
-        g_sfDevice->SF_QueryStaticSampleMemorySize(
-            g_sfDeviceId,
-            reinterpret_cast<PDWORD>(&g_ratingBuf_64dbe0),
-            reinterpret_cast<PDWORD>(&g_sfVer)
-        );
+        g_sfDevice->SF_QueryStaticSampleMemorySize(g_sfDeviceId, &g_staticSampleBytes, &g_sfVer);
     }
     g_sfDevice->SF_GetRouterID(g_sfDeviceId, reinterpret_cast<PDWORD>(&g_id_64df9c));
     u32 v = g_id_64df9c;

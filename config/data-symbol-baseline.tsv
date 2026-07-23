@@ -8,7 +8,6 @@
 0x00001217	_CreateAmbientPosSound	GameObjectFactory.cpp
 0x0000158c	_CreateBoomerang	GameObjectFactory.cpp
 0x000016c7	_CreateTimeBomb	GameObjectFactory.cpp
-0x00001947	?Lab401947@@YAXXZ	GruntzMgr.cpp
 0x000019bf	_CreateBrickz	GameObjectFactory.cpp
 0x00001b09	_CreateLevelTime	GameObjectFactory.cpp
 0x00001bd1	?Reset@CSBI_RectOnly@@UAEXXZ	SBI_RectOnlyDtorEh.cpp
@@ -16,8 +15,6 @@
 0x00002158	_CreateAmbientSound	GameObjectFactory.cpp
 0x00002167	_GruntzLoadGameDlgProc	GruntzMgr.cpp
 0x000021e9	_GruntzDebugGruntTypeProc	GruntzMgr.cpp
-0x0000222f	?MultiJoinHandler@@YAXXZ	Multi.cpp
-0x000024e6	?SaveRunCallback@@YAHPAX0HHH@Z	GameSave.cpp
 0x000027fc	_MultiOptionzCallback	Multi.cpp
 0x00002851	_CreateSpotAmbientSound	GameObjectFactory.cpp
 0x00002ab8	_LevelNumberDialogProcThunk	GruntzMgr.cpp
@@ -35,14 +32,9 @@
 0x00003ca6	_CreateStaticHazard	GameObjectFactory.cpp
 0x0000448a	_CreateDemoSign	GameObjectFactory.cpp
 0x00051510	?g_typeDesc1@@3PADA	GruntSteps.cpp
-0x00190aa0	?g_keyboardDataFormat@@3PBEB	DinMgr2.cpp
-0x00190b30	?g_mouseDataFormat@@3PBEB	DinMgr2.cpp
-0x00191590	?g_joystickDataFormat@@3PBEB	DinMgr2.cpp
 0x001e8fe8	_g_bootyLetterCoords	BootyStateActivate.cpp
 0x001e9608	?g_cmdBitTable@@3PBGB	GruntzCmdMgr.cpp
 0x001ef458	_IID_IDirectInputDevice2A	InputDevice.cpp
-0x001ef538	?g_deviceConfigB@@3PBEB	DinMgr2.cpp
-0x001ef548	?g_deviceConfigA@@3PBEB	DinMgr2.cpp
 0x001ef848	_IID_IDirectDraw2	DirectDrawMgr.cpp
 0x00224d58	?g_guid1@@3PBEB	NetMgr.cpp
 0x00224d68	?g_guid2@@3PBEB	NetMgr.cpp
@@ -50,12 +42,6 @@
 0x00224d88	?g_guid4@@3PBEB	NetMgr.cpp
 0x00224d98	?g_guid5@@3PBEB	NetMgr.cpp
 0x0024556c	_g_gameReg	GruntzMgr.cpp
-0x0024dae0	?g_sfMusic4@@3PADA	SoundFontPath.cpp
-0x0024dc28	?g_sfLocal4@@3PADA	SoundFontPath.cpp
-0x0024dd30	?g_sfMusic@@3PADA	SoundFontPath.cpp
-0x0024de30	?g_sfLocal@@3PADA	SoundFontPath.cpp
-0x0024dfa0	?g_sfDir@@3PADA	SoundFontPath.cpp
-0x00251618	_g_appResHandle	StartUpPrompt.cpp
 0x002856f8	_g_rasterEdgeR	DDrawPolyFill.cpp
 0x002856f8	_g_rasterEdgeR	WarpTextureBlit.cpp
 0x002a1708	_g_rasterVtxA	ImagePolyClip.cpp

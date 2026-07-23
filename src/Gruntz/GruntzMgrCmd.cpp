@@ -286,7 +286,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                             return 1;
                         }
                         char buf[128];
-                        g_pwsprintfA(buf, "AMBIENT%d", _g->GetAmbientId()); // 0xda200 (canonical)
+                        wsprintfA(buf, "AMBIENT%d", _g->GetAmbientId());
                         m_sound->PlayByName(buf, 1);
                         return 1;
                     }

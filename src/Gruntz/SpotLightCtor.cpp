@@ -248,7 +248,7 @@ i32 CSpotLight::Tick() {
                 i32 seed;
                 if ((g_randSeeded & 1) == 0) {
                     g_randSeeded |= 1;
-                    seed = static_cast<i32>(g_pTimeGetTime());
+                    seed = static_cast<i32>(timeGetTime());
                 } else {
                     seed = g_randSeed;
                 }

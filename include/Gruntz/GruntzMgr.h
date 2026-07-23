@@ -490,7 +490,6 @@ extern "C" i32 g_cdPromptResult;
 extern i32 g_debugDisplayFlags; // bits: 1 obj count, 4 world pos, 0x10 frame rate,
 extern "C" u32 g_explosionz;    // "Explosionz"
 extern i32 g_isHost_648cf0;
-extern i32(__cdecl* g_pwsprintfA)(char*, const char*, ...);
 extern CString g_brickText1;
 extern CString g_brickText2;
 
