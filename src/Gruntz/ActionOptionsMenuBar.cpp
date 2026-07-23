@@ -91,9 +91,9 @@ i32 CActionOptionsMenuBar::LoadAssets() {
 // adjusted-y + four arg loads) are the same instruction multiset as retail but
 // our cl sinks the precomputed `m_screenY=eax` store one slot early. Logic exact.
 RVA(0x00009220, 0x8f)
-void CActionOptionsMenuBar::Init(i32 gx, i32 a, i32 x, i32 y, i32 b, i32 gy) {
+i32 CActionOptionsMenuBar::Init(i32 gx, i32 a, i32 x, i32 y, i32 b, i32 gy) {
     if (m_active) {
-        return;
+        return 0;
     }
     if (x - 0x25 < 0) {
         x = 0x25;
@@ -116,9 +116,11 @@ void CActionOptionsMenuBar::Init(i32 gx, i32 a, i32 x, i32 y, i32 b, i32 gy) {
     m_button1State = a;
     m_gridY = gy;
     m_button0State = gx;
-    if (Refresh()) {
-        m_active = 1;
+    if (Refresh() == 0) {
+        return 0;
     }
+    m_active = 1;
+    return 1;
 }
 
 RVA(0x000092e0, 0x8)

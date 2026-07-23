@@ -388,8 +388,8 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
     } else if (op == 8) {
         (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
         if (m_position == 0) {
-            SubResetA();
-            SubResetB();
+            RefreshA();
+            winapi_0fe520_SetRect();
         }
     }
 

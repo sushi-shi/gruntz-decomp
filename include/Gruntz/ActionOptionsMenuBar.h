@@ -8,7 +8,7 @@ class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>); 
 class CActionOptionsMenuBar {
 public:
     CActionOptionsMenuBar();
-    void Init(i32 a, i32 b, i32 x, i32 y, i32 gx, i32 gy);
+    i32 Init(i32 a, i32 b, i32 x, i32 y, i32 gx, i32 gy);
     void Clear();
     i32 Activate(i32 a);
     i32 Refresh();

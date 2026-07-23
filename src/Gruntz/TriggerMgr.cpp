@@ -666,7 +666,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
             m_pendingFxKind = 0;
             (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(0, 0);
             CGameObject* o = hit->m_object;
-            this->PlaceA(o->m_screenX, o->m_screenY, a18, a14);
+            this->DestroyGroup(o->m_screenX, o->m_screenY, a18, a14);
             return 1;
         } else {
             sel = 2;
@@ -763,21 +763,21 @@ reportError:
     return 0;
 }
 
-// 0x798d0: DestroyGroup(col, row, force) - lazily create the overlay sub-object (+0x25c) via
-// new+ctor (the /GX frame guards the partially-constructed object); if it fails to take, tear
-// it back down and ReportError(0x800a). When it already exists, route by the magic group to
-// the place helper. ret 1 on placement. (__stdcall: ret 0x10.) Reconstructed to plateau.
+// 0x798d0: DestroyGroup - lazily create the overlay sub-object (+0x25c) via new+ctor
+// (the /GX frame guards the partially-constructed object); if its assets fail to load,
+// tear it back down and ReportError(0x800a). When it already exists, initialize it from
+// the selected cell and place the overlay. ret 1 on placement.
 // @early-stop
 // /GX new+ctor wall: the placement-new lifetime + the teardown-on-failure path carry the EH
 // frame whose state numbering + partial-object cleanup diverge from retail; the alloc/ctor/
 // teardown shape is faithful. topic:wall topic:eh.
 RVA(0x000798d0, 0x1b6)
-i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
-    static_cast<void>(force);
+i32 CTriggerMgr::DestroyGroup(i32 a1, i32 a2, i32 a3, i32 a4) {
+    static_cast<void>(a1);
     CActionOptionsMenuBar* ov = m_overlay;
     if (ov == 0) {
         m_overlay = new CActionOptionsMenuBar;
-        if (this->Probe() == 0) {
+        if (m_overlay->LoadAssets() == 0) {
             CActionOptionsMenuBar* o2 = m_overlay;
             if (o2 != 0) {
                 o2->Clear();
@@ -796,19 +796,22 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
     if (cellp == 0 || *reinterpret_cast<i32*>((cellp + 0x1ec)) != g_curPlayer) {
         return 0;
     }
-    if (this->PlaceCell(
-            *reinterpret_cast<i32*>((cellp + 0x1f0)),
+    if (ov->Init(
+            0,
+            0,
+            a2,
+            a4,
             *reinterpret_cast<i32*>((cellp + 0x1ec)),
-            0
+            *reinterpret_cast<i32*>((cellp + 0x1f0))
         )
         == 0) {
         return 0;
     }
     CGameLevel* view = m_world->m_level;
     CDDrawWorkerHost* pl = view->m_mainPlane;
-    i32 ox = pl->m_originX - view->m_planeCtx.top + row;
-    i32 oy = pl->m_originY - view->m_planeCtx.left + col;
-    this->PlaceCell(oy, ox, 1);
+    i32 ox = pl->m_originX - view->m_planeCtx.top + a4;
+    i32 oy = pl->m_originY - view->m_planeCtx.left + a3;
+    this->PlaceObjectFull(oy, ox);
     return 1;
 }
 
@@ -1337,7 +1340,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     i32 hasOv = (m_overlay != 0) ? 1 : 0;
     ar->Write(&hasOv, 4);
     if (m_overlay != 0) {
-        if (this->SerializeOverlay(ar, 0, 0) == 0) { // overlay serialize self-call 0x7df8
+        if (m_overlay->Serialize(ar) == 0) {
             return 0;
         }
     } else {
@@ -1574,7 +1577,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
         cell = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
-    i32 kind = this->Classify(x, y);
+    i32 kind = ov->HitHover(x, y);
     if (kind == 2) {
         i32 alt = cell->m_entranceReason;
         if (alt > 0x16) {

@@ -274,7 +274,7 @@ public:
 
     // 0x798d0: DestroyGroup - /GX destruct of a cell group (member CString temporaries on
     // teardown). Reconstructed to plateau (eh sibling TU).
-    i32 DestroyGroup(i32 col, i32 row, i32 force);
+    i32 DestroyGroup(i32 a1, i32 a2, i32 a3, i32 a4);
 
     // 0x79b80: ReinitGroup - /GX re-init driver with a CString config-name temporary (eh
     // sibling TU). Reconstructed to plateau.
@@ -292,10 +292,6 @@ public:
     // 0x7a760: ScanGroup - the magic-group scanner/applier; for each live cell of the
     // group, dispatch its logic and tally. Reconstructed to plateau. (__thiscall.)
     i32 ScanGroup(CFileMemBase* ar);
-
-    // 0x7df8: the overlay-serialize self-call ScanGroup tails into (writes the overlay into
-    // the archive). Still-UNRECONSTRUCTED; declared so the reloc-masked self-call is clean.
-    i32 SerializeOverlay(CFileMemBase* ar, i32 b, i32 c);
 
     // 0x7b1b0: TriggerCell(x, y) - look up the (x,y) cell, switch on its logic kind and
     // spawn the matching fx sprite (+0x2a8), then refresh + record. (ret 0x8.)
@@ -435,19 +431,14 @@ public:
     ~CTriggerMgr();
 
     // --- self-called helpers the reconstructed leaves dispatch on `this` -----------------
-    // Still-UNRECONSTRUCTED CTriggerMgr methods (no body / RVA here); declared so the leaves'
-    // reloc-masked self-calls mangle onto this class with no `((CTmSelf*)this)` cast. Reset3/
-    // RefreshB cover several retail RVAs of the same shape (all masked).
+    // Still-UNRECONSTRUCTED CTriggerMgr methods (no body / RVA here). Reset3/RefreshB
+    // cover several retail RVAs of the same shape (all masked).
     i32 Reset3(i32 a, i32 b, i32 c);
-    i32 Probe();                        // DestroyGroup overlay-took self-probe (reloc-masked)
-    i32 PlaceCell(i32 a, i32 b, i32 c); // DestroyGroup placement self-call (reloc-masked)
     // (ReportObjectAt is GONE - its thunk 0x3030 jumps to 0x6e120, which IS
     // ApplyTriggerB; CGrunt::StepPeerTracking calls the real name.)
     CGrunt* Hit(i32 arg, i32 a, i32 b, i32* outRow, i32* outCol);
-    i32 Classify(i32 x, i32 y);
     void ReportN(i32 a, i32 b, u8* bytes, i32 c, i32 d, i32 e, i32 f);
     CGrunt* Hit5(i32 a, i32 b, i32 c, i32 d, i32 e);
-    i32 PlaceA(i32 a, i32 b, i32 c, i32 d);
     i32 PlaceB(i32 a, i32 b, i32 c);
     void Fx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
 

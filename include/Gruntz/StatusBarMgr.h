@@ -208,8 +208,6 @@ public:
     // Sync's reloc-masked engine helpers (ILT thunk VAs; bodies unreconstructed):
     i32 PreWriteValidate(CFileMemBase* s); // ILT 0x4016b8
     i32 PreReadValidate(CFileMemBase* s);  // ILT 0x402b53
-    void SubResetA();                      // ILT 0x402b8a
-    void SubResetB();                      // ILT 0x402d5b
     void PostBlockFixup();                 // ILT 0x403a08
     void Finalize();                       // ILT 0x40125d
     // 0x10bbe0: the rez-machine active-value getter (body in SBI_RectOnly.cpp -

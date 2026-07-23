@@ -27,7 +27,6 @@
 ?BitStreamBlowfishDecode@@YGXPAX0@Z
 ?BlitIntoDesc@CDDSurface@@UAEHPAX@Z
 ?ChipFinish@CStatusBarMgr@@QAEXHHH@Z
-?Classify@CTriggerMgr@@QAEHHH@Z
 ?ClickAt_ff9d0@CStatusBarMgr@@QAEHHHH@Z
 ?Command@CBattlezData@@QAEHHHHH@Z
 ?Commit42e1@CBattlezMapConfig@@QAEXPAVCGrunt@@@Z
@@ -107,8 +106,6 @@
 ?PinCellIndex@zDArray@@QAEHXZ
 ?Place@CStatusBarMgr@@QAEHHHH@Z
 ?Place@CUserLogic@@QAEHHHHHHHHHHHHH@Z
-?PlaceA@CTriggerMgr@@QAEHHHHH@Z
-?PlaceCell@CTriggerMgr@@QAEHHHH@Z
 ?Plan293c@CBattlezMapConfig@@QAEXPAVCGrunt@@HHHHH@Z
 ?PlaneLoadVia@@YGHPAX@Z
 ?PlaneSaveVia@@YGHPAX@Z
@@ -121,7 +118,6 @@
 ?PrepCmd7@CGruntzMgr@@QAEHH@Z
 ?Probe1a4b@CBattlezMapConfig@@QAEHPAVCGrunt@@HH@Z
 ?Probe@CTriggerMgr@@QAEHHHHHHHHHHHHHH@Z
-?Probe@CTriggerMgr@@QAEHXZ
 ?Probe@zDArray@@QAEHHH@Z
 ?ProbeCell@CTriggerMgr@@QAEHHHPAXH0HHHH@Z
 ?RaiseBattleAlert@CWarlord@@QAEXXZ
@@ -142,7 +138,6 @@
 ?SbiList_Dtor@@YAXXZ
 ?ScratchResolve@zDArray@@QAEPAVCAnimNameRecord@@PAX@Z
 ?SelfImpact2b58@CBattlezMapConfig@@QAEXPAVCGrunt@@HHH@Z
-?SerializeOverlay@CTriggerMgr@@QAEHPAVCFileMemBase@@HH@Z
 ?SetDecayTarget@CGruntBehaviorLeaf@@QAEXH@Z
 ?SetFont@FontRenderer@@QAEXPAVFont@@@Z
 ?SetupSprite@CInGameIcon@@QAEXPBD@Z
@@ -152,8 +147,6 @@
 ?Step20b3@CGruntzCmdMgr@@QAEXH@Z
 ?StepCoordTick@CGrunt@@QAEXXZ
 ?StepDropApply@CGrunt@@QAEXXZ
-?SubResetA@CStatusBarMgr@@QAEXXZ
-?SubResetB@CStatusBarMgr@@QAEXXZ
 ?SymBindRecord@@YAXPAXPADH@Z
 ?SymBuildLeaf@@YAXPAVCSymParser@@PAX1@Z
 ?Sync@CWarpStoneFly@@QAEHPAVCFileMemBase@@HHH@Z
