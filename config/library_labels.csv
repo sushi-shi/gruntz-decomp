@@ -529,7 +529,6 @@ rva,name,lib,confidence,source
 0x097830,___inittime,LIBCMT,LOW,anchored
 0x097d90,___inittime,LIBCMT,LOW,anchored
 0x099410,___inittime,LIBCMT,LOW,anchored
-0x099be0,___inittime,LIBCMT,LOW,anchored
 0x09a4a0,__inc,LIBCMT,LOW,anchored
 0x09b4a0,__inc,LIBCMT,LOW,anchored
 0x09b4f0,__inc,LIBCMT,LOW,anchored

@@ -15,15 +15,19 @@
 DATA(0x002459b0)
 CAreaMgr g_areaMgr;
 
-RVA(0x00099b80, 0xa)
-void TokenMgrReset() {
-    g_areaMgr.CAreaMgr::CAreaMgr();
-}
+// MSVC's compiler-private static-object family for g_areaMgr: ctor helper,
+// atexit registrar, and dtor helper. The decimal suffixes are temporary
+// globally-unique RVA-derived placeholders; see
+// docs/patterns/msvc-static-object-e-helper-family.md.
+RVA_COMPGEN(0x00099b80, 0xa, _$E629632)
 
 RVA(0x00099ba0, 0x29)
 CAreaMgr::CAreaMgr() {
     m_currentAreaIndex = 0;
 }
+
+RVA_COMPGEN(0x00099be0, 0xe, _$E629728)
+RVA_COMPGEN(0x00099c00, 0xa, _$E629760)
 
 // ---------------------------------------------------------------------------
 inline CSpawnList::~CSpawnList() {
