@@ -88,7 +88,7 @@ ddrawshadeblit	10	2
 ddrawsubmgr	119	98
 ddrawsubmgrleaf	13	11
 ddrawsurfacemgr	13	7
-ddrawsurfacepair	44	25
+ddrawsurfacepair	45	25
 ddrawworkerhost	4	3
 ddrawworkerregistry	27	20
 ddsurface	56	37
@@ -343,7 +343,7 @@ tileswitchlogic	44	29
 tiletriggercontainer	28	11
 timesplit	2	2
 timestring	1	1
-titleappstart	1	1
+titleappstart	2	2
 toobspikez	9	7
 toypeek	4	3
 trees	21	21
@@ -375,7 +375,7 @@ worldlevelpath	2	2
 worldsoundset	31	22
 wormhole	28	18
 wormholeacts	3	2
-wwdfactoryobject	47	25
+wwdfactoryobject	48	25
 wwdfile	3	1
 wwdgameobject	45	20
 wwdgameobjectrender	15	9
@@ -1142,6 +1142,7 @@ ddrawsurfacepair	?RemoveByValue@CDDrawWorkerMapSmall@@QAEHPAVCObject@@@Z	100.000
 ddrawsurfacepair	?RenderFrame@CDDrawWorkerA@@UAEXPAVCDDrawSurfacePair@@0@Z	88.9636	88.9636	2	e397377a483c	0x165fa0
 ddrawsurfacepair	?RenderFrame@CDDrawWorkerB@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	100.0000	3	1c4884e3b98b	0x1660b0
 ddrawsurfacepair	?ResetSlots@CDDrawWorkerMapSmall@@QAEXXZ	100.0000	100.0000	4	5b663f3ee6c5	0x165b90
+ddrawsurfacepair	?ResolveImage_163ee0@CDDrawSurfacePair@@UAEHPAUCParseSource@@@Z	93.3333	93.3333	1	5203ecdbaaa4	0x163ee0
 ddrawsurfacepair	?RestoreIfLost@CDDrawSurfacePair@@QAEHXZ	98.6667	98.6667	4	811c2fdbf50a	0x163f00
 ddrawsurfacepair	?SetGeom@CDDrawSurfaceChildA@@UAEHHHH@Z	100.0000	100.0000	3	24eb9d329e42	0x1646b0
 ddrawsurfacepair	?SetGeom@CDDrawSurfacePair@@UAEHHHH@Z	78.5294	78.5294	8	351fb1a4018d	0x164250
@@ -3002,7 +3003,7 @@ multi	?SendStatTo@CMulti@@QAEHPAVCNetSessionNode@@HH@Z	100.0000	100.0000	1	bdba7
 multi	?SendStatValue@CMulti@@QAEHHHHH@Z	100.0000	100.0000	2	01ae96335a3a	0xb9570
 multi	?SetupServices@CMulti@@QAEPAUInterfaceObject@@XZ	98.2243	98.2243	2	55173a2e0bbc	0xb78b0
 multi	?SetupTcpIpConfig@CMulti@@QAEHXZ	71.9573	71.9573	5	ac3136e82ed1	0xbc460
-multi	?ShowMultiStartDlg@CMulti@@QAEHXZ	100.0000	100.0000	5	45c063ab2d30	0xb86c0
+multi	?ShowMultiStartDlg@CMulti@@QAEHXZ	100.0000	100.0000	6	da5ef304bd97	0xb86c0
 multi	?StartTitle@CMulti@@QAEHXZ	40.8440	40.8440	17	9797b06d8c9f	0xb72c0
 multi	?TickStateMgrs@CMulti@@UAEXXZ	100.0000	100.0000	1	711e932a66db	0xbd3c0
 multi	?VerifyCustomLevel@CMulti@@QAEHPAXH@Z	6.2021	6.2021	6	503c264d2aa9	0xb8fc0
@@ -3828,7 +3829,7 @@ statusbaritem	??0CStatusBarItem@@QAE@XZ	100.0000	100.0000	5	a3999d9cd566	0x1005d
 statusbaritem	??_GCStatusBarItem@@UAEPAXI@Z	100.0000	100.0000	1	cpp:08500b778fe1	0x100620
 statusbaritem	?Refresh@CStatusBarItem@@UAEHH@Z	100.0000	100.0000	1	7dcb0acb0e2f	0x100600
 statusbaritem	?SetSubtype@CStatusBarItem@@UAEXXZ	100.0000	100.0000	1	2e5b279bc7b9	0x1005b0
-statusbaritem	?Setup@CStatusBarItem@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@HHUSbiRect@@HH@Z	90.0000	90.0000	1	f866e272fc45	0x100660
+statusbaritem	?Setup@CStatusBarItem@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@HHUSbiRect@@HH@Z	90.0000	90.0000	2	5d6a4b66c013	0x100660
 statusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	76.5207	76.5207	16	2446ffbea2be	0x102250
 statusbarspriteacts	??0CStatusBarSprite@@QAE@PAUCGameObject@@@Z	93.8333	93.8333	8	eb96ad4ac921	0x10c230
 statusbarspriteacts	??1CStatusBarSprite@@UAE@XZ	100.0000	100.0000	1	588655b8bd53	0x11b80
@@ -4067,6 +4068,7 @@ tiletriggercontainer	?TransferFlag74@CTileTriggerContainer@@QAEHPAVCFileMemBase@
 timesplit	?BlockScreenSaver@@YAHPAXIIJ@Z	100.0000	100.0000	1	88e11613aa98	0x1192d0
 timesplit	?SplitMillisToHMS@@YAXIPAI00@Z	100.0000	100.0000	2	826102945287	0x119210
 timestring	?FormatElapsedTime@@YA?AVCString@@I@Z	100.0000	100.0000	22	560fb0b807fb	0x1190f0
+titleappstart	?FrameSlot28@CSplashState@@UAEHH@Z	100.0000	100.0000	1	3d0ffd04610e	0xf98f0
 titleappstart	?Vslot09@CSplashState@@UAEHH@Z	100.0000	100.0000	1	60dc30a050a2	0xf9880
 toobspikez	??0CToobSpikez@@QAE@PAUCGameObject@@@Z	93.7453	93.7453	4	34097f92f28e	0x1145c0
 toobspikez	??1CToobSpikez@@UAE@XZ	100.0000	100.0000	2	3ac34800696b	0x12c60
@@ -4394,6 +4396,7 @@ wwdfactoryobject	?IsLoaded@CWwdGameObjectF@@UAEHXZ	80.0000	80.0000	1	13f34bbfbd8
 wwdfactoryobject	?Notify@CGameObject@@QAEXPAX@Z	84.4762	84.4762	2	db691109e969	0x15b650
 wwdfactoryobject	?Recompute@CAniAdvanceCursor@@QAEXH@Z	100.0000	100.0000	3	71756d862f79	0x15c320
 wwdfactoryobject	?RectsOverlap@@YGHPAUCDDrawRect@@0@Z	100.0000	100.0000	2	10e4ebc49f95	0x15bfb0
+wwdfactoryobject	?Render@CWwdGameObjectA@@UAEXPAVCDDrawSurfacePair@@@Z	99.9167	99.9167	1	dc9b992fdfa5	0x15ba20
 wwdfactoryobject	?Render@CWwdGameObjectF@@UAEXPAVCDDrawSurfacePair@@@Z	100.0000	100.0000	1	451c3788459b	0x15ba70
 wwdfactoryobject	?Serialize@CAniAdvanceCursor@@QAEHPAVCFileMemBase@@@Z	99.4175	99.4175	5	a90f57e8f137	0x15c970
 wwdfactoryobject	?Setup@CAniAdvanceCursor@@QAEXPAVCAniElement@@@Z	100.0000	100.0000	3	6586633b4f67	0x15c2d0
@@ -4420,13 +4423,13 @@ wwdgameobject	?ApplyLookupGeometry@CWwdGameObjectA@@QAEHPBDH@Z	93.9394	93.9394	2
 wwdgameobject	?ApplyLookupSprite@CWwdGameObjectA@@QAEXPBDH@Z	84.2571	84.2571	2	9571d2b77bf9	0x1504d0
 wwdgameobject	?ApplyName@CWwdGameObjectA@@QAEXPBD@Z	89.2647	89.2647	2	777b648268b6	0x150540
 wwdgameobject	?BltDirty@CWwdGameObjectA@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	100.0000	4	e876c144750a	0x150660
-wwdgameobject	?BltDirtyEx@CWwdGameObjectA@@UAEXPAVCDDrawSurfacePair@@0H@Z	73.7702	73.7702	4	1af2d6aa9988	0x1506b0
-wwdgameobject	?BltDirtyRegions@CWwdGameObjectA@@UAEXPAVCDDrawSurfacePair@@0H@Z	90.7525	90.7525	5	407e4836a857	0x1508a0
+wwdgameobject	?BltDirtyEx@CWwdGameObjectA@@UAEXPAVCDDrawSurfacePair@@0H@Z	73.7702	73.7702	5	9393e0b66614	0x1506b0
+wwdgameobject	?BltDirtyRegions@CWwdGameObjectA@@UAEXPAVCDDrawSurfacePair@@0H@Z	90.7525	90.7525	6	88eb659f4aff	0x1508a0
 wwdgameobject	?BuildFramesFromSymTab@CDDrawWorker@@UAEHPAVCSymTab@@@Z	100.0000	100.0000	2	950af11a61c7	0x1521f0
 wwdgameobject	?Clear@AnimWorkerObj@@UAEXXZ	100.0000	100.0000	6	0507991aac19	0x151e70
-wwdgameobject	?CreateFrame24@CDDrawWorker@@UAEPAVCImage@@HHHH@Z	99.4267	99.4267	2	377d4ccc442a	0x152110
-wwdgameobject	?CreateFrame28@CDDrawWorker@@UAEPAVCImage@@HHHH@Z	99.4342	99.4342	2	f186c96b2e5a	0x152060
-wwdgameobject	?CreateFrame30@CDDrawWorker@@UAEPAVCImage@@HHH@Z	99.4110	99.4110	2	42d2ea3a9f45	0x151fb0
+wwdgameobject	?CreateFrame24@CDDrawWorker@@UAEPAVCImage@@HHHH@Z	99.4267	99.4267	3	352ab69f2c8e	0x152110
+wwdgameobject	?CreateFrame28@CDDrawWorker@@UAEPAVCImage@@HHHH@Z	99.4342	99.4342	3	6f6be4136bb7	0x152060
+wwdgameobject	?CreateFrame30@CDDrawWorker@@UAEPAVCImage@@HHH@Z	99.4110	99.4110	3	43d4fa06f390	0x151fb0
 wwdgameobject	?EnsureWorker80@CGameObject@@QAEHPAU1@@Z	90.8246	90.8246	7	be9a00e42f57	0x150eb0
 wwdgameobject	?EnsureWorker88@CGameObject@@QAEHPAU1@@Z	90.8246	90.8246	7	aaff28464149	0x150f90
 wwdgameobject	?EnsureWorker90@CGameObject@@QAEHPAU1@@Z	90.8246	90.8246	7	dbf5017273ab	0x151070
@@ -4435,23 +4438,23 @@ wwdgameobject	?GetClassId@AnimWorkerObj@@UAEHXZ	100.0000	100.0000	1	e9fbe5dba591
 wwdgameobject	?GetFirstFrameState@CDDrawWorker@@QAEHXZ	100.0000	100.0000	2	013590cb2b58	0x152570
 wwdgameobject	?GetMemoryUsage@CDDrawWorker@@QAEHH@Z	99.9623	99.9623	1	e6a7a763d6a6	0x1523f0
 wwdgameobject	?Init@AnimWorkerObj@@UAEHP6AHPAUCGameObject@@@ZH@Z	100.0000	100.0000	2	4dc492369029	0x151e20
-wwdgameobject	?InsertFrame@CDDrawWorker@@UAEPAVCImage@@PAXHH@Z	99.4110	99.4110	1	c6f9089647b1	0x151f00
+wwdgameobject	?InsertFrame@CDDrawWorker@@UAEPAVCImage@@PAXHH@Z	99.4110	99.4110	2	313766e6782e	0x151f00
 wwdgameobject	?IsLoaded@AnimWorkerObj@@UAEHXZ	100.0000	100.0000	1	79c5345d8aee	0x151d60
 wwdgameobject	?LookupAnimSprite@CWwdGameObjectA@@QAEHPBD@Z	73.0435	73.0435	2	4100b232bfd9	0x150610
 wwdgameobject	?NotifyHooked@CGameObject@@QAEHPAX@Z	100.0000	100.0000	1	6d834de8edfa	0x151d20
-wwdgameobject	?Play@CGameObject@@UAEHHHHPAX@Z	0.0000	0.0000	2	16534e94d082	0x151150
-wwdgameobject	?Play@CWwdGameObjectA@@UAEHHHHPAX@Z	100.0000	100.0000	3	ec32777305d5	0x150a70
-wwdgameobject	?ReadState@CWwdGameObjectA@@QAEHH@Z	99.3868	99.3868	3	618503733103	0x150b00
+wwdgameobject	?Play@CGameObject@@UAEHHHHPAX@Z	0.0000	0.0000	3	d9a28776a6d5	0x151150
+wwdgameobject	?Play@CWwdGameObjectA@@UAEHHHHPAX@Z	100.0000	100.0000	4	0e63e5f7155c	0x150a70
+wwdgameobject	?ReadState@CWwdGameObjectA@@QAEHH@Z	99.3868	99.3868	4	d470dc65ca41	0x150b00
 wwdgameobject	?ReloadFrame@CDDrawWorker@@UAEHHHH@Z	100.0000	100.0000	1	5d2407cfe287	0x1523b0
-wwdgameobject	?ResolveLinkedObject@CGameObject@@QAEHH@Z	74.7059	74.7059	1	85a4dcc99b5d	0x151b90
+wwdgameobject	?ResolveLinkedObject@CGameObject@@QAEHH@Z	74.7059	74.7059	2	e51871495cf1	0x151b90
 wwdgameobject	?Serialize@CGameObject@@QAEHH@Z	99.5745	99.5745	3	769c3e8603d7	0x151320
 wwdgameobject	?SerializeObjectState@CGameObject@@QAEHH@Z	100.0000	100.0000	3	3ab2167aac2c	0x151780
 wwdgameobject	?SerializeSpriteName@CWwdGameObjectA@@QAEHH@Z	100.0000	100.0000	2	64cb4b4697f2	0x150c30
 wwdgameobject	?SetAllField18@CDDrawWorker@@QAEHH@Z	100.0000	100.0000	1	b5fd2ad2fac0	0x1524d0
 wwdgameobject	?SetAllFormats@CDDrawWorker@@QAEHH@Z	100.0000	100.0000	2	2eb5b450f3a6	0x152520
 wwdgameobject	?SetAllTypes@CDDrawWorker@@QAEHH@Z	100.0000	100.0000	1	a16a4ba33841	0x152480
-wwdgameobject	?Setup@CGameObject@@UAEHHHHH@Z	97.1059	97.1059	1	e5fab7bab515	0x150d60
-wwdgameobject	?Test@CWwdGameObjectA@@QAEHXZ	73.2528	73.2528	2	1a60d4aec07a	0x1509c0
+wwdgameobject	?Setup@CGameObject@@UAEHHHHH@Z	97.1059	97.1059	2	83b786e6bb46	0x150d60
+wwdgameobject	?Test@CWwdGameObjectA@@QAEHXZ	73.2528	73.2528	3	0d1f10225a79	0x1509c0
 wwdgameobject	?Unload@CDDrawWorker@@UAEXXZ	100.0000	100.0000	1	57a062b97434	0x151eb0
 wwdgameobject	?ValidateFramesFromSymTab@CDDrawWorker@@UAEHPAVCSymTab@@@Z	87.8061	87.8061	5	29d76a2497b2	0x1522b0
 wwdgameobject	?WriteSnapshot@CGameObject@@QAEHHH@Z	98.0882	98.0882	4	411ba47f7d76	0x151c00

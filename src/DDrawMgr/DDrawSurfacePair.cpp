@@ -8,14 +8,14 @@
 #include <ddraw.h>              // real IDirectDrawSurface dispatch (IsLost/Restore/Unlock/GetCaps)
 #include <string.h>             // memset for the edge-row fills (inline rep-stos CRT)
 #include <stdio.h>              // sprintf (DrawCount's itoa)
-#include <DDrawMgr/DirectDrawMgr.h>       // canonical CDDrawPtrCollections (CreatePoolItem/CreateDevice)
+#include <DDrawMgr/DirectDrawMgr.h> // canonical CDDrawPtrCollections (CreatePoolItem/CreateDevice)
 #include <DDrawMgr/DDrawWorkerMapSmall.h> // CDDrawWorkerMapSmall (hoisted; meat here)
 #include <DDrawMgr/DDrawWorkerList.h>     // CDDrawWorkerList (hoisted; teardown here)
 #include <DDrawMgr/DDrawWorkerNode.h>     // CDDrawWorkerBase/A/B (Plot/helpers here)
 #include <DDrawMgr/DDrawWorkerCtx.h>      // shared CDDrawWorkerCtx (the +0x0c owner context)
 #include <DDrawMgr/DDrawWorkerCache.h>    // CDDrawWorkerCache (CreateWorker here)
-#include <DDrawMgr/DDrawWorker.h>   // CDDrawWorker (the cache/registry map values, DestroyAll's delete)
-#include <DDrawMgr/AnimWorkerObj.h> // AnimWorkerObj (the 0x17c worker CreateWorker news)
+#include <DDrawMgr/DDrawWorker.h> // CDDrawWorker (the cache/registry map values, DestroyAll's delete)
+#include <DDrawMgr/AnimWorkerObj.h>    // AnimWorkerObj (the 0x17c worker CreateWorker news)
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSurfaceChildA (SetGeom_1646b0 here)
 #include <Io/FileMem.h>                // CFileMem/CFileMemBase (the runtime core here)
 #include <Gruntz/AniElement.h>         // CAniElement + CAniRecordView (the ANI section here)
@@ -27,7 +27,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (2 teardown fns here)
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // canonical CDDrawSurfaceMgr (OwnerMgr() / m_0c parent)
 #include <DDrawMgr/DDrawPtrCollections.h> // canonical CDDrawPtrCollections (the +0x1c surface pool)
-#include <DDrawMgr/AniRecord.h> // ex Globals.h
+#include <DDrawMgr/AniRecord.h>           // ex Globals.h
 
 // The locked-surface pixel geometry is read straight off the held CDDSurface:
 // its byte-pitch (m_pitch @+0x20), its bytes-per-pixel divisor (m_b0 @+0xb0), and
@@ -140,9 +140,10 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
     rect[3] = h;
     if (m_id == 1) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
-        m_surface =
-            static_cast<CDDSurface*>(mgr->m_ptrColl
-                ->CreatePoolItem(static_cast<void*>(mgr->m_drawTarget->m_frontPair->m_surface), reinterpret_cast<void*>(4)));
+        m_surface = static_cast<CDDSurface*>(mgr->m_ptrColl->CreatePoolItem(
+            static_cast<void*>(mgr->m_drawTarget->m_frontPair->m_surface),
+            reinterpret_cast<void*>(4)
+        ));
         if (m_surface == 0) {
             if (OwnerMgr()->m_lastError == 0) {
                 OwnerMgr()->m_lastError = 0xfa3;
@@ -237,7 +238,13 @@ i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
     if (buf == 0) {
         return 0;
     }
-    i32 r = m_surface->Resolve(static_cast<void*>(OwnerMgr()->m_ptrColl), reinterpret_cast<void*>(buf), type, src->m_length, 0);
+    i32 r = m_surface->Resolve(
+        static_cast<void*>(OwnerMgr()->m_ptrColl),
+        reinterpret_cast<void*>(buf),
+        type,
+        src->m_length,
+        0
+    );
     src->EndParse();
     return r;
 }
@@ -252,6 +259,11 @@ i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
 // boolean) EXCEPT the register the m_surface->m_8 re-read lands in (retail eax / ours
 // edx) + the carried scratch reg in the setcc tail (ecx vs edx). Same values, same
 // stores; not source-steerable. docs/patterns/zero-register-pinning.md.
+RVA(0x00163ee0, 0x18)
+i32 CDDrawSurfacePair::ResolveImage_163ee0(CParseSource* src) {
+    return m_surface->MakeImageKey(OwnerMgr()->m_ptrColl, reinterpret_cast<char*>(src), 0);
+}
+
 RVA(0x00163f00, 0x40)
 i32 CDDrawSurfacePair::RestoreIfLost() {
     if (m_surface == 0) {
@@ -444,9 +456,10 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, i32 bpp) {
         m_surface = 0;
         if (m_id == 1) {
             CDDrawSurfaceMgr* mgr = OwnerMgr();
-            m_surface =
-                static_cast<CDDSurface*>(mgr->m_ptrColl
-                    ->CreatePoolItem(static_cast<void*>(mgr->m_drawTarget->m_frontPair->m_surface), reinterpret_cast<void*>(4)));
+            m_surface = static_cast<CDDSurface*>(mgr->m_ptrColl->CreatePoolItem(
+                static_cast<void*>(mgr->m_drawTarget->m_frontPair->m_surface),
+                reinterpret_cast<void*>(4)
+            ));
             if (m_surface == 0) {
                 return 0;
             }
@@ -552,9 +565,23 @@ i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, i32 bpp) {
     }
     i32 hr;
     if (mgr->m_flags & 0x10) {
-        hr = pool->CreateDevice(static_cast<void*>(mgr->m_hWnd), reinterpret_cast<void*>(2), w, h, bpp, mode);
+        hr = pool->CreateDevice(
+            static_cast<void*>(mgr->m_hWnd),
+            reinterpret_cast<void*>(2),
+            w,
+            h,
+            bpp,
+            mode
+        );
     } else {
-        hr = pool->CreateDevice(static_cast<void*>(mgr->m_hWnd), static_cast<void*>(0), w, h, bpp, mode);
+        hr = pool->CreateDevice(
+            static_cast<void*>(mgr->m_hWnd),
+            static_cast<void*>(0),
+            w,
+            h,
+            bpp,
+            mode
+        );
     }
     if (hr == 0) {
         i32 err = pool->m_lastError;
@@ -800,7 +827,9 @@ CString CDDrawWorkerCache::FindKeyOfValue(CObject* target) {
         // ::CObArray's VPTR, so for two CObArray-holding objects this compare is a
         // constant-vs-itself and the scan returns the first key. That is pre-existing
         // and out of this fold's scope - the fold only preserves the same memory read.
-        if (val != 0 && *reinterpret_cast<i32*>(&(static_cast<CDDrawWorker*>(val))->m_items) == *reinterpret_cast<i32*>(&(static_cast<CDDrawWorker*>(target))->m_items)) {
+        if (val != 0
+            && *reinterpret_cast<i32*>(&(static_cast<CDDrawWorker*>(val))->m_items)
+                   == *reinterpret_cast<i32*>(&(static_cast<CDDrawWorker*>(target))->m_items)) {
             return key;
         }
     }
@@ -1025,7 +1054,9 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CParseSource* a1, i32 a2, i32 a3) {
     if (data == 0) {
         return 0;
     }
-    const char* keyHandle = reinterpret_cast<const char*>(a1->m_length); // +0x0c doubles as the key handle for this entry kind
+    const char* keyHandle = reinterpret_cast<const char*>(
+        a1->m_length
+    ); // +0x0c doubles as the key handle for this entry kind
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
     if (w->AllocBufMakeB3(data, reinterpret_cast<i32>(a1), a3) == 0) {
         if (w != 0) {

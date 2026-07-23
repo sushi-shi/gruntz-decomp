@@ -185,7 +185,7 @@ enum {
     STAT_VERIFY_DISAGREE = 0x41e, // host: the players disagree on the level
 };
 
-void NetCueReset_3bbb(i32 a, i32 b); // 0x3bbb
+void ChannelSlots_Set(i32 slot, i32 v); // 0xdb2b0 (play TU; ex NetCueReset_3bbb)
 
 // The MULTI_JOIN dialog handler whose address is pushed into RunErrorDialog. The
 // `push &MultiJoinHandler` reloc targets the ILT jmp-thunk (0x222f), not the body
@@ -1567,7 +1567,7 @@ i32 CMulti::ShowMultiStartDlg() {
                 return 0;
             }
             rec->m_liveGate = 0;
-            NetCueReset_3bbb(rec->m_008, 1);
+            ChannelSlots_Set(rec->m_008, 1);
             BroadcastChannelTable(0); // 0xba810 (ILT 0x1d70)
         }
         if (m_isHost == 0 && m_538 == 0) {

@@ -266,6 +266,13 @@ i32 CWwdGameObjectA::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     return CGameObject::Setup(a1, a2, a3, a4);
 }
 
+RVA(0x0015ba20, 0x1b)
+void CWwdGameObjectA::Render(CDDrawSurfacePair* pair) {
+    if (m_layer) {
+        m_layer->RenderImage(this, pair);
+    }
+}
+
 RVA(0x0015ba40, 0x1a)
 i32 CWwdGameObjectF::IsLoaded() {
     if (m_7c == 0) {

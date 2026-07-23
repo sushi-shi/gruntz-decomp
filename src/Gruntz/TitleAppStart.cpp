@@ -16,7 +16,9 @@
 #include <Gruntz/State.h> // the CState base this title state derives (RunTitleSeq @0xfa350)
 
 #include <Gruntz/AssetRoot.h>
-#include <Gruntz/TitleApp.h> // canonical CTitleApp (CState leaf; identity @identity-TODO)
+#include <DDrawMgr/DDrawSurfaceMgr.h>  // m_world->m_drawTarget (the splash page clear)
+#include <DDrawMgr/DDrawSubMgrPages.h> // ClearAllPages @0x158d50
+#include <Gruntz/TitleApp.h>           // canonical CTitleApp (CState leaf; identity @identity-TODO)
 #include <Gruntz/SplashState.h> // CSplashState: its slot-9 override is DEFINED here (retail TU placement)
 
 RVA(0x000f9880, 0x43)
@@ -26,5 +28,10 @@ i32 CSplashState::Vslot09(i32) {
     }
     RunTitleSeq(static_cast<const char*>(g_assetRoot), 1, 1, 1, 0); // CState::RunTitleSeq @0xfa350
     m_1b8 = 0xea60;
+    return 1;
+}
+RVA(0x000f98f0, 0x16)
+i32 CSplashState::FrameSlot28(i32) {
+    m_world->m_drawTarget->ClearAllPages(0);
     return 1;
 }

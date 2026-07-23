@@ -73,7 +73,6 @@
 ?FormatElapsed@@YA?AVCString@@H@Z
 ?FormatStr@@YAXPAVCString@@PBDZZ
 ?ForwardCombatStep@CGrunt@@QAEHHHHHHHHH@Z
-?FrameSlot28@CSplashState@@UAEHH@Z
 ?FreezeApply@CGrunt@@QAEXXZ
 ?Fx@CTriggerMgr@@QAEXHHHHHH@Z
 ?Gate1a14@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z
@@ -128,7 +127,6 @@
 ?MultiJoinHandler@@YAXXZ
 ?Name42ff@CMulti@@QAE?AVCString@@XZ
 ?NameEdit298c@CMultiStartDlg@@QAEPAVCWnd@@H@Z
-?NetCueReset_3bbb@@YAXHH@Z
 ?Notify@CMapMgr@@QAEXHHH@Z
 ?NotifyAttackImpact@CGrunt@@QAEXXZ
 ?NotifyDrop@CGrunt@@QAEXXZ
@@ -180,13 +178,11 @@
 ?RegCue@CPlay@@QAEXPAXH@Z
 ?RejoinIfNeeded@CMulti@@QAEXH@Z
 ?RemoveAt@CObjList@@QAEXPAUCObjListNode@@@Z
-?Render@CWwdGameObjectA@@UAEXPAVCDDrawSurfacePair@@@Z
 ?ReportError@@YAXPBDHHH@Z
 ?Reserve@zDArray@@QAEHPAVCAnimNameRecord@@H@Z
 ?Reset3@CTriggerMgr@@QAEHHHH@Z
 ?ResetNetSlots@@YAXXZ
 ?ResetTabWidgets2b44@CStatusBarMgr@@QAEXXZ
-?ResolveImage_163ee0@CDDrawSurfacePair@@UAEHPAUCParseSource@@@Z
 ?ResolveItem_1159@@YGPAVCWnd@@H@Z
 ?ResolveSlot_46e0c0@CActReg@@QAEPAPADH@Z
 ?RezAlloc@@YAPAXH@Z

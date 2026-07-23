@@ -8,12 +8,12 @@
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor - A's +0x1a0 member
 #include <Gruntz/WwdGridIter.h>      // WwdRegion - the embedded +0x9c spatial-grid node
 #include <DDrawMgr/AnimWorkerObj.h>  // AnimWorkerObj - the owned +0x7c..+0x90 workers
-#include <Wwd/WwdObjMgr.h> // ex Globals.h
+#include <Wwd/WwdObjMgr.h>           // ex Globals.h
 
 class
     CDDrawSurfacePair; // slots 11-14 params (render ctx + blit pairs; <DDrawMgr/DDrawSurfacePair.h>)
 class CWwdGameObject;  // the flat dispatch model (CWwdGameObject factory pair return type)
-class CDDrawWorker;             // CDDrawWorker/CDDrawWorker ARE CDDrawWorker (<DDrawMgr/DDrawWorker.h>)
+class CDDrawWorker;    // CDDrawWorker/CDDrawWorker ARE CDDrawWorker (<DDrawMgr/DDrawWorker.h>)
 
 class CImage;      // the cached frame element (<Image/CImage.h>)
 struct LeafCue;    // the leaf-scan cache value (<Gruntz/LeafCue.h>)
@@ -30,8 +30,8 @@ class CAniElement; // ApplyGeometryDirect's geometry source (<Gruntz/AniElement.
 struct CGameObject : public CResolveNode {
 public:
     virtual ~CGameObject() OVERRIDE; // 0x15b4f0 (out-of-line, WwdFactoryObject.cpp;
-                                         // body = { Unload(); } + member/base folds)
-    virtual i32 IsLoaded() OVERRIDE;     // slot 5  @0x15b370 (m_7c && m_0c && m_04 != -1)
+                                     // body = { Unload(); } + member/base folds)
+    virtual i32 IsLoaded() OVERRIDE; // slot 5  @0x15b370 (m_7c && m_0c && m_04 != -1)
     // slot 7 - release the four workers + disarm the live/shadow dirty-rect
     // sentinels. INLINE so the family dtors + sibling Unloads fold the content
     // (retail ~A/~F/~C inline it; deep contexts spill to `call 0x15b5d0`).
@@ -76,57 +76,57 @@ public:
 
     // The 0x150xxx live method set (src/Wwd/WwdGameObject.cpp) - the ex-flat
     // CGameObject/CWwdGameObject models' methods, homed at their field level.
-    i32 Serialize(i32 ar);                       // 0x151320
-    i32 WriteSnapshot(i32 dst, i32 unused);      // 0x151c00 (ret 8; 2nd arg unused)
-    i32 SerializeObjectState(i32 a1);                       // 0x151780  resolve deserialized worker names
-    i32 ResolveLinkedObject(i32 gate);                     // 0x151b90  cache the linked object
-                                                 //   (m_carrier) from the key m_184
-    i32 EnsureWorker80(CGameObject* src);    // 0x150eb0  lazy worker @+0x80 (Hit)
-    i32 EnsureWorker88(CGameObject* src);    // 0x150f90  lazy worker @+0x88 (Attack)
-    i32 EnsureWorker90(CGameObject* src);    // 0x151070  lazy worker @+0x90 (collide)
-    void AddLogicHit(char* key);                 // 0x150f50
-    void AddLogicAttack(char* key);              // 0x151030
-    void AddLogicBump(char* key);                // 0x151110
-    i32 NotifyHooked(void* arg);          // 0x151d20  hooked notify via the +0x7c aux
+    i32 Serialize(i32 ar);                  // 0x151320
+    i32 WriteSnapshot(i32 dst, i32 unused); // 0x151c00 (ret 8; 2nd arg unused)
+    i32 SerializeObjectState(i32 a1);       // 0x151780  resolve deserialized worker names
+    i32 ResolveLinkedObject(i32 gate);      // 0x151b90  cache the linked object
+                                            //   (m_carrier) from the key m_184
+    i32 EnsureWorker80(CGameObject* src);   // 0x150eb0  lazy worker @+0x80 (Hit)
+    i32 EnsureWorker88(CGameObject* src);   // 0x150f90  lazy worker @+0x88 (Attack)
+    i32 EnsureWorker90(CGameObject* src);   // 0x151070  lazy worker @+0x90 (collide)
+    void AddLogicHit(char* key);            // 0x150f50
+    void AddLogicAttack(char* key);         // 0x151030
+    void AddLogicBump(char* key);           // 0x151110
+    i32 NotifyHooked(void* arg);            // 0x151d20  hooked notify via the +0x7c aux
 
-    i32 m_sortKey;       // +0x74  the manager z-order sort key (Setup stores a3;
-                         //         CDDrawChildGroup::InsertSorted orders the list by it)
-    i32 m_posCache;      // +0x78  CObList POSITION cache (InsertSorted stores the node;
-                         //         TickKillCues/RemoveAndDelete unlink through it)
+    i32 m_sortKey;  // +0x74  the manager z-order sort key (Setup stores a3;
+                    //         CDDrawChildGroup::InsertSorted orders the list by it)
+    i32 m_posCache; // +0x78  CObList POSITION cache (InsertSorted stores the node;
+                    //         TickKillCues/RemoveAndDelete unlink through it)
     // The worker/partner PAIR scheme (CollideBroadcast @0x159f00 is the proof): each
     // lazily-built handler worker at +0x80/+0x88/+0x90 has its partner slot right
     // after it - the OTHER object of the pending event, stored just before the
     // worker's m_notify fires. (+0x94 is the flat model's m_hitOther.)
-    AnimWorkerObj* m_7c;       // +0x7c  the owned worker/logic record
-    AnimWorkerObj* m_80;       // +0x80  lazily-built Hit handler worker
-    CGameObject* m_84;     // +0x84  Hit partner (RECT-phase mask1 hit)
-    AnimWorkerObj* m_88;       // +0x88  lazily-built Attack handler worker
-    CGameObject* m_8c;     // +0x8c  Attack partner (RECT mask2 / BOX mask2b hit)
-    AnimWorkerObj* m_collideWorker;       // +0x90  lazily-built Bump/collide handler worker
-    CGameObject* m_hitOther; // +0x94  collide partner (stored just before
-                                 //        m_collideWorker's m_collideNotify fires - BroadPhase)
-    CGameObject* m_carrier;  // +0x98  latched carrier (a category-0x80 platform
-                                 //        object; StepAxisAlt stores it + sets flags
-                                 //        bit4; CMovingLogic::Update then advances
-                                 //        m_screenX/Y by the carrier's m_deltaX/Y).
-                                 //        Also the serialized linked object (ResolveLinkedObject
-                                 //        resolves it from the key m_184).
-    WwdRegion m_region;          // +0x9c..+0xb7  the embedded spatial-grid region
-                                 //        node: m_x/m_y (+0xac/+0xb0) are the position
-                                 //        copies Setup refreshes, m_object (+0xb4) the
-                                 //        self back-pointer (the CWwdSlot9c* records
-                                 //        below are its placement-ctor views)
-    i32 m_b8;               // +0xb8  shadow dirty-rect x (prev-frame copy of +0x18)
-    i32 m_bc;               // +0xbc  shadow dirty-rect y
-    i32 m_c0;               // +0xc0  shadow dirty-rect corner (INT_MIN sentinel)
+    AnimWorkerObj* m_7c;            // +0x7c  the owned worker/logic record
+    AnimWorkerObj* m_80;            // +0x80  lazily-built Hit handler worker
+    CGameObject* m_84;              // +0x84  Hit partner (RECT-phase mask1 hit)
+    AnimWorkerObj* m_88;            // +0x88  lazily-built Attack handler worker
+    CGameObject* m_8c;              // +0x8c  Attack partner (RECT mask2 / BOX mask2b hit)
+    AnimWorkerObj* m_collideWorker; // +0x90  lazily-built Bump/collide handler worker
+    CGameObject* m_hitOther;        // +0x94  collide partner (stored just before
+                                    //        m_collideWorker's m_collideNotify fires - BroadPhase)
+    CGameObject* m_carrier;         // +0x98  latched carrier (a category-0x80 platform
+                                    //        object; StepAxisAlt stores it + sets flags
+                                    //        bit4; CMovingLogic::Update then advances
+                                    //        m_screenX/Y by the carrier's m_deltaX/Y).
+                                    //        Also the serialized linked object (ResolveLinkedObject
+                                    //        resolves it from the key m_184).
+    WwdRegion m_region;             // +0x9c..+0xb7  the embedded spatial-grid region
+                                    //        node: m_x/m_y (+0xac/+0xb0) are the position
+                                    //        copies Setup refreshes, m_object (+0xb4) the
+                                    //        self back-pointer (the CWwdSlot9c* records
+                                    //        below are its placement-ctor views)
+    i32 m_b8;                       // +0xb8  shadow dirty-rect x (prev-frame copy of +0x18)
+    i32 m_bc;                       // +0xbc  shadow dirty-rect y
+    i32 m_c0;                       // +0xc0  shadow dirty-rect corner (INT_MIN sentinel)
     char _pc4[0xd0 - 0xc4];
-    i32 m_d0;                // +0xd0  shadow dirty-rect size x
-    i32 m_d4;                // +0xd4  shadow dirty-rect size y
-    i32 m_d8;                // +0xd8  shadow dirty-rect armed flag (-1 == disarmed)
+    i32 m_d0;     // +0xd0  shadow dirty-rect size x
+    i32 m_d4;     // +0xd4  shadow dirty-rect size y
+    i32 m_d8;     // +0xd8  shadow dirty-rect armed flag (-1 == disarmed)
     CString m_dc; // +0xdc  the object's name (dtor 0x1b9cde folds in ~E)
     // +0xe0..+0x18b  the serialized state block (field knowledge merged from the
     // flat CGameObject model - same offsets, one object).
-    i32 m_e0;           // +0xe0
+    i32 m_e0; // +0xe0
     // +0xe4  movement-resolution mode (CGameLevel::DispatchMove kinds 1..8):
     // 7 = direct set (no tile collision; CProjectile seeds it), 1/2/5 -> handler A,
     // 3 -> B, 4 -> C, 8 -> B/C by direction, 6 -> D (two-probe recovery); the
@@ -162,25 +162,25 @@ public:
     // left/top/right/bottom. Trigger ctors store TILE spans (world box = pos +/-
     // extent<<5 +/- 7); the movement steppers read them as PIXEL offsets (L stored
     // negative). 0x80000000 = unset (the collision pumps skip the object).
-    RECT m_extent;      // +0x134  L/T/R/B (a REAL RECT - the broad-phase overlap
-                        //         helpers take it BY VALUE as tagRECT); .bottom is
-                        //         the feet line (WalkColumnDown ground-snaps from it)
-    RECT m_area;        // +0x144  derived activation/stand box (world-space in the
-                        //         trigger initializers; .top is a platform's stand
-                        //         surface row; CollideBroadcast's oi-side test box)
-    RECT m_switchRect;  // +0x154  the tile-switch registrar rect (BY-VALUE arg of
-                        //         RegisterSwitchLogic; CollideBroadcast's oj-side box)
-    i32 m_164;          // +0x164
-    i32 m_168;          // +0x168
-    i32 m_16c;          // +0x16c
-    i32 m_170;          // +0x170
-    i32 m_deltaX;       // +0x174  per-frame movement delta X (carrier-ride advance)
-    i32 m_deltaY;       // +0x178  per-frame movement delta Y
-    i32 m_17c;          // +0x17c
-    i32 m_180;          // +0x180
-    i32 m_184;          // +0x184  serialized linked-object key (ResolveLinkedObject -> m_carrier)
-    i32 m_188;          // +0x188  object id (the manager's CMapPtrToPtr key -
-                        //         g_wwdObjIdCounter stamp; warlord battle-event id)
+    RECT m_extent;     // +0x134  L/T/R/B (a REAL RECT - the broad-phase overlap
+                       //         helpers take it BY VALUE as tagRECT); .bottom is
+                       //         the feet line (WalkColumnDown ground-snaps from it)
+    RECT m_area;       // +0x144  derived activation/stand box (world-space in the
+                       //         trigger initializers; .top is a platform's stand
+                       //         surface row; CollideBroadcast's oi-side test box)
+    RECT m_switchRect; // +0x154  the tile-switch registrar rect (BY-VALUE arg of
+                       //         RegisterSwitchLogic; CollideBroadcast's oj-side box)
+    i32 m_164;         // +0x164
+    i32 m_168;         // +0x168
+    i32 m_16c;         // +0x16c
+    i32 m_170;         // +0x170
+    i32 m_deltaX;      // +0x174  per-frame movement delta X (carrier-ride advance)
+    i32 m_deltaY;      // +0x178  per-frame movement delta Y
+    i32 m_17c;         // +0x17c
+    i32 m_180;         // +0x180
+    i32 m_184;         // +0x184  serialized linked-object key (ResolveLinkedObject -> m_carrier)
+    i32 m_188;         // +0x188  object id (the manager's CMapPtrToPtr key -
+                       //         g_wwdObjIdCounter stamp; warlord battle-event id)
 };
 SIZE_UNKNOWN(); // base subobject; the concrete kinds carry the sizes
 
@@ -200,7 +200,7 @@ public:
     }
     virtual i32 GetClassId() OVERRIDE; // slot 8  @0x15b760 (5 = CLASSID_SERIALREF)
     virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4) OVERRIDE; // slot 10 @0x15b940 (Init)
-    virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;         // slot 11 @0x15ba20 (ret 4)
+    virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;       // slot 11 @0x15ba20 (ret 4)
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 @0x150660
     virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
         OVERRIDE; // slot 13 @0x1506b0
@@ -211,24 +211,24 @@ public:
                   // 7 -> SerializeSpriteName - then the base Play body)
 
     // The created-sprite frame-cache method set (this kind's +0x194/+0x198 tail).
-    void ApplyLookupSprite(const char* key, i32 flag);  // 0x1504d0
-    void ApplyName(const char* name);                   // 0x150540
-    i32 ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0
-    i32 LookupAnimSprite(const char* name);             // 0x150610
+    void ApplyLookupSprite(const char* key, i32 flag);                  // 0x1504d0
+    void ApplyName(const char* name);                                   // 0x150540
+    i32 ApplyLookupGeometry(const char* key, i32 flag);                 // 0x1505b0
+    i32 LookupAnimSprite(const char* name);                             // 0x150610
     void ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault); // 0x58b60
-    i32 Test();             // 0x1509c0  on-screen visibility cull (the m_198 extent)
-    i32 SerializeSpriteName(i32 a1);  // 0x150c30  (A-tail frame-cache reader; Play mode-7 route)
-    i32 ReadState(i32 src); // 0x150b00
+    i32 Test();                      // 0x1509c0  on-screen visibility cull (the m_198 extent)
+    i32 SerializeSpriteName(i32 a1); // 0x150c30  (A-tail frame-cache reader; Play mode-7 route)
+    i32 ReadState(i32 src);          // 0x150b00
 
-    i32 m_18c; // +0x18c  (WwdFile stamp -1; the C kind reads its low byte as dot color)
-    i32 m_190; // +0x190  cached frame NUMBER (WwdFile stamp -1)
+    i32 m_18c;       // +0x18c  (WwdFile stamp -1; the C kind reads its low byte as dot color)
+    i32 m_190;       // +0x190  cached frame NUMBER (WwdFile stamp -1)
     union {          // +0x194  role-union (the flat model's proof): a WwdFile-loaded
                      //         object keeps its source-def record (class-name string
                      //         at +0x24); a CreateSprite'd object caches the looked-up
                      //         sprite (ApplyName/ApplyLookupSprite) / its CDDrawWorker
                      //         (ActionArea's pulse ramp SetAllTypes/SetAllField18)
         char* m_194; // source-def record
-        CDDrawWorker* m_sprite;     // cached sprite (frame-cache role)
+        CDDrawWorker* m_sprite;   // cached sprite (frame-cache role)
         CDDrawWorker* m_imageSet; // cached image set (color/brightness role)
     };
     CImage* m_layer; // +0x198  cached frame POINTER (the flat model name)
@@ -247,7 +247,7 @@ SIZE(0x1dc);
 class CWwdGameObject : public CWwdGameObjectA {
 public:
     virtual ~CWwdGameObject() OVERRIDE; // 0x15bd10 (out-of-line, I obj)
-    virtual i32 IsLoaded() OVERRIDE;     // slot 5  0x15bcd0 (`return m_7c != 0`)
+    virtual i32 IsLoaded() OVERRIDE;    // slot 5  0x15bcd0 (`return m_7c != 0`)
     // slot 7 override: destroy the child list, then the A/E release pass.
     // INLINE so ~B folds it; the out-of-line copy lands at 0x15bf00.
     RVA(0x0015bf00, 0xa1)
@@ -263,7 +263,7 @@ public:
     virtual i32 GetClassId() OVERRIDE; // slot 8  0x15bce0 (0x1b)
     // slot 10/11-14 overrides (bodies in WwdGameObjectRender.cpp).
     virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4) OVERRIDE; // slot 10 0x1665e0
-    virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;         // slot 11 0x1668b0 (broadcast)
+    virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;       // slot 11 0x1668b0 (broadcast)
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 0x1668e0
     virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
         OVERRIDE; // slot 13 0x166910
@@ -271,10 +271,10 @@ public:
         OVERRIDE; // slot 14 0x166950
     // slot 15 INHERITED from A (retail table: 0x150a70).
 
-    void Clear();                            // 0x166810 (destroy m_1dc list + RemoveAll)
+    void Clear();                        // 0x166810 (destroy m_1dc list + RemoveAll)
     i32 AddChild(CGameObject* child);    // 0x1667e0
     i32 RemoveChild(CGameObject* child); // 0x166850
-    i32 WalkChildWorkers();                  // 0x166880 (per-child worker cb + count)
+    i32 WalkChildWorkers();              // 0x166880 (per-child worker cb + count)
     // The child-object factory pair (bodies in WwdGameObjectRender.cpp; the ex-CWwdObjMgrL
     // view is dissolved): build a child CWwdGameObjectA and publish it into m_1dc.
     CWwdGameObject* CreateObject(int a1, int a2, int a3, int a4, int a5, int a6); // 0x166640
