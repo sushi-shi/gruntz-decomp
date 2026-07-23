@@ -431,7 +431,7 @@ i32 CWarlord::LoadAttributes2() {
         if (static_cast<i64>(static_cast<u32>(g_frameTime))
                 - *reinterpret_cast<i64*>(&m_cooldownStampLo)
             >= *reinterpret_cast<i64*>(&m_cooldownWindowLo)) {
-            reg->m_cueSink->Cue(m_object->m_188, 0x436, -1, -1, -1);
+            reg->m_cueSink->SpawnVoiceDriver(m_object->m_188, 0x436, -1, -1, -1);
             m_cooldownWindowLo = 0x7530;
             m_cooldownWindowHi = 0;
             m_cooldownStampLo = g_frameTime;
@@ -590,10 +590,10 @@ i32 CGrunt::ResolveDeathAnimation() {
         i32 y = h->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
             && y >= g->m_viewOriginT) {
-            g->m_cueSink->Cue(h->m_188, m_deathCueArg, -1, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(h->m_188, m_deathCueArg, -1, -1, -1);
         }
     } else {
-        g->m_cueSink->Cue(m_object->m_188, m_deathCueArg, -1, -1, -1);
+        g->m_cueSink->SpawnVoiceDriver(m_object->m_188, m_deathCueArg, -1, -1, -1);
     }
 
     m_activeAnimDesc = m_animPlayer->m_1a0.m_14;
@@ -619,10 +619,10 @@ i32 CGrunt::ResolveAnimation() {
         i32 y = h->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
             && y >= g->m_viewOriginT) {
-            g->m_cueSink->Cue(h->m_188, 0x435, -1, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(h->m_188, 0x435, -1, -1, -1);
         }
     } else {
-        g->m_cueSink->Cue(m_object->m_188, 0x43f, -1, -1, -1);
+        g->m_cueSink->SpawnVoiceDriver(m_object->m_188, 0x43f, -1, -1, -1);
     }
 
     m_activeAnimDesc = m_animPlayer->m_1a0.m_14;
@@ -650,10 +650,10 @@ i32 CGrunt::ResolveIdleAnimation() {
         i32 y = h->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
             && y >= g->m_viewOriginT) {
-            g->m_cueSink->Cue(h->m_188, idx + 0x431, -1, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(h->m_188, idx + 0x431, -1, -1, -1);
         }
     } else {
-        g->m_cueSink->Cue(m_object->m_188, idx + 0x43b, -1, -1, -1);
+        g->m_cueSink->SpawnVoiceDriver(m_object->m_188, idx + 0x43b, -1, -1, -1);
     }
 
     m_activeAnimDesc = m_animPlayer->m_1a0.m_14;
@@ -686,10 +686,10 @@ i32 CGrunt::ResolveBattlecryAnimation() {
         i32 y = h->m_screenY;
         if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
             && y >= g->m_viewOriginT) {
-            g->m_cueSink->Cue(h->m_188, idx + 0x42e, -1, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(h->m_188, idx + 0x42e, -1, -1, -1);
         }
     } else {
-        g->m_cueSink->Cue(m_object->m_188, idx + 0x438, -1, -1, -1);
+        g->m_cueSink->SpawnVoiceDriver(m_object->m_188, idx + 0x438, -1, -1, -1);
     }
 
     m_activeAnimDesc = m_animPlayer->m_1a0.m_14;

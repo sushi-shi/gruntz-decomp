@@ -3233,7 +3233,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                 ToggleStat(cmd - 0x12c);
             } else {
                 HiCueLookup();
-                HiTabB(cmd - 0x13b, 0);
+                PlaceCursorTarget(cmd - 0x13b, 0); // ILT 0x20b8 -> 0x105800
             }
             return 1;
 
@@ -4101,7 +4101,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                         }
                     }
                 }
-                ChipFinish(col, m_extraNotifyArg0, row);
+                SetHlCell(col, m_extraNotifyArg0, row); // ILT 0x3968 -> 0x106b40
             }
             refreshFlag = 1;
             break;

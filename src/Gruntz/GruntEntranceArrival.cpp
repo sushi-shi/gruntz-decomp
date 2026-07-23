@@ -1093,7 +1093,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                         m_object->m_screenX,
                         m_object->m_screenY
                     )) {
-                    g->m_cueSink->Cue(reinterpret_cast<i32>(this), 4, -1, -1, -1);
+                    g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 4, -1, -1, -1);
                 }
             } else if (focused || m_entranceReason != 0) {
                 if (idx == 1) {
@@ -1104,7 +1104,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                             m_object->m_screenX,
                             m_object->m_screenY
                         )) {
-                        g->m_cueSink->Cue(reinterpret_cast<i32>(this), 5, -1, -1, -1);
+                        g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 5, -1, -1, -1);
                     }
                 } else if (idx == 2) {
                     if (CGameLevel::PointInBounds(
@@ -1114,7 +1114,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                             m_object->m_screenX,
                             m_object->m_screenY
                         )) {
-                        g->m_cueSink->Cue(reinterpret_cast<i32>(this), 6, -1, -1, -1);
+                        g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 6, -1, -1, -1);
                     }
                 }
             }
@@ -1758,7 +1758,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
     }
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0) {
         if (m_entranceReason == 0x13) {
-            g_gameReg->m_cueSink->Cue1(m_object->m_188);
+            g_gameReg->m_cueSink->StopVoice(m_object->m_188);
         }
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
@@ -1848,7 +1848,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
 
 reject:
     if (m_entranceReason == 0x1e) {
-        g_gameReg->m_cueSink->Cue1(m_object->m_188);
+        g_gameReg->m_cueSink->StopVoice(m_object->m_188);
     }
     LoadGruntTypeTable(m_19c, 1, 0, 1);
     {

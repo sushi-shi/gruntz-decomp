@@ -106,6 +106,17 @@ resolves to the existing `ScanTargets`. Use the caller's dataflow and receiver
 to interpret each thunk; do not promote a temporary command-role label into a
 new API.
 
+Do not infer a free `__stdcall` function from a callee-cleaned return alone.
+The body at `0x11b7c0` ends in `ret 0x14`, but it first copies ECX to EDI and
+reads fields through EDI; its callers also load `CGameRegistry::m_cueSink` into
+ECX before calling ILT `0x33b4`. Those facts prove the five-stack-argument
+`CGruntSpawnConfig::SpawnVoiceDriver` member overload, not the former free
+`SpawnVoiceDriverStd` model. The same audit collapsed `Cue1` through ILT
+`0x1163` to `StopVoice`, `HiTabB` through ILT `0x20b8` to
+`PlaceCursorTarget`, and `ChipFinish` through ILT `0x3968` to `SetHlCell`.
+Calling convention, receiver identity, and semantic name must be recovered
+together.
+
 ## Trap: FID false-positives on the destinations
 
 The ILT-reached bodies are often 1-6 byte defaults (`c3`, `33 c0 c3`, `b8 01 00 00 00 c3`).

@@ -906,7 +906,7 @@ i32 CGrunt::StepArrivalCommit() {
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0);
     if (eq) {
         if (m_entranceReason == 0x13) {
-            g_gameReg->m_cueSink->Cue1(m_object->m_188);
+            g_gameReg->m_cueSink->StopVoice(m_object->m_188);
         }
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
@@ -1002,7 +1002,7 @@ i32 CGrunt::StepArrivalCommit() {
 
 idleReseed:
     if (m_entranceReason == 0x1e) {
-        g_gameReg->m_cueSink->Cue1(m_object->m_188);
+        g_gameReg->m_cueSink->StopVoice(m_object->m_188);
     }
     LoadGruntTypeTable(m_19c, 1, 0, 0);
     {

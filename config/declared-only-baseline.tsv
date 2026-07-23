@@ -8,12 +8,9 @@
 ?Ar_WriteId@@YAXPAXH0@Z
 ?Arm@CUserLogic@@QAEXPBD0HH@Z
 ?BaseConstruct@zDArray@@QAEPAV1@HHHPAX@Z
-?ChipFinish@CStatusBarMgr@@QAEXHHH@Z
 ?Commit42e1@CBattlezMapConfig@@QAEXPAVCGrunt@@@Z
 ?Construct@CButeTree@@QAEXPAXH@Z
 ?Construct@CGameObject@@QAEXPAXHH@Z
-?Cue1@CGruntSpawnConfig@@QAEXH@Z
-?Cue@CGruntSpawnConfig@@QAEXHHHHH@Z
 ?Deserialize@CTimer@@QAEHPAVCFileMemBase@@@Z
 ?DoTrigger1fb9@CScanMgr@@QAEHPAVCGrunt@@HHHHH@Z
 ?Effect374c@CBattlezMapConfig@@QAEXPAVCGrunt@@H@Z
@@ -24,7 +21,6 @@
 ?Gate1a14@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z
 ?GetNameRecord@zDArray@@QAEPAPADPAX@Z
 ?GetNameRecords@zDArray@@QAEPAVCAnimNameRecord@@PAX@Z
-?HiTabB@CStatusBarMgr@@QAEXHH@Z
 ?Hit5@CTriggerMgr@@QAEPAVCGrunt@@HHHHH@Z
 ?Hit@CTriggerMgr@@QAEPAVCGrunt@@HHHPAH0@Z
 ?Impact25e5@CBattlezMapConfig@@QAEXPAVCGrunt@@HHH@Z

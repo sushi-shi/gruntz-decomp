@@ -206,3 +206,15 @@ settled at 73.71 while MAX remained 73.73. Therefore even an unused class
 forward declaration participates in this MSVC 5 compiler-state butterfly.
 When reversing a similar dip, replay both member/API declaration deltas and
 apparently inert type-forward deltas in their original order.
+
+TWELFTH FIRING (2026-07-23, receiver/calling-convention correction): removing
+four fake declarations from `GruntSpawnConfig.h` and `StatusBarMgr.h`, while
+correcting `0x11b7c0` from a free `__stdcall` placeholder to the five-argument
+`CGruntSpawnConfig::SpawnVoiceDriver` member overload, introduced no new dips.
+Instead, two source-identical rows reversed earlier butterfly movement:
+`CGrunt::PhaseStep` recovered 38.5960→39.7717 and
+`CGrunt::ArrivalScanC` recovered 47.2280→47.2696 without body edits. Overall
+current fuzzy remained 73.71 and MAX remained 73.73. This is another
+controlled reverse sample: when a residue appeared after a declaration batch,
+later removal of false member names and restoration of the authentic receiver
+signature can undo it without touching the affected function.

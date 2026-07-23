@@ -54,7 +54,9 @@ ptr blocks, addr passed), **+0x188/+0x198** (per-half {x,y} edge feed). CDrawSur
 **+0x10/+0x14** scroll origin, **+0x5c→+0x40 .{x,y}** geom feed.
 
 **CGameRegistry (@0x64556c) LAYOUT:** **+0x14** dev/has-window, **+0x30**→{`+0x8` map,
-`+0x24` rect}, **+0x60** cue sink (`Cue`@0x11b7c0 via thunk 0x33b4, ret 0x14 = 5 args),
+`+0x24` rect}, **+0x60** cue sink (the five-argument
+`CGruntSpawnConfig::SpawnVoiceDriver` overload @0x11b7c0 via thunk 0x33b4,
+ret 0x14),
 **+0x68** OnRegion0 message-post sink, **+0x8c/+0x90** viewport, **+0x134** 1/2 mode
 (==1 gate), **+0x13c/+0x140/+0x144/+0x148** view rect (minX/minY/maxX/maxY), **+0x15c**
 level tree.

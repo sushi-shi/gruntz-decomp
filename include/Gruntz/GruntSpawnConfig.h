@@ -60,15 +60,6 @@ class CGrunt; // CueA/CueSpawn first arg
 
 class CGruntSpawnConfig {
 public:
-    // --- the on-screen cue receiver face (folded from Grunt.h's CGruntSpawnConfig -
-    // the +0x60 registry object is ONE class wearing three names: spawn config ==
-    // cue sink == the GruntzMgr "TimerObj" poll face). All declared-only:
-    // reloc-masked thunk calls.
-    void Cue(i32 a, i32 b, i32 c, i32 d, i32 e); // via thunk 0x33b4
-    void Cue1(i32 a);                            // 1-arg cue (thunk_0x1163 -> 0x51c730)
-    // 0x39f4: the on-screen event cue the per-tick game-object managers (CObjectTracker::Update)
-    // fire on the registry's m_cueSink when the managed object is inside the viewport rect.
-
     BOOL Init(CSpawnOwner* owner); // 0x11adc0
     void Clear();                  // 0x11ae30
     BOOL LoadGruntVoices();        // 0x11af00
@@ -80,11 +71,11 @@ public:
     // ApiCaller backlog. param_1=config, param_2=target/index, param_3=pick seed,
     // param_4=priority, param_5=percent.
     BOOL LoadGruntSpawnConfig(i32 param_1, i32 param_2, i32 param_3, i32 param_4, i32 param_5);
-    // Two sibling weighted grunt-voice spawn drivers (0x11b3b0 / 0x11b7c0), re-homed
-    // from the ApiCaller backlog. Both @early-stop stubs (a full body caps at ~47%
-    // on the /GX single-epilogue wall; the return-0 stub scores higher). 0x11b7c0 is
-    // a file-scope __stdcall sibling (see the .cpp).
+    // Two overloaded weighted grunt-voice spawn drivers (0x11b3b0 / 0x11b7c0).
+    // Both consume this in ecx and return with callee-cleaned stack arguments; the
+    // five-argument overload was formerly mis-modeled as a free __stdcall sibling.
     i32 SpawnVoiceDriver(i32, i32, i32, i32, i32, i32); // 0x11b3b0
+    i32 SpawnVoiceDriver(i32, i32, i32, i32, i32);      // 0x11b7c0
     CSpawnList* BuildVoiceSoundList(i32 i);             // 0x11c210 (defined in VoiceSoundList.cpp)
     i32 AnyVoicePlaying();   // 0x11c6c0 (either slot m_08/m_0c has a non-zero m_playFlags)
     i32 VoicePlaying(i32 i); // 0x11c700 (slot i's m_playFlags is non-zero)

@@ -176,7 +176,6 @@ public:
     void BuildGameTabPauseButton();
 
     // ----- siblings the tab-highlight dispatcher (0xfe910) drives (reloc-masked ILT) -----
-    void HiTabB(i32 idx, i32 flag); // 0x20b8 (2 args)
     i32 LoadGooCookingSprite(i32);
     void UpdateRezConveyorStatusBar();
     void LoadRezMachineConfig();
@@ -265,7 +264,6 @@ public:
 
     // ----- fourth batch: the rect-only HUD placement (0xfe520) + its siblings ---
     i32 winapi_0fe520_SetRect();
-    void ChipFinish(i32 col, i32 which, i32 row); // call 0x3968 (__thiscall, 3 args)
 
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
     // +0x00 is a DATA member, not a vptr: this class has no vtable, and the code both

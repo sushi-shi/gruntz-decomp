@@ -32,8 +32,8 @@ extern "C" u32 g_frameTime;
 // m_phase/m_timerBase/m_timerWindow/m_pendingFx - the panic-timer blocks now write
 // the real members through the typed m_cmdGrid.)
 
-// (CRegBattleEvent DISSOLVED 2026-07-20: PostBattleEvent IS CGruntSpawnConfig::Cue on the
-// +0x60 m_cueSink - the warlord fort-alert path now calls reg->m_cueSink->Cue directly.)
+// (CRegBattleEvent DISSOLVED 2026-07-20: PostBattleEvent is the five-argument
+// CGruntSpawnConfig::SpawnVoiceDriver overload on the +0x60 m_cueSink.)
 
 // (CWarlordMission/CWarlordObjective DISSOLVED 2026-07-21: the "mission" was CPlay
 // and the "objective tracker" its m_frameMarker CTimer - the +0x4c completion flag
