@@ -93,7 +93,6 @@
 ?RezAlloc@@YAPAXH@Z
 ?Run@CDDSurface@@QAEHHHHHHHUClipRect16@@@Z
 ?RunModal@CGameApp@@QAEXPBDPAUHWND__@@@Z
-?SbiList_Dtor@@YAXXZ
 ?ScratchResolve@zDArray@@QAEPAVCAnimNameRecord@@PAX@Z
 ?SelfImpact2b58@CBattlezMapConfig@@QAEXPAVCGrunt@@HHH@Z
 ?SetDecayTarget@CGruntBehaviorLeaf@@QAEXH@Z
@@ -111,7 +110,6 @@
 ?TakeHit@CGrunt@@QAEXHHHHHHHH@Z
 ?Teardown@CBattlezData@@QAEXXZ
 ?Tick@CGruntSpawnConfig@@QAEXXZ
-?Tm_DestroyArray@@YAXPAXHH0@Z
 ?Type13Check@CGrunt@@QAEHXZ
 ?UpdateCombatTimer@CGrunt@@QAEXXZ
 ?ValidateMainBlock@@YAHPAX@Z

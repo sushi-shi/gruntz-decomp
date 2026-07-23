@@ -46,45 +46,19 @@ i32 g_curPlayer = 0; // owner def (C linkage from StatusBarItem.h)
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 #include <Gruntz/SBI_WellGoo.h>  // CSBI_WellGoo - m_gaugeSink's real type (m_fillScale @+0x44)
 
-void Tm_DestroyArray(void* base, i32 stride, i32 count, void* dtor); // 0x11f640
-
-void SbiList_Dtor(); // 0x5b48c6
-
-// 0xc8980: CStatusBarMgr member teardown - the /GX dtor body that drains the pooled
-// state (Teardown), destructs the +0x530 CByteArray, then runs the eh-vector-destroy
-// iterator over the eight +0x2c notify lists (stride 0x1c, ~CPtrList per element). The
-// three teardown stages each carry their own descending /GX trylevel.
-// @early-stop
-// ~49% /GX member-array dtor wall (same family as ~CTriggerMgr 0x85c50): the body is
-// byte-correct - Teardown call, lea [this+0x530] + ~CByteArray,
-// and the four-arg eh-vector-destroy push sequence (push &dtor / 8 / add esi,0x2c / 0x1c /
-// push base) all match retail. But the whole /GX SEH frame (push -1 / push handler / mov
-// fs:0,esp) and the descending [esp+0x10]=1/0/-1 trylevel stamps are MISSING: MSVC only
-// emits them for a real `~Class()` whose VALUE members have non-trivial dtors. 0xc8980 is
-// a standalone teardown HELPER. 0xc8980 IS the out-of-line COMDAT copy of the real
-// ~CStatusBarMgr, which now exists in <Gruntz/StatusBarMgr.h> as `{ Teardown(); }` plus
-// the compiler-generated member teardown - PROVEN by CPlay::LoadGameAssetNamespaces's fail path at 0xc82b6,
-// where `delete` INLINES exactly this sequence (Teardown / ~CPtrArray on m_ptrPool /
-// __ehvec_dtor over m_tabLists[8]) under /GX states 3/2. So the fix is known: spell this
-// AS the destructor and the frame + trylevels fall out.
-// IT WAS DELIBERATELY NOT TAKEN, because it is a TWO-SITE codegen trade, not a free win:
-//   * CPlayDtorBody (0xc8700, ~99%) calls this teardown OUT-OF-LINE from a frameless
-//     context (call 0x1438 -> here). Re-pointing that call at an in-class inline dtor
-//     invites MSVC5 to inline this ~100-byte body INTO CPlayDtorBody - cratering a 99%
-//     function to buy this one.
-//   * Emitting the dtor out-of-line while `delete` ALSO inlines it at 0xc82b6 is exactly
-//     what retail does, but which MSVC5 picks is driven by the inlining budget of
-//     whichever TU instantiates it first - not steerable from this file alone.
-// It is ONE decision across both sites, so it belongs to the recovery pass - with this
-// note, not a re-derivation. Documented wall (docs/patterns/
-// eh-dtor-model-members-as-destructible.md).
-RVA(0x000c8980, 0x64)
-void CStatusBarMgr::DtorMembers() {
-    Teardown();
-    reinterpret_cast<CByteArray*>(&m_ptrPool)
-        ->CByteArray::~CByteArray(); // +0x530 real CByteArray teardown
-    Tm_DestroyArray(m_tabLists, 0x1c, 8, static_cast<void*>(&SbiList_Dtor));
+// CStatusBarMgr's destructor is inline in the shared header because retail inlines
+// it at the allocation-failure cleanup in CPlay::LoadGameAssetNamespaces. Retail
+// also keeps this standalone COMDAT copy for CPlay::ReleaseResources. A depth-zero
+// explicit-dtor use makes MSVC emit that copy without replacing either call site
+// with a hand-written teardown helper.
+static CStatusBarMgr* volatile g_forceStatusBarMgrDtor;
+#pragma inline_depth(0)
+void ForceEmitStatusBarMgrDtor() {
+    g_forceStatusBarMgrDtor->~CStatusBarMgr();
 }
+#pragma inline_depth()
+
+RVA_COMPGEN(0x000c8980, 0x64, ??1CStatusBarMgr@@QAE@XZ)
 
 RVA(0x00100530, 0x5)
 i32 CStatusBarItem::SbiSlot6(i32, i32, i32) {

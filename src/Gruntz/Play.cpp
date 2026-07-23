@@ -6111,8 +6111,7 @@ void CPlay::ReleaseResources() {
         m_mgr->m_chatLog->FreeNodes();
     }
     if (m_guts) {
-        m_guts->DtorMembers();
-        ::operator delete(m_guts);
+        delete m_guts;
         m_guts = 0;
     }
     if (m_hitTest) {

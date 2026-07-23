@@ -139,7 +139,6 @@ public:
 
     void UpdateDestructButton(i32 arg); // 0x10bc30 (arms the destruct-button warning)
     i32 EnsureSub(i32 a, i32 b, i32 c); // 0x109ad0 (lazily create the +0x54c sub-object)
-    void DtorMembers();                 // 0xc8980  member teardown (/GX member-array dtor)
     void ResetCounters();
     void ResetSlots();
     void ArmSlot(i32 idx);
