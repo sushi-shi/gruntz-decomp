@@ -51,7 +51,6 @@ public:
 public:
     CPathHazard(); // 0x13170 (no-arg deserialize-path ctor; zeroes the leg/strike i64s)
     CPathHazard(CGameObject* obj); // 0xb35a0 (folds CUserLogic(obj) + the waypoint setup)
-    i32 BeginLeg();                // 0x29be thunk (find/seed the first leg; reloc-masked no-body)
     // GetTypeTag (0x13210, ??_7CPathHazard slot 2 -> this body): the 6-byte
     // per-class logic-type id accessor (0x424). 0x132f0 (the old binding) is
     // CRainCloud's - the derived vtables each hold their OWN 6-byte copy.
@@ -71,7 +70,9 @@ public:
     // index back to 0 once the path is exhausted. Returns 1.
     virtual i32 Arrive(); // slot 18
     // BeginLeg (slot 19, body 0xb47e0): compute the unit vector toward the current
-    // waypoint (m_f8) and seed the movement state. Returns 1.
+    // waypoint (m_f8) and seed the movement state. Returns 1. (Was declared
+    // non-virtual - the binary 21-slot ??_7 proves the slot; ILT thunk 0x29be.)
+    virtual i32 BeginLeg(); // slot 19
     // slot 20 (0x13230, ??_7CPathHazard[20] -> this body): the per-coord hit
     // probe's base default - `return 1`. CUFO inherits it; CRainCloud overrides
     // it with the strike-arm body @0xb4640.
