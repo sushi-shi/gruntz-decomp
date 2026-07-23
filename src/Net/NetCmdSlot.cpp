@@ -1,4 +1,4 @@
-#include <Net/CmdPool.h>  // g_pool (ex .cpp extern)
+#include <Net/CmdPool.h>
 #include <Net/NetMgr.h>   // canonical CNetSession / CNetCmdSlot / CPtrList / CObject
 #include <Gruntz/Multi.h> // CMulti - the real owner of the LoadMenuSelectSprite/OnPlayerLeft/... game-mgr methods (netmgr-vs-cmulti split); Init a2 is a CMulti
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr - CMulti::m_4's real type (its +0x6c m_cmdSubMgr is the CGruntzCmdMgr command manager)
@@ -39,7 +39,10 @@ DATA(0x0024a8b6)
 unsigned char gA_e08; // 0x24a8b6
 DATA(0x0024a8b7)
 unsigned char gA_data; // 0x24a8b7
-DATA_SYMBOL(0x0024aca8, 0x1c, ?g_pool@@3VCPtrList@@A)
+
+template<> DATA(0x0024aca8)
+CPtrList CPtrListPool<CNetCmdPacket>::s_freeList(0xa);
+
 DATA(0x0024b6a0)
 char g_idScratch[0x10]; // 0x24b6a0
 
@@ -47,6 +50,11 @@ DATA(0x0024b6b0)
 char g_idListBuf[0x40]; // 0x24b6b0
 
 void NoopSync(CGruntzCommand* p); // 0xbfb20 (empty)
+
+RVA_COMPGEN(0x000beef0, 0xa, _$E782064)
+RVA_COMPGEN(0x000bef10, 0xd, _$E782096)
+RVA_COMPGEN(0x000bef30, 0xe, _$E782128)
+RVA_COMPGEN(0x000bef50, 0x1f, _$E782160)
 
 RVA(0x000bef80, 0x51)
 i32 CNetSession::Init(void* a1, CMulti* a2, void* a3) {
@@ -113,8 +121,9 @@ void CNetSession::ResetSync() {
         r->m_checksum = 0;
         r++;
     } while (--k);
-    while (g_pool.GetCount() != 0) {
-        void* p = g_pool.RemoveTail();
+    CPtrList& freeList = CPtrListPool<CNetCmdPacket>::s_freeList;
+    while (freeList.GetCount() != 0) {
+        void* p = freeList.RemoveTail();
         if (p) {
             RezFree(p);
         }
@@ -161,7 +170,7 @@ void CNetSession::Reset() {
 
 RVA(0x000bf580, 0x10)
 void RecycleCmd(void* cmd) {
-    g_pool.AddTail(cmd);
+    CPtrListPool<CNetCmdPacket>::s_freeList.AddTail(cmd);
 }
 
 // @early-stop

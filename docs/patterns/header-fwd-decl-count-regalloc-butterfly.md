@@ -310,3 +310,17 @@ The same declaration change reversed five older dips without body edits:
 use the completed direction declarations as another reverse-search state. The
 exact-function count rose by nine, current aggregate is 73.7077, and the
 73.7275 MAX remains unchanged.
+
+EIGHTEENTH FIRING (2026-07-23, template-static recycle lists): replacing three
+fake `CPtrList` declarations and their overlapping `+0xc` count aliases with
+real explicit template-static specializations removed three declared-only data
+symbols. The directly edited allocation, drain, and recycle functions retained
+their previous scores. Twelve newly exposed compiler helpers are exact after
+semantic `$E` relocation normalization, raising the exact-function count
+2718→2727 (twelve helpers added, three manual twins removed) and current
+aggregate 73.7077→73.7180. No source-identical function newly dipped in this
+stage; `CNetSession::Verify(i32)` remains at the previously documented 89.5349
+color from the eleventh firing. Therefore the remaining gap below the 73.7275
+MAX is older declaration-state butterfly churn, not a regression caused by the
+list model. The helper-specific reverse audit is documented in
+`msvc-static-object-e-helper-family.md`.

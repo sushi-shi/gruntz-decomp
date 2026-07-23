@@ -30,13 +30,48 @@ RVA_COMPGEN(0x000bd830, 0xa, _$E776240)
 targets. The placeholder number therefore has no identity meaning; the content
 and relocations select the emitted helper.
 
+## Explicit template-static specialization
+
+A four-helper variant is stronger type evidence. For a non-trivial static data
+member explicitly specialized from a class template, VC5 emits:
+
+1. a 10-byte wrapper that calls the constructor helper and tail-jumps the
+   `atexit` registrar;
+2. the constructor helper;
+3. the 14-byte `atexit` registrar;
+4. a 31-byte destructor helper guarded by one bit in a compiler-private byte.
+
+Multiple specializations in one TU share the byte and use successive bits. An
+ordinary file-scope `CPtrList g(10)` probe instead emits the unguarded 10-byte
+destructor helper; it cannot produce the 31-byte bit-test form. The guarded form
+therefore justifies a real template static data member:
+
+```cpp
+template <class T>
+struct CPool {
+    static CPtrList s_freeList;
+};
+
+template <>
+DATA(0x00......)
+CPtrList CPool<CItem>::s_freeList(0xa);
+```
+
+Do not replace the member at `+0xc` with an overlapping count global:
+`CPtrList::m_nCount` is part of the object and consumers should use the real
+list interface. If the stripped image does not preserve the source template or
+member name, use `@identity-TODO`; the helper family proves the structure, not
+those spellings.
+
 Do not test only the name recognizer. The first implementation classified
 `_$E28` as an `$E` family but excluded executable sections from the definition
 walker, so every helper remained unnormalized while the test stayed green.
 The gate now proves that both VC5's local TEXT definition and the delinker's
 external TEXT definition enter the content-addressing pipeline. The normalized
 sidecar must show `family=e`, `storage=text`, a content-derived canonical name,
-and a non-zero meaningful size; `skipped-undefined` means the contract is still
+and a non-zero meaningful size. A same-name undefined duplicate resolved to the
+unique definition must show `alias-of-definition`; an unresolved
+`skipped-undefined` edge used by another helper means the contract is still
 broken.
 
 TEXT identity also excludes trailing NOPs and uses the meaningful body length,
@@ -65,30 +100,40 @@ replacing the hand-written constructor twin with `RVA_COMPGEN` pins recovered
 the family at `0x000bd7f0`, `0x000bd810`, and `0x000bd830`. The 14-byte middle
 helper had previously been mislabeled as LOW `__inc`.
 
-The original documentation called all three exact, but that was a false result:
-the normalizer recognized `$E` names without ever processing TEXT definitions.
-After the full path was fixed, the family exposed unresolved relocation
-identity and correctly stopped pairing. Keep that dip as a reverse-audit target;
-the real object model is supported, but exactness requires the ordered data and
-callee relocations to agree too.
+## Reverse audit of the apparent ten-function dip
 
-The first full run exposed ten previously credited exact functions. Their
-meaningful instruction bytes have the expected helper shapes, but the
-content-addressed identities differ because their ordered relocation identities
-do not yet agree:
+The original documentation first called the NetLobby family exact without
+proving that executable definitions entered normalization. Fixing that path
+made ten older helpers appear to dip. That conclusion was also incomplete: raw
+instructions and ordered semantic relocations agreed, while four COFF spelling
+artifacts differed:
 
-| TU | Retail helpers removed from exact count |
-| --- | --- |
-| `AreaMgr` | `0x00099b80`, `0x00099be0`, `0x00099c00` |
-| `GameText` | `0x00018740`, `0x00082990` |
-| `CImage` | `0x00153800`, `0x001538b0` |
-| `NetLobbyDialogs` | `0x000bd7f0`, `0x000bd810`, `0x000bd830` |
+- VC5 used decorated ctor/dtor names while the delinker used `Class`/`~Class`;
+- VC5 used `_atexit` while the delinker used `atexit`;
+- the guarded destructor's private guard-byte symbol was independently named;
+- retail COFF retained an undefined `$E<n>` duplicate beside its definition and
+  parent helpers relocated through the undefined symbol.
 
-This is a relocation/model audit queue, not evidence that the normalizer should
-fall back to private names. `match.status` reported the first AreaMgr helper as
-the vanished semantic name `TokenMgrReset` and the first NetLobby helper as
-`InitPlayerNameStr`; those names had occupied the RVAs before the private helper
-identity was exposed and must not be read as separate losses. ButeMgr's two
-one-byte helpers also rebound from `_$E48`/`_$E50` to their shared
-content-addressed identity, but remained exact at the module level and therefore
-did not contribute to the ten-function dip.
+The normalizer now maps ctor/dtor/atexit spellings to semantic roles, recognizes
+only the exact 31-byte guard-site pattern, and resolves an undefined `$E` alias
+only when its same-object name has exactly one candidate definition. A full
+synthetic COFF test proves both the dependency hash and the rewritten relocation
+name; recognizer-only coverage is insufficient.
+
+This recovered all ten apparent losses in `AreaMgr`, `GameText`, `CImage`, and
+`NetLobbyDialogs`. The template-static reconstruction then emitted twelve more
+exact helpers: eight for the two Gruntz command recycle lists and four for the
+network command pool. Thus the earlier “unresolved relocation/model audit
+queue” was wrong: it recorded a normalization defect, not evidence against the
+object models. Preserve this history because the same signature can be used in
+reverse—when an `$E` family dips with identical raw instructions, audit
+semantic relocation aliases and duplicate undefined helper symbols before
+changing reconstructed C++.
+
+The full-build overlap gate also falsified three LOW library labels:
+`0x000238f0`, `0x00023980`, and `0x000bef30` had been called
+`LIBCMT ___inittime`. Each is the 14-byte registrar inside one of the proven
+four-helper families, so the labels were pruned. Use this in reverse on other
+LOW `___inittime` rows, but require the adjacent wrapper, ctor, guarded dtor,
+shared object relocation, and `atexit` edge; the short body alone is not enough
+to reclassify an RVA.

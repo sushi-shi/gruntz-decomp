@@ -48,6 +48,8 @@ NAMED_STATIC = re.compile(r"^(?P<prefix>.+\$S)[0-9]+$")
 # funclet body so objdiff pairs by content. (Text, not data, but the byte/reloc hash is
 # identical machinery.)
 VOLATILE_E = re.compile(r"^_?\$E[0-9]+$")
+MSVC_CTOR = re.compile(r"^\?\?0(?P<class_name>[^@]+)@@")
+MSVC_DTOR = re.compile(r"^\?\?1(?P<class_name>[^@]+)@@")
 
 INITIALIZED_DATA = 0x00000040
 UNINITIALIZED_DATA = 0x00000080
@@ -344,6 +346,39 @@ def _is_canonical_candidate(definition: Definition) -> bool:
     return definition.storage != "text" and definition.symbol.storage_class == 3
 
 
+def _compiler_private_definition_aliases(
+        coff: CoffObject, candidates: dict[int, Definition]) -> dict[int, int]:
+    """Pair an undefined `$E` duplicate with its unique same-object definition.
+
+    The retail delinker can preserve both a defined compiler helper and an
+    undefined external symbol with the same volatile `$E<n>` spelling. Parent
+    helpers may relocate through that undefined symbol. Resolve only an exact,
+    unique same-name duplicate; ambiguous or differently shaped symbols remain
+    untouched.
+    """
+    definitions_by_name: dict[str, list[int]] = defaultdict(list)
+    for symbol_index, definition in candidates.items():
+        if _family(definition.symbol.name) == ("e", None):
+            definitions_by_name[definition.symbol.name].append(symbol_index)
+
+    aliases = {}
+    for symbol in coff.symbols.values():
+        if (
+            symbol.index in candidates
+            or symbol.section != 0
+            or symbol.value != 0
+            or symbol.typ not in (0, FUNCTION_TYPE)
+            or symbol.storage_class != EXTERNAL_STORAGE
+            or symbol.aux_count != 0
+            or _family(symbol.name) != ("e", None)
+        ):
+            continue
+        definitions = definitions_by_name.get(symbol.name, ())
+        if len(definitions) == 1:
+            aliases[symbol.index] = definitions[0]
+    return aliases
+
+
 def _identity_span(kind: str, physical_size: int, meaningful_size: int) -> int:
     # TEXT COMDATs and packed target text align the same helper differently.
     # Padding is not part of a function's identity. Data allocation spans remain
@@ -388,6 +423,41 @@ def _escaped_preview(payload: bytes, limit: int = 48) -> str:
 
 def _record_bytes(record: dict) -> bytes:
     return json.dumps(record, sort_keys=True, separators=(",", ":")).encode("ascii")
+
+
+def _stable_relocation_name(name: str) -> str:
+    """Normalize semantic aliases emitted by cl versus the retail delinker.
+
+    VC5 COFF names a constructor/destructor by its decorated symbol, while the
+    delinker's import from the stripped image commonly names the same target
+    `Class` / `~Class`. The spelling difference must not give otherwise
+    identical compiler-private helpers different content identities.
+    """
+    if name == "_atexit":
+        return "atexit"
+    match = MSVC_CTOR.match(name)
+    if match:
+        return match.group("class_name")
+    match = MSVC_DTOR.match(name)
+    if match:
+        return f"~{match.group('class_name')}"
+    return name
+
+
+def _guarded_static_dtor_guard_site(payload: bytes, relative: int) -> bool:
+    """Identify the two relocations to VC5's private template-dtor guard byte."""
+    return (
+        len(payload) == 0x1F
+        and relative in (0x2, 0x10)
+        and payload[0:2] == b"\x8a\x0d"
+        and payload[6] == 0xB0
+        and payload[7] != 0
+        and payload[8:14] == b"\x84\xc8\x75\x12\x0a\xc8"
+        and payload[14:16] == b"\x88\x0d"
+        and payload[20] == 0xB9
+        and payload[25] == 0xE9
+        and payload[30] == 0xC3
+    )
 
 
 def _digest(record: bytes, seen: dict[str, bytes]) -> str:
@@ -634,6 +704,7 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
         row.symbol.index: row for row in definitions
         if _is_canonical_candidate(row)
     }
+    definition_aliases = _compiler_private_definition_aliases(coff, candidates)
     kinds: dict[int, tuple[str, bytes, str, str]] = {}
     for definition in candidates.values():
         family = _family(definition.symbol.name)
@@ -664,12 +735,23 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
     digest_records: dict[str, bytes] = {}
     dependencies = {}
     for symbol_index, definition in candidates.items():
-        dependencies[symbol_index] = {
-            relocation.symbol_index
-            for relocation in section_relocations[definition.section.index]
-            if (definition.start <= relocation.site < definition.end and
-                relocation.symbol_index in candidates)
-        }
+        family = _family(definition.symbol.name)
+        assert family is not None
+        _kind, meaningful, _proof, _preview = kinds[symbol_index]
+        dependencies[symbol_index] = set()
+        for relocation in section_relocations[definition.section.index]:
+            if not definition.start <= relocation.site < definition.end:
+                continue
+            relative = relocation.site - definition.start
+            if (
+                family[0] == "e"
+                and _guarded_static_dtor_guard_site(meaningful, relative)
+            ):
+                continue
+            target_index = definition_aliases.get(
+                relocation.symbol_index, relocation.symbol_index)
+            if target_index in candidates:
+                dependencies[symbol_index].add(target_index)
 
     levels = {}
     finding_level = set()
@@ -724,11 +806,20 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
                     masked[relative:relative + width], "little", signed=True)
                 masked[relative:relative + width] = bytes(width)
                 target = coff.symbols[relocation.symbol_index]
-                if relocation.symbol_index in candidates:
+                target_index = definition_aliases.get(
+                    relocation.symbol_index, relocation.symbol_index)
+                if (
+                    family[0] == "e"
+                    and _guarded_static_dtor_guard_site(meaningful, relative)
+                ):
+                    target_identity = ("compiler-static-dtor-guard",)
+                    addend = 0
+                elif target_index in candidates:
                     target_identity = (
-                        "canonical", renames[relocation.symbol_index])
+                        "canonical", renames[target_index])
                 else:
-                    target_identity = ("symbol", target.name)
+                    target_identity = (
+                        "symbol", _stable_relocation_name(target.name))
                 reloc_rows.append((
                     relative, relocation.typ, width, addend, target_identity,
                 ))
@@ -786,6 +877,9 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
                 digest, canonical, occurrence, record,
             )
 
+    for alias_index, definition_index in definition_aliases.items():
+        renames[alias_index] = renames[definition_index]
+
     rows = []
     for definition in sorted(candidates.values(), key=lambda row: (
             row.section.index, row.start)):
@@ -800,6 +894,15 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
     for symbol in sorted(coff.symbols.values(), key=lambda row: row.index):
         family = _family(symbol.name)
         if family is None or symbol.index in candidates:
+            continue
+        alias_target = definition_aliases.get(symbol.index)
+        if alias_target is not None:
+            (_definition, _target_family, _kind, _meaningful, _proof, _preview,
+             digest, canonical, occurrence, _record) = resolved[alias_target]
+            rows.append(CanonicalRow(
+                symbol.name, canonical, family[0], "undefined", 0, 0, 0, 0,
+                occurrence, digest, "alias-of-definition", "",
+            ))
             continue
         definition = definition_by_symbol.get(symbol.index)
         if definition is not None:

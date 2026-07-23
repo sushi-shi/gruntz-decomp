@@ -191,12 +191,14 @@ gaps.
   `--recover-data-relocs-from-pdb` as a safety net for anything left uncovered.
 
 - **Bonus: the sizeof extents are a contradiction check.** A reviewed extent must fit
-  the span to its neighbour. Six overlaps fell out, each proving one of a pair is
-  mis-modelled (neither is enrolled — we do not know which is wrong):
-  `g_singleCmdList`/`g_multiCmdList`/`g_pool` (`CPtrList` 0x1c swallows the adjacent
-  `…Count` 0xc in), `g_smallFont` (`Font` 0x18 swallows `g_loadedFlag`), `g_panTable`
-  (mangles `PAHA` = `int*` = 4 but the declared type sized 0x20), `g_imageCache`
-  (`CPtrArray` 0x14 swallows `g_imageCacheIndex`). A real defect worklist:
+  the span to its neighbour. Six overlaps originally fell out. Three are now
+  resolved: `g_singleCmdList`, `g_multiCmdList`, and `g_pool` were fake names for
+  real `CPtrList` template-static specializations, while each adjacent `…Count`
+  was the list's inherited `m_nCount` member at `+0xc`, not independent storage.
+  The remaining overlap worklist is `g_smallFont` (`Font` 0x18 swallows
+  `g_loadedFlag`), `g_panTable` (mangles `PAHA` = `int*` = 4 but the declared type
+  sized 0x20), and `g_imageCache` (`CPtrArray` 0x14 swallows
+  `g_imageCacheIndex`). Audit it with
   `python -m gruntz.build.data_manifest --report`.
 
 ### 3b. `--data-section-manifest` is IN — the container artifact is dead (DONE)

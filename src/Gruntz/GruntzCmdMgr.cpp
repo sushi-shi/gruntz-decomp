@@ -377,8 +377,9 @@ i32 CGruntzMultiCommand::Select(CState* state) {
 
 RVA(0x00024220, 0x2b)
 CGruntzSingleCommand* CGruntzSingleCommand::Allocate() {
-    if (g_singleCmdCount) {
-        return static_cast<CGruntzSingleCommand*>(g_singleCmdList.RemoveTail());
+    CPtrList& freeList = CPtrListPool<CGruntzSingleCommand>::s_freeList;
+    if (freeList.GetCount()) {
+        return static_cast<CGruntzSingleCommand*>(freeList.RemoveTail());
     }
     return new CGruntzSingleCommand;
 }
@@ -395,7 +396,7 @@ char CGruntzSingleCommand::GetTag() {
 
 RVA(0x000242a0, 0xc)
 void CGruntzSingleCommand::Deselect() {
-    g_singleCmdList.AddHead(this); // retire onto the single-command recycle list
+    CPtrListPool<CGruntzSingleCommand>::s_freeList.AddHead(this);
 }
 
 RVA_COMPGEN(0x000242f0, 0x7, ??1CGruntzSingleCommand@@UAE@XZ)
@@ -410,8 +411,9 @@ RVA_COMPGEN(0x00024330, 0x20, ??_GCGruntzCommand@@UAEPAXI@Z)
 
 RVA(0x00024360, 0x2b)
 CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
-    if (g_multiCmdCount) {
-        return static_cast<CGruntzMultiCommand*>(g_multiCmdList.RemoveTail());
+    CPtrList& freeList = CPtrListPool<CGruntzMultiCommand>::s_freeList;
+    if (freeList.GetCount()) {
+        return static_cast<CGruntzMultiCommand*>(freeList.RemoveTail());
     }
     return new CGruntzMultiCommand;
 }
@@ -428,15 +430,16 @@ char CGruntzMultiCommand::GetTag() {
 
 RVA(0x000243e0, 0xc)
 void CGruntzMultiCommand::Deselect() {
-    g_multiCmdList.AddHead(this); // retire onto the multi-command recycle list
+    CPtrListPool<CGruntzMultiCommand>::s_freeList.AddHead(this);
 }
 
 RVA_COMPGEN(0x00024430, 0x7, ??1CGruntzMultiCommand@@UAE@XZ)
 
 RVA(0x00024450, 0x29)
 void CGruntzSingleCommand::FreeAll() {
-    while (g_singleCmdCount) {
-        CGruntzCommand* node = static_cast<CGruntzCommand*>(g_singleCmdList.RemoveTail());
+    CPtrList& freeList = CPtrListPool<CGruntzSingleCommand>::s_freeList;
+    while (freeList.GetCount()) {
+        CGruntzCommand* node = static_cast<CGruntzCommand*>(freeList.RemoveTail());
         if (node) {
             delete node;
         }
@@ -445,8 +448,9 @@ void CGruntzSingleCommand::FreeAll() {
 
 RVA(0x00024490, 0x29)
 void CGruntzMultiCommand::FreeAll() {
-    while (g_multiCmdCount) {
-        CGruntzCommand* node = static_cast<CGruntzCommand*>(g_multiCmdList.RemoveTail());
+    CPtrList& freeList = CPtrListPool<CGruntzMultiCommand>::s_freeList;
+    while (freeList.GetCount()) {
+        CGruntzCommand* node = static_cast<CGruntzCommand*>(freeList.RemoveTail());
         if (node) {
             delete node;
         }
@@ -691,13 +695,6 @@ const u16 g_cmdBitTable[16] = {
 VTBL(CGruntzSingleCommand, 0x001e9634); // vtable_names -> code (RTTI game class)
 VTBL(CGruntzCommand, 0x001e9674);
 VTBL(CGruntzMultiCommand, 0x001e96b4); // vtable_names -> code (RTTI game class)
-DATA_SYMBOL(0x0022b5d0, 0x1c, ?g_singleCmdList@@3VCPtrList@@A)
-DATA(0x0022b5dc)
-i32 g_singleCmdCount;
-DATA_SYMBOL(0x0022b640, 0x1c, ?g_multiCmdList@@3VCPtrList@@A)
-DATA(0x0022b64c)
-i32 g_multiCmdCount;
-
 DATA(0x002451a4)
 i32 g_dlgVal_6451a4;
 DATA(0x00245268)

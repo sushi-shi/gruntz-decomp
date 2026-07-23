@@ -1,9 +1,15 @@
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>     // CGruntzMgr (g_gameReg; m_isCheckpointPrompts)
-#include <Gruntz/GruntzCommand.h> // canonical g_singleCmdList/g_multiCmdList (@0x62b5d0/0x62b640)
+#include <Gruntz/GruntzMgr.h> // CGruntzMgr (g_gameReg; m_isCheckpointPrompts)
+#include <Gruntz/GruntzCommand.h>
 #include <rva.h>
 #include <Gruntz/CheckpointDlg.h> // ex Globals.h
+
+template<> DATA(0x0022b5d0)
+CPtrList CPtrListPool<CGruntzSingleCommand>::s_freeList(0xa);
+
+template<> DATA(0x0022b640)
+CPtrList CPtrListPool<CGruntzMultiCommand>::s_freeList(0xa);
 
 DATA(0x001e94b8)
 const i32 g_msgmap_CCheckpointDlg = 6205544;
@@ -44,11 +50,14 @@ void CCheckpointDlg::OnToggleCheckpointPrompts() {
     g_gameReg->m_isCheckpointPrompts = checked == 0;
 }
 
-RVA(0x000238d0, 0xd)
-void Init238d0() {
-    (static_cast<CPtrList*>(&g_singleCmdList))->CPtrList::CPtrList(0xa);
-}
-RVA(0x00023960, 0xd)
-void InitGlobalObList() {
-    (static_cast<CPtrList*>(&g_multiCmdList))->CPtrList::CPtrList(0xa);
-}
+// MSVC's compiler-private initializer families for the two explicit template
+// static specializations above. The guarded 0x1f-byte destructor helpers share
+// one compiler guard byte and use bits 1 and 2 respectively.
+RVA_COMPGEN(0x000238b0, 0xa, _$E145584)
+RVA_COMPGEN(0x000238d0, 0xd, _$E145616)
+RVA_COMPGEN(0x000238f0, 0xe, _$E145648)
+RVA_COMPGEN(0x00023910, 0x1f, _$E145680)
+RVA_COMPGEN(0x00023940, 0xa, _$E145728)
+RVA_COMPGEN(0x00023960, 0xd, _$E145760)
+RVA_COMPGEN(0x00023980, 0xe, _$E145792)
+RVA_COMPGEN(0x000239a0, 0x1f, _$E145824)

@@ -86,9 +86,7 @@
 ?g_logicActReg_6447f8@@3UCLogicActTable@@A
 ?g_logicActReg_646010@@3UCLogicActTable@@A
 ?g_mapNamePre@@3PADA
-?g_multiCmdList@@3VCPtrList@@A
 ?g_multiplayerAvail@@3HA
-?g_pool@@3VCPtrList@@A
 ?g_powerupActReg@@3UCIndicatorActReg@@A
 ?g_projReg@@3UCCoordColl@@A
 ?g_reg_644af0@@3UCLookupColl@@A
@@ -98,7 +96,6 @@
 ?g_sessionName@@3VCString@@A
 ?g_shadowActReg@@3UCSiblingActReg@@A
 ?g_singleAnimActReg@@3UCSingleAnimActReg@@A
-?g_singleCmdList@@3VCPtrList@@A
 ?g_singleFrameActReg@@3UCActReg@@A
 ?g_statusBarSpriteActReg@@3UCActReg@@A
 ?g_store6453f0@@3VzPTree@@A

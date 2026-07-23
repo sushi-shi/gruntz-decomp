@@ -175,6 +175,13 @@ _CPP_PROTO = re.compile(
     r"(?:(?:const|volatile|noexcept|OVERRIDE)\s*|=\s*0\s*)*$",
     re.DOTALL,
 )
+# A qualified static-data definition with a scalar direct initializer is not a
+# prototype. This shape is required for non-copyable VC5 types such as
+# `CPtrList Pool<T>::s_list(10)`, so copy-initialization is not an available
+# spelling merely to appease the textual census.
+_CPP_QUALIFIED_DIRECT_INIT = re.compile(
+    r"::[A-Za-z_]\w*\s*\(\s*(?:0[xX][0-9A-Fa-f]+|[0-9]+)(?:\s*[,)]|[uUlL]+\s*[,)])"
+)
 _NAMESPACE_OPEN = re.compile(r"(?:^|[;{}])\s*(?:inline\s+)?namespace(?:\s+\w+(?:::\w+)*)?\s*$")
 _EXTERN_BLOCK_OPEN = re.compile(r"(?:^|[;{}])\s*extern\s*$")
 
@@ -201,7 +208,12 @@ def _count_cpp_external_prototypes(code: str) -> int:
                 contexts.pop()
             statement_start = i + 1
         elif ch == ";":
-            if allowed and _CPP_PROTO.match(code[statement_start:i]):
+            statement = code[statement_start:i]
+            if (
+                allowed
+                and _CPP_PROTO.match(statement)
+                and not _CPP_QUALIFIED_DIRECT_INIT.search(statement)
+            ):
                 total += 1
             statement_start = i + 1
     return total

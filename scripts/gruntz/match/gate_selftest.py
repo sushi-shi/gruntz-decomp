@@ -109,6 +109,37 @@ class TestCompilerPrivateFunctionNames(unittest.TestCase):
         )
         return header + section + raw + symbol + struct.pack("<I", 4)
 
+    @staticmethod
+    def _text_helper_alias_coff(parent_targets_alias):
+        child = b"\xb8\x01\x00\x00\x00\xc3"
+        parent = b"\xe8\x00\x00\x00\x00\xc3"
+        raw = child + parent
+        raw_offset = 20 + 40
+        reloc_offset = raw_offset + len(raw)
+        symbol_offset = reloc_offset + 10
+        header = struct.pack(
+            "<HHIIIHH", 0x14C, 1, 0, symbol_offset, 3, 0, 0)
+        section = struct.pack(
+            "<8sIIIIIIHHI",
+            b".text\0\0\0", 0, 0, len(raw), raw_offset, reloc_offset, 0, 1, 0,
+            canonicalize_data_symbols.MEM_EXECUTE,
+        )
+        relocation = struct.pack(
+            "<IIH", len(child) + 1, 1 if parent_targets_alias else 0, 0x14)
+
+        def symbol(name, value, section_ordinal):
+            return name.encode("ascii").ljust(8, b"\0") + struct.pack(
+                "<IhHBB", value, section_ordinal,
+                canonicalize_data_symbols.FUNCTION_TYPE, 2, 0,
+            )
+
+        symbols = (
+            symbol("_$E100", 0, 1)
+            + symbol("_$E100", 0, 0)
+            + symbol("_$E200", len(child), 1)
+        )
+        return header + section + raw + relocation + symbols + struct.pack("<I", 4)
+
     def test_x86_dynamic_initializer_is_content_addressed(self):
         self.assertEqual(canonicalize_data_symbols._family("_$E28"), ("e", None))
 
@@ -166,6 +197,48 @@ class TestCompilerPrivateFunctionNames(unittest.TestCase):
             wide.rows[0].canonical_name,
             packed.rows[0].canonical_name,
         )
+
+    def test_helper_relocation_names_normalize_ctor_dtor_and_atexit_aliases(self):
+        stable = canonicalize_data_symbols._stable_relocation_name
+        self.assertEqual(stable("??0CPtrList@@QAE@H@Z"), "CPtrList")
+        self.assertEqual(stable("??1CPtrList@@UAE@XZ"), "~CPtrList")
+        self.assertEqual(stable("_atexit"), "atexit")
+        self.assertEqual(stable("CPtrList"), "CPtrList")
+        self.assertEqual(stable("~CPtrList"), "~CPtrList")
+
+    def test_template_static_dtor_guard_relocations_are_role_identified(self):
+        body = (
+            b"\x8a\x0d\x00\x00\x00\x00"
+            b"\xb0\x02\x84\xc8\x75\x12\x0a\xc8"
+            b"\x88\x0d\x00\x00\x00\x00"
+            b"\xb9\x00\x00\x00\x00"
+            b"\xe9\x00\x00\x00\x00\xc3"
+        )
+        is_guard = canonicalize_data_symbols._guarded_static_dtor_guard_site
+        self.assertTrue(is_guard(body, 0x2))
+        self.assertTrue(is_guard(body, 0x10))
+        self.assertFalse(is_guard(body, 0x15))
+        self.assertFalse(is_guard(body, 0x1A))
+
+    def test_undefined_helper_alias_resolves_to_unique_same_object_definition(self):
+        direct = canonicalize_data_symbols.canonicalize_coff(
+            self._text_helper_alias_coff(False))
+        through_alias = canonicalize_data_symbols.canonicalize_coff(
+            self._text_helper_alias_coff(True))
+        direct_parent = next(
+            row for row in direct.rows if row.original_name == "_$E200")
+        alias_parent = next(
+            row for row in through_alias.rows if row.original_name == "_$E200")
+        self.assertEqual(direct_parent.canonical_name, alias_parent.canonical_name)
+
+        normalized = canonicalize_data_symbols.CoffObject(through_alias.data)
+        self.assertEqual(normalized.symbols[0].name, normalized.symbols[1].name)
+        alias_row = next(
+            row for row in through_alias.rows
+            if row.original_name == "_$E100"
+            and row.proof == "alias-of-definition"
+        )
+        self.assertEqual(alias_row.canonical_name, normalized.symbols[0].name)
 
 
 # --------------------------------------------------------------------------- #
@@ -511,6 +584,16 @@ class TestCleanlinessRatchet(unittest.TestCase):
             cleanliness.merge_baseline_downonly([("cpp external prototypes", 3)])
         )
         self.assertEqual(merged["cpp external prototypes"], 2)
+
+    def test_cpp_external_prototypes_exclude_qualified_direct_initialized_data(self):
+        code = cleanliness._strip(
+            """
+            template <>
+            DATA(0x0024aca8)
+            CPtrList CPtrListPool<CNetCmdPacket>::s_freeList(0xa);
+            """
+        )
+        self.assertEqual(cleanliness._count_cpp_external_prototypes(code), 0)
 
     def test_prose_does_not_inflate_the_metrics(self):
         code = cleanliness._strip('// a )this cast and a void* m_x live in this comment\n'

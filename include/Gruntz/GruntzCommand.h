@@ -4,6 +4,7 @@
 #include <Mfc.h> // the REAL MFC CPtrList (CPtrList IS CPtrList; see the note below)
 #include <rva.h>
 #include <Ints.h>
+#include <Utils/PtrListPool.h>
 
 typedef u32 gz_size_t;
 void* operator new(gz_size_t);
@@ -130,7 +131,7 @@ public:
     virtual void Deselect() OVERRIDE; // slot 10 (base is __purecall)
     CGruntzSingleCommand() {}         // inline empty ctor (vftable store only)
     static CGruntzSingleCommand* Allocate();
-    static void FreeAll(); // 0x024450 - drain g_singleCmdList, delete each node
+    static void FreeAll(); // 0x024450 - drain the per-type recycle list
 };
 SIZE(0x14);
 
@@ -155,13 +156,8 @@ public:
     virtual void Deselect() OVERRIDE;           // slot 10 (base is __purecall)
     CGruntzMultiCommand() {}
     static CGruntzMultiCommand* Allocate();
-    static void FreeAll(); // 0x024490 - drain g_multiCmdList, delete each node
+    static void FreeAll(); // 0x024490 - drain the per-type recycle list
 };
 SIZE(0x14);
-
-extern i32 g_singleCmdCount;     // 0x62b5dc - non-empty gate
-extern CPtrList g_singleCmdList; // 0x62b5d0 - the recycle list (ecx for RemoveTail)
-extern i32 g_multiCmdCount;      // 0x62b64c
-extern CPtrList g_multiCmdList;  // 0x62b640
 
 #endif // SRC_GRUNTZ_GRUNTZCOMMAND_H

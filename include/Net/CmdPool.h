@@ -1,8 +1,8 @@
 #ifndef NET_CMDPOOL_H
 #define NET_CMDPOOL_H
 
-class CPtrList;
+#include <Utils/PtrListPool.h>
 
-extern CPtrList g_pool; // 0x64aca8
+struct CNetCmdPacket;
 
 #endif // NET_CMDPOOL_H
