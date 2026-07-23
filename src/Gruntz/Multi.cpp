@@ -527,6 +527,13 @@ CNetSession::~CNetSession() {
     ResetSync();
 }
 
+// Slot-32 override: a pure forwarder - cl /O2 tail-jumps the base body (retail
+// 0xb6310 = `jmp` -> ILT 0x3f30 -> ?OnExit@CPlay 0xcb400; vtable holds thunk 0x33be).
+RVA(0x000b6310, 0x5)
+void CMulti::OnExit() {
+    CPlay::OnExit();
+}
+
 RVA(0x000b62a0, 0x4a)
 CNetCmdSlot::~CNetCmdSlot() {
     ResetAll();

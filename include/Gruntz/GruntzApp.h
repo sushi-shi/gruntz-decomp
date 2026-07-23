@@ -8,8 +8,10 @@ class CGruntzApp : public CGameApp {
 public:
     CGruntzApp();                   // ctor
     virtual ~CGruntzApp() OVERRIDE; // vtbl +0x00
-    // slot 4 CloseResources: INHERITED (retail slot holds the CGameApp base body
-    // 0x1b8b thunk target; a CGruntzApp override never existed).
+    // slot 4: a REAL override - retail's slot holds thunk 0x1b8b -> 0x80980, a
+    // one-instruction forwarder in the gruntzapp band that tail-jumps the base
+    // body (cl /O2 emits the jmp for the perfect forwarding call).
+    virtual void CloseResources() OVERRIDE;            // slot 4 (0x80980, GruntzApp.cpp)
     virtual CGameWnd* InitializeGameWindow() OVERRIDE; // slot 13 (0x0809a0, GruntzApp.cpp)
     // Override of the base init virtual (CGameApp slot +0x08): forwards all 7
     // launch args to CGameApp::Init and normalises the result

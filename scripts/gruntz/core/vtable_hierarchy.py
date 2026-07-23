@@ -302,6 +302,23 @@ def spine_names(ci):
     return names
 
 
+_ILT_BAND_END = 0x7C20  # the incremental-link jmp-thunk band (see vs.chase_thunk)
+
+
+def _same_body(a, b):
+    """Slot equality up to ILT jmp-thunks - band-limited. Two vtables can hold
+    DIFFERENT thunk instances of one body; chase those. But a `jmp rel32` OUTSIDE
+    the ILT band is a REAL one-instruction forwarder METHOD (a derived override
+    whose body tail-jumps the base impl: CMulti::OnExit 0xb6310 -> CPlay::OnExit,
+    CInputDevBase::ReleaseDevices 0x1342b0 -> the root body) - chasing it would
+    hide a genuine override slot, so never chase past the band."""
+    if a == b:
+        return True
+    ca = vs.chase_thunk(a) if a < _ILT_BAND_END else None
+    cb = vs.chase_thunk(b) if b < _ILT_BAND_END else None
+    return (ca or a) == (cb or b)
+
+
 def diff_primary(reg, ci):
     """Return (rows, meta). rows: [(idx, fn_rva, name, origin, disposition)].
     meta: dict(base, declared_base, base_inferred, mi, no_base_vtable)."""
@@ -346,7 +363,7 @@ def diff_primary(reg, ci):
             disp = "new" if not declared_base else "unknown"
         elif i >= nB:
             disp = "new"
-        elif fn == base_slots[i]:
+        elif _same_body(fn, base_slots[i]):
             disp = "inherited"
         else:
             disp = "override"
@@ -376,7 +393,7 @@ def diff_secondary(reg, ci, base_off):
             disp = "unknown"
         elif i >= nB:
             disp = "new"
-        elif fn == base_slots[i]:
+        elif _same_body(fn, base_slots[i]):
             disp = "inherited"
         else:
             disp = "override"  # (typically an adjustor thunk to the derived override)
@@ -752,15 +769,15 @@ def _deepest_base(slots, self_rva, known, inter):
         if rva == self_rva:
             continue
         n = len(bslots)
-        if 5 <= n <= len(slots) and all(i == 1 or slots[i] == bslots[i] for i in range(n)):
+        if 5 <= n <= len(slots) and all(i == 1 or _same_body(slots[i], bslots[i]) for i in range(n)):
             if best is None or n > best[1]:
                 best = (nm, n)
     for nm, bslots in inter.items():
         n = len(bslots)
         if n < 6 or n > len(slots):
             continue
-        head_ok = all(i == 1 or slots[i] == bslots[i] for i in range(5))  # CObject prefix
-        tail_ok = any(slots[i] == bslots[i] for i in range(5, n))         # >=1 intermediate slot (rest may be overridden)
+        head_ok = all(i == 1 or _same_body(slots[i], bslots[i]) for i in range(5))  # CObject prefix
+        tail_ok = any(_same_body(slots[i], bslots[i]) for i in range(5, n))         # >=1 intermediate slot (rest may be overridden)
         if head_ok and tail_ok and (best is None or n > best[1]):
             best = (nm, n)
     return best
@@ -863,8 +880,8 @@ def cmd_audit(aud):
                                                 if aud.reg.get(source_base) and aud.reg[source_base].primary() else [])
             nB = len(bslots)
             di = dtor_i if dtor_i is not None else 1
-            n_inh = sum(1 for i in range(min(nB, len(slots))) if i != di and slots[i] == bslots[i])
-            n_ovr = sum(1 for i in range(min(nB, len(slots))) if i == di or slots[i] != bslots[i])
+            n_inh = sum(1 for i in range(min(nB, len(slots))) if i != di and _same_body(slots[i], bslots[i]))
+            n_ovr = sum(1 for i in range(min(nB, len(slots))) if i == di or not _same_body(slots[i], bslots[i]))
             n_new = max(0, len(slots) - nB)
         own = n_ovr + n_new
         n_virt, n_macro = _body_counts(aud.bodies.get(name, []))

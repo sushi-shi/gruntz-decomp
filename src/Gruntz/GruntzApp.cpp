@@ -55,9 +55,15 @@ i32 CGruntzApp::Init(
 
 RVA(0x000808b0, 0x60)
 CGruntzApp::~CGruntzApp() {
-    // CloseResources is NOT overridden by CGruntzApp - the retail dtor calls the
-    // inherited base CGameApp::CloseResources directly (0x13d8c0); the explicit
-    // base qualification binds that real callee (devirtualized, same call bytes).
+    // The retail dtor calls the BASE body directly (0x13d8c0) - the qualified
+    // spelling keeps that direct binding (the CGruntzApp override is @0x80980).
+    CGameApp::CloseResources();
+}
+
+// Slot-4 override: a pure forwarder - cl /O2 tail-jumps the base body (retail
+// 0x80980 = `jmp 0x13d8c0`, reached via ILT thunk 0x1b8b from the vtable).
+RVA(0x00080980, 0x5)
+void CGruntzApp::CloseResources() {
     CGameApp::CloseResources();
 }
 

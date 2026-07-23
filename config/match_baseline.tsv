@@ -172,7 +172,7 @@ grunttubeanim	1	0
 gruntvoice	19	14
 gruntvoiceactreg	1	0
 gruntwingztimesprite	4	3
-gruntzapp	9	9
+gruntzapp	10	10
 gruntzcmdmgr	44	39
 gruntzmapmgr	3	2
 gruntzmgr	138	98
@@ -242,7 +242,7 @@ modeobjinit	2	1
 motionstate	6	3
 movieplayer	2	2
 movinglogic	7	3
-multi	102	61
+multi	103	62
 multistartdlg	17	8
 multistartdlgroster	32	18
 namerecord	4	3
@@ -2184,6 +2184,7 @@ gruntwingztimesprite	?GetTypeTag@CGruntWingzTimeSprite@@UAE?AW4LogicTypeId@@XZ	1
 gruntwingztimesprite	?Vslot16@CGruntWingzTimeSprite@@UAEHPAVCGrunt@@@Z	100.0000	100.0000	1	258bb5e32138	0x7fd90
 gruntzapp	??0CGruntzApp@@QAE@XZ	100.0000	100.0000	7	b346beed7561	0x80850
 gruntzapp	??1CGruntzApp@@UAE@XZ	100.0000	100.0000	8	3edd722cbf69	0x808b0
+gruntzapp	?CloseResources@CGruntzApp@@UAEXXZ	100.0000	100.0000	1	cpp:4abc3c5bf514	0x80980
 gruntzapp	?ErrorDialogProc@CGruntzApp@@SGHPAUHWND__@@IIJ@Z	100.0000	100.0000	8	f0ec39f37b63	0x80c70
 gruntzapp	?HandleCommand@CGruntzApp@@UAEHHW4GruntzCommand@@H@Z	100.0000	100.0000	1	cpp:cbac91100c2f	0x80aa0
 gruntzapp	?Init@CGruntzApp@@UAEHPAUHINSTANCE__@@PAD11HHH@Z	100.0000	100.0000	2	642ebe91fc86	0x80930
@@ -2957,6 +2958,7 @@ multi	?LoadMenuSelectSprite@CMulti@@QAEHPAX@Z	100.0000	100.0000	13	be5fc334a17b	
 multi	?MultiJoinDlgProc@@YGHPAUHWND__@@IIH@Z	75.7872	75.7872	6	7a7ee99f9740	0xb8020
 multi	?NetSetupDlgProc@@YGHPAUHWND__@@IIH@Z	87.1589	87.1589	6	dd08afba9936	0xb7b10
 multi	?OnDropPlayer@CMulti@@QAEXXZ	100.0000	100.0000	6	c7ca43dfd243	0xbc110
+multi	?OnExit@CMulti@@UAEXXZ	100.0000	100.0000	1	cpp:0021d97702f1	0xb6310
 multi	?OnJoinConfirm@CMulti@@QAEHPAX@Z	81.9882	81.9882	5	4e1ff87657d5	0xb8cf0
 multi	?OnMultiOptions@CMulti@@QAEXXZ	100.0000	100.0000	3	fc565831af67	0xbadd0
 multi	?OnMultiPause@CMulti@@QAEXXZ	100.0000	100.0000	5	d0faa33c664e	0xbad40
@@ -3265,7 +3267,7 @@ play	?LoadLevelAnims@CPlay@@QAEHH@Z	100.0000	100.0000	4	0a4d861e565a	0xdb750
 play	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	8	ec6c2f7bb630	0xdb7e0
 play	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	8	80c2370efbdb	0xdb6c0
 play	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	8	2cc1097e7e6f	0xd1710
-play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	90.2500	90.2500	11	538683642a50	0xd12b0
+play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	90.3250	90.3250	11	538683642a50	0xd12b0
 play	?LoadWarlordSprites@CPlay@@QAEHHPAH@Z	90.8191	90.8191	15	a0676026e9c0	0xd65d0
 play	?MainPlaneQueryA@CGameLevel@@QAEHXZ	100.0000	100.0000	2	03f0d70791b8	0xcedf0
 play	?MainPlaneQueryB@CGameLevel@@QAEHXZ	100.0000	100.0000	2	f5c3cf707abf	0xcee10
