@@ -1828,7 +1828,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         do {
                             i32 dx = rangeA ? GruntRand() % rangeA + 1 : GruntRand() & 1;
                             i32 dy = rangeB ? GruntRand() % rangeB + 1 : GruntRand() & 1;
-                            if (g->TeleportMove(dx, dy, 0, 1)) {
+                            if (g->StepAnimDispatchA(dx, dy, 0, 1)) {
                                 CGameObject* spr =
                                     g_gameReg->m_world->m_childGroup
                                         ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
@@ -1895,7 +1895,6 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         if (gx == x && gy == y) {
                             break;
                         }
-                        g->FreezeApply();
                         CGameObject* h = g->m_object;
                         CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                             0,

@@ -5,7 +5,7 @@
 #include <Gruntz/Play.h>              // the real CPlay : CState (the method owner)
 #include <Gruntz/View.h>              // the CDDrawSurfaceMgr chain (render state, draw surface)
 #include <DDrawMgr/DDrawChildGroup.h> // renderer A - the real CDDrawChildGroup (m_list.GetCount @+0x1c)
-#include <Gruntz/GameLevel.h>   // canonical CGameLevel/CDDrawWorkerHost (the m_24 level + scroll origin)
+#include <Gruntz/GameLevel.h> // canonical CGameLevel/CDDrawWorkerHost (the m_24 level + scroll origin)
 #include <DDrawMgr/DDSurface.h> // the real CDDSurface (render-flip surface; +0x08 held COM surface)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (m_surface)
 #include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (full def)
@@ -15,7 +15,7 @@
 
 #include <rva.h>
 
-CString FormatElapsed(i32 count);
+CString FormatElapsedTime(u32 ms); // 0x1190f0 (TimeString.cpp)
 
 RVA(0x000cf770, 0x35e)
 void CPlay::DrawDebugStats() {
@@ -44,7 +44,7 @@ void CPlay::DrawDebugStats() {
         strcat(buf, " Timing = On ");
     }
     if (g_debugDisplayFlags & 0x80) {
-        CString t = FormatElapsed(g_frameTime);
+        CString t = FormatElapsedTime(g_frameTime);
         t += " ";
         strcat(buf, t);
         t += " ";

@@ -25,7 +25,7 @@ public:
     // CFileMemBase is a typedef of CFileMemBase == the real CFileMemBase, so this is
     // the same parameter type as the rest of the chain (mangles PAVCFileMemBase@@).
     virtual i32 SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xe7cd0
-    virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
+    virtual i32 Refresh(i32 a) OVERRIDE;                                             // slot 4
     virtual i32 Render() OVERRIDE; // slot 5 - 0xe7b00 (ex Tick)
     // Slots 13/14 ARE Init and SetRange - the ILT thunks prove it (0x3b48 -> jmp 0xe7980
     // = Init; 0x3bde -> jmp 0xe7c30 = SetRange). They used to be declared here TWICE: as
@@ -60,12 +60,12 @@ public:
     // slot-5 body (vtbl 0x1ead6c slot [5], thunk 0x2dfb): the timeGetTime-driven cel
     // advance within [m_frameStart, m_frameEnd]. Ex CAniPlayer::Tick (dossier #16 identity fold).
 
-    i32 m_interval; // +0x3c  persistent serialized ints (Serialize save/load block)
-    i32 m_lastTime; // +0x40
-    i32 m_step; // +0x44
-    i32 m_loop; // +0x48
+    i32 m_interval;   // +0x3c  persistent serialized ints (Serialize save/load block)
+    i32 m_lastTime;   // +0x40
+    i32 m_step;       // +0x44
+    i32 m_loop;       // +0x48
     i32 m_frameStart; // +0x4c
-    i32 m_frameEnd; // +0x50
+    i32 m_frameEnd;   // +0x50
 };
 SIZE_UNKNOWN();
 
@@ -95,7 +95,6 @@ public:
     void SetDirection(i32 a, i32 b);      // 0x0ea0f0
     void SetDirectionAlt(i32 a1, i32 a2); // 0x0ea170
     // The m_114-gated 2-arg arrow mode sink (reloc `M`).
-    void SetArrowMode(i32 a, i32 b);
 };
 SIZE(0x54);
 VTBL(CSBI_StatzTabArrow, 0x001eac94); // vtable_names -> code (RTTI game class)

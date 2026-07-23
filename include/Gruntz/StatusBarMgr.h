@@ -179,14 +179,13 @@ public:
     void BuildGameTabPauseButton();
 
     // ----- siblings the tab-highlight dispatcher (0xfe910) drives (reloc-masked ILT) -----
-    CStatusBarItem* HiResolve(i32 a, i32 b); // 0x2dc4 (resolve the hit widget - a tab-list item)
-    void HiRefreshResource();                // 0x3d91 (call 0x3d91)
-    void HiSelectStat(i32 idx);              // 0x264e (call 0x264e, 1 arg)
-    void HiTabA(i32 idx);                    // 0x4179 (1 arg)
-    void HiTabB(i32 idx, i32 flag);          // 0x20b8 (2 args)
-    void HiGrunt0(i32 idx);                  // 0x42a5 (1 arg)
-    void HiGrunt1(i32 idx);                  // 0x4151 (1 arg)
-    void HiGrunt2(i32 idx);                  // 0x37ce (1 arg)
+    void HiRefreshResource();       // 0x3d91 (call 0x3d91)
+    void HiSelectStat(i32 idx);     // 0x264e (call 0x264e, 1 arg)
+    void HiTabA(i32 idx);           // 0x4179 (1 arg)
+    void HiTabB(i32 idx, i32 flag); // 0x20b8 (2 args)
+    void HiGrunt0(i32 idx);         // 0x42a5 (1 arg)
+    void HiGrunt1(i32 idx);         // 0x4151 (1 arg)
+    void HiGrunt2(i32 idx);         // 0x37ce (1 arg)
     i32 LoadGooCookingSprite(i32);
     void UpdateRezConveyorStatusBar();
     void LoadRezMachineConfig();
@@ -282,8 +281,6 @@ public:
 
     // ----- fourth batch: the rect-only HUD placement (0xfe520) + its siblings ---
     i32 winapi_0fe520_SetRect();
-    void ConveyorReturn();                        // call 0x26a3 (__thiscall, no args)
-    void ChipNotify27f7();                        // call 0x27f7 (__thiscall, no args)
     void ChipFinish(i32 col, i32 which, i32 row); // call 0x3968 (__thiscall, 3 args)
 
     // ----- fifth batch: item-config-loader siblings (reloc-masked ILT thunks) -----
@@ -486,7 +483,7 @@ SIZE_UNKNOWN();
 // the "frame entry" +0x18/+0x1c were CImage::m_anchorX/m_anchorY.)
 
 // (CSbiHiWidget DISSOLVED 2026-07-22: it was a never-constructed dispatch view of the
-// CStatusBarItem-family hit widget HiResolve returns. UpdateStatusBarTabHighlight now
+// CStatusBarItem-family hit widget HitTestRects returns. UpdateStatusBarTabHighlight now
 // uses the real CStatusBarItem: Update->SbiSlot6 (slot 6), m_cmdId->m_cmd (+0xc),
 // m_widgetKind->m_tab (+0x10, the switch key 0..6 IS the owning tab index) - all
 // slot/offset-identical, byte-neutral. See <Gruntz/StatusBarItem.h>.)

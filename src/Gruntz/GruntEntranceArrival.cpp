@@ -1830,7 +1830,6 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
         if (flag != 0) {
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
-            OnCoordCommit(m_coordToggle);
         }
     }
     goto tail;
@@ -2218,7 +2217,6 @@ i32 CGrunt::StepEntranceRelatchB() {
     }
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
-    OnCoordCommit(m_coordToggle);
     CGruntzMgr* g = g_gameReg;
     CMapMgr* grid = g->m_tileGrid;
     i32 tx = m_lastTilePxX >> 5;

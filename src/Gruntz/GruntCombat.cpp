@@ -1692,7 +1692,6 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
             if (redo) {
                 m_prevAnimSetNode = m_objAux->m_1c;
                 m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
-                OnCoordCommit(m_coordToggle);
             }
         }
     }

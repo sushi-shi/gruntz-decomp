@@ -3200,7 +3200,7 @@ static __inline void HiPost(i32 cmdId) {
 // also names the real g_gameReg at 0x245460. The residual is purely the code bytes.)
 RVA(0x000fe910, 0xb8e)
 i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
-    CStatusBarItem* w = HiResolve(a2, a3);
+    CStatusBarItem* w = HitTestRects(a2, a3);
     if (w == 0) {
         return 1;
     }
@@ -3391,7 +3391,6 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                         HiPost(0x806b);
                     } else {
                         HiCueLookup();
-                        (static_cast<CPlay*>(g_gameReg->m_curState))->HiRefresh(0);
                     }
                     return 1;
                 case 0x325:
@@ -3420,7 +3419,6 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     return 1;
                 case 0x328:
                     HiCueTimed();
-                    (static_cast<CPlay*>(g_gameReg->m_curState))->HiRefresh(0);
                     return 1;
                 default:
                     return 0;
@@ -3625,7 +3623,6 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                             m_itemRectL + 0xc,
                             m_itemRectT + 0xc
                         );
-                        ConveyorReturn();
                     }
                 }
                 break;
@@ -4074,7 +4071,6 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_itemRectL = m_itemBaseX;
                 m_itemRectR = m_itemBaseX + 0x17;
                 rectFlag = 1;
-                ChipNotify27f7();
                 SetHudRectA(
                     0x1e,
                     4,
@@ -4127,7 +4123,6 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                     }
                 }
                 ChipFinish(col, m_extraNotifyArg0, row);
-                ConveyorReturn();
             }
             refreshFlag = 1;
             break;

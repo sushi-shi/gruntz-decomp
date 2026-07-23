@@ -228,7 +228,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[2].AddTail(it);
-            m_gaugeSink = static_cast<CSBI_WellGoo*>(it); // it points at the just-new'd CSBI_WellGoo
+            m_gaugeSink =
+                static_cast<CSBI_WellGoo*>(it); // it points at the just-new'd CSBI_WellGoo
             return 1;
 
         case 3: // ---- Resource tab ----
@@ -871,7 +872,6 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     m_tabLists[1].AddTail(arrow);
                     p[0x1e] = reinterpret_cast<i32>(arrow);
                     if (p[0] != 0) {
-                        arrow->SetArrowMode(m_position, 0);
                     } else {
                         arrow->SetDirection(m_position, 0);
                     }

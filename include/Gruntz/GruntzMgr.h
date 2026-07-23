@@ -200,10 +200,7 @@ public:
     // (reloc-masked). CuePrep @0x40cd00 + the Rand pair: KNOWN-UNDECIDABLE OWNER
     // (bodies never touch `this`; member-vs-free is byte-identical; do not force).
     void CuePrep();
-    tagRECT* GetMessageBounds(
-        tagRECT* out
-    );          // 0x2cb1 thunk (on-screen message bounds; ported from the dead views)
-    i32 Rand(); // game-mgr RNG
+    i32 Rand();                    // game-mgr RNG
     i32 RandRange(i32 lo, i32 hi); // game-mgr RNG range
     i32 SetVoiceVolume(i32 v);     // @0x091a10 (store m_voiceVolume, mirror to m_timer->m_2c)
     void SetSoundVolume(i32 v);    // @0x0919d0 (store m_soundVolume, mirror to the 0x61ab24

@@ -192,7 +192,6 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_38->ApplyLookupSprite(s_DEATHZ_SINK, DEATH_FRAME());
             DEATH_CUE(0x35a);
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
-            Step6a060();
             goto tail;
 
         case DEATH_HOLE: // GRUNTZ_DEATHZ_HOLE
@@ -267,7 +266,6 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_38->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
-            Step6a060();
             goto tail;
         }
 
@@ -299,7 +297,6 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_38->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
-            Step6a060();
             goto tail;
         }
 

@@ -986,7 +986,6 @@ i32 CGrunt::StepArrivalCommit() {
         if (redo) {
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
-            OnCoordCommit(m_coordToggle);
         }
         goto finalize;
     }

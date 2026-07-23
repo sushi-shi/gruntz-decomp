@@ -9,14 +9,14 @@ typedef enum GruntzHotKey {
     VK_DOLLAR = 0x24,
 } GruntzHotKey;
 
-// CheckExePath (reached via an incremental-link thunk). Validates
-// the module path; __cdecl 3 args (path, count, reserved); returns nonzero to
-// proceed to the single-instance check.
-i32 CheckExePath(char* pszPath, i32 nCount, void* pReserved);
+// FindProcessByName (0x118ce0, HeapDiag.cpp): count running processes whose exe
+// basename matches; reached via an incremental-link thunk here as the single-
+// instance guard (path, wantCount, out-handle).
+i32 FindProcessByName(const char* name, i32 wantCount, void** pHandleOut);
 
-// StartupGate (reached via a thunk). __cdecl 1 arg; runs the
-// resource/CD/launch validation, returns nonzero to proceed.
-i32 StartupGate(i32 nReserved);
+// StartUpPrompt (0x1f9b0): the resource/CD/launch validation prompt; reached via
+// a thunk. Returns nonzero to proceed. (1 arg: the parent HWND, null here.)
+i32 StartUpPrompt(HWND__* parent);
 
 // ActiveWait (0x13dfe0) - the timeGetTime busy-wait, used here as a brief
 // settle delay before the hot-key sample.
@@ -44,7 +44,8 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     //    a secondary / lobby launch: hand off to any existing instance and exit
     //    (this whole branch returns 0). Only when the path-check FAILS do we
     //    fall through to the normal startup below.
-    if (GetModuleFileNameA(0, szModulePath, 0xFE) > 0 && CheckExePath(szModulePath, 2, 0) != 0) {
+    if (GetModuleFileNameA(0, szModulePath, 0xFE) > 0
+        && FindProcessByName(szModulePath, 2, 0) != 0) {
         // 2. Single-instance guard: locate the prior window and, if present,
         //    restore it / forward a lobby-launch WM_COMMAND.
         HWND hPrev = FindWindowA("GruntzClass", "Gruntz");
@@ -85,7 +86,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
     // 3b. The startup gate (resource/CD/launch check). On failure bail out.
-    if (StartupGate(0) == 0) {
+    if (StartUpPrompt(0) == 0) {
         return 0;
     }
 

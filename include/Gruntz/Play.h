@@ -285,7 +285,6 @@ public:
     // LevelTileValidation.cpp, where all three bodies live).
     i32 PlaceStartGruntz();   // 0x0d2b20 (called by ResetPlayState @0x0d60b0 on this same `this`)
     i32 ValidateLevelTiles(); // 0x0d2dd0
-    i32 HiRefresh(i32 a);     // 0x0d6560  highlight-cursor refresh
     // BuildHelpReveal (0x0d72c0, THIS TU): the LOADING-BAR wipe tick - retail rets
     // 0x4, so it takes ONE i32 (every caller pushes 0, the LoadByMode finale pushes 1). Its m_revealFrame/m_revealCap*
     // members are the loading-bar counter + frame sprites (LoadLoadingBarSprite).

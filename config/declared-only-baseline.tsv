@@ -32,9 +32,7 @@
 ?BitStreamBlowfishDecode@@YGXPAX0@Z
 ?BlitIntoDesc@CDDSurface@@UAEHPAX@Z
 ?Check@CInGameIcon@@QAEHXZ
-?CheckExePath@@YAHPADHPAX@Z
 ?ChipFinish@CStatusBarMgr@@QAEXHHH@Z
-?ChipNotify27f7@CStatusBarMgr@@QAEXXZ
 ?Classify@CTriggerMgr@@QAEHHH@Z
 ?ClickAt_ff9d0@CStatusBarMgr@@QAEHHHH@Z
 ?ColourBtn1753@CMultiStartDlg@@QAEPAVCWnd@@H@Z
@@ -43,7 +41,6 @@
 ?CommitMoveA@CGrunt@@QAEXHHH@Z
 ?Construct@CButeTree@@QAEXPAXH@Z
 ?Construct@CGameObject@@QAEXPAXHH@Z
-?ConveyorReturn@CStatusBarMgr@@QAEXXZ
 ?CreateWorldObjects@@YAXPAX@Z
 ?CreditsRectSet@@YAXPAXHHHH@Z
 ?Cue1@CGruntSpawnConfig@@QAEXH@Z
@@ -70,10 +67,8 @@
 ?Finish3e4f@CBattlezMapConfig@@QAEXPAVCGrunt@@0@Z
 ?FinishAttackPowered@CGrunt@@QAEXXZ
 ?FlushStateStack@CGruntzMgr@@QAEXXZ
-?FormatElapsed@@YA?AVCString@@H@Z
 ?FormatStr@@YAXPAVCString@@PBDZZ
 ?ForwardCombatStep@CGrunt@@QAEHHHHHHHHH@Z
-?FreezeApply@CGrunt@@QAEXXZ
 ?Fx@CTriggerMgr@@QAEXHHHHHH@Z
 ?Gate1a14@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z
 ?GetAmbientId@CPlay@@QAEHXZ
@@ -84,7 +79,6 @@
 ?GetDotColor@CWwdGameObjectC@@UAEEXZ
 ?GetFrameCount@CFaderRadial@@UAEHXZ
 ?GetFrameCount@CFaderSine@@UAEHXZ
-?GetMessageBounds@CGruntzMgr@@QAEPAUtagRECT@@PAU2@@Z
 ?GetMessageMap@CBattlezDlg@@UBEPBUAFX_MSGMAP@@XZ
 ?GetMessageMap@CMultiStartDlg@@UBEPBUAFX_MSGMAP@@XZ
 ?GetNameRecord@zDArray@@QAEPAPADPAX@Z
@@ -99,9 +93,7 @@
 ?HiGrunt0@CStatusBarMgr@@QAEXH@Z
 ?HiGrunt1@CStatusBarMgr@@QAEXH@Z
 ?HiGrunt2@CStatusBarMgr@@QAEXH@Z
-?HiRefresh@CPlay@@QAEHH@Z
 ?HiRefreshResource@CStatusBarMgr@@QAEXXZ
-?HiResolve@CStatusBarMgr@@QAEPAVCStatusBarItem@@HH@Z
 ?HiSelectStat@CStatusBarMgr@@QAEXH@Z
 ?HiTabA@CStatusBarMgr@@QAEXH@Z
 ?HiTabB@CStatusBarMgr@@QAEXHH@Z
@@ -124,13 +116,11 @@
 ?MapCellRecord@zDArray@@QAEHHH@Z
 ?MapLookup@@YAHPAX0AAPAX@Z
 ?MenuCommit@@YAHPAVCChatBox@@H@Z
-?MultiJoinHandler@@YAXXZ
 ?Name42ff@CMulti@@QAE?AVCString@@XZ
 ?NameEdit298c@CMultiStartDlg@@QAEPAVCWnd@@H@Z
 ?Notify@CMapMgr@@QAEXHHH@Z
 ?NotifyAttackImpact@CGrunt@@QAEXXZ
 ?NotifyDrop@CGrunt@@QAEXXZ
-?OnCoordCommit@CGrunt@@QAEXH@Z
 ?OnFound@CWwdGrid@@UAEXPAUWwdRegion@@@Z
 ?OnMoveFinishA@CGrunt@@QAEXH@Z
 ?OnReanchor@CGrunt@@QAEXH@Z
@@ -194,7 +184,6 @@
 ?ScratchResolve@zDArray@@QAEPAVCAnimNameRecord@@PAX@Z
 ?SelfImpact2b58@CBattlezMapConfig@@QAEXPAVCGrunt@@HHH@Z
 ?SerializeOverlay@CTriggerMgr@@QAEHPAVCFileMemBase@@HH@Z
-?SetArrowMode@CSBI_StatzTabArrow@@QAEXHH@Z
 ?SetAtGrow@CStringArray@@QAEXHPBD@Z
 ?SetDecayTarget@CGruntBehaviorLeaf@@QAEXH@Z
 ?SetDotColor@CWwdGameObjectC@@UAEXE@Z
@@ -206,9 +195,7 @@
 ?SnapPostMessage@CPlay@@QAEXH@Z
 ?SnapWalk@CPlay@@QAEXXZ
 ?Spawn@CTriggerMgr@@QAEPAXHHHHHHH@Z
-?StartupGate@@YAHH@Z
 ?Step20b3@CGruntzCmdMgr@@QAEXH@Z
-?Step6a060@CGrunt@@QAEXXZ
 ?StepCoordTick@CGrunt@@QAEXXZ
 ?StepDropApply@CGrunt@@QAEXXZ
 ?Sub3@CCreditsState@@QAEXXZ
@@ -220,7 +207,6 @@
 ?SyncColour3a5d@CMultiStartDlg@@QAEXHH@Z
 ?TakeHit@CGrunt@@QAEXHHHHHHHH@Z
 ?Teardown@CBattlezData@@QAEXXZ
-?TeleportMove@CGrunt@@QAEHHHHH@Z
 ?TempFileExists@@YAHPAUSaveTempRec@@@Z
 ?Tick@CGruntSpawnConfig@@QAEXXZ
 ?Tm_DestroyArray@@YAXPAXHH0@Z

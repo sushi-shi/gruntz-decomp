@@ -581,7 +581,7 @@ public:
     i32 m_entranceStamped; // +0x228 (one-time entrance/toy-break stamp latch; set 1 at rest)
     i32 m_22c;             // +0x22c (entrance-drop: latched anim re-init gate)
     i32 m_arrivalActive; // +0x230 (arrival commit armed; seeded 1 w/ defender block, gates commit)
-    i32 m_coordToggle;   // +0x234 (parity bit toggled per coord commit; arg to OnCoordCommit)
+    i32 m_coordToggle;   // +0x234 (parity bit toggled per coord commit; arg to SetupTubeAnim)
     i32 m_wingzEnabled;  // +0x238
     i32 m_freezeDelayDone; // +0x23c (freeze finalize: 0 = sparkle-delay window running, 1 = elapsed)
     i32 m_freezeUnfrozen;  // +0x240 (freeze finalize: set 1 when DEATHZ_UNFREEZE applied)
@@ -972,7 +972,6 @@ public:
     void OnMoveFinishA(i32 a);             // thunk_0x3ea4 (1-arg finish)
     void CommitMoveA(i32 a, i32 b, i32 c); // thunk_0x3dfa (3-arg move commit)
     void StepCoordTick();                  // thunk_0x245a (0-arg coord tick)
-    void OnCoordCommit(i32 a);             // thunk_0x1e47 (1-arg commit)
     void NotifyDrop();                     // thunk_0x119a (0-arg drop notify)
     void OnReanchor(i32 a);                // thunk_0x3cce (1-arg reanchor)
     void StepDropApply();                  // thunk (drop-apply tail)
@@ -1061,7 +1060,6 @@ public:
     //  below; the convention conflation is settled __thiscall - see that decl.)
     // @0x6a060 (ret 0) - the SINK/FALL death-finalize step the death-anim loader runs
     // after the entrance-drop notify. External/no-body (reloc-masked here).
-    void Step6a060();
 
     // @0x68520 (ret 0 -> 0) - begin the bomb-grunt run reaction: retire the HUD stat
     // sprites, latch the entrance/struck state, then either re-notify the move or (when
@@ -1136,10 +1134,8 @@ public:
     i32 ArrivalReticleScan(); // 0xee800
 
     // CombatCue per-grunt spell effects (external/no-body, reloc-masked):
-    //   TeleportMove(dx,dy,a,b) thunk 0x2f3b (ret 0x10; nonzero = moved)
-    //   FreezeApply()           thunk 0x28d8 (0-arg freeze)
-    i32 TeleportMove(i32 dx, i32 dy, i32 a, i32 b); // 0x2f3b
-    void FreezeApply();                             // 0x28d8
+    //   StepAnimDispatchA(dx,dy,a,b) thunk 0x2f3b (ret 0x10; nonzero = moved)
+    //   StepArrivalCommit()           thunk 0x28d8 (0-arg freeze)
 };
 SIZE(0x8d8);
 

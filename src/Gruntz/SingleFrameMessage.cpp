@@ -5,7 +5,7 @@
 #include <Wap32/ZVec.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/SingleFrameMessage.h>
-#include <Gruntz/WwdGameReg.h>    // g_gameReg->GetMessageBounds (on-screen message bounds)
+#include <Gruntz/WwdGameReg.h>    // g_gameReg->GetRect (on-screen message bounds)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 RVA(0x0000f5a0, 0x47)
@@ -32,7 +32,7 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj), CW
     m_object->ApplyLookupSprite("GAME_MESSAGEZ", m_38->m_id);
     RECT bounds;
     RECT r;
-    CopyRect(&r, g_gameReg->GetMessageBounds(&bounds));
+    CopyRect(&r, g_gameReg->GetRect(&bounds));
     m_object->m_screenX = r.left + (r.right - r.left) / 2;
     m_object->m_screenY = r.top + (r.bottom - r.top) / 2;
 }

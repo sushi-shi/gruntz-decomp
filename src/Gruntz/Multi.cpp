@@ -187,11 +187,9 @@ enum {
 
 void ChannelSlots_Set(i32 slot, i32 v); // 0xdb2b0 (play TU; ex NetCueReset_3bbb)
 
-// The MULTI_JOIN dialog handler whose address is pushed into RunErrorDialog. The
-// `push &MultiJoinHandler` reloc targets the ILT jmp-thunk (0x222f), not the body
-// (that body is Gap_0b8020 @0xb8020); bind the thunk rva to the referenced symbol so
-// the delinked datum name pairs (R66/GruntzApp _ErrorDialogProcThunk idiom).
-DATA_SYMBOL(0x0000222f, 0x0, ?MultiJoinHandler@@YAXXZ)
+// The MULTI_JOIN dialog handler whose address is pushed into RunErrorDialog (defined
+// below @0xb8020; the push reloc targets its ILT jmp-thunk @0x222f, reloc-masked).
+i32 __stdcall MultiJoinDlgProc(HWND__* hDlg, u32 msg, u32 wParam, i32 lParam);
 
 // The four On*-handler callbacks (declared in <Net/NetMgr.h>, address-taken in the
 // OnMulti* handlers below) likewise push their ILT jmp-thunks; bind each thunk rva to
@@ -1348,7 +1346,7 @@ void CMulti::ReportNetError(i32 level) {
 
 RVA(0x000b7fe0, 0x2f)
 i32 CMulti::JoinSession() {
-    if (RunErrorDialog("MULTI_JOIN", static_cast<void*>(&MultiJoinHandler), 0) == 0) {
+    if (RunErrorDialog("MULTI_JOIN", static_cast<void*>(&MultiJoinDlgProc), 0) == 0) {
         return 0;
     }
     SendStatFlag(0x3f7, 1);
