@@ -1,17 +1,19 @@
-# A shared header's forward-declaration COUNT re-colors an unrelated includer's /O2 schedule
+# Shared-header declaration state re-colors an unrelated includer's /O2 schedule
 tags: cpp:struct cpp:header | asm:mov | topic:wall topic:regalloc topic:tu-layout topic:codegen-idiom
 symptoms: an unrelated function craters (e.g. 100→74%) after a header edit that only renamed
-  members / swapped `struct X;` forward decls; the diff is two loads of an `a+b` arg swapped
-  (retail loads the `this`-side operand first, recompile loads the pointee-side first); the
-  edited header is pulled TRANSITIVELY (via another shared header) into the cratered TU
-confidence: 8/10
+  members, changed an unused member-function signature, or swapped `struct X;` forward
+  declarations; the edited header is pulled directly or transitively into the cratered TU
+confidence: 9/10
 
-The number of file-scope forward declarations (`struct X;` / `class X;`) in a shared header is
-part of MSVC 5.0's per-TU type-table state. Crossing a count threshold re-colors the register
-allocation of an UNRELATED /O2 function in EVERY TU that transitively includes the header — even
-when the header change is otherwise codegen-neutral (renames, signature typing). Observed: a
-GameLevel.h forward-decl block growing 1→3 structs (total file-scope fwd decls 2→4, pulled into
-the CSBI_MenuItem TU via GruntzMgr.h) flipped `CSBI_MenuItem::DecCounter`'s RenderFrame arg block
+Shared-header declarations are part of MSVC 5.0's per-TU type-table/compiler state. Changing that
+state can re-color the register allocation or scheduling of an UNRELATED /O2 function in EVERY TU
+that includes the header, even when the victim neither calls nor names the changed declaration.
+Forward-declaration count is one proven lever, but not the complete rule: class definitions and
+member-function signatures can fire the same family.
+
+The first observed firing was a GameLevel.h forward-decl block growing 1→3 structs (total
+file-scope fwd decls 2→4, pulled into the CSBI_MenuItem TU via GruntzMgr.h). It flipped
+`CSBI_MenuItem::DecCounter`'s RenderFrame arg block
 `mov edx,[this+0x18]; mov eax,[this+0x14]; … mov esi,[f+0x1c]` (retail) into the pointee-first
 order, 100→74%. Threshold was 3-total-OK / 4-breaks (2 in the block still matched).
 
@@ -73,3 +75,14 @@ ButeMgr.h re-cratered DecCounter 100→74.04 AND flipped one load pair in
 to the per-TU type-table CONTENT/state, not only the fwd-decl COUNT — a new class definition
 entering the closure fires it too, and then there is NO count lever to pull. Accepted as the
 butterfly floor (structure-over-current-%); MAX-fuzzy retains the 100s.
+
+FIFTH FIRING (2026-07-23, `CGruntzMgr::ResetWorldState` ABI correction): changing the shared
+header declaration from the false `ResetWorldState(i32)` to the retail-backed
+`ResetWorldState()` made that method exact (`ret 4`→`ret`) and raised global current/MAX fuzzy.
+The full rebuild also moved three source-identical functions in three separate TUs that directly
+include `GruntzMgr.h`: `CGrunt::PhaseStep` 39.7717→38.5960,
+`CLightFxRender::Shape6` 77.0497→76.9834, and `CGrunt::RectSegProbe` 78.7723→78.7228.
+None of the three source files changed. This proves that member-function signature state, not
+only forward declarations or class bodies, belongs to the butterfly family. Keep the correct ABI
+and preserve the per-function MAX; use the includer intersection to explain and later reverse
+similar dips when other missing authentic declarations are restored.

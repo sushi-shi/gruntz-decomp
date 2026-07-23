@@ -120,13 +120,6 @@ CGruntzMgr* g_gameReg = 0;
 #include <Gruntz/PlayStateView.h>
 #include <Gruntz/GameObjectFactory.h>
 
-// ResetWorldState's MFC wait-cursor pair. Retail inlines the global ::Begin/
-// EndWaitCursor (AfxGetApp()->...); modeled as reloc-masked free fns here (only
-// the call shape is load-bearing - the inlined AfxGetModuleState/[+4]/thiscall
-// expansion is part of the documented MFC-inline residual on this @early-stop fn).
-void BeginWaitCursor(); // 0x1beafb
-void EndWaitCursor();   // 0x1beb10
-
 CString RunCustomWorldDialog(i32 hwnd, CString* out);
 
 DATA(0x002455a4)
@@ -1761,17 +1754,8 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
 // surfaces a (0x801f) error, drops the wait cursor, and returns 0. On success it
 // drives the post-reload transition (slot ?, args (savedId,1,0,0)), clears the
 // gates, restores the cursor, and returns 1. A no-op (1) when not idle/exiting.
-// @early-stop
-// /GX wait-cursor wrapper (~60%): logic + the ShowCursor loops + the per-exit
-// Begin/EndWaitCursor pairs are reconstructed. The residual is the /GX EH frame
-// itself: retail wraps the body in a `CWaitCursor wc;` RAII local (ctor inlines
-// AfxGetApp()->BeginWaitCursor, dtor inlines EndWaitCursor at each exit, + the
-// [esp+N] 0/-1 trylevel around its lifetime), which emits the push -1/fs:0 frame
-// my frameless Begin/EndWaitCursor free-fn model lacks. Closing it needs <afxwin.h>
-// + a real CWaitCursor value member (deferred to the final sweep - heavier include
-// that would re-flow this whole TU). Documented EH-frame wall (docs/seh-eh.md).
 RVA(0x00091e20, 0x17d)
-i32 CGruntzMgr::ResetWorldState(i32 notify) {
+i32 CGruntzMgr::ResetWorldState() {
     CState* st = m_curState;
     if (st == 0) {
         return 1;
@@ -1793,18 +1777,16 @@ i32 CGruntzMgr::ResetWorldState(i32 notify) {
     while (show(1) < 0) {
     }
 
-    BeginWaitCursor();
+    CWaitCursor waitCursor;
 
     if (m_colorDepth == 8) {
         if (LoadWorldMode(0x10) == 0) {
             ReportError(0x801f, 0x443);
-            EndWaitCursor();
             return 0;
         }
     } else {
         if (LoadWorldMode(8) == 0) {
             ReportError(0x801f, 0x444);
-            EndWaitCursor();
             return 0;
         }
     }
@@ -1814,7 +1796,6 @@ i32 CGruntzMgr::ResetWorldState(i32 notify) {
     TransitionState(stateId, 1, 0, 0);
     m_modalBusy = 0;
     m_renderGate = 0;
-    EndWaitCursor();
     return 1;
 }
 

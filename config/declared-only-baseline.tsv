@@ -23,7 +23,6 @@
 ?Ar_WriteId@@YAXPAXH0@Z
 ?Arm@CUserLogic@@QAEXPBD0HH@Z
 ?BaseConstruct@zDArray@@QAEPAV1@HHHPAX@Z
-?BeginWaitCursor@@YAXXZ
 ?BitStreamBlowfishDecode@@YGXPAX0@Z
 ?ChipFinish@CStatusBarMgr@@QAEXHHH@Z
 ?ClickAt_ff9d0@CStatusBarMgr@@QAEHHHH@Z
@@ -43,7 +42,6 @@
 ?DoTrigger1fb9@CScanMgr@@QAEHPAVCGrunt@@HHHHH@Z
 ?Effect374c@CBattlezMapConfig@@QAEXPAVCGrunt@@H@Z
 ?EmptyMsgHook@@YGXIJ@Z
-?EndWaitCursor@@YAXXZ
 ?Eng_SpawnFx@@YGXHHHHHH@Z
 ?EnterField1@CTeleporter@@QAEXXZ
 ?EnterField2@CTeleporter@@QAEXXZ
@@ -163,8 +161,6 @@
 ?g_codeI@@3PBDB
 ?g_containerName@@3PADA
 ?g_creationPointActReg@@3UCActReg@@A
-?g_deviceConfigA@@3PBEB
-?g_deviceConfigB@@3PBEB
 ?g_dirAa0@@3PAHA
 ?g_dirAb0@@3PAHA
 ?g_dirAc0@@3PAHA
@@ -186,8 +182,6 @@
 ?g_gruntDefEntranceCell@@3PAHA
 ?g_gruntSpawnScale@@3NB
 ?g_healthActReg@@3UCIndicatorActReg@@A
-?g_joystickDataFormat@@3PBEB
-?g_keyboardDataFormat@@3PBEB
 ?g_lab504358@@3PADA
 ?g_lab545854@@3PADA
 ?g_lightFxActReg@@3UCActReg@@A
@@ -195,7 +189,6 @@
 ?g_logicActReg_6447f8@@3UCLogicActTable@@A
 ?g_logicActReg_646010@@3UCLogicActTable@@A
 ?g_mapNamePre@@3PADA
-?g_mouseDataFormat@@3PBEB
 ?g_multiCmdList@@3VCPtrList@@A
 ?g_multiplayerAvail@@3HA
 ?g_pGetWindow@@3P6GPAUHWND__@@PAU1@I@ZA

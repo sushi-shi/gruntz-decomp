@@ -177,11 +177,11 @@ public:
     typedef i32(__cdecl* ScanCb)(CGameObject* obj, i32 user);
     i32 ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb cb, i32 user);   // @0x092180
     i32 ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, ScanCb cb, i32 user); // @0x092250
-    i32 SetColorDepth(i32 depth);    // @0x091170 (set the packed g_surfaceColorKey color by depth)
-    i32 LoadWorldMode(i32 mode);     // @0x091a40 (switch the world video/color mode + reload)
-    i32 ResetWorldState(i32 notify); // @0x091e20 (idle/exit-prep the world, reset cursor)
-    void StopBankIfActive();         // @0x092000 (if m_sound && m_14: m_sound->StopAll())
-    void StopBank0IfActive();        // @0x092030 (if m_sound && m_14: m_sound->StopBank(0))
+    i32 SetColorDepth(i32 depth); // @0x091170 (set the packed g_surfaceColorKey color by depth)
+    i32 LoadWorldMode(i32 mode);  // @0x091a40 (switch the world video/color mode + reload)
+    i32 ResetWorldState();        // @0x091e20 (idle/exit-prep the world, reset cursor)
+    void StopBankIfActive();      // @0x092000 (if m_sound && m_14: m_sound->StopAll())
+    void StopBank0IfActive();     // @0x092030 (if m_sound && m_14: m_sound->StopBank(0))
     // @0x092060: set the global asset-root path CString (g_assetRoot @0x64e25c) and
     // post WM_COMMAND 0x80ab to the game window; ret 1 (0 when path is null).
     i32 SetAssetRoot(char* path);

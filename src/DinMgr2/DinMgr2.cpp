@@ -33,28 +33,6 @@ i32 g_dinputBeepEnabled; // 0x653aac
 DATA(0x00253ab0)
 i32 g_dinputThirdEnabled; // 0x653ab0
 
-// The keyboard DIDATAFORMAT (c_dfDIKeyboard) CreateDev passes to SetDataFormat
-// (@0x590aa0, a const in .text). Pushed by address (reloc-masked DIR32 operand).
-// DATA_SYMBOL (not DATA): clang mangles the const-u8[] extern with a `Q` storage
-// class while cl 5.0 emits `P` (?g_X@@3PBEB), so a DATA() label's mangling misses
-// the base obj's undefined external (leaving the push-by-address reloc UNBOUND).
-DATA_SYMBOL(0x00190aa0, 0x0, ?g_keyboardDataFormat@@3PBEB)
-
-// The mouse DIDATAFORMAT (c_dfDIMouse, 0x10-byte DIMOUSESTATE) the device-B
-// bring-up (CDeviceConfigB::CreateDev) passes to SetDataFormat; reloc-masked DIR32.
-DATA_SYMBOL(0x00190b30, 0x0, ?g_mouseDataFormat@@3PBEB)
-
-// The joystick DIDATAFORMAT (c_dfDIJoystick2, 0x110-byte DIJOYSTATE2) the joystick
-// bring-up (CDeviceConfigC::CreateDevJoystick) passes to SetDataFormat; reloc-masked DIR32.
-DATA_SYMBOL(0x00191590, 0x0, ?g_joystickDataFormat@@3PBEB)
-
-// The config blob InitA passes to CInputDevice::CreateDev (@0x5ef548), pushed
-// by address (reloc-masked DIR32 operand). DATA_SYMBOL (not DATA): same const-u8[]
-// P-vs-Q mangling drop as the DIDATAFORMAT externs above.
-DATA_SYMBOL(0x001ef548, 0x0, ?g_deviceConfigA@@3PBEB)
-
-DATA_SYMBOL(0x001ef538, 0x0, ?g_deviceConfigB@@3PBEB)
-
 VTBL(CInputDevice, 0x001ef628);   // keyboard-device vtable
 VTBL(CDeviceConfigB, 0x001ef640); // mouse-device vtable
 VTBL(CDeviceConfigC, 0x001ef658); // joystick-device vtable
@@ -154,7 +132,7 @@ void DirectInputMgr2::Shutdown() {
 
 // DirectInputMgr2::InitA (__thiscall, ret 4 => 1 arg = flags). When the DInput
 // object exists, new's a 0x338-byte CInputDevice, inits its fields + stamps its
-// foreign vftable, then CreateDev(m_directInput, g_deviceConfigA, m_owner, flags). On failure
+// foreign vftable, then CreateDev(m_directInput, GUID_SysKeyboard, m_owner, flags). On failure
 // scalar-deletes it (m_deviceA) and returns 0; on success keeps it in m_deviceA, returns 1.
 // @early-stop
 // zero-register-pin wall (docs/patterns/zero-register-pinning.md): logic + offsets
@@ -168,7 +146,7 @@ i32 DirectInputMgr2::InitA(u32 flags) {
     }
     CInputDevice* dev = new CInputDevice;
     m_deviceA = dev;
-    if (dev->CreateDev(m_directInput, g_deviceConfigA, m_owner, flags) == 0) {
+    if (dev->CreateDev(m_directInput, &GUID_SysKeyboard, m_owner, flags) == 0) {
         if (m_deviceA != 0) {
             delete m_deviceA;
         }
@@ -186,7 +164,7 @@ i32 DirectInputMgr2::InitB(u32 flags) {
     }
     CDeviceConfigB* dev = new CDeviceConfigB;
     m_deviceB = dev;
-    if (dev->CreateDev(m_directInput, g_deviceConfigB, m_owner, flags) == 0) {
+    if (dev->CreateDev(m_directInput, &GUID_SysMouse, m_owner, flags) == 0) {
         if (m_deviceB != 0) {
             delete m_deviceB;
         }
@@ -565,7 +543,7 @@ i32 CInputDevice::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 
     }
     m_modeFlags = flags;
     SetupKeyTable();
-    if (SetDataFormat(g_keyboardDataFormat) == 0) {
+    if (SetDataFormat(&c_dfDIKeyboard) == 0) {
         return 0;
     }
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
@@ -878,7 +856,7 @@ i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u3
         return 0;
     }
     m_flags = flags;
-    if (SetDataFormat(g_mouseDataFormat) == 0) {
+    if (SetDataFormat(&c_dfDIMouse) == 0) {
         return 0;
     }
     void* buf = operator new(0x10);
@@ -990,7 +968,7 @@ i32 CDeviceConfigC::CreateDevJoystick(IDirectInputA* di, const void* cfg, HWND o
         return 0;
     }
     m_flags = flags;
-    if (SetDataFormat(g_joystickDataFormat) == 0) {
+    if (SetDataFormat(&c_dfDIJoystick2) == 0) {
         return 0;
     }
     void* buf = operator new(0x110);
