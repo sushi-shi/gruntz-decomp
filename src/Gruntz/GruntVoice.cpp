@@ -33,6 +33,10 @@ VTBL(CGruntVoice, 0x001eaf6c);
 
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
+static inline CVActEntry* VActLookup(i32 coord) {
+    return reinterpret_cast<CVActEntry*>(g_actReg_6514d8.ResolveEntry(coord));
+}
+
 static inline char* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {

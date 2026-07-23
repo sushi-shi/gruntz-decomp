@@ -122,14 +122,6 @@
 ?g_tileTriggerSwitchActReg@@3UCActReg@@A
 ?g_toyActReg@@3UCIndicatorActReg@@A
 ?g_typeColl@@3VzDArray@@A
-?g_vactBase@@3PADA
-?g_vactColl2@@3PAUCVariantSlot@@A
-?g_vactColl@@3UCVActColl@@A
-?g_vactCur@@3PAUCVActEntry@@A
-?g_vactHi@@3HA
-?g_vactLo@@3HA
-?g_vactScratch@@3HA
-?g_vactStride@@3HA
 ?g_vtrigActReg@@3UCActReg@@A
 ?g_warpStonePadActReg@@3UCActReg@@A
 ?winapi_1206b0_GetLastError_HeapValidate_HeapWalk@ApiCallerStubs@@YAHXZ

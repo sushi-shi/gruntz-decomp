@@ -1915,7 +1915,7 @@ gamesave	?SaveGame@@YAHPAUCGameSaveHost@@PAD@Z	100.0000	100.0000	18	64123440437a
 gamestaterecordload	?LoadStateRecord@CGrunt@@QAEHPAVCFileMemBase@@@Z	91.7927	91.7927	6	7dbe9e247a8c	0x555e0
 gametext	$anon_data_448879a15235cc5d396c6df706d03a88f3353881aca6169c589dfc889a2b777f_0	0.0000	0.0000	1	cpp:52ad9336f3cb
 gametext	$anon_data_51bfe2655f8a421c02ee9e41eddea388d630b725e00c7be0c983e6836c1d2665_0	0.0000	0.0000	1	cpp:52ad9336f3cb
-gametext	??0zErrHandling@@QAE@PAUCVariantSlot@@@Z	85.2632	85.2632	1	d3cf3eee9471	0x16d9c0
+gametext	??0zErrHandling@@QAE@PAUCVariantSlot@@@Z	85.2632	85.2632	2	e48bf7646368	0x16d9c0
 gametext	?ClearCoordPool@@YAXXZ	100.0000	100.0000	3	9333f4ef06f1	0x82ff0
 gametext	?GetWarlordName@@YG?AVCString@@H@Z	89.3617	89.3617	5	6d699a7c4ad7	0x1ec20
 gametext	?InitResButeMgr@@YAXXZ	100.0000	100.0000	3	a09525c1cfd7	0x82b20
