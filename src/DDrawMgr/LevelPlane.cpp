@@ -21,7 +21,6 @@
 // <DDrawMgr/DDrawWorkerHost.h> (CDDrawWorkerHost), <Gruntz/UserLogic.h>
 // (CGameObject). Bodies are strictly RVA-ascending; only offsets + emitted
 // bytes are load-bearing (campaign doctrine).
-#include <DDrawMgr/LevelPlane.h> // own extern surface
 #include <Mfc.h>
 #include <Gruntz/WwdGameObject.h> // complete CWwdGameObject: the CGameObject downcast is static
 #include <DDrawMgr/PixelShift.h>  // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
@@ -1170,18 +1169,18 @@ void CDDrawWorkerHost::ResolveColorKey() {
 // emits a compare ladder. Forcing 6 explicit cases still merges them (78%); the 2-case
 // ladder is closest. Logic complete.
 RVA(0x00163710, 0x42)
-i32 __stdcall PlaneSerializeDispatch(void* stream, i32 kind, i32, i32) {
-    if (!stream) {
+i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* s, i32 kind, i32, i32) {
+    if (!s) {
         return 0;
     }
     switch (kind) {
         case 4:
-            if (!PlaneSaveVia(stream)) {
+            if (!Save(s)) {
                 return 0;
             }
             break;
         case 7:
-            if (!PlaneLoadVia(stream)) {
+            if (!Load(s)) {
                 return 0;
             }
             break;

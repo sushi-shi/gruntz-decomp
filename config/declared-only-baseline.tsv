@@ -71,8 +71,6 @@
 ?PinCellIndex@zDArray@@QAEHXZ
 ?Place@CUserLogic@@QAEHHHHHHHHHHHHH@Z
 ?Plan293c@CBattlezMapConfig@@QAEXPAVCGrunt@@HHHHH@Z
-?PlaneLoadVia@@YGHPAX@Z
-?PlaneSaveVia@@YGHPAX@Z
 ?PostCellCommand6@CTriggerMgr@@QAEXHH@Z
 ?PostCellCommand7@CTriggerMgr@@QAEXHH@Z
 ?PrepCmd4@CGruntzMgr@@QAEHH@Z

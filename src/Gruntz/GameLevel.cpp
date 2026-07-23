@@ -10,7 +10,6 @@
 #include <Io/FileStream.h>            // CFile (Open/Read/GetLength/ctor/dtor reloc-masked)
 #include <Gruntz/ImageSets.h>         // CImageSet1/2/3 variant records + RezAlloc/RezFree
 #include <DDrawMgr/DDrawWorkerHost.h> // the REAL plane class (CDDrawWorkerHost == CDDrawWorkerHost)
-#include <DDrawMgr/LevelPlane.h>      // PlaneSerializeDispatch (the EditDispatch tail call)
 #include <rva.h>
 
 #include <string.h> // strcpy, memset
@@ -882,7 +881,7 @@ i32 CGameLevel::EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3) {
     if (m_mainPlane == 0) {
         return 0;
     }
-    return PlaneSerializeDispatch(s, arg1, arg2, arg3) != 0 ? 1 : 0;
+    return m_mainPlane->SerializeDispatch(s, arg1, arg2, arg3) != 0 ? 1 : 0;
 }
 
 RVA(0x001610a0, 0x70)

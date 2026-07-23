@@ -85,9 +85,10 @@ public:
     i32 GetSize();                                   // 0x1633e0 forward the grid's GetSize
     void InitScrollRects();                          // 0x163420 seed the scroll rects (ex "Notify")
     i32 ValidateTiles(char* errOut);                 // 0x163510 scan the tile grid for bad refs
-    void ResolveColorKey();    // 0x163670 pack +0x144 to RGB565 (ex "Refresh")
-    i32 Save(CFileMemBase* s); // 0x163780 serialize out
-    i32 Load(CFileMemBase* s); // 0x1638c0 serialize in
+    void ResolveColorKey(); // 0x163670 pack +0x144 to RGB565 (ex "Refresh")
+    i32 SerializeDispatch(CFileMemBase* s, i32 kind, i32 arg2, i32 arg3); // 0x163710
+    i32 Save(CFileMemBase* s);                                            // 0x163780 serialize out
+    i32 Load(CFileMemBase* s);                                            // 0x1638c0 serialize in
     // 0x1628f0 / 0x162af0 (ex WwdFile:: + its WwdLevelLoader `this`-view): free the old
     // spatial worker, allocate + Init a fresh one from the map-data geometry, then read
     // `count` object records. `this` IS the plane - the view read m_mapData@+0x0c and
