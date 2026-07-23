@@ -273,8 +273,7 @@ struct CNetSession {
     // placed-grunt roster (defined in src/Gruntz/GameChecksum.cpp; ex the
     // "CGameSyncSig" view). Step2437 is a per-frame poke with no bound RVA,
     // kept declared so the CMulti dispatch compiles.
-    i32 Checksum();  // c0590
-    void Step2437(); // per-frame poke (reloc-masked)
+    i32 Checksum(); // c0590
     // 0xbf1d0 (/GX): a CRC/sync-diagnostic dump - walk the level's 4x15 placed-grunt
     // roster (m_session->Mgr()->m_cmdGrid->m_grid) and report a per-grunt CRC line
     // through m_session->ReportVersionMsg. Defined out-of-line in BuildGruntzCrcInfo.cpp.
@@ -656,7 +655,6 @@ public:
     // AutoTuneCmdDelay's external probes (incremental-link thunks; no body here so
     // the call rel32 reloc-masks). MeasurePing samples the round-trip; WriteCmdDelay
     // persists the tuned pair. (ProbeLatency moved to CGruntzMgr - probed on m_4.)
-    i32 MeasurePing();           // 0x... (thunked) round-trip sample
     i32 WriteCmdDelay(i32 flag); // 0x... persist m_cmdDelay/m_resend (returns int; tail-returned)
 
     // The provider/group cluster (0x178xxx). InitFromProvider DirectPlayCreate's a
@@ -714,9 +712,8 @@ public:
     // CreateLocalPlayer (0xbc750, /GX EH): register the local player with the peer
     // under the local name, latch its id (m_localPlayerId), wait for the host to admit it,
     // then announce the join (stat 0x3f9 packet carrying the name). Returns 1.
-    i32 CreateLocalPlayer();       // 0xbc750
-    CString GetString5a0();        // 0xb7ad0  the local player-name CString
-    void ReportConnectFailed(i32); // 0xb7f60  connect-failed diagnostic (1-arg)
+    i32 CreateLocalPlayer(); // 0xbc750
+    CString GetString5a0();  // 0xb7ad0  the local player-name CString
 
     // SaveConfig (0xbccd0, /GX EH): pack the command-timing config (m_5b0, the two
     // config-name strings, m_cmdDelay/m_resend/m_600/m_2d8) into a 0x11c-byte stat
@@ -815,11 +812,10 @@ public:
     // (__thiscall on `this` unless noted; bodies external/no-body so the
     // `call rel32` reloc-masks).
     //   SendStat3      (b9410) the 3-arg stat sender (id, value, flag)
-    //   ReportNetError (b7e30) status-bar diagnostic (string, level)
+    //   ReportVersionMsg (b7e30) status-bar diagnostic (string, level; a CMulti method)
     //   ReportStatusId (b7ec0) status-bar diagnostic by string-resource id
     //   AckDropPlayer  (ba590) finalize a dropped player (id)
     //   ResetCmdBuffers(c0070) zero the four per-slot command buffers, no args
-    void ReportNetError(const char* msg, i32 level);
     void ReportStatusId(UINT strId, i32 level);
     void AckDropPlayer(i32 id);
     // SendStat3 (b9410) + PollSession (b95f0) are matched in this TU. PollSession
@@ -923,10 +919,19 @@ SIZE(0x8c); // the real DirectPlay wrapper (RezAlloc/operator new 0x8c @0xb560e)
 extern "C" i32 g_spEnumValidated; // 0x002bf840 (_g_spEnumValidated; def in NetMgr.cpp)
 class CNetMgr;
 struct NetDPName;
-extern "C" BOOL __stdcall NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags,
-                                          CNetMgr* ctx); // 0x1786a0
-extern "C" BOOL __stdcall NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlags,
-                                    CNetMgr* ctx); // 0x178b00
+extern "C" BOOL __stdcall NetEnumPlayerCb(
+    void* lpThisSD,
+    void* lpdwTimeout,
+    DWORD dwFlags,
+    CNetMgr* ctx
+); // 0x1786a0
+extern "C" BOOL __stdcall NetEnumCb(
+    u32 dpId,
+    DWORD dwType,
+    NetDPName* lpName,
+    DWORD dwFlags,
+    CNetMgr* ctx
+); // 0x178b00
 
 extern "C" i32 g_activePlayerCount;
 #endif // NET_NETMGR_H

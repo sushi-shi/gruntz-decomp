@@ -1184,12 +1184,12 @@ i32 CGrunt::StepGruntMovement() {
         (static_cast<i32*>(node))[1] = tgtTileY;
         m_31c.AddHead(node);
     }
-    if (ProbeRetry() == 0) {
+    if (PathScan() == 0) {
         PlaySound(0x3e8, rec);
         SetEntrancePos(1, 0);
         return 0;
     }
-    // ProbeRetry() != 0
+    // PathScan() != 0
     if (CoordCount() == 0) {
         goto label_4cb2a;
     }
@@ -1830,7 +1830,7 @@ void CGrunt::MovingSlot16() {
                 m_coordRetryCount = 0;
                 NotifyDrop();
             } else if (m_coordRetryCount <= 5) {
-                if (ProbeRetry() != 0) {
+                if (PathScan() != 0) {
                     GruntCoord* h2 = (CoordHead())->m_coord;
                     m_entrancePxX = (h2->m_x << 5) + 0x10;
                     m_entrancePxY = (h2->m_y << 5) + 0x10;

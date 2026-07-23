@@ -17,7 +17,7 @@ DATA(0x0021243c)
 char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 
 CWnd* __stdcall ResolveItem_1159(i32 idx);      // 0x01159
-void __stdcall RefreshRosterRow(i32 flag);              // 0x01d70
+void __stdcall RefreshRosterRow(i32 flag);      // 0x01d70
 void __stdcall Refresh185c(GruntzPlayer* slot); // 0x0185c
 
 void ChannelSlots_Set(i32 slot, i32 v); // 0xdb2b0
@@ -90,7 +90,7 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
     if (pSend(owner->m_hWnd, 0x147, 0, 0) == 0) {
         if (s->m_014 != 0) {
             if (s->m_liveGate != 0) {
-                g_multiState->DropPlayer(s->m_playerIndex);
+                g_multiState->DropChannelPlayer(s->m_playerIndex);
             }
         } else if (s->m_liveGate != 0) {
             ChannelSlots_Set(s->m_008, 1);
@@ -103,7 +103,7 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
         if (pSend(owner->m_hWnd, 0x147, 0, 0) != 4) {
             if (s->m_014 != 0) {
                 if (s->m_liveGate != 0) {
-                    g_multiState->DropPlayer(s->m_playerIndex);
+                    g_multiState->DropChannelPlayer(s->m_playerIndex);
                 }
                 i32 free = ChannelSlots_FindFree();
                 s->m_008 = free;
@@ -704,7 +704,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
     i32 f1c = 1;
     i32 f18 = 0;
     i32 idx = 0;
-    i32 t = this->LocalSlot2d4c();
+    i32 t = this->GetSlotIndex();
     i32 localColour = g_multiState->m_isHost ? m_host->m_options[t].m_readyFlag : 1;
     i32 off = 0;
     do {
@@ -745,7 +745,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
             );
             this->SyncColour3a5d(idx, slot->m_liveGate ? slot->m_comboSel : 0);
             if (force == 0) {
-                if (this->LocalSlot2d4c() == idx) {
+                if (this->GetSlotIndex() == idx) {
                     goto next;
                 }
                 if (g_multiState->m_isHost && slot->m_014 == 0) {
@@ -904,16 +904,16 @@ void CMultiStartDlg::Watchdog() {
         msg = "version";
     } else {
         if (g_playerLeftFlag != 0) {
-            Sync16db(1);
-            Sync227a();
+            UpdatePlayers(1);
+            EnableControls();
             UpdateColorItems();
-            Sync38d2();
+            UpdateSlot();
             g_playerLeftFlag = 0;
         }
         if (g_multiState->m_58c != 0) {
-            Sync227a();
+            EnableControls();
             UpdateColorItems();
-            Sync38d2();
+            UpdateSlot();
             g_multiState->m_58c = 0;
         }
         g_watchBusy = 0;
@@ -1058,10 +1058,10 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
     }
     if (g_multiState->m_isHost) {
         RefreshRosterRow(0);
-        Sync16db(1);
-        Sync227a();
+        UpdatePlayers(1);
+        EnableControls();
         UpdateColorItems();
-        Sync38d2();
+        UpdateSlot();
     } else {
         Refresh185c(slot);
     }

@@ -170,8 +170,6 @@ public:
     // view's 16 `(CStatusBarMgr*)this` casts at its SetupImage arg1 were that identity
     // spelling itself out.
     i32 BuildTabzDialog();
-    i32 Probe2e69(); // 0x2e69 (post-build validity probe)
-    i32 Probe41a1(); // 0x41a1 (post-build validity probe)
     i32 winapi_107d00_SetRect();
     i32 LoadBattlezItemConfig(CDDrawSurfaceMgr* world); // stores the world holder into m_c
     i32 LoadMainStatusBarSprite();
@@ -221,10 +219,8 @@ public:
     i32 LoadStatzTabToggleSprite(i32 value, i32 idx); // 0x104e60 (body in SBI_RectOnly.cpp)
     void UpdateGruntOvenStatusBar();
     void TickGauge();
-    i32 GaugeComplete();   // call 0x3e2c - gauge-at-100 completion test
-    void GaugeFinish(i32); // call 0x39ef - completion hook
     void UpdateChipGrinderStatusBar();
-    void ChipGrinderFinishStep(); // 0x106a00 (grinder finish-step; reloc-masked)
+    void NotifyAllSlots(); // 0x106a00 (grinder finish-step; reloc-masked)
     void UpdateDestructButtonStatusBar();
     i32 Activate();
     i32 SetTabState(i32 tab, i32 state);
@@ -235,14 +231,12 @@ public:
     i32 HlClickGroup0(i32 row);
     i32 HlClickGroup1(i32 row);
     i32 HlClickGroup2(i32 row);
-    void* ResolveHandle(i32 handle);  // call 0x17a8 - validity probe
-    void SetCursorRect(i32 x, i32 y); // call 0x3878 (__thiscall, 2 args)
+    void* ResolveHandle(i32 handle); // call 0x17a8 - validity probe
     i32 SetTab(i32 tab, i32 flag);
     i32 ClearTabSprites(i32 idx);
     i32 HitTest(i32 x, i32 y);
     i32 Serialize(CFileMemBase* s);
     i32 Deserialize(CFileMemBase* s);
-    void NotifyAllSlots();
 
     i32 ConfigureRect(
         i32 sub,
@@ -267,7 +261,6 @@ public:
     void ResetWidgets(i32 keepLists);
     void ClearTabGroup();
     i32 ClearStat(i32 idx);
-    i32 ActivateCursor(i32 idx, i32 on);
     void EnterHlRow(i32 row, i32 group);
     void InitTabRects();
     i32 SetFallRect(i32 a, i32 b, i32 c);
@@ -290,20 +283,12 @@ public:
 
     // ----- fourth batch: the rect-only HUD placement (0xfe520) + its siblings ---
     i32 winapi_0fe520_SetRect();
-    void RefreshFallRect();                       // call 0x1cbc (__thiscall, no args)
     void ConveyorReturn();                        // call 0x26a3 (__thiscall, no args)
-    i32 FallItemTick();                           // call 0x2130 (__thiscall, no args)
     void ChipNotify27f7();                        // call 0x27f7 (__thiscall, no args)
     void ChipFinish(i32 col, i32 which, i32 row); // call 0x3968 (__thiscall, 3 args)
 
     // ----- fifth batch: item-config-loader siblings (reloc-masked ILT thunks) -----
-    void RefreshHost();         // call 0x2577 (__thiscall, no args)
-    void PrepMultiReset();      // call 0x367a (__thiscall, no args)
-    void NotifyTabExit();       // call 0x2329 (__thiscall, no args)
-    void ArmTab(i32 a, i32 b);  // call 0x427d (__thiscall, 2 args)
     void ResetTabWidgets2b44(); // call 0x2b44 (__thiscall, no args)
-    void FinishReset1f6e();     // call 0x1f6e (__thiscall, no args)
-    void FinishReset16ea();     // call 0x16ea (__thiscall, no args)
 
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
     // +0x00 is a DATA member, not a vptr: this class has no vtable, and the code both

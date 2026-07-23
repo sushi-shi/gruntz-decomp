@@ -10,7 +10,7 @@ class CDDrawPtrCollections; // folded CImageSurfacePool
 #include <Ints.h>
 #include <Wap32/WapObj.h> // CWapObj : CObject - the abstract intermediate (slots 5/6)
 
-class CString;   // real MFC CString (4-byte ptr); completed via <Mfc.h> in the .cpp
+class CString;           // real MFC CString (4-byte ptr); completed via <Mfc.h> in the .cpp
 class CResolveNode;      // the blit/draw request IS the resolve node (ex-CBlitInfo view)
 class CDDrawSurfacePair; // the blit destination (ex the "CImage* dst" mistype)
 
@@ -100,25 +100,20 @@ public:
     virtual ~CImage()
         OVERRIDE; // 0x0d5e80 (overrides CObject slot 1; cl stamps ??_7CImage at entry)
 
-    // slot 5 IsLoaded (0x0d5dc0) / slot 6 IsReady (0x0d5da0): CImage inherits BOTH
-    // CWapObj defaults unchanged (the only family member to do so). Kept declared
-    // here as anchors (declared-only) - REMOVING them is structurally correct but
-    // perturbs the /O2 regalloc of the CImage.h includers (sbi_image/aniplayer/...),
-    // a heavy butterfly for no match/binding gain (the 0x0d5dc0 body is bound as
-    // CWapObj::IsLoaded in the .cpp regardless). Cleanup deferred to a coordinated pass.
-    virtual i32 IsLoaded() OVERRIDE; // slot 5 (== CWapObj default, body 0x0d5dc0)
-    virtual i32 IsReady() OVERRIDE;  // slot 6 (== CWapObj default, body 0x0d5da0)
-    virtual void FreeAll();          // slot 7  0x153260
-    virtual i32 GetClassId();        // slot 8  0x0042aa -> 0x0d5de0: return 10 (class type tag)
+    // slots 5/6 (IsLoaded 0x0d5dc0 / IsReady 0x0d5da0): CImage inherits BOTH
+    // CWapObj defaults unchanged (the only family member to do so) - no override
+    // decls, so the vtable slots bind the real CWapObj bodies.
+    virtual void FreeAll();   // slot 7  0x153260
+    virtual i32 GetClassId(); // slot 8  0x0042aa -> 0x0d5de0: return 10 (class type tag)
     virtual i32 Create24(CImageFrameDesc* desc, i32 mode, i32 keyed);          // slot 9  0x1530e0
     virtual i32 LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b); // slot 10 0x152fb0
     virtual i32 Resolve(CParseSource* src, i32 arg);                           // slot 11 0x152f20
     virtual i32 Create(CImageFrameDesc* desc, i32 keyed);                      // slot 12 0x152e90
     virtual i32 Reload(CParseSource* src, i32 arg);                            // slot 13 0x153380
-    virtual void RenderImage(CResolveNode* info, CDDrawSurfacePair* dst);                    // slot 14 0x153470
-    virtual void FlipVertical(void* a);                                       // slot 15 (external)
+    virtual void RenderImage(CResolveNode* info, CDDrawSurfacePair* dst);      // slot 14 0x153470
+    virtual void FlipVertical(void* a);                                        // slot 15 (external)
     virtual void FlipHorizontal(void* a); // slot 16 (ILT 0x002d6a; no-op sink)
-    virtual void FlipBoth(void* a); // slot 17: forward arg to slots 15 then 16
+    virtual void FlipBoth(void* a);       // slot 17: forward arg to slots 15 then 16
 
     // Non-virtual members (direct-called; not in the vtable).
     i32

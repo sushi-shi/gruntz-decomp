@@ -93,7 +93,7 @@ public:
     // reloc-mask). ToggleRow sets the active option N; RefreshOptionState refreshes.
     i32 ToggleRow(
         i32 option
-    );                // 0x015fe0 (canonical ?ToggleRow@CBattlezDlg, homed in BattlezDlgRow.cpp)
+    ); // 0x015fe0 (canonical ?ToggleRow@CBattlezDlg, homed in BattlezDlgRow.cpp)
     void RefreshOptionState(); // 0x0173e0
 
     // The four per-option apply handlers (0x15de0/15e60/15ee0/15f60): set option N,
@@ -276,11 +276,7 @@ public:
     // Roster helpers (own methods reached through ILT thunks; reloc-masked, RVAs
     // live in sibling units / ApiCaller stubs).
     void Drive();           // 0xc40b0  re-drive the connect state (body in NetMgrMisc.cpp)
-    i32 Sync16db(i32);      // 0x016db  (DoDataExchange tests the result)
-    void Sync227a();        // 0x0227a
     i32 UpdateColorItems(); // 0xc1aa0 (color-item refresh; via 0x02c0c thunk; ex m4::MultiColorDlg)
-    i32 Sync38d2();         // 0x038d2  (DoDataExchange tests the result)
-    i32 LocalSlot2d4c();    // 0x02d4c  current local slot index
     CWnd* NameEdit298c(i32 idx);         // 0x0298c  name edit for slot idx
     CWnd* KindCombo1929(i32 idx);        // 0x01929  human/computer combo for slot idx
     CWnd* ReadyCheck1159(i32 idx);       // 0x01159  ready checkbox for slot idx
@@ -296,8 +292,8 @@ public:
     // slot after a join/leave. Was CNetGameDlg::UpdateSlot / the roster's
     // "SyncKind3ffd".
     void SyncChannelSlot(i32 ch);
-    i32 EnableControls();     // 0xc4120  re-enable the four player-config controls
-    void ConnectStep(); // 0xc2a20  one connect step: reconcile slot 1 then Drive
+    i32 EnableControls(); // 0xc4120  re-enable the four player-config controls
+    void ConnectStep();   // 0xc2a20  one connect step: reconcile slot 1 then Drive
     // Message-map handlers: reconcile channel 2 / 3 (SyncChannelSlot) then re-drive
     // the connect state. Twins of ConnectStep (channel 1); PROVEN CMultiStartDlg (they
     // call this->SyncChannelSlot(0xc2ab0) + this->Drive(0xc40b0)). Bodies in

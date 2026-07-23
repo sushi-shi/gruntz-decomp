@@ -22,7 +22,7 @@ class CDDrawSubMgrLeafScan;
 class CDDrawWorkerRegistry;
 
 SIZE_UNKNOWN();
-class CDDrawWorker;             // SetGruntColor's sink IS CDDrawWorker
+class CDDrawWorker; // SetGruntColor's sink IS CDDrawWorker
 
 class CDDrawSurfaceMgr;
 
@@ -235,8 +235,8 @@ public:
     i32 ExitModalUI(class CDialog* dlg, i32 notify); // @0x0903f0
     i32 FinishLevel(i32 full, i32 stopBank);         // @0x08e980
     i32 FillSaveInfo(SaveSlot* dst, void* snapshot); // @0x0927b0
-    i32 SaveState(CFileMemBase* ar);               // @0x093620 (shared CFileMemBase)
-    i32 LoadState(CFileMemBase* ar);               // @0x093920 (deserialize counterpart)
+    i32 SaveState(CFileMemBase* ar);                 // @0x093620 (shared CFileMemBase)
+    i32 LoadState(CFileMemBase* ar);                 // @0x093920 (deserialize counterpart)
     // @0x08e3a0 - the level/viewport text rect (default 640x480, else the active
     // world view's rect at m_world->m_level + 0x10) written to *out. Was the fake
     // `RectQuery_08e3a0` view in GruntzMgr.cpp AND the phantom CGameRegistry::GetRect:
@@ -253,11 +253,9 @@ public:
     void RecomputeViewScale();                         // @0x08f7f0
     i32 PrepCmd4(i32 a0);                              // reloc-masked sibling (cmd-4 arm gate)
     i32 PrepCmd7(i32 a0);                              // reloc-masked sibling (cmd-7 arm gate)
-    void RunWinHook();      // reloc-masked sibling (win/level-complete hook)
-    i32 CheckLevelActive(); // reloc-masked sibling (level-active predicate)
+    void RunWinHook(); // reloc-masked sibling (win/level-complete hook)
     // A sibling state-transition pusher reached by PassClickToPlayState's reloc-
     // masked 4-arg call (deferred body / matched elsewhere).
-    i32 ChangeToPlayState(i32 a, i32 b, i32 c, i32 d);
     // SwitchToNextState's helpers fold onto the real bound methods: MakeNextState ==
     // TopState (0x90980), ActivateState == PopTopIfMatches (0x909e0), PostSwitchHook ==
     // RefreshGameClock (0x8f620); GetSaveSource == PickPlayOrPausedState (0x92990);
@@ -319,7 +317,6 @@ public:
     i32 CountReadyOptionsSlots(i32 anyState); // @0x092e30 (count loaded/armed slots)
     // AutoTuneCmdDelay's secondary latency probe (thunked; reloc-masked). Retail calls
     // it on the game mgr (CMulti's m_4), NOT on the CMulti itself.
-    i32 ProbeLatency(i32 flag);
     GruntzPlayer* FindOptionsSlot(i32 x); // @0x092e80 (slot whose m_18 == x)
     i32 ResetOptionsSlot(i32 idx);        // @0x092da0 (reset slot idx if loaded)
     void ResetAllOptionsSlots();          // @0x092df0 (reset all 4 slots)
@@ -474,12 +471,12 @@ extern "C" void ModeResetCallback(); // LAB_00403193
 // The clock/scroll/warp timer globals SaveState streams live in <Rez/FrameClock.h>.
 extern "C" i32 g_monologoShown;
 extern "C" void Format(CString* dst, const char* fmt, ...);
-    // g_lastNow (game-side now mirror, 0x245580) comes from <Rez/FrameClock.h>.
-    // The chat-message sprintf scratch buffer (owner-TU .bss definition; canonical
-    // extern in <Globals.h>). RVA-ascending: 0x2452d8 precedes g_resolutionChanged below.
+// g_lastNow (game-side now mirror, 0x245580) comes from <Rez/FrameClock.h>.
+// The chat-message sprintf scratch buffer (owner-TU .bss definition; canonical
+// extern in <Globals.h>). RVA-ascending: 0x2452d8 precedes g_resolutionChanged below.
 extern "C" char g_msgScratch[256]; // 0x6452d8
-    // The clock/scroll-state globals ResetClockGlobals zeroes (reloc-masked); bound
-    // here (their VA-typo'd C++ ?g_...@@3HA twins in gruntzmgrcmd are a separate defect).
+// The clock/scroll-state globals ResetClockGlobals zeroes (reloc-masked); bound
+// here (their VA-typo'd C++ ?g_...@@3HA twins in gruntzmgrcmd are a separate defect).
 extern "C" u32 g_gruntDestruction;
 extern "C" u32 g_gruntCreation;
 extern "C" u32 g_gooPuddlez;
@@ -509,8 +506,8 @@ extern "C" CGruntzMgr* g_gameReg;
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-    // The game frame-clock wrapper (0xcd00, reached via the ILT thunk 0x39ae): returns
-    // timeGetTime(). Reloc-masked E8 call.
+// The game frame-clock wrapper (0xcd00, reached via the ILT thunk 0x39ae): returns
+// timeGetTime(). Reloc-masked E8 call.
 extern "C" u32 GameGetTime(void);           // 0xcd00
 extern "C" void RecomputePlaneCoords(void); // 0x161c90
 

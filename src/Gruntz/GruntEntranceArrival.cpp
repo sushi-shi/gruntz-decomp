@@ -31,9 +31,9 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
 #include <Gruntz/Enums.h>             // GruntType tool/powerup kinds + GruntDeathKind + RezTypeTag
-#include <Gruntz/State.h>       // CState (m_levelIndex/m_levelBank - StepWarpExit's level lookup)
-#include <Wap32/Wap32.h>        // CGameWnd (m_hwnd - StepWarpExit's level-switch post target)
-#include <Gruntz/GameLevel.h>   // canonical CGameLevel/CDDrawWorkerHost (m_world->m_level visible rect)
+#include <Gruntz/State.h>     // CState (m_levelIndex/m_levelBank - StepWarpExit's level lookup)
+#include <Wap32/Wap32.h>      // CGameWnd (m_hwnd - StepWarpExit's level-switch post target)
+#include <Gruntz/GameLevel.h> // canonical CGameLevel/CDDrawWorkerHost (m_world->m_level visible rect)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
 #include <Gruntz/ActReg.h>      // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
@@ -56,7 +56,7 @@
 #include <Gruntz/GruntEntranceArrival.h> // ex Globals.h
 
 DATA(0x001e9a68)
-double s_fpZero = 0.0;        // 0x5e9a68
+double s_fpZero = 0.0; // 0x5e9a68
 
 static void GruntPosScratchTeardown() {
     CAnimScratchString* slot = (reinterpret_cast<CAnimScratchString*>(g_typeColl.m_alloc));
@@ -1219,7 +1219,7 @@ void CGrunt::ResolveEntranceArrival() {
                     m_object->m_extent.right = 0;
                     m_object->m_extent.top = 0;
                     m_object->m_extent.bottom = 0;
-                    EntranceArrivalHook(0, 0);
+                    SetEntrancePos(0, 0);
                 }
             }
         }
@@ -1800,7 +1800,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
             m_194 = mode;
             m_moveMode = -1;
         } else if (mode >= 0x17) {
-            EmitMoveCueQ(mode);
+            LoadVehicleGruntSprites(mode);
         } else {
             SetMoveStateA(mode, 1, 0, 1);
             m_moveMode = -1;
@@ -1881,10 +1881,10 @@ tail:
                 CGameObject* oh = (static_cast<CGrunt*>(cellObj))->m_object;
                 i32 cx = oh->m_screenX;
                 i32 cy = oh->m_screenY;
-                if (m_358 != 0 && m_entranceCommitted != 0 && IsInCombatRange(cx, cy)) {
+                if (m_358 != 0 && m_entranceCommitted != 0 && RectContains(cx, cy)) {
                     if (!(s_TileFlags(g_gameReg->m_tileGrid, m_lastTilePxX >> 5, m_lastTilePxY >> 5)
                           & 0x80)) {
-                        CommitCombatMove(a2, a3, cx, cy);
+                        CommitNeighbor(a2, a3, cx, cy);
                     }
                 }
             }

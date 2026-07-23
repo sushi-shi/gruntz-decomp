@@ -2639,7 +2639,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
     }
 
     if (m_musicEnabled) {
-        if (CheckLevelActive()) {
+        if (CheckPlayState()) {
             m_sound->StopBank(1);
         }
     }
@@ -2709,7 +2709,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
     }
     if (m_world) {
         if (notify && m_curState && m_curState->Update() != GAMESTATE_MENU) {
-            m_curState->NotifyExit(0x32);
+            m_curState->Present(0x32);
         } else {
             notify = 0;
         }
@@ -2783,7 +2783,7 @@ i32 CGruntzMgr::SwitchToNextState() {
 // the click into the state: notify slot 10 (FrameSlot28) with the state id, then
 // route the (a0, a2) hit through slot 30 (LoadByMode); on a hit it also notifies
 // slot 9 (Vslot09) and returns 1, otherwise returns 0. When not in PLAY/paused
-// it pushes a fresh PLAY transition via ChangeToPlayState(3, a0, 0, 0).
+// it pushes a fresh PLAY transition via TransitionState(3, a0, 0, 0).
 // @early-stop
 // regalloc wall: in the hit block retail caches m_curState's vtbl in callee-saved ebx
 // across the two virtual calls (push ebx at entry, stack args shift +4); MSVC
@@ -2807,7 +2807,7 @@ i32 CGruntzMgr::PassClickToPlayState(i32 a0, i32 a1, i32 a2) {
         m_curState->Vslot09(m_curState->Update());
         return 1;
     }
-    return ChangeToPlayState(3, a0, 0, 0);
+    return TransitionState(3, a0, 0, 0);
 }
 
 RVA(0x0008f740, 0x46)
@@ -3269,7 +3269,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
     }
     if (m_world) {
         if (flag && m_curState && m_curState->Update() != GAMESTATE_MENU) {
-            m_curState->NotifyExit(0x32);
+            m_curState->Present(0x32);
         } else {
             flag = 0;
         }

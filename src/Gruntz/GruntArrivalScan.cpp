@@ -844,7 +844,7 @@ i32 CGrunt::ArrivalReticleScan() {
             return 1;
         }
         if (m_combatActive == 0 && m_stamina >= 0x64 && occOnTile) {
-            CommitCombatMove(
+            CommitNeighbor(
                 occ->m_tileOwnerHi,
                 occ->m_tileOwnerLo,
                 occ->m_lastTilePxX,

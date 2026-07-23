@@ -1,7 +1,7 @@
 #include <Gruntz/GruntzMgr.h> // m_host's real type (the ex CNetDlgHost/CMultiSlot views)
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
-#include <Net/NetMgr.h>          // the real CNetMgr (m_netGate selection latches)
+#include <Net/NetMgr.h>           // the real CNetMgr (m_netGate selection latches)
 #include <Gruntz/GruntzMgr.h>
 #include <Net/InterfaceObject.h>
 #include <Gruntz/GameRegistry.h> // the real CGameRegistry (g_gameReg; m_curState @+0x2c)
@@ -57,7 +57,12 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     while (item != 0) {
         CString name(item->m_name);
         name.MakeUpper();
-        ::SendMessageA(combo->m_hWnd, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(static_cast<LPCTSTR>(name)));
+        ::SendMessageA(
+            combo->m_hWnd,
+            CB_ADDSTRING,
+            0,
+            reinterpret_cast<LPARAM>(static_cast<LPCTSTR>(name))
+        );
         item = static_cast<MpSymItem*>(st->NextSym3(item));
     }
     CWnd* combo2 = GetDlgItem(0x4ff);
@@ -81,7 +86,13 @@ i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             return 0;
         }
     }
-    return CallWindowProcA(reinterpret_cast<WNDPROC>(g_savedMultiWndProc), hWnd, msg, wParam, lParam);
+    return CallWindowProcA(
+        reinterpret_cast<WNDPROC>(g_savedMultiWndProc),
+        hWnd,
+        msg,
+        wParam,
+        lParam
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -150,8 +161,8 @@ i32 CMultiStartDlg::UpdateColorItems() {
     } else {
         CString cur;
         itChild->GetWindowTextA(cur);
-        if (strcmp(cur, g_multiState->Name31d4()) != 0) {
-            itChild->SetWindowTextA(g_multiState->Name31d4());
+        if (strcmp(cur, g_multiState->GetConfigNameA()) != 0) {
+            itChild->SetWindowTextA(g_multiState->GetConfigNameA());
         }
     }
     it4ff->EnableWindow(0);
@@ -333,10 +344,10 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         if (!UpdateColorItems()) {
             return;
         }
-        if (!Sync38d2()) {
+        if (!UpdateSlot()) {
             return;
         }
-        if (!Sync16db(1)) {
+        if (!UpdatePlayers(1)) {
             return;
         }
     } else {
@@ -516,4 +527,3 @@ i32 CMultiStartDlg::GetComboSelC(i32 id) {
     }
     return ::SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
 }
-

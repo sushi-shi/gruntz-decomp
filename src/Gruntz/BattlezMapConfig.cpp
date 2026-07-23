@@ -967,7 +967,8 @@ i32 CBattlezMapConfig::ValidateUnitPath(i32 unitArg) {
                 }
                 return 0;
             }
-            if (PathCrossesMarkedTile(reinterpret_cast<i32>(unit)) == 0 && unit->m_defenderState == 7) {
+            if (PathCrossesMarkedTile(reinterpret_cast<i32>(unit)) == 0
+                && unit->m_defenderState == 7) {
                 GruntCoordNode* head = unit->CoordHead();
                 if (head != 0) {
                     GruntCoordNode* n = head->m_next;
@@ -2224,7 +2225,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                         if (cf & 0x939) {
                             return 1;
                         }
-                        if (g->IsInCombatRange((col << 5) + 0x10, (row << 5) + 0x10) != 0) {
+                        if (g->RectContains((col << 5) + 0x10, (row << 5) + 0x10) != 0) {
                             m_triggerMgr->ApplyTriggerA(
                                 g->m_tileOwnerHi,
                                 g->m_tileOwnerLo,

@@ -1023,9 +1023,9 @@ void CStatusBarMgr::TickGauge() {
     changed = 1;
 noChange:;
     if (m_gauge == 100) {
-        if (GaugeComplete()) {
+        if (AnySlotActive()) {
             changed = 1;
-            GaugeFinish(0);
+            SetGauge(0);
         }
     }
     if (changed) {
@@ -1140,7 +1140,7 @@ i32 CStatusBarMgr::Deactivate() {
         i32 y = b - 0x30;
         m_28 = y;
         m_24 = x;
-        SetCursorRect(x, y);
+        SetSpritePos(x, y);
     }
 
     POSITION n = m_tabLists[0].GetHeadPosition();
@@ -1466,7 +1466,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
     }
 
     if (m_extraNotify1 != 0 && stepped) {
-        ChipGrinderFinishStep();
+        NotifyAllSlots();
     }
 }
 
@@ -2194,7 +2194,7 @@ i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
                 }
             }
         }
-        ActivateCursor(cmd - 0x13b, 1);
+        PlaceCursorTarget(cmd - 0x13b, 1);
         return 1;
     }
     UpdateStatusBarTabHighlight(a, x, y);
@@ -2764,13 +2764,13 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     m_tabLists[0].AddTail(it);
     m_tabSprite4 = static_cast<CSBI_MenuItem*>(it);
 
-    if (Probe2e69() == 0) {
+    if (BuildSideTabs() == 0) {
         return 0;
     }
     if (RefreshState() == 0) {
         return 0;
     }
-    if (Probe41a1() == 0) {
+    if (BuildTabzDialog() == 0) {
         return 0;
     }
     m_tabsBuilt = 1;
@@ -2923,12 +2923,12 @@ i32 CStatusBarMgr::winapi_107d00_SetRect() {
         m_extraNotify0->m_rect14.m_8 = m_itemRectR + x;
         m_extraNotify0->m_rect14.m_c = m_itemRectB + y;
     }
-    RefreshFallRect();
+    NotifyAllSlots();
     i32 c = m_rezTick;
     m_rezActive = 0;
     if (c > 0) {
         m_rezTick = c - 1;
-        FallItemTick();
+        UpdateRezMachineWakeStatusBar();
     }
     return 1;
 }
@@ -3298,7 +3298,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             HiCueLookup();
             m_tabCycle = cmd - 0x190;
             ResetWidgets(0);
-            FinishReset16ea();
+            TryActivate();
             Deactivate();
             return 1;
 
@@ -3337,7 +3337,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     return 1;
                 case 0x1fa:
                     HiCueLookup();
-                    ArmTab(5, 0);
+                    SetTab(5, 0);
                     return 1;
                 case 0x1fc:
                     if (g_gameReg->m_134 != 1) {
@@ -3465,7 +3465,7 @@ i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
             }
         }
     }
-    RefreshHost();
+    RefreshAll();
 
     char* B = reinterpret_cast<char*>(this);
     POSITION n = m_tabLists[0].GetHeadPosition();
@@ -4137,7 +4137,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             m_extraNotify0->m_rect14.m_c = m_itemRectB + m_rect14.m_0;
         }
         if (refreshFlag) {
-            RefreshFallRect();
+            NotifyAllSlots();
         }
     }
 }
@@ -4177,7 +4177,7 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
         n->m_rect14.m_4 = t + y;
         n->m_rect14.m_c = y + b;
     }
-    RefreshFallRect();
+    NotifyAllSlots();
     return 1;
 }
 
@@ -4219,15 +4219,15 @@ i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
 // source-steerable; deferred to the final sweep.
 RVA(0x00107ae0, 0x1aa)
 void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
-    PrepMultiReset();
+    BuildGameTabPauseButton();
     if (m_position == kSubtypeTag) {
         RefreshState();
     }
     if (m_activeTab != 5) {
-        NotifyTabExit();
+        ClearTabGroup();
         m_activeTab = 5;
     }
-    ArmTab(5, 1);
+    SetTab(5, 1);
     memset(m_statFlags, 0, sizeof(m_statFlags));
     ResetTabWidgets2b44();
 
@@ -4266,8 +4266,8 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
         free(m_retabNotify);
         m_retabNotify = 0;
     }
-    FinishReset1f6e();
+    ExitMode();
     m_578 = 0;
     m_modeArmed = 0;
-    FinishReset16ea();
+    TryActivate();
 }

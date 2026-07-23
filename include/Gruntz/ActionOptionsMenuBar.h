@@ -2,7 +2,7 @@
 
 class CFileMemBase;
 
-class CImage; // the menu-bar drawable (m_frame; RenderFrameClipped 0x153810)
+class CImage;       // the menu-bar drawable (m_frame; RenderFrameClipped 0x153810)
 class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>); the
 
 class CActionOptionsMenuBar {
@@ -20,24 +20,23 @@ public:
     void Dtor(); // in-place dtor (DestroyGroup teardown, reloc-masked)
     i32 LoadAssets();
 
-    void Forward(i32 a, i32 b);         // 0x49b86 (reloc-masked) - forward (x,y) to the overlay
     int Deserialize(CFileMemBase* s); // 0x00009bb0
 
-    i32 m_gridX;               // +0x00  grid X
-    i32 m_gridY;               // +0x04  grid Y
-    i32 m_screenX;             // +0x08  screen X (clamped)
-    i32 m_screenY;             // +0x0c  screen Y (adjusted)
-    CImage* m_frame;           // +0x10  menu-bar frame 1 (the drawable)
-    i32 m_button0State;        // +0x14  button[0] state
-    i32 m_button1State;        // +0x18  button[1] state
-    CImage* m_button0Frame;    // +0x1c  button[0] resolved frame
-    CImage* m_button1Frame;    // +0x20  button[1] resolved frame
-    i32 m_button0Icon;         // +0x24  button[0] icon
-    i32 m_button1Icon;         // +0x28  button[1] icon
-    i32 m_active;              // +0x2c  active flag
+    i32 m_gridX;                    // +0x00  grid X
+    i32 m_gridY;                    // +0x04  grid Y
+    i32 m_screenX;                  // +0x08  screen X (clamped)
+    i32 m_screenY;                  // +0x0c  screen Y (adjusted)
+    CImage* m_frame;                // +0x10  menu-bar frame 1 (the drawable)
+    i32 m_button0State;             // +0x14  button[0] state
+    i32 m_button1State;             // +0x18  button[1] state
+    CImage* m_button0Frame;         // +0x1c  button[0] resolved frame
+    CImage* m_button1Frame;         // +0x20  button[1] resolved frame
+    i32 m_button0Icon;              // +0x24  button[0] icon
+    i32 m_button1Icon;              // +0x28  button[1] icon
+    i32 m_active;                   // +0x2c  active flag
     CDDrawWorker* m_normChipSprite; // +0x30  norm-chip sprite
     CDDrawWorker* m_highChipSprite; // +0x34  high-chip sprite
     CDDrawWorker* m_greyChipSprite; // +0x38  grey-chip sprite
-    i32 m_loaded;              // +0x3c  loaded flag
+    i32 m_loaded;                   // +0x3c  loaded flag
 };
 SIZE_UNKNOWN();

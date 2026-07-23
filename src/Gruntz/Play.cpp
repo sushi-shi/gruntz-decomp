@@ -282,7 +282,7 @@ i32 CPlay::Render() {
         // ---- MAIN in-game frame ----
         // =================================================================
         StepInputA();                                 // cursor draw (BltFast)
-        StepWorldB();                                 // world/camera sub-step B
+        LoadScrollSpeedOptions();                     // world/camera sub-step B
         StepGridWalk(static_cast<i32>(g_frameDelta)); // 0x2e2d  frame-grid advance
 
         g_killCueClock = g_lastNow; // mirror the draw clock
@@ -405,7 +405,7 @@ i32 CPlay::Render() {
             if (w->m_cmdGrid->m_armed != 0) {
                 WorldSubstep();
             }
-            StepWorldB();
+            LoadScrollSpeedOptions();
         }
 
         StepScroll();
@@ -533,7 +533,7 @@ i32 CPlay::Render() {
         }
 
         m_beginMarker->FilterList2(reinterpret_cast<void*>(g_frameDelta));
-        PostHud(0);
+        winapi_0d0b30_CopyRect(0);
         if (m_worldReady != 0) { // optional HUD overlay draw
             Eng_HudDraw(
                 m_world->m_drawTarget->m_frontPair->m_surface,
@@ -645,7 +645,7 @@ alt2:
             }
         }
         m_beginMarker->FilterList2(reinterpret_cast<void*>(g_frameDelta));
-        PostHud(0);
+        winapi_0d0b30_CopyRect(0);
         m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
     }
     return 1; // draw tail
@@ -2011,9 +2011,9 @@ void CPlay::StepC() {
         return;
     }
     if (mode == VIEW_MODE_A) {
-        StepC_ModeA(4);
+        ClampViewport(4);
     } else {
-        StepC_ModeB(4);
+        ClampViewport2(4);
     }
 }
 
@@ -5902,21 +5902,21 @@ i32 CPlay::ResetPlayState() {
             (static_cast<CSaveGame*>(reg->m_saveSink))->Save(0, 0x81a6);
         }
         CGameLevel* g = m_mgr->m_world->m_level;
-        ResetGoalGeom(g->m_header.startX, g->m_header.startY);
+        ResetGoals(g->m_header.startX, g->m_header.startY);
     } else {
         GruntzPlayer* slot = &g_gameReg->m_options[g_curPlayer]; // roster-view keep (disp wall)
         if (slot != 0) {
-            ResetGoalGeom(slot->m_focusX, slot->m_focusY);
+            ResetGoals(slot->m_focusX, slot->m_focusY);
         } else {
             CGameLevel* g = m_mgr->m_world->m_level;
-            ResetGoalGeom(g->m_header.startX, g->m_header.startY);
+            ResetGoals(g->m_header.startX, g->m_header.startY);
         }
     }
     if (m_scrollSink != 0) {
         m_scrollSink->m_stateFlags &= ~1;
     }
     m_inGame = 0;
-    if (!PrepareReset()) {
+    if (!PlaceStartGruntz()) {
         return 0;
     }
     for (i32 i = 0; i < 4; i++) {
@@ -5999,7 +5999,7 @@ void CPlay::FreeListTeardown() {
     if (m_mgr->m_cmdGrid != 0) {
         m_mgr->m_cmdGrid->ClearGridRange(5);
     }
-    Teardown1780();
+    ForwardReady();
     if (m_world->m_soundRegistry->m_2c != 0) {
         m_world->m_soundRegistry->m_2c->Stop();
     }

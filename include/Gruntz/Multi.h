@@ -142,7 +142,6 @@ public:
         return m_5b8;
     }
     CString Name42ff(); // ILT 0x0042ff -> GetConfigNameB 0x0b60d0 (MultiColorDlg)
-    CString Name31d4(); // ILT 0x0031d4 -> GetConfigNameA 0x0b6090 (MultiColorDlg)
     void ReportVersionMsg(char* msg, i32 code); // 0x0b7e30
     // Status-bar diagnostic by string-resource id: LoadStringA through
     // m_logic->m_owner->m_hInstance then ReportVersionMsg. Defined in
@@ -171,7 +170,6 @@ public:
     void SendNetStat(i32 id, u32 value, i32 flag); // 0x0b9290 (__thiscall, 3 args)
     // The multiplayer net-game / lobby-watchdog dialog helpers reach these on the
     // g_multiState singleton (Ghidra labels them CNetMgr::, the same-object dual-view).
-    void DropPlayer(i32 id);        // 0x0bb510 (roster-side declared-only alias)
     i32 DropChannelPlayer(i32 idx); // 0x0bb510
     i32 Poll(i32 token);            // 0x0bba10  (via ILT 0x1249; verify-custom-level poll)
     i32 ResolveLocalPlayer();       // 0x0ba7d0
@@ -198,10 +196,8 @@ public:
     i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd); // 0x0bb190
     i32 ReadGroupSel();                                                     // 0x0b76a0
     i32 PumpA();             // 0x0b6b40  (timeGetTime/wsprintf helper)
-    i32 PumpAReady();        // PumpA head probe (thiscall) 0x??
-    void PumpAReset();       // PumpA idle reset (thiscall) 0x??
+    void PumpB();            // PumpA idle reset (thiscall) 0x??
     i32 PumpAIndex();        // PumpA ambient index (thiscall) 0x??
-    void PumpB();            // 0x0b6e90
     void OnOutOfSync();      // 0x0bae40
     void RefreshSlotTable(); // 0x021bd0  (free fn-ish thiscall on this)
     // (The ex "LoadLevelByMode" @0xca200 alias is GONE - that body is the inherited
@@ -273,19 +269,16 @@ public:
     void HandleVersionCheck(CNetVersionMsg* msg);                                // 0x0bd0b0
     void AnnounceVersion(i32 param);                                             // 0x0bd180
     // External thunked helpers the cluster fires (no body here so the call reloc-masks).
-    i32 MeasurePing(); // round-trip sample
     // (ProbeLatency moved to CGruntzMgr - retail probes it on m_4, called via Mgr())
     i32 WriteCmdDelay(i32 flag); // persist m_5a4/m_drainReload (returns int; tail-returned)
     void SendStatPacket(i32 param, const void* packet, i32 size, i32 flag); // stat dispatcher
     void ShowChatLine(void* hWnd, const char* text);                        // 0xbb3e0 (external)
     void HandleSpriteMsg(CNetCtrlMsg* msg);                                 // 0xba620 (external)
     void RejoinIfNeeded(i32 flag);                                          // 0xba810 (external)
-    void ReportConnectFailed(i32);                                          // 0xb7f60 (external)
     i32 DispatchServices(const char* cmd, i32 flag, void* cb);              // 0xbc250 (external)
-    CString GetGameName();                         // 0xb7a90 (external; == GetString59c)
-    void ApplyDynSetting(CString s);               // 0xb76c0 (external)
-    void SetServiceName(CString s);                // 0xb7730 (external)
-    void PopulateGroupList(void* hList, i32 flag); // 0x1784be (external)
+    void ApplyDynSetting(CString s);                                        // 0xb76c0 (external)
+    void SetServiceName(CString s);                                         // 0xb7730 (external)
+    void PopulateGroupList(void* hList, i32 flag);                          // 0x1784be (external)
     // (ReportError/SetReportMode are CNetMgr statics reached directly as
     //  CNetMgr::ReportError - <Net/NetMgr.h> is included by Multi.cpp.)
 
@@ -366,24 +359,24 @@ void MultiJoinHandler(); // thunk 0x222f -> body 0xb8020 (Gap_0b8020)
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
-extern "C" i32(WINAPI* g_pEndDialog)(HWND, i32);                   // 0x6c44ac
-extern "C" void ServicesDispatchCb(); // 0x401a19
+extern "C" i32(WINAPI* g_pEndDialog)(HWND, i32); // 0x6c44ac
+extern "C" void ServicesDispatchCb();            // 0x401a19
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 struct CNetCreateCtx;
 class CFile;
 extern "C" CNetCreateCtx* g_netCreateCtx;
-extern "C" i32 g_serviceId;           // 0x611d8c
-extern "C" i32 Cfg_SetSection(char* buf, const char* fmt, i32 arg);   // 0xf9280
-extern "C" i32 Cfg_AppendKeyVal(char* buf, const char* key, i32 val); // 0xf93b0
-extern "C" CMulti* g_connectRptMgr;                                   // 0x648cf8
+extern "C" i32 g_serviceId;                                             // 0x611d8c
+extern "C" i32 Cfg_SetSection(char* buf, const char* fmt, i32 arg);     // 0xf9280
+extern "C" i32 Cfg_AppendKeyVal(char* buf, const char* key, i32 val);   // 0xf93b0
+extern "C" CMulti* g_connectRptMgr;                                     // 0x648cf8
 extern "C" i32 Cfg_GetKey(char* out, const char* src, const char* key); // 0xf9160
-extern "C" HWND g_setupDlgHwnd;                                    // 0x64557c
-extern "C" i32 BaseDlgProc(HWND, u32 msg, u32 wParam, i32 lParam); // 0x1192d0
-extern "C" u32(WINAPI* g_pGetDlgItemTextA)(HWND, i32, char*, i32); // 0x6c448c
-extern "C" i32(WINAPI* g_pMessageBeep)(u32);                       // 0x6c4534
-extern "C" void RefreshPlayerRow(HWND hDlg, HWND hList); // 0xb8af0
+extern "C" HWND g_setupDlgHwnd;                                         // 0x64557c
+extern "C" i32 BaseDlgProc(HWND, u32 msg, u32 wParam, i32 lParam);      // 0x1192d0
+extern "C" u32(WINAPI* g_pGetDlgItemTextA)(HWND, i32, char*, i32);      // 0x6c448c
+extern "C" i32(WINAPI* g_pMessageBeep)(u32);                            // 0x6c4534
+extern "C" void RefreshPlayerRow(HWND hDlg, HWND hList);                // 0xb8af0
 extern "C" i32 NetFormatKeyed(char* out, void* src, const char* key);
 extern CFile g_obj646778; // (spelled via the underlying MFC CFile; CFile is its typedef)
 extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);

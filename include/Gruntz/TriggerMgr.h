@@ -309,7 +309,7 @@ public:
     // 0x79d90: ResetSpawnState - when the active game state is live (gameReg->m_134==1)
     // and this->m_284 is set, free the world status item's pending buffer (+0x54c),
     // clear +0x548, drop the last entry of the +0x260 array, optionally re-fire the
-    // build-state notifier, re-pulse the pending-fx (+0x2a0), and RefreshB(6). (__thiscall.)
+    // build-state notifier, re-pulse the pending-fx (+0x2a0), and LoadFinishLevelSprite(6). (__thiscall.)
     void ResetSpawnState();
 
     // 0x7c2e0: CycleMoveIcons(skipRow, enable) - for rows 0..3 except `skipRow`, either
@@ -443,14 +443,8 @@ public:
     i32 PlaceCell(i32 a, i32 b, i32 c); // DestroyGroup placement self-call (reloc-masked)
     // (ReportObjectAt is GONE - its thunk 0x3030 jumps to 0x6e120, which IS
     // ApplyTriggerB; CGrunt::StepPeerTracking calls the real name.)
-    void RecallCell(CGrunt* cell, i32 x, i32 y); // (cell,x,y): NotifyCell pushes y,x,cell
-    void RefreshB(i32 a);
-    void RefreshC();
     CGrunt* Hit(i32 arg, i32 a, i32 b, i32* outRow, i32* outCol);
-    void ClearMagic(i32 key);
     i32 Classify(i32 x, i32 y);
-    void Refresh2();
-    void Record2(i32 x, i32 y);
     void ReportN(i32 a, i32 b, u8* bytes, i32 c, i32 d, i32 e, i32 f);
     CGrunt* Hit5(i32 a, i32 b, i32 c, i32 d, i32 e);
     i32 PlaceA(i32 a, i32 b, i32 c, i32 d);
@@ -506,13 +500,13 @@ public:
     // their member teardown: 2 scalar ??1CObList CALLs (m_baseList/m_recList) + the
     // m_selLists[10] array teardown, whose __ehvec_dtor takes ??1CObList as a function
     // POINTER (that is ~CTriggerMgr's DATA reloc), + 1 ??1CByteArray CALL. No casts remain.
-    CPtrList m_baseList;   // +0x000  base object-list (holds CTmRecNode payloads)
+    CPtrList m_baseList;  // +0x000  base object-list (holds CTmRecNode payloads)
     CGrunt* m_grid[0x3c]; // +0x01c  the 4x15 placed grid-object cells (stride 4)
-    i32 m_rowCount[4];     // +0x10c  per-row placed count (bumped/serialized 0x10 B)
-    i32 m_cellFlag[0x3c];  // +0x11c  parallel 4x15 per-cell flag grid; also holds the
-                           //         cached origin pair at +0x58/+0x5c (GetOriginXY, raw)
-    i32 m_rowStateB[4];    // +0x20c  per-row state band B
-    i32 m_rowStateC[4];    // +0x21c  per-row state band C
+    i32 m_rowCount[4];    // +0x10c  per-row placed count (bumped/serialized 0x10 B)
+    i32 m_cellFlag[0x3c]; // +0x11c  parallel 4x15 per-cell flag grid; also holds the
+                          //         cached origin pair at +0x58/+0x5c (GetOriginXY, raw)
+    i32 m_rowStateB[4];   // +0x20c  per-row state band B
+    i32 m_rowStateC[4];   // +0x21c  per-row state band C
     // +0x22c  the active world/resource holder (SetLevel). Renamed m_level->m_world:
     // it is the CDDrawSurfaceMgr WORLD HOLDER, not the board - consumers reach the real
     // CGameLevel via m_world->m_level (and the child-group factory via m_world->m_childGroup).
@@ -548,7 +542,7 @@ public:
     // +0x2a0: the pending-fx GRUNT (the spawned fx sprite's bound logic). Ex-CTmPendingFx
     // view; its `Pulse()` was ?ResolveDeathAnimation@CGrunt@@QAEHXZ @0x455f0 all along
     // (ILT 0x3a1c at both call sites), and the deserializer stores m_7c->m_logic here.
-    CGrunt* m_pendingFx;    // +0x2a0  pending-fx grunt logic
+    CGrunt* m_pendingFx;     // +0x2a0  pending-fx grunt logic
     i32 m_countdownActive;   // +0x2a4  countdown armed gate (serialized; ex m_2a4)
     i32 m_pendingFxKind;     // +0x2a8  active pending overlay-fx kind
     char _pad2ac[0x4];       // +0x2ac
@@ -575,8 +569,8 @@ i32 __stdcall SpawnTileFx(i32 px, i32 py, i32 kind);
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 extern void __stdcall Eng_BuildNotifyA(i32 a); // 0x100930 (thunk 0x12fd); ret 4 = __stdcall
-extern "C" void IconClassInitB(); // 0x402bad
-extern "C" void IconClassInitA(); // 0x40288d
+extern "C" void IconClassInitB();              // 0x402bad
+extern "C" void IconClassInitA();              // 0x40288d
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

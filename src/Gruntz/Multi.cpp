@@ -37,10 +37,10 @@
 #include <stdio.h>                    // engine sprintf (reloc-masked)
 #include <stdlib.h>                   // srand (reloc-masked)
 
-#include <Utils/DebugTiming.h> // ActiveWait (ex .cpp extern)
+#include <Utils/DebugTiming.h>     // ActiveWait (ex .cpp extern)
 #include <Net/NetMgrReportError.h> // ex Globals.h
-#include <Gruntz/SoundState.h> // ex Globals.h transitive
-VTBL(CNetMgr, 0x001ea42c); // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emitted
+#include <Gruntz/SoundState.h>     // ex Globals.h transitive
+VTBL(CNetMgr, 0x001ea42c);         // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emitted
 DATA(0x002455fc)
 i32 g_optionsCursor = 0; // decl in Multi.h
 
@@ -159,7 +159,7 @@ enum {
 void FillPlayerList(HWND hList, CNetMgr* sess); // 0x0b89e0  (walks CNetMgr's +0x38 player list)
 
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (CMulti::Open m_c->m_drawTarget)
-#include <Gruntz/Play.h> // ChannelSlots_InitAll (ex .cpp extern)
+#include <Gruntz/Play.h>               // ChannelSlots_InitAll (ex .cpp extern)
 
 DATA(0x00248cec)
 i32 g_activePlayerCount = 0;
@@ -811,9 +811,9 @@ i32 CMulti::Render() {
 // body (0-in-ebp reuse, g_frameDelta single-load hoisting), not steerable from source.
 RVA(0x000b6b40, 0x29e)
 i32 CMulti::PumpA() {
-    i32 ready = PumpAReady();
+    i32 ready = FrameSyncWait();
     if (m_594 == 0 && Mgr()->m_frameGate != 0 && ready == 0) {
-        PumpAReset();
+        PumpB();
         return 1;
     }
     g_lastNow += 0x21;
@@ -842,7 +842,7 @@ i32 CMulti::PumpA() {
         }
     }
     Mgr()->m_cmdSubMgr->Step20b3(m_curSlotId % 128);
-    m_session->Step2437();
+    m_session->Checksum();
     g_frameTicks++;
     u32 t1 = g_timer32 ? g_timer32 : 0x32;
     if (g_frameDelta < t1) {
@@ -890,7 +890,7 @@ i32 CMulti::PumpA() {
             reinterpret_cast<i32>(Mgr())
         ); // CMapMgr is a view of CGruntzMapMgr (+0x70)
     if (ready == 0) {
-        PumpAReset();
+        PumpB();
     }
     Mgr()->AdvanceOptionsCycle();
     return 1;
@@ -1026,8 +1026,7 @@ i32 CMulti::StartTitle() {
         return 0;
     }
     CSymTab* saved = m_2c;
-    CSymTab* st =
-        static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_ATTRACT")); // 0x13c030
+    CSymTab* st = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_ATTRACT")); // 0x13c030
     m_2c = st;
     if (!st) {
         return 0;
@@ -1122,7 +1121,7 @@ i32 CMulti::Open() {
         return 0;
     }
     RunTitleSeq("BACKGND", 0, 0, 1, 0);            // 0xfa350 (CState base)
-    m_world->m_drawTarget->PresentBackPage();        // m_c->m_4
+    m_world->m_drawTarget->PresentBackPage();      // m_c->m_4
     InterfaceObject* descriptor = SetupServices(); // 0xb78b0 (the selected provider node)
     if (!descriptor) {
         return 0;
@@ -1159,7 +1158,7 @@ i32 CMulti::Open() {
 RVA(0x000b78b0, 0x17f)
 InterfaceObject* CMulti::SetupServices() {
     if (Peer()->EnumServiceProviders(0) != 0) {
-        ReportConnectFailed(0);
+        ReportNetError(0);
         return 0;
     }
 
@@ -1177,7 +1176,7 @@ InterfaceObject* CMulti::SetupServices() {
                     );
                 }
                 {
-                    CString gameName = GetGameName();
+                    CString gameName = GetString59c();
                     store->SetValueString(
                         "Game_Name",
                         const_cast<char*>(static_cast<const char*>((gameName)))
@@ -1700,7 +1699,7 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
         reinterpret_cast<i32>(g_emptyString)
     );
     if (enumResult == 0) {
-        g_connectRptMgr->ReportConnectFailed(0);
+        g_connectRptMgr->ReportNetError(0);
         return 0;
     }
 
@@ -1709,7 +1708,7 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     );
     m_5bc = reinterpret_cast<i32>(static_cast<CNetSessionNode*>(lp));
     if (lp == 0) {
-        ReportConnectFailed(0);
+        ReportNetError(0);
         return 0;
     }
 
@@ -1758,7 +1757,7 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
     }
     m_5bc = reinterpret_cast<i32>(static_cast<CNetSessionNode*>(lp));
     if (lp == 0) {
-        ReportConnectFailed(0);
+        ReportNetError(0);
         return 0;
     }
 
@@ -3660,7 +3659,7 @@ i32 CMulti::SetupTcpIpConfig() {
     }
     m_5bc = reinterpret_cast<i32>(static_cast<CNetSessionNode*>(lp));
     if (lp == 0) {
-        ReportConnectFailed(0);
+        ReportNetError(0);
         return 0;
     }
 
@@ -3696,7 +3695,7 @@ i32 CMulti::CreateLocalPlayer() {
         )));
     }
     if (LocalPlayer() == 0) {
-        ReportConnectFailed(0);
+        ReportNetError(0);
         return 0;
     }
 
@@ -3817,7 +3816,7 @@ i32 CMulti::WaitForConnect() {
 // ping. No-op (returns) once the config-loaded gate m_530 is set. Samples the
 // ping (MeasurePing), divides it by 9 (the 0x88888889 reciprocal-multiply) and
 // adds 2 -> a base command delay clamped to a minimum of 3; bumps it by 1 plus a
-// further 1 when a secondary probe (ProbeLatency(0)) exceeds 2, stores it as
+// further 1 when a secondary probe (CountReadyOptionsSlots(0)) exceeds 2, stores it as
 // m_cmdDelay, and picks a resend window (10 for <=5, else 30 or 20 for >8) before
 // persisting the pair (ApplyCmdDelayDefaults via the 0-arg overload).
 // @early-stop
@@ -3834,13 +3833,13 @@ i32 CMulti::AutoTuneCmdDelay() {
         return 1;
     }
 
-    u32 ping = static_cast<u32>(MeasurePing());
+    u32 ping = static_cast<u32>(GetMaxAckLatency());
     i32 base = static_cast<i32>((ping / 30)) + 2;
     if (base < 3) {
         base = 3;
     }
 
-    i32 probe = Mgr()->ProbeLatency(0); // retail calls the probe on m_4 (the game mgr)
+    i32 probe = Mgr()->CountReadyOptionsSlots(0); // retail calls the probe on m_4 (the game mgr)
     base += (probe > 2 ? 1 : 0) + 1;
     m_5a4 = base;
     if (base <= 5) {

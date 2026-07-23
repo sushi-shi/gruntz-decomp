@@ -25,7 +25,7 @@ class DirectSoundMgr;
 typedef struct tagRECT CCueRect;
 SIZE_UNKNOWN();
 
-class CGruntSpawnConfig;                  // the +0x60 registry object (one class, three ex-names)
+class CGruntSpawnConfig; // the +0x60 registry object (one class, three ex-names)
 
 #include <Gruntz/GameRegistry.h>
 
@@ -156,7 +156,7 @@ SIZE_UNKNOWN();
 struct CGruntListNode {
     CGruntListNode* m_next; // +0x00
     char m_pad4[0x8 - 0x4];
-    u8* m_data;   // +0x08  serialized payload blob (0x2c bytes)
+    u8* m_data; // +0x08  serialized payload blob (0x2c bytes)
 };
 SIZE_UNKNOWN();
 
@@ -217,7 +217,7 @@ SIZE_UNKNOWN();
 
 void GruntNode_Delete(void* p);
 
-struct CGruntVoiceRec; // defined below (the 3-DWORD by-value voice record)
+struct CGruntVoiceRec;           // defined below (the 3-DWORD by-value voice record)
 extern CGruntVoiceRec g_voiceN;  // 0x6448e8  (dx==0, dy>0  -> South: down)
 extern CGruntVoiceRec g_voiceS;  // 0x6448d8  (dx==0, dy<0  -> North: up)
 extern CGruntVoiceRec g_voiceE;  // 0x6448c8  (shallow +, dx>0 -> East)
@@ -317,7 +317,7 @@ public:
     // Returns 0. (Base CUserLogic slot 9 is a return-0 default; this is its one
     // known override, hence the slot's name.)
     virtual void UserLogicVfunc9() OVERRIDE; // slot 11 @0x48360 (void family slot)
-    virtual void MovingSlot16() OVERRIDE;   // slot 16 @0x5f310
+    virtual void MovingSlot16() OVERRIDE;    // slot 16 @0x5f310
 
     i32 CreateHealthSprite();
     i32 CreateToySprite();
@@ -410,7 +410,7 @@ public:
     i32 LoadGruntTypeTable(i32 a, i32 b, i32 c, i32 d);
     // @0x50ca0 (RunEntranceMove tail): reload the type table for `typeId` then reset
     // the move-mode pair (m_moveMode=-1, m_1a4=0). Re-homed from Stub.
-    void LoadTypeTableClearMove(i32 typeId);
+    i32 LoadTypeTableClearMove(i32 typeId); // carries LoadGruntTypeTable's result through
 
     // --- arrival / move-step helper cluster (proximity-attributed targets) ---
     void PlayMoveSoundAtTile(i32 tx, i32 ty); // @0x514e0 (ret 8) tile->pixel + PlayMoveSound
@@ -515,17 +515,17 @@ public:
     // byte-verified - see <Gruntz/Projectile.h> for the worked shape. CProjectile did
     // not hit this because its handler table's return types are uniform.
     // ---------------------------------------------------------------------
-    CGameObject* m_34; // +0x150  (CWapX::m_34; == the bound object, m_38's twin slot)
+    CGameObject* m_34;     // +0x150  (CWapX::m_34; == the bound object, m_38's twin slot)
     CWwdGameObjectA* m_38; // +0x154  the created entrance-anim sprite object (the ex
-                        //         CEntranceAnimPlayer view - the player IS the
-                        //         created CGameObject; see UserLogic.h's tail note)
+                           //         CEntranceAnimPlayer view - the player IS the
+                           //         created CGameObject; see UserLogic.h's tail note)
     // +0x158: the sprite's worker record. IDENTITY PROVEN by the ctor tail
     // (Grunt.cpp): `m_158 = obj->m_7c` - the bound object's AnimWorkerObj. Its
     // hop chain
     // m_0c->m_28->m_30: worker->m_0c is the owner/world context (the
     // CDDrawSurfaceMgr facet) whose +0x28 is the CDDrawSubMgrLeafScan cue registry
     // (emit gate +0x30, CMapStringToPtr map +0x10).
-    AnimWorkerObj* m_3c;            // +0x158 (the bound object's worker record)
+    AnimWorkerObj* m_3c;  // +0x158 (the bound object's worker record)
     CAniElement* m_value; // +0x15c (= m_154->m_1a0.m_14 cache)
     char m_pad160[0x170 - 0x160];
     // +0x170 (entrance-reason / movement state). The attack-fire step (UserLogicVfunc7)
@@ -542,40 +542,40 @@ public:
     i32 m_commitPxX; // +0x184 (committed position snapshot X, pixel; = m_lastTilePxX after switch)
     i32 m_commitPxY; // +0x188 (committed position snapshot Y, pixel; = m_lastTilePxY after switch)
     i32 m_18c;       // +0x18c
-    i32 m_toyBlendPct;              // +0x190 (anim-name loader: TOY1/TOY2 blend percent)
-    i32 m_194;                      // +0x194
-    i32 m_198;                      // +0x198
-    i32 m_19c;                      // +0x19c
-    i32 m_moveMode;                 // +0x1a0
-    i32 m_1a4;                      // +0x1a4
-    i32 m_1a8;                      // +0x1a8 (serialized)
-    i32 m_1ac;                      // +0x1ac (serialized)
-    i32 m_1b0;                      // +0x1b0 (serialized)
-    i32 m_1b4;                      // +0x1b4 (serialized)
+    i32 m_toyBlendPct;                  // +0x190 (anim-name loader: TOY1/TOY2 blend percent)
+    i32 m_194;                          // +0x194
+    i32 m_198;                          // +0x198
+    i32 m_19c;                          // +0x19c
+    i32 m_moveMode;                     // +0x1a0
+    i32 m_1a4;                          // +0x1a4
+    i32 m_1a8;                          // +0x1a8 (serialized)
+    i32 m_1ac;                          // +0x1ac (serialized)
+    i32 m_1b0;                          // +0x1b0 (serialized)
+    i32 m_1b4;                          // +0x1b4 (serialized)
     CWwdGameObjectA* m_selectedSprite;  // +0x1b8
     CWwdGameObjectA* m_toySprite;       // +0x1bc
-    CString m_animSetName;          // +0x1c0  (anim-name loader: "GRUNTZ_"+m_animSetName+...)
+    CString m_animSetName;              // +0x1c0  (anim-name loader: "GRUNTZ_"+m_animSetName+...)
     CWwdGameObjectA* m_healthSprite;    // +0x1c4
     CWwdGameObjectA* m_staminaSprite;   // +0x1c8
     CWwdGameObjectA* m_toyTimeSprite;   // +0x1cc
     CWwdGameObjectA* m_wingzTimeSprite; // +0x1d0
     CWwdGameObjectA* m_powerupSprite;   // +0x1d4
-    i32 m_arrived;                  // +0x1d8 (entrance-arrival gate)
-    i32 m_1dc;                      // +0x1dc
-    i32 m_1e0;                      // +0x1e0
-    i32 m_entranceActive;           // +0x1e4 (entrance: set to 1)
-    i32 m_arrivalPending;           // +0x1e8 (SnapToLastTile/ClaimSwitchTile arrival-commit latch)
-    i32 m_tileOwnerHi;              // +0x1ec
-    i32 m_tileOwnerLo;              // +0x1f0
-    i32 m_1f4_moveIcon;             // +0x1f4 (SelectMoveIcon: clamped icon index, [0,0x11))
-    i32 m_1f8;                      // +0x1f8 (serialized)
-    i32 m_entranceCommitted;        // +0x1fc (entrance: cleared)
-    i32 m_neighborCol;              // +0x200 (grid-neighbor: column, -1 = none)
-    i32 m_neighborRow;              // +0x204 (grid-neighbor: row, -1 = none)
-    i32 m_208;                      // +0x208
-    i32 m_20c;                      // +0x20c
-    i32 m_210;                      // +0x210
-    i32 m_214;                      // +0x214
+    i32 m_arrived;                      // +0x1d8 (entrance-arrival gate)
+    i32 m_1dc;                          // +0x1dc
+    i32 m_1e0;                          // +0x1e0
+    i32 m_entranceActive;               // +0x1e4 (entrance: set to 1)
+    i32 m_arrivalPending;    // +0x1e8 (SnapToLastTile/ClaimSwitchTile arrival-commit latch)
+    i32 m_tileOwnerHi;       // +0x1ec
+    i32 m_tileOwnerLo;       // +0x1f0
+    i32 m_1f4_moveIcon;      // +0x1f4 (SelectMoveIcon: clamped icon index, [0,0x11))
+    i32 m_1f8;               // +0x1f8 (serialized)
+    i32 m_entranceCommitted; // +0x1fc (entrance: cleared)
+    i32 m_neighborCol;       // +0x200 (grid-neighbor: column, -1 = none)
+    i32 m_neighborRow;       // +0x204 (grid-neighbor: row, -1 = none)
+    i32 m_208;               // +0x208
+    i32 m_20c;               // +0x20c
+    i32 m_210;               // +0x210
+    i32 m_214;               // +0x214
     i32 m_combatActive; // +0x218 (combat/attack-active latch; set with m_poweredUp on attack, gates stamina display)
     i32 m_neighborValid;   // +0x21c (grid-neighbor: cleared on miss)
     i32 m_poweredUp;       // +0x220 (powered-up gate; 0 = run entrance reset)
@@ -732,9 +732,10 @@ public:
     double m_410;      // +0x410
     i32 m_418;         // +0x418
     i32 m_timePerTile; // +0x41c (TimePerTile config; ComputeFacing time divisor; halved for kind 0x37)
-    i32 m_tileClaimed;                // +0x420 (arrival-claimed latch)
-    DirectSoundMgr* m_struckSlotSound;            // +0x424 (struck-slot sound sample; freed via StopAndRewind)
-    DirectSoundMgr* m_struckVoiceSound;            // +0x428 (struck-voice sound sample; freed via StopAndRewind)
+    i32 m_tileClaimed;                 // +0x420 (arrival-claimed latch)
+    DirectSoundMgr* m_struckSlotSound; // +0x424 (struck-slot sound sample; freed via StopAndRewind)
+    DirectSoundMgr*
+        m_struckVoiceSound;           // +0x428 (struck-voice sound sample; freed via StopAndRewind)
     i32 m_42c;                        // +0x42c
     i32 m_430;                        // +0x430
     i32 m_434;                        // +0x434
@@ -754,12 +755,42 @@ public:
     // +0x810..+0x83f: three timer i64 pairs. Each is a union so the 64-bit
     // arithmetic sites keep the i64 while the ctor's interleaved dword zeroing
     // (lo,lo,hi,hi per block - retail's store order) is typed, not offset-cast.
-    union { i64 m_toyClock; struct { i32 m_toyClockLo, m_toyClockHi; }; };          // +0x810
-    union { i64 m_toyDuration; struct { i32 m_toyDurationLo, m_toyDurationHi; }; }; // +0x818
-    union { i64 m_idleAnchor; struct { i32 m_idleAnchorLo, m_idleAnchorHi; }; };    // +0x820
-    union { i64 m_idleDelay; struct { i32 m_idleDelayLo, m_idleDelayHi; }; };       // +0x828
-    union { i64 m_idleTimer; struct { i32 m_idleTimerLo, m_idleTimerHi; }; };       // +0x830
-    union { i64 m_idleWindow; struct { i32 m_idleWindowLo, m_idleWindowHi; }; };    // +0x838 (= 0x3a98)
+    union {
+        i64 m_toyClock;
+        struct {
+            i32 m_toyClockLo, m_toyClockHi;
+        };
+    }; // +0x810
+    union {
+        i64 m_toyDuration;
+        struct {
+            i32 m_toyDurationLo, m_toyDurationHi;
+        };
+    }; // +0x818
+    union {
+        i64 m_idleAnchor;
+        struct {
+            i32 m_idleAnchorLo, m_idleAnchorHi;
+        };
+    }; // +0x820
+    union {
+        i64 m_idleDelay;
+        struct {
+            i32 m_idleDelayLo, m_idleDelayHi;
+        };
+    }; // +0x828
+    union {
+        i64 m_idleTimer;
+        struct {
+            i32 m_idleTimerLo, m_idleTimerHi;
+        };
+    }; // +0x830
+    union {
+        i64 m_idleWindow;
+        struct {
+            i32 m_idleWindowLo, m_idleWindowHi;
+        };
+    };                        // +0x838 (= 0x3a98)
     i32 m_entranceClockLo;    // +0x840 (entrance: = g_frameTime game clock, low dword)
     i32 m_entranceClockHi;    // +0x844 (entrance: = 0, high dword)
     i32 m_entranceSafeTimeLo; // +0x848 (entrance: = EntranceSafeTime config)
@@ -792,19 +823,19 @@ public:
     i32 m_wingzClockHi;    // +0x894 (wingz timer: anchor clock hi = 0)
     i32 m_wingzDurationLo; // +0x898 (wingz timer: duration lo = (long)(m_wingzTime*scale-bias))
     i32 m_wingzDurationHi; // +0x89c (wingz timer: duration hi = 0)
-    i32 m_8a0; // +0x8a0 (sub-ser record base, SerializeMove)
-    i32 m_8a4; // +0x8a4
-    i32 m_8a8; // +0x8a8
-    i32 m_8ac; // +0x8ac
-    i32 m_8b0; // +0x8b0 (sub-ser record base, SerializeMove)
-    i32 m_8b4; // +0x8b4
-    i32 m_8b8; // +0x8b8
-    i32 m_8bc; // +0x8bc
-    i32 m_8c0; // +0x8c0
-    i32 m_8c4; // +0x8c4
-    i32 m_8c8; // +0x8c8
-    i32 m_8cc; // +0x8cc
-    i32 m_8d0; // +0x8d0
+    i32 m_8a0;             // +0x8a0 (sub-ser record base, SerializeMove)
+    i32 m_8a4;             // +0x8a4
+    i32 m_8a8;             // +0x8a8
+    i32 m_8ac;             // +0x8ac
+    i32 m_8b0;             // +0x8b0 (sub-ser record base, SerializeMove)
+    i32 m_8b4;             // +0x8b4
+    i32 m_8b8;             // +0x8b8
+    i32 m_8bc;             // +0x8bc
+    i32 m_8c0;             // +0x8c0
+    i32 m_8c4;             // +0x8c4
+    i32 m_8c8;             // +0x8c8
+    i32 m_8cc;             // +0x8cc
+    i32 m_8d0;             // +0x8d0
     i32 m_8d4; // +0x8d4  (trailing member; sizeof(CGrunt) == 0x8d8, the `new CGrunt` size)
 
     // The grunt's spawn constructor @0x47a10 (__thiscall, the CMovingLogic-base
@@ -816,14 +847,12 @@ public:
     void LoadCellAnimNames(i32 a, i32 b); // (2-arg; called from LoadEntranceConfig tail)
     void ResetEntranceAnimation(i32 a, i32 b, i32 c); // (ret 0xc) - 3-arg entrance reset
     void ResolveEntranceArrival();
-    void EntrancePrepare(); // thunk_FUN_0044b240 (void this-method, external)
+    void ClearAllSprites(); // thunk_FUN_0044b240 (void this-method, external)
     void BuildEntranceAnimation(i32 mode);
     void LoadEntranceConfig();
     // LoadEntranceConfig tail helpers (this-methods reached via incremental-link
     // thunks; external/no-body, reloc-masked).
-    void EntranceFinishWire(i32 a, i32 b);  // thunk_FUN_00449c60 (2-arg)
-    void EntranceOnReleased();              // thunk_FUN_0044b130 (0-arg)
-    void EntranceArrivalHook(i32 a, i32 b); // thunk_FUN_0044d060 (2-arg; arrival commit)
+    void SetEntrancePos(i32 a, i32 b); // thunk_FUN_0044d060 (2-arg; arrival commit)
 
     // ---- the CGrunt method cluster ----
     // (~CGrunt / SerializeMove / Activate / UserLogicVfunc9 / MovingSlot16
@@ -831,7 +860,7 @@ public:
     void EnsureStruckSlot(const char* key); // @0x57b70 lazily build/play the +0x424 sample
     i32 UpdateEntranceAnim();               // @0x690a0 entrance-anim/arrival update step
     void ApplyMoveKind(i32 v);              // @0x57100 (thunk_0x3c29) 1-arg move-kind apply
-    i32 Save(CFileMemBase* ar);            // @0x53f90 serialize
+    i32 Save(CFileMemBase* ar);             // @0x53f90 serialize
     // @0x555e0 (4856 B; body in GameStateRecordLoad.cpp) - the game-state-record
     // load counterpart of Save: SerializeMove's mode-7 arm, dispatched on this
     // same grunt.
@@ -839,7 +868,6 @@ public:
     //  play-state read serializer; SyncState calls it on the PLAY state. The
     //  CGrunt attribution was a same-offsets overlay; see Play.cpp.)
     i32 LoadStateRecord(CFileMemBase* ar);
-    void ClearAllSprites();    // @0x4b240
     i32 CommitArrival();       // @0x4b130
     void ClearSubA();          // @0x57c10
     void ClearSubB();          // @0x57ce0
@@ -864,7 +892,6 @@ public:
     void ArrivalHook4();
     void ArrivalHook5();
     i32 CanShowStamina();              // @0x514a0
-    void SetEntrancePos(i32 a, i32 b); // @0x4d060 (ret 8)
     void EntranceTileOffset(i32* out); // @0x56f80 (ret 4) adjacent-tile pixel pos
     void ComputeFacing(double dt);     // @0x57060 (ret 8)
     i32 ResetGeometry();               // @0x616e0
@@ -938,7 +965,6 @@ public:
     void ApplySetState1(i32 v); // thunk_0x4322 (1-arg state apply)
     i32 SetMoveStateA(i32 v, i32 a, i32 b, i32 c); // thunk_0x3bd9 (4-arg; nonzero = re-roll)
     void SetMoveStateB(i32 v, i32 a, i32 b, i32 c, i32 d); // thunk_0x1401 (5-arg-ish)
-    void EmitMoveCueQ(i32 a);                              // thunk_0x4336 (1-arg cue/state)
     void EmitMoveCueShort(i32 a, i32 b, i32 c);            // thunk_0x1163 (3-arg cue on m_10)
     void ReseedIdleReset(i32 a, i32 b, i32 c);             // thunk_0x136b (3-arg idle reset)
     // Attack-fire step (UserLogicVfunc7 @0x61cb0, ProjectileUpdate.cpp) helpers
@@ -956,10 +982,8 @@ public:
     void StepCoordTick();                  // thunk_0x245a (0-arg coord tick)
     void OnCoordCommit(i32 a);             // thunk_0x1e47 (1-arg commit)
     void NotifyDrop();                     // thunk_0x119a (0-arg drop notify)
-    i32 ProbeRetry();                      // thunk_0x3c0b (retry predicate)
     void OnReanchor(i32 a);                // thunk_0x3cce (1-arg reanchor)
     void StepDropApply();                  // thunk (drop-apply tail)
-    i32 ApplyMoveMode(i32 v);              // thunk_0x3b75 -> 0x50ca0 (the >=0x32 / <0x17 mode arm)
 
     // ---- chunk-2 attributed targets (RearmAttack family + entrance-move tail) ----
     // @0x5b570 (ret 8) - begin the grunt's attack/combat reaction: gated on the
@@ -1095,9 +1119,7 @@ public:
         i32 a5,
         i32 a6,
         i32 a7
-    );                                                 // call 0x1451
-    i32 IsInCombatRange(i32 x, i32 y);                 // call 0x3c4c (2-arg predicate)
-    void CommitCombatMove(i32 a, i32 b, i32 c, i32 d); // call 0x302b (4-arg)
+    ); // call 0x1451
     // The tile-switch trigger @0x4b320 (thunk 0x1640): scale the (col,row) grid pair
     // to tile-pixel centres (*0x20+0x10) and forward all six args to the engine
     // helper. __thiscall on the grunt - the body
@@ -1165,12 +1187,12 @@ extern char s_codeQ[]; // "Q" (0x0060dc08)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-extern i32 g_gruntDefEntranceCell[3];              // 0x6448e8 (default entrance-cell record)
+extern i32 g_gruntDefEntranceCell[3]; // 0x6448e8 (default entrance-cell record)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern "C" i32 CellTargetable(i32 col, i32 row); // 0x40107d -> 0xf0db0 (MgrListFind)
-extern "C" i32 GameRand(); // 0x51fee0 (__cdecl)
+extern "C" i32 GameRand();                       // 0x51fee0 (__cdecl)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

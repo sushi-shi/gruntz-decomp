@@ -344,7 +344,7 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
             }
         }
     } else {
-        this->RefreshC(); // self-call 0x6c068 (reloc-masked)
+        this->ResetSpawnState(); // self-call 0x6c068 (reloc-masked)
     }
     CoordPoolNode* node = g_coordPool.m_freeHead;
     i32* slot = 0;
@@ -654,7 +654,7 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
 // 0x6ea00: HitTestApply(x, y, kind) - hit-test the cell at (x,y); only for the magic group
 // (out-col == g_curPlayer) and a cell whose config name is NOT "B" and kind 0x14, add the world's
 // score delta, zero the status fields, SetStat(0,0xbb7), re-arm the status item (SetMode 1)
-// and ClearMagic(g_curPlayer). void - no path materialises a return value. (__stdcall: ret 0xc.)
+// and ClearRow(g_curPlayer). void - no path materialises a return value. (__stdcall: ret 0xc.)
 // @early-stop
 // inline-strcmp result-register coloring wall (~80%): void return + strcmp `!= 0` bool steer +
 // i64 score sub are byte-exact and size now matches retail (0x125). The residual is the inline
@@ -703,5 +703,5 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     sub->m_currentMs = 0;         // +0x4c
     world->ArmSnapshot(0, 0xbb7); // 0xd9240
     world->m_guts->SetMode(1);
-    this->ClearMagic(g_curPlayer);
+    this->ClearRow(g_curPlayer);
 }

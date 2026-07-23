@@ -547,7 +547,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     // An active overlay eats the click.
     CActionOptionsMenuBar* ov = m_overlay;
     if (ov != 0 && ov->m_active != 0) {
-        ov->Forward(x, y);
+        ov->HitClick(x, y);
         return 1;
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -921,7 +921,7 @@ void CTriggerMgr::ResetSpawnState() {
             fx->ResolveDeathAnimation();
         }
     }
-    this->RefreshB(6);
+    this->LoadFinishLevelSprite(6);
 }
 
 // 0x79ea0: SpawnTileFx(x, y, a3) - only when the active state is live
@@ -985,7 +985,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         return;
     }
     if (cell->m_arrivalPending == 0) {
-        this->RecallCell(cell, cell->m_lastTilePxX, cell->m_lastTilePxY);
+        this->ApplySwitch(cell, cell->m_lastTilePxX, cell->m_lastTilePxY);
     }
     Coord pt;
     pt.m_x = cell->m_lastTilePxX;
@@ -1011,7 +1011,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
                     fx->ResolveDeathAnimation();
                 }
             }
-            this->RefreshB(1);
+            this->LoadFinishLevelSprite(1);
         }
         cell->m_36c = 1;
         return;
@@ -1021,7 +1021,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         k = cell->m_19c;
     }
     if (k == 0x14) {
-        this->RefreshC();
+        this->ResetSpawnState();
     }
     m_rowStateC[col] += 1;
     cell->m_36c = 1;
@@ -1487,8 +1487,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
             }
             // the looked-up sprite's bound logic IS the pending-fx grunt (the creator
             // downcast every m_7c->m_logic consumer does)
-            CGrunt* obj =
-                static_cast<CGrunt*>((static_cast<CGameObject*>(looked))->m_7c->m_logic);
+            CGrunt* obj = static_cast<CGrunt*>((static_cast<CGameObject*>(looked))->m_7c->m_logic);
             m_pendingFx = obj;
             if (obj == 0) {
                 return 0;
@@ -1594,8 +1593,8 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
         m_pendingFxKind = v;
         world->LoadCursorSprites(v, 0);
     }
-    this->Refresh2();
-    this->Record2(x, y);
+    this->OverlayTick();
+    this->PlaceObjectFull(x, y);
     return 1;
 }
 
@@ -2914,4 +2913,3 @@ RVA(0x00085c50, 0x83)
 CTriggerMgr::~CTriggerMgr() {
     Cleanup();
 }
-

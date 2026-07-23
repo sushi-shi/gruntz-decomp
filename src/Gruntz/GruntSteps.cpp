@@ -18,11 +18,11 @@
 // (between 0x50ca0 and 0x511b0 - contiguity-forced).
 // GruntTubeAnim.cpp (0x50a50, gap 139 before 0x50ca0) is a PROBABLE head of this
 // TU but stays split (no privates/frags to prove it; noted there).
-#include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620
-#include <Gruntz/GruntzMapMgr.h> // the real +0x70 board class (ex GruntBoard view)
+#include <Bute/ButeTree.h>        // CButeTree::Find - g_buteTree @0x6bf620
+#include <Gruntz/GruntzMapMgr.h>  // the real +0x70 board class (ex GruntBoard view)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h>    // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/Grunt.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
@@ -63,7 +63,8 @@ static const char s_GOKARTGRUNT[] = "GOKARTGRUNT";         // s_..._0060da38
 static const char s_POGOSTICKGRUNT[] = "POGOSTICKGRUNT";   // s_..._0060d9fc
 
 static __inline i32 s_TileFlags(CGruntzMapMgr* b, i32 tx, i32 ty) {
-    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width) || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
+        || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
         return 1;
     }
     return (reinterpret_cast<i32*>(b->m_rowBytes[ty]))[tx * 7];
@@ -79,7 +80,8 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     if (tx == mtx && ty == mty) {
         return 1;
     }
-    if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_width) || static_cast<u32>(mty) >= static_cast<u32>(board->m_height)) {
+    if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_width)
+        || static_cast<u32>(mty) >= static_cast<u32>(board->m_height)) {
         return 0;
     }
     i32* tgt = &(reinterpret_cast<i32*>(board->m_rowBytes[mty]))[mtx * 7];
@@ -104,25 +106,29 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     i32 stride = board->m_width * 7 * 4; // bytes per board row
     if (dx > 0) {
         if (dy > 0) {
-            if ((cur[0x1d] & 0x20) || (cur[stride + 1] & 0x20) || (*reinterpret_cast<i32*>((tg - 0x1c)) & 0x2000)
+            if ((cur[0x1d] & 0x20) || (cur[stride + 1] & 0x20)
+                || (*reinterpret_cast<i32*>((tg - 0x1c)) & 0x2000)
                 || (*reinterpret_cast<i32*>((tg - stride)) & 0x2000)) {
                 return 0;
             }
         } else {
             if ((cur[0x1d] & 0x20) || (*reinterpret_cast<i32*>((cur - stride)) & 0x2000)
-                || (*reinterpret_cast<i32*>((tg - 0x1c)) & 0x2000) || (*reinterpret_cast<i32*>((tg + stride)) & 0x2000)) {
+                || (*reinterpret_cast<i32*>((tg - 0x1c)) & 0x2000)
+                || (*reinterpret_cast<i32*>((tg + stride)) & 0x2000)) {
                 return 0;
             }
         }
     } else {
         if (dy > 0) {
-            if ((cur[-0x1b] & 0x20) || (cur[stride + 1] & 0x20) || (*reinterpret_cast<i32*>((tg + 0x1c)) & 0x2000)
+            if ((cur[-0x1b] & 0x20) || (cur[stride + 1] & 0x20)
+                || (*reinterpret_cast<i32*>((tg + 0x1c)) & 0x2000)
                 || (*reinterpret_cast<i32*>((tg - stride)) & 0x2000)) {
                 return 0;
             }
         } else {
             if ((cur[-0x1b] & 0x20) || (*reinterpret_cast<i32*>((cur - stride)) & 0x2000)
-                || (*reinterpret_cast<i32*>((tg + 0x1c)) & 0x2000) || (*reinterpret_cast<i32*>((tg + stride)) & 0x2000)) {
+                || (*reinterpret_cast<i32*>((tg + 0x1c)) & 0x2000)
+                || (*reinterpret_cast<i32*>((tg + stride)) & 0x2000)) {
                 return 0;
             }
         }
@@ -162,19 +168,22 @@ static __inline void SerRecord(CFileMemBase* ar, i32 mode, char* p) {
 
 static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
     CGruntzMapMgr* b = g_gameReg->m_tileGrid;
-    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width) || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
+        || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
         return 1;
     }
     return (reinterpret_cast<i32*>(b->m_rowBytes[ty]))[tx * 7];
 }
 
 RVA(0x00050ca0, 0x2b)
-void CGrunt::LoadTypeTableClearMove(i32 typeId) {
-    // the real callee is CGrunt::LoadGruntTypeTable (0x4dd50, SYMBOL-exported in
-    // UserLogic.cpp; a CGrunt method, discards the i32 result here)
-    LoadGruntTypeTable(typeId, 0, 0, 0);
+i32 CGrunt::LoadTypeTableClearMove(i32 typeId) {
+    // the real callee is CGrunt::LoadGruntTypeTable (0x4dd50, a CGrunt method);
+    // its result rides through the two trailing stores as this fn's return
+    // (callers pass the eax straight out - proven at 0x67a54's tail).
+    i32 r = LoadGruntTypeTable(typeId, 0, 0, 0);
     m_moveMode = -1;
     m_1a4 = 0;
+    return r;
 }
 
 // @early-stop
@@ -262,10 +271,11 @@ i32 CGrunt::LoadVehicleGruntSprites(i32 kind) {
     }
 #undef REGION_INIT
 
-    (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, 0);
+    (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
+        ->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, 0);
 
     i32 code = (((static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
-                    ->m_tileGrid->m_rowBytes[m_lastTilePxY >> 5]))[(m_lastTilePxX >> 5) * 7 + 4];
+                     ->m_tileGrid->m_rowBytes[m_lastTilePxY >> 5]))[(m_lastTilePxX >> 5) * 7 + 4];
     if (code == 0x41 || code == 0x42) {
         if (m_object->m_screenX == m_lastTilePxX && m_object->m_screenY == m_lastTilePxY) {
             // retail pushes (this, x, y) - ret 0xc.
@@ -573,13 +583,13 @@ i32 CGrunt::StepCompassMove() {
             // The target is occupied by another owner: notify the tile mgr (the tile's
             // +0x4 owner id is split into its low two bytes).
             i32 owner;
-            if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_width) || static_cast<u32>(mty) >= static_cast<u32>(board->m_height)) {
+            if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_width)
+                || static_cast<u32>(mty) >= static_cast<u32>(board->m_height)) {
                 owner = -1;
             } else {
                 owner = (reinterpret_cast<i32*>(board->m_rowBytes[mty]))[mtx * 7 + 1];
             }
-            m_tileMgr
-                ->CellDispatch((owner >> 8) & 0xff, owner & 0xff, 2, m_tileOwnerHi);
+            m_tileMgr->CellDispatch((owner >> 8) & 0xff, owner & 0xff, 2, m_tileOwnerHi);
         }
         goto commit;
     }
@@ -603,7 +613,8 @@ i32 CGrunt::StepCompassMove() {
             default:
                 break;
         }
-        i32 toyCount = g_buteMgr.GetIntDef(const_cast<char*>(static_cast<LPCTSTR>(str)), s_ToyTiles, 1);
+        i32 toyCount =
+            g_buteMgr.GetIntDef(const_cast<char*>(static_cast<LPCTSTR>(str)), s_ToyTiles, 1);
         if (m_toyTileIndex < toyCount) {
             switch (m_entranceCell.reason - 1) {
                 case 0:
@@ -722,12 +733,8 @@ i32 CGrunt::StepCompassMove() {
     }
 
 commit:
-    m_tileMgr
-        ->ApplySwitch(
-            this,
-            m_lastTilePxX,
-            m_lastTilePxY
-        ); // real 0x6d300
+    m_tileMgr->ApplySwitch(this, m_lastTilePxX,
+                           m_lastTilePxY); // real 0x6d300
     PlaySound(0x3e8, voice);
     m_commitPxX = m_lastTilePxX;
     m_commitPxY = m_lastTilePxY;
@@ -816,7 +823,8 @@ i32 CGrunt::ClaimSwitchTile() {
     i32 tx = x >> 5;
     i32 ty = y >> 5;
     i32 flags;
-    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width) || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
+    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
+        || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
         flags = 1;
     } else {
         flags = (reinterpret_cast<i32*>(b->m_rowBytes[ty]))[tx * 7];
@@ -825,12 +833,8 @@ i32 CGrunt::ClaimSwitchTile() {
         return 0;
     }
 
-    m_tileMgr
-        ->ApplySwitch(
-            this,
-            m_lastTilePxX,
-            m_lastTilePxY
-        ); // real 0x6d300
+    m_tileMgr->ApplySwitch(this, m_lastTilePxX,
+                           m_lastTilePxY); // real 0x6d300
 
     // Release the grunt's old tile: clear bit 5 of the old tile's flag byte, set
     // its owner record to -1.
@@ -1050,7 +1054,7 @@ modeDispatch: {
         return 1;
     }
     if (mode >= 0x17) {
-        EmitMoveCueQ(mode);
+        LoadVehicleGruntSprites(mode);
         return 1;
     }
     SetMoveStateA(mode, 1, 0, 1);
@@ -1073,7 +1077,9 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
     // DIRECT second base at mdisp +0x150 (past the 0x150 CMovingLogic spine). The
     // Grunt.h ODR world is not converted yet, so the subobject is reached by cast
     // until that MI conversion lands (MI1 flagged item 1).
-    if ((reinterpret_cast<CWapX*>(&m_34))->Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) == 0) {
+    if ((reinterpret_cast<CWapX*>(&m_34))
+            ->Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4))
+        == 0) {
         return 0;
     }
     switch (mode) {
@@ -1093,7 +1099,8 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
             m_tileMgr = g_gameReg->m_cmdGrid;
             break;
     }
-    (reinterpret_cast<CTriRecord*>((&m_entranceCell)))->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+    (reinterpret_cast<CTriRecord*>((&m_entranceCell)))
+        ->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_toyClock));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_idleAnchor));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_idleTimer));
@@ -1102,12 +1109,18 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_860));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_combatClockLo));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_880));
-    (reinterpret_cast<CPairRecord*>((&m_wingzClockLo)))->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
-    (reinterpret_cast<CPairRecord*>((&m_8a0)))->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
-    (reinterpret_cast<CPairRecord*>((&m_8b0)))->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
-    (reinterpret_cast<CPairRecord*>((&m_8c0)))->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
-    (reinterpret_cast<CPairRecord*>((&m_arrivalRerollLo)))->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
-    (reinterpret_cast<CPairRecord*>((&m_278)))->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+    (reinterpret_cast<CPairRecord*>((&m_wingzClockLo)))
+        ->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+    (reinterpret_cast<CPairRecord*>((&m_8a0)))
+        ->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+    (reinterpret_cast<CPairRecord*>((&m_8b0)))
+        ->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+    (reinterpret_cast<CPairRecord*>((&m_8c0)))
+        ->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+    (reinterpret_cast<CPairRecord*>((&m_arrivalRerollLo)))
+        ->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+    (reinterpret_cast<CPairRecord*>((&m_278)))
+        ->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
     return 1;
 }
 
@@ -1133,7 +1146,8 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     if (!ar) {
         return 0;
     }
-    CDDrawSubMgrLeaf* catalog = (static_cast<CGruntTypeCatalog*>(*reinterpret_cast<void**>(&m_3c)))->m_c;
+    CDDrawSubMgrLeaf* catalog =
+        (static_cast<CGruntTypeCatalog*>(*reinterpret_cast<void**>(&m_3c)))->m_c;
     if (!catalog) {
         return 0;
     }
@@ -1437,10 +1451,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_stamina, 4);
     ar->Write(&m_toyTime, 4);
     ar->Write(&m_wingzTime, 4);
-    ar->Write(
-        &m_400,
-        8
-    );
+    ar->Write(&m_400, 8);
     ar->Write(&m_418, 4);
     ar->Write(&m_42c, 4);
     ar->Write(&m_430, 4);
@@ -1503,4 +1514,3 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     }
     return 1;
 }
-

@@ -23,7 +23,7 @@
 #include <Gruntz/Grunt.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (m_animRegistry hop)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)
-#include <Gruntz/GameLevel.h>   // canonical CGameLevel/CDDrawWorkerHost (m_world->m_level visible rect)
+#include <Gruntz/GameLevel.h> // canonical CGameLevel/CDDrawWorkerHost (m_world->m_level visible rect)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
 #include <Gruntz/ActReg.h>      // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
@@ -203,7 +203,7 @@ i32 CGrunt::RunEntranceMove() {
         return 0;
     }
     if (mode >= 0x32) {
-        return ApplyMoveMode(mode);
+        return LoadVehicleGruntSprites(mode); // retail tail 0x67a44 -> 0x50ce0
     }
     if (mode >= 0x22) {
         m_194 = mode;
@@ -211,10 +211,10 @@ i32 CGrunt::RunEntranceMove() {
         return 1;
     }
     if (mode >= 0x17) {
-        EmitMoveCueQ(mode);
+        LoadVehicleGruntSprites(mode);
         return 0;
     }
-    return ApplyMoveMode(mode);
+    return LoadTypeTableClearMove(mode);
 }
 
 // ---------------------------------------------------------------------------
@@ -280,7 +280,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
         m_object->m_flags |= 0x20000;
     }
 
-    EntrancePrepare(); // thunk_FUN_0044b240 (a void this-method)
+    ClearAllSprites(); // thunk_FUN_0044b240 (a void this-method)
 
     CString key;
 
@@ -458,13 +458,13 @@ void CGrunt::LoadEntranceConfig() {
             m_85c = 0;
         } else {
             if (m_tileMgr->RecordListHas(m_tileOwnerHi, m_tileOwnerLo)) {
-                EntranceOnReleased();
+                CommitArrival();
             }
         }
         m_entranceActive = 0;
         ReadConfigFromButeMgr();
         LoadCellAnimNames(0, 0);
-        EntranceFinishWire(0, 0);
+        LoadAnimNameTable(0, 0);
     }
 
     if (m_38->m_1a0.m_28 == 0 || m_38->m_1a0.m_20 != 0) {
@@ -1034,7 +1034,7 @@ modeDispatch: {
         goto finalize;
     }
     if (mode >= 0x17) {
-        EmitMoveCueQ(mode);
+        LoadVehicleGruntSprites(mode);
         goto finalize;
     }
     SetMoveStateA(mode, 1, 0, 1);
@@ -1496,7 +1496,7 @@ modeDispatch: {
         return 1;
     }
     if (mode >= 0x17) {
-        EmitMoveCueQ(mode);
+        LoadVehicleGruntSprites(mode);
         return 1;
     }
     SetMoveStateA(mode, 1, 0, 1);

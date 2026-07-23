@@ -8,17 +8,19 @@
 
 class CGruntzSoundZ;
 class CGruntzSoundInnerZ;
-class CBattlezData;  // CWorld::m_7c score/HUD sink (BattlezData.h; the per-kind counters)
-class CChatBoxOwner; // +0x2e0 hit-test/region sink (real type; deref TUs include ChatBoxOwner.h)
-class CFontConfig;           // CWorld::m_5c  (TypeChar @0x21e20 - the chat/key text layer)
-class CWorldSoundSet;        // CWorld::m_54  (Teardown @0xb660 / Resume @0xbcf0 / Retune @0xbd60)
-class CGruntSpawnConfig;     // CWorld::m_60  (ClearSprites @0x11af90 / DtorBody @0x11c7b0)
-class CGruntzCmdMgr;         // CWorld::m_6c  (EnqueueSingle @0x23c30 - the marker/waypoint queue)
-class CTriggerMgr;           // CWorld::m_68  (== g_gameReg->m_cmdGrid; TriggerMgr.h)
-class CStatusBarMgr;         // CPlay::m_guts (+0x2dc; the 0x630-byte alloc in CPlay::LoadGameAssetNamespaces)
+class CBattlezData;   // CWorld::m_7c score/HUD sink (BattlezData.h; the per-kind counters)
+class CChatBoxOwner;  // +0x2e0 hit-test/region sink (real type; deref TUs include ChatBoxOwner.h)
+class CFontConfig;    // CWorld::m_5c  (TypeChar @0x21e20 - the chat/key text layer)
+class CWorldSoundSet; // CWorld::m_54  (Teardown @0xb660 / Resume @0xbcf0 / Retune @0xbd60)
+class CGruntSpawnConfig; // CWorld::m_60  (ClearSprites @0x11af90 / DtorBody @0x11c7b0)
+class CGruntzCmdMgr;     // CWorld::m_6c  (EnqueueSingle @0x23c30 - the marker/waypoint queue)
+class CTriggerMgr;       // CWorld::m_68  (== g_gameReg->m_cmdGrid; TriggerMgr.h)
+class
+    CStatusBarMgr; // CPlay::m_guts (+0x2dc; the 0x630-byte alloc in CPlay::LoadGameAssetNamespaces)
 class CLightFxRender;        // CPlay::m_lightFx (+0x320; the 0x43c alloc in LoadByMode)
 class CTileTriggerContainer; // CPlay::m_beginMarker (+0x2e4; Serialize @0x117280)
-struct CGameObject; class CWwdGameObjectA; // CPlay::m_scrollSink (+0x4e4; the CursorSnapSprite game object)
+struct CGameObject;
+class CWwdGameObjectA; // CPlay::m_scrollSink (+0x4e4; the CursorSnapSprite game object)
 
 class CMulti; // notify sink (Multi.h; AckJoinFailure 0xbc420); reloc-masked
 
@@ -45,7 +47,7 @@ class CFileMemBase;
 
 class CImage;
 
-class CDDrawWorker;             // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
 class CPlay : public CState {
 public:
@@ -59,7 +61,7 @@ public:
     virtual GameStateId Update() OVERRIDE {
         return GAMESTATE_PLAY;
     }
-    virtual i32 Render() OVERRIDE;               // THE per-frame heart (this TU)
+    virtual i32 Render() OVERRIDE; // THE per-frame heart (this TU)
     // slot 1 (CState override): the PLAY mode/object initializer @0xc7ec0
     // (ModeObjInit.cpp; retail ??_7CPlay slot 1 = ILT 0x132a -> 0xc7ec0).
     virtual i32 LoadGameAssetNamespaces(i32, i32, i32) OVERRIDE;
@@ -75,21 +77,21 @@ public:
     // slot 8 (CState override) - the per-state activation entry (0x0cb800,
     // PlayStateActivate.cpp).
     virtual i32 InputVirtual() OVERRIDE;
-    virtual i32 Vslot09(i32) OVERRIDE;           // slot 9 (CState override)
-    virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10 (CState override)
-    virtual i32 Vslot0b(i32, i32) OVERRIDE;      // slot 11 (CState override)
-    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12 (CState override)
-    virtual i32 Vslot0d(i32, i32) OVERRIDE;      // slot 13 (CState override)
-    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14 (CState override)
-    virtual i32 Vslot0f(i32, i32, i32) OVERRIDE; // slot 15 (CState override)
-    virtual i32 Vslot10(i32, i32, i32) OVERRIDE; // slot 16 (CState override)
-    virtual i32 Vslot11(i32, i32, i32) OVERRIDE; // slot 17 (CState override)
-    virtual i32 Vslot12(i32, i32, i32) OVERRIDE; // slot 18 (CState override)
-    virtual i32 Vslot13(i32, i32, i32) OVERRIDE; // slot 19 (CState override)
+    virtual i32 Vslot09(i32) OVERRIDE;                       // slot 9 (CState override)
+    virtual i32 FrameSlot28(i32) OVERRIDE;                   // slot 10 (CState override)
+    virtual i32 Vslot0b(i32, i32) OVERRIDE;                  // slot 11 (CState override)
+    virtual i32 Vslot0c(i32, i32) OVERRIDE;                  // slot 12 (CState override)
+    virtual i32 Vslot0d(i32, i32) OVERRIDE;                  // slot 13 (CState override)
+    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE;             // slot 14 (CState override)
+    virtual i32 Vslot0f(i32, i32, i32) OVERRIDE;             // slot 15 (CState override)
+    virtual i32 Vslot10(i32, i32, i32) OVERRIDE;             // slot 16 (CState override)
+    virtual i32 Vslot11(i32, i32, i32) OVERRIDE;             // slot 17 (CState override)
+    virtual i32 Vslot12(i32, i32, i32) OVERRIDE;             // slot 18 (CState override)
+    virtual i32 Vslot13(i32, i32, i32) OVERRIDE;             // slot 19 (CState override)
     virtual i32 SetBeginClearParams(i32, i32, i32) OVERRIDE; // slot 20 (CState override, 0x8c970)
-    virtual i32 Vslot15() OVERRIDE;              // slot 21 (CState override)
-    virtual i32 PauseGame() OVERRIDE;            // slot 24 (CState override, 0xcee90)
-    virtual i32 ResumeGame() OVERRIDE;           // slot 25 (CState override, 0xcef00)
+    virtual i32 Vslot15() OVERRIDE;                          // slot 21 (CState override)
+    virtual i32 PauseGame() OVERRIDE;                        // slot 24 (CState override, 0xcee90)
+    virtual i32 ResumeGame() OVERRIDE;                       // slot 25 (CState override, 0xcef00)
     // --- CPlay-owned high slots 26..40 (moved from CState; RTTI CState is 26 slots) ---
     virtual i32 Vslot1a();  // slot 26 (0x8c930)  ret 0
     virtual i32 GetFrame(); // slot 27 (+0x6c)  current frame number (debug HUD "Frame = %i")
@@ -141,7 +143,8 @@ public:
     virtual void DrawWorldFrame();            // slot 39 (+0x9c) 0x0c9c20
     virtual i32 DrawWorldFrames();            // slot 40 (+0xa0) 0x0c9cc0
     virtual i32 BuildMusicCategoryTable(i32); // slot 41 (+0xa4) 0x0dba30 (== the MIDIZ installer)
-    virtual i32 BuildWorldLevelPath(i32);     // slot 42 (+0xa8) - 0xdbc80, defined in WorldLevelPath.cpp
+    virtual i32
+        BuildWorldLevelPath(i32); // slot 42 (+0xa8) - 0xdbc80, defined in WorldLevelPath.cpp
 
     // (the m_4w() CWorld-cast accessor is GONE - CState::m_4 is the typed
     // CGruntzMgr* already; consumers deref it directly.)
@@ -176,7 +179,6 @@ public:
     // cursor-half surface at the edge-fed {x,y}, error-logged via
     // CDDrawPtrCollections::GetErrorString (thunk-target proven).
     i32 StepInputA(); // (THIS TU)
-    void StepWorldB();
     // (The PLAY-state keyboard/cheat dispatcher 0xcbcc0 folded onto the slot-12
     // virtual Vslot0c: it routes a virtual-key to its game/cheat action, reading
     // the guts (+0x2dc), chat sink (+0x2e0), area idx and cheat globals. The old
@@ -210,7 +212,6 @@ public:
     i32 BuildGruntNamespaceList(i32 arg);           // 0x0dd050 (THIS TU)
     // The namespace-register op IS CState::BuildAssetNamespacePrefixes
     // (0xdca70, State.h) - reached directly (CPlay inherits it from CState).
-    void PostHud(i32 wParam);
     // (MarkerBegin is GONE - it is m_beginMarker->FilterList2 (0x1170b0, a
     // CTileTriggerContainer sub-object thiscall), not a CPlay-this method.)
     void StepC(); // (THIS TU)
@@ -237,10 +238,8 @@ public:
     // here was always right - it was just declared non-virtual beside its own slot.)
 
     // --- leaf sub-helpers the THIS-TU functions call (external, reloc-masked) ---
-    void StepC_ModeA(i32 z); // (thiscall, 1 arg) StepC m_viewMode==1
-    void StepC_ModeB(i32 z); // (thiscall, 1 arg) StepC else
-    void RegionEnter();      // (thiscall, no arg) OnRegion on-enter
-    void RegionLeave();      // (thiscall, no arg) OnRegion on-leave
+    void RegionEnter(); // (thiscall, no arg) OnRegion on-enter
+    void RegionLeave(); // (thiscall, no arg) OnRegion on-leave
     // (GutsStep/FrameTimerBegin/FrameTimerEnd/MarkerEnd/WorldBlit are GONE - they
     // were fabricated CPlay-this wrappers of sub-object thiscalls: the guts step is
     // m_guts->LoadDestructButtonSprite (0x34bd->0xffb20), the frame-marker begin/end
@@ -412,10 +411,7 @@ public:
     // NAPOLEAN/VIKING/PATTON CString names. CString temps force the /GX EH frame.
     i32 BuildWarlordNameTable(i32 arg); // 0x0dd340
     // ResetPlayState's own reloc-masked CPlay-thiscall leaves (external):
-    void ResetGoalGeom(i32 lo, i32 hi); // 0x2e28 thunk  (this, lo, hi)
-    i32 PrepareReset();                 // 0x1d75 thunk  (this) -> proceed gate
     // FreeListTeardown's reloc-masked CPlay-thiscall leaf (external):
-    void Teardown1780(); // 0x1780 thunk  (this) early teardown step
     // BuildWarlordNameTable/LoadWarlordSprites leaves: ProbeWarlord IS
     // CPlay::BuildGruntTypeNameTable (0xdc6d0); BindWarlordName IS
     // CState::BuildAssetNamespacePrefixes (0xdca70, inherited from CState).
@@ -561,7 +557,7 @@ public:
     // +0x4c0  reveal-strip cap sprite objects (passed by-ptr to the HUD-strip draw).
     CImage *m_revealCapMid, *m_revealCapEnd, *m_revealCapStart;
     // +0x4cc: the level/tile frame grid GrabTile/AdvanceTile walk (canonical CDDrawWorker)
-    CDDrawWorker* m_grid;      // +0x4cc  level tile/frame grid (canonical CDDrawWorker)
+    CDDrawWorker* m_grid;   // +0x4cc  level tile/frame grid (canonical CDDrawWorker)
     CImage* m_gridCurFrame; // +0x4d0  current tile/frame image (a CDDrawWorker row)
     i32 m_gridHasSprite;    // +0x4d4  has-grid-sprite flag
     i32 m_gridDelayBase;    // +0x4d8  step-delay base
@@ -573,8 +569,8 @@ public:
     // drag/select active bit and its m_screenX/m_screenY (+0x5c/+0x60) receive
     // StepScroll's snapped scroll offsets. Was the `ScrollSink` view.
     CWwdGameObjectA* m_scrollSink; // +0x4e4
-    i32 m_gridWalkActive;      // +0x4e8  grid-walk active flag
-    i32 m_renderDisabled;      // +0x4ec  Render hard early-out gate
+    i32 m_gridWalkActive;          // +0x4e8  grid-walk active flag
+    i32 m_renderDisabled;          // +0x4ec  Render hard early-out gate
     i32 m_4f0;             // +0x4f0  highlight-busy gate (SBI_RectOnly reads it non-zero => bail)
     i32 m_winLoseBanner;   // +0x4f4  win/lose banner gate
     i32 m_inGame;          // +0x4f8  PRIMARY mode: nonzero = main in-game frame
@@ -626,43 +622,43 @@ SIZE_UNKNOWN();
 SIZE_UNKNOWN();
 
 extern "C" {
-    extern i32 g_lastNow;    // 0x245580 (-> mirror g_killCueClock; also in <Rez/FrameClock.h>)
+    extern i32 g_lastNow;        // 0x245580 (-> mirror g_killCueClock; also in <Rez/FrameClock.h>)
     extern "C" i32 g_frameDelta; // 0x245584 (frame delta cap; canonical decl-shape)
     extern "C" u32 g_frameTime;  // 0x245588 (the running game clock)
-    extern StateMgrBZ* g_spawnConfig; // the dev/render-state singleton (DispatchHudClick)
-    extern "C" i32 g_curPlayer;       // a default cue/message wParam
-    extern "C" u32 g_killCueClock;        // draw-clock mirror
-    extern "C" u32 g_engineFrameDelta;    // draw-delta mirror
+    extern StateMgrBZ* g_spawnConfig;  // the dev/render-state singleton (DispatchHudClick)
+    extern "C" i32 g_curPlayer;        // a default cue/message wParam
+    extern "C" u32 g_killCueClock;     // draw-clock mirror
+    extern "C" u32 g_engineFrameDelta; // draw-delta mirror
 }
 
 // The channel-slot pool helpers (defs in Play.cpp, C++ linkage - the old
 // consumer-side `extern "C"` decls were wrong about the defs' linkage).
-i32 ChannelSlots_FindFree();    // 0xdb280
-void ChannelSlots_InitAll();    // 0x2da1 (thunk) - no `this` (stale-ecx callee)
+i32 ChannelSlots_FindFree(); // 0xdb280
+void ChannelSlots_InitAll(); // 0x2da1 (thunk) - no `this` (stale-ecx callee)
 
 extern i32 g_areaPageSize; // 0x00245270
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern i32 MapLookup(void* map, void* key, void*& out); // CMapPtrToPtr::Lookup
-    // (Eng_Profiler1/2 are GONE - the per-frame tick is m_c->m_soundStream, the REAL
-    // SoundStream: PurgeVoiceList @0x136e20 + TickSubManagers @0x137ac0, __thiscall.)
+// (Eng_Profiler1/2 are GONE - the per-frame tick is m_c->m_soundStream, the REAL
+// SoundStream: PurgeVoiceList @0x136e20 + TickSubManagers @0x137ac0, __thiscall.)
 extern "C" void Eng_HudDraw(void* hud, RECT* r, i32 c);
 extern "C" void Eng_FrameTimerStep(void* t, i32 now); // carcass-only; identity unrecovered
-extern "C" i32 g_playActive;   // DAT_0064e35c
-extern "C" void VisFn_40fe90();        // 0x40fe90
-extern "C" void VisFn_4bf150();        // 0x4bf150
-extern "C" void VisFn_423b40();        // 0x423b40
-extern "C" void VisFn_Roll();          // 0x4cd70  (Roll)
-extern "C" void VisFn_41e570();        // 0x41e570
-extern "C" void VisFn_41e520();        // 0x41e520
-extern "C" void VisFn_47e160();        // 0x47e160 (7th visible-type notify fn; retail thunk 0x402d24)
-extern "C" void VisFn_49b410();        // 0x49b410
+extern "C" i32 g_playActive;                          // DAT_0064e35c
+extern "C" void VisFn_40fe90();                       // 0x40fe90
+extern "C" void VisFn_4bf150();                       // 0x4bf150
+extern "C" void VisFn_423b40();                       // 0x423b40
+extern "C" void VisFn_Roll();                         // 0x4cd70  (Roll)
+extern "C" void VisFn_41e570();                       // 0x41e570
+extern "C" void VisFn_41e520();                       // 0x41e520
+extern "C" void VisFn_47e160(); // 0x47e160 (7th visible-type notify fn; retail thunk 0x402d24)
+extern "C" void VisFn_49b410(); // 0x49b410
 extern "C" void VisFn_IntersectRect(); // 0x432060 (winapi_032060_IntersectRect)
 extern "C" void VisFn_49b310();        // 0x49b310
 extern "C" void VisFn_CBattlezDlg();   // 0x414b30 (CBattlezDlg)
 extern "C" void VisFn_4fce80();        // 0x4fce80
-    // The variadic profiler logger (cdecl). 0x1b2cf5.
+// The variadic profiler logger (cdecl). 0x1b2cf5.
 extern "C" void ProfLog(void* sink, const char* fmt, ...);
 extern "C" i32 g_profAccA;
 extern "C" i32 g_profAccB;

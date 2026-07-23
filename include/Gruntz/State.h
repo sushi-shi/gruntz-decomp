@@ -2,20 +2,20 @@
 #define GRUNTZ_GRUNTZ_CSTATE_H
 
 #include <Ints.h>
-#include <rva.h> // SIZE/VTBL vtable-catalog annotations
+#include <rva.h>                // SIZE/VTBL vtable-catalog annotations
 #include <Gruntz/GameStateId.h> // Update()'s per-state id return type
 
 class CDDrawSurfaceMgr; // +0x0c render/resource holder == CGameRegistry::m_world;
 class CSymParser;       // +0x08 the level/rez symbol parser (<Bute/SymParser.h>) - the manager's
-class CDDSurface;        // +0x160/+0x164 the two 64x64 scratch blit surfaces (DDrawMgr)
+class CDDSurface;       // +0x160/+0x164 the two 64x64 scratch blit surfaces (DDrawMgr)
 class CSymTab;
 
-class CSymTab;           // m_2c's symbol-table facet (ResolvePath/FindSub; <Bute/SymTab.h>)
-class CFileMemBase;      // HeaderWrite/HeaderRead's serialize stream (<Io/FileMem.h>)
-class CGruntzMgr;        // +0x04 owner back-ptr: the game-manager singleton (*g_gameReg).
-class CFaderMgr;         // +0x10 fader manager (the CSoundFxEmitter facet's fader mgr;
-struct FxResource;       // +0x0c viewed as the emitter resource chain (== m_c; the DDraw
-class CString;           // MFC - BuildAssetNamespacePrefixes' key arg (reference-only here)
+class CSymTab;      // m_2c's symbol-table facet (ResolvePath/FindSub; <Bute/SymTab.h>)
+class CFileMemBase; // HeaderWrite/HeaderRead's serialize stream (<Io/FileMem.h>)
+class CGruntzMgr;   // +0x04 owner back-ptr: the game-manager singleton (*g_gameReg).
+class CFaderMgr;    // +0x10 fader manager (the CSoundFxEmitter facet's fader mgr;
+struct FxResource;  // +0x0c viewed as the emitter resource chain (== m_c; the DDraw
+class CString;      // MFC - BuildAssetNamespacePrefixes' key arg (reference-only here)
 
 class CState {
 public:
@@ -60,7 +60,7 @@ public:
     virtual i32 Vslot06() {
         return 0;
     } // slot 6  (+0x18)  activation-ready poll
-    virtual i32 Vslot07();        // slot 7  (+0x1c)  lobby-host-ready poll
+    virtual i32 Vslot07(); // slot 7  (+0x1c)  lobby-host-ready poll
     // slot 8 (+0x20) - per-frame input poll. Base body @0x0face0 (Attract.cpp;
     // ??_7CState@@6B@+0x20): the shared image-load gate - hide the cursor, gate on
     // the level being ready, draw the "loading imagez" splash, load GAME_IMAGEZ,
@@ -138,7 +138,6 @@ public:
     virtual i32 ResumeGame();
 
     // Non-virtual exit notification (reloc-masked; called by ExitModalUI).
-    void NotifyExit(i32 code);
 
     // The state-header serialize passes (defined in Attract.cpp, the 0xfa.. CState
     // band). CPlay::HeaderSerialize (0xfafa0) dispatches: kind 4 -> HeaderWrite
@@ -226,18 +225,18 @@ public:
     // LoadNamespace +0x4c). The state activators (CBootyState/CMultiBootyState/CImageState
     // slot-8 loaders) reach it through this one holder. Its render sub-object facets
     // live in <Gruntz/View.h>.
-    CDDrawSurfaceMgr* m_world; // +0x0c
-    CFaderMgr* m_faderMgr; // +0x10  fader mgr (RetireScene's Add/Remove target; the
-                           //         loader caches mgr->m_40 here - the +0x40 slot's
-                           //         CFaderMgr-vs-CTriggerMgr identity conflict is open)
-    CDDSurface* m_blitSurface0;      // +0x14  owned blit surface (ReleaseResources returns it
-                           //         to the m_c->m_ptrColl pool; ex-CGameModeBase typing)
-    CDDSurface* m_blitSurface1;      // +0x18  owned blit surface (same pool)
-    i32 m_levelIndex;      // +0x1c  play-state level index 1..0x28 (CGruntzMgr::GoToNext/PrevLevel)
-    i32 m_levelType;       // +0x20  level terrain-class id; CProjectile::LoadProjectileEffects
-                           //         switches on it (4/5/8 land-death, 6 no-death) to pick the
-                           //         level death effect
-    i32 m_24;              // +0x24
+    CDDrawSurfaceMgr* m_world;  // +0x0c
+    CFaderMgr* m_faderMgr;      // +0x10  fader mgr (RetireScene's Add/Remove target; the
+                                //         loader caches mgr->m_40 here - the +0x40 slot's
+                                //         CFaderMgr-vs-CTriggerMgr identity conflict is open)
+    CDDSurface* m_blitSurface0; // +0x14  owned blit surface (ReleaseResources returns it
+                                //         to the m_c->m_ptrColl pool; ex-CGameModeBase typing)
+    CDDSurface* m_blitSurface1; // +0x18  owned blit surface (same pool)
+    i32 m_levelIndex; // +0x1c  play-state level index 1..0x28 (CGruntzMgr::GoToNext/PrevLevel)
+    i32 m_levelType;  // +0x20  level terrain-class id; CProjectile::LoadProjectileEffects
+                      //         switches on it (4/5/8 land-death, 6 no-death) to pick the
+                      //         level death effect
+    i32 m_24;         // +0x24
     // +0x28  level asset bank; a Bute CSymTab (LookupSet == CSymTab::ResolvePath
     // 0x13bae0), so every user reaches it as CSymTab* -> typed here (kills the casts).
     // LoadGameAssetNamespaces stores the resolved "AREA%i" node here.
@@ -256,7 +255,7 @@ public:
     CSymTab* m_gameBank;   // +0x34  GAME asset bank (CSymTab; GAME-namespace loaders' source)
     i32 m_38;              // +0x38
     i32 m_ready;           // +0x3c  active/ready gate (IsActive returns it)
-    i32 m_notifyLatch;              // +0x40  notify latch (HandleCommand 0x8006 sets 1 before the
+    i32 m_notifyLatch;     // +0x40  notify latch (HandleCommand 0x8006 sets 1 before the
                            //         menu transition)
     i32 m_44;              // +0x44  (LoadGameAssetNamespaces seeds -1; role unrecovered)
     i32 m_48;              // +0x48  (LoadGameAssetNamespaces seeds -1; role unrecovered)
@@ -277,7 +276,7 @@ public:
     // - the 64x64 rect dims).
     CDDSurface* m_scratchSurface0; // +0x160 first-half scratch surface
     CDDSurface* m_scratchSurface1; // +0x164 second-half scratch surface
-    i32 m_168;         // +0x168 first-half block (addr taken)
+    i32 m_168;                     // +0x168 first-half block (addr taken)
     i32 m_16c;
     i32 m_170; // +0x170 (= 0x40)
     i32 m_174; // +0x174 (= 0x40)
