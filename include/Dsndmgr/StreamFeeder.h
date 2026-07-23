@@ -12,9 +12,10 @@ class DirectSoundMgr;
 
 struct StreamFeeder {
     virtual i32
-    Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2); // [0] feed-two-regions
-    virtual i32 FeedData();                                             // [1] 0x137e10
-    virtual void OnDrain();                                             // [2] 0x137e20
+    Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2) = 0; // [0] feed-two-regions
+    //     (__purecall in the base vtable)
+    virtual i32 FeedData(); // [1] 0x137e10
+    virtual void OnDrain(); // [2] 0x137e20
 
     // vptr @ +0x00 (implicit); first real field at +0x04.
     SoundDevice* m_owner;     // +0x04  owner (SoundStream, via its SoundDevice base)

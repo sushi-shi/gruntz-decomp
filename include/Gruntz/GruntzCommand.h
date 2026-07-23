@@ -86,7 +86,7 @@ public:
     // placeholder guess: the leaves' bodies (0x24050/0x240d0) end in `ret 8`, so the
     // slot is a 2-ARG __thiscall, and they read the buffer from the first stack arg and
     // return the byte count. Named from that proven role - a CHOICE, not a reading.
-    virtual i32 Pack(char* buf, i32 unused); // slot 8 (+0x20) __purecall in the base
+    virtual i32 Pack(char* buf, i32 unused) = 0; // slot 8 (+0x20) __purecall in the base
     // slots 9/10 - __purecall in the base (RTTI: 11 slots, [9] and [10] both
     // __purecall @0x11fec0), so each leaf provides the body. CGruntzCmdMgr::ScanTargets
     // (0x23a10) dispatches them back-to-back on every queued command: Select is handed
@@ -95,7 +95,7 @@ public:
     // + these two - was this class; its m_4/m_6/m_c are m_4 / m_6 / m_submitted.)
     virtual i32 Select(CState* state) = 0; // slot 9  (+0x24)  __purecall in the base; the
     // dispatcher passes m_curState (any CState) - the overrides downcast by protocol
-    virtual void Deselect();            // slot 10 (+0x28)  __purecall in the base
+    virtual void Deselect() = 0; // slot 10 (+0x28)  __purecall in the base
 
     // Non-virtual members of the base (called directly, not via the vtable):
     i32 SetParamsEx(char a0, char a1, char a2, i16 a3, i16 a4, char a5, char a6); // 0x023e60
@@ -136,9 +136,10 @@ public:
     // the number of bytes written. WAS declared twice: as the `Vfunc8` placeholder here
     // and as a non-virtual `Pack` below - one body, two names.
     virtual i32 Pack(char* buf, i32 unused) OVERRIDE;
-    virtual i32 Select(CState* state) OVERRIDE; // slot 9 - 0x024140 (ex ApplyOne: run via CPlay::ExecCommand)
-    virtual void Deselect() OVERRIDE;            // slot 10 (base is __purecall)
-    CGruntzSingleCommand() {}                    // inline empty ctor (vftable store only)
+    virtual i32 Select(CState* state)
+        OVERRIDE;                     // slot 9 - 0x024140 (ex ApplyOne: run via CPlay::ExecCommand)
+    virtual void Deselect() OVERRIDE; // slot 10 (base is __purecall)
+    CGruntzSingleCommand() {}         // inline empty ctor (vftable store only)
     static CGruntzSingleCommand* Allocate();
     static void FreeAll(); // 0x024450 - drain g_singleCmdList, delete each node
 };
@@ -161,17 +162,16 @@ public:
     // of bytes written. Same one-body-two-names shadow as the Single twin.
     virtual i32 Pack(char* buf, i32 unused) OVERRIDE;
     virtual i32 Select(CState* state) OVERRIDE; // slot 9 - 0x024190 (ex ApplyMask)
-    virtual void Deselect() OVERRIDE;            // slot 10 (base is __purecall)
+    virtual void Deselect() OVERRIDE;           // slot 10 (base is __purecall)
     CGruntzMultiCommand() {}
     static CGruntzMultiCommand* Allocate();
     static void FreeAll(); // 0x024490 - drain g_multiCmdList, delete each node
 };
 SIZE(0x14);
 
-extern i32 g_singleCmdCount;           // 0x62b5dc - non-empty gate
+extern i32 g_singleCmdCount;     // 0x62b5dc - non-empty gate
 extern CPtrList g_singleCmdList; // 0x62b5d0 - the recycle list (ecx for RemoveTail)
-extern i32 g_multiCmdCount;            // 0x62b64c
+extern i32 g_multiCmdCount;      // 0x62b64c
 extern CPtrList g_multiCmdList;  // 0x62b640
 
 #endif // SRC_GRUNTZ_GRUNTZCOMMAND_H
-

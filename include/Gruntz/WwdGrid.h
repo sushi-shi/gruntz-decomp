@@ -36,7 +36,10 @@ public:
     // retail's caller TU must have (its Init calls ??0CWwdGrid on the shell storage).
     // Only the vtable DATUM's slot-5 reloc differs (ours names OnFound, retail
     // __purecall) - a data-phase footnote, not a code byte.
-    virtual void OnFound(WwdRegion* r);
+    virtual void OnFound(WwdRegion* r); // [5] retail slot = __purecall (abstract in the
+                                        // original); left concrete here because Init
+                                        // placement-constructs the base over the shell -
+                                        // the family identity knot is still open
 
     void FreeBuckets();
     i32 Add(WwdRegion* r);

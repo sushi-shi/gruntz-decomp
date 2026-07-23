@@ -68,7 +68,6 @@
 ?CueSpawn@CGruntSpawnConfig@@QAEXPAVCGrunt@@HHHH@Z
 ?CueVisible@@YAHHHH@Z
 ?DeleteSaveSlot@@YAXPAUHWND__@@PAVCSaveGame@@@Z
-?Deselect@CGruntzCommand@@UAEXXZ
 ?Deselect@CGruntzMultiCommand@@UAEXXZ
 ?Deselect@CGruntzSingleCommand@@UAEXXZ
 ?Deserialize@CTimer@@QAEHPAVCFileMemBase@@@Z
@@ -91,7 +90,6 @@
 ?EnterField2@CTeleporter@@QAEXXZ
 ?EntranceApplyFrame@@YGXPBDH@Z
 ?Fade@CAmbientSound@@QAEHHHH@Z
-?Feed@StreamFeeder@@UAEHPAXIPAI0I1@Z
 ?FileExists@@YAHPBD@Z
 ?Finalize@CStatusBarMgr@@QAEXXZ
 ?Finish3e4f@CBattlezMapConfig@@QAEXPAVCGrunt@@0@Z
@@ -217,7 +215,6 @@
 ?OnTileMismatch@CGrunt@@QAEXH@Z
 ?OnToggleCk5Option@@YAXPAUHWND__@@@Z
 ?OpenSettingsStore@@YAXXZ
-?Pack@CGruntzCommand@@UAEHPADH@Z
 ?PauseGame@CState@@UAEHXZ
 ?PeekClass@CButeMgr@@QAEFHD@Z
 ?PickupResetA@CGrunt@@QAEXXZ
