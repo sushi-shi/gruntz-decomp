@@ -163,9 +163,8 @@ enum {
 DATA(0x00248cec)
 i32 g_activePlayerCount = 0;
 
-// g_sessionName (0x002473d8): CString - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x002473d8, 0x0, ?g_sessionName@@3VCString@@A)
+DATA(0x002473d8)
+CString g_sessionName;
 
 DATA(0x00248d00)
 HWND g_netPlayerListHwnd; // owner def (zero-init .bss)
@@ -226,10 +225,10 @@ CMulti::~CMulti() {
     // CMulti : CPlay. No manual base teardown here.
 }
 
-RVA(0x000b5380, 0xa)
-void InitStr6473d8() {
-    g_sessionName.CString::CString();
-}
+RVA_COMPGEN(0x000b5360, 0xa, _$E742240)
+RVA_COMPGEN(0x000b5380, 0xa, _$E742272)
+RVA_COMPGEN(0x000b53a0, 0xe, _$E742304)
+RVA_COMPGEN(0x000b53c0, 0xa, _$E742336)
 
 RVA(0x000b5400, 0xa)
 void ConstructFileIOGlobal() {

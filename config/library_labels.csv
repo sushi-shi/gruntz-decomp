@@ -594,7 +594,6 @@ rva,name,lib,confidence,source
 0x0b5270,__inc,LIBCMT,LOW,anchored
 0x0b52c0,__inc,LIBCMT,LOW,anchored
 0x0b5310,__inc,LIBCMT,LOW,anchored
-0x0b53a0,___inittime,LIBCMT,LOW,anchored
 0x0b5420,___inittime,LIBCMT,LOW,anchored
 0x0b5fd0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x0b8af0,__fpclear,LIBCMT,LOW,anchored
@@ -962,7 +961,6 @@ rva,name,lib,confidence,source
 0x0f9600,__inc,LIBCMT,LOW,anchored
 0x0f9650,__inc,LIBCMT,LOW,anchored
 0x0f96a0,__inc,LIBCMT,LOW,anchored
-0x0f9730,___inittime,LIBCMT,LOW,anchored
 0x0f9bd0,__inc,LIBCMT,LOW,anchored
 0x0f9c20,__inc,LIBCMT,LOW,anchored
 0x0f9c70,__inc,LIBCMT,LOW,anchored

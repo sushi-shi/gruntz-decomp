@@ -1,14 +1,11 @@
-#include <Ints.h>
-#include <Gruntz/Dialogs.h> // CString (the E25c forwarder's cast)
+#include <Mfc.h>
+#include <Net/NetMgrMisc.h>
 #include <rva.h>
-#include <string.h>
-#include <Net/NetMgrMisc.h> // g_assetRoot decl
 
-// g_assetRoot (0x0024e25c): CString - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-DATA_SYMBOL(0x0024e25c, 0x0, ?g_assetRoot@@3VCString@@A)
+template<> DATA(0x0024e25c)
+CString CStringStaticPool<CAssetRootTag>::s_value;
 
-RVA(0x000f9710, 0xa)
-void NetPollE25c() {
-    g_assetRoot.~CString();
-}
+RVA_COMPGEN(0x000f96f0, 0xa, _$E1021680)
+RVA_COMPGEN(0x000f9710, 0xa, _$E1021712)
+RVA_COMPGEN(0x000f9730, 0xe, _$E1021744)
+RVA_COMPGEN(0x000f9750, 0x1f, _$E1021776)

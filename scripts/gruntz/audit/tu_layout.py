@@ -35,8 +35,9 @@ Report sections + queries:
      SCATTERED (conflated TUs / COMDAT-heavy families like the State classes).
   --neighbors 0xRVA    - the probable class siblings of one matched function.
   --attribute          - tie classless functions to a class by same-class bracketing.
-     Two target sets: (a) UNNAMED FUN_ bodies (from the Ghidra boundary export) ->
-     new class stubs (gen_attributed_stubs); (b) already-labeled CATCH-ALL stubs
+     Two target sets: (a) still-unclaimed FUN_ bodies (from the Ghidra boundary
+     export, minus current RVA/RVA_COMPGEN source claims) -> new class stubs
+     (gen_attributed_stubs); (b) already-labeled CATCH-ALL stubs
      (ApiCallers/Backlog/EngineExternFns + placeholder classes) -> a RELOCATION
      worklist (move the typed stub to that class's TU). The both-sides HIGH rule is
      validated at ~91% exact / 94% same-family by leave-one-out on matched methods.
@@ -132,7 +133,7 @@ def _parse_size(s: str) -> int:
 
 
 def load_funcs(src: Path = SRC) -> list[Func]:
-    """Every matched (non-stub) RVA-annotated function in src/, sorted by RVA."""
+    """Every non-stub RVA/RVA_COMPGEN function claim in src/, sorted by RVA."""
     out: list[Func] = []
     for path in sorted(src.rglob("*.cpp")):
         if "Stub" in path.parts[len(src.parts):]:  # skip src/Stub/ backlog
@@ -141,15 +142,20 @@ def load_funcs(src: Path = SRC) -> list[Func]:
         lines = path.read_text(errors="replace").splitlines()
         for i, ln in enumerate(lines):
             m = RVA_RE.search(ln)
-            if not m:
+            cm = RVA_COMPGEN_RE.search(ln)
+            if not m and not cm:
                 continue
-            rva, size = int(m.group(1), 16), _parse_size(m.group(2))
+            match = m or cm
+            rva, size = int(match.group(1), 16), _parse_size(match.group(2))
             cls = meth = None
-            for j in range(i, min(i + 4, len(lines))):
-                sm = SIG_RE.search(lines[j])
-                if sm:
-                    cls, meth = sm.group(1), sm.group(2)
-                    break
+            if cm:
+                meth = cm.group(3)
+            else:
+                for j in range(i, min(i + 4, len(lines))):
+                    sm = SIG_RE.search(lines[j])
+                    if sm:
+                        cls, meth = sm.group(1), sm.group(2)
+                        break
             out.append(Func(rva, size, cls, meth, tu))
     out.sort(key=lambda f: f.rva)
     return out
@@ -382,11 +388,13 @@ def _attribute_targets(seq, back, fwd, gap, target_rvas):
 
 
 def attribute(funcs, boundaries, gap):
-    """Tie each unnamed FUN_ body to a class. Returns ({rva: (cls, conf)}, n_unnamed)."""
+    """Tie each unclaimed FUN_ body to a class. Returns (attributions, count)."""
     seq = _matched_seq(funcs)
     back, fwd = _run_bounds(seq)
+    claimed = {f.rva for f in funcs}
     unnamed = [b[0] for b in boundaries
-               if b[2].startswith("FUN_") and not is_thunk(b[2], b[1])]
+               if b[2].startswith("FUN_") and not is_thunk(b[2], b[1])
+               and b[0] not in claimed]
     return _attribute_targets(seq, back, fwd, gap, unnamed), len(unnamed)
 
 
@@ -478,7 +486,7 @@ def report_attribution(funcs, functions_csv: Path, gap: int, emit) -> None:
     n_hi = sum(1 for _, c in attr.values() if c == "HIGH")
     n_med = len(attr) - n_hi
     both, exact, fam_ok = validate_loo(funcs, gap)
-    print(f"  unnamed FUN_ bodies (non-thunk): {n_unnamed}")
+    print(f"  remaining unnamed FUN_ bodies (non-thunk, source claims excluded): {n_unnamed}")
     print(f"  attributed by same-class bracket (gap<={gap:#x}): {len(attr)} "
           f"({len(attr) / n_unnamed:.0%})  ->  HIGH {n_hi}, MED {n_med}")
     if both:

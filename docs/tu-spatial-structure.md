@@ -64,7 +64,9 @@ mis-attribution lands on a same-family neighbour, not a random class.
 
 `tu_layout --attribute` brackets each classless function: if it sits between two
 matched functions of the **same class C**, within `--gap` (default `0x4000`), it is
-C. Confidence:
+C. The reported unnamed total excludes every RVA already claimed by either
+`RVA(...)` or `RVA_COMPGEN(...)`; the Ghidra export is a boundary inventory, not
+an authoritative current backlog. Confidence:
 
 - **HIGH** — C sits in a contiguous run of ≥3 of its own methods, and neither
   bracket end is in a pool. ~260 bodies.

@@ -2,8 +2,17 @@
 #ifndef GRUNTZ_NET_NETMGRMISC_H
 #define GRUNTZ_NET_NETMGRMISC_H
 
-#include <Ints.h>
+class CString;
 
-extern CString g_assetRoot; // 0x0024e25c
+// @identity-TODO
+// Retail's four compiler-private static-object helpers prove that the asset-root
+// CString is an explicit specialization of a template static data member. The
+// stripped image does not preserve the original template, tag, or member names.
+template<class Tag> struct CStringStaticPool {
+    static CString s_value;
+};
+
+struct CAssetRootTag;
+typedef CStringStaticPool<CAssetRootTag> CAssetRootStorage;
 
 #endif // GRUNTZ_NET_NETMGRMISC_H

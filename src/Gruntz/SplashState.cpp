@@ -34,7 +34,7 @@
 #include <Wap32/GameApp.h> // ex Globals.h
 RVA(0x000f9780, 0x8c)
 i32 CSplashState::LoadGameAssetNamespaces(i32 a, i32 b, i32 c) {
-    if (g_assetRoot.GetLength() == 0) {
+    if (CAssetRootStorage::s_value.GetLength() == 0) {
         return 0;
     }
     // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
@@ -146,7 +146,7 @@ i32 CSplashState::InputVirtual() {
     while (ShowCursor(FALSE) >= 0) {
     }
     return RunTitleSeq(
-        static_cast<const char*>(g_assetRoot),
+        static_cast<const char*>(CAssetRootStorage::s_value),
         0,
         0,
         1,
@@ -162,7 +162,7 @@ i32 CSplashState::Vslot06() {
     while (ShowCursor(FALSE) >= 0) {
     }
     return RunTitleSeq(
-        static_cast<const char*>(g_assetRoot),
+        static_cast<const char*>(CAssetRootStorage::s_value),
         0,
         0,
         1,

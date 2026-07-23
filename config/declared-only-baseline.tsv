@@ -57,13 +57,11 @@
 ?WorldSoundCreateFull@@YGPAUPosSoundPlaced@@PAXHPAUtagRECT@@HHHHHH@Z
 ?WorldSoundCreateSimple@@YGPAUPosSoundPlaced@@PAXHPAUtagRECT@@HH@Z
 ?WriteName@@YAXPAX0@Z
-?g_assetRoot@@3VCString@@A
 ?g_buteMgr@@3VCButeMgr@@A
 ?g_lab504358@@3PADA
 ?g_lab545854@@3PADA
 ?g_mapNamePre@@3PADA
 ?g_multiplayerAvail@@3HA
-?g_sessionName@@3VCString@@A
 ?g_store6453f0@@3VzPTree@@A
 ?g_store64544c@@3VzPTree@@A
 ?g_tileKindMagic@@3HA

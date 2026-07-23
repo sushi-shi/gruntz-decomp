@@ -1825,7 +1825,7 @@ i32 CGruntzMgr::SetAssetRoot(char* path) {
     if (path == 0) {
         return 0;
     }
-    g_assetRoot = path;
+    CAssetRootStorage::s_value = path;
     ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x80ab, 0);
     return 1;
 }

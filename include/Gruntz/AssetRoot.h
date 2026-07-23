@@ -2,7 +2,6 @@
 #define GRUNTZ_ASSETROOT_H
 
 #include <Gruntz/String.h> // MFC CString
-
-extern CString g_assetRoot; // 0x64e25c
+#include <Net/NetMgrMisc.h>
 
 #endif // GRUNTZ_ASSETROOT_H

@@ -37,6 +37,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from gruntz.audit import tu_layout
 from gruntz.cleanliness import board as cleanliness
 from gruntz.cleanliness import class_sizes
 from gruntz.core import class_meta
@@ -275,6 +276,28 @@ class TestCompilerPrivateFunctionNames(unittest.TestCase):
             and row.proof == "alias-of-definition"
         )
         self.assertEqual(alias_row.canonical_name, normalized.symbols[0].name)
+
+
+# --------------------------------------------------------------------------- #
+# unnamed-function queue: current source claims leave the raw Ghidra inventory #
+# --------------------------------------------------------------------------- #
+class TestUnnamedFunctionQueue(unittest.TestCase):
+    def test_rva_compgen_claim_is_not_reported_as_still_unnamed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            src = Path(tmp) / "src"
+            src.mkdir()
+            (src / "Static.cpp").write_text(
+                "RVA_COMPGEN(0x00001000, 0xa, _$E4096)\n"
+            )
+            funcs = tu_layout.load_funcs(src)
+            boundaries = [
+                (0x1000, 0xA, "FUN_00401000"),
+                (0x2000, 0xA, "FUN_00402000"),
+            ]
+            _, remaining = tu_layout.attribute(
+                funcs, boundaries, tu_layout.DEFAULT_GAP
+            )
+            self.assertEqual(remaining, 1)
 
 
 # --------------------------------------------------------------------------- #
