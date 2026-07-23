@@ -46,9 +46,35 @@ residue belongs to this family. Never add fake functions, padding, declarations,
 reorder proven owners solely to select a compiler state; preserve MAX-fuzzy while the
 real predecessor set lands.
 
+A structurally correct predecessor rehome can therefore make an unchanged later method
+worse temporarily. Treat that dip as evidence that some other earlier TU content is
+still absent or mis-shaped, not as evidence for restoring the false owner. The useful
+reverse-search signature is:
+
+1. the victim's per-function source fingerprint is unchanged;
+2. the edited functions precede it in the same translation unit;
+3. the victim's diff is a localized register-color/scheduling substitution with
+   unchanged control flow, constants, calls, and relocations; and
+4. the predecessor change is independently supported by RTTI, ILT/xref, or layout
+   evidence.
+
+Keep the victim's MAX score, record the structural correction, and use state trials or
+the remaining real predecessor backlog to search for the compensating retail compiler
+state.
+
 Evidence: adding the retail-backed `CDDSurface::BlitIntoDesc` at `0x0013e2e0` before
 source-identical `CDDSurface::ShadeRect` at `0x0013f460` moved the latter's current score
 from 68.4455% to 63.6682%. A clean current-header A/B compile, differing only by that
 definition, changed two `ShadeRect` color-pack loop regions (mask/shift order, table-load
 order, and `ax` versus `di` partial-register destination). This directly falsifies the
 former blanket claim that a TU sibling's presence cannot affect another COMDAT's bytes.
+
+Second instance: rehoming the exact `0x411f0`/`0x412c0` methods from the false sibling
+`CWormhole` view to their ILT/RTTI/layout-proven `CTeleporter` owner left
+`CTeleporter::Update`'s fingerprint at `9b48a6edc775` but moved it from 100% to
+98.9103%. Its only diff is the final lookup/call block choosing `ebx/edx` where the
+previous compile chose `ecx/eax`; its constants, branches, calls, and relocations are
+unchanged. The ownership proof is independent: RTTI makes CTeleporter and CWormhole
+sibling leaves, and the supposedly wormhole-typed candidate test uses ILT `0x4039b3`,
+which jumps to `CreateTeleporter`, before calling `0x412c0` on the candidate logic
+pointer.

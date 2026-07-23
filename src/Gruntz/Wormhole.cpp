@@ -2,10 +2,10 @@
 // (one obj; wave3-I grunt-region partition).
 //
 // ONE-TU evidence (interval 0x3fc70-0x41db2, TU_MIGRATION "wormhole trio"):
-//   * text A-B-A weave: LoadColors/ReapplyConfig@CWormhole (0x411f0/0x412c0) sit
-//     INSIDE the CTeleporter block (0x41020..0x41db2), and SpawnPartners@CWormhole
-//     (0x403b0) / LoadColors bracket the CGruntPuddle block - impossible for
-//     separate objs at first link.
+//   * text A-B-A weave: CTeleporter::LoadColors/ReapplyConfig
+//     (0x411f0/0x412c0) sit inside the CTeleporter block (0x41020..0x41db2), while
+//     SpawnPartners@CWormhole (0x403b0) and the teleporter block bracket the
+//     CGruntPuddle block - impossible for separate objs at first link.
 //   * the in-interval registrar fns (InitLogicDispatch_6445e8 0x406d0,
 //     RegisterLogic 0x408b0, CTeleporter_RegisterActs 0x41680) are
 //     text-contained inside the obj -> same TU.
@@ -26,7 +26,7 @@
 //   0x040490 CGruntPuddle ctor  0x0406d0 InitLogicDispatch_6445e8
 //   0x040750 P::FireActivation  0x0408b0 RegisterLogic
 //   0x040c30 P::Place  0x040d20 P::Remove  0x040e50 P::Serialize
-//   0x041020 CTeleporter ctor  0x0411f0 W::LoadColors  0x0412c0 W::ReapplyConfig
+//   0x041020 CTeleporter ctor  0x0411f0 T::LoadColors  0x0412c0 T::ReapplyConfig
 //   0x041350 T::Serialize  0x0414a0 T::InitActReg  0x041520 T::FireActivation
 //   0x041680 CTeleporter_RegisterActs  0x0419e0 T::Begin  0x041aa0 T::Update
 // (CGruntPuddle::SetBute @0x07d810 is NOT this TU - its birth position is the
@@ -48,6 +48,7 @@
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/Grunt.h>         // CGrunt (Teleporter::Update's hit-test target)
+#include <Gruntz/GameObjectFactory.h> // CreateTeleporter (ILT 0x4039b3 type marker)
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/ActReg.h>       // shared activation-registrar archetype
@@ -281,12 +282,12 @@ void RegisterWormholeLogic() {
 // CWormhole::SpawnPartners  (0x0403b0)
 // Re-applies the global geometry default to the wormhole's geometry sub-player,
 // then - only when this wormhole is a freshly-spawned, un-paired open one - walks
-// every game object in the world registry and, for each that is a WORMHOLE
-// (its +0x7c aux's +0x10 type marker == &WormholeTypeMarker) sitting at the same
+// every game object in the world registry and, for each TELEPORTER
+// (its +0x7c aux's +0x10 notify function == the CreateTeleporter ILT) sitting at the same
 // tile coords (m_tileX/m_tileY == this->m_object->m_164/m_168), re-runs that partner's
-// config (ReapplyConfig) when it has a live logic object (aux->m_wormhole).
+// config (ReapplyConfig) when it has a live CTeleporter logic object.
 // __thiscall, no args, returns int (0).
-// @source: trace this/ecx (high); calls sibling ReapplyConfig (0x412c0)
+// @source: ILT 0x4039b3 -> CreateTeleporter + trace aux->m_logic/ecx (high)
 // @early-stop
 // shrink-wrapped-callee-save-push wall (inverse): body byte-identical, but retail
 // eager-pushes ebp in the prologue while cl shrink-wraps it to the loop preheader;
@@ -326,9 +327,9 @@ void CWormhole::SpawnPartners() {
         node = node->m_next;
         if (obj != 0) {
             AnimWorkerObj* aux = obj->m_7c;
-            if (static_cast<void*>(aux->m_notify) == static_cast<void*>(&WormholeTypeMarker)
-                && obj->m_screenX == tx && obj->m_screenY == ty && aux->m_logic != 0) {
-                (static_cast<CWormhole*>(aux->m_logic))->ReapplyConfig();
+            if (aux->m_notify == &CreateTeleporter && obj->m_screenX == tx && obj->m_screenY == ty
+                && aux->m_logic != 0) {
+                static_cast<CTeleporter*>(aux->m_logic)->ReapplyConfig();
             }
         }
     } while (node != 0);
@@ -585,12 +586,12 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
-    EnterField1();
-    EnterField2();
+    LoadColors();
+    ReapplyConfig();
 }
 
 RVA(0x000411f0, 0xa0)
-void CWormhole::LoadColors() {
+void CTeleporter::LoadColors() {
     // The kind/color fields live on the bound object (m_10, a CGameObject*).
     // NB: do NOT cache m_10 in a local for the if-chain, or MSVC
     // pins it in a 2nd callee-saved reg (edi) and the schedule diverges (the
@@ -625,14 +626,14 @@ void CWormhole::LoadColors() {
 }
 
 RVA(0x000412c0, 0x63)
-i32 CWormhole::ReapplyConfig() {
+i32 CTeleporter::ReapplyConfig() {
     m_38->ApplyName("GAME_WORMHOLE");
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_TELEPORTEROPEN", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_54 = 1;
-    m_68 = 0;
+    m_armed = 1;
+    m_tickHandled = 0;
     m_38->m_stateFlags &= ~1;
     return 1;
 }
@@ -667,7 +668,7 @@ i32 CTeleporter::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
             ar->Read(&m_tickHandled, 4);
             break;
         case 8:
-            (reinterpret_cast<CWormhole*>(this))->LoadColors();
+            LoadColors();
             break;
     }
     return 1;

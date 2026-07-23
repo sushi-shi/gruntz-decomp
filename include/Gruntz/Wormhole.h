@@ -21,17 +21,8 @@ public:
                                                   // dispatch via g_wormholeDispatch)
     CWormhole(CGameObject* obj);                  // 0x03fc70 (1-arg leaf ctor, /GX frame)
     void SpawnPartners();                         // 0x0403b0
-    void LoadColors();                            // 0x0411f0
-    i32 ReapplyConfig();                          // 0x0412c0 (per-partner config re-run)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
-
-    // CWormhole's own data begins at +0x40 (CUserLogic base ends at +0x40). Only
-    // the offsets the matched methods write are modeled; +0x54/+0x68 are config
-    // state flags whose exact roles are unproven (kept as offset placeholders).
-    i32 m_54; // +0x54  config flag (set to 1 by ReapplyConfig)
-    char m_pad58[0x68 - 0x58];
-    i32 m_68; // +0x68  config flag (cleared by ReapplyConfig)
 };
 SIZE_UNKNOWN();
 
@@ -47,7 +38,6 @@ extern "C" void TeleporterActB(); // 0x403846 (teleporter "B")
 extern "C" void TeleporterActA(); // 0x40187a (teleporter "A")
 extern "C" void PuddleActB();     // 0x403418 (puddle "B")
 extern "C" void PuddleActA();     // 0x4021f8 (puddle "A")
-extern "C" void WormholeTypeMarker();
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

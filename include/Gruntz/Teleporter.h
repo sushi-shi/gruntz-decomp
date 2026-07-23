@@ -39,9 +39,8 @@ public:
     // (+0x58/+0x60) then the two i32 fields (m_armed/+0x54, m_tickHandled/+0x68);
     // tag 8 (post-load) re-applies the config via LoadColors. Same archetype as
     // CGruntPuddle::Serialize / CWormhole::Serialize.
-    // LoadColors (0x411f0) IS CWormhole::LoadColors - there is ONE such function at
-    // 0x411f0 (MSVC5 has no /OPT:ICF); the tag-8 post-load reapply calls it on the
-    // teleporter `this` (cast to CWormhole* at the call site), so no fake shadow decl.
+    void LoadColors();   // 0x411f0: resolve the teleporter/wormhole display color
+    i32 ReapplyConfig(); // 0x412c0: reopen and arm the teleporter
     // Begin (0x419e0): advance the anim sub-mgr; on its first idle frame, snapshot
     // the bound geometry, apply the teleporter lookup-geometry and re-bind the "B"
     // bute node. Returns 0.
@@ -51,10 +50,6 @@ public:
     // grunt, spawn the "Teleporter"/"Wormhole" sprite, close the gate and scroll
     // the camera to the warped grunt. Returns 0.
     i32 Update();
-    // Leaf-state entry setup this-methods the ctor runs (0x1771 / 0x27d9;
-    // reloc-masked no-body).
-    void EnterField1(); // 0x1771
-    void EnterField2(); // 0x27d9
     // vtable slot 2 (per-class logic-type id), inline. The ctor now lives in
     // Teleporter.cpp so cl+clang emit this COMDAT (@0x10d80) + the ??_7CTeleporter
     // vtable in this TU.

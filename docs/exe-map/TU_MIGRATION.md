@@ -100,7 +100,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x03a530` | `?ConstructLogicActRange_62bfa0@@YAXXZ` | cursorsnapactreg | `0x3a200` cursorsnapsprite |
 | `0x03a710` | `?RegisterXLogic_62bfa0@@YAXXZ` | cursorsnapactreg | `0x3a710` ? |
 | `0x03ecf0` | `??0CExitTrigger@@QAE@PAUCGameObject@@@Z` | exittrigger | `0x3ecf0` ? |
-| `0x03f5f0` | `?HandleFortConquered@CFortressFlag@@QAEXXZ` | fortconquered | `0x3f5f0` ? |
+| `0x03f5f0` | `?AdvanceAnim@CExitTrigger@@QAEHXZ` | fortconquered | `0x3f5f0` ? |
 | `0x0476b0` | `?Update@RbEffect@@QAEHXZ` | rockbreakeffectupdate | `0x476b0` ? |
 | `0x04a780` | `?Classify@MotionEntity@@QAEPAUDirDesc@@PAU1@D@Z` | directionclassify | `0x47a10` grunt |
 | `0x04d800` | `?winapi_04d800_CopyRect@CUserLogic@@QAEHHHHHHHHHHHHH@Z` | userlogic | `0x4d800` ? |

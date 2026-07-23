@@ -495,13 +495,20 @@ to CheckpointTrigger.cpp (its class TU, 0x10cb10 interval).
 **Verdicts** (all executed):
 
 * `0x03fc70-0x041db2` wormhole trio -> **ONE TU** (Wormhole.cpp): text A-B-A weave
-  (LoadColors/ReapplyConfig@CWormhole 0x411f0/0x412c0 INSIDE the CTeleporter
-  block; SpawnPartners/LoadColors bracket the CGruntPuddle block); frags
-  i297-i299 one run; private .data band 0x20d194-0x20d1d0 contiguous. The three
-  in-interval registrar fns (0x406d0/0x408b0/0x41680) are text-contained ->
-  folded in. GruntPuddle::SetBute @0x7d810 is NOT this TU (own interval at the
-  TriggerMgr tail) - stays in GruntPuddle.cpp (@identity-TODO). WormholeActs.cpp
-  (0x3f210, frag i296) left split: adjacent obj, no positive one-obj evidence.
+  (CTeleporter::LoadColors/ReapplyConfig 0x411f0/0x412c0 inside the CTeleporter
+  block; CWormhole::SpawnPartners and the teleporter block bracket the
+  CGruntPuddle block); frags i297-i299 one run; private .data band
+  0x20d194-0x20d1d0 contiguous. The method ownership is not an ICF fold:
+  CTeleporter's ctor and SerializeMove pass their unadjusted `this`, while
+  CWormhole::SpawnPartners compares the candidate notify function with ILT
+  0x4039b3, which jumps to CreateTeleporter, then calls 0x412c0 on that
+  candidate's CTeleporter logic pointer. RTTI independently shows CTeleporter
+  and CWormhole as sibling leaves with direct bases CUserLogic@0 and CWapX@0x34.
+  The three in-interval registrar fns (0x406d0/0x408b0/0x41680) are
+  text-contained -> folded in. GruntPuddle::SetBute @0x7d810 is NOT this TU
+  (own interval at the TriggerMgr tail) - stays in GruntPuddle.cpp
+  (@identity-TODO). WormholeActs.cpp (0x3f210, frag i296) left split: adjacent
+  obj, no positive one-obj evidence.
 * `0x042d40-0x04d7c6` -> **THREE TUs**:
   - **Warlord.cpp** `0x42d40-0x45cc1`: CWarlord + the five CGrunt::Resolve*Animation
     fns (0x45100/0x455f0/0x457b0/0x45960/0x45b60) - text A-B-A (0x45100 between

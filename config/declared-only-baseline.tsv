@@ -4,7 +4,6 @@
 # (rename to the real symbol / define the owner), then --update. Drive to 0.
 ??0CDDrawSurfacePair@@QAE@HHH@Z
 ??0RezElem40@@QAE@XZ
-?AdvanceAnim@CExitTrigger@@QAEHXZ
 ?Apply13@CGrunt@@QAEXHH@Z
 ?ApplyBox@CGrunt@@QAEHHHHHHH@Z
 ?Ar_WriteId@@YAXPAXH0@Z
@@ -27,8 +26,6 @@
 ?DoTrigger1fb9@CScanMgr@@QAEHPAVCGrunt@@HHHHH@Z
 ?Effect374c@CBattlezMapConfig@@QAEXPAVCGrunt@@H@Z
 ?Eng_SpawnFx@@YGXHHHHHH@Z
-?EnterField1@CTeleporter@@QAEXXZ
-?EnterField2@CTeleporter@@QAEXXZ
 ?EntranceApplyFrame@@YGXPBDH@Z
 ?Fade@CAmbientSound@@QAEHHHH@Z
 ?Finish3e4f@CBattlezMapConfig@@QAEXPAVCGrunt@@0@Z
