@@ -57,7 +57,6 @@
 ?WorldSoundCreateFull@@YGPAUPosSoundPlaced@@PAXHPAUtagRECT@@HHHHHH@Z
 ?WorldSoundCreateSimple@@YGPAUPosSoundPlaced@@PAXHPAUtagRECT@@HH@Z
 ?WriteName@@YAXPAX0@Z
-?g_buteMgr@@3VCButeMgr@@A
 ?g_lab504358@@3PADA
 ?g_lab545854@@3PADA
 ?g_mapNamePre@@3PADA

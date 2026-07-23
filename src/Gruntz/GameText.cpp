@@ -5,11 +5,12 @@
 #include <afxwin.h>
 #include <Gruntz/GameText.h>
 #include <rva.h>
-#include <Bute/ButeMgr.h>        // the one CButeMgr (its 0x170210 ctor; the 0x82b20 in-place init)
-#include <Gruntz/Attract.h>      // g_attractStateCount C-linkage declaration
-#include <Gruntz/FreeNodePool.h> // g_coordPool (the 0x82fa0/0x82ff0 coord-pool reset/clear tail)
-#include <Gruntz/Play.h>         // g_areaHazardParam C-linkage declaration
-#include <Rez/RezSync.h>         // g_dlgVal_645538 declaration
+#include <Bute/ButeMgr.h>         // the one CButeMgr (its 0x170210 ctor; the 0x82b20 in-place init)
+#include <Gruntz/Attract.h>       // g_attractStateCount C-linkage declaration
+#include <Gruntz/FreeNodePool.h>  // g_coordPool (the 0x82fa0/0x82ff0 coord-pool reset/clear tail)
+#include <Gruntz/MgrAutoScroll.h> // g_panMinX/g_panMaxX declarations
+#include <Gruntz/Play.h>          // g_areaHazardParam C-linkage declaration
+#include <Rez/RezSync.h>          // g_dlgVal_645538 declaration
 
 // ---------------------------------------------------------------------------
 // The two name tables are file-scope arrays of CString with brace-initializers.
@@ -25,139 +26,14 @@
 //   / "High Rollerz" / "Honey, I Shrunk the Gruntz!" / "The Miniature Masterz"
 //   / "Gruntz in Space".
 // ---------------------------------------------------------------------------
-// The two file-scope CString name tables (g_worldName below, g_statLabel further down)
-// each emit a compiler-generated dynamic-init `$E<n>` funclet that runs the 8
-// CString::CString ctors at startup. The `<n>` is an unstable per-object counter, so the
-// funclets are content-addressed by canonicalize_data_symbols (paired by body, not
-// number); both pins live here, co-located in RVA order for the compgen_order ratchet
-// (this TU's .text is multi-region, so the two funclets' addresses are far apart).
-RVA_COMPGEN(0x00018740, 0x79, _$E4) // g_statLabel[8] initializer
-RVA_COMPGEN(0x00082990, 0x79, _$E1) // g_worldName[8] initializer
-static CString g_worldName[8] = {
-    "Rocky Roadz",
-    "Gruntziclez",
-    "Trouble in the Tropicz",
-    "High on Sweetz",
-    "High Rollerz",
-    "Honey, I Shrunk the Gruntz!",
-    "The Miniature Masterz",
-    "Gruntz in Space",
-};
-
-VTBL(zErrHandling, 0x001f04cc); // ??_7CContainerErr@@6B@ - ONE slot (the dtor)
-DATA(0x002451a8)
-CWinApp g_gruntzWinApp("Gruntz");
-RVA_COMPGEN(0x00082a80, 0xa, _$E535168)
-RVA_COMPGEN(0x00082aa0, 0x10, _$E535200)
-RVA_COMPGEN(0x00082ac0, 0xe, _$E535232)
-RVA_COMPGEN(0x00082ae0, 0xa, _$E535264)
-
-// The resource-config bute manager @0x6453d8 (RVA 0x2453d8). Tree-wide it is the
-// CButeMgr singleton g_buteMgr (?g_buteMgr@@3VCButeMgr@@A, DATA-bound in FontConfig.cpp,
-// read by Projectile/DoNothing/... via GetInt/GetDword); this thunk constructs it in
-// place through the real CButeMgr ctor (0x170210, ButeSectionCtor.cpp). Bind the reloc
-// to the canonical g_buteMgr symbol (NOT a private g_resButeMgr - that leaves it
-// UNBOUND). (The @identity-TODO here is RESOLVED 2026-07-19: CButeMgr and the ex
-// "CButeSection" were the same 280-B config object; the twin class is dissolved and
-// the (CButeSection*) conflation cast fell out with it.)
-RVA(0x00082b20, 0xa)
-void InitResButeMgr() {
-    (&g_buteMgr)->CButeMgr::CButeMgr();
-}
-
-DATA(0x00245524)
-CString g_brickText1;
-DATA(0x00245528)
-CString g_brickText2;
-DATA(0x0024552c)
-CString g_str64552c;
-DATA(0x00245530)
-CString g_str645530;
-
-RVA(0x00082ba0, 0xa)
-void InitStr645524() {
-    g_brickText1.CString::CString();
-}
-RVA(0x00082c20, 0xa)
-void InitStr645528() {
-    g_brickText2.CString::CString();
-}
-RVA(0x00082ca0, 0xa)
-void InitStr64552c() {
-    g_str64552c.CString::CString();
-}
-RVA(0x00082d20, 0xa)
-void InitStr645530() {
-    g_str645530.CString::CString();
-}
-
-DATA(0x00245514)
-CString g_str645514;
-DATA(0x00245518)
-CString g_str645518;
-DATA(0x0024551c)
-CString g_str64551c;
-DATA(0x00245520)
-CString g_str645520;
-
-RVA(0x00082da0, 0xa)
-void InitStr645514() {
-    g_str645514.CString::CString();
-}
-RVA(0x00082e20, 0xa)
-void InitStr645518() {
-    g_str645518.CString::CString();
-}
-RVA(0x00082ea0, 0xa)
-void InitStr64551c() {
-    g_str64551c.CString::CString();
-}
-RVA(0x00082f20, 0xa)
-void InitStr645520() {
-    g_str645520.CString::CString();
-}
-
-DATA(0x00245534)
-i32 g_attractStateCount = 0;
-DATA(0x00245538)
-i32 g_dlgVal_645538;
-DATA(0x0024553c)
-i32 g_areaHazardParam = 0;
-
-DATA(0x00245540)
-FreeNodePool g_coordPool;
-
-RVA(0x00082fa0, 0x17)
-void ResetCoordPool() {
-    g_coordPool.m_block = 0;
-    g_coordPool.m_freeHead = 0;
-    g_coordPool.m_count = 0;
-    g_coordPool.m_linkOffset = 0;
-}
-
-RVA(0x00082ff0, 0x2f)
-void ClearCoordPool() {
-    if (g_coordPool.m_block != 0) {
-        // The retail call @0x82ffd targets 0x1b9b82 == ??3@YAXPAX@Z (MFC operator
-        // delete, library row), NOT a RezFree wrapper - bind to the real symbol.
-        ::operator delete(g_coordPool.m_block);
-    }
-    g_coordPool.m_block = 0;
-    g_coordPool.m_freeHead = 0;
-    g_coordPool.m_count = 0;
-    g_coordPool.m_linkOffset = 0;
-}
-
-static CString g_statLabel[8] = {
-    "Time:",
-    "Survivorz:",
-    "Deathz:",
-    "Toolz:",
-    "Toyz:",
-    "Powerupz:",
-    "Coinz:",
-    "Secretz:",
-};
+// Each CString table emits the complete wrapper/initializer/atexit/array-destructor
+// family. The `<n>` suffix is an unstable per-object counter, so the helpers are
+// content-addressed by canonicalize_data_symbols (paired by body and relocations,
+// not number). This TU's .text is multi-region, hence the distant family RVAs.
+RVA_COMPGEN(0x00018720, 0xa, _$E100128)
+RVA_COMPGEN(0x00018740, 0x79, _$E100160)
+RVA_COMPGEN(0x000187e0, 0xe, _$E100320)
+RVA_COMPGEN(0x00018800, 0x14, _$E100352)
 
 RVA(0x0001ec20, 0x8d)
 CString __stdcall GetWarlordName(i32 id) {
@@ -180,6 +56,123 @@ CString __stdcall GetWarlordName(i32 id) {
             return CString("");
     }
 }
+
+RVA_COMPGEN(0x00082970, 0xa, _$E534896)
+RVA_COMPGEN(0x00082990, 0x79, _$E534928)
+RVA_COMPGEN(0x00082a30, 0xe, _$E535088)
+RVA_COMPGEN(0x00082a50, 0x14, _$E535120)
+static CString g_worldName[8] = {
+    "Rocky Roadz",
+    "Gruntziclez",
+    "Trouble in the Tropicz",
+    "High on Sweetz",
+    "High Rollerz",
+    "Honey, I Shrunk the Gruntz!",
+    "The Miniature Masterz",
+    "Gruntz in Space",
+};
+
+VTBL(zErrHandling, 0x001f04cc); // ??_7CContainerErr@@6B@ - ONE slot (the dtor)
+DATA(0x002451a8)
+CWinApp g_gruntzWinApp("Gruntz");
+RVA_COMPGEN(0x00082a80, 0xa, _$E535168)
+RVA_COMPGEN(0x00082aa0, 0x10, _$E535200)
+RVA_COMPGEN(0x00082ac0, 0xe, _$E535232)
+RVA_COMPGEN(0x00082ae0, 0xa, _$E535264)
+
+DATA(0x002453d8)
+CButeMgr g_buteMgr;
+RVA_COMPGEN(0x00082b00, 0xa, _$E535296)
+RVA_COMPGEN(0x00082b20, 0xa, _$E535328)
+RVA_COMPGEN(0x00082b40, 0xe, _$E535360)
+RVA_COMPGEN(0x00082b60, 0xa, _$E535392)
+
+DATA(0x00245508)
+i32 g_panMinX;
+DATA(0x0024550c)
+i32 g_panMaxX;
+
+DATA(0x00245524)
+CString g_brickText1;
+RVA_COMPGEN(0x00082b80, 0xa, _$E535424)
+RVA_COMPGEN(0x00082ba0, 0xa, _$E535456)
+RVA_COMPGEN(0x00082bc0, 0xe, _$E535488)
+RVA_COMPGEN(0x00082be0, 0xa, _$E535520)
+
+DATA(0x00245528)
+CString g_brickText2;
+RVA_COMPGEN(0x00082c00, 0xa, _$E535552)
+RVA_COMPGEN(0x00082c20, 0xa, _$E535584)
+RVA_COMPGEN(0x00082c40, 0xe, _$E535616)
+RVA_COMPGEN(0x00082c60, 0xa, _$E535648)
+
+DATA(0x0024552c)
+CString g_str64552c;
+RVA_COMPGEN(0x00082c80, 0xa, _$E535680)
+RVA_COMPGEN(0x00082ca0, 0xa, _$E535712)
+RVA_COMPGEN(0x00082cc0, 0xe, _$E535744)
+RVA_COMPGEN(0x00082ce0, 0xa, _$E535776)
+
+DATA(0x00245530)
+CString g_str645530;
+RVA_COMPGEN(0x00082d00, 0xa, _$E535808)
+RVA_COMPGEN(0x00082d20, 0xa, _$E535840)
+RVA_COMPGEN(0x00082d40, 0xe, _$E535872)
+RVA_COMPGEN(0x00082d60, 0xa, _$E535904)
+
+DATA(0x00245514)
+CString g_str645514;
+RVA_COMPGEN(0x00082d80, 0xa, _$E535936)
+RVA_COMPGEN(0x00082da0, 0xa, _$E535968)
+RVA_COMPGEN(0x00082dc0, 0xe, _$E536000)
+RVA_COMPGEN(0x00082de0, 0xa, _$E536032)
+
+DATA(0x00245518)
+CString g_str645518;
+RVA_COMPGEN(0x00082e00, 0xa, _$E536064)
+RVA_COMPGEN(0x00082e20, 0xa, _$E536096)
+RVA_COMPGEN(0x00082e40, 0xe, _$E536128)
+RVA_COMPGEN(0x00082e60, 0xa, _$E536160)
+
+DATA(0x0024551c)
+CString g_str64551c;
+RVA_COMPGEN(0x00082e80, 0xa, _$E536192)
+RVA_COMPGEN(0x00082ea0, 0xa, _$E536224)
+RVA_COMPGEN(0x00082ec0, 0xe, _$E536256)
+RVA_COMPGEN(0x00082ee0, 0xa, _$E536288)
+
+DATA(0x00245520)
+CString g_str645520;
+RVA_COMPGEN(0x00082f00, 0xa, _$E536320)
+RVA_COMPGEN(0x00082f20, 0xa, _$E536352)
+RVA_COMPGEN(0x00082f40, 0xe, _$E536384)
+RVA_COMPGEN(0x00082f60, 0xa, _$E536416)
+
+DATA(0x00245534)
+i32 g_attractStateCount = 0;
+DATA(0x00245538)
+i32 g_dlgVal_645538;
+DATA(0x0024553c)
+i32 g_areaHazardParam = 0;
+
+DATA(0x00245540)
+FreeNodePool g_coordPool;
+
+RVA_COMPGEN(0x00082f80, 0xa, _$E536448)
+RVA_COMPGEN(0x00082fa0, 0x17, _$E536480)
+RVA_COMPGEN(0x00082fd0, 0xe, _$E536528)
+RVA_COMPGEN(0x00082ff0, 0x2f, _$E536560)
+
+static CString g_statLabel[8] = {
+    "Time:",
+    "Survivorz:",
+    "Deathz:",
+    "Toolz:",
+    "Toyz:",
+    "Powerupz:",
+    "Coinz:",
+    "Secretz:",
+};
 
 static char* g_errMsg_OutOfMem; // the lazy-init guard slot
 static char* g_errMsg_BadData;

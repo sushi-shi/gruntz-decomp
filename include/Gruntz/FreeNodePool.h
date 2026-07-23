@@ -14,6 +14,18 @@ SIZE(0xc);
 
 class FreeNodePool {
 public:
+    FreeNodePool() : m_block(0), m_freeHead(0), m_count(0), m_linkOffset(0) {}
+
+    ~FreeNodePool() {
+        if (m_block != 0) {
+            ::operator delete(m_block);
+        }
+        m_block = 0;
+        m_freeHead = 0;
+        m_count = 0;
+        m_linkOffset = 0;
+    }
+
     void Push(void* p); // 0x0311b0
 
     // The payload->node back-step every recycle site performs: the element pointer
@@ -23,12 +35,12 @@ public:
         return reinterpret_cast<CoordPoolNode*>(reinterpret_cast<char*>(payload) - m_linkOffset);
     }
 
-    CoordPoolNode* m_block;    // +0x00  owned backing block (RezAlloc'd; freed by ClearCoordPool)
+    CoordPoolNode* m_block;    // +0x00  owned backing block
     CoordPoolNode* m_freeHead; // +0x04  free-list head
     i32 m_count;               // +0x08  element count of m_block
     i32 m_linkOffset;          // +0x0c  payload offset inside a node (Push subtracts it)
 };
-SIZE_UNKNOWN();
+SIZE(0x10);
 
 extern FreeNodePool g_coordPool;
 

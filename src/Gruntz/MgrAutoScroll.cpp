@@ -16,10 +16,6 @@ DATA(0x002452a4)
 i32 g_jitterX;
 DATA(0x002452cc)
 i32 g_jitterY;
-DATA(0x00245508)
-i32 g_panMinX;
-DATA(0x0024550c)
-i32 g_panMaxX;
 
 DATA(0x0024c27c)
 CDDrawWorkerHost* g_backView;

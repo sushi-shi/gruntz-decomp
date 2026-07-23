@@ -100,6 +100,37 @@ replacing the hand-written constructor twin with `RVA_COMPGEN` pins recovered
 the family at `0x000bd7f0`, `0x000bd810`, and `0x000bd830`. The 14-byte middle
 helper had previously been mislabeled as LOW `__inc`.
 
+## Inline destructor body and array variants
+
+The constructor and destructor helpers do not have to tail-jump to separately
+emitted methods. When the original class defines a small constructor or
+destructor inline, VC5 can put that logic directly in the `$E<n>` helper. In
+GameText, the `FreeNodePool` constructor helper clears four fields and its
+destructor helper conditionally calls global `operator delete`, then clears the
+same fields. Those bodies were previously modeled as developer-written
+`ResetCoordPool` and `ClearCoordPool` functions. The complete adjacent
+wrapper/registrar pair and their shared `g_coordPool` relocations prove that the
+delete call belongs to an inline destructor, not to a manually named cleanup
+routine. Put the inline methods on the real class in its shared header and
+define the file-scope object normally.
+
+An array of non-trivial objects has the same four roles, but its initializer is
+the expanded element-construction run and its destructor helper calls the
+vector-destruction helper. The GameText `CString[8]` name tables produce
+10/121/14/20-byte wrapper, initializer, registrar, and destructor bodies.
+Treat the four shared-base relocations as one family; do not name only the
+semantically conspicuous initializer as if it were a developer function.
+
+Recovering a real large file-scope object can also widen the owning TU's
+ordinary-data band and expose smaller foreign definitions inside it. Audit that
+warning with contribution evidence rather than reverting the object model.
+For GameText, the initializer-table run proves the surrounding constructed
+objects, while `g_panMinX` and `g_panMaxX` occupy the intervening ordinary BSS.
+Their consumers establish scroll semantics but not storage ownership, so their
+definitions belong to GameText and their declarations remain in the shared
+autoscroll header. This is the reverse-use rule: xrefs name a datum; a proven
+ordinary contribution homes it.
+
 ## Reverse audit of the apparent ten-function dip
 
 The original documentation first called the NetLobby family exact without

@@ -173,7 +173,6 @@ rva,name,lib,confidence,source
 0x018630,__inc,LIBCMT,LOW,anchored
 0x018680,__inc,LIBCMT,LOW,anchored
 0x0186d0,__inc,LIBCMT,LOW,anchored
-0x0187e0,___inittime,LIBCMT,LOW,anchored
 0x0201f0,__inc,LIBCMT,LOW,anchored
 0x020210,__inc,LIBCMT,LOW,anchored
 0x020260,__inc,LIBCMT,LOW,anchored
@@ -448,17 +447,6 @@ rva,name,lib,confidence,source
 0x082880,__inc,LIBCMT,LOW,anchored
 0x0828d0,__inc,LIBCMT,LOW,anchored
 0x082920,__inc,LIBCMT,LOW,anchored
-0x082a30,___inittime,LIBCMT,LOW,anchored
-0x082b40,___inittime,LIBCMT,LOW,anchored
-0x082bc0,___inittime,LIBCMT,LOW,anchored
-0x082c40,___inittime,LIBCMT,LOW,anchored
-0x082cc0,___inittime,LIBCMT,LOW,anchored
-0x082d40,___inittime,LIBCMT,LOW,anchored
-0x082dc0,___inittime,LIBCMT,LOW,anchored
-0x082e40,___inittime,LIBCMT,LOW,anchored
-0x082ec0,___inittime,LIBCMT,LOW,anchored
-0x082f40,___inittime,LIBCMT,LOW,anchored
-0x082fd0,___inittime,LIBCMT,LOW,anchored
 0x0832e0,__fpclear,LIBCMT,LOW,anchored
 0x08c3d0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x08c9a0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
