@@ -31,6 +31,7 @@ import argparse
 import contextlib
 import io
 import json
+import struct
 import sys
 import tempfile
 import unittest
@@ -89,8 +90,82 @@ class TestLibraryLabels(unittest.TestCase):
 # COFF normalization: MSVC's x86 `$E<n>` functions carry a leading underscore #
 # --------------------------------------------------------------------------- #
 class TestCompilerPrivateFunctionNames(unittest.TestCase):
+    @staticmethod
+    def _text_helper_coff(raw_size):
+        body = b"\xb8\x01\x00\x00\x00\xc3"
+        raw = body + b"\x90" * (raw_size - len(body))
+        raw_offset = 20 + 40
+        symbol_offset = raw_offset + len(raw)
+        header = struct.pack(
+            "<HHIIIHH", 0x14C, 1, 0, symbol_offset, 1, 0, 0)
+        section = struct.pack(
+            "<8sIIIIIIHHI",
+            b".text\0\0\0", 0, 0, len(raw), raw_offset, 0, 0, 0, 0,
+            canonicalize_data_symbols.MEM_EXECUTE,
+        )
+        symbol = b"_$E28\0\0\0" + struct.pack(
+            "<IhHBB",
+            0, 1, canonicalize_data_symbols.FUNCTION_TYPE, 2, 0,
+        )
+        return header + section + raw + symbol + struct.pack("<I", 4)
+
     def test_x86_dynamic_initializer_is_content_addressed(self):
         self.assertEqual(canonicalize_data_symbols._family("_$E28"), ("e", None))
+
+    def test_dynamic_initializer_text_definition_is_a_candidate(self):
+        section = canonicalize_data_symbols.Section(
+            1, 0, ".text", 0x20, 0, 0, 0,
+            canonicalize_data_symbols.MEM_EXECUTE,
+        )
+        for storage_class in (2, 3):
+            symbol = canonicalize_data_symbols.Symbol(
+                0, 0, "_$E28", 0, 1,
+                canonicalize_data_symbols.FUNCTION_TYPE, storage_class, 0,
+            )
+            definition = canonicalize_data_symbols.Definition(
+                symbol, section, "text", 0, 0x20,
+            )
+            self.assertTrue(
+                canonicalize_data_symbols._is_canonical_candidate(definition))
+
+    def test_ordinary_text_function_is_not_a_candidate(self):
+        section = canonicalize_data_symbols.Section(
+            1, 0, ".text", 0x20, 0, 0, 0,
+            canonicalize_data_symbols.MEM_EXECUTE,
+        )
+        symbol = canonicalize_data_symbols.Symbol(
+            0, 0, "_ordinary", 0, 1,
+            canonicalize_data_symbols.FUNCTION_TYPE, 2, 0,
+        )
+        definition = canonicalize_data_symbols.Definition(
+            symbol, section, "text", 0, 0x20,
+        )
+        self.assertFalse(
+            canonicalize_data_symbols._is_canonical_candidate(definition))
+
+    def test_text_identity_excludes_alignment_padding(self):
+        self.assertEqual(
+            canonicalize_data_symbols._identity_span("text", 0x20, 0x1a),
+            0x1a,
+        )
+        self.assertEqual(
+            canonicalize_data_symbols._identity_span("data", 0x20, 0x1a),
+            0x20,
+        )
+
+    def test_full_coff_path_pairs_different_text_alignment_spans(self):
+        wide = canonicalize_data_symbols.canonicalize_coff(
+            self._text_helper_coff(0x20))
+        packed = canonicalize_data_symbols.canonicalize_coff(
+            self._text_helper_coff(0x1c))
+        self.assertEqual(len(wide.rows), 1)
+        self.assertEqual(len(packed.rows), 1)
+        self.assertEqual(wide.rows[0].storage, "text")
+        self.assertEqual(wide.rows[0].meaningful_size, 6)
+        self.assertEqual(
+            wide.rows[0].canonical_name,
+            packed.rows[0].canonical_name,
+        )
 
 
 # --------------------------------------------------------------------------- #

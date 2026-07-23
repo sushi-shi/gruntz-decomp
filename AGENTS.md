@@ -182,6 +182,14 @@ missing logic or unresolved relocation work.
   `docs/patterns/` plus `docs/patterns/INDEX.md`; correct older pattern claims
   that the new evidence falsifies. Do not leave this knowledge only in a source
   comment or commit message.
+- When a correctness fix lowers a metric, identify the exact functions, data,
+  or relocations that stopped pairing and document the reusable cause before
+  committing. Treat that delta as a reverse-audit queue for similar hidden
+  mismodelling; do not erase the evidence merely to restore MAX.
+- Documentation and green tests are claims, not authority. If retail evidence
+  falsifies a documented tool contract, correct the documentation and add a
+  negative or integration control that exercises the full path which failed;
+  a recognizer-only test does not prove its consumer uses the result.
 - Preserve user and concurrent changes. Do not revert unrelated edits, and
   stage only files belonging to the current unit of work.
 - Prefer focused commits such as `match: reconstruct CThing::Method` or

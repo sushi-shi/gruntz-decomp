@@ -1,8 +1,9 @@
-"""Canonicalize MSVC compiler-private data names in a disposable COFF copy.
+"""Canonicalize MSVC compiler-private symbol names in a disposable COFF copy.
 
 The transform is deliberately local to one object.  It does not consult a
 manifest, a paired object, source text, or retail addresses.  Symbol indices do
-not change. Compiler-private data receives stable, content-derived names. In
+not change. Compiler-private data and `$E<n>` text helpers receive stable,
+content-derived names. In
 embedded .text jump tables, same-function DIR32 references to volatile local
 labels are rewritten to the containing external function plus an equivalent
 owner-relative addend; all resolved section offsets are proved unchanged.
@@ -268,7 +269,7 @@ class CoffObject:
 def _storage(section: Section) -> str | None:
     flags = section.characteristics
     if flags & MEM_EXECUTE:
-        return None
+        return "text"
     if flags & UNINITIALIZED_DATA:
         return "bss"
     if not flags & INITIALIZED_DATA:
@@ -279,7 +280,7 @@ def _storage(section: Section) -> str | None:
 def _definitions(coff: CoffObject) -> tuple[Definition, ...]:
     by_section: dict[int, list[Symbol]] = defaultdict(list)
     for symbol in coff.symbols.values():
-        if (symbol.section > 0 and symbol.typ == 0 and
+        if (symbol.section > 0 and symbol.typ in (0, FUNCTION_TYPE) and
                 symbol.storage_class in (2, 3) and symbol.aux_count == 0 and
                 _storage(coff.sections[symbol.section - 1]) is not None):
             by_section[symbol.section].append(symbol)
@@ -327,6 +328,27 @@ def _family(name: str) -> tuple[str, str | None] | None:
     if match:
         return "named", match.group("prefix")
     return None
+
+
+def _is_canonical_candidate(definition: Definition) -> bool:
+    family = _family(definition.symbol.name)
+    if family is None:
+        return False
+    if family[0] == "e":
+        # VC5 emits local `$E<n>` definitions while the delinker exposes an
+        # RVA-pinned target helper as external. Both are real definitions.
+        return (
+            definition.storage == "text"
+            and definition.symbol.storage_class in (2, 3)
+        )
+    return definition.storage != "text" and definition.symbol.storage_class == 3
+
+
+def _identity_span(kind: str, physical_size: int, meaningful_size: int) -> int:
+    # TEXT COMDATs and packed target text align the same helper differently.
+    # Padding is not part of a function's identity. Data allocation spans remain
+    # significant because they are the only proven object extent.
+    return meaningful_size if kind == "text" else physical_size
 
 
 def _relocation_width(typ: int) -> int:
@@ -610,7 +632,7 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
 
     candidates = {
         row.symbol.index: row for row in definitions
-        if row.symbol.storage_class == 3 and _family(row.symbol.name) is not None
+        if _is_canonical_candidate(row)
     }
     kinds: dict[int, tuple[str, bytes, str, str]] = {}
     for definition in candidates.values():
@@ -619,7 +641,15 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
         own_relocs = [row for row in section_relocations[definition.section.index]
                       if definition.start <= row.site < definition.end]
         kind, meaningful, proof = "data", raw, "physical-span"
-        if family and family[0] == "sg":
+        if family and family[0] == "e":
+            # Base COMDATs and packed delinked target text have different
+            # alignment spans. The helper body ends before their trailing NOPs.
+            meaningful = raw.rstrip(b"\x90")
+            if not meaningful:
+                raise ValueError(
+                    f"empty compiler-private text helper {definition.symbol.name}")
+            kind, proof = "text", "trailing-nop-padding"
+        elif family and family[0] == "sg":
             string_size = _is_string(raw, own_relocs)
             if string_size is not None:
                 kind, meaningful, proof = "string", raw[:string_size], "nul-terminated"
@@ -703,11 +733,12 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
                     relative, relocation.typ, width, addend, target_identity,
                 ))
             reloc_rows.sort(key=lambda row: _record_bytes({"relocation": row}))
+            physical_size = definition.end - definition.start
             record = _record_bytes({
-                "schema": "gruntz-anon-data-v1",
+                "schema": "gruntz-anon-symbol-v2",
                 "kind": kind,
                 "storage": definition.storage,
-                "span": definition.end - definition.start,
+                "span": _identity_span(kind, physical_size, len(meaningful)),
                 "meaningful_size": len(meaningful),
                 "payload": bytes(masked).hex(),
                 "relocations": reloc_rows,

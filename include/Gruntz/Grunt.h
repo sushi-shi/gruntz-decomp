@@ -61,18 +61,25 @@ extern i32 g_cellScale; // DAT_006bf668
 extern i32 g_cellRecordBase; // DAT_006bf464
 extern i32 g_cellRecordRet;  // DAT_006bf428
 
-extern i32 g_dirAb0[2];     // DAT_00644ab0
-extern i32 g_dirAe0[2];     // DAT_00644ae0
-extern i32 g_dirAa0[2];     // DAT_00644aa0
-extern i32 g_dirB28[2];     // DAT_00644b28
-extern i32 g_dirAc0[2];     // DAT_00644ac0
-extern i32 g_dirB48[2];     // DAT_00644b48
-extern i32 g_dirAd0[2];     // DAT_00644ad0
-extern i32 g_dirB18[2];     // DAT_00644b18
-extern i32 g_dirB38[2];     // DAT_00644b38
-extern double g_dirConst2;  // DAT_005e9a28 = 2.0
-extern double g_dirConst1;  // DAT_005e9a30 = 1.0
-extern double g_dirConstN1; // DAT_005e9a38 = -1.0
+struct GruntDirectionCell {
+    GruntDirectionCell(i32 row_, i32 column_, i32 direction_)
+        : row(row_), column(column_), direction(direction_) {}
+
+    i32 row;
+    i32 column;
+    i32 direction;
+};
+SIZE(0xc);
+
+extern GruntDirectionCell g_gruntDirNorth;     // 0x00244ab0
+extern GruntDirectionCell g_gruntDirNorthEast; // 0x00244ae0
+extern GruntDirectionCell g_gruntDirEast;      // 0x00244aa0
+extern GruntDirectionCell g_gruntDirSouthEast; // 0x00244b28
+extern GruntDirectionCell g_gruntDirSouth;     // 0x00244ac0
+extern GruntDirectionCell g_gruntDirSouthWest; // 0x00244b48
+extern GruntDirectionCell g_gruntDirWest;      // 0x00244ad0
+extern GruntDirectionCell g_gruntDirNorthWest; // 0x00244b18
+extern GruntDirectionCell g_gruntDirCenter;    // 0x00244b38
 
 struct CAnimScratchString {
     char* m_str; // +0x00  (4-byte stride)

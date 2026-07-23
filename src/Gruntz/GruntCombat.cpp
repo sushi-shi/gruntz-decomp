@@ -79,6 +79,25 @@ static const char s_keyE[] = "E";
 static const char s_keyA[] = "A";
 static const char s_keyF[] = "F";
 
+DATA(0x00244ab0)
+GruntDirectionCell g_gruntDirNorth(0, 1, 1);
+DATA(0x00244ae0)
+GruntDirectionCell g_gruntDirNorthEast(0, 2, 2);
+DATA(0x00244aa0)
+GruntDirectionCell g_gruntDirEast(1, 2, 3);
+DATA(0x00244b28)
+GruntDirectionCell g_gruntDirSouthEast(2, 2, 4);
+DATA(0x00244ac0)
+GruntDirectionCell g_gruntDirSouth(2, 1, 5);
+DATA(0x00244b48)
+GruntDirectionCell g_gruntDirSouthWest(2, 0, 6);
+DATA(0x00244ad0)
+GruntDirectionCell g_gruntDirWest(1, 0, 7);
+DATA(0x00244b18)
+GruntDirectionCell g_gruntDirNorthWest(0, 0, 8);
+DATA(0x00244b38)
+GruntDirectionCell g_gruntDirCenter(1, 1, 0);
+
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
 static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98
@@ -1815,6 +1834,16 @@ CObject* CDDrawSubMgrLeafScan::Lookup(const char* key) {
     return static_cast<CObject*>(val);
 }
 
+RVA_COMPGEN(0x0005b840, 0x1a, _$E580160)
+RVA_COMPGEN(0x0005b890, 0x1a, _$E580240)
+RVA_COMPGEN(0x0005b8e0, 0x1f, _$E580320)
+RVA_COMPGEN(0x0005b930, 0x1a, _$E580400)
+RVA_COMPGEN(0x0005b980, 0x1f, _$E580480)
+RVA_COMPGEN(0x0005b9d0, 0x1f, _$E580560)
+RVA_COMPGEN(0x0005ba20, 0x1f, _$E580640)
+RVA_COMPGEN(0x0005ba70, 0x17, _$E580720)
+RVA_COMPGEN(0x0005bac0, 0x1a, _$E580800)
+
 RVA(0x0005baf0, 0xf4)
 i32 GruntSpawnPump(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
@@ -1910,74 +1939,74 @@ void RegisterActs_644af0() {
 // matches from C source. Deferred to the final sweep.
 RVA(0x0005caa0, 0x5e4)
 void CGrunt::Activate() {
-    double diag = sqrt(g_dirConst2); // sqrt(2.0)
+    double diag = sqrt(2.0);
     // the per-direction m_cells records (stride 0x68; retail index math is 13*(3*lo+hi)
     // doubles == exactly &m_cells[3*lo+hi].m_dirX - the old "15-double stride" tbl was
     // a mis-decode writing past the record for every index > 0)
 
-    double s = g_dirConst1 / diag; // 1 / sqrt2
-    double n = g_dirConstN1 / s;   // -1 / (1/sqrt2)
+    double s = 1.0 / diag;
+    double n = -1.0 / s;
 
     // Each record: 4 doubles at the cell's +0/8/0x10/0x18. The 9 globals are processed
     // in this fixed order (ab0,ae0,aa0,b28,ac0,b48,ad0,b18,b38).
     {
-        CGruntCellRec* c = &m_cells[3 * g_dirAb0[0] + g_dirAb0[1]];
+        CGruntCellRec* c = &m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column];
         c->m_dirX = 0.0;
         c->m_dirY = -1.0;
         c->m_stepX = 0.0;
         c->m_stepY = -0.5;
     }
     {
-        CGruntCellRec* c = &m_cells[3 * g_dirAe0[0] + g_dirAe0[1]];
+        CGruntCellRec* c = &m_cells[3 * g_gruntDirNorthEast.row + g_gruntDirNorthEast.column];
         c->m_dirX = s;
         c->m_dirY = s;
         c->m_stepX = 0.5;
         c->m_stepY = -0.5;
     }
     {
-        CGruntCellRec* c = &m_cells[3 * g_dirAa0[0] + g_dirAa0[1]];
+        CGruntCellRec* c = &m_cells[3 * g_gruntDirEast.row + g_gruntDirEast.column];
         c->m_dirX = 1.0;
         c->m_dirY = 0.0;
         c->m_stepX = 0.5;
         c->m_stepY = 0.0;
     }
     {
-        CGruntCellRec* c = &m_cells[3 * g_dirB28[0] + g_dirB28[1]];
+        CGruntCellRec* c = &m_cells[3 * g_gruntDirSouthEast.row + g_gruntDirSouthEast.column];
         c->m_dirX = s;
         c->m_dirY = s;
         c->m_stepX = 0.5;
         c->m_stepY = 0.5;
     }
     {
-        CGruntCellRec* c = &m_cells[3 * g_dirAc0[0] + g_dirAc0[1]];
+        CGruntCellRec* c = &m_cells[3 * g_gruntDirSouth.row + g_gruntDirSouth.column];
         c->m_dirX = 0.0;
         c->m_dirY = 1.0;
         c->m_stepX = 0.0;
         c->m_stepY = 0.5;
     }
     {
-        CGruntCellRec* c = &m_cells[3 * g_dirB48[0] + g_dirB48[1]];
+        CGruntCellRec* c = &m_cells[3 * g_gruntDirSouthWest.row + g_gruntDirSouthWest.column];
         c->m_dirX = n;
         c->m_dirY = s;
         c->m_stepX = -0.5;
         c->m_stepY = 0.5;
     }
     {
-        CGruntCellRec* c = &m_cells[3 * g_dirAd0[0] + g_dirAd0[1]];
+        CGruntCellRec* c = &m_cells[3 * g_gruntDirWest.row + g_gruntDirWest.column];
         c->m_dirX = -1.0;
         c->m_dirY = 0.0;
         c->m_stepX = -0.5;
         c->m_stepY = 0.0;
     }
     {
-        CGruntCellRec* c = &m_cells[3 * g_dirB18[0] + g_dirB18[1]];
+        CGruntCellRec* c = &m_cells[3 * g_gruntDirNorthWest.row + g_gruntDirNorthWest.column];
         c->m_dirX = n;
         c->m_dirY = n;
         c->m_stepX = -0.5;
         c->m_stepY = -0.5;
     }
     {
-        CGruntCellRec* c = &m_cells[3 * g_dirB38[0] + g_dirB38[1]];
+        CGruntCellRec* c = &m_cells[3 * g_gruntDirCenter.row + g_gruntDirCenter.column];
         c->m_dirX = 0.0;
         c->m_dirY = 0.0;
         c->m_stepX = 0.0;
