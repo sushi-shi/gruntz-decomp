@@ -550,8 +550,10 @@ def write_baseline(funcs: dict[tuple[str, str], dict]) -> None:
         unit, fn = key
         f = funcs[key]
         addr = f.get("addr")
-        addr_s = f"0x{addr:x}" if addr is not None else ""
-        lines.append(f"{unit}\t{fn}\t{f['best']:.4f}\t{f['cur']:.4f}\t{f['tries']}\t{f['fp']}\t{addr_s}\n")
+        line = f"{unit}\t{fn}\t{f['best']:.4f}\t{f['cur']:.4f}\t{f['tries']}\t{f['fp']}"
+        if addr is not None:
+            line += f"\t0x{addr:x}"
+        lines.append(line + "\n")
     BASELINE.write_text("".join(lines))
 
 

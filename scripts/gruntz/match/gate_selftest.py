@@ -404,6 +404,12 @@ class TestBestEverRatchet(unittest.TestCase):
         status.write_baseline({("u", "?F@@QAEHXZ"): {
             "best": best, "cur": cur, "tries": tries, "fp": fp, "addr": rva}})
 
+    def test_addressless_rows_do_not_emit_trailing_whitespace(self):
+        status.write_baseline({("u", "$anon_data_hash_0"): {
+            "best": 100.0, "cur": 100.0, "tries": 1, "fp": "aaaa", "addr": None}})
+        rows = self.baseline.read_text().splitlines()
+        self.assertEqual(rows[-1], "u\t$anon_data_hash_0\t100.0000\t100.0000\t1\taaaa")
+
     def test_editing_a_function_cannot_erode_its_best(self):
         """THE BUG, minimal: a row with best > current, an EDIT, and a plain update."""
         self._seed(best=98.8947, cur=98.8947, fp="aaaa", rva=0xe7440)
