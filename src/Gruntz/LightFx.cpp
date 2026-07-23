@@ -2,20 +2,20 @@
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Io/FileMem.h>              // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/AniAdvanceCursor.h> // (ex DDrawBlitParam - folded onto CAniAdvanceCursor)
 #include <Gruntz/ActReg.h>           // the shared CActReg coordinate-registry archetype
 #include <Gruntz/LightFx.h>
 #include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/LightFxMgr.h>        // CLightFxMgr (g_gameReg->m_logicPump @+0x78; Push)
-#include <Image/ImageSet.h>           // CDDrawWorker - the spec Lookup result (frames + index range)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (spec/effect stores)
+#include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; Push)
+#include <Image/ImageSet.h>    // CDDrawWorker - the spec Lookup result (frames + index range)
+#include <DDrawMgr/DDrawSurfaceMgr.h>     // the m_0c world root (spec/effect stores)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (the spec store; Ob 0x1b8008)
 #include <DDrawMgr/DDrawSubMgrLeaf.h>     // m_animRegistry (the effect store; Ptr 0x1b8438)
 #include <Gruntz/LogicTypeTableInline.h>  // unrolled built-in logic-type registration
-#include <Gruntz/SerialArchive.h>    // CFileMemBase Read(+0x2c)/Write(+0x30) for SerializeMove
+#include <Gruntz/SerialArchive.h>         // CFileMemBase Read(+0x2c)/Write(+0x30) for SerializeMove
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sink; Advance)
 #include <Wap32/ZVec.h>
@@ -79,7 +79,8 @@ void CLightFx::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CLightFxActEntry*>(g_lightFxActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CLightFx::AdvanceAnim);
+    (reinterpret_cast<CLightFxActEntry*>(g_lightFxActReg.ResolveEntry(id)))->m_fn =
+        static_cast<i32 (CUserLogic::*)()>(&CLightFx::AdvanceAnim);
 }
 
 // ===========================================================================
@@ -131,10 +132,16 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
     m_anchorB = anchorB;
     // effect lookup -> CMapStringToPtr::Lookup (0x1b8438) via the object's owner
     // context (CGameObject::m_0c @+0xc); out is void*&.
-    m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(reinterpret_cast<const char*>(effect), reinterpret_cast<void*&>(node));
+    m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(
+        reinterpret_cast<const char*>(effect),
+        reinterpret_cast<void*&>(node)
+    );
     if (node != 0) {
         node = 0;
-        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(reinterpret_cast<const char*>(effect), reinterpret_cast<void*&>(node));
+        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(
+            reinterpret_cast<const char*>(effect),
+            reinterpret_cast<void*&>(node)
+        );
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(reinterpret_cast<CAniElement*>(node));
         RebindNode();
@@ -144,7 +151,13 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
 
 RVA(0x0009d660, 0xc8)
 i32 CLightFx::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
-    if (CUserLogic::SerializeMove(reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))), mode, a3, a4) == 0) {
+    if (CUserLogic::SerializeMove(
+            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
+            mode,
+            a3,
+            a4
+        )
+        == 0) {
         return 0;
     }
     if (Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) == 0) {
@@ -160,7 +173,8 @@ i32 CLightFx::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
             (static_cast<CFileMemBase*>(ar))->Read(&m_anchorB, 4);
             break;
         case 8:
-            g_gameReg->m_logicPump->Push(reinterpret_cast<CDDrawWorker*>(m_38->m_194), m_anchorA, 7);
+            g_gameReg->m_logicPump
+                ->Push(reinterpret_cast<CDDrawWorker*>(m_38->m_194), m_anchorA, 7);
             break;
     }
     return 1;

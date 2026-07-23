@@ -7,9 +7,9 @@
 #include <Gruntz/GameRegistry.h>  // CGameRegistry (g_gameReg->m_world = CDDrawSurfaceMgr*)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (reader; Read @ vtable +0x2c)
 #include <Gruntz/StreamRecordLoaders.h> // CEventLoadRec (this TU owns the loader)
-#include <Gruntz/Sprite.h>             // CDDrawWorker (the looked-up, index-gated frame table)
-#include <DDrawMgr/DDrawWorkerCache.h> // the +0x14 worker cache - Find (0x9cab0) is its method
-#include <string.h>                    // inline strlen (repne scasb) over the scratch buffer
+#include <Gruntz/Sprite.h>              // CDDrawWorker (the looked-up, index-gated frame table)
+#include <DDrawMgr/DDrawWorkerCache.h>  // the +0x14 worker cache - Find (0x9cab0) is its method
+#include <string.h>                     // inline strlen (repne scasb) over the scratch buffer
 
 // @early-stop
 // outparam-zeroinit-scheduling wall (same as CTriggerLoadRec): logic + offsets

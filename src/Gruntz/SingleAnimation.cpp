@@ -43,9 +43,12 @@ void CSingleAnimation::InitActReg() {
 
 RVA(0x000aea20, 0x102)
 void CSingleAnimation::FireActivation(i32 id) {
-    CSingleAnimActEntry* e = reinterpret_cast<CSingleAnimActEntry*>(g_singleAnimActReg.ResolveEntry(id));
+    CSingleAnimActEntry* e =
+        reinterpret_cast<CSingleAnimActEntry*>(g_singleAnimActReg.ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*(reinterpret_cast<CSingleAnimActEntry*>(g_singleAnimActReg.ResolveEntry(id)))->m_fn)();
+        (this
+             ->*(reinterpret_cast<CSingleAnimActEntry*>(g_singleAnimActReg.ResolveEntry(id)))
+             ->m_fn)();
     }
 }
 

@@ -5,7 +5,7 @@
 #include <rva.h>
 #include <DDrawMgr/DirPal.h> // LogPal256 (this TU owns the palette snapshots)
 #include <stdio.h>
-#include <string.h>  // strrchr / _stricmp / inline memcpy
+#include <string.h> // strrchr / _stricmp / inline memcpy
 
 #define DIRPAL_FILE "C:\\Proj\\DDrawMgr\\DIRPAL.CPP"
 
@@ -721,4 +721,3 @@ i32 BlackoutSystemPalette() {
     }
     return 0;
 }
-

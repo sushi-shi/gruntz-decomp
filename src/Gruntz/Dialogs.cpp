@@ -91,7 +91,7 @@ RVA_COMPGEN(0x00017140, 0x47, ??1CBattlezDlgCustom@@UAE@XZ)
 RVA(0x00018030, 0x56)
 CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 
-VTBL(CBattlezDlg, 0x001e8bac); // vtable_names -> code (RTTI game class)
+VTBL(CBattlezDlg, 0x001e8bac);       // vtable_names -> code (RTTI game class)
 VTBL(CBattlezDlgColors, 0x001e8d94); // vtable_names -> code (RTTI game class)
 VTBL(CBattlezDlgCustom, 0x001e8ee4); // vtable_names -> code (RTTI game class)
 DATA(0x00229d10)
@@ -181,16 +181,19 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
         pSend = ::SendMessageA;
         for (i32 i = 0; i < 0x11; i++) {
             i32 avail = 1;
-            GruntzPlayer* rec = m_slots->m_options; // the per-player slots (color=m_008, occupancy=m_liveGate)
+            GruntzPlayer* rec =
+                m_slots->m_options; // the per-player slots (color=m_008, occupancy=m_liveGate)
             for (i32 j = 0; j < 4; j++) {
-                if (rec->m_liveGate != 0 && rec->m_008 == i) { // occupied slot already using color i
+                if (rec->m_liveGate != 0
+                    && rec->m_008 == i) { // occupied slot already using color i
                     avail = 0;
                 }
                 rec++;
             }
             if (avail) {
-                long idx = pSend(lb->m_hWnd, 0x180, 0, reinterpret_cast<long>("Color")); // LB_ADDSTRING
-                pSend(lb->m_hWnd, 0x19a, idx, i);                      // LB_SETITEMDATA
+                long idx =
+                    pSend(lb->m_hWnd, 0x180, 0, reinterpret_cast<long>("Color")); // LB_ADDSTRING
+                pSend(lb->m_hWnd, 0x19a, idx, i);                                 // LB_SETITEMDATA
             }
         }
         pSend(lb->m_hWnd, 0x186, 0, 0); // LB_SETCURSEL
@@ -199,7 +202,9 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
 
 RVA(0x00017ac0, 0x6)
 const AFX_MSGMAP* CBattlezDlgColors::GetMessageMap() const {
-    return reinterpret_cast<const AFX_MSGMAP*>(&g_msgmap_CBattlezDlgColors); // msgmap global still a placeholder type
+    return reinterpret_cast<const AFX_MSGMAP*>(
+        &g_msgmap_CBattlezDlgColors
+    ); // msgmap global still a placeholder type
 }
 
 RVA(0x00017ae0, 0x20)

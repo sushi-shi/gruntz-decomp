@@ -34,12 +34,12 @@ inline CFaderArray::~CFaderArray() {
 
 class CFaderMgr {
 public:
-    CFaderMgr();                                           // 0x17d8f0
-    ~CFaderMgr();                                          // 0x17d910
+    CFaderMgr();                                                   // 0x17d8f0
+    ~CFaderMgr();                                                  // 0x17d910
     i32 SetConfig(i32 a, i32 b, class CDDrawPtrCollections* pool); // 0x17d980
-    void FreeAll();                                        // 0x17d9a0
-    CFader* Add(i32 nFaderType, class CFxModeDesc* pInit); // 0x17d9c0 (pInit = the
-                                                           // per-type transition descriptor)
+    void FreeAll();                                                // 0x17d9a0
+    CFader* Add(i32 nFaderType, class CFxModeDesc* pInit);         // 0x17d9c0 (pInit = the
+    // per-type transition descriptor)
     RVA(0x0017e160, 0x8)
     i32 Flush() {
         return (reinterpret_cast<CFaderMgr*>(&m_sharedPtrColl))->Flush();
@@ -47,11 +47,11 @@ public:
     void Remove(CFader* pFader); // 0x17e170
     void DeleteAll();            // 0x17e1d0
 
-    i32 m_timerArgA;      // +0x00
-    i32 m_timerArgB;      // +0x04
-    i32 m_active;         // +0x08
-    i32 m_0c;             // +0x0c
-    CFaderArray m_arr;    // +0x10 element array subobject
+    i32 m_timerArgA;   // +0x00
+    i32 m_timerArgB;   // +0x04
+    i32 m_active;      // +0x08
+    i32 m_0c;          // +0x0c
+    CFaderArray m_arr; // +0x10 element array subobject
     // +0x24  the DirectDraw manager handed to every fader's Set2c (retail binds
     // 0 - see CFader::m_ptrColl). Ex the i32 "m_sharedSet2cArg".
     class CDDrawPtrCollections* m_sharedPtrColl;

@@ -2,7 +2,7 @@
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <Bute/ButeTree.h> // g_buteTree
+#include <Bute/ButeTree.h>        // g_buteTree
 
 // CToyPeek::~CToyPeek @0x11c40 - empty vtable-anchor dtor; folds the CUserLogic
 // teardown (the /GX leaf-dtor archetype).

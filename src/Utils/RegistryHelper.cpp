@@ -151,7 +151,14 @@ namespace Utils {
 
         if (m_open && szValueName) {
             cbData = 4;
-            if (RegQueryValueExA(m_valueKey, szValueName, 0, &dwType, reinterpret_cast<LPBYTE>(&dwData), &cbData) == 0
+            if (RegQueryValueExA(
+                    m_valueKey,
+                    szValueName,
+                    0,
+                    &dwType,
+                    reinterpret_cast<LPBYTE>(&dwData),
+                    &cbData
+                ) == 0
                 && dwType == 4 /*REG_DWORD*/) {
                 return dwData;
             }
@@ -215,7 +222,14 @@ namespace Utils {
         if (!pData) {
             return 0;
         }
-        return RegSetValueExA(m_valueKey, szValueName, 0, 3 /*REG_BINARY*/, static_cast<LPBYTE>(pData), dataSize)
+        return RegSetValueExA(
+                   m_valueKey,
+                   szValueName,
+                   0,
+                   3 /*REG_BINARY*/,
+                   static_cast<LPBYTE>(pData),
+                   dataSize
+               )
                == 0;
     }
 
@@ -230,7 +244,15 @@ namespace Utils {
         if (!szValueName) {
             return 0;
         }
-        return RegSetValueExA(m_valueKey, szValueName, 0, 4 /*REG_DWORD*/, reinterpret_cast<LPBYTE>(&value), 4) == 0;
+        return RegSetValueExA(
+                   m_valueKey,
+                   szValueName,
+                   0,
+                   4 /*REG_DWORD*/,
+                   reinterpret_cast<LPBYTE>(&value),
+                   4
+               )
+               == 0;
     }
 
     // -------------------------------------------------------------------------

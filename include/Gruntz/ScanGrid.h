@@ -63,8 +63,8 @@ struct CScanMgr {
     char _10[0xcc - 0x10];
     u32 m_cc; // +0xcc  idle threshold
     char _d0[0xf4 - 0xd0];
-    CScanGoal** m_f4; // +0xf4  goal table
-    i32 m_f8;         // +0xf8  goal count
+    CScanGoal** m_f4;          // +0xf4  goal table
+    i32 m_f8;                  // +0xf8  goal count
     i32 ScanRegion(CGrunt* g); // 0x32ce0
 };
 SIZE_UNKNOWN();

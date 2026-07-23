@@ -1,5 +1,5 @@
 #include <Gruntz/MenuSparkle.h> // the ONE canonical CMenuSparkle (the Grunt.h-world
-#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Io/FileMem.h>         // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/MenuSparkleSerial.h> // own exported globals (ex Globals.h)
 
 DATA(0x001ea3d4)

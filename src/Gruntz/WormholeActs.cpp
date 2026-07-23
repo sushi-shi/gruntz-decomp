@@ -1,7 +1,7 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
-#include <Gruntz/Wormhole.h>    // (kept: Wormhole.cpp shares this TU-header's registry note)
-#include <Gruntz/ExitTrigger.h> // the owning class (act dispatcher + CExitActEntry)
+#include <Gruntz/Wormhole.h>        // (kept: Wormhole.cpp shares this TU-header's registry note)
+#include <Gruntz/ExitTrigger.h>     // the owning class (act dispatcher + CExitActEntry)
 #include <Gruntz/UserLogic.h>
 
 #include <rva.h>
@@ -27,7 +27,8 @@ RVA(0x0003f290, 0x102)
 void CExitTrigger::FireActivation(i32 coord) {
     CExitActEntry* e = reinterpret_cast<CExitActEntry*>(g_exitTriggerActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        CExitActEntry* e2 = reinterpret_cast<CExitActEntry*>(g_exitTriggerActReg.ResolveEntry(coord));
+        CExitActEntry* e2 =
+            reinterpret_cast<CExitActEntry*>(g_exitTriggerActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }

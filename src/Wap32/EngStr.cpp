@@ -1,7 +1,7 @@
 #include <Ints.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // the real render "object" (world mgr; m_drawTarget)
-#include <DDrawMgr/DDrawSubMgrPages.h>  // the pages (m_frontPair)
-#include <DDrawMgr/DDrawSurfacePair.h>  // the front pair (m_surface)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the pages (m_frontPair)
+#include <DDrawMgr/DDrawSurfacePair.h> // the front pair (m_surface)
 #include <rva.h>
 #include <Wap32/EngStr.h>
 
@@ -26,7 +26,8 @@ void EngStr_DrawText(
     i32 a7,
     i32 a8
 ) {
-    CDDrawSurfacePair* pair = obj->m_drawTarget->m_frontPair; // the real chain (ex the Sub/Cfg facets)
+    CDDrawSurfacePair* pair =
+        obj->m_drawTarget->m_frontPair; // the real chain (ex the Sub/Cfg facets)
     if (pair == 0) {
         return;
     }

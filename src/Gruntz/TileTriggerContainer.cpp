@@ -698,7 +698,8 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, i32 op, i32 a3, i32 a4) {
         i32 cnt = m_base.GetCount();
         s->Write(&cnt, 4);
         for (node = TtcHead(m_base); node != 0; node = node->m_next) {
-            if (SerializeApplyA(s, 4, a3, a4, static_cast<CTileTriggerSwitchLogic*>(node->m_data)) == 0) {
+            if (SerializeApplyA(s, 4, a3, a4, static_cast<CTileTriggerSwitchLogic*>(node->m_data))
+                == 0) {
                 return 0;
             }
         }
@@ -788,8 +789,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, i32 op, i32 a3, i32 a4) {
 // 8-tag switch to a jmp[tbl+(tag-1)*4] table, the recompile to a range-check tree
 // (the two identical case bodies collapse).  See docs/patterns/switch-cmpje-tree-vs-jumptable.md
 RVA(0x00117630, 0x82)
-i32 __stdcall
-SerializeApplyA(CFileMemBase* s, i32 a2, i32 a3, i32 a4, CTileTriggerSwitchLogic* o) {
+i32 __stdcall SerializeApplyA(CFileMemBase* s, i32 a2, i32 a3, i32 a4, CTileTriggerSwitchLogic* o) {
     if (o == 0) {
         return 0;
     }
@@ -952,7 +952,8 @@ void* CTileTriggerContainer::LoadElement(CFileMemBase* reader, i32 kind, i32 a2,
                 // m_imageSets' CObArray payload -> the CTileImageSet collision record;
                 // retail pushes two zeros: GetCollisionAt(0, 0) (the 0-arg "TypeId"
                 // view mis-modeled this slot).
-                CTileImageSet* rec = static_cast<CTileImageSet*>(level->m_imageSets.GetData()[tile & 0xffff]);
+                CTileImageSet* rec =
+                    static_cast<CTileImageSet*>(level->m_imageSets.GetData()[tile & 0xffff]);
                 type = rec->GetCollisionAt(0, 0);
             }
             if (type == 0x67 || type == 0x68) {
@@ -1038,7 +1039,8 @@ CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 x, i32 y) {
             // tag 0x16 (== factory id 22) IS the CGiantRockLogic discriminant, so
             // the hit is a rock element - the ONE checked downcast lives here so
             // every caller is cast-free.
-            CGiantRockLogic* r = static_cast<CGiantRockLogic*>(FindInLists12(py + base, TRIGID_GIANT_ROCK_22));
+            CGiantRockLogic* r =
+                static_cast<CGiantRockLogic*>(FindInLists12(py + base, TRIGID_GIANT_ROCK_22));
             if (r != 0) {
                 return r;
             }

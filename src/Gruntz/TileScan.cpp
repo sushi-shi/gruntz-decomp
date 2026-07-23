@@ -12,7 +12,8 @@
 // <Gruntz/ScanGrid.h> (included above) - its shape belongs in the shared scan header.
 
 static inline i32 GridLookup(CScanGrid* g, i32 x, i32 y) {
-    if (static_cast<u32>(x) < static_cast<u32>(g->m_width) && static_cast<u32>(y) < static_cast<u32>(g->m_height)) {
+    if (static_cast<u32>(x) < static_cast<u32>(g->m_width)
+        && static_cast<u32>(y) < static_cast<u32>(g->m_height)) {
         return g->m_8[y][x].m_flags;
     }
     return 1;
@@ -56,7 +57,8 @@ i32 CTileScan::Scan(CGrunt* arg) {
                 continue;
             }
             CScanGrid* grid = m_c;
-            if (static_cast<u32>(b) >= static_cast<u32>(grid->m_width) || static_cast<u32>(a) >= static_cast<u32>(grid->m_height)) {
+            if (static_cast<u32>(b) >= static_cast<u32>(grid->m_width)
+                || static_cast<u32>(a) >= static_cast<u32>(grid->m_height)) {
                 continue;
             }
             i32 flags = GridLookup(grid, b, a);

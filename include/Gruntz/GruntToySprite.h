@@ -14,7 +14,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTTOYSPRITE;
     } // slot 2
-    CGruntToySprite(CGameObject* obj);   // 0x07f350 (ctor body in GruntToySprite.cpp)
+    CGruntToySprite(CGameObject* obj); // 0x07f350 (ctor body in GruntToySprite.cpp)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
@@ -31,8 +31,8 @@ public:
 
     CAniElement*
         m_geoId; // +0x40  geometry-id cache slot (indicator-sprite family; unset by this leaf's ApplyLookupSprite ctor)
-    i32 m_cellX;     // +0x54  grunt cell x
-    i32 m_cellY;     // +0x58  grunt cell y
+    i32 m_cellX; // +0x54  grunt cell x
+    i32 m_cellY; // +0x58  grunt cell y
     i32 m_lastLayer; // +0x5c  last-seen layer index (Update tracks layer change)
 };
 SIZE_UNKNOWN();
@@ -44,6 +44,6 @@ struct CToyActEntry {
 SIZE_UNKNOWN();
 
 #include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg (extern below)
-extern CIndicatorActReg g_toyActReg; // 0x00244d58
+extern CIndicatorActReg g_toyActReg;     // 0x00244d58
 
 #endif // GRUNTZ_CGRUNTTOYSPRITE_H

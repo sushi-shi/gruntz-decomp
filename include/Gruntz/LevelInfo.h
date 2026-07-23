@@ -4,7 +4,7 @@
 #include <Ints.h>
 #include <rva.h>
 
-class CDDrawChildGroup;      // <DDrawMgr/DDrawChildGroup.h> the walked object collection (m_coll)
+class CDDrawChildGroup; // <DDrawMgr/DDrawChildGroup.h> the walked object collection (m_coll)
 
 class CMapMgr;               // <Gruntz/MapMgr.h>   (== CMapMgr) the tile/path grid
 class CTriggerMgr;           // <Gruntz/TriggerMgr.h>

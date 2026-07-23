@@ -1,5 +1,5 @@
-#include <Rez/FrameClock.h> // g_engineFrameDelta/g_killCueClock (the clock band)
-#include <Gruntz/InGameText.h> // the canonical CInGameText : CUserLogic model
+#include <Rez/FrameClock.h>       // g_engineFrameDelta/g_killCueClock (the clock band)
+#include <Gruntz/InGameText.h>    // the canonical CInGameText : CUserLogic model
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
@@ -32,8 +32,10 @@ i32 CInGameText::Update() {
 
     i32 areaId;
     i32 subId;
-    CGrunt* found = reinterpret_cast<CGrunt*>(g_gameReg->m_cmdGrid
-                        ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1));
+    CGrunt* found = reinterpret_cast<CGrunt*>(
+        g_gameReg->m_cmdGrid
+            ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1)
+    );
     if (found == 0) {
         m_cachedSubId = -1;
         m_38->m_stateFlags &= ~1;
@@ -46,9 +48,12 @@ i32 CInGameText::Update() {
         return 0;
     }
 
-    char** node = reinterpret_cast<char**>(g_typeColl._zvec::IndexToPtr(reinterpret_cast<i32>(found->m_objAux->m_1c)));
-    CString* p =
-        reinterpret_cast<CString*>(g_typeColl.m_alloc); // m_alloc is the i32-typed slot base (the _zvec spelling)
+    char** node = reinterpret_cast<char**>(
+        g_typeColl._zvec::IndexToPtr(reinterpret_cast<i32>(found->m_objAux->m_1c))
+    );
+    CString* p = reinterpret_cast<CString*>(
+        g_typeColl.m_alloc
+    ); // m_alloc is the i32-typed slot base (the _zvec spelling)
     i32 n = g_typeColl.m_grown;
     while (n-- != 0) {
         if (p != 0) {

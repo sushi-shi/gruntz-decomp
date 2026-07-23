@@ -5,8 +5,8 @@
 #include <Ints.h>
 #include <rva.h>
 
-class CStatusBarMgr;      // the owning status-bar manager (Setup arg1 / m_2c)
-class CDDrawSurfaceMgr;   // the config host (Setup arg2 / m_24)
+class CStatusBarMgr;    // the owning status-bar manager (Setup arg1 / m_2c)
+class CDDrawSurfaceMgr; // the config host (Setup arg2 / m_24)
 
 struct SbiRect {
     i32 m_0; // +0x00 (rel +0x14)
@@ -67,18 +67,26 @@ public:
     // sites pass an INLINE TEMPORARY, `SbRect(cx - 0x5e, cy - 0x3c, ...)`. That temporary
     // is the whole trick: a named local makes cl materialize the struct and copy it; an
     // inline temporary makes it build the struct in place, which is what retail does.
-    virtual i32 Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10); // slot 2
-    virtual void Reset(); // slot 3 - teardown/reset hook (base body 0x10bfa0, ex DtorStatus)
+    virtual i32 Setup(
+        CStatusBarMgr* owner,
+        CDDrawSurfaceMgr* host,
+        i32 a3,
+        i32 a4,
+        SbiRect rc,
+        i32 a9,
+        i32 a10
+    );                          // slot 2
+    virtual void Reset();       // slot 3 - teardown/reset hook (base body 0x10bfa0, ex DtorStatus)
     virtual i32 Refresh(i32 a); // slot 4 (base body unreconstructed)
-    virtual i32 Render(); // slot 5 (base body unreconstructed)
+    virtual i32 Render();       // slot 5 (base body unreconstructed)
     // slots 6..9 (0x100530/0x100550/0x100570/0x100590): base defaults - each is
     // `xor eax,eax; ret 0xc` => i32-return, 3 stack args, `return 0`. No SBI leaf
     // overrides them. Out-of-line default bodies in SBI_RectOnly.cpp.
-    virtual i32 SbiSlot6(i32, i32, i32); // slot 6  0x100530
+    virtual i32 SbiSlot6(i32, i32, i32);      // slot 6  0x100530
     virtual i32 Click1c(i32 a, i32 b, i32 c); // slot 7 (+0x1c)  0x100550  click handler A
-    virtual i32 SbiSlot8(i32, i32, i32); // slot 8  0x100570
+    virtual i32 SbiSlot8(i32, i32, i32);      // slot 8  0x100570
     virtual i32 Click24(i32 a, i32 b, i32 c); // slot 9 (+0x24)  0x100590  click handler B
-    virtual void SetSubtype();           // slot 10
+    virtual void SetSubtype();                // slot 10
 
     // Semantic names recovered from the ex-CSbiRect reader view (the hit-test code
     // reads these same slots as enabled/kind/cmd/tab + the x/y span rect).
@@ -88,9 +96,9 @@ public:
     i32 m_tab;     // +0x10  Setup arg4: owning tab index
     // +0x14..0x20: a 4-int sub-block (a RECT-like record) that Setup fills through
     // a single base pointer (lea &m_14; [+0]/[+4]/[+8]/[+c]).
-    SbiRect m_rect14; // +0x14  Setup args 5..8
+    SbiRect m_rect14;             // +0x14  Setup args 5..8
     class CDDrawSurfaceMgr* m_24; // +0x24  Setup arg2: the config host (surface mgr)
-    i32 m_28;         // +0x28
+    i32 m_28;                     // +0x28
     class CStatusBarMgr* m_2c;    // +0x2c  Setup arg1: the owning status-bar mgr
 
     // Member teardown run by the inline destructor of the CHAIN-DTOR device below

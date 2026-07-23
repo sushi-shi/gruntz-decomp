@@ -216,12 +216,21 @@ i32 CSpriteRef::Build(i32 cache, void* shade, i32 kind) {
         default:
             return 0;
     }
-    m_teamColor1 = static_cast<u16>(((static_cast<u8>((static_cast<u8>(r1) >> static_cast<u8>(g_rDown))) << g_rUp)
-                         | (static_cast<u8>((static_cast<u8>(g1) >> static_cast<u8>(g_gDown))) << g_gUp) | static_cast<u8>((static_cast<u8>(b1) >> static_cast<u8>(g_bDown)))));
-    m_teamColor2 = static_cast<u16>(((static_cast<u8>((static_cast<u8>(g2) >> static_cast<u8>(g_gDown))) << g_gUp)
-                         | (static_cast<u8>((static_cast<u8>(r2) >> static_cast<u8>(g_rDown))) << g_rUp) | static_cast<u8>((static_cast<u8>(b2) >> static_cast<u8>(g_bDown)))));
-    m_teamColor3 = static_cast<u16>(((static_cast<u8>((static_cast<u8>(r3) >> static_cast<u8>(g_rDown))) << g_rUp)
-                         | (static_cast<u8>((static_cast<u8>(g3) >> static_cast<u8>(g_gDown))) << g_gUp) | static_cast<u8>((static_cast<u8>(b3) >> static_cast<u8>(g_bDown)))));
+    m_teamColor1 = static_cast<u16>(
+        ((static_cast<u8>((static_cast<u8>(r1) >> static_cast<u8>(g_rDown))) << g_rUp)
+         | (static_cast<u8>((static_cast<u8>(g1) >> static_cast<u8>(g_gDown))) << g_gUp)
+         | static_cast<u8>((static_cast<u8>(b1) >> static_cast<u8>(g_bDown))))
+    );
+    m_teamColor2 = static_cast<u16>(
+        ((static_cast<u8>((static_cast<u8>(g2) >> static_cast<u8>(g_gDown))) << g_gUp)
+         | (static_cast<u8>((static_cast<u8>(r2) >> static_cast<u8>(g_rDown))) << g_rUp)
+         | static_cast<u8>((static_cast<u8>(b2) >> static_cast<u8>(g_bDown))))
+    );
+    m_teamColor3 = static_cast<u16>(
+        ((static_cast<u8>((static_cast<u8>(r3) >> static_cast<u8>(g_rDown))) << g_rUp)
+         | (static_cast<u8>((static_cast<u8>(g3) >> static_cast<u8>(g_gDown))) << g_gUp)
+         | static_cast<u8>((static_cast<u8>(b3) >> static_cast<u8>(g_bDown))))
+    );
     return 1;
 }
 
@@ -236,7 +245,7 @@ void CSpriteRef::Free() {
 }
 
 DATA(0x0024c86c)
-i32 g_dlg64c86c = 0;       // DAT_0064c86c (the active save-sink; owner-TU definition)
+i32 g_dlg64c86c = 0; // DAT_0064c86c (the active save-sink; owner-TU definition)
 class CSaveGame;
 i32 DrawSaveGameMenu(HWND hDlg, i32 wParam, CSaveGame* cur); // 0xe3f40 (savegame)
 void FillSaveDialog(HWND hDlg, CSaveGame* sg);               // 0xe3c60 (savegame)

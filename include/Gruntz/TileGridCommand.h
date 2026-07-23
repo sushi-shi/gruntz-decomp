@@ -3,8 +3,8 @@
 
 #include <Ints.h>
 #include <Gruntz/GameRegistry.h>
-#include <Wwd/WwdFile.h>          // CDDrawWorkerHost - the canonical plane (the active layer)
-#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
+#include <Wwd/WwdFile.h>              // CDDrawWorkerHost - the canonical plane (the active layer)
+#include <Gruntz/SerialArchive.h>     // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>         // CGameObject (the created InGameText sprite)
 #include <rva.h>                      // SIZE_UNKNOWN class-metadata macros used below

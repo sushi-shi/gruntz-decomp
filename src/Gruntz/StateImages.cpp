@@ -5,8 +5,8 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 
 #include <rva.h>
-#include <Gruntz/BankMgr.h>  // CSymTab::LookupSet (the state's +0x2c/+0x30 asset source)
-#include <Gruntz/GameMode.h> // canonical CBootyState : CState + the shared CDDrawSurfaceMgr facet
+#include <Gruntz/BankMgr.h>    // CSymTab::LookupSet (the state's +0x2c/+0x30 asset source)
+#include <Gruntz/GameMode.h>   // canonical CBootyState : CState + the shared CDDrawSurfaceMgr facet
 #include <Gruntz/ImageState.h> // canonical CImageState (CState leaf, MENU image loader)
 
 RVA(0x000a09a0, 0x6a)

@@ -36,12 +36,22 @@ i32 CFileImageSurface::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 
             }
             break;
         case FMT_PCX:
-            if (!Decode(static_cast<CDDrawPtrCollections*>(surf), static_cast<CFileImageSrc*>(buf), static_cast<i32>(size), c)) {
+            if (!Decode(
+                    static_cast<CDDrawPtrCollections*>(surf),
+                    static_cast<CFileImageSrc*>(buf),
+                    static_cast<i32>(size),
+                    c
+                )) {
                 return 0;
             }
             break;
         case FMT_BMP:
-            if (!DecodeRun(static_cast<CDDrawPtrCollections*>(surf), buf, static_cast<i32>(size), c)) {
+            if (!DecodeRun(
+                    static_cast<CDDrawPtrCollections*>(surf),
+                    buf,
+                    static_cast<i32>(size),
+                    c
+                )) {
                 return 0;
             }
             break;
@@ -87,7 +97,8 @@ i32 CFileImageSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 fla
             return 0;
         }
     } else if (ext != 0 && _strcmpi(ext, ".PID") == 0) {
-        if (DecodePcxEx(info, path, reinterpret_cast<void*>(flags), reinterpret_cast<void*>(key)) == 0) {
+        if (DecodePcxEx(info, path, reinterpret_cast<void*>(flags), reinterpret_cast<void*>(key))
+            == 0) {
             return 0;
         }
         doFill = 0;
@@ -131,8 +142,13 @@ i32 CPoolItemA88::UpdateOverlay(
     u32 flags,
     void* fx
 ) {
-    return m_ddSurface
-        ->UpdateOverlay(static_cast<LPRECT>(srcRect), dest->m_ddSurface, static_cast<LPRECT>(destRect), flags, static_cast<LPDDOVERLAYFX>(fx));
+    return m_ddSurface->UpdateOverlay(
+        static_cast<LPRECT>(srcRect),
+        dest->m_ddSurface,
+        static_cast<LPRECT>(destRect),
+        flags,
+        static_cast<LPDDOVERLAYFX>(fx)
+    );
 }
 
 RVA(0x00148af0, 0x58)

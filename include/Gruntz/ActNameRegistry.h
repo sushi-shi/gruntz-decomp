@@ -11,7 +11,7 @@ struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/Type
 
 #include <rva.h>
 
-#include <Bute/ButeMgr.h>   // CButeTree::Find / Insert
+#include <Bute/ButeMgr.h> // CButeTree::Find / Insert
 #include <Gruntz/ActReg.h>
 
 DATA(0x002bf650)
@@ -23,9 +23,13 @@ static inline char* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
     char* slot;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
-        slot = reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
+        slot = reinterpret_cast<char*>(
+            (g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride)
+        );
     } else if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0))) {
-        slot = reinterpret_cast<char*>((g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride));
+        slot = reinterpret_cast<char*>(
+            (g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride)
+        );
     } else {
         void* item = g_projActCache;
         g_retAddrBreadcrumb = GetRetAddr();

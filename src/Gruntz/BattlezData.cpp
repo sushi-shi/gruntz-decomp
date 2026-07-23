@@ -522,4 +522,3 @@ i32 CBattlezData::Serialize(CFileMemBase* s, i32 op, i32 a2, i32 a3) {
     }
     return 1;
 }
-

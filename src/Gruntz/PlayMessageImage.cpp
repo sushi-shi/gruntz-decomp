@@ -74,7 +74,13 @@ i32 CPlay::Vslot23() {
     if (surf == 0) {
         return 0;
     }
-    (static_cast<CImage*>(frame))->RenderFrame(surf, reinterpret_cast<void*>((surf->m_width / 2)), reinterpret_cast<void*>((surf->m_height / 2)), 0);
+    (static_cast<CImage*>(frame))
+        ->RenderFrame(
+            surf,
+            reinterpret_cast<void*>((surf->m_width / 2)),
+            reinterpret_cast<void*>((surf->m_height / 2)),
+            0
+        );
     m_world->m_drawTarget->m_frontPair->m_surface->Flip(static_cast<CDDSurface*>(0));
     return 1;
 }

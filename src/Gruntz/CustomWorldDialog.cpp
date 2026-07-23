@@ -1,7 +1,7 @@
 #include <Mfc.h>
 #include <Gruntz/PortalPath.h> // g_nameFmt (ex .cpp extern)
-#undef _AFX_ENABLE_INLINES // skip afxwin1.inl (MFC4.2 implicit-int inlines clang rejects)
-#include <afxwin.h>        // real MFC CCmdTarget::Begin/EndWaitCursor (via m_pCurrentWinApp)
+#undef _AFX_ENABLE_INLINES     // skip afxwin1.inl (MFC4.2 implicit-int inlines clang rejects)
+#include <afxwin.h>            // real MFC CCmdTarget::Begin/EndWaitCursor (via m_pCurrentWinApp)
 #include <Gruntz/GameRegMfcPtr.h>
 
 #include <Gruntz/CustomWorldInfoDlg.h> // WwdWorldHolder/WwdLevelInfoSrc (IsValidWwd receiver)
@@ -11,11 +11,11 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <direct.h> // _getcwd (BuildCustomWwdPath)
-#include <io.h>     // _finddata_t / _findfirst / _findnext (FillCustomLevelList)
-#include <stdio.h>  // sprintf
-#include <stdlib.h> // atoi
-#include <string.h> // strstr / inline strcpy-strlen
+#include <direct.h>                   // _getcwd (BuildCustomWwdPath)
+#include <io.h>                       // _finddata_t / _findfirst / _findnext (FillCustomLevelList)
+#include <stdio.h>                    // sprintf
+#include <stdlib.h>                   // atoi
+#include <string.h>                   // strstr / inline strcpy-strlen
 #include <Gruntz/CustomWorldDialog.h> // own exported globals (ex Globals.h)
 
 INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);

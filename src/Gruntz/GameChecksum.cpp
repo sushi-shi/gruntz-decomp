@@ -1,7 +1,7 @@
 #include <Ints.h>
 #include <rva.h>
-#include <stdlib.h>       // rand (0x11fee0), the trailing signature component
-#include <Gruntz/Grunt.h> // the real CGrunt roster entry + its CGameObject* m_10
+#include <stdlib.h>            // rand (0x11fee0), the trailing signature component
+#include <Gruntz/Grunt.h>      // the real CGrunt roster entry + its CGameObject* m_10
 #include <Gruntz/Multi.h>      // CMulti (m_session pointee; its CState base m_4)
 #include <Gruntz/GruntzMgr.h>  // CGruntzMgr (m_4 pointee; m_cmdGrid @+0x68)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr (m_grid @+0x1c, the 4x15 roster)

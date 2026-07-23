@@ -77,7 +77,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
 
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
-#include <Gruntz/Play.h> // ChannelSlots_FindFree (ex .cpp extern)
+#include <Gruntz/Play.h>          // ChannelSlots_FindFree (ex .cpp extern)
 
 // g_creationPointActReg (0x00244700): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
@@ -131,9 +131,11 @@ void CGruntCreationPoint::InitActReg() {
 
 RVA(0x0003e960, 0x102)
 void CGruntCreationPoint::FireActivation(i32 coord) {
-    CreationPointHandler* e = reinterpret_cast<CreationPointHandler*>(g_creationPointActReg.ResolveEntry(coord));
+    CreationPointHandler* e =
+        reinterpret_cast<CreationPointHandler*>(g_creationPointActReg.ResolveEntry(coord));
     if (*e != 0) {
-        CreationPointHandler* e2 = reinterpret_cast<CreationPointHandler*>(g_creationPointActReg.ResolveEntry(coord));
+        CreationPointHandler* e2 =
+            reinterpret_cast<CreationPointHandler*>(g_creationPointActReg.ResolveEntry(coord));
         (this->*(*e2))();
     }
 }
@@ -175,4 +177,3 @@ i32 CGruntCreationPoint::AdvanceAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     return 0;
 }
-

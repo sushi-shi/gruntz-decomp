@@ -10,10 +10,10 @@ class DSoundCloneInst; // the pooled cue player (ex DSoundCloneInst; Dsndmgr/Dir
 
 class CAniRenderCtx {
 public:
-    void ClampFirst(); // 0x15cc50  __thiscall on the context (I obj)
-    void ClampLast();  // 0x15cc90  __thiscall on the context (I obj)
-    char m_pad00[0x08];       // +0x00..0x07
-    i32 m_flags;              // +0x08  flags (bit 0x2000000 tested)
+    void ClampFirst();  // 0x15cc50  __thiscall on the context (I obj)
+    void ClampLast();   // 0x15cc90  __thiscall on the context (I obj)
+    char m_pad00[0x08]; // +0x00..0x07
+    i32 m_flags;        // +0x08  flags (bit 0x2000000 tested)
     char m_pad0c[0x10 - 0x0c];
     i32 m_posModeX; // +0x10  pos-mode X
     i32 m_posModeY; // +0x14  pos-mode Y
@@ -26,7 +26,7 @@ public:
     i32 m_screenY;              // +0x60  screen Y
     char m_pad64[0x190 - 0x64]; // +0x64..0x18f
     i32 m_frameCursor;          // +0x190  sequence frame cursor
-    CDDrawWorker* m_frameSeq;        // +0x194  active frame sequence
+    CDDrawWorker* m_frameSeq;   // +0x194  active frame sequence
     i32 m_curFrame;             // +0x198  resolved current frame pointer
 };
 SIZE_UNKNOWN();

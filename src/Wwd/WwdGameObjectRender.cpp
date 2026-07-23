@@ -160,7 +160,7 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 // no-op). docs/patterns/zero-register-pinning.md / tail-merge layout.
 RVA(0x001662a0, 0x1fa)
 void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
-    i32 rc[4];                      // one reused src+dst rect buffer
+    i32 rc[4];                              // one reused src+dst rect buffer
     if (m_dirtyArmed != -1 && m_d8 != -1) { // both armed
         i32 dx = abs(m_lastX - m_b8) + 1;
         i32 dy = abs(m_lastY - m_bc) + 1;
@@ -263,12 +263,12 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
 // emits no frame.  docs/patterns/rezalloc-placement-new-no-eh-frame.md.
 // ===========================================================================
 RVA(0x00166640, 0x13b)
-CWwdGameObject*
-CWwdGameObject::CreateObject(int a1, int a2, int a3, int a4, int a5, int a6) {
+CWwdGameObject* CWwdGameObject::CreateObject(int a1, int a2, int a3, int a4, int a5, int a6) {
     char* obj = static_cast<char*>(RezAlloc(0x1dc));
     CWwdGameObjectA* result;
     if (obj != 0) {
-        int root = m_ownerCtx; // the CLoadable owner int handle (== this->m_ownerCtx, the CDDrawSurfaceMgr)
+        int root =
+            m_ownerCtx; // the CLoadable owner int handle (== this->m_ownerCtx, the CDDrawSurfaceMgr)
         new (obj) CWwdGameObjBaseCtor(root, a1, a6);
         result = reinterpret_cast<CWwdGameObjectA*>(obj);
         // the embedded +0x1a0 CAniAdvanceCursor(owner=root, field04=a1, field08=a6): retail
@@ -371,7 +371,8 @@ i32 CWwdGameObject::RemoveChild(CGameObject* child) {
 RVA(0x00166880, 0x29)
 i32 CWwdGameObject::WalkChildWorkers() {
     i32 count = 0;
-    for (CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition()); n != 0;) {
+    for (CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition());
+         n != 0;) {
         CDDrawGroupNode* cur = n;
         n = n->m_next;
         CGameObject* o = cur->m_obj;

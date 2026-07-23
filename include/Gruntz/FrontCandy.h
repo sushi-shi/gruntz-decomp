@@ -14,11 +14,12 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_FRONTCANDY;
     }
+
 public:
     CFrontCandy(CGameObject* obj); // 0x0abfa0
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
-                               // logic-worker pump @0xaa1e0, pushes 0x54)
+    // logic-worker pump @0xaa1e0, pushes 0x54)
 };
 SIZE_UNKNOWN();
 

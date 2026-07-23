@@ -43,7 +43,7 @@
 // Both are documented codegen walls (docs/patterns/gx-frame-outofline-ctor.md);
 // re-attack in the final sweep.
 #include <rva.h>
-#include <Gruntz/TriggerMgr.h> // m_cmdGrid's real class (m_phase/m_3ec)
+#include <Gruntz/TriggerMgr.h>    // m_cmdGrid's real class (m_phase/m_3ec)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 
@@ -231,7 +231,9 @@ void CStatusBarMgr::BuildGameMenu() {
             return;
         }
         m_tabLists[5].AddTail(it);
-        m_modeNotify = static_cast<CSBI_ImageSet*>(it); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
+        m_modeNotify = static_cast<CSBI_ImageSet*>(
+            it
+        ); // RESOLVED: retail's push-0x34 agrees (base==target, 12x0x34/14x0x3c) - the field holds BOTH classes over time; the +0x30 Notify only fires in ImageSet-holding states
         if (g_gameReg->m_134 != 1) {
             it->m_enabled = 0;
             m_modeState = 7;
@@ -243,7 +245,8 @@ void CStatusBarMgr::BuildGameMenu() {
 
     // ---- briefing variant: a single MISSIONSTATUS widget ----
     it = new CSBI_ImageSet;
-    i32 variant = (g_gameReg->m_cmdGrid->m_phase == 1) ? 1 : 2; // MISSIONSTATUS variant = the round phase
+    i32 variant =
+        (g_gameReg->m_cmdGrid->m_phase == 1) ? 1 : 2; // MISSIONSTATUS variant = the round phase
     r.left = bx;
     r.top = by + 0xd7;
     r.right = bx + 0x9f;

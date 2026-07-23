@@ -2,10 +2,10 @@
 #include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/SpotLight.h>         // CSpotLight - the spawned spotlight's bound logic leaf
-#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialArchive.h>     // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/LightFxMgr.h>    // CLightFxMgr (g_gameReg->m_logicPump->m_tables[]) - Method_b4cb0
-#include <Gruntz/GruntzMgr.h> // complete CGruntzMgr
+#include <Gruntz/GruntzMgr.h>     // complete CGruntzMgr
 #include <rva.h>
 
 VTBL(CUFO, 0x001e72b4); // vtable_names -> code (RTTI game class)
@@ -96,8 +96,7 @@ i32 CPathHazard::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, i32 d) {
     if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
         return 0;
     }
-    if (Chain(static_cast<CFileMemBase*>(stream), tag, c, reinterpret_cast<CGameObject*>(d))
-        == 0) {
+    if (Chain(static_cast<CFileMemBase*>(stream), tag, c, reinterpret_cast<CGameObject*>(d)) == 0) {
         return 0;
     }
     SerQuadPair(s, tag, B + 0x108);

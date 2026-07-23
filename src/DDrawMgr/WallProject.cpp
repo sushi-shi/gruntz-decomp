@@ -66,7 +66,12 @@ i32 ProjectWallQuad(
     }
 
     if (ImagePolyClipRect(g_rasterVtxB, 4, p8, p8, p9, p10) != 0) {
-        FillPolygon(g_rasterVtxB, g_rasterVtxCount, reinterpret_cast<CDDSurface*>(p0), static_cast<i16>(p6));
+        FillPolygon(
+            g_rasterVtxB,
+            g_rasterVtxCount,
+            reinterpret_cast<CDDSurface*>(p0),
+            static_cast<i16>(p6)
+        );
     }
     return 1;
 }

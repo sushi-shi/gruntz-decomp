@@ -23,7 +23,7 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE; // 0x10d8c0 (vtable slot 4)
     static void RegisterActs();                   // 0x10da20
     i32 AdvanceAnim();                            // 0x10dc20
-                               //         the state pump's `new CWarpStonePad` = new(0x54))
+    //         the state pump's `new CWarpStonePad` = new(0x54))
 };
 SIZE(0x54);
 

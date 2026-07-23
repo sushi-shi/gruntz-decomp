@@ -79,8 +79,10 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             count++;
         }
     }
-    if (count <= 1 && m_phase == 2 && (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_toggleActive == 0
-        && (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_toggleHandle == 0 && m_pendingFx == 0) {
+    if (count <= 1 && m_phase == 2
+        && (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_toggleActive == 0
+        && (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_toggleHandle == 0
+        && m_pendingFx == 0) {
         if (static_cast<i64>(g_frameTime) - m_timerBase >= m_timerWindow) {
             (static_cast<CPlay*>(g_gameReg->m_curState))->EnterOverlayDrag(0);
         }
@@ -135,11 +137,14 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                         if (slot && slot->m_joined && !slot->m_doneFlag && !slot->m_clearedRound) {
                             slot->m_clearedRound = 1;
                             CGameObject* out = 0;
-                            if (g_gameReg->m_world->m_childGroup->m_map48
-                                    .Lookup(reinterpret_cast<void*>(slot->m_00c), reinterpret_cast<void*&>(out))
+                            if (g_gameReg->m_world->m_childGroup->m_map48.Lookup(
+                                    reinterpret_cast<void*>(slot->m_00c),
+                                    reinterpret_cast<void*&>(out)
+                                )
                                 && out) {
                                 if (out->m_7c->m_logic) {
-                                    (static_cast<CGrunt*>(out->m_7c->m_logic))->ResolveDeathAnimation();
+                                    (static_cast<CGrunt*>(out->m_7c->m_logic))
+                                        ->ResolveDeathAnimation();
                                 }
                             }
                             ClearRowAndRefresh(i);
@@ -148,10 +153,13 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                         if (g_curPlayer == i) {
                             g_gameReg->m_cmdGrid->LoadFinishLevelSprite(2);
                         }
-                        if (lastSlot && lastSlot->m_joined && !lastSlot->m_doneFlag && !lastSlot->m_clearedRound) {
+                        if (lastSlot && lastSlot->m_joined && !lastSlot->m_doneFlag
+                            && !lastSlot->m_clearedRound) {
                             CGameObject* out = 0;
-                            if (g_gameReg->m_world->m_childGroup->m_map48
-                                    .Lookup(reinterpret_cast<void*>(lastSlot->m_00c), reinterpret_cast<void*&>(out))
+                            if (g_gameReg->m_world->m_childGroup->m_map48.Lookup(
+                                    reinterpret_cast<void*>(lastSlot->m_00c),
+                                    reinterpret_cast<void*&>(out)
+                                )
                                 && out) {
                                 if (out->m_7c->m_logic) {
                                     (static_cast<CGrunt*>(out->m_7c->m_logic))->ResolveAnimation();

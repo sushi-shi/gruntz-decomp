@@ -12,12 +12,12 @@
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (Read @+0x2c / Write @+0x30)
 #include <Bute/ButeMgr.h>         // CButeMgr (g_buteMgr GetIntDef), CButeTree (g_buteTree)
-#include <Rez/FrameClock.h> // g_frameTime/g_engineFrameDelta (frame-clock band)
+#include <Rez/FrameClock.h>       // g_frameTime/g_engineFrameDelta (frame-clock band)
 
 #include <Gruntz/AniElement.h> // CAniElement + CAniRecordView (the SetAnimEx idiom)
 
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // CDDrawSubMgrLeaf (m_world->m_animRegistry->m_10 cue lookup)
-#include <Gruntz/Play.h> // ex Globals.h
+#include <Gruntz/Play.h>              // ex Globals.h
 
 struct CHaznEntry; // an entry: first dword is the registered handler
 

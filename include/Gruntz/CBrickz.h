@@ -9,7 +9,7 @@
 class CBrickz : public CUserLogic, public CWapX {
 public:
 public:
-    CBrickz(CGameObject* obj);   // 0x10e800 (1-arg ctor)
+    CBrickz(CGameObject* obj); // 0x10e800 (1-arg ctor)
     // NO user-declared dtor: retail 0x113c0 is COMPILER-GENERATED (implicit; the
     // vtable-owner-probe proof is in <Gruntz/MapLogic.h>; RVA_COMPGEN pin in
     // TileLogicPump.cpp).
@@ -27,9 +27,9 @@ public:
     // act clusters were shifted one class down. RTTI: CBrickz[4] override -> 0x0012b2,
     // and 0x0012b2 -> jmp 0x10ea80 (sema xref).
     virtual void FireActivation(i32 id) OVERRIDE; // 0x10ea80
-    static void InitActReg();   // 0x10ea00 (constructs g_brickzActReg @0x64e7c0)
-    static void RegisterActs(); // 0x10ebe0 (binds the "A" activation handler)
-    i32 Trigger();              // 0x10ede0 (the activation handler; declared-only, used as a PMF)
+    static void InitActReg();                     // 0x10ea00 (constructs g_brickzActReg @0x64e7c0)
+    static void RegisterActs();                   // 0x10ebe0 (binds the "A" activation handler)
+    i32 Trigger(); // 0x10ede0 (the activation handler; declared-only, used as a PMF)
     // Declared-only (body 0x810f0, Brickz.cpp): load the puzzle's tile attributes.
     // Added so Play.cpp can call it on the real class instead of on the fabricated `Eng`
     // conflation (the call reloc-masks either way, but only this spelling binds to the

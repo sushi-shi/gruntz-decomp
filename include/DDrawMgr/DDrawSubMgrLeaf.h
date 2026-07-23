@@ -22,7 +22,7 @@ public:
     // overriding CLoadable's, then slot 8 GetClassId INHERITED from CLoadable.
     virtual i32 IsLoaded() OVERRIDE; // [5] 0x1577a0 (overrides CLoadable::IsLoaded)
     virtual i32 IsReady() OVERRIDE;  // [6] 0x152640 (own return-1, overrides CWapObj::IsReady)
-    virtual void Unload() OVERRIDE;  // [7] 0x152650 (overrides CLoadable::Unload; tail-jmps FreeAll)
+    virtual void Unload() OVERRIDE; // [7] 0x152650 (overrides CLoadable::Unload; tail-jmps FreeAll)
     // slot 8 GetClassId INHERITED from CLoadable (@0x154a00 -> CLASSID_NONE); not
     // redeclared (the old "GetTypeId" was a phantom own-decl of that shared body).
 

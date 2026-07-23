@@ -25,9 +25,9 @@ public:
     // tail-chaining CStatusBarItem::SerializeFields. 4 args, proven by `ret 0x10` + the
     // body's `mov esi,[esp+0x9c]` archive read / `[esp+0xa4]` kind switch (case 4/7).
     virtual i32 SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe9a30
-    virtual void Reset() OVERRIDE; // slot 3 - 0xe9800 (out-of-line)
+    virtual void Reset() OVERRIDE;       // slot 3 - 0xe9800 (out-of-line)
     virtual i32 Refresh(i32 a) OVERRIDE; // slot 4 - 0xe9820 (rebuild the +0x58 draw gate)
-    virtual i32 Render() OVERRIDE; // slot 5 - 0xe99c0 (draw the two side frames)
+    virtual i32 Render() OVERRIDE;       // slot 5 - 0xe99c0 (draw the two side frames)
 
     // 0xe9600: the side tab's own configure, run on the freshly-`new`ed child by
     // CStatusBarMgr::BuildSideTabs. `parent` is the mgr - the body reads parent->m_10 /
@@ -52,7 +52,7 @@ public:
         i32 onLeft
     ); // 0xe9600
 
-    i32 BuildHandle();       // 0xe9850  sibling: build the +0x58 draw gate
+    i32 BuildHandle(); // 0xe9850  sibling: build the +0x58 draw gate
 
     // base region m_0..0x2f comes from CStatusBarItem (incl. m_2c, the owner slot that
     // inherited slot-2 Setup fills - BuildHandle reads it as the empty-slot fallback
@@ -61,12 +61,12 @@ public:
     CImage* m_bottomFrame; // +0x34  bottom frame handle (resolved glyph)
     i32 m_sampledValue;    // +0x38  tracked sampled value
     i32 m_rowIndex;        // +0x3c  unit-table row index (stride 15)
-    i32 m_colIndex;              // +0x40  unit-table column index
-    i32 m_sampleMode;              // +0x44  sample mode (0 idle / 2 ability / 3 badge / 1 health)
-    i32 m_drawX;              // +0x48  draw x
-    i32 m_drawY;              // +0x4c  draw y
-    i32 m_bottomFrameDy;              // +0x50  bottom-frame y delta
-    i32 m_onLeft; // +0x54  side latch (BuildStatzTabStatusBar's `onLeft`); was an unnamed pad
+    i32 m_colIndex;        // +0x40  unit-table column index
+    i32 m_sampleMode;      // +0x44  sample mode (0 idle / 2 ability / 3 badge / 1 health)
+    i32 m_drawX;           // +0x48  draw x
+    i32 m_drawY;           // +0x4c  draw y
+    i32 m_bottomFrameDy;   // +0x50  bottom-frame y delta
+    i32 m_onLeft;   // +0x54  side latch (BuildStatzTabStatusBar's `onLeft`); was an unnamed pad
     i32 m_drawGate; // +0x58  draw gate (0 => not built)
 };
 SIZE_UNKNOWN();

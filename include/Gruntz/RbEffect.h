@@ -19,7 +19,7 @@ struct RbEffect {
     CWwdGameObjectA* m_10; // +0x10  target object
     char p14[0x38 - 0x14];
     CWwdGameObjectA* m_38; // +0x38  effect sprite (a CreateSprite product - the A kind)
-    i32 Update();      // 0x476b0
+    i32 Update();          // 0x476b0
 };
 SIZE_UNKNOWN();
 

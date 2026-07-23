@@ -143,7 +143,7 @@ public:
 };
 SIZE(0xb0);
 
-#include <Gruntz/ActReg.h> // CActReg (extern below)
+#include <Gruntz/ActReg.h>    // CActReg (extern below)
 extern CActReg g_actionTable; // 0x00244610
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the

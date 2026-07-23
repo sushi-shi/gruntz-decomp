@@ -1,8 +1,8 @@
 #include <Gruntz/CursorSnapSprite.h>
-#include <Bute/ButeTree.h>          // g_buteTree
+#include <Bute/ButeTree.h> // g_buteTree
 
 #include <Gruntz/AnimWorker.h> // shared Owner / Worker views + Worker_DefaultPump (CursorSnapWorkerPump)
-#include <Gruntz/UserLogic.h>  // the dispatched CUserLogic slot layout
+#include <Gruntz/UserLogic.h> // the dispatched CUserLogic slot layout
 
 RVA(0x00011880, 0x47)
 i32 CCursorSnapSprite::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {

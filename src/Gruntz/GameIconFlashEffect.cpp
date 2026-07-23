@@ -9,7 +9,8 @@ i32 GameIconFlashEffect(CGameObject* obj) {
     i32 state = reinterpret_cast<i32>(w->m_1c);
     if (state != 0) {
         if (state == 5) {
-            CAniAdvanceCursor* a = &static_cast<CWwdGameObjectA*>(obj)->m_1a0; // the handed obj IS the A-kind sprite
+            CAniAdvanceCursor* a =
+                &static_cast<CWwdGameObjectA*>(obj)->m_1a0; // the handed obj IS the A-kind sprite
             a->Advance(g_engineFrameDelta);
             if (a->m_28 != 0 && a->m_20 == 0) {
                 obj->m_flags |= 0x10000;

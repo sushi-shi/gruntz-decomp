@@ -7,7 +7,7 @@
 
 #include <Dsndmgr/SfManager.h> // real SFMANL101API device + the SFManager factory
 
-#include <Gruntz/SoundFontPath.h> // g_sfDeviceId (ex .cpp extern)
+#include <Gruntz/SoundFontPath.h>  // g_sfDeviceId (ex .cpp extern)
 #include <Gruntz/SFSelectDevice.h> // own exported globals (ex Globals.h)
 DATA(0x00213dff)
 char g_id0_613dff = 0;
@@ -65,7 +65,8 @@ i32 SFManager_SelectBestDevice() {
     if (g_sfDll == 0) {
         return 0;
     }
-    SfManagerFactory* fn = reinterpret_cast<SfManagerFactory*>(GetProcAddress(g_sfDll, "SFManager"));
+    SfManagerFactory* fn =
+        reinterpret_cast<SfManagerFactory*>(GetProcAddress(g_sfDll, "SFManager"));
     g_factory_64e0ac = fn;
     if (fn == 0) {
         FreeLibrary(g_sfDll);

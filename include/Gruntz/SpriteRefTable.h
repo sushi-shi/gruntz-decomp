@@ -25,7 +25,7 @@ SIZE_UNKNOWN();
 // from the sprite LOADER side (it is NOT CAniRecordBase2). Kept minimal until then.
 struct CLookupSprite {
     char m_pad00[0xc];
-    u8* m_frameData;   // +0x0c  the frame's raw RLE/pixel payload
+    u8* m_frameData; // +0x0c  the frame's raw RLE/pixel payload
 };
 SIZE_UNKNOWN();
 struct CLookupResult {

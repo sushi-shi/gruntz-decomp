@@ -26,12 +26,14 @@ void* operator new(u32 n); // 0x1b9b46
         ar->Read(&id, 4);                                                                          \
         obj = 0;                                                                                   \
         void* r;                                                                                   \
-        if (dir->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(id), obj) != 0 && obj != 0) {                  \
-            r = ((reinterpret_cast<CGameObject*>(obj))->GetClassId() == CLASSID_SERIALREF) ? obj : 0;            \
+        if (dir->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(id), obj) != 0               \
+            && obj != 0) {                                                                         \
+            r = ((reinterpret_cast<CGameObject*>(obj))->GetClassId() == CLASSID_SERIALREF) ? obj   \
+                                                                                           : 0;    \
         } else {                                                                                   \
             r = 0;                                                                                 \
         }                                                                                          \
-        *reinterpret_cast<void**>(p + (off)) = r;                                                                  \
+        *reinterpret_cast<void**>(p + (off)) = r;                                                  \
         if (r == 0 && id != 0) {                                                                   \
             return 0;                                                                              \
         }                                                                                          \
@@ -40,7 +42,7 @@ void* operator new(u32 n); // 0x1b9b46
     do {                                                                                           \
         ++g_serialCounter;                                                                         \
         ar->Read(buf, 0x80);                                                                       \
-        *reinterpret_cast<CString*>(p + (off)) = buf;                                                              \
+        *reinterpret_cast<CString*>(p + (off)) = buf;                                              \
     } while (0)
 #define NAMEREF(off)                                                                               \
     do {                                                                                           \
@@ -49,9 +51,9 @@ void* operator new(u32 n); // 0x1b9b46
         if (strlen(buf) != 0) {                                                                    \
             obj = 0;                                                                               \
             dir->m_animRegistry->m_10.Lookup(buf, obj);                                            \
-            *reinterpret_cast<void**>(p + (off)) = obj;                                                            \
+            *reinterpret_cast<void**>(p + (off)) = obj;                                            \
         } else {                                                                                   \
-            *reinterpret_cast<void**>(p + (off)) = 0;                                                              \
+            *reinterpret_cast<void**>(p + (off)) = 0;                                              \
         }                                                                                          \
     } while (0)
 
@@ -282,7 +284,10 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     }
 
     // Drain + free the m_338 list.
-    while (*reinterpret_cast<void**>((p + 0x344)) != 0 && *reinterpret_cast<i32*>((reinterpret_cast<char*>(*reinterpret_cast<void**>((p + 0x33c))) + 8)) != 0) {
+    while (*reinterpret_cast<void**>((p + 0x344)) != 0
+           && *reinterpret_cast<i32*>(
+                  (reinterpret_cast<char*>(*reinterpret_cast<void**>((p + 0x33c))) + 8)
+              ) != 0) {
         void* rem = (reinterpret_cast<CPtrList*>((p + 0x338)))->RemoveHead();
         RezFree(rem);
     }

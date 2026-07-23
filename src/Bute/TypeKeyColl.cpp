@@ -15,11 +15,11 @@
 #undef isdigit
 #pragma function(memcpy)
 
-#include <Gruntz/StringNode.h>    // the type-name teardown slot
-#include <Gruntz/TypeKeyColl.h>   // CZErrSink/CZArrayRoot/CZArray2D/zDArray (one shape)
+#include <Gruntz/StringNode.h>     // the type-name teardown slot
+#include <Gruntz/TypeKeyColl.h>    // CZErrSink/CZArrayRoot/CZArray2D/zDArray (one shape)
 #include <Gruntz/TypeKeyCollStr.h> // s_out_of_memory (owner-only decl header)
-#include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
-#include <Gruntz/XferArchive.h>   // canonical CXferArchive/CXferField (ProjTypeXfer arg)
+#include <Gruntz/TypeNameEntry.h>  // the shared type-name-registry record (CString m_name)
+#include <Gruntz/XferArchive.h>    // canonical CXferArchive/CXferField (ProjTypeXfer arg)
 #include <Wap32/ZVec.h>
 
 DATA(0x002bf454)
@@ -37,7 +37,7 @@ DATA_SYMBOL(0x002bf650, 0x0, ?g_typeColl@@3VzDArray@@A)
 
 VTBL(zBitVec, 0x001f04c8);
 VTBL(zDArray, 0x001f04d0); // leaf ??_7CTypeKeyColl @0x5f04d0 (1-slot dtor vtable)
-VTBL(_zdvec, 0x001f04d4); // ~_zdvec-entry vtable (0x5f04d4)
+VTBL(_zdvec, 0x001f04d4);  // ~_zdvec-entry vtable (0x5f04d4)
 
 VTBL(CButeNodeEntry, 0x001f04d8); // the entry member's own (base) vtable
 DATA(0x002bf468)
@@ -222,8 +222,11 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
             }
             m_capacity = that.m_capacity;
         }
-        const u32* src = (static_cast<u32>(that.m_capacity) > 0x20) ? that.m_words : reinterpret_cast<const u32*>(&that.m_words);
-        u32* dst = (static_cast<u32>(m_capacity) > 0x20) ? m_words : reinterpret_cast<u32*>(&m_words);
+        const u32* src = (static_cast<u32>(that.m_capacity) > 0x20)
+                             ? that.m_words
+                             : reinterpret_cast<const u32*>(&that.m_words);
+        u32* dst =
+            (static_cast<u32>(m_capacity) > 0x20) ? m_words : reinterpret_cast<u32*>(&m_words);
         memcpy(dst, src, static_cast<u32>(m_capacity) >> 3);
     }
     return *this;
@@ -318,7 +321,8 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(g_containerName
             ++q;
         }
         {
-            u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : reinterpret_cast<u32*>(&m_words);
+            u32* band =
+                (static_cast<u32>(m_capacity) > 0x20) ? m_words : reinterpret_cast<u32*>(&m_words);
             band[static_cast<u32>(v) >> 5] |= 1u << (v & 0x1f);
         }
         if (*q == 0) {
@@ -348,7 +352,9 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(g_containerName
                 v2 = t;
             }
             for (i32 b = v + 1; b <= v2; ++b) {
-                u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : reinterpret_cast<u32*>(&m_words);
+                u32* band = (static_cast<u32>(m_capacity) > 0x20)
+                                ? m_words
+                                : reinterpret_cast<u32*>(&m_words);
                 band[static_cast<u32>(b) >> 5] |= 1u << (b & 0x1f);
             }
             while (*q != 0 && !isdigit(*q)) {
@@ -418,7 +424,8 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(g_containerName) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, reinterpret_cast<i32>(cache), 0xc);
     } else {
-        u32* base = (static_cast<u32>(m_capacity) > 0x20) ? m_words : reinterpret_cast<u32*>(&m_words);
+        u32* base =
+            (static_cast<u32>(m_capacity) > 0x20) ? m_words : reinterpret_cast<u32*>(&m_words);
         u32* slot = base + (static_cast<u32>(idx) >> 5);
         *slot |= 1u << (idx & 0x1f);
     }
@@ -647,8 +654,7 @@ void* CButeTree::Insert(const char* key, void* value) {
 }
 
 RVA(0x0016dda0, 0x3c)
-zDArray::zDArray(i32 stride, i32 lo, i32 hi, void* scratch)
-    : _zdvec(stride, lo, hi, scratch) {
+zDArray::zDArray(i32 stride, i32 lo, i32 hi, void* scratch) : _zdvec(stride, lo, hi, scratch) {
     m_alloc = m_base;          // +0x1c  the fresh band base (was the m_cursor view)
     m_grown = m_hi - m_lo + 1; // +0x20  its slot count (was the m_count view)
 }
@@ -675,7 +681,7 @@ zDArray::zDArray(i32 stride, i32 lo, i32 hi, void* scratch)
 // load sequence. Not source-steerable; deferred to the final sweep.
 RVA(0x0016de30, 0xe7)
 _zdvec::_zdvec(i32 stride, i32 lo, i32 hi, void* scratch)
-    : _zvec(&g_zArrayTag) { // -> the zErrHandling base ctor @0x16d9c0
+    : _zvec(&g_zArrayTag) {                // -> the zErrHandling base ctor @0x16d9c0
     m_spare = static_cast<char*>(scratch); // +0x14  scratch element (was the m_buf2 view)
     m_lo = lo;
     m_hi = hi;
@@ -683,7 +689,8 @@ _zdvec::_zdvec(i32 stride, i32 lo, i32 hi, void* scratch)
     m_stride = stride;
     if (lo > hi) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(static_cast<void*>(this), reinterpret_cast<i32>("Inconsistent bounds"), 0x16);
+        m_errSink
+            ->Set(static_cast<void*>(this), reinterpret_cast<i32>("Inconsistent bounds"), 0x16);
         return;
     }
     i32 total = (hi - lo + 1) * stride;
@@ -963,11 +970,7 @@ void* CVariantSlot::Add(void* key, void* val) {
         g_recs23[idx].m_4 = val;
         return old;
     }
-    memcpy(
-        &g_recs23[m_04],
-        &g_recs23[m_04 + 1],
-        (g_recCount23 - m_04 - 1) * sizeof(TypeKeyRec)
-    );
+    memcpy(&g_recs23[m_04], &g_recs23[m_04 + 1], (g_recCount23 - m_04 - 1) * sizeof(TypeKeyRec));
     g_recCount23 = g_recCount23 - 1;
     return old;
 }
@@ -993,10 +996,14 @@ i32 FirstDiffBit(const char* a, const char* b) {
 static inline char* TypeResolve(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return reinterpret_cast<char*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
+        return reinterpret_cast<char*>(
+            (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
+        );
     }
     if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0))) {
-        return reinterpret_cast<char*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
+        return reinterpret_cast<char*>(
+            (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
+        );
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
@@ -1030,7 +1037,8 @@ i32 ProjTypeXfer(CUserLogic* ar) {
     ar->XferName(entry->m_name.GetBuffer(0)); // 0x1ba11c ?GetBuffer@CString@@QAEPADH@Z
     ar->FireActivation(reinterpret_cast<i32>(ar->m_objAux->m_1c));
 
-    entry = reinterpret_cast<CTypeNameEntry*>(TypeResolve(reinterpret_cast<i32>(ar->m_objAux->m_1c)));
+    entry =
+        reinterpret_cast<CTypeNameEntry*>(TypeResolve(reinterpret_cast<i32>(ar->m_objAux->m_1c)));
     FreeNodes();
     ar->FinalizeStep(reinterpret_cast<i32>(entry->m_name.GetBuffer(0)));
     return 1;

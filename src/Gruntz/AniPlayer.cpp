@@ -56,7 +56,8 @@ i32 CAniPlayer::Start(
 // ===========================================================================
 RVA(0x000e5b90, 0x51)
 i32 CAniPlayer::TickToggle(i32 param) {
-    if (static_cast<__int64>(g_frameTime) - *reinterpret_cast<__int64*>(&m_58) >= *reinterpret_cast<__int64*>(&m_60)) {
+    if (static_cast<__int64>(g_frameTime) - *reinterpret_cast<__int64*>(&m_58)
+        >= *reinterpret_cast<__int64*>(&m_60)) {
         m_38 = (m_38 == m_frameStart) ? m_frameEnd : m_frameStart;
         m_60 = m_interval;
         m_64 = 0;

@@ -364,7 +364,10 @@ namespace NetLobby {
         if (hWnd && ctx) {
             CString banner;
             if (g_sessionName.GetLength() != 0) {
-                banner.Format("Not Receiving Data From Client: %s", static_cast<LPCTSTR>(g_sessionName));
+                banner.Format(
+                    "Not Receiving Data From Client: %s",
+                    static_cast<LPCTSTR>(g_sessionName)
+                );
                 SetDlgItemTextA(hWnd, 0x44b, static_cast<LPCTSTR>(banner));
             }
             Init_be3e0(hWnd, ctx);

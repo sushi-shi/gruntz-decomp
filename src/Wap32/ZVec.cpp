@@ -21,7 +21,8 @@
 RVA(0x00008750, 0x15)
 i32 _zdvec::Destroy() {
     i32 tmp = reinterpret_cast<i32>(m_base);
-    *reinterpret_cast<void**>(this) = const_cast<void**>(&zDArrayLiveTable); // re-stamp LIVE vtable (non-dtor wall)
+    *reinterpret_cast<void**>(this) =
+        const_cast<void**>(&zDArrayLiveTable); // re-stamp LIVE vtable (non-dtor wall)
     this->~_zdvec();
     return tmp;
 }
@@ -81,4 +82,3 @@ char* _zvec::IndexToPtr(i32 idx) {
     m_errSink->Set(static_cast<void*>(this), sentinel, 0xc);
     return m_spare;
 }
-

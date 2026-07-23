@@ -75,60 +75,60 @@ public:
 };
 SIZE(0x10);
 
-    class CGameMgr;
+class CGameMgr;
 class CGameMgr {
-    public:
-        CGameMgr();
-        // ~CGameMgr is INLINE: it re-stores the base vftable then runs Close
-        // (clearing the owned pointers). It must be visible here so the derived
-        // CGruntzMgr's dtor (another TU) inlines the base-subobject teardown exactly
-        // as the retail dtor does (store base vptr + devirtualized Close
-        // call) instead of emitting an out-of-line base-dtor call.
-        virtual ~CGameMgr() {
-            Close();
-        } // +0x00 idx0 dtor
-        virtual i32 Run(CGameWnd* pGameWnd, char* szCmdLine); // +0x04 idx1
-        virtual void Close();                                 // +0x08 idx2
-        virtual i32 IsActive();                     // +0x0c idx3 (active? gate)
-        // +0x10 idx4 - the base per-frame tick (body @0x13ddc0, base vtable slot 4
-        // holds it DIRECTLY - verified against retail ??_7CGameMgr @0x5e9b8c): sample
-        // timeGetTime into the g_wap32Now/g_wap32FrameDelta clock pair, run down the
-        // run-state countdown, busy-wait to the ms budget when pacing is armed, and
-        // fold the 2s frame-count window into m_fps. CGruntzMgr overrides it (slot 4
-        // thunk 0x1c7b -> 0x8b740) with the game tick, which calls this base body
-        virtual i32 PerFrameTick();               // +0x10 idx4  @0x13ddc0
-        virtual i32 HandleCommand(i32, GruntzCommand, i32); // +0x14 idx5
+public:
+    CGameMgr();
+    // ~CGameMgr is INLINE: it re-stores the base vftable then runs Close
+    // (clearing the owned pointers). It must be visible here so the derived
+    // CGruntzMgr's dtor (another TU) inlines the base-subobject teardown exactly
+    // as the retail dtor does (store base vptr + devirtualized Close
+    // call) instead of emitting an out-of-line base-dtor call.
+    virtual ~CGameMgr() {
+        Close();
+    } // +0x00 idx0 dtor
+    virtual i32 Run(CGameWnd* pGameWnd, char* szCmdLine); // +0x04 idx1
+    virtual void Close();                                 // +0x08 idx2
+    virtual i32 IsActive();                               // +0x0c idx3 (active? gate)
+    // +0x10 idx4 - the base per-frame tick (body @0x13ddc0, base vtable slot 4
+    // holds it DIRECTLY - verified against retail ??_7CGameMgr @0x5e9b8c): sample
+    // timeGetTime into the g_wap32Now/g_wap32FrameDelta clock pair, run down the
+    // run-state countdown, busy-wait to the ms budget when pacing is armed, and
+    // fold the 2s frame-count window into m_fps. CGruntzMgr overrides it (slot 4
+    // thunk 0x1c7b -> 0x8b740) with the game tick, which calls this base body
+    virtual i32 PerFrameTick();                         // +0x10 idx4  @0x13ddc0
+    virtual i32 HandleCommand(i32, GruntzCommand, i32); // +0x14 idx5
 
-        // Non-virtual ctor helpers (called directly from the ctor / Run).
-        void InitTimeFields(i32 reset); // @0x13de70
-        void InitializeTimeGlobal();    // @0x13dea0
-        // Frame-pacing helpers (bodies in GameApp.cpp, inside CGameMgr's own
-        // contiguous retail method block 0x13dd10..0x13df30; ex RezMgr::):
-        void SpinWaitUntil(i32 ms);   // @0x13dec0  busy-wait to the pacing budget
-        void SetFrameRate(i32 fps);   // @0x13dee0  arm m_pacingGate + derive m_frameBudgetMs
-        i32 TrySetFrameRate(i32 fps); // @0x13df00  install only when pacing inactive
+    // Non-virtual ctor helpers (called directly from the ctor / Run).
+    void InitTimeFields(i32 reset); // @0x13de70
+    void InitializeTimeGlobal();    // @0x13dea0
+    // Frame-pacing helpers (bodies in GameApp.cpp, inside CGameMgr's own
+    // contiguous retail method block 0x13dd10..0x13df30; ex RezMgr::):
+    void SpinWaitUntil(i32 ms);   // @0x13dec0  busy-wait to the pacing budget
+    void SetFrameRate(i32 fps);   // @0x13dee0  arm m_pacingGate + derive m_frameBudgetMs
+    i32 TrySetFrameRate(i32 fps); // @0x13df00  install only when pacing inactive
 
-        CGameWnd* m_gameWnd;   // +0x04  bound game window (set by Run)
-        CGameApp* m_owner;     // +0x08  owning app (pGameWnd->m_owner; set by Run)
-        i32 m_frameGate;       // +0x0c  nonzero suppresses the per-frame advance
-        i32 m_soundEnabled;    // +0x10  sound-on flag (=1 in ctor; WriteInt "Sound")
-        i32 m_musicEnabled;    // +0x14  music-on flag (=1 in ctor; WriteInt "Music")
-        i32 m_fps;             // +0x18  measured frames-per-second (debug HUD "Fps = %i"; =-1 on
-                               //        frame-clock reset = no measurement yet; PerFrameTick
-                               //        stores count>>1 over each 2000 ms window)
-        i32 m_pacingGate;      // +0x1c  frame-pacing gate: the target fps SetFrameRate stores
-                               //        (>0 arms PerFrameTick's busy-wait; cleared by ctor/Run;
-                               //        ex "m_pauseFlag (inferred)")
-        i32 m_frameCounter;    // +0x20  frames-this-window counter (PerFrameTick ++ per frame;
-                               //        zeroed by InitTimeFields; a COUNT - ex "m_elapsedMs")
-        i32 m_windowStartTick; // +0x24  fps-window start tick (timeGetTime, by InitTimeFields)
-        i32 m_frameBudgetMs;   // +0x28  target ms-per-frame (SetFrameRate: 1000/fps)
+    CGameWnd* m_gameWnd;   // +0x04  bound game window (set by Run)
+    CGameApp* m_owner;     // +0x08  owning app (pGameWnd->m_owner; set by Run)
+    i32 m_frameGate;       // +0x0c  nonzero suppresses the per-frame advance
+    i32 m_soundEnabled;    // +0x10  sound-on flag (=1 in ctor; WriteInt "Sound")
+    i32 m_musicEnabled;    // +0x14  music-on flag (=1 in ctor; WriteInt "Music")
+    i32 m_fps;             // +0x18  measured frames-per-second (debug HUD "Fps = %i"; =-1 on
+                           //        frame-clock reset = no measurement yet; PerFrameTick
+                           //        stores count>>1 over each 2000 ms window)
+    i32 m_pacingGate;      // +0x1c  frame-pacing gate: the target fps SetFrameRate stores
+                           //        (>0 arms PerFrameTick's busy-wait; cleared by ctor/Run;
+                           //        ex "m_pauseFlag (inferred)")
+    i32 m_frameCounter;    // +0x20  frames-this-window counter (PerFrameTick ++ per frame;
+                           //        zeroed by InitTimeFields; a COUNT - ex "m_elapsedMs")
+    i32 m_windowStartTick; // +0x24  fps-window start tick (timeGetTime, by InitTimeFields)
+    i32 m_frameBudgetMs;   // +0x28  target ms-per-frame (SetFrameRate: 1000/fps)
 
-        // (The former `vector_deleting_destructor` stub @0x133380 is gone: it was never
-        // a CGameMgr method at all - it is CInputDevRoot's scalar-deleting destructor
-        // ??_GCInputDevRoot@@UAEPAXI@Z, now named at its real rva in src/DinMgr2/DinMgr2.cpp
-        // where cl already emits that COMDAT.)
-    };
+    // (The former `vector_deleting_destructor` stub @0x133380 is gone: it was never
+    // a CGameMgr method at all - it is CInputDevRoot's scalar-deleting destructor
+    // ??_GCInputDevRoot@@UAEPAXI@Z, now named at its real rva in src/DinMgr2/DinMgr2.cpp
+    // where cl already emits that COMDAT.)
+};
 SIZE(0x2c);
 
 struct GameInfo {
@@ -189,12 +189,12 @@ public:
     // Called by CGameWnd::OnCommand; CGruntzApp overrides it (0x080aa0).
     virtual i32
     HandleCommand(i32 notifyCode, GruntzCommand cmdId, i32 lParam); // +0x28 slot 10 0x080d90
-    virtual BOOL InitializeAccelerators(LPCSTR lpTable); // +0x2c
-    virtual void ShowError() {}                          // +0x30
-    virtual CGameWnd* InitializeGameWindow();            // +0x34
+    virtual BOOL InitializeAccelerators(LPCSTR lpTable);            // +0x2c
+    virtual void ShowError() {}                                     // +0x30
+    virtual CGameWnd* InitializeGameWindow();                       // +0x34
     virtual CGameMgr* InitializeGameManager();    // +0x38  (0x13dbc0: new CGameMgr)
-    virtual void InitializeDefaultWindowClass();         // +0x3c
-    virtual void InitializeDefaultCreateStruct();        // +0x40
+    virtual void InitializeDefaultWindowClass();  // +0x3c
+    virtual void InitializeDefaultCreateStruct(); // +0x40
 
     // Static window procedure stored into m_wc.lpfnWndProc.
     static LRESULT CALLBACK GameWindowProc(HWND, UINT, WPARAM, LPARAM);
@@ -205,7 +205,7 @@ public:
     void RunModal(const char* msg, HWND hwnd);
 
     CGameWnd* m_gameWnd;          // +0x04  the game window (deleted by CloseResources)
-    CGameMgr* m_gameMgr;   // +0x08  the game manager (deleted by CloseResources)
+    CGameMgr* m_gameMgr;          // +0x08  the game manager (deleted by CloseResources)
     HINSTANCE m_hInstance;        // +0x0c  hInstance
     HACCEL m_hAccel;              // +0x10  accelerator table
     GameInfo m_gameInfo;          // +0x14  (0x1d4 bytes; szGameIdentifier @ +0xa0 etc.)

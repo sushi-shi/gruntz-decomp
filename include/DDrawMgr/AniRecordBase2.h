@@ -39,8 +39,8 @@ struct CAniRecordBase2 : public CWapObj {
     virtual i32 IsLoaded() OVERRIDE;     // [5] 0x165d90 (m_buf != 0; overrides CWapObj)
     // slot 6 IsReady INHERITED from CWapObj (its `return 1` default @0xd5da0, reached
     // via the 0x001c08 thunk); not redeclared (that was a phantom own "IsValidImage").
-    virtual void FreeBuf();      // [7] 0x168fb0  release m_buf into the owner pool
-    virtual i32 GetClassId();    // [8] 0x165da0  CLASSID 0x15
+    virtual void FreeBuf();   // [7] 0x168fb0  release m_buf into the owner pool
+    virtual i32 GetClassId(); // [8] 0x165da0  CLASSID 0x15
     // Slots 9-12: the buffer (de)allocation virtuals - each wraps one
     // CDDrawPtrCollections pool entrypoint (Create/MakeB/MakeB2/MakeB3) with the
     // 0x44 palette kind + the optional system-palette capture.

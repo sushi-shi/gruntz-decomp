@@ -1,6 +1,6 @@
 #include <Gruntz/GameText.h>
 #include <rva.h>
-#include <Bute/ButeMgr.h> // the one CButeMgr (its 0x170210 ctor; the 0x82b20 in-place init)
+#include <Bute/ButeMgr.h>        // the one CButeMgr (its 0x170210 ctor; the 0x82b20 in-place init)
 #include <Gruntz/FreeNodePool.h> // g_coordPool (the 0x82fa0/0x82ff0 coord-pool reset/clear tail)
 
 // ---------------------------------------------------------------------------
@@ -36,7 +36,7 @@ static CString g_worldName[8] = {
     "Gruntz in Space",
 };
 
-#include <Gruntz/ActReg.h> // CActReg - the shared registry-cell archetype
+#include <Gruntz/ActReg.h>      // CActReg - the shared registry-cell archetype
 VTBL(zErrHandling, 0x001f04cc); // ??_7CContainerErr@@6B@ - ONE slot (the dtor)
 DATA_SYMBOL(0x002451a8, 0x24, ?g_actRegCaption@@3UCActReg@@A)
 RVA(0x00082aa0, 0x10)

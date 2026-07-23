@@ -29,7 +29,12 @@ i32 CLatencyList::FillCombo(i32 hDlg, i32 ctrlId) {
         i32 idx;
         {
             CString name = rec->GetName();
-            idx = ::SendMessageA(combo, CB_ADDSTRING, 0, reinterpret_cast<long>(static_cast<LPCTSTR>(name)));
+            idx = ::SendMessageA(
+                combo,
+                CB_ADDSTRING,
+                0,
+                reinterpret_cast<long>(static_cast<LPCTSTR>(name))
+            );
         }
         if (idx != -1) {
             ::SendMessageA(combo, CB_SETITEMDATA, idx, data);

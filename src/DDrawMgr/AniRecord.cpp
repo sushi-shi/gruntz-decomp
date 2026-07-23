@@ -1,7 +1,7 @@
 #include <rva.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>  // the record owner (m_ptrColl/m_drawTarget)
-#include <DDrawMgr/DDrawSubMgrPages.h>  // m_drawTarget full type (m_frontPair)
-#include <DDrawMgr/DDrawSurfacePair.h>  // the front pair (m_bpp/m_surface)
+#include <DDrawMgr/DDrawSurfaceMgr.h>     // the record owner (m_ptrColl/m_drawTarget)
+#include <DDrawMgr/DDrawSubMgrPages.h>    // m_drawTarget full type (m_frontPair)
+#include <DDrawMgr/DDrawSurfacePair.h>    // the front pair (m_bpp/m_surface)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // the token-map ctx (m_10)
 #include <Wap32/Object.h>
 #include <Mfc.h>                    // real MFC CStringArray / CMapStringToPtr / CString / CObject
@@ -12,7 +12,7 @@
 #include <DDrawMgr/AniRecordBase2.h>      // the canonical secondary/base facet (dtor 0x165dd0 here)
 #include <DDrawMgr/AniRecordViews.h> // honest by-offset owner/surface models (@identity-TODO, no RTTI)
 #include <string.h>                  // strlen (inline repnz scas)
-#include <DDrawMgr/AniRecord.h> // own exported globals (ex Globals.h)
+#include <DDrawMgr/AniRecord.h>      // own exported globals (ex Globals.h)
 
 VTBL(CAniRecordView, 0x001f02c0);
 VTBL(CAniRecordBase2, 0x001f02d8); // ??_7 (14 slots)
@@ -226,7 +226,8 @@ void CAniRecordBase2::FreeBuf() {
 
 RVA(0x00168fd0, 0x24)
 i32 CAniRecordBase2::PushPalette() {
-    CDDrawSurfacePair* sd = OwnerMgr()->m_drawTarget->m_frontPair; // the ex AniImageHost/AniSurfDesc chain, all canon
+    CDDrawSurfacePair* sd =
+        OwnerMgr()->m_drawTarget->m_frontPair; // the ex AniImageHost/AniSurfDesc chain, all canon
     if (sd->m_bpp != 8) {
         return 1;
     }

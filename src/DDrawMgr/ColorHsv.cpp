@@ -50,4 +50,3 @@ ColorHSV* RgbToHsv(ColorHSV* out, u32 color) {
     out->v = v;
     return out;
 }
-

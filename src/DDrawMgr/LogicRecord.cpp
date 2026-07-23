@@ -49,14 +49,22 @@ i32 AnimWorkerObj::Dispatch(i32 a, i32 mode, void* c, void* d) {
             if (m_targetId) {
                 void* out = 0;
                 CMapPtrToPtr* res = &m_0c->m_childGroup->m_map48;
-                m_target = res->Lookup(reinterpret_cast<void*>(m_targetId), out) ? static_cast<CGameObject*>(out) : static_cast<CGameObject*>(0);
+                m_target = res->Lookup(reinterpret_cast<void*>(m_targetId), out)
+                               ? static_cast<CGameObject*>(out)
+                               : static_cast<CGameObject*>(0);
             }
             break;
         default: // 5, 6
             break;
     }
     if (m_logic) {
-        if (m_logic->SerializeMove(reinterpret_cast<CFileMemBase*>(a), mode, reinterpret_cast<i32>(c), reinterpret_cast<i32>(d)) == 0) {
+        if (m_logic->SerializeMove(
+                reinterpret_cast<CFileMemBase*>(a),
+                mode,
+                reinterpret_cast<i32>(c),
+                reinterpret_cast<i32>(d)
+            )
+            == 0) {
             return 0;
         }
     }

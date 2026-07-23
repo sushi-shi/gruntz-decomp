@@ -33,12 +33,12 @@ typedef enum DSoundDx5Magic {
     DSBUFFERDESC_SIZE = 0x14,  // retail sizeof(DSBUFFERDESC) (DX6 grew the struct)
 } DSoundDx5Magic;
 
-VTBL(DirectSoundMgr, 0x001ef6b8); // cl-emitted ??_7DirectSoundMgr@@6B@ (base subobject dtor)
+VTBL(DirectSoundMgr, 0x001ef6b8);  // cl-emitted ??_7DirectSoundMgr@@6B@ (base subobject dtor)
 VTBL(DSoundCloneInst, 0x001ef6bc); // cl-emitted ??_7DSoundCloneInst@@6B@
-VTBL(DSoundBaseSub, 0x001ef6c0); // cl-emitted ??_7DSoundBaseSub@@6B@
-VTBL(SoundDevice, 0x001ef6c4); // cl-emitted ??_7SoundDevice@@6B@ (virtual dtor)
-VTBL(PureSoundElem, 0x001ef6c8); // 2 __purecall slots (Tick/Stop); the reap-teardown
-VTBL(DSoundVoice, 0x001ef6d0); // cl-emitted ??_7DSoundVoice@@6B@ (Tick/Stop/+137630)
+VTBL(DSoundBaseSub, 0x001ef6c0);   // cl-emitted ??_7DSoundBaseSub@@6B@
+VTBL(SoundDevice, 0x001ef6c4);     // cl-emitted ??_7SoundDevice@@6B@ (virtual dtor)
+VTBL(PureSoundElem, 0x001ef6c8);   // 2 __purecall slots (Tick/Stop); the reap-teardown
+VTBL(DSoundVoice, 0x001ef6d0);     // cl-emitted ??_7DSoundVoice@@6B@ (Tick/Stop/+137630)
 DATA(0x00253ab8)
 i32 g_volumeTable[100];
 DATA(0x00253c48)
@@ -464,7 +464,11 @@ i32 DirectSoundMgr::GetCurrentPosition(u32* play, u32* write) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->GetCurrentPosition(reinterpret_cast<LPDWORD>(play), reinterpret_cast<LPDWORD>(write)) != 0;
+    i32 hr = m_buffer->GetCurrentPosition(
+                 reinterpret_cast<LPDWORD>(play),
+                 reinterpret_cast<LPDWORD>(write)
+             )
+             != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x1c8, hr);
         return 0;
@@ -490,7 +494,12 @@ i32 DirectSoundMgr::GetFormat(void* fmt, u32 size, u32* written) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->GetFormat(static_cast<LPWAVEFORMATEX>(fmt), size, reinterpret_cast<LPDWORD>(written)) != 0;
+    i32 hr = m_buffer->GetFormat(
+                 static_cast<LPWAVEFORMATEX>(fmt),
+                 size,
+                 reinterpret_cast<LPDWORD>(written)
+             )
+             != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x1e2, hr);
         return 0;
@@ -636,8 +645,15 @@ i32 DirectSoundMgr::LoadFromFile(FILE* fp, u32 bytes, i32 offset) {
     u32 n1;
     void* p2;
     u32 n2;
-    i32 hr =
-        m_buffer->Lock(0, bytes, &p1, reinterpret_cast<LPDWORD>(&n1), &p2, reinterpret_cast<LPDWORD>(&n2), DSBLOCK_FROMWRITECURSOR);
+    i32 hr = m_buffer->Lock(
+        0,
+        bytes,
+        &p1,
+        reinterpret_cast<LPDWORD>(&n1),
+        &p2,
+        reinterpret_cast<LPDWORD>(&n2),
+        DSBLOCK_FROMWRITECURSOR
+    );
     if (hr != 0) {
         GetErrorString(DSNDMGR_FILE, 0x27c, hr);
         return 0;
@@ -672,9 +688,16 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
     void* p2;
     u32 n1;
     u32 n2;
-    i32 hr =
-        m_buffer->Lock(0, lockBytes, &p1, reinterpret_cast<LPDWORD>(&n1), &p2, reinterpret_cast<LPDWORD>(&n2), DSBLOCK_ENTIREBUFFER)
-        != 0;
+    i32 hr = m_buffer->Lock(
+                 0,
+                 lockBytes,
+                 &p1,
+                 reinterpret_cast<LPDWORD>(&n1),
+                 &p2,
+                 reinterpret_cast<LPDWORD>(&n2),
+                 DSBLOCK_ENTIREBUFFER
+             )
+             != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x2bd, hr);
         return 0;
@@ -751,7 +774,8 @@ void DSoundCloneInst::StopAllClones() {
     if (m_owner->m_initialized == 0) {
         return;
     }
-    for (CloneNode* node = static_cast<CloneNode*>(m_cloneList.m_head); node != 0; node = static_cast<CloneNode*>(node->m_next)) {
+    for (CloneNode* node = static_cast<CloneNode*>(m_cloneList.m_head); node != 0;
+         node = static_cast<CloneNode*>(node->m_next)) {
         node->m_inst->StopAndRewind();
     }
 }
@@ -844,7 +868,16 @@ i32 DirectSoundMgr::Lock(u32 off, u32 bytes, void** p1, u32* n1, void** p2, u32*
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->Lock(off, bytes, p1, reinterpret_cast<LPDWORD>(n1), p2, reinterpret_cast<LPDWORD>(n2), flags) != 0;
+    i32 hr = m_buffer->Lock(
+                 off,
+                 bytes,
+                 p1,
+                 reinterpret_cast<LPDWORD>(n1),
+                 p2,
+                 reinterpret_cast<LPDWORD>(n2),
+                 flags
+             )
+             != 0;
     if (!hr) {
         return 1;
     }
@@ -852,7 +885,16 @@ i32 DirectSoundMgr::Lock(u32 off, u32 bytes, void** p1, u32* n1, void** p2, u32*
         if (m_reacquireOwner->ReacquireBuffer() == 0) {
             return 0;
         }
-        hr = m_buffer->Lock(off, bytes, p1, reinterpret_cast<LPDWORD>(n1), p2, reinterpret_cast<LPDWORD>(n2), flags) != 0;
+        hr = m_buffer->Lock(
+                 off,
+                 bytes,
+                 p1,
+                 reinterpret_cast<LPDWORD>(n1),
+                 p2,
+                 reinterpret_cast<LPDWORD>(n2),
+                 flags
+             )
+             != 0;
         if (!hr) {
             return 1;
         }
@@ -1032,7 +1074,8 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     if (voice) {
         voice->BaseInit(out, this);
     }
-    voice->m_freq = *reinterpret_cast<u32*>(&wf.wFormatTag); // +0x18  format word (wFormatTag|nChannels)
+    voice->m_freq =
+        *reinterpret_cast<u32*>(&wf.wFormatTag); // +0x18  format word (wFormatTag|nChannels)
     m_bufferList.InsertHead(voice ? &voice->m_link : 0);
     voice->m_rateBase = fmt->nAvgBytesPerSec;   // +0x38  avg bytes/sec
     voice->m_sampleRate = fmt->nAvgBytesPerSec; // +0x3c  duration divisor

@@ -82,7 +82,13 @@ i32 CFecFile::ReadArchive(const char* name) {
 
     char buf[0x100];
     sprintf(buf, "Opened FEC File %s\n", name);
-    sprintf(buf, "FEC File Version: %d.%d\nNumber of Files: %d\n", m_versionMajor, m_versionMinor, m_fileCount);
+    sprintf(
+        buf,
+        "FEC File Version: %d.%d\nNumber of Files: %d\n",
+        m_versionMajor,
+        m_versionMinor,
+        m_fileCount
+    );
 
     if (m_stream.Read(&m_entry, 0x10c) != 0x10c) {
         goto fail;
@@ -292,7 +298,8 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
         if (file.Open(decoded, 0x1002, 0) == 0) {
             goto fail;
         }
-        if (m_stream.Seek(static_cast<i32>(m_index.GetData()[i]), 0) != static_cast<i32>(m_index.GetData()[i])) {
+        if (m_stream.Seek(static_cast<i32>(m_index.GetData()[i]), 0)
+            != static_cast<i32>(m_index.GetData()[i])) {
             goto fail;
         }
         u32 copied = 0;
@@ -365,4 +372,3 @@ void __stdcall FecDecode(const char* src, char* dst, unsigned short len) {
     }
     dst[len] = 0;
 }
-

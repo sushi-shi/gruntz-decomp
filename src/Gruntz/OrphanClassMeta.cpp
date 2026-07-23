@@ -6,4 +6,3 @@
 #include <Gruntz/Enums.h>
 #include <Gruntz/GruntIndicatorSprite.h>
 #include <Gruntz/LogicTypeTableInline.h>
-

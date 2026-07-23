@@ -1,4 +1,4 @@
-#include <Net/DPlayImports.h> // DirectPlayCreate/Enumerate (TU-private import decls)
+#include <Net/DPlayImports.h>    // DirectPlayCreate/Enumerate (TU-private import decls)
 #include <Net/NetMgr.h>          // CNetMgr + DirectPlay/list node types (pulls <Mfc.h>, RezMgr)
 #include <Net/NetGuids.h>        // g_guid1..g_guid5 (owner-only decl header)
 #include <Net/InterfaceObject.h> // Find() returns the InterfaceObject group-node
@@ -7,7 +7,7 @@
 #include <string.h> // memset (the inlined rep stos node/packet zeroing) + memcmp (IsInterfaceX)
 
 VTBL(CNetPlayerListNode, 0x001f0760); // ??_7CNetPlayerListNode@@6B@ (5-slot CObject-derived)
-VTBL(CNetSessionNode, 0x001f0778); // own (final) vtable
+VTBL(CNetSessionNode, 0x001f0778);    // own (final) vtable
 DATA(0x002bf840)
 i32 g_spEnumValidated = 0; // 0x6bf840 (owner def; C linkage from NetMgr.h)
 
@@ -639,8 +639,7 @@ i32 CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d)
     }
 
     if (node != 0) {
-        __POSITION* pos =
-            static_cast<__POSITION*>(m_sessions.AddTail(static_cast<CObject*>(node)));
+        __POSITION* pos = static_cast<__POSITION*>(m_sessions.AddTail(static_cast<CObject*>(node)));
         if (pos == 0) {
             delete node;
         } else {

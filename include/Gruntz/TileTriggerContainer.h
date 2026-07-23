@@ -3,8 +3,8 @@
 
 #include <Mfc.h> // MFC CPtrList (the m_base/m_list1-3 sub-object list methods)
 #include <Ints.h>
-#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @ +0x2c / Write @ +0x30)
-#include <Gruntz/TileActionEvent.h>   // CTileActionEvent - the 0x28 m_list3 element (was TtcMark)
+#include <Gruntz/SerialArchive.h>   // the shared CFileMemBase stream (Read @ +0x2c / Write @ +0x30)
+#include <Gruntz/TileActionEvent.h> // CTileActionEvent - the 0x28 m_list3 element (was TtcMark)
 #include <Gruntz/TileTriggerWiring.h> // CTrigParam / CTrigSourceRecord (AddLogic marshaling blocks)
 #include <rva.h>                      // SIZE_UNKNOWN class-metadata macros used below
 
@@ -178,12 +178,12 @@ public:
     // The base sub-object's own destructor; runs RemoveAll then clears +0x74.
     void DtorBase(); // 0x115f30
 
-    TtcObList m_base;        // +0x00 (head @ +0x04)  the base CPtrList sub-object
-    TtcObList m_list1;       // +0x1c (head @ +0x20)
-    TtcObList m_list2;       // +0x38 (head @ +0x3c)
-    TtcObList m_list3;       // +0x54 (head @ +0x58)
+    TtcObList m_base;                 // +0x00 (head @ +0x04)  the base CPtrList sub-object
+    TtcObList m_list1;                // +0x1c (head @ +0x20)
+    TtcObList m_list2;                // +0x38 (head @ +0x3c)
+    TtcObList m_list3;                // +0x54 (head @ +0x58)
     CTileTriggerLogic* m_latchedLeaf; // +0x70  id-0x15 latches the built logic leaf here
-    i32 m_built;                // +0x74  gates DtorBase's RemoveAll call, then cleared (0/nonzero)
+    i32 m_built; // +0x74  gates DtorBase's RemoveAll call, then cleared (0/nonzero)
 };
 SIZE_UNKNOWN();
 

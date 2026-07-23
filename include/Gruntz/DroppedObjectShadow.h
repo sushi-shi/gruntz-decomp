@@ -14,7 +14,7 @@ public:
         return LOGIC_DROPPEDOBJECTSHADOW;
     } // slot 2
 public:
-    CDroppedObjectShadow(CGameObject* obj);   // 0xc7490 (1-arg leaf ctor)
+    CDroppedObjectShadow(CGameObject* obj); // 0xc7490 (1-arg leaf ctor)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     // The slot-1 serialize impl (plain method: ?Serialize name + RVA pin, vtable
@@ -27,7 +27,7 @@ public:
     static void InitActReg();                     // 0xc76d0 (build g_shadowActReg over [2000,2010])
     virtual void FireActivation(i32 id) OVERRIDE; // 0xc7750 (look up + fire the registered handler)
     static void RegisterActs();                   // 0xc78b0 (bind Advance to the "A" key)
-    i32 Advance();             // 0xc7ab0 (per-frame: advance anim; drop frame -> spawn)
+    i32 Advance(); // 0xc7ab0 (per-frame: advance anim; drop frame -> spawn)
 };
 SIZE(0x54);
 

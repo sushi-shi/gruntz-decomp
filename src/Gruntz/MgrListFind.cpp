@@ -1,5 +1,5 @@
 #include <Gruntz/TriggerMgrViews.h> // CTriggerMgr + CTmRecNode (MFC-first)
-#include <Gruntz/GruntPuddle.h>      // CGruntPuddle (the baseList element; m_tileX/m_tileY/m_pending)
+#include <Gruntz/GruntPuddle.h>   // CGruntPuddle (the baseList element; m_tileX/m_tileY/m_pending)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
@@ -17,7 +17,8 @@
 // 100% correct; deferred.
 RVA(0x000f0db0, 0x48)
 i32 MgrListFind(i32 a1, i32 a2) {
-    CTmRecNode* node = reinterpret_cast<CTmRecNode*>(g_gameReg->m_cmdGrid->m_baseList.GetHeadPosition());
+    CTmRecNode* node =
+        reinterpret_cast<CTmRecNode*>(g_gameReg->m_cmdGrid->m_baseList.GetHeadPosition());
     while (node) {
         CTmRecNode* cur = node;
         node = node->m_next;

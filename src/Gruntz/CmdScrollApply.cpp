@@ -1,7 +1,7 @@
 #include <Ints.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <rva.h>
-#include <Gruntz/ScrollState.h> // g_scrollAccum / g_scrollClock (auto-scroll state block)
+#include <Gruntz/ScrollState.h>   // g_scrollAccum / g_scrollClock (auto-scroll state block)
 #include <Gruntz/MgrAutoScroll.h> // ex Globals.h
 
 RVA(0x000ec1c0, 0x43)

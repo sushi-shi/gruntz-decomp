@@ -167,11 +167,14 @@ CShadeTable* CShadeTableCache::FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 sta
         for (i32 j = 0; j < nA; j++) {
             float tt = static_cast<float>(j) / static_cast<float>(nA);
             float inv = g_one - tt;
-            float fr = static_cast<float>((startPct * static_cast<i32>(p->r) / 100)) * inv + static_cast<float>(static_cast<i32>(p->r)) * tt;
+            float fr = static_cast<float>((startPct * static_cast<i32>(p->r) / 100)) * inv
+                       + static_cast<float>(static_cast<i32>(p->r)) * tt;
             i32 rn = static_cast<i32>((fr < g_255 ? fr : g_255));
-            float fg = static_cast<float>((startPct * static_cast<i32>(p->g) / 100)) * inv + static_cast<float>(static_cast<i32>(p->g)) * tt;
+            float fg = static_cast<float>((startPct * static_cast<i32>(p->g) / 100)) * inv
+                       + static_cast<float>(static_cast<i32>(p->g)) * tt;
             i32 gn = static_cast<i32>((fg < g_255 ? fg : g_255));
-            float fb = static_cast<float>((startPct * static_cast<i32>(p->b) / 100)) * inv + static_cast<float>(static_cast<i32>(p->b)) * tt;
+            float fb = static_cast<float>((startPct * static_cast<i32>(p->b) / 100)) * inv
+                       + static_cast<float>(static_cast<i32>(p->b)) * tt;
             i32 bn = static_cast<i32>((fb < g_255 ? fb : g_255));
             ramp[j] = NearestPaletteIndex(rn, pal, gn, bn);
         }
@@ -186,11 +189,17 @@ CShadeTable* CShadeTableCache::FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 sta
         for (i32 k = 0; k < nB; k++) {
             float uu = static_cast<float>(k) / static_cast<float>(nB);
             float inv = g_one - uu;
-            float fr = static_cast<float>(static_cast<i32>(p->r)) * inv + static_cast<float>(static_cast<i32>(p->r)) * static_cast<float>(endPct) * g_p01 * uu;
+            float fr = static_cast<float>(static_cast<i32>(p->r)) * inv
+                       + static_cast<float>(static_cast<i32>(p->r)) * static_cast<float>(endPct)
+                             * g_p01 * uu;
             i32 rn = static_cast<i32>((fr < g_255 ? fr : g_255));
-            float fg = static_cast<float>(static_cast<i32>(p->g)) * inv + static_cast<float>(static_cast<i32>(p->g)) * static_cast<float>(endPct) * g_p01 * uu;
+            float fg = static_cast<float>(static_cast<i32>(p->g)) * inv
+                       + static_cast<float>(static_cast<i32>(p->g)) * static_cast<float>(endPct)
+                             * g_p01 * uu;
             i32 gn = static_cast<i32>((fg < g_255 ? fg : g_255));
-            float fb = static_cast<float>(static_cast<i32>(p->b)) * inv + static_cast<float>(static_cast<i32>(p->b)) * static_cast<float>(endPct) * g_p01 * uu;
+            float fb = static_cast<float>(static_cast<i32>(p->b)) * inv
+                       + static_cast<float>(static_cast<i32>(p->b)) * static_cast<float>(endPct)
+                             * g_p01 * uu;
             i32 bn = static_cast<i32>((fb < g_255 ? fb : g_255));
             ramp[nA + k] = NearestPaletteIndex(rn, pal, gn, bn);
         }
@@ -242,7 +251,8 @@ CShadeTableCache::HsvShiftTable(PalEntry* pal, i32 steps, i32 pct, i32 gamma, i3
             i32 r = p->r;
             i32 g = p->g;
             i32 b = p->b;
-            float luma = static_cast<float>(r) * g_lumaR + static_cast<float>(g) * g_lumaG + static_cast<float>(b) * g_lumaB;
+            float luma = static_cast<float>(r) * g_lumaR + static_cast<float>(g) * g_lumaG
+                         + static_cast<float>(b) * g_lumaB;
             i32 lumaByte = static_cast<i32>(luma) & 0xff;
             float x = g_one / (static_cast<float>(lumaByte) * g_inv255 - g_negone);
             float factor = static_cast<float>(pow(static_cast<double>(x), dGamma));
@@ -291,9 +301,15 @@ CShadeTable* CShadeTableCache::HueRampTable(PalEntry* pal, i32 steps, i32 packed
         for (i32 j = 0; j < steps; j++) {
             float t1 = static_cast<float>(j) / static_cast<float>(steps);
             float t0 = 1.0f - t1;
-            i32 bn = static_cast<i32>((t0 * static_cast<float>(static_cast<i32>(p->b)) + t1 * static_cast<float>(cb)));
-            i32 gn = static_cast<i32>((t0 * static_cast<float>(static_cast<i32>(p->g)) + t1 * static_cast<float>(cg)));
-            i32 rn = static_cast<i32>((t0 * static_cast<float>(static_cast<i32>(p->r)) + t1 * static_cast<float>(cr)));
+            i32 bn = static_cast<i32>(
+                (t0 * static_cast<float>(static_cast<i32>(p->b)) + t1 * static_cast<float>(cb))
+            );
+            i32 gn = static_cast<i32>(
+                (t0 * static_cast<float>(static_cast<i32>(p->g)) + t1 * static_cast<float>(cg))
+            );
+            i32 rn = static_cast<i32>(
+                (t0 * static_cast<float>(static_cast<i32>(p->r)) + t1 * static_cast<float>(cr))
+            );
             data[i * steps + j] = NearestPaletteIndex(rn, pal, gn, bn);
         }
     }
@@ -395,9 +411,15 @@ i32 __cdecl CShadeTableCache::CompareLuma(const void* a, const void* b) {
     u8 ia = *static_cast<const u8*>(a);
     u8 ib = *static_cast<const u8*>(b);
     PalEntry* pa = &g_pal[ia];
-    u8 la = static_cast<u8>(static_cast<i32>((static_cast<float>(pa->b) * g_lumaB + static_cast<float>(pa->g) * g_lumaG + static_cast<float>(pa->r) * g_lumaR)));
+    u8 la = static_cast<u8>(static_cast<i32>(
+        (static_cast<float>(pa->b) * g_lumaB + static_cast<float>(pa->g) * g_lumaG
+         + static_cast<float>(pa->r) * g_lumaR)
+    ));
     PalEntry* pb = &g_pal[ib];
-    u8 lb = static_cast<u8>(static_cast<i32>((static_cast<float>(pb->b) * g_lumaB + static_cast<float>(pb->g) * g_lumaG + static_cast<float>(pb->r) * g_lumaR)));
+    u8 lb = static_cast<u8>(static_cast<i32>(
+        (static_cast<float>(pb->b) * g_lumaB + static_cast<float>(pb->g) * g_lumaG
+         + static_cast<float>(pb->r) * g_lumaR)
+    ));
     if (lb > la) {
         return -1;
     }
@@ -468,11 +490,15 @@ CShadeTable* CShadeTableCache::GreyTable() {
     u16* out = reinterpret_cast<u16*>(t->m_data);
     if (g_rDown == 3 && g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
         for (i32 v = 0; v < 0x10000; v++) {
-            *out++ = static_cast<u16>(((((static_cast<u8>((v >> 0xb)) << 4) + ((v >> 6) & 0xf)) << 4) + ((v >> 1) & 0xf)));
+            *out++ = static_cast<u16>(
+                ((((static_cast<u8>((v >> 0xb)) << 4) + ((v >> 6) & 0xf)) << 4) + ((v >> 1) & 0xf))
+            );
         }
     } else {
         for (i32 v = 0; v < 0x10000; v++) {
-            *out++ = static_cast<u16>(((((static_cast<u8>((v >> 0xc)) << 4) + ((v >> 7) & 0xf)) << 4) + ((v >> 1) & 0xf)));
+            *out++ = static_cast<u16>(
+                ((((static_cast<u8>((v >> 0xc)) << 4) + ((v >> 7) & 0xf)) << 4) + ((v >> 1) & 0xf))
+            );
         }
     }
     return t;
@@ -519,9 +545,13 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
                     i32 gn = static_cast<i32>((fg < 255.0f ? fg : 255.0f));
                     float fb = static_cast<float>(static_cast<i32>(bc)) * f;
                     i32 bn = static_cast<i32>((fb < 255.0f ? fb : 255.0f));
-                    *out++ = static_cast<u16>(((static_cast<u8>((static_cast<u8>(rn) >> static_cast<u8>(g_rDown))) << g_rUp)
-                                   | (static_cast<u8>((static_cast<u8>(gn) >> static_cast<u8>(g_gDown))) << g_gUp)
-                                   | static_cast<u8>((static_cast<u8>(bn) >> static_cast<u8>(g_bDown)))));
+                    *out++ = static_cast<u16>(
+                        ((static_cast<u8>((static_cast<u8>(rn) >> static_cast<u8>(g_rDown)))
+                          << g_rUp)
+                         | (static_cast<u8>((static_cast<u8>(gn) >> static_cast<u8>(g_gDown)))
+                            << g_gUp)
+                         | static_cast<u8>((static_cast<u8>(bn) >> static_cast<u8>(g_bDown))))
+                    );
                 }
             }
         }
@@ -570,9 +600,13 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
                 u8 gn = static_cast<u8>((((g * level / 0xf) << 4) + subg));
                 for (i32 b = 0; b < 0x10; b++) {
                     u8 bn = static_cast<u8>((((b * level / 0xf) << 4) + subb));
-                    *out++ =
-                        static_cast<u16>(((static_cast<u8>((bn >> static_cast<u8>(g_bDown)))) | (static_cast<u8>((static_cast<u8>(rn) >> static_cast<u8>(g_rDown))) << g_rUp)
-                              | (static_cast<u8>((static_cast<u8>(gn) >> static_cast<u8>(g_gDown))) << g_gUp)));
+                    *out++ = static_cast<u16>(
+                        ((static_cast<u8>((bn >> static_cast<u8>(g_bDown))))
+                         | (static_cast<u8>((static_cast<u8>(rn) >> static_cast<u8>(g_rDown)))
+                            << g_rUp)
+                         | (static_cast<u8>((static_cast<u8>(gn) >> static_cast<u8>(g_gDown)))
+                            << g_gUp))
+                    );
                 }
             }
         }
@@ -604,8 +638,11 @@ CShadeTable* CShadeTableCache::AlphaTable(u8* pal) {
     u16* out = reinterpret_cast<u16*>(t->m_data);
     u8* p = pal;
     for (i32 i = 0x100; i != 0; i--) {
-        u16 v = static_cast<u16>(((static_cast<u8>((p[0] >> static_cast<u8>(g_rDown))) << g_rUp) | (static_cast<u8>((p[1] >> static_cast<u8>(g_gDown))) << g_gUp)
-                      | static_cast<u8>((p[2] >> static_cast<u8>(g_bDown)))));
+        u16 v = static_cast<u16>(
+            ((static_cast<u8>((p[0] >> static_cast<u8>(g_rDown))) << g_rUp)
+             | (static_cast<u8>((p[1] >> static_cast<u8>(g_gDown))) << g_gUp)
+             | static_cast<u8>((p[2] >> static_cast<u8>(g_bDown))))
+        );
         *out++ = v;
         p += 4;
     }
@@ -984,7 +1021,8 @@ void CShadeTableArray::SetSizeGrow(i32 nNewSize, i32 nGrowBy) {
         } else {
             nNewMax = nNewSize;
         }
-        CShadeTable** pNewData = static_cast<CShadeTable**>(::operator new(nNewMax * sizeof(CShadeTable*)));
+        CShadeTable** pNewData =
+            static_cast<CShadeTable**>(::operator new(nNewMax * sizeof(CShadeTable*)));
         memcpy(pNewData, m_pData, m_nSize * sizeof(CShadeTable*));
         memset(&pNewData[m_nSize], 0, (nNewSize - m_nSize) * sizeof(CShadeTable*));
         ::operator delete(m_pData);

@@ -5,7 +5,7 @@
 #include <rva.h>
 #include <Gruntz/SBI_Image.h> // canonical frameless CSBI_Image base (real RTTI base)
 
-class CDDrawWorker;             // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
 #include <Gruntz/SerialArchive.h>
 
@@ -21,9 +21,9 @@ public:
     virtual ~CSBI_ImageSet() OVERRIDE; // slot 0
     // slot 1 (vtbl 0x1eac4c thunk 0x3ca1 -> 0xe74f0): chains CSBI_Image::SerializeFields.
     virtual i32 SerializeFields(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xe74f0
-    virtual void Reset() OVERRIDE; // slot 3 - 0xe7400 (ex ResetCounters)
+    virtual void Reset() OVERRIDE;       // slot 3 - 0xe7400 (ex ResetCounters)
     virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
-    virtual i32 Render() OVERRIDE; // slot 5 - 0xe7440 (ex TickRenderFrame)
+    virtual i32 Render() OVERRIDE;       // slot 5 - 0xe7440 (ex TickRenderFrame)
     virtual i32
     SetupImage(CStatusBarMgr*, CDDrawSurfaceMgr*, i32, i32, SbRect, const char*, i32, i32)
         OVERRIDE; // slot 11
@@ -46,7 +46,7 @@ public:
     // frame from the record table. Ex CAniPlayer view (dossier #16).
 
     CDDrawWorker* m_34; // +0x34  resolved config record (the real image-registry CDDrawWorker)
-    i32 m_38;      // +0x38  serialized config id (4 bytes)
+    i32 m_38;           // +0x38  serialized config id (4 bytes)
 };
 SIZE(0x3c);
 

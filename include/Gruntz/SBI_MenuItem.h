@@ -43,9 +43,9 @@ public:
     // tail-chains CSBI_Image::SerializeFields. Was the non-virtual `Serialize` beside a
     // fabricated 0-arg `SbiVfunc0` placeholder that held the slot.
     virtual i32 SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe8520
-    virtual void Reset() OVERRIDE; // slot 3 - 0xe81a0 (ex ClearFrame2)
+    virtual void Reset() OVERRIDE;       // slot 3 - 0xe81a0 (ex ClearFrame2)
     virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
-    virtual i32 Render() OVERRIDE; // slot 5 - 0xe82a0 (ex DecCounter, decrement-and-blit)
+    virtual i32 Render() OVERRIDE;       // slot 5 - 0xe82a0 (ex DecCounter, decrement-and-blit)
     // slot 11 (0xe80e0), the CSBI_Image::SetupImage override. This USED to be split in two:
     // a body-less `virtual` here to pin the slot, plus the real body as a separate
     // non-virtual `InitItem`. Its arg model looked different (it called arg9 `obj` and

@@ -20,7 +20,7 @@ class CAniElement;     // resolved anim-geometry handle (the grunt arm's *GeoSrc
 class CMovingLogic : public CUserLogic {
 public:
     virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                        // slot 2
     // slot 5 (0x13c70; out-of-line body in Projectile.cpp - the deferred-callback
     // release + the MovingSlot16 tail; was bound as `CProjectile::ReleaseDeferred`,
     // but the slot lives in ??_7CMovingLogic @0x1e87ac - CProjectile INHERITS it).

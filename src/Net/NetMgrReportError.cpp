@@ -1,8 +1,8 @@
-#include <Net/NetMgr.h> // the single shared CNetMgr (ReportError is a static member)
+#include <Net/NetMgr.h>      // the single shared CNetMgr (ReportError is a static member)
 #include <Net/EmptyString.h> // g_emptyString (owner-only decl header)
 #include <rva.h>
-#include <stdio.h>  // engine sprintf (reloc-masked)
-#include <string.h> // inline strcpy (rep movs / repne scasb)
+#include <stdio.h>                 // engine sprintf (reloc-masked)
+#include <string.h>                // inline strcpy (rep movs / repne scasb)
 #include <Net/NetMgrReportError.h> // own exported globals (ex Globals.h)
 
 DATA(0x002bf6e8)

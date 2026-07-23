@@ -22,7 +22,7 @@ public:
         OVERRIDE;               // 0x10fd10 (vtable slot 4: per-coord PMF dispatch)
     static void RegisterActs(); // 0x10fe70  intern "A", bind Handler (static: no this)
     i32 ApplyAnimation(char* sprite, char* geom); // 0x110070
-    i32 TransitionAct();                         // 0x110110  the per-frame handler bound here
+    i32 TransitionAct();                          // 0x110110  the per-frame handler bound here
 
     // Leaf fields: CUserLogic ends at +0x40, the leaf object is 0x54 (the size the
     // state pump's `operator new(0x54)` allocates). m_activeAnimDesc caches the

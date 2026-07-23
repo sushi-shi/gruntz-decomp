@@ -13,7 +13,7 @@ public:
         return LOGIC_FRONTCANDYANI;
     } // slot 2
 public:
-    CFrontCandyAni(CGameObject* obj);   // 0x0acf40
+    CFrontCandyAni(CGameObject* obj); // 0x0acf40
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     // The vtable slot-1 two-chain body (0xfdf0): the shared CUserLogic serialize
@@ -39,7 +39,7 @@ struct CFrontCandyActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h> // CActReg (extern below)
+#include <Gruntz/ActReg.h>         // CActReg (extern below)
 extern CActReg g_frontCandyActReg; // 0x002460b0
 
 #endif // GRUNTZ_CFRONTCANDYANI_H

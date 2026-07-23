@@ -127,7 +127,7 @@ public:
         return ::operator new(0x206c);
     }
     i32 ApplyInit(CFxModeDesc* src); // 0x1804a0 (apply the built default init)
-    void SubFree();            // 0x180630 (dtor member teardown; reloc-masked)
+    void SubFree();                  // 0x180630 (dtor member teardown; reloc-masked)
     // The radial shade-remap blit (ghidra "Render", CircleShadeBlit.cpp). Walks the
     // circular light band and remaps boundary pixels through the 2D displacement table
     // arg, reading m_surface/m_3c pitch, the centre and the surf w/h. Non-virtual,
@@ -174,7 +174,7 @@ public:
     // default `new CFaderRadial` pushes 0x5c on its own - which is what the retail factory
     // at 0x17d9c0 does.)
     i32 ApplyInit(CFxModeDesc* src); // 0x17fa40 (apply the built default init)
-    void FreeBuffer();         // 0x17fc40 (dtor: free the m_cells buffer)
+    void FreeBuffer();               // 0x17fc40 (dtor: free the m_cells buffer)
 
     // The radial distance-field state. ApplyInit (0x17fa40) resolves the source/dest
     // surfaces from the CFxModeT4 descriptor, builds the base's shade table through the

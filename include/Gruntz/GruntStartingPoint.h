@@ -16,7 +16,7 @@ public:
         return LOGIC_GRUNTSTARTINGPOINT;
     } // slot 2
 public:
-    CGruntStartingPoint(CGameObject* obj);   // 0x3df30
+    CGruntStartingPoint(CGameObject* obj); // 0x3df30
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     virtual void FireActivation(i32 id)

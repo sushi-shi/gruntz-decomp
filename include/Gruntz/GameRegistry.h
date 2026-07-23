@@ -10,10 +10,10 @@ namespace Utils {
 }
 class CGruntSpawnConfig;
 
-class CState;           // +0x2c current game-state; CState.h completes it
-class CWorldSoundSet;   // +0x54 active-level input/spatial-sound object (WorldSoundSet.h)
+class CState;         // +0x2c current game-state; CState.h completes it
+class CWorldSoundSet; // +0x54 active-level input/spatial-sound object (WorldSoundSet.h)
 class CTriggerMgr;
-class CBattlezData; // +0x7c the HUD/score accumulator (BattlezData.h completes it)
+class CBattlezData;       // +0x7c the HUD/score accumulator (BattlezData.h completes it)
 struct CDDrawSubMgrPages; // +0x30->+0x04 active draw surface (m_drawContext at +0x14)
 class CDDrawWorkerRegistry;
 

@@ -40,7 +40,7 @@ struct CTelActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h> // CActReg (extern below)
+#include <Gruntz/ActReg.h>     // CActReg (extern below)
 extern CActReg g_secretActReg; // 0x00244598
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk

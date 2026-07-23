@@ -107,4 +107,3 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
     surf->m_ddSurface->Unlock(0);
     return 1;
 }
-

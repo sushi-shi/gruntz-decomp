@@ -59,7 +59,7 @@ SIZE_UNKNOWN(); // CResolveNode base subobject (+0x00..+0xd8)
 struct CWwdGameObjBaseCtor : public WwdCtorBase {
     CString m_label; // +0xdc  ??0CString (0x1b9b93)
     char _pe0[0x188 - 0xe0];
-    int m_188;                              // +0x188  object id
+    int m_188;                                // +0x188  object id
     CWwdGameObjBaseCtor(int a, int b, int c); // 0x15b390 (I obj)
 };
 SIZE_UNKNOWN(); // 0x15b390 per-kind wide-object ctor (CResolveNode base)

@@ -15,7 +15,15 @@ RVA_COMPGEN(0x00080cf0, 0x12, ??1CGameApp@@UAE@XZ)
 
 RVA(0x00080d20, 0x24)
 i32 CGameApp::InitDefault(HINSTANCE hInstance, char* szName) {
-    return Init(hInstance, szName, szName, g_emptyString, 0, static_cast<i32>(0x80000000), static_cast<i32>(0x80000000));
+    return Init(
+        hInstance,
+        szName,
+        szName,
+        g_emptyString,
+        0,
+        static_cast<i32>(0x80000000),
+        static_cast<i32>(0x80000000)
+    );
 }
 
 RVA(0x00080d60, 0x18)

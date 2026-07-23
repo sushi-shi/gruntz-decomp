@@ -22,8 +22,8 @@ public:
     // plain-method claim was a misbinding (that is CDDrawChildGroup.s id 0x10).
     virtual i32 GetClassId() OVERRIDE; // [8]  0x156cf0 -> CLASSID_WORKERMAPSMALL (0x14)
     virtual void* Factory_1658c0(CParseSource* a1, const char* key, i32 a3); // [9] 0x1658c0
-    virtual void* CreateWorker28(i32 a1, const char* key, i32 a3);                  // [10] 0x165990
-    virtual void* CreateWorker2C(i32 a1, const char* key, i32 a3);                  // [11] 0x165a10
+    virtual void* CreateWorker28(i32 a1, const char* key, i32 a3);           // [10] 0x165990
+    virtual void* CreateWorker2C(i32 a1, const char* key, i32 a3);           // [11] 0x165a10
     virtual void* Factory_165a90(CParseSource* a1, i32 a2, i32 a3);          // [12] 0x165a90
     virtual ~CDDrawWorkerMapSmall() OVERRIDE; // overrides slot [1]; 0x156d20 (G obj)
 

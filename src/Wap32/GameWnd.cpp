@@ -159,12 +159,19 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
             }
             break;
         case 0x0003 /*WM_MOVE*/:
-            if (g_activeGameWnd->OnMove(static_cast<i32>((lParam & 0xffff)), static_cast<i32>((static_cast<u32>(lParam) >> 16)))) {
+            if (g_activeGameWnd->OnMove(
+                    static_cast<i32>((lParam & 0xffff)),
+                    static_cast<i32>((static_cast<u32>(lParam) >> 16))
+                )) {
                 return 0;
             }
             break;
         case 0x0005 /*WM_SIZE*/:
-            if (g_activeGameWnd->OnSize(wParam, static_cast<i32>((lParam & 0xffff)), static_cast<i32>((static_cast<u32>(lParam) >> 16)))) {
+            if (g_activeGameWnd->OnSize(
+                    wParam,
+                    static_cast<i32>((lParam & 0xffff)),
+                    static_cast<i32>((static_cast<u32>(lParam) >> 16))
+                )) {
                 return 0;
             }
             break;
@@ -214,44 +221,65 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
             }
             break;
         case 0x0201 /*WM_LBUTTONDOWN*/:
-            if (g_activeGameWnd
-                    ->OnLButtonDown(wParam, static_cast<i32>((lParam & 0xffff)), static_cast<i32>((static_cast<u32>(lParam) >> 16)))) {
+            if (g_activeGameWnd->OnLButtonDown(
+                    wParam,
+                    static_cast<i32>((lParam & 0xffff)),
+                    static_cast<i32>((static_cast<u32>(lParam) >> 16))
+                )) {
                 return 0;
             }
             break;
         case 0x0202 /*WM_LBUTTONUP*/:
-            if (g_activeGameWnd
-                    ->OnLButtonUp(wParam, static_cast<i32>((lParam & 0xffff)), static_cast<i32>((static_cast<u32>(lParam) >> 16)))) {
+            if (g_activeGameWnd->OnLButtonUp(
+                    wParam,
+                    static_cast<i32>((lParam & 0xffff)),
+                    static_cast<i32>((static_cast<u32>(lParam) >> 16))
+                )) {
                 return 0;
             }
             break;
         case 0x0204 /*WM_RBUTTONDOWN*/:
-            if (g_activeGameWnd
-                    ->OnRButtonDown(wParam, static_cast<i32>((lParam & 0xffff)), static_cast<i32>((static_cast<u32>(lParam) >> 16)))) {
+            if (g_activeGameWnd->OnRButtonDown(
+                    wParam,
+                    static_cast<i32>((lParam & 0xffff)),
+                    static_cast<i32>((static_cast<u32>(lParam) >> 16))
+                )) {
                 return 0;
             }
             break;
         case 0x0205 /*WM_RBUTTONUP*/:
-            if (g_activeGameWnd
-                    ->OnRButtonUp(wParam, static_cast<i32>((lParam & 0xffff)), static_cast<i32>((static_cast<u32>(lParam) >> 16)))) {
+            if (g_activeGameWnd->OnRButtonUp(
+                    wParam,
+                    static_cast<i32>((lParam & 0xffff)),
+                    static_cast<i32>((static_cast<u32>(lParam) >> 16))
+                )) {
                 return 0;
             }
             break;
         case 0x0200 /*WM_MOUSEMOVE*/:
-            if (g_activeGameWnd
-                    ->OnMouseMove(wParam, static_cast<i32>((lParam & 0xffff)), static_cast<i32>((static_cast<u32>(lParam) >> 16)))) {
+            if (g_activeGameWnd->OnMouseMove(
+                    wParam,
+                    static_cast<i32>((lParam & 0xffff)),
+                    static_cast<i32>((static_cast<u32>(lParam) >> 16))
+                )) {
                 return 0;
             }
             break;
         case 0x0203 /*WM_LBUTTONDBLCLK*/:
-            if (g_activeGameWnd
-                    ->OnLButtonDblClk(wParam, static_cast<i32>((lParam & 0xffff)), static_cast<i32>((static_cast<u32>(lParam) >> 16)))) {
+            if (g_activeGameWnd->OnLButtonDblClk(
+                    wParam,
+                    static_cast<i32>((lParam & 0xffff)),
+                    static_cast<i32>((static_cast<u32>(lParam) >> 16))
+                )) {
                 return 0;
             }
             break;
         case 0x0206 /*WM_RBUTTONDBLCLK*/:
-            if (g_activeGameWnd
-                    ->OnRButtonDblClk(wParam, static_cast<i32>((lParam & 0xffff)), static_cast<i32>((static_cast<u32>(lParam) >> 16)))) {
+            if (g_activeGameWnd->OnRButtonDblClk(
+                    wParam,
+                    static_cast<i32>((lParam & 0xffff)),
+                    static_cast<i32>((static_cast<u32>(lParam) >> 16))
+                )) {
                 return 0;
             }
             break;

@@ -30,9 +30,9 @@
 
 RVA(0x001848b0, 0x47)
 CHashElement* CHashElement::Next() {
-    CHashElement* n = m_link.m_next
-        ? reinterpret_cast<CHashElement*>(reinterpret_cast<char*>(m_link.m_next) - 4)
-        : 0;
+    CHashElement* n =
+        m_link.m_next ? reinterpret_cast<CHashElement*>(reinterpret_cast<char*>(m_link.m_next) - 4)
+                      : 0;
     if (n == 0) {
         u32 i = m_bucket + 1;
         CHashBase* coll = m_owner;

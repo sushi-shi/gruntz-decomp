@@ -63,9 +63,12 @@ void CBehindCandyAni::InitActReg() {
 
 RVA(0x000ad850, 0x102)
 void CBehindCandyAni::FireActivation(i32 id) {
-    CBehindCandyActEntry* e = reinterpret_cast<CBehindCandyActEntry*>(g_behindCandyActReg.ResolveEntry(id));
+    CBehindCandyActEntry* e =
+        reinterpret_cast<CBehindCandyActEntry*>(g_behindCandyActReg.ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*(reinterpret_cast<CBehindCandyActEntry*>(g_behindCandyActReg.ResolveEntry(id)))->m_fn)();
+        (this
+             ->*(reinterpret_cast<CBehindCandyActEntry*>(g_behindCandyActReg.ResolveEntry(id)))
+             ->m_fn)();
     }
 }
 

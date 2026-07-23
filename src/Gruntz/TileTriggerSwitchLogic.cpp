@@ -1,4 +1,4 @@
-#include <string.h>            // memcpy -> the /Oi `rep movsd` in BuildSmall
+#include <string.h>         // memcpy -> the /Oi `rep movsd` in BuildSmall
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag
@@ -413,7 +413,8 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
     // (3) fire the command-grid effect at the tile center (cx/cy reused by step 4).
     i32 cx = (m_tileX << 5) + 0x10;
     i32 cy = (m_tileY << 5) + 0x10;
-    g_gameReg->m_cmdGrid->LoadPowerupIconSprites(m_powerupType, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
+    g_gameReg->m_cmdGrid
+        ->LoadPowerupIconSprites(m_powerupType, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
 
     // (4) when +0xc4 is set, spawn an InGameText sprite carrying it.
     if (m_textId != 0) {
@@ -433,7 +434,8 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
         return;
     }
     CDDrawSubMgrLeafScan* sreg =
-        gameMgr->m_soundRegistry; // m_28 typed CDDrawSubMgrLeafScan* on the canonical holder (GameRegistry.h)
+        gameMgr
+            ->m_soundRegistry; // m_28 typed CDDrawSubMgrLeafScan* on the canonical holder (GameRegistry.h)
     if (sreg->m_emitGate != 0) {
         return;
     }
@@ -950,9 +952,9 @@ i32 CTileActionEvent::Process(i32 arg) {
             if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
                 && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT
                 && g_gameReg->m_world->m_soundRegistry->m_emitGate == 0) {
-                LeafCue* snd = static_cast<LeafCue*>(g_gameReg->m_world->m_soundRegistry->Lookup(
-                    "GRUNTZ_NORMALGRUNT_IMPACTMM3"
-                ));
+                LeafCue* snd = static_cast<LeafCue*>(
+                    g_gameReg->m_world->m_soundRegistry->Lookup("GRUNTZ_NORMALGRUNT_IMPACTMM3")
+                );
                 if (snd != 0) {
                     snd->PlayIfElapsed(static_cast<i32>(g_sndCueTag), 0, 0, 0);
                 }
@@ -979,7 +981,7 @@ i32 CTileActionEvent::Process(i32 arg) {
     if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
         && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
         CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup
-                               ->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
+                                   ->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
         if (spr != 0) {
             spr->ApplyLookupGeometry("GAME_BRICKBREAK", 0);
             // Inner dense byte-mapped switch on (effect - 0x132), span 0x12 (MSVC5

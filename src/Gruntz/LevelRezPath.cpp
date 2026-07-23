@@ -5,10 +5,10 @@
 
 #include <rva.h>
 
-#include <Bute/SymParser.h>     // the shared CSymParser (ResolvePath 0x13c030)
-#include <Gruntz/GruntzMgr.h>   // the REAL owner (was the LevelRezLoader view)
+#include <Bute/SymParser.h>      // the shared CSymParser (ResolvePath 0x13c030)
+#include <Gruntz/GruntzMgr.h>    // the REAL owner (was the LevelRezLoader view)
 #include <Gruntz/LevelRezPath.h> // LevelRezData (the 0x5f4 rez descriptor)
-#include <Gruntz/ParseSource.h> // CParseSource::BeginParse/EndParse (0x139960/0x1399d0)
+#include <Gruntz/ParseSource.h>  // CParseSource::BeginParse/EndParse (0x139960/0x1399d0)
 
 // @source: decomp-xref
 // @early-stop
@@ -73,8 +73,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) 
         if (node == 0) {
             return 0;
         }
-        CParseSource* sub =
-            node->Insert(name, reinterpret_cast<void*>(0x575744));
+        CParseSource* sub = node->Insert(name, reinterpret_cast<void*>(0x575744));
         if (sub == 0) {
             return 0;
         }
@@ -90,8 +89,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) 
     if (node == 0) {
         return 0;
     }
-    CParseSource* sub =
-        node->Insert(name, reinterpret_cast<void*>(0x575744));
+    CParseSource* sub = node->Insert(name, reinterpret_cast<void*>(0x575744));
     if (sub == 0) {
         return 0;
     }
@@ -103,4 +101,3 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) 
     sub->EndParse();
     return buf.m_2ec;
 }
-

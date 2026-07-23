@@ -23,7 +23,9 @@ void CCheckpointDlg::DoDataExchange(CDataExchange* pDX) {
 
 RVA(0x00023570, 0x6)
 const AFX_MSGMAP* CCheckpointDlg::GetMessageMap() const {
-    return reinterpret_cast<const AFX_MSGMAP*>(&g_msgmap_CCheckpointDlg); // msgmap global still a placeholder type
+    return reinterpret_cast<const AFX_MSGMAP*>(
+        &g_msgmap_CCheckpointDlg
+    ); // msgmap global still a placeholder type
 }
 
 // CCheckpointDlg::OnToggleCheckpointPrompts (0x23590): mirror the "disable prompts"

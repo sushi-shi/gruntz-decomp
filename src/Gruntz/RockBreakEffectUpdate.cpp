@@ -21,7 +21,7 @@
 #include <Gruntz/UserLogic.h>    // CGameObject (the target + effect sprite are both one)
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_cmdGrid)
 #include <Gruntz/TriggerMgr.h> // BuildRockBreakParticles (ex CRockBreakMgr - dissolved onto CTriggerMgr)
-#include <Gruntz/RbEffect.h>   // canonical RbEffect (the rock-break effect leaf; identity @identity-TODO)
+#include <Gruntz/RbEffect.h> // canonical RbEffect (the rock-break effect leaf; identity @identity-TODO)
 
 // The effect leaf: its bound target (m_10, +0x114 state gates the spawn) and its
 // effect sprite (m_38, CAniAdvanceCursor @+0x1a0, +0x1c0/+0x1c8 gates) are BOTH real

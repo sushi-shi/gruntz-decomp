@@ -19,7 +19,7 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE;
     i32 Tick();
     i32 LoadSprites();
-    CKitchenSlime(CGameObject* obj);   // 0x0b23a0 (folds CUserLogic(obj) + the slime setup)
+    CKitchenSlime(CGameObject* obj); // 0x0b23a0 (folds CUserLogic(obj) + the slime setup)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 

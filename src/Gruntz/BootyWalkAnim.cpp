@@ -10,11 +10,11 @@
 
 #include <Gruntz/GameMode.h>  // canonical CBootyState : CState (the folded booty state)
 #include <Gruntz/GruntzMgr.h> // the real g_gameReg class (the Booty view is dissolved)
-#include <Gruntz/BzState.h>  // the deferred g_gameReg sub-object views
+#include <Gruntz/BzState.h>   // the deferred g_gameReg sub-object views
 
 #include <rva.h>
-#include <Gruntz/SoundState.h> // ex Globals.h transitive
-#include <Gruntz/Random.h> // ex Globals.h transitive
+#include <Gruntz/SoundState.h>    // ex Globals.h transitive
+#include <Gruntz/Random.h>        // ex Globals.h transitive
 #include <Gruntz/BootyWalkAnim.h> // ex Globals.h
 
 DATA(0x001e9068)
@@ -58,7 +58,8 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         return 0;
     }
     for (i32 i = 0; i < 4; i++) {
-        m_animSprites[i] = g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
+        m_animSprites[i] =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
         if (m_animSprites[i] == 0) {
             return 0;
         }
@@ -68,14 +69,14 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         m_animSprites[i]->m_drawActive = 1;
         m_animSprites[i]->m_drawFillCmd = 0xa;
         m_animSprites[i]->m_drawFillArg = sel;
-        m_visSprites[i] = g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
+        m_visSprites[i] =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
         if (m_visSprites[i] == 0) {
             return 0;
         }
         static CString buf;
-        const char* prefix = (i < (g_gameReg->m_scoreHud->m_count - 1) % 4 + 1)
-                                 ? "GAME_INGAMEICONZ_"
-                                 : "BOOTY_DIM";
+        const char* prefix =
+            (i < (g_gameReg->m_scoreHud->m_count - 1) % 4 + 1) ? "GAME_INGAMEICONZ_" : "BOOTY_DIM";
         buf.Format("%sSECRET%c", prefix, g_secretChars[i]);
         m_visSprites[i]->ApplyName(buf);
         m_visSprites[i]->ApplyLookupGeometry("GAME_CYCLE100", 0);
@@ -255,15 +256,14 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                         x = g_randSeed;
                     }
                     g_randSeed = x * 214013 + 2531011;
-                    g_gameReg->m_cueSink
-                        ->SpawnVoiceDriver(
-                            0,
-                            0x3bf,
-                            ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % 0x11,
-                            1,
-                            -1,
-                            -1
-                        );
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(
+                        0,
+                        0x3bf,
+                        ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % 0x11,
+                        1,
+                        -1,
+                        -1
+                    );
                     m_walkStarted = 1;
                 } else {
                     m_animSprites[m_stepIndex]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
@@ -274,8 +274,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     g->m_drawFillArg = sel;
                     m_visSprites[m_stepIndex]->m_stateFlags |= 1;
                     m_stepIndex++;
-                    g_gameReg->m_cueSink
-                        ->SpawnVoiceDriver(0, 0x441, 0, 1, -1, -1);
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x441, 0, 1, -1, -1);
                     if (m_stepIndex == g_gameReg->m_scoreHud->m_count % 4) {
                         m_stepIndex = 4;
                         return 1;

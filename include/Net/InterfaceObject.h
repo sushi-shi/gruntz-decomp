@@ -7,8 +7,8 @@
 #include <rva.h>
 
 struct InterfaceObject : public CObject {
-    GUID* m_guid;      // +0x04  the service-provider GUID (LPGUID, stored raw)
-    CString m_name; // +0x08  the provider name
+    GUID* m_guid;               // +0x04  the service-provider GUID (LPGUID, stored raw)
+    CString m_name;             // +0x08  the provider name
     __POSITION* m_listPosition; // +0x0c  cached AddTail position
 
     // Inline ctor: base CObject vptr stamp + m_name CString ctor + own vptr stamp,

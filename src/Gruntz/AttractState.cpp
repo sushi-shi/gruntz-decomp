@@ -1,4 +1,4 @@
-#include <EmptyString.h> // g_emptyString (ex .cpp extern)
+#include <EmptyString.h>          // g_emptyString (ex .cpp extern)
 #include <Gruntz/String.h>        // MFC CString (Vslot09's CMapStringToOb/CObject); MFC-first
 #include <Rez/FrameClock.h>       // frame-clock band (g_frameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
@@ -17,8 +17,8 @@
 #include <rva.h>
 
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ScanTree/RemoveKeysEqual)
-#include <Gruntz/SoundState.h> // ex Globals.h transitive
-#include <Gruntz/Random.h> // ex Globals.h transitive
+#include <Gruntz/SoundState.h>            // ex Globals.h transitive
+#include <Gruntz/Random.h>                // ex Globals.h transitive
 
 VTBL(CAttract, 0x001ea194);
 VTBL(CState, 0x001ea21c);
@@ -310,4 +310,3 @@ RVA(0x0008cd90, 0x55)
 CAttract::~CAttract() {
     ReleaseResources();
 }
-

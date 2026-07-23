@@ -1,5 +1,5 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>         // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 
@@ -223,13 +223,23 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
         if (!frame) {
             return 0;
         }
-        frame->RenderFrame(reinterpret_cast<void*>(arg1), reinterpret_cast<void*>((self->m_0 + 0x140)), reinterpret_cast<void*>((self->m_4 + 0x20)), 0);
+        frame->RenderFrame(
+            reinterpret_cast<void*>(arg1),
+            reinterpret_cast<void*>((self->m_0 + 0x140)),
+            reinterpret_cast<void*>((self->m_4 + 0x20)),
+            0
+        );
     } else {
         CImage* frame = static_cast<CImage*>(spr->m_items.GetAt(spr->m_minIndex));
         if (!frame) {
             return 0;
         }
-        frame->RenderFrame(reinterpret_cast<void*>(arg1), reinterpret_cast<void*>((self->m_0 + 0xf0)), reinterpret_cast<void*>((self->m_4 + 0x20)), 0);
+        frame->RenderFrame(
+            reinterpret_cast<void*>(arg1),
+            reinterpret_cast<void*>((self->m_0 + 0xf0)),
+            reinterpret_cast<void*>((self->m_4 + 0x20)),
+            0
+        );
     }
 
     HDC hdc = 0;

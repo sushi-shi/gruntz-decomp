@@ -119,9 +119,12 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x000acbb0, 0x102)
 void CEyeCandyAni::FireActivation(i32 id) {
-    CEyeCandyActEntry* e = reinterpret_cast<CEyeCandyActEntry*>(g_eyeCandyDispatch.ResolveEntry(id));
+    CEyeCandyActEntry* e =
+        reinterpret_cast<CEyeCandyActEntry*>(g_eyeCandyDispatch.ResolveEntry(id));
     if (e->m_fn != 0) {
-        (this->*(reinterpret_cast<CEyeCandyActEntry*>(g_eyeCandyDispatch.ResolveEntry(id)))->m_fn)();
+        (this
+             ->*(reinterpret_cast<CEyeCandyActEntry*>(g_eyeCandyDispatch.ResolveEntry(id)))
+             ->m_fn)();
     }
 }
 
@@ -189,9 +192,11 @@ void CFrontCandyAni::InitActReg() {
 
 RVA(0x000ad1b0, 0x102)
 void CFrontCandyAni::FireActivation(i32 coord) {
-    CFrontCandyActEntry* e = reinterpret_cast<CFrontCandyActEntry*>(g_frontCandyActReg.ResolveEntry(coord));
+    CFrontCandyActEntry* e =
+        reinterpret_cast<CFrontCandyActEntry*>(g_frontCandyActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        CFrontCandyActEntry* e2 = reinterpret_cast<CFrontCandyActEntry*>(g_frontCandyActReg.ResolveEntry(coord));
+        CFrontCandyActEntry* e2 =
+            reinterpret_cast<CFrontCandyActEntry*>(g_frontCandyActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }

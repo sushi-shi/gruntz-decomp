@@ -63,7 +63,7 @@ public:
         return LOGIC_TELEPORTER;
     }
     virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32)
-        OVERRIDE;                    // slot 1 (body: Serialize 0x41350)
+        OVERRIDE; // slot 1 (body: Serialize 0x41350)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     i32 m_armed; // +0x54  armed flag (a resolved target id)

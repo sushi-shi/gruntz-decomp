@@ -8,8 +8,8 @@
 
 class CFader {
 public:
-    CFader();                   // 0x17e450
-    virtual ~CFader();          // 0x17e4a0  (/GX EH frame; vtable slot 0)
+    CFader();          // 0x17e450
+    virtual ~CFader(); // 0x17e4a0  (/GX EH frame; vtable slot 0)
     // Slot roles PROVEN by the two run-drivers below: `count = GetFrameCount(); BeginFade();
     // RenderFrame(0); ... RenderFrame(frame); ... RenderFrame(count); EndFade();`.
     virtual void RenderFrame(i32 f) = 0; // slot 1 (__purecall in base; renders one fade frame)
@@ -46,8 +46,8 @@ public:
     // use the same slot as the overlay surface pool. (Ex the i32 "m_set2cArg" the
     // fake IFadeSink interface read through.)
     class CDDrawPtrCollections* m_ptrColl;
-    i32 m_flag;               // +0x30  teardown gate (=1 in the base ctor)
-    i32 m_34;                 // +0x34  RunFade's measured frame rate
+    i32 m_flag; // +0x30  teardown gate (=1 in the base ctor)
+    i32 m_34;   // +0x34  RunFade's measured frame rate
 };
 SIZE(0x38);
 
@@ -58,12 +58,12 @@ extern "C" i32 __ftol(double v); // 0x11f570 (CRT double->long, x87 fstcw/fldcw)
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern const float g_faderScale_5f085c; // 0x5f085c  intensity->magnitude scale
-extern const double g_faderPowK; // 2.0
-extern const float g_faderHalf; // 0.5
-extern const double g_faderScale; // 10000.0
-extern const double g_faderBiasR; // -1.0  (r - K == r + 1.0)
-extern const float g_faderBiasFade; // -1.0  (fade - K == fade + 1.0)
-extern const float g_faderOne; // 1.0  (per-cell render threshold: fade - frame > 1.0)
+extern const double g_faderPowK;        // 2.0
+extern const float g_faderHalf;         // 0.5
+extern const double g_faderScale;       // 10000.0
+extern const double g_faderBiasR;       // -1.0  (r - K == r + 1.0)
+extern const float g_faderBiasFade;     // -1.0  (fade - K == fade + 1.0)
+extern const float g_faderOne;          // 1.0  (per-cell render threshold: fade - frame > 1.0)
 extern "C" int _access(const char* path, int mode); // 0x193900 CRT
 
 extern float g_fxBias;

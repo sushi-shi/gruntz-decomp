@@ -5,8 +5,8 @@
 
 #include <Mfc.h> // CObject base + <windows.h>
 
-#include <Gruntz/UserLogic.h>    // CUserLogic : CUserBase, CGameObject
-#include <Wap32/ZVec.h>          // zDArray<member-fn-ptr> (the dispatch table)
+#include <Gruntz/UserLogic.h>     // CUserLogic : CUserBase, CGameObject
+#include <Wap32/ZVec.h>           // zDArray<member-fn-ptr> (the dispatch table)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 class CFileMemBase;
@@ -19,7 +19,7 @@ public:
         return LOGIC_INGAMETEXT;
     } // slot 2
 public:
-    CInGameText(CGameObject* obj);   // 0x099110 (folds CUserLogic(obj) + on-screen tail)
+    CInGameText(CGameObject* obj); // 0x099110 (folds CUserLogic(obj) + on-screen tail)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
@@ -28,8 +28,8 @@ public:
     i32 Update();                                 // 0x0997c0
 
     // --- CInGameText own fields (offsets load-bearing) ---
-    i32 m_cachedAreaId;        // +0x54  Update: cached hit-test area id; serialized scalar
-    i32 m_cachedSubId;         // +0x58  Update: cached hit-test sub id; serialized scalar
+    i32 m_cachedAreaId; // +0x54  Update: cached hit-test area id; serialized scalar
+    i32 m_cachedSubId;  // +0x58  Update: cached hit-test sub id; serialized scalar
 };
 SIZE_UNKNOWN();
 

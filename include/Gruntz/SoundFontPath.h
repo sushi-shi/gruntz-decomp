@@ -10,9 +10,9 @@ extern u16 g_sfDeviceId; // 0x0024dd28 (WORD; u16 here - the header precedes win
 // VAs are reloc-masked at use) ---
 extern char g_sfMusic4[]; // "<drive>:\MUSIC\Gruntz4.SF2"
 extern char g_sfLocal4[]; // "<cwd>\Gruntz4.SF2"
-extern char g_sfMusic[]; // "<drive>:\MUSIC\Gruntz.SF2"
-extern char g_sfLocal[]; // "<cwd>\Gruntz.SF2"
-extern char g_sfDir[]; // GetCurrentDirectoryA(0xff, ...) scratch
+extern char g_sfMusic[];  // "<drive>:\MUSIC\Gruntz.SF2"
+extern char g_sfLocal[];  // "<cwd>\Gruntz.SF2"
+extern char g_sfDir[];    // GetCurrentDirectoryA(0xff, ...) scratch
 
 extern "C" char g_id0_613dff; // (def in SFSelectDevice.cpp)
 extern "C" char g_id1_613e00; // (def in SFSelectDevice.cpp)

@@ -1,7 +1,7 @@
 #ifndef SRC_WWD_WWDFILE_H
 #define SRC_WWD_WWDFILE_H
 
-class CDDrawWorker;             // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
 #include <Mfc.h> // real MFC CString (the WwdFile members take it by value)
 #include <Ints.h>

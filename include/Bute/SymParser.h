@@ -28,8 +28,8 @@ SIZE(0x10); // { vptr, head, tail, count }
 struct CParseSource; // the 0x3c leaf parse record (ex 'CSymLeafBuilder')
 
 struct CSlotNode {
-    DSoundLink m_link;         // +0x00  intrusive chain node { next, prev }
-    CParseSource* m_buffer;    // +0x08  owned parse-slot block (RezFree'd)
+    DSoundLink m_link;      // +0x00  intrusive chain node { next, prev }
+    CParseSource* m_buffer; // +0x08  owned parse-slot block (RezFree'd)
 };
 SIZE(0xc);
 
@@ -134,9 +134,10 @@ public:
     void SetDelims(char* s); // 0x13ba80
 
     // The three path-resolution thunks: forward into GetRoot()'s CSymTab.
-    struct CParseSource* ResolveQualified(const char* name, void* arg); // 0x13bff0 -> root->ResolveQualified
-    void* ResolvePath(const char* path);               // 0x13c030 -> root->ResolvePath
-    void AddNode(void* rec);                           // 0x13c210 -> m_hash insert
+    struct CParseSource*
+    ResolveQualified(const char* name, void* arg); // 0x13bff0 -> root->ResolveQualified
+    void* ResolvePath(const char* path);           // 0x13c030 -> root->ResolvePath
+    void AddNode(void* rec);                       // 0x13c210 -> m_hash insert
 
     // vptr implicit @ +0x00 (??_7CSymParser@@6B@)
     // +0x04  owned delimiter-set buffer: the tokenizer split set the CSymTab path

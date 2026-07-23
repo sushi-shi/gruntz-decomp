@@ -21,7 +21,7 @@ public:
     i32 Tick();                                   // 0x042ac0
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
-                               //         AnimWorkerHandlers `new CSecretLevelTrigger`)
+    //         AnimWorkerHandlers `new CSecretLevelTrigger`)
 };
 SIZE(0x54);
 

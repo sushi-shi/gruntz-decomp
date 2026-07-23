@@ -1,5 +1,5 @@
-#include <Gruntz/ActNameRegistry.h> // the shared action-name registry archetype
-#include <Gruntz/ActReg.h>          // the shared activation-registrar archetype
+#include <Gruntz/ActNameRegistry.h>  // the shared action-name registry archetype
+#include <Gruntz/ActReg.h>           // the shared activation-registrar archetype
 #include <Gruntz/CursorSnapActReg.h> // g_logicActReg_62bfa0 decl
 
 // g_logicActReg_62bfa0 (0x0022bfa0): CLogicActTable - no provable static init (the type has no
@@ -46,5 +46,6 @@ void ConstructLogicActRange_62bfa0() {
 RVA(0x0003a710, 0x18d)
 void RegisterXLogic_62bfa0() {
     i32 id = RegisterActionName();
-    *reinterpret_cast<void**>(g_logicActReg_62bfa0.ResolveEntry(id)) = static_cast<void*>(&CursorSnapAct);
+    *reinterpret_cast<void**>(g_logicActReg_62bfa0.ResolveEntry(id)) =
+        static_cast<void*>(&CursorSnapAct);
 }

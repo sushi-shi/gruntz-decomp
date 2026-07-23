@@ -1,5 +1,5 @@
-#include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (full def)
+#include <Gruntz/GameRegMfcPtr.h>      // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Gruntz/ActionOptionsMenuBar.h>
@@ -13,7 +13,7 @@
 
 #include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/SerialArchive.h> // the shared archive stream (Serialize's Write @+0x30)
-#include <Wwd/WwdFile.h>          // CDDrawWorkerHost - the canonical plane (world->screen transform)
+#include <Wwd/WwdFile.h> // CDDrawWorkerHost - the canonical plane (world->screen transform)
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/Sprite.h>
 
@@ -59,10 +59,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     }
 
     spr_ob = 0;
-    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
-        "GAME_INGAMEICONZ_NORMCHIPZ",
-        spr_ob
-    );
+    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_INGAMEICONZ_NORMCHIPZ", spr_ob);
     spr = static_cast<CDDrawWorker*>(spr_ob);
     m_normChipSprite = spr;
     if (!spr) {
@@ -70,10 +67,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     }
 
     spr_ob = 0;
-    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
-        "GAME_INGAMEICONZ_HIGHCHIPZ",
-        spr_ob
-    );
+    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_INGAMEICONZ_HIGHCHIPZ", spr_ob);
     spr = static_cast<CDDrawWorker*>(spr_ob);
     m_highChipSprite = spr;
     if (!spr) {
@@ -81,10 +75,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     }
 
     spr_ob = 0;
-    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
-        "GAME_INGAMEICONZ_GREYCHIPZ",
-        spr_ob
-    );
+    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_INGAMEICONZ_GREYCHIPZ", spr_ob);
     spr = static_cast<CDDrawWorker*>(spr_ob);
     m_greyChipSprite = spr;
     if (!spr) {
@@ -241,7 +232,13 @@ i32 CActionOptionsMenuBar::Render() {
     r[1] = src[1];
     r[2] = src[2];
     r[3] = src[3];
-    m_frame->RenderFrameClipped(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>(sy), reinterpret_cast<void*>(sx), r, 0);
+    m_frame->RenderFrameClipped(
+        reinterpret_cast<void*>(ctx),
+        reinterpret_cast<void*>(sy),
+        reinterpret_cast<void*>(sx),
+        r,
+        0
+    );
 
     if (m_button0Frame) {
         i32* src2 = reinterpret_cast<i32*>(&g_gameReg->m_world->m_level->m_planeCtx);
@@ -249,7 +246,13 @@ i32 CActionOptionsMenuBar::Render() {
         r[1] = src2[1];
         r[2] = src2[2];
         r[3] = src2[3];
-        m_frame->RenderFrameClipped(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>((sy - 0xc)), reinterpret_cast<void*>((sx + 2)), r, 0);
+        m_frame->RenderFrameClipped(
+            reinterpret_cast<void*>(ctx),
+            reinterpret_cast<void*>((sy - 0xc)),
+            reinterpret_cast<void*>((sx + 2)),
+            r,
+            0
+        );
     }
     if (m_button1Frame) {
         i32* src3 = reinterpret_cast<i32*>(&g_gameReg->m_world->m_level->m_planeCtx);
@@ -257,7 +260,13 @@ i32 CActionOptionsMenuBar::Render() {
         r[1] = src3[1];
         r[2] = src3[2];
         r[3] = src3[3];
-        m_frame->RenderFrameClipped(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>((sy + 0x10)), reinterpret_cast<void*>((sx + 2)), r, 0);
+        m_frame->RenderFrameClipped(
+            reinterpret_cast<void*>(ctx),
+            reinterpret_cast<void*>((sy + 0x10)),
+            reinterpret_cast<void*>((sx + 2)),
+            r,
+            0
+        );
     }
     return 1;
 }
@@ -560,4 +569,3 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
 
     return 1;
 }
-

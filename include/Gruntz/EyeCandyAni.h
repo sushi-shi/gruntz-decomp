@@ -11,7 +11,7 @@ public:
 public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
-    CEyeCandyAni(CGameObject* obj);   // 0xac870
+    CEyeCandyAni(CGameObject* obj); // 0xac870
     // 0x0000ff00 vtable slot 2: per-class logic-type id, inline (one
     // deduped COMDAT copy in retail; see docs on header-inline members).
     RVA(0x0000ff00, 0x6)

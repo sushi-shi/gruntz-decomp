@@ -7,12 +7,12 @@
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages::PagesReady (m_c->m_04 page gate)
 #include <DDrawMgr/DDSurface.h>        // the frame surface CDDSurface (m_10->m_2c->m_8 IsLost poll)
 
-#include <Gruntz/BankMgr.h>      // CBankMgr::Lookup / CSymTab::LoadGroup (m_8/m_2c)
-#include <DinMgr2/DirectInputMgr2.h> // CInputDevBase (Poll/m_currentKeys press-edge flags)
-#include <Gruntz/GameMode.h>     // g_actorList (poll list) + GM_SimpleAnim (Render spine)
-#include <Gruntz/State.h>        // CState base (m_4/m_8/m_c/m_2c owner/view/bank facets)
-#include <Gruntz/View.h>         // CState::m_c render sub-object facets
-#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (the m_c holder)
+#include <Gruntz/BankMgr.h>           // CBankMgr::Lookup / CSymTab::LoadGroup (m_8/m_2c)
+#include <DinMgr2/DirectInputMgr2.h>  // CInputDevBase (Poll/m_currentKeys press-edge flags)
+#include <Gruntz/GameMode.h>          // g_actorList (poll list) + GM_SimpleAnim (Render spine)
+#include <Gruntz/State.h>             // CState base (m_4/m_8/m_c/m_2c owner/view/bank facets)
+#include <Gruntz/View.h>              // CState::m_c render sub-object facets
+#include <Gruntz/GameRegistry.h>      // CDDrawSurfaceMgr (the m_c holder)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSubMgrLeafScan (m_c->m_soundRegistry Install facet)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr::RestoreVideoMode (m_4 facet) + m_gameWnd->m_hwnd
 #include <Gruntz/Attract.h> // CSymParser (m_8 facet; ResolvePath). RunTitleSeq @0xfa350 is now a CState base method.
@@ -145,7 +145,13 @@ i32 CSplashState::InputVirtual() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return RunTitleSeq(static_cast<const char*>(g_assetRoot), 0, 0, 1, 0); // 0xfa350 (CState base method)
+    return RunTitleSeq(
+        static_cast<const char*>(g_assetRoot),
+        0,
+        0,
+        1,
+        0
+    ); // 0xfa350 (CState base method)
 }
 
 RVA(0x000f9af0, 0x3e)
@@ -155,7 +161,13 @@ i32 CSplashState::Vslot06() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return RunTitleSeq(static_cast<const char*>(g_assetRoot), 0, 0, 1, 0); // 0xfa350 (CState base method)
+    return RunTitleSeq(
+        static_cast<const char*>(g_assetRoot),
+        0,
+        0,
+        1,
+        0
+    ); // 0xfa350 (CState base method)
 }
 
 RVA(0x000f9b40, 0x37)
@@ -171,4 +183,3 @@ i32 CSplashState::Vslot0e(i32, i32, i32) {
     PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     return 1;
 }
-

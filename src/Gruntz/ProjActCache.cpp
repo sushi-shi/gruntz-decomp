@@ -1,8 +1,8 @@
 #include <Bute/ButeTree.h> // the real CVariantSlot (m_errSink->Set)
 #include <Gruntz/ProjActCache.h>
 
-#include <stdlib.h> // realloc (0x125180), malloc (0x120b60)
-#include <string.h> // memset (rep stos)
+#include <stdlib.h>        // realloc (0x125180), malloc (0x120b60)
+#include <string.h>        // memset (rep stos)
 #include <Wap32/zBitVec.h> // ex Globals.h
 
 #pragma intrinsic(strlen, strcmp, memcpy)
@@ -87,7 +87,8 @@ void* CProjActMap::Insert(const char* key, void* value) {
         if (kb != 0) {
             memcpy(kb, key, strlen(key) + 1);
 
-            i32 selfdir = (1 << (critbit & 7)) & static_cast<i32>(static_cast<signed char>(key[critbit >> 3]));
+            i32 selfdir = (1 << (critbit & 7))
+                          & static_cast<i32>(static_cast<signed char>(key[critbit >> 3]));
             if (selfdir) {
                 nn->m_4 = nn;
             } else {
@@ -144,7 +145,8 @@ zBitVec* zBitVec::Or(zBitVec* o) {
         }
     }
     i32 nwords = static_cast<i32>((static_cast<u32>((o->m_capacity + 1)) >> 5));
-    u32* obuf = static_cast<u32>(o->m_capacity) > 0x20 ? o->m_words : reinterpret_cast<u32*>(&o->m_words);
+    u32* obuf =
+        static_cast<u32>(o->m_capacity) > 0x20 ? o->m_words : reinterpret_cast<u32*>(&o->m_words);
     u32* tbuf = static_cast<u32>(m_capacity) > 0x20 ? m_words : reinterpret_cast<u32*>(&m_words);
     for (i32 i = 0; i < nwords; i++) {
         tbuf[i] |= obuf[i];

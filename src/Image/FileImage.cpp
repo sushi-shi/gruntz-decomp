@@ -7,7 +7,7 @@
 
 #include <ddraw.h> // real IDirectDrawSurface dispatch (this->m_8->Unlock in the exporters)
 
-#include <string.h> // memcpy / strlen (inlined to rep movs / repne scas)
+#include <string.h>          // memcpy / strlen (inlined to rep movs / repne scas)
 #include <Image/ImagePool.h> // ex Globals.h
 #include <Image/FileImage.h> // own exported globals (ex Globals.h)
 
@@ -1231,4 +1231,3 @@ void* CDDSurface::LoadPid(char* name, char* path, void* a3) {
     operator delete(buf);
     return result;
 }
-

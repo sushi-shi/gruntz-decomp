@@ -1,6 +1,6 @@
 #include <rva.h>
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
-#include <Mfc.h> // /GX EH-frame helpers
+#include <Mfc.h>          // /GX EH-frame helpers
 
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Wwd/WwdSpatialMgr.h> // the canonical spatial/scroll worker (m_scroll)

@@ -41,16 +41,27 @@ CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
             if (sub.IsEmpty()) {
                 name.Format("VOICES_%s", static_cast<LPCTSTR>(scratch));
             } else {
-                name.Format("VOICES_%s_%s", static_cast<LPCTSTR>(scratch), static_cast<LPCTSTR>(sub));
+                name.Format(
+                    "VOICES_%s_%s",
+                    static_cast<LPCTSTR>(scratch),
+                    static_cast<LPCTSTR>(sub)
+                );
             }
             void* res = reinterpret_cast<void*>((reinterpret_cast<CSymParser*>(m_owner->m_34))
-                            ->ResolveQualified(static_cast<LPCTSTR>(name), reinterpret_cast<void*>(0x574156)));
+                                                    ->ResolveQualified(
+                                                        static_cast<LPCTSTR>(name),
+                                                        reinterpret_cast<void*>(0x574156)
+                                                    ));
             if (res != 0) {
                 // retail copy-ctors `name` straight into the by-value arg slot
                 // (push 0; push ecx; mov ecx,esp; copy-ctor) - no local temp.
                 list->AddVoiceSound(name, 0);
                 sub.Format("S%i", i);
-                sub = *g_buteMgr.GetStringDef(static_cast<LPCTSTR>(scratch), static_cast<LPCTSTR>(sub), &dir);
+                sub = *g_buteMgr.GetStringDef(
+                    static_cast<LPCTSTR>(scratch),
+                    static_cast<LPCTSTR>(sub),
+                    &dir
+                );
             } else {
                 sub.Empty();
             }

@@ -83,7 +83,8 @@ i32 CMapMgr::SearchEdge(
     i32 maskA,
     i32 maskC
 ) {
-    if (static_cast<u32>(xA) >= m_width || static_cast<u32>(yA) >= m_height || static_cast<u32>(xB) >= m_width || static_cast<u32>(yB) >= m_height) {
+    if (static_cast<u32>(xA) >= m_width || static_cast<u32>(yA) >= m_height
+        || static_cast<u32>(xB) >= m_width || static_cast<u32>(yB) >= m_height) {
         return 0;
     }
     BrickzCell* cellB = &m_rows[yB][xB];
@@ -263,4 +264,3 @@ i32 CMapMgr::IsCellClear(i32 x, i32 y) {
 // (the MapSerializeCurve gate, the m_scoreHud->Command forward, the neg/sbb/neg bool).
 // The `extern "C" i32 __cdecl MapSerializeCurve(i32,i32,i32,i32)` this TU carried existed
 // only to serve this phantom's call and dies with it - see <Gruntz/MapLogic.h>.
-

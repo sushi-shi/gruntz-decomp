@@ -1,5 +1,5 @@
 #include <rva.h>
-#include <DDrawMgr/DDrawShadeBlit.h> // CDDrawShadeBlit - the REAL owner of Select @0x14dd90
+#include <DDrawMgr/DDrawShadeBlit.h>  // CDDrawShadeBlit - the REAL owner of Select @0x14dd90
 #include <DDrawMgr/ShadeDescrTable.h> // own exported globals (ex Globals.h)
 
 struct ShadeDescr;

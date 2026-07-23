@@ -7,16 +7,20 @@
 
 class CShadeTableCache;
 struct CShadeTable;
-struct CGameRegistry; // canonical is `struct` (<Gruntz/GameRegistry.h>); keyword must match for Init's PAU mangling
+struct
+    CGameRegistry; // canonical is `struct` (<Gruntz/GameRegistry.h>); keyword must match for Init's PAU mangling
 class CDDrawSurfaceMgr; // reg->m_world (+0x30) - the loaded world/resource holder
-class CDDrawWorker;             // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+class CDDrawWorker;     // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
 class CLightFxMgr {
 public:
     // 0x9dad0  Init - bind to the game registry, fetch the shade-table cache, and
     // build the identity + additive + 8 subtractive color tables, registering the
     // grey table globally (key 9). __thiscall, 2 args (reg, owner), ret 0x8.
-    i32 Init(class CGruntzMgr* reg, class CGruntzMgr* owner); // both args ARE the one manager (the ex dual-view pair)
+    i32 Init(
+        class CGruntzMgr* reg,
+        class CGruntzMgr* owner
+    ); // both args ARE the one manager (the ex dual-view pair)
     // 0x9dc80  Reset - zero the bound pointers (+0x4..+0x10) and the 10 table
     // slots. __thiscall, no args, ret 0.
     void Reset();

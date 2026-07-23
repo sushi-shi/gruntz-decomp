@@ -42,4 +42,3 @@ CState::CState() {
     m_cursorX = 0;
     m_cursorY = 0;
 }
-

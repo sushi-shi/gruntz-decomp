@@ -49,10 +49,10 @@ public:
     virtual i32 GetClassId() OVERRIDE; // slot 8  (@0x20) 0x1590c0
     // slot 9 SetGeometry INHERITED from CDrawSubWorker (the shared 0x158fd0 body).
     virtual i32 SetGeom(i32 w, i32 h, i32 bpp) OVERRIDE; // slot 10 (@0x28) 0x164250
-    virtual i32 InitFromSurface(CDDSurface* src);   // slot 11 (@0x2c) 0x163db0
-    virtual i32 Create(i32 w, i32 h, i32 bpp, i32 a3);     // slot 12 (@0x30) 0x163c90
-    virtual i32 LoadImage(CParseSource* src);       // slot 13 (@0x34) 0x163e50
-    virtual i32 ResolveImage_163ee0(CParseSource* src);    // slot 14 (@0x38) 0x163ee0
+    virtual i32 InitFromSurface(CDDSurface* src);        // slot 11 (@0x2c) 0x163db0
+    virtual i32 Create(i32 w, i32 h, i32 bpp, i32 a3);   // slot 12 (@0x30) 0x163c90
+    virtual i32 LoadImage(CParseSource* src);            // slot 13 (@0x34) 0x163e50
+    virtual i32 ResolveImage_163ee0(CParseSource* src);  // slot 14 (@0x38) 0x163ee0
 
     virtual ~CDDrawSurfacePair() OVERRIDE; // 0x1590f0  slot 1 (scalar-deleting dtor)
 

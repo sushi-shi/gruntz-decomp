@@ -5,7 +5,7 @@
 #include <Ints.h>
 #include <Gruntz/SbiSideTabBuildViews.h> // (the settings view; the builder IS CStatusBarMgr)
 #include <Gruntz/StatusBarMgr.h>
-#include <Gruntz/GruntzMgr.h>            // the *0x24556c singleton (CGruntzMgr)
+#include <Gruntz/GruntzMgr.h> // the *0x24556c singleton (CGruntzMgr)
 
 // @early-stop
 // this/newobj callee-saved register-pinning wall (docs/patterns/

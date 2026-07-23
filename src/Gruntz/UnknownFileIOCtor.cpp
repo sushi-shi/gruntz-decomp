@@ -1,4 +1,4 @@
-#include <Io/FileStream.h> // real CFile (also pulls <Mfc.h> -> CByteArray)
+#include <Io/FileStream.h>      // real CFile (also pulls <Mfc.h> -> CByteArray)
 #include <Gruntz/FileIOOwner.h> // canonical FileIOOwner (identity @identity-TODO)
 #include <rva.h>
 

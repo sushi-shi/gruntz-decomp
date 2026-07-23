@@ -1,7 +1,7 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/TypeKeyColl.h>     // s_codeA/s_actKeyB registration keys
 #include <Wap32/ZVec.h>
-#include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CActReg)
+#include <Gruntz/ActReg.h>           // the shared activation-registrar archetype (CActReg)
 #include <Gruntz/PathHazardActReg.h> // g_actReg_646250 decl
 
 // g_actReg_646250 (0x00246250): CActReg - no provable static init (the type has no
@@ -41,7 +41,8 @@ void RegisterActs_646250() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_actReg_646250.ResolveEntry(id)) = static_cast<void*>(&PathHazardActA);
+    *reinterpret_cast<void**>(g_actReg_646250.ResolveEntry(id)) =
+        static_cast<void*>(&PathHazardActA);
 
     i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
     if (id2 == 0) {
@@ -52,5 +53,6 @@ void RegisterActs_646250() {
         (reinterpret_cast<CString*>(slot))->operator=("B");
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(g_actReg_646250.ResolveEntry(id2)) = static_cast<void*>(&PathHazardActB);
+    *reinterpret_cast<void**>(g_actReg_646250.ResolveEntry(id2)) =
+        static_cast<void*>(&PathHazardActB);
 }

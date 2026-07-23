@@ -29,7 +29,7 @@ public:
     // [7] 0x163bc0 (T obj) - the virtual teardown broadcast (ex "DestroyWorkers"):
     // byte-identical twin of the non-virtual ClearWorkers (same source body,
     // compiled twice); overrides CLoadable's reset/unload hook.
-    virtual void Unload() OVERRIDE; // [7] 0x163bc0
+    virtual void Unload() OVERRIDE;    // [7] 0x163bc0
     virtual i32 GetClassId() OVERRIDE; // [8] 0x156f20 -> CLASSID_WORKERLIST (0x11)
     // slots 9-12 - the worker factories (G obj bodies; NO direct retail callers:
     // reached only through these slots).

@@ -12,7 +12,7 @@ public:
         return LOGIC_LEVELTIME;
     } // slot 2
 public:
-    CLevelTime(CGameObject* obj);   // 0x9b8b0
+    CLevelTime(CGameObject* obj); // 0x9b8b0
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 

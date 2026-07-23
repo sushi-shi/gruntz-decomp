@@ -55,7 +55,7 @@ struct CLightFxActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h> // CActReg (extern below)
+#include <Gruntz/ActReg.h>      // CActReg (extern below)
 extern CActReg g_lightFxActReg; // 0x00245ad0
 
 #endif // GRUNTZ_GRUNTZ_CLIGHTFX_H

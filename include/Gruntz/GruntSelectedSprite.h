@@ -13,7 +13,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTSELECTEDSPRITE;
     } // slot 2
-    CGruntSelectedSprite(CGameObject* obj);   // 0x07e3e0 (ctor body in GruntSelectedSprite.cpp)
+    CGruntSelectedSprite(CGameObject* obj); // 0x07e3e0 (ctor body in GruntSelectedSprite.cpp)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
@@ -24,8 +24,8 @@ public:
 
     i32 SetCell(i32 x, i32 y); // 0x07e9c0
     i32 Update();              // 0x07e9f0
-    i32 m_cellX; // +0x54  grunt cell x
-    i32 m_cellY; // +0x58  grunt cell y
+    i32 m_cellX;               // +0x54  grunt cell x
+    i32 m_cellY;               // +0x58  grunt cell y
 };
 SIZE_UNKNOWN();
 
@@ -35,7 +35,7 @@ struct CSelectedActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg (extern below)
+#include <Gruntz/GruntIndicatorSprite.h>  // CIndicatorActReg (extern below)
 extern CIndicatorActReg g_selectedActReg; // 0x00244da8
 
 #endif // GRUNTZ_CGRUNTSELECTEDSPRITE_H

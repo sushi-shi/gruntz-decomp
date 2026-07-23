@@ -30,7 +30,7 @@
 // rezalloc-placement-new-no-eh-frame.md, topic:eh/topic:wall). Deferred to the
 // final sweep.
 
-#include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Mfc.h> // MFC superset of <Win32.h> (afx first): <Gruntz/SoundCue.h> now needs the
@@ -171,7 +171,14 @@ void BuildMainMenuTree(void* arg) {
     }
     // ---- page 2 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_SINGLEPLAYER, s_MENU_SINGLEPLAYER_TITLE, s_MAIN, 0) == 0) {
+    if (page->Configure(
+            static_cast<CChatBox*>(arg),
+            s_SINGLEPLAYER,
+            s_MENU_SINGLEPLAYER_TITLE,
+            s_MAIN,
+            0
+        )
+        == 0) {
         delete page;
         return;
     }
@@ -186,7 +193,14 @@ void BuildMainMenuTree(void* arg) {
     }
     // ---- page 3 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_MULTIPLAYER, s_MENU_MULTIPLAYER_TITLE, s_MAIN, 0) == 0) {
+    if (page->Configure(
+            static_cast<CChatBox*>(arg),
+            s_MULTIPLAYER,
+            s_MENU_MULTIPLAYER_TITLE,
+            s_MAIN,
+            0
+        )
+        == 0) {
         delete page;
         return;
     }
@@ -201,7 +215,8 @@ void BuildMainMenuTree(void* arg) {
     }
     // ---- page 4 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_MOVIEZ, s_MENU_MOVIEZ_TITLE, s_MAIN, 0) == 0) {
+    if (page->Configure(static_cast<CChatBox*>(arg), s_MOVIEZ, s_MENU_MOVIEZ_TITLE, s_MAIN, 0)
+        == 0) {
         delete page;
         return;
     }
@@ -219,7 +234,14 @@ void BuildMainMenuTree(void* arg) {
     }
     // ---- page 5 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_QUESTZ, s_MENU_QUESTZ_TITLE, s_SINGLEPLAYER, 0) == 0) {
+    if (page->Configure(
+            static_cast<CChatBox*>(arg),
+            s_QUESTZ,
+            s_MENU_QUESTZ_TITLE,
+            s_SINGLEPLAYER,
+            0
+        )
+        == 0) {
         delete page;
         return;
     }
@@ -260,7 +282,14 @@ void BuildMainMenuTree(void* arg) {
     }
     // ---- page 6 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_TRAINING, s_MENU_AREAS_TRAININGTITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(
+            static_cast<CChatBox*>(arg),
+            s_TRAINING,
+            s_MENU_AREAS_TRAININGTITLE,
+            s_QUESTZ,
+            0
+        )
+        == 0) {
         delete page;
         return;
     }
@@ -275,7 +304,8 @@ void BuildMainMenuTree(void* arg) {
     }
     // ---- page 7 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA1, s_MENU_AREAS_AREA1TITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA1, s_MENU_AREAS_AREA1TITLE, s_QUESTZ, 0)
+        == 0) {
         delete page;
         return;
     }
@@ -299,7 +329,8 @@ void BuildMainMenuTree(void* arg) {
     }
     // ---- page 8 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA2, s_MENU_AREAS_AREA2TITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA2, s_MENU_AREAS_AREA2TITLE, s_QUESTZ, 0)
+        == 0) {
         delete page;
         return;
     }
@@ -326,7 +357,8 @@ void BuildMainMenuTree(void* arg) {
     }
     // ---- page 9 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA3, s_MENU_AREAS_AREA3TITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA3, s_MENU_AREAS_AREA3TITLE, s_QUESTZ, 0)
+        == 0) {
         delete page;
         return;
     }
@@ -353,7 +385,8 @@ void BuildMainMenuTree(void* arg) {
     }
     // ---- page 10 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA4, s_MENU_AREAS_AREA4TITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA4, s_MENU_AREAS_AREA4TITLE, s_QUESTZ, 0)
+        == 0) {
         delete page;
         return;
     }
@@ -380,7 +413,8 @@ void BuildMainMenuTree(void* arg) {
     }
     // ---- page 11 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA5, s_MENU_AREAS_AREA5TITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA5, s_MENU_AREAS_AREA5TITLE, s_QUESTZ, 0)
+        == 0) {
         delete page;
         return;
     }
@@ -407,7 +441,8 @@ void BuildMainMenuTree(void* arg) {
     }
     // ---- page 12 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA6, s_MENU_AREAS_AREA6TITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA6, s_MENU_AREAS_AREA6TITLE, s_QUESTZ, 0)
+        == 0) {
         delete page;
         return;
     }
@@ -434,7 +469,8 @@ void BuildMainMenuTree(void* arg) {
     }
     // ---- page 13 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA7, s_MENU_AREAS_AREA7TITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA7, s_MENU_AREAS_AREA7TITLE, s_QUESTZ, 0)
+        == 0) {
         delete page;
         return;
     }
@@ -461,7 +497,8 @@ void BuildMainMenuTree(void* arg) {
     }
     // ---- page 14 ----
     page = new CMenuPage;
-    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA8, s_MENU_AREAS_AREA8TITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(static_cast<CChatBox*>(arg), s_AREA8, s_MENU_AREAS_AREA8TITLE, s_QUESTZ, 0)
+        == 0) {
         delete page;
         return;
     }

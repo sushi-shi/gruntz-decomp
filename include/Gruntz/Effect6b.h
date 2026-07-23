@@ -8,11 +8,11 @@ struct CGameObject; // the +0x154 entrance-anim sprite (<Gruntz/UserLogic.h>)
 class CAniElement;  // the active-anim descriptor
 
 struct CEffect6b {
-    char _00[4];              // +0x00  == CGrunt::m_150
-    CWwdGameObjectA* m_player;    // +0x04  == CGrunt::m_154 (the entrance-anim object)
-    char _08[0xc - 8];        // +0x08  == CGrunt::m_158 (AnimWorkerObj*)
-    CAniElement* m_prevDesc;  // +0x0c  == CGrunt::m_prevEntranceDesc
-    void Apply(i32 a, i32 b); // 0x6b2e0
+    char _00[4];               // +0x00  == CGrunt::m_150
+    CWwdGameObjectA* m_player; // +0x04  == CGrunt::m_154 (the entrance-anim object)
+    char _08[0xc - 8];         // +0x08  == CGrunt::m_158 (AnimWorkerObj*)
+    CAniElement* m_prevDesc;   // +0x0c  == CGrunt::m_prevEntranceDesc
+    void Apply(i32 a, i32 b);  // 0x6b2e0
 };
 SIZE_UNKNOWN();
 

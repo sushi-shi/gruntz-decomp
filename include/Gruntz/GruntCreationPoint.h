@@ -32,7 +32,7 @@ public:
 };
 SIZE(0x54);
 
-#include <Gruntz/ActReg.h> // CActReg (extern below)
+#include <Gruntz/ActReg.h>            // CActReg (extern below)
 extern CActReg g_creationPointActReg; // 0x00244700
 
 #endif // GRUNTZ_CGRUNTCREATIONPOINT_H

@@ -6,7 +6,7 @@
 #include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <Gruntz/Attract.h>
 #include <Gruntz/GameMode.h> // CMenuState + CCreditsState: their slot overrides are DEFINED here (retail TU placement)
-#include <Gruntz/GameRegistry.h> // the ONE game-registry shape (CGameRegistry / g_gameReg)
+#include <Gruntz/GameRegistry.h>      // the ONE game-registry shape (CGameRegistry / g_gameReg)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSubMgrPages (m_10 frame surface / m_14 draw surface)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
@@ -19,15 +19,15 @@
 #include <Bute/SymParser.h>            // CSymParser (m_symParser->ResolvePath)
 #include <Gruntz/SerialArchive.h>      // the ONE shared archive stream (Read@+0x2c / Write@+0x30)
 #include <Gruntz/SplashParams.h>       // the "loading imagez" splash-caption params
-#include <Gruntz/Play.h>               // CPlay (HeaderSerialize 0xfafa0 is DEFINED here - retail TU placement)
-#include <Wap32/EngStr.h>              // THE canonical EngStr_DrawText (0x115440) lean decl
+#include <Gruntz/Play.h>  // CPlay (HeaderSerialize 0xfafa0 is DEFINED here - retail TU placement)
+#include <Wap32/EngStr.h> // THE canonical EngStr_DrawText (0x115440) lean decl
 #include <rva.h>
 
 #include <stdio.h>  // sprintf (the "\SCREENZ\%s" path formatter)
 #include <string.h> // inline /Oi strlen (repnz scasb) for the Vslot17 TextOutA
 
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree/RemoveKeysEqual)
-#include <Gruntz/LevelPreview.h> // ex Globals.h
+#include <Gruntz/LevelPreview.h>          // ex Globals.h
 
 DATA(0x0024e360)
 i32 g_suppress_64e360 = 0; // 0x24e360
@@ -674,4 +674,3 @@ i32 CState::HeaderRead(CFileMemBase* ar) {
     ar->Read(&m_inputHalfSel, 4);
     return 1;
 }
-

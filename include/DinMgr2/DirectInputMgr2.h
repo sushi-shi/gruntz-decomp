@@ -124,18 +124,18 @@ public:
     // targets here diff clean. Direct callers qualify the call (CInputDevRoot::Create)
     // to keep the byte-exact direct `call rel32`.
     virtual i32 Create(IDirectInputA* di, const void* deviceGuid, HWND hwnd); // slot 1  0x134cb0
-    virtual void ReleaseDevices();                                             // slot 2  0x134d50
+    virtual void ReleaseDevices();                                            // slot 2  0x134d50
     RVA(0x001332b0, 0xb)
     virtual i32 IsValid() {
         return m_device2 != 0;
     }
 
     // Shared non-virtual COM helpers.
-    i32 Acquire();          // 0x134fb0
-    i32 PollDevice();       // 0x135040  (used by every leaf Poll override)
+    i32 Acquire();            // 0x134fb0
+    i32 PollDevice();         // 0x135040  (used by every leaf Poll override)
     DeviceState* ReadState(); // 0x134d90
-    i32 Unacquire();        // 0x134fe0
-    i32 Escape(void* data); // 0x135000  IDirectInputDevice2::Escape
+    i32 Unacquire();          // 0x134fe0
+    i32 Escape(void* data);   // 0x135000  IDirectInputDevice2::Escape
 
     // COM device-query thunks: fill an embedded descriptor via the device slot,
     // report on failure, and return the descriptor pointer (0 on failure). The
@@ -191,19 +191,19 @@ public:
         return 0;
     }
     virtual i32 ResetState(); // +0x14  slot 5  clear the press-edge latch
-
 };
 SIZE(0x2b4); // middle-base subobject (adds no fields)
 
 class CInputDevice : public CInputDevBase {
 public:
     CInputDevice();
-    virtual ~CInputDevice() OVERRIDE;       // 0x133300 (the /GX multilevel deleting-dtor)
-    virtual void ReleaseDevices() OVERRIDE; // slot 2  0x133bf0 (ex Teardown; keyboard leaf teardown)
+    virtual ~CInputDevice() OVERRIDE; // 0x133300 (the /GX multilevel deleting-dtor)
+    virtual void ReleaseDevices()
+        OVERRIDE; // slot 2  0x133bf0 (ex Teardown; keyboard leaf teardown)
 
     i32 CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 flags); // 0x133b50
-    void SetupKeyTable();                                                      // 0x133c30
-    virtual i32 Poll() OVERRIDE;                                               // slot 4  0x133d00
+    void SetupKeyTable();                                                     // 0x133c30
+    virtual i32 Poll() OVERRIDE;                                              // slot 4  0x133d00
 
     u32 m_keyTable[0x20]; // +0x2b4..0x333  scan-code table (0x20 dwords)
     i32 m_modeFlags;      // +0x334  keyboard/mouse mode flag (bit 0 = direct/async)
@@ -241,10 +241,10 @@ SIZE_UNKNOWN();
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern "C" i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref); // 0x132fc0
-extern const u8 g_keyboardDataFormat[]; // 0x590aa0
-extern const u8 g_mouseDataFormat[]; // 0x590b30
-extern const u8 g_joystickDataFormat[]; // 0x591590
-extern const u8 g_deviceConfigA[]; // 0x5ef548
+extern const u8 g_keyboardDataFormat[];                                           // 0x590aa0
+extern const u8 g_mouseDataFormat[];                                              // 0x590b30
+extern const u8 g_joystickDataFormat[];                                           // 0x591590
+extern const u8 g_deviceConfigA[];                                                // 0x5ef548
 extern const u8 g_deviceConfigB[]; // 0x5ef538 - device-B CreateDev config blob
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk

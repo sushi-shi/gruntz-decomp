@@ -4,12 +4,12 @@
 
 #include <Ints.h>
 
-#include <Bute/SymTab.h>       // the shared CSymTab (ResolveQualified 0x13be40)
-#include <Gruntz/GameLevel.h>  // canonical CGameLevel (real virtual slots 15/16/17 + non-virtuals)
-#include <Gruntz/Play.h>            // CPlay - slot-42 owner (the ex-CWorldState view is dissolved)
-#include <Gruntz/GameLevel.h>       // m_world->m_level (CGameLevel)
+#include <Bute/SymTab.h>      // the shared CSymTab (ResolveQualified 0x13be40)
+#include <Gruntz/GameLevel.h> // canonical CGameLevel (real virtual slots 15/16/17 + non-virtuals)
+#include <Gruntz/Play.h>      // CPlay - slot-42 owner (the ex-CWorldState view is dissolved)
+#include <Gruntz/GameLevel.h> // m_world->m_level (CGameLevel)
 #include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <Gruntz/GruntzMgr.h>       // m_mgr fields (world file, battlez/multi gates)
+#include <Gruntz/GruntzMgr.h>     // m_mgr fields (world file, battlez/multi gates)
 #include <Gruntz/MgrAutoScroll.h> // ex Globals.h
 
 class CParseSource;
@@ -20,7 +20,8 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
     if (m_mgr->m_strWorldFile.GetLength() != 0) {
         if (m_mgr->m_128 != 0) {
             CString key = "BATTLEZ\\" + m_mgr->GetWorldFileName();
-            CParseSource* node = m_gameBank->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
+            CParseSource* node =
+                m_gameBank->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
             if (node == 0) {
                 return 0;
             }
@@ -29,7 +30,8 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
             }
         } else if (m_mgr->m_12c != 0) {
             CString key = "MULTI\\" + m_mgr->GetWorldFileName();
-            CParseSource* node = m_gameBank->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
+            CParseSource* node =
+                m_gameBank->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
             if (node == 0) {
                 return 0;
             }

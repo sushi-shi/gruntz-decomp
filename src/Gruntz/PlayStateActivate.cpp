@@ -1,5 +1,5 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>         // g_gameReg at its REAL type (CGruntzMgr)
 #include <Mfc.h>                          // ShowCursor (afx-first)
 #include <EmptyString.h>                  // g_emptyString
 #include <Bute/SymTab.h>                  // canonical CSymTab (ResolvePath @0x13bae0)
@@ -23,8 +23,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag); //
 
 RVA(0x000cb800, 0x191)
 i32 CPlay::InputVirtual() {
-    if (!CState::
-            InputVirtual()) { // 0xface0 CState slot-8 base image-load gate
+    if (!CState::InputVirtual()) { // 0xface0 CState slot-8 base image-load gate
         return 0;
     }
     while (ShowCursor(FALSE) >= 0)
@@ -64,7 +63,10 @@ i32 CPlay::InputVirtual() {
     if (m_region1Gate != 0) {
         NotifyVisibleEntities(); // CPlay @0xd9050
     } else {
-        m_world->m_level->VisitVisible(static_cast<void*>(m_world->m_drawTarget->m_backPair), m_world->m_childGroup);
+        m_world->m_level->VisitVisible(
+            static_cast<void*>(m_world->m_drawTarget->m_backPair),
+            m_world->m_childGroup
+        );
         m_world->m_workerList->PruneWorkers(
             m_world->m_drawTarget->m_backPair,
             m_world->m_drawTarget->m_overlayPair

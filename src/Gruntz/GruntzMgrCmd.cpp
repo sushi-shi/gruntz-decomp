@@ -26,19 +26,28 @@
 
 i32 ParseSerial(CGruntzMgr* mgr, char* s); // 0x0d210 (SerialObjectFactory.cpp)
 
-void SaveFrontBufferShot(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i32 h, char* name, void* arg7);
+void SaveFrontBufferShot(
+    Utils::RegistryHelper* bute,
+    CGruntzMgr* mgr,
+    i32 w,
+    i32 h,
+    char* name,
+    void* arg7
+);
 
 #define PLAYCUE(TAG)                                                                               \
     if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \
-        LeafCue* _c =                                                                              \
-            static_cast<LeafCue*>(m_world->m_soundRegistry->Lookup(TAG));       \
+        LeafCue* _c = static_cast<LeafCue*>(m_world->m_soundRegistry->Lookup(TAG));                \
         if (_c)                                                                                    \
             _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                               \
     }
 #define PLAYCUE_MAP(TAG)                                                                           \
     if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \
         LeafCue* _c = 0;                                                                           \
-        m_world->m_soundRegistry->m_10.Lookup(TAG, reinterpret_cast<void*&>(_c)); /* CMapStringToPtr (0x1b8438) */   \
+        m_world->m_soundRegistry->m_10.Lookup(                                                     \
+            TAG,                                                                                   \
+            reinterpret_cast<void*&>(_c)                                                           \
+        ); /* CMapStringToPtr (0x1b8438) */                                                        \
         if (_c)                                                                                    \
             _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                               \
     }
@@ -64,24 +73,21 @@ void SaveFrontBufferShot(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i3
     {                                                                                              \
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
-        CGrunt* _cell = m_cmdGrid->m_recList.GetCount() == 1                                       \
-                            ? static_cast<CGrunt*>(                                           \
-                                  m_cmdGrid->m_grid                                                \
-                                      [reinterpret_cast<Coord*>(                              \
-                                           m_cmdGrid->m_recList.GetHead())                         \
-                                           ->m_y                                                     \
-                                       + reinterpret_cast<Coord*>(                            \
-                                             m_cmdGrid->m_recList.GetHead())                       \
-                                                 ->m_x                                               \
-                                             * 15])                                                \
-                            : 0;                                                                   \
+        CGrunt* _cell =                                                                            \
+            m_cmdGrid->m_recList.GetCount() == 1                                                   \
+                ? static_cast<CGrunt*>(                                                            \
+                      m_cmdGrid->m_grid                                                            \
+                          [reinterpret_cast<Coord*>(m_cmdGrid->m_recList.GetHead())->m_y           \
+                           + reinterpret_cast<Coord*>(m_cmdGrid->m_recList.GetHead())->m_x * 15]   \
+                  )                                                                                \
+                : 0;                                                                               \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_tileOwnerHi != g_curPlayer)                                                   \
             return 0;                                                                              \
-        CGrunt* _c2 =                                                                              \
-            reinterpret_cast<CGrunt*>(                                                             \
-                m_cmdGrid->m_grid[_cell->m_tileOwnerLo + _cell->m_tileOwnerHi * 15]);              \
+        CGrunt* _c2 = reinterpret_cast<CGrunt*>(                                                   \
+            m_cmdGrid->m_grid[_cell->m_tileOwnerLo + _cell->m_tileOwnerHi * 15]                    \
+        );                                                                                         \
         i32 _r = (_c2 && _c2->m_entranceCommitted) ? _c2->LoadPickupSprites(ID, 0, 0, 0, 1) : 0;   \
         if (!_r)                                                                                   \
             return 0;                                                                              \
@@ -93,17 +99,14 @@ void SaveFrontBufferShot(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i3
     {                                                                                              \
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
-        CGrunt* _cell = m_cmdGrid->m_recList.GetCount() == 1                                       \
-                            ? static_cast<CGrunt*>(                                           \
-                                  m_cmdGrid->m_grid                                                \
-                                      [reinterpret_cast<Coord*>(                              \
-                                           m_cmdGrid->m_recList.GetHead())                         \
-                                           ->m_y                                                     \
-                                       + reinterpret_cast<Coord*>(                            \
-                                             m_cmdGrid->m_recList.GetHead())                       \
-                                                 ->m_x                                               \
-                                             * 15])                                                \
-                            : 0;                                                                   \
+        CGrunt* _cell =                                                                            \
+            m_cmdGrid->m_recList.GetCount() == 1                                                   \
+                ? static_cast<CGrunt*>(                                                            \
+                      m_cmdGrid->m_grid                                                            \
+                          [reinterpret_cast<Coord*>(m_cmdGrid->m_recList.GetHead())->m_y           \
+                           + reinterpret_cast<Coord*>(m_cmdGrid->m_recList.GetHead())->m_x * 15]   \
+                  )                                                                                \
+                : 0;                                                                               \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_tileOwnerHi != g_curPlayer)                                                   \
@@ -119,13 +122,13 @@ void SaveFrontBufferShot(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i3
         i32 st = m_curState->Update();                                                             \
         CMenuState* mus = 0;                                                                       \
         if (st == GAMESTATE_MENU) {                                                                \
-            mus = static_cast<CMenuState*>(m_curState);                                                         \
-            (static_cast<CMenuState*>(m_curState))->StopMusicChain();                                           \
+            mus = static_cast<CMenuState*>(m_curState);                                            \
+            (static_cast<CMenuState*>(m_curState))->StopMusicChain();                              \
             if (::ShowCursor(0) >= 0)                                                              \
                 while (::ShowCursor(0) >= 0) {                                                     \
                 }                                                                                  \
         }                                                                                          \
-        ChangeState(N);                                                                      \
+        ChangeState(N);                                                                            \
         if (mus) {                                                                                 \
             mus->StartMusic();                                                                     \
             if (::ShowCursor(1) < 0)                                                               \
@@ -139,10 +142,10 @@ void SaveFrontBufferShot(Utils::RegistryHelper* bute, CGruntzMgr* mgr, i32 w, i3
         i32 st = m_curState->Update();                                                             \
         CMenuState* mus = 0;                                                                       \
         if (st == GAMESTATE_MENU) {                                                                \
-            mus = static_cast<CMenuState*>(m_curState);                                                         \
-            (static_cast<CMenuState*>(m_curState))->StopMusicChain();                                           \
+            mus = static_cast<CMenuState*>(m_curState);                                            \
+            (static_cast<CMenuState*>(m_curState))->StopMusicChain();                              \
         }                                                                                          \
-        ChangeState(N);                                                                      \
+        ChangeState(N);                                                                            \
         if (mus)                                                                                   \
             mus->StartMusic();                                                                     \
         return 1;                                                                                  \
@@ -214,9 +217,10 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                 switch (nID & 0xffff) {
                     case kCheatProgrammingGod: {
                         if (m_world->m_soundRegistry->m_emitGate == 0) {
-                            LeafCue* _c =
-                                static_cast<LeafCue*>((static_cast<CDDrawSubMgrLeafScan*>(m_world->m_soundRegistry))
-                                    ->Lookup("GAME_MINORCHEAT"));
+                            LeafCue* _c = static_cast<LeafCue*>(
+                                (static_cast<CDDrawSubMgrLeafScan*>(m_world->m_soundRegistry))
+                                    ->Lookup("GAME_MINORCHEAT")
+                            );
                             if (_c) {
                                 _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                             }
@@ -360,10 +364,13 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                             return 0;
                         }
                         m_cmdGrid->ClearRowAndRefresh(5);
-                        void* _key = reinterpret_cast<void*>(g_gameReg->m_options[0].m_00c); // death/monologo sprite key
+                        void* _key = reinterpret_cast<void*>(
+                            g_gameReg->m_options[0].m_00c
+                        ); // death/monologo sprite key
                         if (_key) {
                             CGameObject* _dr = 0;
-                            if (g_gameReg->m_world->m_childGroup->m_map48.Lookup(static_cast<void*>(_key), reinterpret_cast<void*&>(_dr))
+                            if (g_gameReg->m_world->m_childGroup->m_map48
+                                    .Lookup(static_cast<void*>(_key), reinterpret_cast<void*&>(_dr))
                                 && _dr) {
                                 // the entry's inner receiver is the grunt logic (thunk
                                 // 0x3a1c -> CGrunt::ResolveDeathAnimation @0x455f0);
@@ -475,9 +482,10 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         return 1;
                     case kCheatWawa:
                         if (m_world->m_soundRegistry->m_emitGate == 0) {
-                            LeafCue* _c =
-                                static_cast<LeafCue*>((static_cast<CDDrawSubMgrLeafScan*>(m_world->m_soundRegistry))
-                                    ->Lookup("GAME_WAWA"));
+                            LeafCue* _c = static_cast<LeafCue*>(
+                                (static_cast<CDDrawSubMgrLeafScan*>(m_world->m_soundRegistry))
+                                    ->Lookup("GAME_WAWA")
+                            );
                             if (_c) {
                                 _c->PlayIfElapsed(0x64, 0, 0, 0);
                             }
@@ -591,7 +599,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                             LeafCue* _c = static_cast<LeafCue*>(_c_ob);
                             if (_c && g_sndEnabled) {
                                 i32 now = g_killCueClock;
-                                if (static_cast<u32>((now - _c->m_14)) >= static_cast<u32>(_c->m_18)) {
+                                if (static_cast<u32>((now - _c->m_14))
+                                    >= static_cast<u32>(_c->m_18)) {
                                     _c->m_14 = now;
                                     _c->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
                                 }
@@ -1088,14 +1097,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             CheckDisplayBoundsB();
             return 1;
         case kCmdScreenshot: { // 0x89fbc  screenshot (front surface -> SaveScreenshot)
-            SaveFrontBufferShot(
-                m_settings,
-                this,
-                g_gameReg->m_modeW,
-                g_gameReg->m_modeH,
-                0,
-                0
-            );
+            SaveFrontBufferShot(m_settings, this, g_gameReg->m_modeW, g_gameReg->m_modeH, 0, 0);
             return 1;
         }
         case kCmdReloadLevel: {

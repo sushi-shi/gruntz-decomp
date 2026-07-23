@@ -12,7 +12,7 @@
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + emitted code
 // bytes are load-bearing (campaign doctrine).
 #include <rva.h>
-#include <Gruntz/ParseSource.h> // CParseSource (GetEntryTag) - keep BEFORE any
+#include <Gruntz/ParseSource.h>           // CParseSource (GetEntryTag) - keep BEFORE any
 #include <Mfc.h>                          // real MFC CObject / CMapStringToPtr / CString / POSITION
 #include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf (the ANI catalog host)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // THE canonical CDDrawSubMgrLeafScan (sibling class)
@@ -46,7 +46,7 @@ i32 CDDrawSubMgrLeaf::IsReady() {
 }
 RVA(0x00152650, 0x5)
 void CDDrawSubMgrLeaf::Unload() { // slot 7 (CLoadable::Unload override; void per the scheme)
-    FreeAll(); // tail-jmp to FreeAll (retail 0x152650 IS the 5-byte e9)
+    FreeAll();                    // tail-jmp to FreeAll (retail 0x152650 IS the 5-byte e9)
 }
 
 // ---------------------------------------------------------------------------

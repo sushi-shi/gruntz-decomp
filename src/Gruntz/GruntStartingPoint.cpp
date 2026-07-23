@@ -1,5 +1,5 @@
 #include <Gruntz/GruntStartingPoint.h>
-#include <Wap32/zBitVec.h>          // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Wap32/zBitVec.h>        // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 #include <Bute/ButeMgr.h> // CButeTree
@@ -67,15 +67,21 @@ void* g_projActCache;
 static inline CTypeNameEntry* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return reinterpret_cast<CTypeNameEntry*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
+        return reinterpret_cast<CTypeNameEntry*>(
+            (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
+        );
     }
     if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0))) {
-        return reinterpret_cast<CTypeNameEntry*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
+        return reinterpret_cast<CTypeNameEntry*>(
+            (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
+        );
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
-    return reinterpret_cast<CTypeNameEntry*>(g_typeColl.m_spare); // m_spare is the i32-typed slow-path slot
+    return reinterpret_cast<CTypeNameEntry*>(
+        g_typeColl.m_spare
+    ); // m_spare is the i32-typed slow-path slot
 }
 
 static inline StartActEntry* R4Lookup(i32 coord) {
@@ -126,4 +132,3 @@ void ActReg4RegisterType() {
     // MSVC5 has no fn-ptr->PMF conversion, so the write goes through the raw slot).
     *reinterpret_cast<void**>(R4Lookup(id)) = static_cast<void*>(&ActReg4Handler);
 }
-

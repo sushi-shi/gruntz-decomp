@@ -20,13 +20,13 @@ public:
     virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
     static void InitActReg(); // 0x11a320 (constructs g_vtrigColl @0x651500)
     virtual void FireActivation(i32 id)
-        OVERRIDE;                      // 0x11a3a0 (vtable slot 4 body: per-coord PMF dispatch)
-    static void RegisterActs();        // 0x11a500 (binds Tick to the activation key "A"; static:
-                                       //  no this, called this-less by the game-object factory)
-    i32 Tick();                        // 0x11a700
+        OVERRIDE;               // 0x11a3a0 (vtable slot 4 body: per-coord PMF dispatch)
+    static void RegisterActs(); // 0x11a500 (binds Tick to the activation key "A"; static:
+                                //  no this, called this-less by the game-object factory)
+    i32 Tick();                 // 0x11a700
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
-                                       //         the state pump's `new CVoiceTrigger` = new(0x54))
+    //         the state pump's `new CVoiceTrigger` = new(0x54))
 };
 SIZE(0x54);
 

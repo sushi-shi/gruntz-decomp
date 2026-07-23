@@ -2,7 +2,7 @@
 #define GRUNTZ_CMGRSETTINGS_H
 
 #include <Mfc.h> // real MFC CMapStringToOb / CObject (Lookup 0x1b8008, reloc-masked)
-class CImage; // the resolved m_38 frame element (<Image/CImage.h>)
+class CImage;    // the resolved m_38 frame element (<Image/CImage.h>)
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/SerialArchive.h> // shared CFileMemBase stream (Read @ +0x2c / Write @ +0x30)
 #include <Ints.h>

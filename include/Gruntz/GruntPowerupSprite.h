@@ -14,7 +14,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTPOWERUPSPRITE;
     } // slot 2
-    CGruntPowerupSprite(CGameObject* obj);   // 0x07fdb0 (ctor body in GruntPowerupSprite.cpp)
+    CGruntPowerupSprite(CGameObject* obj); // 0x07fdb0 (ctor body in GruntPowerupSprite.cpp)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 

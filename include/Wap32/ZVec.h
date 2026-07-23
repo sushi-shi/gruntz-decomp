@@ -36,8 +36,8 @@ public:
     // element when none is supplied) and reports a fatal bounds/OOM through the
     // inherited error sink. /GX (the half-built zErrHandling base unwinds).
     _zdvec(i32 stride, i32 lo, i32 hi, void* scratch);
-    i32 Destroy();               // 0x8750  (re-stamp live vtable + run ~_zdvec)
-    char* IndexToPtr(i32 i);     // 0x310f0 (base accessor + per-slot member-ptr init)
+    i32 Destroy();              // 0x8750  (re-stamp live vtable + run ~_zdvec)
+    char* IndexToPtr(i32 i);    // 0x310f0 (base accessor + per-slot member-ptr init)
     virtual ~_zdvec() OVERRIDE; // 0x16df40 (cl auto-stamps ??_7zDArray at entry)
 };
 SIZE_UNKNOWN(); // derived; adds override, no storage

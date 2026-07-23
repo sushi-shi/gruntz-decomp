@@ -6,7 +6,7 @@
 #include <rva.h>
 
 #include <Gruntz/TypeKeyColl.h> // the real registry chain (zDArray : _zdvec : _zvec)
-#include <Wap32/zBitVec.h> // ex Globals.h
+#include <Wap32/zBitVec.h>      // ex Globals.h
 
 struct CActReg : public zDArray {
     // 0x464e0 (defined out-of-line in FortressFlag.cpp, inside that band): the
@@ -37,7 +37,7 @@ SIZE_UNKNOWN();
 
 struct CLogicActTable : public CActReg {}; // per-logic-class dispatch tables
 SIZE_UNKNOWN();
-struct CLookupColl : public CActReg {};    // the outlined-lookup registries
+struct CLookupColl : public CActReg {}; // the outlined-lookup registries
 SIZE_UNKNOWN();
 struct CSiblingActReg : public CActReg {}; // CUserLogic-leaf sibling registries
 SIZE_UNKNOWN();
@@ -45,7 +45,7 @@ struct CTeleporterActReg : public CActReg {}; // CTeleporter's registry (0x6446b
 SIZE_UNKNOWN();
 struct CBehindCandyActReg : public CActReg {}; // CBehindCandyAni's registry (0x645f98)
 SIZE_UNKNOWN();
-struct CSingleAnimActReg : public CActReg {};  // CSingleAnimation's registry (0x645f70)
+struct CSingleAnimActReg : public CActReg {}; // CSingleAnimation's registry (0x645f70)
 SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_ACTREG_H

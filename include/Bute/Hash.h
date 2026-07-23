@@ -23,7 +23,7 @@ struct CHashSlot {
     // free function CHashSlot_Dtor whose address was passed by hand.)
     ~CHashSlot();
 
-    char m_pad00[0x8];     // +0x00
+    char m_pad00[0x8];  // +0x00
     DSoundList m_chain; // +0x08  { head, tail }
 };
 SIZE(0x10);
@@ -43,7 +43,7 @@ public:
     // former RezNode::Next view folded onto this (wave5-F1). Body in RezColl.cpp.
     CHashElement* Next(); // 0x1848b0
 
-    DSoundLink m_link;   // +0x04  intrusive chain node { next, prev }
+    DSoundLink m_link;  // +0x04  intrusive chain node { next, prev }
     CHashBase* m_owner; // +0x0c  owning table back-ptr (Insert stamps this)
     u32 m_bucket;       // +0x10  computed bucket (Insert stamps this)
     void* m_record;     // +0x14  the stored (key,value) payload (key first);

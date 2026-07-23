@@ -273,4 +273,3 @@ CGameObject* CWwdSpatialMgr::GetNextObject() {
     m_curGrid = 0;
     return 0;
 }
-

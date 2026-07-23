@@ -5,9 +5,15 @@
 #include <Gruntz/UserLogic.h>
 
 extern "C" {
-    i32 LogicHitFactory(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)    // 0x56e4c0
-    i32 LogicAttackFactory(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant) // 0x56e4d0
-    i32 LogicBumpFactory(CGameObject* obj); // GameObjNotifyFn ABI (CreateWorker registrant)   // 0x56e4e0
+    i32 LogicHitFactory(
+        CGameObject* obj
+    ); // GameObjNotifyFn ABI (CreateWorker registrant)    // 0x56e4c0
+    i32 LogicAttackFactory(
+        CGameObject* obj
+    ); // GameObjNotifyFn ABI (CreateWorker registrant) // 0x56e4d0
+    i32 LogicBumpFactory(
+        CGameObject* obj
+    ); // GameObjNotifyFn ABI (CreateWorker registrant)   // 0x56e4e0
 }
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>

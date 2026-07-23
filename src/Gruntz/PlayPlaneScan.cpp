@@ -121,7 +121,8 @@ i32 CPlay::ScanBuildTiles() {
                 tile = 0;
             } else {
                 // the m_imageSets CObArray element's slot-8 per-pixel collision query
-                tile = (static_cast<CImageSet1*>(ds->m_imageSets[cell & 0xffff]))->GetCollisionAt(subX, subY);
+                tile = (static_cast<CImageSet1*>(ds->m_imageSets[cell & 0xffff]))
+                           ->GetCollisionAt(subX, subY);
             }
             if (m_beginMarker->AddLogic(
                     tile,
@@ -207,8 +208,10 @@ i32 CPlay::ScanShuffleQuads() {
             continue;
         }
         GameObjNotifyFn vf = p->m_7c->m_notify;
-        if (static_cast<void*>(vf) == static_cast<void*>(PlaneQuadA) || static_cast<void*>(vf) == static_cast<void*>(PlaneQuadB)
-            || static_cast<void*>(vf) == static_cast<void*>(PlaneQuadC) || static_cast<void*>(vf) == static_cast<void*>(PlaneQuadD)
+        if (static_cast<void*>(vf) == static_cast<void*>(PlaneQuadA)
+            || static_cast<void*>(vf) == static_cast<void*>(PlaneQuadB)
+            || static_cast<void*>(vf) == static_cast<void*>(PlaneQuadC)
+            || static_cast<void*>(vf) == static_cast<void*>(PlaneQuadD)
             || static_cast<void*>(vf) == static_cast<void*>(PlaneQuadE)) {
             p->m_124 = perm[p->m_124];
         } else if (static_cast<void*>(vf) == static_cast<void*>(PlaneQuadF)) {

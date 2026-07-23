@@ -6,7 +6,7 @@
 #include <Mfc.h>
 class DSoundCloneInst; // the pooled cue play-object (ConfigureItem @0x1360d0; the
 
-class CDDrawWorker;           // the frame-data value the +0x10 map ALSO yields; the +0x28
+class CDDrawWorker; // the frame-data value the +0x10 map ALSO yields; the +0x28
 
 #include <Gruntz/LeafCue.h>
 

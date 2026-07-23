@@ -20,7 +20,7 @@ extern "C" void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...);
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-extern "C" i32 fclose(void* fp);    // 0x11f780 (CRT fclose, library row _fclose)
+extern "C" i32 fclose(void* fp); // 0x11f780 (CRT fclose, library row _fclose)
 
 extern i32 g_debugPrintMode;
 #endif // GRUNTZ_REZ_DEBUGPRINTF_H_H

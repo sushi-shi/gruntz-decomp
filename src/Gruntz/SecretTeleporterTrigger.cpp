@@ -1,7 +1,7 @@
-#include <Bute/ButeTree.h>          // CVariantSlot::Set (0x16d850)
+#include <Bute/ButeTree.h>        // CVariantSlot::Set (0x16d850)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Wap32/ZVec.h>             // _zvec::GrowTo (Find 0x16da80)
+#include <Wap32/ZVec.h> // _zvec::GrowTo (Find 0x16da80)
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/GameLevel.h> // canonical CGameLevel/CDDrawWorkerHost (m_world->m_level visible rect)      // CTriggerMgr::HitTestCell (0x75af0) / CellDispatch (0x6bcb0)
 #include <Gruntz/GruntSpawnConfig.h>  // CGruntSpawnConfig::SpawnVoiceDriver (the cue)
@@ -10,8 +10,8 @@
 #include <Gruntz/BattlezData.h>       // CBattlezData (g_gameReg->m_scoreHud; +0x3c armed counter)
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/ActReg.h>
-#include <Gruntz/ActNameRegistry.h>   // the SHARED activation-name registry (g_buteTree/
-#include <Gruntz/ActReg.h>            // the shared CActReg coordinate-registry archetype
+#include <Gruntz/ActNameRegistry.h>         // the SHARED activation-name registry (g_buteTree/
+#include <Gruntz/ActReg.h>                  // the shared CActReg coordinate-registry archetype
 #include <Gruntz/SecretTeleporterTrigger.h> // the canonical class
 #include <Gruntz/SecretLevelTrigger.h>      // canonical CSecretLevelTrigger : CUserLogic
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
@@ -136,7 +136,8 @@ void CSecretTeleporterTrigger::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CTelActEntry*>(ActLookup(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CSecretTeleporterTrigger::SpawnTeleporter);
+    (reinterpret_cast<CTelActEntry*>(ActLookup(id)))->m_fn =
+        static_cast<i32 (CUserLogic::*)()>(&CSecretTeleporterTrigger::SpawnTeleporter);
 }
 
 RVA(0x000424b0, 0x1a0)
@@ -166,7 +167,8 @@ RVA(0x00042760, 0x102)
 void CSecretLevelTrigger::FireActivation(i32 coord) {
     CSecretActEntry* e = reinterpret_cast<CSecretActEntry*>(g_secretActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        CSecretActEntry* e2 = reinterpret_cast<CSecretActEntry*>(g_secretActReg.ResolveEntry(coord));
+        CSecretActEntry* e2 =
+            reinterpret_cast<CSecretActEntry*>(g_secretActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -199,15 +201,17 @@ void CSecretLevelTrigger::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CSecretActEntry*>(g_secretActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CSecretLevelTrigger::Tick);
+    (reinterpret_cast<CSecretActEntry*>(g_secretActReg.ResolveEntry(id)))->m_fn =
+        static_cast<i32 (CUserLogic::*)()>(&CSecretLevelTrigger::Tick);
 }
 
 RVA(0x00042ac0, 0x90)
 i32 CSecretLevelTrigger::Tick() {
     i32 outA, outB;
     CWwdGameObjectA* spr = m_object;
-    CTrigger* hit =
-        reinterpret_cast<CTrigger*>(g_gameReg->m_cmdGrid->HitTestCell(spr->m_screenX, spr->m_screenY, &outB, &outA, 1));
+    CTrigger* hit = reinterpret_cast<CTrigger*>(
+        g_gameReg->m_cmdGrid->HitTestCell(spr->m_screenX, spr->m_screenY, &outB, &outA, 1)
+    );
     if (hit) {
         spr = m_object;
         i32 ok = 1;
@@ -232,8 +236,9 @@ RVA(0x00042b80, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 loc0, loc4;
     CWwdGameObjectA* o = m_object;
-    CTrigger* hit =
-        reinterpret_cast<CTrigger*>(g_gameReg->m_cmdGrid->HitTestCell(o->m_screenX, o->m_screenY, &loc0, &loc4, 1));
+    CTrigger* hit = reinterpret_cast<CTrigger*>(
+        g_gameReg->m_cmdGrid->HitTestCell(o->m_screenX, o->m_screenY, &loc0, &loc4, 1)
+    );
     if (hit) {
         o = m_object;
         CDDrawChildGroup* fac = g_gameReg->m_world->m_childGroup;
@@ -262,8 +267,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             CDDrawWorkerHost* rc = g->m_world->m_level->m_mainPlane;
             if (ex < rc->m_extentX && ex >= rc->m_originX && ey < rc->m_extentY
                 && ey >= rc->m_originY) {
-                g->m_cueSink
-                    ->SpawnVoiceDriver(reinterpret_cast<i32>(hit), 0x3fc, -1, 0, -1, -1);
+                g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(hit), 0x3fc, -1, 0, -1, -1);
             }
         }
         m_38->m_flags |= 0x10000;

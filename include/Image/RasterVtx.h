@@ -18,8 +18,8 @@ SIZE(0x1c);
 extern "C" ClipVtx g_rasterVtxA[]; // 0x6a1708
 extern "C" ClipVtx g_rasterVtxB[]; // 0x6a21f8
 extern "C" i32 g_rasterVtxCount;   // 0x6becf8 (published by ImagePolyClipRect)
-extern "C" i32 g_rasterDestRow; // 0x6a2ce8  current scanline base (engine scratch)
-extern "C" i32 g_rasterDestPtr; // 0x6becf4  current span start (engine scratch)
+extern "C" i32 g_rasterDestRow;    // 0x6a2ce8  current scanline base (engine scratch)
+extern "C" i32 g_rasterDestPtr;    // 0x6becf4  current span start (engine scratch)
 
 // The rotate-blit SOURCE image geometry: the object RotateRasterize (clipFlag==-1)
 // and ImageRotateBlit read the default clip box from - width @+0x18, height @+0x1c.

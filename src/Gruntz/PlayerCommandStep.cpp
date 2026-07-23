@@ -1,4 +1,4 @@
-#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
+#include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Ints.h>
@@ -10,7 +10,7 @@
 #include <Gruntz/Play.h>         // canonical CPlay (the ex-CCmdHandler identity)
 #include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (CPlay::m_4)
 #include <Gruntz/StatusBarMgr.h> // CStatusBarMgr::EnterHlRow (m_guts, +0x2dc)
-#include <Gruntz/SoundState.h> // ex Globals.h transitive
+#include <Gruntz/SoundState.h>   // ex Globals.h transitive
 
 static const char s_gameBadSelect[] = "GAME_BADSELECT";              // 0x612c28
 static const char s_grunt[] = "Grunt";                               // 0x60a9ec
@@ -86,7 +86,13 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
             if (g != 0 && g->m_entranceCommitted != 0) {
                 g->m_arrivalActive = 0;
             }
-            res = m_mgr->m_cmdGrid->ClearCell(player, static_cast<u8>(a3), static_cast<u16>(a5), static_cast<u16>(a6), 0);
+            res = m_mgr->m_cmdGrid->ClearCell(
+                player,
+                static_cast<u8>(a3),
+                static_cast<u16>(a5),
+                static_cast<u16>(a6),
+                0
+            );
             if (res != 0) {
                 if (player != static_cast<u32>(g_curPlayer)) {
                     return 1;
@@ -130,14 +136,35 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
             }
             u32 px = static_cast<u16>(a5);
             u32 py = static_cast<u16>(a6);
-            CGrunt* node = static_cast<CGrunt*>(m_mgr->m_cmdGrid->CellHitTest(px, py, reinterpret_cast<i32*>(&a4), reinterpret_cast<i32*>(&a8), 5));
+            CGrunt* node = static_cast<CGrunt*>(m_mgr->m_cmdGrid->CellHitTest(
+                px,
+                py,
+                reinterpret_cast<i32*>(&a4),
+                reinterpret_cast<i32*>(&a8),
+                5
+            ));
             if (node == 0 || g->m_entranceActive != 0) {
                 g->m_arrivalActive = 0;
             } else {
-                g->SetArrivalTarget(static_cast<i32>(player), px, node->m_object->m_screenX, node->m_object->m_screenY);
+                g->SetArrivalTarget(
+                    static_cast<i32>(player),
+                    px,
+                    node->m_object->m_screenX,
+                    node->m_object->m_screenY
+                );
             }
-            res = (isB == 0) ? m_mgr->m_cmdGrid->ApplyTriggerA(player, *reinterpret_cast<i32*>(&a4), *reinterpret_cast<i32*>(&a8), 0)
-                             : m_mgr->m_cmdGrid->ApplyTriggerB(player, *reinterpret_cast<i32*>(&a4), *reinterpret_cast<i32*>(&a8), 0);
+            res = (isB == 0) ? m_mgr->m_cmdGrid->ApplyTriggerA(
+                                   player,
+                                   *reinterpret_cast<i32*>(&a4),
+                                   *reinterpret_cast<i32*>(&a8),
+                                   0
+                               )
+                             : m_mgr->m_cmdGrid->ApplyTriggerB(
+                                   player,
+                                   *reinterpret_cast<i32*>(&a4),
+                                   *reinterpret_cast<i32*>(&a8),
+                                   0
+                               );
             if (res != 0) {
                 if (res != -1) {
                     if (player != static_cast<u32>(g_curPlayer)) {
@@ -148,8 +175,13 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                     }
                     return 1;
                 }
-                res = m_mgr->m_cmdGrid
-                          ->ClearCell(player, *reinterpret_cast<i32*>(&a4), *reinterpret_cast<i32*>(&a8), 0, (isB == 0) ? 2 : 3);
+                res = m_mgr->m_cmdGrid->ClearCell(
+                    player,
+                    *reinterpret_cast<i32*>(&a4),
+                    *reinterpret_cast<i32*>(&a8),
+                    0,
+                    (isB == 0) ? 2 : 3
+                );
                 if (res != 0) {
                     if (player != static_cast<u32>(g_curPlayer)) {
                         return 1;
@@ -320,9 +352,16 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
             res = m_mgr->m_cmdGrid->ApplyTriggerA(player, *reinterpret_cast<i32*>(&a7), row, 0);
             if (res != 0) {
                 if (res == -1) {
-                    res = m_mgr->m_cmdGrid->ClearCell(player, *reinterpret_cast<i32*>(&a8), *reinterpret_cast<i32*>(&a2), 0, 2);
+                    res = m_mgr->m_cmdGrid->ClearCell(
+                        player,
+                        *reinterpret_cast<i32*>(&a8),
+                        *reinterpret_cast<i32*>(&a2),
+                        0,
+                        2
+                    );
                     if (res == 0) {
-                        if (static_cast<u32>(g_curPlayer) != player || g->m_entranceCommitted == 0) {
+                        if (static_cast<u32>(g_curPlayer) != player
+                            || g->m_entranceCommitted == 0) {
                             return 0;
                         }
                         GruntCue(g, 0x324, -1, 0, -1, -1);
@@ -331,7 +370,8 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                     if (static_cast<u8>(a2) != static_cast<u32>(g_curPlayer)) {
                         return 1;
                     }
-                    if (*reinterpret_cast<u32*>(&a4) != static_cast<u32>(g_curPlayer) && g->m_entranceCommitted != 0) {
+                    if (*reinterpret_cast<u32*>(&a4) != static_cast<u32>(g_curPlayer)
+                        && g->m_entranceCommitted != 0) {
                         GruntCue(g, 0x325, -1, 0, -1, -1);
                     }
                     return 1;
@@ -339,7 +379,8 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                 if (static_cast<u8>(a2) != static_cast<u32>(g_curPlayer)) {
                     return 1;
                 }
-                if (static_cast<u32>(g_curPlayer) != *reinterpret_cast<u32*>(&a8) && g->m_entranceCommitted != 0) {
+                if (static_cast<u32>(g_curPlayer) != *reinterpret_cast<u32*>(&a8)
+                    && g->m_entranceCommitted != 0) {
                     GruntCue(g, 0x325, -1, 0, -1, -1);
                 }
                 return 1;
@@ -385,17 +426,25 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                     if (static_cast<u8>(a2) != static_cast<u32>(g_curPlayer)) {
                         return 1;
                     }
-                    if (*reinterpret_cast<u32*>(&a8) != static_cast<u32>(g_curPlayer) && g->m_entranceCommitted != 0) {
+                    if (*reinterpret_cast<u32*>(&a8) != static_cast<u32>(g_curPlayer)
+                        && g->m_entranceCommitted != 0) {
                         GruntCue(g, 0x325, -1, 0, -1, -1);
                     }
                     return 1;
                 }
-                res = m_mgr->m_cmdGrid->ClearCell(player, *reinterpret_cast<i32*>(&a8), *reinterpret_cast<i32*>(&a2), 0, 3);
+                res = m_mgr->m_cmdGrid->ClearCell(
+                    player,
+                    *reinterpret_cast<i32*>(&a8),
+                    *reinterpret_cast<i32*>(&a2),
+                    0,
+                    3
+                );
                 if (res != 0) {
                     if (static_cast<u8>(a2) != static_cast<u32>(g_curPlayer)) {
                         return 1;
                     }
-                    if (static_cast<u32>(g_curPlayer) != *reinterpret_cast<u32*>(&a4) && g->m_entranceCommitted != 0) {
+                    if (static_cast<u32>(g_curPlayer) != *reinterpret_cast<u32*>(&a4)
+                        && g->m_entranceCommitted != 0) {
                         GruntCue(g, 0x325, -1, 0, -1, -1);
                     }
                     return 1;

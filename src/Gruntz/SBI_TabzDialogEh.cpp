@@ -4,7 +4,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Ints.h>
 #include <rva.h>
-#include <Gruntz/TriggerMgr.h> // m_cmdGrid's real class (m_phase/m_3ec)
+#include <Gruntz/TriggerMgr.h>         // m_cmdGrid's real class (m_phase/m_3ec)
 #include <Gruntz/GruntzMgr.h>          // the *0x24556c singleton (CGruntzMgr)
 #include <Gruntz/SbiTabzDialogViews.h> // the CSBI_Image / CSBI_MenuItem / CSBI_ImageSet leaves
 #include <Gruntz/StatusBarMgr.h>       // the REAL host: this fn is a CStatusBarMgr method
@@ -266,8 +266,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     // count active players (m_178!=0 && m_17c==0 && m_174==0) over the 4 slots.
     i32 count = 0;
     for (i32 i = 0; i < 4; i++) {
-        if (g_gameReg->m_options[i].m_joined != 0
-            && g_gameReg->m_options[i].m_doneFlag == 0
+        if (g_gameReg->m_options[i].m_joined != 0 && g_gameReg->m_options[i].m_doneFlag == 0
             && g_gameReg->m_options[i].m_clearedRound == 0) {
             count++;
         }

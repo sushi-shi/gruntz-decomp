@@ -1,4 +1,4 @@
-#include <Mfc.h>                  // wsprintfA (USER32, reloc-masked)
+#include <Mfc.h> // wsprintfA (USER32, reloc-masked)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/SerialCounter.h> // g_serialCounter
 #include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)

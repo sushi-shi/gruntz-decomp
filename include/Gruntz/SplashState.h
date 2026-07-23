@@ -21,11 +21,12 @@ public:
     virtual i32 LoadGameAssetNamespaces(i32 a, i32 b, i32 c) OVERRIDE;
     virtual void ReleaseResources() OVERRIDE; // slot 2  0x0f9840 (SplashState.cpp; retail
                                               //   slot 2 = ILT 0x2919; ex "CGameModeBase::Reset")
-    virtual GameStateId Update() OVERRIDE;       // slot 4
-    virtual i32 Render() OVERRIDE;               // slot 5
-    virtual i32 Vslot06() OVERRIDE;              // slot 6
-    virtual i32 InputVirtual() OVERRIDE;         // slot 8
-    virtual i32 Vslot09(i32) OVERRIDE; // slot 9  (+0x24) 0x0f9880 (ex CTitleApp::OnStart; defined in TitleAppStart.cpp)
+    virtual GameStateId Update() OVERRIDE;    // slot 4
+    virtual i32 Render() OVERRIDE;            // slot 5
+    virtual i32 Vslot06() OVERRIDE;           // slot 6
+    virtual i32 InputVirtual() OVERRIDE;      // slot 8
+    virtual i32 Vslot09(i32)
+        OVERRIDE; // slot 9  (+0x24) 0x0f9880 (ex CTitleApp::OnStart; defined in TitleAppStart.cpp)
     virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10
     virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
     virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14

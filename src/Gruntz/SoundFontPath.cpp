@@ -4,9 +4,9 @@
 
 #include <Win32.h> // GetCurrentDirectoryA / FreeLibrary
 
-#include <Dsndmgr/SfManager.h> // real SFMANL101API device + the SFManager factory
-#include <stdio.h>             // sprintf (0x11f890, _sprintf)
-#include <string.h>            // strlen (inline repne scas)
+#include <Dsndmgr/SfManager.h>     // real SFMANL101API device + the SFManager factory
+#include <stdio.h>                 // sprintf (0x11f890, _sprintf)
+#include <string.h>                // strlen (inline repne scas)
 #include <Gruntz/SFSelectDevice.h> // ex Globals.h
 
 DATA(0x0024dacc)
@@ -50,7 +50,10 @@ i32 SfDeviceInitKeys() {
     g_sfCfgA2 = 0;
     for (i32 i = 1; i <= 0x7f; i++) {
         g_sfCfgA0 = static_cast<WORD>(i);
-        (reinterpret_cast<SfGetLoadedBankPathname2>(g_sfDevice->SF_GetLoadedBankPathname))(g_sfDeviceId, reinterpret_cast<PSFMIDILOCATION>(&g_sfCfgA0));
+        (reinterpret_cast<SfGetLoadedBankPathname2>(g_sfDevice->SF_GetLoadedBankPathname))(
+            g_sfDeviceId,
+            reinterpret_cast<PSFMIDILOCATION>(&g_sfCfgA0)
+        );
     }
     g_sfCfgA0 = 1;
     return 1;

@@ -1,6 +1,6 @@
-#include <Gruntz/Dialogs.h>       // CBattlezDlgCustom (: CDialog), CDataExchange, CListBox (afxwin)
+#include <Gruntz/Dialogs.h> // CBattlezDlgCustom (: CDialog), CDataExchange, CListBox (afxwin)
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>     // canonical CGruntzMgr (IsBattlezMapFile)
+#include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (IsBattlezMapFile)
 #include <Ints.h>
 #include <rva.h>
 
@@ -84,6 +84,7 @@ void CBattlezDlgCustom::PickIfSelected() {
 
 RVA(0x00018430, 0xd)
 void EndWaitCursorOnThread() {
-    CCmdTarget* thread = *reinterpret_cast<CCmdTarget**>((reinterpret_cast<char*>(AfxGetModuleState()) + 4));
+    CCmdTarget* thread =
+        *reinterpret_cast<CCmdTarget**>((reinterpret_cast<char*>(AfxGetModuleState()) + 4));
     thread->EndWaitCursor();
 }

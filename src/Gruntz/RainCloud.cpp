@@ -1,10 +1,10 @@
 #include <Gruntz/RainCloud.h> // CRainCloud : CPathHazard (canonical; pulls PathHazard.h -> GameRegistry.h)
 #include <Gruntz/LightFxMgr.h> // reg->m_logicPump (+0x78): the shade-table pump the fill arg reads
-#include <Gruntz/GruntzMgr.h> // complete CGruntzMgr
+#include <Gruntz/GruntzMgr.h>  // complete CGruntzMgr
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag (HitTest's kill-sound gate)
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (m_cmdGrid: CellDispatch @0x6bcb0)
-#include <Rez/FrameClock.h> // g_frameTime/g_killCueClock (strike deadline + cue clock)
-#include <Bute/ButeMgr.h>   // g_buteMgr (the RainCloudFlashTime window bute)
+#include <Rez/FrameClock.h>    // g_frameTime/g_killCueClock (strike deadline + cue clock)
+#include <Bute/ButeMgr.h>      // g_buteMgr (the RainCloudFlashTime window bute)
 #include <rva.h>
 
 VTBL(CRainCloud, 0x001e7324); // vtable_names -> code (RTTI game class)

@@ -10,17 +10,17 @@
 // Add IS this Add @0x16e360), reached by reinterpret_cast<CKeyFinder*>(a CVariantSlot*) -
 // dissolved here (m_index->m_04, m_owner->m_label).
 struct CVariantSlot {
-    CVariantSlot(void* owner);                   // 0x16e1a0 (cursor ctor: typeTag=2, m_10=2)
-    void Set(void* obj, i32 a, i32 b);           // 0x16d850
-    i32 Find(i32 key);                           // 0x16e1d0 (binary-search the g_recs23 key table)
-    void* Add(void* key, void* val);             // 0x16e360 (keyed insert/update/remove; val==0 removes)
+    CVariantSlot(void* owner);         // 0x16e1a0 (cursor ctor: typeTag=2, m_10=2)
+    void Set(void* obj, i32 a, i32 b); // 0x16d850
+    i32 Find(i32 key);                 // 0x16e1d0 (binary-search the g_recs23 key table)
+    void* Add(void* key, void* val);   // 0x16e360 (keyed insert/update/remove; val==0 removes)
     void(__cdecl* m_callback)(char* buf, i32 v); // +0x00 (call [this]; the error callback)
-    i32 m_04;                                    // +0x04 probe/found index (Find writes it; ex m_index)
-    u16 m_valueWord;                             // +0x08 word storage
-    u16 m_0a;                                    // +0x0a
-    i32 m_typeTag;                               // +0x0c type tag (1/2/4; the cursor ctor sets 2)
-    i32 m_10;                                    // +0x10 (the cursor ctor sets 2)
-    char* m_label;                               // +0x14 label / format text / cursor owner (ex m_owner)
+    i32 m_04;        // +0x04 probe/found index (Find writes it; ex m_index)
+    u16 m_valueWord; // +0x08 word storage
+    u16 m_0a;        // +0x0a
+    i32 m_typeTag;   // +0x0c type tag (1/2/4; the cursor ctor sets 2)
+    i32 m_10;        // +0x10 (the cursor ctor sets 2)
+    char* m_label;   // +0x14 label / format text / cursor owner (ex m_owner)
 };
 SIZE_UNKNOWN();
 

@@ -2,8 +2,8 @@
 #include <Mfc.h>
 
 #include <Gruntz/WwdGrid.h>
-#include <Wwd/WwdGridShell.h> // the sibling 0x44 grid (its dtor 0x1682a0 lives in this obj)
-#include <Gruntz/WwdGridIter.h>  // CWwdGridIter cursor - Start/Init/GetNext bodies live
+#include <Wwd/WwdGridShell.h>   // the sibling 0x44 grid (its dtor 0x1682a0 lives in this obj)
+#include <Gruntz/WwdGridIter.h> // CWwdGridIter cursor - Start/Init/GetNext bodies live
 
 VTBL(CWwdGrid, 0x001f0328); // ??_7CWwdGrid@@6B@ (6-slot CObject-derived vtable)
 void operator delete(void* p);
@@ -121,7 +121,8 @@ i32 CWwdGrid::Query(i32 a0, i32 a1, i32 a2, i32 a3, i32 doRemove) {
                 i32 rowN = rowB - rowA + 1;
                 i32 idx = base;
                 do {
-                    WwdRegion* r = static_cast<WwdRegion*>(m_buckets[idx].m_head); // list head -> typed node
+                    WwdRegion* r =
+                        static_cast<WwdRegion*>(m_buckets[idx].m_head); // list head -> typed node
                     while (r) {
                         i32 x = r->m_x;
                         WwdRegion* next = static_cast<WwdRegion*>(r->m_next);

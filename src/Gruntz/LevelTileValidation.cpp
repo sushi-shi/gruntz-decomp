@@ -130,7 +130,8 @@ i32 CPlay::PlaceStartGruntz() {
         CDDrawGroupNode* next = node->m_next;
         if (obj != 0) {
             AnimWorkerObj* aux = obj->m_7c;
-            void* who = static_cast<void*>(aux->m_notify); // +0x10: WHICH leaf class built this object
+            void* who =
+                static_cast<void*>(aux->m_notify); // +0x10: WHICH leaf class built this object
             if (who == reinterpret_cast<void*>(0x4024a5)) {
                 i32 idx = reg->m_cmdGrid->PlaceObject(
                     obj->m_124,
@@ -155,7 +156,9 @@ i32 CPlay::PlaceStartGruntz() {
                         (obj->m_screenX & ~0x1f) + 0x10,
                         (obj->m_screenY & ~0x1f) + 0x10
                     );
-                    g_gameReg->EnterModalUI(static_cast<const char*>(static_cast<LPCSTR>(s))); // 0x8ef10
+                    g_gameReg->EnterModalUI(
+                        static_cast<const char*>(static_cast<LPCSTR>(s))
+                    ); // 0x8ef10
                     return 0;
                 }
                 obj->m_flags |= 0x10000;
@@ -206,7 +209,7 @@ i32 CPlay::ValidateLevelTiles() {
     i32 ok = 1;
     do {
         CGameObject* obj = node->m_obj; // GetNext: data @+0x08
-        node = node->m_next;                //          pNext @+0x00
+        node = node->m_next;            //          pNext @+0x00
         if (obj == 0) {
             continue;
         }
@@ -256,12 +259,14 @@ i32 CPlay::ValidateLevelTiles() {
                 if (tcidx == 0) {
                     return 0;
                 }
-                type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))->GetCollisionAt(0, 0);
+                type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))
+                           ->GetCollisionAt(0, 0);
             }
             if (type == 0x1e || type == 0x1f || type == 0x22 || type == 0x23) {
                 // toy tile: re-resolve the underlying tile-class type through the
                 // trigger registrar's tag-0x1a record (+0x34 = tile-class index).
-                CTileTriggerLogic* r = m_beginMarker->FindInLists12(obj->m_id, TRIGID_COVERED_POWERUP_26);
+                CTileTriggerLogic* r =
+                    m_beginMarker->FindInLists12(obj->m_id, TRIGID_COVERED_POWERUP_26);
                 if (r == 0) {
                     return 0;
                 }
@@ -269,7 +274,8 @@ i32 CPlay::ValidateLevelTiles() {
                 if (tcidx == 0) {
                     return 0;
                 }
-                type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))->GetCollisionAt(0, 0);
+                type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))
+                           ->GetCollisionAt(0, 0);
             }
             switch (type - 0x33) {
                 case 4: // 0x37
@@ -560,7 +566,8 @@ i32 CPlay::ValidateLevelTiles() {
                     i32 gx = dy + col;
                     i32 gyy = row - 1;
                     CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
-                    if (static_cast<u32>(gx) >= gg->m_width || static_cast<u32>(gyy) >= gg->m_height) {
+                    if (static_cast<u32>(gx) >= gg->m_width
+                        || static_cast<u32>(gyy) >= gg->m_height) {
                         continue;
                     }
                     i32 kind = obj->m_124;
@@ -585,10 +592,12 @@ i32 CPlay::ValidateLevelTiles() {
                     }
                     counts[kind]++;
                     gg = g_gameReg->m_tileGrid;
-                    if (static_cast<u32>(gx) >= gg->m_width || static_cast<u32>(gyy) >= gg->m_height) {
+                    if (static_cast<u32>(gx) >= gg->m_width
+                        || static_cast<u32>(gyy) >= gg->m_height) {
                         continue;
                     }
-                    i32* cellRow = reinterpret_cast<i32*>((reinterpret_cast<char*>(gg->m_rows[0]) + ofs));
+                    i32* cellRow =
+                        reinterpret_cast<i32*>((reinterpret_cast<char*>(gg->m_rows[0]) + ofs));
                     *reinterpret_cast<i32*>((reinterpret_cast<char*>(cellRow) + ebp)) |= bit;
                 }
             }

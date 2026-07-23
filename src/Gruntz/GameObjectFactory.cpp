@@ -128,8 +128,7 @@ void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
     CCheckpointTrigger::RegisterActs(); // 0x10f340 (ex 'CTileSecretTrigger::')
     ctx->m_workerCache->CreateWorker(CreateTeleporter, "Teleporter", 4);
     CTeleporter_RegisterActs();
-    ctx->m_workerCache
-        ->CreateWorker(CreateSecretTeleporterTrigger, "SecretTeleporterTrigger", 4);
+    ctx->m_workerCache->CreateWorker(CreateSecretTeleporterTrigger, "SecretTeleporterTrigger", 4);
     CSecretTeleporterTrigger::RegisterActs();
     ctx->m_workerCache->CreateWorker(CreateSecretLevelTrigger, "SecretLevelTrigger", 4);
     CSecretLevelTrigger::RegisterActs();

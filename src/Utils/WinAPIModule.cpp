@@ -25,18 +25,21 @@ namespace Utils {
                 return 0;
             }
 
-            PFNCREATESNAPSHOT pCreateSnapshot =
-                reinterpret_cast<PFNCREATESNAPSHOT>(GetProcAddress(k32, "CreateToolhelp32Snapshot"));
+            PFNCREATESNAPSHOT pCreateSnapshot = reinterpret_cast<PFNCREATESNAPSHOT>(
+                GetProcAddress(k32, "CreateToolhelp32Snapshot")
+            );
             if (!pCreateSnapshot) {
                 return 0;
             }
 
-            PFNMODULEWALK pModuleFirst = reinterpret_cast<PFNMODULEWALK>(GetProcAddress(k32, "Module32First"));
+            PFNMODULEWALK pModuleFirst =
+                reinterpret_cast<PFNMODULEWALK>(GetProcAddress(k32, "Module32First"));
             if (!pModuleFirst) {
                 return 0;
             }
 
-            PFNMODULEWALK pModuleNext = reinterpret_cast<PFNMODULEWALK>(GetProcAddress(k32, "Module32Next"));
+            PFNMODULEWALK pModuleNext =
+                reinterpret_cast<PFNMODULEWALK>(GetProcAddress(k32, "Module32Next"));
             if (!pModuleNext) {
                 return 0;
             }

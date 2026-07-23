@@ -17,13 +17,13 @@ public:
     void SetTime(i32 a, i32 b);
     void AddTime(i32 seconds, i32 minutes);
     i32 HandleEvent(CFileMemBase* ar, i32 kind, i32 a3, i32 a4); // 0x9c1c0
-    i32 Serialize(CFileMemBase* ar);   // 0x9c2e0 (SpriteLoaders cluster)
+    i32 Serialize(CFileMemBase* ar);                             // 0x9c2e0 (SpriteLoaders cluster)
     i32 Deserialize(CFileMemBase* ar); // 0x9c650 (external, declared-not-defined)
 
-    i32 m_baseX;       // +0x00 base x (screen origin)
-    i32 m_baseY;       // +0x04 base y
+    i32 m_baseX;            // +0x00 base x (screen origin)
+    i32 m_baseY;            // +0x04 base y
     CDDrawWorker* m_sprite; // +0x08 the looked-up "GAME_TIMER" sprite set
-    i32 m_active;      // +0x0c visible/active flag
+    i32 m_active;           // +0x0c visible/active flag
     // The five cached MM:SS frames, laid out L->R by Draw at x-0x22..x+0x22 and
     // reassigned per Tick's digit decode: [MinTens][MinOnes][:][SecTens][SecOnes].
     CImage* m_frameMinTens; // +0x10 tens-of-minutes digit frame

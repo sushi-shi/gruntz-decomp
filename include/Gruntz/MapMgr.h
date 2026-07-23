@@ -57,7 +57,7 @@ public:
     // slot 5 there is the SAME 0x853f0 body - so CMapMgr / CMapMgr / CMapVisitTarget
     // are ONE class under three names. Slots 1 and 4 are folded here; IsCellClear stays
     // declared-only until CMapMgr's whole method set folds (@identity-TODO).
-    virtual void Reset();                                            // slot 0  0x09ec30
+    virtual void Reset();                                          // slot 0  0x09ec30
     virtual i32 Visit(CFileMemBase* ar, i32 mode, i32 a2, i32 a3); // [1] 0x09f7f0
     virtual i32 Save(CFileMemBase*);                               // slot 2  0x09f840
     virtual i32 Load(CFileMemBase*);                               // slot 3  0x09f9a0

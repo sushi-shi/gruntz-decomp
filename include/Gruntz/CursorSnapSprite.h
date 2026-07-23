@@ -3,9 +3,9 @@
 
 #include <rva.h>
 
-#include <Gruntz/ActReg.h>       // CLogicActTable (the slot-4 activation-dispatch table)
+#include <Gruntz/ActReg.h>        // CLogicActTable (the slot-4 activation-dispatch table)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Gruntz/UserLogic.h>    // CUserLogic base (CCursorSnapSprite : CUserLogic)
+#include <Gruntz/UserLogic.h>     // CUserLogic base (CCursorSnapSprite : CUserLogic)
 
 class CCursorSnapSprite : public CUserLogic, public CWapX {
 public:

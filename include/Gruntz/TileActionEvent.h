@@ -54,8 +54,8 @@ public:
     i32 m_actionCode; // +0x00  action-type code (0x12d..0x149)
     i32 m_tileX;      // +0x04  tile X
     i32 m_tileY;      // +0x08  tile Y
-    i32 m_cellKey;          // +0x0c  cell key ((x<<8)|y; CTileTriggerContainer::FindByField0C match)
-    i32 m_live;         // +0x10  live flag (ctor zeroes; AddToList3 sets 1; dtor clears)
+    i32 m_cellKey;    // +0x0c  cell key ((x<<8)|y; CTileTriggerContainer::FindByField0C match)
+    i32 m_live;       // +0x10  live flag (ctor zeroes; AddToList3 sets 1; dtor clears)
     // +0x14  the owning CTileTriggerContainer (AddToList3/Serialize back-stamp it;
     // NOT serialized - which is exactly why the field skips the stream).
     CTileTriggerContainer* m_owner;

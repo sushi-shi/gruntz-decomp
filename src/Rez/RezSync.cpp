@@ -1,7 +1,7 @@
 #include <Rez/RezSync.h> // own extern surface
 #include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (ex .cpp extern)
-#include <Net/NetMgr.h>           // g_localVersion (ex .cpp extern; def in Multi.cpp)
+#include <Gruntz/GameRegMfcPtr.h>     // g_gameReg at its REAL type (ex .cpp extern)
+#include <Net/NetMgr.h>               // g_localVersion (ex .cpp extern; def in Multi.cpp)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (m_30; ex the local view)
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/FontConfig.h>
@@ -43,8 +43,8 @@
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/SoundFxEmitter.h> // ex Globals.h
-#include <Wap32/GameApp.h> // ex Globals.h
-#include <Gruntz/SoundState.h> // ex Globals.h transitive
+#include <Wap32/GameApp.h>         // ex Globals.h
+#include <Gruntz/SoundState.h>     // ex Globals.h transitive
 
 #include <Rez/RezSyncGlobals.h> // RezSync's private split-views of g_inputMgr/g_spawnConfig
 

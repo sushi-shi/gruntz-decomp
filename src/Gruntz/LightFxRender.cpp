@@ -1595,4 +1595,3 @@ i32 CLightFxRender::ClampRect(i32 x, i32 y, i32* out, i32 margin) {
     out[1] = (y - m_dstT) / m_scale;
     return 1;
 }
-

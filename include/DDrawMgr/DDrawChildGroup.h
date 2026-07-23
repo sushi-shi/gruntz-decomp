@@ -3,7 +3,7 @@
 
 #include <rva.h>
 #include <Ints.h>
-#include <Mfc.h>            // CMapPtrToPtr - the +0x2c / +0x48 collections (real MFC)
+#include <Mfc.h>             // CMapPtrToPtr - the +0x2c / +0x48 collections (real MFC)
 #include <Gruntz/Loadable.h> // CLoadable - the real base (ctor 0x156cb0 at the Init new-site)
 
 struct AnimWorkerObj; // the +0x7c worker/logic record (<DDrawMgr/AnimWorkerObj.h>)
@@ -20,9 +20,9 @@ struct CGameObject;
 // CWarlordListNode duplicate is dissolved here (2026-07-14); the former
 // SpriteFactory.h "CSpriteListNode" (next/m_sprite) and WwdObjMgr.h "CWwdNode"
 // (m_next/m_prev/m_obj) duplicates are dissolved here (2026-07-16).
-struct CGameObject;   // <Gruntz/UserLogic.h> (game-side reading of the same object)
+struct CGameObject;    // <Gruntz/UserLogic.h> (game-side reading of the same object)
 class CWwdGameObjectA; // the created-sprite kind (CreateSprite's product type)
-class CWwdGameObject; // <Gruntz/WwdGameObject.h> (WWD collection reading)
+class CWwdGameObject;  // <Gruntz/WwdGameObject.h> (WWD collection reading)
 struct CDDrawGroupNode {
     CDDrawGroupNode* m_next; // +0x00
     CDDrawGroupNode* m_prev; // +0x04  (pPrev; rarely walked)
@@ -40,14 +40,14 @@ public:
     // slot 1: ??1 @0x157630 (defined in DDrawSubMgr.cpp, the family dtor pocket -
     // the ex CDDrawChildGroupDtorHost view; ??_G @0x157610 is cl-generated there).
     virtual ~CDDrawChildGroup() OVERRIDE;
-    virtual i32 IsLoaded() OVERRIDE; // slot 5  0x1575e0 (parent set && status != -1)
-    virtual i32 IsReady() OVERRIDE;  // slot 6  0x1576c0 (own `return 1` copy)
+    virtual i32 IsLoaded() OVERRIDE;   // slot 5  0x1575e0 (parent set && status != -1)
+    virtual i32 IsReady() OVERRIDE;    // slot 6  0x1576c0 (own `return 1` copy)
     virtual void Unload() OVERRIDE;    // slot 7  0x1591e0 -> DestroyChildren (ex "ForwardTo3C")
     virtual i32 GetClassId() OVERRIDE; // slot 8  0x157600 -> CLASSID_CHILDGROUP (0x10)
     // slot 9 (+0x24) = the per-frame kill-cue tick (0x159a70, ret 4 = 1 arg; body in
     // WwdObjMgr.cpp). CMulti/CPlay's frame pump dispatches it here with the frame
     // delta, then slot 16 below.
-    virtual void TickKillCues(i32 advance);                // slot 9  +0x24
+    virtual void TickKillCues(i32 advance);                       // slot 9  +0x24
     virtual void WalkDispatch2C(class CDDrawSurfacePair* target); // slot 10 0x159c90 (child Render)
     virtual void WalkDispatch30(i32 a1, i32 a2);         // slot 11 0x159cc0 (child BltDirty)
     virtual void WalkDispatch34(i32 a1, i32 a2, i32 a3); // slot 12 0x159cf0 (child BltDirtyEx)
@@ -109,12 +109,11 @@ public:
     // `id`, and whose +0x7c sub-object's +0x10 matches the object the worker-cache
     // name map yields for `key`.
     void* Find(i32 id, const char* key);
-    CWwdGameObject* FindByKey(void* key); // 0x15a9a0 first obj with m_key==key
-    CWwdGameObject*
-    FindByStatusKey(void* key); // 0x15a9d0 first status-5 obj with m_key==key
-    i32 IsKindUnique(i32 kind); // 0x15aa20 1 unless 2+ objs share m_04==kind
-    i32 CountByKind(i32 kind);  // 0x15aa60 count of objs with m_04==kind
-    i32 SumWeighted();          // 0x15aaf0 sum i*(m_5c+m_74+m_60+m_04)
+    CWwdGameObject* FindByKey(void* key);       // 0x15a9a0 first obj with m_key==key
+    CWwdGameObject* FindByStatusKey(void* key); // 0x15a9d0 first status-5 obj with m_key==key
+    i32 IsKindUnique(i32 kind);                 // 0x15aa20 1 unless 2+ objs share m_04==kind
+    i32 CountByKind(i32 kind);                  // 0x15aa60 count of objs with m_04==kind
+    i32 SumWeighted();                          // 0x15aaf0 sum i*(m_5c+m_74+m_60+m_04)
 
     // (+0x04 m_04 / +0x08 m_flags / +0x0c m_0c are the INHERITED CLoadable header
     // trio - m_flags bit 0x200000 = draw per-object debug counts; the owner read

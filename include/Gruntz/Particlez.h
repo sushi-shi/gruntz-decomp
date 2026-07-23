@@ -23,8 +23,8 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE; // 0x046d30
     // Bind the per-frame handler (Update) to the activation key "A" via the shared
     // name registry (the same archetype as CSecretTeleporterTrigger::RegisterActs).
-    static void RegisterActs();     // 0x046e90
-    i32 Update();                   // 0x047090 (advance anim + on-screen latch; ret 0)
+    static void RegisterActs(); // 0x046e90
+    i32 Update();               // 0x047090 (advance anim + on-screen latch; ret 0)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 };

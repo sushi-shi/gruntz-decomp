@@ -13,14 +13,7 @@
 // null-guard `jne; ret` exits are byte-identical but cl /O2 merges them into one
 // shared `je ret`. Logic 100% correct; deferred (same non-steerable heuristic).
 RVA(0x00114f50, 0x3e)
-void ChainForward14(
-    Utils::RegistryHelper* p1,
-    CGruntzMgr* p2,
-    i32 p3,
-    i32 p4,
-    char* p5,
-    void* p6
-) {
+void ChainForward14(Utils::RegistryHelper* p1, CGruntzMgr* p2, i32 p3, i32 p4, char* p5, void* p6) {
     CDDrawSurfacePair* pair = p2->m_world->m_drawTarget->m_backPair;
     if (pair) {
         CDDSurface* leaf = pair->m_surface;
@@ -38,14 +31,7 @@ void ChainForward14(
 // duplication heuristic (not flag- or source-steerable: nested-if and /Oy- both
 // tested, no change). Logic 100% correct; deferred.
 RVA(0x00114fa0, 0x3e)
-void ChainForward(
-    Utils::RegistryHelper* p1,
-    CGruntzMgr* p2,
-    i32 p3,
-    i32 p4,
-    char* p5,
-    void* p6
-) {
+void ChainForward(Utils::RegistryHelper* p1, CGruntzMgr* p2, i32 p3, i32 p4, char* p5, void* p6) {
     CDDrawSurfacePair* pair = p2->m_world->m_drawTarget->m_overlayPair;
     if (pair) {
         CDDSurface* leaf = pair->m_surface;

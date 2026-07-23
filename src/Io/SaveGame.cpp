@@ -24,7 +24,7 @@ CImagePool* g_previewMgr; // 0x64c814
 DATA(0x0024c864)
 i32 g_slotState;
 DATA(0x0024c868)
-void* g_previewImage;                           // 0x64c868  (CRezImage* previewed DIB)
+void* g_previewImage;                     // 0x64c868  (CRezImage* previewed DIB)
 i32 __stdcall CloseTempFile(SaveSlot* r); // defined below (0x0e5550)
 void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);
 void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev);
@@ -957,4 +957,3 @@ void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6
     EnableWindow(GetDlgItem(hWnd, id5), flag);
     EnableWindow(GetDlgItem(hWnd, id6), flag);
 }
-

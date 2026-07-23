@@ -20,10 +20,10 @@ public:
         return LOGIC_OBJECTDROPPER;
     }
     virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
-    CObjectDropper(CGameObject* obj);   // 0xc59f0 (folds CUserLogic(obj) + the drop setup)
+    CObjectDropper(CGameObject* obj); // 0xc59f0 (folds CUserLogic(obj) + the drop setup)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
-    i32 Update();                       // 0xc62e0 (per-frame drop tick + drift/wrap)
+    i32 Update(); // 0xc62e0 (per-frame drop tick + drift/wrap)
     virtual void FireActivation(i32 id)
         OVERRIDE; // 0xc5f80 (look up + fire the registered act handler)
     // Construct the class's activation-coordinate registry (g_dropperActReg

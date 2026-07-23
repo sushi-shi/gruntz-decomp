@@ -1,7 +1,7 @@
 #include <Gruntz/Boomerang.h> // CBoomerang : CProjectile (+return-trajectory fields, sizeof 0x260)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Grunt.h>     // CGrunt (launcher grunt return-record) + CFileMemBase
+#include <Gruntz/Grunt.h>        // CGrunt (launcher grunt return-record) + CFileMemBase
 #include <Gruntz/GameRegistry.h> // g_gameReg (m_world gate, m_cmdGrid launcher-cell grid)
 #include <rva.h>
 #include <Io/FileMem.h> // CFileMemBase - the CFileMemBase stream (Read/Write dispatch)
@@ -59,16 +59,22 @@ i32 CBoomerang::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i3
     CWwdGameObjectA* owner = m_object;
     m_launchX = owner->m_screenX;
     m_launchY = owner->m_screenY;
-    double d = g_projPhase0 / (static_cast<double>(static_cast<u32>(m_timePerTile)) * g_boomTimeScale * m_flightDist);
-    double originX = (static_cast<double>(m_targetX) + static_cast<double>(owner->m_screenX)) * g_boomHalf;
-    double originY = (static_cast<double>(m_targetY) + static_cast<double>(owner->m_screenY)) * g_boomHalf;
+    double d =
+        g_projPhase0
+        / (static_cast<double>(static_cast<u32>(m_timePerTile)) * g_boomTimeScale * m_flightDist);
+    double originX =
+        (static_cast<double>(m_targetX) + static_cast<double>(owner->m_screenX)) * g_boomHalf;
+    double originY =
+        (static_cast<double>(m_targetY) + static_cast<double>(owner->m_screenY)) * g_boomHalf;
     m_originX = originX;
     m_originY = originY;
     m_dirX = originX - static_cast<double>(owner->m_screenX);
     m_dirY = originY - static_cast<double>(owner->m_screenY);
     m_phase = 0.0;
     m_velScale = d;
-    CGrunt* g = *reinterpret_cast<CGrunt**>((reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + (15 * a + b) * 4 + 0x1c));
+    CGrunt* g = *reinterpret_cast<CGrunt**>(
+        (reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + (15 * a + b) * 4 + 0x1c)
+    );
     if (g != 0) {
         g->m_280 = static_cast<i32>((d * m_flightDist * g_boomRetC3 - g_boomRetC4));
         g->m_284 = 0;

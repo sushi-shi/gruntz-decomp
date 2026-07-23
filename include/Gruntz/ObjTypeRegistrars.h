@@ -3,22 +3,22 @@
 
 #include <Gruntz/MovingLogic.h> // CMovingLogic (CProjectile base) -> pulls CUserLogic
 #include <rva.h>
-#include <Gruntz/CBrickz.h>     // the REAL CBrickz (its static RegisterActs @0x10ebe0)
-#include <Gruntz/ExitTrigger.h> // the REAL CExitTrigger (its static RegisterActs @0x3f3f0)
-#include <Gruntz/ObjectDropper.h> // the REAL CObjectDropper (MI: CUserLogic + CWapX)
-#include <Gruntz/Particlez.h> // the REAL CParticlez (MI: CUserLogic + CWapX)
-#include <Gruntz/RollingBall.h> // the REAL CRollingBall (MI: CUserLogic + CWapX)
+#include <Gruntz/CBrickz.h>            // the REAL CBrickz (its static RegisterActs @0x10ebe0)
+#include <Gruntz/ExitTrigger.h>        // the REAL CExitTrigger (its static RegisterActs @0x3f3f0)
+#include <Gruntz/ObjectDropper.h>      // the REAL CObjectDropper (MI: CUserLogic + CWapX)
+#include <Gruntz/Particlez.h>          // the REAL CParticlez (MI: CUserLogic + CWapX)
+#include <Gruntz/RollingBall.h>        // the REAL CRollingBall (MI: CUserLogic + CWapX)
 #include <Gruntz/SecretLevelTrigger.h> // the REAL CSecretLevelTrigger (MI: CUserLogic + CWapX)
 #include <Gruntz/SecretTeleporterTrigger.h> // the REAL CSecretTeleporterTrigger (MI: CUserLogic + CWapX)
-#include <Gruntz/SingleAnimation.h> // the REAL CSingleAnimation (MI: CUserLogic + CWapX)
-#include <Gruntz/StaticHazard.h> // the REAL CStaticHazard (MI: CUserLogic + CWapX)
-#include <Gruntz/StatusBarSprite.h> // the REAL CStatusBarSprite (MI: CUserLogic + CWapX)
-#include <Gruntz/TileTriggerSwitch.h> // the REAL CTileTriggerSwitch (MI: CUserLogic + CWapX)
+#include <Gruntz/SingleAnimation.h>         // the REAL CSingleAnimation (MI: CUserLogic + CWapX)
+#include <Gruntz/StaticHazard.h>            // the REAL CStaticHazard (MI: CUserLogic + CWapX)
+#include <Gruntz/StatusBarSprite.h>         // the REAL CStatusBarSprite (MI: CUserLogic + CWapX)
+#include <Gruntz/TileTriggerSwitch.h>       // the REAL CTileTriggerSwitch (MI: CUserLogic + CWapX)
 #include <Gruntz/TileTriggerTransition.h> // the REAL CTileTriggerTransition (MI: CUserLogic + CWapX)
-#include <Gruntz/TimeBomb.h> // the REAL CTimeBomb (MI: CUserLogic + CWapX)
-#include <Gruntz/ToobSpikez.h> // the REAL CToobSpikez (MI: CUserLogic + CWapX)
-#include <Gruntz/VoiceTrigger.h> // the REAL CVoiceTrigger (MI: CUserLogic + CWapX)
-#include <Gruntz/WarpStonePad.h> // the REAL CWarpStonePad (MI: CUserLogic + CWapX)
+#include <Gruntz/TimeBomb.h>              // the REAL CTimeBomb (MI: CUserLogic + CWapX)
+#include <Gruntz/ToobSpikez.h>            // the REAL CToobSpikez (MI: CUserLogic + CWapX)
+#include <Gruntz/VoiceTrigger.h>          // the REAL CVoiceTrigger (MI: CUserLogic + CWapX)
+#include <Gruntz/WarpStonePad.h>          // the REAL CWarpStonePad (MI: CUserLogic + CWapX)
 #include <Gruntz/GruntHealthSprite.h>
 #include <Gruntz/GruntPowerupSprite.h>
 #include <Gruntz/GruntSelectedSprite.h>

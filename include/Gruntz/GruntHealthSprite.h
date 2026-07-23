@@ -26,12 +26,12 @@ public:
     // slot 16 (new): the per-class stat-time getter (leaf overrides read the bound
     // grunt's stamina/wingz/toy timer); HealthUpdate dispatches it with the grunt entry.
     virtual i32 Vslot16(CGrunt* grunt);
-    CGruntHealthSprite();                   // 0x011ef0 (no-arg ctor; body in GruntHealthSprite.cpp)
-    CGruntHealthSprite(CGameObject* obj);   // 0x07eb00 (1-arg ctor; body in GruntHealthSprite.cpp)
+    CGruntHealthSprite();                 // 0x011ef0 (no-arg ctor; body in GruntHealthSprite.cpp)
+    CGruntHealthSprite(CGameObject* obj); // 0x07eb00 (1-arg ctor; body in GruntHealthSprite.cpp)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
-                                            // so its 0x11fb0 COMDAT labels cleanly - an inline dtor
-                                            // can't hang RVA() without also tagging the synthesized
+    // so its 0x11fb0 COMDAT labels cleanly - an inline dtor
+    // can't hang RVA() without also tagging the synthesized
     // ??_G, tripping the duplicate-RVA guard. The derived leaf
     // dtors therefore tail-jump this base dtor rather than
     // inlining the teardown - a pre-existing modeling gap.)

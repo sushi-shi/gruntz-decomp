@@ -474,4 +474,3 @@ RVA(0x0011c830, 0x12)
 BOOL CGruntSpawnConfig::IsReady() {
     return m_owner->m_100 != 0;
 }
-

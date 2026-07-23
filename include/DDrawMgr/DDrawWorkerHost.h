@@ -4,7 +4,7 @@
 #include <Ints.h>
 #include <Gruntz/Loadable.h>      // CLoadable : CWapObj : CObject (pulls <Mfc.h>/windows.h)
 #include <DDrawMgr/DDrawWorker.h> // (m_frameSets is the real MFC ::CObArray)
-#include <ddraw.h> // DDBLTFX (the +0xf4 blit-fx member; windows.h via <Mfc.h> above)
+#include <ddraw.h>                // DDBLTFX (the +0xf4 blit-fx member; windows.h via <Mfc.h> above)
 #include <rva.h>
 
 typedef struct tagRECT LevelCoordRect;
@@ -13,10 +13,10 @@ SIZE_UNKNOWN();
 struct CWwdSpatialMgr;
 
 class CDDrawSurfaceMgr; // the +0x0c world/display root (ex the CPlaneMapData view)
-struct CPlaneDrawCtx; // Draw's render context (its +0x2c is the blit target surface)
-class CDDrawWorker;             // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+struct CPlaneDrawCtx;   // Draw's render context (its +0x2c is the blit target surface)
+class CDDrawWorker;     // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
-class CFileMemBase;   // the abstract serialize stream (Read @+0x2c / Write @+0x30)
+class CFileMemBase; // the abstract serialize stream (Read @+0x2c / Write @+0x30)
 
 // (B)-form re-base 2026-07-22: retail ??0CDDrawWorkerHost (0x1615a0) stamps
 // ??_7CLoadable @+0x2a (surviving across the m_frameSets CObArray member ctor)
@@ -74,20 +74,20 @@ public:
     // view IS this plane, proven by the parallel Brickz fold):
     // m_tileGrid[m_colOffsets[y] + x] = id.
     void SetCell(i32 x, i32 y, i32 id);
-    void RecomputePlaneCoords();                  // 0x161c90 wrap/clamp scaled coords
-    void Build(LevelCoordRect* coords);           // 0x161e80 re-place + recompute one plane
-    void SetTileSize(i32 tileW, i32 tileH);       // 0x161f00 derive wrap dims/fill/shifts
+    void RecomputePlaneCoords();                     // 0x161c90 wrap/clamp scaled coords
+    void Build(LevelCoordRect* coords);              // 0x161e80 re-place + recompute one plane
+    void SetTileSize(i32 tileW, i32 tileH);          // 0x161f00 derive wrap dims/fill/shifts
     void SetTileSizeFromImageSet(CDDrawWorker* set); // 0x161fa0 seed tile size from a frame
-    void Draw(CPlaneDrawCtx* ctx);                // 0x162010 the tile-grid render (ex "Sync")
-    i32 Prune();                           // 0x1628d0 forward the grid's Prune
-    i32 CenterScrollA();                          // 0x163300 (ex "QueryA")
-    i32 CenterScrollB();                          // 0x163370 (ex "QueryB")
-    i32 GetSize();                         // 0x1633e0 forward the grid's GetSize
-    void InitScrollRects();                       // 0x163420 seed the scroll rects (ex "Notify")
-    i32 ValidateTiles(char* errOut);              // 0x163510 scan the tile grid for bad refs
-    void ResolveColorKey();                       // 0x163670 pack +0x144 to RGB565 (ex "Refresh")
-    i32 Save(CFileMemBase* s);                    // 0x163780 serialize out
-    i32 Load(CFileMemBase* s);                    // 0x1638c0 serialize in
+    void Draw(CPlaneDrawCtx* ctx);                   // 0x162010 the tile-grid render (ex "Sync")
+    i32 Prune();                                     // 0x1628d0 forward the grid's Prune
+    i32 CenterScrollA();                             // 0x163300 (ex "QueryA")
+    i32 CenterScrollB();                             // 0x163370 (ex "QueryB")
+    i32 GetSize();                                   // 0x1633e0 forward the grid's GetSize
+    void InitScrollRects();                          // 0x163420 seed the scroll rects (ex "Notify")
+    i32 ValidateTiles(char* errOut);                 // 0x163510 scan the tile grid for bad refs
+    void ResolveColorKey();    // 0x163670 pack +0x144 to RGB565 (ex "Refresh")
+    i32 Save(CFileMemBase* s); // 0x163780 serialize out
+    i32 Load(CFileMemBase* s); // 0x1638c0 serialize in
     // 0x1628f0 / 0x162af0 (ex WwdFile:: + its WwdLevelLoader `this`-view): free the old
     // spatial worker, allocate + Init a fresh one from the map-data geometry, then read
     // `count` object records. `this` IS the plane - the view read m_mapData@+0x0c and
@@ -106,22 +106,22 @@ public:
     // CResolveNode's. The owner read is OwnerMgr() (== the ex "m_mapData"; the
     // CPlaneMapData facet-view cascade proof lives in <Wwd/WwdFile.h>.)
     // m_flags bits: bit0 = MAIN/origin-fixed plane, bit1 hidden, bit2/3 = wrap X/Y.
-    float m_scaledX;          // +0x10  scroll origin X (RecomputePlaneCoords wrap target)
-    float m_scaledY;          // +0x14  scroll origin Y
-    float m_scaleX;           // +0x18  X parallax factor (ctor seeds 1.0f)
-    float m_scaleY;           // +0x1c  Y parallax factor (ctor seeds 1.0f)
-    i32* m_tileGrid;          // +0x20  tile-handle grid (row-major; owned, RezFree'd)
-    i32* m_colOffsets;        // +0x24  per-column base offsets (owned, RezFree'd)
-    i32 m_gridW; // +0x28  tile-grid width
-    i32 m_gridH; // +0x2c  tile-grid height
-    i32 m_wrapW; // +0x30  tile count across (wrap/clamp modulus)
-    i32 m_wrapH; // +0x34  tile count down
-    i32 m_tilePxW; // +0x38  tile pixel width (log2 -> m_shiftX)
-    i32 m_tilePxH; // +0x3c  tile pixel height
-    i32 m_originX; // +0x40  near tile-origin X (RecomputePlaneCoords out; Draw/wrap base)
-    i32 m_originY; // +0x44  near tile-origin Y
-    i32 m_extentX; // +0x48  far tile-extent X
-    i32 m_extentY; // +0x4c  far tile-extent Y
+    float m_scaledX;   // +0x10  scroll origin X (RecomputePlaneCoords wrap target)
+    float m_scaledY;   // +0x14  scroll origin Y
+    float m_scaleX;    // +0x18  X parallax factor (ctor seeds 1.0f)
+    float m_scaleY;    // +0x1c  Y parallax factor (ctor seeds 1.0f)
+    i32* m_tileGrid;   // +0x20  tile-handle grid (row-major; owned, RezFree'd)
+    i32* m_colOffsets; // +0x24  per-column base offsets (owned, RezFree'd)
+    i32 m_gridW;       // +0x28  tile-grid width
+    i32 m_gridH;       // +0x2c  tile-grid height
+    i32 m_wrapW;       // +0x30  tile count across (wrap/clamp modulus)
+    i32 m_wrapH;       // +0x34  tile count down
+    i32 m_tilePxW;     // +0x38  tile pixel width (log2 -> m_shiftX)
+    i32 m_tilePxH;     // +0x3c  tile pixel height
+    i32 m_originX;     // +0x40  near tile-origin X (RecomputePlaneCoords out; Draw/wrap base)
+    i32 m_originY;     // +0x44  near tile-origin Y
+    i32 m_extentX;     // +0x48  far tile-extent X
+    i32 m_extentY;     // +0x4c  far tile-extent Y
     // +0x50  the plane's level-coord bounds (Build/InitGeometry copy). RECONCILED:
     // the ex-m_viewX/m_viewY "scroll pixel offset" reading was .left/.top - WrapCoord
     // translates world coords by the bounds ORIGIN; the ctor's -1 is the pre-Build
@@ -140,7 +140,7 @@ public:
     i32 m_shiftY;             // +0x90  tile->pixel shift Y
     i32 m_94;                 // +0x94  int scaled into m_scaleX (m_scaleX = m_94 * DAT_5f02a0)
     i32 m_98;                 // +0x98  int scaled into m_scaleY
-    CObArray m_frameSets;   // +0x9c  frame-set array (elements: CPlaneFrame*; the
+    CObArray m_frameSets;     // +0x9c  frame-set array (elements: CPlaneFrame*; the
                               //        draw loop indexes m_pData by handle>>16;
                               //        ctor 0x1b55e9 / ~ 0x1b561c; ex "m_obArray")
     CWwdSpatialMgr* m_scroll; // +0xb0  camera/scroll + spatial-grid worker

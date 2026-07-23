@@ -6,7 +6,7 @@
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_world)
 #include <Gruntz/SBI_StatzTabGruntBar.h> // the REAL class
 #include <Gruntz/Sprite.h> // CDDrawWorker - the glyph maps ARE frame-data sprites (ex CStatzGlyphMap)
-#include <string.h>                      // inline strlen / strcpy / memset over the scratch buffer
+#include <string.h>        // inline strlen / strcpy / memset over the scratch buffer
 
 // ===========================================================================
 // CSBI_StatzTabGruntBar::SerializeFields (0x0ea990) - the stat tab's dual-mode slot-1
@@ -53,7 +53,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CFileMemBase* s, i32 mode, i32 a2, i3
     memset(buf, 0, sizeof(buf));                                                                   \
     v = 0;                                                                                         \
     if (field != 0) {                                                                              \
-        reg->m_imageRegistry->AnyValueMatches(field, buf, &v);                                       \
+        reg->m_imageRegistry->AnyValueMatches(field, buf, &v);                                     \
     }                                                                                              \
     s->Write(buf, 0x80);                                                                           \
     s->Write(&v, 4)
@@ -102,11 +102,11 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CFileMemBase* s, i32 mode, i32 a2, i3
     if (strlen(buf) != 0) {                                                                        \
         i32 i = idx;                                                                               \
         out = 0;                                                                                   \
-        reg->m_imageRegistry->m_10map.Lookup(buf, out);                                                       \
-        CDDrawWorker* gm = static_cast<CDDrawWorker*>(out);                                                 \
+        reg->m_imageRegistry->m_10map.Lookup(buf, out);                                            \
+        CDDrawWorker* gm = static_cast<CDDrawWorker*>(out);                                        \
         CImage* r;                                                                                 \
-        if (gm != 0 && i >= gm->m_minIndex && i <= gm->m_maxIndex) {                                  \
-            r = static_cast<CImage*>(gm->m_items.GetAt(i));                                                                    \
+        if (gm != 0 && i >= gm->m_minIndex && i <= gm->m_maxIndex) {                               \
+            r = static_cast<CImage*>(gm->m_items.GetAt(i));                                        \
         } else {                                                                                   \
             r = 0;                                                                                 \
         }                                                                                          \
@@ -119,8 +119,8 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CFileMemBase* s, i32 mode, i32 a2, i3
     s->Read(buf, 0x80);                                                                            \
     if (strlen(buf) != 0) {                                                                        \
         out = 0;                                                                                   \
-        reg->m_imageRegistry->m_10map.Lookup(buf, out);                                                       \
-        field = reinterpret_cast<CDDrawWorker*>(out);                                                              \
+        reg->m_imageRegistry->m_10map.Lookup(buf, out);                                            \
+        field = reinterpret_cast<CDDrawWorker*>(out);                                              \
     } else {                                                                                       \
         field = 0;                                                                                 \
     }

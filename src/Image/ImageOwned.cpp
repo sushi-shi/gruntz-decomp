@@ -85,7 +85,8 @@ i32 CDDrawShadeBlit::BuildRle(
                 do {
                     if (static_cast<i32>(src[i]) != keyVal) {
                         // literal run (the fall-through / primary path)
-                        while (i < m_width && (i - runStart) < 0x7e && static_cast<i32>(src[i]) != keyVal) {
+                        while (i < m_width && (i - runStart) < 0x7e
+                               && static_cast<i32>(src[i]) != keyVal) {
                             i++;
                         }
                         ba.SetAtGrow(ba.GetSize(), static_cast<u8>((i - runStart)));
@@ -95,7 +96,8 @@ i32 CDDrawShadeBlit::BuildRle(
                         runStart = i;
                     } else {
                         // key run (floated to the tail)
-                        while (i < m_width && (i - runStart) < 0x7e && static_cast<i32>(src[i]) == keyVal) {
+                        while (i < m_width && (i - runStart) < 0x7e
+                               && static_cast<i32>(src[i]) == keyVal) {
                             i++;
                         }
                         ba.SetAtGrow(ba.GetSize(), static_cast<u8>(((i - runStart) | 0x80)));
@@ -138,7 +140,14 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palett
     if (bits == 0) {
         return 0;
     }
-    i32 r = BuildRle(reinterpret_cast<void*>(bits), surf->m_width, surf->m_height, surf->m_pitch, keyVal, palette);
+    i32 r = BuildRle(
+        reinterpret_cast<void*>(bits),
+        surf->m_width,
+        surf->m_height,
+        surf->m_pitch,
+        keyVal,
+        palette
+    );
     surf->m_ddSurface->Unlock(0);
     return r;
 }
@@ -316,7 +325,11 @@ i32 CDDrawShadeBlit::Decompress(void* dest) {
             x += m_rleData[cursor] - 0x80;
             cursor += 1;
         } else {
-            memcpy(reinterpret_cast<u8*>(dest) + y * m_width + x, m_rleData + cursor + 1, m_rleData[cursor]);
+            memcpy(
+                reinterpret_cast<u8*>(dest) + y * m_width + x,
+                m_rleData + cursor + 1,
+                m_rleData[cursor]
+            );
             x += m_rleData[cursor];
             cursor += m_rleData[cursor] + 1;
         }
@@ -327,4 +340,3 @@ i32 CDDrawShadeBlit::Decompress(void* dest) {
     }
     return 1;
 }
-

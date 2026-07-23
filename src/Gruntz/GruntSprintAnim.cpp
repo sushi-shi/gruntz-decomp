@@ -86,4 +86,3 @@ i32 CBootyState::BuildGruntSprintAnimation() {
     }
     return 1;
 }
-

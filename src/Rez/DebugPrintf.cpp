@@ -1,8 +1,8 @@
 #include <Rez/DebugPrintf.h> // C-linkage decls for the ex-wrapped defs
 #include <rva.h>
 
-#include <stdlib.h> // atol / getenv
-#include <string.h> // inline strcpy (rep movs / repne scasb), strpbrk, strstr
+#include <stdlib.h>          // atol / getenv
+#include <string.h>          // inline strcpy (rep movs / repne scasb), strpbrk, strstr
 #include <Gruntz/RangeSet.h> // canonical CRangeSet + CRange (the debug-channel set)
 #include <Rez/DebugConfig.h> // canonical CDebugConfig (the debug-output config singleton)
 
@@ -136,7 +136,8 @@ void MonoNewline() {
         i32 i = 0xa0;
         do {
             i += 2;
-            *reinterpret_cast<u16*>((g_monoBuffer + i - 0xa2)) = *reinterpret_cast<u16*>((g_monoBuffer + i - 2));
+            *reinterpret_cast<u16*>((g_monoBuffer + i - 0xa2)) =
+                *reinterpret_cast<u16*>((g_monoBuffer + i - 2));
         } while (i < 0xfa0);
         i = 0xf00;
         do {

@@ -58,15 +58,18 @@ void CFaderLight::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
                     i32 p = *reinterpret_cast<u8*>(rowLdst);
                     *reinterpret_cast<u8*>(rowLsrc) = *reinterpret_cast<u8*>((a3 + p * R + cl));
                     i32 q = *reinterpret_cast<u8*>((rowLdst + mirDst));
-                    *reinterpret_cast<u8*>((rowLsrc + mirSrc)) = *reinterpret_cast<u8*>((a3 + q * m_spanCount + cl));
+                    *reinterpret_cast<u8*>((rowLsrc + mirSrc)) =
+                        *reinterpret_cast<u8*>((a3 + q * m_spanCount + cl));
                 }
                 rowLsrc++;
                 rowLdst++;
                 if (2 * cy - row < m_surfWidth) {
                     i32 p = *reinterpret_cast<u8*>(rowRdst);
-                    *reinterpret_cast<u8*>(rowRsrc) = *reinterpret_cast<u8*>((a3 + p * m_spanCount + cl));
+                    *reinterpret_cast<u8*>(rowRsrc) =
+                        *reinterpret_cast<u8*>((a3 + p * m_spanCount + cl));
                     i32 q = *reinterpret_cast<u8*>((rowRdst + mirDst));
-                    *reinterpret_cast<u8*>((rowRsrc + mirSrc)) = *reinterpret_cast<u8*>((a3 + q * m_spanCount + cl));
+                    *reinterpret_cast<u8*>((rowRsrc + mirSrc)) =
+                        *reinterpret_cast<u8*>((a3 + q * m_spanCount + cl));
                 }
                 rowRsrc--;
                 rowRdst--;
@@ -92,7 +95,8 @@ void CFaderLight::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
             rowLdst++;
             if (2 * cy - row < m_surfWidth) {
                 i32 p = *reinterpret_cast<u8*>(rowRdst);
-                *reinterpret_cast<u8*>(rowRsrc) = *reinterpret_cast<u8*>((a3 + p * m_spanCount + cl));
+                *reinterpret_cast<u8*>(rowRsrc) =
+                    *reinterpret_cast<u8*>((a3 + p * m_spanCount + cl));
             }
             rowRsrc--;
             rowRdst--;
@@ -129,7 +133,8 @@ void CFaderLight::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
                 rowLdst++;
                 if (2 * cy - row < m_surfWidth) {
                     i32 p = *reinterpret_cast<u8*>(rowRdst);
-                    *reinterpret_cast<u8*>(rowRsrc) = *reinterpret_cast<u8*>((a3 + p * m_spanCount + cl));
+                    *reinterpret_cast<u8*>(rowRsrc) =
+                        *reinterpret_cast<u8*>((a3 + p * m_spanCount + cl));
                 }
                 rowRsrc--;
                 rowRdst--;
@@ -153,15 +158,18 @@ void CFaderLight::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
                 i32 p = *reinterpret_cast<u8*>(rowLdst);
                 *reinterpret_cast<u8*>(rowLsrc) = *reinterpret_cast<u8*>((a3 + p * R + cl));
                 i32 q = *reinterpret_cast<u8*>((rowLdst - mirDst));
-                *reinterpret_cast<u8*>((rowLsrc - mirSrc)) = *reinterpret_cast<u8*>((a3 + q * m_spanCount + cl));
+                *reinterpret_cast<u8*>((rowLsrc - mirSrc)) =
+                    *reinterpret_cast<u8*>((a3 + q * m_spanCount + cl));
             }
             rowLsrc++;
             rowLdst++;
             if (2 * cy - row < m_surfWidth) {
                 i32 p = *reinterpret_cast<u8*>(rowRdst);
-                *reinterpret_cast<u8*>(rowRsrc) = *reinterpret_cast<u8*>((a3 + p * m_spanCount + cl));
+                *reinterpret_cast<u8*>(rowRsrc) =
+                    *reinterpret_cast<u8*>((a3 + p * m_spanCount + cl));
                 i32 q = *reinterpret_cast<u8*>((rowRdst - mirDst));
-                *reinterpret_cast<u8*>((rowRsrc - mirSrc)) = *reinterpret_cast<u8*>((a3 + q * m_spanCount + cl));
+                *reinterpret_cast<u8*>((rowRsrc - mirSrc)) =
+                    *reinterpret_cast<u8*>((a3 + q * m_spanCount + cl));
             }
             rowRsrc--;
             rowRdst--;

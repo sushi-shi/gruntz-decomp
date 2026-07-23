@@ -11,7 +11,7 @@ public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                        // slot 2
 public:
     CStatusBarSprite(CGameObject* obj); // 0x10c230
     static void InitActReg();           // 0x10c430

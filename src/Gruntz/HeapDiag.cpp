@@ -1,8 +1,8 @@
 #include <Gruntz/HeapDiag.h> // own extern surface
-#include <Win32.h>  // OutputDebugStringA
-#include <malloc.h> // _HEAPINFO / _heapchk / _heapwalk / _HEAPOK / _USEDENTRY
-#include <stdio.h>  // sprintf
-#include <string.h> // memset
+#include <Win32.h>           // OutputDebugStringA
+#include <malloc.h>          // _HEAPINFO / _heapchk / _heapwalk / _HEAPOK / _USEDENTRY
+#include <stdio.h>           // sprintf
+#include <string.h>          // memset
 
 #include <rva.h>
 
@@ -64,12 +64,15 @@ int HeapCheckDump(int walkOnBad) {
         return status;
     }
     memset(&hinfo, 0, sizeof(hinfo));
-    (reinterpret_cast<HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(&hinfo);
+    (reinterpret_cast<
+        HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(&hinfo);
     OutputDebugStringA("Walking heap...\n");
     hinfo._pentry = 0;
-    int r = (reinterpret_cast<HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(&hinfo);
+    int r = (reinterpret_cast<
+             HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(&hinfo);
     while (r == _HEAPOK) {
-        r = (reinterpret_cast<HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(&hinfo);
+        r = (reinterpret_cast<
+             HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(&hinfo);
     }
     sprintf(
         buf,
@@ -122,10 +125,13 @@ int HeapStats() {
         hinfo._pentry = 0;
         hinfo._size = 0;
         hinfo._useflag = 0;
-        (reinterpret_cast<HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(&hinfo);
+        (reinterpret_cast<
+            HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(&hinfo);
         hinfo._pentry = 0;
-        int r =
-            (reinterpret_cast<HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(&hinfo);
+        int r = (reinterpret_cast<
+                 HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(
+            &hinfo
+        );
         while (r == status) {
             total += hinfo._size;
             if (hinfo._useflag == _USEDENTRY) {
@@ -133,7 +139,8 @@ int HeapStats() {
             } else {
                 free += hinfo._size;
             }
-            r = (reinterpret_cast<HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(
+            r = (reinterpret_cast<
+                 HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(
                 &hinfo
             );
         }

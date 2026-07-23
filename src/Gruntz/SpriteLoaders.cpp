@@ -1,5 +1,5 @@
 #include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (full def)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/GameRegMfcPtr.h>      // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <rva.h>
@@ -27,12 +27,15 @@ i32 CPlay::LoadLoadingBarSprite() {
         return 0;
     }
 
-    m_revealCapStart =
-        (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1) ? static_cast<CImage*>(spr->m_items.GetAt(1)) : 0;
-    m_revealCapMid =
-        (spr->m_minIndex <= 2 && spr->m_maxIndex >= 2) ? static_cast<CImage*>(spr->m_items.GetAt(2)) : 0;
-    m_revealCapEnd =
-        (spr->m_minIndex <= 3 && spr->m_maxIndex >= 3) ? static_cast<CImage*>(spr->m_items.GetAt(3)) : 0;
+    m_revealCapStart = (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1)
+                           ? static_cast<CImage*>(spr->m_items.GetAt(1))
+                           : 0;
+    m_revealCapMid = (spr->m_minIndex <= 2 && spr->m_maxIndex >= 2)
+                         ? static_cast<CImage*>(spr->m_items.GetAt(2))
+                         : 0;
+    m_revealCapEnd = (spr->m_minIndex <= 3 && spr->m_maxIndex >= 3)
+                         ? static_cast<CImage*>(spr->m_items.GetAt(3))
+                         : 0;
     m_revealFrame = 1;
     return 1;
 }
@@ -68,28 +71,33 @@ i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
         return 0;
     }
 
-    m_frameMinTens =
-        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? static_cast<CImage*>(spr->m_items.GetAt(10)) : 0;
+    m_frameMinTens = (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10)
+                         ? static_cast<CImage*>(spr->m_items.GetAt(10))
+                         : 0;
     if (!m_frameMinTens) {
         return 0;
     }
-    m_frameMinOnes =
-        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? static_cast<CImage*>(spr->m_items.GetAt(10)) : 0;
+    m_frameMinOnes = (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10)
+                         ? static_cast<CImage*>(spr->m_items.GetAt(10))
+                         : 0;
     if (!m_frameMinOnes) {
         return 0;
     }
-    m_frameColon =
-        (spr->m_minIndex <= 11 && spr->m_maxIndex >= 11) ? static_cast<CImage*>(spr->m_items.GetAt(11)) : 0;
+    m_frameColon = (spr->m_minIndex <= 11 && spr->m_maxIndex >= 11)
+                       ? static_cast<CImage*>(spr->m_items.GetAt(11))
+                       : 0;
     if (!m_frameColon) {
         return 0;
     }
-    m_frameSecTens =
-        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? static_cast<CImage*>(spr->m_items.GetAt(10)) : 0;
+    m_frameSecTens = (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10)
+                         ? static_cast<CImage*>(spr->m_items.GetAt(10))
+                         : 0;
     if (!m_frameSecTens) {
         return 0;
     }
-    m_frameSecOnes =
-        (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10) ? static_cast<CImage*>(spr->m_items.GetAt(10)) : 0;
+    m_frameSecOnes = (spr->m_minIndex <= 10 && spr->m_maxIndex >= 10)
+                         ? static_cast<CImage*>(spr->m_items.GetAt(10))
+                         : 0;
     if (!m_frameSecOnes) {
         return 0;
     }
@@ -130,7 +138,8 @@ i32 CTimer::Tick(i32 dt) {
         return 1;
     }
     // remaining = (m_accumLo:m_accumHi) - g_frameTime + (m_baseTimeLo:m_baseTimeHi), clamped at 0.
-    i64 rem = *reinterpret_cast<i64*>(&m_accumLo) - static_cast<u32>(g_frameTime) + *reinterpret_cast<i64*>(&m_baseTimeLo);
+    i64 rem = *reinterpret_cast<i64*>(&m_accumLo) - static_cast<u32>(g_frameTime)
+              + *reinterpret_cast<i64*>(&m_baseTimeLo);
     i32 v = (rem > 0) ? static_cast<i32>(rem) : 0;
     m_currentMs = v;
 
@@ -224,28 +233,49 @@ i32 CTimer::Draw(i32 pSurf, i32 force) {
     if (!m_running) {
         return 1;
     }
-    if (force == 0 && static_cast<u32>(m_currentMs) < 0x2710 && static_cast<u32>(g_timer500) >= 0xfa) {
+    if (force == 0 && static_cast<u32>(m_currentMs) < 0x2710
+        && static_cast<u32>(g_timer500) >= 0xfa) {
         return 1;
     }
     if (m_frameMinTens) {
-        m_frameMinTens
-            ->RenderFrame(reinterpret_cast<void*>((pSurf)), reinterpret_cast<void*>((m_baseX - 0x22)), reinterpret_cast<void*>((m_baseY)), static_cast<void*>((0)));
+        m_frameMinTens->RenderFrame(
+            reinterpret_cast<void*>((pSurf)),
+            reinterpret_cast<void*>((m_baseX - 0x22)),
+            reinterpret_cast<void*>((m_baseY)),
+            static_cast<void*>((0))
+        );
     }
     if (m_frameMinOnes) {
-        m_frameMinOnes
-            ->RenderFrame(reinterpret_cast<void*>((pSurf)), reinterpret_cast<void*>((m_baseX - 0x10)), reinterpret_cast<void*>((m_baseY)), static_cast<void*>((0)));
+        m_frameMinOnes->RenderFrame(
+            reinterpret_cast<void*>((pSurf)),
+            reinterpret_cast<void*>((m_baseX - 0x10)),
+            reinterpret_cast<void*>((m_baseY)),
+            static_cast<void*>((0))
+        );
     }
     if (m_frameColon) {
-        m_frameColon
-            ->RenderFrame(reinterpret_cast<void*>((pSurf)), reinterpret_cast<void*>((m_baseX)), reinterpret_cast<void*>((m_baseY)), static_cast<void*>((0)));
+        m_frameColon->RenderFrame(
+            reinterpret_cast<void*>((pSurf)),
+            reinterpret_cast<void*>((m_baseX)),
+            reinterpret_cast<void*>((m_baseY)),
+            static_cast<void*>((0))
+        );
     }
     if (m_frameSecTens) {
-        m_frameSecTens
-            ->RenderFrame(reinterpret_cast<void*>((pSurf)), reinterpret_cast<void*>((m_baseX + 0x10)), reinterpret_cast<void*>((m_baseY)), static_cast<void*>((0)));
+        m_frameSecTens->RenderFrame(
+            reinterpret_cast<void*>((pSurf)),
+            reinterpret_cast<void*>((m_baseX + 0x10)),
+            reinterpret_cast<void*>((m_baseY)),
+            static_cast<void*>((0))
+        );
     }
     if (m_frameSecOnes) {
-        m_frameSecOnes
-            ->RenderFrame(reinterpret_cast<void*>((pSurf)), reinterpret_cast<void*>((m_baseX + 0x22)), reinterpret_cast<void*>((m_baseY)), static_cast<void*>((0)));
+        m_frameSecOnes->RenderFrame(
+            reinterpret_cast<void*>((pSurf)),
+            reinterpret_cast<void*>((m_baseX + 0x22)),
+            reinterpret_cast<void*>((m_baseY)),
+            static_cast<void*>((0))
+        );
     }
     return 1;
 }

@@ -1,4 +1,4 @@
-#include <string.h>                   // memcpy -> the /Oi `rep movsd` that copies rect into m_block
+#include <string.h>               // memcpy -> the /Oi `rep movsd` that copies rect into m_block
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)

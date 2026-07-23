@@ -46,27 +46,38 @@ struct CParseSource {
     CParseSource* Init();
     // The leaf-record fill/teardown pair (0x139710/0x1397a0, bodies in SymTab.cpp with
     // the rest of this class's band; the ex-CSymLeafBuilder methods).
-    void Build(CSymTab* owner, const char* name, void* f4, void* rec, void* str2, i32 f3,
-               i32 f1, void* f2, void* f6, void* arr, CRezItmBase* stream);
+    void Build(
+        CSymTab* owner,
+        const char* name,
+        void* f4,
+        void* rec,
+        void* str2,
+        i32 f3,
+        i32 f1,
+        void* f2,
+        void* f6,
+        void* arr,
+        CRezItmBase* stream
+    );
     void Teardown();
     i32 SetPos(i32 pos); // 0x139ae0 (out-of-line: m_cursor = pos; return 1)
     i32 ReadAt(void* dst, i32 pos, u32 len);
     i32 Read(void* dst, u32 len, i32 seekPos);
 
-    char* m_name;                      // +0x00 source name
-    void* m_entry;                     // +0x04 keyed-store entry (first dword = tag)
-    void* m_typeTag;                   // +0x08  type tag (the Build f2 slot)
-    u32 m_length;                      // +0x0c total byte length / limit
-    CSymTab* m_owner;                  // +0x10  owning scope (Build stores it; the stream side
-                                       //        reads its m_baseOffset/m_mappedBuf as the mapped window)
-    i32 m_base;                        // +0x14 source base ptr
-    i32 m_cursor;                      // +0x18 read cursor
+    char* m_name;     // +0x00 source name
+    void* m_entry;    // +0x04 keyed-store entry (first dword = tag)
+    void* m_typeTag;  // +0x08  type tag (the Build f2 slot)
+    u32 m_length;     // +0x0c total byte length / limit
+    CSymTab* m_owner; // +0x10  owning scope (Build stores it; the stream side
+                      //        reads its m_baseOffset/m_mappedBuf as the mapped window)
+    i32 m_base;       // +0x14 source base ptr
+    i32 m_cursor;     // +0x18 read cursor
     // +0x1c embedded parse-slot hash-node (0x18 B, vptr @0x5ef740, spans +0x1c..+0x33).
     // Its m_record (+0x30) is the ex "m_selfLink": Init points it at this record, whose
     // first dword (m_name) is the hash key.
     CParseSlotHashNode m_node1c;
     CRezItmBase* m_reader; // +0x34  the providing rez node (slot-2 virtual Read)
-    i32 m_buffer;                      // +0x38 lazily-allocated inline byte buffer (as int address)
+    i32 m_buffer;          // +0x38 lazily-allocated inline byte buffer (as int address)
 };
 SIZE_UNKNOWN();
 

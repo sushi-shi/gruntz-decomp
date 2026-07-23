@@ -10,7 +10,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h> // m_page->m_drawTarget: front/back/overlay CDDrawSurfacePair
 #include <DDrawMgr/DDrawSurfacePair.h> // each pair's +0x2c CDDSurface + +0x1c src RECT
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_page->m_10: CDDrawWorkerRegistry (CMapStringToOb catalog)
-#include <Gruntz/GameRegistry.h>          // CDDrawSurfaceMgr (m_page) + CDDrawSubMgrLeafScan + LeafCue
+#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (m_page) + CDDrawSubMgrLeafScan + LeafCue
 #include <Gruntz/MenuPage.h>
 
 RVA(0x00182ab0, 0x7b)
@@ -327,11 +327,21 @@ i32 CChatBox::Draw(i32 a0, i32 sprite_, i32 arg2, i32 arg3) {
     }
     if (m_row0Frame) {
         i32 x = -(sprite->GetFrameWidth() / 2) - m_row0Offset + anchorX;
-        m_row0Frame->RenderFrame(reinterpret_cast<void*>(arg2), reinterpret_cast<void*>(x), reinterpret_cast<void*>(anchorY), static_cast<void*>(0));
+        m_row0Frame->RenderFrame(
+            reinterpret_cast<void*>(arg2),
+            reinterpret_cast<void*>(x),
+            reinterpret_cast<void*>(anchorY),
+            static_cast<void*>(0)
+        );
     }
     if (m_row1Frame) {
         i32 x = sprite->GetFrameWidth() / 2 + m_row1Offset + anchorX;
-        m_row1Frame->RenderFrame(reinterpret_cast<void*>(arg2), reinterpret_cast<void*>(x), reinterpret_cast<void*>(anchorY), static_cast<void*>(0));
+        m_row1Frame->RenderFrame(
+            reinterpret_cast<void*>(arg2),
+            reinterpret_cast<void*>(x),
+            reinterpret_cast<void*>(anchorY),
+            static_cast<void*>(0)
+        );
     }
     return 1;
 }

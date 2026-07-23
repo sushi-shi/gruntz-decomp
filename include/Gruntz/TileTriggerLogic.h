@@ -6,7 +6,8 @@
 
 #include <Gruntz/SerialArchive.h> // CFileMemBase (Read @ +0x2c / Write @ +0x30)
 
-class CTileTriggerContainer; // owner, back-stamped into m_owner (fwd; def in TileTriggerContainer.h)
+class
+    CTileTriggerContainer; // owner, back-stamped into m_owner (fwd; def in TileTriggerContainer.h)
 
 extern i32 g_tileKindMagic;
 
@@ -89,31 +90,31 @@ public:
     // calls ValidateByType (ILT 0x1abe) at 0x117aa7 on a freshly-`new`ed 0x9c
     // CTileTriggerLogic (`push 0x9c; call ??2; mov ecx,eax; call ??0CTileTriggerLogic`).
     i32 ValidateByType(void* archive, i32 type, i32 a3, i32 a4); // 0x113a90
-    i32 Serialize(CFileMemBase* s);                            // 0x113ae0
-    i32 Deserialize(CFileMemBase* s);                          // 0x113c10
+    i32 Serialize(CFileMemBase* s);                              // 0x113ae0
+    i32 Deserialize(CFileMemBase* s);                            // 0x113c10
 
     // Field names below take the RICHER of the two spellings this class was reconstructed
     // under (the CTileGridCommand view named the tag/coords/duty spans; this one did not).
-    i32 m_typeTag;               // +0x04  type tag (0x17/0x18 duty-cycle discriminant)
+    i32 m_typeTag;                  // +0x04  type tag (0x17/0x18 duty-cycle discriminant)
     i32 m_tileX;                    // +0x08  coord x
     i32 m_tileY;                    // +0x0c  coord y
-    i32 m_10;                    // +0x10
-    i32 m_14;                    // +0x14  flag
-    i32 m_18;                    // +0x18
-    i32 m_initGate;                    // +0x1c  init flag (zeroed by ctor AFTER m_block; the
-                                 //        inlined `delete` in the container walkers zeroes
-                                 //        exactly this - which is what proves those list
-                                 //        elements are THIS class, not the 0x8c switch logic
-                                 //        whose dtor zeroes +0x20)
+    i32 m_10;                       // +0x10
+    i32 m_14;                       // +0x14  flag
+    i32 m_18;                       // +0x18
+    i32 m_initGate;                 // +0x1c  init flag (zeroed by ctor AFTER m_block; the
+                                    //        inlined `delete` in the container walkers zeroes
+                                    //        exactly this - which is what proves those list
+                                    //        elements are THIS class, not the 0x8c switch logic
+                                    //        whose dtor zeroes +0x20)
     CTileTriggerContainer* m_owner; // +0x20  owning container
-    u32 m_startClock;                    // +0x24  game-clock snapshot (g_frameTime)
-    u32 m_dutyOnSpan;                    // +0x28  duty on-span (unsigned duration)
-    u32 m_leadInSpan;                    // +0x2c  lead-in span (unsigned duration)
-    u32 m_dutyOffSpan;                    // +0x30  duty off-span (unsigned duration)
-    i32 m_tileToken;                    // +0x34
-    i32 m_dutyOn;                // +0x38  duty-cycle on/off latch (1 = currently on)
-    i32 m_block[24];             // +0x3c..0x9b  (rep stosl, 24 dwords; the "m_grid" of the
-                                 //        folded view - same 24 dwords at the same offset)
+    u32 m_startClock;               // +0x24  game-clock snapshot (g_frameTime)
+    u32 m_dutyOnSpan;               // +0x28  duty on-span (unsigned duration)
+    u32 m_leadInSpan;               // +0x2c  lead-in span (unsigned duration)
+    u32 m_dutyOffSpan;              // +0x30  duty off-span (unsigned duration)
+    i32 m_tileToken;                // +0x34
+    i32 m_dutyOn;                   // +0x38  duty-cycle on/off latch (1 = currently on)
+    i32 m_block[24];                // +0x3c..0x9b  (rep stosl, 24 dwords; the "m_grid" of the
+                                    //        folded view - same 24 dwords at the same offset)
 };
 SIZE(0x9c);
 
@@ -129,12 +130,12 @@ public:
     void BuildRockBreakInGameText(); // 0x1122a0
 
     i32 ApplyByType(void* archive, i32 type, i32 a3, i32 a4); // 0x113d40 (ILT 0x1d39)
-    i32 SerializeMatrix(CFileMemBase* s);                   // 0x113dd0 (type-4 save)
-    i32 DeserializeMatrix(CFileMemBase* s);                 // 0x113e70 (type-7 load)
+    i32 SerializeMatrix(CFileMemBase* s);                     // 0x113dd0 (type-4 save)
+    i32 DeserializeMatrix(CFileMemBase* s);                   // 0x113e70 (type-7 load)
 
-    i32 m_matrix[9]; // +0x9c..0xbf  3x3, streamed as a nested 3x3 loop
-    i32 m_powerupType;        // +0xc0        streamed FIRST (before the matrix)
-    i32 m_textId;        // +0xc4        streamed SECOND; the object ends at 0xc8
+    i32 m_matrix[9];   // +0x9c..0xbf  3x3, streamed as a nested 3x3 loop
+    i32 m_powerupType; // +0xc0        streamed FIRST (before the matrix)
+    i32 m_textId;      // +0xc4        streamed SECOND; the object ends at 0xc8
 };
 SIZE(0xc8);
 VTBL(CGiantRockLogic, 0x001eaee4); // vtable_names -> code (RTTI game class)

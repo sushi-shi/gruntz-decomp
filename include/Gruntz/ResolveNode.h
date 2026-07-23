@@ -50,31 +50,31 @@ public:
     i32 m_14; // +0x14  (SetPosition zeroes)
     // +0x18/+0x1c: the live dirty-rect / last-drawn position (RenderDot caches the
     // drawn column/row here; the 9-dword +0x18..+0x3c block is snapshotted to +0xb8).
-    i32 m_lastX;              // +0x18
-    i32 m_lastY;              // +0x1c
+    i32 m_lastX; // +0x18
+    i32 m_lastY; // +0x1c
     // +0x20..+0x2f  the live dirty-rect / blit out-rect (.left INT_MIN = disarmed
     // corner; the blit path whole-struct-assigns it and reads it back per edge).
     RECT m_dirtyRect;
     // +0x30/+0x34: live dirty-rect size (a RenderDot dot plot sets 1x1; the
     // A/C blit slots read them as the rect extent).
-    i32 m_dirtyW;             // +0x30
-    i32 m_dirtyH;             // +0x34
+    i32 m_dirtyW;     // +0x30
+    i32 m_dirtyH;     // +0x34
     i32 m_dirtyArmed; // +0x38  live dirty-rect armed flag (-1 == disarmed; the blit
                       //        path's result out: 0 ok / -1 culled - same latch)
     // +0x3c  the owning level (SetPosition seeds OwnerMgr()->m_level; the blit path
     // hops m_level->m_mainPlane->WrapCoord). Was the i32 "m_3c" + the ex-CBlitXform
     // view's +0x5c plane hop - CBlitXform WAS CGameLevel.
     class CGameLevel* m_level;
-    i32 m_stateFlags;                 // +0x40  (SetPosition zeroes)
-    i32 m_44;                 // +0x44  (SetPosition zeroes)
-    i32 m_48;                 // +0x48  (SetPosition reseeds 0x32)
-    i32 m_drawFillArg;        // +0x4c  (SetPosition zeroes; flat name carried)
-    i32 m_drawFillCmd;        // +0x50  (SetPosition reseeds 1; 0xb = decay fill-bar)
-    i32 m_fillFraction;       // +0x54  fill fraction (0..256)
-    i32 m_drawActive;         // +0x58  dirty/active flag (SetPosition zeroes)
-    i32 m_screenX;            // +0x5c  screen/position X (INT_MIN = unset; the flat
-                              //        CGameObject model's m_screenX - name converged)
-    i32 m_screenY;            // +0x60  screen/position Y
+    i32 m_stateFlags;   // +0x40  (SetPosition zeroes)
+    i32 m_44;           // +0x44  (SetPosition zeroes)
+    i32 m_48;           // +0x48  (SetPosition reseeds 0x32)
+    i32 m_drawFillArg;  // +0x4c  (SetPosition zeroes; flat name carried)
+    i32 m_drawFillCmd;  // +0x50  (SetPosition reseeds 1; 0xb = decay fill-bar)
+    i32 m_fillFraction; // +0x54  fill fraction (0..256)
+    i32 m_drawActive;   // +0x58  dirty/active flag (SetPosition zeroes)
+    i32 m_screenX;      // +0x5c  screen/position X (INT_MIN = unset; the flat
+                        //        CGameObject model's m_screenX - name converged)
+    i32 m_screenY;      // +0x60  screen/position Y
     // +0x64..+0x73  the record clip rect - ONE member, wholly the node's: LevelTile-
     // Validation passes it BY VALUE (a RECT straddling a base boundary cannot exist),
     // the D-ctor seeds only .left (the INT_MIN sentinel), and the worker leaves'

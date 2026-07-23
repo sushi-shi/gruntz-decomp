@@ -24,9 +24,7 @@ RVA(0x000a9b80, 0xf1)
 i32 HandlerA9B80(CGameObject* owner){LOGIC_WORKER_PUMP(CSingleFrameMessage)}
 
 RVA(0x000a9cc0, 0xf1)
-extern "C" i32 CreateDoNothing(CGameObject* owner) {
-    LOGIC_WORKER_PUMP(CDoNothing)
-}
+extern "C" i32 CreateDoNothing(CGameObject* owner){LOGIC_WORKER_PUMP(CDoNothing)}
 
 #include <Gruntz/DoNothingNormalDtor.h> // the real CDoNothingNormal leaf (ex the DnnRec pen)
 
@@ -80,4 +78,6 @@ RVA(0x000aaaa0, 0xf1)
 extern "C" i32 CreateSingleAnimation(CGameObject* owner){LOGIC_WORKER_PUMP(CSingleAnimation)}
 
 RVA(0x000aabe0, 0xf1)
-extern "C" i32 CreateGuardPoint(CGameObject* owner){LOGIC_WORKER_PUMP(CGuardPoint)}
+extern "C" i32 CreateGuardPoint(CGameObject* owner) {
+    LOGIC_WORKER_PUMP(CGuardPoint)
+}

@@ -21,7 +21,8 @@ public:
     virtual i32 IsLoaded() OVERRIDE; // slot 5 (@0x14) 0x157480 ("all children present?")
     // slot 6 IsReady INHERITED from CWapObj (the shared `return 1` default @0xd5da0,
     // reached via the 0x001c08 thunk); not redeclared (that was a phantom own-decl).
-    virtual void Unload() OVERRIDE; // slot 7 (@0x1c) 0x158ac0 (ex "DestroyChildren": free the pairs)
+    virtual void Unload()
+        OVERRIDE; // slot 7 (@0x1c) 0x158ac0 (ex "DestroyChildren": free the pairs)
     RVA(0x001574a0, 0x6)
     virtual i32 GetClassId() OVERRIDE {
         return CLASSID_SUBMGRPAGES; // 0xf
@@ -36,18 +37,18 @@ public:
     i32 LoadPageImage(
         struct CParseSource* src,
         i32 arg2
-    );                    // 0x158b40 (LoadImage the page from the parse record)
-    void FlipAndNotify(); // 0x158b90
-    i32 PagesReady();     // 0x158bc0
+    );                                       // 0x158b40 (LoadImage the page from the parse record)
+    void FlipAndNotify();                    // 0x158b90
+    i32 PagesReady();                        // 0x158bc0
     i32 ResizePages(i32 a1, i32 a2, i32 a3); // 0x158bf0
-    i32 CreateOverlay(i32 a1, i32 a2);         // 0x158cb0
-    void ClearAllPages(i32 a1);                // 0x158d50
-    i32 BlitPage(CDDrawSurfacePair* dst);      // 0x158c70
-    i32 HasOverlay();                       // 0x158d20
-    i32 PresentBackPage();                       // 0x158dc0
-    i32 TransEnter();                          // 0x158e40
-    i32 TransTitle();                          // 0x158e90
-    i32 TransExit();                           // 0x158ee0
+    i32 CreateOverlay(i32 a1, i32 a2);       // 0x158cb0
+    void ClearAllPages(i32 a1);              // 0x158d50
+    i32 BlitPage(CDDrawSurfacePair* dst);    // 0x158c70
+    i32 HasOverlay();                        // 0x158d20
+    i32 PresentBackPage();                   // 0x158dc0
+    i32 TransEnter();                        // 0x158e40
+    i32 TransTitle();                        // 0x158e90
+    i32 TransExit();                         // 0x158ee0
 
     // (+0x04..+0x0c = the INHERITED CLoadable header trio; owner via OwnerMgr().)
     CDDrawSurfacePair* m_frontPair;   // +0x10  front (Flip target; the "child A" element)

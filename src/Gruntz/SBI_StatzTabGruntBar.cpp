@@ -1,4 +1,4 @@
-#define SBI_DTOR_CHAIN // enable the inline base-dtor body (see StatusBarItem.h)
+#define SBI_DTOR_CHAIN              // enable the inline base-dtor body (see StatusBarItem.h)
 #include <Gruntz/GameRegStatzPtr.h> // g_gameReg under the Statz facet view (TU-private)
 #include <rva.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
@@ -139,8 +139,9 @@ RVA(0x000ea6c0, 0x237)
 i32 CSBI_StatzTabGruntBar::Update() {
     i32 dirty = 0;
     CStatzSelHost* table = g_gameReg->m_unitTable;
-    CStatzGruntRec* unit =
-        *reinterpret_cast<CStatzGruntRec**>((reinterpret_cast<char*>(table) + (m_unitCol + 15 * m_unitRow) * 4 + 0x1c));
+    CStatzGruntRec* unit = *reinterpret_cast<CStatzGruntRec**>(
+        (reinterpret_cast<char*>(table) + (m_unitCol + 15 * m_unitRow) * 4 + 0x1c)
+    );
 
     i32 statusVal;
     i32 abilityVal; // ebx
@@ -184,14 +185,17 @@ i32 CSBI_StatzTabGruntBar::Update() {
 
         // selection-list glyph
         if (m_selectKey != 0) {
-            selectVal = (reinterpret_cast<CTriggerMgr*>(table))->SelectionListFind(m_unitCol, m_unitRow);
+            selectVal =
+                (reinterpret_cast<CTriggerMgr*>(table))->SelectionListFind(m_unitCol, m_unitRow);
         }
 
         // self-bumping anim timer
         timerVal = m_timerValue;
         if (unit->m_alive == 0) {
             timerVal = -1;
-        } else if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_timerAnchorLo) >= *reinterpret_cast<i64*>(&m_timerWindowLo)) {
+        } else if (static_cast<i64>(static_cast<u32>(g_frameTime))
+                       - *reinterpret_cast<i64*>(&m_timerAnchorLo)
+                   >= *reinterpret_cast<i64*>(&m_timerWindowLo)) {
             if (timerVal > 0) {
                 timerVal++;
                 if (timerVal > 0xa) {
@@ -237,12 +241,14 @@ i32 CSBI_StatzTabGruntBar::Update() {
     // value 3: selection (glyph/value, main glyph map; +0x28 row offset on lookup)
     if (m_selectValue != selectVal) {
         if (selectVal == 0) {
-            m_selectGlyph = reinterpret_cast<CImage*>(selectVal); // selectVal == 0 (store the reg, not imm)
+            m_selectGlyph =
+                reinterpret_cast<CImage*>(selectVal); // selectVal == 0 (store the reg, not imm)
         } else {
             CDDrawWorker* gm = m_glyphMap;
             i32 key = selectVal + 0x28;
-            m_selectGlyph =
-                (key < gm->m_minIndex || key > gm->m_maxIndex) ? 0 : static_cast<CImage*>(gm->m_items.GetAt(key));
+            m_selectGlyph = (key < gm->m_minIndex || key > gm->m_maxIndex)
+                                ? 0
+                                : static_cast<CImage*>(gm->m_items.GetAt(key));
         }
         m_selectValue = selectVal;
         dirty = 1;
@@ -250,10 +256,9 @@ i32 CSBI_StatzTabGruntBar::Update() {
     // value 4: timer (glyph/value, timer glyph map)
     if (m_timerValue != timerVal) {
         CDDrawWorker* gm = m_timerGlyphMap;
-        m_timerGlyph =
-            (timerVal < gm->m_minIndex || timerVal > gm->m_maxIndex)
-                ? 0
-                : static_cast<CImage*>(gm->m_items.GetAt(timerVal));
+        m_timerGlyph = (timerVal < gm->m_minIndex || timerVal > gm->m_maxIndex)
+                           ? 0
+                           : static_cast<CImage*>(gm->m_items.GetAt(timerVal));
         m_timerValue = timerVal;
         dirty = 1;
     }

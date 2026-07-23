@@ -4,7 +4,7 @@
 
 #include <Ints.h>
 
-#include <Gruntz/ActReg.h> // CActReg (extern below)
+#include <Gruntz/ActReg.h>     // CActReg (extern below)
 extern CActReg g_brickzActReg; // 0x0024e7c0
 
 extern CActReg g_checkpointActReg; // 0x0024e7e8

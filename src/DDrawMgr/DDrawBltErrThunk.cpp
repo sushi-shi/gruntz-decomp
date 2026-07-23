@@ -8,9 +8,16 @@
 
 RVA(0x0008dd80, 0x31)
 i32 CDDrawPtrCollections::GetCapsChecked() {
-    i32 hr = m_device->GetCaps(reinterpret_cast<LPDDCAPS>(m_driverCaps), reinterpret_cast<LPDDCAPS>(m_helCaps));
+    i32 hr = m_device->GetCaps(
+        reinterpret_cast<LPDDCAPS>(m_driverCaps),
+        reinterpret_cast<LPDDCAPS>(m_helCaps)
+    );
     if (hr != 0) {
-        CDDrawPtrCollections::GetErrorString(const_cast<char*>("c:\\proj\\incs\\ddrawmgr.h"), 0x135, hr);
+        CDDrawPtrCollections::GetErrorString(
+            const_cast<char*>("c:\\proj\\incs\\ddrawmgr.h"),
+            0x135,
+            hr
+        );
     }
     return hr;
 }

@@ -30,7 +30,7 @@ public:
 
     CVariantSlot* m_errSink; // +0x04  the error sink this object registers with
 };
-SIZE(0x8); // { vptr @0, m_errSink @4 }
+SIZE(0x8);      // { vptr @0, m_errSink @4 }
 SIZE_UNKNOWN(); // error-reporter subobject view
 
 class zBitVec : public zErrHandling {

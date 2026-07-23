@@ -33,19 +33,19 @@ public:
     i32 AddFile(const char* name, i32* pCancel, void* pProgress);       // 0x17b950
     i32 ExtractArchive(const char* dir, i32* pCancel, void* pProgress); // 0x17bcd0
 
-    i32 m_openGate;         // +0x00  open-gate (must be nonzero)
-    i32 m_readOpen;         // +0x04  read-open flag
-    i32 m_writeOpen;         // +0x08  write-open flag
-    i32 m_versionMajor;         // +0x0c  version major (12-byte header word 0)
-    i32 m_versionMinor;         // +0x10  version minor
-    i32 m_fileCount;         // +0x14  entry count
-    FecEntry m_entry; // +0x18  per-entry record (0x10c B; typed above, streamed as a blob)
+    i32 m_openGate;     // +0x00  open-gate (must be nonzero)
+    i32 m_readOpen;     // +0x04  read-open flag
+    i32 m_writeOpen;    // +0x08  write-open flag
+    i32 m_versionMajor; // +0x0c  version major (12-byte header word 0)
+    i32 m_versionMinor; // +0x10  version minor
+    i32 m_fileCount;    // +0x14  entry count
+    FecEntry m_entry;   // +0x18  per-entry record (0x10c B; typed above, streamed as a blob)
     // +0x124  the embedded MFC CFile (0x10 B: vptr, m_hFile @+0x128, m_bCloseOnDelete
     // @+0x12c, m_strFileName @+0x130). Lookup's "+0x128 success result" is m_stream.m_hFile.
     CFile m_stream;
-    i32 m_nextIndex;           // +0x134  running entry counter (write path); cleared by Init/OnFail
-    CDWordArray m_index; // +0x138  per-entry offset table (m_pData @+0x13c, m_nSize @+0x140)
-    char m_copyBuf[0x8000];  // +0x14c  32 KB streaming copy buffer
+    i32 m_nextIndex;        // +0x134  running entry counter (write path); cleared by Init/OnFail
+    CDWordArray m_index;    // +0x138  per-entry offset table (m_pData @+0x13c, m_nSize @+0x140)
+    char m_copyBuf[0x8000]; // +0x14c  32 KB streaming copy buffer
 };
 SIZE(0x814c);
 

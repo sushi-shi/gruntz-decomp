@@ -73,7 +73,7 @@ public:
     // only ~93% (its callers dropped retail's `mov ecx,<element>`).
     i32 ValidateByType(CFileMemBase* s, i32 mode, i32 a3, i32 a4); // 0x113860
     i32 SaveState(CFileMemBase* s); // 0x1138b0 (write via slot +0x30; was the
-                                      // "CTileTriggerData::LoadV4" view - same fields)
+                                    // "CTileTriggerData::LoadV4" view - same fields)
     i32 LoadState(CFileMemBase* s); // 0x1139a0 (read via slot +0x2c)
     // ValidateByType (0x113a90) / ApplyByType (0x113d40) / SerializeMatrix (0x113dd0) /
     // DeserializeMatrix (0x113e70) are NOT members - they were misattributed here. Retail's
@@ -84,7 +84,7 @@ public:
     // 0x8c object cannot hold - that overrun was the "m_block[37]/[38]" contradiction.
 
     // +0x00  implicit vptr (real virtuals above; was an explicit m_vptr struct stamp)
-    i32 m_typeId;       // +0x04  type id (the factory switch id 1..8; LoadElement stamps it,
+    i32 m_typeId;   // +0x04  type id (the factory switch id 1..8; LoadElement stamps it,
                     //        Setup seeds it; CTileTriggerContainer::FindChild matches on it)
     i32 m_08;       // +0x08  (serialized in LoadState)
     i32 m_key0c;    // +0x0c  secondary key
@@ -92,7 +92,7 @@ public:
     i32 m_linkGate; // +0x14  link-check gate (VerifyBlockLinks guard)
     i32 m_18;       // +0x18  (serialized in LoadState)
     i32 m_1c;       // +0x1c  (serialized in LoadState)
-    i32 m_initGate;       // +0x20  init gate (ctor + dtor zero it, Setup sets 1 - the 0x8c
+    i32 m_initGate; // +0x20  init gate (ctor + dtor zero it, Setup sets 1 - the 0x8c
                     //        family's twin of CTileTriggerLogic::m_initGate; the old
                     //        "ChildNode* child-list head" reading belonged to the
                     //        CONTAINER's +0x20 = m_list1 head, not to this class)

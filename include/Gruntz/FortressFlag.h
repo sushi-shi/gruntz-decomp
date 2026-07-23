@@ -39,10 +39,10 @@ struct CFortressFlagActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h> // CActReg (extern below)
+#include <Gruntz/ActReg.h>           // CActReg (extern below)
 extern CActReg g_fortressFlagActReg; // 0x00244638
 
-#include <Gruntz/ActReg.h> // CLogicActTable (extern below)
+#include <Gruntz/ActReg.h>                  // CLogicActTable (extern below)
 extern CLogicActTable g_logicActReg_6447f8; // 0x002447f8
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the

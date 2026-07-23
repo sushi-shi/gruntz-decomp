@@ -31,15 +31,15 @@ public:
     virtual void RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b);
 
     // (+0x68..+0x73 is the base node's m_clip tail - no pad needed: the node ends at +0x74)
-    i32 m_refCount;           // +0x74  frames-remaining count (Vfunc* re-arm to 2)
+    i32 m_refCount; // +0x74  frames-remaining count (Vfunc* re-arm to 2)
     // +0x78 the frame slot - a BASE field (the shared slot bodies read/clear it as a
     // dword: IsLoaded @0x157200 `[ecx+0x78]!=0`, Unload @0x157310 `[ecx+0x78]=0`),
     // overlaid per-kind: A stores its BYTE frame (factory seed `mov byte [eax+0x78],bl`
     // @0x157012), B its int frame/node pointer (dword seed @0x157192).
     union {
-        i32 m_78;          // the dword reading (the base predicates test/clear it)
+        i32 m_78;              // the dword reading (the base predicates test/clear it)
         class CImage* m_frame; // B's frame image (RenderFrame dispatches its slot 14)
-        char m_78b;        // A's byte frame
+        char m_78b;            // A's byte frame
     };
 
     CDDrawWorkerBase() {}
@@ -85,7 +85,7 @@ struct CDDrawWorkerB : public CDDrawWorkerBase {
     CDDrawWorkerB(CDDrawSurfaceMgr* ctx) : CDDrawWorkerBase(ctx) {
         m_78 = 0;
     }
-    virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3);                    // [11] 0x1572f0
+    virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3);                       // [11] 0x1572f0
     virtual i32 PlaceFrame(i32 a1, i32 a2, CDDrawWorker* src, i32 a4); // [12] 0x1572b0
     virtual i32 PlaceBound(i32 a1, i32 a2, i32 a3, i32 a4);            // [13] 0x157280
 

@@ -20,15 +20,19 @@ public:
 #ifdef SBI_RECTONLY_OWN_CTOR
     CSBI_RectOnly(); // 0x00101fa0 (out-of-line COMDAT, SBI_RectOnlyBase.cpp)
 #else
-    CSBI_RectOnly() { m_kind = 1; }
+    CSBI_RectOnly() {
+        m_kind = 1;
+    }
 #endif
     virtual ~CSBI_RectOnly() OVERRIDE; // slot 0
     // (NO slot-1 override: sema class says vtbl 0x1eab8c slot [1] is INHERITED
     // (CStatusBarItem::SerializeFields, thunk 0x1848). The `SbiVfunc0` the old merged TU
     // defined under this class name belonged to the host's fabricated vtable, not here.)
     // slot 2 (0xe86e0). Args 5..8 are ONE by-value SbRect - see StatusBarItem.h.
-    virtual i32 Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10) OVERRIDE;
-    virtual void Reset() OVERRIDE; // slot 3 - 0xe8760 (ex DtorRect)
+    virtual i32
+    Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10)
+        OVERRIDE;
+    virtual void Reset() OVERRIDE;       // slot 3 - 0xe8760 (ex DtorRect)
     virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
     // Member teardown run by the CHAIN-DTOR device (see StatusBarItem.h).
     // (InsertPtr 0x108410 / ClearTabGroup 0x100b00 / Deactivate 0x100cb0 were declared
@@ -61,9 +65,9 @@ public:
     // be a non-virtual `SerializeChain` sitting beside a fabricated 0-arg `SbiVfunc0`
     // that held the slot instead.
     virtual i32 SerializeFields(CFileMemBase* ar, i32 kind, i32 a, i32 b) OVERRIDE; // 0xe6e40
-    virtual void Reset() OVERRIDE; // slot 3 - 0xe6d90 (ex ClearFrame)
+    virtual void Reset() OVERRIDE;       // slot 3 - 0xe6d90 (ex ClearFrame)
     virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
-    virtual i32 Render() OVERRIDE; // slot 5 - 0xe6dd0 (ex TickRenderCurrent)
+    virtual i32 Render() OVERRIDE;       // slot 5 - 0xe6dd0 (ex TickRenderCurrent)
     // vtable slot 11 (0xe6c80): the image setup, 11 dwords of args. The RETAIL BODY pins
     // the arg types (disasm 0xe6c80): entry `mov eax,[esp+8]` reads arg2 and later
     // `mov ecx,[eax+0x10]` DEREFERENCES it => arg2 is the CDDrawSurfaceMgr*; arg1 is only

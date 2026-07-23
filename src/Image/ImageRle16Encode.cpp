@@ -22,7 +22,10 @@ void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
             u8 r = static_cast<u8>((static_cast<u8>(pal[0]) >> g_rDown));
             pal += 4;
             u8 b = static_cast<u8>((static_cast<u8>(pal[-2]) >> g_bDown));
-            *t++ = static_cast<u16>(((static_cast<u32>(g) << g_gUp) | (static_cast<u32>(r) << g_rUp) | static_cast<u32>(b)));
+            *t++ = static_cast<u16>(
+                ((static_cast<u32>(g) << g_gUp) | (static_cast<u32>(r) << g_rUp)
+                 | static_cast<u32>(b))
+            );
         }
     }
 

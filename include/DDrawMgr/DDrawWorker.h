@@ -31,8 +31,8 @@ public:
     // and 15 (0x1522b0, @early-stop regalloc wall) are HOMED in DDrawWorker.cpp: they
     // walk a CSymTab scope and self-dispatch InsertFrame (slot 14) / ReloadFrame
     // (slot 16). m_0c is the owning CDDrawSurfaceMgr (single-frame flag m_flags&0x100).
-    virtual i32 SetKey(const char* key);            // slot 9  @0x155810 (key copy)
-    virtual i32 BuildFramesFromSymTab(CSymTab* tab);       // slot 10 @0x1521f0
+    virtual i32 SetKey(const char* key);             // slot 9  @0x155810 (key copy)
+    virtual i32 BuildFramesFromSymTab(CSymTab* tab); // slot 10 @0x1521f0
     virtual CImage* CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3); // slot 11 @0x152110
     virtual CImage* CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3); // slot 12 @0x152060
     virtual CImage* CreateFrame30(i32 a0, i32 index, i32 a2);         // slot 13 @0x151fb0
@@ -51,16 +51,16 @@ public:
     // class's own virtuals. Their return type is CImage* (the bodies' mangled names say
     // PAVCImage), not the `i32` the slots used to be declared with.
     virtual CImage* InsertFrame(void* rec, i32 n, i32 flag); // slot 14 @0x151f00
-    virtual i32 ValidateFramesFromSymTab(CSymTab* tab);  // slot 15 @0x1522b0
-    virtual i32 ReloadFrame(i32 rec, i32 n, i32 flag); // slot 16 @0x1523b0
+    virtual i32 ValidateFramesFromSymTab(CSymTab* tab);      // slot 15 @0x1522b0
+    virtual i32 ReloadFrame(i32 rec, i32 n, i32 flag);       // slot 16 @0x1523b0
     // ---- the ex-CDDrawWorker non-virtual methods (stage 5 of the fold; bodies in
     // wwdgameobject at their retail RVAs). They were declared on a THIRD view of this
     // same 0x6c object; CreateFrame24/28/30 above are this vtable's own slots 11/12/13.
-    i32 SetAllTypes(i32 type);        // 0x152480  walk [min,max], set each frame's draw type
-    i32 SetAllFormats(i32 format);    // 0x152520  @fake-param: really a ShadeDescr*
-    i32 SetAllField18(i32 value);     // 0x1524d0  walk [min,max], set each owned light level
-    i32 GetFirstFrameState();         // 0x152570  lowest frame's owned draw type
-    i32 GetMemoryUsage(i32 raw);      // 0x1523f0  sum decoded byte size over [min,max]
+    i32 SetAllTypes(i32 type);     // 0x152480  walk [min,max], set each frame's draw type
+    i32 SetAllFormats(i32 format); // 0x152520  @fake-param: really a ShadeDescr*
+    i32 SetAllField18(i32 value);  // 0x1524d0  walk [min,max], set each owned light level
+    i32 GetFirstFrameState();      // 0x152570  lowest frame's owned draw type
+    i32 GetMemoryUsage(i32 raw);   // 0x1523f0  sum decoded byte size over [min,max]
     i32 FindFrame(CImage* frame, char* outName, i32* outIndex); // linear scan + name copy
     // The bounds-checked accessor SetAllTypes/SetAllFormats inline: a frame index outside
     // [m_minIndex, m_maxIndex] yields a null frame.
@@ -88,11 +88,11 @@ public:
     }
     void AddFrameAt(void* elem, i32 index); // 0x1521c0  SetAtGrow + widen [m_64,m_68]
 
-    CObArray m_items; // +0x10  owned-pointer array (0x14: m_pData@+0x14, m_nSize@+0x18)
-    char m_name[0x40];   // +0x24  registry key buffer (SetKey strncpy's it,
-                        //        NUL @+0x63; CDDrawWorkerRegistry removes by it)
-    i32 m_minIndex;           // +0x64  cached-index sentinel (Unload seeds 99999)
-    i32 m_maxIndex;           // +0x68
+    CObArray m_items;  // +0x10  owned-pointer array (0x14: m_pData@+0x14, m_nSize@+0x18)
+    char m_name[0x40]; // +0x24  registry key buffer (SetKey strncpy's it,
+                       //        NUL @+0x63; CDDrawWorkerRegistry removes by it)
+    i32 m_minIndex;    // +0x64  cached-index sentinel (Unload seeds 99999)
+    i32 m_maxIndex;    // +0x68
 };
 SIZE(0x6c);
 

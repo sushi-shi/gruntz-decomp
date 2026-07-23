@@ -701,4 +701,3 @@ i32 CGrunt::ResolveBattlecryAnimation() {
     m_objAux->m_1c = g_buteTree.Find(s_keyF);
     return 1;
 }
-

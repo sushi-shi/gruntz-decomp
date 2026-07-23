@@ -9,15 +9,15 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/WwdGridIter.h> // WwdRegion - the embedded +0x9c region node
 
-struct CGameObject;  // fwd (the worker's collide callback takes the object)
+struct CGameObject;      // fwd (the worker's collide callback takes the object)
 struct LeafCue;          // the +0x19c resolved leaf-scan cue (<Gruntz/LeafCue.h>)
 class CDDrawSurfacePair; // slots 11-14 params (<DDrawMgr/DDrawSurfacePair.h>)
-class CUserLogic; // fwd (AnimWorkerObj::m_logic is the object's bound logic leaf)
+class CUserLogic;        // fwd (AnimWorkerObj::m_logic is the object's bound logic leaf)
 struct Coord;
 
 #include <DDrawMgr/AnimWorkerObj.h>
 
-class CDDrawWorker;           // the +0x194 cached sprite IS CDDrawWorker
+class CDDrawWorker; // the +0x194 cached sprite IS CDDrawWorker
 
 class CImage;
 
@@ -46,7 +46,7 @@ public:
     CUserLogic(CGameObject* obj);
     virtual ~CUserLogic() OVERRIDE {} // inline: folds into leaf dtors (link teardown + vptr stores)
     virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                        // slot 2
     // slot 3 (+0x0c): the serialize name-in hook - ProjTypeXfer (0x16e4f0) resolves
     // the type name and dispatches it here virtually (`push name; call [vptr+0xc]`,
     // llvm-objdump-proven). Default 0x00106e: a ret-4 one-arg no-op.
@@ -141,9 +141,9 @@ public:
     i32 Place(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32); // 0x4c1c4
     void Arm(const char* lighting, const char* cursor, i32 kind, i32 one); // 0x4e517
 
-    i32 m_deferredCallback;          // +0x04
-    i32 m_gatedCallback;          // +0x08
-    CGameObject* m_0c; // +0x0c
+    i32 m_deferredCallback; // +0x04
+    i32 m_gatedCallback;    // +0x08
+    CGameObject* m_0c;      // +0x0c
     // +0x10  bound game object (== m_38): the created A-kind sprite (every binding
     // site hands a CreateSprite/ReadPlaneObjects product; leaves read its m_1a0
     // cache). The ex-"m_10" arm was the same type/role - one name now.
@@ -209,15 +209,15 @@ public:
     // Field names keep the tile-leaf +0x34 spellings (this class is reached at THREE
     // displacements - see the note above - so no one spelling can be offset-accurate).
     // The union of what the three worlds independently recovered about each slot:
-    CGameObject* m_34;      // +0x00 (leaf +0x34, moving +0x150)  the referenced object
-    CWwdGameObjectA* m_38;  // +0x04 (leaf +0x38, moving +0x154)  == m_34: the bound/render
-                         //   CREATED SPRITE (the A kind - every binding site hands a
-                         //   CreateSprite product; leaves read its m_1a0 cursor/frame cache)
-                         //   object (leaves read m_38->m_flags; the projectile world
-                         //   called this m_sprite, "primary sprite/render object")
-    AnimWorkerObj* m_3c; // +0x08 (leaf +0x3c, moving +0x158)  obj->m_7c - the bound
-                         //   object's worker record (CGrunt called this m_158 and
-                         //   proved it the same way: ctor tail `= obj->m_7c`)
+    CGameObject* m_34;     // +0x00 (leaf +0x34, moving +0x150)  the referenced object
+    CWwdGameObjectA* m_38; // +0x04 (leaf +0x38, moving +0x154)  == m_34: the bound/render
+                           //   CREATED SPRITE (the A kind - every binding site hands a
+                           //   CreateSprite product; leaves read its m_1a0 cursor/frame cache)
+                           //   object (leaves read m_38->m_flags; the projectile world
+                           //   called this m_sprite, "primary sprite/render object")
+    AnimWorkerObj* m_3c;   // +0x08 (leaf +0x3c, moving +0x158)  obj->m_7c - the bound
+                           //   object's worker record (CGrunt called this m_158 and
+                           //   proved it the same way: ctor tail `= obj->m_7c`)
     // +0x0c (leaf +0x40, moving +0x15c)  the resolved registry value - the anim
     // registry's values are CAniElement (: CObject) entries; every world's ctors
     // snapshot the bound object's active descriptor here via the SAME expression
@@ -233,7 +233,7 @@ SIZE(0x20);
 class CTileTrigger : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                        // slot 2
 public:
     CTileTrigger();                 // 0x011160 (no-arg)
     CTileTrigger(CGameObject* obj); // 0x10e220 (1-arg)

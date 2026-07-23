@@ -19,14 +19,14 @@
 // Functions in retail-RVA order; shared views/externs in
 // <Gruntz/TriggerMgrViews.h>. /GX profile kept from the parent unit (no EH
 // temps in these leaves; byte-neutral).
-#include <Gruntz/Grunt.h> // CGrunt IS CGrunt (folded) - the cells are dereferenced here
+#include <Gruntz/Grunt.h>         // CGrunt IS CGrunt (folded) - the cells are dereferenced here
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h>
 
 #include <Gruntz/TileGrid.h> // canonical CMapMgr (FindGruntAt's packed owner grid)
 
-#include <Gruntz/TriggerMgrViews.h>  // the shared CTm* views + singleton externs
+#include <Gruntz/TriggerMgrViews.h> // the shared CTm* views + singleton externs
 
 RVA(0x000759e0, 0x18)
 Coord* CTriggerMgr::GetOriginXY(Coord* out) {
@@ -49,7 +49,8 @@ Coord* Coord::Set(i32 a, i32 b) {
 
 RVA(0x00075a40, 0x34)
 i32 CGridLookup::Lookup(i32 x, i32 y) {
-    if (static_cast<u32>(x) < static_cast<u32>(m_c) && static_cast<u32>(y) < static_cast<u32>(m_10)) {
+    if (static_cast<u32>(x) < static_cast<u32>(m_c)
+        && static_cast<u32>(y) < static_cast<u32>(m_10)) {
         return m_8[y][x].m_0;
     }
     return 1;
@@ -170,8 +171,11 @@ CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* o
                 continue;
             }
             i32 val;
-            if (static_cast<u32>(x) < static_cast<u32>(grid->m_width) && static_cast<u32>(y) < static_cast<u32>(grid->m_height)) {
-                val = *reinterpret_cast<i32*>((reinterpret_cast<char*>(grid->m_rows[y]) + x * 0x1c + 4));
+            if (static_cast<u32>(x) < static_cast<u32>(grid->m_width)
+                && static_cast<u32>(y) < static_cast<u32>(grid->m_height)) {
+                val = *reinterpret_cast<i32*>(
+                    (reinterpret_cast<char*>(grid->m_rows[y]) + x * 0x1c + 4)
+                );
             } else {
                 val = -1;
             }

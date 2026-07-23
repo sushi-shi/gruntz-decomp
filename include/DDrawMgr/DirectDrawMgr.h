@@ -27,7 +27,7 @@ struct CDdModePair {
 };
 SIZE_UNKNOWN();
 
-struct CDDPalette {     // struct (PAUCDDPalette mangling); consistent with the fwd decls
+struct CDDPalette { // struct (PAUCDDPalette mangling); consistent with the fwd decls
 public:
     // Pool-item construction (the CDDrawPtrCollections MakeB*/Create factories
     // inline these): zero the fields; class operator new is the Rez heap 0x38 alloc.
@@ -135,7 +135,7 @@ extern "C" void DdEnumModesCallback(); // 0x143390
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-extern "C" const GUID IID_IDirectDraw2; // 0x5ef848
+extern "C" const GUID IID_IDirectDraw2;                  // 0x5ef848
 extern "C" int sprintf(char* buf, const char* fmt, ...); // 0x11f890 (_sprintf)
 
 extern i32 (*g_restoreHandler)();

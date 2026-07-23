@@ -1,4 +1,4 @@
-#include <Mfc.h>           // real MFC CString (direction-name match temp; reloc-masked)
+#include <Mfc.h> // real MFC CString (direction-name match temp; reloc-masked)
 #include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -15,7 +15,7 @@
 #include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) + CGameObject::ApplyName (0x150540)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (0x15c360) - the +0x1a0 sub-object
-#include <Gruntz/Sprite.h>           // CDDrawWorker (frame-data value; the looked-up direction sprite)
+#include <Gruntz/Sprite.h>        // CDDrawWorker (frame-data value; the looked-up direction sprite)
 #include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/SerialArchive.h> // shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
@@ -134,15 +134,21 @@ i32 g_typeCounter = 2000;
 static inline CTypeNameEntry* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return reinterpret_cast<CTypeNameEntry*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
+        return reinterpret_cast<CTypeNameEntry*>(
+            (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
+        );
     }
     if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0))) {
-        return reinterpret_cast<CTypeNameEntry*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
+        return reinterpret_cast<CTypeNameEntry*>(
+            (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
+        );
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
-    return reinterpret_cast<CTypeNameEntry*>(g_typeColl.m_spare); // m_spare is the i32-typed slow-path slot
+    return reinterpret_cast<CTypeNameEntry*>(
+        g_typeColl.m_spare
+    ); // m_spare is the i32-typed slow-path slot
 }
 
 // CKitchenSlime::RegisterType @0x0b2aa0 - the level-load class registrar. Assign
@@ -233,7 +239,9 @@ i32 CKitchenSlime::Tick() {
         return 0;
     }
 
-    double step = static_cast<double>(static_cast<i64>(static_cast<u64>(static_cast<u32>(g_frameDelta)))) * m_speed;
+    double step =
+        static_cast<double>(static_cast<i64>(static_cast<u64>(static_cast<u32>(g_frameDelta))))
+        * m_speed;
     double* m88d = reinterpret_cast<double*>(&m_stepMag);
 
     i32 newX;
@@ -319,8 +327,7 @@ i32 CKitchenSlime::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, i32 d) {
     if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
         return 0;
     }
-    return Chain(stream, tag, c, reinterpret_cast<CGameObject*>(d))
-           != 0;
+    return Chain(stream, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
 }
 
 // @early-stop
@@ -360,14 +367,16 @@ i32 CKitchenSlime::LoadSprites() {
         i32 gy = tileY >> 5;
         i32 tileFlags;
         CMapMgr* map = g_gameReg->m_tileGrid;
-        if (static_cast<u32>(gx) >= static_cast<u32>(map->m_width) || static_cast<u32>(gy) >= static_cast<u32>(map->m_height)) {
+        if (static_cast<u32>(gx) >= static_cast<u32>(map->m_width)
+            || static_cast<u32>(gy) >= static_cast<u32>(map->m_height)) {
             tileFlags = 1;
         } else {
             tileFlags = ((map->m_rowInts[gy]))[gx * 7];
         }
 
-        if (tileY >= lvl->m_extent.top && tileX <= lvl->m_extent.right && tileY <= lvl->m_extent.bottom
-            && tileX >= lvl->m_extent.left && !(tileFlags & 0x939) && !(tileFlags & 2)) {
+        if (tileY >= lvl->m_extent.top && tileX <= lvl->m_extent.right
+            && tileY <= lvl->m_extent.bottom && tileX >= lvl->m_extent.left && !(tileFlags & 0x939)
+            && !(tileFlags & 2)) {
             found = 1;
             break;
         }
@@ -479,4 +488,3 @@ i32 CKitchenSlime::LoadSprites() {
     m_stepMagHi = 0;
     return 1;
 }
-

@@ -93,9 +93,12 @@ public:
     //     subobject) then 19 fields whose ptr/int pattern matches this class's
     //     m_statusGlyph..m_glyphMap at every single offset.
     virtual i32 SerializeFields(CFileMemBase* s, i32 mode, i32 a2, i32 a3) OVERRIDE; // 0xea990
-    virtual void Reset() OVERRIDE; // slot 3 - 0xea470 (drop the five tracked values; also the dtor teardown)
-    virtual i32 Refresh(i32 a) OVERRIDE; // slot 4 - 0xea4b0 (ex Poll: update + conditional vfunc-10 redraw)
-    virtual i32 Render() OVERRIDE; // slot 5 - 0xea4e0 (ex Blit: draw the tab background + value glyphs)
+    virtual void Reset()
+        OVERRIDE; // slot 3 - 0xea470 (drop the five tracked values; also the dtor teardown)
+    virtual i32 Refresh(i32 a)
+        OVERRIDE; // slot 4 - 0xea4b0 (ex Poll: update + conditional vfunc-10 redraw)
+    virtual i32 Render()
+        OVERRIDE; // slot 5 - 0xea4e0 (ex Blit: draw the tab background + value glyphs)
 
     // 0xea1f0: the stat bar's own "configure" (it derives straight from CStatusBarItem,
     // so there is no slot-11 SetupImage to override). Same owner/config-host pair as
@@ -114,33 +117,33 @@ public:
         i32 selMode
     ); // 0xea1f0
 
-    i32 Update();      // 0xea6c0  resample the grunt and latch any changed value
+    i32 Update(); // 0xea6c0  resample the grunt and latch any changed value
 
     // ----- layout (offsets are the load-bearing fact) -----
     // base region m_0..0x2f comes from CStatusBarItem (0x30, incl. m_2c); leaf fields
     // start at +0x30.
-    CImage* m_statusGlyph;           // +0x30  status background glyph
-    CImage* m_statusGlyphLatched;    // +0x34  status value glyph (resolved by Update)
-    i32 m_statusValue;               // +0x38  status value (tracked)
-    CImage* m_abilityGlyph;          // +0x3c  ability background glyph
-    CImage* m_abilityGlyphLatched;   // +0x40  ability value glyph (resolved by Update)
-    i32 m_abilityValue;              // +0x44  ability value (tracked)
-    CImage* m_overrideGlyph;         // +0x48  override background glyph
-    CImage* m_overrideGlyphLatched;  // +0x4c  override value glyph (resolved by Update)
-    i32 m_overrideValue;             // +0x50  override value (tracked)
-    CImage* m_selectKey;             // +0x54  selection background glyph (0 => no selection)
-    CImage* m_selectGlyph;           // +0x58  selection value glyph (resolved by Update)
-    i32 m_selectValue;               // +0x5c  selection value (tracked)
-    i32 m_unitRow;                   // +0x60  unit-table row index (stride 15 records)
-    i32 m_unitCol;                   // +0x64  unit-table column index (within the 15-dword record)
-    CDDrawWorker* m_timerGlyphMap; // +0x68  timer glyph map (a frame-data CDDrawWorker)
-    CImage* m_timerGlyph;     // +0x6c  timer glyph (resolved by Update)
-    i32 m_timerValue;         // +0x70  timer value (tracked)
-    CDDrawWorker* m_glyphMap;      // +0x74  glyph map for the first four values (a CDDrawWorker)
-    i32 m_timerAnchorLo;             // +0x78  timer anchor lo (g_frameTime at last bump)
-    i32 m_timerAnchorHi;             // +0x7c  timer anchor hi
-    i32 m_timerWindowLo;             // +0x80  timer window lo
-    i32 m_timerWindowHi;             // +0x84  timer window hi
+    CImage* m_statusGlyph;          // +0x30  status background glyph
+    CImage* m_statusGlyphLatched;   // +0x34  status value glyph (resolved by Update)
+    i32 m_statusValue;              // +0x38  status value (tracked)
+    CImage* m_abilityGlyph;         // +0x3c  ability background glyph
+    CImage* m_abilityGlyphLatched;  // +0x40  ability value glyph (resolved by Update)
+    i32 m_abilityValue;             // +0x44  ability value (tracked)
+    CImage* m_overrideGlyph;        // +0x48  override background glyph
+    CImage* m_overrideGlyphLatched; // +0x4c  override value glyph (resolved by Update)
+    i32 m_overrideValue;            // +0x50  override value (tracked)
+    CImage* m_selectKey;            // +0x54  selection background glyph (0 => no selection)
+    CImage* m_selectGlyph;          // +0x58  selection value glyph (resolved by Update)
+    i32 m_selectValue;              // +0x5c  selection value (tracked)
+    i32 m_unitRow;                  // +0x60  unit-table row index (stride 15 records)
+    i32 m_unitCol;                  // +0x64  unit-table column index (within the 15-dword record)
+    CDDrawWorker* m_timerGlyphMap;  // +0x68  timer glyph map (a frame-data CDDrawWorker)
+    CImage* m_timerGlyph;           // +0x6c  timer glyph (resolved by Update)
+    i32 m_timerValue;               // +0x70  timer value (tracked)
+    CDDrawWorker* m_glyphMap;       // +0x74  glyph map for the first four values (a CDDrawWorker)
+    i32 m_timerAnchorLo;            // +0x78  timer anchor lo (g_frameTime at last bump)
+    i32 m_timerAnchorHi;            // +0x7c  timer anchor hi
+    i32 m_timerWindowLo;            // +0x80  timer window lo
+    i32 m_timerWindowHi;            // +0x84  timer window hi
 };
 SIZE_UNKNOWN();
 

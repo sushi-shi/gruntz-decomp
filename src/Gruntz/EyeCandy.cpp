@@ -1,7 +1,7 @@
 #include <Gruntz/EyeCandy.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
+#include <Image/CImage.h>         // the +0x198 cached frame (ex CGameObjLayer view)
 
 RVA(0x0000fcc0, 0x47)
 i32 CEyeCandy::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {

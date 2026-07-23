@@ -149,6 +149,13 @@ i32 RotateRasterize(
         return 0;
     }
 
-    WarpTextureBlit(g_rasterVtxB, n, reinterpret_cast<CDDSurface*>(a4), reinterpret_cast<CDDSurface*>(a4), a5, a6);
+    WarpTextureBlit(
+        g_rasterVtxB,
+        n,
+        reinterpret_cast<CDDSurface*>(a4),
+        reinterpret_cast<CDDSurface*>(a4),
+        a5,
+        a6
+    );
     return 1;
 }

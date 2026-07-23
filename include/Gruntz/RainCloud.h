@@ -9,7 +9,7 @@
 class CRainCloud : public CPathHazard {
 public:
     virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                        // slot 2
     CRainCloud(CGameObject* obj);
     // The slots CRainCloud overrides over CPathHazard's vtable (declared only;
     // reloc-masked). slots 1/2 (origin CUserBase) stay inherited-attributed.

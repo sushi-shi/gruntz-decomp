@@ -55,9 +55,9 @@ extern i32 g_typeCounter;
 // VAs are reloc-masked at use) ---
 extern "C" i32 g_recCount23;
 extern "C" void Format_18d0f0(char* buf, i32 value, i32 cap); // 0x18d0f0
-#include <Bute/ButeTree.h> // CButeTree (for the extern below)
+#include <Bute/ButeTree.h>                                    // CButeTree (for the extern below)
 extern CButeTree g_buteTree;
 
 extern u8 g_zArrayTag;
 extern "C" i32 g_helperRefCount; // 0x2bf400 owner def in TypeKeyColl.cpp (C linkage)
-#endif // GRUNTZ_GRUNTZ_TYPEKEYCOLL_H
+#endif                           // GRUNTZ_GRUNTZ_TYPEKEYCOLL_H

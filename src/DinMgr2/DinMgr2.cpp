@@ -139,8 +139,9 @@ void DirectInputMgr2::Shutdown() {
     }
     i32 n = m_devices.GetSize();
     for (i32 i = 0; i < n; i++) {
-        CInputDevBase* d =
-            (i >= 0 && i < m_devices.GetSize()) ? reinterpret_cast<CInputDevBase*>(m_devices.GetAt(i)) : 0;
+        CInputDevBase* d = (i >= 0 && i < m_devices.GetSize())
+                               ? reinterpret_cast<CInputDevBase*>(m_devices.GetAt(i))
+                               : 0;
         if (d != 0) {
             delete d;
         }
@@ -327,7 +328,9 @@ void* DirectInputMgr2::AddController(i32 count, i32 a2, i32 a3) {
         return 0;
     }
     CDeviceListNode* node = new CDeviceListNode; // operator new(0x88) + ctor zeroes the links
-    if ((reinterpret_cast<CFixedPtrArray32*>(node))->FillFrom(reinterpret_cast<CInputDevBase**>(count), a2, a3) == 0) {
+    if ((reinterpret_cast<CFixedPtrArray32*>(node))
+            ->FillFrom(reinterpret_cast<CInputDevBase**>(count), a2, a3)
+        == 0) {
         if (node != 0) {
             (reinterpret_cast<CFixedPtrArray32*>(node))->Clear();
             operator delete(node);
@@ -919,12 +922,12 @@ typedef enum MouseKeyFlags {
     do {                                                                                           \
         if (m_edgeKeys & (bit)) {                                                                  \
             if (m_latchedKeys & (bit)) {                                                           \
-                m_currentKeys &= ~static_cast<u32>(bit);                                                      \
+                m_currentKeys &= ~static_cast<u32>(bit);                                           \
             } else {                                                                               \
                 m_latchedKeys |= (bit);                                                            \
             }                                                                                      \
         } else {                                                                                   \
-            m_latchedKeys &= ~static_cast<u32>(bit);                                                          \
+            m_latchedKeys &= ~static_cast<u32>(bit);                                               \
         }                                                                                          \
     } while (0)
 

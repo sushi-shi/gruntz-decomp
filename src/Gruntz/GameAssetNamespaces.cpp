@@ -6,13 +6,13 @@
 #include <Bute/SymParser.h>   // the shared CSymParser (ResolvePath 0x13c030)
 #include <Gruntz/State.h>     // CState: the real owner of the loader (all leaf states inherit it)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr - the manager arg (m_world/m_symParser/m_40/...)
-#include <Gruntz/GameRegistry.h>      // CDDrawSurfaceMgr (m_10/m_ptrColl/m_28/m_animRegistry)
-#include <DDrawMgr/DDrawSubMgrLeaf.h> // CDDrawSubMgrLeaf (HasKeyPrefix / ScanTree)
-#include <Gruntz/SpriteRefTable.h>    // the shared CSpriteRefTable (g_gameReg->m_spriteFactory)
+#include <Gruntz/GameRegistry.h>          // CDDrawSurfaceMgr (m_10/m_ptrColl/m_28/m_animRegistry)
+#include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf (HasKeyPrefix / ScanTree)
+#include <Gruntz/SpriteRefTable.h>        // the shared CSpriteRefTable (g_gameReg->m_spriteFactory)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // CDDrawWorkerRegistry == CDDrawWorkerRegistry (InstallTree)
 #include <DDrawMgr/DDrawPtrCollections.h> // the ONE CDDrawPtrCollections shape (MakeAndAddB)
 #include <Gruntz/FaderMgr.h>              // CFaderMgr - CState::m_faderMgr's real class
-#include <Gruntz/GameAssetNamespaces.h> // own exported globals (ex Globals.h)
+#include <Gruntz/GameAssetNamespaces.h>   // own exported globals (ex Globals.h)
 
 DATA(0x00251614)
 i32 g_buildNumber; // 0x651614  sprintf("... Build %i ...", g_buildNumber)
@@ -76,7 +76,8 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
     // the shared CSpriteRefTable types the source resolver as i32 (a raw 4-byte
     // handle); the parser pointer is passed through unchanged (reloc-masked).
     // Retail re-reads both through this->m_4 (spilled `this`, not the cached arg).
-    if (m_mgr->m_spriteFactory->BuildToolToyColorTable(reinterpret_cast<i32>(m_mgr->m_symParser)) == 0) {
+    if (m_mgr->m_spriteFactory->BuildToolToyColorTable(reinterpret_cast<i32>(m_mgr->m_symParser))
+        == 0) {
         return 0;
     }
     if (m_scratchSurface0 == 0 && m_scratchSurface1 == 0) {

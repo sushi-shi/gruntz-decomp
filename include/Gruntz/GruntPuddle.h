@@ -39,7 +39,7 @@ public:
         return LOGIC_GRUNTPUDDLE;
     } // slot 2
 public:
-    CGruntPuddle(CGameObject* obj);   // 0x040490
+    CGruntPuddle(CGameObject* obj); // 0x040490
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 

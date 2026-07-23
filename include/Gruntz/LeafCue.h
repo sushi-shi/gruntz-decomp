@@ -29,8 +29,8 @@ struct LeafCue : public CLoadable {
     // The three buffer loaders (all cache into m_10; bodies in DDrawSubMgr.cpp).
     // The owner handle in CLoadable::m_0c is the CDDrawSurfaceMgr whose +0x20
     // m_soundStream is the SoundDevice they acquire through.
-    i32 LoadSoundA(void* riff);              // 0x1586e0  SoundDevice::Acquire(riff)
-    i32 LoadSoundB(void* src);               // 0x158720  SoundDevice::AcquireFile(path)
+    i32 LoadSoundA(void* riff);       // 0x1586e0  SoundDevice::Acquire(riff)
+    i32 LoadSoundB(void* src);        // 0x158720  SoundDevice::AcquireFile(path)
     i32 Configure(CParseSource* src); // 0x158760  BeginParse -> Acquire -> EndParse
 
     // The gated play entry (LeafCuePlay.cpp): when the throttle interval elapsed,

@@ -144,4 +144,3 @@ i32 CGruntPowerupSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a
     }
     return 1;
 }
-
