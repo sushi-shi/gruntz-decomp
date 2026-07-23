@@ -1113,10 +1113,6 @@ extern char s_codeQ[]; // "Q" (0x0060dc08)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-extern i32 g_gruntDefEntranceCell[3]; // 0x6448e8 (default entrance-cell record)
-
-// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
-// VAs are reloc-masked at use) ---
 extern "C" i32 CellTargetable(i32 col, i32 row); // 0x40107d -> 0xf0db0 (MgrListFind)
 extern "C" i32 GameRand();                       // 0x51fee0 (__cdecl)
 

@@ -79,3 +79,12 @@ placeholder `zDArray::Reserve` calls the already reconstructed
 `zErrHandling::Report` at `0x00034960`. Naming those existing inherited
 operations preserved the function's 80.7091 fuzzy score and removed two more
 declared-only functions.
+
+A related one-site alias began at the correct object boundary rather than at
+an interior offset. `g_gruntDefEntranceCell[3]` claimed `0x006448e8`, but that
+address already owns the complete 12-byte `CGruntVoiceRec g_voiceN`. The
+`CGrunt` constructor reads the base, `+4`, and `+8` words and copies them to
+another three-word record. Expressing those loads as `g_voiceN.m_0`,
+`g_voiceN.m_4`, and `g_voiceN.m_8` preserves the retail accesses without
+inventing overlapping storage. Check exact-base collisions as well as interior
+offsets when draining data aliases.

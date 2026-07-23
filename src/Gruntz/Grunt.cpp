@@ -329,9 +329,9 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_8cc = 0;
 
     // Second-phase field inits (post CGrunt vptr restamp).
-    m_entranceCell.col = g_gruntDefEntranceCell[0];
-    m_entranceCell.row = g_gruntDefEntranceCell[1];
-    m_entranceCell.reason = g_gruntDefEntranceCell[2];
+    m_entranceCell.col = g_voiceN.m_0;
+    m_entranceCell.row = g_voiceN.m_4;
+    m_entranceCell.reason = g_voiceN.m_8;
     m_434 = m_object->m_11c;
     m_438 = g_frameTicks;
     m_object->m_moveMode = 1;

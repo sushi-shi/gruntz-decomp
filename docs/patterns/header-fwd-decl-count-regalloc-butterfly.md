@@ -219,7 +219,24 @@ controlled reverse sample: when a residue appeared after a declaration batch,
 later removal of false member names and restoration of the authentic receiver
 signature can undo it without touching the affected function.
 
-THIRTEENTH FIRING (2026-07-23, shredded `g_typeColl` recovery): replacing five
+THIRTEENTH FIRING (2026-07-23, constructed-global type recovery): replacing
+`char[]`, `u8`, and `void*` placeholder globals with four real
+`CVariantSlot` objects, and changing the shared `zErrHandling` boundary from
+`void*` to `CVariantSlot*`, changed declaration state across the Bute/Wap
+header closure. Four source-identical functions newly dipped:
+`CSBI_MenuItem::Render` 100→92.0357,
+`CGrunt::StepCompassMove` 35.2959→32.9266,
+`CGrunt::PhaseStep` 39.7717→38.5960, and
+`CGrunt::RectSegProbe` 78.7723→78.7228. Three unrelated rows moved the other
+way without body edits: `CBattlezMapConfig::Step33520` 53.5016→53.5120, and
+`CDDrawWorkerHost::Save` / `CDDrawWorker::GetMemoryUsage` became exact.
+The four newly exposed static initializer helpers are also exact, while
+overall current fuzzy moved 73.71→73.70 and MAX stayed 73.73. Preserve the
+typed object model and the MAX values; this is another bidirectional example
+where restoring authentic global and parameter declarations can both create
+and reverse compiler-state colorings elsewhere.
+
+FOURTEENTH FIRING (2026-07-23, shredded `g_typeColl` recovery): replacing five
 fake `g_cell*` field names with the inherited `_zvec` fields of the real
 `g_typeColl`, replacing two more globals with the existing
 `g_projActCache`/`g_retAddrBreadcrumb`, and removing four fake `zDArray`
@@ -243,7 +260,7 @@ state both repaired and displaced schedules; the rounded overall MAX remained
 a `Grunt.h`/`TypeKeyColl.h` consumer may respond to completing the authentic
 vector API or removing another interior-field alias.
 
-FOURTEENTH FIRING (2026-07-23, final vector-callee aliases): removing only the
+FIFTEENTH FIRING (2026-07-23, final vector-callee aliases): removing only the
 one-site `zDArray::Probe` and `zDArray::Reserve` declarations from
 `TypeKeyColl.h`, after their callers were changed to the retail-proven
 `_zvec::GrowTo` and `zErrHandling::Report`, left the directly edited
@@ -255,19 +272,12 @@ butterfly colors, showing that even deleting two unused member declarations can
 reverse a recent recovery. Preserve the real inherited callees and the saved
 MAX values.
 
-THIRTEENTH FIRING (2026-07-23, constructed-global type recovery): replacing
-`char[]`, `u8`, and `void*` placeholder globals with four real
-`CVariantSlot` objects, and changing the shared `zErrHandling` boundary from
-`void*` to `CVariantSlot*`, changed declaration state across the Bute/Wap
-header closure. Four source-identical functions newly dipped:
-`CSBI_MenuItem::Render` 100→92.0357,
-`CGrunt::StepCompassMove` 35.2959→32.9266,
-`CGrunt::PhaseStep` 39.7717→38.5960, and
-`CGrunt::RectSegProbe` 78.7723→78.7228. Three unrelated rows moved the other
-way without body edits: `CBattlezMapConfig::Step33520` 53.5016→53.5120, and
-`CDDrawWorkerHost::Save` / `CDDrawWorker::GetMemoryUsage` became exact.
-The four newly exposed static initializer helpers are also exact, while
-overall current fuzzy moved 73.71→73.70 and MAX stayed 73.73. Preserve the
-typed object model and the MAX values; this is another bidirectional example
-where restoring authentic global and parameter declarations can both create
-and reverse compiler-state colorings elsewhere.
+SIXTEENTH FIRING (2026-07-23, exact-base data alias): removing only the false
+`g_gruntDefEntranceCell[3]` declaration from `Grunt.h`, after changing the
+direct `CGrunt` constructor loads to the retail-proven `CGruntVoiceRec
+g_voiceN` fields at the same base address, introduced no new dip.
+`CGrunt::ArrivalScanC` instead recovered 47.2280→47.2696, its saved MAX,
+without a body edit. Overall current fuzzy remained 73.70 and MAX remained
+73.73. Exact-base aliases therefore participate in the same declaration-state
+search dimension as interior-field aliases even when their replacement has
+the same storage width and relocation address.
