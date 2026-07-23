@@ -48,6 +48,10 @@ LIBRARY_EXTRA = {
     "stdiobuf", "Iostream_init", "exception", "type_info", "bad_cast", "bad_typeid",
     "CMemFile", "CStdioFile", "CPaintDC", "CDumpContext", "CArchiveException",
     "CGdiObject", "CSize", "AFX_MODULE_STATE",
+    # MFC collection classes the corpus references but never defines: their bodies
+    # live in the statically-linked MFC band (??1CStringArray -> 0x1bef92) and the
+    # linker resolves them from the .LIB - library externs, not fabricated aliases.
+    "CStringArray", "CByteArray", "CDWordArray", "CWordArray", "CUIntArray",
 }
 
 

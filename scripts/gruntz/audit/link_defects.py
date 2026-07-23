@@ -254,8 +254,12 @@ def lib_symbols():
                 syms.add(f[2].strip())
             elif len(f) == 2 and f[0] in ("T", "D", "B", "R", "t"):
                 syms.add(f[1].strip())
-    cache.parent.mkdir(parents=True, exist_ok=True)
-    cache.write_text("\n".join(sorted(syms)))
+    # Never cache an EMPTY scan: outside the nix shell $MSVC_DIR is unset, the lib
+    # glob finds nothing, and a cached empty file would poison every later consumer
+    # (assert_relocs' FAKE check, the declared-only triage) until hand-deleted.
+    if syms:
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        cache.write_text("\n".join(sorted(syms)))
     return syms
 
 

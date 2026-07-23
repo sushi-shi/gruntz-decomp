@@ -5,7 +5,6 @@
 ??0CDDSurface@@QAE@XZ
 ??0CDDrawSurfacePair@@QAE@HHH@Z
 ??0CGruntCellRec@@QAE@XZ
-??0CStringArray@@QAE@XZ
 ??0RezElem40@@QAE@XZ
 ??1CBoomerang@@UAE@XZ
 ??1CButeRef5@@QAE@XZ
@@ -16,7 +15,6 @@
 ??1CGruntCellRec@@QAE@XZ
 ??1CGruntzMultiCommand@@UAE@XZ
 ??1CGruntzSingleCommand@@UAE@XZ
-??1CStringArray@@UAE@XZ
 ??1DSoundVoice@@UAE@XZ
 ??1zDArray@@UAE@XZ
 ?AdvanceAnim@CExitTrigger@@QAEHXZ
@@ -172,7 +170,6 @@
 ?ScratchResolve@zDArray@@QAEPAVCAnimNameRecord@@PAX@Z
 ?SelfImpact2b58@CBattlezMapConfig@@QAEXPAVCGrunt@@HHH@Z
 ?SerializeOverlay@CTriggerMgr@@QAEHPAVCFileMemBase@@HH@Z
-?SetAtGrow@CStringArray@@QAEXHPBD@Z
 ?SetDecayTarget@CGruntBehaviorLeaf@@QAEXH@Z
 ?SetFont@FontRenderer@@QAEXPAVFont@@@Z
 ?SetRange@CSliderCtrl@@QAEXHHH@Z
