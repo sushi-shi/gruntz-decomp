@@ -37,7 +37,6 @@
 ?ForwardCombatStep@CGrunt@@QAEHHHHHHHHH@Z
 ?Fx@CTriggerMgr@@QAEXHHHHHH@Z
 ?Gate1a14@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z
-?GetDlgItemThreaded@@YGPAVCWnd@@H@Z
 ?GetNameRecord@zDArray@@QAEPAPADPAX@Z
 ?GetNameRecords@zDArray@@QAEPAVCAnimNameRecord@@PAX@Z
 ?GruntDropReady029b40@@YGHPAVCGrunt@@@Z

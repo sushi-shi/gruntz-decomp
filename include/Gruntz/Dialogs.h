@@ -165,10 +165,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-// The fifth per-index combo getter (0xc2640, free __stdcall; def in MultiStartDlg.cpp):
-// the human/computer kind combo for slot idx.
-CWnd* __stdcall GetCtrlE(i32 index);
-
 class CBattlezDlgColors : public CDialog {
 public:
     CBattlezDlgColors(class CGruntzMgr* a0, i32 a1, i32 a2, CWnd* pParent);
@@ -309,11 +305,14 @@ public:
     // Per-slot control accessors: switch(index) over a 4-entry control-ID table,
     // each case returning this->GetDlgItem(constID). SAME shape as
     // CBattlezDlg::GetCtrlA..D (the inline .rdata jump table reloc-masks).
-    CWnd* GetCtrlA(i32 index); // 0xc26c0
-    CWnd* GetCtrlB(i32 index); // 0xc2740
-    CWnd* GetCtrlC(i32 index); // 0xc27c0
-    CWnd* GetCtrlD(i32 index); // 0xc2840
-    i32 GetComboSelC(i32 id);  // 0xc2940  GetCtrlC combo cur-sel + 1 (-1 if missing)
+    CWnd* GetCtrlA(i32 index);             // 0xc26c0
+    CWnd* GetCtrlB(i32 index);             // 0xc2740
+    CWnd* GetCtrlC(i32 index);             // 0xc27c0
+    CWnd* GetCtrlD(i32 index);             // 0xc2840
+    CWnd* GetCtrlE(i32 index);             // 0xc2640  human/computer kind combo
+    void SetComboSelE(i32 index, i32 sel); // 0xc28c0
+    i32 GetComboSelE(i32 index);           // 0xc2900
+    i32 GetComboSelC(i32 id);              // 0xc2940  GetCtrlC combo cur-sel + 1 (-1 if missing)
     // WM_DRAWITEM (0xc3100): owner-draw the four team-color swatch controls
     // (0x501/0x503/0x505/0x507) - the exact twin of CBattlezDlg::OnDrawItem, over the
     // m_host slot array's per-slot color index. Chains the base CWnd owner-draw default.
@@ -380,9 +379,6 @@ extern "C" i32 g_watchBusy;   // 0x64bdc4
 extern "C" i32 g_watchBlinkA; // 0x64bdc8
 extern "C" i32 g_watchBlinkB; // 0x64bdcc
 
-// --- the TU's extern surface (moved out of the .cpp; addresses/thunk
-// VAs are reloc-masked at use) ---
-extern CWnd* __stdcall GetDlgItemThreaded(i32 id);
 extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 extern "C" i32 CALLBACK WndProc_15a10(HWND, UINT, WPARAM, LPARAM); // 0x15a10 (C linkage carrier)

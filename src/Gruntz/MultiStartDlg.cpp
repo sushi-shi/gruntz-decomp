@@ -380,35 +380,29 @@ const AFX_MSGMAP* CMultiStartDlg::GetMessageMap() const {
 }
 
 // ---------------------------------------------------------------------------
-// GetCtrlE (0xc2640, free __stdcall): the fifth per-index combo getter over control
-// IDs 0x500/0x50e/0x50f/0x510. Reclaimed from the globals unit's bogus g_typeDesc2
-// char-array DATA mislabel - 0xc2640 is this function, not a data global. Unlike the
-// member CMultiStartDlg::GetCtrlA..D, this is a FREE __stdcall function whose body
-// threads the caller's dialog `this` (ecx) straight into GetDlgItem (see the helper
-// decl above). Callers SetComboSelE/GetComboSelE now bind to it.
+// GetCtrlE (0xc2640): the fifth per-index combo getter over control IDs
+// 0x500/0x50e/0x50f/0x510. Reclaimed from the globals unit's bogus g_typeDesc2
+// char-array DATA mislabel - 0xc2640 is this function, not a data global. Retail
+// callers load CMultiStartDlg into ecx, and its body is identical to the adjacent
+// member GetCtrlA..D accessors except for the control IDs.
 // @early-stop
-// ~69%: the switch shape, hoisted `xor eax,eax`, per-case `push id; call; ret 4` and
-// the 4-entry jump table all match retail; residual is (1) the index register - retail
-// keeps it in edx because ecx is live holding the threaded `this` (the body IS a member
-// threading ecx into GetDlgItem), but the free __stdcall reconstruction (forced by the
-// ?GetCtrlE@@YG.. symbol the callers reference) leaves ecx free so MSVC picks ecx for
-// the index; no C++ spelling reserves ecx without a `this` param. (2) jump-table-data
-// scoring artifact - docs/patterns/jumptable-data-overlap.md.
+// jump-table-data scoring artifact (code byte-exact) -
+// docs/patterns/jumptable-data-overlap.md.
 RVA(0x000c2640, 0x46)
-CWnd* __stdcall GetCtrlE(i32 index) {
+CWnd* CMultiStartDlg::GetCtrlE(i32 index) {
     CWnd* result = 0;
     switch (index) {
         case 0:
-            result = GetDlgItemThreaded(0x500);
+            result = GetDlgItem(0x500);
             break;
         case 1:
-            result = GetDlgItemThreaded(0x50e);
+            result = GetDlgItem(0x50e);
             break;
         case 2:
-            result = GetDlgItemThreaded(0x50f);
+            result = GetDlgItem(0x50f);
             break;
         case 3:
-            result = GetDlgItemThreaded(0x510);
+            result = GetDlgItem(0x510);
             break;
     }
     return result;
@@ -507,7 +501,7 @@ CWnd* CMultiStartDlg::GetCtrlD(i32 index) {
 }
 
 RVA(0x000c28c0, 0x27)
-void __stdcall SetComboSelE(i32 index, i32 sel) {
+void CMultiStartDlg::SetComboSelE(i32 index, i32 sel) {
     CWnd* c = GetCtrlE(index);
     if (c != 0) {
         ::SendMessageA(c->m_hWnd, 0x14e, sel, 0);
@@ -515,7 +509,7 @@ void __stdcall SetComboSelE(i32 index, i32 sel) {
 }
 
 RVA(0x000c2900, 0x2a)
-i32 __stdcall GetComboSelE(i32 index) {
+i32 CMultiStartDlg::GetComboSelE(i32 index) {
     CWnd* c = GetCtrlE(index);
     if (c == 0) {
         return -1;
