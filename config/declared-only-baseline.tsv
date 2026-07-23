@@ -172,7 +172,6 @@
 ?SerializeOverlay@CTriggerMgr@@QAEHPAVCFileMemBase@@HH@Z
 ?SetDecayTarget@CGruntBehaviorLeaf@@QAEXH@Z
 ?SetFont@FontRenderer@@QAEXPAVFont@@@Z
-?SetRange@CSliderCtrl@@QAEXHHH@Z
 ?SetServiceName@CMulti@@QAEXVCString@@@Z
 ?SetupSprite@CInGameIcon@@QAEXPBD@Z
 ?ShowChatLine@CMulti@@QAEXPAXPBD@Z

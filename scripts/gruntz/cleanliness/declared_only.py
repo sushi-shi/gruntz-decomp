@@ -97,7 +97,16 @@ def declared_only():
     tdef, tund = _nm(sorted(glob.glob(str(TARGET / "*.obj"))))
     never = bund - bdef
     alias = never - tdef - tund
-    return {s for s in alias if not _is_library(s)}
+    # A symbol the toolchain .LIB tables can supply (CRT/MFC/Win32/DirectX statics)
+    # resolves at link no matter what - a library extern, never a fabricated alias.
+    # This is the LINKER'S answer (?SetRange@CSliderCtrl was baselined as debt for
+    # weeks because the name-pattern filter had no CSliderCtrl row).
+    try:
+        from gruntz.audit.link_defects import lib_symbols
+        libs = lib_symbols()
+    except Exception:
+        libs = set()
+    return {s for s in alias if not _is_library(s) and s not in libs}
 
 
 def _read_baseline():
