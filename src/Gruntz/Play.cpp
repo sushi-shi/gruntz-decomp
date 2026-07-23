@@ -466,9 +466,9 @@ i32 CPlay::Render() {
             if (static_cast<i32>(dur) >= 0) {
                 // duration elapsed: post a message + reset the marker block + walk.
                 if (m_guts->m_modeArmed != 0) {
-                    SnapPostMessage(5); // reg->m_68 (5)
+                    g_gameReg->m_cmdGrid->ClearRowAndRefresh(5);
                 } else {
-                    SnapPostMessage(g_curPlayer);
+                    g_gameReg->m_cmdGrid->ClearRowAndRefresh(g_curPlayer);
                 }
                 // reset the m_frameMarker marker block (+0x30..0x4c):
                 m_frameMarker->Draw(0, 0);

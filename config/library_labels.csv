@@ -1698,6 +1698,7 @@ rva,name,lib,confidence,source
 0x161350,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x161440,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x1614e0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
+0x161560,??1CObject@@UAE@XZ,NAFXCW,HIGH,object-unwind-inlinee
 0x163a20,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x163ad0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x165780,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored

@@ -31,7 +31,6 @@
 0x000033c8	_ErrorDialogProcThunk@16	GruntzApp.cpp
 0x00003ca6	_CreateStaticHazard	GameObjectFactory.cpp
 0x0000448a	_CreateDemoSign	GameObjectFactory.cpp
-0x00051510	?g_typeDesc1@@3PADA	GruntSteps.cpp
 0x001e8fe8	_g_bootyLetterCoords	BootyStateActivate.cpp
 0x001e9608	?g_cmdBitTable@@3PBGB	GruntzCmdMgr.cpp
 0x001ef458	_IID_IDirectInputDevice2A	InputDevice.cpp
@@ -50,4 +49,3 @@
 0x002a2cf0	_g_rasterEdgeL	WarpTextureBlit.cpp
 0x002bf3bc	_g_engineFrameDelta	InGameTextUpdate.cpp
 0x002bf3c0	_g_killCueClock	InGameTextUpdate.cpp
-0x002bf408	?g_containerName@@3PADA	TypeKeyColl.cpp

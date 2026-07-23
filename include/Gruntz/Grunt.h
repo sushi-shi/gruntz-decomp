@@ -932,7 +932,7 @@ public:
     // offset is this layout: m_154/m_tileOwnerHi/Lo/m_tileMgr/m_deathType/m_36c.)
     i32 StepWarpExit(); // @0x64540
 
-    // Remaining unreconstructed helper.
+    // Drop/entrance movement helpers.
     i32 IsDropReady(i32 a = 0); // thunk_0x17df (drop-ready predicate; 1-arg __thiscall)
     void StepDropApply();       // placeholder for an unreconstructed inlined drop-apply tail
 

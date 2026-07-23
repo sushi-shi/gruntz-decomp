@@ -246,7 +246,6 @@ public:
     // are m_frameMarker->Tick/Draw (0x3710/0x27a2, CTimer), and the world blit is
     // m_4->m_54->Retune (0x1a7d->0xbd60, CWorldSoundSet).)
     // Render-carcass leaves still unresolved (CPlay backlog; carcass-only callers):
-    void SnapPostMessage(i32 wParam);
     // The two CLightFxRender thunks 0x1fa0/0x14dd are dispatched straight on
     // m_lightFx: Resize(delta,0) + ComputeRect(m_c->m_drawTarget->m_backPair, &rc).
     void InputSubStep(void* in);         // (m_4->m_70)

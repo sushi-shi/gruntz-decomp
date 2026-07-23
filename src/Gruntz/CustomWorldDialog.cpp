@@ -448,7 +448,7 @@ CString WwdFile::GetMapBaseName(CString path) {
     strcpy(g_mapNameBuf, path);
     i32 blen = strlen(g_mapNameBuf);
     if (blen >= 5) {
-        g_mapNamePre[blen] = 0; // g_mapNameBuf[blen - 4] = 0 (drop the ".ext")
+        g_mapNameBuf[blen - 4] = 0;
         i32 blen2 = strlen(g_mapNameBuf);
         if (blen2 >= 1) {
             i32 i = blen2 - 1;

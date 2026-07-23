@@ -36,6 +36,26 @@ ddraw pool `new` base + a58 items, so those two dtor COMDATs exist in both — t
 linker kept the IMAGE copies (0x141350 / 0x142360). a88/ab8/ae8 are `new`'d only
 by the pool, so their dtors live only in the ddraw region.
 
+## Unwind-only base-class inlinees can sit deep in a game TU
+
+A library-class body found inside a game's RVA band is not automatically a
+misattribution. At 0x00161560, the seven-byte body
+`mov [ecx],0x5e8cb4; ret` re-stamps `CObject`'s vtable. Its only incoming
+reference is the `CImageSet3` destructor's unwind metadata, and the corresponding
+object emits the same `CObject::~CObject` COMDAT. The linker retained that inline
+base-destructor copy beside the game TU that needed it.
+
+Classify this specific shape from all three facts together:
+
+- the body performs only the known library base-vtable restamp;
+- its sole xref is unwind metadata belonging to a derived game class;
+- the attributed object emits the same mangled base-class destructor.
+
+RVA depth alone cannot distinguish this retained inlinee from a game method.
+Conversely, do not label a nearby unknown as library code merely because its
+bytes resemble a tiny destructor; the vtable target, xref kind, and object symbol
+must agree.
+
 ## Reconstruction rule
 
 - Give each derived class an out-of-line `~T() {}` with the RVA the vtable's

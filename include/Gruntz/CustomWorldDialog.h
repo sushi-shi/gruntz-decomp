@@ -6,6 +6,5 @@
 
 class CDDrawSurfaceMgr;
 extern class CDDrawSurfaceMgr* g_dat62c268;
-extern char g_mapNamePre[4];
 extern char g_mapNameBuf[0x200];
 #endif // GRUNTZ_GRUNTZ_CUSTOMWORLDDIALOG_H

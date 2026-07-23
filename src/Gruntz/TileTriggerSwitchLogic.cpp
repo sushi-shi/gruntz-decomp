@@ -33,6 +33,7 @@
 //   parked at the two-jump-table wall (@early-stop) for the final sweep.
 // <Mfc.h> (not <Win32.h>): UserLogic.h pulls afx via ButeMgr.h/String.h, so the
 // umbrella must be the MFC superset kept first (mfc-wall-is-breakable doctrine).
+#include <Gruntz/CurPlayer.h>
 // ---------------------------------------------------------------------------
 // The game registry singleton (?g_gameReg@@3PAUWwdGameRegZ@@A at VA 0x64556c).
 // Only the offsets this cluster reaches are modeled; reloc-masked DIR32.
@@ -760,7 +761,7 @@ CTileActionEvent::CTileActionEvent() {
 RVA(0x00112da0, 0x9e)
 i32 CTileActionEvent::SetActionCode(i32 code) {
     m_actionCode = code;
-    if (m_playerFlags[g_tileKindMagic] == 0 && static_cast<u32>((code - 0x12f)) <= 0x1a) {
+    if (m_playerFlags[g_curPlayer] == 0 && static_cast<u32>((code - 0x12f)) <= 0x1a) {
         switch (code) {
             case 0x12f:
             case 0x132:

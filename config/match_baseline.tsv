@@ -163,7 +163,7 @@ gruntstaminasprite	4	3
 gruntstartingpoint	10	8
 gruntstaterec	1	0
 gruntstatestep	1	0
-gruntsteps	23	14
+gruntsteps	24	14
 grunttargetscan	1	0
 grunttilescan	1	0
 grunttoysprite	12	7
@@ -921,7 +921,7 @@ customworlddialog	?BuildCustomWwdPath@@YA?AVCString@@V1@@Z	100.0000	100.0000	1	5
 customworlddialog	?CustomWorldInfoDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	4	c3f6b086ecc1	0x3b600
 customworlddialog	?FillCustomLevelList@m4@@YAHPAUHWND__@@@Z	70.9590	70.9590	7	0d2c248ae5dd	0x3af90
 customworlddialog	?FillLevelInfoDialog@@YAHPAUHWND__@@@Z	100.0000	100.0000	7	12399fb6dd39	0x3b1a0
-customworlddialog	?GetMapBaseName@WwdFile@@SA?AVCString@@V2@@Z	83.2887	83.2887	1	c7a8c051baf4	0x3bb50
+customworlddialog	?GetMapBaseName@WwdFile@@SA?AVCString@@V2@@Z	83.2887	83.2887	2	75263c12e979	0x3bb50
 customworlddialog	?LoadCustomWorldInfo@@YAHPAUHWND__@@@Z	100.0000	100.0000	7	9efb18a13a8a	0x3b7c0
 customworlddialog	?LoadCustomWorldSelection@@YAHPAUHWND__@@@Z	100.0000	100.0000	7	1ef4759496e8	0x3b310
 customworlddialog	?RunCustomWorldDialog@@YA?AVCString@@HPAV1@@Z	95.7143	95.7143	11	844900d38850	0x3ad90
@@ -1894,7 +1894,7 @@ gameapp	?SpinWaitUntil@CGameMgr@@QAEXH@Z	100.0000	100.0000	1	9edc438247b3	0x13de
 gameapp	?TrySetFrameRate@CGameMgr@@QAEHH@Z	100.0000	100.0000	1	e8c84e5f3df1	0x13df00
 gameapp	?WaitKeyEdge@@YAXHH@Z	100.0000	100.0000	4	edd920d9e9e0	0x13df30
 gameassetnamespaces	?LoadGameAssetNamespaces@CState@@UAEHHHH@Z	94.5249	94.5249	3	e1347fc70201	0xf9ea0
-gamechecksum	?Checksum@CNetSession@@QAEHXZ	54.8560	54.8480	4	17a9e37868f2	0xc0590
+gamechecksum	?Checksum@CNetSession@@QAEHXZ	54.8560	54.8400	4	17a9e37868f2	0xc0590
 gameiconflasheffect	?GameIconFlashEffect@@YAHPAUCGameObject@@@Z	100.0000	100.0000	7	510c3a5234cf	0xae360
 gameinfostring	?BuildGameDate@@YAHPAUCGameInfoTime@@@Z	92.6667	92.6667	1	4f350faa4de0	0x118330
 gameinfostring	?Check1@CGameInfo@@QAEHXZ	100.0000	100.0000	1	b83b42b69830	0x1182f0
@@ -2296,18 +2296,19 @@ gruntsteps	$anon_data_f3ecefc498511ad8ebd70ccee11ed9f91461a5ddefc2a78c1128396235
 gruntsteps	?CanShowStamina@CGrunt@@QAEHXZ	100.0000	100.0000	1	a2cdce80ada0	0x514a0
 gruntsteps	?ClaimSwitchTile@CGrunt@@QAEHXZ	60.4427	60.4427	8	822346014dfc	0x52c70
 gruntsteps	?ConsiderArrival@CGrunt@@QAEXH@Z	83.7667	83.7667	4	79e67ae896a5	0x52f40
+gruntsteps	?IsDropReady@CGrunt@@QAEHH@Z	97.9805	97.9805	1	b20244bbf089	0x51510
 gruntsteps	?LoadTypeTableClearMove@CGrunt@@QAEHH@Z	100.0000	100.0000	1	f94268662acb	0x50ca0
 gruntsteps	?LoadVehicleGruntSprites@CGrunt@@QAEHH@Z	34.1942	34.1942	5	6fe2a8b25df0	0x50ce0
 gruntsteps	?PlayMoveSound@CGrunt@@QAEXHH@Z	100.0000	100.0000	6	db7a1a7fbf7e	0x511b0
 gruntsteps	?PlayMoveSoundAtTile@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	f60fee3e75ae	0x514e0
-gruntsteps	?RectContains@CGrunt@@QAEHHH@Z	55.2258	55.2258	2	a4e734c1fa23	0x51850
-gruntsteps	?RectContainsGated@CGrunt@@QAEHHH@Z	63.3543	63.3543	2	95c85ebdac20	0x51a20
+gruntsteps	?RectContains@CGrunt@@QAEHHH@Z	61.6774	61.6774	2	a4e734c1fa23	0x51850
+gruntsteps	?RectContainsGated@CGrunt@@QAEHHH@Z	63.3543	61.9764	2	95c85ebdac20	0x51a20
 gruntsteps	?Save@CGrunt@@QAEHPAVCFileMemBase@@@Z	94.2520	94.2520	6	cc8b647f6e77	0x53f90
 gruntsteps	?SerializeMove@CGrunt@@UAEHPAVCFileMemBase@@HHH@Z	100.0000	100.0000	8	d1041a1cb4f9	0x53b80
 gruntsteps	?SetArrivalTarget@CGrunt@@QAEXHHHH@Z	64.4000	64.4000	1	057deba63704	0x52ed0
 gruntsteps	?SnapToLastTile@CGrunt@@QAEXH@Z	100.0000	100.0000	5	c3e0d37caa27	0x517b0
 gruntsteps	?StepAnimDispatchA@CGrunt@@QAEHHHHH@Z	43.5229	43.5229	12	478528624bf2	0x52fb0
-gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	32.9266	32.9266	11	e188016b893a	0x51c00
+gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	35.2959	35.2959	11	e188016b893a	0x51c00
 grunttargetscan	?ScanNearestTarget@CGrunt@@QAEHXZ	27.2142	27.2134	8	199f1baeb08b	0xf42f0
 grunttilescan	?ScanRegion@CScanMgr@@QAEHPAVCGrunt@@@Z	66.4426	66.4426	7	236982332d1d	0x32ce0
 grunttoysprite	$anon_data_34e8575cd10e0823690938a2f7de15108b54c854c19aebb2112fe4676162dece_0	100.0000	100.0000	1	cpp:8257cda4903d
@@ -2373,7 +2374,7 @@ gruntzcmdmgr	??1CGruntzSingleCommand@@UAE@XZ	100.0000	100.0000	1	cpp:9093f316b3a
 gruntzcmdmgr	??_GCGruntzCommand@@UAEPAXI@Z	100.0000	100.0000	1	cpp:0baab07748f5	0x24330
 gruntzcmdmgr	?Allocate@CGruntzMultiCommand@@SAPAV1@XZ	100.0000	100.0000	3	f77f5aa7e330	0x24360
 gruntzcmdmgr	?Allocate@CGruntzSingleCommand@@SAPAV1@XZ	100.0000	100.0000	3	b8f1fb7e11fa	0x24220
-gruntzcmdmgr	?BlitTileMarker@CGruntzCmdMgr@@QAEXHHHHH@Z	59.8684	59.8684	7	8ee0f7e61c83	0x23d90
+gruntzcmdmgr	?BlitTileMarker@CGruntzCmdMgr@@QAEXHHHHH@Z	65.8684	65.8684	7	8ee0f7e61c83	0x23d90
 gruntzcmdmgr	?Clear@CGruntzCmdMgr@@QAEXXZ	100.0000	100.0000	2	c0d9b8525489	0x23c00
 gruntzcmdmgr	?ClearAndReset@CGruntzCmdMgr@@QAEXXZ	100.0000	100.0000	1	95974bdf2f84	0x239f0
 gruntzcmdmgr	?Deselect@CGruntzMultiCommand@@UAEXXZ	100.0000	100.0000	2	1491cca2ed21	0x243e0
@@ -2883,9 +2884,9 @@ levelpreview	?RefadeVirtual@CPreviewState@@QAEHXZ	100.0000	100.0000	2	13f93976e4
 levelpreview	?ResetPreview@CPreviewState@@QAEXXZ	98.8235	98.8235	3	11b0042fb870	0xde140
 levelpreview	?Tick@CPreviewState@@QAEHXZ	99.7826	99.7826	10	d88296dd33ad	0xde200
 levelrezpath	?BuildLevelRezPath@CGruntzMgr@@QAEHHHHHVCString@@@Z	45.0709	45.0709	5	6b85c025a99c	0x93d40
-leveltilevalidation	?PlaceStartGruntz@CPlay@@QAEHXZ	63.9458	63.9458	10	568f1274dc05	0xd2b20
+leveltilevalidation	?PlaceStartGruntz@CPlay@@QAEHXZ	63.9458	63.9458	11	919f42bbc938	0xd2b20
 leveltilevalidation	?PositionBridgeToggle@CPlay@@QAEHHH@Z	91.2321	91.2321	4	15f66bcf1fe1	0xd5b20
-leveltilevalidation	?ValidateLevelTiles@CPlay@@QAEHXZ	54.1523	54.1523	14	54b514323f9c	0xd2dd0
+leveltilevalidation	?ValidateLevelTiles@CPlay@@QAEHXZ	54.1523	54.1523	15	cca9f245258e	0xd2dd0
 leveltimedtor	??0CLevelTime@@QAE@PAUCGameObject@@@Z	99.6818	99.6818	4	35a119a2491b	0x9b8b0
 leveltimedtor	??1CLevelTime@@UAE@XZ	100.0000	100.0000	2	e29f6e4f5886	0x11a50
 leveltimedtor	?GetTypeTag@CLevelTime@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:580f958fc849	0x11990
@@ -2969,7 +2970,7 @@ logicworkerhandlersb	_CreateRainCloud	100.0000	100.0000	1	b9f3f03e6c0e	0xaf5a0
 logicworkerhandlersb	_CreateRollingBall	100.0000	100.0000	1	e5b1d4fdc173	0xaf0a0
 logicworkerhandlersb	_CreateSpotLight	100.0000	100.0000	1	b183565559d1	0xaf1e0
 logicworkerhandlersb	_CreateUFO	100.0000	100.0000	1	e6613aed3d0e	0xaf6e0
-mainmenubuilder	?BuildMainMenuTree@@YAHPAVCChatBox@@H@Z	94.5734	94.5734	1	c15d09a2c8b1	0xa11d0
+mainmenubuilder	?BuildMainMenuTree@@YAHPAVCChatBox@@H@Z	94.5734	94.5734	2	7b7ae90c4ec5	0xa11d0
 mainmenubuilder	?SetMenuTextRect@@YAXXZ	100.0000	100.0000	1	f58ff91e1747	0xa1190
 maplogic	?MapSerializeCurve@@YAHPAVCFileMemBase@@HHH@Z	100.0000	100.0000	5	4ddbdb4511f8	0xec230
 mapmgr	??0CMapArrayA@@QAE@XZ	100.0000	100.0000	5	e0f9c2128b4c	0x9e700
@@ -3516,7 +3517,7 @@ play	?RegionLeave@CPlay@@QAEXXZ	100.0000	100.0000	5	ffab0d74f410	0xd8960
 play	?RegisterInputBindings@CPlay@@QAEHXZ	100.0000	100.0000	6	993b54aa05a0	0xd9160
 play	?ReleaseLevelOverlay@CPlay@@QAEHH@Z	100.0000	100.0000	5	69782dedfe50	0xd6560
 play	?ReleaseResources@CPlay@@UAEXXZ	94.8355	94.8355	4	f311f0916585	0xc8700
-play	?Render@CPlay@@UAEHXZ	0.0000	0.0000	24	0e18407fbf8b	0xc8cf0
+play	?Render@CPlay@@UAEHXZ	0.0000	0.0000	25	9a263b5fc263	0xc8cf0
 play	?Reset@GruntzPlayer@@QAEHXZ	94.8750	94.8750	4	41e193090fa0	0xda9e0
 play	?ResetGoals@CPlay@@QAEHHH@Z	100.0000	100.0000	11	64f4c78cc0e5	0xd5f00
 play	?ResetPlayState@CPlay@@QAEHXZ	92.0600	92.0600	13	757cd3ce948b	0xd60b0
@@ -3668,7 +3669,7 @@ rezmgr	?MakeRezPath@CGruntzMgr@@QAEHXZ	92.7923	92.7923	2	c88af8746b20	0x91670
 rezmgr	?PerFrameTick@CGruntzMgr@@UAEHXZ	100.0000	100.0000	1	a6b920d100db	0x8b740
 rezsync	?GetRezPath@CGruntzMgr@@QAE?AVCString@@XZ	100.0000	100.0000	1	6c4e5160b9ee	0x85500
 rezsync	?RezFreeStdcall@@YGXPAX@Z	100.0000	100.0000	2	b9d4502f6f0e	0x853d0
-rezsync	?Run@CGruntzMgr@@UAEHPAVCGameWnd@@PAD@Z	65.9955	65.9955	8	e9ea1019d08b	0x83450
+rezsync	?Run@CGruntzMgr@@UAEHPAVCGameWnd@@PAD@Z	66.5792	66.5792	9	a92617098305	0x83450
 rockbreakeffectupdate	?Update@RbEffect@@QAEHXZ	98.4848	98.4848	4	e86293412107	0x476b0
 rollingball	$anon_data_0a52b00218f63252380a56a998b150586110b6e4dc4a3c7dd84806e7224a6e6a_0	100.0000	100.0000	1	cpp:5ef8e094a467
 rollingball	$anon_data_58a6478b17ad8ce6030304f9693c4b54ddd7aff2248ced4f7093d07355fb117b_0	100.0000	100.0000	1	cpp:5ef8e094a467
@@ -4301,7 +4302,7 @@ tileswitchlogic	?Serialize@CTileActionEvent@@QAEHPAXHHH@Z	100.0000	100.0000	1	c1
 tileswitchlogic	?Serialize@CTileTriggerLogic@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	3	da1764beef82	0x113ae0
 tileswitchlogic	?SerializeFields@CTileActionEvent@@QAEHPAX@Z	100.0000	100.0000	3	964921e339dd	0x113f60
 tileswitchlogic	?SerializeMatrix@CGiantRockLogic@@QAEHPAVCFileMemBase@@@Z	95.0909	95.0909	3	acdfc2583a2b	0x113dd0
-tileswitchlogic	?SetActionCode@CTileActionEvent@@QAEHH@Z	0.0000	0.0000	7	0758a59aeff6	0x112da0
+tileswitchlogic	?SetActionCode@CTileActionEvent@@QAEHH@Z	0.0000	0.0000	8	c5b9260b0340	0x112da0
 tileswitchlogic	?Setup@CTileTriggerSwitchLogic@@UAEHPAVCTileTriggerContainer@@HHHHHHH@Z	100.0000	100.0000	2	53c764844260	0x1104f0
 tileswitchlogic	?SwitchDown@CCheckpointTriggerSwitchLogic@@EAEHXZ	73.1351	73.1351	4	258108b1c306	0x112b70
 tileswitchlogic	?SwitchDown@CTileExclusiveTriggerSwitchLogic@@EAEHXZ	84.2818	84.2818	1	f9a27c88f827	0x112080

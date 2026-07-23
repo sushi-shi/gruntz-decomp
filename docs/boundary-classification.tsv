@@ -282,7 +282,7 @@ rva	size	category	evidence
 0x00161460	0x7	GAME	engine code (refs=1 in / 0 dir32; no library signal)
 0x001614b0	0x1c	GAME	engine code (refs=0 in / 1 dir32; no library signal)
 0x00161500	0x58	GAME	engine code (refs=1 in / 0 dir32; no library signal)
-0x00161560	0x7	GAME	engine code (refs=1 in / 0 dir32; no library signal)
+0x00161560	0x7	LIBRARY	CObject::~CObject retained COMDAT (CObject vtable restamp; sole xref is CImageSet3 unwind metadata)
 0x00161bf0	0x5e	GAME	engine code (refs=0 in / 1 dir32; no library signal)
 0x001628d0	0x12	GAME	engine code (refs=1 in / 0 dir32; no library signal)
 0x001628f0	0x1fc	GAME	engine code (refs=1 in / 0 dir32; no library signal)

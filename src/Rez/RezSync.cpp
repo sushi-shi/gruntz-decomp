@@ -1,4 +1,5 @@
 #include <Rez/RezSync.h> // own extern surface
+#include <EmptyString.h> // g_emptyString
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Gruntz/GameRegMfcPtr.h>     // g_gameReg at its REAL type (ex .cpp extern)
 #include <Net/NetMgr.h>               // g_localVersion (ex .cpp extern; def in Multi.cpp)
@@ -433,8 +434,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     m_saveSink = new CSaveGame;
-    if (!m_saveSink->SaveGameFile(g_lab545854)) {
-        // (uses g_emptyString 0x6293f4 in retail)
+    if (!m_saveSink->SaveGameFile(g_emptyString)) {
         ReportError(0x800a, 0x412);
         return 0;
     }
@@ -502,7 +502,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     // --- Phase 15: GAME_ATTRIBUTEZ blowfish-decoded bute parse -------
     {
         CSymParser* mgr = m_symParser;
-        CParseSource* stream = mgr->ResolveQualified("GAME_ATTRIBUTEZ", &g_lab545854);
+        CParseSource* stream =
+            mgr->ResolveQualified("GAME_ATTRIBUTEZ", reinterpret_cast<void*>('TXT'));
         g_buteMgr.SetErrCallback(reinterpret_cast<ErrCallback>(&cb_401bc2));
         i32 ok = 0;
         if (stream) {
@@ -522,14 +523,15 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             g_buteMgr.m_stream = static_cast<istream*>(::operator new(0x60));
             stream->EndParse();
             g_buteMgr.Init();
-            g_store6453f0.ClearRecursive(0);
+            g_buteMgr.m_tree.ClearRecursive(0);
             g_buteMgr.m_tree.m_root = 0;
             g_buteMgr.m_tree.m_lookupPending = 0;
             g_buteMgr.m_tree.m_nodeCount = 0;
-            g_store64544c.ClearRecursive(0);
+            g_buteMgr.m_tree48.ClearRecursive(0);
             g_buteMgr.m_tree48.m_root = 0;
             g_buteMgr.m_tree48.m_lookupPending = 0;
             g_buteMgr.m_tree48.m_nodeCount = 0;
+            g_buteMgr.m_tree74.ClearRecursive(0);
             g_buteMgr.m_tree74.m_root = 0;
             g_buteMgr.m_tree74.m_lookupPending = 0;
             g_buteMgr.m_tree74.m_nodeCount = 0;
@@ -607,7 +609,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
         while (attract->ResolveQualified(
             static_cast<const char*>(*reinterpret_cast<void**>(&title)),
-            &g_lab504358
+            reinterpret_cast<void*>('PCX')
         )) {
             g_attractStateCount++;
             title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);

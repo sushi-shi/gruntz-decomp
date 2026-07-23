@@ -20,6 +20,7 @@
 // TU but stays split (no privates/frags to prove it; noted there).
 #include <Bute/ButeTree.h>        // CButeTree::Find - g_buteTree @0x6bf620
 #include <Gruntz/GruntzMapMgr.h>  // the real +0x70 board class (ex GruntBoard view)
+#include <Gruntz/Brickz.h>        // the real 0x1c-byte tile-cell layout
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
@@ -47,8 +48,6 @@
 #include <Gruntz/GruntzMgr.h>  // the MFC-side registry view (vehicle path)
 #include <Gruntz/PickupType.h> // the toy/vehicle grunt-kind id band
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr::ApplySwitch
-
-DATA_SYMBOL(0x00051510, 0x0, ?g_typeDesc1@@3PADA)
 
 DATA(0x002448d8)
 GruntDirectionCell g_gruntMoveDirNorth(0, 1, 1);
@@ -373,6 +372,91 @@ i32 CGrunt::CanShowStamina() {
 RVA(0x000514e0, 0x1e)
 void CGrunt::PlayMoveSoundAtTile(i32 tx, i32 ty) {
     PlayMoveSound(tx * 0x20 + 0x10, ty * 0x20 + 0x10);
+}
+
+// @early-stop
+// 97.98%: the CFG, calls, constants, typed BrickzCell accesses, and ordered relocations
+// match retail. Residue is the free-list node/coordinate register swap plus equivalent
+// SIB spellings and store scheduling in the two board-cell blocks.
+RVA(0x00051510, 0x20f)
+i32 CGrunt::IsDropReady(i32 a) {
+    {
+        CGruntzMapMgr* board = g_gameReg->m_tileGrid;
+        i32 x = m_commitPxX >> 5;
+        i32 y = m_commitPxY >> 5;
+        i32 owner;
+        if (static_cast<u32>(x) < static_cast<u32>(board->m_width)
+            && static_cast<u32>(y) < static_cast<u32>(board->m_height)) {
+            owner = board->m_rowInts[y][x * 7 + 1];
+        } else {
+            owner = -1;
+        }
+        if (owner != -1) {
+            return 0;
+        }
+    }
+
+    CWwdGameObjectA* object = m_object;
+    i32 lastX = m_lastTilePxX;
+    if (object->m_screenX == lastX) {
+        i32 lastY = m_lastTilePxY;
+        if (object->m_screenY == lastY) {
+            return 0;
+        }
+    }
+
+    if (m_31c.GetCount() != 0) {
+        Coord* coord = 0;
+        CoordPoolNode* node = g_coordPool.m_freeHead;
+        i32 coordX = m_lastTilePxX >> 5;
+        i32 coordY = m_lastTilePxY >> 5;
+        if (node->m_next != 0) {
+            coord = &node->m_coord;
+            coord->m_x = coordX;
+            coord->m_y = coordY;
+            g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
+        }
+        m_31c.AddHead(coord);
+    }
+
+    m_object->m_screenX = m_commitPxX;
+    m_object->m_screenY = m_commitPxY;
+    object = m_object;
+    if (object->m_sortKey != object->m_screenY + 0x186a0) {
+        object->m_sortKey = object->m_screenY + 0x186a0;
+        i32 flags = object->m_flags;
+        object->m_flags = flags | 0x20000;
+    }
+
+    i32 oldY = m_lastTilePxY >> 5;
+    i32 oldX = m_lastTilePxX >> 5;
+    i32 newX = m_commitPxX >> 5;
+    i32 newY = m_commitPxY >> 5;
+    {
+        CGruntzMapMgr* board = g_gameReg->m_tileGrid;
+        board->m_rows[oldY][oldX].m_flagBytes[3] &= 0xdf;
+        board->m_rows[oldY][oldX].m_4 = -1;
+    }
+    {
+        CGruntzMapMgr* board = g_gameReg->m_tileGrid;
+        i32 ownerLo = m_tileOwnerLo;
+        i32 ownerHi = m_tileOwnerHi;
+        board->m_rows[newY][newX].m_flagBytes[3] |= 0x20;
+        board->m_rows[newY][newX].m_4 = (ownerHi << 8) | ownerLo;
+    }
+
+    m_lastTilePxX = m_commitPxX;
+    m_lastTilePxY = m_commitPxY;
+    m_commitPxX = m_entrancePxX;
+    m_commitPxY = m_entrancePxY;
+    m_35c = 1;
+
+    SetEntrancePos(a, 1);
+    if (m_arrivalPending != 0) {
+        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+        m_arrivalPending = 0;
+    }
+    return 1;
 }
 
 RVA(0x000517b0, 0x7d)

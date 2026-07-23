@@ -23,7 +23,6 @@
 ?Impact25e5@CBattlezMapConfig@@QAEXPAVCGrunt@@HHH@Z
 ?Init@CMotionState@@QAEXXZ
 ?InputSubStep@CPlay@@QAEXPAX@Z
-?IsDropReady@CGrunt@@QAEHH@Z
 ?ListDtor@CWwdSpatialMgr@@QAEXXZ
 ?LoadSprite@CSpriteRefTable@@QAEPAXPAXH@Z
 ?MapLookup@@YAHPAX0AAPAX@Z
@@ -46,7 +45,6 @@
 ?RunModal@CGameApp@@QAEXPBDPAUHWND__@@@Z
 ?SelfImpact2b58@CBattlezMapConfig@@QAEXPAVCGrunt@@HHH@Z
 ?SetupSprite@CInGameIcon@@QAEXPBD@Z
-?SnapPostMessage@CPlay@@QAEXH@Z
 ?SnapWalk@CPlay@@QAEXXZ
 ?Spawn@CTriggerMgr@@QAEPAXHHHHHHH@Z
 ?StepDropApply@CGrunt@@QAEXXZ
@@ -57,11 +55,4 @@
 ?WorldSoundCreateFull@@YGPAUPosSoundPlaced@@PAXHPAUtagRECT@@HHHHHH@Z
 ?WorldSoundCreateSimple@@YGPAUPosSoundPlaced@@PAXHPAUtagRECT@@HH@Z
 ?WriteName@@YAXPAX0@Z
-?g_lab504358@@3PADA
-?g_lab545854@@3PADA
-?g_mapNamePre@@3PADA
-?g_multiplayerAvail@@3HA
-?g_store6453f0@@3VzPTree@@A
-?g_store64544c@@3VzPTree@@A
-?g_tileKindMagic@@3HA
 ?winapi_1206b0_GetLastError_HeapValidate_HeapWalk@ApiCallerStubs@@YAHXZ

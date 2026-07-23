@@ -9,8 +9,6 @@
 class
     CTileTriggerContainer; // owner, back-stamped into m_owner (fwd; def in TileTriggerContainer.h)
 
-extern i32 g_tileKindMagic;
-
 typedef enum TrigLogicId {
     TRIGID_SWITCH_1 = 1,              // CTileTriggerSwitchLogic
     TRIGID_SWITCH_2 = 2,              // CTileTriggerSwitchLogic

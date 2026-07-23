@@ -4,7 +4,7 @@
 // the 3-CString/CPtrList ctor), initializes it from a "MENU_<PAGE>" key + label
 // (Configure), fills it with items / sub-items (AddItem / AddSubItem, each a key +
 // label + flags + index), conditionally disables the multiplayer-gated items
-// (when g_multiplayerAvail is set) and the area-progress-gated items (when the
+// (when the CD prompt failed) and the area-progress-gated items (when the
 // player has not unlocked that area), and hands the finished page to the menu
 // host (RegisterPage). The 14 pages: MAINMENU, SINGLEPLAYER, MULTIPLAYER,
 // MOVIEZ, QUESTZ, then the 9 AREAS sub-pages (TRAINING + AREA1..8).
@@ -33,6 +33,7 @@
 #include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/StartUpPrompt.h> // g_cdPromptResult
 #include <Mfc.h> // MFC superset of <Win32.h> (afx first): <Gruntz/SoundCue.h> now needs the
 #include <rva.h>
 
@@ -156,13 +157,13 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         return 0;
     }
     it = page->AddItem(s_SINGLEPLAYER, s_MENU_MAINMENU_SINGLEPLAYER, 0, s_SINGLEPLAYER, 0);
-    if (g_multiplayerAvail != 0) {
+    if (g_cdPromptResult != 0) {
         it->Disable(3);
     }
     page->AddItem(s_MULTIPLAYER, s_MENU_MAINMENU_MULTIPLAYER, 0, s_MULTIPLAYER, 0);
     page->AddItem(s_OPTIONZ, s_MENU_MAINMENU_OPTIONZ, 0x80e2, 0, 0);
     it = page->AddItem(s_MOVIEZ, s_MENU_MAINMENU_MOVIEZ, 0, s_MOVIEZ, 0);
-    if (g_multiplayerAvail != 0) {
+    if (g_cdPromptResult != 0) {
         it->Disable(3);
     }
     page->AddItem(s_HELP, s_MENU_MAINMENU_HELP, 0x8035, 0, 0);
@@ -192,7 +193,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         return 0;
     }
     it = page->AddItem(s_HOST, s_MENU_MULTIPLAYER_HOST, 0x80d3, 0, 0);
-    if (g_multiplayerAvail != 0) {
+    if (g_cdPromptResult != 0) {
         it->Disable(3);
     }
     page->AddItem(s_JOIN, s_MENU_MULTIPLAYER_JOIN, 0x80d2, 0, 0);

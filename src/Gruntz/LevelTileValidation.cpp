@@ -163,10 +163,10 @@ i32 CPlay::PlaceStartGruntz() {
                 }
                 obj->m_flags |= 0x10000;
             } else if (g_gameReg->m_134 != 1 && who == reinterpret_cast<void*>(0x4017e4)
-                       && obj->m_124 == g_tileKindMagic) {
+                       && obj->m_124 == g_curPlayer) {
                 // The per-player start record: m_options[k] (+0x150, stride 0x238); +0x228 is
                 // the cap on start gruntz for that player (the roster's m_comboSel field).
-                GruntzPlayer* e = &g_gameReg->m_options[g_tileKindMagic];
+                GruntzPlayer* e = &g_gameReg->m_options[g_curPlayer];
                 if (e != 0 && counter < e->m_comboSel) {
                     reg->m_cmdSubMgr->EnqueueSingle(
                         result,
@@ -512,7 +512,7 @@ i32 CPlay::ValidateLevelTiles() {
                 m_guts->InsertPtr(obj->m_118, obj->m_114);
             }
         } else if (who == reinterpret_cast<void*>(0x4017e4)) {
-            if (obj->m_124 == g_tileKindMagic) {
+            if (obj->m_124 == g_curPlayer) {
                 CoordPoolNode* cell = g_coordPool.m_freeHead;
                 void* slot = 0;
                 if (cell->m_next != 0) {
