@@ -12,6 +12,9 @@ VTBL(CCheckpointDlg, 0x001e9504); // vtable_names -> code (RTTI game class)
 RVA(0x000234a0, 0x1e)
 CCheckpointDlg::CCheckpointDlg(CWnd* pParent) : CDialog(0xcd, pParent) {}
 
+RVA_COMPGEN(0x000234d0, 0x1e, ??_GCCheckpointDlg@@UAEPAXI@Z)
+RVA_COMPGEN(0x00023500, 0x5, ??1CCheckpointDlg@@UAE@XZ)
+
 RVA(0x00023520, 0x3e)
 void CCheckpointDlg::DoDataExchange(CDataExchange* pDX) {
     if (pDX->m_bSaveAndValidate == 0) {

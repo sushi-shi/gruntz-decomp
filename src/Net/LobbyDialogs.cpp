@@ -1,4 +1,5 @@
 #include <Mfc.h> // real MFC CString (status/drop banners) + windows.h (dialog API) via afx.h
+#include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Net/NetLobby.h> // NetLobby::g_curDlg (defined below; DATA home is this TU)
@@ -500,3 +501,28 @@ namespace NetLobby {
         }
     }
 } // namespace NetLobby
+
+RVA(0x000beb60, 0x1e)
+CMultiHelpDlg::CMultiHelpDlg(CWnd* pParent) : CDialog(0xcb, pParent) {}
+
+RVA_COMPGEN(0x000beb90, 0x1e, ??_GCMultiHelpDlg@@UAEPAXI@Z)
+RVA_COMPGEN(0x000bebc0, 0x5, ??1CMultiHelpDlg@@UAE@XZ)
+
+RVA(0x000bebe0, 0x3)
+void CMultiHelpDlg::DoDataExchange(CDataExchange*) {}
+
+RVA(0x000bec00, 0x6)
+const AFX_MSGMAP* CMultiHelpDlg::GetMessageMap() const {
+    return &messageMap;
+}
+
+DATA(0x001ea448)
+const AFX_MSGMAP CMultiHelpDlg::messageMap = {
+    &CDialog::messageMap,
+    &CMultiHelpDlg::_messageEntries[0],
+};
+
+DATA(0x001ea450)
+const AFX_MSGMAP_ENTRY CMultiHelpDlg::_messageEntries[] = {
+    {0, 0, 0, 0, AfxSig_end, 0},
+};

@@ -80,6 +80,7 @@ RVA_COMPGEN(0x00016460, 0x46, ??1CGdiObject@@UAE@XZ)
 // been reunited here, so this obj emits the ??_G/??_7 pair as retail's did.)
 RVA_COMPGEN(0x000164d0, 0x1e, ??_GCBrush@@UAEPAXI@Z)
 RVA_COMPGEN(0x00016500, 0x46, ??1CBrush@@UAE@XZ)
+RVA_COMPGEN(0x00016da0, 0x5, ??1CBattlezDlgColors@@UAE@XZ)
 
 // ~CBattlezDlgCustom @0x17140 - destroy the CString member m_customName, then chain the
 // NAFXCW ~CDialog base dtor, under a /GX EH frame for the member unwind. COMPILER-GENERATED
@@ -89,6 +90,7 @@ RVA_COMPGEN(0x00016500, 0x46, ??1CBrush@@UAE@XZ)
 // a "vptr-restamp-presence wall" that capped both this body (~94.4%) and the copy
 // ShowCustomDlg inlines (~92.9%).
 RVA_COMPGEN(0x00017140, 0x47, ??1CBattlezDlgCustom@@UAE@XZ)
+RVA_COMPGEN(0x00017980, 0x1e, ??_GCBattlezDlgColors@@UAEPAXI@Z)
 
 RVA(0x00018030, 0x56)
 CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}

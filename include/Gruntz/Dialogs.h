@@ -168,8 +168,9 @@ SIZE_UNKNOWN();
 class CBattlezDlgColors : public CDialog {
 public:
     CBattlezDlgColors(class CGruntzMgr* a0, i32 a1, i32 a2, CWnd* pParent);
-    // NO user dtor (binary fact): the retail slot-1 body IS ??1CDialog@@UAE@XZ
-    // (0x1ba51d) - a user dtor would emit a ??1CBattlezDlgColors COMDAT retail lacks.
+    // No declared dtor: retail does contain the implicit compiler-generated
+    // ??1CBattlezDlgColors and scalar-deleting wrapper. Their vtable/call xrefs prove
+    // the class identity; RVA_COMPGEN pins both bodies in Dialogs.cpp.
     // MFC GetMessageMap override: returns &CBattlezDlgColors::messageMap (modeled
     // non-virtual so it does not perturb the compiler-emitted vtable/ctor stamp;
     // only its 6 own bytes `mov eax,OFFSET msgmap; ret` are matched).
@@ -346,11 +347,10 @@ SIZE_UNKNOWN();
 class CCheckpointDlg : public CDialog {
 public:
     CCheckpointDlg(CWnd* pParent);
-    // No declared dtor - same reason as CBattlezDlg above. The declared-only
-    // `virtual ~CCheckpointDlg()` that used to sit here had a body in NO obj (a guaranteed
-    // unresolved external) and would have forced a `call ??1CCheckpointDlg` at the stack
-    // local in CGruntzMgr::OnCheckpointReached, where retail inlines the teardown
-    // (`call ??1CDialog` @0x1ba51d, nothing else). Implicit is both correct and linkable.
+    // No declared dtor: retail does contain the implicit compiler-generated
+    // ??1CCheckpointDlg and scalar-deleting wrapper. Their vtable/call xrefs prove the
+    // class identity; RVA_COMPGEN pins both bodies in CheckpointDlg.cpp. Stack-local
+    // teardown may still inline directly to the CDialog base destructor.
     // MFC GetMessageMap override (see CBattlezDlgColors): returns the static map.
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35
@@ -365,9 +365,17 @@ SIZE_UNKNOWN();
 
 class CMultiHelpDlg : public CDialog {
 public:
-    virtual ~CMultiHelpDlg() OVERRIDE;                        // slot 1
-    virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
+    CMultiHelpDlg(CWnd* pParent);
+    // The implicit compiler-generated destructor and scalar-deleting wrapper occupy
+    // slot 1; both are pinned in LobbyDialogs.cpp rather than hand-written.
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35
+
+protected:
+    static const AFX_MSGMAP messageMap;
+    virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12
+
+private:
+    static const AFX_MSGMAP_ENTRY _messageEntries[];
 };
 SIZE_UNKNOWN();
 VTBL(CMultiHelpDlg, 0x001ea474);

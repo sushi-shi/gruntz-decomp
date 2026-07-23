@@ -751,6 +751,24 @@ def ms_c_symbol(candidate, obj_syms):
     return hits[0] if len(hits) == 1 else None
 
 
+def msvc5_data_symbol(candidate, obj_syms):
+    """Resolve a known clang-vs-VC5 static-data mangling difference.
+
+    For the ``const AFX_MSGMAP_ENTRY Class::_messageEntries[]`` emitted by the
+    official MFC message-map macros, clang's AST mangler reports
+    ``@@0QBUAFX_MSGMAP_ENTRY@@B`` while VC5 emits
+    ``@@0PBUAFX_MSGMAP_ENTRY@@B``.  Never accept the spelling speculatively:
+    return it only when that exact VC5 symbol is present in the compiled object.
+    """
+    if not candidate or not obj_syms:
+        return None
+    suffix = "@@0QBUAFX_MSGMAP_ENTRY@@B"
+    if not candidate.endswith(suffix):
+        return None
+    vc5_candidate = candidate[:-len(suffix)] + "@@0PBUAFX_MSGMAP_ENTRY@@B"
+    return vc5_candidate if vc5_candidate in obj_syms else None
+
+
 def units_from_toml(path):
     """source-path (repo-relative) -> unit stem."""
     import tomllib
@@ -1218,6 +1236,8 @@ def main():
                 if cand is None:
                     misses.append((rva, None, unit, "no VarDecl below DATA()"))
                     continue
+                if all_syms is not None and cand not in all_syms:
+                    cand = msvc5_data_symbol(cand, all_syms) or cand
                 # The `globals` unit is trusted (see GLOBALS_UNIT): its externs are
                 # never referenced in its own base obj, so bypass the authority
                 # check (the names came pre-checked from the matched TUs).

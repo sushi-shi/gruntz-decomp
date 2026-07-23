@@ -147,7 +147,6 @@ rva,name,lib,confidence,source
 0x014ac0,__inc,LIBCMT,LOW,anchored
 0x014be0,__fpclear,LIBCMT,LOW,anchored
 0x014c60,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x016da0,__inc,LIBCMT,LOW,anchored
 0x017660,__inc,LIBCMT,LOW,anchored
 0x0176b0,__inc,LIBCMT,LOW,anchored
 0x017700,__inc,LIBCMT,LOW,anchored
@@ -157,7 +156,6 @@ rva,name,lib,confidence,source
 0x017840,__inc,LIBCMT,LOW,anchored
 0x017890,__inc,LIBCMT,LOW,anchored
 0x0178e0,__inc,LIBCMT,LOW,anchored
-0x017980,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x017d60,__inc,LIBCMT,LOW,anchored
 0x017db0,__inc,LIBCMT,LOW,anchored
 0x017e00,__inc,LIBCMT,LOW,anchored
@@ -206,8 +204,6 @@ rva,name,lib,confidence,source
 0x0233b0,__inc,LIBCMT,LOW,anchored
 0x023400,__inc,LIBCMT,LOW,anchored
 0x023450,__inc,LIBCMT,LOW,anchored
-0x0234d0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x023500,__inc,LIBCMT,LOW,anchored
 0x0235e0,__inc,LIBCMT,LOW,anchored
 0x023630,__inc,LIBCMT,LOW,anchored
 0x023680,__inc,LIBCMT,LOW,anchored
@@ -659,8 +655,6 @@ rva,name,lib,confidence,source
 0x0bea70,__inc,LIBCMT,LOW,anchored
 0x0beac0,__inc,LIBCMT,LOW,anchored
 0x0beb10,__inc,LIBCMT,LOW,anchored
-0x0beb90,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x0bebc0,__inc,LIBCMT,LOW,anchored
 0x0bec20,__inc,LIBCMT,LOW,anchored
 0x0bec70,__inc,LIBCMT,LOW,anchored
 0x0becc0,__inc,LIBCMT,LOW,anchored

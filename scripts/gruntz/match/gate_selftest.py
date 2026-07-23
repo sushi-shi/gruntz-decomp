@@ -40,7 +40,7 @@ from gruntz.cleanliness import board as cleanliness
 from gruntz.cleanliness import class_sizes
 from gruntz.core import class_meta
 from gruntz.core import library_labels
-from gruntz.build import canonicalize_data_symbols
+from gruntz.build import canonicalize_data_symbols, labels
 from gruntz.cleanliness import vtable_slot_binding as vsb
 from gruntz.match import high_water, status
 from gruntz.match import verify_unique_names as vun
@@ -91,6 +91,26 @@ class TestLibraryLabels(unittest.TestCase):
 class TestCompilerPrivateFunctionNames(unittest.TestCase):
     def test_x86_dynamic_initializer_is_content_addressed(self):
         self.assertEqual(canonicalize_data_symbols._family("_$E28"), ("e", None))
+
+
+# --------------------------------------------------------------------------- #
+# label extraction: clang and VC5 disagree on MFC message-entry array mangling #
+# --------------------------------------------------------------------------- #
+class TestMsvc5DataSymbols(unittest.TestCase):
+    def test_message_entries_resolve_to_vc5_spelling_present_in_object(self):
+        clang = "?_messageEntries@CMultiHelpDlg@@0QBUAFX_MSGMAP_ENTRY@@B"
+        vc5 = "?_messageEntries@CMultiHelpDlg@@0PBUAFX_MSGMAP_ENTRY@@B"
+        self.assertEqual(labels.msvc5_data_symbol(clang, {vc5}), vc5)
+
+    def test_message_entries_are_not_rewritten_without_object_authority(self):
+        clang = "?_messageEntries@CMultiHelpDlg@@0QBUAFX_MSGMAP_ENTRY@@B"
+        self.assertIsNone(labels.msvc5_data_symbol(clang, set()))
+        self.assertIsNone(labels.msvc5_data_symbol(clang, {"?unrelated@@3HA"}))
+
+    def test_unrelated_static_data_is_not_rewritten(self):
+        clang = "?value@CMultiHelpDlg@@0QBUOtherType@@B"
+        vc5 = "?value@CMultiHelpDlg@@0PBUOtherType@@B"
+        self.assertIsNone(labels.msvc5_data_symbol(clang, {vc5}))
 
 
 # --------------------------------------------------------------------------- #
