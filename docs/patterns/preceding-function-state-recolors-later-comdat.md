@@ -78,3 +78,11 @@ unchanged. The ownership proof is independent: RTTI makes CTeleporter and CWormh
 sibling leaves, and the supposedly wormhole-typed candidate test uses ILT `0x4039b3`,
 which jumps to `CreateTeleporter`, before calling `0x412c0` on the candidate logic
 pointer.
+
+Reverse-use instance: restoring the missing exact
+`FontRenderer::SetFont` at `0x179c10` before source-identical
+`FontRenderer::DrawGlyphRun` at `0x179e70` improved the latter's current score
+from 61.2778% to 61.5787%. The victim was not edited; only the authentic
+preceding nine-byte setter landed. This does not recover the whole historical
+62.0417% MAX, but it proves that draining real predecessor omissions can move a
+dipped successor back toward its retail compiler state.

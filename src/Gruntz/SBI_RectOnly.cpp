@@ -1695,6 +1695,11 @@ void CStatusBarMgr::InitTabRects() {
     m_pendingHlRow = -1;
 }
 
+RVA(0x000ff9d0, 0x8)
+i32 CStatusBarMgr::ClickAt_ff9d0(i32, i32, i32) {
+    return 1;
+}
+
 RVA(0x000ff9f0, 0xe4)
 i32 CStatusBarMgr::ClickToggle(i32 x, i32 y, i32 z) {
     CStatusBarItem* r = HitTestRects(x, y);

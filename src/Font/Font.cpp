@@ -140,6 +140,11 @@ FontRenderer::FontRenderer() {
     m_surface = 0;
 }
 
+RVA(0x00179c10, 0x9)
+void FontRenderer::SetFont(Font* f) {
+    m_font = f;
+}
+
 RVA(0x00179c20, 0xa)
 void FontRenderer::SetColor(i32 color) {
     m_color = color;

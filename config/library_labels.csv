@@ -1055,7 +1055,6 @@ rva,name,lib,confidence,source
 0x0fdb10,__inc,LIBCMT,LOW,anchored
 0x0fdb60,__inc,LIBCMT,LOW,anchored
 0x0fdbb0,__inc,LIBCMT,LOW,anchored
-0x0ff9d0,_DllMain@12,LIBCMT,LOW,anchored
 0x1006d0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x1007a0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x100900,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
@@ -1862,7 +1861,6 @@ rva,name,lib,confidence,source
 0x179320,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x179390,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x179400,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x179c10,?SetClientSite@CDataBoundProperty@@QAEXPAVCOleControlSite@@@Z,NAFXCW,MEDIUM,anchored
 0x17e430,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x17e480,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x17e970,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
