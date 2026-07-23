@@ -54,19 +54,21 @@ namespace NetLobby {
 
 namespace NetLobby {
 
-    // ---------------------------------------------------------------------------
-    // 0x0bd7f0 (RVA-homed from src/Stub/BoundaryLowerThunks.cpp) - the compiler-
-    // generated dynamic initializer for the pending drop-in player-name CString
-    // g_str649618: tail-construct it empty in place (CString::CString @0x1b9b93, the
-    // NAFXCW default ctor - reloc-masked). NetDlgInitDropIn below reads the pending
-    // drop-in name through this CString's LPCTSTR (m_pszData, the char* at 0x249618) -
-    // one DATA home, no separate g_playerName_* char* alias.
+    // The pending drop-in player name is a real file-scope CString. MSVC emits its
+    // three private _$E<n> helpers: construct it, register the atexit helper, and
+    // destroy it. Their numeric suffixes are unstable, so the object normalizer
+    // content-addresses them; these placeholders bind the three retail bodies.
+    // Tooling debt: the RVA-derived _$E... placeholders are not semantic identities.
+    // A future annotation
+    // should name each helper's role and owning global instead of exposing a
+    // replaceable compiler-private ordinal.
+    // NetDlgInitDropIn below reads it through CString's LPCTSTR (m_pszData, the char*
+    // at 0x249618) - one DATA home, no separate g_playerName_* alias.
     DATA(0x00249618)
     CString g_str649618;
-    RVA(0x000bd7f0, 0xa)
-    void InitPlayerNameStr() {
-        g_str649618.CString::CString();
-    }
+    RVA_COMPGEN(0x000bd7f0, 0xa, _$E776176)
+    RVA_COMPGEN(0x000bd810, 0xe, _$E776208)
+    RVA_COMPGEN(0x000bd830, 0xa, _$E776240)
 
     // __stdcall DlgProc: the host-wait dialog. WM_TIMER polls the PAUSE key
     // (GetAsyncKeyState(VK_PAUSE) & down|pressed) and re-posts the 0x4d2 abort;

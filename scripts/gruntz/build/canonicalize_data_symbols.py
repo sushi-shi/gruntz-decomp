@@ -46,7 +46,7 @@ NAMED_STATIC = re.compile(r"^(?P<prefix>.+\$S)[0-9]+$")
 # by a fixed number. Same treatment: rename base + target `$E<n>` to a hash of the
 # funclet body so objdiff pairs by content. (Text, not data, but the byte/reloc hash is
 # identical machinery.)
-VOLATILE_E = re.compile(r"^\$E[0-9]+$")
+VOLATILE_E = re.compile(r"^_?\$E[0-9]+$")
 
 INITIALIZED_DATA = 0x00000040
 UNINITIALIZED_DATA = 0x00000080

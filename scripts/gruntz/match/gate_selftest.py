@@ -40,6 +40,7 @@ from gruntz.cleanliness import board as cleanliness
 from gruntz.cleanliness import class_sizes
 from gruntz.core import class_meta
 from gruntz.core import library_labels
+from gruntz.build import canonicalize_data_symbols
 from gruntz.cleanliness import vtable_slot_binding as vsb
 from gruntz.match import high_water, status
 from gruntz.match import verify_unique_names as vun
@@ -82,6 +83,14 @@ class TestLibraryLabels(unittest.TestCase):
                 "0x3000,low,LIBCMT,LOW,test\n"
             )
             self.assertEqual(library_labels.active_rvas(labels), {0x1000, 0x2000})
+
+
+# --------------------------------------------------------------------------- #
+# COFF normalization: MSVC's x86 `$E<n>` functions carry a leading underscore #
+# --------------------------------------------------------------------------- #
+class TestCompilerPrivateFunctionNames(unittest.TestCase):
+    def test_x86_dynamic_initializer_is_content_addressed(self):
+        self.assertEqual(canonicalize_data_symbols._family("_$E28"), ("e", None))
 
 
 # --------------------------------------------------------------------------- #
