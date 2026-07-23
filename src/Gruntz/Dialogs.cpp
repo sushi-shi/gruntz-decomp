@@ -6,6 +6,8 @@
 #include <rva.h>
 #include <string.h> // inline strcmp (the empty-text WM_SETTEXT gate in the edit subclass)
 
+DATA(0x001e88b0)
+const i32 g_msgmap_CBattlezDlg = 6205544;
 DATA(0x001e8d10)
 const i32 g_msgmap_CBattlezDlgColors = 6205544;
 
@@ -105,6 +107,11 @@ i32 CALLBACK WndProc_15a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         }
     }
     return CallWindowProcA(g_savedDlgWndProc, hWnd, msg, wParam, lParam);
+}
+
+RVA(0x00015aa0, 0x6)
+const AFX_MSGMAP* CBattlezDlg::GetMessageMap() const {
+    return reinterpret_cast<const AFX_MSGMAP*>(&g_msgmap_CBattlezDlg);
 }
 
 // ShowCustomDlg (0x17030) - stack-construct a CBattlezDlgCustom and DoModal it;

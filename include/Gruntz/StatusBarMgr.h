@@ -148,8 +148,6 @@ public:
     void SetGauge(i32 value);
     void RefreshAll();
     void Reset();
-    i32 Place(i32 a, i32 b, i32 c); // reloc-masked
-    void Run();                     // reloc-masked
     void ToggleStat(i32 idx);
     void SetHudRectA(i32 y0, i32 x0, i32 z);
     void SetHudRectB(i32 y0, i32 x0, i32 z);
@@ -179,13 +177,7 @@ public:
     void BuildGameTabPauseButton();
 
     // ----- siblings the tab-highlight dispatcher (0xfe910) drives (reloc-masked ILT) -----
-    void HiRefreshResource();       // 0x3d91 (call 0x3d91)
-    void HiSelectStat(i32 idx);     // 0x264e (call 0x264e, 1 arg)
-    void HiTabA(i32 idx);           // 0x4179 (1 arg)
     void HiTabB(i32 idx, i32 flag); // 0x20b8 (2 args)
-    void HiGrunt0(i32 idx);         // 0x42a5 (1 arg)
-    void HiGrunt1(i32 idx);         // 0x4151 (1 arg)
-    void HiGrunt2(i32 idx);         // 0x37ce (1 arg)
     i32 LoadGooCookingSprite(i32);
     void UpdateRezConveyorStatusBar();
     void LoadRezMachineConfig();
@@ -205,11 +197,6 @@ public:
     // 7 = read, 8 = reset - streams the timer/slot blocks and SerializeFields()-walks
     // every owned widget. Ex the "CLevelSync" fake view of this manager (m_guts).
     i32 Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5); // 0x1084d0
-    // Sync's reloc-masked engine helpers (ILT thunk VAs; bodies unreconstructed):
-    i32 PreWriteValidate(CFileMemBase* s); // ILT 0x4016b8
-    i32 PreReadValidate(CFileMemBase* s);  // ILT 0x402b53
-    void PostBlockFixup();                 // ILT 0x403a08
-    void Finalize();                       // ILT 0x40125d
     // 0x10bbe0: the rez-machine active-value getter (body in SBI_RectOnly.cpp -
     // m_extraNotifyArg0 / m_ptrPool active cell).
     i32 GetActiveValue();

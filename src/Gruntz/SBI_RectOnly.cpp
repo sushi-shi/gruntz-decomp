@@ -378,11 +378,11 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
         return 0;
     }
     if (op == 4) {
-        if (PreWriteValidate(s) == 0) {
+        if (Serialize(s) == 0) {
             return 0;
         }
     } else if (op == 7) {
-        if (PreReadValidate(s) == 0) {
+        if (Deserialize(s) == 0) {
             return 0;
         }
     } else if (op == 8) {
@@ -508,7 +508,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
         s->Read(&m_2a8, 8);
     }
     if (op == 7 && m_position != 2) {
-        PostBlockFixup();
+        BuildStatusBarTabs();
     }
 
 // SerializeFields (CStatusBarItem slot 1) every owned widget, op-driven.
@@ -599,7 +599,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
     SER(m_modeNotify)
 #undef SER
 
-    Finalize();
+    Deactivate();
     return 1;
 }
 
@@ -3222,7 +3222,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                 }
                 if (cmd == 0x25b) {
                     HiCueFind();
-                    HiRefreshResource();
+                    HideRect();
                     return 1;
                 }
                 return 0;
@@ -3251,7 +3251,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             }
             if (cmd <= 0x13a) {
                 HiCueLookup();
-                HiTabA(cmd - 0x12c);
+                ToggleStat(cmd - 0x12c);
             } else {
                 HiCueLookup();
                 HiTabB(cmd - 0x13b, 0);
@@ -3268,7 +3268,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (cmd < 0x64 || cmd > 0x68) {
                 return 0;
             }
-            HiSelectStat(cmd - 0x64);
+            ActivateSlot(cmd - 0x64);
             return 1;
 
         case 3:
@@ -3282,11 +3282,11 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                 return 1;
             }
             if (cmd <= 0xd6) {
-                HiGrunt0(cmd - 0xd3);
+                HlClickGroup0(cmd - 0xd3);
             } else if (cmd <= 0xda) {
-                HiGrunt1(cmd - 0xd7);
+                HlClickGroup1(cmd - 0xd7);
             } else {
-                HiGrunt2(cmd - 0xdb);
+                HlClickGroup2(cmd - 0xdb);
             }
             return 1;
 

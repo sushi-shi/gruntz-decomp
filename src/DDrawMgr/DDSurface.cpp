@@ -138,6 +138,93 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     return 1;
 }
 
+// @early-stop
+// The 0x188-byte function body is instruction-identical to retail. Objdiff stops the
+// normalized base function at the first compiler-emitted switch-table local label
+// ($L26360), so the two inline jump tables and all case bodies score outside the
+// function. The raw COFF body through `ret 4` matches; this is the same
+// jump-table-data carve artifact documented on Refresh above.
+RVA(0x0013e2e0, 0x188)
+i32 CDDSurface::BlitIntoDesc(void* a) {
+    CDDrawPtrCollections* mgr = static_cast<CDDrawPtrCollections*>(a);
+    if (mgr->m_device == 0) {
+        return 0;
+    }
+
+    i32 hr = mgr->m_device
+                 ->CreateSurface(reinterpret_cast<LPDDSURFACEDESC>(m_desc), &m_ddSurfaceBack, 0);
+    if (hr != 0) {
+        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0xd5, hr);
+        return 0;
+    }
+
+    hr = m_ddSurfaceBack->QueryInterface(
+        IID_IDirectDrawSurface3,
+        reinterpret_cast<void**>(&m_ddSurface)
+    );
+    if (hr != 0) {
+        CDDrawPtrCollections::GetErrorString(0, 0, hr);
+        return 0;
+    }
+
+    i32* d = reinterpret_cast<i32*>(m_desc);
+    for (i32 i = 0x1b; i != 0; i--) {
+        *d++ = 0;
+    }
+    m_descSize = 0x6c;
+    hr = m_ddSurface->GetSurfaceDesc(reinterpret_cast<LPDDSURFACEDESC>(m_desc));
+    if (hr != 0) {
+        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0xeb, hr);
+    }
+
+    i32 bits = m_srcBitDepth;
+    m_hasColorKey = 0;
+    m_bitDepth = bits;
+    switch (bits) {
+        case 8:
+            m_bytesPerRow = m_width;
+            break;
+        case 16:
+            m_bytesPerRow = m_width * 2;
+            break;
+        case 24:
+            m_bytesPerRow = m_width * 3;
+            break;
+        case 32:
+            m_bytesPerRow = m_width * 4;
+            break;
+        default:
+            m_bytesPerRow = m_width;
+            break;
+    }
+
+    switch (bits) {
+        case 8:
+            m_bytesPerPixel = 1;
+            break;
+        case 16:
+            m_bytesPerPixel = 2;
+            break;
+        case 24:
+            m_bytesPerPixel = 3;
+            break;
+        case 32:
+            m_bytesPerPixel = 4;
+            break;
+        default:
+            m_bytesPerPixel = 1;
+            break;
+    }
+
+    m_pixelsPerRow = static_cast<u32>(m_pitch) / static_cast<u32>(m_bytesPerPixel);
+    m_fullRect.left = 0;
+    m_fullRect.top = 0;
+    m_fullRect.right = m_width;
+    m_fullRect.bottom = m_height;
+    m_imageBytes = m_height * m_bytesPerRow;
+    return 1;
+}
+
 RVA(0x0013e4d0, 0x7e)
 void CDDSurface::FreeSurfaces() {
     // m_elements holds owned child CDDSurface wrappers of the attached-surface

@@ -21,6 +21,8 @@ enum {
 
 #include <Gruntz/MpSymItem.h>
 
+DATA(0x001ea578)
+const i32 g_msgmap_CMultiStartDlg = 6205544;
 VTBL(CMultiStartDlg, 0x001ea8ec); // vtable_names -> code (RTTI game class)
 DATA(0x0024bdb0)
 CString g_gruntNames[4];
@@ -373,6 +375,11 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         NetLobby::g_curDlg = 0;
     }
     FlashCtrlD();
+}
+
+RVA(0x000c2620, 0x6)
+const AFX_MSGMAP* CMultiStartDlg::GetMessageMap() const {
+    return reinterpret_cast<const AFX_MSGMAP*>(&g_msgmap_CMultiStartDlg);
 }
 
 // ---------------------------------------------------------------------------

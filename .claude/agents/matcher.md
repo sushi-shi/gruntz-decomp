@@ -239,13 +239,15 @@ are assigned is game/engine code, so you never identify or handle library yourse
    - **`match_variants --state-trials` — narrow use, NOT a universal wall-breaker.** The
      exhaustive engine's TU-state search perturbs the *preceding* TU content, so it moves
      ONLY walls whose codegen depends on cross-function composition (inlining budget,
-     COMDAT/string ordering, cross-function scheduling). It is **structurally immune to
-     INTRA-function walls** — register *coloring* (`ebx` vs `edi` for `this`), SIB base/index
-     role, a spill decision, partial-register width (`and al` vs `and eax`), callee-saved
-     coalescing — because those come from the function's OWN dataflow, which TU-state does
-     not change (empirically 0/4 wall families moved, even at 1024 variants). So DON'T spend
-     `--state-trials` on a documented intra-function regalloc/SIB/spill/width wall; only
-     reach for it when the residue plausibly depends on TU-cumulative state.
+     COMDAT/string ordering, cross-function scheduling). Independent COMDAT sections do
+     NOT guarantee independent optimizer state: a controlled current-header A/B compile
+     proved that adding the real preceding `CDDSurface::BlitIntoDesc` changes two
+     source-identical `ShadeRect` loop schedules, including mask/shift order and `ax` vs
+     `di` partial-register selection. Four other intrinsic wall families still did not
+     move even at 1024 variants. Therefore classify first: use `--state-trials` when the
+     residue moves in a predecessor A/B test or otherwise plausibly depends on
+     TU-cumulative state; do not use it as a substitute for fixing the victim's types,
+     control flow, constants, or ownership.
      `gruntz permute variants <src.cpp> <rva> --state-trials 64 --max-depth 3
      --limit 512 -o /tmp/m.json --run --top 12`. See the **`permute` skill**.
 3. **The ONLY acceptable non-100% is a maximized `@early-stop`:** a COMPLETE correct

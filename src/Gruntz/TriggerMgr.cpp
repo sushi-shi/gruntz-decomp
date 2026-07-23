@@ -881,12 +881,12 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
             sbi->Reset();
         }
         if (sbi->m_activeTab != 5) {
-            sbi->Place(5, 3, 0);
+            sbi->SetTabState(5, 3);
         }
-        sbi->Place(5, 1, 0);
-        sbi->Run();
+        sbi->SetTab(5, 1);
+        sbi->Deactivate();
     }
-    if (sbi->Place(color, outR, outC) != 0) {
+    if (sbi->EnsureSub(color, outR, outC) != 0) {
         sbi->m_hlBusy = 1;
     } else {
         m_byteArr.InsertAt(m_byteArr.GetSize(), 0, 0);
@@ -914,7 +914,7 @@ void CTriggerMgr::ResetSpawnState() {
         m_byteArr.RemoveAt(m_byteArr.GetSize() - 1, 1);
         CStatusBarMgr* ctx = world->m_guts;
         if (*reinterpret_cast<i32*>(ctx) != 2 && ctx->m_activeTab == 5) {
-            Eng_BuildNotifyA(0);
+            ctx->ResetWidgets(0);
             world->m_guts->TryActivate();
         }
     }

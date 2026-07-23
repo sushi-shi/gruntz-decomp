@@ -389,7 +389,7 @@ i32 CPlay::Render() {
 
         if (m_region0Gate != 0) { // extra HUD/overlay layer
             m_world->m_drawTarget->m_frontPair->m_surface->Fill(0);
-            GutsStepB(); // m_guts
+            m_guts->Deactivate();
         }
 
         if (m_worldReady == 0) { // world-ready init
@@ -472,7 +472,7 @@ i32 CPlay::Render() {
                 }
                 // reset the m_frameMarker marker block (+0x30..0x4c):
                 m_frameMarker->Draw(0, 0);
-                GutsStepC(); // m_guts
+                m_guts->SetMode(0);
                 m_snapshotActive = 0;
                 // walk the level tree (CMapPtrToPtr::Lookup):
                 if (g_gameReg->m_options[0].m_00c != 0) {

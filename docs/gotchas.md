@@ -48,13 +48,15 @@ Hard-won traps that cost real time. Grouped by area. The deeper codegen idioms l
 
 - **`permute.py` (operand-order/reassoc/decl-split) cannot move regalloc.** MSVC5
   canonicalizes `ptr+i == i+ptr`, so operand swaps are no-ops on SIB walls.
-- **`match_variants --state-trials` is STRUCTURALLY IMMUNE to intra-function walls.** It
-  perturbs the *preceding* TU content, so it moves ONLY walls that depend on cross-function
-  composition (inlining budget, COMDAT/string ordering, cross-function scheduling). Register
-  *coloring* (`ebx` vs `edi`), SIB base/index, spill, partial-width (`and al` vs `and eax`),
-  callee-saved coalescing (frame `0x80` vs `0x70`) come from the function's OWN dataflow →
-  0/4 wall families moved even at 1024 variants. **Do NOT spend `--state-trials` on a
-  documented intra-function wall.**
+- **`match_variants --state-trials` targets cross-function compiler state, not arbitrary
+  source bugs.** It perturbs the *preceding* TU content, so use it when a source-identical
+  later function moves after TU composition changes. Do not assume independent COMDATs mean
+  independent codegen: adding the real preceding `BlitIntoDesc` changed two `ShadeRect`
+  loop schedules, including mask/shift order and `ax` vs `di` partial-register selection.
+  Conversely, four previously tested intrinsic wall families did not move even at 1024
+  variants. Use a controlled predecessor A/B test to classify the residue before spending
+  a large state search; see
+  `docs/patterns/preceding-function-state-recolors-later-comdat.md`.
 - **A 95%+ "regalloc wall" is often a MISLABELED CORRECTNESS BUG** the diff masks. Audit
   before believing the `@early-stop`. This is the real yield lever (see the playbook below).
 
