@@ -39,7 +39,6 @@
 ?BeginWaitCursor@@YAXXZ
 ?BitStreamBlowfishDecode@@YGXPAX0@Z
 ?BlitIntoDesc@CDDSurface@@UAEHPAX@Z
-?BlitTileMarkerAt@@YGXHHHHHHHH@Z
 ?Check@CInGameIcon@@QAEHXZ
 ?CheckExePath@@YAHPADHPAX@Z
 ?ChipFinish@CStatusBarMgr@@QAEXHHH@Z
@@ -48,7 +47,6 @@
 ?ClickAt_ff9d0@CStatusBarMgr@@QAEHHHH@Z
 ?Close@CFileMem@@UAEXXZ
 ?Close@CFileMemBase@@UAEXXZ
-?CloseSettingsStore@@YAXXZ
 ?ColourBtn1753@CMultiStartDlg@@QAEPAVCWnd@@H@Z
 ?Command@CBattlezData@@QAEHHHHH@Z
 ?Commit42e1@CBattlezMapConfig@@QAEXPAVCGrunt@@@Z
@@ -69,7 +67,6 @@
 ?Deserialize@CTimer@@QAEHPAVCFileMemBase@@@Z
 ?Disarm@CGrunt@@QAEHHH@Z
 ?Dispatch@CGrunt@@QAEHHH@Z
-?Dispatch@CGruntzCmdMgr@@QAEXHH@Z
 ?DispatchServices@CMulti@@QAEHPBDHPAX@Z
 ?DoTrigger1fb9@CScanMgr@@QAEHPAVCGrunt@@HHHHH@Z
 ?DropActB_c7be0@@YAHXZ
@@ -79,7 +76,6 @@
 ?EmptyMsgHook@@YGXIJ@Z
 ?EndWaitCursor@@YAXXZ
 ?Eng_BuildNotifyA@@YGXH@Z
-?Eng_PostCmd@@YGXHHHH@Z
 ?Eng_SpawnFx@@YGXHHHHHH@Z
 ?EnterField1@CTeleporter@@QAEXXZ
 ?EnterField2@CTeleporter@@QAEXXZ
@@ -96,7 +92,6 @@
 ?FormatStr@@YAXPAVCString@@PBDZZ
 ?ForwardCombatStep@CGrunt@@QAEHHHHHHHHH@Z
 ?FrameSlot28@CSplashState@@UAEHH@Z
-?FreeHintSprite@@YGXHHHH@Z
 ?FreezeApply@CGrunt@@QAEXXZ
 ?Fx@CTriggerMgr@@QAEXHHHHHH@Z
 ?Gate1a14@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z
@@ -162,7 +157,6 @@
 ?IsLoaded@CWwdGameObjectF@@UAEHXZ
 ?IsMidi@CGruntzSoundInnerZ@@UAEHXZ
 ?IsStarted@CGruntzSoundInnerZ@@UAEHXZ
-?KindCombo1929@CMultiStartDlg@@QAEPAVCWnd@@H@Z
 ?Lab401947@@YAXXZ
 ?Link@CParserObjList@@QAEXPAX@Z
 ?ListDtor@CWwdSpatialMgr@@QAEXXZ
@@ -186,7 +180,6 @@
 ?OnReanchor@CGrunt@@QAEXH@Z
 ?OnRegion5@CPlay@@QAEXXZ
 ?OnTileMismatch@CGrunt@@QAEXH@Z
-?OpenSettingsStore@@YAXXZ
 ?PeekClass@CButeMgr@@QAEFHD@Z
 ?PickupResetA@CGrunt@@QAEXXZ
 ?PickupResetB@CGrunt@@QAEXHHH@Z
@@ -254,7 +247,6 @@
 ?SbiList_Dtor@@YAXXZ
 ?ScratchResolve@zDArray@@QAEPAVCAnimNameRecord@@PAX@Z
 ?SelfImpact2b58@CBattlezMapConfig@@QAEXPAVCGrunt@@HHH@Z
-?SendStatPacket@CMulti@@QAEXHPBXHH@Z
 ?SerializeOverlay@CTriggerMgr@@QAEHPAVCFileMemBase@@HH@Z
 ?SetArrowMode@CSBI_StatzTabArrow@@QAEXHH@Z
 ?SetAtGrow@CStringArray@@QAEXHPBD@Z
@@ -268,14 +260,12 @@
 ?ShowChatLine@CMulti@@QAEXPAXPBD@Z
 ?SnapPostMessage@CPlay@@QAEXH@Z
 ?SnapWalk@CPlay@@QAEXXZ
-?Spawn@CGruntzCmdMgr@@QAEXHDHHHHHH@Z
 ?Spawn@CTriggerMgr@@QAEPAXHHHHHHH@Z
 ?StartupGate@@YAHH@Z
 ?Step20b3@CGruntzCmdMgr@@QAEXH@Z
 ?Step6a060@CGrunt@@QAEXXZ
 ?StepCoordTick@CGrunt@@QAEXXZ
 ?StepDropApply@CGrunt@@QAEXXZ
-?Stop@CGruntSpawnConfig@@QAEXXZ
 ?Sub1@CCreditsState@@QAEXXZ
 ?Sub2@CCreditsState@@QAEXXZ
 ?Sub3@CCreditsState@@QAEXXZ
@@ -287,7 +277,6 @@
 ?SyncColour3a5d@CMultiStartDlg@@QAEXHH@Z
 ?TakeHit@CGrunt@@QAEXHHHHHHHH@Z
 ?Teardown@CBattlezData@@QAEXXZ
-?Teardown@CGruntSpawnConfig@@QAEXXZ
 ?TeleportMove@CGrunt@@QAEHHHHH@Z
 ?TempFileExists@@YAHPAUSaveTempRec@@@Z
 ?Tick@CGruntSpawnConfig@@QAEXXZ

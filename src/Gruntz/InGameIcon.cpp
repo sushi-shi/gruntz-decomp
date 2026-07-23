@@ -3,6 +3,7 @@
 #include <Io/FileMem.h>       // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
 #include <Gruntz/InGameIcon.h>
+#include <Gruntz/LeafCue.h> // LeafCue::PlayIfElapsed (the stale-ecx cue pokes)
 #include <Gruntz/ToyPeek.h> // CToyPeek::FireActivation @0x97de0 (its slot 4 lives in this .text run)
 #include <Gruntz/ActReg.h>
 #include <Gruntz/InGameText.h>     // CInGameText + g_textDispatch (its TU folds in below, wave3-J)
@@ -793,7 +794,10 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
             CWwdGameObjectA* o = m_object;
             if (o->m_screenX < reg->m_viewOriginR && o->m_screenX >= reg->m_viewOriginL
                 && o->m_screenY < reg->m_viewOriginB && o->m_screenY >= reg->m_viewOriginT) {
-                Eng_PostCmd(g_sndCueTag, 0, 0, 0);
+                // retail bug: the thiscall runs on whatever ecx survived the last
+                // call (no receiver load) - spelled on the tag global per the
+                // PlayerCommandStep precedent; reloc-masked either way.
+                reinterpret_cast<LeafCue*>(&g_sndCueTag)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 reg = g_gameReg;
             }
         }
@@ -829,7 +833,8 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         CWwdGameObjectA* o = m_object;
         if (o->m_screenX < reg->m_viewOriginR && o->m_screenX >= reg->m_viewOriginL
             && o->m_screenY < reg->m_viewOriginB && o->m_screenY >= reg->m_viewOriginT) {
-            Eng_PostCmd(g_sndCueTag, 0, 0, 0);
+            // retail bug: stale-ecx thiscall (see the sibling site above).
+            reinterpret_cast<LeafCue*>(&g_sndCueTag)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
             reg = g_gameReg;
         }
     }

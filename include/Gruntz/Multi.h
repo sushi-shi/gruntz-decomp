@@ -273,14 +273,13 @@ public:
     // External thunked helpers the cluster fires (no body here so the call reloc-masks).
     // (ProbeLatency moved to CGruntzMgr - retail probes it on m_4, called via Mgr())
     i32 WriteCmdDelay(i32 flag); // persist m_5a4/m_drainReload (returns int; tail-returned)
-    void SendStatPacket(i32 param, const void* packet, i32 size, i32 flag); // stat dispatcher
-    void ShowChatLine(void* hWnd, const char* text);                        // 0xbb3e0 (external)
-    void HandleSpriteMsg(CNetCtrlMsg* msg);                                 // 0xba620 (external)
-    void RejoinIfNeeded(i32 flag);                                          // 0xba810 (external)
-    i32 DispatchServices(const char* cmd, i32 flag, void* cb);              // 0xbc250 (external)
-    void ApplyDynSetting(CString s);                                        // 0xb76c0 (external)
-    void SetServiceName(CString s);                                         // 0xb7730 (external)
-    void PopulateGroupList(void* hList, i32 flag);                          // 0x1784be (external)
+    void ShowChatLine(void* hWnd, const char* text);           // 0xbb3e0 (external)
+    void HandleSpriteMsg(CNetCtrlMsg* msg);                    // 0xba620 (external)
+    void RejoinIfNeeded(i32 flag);                             // 0xba810 (external)
+    i32 DispatchServices(const char* cmd, i32 flag, void* cb); // 0xbc250 (external)
+    void ApplyDynSetting(CString s);                           // 0xb76c0 (external)
+    void SetServiceName(CString s);                            // 0xb7730 (external)
+    void PopulateGroupList(void* hList, i32 flag);             // 0x1784be (external)
     // (ReportError/SetReportMode are CNetMgr statics reached directly as
     //  CNetMgr::ReportError - <Net/NetMgr.h> is included by Multi.cpp.)
 

@@ -22,7 +22,9 @@
 #include <DDrawMgr/DirectDrawMgr.h> // CDDrawPtrCollections::FindFwd/FindBack (display-mode pool)
 #include <Io/SaveGame.h>
 #include <Gruntz/Play.h>
-#include <Rez/FrameClock.h> // the frame-clock/timer band SaveState/LoadState/PerFrameTick stream
+#include <Rez/FrameClock.h>   // the frame-clock/timer band SaveState/LoadState/PerFrameTick stream
+#include <Gruntz/Fonts.h>     // FreeFontsMemory (the Close teardown run)
+#include <Gruntz/SoundFont.h> // CloseSoundFontDevice (ditto)
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (CPlay::m_guts; SetVideoMode resize hooks)
 #include <Gruntz/Demo.h> // canonical CDemo (the CPlay-derived demo state; its dtor lives in this obj)
 #include <Gruntz/Attract.h>  // canonical CAttract
@@ -80,9 +82,6 @@ void operator delete(void*); // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member tear
 
 DATA(0x00248ce8)
 i32 g_scoreTimeBase;
-
-void OpenSettingsStore();  // FUN_005158f0
-void CloseSettingsStore(); // FUN_004f8e20
 
 #include <Gruntz/Dialogs.h>
 
@@ -2126,7 +2125,7 @@ i32 CGruntzMgr::Quicksave() {
         return 0;
     }
     if (m_cueSink) {
-        m_cueSink->Stop();
+        m_cueSink->DtorBody(); // 0x11c7b0 (the cue-timer flush; ex the "Stop" alias)
     }
     FillSaveInfo(m_saveInfoRec, 0);
     if (g_gameReg->m_saveSink->Save(reinterpret_cast<i32>(m_saveInfoRec->m_serial), 0x81a7)) {
@@ -2697,7 +2696,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
         return;
     }
     if (m_cueSink) {
-        m_cueSink->Stop();
+        m_cueSink->DtorBody(); // 0x11c7b0 (the cue-timer flush; ex the "Stop" alias)
     }
     if (m_world) {
         m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
@@ -2722,7 +2721,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
 RVA(0x000903f0, 0x10c)
 i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
     if (m_cueSink) {
-        m_cueSink->Stop();
+        m_cueSink->DtorBody(); // 0x11c7b0 (the cue-timer flush; ex the "Stop" alias)
     }
     if (m_cmdGrid && m_soundEnabled) {
         m_cmdGrid->DestroyAllAnims();
@@ -2974,7 +2973,7 @@ void CGruntzMgr::Close() {
     if (m_world) {
         m_world->SetHwnd(0);
     }
-    OpenSettingsStore();
+    FreeFontsMemory(); // 0x1158f0 (retail Close's second call; ex 'OpenSettingsStore')
     Utils::RegistryHelper* cfg = m_settings;
     if (cfg) {
         cfg->SetValueDword("Num_Runs", m_numRuns);
@@ -3089,7 +3088,7 @@ void CGruntzMgr::Close() {
         m_chatLog = 0;
     }
     if (m_cueSink) {
-        m_cueSink->Teardown();
+        m_cueSink->~CGruntSpawnConfig(); // 0x85df0 (non-virtual dtor; ex the "Teardown" alias)
         operator delete(m_cueSink);
         m_cueSink = 0;
     }
@@ -3130,7 +3129,7 @@ void CGruntzMgr::Close() {
         operator delete(m_logicPump);
         m_logicPump = 0;
     }
-    CloseSettingsStore();
+    CloseSoundFontDevice(); // 0xf8e20 (ex 'CloseSettingsStore')
     if (m_lobby) {
         m_lobby->Release();
         m_lobby = 0;
@@ -3282,7 +3281,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
         return 0;
     }
     if (m_cueSink) {
-        m_cueSink->Stop();
+        m_cueSink->DtorBody(); // 0x11c7b0 (the cue-timer flush; ex the "Stop" alias)
     }
     if (m_cmdGrid && m_soundEnabled) {
         m_cmdGrid->DestroyAllAnims();

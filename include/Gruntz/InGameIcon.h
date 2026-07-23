@@ -28,8 +28,6 @@ extern "C" u32 g_frameTime; // DAT_00645588  (the running game clock stamped int
 
 #include <Gruntz/SerialCounter.h> // g_serialCounter (the serialize sequence counter)
 
-void __stdcall Eng_PostCmd(i32 ctx, i32 a, i32 b, i32 c); // 0x41f940
-
 class CInGameIcon : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1

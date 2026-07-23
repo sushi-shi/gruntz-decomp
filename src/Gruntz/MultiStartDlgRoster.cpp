@@ -80,11 +80,11 @@ void CMultiStartDlg::ReconcileChannel3() {
 // (0xc2ab0; also reached as the roster's per-row reconcile via ILT thunk 0x3ffd.)
 RVA(0x000c2ab0, 0x161)
 void CMultiStartDlg::SyncChannelSlot(i32 ch) {
-    CWnd* owner = KindCombo1929(ch); // 0x1929  the list whose selection drives the slot
-    CWnd* c1 = NameEdit298c(ch);     // 0x298c
-    CWnd* c2 = GetCtrlD(ch);         // 0x30da -> 0xc2840
-    ColourBtn1753(ch);               // 0x1753 (side effect only)
-    ReadyCheck1159(ch);              // 0x1159 (side effect only)
+    CWnd* owner = GetCtrlE(ch);  // 0x1929  the list whose selection drives the slot
+    CWnd* c1 = NameEdit298c(ch); // 0x298c
+    CWnd* c2 = GetCtrlD(ch);     // 0x30da -> 0xc2840
+    ColourBtn1753(ch);           // 0x1753 (side effect only)
+    ReadyCheck1159(ch);          // 0x1159 (side effect only)
     GruntzPlayer* s = &m_host->m_options[ch];
     LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     if (pSend(owner->m_hWnd, 0x147, 0, 0) == 0) {
@@ -720,7 +720,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
                 enName = slot->m_slotKey == g_multiState->m_hostIndex ? 1 : 0;
             }
             this->NameEdit298c(idx)->EnableWindow(enName);
-            this->KindCombo1929(idx)->EnableWindow(
+            GetCtrlE(idx)->EnableWindow(
                 g_multiState->m_isHost && localColour == 0
                         && slot->m_slotKey != g_multiState->m_hostIndex
                     ? 1
@@ -760,18 +760,13 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
                     this->NameEdit298c(idx)->SetWindowTextA(pch);
                 }
                 if (slot->m_014) {
-                    ::SendMessageA(this->KindCombo1929(idx)->m_hWnd, 0x14e, 4, 0);
+                    ::SendMessageA(GetCtrlE(idx)->m_hWnd, 0x14e, 4, 0);
                 } else {
-                    ::SendMessageA(
-                        this->KindCombo1929(idx)->m_hWnd,
-                        0x14e,
-                        slot->m_configId + 1,
-                        0
-                    );
+                    ::SendMessageA(GetCtrlE(idx)->m_hWnd, 0x14e, slot->m_configId + 1, 0);
                 }
             } else {
                 this->NameEdit298c(idx)->SetWindowTextA(g_emptyString);
-                ::SendMessageA(this->KindCombo1929(idx)->m_hWnd, 0x14e, 0, 0);
+                ::SendMessageA(GetCtrlE(idx)->m_hWnd, 0x14e, 0, 0);
             }
             this->SyncChannelSlot(idx); // 0x3ffd thunk -> 0xc2ab0 reconcile (== SyncChannelSlot)
         }

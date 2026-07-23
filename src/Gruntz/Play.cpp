@@ -3688,7 +3688,7 @@ i32 CPlay::Vslot10(i32 msg, i32 x, i32 y) {
             char ab = static_cast<char>(g_curPlayer);
             px = (px & 0xffe0) + 0x10;
             py = (py & 0xffe0) + 0x10;
-            m_mgr->m_cmdSubMgr->Spawn(1, ab, 0, 0, px, py, 0, 0);
+            m_mgr->m_cmdSubMgr->EnqueueSingle(1, ab, 0, 0, px, py, 0, 0);
             return 1;
         }
     }

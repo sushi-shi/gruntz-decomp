@@ -3938,7 +3938,10 @@ i32 CMulti::ResetPlayerCommands(i32 id) {
     i32 seq = (slot->m_baseSeq + 1) * static_cast<i32>(m_5a4);
     i32 end = seq + static_cast<i32>(m_5a4) * 3;
     for (; seq < end; seq++) {
-        NetGameMgr()->m_cmdSubMgr->Dispatch(slot->m_desc->m_cmdWord, seq);
+        NetGameMgr()->m_cmdSubMgr->RemoveMatchingTarget(
+            static_cast<char>(slot->m_desc->m_cmdWord),
+            static_cast<char>(seq)
+        );
         slot->RemoveCmd(seq / static_cast<i32>(m_5a4));
     }
     slot->ResetTriple(slot->m_rangeA);
@@ -4031,7 +4034,7 @@ void CMulti::AnnounceVersion(i32 param) {
     packet.m_localVersion = g_localVersion;
     packet.m_statId = STAT_VERSIONPACKET;
 
-    SendStatPacket(param, &packet, 0x20, 1);
+    SendStatPairRaw(reinterpret_cast<CNetSessionNode*>(param), &packet, 0x20, 1);
 }
 
 RVA(0x000bd210, 0x14d)

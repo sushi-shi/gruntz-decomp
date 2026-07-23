@@ -182,7 +182,6 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
     m_base.AddTail(cmd);
 }
 
-void __stdcall BlitTileMarkerAt(i32, i32, i32, i32, i32, i32, i32, i32);
 // @early-stop
 // scheduling wall (~50%): logic exact, but retail interleaves the sx/sy compute
 // sharing the R/P loads and snaps sx with a byte `and al,0xe0` (proven high bits 0)
@@ -194,7 +193,16 @@ void CGruntzCmdMgr::BlitTileMarker(i32 a1, i32 a2, i32 x, i32 y, i32 a5) {
     CDDrawWorkerHost* r = p->m_mainPlane;
     i32 sx = ((r->m_originX - p->m_planeCtx.left + (x & 0xffff)) & ~0x1f) + 0x10;
     i32 sy = ((r->m_originY - p->m_planeCtx.top + (y & 0xffff)) & ~0x1f) + 0x10;
-    BlitTileMarkerAt(a1, a2, 0, 0, sx, sy, 0, a5);
+    EnqueueSingle(
+        a1,
+        static_cast<char>(a2),
+        0,
+        0,
+        static_cast<i16>(sx),
+        static_cast<i16>(sy),
+        0,
+        static_cast<char>(a5)
+    );
 }
 
 RVA(0x00023e20, 0x2f)

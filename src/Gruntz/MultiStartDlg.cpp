@@ -283,15 +283,15 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         i32 i;
         for (i = 0; i < NUM_PLAYER_SLOTS; i++) {
             HWND kc;
-            kc = KindCombo1929(i)->m_hWnd;
+            kc = GetCtrlE(i)->m_hWnd;
             pSend(kc, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("None"));
-            kc = KindCombo1929(i)->m_hWnd;
+            kc = GetCtrlE(i)->m_hWnd;
             pSend(kc, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Computer (easy)"));
-            kc = KindCombo1929(i)->m_hWnd;
+            kc = GetCtrlE(i)->m_hWnd;
             pSend(kc, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Computer (normal)"));
-            kc = KindCombo1929(i)->m_hWnd;
+            kc = GetCtrlE(i)->m_hWnd;
             pSend(kc, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Computer (difficult)"));
-            kc = KindCombo1929(i)->m_hWnd;
+            kc = GetCtrlE(i)->m_hWnd;
             pSend(kc, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Human"));
         }
         for (i = 0; i < NUM_PLAYER_SLOTS; i++) {

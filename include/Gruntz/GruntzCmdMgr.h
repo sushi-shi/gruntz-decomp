@@ -21,8 +21,6 @@ SIZE_UNKNOWN();
 
 class CGruntzCmdMgr {
 public:
-    void
-    Spawn(i32 a1, char area, i32 a3, i32 a4, i32 px, i32 py, i32 a7, i32 a8); // reloc-masked (fold)
     // 0x023b40 - find the first base-queue target matching (indexByte, typeByte)
     // and remove+deselect it.
     void RemoveMatchingTarget(char indexByte, char typeByte);
@@ -50,7 +48,6 @@ public:
     // 0x423b40 (via ILT 0x2a63) - re-dispatch a queued command by sequence during
     // the net resend pass (CNetMgr::ResetPlayerCommands: m_4->m_6c->Dispatch).
     // External/no-body here (reloc-masked thiscall).
-    void Dispatch(i32 cmdHead, i32 seq);
     // 0x024890 - the command-queue (de)serializer. mode 4 = write the queue to
     // the stream; mode 7 = read it back, rebuilding the queue.
     i32 Serialize(CFileMemBase* stream, i32 mode, i32 a3, i32 a4);

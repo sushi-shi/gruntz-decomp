@@ -95,7 +95,6 @@ public:
     void DtorBody();         // 0x11c7b0 (the 2-iter pair teardown; == m_timer->Flush)
     void Stop();             // reloc-masked (per-frame poll stop, via CGruntzMgr::m_timer)
     void Tick();             // reloc-masked (BroadcastCmd 4/7)
-    void Teardown();         // reloc-masked (Close)
     void ResetPicks();       // 0x11c7f0 (DtorBody + reset entry m_20s)
     BOOL IsReady();          // 0x11c830 (out-of-line: m_00->m_100 != 0)
     ~CGruntSpawnConfig();    // 0x85df0

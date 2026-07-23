@@ -168,6 +168,10 @@ public:
 };
 SIZE_UNKNOWN();
 
+// The fifth per-index combo getter (0xc2640, free __stdcall; def in MultiStartDlg.cpp):
+// the human/computer kind combo for slot idx.
+CWnd* __stdcall GetCtrlE(i32 index);
+
 class CBattlezDlgColors : public CDialog {
 public:
     CBattlezDlgColors(class CGruntzMgr* a0, i32 a1, i32 a2, CWnd* pParent);
@@ -279,7 +283,6 @@ public:
     void Drive();           // 0xc40b0  re-drive the connect state (body in NetMgrMisc.cpp)
     i32 UpdateColorItems(); // 0xc1aa0 (color-item refresh; via 0x02c0c thunk; ex m4::MultiColorDlg)
     CWnd* NameEdit298c(i32 idx);         // 0x0298c  name edit for slot idx
-    CWnd* KindCombo1929(i32 idx);        // 0x01929  human/computer combo for slot idx
     CWnd* ReadyCheck1159(i32 idx);       // 0x01159  ready checkbox for slot idx
     CWnd* ColourBtn1753(i32 idx);        // 0x01753  colour button for slot idx
     void SyncColour3a5d(i32 idx, i32 v); // 0x03a5d
