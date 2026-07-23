@@ -1,7 +1,8 @@
 #include <rva.h>
 #include <iostream.h>
 
-void Blowfish_decipher(unsigned int* xl, unsigned int* xr);
+#include <Crypto/BitStreamBlowfish.h>
+#include <Crypto/Blowfish.h>
 
 RVA(0x0016f760, 0x82)
 void __stdcall BitStreamBlowfishDecode(istream* in, ostream* out) {

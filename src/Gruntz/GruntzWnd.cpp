@@ -1,4 +1,5 @@
 #include <Wap32/Wap32.h>
+#include <Dsndmgr/GruntzSoundZ.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzWnd.h>
 #include <rva.h>

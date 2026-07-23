@@ -659,6 +659,10 @@ zDArray::zDArray(i32 stride, i32 lo, i32 hi, void* scratch) : _zdvec(stride, lo,
     m_grown = m_hi - m_lo + 1; // +0x20  its slot count (was the m_count view)
 }
 
+// The implicit derived destructor has no standalone body: its vtable slot emits
+// this scalar-deleting thunk, which directly tears down the _zdvec base.
+RVA_COMPGEN(0x0016dde0, 0x1e, ??_GzDArray@@UAEPAXI@Z)
+
 // ===========================================================================
 // _zdvec::_zdvec (0x16de30) - the allocating vector ctor (this body was modelled
 // as `CZArray2D::CZArray2D` until the fold: CZArray2D IS _zdvec, one class under two

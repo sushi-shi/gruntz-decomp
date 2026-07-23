@@ -45,6 +45,8 @@
 #include <Gruntz/SoundFxEmitter.h> // ex Globals.h
 #include <Wap32/GameApp.h>         // ex Globals.h
 #include <Gruntz/SoundState.h>     // ex Globals.h transitive
+#include <Crypto/BitStreamBlowfish.h>
+#include <Crypto/Blowfish.h>
 
 #include <Rez/RezSyncGlobals.h> // RezSync's private split-views of g_inputMgr/g_spawnConfig
 
@@ -78,9 +80,6 @@ i32 g_enableEmulation = 0; // "Enable Emulation"
 
 DATA(0x00245534)
 i32 g_attractStateCount = 0; // 0x645534
-
-void __stdcall Blowfish_InitKey(unsigned char*);      // 0x16f6c0
-void __stdcall BitStreamBlowfishDecode(void*, void*); // 0x16f760
 
 DATA(0x00245210)
 i32 g_appHInstance;
@@ -520,7 +519,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             Blowfish_InitKey(reinterpret_cast<unsigned char*>(const_cast<char*>("1212C")));
             ostrstream* snk =
                 new ostrstream(static_cast<char*>(src), esz, 2); // ??0ostrstream (0x1698c0)
-            BitStreamBlowfishDecode(snk, rdr);
+            BitStreamBlowfishDecode(rdr, snk);
             // carcass gap: retail allocs a third 0x60 stream object here with no
             // visible ctor call in the recovered bytes; kept as the bare allocation.
             g_buteMgr.m_stream = static_cast<istream*>(::operator new(0x60));

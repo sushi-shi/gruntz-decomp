@@ -36,25 +36,25 @@ extern "C" void AfxString_AppendChar(void* pStr, char c);
 
 struct CButeRef5 { // 16 bytes
     CButeRef5() : a(0), b(0), c(0), d(0) {}
-    ~CButeRef5();
+    ~CButeRef5() {}
     DWORD a, b, c, d;
 };
 SIZE(0x10);
 struct CButeRef6 { // 8 bytes
     CButeRef6() : a(0), b(0) {}
-    ~CButeRef6();
+    ~CButeRef6() {}
     DWORD a, b;
 };
 SIZE(0x8);
 struct CButeRef7 { // 24 bytes
     CButeRef7() : a(0), b(0), c(0), d(0), e(0), f(0) {}
-    ~CButeRef7();
+    ~CButeRef7() {}
     DWORD a, b, c, d, e, f;
 };
 SIZE(0x18);
 struct CButeRef8 { // 16 bytes
     CButeRef8() : a(0), b(0), c(0), d(0) {}
-    ~CButeRef8();
+    ~CButeRef8() {}
     DWORD a, b, c, d;
 };
 SIZE(0x10);

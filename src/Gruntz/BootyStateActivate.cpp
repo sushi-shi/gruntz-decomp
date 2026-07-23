@@ -581,8 +581,6 @@ i32 CMultiBootyState::QueryGruntSlots() {
     return 0;
 }
 
-CString* GetColorName(CString* out);
-
 DATA(0x001e9178)
 RECT g_col1Rects[4] =
     {{200, 415, 284, 465}, {316, 415, 400, 465}, {432, 415, 516, 465}, {548, 415, 632, 465}};
@@ -759,8 +757,8 @@ void CMultiBootyState::DrawBattleStats() {
                     color = 0;
                     break;
             }
-            CString cn;
-            s.Format("%s", static_cast<const char*>(*GetColorName(&cn)));
+            CString cn = g_gameReg->m_options[i].GetName();
+            s.Format("%s", static_cast<const char*>(cn));
             copyRect(&rc, &g_colorRects[i]);
             DrawStatText(
                 m_world,

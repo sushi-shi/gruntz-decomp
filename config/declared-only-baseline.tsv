@@ -4,18 +4,12 @@
 # (rename to the real symbol / define the owner), then --update. Drive to 0.
 ??0CDDrawSurfacePair@@QAE@HHH@Z
 ??0RezElem40@@QAE@XZ
-??1CButeRef5@@QAE@XZ
-??1CButeRef6@@QAE@XZ
-??1CButeRef7@@QAE@XZ
-??1CButeRef8@@QAE@XZ
-??1zDArray@@UAE@XZ
 ?AdvanceAnim@CExitTrigger@@QAEHXZ
 ?Apply13@CGrunt@@QAEXHH@Z
 ?ApplyBox@CGrunt@@QAEHHHHHHH@Z
 ?Ar_WriteId@@YAXPAXH0@Z
 ?Arm@CUserLogic@@QAEXPBD0HH@Z
 ?BaseConstruct@zDArray@@QAEPAV1@HHHPAX@Z
-?BitStreamBlowfishDecode@@YGXPAX0@Z
 ?ChipFinish@CStatusBarMgr@@QAEXHHH@Z
 ?ClickAt_ff9d0@CStatusBarMgr@@QAEHHHH@Z
 ?Command@CBattlezData@@QAEHHHHH@Z
@@ -23,7 +17,6 @@
 ?CommitMoveA@CGrunt@@QAEXHHH@Z
 ?Construct@CButeTree@@QAEXPAXH@Z
 ?Construct@CGameObject@@QAEXPAXHH@Z
-?CreditsRectSet@@YAXPAXHHHH@Z
 ?Cue1@CGruntSpawnConfig@@QAEXH@Z
 ?Cue@CGruntSpawnConfig@@QAEXHHHHH@Z
 ?CuePrep@CGruntzMgr@@QAEXXZ
@@ -33,7 +26,6 @@
 ?Dispatch@CGrunt@@QAEHHH@Z
 ?DoTrigger1fb9@CScanMgr@@QAEHPAVCGrunt@@HHHHH@Z
 ?Effect374c@CBattlezMapConfig@@QAEXPAVCGrunt@@H@Z
-?EmptyMsgHook@@YGXIJ@Z
 ?Eng_SpawnFx@@YGXHHHHHH@Z
 ?EnterField1@CTeleporter@@QAEXXZ
 ?EnterField2@CTeleporter@@QAEXXZ
@@ -42,11 +34,9 @@
 ?Finish3e4f@CBattlezMapConfig@@QAEXPAVCGrunt@@0@Z
 ?FinishAttackPowered@CGrunt@@QAEXXZ
 ?FlushStateStack@CGruntzMgr@@QAEXXZ
-?FormatStr@@YAXPAVCString@@PBDZZ
 ?ForwardCombatStep@CGrunt@@QAEHHHHHHHHH@Z
 ?Fx@CTriggerMgr@@QAEXHHHHHH@Z
 ?Gate1a14@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z
-?GetColorName@@YAPAVCString@@PAV1@@Z
 ?GetDlgItemThreaded@@YGPAVCWnd@@H@Z
 ?GetNameRecord@zDArray@@QAEPAPADPAX@Z
 ?GetNameRecords@zDArray@@QAEPAVCAnimNameRecord@@PAX@Z

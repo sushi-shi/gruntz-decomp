@@ -1844,7 +1844,6 @@ rva,name,lib,confidence,source
 0x16d6f0,__inc,LIBCMT,LOW,anchored
 0x16d9a0,__inc,LIBCMT,LOW,anchored
 0x16da40,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x16dde0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x16de00,__inc,LIBCMT,LOW,anchored
 0x16de10,__inc,LIBCMT,LOW,anchored
 0x16df20,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored

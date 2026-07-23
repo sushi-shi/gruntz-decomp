@@ -227,6 +227,9 @@ i32 CGruntzSoundZ::IsPlaying() {
     return m_pCurrent->Stop();
 }
 
+RVA(0x00138940, 0x3)
+void __stdcall EmptyMsgHook(WPARAM, LPARAM) {}
+
 RVA(0x00138950, 0x70)
 i32 CGruntzSoundZ::SetXMidiVolume(i32 volume) {
     if (g_ailMidiDriver == 0) {

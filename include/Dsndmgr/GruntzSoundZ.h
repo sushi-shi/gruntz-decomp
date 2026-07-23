@@ -12,6 +12,8 @@ typedef struct _MDI_DRIVER* HMDIDRIVER_;
 
 extern HMDIDRIVER_ g_ailMidiDriver;
 
+void __stdcall EmptyMsgHook(WPARAM wParam, LPARAM lParam); // 0x138940
+
 class CGruntzSoundInnerZ : public CObject {
 public:
     // Only the dtor overrides a base (CObject slot 1); slots 5..15 are new virtuals

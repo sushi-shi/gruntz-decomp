@@ -1619,8 +1619,6 @@ i32 CTriggerMgr::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i32 dummy
     return spr != 0;
 }
 
-void FormatStr(CString* out, const char* fmt, ...);
-
 // @source: string-xref
 // @early-stop
 // regalloc/loop-strength-reduction wall: the logic - the M400c prep call, the
@@ -1686,7 +1684,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                     CGiantRockLogic* gr = root->m_2e4->ScanNeighborhood(tx, ty);
                     if (gr == 0) {
                         CString msg;
-                        FormatStr(&msg, "No giant rock logic found around: x=%d, y=%d", cx, cy);
+                        msg.Format("No giant rock logic found around: x=%d, y=%d", cx, cy);
                         g_gameReg->EnterModalUI(msg);
                         g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_ROCK_SCAN_MISS);
                         return 0;

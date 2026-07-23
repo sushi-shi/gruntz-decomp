@@ -118,8 +118,6 @@ public:
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();
 
-void CreditsRectSet(void* rect, i32 l, i32 t, i32 r, i32 b); // 0x08c380
-
 class CCreditsState : public CState {
 public:
     // Constructed by CGruntzMgr::TransitionState (`new CCreditsState`, state id 8,
@@ -134,8 +132,8 @@ public:
         m_scrollReseedTimer = 0;
         m_scrollAccum = 0;
         m_scrollStep = 0;
-        CreditsRectSet(&m_scrollRect, 0, 0, 0x280, 0x1e0);
-        CreditsRectSet(&m_drawRect, 0, 0, 0x280, 0x1e0);
+        m_scrollRect.SetRect(0, 0, 0x280, 0x1e0);
+        m_drawRect.SetRect(0, 0, 0x280, 0x1e0);
         m_20c = 1;
         m_videoHandle = 0;
         m_videoPlaying = 0;
@@ -186,14 +184,13 @@ public:
     i32 m_flashTimer;    // +0x1bc flash re-roll timer
     i32 m_fadeCountdown; // +0x1c0 fade countdown ms (LoadCreditzAssets arms 3000 on the rising edge)
     i32 m_fxEnabled;     // +0x1c4 conditional-FX gate / credits-music toggle
-    // The two 0x10-byte rect sub-objects the ctor Set-initialises to the full 640x480
-    // screen (Set @0x08c380, 4 args). They are plain RECTs: SetupTitle SetRect()s the
-    // master scroll rect and DrawTextA-measures into the working one; the per-frame
-    // DrawScrollingCredits copies master -> working and scrolls it up.
-    RECT m_scrollRect; // +0x1c8  master caption rect (Set(0,0,0x280,0x1e0); SetupTitle SetRect)
-    RECT m_drawRect;   // +0x1d8  working/scrolled caption rect (DrawTextA target)
-    CRgn m_1e8;        // +0x1e8 embedded GDI region (RTTI .?AVCRgn@@; freed by ~CCreditsState)
-    CString m_caption; // +0x1f0 credits caption CString (freed by ~CCreditsState)
+    // The two 0x10-byte CRect sub-objects the ctor initialises through the exact
+    // CRect::SetRect method at 0x08c380. SetupTitle may still pass them through the
+    // inherited RECT interface to Win32 APIs; that does not erase their C++ identity.
+    CRect m_scrollRect; // +0x1c8  master caption rect (SetRect(0,0,0x280,0x1e0))
+    CRect m_drawRect;   // +0x1d8  working/scrolled caption rect (DrawTextA target)
+    CRgn m_1e8;         // +0x1e8 embedded GDI region (RTTI .?AVCRgn@@; freed by ~CCreditsState)
+    CString m_caption;  // +0x1f0 credits caption CString (freed by ~CCreditsState)
     i32 m_scrollReseedTimer; // +0x1f4  scroll reseed timer (counts the frame delta down)
     // +0x1f8 / +0x200 are DOUBLES, not four ints: DrawScrollingCredits does
     // `fmul QWORD PTR [esi+0x200]` / `fadd|fstp QWORD PTR [esi+0x1f8]` and SetupTitle

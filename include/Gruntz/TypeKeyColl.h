@@ -15,7 +15,8 @@ SIZE_UNKNOWN();
 class zDArray : public _zdvec {
 public:
     zDArray(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16dda0
-    virtual ~zDArray() OVERRIDE;                        // [0] ??_G 0x16dde0 (external)
+    // The implicit destructor overrides _zdvec::~_zdvec. Retail emits the derived
+    // scalar-deleting slot thunk at 0x16dde0, but no separate ??1zDArray body.
     // (the grow-on-miss the lookups drive is _zvec::GrowTo @0x16da80, reached via a
     //  (_zvec*)&coll cast at the call sites - the former zDArray::Find fake is gone.)
     zDArray* Construct(i32 lo, i32 hi); // 0x8710 (def in ZDArrayDerived.cpp: the
