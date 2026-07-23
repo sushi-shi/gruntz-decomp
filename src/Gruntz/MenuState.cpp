@@ -1,4 +1,4 @@
-#include <Gruntz/MenuState.h> // C-linkage decls for the ex-wrapped defs
+#include <Gruntz/MenuState.h>        // C-linkage decls for the ex-wrapped defs
 #include <DinMgr2/DirectInputMgr2.h> // CInputDevBase (Poll/m_currentKeys press-edge flags)
 #include <Gruntz/GameMode.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
@@ -18,11 +18,11 @@
 #include <Bute/SymParser.h> // canonical CSymParser + CSymTab (LoadGameAssetNamespaces ResolvePath)
 #include <Image/CImage.h>   // g_resourceInstallActive
 #include <Gruntz/ChatBox.h> // canonical CChatBox (m_1b4 menu UI object; Init lives here)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawWorkerRegistry (m_c->m_imageRegistry)
+#include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical CDDrawWorkerRegistry (m_c->m_imageRegistry)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
 #include <DDrawMgr/DDrawWorkerList.h>  // renderer B - the real CDDrawWorkerList (ClearWorkers)
 #include <Win32.h>                     // IsDlgButtonChecked + HWND (real USER32 header)
-#include <Gruntz/SoundState.h> // ex Globals.h transitive
+#include <Gruntz/SoundState.h>         // ex Globals.h transitive
 
 DATA(0x00245574)
 CFixedPtrArray32* g_actorList = 0;
@@ -326,6 +326,11 @@ i32 CMenuState::Vslot10(i32 arg1, i32 arg2, i32 arg3) {
     return 1;
 }
 
+RVA(0x000a0d20, 0x8)
+i32 CMenuState::SetBeginClearParams(i32, i32, i32) {
+    return 1;
+}
+
 RVA(0x000a0d40, 0x24)
 i32 CMenuState::Vslot07() {
     i32 r = IsActive();
@@ -370,5 +375,15 @@ void CMenuState::BuildVersionString(CGMVerRect r) {
     if (g_cdPromptResult) {
         str += " (SPAWN MODE)";
     }
-    ShowHudMessage(reinterpret_cast<HudMsgSink*>(m_world), reinterpret_cast<i32>(&str), reinterpret_cast<i32>(&r), 0x64, 1, 0xff, 0xff, 0, 0);
+    ShowHudMessage(
+        reinterpret_cast<HudMsgSink*>(m_world),
+        reinterpret_cast<i32>(&str),
+        reinterpret_cast<i32>(&r),
+        0x64,
+        1,
+        0xff,
+        0xff,
+        0,
+        0
+    );
 }

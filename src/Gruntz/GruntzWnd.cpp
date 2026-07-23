@@ -37,6 +37,11 @@ CGruntzWnd::~CGruntzWnd() {
 // the reloc-masked/plateau operands: the IAT-mirror calls (IsIconic/SendMessageA bare-
 // absolute ds slots), the g_curDlg DIR32, the unnamed empty-hook 0x138940 target.
 // topic:regalloc topic:tail-merge.
+RVA(0x00094770, 0x5)
+i32 CGruntzWnd::Wap32GameWndVfunc2(i32, i32, i32) {
+    return 0;
+}
+
 RVA(0x00094790, 0xc2)
 i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {

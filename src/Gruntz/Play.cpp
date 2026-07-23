@@ -4481,6 +4481,11 @@ i32 CGameLevel::MainPlaneQueryB() {
     return 0;
 }
 
+RVA(0x000cee30, 0x8)
+i32 CPlay::Vslot12(i32, i32, i32) {
+    return 1;
+}
+
 // ===========================================================================
 // DrawWorldPresent (0x0cefc0) - a present-only world frame: run the two camera
 // sub-steps (DrawB then DrawA), guarded on the camera-geom ptr, twice - each

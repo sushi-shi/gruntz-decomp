@@ -76,7 +76,7 @@ public:
     // serializer's retail bytes are `call [vptr+0x18]; and eax,0xff` with NO
     // sign-extension insn, so the compiler saw an int-family return; Pack stores
     // its low byte first). Was declared char - which forked the CGruntzCommand view.
-    virtual i32 GetTag();
+    virtual char GetTag(); // 1-byte tag: the leaves' `mov al,N` bodies pin the width
     // slot 7 - parse a flat command buffer in place; the leaves (Single/Multi)
     // override it with real parsers, the base anchor is a no-op. Consumed-byte
     // count returned. (Recovered from NetCmdSlot.cpp's ProcessCmd dispatch.)
@@ -129,7 +129,7 @@ public:
     virtual i32 Save(CFileMemBase* s) OVERRIDE;
     virtual i32 Load(CFileMemBase* s) OVERRIDE;
     virtual i32 Vslot05() OVERRIDE; // 0x24260
-    virtual i32 GetTag() OVERRIDE;
+    virtual char GetTag() OVERRIDE;
     virtual i32 Parse(void*, i32) OVERRIDE;
     // 0x024050 (slot 8) - pack this command into a flat byte buffer: tag (GetTag), then
     // the five scalar params, then m_10, and conditionally m_11 (when m_5 >= 8). Returns
@@ -155,7 +155,7 @@ public:
     virtual i32 Save(CFileMemBase* s) OVERRIDE;
     virtual i32 Load(CFileMemBase* s) OVERRIDE;
     virtual i32 Vslot05() OVERRIDE; // 0x243a0
-    virtual i32 GetTag() OVERRIDE;
+    virtual char GetTag() OVERRIDE;
     virtual i32 Parse(void*, i32) OVERRIDE;
     // 0x0240d0 (slot 8) - pack this command into a flat byte buffer: tag (GetTag), the
     // five scalar params, then the +0x10 16-bit flag mask as a WORD. Returns the number

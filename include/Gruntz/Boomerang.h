@@ -11,9 +11,12 @@ public:
     // unless a body is bound below; their vftable references reloc-mask).
     virtual ~CBoomerang() OVERRIDE; // slot 0  (origin CUserBase)
     virtual i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4)
-        OVERRIDE;                              // slot 1 @0xe15d0
-    virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2  (origin CUserBase)
-    virtual void MovingSlot16() OVERRIDE;      // slot 16 @0xe08b0 - the boomerang motion step
+        OVERRIDE; // slot 1 @0xe15d0
+    RVA(0x000129b0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { // slot 2  (origin CUserBase)
+        return LOGIC_BOOMERANG;
+    }
+    virtual void MovingSlot16() OVERRIDE; // slot 16 @0xe08b0 - the boomerang motion step
     virtual i32 LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1)
         OVERRIDE; // slot 17 @0xe0690 (origin CProjectile)
 

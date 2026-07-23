@@ -24,10 +24,10 @@
 #include <Gruntz/LeafCue.h>   // LeafCue (the config-cue leaf: m_10/m_14/m_18) for ScrollDialog
 #include <Net/NetMgr.h>
 #include <Gruntz/Multi.h> // CMulti::SendChannelStat422/423 (dispatched on m_curState; netmgr-vs-cmulti split)
-#include <Gruntz/Wnd.h>   // the real MFC CWnd via <afxwin.h> (FromHandle; m_hWnd @+0x1c)
-#include <Gruntz/Enums.h> // RES_640x480/RES_800x600/RES_1024x768
-#include <string.h>       // strcat (inline repnz scasb + rep movs under /O2 /Oi)
-#include <Rez/RezSync.h> // ex Globals.h
+#include <Gruntz/Wnd.h>        // the real MFC CWnd via <afxwin.h> (FromHandle; m_hWnd @+0x1c)
+#include <Gruntz/Enums.h>      // RES_640x480/RES_800x600/RES_1024x768
+#include <string.h>            // strcat (inline repnz scasb + rep movs under /O2 /Oi)
+#include <Rez/RezSync.h>       // ex Globals.h
 #include <Gruntz/SoundState.h> // ex Globals.h transitive
 
 typedef enum VideoConfigDlgId {
@@ -89,7 +89,7 @@ void OnToggleCk5Option(HWND hDlg);                                 // 0x036df0 (
 void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, i32 nSel); // 0x036f30
 void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32 code, i32 pos); // 0x0370a0
 void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos);               // 0x037260
-void DialogInit(HWND hDlg);                                           // 0x037870
+void DialogInit(HWND hDlg);                                                // 0x037870
 void SaveVideoCheckboxes(HWND hDlg);                                       // 0x0378c0
 void ApplyGameOptions(); // the dlgproc's free-call shape of ?ApplyGameOptions@CPlay@@ (0x036be0)
 namespace ApiCallerStubs {
@@ -405,6 +405,9 @@ void OnToggleSpeechOption(HWND hWnd) {
         EnableWindow(GetDlgItem(hWnd, 0x472), state);
     }
 }
+
+RVA(0x00036df0, 0x1)
+void OnToggleCk5Option(HWND__*) {}
 
 RVA(0x00036e10, 0x26)
 void OnToggleEasyModeOption(HWND hWnd) {

@@ -1,12 +1,12 @@
-#define SBI_DTOR_CHAIN // enable the inline base-dtor body (see StatusBarItem.h)
-#include <Mfc.h>       // afx-first (TU pulls MFC via unified CObject; superset of Win32.h)
+#define SBI_DTOR_CHAIN         // enable the inline base-dtor body (see StatusBarItem.h)
+#include <Mfc.h>               // afx-first (TU pulls MFC via unified CObject; superset of Win32.h)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr (m_cmdGrid) + CGrunt (the placed grid grunt)
-#include <Gruntz/Grunt.h> // complete CGrunt (CGrunt == CGrunt; the stat fields)
+#include <Gruntz/Grunt.h>      // complete CGrunt (CGrunt == CGrunt; the stat fields)
 #include <rva.h>
 #include <Ints.h>
 
-#include <Gruntz/StatusBarMgr.h>      // CStatusBarMgr (ClearStat, the side-tab owner slot)
-#include <Gruntz/GameRegistry.h>      // canonical CGameRegistry (the builders' singleton view)
+#include <Gruntz/StatusBarMgr.h> // CStatusBarMgr (ClearStat, the side-tab owner slot)
+#include <Gruntz/GameRegistry.h> // canonical CGameRegistry (the builders' singleton view)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr + CDDrawSubMgrPages + CDDrawWorkerRegistry
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
 #include <Gruntz/Sprite.h>                // CDDrawWorker (fold: ex via ResMgr.h)
@@ -25,7 +25,7 @@
 #include <Image/ImageSet.h> // canonical CDDrawWorker (SetAllTypes/SetAllFormats; the config record)
 #include <Io/FileMem.h>     // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/SerialCounter.h> // g_serialCounter (bumped once per string field)
-#include <string.h> // inline strlen/strcpy/memset over the serialize scratch buffer
+#include <string.h>               // inline strlen/strcpy/memset over the serialize scratch buffer
 
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -90,10 +90,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     CDDrawWorker* rec = 0;
     CObject* recOb = 0;
     m_cmd = p3;
-    h->m_imageRegistry->m_10map.Lookup(
-        "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND",
-        recOb
-    );
+    h->m_imageRegistry->m_10map.Lookup("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND", recOb);
     rec = static_cast<CDDrawWorker*>(recOb);
     CImage* spr;
     if (rec == 0 || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
@@ -125,12 +122,11 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     if (s == 0) {
         return 0;
     }
-    i32 sel =
-        g_gameReg->m_spriteFactory
-            ->GetSel(
-                g_gameReg->m_options[g_curPlayer].m_008, // ex the +0x138 rebased world-slot view (+0x138+0x20 == m_options+0x08)
-                0
-            );
+    i32 sel = g_gameReg->m_spriteFactory->GetSel(
+        g_gameReg->m_options[g_curPlayer]
+            .m_008, // ex the +0x138 rebased world-slot view (+0x138+0x20 == m_options+0x08)
+        0
+    );
     if (sel == 0) {
         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
@@ -167,6 +163,11 @@ void CSBI_GruntMachine::Reset() {
 // (docs/patterns/reloc-typing-vptr-global.md), and the merged (retail-shaped) TU
 // additionally flips the m_28 early-out layout (retail jle-to-end vs inline
 // return-1) plus the commutative anchor adds - operand flips don't steer it.
+RVA(0x000e8c90, 0x8)
+i32 CSBI_GruntMachine::Refresh(i32) {
+    return 1;
+}
+
 RVA(0x000e8cb0, 0xc4)
 i32 CSBI_GruntMachine::Render() {
     if (m_28 <= 0) {
@@ -176,9 +177,13 @@ i32 CSBI_GruntMachine::Render() {
     m_28--;
     CDDrawWorker* cfg = m_config;
 
-    m_frameA = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : static_cast<CImage*>(cfg->m_items.GetAt(idx));
+    m_frameA = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex)
+                   ? 0
+                   : static_cast<CImage*>(cfg->m_items.GetAt(idx));
     idx = m_frameIdxB;
-    m_frameB = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex) ? 0 : static_cast<CImage*>(cfg->m_items.GetAt(idx));
+    m_frameB = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex)
+                   ? 0
+                   : static_cast<CImage*>(cfg->m_items.GetAt(idx));
 
     i32 ctx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
 
@@ -511,7 +516,9 @@ i32 CSBI_SideTab::BuildHandle() {
     if (mode == 0) {
         return 0;
     }
-    CGrunt* unit = g_gameReg->m_cmdGrid->m_grid[m_colIndex + 15 * m_rowIndex]; // the placed grid grunt (ex CSideTabGruntRec view)
+    CGrunt* unit =
+        g_gameReg->m_cmdGrid->m_grid
+            [m_colIndex + 15 * m_rowIndex]; // the placed grid grunt (ex CSideTabGruntRec view)
     if (unit == 0) {
         m_2c->ClearStat(m_colIndex);
         return 0;
@@ -578,8 +585,18 @@ RVA(0x000e99c0, 0x4c)
 i32 CSBI_SideTab::Render() {
     if (m_drawGate) {
         i32 ctx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
-        m_topFrame->RenderFrame(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>(m_drawX), reinterpret_cast<void*>(m_drawY), 0);
-        m_bottomFrame->RenderFrame(reinterpret_cast<void*>(ctx), reinterpret_cast<void*>((m_drawX + m_bottomFrameDy)), reinterpret_cast<void*>(m_drawY), 0);
+        m_topFrame->RenderFrame(
+            reinterpret_cast<void*>(ctx),
+            reinterpret_cast<void*>(m_drawX),
+            reinterpret_cast<void*>(m_drawY),
+            0
+        );
+        m_bottomFrame->RenderFrame(
+            reinterpret_cast<void*>(ctx),
+            reinterpret_cast<void*>((m_drawX + m_bottomFrameDy)),
+            reinterpret_cast<void*>(m_drawY),
+            0
+        );
     }
     return 1;
 }
@@ -794,9 +811,10 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     if (selMode == 0) {
         CDDrawWorker* sel = 0;
         CObject* selOb = 0;
-        m_24
-            ->m_imageRegistry->m_10map
-            .Lookup("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR", selOb);
+        m_24->m_imageRegistry->m_10map.Lookup(
+            "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR",
+            selOb
+        );
         sel = static_cast<CDDrawWorker*>(selOb);
         m_timerGlyphMap = sel;
         if (sel == 0) {
@@ -810,9 +828,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     } else {
         CDDrawWorker* sel = 0;
         CObject* selOb = 0;
-        m_24
-            ->m_imageRegistry->m_10map
-            .Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", selOb);
+        m_24->m_imageRegistry->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", selOb);
         sel = static_cast<CDDrawWorker*>(selOb);
         m_timerGlyphMap = sel;
         if (sel == 0) {

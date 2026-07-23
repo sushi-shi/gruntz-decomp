@@ -314,7 +314,6 @@ rva,name,lib,confidence,source
 0x0362b0,__inc,LIBCMT,LOW,anchored
 0x036300,__inc,LIBCMT,LOW,anchored
 0x036350,__inc,LIBCMT,LOW,anchored
-0x036df0,__fpclear,LIBCMT,LOW,anchored
 0x037510,__inc,LIBCMT,LOW,anchored
 0x037560,__inc,LIBCMT,LOW,anchored
 0x0375b0,__inc,LIBCMT,LOW,anchored
@@ -492,15 +491,12 @@ rva,name,lib,confidence,source
 0x082fd0,___inittime,LIBCMT,LOW,anchored
 0x0832e0,__fpclear,LIBCMT,LOW,anchored
 0x08c3d0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x08c6d0,?length@charNode@@UBEHXZ,LIBCMT,LOW,anchored
-0x08c6f0,?length@charNode@@UBEHXZ,LIBCMT,LOW,anchored
 0x08c9a0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x08cd60,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x08ce30,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x08cf00,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x08cfd0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x08d0a0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x08d200,___init_collate,LIBCMT,LOW,anchored
 0x08d240,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x08d410,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x08d4e0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
@@ -588,7 +584,6 @@ rva,name,lib,confidence,source
 0x09fd50,__inc,LIBCMT,LOW,anchored
 0x09fda0,__inc,LIBCMT,LOW,anchored
 0x09fdf0,__inc,LIBCMT,LOW,anchored
-0x0a0d20,_DllMain@12,LIBCMT,LOW,anchored
 0x0a0ea0,__inc,LIBCMT,LOW,anchored
 0x0a0ef0,__inc,LIBCMT,LOW,anchored
 0x0a0f40,__inc,LIBCMT,LOW,anchored
@@ -684,7 +679,6 @@ rva,name,lib,confidence,source
 0x0bee50,__inc,LIBCMT,LOW,anchored
 0x0beea0,__inc,LIBCMT,LOW,anchored
 0x0bef30,___inittime,LIBCMT,LOW,anchored
-0x0bfb20,__fpclear,LIBCMT,LOW,anchored
 0x0c0840,__inc,LIBCMT,LOW,anchored
 0x0c0890,__inc,LIBCMT,LOW,anchored
 0x0c08e0,__inc,LIBCMT,LOW,anchored
@@ -727,7 +721,6 @@ rva,name,lib,confidence,source
 0x0c7dd0,__inc,LIBCMT,LOW,anchored
 0x0c7e20,__inc,LIBCMT,LOW,anchored
 0x0c7e70,__inc,LIBCMT,LOW,anchored
-0x0cee30,_DllMain@12,LIBCMT,LOW,anchored
 0x0d5e50,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x0da4c0,__inc,LIBCMT,LOW,anchored
 0x0da510,__inc,LIBCMT,LOW,anchored

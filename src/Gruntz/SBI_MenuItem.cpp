@@ -14,10 +14,10 @@
 #include <Gruntz/Sprite.h>                // CDDrawWorker (fold: ex via ResMgr.h)
 #include <DDrawMgr/DDrawSubMgrPages.h> // the m_drawTarget pages (fold: ex ResMgr.h CDrawTarget) // canonical g_gameReg->m_world (m_world) view (CDDrawSurfaceMgr + CDDrawSubMgrPages + CDDrawWorkerRegistry + CDDrawWorker)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // m_soundRegistry's real class (the cue host: m_10 cue map + m_30 gate)
-#include <Gruntz/LeafCue.h>            // the cue-map value class (ex the CMiCue view)
-#include <Gruntz/SbiConfig.h>          // canonical config-host family (one shape)
-#include <Gruntz/StatusBarMgr.h>       // canonical CStatusBarMgr (LoadTabSprites)
-#include <Image/CImage.h> // canonical frame-record class (CImage::RenderFrame @0x153790)
+#include <Gruntz/LeafCue.h>               // the cue-map value class (ex the CMiCue view)
+#include <Gruntz/SbiConfig.h>    // canonical config-host family (one shape)
+#include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (LoadTabSprites)
+#include <Image/CImage.h>        // canonical frame-record class (CImage::RenderFrame @0x153790)
 
 VTBL(CSBI_MenuItem, 0x001eab4c); // vtable_names -> code (RTTI game class)
 
@@ -79,6 +79,11 @@ void CSBI_MenuItem::Reset() {
 // already-zero key/rec register instead of `xor eax,eax`; (2) the a==-1 default
 // path stores m_30 then RE-READS it for the `setne`, while the in-range path tests
 // the loaded value pre-store. Each return is inline (no shared fail tail). Deferred.
+RVA(0x000e81c0, 0x8)
+i32 CSBI_MenuItem::Refresh(i32) {
+    return 1;
+}
+
 RVA(0x000e81e0, 0x8b)
 i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
     if (key == 0) {

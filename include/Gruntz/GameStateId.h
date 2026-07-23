@@ -8,6 +8,9 @@ enum GameStateId {
     GAMESTATE_MENU = 5,         // CMenuState
     GAMESTATE_CREDITS = 8,      // CCreditsState
     GAMESTATE_BOOTY = 0xa,      // CBootyState
+    GAMESTATE_DEMO = 7,         // CDemo
+    GAMESTATE_HELP = 9,         // CHelpState
+    GAMESTATE_SPLASH = 0xe,     // CSplashState
     GAMESTATE_NONE = 0x11,      // PerFrameTick sentinel: suppresses frame timing
     GAMESTATE_MULTIBOOTY = 0x12 // CMultiBootyState
 };

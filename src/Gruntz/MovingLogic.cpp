@@ -1,7 +1,7 @@
 #define CMOVINGLOGIC_STANDALONE_CTOR
 #include <Gruntz/MovingLogic.h>
 #include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
-#include <strstrea.h> // REAL CRT ostrstream/istrstream (the serialize accumulator temps)
+#include <strstrea.h>   // REAL CRT ostrstream/istrstream (the serialize accumulator temps)
 #include <Gruntz/MovingLogicSerial.h> // the serialize helpers (WriteName/ReadName/ReadCurve)
 #include <Gruntz/GameLevel.h>         // CGameLevel::MoveToward (the level hop in Update)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // m_object->m_0c (the world root; m_level hop)
@@ -73,6 +73,11 @@ CMovingLogic::CMovingLogic() {
     m_128 = g_movingLogicMax;
     m_130 = g_movingLogicMax;
     m_138 = g_movingLogicMax;
+}
+
+RVA(0x00013bb0, 0x4)
+LogicTypeId CMovingLogic::GetTypeTag() {
+    return LOGIC_NONE;
 }
 
 RVA(0x00013bd0, 0x44)
@@ -212,13 +217,21 @@ void CMovingLogic::MovingSlot16() {
 
     // Drive the level's move resolver toward the new position.
     if (m_object->m_moveMode == 1) {
-        m_148 = m_object->OwnerMgr()->m_level
-                    ->MoveToward(m_object, static_cast<i32>(Motion()->m_40), m_object->m_screenY, m_14c);
+        m_148 = m_object->OwnerMgr()->m_level->MoveToward(
+            m_object,
+            static_cast<i32>(Motion()->m_40),
+            m_object->m_screenY,
+            m_14c
+        );
         Motion()->m_30 = 0.0;
     } else {
         m_object->m_flags &= ~0x10;
-        m_148 = m_object->OwnerMgr()->m_level
-                    ->MoveToward(m_object, static_cast<i32>(Motion()->m_40), static_cast<i32>(Motion()->m_48), m_14c);
+        m_148 = m_object->OwnerMgr()->m_level->MoveToward(
+            m_object,
+            static_cast<i32>(Motion()->m_40),
+            static_cast<i32>(Motion()->m_48),
+            m_14c
+        );
     }
 
     // X arrival: if the object moved off the motion target, re-solve the X
@@ -308,4 +321,3 @@ i32 CMovingLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
     }
     return CUserLogic::SerializeMove(arc, mode, a3, a4) != 0;
 }
-

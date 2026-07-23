@@ -806,7 +806,6 @@ public:
     void OnDropPlayer();             // 0xbc110
     i32 WaitForConnect();            // 0xbca50
     i32 ResetPlayerCommands(i32 id); // 0xbcf20
-    void WriteTag(const char* tag);  // 0xbd4a0  reloc-masked (no-op stub)
 
     // External engine helpers the cluster fires through incremental-link thunks
     // (__thiscall on `this` unless noted; bodies external/no-body so the

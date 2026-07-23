@@ -2,7 +2,7 @@
 # floor for the build-integrity denominator gate (labels.py). A unit whose
 # count DROPS fails the build; see check_labels_manifest(). Regenerate a
 # deliberate drop with GRUNTZ_LABELS_ACK=1.
-# units: 366  functions: 4191
+# units: 366  functions: 4251
 actionarea	16
 actionoptionsmenubar	12
 adler32	1
@@ -13,7 +13,7 @@ anirecord	14
 areamgr	58
 arrayserialize	4
 attract	19
-attractstate	28
+attractstate	31
 battlezdata	30
 battlezdlgrow	1
 battlezmapconfig	50
@@ -23,10 +23,10 @@ bitarray	1
 bitstreamblowfish	1
 blowfish	4
 blowfishcopy	1
-boomerang	3
+boomerang	4
 bootycheatstate	1
 bootymessages	3
-bootystateactivate	48
+bootystateactivate	51
 bootywalkanim	2
 bracketvalue	1
 brickz	4
@@ -54,7 +54,7 @@ circleshadeblit	1
 cmdscrollapply	2
 colorhsv	1
 connslotlist	3
-creditsstate	33
+creditsstate	36
 creditzassets	1
 cremusnode	2
 cspawnentry	1
@@ -132,9 +132,9 @@ gruntchargestep	1
 gruntcombat	25
 gruntcreationpoint	8
 gruntdatarecord	2
-gruntentrancearrival	23
+gruntentrancearrival	24
 gruntentrancemove	14
-grunthealthsprite	10
+grunthealthsprite	11
 gruntindicatorworkerhandlers	7
 gruntmovestep	1
 gruntpickupload	1
@@ -157,18 +157,18 @@ gruntvoice	19
 gruntvoiceactreg	1
 gruntwingztimesprite	4
 gruntzapp	9
-gruntzcmdmgr	40
+gruntzcmdmgr	44
 gruntzmapmgr	3
-gruntzmgr	153
+gruntzmgr	160
 gruntzmgr2	1
 gruntzmgrcmd	1
 gruntzrandom	5
 gruntzsoundz	31
-gruntzwnd	17
+gruntzwnd	18
 guardpoint	4
 hash	10
 heapdiag	8
-helpstate	25
+helpstate	32
 iconloaders	2
 imageowned	8
 imagepolyclip	2
@@ -218,20 +218,20 @@ menuitem	31
 menupage	34
 menusparkle	7
 menusparkleserial	1
-menustate	30
+menustate	34
 mgrautoscroll	1
 mgrlistfind	1
 mgrsettings	1
 modeobjinit	2
 motionstate	6
 movieplayer	2
-movinglogic	6
-multi	105
+movinglogic	7
+multi	106
 multistartdlg	17
 multistartdlgroster	32
 namerecord	4
 netcmdmgr	1
-netcmdslot	45
+netcmdslot	46
 netlobbydialogs	21
 netmgr	45
 netmgrerror	2
@@ -244,9 +244,9 @@ packetpool	2
 palettebmp	2
 palettecopy	1
 palettesnapshot	1
-pathhazard	12
+pathhazard	13
 pathhazardactreg	2
-play	115
+play	116
 playercommandstep	1
 playmessageimage	2
 playplanescan	2
@@ -269,19 +269,19 @@ rockbreakeffectupdate	1
 rollingball	8
 savegame	33
 savescreenshot	1
-sbi_image	5
-sbi_imageset	5
-sbi_imagesetani	5
-sbi_menuitem	11
+sbi_image	6
+sbi_imageset	7
+sbi_imagesetani	6
+sbi_menuitem	12
 sbi_rectonly	83
-sbi_rectonlybase	3
+sbi_rectonlybase	4
 sbi_rectonlydtor_eh	2
 sbi_sidetab_build	1
 sbi_statztabarrow_eh	1
 sbi_statztabgruntbar	5
 sbi_tabzdialog_eh	1
 sbi_warlordhead	6
-sbi_wellgoo	5
+sbi_wellgoo	6
 scattersamples	2
 secretteleportertrigger	17
 serializesyncmarker	1
@@ -305,7 +305,7 @@ spriteloaders	10
 spriteref	3
 spritereftable	10
 startupprompt	1
-state	18
+state	21
 statedispatch	1
 stateimages	2
 statemgrbz	7
@@ -314,14 +314,14 @@ statichazard	9
 statusbargamemenu	1
 statusbaritem	4
 statusbarmgr	1
-statusbarspriteacts	7
-statusbartabbuilders	16
+statusbarspriteacts	8
+statusbartabbuilders	17
 statusbarupdaters	2
 streamrecordloaders	2
 surfacepalette	1
 symtab	60
 terraintileloader	1
-tilelogicpump	58
+tilelogicpump	64
 tilescan	1
 tileswitchlogic	44
 tiletriggercontainer	28
@@ -340,9 +340,9 @@ typekeycoll	31
 ufo	6
 uncompr	1
 unknownfileioctor	1
-userlogic	17
+userlogic	18
 userlogicctoremit	2
-videoconfig	18
+videoconfig	19
 voicesoundlist	1
 wallproject	1
 wap32rect	3

@@ -64,7 +64,8 @@ i32 CSBI_Image::SetupImage(
         return 0 != 0;
     }
     CDDrawWorker* rec = 0;
-    (reinterpret_cast<CMapStringToPtr*>(&host->m_imageRegistry->m_10map))->Lookup(key, reinterpret_cast<void*&>(rec));
+    (reinterpret_cast<CMapStringToPtr*>(&host->m_imageRegistry->m_10map))
+        ->Lookup(key, reinterpret_cast<void*&>(rec));
     if (rec == 0 || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
         m_frame = 0;
         return 0 != 0;
@@ -89,6 +90,11 @@ void CSBI_Image::Reset() {
 // the g_gameReg->m_world->m_drawTarget surface-context chain to last, where cl loads the
 // global mid-sequence. Neither local nor inlined surfaceCtx flips it (RenderFrame
 // arg-eval-order/regalloc wall shared by the whole slot-5 render family). Final sweep.
+RVA(0x000e6db0, 0x8)
+i32 CSBI_Image::Refresh(i32) {
+    return 1;
+}
+
 RVA(0x000e6dd0, 0x45)
 i32 CSBI_Image::Render() {
     if (m_28 > 0) {
@@ -96,7 +102,9 @@ i32 CSBI_Image::Render() {
         CImage* cel = m_frame;
         if (cel != 0) {
             cel->RenderFrame(
-                reinterpret_cast<void*>(reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair)),
+                reinterpret_cast<void*>(
+                    reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair)
+                ),
                 reinterpret_cast<void*>((m_rect14.m_0 + cel->m_anchorX)),
                 reinterpret_cast<void*>((m_rect14.m_4 + cel->m_anchorY)),
                 static_cast<void*>(0)

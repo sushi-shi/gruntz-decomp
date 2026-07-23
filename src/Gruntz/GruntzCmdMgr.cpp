@@ -23,7 +23,7 @@ i32 CGruntzCommand::Save(CFileMemBase*) {
 i32 CGruntzCommand::Load(CFileMemBase*) {
     return 0;
 }
-i32 CGruntzCommand::GetTag() {
+char CGruntzCommand::GetTag() {
     return 0;
 }
 i32 CGruntzCommand::Parse(void*, i32) {
@@ -69,7 +69,8 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
     i32 i;
     for (i = 0; i < m_base.GetCount(); i++) {
         POSITION pos = m_base.FindIndex(i);
-        CGruntzCommand* obj = *reinterpret_cast<CGruntzCommand**>((reinterpret_cast<char*>(pos) + 8));
+        CGruntzCommand* obj =
+            *reinterpret_cast<CGruntzCommand**>((reinterpret_cast<char*>(pos) + 8));
         i32 flags = obj->m_submitted; // +0x0c submit-context latch
         if (!(flags & 2)) {
             if (!(flags & 1)) {
@@ -104,7 +105,8 @@ RVA(0x00023b40, 0x53)
 void CGruntzCmdMgr::RemoveMatchingTarget(char indexByte, char typeByte) {
     for (i32 i = 0; i < m_base.GetCount(); i++) {
         POSITION pos = m_base.FindIndex(i);
-        CGruntzCommand* obj = *reinterpret_cast<CGruntzCommand**>((reinterpret_cast<char*>(pos) + 8));
+        CGruntzCommand* obj =
+            *reinterpret_cast<CGruntzCommand**>((reinterpret_cast<char*>(pos) + 8));
         if (obj->m_targetType == static_cast<u8>(typeByte)
             && obj->m_targetIndex == static_cast<u8>(indexByte)) {
             m_base.RemoveAt(pos);
@@ -378,6 +380,16 @@ i32 CGruntzSingleCommand::Vslot05() {
     return 1;
 }
 
+RVA(0x00024280, 0x3)
+char CGruntzSingleCommand::GetTag() {
+    return 1;
+}
+
+RVA(0x000242a0, 0xc)
+void CGruntzSingleCommand::Deselect() {
+    g_singleCmdList.AddHead(this); // retire onto the single-command recycle list
+}
+
 RVA(0x000242f0, 0x7)
 void CGruntzCommand::CGruntzCommand_0242f0() {
     this->CGruntzCommand::~CGruntzCommand();
@@ -402,6 +414,16 @@ CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
 RVA(0x000243a0, 0x6)
 i32 CGruntzMultiCommand::Vslot05() {
     return 1;
+}
+
+RVA(0x000243c0, 0x3)
+char CGruntzMultiCommand::GetTag() {
+    return 2;
+}
+
+RVA(0x000243e0, 0xc)
+void CGruntzMultiCommand::Deselect() {
+    g_multiCmdList.AddHead(this); // retire onto the multi-command recycle list
 }
 
 RVA(0x00024430, 0x7)

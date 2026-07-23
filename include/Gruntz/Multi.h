@@ -240,7 +240,9 @@ public:
     i32 HandleControlMsg(CNetCtrlMsg* msg, i32 arg2);                            // 0x0ba1a0
     i32 OnPlayerLeft(i32 playerId);                                              // 0x0ba3b0
     void AckDropPlayer(i32 id);                                                  // 0x0ba590
-    void WriteTag(const char* tag); // 0x0bd4a0 (reloc-masked)
+    RVA(0x000bd4a0, 0x3)
+    void WriteTag(const char*) {} // no-op debug tag sink (COMDAT; linker pooled it
+                                  // past the filestream band at 0xbd4a0)
     // Drop/wait helpers (moved off the conflated CNetMgr in the netmgr-vs-cmulti
     // split): both run on `this`==CMulti (they read the +0x520 session, the +0x604
     // drop-id CDWordArray, m_534, m_hostIndex).

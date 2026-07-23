@@ -2,9 +2,9 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (CUserBase/CUserLogic GetTypeTag)
 #include <Gruntz/UserLogic.h>   // CWapX / CUserBase / CUserLogic - the classes this TU defines
 #include <Gruntz/GameObjectFactory.h> // the Logic*Factory registrants (BuildLogicTypeTable)
-#include <Gruntz/Grunt.h>       // CAnimLookupNode (the m_14 aux FinalizeStep's guard reads at +0x1c)
-#include <Gruntz/SerialArchive.h>     // the archive (Read/Write slots)
-#include <Gruntz/AniElement.h>        // full CAniElement (m_value upcasts to CObject at KeyOfValue)
+#include <Gruntz/Grunt.h> // CAnimLookupNode (the m_14 aux FinalizeStep's guard reads at +0x1c)
+#include <Gruntz/SerialArchive.h> // the archive (Read/Write slots)
+#include <Gruntz/AniElement.h>    // full CAniElement (m_value upcasts to CObject at KeyOfValue)
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerCache.h> // the worker cache (m_10 Lookup / CreateWorker)
 #include <DDrawMgr/DDrawSubMgrLeaf.h>  // the name registry (m_10 Lookup / KeyOfValue)
@@ -38,6 +38,11 @@ i32 CUserBase::SerializeMove(CFileMemBase*, i32, i32, i32) {
 RVA(0x000087f0, 0x3)
 LogicTypeId CUserBase::GetTypeTag() {
     return static_cast<LogicTypeId>(0);
+}
+
+RVA(0x00008840, 0x4)
+LogicTypeId CUserLogic::GetTypeTag() {
+    return LOGIC_NONE;
 }
 
 RVA(0x000088d0, 0x1)
@@ -159,7 +164,9 @@ i32 CWapX::Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj) {
         }
         void* val = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
         m_3c->m_0c->m_animRegistry->m_10.Lookup(name, val);
-        m_value = static_cast<CAniElement*>(val); // the map stores void*; KeyOfValue takes the CObject* upcast
+        m_value = static_cast<CAniElement*>(
+            val
+        ); // the map stores void*; KeyOfValue takes the CObject* upcast
         return 1;
     }
     if (mode == 4) {

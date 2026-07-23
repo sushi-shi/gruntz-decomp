@@ -1,11 +1,12 @@
 #include <Mfc.h> // ShowCursor (afx-first)
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>  // CDDrawSubMgrPages::PagesReady (the page gate)
+#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages::PagesReady (the page gate)
 #include <DDrawMgr/DDrawSurfacePair.h> // the front pair's held surface (Render's busy probe)
 #include <DDrawMgr/DDSurface.h>
 
 #include <Gruntz/BankMgr.h>      // CBankMgr::Lookup (inherited m_8) -> CSymTab
+#include <Gruntz/Demo.h>         // CDemo (its Update body rides this TU's band)
 #include <Gruntz/GruntzMgr.h>    // CGruntzMgr m_4 + m_gameWnd->PumpMessages (pulls State.h/Wap32.h)
 #include <Gruntz/HelpState.h>    // canonical CHelpState (was defined locally here)
 #include <Gruntz/SplashState.h>  // CSplashState (the 0x8d000 /GX out-of-line dtor)
@@ -13,21 +14,36 @@
 #include <Gruntz/Attract.h>      // CMenuRoot chain (m_c): Render's busy surface + attract registrar
 #include <DDrawMgr/DDSurface.h> // CDDSurface::m_8 (the held IDirectDrawSurface, Render's busy gate)
 #include <ddraw.h>              // IDirectDrawSurface::IsLost (slot 24) - Render's busy poll
-#include <Gruntz/FixedPtrArray32.h>     // the game-controller poll list (g_actorList)
-#include <DinMgr2/DirectInputMgr2.h>    // CInputDevBase (Poll/m_currentKeys press-edge flags)
+#include <Gruntz/FixedPtrArray32.h>  // the game-controller poll list (g_actorList)
+#include <DinMgr2/DirectInputMgr2.h> // CInputDevBase (Poll/m_currentKeys press-edge flags)
 #include <rva.h>
 
 DATA(0x002111b0)
 u8 g_titleBuf = 72;
+
+RVA(0x0008cee0, 0x6)
+GameStateId CHelpState::Update() {
+    return GAMESTATE_HELP;
+}
 
 RVA(0x0008cf30, 0x55)
 CHelpState::~CHelpState() {
     CState::ReleaseResources(); // 0xfa150 (the base slot-2 teardown; qualified -> direct)
 }
 
+RVA(0x0008cfb0, 0x6)
+GameStateId CSplashState::Update() {
+    return GAMESTATE_SPLASH;
+}
+
 RVA(0x0008d000, 0x55)
 CSplashState::~CSplashState() {
     CSplashState::ReleaseResources(); // 0xf9840 (own slot-2 override; in-dtor static bind)
+}
+
+RVA(0x0008d080, 0x6)
+GameStateId CDemo::Update() {
+    return GAMESTATE_DEMO;
 }
 
 RVA(0x00095090, 0x6e)
@@ -75,6 +91,11 @@ i32 CHelpState::Vslot09(i32 arg) {
 // `mov ecx,[eax+0x28]; mov ecx,[ecx+0x2c]` - same value, m_28 pinned in eax vs ecx;
 // permuter no-change) plus the reloc-masked IAT/cross-unit operands the sibling
 // CAttract::Render documents (ReportError/PostMessageA/PurgeVoiceList). topic:regalloc.
+RVA(0x000951d0, 0x8)
+i32 CHelpState::FrameSlot28(i32) {
+    return 1;
+}
+
 RVA(0x000951f0, 0xeb)
 i32 CHelpState::Render() {
     IDirectDrawSurface* busy = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
@@ -114,7 +135,13 @@ i32 CHelpState::InputVirtual() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    i32 r = RunTitleSeq(reinterpret_cast<char*>(&g_titleBuf), 0, 0, 1, 0); // 0xfa350 (CState base method)
+    i32 r = RunTitleSeq(
+        reinterpret_cast<char*>(&g_titleBuf),
+        0,
+        0,
+        1,
+        0
+    ); // 0xfa350 (CState base method)
     while (ShowCursor(FALSE) >= 0) {
     }
     return r;
@@ -127,7 +154,13 @@ i32 CHelpState::Vslot06() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return RunTitleSeq(reinterpret_cast<char*>(&g_titleBuf), 0, 0, 1, 0); // 0xfa350 (CState base method)
+    return RunTitleSeq(
+        reinterpret_cast<char*>(&g_titleBuf),
+        0,
+        0,
+        1,
+        0
+    ); // 0xfa350 (CState base method)
 }
 
 RVA(0x000953f0, 0x37)

@@ -981,6 +981,12 @@ i32 CGrunt::StepEntranceRelatchA() {
 // the body stays the byte-matched __stdcall leaf (it ignores ecx / uses pure stack args).
 // retail identity: ?RectSegProbe@CGrunt@@QAEHPAX00@Z (byte-matched as the __stdcall leaf
 // CGrunt_SegBoxOverlap, which ignores ecx; the fold onto CGrunt is deferred)
+RVA(0x00062b40, 0x11)
+i32 CGrunt::UserLogicVfunc6() {
+    m_438 = g_frameTicks;
+    return 1;
+}
+
 RVA(0x00062b70, 0x205)
 i32 __stdcall CGrunt_SegBoxOverlap(GruntBox* p, GruntSegEnd* e1, GruntSegEnd* e2) {
     i32 e1y = e1->m_4;

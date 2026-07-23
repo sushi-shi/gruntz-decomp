@@ -1,5 +1,5 @@
-#include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
+#include <Gruntz/ActNameRegistry.h>       // the shared activation-name registry archetype
+#include <Gruntz/ActReg.h>                // the shared CActReg coordinate-registry archetype
 #include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
@@ -8,7 +8,7 @@
 #include <Wap32/ZVec.h>
 
 #include <Gruntz/StatusBarSprite.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+#include <Gruntz/SerialArchive.h>       // the serialize stream (== the real CFileMemBase)
 #include <Gruntz/StatusBarSpriteActs.h> // g_statusBarSpriteActReg decl
 
 // g_statusBarSpriteActReg (0x0024e670): CActReg - no provable static init (the type has no
@@ -93,8 +93,9 @@ void CStatusBarSprite::FireActivation(i32 coord) {
     CStatusBarSpriteActEntry* e =
         reinterpret_cast<CStatusBarSpriteActEntry*>(g_statusBarSpriteActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        CStatusBarSpriteActEntry* e2 =
-            reinterpret_cast<CStatusBarSpriteActEntry*>(g_statusBarSpriteActReg.ResolveEntry(coord));
+        CStatusBarSpriteActEntry* e2 = reinterpret_cast<CStatusBarSpriteActEntry*>(
+            g_statusBarSpriteActReg.ResolveEntry(coord)
+        );
         (this->*(e2->m_fn))();
     }
 }
@@ -131,11 +132,20 @@ void CStatusBarSprite::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CStatusBarSprite::AdvanceAnim);
 }
 
+RVA(0x00011ac0, 0x6)
+LogicTypeId CStatusBarSprite::GetTypeTag() {
+    return LOGIC_STATUSBARSPRITE;
+}
+
 RVA(0x00011ae0, 0x47)
 i32 CStatusBarSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(
+            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
+            mode,
+            a3,
+            a4
+        )) {
         return 0;
     }
     return Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
 }
-

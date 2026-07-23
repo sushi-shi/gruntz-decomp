@@ -415,6 +415,11 @@ RVA_COMPGEN(0x0008c470, 0xb, ??1CState@@UAE@XZ)
 // dtor; cl still emits one out-of-line COMDAT copy (driven by ??_GCPlay), which lands
 // at 0x8c830. An inline dtor can't hang an RVA() (it would also tag the synthesized
 // ??_G -> duplicate-RVA), so it is pinned by mangled name:
+RVA(0x0008c530, 0x8)
+i32 CState::FrameSlot28(i32) {
+    return 1;
+}
+
 RVA_COMPGEN(0x0008c830, 0xaf, ??1CPlay@@UAE@XZ)
 
 RVA(0x0008d0d0, 0xc4)
@@ -426,6 +431,21 @@ CDemo::~CDemo() {
     // compiler then inline-folds the ~CPlay base teardown (its own
     // CPlay::ReleaseResources call at +0x40). Byte-neutral.
     CPlay::ReleaseResources();
+}
+
+RVA(0x0008d1e0, 0x6)
+GameStateId CMulti::Update() {
+    return GAMESTATE_NONE;
+}
+
+RVA(0x0008d200, 0x3)
+i32 CMulti::Vslot1a() {
+    return 0;
+}
+
+RVA(0x0008d220, 0xa)
+i32 CMulti::GetFrame() {
+    return m_session->m_tick;
 }
 
 RVA(0x0008d850, 0x83)

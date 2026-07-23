@@ -42,12 +42,12 @@
 #include <Gruntz/AniElement.h>            // CAniElement (ApplyAnimation +0x1b4 anim descriptor)
 #include <Gruntz/AniAdvanceCursor.h>      // CAniAdvanceCursor (TransitionAct anim sub-object)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Gruntz/SerialArchive.h>         // CFileMemBase (Read @+0x2c / Write @+0x30)
-#include <Gruntz/GameRegistry.h>          // g_gameReg->m_134 (play sub-mode gate in the warp ctor)
-#include <string.h>                       // memset (inlined rep stosd)
+#include <Gruntz/SerialArchive.h> // CFileMemBase (Read @+0x2c / Write @+0x30)
+#include <Gruntz/GameRegistry.h>  // g_gameReg->m_134 (play sub-mode gate in the warp ctor)
+#include <string.h>               // memset (inlined rep stosd)
 #include <rva.h>
-#include <DDrawMgr/AniAdvance.h> // CAniDesc (the descriptor record)
-#include <Image/CImage.h> // the +0x198 cached frame (ex CGameObjLayer view)
+#include <DDrawMgr/AniAdvance.h>  // CAniDesc (the descriptor record)
+#include <Image/CImage.h>         // the +0x198 cached frame (ex CGameObjLayer view)
 #include <Gruntz/TileLogicPump.h> // g_brickzActReg decl
 
 // g_warpStonePadActReg (0x0024e6a0): CActReg - no provable static init (the type has no
@@ -74,7 +74,7 @@ VTBL(CWarpStonePad, 0x001e71ac); // vtable_names -> code (RTTI game class)
 VTBL(CBrickz, 0x001e7c54);
 VTBL(CGiantRock, 0x001e7d5c); // vtable_names -> code (RTTI game class)
 VTBL(CTileTriggerTransition, 0x001e7db4);
-VTBL(CCoveredPowerup, 0x001e7e0c); // vtable_names -> code (RTTI game class)
+VTBL(CCoveredPowerup, 0x001e7e0c);    // vtable_names -> code (RTTI game class)
 VTBL(CTileSecretTrigger, 0x001e7e64); // vtable_names -> code (RTTI game class)
 VTBL(CCheckpointTrigger, 0x001e7ebc);
 VTBL(CTileTrigger, 0x001e7f14);
@@ -84,9 +84,9 @@ DATA_SYMBOL(0x0024e720, 0x24, ?g_tileActReg@@3UCActReg@@A)
 
 #define TILE_LOGIC_WORKER_PUMP(LEAF)                                                               \
     AnimWorkerObj* ctl = obj->m_7c;                                                                \
-    switch (reinterpret_cast<u32>(ctl->m_1c)) {                                                                      \
+    switch (reinterpret_cast<u32>(ctl->m_1c)) {                                                    \
         case 0: {                                                                                  \
-            ctl->m_1c = reinterpret_cast<void*>(0x3e8);                                                              \
+            ctl->m_1c = reinterpret_cast<void*>(0x3e8);                                            \
             LEAF* t = new LEAF(obj);                                                               \
             t->Activate();                                                                         \
             ctl->m_logic = t;                                                                      \
@@ -113,14 +113,19 @@ DATA_SYMBOL(0x0024e720, 0x24, ?g_tileActReg@@3UCActReg@@A)
         case 0x3e8:                                                                                \
             break;                                                                                 \
         default:                                                                                   \
-            ProjTypeXfer(ctl->m_logic);                                             \
+            ProjTypeXfer(ctl->m_logic);                                                            \
             break;                                                                                 \
     }                                                                                              \
     return 1;
 
 RVA(0x00010f20, 0x47)
 i32 CWarpStonePad::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(
+            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
+            mode,
+            a3,
+            a4
+        )) {
         return 0;
     }
     return Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
@@ -134,9 +139,19 @@ i32 CWarpStonePad::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00010fc0, 0x44, ??1CWarpStonePad@@UAE@XZ)
 
+RVA(0x00011030, 0x6)
+LogicTypeId CTileTriggerSwitch::GetTypeTag() {
+    return LOGIC_TILETRIGGERSWITCH;
+}
+
 RVA(0x00011050, 0x47)
 i32 CTileTriggerSwitch::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(
+            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
+            mode,
+            a3,
+            a4
+        )) {
         return 0;
     }
     return Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
@@ -152,9 +167,19 @@ RVA_COMPGEN(0x000110f0, 0x44, ??1CTileTriggerSwitch@@UAE@XZ)
 RVA(0x00011160, 0x4b)
 CTileTrigger::CTileTrigger() {}
 
+RVA(0x000111d0, 0x6)
+LogicTypeId CTileTrigger::GetTypeTag() {
+    return LOGIC_TILETRIGGER;
+}
+
 RVA(0x000111f0, 0x47)
 i32 CTileTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(
+            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
+            mode,
+            a3,
+            a4
+        )) {
         return 0;
     }
     return Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
@@ -188,6 +213,11 @@ RVA_COMPGEN(0x000113c0, 0x44, ??1CBrickz@@UAE@XZ)
 // a user-declared `~CCheckpointTrigger() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA(0x00011430, 0x6)
+LogicTypeId CCheckpointTrigger::GetTypeTag() {
+    return LOGIC_CHECKPOINTTRIGGER;
+}
+
 RVA_COMPGEN(0x00011480, 0x44, ??1CCheckpointTrigger@@UAE@XZ)
 
 // --- CTileTrigger leaf destructors (0x011540 / 0x011600 / 0x0116c0) --- the SAME
@@ -196,17 +226,32 @@ RVA_COMPGEN(0x00011480, 0x44, ??1CCheckpointTrigger@@UAE@XZ)
 // a user-declared `~CTileSecretTrigger() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA(0x000114f0, 0x6)
+LogicTypeId CTileSecretTrigger::GetTypeTag() {
+    return LOGIC_TILESECRETTRIGGER;
+}
+
 RVA_COMPGEN(0x00011540, 0x44, ??1CTileSecretTrigger@@UAE@XZ)
 
 // IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
 // a user-declared `~CGiantRock() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA(0x000115b0, 0x6)
+LogicTypeId CGiantRock::GetTypeTag() {
+    return LOGIC_GIANTROCK;
+}
+
 RVA_COMPGEN(0x00011600, 0x44, ??1CGiantRock@@UAE@XZ)
 // IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
 // a user-declared `~CCoveredPowerup() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA(0x00011670, 0x6)
+LogicTypeId CCoveredPowerup::GetTypeTag() {
+    return LOGIC_COVEREDPOWERUP;
+}
+
 RVA_COMPGEN(0x000116c0, 0x44, ??1CCoveredPowerup@@UAE@XZ)
 
 // --- CTileTriggerTransition leaf pool (the tiletriggertransition stray, folded waveM-strays)
@@ -221,7 +266,12 @@ LogicTypeId CTileTriggerTransition::GetTypeTag() {
 
 RVA(0x00011750, 0x47)
 i32 CTileTriggerTransition::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(
+            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
+            mode,
+            a3,
+            a4
+        )) {
         return 0;
     }
     return Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
@@ -321,7 +371,8 @@ void CWarpStonePad::InitActReg() {
 
 RVA(0x0010d8c0, 0x102)
 void CWarpStonePad::FireActivation(i32 coord) {
-    CWarpStonePadActEntry* e = reinterpret_cast<CWarpStonePadActEntry*>(g_warpStonePadActReg.ResolveEntry(coord));
+    CWarpStonePadActEntry* e =
+        reinterpret_cast<CWarpStonePadActEntry*>(g_warpStonePadActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
         CWarpStonePadActEntry* e2 =
             reinterpret_cast<CWarpStonePadActEntry*>(g_warpStonePadActReg.ResolveEntry(coord));
@@ -373,11 +424,13 @@ void CTileTriggerSwitch::InitActReg() {
 
 RVA(0x0010dea0, 0x102)
 void CTileTriggerSwitch::FireActivation(i32 coord) {
-    CTileTriggerSwitchActEntry* e =
-        reinterpret_cast<CTileTriggerSwitchActEntry*>(g_tileTriggerSwitchActReg.ResolveEntry(coord));
+    CTileTriggerSwitchActEntry* e = reinterpret_cast<CTileTriggerSwitchActEntry*>(
+        g_tileTriggerSwitchActReg.ResolveEntry(coord)
+    );
     if (e->m_fn != 0) {
-        CTileTriggerSwitchActEntry* e2 =
-            reinterpret_cast<CTileTriggerSwitchActEntry*>(g_tileTriggerSwitchActReg.ResolveEntry(coord));
+        CTileTriggerSwitchActEntry* e2 = reinterpret_cast<CTileTriggerSwitchActEntry*>(
+            g_tileTriggerSwitchActReg.ResolveEntry(coord)
+        );
         (this->*(e2->m_fn))();
     }
 }
@@ -405,8 +458,8 @@ void CTileTriggerSwitch::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<CTileTriggerSwitchActEntry*>(g_tileTriggerSwitchActReg.ResolveEntry(id)))->m_fn =
-        static_cast<i32 (CUserLogic::*)()>(&CTileTriggerSwitch::AdvanceAnim);
+    (reinterpret_cast<CTileTriggerSwitchActEntry*>(g_tileTriggerSwitchActReg.ResolveEntry(id)))
+        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CTileTriggerSwitch::AdvanceAnim);
 }
 
 RVA(0x0010e220, 0x17d)
@@ -428,9 +481,11 @@ void CTileTrigger::InitActReg() {
 
 RVA(0x0010e4a0, 0x102)
 void CTileTrigger::FireActivation(i32 coord) {
-    CTileTriggerActEntry* e = reinterpret_cast<CTileTriggerActEntry*>(g_tileTriggerActReg.ResolveEntry(coord));
+    CTileTriggerActEntry* e =
+        reinterpret_cast<CTileTriggerActEntry*>(g_tileTriggerActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        CTileTriggerActEntry* e2 = reinterpret_cast<CTileTriggerActEntry*>(g_tileTriggerActReg.ResolveEntry(coord));
+        CTileTriggerActEntry* e2 =
+            reinterpret_cast<CTileTriggerActEntry*>(g_tileTriggerActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -505,7 +560,8 @@ RVA(0x0010ea80, 0x102)
 void CBrickz::FireActivation(i32 coord) {
     CBrickzActEntry* e = reinterpret_cast<CBrickzActEntry*>(g_brickzActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        CBrickzActEntry* e2 = reinterpret_cast<CBrickzActEntry*>(g_brickzActReg.ResolveEntry(coord));
+        CBrickzActEntry* e2 =
+            reinterpret_cast<CBrickzActEntry*>(g_brickzActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -599,9 +655,11 @@ void CCheckpointTrigger::InitActReg() {
 
 RVA(0x0010f1e0, 0x102)
 void CCheckpointTrigger::FireActivation(i32 coord) {
-    CCheckpointActEntry* e = reinterpret_cast<CCheckpointActEntry*>(g_checkpointActReg.ResolveEntry(coord));
+    CCheckpointActEntry* e =
+        reinterpret_cast<CCheckpointActEntry*>(g_checkpointActReg.ResolveEntry(coord));
     if (e->m_fn != 0) {
-        CCheckpointActEntry* e2 = reinterpret_cast<CCheckpointActEntry*>(g_checkpointActReg.ResolveEntry(coord));
+        CCheckpointActEntry* e2 =
+            reinterpret_cast<CCheckpointActEntry*>(g_checkpointActReg.ResolveEntry(coord));
         (this->*(e2->m_fn))();
     }
 }
@@ -678,7 +736,12 @@ i32 CCheckpointTrigger::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a
         sa->Read(m_state, 0x3c);
         sa->Read(&m_firstEmpty, 4);
     }
-    if (!CUserLogic::SerializeMove(reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(arc))), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(
+            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(arc))),
+            mode,
+            a3,
+            a4
+        )) {
         return 0;
     }
     return Chain(sa, mode, a3, reinterpret_cast<CGameObject*>(a4)) ? 1 : 0;
@@ -747,7 +810,8 @@ void CTileTriggerTransition::RegisterActs() {
         (reinterpret_cast<CString*>(slot))->operator=("A");
         g_typeCounter++;
     }
-    (reinterpret_cast<TileActEntry*>(g_tileActReg.ResolveEntry(id)))->m_fn = static_cast<i32 (CUserLogic::*)()>(&CTileTriggerTransition::TransitionAct);
+    (reinterpret_cast<TileActEntry*>(g_tileActReg.ResolveEntry(id)))->m_fn =
+        static_cast<i32 (CUserLogic::*)()>(&CTileTriggerTransition::TransitionAct);
 }
 
 RVA(0x00110070, 0x71)
@@ -757,7 +821,8 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
         return 0;
     }
     CAniElement* desc = m_38->m_1a0.m_14;
-    CAniDesc* elem = desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+    CAniDesc* elem =
+        desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
     m_38->ApplyLookupSprite(sprite, elem->m_param);
     m_prevAnimSetNode = m_objAux->m_1c; // save the prev anim-set node (CUserLogic base field)
     m_objAux->m_1c = g_buteTree.Find("A");
@@ -772,4 +837,3 @@ i32 CTileTriggerTransition::TransitionAct() {
     }
     return 0;
 }
-

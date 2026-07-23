@@ -54,7 +54,8 @@ i32 CSBI_ImageSetAni::Init(
         m_cmd = a2;
         if (key != 0) {
             CDDrawWorker* tbl = 0;
-            (reinterpret_cast<CMapStringToPtr*>(&host->m_imageRegistry->m_10map))->Lookup(key, reinterpret_cast<void*&>(tbl));
+            (reinterpret_cast<CMapStringToPtr*>(&host->m_imageRegistry->m_10map))
+                ->Lookup(key, reinterpret_cast<void*&>(tbl));
             m_34 = tbl;
             if (tbl != 0) {
                 m_interval = b2;
@@ -73,6 +74,11 @@ i32 CSBI_ImageSetAni::Init(
         }
     }
     return 0;
+}
+
+RVA(0x000e7ae0, 0x8)
+i32 CSBI_ImageSetAni::Refresh(i32) {
+    return 1;
 }
 
 // ===========================================================================

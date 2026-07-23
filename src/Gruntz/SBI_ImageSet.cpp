@@ -61,7 +61,8 @@ i32 CSBI_ImageSet::SetupImage(
         return 0;
     }
     CDDrawWorker* rec = 0;
-    (reinterpret_cast<CMapStringToPtr*>(&host->m_imageRegistry->m_10map))->Lookup(key, reinterpret_cast<void*&>(rec));
+    (reinterpret_cast<CMapStringToPtr*>(&host->m_imageRegistry->m_10map))
+        ->Lookup(key, reinterpret_cast<void*&>(rec));
     m_34 = rec;
     if (rec == 0) {
         return 0;
@@ -94,6 +95,11 @@ void CSBI_ImageSet::Reset() {
 // 86.7% - logic + externs byte-exact; residual is the same RenderFrame surface-context
 // chain regalloc as CSBI_Image::Render plus the record-table range-test register
 // pairing. Final sweep.
+RVA(0x000e7420, 0x8)
+i32 CSBI_ImageSet::Refresh(i32) {
+    return 1;
+}
+
 RVA(0x000e7440, 0x5e)
 i32 CSBI_ImageSet::Render() {
     if (m_28 > 0) {
@@ -108,7 +114,9 @@ i32 CSBI_ImageSet::Render() {
         m_frame = cel;
         if (cel != 0) {
             cel->RenderFrame(
-                reinterpret_cast<void*>(reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair)),
+                reinterpret_cast<void*>(
+                    reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair)
+                ),
                 reinterpret_cast<void*>((cel->m_anchorX + m_rect14.m_0)),
                 reinterpret_cast<void*>((cel->m_anchorY + m_rect14.m_4)),
                 static_cast<void*>(0)
@@ -130,6 +138,14 @@ i32 CSBI_ImageSet::Render() {
 // reloc-masked Lookup/Read/WriteBytes/BaseSerialize/g_* operands. Naming the strlen
 // result to recover the dead store regresses it (98.4%) - a non-steerable /O2
 // dead-store artifact (docs/patterns/reloc-typing-vptr-global.md). Effectively done.
+RVA(0x000e74c0, 0x16)
+void CSBI_ImageSet::Notify(i32 id) {
+    if (id != -1) {
+        m_38 = id;
+    }
+    m_28 = 2;
+}
+
 RVA(0x000e74f0, 0x152)
 i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {

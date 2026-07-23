@@ -4054,3 +4054,7 @@ i32 CMulti::Vslot0b(i32 arg0, i32 arg1) {
     }
     return CPlay::Vslot0b(arg0, arg1); // qualified: the BASE leg, not this override
 }
+RVA(0x000bd3c0, 0x9)
+void CMulti::TickStateMgrs() {
+    m_mgr->TickStateMgrs();
+}

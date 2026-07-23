@@ -1,9 +1,9 @@
 #define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
 #include <rva.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_24 config host (real type)
-#include <Gruntz/CurPlayer.h>     // g_curPlayer
-#include <Gruntz/SerialCounter.h> // g_serialCounter
-#include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Gruntz/CurPlayer.h>         // g_curPlayer
+#include <Gruntz/SerialCounter.h>     // g_serialCounter
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SBI_WellGoo.h>
@@ -58,6 +58,11 @@ i32 CSBI_WellGoo::Setup(CStatusBarMgr*, CDDrawSurfaceMgr*, i32, i32, SbiRect, i3
 // precision (fmuls/fsubs), (3) fixing the clamp to a 1.0 FLOOR + (4) decrementing
 // m_28 between the two guards + reusing the ctx pointer for ctx->m_2c (the BltEx
 // receiver), all matching retail's byte stream.
+RVA(0x000e6360, 0x8)
+i32 CSBI_WellGoo::Refresh(i32) {
+    return 1;
+}
+
 RVA(0x000e6380, 0xf9)
 i32 CSBI_WellGoo::Render() {
     if (m_28 <= 0) {
@@ -69,7 +74,12 @@ i32 CSBI_WellGoo::Render() {
     }
 
     CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
-    m_baseFrame->RenderFrame(static_cast<void*>(ctx), reinterpret_cast<void*>(m_drawX), reinterpret_cast<void*>((m_rect14.m_c + 3)), 0);
+    m_baseFrame->RenderFrame(
+        static_cast<void*>(ctx),
+        reinterpret_cast<void*>(m_drawX),
+        reinterpret_cast<void*>((m_rect14.m_c + 3)),
+        0
+    );
 
     // Goo fill height: a fraction of the (m_rect14.m_c - m_rect14.m_4) progress,
     // ceiling-clamped to 1.0, subtracted off the current water line and rounded to an
@@ -81,7 +91,13 @@ i32 CSBI_WellGoo::Render() {
     }
     m_fgTop = static_cast<i32>((static_cast<double>(m_rect14.m_c) - fill));
 
-    m_blitter->Blit(reinterpret_cast<ShadeRect*>(&m_srcRect), m_gooSrc, reinterpret_cast<ShadeRect*>(&m_srcRect), 0, 0);
+    m_blitter->Blit(
+        reinterpret_cast<ShadeRect*>(&m_srcRect),
+        m_gooSrc,
+        reinterpret_cast<ShadeRect*>(&m_srcRect),
+        0,
+        0
+    );
 
     m_drawGuard++;
     m_blitGuard++;
@@ -89,7 +105,12 @@ i32 CSBI_WellGoo::Render() {
     m_blitGuard--;
     m_drawGuard--;
 
-    m_fgFrame->RenderFrame(static_cast<void*>(ctx), reinterpret_cast<void*>(m_drawX), reinterpret_cast<void*>((m_fgTop - 2)), 0);
+    m_fgFrame->RenderFrame(
+        static_cast<void*>(ctx),
+        reinterpret_cast<void*>(m_drawX),
+        reinterpret_cast<void*>((m_fgTop - 2)),
+        0
+    );
     return 1;
 }
 
@@ -198,7 +219,8 @@ i32 CSBI_WellGoo::SerializeFields(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
             if (m_gooSrc == 0) {
                 return 0;
             }
-            i32 sel = g_gameReg->m_options[g_curPlayer].m_008; // ex the '+0x158 selector table' raw read (0x150 + 8 + i*0x238)
+            i32 sel = g_gameReg->m_options[g_curPlayer]
+                          .m_008; // ex the '+0x158 selector table' raw read (0x150 + 8 + i*0x238)
             i32 node = g_gameReg->m_spriteFactory->GetSel(sel, 0);
             if (node == 0) {
                 node = g_gameReg->m_spriteFactory->GetSel(1, 0);

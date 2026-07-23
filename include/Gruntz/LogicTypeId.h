@@ -2,8 +2,17 @@
 #define GRUNTZ_LOGICTYPEID_H
 
 enum LogicTypeId {
-    LOGIC_ANICYCLE = 0x3ea,  // CAniCycle::GetTypeTag               @0x0f450
-    LOGIC_DONOTHING = 0x3ec, // CDoNothing::GetTypeTag              @0x0f6b0
+    LOGIC_NONE = -1,                 // CUserLogic/CMovingLogic base default @0x08840/0x13bb0
+    LOGIC_STATUSBARSPRITE = 0x3ff,   // CStatusBarSprite::GetTypeTag    @0x11ac0
+    LOGIC_TILETRIGGERSWITCH = 0x400, // CTileTriggerSwitch::GetTypeTag  @0x11030
+    LOGIC_TILETRIGGER = 0x401,       // CTileTrigger::GetTypeTag        @0x111d0
+    LOGIC_CHECKPOINTTRIGGER = 0x402, // CCheckpointTrigger::GetTypeTag  @0x11430
+    LOGIC_TILESECRETTRIGGER = 0x403, // CTileSecretTrigger::GetTypeTag  @0x114f0
+    LOGIC_COVEREDPOWERUP = 0x404,    // CCoveredPowerup::GetTypeTag     @0x11670
+    LOGIC_GIANTROCK = 0x406,         // CGiantRock::GetTypeTag          @0x115b0
+    LOGIC_BOOMERANG = 0x413,         // CBoomerang::GetTypeTag          @0x129b0
+    LOGIC_ANICYCLE = 0x3ea,          // CAniCycle::GetTypeTag               @0x0f450
+    LOGIC_DONOTHING = 0x3ec,         // CDoNothing::GetTypeTag              @0x0f6b0
     LOGIC_FRONTCANDY =
         0x3ef, // CFrontCandy::GetTypeTag             @0x0fa40 (vtable 0x1e84ec, slot 2)
     LOGIC_BEHINDCANDY = 0x3f0,           // CBehindCandy::GetTypeTag            @0x0fb70
@@ -23,14 +32,16 @@ enum LogicTypeId {
     LOGIC_PARTICLEZ = 0x41c,             // CParticlez::GetTypeTag              @0x12cd0
     LOGIC_SPOTLIGHT =
         0x41d, // CSpotLight::GetTypeTag              @0x12ff0 (vtable 0x1e75bc, slot 2)
-    LOGIC_WAYPOINT = 0x420,     // CWayPoint::GetTypeTag               @0x10220
-    LOGIC_ACTIONAREA = 0x423,   // CActionArea::GetTypeTag             @0x07f80
+    LOGIC_WAYPOINT = 0x420,   // CWayPoint::GetTypeTag               @0x10220
+    LOGIC_ACTIONAREA = 0x423, // CActionArea::GetTypeTag             @0x07f80
     // The 0x424..0x426 trio was UNTANGLED 2026-07-22 by dumping the four raw
     // vtables' slot 2: the old labels came from misbound bodies.
-    LOGIC_PATHHAZARD = 0x424,   // CPathHazard::GetTypeTag             @0x13210
-    LOGIC_RAINCLOUD = 0x425,    // CRainCloud::GetTypeTag              @0x132f0 (vtable 0x1e7324 slot 2)
-    LOGIC_UFO = 0x426,          // CUFO::GetTypeTag                    @0x133b0 (vtable 0x1e72b4 slot 2)
-    LOGIC_VOICETRIGGER = 0x42b, // CVoiceTrigger::GetTypeTag           @0x13550 (vtable 0x1e885c slot 2)
+    LOGIC_PATHHAZARD = 0x424, // CPathHazard::GetTypeTag             @0x13210
+    LOGIC_RAINCLOUD =
+        0x425,         // CRainCloud::GetTypeTag              @0x132f0 (vtable 0x1e7324 slot 2)
+    LOGIC_UFO = 0x426, // CUFO::GetTypeTag                    @0x133b0 (vtable 0x1e72b4 slot 2)
+    LOGIC_VOICETRIGGER =
+        0x42b, // CVoiceTrigger::GetTypeTag           @0x13550 (vtable 0x1e885c slot 2)
     LOGIC_FORTRESSFLAG = 0x427, // CFortressFlag::GetTypeTag           @0x10e40
     LOGIC_TOYPEEK = 0x428, // CToyPeek::GetTypeTag                @0x11bf0 (vtable 0x1e7204, slot 2)
     LOGIC_WARPSTONEPAD =

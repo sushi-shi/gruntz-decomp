@@ -1,4 +1,4 @@
-#include <Net/CmdPool.h> // g_pool (ex .cpp extern)
+#include <Net/CmdPool.h>  // g_pool (ex .cpp extern)
 #include <Net/NetMgr.h>   // canonical CNetSession / CNetCmdSlot / CPtrList / CObject
 #include <Gruntz/Multi.h> // CMulti - the real owner of the LoadMenuSelectSprite/OnPlayerLeft/... game-mgr methods (netmgr-vs-cmulti split); Init a2 is a CMulti
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr - CMulti::m_4's real type (its +0x6c m_cmdSubMgr is the CGruntzCmdMgr command manager)
@@ -8,7 +8,7 @@
 #include <Rez/RezMgr.h>
 #include <dplay.h> // real DirectPlay: CNetMgr::m_endpoint (+0x18) is IDirectPlay4
 #include <rva.h>
-#include <string.h> // memcpy / memset / strcat (see #pragma intrinsic below)
+#include <string.h>         // memcpy / memset / strcat (see #pragma intrinsic below)
 #include <Net/NetCmdSlot.h> // own exported globals (ex Globals.h)
 
 #pragma intrinsic(memcpy)
@@ -315,6 +315,9 @@ i32 CNetSession::Tick() {
 // @early-stop
 // regalloc/spill wall (~67%): logic correct, retail spills `this` (dead slot) +
 // caches &m_slots[0]; this cl allocates the slot pointers differently.
+RVA(0x000bfb20, 0x1)
+void NoopSync(CGruntzCommand*) {}
+
 RVA(0x000bfb40, 0xe2)
 i32 CNetSession::SendAll() {
     i32 count = 0;

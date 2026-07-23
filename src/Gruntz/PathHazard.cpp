@@ -56,6 +56,11 @@ RVA_COMPGEN(0x00013280, 0x44, ??1CPathHazard@@UAE@XZ)
 // bute/geometry tail all match retail). Residual is the /GX leaf-vptr re-stamp
 // position + retail's walking-pointer reuse of the copy's ecx in the search loop
 // (a regalloc artifact, not source-steerable).
+RVA(0x000132f0, 0x6)
+LogicTypeId CRainCloud::GetTypeTag() {
+    return LOGIC_RAINCLOUD;
+}
+
 RVA(0x000b35a0, 0x401)
 CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_legDeadline = 0;

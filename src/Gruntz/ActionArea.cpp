@@ -17,7 +17,7 @@
 
 VTBL(CActionArea, 0x001e7004);
 VTBL(CUserLogic, 0x001e705c); // vtable_names -> code (RTTI game class)
-VTBL(CUserBase, 0x001e70b4); // ??_7CUserBase@@6B@ (the RTTI base vtable; catalog only,
+VTBL(CUserBase, 0x001e70b4);  // ??_7CUserBase@@6B@ (the RTTI base vtable; catalog only,
 DATA_SYMBOL(0x00229388, 0x24, ?g_projReg@@3UCCoordColl@@A)
 
 static inline CActionAreaActEntry* R3Lookup(i32 coord) {
@@ -29,15 +29,22 @@ static inline CActionAreaActEntry* R3Lookup(i32 coord) {
 static inline CTypeNameEntry* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return reinterpret_cast<CTypeNameEntry*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
+        return reinterpret_cast<CTypeNameEntry*>(
+            (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
+        );
     }
     if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0))) {
-        return reinterpret_cast<CTypeNameEntry*>((g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride));
+        return reinterpret_cast<CTypeNameEntry*>(
+            (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
+        );
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    (static_cast<CVariantSlot*>(g_typeColl.m_errSink))->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
-    return reinterpret_cast<CTypeNameEntry*>(g_typeColl.m_spare); // m_spare is the i32-typed slow-path slot
+    (static_cast<CVariantSlot*>(g_typeColl.m_errSink))
+        ->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
+    return reinterpret_cast<CTypeNameEntry*>(
+        g_typeColl.m_spare
+    ); // m_spare is the i32-typed slow-path slot
 }
 
 // @early-stop
@@ -166,11 +173,13 @@ i32 CActionArea::Tick() {
     if (*phase != 0) {
         i64 d2 = static_cast<i64>(static_cast<u32>(g_frameTime)) - *ts;
         double t = static_cast<double>(static_cast<u32>((d2 < 0 ? 0 : static_cast<u32>(d2))));
-        (reinterpret_cast<CDDrawWorker*>(m_38->m_194))->SetAllField18(static_cast<i32>(((1.0 - t * 0.002) * 50.0 - (-155.0))));
+        (reinterpret_cast<CDDrawWorker*>(m_38->m_194))
+            ->SetAllField18(static_cast<i32>(((1.0 - t * 0.002) * 50.0 - (-155.0))));
     } else {
         i64 d2 = static_cast<i64>(static_cast<u32>(g_frameTime)) - *ts;
         double t = static_cast<double>(static_cast<u32>((d2 < 0 ? 0 : static_cast<u32>(d2))));
-        (reinterpret_cast<CDDrawWorker*>(m_38->m_194))->SetAllField18(static_cast<i32>((t * 0.1 - (-155.0))));
+        (reinterpret_cast<CDDrawWorker*>(m_38->m_194))
+            ->SetAllField18(static_cast<i32>((t * 0.1 - (-155.0))));
     }
     return 0;
 }

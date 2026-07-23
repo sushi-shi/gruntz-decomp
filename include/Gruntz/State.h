@@ -67,8 +67,11 @@ public:
     // then seed the input latches (m_inputWarmup1/2, m_inputHalfSel). Leaf slot-8
     // overrides (CBootyState/CMultiBootyState/CImageState/CPlay) chain back via the
     // qualified CState::InputVirtual() base call.
-    virtual i32 InputVirtual();   // slot 8  (+0x20)  per-frame input poll
-    virtual i32 Vslot09(i32);     // slot 9  (+0x24)  notify w/ state id
+    virtual i32 InputVirtual(); // slot 8  (+0x20)  per-frame input poll
+    RVA(0x0008c510, 0x8)
+    virtual i32 Vslot09(i32) {
+        return 1;
+    } // slot 9  (+0x24)  notify w/ state id
     virtual i32 FrameSlot28(i32); // slot 10 (+0x28)  per-frame poll (leaf override)
     // CGruntzMgr's per-state forwarders (0x8d9d0..0x8dbe0) dispatch a 2-arg or
     // 3-arg notification into these slots; the int return / arg shapes are what
@@ -134,8 +137,14 @@ public:
     // bodies prove a role - a CHOICE from the evidence, not a reading. The i32 return is
     // the bodies' (`QAEH`), not the void these placeholders guessed; both call sites in
     // CGruntzMgr discard it.
-    virtual i32 PauseGame();
-    virtual i32 ResumeGame();
+    RVA(0x0008c6d0, 0x6)
+    virtual i32 PauseGame() {
+        return 1;
+    }
+    RVA(0x0008c6f0, 0x6)
+    virtual i32 ResumeGame() {
+        return 1;
+    }
 
     // Non-virtual exit notification (reloc-masked; called by ExitModalUI).
 

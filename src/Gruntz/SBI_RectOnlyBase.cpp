@@ -23,7 +23,15 @@ CSBI_RectOnly::CSBI_RectOnly() {
 // statement-schedule-faithful.md) - direct, array, and struct-pointer spellings all
 // fold the same; not steerable from C. Deferred to the final sweep.
 RVA(0x000e86e0, 0x53)
-i32 CSBI_RectOnly::Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10) {
+i32 CSBI_RectOnly::Setup(
+    CStatusBarMgr* owner,
+    CDDrawSurfaceMgr* host,
+    i32 a3,
+    i32 a4,
+    SbiRect rc,
+    i32 a9,
+    i32 a10
+) {
     if (host == 0 || owner == 0) {
         return 0;
     }
@@ -41,3 +49,7 @@ i32 CSBI_RectOnly::Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i
 
 RVA(0x000e8760, 0x1)
 void CSBI_RectOnly::Reset() {}
+RVA(0x000e8780, 0x8)
+i32 CSBI_RectOnly::Refresh(i32) {
+    return 1;
+}
