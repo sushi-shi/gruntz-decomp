@@ -7,10 +7,10 @@
 // The keyed error-handling slot: it is BOTH the variant slot (m_callback/word/tag/label,
 // via Set) and the key-table cursor (Find/Add over the global g_recs23 table). The ex
 // CKeyFinder "reduced view" was this same 0x18-byte object (byte-identical layout, and its
-// Add IS this Add @0x16e360), reached by reinterpret_cast<CKeyFinder*>(a CVariantSlot*) -
-// dissolved here (m_index->m_04, m_owner->m_label).
+// Add IS this Add @0x16e360); that cast-based view is dissolved here
+// (m_index->m_04, m_owner->m_label).
 struct CVariantSlot {
-    CVariantSlot(void* owner);         // 0x16e1a0 (cursor ctor: typeTag=2, m_10=2)
+    CVariantSlot(char* label);         // 0x16e1a0 (cursor ctor: typeTag=2, m_10=2)
     void Set(void* obj, i32 a, i32 b); // 0x16d850
     i32 Find(i32 key);                 // 0x16e1d0 (binary-search the g_recs23 key table)
     void* Add(void* key, void* val);   // 0x16e360 (keyed insert/update/remove; val==0 removes)
@@ -22,7 +22,7 @@ struct CVariantSlot {
     i32 m_10;        // +0x10 (the cursor ctor sets 2)
     char* m_label;   // +0x14 label / format text / cursor owner (ex m_owner)
 };
-SIZE_UNKNOWN();
+SIZE(0x18);
 
 struct TypeKeyRec {
     i32 m_key; // +0x00  the key (CVariantSlot::Find subtracts the probe key from it)

@@ -4,21 +4,23 @@
 #include <Ints.h>
 #include <rva.h>
 
-extern char g_containerName[];    // 0x6bf408 (base ctor const char* arg)
-extern i32 g_defaultProjActSize;  // 0x61ad28 (fallback capacity)
-extern void* g_projActCache;      // 0x6bf464 (?g_projActCache@@3PAXA)
-extern void* g_retAddrBreadcrumb; // 0x6bf428 (?g_projActAllocResult; OOM record cell)
-extern void* g_projActName;       // 0x6bf454 (bad-arg diagnostic record cell)
+struct CVariantSlot;
+
+extern CVariantSlot g_zBitSetErrorSlot;      // 0x6bf408 ("zBitSet: ")
+extern CVariantSlot g_globalErrorSlot;       // 0x6bf430 ("Global Error: ")
+extern CVariantSlot g_dynamicArrayErrorSlot; // 0x6bf468 ("Dynamic Array: ")
+extern i32 g_defaultProjActSize;             // 0x61ad28 (fallback capacity)
+extern void* g_projActCache;                 // 0x6bf464 (?g_projActCache@@3PAXA)
+extern void* g_retAddrBreadcrumb;            // 0x6bf428 (caller-IP breadcrumb)
+extern void* g_projActName;                  // 0x6bf454 (bad-arg diagnostic record cell)
 
 void* GetRetAddr();       // 0x16d990
 void* GetCallerRetAddr(); // 0x16e0f0
 
-struct CVariantSlot;
-
 class zErrHandling {
 public:
-    zErrHandling(void* errSink); // 0x16d9c0 (defined in src/Gruntz/GameText.cpp)
-    virtual ~zErrHandling();     // [0] the ONLY slot (??_G 0x16da40; real ~ at 0x16da60)
+    zErrHandling(CVariantSlot* errSink); // 0x16d9c0 (defined in src/Gruntz/GameText.cpp)
+    virtual ~zErrHandling();             // [0] the ONLY slot (??_G 0x16da40; real ~ at 0x16da60)
 
     // 0x034960: the OUTLINED overflow/OOM report path (defined in BattlezMapConfig.cpp,
     // where it sits in retail RVA order). Body = `g_retAddrBreadcrumb = GetRetAddr();

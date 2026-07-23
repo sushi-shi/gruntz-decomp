@@ -3,10 +3,9 @@
 #include <rva.h>
 #include <Ints.h>
 
-extern void* g_buteNodeErrMsg; // DAT_006bf480 - the node's error-message global
-
-struct CVariantSlot;  // <Bute/ButeTree.h> - the +0x04 error sink (Set 0x16d850)
-struct CButeTreeNode; // <Bute/ButeTree.h> - the 0x14-byte crit-bit trie node
+struct CVariantSlot;                   // <Bute/ButeTree.h> - the +0x04 error sink (Set 0x16d850)
+struct CButeTreeNode;                  // <Bute/ButeTree.h> - the 0x14-byte crit-bit trie node
+extern CVariantSlot g_symTabErrorSlot; // 0x6bf480 ("zSymTab: ")
 
 #include <Wap32/zBitVec.h> // the canonical zErrHandling (ctor 0x16d9c0 / dtor 0x16da60)
 

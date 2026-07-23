@@ -40,8 +40,6 @@ VTBL(zDArray, 0x001f04d0); // leaf ??_7CTypeKeyColl @0x5f04d0 (1-slot dtor vtabl
 VTBL(_zdvec, 0x001f04d4);  // ~_zdvec-entry vtable (0x5f04d4)
 
 VTBL(CButeNodeEntry, 0x001f04d8); // the entry member's own (base) vtable
-DATA(0x002bf468)
-u8 g_zArrayTag; // 0x6bf468 (owner-TU def; the CZArrayRoot base-tag byte, &g_zArrayTag)
 // @identity-TODO INTERIOR-OFFSET CLUSTER - do NOT "fix" these by defining them.
 // g_typeColl (0x6bf650) and the eight scalars around it are ONE object, not nine globals:
 //     g_typeColl +0x00   g_typeColl.m_errSink +0x04  g_typeColl.m_lo  +0x08  g_typeColl.m_hi    +0x0c
@@ -60,12 +58,8 @@ u8 g_zArrayTag; // 0x6bf468 (owner-TU def; the CZArrayRoot base-tag byte, &g_zAr
 DATA(0x002bf45c)
 void* g_projActName2; // 0x6bf45c
 
-// g_containerName (0x2bf408, char[] in <Wap32/zBitVec.h>) - the zErrHandling base-ctor
-// name arg the zBitVec ctors pass. Bound via DATA_SYMBOL (the char[] extern mangles
-// `?g_containerName@@3PADA` under cl; scanned per-.cpp so it lives here, not the header).
 // g_defaultProjActSize (0x21ad28, i32 in zBitVec.h) - the fallback capacity the
 // default/HH zBitVec ctors size to.
-DATA_SYMBOL(0x002bf408, 0x0, ?g_containerName@@3PADA)
 DATA(0x0021ad28)
 i32 g_defaultProjActSize;
 
@@ -246,7 +240,7 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
 // pass-1 assignment; no source lever reaches the allocator here. ~79.8%, logic
 // complete; deferred to the final sweep.
 RVA(0x0016d3a0, 0x344)
-zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(g_containerName) {
+zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetErrorSlot) {
     i32 maxv = 0;
     const char* start;
     const char* q;
@@ -378,7 +372,14 @@ badchar: {
 }
 }
 
-inline zBitVec::zBitVec() : zErrHandling(g_containerName) {
+// Retail places this dynamic initializer immediately before the default zBitVec
+// constructor. The 0x18-byte object spans 0x6bf408..0x6bf41f; it was previously
+// mis-modeled as a char array containing the label.
+DATA(0x002bf408)
+CVariantSlot g_zBitSetErrorSlot("zBitSet: ");
+RVA_COMPGEN(0x0016d700, 0x10, _$E1496832)
+
+inline zBitVec::zBitVec() : zErrHandling(&g_zBitSetErrorSlot) {
     if (!SetSize(g_defaultProjActSize)) {
         void* cache = g_projActCache;
         g_retAddrBreadcrumb = GetCallerRetAddr();
@@ -411,7 +412,7 @@ CUserBaseLink::CUserBaseLink() {}
 //       +3 bytes that shift the success tail.
 // ~77.8%, logic complete; deferred to the final sweep.
 RVA(0x0016d790, 0xb1)
-zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(g_containerName) {
+zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
     u32 n = static_cast<u32>(sizehint);
     if (n == 0) {
         n = static_cast<u32>(g_defaultProjActSize);
@@ -476,6 +477,13 @@ void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
         }
     }
 }
+
+// Retail's 0x16d9b0 helper constructs this complete 0x18-byte fallback error
+// slot. Its storage belongs to TypeKeyColl's contiguous 0x6bf400 data band;
+// zErrHandling's constructor in GameText.cpp only consumes it.
+DATA(0x002bf430)
+CVariantSlot g_globalErrorSlot("Global Error: ");
+RVA_COMPGEN(0x0016d9b0, 0x10, _$E1497520)
 
 RVA(0x0016da60, 0x12)
 zErrHandling::~zErrHandling() {
@@ -663,6 +671,13 @@ zDArray::zDArray(i32 stride, i32 lo, i32 hi, void* scratch) : _zdvec(stride, lo,
 // this scalar-deleting thunk, which directly tears down the _zdvec base.
 RVA_COMPGEN(0x0016dde0, 0x1e, ??_GzDArray@@UAEPAXI@Z)
 
+// The dynamic-array 0x18-byte error slot, initialized by the retail helper at 0x16de20.
+// Its complete extent is 0x6bf468..0x6bf47f; the former u8 "tag" was only its
+// first byte viewed through an incorrect declaration.
+DATA(0x002bf468)
+CVariantSlot g_dynamicArrayErrorSlot("Dynamic Array: ");
+RVA_COMPGEN(0x0016de20, 0x10, _$E1498656)
+
 // ===========================================================================
 // _zdvec::_zdvec (0x16de30) - the allocating vector ctor (this body was modelled
 // as `CZArray2D::CZArray2D` until the fold: CZArray2D IS _zdvec, one class under two
@@ -685,7 +700,7 @@ RVA_COMPGEN(0x0016dde0, 0x1e, ??_GzDArray@@UAEPAXI@Z)
 // load sequence. Not source-steerable; deferred to the final sweep.
 RVA(0x0016de30, 0xe7)
 _zdvec::_zdvec(i32 stride, i32 lo, i32 hi, void* scratch)
-    : _zvec(&g_zArrayTag) {                // -> the zErrHandling base ctor @0x16d9c0
+    : _zvec(&g_dynamicArrayErrorSlot) {    // -> the zErrHandling base ctor @0x16d9c0
     m_spare = static_cast<char*>(scratch); // +0x14  scratch element (was the m_buf2 view)
     m_lo = lo;
     m_hi = hi;
@@ -741,6 +756,13 @@ CButeNodeEntry::CButeNodeEntry(i32 n, void(__cdecl* teardown)(void*)) {
 RVA(0x0016dfc0, 0x7)
 CButeNodeEntry::~CButeNodeEntry() {}
 
+// The adjacent zSymTab error slot is likewise one constructed CVariantSlot,
+// not the former void* placeholder. Retail's 0x16dfe0 helper supplies this
+// exact label immediately before the zPTree constructor.
+DATA(0x002bf480)
+CVariantSlot g_symTabErrorSlot("zSymTab: ");
+RVA_COMPGEN(0x0016dfe0, 0x10, _$E1499104)
+
 // zPTree ctor (0x16dff0, ex ButeNode.cpp): run the zErrHandling primary base
 // ctor + the CButeNodeEntry second-base ctor, then cl auto-stamps the two
 // most-derived vptrs (??_7zPTree @+0 = 0x5e94ac, and the second-base-in-derived
@@ -752,7 +774,7 @@ CButeNodeEntry::~CButeNodeEntry() {}
 // last-stores. Logic byte-faithful; converted per the ALL-VTABLES mandate.
 RVA(0x0016dff0, 0x73)
 zPTree::zPTree(void(__cdecl* teardown)(void*), i32 n)
-    : zErrHandling(&g_buteNodeErrMsg), CButeNodeEntry(n, teardown) {
+    : zErrHandling(&g_symTabErrorSlot), CButeNodeEntry(n, teardown) {
     m_root = 0;
     m_lookupPending = 0;
 }
@@ -820,12 +842,12 @@ i32 zBitVec::SetSize(i32 nbits) {
 }
 
 RVA(0x0016e1a0, 0x23)
-CVariantSlot::CVariantSlot(void* owner) {
+CVariantSlot::CVariantSlot(char* label) {
     m_typeTag = 2;
     m_10 = 2;
     // +0x00 (m_callback) is intentionally left unset here (the register path seeds it).
     m_valueWord = 0;
-    m_label = static_cast<char*>(owner);
+    m_label = label;
 }
 
 RVA(0x0016e1d0, 0x4b)

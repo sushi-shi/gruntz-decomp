@@ -77,13 +77,11 @@
 ?g_behindCandyActReg@@3UCBehindCandyActReg@@A
 ?g_brickzActReg@@3UCActReg@@A
 ?g_buteMgr@@3VCButeMgr@@A
-?g_buteNodeErrMsg@@3PAXA
 ?g_cellHi@@3HA
 ?g_cellLo@@3HA
 ?g_cellRecordBase@@3HA
 ?g_cellRecordRet@@3HA
 ?g_checkpointActReg@@3UCActReg@@A
-?g_containerName@@3PADA
 ?g_creationPointActReg@@3UCActReg@@A
 ?g_dirDescTable@@3PAUDirDesc@@A
 ?g_dropColl@@3UCSiblingActReg@@A

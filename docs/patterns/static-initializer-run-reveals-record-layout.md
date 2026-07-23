@@ -52,6 +52,32 @@ DATA(0x00......)
 GruntDirectionCell g_direction(0, 1, 1);
 ```
 
+A second form is a helper that passes one constructor argument and one object
+address:
+
+```asm
+push  <label>
+mov   ecx,<object>
+call  CVariantSlot::CVariantSlot
+ret
+```
+
+Four 16-byte helpers at `0x0016d700`, `0x0016d9b0`, `0x0016de20`, and
+`0x0016dfe0` pass the labels `"zBitSet: "`, `"Global Error: "`,
+`"Dynamic Array: "`, and `"zSymTab: "` to the same constructor, with object
+bases `0x006bf408`, `0x006bf430`, `0x006bf468`, and `0x006bf480`. The
+constructor writes `+0x08`, `+0x0c`, `+0x10`, and `+0x14`, so each base owns a
+complete 0x18-byte `CVariantSlot`. Consumers pass those same bases through
+`zErrHandling` and invoke `CVariantSlot::Set`/`Add`. This disproves the former
+`char[]`, `u8`, and `void*` declarations: the byte at `0x006bf468` is the first
+byte of a constructed object, not an independent tag.
+
+Code proximity did not prove storage ownership in this case. The
+`0x0016d9b0` initializer sits immediately before a constructor emitted from
+GameText.cpp, but the ordinary-data interleave gate places all four objects in
+TypeKeyColl.cpp's contiguous `0x006bf400` band. Keep the typed extern in the
+consumer and the definition in the data owner's TU.
+
 This pattern is useful in reverse. Search unknown data clusters for repeated
 compiler-generated helpers with the same relative store offsets, group their
 relocation targets by base, and use the consumers to name the fields. The

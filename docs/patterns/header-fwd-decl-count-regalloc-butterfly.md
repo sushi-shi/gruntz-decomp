@@ -218,3 +218,20 @@ current fuzzy remained 73.71 and MAX remained 73.73. This is another
 controlled reverse sample: when a residue appeared after a declaration batch,
 later removal of false member names and restoration of the authentic receiver
 signature can undo it without touching the affected function.
+
+THIRTEENTH FIRING (2026-07-23, constructed-global type recovery): replacing
+`char[]`, `u8`, and `void*` placeholder globals with four real
+`CVariantSlot` objects, and changing the shared `zErrHandling` boundary from
+`void*` to `CVariantSlot*`, changed declaration state across the Bute/Wap
+header closure. Four source-identical functions newly dipped:
+`CSBI_MenuItem::Render` 100→92.0357,
+`CGrunt::StepCompassMove` 35.2959→32.9266,
+`CGrunt::PhaseStep` 39.7717→38.5960, and
+`CGrunt::RectSegProbe` 78.7723→78.7228. Three unrelated rows moved the other
+way without body edits: `CBattlezMapConfig::Step33520` 53.5016→53.5120, and
+`CDDrawWorkerHost::Save` / `CDDrawWorker::GetMemoryUsage` became exact.
+The four newly exposed static initializer helpers are also exact, while
+overall current fuzzy moved 73.71→73.70 and MAX stayed 73.73. Preserve the
+typed object model and the MAX values; this is another bidirectional example
+where restoring authentic global and parameter declarations can both create
+and reverse compiler-state colorings elsewhere.

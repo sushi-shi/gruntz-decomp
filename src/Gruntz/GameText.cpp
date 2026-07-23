@@ -166,8 +166,7 @@ CString __stdcall GetWarlordName(i32 id) {
     }
 }
 
-static char g_defaultErrMsg[24]; // taken by-address (the default-message buffer)
-static char* g_errMsg_OutOfMem;  // the lazy-init guard slot
+static char* g_errMsg_OutOfMem; // the lazy-init guard slot
 static char* g_errMsg_BadData;
 static char* g_errMsg_Overflow;
 static char* g_errMsg_NoFile;
@@ -177,11 +176,11 @@ static char* g_errMsg_NullArg;
 static char* g_errMsg_BadArg;
 
 RVA(0x0016d9c0, 0x75)
-zErrHandling::zErrHandling(void* errSink) {
+zErrHandling::zErrHandling(CVariantSlot* errSink) {
     // +0x04 stored first, the vptr after it (cl's implicit stamp). The arg is the sink to
     // register with, not a string: ~zErrHandling loads +0x04 into ecx as a __thiscall
-    // `this` (see <Wap32/zBitVec.h>). The default-sink buffer is taken by address.
-    m_errSink = static_cast<CVariantSlot*>((errSink ? errSink : g_defaultErrMsg));
+    // `this` (see <Wap32/zBitVec.h>). A null argument selects the constructed global sink.
+    m_errSink = errSink ? errSink : &g_globalErrorSlot;
 
     if (g_errMsg_OutOfMem == 0) {
         g_errMsg_OutOfMem = "Out of memory";

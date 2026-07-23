@@ -12,7 +12,7 @@ public:
     // Pass-through to the error-sink base ctor (0x16d9c0): retail's allocating ctor
     // opens with exactly that one base call, so this stays inline (no _zvec body of
     // its own exists in the image).
-    _zvec(void* errSink) : zErrHandling(errSink) {}
+    _zvec(CVariantSlot* errSink) : zErrHandling(errSink) {}
 
     void* GrowTo(i32 idx, i32 at); // 0x16da80
     char* IndexToPtr(i32 idx);     // 0x312a0  (the plain base accessor)
