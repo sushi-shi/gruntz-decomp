@@ -577,7 +577,7 @@ battlezdlgrow	?ToggleRow@CBattlezDlg@@QAEHH@Z	82.0714	82.0714	6	15980bd7b656	0x1
 battlezmapconfig	??0CBattlezMapConfig@@QAE@XZ	93.3108	93.3108	3	b7c4fcc71a5f	0x24dc0
 battlezmapconfig	??1CBattlezMapConfig@@QAE@XZ	100.0000	100.0000	2	fb1156cf80c5	0x24f80
 battlezmapconfig	?AcceptAlways@CBattlezMapConfig@@QAEHH@Z	100.0000	100.0000	1	fc603200b9da	0x2c080
-battlezmapconfig	?CanPlaySpecialAnim@CBattlezMapConfig@@QAEHH@Z	80.7091	80.7091	1	b56a452132e0	0x34460
+battlezmapconfig	?CanPlaySpecialAnim@CBattlezMapConfig@@QAEHH@Z	80.7091	80.7091	2	2eb85fd7a5c8	0x34460
 battlezmapconfig	?CheckQueuedSpawnTile@CBattlezMapConfig@@QAEHH@Z	72.4444	72.4444	1	d9c390af19cd	0x34c70
 battlezmapconfig	?ChooseIdleBehavior@CBattlezMapConfig@@QAEHH@Z	48.7101	48.7101	1	3ea7105e39bd	0x2f620
 battlezmapconfig	?ClaimCellFromRow@CBattlezMapConfig@@QAEHHHHH@Z	88.5128	88.5128	1	c9cad3a972e1	0x30730
@@ -610,7 +610,7 @@ battlezmapconfig	?RouteUnitTo@CBattlezMapConfig@@QAEHHHHHHH@Z	63.8443	63.8443	1	
 battlezmapconfig	?RouteUnitToGoal@CBattlezMapConfig@@QAEHHHHHH@Z	71.1806	71.1806	1	671f77daa18f	0x302c0
 battlezmapconfig	?Serialize@CBattlezMapConfig@@QAEHPAX@Z	100.0000	100.0000	4	aca1d60da960	0x2b420
 battlezmapconfig	?SerializeState@CBattlezMapConfig@@QAEHHPAXHH@Z	100.0000	100.0000	2	e5a3c966a8b1	0x2bfc0
-battlezmapconfig	?Step@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	73.2934	73.2934	6	5e0553c5c305	0x31610
+battlezmapconfig	?Step@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	73.2934	73.2883	6	5e0553c5c305	0x31610
 battlezmapconfig	?StepAllRowSpawns@CBattlezMapConfig@@QAEHXZ	100.0000	100.0000	1	582c2555c6f3	0x25c20
 battlezmapconfig	?StepBoard@CBattlezMapConfig@@QAEHXZ	75.2712	75.2712	1	06da66faaa5a	0x25d90
 battlezmapconfig	?StepRowSpawn@CBattlezMapConfig@@QAEHH@Z	82.2366	82.2366	1	9f7b7b112cb5	0x26470
@@ -1983,8 +1983,8 @@ grunt	?winapi_04d800_CopyRect@CUserLogic@@QAEHHHHHHHHHHHHH@Z	0.6786	0.6786	1	ea5
 gruntarrivalscan	?ArrivalReticleScan@CGrunt@@QAEHXZ	15.1823	15.1823	5	8a22e523cfd7	0xee800
 gruntarrivalscan	?ArrivalScanA@CGrunt@@QAEHXZ	50.2333	50.2182	14	9d7ec0d70b9e	0xecc90
 gruntarrivalscan	?ArrivalScanB@CGrunt@@QAEHXZ	41.1545	41.1407	15	0e666b9ce427	0xf0e20
-gruntarrivalscan	?ArrivalScanC@CGrunt@@QAEHXZ	47.2696	47.2696	14	407602923a1f	0xf36a0
-gruntarrivalscan	?PhaseStep@CGrunt@@QAEHXZ	39.7717	39.7717	16	fbd8add037c7	0xf60f0
+gruntarrivalscan	?ArrivalScanC@CGrunt@@QAEHXZ	47.2696	47.2280	14	407602923a1f	0xf36a0
+gruntarrivalscan	?PhaseStep@CGrunt@@QAEHXZ	39.7717	38.5960	16	fbd8add037c7	0xf60f0
 gruntarrivalscan	?ResolveArrivalNeighbor@CGrunt@@QAEHXZ	74.9747	74.9747	3	ef6b89ef8b1b	0xf26f0
 gruntarrivalscan	?ResolveArrivalReposition@CGrunt@@QAEHXZ	66.6582	66.6582	9	3b368f552075	0xec670
 gruntarrivalscan	?SeekTarget@CGrunt@@QAEHXZ	14.3882	14.3882	11	838654378435	0xf71c0
@@ -2157,14 +2157,14 @@ gruntsteps	?LoadTypeTableClearMove@CGrunt@@QAEHH@Z	100.0000	100.0000	1	f94268662
 gruntsteps	?LoadVehicleGruntSprites@CGrunt@@QAEHH@Z	34.1942	34.1942	5	6fe2a8b25df0	0x50ce0
 gruntsteps	?PlayMoveSound@CGrunt@@QAEXHH@Z	100.0000	100.0000	5	69272fa1cbab	0x511b0
 gruntsteps	?PlayMoveSoundAtTile@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	f60fee3e75ae	0x514e0
-gruntsteps	?RectContains@CGrunt@@QAEHHH@Z	61.6774	59.0564	2	a4e734c1fa23	0x51850
+gruntsteps	?RectContains@CGrunt@@QAEHHH@Z	61.6774	55.2258	2	a4e734c1fa23	0x51850
 gruntsteps	?RectContainsGated@CGrunt@@QAEHHH@Z	61.9764	61.9764	2	95c85ebdac20	0x51a20
 gruntsteps	?Save@CGrunt@@QAEHPAVCFileMemBase@@@Z	94.2520	94.2520	6	cc8b647f6e77	0x53f90
 gruntsteps	?SerializeMove@CGrunt@@UAEHPAVCFileMemBase@@HHH@Z	100.0000	100.0000	8	d1041a1cb4f9	0x53b80
 gruntsteps	?SetArrivalTarget@CGrunt@@QAEXHHHH@Z	64.4000	64.4000	1	057deba63704	0x52ed0
 gruntsteps	?SnapToLastTile@CGrunt@@QAEXH@Z	100.0000	100.0000	5	c3e0d37caa27	0x517b0
 gruntsteps	?StepAnimDispatchA@CGrunt@@QAEHHHHH@Z	43.5366	43.5229	12	478528624bf2	0x52fb0
-gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	35.2959	32.9266	10	b31c1cd3d760	0x51c00
+gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	35.2959	35.2959	10	b31c1cd3d760	0x51c00
 grunttargetscan	?ScanNearestTarget@CGrunt@@QAEHXZ	27.2142	27.2134	8	199f1baeb08b	0xf42f0
 grunttilescan	?ScanRegion@CScanMgr@@QAEHPAVCGrunt@@@Z	66.4426	66.4426	7	236982332d1d	0x32ce0
 grunttoysprite	??0CGruntToySprite@@QAE@PAUCGameObject@@@Z	95.1200	95.1200	3	938196887033	0x7f350

@@ -243,6 +243,18 @@ state both repaired and displaced schedules; the rounded overall MAX remained
 a `Grunt.h`/`TypeKeyColl.h` consumer may respond to completing the authentic
 vector API or removing another interior-field alias.
 
+FOURTEENTH FIRING (2026-07-23, final vector-callee aliases): removing only the
+one-site `zDArray::Probe` and `zDArray::Reserve` declarations from
+`TypeKeyColl.h`, after their callers were changed to the retail-proven
+`_zvec::GrowTo` and `zErrHandling::Report`, left the directly edited
+`CBattlezMapConfig::CanPlaySpecialAnim` at 80.7091. Three source-identical
+consumers moved: `CGrunt::RectContains` 59.0564→55.2258,
+`CGrunt::PhaseStep` 39.7717→38.5960, and
+`CGrunt::ArrivalScanC` 47.2696→47.2280. The latter two exactly revisit earlier
+butterfly colors, showing that even deleting two unused member declarations can
+reverse a recent recovery. Preserve the real inherited callees and the saved
+MAX values.
+
 THIRTEENTH FIRING (2026-07-23, constructed-global type recovery): replacing
 `char[]`, `u8`, and `void*` placeholder globals with four real
 `CVariantSlot` objects, and changing the shared `zErrHandling` boundary from

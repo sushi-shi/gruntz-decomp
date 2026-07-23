@@ -34,8 +34,6 @@ public:
     char** GetNameRecord(void* node);            // thunk_FUN_004310f0 (ret 4)
     CAnimNameRecord* GetNameRecords(void* node); // thunk_FUN_004312a0 (ret 4)
     CAnimNameRecord* ScratchResolve(void* node); // thunk 0x403864
-    i32 Probe(i32 a, i32 b);                     // 0x16da80 (_zvec::GrowTo base grow)
-    i32 Reserve(CAnimNameRecord* rec, i32 n);    // 0x034960
 
     // NO OWN FIELDS: the "m_cursor @+0x1c / m_count @+0x20" this class used to declare
     // ARE the inherited _zvec::m_alloc / _zvec::m_grown at those exact offsets - the ctor

@@ -71,3 +71,11 @@ breadcrumb, then call `m_errSink->Set(&g_typeColl, cache, 0xc)`. Modeling the
 real fields, methods, and globals removed four false function declarations and
 four declared-only data names. It also removed the overlapping
 `g_zvecErrSentinel` definition at the same address as `g_projActCache`.
+
+The same callee audit removed the last two one-site aliases from this vector
+API. In `CBattlezMapConfig::CanPlaySpecialAnim`, placeholder
+`zDArray::Probe` calls retail `_zvec::GrowTo` at `0x0016da80`, while
+placeholder `zDArray::Reserve` calls the already reconstructed
+`zErrHandling::Report` at `0x00034960`. Naming those existing inherited
+operations preserved the function's 80.7091 fuzzy score and removed two more
+declared-only functions.

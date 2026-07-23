@@ -35,7 +35,6 @@
 ?Plan293c@CBattlezMapConfig@@QAEXPAVCGrunt@@HHHHH@Z
 ?Probe1a4b@CBattlezMapConfig@@QAEHPAVCGrunt@@HH@Z
 ?Probe@CTriggerMgr@@QAEHHHHHHHHHHHHHH@Z
-?Probe@zDArray@@QAEHHH@Z
 ?ProbeCell@CTriggerMgr@@QAEHHHPAXH0HHHH@Z
 ?RaiseBattleAlert@CWarlord@@QAEXXZ
 ?RbClearCell@@YAXPAXHHH@Z
@@ -44,7 +43,6 @@
 ?Ready27ed@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z
 ?RegCue@CPlay@@QAEXPAXH@Z
 ?RemoveAt@CObjList@@QAEXPAUCObjListNode@@@Z
-?Reserve@zDArray@@QAEHPAVCAnimNameRecord@@H@Z
 ?Reset3@CTriggerMgr@@QAEHHHH@Z
 ?ResolveSlot_46e0c0@CActReg@@QAEPAPADH@Z
 ?RezAlloc@@YAPAXH@Z

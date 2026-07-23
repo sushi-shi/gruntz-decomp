@@ -4865,13 +4865,13 @@ void CGrunt::RecycleCoords() {
 // Then resolve the unit's anim name and reject the simple type codes (I/G/L/J/C)
 // outright; for the remaining codes, run the second resolver (which fills the
 // g_typeColl.m_alloc CString array, torn down each call) and either map an in-range
-// candidate index directly or Probe/Reserve a slot, returning whether the final
+// candidate index directly or grow/report a slot, returning whether the final
 // resolved name differs from the "P" code.
 // ===========================================================================
 // @early-stop
 // resolver-cluster plateau: the eligibility guards + the five inline-strcmp type
 // rejects (I/G/L/J/C) are byte-exact; the second-resolver tail (GetRecords +
-// g_typeColl.m_alloc teardown loop, the candidate-bounds map, Probe/Reserve) is
+// g_typeColl.m_alloc teardown loop, the candidate-bounds map, grow/report) is
 // reconstructed but its global-scratch regalloc and the imul/bounds arithmetic
 // diverge from retail's. Deferred to the final sweep.
 RVA(0x00034460, 0x3fc)
@@ -4969,16 +4969,16 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(i32 unitArg) {
         return 0;
     }
 
-    // Map the candidate index, or Probe/Reserve a fresh slot.
+    // Map the candidate index, or grow/report a fresh slot.
     i32 ci = reinterpret_cast<i32>(unit->m_objAux->m_1c);
     char* sel;
     g_typeColl.m_grown = 0;
     if (ci >= g_typeColl.m_lo && ci <= g_typeColl.m_hi) {
         sel = g_typeColl.m_base + (ci - g_typeColl.m_lo) * g_typeColl.m_stride;
-    } else if (g_typeColl.Probe(ci, 0) != 0) {
+    } else if (g_typeColl.GrowTo(ci, 0) != 0) {
         sel = g_typeColl.m_base + (ci - g_typeColl.m_lo) * g_typeColl.m_stride;
     } else {
-        g_typeColl.Reserve(static_cast<CAnimNameRecord*>(g_projActCache), 0xc);
+        g_typeColl.Report(reinterpret_cast<i32>(g_projActCache), 0xc);
         sel = g_typeColl.m_spare;
     }
 
