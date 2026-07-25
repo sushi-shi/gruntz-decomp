@@ -26,7 +26,9 @@ extern "C" void DrawStatText(
     i32 a9
 ); // (booty stat text row)
 
-extern "C" i32 g_bootyLetterCoords[]; // 0x001e8fe8 (bound by DATA_SYMBOL in BootyStateActivate.cpp)
+// 0x001e8fe8, .rdata, 0x80 B = 32 i32 (gap to g_idleSpriteIds @0x1e9068). Layout:
+// four (x,y) anchor pairs, then three identical rows of eight column x-positions.
+extern "C" const i32 g_bootyLetterCoords[32];
 
 extern float g_secretRatioScale;
 extern char g_secretMsgA[0x20];

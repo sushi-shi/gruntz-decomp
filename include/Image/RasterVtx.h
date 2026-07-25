@@ -15,8 +15,13 @@ struct ClipVtx {
 };
 SIZE(0x1c);
 
-extern "C" ClipVtx g_rasterVtxA[]; // 0x6a1708
-extern "C" ClipVtx g_rasterVtxB[]; // 0x6a21f8
+// Extents proven by the gap to the next data symbol, each an exact multiple of
+// sizeof(ClipVtx)==0x1c: the A/B clip buffers are 0xaf0 B = 100 each, and the
+// L/R per-scanline edge tables are 0x1c000 B = 4096 each.
+extern "C" ClipVtx g_rasterVtxA[100];   // 0x6a1708
+extern "C" ClipVtx g_rasterVtxB[100];   // 0x6a21f8
+extern "C" ClipVtx g_rasterEdgeR[4096]; // 0x6856f8  ascending-edge table (fill reads +0x10)
+extern "C" ClipVtx g_rasterEdgeL[4096]; // 0x6a2cf0  descending-edge table
 extern "C" i32 g_rasterVtxCount;   // 0x6becf8 (published by ImagePolyClipRect)
 extern "C" i32 g_rasterDestRow;    // 0x6a2ce8  current scanline base (engine scratch)
 extern "C" i32 g_rasterDestPtr;    // 0x6becf4  current span start (engine scratch)

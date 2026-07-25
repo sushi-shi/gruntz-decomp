@@ -36,7 +36,8 @@ i32 g_warpU = 0; // 0x6856f0  (u accumulator)
 DATA(0x002856f4)
 i32 g_warpV = 0; // 0x6856f4  (v accumulator)
 
-DATA_SYMBOL(0x002856f8, 0x0, _g_rasterEdgeR)
+DATA(0x002856f8)
+ClipVtx g_rasterEdgeR[4096]; // C linkage inherited from <Image/RasterVtx.h>
 DATA(0x002a16f8)
 i32 g_warpTexBase = 0; // 0x6a16f8  (locked texture base)
 DATA(0x002a16fc)
@@ -45,7 +46,8 @@ DATA(0x002a1700)
 i32 g_warpVStep = 0; // 0x6a1700  (v per-pixel step)
 DATA(0x002a2ce8)
 i32 g_rasterDestRow = 0; // decl in Image/RasterVtx.h
-DATA_SYMBOL(0x002a2cf0, 0x0, _g_rasterEdgeL)
+DATA(0x002a2cf0)
+ClipVtx g_rasterEdgeL[4096]; // C linkage inherited from <Image/RasterVtx.h>
 DATA(0x002becf0)
 i32 g_warpUMask = 0; // 0x6becf0  (texture index row-mask)
 

@@ -1,3 +1,5 @@
+#define USERLOGIC_OOL_CTOR // retail CALLS ??0CUserLogic (0x58cd0) here; do not emit a
+                           // second, differently-inlined COMDAT copy of it (ODR)
 #include <Mfc.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)

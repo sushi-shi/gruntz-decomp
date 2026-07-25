@@ -672,7 +672,7 @@ bootystateactivate	?ReleaseResources@CBootyState@@UAEXXZ	98.4375	98.4375	8	26505
 bootystateactivate	?ReleaseResources@CMultiBootyState@@UAEXXZ	98.5000	98.5000	8	a8d166947c36	0x1e520
 bootystateactivate	?Render@CBootyState@@UAEHXZ	0.5698	0.5698	1	b15f566601dd	0x1c210
 bootystateactivate	?Render@CMultiBootyState@@UAEHXZ	100.0000	100.0000	12	cff89ddc7c1c	0x1f480
-bootystateactivate	?StepGlitterAnim@CMultiBootyState@@QAEXXZ	79.0896	79.0896	6	fe11420fa120	0x196c0
+bootystateactivate	?StepGlitterAnim@CMultiBootyState@@QAEXXZ	79.0896	79.0896	7	13bcdaae0b79	0x196c0
 bootystateactivate	?Vslot06@CBootyState@@UAEHXZ	100.0000	100.0000	2	00e109f6d491	0x1ce10
 bootystateactivate	?Vslot06@CMultiBootyState@@UAEHXZ	100.0000	100.0000	2	3be55294b99e	0x1f850
 bootystateactivate	?Vslot07@CBootyState@@UAEHXZ	100.0000	100.0000	1	f6e04108da52	0x1ce30
@@ -3390,7 +3390,7 @@ portalpath	?LaunchProcessInDir@@YGHPAD0@Z	100.0000	100.0000	14	fb8a85f3980e	0x90
 projactcache	?Insert@CProjActMap@@QAEPAXPBDPAX@Z	58.2085	58.2085	6	383b0db685b6	0x1933b0
 projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	87.9367	87.9367	12	172989b0a8d2	0xdec60
 projectile	??0CProjectile@@QAE@XZ	100.0000	100.0000	13	172989b0a8d2	0x126e0
-projectile	??0CTimeBomb@@QAE@PAUCGameObject@@@Z	85.6710	85.6710	10	3a9363ad3523	0xe1b90
+projectile	??0CTimeBomb@@QAE@PAUCGameObject@@@Z	53.7484	53.7484	10	3a9363ad3523	0xe1b90
 projectile	??1CProjectile@@UAE@XZ	94.2653	94.2653	8	2a6d73cd9c2b	0xdef60
 projectile	??1CTimeBomb@@UAE@XZ	100.0000	100.0000	1	60e9ec8a4aa5	0x12a70
 projectile	??_GCProjectile@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8f6502dd7c51	0x12980
@@ -4332,7 +4332,7 @@ videoconfig	?winapi_036e50_GetDlgItem_SetScrollPos@ApiCallerStubs@@YAXPAUHWND__@
 videoconfig	?winapi_036ec0_GetDlgItem_GetScrollInfo@ApiCallerStubs@@YAHPAUHWND__@@H@Z	100.0000	100.0000	1	f8fd31fe8da1	0x36ec0
 videoconfig	?winapi_0371e0_GetDlgItem_SetScrollInfo@ApiCallerStubs@@YAXPAUHWND__@@HHH@Z	100.0000	100.0000	1	c19d8c34bade	0x371e0
 voicesoundlist	?BuildVoiceSoundList@CGruntSpawnConfig@@QAEPAVCSpawnList@@H@Z	86.1571	86.1571	6	df1f16e65647	0x11c210
-wallproject	?ProjectWallQuad@@YAHPAVCDDSurface@@HHHHHHHHHH@Z	41.1727	41.1727	1	f34eb866c891	0x1471d0
+wallproject	?ProjectWallQuad@@YAHPAVCDDSurface@@HHHHHHHHHH@Z	37.5396	37.5396	1	f34eb866c891	0x1471d0
 wap32rect	??0CRect@@QAE@HHHH@Z	100.0000	100.0000	1	1edde1fedff4	0x29ac0
 wap32rect	??4CRect@@QAEAAU0@ABUtagRECT@@@Z	100.0000	100.0000	1	9ad4eb3864d2	0x115b30
 wap32rect	?SetRect@CRect@@QAEXHHHH@Z	100.0000	100.0000	1	f640754770df	0x8c380

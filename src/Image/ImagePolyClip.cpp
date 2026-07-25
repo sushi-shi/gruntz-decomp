@@ -4,8 +4,10 @@
 #include <rva.h>
 #include <string.h> // inline rep-movs struct copy
 
-DATA_SYMBOL(0x002a1708, 0x0, _g_rasterVtxA)
-DATA_SYMBOL(0x002a21f8, 0x0, _g_rasterVtxB)
+DATA(0x002a1708)
+ClipVtx g_rasterVtxA[100]; // C linkage inherited from <Image/RasterVtx.h>
+DATA(0x002a21f8)
+ClipVtx g_rasterVtxB[100]; // C linkage inherited from <Image/RasterVtx.h>
 DATA(0x002becf8)
 i32 g_rasterVtxCount = 0; // decl in Image/RasterVtx.h
 

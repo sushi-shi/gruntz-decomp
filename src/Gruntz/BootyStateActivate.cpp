@@ -28,7 +28,14 @@
 #include <Io/MoviePlayer.h> // CMoviePlayer (~; CMultiBootyState::ReleaseResources m_4->m_60)
 
 
-DATA_SYMBOL(0x001e8fe8, 0x0, _g_bootyLetterCoords)
+DATA(0x001e8fe8)
+// .rdata; C linkage inherited from <Gruntz/BootyMessages.h>.
+const i32 g_bootyLetterCoords[32] = {
+    472, 101, 525, 98,  474, 146, 525, 144,       // four (x,y) anchors
+    127, 170, 215, 262, 301, 345, 386, 427,       // row 1 column x-positions
+    127, 170, 215, 262, 301, 345, 386, 427,       // row 2 (identical)
+    127, 170, 215, 262, 301, 345, 386, 427,       // row 3 (identical)
+};
 
 static const float kGlitterPhaseBias = -225.0f;  // was g_5e93b4 (fsub'd, hence negative)
 static const double kDegToRad = 0.017453292;     // was g_5e93b8 (pi/180)
@@ -173,7 +180,7 @@ RVA(0x000196c0, 0x1d3)
 void CMultiBootyState::StepGlitterAnim() {
     if (m_1b4) {
         if (m_letterIdx >= 0) {
-            i32* tbl = g_bootyLetterCoords + 1;    // walks: tbl[-1]=x, tbl[0]=y; advances by 2
+            const i32* tbl = g_bootyLetterCoords + 1;    // walks: tbl[-1]=x, tbl[0]=y; advances by 2
             CWwdGameObjectA** ap = m_trailSprites; // walks the array by 1
             for (i32 i = 0; i <= m_letterIdx; i++) {
                 CWwdGameObjectA* e = *ap;
@@ -213,7 +220,7 @@ void CMultiBootyState::StepGlitterAnim() {
     i32 i = 0;
     CWwdGameObjectA** arr1ec = m_trailSprites;
     if (idx > 0) {
-        i32* tbl = g_bootyLetterCoords + 1; // ecx: tbl[-1]=x, tbl[0]=y
+        const i32* tbl = g_bootyLetterCoords + 1; // ecx: tbl[-1]=x, tbl[0]=y
         CWwdGameObjectA** ap = arr1ec;      // eax
         do {
             CWwdGameObjectA* e = *ap;

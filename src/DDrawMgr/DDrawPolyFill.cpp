@@ -6,8 +6,6 @@
 #include <DDrawMgr/DDrawPolyFill.h> // ClipVtx (this TU owns the tables)
 
 #include <Image/WarpTextureBlit.h> // g_rasterDestPtr/Scale/ScaleNeg (ex .cpp externs; bound at their defs)
-DATA_SYMBOL(0x002856f8, 0x0, _g_rasterEdgeR)
-DATA_SYMBOL(0x002a2cf0, 0x0, _g_rasterEdgeL)
 
 // FillPolygon (0x146fe0, __cdecl) - scanline-fill a polygon into a CDDSurface. Pass 1
 // walks each edge (prev->cur, wrapping), ftol's the endpoints, picks the asc/desc edge
