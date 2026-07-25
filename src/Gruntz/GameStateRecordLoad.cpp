@@ -1,3 +1,4 @@
+#include <Gruntz/GameStateRecordLoad.h> // this TU's external declarations
 #include <Gruntz/GruntDataRecord.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Rez/RezAlloc.h>             // RezAlloc/RezFree
@@ -18,7 +19,6 @@
 static const char s_Powerupz[] = "Powerupz";                                 // 0x60d9b4
 static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 0x60d900
 
-void* operator new(u32 n); // 0x1b9b46
 
 #define SERIALREF(off)                                                                             \
     do {                                                                                           \

@@ -25,4 +25,10 @@ class CSaveGame;  // <Io/SaveGame.h>
 void FillGameInfoDialog(HWND hDlg, CSaveGame* dlg);
 void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6);
 
+
+// File-scope prototypes moved from the .cpp (external linkage
+// belongs in the owner header).
+int TempFileExists(SaveSlot* p); // 0x0e5700 (SaveGame.cpp)
+i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg); // 0x9e390 (WM_COMMAND handler)
+
 #endif // GRUNTZ_GRUNTZ_LOADGAMEMENU_H

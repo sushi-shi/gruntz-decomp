@@ -531,4 +531,9 @@ extern "C" void IconClassInitB(); // 0x402bad
 extern "C" void IconClassInitA(); // 0x40288d
 
 extern i32 g_groupSentinel;
+
+// File-scope prototypes moved from the .cpp (external linkage
+// belongs in the owner header).
+// RezFree is declared extern "C" in <Rez/RezAlloc.h>, which owns it.
+
 #endif

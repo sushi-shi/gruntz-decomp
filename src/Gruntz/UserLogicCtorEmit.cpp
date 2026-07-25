@@ -19,6 +19,7 @@
 // EVERY leaf 1-arg ctor there and regress them all (measured: ~25 leaves dropped
 // from ~90% to ~10-50%). Isolating the forcer + the inline body in this TU emits
 // the standalone COMDATs while UserLogic.cpp's leaves keep calling the helper.
+#include <Gruntz/UserLogicCtorEmit.h> // this TU's external declarations
 #include <Mfc.h> // operator new + the afx-first windows.h order UserLogic.h needs
 #include <Gruntz/UserLogic.h>
 #include <rva.h>
@@ -48,12 +49,6 @@ RVA_COMPGEN(0x00058cd0, 0x195, ??0CUserLogic@@QAE@PAUCGameObject@@@Z)
 i32 LogicHitFactory(
     CGameObject* obj
 ); // GameObjNotifyFn ABI (CreateWorker registrant)    // 0x56e4c0
-i32 LogicAttackFactory(
-    CGameObject* obj
-); // GameObjNotifyFn ABI (CreateWorker registrant) // 0x56e4d0
-i32 LogicBumpFactory(
-    CGameObject* obj
-); // GameObjNotifyFn ABI (CreateWorker registrant)   // 0x56e4e0
 inline void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     {
         CObject* found = 0;

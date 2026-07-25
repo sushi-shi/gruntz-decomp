@@ -80,15 +80,11 @@
 #include <Gruntz/PlayStateView.h>
 #include <Gruntz/GameObjectFactory.h>
 
-char GetGruntzDriveLetter();  // 0x1ffe0 (WinAPICdRom.cpp)
-i32 FileExists(char* szPath); // 0x1189c0 (HeapDiag.cpp)
-void operator delete(void*); // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member teardown
 
 DATA(0x00248ce8)
 i32 g_scoreTimeBase;
 
 
-void ChannelSlots_InitAll(); // 0xdb1d0
 
 // The Win32 dialog procedures handed to RunModalDialog. Each pushed code address is
 // the proc's ILT jmp-thunk (retail /INCREMENTAL routes an address-taken function
@@ -101,8 +97,6 @@ DATA_SYMBOL(0x00001041, 0x0, _GruntzSaveGameDlgProc)
 DATA_SYMBOL(0x000011d1, 0x0, _GruntzSaveMsgDlgProc)
 DATA_SYMBOL(0x00002ab8, 0x0, _LevelNumberDialogProcThunk)
 INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK
-    LevelNumberDialogProc8e8c0(HWND, UINT, WPARAM, LPARAM); // DEBUG_SETSKILL proc (thunk 0x1947)
 
 DATA(0x002455e8)
 i32 g_monologoShown;

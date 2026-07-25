@@ -1,3 +1,4 @@
+#include <Gruntz/PlayPlaneScan.h> // this TU's external declarations
 #include <Gruntz/SBI_Image.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/StatusBarMgr.h> // InsertPtr is a method of the 0x630 host, not the SBI leaf
@@ -13,15 +14,7 @@
 #include <Gruntz/UserLogic.h>            // CGameObject + AnimWorkerObj (the placed objects)
 #include <Gruntz/GameLevel.h>            // CGameLevel + CDDrawWorkerHost (the tile grid)
 
-void PlaneType_Rock();    // 0x40137a
-void PlaneType_Covered(); // 0x403d0f
 
-void PlaneQuadA(); // 0x4017e4
-void PlaneQuadB(); // 0x40192e
-void PlaneQuadC(); // 0x403148
-void PlaneQuadD(); // 0x401087
-void PlaneQuadE(); // 0x40164f
-void PlaneQuadF(); // 0x4019bf (the 4-corner permute type)
 
 // ---------------------------------------------------------------------------
 // ScanBuildTiles (0x0d53d0): walk the renderer plane list; for each rock plane

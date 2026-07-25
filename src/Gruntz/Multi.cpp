@@ -556,17 +556,6 @@ i32 CMulti::Vslot09(i32 arg) {
     return 1;
 }
 
-void ShowHudMessage(
-    CDDrawSurfaceMgr* sink,
-    CString* text,
-    RECT* box,
-    i32 fontSel,
-    i32 b,
-    i32 c,
-    i32 d,
-    i32 e,
-    i32 f
-); // 0x1154b0
 
 // ===========================================================================
 // CMulti::FrameSlot28  @ 0x0b63f0  (vtable slot 10 / +0x28) - the HUD status/

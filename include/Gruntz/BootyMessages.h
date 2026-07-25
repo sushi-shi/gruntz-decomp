@@ -31,4 +31,19 @@ extern "C" i32 g_bootyLetterCoords[]; // 0x001e8fe8 (bound by DATA_SYMBOL in Boo
 extern float g_secretRatioScale;
 extern char g_secretMsgA[0x20];
 extern char g_secretMsgB[0x80];
+
+// File-scope prototypes moved from the .cpp (external linkage
+// belongs in the owner header).
+void ShowHudMessage(
+    CDDrawSurfaceMgr* sink,
+    CString* text,
+    RECT* box,
+    i32 fontSel,
+    i32 b,
+    i32 c,
+    i32 d,
+    i32 e,
+    i32 f
+); // 0x1154b0
+
 #endif // GRUNTZ_GRUNTZ_BOOTYMESSAGES_H

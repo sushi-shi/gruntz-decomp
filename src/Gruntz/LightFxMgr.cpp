@@ -9,7 +9,6 @@
 #include <string.h> // memset -> inline rep stosd in Reset
 
 struct ShadeDescr;
-void SetShadeDescr(ShadeDescr* v, int mode); // 0x14dcf0
 
 RVA(0x0009dad0, 0x14a)
 i32 CLightFxMgr::Init(CGruntzMgr* reg, CGruntzMgr* owner) {

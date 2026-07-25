@@ -511,4 +511,18 @@ i32 FindProcessByName(const char* name, i32 flag, void** out);
 i32 __stdcall LaunchPortalExe(char* outPath);
 i32 __stdcall LaunchProcessInDir(char* exe, char* dir);
 
+
+// File-scope prototypes moved from the .cpp (external linkage
+// belongs in the owner header).
+char GetGruntzDriveLetter();  // 0x1ffe0 (WinAPICdRom.cpp)
+i32 FileExists(char* szPath); // 0x1189c0 (HeapDiag.cpp)
+void operator delete(void*); // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member teardown
+void ChannelSlots_InitAll(); // 0xdb1d0
+
+
+// Dialog proc, declared in the owner header (file-scope prototypes have
+// external linkage).
+INT_PTR CALLBACK
+    LevelNumberDialogProc8e8c0(HWND, UINT, WPARAM, LPARAM); // DEBUG_SETSKILL proc (thunk 0x1947)
+
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

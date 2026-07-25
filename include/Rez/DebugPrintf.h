@@ -29,4 +29,11 @@ extern i32 g_debugPrintMode;
 // the owner header.
 void DebugSetCursorXY(i32 x, i32 y);
 
+
+// File-scope prototypes moved from the .cpp (external linkage
+// belongs in the owner header).
+void DebugSetCursor(i32, i32, i32); // 0x184fd0
+int vsprintf(char* buf, const char* fmt, char* va); // 0x121770 (CRT)
+void DebugSink_184df0(char* line);                  // 0x184df0 (1-byte sink)
+
 #endif // GRUNTZ_REZ_DEBUGPRINTF_H_H

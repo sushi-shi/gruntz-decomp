@@ -9,4 +9,19 @@
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---
 extern "C" tagRECT g_versionRect; // .bss (def in MenuState.cpp)
 
+
+// File-scope prototypes moved from the .cpp (external linkage
+// belongs in the owner header).
+void ShowHudMessage(
+    CDDrawSurfaceMgr* sink,
+    CString* text,
+    RECT* box,
+    i32 fontSel,
+    i32 b,
+    i32 c,
+    i32 d,
+    i32 e,
+    i32 f
+); // 0x1154b0
+
 #endif // GRUNTZ_GRUNTZ_MENUSTATE_H_H

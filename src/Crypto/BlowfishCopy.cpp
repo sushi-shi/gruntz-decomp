@@ -1,8 +1,8 @@
+#include <Crypto/BlowfishCopy.h> // this TU's external declarations
 #include <Ints.h>
 #include <rva.h>
 #include <iostream.h>
 
-void Blowfish_encipher(u32* xl, u32* xr);
 
 // @early-stop
 // regalloc wall (topic:wall topic:regalloc, const-materialize-into-reg-vs-immediate):

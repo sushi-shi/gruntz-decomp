@@ -65,4 +65,14 @@ extern "C" HINSTANCE g_hResModule; // 0x002bf6e0 (C linkage - the owner def's wr
 extern "C" HINSTANCE g_hResModule;
 
 extern char g_bmpHeaderTemplate[];
+
+// File-scope prototypes moved from the .cpp (external linkage
+// belongs in the owner header).
+
+namespace ApiCallerStubs {
+    i32 winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps();
+    void winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD();
+} // namespace ApiCallerStubs
+
+
 #endif // SRC_IMAGE_IMAGEPOOL_H

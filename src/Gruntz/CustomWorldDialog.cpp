@@ -19,7 +19,6 @@
 #include <Gruntz/CustomWorldDialog.h> // own exported globals (ex Globals.h)
 #include <Net/NetLobby.h> // NetLobby::g_curDlg
 
-INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
 // LoadCustomWorldInfo's DialogBoxParamA takes CustomWorldInfoDlgProc's ADDRESS, and the
 // retail /INCREMENTAL link routes it through the proc's ILT jmp-thunk 0x305d (jmp 0x3b600),
 // so the DIR32 stored is 0x305d, not the body 0x3b600. Bind the address-taken symbol to
@@ -44,13 +43,8 @@ DATA(0x0022c274)
 HWND g_customLevelList = 0; // 0x62c274  the picker's level listbox (id 0x3fc)
 
 namespace m4 {
-    i32 FillCustomLevelList(HWND hWnd); // 0x3af90
 }
-i32 LoadCustomWorldInfo(HWND hDlg);      // 0x3b7c0
-i32 FillLevelInfoDialog(HWND hDlg);      // 0x3b1a0
-i32 LoadCustomWorldSelection(HWND hWnd); // 0x3b310
 
-i32 FileExists(char* path); // 0x1189c0 (heapdiag; "PathFileExists 0x4282" was a thunk to it)
 
 // The three file-scope CStrings each emit wrapper/constructor/registrar/
 // destructor helpers. The _$E<n> suffixes are unique placeholders; the

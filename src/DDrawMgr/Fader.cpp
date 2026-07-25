@@ -15,7 +15,6 @@
 #include <string.h>                       // rep-movs / memset element copies
 #include <rva.h>
 
-void __cdecl operator delete(void* p); // ??3@YAXPAX@Z (0x1b9b82)
 
 VTBL(CFader, 0x001f07a8);
 VTBL(CFaderMesh, 0x001f07c0);
@@ -282,7 +281,6 @@ static __inline i32 FxRand(i32 range) {
 
 DATA(0x001f085c)
 const float g_faderScale_5f085c = 0.01f;
-void ScatterSamples(i32* arr, i32, i32, i32); // 0x182940 ?ScatterSamples@@YAXPAHHHH@Z
 
 // @early-stop
 // regalloc coin-flip wall (73.5% fuzzy). Full body is byte-shape-identical to retail;

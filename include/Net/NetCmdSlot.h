@@ -45,4 +45,9 @@ SIZE(0x400);
 extern char g_lobbyRecvBuf[0x800];
 extern NetCmdSendMsg g_netCmdSendMsg;
 extern NetGruntRecMsg g_netGruntRecMsg;
+
+// File-scope prototypes moved from the .cpp (external linkage
+// belongs in the owner header).
+void NoopSync(CGruntzCommand* p); // 0xbfb20 (empty)
+
 #endif // GRUNTZ_NET_NETCMDSLOT_H

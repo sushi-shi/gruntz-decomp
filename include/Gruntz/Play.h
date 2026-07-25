@@ -680,4 +680,35 @@ void Cmd_ApplyScrollParams(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
 CString GetColorName(i32 colorIdx, i32 upper);
 CString GetDifficultyName(i32 diffIdx, i32 upper);
 
+
+// File-scope prototypes moved from the .cpp (external linkage
+// belongs in the owner header).
+i32 LayerBlitFrame(CDDrawSurfaceMgr* mgr, CImage* img, i32 x, i32 w, i32 one, i32 zero); // 0x115300
+void UpdateMgrScroll(CGruntzMgr* pm, CStatusBarMgr* bar, i32 snapFlag);                  // 0x0ebd70
+void ShowHudMessage(
+    CDDrawSurfaceMgr* sink,
+    CString* text,
+    RECT* box,
+    i32 fontSel,
+    i32 b,
+    i32 c,
+    i32 d,
+    i32 e,
+    i32 f
+); // 0x1154b0
+void ShowHudMessageAlt(
+    CDDrawSurfaceMgr* sink,
+    CString* text,
+    RECT* box,
+    i32 fontSel,
+    i32 b,
+    i32 c,
+    i32 d,
+    i32 e,
+    i32 f
+); // 0x115520
+void Cmd_ResetScroll();  // 0x2bd0  YAXXZ
+i32 QueryToken(i32 a);   // 0x39a4  QueryToken(int)
+void ActiveWait(u32 ms); // 0x13dfe0 busy-wait
+
 #endif // SRC_GRUNTZ_CPLAY_H

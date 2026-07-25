@@ -29,7 +29,6 @@ char g_idScratch[0x10]; // 0x24b6a0
 DATA(0x0024b6b0)
 char g_idListBuf[0x40]; // 0x24b6b0
 
-void NoopSync(CGruntzCommand* p); // 0xbfb20 (empty)
 
 RVA(0x000bef80, 0x51)
 i32 CNetSession::Init(void* a1, CMulti* a2, void* a3) {

@@ -1,3 +1,4 @@
+#include <Gruntz/PlayMessageImage.h> // this TU's external declarations
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Gruntz/Play.h>
@@ -7,7 +8,6 @@
 #include <DDrawMgr/DDSurface.h>        // CDDSurface::Flip (0x13e850)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDDrawSubMgrPages pages (real class of m_10/m_14/m_18)
 
-i32 LayerBlitFrame(CDDrawSurfaceMgr*, CImage*, i32, i32, i32, i32); // 0x115300
 
 // ===========================================================================
 // CPlay::DrawMessageFrame (0x0d1650) - draw the GAME_MESSAGEZ image `index`

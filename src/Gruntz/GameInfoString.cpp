@@ -1,3 +1,4 @@
+#include <Gruntz/GameInfoString.h> // this TU's external declarations
 #include <Mfc.h>  // real MFC CTime (GetCurrentTime / GetLocalTm) - the BuildGameDate clock
 #include <time.h> // struct tm (GetLocalTm's return record)
 #include <rva.h>
@@ -5,8 +6,6 @@
 #include <string.h>          // strlen/strcat/memset (inlined /O2)
 #include <Gruntz/GameInfo.h> // the shared CGameInfo / CGameInfoTime record (NameRecord shares it)
 
-i32 ValidateGameTime(CGameInfoTime* t);                  // 0x118310
-void SplitMillisToHMS(u32 n, u32* hh, u32* mm, u32* ss); // 0x119210
 DATA(0x0024ebf8)
 char g_infoScratch[0x100] = {0}; // 0x64ebf8  per-piece scratch
 DATA(0x0024ecf8)

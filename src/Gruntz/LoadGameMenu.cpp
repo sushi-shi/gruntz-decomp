@@ -11,9 +11,7 @@
 DATA(0x00245ca4)
 CSaveGame* g_dlgLoadSink = 0; // DAT_00645ca4  (owner-TU definition)
 
-int TempFileExists(SaveSlot* p); // 0x0e5700 (SaveGame.cpp)
 
-i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg); // 0x9e390 (WM_COMMAND handler)
 
 RVA(0x0009dff0, 0x8c)
 i32 CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {

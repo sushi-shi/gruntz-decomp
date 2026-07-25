@@ -15,4 +15,13 @@ struct CDDrawRect {
 SIZE_UNKNOWN();
 i32 __stdcall RectsOverlap(CDDrawRect* a, CDDrawRect* b); // 0x15bfb0 (I obj)
 
+
+// File-scope prototypes moved from the .cpp (external linkage
+// belongs in the owner header).
+
+namespace Rng {
+    i32 Next2();
+} // namespace Rng
+
+
 #endif // GRUNTZ_WWD_WWDFACTORYOBJECT_H

@@ -384,4 +384,19 @@ extern "C" i32 g_sharedFlag;
 extern i32 g_dplayAppGuid[4];
 extern char s_GameKey[];
 extern u32 g_ackThrottleDeadline;
+
+// File-scope prototypes moved from the .cpp (external linkage
+// belongs in the owner header).
+void ShowHudMessage(
+    CDDrawSurfaceMgr* sink,
+    CString* text,
+    RECT* box,
+    i32 fontSel,
+    i32 b,
+    i32 c,
+    i32 d,
+    i32 e,
+    i32 f
+); // 0x1154b0
+
 #endif // GRUNTZ_GRUNTZ_CMULTI_H

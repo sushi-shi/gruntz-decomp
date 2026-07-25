@@ -1,3 +1,4 @@
+#include <Net/LobbyDialogs.h> // this TU's external declarations
 #include <Mfc.h> // real MFC CString (status/drop banners) + windows.h (dialog API) via afx.h
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
@@ -13,7 +14,6 @@
 #include <string.h>      // strcpy/strcat (inline CRT, reloc-masked)
 #include <stdio.h>       // sprintf (the drop-in banner)
 
-i32 BlockScreenSaver(void*, UINT, WPARAM, LPARAM);
 
 namespace NetLobby {
     // --- cluster-local globals (DATA home is HERE) ---
@@ -32,25 +32,11 @@ namespace NetLobby {
     // OnLobbyTimerC fake decls that reloc-masked instead of binding). Each RVA is
     // reached by both a WM_INITDIALOG and a WM_TIMER path, so both call sites bind to
     // the one empty function at that RVA.
-    void Init_bda50(HWND hWnd, void* ctx); // 0xbda50 (host-wait init/timer hook)
-    void Init_bdbe0(HWND hWnd, void* ctx); // 0xbdbe0 (join-wait init/timer hook)
-    void Init_bddb0(HWND hWnd, void* ctx); // 0xbddb0 (lobby init/timer hook)
-    void Init_be3e0(HWND hWnd, void* ctx); // 0xbe3e0 (drop-wait init/timer hook)
-    void Init_2522(HWND hWnd, void* ctx);  // 0xbe030 (session-wait button enable)
-    void Init_2ed7(HWND hWnd, void* ctx);  // 0xbe820 (drop-in button enable)
     // These four ARE the real dialog helpers defined later in this TU (reloc-masked
     // calls now bind to the correct RVAs); forward-declared so the early DlgProcs
     // above their definitions can call them.
-    void NetDlgInit_bdd60(HWND, void*);    // 0xbdd60 (ex OnLobbyInit_2c66)
-    void NetDlgInitDropWait(HWND, void*);  // 0xbe2f0 (ex OnLobbyInit_371f)
-    void NetDlgSessionStop(HWND, CMulti*); // 0xbe490 (ex OnLobbyTimerA_265d)
-    void NetChatSubmit(HWND, void*);       // 0xbe400 (ex OnLobbyCancel_2ae0)
     // WM_INITDIALOG init helpers defined later in this TU (forward-declared so the
     // sibling wait/drop DlgProcs below can call them before their definitions).
-    void NetDlgInit_bda00(HWND hWnd, void* ctx); // 0xbda00
-    void NetDlgInit_bdb90(HWND hWnd, void* ctx); // 0xbdb90
-    void NetDlgInit_bdfe0(HWND hWnd, void* ctx); // 0xbdfe0
-    void NetDlgInitDropIn(HWND hWnd, void* ctx); // 0xbe760
 } // namespace NetLobby
 
 namespace NetLobby {

@@ -1,3 +1,4 @@
+#include <Gruntz/GruntzMgrCmd.h> // this TU's external declarations
 #include <Ints.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -25,16 +26,7 @@
 #include <Dsndmgr/GruntzSoundZ.h>    // CGruntzSoundZ (m_sound)
 #include <Gruntz/WorldSoundSet.h>    // CWorldSoundSet (m_inputState @+0x54; Stop/Resume)
 
-i32 ParseSerial(CGruntzMgr* mgr, char* s); // 0x0d210 (SerialObjectFactory.cpp)
 
-void SaveFrontBufferShot(
-    Utils::RegistryHelper* bute,
-    CGruntzMgr* mgr,
-    i32 w,
-    i32 h,
-    char* name,
-    void* arg7
-);
 
 #define PLAYCUE(TAG)                                                                               \
     if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \

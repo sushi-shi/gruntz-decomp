@@ -13,8 +13,6 @@
 #include <stdlib.h> // _itoa
 #include <string.h> // memset -> inline rep stos
 
-int TempFileExists(SaveSlot* p); // 0x0e5700 (defined below)
-void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6); // 0x0e3e80
 
 char* g_areaNames[8]; // 0x6454e8
 DATA(0x00213a9c)
@@ -25,9 +23,6 @@ DATA(0x0024c864)
 i32 g_slotState;
 DATA(0x0024c868)
 void* g_previewImage;                     // 0x64c868  (CRezImage* previewed DIB)
-i32 __stdcall CloseTempFile(SaveSlot* r); // defined below (0x0e5550)
-void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);
-void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev);
 
 // LevelPreviewDlgProc (0x0e3690) - the level-select preview dialog proc. WM_INITDIALOG
 // builds the g_previewMgr image pool + the level title; WM_COMMAND (IDOK/IDCANCEL)

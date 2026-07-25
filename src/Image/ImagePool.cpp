@@ -22,8 +22,6 @@ namespace ApiCallerStubs {
     // Two free GDI palette helpers PalBuilder::Build/Tune funnel through:
     // 0x1770a0 probes display-palette support; 0x177160 resets the screen
     // palette to all-black. __cdecl.
-    i32 winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps();
-    void winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD();
 } // namespace ApiCallerStubs
 
 DATA(0x0021aabc)

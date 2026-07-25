@@ -11,4 +11,13 @@ i32 FileExists(char* path);
 struct tagMODULEENTRY32; // tlhelp32.h (consumer TUs include it)
 extern "C" i32 LegacyFindModule(u32 pid, u32 moduleId, struct tagMODULEENTRY32* out, u32 size);
 
+
+// File-scope prototypes moved from the .cpp (external linkage
+// belongs in the owner header).
+
+namespace ApiCallerStubs {
+    void winapi_118b50_OutputDebugStringA(i32 status);
+} // namespace ApiCallerStubs
+
+
 #endif // GRUNTZ_GRUNTZ_HEAPDIAG_H

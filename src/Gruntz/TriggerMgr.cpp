@@ -1364,7 +1364,6 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     return 1;
 }
 
-void RezFree(void* p); // 0x1b9b82 (__cdecl free used by the overlay teardown)
 
 // 0x7abc0: Load(ar) - deserialize the whole trigger-mgr state (see the header). The
 // grid + list loads resolve each stored key through the level's map, validating the

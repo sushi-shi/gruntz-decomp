@@ -1,3 +1,4 @@
+#include <Gruntz/WinMain.h> // this TU's external declarations
 #include <Mfc.h>
 #include <stdio.h>  // sscanf (0x120900), the version parse
 #include <string.h> // strstr (0x120090), cmd-line flag scan
@@ -13,20 +14,16 @@ typedef enum GruntzHotKey {
 // FindProcessByName (0x118ce0, HeapDiag.cpp): count running processes whose exe
 // basename matches; reached via an incremental-link thunk here as the single-
 // instance guard (path, wantCount, out-handle).
-i32 FindProcessByName(const char* name, i32 wantCount, void** pHandleOut);
 
 // StartUpPrompt (0x1f9b0): the resource/CD/launch validation prompt; reached via
 // a thunk. Returns nonzero to proceed. (1 arg: the parent HWND, null here.)
-i32 StartUpPrompt(HWND__* parent);
 
 // ActiveWait (0x13dfe0) - the timeGetTime busy-wait, used here as a brief
 // settle delay before the hot-key sample.
-void ActiveWait(u32 milliseconds);
 
 // VERSION.DLL imports (GetFileVersionInfoSizeA/GetFileVersionInfoA/VerQueryValueA)
 // come from <windows.h> (winver, pulled by afx.h/MFC).
 
-i32 CALLBACK AdvancedOptionsDialogProc(HWND, UINT, WPARAM, LPARAM);
 
 
 static i32 g_version0; // 1st %d

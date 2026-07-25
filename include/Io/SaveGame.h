@@ -10,6 +10,8 @@
 
 #include <EmptyString.h> // g_emptyString (the shared "" constant)
 
+struct CLevelInfo;
+
 // The ONE 0x100 save record (the ex-SaveInfo twin is MERGED here: same layout,
 // the in-memory quickload code's role names live as union arms).
 struct SaveSlot {
@@ -98,4 +100,13 @@ extern void* g_previewImage;
 
 void FillSaveDialog(HWND hDlg, CSaveGame* saveGame);               // 0x0e3c60
 i32 DrawSaveGameMenu(HWND hDlg, i32 command, CSaveGame* saveGame); // 0x0e3f40
+
+// File-scope prototypes moved from the .cpp (external linkage
+// belongs in the owner header).
+int TempFileExists(SaveSlot* p); // 0x0e5700 (defined below)
+void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6); // 0x0e3e80
+i32 __stdcall CloseTempFile(SaveSlot* r); // defined below (0x0e5550)
+void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);
+void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev);
+
 #endif                                                             // SRC_IO_SAVEGAME_H

@@ -19,7 +19,6 @@ i32 g_debugPrintMode = 0;
 DATA(0x002bf8e0)
 FILE* g_debugLogFile = 0;
 
-void DebugSetCursor(i32, i32, i32); // 0x184fd0
 
 DATA(0x002bf848)
 CDebugConfig g_debugConfig;
@@ -160,8 +159,6 @@ void MonoClear() {
     g_monoCol = 0;
 }
 
-int vsprintf(char* buf, const char* fmt, char* va); // 0x121770 (CRT)
-void DebugSink_184df0(char* line);                  // 0x184df0 (1-byte sink)
 
 RVA(0x00184e00, 0x55)
 void RezAssertFail(char* fmt, ...) {

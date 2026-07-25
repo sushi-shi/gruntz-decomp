@@ -43,7 +43,6 @@ i32 FileExists(char* szPath) {
 }
 
 namespace ApiCallerStubs {
-    void winapi_118b50_OutputDebugStringA(i32 status);
 } // namespace ApiCallerStubs
 
 // @early-stop

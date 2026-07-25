@@ -14,7 +14,6 @@
 #include <DDrawMgr/WallProject.h>
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
 
-void* operator new(u32); // engine allocator (reloc-masked rel32)
 
 VTBL(CDDSurface, 0x001ef7f0); // ??_7CDDSurface@@6B@ (9-slot base surface vtable)
 DATA(0x00253c88)

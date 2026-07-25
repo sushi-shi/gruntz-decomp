@@ -1,3 +1,4 @@
+#include <Gruntz/SaveFrontBufferShot.h> // this TU's external declarations
 #include <Ints.h>
 
 #include <Gruntz/GruntzMgr.h>          // the real CGruntzMgr (arg2's true class) + m_world chain
@@ -8,14 +9,6 @@
 
 #include <rva.h>
 
-void SaveFrontBufferShotImpl(
-    Utils::RegistryHelper* bute,
-    CGruntzMgr* mgr,
-    i32 w,
-    i32 h,
-    char* name,
-    void* arg7
-);
 
 RVA(0x00114ec0, 0x27)
 void SaveFrontBufferShot(

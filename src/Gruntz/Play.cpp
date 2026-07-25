@@ -75,8 +75,6 @@ inline void* operator new(u32, void* p) {
 
 
 class CImage;
-i32 LayerBlitFrame(CDDrawSurfaceMgr* mgr, CImage* img, i32 x, i32 w, i32 one, i32 zero); // 0x115300
-void UpdateMgrScroll(CGruntzMgr* pm, CStatusBarMgr* bar, i32 snapFlag);                  // 0x0ebd70
 
 
 typedef enum {
@@ -171,28 +169,6 @@ typedef enum {
     CURSOR_TOOL_YOYOZ = 0xe8
 } ToolCursorId;
 
-void ShowHudMessage(
-    CDDrawSurfaceMgr* sink,
-    CString* text,
-    RECT* box,
-    i32 fontSel,
-    i32 b,
-    i32 c,
-    i32 d,
-    i32 e,
-    i32 f
-); // 0x1154b0
-void ShowHudMessageAlt(
-    CDDrawSurfaceMgr* sink,
-    CString* text,
-    RECT* box,
-    i32 fontSel,
-    i32 b,
-    i32 c,
-    i32 d,
-    i32 e,
-    i32 f
-); // 0x115520
 
 // ===========================================================================
 // CPlay::FrameSlot28  (vtable slot 10 / +0x28) - the HUD status/pause overlay.
@@ -686,9 +662,6 @@ CAreaMgr* g_pAreaMgr = &g_areaMgr;
 // ---------------------------------------------------------------------------
 // Genuine __cdecl engine helpers (reloc-masked rel32).
 // ---------------------------------------------------------------------------
-void Cmd_ResetScroll();  // 0x2bd0  YAXXZ
-i32 QueryToken(i32 a);   // 0x39a4  QueryToken(int)
-void ActiveWait(u32 ms); // 0x13dfe0 busy-wait
 
 RVA(0x000ca200, 0xe34)
 i32 CPlay::LoadByMode(i32 level, i32) {

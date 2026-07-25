@@ -1,9 +1,9 @@
+#include <Gruntz/StateDispatch.h> // this TU's external declarations
 #include <rva.h>
 
 #include <Gruntz/LevelTimeDtor.h> // canonical CLevelTime : CTileLogic : CUserLogic (+ CGameObject/AnimWorkerObj)
 
 class CUserLogic;
-i32 ProjTypeXfer(CUserLogic* logic); // 0x16e4f0 (the "archive" IS the logic)
 
 RVA(0x0009b770, 0xf1)
 i32 StateDispatch(CGameObject* obj) {

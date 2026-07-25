@@ -53,17 +53,6 @@ SecretMsgRow g_secretMsgRows[24]; // 0x629f30  (0xa0 stride)
 char g_secretMsgA[0x20];          // 0x62ae30  encoded line A
 char g_secretMsgB[0x80];          // 0x62ae50  encoded line B (strB extent 0x80, not 0x20)
 
-void ShowHudMessage(
-    CDDrawSurfaceMgr* sink,
-    CString* text,
-    RECT* box,
-    i32 fontSel,
-    i32 b,
-    i32 c,
-    i32 d,
-    i32 e,
-    i32 f
-); // 0x1154b0
 
 // ===========================================================================
 // ShowLevelCompleteMessage @0x1c9d0 - draws the per-slot ready/template overlays,

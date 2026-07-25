@@ -324,4 +324,9 @@ extern "C" const GUID IID_IDirectDrawSurface3; // 0x5ef888
 
 extern u8 g_clut[];
 extern u16 g_lut16[256];
+
+// File-scope prototypes moved from the .cpp (external linkage
+// belongs in the owner header).
+void* operator new(u32); // engine allocator (reloc-masked rel32)
+
 #endif // DDRAWMGR_CDDSURFACE_H

@@ -347,17 +347,6 @@ DATA(0x0025160c)
 i32 g_versionMid = 0; // decl in <Gruntz/GameMode.h>
 DATA(0x00251610)
 i32 g_versionMinor = 0; // decl in <Gruntz/GameMode.h>
-void ShowHudMessage(
-    CDDrawSurfaceMgr* sink,
-    CString* text,
-    RECT* box,
-    i32 fontSel,
-    i32 b,
-    i32 c,
-    i32 d,
-    i32 e,
-    i32 f
-); // 0x1154b0
 RVA(0x000a0d80, 0xd7)
 void CMenuState::BuildVersionString(tagRECT r) {
     CString str;

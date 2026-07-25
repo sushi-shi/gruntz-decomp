@@ -1,9 +1,9 @@
+#include <Utils/WinAPICdRom.h> // this TU's external declarations
 #include <Mfc.h>
 #include <Utils/RegistryHelper.h>
 #include <rva.h>
 #include <stdio.h>
 
-char GetGruntzDriveLetter();
 
 RVA(0x0001fd50, 0xf)
 i32 IsGruntzCDInAnyDrive() {

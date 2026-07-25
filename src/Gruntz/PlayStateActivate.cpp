@@ -1,3 +1,4 @@
+#include <Gruntz/PlayStateActivate.h> // this TU's external declarations
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Gruntz/GameRegMfcPtr.h>         // g_gameReg at its REAL type (CGruntzMgr)
 #include <Mfc.h>                          // ShowCursor (afx-first)
@@ -19,7 +20,6 @@
 #include <Gruntz/StatusBarMgr.h>       // canonical CStatusBarMgr (m_guts Deactivate/Load...)
 
 class CGruntzMgr;
-void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag); // reloc-masked
 
 RVA(0x000cb800, 0x191)
 i32 CPlay::InputVirtual() {

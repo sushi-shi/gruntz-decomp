@@ -1,3 +1,4 @@
+#include <Gruntz/BootyStateActivate.h> // this TU's external declarations
 #include <Gruntz/BootyMessages.h> // DrawStatText / g_bootyLetterCoords (ex .cpp externs)
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
@@ -26,17 +27,6 @@
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr / CDDrawSubMgrLeafScan (CState::m_c draw+cue context)
 #include <Io/MoviePlayer.h> // CMoviePlayer (~; CMultiBootyState::ReleaseResources m_4->m_60)
 
-void ShowHudMessageAlt(
-    CDDrawSurfaceMgr* sink,
-    CString* text,
-    RECT* box,
-    i32 fontSel,
-    i32 b,
-    i32 c,
-    i32 d,
-    i32 e,
-    i32 f
-); // 0x115520
 
 DATA_SYMBOL(0x001e8fe8, 0x0, _g_bootyLetterCoords)
 

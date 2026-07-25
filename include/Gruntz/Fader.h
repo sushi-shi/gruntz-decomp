@@ -68,4 +68,10 @@ extern "C" int _access(const char* path, int mode); // 0x193900 CRT
 
 extern float g_fxBias;
 extern float g_fxEps;
+
+// File-scope prototypes moved from the .cpp (external linkage
+// belongs in the owner header).
+void __cdecl operator delete(void* p); // ??3@YAXPAX@Z (0x1b9b82)
+void ScatterSamples(i32* arr, i32, i32, i32); // 0x182940 ?ScatterSamples@@YAXPAHHHH@Z
+
 #endif // GRUNTZ_GRUNTZ_CFADER_H

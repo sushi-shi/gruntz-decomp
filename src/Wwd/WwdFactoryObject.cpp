@@ -35,7 +35,6 @@
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the +0x0c owner: the canonical CDDrawSurfaceMgr
 namespace Rng {
-    i32 Next2();
 }
 
 

@@ -5,6 +5,8 @@
 
 #include <Ints.h>
 
+struct ShadeDescr;
+
 class CShadeTableCache;
 struct CShadeTable;
 struct
@@ -38,5 +40,10 @@ public:
     CShadeTable* m_tables[10]; // +0x14  the 10 color tables (1 add + 9 sub)
 };
 SIZE(0x3c);
+
+
+// File-scope prototypes moved from the .cpp (external linkage
+// belongs in the owner header).
+void SetShadeDescr(ShadeDescr* v, int mode); // 0x14dcf0
 
 #endif // GRUNTZ_GRUNTZ_LIGHTFXMGR_H

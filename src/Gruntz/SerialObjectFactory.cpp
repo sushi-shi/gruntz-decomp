@@ -1,3 +1,4 @@
+#include <Gruntz/SerialObjectFactory.h> // this TU's external declarations
 #include <Gruntz/SerialCounter.h> // own extern surface
 #include <Gruntz/GruntzMgr.h>     // the mgr's real type
 #include <Ints.h>
@@ -11,7 +12,6 @@
 
 // fwd: the (de)serialize dispatch this TU defines below (0xd2a0); ParseSerial hands
 // it to RestoreChildren as the parse callback (retail wires the ILT thunk 0x4024e6).
-i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void** ppObj);
 
 RVA(0x0000d210, 0x65)
 i32 ParseSerial(CGruntzMgr* mgr, char* s) {
@@ -57,7 +57,6 @@ i32 ParseSerial(CGruntzMgr* mgr, char* s) {
 // own regalloc. The structural dossier above (mode dispatch + typeId->class->size->vtable
 // factory table) is the final-sweep starting point; the return-0 normalization artifact
 // is kept per the >512B rule.
-i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void** ppObj);
 RVA(0x0000d2a0, 0x1984)
 i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void** ppObj) {
     return 0;

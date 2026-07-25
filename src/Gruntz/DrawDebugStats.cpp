@@ -1,3 +1,4 @@
+#include <Gruntz/DrawDebugStats.h> // this TU's external declarations
 #include <Mfc.h> // real MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde / += 0x1ba0c8) + windows.h
 #include <Gruntz/GameRegMfcPtr.h>
 #include <ddraw.h> // real IDirectDrawSurface (the debug-overlay DC host: GetDC/ReleaseDC)
@@ -15,7 +16,6 @@
 
 #include <rva.h>
 
-CString FormatElapsedTime(u32 ms); // 0x1190f0 (TimeString.cpp)
 
 RVA(0x000cf770, 0x35e)
 void CPlay::DrawDebugStats() {

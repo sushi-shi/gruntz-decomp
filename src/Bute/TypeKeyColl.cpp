@@ -89,7 +89,6 @@ i32 g_defaultProjActSize;
 DATA(0x0021adf4)
 const char s_out_of_memory[] = "out of memory"; // decl in <Gruntz/TypeKeyColl.h>
 
-i32 FirstDiffBit(const char* a, const char* b); // 0x16e480
 
 DATA(0x002bf498)
 TypeKeyRec g_recs23[32];
@@ -1049,7 +1048,7 @@ void ButeTreeNopFree(void*);
 
 __inline CButeTree::CButeTree(void(__cdecl* teardown)(void*), i32 n) : zPTree(teardown, n) {}
 
-CButeTree g_buteTree(&ButeTreeNopFree, 0);
+CButeTree g_buteTree = CButeTree(&ButeTreeNopFree, 0);
 
 // MSVC emits the inlined g_typeColl constructor and its atexit wrapper as a pair.
 // The local `$E` number is unstable; compiler-generated matching binds it by content.
