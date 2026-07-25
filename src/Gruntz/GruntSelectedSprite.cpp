@@ -27,6 +27,7 @@ VTBL(CGruntSelectedSprite, 0x001e7bfc); // vtable_names -> code (RTTI game class
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
 template<> DATA(0x00244da8)
 CActReg CActRegPool<CGruntSelectedSprite>::s_table(2000, 2010);
+RVA_COMPGEN(0x00011e50, 0x1e, ??_GCGruntSelectedSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011e80, 0x44, ??1CGruntSelectedSprite@@UAE@XZ)
 
 RVA(0x0007e3e0, 0x178)

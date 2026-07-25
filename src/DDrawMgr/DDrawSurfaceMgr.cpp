@@ -43,6 +43,7 @@ CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
 
 VTBL(CDDrawSurfaceMgr, 0x001efc58);
 
+RVA_COMPGEN(0x00155890, 0x1e, ??_GCDDrawSurfaceMgr@@UAEPAXI@Z)
 RVA(0x001558b0, 0x46)
 CDDrawSurfaceMgr::~CDDrawSurfaceMgr() {
     Cleanup();

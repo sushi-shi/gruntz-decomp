@@ -36,6 +36,7 @@ const double g_spotRateMul = -1.0; // 0x5ea3f8
 // a user-declared `~CSpotLight() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA_COMPGEN(0x00013010, 0x1e, ??_GCSpotLight@@UAEPAXI@Z)
 RVA_COMPGEN(0x00013040, 0x44, ??1CSpotLight@@UAE@XZ)
 
 RVA(0x000b1200, 0x2cb)

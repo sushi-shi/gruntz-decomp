@@ -81,6 +81,8 @@ CProjectile::CProjectile() {}
 // a user-declared `~CTimeBomb() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA_COMPGEN(0x00012980, 0x1e, ??_GCProjectile@@UAEPAXI@Z)
+RVA_COMPGEN(0x00012a40, 0x1e, ??_GCTimeBomb@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012a70, 0x44, ??1CTimeBomb@@UAE@XZ)
 
 typedef void (CMovingLogic::*MovingCallback)();

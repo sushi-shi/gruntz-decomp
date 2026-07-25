@@ -204,6 +204,7 @@ i32 CSBI_ImageSetAni::SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4)
     return CSBI_ImageSet::SerializeFields(s, mode, a3, a4) != 0; // qualified = direct base call
 }
 
+RVA_COMPGEN(0x001047c0, 0x1e, ??_GCSBI_ImageSetAni@@UAEPAXI@Z)
 RVA(0x001047f0, 0x94)
 CSBI_ImageSetAni::~CSBI_ImageSetAni() {
     Reset();

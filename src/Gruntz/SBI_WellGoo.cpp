@@ -252,6 +252,7 @@ i32 CSBI_WellGoo::SerializeFields(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
     return 1;
 }
 
+RVA_COMPGEN(0x00104b80, 0x1e, ??_GCSBI_WellGoo@@UAEPAXI@Z)
 RVA(0x00104bb0, 0x94)
 CSBI_WellGoo::~CSBI_WellGoo() {
     if (m_gooSrc != 0) {

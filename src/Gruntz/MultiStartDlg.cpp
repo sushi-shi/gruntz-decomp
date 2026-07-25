@@ -37,6 +37,7 @@ CMultiStartDlg::CMultiStartDlg(CGruntzMgr* a0, CWnd* pParent) : CDialog(0xc5, pP
     g_multiState = static_cast<CMulti*>(g_gameReg->m_curState);
 }
 
+RVA_COMPGEN(0x000c1810, 0x1e, ??_GCMultiStartDlg@@UAEPAXI@Z)
 RVA(0x000c1840, 0x16e)
 i32 CMultiStartDlg::SetupWorldCombo() {
     CWnd* combo = GetDlgItem(0x4ff);

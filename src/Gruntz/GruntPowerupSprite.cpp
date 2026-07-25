@@ -23,6 +23,7 @@ VTBL(CGruntPowerupSprite, 0x001e76c4); // vtable_names -> code (RTTI game class)
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
 template<> DATA(0x00244d30)
 CActReg CActRegPool<CGruntPowerupSprite>::s_table(2000, 2010);
+RVA_COMPGEN(0x00012340, 0x1e, ??_GCGruntPowerupSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012370, 0x44, ??1CGruntPowerupSprite@@UAE@XZ)
 
 RVA(0x0007fdb0, 0x166)

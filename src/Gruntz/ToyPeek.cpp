@@ -12,6 +12,7 @@
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 #include <rva.h>
 #include <rva.h>
+RVA_COMPGEN(0x00011c10, 0x1e, ??_GCToyPeek@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011c40, 0x44, ??1CToyPeek@@UAE@XZ)
 
 // CToyPeek::CToyPeek (0x98140) - fold the shared CUserLogic(obj) init, then nudge

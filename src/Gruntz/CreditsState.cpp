@@ -529,6 +529,7 @@ i32 CCreditsState::FlashColor() {
 // still reaches it through the declared-only CTsSub45 ctor, reloc-masked to the same
 // rva, and no TU of ours emits those two COMDATs yet.)
 RVA_COMPGEN(0x0008c400, 0x46, ??1CRgn@@UAE@XZ)
+RVA_COMPGEN(0x0008d5b0, 0x1e, ??_GCCreditsState@@UAEPAXI@Z)
 RVA(0x0008d5e0, 0x8b)
 CCreditsState::~CCreditsState() {
     ReleaseResources();

@@ -8,6 +8,7 @@ CString InterfaceObject::GetName() {
     return m_name;
 }
 
+RVA_COMPGEN(0x00179320, 0x1e, ??_GInterfaceObject@@UAEPAXI@Z)
 RVA(0x00179340, 0x48)
 InterfaceObject::~InterfaceObject() {
     m_guid = 0;

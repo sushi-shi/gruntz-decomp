@@ -155,6 +155,7 @@ i32 CDDrawWorkerMapSmall::GetClassId() {
 // reloc-masked EH names. WALL RE-PROVEN for the clean polymorphic model
 // (eh-dtor-implicit-vptr-stamp-first.md sub-case 2 does NOT apply - three
 // destructible members intervene). Logic complete.
+RVA_COMPGEN(0x00156d00, 0x1e, ??_GCDDrawWorkerMapSmall@@UAEPAXI@Z)
 RVA(0x00156d20, 0x82)
 CDDrawWorkerMapSmall::~CDDrawWorkerMapSmall() {
     Unload();
@@ -243,6 +244,7 @@ i32 CDDrawWorkerList::GetClassId() {
     return CLASSID_WORKERLIST; // 0x11
 }
 
+RVA_COMPGEN(0x00156f30, 0x1e, ??_GCDDrawWorkerList@@UAEPAXI@Z)
 RVA(0x00156f50, 0x68)
 CDDrawWorkerList::~CDDrawWorkerList() {
     Unload();
@@ -286,6 +288,7 @@ i32 CDDrawWorkerBase::SetPosition(i32 x, i32 y) {
 // into the final CObject stamp). Fix = the family-wide inline/(B)-form dtor flip,
 // deferred with CLoadable's. Pre-rebase this was ~94% on a fake CObject base;
 // the CResolveNode truth is worth the drop (factories/Vfuncs all EXACT).
+RVA_COMPGEN(0x001570b0, 0x1e, ??_GCDDrawWorkerA@@UAEPAXI@Z)
 RVA(0x001570d0, 0x39)
 CDDrawWorkerA::~CDDrawWorkerA() {
     volatile LONG* pHi = &m_dirtyRect.left;
@@ -342,6 +345,7 @@ i32 CDDrawWorkerBase::GetClassId() {
 // @early-stop
 // (A)-form base-dtor wall (~59%): same residual as ~CDDrawWorkerA (tail
 // `jmp ??1CResolveNode` vs retail's inlined base teardown + the kept entry stamp).
+RVA_COMPGEN(0x00157220, 0x1e, ??_GCDDrawWorkerB@@UAEPAXI@Z)
 RVA(0x00157240, 0x3c)
 CDDrawWorkerB::~CDDrawWorkerB() {
     volatile LONG* pHi = &m_dirtyRect.left;
@@ -619,6 +623,7 @@ i32 CFileMemBase::WantCreate() {
     return m_mode == 0;
 }
 
+RVA_COMPGEN(0x00157960, 0x1e, ??_GCFileMemBase@@UAEPAXI@Z)
 RVA(0x00157980, 0x74)
 CFileMem::~CFileMem() {
     Reset();
@@ -636,6 +641,7 @@ i32 CFileMem::GetOffset() {
     return m_offset;
 }
 
+RVA_COMPGEN(0x00157a20, 0x1e, ??_GCFileMem@@UAEPAXI@Z)
 RVA(0x00157a40, 0x10)
 void CFileMemBase::Reset() {
     m_4 = 0;
@@ -1595,6 +1601,7 @@ i32 CDDrawSurfacePair::GetClassId() {
     return CLASSID_SURFACEPAIR;
 }
 
+RVA_COMPGEN(0x001590d0, 0x1e, ??_GCDDrawSurfacePair@@UAEPAXI@Z)
 RVA(0x001590f0, 0x56)
 CDDrawSurfacePair::~CDDrawSurfacePair() {
     Unload(); // devirtualized in the dtor (slot-7 body @0x163e20)

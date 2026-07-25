@@ -2283,6 +2283,9 @@ yes:
 // choices; a shared `goto`-return for the two `return 0` paths was matching-neutral
 // (retail already merges them). Not source-steerable. Deferred to the final sweep.
 RVA(0x00160c50, 0x289)
+RVA_COMPGEN(0x00161350, 0x1e, ??_GCImageSet1@@UAEPAXI@Z)
+RVA_COMPGEN(0x00161440, 0x1e, ??_GCImageSet2@@UAEPAXI@Z)
+RVA_COMPGEN(0x001614e0, 0x1e, ??_GCImageSet3@@UAEPAXI@Z)
 i32 CGameLevel::ScanRowSpan(i32 x0, i32 y, i32 x1, i32 step) {
     if (x1 > x0) {
         for (i32 col = x0; col <= x1; col += step) {

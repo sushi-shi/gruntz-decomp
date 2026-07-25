@@ -79,6 +79,7 @@ static i32 VtblResolve(void* ent) {
 // a user-declared `~CRollingBall() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA_COMPGEN(0x00012f50, 0x1e, ??_GCRollingBall@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012f80, 0x44, ??1CRollingBall@@UAE@XZ)
 
 // CRollingBall::CRollingBall @0xaf820 - fold the shared CUserLogic(obj) init, bind

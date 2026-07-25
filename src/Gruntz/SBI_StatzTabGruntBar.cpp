@@ -265,6 +265,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
     return dirty;
 }
 
+RVA_COMPGEN(0x00104ad0, 0x1e, ??_GCSBI_StatzTabGruntBar@@UAEPAXI@Z)
 RVA(0x00104b00, 0x55)
 CSBI_StatzTabGruntBar::~CSBI_StatzTabGruntBar() {
     Reset();

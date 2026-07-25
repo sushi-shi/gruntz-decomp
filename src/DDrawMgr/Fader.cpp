@@ -31,6 +31,7 @@ CFader::CFader() {
     m_flag = 1;
 }
 
+RVA_COMPGEN(0x0017e480, 0x1e, ??_GCFader@@UAEPAXI@Z)
 RVA(0x0017e4a0, 0x69)
 CFader::~CFader() {
     if (m_table && m_flag) {
@@ -158,6 +159,7 @@ CFaderMesh::CFaderMesh() {}
 // instead. The CALL reloc binds to the real dtor (reloc-faithful); inlining it here
 // would require the header-inline move that unbinds the 0x17f330 emission. A
 // deliberate structure-over-% trade.
+RVA_COMPGEN(0x0017e970, 0x1e, ??_GCFaderMesh@@UAEPAXI@Z)
 RVA(0x0017e990, 0x6b)
 CFaderMesh::~CFaderMesh() {}
 
@@ -238,6 +240,9 @@ i32 CFaderMesh::GetFrameCount() {
     return 0x1f4;
 }
 
+RVA_COMPGEN(0x0017f310, 0x1e, ??_GCRezBufferObject@@UAEPAXI@Z)
+RVA_COMPGEN(0x0017f550, 0x1e, ??_GCFaderFlat@@UAEPAXI@Z)
+RVA_COMPGEN(0x0017f9d0, 0x1e, ??_GCFaderRadial@@UAEPAXI@Z)
 RVA(0x0017fda0, 0x8)
 i32 CFaderRadial::GetFrameCount() {
     return m_maxRadius;
@@ -249,6 +254,7 @@ CFaderSine::CFaderSine() {
     m_frameCount = 0;
 }
 
+RVA_COMPGEN(0x0017fdd0, 0x1e, ??_GCFaderSine@@UAEPAXI@Z)
 RVA(0x0017fdf0, 0xb)
 CFaderSine::~CFaderSine() {}
 
@@ -355,6 +361,7 @@ CFaderLight::CFaderLight() {
     m_overlay = 0;
 }
 
+RVA_COMPGEN(0x00180430, 0x1e, ??_GCFaderLight@@UAEPAXI@Z)
 RVA(0x00180450, 0x4f)
 CFaderLight::~CFaderLight() {
     SubFree();
@@ -1048,6 +1055,7 @@ void CFaderRadial::RenderFrame(i32 frame) {
     RezFree(scratch);
 }
 
+RVA_COMPGEN(0x00181700, 0x1e, ??_GCFaderShape@@UAEPAXI@Z)
 RVA(0x00181720, 0xb3)
 CFaderShape::~CFaderShape() {
     if (m_warpTable) {

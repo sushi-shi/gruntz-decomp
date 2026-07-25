@@ -417,6 +417,11 @@ i32 CState::FrameSlot28(i32) {
 
 RVA_COMPGEN(0x0008c830, 0xaf, ??1CPlay@@UAE@XZ)
 
+RVA_COMPGEN(0x0008c9a0, 0x1e, ??_GCPlay@@UAEPAXI@Z)
+RVA_COMPGEN(0x0008ce30, 0x1e, ??_GCMenuState@@UAEPAXI@Z)
+RVA_COMPGEN(0x0008cf00, 0x1e, ??_GCHelpState@@UAEPAXI@Z)
+RVA_COMPGEN(0x0008cfd0, 0x1e, ??_GCSplashState@@UAEPAXI@Z)
+RVA_COMPGEN(0x0008d0a0, 0x1e, ??_GCDemo@@UAEPAXI@Z)
 RVA(0x0008d0d0, 0xc4)
 CDemo::~CDemo() {
     // The retail +0x2b call targets the ILT thunk 0x3c010, itself a 5-byte jmp to
@@ -443,6 +448,7 @@ i32 CMulti::GetFrame() {
     return m_session->m_tick;
 }
 
+RVA_COMPGEN(0x0008d240, 0x1e, ??_GCMulti@@UAEPAXI@Z)
 RVA(0x0008d850, 0x83)
 i32 CGruntzMgr::GoToNextLevel() {
     if (m_curState->Update() != GAMESTATE_PLAY) {

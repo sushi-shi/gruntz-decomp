@@ -470,6 +470,7 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     return 1;
 }
 
+RVA_COMPGEN(0x000b5fd0, 0x1e, ??_GCNetMgr@@UAEPAXI@Z)
 RVA(0x000b6000, 0x6d)
 CNetMgr::~CNetMgr() {
     Destroy();

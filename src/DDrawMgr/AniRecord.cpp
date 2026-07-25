@@ -27,6 +27,7 @@ void operator delete(void* p);
 // in <DDrawMgr/AniRecordViews.h> (@identity-TODO) so they no longer count as .cpp-local
 // views. CAniRecordOwner->m_pool is the real CDDrawPtrCollections the Alloc* leaves use.
 
+RVA_COMPGEN(0x00165780, 0x1e, ??_GCAniRecordView@@UAEPAXI@Z)
 RVA(0x001657a0, 0x66)
 CAniRecordView::~CAniRecordView() {
     CAniRecordView* r = this;
@@ -49,6 +50,7 @@ i32 CAniRecordBase2::GetClassId() {
     return 0x15;
 }
 
+RVA_COMPGEN(0x00165db0, 0x1e, ??_GCAniRecordBase2@@UAEPAXI@Z)
 RVA(0x00165dd0, 0x5b)
 CAniRecordBase2::~CAniRecordBase2() {
     // Own-slot FreeBuf: in the dtor cl devirtualizes to the direct 0x168fb0 call.

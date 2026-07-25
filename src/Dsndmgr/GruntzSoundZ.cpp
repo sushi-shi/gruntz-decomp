@@ -281,6 +281,7 @@ i32 CGruntzSoundInnerZ::IsMidi() {
     return 1;
 }
 
+RVA_COMPGEN(0x00138a30, 0x1e, ??_GCGruntzSoundInnerZ@@UAEPAXI@Z)
 RVA(0x00138a50, 0x46)
 CGruntzSoundInnerZ::~CGruntzSoundInnerZ() {
     ReleaseHandle();

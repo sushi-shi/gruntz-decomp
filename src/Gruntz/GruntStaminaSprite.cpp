@@ -3,6 +3,7 @@
 #include <Bute/ButeTree.h> // g_buteTree.Find (0x16d190) - the "A" animset seed
 #include <rva.h>
 
+RVA_COMPGEN(0x00012040, 0x1e, ??_GCGruntStaminaSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012070, 0x44, ??1CGruntStaminaSprite@@UAE@XZ)
 
 // CGruntStaminaSprite::CGruntStaminaSprite @0x0007fae0 - the /GX HUD sprite ctor.

@@ -33,6 +33,7 @@ i32 CSimpleAnimation::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CSimpleAnimation() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA_COMPGEN(0x0000f9a0, 0x1e, ??_GCSimpleAnimation@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000f9d0, 0x44, ??1CSimpleAnimation@@UAE@XZ)
 
 VTBL(CSimpleAnimation, 0x001e8544);

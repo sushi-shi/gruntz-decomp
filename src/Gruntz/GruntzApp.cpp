@@ -31,6 +31,7 @@ char g_errorText[0x100] = {0};
 RVA(0x00080850, 0x12)
 CGruntzApp::CGruntzApp() {}
 
+RVA_COMPGEN(0x00080880, 0x1e, ??_GCGruntzApp@@UAEPAXI@Z)
 RVA(0x00080930, 0x31)
 i32 CGruntzApp::Init(
     HINSTANCE hInstance,

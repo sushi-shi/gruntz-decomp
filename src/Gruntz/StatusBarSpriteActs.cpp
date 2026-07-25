@@ -26,6 +26,7 @@ VTBL(CStatusBarSprite, 0x001e7fc4);
 // a user-declared `~CStatusBarSprite() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA_COMPGEN(0x00011b50, 0x1e, ??_GCStatusBarSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011b80, 0x44, ??1CStatusBarSprite@@UAE@XZ)
 
 RVA(0x0010c0f0, 0xf1)

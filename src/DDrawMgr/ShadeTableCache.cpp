@@ -985,6 +985,7 @@ void CShadeTableArray::Serialize(CArchive& arc) {
 // element-count `rep stosd` but cl emits the generic byte-count split (shl/shr +
 // `rep stosb` remainder) for the same memset, and (2) the long-lived 0/null register
 // pin cascade the 40-byte twin (CArrayE40, 96%) also hits. Not source-steerable.
+RVA_COMPGEN(0x00150020, 0x1e, ??_GCShadeTableArray@@UAEPAXI@Z)
 RVA(0x00150040, 0x136)
 void CShadeTableArray::SetSizeGrow(i32 nNewSize, i32 nGrowBy) {
     if (nGrowBy != -1) {

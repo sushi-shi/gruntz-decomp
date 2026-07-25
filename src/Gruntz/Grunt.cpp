@@ -178,6 +178,7 @@ static void GruntScratchTeardown() {
 // `push ecx`; `add esp,0x14` vs `0x10`). Closing this needs the base construction
 // state propagated into the derived dtor's state table (the CUserLogic ctor visible in
 // this TU) - deferred to the final sweep.
+RVA_COMPGEN(0x0000f2c0, 0x1e, ??_GCGrunt@@UAEPAXI@Z)
 RVA(0x0000f2f0, 0xc8)
 CGrunt::~CGrunt() {
     UserLogicVfunc9();
@@ -205,6 +206,7 @@ static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 // vptr residue is byte-verified (llvm-objdump: only the intermediate stamp reloc differs).
 // Deferred to the final sweep.
 
+RVA_COMPGEN(0x00013c40, 0x1e, ??_GCMovingLogic@@UAEPAXI@Z)
 RVA(0x00047a10, 0x770)
 CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     // CMovingLogic constructed the real m_motion member. This leaf applies its

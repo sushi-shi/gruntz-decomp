@@ -131,6 +131,7 @@ static char* g_errMsg_NullArg;
 static char* g_errMsg_BadArg;
 
 RVA(0x0016d9c0, 0x75)
+RVA_COMPGEN(0x0016da40, 0x1e, ??_GzErrHandling@@UAEPAXI@Z)
 zErrHandling::zErrHandling(CVariantSlot* errSink) {
     // +0x04 stored first, the vptr after it (cl's implicit stamp). The arg is the sink to
     // register with, not a string: ~zErrHandling loads +0x04 into ecx as a __thiscall

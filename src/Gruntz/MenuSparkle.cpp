@@ -39,6 +39,7 @@
 template<> DATA(0x00246010)
 CActReg CActRegPool<CMenuSparkle>::s_table(2000, 2010);
 
+RVA_COMPGEN(0x00010180, 0x1e, ??_GCMenuSparkle@@UAEPAXI@Z)
 RVA_COMPGEN(0x000101b0, 0x44, ??1CMenuSparkle@@UAE@XZ)
 
 RVA(0x000adbe0, 0x178)

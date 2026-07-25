@@ -32,6 +32,7 @@ i32 CMenuItem::OnInit() {
     return 0;
 }
 
+RVA_COMPGEN(0x00184670, 0x1e, ??_GCMenuItem@@UAEPAXI@Z)
 RVA(0x00184690, 0x91)
 inline CMenuItem::~CMenuItem() {
     Dispatch0c();
@@ -67,6 +68,7 @@ i32 CMenuItem2::OnInit() {
     return 1;
 }
 
+RVA_COMPGEN(0x001847c0, 0x1e, ??_GCMenuItem2@@UAEPAXI@Z)
 RVA(0x001847e0, 0xa6)
 CMenuItem2::~CMenuItem2() {
     Dispatch0c();

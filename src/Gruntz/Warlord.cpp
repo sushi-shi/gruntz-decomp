@@ -139,6 +139,7 @@ CActReg CActRegPool<CWarlord>::s_table(2000, 2010);
 // too, so this is a ~50-leaf tile-logic-wide structural item, not a CWarlord one.
 // Also entangled: unwind action(0) calls ??1L_8860@@UAE@XZ - still an L_<rva>
 // placeholder shell (src/Gruntz/WorldSoundSet.cpp).
+RVA_COMPGEN(0x000107c0, 0x1e, ??_GCWarlord@@UAEPAXI@Z)
 RVA_COMPGEN(0x000107f0, 0x55, ??1CWarlord@@UAE@XZ)
 
 typedef enum WarlordOwner {

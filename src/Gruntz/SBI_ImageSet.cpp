@@ -183,6 +183,7 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4) {
     return CSBI_Image::SerializeFields(s, mode, a3, a4) != 0;
 }
 
+RVA_COMPGEN(0x00101fd0, 0x1e, ??_GCSBI_ImageSet@@UAEPAXI@Z)
 RVA(0x00102000, 0x7f)
 CSBI_ImageSet::~CSBI_ImageSet() {
     Reset();

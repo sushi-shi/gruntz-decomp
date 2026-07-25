@@ -130,6 +130,7 @@ i32 CWarpStonePad::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
 // a user-declared `~CWarpStonePad() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA_COMPGEN(0x00010f90, 0x1e, ??_GCWarpStonePad@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010fc0, 0x44, ??1CWarpStonePad@@UAE@XZ)
 
 RVA(0x00011030, 0x6)
@@ -155,6 +156,7 @@ i32 CTileTriggerSwitch::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4
 // a user-declared `~CTileTriggerSwitch() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA_COMPGEN(0x000110c0, 0x1e, ??_GCTileTriggerSwitch@@UAEPAXI@Z)
 RVA_COMPGEN(0x000110f0, 0x44, ??1CTileTriggerSwitch@@UAE@XZ)
 
 RVA(0x00011160, 0x4b)
@@ -182,6 +184,7 @@ i32 CTileTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
 // being called; MSVC still emits one out-of-line COMDAT copy (called by its scalar-
 // deleting dtor) at 0x011290, pinned by mangled name (an inline-defined dtor can't
 // hang an RVA()):
+RVA_COMPGEN(0x00011260, 0x1e, ??_GCTileTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011290, 0x44, ??1CTileTrigger@@UAE@XZ)
 
 RVA(0x00011320, 0x47)
@@ -197,6 +200,7 @@ i32 CBrickz::SerializeMove(CFileMemBase* a, i32 b, i32 c, i32 d) {
 // probe (see <Gruntz/MapLogic.h>: ??_7CBrickz @0x1e7c54 slot 0 -> sdd 0x11390 -> 0x113c0;
 // the ex-CMapLogic view binding). This TU emits CBrickz vtable/??_G -> the ??1 COMDAT.
 // CBrickz::GetTypeTag @0x011300 is header-inline (in <Gruntz/CBrickz.h>).
+RVA_COMPGEN(0x00011390, 0x1e, ??_GCBrickz@@UAEPAXI@Z)
 RVA_COMPGEN(0x000113c0, 0x44, ??1CBrickz@@UAE@XZ)
 
 // ~CCheckpointTrigger @0x011480 - the bare folded CUserLogic teardown (store the
@@ -211,6 +215,7 @@ LogicTypeId CCheckpointTrigger::GetTypeTag() {
     return LOGIC_CHECKPOINTTRIGGER;
 }
 
+RVA_COMPGEN(0x00011450, 0x1e, ??_GCCheckpointTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011480, 0x44, ??1CCheckpointTrigger@@UAE@XZ)
 
 // --- CTileTrigger leaf destructors (0x011540 / 0x011600 / 0x0116c0) --- the SAME
@@ -224,6 +229,7 @@ LogicTypeId CTileSecretTrigger::GetTypeTag() {
     return LOGIC_TILESECRETTRIGGER;
 }
 
+RVA_COMPGEN(0x00011510, 0x1e, ??_GCTileSecretTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011540, 0x44, ??1CTileSecretTrigger@@UAE@XZ)
 
 // IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
@@ -235,6 +241,7 @@ LogicTypeId CGiantRock::GetTypeTag() {
     return LOGIC_GIANTROCK;
 }
 
+RVA_COMPGEN(0x000115d0, 0x1e, ??_GCGiantRock@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011600, 0x44, ??1CGiantRock@@UAE@XZ)
 // IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
 // a user-declared `~CCoveredPowerup() {}` emits the leaf-vptr restamp, and the CWapX
@@ -245,6 +252,7 @@ LogicTypeId CCoveredPowerup::GetTypeTag() {
     return LOGIC_COVEREDPOWERUP;
 }
 
+RVA_COMPGEN(0x00011690, 0x1e, ??_GCCoveredPowerup@@UAEPAXI@Z)
 RVA_COMPGEN(0x000116c0, 0x44, ??1CCoveredPowerup@@UAE@XZ)
 
 // --- CTileTriggerTransition leaf pool (the tiletriggertransition stray, folded waveM-strays)
@@ -281,6 +289,7 @@ i32 CTileTriggerTransition::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i3
 // empty leaf dtors CANNOT be copies of one ~CUserLogic: each is its own class's dtor.)
 // An inline-defined dtor can't hang an RVA() (it would also tag the synthesized ??_G ->
 // duplicate-RVA), so it is pinned by mangled name:
+RVA_COMPGEN(0x000117c0, 0x1e, ??_GCTileTriggerTransition@@UAEPAXI@Z)
 RVA_COMPGEN(0x000117f0, 0x44, ??1CTileTriggerTransition@@UAE@XZ)
 
 RVA(0x0010cb10, 0xf1)

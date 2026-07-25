@@ -173,6 +173,7 @@ void CResolveNode::Unload() {
     m_dirtyArmed = -1;
 }
 
+RVA_COMPGEN(0x0015b4c0, 0x1e, ??_GCGameObject@@UAEPAXI@Z)
 RVA(0x0015b4f0, 0xde)
 CGameObject::~CGameObject() {
     Unload(); // devirtualized in the dtor -> the inline E pass
@@ -210,6 +211,7 @@ i32 CAniAdvanceCursor::IsLoaded() {
     return m_10 != 0;
 }
 
+RVA_COMPGEN(0x0015b6b0, 0x1e, ??_GCAniAdvanceCursor@@UAEPAXI@Z)
 RVA(0x0015b6d0, 0x5b)
 CAniAdvanceCursor::~CAniAdvanceCursor() {
     Unload(); // devirtualized in the dtor -> direct call to 0x15c2c0
@@ -252,6 +254,7 @@ i32 CWwdGameObjectA::GetClassId() {
     return CLASSID_WWDOBJA;
 }
 
+RVA_COMPGEN(0x0015b770, 0x1e, ??_GCWwdGameObjectA@@UAEPAXI@Z)
 RVA(0x0015b790, 0x1a6)
 CWwdGameObjectA::~CWwdGameObjectA() {
     Unload(); // devirtualized -> the inline A pass (geometry cache + E release)
@@ -308,6 +311,7 @@ void CWwdGameObjectF::BltDirtyRegions(CDDrawSurfacePair*, CDDrawSurfacePair*, i3
 // @early-stop
 // zero-register-pinning regalloc wall: two-level fold + double worker pass +
 // trylevel chain reproduced; residual is callee-saved const register coloring.
+RVA_COMPGEN(0x0015bab0, 0x1e, ??_GCWwdGameObjectF@@UAEPAXI@Z)
 RVA(0x0015bad0, 0x153)
 CWwdGameObjectF::~CWwdGameObjectF() {
     Unload(); // devirtualized -> the inline F pass (the E release copy)
@@ -338,6 +342,7 @@ i32 CWwdGameObject::GetClassId() {
     return CLASSID_WWDOBJB;
 }
 
+RVA_COMPGEN(0x0015bcf0, 0x1e, ??_GCWwdGameObject@@UAEPAXI@Z)
 RVA(0x0015bd10, 0x1ef)
 CWwdGameObject::~CWwdGameObject() {
     Unload(); // devirtualized -> the inline B pass (Clear + geometry + E release)
@@ -392,6 +397,7 @@ void CWwdGameObjectC::SetDotColor(u8 c8) {
     m_dotColor = c8;
 }
 
+RVA_COMPGEN(0x0015c050, 0x1e, ??_GCWwdGameObjectC@@UAEPAXI@Z)
 RVA(0x0015c070, 0x159)
 CWwdGameObjectC::~CWwdGameObjectC() {
     Unload(); // devirtualized -> the inline C pass (byte clear + E release)

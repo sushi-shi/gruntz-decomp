@@ -34,6 +34,7 @@ CBattlezDlg::CBattlezDlg(CGruntzMgr* a0, CWnd* pParent) : CDialog(0xc0, pParent)
 // every user-written dtor body. Declaring the dtor cost exactly those 6 bytes (the old
 // "vptr-restamp-presence wall", ~94.4%) and forced GruntzMgr.cpp to carry a second
 // definition of the class under the same name. Both are gone.
+RVA_COMPGEN(0x00014c60, 0x1e, ??_GCBattlezDlg@@UAEPAXI@Z)
 RVA_COMPGEN(0x00014c90, 0x47, ??1CBattlezDlg@@UAE@XZ)
 
 // @confidence: low
@@ -957,6 +958,7 @@ RVA(0x00017540, 0x3)
 void CBattlezDlg::StubBtnHandler(i32) {}
 
 RVA(0x00017d40, 0x8)
+RVA_COMPGEN(0x000180b0, 0x1e, ??_GCBattlezDlgCustom@@UAEPAXI@Z)
 void CBattlezDlg::OnOkCommand() {
     OnOK();
 }

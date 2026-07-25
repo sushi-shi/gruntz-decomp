@@ -26,6 +26,7 @@
 #include <rva.h>
 #include <Bute/ButeMgr.h>
 #include <Gruntz/TriggerMgr.h>
+RVA_COMPGEN(0x00010890, 0x1e, ??_GCExitTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x000108c0, 0x44, ??1CExitTrigger@@UAE@XZ)
 
 

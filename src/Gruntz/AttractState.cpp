@@ -306,6 +306,7 @@ GameStateId CAttract::Update() {
     return GAMESTATE_ATTRACT;
 }
 
+RVA_COMPGEN(0x0008cd60, 0x1e, ??_GCAttract@@UAEPAXI@Z)
 RVA(0x0008cd90, 0x55)
 CAttract::~CAttract() {
     ReleaseResources();

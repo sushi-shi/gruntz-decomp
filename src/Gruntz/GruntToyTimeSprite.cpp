@@ -2,6 +2,7 @@
 #include <Bute/ButeTree.h> // g_buteTree.Find (0x16d190) - the "A" animset seed
 #include <rva.h>
 
+RVA_COMPGEN(0x00012100, 0x1e, ??_GCGruntToyTimeSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012130, 0x44, ??1CGruntToyTimeSprite@@UAE@XZ)
 
 // CGruntToyTimeSprite::CGruntToyTimeSprite @0x0007fbd0 - the /GX HUD sprite ctor.

@@ -400,6 +400,7 @@ void CGruntzSingleCommand::Deselect() {
     CPtrListPool<CGruntzSingleCommand>::s_freeList.AddHead(this);
 }
 
+RVA_COMPGEN(0x000242c0, 0x1e, ??_GCGruntzSingleCommand@@UAEPAXI@Z)
 RVA_COMPGEN(0x000242f0, 0x7, ??1CGruntzSingleCommand@@UAE@XZ)
 
 RVA(0x00024310, 0x6)
@@ -434,6 +435,7 @@ void CGruntzMultiCommand::Deselect() {
     CPtrListPool<CGruntzMultiCommand>::s_freeList.AddHead(this);
 }
 
+RVA_COMPGEN(0x00024400, 0x1e, ??_GCGruntzMultiCommand@@UAEPAXI@Z)
 RVA_COMPGEN(0x00024430, 0x7, ??1CGruntzMultiCommand@@UAE@XZ)
 
 RVA(0x00024450, 0x29)

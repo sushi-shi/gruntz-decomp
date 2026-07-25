@@ -13,6 +13,7 @@ VTBL2(CBSecStream, CButeNodeEntry, 0x001f0514)
 VTBL2(CBSecStream, CContainerErr, 0x001f0510)
 
 RVA(0x00170210, 0x118)
+RVA_COMPGEN(0x00174d30, 0x1e, ??_GCBSecStream@@UAEPAXI@Z)
 CButeMgr::CButeMgr() {
     m_streamBase = 0;
     m_errCallback = 0;

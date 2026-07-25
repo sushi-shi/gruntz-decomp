@@ -33,6 +33,7 @@ void CDDrawWorkerHost::VtSlot11_163ac0(i32) {}
 // multi-member /GX funclet/state ordering across the worker delete + two buffer
 // frees + CWorkerObArray member + ~CLoadable fold (grand-base stamp position + EH
 // state writes), same wall class as the entry-list dtor. Logic complete.
+RVA_COMPGEN(0x00163ad0, 0x1e, ??_GCDDrawWorkerHost@@UAEPAXI@Z)
 RVA(0x00163af0, 0xcd)
 CDDrawWorkerHost::~CDDrawWorkerHost() {
     if (m_scroll != 0) {

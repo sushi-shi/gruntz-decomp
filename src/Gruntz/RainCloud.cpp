@@ -20,6 +20,7 @@ VTBL(CRainCloud, 0x001e7324); // vtable_names -> code (RTTI game class)
 // EH state blocks the dead-store elision that used to hide it. THIS obj emits
 // ??_7CRainCloud -> ??_G -> the implicit ??1 COMDAT (the ctor above is what needs
 // the vtable), so the pin resolves here - PathHazard.cpp never emits it.
+RVA_COMPGEN(0x00013310, 0x1e, ??_GCRainCloud@@UAEPAXI@Z)
 RVA_COMPGEN(0x00013340, 0x44, ??1CRainCloud@@UAE@XZ)
 
 // CRainCloud::HitTest @0x0b4640 (slot-20 override; ??_7CRainCloud[20] is the

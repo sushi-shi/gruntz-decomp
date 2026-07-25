@@ -622,6 +622,7 @@ CDDSurface* CDDrawPtrCollections::Createa88_3(i32 a, i32 b, i32 c) {
     return item;
 }
 
+RVA_COMPGEN(0x00142800, 0x1e, ??_GCPoolItemA88@@UAEPAXI@Z)
 RVA(0x00142820, 0x53)
 CPoolItemA88::~CPoolItemA88() {}
 
@@ -655,6 +656,7 @@ CDDSurface* CDDrawPtrCollections::Createab8_3(i32 a, i32 b, i32 c) {
     return item;
 }
 
+RVA_COMPGEN(0x00142a20, 0x1e, ??_GCPoolItemAB8@@UAEPAXI@Z)
 RVA(0x00142a40, 0x53)
 CPoolItemAB8::~CPoolItemAB8() {}
 
@@ -709,6 +711,7 @@ CDDSurface* CDDrawPtrCollections::Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e,
     return item;
 }
 
+RVA_COMPGEN(0x00142d20, 0x1e, ??_GCPoolItemAE8@@UAEPAXI@Z)
 RVA(0x00142d40, 0x53)
 CPoolItemAE8::~CPoolItemAE8() {}
 

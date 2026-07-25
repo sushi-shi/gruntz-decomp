@@ -100,6 +100,7 @@ void CImage::FlipBoth(void* arg) {
     FlipHorizontal(arg);
 }
 
+RVA_COMPGEN(0x000d5e50, 0x1e, ??_GCImage@@UAEPAXI@Z)
 RVA(0x000d5e80, 0x5b)
 CImage::~CImage() {
     FreeAll();

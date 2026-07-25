@@ -337,6 +337,7 @@ RVA_COMPGEN(0x0017e240, 0x51, ??1CFaderArray@@UAE@XZ)
 // faithful, but retail pins this->ebx / ar->esi while cl lands ebp/edi, cascading the
 // scratch edx/ecx picks through the realloc lea chains. Not source-steerable.
 RVA(0x0017e2a0, 0x188)
+RVA_COMPGEN(0x0017e430, 0x1e, ??_GCFaderArray@@UAEPAXI@Z)
 void CFaderArray::Serialize(CArchive& ar) {
     if (ar.IsStoring()) {
         ar.WriteCount(m_nSize);

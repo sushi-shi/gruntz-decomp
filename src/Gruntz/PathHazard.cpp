@@ -35,6 +35,7 @@ CPathHazard::CPathHazard() {
 // ~CPathHazard was misbound to 0x13340 (which is really ~CRainCloud - see below): the
 // whole family was shifted by one, because N byte-identical empty leaf dtors were being
 // assigned by proximity instead of by the vtable that dispatches them.
+RVA_COMPGEN(0x00013250, 0x1e, ??_GCPathHazard@@UAEPAXI@Z)
 RVA_COMPGEN(0x00013280, 0x44, ??1CPathHazard@@UAE@XZ)
 
 // (~CRainCloud x13340 is IMPLICIT and its COMDAT is emitted by raincloud.obj - the

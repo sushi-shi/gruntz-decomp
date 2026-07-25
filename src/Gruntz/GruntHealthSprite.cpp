@@ -25,6 +25,7 @@ CGruntHealthSprite::CGruntHealthSprite() {}
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
 template<> DATA(0x00244d80)
 CActReg CActRegPool<CGruntHealthSprite>::s_table(2000, 2010);
+RVA_COMPGEN(0x00011f80, 0x1e, ??_GCGruntHealthSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011fb0, 0x44, ??1CGruntHealthSprite@@UAE@XZ)
 
 RVA(0x0007eb00, 0x170)

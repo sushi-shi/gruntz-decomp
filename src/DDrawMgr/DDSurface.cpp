@@ -2027,6 +2027,7 @@ i32 CDDSurface::GetHeight() {
     return m_height;
 }
 
+RVA_COMPGEN(0x00141330, 0x1e, ??_GCDDSurface@@UAEPAXI@Z)
 RVA(0x00141350, 0x53)
 CDDSurface::~CDDSurface() {
     FreeSurfaces();

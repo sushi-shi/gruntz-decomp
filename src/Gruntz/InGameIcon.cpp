@@ -87,6 +87,7 @@ static inline char* ResolveSlot(_zdvec* v, i32 idx) {
 // a user-declared `~CInGameIcon() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA_COMPGEN(0x00011cd0, 0x1e, ??_GCInGameIcon@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011d00, 0x44, ??1CInGameIcon@@UAE@XZ)
 
 // ===========================================================================
@@ -100,6 +101,7 @@ RVA_COMPGEN(0x00011d00, 0x44, ??1CInGameIcon@@UAE@XZ)
 // a user-declared `~CInGameText() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA_COMPGEN(0x00011d90, 0x1e, ??_GCInGameText@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011dc0, 0x44, ??1CInGameText@@UAE@XZ)
 
 // ===========================================================================

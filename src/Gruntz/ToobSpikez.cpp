@@ -12,6 +12,7 @@
 #include <Wap32/ZVec.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
+RVA_COMPGEN(0x00012c30, 0x1e, ??_GCToobSpikez@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012c60, 0x44, ??1CToobSpikez@@UAE@XZ)
 
 RVA(0x00114480, 0xf1)

@@ -622,6 +622,7 @@ void CWwdGridShell::OnFound(WwdRegion* r) {
 // Init call unresolved. `Pt_168080` was a plain i32[2] size pair.)
 //
 RVA(0x00168080, 0x1f6)
+RVA_COMPGEN(0x00168280, 0x1e, ??_GCWwdGridShell@@UAEPAXI@Z)
 i32 CWwdSpatialMgr::Init(void* a1, RECT* rc, i32* p3, i32* p4, i32* p5, i32* p6, i32* p7, i32* p8) {
     if (a1) {
         m_grid0 = new CWwdGridShell;

@@ -27,6 +27,7 @@ i32 CLevelTime::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
     return Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
 }
 
+RVA_COMPGEN(0x00011a20, 0x1e, ??_GCLevelTime@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011a50, 0x44, ??1CLevelTime@@UAE@XZ)
 
 // CLevelTime::CLevelTime @0x9b8b0 - fold the shared CUserLogic(obj) init (with the

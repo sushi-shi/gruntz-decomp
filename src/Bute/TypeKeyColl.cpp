@@ -166,6 +166,7 @@ zBitVec::~zBitVec() {
 // regalloc wall: 1 instruction of 172 differs - `m_capacity = that.m_capacity` on the
 // capacities-differ path picks ecx in cl vs eax in retail (retail reuses the freed
 // malloc-result register). 99.84%, no source lever for the scratch register.
+RVA_COMPGEN(0x0016d2d0, 0x1e, ??_GzBitVec@@UAEPAXI@Z)
 RVA(0x0016d2f0, 0xac)
 zBitVec& zBitVec::operator=(const zBitVec& that) {
     if (this != &that) {
@@ -720,6 +721,7 @@ CButeNodeEntry::CButeNodeEntry(i32 n, void(__cdecl* teardown)(void*)) {
     m_nodeCount = 0;
 }
 
+RVA_COMPGEN(0x0016dfa0, 0x1e, ??_GCButeNodeEntry@@UAEPAXI@Z)
 RVA(0x0016dfc0, 0x7)
 CButeNodeEntry::~CButeNodeEntry() {}
 

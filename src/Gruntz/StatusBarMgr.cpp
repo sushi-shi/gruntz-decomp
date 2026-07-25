@@ -50,6 +50,7 @@ VTBL(CSBI_GruntMachine, 0x001eadbc); // vtable_names -> code (RTTI game class)
 //  (3) per-item store-scheduling / vtable-stamp-position coin-flips in the inline ctors.
 // All are matcher.md regalloc/scheduling walls; logic + offsets + call shape are exact.
 RVA(0x00102250, 0x1dcd)
+RVA_COMPGEN(0x00104cb0, 0x1e, ??_GCSBI_GruntMachine@@UAEPAXI@Z)
 i32 CStatusBarMgr::LoadTabSprites() {
     CDDrawSurfaceMgr* code = m_c; // the setup arg2 config host (spilled to [esp+0x10] in retail)
     i32 bx = m_10;                // base x

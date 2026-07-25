@@ -50,6 +50,7 @@ static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
 // a user-declared `~CKitchenSlime() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA_COMPGEN(0x000130d0, 0x1e, ??_GCKitchenSlime@@UAEPAXI@Z)
 RVA_COMPGEN(0x00013100, 0x44, ??1CKitchenSlime@@UAE@XZ)
 
 // CKitchenSlime::CKitchenSlime @0x0b23a0 - fold the shared CUserLogic(obj) init,

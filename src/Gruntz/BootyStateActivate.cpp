@@ -913,11 +913,13 @@ i32 CMultiBootyState::Vslot0c(i32, i32) {
     return PostCommandIfKey();
 }
 
+RVA_COMPGEN(0x0008d410, 0x1e, ??_GCBootyState@@UAEPAXI@Z)
 RVA(0x0008d440, 0x55)
 CBootyState::~CBootyState() {
     ReleaseResources();
 }
 
+RVA_COMPGEN(0x0008d4e0, 0x1e, ??_GCMultiBootyState@@UAEPAXI@Z)
 RVA(0x0008d510, 0x55)
 CMultiBootyState::~CMultiBootyState() {
     ReleaseResources();

@@ -28,6 +28,7 @@ i32 CDoNothing::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CDoNothing() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA_COMPGEN(0x0000f740, 0x1e, ??_GCDoNothing@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000f770, 0x44, ??1CDoNothing@@UAE@XZ)
 
 RVA(0x0000f800, 0x47)
@@ -47,6 +48,7 @@ i32 CDoNothingNormal::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CDoNothingNormal() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA_COMPGEN(0x0000f870, 0x1e, ??_GCDoNothingNormal@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000f8a0, 0x44, ??1CDoNothingNormal@@UAE@XZ)
 
 CDoNothingNormal* RealizeCDoNothingNormal();

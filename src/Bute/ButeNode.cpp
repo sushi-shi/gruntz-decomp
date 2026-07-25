@@ -38,6 +38,7 @@ VTBL(CButeNode, 0x001f051c); // node primary (most-derived) vtable @+0x00 (this 
 // case groups to chase the colouring MOVES the blocks (cl lays arms out in source order),
 // which craters it to 5.4%. So the arm ORDER is right and only the colouring is off.
 // ===========================================================================
+RVA_COMPGEN(0x00174d50, 0x1e, ??_GCButeNode@@UAEPAXI@Z)
 RVA(0x00174df0, 0x7c)
 void __cdecl ButeValueTeardown(void* pValue) {
     CButeValue* v = static_cast<CButeValue*>(pValue);

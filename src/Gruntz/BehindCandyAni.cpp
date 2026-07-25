@@ -34,6 +34,7 @@ i32 CBehindCandyAni::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CBehindCandyAni() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA_COMPGEN(0x000100c0, 0x1e, ??_GCBehindCandyAni@@UAEPAXI@Z)
 RVA_COMPGEN(0x000100f0, 0x44, ??1CBehindCandyAni@@UAE@XZ)
 
 RVA(0x000ad540, 0x1f0)

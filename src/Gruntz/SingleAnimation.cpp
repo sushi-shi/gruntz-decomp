@@ -32,6 +32,7 @@ i32 CSingleAnimation::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CSingleAnimation() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
+RVA_COMPGEN(0x00010510, 0x1e, ??_GCSingleAnimation@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010540, 0x44, ??1CSingleAnimation@@UAE@XZ)
 
 RVA(0x000ae7f0, 0x13d)

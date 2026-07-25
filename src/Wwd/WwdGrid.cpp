@@ -11,6 +11,7 @@ void operator delete(void* p);
 RVA(0x001682a0, 0x46)
 CWwdGridShell::~CWwdGridShell() {}
 
+RVA_COMPGEN(0x00168bf0, 0x1e, ??_GCWwdGrid@@UAEPAXI@Z)
 RVA_COMPGEN(0x00168c10, 0x46, ??1CWwdGrid@@UAE@XZ)
 
 // ===========================================================================

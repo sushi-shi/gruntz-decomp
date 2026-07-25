@@ -11,6 +11,7 @@ VTBL(CBoomerang, 0x001e792c);
 DATA(0x001eaae8)
 const double g_projPhase0 = 3.1415927;
 
+RVA_COMPGEN(0x000129d0, 0x1e, ??_GCBoomerang@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012a00, 0x5, ??1CBoomerang@@UAE@XZ)
 
 // @confidence: high

@@ -96,6 +96,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbient6(const char* key, i32 a1, RECT* box
 // 0xb790 - ??1CAmbientSound@@UAE@XZ: the out-of-line COMDAT copy of the inline
 // ~CAmbientSound (<Gruntz/AmbientSound.h>). Clears m_voice/m_listNode, folds the
 // inline ~CUserBase (stamp ??_7CUserBase). RVA_COMPGEN NAMES the retail copy.
+RVA_COMPGEN(0x0000b760, 0x1e, ??_GCAmbientSound@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000b790, 0xf, ??1CAmbientSound@@UAE@XZ)
 
 RVA(0x0000b7b0, 0x80)
@@ -131,6 +132,7 @@ CWorldSoundSet::CreatePos6(const char* key, i32 a1, AmbientPoint* pos, i32 a3, i
 // 0xb940 - ??1CAmbientPosSound@@UAE@XZ: the out-of-line COMDAT copy of the inline
 // ~CAmbientPosSound (<Gruntz/AmbientSound.h>). Inlines the base ~CAmbientSound so it
 // collapses to the same bytes as 0xb790 (stamp ??_7CUserBase, clear m_voice/m_listNode).
+RVA_COMPGEN(0x0000b910, 0x1e, ??_GCAmbientPosSound@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000b940, 0xf, ??1CAmbientPosSound@@UAE@XZ)
 
 RVA(0x0000b960, 0x80)
@@ -189,6 +191,7 @@ CRandomAmbientSound* CWorldSoundSet::CreateRandomBox(
 // Ghidra mislabeled it ??0 (ctor) from the byte-shape overlap, but its `xor eax,eax` (no
 // this-return) + its sole caller being the scalar-deleting-dtor 0xbb10 (vtable slot 0)
 // prove it is the dtor.
+RVA_COMPGEN(0x0000bb10, 0x1e, ??_GCRandomAmbientSound@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000bb40, 0xf, ??1CRandomAmbientSound@@UAE@XZ)
 
 RVA(0x0000bb60, 0x9b)
