@@ -723,7 +723,7 @@ public:
     double m_408;      // +0x408
     double m_410;      // +0x410
     i32 m_418;         // +0x418
-    i32 m_timePerTile; // +0x41c (TimePerTile config; ComputeFacing time divisor; halved for kind 0x37)
+    u32 m_timePerTile; // +0x41c (TimePerTile config, unsigned: retail halves it with `shr`; ComputeFacing time divisor; halved for kind 0x37)
     i32 m_tileClaimed;                 // +0x420 (arrival-claimed latch)
     DirectSoundMgr* m_struckSlotSound; // +0x424 (struck-slot sound sample; freed via StopAndRewind)
     DirectSoundMgr*
