@@ -34,8 +34,6 @@ static inline CGruntzMgr* Owner(CState* s) {
     return s->m_mgr;
 }
 
-void operator delete(void*);
-
 RVA(0x0008ce60, 0x55)
 CMenuState::~CMenuState() {
     ReleaseResources();

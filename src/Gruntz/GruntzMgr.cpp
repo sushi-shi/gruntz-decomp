@@ -82,8 +82,6 @@
 
 char GetGruntzDriveLetter();  // 0x1ffe0 (WinAPICdRom.cpp)
 i32 FileExists(char* szPath); // 0x1189c0 (HeapDiag.cpp)
-
-void* operator new(u32);
 void operator delete(void*); // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member teardown
 
 DATA(0x00248ce8)

@@ -52,9 +52,6 @@
 #include <DinMgr2/InputMgrPtr.h>
 #include <Gruntz/StateMgrBZ.h>
 
-void* operator new(unsigned int);
-void operator delete(void*);
-
 DATA(0x002455b4)
 i32 g_disableAudio = 0; // "Disable Audio"        master audio kill
 DATA(0x002455bc)

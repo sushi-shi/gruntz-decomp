@@ -82,23 +82,23 @@ static const char s_keyA[] = "A";
 static const char s_keyF[] = "F";
 
 DATA(0x00244ab0)
-GruntDirectionCell g_gruntDirNorth(0, 1, 1);
+GruntDirectionCell g_gruntDirNorth = GruntDirectionCell(0, 1, 1);
 DATA(0x00244ae0)
-GruntDirectionCell g_gruntDirNorthEast(0, 2, 2);
+GruntDirectionCell g_gruntDirNorthEast = GruntDirectionCell(0, 2, 2);
 DATA(0x00244aa0)
-GruntDirectionCell g_gruntDirEast(1, 2, 3);
+GruntDirectionCell g_gruntDirEast = GruntDirectionCell(1, 2, 3);
 DATA(0x00244b28)
-GruntDirectionCell g_gruntDirSouthEast(2, 2, 4);
+GruntDirectionCell g_gruntDirSouthEast = GruntDirectionCell(2, 2, 4);
 DATA(0x00244ac0)
-GruntDirectionCell g_gruntDirSouth(2, 1, 5);
+GruntDirectionCell g_gruntDirSouth = GruntDirectionCell(2, 1, 5);
 DATA(0x00244b48)
-GruntDirectionCell g_gruntDirSouthWest(2, 0, 6);
+GruntDirectionCell g_gruntDirSouthWest = GruntDirectionCell(2, 0, 6);
 DATA(0x00244ad0)
-GruntDirectionCell g_gruntDirWest(1, 0, 7);
+GruntDirectionCell g_gruntDirWest = GruntDirectionCell(1, 0, 7);
 DATA(0x00244b18)
-GruntDirectionCell g_gruntDirNorthWest(0, 0, 8);
+GruntDirectionCell g_gruntDirNorthWest = GruntDirectionCell(0, 0, 8);
 DATA(0x00244b38)
-GruntDirectionCell g_gruntDirCenter(1, 1, 0);
+GruntDirectionCell g_gruntDirCenter = GruntDirectionCell(1, 1, 0);
 
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec

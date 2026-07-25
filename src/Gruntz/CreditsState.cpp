@@ -31,8 +31,6 @@ static inline CGruntzMgr* Owner(CState* s) {
     return s->m_mgr;
 }
 
-void operator delete(void*);
-
 
 DATA(0x0022bf74)
 i32 g_clipRegionEnabled; // owner def (zero-init .bss)

@@ -6,7 +6,6 @@
 #include <Gruntz/WwdGridIter.h> // CWwdGridIter cursor - Start/Init/GetNext bodies live
 
 VTBL(CWwdGrid, 0x001f0328); // ??_7CWwdGrid@@6B@ (6-slot CObject-derived vtable)
-void operator delete(void* p);
 
 RVA(0x001682a0, 0x46)
 CWwdGridShell::~CWwdGridShell() {}

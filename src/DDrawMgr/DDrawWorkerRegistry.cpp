@@ -33,8 +33,6 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-void operator delete(void*);
-
 // The linker-kept COMDAT pair of CLoadable's (A)-form inline dtor - ??_G
 // @0x155720 (this obj's span) calling ??1 @0xd5d70 (the CImage-band COMDAT pool)
 // via the ILT thunk 0x429b. This TU `new`s/destroys CDDrawWorker (: CLoadable),

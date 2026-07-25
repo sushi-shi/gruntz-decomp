@@ -858,7 +858,7 @@ creditsstate	??1CRgn@@UAE@XZ	100.0000	100.0000	1	cpp:f04f02469898	0x8c400
 creditsstate	??_GCCreditsState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e889f4c276ac	0x8d5b0
 creditsstate	?DrawScrollingCredits@CCreditsState@@QAEHXZ	85.3285	85.3285	9	1acea833d89e	0x396f0
 creditsstate	?FinishState@CCreditsState@@QAEHXZ	100.0000	100.0000	1	5b6722d9ab3b	0x39c40
-creditsstate	?FlashColor@CCreditsState@@QAEHXZ	67.5385	67.5385	2	a2ed174ca4cf	0x39d00
+creditsstate	?FlashColor@CCreditsState@@QAEHXZ	63.6923	63.6923	2	a2ed174ca4cf	0x39d00
 creditsstate	?InitAttractTitle@CCreditsState@@QAEHXZ	81.1980	81.1980	11	3082a6d81194	0x39570
 creditsstate	?InputVirtual@CCreditsState@@UAEHXZ	100.0000	100.0000	5	0807e871e4ef	0x393b0
 creditsstate	?LoadGameAssetNamespaces@CCreditsState@@UAEHHHH@Z	100.0000	100.0000	5	550086da0c4c	0x38d20

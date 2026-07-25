@@ -672,8 +672,6 @@ i32 CDDrawSurfacePair::Probe() {
            || m_surface->m_ddSurface->Restore() == 0 || m_surface->m_ddSurface->Restore() == 0;
 }
 
-void operator delete(void*);
-
 RVA(0x001646b0, 0xde)
 i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, i32 bpp) {
     if (m_width == w && m_height == h && m_bpp == bpp) {
@@ -812,8 +810,6 @@ void* CDDrawWorkerCache::CreateWorker(GameObjNotifyFn factory, const char* key, 
     m_10[key] = static_cast<CObject*>(w);
     return w;
 }
-
-void* operator new(u32 n);
 
 RVA(0x00165360, 0xf1)
 CString CDDrawWorkerCache::FindKeyOfValue(CObject* target) {

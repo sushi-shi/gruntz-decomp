@@ -54,8 +54,6 @@
 #include <Wap32/WapObj.h>             // CWapObj : CObject
 #include <Gruntz/SoundState.h>        // ex Globals.h transitive
 
-void operator delete(void*);
-
 // The ctor 0x156cb0 stamps 0x5efc30 - CLoadable's OWN vtable - so CDDrawSubMgr IS
 // CLoadable under a second name (<Gruntz/Loadable.h> records the proof). The 3-arg
 // CLoadable base ctor is defined below at its retail RVA.
@@ -83,9 +81,6 @@ float g_sndPanScale = 0.009999999776482582f;
 VTBL(CDDrawSurfacePair, 0x001eff30);
 VTBL(CDDrawSurfaceChildA, 0x001eff70); // ??_7CDDrawSurfaceChildA@@6B@ (11 slots)
 VTBL(CDrawSubWorker, 0x001effa0);      // ??_7CDrawSubWorker (11-slot CLoadable leaf)
-
-void* operator new(u32 n);
-void operator delete(void* p);
 
 static inline i32 LeafReadMapCount(const CDDrawSubMgrLeafScan* p) {
     return *reinterpret_cast<const i32*>((reinterpret_cast<const char*>(p) + 0x1c));
@@ -1577,8 +1572,6 @@ i32 CDrawSubWorker::SetGeom(i32 w, i32 h, i32 bpp) {
     m_srcRect[2] = w;
     return 1;
 }
-
-void* operator new(u32 n);
 inline void* operator new(u32, void* p) {
     return p;
 }

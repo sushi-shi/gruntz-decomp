@@ -30,9 +30,6 @@ VTBL(CAniElement, 0x001efba8); // ??_7 (5 slots; slot 1 = cl-auto ??_G @0x152e10
 DATA(0x0021ab18)
 const char g_fmtPathJoin[] = "%s%s%s";
 
-void* operator new(u32 n);
-void operator delete(void*);
-
 RVA(0x0006b2a0, 0x23)
 CObject* CDDrawSubMgrLeaf::LookupValue(const char* key) {
     void* val = 0;

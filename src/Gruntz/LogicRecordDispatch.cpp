@@ -8,8 +8,6 @@
 #include <Gruntz/XferArchive.h> // ProjTypeXfer (0x16e4f0) = the default-case fall-through
 #include <Gruntz/UserLogic.h>
 
-void* operator new(u32 n);
-
 
 enum LogicRecordState {
     kLogicStateInit = 0,      // build the sub-record, then -> kLogicStateBuilt

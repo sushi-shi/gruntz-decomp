@@ -45,8 +45,6 @@ void* g_ddCreateCtx = 0; // 0x683ee4
 
 void BuildColorChannelTables();
 
-void operator delete(void*);
-
 inline CDDSurface::~CDDSurface() {
     FreeSurfaces();
 }

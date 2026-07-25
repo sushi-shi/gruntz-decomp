@@ -38,8 +38,6 @@ void ShowHudMessageAlt(
     i32 f
 ); // 0x115520
 
-void operator delete(void*);
-
 DATA_SYMBOL(0x001e8fe8, 0x0, _g_bootyLetterCoords)
 
 static const float kGlitterPhaseBias = -225.0f;  // was g_5e93b4 (fsub'd, hence negative)

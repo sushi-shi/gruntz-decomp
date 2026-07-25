@@ -19,9 +19,6 @@ VTBL(CAniRecordBase2, 0x001f02d8); // ??_7 (14 slots)
 DATA(0x002bf3c4)
 i32 g_aniParsedNameLen = 0; // 0x6bf3c4
 
-void* operator new(u32 n);
-void operator delete(void* p);
-
 // The record's owner nodes CAniRecordOwner (record+0x0c) and CAniMapOwner (the token-map
 // owner) are honest by-offset models with no recoverable RTTI identity; their defs live
 // in <DDrawMgr/AniRecordViews.h> (@identity-TODO) so they no longer count as .cpp-local

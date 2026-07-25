@@ -50,21 +50,21 @@
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr::ApplySwitch
 
 DATA(0x002448d8)
-GruntDirectionCell g_gruntMoveDirNorth(0, 1, 1);
+GruntDirectionCell g_gruntMoveDirNorth = GruntDirectionCell(0, 1, 1);
 DATA(0x00244908)
-GruntDirectionCell g_gruntMoveDirNorthEast(0, 2, 2);
+GruntDirectionCell g_gruntMoveDirNorthEast = GruntDirectionCell(0, 2, 2);
 DATA(0x002448c8)
-GruntDirectionCell g_gruntMoveDirEast(1, 2, 3);
+GruntDirectionCell g_gruntMoveDirEast = GruntDirectionCell(1, 2, 3);
 DATA(0x00244928)
-GruntDirectionCell g_gruntMoveDirSouthEast(2, 2, 4);
+GruntDirectionCell g_gruntMoveDirSouthEast = GruntDirectionCell(2, 2, 4);
 DATA(0x002448e8)
-GruntDirectionCell g_gruntMoveDirSouth(2, 1, 5);
+GruntDirectionCell g_gruntMoveDirSouth = GruntDirectionCell(2, 1, 5);
 DATA(0x00244948)
-GruntDirectionCell g_gruntMoveDirSouthWest(2, 0, 6);
+GruntDirectionCell g_gruntMoveDirSouthWest = GruntDirectionCell(2, 0, 6);
 DATA(0x002448f8)
-GruntDirectionCell g_gruntMoveDirWest(1, 0, 7);
+GruntDirectionCell g_gruntMoveDirWest = GruntDirectionCell(1, 0, 7);
 DATA(0x00244918)
-GruntDirectionCell g_gruntMoveDirNorthWest(0, 0, 8);
+GruntDirectionCell g_gruntMoveDirNorthWest = GruntDirectionCell(0, 0, 8);
 
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec

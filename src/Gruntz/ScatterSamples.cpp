@@ -1,9 +1,6 @@
 #include <Ints.h>
 #include <rva.h>
 
-void* operator new(u32 n);
-void operator delete(void* p);
-
 RVA(0x00182a80, 0x2e)
 i32 IsPrime(i32 n) {
     i32 d = 2;

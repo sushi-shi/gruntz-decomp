@@ -1,8 +1,6 @@
 #include <Gruntz/State.h>
 #include <rva.h>
 
-void operator delete(void*);
-
 // CState::~CState() - the slot-0 scalar-deleting dtor `??_G` (0x8c710). Its body is
 // defined INLINE in <Gruntz/State.h> so MSVC folds it into the synth `??_G` thunk; the
 // thunk has no source body, so pin its symbol by mangled name here.
