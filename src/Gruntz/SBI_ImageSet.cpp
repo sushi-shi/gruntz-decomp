@@ -60,9 +60,9 @@ i32 CSBI_ImageSet::SetupImage(
     if (key == 0) {
         return 0;
     }
-    CDDrawWorker* rec = 0;
-    (reinterpret_cast<CMapStringToPtr*>(&host->m_imageRegistry->m_10map))
-        ->Lookup(key, reinterpret_cast<void*&>(rec));
+    CObject* found = 0;
+    host->m_imageRegistry->m_10map.Lookup(key, found);
+    CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
     m_34 = rec;
     if (rec == 0) {
         return 0;

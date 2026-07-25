@@ -53,9 +53,9 @@ i32 CSBI_ImageSetAni::Init(
         m_rect14.m_c = rc.bottom;
         m_cmd = a2;
         if (key != 0) {
-            CDDrawWorker* tbl = 0;
-            (reinterpret_cast<CMapStringToPtr*>(&host->m_imageRegistry->m_10map))
-                ->Lookup(key, reinterpret_cast<void*&>(tbl));
+            CObject* found = 0;
+            host->m_imageRegistry->m_10map.Lookup(key, found);
+            CDDrawWorker* tbl = static_cast<CDDrawWorker*>(found);
             m_34 = tbl;
             if (tbl != 0) {
                 m_interval = b2;

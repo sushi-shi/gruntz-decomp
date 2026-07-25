@@ -1862,9 +1862,9 @@ i32 CPlay::SyncRead2f7c(CFileMemBase* ar) {
     if (strlen(buf80a) == 0) {
         m_gridCurFrame = 0;
     } else {
-        CDDrawWorker* set = 0;
-        (reinterpret_cast<CMapStringToPtr*>(&res->m_imageRegistry->m_10map))
-            ->Lookup(static_cast<const char*>(buf80a), reinterpret_cast<void*&>(set));
+        CObject* found = 0;
+        res->m_imageRegistry->m_10map.Lookup(static_cast<const char*>(buf80a), found);
+        CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
         if (set == 0 || idx < set->m_minIndex || idx > set->m_maxIndex) {
             m_gridCurFrame = 0;
         } else {
@@ -1876,12 +1876,11 @@ i32 CPlay::SyncRead2f7c(CFileMemBase* ar) {
     g_serialCounter++;
     char buf80b[0x80];
     ar->Read(buf80b, 0x80);
-    void* gridObj = 0;
+    CObject* gridObj = 0;
     if (strlen(buf80b) == 0) {
         m_grid = 0;
     } else {
-        (reinterpret_cast<CMapStringToPtr*>(&res->m_imageRegistry->m_10map))
-            ->Lookup(buf80b, gridObj);
+        res->m_imageRegistry->m_10map.Lookup(buf80b, gridObj);
         m_grid = static_cast<CDDrawWorker*>(gridObj);
     }
 

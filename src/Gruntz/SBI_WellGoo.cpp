@@ -185,9 +185,9 @@ i32 CSBI_WellGoo::SerializeFields(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
             arc->Read(buf, 0x80);
             arc->Read(&idx, 4);
             if (strlen(buf) != 0) {
-                CDDrawWorker* set = 0;
-                (reinterpret_cast<CMapStringToPtr*>(&mgr->m_imageRegistry->m_10map))
-                    ->Lookup(buf, reinterpret_cast<void*&>(set));
+                CObject* found = 0;
+                mgr->m_imageRegistry->m_10map.Lookup(buf, found);
+                CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
                 if (set != 0) {
                     m_fgFrame = set->GetAt(idx); // same bounds gate, inline
                 } else {
@@ -200,9 +200,9 @@ i32 CSBI_WellGoo::SerializeFields(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
             arc->Read(buf, 0x80);
             arc->Read(&idx, 4);
             if (strlen(buf) != 0) {
-                CDDrawWorker* set = 0;
-                (reinterpret_cast<CMapStringToPtr*>(&mgr->m_imageRegistry->m_10map))
-                    ->Lookup(buf, reinterpret_cast<void*&>(set));
+                CObject* found = 0;
+                mgr->m_imageRegistry->m_10map.Lookup(buf, found);
+                CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
                 if (set != 0) {
                     m_baseFrame = set->GetAt(idx); // same bounds gate, inline
                 } else {

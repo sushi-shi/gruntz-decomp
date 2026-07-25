@@ -63,9 +63,9 @@ i32 CSBI_Image::SetupImage(
         m_frame = 0;
         return 0 != 0;
     }
-    CDDrawWorker* rec = 0;
-    (reinterpret_cast<CMapStringToPtr*>(&host->m_imageRegistry->m_10map))
-        ->Lookup(key, reinterpret_cast<void*&>(rec));
+    CObject* found = 0;
+    host->m_imageRegistry->m_10map.Lookup(key, found);
+    CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
     if (rec == 0 || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
         m_frame = 0;
         return 0 != 0;
