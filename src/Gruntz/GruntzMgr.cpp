@@ -2210,12 +2210,11 @@ void CGruntzMgr::ResetAllOptionsSlots() {
 RVA(0x00092e30, 0x39)
 i32 CGruntzMgr::CountReadyOptionsSlots(i32 anyState) {
     i32 count = 0;
-    GruntzPlayer* slot = &m_options[0];
-    for (i32 d = 4; d != 0; d--) {
+    for (i32 i = 0; i < 4; i++) {
+        GruntzPlayer* slot = &m_options[i];
         if (slot && slot->m_liveGate != 0 && (anyState != 0 || slot->m_014 != 0)) {
             count++;
         }
-        slot++;
     }
     return count;
 }
