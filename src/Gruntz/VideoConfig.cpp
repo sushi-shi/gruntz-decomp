@@ -79,23 +79,6 @@ HWND g_optHwndCk7 = 0; // IDC 0x470
 DATA(0x0022bdf4)
 HWND g_optHwndCk8 = 0; // IDC 0x476
 
-void LoadGameOptionsToDialog(HWND hDlg);                           // 0x036860
-void ReadMenuOptionsDialog(HWND hDlg);                             // 0x036a30
-void OnToggleMusicOption(HWND hDlg);                               // 0x036d00
-void OnToggleVoiceOption(HWND hDlg);                               // 0x036d50
-void OnToggleSpeechOption(HWND hDlg);                              // 0x036da0
-void OnToggleEasyModeOption(HWND hDlg);                            // 0x036e10
-void OnToggleCk5Option(HWND hDlg);                                 // 0x036df0 (thunk 0x19b5;
-void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, i32 nSel); // 0x036f30
-void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32 code, i32 pos); // 0x0370a0
-void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos);               // 0x037260
-void DialogInit(HWND hDlg);                                                // 0x037870
-void SaveVideoCheckboxes(HWND hDlg);                                       // 0x0378c0
-namespace ApiCallerStubs {
-    void winapi_0371e0_GetDlgItem_SetScrollInfo(HWND hDlg, i32 id, i32 pos, i32 max); // 0x0371e0
-    i32 winapi_036ec0_GetDlgItem_GetScrollInfo(HWND hDlg, i32 id);                    // 0x036ec0
-} // namespace ApiCallerStubs
-
 RVA(0x000363a0, 0x41)
 i32 GetResolutionCode() {
     i32 w = g_gameReg->m_savedModeW;
