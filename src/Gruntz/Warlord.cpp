@@ -376,8 +376,8 @@ i32 CWarlord::LoadAttributes() {
     }
 
     if (static_cast<i64>(static_cast<u32>(g_frameTime))
-            - *reinterpret_cast<i64*>(&m_cooldownStampLo)
-        >= *reinterpret_cast<i64*>(&m_cooldownWindowLo)) {
+            - m_cooldownStamp64
+        >= m_cooldownWindow64) {
         if (rand() % 10 < 5) {
             ResolveIdleAnimation();
             return 0;
@@ -425,8 +425,8 @@ i32 CWarlord::LoadAttributes2() {
             return 0;
         }
         if (static_cast<i64>(static_cast<u32>(g_frameTime))
-                - *reinterpret_cast<i64*>(&m_cooldownStampLo)
-            >= *reinterpret_cast<i64*>(&m_cooldownWindowLo)) {
+                - m_cooldownStamp64
+            >= m_cooldownWindow64) {
             reg->m_cueSink->SpawnVoiceDriver(m_object->m_188, 0x436, -1, -1, -1);
             m_cooldownWindowLo = 0x7530;
             m_cooldownWindowHi = 0;

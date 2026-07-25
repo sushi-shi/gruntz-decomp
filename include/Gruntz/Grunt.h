@@ -104,15 +104,20 @@ struct GruntCoordNode {
 };
 SIZE_UNKNOWN();
 
-// The devs' OWN coord-list advance method (0x29a30, ex ?ListNodeAdvance@@YGPAXPAPAX@Z):
-// every retail caller sets ecx = &m_31c (a __thiscall on the list) before the call. A
-// cl5.0 flag matrix (O1 / O2 / O2+Ob0 / Od / Ox / O2+Os probe, 2026-07-25) proves MFC's
-// inline CPtrList::GetNext can NEVER emit out-of-line without also out-lining
-// GetHeadPosition (which retail keeps as direct loads) - so this body is not MFC's, it
-// is the devs' own method on their coord-list. Modeled as a fieldless method carrier;
-// CGrunt::CoordListOps() below is the one language-forced reinterpret reaching it
-// (same MFC-privacy category as the POSITION->node cast on the accessors).
-struct GruntCoordListOps {
+// The devs' coord-list extension (its one method is 0x29a30, ex
+// ?ListNodeAdvance@@YGPAXPAPAX@Z). IDENTITY, by the full xref chase: every retail
+// caller (the four CBattlezMapConfig steppers, StepRowUnits/Step/031ca0/032060) sets
+// ecx = &grunt->m_31c before the call - the receiver IS the CPtrList object itself
+// (RTTI-proven real MFC: its ctor 0x1b4867 / RemoveAll 0x1b48a6 / vtable live in the
+// MFC band), and the 0x10-byte body never reads `this`. A cl5.0 flag matrix
+// (O1 / O2 / O2+Ob0 / Od / Ox / O2+Os probe, 2026-07-25) proves MFC's inline
+// CPtrList::GetNext can NEVER emit out-of-line while GetHeadPosition stays inline
+// (retail has direct head loads), so 0x29a30 is not MFC's - it is the devs' own
+// method with the list as `this`: the classic never-constructed MFC-extension
+// subclass, reached by downcast. Real inheritance, no reinterpret; never
+// instantiate it (constructing one would stamp a phantom ??_7 - retail has none).
+class CGruntCoordList : public CPtrList {
+public:
     void*& NextData(void*& pos); // 0x29a30 (advance pos; return the node's data slot)
 };
 
@@ -654,8 +659,8 @@ public:
     GruntCoordNode* CoordHead() const {
         return reinterpret_cast<GruntCoordNode*>(m_31c.GetHeadPosition());
     }
-    GruntCoordListOps* CoordListOps() const {
-        return reinterpret_cast<GruntCoordListOps*>(const_cast<CPtrList*>(&m_31c));
+    CGruntCoordList* CoordListOps() {
+        return static_cast<CGruntCoordList*>(&m_31c);
     }
     GruntCoordNode* CoordTail() const {
         return reinterpret_cast<GruntCoordNode*>(m_31c.GetTailPosition());

@@ -34,8 +34,43 @@ CANNOT move a wall that comes from the function's OWN dataflow — register *col
 (`ebx` vs `edi` for `this`), SIB base/index role, a spill decision, partial-register
 width (`and al` vs `and eax`), callee-saved coalescing (frame `0x80` vs `0x70`). A
 wall-breaker experiment ran 4 such families (one at 1024 variants) and moved **zero**.
-So do NOT spend `--state-trials` on a documented intra-function regalloc/SIB/spill/width
-wall; reserve it for residue that plausibly depends on TU-cumulative state.
+So do NOT spend `--state-trials` ALONE on a documented intra-function regalloc/SIB/
+spill/width wall; a pure island sweep of the unchanged source cannot re-color it. But
+see the CROSSED search below — islands multiplied against source transformations are
+a different animal from islands alone.
+
+## The homm2 endgame method: TRANSFORMATION × ISLANDS, banked by MAX
+
+The sibling homm2 campaign closed its residual tail with a Cartesian search
+(homm2/RECOVERY.md "THE METHOD"), and its mechanics apply here verbatim:
+
+1. **Axes**: a set of LEGITIMATE source transformations of the function (the AST
+   families: relational/commutative order, statement reorder, decl split/merge/hoist,
+   inline extraction, identifier renames — renames steer stack-slot/coloring order and
+   are exactly the axis that automates hand slot-guessing).
+2. **Islands**: for EVERY transformation, ~32-120 deterministic TU-state permutations
+   (`--state-trials N --state-seed S`, families from `tu_state_noise.py`) — each island
+   is a different compiler-state context for the SAME variant.
+3. Score every (transformation, island) cell. FIRST EXACT WINS. Then:
+   **bank the MAX and RESTORE THE CLEANEST SOURCE.** gruntz has no `--record-max`
+   flag (homm2 grew one); the manual recipe: apply the audited `exact.cpp`,
+   `gruntz build --fast` (the per-function MAX ledger banks the observed 100), then
+   restore the clean spelling and rebuild. The exact was OBSERVED and is permanently
+   credited; the committed source stays dev-plausible.
+4. If the best ceiling stalls across all transformations, **the ceiling's diff EXPOSES
+   the structural error** — a wrong type/layout/control shape in OUR reconstruction.
+   Fix THAT and re-run. (This is the mislabeled-correctness-bug rule in search form.)
+5. **Hash-scoped completion**: never re-search byte-identical source — only a new
+   transformation (new hash) buys new information. Log per-function results; dedupe
+   the worklist against functions whose current hash was already searched.
+6. **Epoch discipline**: a stale report breeds phantom residuals. Full `gruntz build`
+   → fresh `residual_queue` → verify any surprising row with `objdiff-cli diff`
+   before spending search time on it.
+
+**PRIME SOURCE RULE (user directive, both campaigns): we write code the way the
+original devs wrote it.** No contorted spellings, no steering macros, no index-flipped
+subscripts in committed source. A grotesque spelling that scores 100 is WORSE than a
+clean 99.9 — the search exists so the clean spelling gets the credit via MAX.
 
 **The real high-yield move on a "regalloc wall" is to suspect a MISLABELED CORRECTNESS
 BUG.** A large fraction of `@early-stop` "walls" are a hidden source bug the diff masks:

@@ -30,6 +30,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <Bute/ButeMgr.h>
+#include <Gruntz/BattlezData.h> // CBattlezData (the score-HUD one-off arms)
+#include <Gruntz/Play.h>          // CPlay (BuildGruntTypeNameTable/OnRegion*/PostActionCue/m_guts)
+#include <Gruntz/StatusBarMgr.h>  // CStatusBarMgr (the kind-0x32 rez-machine wake arm)
+#include <Gruntz/Timer.h>         // CTimer::AddTime (the stopwatch arm)
+#include <Gruntz/CurPlayer.h>     // g_curPlayer (region/pending-fx gates)
+#include <Wap32/zBitVec.h>        // GetRetAddr/g_projActCache/g_retAddrBreadcrumb (zvec grow path)
+#include <DDrawMgr/AniAdvance.h>  // CAniDesc (the "H" health-pose record)
+#include <new>                    // placement new (the g_typeColl slot construction)
 
 VTBL(CGrunt, 0x001e8754);
 
@@ -2069,23 +2077,1355 @@ i32 CUserLogic::Place(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32
     return 0;
 }
 
-// XREF-RECOVERED IDENTITY (matcher-1): LoadGruntTypeTable (0x4dd50, 8896 B) and
-// LoadGruntTuningConstants (0x5d210, 5187 B) are CGrunt methods, NOT CUserLogic - both
-// run on a CGrunt `this` (fields to +0x3f0), and 0x5d210 is CGrunt vtable slot 3
-// (?LoadGruntTuningConstants is data-ref'd at ~??_7CGrunt@@6B@+0xc; it calls 0xee800 =
-// CGrunt::ArrivalReticleScan). Supporting singletons are the canonical classes:
-// CGameRegistry (g_gameReg @0x64556c), CMapMgr (+0x70), g_typeColl (zDArray,
-// tuning), g_resButeMgr (config strings: FadeTransparency/SafeFlashTime/AccelerateFlash/
-// EntranceSafeTime). Both are DEFERRED to the final sweep: they are decompiler-gated
-// mega-methods (MSVC /O2 stack-slot aliasing + a local CByteArray + the tile grid double-
-// loops + switch tables), of the same shape as CGrunt::ArrivalReticleScan whose front is
-// banked in GruntReticle.cpp. Kept as stubs here (RVA-anchored); reconstructing them
-// needs the Ghidra decompiler C.
-// @confidence: med
-// @source: string-xref;vtable-slot
-// @stub
+// Construct a CString into every slot the last g_typeColl lookup grew (the
+// per-slot construction the derived accessor 0x310f0 performs; the arm/tail
+// sites here reach the BASE accessor / the open-coded fast path and run it
+// themselves).
+static inline void ConstructGrownSlots() {
+    char* slot = g_typeColl.m_alloc;
+    i32 n = g_typeColl.m_grown;
+    while (n-- != 0) {
+        if (slot) {
+            new (static_cast<void*>(slot)) CString();
+        }
+        slot += 4;
+    }
+}
+
+// ===========================================================================
+// CGrunt::LoadGruntTypeTable  @0x4dd50  (8896 B)
+// The per-tool/type (re)load dispatcher: guard head (kind -1 / conversion kinds
+// 0x39-0x3a / entrance gates + the "A"/"D" type-code probe), then a two-level
+// switch (byte index table + arm table) over the tool kind: the ~23 regular
+// grunt-type arms (m_animSetName = "<TYPE>GRUNT", the ToolAA reach rect, the
+// m_2d0-selected arrival-flag word, per-type m_24c masks), the ten TOY arms
+// (m_24c=1 + the g_typeColl per-slot CString construction + the "D" probe ->
+// ConsiderArrival), the Health1/2/3 pickups, the powerup arms (conversion /
+// deathtouch / ghost / invulnerability / roidz / reactive armor / superspeed
+// with their Powerupz windows + struck-voice loops), the region/HUD one-offs,
+// and the stopwatch. The common tail rebinds m_170, reloads the config +
+// cell/anim name tables, resolves the type record ("H" health-pose vs "D"
+// entrance-name paths), re-wires the tile switch (0x41/0x42 tile kinds), and
+// runs the pending-fx / kind-0x14 group reinit finishers.
+// ===========================================================================
+// @early-stop
+// first-pass reconstruction banked at ~61% (was a 0.08% stub): the head guards +
+// shared fail exit, the full 53-arm switch (both tables auto-emitted), the toy
+// g_typeColl slot construction, the powerup windows and the common tail are in
+// place. Residual: per-arm micro-iteration (the fail-label block placement is
+// hoisted next to its last goto where retail keeps it at 0x50004; arg-eval
+// scheduling in the wingz calls; the toy-arm shared strcmp tails) - resume with
+// sema disasm --diff per arm.
 RVA(0x0004dd50, 0x22c0)
-i32 CGrunt::LoadGruntTypeTable(i32, i32, i32, i32) {
+i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
+    char eq;
+    if (kind == -1) {
+        goto fail;
+    }
+    if (m_gruntKind == 0x39) {
+        goto fail;
+    }
+    if (m_gruntKind == 0x3a) {
+        goto fail;
+    }
+    if (fresh == 0) {
+        if (m_entranceActive != 0) {
+            goto fail;
+        }
+        eq =
+            (strcmp(
+                 (*g_typeColl.GetNameRecord(static_cast<void*>((m_objAux->m_1c)))),
+                 "A"
+             )
+             != 0);
+        if (eq) {
+            eq =
+                (strcmp(
+                     (*g_typeColl.GetNameRecord(static_cast<void*>((m_objAux->m_1c)))),
+                     "D"
+                 )
+                 != 0);
+            if (eq) {
+                goto fail;
+            }
+        }
+    }
+    if (m_entranceReason == kind) {
+        if (kind != 0x16) {
+            return 1;
+        }
+        m_wingzTime = 0x64;
+        LoadWingzGruntSprites(m_wingzEnabled);
+        return 1;
+    }
+    if (defer == 0) {
+        if (StepAnimDispatchB() != 0) {
+            if (m_gruntKind == 0x39) {
+                goto fail;
+            }
+            if (m_gruntKind == 0x3a) {
+                goto fail;
+            }
+            if (m_entranceReason == kind) {
+                if (kind != 0x16) {
+                    return 1;
+                }
+                m_wingzTime = 0x64;
+                LoadWingzGruntSprites(m_wingzEnabled);
+                return 1;
+            }
+        }
+    }
+    if (m_coordToggle != 0) {
+        goto fail;
+    }
+    if (kind != 0x16) {
+        m_wingzEnabled = 0;
+        m_wingzDurationLo = 0;
+        m_wingzDurationHi = 0;
+        if (m_wingzTimeSprite != 0) {
+            m_wingzTimeSprite->m_flags |= 0x10000;
+            m_wingzTimeSprite = 0;
+        }
+    }
+    fresh = 0;
+    defer = 0;
+    if (m_entranceReason < 0x17) {
+        m_19c = m_entranceReason;
+    }
+    switch (kind) {
+        case 0: {
+            m_animSetName = "NORMALGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0;
+            m_354 = 1;
+            break;
+        }
+        case 1: {
+            m_animSetName = "BOMBGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0;
+            m_354 = 1;
+            break;
+        }
+        case 2: {
+            m_animSetName = "BOOMERANGGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (m_arrivalState == 4) {
+                m_defenderRadius = 1;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0;
+            m_354 = 1;
+            break;
+        }
+        case 3: {
+            m_animSetName = "BRICKGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0;
+            m_354 = 1;
+            break;
+        }
+        case 4: {
+            m_animSetName = "CLUBGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0;
+            m_354 = 1;
+            break;
+        }
+        case 5: {
+            m_animSetName = "GAUNTLETZGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0;
+            m_354 = 1;
+            break;
+        }
+        case 6: {
+            m_animSetName = "GLOVEZGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0;
+            m_354 = 1;
+            break;
+        }
+        case 7: {
+            m_animSetName = "GOOBERGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0;
+            m_354 = 1;
+            if (m_arrivalState == 0x11) {
+                if (m_2d8 != 4) {
+                    if (CoordCount() != 0) {
+                        GruntCoordNode* p = CoordHead();
+                        while (p != 0) {
+                            GruntCoordNode* c = p;
+                            p = p->m_next;
+                            if (c->m_coord != 0) {
+                                g_coordPool.Push(c->m_coord);
+                            }
+                        }
+                        m_31c.RemoveAll();
+                    }
+                    for (;;) {
+                        void* h;
+                        if (m_338.GetCount() != 0) {
+                            h = m_338.GetHead();
+                        } else {
+                            h = 0;
+                        }
+                        if (h == 0) {
+                            break;
+                        }
+                        if (m_338.GetCount() != 0) {
+                            ::operator delete(m_338.RemoveHead());
+                        }
+                    }
+                    i32* payload = static_cast<i32*>(::operator new(0x2c));
+                    if (payload != 0) {
+                        memset(payload, 0, 0x2c);
+                    }
+                    payload[0] = 9;
+                    m_338.AddTail(payload);
+                }
+            }
+            break;
+        }
+        case 8: {
+            m_animSetName = "GRAVITYBOOTZGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0x400;
+            m_354 = 1;
+            break;
+        }
+        case 9: {
+            m_animSetName = "GUNHATGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            if (m_arrivalState == 4) {
+                m_defenderRadius = 1;
+            }
+            m_24c = 0;
+            m_354 = 1;
+            break;
+        }
+        case 0xa: {
+            m_animSetName = "NERFGUNGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            if (m_arrivalState == 4) {
+                m_defenderRadius = 1;
+            }
+            m_24c = 0;
+            m_354 = 1;
+            break;
+        }
+        case 0xb: {
+            m_animSetName = "ROCKGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            if (m_arrivalState == 4) {
+                m_defenderRadius = 1;
+            }
+            m_24c = 0;
+            m_354 = 1;
+            break;
+        }
+        case 0xc: {
+            m_animSetName = "SHIELDGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0;
+            m_354 = 1;
+            break;
+        }
+        case 0xd: {
+            m_animSetName = "SHOVELGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0;
+            m_354 = 1;
+            break;
+        }
+        case 0xe: {
+            m_animSetName = "SPRINGGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0x1000;
+            m_354 = 1;
+            break;
+        }
+        case 0xf: {
+            m_animSetName = "SPYGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0;
+            m_354 = 1;
+            break;
+        }
+        case 0x10: {
+            m_animSetName = "SWORDGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0;
+            m_354 = 1;
+            break;
+        }
+        case 0x11: {
+            m_animSetName = "TIMEBOMBGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0;
+            m_354 = 1;
+            break;
+        }
+        case 0x12: {
+            m_animSetName = "TOOBGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_coordToggle = 0;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0x100;
+            m_354 = 1;
+            break;
+        }
+        case 0x13: {
+            m_animSetName = "WANDGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0;
+            m_354 = 1;
+            break;
+        }
+        case 0x14: {
+            m_animSetName = "WARPSTONEGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0;
+            m_354 = 0;
+            break;
+        }
+        case 0x15: {
+            m_animSetName = "WELDERGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            if (m_arrivalState == 4) {
+                m_defenderRadius = 1;
+            }
+            m_24c = 0;
+            m_354 = 1;
+            break;
+        }
+        case 0x16: {
+            m_animSetName = "WINGZGRUNT";
+            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            m_reachRectLeft = -r;
+            m_reachRectTop = -r;
+            m_reachRadius = r;
+            m_reachRectBottom = r;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            if (m_arrivalState == 4) {
+                m_defenderRadius = 1;
+            }
+            m_24c = 0xd02;
+            m_wingzEnabled = 0;
+            m_wingzTime = 0x64;
+            m_354 = 1;
+            break;
+        }
+        case 0x17: {
+            if (m_arrivalState == 1) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 1;
+            m_animSetName = "BABYWALKERGRUNT";
+            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            ConstructGrownSlots();
+            eq = (strcmp(rec, "D") == 0);
+            if (eq) {
+                ConsiderArrival(0);
+                fresh = 1;
+                defer = 1;
+            }
+            break;
+        }
+        case 0x18: {
+            if (m_arrivalState == 1) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 1;
+            m_animSetName = "BEACHBALLGRUNT";
+            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            ConstructGrownSlots();
+            eq = (strcmp(rec, "D") == 0);
+            if (eq) {
+                ConsiderArrival(0);
+                fresh = 1;
+            }
+            break;
+        }
+        case 0x19: {
+            if (m_arrivalState == 1) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 1;
+            m_animSetName = "BIGWHEELGRUNT";
+            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            ConstructGrownSlots();
+            eq = (strcmp(rec, "D") == 0);
+            if (eq) {
+                ConsiderArrival(0);
+                fresh = 1;
+                defer = 1;
+            }
+            break;
+        }
+        case 0x1a: {
+            if (m_arrivalState == 1) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 1;
+            m_animSetName = "GOKARTGRUNT";
+            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            ConstructGrownSlots();
+            eq = (strcmp(rec, "D") == 0);
+            if (eq) {
+                ConsiderArrival(0);
+                fresh = 1;
+            }
+            break;
+        }
+        case 0x1b: {
+            if (m_arrivalState == 1) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 1;
+            m_animSetName = "JACKINTHEBOXGRUNT";
+            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            ConstructGrownSlots();
+            eq = (strcmp(rec, "D") == 0);
+            if (eq) {
+                ConsiderArrival(0);
+                fresh = 1;
+            }
+            break;
+        }
+        case 0x1c: {
+            if (m_arrivalState == 1) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 1;
+            m_animSetName = "JUMPROPEGRUNT";
+            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            ConstructGrownSlots();
+            eq = (strcmp(rec, "D") == 0);
+            if (eq) {
+                ConsiderArrival(0);
+                fresh = 1;
+                defer = 1;
+            }
+            break;
+        }
+        case 0x1d: {
+            if (m_arrivalState == 1) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 1;
+            m_animSetName = "POGOSTICKGRUNT";
+            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            ConstructGrownSlots();
+            eq = (strcmp(rec, "D") == 0);
+            if (eq) {
+                ConsiderArrival(0);
+                fresh = 1;
+                defer = 1;
+            }
+            break;
+        }
+        case 0x1e: {
+            if (m_arrivalState == 1) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_moveVariant = variant;
+            m_24c = 1;
+            m_animSetName = "SCROLLGRUNT";
+            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            ConstructGrownSlots();
+            eq = (strcmp(rec, "D") == 0);
+            if (eq) {
+                ConsiderArrival(0);
+                fresh = 1;
+            }
+            break;
+        }
+        case 0x1f: {
+            if (m_arrivalState == 1) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 1;
+            m_animSetName = "SQUEAKTOYGRUNT";
+            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            ConstructGrownSlots();
+            eq = (strcmp(rec, "D") == 0);
+            if (eq) {
+                ConsiderArrival(0);
+                fresh = 1;
+            }
+            break;
+        }
+        case 0x20: {
+            if (m_arrivalState == 1) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 1;
+            m_animSetName = "YOYOGRUNT";
+            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            ConstructGrownSlots();
+            eq = (strcmp(rec, "D") == 0);
+            if (eq) {
+                ConsiderArrival(0);
+                fresh = 1;
+            }
+            break;
+        }
+        case 0x33: {
+            i32 h = g_buteMgr.GetIntDef("Powerupz", "Health1", 0x19) + m_health;
+            if (h >= 0x64) {
+                h = 0x64;
+            }
+            m_health = h;
+            return 1;
+        }
+        case 0x34: {
+            i32 h = g_buteMgr.GetIntDef("Powerupz", "Health2", 0x19) + m_health;
+            if (h >= 0x64) {
+                h = 0x64;
+            }
+            m_health = h;
+            return 1;
+        }
+        case 0x35: {
+            i32 h = g_buteMgr.GetIntDef("Powerupz", "Health3", 0x19) + m_health;
+            if (h >= 0x64) {
+                h = 0x64;
+            }
+            m_health = h;
+            return 1;
+        }
+        case 0x39: {
+            m_19c = m_entranceReason;
+            m_reachRectLeft = -1;
+            m_reachRectTop = -1;
+            m_reachRadius = 1;
+            m_reachRectBottom = 1;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            fresh = 0;
+            m_animSetName = "HAREKRISHNAGRUNT";
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0;
+            m_gruntKind = 0x39;
+            m_8a8 = g_buteMgr.GetDwordDef("Powerupz", "ConversionTime", 0x1f4);
+            m_8ac = 0;
+            m_8a0 = g_frameTime;
+            m_8a4 = 0;
+            ClearSubB();
+            EnsureStruckVoice("GAME_CONVERSIONLOOP");
+            break;
+        }
+        case 0x3a: {
+            m_19c = m_entranceReason;
+            m_reachRectLeft = -1;
+            m_reachRectTop = -1;
+            m_reachRadius = 1;
+            m_reachRectBottom = 1;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            fresh = 0;
+            m_animSetName = "REAPERGRUNT";
+            if (m_arrivalState == 0) {
+                m_arrivalFlags = 0x4000901;
+            } else if (m_arrivalState == 0x11) {
+                m_arrivalFlags = 0x4000983;
+            } else {
+                m_arrivalFlags = 0x1c000d83;
+            }
+            if (g_gameReg->m_134 == 1) {
+                m_arrivalFlags |= 0x10;
+            }
+            m_24c = 0;
+            m_gruntKind = 0x3a;
+            if (m_378 == 0) {
+                m_378 = g_buteMgr.GetDwordDef("Powerupz", "DeathTouchTime", 0x4e20);
+            }
+            m_8a8 = m_378;
+            m_8ac = 0;
+            m_8a0 = g_frameTime;
+            m_8a4 = 0;
+            m_8b8 = 0;
+            m_8bc = 0;
+            ClearSubB();
+            EnsureStruckVoice("GAME_DEATHTOUCHLOOP");
+            break;
+        }
+        case 0x36: {
+            m_gruntKind = 0x36;
+            i32 t = g_buteMgr.GetIntDef("Powerupz", "GruntGhostTransparencyOn", 0xe0);
+            m_object->m_drawActive = 1;
+            m_object->m_drawFillCmd = 0xb;
+            m_object->m_fillFraction = t;
+            if (m_378 == 0) {
+                m_378 = g_buteMgr.GetDwordDef("Powerupz", "GhostTime", 0x4e20);
+            }
+            m_8a8 = m_378;
+            m_8ac = 0;
+            m_8a0 = g_frameTime;
+            m_8a4 = 0;
+            m_8b8 = 0;
+            m_8bc = 0;
+            ClearSubB();
+            EnsureStruckVoice("GAME_GHOSTLOOP");
+            return 1;
+        }
+        case 0x38: {
+            m_gruntKind = 0x38;
+            if (m_378 == 0) {
+                m_378 = g_buteMgr.GetDwordDef("Powerupz", "InvulnerabilityTime", 0x4e20);
+            }
+            m_8a8 = m_378;
+            m_8ac = 0;
+            m_8a0 = g_frameTime;
+            m_8a4 = 0;
+            m_8b8 = 0;
+            m_8bc = 0;
+            ClearSubB();
+            EnsureStruckVoice("GAME_INVULNERABILITYLOOP");
+            return 1;
+        }
+        case 0x3c: {
+            m_gruntKind = 0x3c;
+            CreatePowerupSprite(3);
+            if (m_378 == 0) {
+                m_378 = g_buteMgr.GetDwordDef("Powerupz", "ReactiveArmorTime", 0x4e20);
+            }
+            m_8a8 = m_378;
+            m_8ac = 0;
+            m_8a0 = g_frameTime;
+            m_8a4 = 0;
+            m_8b8 = 0;
+            m_8bc = 0;
+            ClearSubB();
+            EnsureStruckVoice("GAME_REACTIVEARMORLOOP");
+            return 1;
+        }
+        case 0x3b: {
+            m_gruntKind = 0x3b;
+            CreatePowerupSprite(1);
+            if (m_378 == 0) {
+                m_378 = g_buteMgr.GetDwordDef("Powerupz", "RoidzTime", 0x4e20);
+            }
+            m_8a8 = m_378;
+            m_8ac = 0;
+            m_8a0 = g_frameTime;
+            m_8a4 = 0;
+            m_8b8 = 0;
+            m_8bc = 0;
+            ClearSubB();
+            EnsureStruckVoice("GAME_ROIDZLOOP");
+            return 1;
+        }
+        case 0x37: {
+            m_gruntKind = 0x37;
+            CreatePowerupSprite(2);
+            if (m_378 == 0) {
+                m_378 = g_buteMgr.GetDwordDef("Powerupz", "SuperSpeedTime", 0x4e20);
+            }
+            m_8a8 = m_378;
+            m_8ac = 0;
+            m_8a0 = g_frameTime;
+            m_8a4 = 0;
+            m_8b8 = 0;
+            m_8bc = 0;
+            ReadConfigFromButeMgr();
+            LoadCellAnimNames(0, 0);
+            LoadAnimNameTable(0, 0);
+            ClearSubB();
+            EnsureStruckVoice("GAME_SUPERSPEEDLOOP");
+            return 1;
+        }
+        case 0x32: {
+            CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
+            CStatusBarMgr* sb = play->m_guts;
+            if (sb->m_hlBusy == 0) {
+                if (sb->m_position == 2) {
+                    sb->RefreshState();
+                }
+                if (sb->m_activeTab != 3) {
+                    sb->SetTabState(3, 3);
+                }
+                sb->Deactivate();
+                play->m_guts->UpdateRezMachineWakeStatusBar();
+                return 1;
+            }
+            m_tileMgr->CycleMoveIcons(m_tileOwnerHi, 1);
+            return 1;
+        }
+        case 0x3d: {
+            if (m_tileOwnerHi == g_curPlayer) {
+                return 1;
+            }
+            (static_cast<CPlay*>(g_gameReg->m_curState))->OnRegion3(1);
+            return 1;
+        }
+        case 0x3e: {
+            if (m_tileOwnerHi == g_curPlayer) {
+                return 1;
+            }
+            (static_cast<CPlay*>(g_gameReg->m_curState))->OnRegion1(1);
+            return 1;
+        }
+        case 0x3f: {
+            if (m_tileOwnerHi == g_curPlayer) {
+                return 1;
+            }
+            (static_cast<CPlay*>(g_gameReg->m_curState))->OnRegion2(1);
+            return 1;
+        }
+        case 0x40: {
+            if (m_tileOwnerHi == g_curPlayer) {
+                return 1;
+            }
+            (static_cast<CPlay*>(g_gameReg->m_curState))->OnRegion2(1);
+            return 1;
+        }
+        case 0x5a:
+        case 0x5b:
+        case 0x5c:
+        case 0x5d: {
+            g_gameReg->m_scoreHud->m_scoreValue = 1;
+            return 1;
+        }
+        case 0x5e: {
+            (static_cast<CPlay*>(g_gameReg->m_curState))->PostActionCue(m_moveMode);
+            return 1;
+        }
+        case 0x50: {
+            g_gameReg->m_scoreHud->m_2c++;
+            return 1;
+        }
+        case 0x4b: {
+            CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
+            if (play->m_frameMarker == 0) {
+                return 1;
+            }
+            i32 mins = g_buteMgr.GetIntDef("Powerupz", "StopwatchMinutes", 1);
+            i32 secs = g_buteMgr.GetIntDef("Powerupz", "StopwatchSeconds", 0);
+            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
+                secs += secs;
+                mins += mins;
+                if (secs > 0x3b) {
+                    mins++;
+                    secs -= 0x3c;
+                }
+            }
+            play->m_frameMarker->AddTime(mins, secs);
+            return 1;
+        }
+        default: {
+            m_reachRectLeft = -1;
+            m_reachRectTop = -1;
+            m_reachRadius = 1;
+            m_reachRectBottom = 1;
+            m_2a0 = 0;
+            m_2a4 = 0;
+            m_2a8 = 0;
+            m_2ac = 0;
+            fresh = 0;
+            m_animSetName = "NORMALGRUNT";
+            break;
+        }
+    }
+    // The common tail: rebind the tool kind + reload the name/anim tables, then
+    // resolve the type record and finish the entrance wiring.
+    {
+        CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
+        if (kind == 0x12) {
+            play->BuildGruntTypeNameTable(0x12, 1, 1, 0);
+        } else {
+            play->BuildAssetNamespacePrefixes(m_animSetName, 1, 1, 0);
+        }
+    }
+    m_entranceReason = kind;
+    ReadConfigFromButeMgr();
+    LoadCellAnimNames(fresh, defer);
+    LoadAnimNameTable(fresh, defer);
+    if (fresh == 0) {
+        char* rec;
+        {
+            i32 key = reinterpret_cast<i32>(m_objAux->m_1c);
+            g_typeColl.m_grown = 0;
+            if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
+                rec = g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride;
+            } else if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
+                rec = g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride;
+            } else {
+                void* item = g_projActCache;
+                g_retAddrBreadcrumb = GetRetAddr();
+                g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
+                rec = g_typeColl.m_spare;
+            }
+            ConstructGrownSlots();
+        }
+        eq = (strcmp(reinterpret_cast<CAnimNameRecord*>(rec)->m_name, "H") == 0);
+        if (eq) {
+            CAniElement* el = m_38->m_1a0.m_14;
+            CAniDesc* first;
+            if (el->m_records.GetSize() > 0) {
+                first = static_cast<CAniDesc*>(el->m_records[0]);
+            } else {
+                first = 0;
+            }
+            i32 handle = first->m_param;
+            GruntEntranceCell cell = m_entranceCell;
+            m_38->ApplyLookupSprite(
+                m_cells[cell.col * 3 + cell.row].m_names[1].GetBuffer(0),
+                handle
+            );
+        } else {
+            if (m_poweredUp != 0 && m_neighborValid == 0) {
+                m_entranceActive = 0;
+                m_combatActive = 0;
+                m_neighborValid = 0;
+                m_poweredUp = 0;
+                ResetEntranceAnimation(1, 0, 0);
+            }
+            char* rec2;
+            {
+                i32 key2 = reinterpret_cast<i32>(m_objAux->m_1c);
+                g_typeColl.m_grown = 0;
+                if (key2 >= g_typeColl.m_lo && key2 <= g_typeColl.m_hi) {
+                    rec2 = g_typeColl.m_base + (key2 - g_typeColl.m_lo) * g_typeColl.m_stride;
+                } else if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key2, 0) != 0) {
+                    rec2 = g_typeColl.m_base + (key2 - g_typeColl.m_lo) * g_typeColl.m_stride;
+                } else {
+                    void* item2 = g_projActCache;
+                    g_retAddrBreadcrumb = GetRetAddr();
+                    g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item2), 0xc);
+                    rec2 = g_typeColl.m_spare;
+                }
+                ConstructGrownSlots();
+            }
+            eq = (strcmp(reinterpret_cast<CAnimNameRecord*>(rec2)->m_name, "D") == 0);
+            if (eq) {
+                GruntEntranceCell cell2 = m_entranceCell;
+                m_38->ApplyName(m_cells[cell2.col * 3 + cell2.row].m_names[2].GetBuffer(0));
+                m_value = m_38->m_1a0.m_14;
+                m_38->m_1a0.Setup(m_poseWalk);
+            } else {
+                ResetEntranceAnimation(1, 0, 0);
+                if (m_arrivalPending == 0) {
+                    m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+                    i32 col = m_lastTilePxX >> 5;
+                    i32 row = m_lastTilePxY >> 5;
+                    i32 tk = g_gameReg->m_tileGrid->m_rows[row][col].m_10;
+                    if (tk == 0x41) {
+                        UpdateArrival(col, row);
+                    } else if (tk == 0x42) {
+                        if (m_object->m_screenX == m_lastTilePxX
+                            && m_object->m_screenY == m_lastTilePxY) {
+                            m_tileMgr->ApplySwitch(this, m_lastTilePxX, m_lastTilePxY);
+                            m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (m_arrived != 0) {
+        if (m_tileOwnerHi == g_curPlayer) {
+            m_tileMgr->StopPendingFx();
+        }
+    }
+    if (kind == 0x14) {
+        m_tileMgr->ReinitGroup(m_object->m_screenX, m_object->m_screenY);
+    }
+    return 1;
+fail:
     return 0;
 }
 

@@ -116,10 +116,23 @@ public:
     // The threat-cooldown timer: a 64-bit start stamp (m_cooldownStamp) and window
     // (m_cooldownWindow), each stored as a manually zero-extended lo/hi i32 pair so
     // the elapsed compare runs 64-bit; retail emits separate 32-bit stores.
-    i32 m_cooldownStampLo;  // +0x88
-    i32 m_cooldownStampHi;  // +0x8c
-    i32 m_cooldownWindowLo; // +0x90
-    i32 m_cooldownWindowHi; // +0x94
+    // +0x88/+0x90: the attack cooldown as the standard 64-bit anchor+window pair
+    // (same shape as CGrunt's +0x278/+0x308 pairs; the i32 halves stay for the
+    // serializers' per-dword stores).
+    union {
+        i64 m_cooldownStamp64; // +0x88
+        struct {
+            i32 m_cooldownStampLo; // +0x88
+            i32 m_cooldownStampHi; // +0x8c
+        };
+    };
+    union {
+        i64 m_cooldownWindow64; // +0x90
+        struct {
+            i32 m_cooldownWindowLo; // +0x90
+            i32 m_cooldownWindowHi; // +0x94
+        };
+    };
     // A second 64-bit stamp/window timer pair (zeroed in the ctor prologue and again
     // just before the initial moving-anim resolve).
     i32 m_timer2StampLo;  // +0x98

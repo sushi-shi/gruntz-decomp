@@ -456,10 +456,13 @@ i32 CBattlezMapConfig::StepBoard() {
                 if (unit->m_poweredUp != 0) {
                     continue;
                 }
-                i32 idx = reinterpret_cast<i32>(unit->m_objAux->m_1c);
                 i32 eq;
                 eq =
-                    (strcmp((*g_typeColl.GetNameRecord(reinterpret_cast<void*>((idx)))), "I") == 0);
+                    (strcmp(
+                         (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))),
+                         "I"
+                     )
+                     == 0);
                 if (eq) {
                     continue;
                 }
@@ -1225,7 +1228,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                     }
                         {
                             i32 special = 1;
-                            if (unit->m_object->m_screenX != unit->m_lastTilePxX
+                            if (unit->m_lastTilePxX != unit->m_object->m_screenX
                                 || unit->m_object->m_screenY != unit->m_lastTilePxY) {
                                 special = 0;
                             }
@@ -1534,7 +1537,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
         }
         if (unit != 0) {
             if (unit->m_object->m_screenX == unit->m_lastTilePxX
-                && unit->m_object->m_screenY == unit->m_lastTilePxY
+                && unit->m_lastTilePxY == unit->m_object->m_screenY
                 && unit->m_entranceCommitted != 0 && unit->m_deathAnimStarted == 0
                 && unit->m_entranceActive == 0 && unit->m_poweredUp == 0) {
                 eq =
@@ -2194,7 +2197,7 @@ colHitB: {
 }
 
 RVA(0x00029a30, 0x10)
-void*& GruntCoordListOps::NextData(void*& pos) {
+void*& CGruntCoordList::NextData(void*& pos) {
     char* cur = static_cast<char*>(pos);
     pos = *reinterpret_cast<void**>(cur);
     return *reinterpret_cast<void**>(cur + 8);
