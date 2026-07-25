@@ -1628,5 +1628,5 @@ CDDrawSurfaceChildA::~CDDrawSurfaceChildA() {
 }
 RVA(0x001591d0, 0x8)
 void CDDrawSurfaceChildA::Unload() {
-    m_surface = 0;
+    m_width = 0; // retail zeroes the +0x10 width sentinel, NOT the +0x2c surface slot
 }

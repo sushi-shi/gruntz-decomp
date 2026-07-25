@@ -90,7 +90,7 @@ i32 CLightFxRender::AllocSurface() {
     FreeSurface();
     CGruntzMapMgr* info = m_tileGrid;
     CDDrawSurfaceMgr* mgr = m_world;
-    m_surface = mgr->m_ptrColl->MakeAndAddB(info->m_width, info->m_height, 0, 0, -1);
+    m_surface = mgr->m_ptrColl->MakeAndAddB(info->m_height, info->m_width, 0, 0, -1);
     if (m_surface == 0) {
         return 0;
     }
