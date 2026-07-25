@@ -7,7 +7,7 @@ scripts/). Grouped by area:
             build / labels / structs / ghidra-refresh / init / status / ...
   build/    matching build - labels, ghidra_metadata_generate, synth_pdb,
             delink, ninja_syntax (the ninja compile -> labels -> delink chain)
-  ghidra/   comprehension-DB enrichment - apply, export, decomp_export (PyGhidra)
+  ghidra/   comprehension-DB enrichment - apply, export (PyGhidra)
   init/     local-environment setup - toolchain, clangd
   match/    matching-progress tooling - status (the match CLI), fingerprints
             (its helper), verify_stubs (the build gate)
