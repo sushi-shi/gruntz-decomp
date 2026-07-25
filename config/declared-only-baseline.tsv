@@ -1,5 +1,0 @@
-# declared-only debt (gruntz.cleanliness.declared_only): symbols some base obj
-# references that NO base obj defines and retail's namespace never names -
-# fabricated aliases / phantom externs. RATCHET: new rows are FATAL; fix rows
-# (rename to the real symbol / define the owner), then --update. Drive to 0.
-?StepDropApply@CGrunt@@QAEXXZ

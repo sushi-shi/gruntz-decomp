@@ -1510,7 +1510,7 @@ kArm:
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeK) == 0);
     if (eq && m_entranceArmed != 0) {
         m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxY, m_lastTilePxX);
-        StepDropApply();
+        // The inlined drop-apply tail that closes the K arm is not reconstructed yet.
     }
     return 1;
 }

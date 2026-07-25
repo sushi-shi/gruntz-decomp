@@ -906,7 +906,6 @@ public:
 
     // Drop/entrance movement helpers.
     i32 IsDropReady(i32 a = 0); // thunk_0x17df (drop-ready predicate; 1-arg __thiscall)
-    void StepDropApply();       // placeholder for an unreconstructed inlined drop-apply tail
 
     // ---- chunk-2 attributed targets (RearmAttack family + entrance-move tail) ----
     // @0x5b570 (ret 8) - begin the grunt's attack/combat reaction: gated on the
@@ -1088,11 +1087,4 @@ extern "C" void __stdcall GruntCue(CGrunt* g, i32 code, i32 a, i32 b, i32 c, i32
 extern "C" i32 BadSelect(const char* msg);                     // 0x402cca (__cdecl)
 extern "C" i32 PickupCheck(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x403c6a (__cdecl)
 
-extern char s_codeD[];
-extern char s_codeF[];
-extern char s_codeM[];
-extern char s_codeH[];
-extern char s_codeN[];
-extern char s_codeQ[];
-extern char s_codeO[];
 #endif // SRC_GRUNTZ_GRUNT_H

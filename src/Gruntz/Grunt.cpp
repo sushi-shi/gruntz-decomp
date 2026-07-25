@@ -965,29 +965,46 @@ i32 CGrunt::TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
 
 // ---------------------------------------------------------------------------
 // CGrunt::StepArrivalDrop(a,b,c,d,e,f)   @0x4b370   (ret 0x18, /GX EH frame)
-// @early-stop
-// TRUNCATED reconstruction (~8%): only the head (m_464 clear + "D" strcmp + the
-// reachedTarget arg test + a partial coord-node freelist recycle) is present. Retail
-// is 838 insns; the base is ~86. The missing ~750 are the arrival-commit tail the
-// placeholder `StepDropApply()` stands in for: 4 pathfinder re-probes (0x20f4), the
-// CPtrList release/claim churn (0x1b4a03/0x1b48a6), and the per-direction tile-commit
-// body. Needs a dedicated leaf-first reconstruction of that shared inlined tail (also
-// inlined into MovingSlot16) - deferred to the final sweep, NOT a codegen wall.
+// Re-path the grunt from its last committed tile to the (a,b) pixel target and
+// commit the arrival. Structure:
+//   * recycle the current occupied-coord path onto g_coordPool, then SearchEdge
+//     (0x81e10) a fresh route through m_31c;
+//   * if that route's head cell passes the d/maskC flag gate, optionally re-probe
+//     into a scratch CPtrList (hence the /GX frame) and adopt the shorter path;
+//   * if the FIRST SearchEdge fails, nudge the target one tile toward whichever
+//     4-neighbour is free (the bits-5..14 jump table at 0x44be70), blank the 3x3
+//     window around it, re-probe, and restore the window;
+//   * if that still fails, walk a 16.16 fixed-point line from the last tile toward
+//     the target and re-probe from the last passable cell.
+// The cell flag word is rowInts[y][x*7], bounds-checked to 1 - CellFlagsAt
+// (0x75a40) open-coded, as retail inlines it at every site here.
 RVA(0x0004b370, 0xafd)
 i32 CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
-    m_arrivalNotified = 0; // m_464 cleared on entry
+    CGruntzMapMgr* grid;
+    GruntCoordNode* n;
+    GruntCoordNode* cur;
+    CoordPoolNode* pooled;
+    GruntCoord* tail;
+    POSITION pos;
+    i32 lastX, lastY, tileX, tileY;
+    i32 maskC, cnt, headFlags, lastFlags, hit;
+    i32 reinit; // entrance-reinit gate: cleared on the m_arrivalState==0x11 bail
+    i32 nudged; // the nudge/line-walk found a fresh target
+    i32 free4, step, acc, err, walkX, walkY, blocked;
+    i32 saved[3][3];
+    i32 sx, sy;
     bool eq;
+
+    m_454 = 0;
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeD) == 0);
     if (!eq && a == m_entrancePxX && b == m_entrancePxY) {
-        goto reachedTarget;
+        goto commitPhase;
     }
-    // Recycle the occupied-coord nodes onto the CoordPool, empty the list, then
-    // probe the destination tile via the engine pathfinder (0x20f4) and either
-    // re-anchor (within range) or fall through to the big arrival commit.
+    // Recycle the occupied-coord payloads onto the CoordPool, then empty the list.
     if (CoordCount() != 0) {
-        GruntCoordNode* n = CoordHead();
+        n = CoordHead();
         while (n != 0) {
-            GruntCoordNode* cur = n;
+            cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
                 g_coordPool.Push(cur->m_coord);
@@ -995,11 +1012,283 @@ i32 CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
         }
         m_31c.RemoveAll();
     }
-    StepDropApply();
-    return 0;
+    lastX = m_lastTilePxX >> 5;
+    lastY = m_lastTilePxY >> 5;
+    tileX = a >> 5;
+    tileY = b >> 5;
+    if (d == -1) {
+        d = m_arrivalFlags;
+    }
+    m_288 = a;
+    m_28c = b;
+    maskC = f | m_24c;
+    grid = g_gameReg->m_tileGrid;
+    if (grid->SearchEdge(lastX, lastY, tileX, tileY, &m_31c, e, d, maskC) == 0) {
+        goto nudgeTarget;
+    }
+dropHead:
+    // The route's first hop is the tile the grunt already stands on.
+    if (CoordCount() != 0) {
+        pooled = g_coordPool.NodeOf(m_31c.RemoveHead());
+        pooled->m_next = g_coordPool.m_freeHead;
+        g_coordPool.m_freeHead = pooled;
+    }
+pathGate:
+    reinit = 1;
+    cnt = CoordCount();
+    if (cnt == 0) {
+        goto commitEntrance;
+    }
+    tail = CoordHead()->m_coord;
+    headFlags = (static_cast<u32>(tail->m_x) >= grid->m_width
+                 || static_cast<u32>(tail->m_y) >= grid->m_height)
+                    ? 1
+                    : grid->m_rowInts[tail->m_y][tail->m_x * 7];
+    lastFlags =
+        (static_cast<u32>(lastX) >= grid->m_width || static_cast<u32>(lastY) >= grid->m_height)
+            ? 1
+            : grid->m_rowInts[lastY][lastX * 7];
+    if ((lastFlags & 0x80) != 0) {
+        goto commitEntrance;
+    }
+    if ((headFlags & 0x20000000) == 0) {
+        hit = headFlags & d;
+        if ((hit & 0x20000000) == 0) {
+            if (hit == 0) {
+                goto commitEntrance;
+            }
+            if ((maskC & headFlags) != 0) {
+                goto commitEntrance;
+            }
+        }
+    }
+    if (cnt == 1 && m_arrivalPending == 0) {
+        // A single-hop route onto the tile we already occupy: just re-commit.
+        SetEntrancePos(1, 1);
+        if (m_object->m_screenX == m_lastTilePxX && m_object->m_screenY == m_lastTilePxY) {
+            PlayMoveSoundAtTile(tileX, tileY);
+        }
+        return 0;
+    }
+    if (m_arrivalState == 0x11) {
+        reinit = 0;
+        goto commitEntrance;
+    }
+    {
+        // Scratch route: if the same trip is no more than 3 hops longer with the
+        // 0x20000000 terrain bit forced on, adopt it instead.
+        CPtrList probe(10);
+        if (grid->SearchEdge(lastX, lastY, tileX, tileY, &probe, e, d | 0x20000000, maskC) != 0
+            && probe.GetCount() != 0) {
+            if (probe.GetCount() > cnt + 3) {
+                pos = probe.GetHeadPosition();
+                while (pos != 0) {
+                    pooled = g_coordPool.NodeOf(probe.GetNext(pos));
+                    pooled->m_next = g_coordPool.m_freeHead;
+                    g_coordPool.m_freeHead = pooled;
+                }
+            } else {
+                pooled = g_coordPool.NodeOf(probe.RemoveHead());
+                pooled->m_next = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = pooled;
+                if (CoordCount() != 0) {
+                    n = CoordHead();
+                    while (n != 0) {
+                        cur = n;
+                        n = n->m_next;
+                        if (cur->m_coord != 0) {
+                            pooled = g_coordPool.NodeOf(cur->m_coord);
+                            pooled->m_next = g_coordPool.m_freeHead;
+                            g_coordPool.m_freeHead = pooled;
+                        }
+                    }
+                    m_31c.RemoveAll();
+                }
+                pos = probe.GetHeadPosition();
+                while (pos != 0) {
+                    m_31c.AddTail(probe.GetNext(pos));
+                }
+            }
+            probe.RemoveAll();
+        }
+    }
+commitEntrance:
+    m_entrancePxX = a;
+    m_entrancePxY = b;
+    if (reinit != 0) {
+        StepEntranceReinit();
+    }
+commitPhase:
+    m_arrivalPhase = c;
+    return 1;
 
-reachedTarget:
-    return m_tileMgr->CellDispatch(a, b, c, d);
+nudgeTarget:
+    nudged = 0;
+    // Nudge the target one tile toward whichever 4-neighbour is still open (cell
+    // tag 0x21). Bits: 1 = y+1, 2 = y-1, 4 = x+1, 8 = x-1.
+    if (grid->m_rowInts[tileY][tileX * 7 + 4] != 0x21) {
+        goto nudgeDone;
+    }
+    free4 = (grid->m_rowInts[tileY + 1][tileX * 7 + 4] == 0x21) ? 1 : 0;
+    if (grid->m_rowInts[tileY - 1][tileX * 7 + 4] == 0x21) {
+        free4 |= 2;
+    }
+    if (grid->m_rowInts[tileY][tileX * 7 + 11] == 0x21) {
+        free4 |= 4;
+    }
+    if (grid->m_rowInts[tileY][tileX * 7 - 3] == 0x21) {
+        free4 |= 8;
+    }
+    switch (free4) {
+        case 5:
+            tileX++;
+            tileY++;
+            break;
+        case 6:
+            tileX++;
+            tileY--;
+            break;
+        case 7:
+            tileX++;
+            break;
+        case 9:
+            tileX--;
+            tileY++;
+            break;
+        case 10:
+            tileX--;
+            tileY--;
+            break;
+        case 11:
+            tileX--;
+            break;
+        case 13:
+            tileY++;
+            break;
+        case 14:
+            tileY--;
+            break;
+        default:
+            break;
+    }
+    // Blank the 3x3 window around the nudged tile so the probe can enter it, then
+    // restore it verbatim afterwards.
+    for (sy = tileY - 1; sy < tileY + 2; sy++) {
+        for (sx = tileX - 1; sx < tileX + 2; sx++) {
+            saved[sx - tileX + 1][sy - tileY + 1] = grid->m_rowInts[sy][sx * 7 + 7];
+            grid->m_rowInts[sy][sx * 7 + 7] = 0;
+        }
+    }
+    if (grid->SearchEdge(lastX, lastY, tileX, tileY, &m_31c, e, d, maskC) != 0
+        && CoordCount() != 0) {
+        pooled = g_coordPool.NodeOf(m_31c.RemoveHead());
+        pooled->m_next = g_coordPool.m_freeHead;
+        g_coordPool.m_freeHead = pooled;
+        if (CoordCount() != 0) {
+            pooled = g_coordPool.NodeOf(m_31c.RemoveTail());
+            pooled->m_next = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = pooled;
+            if (CoordCount() != 0) {
+                nudged = 1;
+                tail = CoordTail()->m_coord;
+                a = tail->m_x * 32 + 0x10;
+                b = tail->m_y * 32 + 0x10;
+            }
+        }
+    }
+    for (sy = tileY - 1; sy < tileY + 2; sy++) {
+        for (sx = tileX - 1; sx < tileX + 2; sx++) {
+            grid->m_rowInts[sy][sx * 7 + 7] = saved[sx - tileX + 1][sy - tileY + 1];
+        }
+    }
+    if (nudged != 0) {
+        if (CoordCount() == 1 && c == 2 && m_entranceReason == 5) {
+            m_tileMgr->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, a, b);
+            SetEntrancePos(1, 1);
+            return 1;
+        }
+        m_288 = a;
+        m_28c = b;
+    }
+nudgeDone:
+    if (nudged != 0) {
+        goto pathGate;
+    }
+    if (m_arrivalState != 0) {
+        SetEntrancePos(1, 1);
+        return 0;
+    }
+    if (lastX == tileX && lastY == tileY) {
+        goto reCommit;
+    }
+    // 16.16 fixed-point line walk from the last tile toward the target; stop at the
+    // first cell d rejects, keeping the last passable one in (walkX, walkY).
+    blocked = 0;
+    walkX = tileX;
+    walkY = tileY;
+    if (abs(tileX - lastX) > abs(tileY - lastY)) {
+        step = ((tileY - lastY) << 16) / abs(tileX - lastX);
+        acc = lastY << 16;
+        sx = lastX;
+        while (blocked == 0) {
+            sy = acc >> 16;
+            err = (static_cast<u32>(sx) >= grid->m_width || static_cast<u32>(sy) >= grid->m_height)
+                      ? 1
+                      : grid->m_rowInts[sy][sx * 7];
+            if ((d & err) != 0 && (m_24c & err) == 0) {
+                blocked = 1;
+            } else {
+                walkX = sx;
+                walkY = sy;
+                acc += step;
+                sx += (tileX > lastX) ? 1 : -1;
+            }
+        }
+    } else {
+        step = ((tileX - lastX) << 16) / abs(tileY - lastY);
+        acc = lastX << 16;
+        sy = lastY;
+        while (blocked == 0) {
+            sx = acc >> 16;
+            err = (static_cast<u32>(sx) >= grid->m_width || static_cast<u32>(sy) >= grid->m_height)
+                      ? 1
+                      : grid->m_rowInts[sy][sx * 7];
+            if ((d & err) != 0 && (m_24c & err) == 0) {
+                blocked = 1;
+            } else {
+                walkX = sx;
+                walkY = sy;
+                acc += step;
+                sy += (tileY > lastY) ? 1 : -1;
+            }
+        }
+    }
+    if (lastX != walkX || lastY != walkY) {
+        goto reProbe;
+    }
+reCommit:
+    SetEntrancePos(1, 1);
+    if (m_arrivalPending == 0) {
+        return 0;
+    }
+    m_arrivalPhase = c;
+    return 1;
+
+reProbe:
+    a = walkX * 32 + 0x10;
+    b = walkY * 32 + 0x10;
+    if (grid->SearchEdge(walkX, walkY, lastX, lastY, &m_31c, 1, d, maskC) != 0) {
+        goto dropHead;
+    }
+    SetEntrancePos(1, 1);
+    if (m_object->m_screenX == m_lastTilePxX && m_object->m_screenY == m_lastTilePxY) {
+        PlayMoveSoundAtTile(walkX, walkY);
+    }
+    if (m_arrivalPending == 0) {
+        return 0;
+    }
+    m_arrivalPhase = c;
+    return 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -1814,9 +2103,9 @@ void CGrunt::XferName(char* name) {}
 // the arrival-commit block at 0x5f490 (a second GetNameRecords/scratch-teardown + a
 // "D"-gated arrival-processing body: pathfinder re-probe, tile release/claim, the
 // per-direction m_cells[base] {m_dirX..m_stepY} double movement-integration tail). This
-// is the shared inlined arrival-commit tail (the placeholder `StepDropApply()` call
-// stands in for it here). Needs a dedicated leaf-first reconstruction of that tail
-// (shared with StepArrivalDrop) - deferred to the final sweep, NOT a codegen wall.
+// is the same arrival-commit tail inlined into StepArrivalDrop; nothing stands in for
+// it here. Needs a dedicated leaf-first reconstruction of that tail (shared with
+// StepArrivalDrop) - deferred to the final sweep, NOT a codegen wall.
 RVA(0x0005f310, 0xb5e)
 void CGrunt::MovingSlot16() {
     if (m_arrivalState != 0x11) {

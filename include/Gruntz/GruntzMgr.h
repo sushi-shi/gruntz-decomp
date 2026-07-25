@@ -500,7 +500,6 @@ extern "C" void RecomputePlaneCoords(void); // 0x161c90
 
 extern i32 g_warpX;
 extern i32 g_warpY;
-extern "C" char g_msgScratch[];
 extern "C" i32 g_cdPromptResult;
 extern i32 g_debugDisplayFlags;
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

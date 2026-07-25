@@ -1118,7 +1118,7 @@ applyTail:
         m_entranceCommitted = 0;
         ResetEntranceAnimation(1, 0, 0);
     }
-    StepDropApply();
+    // The inlined drop-apply tail that closes this arm is not reconstructed yet.
     return 1;
 
 modeDispatch: {

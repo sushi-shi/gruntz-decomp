@@ -28,6 +28,7 @@ struct CObjList : public CObjListBase {
     void AddHead(CObjNode* node); // 0x1851e0
     void Remove(CObjNode* node);  // 0x1852e0
 };
+SIZE(0xc); // {vptr (CObjListBase), head, tail} - CRezList adds no data, same 0xc
 
 struct CRezList : public CObjList {
     CRezList() {
