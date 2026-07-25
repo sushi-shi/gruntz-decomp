@@ -2522,8 +2522,8 @@ i32 CPlay::ProfileDeltaFrame() {
     }
     i32 renderMs = static_cast<i32>((tg() - t0));
     m_mgr->m_inputState->Retune( // 0x1a7d -> CWorldSoundSet::Retune (positional audio)
-        m_world->m_level->m_mainPlane->m_viewRect.left,
-        m_world->m_level->m_mainPlane->m_viewRect.top
+        m_world->m_level->m_mainPlane->m_snappedX,
+        m_world->m_level->m_mainPlane->m_snappedY
     );
     u32 t2 = tg();
     m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
