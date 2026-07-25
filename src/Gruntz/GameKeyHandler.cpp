@@ -11,7 +11,7 @@
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (group/cell/puddle dispatch + CenterOnGroup)
 #include <Gruntz/GruntzCmdMgr.h> // canonical CGruntzCmdMgr (m_cmdSubMgr: BlitTileMarker @0x23d90)
 #include <Gruntz/FontConfig.h>   // canonical CFontConfig (EndInput; non-virtual, cast-neutral)
-#include <Gruntz/LeafCue.h>      // LeafCue::PlayIfElapsed (the stale-ecx cue pokes)
+#include <Gruntz/LeafCue.h>      // LeafCue::PlayIfElapsed (the looked-up cue)
 #include <Gruntz/SoundCue.h>     // CDDrawSubMgrLeafScan (its +0x10 IS the real MFC CMapStringToOb)
 #include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (score/run/finish helpers) + GruntzPlayer
 #include <Gruntz/Play.h>         // canonical CPlay - the PLAY-state object DispatchKey runs on
@@ -24,9 +24,8 @@
         if (_s->m_emitGate == 0) {                                                                 \
             void* found = 0;                                                                       \
             _s->m_10.Lookup("GAME_TABHIGHLIGHT1", found);                                          \
-            if (found != 0) /* retail bug: ecx still holds &m_10 (the MAP), not the   */           \
-                            /* found cue - the call runs on the map object; reproduced */          \
-                reinterpret_cast<LeafCue*>(&_s->m_10)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);        \
+            if (found != 0)                                                                        \
+                static_cast<LeafCue*>(found)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                 \
         }                                                                                          \
     } while (0)
 
@@ -257,8 +256,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
             void* found = 0;
             s->m_10.Lookup("GAME_TABHIGHLIGHT1", found);
             if (found != 0) {
-                // retail bug: ecx still holds &m_10 (the map), not the found cue.
-                reinterpret_cast<LeafCue*>(&s->m_10)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                static_cast<LeafCue*>(found)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
             }
         }
         return 1;

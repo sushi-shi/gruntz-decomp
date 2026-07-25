@@ -1,3 +1,4 @@
+#include <Gruntz/ProjActCache.h> // C linkage for the definitions below (inherited, not restated)
 #include <Gruntz/UserLogic.h> // complete CUserLogic (ProjTypeXfer drives its [3]/[4]/[5] virtually)
 #include <Mfc.h>
 #include <Bute/ButeTree.h>       // canonical CButeTree / CVariantSlot / CButeTreeNode (one shape)

@@ -1,3 +1,4 @@
+#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Wap32/ZVec.h>
 #include <Bute/ButeTree.h>

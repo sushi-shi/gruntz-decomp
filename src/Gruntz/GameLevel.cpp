@@ -1,3 +1,4 @@
+#include <Wwd/WwdFile.h> // C linkage for the definitions below (inherited, not restated)
 #include <Mfc.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/SerialArchive.h>     // CFileMemBase (== CFileMemBase; the EditDispatch stream)

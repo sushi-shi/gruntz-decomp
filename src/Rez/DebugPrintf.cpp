@@ -17,7 +17,7 @@ i32 g_monoCol = 0;
 DATA(0x002bf8dc)
 i32 g_debugPrintMode = 0;
 DATA(0x002bf8e0)
-void* g_debugLogFile = 0;
+FILE* g_debugLogFile = 0;
 
 void DebugSetCursorXY(i32 x, i32 y);
 void DebugSetCursor(i32, i32, i32); // 0x184fd0

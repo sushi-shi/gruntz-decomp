@@ -8,6 +8,7 @@
 // but whose text AND private .data cells sit inside this obj's band
 // (Load@CRezDirNode 0x13a0f0; @identity-TODO). 0x13c080 is Classify@CSymParser
 // (its callers ParseBuffer/LoadEntry pass ecx=this; ex the FindEntry@CRezDir guess).
+#include <Rez/DebugPrintf.h> // RezAssertFail (owning decl; varargs C linkage)
 #include <Bute/SymTab.h> // own extern surface
 #include <Mfc.h>         // afx-first (RezMgr.h below pulls MFC/Win32 for the two Rez strays)
 #include <rva.h>

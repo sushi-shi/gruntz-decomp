@@ -1,3 +1,4 @@
+#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
 #include <Gruntz/ActNameRegistry.h>       // the shared activation-name registry archetype
 #include <Gruntz/ActReg.h>                // the shared CActReg coordinate-registry archetype
 #include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view

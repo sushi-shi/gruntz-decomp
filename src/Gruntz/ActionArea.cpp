@@ -1,3 +1,4 @@
+#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
 #include <Mfc.h>           // real MFC CString (the type-name record's +0x00 member)
 #include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>    // the serialize stream (CFileMemBase == the real CFileMemBase)

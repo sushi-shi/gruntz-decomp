@@ -1,3 +1,4 @@
+#include <Gruntz/Multi.h> // C linkage for the definitions below (inherited, not restated)
 #include <Ints.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/SoundState.h> // g_sndEnabled/g_sndCueTag

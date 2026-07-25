@@ -16,7 +16,9 @@ extern "C" i32 RezStatEntry(const char* name, RezFindRec* rec);
 
 class CRezDir;
 
-extern "C" void RezAssertFail(const char* msg);
+// Declared in <Rez/DebugPrintf.h>, which owns the definition; the signature is
+// varargs. A second C-linkage decl with a different signature is ill-formed
+// (C linkage cannot be overloaded), so do not restate it here.
 
 extern "C" char* RezStrrchr(const char* s, i32 ch);
 extern "C" i32 RezStricmp(const char* a, const char* b);

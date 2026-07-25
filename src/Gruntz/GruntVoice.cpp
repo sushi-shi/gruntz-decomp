@@ -1,3 +1,4 @@
+#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
 #include <Mfc.h>              // CMapPtrToPtr (the id->object map, Lookup @0x1b8760)
 #include <Gruntz/CurPlayer.h> // g_curPlayer
 #include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)

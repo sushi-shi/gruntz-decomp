@@ -1,3 +1,4 @@
+#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
 #include <Gruntz/ObjectDropper.h> // CObjectDropper : CUserLogic (ctor 0xc59f0)
 #include <Rez/FrameClock.h>       // frame-clock band (g_frameDelta/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)

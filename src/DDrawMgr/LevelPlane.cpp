@@ -21,6 +21,7 @@
 // <DDrawMgr/DDrawWorkerHost.h> (CDDrawWorkerHost), <Gruntz/UserLogic.h>
 // (CGameObject). Bodies are strictly RVA-ascending; only offsets + emitted
 // bytes are load-bearing (campaign doctrine).
+#include <Gruntz/GruntzMgr.h> // C linkage for the definitions below (inherited, not restated)
 #include <Mfc.h>
 #include <Gruntz/WwdGameObject.h> // complete CWwdGameObject: the CGameObject downcast is static
 #include <DDrawMgr/PixelShift.h>  // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown

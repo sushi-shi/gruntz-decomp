@@ -1,3 +1,4 @@
+#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
 #include <rva.h>
 
 #include <Gruntz/AnimWorker.h>           // shared Owner / Worker views + Worker_DefaultPump

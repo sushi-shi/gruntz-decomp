@@ -1,4 +1,5 @@
 #define USERLOGIC_OOL_CTOR // retail CALLS ??0CUserLogic (0x58cd0) at this TU case-0; decl-only base ctor
+#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
 #include <rva.h>
 #include <Gruntz/AniCycle.h>
 #include <Gruntz/SingleFrameMessage.h>

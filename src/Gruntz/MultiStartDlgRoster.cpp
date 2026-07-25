@@ -1,3 +1,4 @@
+#include <Gruntz/Grunt.h> // C linkage for the definitions below (inherited, not restated)
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>

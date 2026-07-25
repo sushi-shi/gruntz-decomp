@@ -1,3 +1,4 @@
+#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
 #include <Gruntz/Demo.h>
 #include <Gruntz/DemoHelpers.h> // CDemoSetup / Orient3 (the TU's helper types)
 #include <Io/FileMem.h>         // the serialize stream (CFileMemBase == the real CFileMemBase)

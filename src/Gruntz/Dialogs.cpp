@@ -1,3 +1,4 @@
+#include <Gruntz/Grunt.h> // C linkage for the definitions below (inherited, not restated)
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <EmptyString.h> // g_emptyString

@@ -25,6 +25,7 @@
 //     CBrickz via ILT thunk 0x3701 -> ctor 0x10e800). Modeled on the real CBrickz (the ex
 //
 // Only offsets / code bytes are load-bearing; names are placeholders.
+#include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
 #include <Gruntz/ActNameRegistry.h> // g_buteTree / s_codeA / g_typeCounter / g_typeColl* / ActNameLookup
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
