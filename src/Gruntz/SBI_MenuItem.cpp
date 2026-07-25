@@ -137,9 +137,9 @@ i32 CSBI_MenuItem::Render() {
         CImage* f = m_frame;
         if (f) {
             f->RenderFrame(
-                static_cast<void*>(g_gameReg->m_world->m_drawTarget->m_backPair),
-                reinterpret_cast<void*>((m_rect14.m_0 + f->m_anchorX)),
-                reinterpret_cast<void*>((m_rect14.m_4 + f->m_anchorY)),
+                g_gameReg->m_world->m_drawTarget->m_backPair,
+                m_rect14.m_0 + f->m_anchorX,
+                m_rect14.m_4 + f->m_anchorY,
                 0
             );
         }

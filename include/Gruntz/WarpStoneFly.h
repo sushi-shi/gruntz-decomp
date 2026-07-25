@@ -37,15 +37,4 @@ public:
 SIZE(0x40);
 SIZE_UNKNOWN();
 
-struct CWsfDrawable {
-    char m_pad0[0x14];
-    i32 m_context; // +0x14  surface context
-};
-SIZE_UNKNOWN();
-struct CWsfGameMgr {
-    char m_pad0[0x4];
-    CWsfDrawable* m_drawable; // +0x04  active drawable
-};
-SIZE_UNKNOWN();
-
 #endif // GRUNTZ_GRUNTZ_WARPSTONEFLY_H

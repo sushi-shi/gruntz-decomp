@@ -61,5 +61,8 @@ public:
     u32 m_latchedKeys;           // +0x20  snapshot of m_edgeKeys
     i32 m_suppress;              // +0x24  "suppress input" flag (clears the key words)
 };
+SIZE(0x28);
+
+extern "C" StateMgrBZ* g_spawnConfig; // _g_spawnConfig at 0x245578
 
 #endif // GRUNTZ_STATEMGRBZ_H

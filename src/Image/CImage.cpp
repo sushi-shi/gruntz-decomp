@@ -588,17 +588,10 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
 }
 
 RVA(0x00153790, 0x6a)
-void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
+void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
     static CResolveNode clip; // magic-static guard @0x6bf314, ctor 0x1549d0 + atexit
-    if (clip.Init(
-            reinterpret_cast<i32>(m_parent),
-            0,
-            reinterpret_cast<i32>(b),
-            reinterpret_cast<i32>(c),
-            reinterpret_cast<i32>(d),
-            0
-        )) {
-        this->RenderImage(&clip, static_cast<CDDrawSurfacePair*>(a));
+    if (clip.Init(reinterpret_cast<i32>(m_parent), 0, x, y, flags, 0)) {
+        this->RenderImage(&clip, target);
     }
 }
 
@@ -633,23 +626,18 @@ i32 g_surfaceColorKey = 0; // 0x2bf380
 // (`llvm-nm build/objdiff/base/cimage.obj`) if labels.py reports "not in base obj".
 
 RVA(0x00153810, 0x95)
-void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) {
+void CImage::RenderFrameClipped(
+    CDDrawSurfacePair* target, i32 x, i32 y, RECT* clipRect, i32 flags
+) {
     static CResolveNode clip; // magic-static guard @0x6bf29c, ctor 0x1549d0 + atexit
-    if (clip.Init(
-            reinterpret_cast<i32>(m_parent),
-            0,
-            reinterpret_cast<i32>(b),
-            reinterpret_cast<i32>(c),
-            reinterpret_cast<i32>(d),
-            0
-        )) {
-        if (rect != 0) {
-            g_imageClipRect[0] = (static_cast<i32*>(rect))[0];
-            g_imageClipRect[1] = (static_cast<i32*>(rect))[1];
-            g_imageClipRect[2] = (static_cast<i32*>(rect))[2];
-            g_imageClipRect[3] = (static_cast<i32*>(rect))[3];
+    if (clip.Init(reinterpret_cast<i32>(m_parent), 0, x, y, flags, 0)) {
+        if (clipRect != 0) {
+            g_imageClipRect[0] = clipRect->left;
+            g_imageClipRect[1] = clipRect->top;
+            g_imageClipRect[2] = clipRect->right;
+            g_imageClipRect[3] = clipRect->bottom;
         }
-        this->RenderImage(&clip, static_cast<CDDrawSurfacePair*>(a));
+        this->RenderImage(&clip, target);
     }
 }
 

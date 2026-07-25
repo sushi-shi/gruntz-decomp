@@ -21,7 +21,8 @@ public:
     virtual i32 GetFrameWidth() OVERRIDE;                    // 0x185880  slot 5  (decl-only)
     virtual void Disable(i32 mode) OVERRIDE;                 // 0x184780  slot 6  (decl-only)
     virtual i32 Notify(void* arg) OVERRIDE;                  // 0x1858a0  slot 8  (frame cursor)
-    virtual i32 Place(i32 ctx, i32 x, i32 y) OVERRIDE;       // 0x1858d0  slot 9  (draws frame)
+    virtual i32 Place(CDDrawSurfacePair* target, i32 x, i32 y)
+        OVERRIDE;                                            // 0x1858d0  slot 9  (draws frame)
     virtual i32 OnInit() OVERRIDE;                           // 0x1847b0  slot 13 (return 1)
     virtual void SetFrame(i32 v); // 0x1847a0  slot 14 (new; body in BoundaryUpper)
 

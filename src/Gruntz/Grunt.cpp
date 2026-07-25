@@ -1049,7 +1049,7 @@ i32 CGrunt::StepGruntMovement() {
     }
     if (m_arrivalState == 0x11) {
         CBattlezMapConfig* slot = &g_gameReg->m_options[m_tileOwnerHi].m_038;
-        if (slot != 0 && slot->ValidateUnitPath(reinterpret_cast<i32>(this)) == 0) {
+        if (slot != 0 && slot->ValidateUnitPath(this) == 0) {
             SetEntrancePos(1, 1);
             return 0;
         }
@@ -1345,7 +1345,7 @@ label_4c6e4:
         i32 hudY = m_object->m_screenY;
         i32 hudX = m_object->m_screenX;
         CCueRect* rr =
-            reinterpret_cast<CCueRect*>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX);
+            &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
         if (hudX < rr->right && hudX >= rr->left && hudY < rr->bottom && hudY >= rr->top) {
             g_gameReg->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 8, -1, -1, -1);
         }
@@ -1775,7 +1775,7 @@ i32 CGrunt::CreateSelectedSprite() {
 // @source: winapi:CopyRect
 // @stub
 RVA(0x0004d800, 0x423)
-i32 CUserLogic::winapi_04d800_CopyRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {
+i32 CUserLogic::Place(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {
     return 0;
 }
 

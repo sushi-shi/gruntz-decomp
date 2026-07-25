@@ -292,8 +292,8 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     {
         i32 x = m_object->m_screenX;
         i32 y = m_object->m_screenY;
-        if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
-            && y >= g->m_viewOriginT) {
+        if (x < g->m_viewBounds.right && x >= g->m_viewBounds.left && y < g->m_viewBounds.bottom
+            && y >= g->m_viewBounds.top) {
             onScreen = 1;
         } else {
             // The focused object IS a grunt (the identity test below is against
@@ -614,8 +614,8 @@ i32 CGrunt::StartBombGruntRun() {
         CWwdGameObjectA* h = m_object;
         i32 vx = h->m_screenX;
         i32 vy = h->m_screenY;
-        i32* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_originX; // the +0x40 visible rect
-        if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
+        const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+        if (vx < rect->right && vx >= rect->left && vy < rect->bottom && vy >= rect->top) {
             g_gameReg->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 8, -1, -1, -1);
         }
     }
@@ -692,7 +692,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         CGruntzMgr* g = g_gameReg;
         i32 y = m_object->m_screenY;
         i32 x = m_object->m_screenX;
-        CCueRect* r = reinterpret_cast<CCueRect*>(&g->m_world->m_level->m_mainPlane->m_originX);
+        CCueRect* r = &g->m_world->m_level->m_mainPlane->m_viewRect;
         if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
             g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 8, -1, -1, -1);
         }
@@ -1143,9 +1143,9 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             CWwdGameObjectA* h = m_object;
             i32 vx = h->m_screenX;
             i32 vy = h->m_screenY;
-            i32* rect =
-                &g_gameReg->m_world->m_level->m_mainPlane->m_originX; // the +0x40 visible rect
-            if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
+            const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+            if (vx < rect->right && vx >= rect->left && vy < rect->bottom
+                && vy >= rect->top) {
                 g_gameReg->m_cueSink
                     ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x35c, -1, 0, -1, -1);
             }

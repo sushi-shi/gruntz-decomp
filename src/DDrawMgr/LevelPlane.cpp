@@ -38,11 +38,17 @@
 #include <DDrawMgr/DDrawSurfacePair.h>    // ->m_bpp (the ex CPlaneSurfDesc::m_format)
 #include <DDrawMgr/DDrawChildGroup.h>     // m_childGroup (the worker source)
 #include <Io/FileMem.h> // the REAL serialize-stream base CFileMemBase (Save/Load's Read@+0x2c/Write@+0x30)
-#include <Wwd/WwdSpatialMgr.h> // the canonical spatial/scroll worker (m_scroll)
+#include <Wwd/WwdSpatialMgr.h>  // the canonical spatial/scroll worker (m_scroll)
+#include <Wwd/WwdGameObjCtor.h> // the real 0x15b390 base-object constructor
 #include <rva.h>
 
 #include <stdio.h>  // sprintf (ValidateTiles diagnostics)
 #include <string.h> // strcpy/memcpy/memset (inline rep movs / rep stos)
+
+static __inline i32 GridByteSize(i32 height, i32 width) {
+    height *= width;
+    return height * 4;
+}
 
 // ---------------------------------------------------------------------------
 // The WWD "imageSet3" grid-owner pocket. src/Image/ImageSet3.cpp hosts the same
@@ -302,39 +308,39 @@ void CDDrawWorkerHost::RecomputePlaneCoords() {
     p->m_snappedY = iy;
 
     i32 ox = ix - p->m_anchorX;
-    p->m_originX = ox;
+    p->m_viewRect.left = ox;
     if (ox < 0) {
         if (wrapX) {
-            p->m_originX = p->m_wrapW + ox;
+            p->m_viewRect.left = p->m_wrapW + ox;
         } else {
-            p->m_originX = 0;
+            p->m_viewRect.left = 0;
         }
     }
 
     i32 oy = iy - p->m_anchorY;
-    p->m_originY = oy;
+    p->m_viewRect.top = oy;
     if (oy < 0) {
         if (wrapY) {
-            p->m_originY = p->m_wrapH + oy;
+            p->m_viewRect.top = p->m_wrapH + oy;
         } else {
-            p->m_originY = 0;
+            p->m_viewRect.top = 0;
         }
     }
 
     // --- derive the far tile extents (clamped, unless wrapping) ---------------
-    i32 ex = p->m_viewW + p->m_originX - 1;
-    i32 ey = p->m_viewH + p->m_originY - 1;
-    p->m_extentX = ex;
-    p->m_extentY = ey;
+    i32 ex = p->m_viewW + p->m_viewRect.left - 1;
+    i32 ey = p->m_viewH + p->m_viewRect.top - 1;
+    p->m_viewRect.right = ex;
+    p->m_viewRect.bottom = ey;
     if (ex >= p->m_wrapW && wrapX == 0) {
         i32 over = ex - p->m_wrapW + 1;
-        p->m_extentX = ex - over;
-        p->m_originX = p->m_originX - over;
+        p->m_viewRect.right = ex - over;
+        p->m_viewRect.left = p->m_viewRect.left - over;
     }
     if (ey >= p->m_wrapH && wrapY == 0) {
         i32 over = ey - p->m_wrapH + 1;
-        p->m_extentY = ey - over;
-        p->m_originY = p->m_originY - over;
+        p->m_viewRect.bottom = ey - over;
+        p->m_viewRect.top = p->m_viewRect.top - over;
     }
 }
 
@@ -454,14 +460,14 @@ void CDDrawWorkerHost::Draw(CPlaneDrawCtx* ctx) {
     }
     CDDSurface* surf = ctx->m_surface;
 
-    i32 colL = m_originX >> m_shiftX;
-    i32 leftW = ((colL + 1) << m_shiftX) - m_originX;
-    i32 rowT = m_originY >> m_shiftY;
-    i32 topH = ((rowT + 1) << m_shiftY) - m_originY;
-    i32 colR = m_extentX >> m_shiftX;
-    i32 rightW = m_extentX - (colR << m_shiftX) + 1;
-    i32 rowB = m_extentY >> m_shiftY;
-    i32 botH = m_extentY - (rowB << m_shiftY) + 1;
+    i32 colL = m_viewRect.left >> m_shiftX;
+    i32 leftW = ((colL + 1) << m_shiftX) - m_viewRect.left;
+    i32 rowT = m_viewRect.top >> m_shiftY;
+    i32 topH = ((rowT + 1) << m_shiftY) - m_viewRect.top;
+    i32 colR = m_viewRect.right >> m_shiftX;
+    i32 rightW = m_viewRect.right - (colR << m_shiftX) + 1;
+    i32 rowB = m_viewRect.bottom >> m_shiftY;
+    i32 botH = m_viewRect.bottom - (rowB << m_shiftY) + 1;
     i32 nCols = colR - colL - 1;
     i32 nRows = rowB - rowT - 1;
 
@@ -687,7 +693,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
         return 0;
     }
 
-    obj->Construct(OwnerMgr(), id, 0);
+    new (obj) CWwdGameObjBaseCtor(reinterpret_cast<i32>(OwnerMgr()), id, 0);
 
     // Construct the embedded sub-object at +0x1A0, then re-stamp both vtables (the
     // base ctors leave a base vtable; ReadPlaneObjects promotes both to their
@@ -747,9 +753,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // Grid bounds check on x/y; failure deletes the object and returns the bytes
     // consumed so far (so the caller still advances over the bad record).
     if (x < 0 || x >= m_wrapW || y < 0 || y >= m_wrapH) {
-        reinterpret_cast<WwdRetailSlot16Facet*>(obj)->Delete(
-            1
-        ); // retail BARE scalar-delete call (no null guard - plain `delete` adds one)
+        delete obj;
         return static_cast<i32>((strCursor - reinterpret_cast<const char*>(src)));
     }
 
@@ -764,17 +768,13 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     }
 
     if (!loaded) {
-        reinterpret_cast<WwdRetailSlot16Facet*>(obj)->Delete(
-            1
-        ); // retail BARE scalar-delete call (no null guard - plain `delete` adds one)
+        delete obj;
         return static_cast<i32>((strCursor - reinterpret_cast<const char*>(src)));
     }
 
     // Run the object's load virtual (reads the fixed record into the object).
     if (obj->Setup(static_cast<i32>(logicLen), id, reinterpret_cast<i32>(strCursor), id) == 0) {
-        reinterpret_cast<WwdRetailSlot16Facet*>(obj)->Delete(
-            1
-        ); // retail BARE scalar-delete call (no null guard - plain `delete` adds one)
+        delete obj;
         return 0;
     }
 
@@ -782,9 +782,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
 
     AnimWorkerObj* anim = obj->m_7c;
     if (anim == 0) {
-        reinterpret_cast<WwdRetailSlot16Facet*>(obj)->Delete(
-            1
-        ); // retail BARE scalar-delete call (no null guard - plain `delete` adds one)
+        delete obj;
         return 0;
     }
 
@@ -945,7 +943,7 @@ i32 CDDrawWorkerHost::CenterScrollA() {
     if (flags & 0x4) {
         x = static_cast<i32>(m_scaledX);
     } else {
-        x = (m_originX + m_extentX) / 2 + 1;
+        x = (m_viewRect.left + m_viewRect.right) / 2 + 1;
     }
 
     i32 y;
@@ -953,7 +951,7 @@ i32 CDDrawWorkerHost::CenterScrollA() {
         y = static_cast<i32>(m_scaledY);
         return scroll->ScrollTo(x, y);
     }
-    y = (m_originY + m_extentY) / 2 + 1;
+    y = (m_viewRect.top + m_viewRect.bottom) / 2 + 1;
     return scroll->ScrollTo(x, y);
 }
 
@@ -972,7 +970,7 @@ i32 CDDrawWorkerHost::CenterScrollB() {
     if (flags & 0x4) {
         x = static_cast<i32>(m_scaledX);
     } else {
-        x = (m_extentX + m_originX) / 2 + 1;
+        x = (m_viewRect.right + m_viewRect.left) / 2 + 1;
     }
 
     i32 y;
@@ -980,7 +978,7 @@ i32 CDDrawWorkerHost::CenterScrollB() {
         y = static_cast<i32>(m_scaledY);
         return scroll->Relocate(x, y);
     }
-    y = (m_extentY + m_originY) / 2 + 1;
+    y = (m_viewRect.bottom + m_viewRect.top) / 2 + 1;
     return scroll->Relocate(x, y);
 }
 
@@ -1010,26 +1008,26 @@ void CDDrawWorkerHost::InitScrollRects() {
     i32 dc = g->m_rectCHeight;
 
     CWwdSpatialMgr* s = m_scroll;
-    s->m_rect0Left = 0;
-    s->m_rect0Top = 0;
-    s->m_rect0Right = c8 - 1;
-    s->m_rect0Bottom = cc - 1;
+    s->m_rect0.left = 0;
+    s->m_rect0.top = 0;
+    s->m_rect0.right = c8 - 1;
+    s->m_rect0.bottom = cc - 1;
     s->m_org0x = c8 / 2;
     s->m_org0y = cc / 2;
 
     s = m_scroll;
-    s->m_rect1Left = 0;
-    s->m_rect1Top = 0;
-    s->m_rect1Right = d0 - 1;
-    s->m_rect1Bottom = d4 - 1;
+    s->m_rect1.left = 0;
+    s->m_rect1.top = 0;
+    s->m_rect1.right = d0 - 1;
+    s->m_rect1.bottom = d4 - 1;
     s->m_org1x = d0 / 2;
     s->m_org1y = d4 / 2;
 
     s = m_scroll;
-    s->m_rect2Left = 0;
-    s->m_rect2Top = 0;
-    s->m_rect2Right = d8 - 1;
-    s->m_rect2Bottom = dc - 1;
+    s->m_rect2.left = 0;
+    s->m_rect2.top = 0;
+    s->m_rect2.right = d8 - 1;
+    s->m_rect2.bottom = dc - 1;
     s->m_org2x = d8 / 2;
     s->m_org2y = dc / 2;
 
@@ -1198,14 +1196,14 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     s->Write(&m_scaledY, 4);
     s->Write(&m_scaleX, 4);
     s->Write(&m_scaleY, 4);
-    s->Write(&m_originX, 0x10);
+    s->Write(&m_viewRect.left, 0x10);
     s->Write(&m_zBound, 4);
     s->Write(&m_snappedX, 4);
     s->Write(&m_snappedY, 4);
     s->Write(&m_94, 4);
     s->Write(&m_98, 4);
 
-    i32 gridSize = m_gridW * m_gridH * 4;
+    i32 gridSize = static_cast<u32>(m_gridW) * m_gridH * 4;
     s->Write(&gridSize, 4);
     s->Write(m_tileGrid, gridSize);
 
@@ -1234,7 +1232,7 @@ i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
     s->Read(&m_scaledY, 4);
     s->Read(&m_scaleX, 4);
     s->Read(&m_scaleY, 4);
-    s->Read(&m_originX, 0x10);
+    s->Read(&m_viewRect.left, 0x10);
     s->Read(&m_zBound, 4);
     s->Read(&m_snappedX, 4);
     s->Read(&m_snappedY, 4);
@@ -1243,7 +1241,7 @@ i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
 
     i32 gridSize = 0;
     s->Read(&gridSize, 4);
-    if (gridSize != m_gridH * m_gridW * 4) {
+    if (gridSize != GridByteSize(m_gridH, m_gridW)) {
         return 0;
     }
     s->Read(m_tileGrid, gridSize);

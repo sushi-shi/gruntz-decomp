@@ -73,8 +73,8 @@ i32 CInGameText::Update() {
     CWwdGameObjectA* o = m_object;
     i32 x = o->m_screenX;
     i32 y = o->m_screenY;
-    if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
-        && y < g_gameReg->m_viewOriginB && y >= g_gameReg->m_viewOriginT) {
+    if (x < g_gameReg->m_viewBounds.right && x >= g_gameReg->m_viewBounds.left
+        && y < g_gameReg->m_viewBounds.bottom && y >= g_gameReg->m_viewBounds.top) {
         CDDrawSubMgrLeafScan* set = g_gameReg->m_world->m_soundRegistry;
         if (set->m_emitGate == 0) {
             void* res_ob = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&

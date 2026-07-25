@@ -227,48 +227,17 @@ i32 CActionOptionsMenuBar::Render() {
     i32 sy = m_screenY;
     (g_gameReg->m_world->m_level->m_mainPlane)->WrapCoord(&sx, &sy);
 
-    i32 r[4];
-    i32* src = reinterpret_cast<i32*>(&g_gameReg->m_world->m_level->m_planeCtx);
-    i32 ctx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
-    r[0] = src[0];
-    r[1] = src[1];
-    r[2] = src[2];
-    r[3] = src[3];
-    m_frame->RenderFrameClipped(
-        reinterpret_cast<void*>(ctx),
-        reinterpret_cast<void*>(sy),
-        reinterpret_cast<void*>(sx),
-        r,
-        0
-    );
+    RECT r = g_gameReg->m_world->m_level->m_planeCtx;
+    CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
+    m_frame->RenderFrameClipped(ctx, sy, sx, &r, 0);
 
     if (m_button0Frame) {
-        i32* src2 = reinterpret_cast<i32*>(&g_gameReg->m_world->m_level->m_planeCtx);
-        r[0] = src2[0];
-        r[1] = src2[1];
-        r[2] = src2[2];
-        r[3] = src2[3];
-        m_frame->RenderFrameClipped(
-            reinterpret_cast<void*>(ctx),
-            reinterpret_cast<void*>((sy - 0xc)),
-            reinterpret_cast<void*>((sx + 2)),
-            r,
-            0
-        );
+        r = g_gameReg->m_world->m_level->m_planeCtx;
+        m_frame->RenderFrameClipped(ctx, sy - 0xc, sx + 2, &r, 0);
     }
     if (m_button1Frame) {
-        i32* src3 = reinterpret_cast<i32*>(&g_gameReg->m_world->m_level->m_planeCtx);
-        r[0] = src3[0];
-        r[1] = src3[1];
-        r[2] = src3[2];
-        r[3] = src3[3];
-        m_frame->RenderFrameClipped(
-            reinterpret_cast<void*>(ctx),
-            reinterpret_cast<void*>((sy + 0x10)),
-            reinterpret_cast<void*>((sx + 2)),
-            r,
-            0
-        );
+        r = g_gameReg->m_world->m_level->m_planeCtx;
+        m_frame->RenderFrameClipped(ctx, sy + 0x10, sx + 2, &r, 0);
     }
     return 1;
 }

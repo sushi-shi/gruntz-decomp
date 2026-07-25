@@ -441,8 +441,8 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     if (id != 0) {
         CWwdGameObjectA* hud = m_object;
         CGruntzMgr* g = g_gameReg;
-        if ((hud->m_screenX < g->m_viewOriginR && hud->m_screenX >= g->m_viewOriginL
-             && hud->m_screenY < g->m_viewOriginB && hud->m_screenY >= g->m_viewOriginT)
+        if ((hud->m_screenX < g->m_viewBounds.right && hud->m_screenX >= g->m_viewBounds.left
+             && hud->m_screenY < g->m_viewBounds.bottom && hud->m_screenY >= g->m_viewBounds.top)
             || a2 != 0) {
             g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), id, -1, 0, -1, -1);
         }

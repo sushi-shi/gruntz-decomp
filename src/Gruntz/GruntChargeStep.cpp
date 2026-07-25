@@ -130,9 +130,7 @@ i32 CGrunt::ChargeStep() {
                         // the visible-rect gate: play the "engaged" voice only when this
                         // grunt is on screen (the rect sits 0x40 into the viewport object)
                         i32 los = CGameLevel::PointInBounds(
-                            reinterpret_cast<const LevelCoordRect*>(
-                                &mgr->m_world->m_level->m_mainPlane->m_originX
-                            ),
+                            &mgr->m_world->m_level->m_mainPlane->m_viewRect,
                             mp->m_screenX,
                             mp->m_screenY
                         );

@@ -121,10 +121,10 @@ CGrunt* CTriggerMgr::FindNearestInRow(CGrunt* g) {
 RVA(0x00078060, 0x18d)
 void CTriggerMgr::HudRect(RECT r, i32 flag) {
     CGameLevel* view = m_world->m_level;
-    r.left += view->m_mainPlane->m_originX - view->m_planeCtx.left;
-    r.top += view->m_mainPlane->m_originY - view->m_planeCtx.top;
-    r.right += view->m_mainPlane->m_originX - view->m_planeCtx.left;
-    r.bottom += view->m_mainPlane->m_originY - view->m_planeCtx.top;
+    r.left += view->m_mainPlane->m_viewRect.left - view->m_planeCtx.left;
+    r.top += view->m_mainPlane->m_viewRect.top - view->m_planeCtx.top;
+    r.right += view->m_mainPlane->m_viewRect.left - view->m_planeCtx.left;
+    r.bottom += view->m_mainPlane->m_viewRect.top - view->m_planeCtx.top;
     for (i32 i = 0; i < 4; i++) {
         for (i32 j = 0; j < 15; j++) {
             CGrunt* g = m_grid[j];
@@ -815,8 +815,8 @@ i32 CTriggerMgr::DestroyGroup(i32 a1, i32 a2, i32 a3, i32 a4) {
     }
     CGameLevel* view = m_world->m_level;
     CDDrawWorkerHost* pl = view->m_mainPlane;
-    i32 ox = pl->m_originX - view->m_planeCtx.top + a4;
-    i32 oy = pl->m_originY - view->m_planeCtx.left + a3;
+    i32 ox = pl->m_viewRect.left - view->m_planeCtx.top + a4;
+    i32 oy = pl->m_viewRect.top - view->m_planeCtx.left + a3;
     this->PlaceObjectFull(oy, ox);
     return 1;
 }
@@ -871,8 +871,8 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
         g_buteMgr.GetIntDef(const_cast<char*>(static_cast<const char*>(name)), "WarpStone", 0);
     i32 hx = col;
     i32 hy = row;
-    if (hy >= g_gameReg->m_viewOriginR || hy < g_gameReg->m_viewOriginL
-        || hx >= g_gameReg->m_viewOriginB || hx < g_gameReg->m_viewOriginT) {
+    if (hy >= g_gameReg->m_viewBounds.right || hy < g_gameReg->m_viewBounds.left
+        || hx >= g_gameReg->m_viewBounds.bottom || hx < g_gameReg->m_viewBounds.top) {
         lvl->ResetGoals(hy, hx);
     }
     // the main plane's coord wrap (thunk 0x295a -> ?WrapCoord@CDDrawWorkerHost@@ @0xa000;
@@ -1587,12 +1587,13 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
             alt = cell->m_19c;
         }
         if (alt == 0x13) {
-            g_gameReg->m_cmdGrid->Spawn(cell->m_lastTilePxX, cell->m_lastTilePxY, 0, 0, 0, 2, 1);
+            g_gameReg->m_cmdGrid
+                ->ResetGroup(cell->m_lastTilePxX, cell->m_lastTilePxY, 0, 0, 0, 2, 1);
         }
     } else if (kind == 3) {
         if (cell->m_198 == 0x1e) {
             CGameObject* o = cell->m_object;
-            g_gameReg->m_cmdGrid->Spawn(o->m_screenX, o->m_screenY, 0, 0, 0, 3, 1);
+            g_gameReg->m_cmdGrid->ResetGroup(o->m_screenX, o->m_screenY, 0, 0, 0, 3, 1);
         }
     } else if (kind != 0) {
         i32 v = kind + kPendingFxIdBase;
@@ -1730,7 +1731,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             POINT pt;
             pt.x = pxX;
             pt.y = pxY;
-            if (!PtInRect(reinterpret_cast<const RECT*>(&g_gameReg->m_viewOriginL), pt)) {
+            if (!PtInRect(&g_gameReg->m_viewBounds, pt)) {
                 continue;
             }
             CWwdGameObjectA* spr =
@@ -2059,7 +2060,7 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
         k = src->m_19c;
     }
     i32 vis = src->m_198;
-    this->Reset3(col, k, vis); // prep self-call 0x7ec96
+    this->CellDispatch(col, row, 0, a18);
     CDDrawChildGroup* fac = m_world->m_childGroup;
     CWwdGameObjectA* sprite = fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
     if (sprite == 0) {

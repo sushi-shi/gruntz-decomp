@@ -177,7 +177,7 @@ i32 CMenuItem::Notify(void*) {
 }
 
 RVA(0x001855f0, 0x94)
-i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
+i32 CMenuItem::Place(CDDrawSurfacePair* target, i32 x, i32 y) {
     CDDrawWorker* page = static_cast<CDDrawWorker*>(m_sprite);
     if (!page) {
         return 0;
@@ -200,12 +200,7 @@ i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
     if (!row) {
         return 0;
     }
-    row->RenderFrame(
-        reinterpret_cast<void*>(ctx),
-        reinterpret_cast<void*>(py),
-        reinterpret_cast<void*>(px),
-        static_cast<void*>(0)
-    );
+    row->RenderFrame(target, py, px, 0);
     m_hitLeft = py - row->m_anchorX;
     m_hitRight = py + row->m_anchorX;
     m_hitTop = px - row->m_anchorY;
@@ -325,7 +320,7 @@ i32 CMenuItem2::Notify(void* arg) {
 // (ebx vs ebp) holds the py/px coordinate pair -- retail pins py(m_44) in ebp, the
 // recompile in ebx. Identical not-source-steerable tie as CMenuItem::Place (0x1855f0).
 RVA(0x001858d0, 0x72)
-i32 CMenuItem2::Place(i32 ctx, i32 x, i32 y) {
+i32 CMenuItem2::Place(CDDrawSurfacePair* target, i32 x, i32 y) {
     i32 py, px;
     if (m_fixedX != static_cast<i32>(0xeeeeeeee)) {
         py = m_fixedX;
@@ -338,12 +333,7 @@ i32 CMenuItem2::Place(i32 ctx, i32 x, i32 y) {
     if (!f) {
         return 0;
     }
-    f->RenderFrame(
-        reinterpret_cast<void*>(ctx),
-        reinterpret_cast<void*>(py),
-        reinterpret_cast<void*>(px),
-        0
-    );
+    f->RenderFrame(target, py, px, 0);
     m_hitLeft = py - f->m_anchorX;
     m_hitRight = py + f->m_anchorX;
     m_hitTop = px - f->m_anchorY;

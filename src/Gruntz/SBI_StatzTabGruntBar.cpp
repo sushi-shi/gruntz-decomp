@@ -1,7 +1,10 @@
 #define SBI_DTOR_CHAIN              // enable the inline base-dtor body (see StatusBarItem.h)
-#include <Gruntz/GameRegStatzPtr.h> // g_gameReg under the Statz facet view (TU-private)
+#include <Gruntz/GameRegMfcPtr.h>
 #include <rva.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Mfc.h>
 #include <Ints.h>
@@ -52,54 +55,54 @@ i32 CSBI_StatzTabGruntBar::Refresh(i32 arg) {
 // g_frameTime DIR32. Logic complete; deferred to the final sweep (whole-hierarchy model).
 // 0xea4e0: draw the tab (slot +0x14). Blit each column's background glyph (status/
 // ability/override/select at x-offsets 0/0x14/0x28/0x3c) and, overlaid on it, the
-// resolved value glyph - all onto g_gameReg->m_30->m_4->m_14 (the active render
+// resolved value glyph - all onto the world's active back pair
 // context) at the item's screen anchor + each glyph's own draw anchor. The four
 // background glyphs + select-value are gated by m_28 (a countdown); the timer glyph
 // always draws. Returns 1.
 RVA(0x000ea4e0, 0x172)
 i32 CSBI_StatzTabGruntBar::Render() {
-    void* ctx = g_gameReg->m_30->m_4->m_14;
+    CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
     if (m_28 > 0) {
         m_28--;
         m_statusGlyph->RenderFrame(
             ctx,
-            reinterpret_cast<void*>((m_rect14.m_0 + m_statusGlyph->m_anchorX)),
-            reinterpret_cast<void*>((m_rect14.m_4 + m_statusGlyph->m_anchorY)),
+            m_rect14.m_0 + m_statusGlyph->m_anchorX,
+            m_rect14.m_4 + m_statusGlyph->m_anchorY,
             0
         );
         m_abilityGlyph->RenderFrame(
             ctx,
-            reinterpret_cast<void*>((m_rect14.m_0 + m_abilityGlyph->m_anchorX + 0x14)),
-            reinterpret_cast<void*>((m_rect14.m_4 + m_abilityGlyph->m_anchorY)),
+            m_rect14.m_0 + m_abilityGlyph->m_anchorX + 0x14,
+            m_rect14.m_4 + m_abilityGlyph->m_anchorY,
             0
         );
         m_overrideGlyph->RenderFrame(
             ctx,
-            reinterpret_cast<void*>((m_rect14.m_0 + m_overrideGlyph->m_anchorX + 0x28)),
-            reinterpret_cast<void*>((m_rect14.m_4 + m_overrideGlyph->m_anchorY)),
+            m_rect14.m_0 + m_overrideGlyph->m_anchorX + 0x28,
+            m_rect14.m_4 + m_overrideGlyph->m_anchorY,
             0
         );
         if (m_selectKey != 0) {
             m_selectKey->RenderFrame(
                 ctx,
-                reinterpret_cast<void*>((m_rect14.m_0 + m_selectKey->m_anchorX + 0x3c)),
-                reinterpret_cast<void*>((m_rect14.m_4 + m_selectKey->m_anchorY)),
+                m_rect14.m_0 + m_selectKey->m_anchorX + 0x3c,
+                m_rect14.m_4 + m_selectKey->m_anchorY,
                 0
             );
         }
         if (m_statusGlyphLatched != 0) {
             m_statusGlyphLatched->RenderFrame(
                 ctx,
-                reinterpret_cast<void*>((m_rect14.m_0 + m_statusGlyph->m_anchorX + 1)),
-                reinterpret_cast<void*>((m_rect14.m_4 + m_statusGlyph->m_anchorY)),
+                m_rect14.m_0 + m_statusGlyph->m_anchorX + 1,
+                m_rect14.m_4 + m_statusGlyph->m_anchorY,
                 0
             );
         }
         if (m_abilityGlyphLatched != 0) {
             m_abilityGlyphLatched->RenderFrame(
                 ctx,
-                reinterpret_cast<void*>((m_rect14.m_0 + m_abilityGlyph->m_anchorX + 0x14)),
-                reinterpret_cast<void*>((m_rect14.m_4 + m_abilityGlyph->m_anchorY)),
+                m_rect14.m_0 + m_abilityGlyph->m_anchorX + 0x14,
+                m_rect14.m_4 + m_abilityGlyph->m_anchorY,
                 0
             );
         }
@@ -110,16 +113,16 @@ i32 CSBI_StatzTabGruntBar::Render() {
         if (m_overrideGlyphLatched != 0) {
             m_overrideGlyphLatched->RenderFrame(
                 ctx,
-                reinterpret_cast<void*>((m_rect14.m_0 + m_overrideGlyph->m_anchorX + 0x28 + adj)),
-                reinterpret_cast<void*>((m_rect14.m_4 + m_overrideGlyph->m_anchorY)),
+                m_rect14.m_0 + m_overrideGlyph->m_anchorX + 0x28 + adj,
+                m_rect14.m_4 + m_overrideGlyph->m_anchorY,
                 0
             );
         }
         if (m_selectGlyph != 0) {
             m_selectGlyph->RenderFrame(
                 ctx,
-                reinterpret_cast<void*>((m_rect14.m_0 + m_selectKey->m_anchorX + 0x3b)),
-                reinterpret_cast<void*>((m_rect14.m_4 + m_selectKey->m_anchorY)),
+                m_rect14.m_0 + m_selectKey->m_anchorX + 0x3b,
+                m_rect14.m_4 + m_selectKey->m_anchorY,
                 0
             );
         }
@@ -127,8 +130,8 @@ i32 CSBI_StatzTabGruntBar::Render() {
     if (m_timerGlyph != 0) {
         m_timerGlyph->RenderFrame(
             ctx,
-            reinterpret_cast<void*>((m_rect14.m_0 + m_timerGlyph->m_anchorX)),
-            reinterpret_cast<void*>((m_rect14.m_4 + m_timerGlyph->m_anchorY)),
+            m_rect14.m_0 + m_timerGlyph->m_anchorX,
+            m_rect14.m_4 + m_timerGlyph->m_anchorY,
             0
         );
     }
@@ -138,10 +141,8 @@ i32 CSBI_StatzTabGruntBar::Render() {
 RVA(0x000ea6c0, 0x237)
 i32 CSBI_StatzTabGruntBar::Update() {
     i32 dirty = 0;
-    CStatzSelHost* table = g_gameReg->m_unitTable;
-    CStatzGruntRec* unit = *reinterpret_cast<CStatzGruntRec**>(
-        (reinterpret_cast<char*>(table) + (m_unitCol + 15 * m_unitRow) * 4 + 0x1c)
-    );
+    CTriggerMgr* table = g_gameReg->m_cmdGrid;
+    CGrunt* unit = table->m_grid[m_unitCol + TM_GRID_COLS * m_unitRow];
 
     i32 statusVal;
     i32 abilityVal; // ebx
@@ -167,31 +168,30 @@ i32 CSBI_StatzTabGruntBar::Update() {
         }
 
         // ability + override
-        i32 level = unit->m_abilityLevel;
+        i32 level = unit->m_entranceReason;
         abilityVal = -1;
         overrideVal = -1;
         selectVal = 0;
-        i32 cap = (level > 0x16) ? unit->m_abilityCap : level;
+        i32 cap = (level > 0x16) ? unit->m_19c : level;
         if (cap != 0) {
-            abilityVal = (level > 0x16) ? unit->m_abilityCap : level;
+            abilityVal = (level > 0x16) ? unit->m_19c : level;
             if (abilityVal == 3) {
-                abilityVal = unit->m_abilitySub + 0x11;
+                abilityVal = unit->m_194 + 0x11;
             }
         }
-        i32 badge = unit->m_badge;
+        i32 badge = unit->m_198;
         if (badge != 0) {
             overrideVal = badge;
         }
 
         // selection-list glyph
         if (m_selectKey != 0) {
-            selectVal =
-                (reinterpret_cast<CTriggerMgr*>(table))->SelectionListFind(m_unitCol, m_unitRow);
+            selectVal = table->SelectionListFind(m_unitCol, m_unitRow);
         }
 
         // self-bumping anim timer
         timerVal = m_timerValue;
-        if (unit->m_alive == 0) {
+        if (unit->m_arrived == 0) {
             timerVal = -1;
         } else if (static_cast<i64>(static_cast<u32>(g_frameTime))
                        - *reinterpret_cast<i64*>(&m_timerAnchorLo)

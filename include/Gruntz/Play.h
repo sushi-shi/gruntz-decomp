@@ -221,7 +221,6 @@ public:
     i32 OnRegion2(i32 z); // (THIS TU)
     i32 OnRegion3(i32 z); // (THIS TU)
     i32 OnRegion4(i32 z); // (THIS TU)
-    void OnRegion5();
 
     // The viewport-clamp sub-steps (THIS TU): shrink/clamp the active viewport then
     // push it down the draw chain. Both share a common apply-tail.
@@ -248,7 +247,6 @@ public:
     // Render-carcass leaves still unresolved (CPlay backlog; carcass-only callers):
     // The two CLightFxRender thunks 0x1fa0/0x14dd are dispatched straight on
     // m_lightFx: Resize(delta,0) + ComputeRect(m_c->m_drawTarget->m_backPair, &rc).
-    void RegCue(void* sink, i32 wParam); // (reg->m_60)
 
     // --- the trace-discovered CPlay sub-steps reconstructed in this TU ---
     void ApplyGameOptions(); // 0x036be0 (options-dialogs TU: VideoConfig.cpp)
@@ -604,21 +602,10 @@ public:
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();
 
-struct StateMgrBZ {
-    i32 m_0, m_4, m_8; // +0x00..+0x08
-    char m_padc[0x10 - 0xc];
-    i32 m_10, m_14; // +0x10, +0x14
-    i32 m_18;       // +0x18  flags
-    i32 Flush();    // 0x385e0 (?Flush@) (the +0x578 state-mgr flush)
-};
-SIZE_UNKNOWN();
-SIZE_UNKNOWN();
-
 extern "C" {
     extern i32 g_lastNow;        // 0x245580 (-> mirror g_killCueClock; also in <Rez/FrameClock.h>)
     extern "C" i32 g_frameDelta; // 0x245584 (frame delta cap; canonical decl-shape)
     extern "C" u32 g_frameTime;  // 0x245588 (the running game clock)
-    extern StateMgrBZ* g_spawnConfig;  // the dev/render-state singleton (DispatchHudClick)
     extern "C" i32 g_curPlayer;        // a default cue/message wParam
     extern "C" u32 g_killCueClock;     // draw-clock mirror
     extern "C" u32 g_engineFrameDelta; // draw-delta mirror

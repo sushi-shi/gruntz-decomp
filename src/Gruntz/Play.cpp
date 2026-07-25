@@ -1,5 +1,6 @@
 #include <Gruntz/GameObjectFactory.h> // the real Create* registrants (ex char[] thunk views)
 #include <Gruntz/Play.h>
+#include <Gruntz/StateMgrBZ.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr; ex the CGameRegistry view)
 #include <Rez/FrameClock.h>       // g_lastNow / g_frameTicks (frame-clock band)
 #include <Rez/RezAlloc.h>         // retail operator-new/delete allocator entry points
@@ -292,8 +293,8 @@ i32 CPlay::Render() {
             m_world->m_drawTarget->m_overlayPair
         ); // vtbl[+0x34]
         m_mgr->m_inputState->Retune( // 0x1a7d -> CWorldSoundSet::Retune (positional audio)
-            m_world->m_level->m_mainPlane->m_originX,
-            m_world->m_level->m_mainPlane->m_originY
+            m_world->m_level->m_mainPlane->m_viewRect.left,
+            m_world->m_level->m_mainPlane->m_viewRect.top
         );
         if (m_world->m_soundStream != 0) { // frame profiler
             u32 t = timeGetTime();
@@ -323,7 +324,10 @@ i32 CPlay::Render() {
         }
 
         m_frameMarker->Tick(static_cast<i32>(g_frameDelta));    // 0x3710  CTimer::Tick
-        m_frameMarker->Draw(0, static_cast<i32>(g_frameDelta)); // 0x27a2  CTimer::Draw
+        m_frameMarker->Draw(
+            static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair),
+            1
+        ); // 0x27a2  CTimer::Draw
         m_world->m_drawTarget->m_frontPair->m_surface->Flip(0); // 0x13e850  CDDSurface::Flip
         UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);      // 0x2356
         winapi_0d0b30_CopyRect(reinterpret_cast<i32>(m_world->m_drawTarget->m_backPair)); // 0x1519
@@ -352,7 +356,7 @@ i32 CPlay::Render() {
         if (m_levelId == CURSOR_FLAILINGGRUNT) { // booty/flailing-grunt one-shot
             u32 elapsed = g_frameTime - static_cast<u32>(m_bootyTimerLo);
             if (elapsed >= static_cast<u32>(m_bootyInterval)) {
-                RegCue(g_gameReg->m_cueSink, 0x33e); // the +0x60 cue-sink cue
+                g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x33e, -1, 1, -1, -1);
                 m_bootyInterval = BOOTY_INTERVAL_MS;
                 m_bootyIntervalHi = 0;
                 m_bootyTimerLo = static_cast<i32>(g_frameTime);
@@ -454,8 +458,8 @@ i32 CPlay::Render() {
         }
 
         m_mgr->m_inputState->Retune( // world sound retune off the plane scroll origin
-            m_world->m_level->m_mainPlane->m_originX,
-            m_world->m_level->m_mainPlane->m_originY
+            m_world->m_level->m_mainPlane->m_viewRect.left,
+            m_world->m_level->m_mainPlane->m_viewRect.top
         );
         if (m_world->m_drawTarget->m_backPair == 0) {
             return 1;
@@ -473,7 +477,10 @@ i32 CPlay::Render() {
                     g_gameReg->m_cmdGrid->ClearRowAndRefresh(g_curPlayer);
                 }
                 // reset the m_frameMarker marker block (+0x30..0x4c):
-                m_frameMarker->Draw(0, 0);
+                m_frameMarker->Draw(
+                    static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair),
+                    0
+                );
                 m_guts->SetMode(0);
                 m_snapshotActive = 0;
                 // walk the level tree (CMapPtrToPtr::Lookup):
@@ -504,10 +511,12 @@ i32 CPlay::Render() {
             // (CString temp dtor runs here under the EH frame)
         }
 
-        // --- the four scroll-region one-shots (+0x430/+0x440/+0x450/+0x460) ---
-        m_frameMarker->Draw(0, m_frameMarker != 0); // reset
-        OnRegion5();
-        Eng_FrameTimerStep(w->m_cmdGrid, 0); // m_4->m_68 (carcass; unresolved callee)
+        CDDrawSurfacePair* view =
+            static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair);
+        m_frameMarker->Draw(view, 0);
+        m_hitTest->LoadChatBoxSprite(view);
+        DrawDebugStats();
+        m_mgr->m_cmdGrid->OverlayRelease();
 
         if (m_winLoseBanner != 0 && m_guts->m_toggleActive == 0 && m_guts->m_toggleHandle == 0) {
             // win/lose banner timer (+0x3f8 again, 0x1f4 ms):
@@ -592,7 +601,10 @@ alt2:
             if (m_guts->m_toggleActive == 0 && m_guts->m_toggleHandle == 0) {
                 PlayCueAt(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, 0); // win/lose
             }
-            m_frameMarker->Draw(1, 0);
+            m_frameMarker->Draw(
+                static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair),
+                1
+            );
         } else {
             // ---- the active short frame: entity step + cues ----
             if (m_stepCountdown > 0) {
@@ -608,7 +620,10 @@ alt2:
                 m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
                 Eng_FrameTimerStep(m_guts, 0x32); // (carcass; unresolved callee)
                 PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, 0); // (cueId=m_lastCueId)
-                m_frameMarker->Draw(1, 0);
+                m_frameMarker->Draw(
+                    static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair),
+                    1
+                );
             }
             if (m_ambientInitDone == 0) {
                 // the same AMBIENT level-init one-shot (+0x348):
@@ -2289,8 +2304,10 @@ void CPlay::StepScroll() {
     CGameLevel* v = m_world->m_level;
     CDDrawWorkerHost* geom = v->m_mainPlane;
 
-    i32 y = m_cursorY + (geom->m_originY - v->m_planeCtx.top);  // [edx+4]-m_14; +=m_cursorY
-    i32 x = geom->m_originX + (m_cursorX - v->m_planeCtx.left); // [edx]; +=m_cursorX-m_10
+    i32 y =
+        m_cursorY + (geom->m_viewRect.top - v->m_planeCtx.top); // [edx+4]-m_14; +=m_cursorY
+    i32 x = geom->m_viewRect.left
+        + (m_cursorX - v->m_planeCtx.left); // [edx]; +=m_cursorX-m_10
 
     y = (y & ~0x1f) + 0x10; // align down 0x20 (and al,0xe0); + 0x10
     x = (x & ~0x1f) + 0x10; // align down 0x20 (and edi,~0x1f); + 0x10
@@ -2533,8 +2550,8 @@ i32 CPlay::ProfileDeltaFrame() {
     }
     i32 renderMs = static_cast<i32>((tg() - t0));
     m_mgr->m_inputState->Retune( // 0x1a7d -> CWorldSoundSet::Retune (positional audio)
-        m_world->m_level->m_mainPlane->m_originX,
-        m_world->m_level->m_mainPlane->m_originY
+        m_world->m_level->m_mainPlane->m_viewRect.left,
+        m_world->m_level->m_mainPlane->m_viewRect.top
     );
     u32 t2 = tg();
     m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
@@ -2586,8 +2603,8 @@ i32 g_profAccB;
 RVA(0x000c9e40, 0x1d7)
 i32 CPlay::ProfileInputFrame() {
     m_mgr->m_inputState->Retune( // 0x1a7d -> CWorldSoundSet::Retune (positional audio)
-        m_world->m_level->m_mainPlane->m_originX,
-        m_world->m_level->m_mainPlane->m_originY
+        m_world->m_level->m_mainPlane->m_viewRect.left,
+        m_world->m_level->m_mainPlane->m_viewRect.top
     ); // untimed
     DWORD(WINAPI * tg)(void) = ::timeGetTime;
 
@@ -3163,7 +3180,7 @@ i32 CPlay::CanQuickSave() {
 RVA(0x000da440, 0x60)
 i32 CPlay::PostHudRect() {
     if (m_worldReady != 0) {
-        m_mgr->m_cmdGrid->HudRect(m_hudRect, g_spawnConfig->m_18 & 0x20);
+        m_mgr->m_cmdGrid->HudRect(m_hudRect, g_spawnConfig->m_edgeKeys & 0x20);
     }
     m_worldReady = 0;
     m_dragSnapActive = 0;
@@ -3600,7 +3617,7 @@ i32 CPlay::Vslot0f(i32 a, i32 x, i32 y) {
             ->ClearHandle(a, x, y); // 0x13f2 -> CLightFxRender::ClearHandle @0xa9500 (ecx=m_320)
     }
     if (m_worldReady != 0) {
-        m_mgr->m_cmdGrid->HudRect(m_hudRect, g_spawnConfig->m_18 & 0x20);
+        m_mgr->m_cmdGrid->HudRect(m_hudRect, g_spawnConfig->m_edgeKeys & 0x20);
     }
     m_worldReady = 0;
     m_dragSnapActive = 0;
@@ -3690,8 +3707,8 @@ i32 CPlay::Vslot10(i32 msg, i32 x, i32 y) {
     }
 
     CGameLevel* h = m_mgr->m_world->m_level;
-    i32 px = h->m_mainPlane->m_originX - h->m_planeCtx.left + x;
-    i32 py = h->m_mainPlane->m_originY - h->m_planeCtx.top + y;
+    i32 px = h->m_mainPlane->m_viewRect.left - h->m_planeCtx.left + x;
+    i32 py = h->m_mainPlane->m_viewRect.top - h->m_planeCtx.top + y;
     for (i32 i = 0; i < markerCount(); i++) {
         CHitMarker* e = markerData()[i];
         if (e == 0) {
@@ -3868,8 +3885,8 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
             }
         }
         CGameLevel* v = m_world->m_level;
-        i32 wx = v->m_mainPlane->m_originX - v->m_planeCtx.left + x;
-        i32 wy = v->m_mainPlane->m_originY - v->m_planeCtx.top + y;
+        i32 wx = v->m_mainPlane->m_viewRect.left - v->m_planeCtx.left + x;
+        i32 wy = v->m_mainPlane->m_viewRect.top - v->m_planeCtx.top + y;
         m_mgr->m_cmdGrid->PlaceObjectFull(wx, wy); // 0x2ca7 -> @0x78a50
         return 1;
     }
@@ -4101,8 +4118,8 @@ i32 CPlay::Vslot0e(i32 a, i32 x, i32 y) {
         CGruntzMgr* w = m_mgr;
         CGameLevel* geom = w->m_world->m_level;
         CDDrawWorkerHost* cam = geom->m_mainPlane;
-        i32 sx = cam->m_originX - geom->m_planeCtx.left + xr;
-        i32 sy = cam->m_originY - geom->m_planeCtx.top + y;
+        i32 sx = cam->m_viewRect.left - geom->m_planeCtx.left + xr;
+        i32 sy = cam->m_viewRect.top - geom->m_planeCtx.top + y;
         if (m_dragInhibit1 == 0) {
             goto mode_36c;
         }
@@ -4173,8 +4190,8 @@ mode_36c:
         // inside the world rect: place a waypoint through the trigger grid
         CGameLevel* ds = m_world->m_level;
         CDDrawWorkerHost* cam = ds->m_mainPlane;
-        i32 wx = cam->m_originX - ds->m_planeCtx.left + xr;
-        i32 wy = cam->m_originY - ds->m_planeCtx.top + y;
+        i32 wx = cam->m_viewRect.left - ds->m_planeCtx.left + xr;
+        i32 wy = cam->m_viewRect.top - ds->m_planeCtx.top + y;
         i32 tok = *reinterpret_cast<char*>(&m_cursorFrame);
         if (g_gameReg->m_cmdGrid->CellHitTest(wx, wy, &x, &y, tok) != 0) {
             w->m_cmdSubMgr->EnqueueSingle(
@@ -4339,9 +4356,9 @@ drag_box: {
         goto ret1;
     }
     m_mgr->m_cmdGrid
-        ->ResetCell(slot38, slot38, g_spawnConfig->m_18 & 0x20, 0); // 0x29cd -> @0x6bfd0
+        ->ResetCell(slot38, slot38, g_spawnConfig->m_edgeKeys & 0x20, 0); // 0x29cd -> @0x6bfd0
     if (a == g_curPlayer) {
-        if (0 != (g_spawnConfig->m_18 & 0x20)) {
+        if (0 != (g_spawnConfig->m_edgeKeys & 0x20)) {
             goto ret1;
         }
         picked->OnStruck(1); // 0x1f4b -> CGrunt::OnStruck @0x588f0
@@ -4438,8 +4455,8 @@ i32 CPlay::Vslot11(i32 a, i32 x, i32 y) {
         && y >= ph->m_planeCtx.top) {
         CGameLevel* ds = m_world->m_level;
         CDDrawWorkerHost* geom = ds->m_mainPlane;
-        i32 rawX = geom->m_originX - ds->m_planeCtx.left + x;
-        i32 rawY = geom->m_originY - ds->m_planeCtx.top + y;
+        i32 rawX = geom->m_viewRect.left - ds->m_planeCtx.left + x;
+        i32 rawY = geom->m_viewRect.top - ds->m_planeCtx.top + y;
         i32 snapX = (rawX & ~0x1f) + 0x10;
         i32 snapY = (rawY & ~0x1f) + 0x10;
         m_tileClickX = snapX;
@@ -4977,8 +4994,8 @@ i32 CPlay::LoadScrollSpeedOptions() {
          + g_scrollMinSpeed)
     );
     CDDrawWorkerHost* g = w->m_world->m_level->m_mainPlane;
-    i32 sx = g->m_originX;
-    i32 sy = g->m_originY;
+    i32 sx = g->m_viewRect.left;
+    i32 sy = g->m_viewRect.top;
     i32 extentX = w->m_modeW;
     i32 extentY = w->m_modeH;
 

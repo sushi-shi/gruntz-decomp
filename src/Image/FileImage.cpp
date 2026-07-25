@@ -235,11 +235,10 @@ i32 CDDSurface::Load(i32 a, char* name, i32 c) {
     if (p->m_e != 8) {
         return 0;
     }
-    memset(m_desc, 0, 0x6c);
-    m_descSize = 0x6c;
-    *reinterpret_cast<i32*>((m_desc + 0x68)) =
-        c | 0x40;                              // +0x78 control word (the BlitSurf a5 slot)
-    *reinterpret_cast<i32*>((m_desc + 4)) = 7; // dwFlags
+    memset(m_descWords, 0, sizeof(DDSURFACEDESC));
+    m_descSize = sizeof(DDSURFACEDESC);
+    m_surfaceCaps = c | 0x40;
+    m_descFlags = 7;
     m_width = p->m_4;
     m_height = c;
     if (!Init1(reinterpret_cast<CDDrawPtrCollections*>(saved), 0)) {

@@ -275,10 +275,6 @@ public:
     // CommitNeighbor 0x5b050, BeginAttack 0x5b570, PlayMoveSound 0x511b0,
     // ResetEntranceAnimation 0x62e10) - the fold binds the call sites straight to them.
     //
-    // ApplyTriggerB's current ApplyBox call is not a real retail callee. That call
-    // compresses an unreconstructed branch beginning with CTriggerMgr::CellHitTest;
-    // keep it visible as modeling debt until that branch is recovered.
-    i32 ApplyBox(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
     virtual void Activate() OVERRIDE;       // slot 6  @0x5caa0 (void family slot)
     virtual i32 UserLogicVfunc6() OVERRIDE; // slot 8  (0x62b40)
     virtual i32 StepAttackFire() OVERRIDE;  // slot 9  @0x61cb0 (attack-fire step)
@@ -1070,7 +1066,8 @@ SIZE(0x4);
 
 bool CGrunt_IsSameType(CGrunt* a, CGrunt* b);
 
-void GruntRecycleCoords(CGrunt* g); // 0x343f0
+void GruntRecycleCoords(CGrunt* g);                                           // 0x343f0
+void __stdcall TileSwitch(CGrunt* g, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x29af0
 
 extern char s_codeD[]; // "D" (0x0060cca4)
 extern char s_codeF[]; // "F" (0x0060d2e8)

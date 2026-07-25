@@ -1035,47 +1035,18 @@ i32 ProjTypeXfer(CUserLogic* ar) {
     return 1;
 }
 
-// ===========================================================================
-// `dynamic initializer for g_buteTree' (0x16e6a0) - construct the global bute
-// tree (deeper base ctor 0x16dff0) then stamp its runtime vtables.
-// ===========================================================================
-// g_buteTree is the canonical CButeTree (crit-bit trie), now `CButeTree : public zPTree`
-// (<Bute/ButeTree.h>). Construct (0x16dff0 == the zPTree base ctor above) runs the base
-// ctor; the +0x00 / +0x08 runtime vptr re-stamps (0x5f04e0/0x5f04dc, CButeTree's most-
-// derived vtables) are dropped here - they emit only when g_buteTree is DEFINED (not
-// extern) as a real global (see the ??_GCButeTree @emission-TODO below). Kept extern +
-// hand-written this pass; @early-stop until the coupled emission lands.
-// @early-stop
-// hand-written construct (~71%): the CButeTree runtime vptr re-stamps are elided (they
-// need g_buteTree defined so cl auto-emits the ctor+vtables). Deferred to the coupled
-// emission (docs at ??_GCButeTree below).
-// Canonical name->RVA pin for the g_buteTree singleton (?g_buteTree@@3VCButeTree@@A
-// @0x6bf620): this is its construction owner (DynInitButeTree below). The type-complete
-// decl lives in <Bute/ButeTree.h> (included above); consumers reach it there. DATA() in
-// a header is ignored, so the reloc-name binding is pinned here, on the owner TU's decl.
+// g_buteTree is a real 0x2c-byte global object, not a pointer slot. Its static
+// definition makes VC5 emit the private _$E<n> initializer/atexit family: the
+// initializer calls zPTree's constructor on 0x6bf620 and stamps CButeTree's two
+// most-derived vptrs. The volatile helpers are recorded only in
+// config/compiler-generated-functions.tsv.
 DATA_SYMBOL(0x002bf620, 0x2c, ?g_buteTree@@3VCButeTree@@A)
 
 void ButeTreeNopFree(void*);
 
-RVA(0x0016e6a0, 0x26)
-void DynInitButeTree() {
-    g_buteTree.Construct(static_cast<void*>(&ButeTreeNopFree), 0);
-}
+__inline CButeTree::CButeTree(void(__cdecl* teardown)(void*), i32 n) : zPTree(teardown, n) {}
 
-// @early-stop
-// `atexit destructor for g_buteTree' (??__F, 0x16e6e0) - homed from GapFunctions.cpp
-// (matcher-5); the teardown thunk MSVC registers via atexit for the DynInit above. It
-// restamps g_buteTree's dtor vptrs (0x5e94ac / 0x5e949c), runs the member-dtor chain
-// (0x16e070 on &g_buteTree, 0x16cfc0 on the +8 subobject via the `p?&p->m8:0` neg/sbb/and
-// idiom) and tail-jmps the base dtor 0x16ca60. A COMPILER-GENERATED atexit thunk: emitting
-// it byte-exact needs g_buteTree defined (not extern) with the real ~CButeTree chain, which
-// conflicts with the hand-written DynInit; homed pending that restructure. The
-// name states the proven ??__F identity; RVA_COMPGEN(0x16e6e0, 0x3e,
-// ??__Fg_buteTree@@YAXXZ) is the target model, MISSING until that emission lands.
-RVA(0x0016e6e0, 0x3e)
-i32 ButeTreeAtexitDtor(void) {
-    return 0;
-}
+CButeTree g_buteTree(&ButeTreeNopFree, 0);
 
 // MSVC emits the inlined g_typeColl constructor and its atexit wrapper as a pair.
 // The local `$E` number is unstable; compiler-generated matching binds it by content.
@@ -1083,37 +1054,28 @@ RVA_COMPGEN(0x0016e7a0, 0x48, ??__Fg_typeColl@@YAXXZ)
 
 // ===========================================================================
 // CButeTree::`scalar deleting destructor' ??_GCButeTree (0x16e9c0) - the compiler-
-// synthesized slot-0 scalar-deleting dtor of CButeTree's virtual destructor (declared
-// in <Bute/ButeTree.h>): cl inlines the dtor teardown (dtor-phase vptr re-stamps
+// synthesized slot-0 scalar-deleting dtor of CButeTree's implicit virtual destructor:
+// cl inlines the dtor teardown (dtor-phase vptr re-stamps
 // 0x5e94ac @+0 / 0x5e949c @+8, ClearRecursive(0) @0x16e070, the second-base restore
 // @0x16dfc0 on the masked this+8, then the primary BaseDtor @0x16da60), then
 // ::operator delete when bit0 of the deleting-flag is set; returns this. It is NOT
 // dev source (a compiler ??_G thunk), so it is pinned by mangled name here, not
 // written as a method. (zPTree==CButeTree, the same 0x2c-byte class.)
 //
-// DEFERRED EMISSION (reloc): this RVA_COMPGEN binds only once cl EMITS ??_GCButeTree in
-// THIS obj, which needs g_buteTree defined (not extern) as a real global CButeTree so
-// its compiler-generated ctor/dtor/vtable emit here. That is BLOCKED by a dual-vtable
-// identity (the butenode-dual-model, OUT OF SCOPE for this pass), PROVEN by disasm:
+// The dual-vtable phase change is expected, not an identity conflict:
 //   * construction (DynInitButeTree 0x16e6a0) stamps ??_7CButeTree     @0x5f04e0 /
 //     ??_7CButeStore@@6BCButeStoreSecond @0x5f04dc   (the CButeTree identity);
 //   * destruction (0x16e9c0 ??_G AND 0x16e6e0 atexit) stamps ??_7zPTree @0x5e94ac /
 //     ??_7CButeStore@@6BCButeNodeEntry  @0x5e949c    (the zPTree/zPTree identity).
-// CORRECTION (RTTI-proven): the split is NOT irreducible. It is exactly what
+// RTTI proves that this is exactly what
 // `class CButeTree : public zPTree` (now modeled, <Bute/ButeTree.h>) with an EMPTY
 // ~CButeTree produces - the ctor re-stamps CButeTree's most-derived 0x5f04e0/0x5f04dc
 // after the zPTree base ctor; the empty derived dtor elides its protective re-stamp so
 // ??_G goes straight to ~zPTree (which stamps zPTree's 0x5e94ac/0x5e949c). Real classes
 // are zErrHandling(@0), zPtrColl(fabricated "CButeNodeEntry", @8), zPTree : those.
-// DEFERRED EMISSION (COUPLED, not this pass): binding 0x16e9c0 needs g_buteTree DEFINED so
-// cl emits ??_G/??__E/??__F/the CButeTree vtables. Requires as one atomic unit: (1) an
-// INLINE ~zPTree { ClearRecursive(0); } + ClearRecursive as a zPTree method (0x16e070),
-// which forces zPTree : zPTree so its Reset/leaf-dtor callers still bind faithfully;
-// (2) DATA_SYMBOL on the emitted ??_7CButeTree@@6BCButeNodeEntry@@ @0x5f04dc (the
-// fabricated ??_7CButeStore@@6BCButeStoreSecond@@ name won't auto-match) + butemgr
-// dropping that binding; (3) RVA_COMPGEN pins for the cl-mangled init/atexit thunks. Gate on
-// ClearRecursive/~CButeMgr staying byte-exact (the +0x10 store-flag is a BYTE read;
-// zPTree's m_kind is i16 - a real byte-risk to the 100% ClearRecursive).
+// The authentic global definition above emits ??_G and both CButeTree vtables.
+// The private initializer/destructor ordinal helpers remain unclaimed because
+// _$E<n> names are not stable source identities.
 RVA_COMPGEN(0x0016e9c0, 0x45, ??_GCButeTree@@UAEPAXI@Z)
 
 RVA(0x0016ea10, 0x1)

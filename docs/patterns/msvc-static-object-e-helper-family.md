@@ -14,21 +14,24 @@ A real file-scope object with a non-trivial constructor or destructor makes MSVC
 The numeric suffix is a per-object counter and changes when the TU's emitted
 symbols change. Do not turn these into stable developer-written names, and do
 not keep a hand-written constructor twin beside the compiler-emitted one. Define
-the real global object and pin the retail helpers with distinct placeholder
-names:
+the real global object and record the retail helpers as navigation evidence:
 
 ```cpp
 DATA(0x00......)
 CString g_name;
-RVA_COMPGEN(0x000bd7f0, 0xa, _$E776176)
-RVA_COMPGEN(0x000bd810, 0xe, _$E776208)
-RVA_COMPGEN(0x000bd830, 0xa, _$E776240)
+```
+
+```text
+# config/compiler-generated-functions.tsv
+0x000bd7f0  0xa  _$E776176  netlobbydialogs  src/Net/LobbyDialogs.cpp:70
+0x000bd810  0xe  _$E776208  netlobbydialogs  src/Net/LobbyDialogs.cpp:71
+0x000bd830  0xa  _$E776240  netlobbydialogs  src/Net/LobbyDialogs.cpp:72
 ```
 
 `canonicalize_data_symbols.py` recognizes both `$E28` and the x86 COFF spelling
-`_$E28`, then pairs base and target by normalized bytes plus ordered relocation
-targets. The placeholder number therefore has no identity meaning; the content
-and relocations select the emitted helper.
+`_$E28`, but normalization cannot make the ordinal a stable identity when the
+two objects expose different relocation evidence. These rows therefore stay
+outside source labeling and objdiff pairing.
 
 ## Explicit template-static specialization
 
@@ -95,10 +98,10 @@ object does not emit a matching `$E` family, the source still has a storage or
 class-model defect—commonly an `extern` plus `DATA_SYMBOL` standing in for the
 real global—and a pin alone would hide that defect.
 
-Evidence: `NetLobby::g_str649618` emits all three helpers automatically, and
-replacing the hand-written constructor twin with `RVA_COMPGEN` pins recovered
-the family at `0x000bd7f0`, `0x000bd810`, and `0x000bd830`. The 14-byte middle
-helper had previously been mislabeled as LOW `__inc`.
+Evidence: `NetLobby::g_str649618` emits all three helpers automatically. Removing
+the hand-written constructor twin recovered the real family at `0x000bd7f0`,
+`0x000bd810`, and `0x000bd830`; those volatile helpers now live only in the TSV.
+The 14-byte middle helper had previously been mislabeled as LOW `__inc`.
 
 ## Inline destructor body and array variants
 
@@ -208,22 +211,22 @@ with a separately materialized virtual destructor does not emit the retail
 unnamed until its emission trigger is recovered; manually writing a destructor
 wrapper would repeat the original modeling error.
 
-These structural corrections can lower the current aggregate fuzzy percentage:
-the helper families enlarge the named-function denominator, and a previously
-masked relocation alias can stop pairing even while many new functions become
-exact. Preserve the MAX high-water mark, compare the exact affected helpers and
-ordered relocations, and record the cause. Do not undo the object model merely
-to restore the current percentage.
+These structural corrections can move the current aggregate fuzzy percentage:
+removing false named helpers changes the denominator, while header/emission
+state can recolor unrelated bodies. Preserve the MAX high-water mark, compare
+the affected functions and ordered relocations, and record the cause. Do not
+undo the object model merely to restore the current percentage.
 
 ## Private-symbol and BSS-layout traps
 
-`RVA_COMPGEN` names the retail helper; it does not rename VC5's emitted local
-symbol. A source annotation such as `_$E1136016` can therefore correspond to a
-base-object symbol named `_$E28`. A source/retail disassembly query by the
-placeholder may report that the base symbol is missing even when `llvm-nm` and
-`llvm-objdump -dr` show the complete compiler-emitted family. Compare the actual
-base and target local definitions, meaningful body lengths, and ordered
-relocation roles. Never interpret the placeholder suffix as source identity.
+Historical `RVA_COMPGEN(..., _$E<n>)` claims named retail helpers but could not
+rename VC5's emitted local symbol. A retail observation such as `_$E1136016`
+can correspond to a base-object symbol named `_$E28`. Keep that observation in
+`config/compiler-generated-functions.tsv`; a source/retail disassembly query by
+the ordinal may otherwise report the base symbol missing even when `llvm-nm`
+and `llvm-objdump -dr` show the complete compiler-emitted family. Compare the
+actual base and target local definitions, meaningful body lengths, and ordered
+relocation roles. Never interpret the suffix as source identity.
 
 A structurally correct helper can also remain anonymous or unpaired in the
 report when delinking changes the visibility of a file-local `$S<n>` data

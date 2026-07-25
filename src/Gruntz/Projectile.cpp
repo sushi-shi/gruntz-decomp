@@ -521,8 +521,8 @@ void CProjectile::MovingSlot16() {
     if (m_kind == 0x16) { // WINGZ: loop the flight sound while over the level
         CWwdGameObjectA* owner = m_object;
         CGruntzMgr* reg = g_gameReg;
-        if (owner->m_screenX < reg->m_viewOriginR && owner->m_screenX >= reg->m_viewOriginL
-            && owner->m_screenY < reg->m_viewOriginB && owner->m_screenY >= reg->m_viewOriginT) {
+        if (owner->m_screenX < reg->m_viewBounds.right && owner->m_screenX >= reg->m_viewBounds.left
+            && owner->m_screenY < reg->m_viewBounds.bottom && owner->m_screenY >= reg->m_viewBounds.top) {
             LaunchSound("GRUNTZ_WINGZGRUNT_PROJECTILELOOP");
         } else if (m_sound != 0) {
             m_sound->StopAndRewind();
@@ -656,8 +656,8 @@ void CProjectile::MovingSlot16() {
         }
         if (flags & 0x900) {
             // water tile: spill a splash then hide the projectile
-            if (m_targetX < reg->m_viewOriginR && m_targetX >= reg->m_viewOriginL
-                && m_targetY < reg->m_viewOriginB && m_targetY >= reg->m_viewOriginT) {
+            if (m_targetX < reg->m_viewBounds.right && m_targetX >= reg->m_viewBounds.left
+                && m_targetY < reg->m_viewBounds.bottom && m_targetY >= reg->m_viewBounds.top) {
                 CWwdGameObjectA* fx =
                     reg->m_world->m_childGroup
                         ->CreateSprite(0, m_targetX, m_targetY, 0xcf84f, "Particlez", 0x40003);
@@ -683,8 +683,8 @@ void CProjectile::MovingSlot16() {
                         break;
                     default:
                         // level death tile: spill the death-splash then hide
-                        if (m_targetX < reg->m_viewOriginR && m_targetX >= reg->m_viewOriginL
-                            && m_targetY < reg->m_viewOriginB && m_targetY >= reg->m_viewOriginT) {
+                        if (m_targetX < reg->m_viewBounds.right && m_targetX >= reg->m_viewBounds.left
+                            && m_targetY < reg->m_viewBounds.bottom && m_targetY >= reg->m_viewBounds.top) {
                             CWwdGameObjectA* fx = reg->m_world->m_childGroup->CreateSprite(
                                 0,
                                 m_targetX,

@@ -192,8 +192,8 @@ RVA(0x00023d90, 0x64)
 void CGruntzCmdMgr::BlitTileMarker(i32 a1, i32 a2, i32 x, i32 y, i32 a5) {
     CGameLevel* p = m_38->m_world->m_level;
     CDDrawWorkerHost* r = p->m_mainPlane;
-    i32 sx = ((r->m_originX - p->m_planeCtx.left + (x & 0xffff)) & ~0x1f) + 0x10;
-    i32 sy = ((r->m_originY - p->m_planeCtx.top + (y & 0xffff)) & ~0x1f) + 0x10;
+    i32 sx = ((r->m_viewRect.left - p->m_planeCtx.left + (x & 0xffff)) & ~0x1f) + 0x10;
+    i32 sy = ((r->m_viewRect.top - p->m_planeCtx.top + (y & 0xffff)) & ~0x1f) + 0x10;
     EnqueueSingle(
         a1,
         static_cast<char>(a2),

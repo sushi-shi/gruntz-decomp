@@ -135,7 +135,11 @@ def main():
     base = _read_baseline()
     new = cur - base
     fixed = base - cur
-    nf = sum(1 for s in cur if not re.search(r"@@\d", s))
+    # Data storage-class encodings begin immediately after the scoped name as
+    # `@@3`/`@@4`. Do not search for any later `@@<digit>`: function parameter
+    # back-references use forms such as `@@0` too (for example a repeated CGrunt*
+    # parameter), which previously made real functions look like data here.
+    nf = sum(1 for s in cur if not re.search(r"@@[34]", s))
     nd = len(cur) - nf
     print(f"declared-only: {len(cur)} symbol(s) defined nowhere & unknown to retail "
           f"({nf} func, {nd} data; baseline {len(base)}, fixed {len(fixed)}, NEW {len(new)})")

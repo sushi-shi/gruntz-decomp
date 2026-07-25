@@ -25,7 +25,7 @@ void CDDrawWorkerHost::WrapCoord(i32* px, i32* py) {
         } else if (x >= m_wrapW) {
             *px = x - m_wrapW;
         }
-        if (m_extentX >= m_wrapW && *px < m_originX && *px <= m_extentX - m_wrapW) {
+        if (m_viewRect.right >= m_wrapW && *px < m_viewRect.left && *px <= m_viewRect.right - m_wrapW) {
             *px = m_wrapW + *px;
         }
     }
@@ -37,13 +37,13 @@ void CDDrawWorkerHost::WrapCoord(i32* px, i32* py) {
         } else if (y >= m_wrapH) {
             *py = y - m_wrapH;
         }
-        if (m_extentY >= m_wrapH && *py < m_originY && *py <= m_extentY - m_wrapH) {
+        if (m_viewRect.bottom >= m_wrapH && *py < m_viewRect.top && *py <= m_viewRect.bottom - m_wrapH) {
             *py = m_wrapH + *py;
         }
     }
 
-    *px = *px - m_originX;
-    *py = *py - m_originY;
+    *px = *px - m_viewRect.left;
+    *py = *py - m_viewRect.top;
     *px = *px + m_bounds50.left;
     *py = *py + m_bounds50.top;
 }

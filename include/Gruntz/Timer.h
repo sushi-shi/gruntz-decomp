@@ -7,13 +7,15 @@
 #include <Gruntz/SerialArchive.h> // CFileMemBase (HandleEvent/Serialize stream)
 #include <Gruntz/Sprite.h>        // CDDrawWorker (the looked-up "GAME_TIMER" sprite set)
 
+class CDDrawSurfacePair;
+
 class CTimer {
 public:
     CTimer* Init();
     i32 LoadTimerSprite(i32 a, i32 b);
     void Reset();
     i32 Tick(i32 dt);
-    i32 Draw(i32 x, i32 pSurf);
+    i32 Draw(CDDrawSurfacePair* target, i32 force);
     void SetTime(i32 a, i32 b);
     void AddTime(i32 seconds, i32 minutes);
     i32 HandleEvent(CFileMemBase* ar, i32 kind, i32 a3, i32 a4); // 0x9c1c0

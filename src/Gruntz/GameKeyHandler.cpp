@@ -15,6 +15,7 @@
 #include <Gruntz/SoundCue.h>     // CDDrawSubMgrLeafScan (its +0x10 IS the real MFC CMapStringToOb)
 #include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (score/run/finish helpers) + GruntzPlayer
 #include <Gruntz/Play.h>         // canonical CPlay - the PLAY-state object DispatchKey runs on
+#include <Gruntz/StateMgrBZ.h>   // g_spawnConfig and its input-bit fields
 #include <Wwd/WwdGameObjectFamily.h> // CWwdGameObjectA - the TriggerMgr goal camera sprite
 
 #define CLEAR_TAB_HINT(sndHost)                                                                    \
@@ -194,7 +195,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         i32 idx = self->m_514;
         i32 pick;
         GruntzPlayer* area;
-        if (dev->m_18 & 1) {
+        if (dev->m_edgeKeys & 1) {
             pick = idx - 1;
             if (pick < 0) {
                 pick = 3;
@@ -243,7 +244,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
     }
     // Q (cc350): toggle the pause flag
     if (key == 0x51) {
-        if ((dev->m_18 & 0x20) == 0) {
+        if ((dev->m_edgeKeys & 0x20) == 0) {
             return 1;
         }
         CGruntzMgr* h = self->m_mgr;
@@ -269,7 +270,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
     }
     // C (cc3f9)
     if (key == 0x43) {
-        g_gameReg->m_cmdGrid->CenterOnGroup(dev->m_18 & 0x20);
+        g_gameReg->m_cmdGrid->CenterOnGroup(dev->m_edgeKeys & 0x20);
         return 1;
     }
     // T (cc41c)
@@ -286,7 +287,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
     }
     // Space (cc46d): recorder step / recycle node churn
     if (key == 0x20) {
-        if (dev->m_18 & 0x20) {
+        if (dev->m_edgeKeys & 0x20) {
             CDDrawWorkerHost* obj = self->m_world->m_level->m_mainPlane;
             i32 v0 = obj->m_snappedX;
             i32 v1 = obj->m_snappedY;
@@ -330,7 +331,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         if (self->arr488Count() == 0) {
             return 1;
         }
-        if (dev->m_18 & 1) {
+        if (dev->m_edgeKeys & 1) {
             i32 c = self->m_49c - 1;
             self->m_49c = c;
             if (c < 0) {
@@ -374,12 +375,12 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         return 1;
     }
     // M (cc668)
-    if (key == 0x4d && (dev->m_18 & 0x20)) {
+    if (key == 0x4d && (dev->m_edgeKeys & 0x20)) {
         g_gameReg->SetSoundLevelState(g_gameReg->m_musicEnabled == 0);
         return 1;
     }
     // V (cc692)
-    if (key == 0x56 && (dev->m_18 & 0x20)) {
+    if (key == 0x56 && (dev->m_edgeKeys & 0x20)) {
         g_gameReg->m_isVoiceEnabled = (g_gameReg->m_isVoiceEnabled == 0);
         return 1;
     }
@@ -406,7 +407,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
     }
     // S (cc76e)
     if (key == 0x53) {
-        if (dev->m_18 & 0x20) {
+        if (dev->m_edgeKeys & 0x20) {
             g_gameReg->SetRunState(g_gameReg->m_soundEnabled == 0);
             return 1;
         }
@@ -459,7 +460,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
             return 1;
         }
         CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
-        self->m_guts->AdvanceTab(g_spawnConfig->m_18 & 1);
+        self->m_guts->AdvanceTab(g_spawnConfig->m_edgeKeys & 1);
         return 1;
     }
     // G (cc986)
@@ -565,8 +566,8 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         i32 my = self->m_cursorY;
         if (!(mx >= x1 || mx < x0 || my >= y1 || my < y0)) {
             CDDrawWorkerHost* g = q->m_mainPlane;
-            i32 by = g->m_originY - q->m_planeCtx.top + my;
-            i32 bx = g->m_originX - q->m_planeCtx.left + mx;
+            i32 by = g->m_viewRect.top - q->m_planeCtx.top + my;
+            i32 bx = g->m_viewRect.left - q->m_planeCtx.left + mx;
             host->m_cmdGrid->SpawnPuddle(bx, by, 0, 0, 1, 0x19);
         }
     }
@@ -579,8 +580,9 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         i32 my = self->m_cursorY;
         CGameLevel* q = h->m_world->m_level;
         CDDrawWorkerHost* g = q->m_mainPlane;
-        i32 by = ((g->m_originY - q->m_planeCtx.top + my) & ~0x1f) + 0x10;
-        i32 bx = ((self->m_cursorX - q->m_planeCtx.left + g->m_originX) & ~0x1f) + 0x10;
+        i32 by = ((g->m_viewRect.top - q->m_planeCtx.top + my) & ~0x1f) + 0x10;
+        i32 bx =
+            ((self->m_cursorX - q->m_planeCtx.left + g->m_viewRect.left) & ~0x1f) + 0x10;
         g_gameReg->m_cmdGrid->LoadExplosionSprites(bx, by, -1, 1);
         return 1;
     }
@@ -602,7 +604,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
     }
     // digit cheats 1-9 (cce0f)
     if (key == 0x31) {
-        if (g_spawnConfig->m_18 & 0x20) {
+        if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(1);
         } else {
             g_gameReg->m_cmdGrid->CenterSelectionGroup(1);
@@ -610,7 +612,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x32) {
-        if (g_spawnConfig->m_18 & 0x20) {
+        if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(2);
         } else {
             g_gameReg->m_cmdGrid->CenterSelectionGroup(2);
@@ -618,7 +620,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x33) {
-        if (g_spawnConfig->m_18 & 0x20) {
+        if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(3);
         } else {
             g_gameReg->m_cmdGrid->CenterSelectionGroup(3);
@@ -626,7 +628,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x34) {
-        if (g_spawnConfig->m_18 & 0x20) {
+        if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(4);
         } else {
             g_gameReg->m_cmdGrid->CenterSelectionGroup(4);
@@ -634,7 +636,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x35) {
-        if (g_spawnConfig->m_18 & 0x20) {
+        if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(5);
         } else {
             g_gameReg->m_cmdGrid->CenterSelectionGroup(5);
@@ -642,7 +644,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x36) {
-        if (g_spawnConfig->m_18 & 0x20) {
+        if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(6);
         } else {
             g_gameReg->m_cmdGrid->CenterSelectionGroup(6);
@@ -650,7 +652,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x37) {
-        if (g_spawnConfig->m_18 & 0x20) {
+        if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(7);
         } else {
             g_gameReg->m_cmdGrid->CenterSelectionGroup(7);
@@ -658,7 +660,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x38) {
-        if (g_spawnConfig->m_18 & 0x20) {
+        if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(8);
         } else {
             g_gameReg->m_cmdGrid->CenterSelectionGroup(8);
@@ -666,7 +668,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x39) {
-        if (g_spawnConfig->m_18 & 0x20) {
+        if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(9);
         } else {
             g_gameReg->m_cmdGrid->CenterSelectionGroup(9);

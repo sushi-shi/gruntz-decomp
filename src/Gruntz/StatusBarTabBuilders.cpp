@@ -185,32 +185,32 @@ i32 CSBI_GruntMachine::Render() {
                    ? 0
                    : static_cast<CImage*>(cfg->m_items.GetAt(idx));
 
-    i32 ctx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
+    CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
 
     CImage* f = m_standaloneFrame;
     if (f) {
         f->RenderFrame(
-            reinterpret_cast<void*>(ctx),
-            reinterpret_cast<void*>((m_rect14.m_0 + f->m_anchorX)),
-            reinterpret_cast<void*>((m_rect14.m_4 + f->m_anchorY)),
+            ctx,
+            m_rect14.m_0 + f->m_anchorX,
+            m_rect14.m_4 + f->m_anchorY,
             0
         );
     }
     f = m_frameB;
     if (f) {
         f->RenderFrame(
-            reinterpret_cast<void*>(ctx),
-            reinterpret_cast<void*>((m_rect14.m_0 + f->m_anchorX + 0x2c)),
-            reinterpret_cast<void*>((m_rect14.m_4 + f->m_anchorY)),
+            ctx,
+            m_rect14.m_0 + f->m_anchorX + 0x2c,
+            m_rect14.m_4 + f->m_anchorY,
             0
         );
     }
     f = m_frameA;
     if (f) {
         f->RenderFrame(
-            reinterpret_cast<void*>(ctx),
-            reinterpret_cast<void*>((m_rect14.m_0 + f->m_anchorX)),
-            reinterpret_cast<void*>((m_rect14.m_4 + f->m_anchorY)),
+            ctx,
+            m_rect14.m_0 + f->m_anchorX,
+            m_rect14.m_4 + f->m_anchorY,
             0
         );
     }
@@ -584,17 +584,17 @@ i32 CSBI_SideTab::BuildHandle() {
 RVA(0x000e99c0, 0x4c)
 i32 CSBI_SideTab::Render() {
     if (m_drawGate) {
-        i32 ctx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
+        CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
         m_topFrame->RenderFrame(
-            reinterpret_cast<void*>(ctx),
-            reinterpret_cast<void*>(m_drawX),
-            reinterpret_cast<void*>(m_drawY),
+            ctx,
+            m_drawX,
+            m_drawY,
             0
         );
         m_bottomFrame->RenderFrame(
-            reinterpret_cast<void*>(ctx),
-            reinterpret_cast<void*>((m_drawX + m_bottomFrameDy)),
-            reinterpret_cast<void*>(m_drawY),
+            ctx,
+            m_drawX + m_bottomFrameDy,
+            m_drawY,
             0
         );
     }

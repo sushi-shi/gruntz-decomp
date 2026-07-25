@@ -7,8 +7,10 @@
 #include <Mfc.h>
 
 class CMenuPage;
+class CMenuItem;
 
 class CDDrawSurfaceMgr;
+class CDDrawSurfacePair;
 
 class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
@@ -31,7 +33,7 @@ public:
     i32 AdvanceRow0(void* key, i32 x, i32 y); // 0x182df0
     i32 AdvanceRow1(void* key, i32 x, i32 y); // 0x182e60
     i32 Step(i32 dt);                         // 0x182ed0
-    i32 Draw(i32 a0, i32 sprite, i32 arg2, i32 arg3); // 0x182f90
+    i32 Draw(CDDrawSurfacePair* target, CMenuItem* sprite, i32 x, i32 y); // 0x182f90
     i32 ScrollRow0();                                 // 0x183030
     i32 ScrollRow1();                                 // 0x1830b0
     i32 FocusSelect(i32 x, i32 y);                    // 0x183170 (page FocusAndSelect(x,y))

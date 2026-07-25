@@ -10,6 +10,7 @@
 #include <Gruntz/MenuItem2.h>
 
 class CDDrawSurfaceMgr;
+class CDDrawSurfacePair;
 class CDDrawWorker; // <DDrawMgr/DDrawWorker.h> - the m_subPage sprite strip
 class CChatBox;     // the render host (Draw/ReplaceNode/ScrollRow1; +0x20 wrap flag)
 
@@ -82,7 +83,7 @@ public:
     i32 RestoreFocus();                        // 0x1839d0  focus saved name / first focusable
     i32 SetFocus(CMenuItem* item, i32 notify); // 0x183ad0
     i32 NotifyAll(void* arg);                  // 0x183b30
-    i32 Layout(i32 ctx);                       // 0x183b60  measure/place children
+    i32 Layout(CDDrawSurfacePair* target);      // 0x183b60  measure/place children
     i32 FocusNext();                           // 0x183c50
     i32 FocusPrev();                           // 0x183d10
     i32 Activate();                            // 0x183dd0  focus->vtable[+0x30]
@@ -92,7 +93,7 @@ public:
     CMenuItem* FindByName(const char* s);      // 0x184150  /GX; walk + strcmp
     i32 SelectForward();                       // 0x1843f0  /GX
     i32 SelectBackward();                      // 0x1844d0  /GX
-    i32 LayoutOne(i32 ctx);                    // 0x183e50  single-column measure/place
+    i32 LayoutOne(CDDrawSurfacePair* target);   // 0x183e50  single-column measure/place
 
     // 0x74-item factories (derived item @0x5f08f8) - mirror AddItem/AddSubItem:
     CMenuItem2* AddItem2(i32, i32, i32, i32, i32);                   // 0x1836f0

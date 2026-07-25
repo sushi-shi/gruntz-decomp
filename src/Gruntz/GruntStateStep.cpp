@@ -154,7 +154,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
                 if (strcmp(nm, "I") != 0 && strcmp(nm, "G") != 0 && strcmp(nm, "L") != 0
                     && strcmp(nm, "P") != 0 && strcmp(nm, "J") != 0 && strcmp(nm, "C") != 0
                     && strcmp(nm, "R") != 0) {
-                    Finish3e4f(g, cur);
+                    winapi_02ae00_IntersectRect(g, cur);
                 }
             }
             g->m_defenderState = 0;
@@ -230,7 +230,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
     }
 
 tail:
-    if (CanPlaySpecialAnim(reinterpret_cast<i32>(g))) {
+    if (CanPlaySpecialAnim(g)) {
         if (g->CoordCount() == 0 && static_cast<u32>(g->m_dwell) > static_cast<u32>(m_0a0)
             && m_0f0.GetSize() != 0) {
             GruntCoord* e =

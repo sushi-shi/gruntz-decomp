@@ -42,25 +42,29 @@ i32 g_bDown; // 0x683eb4  (== ex g_bDown)
 RVA(0x0013e0a0, 0x27)
 i32 CDDSurface::Init1(CDDrawPtrCollections* h, i32 a) {
     if (a != 0) {
-        memcpy(m_ddsd, reinterpret_cast<const void*>(a), 0x6c); // the +0x10 DDSURFACEDESC scratch
+        memcpy(
+            m_descWords,
+            reinterpret_cast<const void*>(a),
+            sizeof(DDSURFACEDESC)
+        );
     }
     return BlitIntoDesc(h);
 }
 
 RVA(0x0013e0d0, 0x66)
 i32 CDDSurface::BlitSurf(void* surf, i32 width, i32 height, i32 a4, i32 a5) {
-    i32* desc = reinterpret_cast<i32*>((this->m_desc));
+    i32* desc = this->m_descWords;
     for (i32 i = 0x1b; i != 0; i--) {
         *desc++ = 0;
     }
-    *reinterpret_cast<i32*>((this->m_desc + 0x68)) = a5; // m_78
+    this->m_surfaceCaps = a5;
     this->m_width = width;
     this->m_height = height;
-    *reinterpret_cast<i32*>((this->m_desc)) = 0x6c;  // dwSize
-    *reinterpret_cast<i32*>((this->m_desc + 4)) = 7; // dwFlags
+    this->m_descSize = sizeof(DDSURFACEDESC);
+    this->m_descFlags = 7;
     if (a4 != 0 && a4 != (static_cast<CDDrawPtrCollections*>(surf))->m_palBpp) {
-        *reinterpret_cast<i32*>((this->m_desc + 4)) = 0x1007;
-        *reinterpret_cast<i32*>((this->m_desc + 0x48)) = 0x20; // m_58
+        this->m_descFlags = 0x1007;
+        this->m_pixelFormatSize = sizeof(DDPIXELFORMAT);
         this->m_srcBitDepth = a4;
     }
     return this->BlitIntoDesc(surf); // slot-8 virtual dispatch (+0x20)
@@ -70,12 +74,12 @@ RVA(0x0013e140, 0x133)
 i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     m_ddSurface = surf;
     i32 i;
-    i32* d = reinterpret_cast<i32*>(m_desc);
+    i32* d = m_descWords;
     for (i = 0x1b; i != 0; i--) {
         *d++ = 0;
     }
-    m_descSize = 0x6c;
-    i32 hr = m_ddSurface->GetSurfaceDesc(reinterpret_cast<LPDDSURFACEDESC>(m_desc));
+    m_descSize = sizeof(DDSURFACEDESC);
+    i32 hr = m_ddSurface->GetSurfaceDesc(&m_apiDesc);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x7e, hr);
     }
@@ -147,8 +151,7 @@ i32 CDDSurface::BlitIntoDesc(void* a) {
         return 0;
     }
 
-    i32 hr = mgr->m_device
-                 ->CreateSurface(reinterpret_cast<LPDDSURFACEDESC>(m_desc), &m_ddSurfaceBack, 0);
+    i32 hr = mgr->m_device->CreateSurface(&m_apiDesc, &m_ddSurfaceBack, 0);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0xd5, hr);
         return 0;
@@ -163,12 +166,12 @@ i32 CDDSurface::BlitIntoDesc(void* a) {
         return 0;
     }
 
-    i32* d = reinterpret_cast<i32*>(m_desc);
+    i32* d = m_descWords;
     for (i32 i = 0x1b; i != 0; i--) {
         *d++ = 0;
     }
-    m_descSize = 0x6c;
-    hr = m_ddSurface->GetSurfaceDesc(reinterpret_cast<LPDDSURFACEDESC>(m_desc));
+    m_descSize = sizeof(DDSURFACEDESC);
+    hr = m_ddSurface->GetSurfaceDesc(&m_apiDesc);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0xeb, hr);
     }
@@ -306,7 +309,7 @@ i32 CDDSurface::SetPalette(CDDPalette* pal, i32 unused) {
 RVA(0x0013e6d0, 0x88)
 i32 CDDSurface::Lock(void* rect) {
     i32 hr = m_ddSurface
-                 ->Lock(static_cast<LPRECT>(rect), reinterpret_cast<LPDDSURFACEDESC>(m_desc), 1, 0);
+                 ->Lock(static_cast<LPRECT>(rect), &m_apiDesc, 1, 0);
     if (hr == 0) {
         return m_lockBits;
     }
@@ -314,7 +317,7 @@ i32 CDDSurface::Lock(void* rect) {
         if (RestoreLost() == 0) {
             return 0;
         }
-        hr = m_ddSurface->Lock(0, reinterpret_cast<LPDDSURFACEDESC>(m_desc), 1, 0);
+        hr = m_ddSurface->Lock(0, &m_apiDesc, 1, 0);
         if (hr == 0) {
             return m_lockBits;
         }
@@ -1530,12 +1533,12 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
 RVA(0x00140770, 0x326)
 void CDDSurface::DumpSurfaceInfo(i32 detailed) {
     i32 i;
-    i32* p = reinterpret_cast<i32*>(m_desc);
+    i32* p = m_descWords;
     for (i = 0x1b; i != 0; i--) {
         *p++ = 0;
     }
-    m_descSize = 0x6c;
-    LPDDSURFACEDESC desc = reinterpret_cast<LPDDSURFACEDESC>(m_desc);
+    m_descSize = sizeof(DDSURFACEDESC);
+    LPDDSURFACEDESC desc = &m_apiDesc;
     m_ddSurface->GetSurfaceDesc(desc);
     if (desc == 0) {
         return;

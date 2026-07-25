@@ -634,30 +634,31 @@ i32 CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
 }
 
 RVA(0x0013a4b0, 0x75)
-i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
+CParseSource*
+CSymTab::AddNodeEntry(u32 key, const char* name, CSymRec* rec, CRezItmBase* stream) {
     CParseSource* slot = m_owner->PopParseSlot();
     if (slot == 0) {
-        return reinterpret_cast<i32>(slot);
+        return slot;
     }
     slot->Build(
         this,
-        static_cast<const char*>(a1),
-        a0,
-        a2,
+        name,
+        reinterpret_cast<void*>(key),
+        rec,
         0,
         0,
         0,
         reinterpret_cast<void*>(m_owner->MakeSeed()),
         0,
         0,
-        static_cast<CRezItmBase*>(a3)
+        stream
     );
-    (static_cast<CSymRec*>(a2))->m_valTable.Insert(&slot->m_node1c);
-    u32 len = strlen(static_cast<char*>(a1));
+    rec->m_valTable.Insert(&slot->m_node1c);
+    u32 len = strlen(name);
     if (static_cast<u32>(m_owner->m_longestLeafNameLen) <= len) {
         m_owner->m_longestLeafNameLen = len + 1;
     }
-    return reinterpret_cast<i32>(slot);
+    return slot;
 }
 
 RVA(0x0013a530, 0x47)
@@ -1210,8 +1211,6 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
     return 1;
 }
 
-void SymBuildLeaf(CSymParser* p, void* recArg, void* extKey); // 0x13b970
-void SymBindRecord(void* rec, char* name, i32 h);             // 0x13cac0
 VTBL(CParseSlotHashNode, 0x001ef740);
 VTBL(CSymRecNode, 0x001ef744);
 VTBL(CSymTabNode, 0x001ef748);
@@ -1266,33 +1265,46 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
             ParseRecords(reader, static_cast<CSymTab*>(child), childpath, flag);
             continue;
         }
-        // a file: split off its extension, resolve the leaf record
+        // A file: build its full path, split out the upper-case stem/extension,
+        // and resolve the extension-keyed leaf record.
+        strcpy(full, pattern);
+        strcpy(full + strlen(full), fd.name);
+        char drive[_MAX_DRIVE];
+        char dir[_MAX_DIR];
+        char splitName[_MAX_FNAME];
         char fname[0x108];
         char ext[0x108];
-        _splitpath(fd.name, 0, 0, fname, ext);
-        _strlwr(ext);
+        _splitpath(full, drive, dir, splitName, ext);
+        strcpy(fname, splitName);
+        _strupr(fname);
         i32 nleft = static_cast<i32>(strlen(fname));
         i32 i = 0;
         while (i < nleft && fname[i] >= '0' && fname[i] <= '9') {
             i++;
         }
         i32 key = (i >= nleft) ? atoi(fname) : static_cast<i32>(m_nextGeneratedFileKey++);
-        void* extKey = 0;
+        u32 extKey = 0;
+        char extName[0x10];
+        char unpackedTag[0x10];
         if (ext[0] != 0) {
-            _strlwr(ext);
-            extKey = reinterpret_cast<void*>(PackTag(ext));
+            strcpy(extName, ext + 1);
+            _strupr(extName);
+            extKey = PackTag(extName);
         }
-        SymBuildLeaf(this, &fd, extKey);
-        void* rec = node->FindOrAddSym(key);
-        if (node->Insert(fname, extKey) == 0) {
-            node->AddNodeEntry(reinterpret_cast<void*>(static_cast<u32>(fd.size)), rec, full, 0);
+        UnpackTag(extKey, unpackedTag);
+        CSymRec* rec = node->FindOrAddSym(static_cast<i32>(extKey));
+        CParseSource* entry = node->Insert(fname, reinterpret_cast<void*>(extKey));
+        CParseSource* source = 0;
+        if (entry == 0) {
+            source = node->AddNodeEntry(static_cast<u32>(key), fname, rec, 0);
         } else if (flag != 0) {
-            node->AddNodeSubEntry(rec, extKey);
-            node->AddNodeEntry(reinterpret_cast<void*>(static_cast<u32>(fd.size)), rec, full, 0);
+            node->AddNodeSubEntry(rec, entry);
+            source = node->AddNodeEntry(static_cast<u32>(key), fname, rec, 0);
         }
-        void* node2 = node->FindOrAddSym(key);
-        if (node2) {
-            SymBindRecord(node2, full, h);
+        if (source != 0) {
+            source->m_typeTag = reinterpret_cast<void*>(fd.time_write);
+            source->m_length = static_cast<u32>(fd.size);
+            source->m_reader = new CRezFile(this, full, static_cast<CRezDir*>(reader));
         }
     } while (_findnext(h, &fd) != 0);
     _findclose(h);

@@ -43,9 +43,7 @@ i32 FileExists(char* szPath) {
 
 namespace ApiCallerStubs {
     void winapi_118b50_OutputDebugStringA(i32 status);
-    i32 winapi_1206b0_GetLastError_HeapValidate_HeapWalk();
 } // namespace ApiCallerStubs
-typedef i32(__cdecl* HeapWalkFn)(_HEAPINFO*);
 
 // @early-stop
 // 96.7%: body byte-exact. Residual is the shrink-wrapped `push esi` - retail defers
@@ -64,15 +62,12 @@ int HeapCheckDump(int walkOnBad) {
         return status;
     }
     memset(&hinfo, 0, sizeof(hinfo));
-    (reinterpret_cast<
-        HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(&hinfo);
+    _heapwalk(&hinfo);
     OutputDebugStringA("Walking heap...\n");
     hinfo._pentry = 0;
-    int r = (reinterpret_cast<
-             HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(&hinfo);
+    int r = _heapwalk(&hinfo);
     while (r == _HEAPOK) {
-        r = (reinterpret_cast<
-             HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(&hinfo);
+        r = _heapwalk(&hinfo);
     }
     sprintf(
         buf,
@@ -125,13 +120,9 @@ int HeapStats() {
         hinfo._pentry = 0;
         hinfo._size = 0;
         hinfo._useflag = 0;
-        (reinterpret_cast<
-            HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(&hinfo);
+        _heapwalk(&hinfo);
         hinfo._pentry = 0;
-        int r = (reinterpret_cast<
-                 HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(
-            &hinfo
-        );
+        int r = _heapwalk(&hinfo);
         while (r == status) {
             total += hinfo._size;
             if (hinfo._useflag == _USEDENTRY) {
@@ -139,10 +130,7 @@ int HeapStats() {
             } else {
                 free += hinfo._size;
             }
-            r = (reinterpret_cast<
-                 HeapWalkFn>(ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk))(
-                &hinfo
-            );
+            r = _heapwalk(&hinfo);
         }
     }
     sprintf(buf, "Heap stats: Total = %lu, Free = %lu, Used = %lu", total, used, free);

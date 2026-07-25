@@ -198,14 +198,13 @@ CString CFontConfig::GetInputText() {
 }
 
 RVA(0x00020f40, 0x188)
-i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
+i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     CChatBoxOwner* self = this;
     if (!self->m_10) {
         return 1;
     }
 
-    CDDrawSurfacePair* ctx = reinterpret_cast<CDDrawSurfacePair*>(arg1);
-    CDDSurface* host = ctx->m_surface;
+    CDDSurface* host = target->m_surface;
     if (!host) {
         return 0;
     }
@@ -223,23 +222,13 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
         if (!frame) {
             return 0;
         }
-        frame->RenderFrame(
-            reinterpret_cast<void*>(arg1),
-            reinterpret_cast<void*>((self->m_0 + 0x140)),
-            reinterpret_cast<void*>((self->m_4 + 0x20)),
-            0
-        );
+        frame->RenderFrame(target, self->m_0 + 0x140, self->m_4 + 0x20, 0);
     } else {
         CImage* frame = static_cast<CImage*>(spr->m_items.GetAt(spr->m_minIndex));
         if (!frame) {
             return 0;
         }
-        frame->RenderFrame(
-            reinterpret_cast<void*>(arg1),
-            reinterpret_cast<void*>((self->m_0 + 0xf0)),
-            reinterpret_cast<void*>((self->m_4 + 0x20)),
-            0
-        );
+        frame->RenderFrame(target, self->m_0 + 0xf0, self->m_4 + 0x20, 0);
     }
 
     HDC hdc = 0;

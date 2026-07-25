@@ -2,25 +2,4 @@
 # references that NO base obj defines and retail's namespace never names -
 # fabricated aliases / phantom externs. RATCHET: new rows are FATAL; fix rows
 # (rename to the real symbol / define the owner), then --update. Drive to 0.
-?ApplyBox@CGrunt@@QAEHHHHHHH@Z
-?Commit42e1@CBattlezMapConfig@@QAEXPAVCGrunt@@@Z
-?Construct@CButeTree@@QAEXPAXH@Z
-?Construct@CGameObject@@QAEXPAXHH@Z
-?DoTrigger1fb9@CScanMgr@@QAEHPAVCGrunt@@HHHHH@Z
-?Effect374c@CBattlezMapConfig@@QAEXPAVCGrunt@@H@Z
-?Finish3e4f@CBattlezMapConfig@@QAEXPAVCGrunt@@0@Z
-?Gate1a14@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z
-?Impact25e5@CBattlezMapConfig@@QAEXPAVCGrunt@@HHH@Z
-?OnRegion5@CPlay@@QAEXXZ
-?Place@CUserLogic@@QAEHHHHHHHHHHHHH@Z
-?Plan293c@CBattlezMapConfig@@QAEXPAVCGrunt@@HHHHH@Z
-?Probe1a4b@CBattlezMapConfig@@QAEHPAVCGrunt@@HH@Z
-?Ready27ed@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z
-?RegCue@CPlay@@QAEXPAXH@Z
-?Reset3@CTriggerMgr@@QAEHHHH@Z
-?SelfImpact2b58@CBattlezMapConfig@@QAEXPAVCGrunt@@HHH@Z
-?Spawn@CTriggerMgr@@QAEPAXHHHHHHH@Z
 ?StepDropApply@CGrunt@@QAEXXZ
-?SymBindRecord@@YAXPAXPADH@Z
-?SymBuildLeaf@@YAXPAVCSymParser@@PAX1@Z
-?winapi_1206b0_GetLastError_HeapValidate_HeapWalk@ApiCallerStubs@@YAHXZ

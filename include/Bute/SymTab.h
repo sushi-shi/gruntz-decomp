@@ -69,6 +69,7 @@ public:
 SIZE(0x30); // leaf-record allocation size (operator new -> RezAlloc)
 
 struct CParseSource; // <Gruntz/ParseSource.h>
+class CRezItmBase;
 
 class CSymTab {
 public:
@@ -131,7 +132,8 @@ public:
     // (name=a1, rec=a2, f4=a0, stream=a3), splice it into rec's +0x24 sub-table, and
     // bump the parser's longest-leaf-name counter (m_owner->m_longestLeafNameLen).
     // Returns the slot.
-    i32 AddNodeEntry(void* a0, void* a1, void* a2, void* a3); // 0x13a4b0
+    CParseSource*
+    AddNodeEntry(u32 key, const char* name, CSymRec* rec, CRezItmBase* stream); // 0x13a4b0
 
     // The leaf-merge helper ApplyRange calls when a leaf record's +0x24 sub-table walk
     // already has the key (0x13a530, __thiscall(rec, found)). Reloc-masked extern.

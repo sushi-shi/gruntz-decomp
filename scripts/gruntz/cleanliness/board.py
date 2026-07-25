@@ -219,16 +219,16 @@ def _count_cpp_external_prototypes(code: str) -> int:
     return total
 
 
-# --- C-style casts: the ONE cast ratchet (user directive 2026-07-21) ---
+# --- cast ratchets ---
 # Policy (docs/cast-metric-policy.md): C-style `(T)expr` casts are BANNED; every cast is a
-# C++ NAMED cast (static_cast/reinterpret_cast/const_cast/dynamic_cast). So the only cast
-# metric that matters is "were any C-style casts introduced" - ratcheted to 0. Named casts
-# (`reinterpret_cast<CFoo*>(m_x)` etc.) are ALLOWED; whether one stands in for a fake view is
-# a SEPARATE concern caught by the view / caller-callee-fake-view metrics, not a cast count.
+# C++ NAMED cast (static_cast/reinterpret_cast/const_cast/dynamic_cast). Named casts remain
+# visible debt: every reinterpret_cast is counted and ratcheted down because it is often the
+# only lexical evidence of an integer carrier, fake class facet, or member-address re-view.
 _C_THIS_CAST = re.compile(r"\)this\b")
 _CHAR_STAR_CAST = re.compile(r"(?<![\w>)])\((?:const |unsigned |signed )*char ?\*\)")
 _NUMERIC_CAST = re.compile(
     r"(?<![\w>)])\((?:i8|i16|i32|i64|u8|u16|u32|u64|float|double|char|short|int|long|unsigned)\)")
+_REINTERPRET_CAST = re.compile(r"\breinterpret_cast\s*<")
 
 
 def _count_c_style_casts(code: str) -> int:
@@ -266,8 +266,9 @@ METRICS = (
     ("->vtbl accesses", re.compile(r"->\s*\w*[Vv]tbl\w*"), False),
     ("g_*Vtbl globals", re.compile(r"\bg_\w*[Vv]tbl\w*"), False),
     ("m_vtbl/m_vptr members", re.compile(r"\bm_v(?:tbl|ptr)\w*"), False),
-    # --- casts: ONE ratchet - no C-style casts (named casts are allowed) ---
+    # --- casts: C-style is forbidden; reinterpret_cast debt may only decrease ---
     ("C-style casts", _count_c_style_casts, False),
+    ("reinterpret_casts", _REINTERPRET_CAST, False),
     ("void* m_ members", re.compile(r"\bvoid ?\* m_"), False),
     # --- metric-evasion / placeholder hacks (2026-07-14 de-hack campaign; MAX-fuzzy gate) ---
     ("offset-cast macros", _count_offset_macro_casts, False),
@@ -340,9 +341,10 @@ def _caller_callee_counts() -> dict[str, int]:
 
 
 # Ratchet set: metrics that only go DOWN. The view/vtable metrics + the caller_callee
-# fake-view edge + C-style casts + .cpp external declarations (owner headers only).
+# fake-view edge + cast counts + .cpp external declarations (owner headers only).
 _RATCHET = _VIEW_METRICS | set(_CALLER_CALLEE_LABELS) | {
     "C-style casts",
+    "reinterpret_casts",
     "cpp extern decls",
     "cpp external prototypes",
 }

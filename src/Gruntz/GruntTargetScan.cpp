@@ -15,8 +15,8 @@
 // CGameRegistry (g_gameReg), CScanTileMgr IS CGruntTileMgr (m_tileMgr / g_gameReg->
 // m_cmdGrid, the CGrunt* m_grid[4][15] board), CScanCueMgr's cue fire IS
 // CGruntSpawnConfig::CueA (cast-free), CScanSub30/CScanSub24 are the m_world->m_level chain
-// (CDDrawSurfaceMgr -> CGameLevel, board base at +0x5c). CScanGrid stays the shared
-// <Gruntz/ScanGrid.h> board-grid view (dims).
+// (CDDrawSurfaceMgr -> CGameLevel, board base at +0x5c). The tile board is the
+// canonical CGruntzMapMgr/CMapMgr object.
 //
 // @early-stop
 // Logic reconstructed in full (every branch, the 12 inlined priority switches, the grid
@@ -41,8 +41,8 @@
 #include <Gruntz/Grunt.h>        // canonical CGrunt / CGruntSpawnConfig / CGameRegistry
 #include <Gruntz/TriggerMgr.h>   // the ONE CTriggerMgr (ex the CGruntTileMgr view)
 #include <Gruntz/GameRegistry.h> // CGameRegistry / CDDrawSurfaceMgr
-#include <Gruntz/GameLevel.h> // CGameLevel / CDDrawWorkerHost (world->m_24->m_mainPlane->m_originX)
-#include <Gruntz/ScanGrid.h>  // CScanGrid (the shared board-grid dims view)
+#include <Gruntz/GameLevel.h> // CGameLevel / CDDrawWorkerHost (world->m_24->m_mainPlane->m_viewRect.left)
+#include <Gruntz/GruntzMapMgr.h> // canonical tile board
 #include <stdlib.h>           // engine rand (0x11fee0)
 
 #define PRIO(dst, r)                                                                               \
@@ -297,9 +297,7 @@ i32 CGrunt::ScanNearestTarget() {
             m_defenderState = 1;
             {
                 if (CGameLevel::PointInBounds(
-                        reinterpret_cast<const LevelCoordRect*>(
-                            &g_gameReg->m_world->m_level->m_mainPlane->m_originX
-                        ),
+                        &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
                         m_object->m_screenX,
                         m_object->m_screenY
                     )
@@ -353,7 +351,7 @@ i32 CGrunt::ScanNearestTarget() {
                     if (spanY != 0) {
                         baseRow += rand() % spanY;
                     }
-                    CScanGrid* grid = reinterpret_cast<CScanGrid*>(g_gameReg->m_tileGrid);
+                    CMapMgr* grid = g_gameReg->m_tileGrid;
                     if (static_cast<u32>(baseCol) < static_cast<u32>(grid->m_width)
                         && static_cast<u32>(baseRow) < static_cast<u32>(grid->m_height)) {
                         this->TileSwitch(baseCol, baseRow, 0, m_arrivalFlags, 1, 0);

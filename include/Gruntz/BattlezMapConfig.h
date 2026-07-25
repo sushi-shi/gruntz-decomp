@@ -27,42 +27,42 @@ public:
     void FreeArrays();
     i32 StepAllRowSpawns();
     void Clear(); // 0x02ade0
-    i32 EnterDefenderMode(i32, i32);
-    i32 PathCrossesMarkedTile(i32);
-    i32 IsCoordOccupied(i32, i32, i32);
+    i32 EnterDefenderMode(CGrunt*, i32);
+    i32 PathCrossesMarkedTile(CGrunt*);
+    i32 IsCoordOccupied(CGrunt*, i32, i32);
     i32 SerializeState(i32, void*, i32, i32);
-    i32 PathToNearbyUnit(i32); // 0x02ed90
+    i32 PathToNearbyUnit(CGrunt*); // 0x02ed90
     i32 Serialize(void*);
     i32 Deserialize(void*);
     i32 ClaimCellFromRow(i32, i32, i32, i32);
     i32 TrySeedSpawnAt(i32, i32);
-    i32 RepathToFreeCell(i32);
+    i32 RepathToFreeCell(CGrunt*);
     i32 ProbeUnoccupiedAt(i32, i32); // 0x035210  unoccupied-candidate-at-(x,y) probe
-    i32 ForcePlaceFromReserve(i32);  // 0x035550  spend-reserve forced place
-    void* PickSpawnCoord(void*, i32, i32);
-    i32 RouteUnitTo(i32, i32, i32, i32, i32, i32);
-    i32 RouteUnitToGoal(i32, i32, i32, i32, i32);
+    i32 ForcePlaceFromReserve(CGrunt*); // 0x035550  spend-reserve forced place
+    void* PickSpawnCoord(void*, CGrunt*, i32);
+    i32 RouteUnitTo(CGrunt*, i32, i32, i32, i32, i32);
+    i32 RouteUnitToGoal(CGrunt*, i32, i32, i32, i32);
     i32 StepRowSpawn(i32);
-    i32 CanPlaySpecialAnim(i32);
+    i32 CanPlaySpecialAnim(CGrunt*);
     i32 StepBoard();
-    i32 ChooseIdleBehavior(i32);
-    i32 ValidateUnitPath(i32);
-    i32 ClaimTilesAround(i32, i32, i32, i32);
-    i32 PathToNearestCandidate(i32, i32, i32, i32);
-    i32 PathToNearestGoal(i32, i32, i32);
+    i32 ChooseIdleBehavior(CGrunt*);
+    i32 ValidateUnitPath(CGrunt*);
+    i32 ClaimTilesAround(CGrunt*, i32, i32, i32);
+    i32 PathToNearestCandidate(CGrunt*, i32, i32, i32);
+    i32 PathToNearestGoal(CGrunt*, i32, i32);
     void* PickRandomIdleUnit(i32); // 0x02ad40  pick a random idle (m_busy==0) unit from a band row
-    i32 AcceptAlways(i32);         // 0x02c080
-    i32 CheckQueuedSpawnTile(i32); // 0x034c70  board-tile spawn check for a queued unit
-    i32 RetargetIdleUnit(i32);     // 0x0358a0  idle-unit retarget / despawn / near-band keep
+    i32 AcceptAlways(CGrunt*);     // 0x02c080
+    i32 CheckQueuedSpawnTile(CGrunt*); // 0x034c70  board-tile spawn check for a queued unit
+    i32 RetargetIdleUnit(CGrunt*);     // 0x0358a0  idle-unit retarget / despawn / near-band keep
     i32 winapi_0267c0_IntersectRect_PtInRect();
-    i32 winapi_02a570_IntersectRect(i32);
+    i32 winapi_02a570_IntersectRect(CGrunt*);
     CGrunt* FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH); // 0x2ab80
-    i32 winapi_02ae00_IntersectRect(i32, i32);
-    i32 winapi_02c140_IntersectRect_PtInRect(i32);
-    i32 winapi_02dfa0_IntersectRect(i32, i32, i32, i32);
-    i32 winapi_02e3a0_PtInRect(i32);
-    i32 winapi_031ca0_IntersectRect(i32);
-    i32 winapi_032060_IntersectRect(i32);
+    i32 winapi_02ae00_IntersectRect(CGrunt*, CGrunt*);
+    i32 winapi_02c140_IntersectRect_PtInRect(CGrunt*);
+    i32 winapi_02dfa0_IntersectRect(CGrunt*, i32, i32, i32);
+    i32 winapi_02e3a0_PtInRect(CGrunt*);
+    i32 winapi_031ca0_IntersectRect(CGrunt*);
+    i32 winapi_032060_IntersectRect(CGrunt*);
 
     // ---- run phase, formerly modeled as the two SEPARATE .cpp-local views
     // `CArriveMgr` and `CGruntMover` -----------------------------------------
@@ -73,18 +73,10 @@ public:
     i32 ResolveArrival(CGrunt* g); // 0x02c690  (was CArriveMgr::ResolveArrival)
     i32 Step(CGrunt* g);           // 0x031610  (was CGruntMover::Step)
     i32 Step33520(CGrunt* g);      // 0x033520  (was the CStepMgr view; GruntStateStep.cpp)
-
-    // The reloc-masked engine siblings both views dispatched on `this` (unreconstructed;
-    // declared-only so the __thiscall rel32 masks). Named by their ILT thunk rva.
-    i32 Gate1a14(CGrunt* g);                                     // thunk 0x1a14
-    void Effect374c(CGrunt* g, i32 kind);                        // thunk 0x374c
-    i32 Probe1a4b(CGrunt* g, i32 a, i32 b);                      // thunk 0x1a4b
-    void Impact25e5(CGrunt* g, i32 a, i32 b, i32 c);             // thunk 0x25e5
-    void SelfImpact2b58(CGrunt* g, i32 a, i32 b, i32 c);         // thunk 0x2b58
-    i32 Ready27ed(CGrunt* g);                                    // thunk 0x27ed
-    void Commit42e1(CGrunt* g);                                  // thunk 0x42e1
-    void Plan293c(CGrunt* g, i32 x, i32 y, i32 a, i32 b, i32 c); // thunk 0x293c
-    void Finish3e4f(CGrunt* g, CGrunt* a);                       // thunk 0x3e4f
+    // 0x032ce0: the 10x10 trigger/goal scan. Its former CScanMgr view is this
+    // class: caller 0x267c0 passes this, +0x0c/+0xcc agree, and its +0xf4/+0xf8
+    // goal table is CPtrArray m_0f0's data/count pair.
+    i32 ScanRegion(CGrunt* g);
 
     // ---- head block 0x000..0xdc: two phase-views of the same bytes ---------
     // AUDIT 2026-07-21 (union-reconcile map; the arms are ONE field set):

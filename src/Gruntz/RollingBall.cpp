@@ -264,8 +264,8 @@ i32 CRollingBall::Update() {
         CWwdGameObjectA* logic = m_object;
         i32 cx = logic->m_screenX;
         i32 cy = logic->m_screenY;
-        if (cx < g_gameReg->m_viewOriginR && cx >= g_gameReg->m_viewOriginL
-            && cy < g_gameReg->m_viewOriginB && cy >= g_gameReg->m_viewOriginT) {
+        if (cx < g_gameReg->m_viewBounds.right && cx >= g_gameReg->m_viewBounds.left
+            && cy < g_gameReg->m_viewBounds.bottom && cy >= g_gameReg->m_viewBounds.top) {
             g_gameReg->m_cmdGrid->m_rollingballWanted = 1;
         }
         CWwdGameObjectA* logic2 = m_object;

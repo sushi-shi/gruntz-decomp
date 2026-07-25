@@ -121,8 +121,10 @@ public:
     i32 CopyFrom(CImage* other);                 // 0x1532b0  (clone the surface from another image)
     i32
     SetOrigin(CImageFrameDesc* desc, i32 mode); // 0x153330 (copy desc origin for mode 3/4, else 0)
-    void RenderFrame(void* a, void* b, void* c, void* d);                    // 0x153790
-    void RenderFrameClipped(void* a, void* b, void* c, void* d, void* rect); // 0x153810
+    void RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags); // 0x153790
+    void RenderFrameClipped(
+        CDDrawSurfacePair* target, i32 x, i32 y, RECT* clipRect, i32 flags
+    ); // 0x153810
 
     // The 5 sprite blit/clip routines (0x1538c0..0x1544d0): compute the on-screen
     // sprite rect (with optional X/Y flip in the anchor math + an optional m_3c

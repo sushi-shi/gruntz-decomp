@@ -22,6 +22,7 @@
 #include <DDrawMgr/DirectDrawMgr.h> // CDDrawPtrCollections::FindFwd/FindBack (display-mode pool)
 #include <Io/SaveGame.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/StateMgrBZ.h>
 #include <Rez/FrameClock.h>   // the frame-clock/timer band SaveState/LoadState/PerFrameTick stream
 #include <Gruntz/Fonts.h>     // FreeFontsMemory (the Close teardown run)
 #include <Gruntz/SoundFont.h> // CloseSoundFontDevice (ditto)
@@ -139,7 +140,7 @@ i32 g_debugDisplayFlags; // bits: 1 obj count, 4 world pos, 0x10 frame rate,
 DATA(0x00245570)
 DirectInputMgr2* g_inputMgr = 0; // DAT_00245570
 DATA(0x00245578)
-StateMgrBZ* g_spawnConfig = 0; // DAT_00245578 (canonical binding; also decl'd in Play.h)
+StateMgrBZ* g_spawnConfig = 0; // _g_spawnConfig; C linkage inherited from StateMgrBZ.h
 
 // CGruntzMgr's ctor/dtor pass the m_options[4] element ctor/dtor to the __ehvec
 // iterators through the retail /INCREMENTAL ILT thunks 0x2a7c (ctor) / 0x1465 (dtor).
@@ -2287,12 +2288,12 @@ i32 CGameMgr::HandleCommand(i32, GruntzCommand, i32) {
 // CGruntzMgr::RecomputeViewScale (0x08f7f0; ret). Recomputes the world view's
 // three scaled-extent pairs from its tile rect (width/height + 1) at three zoom
 // factors (1.4 / 5.3 / 1.12), notifying the view after each pair, then snapshots
-// the view's edge origins (m_5c +0x40..+0x4c, biased by 0x60) into m_viewOriginL..m_148.
+// the view's edge origins (m_5c +0x40..+0x4c, biased by 0x60) into m_viewBounds.left..m_148.
 // No-op when no world is loaded. The int extents are converted to float once and
 // reused across the three scale passes (fild/fst then fld).
 // @early-stop
 // ~83% x87-scheduling wall: logic is exact (same 1.4/5.3/1.12 scales, same view
-// writes + per-pass Notify + the m_viewOriginL..m_148 edge snapshot). Retail keeps the
+// writes + per-pass Notify + the m_viewBounds.left..m_148 edge snapshot). Retail keeps the
 // freshly-converted extent in st0 with `fst` (store-and-keep) and multiplies it
 // in place; MSVC here emits `fstp` (store-and-pop) + a reload `fld`, a 1-2 instr
 // FPU-stack scheduling drift per pass. No source spelling flips fst<->fstp;
@@ -2324,10 +2325,10 @@ void CGruntzMgr::RecomputeViewScale() {
     if (v->m_mainPlane == 0) {
         return;
     }
-    m_viewOriginL = (v->m_mainPlane)->m_originX - 0x60;
-    m_viewOriginT = (m_world->m_level->m_mainPlane)->m_originY - 0x60;
-    m_viewOriginR = (m_world->m_level->m_mainPlane)->m_extentX + 0x60;
-    m_viewOriginB = (m_world->m_level->m_mainPlane)->m_extentY + 0x60;
+    m_viewBounds.left = (v->m_mainPlane)->m_viewRect.left - 0x60;
+    m_viewBounds.top = (m_world->m_level->m_mainPlane)->m_viewRect.top - 0x60;
+    m_viewBounds.right = (m_world->m_level->m_mainPlane)->m_viewRect.right + 0x60;
+    m_viewBounds.bottom = (m_world->m_level->m_mainPlane)->m_viewRect.bottom + 0x60;
 }
 
 // -------------------------------------------------------------------------
@@ -2464,7 +2465,7 @@ i32 CGruntzMgr::SaveState(CFileMemBase* ar) {
     ar->Write(&m_130, 4);
     ar->Write(&m_134, 4);
     ar->Write(&m_optionsCount, 4);
-    ar->Write(&m_viewOriginL, 0x10); // the 0x10-byte view-origin block (+0x13c..+0x148)
+    ar->Write(&m_viewBounds.left, 0x10); // the 0x10-byte view-origin block (+0x13c..+0x148)
     ar->Write(&g_lastNow, 4);
     ar->Write(&g_frameDelta, 4);
     ar->Write(&g_frameTime, 4);
@@ -2511,7 +2512,7 @@ i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
     ar->Read(&m_130, 4);
     ar->Read(&m_134, 4);
     ar->Read(&m_optionsCount, 4);
-    ar->Read(&m_viewOriginL, 0x10); // view-origin block (+0x13c..+0x148)
+    ar->Read(&m_viewBounds.left, 0x10); // view-origin block (+0x13c..+0x148)
     ar->Read(&g_lastNow, 4);
     ar->Read(&g_frameDelta, 4);
     ar->Read(&g_frameTime, 4);
@@ -3016,11 +3017,12 @@ void CGruntzMgr::Close() {
     }
     if (g_spawnConfig) {
         StateMgrBZ* v = g_spawnConfig;
-        v->m_0 = 0;
-        v->m_4 = 0;
-        v->m_8 = 0;
-        v->m_10 = 0;
-        v->m_14 = 0;
+        v->m_device = 0;
+        v->m_keyboard = 0;
+        v->m_joystick = 0;
+        v->m_joystick2 = 0;
+        v->m_deviceList = 0;
+        v->m_mode = 0;
         operator delete(v);
         g_spawnConfig = 0;
     }
@@ -3476,8 +3478,8 @@ INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
             // the view's `m_24->m_5c` IS CGameLevel::m_mainPlane (+0x5c) - the field exists
             // on the real class under its real name; only the fake view lacked it.
             CDDrawWorkerHost* warp = g_gameReg->m_world->m_level->m_mainPlane;
-            i32 seedX = warp->m_originX;
-            i32 seedY = warp->m_originY;
+            i32 seedX = warp->m_viewRect.left;
+            i32 seedY = warp->m_viewRect.top;
             SetDlgItemInt(hDlg, 0x40e, seedX, 0);
             SetDlgItemInt(hDlg, 0x40f, seedY, 0);
             return 1;

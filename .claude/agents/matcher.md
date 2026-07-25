@@ -41,14 +41,19 @@ The common jobs, all yours:
 - **Home globals / bind DATA / kill link defects** (PHANTOM / UNDEFINED-DATA / DIVERGENT) when
   they cross your path.
 
-## CLEANLINESS OVER CURRENT % — MAX FUZZY IS THE GATE (2026-07-14, governing)
+## PER-FUNCTION MAX FUZZY IS THE ONLY MATCHING LEDGER (governing)
 
-**We track MAX fuzzy% (best-ever per fn), not current fuzzy%. So a CURRENT-% dip NEVER matters —
-MAX preserves your best result forever.** Almost every ugly shortcut in this tree exists because a
-past lane feared a small % drop and took the hack instead of the clean shape. **That fear is now
-void.** Do the correct, clean, typed thing EVERYWHERE, even when it costs current %. Report the drop;
-do not revert it, do not avoid the work. (Example: consolidating the kTile `#define`s into a typed
-enum cost ~0.13% current fuzzy on one TU's scheduling wall — done anyway, MAX held.)
+**The campaign goal is for every function's historical MAX fuzzy to reach 100%. It is not a goal
+for every function to be 100% in the same build.** `MAX` preserves each function's best observed
+result, so a current-% dip, a lower current exact-function count, or movement in unrelated functions
+does not cost anything.
+
+MSVC codegen is easily perturbed by compiler state. A typedef, include, declaration, function, or
+other source above the target can change register allocation and scheduling in that function and
+elsewhere in the TU. Therefore current fuzzy, overall fuzzy, and current exact totals are never
+acceptance criteria and their movement is not a regression investigation queue. Do the correct,
+clean, typed thing everywhere; keep it whenever the build succeeds and the MAX gate holds. Never
+revert correct work to restore simultaneous exactness or a current aggregate.
 
 **Banned constructs — each is a metric-evasion or placeholder hack; ELIMINATE, never create:**
 1. **Per-TU `extern` decls** (of globals OR functions). A symbol belongs in its real **owner's
@@ -146,18 +151,17 @@ parameter declared `MyEnum` mangles as `W4MyEnum@@` where `int` mangles as `H`. 
   the enum, that is a deliberate change: verify the resulting mangled name still binds, and
   say so in the report.
 
-This is cleanup, not matching: it costs nothing and it is how the knowledge you paid for
-survives you.
+This is cleanup, not a claim about current codegen neutrality. It is how the knowledge you
+paid for survives you.
 
 ### The only metric that counts this phase
 
 **View cleanliness**, driven to 0: `placeholder classes` · `.cpp-local views` ·
 `void* m_` members · `)this` casts · `)m_` casts.
 
-**% IS ALLOWED TO DROP, AND IT WILL.** Structure comes first; **once every view is gone we
-do a dedicated pass to recover the structure and the points.** Do not defend a number, do
-not A/B a drop, do not revert a correct dissolution because it cost you points, do not
-`@early-stop` over it. One line in the report; move on.
+**Current % is allowed to move, and it will.** Structure comes first. Do not defend a current
+number, A/B its movement, revert a correct dissolution, or add `@early-stop` because of it.
+Continue raising per-function MAX independently until every function's MAX reaches 100%.
 
 **Casts are a symptom, never a target.** Fix the TYPE (`void* m_` → the real class), and the
 cast falls out on its own. Deleting a cast without fixing the type just relocates the lie.
@@ -167,8 +171,8 @@ cast falls out on its own. Deleting a cast without fixing the type just relocate
 The campaign is past pure matching — it is recovering the ORIGINAL TU structure
 (rehoming functions/globals to their true files, dissolving fake views, binding
 symbols to the RIGHT rva). In this phase: **do NOT fear regalloc ripple and do NOT
-protect match %.** A %-drop from moving a function/global/view to its true home, or
-from correcting a binding, is EXPECTED and RECOVERS as more structure lands.
+protect current match %.** Movement from placing a function/global/view in its true
+home or correcting a binding is expected and has no cost while MAX holds.
 
 > ## REGALLOC DROPS ARE EXPECTED. DO NOT SPEND BUDGET ON THEM.
 >
@@ -186,10 +190,9 @@ from correcting a binding, is EXPECTED and RECOVERS as more structure lands.
 > - In the report, **one line** is enough: *"N functions moved, /O2 ripple from <the header
 >   or type I changed>"*. No mechanism essay is required for ordinary ripple.
 >
-> **The ONE thing that still deserves scrutiny:** a drop that suggests the *shape is wrong*
-> — a function you actually rewrote that got worse, a crater (tens of points), or a change
-> in emitted **arity/return type/offsets**. That is a signal about correctness, not about
-> regalloc. Everything else: take the drop, keep the structure, move on.
+> Current-score movement alone never proves the shape is wrong, even in a function you edited.
+> Scrutinize substantive evidence instead: wrong arity, return type, offsets, constants,
+> relocations, ownership, control flow, build failure, or a MAX-gate failure.
 >
 > Measured this campaign: **the lie repeatedly scored better than the truth** (a wrong
 > vtable, a fake reinterpret, and a fabricated base each propped up a number). And
@@ -206,10 +209,11 @@ still governs an ordinary from-scratch reconstruction; it does NOT license rever
 a correct structural change to protect a number. Retargeting a call/global to the RIGHT
 function/rva and dropping the fake view is USUALLY byte-neutral — but **not always** (a
 real signature or type can genuinely differ from the fake view's), and when it isn't,
-**take the %-hit anyway**: keep the correct binding, mark `@early-stop` + note it, and
-NEVER revert the retarget to protect %. The only thing you ever revert is an ACCIDENT —
+keep the correct binding. Do not mark `@early-stop`, investigate, or report a cost merely
+because current codegen moved. NEVER revert the retarget to protect current %. The only
+thing you ever revert is an ACCIDENT —
 an edit you didn't intend or a wrong value you can fix to the *right* one. A deliberate
-correct change that costs % stays.
+correct change stays.
 
 ## Reconstruction mandate (non-negotiable)
 
@@ -274,24 +278,20 @@ are assigned is game/engine code, so you never identify or handle library yourse
 batch's size to fit your budget. So budget is never a reason to stop short of the
 mandate above: complete every assigned function (to 100% or a byte-proven `@early-stop`).**
 
-**JUDGE BY MAX %, NOT THE GENERAL %.** The build's *overall/current* % can DIP while
-structural work lands elsewhere in the tree — e.g. the inline-header migration moves
-inline/virtual one-liners (`GetTypeTag`, `Update`, small accessors) into their class
-headers, which TRANSIENTLY drops `symbol_names` rows for any class whose vtable-emitting
-`.cpp` isn't reconstructed yet; that coverage backfills automatically as the campaign
-fills those TUs in. **A lower general % is NOT your regression and NOT a reason to
-revert.** What matters is the **MAX / best-% high-water mark**: `status.py` tracks a
-per-function `best%`, and `gruntz build` reports whether MAX held. Keep every function
-at or above its high-water, push your target toward its own max — and ignore a lower
-general % caused by other agents' structural churn. When `gruntz build` says **"MAX %
-unchanged"**, nothing you own got worse; do not get spooked. Only a *drop in your own
-function's best%* (or a build failure) is a real regression to fix.
+**JUDGE ONLY MATCHING PROGRESS BY PER-FUNCTION MAX, NEVER BY THE GENERAL/CURRENT BUILD.**
+The build's current scores can move because MSVC compiler state is sensitive even to a
+typedef or declaration above a function. This can perturb many unrelated functions.
+`status.py` retains a per-function `best%`, and `gruntz build` verifies that ledger with
+the MAX gate. When the gate holds, no matching progress was lost. Continue pushing each
+function's historical MAX to 100%; they do not need to be simultaneously exact. Do not
+attribute, bisect, report as a cost, or revert ordinary current-score and exact-count
+movement. A build failure or MAX-gate failure still requires investigation.
 
 **Two work modes (know which your brief is):** the mandate above is RECONSTRUCTION mode —
 maximize %. A CLEANUP brief (folds/merges/de-hack/typing per the orchestrator) follows the
 clean-room mandate instead (docs/cleanup-plan.md): the binary-proven correct shape wins,
-regalloc/header % drops are accepted + reported, never a reason to defer or revert correct
-work. Only a build failure or wrong evidence stops a cleanup change.
+regalloc/header current-score movement is ignored, never a reason to defer or revert correct
+work. Only a build failure, MAX-gate failure, or wrong evidence stops a cleanup change.
 
 **NAME-PRESERVING FOLDS (hard rule):** a fold/merge must never degrade knowledge. When a
 view you are deleting carries a semantic field/method name (`m_attractCounter`, `originX`,
@@ -727,12 +727,10 @@ other TUs), where letting the compiler emit a vtable would produce a divergent o
 out prematurely** (an incomplete polymorphic class emits a wrong vtable and regresses); remove it
 when the class is fully modeled and the emitted vtable matches retail.
 
-**Verify each type swap with a build — a % drop is evidence to READ, not an auto-revert.** A drop
-**localized at the retyped accesses** means the binary disproves the new shape: a typed
-`CTypedPtrArray<CPtrArray,…>` dropped GameLevel's ctor **89.5%→72%**, proving that array is a
-genuine `CDWordArray` — the casts are authentic dev code; revert and keep them. A **diffuse**
-regalloc/header-fattening ripple from a binary-proven-correct shape is NOT such proof — in a
-cleanup brief it is an accepted, reported cost (see "Two work modes"), never a reason to revert.
+**Verify each type swap with a build, but do not interpret current fuzzy movement as proof for or
+against the type.** Compiler-state perturbation can be local or diffuse and can be large. Establish
+the type from retail layout, operations, mangling, RTTI, xrefs, and relocations. Keep the
+evidence-backed type when the build succeeds and MAX holds.
 
 **Never** write `(T*)0xADDR` for a data reference — a bare immediate carries no relocation and
 caps the function below 100%. Use the real string literal / named global / typed extern

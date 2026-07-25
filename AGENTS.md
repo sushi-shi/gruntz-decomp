@@ -14,8 +14,16 @@ one-off campaign notes here.
 - Correct structure outranks a transient fuzzy score: real classes, types,
   ownership, storage, control flow, calling conventions, and relocation targets
   must not be distorted to protect a metric.
-- Objdiff fuzzy percentage is a navigation signal, not proof. Raw instructions,
-  constants, and ordered relocations decide whether a reconstruction is correct.
+- The matching objective is **per-function historical MAX fuzzy = 100%**. It is
+  neither necessary nor expected for every function to be at 100% in the same
+  build. The MAX ledger preserves each function's best observed result.
+- Current fuzzy, overall fuzzy, and current exact-function totals are navigation
+  signals, not acceptance gates. MSVC codegen is easily perturbed by declaration
+  state: even a typedef, include, or declaration above a function can change that
+  function or unrelated functions in the TU. Accept correct work whenever the
+  MAX gate holds; never revert it to restore a current aggregate or exact count.
+- Raw instructions, constants, and ordered relocations decide whether a
+  reconstruction is correct.
 - The binary has no original PDB. Generated PDBs, delinked objects, inferred
   function boundaries, and contribution ranges are working models, not new
   ground truth.
@@ -193,10 +201,12 @@ missing logic or unresolved relocation work.
   `docs/patterns/` plus `docs/patterns/INDEX.md`; correct older pattern claims
   that the new evidence falsifies. Do not leave this knowledge only in a source
   comment or commit message.
-- When a correctness fix lowers a metric, identify the exact functions, data,
-  or relocations that stopped pairing and document the reusable cause before
-  committing. Treat that delta as a reverse-audit queue for similar hidden
-  mismodelling; do not erase the evidence merely to restore MAX.
+- Do not investigate ordinary current-score or exact-count movement caused by a
+  correctness fix. Codegen perturbation is expected and unrelated functions do
+  not impose a cost. Investigate only evidence of a substantive modeling error,
+  a build failure, or a MAX-gate failure. A reproducible perturbation mechanism
+  may be documented for later reverse use, but attribution is not a prerequisite
+  for keeping or committing correct work.
 - Documentation and green tests are claims, not authority. If retail evidence
   falsifies a documented tool contract, correct the documentation and add a
   negative or integration control that exercises the full path which failed;

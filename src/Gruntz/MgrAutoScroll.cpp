@@ -141,8 +141,8 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
     }
 
     CDDrawSurfaceMgr* o = pm->m_world;
-    pm->m_viewOriginL = o->m_level->m_mainPlane->m_originX - 0x60;
-    pm->m_viewOriginT = o->m_level->m_mainPlane->m_originY - 0x60;
-    pm->m_viewOriginR = o->m_level->m_mainPlane->m_extentX + 0x60;
-    pm->m_viewOriginB = o->m_level->m_mainPlane->m_extentY + 0x60;
+    pm->m_viewBounds.left = o->m_level->m_mainPlane->m_viewRect.left - 0x60;
+    pm->m_viewBounds.top = o->m_level->m_mainPlane->m_viewRect.top - 0x60;
+    pm->m_viewBounds.right = o->m_level->m_mainPlane->m_viewRect.right + 0x60;
+    pm->m_viewBounds.bottom = o->m_level->m_mainPlane->m_viewRect.bottom + 0x60;
 }

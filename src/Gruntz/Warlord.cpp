@@ -522,8 +522,8 @@ void CWarlord::BuildFortSplashParticles() {
     CWwdGameObjectA* o = m_object;
     i32 x = o->m_screenX;
     i32 y = o->m_screenY;
-    if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
-        && y < g_gameReg->m_viewOriginB && y >= g_gameReg->m_viewOriginT) {
+    if (x < g_gameReg->m_viewBounds.right && x >= g_gameReg->m_viewBounds.left
+        && y < g_gameReg->m_viewBounds.bottom && y >= g_gameReg->m_viewBounds.top) {
         CWwdGameObjectA* fx = g_gameReg->m_world->m_childGroup
                                   ->CreateSprite(0, x - 30, y + 10, 0xcf84f, "Particlez", 0x40003);
         if (fx != 0) {
@@ -583,8 +583,8 @@ i32 CWarlord::ResolveDeathAnimation() {
         CWwdGameObjectA* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
-            && y >= g->m_viewOriginT) {
+        if (x < g->m_viewBounds.right && x >= g->m_viewBounds.left && y < g->m_viewBounds.bottom
+            && y >= g->m_viewBounds.top) {
             g->m_cueSink->SpawnVoiceDriver(h->m_188, m_ownerTag, -1, -1, -1);
         }
     } else {
@@ -612,8 +612,8 @@ i32 CWarlord::RaiseBattleAlert() {
         CWwdGameObjectA* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
-            && y >= g->m_viewOriginT) {
+        if (x < g->m_viewBounds.right && x >= g->m_viewBounds.left && y < g->m_viewBounds.bottom
+            && y >= g->m_viewBounds.top) {
             g->m_cueSink->SpawnVoiceDriver(h->m_188, 0x435, -1, -1, -1);
         }
     } else {
@@ -643,8 +643,8 @@ i32 CWarlord::ResolveIdleAnimation() {
         CWwdGameObjectA* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
-            && y >= g->m_viewOriginT) {
+        if (x < g->m_viewBounds.right && x >= g->m_viewBounds.left && y < g->m_viewBounds.bottom
+            && y >= g->m_viewBounds.top) {
             g->m_cueSink->SpawnVoiceDriver(h->m_188, idx + 0x431, -1, -1, -1);
         }
     } else {
@@ -679,8 +679,8 @@ i32 CWarlord::ResolveBattlecryAnimation() {
         CWwdGameObjectA* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
-            && y >= g->m_viewOriginT) {
+        if (x < g->m_viewBounds.right && x >= g->m_viewBounds.left && y < g->m_viewBounds.bottom
+            && y >= g->m_viewBounds.top) {
             g->m_cueSink->SpawnVoiceDriver(h->m_188, idx + 0x42e, -1, -1, -1);
         }
     } else {

@@ -153,11 +153,11 @@ i32 CPoolItemA88::UpdateOverlay(
 
 RVA(0x00148af0, 0x58)
 i32 CPoolItemAB8::Setup(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4) {
-    memset(m_ddsd, 0, 0x6c);
-    m_ddsd[0] = 0x6c;
-    m_ddsd[0x1a] = a2 | 0x200;
-    m_ddsd[1] = a3;
-    m_ddsd[5] = a4;
+    memset(m_descWords, 0, sizeof(DDSURFACEDESC));
+    m_descSize = sizeof(DDSURFACEDESC);
+    m_surfaceCaps = a2 | 0x200;
+    m_descFlags = a3;
+    m_backBufferCount = a4;
     if (!CDDSurface::Init1(info, 0)) {
         return 0;
     }

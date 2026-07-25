@@ -701,6 +701,17 @@ class TestCleanlinessRatchet(unittest.TestCase):
         self.assertNotIn("m_y", code)
         self.assertIn("(int)", code)
 
+    def test_reinterpret_casts_are_a_down_only_metric(self):
+        code = cleanliness._strip(
+            "// reinterpret_cast<CFake*>(x)\n"
+            "auto* real = reinterpret_cast<CReal*>(value);\n"
+        )
+        self.assertEqual(len(cleanliness._REINTERPRET_CAST.findall(code)), 1)
+        self.assertIn("reinterpret_casts", cleanliness._RATCHET)
+        cleanliness.save_baseline([("reinterpret_casts", 7)])
+        merged = dict(cleanliness.merge_baseline_downonly([("reinterpret_casts", 8)]))
+        self.assertEqual(merged["reinterpret_casts"], 7)
+
 
 # --------------------------------------------------------------------------- #
 # vtable_slot_binding: the baseline must not read as empty (the found bug)     #

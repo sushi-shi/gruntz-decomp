@@ -119,10 +119,7 @@ public:
     i32 m_wrapH;       // +0x34  tile count down
     i32 m_tilePxW;     // +0x38  tile pixel width (log2 -> m_shiftX)
     i32 m_tilePxH;     // +0x3c  tile pixel height
-    i32 m_originX;     // +0x40  near tile-origin X (RecomputePlaneCoords out; Draw/wrap base)
-    i32 m_originY;     // +0x44  near tile-origin Y
-    i32 m_extentX;     // +0x48  far tile-extent X
-    i32 m_extentY;     // +0x4c  far tile-extent Y
+    RECT m_viewRect; // +0x40  visible world rectangle: near origin and far extent
     // +0x50  the plane's level-coord bounds (Build/InitGeometry copy). RECONCILED:
     // the ex-m_viewX/m_viewY "scroll pixel offset" reading was .left/.top - WrapCoord
     // translates world coords by the bounds ORIGIN; the ctor's -1 is the pre-Build

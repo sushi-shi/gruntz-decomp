@@ -61,7 +61,6 @@ class CGruntPuddle;
 
 class CTriggerMgr {
 public:
-    void* Spawn(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g);
     // 0x7abc0: Load(ar) - deserialize the whole trigger-mgr state from the reader
     // (the 4x15 placed-object grid, per-row state bands, byte table, record list,
     // ten selection lists, base object list, overlay sub-object + tail scalars).
@@ -425,9 +424,6 @@ public:
     ~CTriggerMgr();
 
     // --- self-called helpers the reconstructed leaves dispatch on `this` -----------------
-    // Still-UNRECONSTRUCTED CTriggerMgr methods (no body / RVA here). Reset3/RefreshB
-    // cover several retail RVAs of the same shape (all masked).
-    i32 Reset3(i32 a, i32 b, i32 c);
     // (ReportObjectAt is GONE - its thunk 0x3030 jumps to 0x6e120, which IS
     // ApplyTriggerB; CGrunt::StepPeerTracking calls the real name.)
     void ReportN(i32 a, i32 b, u8* bytes, i32 c, i32 d, i32 e, i32 f);

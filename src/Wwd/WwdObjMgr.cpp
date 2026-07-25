@@ -849,8 +849,8 @@ void CDDrawChildGroup::DrawObjectCounts() {
             } else if (box.left >= w) {
                 wl = box.left - w;
             }
-            i32 farEdge = view->m_extentX;
-            if (farEdge >= w && wl < view->m_originX && wl <= farEdge - w) {
+            i32 farEdge = view->m_viewRect.right;
+            if (farEdge >= w && wl < view->m_viewRect.left && wl <= farEdge - w) {
                 wl += w;
             }
         }
@@ -861,13 +861,13 @@ void CDDrawChildGroup::DrawObjectCounts() {
             } else if (box.top >= h) {
                 wt = box.top - h;
             }
-            i32 farEdge = view->m_extentY;
-            if (farEdge >= h && wt < view->m_originY && wt <= farEdge - h) {
+            i32 farEdge = view->m_viewRect.bottom;
+            if (farEdge >= h && wt < view->m_viewRect.top && wt <= farEdge - h) {
                 wt += h;
             }
         }
-        rc.left = wl - view->m_originX + view->m_bounds50.left;
-        rc.top = wt - view->m_originY + view->m_bounds50.top;
+        rc.left = wl - view->m_viewRect.left + view->m_bounds50.left;
+        rc.top = wt - view->m_viewRect.top + view->m_bounds50.top;
         view->WrapCoord(
             reinterpret_cast<i32*>(&rc.right),
             reinterpret_cast<i32*>(&rc.bottom)

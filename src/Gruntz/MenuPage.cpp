@@ -329,9 +329,9 @@ i32 CMenuPage::FocusPrev() {
 // commutative `m_offsetY + m_rectTop` operands at the y-init; not source-steerable (operand
 // order, hoisting, and raw-vs-member access all canonicalize to the same pick).
 RVA(0x00183b60, 0xe8)
-i32 CMenuPage::Layout(i32 ctx) {
+i32 CMenuPage::Layout(CDDrawSurfacePair* target) {
     if (m_flags & 4) {
-        return LayoutOne(ctx);
+        return LayoutOne(target);
     }
     i32 x0 = m_rect.left;
     i32 x1 = m_rect.right;
@@ -342,12 +342,7 @@ i32 CMenuPage::Layout(i32 ctx) {
         CImage* head = static_cast<CImage*>(sub->m_items.GetAt(sub->m_minIndex));
         if (head) {
             y += head->m_anchorY;
-            head->RenderFrame(
-                reinterpret_cast<void*>(ctx),
-                reinterpret_cast<void*>(x),
-                reinterpret_cast<void*>(y),
-                static_cast<void*>(0)
-            );
+            head->RenderFrame(target, x, y, 0);
             y += m_headGap + head->m_anchorY;
         }
     }
@@ -358,9 +353,9 @@ i32 CMenuPage::Layout(i32 ctx) {
         CMenuItem* item = cur->data;
         if (item) {
             y += item->GetWidth() / 2;
-            item->Place(ctx, x, y);
+            item->Place(target, x, y);
             if (item->m_state == 2 && !(m_flags & 8)) {
-                m_host->Draw(ctx, reinterpret_cast<i32>(item), x, y);
+                m_host->Draw(target, item, x, y);
             }
             y += item->GetWidth() / 2;
             y += m_rowSpacing;
@@ -421,7 +416,7 @@ i32 CMenuPage::CanWrap() {
 // operand-order pick as the sibling Layout (0x183b60) at the y-init - not source-
 // steerable (canonicalizes to the same register pick). Logic complete.
 RVA(0x00183e50, 0x11c)
-i32 CMenuPage::LayoutOne(i32 ctx) {
+i32 CMenuPage::LayoutOne(CDDrawSurfacePair* target) {
     i32 x0 = m_rect.left;
     i32 x1 = m_rect.right;
     i32 x = (((x1 - x0 + 1) / 2)) + m_offsetX + x0;
@@ -431,12 +426,7 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
         CImage* head = static_cast<CImage*>(sub->m_items.GetAt(sub->m_minIndex));
         if (head) {
             y += head->m_anchorY;
-            head->RenderFrame(
-                reinterpret_cast<void*>(ctx),
-                reinterpret_cast<void*>(x),
-                reinterpret_cast<void*>(y),
-                static_cast<void*>(0)
-            );
+            head->RenderFrame(target, x, y, 0);
             y += m_headGap + head->m_anchorY;
         }
     }
@@ -450,9 +440,9 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
         CMenuItem* item = cur->data;
         if (item) {
             y += item->GetWidth() / 2;
-            item->Place(ctx, col, y);
+            item->Place(target, col, y);
             if (item->m_state == 2 && !(m_flags & 8)) {
-                m_host->Draw(ctx, reinterpret_cast<i32>(item), col, y);
+                m_host->Draw(target, item, col, y);
             }
             y += item->GetWidth() / 2;
             y += m_rowSpacing;

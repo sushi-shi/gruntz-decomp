@@ -1,5 +1,6 @@
 #include <Mfc.h> // afx-first (Reticle's /GX EH frame builds a local CByteArray; RECT/IntersectRect)
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
+#include <Gruntz/Brickz.h> // BrickzCell (canonical 0x1c-byte tile cell)
 #include <Gruntz/GruntzMapMgr.h>  // the real +0x70 board class (ex GruntBoard view)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -35,11 +36,11 @@
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
         ra.bottom = pb->bottom;                                                                    \
-        if (!IntersectRect(&(grid)->m_60, &ra, &rb)) {                                             \
-            (grid)->m_60 = ra;                                                                     \
+        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
+            (grid)->m_bounds = ra;                                                                 \
         }                                                                                          \
-        (grid)->m_70 = (grid)->m_60.right - (grid)->m_60.left;                                     \
-        (grid)->m_74 = (grid)->m_60.bottom - (grid)->m_60.top;                                     \
+        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                           \
+        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                           \
     }
 
 #define RECYCLE_COORDS(head)                                                                       \
@@ -67,11 +68,11 @@
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
         ra.bottom = pb->bottom;                                                                    \
-        if (!IntersectRect(&(grid)->m_60, &ra, &rb)) {                                             \
-            (grid)->m_60 = ra;                                                                     \
+        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
+            (grid)->m_bounds = ra;                                                                 \
         }                                                                                          \
-        (grid)->m_70 = (grid)->m_60.right - (grid)->m_60.left;                                     \
-        (grid)->m_74 = (grid)->m_60.bottom - (grid)->m_60.top;                                     \
+        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                           \
+        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                           \
     }
 
 #define GRID_RECT_INLINE(grid)                                                                     \
@@ -86,11 +87,11 @@
         rb.top = 0;                                                                                \
         rb.right = (grid)->m_width;                                                                \
         rb.bottom = (grid)->m_height;                                                              \
-        if (!IntersectRect(&(grid)->m_60, &ra, &rb)) {                                             \
-            (grid)->m_60 = ra;                                                                     \
+        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
+            (grid)->m_bounds = ra;                                                                 \
         }                                                                                          \
-        (grid)->m_70 = (grid)->m_60.right - (grid)->m_60.left;                                     \
-        (grid)->m_74 = (grid)->m_60.bottom - (grid)->m_60.top;                                     \
+        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                           \
+        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                           \
     }
 
 #define DRAIN_COORDS()                                                                             \
@@ -144,9 +145,10 @@ i32 CGrunt::ResolveArrivalReposition() {
                         CWwdGameObjectA* h = m_object;
                         i32 vx = h->m_screenX;
                         i32 vy = h->m_screenY;
-                        i32* rect = &g_gameReg->m_world->m_level->m_mainPlane
-                                         ->m_originX; // the +0x40 visible rect
-                        if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
+                        const RECT* rect =
+                            &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                        if (vx < rect->right && vx >= rect->left && vy < rect->bottom
+                            && vy >= rect->top) {
                             g_gameReg->m_cueSink->SpawnVoiceDriver(
                                 reinterpret_cast<i32>(this),
                                 0x366,
@@ -233,7 +235,7 @@ i32 CGrunt::ArrivalScanA() {
     }
     m_defenderX = m_lastTilePxX;
     m_defenderY = m_lastTilePxY;
-    CScanGrid* grid = reinterpret_cast<CScanGrid*>(g_gameReg->m_tileGrid);
+    CMapMgr* grid = g_gameReg->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
     i32 c1[4];
@@ -342,7 +344,7 @@ L_ed006:
     }
     if (m_390 != 0) {
         CCueRect* board =
-            reinterpret_cast<CCueRect*>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX);
+            &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
         i32 x = m_object->m_screenX;
         i32 y = m_object->m_screenY;
         if (x < board->right && board->left <= x && y < board->bottom && board->top <= y) {
@@ -358,8 +360,8 @@ L_ed153:
         GruntCoord* coord = (reinterpret_cast<GruntCoordNode*>(m_31c.GetHeadPosition()))->m_coord;
         i32 col = coord->m_x;
         i32 row = coord->m_y;
-        CScanCell* cell = &grid->m_8[row][col];
-        if ((cell->m_flags & 0x8000) != 0 || cell->m_type == 0x97 || cell->m_type == 0x98) {
+        BrickzCell* cell = &grid->m_rows[row][col];
+        if ((cell->m_0 & 0x8000) != 0 || cell->m_10 == 0x97 || cell->m_10 == 0x98) {
             m_tileMgr
                 ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, (col << 5) + 0x10, (row << 5) + 0x10);
             SetEntrancePos(1, 1);
@@ -401,16 +403,16 @@ L_ed153:
         gb2.top = 0;
         gb2.right = grid->m_width;
         gb2.bottom = grid->m_height;
-        if (!IntersectRect(&grid->m_60, &lb, &gb2)) {
-            grid->m_60 = lb;
+        if (!IntersectRect(&grid->m_bounds, &lb, &gb2)) {
+            grid->m_bounds = lb;
         }
-        grid->m_70 = grid->m_60.right - grid->m_60.left;
-        grid->m_74 = grid->m_60.bottom - grid->m_60.top;
+        grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
+        grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
     }
     for (i32 row = isect.top; row < isect.bottom; row++) {
-        CScanCell* cell = &grid->m_8[row][isect.left];
+        BrickzCell* cell = &grid->m_rows[row][isect.left];
         for (i32 col = isect.left; col < isect.right; col++) {
-            if ((cell->m_flags & 0x8000) != 0 || cell->m_type == 0x97 || cell->m_type == 0x98) {
+            if ((cell->m_0 & 0x8000) != 0 || cell->m_10 == 0x97 || cell->m_10 == 0x98) {
                 i32 dr = row - cy;
                 IABS(dr);
                 i32 dc = col - cx;
@@ -422,7 +424,7 @@ L_ed153:
                     bestRow = row;
                 }
             }
-            cell++; // 0x1c stride (sizeof CScanCell)
+            cell++;
         }
     }
     if (best != 0x7fffffff) {
@@ -545,9 +547,7 @@ i32 CGrunt::WanderStep() {
                             m_arrivalRow = g->m_tileOwnerLo;
                             m_defenderState = 1;
                             if (CGameLevel::PointInBounds(
-                                    reinterpret_cast<const LevelCoordRect*>(
-                                        &g_gameReg->m_world->m_level->m_mainPlane->m_originX
-                                    ),
+                                    &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
                                     m_object->m_screenX,
                                     m_object->m_screenY
                                 )
@@ -993,9 +993,7 @@ i32 CGrunt::UpdateArrival() {
                             this->m_arrivalRow = g->m_tileOwnerLo;
                             this->m_defenderState = 1;
                             i32 r = CGameLevel::PointInBounds(
-                                reinterpret_cast<const LevelCoordRect*>(
-                                    &g_gameReg->m_world->m_level->m_mainPlane->m_originX
-                                ),
+                                &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
                                 this->m_object->m_screenX,
                                 this->m_object->m_screenY
                             );
@@ -1161,7 +1159,7 @@ i32 CGrunt::ArrivalScanB() {
     }
     m_defenderX = m_lastTilePxX;
     m_defenderY = m_lastTilePxY;
-    CScanGrid* grid = reinterpret_cast<CScanGrid*>(g_gameReg->m_tileGrid);
+    CMapMgr* grid = g_gameReg->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
     i32 c1[4];
@@ -1265,9 +1263,7 @@ L_ed006b:
                 i32 x = m_object->m_screenX;
                 i32 y = m_object->m_screenY;
                 if (CGameLevel::PointInBounds(
-                        reinterpret_cast<const LevelCoordRect*>(
-                            &g_gameReg->m_world->m_level->m_mainPlane->m_originX
-                        ),
+                        &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
                         x,
                         y
                     )
@@ -1324,11 +1320,11 @@ L_scanb:
         gb2.top = 0;
         gb2.right = grid->m_width;
         gb2.bottom = grid->m_height;
-        if (!IntersectRect(&grid->m_60, &lb, &gb2)) {
-            grid->m_60 = lb;
+        if (!IntersectRect(&grid->m_bounds, &lb, &gb2)) {
+            grid->m_bounds = lb;
         }
-        grid->m_70 = grid->m_60.right - grid->m_60.left;
-        grid->m_74 = grid->m_60.bottom - grid->m_60.top;
+        grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
+        grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
     }
 
     i32 best = 0x7fffffff;
@@ -1614,9 +1610,8 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 CWwdGameObjectA* h = m_object;
                 i32 x = h->m_screenX;
                 i32 y = h->m_screenY;
-                i32* rect =
-                    &g_gameReg->m_world->m_level->m_mainPlane->m_originX; // the +0x40 visible rect
-                if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
+                const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                if (x < rect->right && x >= rect->left && y < rect->bottom && y >= rect->top) {
                     g_gameReg->m_cueSink
                         ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
                 }
@@ -1786,9 +1781,9 @@ i32 CGrunt::StepArrivalDefense() {
                 CWwdGameObjectA* h = m_object;
                 i32 vx = h->m_screenX;
                 i32 vy = h->m_screenY;
-                i32* rect =
-                    &g_gameReg->m_world->m_level->m_mainPlane->m_originX; // the +0x40 visible rect
-                if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
+                const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                if (vx < rect->right && vx >= rect->left && vy < rect->bottom
+                    && vy >= rect->top) {
                     g_gameReg->m_cueSink
                         ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
                 }
@@ -1904,12 +1899,9 @@ i32 CGrunt::StepArrivalDefense() {
                 m_arrivalRow = occ->m_tileOwnerLo;
                 m_defenderState = 1;
                 CWwdGameObjectA* h = m_object;
-                i32* rect =
-                    &g_gameReg->m_world->m_level->m_mainPlane->m_originX; // the +0x40 visible rect
+                const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
                 if (CGameLevel::PointInBounds(
-                        reinterpret_cast<const LevelCoordRect*>(rect),
-                        h->m_screenX,
-                        h->m_screenY
+                        rect, h->m_screenX, h->m_screenY
                     )
                     == 0) {
                     goto L_f318a;
@@ -1990,7 +1982,7 @@ i32 CGrunt::ArrivalScanC() {
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0) {
         return 1;
     }
-    CScanGrid* grid = reinterpret_cast<CScanGrid*>(g_gameReg->m_tileGrid);
+    CMapMgr* grid = g_gameReg->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
     i32 c1[4];
@@ -2089,7 +2081,7 @@ i32 CGrunt::ArrivalScanC() {
         != 0) {
         if (m_390 != 0) {
             CCueRect* board =
-                reinterpret_cast<CCueRect*>(&g_gameReg->m_world->m_level->m_mainPlane->m_originX);
+                &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
             i32 x = m_object->m_screenX;
             i32 y = m_object->m_screenY;
             if (x < board->right && board->left <= x && y < board->bottom && board->top <= y) {
@@ -2106,8 +2098,8 @@ L_tailc:
         GruntCoord* coord = (reinterpret_cast<GruntCoordNode*>(m_31c.GetHeadPosition()))->m_coord;
         i32 col = coord->m_x;
         i32 row = coord->m_y;
-        CScanCell* cell = &grid->m_8[row][col];
-        if ((cell->m_flags & 0x40) != 0 || (cell->m_flags & 0x10000) != 0) {
+        BrickzCell* cell = &grid->m_rows[row][col];
+        if ((cell->m_0 & 0x40) != 0 || (cell->m_0 & 0x10000) != 0) {
             m_tileMgr
                 ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, (col << 5) + 0x10, (row << 5) + 0x10);
             SetEntrancePos(1, 1);
@@ -2142,19 +2134,19 @@ L_tailc:
             gb2.top = 0;
             gb2.right = grid->m_width;
             gb2.bottom = grid->m_height;
-            if (!IntersectRect(&grid->m_60, &lb, &gb2)) {
-                grid->m_60 = lb;
+            if (!IntersectRect(&grid->m_bounds, &lb, &gb2)) {
+                grid->m_bounds = lb;
             }
-            grid->m_70 = grid->m_60.right - grid->m_60.left;
-            grid->m_74 = grid->m_60.bottom - grid->m_60.top;
+            grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
+            grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
         }
         i32 best = 0x7fffffff;
         i32 bestCol = -1;
         i32 bestRow = -1;
         for (i32 row = isect.top; row < isect.bottom; row++) {
-            CScanCell* cell = &grid->m_8[row][isect.left];
+            BrickzCell* cell = &grid->m_rows[row][isect.left];
             for (i32 col = isect.left; col < isect.right; col++) {
-                if ((cell->m_flags & 0x10000) != 0) {
+                if ((cell->m_0 & 0x10000) != 0) {
                     i32 dr = row - cy;
                     IABS(dr);
                     i32 dc = col - cx;
@@ -2166,7 +2158,7 @@ L_tailc:
                         bestRow = row;
                     }
                 }
-                cell++; // 0x1c stride (sizeof CScanCell)
+                cell++;
             }
         }
         if (best != 0x7fffffff) {
@@ -2264,7 +2256,7 @@ state2: {
     }
     i32 x = m_arrivalCol;
     i32 y = m_arrivalRow;
-    CScanGrid* grid = reinterpret_cast<CScanGrid*>(g_gameReg->m_tileGrid);
+    CMapMgr* grid = g_gameReg->m_tileGrid;
     {
         RECT box;
         box.left = x - 4;
@@ -2276,11 +2268,11 @@ state2: {
         gb.top = 0;
         gb.right = grid->m_width;
         gb.bottom = grid->m_height;
-        if (!IntersectRect(&grid->m_60, &box, &gb)) {
-            grid->m_60 = box;
+        if (!IntersectRect(&grid->m_bounds, &box, &gb)) {
+            grid->m_bounds = box;
         }
-        grid->m_70 = grid->m_60.right - grid->m_60.left;
-        grid->m_74 = grid->m_60.bottom - grid->m_60.top;
+        grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
+        grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
     }
     acc.SetAtGrow(acc.GetSize(), ((x - 2) << 16) | ((y - 2) & 0xffff));
     acc.SetAtGrow(acc.GetSize(), ((x - 1) << 16) | ((y - 2) & 0xffff));
@@ -2303,12 +2295,12 @@ state2: {
         i32 pt = acc.GetAt(sel);
         i32 px = static_cast<u32>(pt) >> 0x10;
         i32 py = pt & 0xffff;
-        CScanGrid* pl = reinterpret_cast<CScanGrid*>(g_gameReg->m_tileGrid);
+        CMapMgr* pl = g_gameReg->m_tileGrid;
         i32 flag;
         if (static_cast<u32>(px) < static_cast<u32>(pl->m_width)
             && static_cast<u32>(py) < static_cast<u32>(pl->m_height) && px < pl->m_width
             && py < pl->m_height) {
-            flag = (reinterpret_cast<i32*>(pl->m_8[py]))[px * 8 - px];
+            flag = pl->m_rows[py][px].m_0;
         } else {
             flag = 1;
         }
@@ -2322,7 +2314,7 @@ state2: {
         acc.RemoveAt(sel, 1);
     }
 build_tail: {
-    CScanGrid* pl2 = reinterpret_cast<CScanGrid*>(g_gameReg->m_tileGrid);
+    CMapMgr* pl2 = g_gameReg->m_tileGrid;
     GRID_BOUNDS(pl2);
     (reinterpret_cast<CByteArray*>(&acc))->~CByteArray();
     goto common;
@@ -2377,9 +2369,7 @@ state0: {
         goto common;
     }
     if (CGameLevel::PointInBounds(
-            reinterpret_cast<const LevelCoordRect*>(
-                &g_gameReg->m_world->m_level->m_mainPlane->m_originX
-            ),
+            &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
             m_object->m_screenX,
             m_object->m_screenY
         )
@@ -2401,11 +2391,11 @@ common: {
         GruntCoord* nc = head->m_next->m_coord;
         i32 fx = nc->m_x;
         i32 fy = nc->m_y;
-        CScanGrid* pl = reinterpret_cast<CScanGrid*>(g_gameReg->m_tileGrid);
+        CMapMgr* pl = g_gameReg->m_tileGrid;
         i32 flag;
         if (static_cast<u32>(fx) < static_cast<u32>(pl->m_width)
             && static_cast<u32>(fy) < static_cast<u32>(pl->m_height)) {
-            flag = (reinterpret_cast<i32*>(pl->m_8[fy]))[fx * 8 - fx];
+            flag = pl->m_rows[fy][fx].m_0;
         } else {
             flag = 1;
         }
@@ -2426,13 +2416,13 @@ common: {
         return 1;
     }
     GruntCoord* p1 = CoordHead()->m_coord;
-    CScanGrid* pl2 = reinterpret_cast<CScanGrid*>(g_gameReg->m_tileGrid);
+    CMapMgr* pl2 = g_gameReg->m_tileGrid;
     i32 gx = p1->m_x;
     i32 gy = p1->m_y;
     i32 flag2;
     if (static_cast<u32>(gx) < static_cast<u32>(pl2->m_width)
         && static_cast<u32>(gy) < static_cast<u32>(pl2->m_height)) {
-        flag2 = (reinterpret_cast<i32*>(pl2->m_8[gy]))[gx * 8 - gx];
+        flag2 = pl2->m_rows[gy][gx].m_0;
     } else {
         flag2 = 1;
     }
@@ -2587,9 +2577,7 @@ i32 CGrunt::SeekTarget() {
                     != 0) {
                     i32 by = this->m_object->m_screenY;
                     i32 bx = this->m_object->m_screenX;
-                    CCueRect* board = reinterpret_cast<CCueRect*>(
-                        &g_gameReg->m_world->m_level->m_mainPlane->m_originX
-                    );
+                    CCueRect* board = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
                     if (bx < board->right && board->left <= bx && by < board->bottom
                         && board->top <= by) {
                         g_gameReg->m_cueSink
@@ -2694,9 +2682,7 @@ i32 CGrunt::SeekTarget() {
         }
         if (this->m_390 != 0) {
             i32 r = CGameLevel::PointInBounds(
-                reinterpret_cast<const LevelCoordRect*>(
-                    &g_gameReg->m_world->m_level->m_mainPlane->m_originX
-                ),
+                &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
                 this->m_object->m_screenX,
                 this->m_object->m_screenY
             );
@@ -2781,9 +2767,8 @@ i32 CGrunt::StepArrivalDefenseLean() {
             CWwdGameObjectA* h = m_object;
             i32 vx = h->m_screenX;
             i32 vy = h->m_screenY;
-            i32* rect =
-                &g_gameReg->m_world->m_level->m_mainPlane->m_originX; // the +0x40 visible rect
-            if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
+            const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+            if (vx < rect->right && vx >= rect->left && vy < rect->bottom && vy >= rect->top) {
                 g_gameReg->m_cueSink
                     ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
             }
@@ -2802,9 +2787,9 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 CWwdGameObjectA* h = m_object;
                 i32 vx = h->m_screenX;
                 i32 vy = h->m_screenY;
-                i32* rect =
-                    &g_gameReg->m_world->m_level->m_mainPlane->m_originX; // the +0x40 visible rect
-                if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
+                const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                if (vx < rect->right && vx >= rect->left && vy < rect->bottom
+                    && vy >= rect->top) {
                     g_gameReg->m_cueSink
                         ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
                 }

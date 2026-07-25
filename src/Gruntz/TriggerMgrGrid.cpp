@@ -28,6 +28,9 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzMapMgr.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/BattlezData.h>          // CBattlezData - the REAL +0x7c HUD/score board
 #include <DDrawMgr/DDrawChildGroup.h>    // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>            // canonical CUserLogic (switch/trigger logic virtuals)
@@ -259,8 +262,8 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
 RVA(0x0006be30, 0x47)
 CGrunt* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 startRow) {
     CGameLevel* view = m_world->m_level;
-    i32 px = view->m_mainPlane->m_originX - view->m_planeCtx.left + sx;
-    i32 py = view->m_mainPlane->m_originY - view->m_planeCtx.top + sy;
+    i32 px = view->m_mainPlane->m_viewRect.left - view->m_planeCtx.left + sx;
+    i32 py = view->m_mainPlane->m_viewRect.top - view->m_planeCtx.top + sy;
     return CellHitTest(px, py, outRow, outCol, startRow);
 }
 
@@ -340,7 +343,7 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
     }
     if (force != 0) {
         if (keep == 0) {
-            if (this->Reset3(col, row, 0) != 0) {
+            if (RemoveCellRecord(col, row, 0) != 0) {
                 return 1;
             }
         }
@@ -575,7 +578,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28) {
 
 // 0x6e120: ApplyTriggerB(a1c, col, row, a28, a2c, a30) - the exit variant of ApplyTriggerA:
 // same cell lookup + validation, then snap (a28,a2c) to a tile and route the cell's exit
-// logic; updates +0x384 and returns the applier's boolean. (__stdcall: ret 0x10.)
+// logic; updates the arrival phase and returns the applier's boolean. (__stdcall: ret 0x10.)
 // Reconstructed to plateau.
 // @early-stop
 // big branchy trigger-applier (0x552 B): mirrors ApplyTriggerA's wall - kind-dispatch ladder
@@ -598,9 +601,107 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
     }
     i32 by = (a2c & ~0x1f) + 0x10;
     i32 bx = (a28 & ~0x1f) + 0x10;
-    cell->m_coordRetryCount = 0;
-    i32 r = cell->ApplyBox(bx, by, row, -1, 1, 0);
-    return r != 0 ? 1 : 0;
+    if (cell->RectContainsGated(bx, by) == 0) {
+        return -1;
+    }
+
+    cell->m_arrivalPhase = 0;
+    i32 hitRow;
+    i32 hitCol;
+    CGrunt* hit = CellHitTest(a28, a2c, &hitRow, &hitCol, 5);
+    if (hit == 0) {
+        CGruntzMapMgr* map = g_gameReg->m_tileGrid;
+        i32 tx = a28 >> 5;
+        i32 ty = a2c >> 5;
+        i32 flags = 1;
+        if (static_cast<u32>(tx) < map->m_width && static_cast<u32>(ty) < map->m_height) {
+            flags = map->m_rows[ty][tx].m_0;
+        }
+        if ((flags & 0x40939) != 0 || (flags & 0x82) != 0) {
+            return 0;
+        }
+
+        i32 kind = cell->m_198;
+        i32 moveKind = kind == 0x1e ? cell->m_moveKind : 0;
+        if (LoadToyBoxIcon(bx, by, col, kind, moveKind) == 0) {
+            return 0;
+        }
+
+        char* name = *g_typeColl.GetNameRecord(cell->m_objAux->m_1c);
+        if (strcmp(name, "I") == 0) {
+            LoadTileArrivalFx(
+                col,
+                row,
+                cell->m_moveTileX,
+                cell->m_moveTileY,
+                cell->m_entranceReason,
+                -1
+            );
+        }
+        cell->PlayMoveSound(bx, by);
+        if (cell->m_poweredUp != 0 && cell->m_neighborValid == 0) {
+            cell->m_entranceActive = 0;
+            cell->m_combatActive = 0;
+            cell->m_neighborValid = 0;
+            cell->m_poweredUp = 0;
+            cell->ResetEntranceAnimation(1, 0, 0);
+        }
+        cell->LoadVehicleGruntSprites(0);
+        return 1;
+    }
+
+    if ((hit->m_lastTilePxX != bx || hit->m_lastTilePxY != by)
+        && (hit->m_commitPxX != bx || hit->m_commitPxY != by)) {
+        return 0;
+    }
+
+    char* hitName = *g_typeColl.GetNameRecord(hit->m_objAux->m_1c);
+    if (strcmp(hitName, "G") == 0 || strcmp(hitName, "L") == 0
+        || strcmp(hitName, "P") == 0) {
+        return 0;
+    }
+
+    i32 kind = cell->m_198;
+    i32 moveKind = kind == 0x1e ? cell->m_moveKind : 0;
+    cell->PlayMoveSound(bx, by);
+    cell->m_neighborValid = 0;
+    if (cell->m_poweredUp != 0) {
+        cell->m_entranceActive = 0;
+        cell->m_combatActive = 0;
+        cell->m_neighborValid = 0;
+        cell->m_poweredUp = 0;
+        cell->ResetEntranceAnimation(1, 0, 0);
+    }
+
+    char* name = *g_typeColl.GetNameRecord(cell->m_objAux->m_1c);
+    if (strcmp(name, "I") == 0) {
+        LoadTileArrivalFx(
+            col,
+            row,
+            cell->m_moveTileX,
+            cell->m_moveTileY,
+            cell->m_entranceReason,
+            -1
+        );
+    }
+    if (hit->LoadGruntTypeTable(kind, 1, moveKind, 0) == 0) {
+        return 0;
+    }
+    cell->LoadVehicleGruntSprites(0);
+
+    if (hit->m_tileOwnerHi != col) {
+        CGameObject* obj = cell->m_object;
+        CDDrawWorkerHost* plane = g_gameReg->m_world->m_level->m_mainPlane;
+        if (obj->m_screenX >= plane->m_viewRect.left
+            && obj->m_screenX < plane->m_viewRect.right
+            && obj->m_screenY >= plane->m_viewRect.top
+            && obj->m_screenY < plane->m_viewRect.bottom) {
+            g_gameReg->m_cueSink->SpawnVoiceDriver(
+                reinterpret_cast<i32>(cell), 0x38e, -1, 0, -1, -1
+            );
+        }
+    }
+    return 1;
 }
 
 RVA(0x0006e7e0, 0x5)

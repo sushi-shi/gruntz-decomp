@@ -7,6 +7,7 @@
 #include <Mfc.h> // CString, HDC
 
 class CDDrawSurfaceMgr; // the world holder latched at m_18 (<Gruntz/GameRegistry.h>)
+class CDDrawSurfacePair;
 
 class CFontConfig;
 
@@ -47,7 +48,7 @@ public:
     // The chat-box cheat-code processor ("Enable Cheatzfile" command).
     void ProcessCheatInput(i32 a, i32 b);
     // Render the chat-box sprite + stamp its text for the current mode.
-    i32 LoadChatBoxSprite(i32 arg1);
+    i32 LoadChatBoxSprite(CDDrawSurfacePair* target);
     // (The ex-"HitTest43e0" decl was a THUNK-ALIAS DUPLICATE: ILT 0x43e0 jmps to the
     // real HitTest @0x21140 above - CPlay's OnMouseUp probe reaches it that way. One
     // function, two source names, one of them an unresolvable symbol.)

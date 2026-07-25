@@ -148,7 +148,7 @@ RVA(0x00150660, 0x49)
 void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     memcpy(&m_b8, &m_lastX, 36);
     if (m_dirtyArmed != -1) {
-        RECT* r = reinterpret_cast<RECT*>(&m_dirtyRect.left);
+        RECT* r = &m_dirtyRect;
         a->m_surface->BltFast(r->left, r->top, b->m_surface, r, 0x10);
         m_dirtyArmed = -1;
     }
@@ -174,13 +174,13 @@ void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32
         RECT ir;
         if (IntersectRect(
                 &ir,
-                reinterpret_cast<RECT*>(&m_dirtyRect.left),
-                reinterpret_cast<RECT*>(&m_c0)
+                &m_dirtyRect,
+                &m_shadowRect
             )) {
             UnionRect(
                 &ir,
-                reinterpret_cast<RECT*>(&m_dirtyRect.left),
-                reinterpret_cast<RECT*>(&m_c0)
+                &m_dirtyRect,
+                &m_shadowRect
             );
             i32 w = ir.right - ir.left + 1;
             i32 h = ir.bottom - ir.top + 1;
@@ -235,13 +235,13 @@ void CWwdGameObjectA::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b
         RECT ir;
         if (IntersectRect(
                 &ir,
-                reinterpret_cast<RECT*>(&m_dirtyRect.left),
-                reinterpret_cast<RECT*>(&m_c0)
+                &m_dirtyRect,
+                &m_shadowRect
             )) {
             UnionRect(
                 &ir,
-                reinterpret_cast<RECT*>(&m_dirtyRect.left),
-                reinterpret_cast<RECT*>(&m_c0)
+                &m_dirtyRect,
+                &m_shadowRect
             );
             i32 pos[2];
             i32 size[2];

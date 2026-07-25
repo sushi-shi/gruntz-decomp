@@ -177,7 +177,7 @@ i32 CTileTriggerLogic::Tick() {
         POINT pt;
         pt.x = sx;
         pt.y = sy;
-        if (!PtInRect(reinterpret_cast<const RECT*>(&g_gameReg->m_viewOriginL), pt) || srcId == 0x68
+        if (!PtInRect(&g_gameReg->m_viewBounds, pt) || srcId == 0x68
             || srcId == 0x67) {
             transId = 0;
         } else {
@@ -378,7 +378,7 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
     POINT pt;
     pt.y = (m_tileY << 5) + 0x10;
     pt.x = (m_tileX << 5) + 0x10;
-    if (PtInRect(reinterpret_cast<const RECT*>(&g_gameReg->m_viewOriginL), pt)) {
+    if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
         inRect = 1;
     }
 
@@ -428,10 +428,10 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
     }
 
     // (5) on-screen + no active override -> play the LEVEL_ROCKBREAK cue.
-    if ((m_tileX << 5) + 0x10 >= g_gameReg->m_viewOriginR
-        || (m_tileX << 5) + 0x10 < g_gameReg->m_viewOriginL
-        || (m_tileY << 5) + 0x10 >= g_gameReg->m_viewOriginB
-        || (m_tileY << 5) + 0x10 < g_gameReg->m_viewOriginT) {
+    if ((m_tileX << 5) + 0x10 >= g_gameReg->m_viewBounds.right
+        || (m_tileX << 5) + 0x10 < g_gameReg->m_viewBounds.left
+        || (m_tileY << 5) + 0x10 >= g_gameReg->m_viewBounds.bottom
+        || (m_tileY << 5) + 0x10 < g_gameReg->m_viewBounds.top) {
         return;
     }
     CDDrawSubMgrLeafScan* sreg =
@@ -950,8 +950,8 @@ i32 CTileActionEvent::Process(i32 arg) {
         } else if (effect == 0x13e) {
             i32 px = (m_tileX << 5) + 0x10;
             i32 py = (m_tileY << 5) + 0x10;
-            if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
-                && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT
+            if (px < g_gameReg->m_viewBounds.right && px >= g_gameReg->m_viewBounds.left
+                && py < g_gameReg->m_viewBounds.bottom && py >= g_gameReg->m_viewBounds.top
                 && g_gameReg->m_world->m_soundRegistry->m_emitGate == 0) {
                 LeafCue* snd = static_cast<LeafCue*>(
                     g_gameReg->m_world->m_soundRegistry->Lookup("GRUNTZ_NORMALGRUNT_IMPACTMM3")
@@ -979,8 +979,8 @@ i32 CTileActionEvent::Process(i32 arg) {
 
     i32 px = (m_tileX << 5) + 0x10;
     i32 py = (m_tileY << 5) + 0x10;
-    if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
-        && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
+    if (px < g_gameReg->m_viewBounds.right && px >= g_gameReg->m_viewBounds.left
+        && py < g_gameReg->m_viewBounds.bottom && py >= g_gameReg->m_viewBounds.top) {
         CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup
                                    ->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
         if (spr != 0) {

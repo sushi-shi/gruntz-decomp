@@ -49,7 +49,8 @@
 #include <Crypto/BitStreamBlowfish.h>
 #include <Crypto/Blowfish.h>
 
-#include <Rez/RezSyncGlobals.h> // RezSync's private split-views of g_inputMgr/g_spawnConfig
+#include <DinMgr2/InputMgrPtr.h>
+#include <Gruntz/StateMgrBZ.h>
 
 void* operator new(unsigned int);
 void operator delete(void*);
@@ -441,16 +442,24 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_scoreHud = new CBattlezData;
     m_scoreHud->InitWithRecords(m_saveSink->m_pad24); // the opaque header tail = the records blob
 
-    // --- Phase 12: the grunt spawn-config singleton (g_spawnConfig) -------
-    g_spawnConfig = static_cast<CGruntSpawnConfig*>(RezAlloc(0x28));
+    // --- Phase 12: input-state aggregator singleton ----------------------
+    g_spawnConfig = static_cast<StateMgrBZ*>(RezAlloc(sizeof(StateMgrBZ)));
     if (g_spawnConfig) {
-        i32* z = reinterpret_cast<i32*>(g_spawnConfig);
-        z[0] = z[1] = z[2] = z[4] = z[5] = 0;
+        g_spawnConfig->m_device = 0;
+        g_spawnConfig->m_keyboard = 0;
+        g_spawnConfig->m_joystick = 0;
+        g_spawnConfig->m_joystick2 = 0;
+        g_spawnConfig->m_deviceList = 0;
+        g_spawnConfig->m_mode = 0;
     }
-    if (!g_spawnConfig->Init(static_cast<CSpawnOwner*>(g_inputMgr))) {
+    if (!g_spawnConfig->Init(g_inputMgr, 6)) {
         if (g_spawnConfig) {
-            i32* z = reinterpret_cast<i32*>(g_spawnConfig);
-            z[0] = z[1] = z[2] = z[4] = z[5] = 0;
+            g_spawnConfig->m_device = 0;
+            g_spawnConfig->m_keyboard = 0;
+            g_spawnConfig->m_joystick = 0;
+            g_spawnConfig->m_joystick2 = 0;
+            g_spawnConfig->m_deviceList = 0;
+            g_spawnConfig->m_mode = 0;
             RezFree(g_spawnConfig);
             g_spawnConfig = 0;
         }

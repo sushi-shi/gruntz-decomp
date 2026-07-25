@@ -2,11 +2,9 @@
 #define GRUNTZ_WWD_WWDSPATIALMGR_H
 
 #include <Ints.h>
+#include <Win32.h>
 #include <rva.h>
 #include <Gruntz/WwdGridIter.h> // CWwdGridIter - the embedded cursor member (+0x70)
-
-struct tagRECT; // the Init grid rect (Win32 RECT; completed via <Mfc.h>/<Win32.h> in the .cpp)
-typedef struct tagRECT RECT;
 
 class CDDrawChildGroup; // the master object manager (+0x00)
 class CWwdGrid;         // one plane's spatial bucket index (each TU supplies its own def)
@@ -20,16 +18,13 @@ struct CWwdSpatialMgr {
     // +0x10..+0x3c: each grid's world rect (seeded to (0,0,w-1,h-1) from the plane
     // geometry's three dimension pairs). grid1's rect is at +0x30 and grid2's at
     // +0x20 - the write order of the matched InitScrollRects.
-    i32 m_rect0Left, m_rect0Top, m_rect0Right, m_rect0Bottom; // +0x10  (grid0)
-    i32 m_rect2Left, m_rect2Top, m_rect2Right, m_rect2Bottom; // +0x20  (grid2)
-    i32 m_rect1Left, m_rect1Top, m_rect1Right, m_rect1Bottom; // +0x30  (grid1)
+    RECT m_rect0; // +0x10  grid0 world rectangle
+    RECT m_rect2; // +0x20  grid2 world rectangle
+    RECT m_rect1; // +0x30  grid1 world rectangle
     i32 m_org0x, m_org0y; // +0x40 / +0x44  grid0 scroll origin (seeded to its centre)
     i32 m_org1x, m_org1y; // +0x48 / +0x4c  grid1 scroll origin
     i32 m_org2x, m_org2y; // +0x50 / +0x54  grid2 scroll origin
-    i32 m_bbMinX;         // +0x58
-    i32 m_bbMinY;         // +0x5c
-    i32 m_bbMaxX;         // +0x60
-    i32 m_bbMaxY;         // +0x64
+    RECT m_bounds;        // +0x58  shared spatial bounds copied from Init's RECT
     i32 m_scrollX;        // +0x68  cached scroll position (InitScrollRects parks it at
     i32 m_scrollY;        // +0x6c  -22222 so the first SetTarget always moves)
     CWwdGridIter m_iter;  // +0x70  embedded cursor for the GetFirst/GetNext API

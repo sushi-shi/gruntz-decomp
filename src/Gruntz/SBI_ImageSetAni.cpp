@@ -104,12 +104,12 @@ i32 CSBI_ImageSetAni::Render() {
         }
         m_frame = cel;
         if (cel != 0) {
-            i32 surfaceCtx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
+            CDDrawSurfacePair* surfaceCtx = g_gameReg->m_world->m_drawTarget->m_backPair;
             cel->RenderFrame(
-                reinterpret_cast<void*>(surfaceCtx),
-                reinterpret_cast<void*>((cel->m_anchorX + m_rect14.m_0)),
-                reinterpret_cast<void*>((cel->m_anchorY + m_rect14.m_4)),
-                static_cast<void*>(0)
+                surfaceCtx,
+                cel->m_anchorX + m_rect14.m_0,
+                cel->m_anchorY + m_rect14.m_4,
+                0
             );
         }
         u32 now = timeGetTime();

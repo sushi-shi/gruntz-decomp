@@ -130,8 +130,8 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
         case 1: {
             // step the current scroll position one unit toward the target.
             CGameLevel* gh = (static_cast<CDDrawSurfaceMgr*>(st->m_0c))->m_level;
-            i32 curX = gh->m_mainPlane->m_originX;
-            i32 curY = gh->m_mainPlane->m_originY;
+            i32 curX = gh->m_mainPlane->m_viewRect.left;
+            i32 curY = gh->m_mainPlane->m_viewRect.top;
             if (curX < st->m_scrollTargetX) {
                 curX++;
             } else if (curX > st->m_scrollTargetX) {

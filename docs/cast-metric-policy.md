@@ -6,6 +6,8 @@ drive **every** metric in `config/cleanliness-baseline.tsv` to **0**, then move 
 metrics, all drive-to-0:
 
 - the cast counts — `)this casts`, `)m_ casts`, `(char*) casts`, `(const char*) casts`
+- every `reinterpret_cast` (a down-only ceiling even when a reviewed instance is
+  temporarily legitimate)
 - `void* m_ members`
 - `.cpp-local views`
 - `placeholder classes`
@@ -35,6 +37,11 @@ A cast is a **symptom**; the defect is usually the type above it. Three cases:
    - **`reinterpret_cast`** — pointer / handle reinterprets between unrelated real types.
    - **`const_cast`** — const only.
    - **`dynamic_cast`** — RTTI downcasts (rare here; the binary is mostly /GR-off).
+
+Named does not mean invisible. The cleanliness board counts every
+`reinterpret_cast` and ratchets that total down. A reviewed ABI/container cast may
+remain while its owner is understood, but a new one fails the gate: first prove why
+the existing type cannot express the operation.
 
 3. **Offset-cast `(char*)x + N` — HARD BAN, no exception.** Pointer + byte-offset to reach a member is
    *always* a mis-model: the member at `+N` is real, so it becomes named access `&x->m_field` /

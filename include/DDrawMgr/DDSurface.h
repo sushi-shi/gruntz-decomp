@@ -3,9 +3,8 @@
 
 #include <Mfc.h> // real MFC CPtrArray (the +0x94 element array, value member) + POSITION
 #include <Ints.h>
+#include <ddraw.h> // DDSURFACEDESC + IDirectDrawSurface (the embedded descriptor/COM boundary)
 #include <rva.h>
-
-struct IDirectDrawSurface; // <ddraw.h> in the dispatching TUs; pointer-only here
 
 struct CDDPalette;          // fwd (SetPalette takes a wrapper ptr; PAUCDDPalette => struct)
 class CDDrawPtrCollections; // fwd (the display/pool manager passed as the palette/init context)
@@ -258,33 +257,34 @@ public:
     POSITION m_pos; // +0x04  cached CPtrList POSITION (the pool-A item slot); pad otherwise
     IDirectDrawSurface* m_ddSurface;     // +0x08  held DirectDraw surface (released via Release)
     IDirectDrawSurface* m_ddSurfaceBack; // +0x0c  held back/secondary surface (also released)
-    // +0x10..+0x7c: the surface's embedded DDSURFACEDESC scratch (0x6c). AUDITED
-    // 2026-07-21 - the i32-typed arms are LOAD-BEARING and must NOT become a real
-    // DDSURFACEDESC member: the game does SIGNED math on dwWidth/dwHeight/lPitch
-    // everywhere (jge/idiv codegen), and typing them DWORD flipped ~15 fns unsigned
-    // (Tile 100->93.8 etc. - reverted). The union IS the signed reading of the real
-    // DDSURFACEDESC layout, like the MapMgr row-table arms.
+    // +0x10..+0x7c: one embedded DDSURFACEDESC scratch (0x6c), with two authentic
+    // roles. DirectDraw receives the SDK arm; game arithmetic uses the signed arm
+    // because retail performs signed comparisons/divisions on width, height and
+    // pitch. A plain DDSURFACEDESC member changed those operations to unsigned.
     union {
-        u32 m_ddsd[(0x7c - 0x10) / 4]; // +0x10  full DDSURFACEDESC word view (dwSize @[0])
+        DDSURFACEDESC m_apiDesc; // +0x10  official COM-boundary representation
+        i32 m_descWords[0x6c / 4]; // +0x10  signed word view used by retail clear loops
         struct {
-            union {                // +0x10  DDSURFACEDESC scratch (m_desc-relative accessors)
-                char m_desc[0x24]; //        raw view (Refresh bulk-clears the desc as dwords)
-                struct {
-                    i32 m_descSize; // +0x10  dwSize
-                    char m_descpad14[0x18 - 0x14];
-                    i32 m_height; // +0x18  dwHeight (compared vs decoded height)
-                    i32 m_width;  // +0x1c  dwWidth  (compared vs decoded width)
-                    i32 m_pitch;  // +0x20  lPitch (row stride)
-                };
-            };
-            i32 m_lockBits;            // +0x34  desc lpSurface (locked bits pointer; returned by
-                                       //         Lock, used as the pixel buffer by Fill/BlitDirect)
-            char m_pad38[0x64 - 0x38]; // +0x38
-            i32 m_srcBitDepth;         // +0x64  pixel-format bit depth / colour-key colour
-            i32 m_rMask;               // +0x68  DDPIXELFORMAT R channel bitmask
-            i32 m_gMask;               // +0x6c  DDPIXELFORMAT G channel bitmask
-            i32 m_bMask;               // +0x70  DDPIXELFORMAT B channel bitmask
-            char m_pad74[0x7c - 0x74]; // +0x74
+            i32 m_descSize;             // +0x10  dwSize
+            i32 m_descFlags;            // +0x14  dwFlags
+            i32 m_height;               // +0x18  dwHeight
+            i32 m_width;                // +0x1c  dwWidth
+            i32 m_pitch;                // +0x20  lPitch
+            i32 m_backBufferCount;      // +0x24  dwBackBufferCount
+            i32 m_mipMapCount;          // +0x28  dwMipMapCount / dwZBufferBitDepth
+            i32 m_alphaBitDepth;        // +0x2c  dwAlphaBitDepth
+            i32 m_descReserved;         // +0x30  dwReserved
+            i32 m_lockBits;             // +0x34  lpSurface (32-bit pointer carrier)
+            char m_colorKeys[0x20];      // +0x38  four DDCOLORKEY records
+            i32 m_pixelFormatSize;       // +0x58  ddpfPixelFormat.dwSize
+            i32 m_pixelFormatFlags;      // +0x5c  ddpfPixelFormat.dwFlags
+            i32 m_pixelFormatFourCC;     // +0x60  ddpfPixelFormat.dwFourCC
+            i32 m_srcBitDepth;           // +0x64  ddpfPixelFormat.dwRGBBitCount
+            i32 m_rMask;                 // +0x68  ddpfPixelFormat.dwRBitMask
+            i32 m_gMask;                 // +0x6c  ddpfPixelFormat.dwGBitMask
+            i32 m_bMask;                 // +0x70  ddpfPixelFormat.dwBBitMask
+            i32 m_alphaMask;             // +0x74  ddpfPixelFormat.dwRGBAlphaBitMask
+            i32 m_surfaceCaps;           // +0x78  ddsCaps.dwCaps
         };
     };
     i32 m_dontOwn; // +0x7c  don't-own flag (bit0 => surfaces not released)

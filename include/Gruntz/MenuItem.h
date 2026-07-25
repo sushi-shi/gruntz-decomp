@@ -7,6 +7,7 @@
 #include <Mfc.h>
 
 class CMenuItem;
+class CDDrawSurfacePair;
 
 struct CMenuItemCatalog {
     char pad0[0x10];
@@ -54,7 +55,7 @@ public:
                                               // Configure chains it w/ 2)
     virtual i32 Detach();                     // 0x1855d0  slot 7  (return-1 default)
     virtual i32 Notify(void* arg);            // 0x1855e0  slot 8  (declared-only)
-    virtual i32 Place(i32 ctx, i32 x, i32 y); // 0x1855f0  slot 9
+    virtual i32 Place(CDDrawSurfacePair* target, i32 x, i32 y); // 0x1855f0  slot 9
     virtual i32 Configure(void* notify);      // 0x185690  slot 10 (0x185690)
     virtual i32 Release();                    // 0x1856c0  slot 11 (Disable(1) + return 1)
     virtual i32 Trigger();                    // 0x1856d0  slot 12

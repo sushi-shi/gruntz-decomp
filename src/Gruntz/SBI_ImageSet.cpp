@@ -114,12 +114,10 @@ i32 CSBI_ImageSet::Render() {
         m_frame = cel;
         if (cel != 0) {
             cel->RenderFrame(
-                reinterpret_cast<void*>(
-                    reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair)
-                ),
-                reinterpret_cast<void*>((cel->m_anchorX + m_rect14.m_0)),
-                reinterpret_cast<void*>((cel->m_anchorY + m_rect14.m_4)),
-                static_cast<void*>(0)
+                g_gameReg->m_world->m_drawTarget->m_backPair,
+                cel->m_anchorX + m_rect14.m_0,
+                cel->m_anchorY + m_rect14.m_4,
+                0
             );
         }
     }

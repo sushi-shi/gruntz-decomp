@@ -4,6 +4,7 @@
 #include <rva.h>
 #include <Ints.h>
 #include <Gruntz/StatusBarMgr.h> // the 0x630 status-bar host (the fly's owner)
+#include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Image/CImage.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (m_byteArr tab-state array)
@@ -74,12 +75,10 @@ i32 CWarpStoneFly::Tick(i32 dt) {
 RVA(0x0010a2f0, 0x35)
 i32 CWarpStoneFly::Draw() {
     m_sprite->RenderFrame(
-        reinterpret_cast<void*>(
-            (reinterpret_cast<CWsfGameMgr*>(g_gameReg->m_world))->m_drawable->m_context
-        ),
-        reinterpret_cast<void*>(static_cast<i32>(m_currentX)),
-        reinterpret_cast<void*>(static_cast<i32>(m_currentY)),
-        static_cast<void*>(0)
+        g_gameReg->m_world->m_drawTarget->m_backPair,
+        static_cast<i32>(m_currentX),
+        static_cast<i32>(m_currentY),
+        0
     );
     return 1;
 }

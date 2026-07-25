@@ -41,14 +41,14 @@ i32 CLightFxRender::Init(CGruntzMgr* mgr, i32 arg2) {
     if (!AllocSurface()) {
         return 0;
     }
-    m_dstL = 0;
-    m_dstT = 0;
-    m_dstR = 0;
-    m_dstB = 0;
-    m_srcL = 0;
-    m_srcT = 0;
-    m_srcR = 0;
-    m_srcB = 0;
+    m_dstRect.left = 0;
+    m_dstRect.top = 0;
+    m_dstRect.right = 0;
+    m_dstRect.bottom = 0;
+    m_srcRect.left = 0;
+    m_srcRect.top = 0;
+    m_srcRect.right = 0;
+    m_srcRect.bottom = 0;
     return 1;
 }
 
@@ -253,7 +253,7 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
     if (surf == 0) {
         return 0;
     }
-    RECT* srcRect = reinterpret_cast<RECT*>(&m_srcL);
+    RECT* srcRect = &m_srcRect;
     *srcRect = *src;
     i32 w = src->right - src->left + 1;
     i32 h = src->bottom - src->top + 1;
@@ -268,20 +268,20 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
     m_scale = scale;
     i32 wpx = surf->m_width * scale;
     i32 hpx = surf->m_height * scale;
-    m_dstL = cx - ((wpx - (wpx >> 31)) >> 1);
-    m_dstT = cy - ((hpx - (hpx >> 31)) >> 1);
-    m_dstR = surf->m_width * scale + m_dstL;
-    m_dstB = surf->m_height * scale + m_dstT;
-    if (ctx->m_surface->BltEx(&m_dstL, m_surface, 0, 0x1000000, 0) != 0) {
+    m_dstRect.left = cx - ((wpx - (wpx >> 31)) >> 1);
+    m_dstRect.top = cy - ((hpx - (hpx >> 31)) >> 1);
+    m_dstRect.right = surf->m_width * scale + m_dstRect.left;
+    m_dstRect.bottom = surf->m_height * scale + m_dstRect.top;
+    if (ctx->m_surface->BltEx(&m_dstRect.left, m_surface, 0, 0x1000000, 0) != 0) {
         return 0;
     }
     // The live world rect is the main plane's origin/extent quad (+0x40..+0x4c);
     // >>5 converts world pixels to tile units.
     CDDrawWorkerHost* world = m_world->m_level->m_mainPlane;
-    i32 l = world->m_originX >> 5;
-    i32 t = world->m_originY >> 5;
-    i32 rr = world->m_extentX >> 5;
-    i32 b = world->m_extentY >> 5;
+    i32 l = world->m_viewRect.left >> 5;
+    i32 t = world->m_viewRect.top >> 5;
+    i32 rr = world->m_viewRect.right >> 5;
+    i32 b = world->m_viewRect.bottom >> 5;
     if (m_scale != 1) {
         l *= m_scale;
         t *= m_scale;
@@ -289,10 +289,10 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
         b = b * m_scale + m_scale - 1;
     }
     RECT box;
-    box.left = l + m_dstL;
-    box.right = rr + m_dstL;
-    box.top = t + m_dstT;
-    box.bottom = b + m_dstT;
+    box.left = l + m_dstRect.left;
+    box.right = rr + m_dstRect.left;
+    box.top = t + m_dstRect.top;
+    box.bottom = b + m_dstRect.top;
     DrawBorder(&box, ctx, 0xffff);
     return 1;
 }
@@ -1571,27 +1571,27 @@ i32 CLightFxRender::ApplyB(i32, i32 x, i32 y) {
 // pins x in edx / y in eax - a pervasive register rename through every instr.
 RVA(0x000a9660, 0xca)
 i32 CLightFxRender::ClampRect(i32 x, i32 y, i32* out, i32 margin) {
-    if (x < m_srcL || x > m_srcR || y < m_srcT || y > m_srcB) {
+    if (x < m_srcRect.left || x > m_srcRect.right || y < m_srcRect.top || y > m_srcRect.bottom) {
         return 0;
     }
     if (margin > 0) {
-        if (x < m_dstL && m_dstL - x <= margin) {
-            x = m_dstL;
+        if (x < m_dstRect.left && m_dstRect.left - x <= margin) {
+            x = m_dstRect.left;
         }
-        if (x > m_dstR && x - m_dstR <= margin) {
-            x = m_dstR;
+        if (x > m_dstRect.right && x - m_dstRect.right <= margin) {
+            x = m_dstRect.right;
         }
-        if (y < m_dstT && m_dstT - y <= margin) {
-            y = m_dstT;
+        if (y < m_dstRect.top && m_dstRect.top - y <= margin) {
+            y = m_dstRect.top;
         }
-        if (y > m_dstB && y - m_dstB <= margin) {
-            y = m_dstB;
+        if (y > m_dstRect.bottom && y - m_dstRect.bottom <= margin) {
+            y = m_dstRect.bottom;
         }
     }
-    if (x < m_dstL || x > m_dstR || y < m_dstT || y > m_dstB) {
+    if (x < m_dstRect.left || x > m_dstRect.right || y < m_dstRect.top || y > m_dstRect.bottom) {
         return 0;
     }
-    out[0] = (x - m_dstL) / m_scale;
-    out[1] = (y - m_dstT) / m_scale;
+    out[0] = (x - m_dstRect.left) / m_scale;
+    out[1] = (y - m_dstRect.top) / m_scale;
     return 1;
 }

@@ -229,7 +229,7 @@ i32 CTimer::Tick(i32 dt) {
 }
 
 RVA(0x0009bfa0, 0xb4)
-i32 CTimer::Draw(i32 pSurf, i32 force) {
+i32 CTimer::Draw(CDDrawSurfacePair* target, i32 force) {
     if (!m_running) {
         return 1;
     }
@@ -239,42 +239,37 @@ i32 CTimer::Draw(i32 pSurf, i32 force) {
     }
     if (m_frameMinTens) {
         m_frameMinTens->RenderFrame(
-            reinterpret_cast<void*>((pSurf)),
-            reinterpret_cast<void*>((m_baseX - 0x22)),
-            reinterpret_cast<void*>((m_baseY)),
-            static_cast<void*>((0))
+            target,
+            m_baseX - 0x22,
+            m_baseY,
+            0
         );
     }
     if (m_frameMinOnes) {
         m_frameMinOnes->RenderFrame(
-            reinterpret_cast<void*>((pSurf)),
-            reinterpret_cast<void*>((m_baseX - 0x10)),
-            reinterpret_cast<void*>((m_baseY)),
-            static_cast<void*>((0))
+            target,
+            m_baseX - 0x10,
+            m_baseY,
+            0
         );
     }
     if (m_frameColon) {
-        m_frameColon->RenderFrame(
-            reinterpret_cast<void*>((pSurf)),
-            reinterpret_cast<void*>((m_baseX)),
-            reinterpret_cast<void*>((m_baseY)),
-            static_cast<void*>((0))
-        );
+        m_frameColon->RenderFrame(target, m_baseX, m_baseY, 0);
     }
     if (m_frameSecTens) {
         m_frameSecTens->RenderFrame(
-            reinterpret_cast<void*>((pSurf)),
-            reinterpret_cast<void*>((m_baseX + 0x10)),
-            reinterpret_cast<void*>((m_baseY)),
-            static_cast<void*>((0))
+            target,
+            m_baseX + 0x10,
+            m_baseY,
+            0
         );
     }
     if (m_frameSecOnes) {
         m_frameSecOnes->RenderFrame(
-            reinterpret_cast<void*>((pSurf)),
-            reinterpret_cast<void*>((m_baseX + 0x22)),
-            reinterpret_cast<void*>((m_baseY)),
-            static_cast<void*>((0))
+            target,
+            m_baseX + 0x22,
+            m_baseY,
+            0
         );
     }
     return 1;

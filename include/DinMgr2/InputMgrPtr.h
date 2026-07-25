@@ -2,6 +2,6 @@
 #define DINMGR2_INPUTMGRPTR_H
 
 class DirectInputMgr2;
-extern "C" DirectInputMgr2* g_inputMgr; // *0x245570 reset-manager singleton (real view)
+extern DirectInputMgr2* g_inputMgr; // ?g_inputMgr@@3PAVDirectInputMgr2@@A at 0x245570
 
 #endif // DINMGR2_INPUTMGRPTR_H

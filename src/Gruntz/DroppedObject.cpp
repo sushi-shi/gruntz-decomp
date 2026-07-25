@@ -653,9 +653,9 @@ i32 CDroppedObject::ActA() {
                             // fall through
                         case 7:
                         default:
-                            if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
-                                && m_landY < g_gameReg->m_viewOriginB
-                                && m_landY >= g_gameReg->m_viewOriginT) {
+                            if (x < g_gameReg->m_viewBounds.right && x >= g_gameReg->m_viewBounds.left
+                                && m_landY < g_gameReg->m_viewBounds.bottom
+                                && m_landY >= g_gameReg->m_viewBounds.top) {
                                 CWwdGameObjectA* s = g_gameReg->m_world->m_childGroup->CreateSprite(
                                     0,
                                     x,
@@ -676,8 +676,8 @@ i32 CDroppedObject::ActA() {
                 }
             }
         } else {
-            if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
-                && m_landY < g_gameReg->m_viewOriginB && m_landY >= g_gameReg->m_viewOriginT) {
+            if (x < g_gameReg->m_viewBounds.right && x >= g_gameReg->m_viewBounds.left
+                && m_landY < g_gameReg->m_viewBounds.bottom && m_landY >= g_gameReg->m_viewBounds.top) {
                 CWwdGameObjectA* s =
                     g_gameReg->m_world->m_childGroup
                         ->CreateSprite(0, x, m_landY, 0xcf84f, "Particlez", 0x40003);

@@ -42,7 +42,7 @@ public:
         WORKER_FREE(m_80);
         WORKER_FREE(m_88);
         WORKER_FREE(m_collideWorker);
-        m_c0 = static_cast<i32>(0x80000000);
+        m_shadowRect.left = static_cast<i32>(0x80000000);
         m_d8 = -1;
         m_screenX = static_cast<i32>(0x80000000);
         m_dirtyRect.left = static_cast<i32>(0x80000000);
@@ -68,11 +68,6 @@ public:
     // (latch the worker's error state on underflow); else fire the +0x80
     // notifier's m_notify with the owner. (Ex CWwdFactoryObject::Notify.)
     void Notify(void* p); // 0x15b650
-
-    // The engine base-object ctor (0x15b390; declared-only here - the body is the
-    // CWwdGameObjBaseCtor view's /GX ctor in WwdFactoryObject.cpp, a fold pending
-    // that view's dissolution). ReadPlaneObjects runs it on a raw new(0x1dc) block.
-    void Construct(void* owner, i32 id, i32 z); // 0x15b390
 
     // The 0x150xxx live method set (src/Wwd/WwdGameObject.cpp) - the ex-flat
     // CGameObject/CWwdGameObject models' methods, homed at their field level.
@@ -116,13 +111,12 @@ public:
                                     //        copies Setup refreshes, m_object (+0xb4) the
                                     //        self back-pointer (the CWwdSlot9c* records
                                     //        below are its placement-ctor views)
-    i32 m_b8;                       // +0xb8  shadow dirty-rect x (prev-frame copy of +0x18)
-    i32 m_bc;                       // +0xbc  shadow dirty-rect y
-    i32 m_c0;                       // +0xc0  shadow dirty-rect corner (INT_MIN sentinel)
-    char _pc4[0xd0 - 0xc4];
-    i32 m_d0;     // +0xd0  shadow dirty-rect size x
-    i32 m_d4;     // +0xd4  shadow dirty-rect size y
-    i32 m_d8;     // +0xd8  shadow dirty-rect armed flag (-1 == disarmed)
+    i32 m_b8;          // +0xb8  shadow dirty-rect x (prev-frame copy of +0x18)
+    i32 m_bc;          // +0xbc  shadow dirty-rect y
+    RECT m_shadowRect; // +0xc0  shadow blit rectangle (.left is the INT_MIN sentinel)
+    i32 m_d0;          // +0xd0  shadow dirty-rect size x
+    i32 m_d4;          // +0xd4  shadow dirty-rect size y
+    i32 m_d8;          // +0xd8  shadow dirty-rect armed flag (-1 == disarmed)
     CString m_dc; // +0xdc  the object's name (dtor 0x1b9cde folds in ~E)
     // +0xe0..+0x18b  the serialized state block (field knowledge merged from the
     // flat CGameObject model - same offsets, one object).
@@ -354,7 +348,7 @@ class CWwdShadowRec { // the E-level shadow dirty-rect block (+0xb8)
 public:
     CWwdShadowRec(); // 0x15b270
     char m_pad0[0x8];
-    i32 m_8; // abs +0xc0 == CGameObject::m_c0 (INT_MIN sentinel)
+    i32 m_8; // abs +0xc0 == CGameObject::m_shadowRect.left (INT_MIN sentinel)
     char m_pad0c[0x20 - 0xc];
     i32 m_20; // abs +0xd8 == CGameObject::m_d8 (-1 == disarmed)
 };

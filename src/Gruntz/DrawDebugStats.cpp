@@ -37,7 +37,7 @@ void CPlay::DrawDebugStats() {
     }
     if (g_debugDisplayFlags & 0x4) {
         CDDrawWorkerHost* p = m_world->m_level->m_mainPlane;
-        sprintf(scratch, " Pos = %i,%i", p->m_originX, p->m_originY);
+        sprintf(scratch, " Pos = %i,%i", p->m_viewRect.left, p->m_viewRect.top);
         strcat(buf, scratch);
     }
     if (g_debugDisplayFlags & 0x40) {

@@ -167,8 +167,8 @@ void CGrunt::FinalizeStep(i32 arg) {
             CGruntzMgr* g = g_gameReg;
             i32 x = m_object->m_screenX;
             i32 y = m_object->m_screenY;
-            if (!(x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
-                  && y >= g->m_viewOriginT)) {
+            if (!(x < g->m_viewBounds.right && x >= g->m_viewBounds.left && y < g->m_viewBounds.bottom
+                  && y >= g->m_viewBounds.top)) {
                 ClearSubB();
             }
         }
@@ -338,7 +338,7 @@ i32 CGrunt::UpdateGruntStatus() {
     i32 x = m_object->m_screenX;
     i32 y = m_object->m_screenY;
     i32* vr = reinterpret_cast<i32*>(
-        (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX))
+        (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_viewRect.left))
     );
     if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
         g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 2, -1, -1, -1);
@@ -412,8 +412,8 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
         CGruntzMgr* g = g_gameReg;
         i32 yy = h->m_screenY;
         i32 xx = h->m_screenX;
-        i32* rect = &g->m_world->m_level->m_mainPlane->m_originX; // the +0x40 visible rect
-        if (xx < rect[2] && xx >= rect[0] && yy < rect[3] && yy >= rect[1]) {
+        const RECT* rect = &g->m_world->m_level->m_mainPlane->m_viewRect;
+        if (xx < rect->right && xx >= rect->left && yy < rect->bottom && yy >= rect->top) {
             g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 1, -1, -1, -1);
         }
     }
@@ -766,9 +766,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             i32 m380 = m_moveVariant;
             if (m380 != 0) {
                 i32 tier = cueTier + m380 - 1;
-                const LevelCoordRect* bounds = reinterpret_cast<const LevelCoordRect*>(
-                    &g->m_world->m_level->m_mainPlane->m_originX
-                );
+                const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_viewRect;
                 if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
                     != 0) {
                     g->m_cueSink
@@ -780,9 +778,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
                     m_moveKind = rand() % md + 1;
                 }
                 i32 tier = cueTier + m_moveKind - 1;
-                const LevelCoordRect* bounds = reinterpret_cast<const LevelCoordRect*>(
-                    &g->m_world->m_level->m_mainPlane->m_originX
-                );
+                const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_viewRect;
                 if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
                     != 0) {
                     g->m_cueSink
@@ -952,7 +948,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         CCueRect* r = reinterpret_cast<CCueRect*>(
-            (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX))
+            (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_viewRect.left))
         );
         if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
             g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 0xc, -1, -1, -1);
@@ -1087,9 +1083,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
             i32 focused = (m_tileOwnerHi == g_curPlayer);
             if (focused && idx > 0x5a) {
                 if (CGameLevel::PointInBounds(
-                        reinterpret_cast<const LevelCoordRect*>(
-                            &g->m_world->m_level->m_mainPlane->m_originX
-                        ),
+                        &g->m_world->m_level->m_mainPlane->m_viewRect,
                         m_object->m_screenX,
                         m_object->m_screenY
                     )) {
@@ -1098,9 +1092,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
             } else if (focused || m_entranceReason != 0) {
                 if (idx == 1) {
                     if (CGameLevel::PointInBounds(
-                            reinterpret_cast<const LevelCoordRect*>(
-                                &g->m_world->m_level->m_mainPlane->m_originX
-                            ),
+                            &g->m_world->m_level->m_mainPlane->m_viewRect,
                             m_object->m_screenX,
                             m_object->m_screenY
                         )) {
@@ -1108,9 +1100,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                     }
                 } else if (idx == 2) {
                     if (CGameLevel::PointInBounds(
-                            reinterpret_cast<const LevelCoordRect*>(
-                                &g->m_world->m_level->m_mainPlane->m_originX
-                            ),
+                            &g->m_world->m_level->m_mainPlane->m_viewRect,
                             m_object->m_screenX,
                             m_object->m_screenY
                         )) {
@@ -1423,7 +1413,7 @@ i32 CGrunt::StepArrivalReroll() {
     i32 xp = h->m_screenX;
     CGruntzMgr* g = g_gameReg;
     CCueRect* r = reinterpret_cast<CCueRect*>(
-        (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX))
+        (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_viewRect.left))
     );
     if (pick > 0x19) {
         if (xp < r->right && xp >= r->left && y < r->bottom && y >= r->top) {
@@ -1530,7 +1520,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
             i32 x = h->m_screenX;
             i32 y = h->m_screenY;
             i32* rect = reinterpret_cast<i32*>(
-                (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX))
+                (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_viewRect.left))
             );
             if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
                 g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 0xc, -1, -1, -1);
@@ -1549,7 +1539,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         i32* rect = reinterpret_cast<i32*>(
-            (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX))
+            (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_viewRect.left))
         );
         if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
             g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 0xd, -1, -1, -1);
@@ -1560,8 +1550,8 @@ void CGrunt::LoadVehicleGruntAnimations() {
     CGruntzMgr* g2 = g_gameReg;
     i32 hx = h2->m_screenX;
     i32 hy = h2->m_screenY;
-    if (hx < g2->m_viewOriginR && hx >= g2->m_viewOriginL && hy < g2->m_viewOriginB
-        && hy >= g2->m_viewOriginT) {
+    if (hx < g2->m_viewBounds.right && hx >= g2->m_viewBounds.left && hy < g2->m_viewBounds.bottom
+        && hy >= g2->m_viewBounds.top) {
         if (m_entranceReason == 0x1a) {
             EnsureStruckSlot(s_GRUNTZ_GOKARTGRUNT);
             return;
@@ -1641,9 +1631,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         );
         CGruntzMgr* g = g_gameReg;
         if (CGameLevel::PointInBounds(
-                reinterpret_cast<const LevelCoordRect*>(
-                    &g->m_world->m_level->m_mainPlane->m_originX
-                ),
+                &g->m_world->m_level->m_mainPlane->m_viewRect,
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {
@@ -1655,9 +1643,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         );
         CGruntzMgr* g = g_gameReg;
         if (CGameLevel::PointInBounds(
-                reinterpret_cast<const LevelCoordRect*>(
-                    &g->m_world->m_level->m_mainPlane->m_originX
-                ),
+                &g->m_world->m_level->m_mainPlane->m_viewRect,
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {
@@ -1669,9 +1655,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         );
         CGruntzMgr* g = g_gameReg;
         if (CGameLevel::PointInBounds(
-                reinterpret_cast<const LevelCoordRect*>(
-                    &g->m_world->m_level->m_mainPlane->m_originX
-                ),
+                &g->m_world->m_level->m_mainPlane->m_viewRect,
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {
@@ -1936,8 +1920,8 @@ tail:
         CWwdGameObjectA* h = m_object;
         i32 vx = h->m_screenX;
         i32 vy = h->m_screenY;
-        i32* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_originX; // the +0x40 visible rect
-        if (vx < rect[2] && vx >= rect[0] && vy < rect[3] && vy >= rect[1]) {
+        const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+        if (vx < rect->right && vx >= rect->left && vy < rect->bottom && vy >= rect->top) {
             g_gameReg->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 7, -1, -1, -1);
         }
     }
@@ -2064,7 +2048,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
         CWwdGameObjectA* h = m_object;
         CGruntzMgr* g = g_gameReg;
         const LevelCoordRect* bounds =
-            reinterpret_cast<const LevelCoordRect*>(&g->m_world->m_level->m_mainPlane->m_originX);
+            &g->m_world->m_level->m_mainPlane->m_viewRect;
         if (CGameLevel::PointInBounds(bounds, h->m_screenX, h->m_screenY)) {
             g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 8, -1, -1, -1);
         }
@@ -2117,7 +2101,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         i32* rect = reinterpret_cast<i32*>(
-            (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_originX))
+            (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_viewRect.left))
         );
         if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
             g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), cueId, -1, 0, -1, -1);

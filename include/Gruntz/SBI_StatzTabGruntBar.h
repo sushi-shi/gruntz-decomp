@@ -10,42 +10,6 @@
 class CStatusBarMgr;
 class CDDrawSurfaceMgr;
 
-struct CStatzGruntRec {
-    char m_pad0[0x170];
-    i32 m_abilityLevel; // +0x170  ability level
-    char m_pad174[0x194 - 0x174];
-    i32 m_abilitySub; // +0x194  ability sub-value
-    i32 m_badge;      // +0x198  override badge (non-zero => use directly)
-    i32 m_abilityCap; // +0x19c  ability cap (used when m_abilityLevel > 0x16)
-    char m_pad1a0[0x1d8 - 0x1a0];
-    i32 m_alive; // +0x1d8  alive/active gate (0 => skip the timer block)
-    char m_pad1dc[0x3ec - 0x1dc];
-    i32 m_health; // +0x3ec  health
-};
-SIZE_UNKNOWN();
-
-struct CStatzSelHost {};
-SIZE_UNKNOWN();
-
-struct CStatzDrawable {
-    char m_pad0[0x14];
-    void* m_14; // +0x14  render context (RenderFrame arg0)
-};
-SIZE_UNKNOWN();
-struct CStatzGameMgr {
-    char m_pad0[0x04];
-    CStatzDrawable* m_4; // +0x04  active drawable
-};
-SIZE_UNKNOWN();
-
-struct CStatzGameReg {
-    char m_pad0[0x30];
-    CStatzGameMgr* m_30; // +0x30  active game-mode/renderer
-    char m_pad34[0x68 - 0x34];
-    CStatzSelHost* m_unitTable; // +0x68  unit/record table base + selection host
-};
-SIZE_UNKNOWN();
-
 class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>); the
 
 class CSBI_StatzTabGruntBar : public CStatusBarItem {

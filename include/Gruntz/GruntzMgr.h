@@ -430,8 +430,7 @@ public:
                        //         it (0..100) into the Min..MaxScrollSpeed range)
     i32 m_128, m_12c, m_130, m_134; // +0x128..+0x134  (m_134==3 -> "won"; FillSaveInfo)
     i32 m_optionsCount;             // +0x138  options-cycle high index (=3 in ctor -> 4 slots)
-    i32 m_viewOriginL, m_viewOriginT, m_viewOriginR,
-        m_viewOriginB;            // +0x13c..+0x148  view-edge origins
+    RECT m_viewBounds;            // +0x13c..+0x148  expanded visible-world bounds
     char m_pad14c[0x150 - 0x14c]; // +0x14c..+0x150 gap
     GruntzPlayer m_options[4];    // +0x150 (4x0x238 per-player records; EH state 4) -> 0xa30
 };

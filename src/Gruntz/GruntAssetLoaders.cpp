@@ -74,7 +74,7 @@ enum GruntDeathType {
         CGruntzMgr* _g = g_gameReg;                                                                \
         if (CGameLevel::PointInBounds(                                                             \
                 reinterpret_cast<const LevelCoordRect*>(                                           \
-                    &_g->m_world->m_level->m_mainPlane->m_originX                                  \
+                    &_g->m_world->m_level->m_mainPlane->m_viewRect.left                                  \
                 ),                                                                                 \
                 m_object->m_screenX,                                                               \
                 m_object->m_screenY                                                                \
@@ -376,7 +376,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             {
                 CGruntzMgr* g = g_gameReg;
                 CCueRect* r =
-                    reinterpret_cast<CCueRect*>(&g->m_world->m_level->m_mainPlane->m_originX);
+                    &g->m_world->m_level->m_mainPlane->m_viewRect;
                 i32 x = m_object->m_screenX;
                 i32 y = m_object->m_screenY;
                 if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
@@ -396,9 +396,7 @@ pathA:
     {
         CGruntzMgr* g = g_gameReg;
         if (CGameLevel::PointInBounds(
-                reinterpret_cast<const LevelCoordRect*>(
-                    &g->m_world->m_level->m_mainPlane->m_originX
-                ),
+                &g->m_world->m_level->m_mainPlane->m_viewRect,
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {

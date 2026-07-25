@@ -42,7 +42,7 @@ SIZE(0x14);
 
 class CButeTree : public zPTree {
 public:
-    virtual ~CButeTree() OVERRIDE;              // slot 0 (scalar-dtor 0x16e9c0)
+    CButeTree(void(__cdecl* teardown)(void*), i32 n);
     void* Find(const char* key);                // 0x16d190
     void* Insert(const char* key, void* value); // 0x16db90
     // Walk (0x193340) - invoke fn(key, value, ctx) for each node of the crit-bit
@@ -50,12 +50,6 @@ public:
     // crit-bit index still exceeds the node's; `node`==0 starts from m_root.
     void Walk(void(__cdecl* fn)(char* key, void* value, void* ctx), void* ctx, CButeTreeNode* node);
 
-    // g_buteTree ctor/dtor (TypeKeyColl.cpp). Construct runs the deeper base ctor;
-    // ClearRecursive frees the keyed nodes; BaseDtor is the primary-base teardown;
-    // scalar-dtor is the `scalar deleting destructor'. All reloc-masked __thiscall.
-    void Construct(void* arg, i32 b); // 0x16dff0
-    void ClearRecursive(i32 recurse); // 0x16e070
-    void BaseDtor();                  // 0x16da60
 };
 SIZE_UNKNOWN();
 VTBL(CButeTree, 0x001f04e0); // ??_7CButeTree@@6B@ (1-slot scalar-deleting-dtor vtable)

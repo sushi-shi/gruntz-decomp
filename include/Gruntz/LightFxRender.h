@@ -71,14 +71,8 @@ public:
     CDDrawSurfaceMgr* m_world; // +0x0c = mgr->m_world (+0x30 world holder)
     CDDSurface* m_surface;     // +0x10 the alloc'd work surface
     char m_pad14[0x10];
-    i32 m_srcL;             // +0x24 source rect L
-    i32 m_srcT;             // +0x28 source rect T
-    i32 m_srcR;             // +0x2c source rect R
-    i32 m_srcB;             // +0x30 source rect B
-    i32 m_dstL;             // +0x34 dest/screen rect L
-    i32 m_dstT;             // +0x38 dest/screen rect T
-    i32 m_dstR;             // +0x3c dest/screen rect R
-    i32 m_dstB;             // +0x40 dest/screen rect B
+    RECT m_srcRect;         // +0x24 source rectangle
+    RECT m_dstRect;         // +0x34 destination/screen rectangle
     i32 m_scale;            // +0x44 scale level (0..3) / valid flag
     i32 m_handle;           // +0x48 cached handle (ApplyA latch / ApplyB gate)
     u16 m_buf[0x1f4];       // +0x4c .. +0x433  the 16-bit pixel buffer (500 words)

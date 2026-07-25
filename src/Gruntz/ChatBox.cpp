@@ -113,11 +113,11 @@ i32 CChatBox::Pre() {
     if (!m_activeNode) {
         return 0;
     }
-    i32 ctx = reinterpret_cast<i32>(m_page->m_drawTarget->m_backPair);
-    if (!ctx) {
-        return ctx;
+    CDDrawSurfacePair* target = m_page->m_drawTarget->m_backPair;
+    if (!target) {
+        return 0;
     }
-    return m_activeNode->Layout(ctx) != 0;
+    return m_activeNode->Layout(target) != 0;
 }
 
 RVA(0x00182ce0, 0x36)
@@ -312,8 +312,7 @@ i32 CChatBox::Step(i32 delta) {
 // ~95%.
 // blit both rows' current frames, centered under the sprite anchor.
 RVA(0x00182f90, 0x92)
-i32 CChatBox::Draw(i32 a0, i32 sprite_, i32 arg2, i32 arg3) {
-    CMenuItem* sprite = reinterpret_cast<CMenuItem*>(sprite_);
+i32 CChatBox::Draw(CDDrawSurfacePair* target, CMenuItem* sprite, i32 x0, i32 y0) {
     if (!sprite) {
         return 0;
     }
@@ -322,25 +321,25 @@ i32 CChatBox::Draw(i32 a0, i32 sprite_, i32 arg2, i32 arg3) {
         anchorY = sprite->m_fixedY;
         anchorX = sprite->m_fixedX;
     } else {
-        anchorY = arg3;
-        anchorX = arg2;
+        anchorY = y0;
+        anchorX = x0;
     }
     if (m_row0Frame) {
         i32 x = -(sprite->GetFrameWidth() / 2) - m_row0Offset + anchorX;
         m_row0Frame->RenderFrame(
-            reinterpret_cast<void*>(arg2),
-            reinterpret_cast<void*>(x),
-            reinterpret_cast<void*>(anchorY),
-            static_cast<void*>(0)
+            target,
+            x,
+            anchorY,
+            0
         );
     }
     if (m_row1Frame) {
         i32 x = sprite->GetFrameWidth() / 2 + m_row1Offset + anchorX;
         m_row1Frame->RenderFrame(
-            reinterpret_cast<void*>(arg2),
-            reinterpret_cast<void*>(x),
-            reinterpret_cast<void*>(anchorY),
-            static_cast<void*>(0)
+            target,
+            x,
+            anchorY,
+            0
         );
     }
     return 1;

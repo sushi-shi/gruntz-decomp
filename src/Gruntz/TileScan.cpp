@@ -1,8 +1,9 @@
 #include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
+#include <Gruntz/Brickz.h>    // BrickzCell (the canonical 0x1c-byte tile cell)
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/Grunt.h>    // CGrunt (the scanned arg) + CGameRegistry/CFocusSlot (this->m_4)
-#include <Gruntz/ScanGrid.h> // CScanGrid (this->m_c tile board)
+#include <Gruntz/ScanGrid.h> // CTileScan
 
 // The scanned arg is a real CGrunt: m_2e8 the focus-slot id, m_dwell (+0x2ec) the
 // dwell timer compared to the threshold, m_object the bound HUD/object (screen x/y @
@@ -11,10 +12,10 @@
 // CTileScan (the orphan-COMDAT scan owner, @identity-TODO) is declared in
 // <Gruntz/ScanGrid.h> (included above) - its shape belongs in the shared scan header.
 
-static inline i32 GridLookup(CScanGrid* g, i32 x, i32 y) {
+static inline i32 GridLookup(CMapMgr* g, i32 x, i32 y) {
     if (static_cast<u32>(x) < static_cast<u32>(g->m_width)
         && static_cast<u32>(y) < static_cast<u32>(g->m_height)) {
-        return g->m_8[y][x].m_flags;
+        return g->m_rows[y][x].m_0;
     }
     return 1;
 }
@@ -56,7 +57,7 @@ i32 CTileScan::Scan(CGrunt* arg) {
             if (b == (v5c >> 5) && a == (v60 >> 5)) {
                 continue;
             }
-            CScanGrid* grid = m_c;
+            CMapMgr* grid = m_c;
             if (static_cast<u32>(b) >= static_cast<u32>(grid->m_width)
                 || static_cast<u32>(a) >= static_cast<u32>(grid->m_height)) {
                 continue;

@@ -785,8 +785,8 @@ i32 CTeleporter::Update() {
         mgr = g_gameReg;
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
-        if (x < mgr->m_viewOriginR && x >= mgr->m_viewOriginL && y < mgr->m_viewOriginB
-            && y >= mgr->m_viewOriginT) {
+        if (x < mgr->m_viewBounds.right && x >= mgr->m_viewBounds.left && y < mgr->m_viewBounds.bottom
+            && y >= mgr->m_viewBounds.top) {
             (static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_teleportWanted =
                 1; // an on-screen wormhole keeps GAME_TELEPORTLOOP playing
         }

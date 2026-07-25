@@ -259,8 +259,8 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             i32 ey = eo->m_screenY;
             i32 ex = eo->m_screenX;
             CDDrawWorkerHost* rc = g->m_world->m_level->m_mainPlane;
-            if (ex < rc->m_extentX && ex >= rc->m_originX && ey < rc->m_extentY
-                && ey >= rc->m_originY) {
+            if (ex < rc->m_viewRect.right && ex >= rc->m_viewRect.left
+                && ey < rc->m_viewRect.bottom && ey >= rc->m_viewRect.top) {
                 g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(hit), 0x3fc, -1, 0, -1, -1);
             }
         }

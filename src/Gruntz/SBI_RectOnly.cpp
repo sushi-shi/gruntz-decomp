@@ -3071,8 +3071,8 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                             ->m_drawTarget; // the real pages (ex the CSbiMainL1 facet)
                     entry->RenderFrame(
                         l1->m_backPair,
-                        reinterpret_cast<void*>(entry->m_anchorX + m_10),
-                        reinterpret_cast<void*>(entry->m_anchorY + m_rect14.m_0),
+                        entry->m_anchorX + m_10,
+                        entry->m_anchorY + m_rect14.m_0,
                         0
                     );
                 }

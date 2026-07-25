@@ -1,5 +1,8 @@
 #include <Mfc.h>
+#include <Gruntz/BattlezMapConfig.h>
+#include <Gruntz/Brickz.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/MapMgr.h>
 #include <rva.h>
 
 #include <Ints.h>
@@ -20,11 +23,11 @@
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
         ra.bottom = pb->bottom;                                                                    \
-        if (!IntersectRect(&(grid)->m_60, &ra, &rb)) {                                             \
-            (grid)->m_60 = ra;                                                                     \
+        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
+            (grid)->m_bounds = ra;                                                                 \
         }                                                                                          \
-        (grid)->m_70 = (grid)->m_60.right - (grid)->m_60.left;                                     \
-        (grid)->m_74 = (grid)->m_60.bottom - (grid)->m_60.top;                                     \
+        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                           \
+        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                           \
     }
 
 // @early-stop  ~72% fuzzy (was 0.53% stub)
@@ -46,21 +49,21 @@
 //      two, and the incoming-arg slot is recycled as the hit counter - slot
 //      schedule diverges. Logic/offsets correct; re-attack leaf-first in sweep.
 RVA(0x00032ce0, 0x448)
-i32 CScanMgr::ScanRegion(CGrunt* g) {
+i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
     if (g->m_stamina >= 0x64) {
         if (g->CoordCount() != 0) {
             Coord* c = reinterpret_cast<Coord*>(g->CoordTail()->m_coord);
             i32 col = c->m_x;
             i32 row = c->m_y;
-            CScanGrid* grid = m_c;
+            CMapMgr* grid = m_board;
             i32 flags;
             if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
                 && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
-                flags = grid->m_8[row][col].m_flags;
+                flags = grid->m_rows[row][col].m_0;
             } else {
                 flags = 1;
             }
-            if ((flags & 0x4000) && grid->m_8[row][col].m_type == 0x99) {
+            if ((flags & 0x4000) && grid->m_rows[row][col].m_10 == 0x99) {
                 GruntCoordNode* n = g->CoordHead();
                 while (n != 0) {
                     GruntCoordNode* cur = n;
@@ -73,8 +76,8 @@ i32 CScanMgr::ScanRegion(CGrunt* g) {
                 return 1;
             }
         }
-        if (g->m_dwell > m_cc && g->CoordCount() == 0) {
-            CScanGrid* grid = m_c;
+        if (g->m_dwell > static_cast<u32>(m_0cc) && g->CoordCount() == 0) {
+            CMapMgr* grid = m_board;
             Coord tp;
             g->GetScreenPos(static_cast<Coord*>(&tp));
             i32 cx = tp.m_x >> 5;
@@ -96,18 +99,18 @@ i32 CScanMgr::ScanRegion(CGrunt* g) {
                     if (hits > 4) {
                         break;
                     }
-                    CScanCell* cell = &grid->m_8[row][isect.left];
+                    BrickzCell* cell = &grid->m_rows[row][isect.left];
                     for (i32 col = isect.left; col < isect.right; col++) {
                         if (hits < 5) {
-                            i32 flags = cell->m_flags;
+                            i32 flags = cell->m_0;
                             if (flags & 0x8000) {
-                                if (DoTrigger1fb9(g, col, row, 0xd87, 0, 0)) {
+                                if (RouteUnitTo(g, col, row, 0xd87, 0, 0)) {
                                     SCAN_RECT_BOUNDS(grid);
                                     return 1;
                                 }
                                 hits++;
-                            } else if ((flags & 0x4000) && cell->m_type != 0x99) {
-                                if (DoTrigger1fb9(g, col, row, 0xd87, 0, 0)) {
+                            } else if ((flags & 0x4000) && cell->m_10 != 0x99) {
+                                if (RouteUnitTo(g, col, row, 0xd87, 0, 0)) {
                                     SCAN_RECT_BOUNDS(grid);
                                     return 1;
                                 }
@@ -119,8 +122,9 @@ i32 CScanMgr::ScanRegion(CGrunt* g) {
                 }
             }
             SCAN_RECT_BOUNDS(grid);
-            if (m_f8 != 0) {
-                CScanGoal* e = m_f4[rand() % m_f8];
+            if (m_0f0.GetSize() != 0) {
+                CScanGoal* e =
+                    reinterpret_cast<CScanGoal**>(m_0f0.GetData())[rand() % m_0f0.GetSize()];
                 g->TileSwitch(e->m_0, e->m_4, 0, 0x983, 0, 0);
             }
             g->m_dwell = 0;

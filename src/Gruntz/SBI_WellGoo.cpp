@@ -75,9 +75,9 @@ i32 CSBI_WellGoo::Render() {
 
     CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
     m_baseFrame->RenderFrame(
-        static_cast<void*>(ctx),
-        reinterpret_cast<void*>(m_drawX),
-        reinterpret_cast<void*>((m_rect14.m_c + 3)),
+        ctx,
+        m_drawX,
+        m_rect14.m_c + 3,
         0
     );
 
@@ -106,9 +106,9 @@ i32 CSBI_WellGoo::Render() {
     m_drawGuard--;
 
     m_fgFrame->RenderFrame(
-        static_cast<void*>(ctx),
-        reinterpret_cast<void*>(m_drawX),
-        reinterpret_cast<void*>((m_fgTop - 2)),
+        ctx,
+        m_drawX,
+        m_fgTop - 2,
         0
     );
     return 1;

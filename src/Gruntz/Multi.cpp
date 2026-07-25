@@ -971,7 +971,7 @@ void CMulti::PumpB() {
     if (h == 0) {
         return;
     }
-    m_hitTest->LoadChatBoxSprite(reinterpret_cast<i32>(h));
+    m_hitTest->LoadChatBoxSprite(h);
     DrawDebugStats();
     Mgr()->m_cmdGrid->OverlayRelease();
     StepGridWalk(g_frameDelta);

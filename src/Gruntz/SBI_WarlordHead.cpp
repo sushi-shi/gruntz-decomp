@@ -116,7 +116,7 @@ i32 CSBI_WarlordHead::Render() {
         return 1;
     }
     m_28--;
-    i32 ctx = reinterpret_cast<i32>(g_gameReg->m_world->m_drawTarget->m_backPair);
+    CDDrawSurfacePair* target = g_gameReg->m_world->m_drawTarget->m_backPair;
 
     CDDrawWorker* cfg = m_34;
     CImage* f;
@@ -131,9 +131,9 @@ i32 CSBI_WarlordHead::Render() {
     }
     if (f) {
         f->RenderFrame(
-            reinterpret_cast<void*>(ctx),
-            reinterpret_cast<void*>((m_rect14.m_0 + f->m_anchorX)),
-            reinterpret_cast<void*>((m_rect14.m_4 + f->m_anchorY)),
+            target,
+            m_rect14.m_0 + f->m_anchorX,
+            m_rect14.m_4 + f->m_anchorY,
             0
         );
     }
@@ -146,9 +146,9 @@ i32 CSBI_WarlordHead::Render() {
     m_frame = g;
     if (g) {
         g->RenderFrame(
-            reinterpret_cast<void*>(ctx),
-            reinterpret_cast<void*>((m_rect14.m_0 + g->m_anchorX)),
-            reinterpret_cast<void*>((m_rect14.m_4 + g->m_anchorY)),
+            target,
+            m_rect14.m_0 + g->m_anchorX,
+            m_rect14.m_4 + g->m_anchorY,
             0
         );
     }

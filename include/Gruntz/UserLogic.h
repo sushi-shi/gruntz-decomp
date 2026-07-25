@@ -121,9 +121,6 @@ public:
     void RegisterLogicTypesOnce();
     void BuildLogicTypeTable(CGameObject* obj); // 0x8a40 (ignores this)
 
-    // __thiscall stub methods re-homed from src/Stub/ApiCallers.cpp; bodies in
-    // src/Gruntz/UserLogic.cpp.
-    i32 winapi_04d800_CopyRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
     // (winapi_064540_PostMessageA was XREF-recovered as CGrunt::StepWarpExit - the
     //  anim-code "C" act handler; body in src/Gruntz/GruntEntranceArrival.cpp.)
     // (winapi_0ee800_IntersectRect_PtInRect was XREF-recovered as CGrunt::ArrivalReticleScan
@@ -138,7 +135,7 @@ public:
     // (FinalizeStep - 0x8b90, body in UserLogic.cpp - is now the slot-5
     // virtual above; retail's slot holds its ILT thunk 0x3913, which
     // reloc_fidelity thunk-resolves onto the body.)
-    i32 Place(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32); // 0x4c1c4
+    i32 Place(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32); // 0x4d800
     i32 m_deferredCallback;                                                // +0x04
     i32 m_gatedCallback;                                                   // +0x08
     CGameObject* m_0c;                                                     // +0x0c

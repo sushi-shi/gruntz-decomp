@@ -365,6 +365,8 @@
 0x0016d9b0	0x10	_$E1497520	typekeycoll	src/Bute/TypeKeyColl.cpp:454
 0x0016de20	0x10	_$E1498656	typekeycoll	src/Bute/TypeKeyColl.cpp:648
 0x0016dfe0	0x10	_$E1499104	typekeycoll	src/Bute/TypeKeyColl.cpp:733
+0x0016e6a0	0x26	_$E1500832	typekeycoll	src/Bute/TypeKeyColl.cpp:1061
+0x0016e6e0	0x3e	_$E1500896	typekeycoll	src/Bute/TypeKeyColl.cpp:1076
 0x0016e730	0x51	_$E1500976	typekeycoll	src/Bute/TypeKeyColl.cpp:1086
 0x00173840	0x0	_$E48	butemgr	src/Bute/ButeMgr.cpp:1214
 0x00173dc0	0x0	_$E50	butemgr	src/Bute/ButeMgr.cpp:1231

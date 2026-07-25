@@ -41,8 +41,8 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
 
     i32 px = (m_08 << 5) + 0x10;
     i32 py = (m_key0c << 5) + 0x10;
-    if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
-        && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
+    if (px < g_gameReg->m_viewBounds.right && px >= g_gameReg->m_viewBounds.left
+        && py < g_gameReg->m_viewBounds.bottom && py >= g_gameReg->m_viewBounds.top) {
         CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_emitGate == 0) {
             void* spr_ob = 0;
@@ -81,8 +81,8 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
 
     i32 px = (m_08 << 5) + 0x10;
     i32 py = (m_key0c << 5) + 0x10;
-    if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
-        && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
+    if (px < g_gameReg->m_viewBounds.right && px >= g_gameReg->m_viewBounds.left
+        && py < g_gameReg->m_viewBounds.bottom && py >= g_gameReg->m_viewBounds.top) {
         CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_emitGate == 0) {
             void* spr_ob = 0;
