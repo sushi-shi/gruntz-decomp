@@ -16,6 +16,8 @@
 #include <Image/CImage.h>   // the +0x198 cached frame (ex CGameObjLayer view)
 
 #include <Gruntz/PathHazardActReg.h> // CActRegPool<CPathHazard>::s_table (ex .cpp extern)
+#include <rva.h>
+#include <rva.h>
 RVA(0x00013170, 0x7b)
 CPathHazard::CPathHazard() {
     m_legDeadline = 0;
@@ -33,7 +35,6 @@ CPathHazard::CPathHazard() {
 // ~CPathHazard was misbound to 0x13340 (which is really ~CRainCloud - see below): the
 // whole family was shifted by one, because N byte-identical empty leaf dtors were being
 // assigned by proximity instead of by the vtable that dispatches them.
-#include <rva.h>
 RVA_COMPGEN(0x00013280, 0x44, ??1CPathHazard@@UAE@XZ)
 
 // (~CRainCloud x13340 is IMPLICIT and its COMDAT is emitted by raincloud.obj - the
@@ -438,5 +439,4 @@ void CPathHazard::ForwardTick() {
     Tick(); // virtual slot 16 (+0x40); tail-jump `mov eax,[ecx]; jmp [eax+0x40]`
 }
 
-#include <rva.h>
 VTBL(CPathHazard, 0x001e7394); // vtable_names -> code (RTTI game class)

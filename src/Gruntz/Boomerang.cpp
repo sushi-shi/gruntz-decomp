@@ -5,6 +5,7 @@
 #include <Gruntz/GameRegistry.h> // g_gameReg (m_world gate, m_cmdGrid launcher-cell grid)
 #include <rva.h>
 #include <Io/FileMem.h> // CFileMemBase - the CFileMemBase stream (Read/Write dispatch)
+#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 
 VTBL(CBoomerang, 0x001e792c);
 DATA(0x001eaae8)
@@ -26,7 +27,6 @@ CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
     m_38->m_flags |= 0x2000002;
 }
 
-#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 
 DATA(0x001eaad8)
 const double g_boomHalf = 0.5; // midpoint scale (0.5) (decl in Boomerang.h)

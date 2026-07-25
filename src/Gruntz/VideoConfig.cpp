@@ -29,6 +29,8 @@
 #include <string.h>            // strcat (inline repnz scasb + rep movs under /O2 /Oi)
 #include <Rez/RezSync.h>       // ex Globals.h
 #include <Gruntz/SoundState.h> // ex Globals.h transitive
+#include <afxcmn.h>
+#include <Net/NetLobby.h> // NetLobby::g_curDlg
 
 typedef enum VideoConfigDlgId {
     IDC_RESCAPTION = 0x52d, // the "current resolution" static text ctrl
@@ -37,9 +39,7 @@ typedef enum VideoConfigDlgId {
 DATA(0x0020ccc4)
 i32 g_videoResolutionMode = 1; // retail .data initial value 1
 
-#include <afxcmn.h>
 
-#include <Net/NetLobby.h> // NetLobby::g_curDlg
 
 DATA(0x0022bd64)
 i32 g_opt_22bd64 = 0;

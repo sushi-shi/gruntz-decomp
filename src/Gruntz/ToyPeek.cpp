@@ -11,6 +11,7 @@
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 #include <rva.h>
+#include <rva.h>
 RVA_COMPGEN(0x00011c40, 0x44, ??1CToyPeek@@UAE@XZ)
 
 // CToyPeek::CToyPeek (0x98140) - fold the shared CUserLogic(obj) init, then nudge
@@ -66,5 +67,4 @@ i32 CToyPeek::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
     return 1;
 }
 
-#include <rva.h>
 VTBL(CToyPeek, 0x001e7204);

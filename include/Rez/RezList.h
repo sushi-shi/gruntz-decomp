@@ -3,6 +3,7 @@
 
 #include <Ints.h>
 #include <rva.h>
+#include <Bute/ObjListBase.h>
 
 class CObjNode {
 public:
@@ -15,7 +16,6 @@ SIZE_UNKNOWN(); // a view of the (variably-sized) list elements
 struct CRezListNode : public CObjNode {};
 SIZE_UNKNOWN();
 
-#include <Bute/ObjListBase.h>
 struct CObjList : public CObjListBase {
     // V0 (slot 0) stays pure here - CObjList is only ever a base in the Rez model.
     // NO DECLARED DESTRUCTOR (binary fact): the implicit dtor produces the same

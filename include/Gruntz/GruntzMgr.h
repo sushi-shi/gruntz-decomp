@@ -11,9 +11,9 @@
 #include <Io/SaveGame.h>           // CSaveGame - the +0x58 save sink
 #include <Gruntz/GruntzMapMgr.h>
 #include <Image/CImage.h> // ex Globals.h
+#include <Gruntz/GruntzPlayer.h>
 class CGruntzCmdMgr; // +0x6c (real class; ~CGruntzCmdMgr @0x85bd0). FWD-declared, not included:
 
-#include <Gruntz/GruntzPlayer.h>
 
 class CFileMemBase;
 

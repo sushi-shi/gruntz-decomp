@@ -24,11 +24,11 @@
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 #include <rva.h>
+#include <Bute/ButeMgr.h>
+#include <Gruntz/TriggerMgr.h>
 RVA_COMPGEN(0x000108c0, 0x44, ??1CExitTrigger@@UAE@XZ)
 
-#include <Bute/ButeMgr.h>
 
-#include <Gruntz/TriggerMgr.h>
 
 VTBL(CExitTrigger, 0x001e822c);
 

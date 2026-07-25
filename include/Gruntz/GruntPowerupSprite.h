@@ -5,6 +5,7 @@
 
 #include <Gruntz/GruntIndicatorSprite.h> // shared registry/entry/renderable types
 #include <Gruntz/SerialArchive.h>        // shared CFileMemBase (Read +0x2c / Write +0x30)
+#include <Gruntz/GruntIndicatorSprite.h> // CActReg (extern below)
 
 class CGruntPowerupSprite : public CUserLogic, public CWapX {
 public:
@@ -40,6 +41,5 @@ struct CPowerupActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/GruntIndicatorSprite.h> // CActReg (extern below)
 
 #endif // GRUNTZ_CGRUNTPOWERUPSPRITE_H

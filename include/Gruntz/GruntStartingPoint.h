@@ -7,6 +7,7 @@
 
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/ActReg.h> // CActReg (for the extern below)
 
 class CGruntStartingPoint : public CUserLogic, public CWapX {
 public:
@@ -36,6 +37,5 @@ extern "C" void ActReg4Handler(); // 0x4040a2
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-#include <Gruntz/ActReg.h> // CActReg (for the extern below)
 
 #endif // GRUNTZ_CGRUNTSTARTINGPOINT_H

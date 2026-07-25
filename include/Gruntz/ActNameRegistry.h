@@ -4,17 +4,17 @@
 #include <Bute/ButeTree.h>
 #include <Wap32/ZVec.h>
 #include <Wap32/zBitVec.h> // ex Globals.h
-
-class CVariantSlot; // folded CActColl2
 #include <Gruntz/TypeKeyColl.h>
-struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
-
 #include <rva.h>
-
 #include <Bute/ButeMgr.h> // CButeTree::Find / Insert
 #include <Gruntz/ActReg.h>
-
 #include <Mfc.h> // real CString (CActName was a fake view over it)
+
+class CVariantSlot; // folded CActColl2
+struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
+
+
+
 
 static inline char* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;

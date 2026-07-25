@@ -11,10 +11,11 @@
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/ObList.h>
 #include <Rez/RezMgr.h> // RezAlloc - the engine heap allocator the node factories use
+#include <Gruntz/String.h>
+#include <Gruntz/GruntzPlayer.h> // the ONE 0x238 per-player/channel record
 
 void ActiveWait(u32 milliseconds); // 0x13dfe0
 
-#include <Gruntz/String.h>
 
 CString __stdcall operator+(const CString& lhs, const char* rhs);
 
@@ -56,7 +57,6 @@ struct CNetVersionPacket {
 };
 SIZE(0x20); // fully-known stack packet
 
-#include <Gruntz/GruntzPlayer.h> // the ONE 0x238 per-player/channel record
 
 // (CNetSessionNode DISSOLVED: it was a second view of CNetSessionNode - same
 // m_sessions payload, id @+0x4, name CString @+0x8,

@@ -3,6 +3,7 @@
 
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 class CSecretTeleporterTrigger : public CUserLogic, public CWapX {
 public:
@@ -39,7 +40,6 @@ struct CTelActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

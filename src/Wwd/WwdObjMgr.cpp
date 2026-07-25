@@ -39,6 +39,7 @@
 #include <Gruntz/GameLevel.h>          // CGameLevel (m_parent->m_level) + CDDrawWorkerHost
 #include <Win32.h>                     // SetRect + RECT
 #include <Wwd/WwdObjMgr.h>             // own exported globals (ex Globals.h)
+#include <DDrawMgr/DDrawWorkerHost.h>
 
 DATA(0x0021ab14)
 i32 g_wwdObjIdCounter = 1;
@@ -47,7 +48,6 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-#include <DDrawMgr/DDrawWorkerHost.h>
 
 inline void* WwdKey(CGameObject* o) {
     return reinterpret_cast<void*>(o->m_188);

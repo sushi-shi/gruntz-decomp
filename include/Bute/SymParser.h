@@ -8,12 +8,12 @@
 #include <Bute/SymTab.h> // the single full CSymTab layout (+ the CSymParser fwd-decl)
 
 #include <EmptyString.h> // g_emptyString (the shared "" constant)
+#include <Bute/ObjListBase.h>
+#include <Rez/RezList.h>
 
 class CRezItmBase;
 
-#include <Bute/ObjListBase.h>
 
-#include <Rez/RezList.h>
 struct CParserObjList : public CObjList {
     virtual void V0() OVERRIDE; // [0] 0x13c4c0 (empty body; declared-only, reloc-masked)
     ~CParserObjList() {}

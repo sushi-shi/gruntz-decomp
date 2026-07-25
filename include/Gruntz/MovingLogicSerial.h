@@ -4,6 +4,8 @@
 #include <Ints.h>
 #include <Gruntz/MotionState.h> // CMotionState (the +0x38 curve ReadCurve fills)
 #include <rva.h>
+#include <Gruntz/SerialArchive.h>
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 // (deliberately NOT <Gruntz/MovingLogic.h>: this header is shared with the Grunt
 // family, which carries its own lean CMovingLogic snapshot in <Gruntz/Grunt.h>.)
 
@@ -17,9 +19,7 @@
 class ostream;
 class istream;
 
-#include <Gruntz/SerialArchive.h>
 
-#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 istream& ReadCurve(istream& accum, CMotionState& c); // 0x16d000
 

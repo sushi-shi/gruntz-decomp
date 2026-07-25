@@ -22,6 +22,8 @@
 #include <Mfc.h> // operator new + the afx-first windows.h order UserLogic.h needs
 #include <Gruntz/UserLogic.h>
 #include <rva.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerCache.h>
 
 RVA_COMPGEN(0x000138d0, 0x4b, ??0CUserLogic@@QAE@XZ) // (100% - byte-exact)
 //
@@ -52,8 +54,6 @@ i32 LogicAttackFactory(
 i32 LogicBumpFactory(
     CGameObject* obj
 ); // GameObjNotifyFn ABI (CreateWorker registrant)   // 0x56e4e0
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawWorkerCache.h>
 inline void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     {
         CObject* found = 0;

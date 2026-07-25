@@ -3,6 +3,7 @@
 
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CGruntCreationPoint : CUserLogic)
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 class CGruntCreationPoint : public CUserLogic, public CWapX {
 public:
@@ -31,6 +32,5 @@ public:
 };
 SIZE(0x54);
 
-#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 #endif // GRUNTZ_CGRUNTCREATIONPOINT_H

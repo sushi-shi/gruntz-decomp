@@ -54,6 +54,10 @@
 
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/GruntEntranceArrival.h> // ex Globals.h
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GameRegistry.h>      // canonical CGameRegistry (fire-view cast)
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>         // CGameObject (the created sprite + the bound object)
 
 DATA(0x001e9a68)
 double s_fpZero = 0.0; // 0x5e9a68
@@ -122,10 +126,6 @@ static void GruntScratchTeardown() {
     }
 }
 
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/GameRegistry.h>      // canonical CGameRegistry (fire-view cast)
-#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
-#include <Gruntz/UserLogic.h>         // CGameObject (the created sprite + the bound object)
 
 DATA(0x0020df94)
 char k_60df94[] = "S";

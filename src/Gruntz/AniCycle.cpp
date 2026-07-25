@@ -3,6 +3,11 @@
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/AniCycle.h>
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Rez/FrameClock.h> // g_engineFrameDelta (the anim-advance clock)
+#include <rva.h>
+#include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 VTBL(CAniCycle, 0x001e86a4);
 template<> DATA(0x00246088)
@@ -22,8 +27,6 @@ i32 CAniCycle::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CAniCycle() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-#include <Rez/FrameClock.h> // g_engineFrameDelta (the anim-advance clock)
-#include <rva.h>
 RVA_COMPGEN(0x0000f510, 0x44, ??1CAniCycle@@UAE@XZ)
 
 RVA(0x000aad20, 0x15c)
@@ -82,9 +85,6 @@ void CAniCycle::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CAniCycle::AdvanceAnim);
 }
 
-#include <rva.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 RVA(0x000ab2e0, 0x17)
 i32 CAniCycle::AdvanceAnim() {

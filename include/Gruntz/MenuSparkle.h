@@ -5,6 +5,7 @@
 
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CMenuSparkle : CUserLogic)
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 class CMenuSparkle : public CUserLogic, public CWapX {
 public:
@@ -32,7 +33,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).

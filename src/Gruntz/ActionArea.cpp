@@ -15,6 +15,8 @@
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 #include <Gruntz/HaznColl.h> // CActReg - the shared _zvec-based registry-collection address-view
+#include <Gruntz/TypeKeyColl.h>
+#include <rva.h>
 
 VTBL(CActionArea, 0x001e7004);
 VTBL(CUserLogic, 0x001e705c); // vtable_names -> code (RTTI game class)
@@ -28,7 +30,6 @@ static inline CActionAreaActEntry* R3Lookup(i32 coord) {
     );
 }
 
-#include <Gruntz/TypeKeyColl.h>
 
 static inline CTypeNameEntry* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
@@ -75,7 +76,6 @@ i32 CreateActionArea(CGameObject* owner) {
 // partial-unwind funclets - retail shows ~150 unwind funclets calling it via
 // thunk 0x1343); the body is the single dead-store-collapsed own-vptr stamp
 // `mov [ecx],offset ??_7CUserBase; ret`. RVA_COMPGEN NAMES the retail copy.
-#include <rva.h>
 
 // CActionArea::CActionArea (0x7da0) - fold the shared CUserLogic(obj) init, then
 // name the bound object "GAME_ACTIONAREA_RED", bind the "A" bute node, lock the

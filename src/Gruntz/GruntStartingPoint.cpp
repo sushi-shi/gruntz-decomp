@@ -12,6 +12,8 @@
 #include <rva.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype (CActRegPool<CGruntStartingPoint>::s_table)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 RVA(0x000105d0, 0x47)
 i32 CGruntStartingPoint::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
@@ -52,8 +54,6 @@ VTBL(CGruntStartingPoint, 0x001e8284);
 template<> DATA(0x002446d8)
 CActReg CActRegPool<CGruntStartingPoint>::s_table(2000, 2010);
 
-#include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 DATA(0x002bf464)
 void* g_projActCache;

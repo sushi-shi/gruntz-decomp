@@ -33,6 +33,8 @@
 #include <Gruntz/ActNameRegistry.h>  // the shared action-name registry archetype
 #include <Gruntz/ActReg.h>           // the shared activation-registrar archetype
 #include <stdlib.h>                  // rand (0x11fee0; flicker-timer seed)
+#include <rva.h>
+#include <rva.h>
 
 template<> DATA(0x00246010)
 CActReg CActRegPool<CMenuSparkle>::s_table(2000, 2010);
@@ -55,7 +57,6 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // a user-declared `~CMenuSparkle() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-#include <rva.h>
 
 VTBL(CMenuSparkle, 0x001e82dc);
 
@@ -140,4 +141,3 @@ i32 CMenuSparkle::AdvanceAnim() {
     return 0;
 }
 
-#include <rva.h>

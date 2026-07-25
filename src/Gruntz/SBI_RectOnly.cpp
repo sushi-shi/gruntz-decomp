@@ -39,12 +39,12 @@
 #include <string.h>            // strlen / memset
 #include <Gruntz/SoundState.h> // ex Globals.h transitive
 #include <Gruntz/Random.h>     // ex Globals.h transitive
+#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+#include <Gruntz/SBI_WellGoo.h>  // CSBI_WellGoo - m_gaugeSink's real type (m_fillScale @+0x44)
 
 DATA(0x00244c54)
 i32 g_curPlayer = 0; // owner def (C linkage from StatusBarItem.h)
 
-#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-#include <Gruntz/SBI_WellGoo.h>  // CSBI_WellGoo - m_gaugeSink's real type (m_fillScale @+0x44)
 
 // CStatusBarMgr's destructor is inline in the shared header because retail inlines
 // it at the allocation-failure cleanup in CPlay::LoadGameAssetNamespaces. Retail

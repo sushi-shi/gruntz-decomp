@@ -5,6 +5,7 @@
 #include <Gruntz/SerialArchive.h> // CFileMemBase - the Load serializer's stream (Read @ +0x2c)
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+#include <Gruntz/CoordNode.h>
 extern FreeNodePool g_coordPool;
 
 void operator delete(void*);
@@ -14,7 +15,6 @@ typedef enum TmGridDim {
     TM_GRID_ROWS = 4,  // rows (m_rowCount/m_rowStateB/m_rowStateC are per-row)
 } TmGridDim;
 
-#include <Gruntz/CoordNode.h>
 
 class CGrunt;
 class CWarlord;

@@ -3,6 +3,7 @@
 #define GRUNTZ_REZ_DEBUGPRINTF_H_H
 
 #include <Ints.h>
+#include <stdio.h> // fclose comes from the real CRT header, not a hand-rolled decl
 
 // --- C-linkage carriers for the TU's extern-C definitions (the defs
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---
@@ -20,7 +21,6 @@ extern "C" void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...);
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-#include <stdio.h> // fclose comes from the real CRT header, not a hand-rolled decl
 
 extern i32 g_debugPrintMode;
 #endif // GRUNTZ_REZ_DEBUGPRINTF_H_H

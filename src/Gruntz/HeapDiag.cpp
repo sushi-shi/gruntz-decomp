@@ -5,6 +5,7 @@
 #include <string.h>          // memset
 
 #include <rva.h>
+#include <tlhelp32.h>
 
 RVA(0x00118930, 0x15)
 void SetActiveAndFocus(HWND hWnd) {
@@ -138,7 +139,6 @@ int HeapStats() {
     return status;
 }
 
-#include <tlhelp32.h>
 typedef HANDLE(WINAPI* PFN_CreateSnapshot)(u32 dwFlags, u32 th32ProcessID);
 typedef i32(WINAPI* PFN_Process32)(HANDLE hSnapshot, PROCESSENTRY32* pe);
 

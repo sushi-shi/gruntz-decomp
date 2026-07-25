@@ -3,6 +3,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzWnd.h>
 #include <rva.h>
+#include <Net/NetLobby.h> // NetLobby::g_curDlg (0x64557c, active modeless-dialog HWND)
 
 RVA(0x00094640, 0x12)
 CGruntzWnd::CGruntzWnd() {}
@@ -19,7 +20,6 @@ CGruntzWnd::~CGruntzWnd() {
     Destroy();
 }
 
-#include <Net/NetLobby.h> // NetLobby::g_curDlg (0x64557c, active modeless-dialog HWND)
 
 // -------------------------------------------------------------------------
 // CGruntzWnd::PreDispatchMessage (vtable slot 1). The window's pre-translate hook,

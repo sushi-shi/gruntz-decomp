@@ -17,6 +17,7 @@
 #include <stdlib.h>                   // atoi
 #include <string.h>                   // strstr / inline strcpy-strlen
 #include <Gruntz/CustomWorldDialog.h> // own exported globals (ex Globals.h)
+#include <Net/NetLobby.h> // NetLobby::g_curDlg
 
 INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
 // LoadCustomWorldInfo's DialogBoxParamA takes CustomWorldInfoDlgProc's ADDRESS, and the
@@ -25,7 +26,6 @@ INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
 // the THUNK rva (same idiom as GruntzApp's _ErrorDialogProcThunk @0x33c8) so have==want.
 DATA_SYMBOL(0x0000305d, 0x0, _CustomWorldInfoDlgProcThunk@16)
 
-#include <Net/NetLobby.h> // NetLobby::g_curDlg
 DATA(0x0022c010)
 char g_mapNameBuf[0x200] = {0}; // 0x62c010  GetMapBaseName filename scratch
 DATA(0x0022c25c)

@@ -4,6 +4,7 @@
 #include <Ints.h>
 #include <Mfc.h> // CString (the +0xdc label member)
 #include <rva.h>
+#include <DDrawMgr/AnimWorkerObj.h>
 
 struct AnimWorkerObj; // <DDrawMgr/AnimWorkerObj.h> - the owned +0x7c worker (canonical
 
@@ -64,6 +65,5 @@ struct CWwdGameObjBaseCtor : public WwdCtorBase {
 };
 SIZE_UNKNOWN(); // 0x15b390 per-kind wide-object ctor (CResolveNode base)
 
-#include <DDrawMgr/AnimWorkerObj.h>
 
 #endif // GRUNTZ_WWD_WWDGAMEOBJCTOR_H

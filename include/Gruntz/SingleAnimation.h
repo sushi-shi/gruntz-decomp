@@ -3,6 +3,7 @@
 
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CSingleAnimation : CUserLogic)
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 class CSingleAnimation : public CUserLogic, public CWapX {
 public:
@@ -38,6 +39,5 @@ struct CSingleAnimActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 #endif // GRUNTZ_CSINGLEANIMATION_H

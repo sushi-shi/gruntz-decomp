@@ -1,6 +1,7 @@
 #include <Gruntz/MenuSparkle.h> // the ONE canonical CMenuSparkle (the Grunt.h-world
 #include <Io/FileMem.h>         // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/MenuSparkleSerial.h> // own exported globals (ex Globals.h)
+#include <rva.h>
 
 DATA(0x001ea3d4)
 i32 g_menuSparkleLo = 1000; // 0x5ea3d4
@@ -33,4 +34,3 @@ i32 CMenuSparkle::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
     return 1;
 }
 
-#include <rva.h>

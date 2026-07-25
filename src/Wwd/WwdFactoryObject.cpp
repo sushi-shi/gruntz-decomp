@@ -31,14 +31,14 @@
 #include <DDrawMgr/DDrawSubMgr.h> // g_sndPanScale (ex .cpp extern)
 #include <Gruntz/SoundState.h>    // g_sndCueTag (ex the g_aniCueItem alias)
 #include <Wwd/WwdObjMgr.h>        // ex Globals.h
+#include <Gruntz/AniElement.h>
+#include <DDrawMgr/DDrawSubMgrLeaf.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the +0x0c owner: the canonical CDDrawSurfaceMgr
 namespace Rng {
     i32 Next2();
 }
 
-#include <Gruntz/AniElement.h>
 
-#include <DDrawMgr/DDrawSubMgrLeaf.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h> // the +0x0c owner: the canonical CDDrawSurfaceMgr
 
 VTBL(CWwdGameObjectC, 0x001effd0);   // ??_7 (19 slots)
 VTBL(CGameObject, 0x001f0020);       // ??_7 (base, 16 slots)

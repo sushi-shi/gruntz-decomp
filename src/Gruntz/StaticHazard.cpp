@@ -18,6 +18,11 @@
 
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // CDDrawSubMgrLeaf (m_world->m_animRegistry->m_10 cue lookup)
 #include <Gruntz/Play.h>              // ex Globals.h
+#include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
+#include <Gruntz/ActName.h> // CActName (shared)
+#include <rva.h>
+#include <rva.h>
+#include <Wap32/ZVec.h>
 
 struct CHaznEntry; // an entry: first dword is the registered handler
 
@@ -27,10 +32,8 @@ CActReg CActRegPool<CStaticHazard>::s_table(2000, 2010);
 
 RVA_COMPGEN(0x00012b30, 0x44, ??1CStaticHazard@@UAE@XZ)
 
-#include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
-#include <Gruntz/ActName.h> // CActName (shared)
 
 static inline char* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
@@ -65,7 +68,6 @@ static inline CHaznEntry* HaznLookup(i32 coord) {
 // a user-declared `~CStaticHazard() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-#include <rva.h>
 
 // ---------------------------------------------------------------------------
 // CStaticHazard::CStaticHazard @0x0fb7a0 - the 1-arg ctor. Chains the standard
@@ -375,8 +377,6 @@ dispatch:
     return 0;
 }
 
-#include <rva.h>
-#include <Wap32/ZVec.h>
 
 RVA(0x000fc5b0, 0xf5)
 i32 CStaticHazard::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {

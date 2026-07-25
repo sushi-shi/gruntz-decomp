@@ -11,6 +11,12 @@
 #include <afxwin.h>
 
 #include <Gruntz/FixedPtrArray32.h> // the game-controller poll list (g_actorList)
+#include <Gruntz/ChatBox.h>
+#include <Gruntz/GlyphStringDraw.h> // RECT (for the extern below)
+#include <Gruntz/State.h>
+#include <Gruntz/View.h> // the CState::m_c render sub-object facets (CRenderer/CDrawSurface)
+#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (the CState::m_c holder itself)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // its real sub-object classes (CDDrawSubMgrPages/CDDrawWorkerRegistry/CDDrawSubMgrLeafScan)
 
 // (CGMSound / CGMSoundEntry / CGMOwner DISSOLVED 2026-07-20: they were phantom views of
 // the CState::m_4 CGruntzMgr. The credits/menu code now reaches the real classes cast-free:
@@ -21,7 +27,6 @@
 
 extern "C" void __stdcall GM_SimpleAnim(i32 z); // (stdcall, 1 arg)
 
-#include <Gruntz/ChatBox.h>
 
 extern "C" tagRECT g_versionRect; // (the 4-int source @c8/cc/d0/d4)
 extern "C" i32 g_frameDelta;      // (last-frame delta, fed to Step)
@@ -32,13 +37,8 @@ struct BzGeomPair {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/GlyphStringDraw.h> // RECT (for the extern below)
 extern RECT g_levelMsgRectsB[8];
 
-#include <Gruntz/State.h>
-#include <Gruntz/View.h> // the CState::m_c render sub-object facets (CRenderer/CDrawSurface)
-#include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr (the CState::m_c holder itself)
-#include <DDrawMgr/DDrawSurfaceMgr.h> // its real sub-object classes (CDDrawSubMgrPages/CDDrawWorkerRegistry/CDDrawSubMgrLeafScan)
 
 struct LeafCue;        // CMenuState::m_1bc - the menu-music sound cue (Gruntz/LeafCue.h)
 class CMoviePlayer;    // CCreditsState::m_videoHandle - real Smacker video player

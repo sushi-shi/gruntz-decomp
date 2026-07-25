@@ -5,6 +5,10 @@
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/SingleAnimation.h>
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <rva.h>
+#include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 VTBL(CSingleAnimation, 0x001e745c);
 template<> DATA(0x00245f70)
@@ -28,7 +32,6 @@ i32 CSingleAnimation::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CSingleAnimation() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-#include <rva.h>
 RVA_COMPGEN(0x00010540, 0x44, ??1CSingleAnimation@@UAE@XZ)
 
 RVA(0x000ae7f0, 0x13d)
@@ -95,6 +98,3 @@ i32 CSingleAnimation::AdvanceAnim() {
     return 0;
 }
 
-#include <rva.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)

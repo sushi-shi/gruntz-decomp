@@ -21,13 +21,13 @@
 
 #include <Gruntz/SpotLightActReg.h> // CActRegPool<CSpotLight>::s_table (ex .cpp extern)
 #include <Gruntz/Random.h>          // ex Globals.h transitive
+#include <Gruntz/SpotLight.h>
 VTBL(CSpotLight, 0x001e75bc);
 DATA(0x001ea3f0)
 const double g_spotRateNum = 3.1415927; // 0x5ea3f0
 DATA(0x001ea3f8)
 const double g_spotRateMul = -1.0; // 0x5ea3f8
 
-#include <Gruntz/SpotLight.h>
 
 // CSpotLight::~CSpotLight @0x13040 - empty vtable-anchor dtor; folds the CUserLogic
 // teardown (the /GX leaf-dtor archetype). Gives CSpotLight a real vftable so the

@@ -18,6 +18,9 @@
 #include <Bute/ButeTree.h> // the real CButeTree (g_buteTree @0x6bf620)
 
 #include <rva.h>
+#include <new>      // placement new (the inlined ConstructElements grow loop)
+#include <stdlib.h> // rand (CRT PRNG, reloc-masked)
+#include <Wap32/ZVec.h>
 
 static const char s_GRUNTZ_[] = "GRUNTZ_";
 static const char s__MOVING[] = "_MOVING";
@@ -43,9 +46,6 @@ static const char s_keyE[] = "E";
 static const char s_keyA[] = "A";
 static const char s_keyF[] = "F";
 
-#include <new>      // placement new (the inlined ConstructElements grow loop)
-#include <stdlib.h> // rand (CRT PRNG, reloc-masked)
-#include <Wap32/ZVec.h>
 
 template<> DATA(0x00244610)
 CActReg CActRegPool<CWarlord>::s_table(2000, 2010);

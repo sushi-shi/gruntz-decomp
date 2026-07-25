@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 class CLightFx : public CUserLogic, public CWapX {
 public:
@@ -54,6 +55,5 @@ struct CLightFxActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 #endif // GRUNTZ_GRUNTZ_CLIGHTFX_H

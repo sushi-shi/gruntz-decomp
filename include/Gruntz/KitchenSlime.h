@@ -5,6 +5,7 @@
 
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (+ CGameObject / CFileMemBase)
+#include <Gruntz/ActReg.h> // CActReg (for the extern below)
 
 class CKitchenSlime : public CUserLogic, public CWapX {
 public:
@@ -66,7 +67,6 @@ extern "C" void KSlimeActivationHandler(); // 0x40180c
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-#include <Gruntz/ActReg.h> // CActReg (for the extern below)
 
 extern const double g_slimeSpeedNum;
 #endif // GRUNTZ_CKITCHENSLIME_H

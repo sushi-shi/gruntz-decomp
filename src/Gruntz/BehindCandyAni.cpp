@@ -7,6 +7,10 @@
 #include <Gruntz/BehindCandyAni.h>
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <rva.h>
+#include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 VTBL(CBehindCandyAni, 0x001e838c);
 template<> DATA(0x00245f98)
@@ -30,7 +34,6 @@ i32 CBehindCandyAni::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CBehindCandyAni() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-#include <rva.h>
 RVA_COMPGEN(0x000100f0, 0x44, ??1CBehindCandyAni@@UAE@XZ)
 
 RVA(0x000ad540, 0x1f0)
@@ -112,6 +115,3 @@ i32 CBehindCandyAni::AdvanceAnim() {
     return 0;
 }
 
-#include <rva.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)

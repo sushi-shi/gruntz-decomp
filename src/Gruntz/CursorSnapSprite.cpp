@@ -3,6 +3,9 @@
 
 #include <Gruntz/AnimWorker.h> // shared Owner / Worker views + Worker_DefaultPump (CursorSnapWorkerPump)
 #include <Gruntz/UserLogic.h> // the dispatched CUserLogic slot layout
+#include <rva.h>
+#include <rva.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 RVA(0x00011880, 0x47)
 i32 CCursorSnapSprite::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
@@ -22,7 +25,6 @@ i32 CCursorSnapSprite::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CCursorSnapSprite() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-#include <rva.h>
 RVA_COMPGEN(0x00011920, 0x44, ??1CCursorSnapSprite@@UAE@XZ)
 
 RVA(0x0003a200, 0xf1)
@@ -93,6 +95,4 @@ void CCursorSnapSprite::FireActivation(i32 id) {
     }
 }
 
-#include <rva.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 VTBL(CCursorSnapSprite, 0x001e8074);

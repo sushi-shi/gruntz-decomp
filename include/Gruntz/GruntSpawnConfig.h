@@ -10,6 +10,7 @@
 #include <Gruntz/SpawnList.h>         // canonical CSpawnList / CSpawnEntry (voice lists)
 #include <DDrawMgr/DDrawChildGroup.h> // the shared CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>         // CGameObject (the created sprite) + AnimWorkerObj
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 class CGruntVoice;  // folded CGruntVoice
 struct StreamVoice; // m_10/m_14 owned voice streams (the real <Dsndmgr/StreamVoice.h>)
@@ -109,7 +110,6 @@ struct CSpawnTree {
 };
 SIZE_UNKNOWN();
 
-#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 extern "C" i32 SpawnResolveName(void* resolver, void* nameStr, i32 mode); // FUN_0053bff0
 

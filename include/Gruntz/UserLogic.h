@@ -8,6 +8,10 @@
 
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/WwdGridIter.h> // WwdRegion - the embedded +0x9c region node
+#include <DDrawMgr/AnimWorkerObj.h>
+#include <Wwd/WwdGameObjectFamily.h>
+#include <Bute/ButeMgr.h>
+#include <Gruntz/SerialArchive.h> // CFileMemBase == CFileMemBase (typedef; NEVER fwd-declare it)
 
 struct CGameObject;      // fwd (the worker's collide callback takes the object)
 struct LeafCue;          // the +0x19c resolved leaf-scan cue (<Gruntz/LeafCue.h>)
@@ -15,15 +19,12 @@ class CDDrawSurfacePair; // slots 11-14 params (<DDrawMgr/DDrawSurfacePair.h>)
 class CUserLogic;        // fwd (AnimWorkerObj::m_logic is the object's bound logic leaf)
 struct Coord;
 
-#include <DDrawMgr/AnimWorkerObj.h>
 
 class CDDrawWorker; // the +0x194 cached sprite IS CDDrawWorker
 
 class CImage;
 
-#include <Wwd/WwdGameObjectFamily.h>
 
-#include <Bute/ButeMgr.h>
 extern CButeMgr g_buteMgr;
 
 extern i32 g_logicTypesRegistered;
@@ -187,7 +188,6 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
     }
 }
 
-#include <Gruntz/SerialArchive.h> // CFileMemBase == CFileMemBase (typedef; NEVER fwd-declare it)
 class CWapX {
 public:
     CWapX() {}

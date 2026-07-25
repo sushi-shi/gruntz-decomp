@@ -3,13 +3,13 @@
 
 #include <Ints.h>
 #include <rva.h>
+#include <Bute/Hash.h> // the REAL CHashElement (the +0x1c node's base)
 
 typedef enum ParseEntryTag {
     PARSETAG_VAW = 0x574156, // "VAW" -> .WAV  sound entry (CDDrawSubMgrLeafScan::ScanTree gate)
     PARSETAG_INA = 0x414e49, // "INA" -> .ANI  animation entry (the sibling Leaf/SurfacePair gate)
 } ParseEntryTag;
 
-#include <Bute/Hash.h> // the REAL CHashElement (the +0x1c node's base)
 
 class CSymTab; // <Bute/SymTab.h>
 

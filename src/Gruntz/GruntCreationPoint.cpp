@@ -9,6 +9,11 @@
 #include <Gruntz/GruntCreationPoint.h>
 #include <Gruntz/AnimSink.h>
 #include <Wap32/ZVec.h>
+#include <rva.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
+#include <Gruntz/Play.h>          // ChannelSlots_FindFree (ex .cpp extern)
 
 typedef i32 (CUserLogic::*CreationPointHandler)();
 
@@ -24,10 +29,8 @@ VTBL(CGruntCreationPoint, 0x001e81d4);
 // a user-declared `~CGruntCreationPoint() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-#include <rva.h>
 RVA_COMPGEN(0x00010730, 0x44, ??1CGruntCreationPoint@@UAE@XZ)
 
-#include <Gruntz/GameRegistry.h>
 
 // CGruntCreationPoint::CGruntCreationPoint @0x3e520 - fold the shared
 // CUserLogic(obj) init, flag the sub-object (+0x08 bit 1 via m_74==5 init), bind
@@ -75,9 +78,6 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
     m_objAux->m_1c = g_buteTree.Find("A");
 }
 
-#include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
-#include <Gruntz/Play.h>          // ChannelSlots_FindFree (ex .cpp extern)
 
 // CActRegPool<CGruntCreationPoint>::s_table (0x00244700): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.

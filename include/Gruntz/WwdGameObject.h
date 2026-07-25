@@ -7,6 +7,7 @@
 #include <Gruntz/UserLogic.h>        // CGameObject - the BASE (all data + the 17-slot vtable)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor - the real +0x1a0 anim/command cursor
 #include <Gruntz/WwdGridIter.h>      // WwdRegion - the embedded +0x9c region node
+#include <DDrawMgr/AnimWorkerObj.h>
 
 class CDDrawSurfaceMgr;
 
@@ -29,7 +30,6 @@ class CImage;            // the cached frame element (<Image/CImage.h>; ex CGame
 class CDDrawSurfacePair; // slots 12-14 params (<DDrawMgr/DDrawSurfacePair.h>)
 struct LeafCue;          // the leaf-scan cache value (<Gruntz/LeafCue.h>; ex LeafScanValue)
 
-#include <DDrawMgr/AnimWorkerObj.h>
 
 // VTBL_ABSENT: never-constructed dispatch facet, PROVEN retail-faithful - it spells
 // the bare ??_G call (push 1; call [vt+4], no null guard: MSVC5 `delete` ALWAYS

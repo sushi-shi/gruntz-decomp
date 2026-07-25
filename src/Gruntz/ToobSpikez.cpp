@@ -6,6 +6,11 @@
 #include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
 #include <Gruntz/ActReg.h> // CActReg (CActRegPool<CToobSpikez>::s_table); ResolveEntry + GetRetAddr/g_projActCache
 #include <Gruntz/ActNameRegistry.h> // the shared name registry: g_typeColl/g_typeCounter/s_codeA/ActNameLookup/g_buteTree
+#include <Rez/FrameClock.h> // g_engineFrameDelta (the anim-advance clock)
+#include <rva.h>
+#include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 RVA_COMPGEN(0x00012c60, 0x44, ??1CToobSpikez@@UAE@XZ)
 
@@ -86,8 +91,6 @@ i32 CToobSpikez::SerializeMove(CFileMemBase* a, i32 b, i32 c, i32 d) {
 // a user-declared `~CToobSpikez() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-#include <Rez/FrameClock.h> // g_engineFrameDelta (the anim-advance clock)
-#include <rva.h>
 
 RVA(0x00114860, 0x102)
 void CToobSpikez::FireActivation(i32 coord) {
@@ -131,9 +134,6 @@ void CToobSpikez::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CToobSpikez::AdvanceAnim);
 }
 
-#include <rva.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 RVA(0x00114bc0, 0x17)
 i32 CToobSpikez::AdvanceAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);

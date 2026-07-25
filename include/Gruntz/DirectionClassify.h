@@ -2,13 +2,13 @@
 #define GRUNTZ_GRUNTZ_DIRECTIONCLASSIFY_H
 
 #include <rva.h>
+#include <Ints.h>
 
 struct GruntDirectionCell;
 
 // MotionEntity - the position-bearing entity Classify (0x4a780) runs on.
 // @identity-TODO: the owning class is unrecovered (orphan; world coords as doubles at
 // +0x78/+0x80, snapped cell ints at +0x140/+0x144). Defined in DirectionClassify.cpp.
-#include <Ints.h>
 struct MotionEntity {
     char p0[0x78];
     double m_78; // +0x78  world coord A

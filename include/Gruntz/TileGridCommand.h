@@ -10,6 +10,7 @@
 #include <rva.h>                      // SIZE_UNKNOWN class-metadata macros used below
 
 #include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/TileTriggerLogic.h>
 
 extern "C" u32 g_frameTime;
 
@@ -30,6 +31,5 @@ SIZE_UNKNOWN();
 struct TgcRedraw {};
 SIZE_UNKNOWN();
 
-#include <Gruntz/TileTriggerLogic.h>
 
 #endif // SRC_GRUNTZ_TILEGRIDCOMMAND_H

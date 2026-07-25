@@ -1,11 +1,13 @@
+#include <Mfc.h>                // CPtrList (+0x204 member)
+#include <Gruntz/MovingLogic.h> // CMovingLogic base (pulls UserLogic.h) + bound externs
+#include <rva.h>
+#include <Gruntz/ActReg.h>
+#include <Gruntz/HaznColl.h>
 #ifndef GRUNTZ_PROJECTILE_H
 #define GRUNTZ_PROJECTILE_H
 
 class CLightFx; // folded CProjShadowActivate
 
-#include <Mfc.h>                // CPtrList (+0x204 member)
-#include <Gruntz/MovingLogic.h> // CMovingLogic base (pulls UserLogic.h) + bound externs
-#include <rva.h>
 
 class DirectSoundMgr; // <Dsndmgr/DirectSoundMgr.h> - the pooled DirectSound buffer
 
@@ -100,8 +102,6 @@ extern "C" void ProjActivationHandler(); // 0x403896
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-#include <Gruntz/ActReg.h>
-#include <Gruntz/HaznColl.h>
 
 extern const double g_projPhase1;
 #endif // GRUNTZ_PROJECTILE_H

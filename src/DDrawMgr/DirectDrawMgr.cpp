@@ -11,6 +11,7 @@
 #include <string.h> // inline strcpy / memcpy / memset (rep stos)
 
 #include <Dsndmgr/SoundBankLoad.h> // g_dot (ex mislabeled .cpp extern)
+#include <DDrawMgr/DdCreateArg.h>
 #define DDRAWMGR_FILE "C:\\Proj\\DDrawMgr\\DDRAWMGR.CPP"
 #define DDRAWMGR_H_FILE "C:\\Proj\\DDrawMgr\\ddrawmgr.h"
 
@@ -1031,7 +1032,6 @@ void CDDrawPtrCollections::FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
 // Kept as honest by-offset + abstract-COM-interface models (no fabricated identity) until
 // the CDDrawSurfacePair->+0xc surface-descriptor subsystem is RTTI-pinned. The factory-arg
 // views CDdDescSrc / CDdCreateArg live in <DDrawMgr/DdCreateArg.h>.
-#include <DDrawMgr/DdCreateArg.h>
 
 // The pool item is a real CDDSurface (vtable 0x5ef7f0): `new CDDSurface` + slot-1
 // Refresh / `delete` (see CreatePoolItem below).

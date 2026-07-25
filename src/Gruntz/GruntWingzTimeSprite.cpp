@@ -1,6 +1,7 @@
 #include <Gruntz/GruntWingzTimeSprite.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Bute/ButeTree.h> // g_buteTree.Find (0x16d190) - the "A" animset seed
+#include <rva.h>
 
 RVA_COMPGEN(0x000121f0, 0x44, ??1CGruntWingzTimeSprite@@UAE@XZ)
 
@@ -41,7 +42,6 @@ CGruntWingzTimeSprite::CGruntWingzTimeSprite(CGameObject* obj) : CGruntHealthSpr
 // a user-declared `~CGruntWingzTimeSprite() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-#include <rva.h>
 
 VTBL(CGruntWingzTimeSprite, 0x001e77cc); // vtable_names -> code (RTTI game class)
 RVA(0x0007fd90, 0xd)

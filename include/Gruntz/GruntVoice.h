@@ -9,6 +9,7 @@
 
 #include <Gruntz/UserLogic.h>  // CUserLogic : CUserBase, EngStr, CGameObject
 #include <Gruntz/InGameIcon.h> // s_actKeyB ("B" @0x60d1bc), g_frameTime (@0x645588)
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 struct CVoiceSample {};
 SIZE_UNKNOWN();
@@ -46,7 +47,6 @@ struct CVActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).

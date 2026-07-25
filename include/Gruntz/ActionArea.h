@@ -7,6 +7,7 @@
 #include <Gruntz/UserLogic.h>
 
 #include <Gruntz/SerialArchive.h> // CFileMemBase (== CFileMemBase) - SerializeMove
+#include <Gruntz/HaznColl.h> // CActReg (for the extern below)
 
 class CActionArea : public CUserLogic, public CWapX {
 public:
@@ -58,6 +59,5 @@ extern "C" void ProjActHandlerThunk(); // 0x403517 (ILT thunk)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-#include <Gruntz/HaznColl.h> // CActReg (for the extern below)
 
 #endif // GRUNTZ_CACTIONAREA_H

@@ -17,6 +17,7 @@
 #include <Gruntz/GuardPoint.h>
 
 #include <Gruntz/WorkerHandler.h> // shared Worker / Owner archetype + LOGIC_WORKER_PUMP
+#include <Gruntz/DoNothingNormalDtor.h> // the real CDoNothingNormal leaf (ex the DnnRec pen)
 
 RVA(0x000a9a40, 0xf1)
 i32 CreateAniCycle(CGameObject* owner){LOGIC_WORKER_PUMP(CAniCycle)}
@@ -27,7 +28,6 @@ i32 HandlerA9B80(CGameObject* owner){LOGIC_WORKER_PUMP(CSingleFrameMessage)}
 RVA(0x000a9cc0, 0xf1)
 i32 CreateDoNothing(CGameObject* owner){LOGIC_WORKER_PUMP(CDoNothing)}
 
-#include <Gruntz/DoNothingNormalDtor.h> // the real CDoNothingNormal leaf (ex the DnnRec pen)
 
 // The switch key worker->m_1c is UNSIGNED (u32); MSVC5 then emits the range checks
 // as unsigned ja/jbe, matching retail byte-for-byte (switch-key-unsigned-ja-vs-jg).

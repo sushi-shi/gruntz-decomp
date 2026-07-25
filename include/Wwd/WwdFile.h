@@ -1,11 +1,12 @@
+#include <Mfc.h> // real MFC CString (the WwdFile members take it by value)
+#include <Ints.h>
+#include <rva.h>
+#include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost (+ CDDrawWorkerHost/CDDrawWorkerHost/
 #ifndef SRC_WWD_WWDFILE_H
 #define SRC_WWD_WWDFILE_H
 
 class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
-#include <Mfc.h> // real MFC CString (the WwdFile members take it by value)
-#include <Ints.h>
-#include <rva.h>
 
 typedef u8 Bytef;
 typedef u32 uLong;
@@ -54,7 +55,6 @@ private:
 };
 SIZE(0x10); // 16-byte file-stream object (full layout to +0xc)
 
-#include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost (+ CDDrawWorkerHost/CDDrawWorkerHost/
 
 class CDDSurface;
 struct CPlaneTile;

@@ -4,6 +4,12 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/SBI_Image.h> // CSBI_Image base
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Image/ImageSet.h> // CDDrawWorker == CDDrawWorker (the ONE frame-set class)
+#include <Gruntz/SpriteRefTable.h>
 
 class CFileMemBase;
 
@@ -11,12 +17,6 @@ class CImage;
 class CDDSurface;
 class CDDrawShadeBlit;
 
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawSubMgrPages.h>
-#include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDrawWorkerRegistry.h>
-#include <Image/ImageSet.h> // CDDrawWorker == CDDrawWorker (the ONE frame-set class)
-#include <Gruntz/SpriteRefTable.h>
 
 class CSBI_WellGoo : public CSBI_Image {
 public:

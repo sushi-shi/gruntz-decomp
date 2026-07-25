@@ -6,6 +6,8 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>
+#include <Bute/ButeMgr.h>
+#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 
 struct CPathWaypoint {
     i32 x; // +0x00
@@ -26,8 +28,6 @@ extern "C" u32 g_engineFrameDelta;
 
 extern "C" i32 g_frameDelta; // VA 0x645584
 
-#include <Bute/ButeMgr.h>
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 
 extern "C" i32 __ftol(double v); // 0x11f570 (CRT double->long; one canonical signature)
 

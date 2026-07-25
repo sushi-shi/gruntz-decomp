@@ -4,6 +4,7 @@
 #include <Wap32/Wap32.h>
 #include <Gruntz/Enums.h>
 #include <rva.h>
+#include <Gruntz/GruntzApp.h>
 
 typedef enum GruntzHotKey {
     VK_DOLLAR = 0x24,
@@ -27,7 +28,6 @@ void ActiveWait(u32 milliseconds);
 
 i32 CALLBACK AdvancedOptionsDialogProc(HWND, UINT, WPARAM, LPARAM);
 
-#include <Gruntz/GruntzApp.h>
 
 static i32 g_version0; // 1st %d
 static i32 g_version1; // 2nd %d

@@ -5,12 +5,12 @@
 #include <rva.h>
 #include <Gruntz/StatusBarItem.h> // CStatusBarItem base
 #include <Gruntz/SbRect.h>        // BuildResourceTabStatusBar's by-value geometry rect
+#include <Image/CImage.h>   // the canonical frame-record class (CImage::RenderFrame @0x153790)
+#include <Image/ImageSet.h> // the config record IS the canonical CDDrawWorker (SbiConfig.h fold)
 
 class CStatusBarMgr;
 class CDDrawSurfaceMgr;
 
-#include <Image/CImage.h>   // the canonical frame-record class (CImage::RenderFrame @0x153790)
-#include <Image/ImageSet.h> // the config record IS the canonical CDDrawWorker (SbiConfig.h fold)
 
 class CSBI_GruntMachine : public CStatusBarItem {
 public:

@@ -1,11 +1,11 @@
+#include <Ints.h>
+#include <rva.h>
 #ifndef GRUNTZ_STATEMGRBZ_H
 #define GRUNTZ_STATEMGRBZ_H
 
 class DirectInputMgr2; // folded SbzInputManager
 class CInputDevice;    // the real DinMgr2 device (<DinMgr2/DirectInputMgr2.h>)
 
-#include <Ints.h>
-#include <rva.h>
 
 struct SbzControllerArray {
     char _vft0[4];         // +0x00 foreign object vptr (reduced view; not owned/dispatched)

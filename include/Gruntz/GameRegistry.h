@@ -3,6 +3,8 @@
 
 #include <Ints.h>
 #include <Gruntz/SoundCue.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/TileGrid.h>
 
 class CDDrawChildGroup; // +0x30 -> +0x08 the object collection / sprite factory (CreateSprite)
 namespace Utils {
@@ -19,9 +21,7 @@ class CDDrawWorkerRegistry;
 
 class CSpriteRefTable;
 class CLightFxMgr;
-#include <DDrawMgr/DDrawSurfaceMgr.h>
 
-#include <Gruntz/TileGrid.h>
 
 class CShadeTableCache; // +0x50 shade-table cache (<DDrawMgr/ShadeTableCache.h>)
 

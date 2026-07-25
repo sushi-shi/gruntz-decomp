@@ -5,6 +5,7 @@
 
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CBehindCandyAni : CUserLogic)
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 class CBehindCandyAni : public CUserLogic, public CWapX {
 public:
@@ -37,6 +38,5 @@ struct CBehindCandyActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 #endif // GRUNTZ_CBEHINDCANDYANI_H

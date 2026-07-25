@@ -5,6 +5,7 @@
 
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CToobSpikez : CUserLogic)
+#include <Gruntz/ActReg.h> // CActReg (for the extern below)
 
 class CToobSpikez : public CUserLogic, public CWapX {
 public:
@@ -34,6 +35,5 @@ SIZE(0x54);
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-#include <Gruntz/ActReg.h> // CActReg (for the extern below)
 
 #endif // GRUNTZ_CTOOBSPIKEZ_H

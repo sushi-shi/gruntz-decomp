@@ -1,5 +1,6 @@
 #include <Gruntz/GruntToyTimeSprite.h>
 #include <Bute/ButeTree.h> // g_buteTree.Find (0x16d190) - the "A" animset seed
+#include <rva.h>
 
 RVA_COMPGEN(0x00012130, 0x44, ??1CGruntToyTimeSprite@@UAE@XZ)
 
@@ -43,5 +44,4 @@ i32 CGruntToyTimeSprite::Vslot16(CGrunt* grunt) {
 // a user-declared `~CGruntToyTimeSprite() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-#include <rva.h>
 VTBL(CGruntToyTimeSprite, 0x001e79ec);

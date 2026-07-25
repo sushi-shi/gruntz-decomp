@@ -2,12 +2,12 @@
 #define SRC_BUTE_PTREENODE_H
 #include <rva.h>
 #include <Ints.h>
+#include <Wap32/zBitVec.h> // the canonical zErrHandling (ctor 0x16d9c0 / dtor 0x16da60)
 
 struct CVariantSlot;                   // <Bute/ButeTree.h> - the +0x04 error sink (Set 0x16d850)
 struct CButeTreeNode;                  // <Bute/ButeTree.h> - the 0x14-byte crit-bit trie node
 extern CVariantSlot g_symTabErrorSlot; // 0x6bf480 ("zSymTab: ")
 
-#include <Wap32/zBitVec.h> // the canonical zErrHandling (ctor 0x16d9c0 / dtor 0x16da60)
 
 class CButeNodeEntry {
 public:

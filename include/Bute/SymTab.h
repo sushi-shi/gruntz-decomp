@@ -5,9 +5,9 @@
 #include <rva.h>
 
 #include <Bute/Hash.h> // CHashElement (the embeddable hash-node prefix records carry)
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 void* operator new(u32 size);
-#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 struct CSymTabNode : public CHashElement {
     // Slot 0 (0x13c3b0): m_owner->HashStr(m_record's key), on the CHashB child-scope

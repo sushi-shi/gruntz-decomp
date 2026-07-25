@@ -5,6 +5,7 @@
 
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CStaticHazard : CUserLogic)
+#include <Gruntz/HaznColl.h> // CActReg (for the extern below)
 
 class CStaticHazard : public CUserLogic, public CWapX {
 public:
@@ -47,6 +48,5 @@ SIZE_UNKNOWN();
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-#include <Gruntz/HaznColl.h> // CActReg (for the extern below)
 
 #endif // GRUNTZ_CSTATICHAZARD_H

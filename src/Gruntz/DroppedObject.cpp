@@ -25,6 +25,10 @@
 #include <Gruntz/State.h> // canonical CState (g_gameReg->m_curState; m_levelType @+0x20)
 
 #include <string.h> // inline strcmp for the direction-name match
+#include <Gruntz/ActName.h> // CActName (shared)
+#include <Gruntz/XferArchive.h>
+#include <rva.h>
+#include <rva.h>
 
 VTBL(CDroppedObjectShadow, 0x001e787c);
 VTBL(CDroppedObject, 0x001e78d4);
@@ -43,7 +47,6 @@ CActReg CActRegPool<CDroppedObjectShadow>::s_table(2000, 2010);
 
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
-#include <Gruntz/ActName.h> // CActName (shared)
 
 static inline char* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
@@ -67,7 +70,6 @@ static inline CDropEntry* DropLookup(i32 coord) {
     return reinterpret_cast<CDropEntry*>(CActRegPool<CDroppedObject>::s_table.ResolveEntry(coord));
 }
 
-#include <Gruntz/XferArchive.h>
 
 typedef enum DropperDir {
     DROPDIR_NORTH = 1, // "LEVEL_OBJECTDROPPER_NORTH", (dx,dy) = ( 0,-1)
@@ -88,7 +90,6 @@ typedef enum DropperDir {
 // a user-declared `~CObjectDropper() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-#include <rva.h>
 RVA_COMPGEN(0x000124f0, 0x44, ??1CObjectDropper@@UAE@XZ)
 
 // IMPLICIT dtor (retail is COMPILER-GENERATED - eh-dtor-vptr-restamp CAUSE B):
@@ -858,7 +859,6 @@ i32 CDroppedObjectShadow::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, i32 d
     return 1;
 }
 
-#include <rva.h>
 
 RVA(0x000c7be0, 0x5)
 i32 CDroppedObject::ActB() {

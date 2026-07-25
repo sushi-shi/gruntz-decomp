@@ -2,6 +2,8 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Image/CImage.h>         // the +0x198 cached frame (ex CGameObjLayer view)
+#include <rva.h>
+#include <rva.h>
 
 RVA(0x0000fb90, 0x47)
 i32 CBehindCandy::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
@@ -21,7 +23,6 @@ i32 CBehindCandy::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CBehindCandy() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-#include <rva.h>
 RVA_COMPGEN(0x0000fc30, 0x44, ??1CBehindCandy@@UAE@XZ)
 
 RVA(0x000ac3f0, 0x1b1)
@@ -43,5 +44,4 @@ CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 }
 
-#include <rva.h>
 VTBL(CBehindCandy, 0x001e8494);

@@ -45,6 +45,7 @@
 
 #include <stdio.h>  // sprintf (ValidateTiles diagnostics)
 #include <string.h> // strcpy/memcpy/memset (inline rep movs / rep stos)
+#include <Gruntz/Loadable.h>
 
 static __inline i32 GridByteSize(i32 height, i32 width) {
     height *= width;
@@ -566,7 +567,6 @@ void CDDrawWorkerHost::Draw(CPlaneDrawCtx* ctx) {
 }
 #undef DRAW_CELL
 
-#include <Gruntz/Loadable.h>
 inline void* operator new(u32, void* p) {
     return p;
 } // placement (embedded sub-object ctor)

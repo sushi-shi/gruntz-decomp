@@ -8,6 +8,7 @@
 
 #include <rva.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/ActReg.h>
 
 class CWarlordAnimSub {
 public:
@@ -131,7 +132,6 @@ public:
 };
 SIZE(0xb0);
 
-#include <Gruntz/ActReg.h>
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).

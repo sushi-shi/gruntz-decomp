@@ -4,10 +4,10 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/SBI_Image.h> // canonical frameless CSBI_Image base (real RTTI base)
+#include <Gruntz/SerialArchive.h>
 
 class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
-#include <Gruntz/SerialArchive.h>
 
 class CSBI_ImageSet : public CSBI_Image {
 public:

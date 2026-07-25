@@ -1,3 +1,17 @@
+#include <Mfc.h> // the REAL MFC CPtrList (m_31c/m_338 are value members) + POSITION
+#include <Ints.h>
+#include <Gruntz/LogicTypeId.h>
+#include <rva.h> // SIZE_UNKNOWN/VTBL class-metadata macros used below
+#include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/UserBaseLink.h>   // shared CUserBaseLink (+0x18 link; ~EngStr 0x16d2a0)
+#include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_74; GetSel)
+#include <Gruntz/WwdGameReg.h>     // the canonical WwdGameReg singleton layout (g_gameReg)
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/MovingLogic.h> // the ONE CMovingLogic (fat spine + the band union; CGrunt derives it)
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/String.h>
+#include <Gruntz/CurPlayer.h> // g_curPlayer (the current local player index)
+#include <Gruntz/SerialCounter.h>
 #ifndef SRC_GRUNTZ_GRUNT_H
 #define SRC_GRUNTZ_GRUNT_H
 
@@ -11,25 +25,13 @@ class DSoundCloneInst; // the pooled cue player (Dsndmgr/DirectSoundMgr.h)
 
 class DirectSoundMgr;
 
-#include <Mfc.h> // the REAL MFC CPtrList (m_31c/m_338 are value members) + POSITION
-#include <Ints.h>
-#include <Gruntz/LogicTypeId.h>
-#include <rva.h> // SIZE_UNKNOWN/VTBL class-metadata macros used below
-#include <DDrawMgr/DDrawChildGroup.h>
-#include <Gruntz/UserBaseLink.h>   // shared CUserBaseLink (+0x18 link; ~EngStr 0x16d2a0)
-#include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_74; GetSel)
-#include <Gruntz/WwdGameReg.h>     // the canonical WwdGameReg singleton layout (g_gameReg)
-#include <Gruntz/UserLogic.h>
-#include <Gruntz/MovingLogic.h> // the ONE CMovingLogic (fat spine + the band union; CGrunt derives it)
 
 typedef struct tagRECT CCueRect;
 SIZE_UNKNOWN();
 
 class CGruntSpawnConfig; // the +0x60 registry object (one class, three ex-names)
 
-#include <Gruntz/GameRegistry.h>
 
-#include <Gruntz/String.h>
 
 CString __stdcall operator+(const char* lhs, const CString& rhs);
 CString __stdcall operator+(const CString& lhs, const char* rhs);
@@ -46,7 +48,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/CurPlayer.h> // g_curPlayer (the current local player index)
 
 struct GruntDirectionCell {
     GruntDirectionCell() {}
@@ -124,7 +125,6 @@ struct CGruntTypeCatalog {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/SerialCounter.h>
 
 struct CGruntListNode {
     CGruntListNode* m_next; // +0x00

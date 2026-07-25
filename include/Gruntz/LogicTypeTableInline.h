@@ -3,6 +3,8 @@
 
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerCache.h>
 
 extern "C" {
     i32 LogicHitFactory(
@@ -16,8 +18,6 @@ extern "C" {
     ); // GameObjNotifyFn ABI (CreateWorker registrant)   // 0x56e4e0
 }
 
-#include <DDrawMgr/DDrawSurfaceMgr.h>
-#include <DDrawMgr/DDrawWorkerCache.h>
 
 inline void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     // Each block re-reads world->m_workerCache for BOTH the Find and the

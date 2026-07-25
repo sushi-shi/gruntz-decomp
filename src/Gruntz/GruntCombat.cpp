@@ -63,6 +63,8 @@
 #include <new>
 #include <Gruntz/GruntEntranceArrival.h> // ex Globals.h
 #include <Gruntz/SoundState.h>           // ex Globals.h transitive
+#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+#include <Gruntz/GruntCombat.h>  // CActRegPool<CGrunt>::s_table decl
 #pragma intrinsic(strcmp, sqrt)
 
 static const char s_GRUNTZ_[] = "GRUNTZ_";
@@ -246,8 +248,6 @@ void CGrunt::EntranceTileOffset(i32* out) {
     out[1] = y;
 }
 
-#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-#include <Gruntz/GruntCombat.h>  // CActRegPool<CGrunt>::s_table decl
 
 DATA(0x0020d7fc)
 char s_codeH[] = "H";

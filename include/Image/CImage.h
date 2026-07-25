@@ -1,3 +1,6 @@
+#include <rva.h>
+#include <Ints.h>
+#include <Wap32/WapObj.h> // CWapObj : CObject - the abstract intermediate (slots 5/6)
 #ifndef SRC_IMAGE_CIMAGE_H
 #define SRC_IMAGE_CIMAGE_H
 
@@ -6,9 +9,6 @@ struct
 
 class CDDrawPtrCollections; // folded CImageSurfacePool
 
-#include <rva.h>
-#include <Ints.h>
-#include <Wap32/WapObj.h> // CWapObj : CObject - the abstract intermediate (slots 5/6)
 
 class CString;           // real MFC CString (4-byte ptr); completed via <Mfc.h> in the .cpp
 class CResolveNode;      // the blit/draw request IS the resolve node (ex-CBlitInfo view)

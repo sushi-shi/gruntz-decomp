@@ -24,6 +24,8 @@
 #undef _AFX_ENABLE_INLINES
 #endif
 #include <afxwin.h>
+#include <Gruntz/Attract.h>
+#include <Gruntz/CreditsState.h> // g_clipRegionEnabled decl
 
 static inline CGruntzMgr* Owner(CState* s) {
     return s->m_mgr;
@@ -31,8 +33,6 @@ static inline CGruntzMgr* Owner(CState* s) {
 
 void operator delete(void*);
 
-#include <Gruntz/Attract.h>
-#include <Gruntz/CreditsState.h> // g_clipRegionEnabled decl
 
 DATA(0x0022bf74)
 i32 g_clipRegionEnabled; // owner def (zero-init .bss)

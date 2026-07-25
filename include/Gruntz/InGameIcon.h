@@ -12,10 +12,11 @@
 #include <Gruntz/CurPlayer.h> // g_curPlayer (the current local player index)
 
 #include <Gruntz/SoundState.h> // g_sndCueTag (the cue-item id) + g_sndEnabled
+#include <Gruntz/SerialCounter.h> // g_serialCounter (the serialize sequence counter)
+#include <Gruntz/LogicFnTable.h> // CActReg (the dispatch-table shell)
 
 extern "C" u32 g_frameTime; // DAT_00645588  (the running game clock stamped into +0x58)
 
-#include <Gruntz/SerialCounter.h> // g_serialCounter (the serialize sequence counter)
 
 class LeafCue;
 
@@ -64,7 +65,6 @@ typedef i32 (CUserLogic::*IconActHandler)();
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
 
-#include <Gruntz/LogicFnTable.h> // CActReg (the dispatch-table shell)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

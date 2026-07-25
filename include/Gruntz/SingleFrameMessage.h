@@ -3,6 +3,7 @@
 
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CSingleFrameMessage : CUserLogic)
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 class CSingleFrameMessage : public CUserLogic, public CWapX {
 public:
@@ -36,6 +37,5 @@ struct CSingleFrameActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 #endif // GRUNTZ_CSINGLEFRAMEMESSAGE_H

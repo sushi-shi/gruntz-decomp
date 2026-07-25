@@ -6,6 +6,7 @@
 #include <Rez/RezMgr.h>
 
 #include <Rez/RezList.h>
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 extern "C" void* Eng_fopen(const char* path, const char* mode); // 0x11f870
 extern "C" i32 RezFClose(void* fp);                             // 0x11f780
@@ -13,7 +14,6 @@ extern "C" u32 RezFRead(void* buf, u32 size, u32 n, void* fp);  // 0x18c220
 extern "C" i32 RezFSeek(void* fp, i32 off, i32 origin);         // 0x18c3a0
 extern "C" u32 RezFWrite(void* buf, u32 size, u32 n, void* fp); // 0x18cb40
 extern "C" i32 Eng_fflush(void* fp);                            // 0x125b50
-#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 // The three fopen mode strings the lazy-open selects by the dir's flags:
 //   s_rb     "rb"  (read-only:  m_write==0 && m_readonly!=0)  - shared w/ SoundDevice

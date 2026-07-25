@@ -4,13 +4,13 @@
 #include <rva.h>
 #include <Gruntz/Play.h>
 #include <Mfc.h>
+#include <Gruntz/MapMgr.h>   // CMapMgr IS CMapMgr (a typedef now - a fwd decl
 
 class CGameApp;              // WAP32 app (<Wap32/Wap32.h>); CGruntzMgr::m_owner (+0x08)
 class CTileTriggerContainer; // CMulti::m_2e4
 class CGruntzSoundZ;         // CGruntzMgr::m_sound (+0x48; PlayByName/FindBank)
 class CFontConfig;           // CGruntzMgr::m_chatLog (+0x5c; the chat/text-input config)
 class CChatBoxOwner;         // CMulti::m_2e0 (per-frame LoadChatBoxSprite sub)
-#include <Gruntz/MapMgr.h>   // CMapMgr IS CMapMgr (a typedef now - a fwd decl
 class CWorldSoundSet;        // CGruntzMgr::m_inputState (+0x54; Retune @0xbd60)
 class CNetMgr;               // CMulti::m_netGate/+0x524 pointee (net-stat/session wrappers)
 class CNetSessionNode;       // the local-player descriptor stored at +0x5bc (<Net/NetMgr.h>)

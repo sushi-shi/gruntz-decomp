@@ -25,10 +25,10 @@
 
 #include <Gruntz/Grunt.h>
 #include <Rez/FrameClock.h> // g_frameDelta/g_engineFrameDelta (frame-clock band)
+#include <Gruntz/KitchenSlime.h>
 
 VTBL(CKitchenSlime, 0x001e750c);
 
-#include <Gruntz/KitchenSlime.h>
 
 DATA(0x001ea3e0)
 const double g_slimeSpeedNum = 32.0;

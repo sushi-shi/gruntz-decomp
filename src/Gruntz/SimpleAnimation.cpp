@@ -11,6 +11,9 @@
 #include <Gruntz/LogicFnTable.h> // the shared CActReg dispatch-table shape
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <rva.h>
+#include <rva.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 RVA(0x0000f930, 0x47)
 i32 CSimpleAnimation::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
@@ -30,7 +33,6 @@ i32 CSimpleAnimation::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
 // a user-declared `~CSimpleAnimation() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-#include <rva.h>
 RVA_COMPGEN(0x0000f9d0, 0x44, ??1CSimpleAnimation@@UAE@XZ)
 
 VTBL(CSimpleAnimation, 0x001e8544);
@@ -140,5 +142,3 @@ i32 CSimpleAnimation::AdvanceAnim() {
     return 0;
 }
 
-#include <rva.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)

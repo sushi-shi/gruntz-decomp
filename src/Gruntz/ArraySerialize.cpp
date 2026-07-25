@@ -18,13 +18,13 @@
 // carries both names - the game's Rez free IS operator delete).
 //
 #include <rva.h>
+#include <Ints.h>
+#include <rva.h>
+#include <Io/MoviePlayer.h> // CMoviePlaylist typedef + the full PLAYLISTINFOSTRUCT
 RVA_COMPGEN(0x00039f20, 0x51, ??1?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAE@XZ)
 RVA_COMPGEN(0x00039fa0, 0x188, ?Serialize@?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEXAAVCArchive@@@Z)
 RVA_COMPGEN(0x0003a1a0, 0x1e, ??_G?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEPAXI@Z)
 RVA_COMPGEN(0x00094340, 0x0, ??0?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@QAE@XZ)
-#include <Ints.h>
-#include <rva.h>
 
-#include <Io/MoviePlayer.h> // CMoviePlaylist typedef + the full PLAYLISTINFOSTRUCT
 
 template class CArray<PLAYLISTINFOSTRUCT*, PLAYLISTINFOSTRUCT*>;

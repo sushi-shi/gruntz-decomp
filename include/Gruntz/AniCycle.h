@@ -5,6 +5,7 @@
 
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CAniCycle : CUserLogic)
+#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 class CAniCycle : public CUserLogic, public CWapX {
 public:
@@ -44,6 +45,5 @@ struct CAniCycleActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 #endif // GRUNTZ_CANICYCLE_H

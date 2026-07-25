@@ -1,12 +1,12 @@
 #ifndef GRUNTZ_BRICKZ_H
 #define GRUNTZ_BRICKZ_H
 #include <rva.h>
+#include <Ints.h>
+#include <Gruntz/MapMgr.h> // CMapMgr IS CMapMgr (see the fold note below)
 
 class CBattlezData; // folded BrickzSerObj
 struct tagRECT;     // Win32 RECT (CMapMgr::Clip arg)
 
-#include <Ints.h>
-#include <Gruntz/MapMgr.h> // CMapMgr IS CMapMgr (see the fold note below)
 
 struct BrickzNode {
     // m_0/m_4 are a (key1,key2) pair when the node is in the lookup list, and a

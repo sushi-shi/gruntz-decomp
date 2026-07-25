@@ -9,12 +9,12 @@
 #include <Crypto/FecCrypt.h> // CFecFile - the +0x540 embedded decode store
 
 #include <ddraw.h>
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 struct SmackTag;   // the RAD Smacker stream handle (<smack.h>'s `Smack` typedef tag)
 class CWnd;        // real MFC CWnd (<afxwin.h> in the dispatching TU)
 struct DDModeInfo; // Init's {w,h,bpp} mode arg (<DDrawMgr/DirectDrawMgr.h>; pointer-only)
 
-#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 struct PLAYLISTINFOSTRUCT {
     i32 m_src;       // +0x00  source handle (0 => stop the run / invalid entry)

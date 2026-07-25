@@ -29,6 +29,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <Bute/ButeMgr.h>
 
 VTBL(CGrunt, 0x001e8754);
 
@@ -56,7 +57,6 @@ static const char s_keyF[] = "F";
 
 i32 g_movingSeed;
 
-#include <Bute/ButeMgr.h>
 
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec

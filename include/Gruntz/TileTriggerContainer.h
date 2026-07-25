@@ -7,13 +7,13 @@
 #include <Gruntz/TileActionEvent.h> // CTileActionEvent - the 0x28 m_list3 element (was TtcMark)
 #include <Gruntz/TileTriggerWiring.h> // CTrigParam / CTrigSourceRecord (AddLogic marshaling blocks)
 #include <rva.h>                      // SIZE_UNKNOWN class-metadata macros used below
+#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 class CTileTriggerContainer;
 class CTileTriggerLogic;       // the per-id logic leaf AddLogic news (def in TileTriggerLogic.h)
 class CGiantRockLogic;         // the 0xc8 m_list1 rock element (def in TileTriggerLogic.h)
 class CTileTriggerSwitchLogic; // the 0x8c m_base element family (def in TileTriggerSwitchLogic.h)
 
-#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 extern "C" u32 g_frameTime;
 

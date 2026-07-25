@@ -14,12 +14,12 @@
 #include <stdio.h>                // sprintf/fopen/fclose (DoDataExchange custom-level probe)
 #include <rva.h>
 #include <Gruntz/MultiStartDlg.h> // own exported globals (ex Globals.h)
+#include <Gruntz/MpSymItem.h>
 
 enum {
     NUM_PLAYER_SLOTS = 4
 };
 
-#include <Gruntz/MpSymItem.h>
 
 DATA(0x001ea578)
 const i32 g_msgmap_CMultiStartDlg = 6205544;

@@ -75,6 +75,10 @@
 #include <Rez/RezSync.h>                  // ex Globals.h
 #include <Wap32/GameApp.h>                // ex Globals.h
 #include <Gruntz/SoundState.h>            // ex Globals.h transitive
+#include <Gruntz/Dialogs.h>
+#include <Net/NetLobby.h> // NetLobby::g_curDlg
+#include <Gruntz/PlayStateView.h>
+#include <Gruntz/GameObjectFactory.h>
 
 char GetGruntzDriveLetter();  // 0x1ffe0 (WinAPICdRom.cpp)
 i32 FileExists(char* szPath); // 0x1189c0 (HeapDiag.cpp)
@@ -85,7 +89,6 @@ void operator delete(void*); // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member tear
 DATA(0x00248ce8)
 i32 g_scoreTimeBase;
 
-#include <Gruntz/Dialogs.h>
 
 void ChannelSlots_InitAll(); // 0xdb1d0
 
@@ -103,7 +106,6 @@ INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK
     LevelNumberDialogProc8e8c0(HWND, UINT, WPARAM, LPARAM); // DEBUG_SETSKILL proc (thunk 0x1947)
 
-#include <Net/NetLobby.h> // NetLobby::g_curDlg
 DATA(0x002455e8)
 i32 g_monologoShown;
 
@@ -119,8 +121,6 @@ i32 g_sndCueTag = 100; // 0x61ab24  the cue-item id (retail .data init = 100)
 DATA(0x0024556c)
 CGruntzMgr* g_gameReg = 0;
 
-#include <Gruntz/PlayStateView.h>
-#include <Gruntz/GameObjectFactory.h>
 
 CString RunCustomWorldDialog(i32 hwnd, CString* out);
 

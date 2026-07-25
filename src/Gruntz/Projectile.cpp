@@ -38,6 +38,8 @@
 #include <Gruntz/SerialCounter.h> // g_serialCounter (SerializeMove's per-record bumps)
 #include <Gruntz/AniElement.h>    // CAniElement complete type (KeyOfValue's CObject* upcast)
 #include <Wap32/zBitVec.h>        // ex Globals.h
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
 
 VTBL(CTimeBomb, 0x001e771c);
 VTBL(CProjectile, 0x001e798c);
@@ -418,7 +420,6 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     return 1;
 }
 
-#include <Gruntz/TypeKeyColl.h>
 
 template<> DATA(0x0024c758)
 CActReg CActRegPool<CProjectile>::s_table(2000, 2010);
@@ -1081,7 +1082,6 @@ static inline CTBombEntry* TBombLookup(i32 coord) {
     return reinterpret_cast<CTBombEntry*>(CActRegPool<CTimeBomb>::s_table.ResolveEntry(coord));
 }
 
-#include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
 
 static inline char* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;

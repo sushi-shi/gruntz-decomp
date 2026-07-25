@@ -7,6 +7,10 @@
 #include <Gruntz/SingleFrameMessage.h>
 #include <Gruntz/WwdGameReg.h>    // g_gameReg->GetRect (on-screen message bounds)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
+#include <rva.h>
+#include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 template<> DATA(0x00245ef0)
 CActReg CActRegPool<CSingleFrameMessage>::s_table(2000, 2010);
@@ -25,7 +29,6 @@ i32 CSingleFrameMessage::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) 
 // a user-declared `~CSingleFrameMessage() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-#include <rva.h>
 RVA_COMPGEN(0x0000f640, 0x44, ??1CSingleFrameMessage@@UAE@XZ)
 
 RVA(0x000ab310, 0x18d)
@@ -90,9 +93,6 @@ void CSingleFrameMessage::RegisterActs() {
         ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CSingleFrameMessage::AdvanceAnim);
 }
 
-#include <rva.h>
-#include <Wap32/ZVec.h>
-#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 RVA(0x000ab910, 0x12)
 i32 CSingleFrameMessage::AdvanceAnim() {

@@ -36,16 +36,16 @@
 #include <Gruntz/StartUpPrompt.h> // g_cdPromptResult
 #include <Mfc.h> // MFC superset of <Win32.h> (afx first): <Gruntz/SoundCue.h> now needs the
 #include <rva.h>
+#include <Gruntz/MenuPage.h> // canonical CMenuItem (Disable [6], the AddItem product)
+#include <Gruntz/ChatBox.h>  // the menu host CChatBox (RegisterPage == AddNode @0x182ba0)
+#include <Gruntz/MainMenuBuilder.h>
+#include <Io/SaveGame.h> // CSaveGame (m_saveSink: CheckMagic + m_curLevel progress)
 
 typedef u32 u32;
 
 DATA(0x00245d88)
 RECT g_menuTextRect = {0}; // 0x245d88  (owner-TU definition)
 
-#include <Gruntz/MenuPage.h> // canonical CMenuItem (Disable [6], the AddItem product)
-#include <Gruntz/ChatBox.h>  // the menu host CChatBox (RegisterPage == AddNode @0x182ba0)
-#include <Gruntz/MainMenuBuilder.h>
-#include <Io/SaveGame.h> // CSaveGame (m_saveSink: CheckMagic + m_curLevel progress)
 
 static i32 RegisterPage(CChatBox* menu, CMenuPage* page) {
     return menu->AddNode(page);

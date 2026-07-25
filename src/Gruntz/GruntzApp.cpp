@@ -4,15 +4,16 @@
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <string.h> // inline strlen/strcpy/strcat (rep movs/scas)
+#include <Gruntz/GruntzMgr.h>
+#include <Net/NetLobby.h> // NetLobby::g_curDlg
+#include <Gruntz/GruntzApp.h>
 
 typedef enum GruntzAppResId {
     IDC_ERROR_TEXT = 0x40d,     // static text field displaying the error message
     IDS_DEFAULT_ERROR = 0x8009, // default string-resource id when the requested id is 0/missing
 } GruntzAppResId;
 
-#include <Gruntz/GruntzMgr.h>
 
-#include <Net/NetLobby.h> // NetLobby::g_curDlg
 // The error-text buffer @0x244ea0 is a GruntzApp file-static in retail. Bind it by RVA
 // via a STABLE symbol name: as a C++ `static` it mangles to `_g_errorText$S<idx>`, whose
 // per-TU index cl5 RENUMBERS on any string-pool change (measured 18949->18953->18964...),
@@ -26,7 +27,6 @@ VTBL(CGruntzApp, 0x001e9ab4); // vtable_names -> code (RTTI game class)
 DATA(0x00244ea0)
 char g_errorText[0x100] = {0};
 
-#include <Gruntz/GruntzApp.h>
 
 RVA(0x00080850, 0x12)
 CGruntzApp::CGruntzApp() {}

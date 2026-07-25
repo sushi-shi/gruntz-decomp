@@ -20,6 +20,8 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <Bute/ButeTree.h>     // CVariantSlot::Set (the grow-path node inserter m_4->Set)
+#include <rva.h>
+#include <rva.h>
 
 // The handler entry record (FortressFlagHandler/CFortressFlagActEntry, the PMF slot,
 // proven at 0x46080/0x461e0) is defined in <Gruntz/FortressFlag.h> after the
@@ -75,7 +77,6 @@ static inline i32 RegisterActionName() {
 // a user-declared `~CFortressFlag() {}` emits the leaf-vptr restamp, and the CWapX
 // base EH state blocks the dead-store elision that used to hide it. The ??_G
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
-#include <rva.h>
 RVA_COMPGEN(0x00010e90, 0x44, ??1CFortressFlag@@UAE@XZ)
 
 RVA(0x00012cf0, 0x47)
@@ -457,7 +458,6 @@ void RegisterXLogic_6447f8() {
         static_cast<void*>(&FortressFlagAct);
 }
 
-#include <rva.h>
 
 // (CFortressFlagActEntry/CPartEntry/CPartEntryI32 SIZE_UNKNOWN live beside their
 //  CActReg.) The ex-WwdRefSlot "+0x158 ref-index array" view is DISSOLVED: it was

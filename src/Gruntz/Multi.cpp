@@ -41,15 +41,7 @@
 #include <Utils/DebugTiming.h>     // ActiveWait (ex .cpp extern)
 #include <Net/NetMgrReportError.h> // ex Globals.h
 #include <Gruntz/SoundState.h>     // ex Globals.h transitive
-VTBL(CNetMgr, 0x001ea42c);         // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emitted
-DATA(0x002455fc)
-i32 g_optionsCursor = 0; // decl in Multi.h
-
 #include <Net/InterfaceObject.h> // the shared DirectPlay group-node class (Find/predicates)
-// (`Cdb200` is gone. Its ONE call site below holds a GruntzPlayer* and reads back the very
-// +0x08 field the method writes, so 0xdb200 IS GruntzPlayer::SwapChannel - the xref that
-// closes Play.cpp's @identity-TODO. Its `M(void*)` was a PHANTOM (?M@Cdb200@@QAEHPAX@Z,
-// defined by no obj); the call now binds to the real ?SwapChannel@GruntzPlayer@@QAEHH@Z.)
 #include <Gruntz/LeafCue.h>
 #include <Bute/SymParser.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
@@ -58,19 +50,29 @@ i32 g_optionsCursor = 0; // decl in Multi.h
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Net/NetMgr.h>
-
-DATA(0x00248cf4)
-CNetCreateCtx* g_netCreateCtx;
 #include <Net/NetPackets.h> // the fixed-layout stat-0x3f9 / stat-0x416 wire structs
 #include <rva.h>
 #include <string.h> // memset (inlined rep stosl for the version packet)
 #include <stdio.h>  // sprintf (the chat-line formatter)
 #include <stdlib.h> // atoi (0x11ffb0) / srand (0x11fed0)
-
 #include <Gruntz/GruntzPlayer.h> // OnPlayerLeft derefs the leaving player's slot
 #include <Gruntz/GruntzCmdMgr.h> // CGruntzMgr::m_cmdSubMgr command manager (ResetPlayerCommands Dispatch)
 #include <Gruntz/SoundCue.h> // DispatchRecvMsg's chat cue (m_c sound sub-mgr -> "GAME_CHAT")
 #include <Bute/SymParser.h>  // the REAL CSymParser (CState::m_8; ResolvePath @0x13c030)
+#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (CMulti::Open m_c->m_drawTarget)
+#include <Gruntz/Play.h>               // ChannelSlots_InitAll (ex .cpp extern)
+VTBL(CNetMgr, 0x001ea42c);         // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emitted
+DATA(0x002455fc)
+i32 g_optionsCursor = 0; // decl in Multi.h
+
+// (`Cdb200` is gone. Its ONE call site below holds a GruntzPlayer* and reads back the very
+// +0x08 field the method writes, so 0xdb200 IS GruntzPlayer::SwapChannel - the xref that
+// closes Play.cpp's @identity-TODO. Its `M(void*)` was a PHANTOM (?M@Cdb200@@QAEHPAX@Z,
+// defined by no obj); the call now binds to the real ?SwapChannel@GruntzPlayer@@QAEHH@Z.)
+
+DATA(0x00248cf4)
+CNetCreateCtx* g_netCreateCtx;
+
 // (The former local CGruntzMgr shadow is gone: m_4's game-mgr methods are now declared
 // directly on the game mgr, so m_4->Method() needs no cross-cast.)
 // LoadGameAssetNamespaces (0xf9ea0) is now CState::LoadGameAssetNamespaces; CMulti
@@ -157,8 +159,6 @@ enum {
     STAT_ACKLATENCY = 0x421,       // report: current worst ack latency
 };
 
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (CMulti::Open m_c->m_drawTarget)
-#include <Gruntz/Play.h>               // ChannelSlots_InitAll (ex .cpp extern)
 
 DATA(0x00248cec)
 i32 g_activePlayerCount = 0;

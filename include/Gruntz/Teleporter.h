@@ -5,6 +5,7 @@
 
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CTeleporter : CUserLogic)
+#include <Bute/ButeMgr.h>
 
 class CFileMemBase;
 
@@ -20,7 +21,6 @@ extern "C" u32 g_engineFrameDelta;
 
 extern "C" u32 g_frameTime; // VA 0x645588 (?g_clock@@3IA, unsigned)
 
-#include <Bute/ButeMgr.h>
 
 class CTeleporter : public CUserLogic, public CWapX {
 public:

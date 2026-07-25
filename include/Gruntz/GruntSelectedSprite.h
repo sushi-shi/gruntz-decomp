@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Gruntz/GruntIndicatorSprite.h> // shared registry/entry/renderable types
+#include <Gruntz/GruntIndicatorSprite.h> // CActReg (extern below)
 
 class CGruntSelectedSprite : public CUserLogic, public CWapX {
 public:
@@ -34,6 +35,5 @@ struct CSelectedActEntry {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/GruntIndicatorSprite.h> // CActReg (extern below)
 
 #endif // GRUNTZ_CGRUNTSELECTEDSPRITE_H

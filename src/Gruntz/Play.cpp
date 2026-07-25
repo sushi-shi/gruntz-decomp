@@ -61,15 +61,18 @@
 
 #include <Gruntz/GameText.h>   // g_brickText1 (ex .cpp extern)
 #include <Gruntz/SoundState.h> // ex Globals.h transitive
+#include <Gruntz/String.h>
+#include <Bute/ButeMgr.h>
+#include <Wap32/EngStr.h>
+#include <string.h> // inlined memset / strcpy in Serialize (rep stos / rep movs)
+#include <Gruntz/BankMgr.h>
+#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 inline void* operator new(u32, void* p) {
     return p;
 }
 
-#include <Gruntz/String.h>
 
-#include <Bute/ButeMgr.h>
 
-#include <Wap32/EngStr.h>
 
 class CImage;
 i32 LayerBlitFrame(CDDrawSurfaceMgr* mgr, CImage* img, i32 x, i32 w, i32 one, i32 zero); // 0x115300
@@ -3184,7 +3187,6 @@ i32 CPlay::PostHudRect() {
     return 1;
 }
 
-#include <string.h> // inlined memset / strcpy in Serialize (rep stos / rep movs)
 
 CString GetColorName(i32 colorIdx, i32 upper);
 CString GetDifficultyName(i32 diffIdx, i32 upper);
@@ -5211,7 +5213,6 @@ i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
     return BuildAssetNamespacePrefixes(name, a2, a3, a4);
 }
 
-#include <Gruntz/BankMgr.h>
 
 RVA(0x000cffe0, 0x3c)
 i32 CPlay::LoadImageBanks() {
@@ -5977,7 +5978,6 @@ i32 CPlay::ResetPlayState() {
     return 1;
 }
 
-#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 
 DATA(0x002455f0)
 i32 g_levelBias100 = 0;

@@ -17,11 +17,11 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
+#include <Wwd/WwdGameObjectFamily.h> // CGameObject (m_7c worker slot)
+#include <DDrawMgr/AnimWorkerObj.h>  // AnimWorkerObj (m_logic / m_1c role-union)
 
 class CUserLogic; // fwd; deref'd in the pump TUs via <Gruntz/UserLogic.h>
 
-#include <Wwd/WwdGameObjectFamily.h> // CGameObject (m_7c worker slot)
-#include <DDrawMgr/AnimWorkerObj.h>  // AnimWorkerObj (m_logic / m_1c role-union)
 
 inline void Worker_DefaultPump(CUserLogic* sub) {
     ProjTypeXfer(sub);

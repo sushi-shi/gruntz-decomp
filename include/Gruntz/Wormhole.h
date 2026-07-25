@@ -3,6 +3,8 @@
 
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CWormhole : CUserLogic)
+#include <Gruntz/ActReg.h> // CActReg (extern below)
+#include <Gruntz/LogicFnTable.h> // CActReg (for the extern below)
 
 class CWormhole : public CUserLogic, public CWapX {
 public:
@@ -26,7 +28,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/ActReg.h> // CActReg (extern below)
 
 // The act-table slot type (the registry stores CUserLogic member pointers).
 typedef void (CUserLogic::*WormholeActHandler)();
@@ -40,6 +41,5 @@ extern "C" void PuddleActA();     // 0x4021f8 (puddle "A")
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-#include <Gruntz/LogicFnTable.h> // CActReg (for the extern below)
 
 #endif // GRUNTZ_CWORMHOLE_H

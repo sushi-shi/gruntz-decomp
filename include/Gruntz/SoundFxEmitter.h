@@ -6,15 +6,15 @@
 
 #include <Gruntz/FaderMgr.h>   // CFaderMgr::Add / Remove + the minimal CFader
 #include <Gruntz/FxModeDesc.h> // CFxModeT2 / CFxModeT3 transition descriptors
+#include <DDrawMgr/DDSurface.h>
+#include <Gruntz/GameRegistry.h>
+#include <DDrawMgr/DDrawSurfacePair.h> // the ONE CDDrawSurfacePair shape (m_surface @+0x2c)
+#include <DDrawMgr/DDrawSubMgrPages.h>
 
 extern "C" i32 g_disableFades;
 
-#include <DDrawMgr/DDSurface.h>
 
-#include <Gruntz/GameRegistry.h>
 
-#include <DDrawMgr/DDrawSurfacePair.h> // the ONE CDDrawSurfacePair shape (m_surface @+0x2c)
-#include <DDrawMgr/DDrawSubMgrPages.h>
 
 void ActiveWait(u32 milliseconds); // 0x13dfe0 busy-wait
 

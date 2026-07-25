@@ -8,19 +8,19 @@
 #include <afxwin.h>
 #include <rva.h>
 #include <Ints.h>
+#include <Net/NetLobby.h>
+#include <Gruntz/String.h>
+#include <Gruntz/ObList.h>
 
 class CString;               // full def via <Gruntz/String.h> below; needed by CWnd::GetWindowText
 struct HWND__;               // the opaque Win32 HWND (windows.h arrives with <Gruntz/String.h>)
 struct tagMEASUREITEMSTRUCT; // windows.h owner-draw measure (CWnd::OnMeasureItem arg)
 struct tagDRAWITEMSTRUCT;    // windows.h owner-draw item    (CWnd::OnDrawItem arg)
 
-#include <Net/NetLobby.h>
 extern "C" i32 g_sharedFlag;
 typedef LRESULT(WINAPI* WapSendMessageA)(HWND, UINT, WPARAM, LPARAM);
 
-#include <Gruntz/String.h>
 
-#include <Gruntz/ObList.h>
 
 class CLatencyList;
 

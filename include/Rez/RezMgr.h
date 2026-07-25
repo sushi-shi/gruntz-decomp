@@ -7,6 +7,8 @@
 #include <Bute/Hash.h>
 
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
+#include <Rez/RezList.h>
+#include <Gruntz/String.h>
 
 struct RezFindRec {
     char raw[0x24];
@@ -107,7 +109,6 @@ extern "C" u32 RezFRead(void* buf, u32 size, u32 n, void* fp);  // 0x18c220
 extern "C" i32 RezFSeek(void* fp, i32 off, i32 origin);         // 0x18c3a0
 extern "C" u32 RezFWrite(void* buf, u32 size, u32 n, void* fp); // 0x18cb40
 
-#include <Rez/RezList.h>
 
 class CRezDir : public CRezItmBase {
 public:
@@ -165,7 +166,6 @@ public:
 };
 SIZE_UNKNOWN(); // partial view of the loader's recursive dir node
 
-#include <Gruntz/String.h>
 
 extern "C" void RezFormat(CString* dst, const char* fmt, ...);
 

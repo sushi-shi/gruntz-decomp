@@ -7,6 +7,7 @@
 #include <Wwd/WwdFile.h> // CDDrawWorkerHost, WwdHeader, operator new, uncompress
 
 #include <Mfc.h> // CObArray (afxcoll)
+#include <Gruntz/Loadable.h>
 
 // The tile collision-kind codes CTileImageSet::GetCollisionAt returns (and the
 // movement/scroll steppers compare against). Consolidated here from the former
@@ -85,7 +86,6 @@ SIZE_UNKNOWN();
 
 struct CParseSource;
 
-#include <Gruntz/Loadable.h>
 
 struct CGameObject;
 class CDDrawChildGroup; // the world object chain (<DDrawMgr/DDrawChildGroup.h>)

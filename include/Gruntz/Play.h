@@ -5,6 +5,10 @@
 #include <Mfc.h>
 
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/View.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h> // the real CState::m_c sub-object classes (CDDrawSubMgrPages / CDDrawWorkerRegistry / CDDrawSubMgrLeafScan)
+#include <Gruntz/State.h>
+#include <Gruntz/Timer.h>
 
 class CGruntzSoundZ;
 class CGruntzSoundInnerZ;
@@ -30,10 +34,7 @@ struct CHitMarker {
 };
 SIZE(0x8);
 
-#include <Gruntz/View.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h> // the real CState::m_c sub-object classes (CDDrawSubMgrPages / CDDrawWorkerRegistry / CDDrawSubMgrLeafScan)
 
-#include <Gruntz/State.h>
 
 struct Edge {
     i32 m_0;
@@ -41,7 +42,6 @@ struct Edge {
 };
 SIZE_UNKNOWN();
 
-#include <Gruntz/Timer.h>
 
 class CFileMemBase;
 
