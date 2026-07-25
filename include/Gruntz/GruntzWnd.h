@@ -5,7 +5,7 @@
 #include <Wap32/Wap32.h>
 #include <rva.h>
 
-class CGruntzMgr;
+#include <Gruntz/GruntzMgr.h> // CGruntzMgr complete: GameMgr() static_casts the CGameMgr base
 
 class CGruntzWnd : public CGameWnd {
 public:
@@ -31,9 +31,7 @@ public:
 
     // Reaches the running game manager through the owning CGameApp.
     CGruntzMgr* GameMgr() {
-        return reinterpret_cast<CGruntzMgr*>(
-            m_owner->m_gameMgr
-        ); // downcast; CGruntzMgr incomplete here (header order) - static once complete
+        return static_cast<CGruntzMgr*>(m_owner->m_gameMgr);
     }
 };
 SIZE(0x10); // recovered from the operator-new site (gruntz.analysis.news)

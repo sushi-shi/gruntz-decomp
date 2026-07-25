@@ -379,9 +379,7 @@ i32 CObjectDropper::Update() {
                             // the canonical 0x1c-byte BrickzCell (its m_0 = packed terrain
                             // flags). @fold-TODO in MapMgr.h tracks retyping m_8 to
                             // BrickzCell** tree-wide.
-                            flags = static_cast<u32>(
-                                (reinterpret_cast<BrickzCell*>(plane->m_rows[cy]))[cx].m_0
-                            );
+                            flags = static_cast<u32>(plane->m_rows[cy][cx].m_0);
                         }
                         if ((flags & 2) == 0) {
                             g_gameReg->m_world->m_childGroup

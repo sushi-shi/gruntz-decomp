@@ -121,7 +121,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CFileMemBase* s, i32 mode, i32 a2, i3
     if (strlen(buf) != 0) {                                                                        \
         out = 0;                                                                                   \
         reg->m_imageRegistry->m_10map.Lookup(buf, out);                                            \
-        field = reinterpret_cast<CDDrawWorker*>(out);                                              \
+        field = static_cast<CDDrawWorker*>(out);                                                   \
     } else {                                                                                       \
         field = 0;                                                                                 \
     }

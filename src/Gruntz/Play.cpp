@@ -1901,9 +1901,7 @@ i32 CPlay::SyncRead2f7c(CFileMemBase* ar) {
         sink = 0;
     } else {
         // GetClassId (slot 8) == CLASSID_SERIALREF (5): the serialize-map referent kind
-        sink = (reinterpret_cast<CGameObject*>(oe))->GetClassId() == CLASSID_SERIALREF
-                   ? reinterpret_cast<CWwdGameObjectA*>(oe)
-                   : 0;
+        sink = oe->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdGameObjectA*>(oe) : 0;
     }
     m_scrollSink = sink;
     if (sink == 0 && gridObj != 0) {

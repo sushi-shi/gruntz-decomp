@@ -1462,7 +1462,7 @@ ret_true:
 RVA(0x000b82e0, 0x230)
 i32 CMulti::DetectConnectionConfig() {
     m_5ac = 0;
-    InterfaceObject* provider = reinterpret_cast<InterfaceObject*>(Peer()->m_groupSel);
+    InterfaceObject* provider = Peer()->m_groupSel;
     if (provider == 0) {
         return 0;
     }

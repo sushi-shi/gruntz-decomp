@@ -785,7 +785,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         } else if (matchActive) {
             ok = cell->LoadPickupSprites(param, flag, 0, sub, 0);
         } else {
-            ok = (reinterpret_cast<CGrunt*>(cell))->LoadGruntTypeTable(param, flag, sub, 0);
+            ok = cell->LoadGruntTypeTable(param, flag, sub, 0);
         }
         reg = g_gameReg;
         if (ok == 0) {
