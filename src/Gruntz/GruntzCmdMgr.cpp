@@ -13,7 +13,6 @@
 #include <Rez/RezSync.h>          // g_dlgVal_645538
 #include <rva.h>
 
-i32 __stdcall IsActive2(void* enable);
 
 i32 CGruntzCommand::Serialize(CFileMemBase*, i32, i32, i32) {
     return 1;

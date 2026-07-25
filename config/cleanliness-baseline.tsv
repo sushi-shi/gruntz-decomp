@@ -15,6 +15,6 @@ reinterpret_casts	3275
 void* m_ members	14
 offset-cast macros	0
 cpp extern decls	0
-cpp external prototypes	113
+cpp external prototypes	88
 view classes (*Views.h)	0
 caller-callee FAKE-VIEW	0

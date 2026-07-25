@@ -637,7 +637,6 @@ void CDDrawChildGroup::DestroyChildren_159ef0() {
 // Forward decl for the Slot40 body (definition follows at 0x15a130 in RVA order):
 // the box-overlap predicate over two CGameObjects (<Gruntz/UserLogic.h>; the old
 // CWwdBox fwd decl mismatched the definition and left the call reloc UNBOUND).
-i32 __stdcall BoxesOverlap(CGameObject* a1, CGameObject* a2);
 
 RVA(0x00159f00, 0x22e)
 void CDDrawChildGroup::CollideBroadcast() {

@@ -7,8 +7,6 @@
 
 #include <Crypto/FecCrypt.h> // the unified CFecFile (embedded MFC CFile stream) shape
 
-void __stdcall FecEncode(const char* src, char* dst);
-void __stdcall FecDecode(const char* src, char* dst, unsigned short len);
 
 RVA(0x0017b510, 0x55)
 i32 CFecFile::Init() {

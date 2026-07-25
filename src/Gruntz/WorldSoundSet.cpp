@@ -22,7 +22,6 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-void SpawnPosSound(PosSoundObj* obj);
 
 // ---------------------------------------------------------------------------
 // 0x87b0 IS ??1CUserBase@@UAE@XZ - the out-of-line COMDAT copy of the INLINE

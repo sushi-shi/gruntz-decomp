@@ -2,6 +2,8 @@
 #ifndef GRUNTZ_GRUNTZ_CUSTOMWORLDDIALOG_H
 #define GRUNTZ_GRUNTZ_CUSTOMWORLDDIALOG_H
 
+
+#include <Mfc.h> // afx.h FIRST: Win32 types named below
 #include <rva.h>
 
 class CDDrawSurfaceMgr;

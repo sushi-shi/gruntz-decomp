@@ -672,4 +672,12 @@ extern char* g_colorNames[];
 extern char* g_difficultyNames[];
 extern "C" i32 g_profAccA;
 extern "C" i32 g_profAccB;
+
+// File-scope prototypes moved from the .cpp: an unqualified
+// declaration at file scope has EXTERNAL linkage, so it belongs in
+// the owner header.
+void Cmd_ApplyScrollParams(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
+CString GetColorName(i32 colorIdx, i32 upper);
+CString GetDifficultyName(i32 diffIdx, i32 upper);
+
 #endif // SRC_GRUNTZ_CPLAY_H

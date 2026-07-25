@@ -43,7 +43,6 @@ CPtrArray g_modeArray;
 DATA(0x00283ee4)
 void* g_ddCreateCtx = 0; // 0x683ee4
 
-void BuildColorChannelTables();
 
 inline CDDSurface::~CDDSurface() {
     FreeSurfaces();
@@ -418,8 +417,6 @@ i32 CDDrawPtrCollections::CreateDevice(
     return 1;
 }
 
-i32 __stdcall
-CreateDirectDrawVia(void* ctx, i32 a1, i32 a2, IDirectDraw2*(__cdecl* factory)(void*, i32, i32));
 
 RVA(0x00141ff0, 0x6c)
 i32 CDDrawPtrCollections::Init(void* factory, void* a1, i32 width, i32 height, i32 bpp, u32 coop) {

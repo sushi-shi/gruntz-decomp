@@ -120,7 +120,6 @@ DATA(0x0024556c)
 CGruntzMgr* g_gameReg = 0;
 
 
-CString RunCustomWorldDialog(i32 hwnd, CString* out);
 
 DATA(0x002455a4)
 u32 g_gruntDestruction;
@@ -801,7 +800,6 @@ i32 CGruntzMgr::ToggleBaseLayer() {
     return 0;
 }
 
-i32 FindProcessByName(const char* name, i32 flag, void** out);
 RVA(0x0008f120, 0x170)
 i32 __stdcall LaunchWebBrowser(char* url) {
     LONG len = 0x104;
@@ -3205,8 +3203,6 @@ void CGruntzMgr::DelayedQuit() {
     }
 }
 
-i32 __stdcall LaunchPortalExe(char* outPath);
-i32 __stdcall LaunchProcessInDir(char* exe, char* dir);
 
 // CGruntzMgr::LaunchPortal (0x0907c0, ret 4). Resolve the installed Portal
 // companion's exe path into a local buffer; if it resolves and the buffer is

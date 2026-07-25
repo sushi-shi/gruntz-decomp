@@ -142,4 +142,12 @@ extern i32 (*g_restoreHandler)();
 class CDDrawPtrCollections;
 
 extern "C" CDDrawPtrCollections* g_DirectDrawMgr;
+
+// File-scope prototypes moved from the .cpp: an unqualified
+// declaration at file scope has EXTERNAL linkage, so it belongs in
+// the owner header.
+void BuildColorChannelTables();
+i32 __stdcall
+CreateDirectDrawVia(void* ctx, i32 a1, i32 a2, IDirectDraw2*(__cdecl* factory)(void*, i32, i32));
+
 #endif // GRUNTZ_CDIRECTDRAWMGR_H

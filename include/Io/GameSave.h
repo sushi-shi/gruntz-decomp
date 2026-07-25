@@ -20,4 +20,10 @@ extern "C" i32 g_saveBuf[0x24]; // 0x229930  the 0x90-byte save header scratch
 
 extern i32 g_savedMenuCmd; // 0x00213a9c (-1; the deferred menu WM_COMMAND)
 
+
+// File-scope prototypes moved from the .cpp: an unqualified
+// declaration at file scope has EXTERNAL linkage, so it belongs in
+// the owner header.
+i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void** ppObj);
+
 #endif // GRUNTZ_IO_GAMESAVE_H

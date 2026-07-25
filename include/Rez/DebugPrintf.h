@@ -23,4 +23,10 @@ extern "C" void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...);
 // VAs are reloc-masked at use) ---
 
 extern i32 g_debugPrintMode;
+
+// File-scope prototypes moved from the .cpp: an unqualified
+// declaration at file scope has EXTERNAL linkage, so it belongs in
+// the owner header.
+void DebugSetCursorXY(i32 x, i32 y);
+
 #endif // GRUNTZ_REZ_DEBUGPRINTF_H_H

@@ -82,7 +82,6 @@ i32 g_traitorMode; // 0x6455b0 - DEFINED once here; GruntCombat.cpp defined it t
 static const char s_animKeyA[] = "A";
 static const char s_animKeyK[] = "K";
 
-static void GruntScratchTeardown();
 
 static const char s_pose_WALK[] = "_WALK";
 static const char s_pose_ATTACK1[] = "_ATTACK1";

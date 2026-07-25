@@ -8,7 +8,6 @@
 #include <ddraw.h>                        // IDirectDrawSurface (UpdateOverlay passthrough)
 #include <string.h>                       // memset (inlined to rep stos at /O2 /Oi)
 
-void BuildColorChannelTables();
 
 RVA(0x00148840, 0x47)
 i32 CFileImageSurface::LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5, i32 key) {

@@ -217,4 +217,10 @@ public:
 SIZE_UNKNOWN();
 SIZE(0x948);
 
+
+// File-scope prototypes moved from the .cpp: an unqualified
+// declaration at file scope has EXTERNAL linkage, so it belongs in
+// the owner header.
+void BuildColorChannelTables();
+
 #endif // GRUNTZ_GRUNTZ_CDDRAWPTRCOLLECTIONS_H

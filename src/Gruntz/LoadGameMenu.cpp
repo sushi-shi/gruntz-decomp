@@ -11,8 +11,6 @@
 DATA(0x00245ca4)
 CSaveGame* g_dlgLoadSink = 0; // DAT_00645ca4  (owner-TU definition)
 
-void FillGameInfoDialog(HWND hDlg, CSaveGame* dlg);
-void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6);
 int TempFileExists(SaveSlot* p); // 0x0e5700 (SaveGame.cpp)
 
 i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg); // 0x9e390 (WM_COMMAND handler)

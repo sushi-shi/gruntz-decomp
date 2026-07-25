@@ -107,7 +107,6 @@ static char s_IdleDelay[] = "IdleDelay";                       // s_IdleDelay_00
 static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius"; // s_PlayerDefenderRadius_0060e1ac
 static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeout_0060df84
 
-static inline void GruntScratchTeardown();
 
 // ===========================================================================
 // The 5 grunt movement / anim-name dispatch state machines (formerly the

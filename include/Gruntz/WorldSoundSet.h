@@ -100,4 +100,12 @@ extern "C" void DefaultActionHandler_2d15(); // LAB_00402d15 (address only)
 extern "C" void* __stdcall PosSoundSpawn(void* layer, i32 a2, void* outPt, i32 a4, i32 a5);
 
 extern i32 g_posSoundReq;
+
+struct PosSoundObj; // <Gruntz/PosSound.h>
+
+// File-scope prototypes moved from the .cpp: an unqualified
+// declaration at file scope has EXTERNAL linkage, so it belongs in
+// the owner header.
+void SpawnPosSound(PosSoundObj* obj);
+
 #endif // GRUNTZ_CWORLDSOUNDSET_H

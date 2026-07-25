@@ -68,4 +68,10 @@ public:
 };
 SIZE_UNKNOWN();
 
+
+// File-scope prototypes moved from the .cpp: an unqualified
+// declaration at file scope has EXTERNAL linkage, so it belongs in
+// the owner header.
+i32 __stdcall IsActive2(void* enable);
+
 #endif // GRUNTZ_GRUNTZCMDMGR_H

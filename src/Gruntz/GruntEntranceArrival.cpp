@@ -87,7 +87,6 @@ static char s_RunningTimePerTile[] = "RunningTimePerTile"; // 0x60e264
 static const char s_animKeyA[] = "A";
 static const char s_animKeyK[] = "K";
 
-static void GruntScratchTeardown();
 
 static __inline i32 s_TileFlags(CMapMgr* b, i32 tx, i32 ty) {
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)

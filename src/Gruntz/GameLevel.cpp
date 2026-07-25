@@ -1794,12 +1794,6 @@ i32 __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen)
     return outLen == src->mainBlockLength ? reinterpret_cast<i32>(dest) : 0;
 }
 
-int WapUncompress(
-    unsigned char* dest,
-    unsigned long* pDestLen,
-    unsigned char* src,
-    unsigned long srcLen
-);
 RVA(0x00160870, 0x43)
 i32 __stdcall WwdFile_CompressMainBlock(
     unsigned char* src,

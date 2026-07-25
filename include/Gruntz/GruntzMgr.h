@@ -502,4 +502,13 @@ extern i32 g_warpX;
 extern i32 g_warpY;
 extern "C" i32 g_cdPromptResult;
 extern i32 g_debugDisplayFlags;
+
+// File-scope prototypes moved from the .cpp: an unqualified
+// declaration at file scope has EXTERNAL linkage, so it belongs in
+// the owner header.
+CString RunCustomWorldDialog(i32 hwnd, CString* out);
+i32 FindProcessByName(const char* name, i32 flag, void** out);
+i32 __stdcall LaunchPortalExe(char* outPath);
+i32 __stdcall LaunchProcessInDir(char* exe, char* dir);
+
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

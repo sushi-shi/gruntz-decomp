@@ -78,7 +78,6 @@ class CImage;
 i32 LayerBlitFrame(CDDrawSurfaceMgr* mgr, CImage* img, i32 x, i32 w, i32 one, i32 zero); // 0x115300
 void UpdateMgrScroll(CGruntzMgr* pm, CStatusBarMgr* bar, i32 snapFlag);                  // 0x0ebd70
 
-void Cmd_ApplyScrollParams(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
 
 typedef enum {
     CUE_INTERVAL_MS = 0x1f4,           // 500 ms  ambient/win-lose cue toggle
@@ -3188,8 +3187,6 @@ i32 CPlay::PostHudRect() {
 }
 
 
-CString GetColorName(i32 colorIdx, i32 upper);
-CString GetDifficultyName(i32 diffIdx, i32 upper);
 
 // ===========================================================================
 // GruntzPlayer::GruntzPlayer()  (0x0da790) - THE default constructor

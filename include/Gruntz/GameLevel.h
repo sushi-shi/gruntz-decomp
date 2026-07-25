@@ -390,4 +390,15 @@ i32 __stdcall ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c);
 // VAs are reloc-masked at use) ---
 extern "C" i32 __stdcall MoveSubDispatch12(CGameObject* obj, i32 a, i32 b, i32 c); // @0x1671c0
 
+
+// File-scope prototypes moved from the .cpp: an unqualified
+// declaration at file scope has EXTERNAL linkage, so it belongs in
+// the owner header.
+int WapUncompress(
+    unsigned char* dest,
+    unsigned long* pDestLen,
+    unsigned char* src,
+    unsigned long srcLen
+);
+
 #endif // SRC_GRUNTZ_GAMELEVEL_H

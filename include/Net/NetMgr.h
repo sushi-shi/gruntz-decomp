@@ -926,4 +926,10 @@ extern "C" BOOL __stdcall NetEnumCb(
 ); // 0x178b00
 
 extern "C" i32 g_activePlayerCount;
+
+// File-scope prototypes moved from the .cpp: an unqualified
+// declaration at file scope has EXTERNAL linkage, so it belongs in
+// the owner header.
+static i32 __stdcall EnumProviderCb(void* guid, char* name, u32 major, u32 minor, void* context);
+
 #endif // NET_NETMGR_H

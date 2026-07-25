@@ -11,7 +11,6 @@ VTBL(CNetSessionNode, 0x001f0778);    // own (final) vtable
 DATA(0x002bf840)
 i32 g_spEnumValidated = 0; // 0x6bf840 (owner def; C linkage from NetMgr.h)
 
-static i32 __stdcall EnumProviderCb(void* guid, char* name, u32 major, u32 minor, void* context);
 
 // ---------------------------------------------------------------------------
 // CNetMgr::InitFromProvider  (__thiscall; ret 0x14, 5 args).

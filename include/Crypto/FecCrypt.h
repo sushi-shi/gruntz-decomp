@@ -49,4 +49,11 @@ public:
 };
 SIZE(0x814c);
 
+
+// File-scope prototypes moved from the .cpp: an unqualified
+// declaration at file scope has EXTERNAL linkage, so it belongs in
+// the owner header.
+void __stdcall FecEncode(const char* src, char* dst);
+void __stdcall FecDecode(const char* src, char* dst, unsigned short len);
+
 #endif // CRYPTO_FECCRYPT_H

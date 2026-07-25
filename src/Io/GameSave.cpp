@@ -7,7 +7,6 @@
 // The recursive snapshot run-callback handed to SnapshotChildren IS
 // SerialObjectFactory @0xd2a0 (SerialObjectFactory.cpp); retail's /INCREMENTAL
 // link routes the address-of through the ILT jmp-thunk 0x24e6 (reloc-masked).
-i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void** ppObj);
 
 DATA(0x00229930)     // C linkage inherited from GameSave.h's extern "C" decl (as g_mapCurve)
 i32 g_saveBuf[0x24]; // the OWNER DEFINITION (zero-init, matching the retail datum)

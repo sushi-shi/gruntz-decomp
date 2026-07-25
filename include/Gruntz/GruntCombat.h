@@ -16,4 +16,10 @@ extern "C" float g_tanC1;              // DAT_005e99a4
 extern "C" double g_tanC2;             // DAT_005e99a8
 extern "C" double g_tanC3;             // DAT_005e99b0
 
+
+// File-scope prototypes moved from the .cpp: an unqualified
+// declaration at file scope has EXTERNAL linkage, so it belongs in
+// the owner header.
+static inline void GruntScratchTeardown();
+
 #endif // GRUNTZ_GRUNTZ_GRUNTCOMBAT_H
