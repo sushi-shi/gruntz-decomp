@@ -16,29 +16,9 @@
 
 char g_lobbyRecvBuf[0x800]; // 0x249858
 DATA(0x0024a058)
-unsigned char gB_flag; // 0x24a058
-DATA(0x0024a059)
-i32 gB_val; // 0x24a059
-DATA(0x0024a05d)
-i32 gB_m14; // 0x24a05d
-DATA(0x0024a061)
-i32 gB_e04; // 0x24a061
-DATA(0x0024a065)
-unsigned char gB_e08; // 0x24a065
-DATA(0x0024a066)
-unsigned char gB_data; // 0x24a066
+NetCmdSendMsg g_netCmdSendMsg; // 0x24a058 (packed wire message; see NetCmdSlot.h)
 DATA(0x0024a8a8)
-unsigned char gA_flag; // 0x24a8a8
-DATA(0x0024a8a9)
-unsigned char gA_slot; // 0x24a8a9
-DATA(0x0024a8aa)
-i32 gA_seq; // 0x24a8aa
-DATA(0x0024a8b2)
-i32 gA_e04; // 0x24a8b2
-DATA(0x0024a8b6)
-unsigned char gA_e08; // 0x24a8b6
-DATA(0x0024a8b7)
-unsigned char gA_data; // 0x24a8b7
+NetGruntRecMsg g_netGruntRecMsg; // 0x24a8a8 (packed wire message; see NetCmdSlot.h)
 
 template<> DATA(0x0024aca8)
 CPtrList CPtrListPool<CNetCmdPacket>::s_freeList(0xa);
@@ -363,19 +343,20 @@ i32 CNetCmdSlot::SendGruntRecord(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32
     if (seq < 0) {
         return 1;
     }
-    gA_seq = seq;
-    gA_flag = static_cast<unsigned char>(flag);
-    gA_slot = static_cast<unsigned char>(slot);
-    gA_e04 = rec->m_checksum;
-    gA_e08 = rec->m_count;
-    memcpy(&gA_data, rec->m_payload, rec->m_payloadLen);
+    g_netGruntRecMsg.m_seq = seq;
+    g_netGruntRecMsg.m_flags = static_cast<unsigned char>(flag);
+    g_netGruntRecMsg.m_slot = static_cast<unsigned char>(slot);
+    g_netGruntRecMsg.m_checksum = rec->m_checksum;
+    g_netGruntRecMsg.m_count = rec->m_count;
+    memcpy(g_netGruntRecMsg.m_payload, rec->m_payload, rec->m_payloadLen);
+    // header (0xf) + payload = the wire length.
     return (reinterpret_cast<CNetMgr*>(m_latchedSeq))
                ->SetData(
                    m_desc->m_playerId,
                    gruntId,
                    0,
-                   reinterpret_cast<i32>(&gA_flag),
-                   rec->m_payloadLen + 0xf
+                   reinterpret_cast<i32>(&g_netGruntRecMsg),
+                   rec->m_payloadLen + offsetof(NetGruntRecMsg, m_payload)
                )
            == 0;
 }
@@ -442,20 +423,21 @@ i32 CNetSession::SendOne(CNetCmdSlot* slot, i32 val) {
     if (slot->NetCmdIdFind(slot->m_rangeA, baseSeq + 3)) {
         flags |= 0x20;
     }
-    gB_flag = flags;
-    gB_val = val;
+    g_netCmdSendMsg.m_flags = flags;
+    g_netCmdSendMsg.m_val = val;
     i32 idx = val % 0x80;
     GruntRec* entry = &m_records[idx];
-    gB_m14 = slot->m_baseSeq;
-    gB_e04 = entry->m_checksum;
-    gB_e08 = entry->m_count;
-    memcpy(&gB_data, entry->m_payload, entry->m_payloadLen);
+    g_netCmdSendMsg.m_baseSeq = slot->m_baseSeq;
+    g_netCmdSendMsg.m_checksum = entry->m_checksum;
+    g_netCmdSendMsg.m_count = entry->m_count;
+    memcpy(g_netCmdSendMsg.m_payload, entry->m_payload, entry->m_payloadLen);
+    // header (0xe) + payload = the wire length.
     return m_netMgr->SetData(
                m_localDesc->m_id,
                slot->m_desc->m_netId,
                0,
-               reinterpret_cast<i32>(&gB_flag),
-               entry->m_payloadLen + 0xe
+               reinterpret_cast<i32>(&g_netCmdSendMsg),
+               entry->m_payloadLen + offsetof(NetCmdSendMsg, m_payload)
            )
            == 0;
 }
