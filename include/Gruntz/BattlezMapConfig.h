@@ -5,7 +5,6 @@
 #include <rva.h>
 #include <Mfc.h> // CPtrArray, CDWordArray (real afxcoll, 0x14 layout); DWORD
 
-void* __stdcall ListNodeAdvance(void** pos);
 
 
 class CTriggerMgr;
@@ -54,8 +53,8 @@ public:
     i32 AcceptAlways(CGrunt*);     // 0x02c080
     i32 CheckQueuedSpawnTile(CGrunt*); // 0x034c70  board-tile spawn check for a queued unit
     i32 RetargetIdleUnit(CGrunt*);     // 0x0358a0  idle-unit retarget / despawn / near-band keep
-    i32 winapi_0267c0_IntersectRect_PtInRect();
-    i32 winapi_02a570_IntersectRect(CGrunt*);
+    i32 StepRowUnits();
+    i32 RepathAroundBlockedTiles(CGrunt*);
     CGrunt* FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH); // 0x2ab80
     i32 winapi_02ae00_IntersectRect(CGrunt*, CGrunt*);
     i32 winapi_02c140_IntersectRect_PtInRect(CGrunt*);
@@ -77,6 +76,10 @@ public:
     // class: caller 0x267c0 passes this, +0x0c/+0xcc agree, and its +0xf4/+0xf8
     // goal table is CPtrArray m_0f0's data/count pair.
     i32 ScanRegion(CGrunt* g);
+    // 0x035f10 (body in TileScan.cpp): the 3x3 dwell-gated tile scan. Its former
+    // CTileScan view is this class: StepRowUnits' m_2d8==0xb arm calls it on
+    // `this`; m_ctx/m_board/m_0c8 are the ex-view's m_4/m_c/m_c8.
+    i32 Scan(CGrunt* g);
 
     // ---- head block 0x000..0xdc: two phase-views of the same bytes ---------
     // AUDIT 2026-07-21 (union-reconcile map; the arms are ONE field set):

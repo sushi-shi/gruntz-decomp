@@ -20,14 +20,14 @@
 
 #define STEP_DRAIN(g)                                                                              \
     {                                                                                              \
-        GruntCoordNode* nd = (g)->CoordHead();                                                     \
-        if (nd != 0) {                                                                             \
+        void* pos = (g)->m_31c.GetHeadPosition();                                                  \
+        if (pos != 0) {                                                                            \
             do {                                                                                   \
-                void* r = ListNodeAdvance(reinterpret_cast<void**>(&nd));                          \
-                if (*static_cast<i32*>(r) != 0) {                                                  \
-                    g_coordPool.Push(reinterpret_cast<void*>(*static_cast<i32*>(r)));              \
+                void* d = (g)->CoordListOps()->NextData(pos);                                      \
+                if (d != 0) {                                                                      \
+                    g_coordPool.Push(d);                                                           \
                 }                                                                                  \
-            } while (nd != 0);                                                                     \
+            } while (pos != 0);                                                                    \
         }                                                                                          \
         (g)->m_31c.RemoveAll();                                                                    \
     }

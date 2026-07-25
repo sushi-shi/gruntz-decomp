@@ -52,7 +52,7 @@
 #include <Wap32/Rect.h> // canonical CRect: the 0x29ac0 direct-store ctor (ex the CScanRectInit Set34a4 carrier view)
 #include <new>             // placement CRect ctor  // the PathScan dirty-rect Set34a4 helper
 #include <Gruntz/Brickz.h> // canonical CMapMgr (SearchEdge)
-#include <Gruntz/BattlezMapConfig.h> // ListNodeAdvance
+#include <Gruntz/BattlezMapConfig.h> // CBattlezMapConfig (the coord-list walk is CoordListOps now)
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/LightFx.h> // CLightFx::Activate (spell LightFx sprites; folded CSpriteRegistrar)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::Lookup (rehomed here)
@@ -843,11 +843,11 @@ i32 CGrunt::PathScan() {
             }
         }
         if (CoordCount() != 0) {
-            GruntCoordNode* nd = CoordHead();
-            while (nd != 0) {
-                void* r = ListNodeAdvance(reinterpret_cast<void**>(&nd));
-                if (*static_cast<i32*>(r) != 0) {
-                    g_coordPool.Push(reinterpret_cast<void*>(*static_cast<i32*>(r)));
+            void* pos = m_31c.GetHeadPosition();
+            while (pos != 0) {
+                void* d = CoordListOps()->NextData(pos);
+                if (d != 0) {
+                    g_coordPool.Push(d);
                 }
             }
             m_31c.RemoveAll();

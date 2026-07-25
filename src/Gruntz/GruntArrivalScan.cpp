@@ -173,8 +173,8 @@ i32 CGrunt::ResolveArrivalReposition() {
         u32 dwell = *reinterpret_cast<u32*>(&m_dwell);
         if (dwell > 0x3e8 && m_resetApplied == 0 && m_318 != 0 && dwell > 0xbb8) {
             if (static_cast<i64>(static_cast<u32>(g_frameTime))
-                    - *reinterpret_cast<i64*>(&m_arrivalRerollLo)
-                >= *reinterpret_cast<i64*>(&m_arrivalRerollWindowLo)) {
+                    - m_arrivalReroll64
+                >= m_arrivalRerollWindow64) {
                 goto L8b5;
             }
             CWwdGameObjectA* h = m_object;
@@ -1923,8 +1923,8 @@ i32 CGrunt::StepArrivalDefense() {
                 return 1;
             }
             if (static_cast<i64>(static_cast<u32>(g_frameTime))
-                    - *reinterpret_cast<i64*>(&m_arrivalRerollLo)
-                >= *reinterpret_cast<i64*>(&m_arrivalRerollWindowLo)) {
+                    - m_arrivalReroll64
+                >= m_arrivalRerollWindow64) {
                 ResetEntranceAnimation(1, 1, 0);
                 m_arrivalRerollLo = 0;
                 m_arrivalRerollWindowLo = 0;
@@ -2864,8 +2864,8 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 return 1;
             }
             if (static_cast<i64>(static_cast<u32>(g_frameTime))
-                    - *reinterpret_cast<i64*>(&m_arrivalRerollLo)
-                >= *reinterpret_cast<i64*>(&m_arrivalRerollWindowLo)) {
+                    - m_arrivalReroll64
+                >= m_arrivalRerollWindow64) {
                 ResetEntranceAnimation(1, 1, 0);
                 m_arrivalRerollWindowLo = GruntRand() % 0x7530 + 0x7530;
                 m_arrivalRerollWindowHi = 0;

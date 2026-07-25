@@ -104,6 +104,18 @@ struct GruntCoordNode {
 };
 SIZE_UNKNOWN();
 
+// The devs' OWN coord-list advance method (0x29a30, ex ?ListNodeAdvance@@YGPAXPAPAX@Z):
+// every retail caller sets ecx = &m_31c (a __thiscall on the list) before the call. A
+// cl5.0 flag matrix (O1 / O2 / O2+Ob0 / Od / Ox / O2+Os probe, 2026-07-25) proves MFC's
+// inline CPtrList::GetNext can NEVER emit out-of-line without also out-lining
+// GetHeadPosition (which retail keeps as direct loads) - so this body is not MFC's, it
+// is the devs' own method on their coord-list. Modeled as a fieldless method carrier;
+// CGrunt::CoordListOps() below is the one language-forced reinterpret reaching it
+// (same MFC-privacy category as the POSITION->node cast on the accessors).
+struct GruntCoordListOps {
+    void*& NextData(void*& pos); // 0x29a30 (advance pos; return the node's data slot)
+};
+
 struct CAnimSetNode {
     char m_pad0[0xc];
     i32 m_c;  // +0x0c  the value Lookup returns into the table
@@ -549,10 +561,24 @@ public:
     i32 m_struckClockHi; // +0x26c (= 0)
     i32 m_struckTimerLo; // +0x270 (= 0xfa0 struck cooldown window)
     i32 m_struckTimerHi; // +0x274 (= 0)
-    i32 m_278;           // +0x278
-    i32 m_27c;           // +0x27c
-    i32 m_280;           // +0x280
-    i32 m_284;           // +0x284
+    // +0x278/+0x280: a 64-bit hold-off pair (anchor clock + window; Boomerang seeds
+    // m_278 = g_frameTime, m_280 = the computed return time; StepRowUnits gates on
+    // (i64)g_frameTime - anchor < window). The i32 halves stay for the serializers'
+    // per-dword stores; the i64 arms are the comparison view (one shape, no casts).
+    union {
+        i64 m_holdAnchor64; // +0x278
+        struct {
+            i32 m_278; // +0x278
+            i32 m_27c; // +0x27c
+        };
+    };
+    union {
+        i64 m_holdWindow64; // +0x280
+        struct {
+            i32 m_280; // +0x280
+            i32 m_284; // +0x284
+        };
+    };
     i32 m_288;           // +0x288 (serialized)
     i32 m_28c;           // +0x28c (serialized)
     // The grunt's reach/collision bounds rect (tile-space {left,top,right,bottom};
@@ -589,10 +615,22 @@ public:
     i32 m_2fc;             // +0x2fc
     i32 m_defenderX;       // +0x300 (arrival: = m_lastTilePxX)
     i32 m_defenderY;       // +0x304 (arrival: = m_lastTilePxY)
-    i32 m_arrivalRerollLo; // +0x308 (arrival re-roll idle timer: anchor clock lo; i64 w/ m_arrivalRerollHi)
-    i32 m_arrivalRerollHi;       // +0x30c (arrival re-roll idle timer: anchor clock hi)
-    i32 m_arrivalRerollWindowLo; // +0x310 (arrival re-roll idle window lo = GruntRand()%0x7530 + 0x7530)
-    i32 m_arrivalRerollWindowHi; // +0x314 (arrival re-roll idle window hi)
+    // +0x308/+0x310: the arrival re-roll idle timer, same 64-bit anchor+window shape
+    // as the +0x278 pair (window lo = GruntRand()%0x7530 + 0x7530).
+    union {
+        i64 m_arrivalReroll64; // +0x308 (anchor clock)
+        struct {
+            i32 m_arrivalRerollLo; // +0x308
+            i32 m_arrivalRerollHi; // +0x30c
+        };
+    };
+    union {
+        i64 m_arrivalRerollWindow64; // +0x310 (idle window)
+        struct {
+            i32 m_arrivalRerollWindowLo; // +0x310
+            i32 m_arrivalRerollWindowHi; // +0x314
+        };
+    };
     i32 m_318;                   // +0x318
     // The two owned lists are REAL MFC CPtrLists (0x1c B each), not views: the ctor
     // calls 0x1b4867 and ~CGrunt calls 0x1b48c6 - the band whose vtable (0x1eb054)
@@ -615,6 +653,9 @@ public:
     // +8 data slot is GruntCoord* m_coord.
     GruntCoordNode* CoordHead() const {
         return reinterpret_cast<GruntCoordNode*>(m_31c.GetHeadPosition());
+    }
+    GruntCoordListOps* CoordListOps() const {
+        return reinterpret_cast<GruntCoordListOps*>(const_cast<CPtrList*>(&m_31c));
     }
     GruntCoordNode* CoordTail() const {
         return reinterpret_cast<GruntCoordNode*>(m_31c.GetTailPosition());

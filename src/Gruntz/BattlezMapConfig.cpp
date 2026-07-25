@@ -549,7 +549,7 @@ i32 CBattlezMapConfig::StepBoard() {
             m_repickLastFire = m_repickTimer;
         }
     }
-    winapi_0267c0_IntersectRect_PtInRect();
+    StepRowUnits();
     m_spawnTimer += g_frameDelta;
     m_repickTimer += g_frameDelta;
     m_claimTimer += g_frameDelta;
@@ -703,57 +703,1501 @@ i32 CBattlezMapConfig::StepRowSpawn(i32) {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::winapi_0267c0_IntersectRect_PtInRect  @0x267c0  (10269 B)
-// The engine's single biggest function and #1 weighted match drag. TRIAGED: this is
-// a GENUINE reconstruction gap (a bare `return 0` scoring 0.06%), NOT a scoring
-// artifact - there is no reconstruction here yet to be mis-scored.
-//
-// STRUCTURE (mapped from the retail disasm; reconstructable, just very large): the
-// master per-unit AI dispatch tick. `esi` is the CGrunt (the same CGrunt-family
-// object ValidateUnitPath drives - reads m_1fc/m_220/m_1e4/m_368 eligibility guards,
-// m_objAux->m_1c type key, m_308/30c/314/310/320/328/280 geometry). The body is:
-//   * head (0x267c0..0x2690b): a screen-rect / board-rect intersect + PtInRect-style
-//     geometry gate (the IntersectRect/PtInRect winapi imports at PTR_..006c4568/6c
-//     that heuristically named this fn) + a first type-name probe.
-//   * the CORE is a long, highly REGULAR chain of eligibility-gated type-dispatch
-//     arms, each of the shape:
-//        if (unit->m_entranceCommitted == 0) goto handler;            // + m_368/m_1e4/m_220 guards
-//        name = *g_typeColl.IndexToPtr(unit->m_14->m_1c);   // zDArray lookup
-//        if (strcmp(name, "<CODE>") == 0) goto handler;     // MSVC5-inlined strcmp
-//     over ~9 distinct type-code string constants (?s_codeA / ?s_codeJ / s_codeI /
-//     s_codeG / s_codeL / s_codeP / k_60bebc / k_60cc90 / k_60cc94), each arm then
-//     branching into a per-type behaviour (coord recycle via g_coordPool, GetScreenPos
-//     geometry, CRect clamps, CButeMgr::GetIntDef config reads, and hand-offs to the
-//     sibling state-machine methods in this TU).
-// callees (all named, reloc-masked): winapi_02c140/02ae00/02e3a0/031ca0/032060 (the
-//   IntersectRect/PtInRect family), GetScreenPos, IndexToPtr (zDArray, x52),
-//   CRect (x15), ListNodeAdvance, g_coordPool.Push, CPtrList::RemoveAll, RectContains,
-//   FindGridNeighbor, ResolveArrival, Step/Step33520, Scan/ScanRegion,
-//   PathCrossesMarkedTile/02ed90/0350d0/034c70/0358a0, CGrunt::TileSwitch, ApplyTriggerA,
-//   ResetEntranceAnimation, StepEntranceReinit, rand, CButeMgr::GetIntDef.
+// CBattlezMapConfig::StepRowUnits  @0x267c0  (10269 B)
+// The master per-tick unit dispatcher over the current cell-row (called from
+// StepBoard every tick). For each of the 15 row slots: four eligibility phases
+// (each re-gated on the unit and the m_278/m_308 64-bit time windows), the
+// I/G/L/P/J/C/R type-code chains, the m_2d8 state jump-table dispatch into the
+// sibling state-machine methods, plus cold tail arms (entrance reset, head-coord
+// arrival recycle, perimeter TileSwitch sweeps, Spellz radius trigger, tile-flag
+// commit via StepEntranceReinit). Faithful oddities kept: the dead head-coord
+// Coord writes (via the address-taken function-scope scratch Coord), the second
+// column-sweep TileSwitch passing xl where the bounds check tests x+2 (retail
+// copy-paste), the final-reclamp return 0 on intersect, and the `hit` local left
+// unset on early phase exits.
 // ===========================================================================
 // @early-stop
-// deferred - SIZE wall, not an idiom/regalloc wall. A faithful reconstruction is
-// tractable (the arm pattern is regular; every callee + type is already modeled - the
-// CGrunt/g_typeColl/CMapMgr views used by ValidateUnitPath above cover it), but at
-// 10269 B it is a dedicated multi-session leaf-first job, not a single-matcher batch.
-// objdiff scores the WHOLE function's alignment, so any sub-complete partial (even a
-// 1-2 KB faithful head) still scores ~0 and diverges its own regalloc - reconstructing
-// a fraction buys no weighted credit and risks banking a wrong guess, so the honest
-// state is the stub + this structural map. TOP-PRIORITY final-sweep target.
-// @confidence: low
-// @source: winapi:IntersectRect;PtInRect
-// @stub
+// callee-saved-swap wall (the documented CBattlezMapConfig::Step allocator wall):
+// retail pins unit->ESI for the whole body and spills `this` (ebx reload temps);
+// our cl colors this->ESI / unit->EDI, so every unit/this member access differs in
+// the modrm byte while the instruction stream is otherwise aligned (structure,
+// chains, jump table, tail arms all verified vs --diff; table sits at the section
+// end in both). sete/setne bool shape fixed via the char locals; the dead-store
+// block survives via the shared scratch Coord; the coord-list walk is the proven
+// CoordListOps thiscall (see Grunt.h). Cached-board / decl-order / sibling-guard
+// nudges did not flip the coloring; queued for the variants wall-breaker.
 RVA(0x000267c0, 0x281d)
-i32 CBattlezMapConfig::winapi_0267c0_IntersectRect_PtInRect() {
-    return 0;
+i32 CBattlezMapConfig::StepRowUnits() {
+    m_140++;
+    CGrunt* unit;
+    i32 hit;
+    char eq;
+    i32 cell;
+    Coord scratch;
+    for (i32 i = 0; i < 15; i++) {
+        unit = m_triggerMgr->m_grid[m_curCell * 15 + i];
+        if (unit != 0) {
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - unit->m_holdAnchor64
+                < unit->m_holdWindow64) {
+                return 1;
+            }
+        }
+        if (unit != 0) {
+            if (unit->CoordCount() != 0) {
+                GruntCoord* hc = (unit->CoordHead())->m_coord;
+                scratch.m_x = hc->m_x;
+                scratch.m_x = m_board->m_width;
+                scratch.m_y = hc->m_y;
+            }
+        }
+        {
+            {
+                if (unit != 0) {
+                    if (static_cast<i64>(static_cast<u32>(g_frameTime))
+                            - unit->m_arrivalReroll64
+                        >= unit->m_arrivalRerollWindow64) {
+                        winapi_02c140_IntersectRect_PtInRect(unit);
+                        if (unit->m_poweredUp != 0) {
+                            eq =
+                                (strcmp(
+                                     (*g_typeColl.GetNameRecord(
+                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                     )),
+                                     "A"
+                                 )
+                                 == 0);
+                            if (eq) {
+                                goto resetEntrance;
+                            }
+                        }
+                        if (unit->CoordCount() != 0) {
+                            GruntCoord* ac = (unit->CoordHead())->m_coord;
+                            i32 ax = ac->m_x;
+                            i32 ay = ac->m_y;
+                            Coord sp;
+                            (static_cast<CUserLogic*>(unit))->GetScreenPos((&sp));
+                            sp.m_x >>= 5;
+                            sp.m_y >>= 5;
+                            if (sp.m_x == ax && sp.m_y == ay) {
+                                goto arriveHead;
+                            }
+                        }
+                        {
+                            i32 st = unit->m_entranceReason;
+                            if (st > 0x16) {
+                                st = unit->m_19c;
+                            }
+                            if (st == 3 && unit->m_2d8 == 0) {
+                                unit->m_2d8 = 0xa;
+                                if (unit->CoordCount() != 0) {
+                                    void* pos = unit->m_31c.GetHeadPosition();
+                                    if (pos != 0) {
+                                        do {
+                                            void* d = unit->CoordListOps()->NextData(pos);
+                                            if (d != 0) {
+                                                g_coordPool.Push(d);
+                                            }
+                                        } while (pos != 0);
+                                    }
+                                    unit->m_31c.RemoveAll();
+                                }
+                            }
+                        }
+                        if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != 0
+                            && unit->m_deathAnimStarted == 0 && unit->m_entranceActive == 0
+                            && unit->m_poweredUp == 0) {
+                            eq =
+                                (strcmp(
+                                     (*g_typeColl.GetNameRecord(
+                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                     )),
+                                     "I"
+                                 )
+                                 == 0);
+                            if (!eq) {
+                                eq =
+                                    (strcmp(
+                                         (*g_typeColl.GetNameRecord(
+                                             static_cast<void*>((unit->m_objAux->m_1c))
+                                         )),
+                                         "G"
+                                     )
+                                     == 0);
+                                if (!eq) {
+                                    eq =
+                                        (strcmp(
+                                             (*g_typeColl.GetNameRecord(
+                                                 static_cast<void*>((unit->m_objAux->m_1c))
+                                             )),
+                                             "L"
+                                         )
+                                         == 0);
+                                    if (!eq) {
+                                        eq =
+                                            (strcmp(
+                                                 (*g_typeColl.GetNameRecord(
+                                                     static_cast<void*>((unit->m_objAux->m_1c))
+                                                 )),
+                                                 "P"
+                                             )
+                                             == 0);
+                                        if (!eq) {
+                                            eq =
+                                                (strcmp(
+                                                     (*g_typeColl.GetNameRecord(
+                                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                                     )),
+                                                     "J"
+                                                 )
+                                                 == 0);
+                                            if (!eq) {
+                                                eq =
+                                                    (strcmp(
+                                                         (*g_typeColl.GetNameRecord(
+                                                             static_cast<void*>(
+                                                                 (unit->m_objAux->m_1c)
+                                                             )
+                                                         )),
+                                                         "C"
+                                                     )
+                                                     == 0);
+                                                if (!eq) {
+                                                    eq =
+                                                        (strcmp(
+                                                             (*g_typeColl.GetNameRecord(
+                                                                 static_cast<void*>(
+                                                                     (unit->m_objAux->m_1c)
+                                                                 )
+                                                             )),
+                                                             "R"
+                                                         )
+                                                         == 0);
+                                                    if (!eq) {
+                                                        i32 st2 = unit->m_entranceReason;
+                                                        if (st2 > 0x16) {
+                                                            st2 = unit->m_19c;
+                                                        }
+                                                        if (st2 == 3 && unit->m_arrivalState == 4
+                                                            && unit->m_defenderState == 6) {
+                                                            unit->LoadPickupSprites(0, 1, 0, 0, 1);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (unit->m_2d8 == 0xb) {
+                            Coord s1;
+                            (static_cast<CUserLogic*>(unit))->GetScreenPos((&s1));
+                            s1.m_x >>= 5;
+                            i32 qx = s1.m_x;
+                            s1.m_y >>= 5;
+                            i32 qy = s1.m_y;
+                            Coord s2;
+                            (static_cast<CUserLogic*>(unit))->GetScreenPos((&s2));
+                            s2.m_y >>= 5;
+                            s2.m_x >>= 5;
+                            i32 tile;
+                            if (static_cast<u32>(s2.m_x) < m_board->m_width
+                                && static_cast<u32>(qy) < m_board->m_height) {
+                                tile = m_board->m_rows[qy][s2.m_x].m_0;
+                            } else {
+                                tile = 1;
+                            }
+                            if (!(tile & 4)) {
+                                unit->m_arrivalCol = -1;
+                                unit->m_2d8 = 4;
+                                unit->m_arrivalRow = -1;
+                                if (unit->CoordCount() != 0) {
+                                    void* pos = unit->m_31c.GetHeadPosition();
+                                    if (pos != 0) {
+                                        do {
+                                            void* d = unit->CoordListOps()->NextData(pos);
+                                            if (d != 0) {
+                                                g_coordPool.Push(d);
+                                            }
+                                        } while (pos != 0);
+                                    }
+                                    unit->m_31c.RemoveAll();
+                                }
+                                unit->m_254 = 0;
+                                unit->m_defenderState = 0;
+                            }
+                        }
+                        {
+                            i32 st = unit->m_entranceReason;
+                            if (st > 0x16) {
+                                st = unit->m_19c;
+                            }
+                            if (st != 0xf && unit->m_2d8 == 9) {
+                                unit->m_arrivalCol = -1;
+                                unit->m_2d8 = 4;
+                                unit->m_arrivalRow = -1;
+                                if (unit->CoordCount() != 0) {
+                                    void* pos = unit->m_31c.GetHeadPosition();
+                                    if (pos != 0) {
+                                        do {
+                                            void* d = unit->CoordListOps()->NextData(pos);
+                                            if (d != 0) {
+                                                g_coordPool.Push(d);
+                                            }
+                                        } while (pos != 0);
+                                    }
+                                    unit->m_31c.RemoveAll();
+                                }
+                                unit->m_254 = 0;
+                                unit->m_defenderState = 0;
+                            }
+                        }
+                        {
+                            i32 st = unit->m_entranceReason;
+                            if (st > 0x16) {
+                                st = unit->m_19c;
+                            }
+                            if (st == 7) {
+                                i32 d8 = unit->m_2d8;
+                                if (d8 != 6 && d8 != 3) {
+                                    if (unit->CoordCount() != 0) {
+                                        void* pos = unit->m_31c.GetHeadPosition();
+                                        if (pos != 0) {
+                                            do {
+                                                void* d = unit->CoordListOps()->NextData(pos);
+                                                if (d != 0) {
+                                                    g_coordPool.Push(d);
+                                                }
+                                            } while (pos != 0);
+                                        }
+                                        unit->m_31c.RemoveAll();
+                                    }
+                                    unit->m_arrivalCol = -1;
+                                    unit->m_arrivalRow = -1;
+                                    unit->m_2d8 = 6;
+                                }
+                            }
+                        }
+                        {
+                            i32 st = unit->m_entranceReason;
+                            if (st > 0x16) {
+                                st = unit->m_19c;
+                            }
+                            if (st != 7 && unit->m_2d8 == 6) {
+                                unit->m_arrivalCol = -1;
+                                unit->m_2d8 = 4;
+                                unit->m_arrivalRow = -1;
+                                if (unit->CoordCount() != 0) {
+                                    void* pos = unit->m_31c.GetHeadPosition();
+                                    if (pos != 0) {
+                                        do {
+                                            void* d = unit->CoordListOps()->NextData(pos);
+                                            if (d != 0) {
+                                                g_coordPool.Push(d);
+                                            }
+                                        } while (pos != 0);
+                                    }
+                                    unit->m_31c.RemoveAll();
+                                }
+                                unit->m_254 = 0;
+                                unit->m_defenderState = 0;
+                            }
+                        }
+                        if (unit->CoordCount() == 0) {
+                            if (unit->m_defenderState == 5) {
+                                unit->m_defenderState = 0;
+                            }
+                        }
+                        if (unit->m_defenderState == 5) {
+                            if (PathCrossesMarkedTile(unit) == 0) {
+                                unit->m_defenderState = 0;
+                            }
+                        }
+                        {
+                            char ne;
+                            ne =
+                                (strcmp(
+                                     (*g_typeColl.GetNameRecord(
+                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                     )),
+                                     "C"
+                                 )
+                                 != 0);
+                            if (ne) {
+                                ne =
+                                    (strcmp(
+                                         (*g_typeColl.GetNameRecord(
+                                             static_cast<void*>((unit->m_objAux->m_1c))
+                                         )),
+                                         "R"
+                                     )
+                                     != 0);
+                                if (ne) {
+                                    ne =
+                                        (strcmp(
+                                             (*g_typeColl.GetNameRecord(
+                                                 static_cast<void*>((unit->m_objAux->m_1c))
+                                             )),
+                                             "C"
+                                         )
+                                         != 0);
+                                    if (ne) {
+                                        ne =
+                                            (strcmp(
+                                                 (*g_typeColl.GetNameRecord(
+                                                     static_cast<void*>((unit->m_objAux->m_1c))
+                                                 )),
+                                                 "G"
+                                             )
+                                             != 0);
+                                        if (ne) {
+                                            ne =
+                                                (strcmp(
+                                                     (*g_typeColl.GetNameRecord(
+                                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                                     )),
+                                                     "L"
+                                                 )
+                                                 != 0);
+                                            if (ne) {
+                                                ne =
+                                                    (strcmp(
+                                                         (*g_typeColl.GetNameRecord(
+                                                             static_cast<void*>(
+                                                                 (unit->m_objAux->m_1c)
+                                                             )
+                                                         )),
+                                                         "P"
+                                                     )
+                                                     != 0);
+                                                if (ne) {
+                                                    ne =
+                                                        (strcmp(
+                                                             (*g_typeColl.GetNameRecord(
+                                                                 static_cast<void*>(
+                                                                     (unit->m_objAux->m_1c)
+                                                                 )
+                                                             )),
+                                                             "J"
+                                                         )
+                                                         != 0);
+                                                    if (ne) {
+                                                        if (unit->m_object->m_screenX
+                                                                == unit->m_lastTilePxX
+                                                            && unit->m_object->m_screenY
+                                                                   == unit->m_lastTilePxY
+                                                            && unit->m_entranceCommitted != 0
+                                                            && unit->m_deathAnimStarted == 0
+                                                            && unit->m_entranceActive == 0) {
+                                                            RECT box;
+                                                            Coord c1;
+                                                            (static_cast<CUserLogic*>(unit))
+                                                                ->GetScreenPos((&c1));
+                                                            c1.m_y >>= 5;
+                                                            c1.m_x >>= 5;
+                                                            Coord c2;
+                                                            (static_cast<CUserLogic*>(unit))
+                                                                ->GetScreenPos((&c2));
+                                                            c2.m_x >>= 5;
+                                                            c2.m_y >>= 5;
+                                                            Coord c3;
+                                                            (static_cast<CUserLogic*>(unit))
+                                                                ->GetScreenPos((&c3));
+                                                            c3.m_y >>= 5;
+                                                            c3.m_x >>= 5;
+                                                            Coord c4;
+                                                            (static_cast<CUserLogic*>(unit))
+                                                                ->GetScreenPos((&c4));
+                                                            c4.m_x >>= 5;
+                                                            c4.m_y >>= 5;
+                                                            box.left = c4.m_x - 4;
+                                                            box.top = c3.m_y - 4;
+                                                            box.right = c2.m_x + 4;
+                                                            box.bottom = c1.m_y + 4;
+                                                            Coord c5;
+                                                            (static_cast<CUserLogic*>(unit))
+                                                                ->GetScreenPos((&c5));
+                                                            c5.m_x >>= 5;
+                                                            c5.m_y >>= 5;
+                                                            Coord c6;
+                                                            (static_cast<CUserLogic*>(unit))
+                                                                ->GetScreenPos((&c6));
+                                                            c6.m_x >>= 5;
+                                                            c6.m_y >>= 5;
+                                                            Coord c7;
+                                                            (static_cast<CUserLogic*>(unit))
+                                                                ->GetScreenPos((&c7));
+                                                            c7.m_y >>= 5;
+                                                            c7.m_x >>= 5;
+                                                            Coord c8;
+                                                            (static_cast<CUserLogic*>(unit))
+                                                                ->GetScreenPos((&c8));
+                                                            c8.m_x >>= 5;
+                                                            c8.m_y >>= 5;
+                                                            i32 rowEnd = c5.m_y + 2;
+                                                            i32 colEnd = c6.m_x + 2;
+                                                            i32 rowBeg = c7.m_y - 1;
+                                                            i32 colBeg = c8.m_x - 1;
+                                                            CMapMgr* board = m_board;
+                                                            RECT bounds;
+                                                            static_cast<RECT*>(new (&bounds) CRect(
+                                                                0,
+                                                                0,
+                                                                board->m_width,
+                                                                board->m_height
+                                                            ));
+                                                            RECT clamp;
+                                                            RECT* pb = &box;
+                                                            if (pb != 0) {
+                                                                clamp.left = pb->left;
+                                                                clamp.top = pb->top;
+                                                                clamp.right = pb->right + 1;
+                                                                clamp.bottom = pb->bottom + 1;
+                                                            } else {
+                                                                RECT tmp;
+                                                                RECT* q = static_cast<RECT*>(
+                                                                    new (&tmp) CRect(
+                                                                        0,
+                                                                        0,
+                                                                        board->m_width,
+                                                                        board->m_height
+                                                                    )
+                                                                );
+                                                                clamp.left = q->left;
+                                                                clamp.top = q->top;
+                                                                clamp.right = q->right;
+                                                                clamp.bottom = q->bottom;
+                                                            }
+                                                            if (!IntersectRect(
+                                                                    &board->m_bounds,
+                                                                    &clamp,
+                                                                    &bounds
+                                                                )) {
+                                                                board->m_bounds = clamp;
+                                                            }
+                                                            board->m_gridW = board->m_bounds.right
+                                                                - board->m_bounds.left;
+                                                            board->m_gridH = board->m_bounds.bottom
+                                                                - board->m_bounds.top;
+                                                            for (i32 row = rowBeg; row < rowEnd;
+                                                                 row++) {
+                                                                CMapMgr* b = m_board;
+                                                                for (i32 col = colBeg; col < colEnd;
+                                                                     col++) {
+                                                                    if (static_cast<u32>(col)
+                                                                            < b->m_width
+                                                                        && static_cast<u32>(row)
+                                                                               < b->m_height) {
+                                                                        if (b->m_rows[row][col]
+                                                                                .m_0
+                                                                            & 0x1000000) {
+                                                                            goto perimSweep;
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    reclampJoin: {
+                        CMapMgr* bd = m_board;
+                        RECT r1;
+                        static_cast<RECT*>(new (&r1) CRect(0, 0, bd->m_width, bd->m_height));
+                        RECT r2;
+                        RECT* p2 =
+                            static_cast<RECT*>(new (&r2) CRect(0, 0, bd->m_width, bd->m_height));
+                        RECT rc;
+                        rc.left = p2->left;
+                        rc.top = p2->top;
+                        rc.right = p2->right;
+                        rc.bottom = p2->bottom;
+                        if (!IntersectRect(&bd->m_bounds, &rc, &r1)) {
+                            bd->m_bounds = rc;
+                        }
+                        bd->m_gridW = bd->m_bounds.right - bd->m_bounds.left;
+                        bd->m_gridH = bd->m_bounds.bottom - bd->m_bounds.top;
+                    }
+                        {
+                            i32 special = 1;
+                            if (unit->m_object->m_screenX != unit->m_lastTilePxX
+                                || unit->m_object->m_screenY != unit->m_lastTilePxY) {
+                                special = 0;
+                            }
+                            if (unit->m_entranceCommitted == 0) {
+                                special = 0;
+                            }
+                            if (unit->m_deathAnimStarted != 0) {
+                                special = 0;
+                            }
+                            if (unit->m_entranceActive != 0) {
+                                special = 0;
+                            }
+                            eq =
+                                (strcmp(
+                                     (*g_typeColl.GetNameRecord(
+                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                     )),
+                                     "I"
+                                 )
+                                 == 0);
+                            if (eq) {
+                                special = 0;
+                            }
+                            eq =
+                                (strcmp(
+                                     (*g_typeColl.GetNameRecord(
+                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                     )),
+                                     "G"
+                                 )
+                                 == 0);
+                            if (eq) {
+                                special = 0;
+                            }
+                            eq =
+                                (strcmp(
+                                     (*g_typeColl.GetNameRecord(
+                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                     )),
+                                     "L"
+                                 )
+                                 == 0);
+                            if (eq) {
+                                special = 0;
+                            }
+                            eq =
+                                (strcmp(
+                                     (*g_typeColl.GetNameRecord(
+                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                     )),
+                                     "P"
+                                 )
+                                 == 0);
+                            if (eq) {
+                                return 0;
+                            }
+                            eq =
+                                (strcmp(
+                                     (*g_typeColl.GetNameRecord(
+                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                     )),
+                                     "J"
+                                 )
+                                 == 0);
+                            if (eq) {
+                                special = 0;
+                            }
+                            eq =
+                                (strcmp(
+                                     (*g_typeColl.GetNameRecord(
+                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                     )),
+                                     "C"
+                                 )
+                                 == 0);
+                            if (eq) {
+                                special = 0;
+                            }
+                            eq =
+                                (strcmp(
+                                     (*g_typeColl.GetNameRecord(
+                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                     )),
+                                     "R"
+                                 )
+                                 == 0);
+                            if (eq) {
+                                special = 0;
+                            }
+                            if (unit->m_gruntKind == 0x36) {
+                                special = 0;
+                            }
+                            if (special != 0) {
+                                if (unit->m_poweredUp != 0 && unit->m_neighborValid == 0
+                                    && unit->m_combatActive == 0 && unit->m_stamina >= 0x64) {
+                                    if (unit->FindGridNeighbor(0) != 0) {
+                                        return 1;
+                                    }
+                                }
+                            }
+                        }
+                        if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != 0
+                            && unit->m_deathAnimStarted == 0 && unit->m_entranceActive == 0
+                            && unit->m_poweredUp == 0) {
+                            eq =
+                                (strcmp(
+                                     (*g_typeColl.GetNameRecord(
+                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                     )),
+                                     "I"
+                                 )
+                                 == 0);
+                            if (!eq) {
+                                eq =
+                                    (strcmp(
+                                         (*g_typeColl.GetNameRecord(
+                                             static_cast<void*>((unit->m_objAux->m_1c))
+                                         )),
+                                         "G"
+                                     )
+                                     == 0);
+                                if (!eq) {
+                                    eq =
+                                        (strcmp(
+                                             (*g_typeColl.GetNameRecord(
+                                                 static_cast<void*>((unit->m_objAux->m_1c))
+                                             )),
+                                             "L"
+                                         )
+                                         == 0);
+                                    if (!eq) {
+                                        eq =
+                                            (strcmp(
+                                                 (*g_typeColl.GetNameRecord(
+                                                     static_cast<void*>((unit->m_objAux->m_1c))
+                                                 )),
+                                                 "P"
+                                             )
+                                             == 0);
+                                        if (!eq) {
+                                            eq =
+                                                (strcmp(
+                                                     (*g_typeColl.GetNameRecord(
+                                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                                     )),
+                                                     "J"
+                                                 )
+                                                 == 0);
+                                            if (!eq) {
+                                                eq =
+                                                    (strcmp(
+                                                         (*g_typeColl.GetNameRecord(
+                                                             static_cast<void*>(
+                                                                 (unit->m_objAux->m_1c)
+                                                             )
+                                                         )),
+                                                         "C"
+                                                     )
+                                                     == 0);
+                                                if (!eq) {
+                                                    eq =
+                                                        (strcmp(
+                                                             (*g_typeColl.GetNameRecord(
+                                                                 static_cast<void*>(
+                                                                     (unit->m_objAux->m_1c)
+                                                                 )
+                                                             )),
+                                                             "R"
+                                                         )
+                                                         == 0);
+                                                    if (!eq) {
+                                                        for (i32 j = 0; j < 4; j++) {
+                                                            if (j != m_curCell) {
+                                                                for (i32 k = 0; k < 15; k++) {
+                                                                    CGrunt* other =
+                                                                        m_triggerMgr
+                                                                            ->m_grid[j * 15 + k];
+                                                                    if (other != 0) {
+                                                                        if (unit->RectContains(
+                                                                                other->m_object
+                                                                                    ->m_screenX,
+                                                                                other->m_object
+                                                                                    ->m_screenY
+                                                                            )
+                                                                            != 0) {
+                                                                            if (unit->m_gruntKind
+                                                                                != 0x36) {
+                                                                                if (other
+                                                                                        ->m_poweredUp
+                                                                                    == 0) {
+                                                                                    if (winapi_02ae00_IntersectRect(
+                                                                                            unit,
+                                                                                            other
+                                                                                        )
+                                                                                        != 0) {
+                                                                                        return 1;
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                        hit = 0;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (unit != 0) {
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - unit->m_arrivalReroll64
+                >= unit->m_arrivalRerollWindow64) {
+                i32 d8 = unit->m_2d8;
+                if (d8 != 3 && d8 != 0xb) {
+                    if (unit->m_entranceCommitted != 0 && unit->m_deathAnimStarted == 0
+                        && unit->m_entranceActive == 0 && unit->m_poweredUp == 0) {
+                        char ne;
+                        ne =
+                            (strcmp(
+                                 (*g_typeColl.GetNameRecord(
+                                     static_cast<void*>((unit->m_objAux->m_1c))
+                                 )),
+                                 "I"
+                             )
+                             != 0);
+                        if (ne) {
+                            ne =
+                                (strcmp(
+                                     (*g_typeColl.GetNameRecord(
+                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                     )),
+                                     "G"
+                                 )
+                                 != 0);
+                            if (ne) {
+                                ne =
+                                    (strcmp(
+                                         (*g_typeColl.GetNameRecord(
+                                             static_cast<void*>((unit->m_objAux->m_1c))
+                                         )),
+                                         "L"
+                                     )
+                                     != 0);
+                                if (ne) {
+                                    ne =
+                                        (strcmp(
+                                             (*g_typeColl.GetNameRecord(
+                                                 static_cast<void*>((unit->m_objAux->m_1c))
+                                             )),
+                                             "P"
+                                         )
+                                         != 0);
+                                    if (ne) {
+                                        ne =
+                                            (strcmp(
+                                                 (*g_typeColl.GetNameRecord(
+                                                     static_cast<void*>((unit->m_objAux->m_1c))
+                                                 )),
+                                                 "J"
+                                             )
+                                             != 0);
+                                        if (ne) {
+                                            ne =
+                                                (strcmp(
+                                                     (*g_typeColl.GetNameRecord(
+                                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                                     )),
+                                                     "C"
+                                                 )
+                                                 != 0);
+                                            if (ne) {
+                                                ne =
+                                                    (strcmp(
+                                                         (*g_typeColl.GetNameRecord(
+                                                             static_cast<void*>(
+                                                                 (unit->m_objAux->m_1c)
+                                                             )
+                                                         )),
+                                                         "R"
+                                                     )
+                                                     != 0);
+                                                if (ne) {
+                                                    if (unit->m_2d8 != 0) {
+                                                        if (winapi_02e3a0_PtInRect(unit) != 0) {
+                                                            hit = 1;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (unit != 0) {
+            if (unit->m_object->m_screenX == unit->m_lastTilePxX
+                && unit->m_object->m_screenY == unit->m_lastTilePxY
+                && unit->m_entranceCommitted != 0 && unit->m_deathAnimStarted == 0
+                && unit->m_entranceActive == 0 && unit->m_poweredUp == 0) {
+                eq =
+                    (strcmp(
+                         (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))),
+                         "I"
+                     )
+                     == 0);
+                if (!eq) {
+                    eq =
+                        (strcmp(
+                             (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c))
+                             )),
+                             "G"
+                         )
+                         == 0);
+                    if (!eq) {
+                        eq =
+                            (strcmp(
+                                 (*g_typeColl.GetNameRecord(
+                                     static_cast<void*>((unit->m_objAux->m_1c))
+                                 )),
+                                 "L"
+                             )
+                             == 0);
+                        if (!eq) {
+                            eq =
+                                (strcmp(
+                                     (*g_typeColl.GetNameRecord(
+                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                     )),
+                                     "P"
+                                 )
+                                 == 0);
+                            if (!eq) {
+                                eq =
+                                    (strcmp(
+                                         (*g_typeColl.GetNameRecord(
+                                             static_cast<void*>((unit->m_objAux->m_1c))
+                                         )),
+                                         "J"
+                                     )
+                                     == 0);
+                                if (!eq) {
+                                    eq =
+                                        (strcmp(
+                                             (*g_typeColl.GetNameRecord(
+                                                 static_cast<void*>((unit->m_objAux->m_1c))
+                                             )),
+                                             "C"
+                                         )
+                                         == 0);
+                                    if (!eq) {
+                                        eq =
+                                            (strcmp(
+                                                 (*g_typeColl.GetNameRecord(
+                                                     static_cast<void*>((unit->m_objAux->m_1c))
+                                                 )),
+                                                 "R"
+                                             )
+                                             == 0);
+                                        if (!eq) {
+                                            if (static_cast<u32>(m_140) % 15
+                                                == static_cast<u32>(i)) {
+                                                {
+                                                    i32 st3 = unit->m_entranceReason;
+                                                    if (st3 > 0x16) {
+                                                        st3 = unit->m_19c;
+                                                    }
+                                                    if (st3 == 0x13 && unit->m_health > 0x1a) {
+                                                        if (rand() % g_diffTier == 0) {
+                                                            i32 r = g_buteMgr.GetIntDef(
+                                                                "Spellz",
+                                                                "SpellRadius",
+                                                                8
+                                                            );
+                                                            RECT spell;
+                                                            i32 px = unit->m_object->m_screenX;
+                                                            i32 py = unit->m_object->m_screenY;
+                                                            spell.left = (px >> 5) - r;
+                                                            spell.top = (py >> 5) - r;
+                                                            spell.right = (px >> 5) + r;
+                                                            spell.bottom = (py >> 5) + r;
+                                                            for (i32 j2 = 0; j2 < 4; j2++) {
+                                                                if (j2 != m_curCell) {
+                                                                    for (i32 k2 = 0; k2 < 15;
+                                                                         k2++) {
+                                                                        CGrunt* o =
+                                                                            m_triggerMgr->m_grid
+                                                                                [j2 * 15 + k2];
+                                                                        if (o != 0) {
+                                                                            POINT pt;
+                                                                            pt.x = o->m_object
+                                                                                       ->m_screenX
+                                                                                >> 5;
+                                                                            pt.y = o->m_object
+                                                                                       ->m_screenY
+                                                                                >> 5;
+                                                                            if (PtInRect(
+                                                                                    &spell,
+                                                                                    pt
+                                                                                )
+                                                                                != 0) {
+                                                                                goto spellHit;
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                if (PathToNearbyUnit(unit) != 0) {
+                                                    return 1;
+                                                }
+                                                if (unit->CoordCount() == 0
+                                                    && unit->m_defenderState == 4) {
+                                                    unit->m_2f8 = -1;
+                                                    unit->m_defenderState = 0;
+                                                    unit->m_2fc = -1;
+                                                }
+                                                {
+                                                    char nd;
+                                                    nd =
+                                                        (strcmp(
+                                                             (*g_typeColl.GetNameRecord(
+                                                                 static_cast<void*>(
+                                                                     (unit->m_objAux->m_1c)
+                                                                 )
+                                                             )),
+                                                             "D"
+                                                         )
+                                                         != 0);
+                                                    if (nd) {
+                                                        ResolveArrival(unit);
+                                                    }
+                                                }
+                                                if (unit->m_object->m_screenX
+                                                        == unit->m_lastTilePxX
+                                                    && unit->m_object->m_screenY
+                                                           == unit->m_lastTilePxY
+                                                    && unit->m_entranceCommitted != 0
+                                                    && unit->m_deathAnimStarted == 0
+                                                    && unit->m_entranceActive == 0
+                                                    && unit->m_poweredUp == 0) {
+                                                    eq =
+                                                        (strcmp(
+                                                             (*g_typeColl.GetNameRecord(
+                                                                 static_cast<void*>(
+                                                                     (unit->m_objAux->m_1c)
+                                                                 )
+                                                             )),
+                                                             "I"
+                                                         )
+                                                         == 0);
+                                                    if (!eq) {
+                                                        eq =
+                                                            (strcmp(
+                                                                 (*g_typeColl.GetNameRecord(
+                                                                     static_cast<void*>(
+                                                                         (unit->m_objAux->m_1c)
+                                                                     )
+                                                                 )),
+                                                                 "G"
+                                                             )
+                                                             == 0);
+                                                        if (!eq) {
+                                                            eq =
+                                                                (strcmp(
+                                                                     (*g_typeColl.GetNameRecord(
+                                                                         static_cast<void*>(
+                                                                             (unit->m_objAux->m_1c)
+                                                                         )
+                                                                     )),
+                                                                     "L"
+                                                                 )
+                                                                 == 0);
+                                                            if (!eq) {
+                                                                eq =
+                                                                    (strcmp(
+                                                                         (*g_typeColl.GetNameRecord(
+                                                                             static_cast<void*>((
+                                                                                 unit->m_objAux
+                                                                                     ->m_1c
+                                                                             ))
+                                                                         )),
+                                                                         "P"
+                                                                     )
+                                                                     == 0);
+                                                                if (!eq) {
+                                                                    eq =
+                                                                        (strcmp(
+                                                                             (*g_typeColl
+                                                                                   .GetNameRecord(
+                                                                                       static_cast<
+                                                                                           void*>((
+                                                                                           unit->m_objAux
+                                                                                               ->m_1c
+                                                                                       ))
+                                                                                   )),
+                                                                             "J"
+                                                                         )
+                                                                         == 0);
+                                                                    if (!eq) {
+                                                                        eq =
+                                                                            (strcmp(
+                                                                                 (*g_typeColl
+                                                                                       .GetNameRecord(
+                                                                                           static_cast<
+                                                                                               void*>((
+                                                                                               unit->m_objAux
+                                                                                                   ->m_1c
+                                                                                           ))
+                                                                                       )),
+                                                                                 "C"
+                                                                             )
+                                                                             == 0);
+                                                                        if (!eq) {
+                                                                            eq =
+                                                                                (strcmp(
+                                                                                     (*g_typeColl
+                                                                                           .GetNameRecord(
+                                                                                               static_cast<
+                                                                                                   void*>((
+                                                                                                   unit->m_objAux
+                                                                                                       ->m_1c
+                                                                                               ))
+                                                                                           )),
+                                                                                     "R"
+                                                                                 )
+                                                                                 == 0);
+                                                                            if (!eq) {
+                                                                                goto dispatch;
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        goto nexti;
+    dispatch: {
+        CMapMgr* bd2 = m_board;
+        RECT a;
+        a.left = 0;
+        a.top = 0;
+        a.right = bd2->m_width;
+        a.bottom = bd2->m_height;
+        RECT t2;
+        RECT* q2 = static_cast<RECT*>(new (&t2) CRect(0, 0, bd2->m_width, bd2->m_height));
+        RECT b2;
+        b2.left = q2->left;
+        b2.top = q2->top;
+        b2.right = q2->right;
+        b2.bottom = q2->bottom;
+        if (!IntersectRect(&bd2->m_bounds, &b2, &a)) {
+            bd2->m_bounds = b2;
+        }
+        bd2->m_gridW = bd2->m_bounds.right - bd2->m_bounds.left;
+        bd2->m_gridH = bd2->m_bounds.bottom - bd2->m_bounds.top;
+        i32 stX = unit->m_entranceReason;
+        if (hit == 0) {
+            switch (unit->m_2d8) {
+                case 0: {
+                    Step33520(unit);
+                    break;
+                }
+                case 2: {
+                    Step(unit);
+                    break;
+                }
+                case 3: {
+                    winapi_031ca0_IntersectRect(unit);
+                    break;
+                }
+                case 4: {
+                    winapi_032060_IntersectRect(unit);
+                    break;
+                }
+                case 6: {
+                    RepathToFreeCell(unit);
+                    break;
+                }
+                case 7: {
+                    CheckQueuedSpawnTile(unit);
+                    break;
+                }
+                case 9: {
+                    RetargetIdleUnit(unit);
+                    break;
+                }
+                case 0xb: {
+                    Scan(unit);
+                    break;
+                }
+                case 0xa: {
+                    ScanRegion(unit);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+        if (unit->CoordCount() != 0) {
+            eq =
+                (strcmp(
+                     (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))),
+                     "A"
+                 )
+                 == 0);
+            if (eq) {
+                GruntCoord* gc = (unit->CoordHead())->m_coord;
+                i32 gx = gc->m_x;
+                i32 gy = gc->m_y;
+                i32 sx = unit->m_object->m_screenX >> 5;
+                i32 sy = unit->m_object->m_screenY >> 5;
+                if (abs(gx - sx) < 2 && abs(gy - sy) < 2) {
+                    cell = m_board->m_rows[gy][gx].m_0;
+                    i32 f = unit->m_arrivalFlags & cell;
+                    if (f & 0x20000000) {
+                        goto LB;
+                    }
+                    if (f == 0) {
+                        goto LA;
+                    }
+                    if ((cell & unit->m_24c) == 0) {
+                        goto LB;
+                    }
+                    if (cell & 0x20000000) {
+                        goto LB;
+                    }
+                    if ((cell & 0x40) == 0) {
+                        goto flagsArm;
+                    }
+                LA:
+                    if (unit->m_entranceReason <= 0x16) {
+                        if (unit->m_entranceReason == 0x16) {
+                            goto nexti;
+                        }
+                        goto LC;
+                    }
+                LB:
+                    if (unit->m_19c != 0x16) {
+                        goto nexti;
+                    }
+                    if (cell & 2) {
+                        goto LR;
+                    }
+                    if ((cell & 0x100) == 0) {
+                        goto nexti;
+                    }
+                LC:
+                    if ((cell & 0x20000000) == 0) {
+                        goto tailArm2;
+                    }
+                    goto nexti;
+                LR:
+                    if (unit->CoordCount() != 0) {
+                        GruntCoordNode* n = unit->CoordHead();
+                        if (n != 0) {
+                            do {
+                                CoordPoolNode* h = g_coordPool.m_freeHead;
+                                GruntCoordNode* cur = n;
+                                n = n->m_next;
+                                if (cur->m_coord != 0) {
+                                    CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
+                                    node->m_next = h;
+                                    h = node;
+                                }
+                                g_coordPool.m_freeHead = h;
+                            } while (n != 0);
+                        }
+                        unit->m_31c.RemoveAll();
+                    }
+                }
+            }
+        }
+    }
+    nexti:;
+    }
+    return 1;
+
+resetEntrance: {
+    i32 pw = unit->m_poweredUp;
+    unit->m_neighborValid = 0;
+    if (pw == 0) {
+        return 1;
+    }
+    unit->m_entranceActive = 0;
+    unit->m_combatActive = 0;
+    unit->m_neighborValid = 0;
+    unit->m_poweredUp = 0;
+    unit->ResetEntranceAnimation(1, 0, 0);
+    return 1;
+}
+
+arriveHead:
+    if (unit->CoordCount() != 0) {
+        void* pos = unit->m_31c.GetHeadPosition();
+        if (pos != 0) {
+            do {
+                void* d = unit->CoordListOps()->NextData(pos);
+                if (d != 0) {
+                    g_coordPool.Push(d);
+                }
+            } while (pos != 0);
+        }
+        unit->m_31c.RemoveAll();
+    }
+    return 1;
+
+perimSweep: {
+    Coord q0;
+    (static_cast<CUserLogic*>(unit))->GetScreenPos((&q0));
+    i32 col = (q0.m_x >> 5) - 2;
+    (static_cast<CUserLogic*>(unit))->GetScreenPos((&scratch));
+    scratch.m_x >>= 5;
+    scratch.m_y >>= 5;
+    while (col < scratch.m_x + 3) {
+        Coord qa;
+        (static_cast<CUserLogic*>(unit))->GetScreenPos((&qa));
+        i32 rt = (qa.m_y >> 5) - 2;
+        if (static_cast<u32>(col) < m_board->m_width && static_cast<u32>(rt) < m_board->m_height) {
+            if (unit->TileSwitch(col, rt, 0, 0x2000098b, 1, 0) != 0) {
+                goto rowHitA;
+            }
+        }
+        Coord qc;
+        (static_cast<CUserLogic*>(unit))->GetScreenPos((&qc));
+        i32 rb = (qc.m_y >> 5) + 2;
+        if (static_cast<u32>(col) < m_board->m_width && static_cast<u32>(rb) < m_board->m_height) {
+            if (unit->TileSwitch(col, rb, 0, 0x2000098b, 1, 0) != 0) {
+                goto rowHitB;
+            }
+        }
+        col++;
+        (static_cast<CUserLogic*>(unit))->GetScreenPos((&scratch));
+        scratch.m_x >>= 5;
+        scratch.m_y >>= 5;
+    }
+    {
+        Coord u0;
+        (static_cast<CUserLogic*>(unit))->GetScreenPos((&u0));
+        i32 row = (u0.m_y >> 5) - 2;
+        (static_cast<CUserLogic*>(unit))->GetScreenPos((&scratch));
+        scratch.m_x >>= 5;
+        scratch.m_y >>= 5;
+        while (row < scratch.m_y + 3) {
+            Coord ua;
+            (static_cast<CUserLogic*>(unit))->GetScreenPos((&ua));
+            ua.m_x >>= 5;
+            ua.m_y >>= 5;
+            i32 xl = ua.m_x - 2;
+            if (static_cast<u32>(xl) < m_board->m_width
+                && static_cast<u32>(row) < m_board->m_height) {
+                if (unit->TileSwitch(xl, row, 0, 0x2000098b, 1, 0) != 0) {
+                    goto colHitA;
+                }
+            }
+            Coord uc;
+            (static_cast<CUserLogic*>(unit))->GetScreenPos((&uc));
+            uc.m_y >>= 5;
+            uc.m_x >>= 5;
+            if (static_cast<u32>(uc.m_x + 2) < m_board->m_width
+                && static_cast<u32>(row) < m_board->m_height) {
+                // Retail copy-paste: the bounds check tests x+2 but the call passes xl.
+                if (unit->TileSwitch(xl, row, 0, 0x2000098b, 1, 0) != 0) {
+                    goto colHitB;
+                }
+            }
+            row++;
+            (static_cast<CUserLogic*>(unit))->GetScreenPos((&scratch));
+            scratch.m_x >>= 5;
+            scratch.m_y >>= 5;
+        }
+    }
+    {
+        CMapMgr* fb = m_board;
+        RECT f1;
+        static_cast<RECT*>(new (&f1) CRect(0, 0, fb->m_width, fb->m_height));
+        RECT f2;
+        RECT* fq = static_cast<RECT*>(new (&f2) CRect(0, 0, fb->m_width, fb->m_height));
+        RECT fc;
+        fc.left = fq->left;
+        fc.top = fq->top;
+        fc.right = fq->right;
+        fc.bottom = fq->bottom;
+        if (IntersectRect(&fb->m_bounds, &fc, &f1) != 0) {
+            return 0;
+        }
+        fb->m_bounds = fc;
+        fb->m_gridW = fb->m_bounds.right - fb->m_bounds.left;
+        fb->m_gridH = fb->m_bounds.bottom - fb->m_bounds.top;
+        return 1;
+    }
+}
+
+rowHitA: {
+    unit->m_arrivalRerollLo = 0;
+    unit->m_arrivalRerollWindowLo = 0;
+    unit->m_arrivalRerollHi = 0;
+    unit->m_arrivalRerollWindowHi = 0;
+    unit->m_arrivalRerollWindowLo = 0x1f40;
+    unit->m_arrivalRerollWindowHi = 0;
+    unit->m_arrivalRerollLo = g_frameTime;
+    unit->m_arrivalRerollHi = 0;
+    CMapMgr* hb = m_board;
+    RECT h1;
+    static_cast<RECT*>(new (&h1) CRect(0, 0, hb->m_width, hb->m_height));
+    RECT h2;
+    RECT* hq = static_cast<RECT*>(new (&h2) CRect(0, 0, hb->m_width, hb->m_height));
+    RECT hc;
+    hc.left = hq->left;
+    hc.top = hq->top;
+    hc.right = hq->right;
+    hc.bottom = hq->bottom;
+    if (!IntersectRect(&hb->m_bounds, &hc, &h1)) {
+        hb->m_bounds = hc;
+    }
+    hb->m_gridW = hb->m_bounds.right - hb->m_bounds.left;
+    hb->m_gridH = hb->m_bounds.bottom - hb->m_bounds.top;
+    return 1;
+}
+
+rowHitB: {
+    unit->m_arrivalRerollLo = 0;
+    unit->m_arrivalRerollWindowLo = 0;
+    unit->m_arrivalRerollHi = 0;
+    unit->m_arrivalRerollWindowHi = 0;
+    unit->m_arrivalRerollWindowLo = 0x1f40;
+    unit->m_arrivalRerollWindowHi = 0;
+    unit->m_arrivalRerollLo = g_frameTime;
+    unit->m_arrivalRerollHi = 0;
+    CMapMgr* hb = m_board;
+    RECT h1;
+    static_cast<RECT*>(new (&h1) CRect(0, 0, hb->m_width, hb->m_height));
+    RECT h2;
+    RECT* hq = static_cast<RECT*>(new (&h2) CRect(0, 0, hb->m_width, hb->m_height));
+    RECT hc;
+    hc.left = hq->left;
+    hc.top = hq->top;
+    hc.right = hq->right;
+    hc.bottom = hq->bottom;
+    if (!IntersectRect(&hb->m_bounds, &hc, &h1)) {
+        hb->m_bounds = hc;
+    }
+    hb->m_gridW = hb->m_bounds.right - hb->m_bounds.left;
+    hb->m_gridH = hb->m_bounds.bottom - hb->m_bounds.top;
+    return 1;
+}
+
+spellHit: {
+    i32 hx = unit->m_lastTilePxX;
+    i32 hy = unit->m_lastTilePxY;
+    m_triggerMgr->ApplyTriggerA(unit->m_tileOwnerHi, unit->m_tileOwnerLo, hx, hy);
+    return 1;
+}
+
+flagsArm: {
+    i32 ok = 1;
+    if (cell & 8) {
+        if ((unit->m_entranceReason > 0x16 ? unit->m_19c : unit->m_entranceReason) != 0x12
+            && (unit->m_entranceReason > 0x16 ? unit->m_19c : unit->m_entranceReason) != 0x16) {
+            ok = 0;
+        }
+    }
+    if (cell & 0x200) {
+        if ((unit->m_entranceReason > 0x16 ? unit->m_19c : unit->m_entranceReason) != 0x12
+            && (unit->m_entranceReason > 0x16 ? unit->m_19c : unit->m_entranceReason) != 0x16) {
+            ok = 0;
+        }
+    }
+    if (ok == 0) {
+        return 1;
+    }
+    {
+        GruntCoord* tc = (unit->CoordTail())->m_coord;
+        unit->m_entrancePxX = (tc->m_x << 5) + 0x10;
+        unit->m_entrancePxY = (tc->m_y << 5) + 0x10;
+        unit->StepEntranceReinit();
+        return 1;
+    }
+}
+
+tailArm2: {
+    GruntCoord* tc = (unit->CoordTail())->m_coord;
+    unit->m_entrancePxX = (tc->m_x << 5) + 0x10;
+    unit->m_entrancePxY = (tc->m_y << 5) + 0x10;
+    unit->StepEntranceReinit();
+    return 1;
+}
+
+colHitA: {
+    unit->m_arrivalRerollLo = 0;
+    unit->m_arrivalRerollWindowLo = 0;
+    unit->m_arrivalRerollHi = 0;
+    unit->m_arrivalRerollWindowHi = 0;
+    unit->m_arrivalRerollWindowLo = 0x1f40;
+    unit->m_arrivalRerollWindowHi = 0;
+    unit->m_arrivalRerollLo = g_frameTime;
+    unit->m_arrivalRerollHi = 0;
+    CMapMgr* hb = m_board;
+    RECT h1;
+    static_cast<RECT*>(new (&h1) CRect(0, 0, hb->m_width, hb->m_height));
+    RECT h2;
+    RECT* hq = static_cast<RECT*>(new (&h2) CRect(0, 0, hb->m_width, hb->m_height));
+    RECT hc;
+    hc.left = hq->left;
+    hc.top = hq->top;
+    hc.right = hq->right;
+    hc.bottom = hq->bottom;
+    if (!IntersectRect(&hb->m_bounds, &hc, &h1)) {
+        hb->m_bounds = hc;
+    }
+    hb->m_gridW = hb->m_bounds.right - hb->m_bounds.left;
+    hb->m_gridH = hb->m_bounds.bottom - hb->m_bounds.top;
+    return 1;
+}
+
+colHitB: {
+    unit->m_arrivalRerollLo = 0;
+    unit->m_arrivalRerollWindowLo = 0;
+    unit->m_arrivalRerollHi = 0;
+    unit->m_arrivalRerollWindowHi = 0;
+    unit->m_arrivalRerollWindowLo = 0x1f40;
+    unit->m_arrivalRerollWindowHi = 0;
+    unit->m_arrivalRerollLo = g_frameTime;
+    unit->m_arrivalRerollHi = 0;
+    CMapMgr* hb = m_board;
+    RECT h1;
+    static_cast<RECT*>(new (&h1) CRect(0, 0, hb->m_width, hb->m_height));
+    RECT h2;
+    RECT* hq = static_cast<RECT*>(new (&h2) CRect(0, 0, hb->m_width, hb->m_height));
+    RECT hc;
+    hc.left = hq->left;
+    hc.top = hq->top;
+    hc.right = hq->right;
+    hc.bottom = hq->bottom;
+    if (!IntersectRect(&hb->m_bounds, &hc, &h1)) {
+        hb->m_bounds = hc;
+    }
+    hb->m_gridW = hb->m_bounds.right - hb->m_bounds.left;
+    hb->m_gridH = hb->m_bounds.bottom - hb->m_bounds.top;
+    return 1;
+}
 }
 
 RVA(0x00029a30, 0x10)
-void* __stdcall ListNodeAdvance(void** it) {
-    char* cur = static_cast<char*>(*it);
-    *it = *reinterpret_cast<void**>(cur);
-    return cur + 8;
+void*& GruntCoordListOps::NextData(void*& pos) {
+    char* cur = static_cast<char*>(pos);
+    pos = *reinterpret_cast<void**>(cur);
+    return *reinterpret_cast<void**>(cur + 8);
 }
 
 RVA(0x00029a50, 0x15)
@@ -1084,7 +2528,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             }
         }
         if (sA & 0x20000000) {
-            winapi_02a570_IntersectRect(unit);
+            RepathAroundBlockedTiles(unit);
             return 0;
         }
         i32 pk = unit->m_entranceReason;
@@ -1150,7 +2594,7 @@ recycleBail:
 }
 
 // ===========================================================================
-// CBattlezMapConfig::winapi_02a570_IntersectRect  @0x02a570  (/GX EH frame)
+// CBattlezMapConfig::RepathAroundBlockedTiles  @0x02a570  (/GX EH frame)
 // The reserved-tile scatter reroute. For a unit that holds occupied coords, clamp
 // the board dirty-rect to a 13x13 box around its screen coord (IntersectRect copy-
 // back), then scan up to three of its coord-list nodes for one on a blocked (bit 0)
@@ -1171,7 +2615,7 @@ recycleBail:
 // the dead maybe-null box branch retail emits (shared with winapi_02c140/02dfa0).
 // Foreign unit/board chains modeled by raw offset. Deferred to the final sweep.
 RVA(0x0002a570, 0x4c6)
-i32 CBattlezMapConfig::winapi_02a570_IntersectRect(CGrunt* unit) {
+i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
     if (unit->CoordCount() == 0) {
         return 1;
     }
@@ -2059,7 +3503,7 @@ static __inline i32 arrCell(CMapMgr* grid, i32 col, i32 row) {
 //       (forces the /GX frame); the exact 700-B transform + tail are a dedicated final-sweep job.
 RVA(0x0002c690, 0xdb4)
 i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
-    if (winapi_02a570_IntersectRect(g)) {
+    if (RepathAroundBlockedTiles(g)) {
         return 1;
     }
     if (g->CoordCount() == 0) {
@@ -4248,14 +5692,14 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
             g->GetScreenPos((&here));
             ::TileSwitch(g, here.m_x >> 5, here.m_y >> 5, m_ac, m_b0, -1);
             if (g->CoordCount() > m_98 + m_94 && g->CoordCount() != 0) {
-                GruntCoordNode* nd = g->CoordHead();
-                if (nd != 0) {
+                void* pos = g->m_31c.GetHeadPosition();
+                if (pos != 0) {
                     do {
-                        void* r = ListNodeAdvance(reinterpret_cast<void**>(&nd));
-                        if (*static_cast<i32*>(r) != 0) {
-                            g_coordPool.Push(reinterpret_cast<void*>((*static_cast<i32*>(r))));
+                        void* d = g->CoordListOps()->NextData(pos);
+                        if (d != 0) {
+                            g_coordPool.Push(d);
                         }
-                    } while (nd != 0);
+                    } while (pos != 0);
                 }
                 g->m_31c.RemoveAll();
             }
@@ -4417,7 +5861,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(CGrunt* unit) {
                 if (unit->CoordCount() != 0) {
                     void* pos = unit->CoordHead();
                     while (pos != 0) {
-                        void* coord = *static_cast<void**>(ListNodeAdvance(&pos));
+                        void* coord = unit->CoordListOps()->NextData(pos);
                         if (coord != 0) {
                             g_coordPool.Push(coord);
                         }
@@ -4493,7 +5937,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(CGrunt* unit) {
     if (unit->CoordCount() != 0) {
         void* pos = unit->CoordHead();
         while (pos != 0) {
-            void* coord = *static_cast<void**>(ListNodeAdvance(&pos));
+            void* coord = unit->CoordListOps()->NextData(pos);
             if (coord != 0) {
                 g_coordPool.Push(coord);
             }
@@ -4558,7 +6002,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(CGrunt* unit) {
                 void* pos = unit->CoordHead();
                 if (pos != 0) {
                     do {
-                        void* coord = *static_cast<void**>(ListNodeAdvance(&pos));
+                        void* coord = unit->CoordListOps()->NextData(pos);
                         if (coord != 0) {
                             g_coordPool.Push(coord);
                         }
