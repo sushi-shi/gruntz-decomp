@@ -29,13 +29,14 @@ public:
     // (4 B) per mode (4=write @+0x30, 7=read @+0x2c), then chain CUserLogic::SerializeMove
     // and the +0x34 serialized-object-reference; return whether the ref chain succeeded.
 
-    CAniElement*
-        m_geoId; // +0x40  geometry-id cache slot (indicator-sprite family; unset by this leaf's ApplyLookupSprite ctor)
+    // (the ex m_geoId dword was an ERRONEOUS extra member: the new-site 0x7dda0
+    // pushes 0x60, and with it the leaf compiled 0x64 with m_cellX skewed +4 -
+    // the geometry cache IS the CWapX base's m_value, not a leaf field.)
     i32 m_cellX; // +0x54  grunt cell x
     i32 m_cellY; // +0x58  grunt cell y
     i32 m_lastLayer; // +0x5c  last-seen layer index (Update tracks layer change)
 };
-SIZE_UNKNOWN();
+SIZE(0x60); // new-site ground truth (0x7dda0 `push 0x60; call ??2`)
 
 typedef i32 (CUserLogic::*ToyActHandler)();
 struct CToyActEntry {

@@ -57,8 +57,10 @@ public:
     i32 m_70;            // +0x70  icon idle-window LO (i64 pair w/ m_74)
     i32 m_74;            // +0x74  icon idle-window HI
     CWwdGameObjectA* m_glitterSprite; // +0x78  glitter overlay FX sprite (A-kind)
+    i32 m_7c;                         // +0x7c  (role unproven; the new-site 0x95750
+                                      //        pushes 0x80 - the object IS 0x80 B)
 };
-SIZE_UNKNOWN();
+SIZE(0x80); // new-site ground truth (0x95750 `push 0x80; call ??2`)
 
 typedef i32 (CUserLogic::*IconActHandler)();
 

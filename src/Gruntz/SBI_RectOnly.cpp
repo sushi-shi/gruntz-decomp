@@ -1141,7 +1141,7 @@ i32 CStatusBarMgr::Deactivate() {
 
 RVA(0x001020a0, 0xae)
 i32 CStatusBarMgr::SetTab(i32 tab, i32 flag) {
-    if (tab == m_activeTab && flag == 0) {
+    if (tab == m_itemKind && flag == 0) {
         return 1;
     }
     POSITION n = m_tabLists[5].GetHeadPosition();
@@ -1158,7 +1158,7 @@ i32 CStatusBarMgr::SetTab(i32 tab, i32 flag) {
     m_tabSprite8 = 0;
     m_tabSprite9 = 0;
     m_tabSprite10 = 0;
-    m_activeTab = tab;
+    m_itemKind = tab;
     // WRONG-CALLEE FIX (assert_relocs): this called RefreshState() @0xfe670 (43 B). Retail
     // calls `this->LoadTabSprites()` @0x102250 (7629 B) - `mov ecx,edi; call 0x1690` right
     // after the m_activeTab store. Both exist, so it linked and objdiff reloc-masked it: a

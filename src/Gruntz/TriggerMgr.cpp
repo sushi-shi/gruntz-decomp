@@ -1143,8 +1143,8 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
     }
     spr->ApplyName("GAME_TOYBOX");
     spr->m_118 = a4;
-    spr->m_130 = a5;
     spr->m_114 = a3;
+    spr->m_130 = a5;
     spr->m_stateFlags |= 1;
     return 1;
 }

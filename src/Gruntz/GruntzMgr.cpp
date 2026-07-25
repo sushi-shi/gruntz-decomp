@@ -3472,8 +3472,8 @@ INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
             // the view's `m_24->m_5c` IS CGameLevel::m_mainPlane (+0x5c) - the field exists
             // on the real class under its real name; only the fake view lacked it.
             CDDrawWorkerHost* warp = g_gameReg->m_world->m_level->m_mainPlane;
-            i32 seedX = warp->m_viewRect.left;
-            i32 seedY = warp->m_viewRect.top;
+            i32 seedX = warp->m_snappedX;
+            i32 seedY = warp->m_snappedY;
             SetDlgItemInt(hDlg, 0x40e, seedX, 0);
             SetDlgItemInt(hDlg, 0x40f, seedY, 0);
             return 1;
