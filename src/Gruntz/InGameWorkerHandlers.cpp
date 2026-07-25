@@ -6,7 +6,7 @@
 #include <Gruntz/WorkerHandler.h> // shared Worker / Owner archetype + CUserLogic base
 
 RVA(0x00095750, 0xf4)
-extern "C" i32 CreateInGameIcon(CGameObject* owner) {
+i32 CreateInGameIcon(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
@@ -44,7 +44,7 @@ extern "C" i32 CreateInGameIcon(CGameObject* owner) {
 }
 
 RVA(0x00095890, 0xf1)
-extern "C" i32 CreateInGameText(CGameObject* owner) {
+i32 CreateInGameText(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {
@@ -82,7 +82,7 @@ extern "C" i32 CreateInGameText(CGameObject* owner) {
 }
 
 RVA(0x000959d0, 0xf1)
-extern "C" i32 CreateToyPeek(CGameObject* owner) {
+i32 CreateToyPeek(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (reinterpret_cast<u32>(rec->m_1c)) {
         case 0: {

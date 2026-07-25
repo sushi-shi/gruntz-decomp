@@ -198,7 +198,7 @@ i32 CLightFx::AdvanceAnim() {
 }
 
 RVA(0x0009cdc0, 0xf1)
-extern "C" i32 CreateLightFx(CGameObject* obj) {
+i32 CreateLightFx(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
     switch (static_cast<u32>(reinterpret_cast<size_t>(aux->m_1c))) {
         case 0:

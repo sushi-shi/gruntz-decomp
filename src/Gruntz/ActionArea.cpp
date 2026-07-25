@@ -64,7 +64,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
 // canonical CUserLogic declares only slots 00..09; dispatching inherited slots 10-15
 // needs those 6 virtuals added to the shared CUserLogic base (a base-vtable reshape).
 RVA(0x00007c60, 0xf1)
-extern "C" i32 CreateActionArea(CGameObject* owner) {
+i32 CreateActionArea(CGameObject* owner) {
     return 0;
 }
 
