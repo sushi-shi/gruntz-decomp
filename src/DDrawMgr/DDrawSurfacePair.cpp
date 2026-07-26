@@ -234,7 +234,7 @@ i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
         default:
             return 0;
     }
-    i32 buf = src->BeginParse();
+    char* buf = src->BeginParse();
     if (buf == 0) {
         return 0;
     }
@@ -981,7 +981,7 @@ void CDDrawWorkerMapSmall::Unload() {
 // EH-state schedule around the destructible worker/CString locals.
 RVA(0x001658c0, 0xcc)
 void* CDDrawWorkerMapSmall::Factory_1658c0(CParseSource* a1, const char* key, i32 a3) {
-    i32 data = a1->BeginParse();
+    char* data = a1->BeginParse();
     if (data == 0) {
         return 0;
     }
@@ -1007,7 +1007,7 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(CParseSource* a1, const char* key, i3
 // the real ctor fixed the regalloc; residual is only the vptr store position (cl 1st vs
 // retail 4th).
 RVA(0x00165990, 0x77)
-void* CDDrawWorkerMapSmall::CreateWorker28(i32 a1, const char* key, i32 a3) {
+void* CDDrawWorkerMapSmall::CreateWorker28(void* a1, const char* key, i32 a3) {
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
     if (w->AllocBufMakeB(a1, a3) == 0) {
         if (w != 0) {
@@ -1024,7 +1024,7 @@ void* CDDrawWorkerMapSmall::CreateWorker28(i32 a1, const char* key, i32 a3) {
 // vptr-scheduler wall (see docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md):
 // residual is only the vptr store position (cl 1st vs retail 4th).
 RVA(0x00165a10, 0x77)
-void* CDDrawWorkerMapSmall::CreateWorker2C(i32 a1, const char* key, i32 a3) {
+void* CDDrawWorkerMapSmall::CreateWorker2C(void* a1, const char* key, i32 a3) {
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
     if (w->AllocBufMakeB2(a1, a3) == 0) {
         if (w != 0) {
@@ -1046,7 +1046,7 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CParseSource* a1, i32 a2, i32 a3) {
     if (a1->GetEntryTag() != 0x504358) {
         return 0;
     }
-    i32 data = a1->BeginParse();
+    char* data = a1->BeginParse();
     if (data == 0) {
         return 0;
     }

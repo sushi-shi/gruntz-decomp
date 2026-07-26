@@ -170,7 +170,7 @@ i32 CImage::Resolve(CParseSource* src, i32 arg) {
         default:
             return 0;
     }
-    i32 resolved = src->BeginParse();
+    char* resolved = src->BeginParse();
     if (resolved == 0) {
         return 0;
     }
@@ -423,7 +423,7 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
         default:
             return 0;
     }
-    i32 resolved = src->BeginParse();
+    char* resolved = src->BeginParse();
     if (resolved == 0) {
         return 0;
     }

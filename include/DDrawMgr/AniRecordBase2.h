@@ -45,9 +45,9 @@ struct CAniRecordBase2 : public CWapObj {
     // CDDrawPtrCollections pool entrypoint (Create/MakeB/MakeB2/MakeB3) with the
     // 0x44 palette kind + the optional system-palette capture.
     virtual void* AllocBufCreate(i32 handle, i32 flag);      // [9]  0x168f20
-    virtual void* AllocBufMakeB(i32 size, i32 flag);         // [10] 0x168ee0
-    virtual void* AllocBufMakeB2(i32 size, i32 flag);        // [11] 0x168ea0
-    virtual void* AllocBufMakeB3(i32 a, i32 size, i32 flag); // [12] 0x168f60
+    virtual void* AllocBufMakeB(void* data, i32 flag);       // [10] 0x168ee0
+    virtual void* AllocBufMakeB2(void* data, i32 flag);      // [11] 0x168ea0
+    virtual void* AllocBufMakeB3(void* data, i32 size, i32 flag); // [12] 0x168f60
     virtual i32 PushPalette();                               // [13] 0x168fd0
 };
 SIZE(0x14); // standalone map-worker allocation size (`new` 0x14)

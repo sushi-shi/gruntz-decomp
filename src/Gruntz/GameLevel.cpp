@@ -300,7 +300,7 @@ i32 CGameLevel::LoadFromFile(const char* path) {
 
 RVA(0x0015d630, 0x41)
 i32 CGameLevel::LoadFromSource(CParseSource* arg) {
-    i32 handle = arg->BeginParse();
+    char* handle = arg->BeginParse();
     if (handle == 0) {
         return 0;
     }

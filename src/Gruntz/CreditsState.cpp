@@ -69,7 +69,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     if (midiz) {
         CParseSource* e = midiz->Insert("PLAY", reinterpret_cast<void*>(0x584d49));
         if (e) {
-            i32 val = e->BeginParse();
+            char* val = e->BeginParse();
             if (val) {
                 m_mgr->m_sound
                     ->CreateBank(reinterpret_cast<void*>(val), e->m_length, "CREDITZ"); // 0x138670
@@ -82,7 +82,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     if (midiz) {
         CParseSource* e2 = midiz->Insert("MONOLITH", reinterpret_cast<void*>(0x584d49));
         if (e2) {
-            i32 val = e2->BeginParse();
+            char* val = e2->BeginParse();
             if (val) {
                 m_mgr->m_sound->CreateBank(
                     reinterpret_cast<void*>(val),

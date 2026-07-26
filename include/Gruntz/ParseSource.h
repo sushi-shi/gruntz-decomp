@@ -39,7 +39,7 @@ struct CParseSource {
     // real out-of-line 6-byte function CALLED at all 8 sites (CImage::Resolve,
     // LoadImage, ...), never inlined - an inline body here would inline it.
     i32 GetEntryTag();
-    i32 BeginParse();
+    char* BeginParse(); // the parse cursor (the mapped buffer or the lazy copy)
     i32 EndParse();
     // 0x139950: the current scope's (m_owner CSymTab) name - `mov eax,[ecx+0x10];
     // mov eax,[eax]` proves the thiscall receiver + the +0x10 owner deref.
@@ -80,7 +80,7 @@ struct CParseSource {
     // first dword (m_name) is the hash key.
     CParseSlotHashNode m_node1c;
     CRezItmBase* m_reader; // +0x34  the providing rez node (slot-2 virtual Read)
-    i32 m_buffer;          // +0x38 lazily-allocated inline byte buffer (as int address)
+    char* m_buffer;        // +0x38 lazily-allocated inline byte buffer
 };
 SIZE_UNKNOWN();
 

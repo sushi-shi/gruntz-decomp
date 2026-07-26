@@ -1108,7 +1108,7 @@ i32 LeafCue::LoadSoundB(void* src) {
 // EndParse). Tried 3 result/store spellings; no source lever flips the homing. Logic complete.
 RVA(0x00158760, 0x59)
 i32 LeafCue::Configure(CParseSource* src) {
-    i32 blob = src->BeginParse();
+    char* blob = src->BeginParse();
     if (blob == 0) {
         return 0;
     }

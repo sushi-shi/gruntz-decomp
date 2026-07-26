@@ -757,7 +757,7 @@ void CDDrawPtrCollections::RemoveItemB(CDDPalette* item) {
 }
 
 RVA(0x00142f40, 0x7c)
-CDDPalette* CDDrawPtrCollections::MakeB2(i32 a, i32 b) {
+CDDPalette* CDDrawPtrCollections::MakeB2(void* a, i32 b) {
     CDDPalette* item = new CDDPalette;
     if (!item->LoadFromFile(m_device, reinterpret_cast<char*>(a), b)) {
         if (item) {
@@ -799,9 +799,9 @@ CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
 }
 
 RVA(0x001430c0, 0x81)
-CDDPalette* CDDrawPtrCollections::MakeB3(i32 a, i32 b, i32 c) {
+CDDPalette* CDDrawPtrCollections::MakeB3(void* a, u32 b, i32 c) {
     CDDPalette* item = new CDDPalette;
-    if (!item->CreateFromTrailing(m_device, reinterpret_cast<void*>(a), b, c)) {
+    if (!item->CreateFromTrailing(m_device, a, b, c)) {
         if (item) {
             item->Destroy();
             ::operator delete(item);

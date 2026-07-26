@@ -121,12 +121,12 @@ void CParseSource::Teardown() {
     if (m_owner != 0) {
         if (m_owner->m_mappedBuf == 0) {
             if (m_buffer) {
-                ::operator delete(reinterpret_cast<void*>(m_buffer));
+                ::operator delete(m_buffer);
             }
         }
     } else {
         if (m_buffer) {
-            ::operator delete(reinterpret_cast<void*>(m_buffer));
+            ::operator delete(m_buffer);
         }
     }
     m_name = 0;
@@ -176,9 +176,9 @@ char* CParseSource::CurrentScopeName() {
 }
 
 RVA(0x00139960, 0x6b)
-i32 CParseSource::BeginParse() {
+char* CParseSource::BeginParse() {
     if (m_owner->m_mappedBuf != 0) {
-        return m_base - m_owner->m_baseOffset + reinterpret_cast<i32>(m_owner->m_mappedBuf);
+        return m_owner->m_mappedBuf + (m_base - m_owner->m_baseOffset);
     }
     if (m_buffer != 0) {
         return m_buffer;
@@ -186,13 +186,13 @@ i32 CParseSource::BeginParse() {
     if (m_length == 0) {
         return 0;
     }
-    m_buffer = reinterpret_cast<i32>(RezAlloc(m_length));
+    m_buffer = static_cast<char*>(RezAlloc(m_length));
     if (m_buffer == 0) {
         return 0;
     }
     if (m_reader->Read(m_base, 0, m_length, reinterpret_cast<void*>(m_buffer))
         != static_cast<i32>(m_length)) {
-        ::operator delete(reinterpret_cast<void*>(m_buffer));
+        ::operator delete(m_buffer);
         m_buffer = 0;
     }
     return m_buffer;
@@ -201,7 +201,7 @@ i32 CParseSource::BeginParse() {
 RVA(0x001399d0, 0x21)
 i32 CParseSource::EndParse() {
     if (m_buffer != 0) {
-        ::operator delete(reinterpret_cast<void*>(m_buffer));
+        ::operator delete(m_buffer);
         m_buffer = 0;
     }
     return 1;

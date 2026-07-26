@@ -157,8 +157,8 @@ i32 CAniRecordView::GetSize() {
 RVA_COMPGEN(0x00168e70, 0x27, ?GetAt@CStringArray@@QBE?AVCString@@H@Z)
 
 RVA(0x00168ea0, 0x40)
-void* CAniRecordBase2::AllocBufMakeB2(i32 size, i32 flag) {
-    CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB2(size, 0x44);
+void* CAniRecordBase2::AllocBufMakeB2(void* data, i32 flag) {
+    CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB2(data, 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
         return static_cast<void*>(0); // tail returns 1 only on the success path below
@@ -171,8 +171,8 @@ void* CAniRecordBase2::AllocBufMakeB2(i32 size, i32 flag) {
 }
 
 RVA(0x00168ee0, 0x40)
-void* CAniRecordBase2::AllocBufMakeB(i32 size, i32 flag) {
-    CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB(reinterpret_cast<void*>(size), 0x44);
+void* CAniRecordBase2::AllocBufMakeB(void* data, i32 flag) {
+    CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB(data, 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
         return static_cast<void*>(0);
@@ -199,8 +199,8 @@ void* CAniRecordBase2::AllocBufCreate(i32 handle, i32 flag) {
 }
 
 RVA(0x00168f60, 0x45)
-void* CAniRecordBase2::AllocBufMakeB3(i32 a, i32 size, i32 flag) {
-    CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB3(a, size, 0x44);
+void* CAniRecordBase2::AllocBufMakeB3(void* data, i32 size, i32 flag) {
+    CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB3(data, size, 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
         return static_cast<void*>(0);

@@ -5359,28 +5359,28 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
     if (levelSet) {
         CParseSource* e = levelSet->Insert("AMBIENT0", reinterpret_cast<void*>(MUSIC_TAG_XMI));
         if (e) {
-            void* res = reinterpret_cast<void*>(e->BeginParse());
+            void* res = e->BeginParse();
             if (res) {
                 m_mgr->m_sound->CreateBank(res, e->m_length, "AMBIENT0");
             }
         }
         e = levelSet->Insert("AMBIENT1", reinterpret_cast<void*>(MUSIC_TAG_XMI));
         if (e) {
-            void* res = reinterpret_cast<void*>(e->BeginParse());
+            void* res = e->BeginParse();
             if (res) {
                 m_mgr->m_sound->CreateBank(res, e->m_length, "AMBIENT1");
             }
         }
         e = levelSet->Insert("INTRO0", reinterpret_cast<void*>(MUSIC_TAG_XMI));
         if (e) {
-            void* res = reinterpret_cast<void*>(e->BeginParse());
+            void* res = e->BeginParse();
             if (res) {
                 m_mgr->m_sound->CreateBank(res, e->m_length, "INTRO0");
             }
         }
         e = levelSet->Insert("INTRO1", reinterpret_cast<void*>(MUSIC_TAG_XMI));
         if (e) {
-            void* res = reinterpret_cast<void*>(e->BeginParse());
+            void* res = e->BeginParse();
             if (res) {
                 m_mgr->m_sound->CreateBank(res, e->m_length, "INTRO1");
             }
@@ -5391,21 +5391,21 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
     if (gameSet) {
         CParseSource* e = gameSet->Insert("POWERUP", reinterpret_cast<void*>(MUSIC_TAG_XMI));
         if (e) {
-            void* res = reinterpret_cast<void*>(e->BeginParse());
+            void* res = e->BeginParse();
             if (res) {
                 m_mgr->m_sound->CreateBank(res, e->m_length, "POWERUP");
             }
         }
         e = gameSet->Insert("CURSE", reinterpret_cast<void*>(MUSIC_TAG_XMI));
         if (e) {
-            void* res = reinterpret_cast<void*>(e->BeginParse());
+            void* res = e->BeginParse();
             if (res) {
                 m_mgr->m_sound->CreateBank(res, e->m_length, "CURSE");
             }
         }
         e = gameSet->Insert("MONOLITH", reinterpret_cast<void*>(MUSIC_TAG_XMI));
         if (e) {
-            void* res = reinterpret_cast<void*>(e->BeginParse());
+            void* res = e->BeginParse();
             if (res) {
                 m_mgr->m_sound->CreateBank(res, e->m_length, "MONOLITH");
             }

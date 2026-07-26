@@ -151,8 +151,8 @@ public:
     CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
     CDDPalette* MakeB(void* rgb, i32 flags);                    // 0x142fc0
     CDDPalette* Create(i32 a, i32 b);                           // 0x143040 (init via 0x147390)
-    CDDPalette* MakeB2(i32 a, i32 b);                           // 0x142f40 (init via 0x147410)
-    CDDPalette* MakeB3(i32 a, i32 b, i32 c);                    // 0x1430c0 (init via 0x147840)
+    CDDPalette* MakeB2(void* data, i32 b);                       // 0x142f40 (init via 0x147410)
+    CDDPalette* MakeB3(void* a, u32 b, i32 c);                    // 0x1430c0 (init via 0x147840)
 
     // Read the trailing 0x300-byte palette from a file and register a pool-B item built
     // from it (0x143150 -> MakeB; 0x143a30 -> Make950, the sibling builder).

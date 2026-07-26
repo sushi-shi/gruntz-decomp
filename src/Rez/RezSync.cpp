@@ -514,15 +514,23 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         i32 ok = 0;
         if (stream) {
             g_buteMgr.m_10e = 1;
-            i32 esz = stream->BeginParse();
+            char* esz = stream->BeginParse();
             void* src = reinterpret_cast<void*>(
                 stream->m_length
             ); // +0x0c doubles as the data ptr for this entry kind
-            istrstream* rdr =
-                new istrstream(static_cast<char*>(src), esz); // ??0istrstream (0x169700)
+            // @identity-TODO: this entry kind carries the bytes in +0x0c and the
+            // length through BeginParse - the two look swapped vs every other
+            // caller, so the raw widths are preserved verbatim here.
+            istrstream* rdr = new istrstream(
+                static_cast<char*>(src),
+                reinterpret_cast<i32>(esz)
+            ); // ??0istrstream (0x169700)
             Blowfish_InitKey(reinterpret_cast<unsigned char*>(const_cast<char*>("1212C")));
-            ostrstream* snk =
-                new ostrstream(static_cast<char*>(src), esz, 2); // ??0ostrstream (0x1698c0)
+            ostrstream* snk = new ostrstream(
+                static_cast<char*>(src),
+                reinterpret_cast<i32>(esz),
+                2
+            ); // ??0ostrstream (0x1698c0)
             BitStreamBlowfishDecode(rdr, snk);
             // carcass gap: retail allocs a third 0x60 stream object here with no
             // visible ctor call in the recovered bytes; kept as the bare allocation.
