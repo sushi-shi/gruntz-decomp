@@ -1563,7 +1563,8 @@ i32 SoundDevice::CreatePrimaryBuffer() {
     if (m_initialized == 0) {
         return 0;
     }
-    if (m_coopLevel != DSSCL_NORMAL) {
+    // a primary buffer needs a priority coop level - bail when still NORMAL
+    if (m_coopLevel == DSSCL_NORMAL) {
         return 0;
     }
     if (m_primaryBuffer == 0) {
