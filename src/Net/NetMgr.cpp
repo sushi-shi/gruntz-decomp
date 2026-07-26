@@ -54,7 +54,7 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
     m_sessionSelId = 0;
     // the +0x4 block IS the app GUID (16-byte struct assign; the CGruntzMgr* m_4
     // claim conflicts with this write - @identity-TODO resolve the +0x4 model)
-    *reinterpret_cast<GUID*>(&m_4) = appGuid;
+    m_appGuid = appGuid;
     m_groupSel = a;
     m_playerSel = 0;
     m_sessionSel = 0;
@@ -96,7 +96,7 @@ i32 CNetMgr::Init(void* a, GUID appGuid) {
     m_groupSelId = 0;
     m_playerSelId = 0;
     m_sessionSelId = 0;
-    i32* base = reinterpret_cast<i32*>((reinterpret_cast<char*>(this) + 4));
+    i32* base = reinterpret_cast<i32*>(&m_appGuid); // the GUID as its 4 dwords
     const i32* g =
         reinterpret_cast<const i32*>(&appGuid); // the app GUID's 4 dwords -> the m_4 setup block
     base[0] = g[0];
@@ -315,7 +315,7 @@ i32 CNetMgr::EnumPlayersInto(void* a, void* b) {
 
     char desc[0x50];
     memset(desc, 0, 0x50);
-    i32* guid = reinterpret_cast<i32*>((reinterpret_cast<char*>(this) + 4));
+    i32* guid = reinterpret_cast<i32*>(&m_appGuid); // the GUID as its 4 dwords
     *reinterpret_cast<i32*>((desc + 0x00)) = 0x50;
     *reinterpret_cast<i32*>((desc + 0x18)) = guid[0];
     *reinterpret_cast<i32*>((desc + 0x1c)) = guid[1];
@@ -488,7 +488,7 @@ RVA(0x001788a0, 0x13c)
 CNetPlayerListNode* CNetMgr::EnumGroupsInto(void* a, void* b, i32 c, i32 d) {
     char buf[0x50];
     memset(buf, 0, 0x50);
-    i32* guid = reinterpret_cast<i32*>((reinterpret_cast<char*>(this) + 4));
+    i32* guid = reinterpret_cast<i32*>(&m_appGuid); // the GUID as its 4 dwords
     *reinterpret_cast<i32*>((buf + 0x00)) = 0x50;
     *reinterpret_cast<i32*>((buf + 0x04)) = 0xa044;
     *reinterpret_cast<i32*>((buf + 0x18)) = guid[0];

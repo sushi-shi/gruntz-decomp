@@ -826,13 +826,21 @@ public:
     // CObject base vptr stamp (0x5e8cb4), the three CObList ctors (nBlockSize 10),
     // the derived vptr stamp (0x5ea42c), then zero +0x14/+0x18.
     // (vptr implicit at +0x000)
-    class CGruntzMgr* m_4; // +0x004  the game manager (ex the CNetGameMgr facet view)
-    // +0x008  a name CString's raw payload. Retail's ~CNetMgr (0xb6000) destroys ONLY
-    // the 3 CObLists (+0x1c/+0x38/+0x54) and leaks this - so it is NOT a destructible
-    // CString member here.
-    char* m_8;
-    CDDrawSurfaceMgr* m_c; // +0x00c  the world holder (CState::m_c mirror)
-    char m_pad10[0x14 - 0x10];
+    // +0x004..+0x013 is ROLE-OVERLOADED (proven by the layout: the app-GUID write in
+    // Init/InitFromProvider covers exactly these 16 bytes, while the session paths use
+    // the same slots as three typed fields) - so it is a union, not an offset view.
+    union {
+        GUID m_appGuid; // +0x004  the DirectPlay application GUID (16 B)
+        struct {
+            class CGruntzMgr* m_4; // +0x004  the game manager
+            // +0x008  a name CString's raw payload. Retail's ~CNetMgr (0xb6000) destroys
+            // ONLY the 3 CObLists (+0x1c/+0x38/+0x54) and leaks this - so it is NOT a
+            // destructible CString member here.
+            char* m_8;
+            CDDrawSurfaceMgr* m_c; // +0x00c  the world holder (CState::m_c mirror)
+            char m_pad10[0x14 - 0x10];
+        };
+    };
     INetReleasable* m_releaseIface; // +0x014  secondary COM interface Destroy releases (slot 2)
     IDirectPlay4Z* m_directPlay; // +0x018  the DirectPlay session interface (IDirectPlay4-shaped)
     // The three managed collections (by-value MFC CObList, 0x1c bytes each; head at
