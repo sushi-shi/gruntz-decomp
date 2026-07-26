@@ -1090,20 +1090,20 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         return 1;
     }
     // b == 0: read the 0xa8-byte binary header, copy its packed fields, validate magic.
-    char hdr[0xa8];
-    reader->Read(0, 0, 0xa8, hdr); // [2] (the view's "ReadRaw")
-    m_50 = *reinterpret_cast<i32*>((hdr + 0x7f));
-    m_30 = *reinterpret_cast<i32*>((hdr + 0x83));
-    m_34 = *reinterpret_cast<i32*>((hdr + 0x87));
-    m_38 = *reinterpret_cast<i32*>((hdr + 0x8b));
-    m_3c = *reinterpret_cast<i32*>((hdr + 0x8f));
-    m_48 = *reinterpret_cast<i32*>((hdr + 0x93));
-    m_54 = *reinterpret_cast<i32*>((hdr + 0x97));
-    m_longestScopeNameLen = *reinterpret_cast<i32*>((hdr + 0x9b));
-    m_longestLeafNameLen = *reinterpret_cast<i32*>((hdr + 0x9f));
-    m_60 = *reinterpret_cast<i32*>((hdr + 0xa3));
-    m_08 = *reinterpret_cast<i32*>((hdr + 0xa7)) & 0xff;
-    if (hdr[0] != 0x0d || hdr[0x3f] != 0x0a || hdr[0x7e] != 0x1a || b != 1) {
+    SymTabFileHeader hdr;
+    reader->Read(0, 0, 0xa8, &hdr); // [2] (the view's "ReadRaw")
+    m_50 = hdr.m_flag;
+    m_30 = hdr.m_scopeCount;
+    m_34 = hdr.m_leafCount;
+    m_38 = hdr.m_38;
+    m_3c = hdr.m_3c;
+    m_48 = hdr.m_48;
+    m_54 = hdr.m_54;
+    m_longestScopeNameLen = hdr.m_longestScopeNameLen;
+    m_longestLeafNameLen = hdr.m_longestLeafNameLen;
+    m_60 = hdr.m_60;
+    m_08 = hdr.m_08 & 0xff;
+    if (hdr.m_magic0 != 0x0d || hdr.m_magic3f != 0x0a || hdr.m_magic7e != 0x1a || b != 1) {
         return 0;
     }
     CSymTab* node = new CSymTab(

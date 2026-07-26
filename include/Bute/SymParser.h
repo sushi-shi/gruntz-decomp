@@ -39,6 +39,31 @@ struct CParserHash : public CHashBase {
 };
 SIZE(0x8); // derives CHashBase (no new fields)
 
+// The 0xa8-byte on-disk symbol-table header (BUTE binary form). The three magic
+// bytes sit at 0/0x3f/0x7e and the field block that follows is PACKED (unaligned
+// dword starts at 0x7f), which is why every reader used to pun it byte-wise.
+#pragma pack(push, 1)
+struct SymTabFileHeader {
+    u8 m_magic0;               // +0x000  0x0d
+    char m_pad001[0x3f - 0x01];
+    u8 m_magic3f;              // +0x03f  0x0a
+    char m_pad040[0x7e - 0x40];
+    u8 m_magic7e;              // +0x07e  0x1a
+    i32 m_flag;                // +0x07f  (-> m_50)
+    i32 m_scopeCount;          // +0x083  (-> m_30)
+    i32 m_leafCount;           // +0x087  (-> m_34)
+    i32 m_38;                  // +0x08b
+    i32 m_3c;                  // +0x08f
+    i32 m_48;                  // +0x093
+    i32 m_54;                  // +0x097
+    i32 m_longestScopeNameLen; // +0x09b
+    i32 m_longestLeafNameLen;  // +0x09f
+    i32 m_60;                  // +0x0a3
+    i32 m_08;                  // +0x0a7  (low byte used)
+};
+SIZE(0xab); // 0xa8 read + the trailing dword the last field overlaps
+#pragma pack(pop)
+
 class CSymParser {
 public:
     // The three primary slots. Retail's bodies are inert defaults (the parser's
