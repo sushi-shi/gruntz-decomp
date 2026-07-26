@@ -139,13 +139,15 @@ void CAniRecordView::ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str
 RVA(0x00168e50, 0x1e)
 i32 CAniRecordView::GetSize() {
     i32 n = m_frameCount;
-    if (n <= 0) {
-        return 0x16;
+    i32 size = 0x16;
+    if (n > 0) {
+        if (m_flags & 0x1) {
+            size = n * 22;
+        } else {
+            size = n;
+        }
     }
-    if (m_flags & 0x1) {
-        return n * 22;
-    }
-    return n;
+    return size;
 }
 
 // ---------------------------------------------------------------------------
