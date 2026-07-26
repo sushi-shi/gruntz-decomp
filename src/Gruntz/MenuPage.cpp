@@ -132,8 +132,7 @@ i32 CMenuPage::RestoreFocus() {
             node = node->pNext;
             CMenuItem* item = cur->data;
             if (item) {
-                CString name = item->GetName();
-                bool match = strcmp(name, m_focusName) == 0;
+                bool match = item->GetName() == m_focusName;
                 if (match) {
                     i32 k = item->m_state;
                     if (k == 1 || k == 2) {
@@ -598,8 +597,7 @@ CMenuItem* CMenuPage::FindByName(const char* s) {
         node = node->pNext;
         CMenuItem* item = cur->data;
         if (item) {
-            CString name = item->GetName();
-            bool match = strcmp(key, name) == 0;
+            bool match = strcmp(key, item->GetName()) == 0;
             if (match) {
                 return item;
             }
