@@ -567,10 +567,11 @@ i32 CMultiBootyState::QueryGruntSlots() {
     char* base = reinterpret_cast<char*>(g_gameReg);
     i32 i = 0;
     char* rec = base + 0x174;
-    for (; i < 4; i++) {
+    while (i < 4) {
         if (*reinterpret_cast<i32*>((rec + 4)) != 0 && *reinterpret_cast<i32*>(rec) == 0) {
             return *reinterpret_cast<i32*>((rec - 0x24));
         }
+        i++;
         rec += 0x238;
     }
     return 0;
