@@ -358,9 +358,10 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     CDDrawSubMgrLeafScan* slot = (static_cast<CDDrawSurfaceMgr*>(m_3c->m_0c))->m_soundRegistry;
     if (slot->m_emitGate == 0) {
         LeafCue* sout = 0;
-        slot->m_10.Lookup(
+        MapLookup(
+            slot->m_10,
             s_GAME_ATTACK,
-            reinterpret_cast<void*&>(sout)
+            sout
         ); // CMapStringToPtr @0x1b8438
         if (sout != 0) {
             // retail reloads the looked-up cue into ecx and __thiscalls 0x1f940

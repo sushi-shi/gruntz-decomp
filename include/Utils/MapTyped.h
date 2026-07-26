@@ -26,4 +26,20 @@ inline void MapGetNext(CMapPtrToPtr& map, POSITION& pos, K& key, T*& out) {
     map.GetNextAssoc(pos, key, reinterpret_cast<void*&>(out));
 }
 
+// The already-void* out-param needs no pun at all.
+inline BOOL MapLookup(CMapStringToPtr& map, LPCTSTR key, void*& out) {
+    return map.Lookup(key, out);
+}
+inline BOOL MapLookup(CMapPtrToPtr& map, void* key, void*& out) {
+    return map.Lookup(key, out);
+}
+template <class K>
+inline void MapGetNext(CMapStringToPtr& map, POSITION& pos, K& key, void*& out) {
+    map.GetNextAssoc(pos, key, out);
+}
+template <class K>
+inline void MapGetNext(CMapPtrToPtr& map, POSITION& pos, K& key, void*& out) {
+    map.GetNextAssoc(pos, key, out);
+}
+
 #endif // GRUNTZ_UTILS_MAPTYPED_H

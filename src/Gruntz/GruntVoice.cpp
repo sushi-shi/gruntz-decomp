@@ -27,6 +27,7 @@
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
 #include <Gruntz/GruntVoiceActReg.h> // CActRegPool<CGruntVoice>::s_table (ex .cpp extern)
 #include <Wap32/zBitVec.h>           // ex Globals.h
+#include <Utils/MapTyped.h> // typed MFC map lookups
 template<> DATA(0x002514d8)
 CActReg CActRegPool<CGruntVoice>::s_table(2000, 2010);
 template<> DATA(0x00251500)
@@ -414,9 +415,10 @@ i32 CGruntVoice::Update() {
     if (m_owner == 0) {
         CGameObject* out = 0;
         i32 src = m_source;
-        i32 resolved = g_gameReg->m_world->m_childGroup->m_map48.Lookup(
+        i32 resolved = MapLookup(
+            g_gameReg->m_world->m_childGroup->m_map48,
             reinterpret_cast<void*>(src),
-            reinterpret_cast<void*&>(out)
+            out
         );
         if (resolved != 0) {
             if (out == 0) {
@@ -441,9 +443,10 @@ i32 CGruntVoice::Update() {
     } else {
         CGameObject* out = 0;
         i32 src = m_source;
-        i32 resolved = g_gameReg->m_world->m_childGroup->m_map48.Lookup(
+        i32 resolved = MapLookup(
+            g_gameReg->m_world->m_childGroup->m_map48,
             reinterpret_cast<void*>(src),
-            reinterpret_cast<void*&>(out)
+            out
         );
         if (resolved != 0) {
             if (out == 0) {

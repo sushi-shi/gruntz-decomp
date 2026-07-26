@@ -26,6 +26,7 @@
 #include <rva.h>
 #include <Bute/ButeMgr.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Utils/MapTyped.h> // typed MFC map lookups
 RVA_COMPGEN(0x00010890, 0x1e, ??_GCExitTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x000108c0, 0x44, ??1CExitTrigger@@UAE@XZ)
 
@@ -133,9 +134,10 @@ i32 CExitTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject*
             arc->Read(&key, 4);
             if (key != 0) {
                 CGameObject* found = 0;
-                CGameObject* obj = holder->m_childGroup->m_map48.Lookup(
+                CGameObject* obj = MapLookup(
+                                       holder->m_childGroup->m_map48,
                                        reinterpret_cast<void*>(key),
-                                       reinterpret_cast<void*&>(found)
+                                       found
                                    )
                                        ? found
                                        : 0;

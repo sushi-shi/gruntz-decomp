@@ -20,6 +20,7 @@
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sink; Advance)
 #include <Wap32/ZVec.h>
+#include <Utils/MapTyped.h> // typed MFC map lookups
 
 // CActRegPool<CLightFx>::s_table (0x00245ad0): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
@@ -104,14 +105,14 @@ void CLightFx::RegisterActs() {
 // vs the m_38 reload before the effect lookup). Logic 100% correct.
 RVA(0x0009d520, 0xfd)
 i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 anchorB) {
-    i32 node = 0;
+    void* node = 0;
     CObject* nodeOb = 0;
     // spec lookup -> CMapStringToOb::Lookup (0x1b8008); out is CObject*& (reinterpret node).
     // The spec source is the worker's owner context (AnimWorkerObj::m_0c @+0xc).
     m_3c->m_0c->m_imageRegistry->m_10map.Lookup(spec, nodeOb);
-    node = reinterpret_cast<i32>(nodeOb);
-    i32 found = node;
-    g_gameReg->m_logicPump->Push(reinterpret_cast<CDDrawWorker*>(found), anchorA, 7);
+    node = nodeOb;
+    void* found = node;
+    g_gameReg->m_logicPump->Push(static_cast<CDDrawWorker*>(found), anchorA, 7);
     if (found != 0) {
         // The spec lookup result IS a CDDrawWorker (it is pushed to the pump as one);
         // read the lowest-indexed frame in its [m_minIndex, m_maxIndex] range.
@@ -135,18 +136,20 @@ i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 an
     m_anchorB = anchorB;
     // effect lookup -> CMapStringToPtr::Lookup (0x1b8438) via the object's owner
     // context (CGameObject::m_0c @+0xc); out is void*&.
-    m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(
+    MapLookup(
+        m_38->OwnerMgr()->m_animRegistry->m_10,
         effect,
-        reinterpret_cast<void*&>(node)
+        node
     );
     if (node != 0) {
         node = 0;
-        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(
+        MapLookup(
+            m_38->OwnerMgr()->m_animRegistry->m_10,
             effect,
-            reinterpret_cast<void*&>(node)
+            node
         );
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup(reinterpret_cast<CAniElement*>(node));
+        m_38->m_1a0.Setup(static_cast<CAniElement*>(node));
         RebindNode();
     }
     return 0;

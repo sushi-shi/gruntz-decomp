@@ -3623,9 +3623,10 @@ i32 CPlay::Vslot10(i32 msg, i32 x, i32 y) {
         CDDrawSubMgrLeafScan* set = m_mgr->m_world->m_soundRegistry;
         if (set->m_emitGate == 0) {
             LeafCue* e = 0;
-            set->m_10.Lookup(
+            MapLookup(
+                set->m_10,
                 "GAME_TABHIGHLIGHT1",
-                reinterpret_cast<void*&>(e)
+                e
             ); // Ptr map out-param idiom
             if (e != 0) {
                 e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
@@ -6728,33 +6729,37 @@ i32 CPlay::SetEffectSpriteDurations() {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup(
+    MapLookup(
+        m_world->m_soundRegistry->m_10,
         "GRUNTZ_DEATHZ_DEATHZFREEZE1A",
-        reinterpret_cast<void*&>(d)
+        d
     );
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup(
+    MapLookup(
+        m_world->m_soundRegistry->m_10,
         "GRUNTZ_DEATHZ_DEATHZFREEZE2A",
-        reinterpret_cast<void*&>(d)
+        d
     );
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup(
+    MapLookup(
+        m_world->m_soundRegistry->m_10,
         "GRUNTZ_DEATHZ_DEATHZUNFREEZE1A",
-        reinterpret_cast<void*&>(d)
+        d
     );
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup(
+    MapLookup(
+        m_world->m_soundRegistry->m_10,
         "GRUNTZ_DEATHZ_DEATHZUNFREEZE1A",
-        reinterpret_cast<void*&>(d)
+        d
     );
     if (d != 0) {
         d->m_18 = 100;
@@ -6765,9 +6770,10 @@ i32 CPlay::SetEffectSpriteDurations() {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup(
+    MapLookup(
+        m_world->m_soundRegistry->m_10,
         "GRUNTZ_DEATHZ_DEATHZSQUASH1A",
-        reinterpret_cast<void*&>(d)
+        d
     );
     if (d != 0) {
         d->m_18 = 100;
@@ -6783,33 +6789,37 @@ i32 CPlay::SetEffectSpriteDurations() {
         d->m_18 = 3000;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup(
+    MapLookup(
+        m_world->m_soundRegistry->m_10,
         "GRUNTZ_DEATHZ_DEATHZELECTROCUTE1A",
-        reinterpret_cast<void*&>(d)
+        d
     );
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup(
+    MapLookup(
+        m_world->m_soundRegistry->m_10,
         "GRUNTZ_NERFGUNGRUNT_NERFGUNZGRUNTP1AS1",
-        reinterpret_cast<void*&>(d)
+        d
     );
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup(
+    MapLookup(
+        m_world->m_soundRegistry->m_10,
         "GRUNTZ_GUNHATGRUNT_GUNHATGRUNTP1AS1",
-        reinterpret_cast<void*&>(d)
+        d
     );
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup(
+    MapLookup(
+        m_world->m_soundRegistry->m_10,
         "GRUNTZ_WELDERGRUNT_WELDERZGRUNTP1AS1",
-        reinterpret_cast<void*&>(d)
+        d
     );
     if (d != 0) {
         d->m_18 = 1000;

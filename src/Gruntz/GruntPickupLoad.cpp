@@ -14,6 +14,7 @@
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/Play.h>         // CPlay (m_curState downcast; m_guts @+0x2dc)
 #include <Gruntz/StatusBarMgr.h> // CStatusBarMgr::GetActiveValue (the MEGAPHONE count path)
+#include <Utils/MapTyped.h> // typed MFC map lookups
 
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \

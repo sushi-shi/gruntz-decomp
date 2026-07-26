@@ -2144,9 +2144,10 @@ void CTriggerMgr::LoadFinishLevelSprite(i32 state) {
         case 1:
             if (m_phase != 2) {
                 LeafCue* p = 0;
-                m_world->m_soundRegistry->m_10.Lookup(
+                MapLookup(
+                    m_world->m_soundRegistry->m_10,
                     "GAME\\FINISHLEVEL",
-                    reinterpret_cast<void*&>(p)
+                    p
                 );
                 m_timerWindow = static_cast<u32>((p->m_10->m_durationMs + 500));
                 m_timerBase = g_frameTime;

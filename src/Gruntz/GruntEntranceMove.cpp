@@ -321,27 +321,30 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     if (mode == 1) {
         i32 r = GruntRand() % 0x1e1;
         if (r > 0x140) {
-            m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(
+            MapLookup(
+                m_38->OwnerMgr()->m_animRegistry->m_10,
                 s_GRUNTZ_ENTRANCEZ_ONE,
-                reinterpret_cast<void*&>(found)
+                found
             );
             if (onScreen) {
                 g->m_cueSink->SpawnVoiceDriver(this, 0x37a, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else if (r > 0xa0) {
-            m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(
+            MapLookup(
+                m_38->OwnerMgr()->m_animRegistry->m_10,
                 s_GRUNTZ_ENTRANCEZ_TWO,
-                reinterpret_cast<void*&>(found)
+                found
             );
             if (onScreen) {
                 g->m_cueSink->SpawnVoiceDriver(this, 0x37b, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else {
-            m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(
+            MapLookup(
+                m_38->OwnerMgr()->m_animRegistry->m_10,
                 s_GRUNTZ_ENTRANCEZ_THREE,
-                reinterpret_cast<void*&>(found)
+                found
             );
             if (onScreen) {
                 g->m_cueSink->SpawnVoiceDriver(this, 0x37c, -1, 0, -1, -1);
@@ -349,15 +352,17 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
             base = s_GRUNTZ_ENTRANCEZ;
         }
     } else if (mode == 2) {
-        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(
+        MapLookup(
+            m_38->OwnerMgr()->m_animRegistry->m_10,
             s_GRUNTZ_ENTRANCEZ_DROP,
-            reinterpret_cast<void*&>(found)
+            found
         );
         base = s_GRUNTZ_ENTRANCEZ_DROP;
     } else {
-        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(
+        MapLookup(
+            m_38->OwnerMgr()->m_animRegistry->m_10,
             s_GRUNTZ_ENTRANCEZ_RESSURECT,
-            reinterpret_cast<void*&>(found)
+            found
         );
         base = s_GRUNTZ_DEATHZ_MELT;
     }

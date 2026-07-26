@@ -22,6 +22,7 @@
 #include <Gruntz/SpotLightActReg.h> // CActRegPool<CSpotLight>::s_table (ex .cpp extern)
 #include <Gruntz/Random.h>          // ex Globals.h transitive
 #include <Gruntz/SpotLight.h>
+#include <Utils/MapTyped.h> // typed MFC map lookups
 VTBL(CSpotLight, 0x001e75bc);
 DATA(0x001ea3f0)
 const double g_spotRateNum = 3.1415927; // 0x5ea3f0
@@ -183,9 +184,10 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
                 i32 id;
                 s->Read(&id, 4);
                 CGameObject* out = 0;
-                i32 resolved = reg->m_world->m_childGroup->m_map48.Lookup(
+                i32 resolved = MapLookup(
+                    reg->m_world->m_childGroup->m_map48,
                     reinterpret_cast<void*>(id),
-                    reinterpret_cast<void*&>(out)
+                    out
                 );
                 if (resolved != 0) {
                     if (out == 0) {
