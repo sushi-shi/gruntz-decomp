@@ -1032,46 +1032,65 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
         switch (m_actionCode) {
             case 0x12f:
                 m_actionCode = 0x130;
-                break;
+            // The COMMIT block lives INSIDE the first case (retail fallthrough
+            // position at 0x113453); every other case in all five tool switches
+            // jumps here (the shared jmp-0x113453 targets).
+            commit: {
+                i32* flags = m_playerFlags;
+                flags[0] = 0;
+                flags[1] = 0;
+                flags[2] = 0;
+                flags[3] = 0;
+                if (playerSlot == 5) {
+                    m_playerFlags[0] = 1;
+                    m_playerFlags[1] = 1;
+                    m_playerFlags[2] = 1;
+                    m_playerFlags[3] = 1;
+                } else {
+                    m_playerFlags[playerSlot] = 1;
+                }
+                SetActionCode(m_actionCode);
+                return 1;
+            }
             case 0x132:
                 m_actionCode = 0x133;
-                break;
+                goto commit;
             case 0x138:
                 m_actionCode = 0x139;
-                break;
+                goto commit;
             case 0x13e:
                 m_actionCode = 0x13f;
-                break;
+                goto commit;
             case 0x144:
                 m_actionCode = 0x145;
-                break;
+                goto commit;
             case 0x130:
                 m_actionCode = 0x131;
-                break;
+                goto commit;
             case 0x133:
                 m_actionCode = 0x135;
-                break;
+                goto commit;
             case 0x134:
                 m_actionCode = 0x136;
-                break;
+                goto commit;
             case 0x139:
                 m_actionCode = 0x13b;
-                break;
+                goto commit;
             case 0x13a:
                 m_actionCode = 0x13c;
-                break;
+                goto commit;
             case 0x13f:
                 m_actionCode = 0x141;
-                break;
+                goto commit;
             case 0x140:
                 m_actionCode = 0x142;
-                break;
+                goto commit;
             case 0x145:
                 m_actionCode = 0x147;
-                break;
+                goto commit;
             case 0x146:
                 m_actionCode = 0x148;
-                break;
+                goto commit;
             default:
                 return 0;
         }
@@ -1083,7 +1102,7 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
             case 0x13e:
             case 0x144:
                 m_actionCode = 0x134;
-                break;
+                goto commit;
             case 0x130:
             case 0x133:
             case 0x134:
@@ -1094,7 +1113,7 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
             case 0x145:
             case 0x146:
                 m_actionCode = 0x137;
-                break;
+                goto commit;
             default:
                 return 0;
         }
@@ -1106,7 +1125,7 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
             case 0x13e:
             case 0x144:
                 m_actionCode = 0x13a;
-                break;
+                goto commit;
             case 0x130:
             case 0x133:
             case 0x134:
@@ -1117,7 +1136,7 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
             case 0x145:
             case 0x146:
                 m_actionCode = 0x13d;
-                break;
+                goto commit;
             default:
                 return 0;
         }
@@ -1129,7 +1148,7 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
             case 0x13e:
             case 0x144:
                 m_actionCode = 0x146;
-                break;
+                goto commit;
             case 0x130:
             case 0x133:
             case 0x134:
@@ -1140,7 +1159,7 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
             case 0x145:
             case 0x146:
                 m_actionCode = 0x149;
-                break;
+                goto commit;
             default:
                 return 0;
         }
@@ -1152,7 +1171,7 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
             case 0x13e:
             case 0x144:
                 m_actionCode = 0x140;
-                break;
+                goto commit;
             case 0x130:
             case 0x133:
             case 0x134:
@@ -1163,26 +1182,13 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
             case 0x145:
             case 0x146:
                 m_actionCode = 0x143;
-                break;
+                goto commit;
             default:
                 return 0;
         }
     }
 
-    m_playerFlags[0] = 0;
-    m_playerFlags[1] = 0;
-    m_playerFlags[2] = 0;
-    m_playerFlags[3] = 0;
-    if (playerSlot == 5) {
-        m_playerFlags[0] = 1;
-        m_playerFlags[1] = 1;
-        m_playerFlags[2] = 1;
-        m_playerFlags[3] = 1;
-    } else {
-        m_playerFlags[playerSlot] = 1;
-    }
-    SetActionCode(m_actionCode);
-    return 1;
+    goto commit;
 }
 
 RVA(0x00113860, 0x3b)
