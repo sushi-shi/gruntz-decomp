@@ -149,11 +149,13 @@ void MonoNewline() {
 // stores the 0x0720 immediate directly where cl hoists it into cx; the row/col=0 pair
 // reuses retail's zero reg. Same alias/hoist family as MonoNewline.
 RVA(0x00184db0, 0x28)
+// @early-stop
+// one row: SIB role swap ([eax+edx] vs [edx+eax*1]) - operand order can't steer it.
 void MonoClear() {
     i32 i = 0;
     do {
+        *reinterpret_cast<u16*>(g_monoBuffer + i) = 0x720;
         i += 2;
-        *reinterpret_cast<u16*>((g_monoBuffer + i - 2)) = 0x720;
     } while (i < 0xfa0);
     g_monoRow = 0;
     g_monoCol = 0;
