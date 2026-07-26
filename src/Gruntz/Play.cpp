@@ -3219,20 +3219,20 @@ GruntzPlayer::~GruntzPlayer() {
 // Deferred to the final sweep.
 RVA(0x000da870, 0xb8)
 i32 GruntzPlayer::SeedForSlot(i32 index) {
-    m_name = g_emptyString;
     m_playerIndex = index;
     m_slotKey = -2;
     m_liveGate = 0;
     m_joined = 0;
     m_014 = 1;
-    m_name = GetDefaultName();
-    m_008 = index;
+    m_name = g_emptyString;
+    m_focusY = 0;
     m_configId = 0;
     m_focusX = 0;
-    m_focusY = 0;
-    m_comboSel = 0xf;
     m_doneFlag = 0;
+    m_comboSel = 0xf;
+    m_008 = index;
     m_030 = 0;
+    m_name = GetDefaultName(0);
     m_latency = 0;
     m_230 = 0;
     return 1;
@@ -3415,7 +3415,7 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, i32 kind, i32 a3, i32 a4) {
 }
 
 RVA(0x000dafb0, 0x71)
-CString GruntzPlayer::GetDefaultName() {
+CString GruntzPlayer::GetDefaultName(i32) {
     // Retail builds a named local temp, then NRV-copies it into the return slot
     // (op= copy-ctor) and destructs the temp -> the /GX frame. A direct
     // `return CString("Player");` would NRV-construct in place (frameless).

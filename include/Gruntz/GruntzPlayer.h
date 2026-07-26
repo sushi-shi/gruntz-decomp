@@ -59,7 +59,7 @@ public:
     }
     i32 Serialize(CFileMemBase* ar, i32 kind, i32 a3, i32 a4); // 0x0dace0
     i32 Deactivate(); // 0x0db2f0 (ex "Cdb2f0::Finalize"; clears the board bundle + m_020)
-    static CString GetDefaultName(); // 0x0dafb0 (/GX, returns "Player")
+    CString GetDefaultName(i32); // 0x0dafb0 (/GX, returns "Player"; ret 0x8 = thiscall + 1 arg)
 
     i32 m_playerIndex;  // +0x000  = -1 (default) / index (seeded)
     CString m_name;     // +0x004  name ("Player")
