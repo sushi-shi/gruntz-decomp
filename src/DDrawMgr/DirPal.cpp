@@ -321,7 +321,7 @@ i32 CDDPalette::GetEntries() {
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x265, hr);
     }
-    return 0;
+    return 0; // retail falls off the end (eax residue); cl5 C2202 forbids fall-off
 }
 
 // CDDPalette::Apply (__thiscall, ret 4 but no real arg). When the readback cache

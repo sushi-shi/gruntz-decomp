@@ -2701,9 +2701,10 @@ i32 CTriggerMgr::SelectionListFind(i32 key, i32 y) {
 // type-descriptor (obj+0x7c) slot-4 matches the switch tag, then stop the three sound
 // channels (+0x3f0, +0x3f4, and the active grunt's +0x618).
 // @early-stop
-// regalloc wall: retail homes the row counter in ebp and the zero-compare const in ebx;
-// our cl swaps them (ebx counter, ebp zero). Code bytes + offsets byte-exact, externs
-// reloc-masked (DirectSoundMgr::StopAndRewind, ReadConfigFromButeMgr tag). topic:wall.
+// regalloc wall (98.8): retail homes the row counter in ebx and the zero const in ebp;
+// our cl swaps them. The list walk is the cur/next split (cur=node; node=node->m_next;
+// cur->m_obj - flipped 96.5 -> 98.8); the residual coloring swap is permute-immune.
+// Externs reloc-masked (DirectSoundMgr::StopAndRewind, ReadConfigFromButeMgr tag). topic:wall.
 RVA(0x0007d330, 0xd3)
 void CTriggerMgr::DestroyAllAnims() {
     CGrunt** cell = m_grid;
@@ -2725,8 +2726,9 @@ void CTriggerMgr::DestroyAllAnims() {
     CDDrawGroupNode* node =
         reinterpret_cast<CDDrawGroupNode*>(m_world->m_childGroup->m_list.GetHeadPosition());
     while (node != 0) {
-        CGameObject* obj = node->m_obj;
+        CDDrawGroupNode* cur = node;
         node = node->m_next;
+        CGameObject* obj = cur->m_obj;
         if (obj != 0) {
             AnimWorkerObj* desc = obj->m_7c;
             // the grunt-notify stamp: workers bound to grunt logic carry
