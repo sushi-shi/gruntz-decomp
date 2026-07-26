@@ -49,17 +49,20 @@ i32 CWarpStoneFly::Sync(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
             i32 index;
             arc->Read(name, 0x80);
             arc->Read(&index, 4);
-            if (strlen(name) == 0) {
-                m_sprite = 0;
-                return 1;
-            }
-            CObject* out = 0;
-            lvl->m_imageRegistry->m_10map.Lookup(name, out);
-            CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
-            if (rec == 0 || index < rec->m_minIndex || index > rec->m_maxIndex) {
-                m_sprite = 0;
+            if (strlen(name) != 0) {
+                i32 i = index;
+                CObject* out = 0;
+                lvl->m_imageRegistry->m_10map.Lookup(name, out);
+                CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
+                CImage* r;
+                if (rec != 0 && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
+                    r = static_cast<CImage*>(rec->m_items.GetAt(i));
+                } else {
+                    r = 0;
+                }
+                m_sprite = r;
             } else {
-                m_sprite = static_cast<CImage*>(rec->m_items.GetAt(index));
+                m_sprite = 0;
             }
         return 1;
     }
