@@ -20,6 +20,8 @@
 // size = the retail symbol stride; the string literal's implicit NUL + zero-fill
 // reproduce the trailing NUL padding exactly (verified byte-for-byte vs retail).
 // clang-format off
+wchar_t* s_cheat_1 = L"MPWAWAWAWAWAWA";
+
 DATA(0x0020c838)
 char s_cheat_20c838[20] = "\x8a\x8d\x94\x7e\x94\x7e\x94\x7e\x94\x7e\x94\x7e\x94\x7e"; // "MPWAWAWAWAWAWA"
 DATA(0x0020c84c)

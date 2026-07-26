@@ -63,14 +63,15 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
             u8* w = g_paletteRampBuf;
             u8* p = reinterpret_cast<u8*>(src) + sizeof(BITMAPFILEHEADER)
                     + sizeof(BITMAPINFOHEADER); // the BMP palette
+            i32 i = 0;
             do {
-                w[0] = p[2];
-                w[1] = p[1];
-                w[2] = p[0];
-                w[3] = 0;
+                g_paletteRampBuf[i] = p[2];
+                g_paletteRampBuf[i + 1] = p[1];
+                g_paletteRampBuf[i + 2] = p[0];
+                g_paletteRampBuf[i + 3] = 0;
                 p += 4;
-                w += 4;
-            } while (w < g_paletteRampBuf + 0x400);
+                i += 4;
+            } while (i < 0x400);
             pal = g_paletteRampBuf;
         } else if (curFmt == 8) {
             if (info->m_hasPalette != 0) {
@@ -142,51 +143,49 @@ void* CDDSurface::DecodeBmp(void* surf, void* buf, u32 size) {
     i32 width = ih->biWidth;
     i32 bitcount = ih->biBitCount;
     i32 height = ih->biHeight;
-    if (m_width != width) {
-        return 0;
-    }
-    if (m_height != height) {
-        return 0;
-    }
-    if (bitcount != 8 && bitcount != 0x18) {
-        return 0;
-    }
-
-    i32 remap = 0;
-    i32 palBpp = pal->m_palBpp;
-    if (palBpp != bitcount) {
-        remap = 1;
-    }
-    if (remap && palBpp == 8 && pal->m_hasPalette == 0) {
-        return 0;
-    }
-
-    void* palette = 0;
-    if (remap) {
-        if (bitcount == 8) {
-            u8* src = reinterpret_cast<u8*>(buf) + sizeof(BITMAPFILEHEADER)
-                      + sizeof(BITMAPINFOHEADER); // the BMP palette
-            u8* d = s_palBmp;
-            do {
-                d[0] = src[2];
-                d[1] = src[1];
-                d[2] = src[0];
-                d[3] = 0;
-                src += 4;
-                d += 4;
-            } while (d < s_palBmp + 0x400);
-            palette = s_palBmp;
+    if (m_width == width && m_height == height && (bitcount == 8 || bitcount == 0x18)) {
+        i32 remap = 0;
+        i32 palBpp = pal->m_palBpp;
+        if (palBpp != bitcount) {
+            remap = 1;
         }
-    } else if (palBpp == 8 && pal->m_hasPalette != 0) {
-        palette = pal->m_palette;
-    }
+        if (!remap || palBpp != 8 || pal->m_hasPalette != 0) {
+            void* palette = 0;
+            if (remap && bitcount == 8) {
+                u8* src = reinterpret_cast<u8*>(buf) + sizeof(BITMAPFILEHEADER)
+                          + sizeof(BITMAPINFOHEADER); // the BMP palette
+                i32 i = 0;
+                do {
+                    s_palBmp[i] = src[2];
+                    s_palBmp[i + 1] = src[1];
+                    s_palBmp[i + 2] = src[0];
+                    s_palBmp[i + 3] = 0;
+                    src += 4;
+                    i += 4;
+                } while (i < 0x400);
+                palette = s_palBmp;
+            } else if (remap && palBpp == 8) {
+                if (pal->m_hasPalette != 0) {
+                    palette = pal->m_palette;
+                } else {
+                    palette = 0;
+                }
+            }
 
-    void* pixels = reinterpret_cast<char*>(buf) + (static_cast<BITMAPFILEHEADER*>(buf))->bfOffBits;
-    if (remap) {
-        return Blit(pixels, bitcount, palette, 2) ? reinterpret_cast<void*>(1)
-                                                  : static_cast<void*>(0);
+            void* pixels =
+                reinterpret_cast<char*>(buf) + (static_cast<BITMAPFILEHEADER*>(buf))->bfOffBits;
+            if (remap) {
+                if (!Blit(pixels, bitcount, palette, 2)) {
+                    return 0;
+                }
+                return reinterpret_cast<void*>(1);
+            }
+            if (BlitDirect(pixels, 2)) {
+                return reinterpret_cast<void*>(1);
+            }
+        }
     }
-    return BlitDirect(pixels, 2) ? reinterpret_cast<void*>(1) : static_cast<void*>(0);
+    return 0;
 }
 
 RVA(0x00144110, 0x156)
@@ -592,17 +591,14 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, 
         if (srcFmt == 8) {
             // build the grayscale ramp from the source's trailing 0x300 palette
             u8* p = reinterpret_cast<u8*>(src) + len - 0x300;
-            u8* w = g_grayRamp + 1;
+            i32 i = 0;
             do {
-                w[-1] = *p;
-                ++p;
-                w[2] = *p;
-                ++p;
-                w[1] = *p;
-                ++p;
-                w[0] = 0;
-                w += 4;
-            } while (w < g_grayRamp + 0x401);
+                g_grayRamp[i] = *p++;
+                g_grayRamp[i + 1] = *p++;
+                g_grayRamp[i + 2] = *p++;
+                g_grayRamp[i + 3] = 0;
+                i += 4;
+            } while (i < 0x400);
             palette = g_grayRamp;
         } else if (curFmt == 8) {
             if (info->m_hasPalette != 0) {
@@ -691,100 +687,93 @@ i32 CDDSurface::LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode)
 
 RVA(0x00144ee0, 0x225)
 void* CDDSurface::DecodePcx(void* surf, void* buf, u32 size) {
-    if (!buf) {
-        return 0;
-    }
-    CDDrawPtrCollections* pal = static_cast<CDDrawPtrCollections*>(surf);
-    u8* hdr = static_cast<u8*>(buf);
-    i32 width = *reinterpret_cast<i16*>(hdr + 8) - *reinterpret_cast<i16*>(hdr + 4) + 1;
-    i32 height = *reinterpret_cast<i16*>(hdr + 0xa) - *reinterpret_cast<i16*>(hdr + 6) + 1;
-    u8 planes = hdr[0x41];
+    if (buf != 0) {
+        CDDrawPtrCollections* pal = static_cast<CDDrawPtrCollections*>(surf);
+        u8* hdr = static_cast<u8*>(buf);
+        i32 width = *reinterpret_cast<i16*>(hdr + 8) - *reinterpret_cast<i16*>(hdr + 4) + 1;
+        i32 height = *reinterpret_cast<i16*>(hdr + 0xa) - *reinterpret_cast<i16*>(hdr + 6) + 1;
+        u8 planes = hdr[0x41];
 
-    i32 bitcount = 0;
-    if (planes == 1) {
-        bitcount = 8;
-    } else if (planes == 3) {
-        bitcount = 0x18;
-    }
-    if (bitcount == 0) {
-        return 0;
-    }
-    if (m_width != width) {
-        return 0;
-    }
-    if (m_height != height) {
-        return 0;
-    }
-
-    i32 remap = 0;
-    i32 palBpp = pal->m_palBpp;
-    if (palBpp != bitcount) {
-        remap = 1;
-    }
-    if (remap && palBpp == 8 && pal->m_hasPalette == 0) {
-        return 0;
-    }
-
-    void* palette = 0;
-    if (remap) {
-        if (bitcount == 8) {
-            u8* src = reinterpret_cast<u8*>(buf) + size - 0x300;
-            u8* d = s_palPcx;
-            do {
-                d[0] = *src++;
-                d[1] = *src++;
-                d[2] = *src++;
-                d[3] = 0;
-                d += 4;
-            } while (d < s_palPcx + 0x400);
-            palette = s_palPcx;
-        } else if (palBpp == 8 && pal->m_hasPalette != 0) {
-            palette = pal->m_palette;
+        i32 bitcount = 0;
+        if (planes == 1) {
+            bitcount = 8;
+        } else if (planes == 3) {
+            bitcount = 0x18;
         }
-    }
-
-    u8* pixels = reinterpret_cast<u8*>(buf) + PCX_HEADER_SIZE;
-    i32 ok;
-    void* decoded = 0;
-    if (!remap) {
-        if (bitcount == 8) {
-            ok = DecodeRun8(pixels);
-        } else {
-            ok = DecodeRun24(pixels);
-        }
-        if (!ok) {
-            return 0;
-        }
-    } else {
-        if (bitcount == 8) {
-            decoded = operator new(width * height);
-            if (!decoded) {
-                return 0;
+        if (bitcount != 0 && m_width == width && m_height == height) {
+            i32 remap = 0;
+            i32 palBpp = pal->m_palBpp;
+            if (palBpp != bitcount) {
+                remap = 1;
             }
-            ok = RunDecode1(decoded, pixels, width, height);
-        } else {
-            decoded = operator new(width * height * 3);
-            if (!decoded) {
-                return 0;
-            }
-            ok = RunDecode3(decoded, pixels, width, height);
-        }
-        if (!ok) {
-            operator delete(decoded);
-            return 0;
-        }
-    }
+            if (!remap || palBpp != 8 || pal->m_hasPalette != 0) {
+                void* palette = 0;
+                if (remap && bitcount == 8) {
+                    u8* src = reinterpret_cast<u8*>(buf) + size - 0x300;
+                    i32 i = 0;
+                    do {
+                        s_palPcx[i] = *src++;
+                        s_palPcx[i + 1] = *src++;
+                        s_palPcx[i + 2] = *src++;
+                        s_palPcx[i + 3] = 0;
+                        i += 4;
+                    } while (i < 0x400);
+                    palette = s_palPcx;
+                } else if (remap && palBpp == 8) {
+                    if (pal->m_hasPalette != 0) {
+                        palette = pal->m_palette;
+                    } else {
+                        palette = 0;
+                    }
+                }
 
-    if (remap) {
-        if (!Blit(decoded, bitcount, palette, 1)) {
-            operator delete(decoded);
-            return 0;
+                u8* pixels = reinterpret_cast<u8*>(buf) + PCX_HEADER_SIZE;
+                i32 ok;
+                void* decoded = 0;
+                if (!remap) {
+                    if (bitcount == 8) {
+                        if (!DecodeRun8(pixels)) {
+                            return 0;
+                        }
+                    } else {
+                        if (!DecodeRun24(pixels)) {
+                            return 0;
+                        }
+                    }
+                } else {
+                    if (bitcount == 8) {
+                        decoded = operator new(width * height);
+                        if (decoded == 0) {
+                            return 0;
+                        }
+                        ok = RunDecode1(decoded, pixels, width, height);
+                    } else {
+                        decoded = operator new(width * height * 3);
+                        if (decoded == 0) {
+                            return 0;
+                        }
+                        ok = RunDecode3(decoded, pixels, width, height);
+                    }
+                    if (!ok) {
+                        operator delete(decoded);
+                        return 0;
+                    }
+                }
+
+                if (remap) {
+                    if (!Blit(decoded, bitcount, palette, 1)) {
+                        operator delete(decoded);
+                        return 0;
+                    }
+                }
+                if (decoded) {
+                    operator delete(decoded);
+                }
+                return reinterpret_cast<void*>(1);
+            }
         }
     }
-    if (decoded) {
-        operator delete(decoded);
-    }
-    return reinterpret_cast<void*>(1);
+    return 0;
 }
 
 RVA(0x00145110, 0x156)
@@ -1044,14 +1033,14 @@ i32 CDDSurface::DecodePcxData(void* surf, void* buf, i32 size, i32 a4, i32 a5) {
             return 0;
         }
         u8* src = hdr + size - 0x300;
-        u8* d = s_palPcxData;
+        i32 i = 0;
         do {
-            d[0] = *src++;
-            d[1] = *src++;
-            d[2] = *src++;
-            d[3] = 0;
-            d += 4;
-        } while (d < s_palPcxData + 0x400);
+            s_palPcxData[i] = *src++;
+            s_palPcxData[i + 1] = *src++;
+            s_palPcxData[i + 2] = *src++;
+            s_palPcxData[i + 3] = 0;
+            i += 4;
+        } while (i < 0x400);
         palette = s_palPcxData;
     } else {
         if (remap) {
@@ -1128,83 +1117,80 @@ RVA(0x00145b10, 0x1b5)
 void* CDDSurface::DecodePid(void* surf, void* buf, u32 size, void* surf2) {
     CDDrawPtrCollections* pal = static_cast<CDDrawPtrCollections*>(surf);
     u8* hdr = static_cast<u8*>(buf);
-    i32 flags = *reinterpret_cast<i32*>((hdr + 4));
-    i32 width = *reinterpret_cast<i32*>((hdr + 8));
-    i32 height = *reinterpret_cast<i32*>((hdr + 0xc));
-    u8* data = hdr + 0x20;
+    u8* p = hdr + 4;
+    i32 flags = *reinterpret_cast<i32*>(p);
+    p += 4;
+    i32 width = *reinterpret_cast<i32*>(p);
+    i32 height = *reinterpret_cast<i32*>(p + 4);
+    p += 4;
+    p += 0x14; // p -> the pixel data
 
-    if (width & 3) {
-        return 0;
-    }
-    if (m_width != width) {
-        return 0;
-    }
-    if (m_height != height) {
-        return 0;
-    }
+    if (!(width & 3) && m_width == width && m_height == height) {
+        void* palette = 0;
+        i32 remap = 0;
+        i32 hasPal = pal->m_hasPalette;
+        if (hasPal != 0) {
+            palette = pal->m_palette;
+        }
+        i32 palBpp = pal->m_palBpp;
+        if (palBpp != 8) {
+            remap = 1;
+        }
 
-    void* palette = 0;
-    if (pal->m_hasPalette != 0) {
-        palette = pal->m_palette;
-    }
-    i32 remap = 0;
-    i32 palBpp = pal->m_palBpp;
-    if (palBpp != 8) {
-        remap = 1;
-    }
+        if (flags & PID_EMBEDDED_PALETTE) {
+            if (size <= 0x300) {
+                return 0;
+            }
+            u8* src = reinterpret_cast<u8*>(buf) + size - 0x300;
+            i32 i = 0;
+            do {
+                s_palPidData[i] = *src++;
+                s_palPidData[i + 1] = *src++;
+                s_palPidData[i + 2] = *src++;
+                s_palPidData[i + 3] = 0;
+                i += 4;
+            } while (i < 0x400);
+            palette = s_palPidData;
+        } else if (remap) {
+            if (palette == 0) {
+                return 0;
+            }
+            if (remap && palBpp == 8 && hasPal == 0) {
+                return 0;
+            }
+        }
 
-    if (flags & PID_EMBEDDED_PALETTE) {
-        if (size <= 0x300) {
-            return 0;
+        void* decoded = 0;
+        if (!remap) {
+            if (!DecodeRun8(p)) {
+                return 0;
+            }
+        } else {
+            decoded = operator new(height * width);
+            if (!decoded) {
+                return 0;
+            }
+            if (!RunDecode1(decoded, p, width, height)) {
+                operator delete(decoded);
+                return 0;
+            }
         }
-        u8* src = reinterpret_cast<u8*>(buf) + size - 0x300;
-        u8* d = s_palPidData;
-        do {
-            d[0] = *src++;
-            d[1] = *src++;
-            d[2] = *src++;
-            d[3] = 0;
-            d += 4;
-        } while (d < s_palPidData + 0x400);
-        palette = s_palPidData;
-    } else if (remap) {
-        if (palette == 0) {
-            return 0;
-        }
-        if (palBpp == 8 && pal->m_hasPalette == 0) {
-            return 0;
-        }
-    }
 
-    void* decoded = 0;
-    if (!remap) {
-        if (!DecodeRun8(data)) {
-            return 0;
+        if (remap) {
+            if (!Blit(decoded, 8, palette, 1)) {
+                operator delete(decoded);
+                return 0;
+            }
         }
-    } else {
-        decoded = operator new(height * width);
-        if (!decoded) {
-            return 0;
-        }
-        if (!RunDecode1(decoded, data, width, height)) {
+        if (decoded) {
             operator delete(decoded);
-            return 0;
         }
-    }
-
-    if (remap) {
-        if (!Blit(decoded, 8, palette, 1)) {
-            operator delete(decoded);
-            return 0;
+        if (flags & PID_TRANSPARENCY) {
+            FillPalette(reinterpret_cast<u32>(surf2));
         }
+        return reinterpret_cast<void*>(1);
     }
-    if (decoded) {
-        operator delete(decoded);
-    }
-    if (flags & PID_TRANSPARENCY) {
-        FillPalette(reinterpret_cast<u32>(surf2));
-    }
-    return reinterpret_cast<void*>(1);
+    return 0;
 }
 
 RVA(0x00145cd0, 0x130)
