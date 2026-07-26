@@ -12,13 +12,17 @@ const float g_c20 = 0.5f; // retail rdata (owner def)
 DATA(0x001efb24)
 float g_c24 = -3.1415927f; // 0x5efb24  -pi (owner-TU def; len = sqrt(dx*dx+dy*dy - g_c24))
 
+// Retail inlined the transcendentals (/Oi alone does not intrinsify them in cl5;
+// the pragma does).
+#pragma intrinsic(atan2, sin, cos, sqrt, fabs)
+
 // @early-stop
-// intrinsic-FPU wall: retail inlined fpatan/fsin/fcos/fsqrt (/Oi) into one fxch-
-// scheduled FPU block writing the workspace; the base TU (no /Oi) lowers atan2/sin/
-// cos/sqrt to CRT calls, so the transform body diverges structurally even though the
-// deltas, the four-vertex rotation, the workspace writes and the build/draw helper
-// calls are the correct shape. Re-attack in the final sweep once an /Oi-intrinsic
-// flag profile exists.
+// x87-spill wall (37.5): the transcendentals NOW inline (the #pragma intrinsic
+// above - fpatan/fsin/fcos/fsqrt match retail). Remaining: our 7 double locals
+// spill to an 8-aligned ebp frame (`and esp,-8`) while retail keeps the whole
+// transform on the x87 stack, frameless. Needs the FP-temp restructure (fewer
+// live doubles across statements); the deltas/rotation/workspace/build-draw
+// calls are the correct shape.
 RVA(0x001471d0, 0x1b4)
 i32 ProjectWallQuad(
     CDDSurface* surface,
