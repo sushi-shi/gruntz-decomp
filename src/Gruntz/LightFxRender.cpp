@@ -317,7 +317,7 @@ void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
     i32 w = r->right - r->left + 1;
     // Top edge (m_surface reloaded per block, matching the retail spill of `this`).
     u16* tp = reinterpret_cast<u16*>(
-        (reinterpret_cast<char*>(base) + r->top * m_surface->m_pitch
+        (static_cast<char*>(base) + r->top * m_surface->m_pitch
          + r->left * m_surface->m_bytesPerPixel)
     );
     for (i32 t = 0; t < w; t++) {
@@ -325,7 +325,7 @@ void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
     }
     // Bottom edge.
     u16* bp = reinterpret_cast<u16*>(
-        (reinterpret_cast<char*>(base) + r->bottom * m_surface->m_pitch
+        (static_cast<char*>(base) + r->bottom * m_surface->m_pitch
          + r->left * m_surface->m_bytesPerPixel)
     );
     for (i32 b = 0; b < w; b++) {
@@ -333,9 +333,9 @@ void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
     }
     // Left / right edges (column step = m_pitch per row).
     i32 h = r->bottom - r->top + 1;
-    char* lp = reinterpret_cast<char*>(base) + r->left * m_surface->m_bytesPerPixel
+    char* lp = static_cast<char*>(base) + r->left * m_surface->m_bytesPerPixel
                + r->top * m_surface->m_pitch;
-    char* rp = reinterpret_cast<char*>(base) + r->right * m_surface->m_bytesPerPixel
+    char* rp = static_cast<char*>(base) + r->right * m_surface->m_bytesPerPixel
                + r->top * m_surface->m_pitch;
     for (i32 v = 0; v < h; v++) {
         *reinterpret_cast<u16*>(lp) = static_cast<u16>(color);

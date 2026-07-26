@@ -786,7 +786,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     }
     u8 opcode = *static_cast<u8*>(rec);
     i32 odd = opcode & 1;
-    char* p = reinterpret_cast<char*>(rec) + 1;
+    char* p = static_cast<char*>(rec) + 1;
     if (m_state != 3) {
         return 1;
     }

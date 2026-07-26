@@ -47,7 +47,7 @@ CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
                     static_cast<LPCTSTR>(sub)
                 );
             }
-            void* res = reinterpret_cast<void*>((reinterpret_cast<CSymParser*>(m_owner->m_34))
+            void* res = static_cast<void*>((reinterpret_cast<CSymParser*>(m_owner->m_34))
                                                     ->ResolveQualified(
                                                         static_cast<LPCTSTR>(name),
                                                         reinterpret_cast<void*>(0x574156)

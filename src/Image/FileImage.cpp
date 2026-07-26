@@ -138,7 +138,7 @@ RVA(0x00143fc0, 0x142)
 void* CDDSurface::DecodeBmp(void* surf, void* buf, u32 size) {
     CDDrawPtrCollections* pal = static_cast<CDDrawPtrCollections*>(surf);
     BITMAPINFOHEADER* ih = reinterpret_cast<BITMAPINFOHEADER*>(
-        reinterpret_cast<char*>(buf) + sizeof(BITMAPFILEHEADER)
+        static_cast<char*>(buf) + sizeof(BITMAPFILEHEADER)
     );
     i32 width = ih->biWidth;
     i32 bitcount = ih->biBitCount;
@@ -152,7 +152,7 @@ void* CDDSurface::DecodeBmp(void* surf, void* buf, u32 size) {
         if (!remap || palBpp != 8 || pal->m_hasPalette != 0) {
             void* palette = 0;
             if (remap && bitcount == 8) {
-                u8* src = reinterpret_cast<u8*>(buf) + sizeof(BITMAPFILEHEADER)
+                u8* src = static_cast<u8*>(buf) + sizeof(BITMAPFILEHEADER)
                           + sizeof(BITMAPINFOHEADER); // the BMP palette
                 i32 i = 0;
                 do {
@@ -173,7 +173,7 @@ void* CDDSurface::DecodeBmp(void* surf, void* buf, u32 size) {
             }
 
             void* pixels =
-                reinterpret_cast<char*>(buf) + (static_cast<BITMAPFILEHEADER*>(buf))->bfOffBits;
+                static_cast<char*>(buf) + (static_cast<BITMAPFILEHEADER*>(buf))->bfOffBits;
             if (remap) {
                 if (!Blit(pixels, bitcount, palette, 2)) {
                     return 0;
@@ -720,7 +720,7 @@ void* CDDSurface::DecodePcx(void* surf, void* buf, u32 size) {
             if (!remap || palBpp != 8 || pal->m_hasPalette != 0) {
                 void* palette = 0;
                 if (remap && bitcount == 8) {
-                    u8* src = reinterpret_cast<u8*>(buf) + size - 0x300;
+                    u8* src = static_cast<u8*>(buf) + size - 0x300;
                     i32 i = 1;
                     do {
                         s_palPcx[i - 1] = *src++;
@@ -738,7 +738,7 @@ void* CDDSurface::DecodePcx(void* surf, void* buf, u32 size) {
                     }
                 }
 
-                u8* pixels = reinterpret_cast<u8*>(buf) + PCX_HEADER_SIZE;
+                u8* pixels = static_cast<u8*>(buf) + PCX_HEADER_SIZE;
                 i32 ok;
                 void* decoded = 0;
                 if (!remap) {
@@ -844,7 +844,7 @@ i32 CDDSurface::RunDecode1(void* dstBuf, void* src, i32 width, i32 height) {
     sp = static_cast<u8*>(src);
     dst = 0;
     for (row = 0; row < height; row++) {
-        dst = reinterpret_cast<u8*>(dstBuf) + width * row;
+        dst = static_cast<u8*>(dstBuf) + width * row;
         cols = width;
         if (carry > 0) {
             for (k = 0; k < carry; k++) {
@@ -909,7 +909,7 @@ i32 CDDSurface::RunDecode3(void* dstBuf, void* src, i32 width, i32 height) {
     dst = 0;
     for (row = 0; row < height; row++) {
         base = row * width * 3;
-        dst = reinterpret_cast<u8*>(dstBuf) + base;
+        dst = static_cast<u8*>(dstBuf) + base;
         cols = width;
         if (carry > 0) {
             for (k = 0; k < carry; k++) {
@@ -941,7 +941,7 @@ i32 CDDSurface::RunDecode3(void* dstBuf, void* src, i32 width, i32 height) {
                 cols--;
             }
         }
-        dst = reinterpret_cast<u8*>(dstBuf) + base + 1;
+        dst = static_cast<u8*>(dstBuf) + base + 1;
         cols = width;
         if (carry > 0) {
             for (k = 0; k < carry; k++) {
@@ -973,7 +973,7 @@ i32 CDDSurface::RunDecode3(void* dstBuf, void* src, i32 width, i32 height) {
                 cols--;
             }
         }
-        dst = reinterpret_cast<u8*>(dstBuf) + base + 2;
+        dst = static_cast<u8*>(dstBuf) + base + 2;
         cols = width;
         if (carry > 0) {
             for (k = 0; k < carry; k++) {
@@ -1152,7 +1152,7 @@ void* CDDSurface::DecodePid(void* surf, void* buf, u32 size, void* surf2) {
             if (size <= 0x300) {
                 return 0;
             }
-            u8* src = reinterpret_cast<u8*>(buf) + size - 0x300;
+            u8* src = static_cast<u8*>(buf) + size - 0x300;
             i32 i = 0;
             do {
                 s_palPidData[i] = *src++;

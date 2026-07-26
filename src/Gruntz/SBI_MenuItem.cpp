@@ -183,7 +183,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
             // the cue map is the Ptr band (void* values), so the element read is a
             // plain from-void cast, not a class-to-class cross-cast.
             mh->m_10.Lookup("GAME_TABHIGHLIGHT2", foundP);
-            found = reinterpret_cast<LeafCue*>(foundP);
+            found = static_cast<LeafCue*>(foundP);
             if (found) {
                 i32 gate = g_sndEnabled;
                 i32 item = g_sndCueTag;

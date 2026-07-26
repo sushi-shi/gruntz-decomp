@@ -499,7 +499,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
         return 0;
     }
     i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
-    char* fill = reinterpret_cast<char*>(p) + oldbytes;
+    char* fill = static_cast<char*>(p) + oldbytes;
     m_grown = hinew - m_hi;
     m_alloc = fill;
     memset(fill, 0, m_grown * m_stride);

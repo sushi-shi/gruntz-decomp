@@ -1293,7 +1293,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
                 if (rec == 0) {
                     return 0;
                 }
-                *reinterpret_cast<i32*>((reinterpret_cast<char*>(rec) + 4)) = desc.m_00;
+                *reinterpret_cast<i32*>((static_cast<char*>(rec) + 4)) = desc.m_00;
                 // 0x159830 == CDDrawChildGroup::AttachSprite (the manager IS the factory)
                 if (AttachSprite(
                         static_cast<CWwdGameObject*>(rec),

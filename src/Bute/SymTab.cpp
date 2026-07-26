@@ -792,10 +792,10 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
                 arr = ::operator new(static_cast<u32>((reinterpret_cast<i32>(f6) * 4)));
                 for (i32 i = reinterpret_cast<i32>(f6); i != 0; i--) {
                     *static_cast<void**>(arr) = *reinterpret_cast<void**>(p);
-                    arr = reinterpret_cast<char*>(arr) + 4;
+                    arr = static_cast<char*>(arr) + 4;
                     p += 4;
                 }
-                arr = reinterpret_cast<char*>(arr) - reinterpret_cast<i32>(f6) * 4;
+                arr = static_cast<char*>(arr) - reinterpret_cast<i32>(f6) * 4;
             } else {
                 arr = 0;
             }

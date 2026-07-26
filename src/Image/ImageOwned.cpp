@@ -321,12 +321,12 @@ i32 CDDrawShadeBlit::Decompress(void* dest) {
     i32 cursor = 0;
     for (i32 y = 0; y < m_height;) {
         if (m_rleData[cursor] & 0x80) {
-            memset(reinterpret_cast<u8*>(dest) + y * m_width + x, fill, m_rleData[cursor] - 0x80);
+            memset(static_cast<u8*>(dest) + y * m_width + x, fill, m_rleData[cursor] - 0x80);
             x += m_rleData[cursor] - 0x80;
             cursor += 1;
         } else {
             memcpy(
-                reinterpret_cast<u8*>(dest) + y * m_width + x,
+                static_cast<u8*>(dest) + y * m_width + x,
                 m_rleData + cursor + 1,
                 m_rleData[cursor]
             );

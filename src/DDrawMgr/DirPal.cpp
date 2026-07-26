@@ -17,7 +17,7 @@ i32 CDDPalette::Create(IDirectDraw2* dd, void* entries, u32 flags) {
     // the base) - a 1-byte-per-insn encoding choice, semantically identical.
     for (i32 i = 0; i < 0x400; i += 4) {
         *reinterpret_cast<i32*>((m_cacheA + i)) =
-            *reinterpret_cast<i32*>((reinterpret_cast<char*>(entries) + i));
+            *reinterpret_cast<i32*>((static_cast<char*>(entries) + i));
     }
     m_cacheB = static_cast<u8*>(::operator new(0x400));
     i32 hr = dd->CreatePalette(flags, static_cast<LPPALETTEENTRY>(entries), &m_palette, 0);
@@ -168,7 +168,7 @@ i32 CDDPalette::CreateFromTrailing(IDirectDraw2* dd, void* data, u32 size, u32 f
         return 0;
     }
     u8 entries[0x400];
-    u8* src = reinterpret_cast<u8*>(data) + size - 0x300;
+    u8* src = static_cast<u8*>(data) + size - 0x300;
     // Per-byte src increment (`*src++`) + a running dst pointer reproduce retail's
     // `inc eax`x3 / `add edx,4` loop shape (vs the `src+=3` bulk-add form).
     u8* dst = entries;

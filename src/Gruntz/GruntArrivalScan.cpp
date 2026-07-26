@@ -615,7 +615,7 @@ i32 CGrunt::WanderStep() {
                     do {
                         void* cur = node;
                         node = *static_cast<void**>(node);
-                        i32 data = *reinterpret_cast<i32*>((reinterpret_cast<char*>(cur) + 8));
+                        i32 data = *reinterpret_cast<i32*>((static_cast<char*>(cur) + 8));
                         if (data != 0) {
                             g_coordPool.Push(reinterpret_cast<void*>((data)));
                         }
@@ -669,7 +669,7 @@ i32 CGrunt::WanderStep() {
                     do {
                         void* cur = node;
                         node = *static_cast<void**>(node);
-                        i32 data = *reinterpret_cast<i32*>((reinterpret_cast<char*>(cur) + 8));
+                        i32 data = *reinterpret_cast<i32*>((static_cast<char*>(cur) + 8));
                         if (data != 0) {
                             CoordPoolNode* fslot =
                                 g_coordPool.NodeOf(reinterpret_cast<void*>(data));

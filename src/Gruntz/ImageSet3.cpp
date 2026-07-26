@@ -36,7 +36,7 @@ i32 CImageSet3::GetStride() {
 // ecx (one fewer move). Logic + memcpy byte-exact; not source-steerable.
 RVA(0x00166d70, 0x8d)
 i32 CImageSet3::Parse(void* record) {
-    i32* p = reinterpret_cast<i32*>((reinterpret_cast<char*>(record) + 8));
+    i32* p = reinterpret_cast<i32*>((static_cast<char*>(record) + 8));
     i32 w = *p++;
     m_width = w;
     i32 h = *p++;

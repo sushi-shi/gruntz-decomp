@@ -47,7 +47,7 @@ i32 zBitVec::EnsureSize(i32 nbits) {
             goto fail;
         }
         u32 oldn = static_cast<u32>(m_capacity) >> 5;
-        memset(reinterpret_cast<u32*>(nbuf) + oldn, 0, (ndwords - oldn) * 4);
+        memset(static_cast<u32*>(nbuf) + oldn, 0, (ndwords - oldn) * 4);
     } else {
         nbuf = malloc(ndwords * 4);
         if (!nbuf) {

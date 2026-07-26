@@ -869,7 +869,7 @@ void CProjectile::ScanTargets(i32 impact) {
             i32 keyY = g->m_tileOwnerLo;
             for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
                 // MFC CPtrList stores the raw Coord payloads; GetNext returns void*
-                Coord* k = reinterpret_cast<Coord*>(m_hitList.GetNext(pos));
+                Coord* k = static_cast<Coord*>(m_hitList.GetNext(pos));
                 if (k->m_x == keyX && k->m_y == keyY) {
                     return;
                 }

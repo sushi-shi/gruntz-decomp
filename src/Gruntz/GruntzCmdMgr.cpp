@@ -258,7 +258,7 @@ i32 CGruntzCommand::SetMaskFromList(char a0, char a1, char a2, i16 a3, i16 a4, i
 // ---------------------------------------------------------------------------
 RVA(0x00023f90, 0x48)
 i32 CGruntzSingleCommand::Parse(void* data, i32 /*len*/) {
-    char* buf = reinterpret_cast<char*>(data) + 1; // skip the tag byte
+    char* buf = static_cast<char*>(data) + 1; // skip the tag byte
     m_targetIndex = *buf++;
     m_5 = *buf++;
     m_targetType = *buf++;
@@ -286,7 +286,7 @@ i32 CGruntzSingleCommand::Parse(void* data, i32 /*len*/) {
 // ---------------------------------------------------------------------------
 RVA(0x00024000, 0x3e)
 i32 CGruntzMultiCommand::Parse(void* data, i32 /*len*/) {
-    char* buf = reinterpret_cast<char*>(data) + 1; // skip the tag byte
+    char* buf = static_cast<char*>(data) + 1; // skip the tag byte
     m_targetIndex = *buf++;
     m_5 = *buf++;
     m_targetType = *buf++;

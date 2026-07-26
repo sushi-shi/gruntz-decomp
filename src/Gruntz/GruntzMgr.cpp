@@ -1129,7 +1129,7 @@ i32 CGruntzMgr::PopTopIfMatches(CState* s) {
     if (n <= 0) {
         return 0;
     }
-    CState* top = reinterpret_cast<CState*>(m_stateStack.GetAt(n - 1));
+    CState* top = static_cast<CState*>(m_stateStack.GetAt(n - 1));
     m_stateStack.RemoveAt(n - 1, 1);
     return top == s;
 }
@@ -1137,7 +1137,7 @@ i32 CGruntzMgr::PopTopIfMatches(CState* s) {
 RVA(0x00090a50, 0x40)
 void CGruntzMgr::ClearStateStack() {
     for (i32 i = 0; i < m_stateStack.GetSize(); i++) {
-        CState* s = reinterpret_cast<CState*>(m_stateStack.GetAt(i));
+        CState* s = static_cast<CState*>(m_stateStack.GetAt(i));
         if (s) {
             delete s;
         }
@@ -1889,7 +1889,7 @@ i32 CGruntzMgr::IsLobbyHostReady() {
 RVA(0x0008e880, 0x27)
 i32 CGruntzMgr::RegisterSetSkillDebugCmd() {
     if (m_curState->Update() == GAMESTATE_PLAY) {
-        RunModalDialog("DEBUG_SETSKILL", reinterpret_cast<void*>(&LevelNumberDialogProc8e8c0), 1);
+        RunModalDialog("DEBUG_SETSKILL", static_cast<void*>(&LevelNumberDialogProc8e8c0), 1);
     }
     return 0;
 }

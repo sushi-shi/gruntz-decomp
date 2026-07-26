@@ -465,7 +465,7 @@ RVA(0x00142120, 0x31)
 void CDDrawPtrCollections::EmptyPoolA() {
     POSITION pos = m_poolA.GetHeadPosition();
     while (pos) {
-        CDDSurface* item = reinterpret_cast<CDDSurface*>(m_poolA.GetNext(pos));
+        CDDSurface* item = static_cast<CDDSurface*>(m_poolA.GetNext(pos));
         delete item;
     }
     m_poolA.RemoveAll();
@@ -738,7 +738,7 @@ RVA(0x00142ed0, 0x3d)
 void CDDrawPtrCollections::EmptyPoolB() {
     POSITION pos = m_poolB.GetHeadPosition();
     while (pos) {
-        CDDPalette* item = reinterpret_cast<CDDPalette*>(m_poolB.GetNext(pos));
+        CDDPalette* item = static_cast<CDDPalette*>(m_poolB.GetNext(pos));
         if (item) {
             item->Destroy();
             ::operator delete(item);
@@ -929,7 +929,7 @@ CDdModePair CDDrawPtrCollections::FindMatch(u32 k0, u32 k1, i32 k2) {
         r.a = -1;
         r.b = -1;
     } else {
-        CDdMode* e = reinterpret_cast<CDdMode*>(m_poolItems.GetData()[idx]);
+        CDdMode* e = static_cast<CDdMode*>(m_poolItems.GetData()[idx]);
         r.a = e->m_c;
         r.b = e->m_8;
     }
@@ -940,7 +940,7 @@ RVA(0x00143470, 0x47)
 i32 CDDrawPtrCollections::FindLast(u32 k0, u32 k1, i32 k2) {
     i32 r = -1;
     for (i32 i = m_poolItems.GetSize() - 1; i >= 0; i--) {
-        CDdMode* e = reinterpret_cast<CDdMode*>(m_poolItems.GetData()[i]);
+        CDdMode* e = static_cast<CDdMode*>(m_poolItems.GetData()[i]);
         if (e->m_c >= k0 && e->m_8 >= k1 && e->m_54 == k2) {
             r = i;
         }
@@ -951,7 +951,7 @@ i32 CDDrawPtrCollections::FindLast(u32 k0, u32 k1, i32 k2) {
 RVA(0x001434c0, 0x45)
 i32 CDDrawPtrCollections::FindIndex(i32 k0, i32 k1, i32 k2) {
     for (i32 i = 0; i < m_poolItems.GetSize(); i++) {
-        CDdMode* e = reinterpret_cast<CDdMode*>(m_poolItems.GetData()[i]);
+        CDdMode* e = static_cast<CDdMode*>(m_poolItems.GetData()[i]);
         if (e->m_c == static_cast<u32>(k0) && e->m_8 == static_cast<u32>(k1) && e->m_54 == k2) {
             return i;
         }
@@ -969,7 +969,7 @@ CDdModePair CDDrawPtrCollections::FindFwd(i32 k0, i32 k1, i32 k2) {
         idx++;
         if (idx < m_poolItems.GetSize()) {
             for (; idx < m_poolItems.GetSize(); idx++) {
-                CDdMode* e = reinterpret_cast<CDdMode*>(m_poolItems.GetData()[idx]);
+                CDdMode* e = static_cast<CDdMode*>(m_poolItems.GetData()[idx]);
                 if (e->m_54 == k2) {
                     r.a = e->m_c;
                     r.b = e->m_8;
@@ -992,7 +992,7 @@ CDdModePair CDDrawPtrCollections::FindBack(i32 k0, i32 k1, i32 k2) {
         idx--;
         if (idx >= 0) {
             for (; idx >= 0; idx--) {
-                CDdMode* e = reinterpret_cast<CDdMode*>(m_poolItems.GetData()[idx]);
+                CDdMode* e = static_cast<CDdMode*>(m_poolItems.GetData()[idx]);
                 if (e->m_54 == k2) {
                     r.a = e->m_c;
                     r.b = e->m_8;

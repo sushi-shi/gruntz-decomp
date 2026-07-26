@@ -32,7 +32,7 @@ public:
     // minus m_linkOffset is its CoordPoolNode. m_linkOffset is a RUNTIME field (the
     // pool's design), so the arithmetic lives here once, not open-coded per site.
     CoordPoolNode* NodeOf(void* payload) {
-        return reinterpret_cast<CoordPoolNode*>(reinterpret_cast<char*>(payload) - m_linkOffset);
+        return reinterpret_cast<CoordPoolNode*>(static_cast<char*>(payload) - m_linkOffset);
     }
 
     CoordPoolNode* m_block;    // +0x00  owned backing block

@@ -76,7 +76,7 @@ RVA(0x00174f60, 0x37)
 void CImagePool::ClearSurfaces() {
     POSITION pos = m_surfaces.GetHeadPosition();
     while (pos) {
-        CRezImage* item = reinterpret_cast<CRezImage*>(m_surfaces.GetNext(pos));
+        CRezImage* item = static_cast<CRezImage*>(m_surfaces.GetNext(pos));
         if (item) {
             item->Free();
             ::operator delete(item);
@@ -89,7 +89,7 @@ RVA(0x00174fa0, 0x3e)
 void CImagePool::ClearPalettes() {
     POSITION pos = m_palettes.GetHeadPosition();
     while (pos) {
-        CImagePaletteNode* item = reinterpret_cast<CImagePaletteNode*>(m_palettes.GetNext(pos));
+        CImagePaletteNode* item = static_cast<CImagePaletteNode*>(m_palettes.GetNext(pos));
         if (item) {
             item->Run();
             ::operator delete(item);
@@ -709,9 +709,9 @@ i32 CRezImage::DecodeResData(void* buf, void* a2, void* a3) {
     i32 bitcount = ih->biBitCount;
     i32 height = ih->biHeight;
     i32 width = ih->biWidth;
-    void* src = reinterpret_cast<u8*>(buf) + sizeof(BITMAPINFOHEADER) + 4; // header + 1 quad
+    void* src = static_cast<u8*>(buf) + sizeof(BITMAPINFOHEADER) + 4; // header + 1 quad
     if (bitcount == 8) {
-        src = reinterpret_cast<u8*>(buf) + ih->biSize + 0x400;
+        src = static_cast<u8*>(buf) + ih->biSize + 0x400;
     }
     return DecodeBlit(src, a2, width, height, bitcount, a3);
 }
@@ -841,10 +841,10 @@ i32 CRezImage::LoadPcx(char* name, void* a2, void* a3) {
 
 RVA(0x001762c0, 0x42)
 i32 CRezImage::DecodeRidData(void* buf, void* a2, void* a3) {
-    i32* hdr = reinterpret_cast<i32*>((reinterpret_cast<char*>(buf) + 8));
+    i32* hdr = reinterpret_cast<i32*>((static_cast<char*>(buf) + 8));
     i32 width = hdr[0];
     i32 height = hdr[1];
-    i32 ok = DecodeBlit(reinterpret_cast<char*>(buf) + RID_HEADER_SIZE, a2, width, height, 8, a3);
+    i32 ok = DecodeBlit(static_cast<char*>(buf) + RID_HEADER_SIZE, a2, width, height, 8, a3);
     if (!(reinterpret_cast<i32>(a3) & 1)) {
         m_transparent = 0;
     }
@@ -1104,7 +1104,7 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
     bih->biCompression = 0;
     bih->biSizeImage = 0;
 
-    u8* pal = reinterpret_cast<u8*>(obj) + 8;
+    u8* pal = static_cast<u8*>(obj) + 8;
     if (pal == 0) {
         return 0;
     }
@@ -1422,7 +1422,7 @@ i32 ApiCallerStubs::CImagePaletteNode::ParsePaletteTail(void* buf, u32 size, i32
     if (size < 0x300) {
         return 0;
     }
-    u8* s = reinterpret_cast<u8*>(buf) + size - 0x300;
+    u8* s = static_cast<u8*>(buf) + size - 0x300;
     PALETTEENTRY* d = pal;
     for (i32 i = 0; i < 256; i++) {
         d->peRed = *s++;

@@ -709,14 +709,14 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
             memcpy(p1, src, n1);
         }
         if (n2 > 0) {
-            memcpy(p2, reinterpret_cast<char*>(src) + n1, n2);
+            memcpy(p2, static_cast<char*>(src) + n1, n2);
         }
     } else {
         // 16-bit signed -> 8-bit unsigned downconversion, per region.
         if (n1 > 0) {
             char* d = static_cast<char*>(p1);
             i16* s = static_cast<i16*>(src);
-            char* end = reinterpret_cast<char*>(p1) + n1;
+            char* end = static_cast<char*>(p1) + n1;
             while (d < end) {
                 *d = static_cast<char>((static_cast<u32>((*s + 0x8000)) >> 8));
                 ++s;
@@ -725,8 +725,8 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
         }
         if (n2 > 0) {
             char* d = static_cast<char*>(p2);
-            i16* s = reinterpret_cast<i16*>((reinterpret_cast<char*>(src) + n1));
-            char* end = reinterpret_cast<char*>(p2) + n2;
+            i16* s = reinterpret_cast<i16*>((static_cast<char*>(src) + n1));
+            char* end = static_cast<char*>(p2) + n2;
             while (d < end) {
                 *d = static_cast<char>((static_cast<u32>((*s + 0x8000)) >> 8));
                 ++s;
@@ -1497,7 +1497,7 @@ i32 DSoundVoice::Stop() {
 // increments blocks the +8 fold) - the ex "add-fold wall" was the p+=2 spelling.
 RVA(0x00137110, 0x8d)
 i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut) {
-    u32* p = reinterpret_cast<u32*>((reinterpret_cast<char*>(riff) + 4));
+    u32* p = reinterpret_cast<u32*>((static_cast<char*>(riff) + 4));
     u32 riffSize = *p;
     p++;
     u32 waveTag = *p;

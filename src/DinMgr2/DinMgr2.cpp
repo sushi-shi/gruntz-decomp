@@ -118,7 +118,7 @@ void DirectInputMgr2::Shutdown() {
     i32 n = m_devices.GetSize();
     for (i32 i = 0; i < n; i++) {
         CInputDevBase* d = (i >= 0 && i < m_devices.GetSize())
-                               ? reinterpret_cast<CInputDevBase*>(m_devices.GetAt(i))
+                               ? static_cast<CInputDevBase*>(m_devices.GetAt(i))
                                : 0;
         if (d != 0) {
             delete d;
@@ -251,7 +251,7 @@ i32 DirectInputMgr2::PollArrayA() {
     i32 failed = 0;
     i32 n = m_devices.GetSize();
     for (i32 i = 0; i < n; i++) {
-        CInputDevBase* d = reinterpret_cast<CInputDevBase*>(m_devices.GetAt(i));
+        CInputDevBase* d = static_cast<CInputDevBase*>(m_devices.GetAt(i));
         if (d != 0 && d->Poll() == 0) {
             failed = 1;
         }
@@ -279,7 +279,7 @@ i32 DirectInputMgr2::PollArrayB() {
     i32 failed = 0;
     i32 n = m_devices.GetSize();
     for (i32 i = 0; i < n; i++) {
-        CInputDevBase* d = reinterpret_cast<CInputDevBase*>(m_devices.GetAt(i));
+        CInputDevBase* d = static_cast<CInputDevBase*>(m_devices.GetAt(i));
         if (d != 0 && d->ResetState() == 0) {
             failed = 1;
         }
@@ -291,7 +291,7 @@ RVA(0x001331a0, 0x37)
 void DirectInputMgr2::FreeDeviceList() {
     POSITION pos = m_deviceList.GetHeadPosition();
     while (pos != 0) {
-        CDeviceListNode* payload = reinterpret_cast<CDeviceListNode*>(m_deviceList.GetNext(pos));
+        CDeviceListNode* payload = static_cast<CDeviceListNode*>(m_deviceList.GetNext(pos));
         if (payload != 0) {
             (reinterpret_cast<CFixedPtrArray32*>(payload))->Clear();
             operator delete(payload);
