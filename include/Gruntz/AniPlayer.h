@@ -48,10 +48,23 @@ public:
     i32 RenderCel();                                            // 0xe5c10
     i32 Serialize(CFileMemBase* arc, i32 mode, i32 a3, i32 a4); // 0xe5c90
 
-    i32 m_58; // +0x58  timed-play window start (i64 lo)
-    i32 m_5c; // +0x5c  (i64 hi)
-    i32 m_60; // +0x60  timed-play window duration (i64 lo)
-    i32 m_64; // +0x64  (i64 hi)
+    i32 m_54; // +0x54  (role unproven; the serializer skips it - retail's
+              //        window pair sits at +0x58/+0x60, one dword past the base)
+    // the timed-play window: the standard 64-bit anchor+window pair.
+    union {
+        i64 m_start64; // +0x58  window start clock
+        struct {
+            i32 m_58; // +0x58  (lo)
+            i32 m_5c; // +0x5c  (hi)
+        };
+    };
+    union {
+        i64 m_window64; // +0x60  window duration
+        struct {
+            i32 m_60; // +0x60  (lo)
+            i32 m_64; // +0x64  (hi)
+        };
+    };
 };
 SIZE_UNKNOWN();
 

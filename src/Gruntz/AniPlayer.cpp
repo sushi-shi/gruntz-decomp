@@ -56,8 +56,7 @@ i32 CAniPlayer::Start(
 // ===========================================================================
 RVA(0x000e5b90, 0x51)
 i32 CAniPlayer::TickToggle(i32 param) {
-    if (static_cast<__int64>(g_frameTime) - *reinterpret_cast<__int64*>(&m_58)
-        >= *reinterpret_cast<__int64*>(&m_60)) {
+    if (static_cast<__int64>(g_frameTime) - m_start64 >= m_window64) {
         m_38 = (m_38 == m_frameStart) ? m_frameEnd : m_frameStart;
         m_60 = m_interval;
         m_64 = 0;
@@ -123,12 +122,12 @@ i32 CAniPlayer::Serialize(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
     }
     switch (mode) {
     case 7:
-        arc->Read(&m_58, 8);
-        arc->Read(&m_60, 8);
+        arc->Read(&m_start64, 8);
+        arc->Read(&m_window64, 8);
         break;
     case 4:
-        arc->Write(&m_58, 8);
-        arc->Write(&m_60, 8);
+        arc->Write(&m_start64, 8);
+        arc->Write(&m_window64, 8);
         break;
     }
     return 1;
