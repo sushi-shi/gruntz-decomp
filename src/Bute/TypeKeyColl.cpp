@@ -532,7 +532,7 @@ RVA(0x0016db90, 0x206)
 void* CButeTree::Insert(const char* key, void* value) {
     if (m_lookupPending == 0) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, "No prior lookup", 0x16);
+        m_errSink->Set(this, const_cast<char*>("No prior lookup"), 0x16);
         return 0;
     }
     i32 newbit = m_keyBitLength - 7;
