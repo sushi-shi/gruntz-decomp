@@ -46,18 +46,8 @@ i32 CSBI_WellGoo::Setup(CStatusBarMgr*, CDDrawSurfaceMgr*, i32, i32, SbiRect, i3
 // fraction of the (m_rect14.m_c - m_rect14.m_4) progress (FLOORED to 1.0, then ftol'd
 // into m_fgTop), shade-blit + BltEx the goo source for that height, and finally draw
 // the foreground anim frame whose top sits at m_fgTop - 2. The m_drawGuard/m_blitGuard
-// inc-around-dec is a draw-depth re-entrancy guard spanning the BltEx.
-// @early-stop
-// ~99.96% reloc-residual plateau: the CODE BYTES are byte-identical to retail
-// (verified llvm-objdump base vs target). The residual is only DATA-reloc naming:
-// the g_gameReg DIR32 + the three FP-constant-pool DIR32s (0.01f/3.0f/1.0 land in
-// the compiler's $T literals vs retail's DAT_005eab28/2c/30) - the documented
-// reloc-typing scoring artifact (docs/patterns/reloc-typing-vptr-global.md). Raised
-// from 83% by (1) unifying the CGoo* views to CImage/CDDrawShadeBlit/CDDSurface so
-// the three call rel32s co-name, (2) the (float) cast keeping 0.01f/3.0f single-
-// precision (fmuls/fsubs), (3) fixing the clamp to a 1.0 FLOOR + (4) decrementing
-// m_28 between the two guards + reusing the ctx pointer for ctx->m_2c (the BltEx
-// receiver), all matching retail's byte stream.
+// inc-around-dec is a draw-depth re-entrancy guard spanning the BltEx (the guard
+// pairs are NOT symmetric: ++ draw-then-blit, -- also draw-then-blit).
 RVA(0x000e6360, 0x8)
 i32 CSBI_WellGoo::Refresh(i32) {
     return 1;
@@ -102,8 +92,8 @@ i32 CSBI_WellGoo::Render() {
     m_drawGuard++;
     m_blitGuard++;
     ctx->m_surface->BltEx(&m_dstRect, m_gooSrc, &m_srcRect, 0x1000000, 0);
-    m_blitGuard--;
     m_drawGuard--;
+    m_blitGuard--;
 
     m_fgFrame->RenderFrame(
         ctx,
