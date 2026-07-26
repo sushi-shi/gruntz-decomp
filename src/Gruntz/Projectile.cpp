@@ -1048,7 +1048,24 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, i32 a4) {
         return 0;
     }
 
-    if (mode == 4) {
+    switch (mode) {
+    case 7: {
+        s->Read(buf, 0x80);
+        s->Read(m_blob, 0x10);
+        CGameObject* obj = reinterpret_cast<CGameObject*>(a4);
+        m_34 = obj;
+        m_38 = static_cast<CWwdGameObjectA*>(obj); // the bound obj IS the created A-kind sprite
+        m_3c = obj->m_7c;
+        if (strlen(buf) == 0) {
+            m_value = 0;
+            return 1;
+        }
+        void* out = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
+        m_3c->m_0c->m_animRegistry->m_10.Lookup(buf, out);
+        m_value = static_cast<CAniElement*>(out);
+        return 1;
+    }
+    case 4: {
         char blob[0x80];
         memset(blob, 0, sizeof(blob));
         if (m_value != 0) {
@@ -1059,23 +1076,7 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, i32 a4) {
         s->Write(m_blob, 0x10);
         return 1;
     }
-    if (mode != 7) {
-        return 1;
     }
-
-    s->Read(buf, 0x80);
-    s->Read(m_blob, 0x10);
-    CGameObject* obj = reinterpret_cast<CGameObject*>(a4);
-    m_34 = obj;
-    m_38 = static_cast<CWwdGameObjectA*>(obj); // the bound obj IS the created A-kind sprite
-    m_3c = obj->m_7c;
-    if (strlen(buf) == 0) {
-        m_value = 0;
-        return 1;
-    }
-    void* out = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
-    m_3c->m_0c->m_animRegistry->m_10.Lookup(buf, out);
-    m_value = static_cast<CAniElement*>(out);
     return 1;
 }
 
@@ -1288,24 +1289,25 @@ i32 CTimeBomb::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
         return 0;
     }
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
-    if (mode == 4) {
-        sa->Write(&m_startTime, 8);
-        sa->Write(&m_duration, 8);
-    } else if (mode == 7) {
+    switch (mode) {
+    case 7:
         sa->Read(&m_startTime, 8);
         sa->Read(&m_duration, 8);
+        break;
+    case 4:
+        sa->Write(&m_startTime, 8);
+        sa->Write(&m_duration, 8);
+        break;
     }
-    if (mode == 4) {
-        sa->Write(&m_fastPhase, 4);
-    } else if (mode == 7) {
+    switch (mode) {
+    case 7:
         sa->Read(&m_fastPhase, 4);
+        break;
+    case 4:
+        sa->Write(&m_fastPhase, 4);
+        break;
     }
-    if (!CUserLogic::SerializeMove(
-            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(arc))),
-            mode,
-            a3,
-            a4
-        )) {
+    if (!CUserLogic::SerializeMove(arc, mode, a3, a4)) {
         return 0;
     }
     return Chain(sa, mode, a3, reinterpret_cast<CGameObject*>(a4)) ? 1 : 0;

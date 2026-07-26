@@ -746,19 +746,17 @@ i32 CCheckpointTrigger::Act_10f970() {
 RVA(0x0010f9a0, 0x8f)
 i32 CCheckpointTrigger::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
-    if (mode == 4) {
-        sa->Write(m_state, 0x3c);
-        sa->Write(&m_firstEmpty, 4);
-    } else if (mode == 7) {
+    switch (mode) {
+    case 7:
         sa->Read(m_state, 0x3c);
         sa->Read(&m_firstEmpty, 4);
+        break;
+    case 4:
+        sa->Write(m_state, 0x3c);
+        sa->Write(&m_firstEmpty, 4);
+        break;
     }
-    if (!CUserLogic::SerializeMove(
-            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(arc))),
-            mode,
-            a3,
-            a4
-        )) {
+    if (!CUserLogic::SerializeMove(arc, mode, a3, a4)) {
         return 0;
     }
     return Chain(sa, mode, a3, reinterpret_cast<CGameObject*>(a4)) ? 1 : 0;

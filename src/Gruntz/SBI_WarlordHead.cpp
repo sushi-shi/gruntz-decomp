@@ -173,10 +173,13 @@ i32 CSBI_WarlordHead::SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4)
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    if (mode == 4) {
-        s->Write(&m_direction, 4);
-    } else if (mode == 7) {
+    switch (mode) {
+    case 7:
         s->Read(&m_direction, 4);
+        break;
+    case 4:
+        s->Write(&m_direction, 4);
+        break;
     }
     return CSBI_ImageSet::SerializeFields(s, mode, a3, a4) != 0; // qualified = direct base call
 }

@@ -302,10 +302,10 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
         secs = 0x63;
     }
     u32 cur = static_cast<u32>(m_currentMs);
-    // carry = 1 unless (the minute already on the clock + new minutes) fits in 0x3b.
-    u32 carry = 1;
-    if (cur % 60000 / 1000 + mins <= 0x3b) {
-        carry = 0;
+    // carry = 1 when (the minute already on the clock + new minutes) overflows 0x3b.
+    u32 carry = 0;
+    if (cur % 60000 / 1000 + mins > 0x3b) {
+        carry = 1;
     }
     // clamp seconds against the second already on the clock (cur / 60000).
     if (cur / 60000 + secs > 0x63) {

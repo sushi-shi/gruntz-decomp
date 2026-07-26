@@ -638,6 +638,7 @@ i32 CState::HeaderWrite(CFileMemBase* ar) {
     ar->Write(&m_198, 0x10);
     ar->Write(&m_inputWarmup1, 4);
     ar->Write(&m_inputWarmup2, 4);
+    ar->Write(&m_inputHalfSel, 4);
     return 1;
 }
 

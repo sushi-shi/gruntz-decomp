@@ -134,20 +134,8 @@ i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
         return 0;
     }
-    if (mode == 4) {
-        // WRITE: render the name to bute text, length-prefix it, append ints.
-        char buf[0x100];
-        ostrstream accum(buf, 0x100); // ??0ostrstream(buf, 0x100, ios::out=2) + vbase flag
-        accum << m_link.m_str;
-        i32 len = accum.pcount(); // the inlined vbase rdbuf()->out_waiting() probe
-        arc->Write(&len, 4);
-        arc->Write(accum.str(), len); // inline forward -> ?str@strstreambuf (0x1692b0)
-        arc->Write(&m_28, 4);
-        arc->Write(&m_2c, 4);
-        arc->Write(&g_logicTypesRegistered, 4);
-        arc->Write(&m_prevAnimSetNode, 4);
-        // scope-end: cl emits ~ostrstream (0x1699c0) then the ~ios vbase (0x169d70)
-    } else if (mode == 7) {
+    switch (mode) {
+    case 7: {
         // READ: pull the length-prefixed text, parse the name back, read the ints.
         i32 len;
         arc->Read(&len, 4);
@@ -167,6 +155,23 @@ i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
         m_gatedCallback = 0;
         m_28 = 0x3e9;
         // scope-end: cl emits ~istrstream (0x1697c0) then the ~ios vbase (0x169d70)
+        break;
+    }
+    case 4: {
+        // WRITE: render the name to bute text, length-prefix it, append ints.
+        char buf[0x100];
+        ostrstream accum(buf, 0x100); // ??0ostrstream(buf, 0x100, ios::out=2) + vbase flag
+        accum << m_link.m_str;
+        i32 len = accum.pcount(); // the inlined vbase rdbuf()->out_waiting() probe
+        arc->Write(&len, 4);
+        arc->Write(accum.str(), len); // inline forward -> ?str@strstreambuf (0x1692b0)
+        arc->Write(&m_28, 4);
+        arc->Write(&m_2c, 4);
+        arc->Write(&g_logicTypesRegistered, 4);
+        arc->Write(&m_prevAnimSetNode, 4);
+        // scope-end: cl emits ~ostrstream (0x1699c0) then the ~ios vbase (0x169d70)
+        break;
+    }
     }
     return 1;
 }
@@ -283,20 +288,8 @@ i32 CMovingLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
         return 0;
     }
-    if (mode == 4) {
-        // WRITE: render the curve to bute text, length-prefix it, append ints.
-        char buf[0x100];
-        ostrstream accum(buf, 0x100); // ??0ostrstream(buf, 0x100, ios::out=2) + vbase flag
-        WriteCurve(accum, *Motion());
-        i32 len = accum.pcount(); // the inlined vbase rdbuf()->out_waiting() probe
-        arc->Write(&len, 4);
-        arc->Write(accum.str(), len); // inline forward -> ?str@strstreambuf (0x1692b0)
-        arc->Write(&m_140, 4);
-        arc->Write(&m_144, 4);
-        arc->Write(&m_148, 4);
-        arc->Write(&m_14c, 4);
-        // scope-end: cl emits ~ostrstream (0x1699c0) then the ~ios vbase (0x169d70)
-    } else if (mode == 7) {
+    switch (mode) {
+    case 7: {
         // READ: pull the length-prefixed text, parse it back, read the ints.
         i32 len;
         arc->Read(&len, 4);
@@ -310,6 +303,23 @@ i32 CMovingLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
         arc->Read(&m_148, 4);
         arc->Read(&m_14c, 4);
         // scope-end: cl emits ~istrstream (0x1697c0) then the ~ios vbase (0x169d70)
+        break;
+    }
+    case 4: {
+        // WRITE: render the curve to bute text, length-prefix it, append ints.
+        char buf[0x100];
+        ostrstream accum(buf, 0x100); // ??0ostrstream(buf, 0x100, ios::out=2) + vbase flag
+        WriteCurve(accum, *Motion());
+        i32 len = accum.pcount(); // the inlined vbase rdbuf()->out_waiting() probe
+        arc->Write(&len, 4);
+        arc->Write(accum.str(), len); // inline forward -> ?str@strstreambuf (0x1692b0)
+        arc->Write(&m_140, 4);
+        arc->Write(&m_144, 4);
+        arc->Write(&m_148, 4);
+        arc->Write(&m_14c, 4);
+        // scope-end: cl emits ~ostrstream (0x1699c0) then the ~ios vbase (0x169d70)
+        break;
+    }
     }
     return CUserLogic::SerializeMove(arc, mode, a3, a4) != 0;
 }

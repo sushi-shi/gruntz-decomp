@@ -98,10 +98,10 @@ public:
     // neighbour toward the pool end/start, writing {m_c,m_8} (or {-1,-1}) to out.
     i32 FindIndex(i32 k0, i32 k1, i32 k2);                   // 0x1434c0
     i32 FindLast(u32 k0, u32 k1, i32 k2);                    // 0x143470
-    void FindFwd(CDdModePair* out, i32 k0, i32 k1, i32 k2);  // 0x143510
-    void FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2); // 0x143590
+    CDdModePair FindFwd(i32 k0, i32 k1, i32 k2);  // 0x143510
+    CDdModePair FindBack(i32 k0, i32 k1, i32 k2); // 0x143590
     // FindMatch = the last >= match's {m_c,m_8} dims (or {-1,-1}); via FindLast.
-    void FindMatch(CDdModePair* out, u32 k0, u32 k1, i32 k2); // 0x143420
+    CDdModePair FindMatch(u32 k0, u32 k1, i32 k2); // 0x143420
 
     // Enumerate DirectDraw drivers (DirectDrawEnumerateA callback CreateDirectDrawVia
     // caches g_ddCreateCtx), then bring up the device via CreateDevice.

@@ -151,7 +151,8 @@ i32 CWapX::Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj) {
     if (arc == 0) {
         return 0;
     }
-    if (mode == 7) {
+    switch (mode) {
+    case 7: {
         // READ: pull the key name + the 0x10 blob, then resolve the key.
         arc->Read(name, 0x80);
         arc->Read(m_blob, 0x10);
@@ -169,7 +170,7 @@ i32 CWapX::Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj) {
         ); // the map stores void*; KeyOfValue takes the CObject* upcast
         return 1;
     }
-    if (mode == 4) {
+    case 4: {
         // WRITE: re-derive the value's name into the key buffer, then write both.
         for (i32 i = 0; i < 0x20; i++) {
             (reinterpret_cast<i32*>(name))[i] = 0;
@@ -180,6 +181,8 @@ i32 CWapX::Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj) {
         }
         arc->Write(name, 0x80);
         arc->Write(m_blob, 0x10);
+        break;
+    }
     }
     return 1;
 }

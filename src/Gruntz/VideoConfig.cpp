@@ -150,8 +150,9 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                         w = 0x280;
                         h = 0x1e0;
                     }
-                    g_gameReg->m_savedModeW = w;
-                    g_gameReg->m_savedModeH = h;
+                    CGruntzMgr* reg = g_gameReg;
+                    reg->m_savedModeW = w;
+                    reg->m_savedModeH = h;
                     if (g_gameReg->IsInPlayState()) {
                         g_gameReg->CheckSavedMode();
                     }

@@ -115,16 +115,8 @@ i32 CBoomerang::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    if (mode == 4) {
-        ar->Write(&m_launchX, 4);
-        ar->Write(&m_launchY, 4);
-        ar->Write(&m_dirX, 8);
-        ar->Write(&m_dirY, 8);
-        ar->Write(&m_originX, 8);
-        ar->Write(&m_originY, 8);
-        ar->Write(&m_phase, 8);
-        ar->Write(&m_launched, 4);
-    } else if (mode == 7) {
+    switch (mode) {
+    case 7:
         ar->Read(&m_launchX, 4);
         ar->Read(&m_launchY, 4);
         ar->Read(&m_dirX, 8);
@@ -133,6 +125,17 @@ i32 CBoomerang::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
         ar->Read(&m_originY, 8);
         ar->Read(&m_phase, 8);
         ar->Read(&m_launched, 4);
+        break;
+    case 4:
+        ar->Write(&m_launchX, 4);
+        ar->Write(&m_launchY, 4);
+        ar->Write(&m_dirX, 8);
+        ar->Write(&m_dirY, 8);
+        ar->Write(&m_originX, 8);
+        ar->Write(&m_originY, 8);
+        ar->Write(&m_phase, 8);
+        ar->Write(&m_launched, 4);
+        break;
     }
     return CProjectile::SerializeMove(ar, mode, a3, a4) ? 1 : 0;
 }

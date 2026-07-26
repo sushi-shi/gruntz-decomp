@@ -913,25 +913,23 @@ i32 __stdcall CDDrawPtrCollections::Compare(void* pa, void* pb) {
 }
 
 // FindMatch (0x143420) - the last >= match's {m_c,m_8} dims via FindLast, or
-// {-1,-1} when none. __thiscall, ret 0x10 => 4 args.
-//
-// @early-stop
-// ~83.7% regalloc wall (sibling of FindFwd/FindBack, same archetype): body + guards
-// + FindLast call byte-exact. Residue: retail materializes the {-1,-1} store via the
-// leftover pushed-arg registers (or ecx,eax / or edx,eax) and loads the out-ptr last
-// in the found path, while cl uses immediate stores + an early out-ptr load. Permuter
-// ran (no change); not source-steerable, same as its two siblings.
+// {-1,-1} when none. __thiscall, ret 0x10 => 4 args (3 keys + the hidden
+// return-slot pointer: the pair returns BY VALUE; retail loads the slot ptr
+// into eax at each exit and stores through it - the ex "out-ptr loaded last"
+// regalloc wall was this mis-modeled signature).
 RVA(0x00143420, 0x4b)
-void CDDrawPtrCollections::FindMatch(CDdModePair* out, u32 k0, u32 k1, i32 k2) {
+CDdModePair CDDrawPtrCollections::FindMatch(u32 k0, u32 k1, i32 k2) {
+    CDdModePair r;
     i32 idx = FindLast(k0, k1, k2);
     if (idx == -1) {
-        out->a = -1;
-        out->b = -1;
+        r.a = -1;
+        r.b = -1;
     } else {
         CDdMode* e = reinterpret_cast<CDdMode*>(m_poolItems.GetData()[idx]);
-        out->a = e->m_c;
-        out->b = e->m_8;
+        r.a = e->m_c;
+        r.b = e->m_8;
     }
+    return r;
 }
 
 RVA(0x00143470, 0x47)
@@ -957,13 +955,11 @@ i32 CDDrawPtrCollections::FindIndex(i32 k0, i32 k1, i32 k2) {
     return -1;
 }
 
-// @early-stop
-// ~82.5% regalloc wall: body + guards + FindIndex call byte-exact; in the scan loop
-// retail pins the strength-reduced iterator pointer in edx and the loaded entry in
-// ecx, while cl swaps them (entry in edx), cascading into the found-path field reads.
-// No source spelling (index/hoisted-base/explicit pointer-walk) flips the pair.
+// (by-value return, same signature recovery as FindMatch: the hidden return
+// slot is the 4th __thiscall arg, loaded into eax at each exit.)
 RVA(0x00143510, 0x71)
-void CDDrawPtrCollections::FindFwd(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
+CDdModePair CDDrawPtrCollections::FindFwd(i32 k0, i32 k1, i32 k2) {
+    CDdModePair r;
     i32 idx = FindIndex(k0, k1, k2);
     if (idx != -1 && idx < m_poolItems.GetSize()) {
         idx++;
@@ -971,22 +967,22 @@ void CDDrawPtrCollections::FindFwd(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
             for (; idx < m_poolItems.GetSize(); idx++) {
                 CDdMode* e = reinterpret_cast<CDdMode*>(m_poolItems.GetData()[idx]);
                 if (e->m_54 == k2) {
-                    out->a = e->m_c;
-                    out->b = e->m_8;
-                    return;
+                    r.a = e->m_c;
+                    r.b = e->m_8;
+                    return r;
                 }
             }
         }
     }
-    out->a = -1;
-    out->b = -1;
+    r.a = -1;
+    r.b = -1;
+    return r;
 }
 
-// @early-stop
-// ~72.8% regalloc wall: same iterator/entry register swap as FindFwd (mirror,
-// descending scan). Logic complete.
+// (by-value return, mirror of FindFwd - descending scan.)
 RVA(0x00143590, 0x7e)
-void CDDrawPtrCollections::FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
+CDdModePair CDDrawPtrCollections::FindBack(i32 k0, i32 k1, i32 k2) {
+    CDdModePair r;
     i32 idx = FindIndex(k0, k1, k2);
     if (idx != -1 && idx < m_poolItems.GetSize()) {
         idx--;
@@ -994,15 +990,16 @@ void CDDrawPtrCollections::FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
             for (; idx >= 0; idx--) {
                 CDdMode* e = reinterpret_cast<CDdMode*>(m_poolItems.GetData()[idx]);
                 if (e->m_54 == k2) {
-                    out->a = e->m_c;
-                    out->b = e->m_8;
-                    return;
+                    r.a = e->m_c;
+                    r.b = e->m_8;
+                    return r;
                 }
             }
         }
     }
-    out->a = -1;
-    out->b = -1;
+    r.a = -1;
+    r.b = -1;
+    return r;
 }
 
 // ---------------------------------------------------------------------------

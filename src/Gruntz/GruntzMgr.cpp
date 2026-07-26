@@ -3407,7 +3407,7 @@ i32 CGruntzMgr::CheckDisplayBoundsA() {
         return 1;
     }
     CDdModePair pt;
-    m_world->m_ptrColl->FindFwd(&pt, m_modeW, m_modeH, m_colorDepth);
+    pt = m_world->m_ptrColl->FindFwd(m_modeW, m_modeH, m_colorDepth);
     i32 x = pt.a;
     i32 y = pt.b;
     if (x > 0x514 || x == -1 || y == -1) {
@@ -3433,7 +3433,7 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
         return 1;
     }
     CDdModePair pt;
-    m_world->m_ptrColl->FindBack(&pt, m_modeW, m_modeH, m_colorDepth);
+    pt = m_world->m_ptrColl->FindBack(m_modeW, m_modeH, m_colorDepth);
     i32 x = pt.a;
     i32 y = pt.b;
     if (x == -1 || y == -1 || x < 0x140 || y < 0xc8) {

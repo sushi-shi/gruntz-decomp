@@ -121,12 +121,15 @@ i32 CAniPlayer::Serialize(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
     if (CSBI_ImageSetAni::SerializeFields(static_cast<CFileMemBase*>(arc), mode, a3, a4) == 0) {
         return 0;
     }
-    if (mode == 4) {
-        arc->Write(&m_58, 8);
-        arc->Write(&m_60, 8);
-    } else if (mode == 7) {
+    switch (mode) {
+    case 7:
         arc->Read(&m_58, 8);
         arc->Read(&m_60, 8);
+        break;
+    case 4:
+        arc->Write(&m_58, 8);
+        arc->Write(&m_60, 8);
+        break;
     }
     return 1;
 }
