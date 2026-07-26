@@ -237,8 +237,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     );
     if (hit) {
         o = m_object;
-        CDDrawChildGroup* fac = g_gameReg->m_world->m_childGroup;
-        CWwdGameObjectA* spr = fac->CreateSprite(
+        CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
             (o->m_114 << 5) + 0x10,
             (o->m_118 << 5) + 0x10,
