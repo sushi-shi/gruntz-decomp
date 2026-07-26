@@ -32,6 +32,11 @@ i32 CMenuItem::OnInit() {
     return 0;
 }
 
+RVA(0x00185510, 0x5)
+void CMenuItem::Dispatch0c() {
+    Reset(); // devirtualized tail-jmp in retail (5 B)
+}
+
 RVA_COMPGEN(0x00184670, 0x1e, ??_GCMenuItem@@UAEPAXI@Z)
 RVA(0x00184690, 0x91)
 inline CMenuItem::~CMenuItem() {
