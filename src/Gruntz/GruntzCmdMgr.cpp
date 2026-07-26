@@ -69,8 +69,7 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
     i32 i;
     for (i = 0; i < m_base.GetCount(); i++) {
         POSITION pos = m_base.FindIndex(i);
-        CGruntzCommand* obj =
-            *reinterpret_cast<CGruntzCommand**>((reinterpret_cast<char*>(pos) + 8));
+        CGruntzCommand* obj = static_cast<CGruntzCommand*>(m_base.GetAt(pos));
         i32 flags = obj->m_submitted; // +0x0c submit-context latch
         if (!(flags & 2)) {
             if (!(flags & 1)) {
@@ -105,8 +104,7 @@ RVA(0x00023b40, 0x53)
 void CGruntzCmdMgr::RemoveMatchingTarget(char indexByte, char typeByte) {
     for (i32 i = 0; i < m_base.GetCount(); i++) {
         POSITION pos = m_base.FindIndex(i);
-        CGruntzCommand* obj =
-            *reinterpret_cast<CGruntzCommand**>((reinterpret_cast<char*>(pos) + 8));
+        CGruntzCommand* obj = static_cast<CGruntzCommand*>(m_base.GetAt(pos));
         if (obj->m_targetType == static_cast<u8>(typeByte)
             && obj->m_targetIndex == static_cast<u8>(indexByte)) {
             m_base.RemoveAt(pos);

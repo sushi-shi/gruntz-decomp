@@ -1670,13 +1670,14 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     void* lp = reinterpret_cast<void*>(
         Peer()->CreatePlayer(const_cast<char*>("Player"), reinterpret_cast<i32>(g_emptyString), 0)
     );
-    m_5bc = reinterpret_cast<i32>(static_cast<CNetSessionNode*>(lp));
+    CNetSessionNode* node = static_cast<CNetSessionNode*>(lp);
+    m_5bc = reinterpret_cast<i32>(node);
     if (lp == 0) {
         ReportNetError(0);
         return 0;
     }
 
-    m_hostIndex = *reinterpret_cast<i32*>((reinterpret_cast<char*>(lp) + 4));
+    m_hostIndex = node->m_id;
     GruntzPlayer* ch0 = NetGameMgr()->m_options;
     i32 chField = ch0->m_008;
     CString name = ch0->GetName();
@@ -1718,7 +1719,8 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
             0
         ));
     }
-    m_5bc = reinterpret_cast<i32>(static_cast<CNetSessionNode*>(lp));
+    CNetSessionNode* node = static_cast<CNetSessionNode*>(lp);
+    m_5bc = reinterpret_cast<i32>(node);
     if (lp == 0) {
         ReportNetError(0);
         return 0;
@@ -1737,7 +1739,7 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
     }
     m_syncGate = 0;
     ResyncLParam() = 1;
-    m_hostIndex = *reinterpret_cast<i32*>((reinterpret_cast<char*>(lp) + 4));
+    m_hostIndex = node->m_id;
     if (Cfg_GetKey(buf, cfgStr, "LEVEL")) {
         ResyncLParam() = atoi(buf);
     }
@@ -3626,13 +3628,14 @@ i32 CMulti::SetupTcpIpConfig() {
             0
         ));
     }
-    m_5bc = reinterpret_cast<i32>(static_cast<CNetSessionNode*>(lp));
+    CNetSessionNode* node = static_cast<CNetSessionNode*>(lp);
+    m_5bc = reinterpret_cast<i32>(node);
     if (lp == 0) {
         ReportNetError(0);
         return 0;
     }
 
-    m_hostIndex = *reinterpret_cast<i32*>((reinterpret_cast<char*>(lp) + 4));
+    m_hostIndex = node->m_id;
     i32 chField = ch0->m_008;
     CString cn2 = ch0->GetName();
     i32 ok = RegisterChannelFrom(cn2, chField, -1, m_hostIndex);
