@@ -1036,18 +1036,21 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
             // position at 0x113453); every other case in all five tool switches
             // jumps here (the shared jmp-0x113453 targets).
             commit: {
+                // retail: zeroes thru a COPY (esi) of the flags base, ones thru
+                // the base itself (eax) - both pointer locals live.
                 i32* flags = m_playerFlags;
-                flags[0] = 0;
-                flags[1] = 0;
-                flags[2] = 0;
-                flags[3] = 0;
+                i32* p = flags;
+                p[0] = 0;
+                p[1] = 0;
+                p[2] = 0;
+                p[3] = 0;
                 if (playerSlot == 5) {
-                    m_playerFlags[0] = 1;
-                    m_playerFlags[1] = 1;
-                    m_playerFlags[2] = 1;
-                    m_playerFlags[3] = 1;
+                    flags[0] = 1;
+                    flags[1] = 1;
+                    flags[2] = 1;
+                    flags[3] = 1;
                 } else {
-                    m_playerFlags[playerSlot] = 1;
+                    flags[playerSlot] = 1;
                 }
                 SetActionCode(m_actionCode);
                 return 1;
