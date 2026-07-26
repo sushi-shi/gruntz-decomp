@@ -380,7 +380,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
                 i32 x = m_object->m_screenX;
                 i32 y = m_object->m_screenY;
                 if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
-                    g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 3, -1, -1, -1);
+                    g->m_cueSink->LoadGruntSpawnConfig(this, 3, -1, -1, -1);
                 }
             }
             // block A: NORMALGRUNT_DEATH override
@@ -400,7 +400,7 @@ pathA:
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {
-            g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 3, -1, -1, -1);
+            g->m_cueSink->LoadGruntSpawnConfig(this, 3, -1, -1, -1);
         }
     }
     deathType = DEATH_NORMAL;

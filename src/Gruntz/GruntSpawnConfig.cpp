@@ -144,7 +144,7 @@ void CGruntSpawnConfig::ClearSprites() {
 
 RVA(0x0011afb0, 0x321)
 BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
-    i32 param_1,
+    CGrunt* who,
     i32 param_2,
     i32 param_3,
     i32 param_4,
@@ -153,14 +153,14 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     if (m_voices[0] == 0 && !LoadGruntVoices()) {
         return 0;
     }
-    if (param_1 == 0) {
+    if (who == 0) {
         return 0;
     }
     if (!IsReady()) {
         return 0;
     }
     void* index = GetButeSlot(
-        reinterpret_cast<CSpawnButeConfig*>(param_1),
+        reinterpret_cast<CSpawnButeConfig*>(who),
         reinterpret_cast<CSpawnButeTarget*>(param_2)
     );
     CString local_10;
@@ -199,7 +199,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     i32 c = v8->m_source;
     i32 d = v0c->m_source;
     StreamVoice** streams = &m_stream0;
-    CSpawnButeConfig* gate = reinterpret_cast<CSpawnButeConfig*>(param_1);
+    CSpawnButeConfig* gate = reinterpret_cast<CSpawnButeConfig*>(who);
     i32 chosen;
     if (b < a) {
         chosen = 1;

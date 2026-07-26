@@ -1645,7 +1645,7 @@ label_4c6e4:
         CCueRect* rr =
             &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
         if (hudX < rr->right && hudX >= rr->left && hudY < rr->bottom && hudY >= rr->top) {
-            g_gameReg->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 8, -1, -1, -1);
+            g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 8, -1, -1, -1);
         }
         tgtPxX = beyondPxX;
         tgtPxY = beyondPxY;

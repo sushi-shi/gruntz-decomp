@@ -71,7 +71,7 @@ public:
     // The percent/priority-gated voice spawn driver (0x11afb0); re-homed from the
     // ApiCaller backlog. param_1=config, param_2=target/index, param_3=pick seed,
     // param_4=priority, param_5=percent.
-    BOOL LoadGruntSpawnConfig(i32 param_1, i32 param_2, i32 param_3, i32 param_4, i32 param_5);
+    BOOL LoadGruntSpawnConfig(class CGrunt* who, i32 param_2, i32 param_3, i32 param_4, i32 param_5);
     // Two overloaded weighted grunt-voice spawn drivers (0x11b3b0 / 0x11b7c0).
     // Both consume this in ecx and return with callee-cleaned stack arguments; the
     // five-argument overload was formerly mis-modeled as a free __stdcall sibling.

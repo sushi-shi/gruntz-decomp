@@ -569,7 +569,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     i32 y = m_object->m_screenY;
     CCueRect* rc = &g->m_world->m_level->m_mainPlane->m_viewRect;
     if (x < rc->right && x >= rc->left && y < rc->bottom && y >= rc->top) {
-        g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 0xe, -1, -1, -1);
+        g->m_cueSink->LoadGruntSpawnConfig(this, 0xe, -1, -1, -1);
     }
 
     LoadGruntTypeTable(0, 1, 0, 1);

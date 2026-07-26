@@ -615,7 +615,7 @@ i32 CGrunt::StartBombGruntRun() {
         i32 vy = h->m_screenY;
         const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
         if (vx < rect->right && vx >= rect->left && vy < rect->bottom && vy >= rect->top) {
-            g_gameReg->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 8, -1, -1, -1);
+            g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 8, -1, -1, -1);
         }
     }
     m_value = m_38->m_1a0.m_14;
@@ -693,7 +693,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         i32 x = m_object->m_screenX;
         CCueRect* r = &g->m_world->m_level->m_mainPlane->m_viewRect;
         if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
-            g->m_cueSink->LoadGruntSpawnConfig(reinterpret_cast<i32>(this), 8, -1, -1, -1);
+            g->m_cueSink->LoadGruntSpawnConfig(this, 8, -1, -1, -1);
         }
     } else {
         m_wingzEnabled = 0;
