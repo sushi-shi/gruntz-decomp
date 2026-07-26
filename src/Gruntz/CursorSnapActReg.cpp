@@ -9,9 +9,9 @@ template<> DATA(0x0022bfa0)
 CActReg CActRegPool<CCursorSnapSprite>::s_table(2000, 2010);
 
 static inline i32 RegisterActionName() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
-        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
+        ActInsertId("A", g_typeCounter);
         i32 key = g_typeCounter;
         id = key;
         CString* slot = ActNameLookup(key);

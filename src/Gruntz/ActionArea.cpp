@@ -138,9 +138,9 @@ void CActionArea::FireActivation(i32 coord) {
 // type-id register differently. Not source-steerable; deferred to the final sweep.
 RVA(0x00008240, 0x18d)
 void CProjActObj::RegisterType() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
-        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
+        ActInsertId("A", g_typeCounter);
         i32 key = g_typeCounter;
         id = key;
         CTypeNameEntry* slot = TypeLookup(key);

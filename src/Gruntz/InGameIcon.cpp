@@ -565,9 +565,9 @@ void CInGameIcon::FireActivation(i32 id) {
 // correct; the register assignment is not source-steerable.
 RVA(0x000979e0, 0x2ac)
 void RegisterIconActions() {
-    i32 idxA = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 idxA = ActFindId("A");
     if (idxA == 0) {
-        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
+        ActInsertId("A", g_typeCounter);
         char* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
         *reinterpret_cast<CString*>(slot) = "A";
         g_typeCounter++;
@@ -576,9 +576,9 @@ void RegisterIconActions() {
     *reinterpret_cast<IconActHandler*>(dslotA) =
         static_cast<IconActHandler>(&CInGameIcon::PeekCycle);
 
-    i32 idxB = reinterpret_cast<i32>(g_buteTree.Find("B"));
+    i32 idxB = ActFindId("B");
     if (idxB == 0) {
-        g_buteTree.Insert("B", reinterpret_cast<void*>(g_typeCounter));
+        ActInsertId("B", g_typeCounter);
         char* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
         *reinterpret_cast<CString*>(slot) = "B";
         g_typeCounter++;
@@ -613,9 +613,9 @@ void CToyPeek::FireActivation(i32 id) {
 // source-steerable. Logic + find/insert + the fn-ptr store correct.
 RVA(0x00097f40, 0x18d)
 void RegisterIconState() {
-    i32 idx = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 idx = ActFindId("A");
     if (idx == 0) {
-        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
+        ActInsertId("A", g_typeCounter);
         char* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
         *reinterpret_cast<CString*>(slot) = "A";
         g_typeCounter++;
@@ -1045,9 +1045,9 @@ void CInGameText::FireActivation(i32 idx) {
 // correct; the register assignment is not source-steerable.
 RVA(0x000995c0, 0x18d)
 void RegisterTextLogic() {
-    i32 idx = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 idx = ActFindId("A");
     if (idx == 0) {
-        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
+        ActInsertId("A", g_typeCounter);
         char* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
         *reinterpret_cast<CString*>(slot) = "A";
         g_typeCounter++;

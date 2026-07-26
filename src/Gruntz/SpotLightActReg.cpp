@@ -33,9 +33,9 @@ static inline void FreeNameSlotNodes() {
 // store are byte-faithful.
 RVA(0x000b1790, 0x2ac)
 void RegisterActs_646188() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
-        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
         CString* slot = ActNameLookup(id);
         FreeNameSlotNodes();
@@ -45,9 +45,9 @@ void RegisterActs_646188() {
     *reinterpret_cast<void**>(CActRegPool<CSpotLight>::s_table.ResolveEntry(id)) =
         static_cast<void*>(&SpotLightActA);
 
-    i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
+    i32 id2 = ActFindId("B");
     if (id2 == 0) {
-        g_buteTree.Insert("B", reinterpret_cast<void*>(g_typeCounter));
+        ActInsertId("B", g_typeCounter);
         id2 = g_typeCounter;
         CString* slot = ActNameLookup(id2);
         FreeNameSlotNodes();

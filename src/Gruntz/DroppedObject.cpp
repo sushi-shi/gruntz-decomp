@@ -329,9 +329,9 @@ void CObjectDropper::FireActivation(i32 actId) {
 // ebp,[eax+1]`). Identical to CAniCycle::RegisterActs. Deferred to the final sweep.
 RVA(0x000c60e0, 0x18d)
 void CObjectDropper::RegisterActs() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
-        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
         CString* slot = ActNameLookup(id);
         i32 cnt = g_typeColl.m_grown;
@@ -563,10 +563,10 @@ void CDroppedObject::FireActivation(i32 coord) {
 // callee-saved register choice cascading into the free-loop counts. Deferred.
 RVA(0x000c6d30, 0x2ac)
 void CDroppedObject::RegisterActs() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
+        ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
         CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
@@ -582,10 +582,10 @@ void CDroppedObject::RegisterActs() {
     *reinterpret_cast<DropHandler*>(DropLookup(id)) =
         reinterpret_cast<DropHandler>(static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::ActA));
 
-    i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
+    i32 id2 = ActFindId("B");
     if (id2 == 0) {
         id2 = g_typeCounter;
-        g_buteTree.Insert("B", reinterpret_cast<void*>(id2));
+        ActInsertId("B", id2);
         CString* slot = ActNameLookup(id2);
         i32 n = g_typeColl.m_grown;
         CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
@@ -789,9 +789,9 @@ void CDroppedObjectShadow::FireActivation(i32 coord) {
 // byte byte-faithful; only the regalloc/free-loop-count materialization diverges).
 RVA(0x000c78b0, 0x18d)
 void CDroppedObjectShadow::RegisterActs() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
-        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
         CString* slot = ActNameLookup(id);
         i32 cnt = g_typeColl.m_grown;

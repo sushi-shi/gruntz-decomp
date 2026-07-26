@@ -68,10 +68,10 @@ void CSingleAnimation::FireActivation(i32 id) {
 // register choice cascading into the free-loop count materialization. Deferred.
 RVA(0x000aeb80, 0x18d)
 void CSingleAnimation::RegisterActs() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
+        ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
         CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);

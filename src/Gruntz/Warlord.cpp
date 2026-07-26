@@ -77,9 +77,9 @@ CActReg CActRegPool<CWarlord>::s_table(2000, 2010);
 
 #define REGISTER_ACTION(key, handler)                                                              \
     do {                                                                                           \
-        i32 id_ = reinterpret_cast<i32>(g_buteTree.Find(key));                                     \
+        i32 id_ = ActFindId(key);                                     \
         if (id_ == 0) {                                                                            \
-            g_buteTree.Insert(key, reinterpret_cast<void*>(g_typeCounter));                        \
+            ActInsertId(key, g_typeCounter);                        \
             id_ = g_typeCounter;                                                                   \
             CString* slot_ = reinterpret_cast<CString*>(g_typeColl.IndexToPtr(id_));               \
             CString* p_ = reinterpret_cast<CString*>(g_typeColl.m_alloc);                          \

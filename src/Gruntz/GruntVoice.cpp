@@ -295,10 +295,10 @@ void CVoiceTrigger::FireActivation(i32 coord) {
 // than retail. Not source-steerable; the SAME plateau as CParticlez::RegisterActs.
 RVA(0x0011a500, 0x18d)
 void CVoiceTrigger::RegisterActs() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
+        ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
         CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);

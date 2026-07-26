@@ -45,9 +45,9 @@ static inline CPartEntry* PartLookup(i32 coord) {
 }
 
 static inline i32 RegisterActionName() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
-        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
+        ActInsertId("A", g_typeCounter);
         i32 key = g_typeCounter;
         id = key;
         CString* slot = ActNameLookup(key);
@@ -196,10 +196,10 @@ void CFortressFlag::FireActivation(i32 coord) {
 // register choice cascading into the free-loop count materialization. Deferred.
 RVA(0x000461e0, 0x18d)
 void CFortressFlag::RegisterActs() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
+        ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
         CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
@@ -382,10 +382,10 @@ void CParticlez::FireActivation(i32 coord) {
 // register choice cascading into the free-loop count materialization. Deferred.
 RVA(0x00046e90, 0x18d)
 void CParticlez::RegisterActs() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
+        ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
         CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);

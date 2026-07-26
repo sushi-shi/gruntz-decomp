@@ -264,9 +264,9 @@ void CWormhole::FireActivation(i32 idx) {
 // register assignment is not source-steerable.
 RVA(0x000401b0, 0x18d)
 void RegisterWormholeLogic() {
-    i32 idx = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 idx = ActFindId("A");
     if (idx == 0) {
-        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
+        ActInsertId("A", g_typeCounter);
         char* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
         *reinterpret_cast<CString*>(slot) = "A";
         g_typeCounter++;
@@ -381,9 +381,9 @@ void CGruntPuddle::FireActivation(i32 id) {
 // A/B inline asymmetry + register-pinning wall (see LogicActRegistrars.cpp header).
 RVA(0x000408b0, 0x2ac)
 void RegisterLogic() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
-        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
         CString* slot = ActNameLookup(id);
         FreeNameSlotNodes();
@@ -393,9 +393,9 @@ void RegisterLogic() {
     *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id)) =
         static_cast<void*>(&PuddleActA);
 
-    i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
+    i32 id2 = ActFindId("B");
     if (id2 == 0) {
-        g_buteTree.Insert("B", reinterpret_cast<void*>(g_typeCounter));
+        ActInsertId("B", g_typeCounter);
         id2 = g_typeCounter;
         CString* slot = ActNameLookup(id2);
         FreeNameSlotNodes();
@@ -689,9 +689,9 @@ void CTeleporter::FireActivation(i32 coord) {
 // A/B inline asymmetry + register-pinning wall (see LogicActRegistrars.cpp header).
 RVA(0x00041680, 0x2ac)
 void CTeleporter_RegisterActs() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
-        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
         CString* slot = ActNameLookup(id);
         FreeNameSlotNodes();
@@ -701,9 +701,9 @@ void CTeleporter_RegisterActs() {
     *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntry(id)) =
         static_cast<void*>(&TeleporterActA);
 
-    i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
+    i32 id2 = ActFindId("B");
     if (id2 == 0) {
-        g_buteTree.Insert("B", reinterpret_cast<void*>(g_typeCounter));
+        ActInsertId("B", g_typeCounter);
         id2 = g_typeCounter;
         CString* slot = ActNameLookup(id2);
         FreeNameSlotNodes();

@@ -387,10 +387,10 @@ void CWarpStonePad::FireActivation(i32 coord) {
 // into the free-loop count materialization. Deferred.
 RVA(0x0010da20, 0x18d)
 void CWarpStonePad::RegisterActs() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
+        ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
         CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
@@ -440,10 +440,10 @@ void CTileTriggerSwitch::FireActivation(i32 coord) {
 // byte-faithful; residual is the slot-vs-id callee-saved register choice. Deferred.
 RVA(0x0010e000, 0x18d)
 void CTileTriggerSwitch::RegisterActs() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
+        ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
         CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
@@ -499,10 +499,10 @@ void CTileTrigger::FireActivation(i32 coord) {
 // byte-faithful; residual is the slot-vs-id callee-saved register choice. Deferred.
 RVA(0x0010e600, 0x18d)
 void CTileTrigger::RegisterActs() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
+        ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
         CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
@@ -572,9 +572,9 @@ void CBrickz::FireActivation(i32 coord) {
 // the regalloc/free-loop-count materialization diverges. Deferred.
 RVA(0x0010ebe0, 0x18d)
 void CBrickz::RegisterActs() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
-        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
         CString* slot = ActNameLookup(id);
         i32 cnt = g_typeColl.m_grown;
@@ -679,10 +679,10 @@ void CCheckpointTrigger::FireActivation(i32 coord) {
 // choice cascading into the free-loop counts. Deferred.
 RVA(0x0010f340, 0x2ac)
 void CCheckpointTrigger::RegisterActs() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
+        ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
         CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
@@ -700,10 +700,10 @@ void CCheckpointTrigger::RegisterActs() {
      ))
         ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act);
 
-    i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
+    i32 id2 = ActFindId("B");
     if (id2 == 0) {
         id2 = g_typeCounter;
-        g_buteTree.Insert("B", reinterpret_cast<void*>(id2));
+        ActInsertId("B", id2);
         CString* slot = ActNameLookup(id2);
         i32 n = g_typeColl.m_grown;
         CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
@@ -807,10 +807,10 @@ void CTileTriggerTransition::FireActivation(i32 coord) {
 // name-list free-loop count materialization - identical wall to CSecretLevelTrigger::RegisterActs.
 RVA(0x0010fe70, 0x18d)
 void CTileTriggerTransition::RegisterActs() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
+        ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
         CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);

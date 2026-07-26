@@ -62,9 +62,9 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 VTBL(CMenuSparkle, 0x001e82dc);
 
 static inline i32 RegisterActionName() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
-        g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
+        ActInsertId("A", g_typeCounter);
         i32 key = g_typeCounter;
         id = key;
         CString* slot = ActNameLookup(key);

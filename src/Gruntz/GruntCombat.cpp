@@ -304,9 +304,9 @@ void CGrunt::ComputeFacing(double dt) {
 
 #define REGISTER_KEY_644AF0(key, handler)                                                          \
     {                                                                                              \
-        i32 id = reinterpret_cast<i32>(g_buteTree.Find(key));                                      \
+        i32 id = ActFindId(key);                                      \
         if (id == 0) {                                                                             \
-            g_buteTree.Insert(key, reinterpret_cast<void*>(g_typeCounter));                        \
+            ActInsertId(key, g_typeCounter);                        \
             id = g_typeCounter;                                                                    \
             CString* slot = reinterpret_cast<CString*>(g_typeColl._zvec::IndexToPtr(id));                                         \
             i32 n = g_typeColl.m_grown;                                                            \

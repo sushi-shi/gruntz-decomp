@@ -162,10 +162,10 @@ void CStaticHazard::FireActivation(i32 coord) {
 // callee-saved register choice cascading into the free-loop counts. Deferred.
 RVA(0x000fbd50, 0x2ac)
 void CStaticHazard::RegisterActs() {
-    i32 id = reinterpret_cast<i32>(g_buteTree.Find("A"));
+    i32 id = ActFindId("A");
     if (id == 0) {
         id = g_typeCounter;
-        g_buteTree.Insert("A", reinterpret_cast<void*>(id));
+        ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
         CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
@@ -180,10 +180,10 @@ void CStaticHazard::RegisterActs() {
     }
     HaznLookup(id)->m_fn = static_cast<HaznHandler>(&CStaticHazard::LoadAttributes2);
 
-    i32 id2 = reinterpret_cast<i32>(g_buteTree.Find("B"));
+    i32 id2 = ActFindId("B");
     if (id2 == 0) {
         id2 = g_typeCounter;
-        g_buteTree.Insert("B", reinterpret_cast<void*>(id2));
+        ActInsertId("B", id2);
         CString* slot = ActNameLookup(id2);
         i32 n = g_typeColl.m_grown;
         CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
