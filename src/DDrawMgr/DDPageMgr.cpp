@@ -746,7 +746,7 @@ i32 CMoviePlayer::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
 // 83.9% - logic/CFG/COM call/popcount loops/classification reproduced. The residual is a
 // regalloc coin-flip: retail spills `this` (sub esp,0x70) + uses ebx as a bit counter,
 // while we keep `this` in ebx (sub esp,0x6c) + use edi for the third counter. Deferred.
-RVA(0x0017d2b0, 0xfa)
+RVA(0x0017d2b0, 0xe4)
 i32 CMoviePlayer::CheckMode16() {
     DDSURFACEDESC desc;
     memset(&desc, 0, sizeof(desc));

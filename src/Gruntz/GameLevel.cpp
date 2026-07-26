@@ -1941,7 +1941,7 @@ i32 CGameLevel::RemovePlane(i32 index) {
     return 1;
 }
 
-RVA(0x0015dbe0, 0xa3)
+RVA(0x0015dbe0, 0x70)
 i32 CGameLevel::MovePlane(i32 from, i32 to) {
     if (from >= 0 && to < m_planes.GetSize()) {
         if (from == to) {

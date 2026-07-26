@@ -610,7 +610,7 @@ void CDDPalette::Flush() {
 // their arg stack slots (reused) after the loop guard + keeps the cache byte in bl;
 // this C spelling hoists the masks into fresh temps (sub esp,0xc) + spills the byte.
 // The in-place-mask / do-while restructurings scored strictly lower. Not steerable.
-RVA(0x001482c0, 0x2e9)
+RVA(0x001482c0, 0x11f)
 void CDDPalette::BlendRange(i32 pct, i32 start, i32 count, i32 r, i32 g, i32 b) {
     for (i32 i = start; i < start + count; i++) {
         u8 cr = m_cacheA[i * 4 + 0];
@@ -698,7 +698,7 @@ i32 CDDPalette::CaptureSystemPalette() {
 // failure paths all match). Residual is only that objdiff scores the ~7 `ff 15` GDI
 // calls fuzzy - they route through the cached fn-ptr globals (::GetDC etc.) vs retail's
 // differently-classed reloc target. Same family as CDDPalette::CaptureSystemPalette.
-RVA(0x00148720, 0x117)
+RVA(0x00148720, 0x9f)
 i32 BlackoutSystemPalette() {
     HDC hdc = ::GetDC(0);
     if (hdc != 0) {

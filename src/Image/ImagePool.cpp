@@ -1002,7 +1002,7 @@ i32 CRezImage::LoadDefault(char* name, void* a2, void* a3) {
 // Tried per-iteration multiply vs pointer-accumulator forms (40.3 -> 43.6); the merged
 // 3-loop induction shape is not source-expressible. Bytes for the prologue/guard/alloc/
 // free + the swap ordering match; the residue is the inner-loop addressing selection.
-RVA(0x00176840, 0x288)
+RVA(0x00176840, 0x11f)
 void CRezImage::FlipVertical() {
     if (m_height <= 1) {
         return;
