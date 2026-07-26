@@ -1150,7 +1150,7 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
         return 0;
     }
     // chain the base-class serialize on `this` (0x16e7f0 = CMovingLogicBase::Serialize)
-    if (CUserLogic::SerializeMove(static_cast<CFileMemBase*>(ar), mode, a3, a4) == 0) {
+    if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
         return 0;
     }
     // then the +0x150 CWapX base subobject's Chain (0x8c00 via the 0x1aff thunk).
@@ -1159,7 +1159,7 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     // Grunt.h ODR world is not converted yet, so the subobject is reached by cast
     // until that MI conversion lands (MI1 flagged item 1).
     if ((reinterpret_cast<CWapX*>(&m_34))
-            ->Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4))
+            ->Chain(ar, mode, a3, a4)
         == 0) {
         return 0;
     }
@@ -1181,7 +1181,7 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
             break;
     }
     (reinterpret_cast<CTriRecord*>((&m_entranceCell)))
-        ->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+        ->Serialize(ar, mode, a3, a4);
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_toyClock));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_idleAnchor));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_idleTimer));
@@ -1191,17 +1191,17 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_combatClockLo));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_880));
     (reinterpret_cast<CPairRecord*>((&m_wingzClockLo)))
-        ->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+        ->Serialize(ar, mode, a3, a4);
     (reinterpret_cast<CPairRecord*>((&m_8a0)))
-        ->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+        ->Serialize(ar, mode, a3, a4);
     (reinterpret_cast<CPairRecord*>((&m_8b0)))
-        ->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+        ->Serialize(ar, mode, a3, a4);
     (reinterpret_cast<CPairRecord*>((&m_8c0)))
-        ->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+        ->Serialize(ar, mode, a3, a4);
     (reinterpret_cast<CPairRecord*>((&m_arrivalRerollLo)))
-        ->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+        ->Serialize(ar, mode, a3, a4);
     (reinterpret_cast<CPairRecord*>((&m_278)))
-        ->Serialize(static_cast<CFileMemBase*>(ar), mode, a3, a4);
+        ->Serialize(ar, mode, a3, a4);
     return 1;
 }
 

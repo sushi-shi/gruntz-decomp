@@ -155,7 +155,7 @@ i32 CLightFx::Activate(i32 spec, i32 effect, i32 anchorA, i32 anchorB) {
 RVA(0x0009d660, 0xc8)
 i32 CLightFx::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     if (CUserLogic::SerializeMove(
-            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
+            ar,
             mode,
             a3,
             a4
@@ -163,17 +163,17 @@ i32 CLightFx::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4)
         == 0) {
         return 0;
     }
-    if (Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) == 0) {
+    if (Chain(ar, mode, a3, a4) == 0) {
         return 0;
     }
     switch (mode) {
         case 4:
-            (static_cast<CFileMemBase*>(ar))->Write(&m_anchorA, 4);
-            (static_cast<CFileMemBase*>(ar))->Write(&m_anchorB, 4);
+            (ar)->Write(&m_anchorA, 4);
+            (ar)->Write(&m_anchorB, 4);
             break;
         case 7:
-            (static_cast<CFileMemBase*>(ar))->Read(&m_anchorA, 4);
-            (static_cast<CFileMemBase*>(ar))->Read(&m_anchorB, 4);
+            (ar)->Read(&m_anchorA, 4);
+            (ar)->Read(&m_anchorB, 4);
             break;
         case 8:
             g_gameReg->m_logicPump

@@ -1051,7 +1051,7 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, CGameObject* a
     case 7: {
         s->Read(buf, 0x80);
         s->Read(m_blob, 0x10);
-        CGameObject* obj = reinterpret_cast<CGameObject*>(a4);
+        CGameObject* obj = a4;
         m_34 = obj;
         m_38 = static_cast<CWwdGameObjectA*>(obj); // the bound obj IS the created A-kind sprite
         m_3c = obj->m_7c;
@@ -1308,7 +1308,7 @@ i32 CTimeBomb::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject* a
     if (!CUserLogic::SerializeMove(arc, mode, a3, a4)) {
         return 0;
     }
-    return Chain(sa, mode, a3, reinterpret_cast<CGameObject*>(a4)) ? 1 : 0;
+    return Chain(sa, mode, a3, a4) ? 1 : 0;
 }
 
 // ---------------------------------------------------------------------------

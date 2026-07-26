@@ -17,14 +17,14 @@ VTBL(CLevelTime, 0x001e801c);
 RVA(0x000119b0, 0x47)
 i32 CLevelTime::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     if (!CUserLogic::SerializeMove(
-            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
+            ar,
             mode,
             a3,
             a4
         )) {
         return 0;
     }
-    return Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
+    return Chain(ar, mode, a3, a4) != 0;
 }
 
 RVA_COMPGEN(0x00011a20, 0x1e, ??_GCLevelTime@@UAEPAXI@Z)

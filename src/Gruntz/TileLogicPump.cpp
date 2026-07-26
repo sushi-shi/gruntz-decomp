@@ -114,14 +114,14 @@ CActReg CActRegPool<CTileTriggerTransition>::s_table(2000, 2010);
 RVA(0x00010f20, 0x47)
 i32 CWarpStonePad::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     if (!CUserLogic::SerializeMove(
-            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
+            ar,
             mode,
             a3,
             a4
         )) {
         return 0;
     }
-    return Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
+    return Chain(ar, mode, a3, a4) != 0;
 }
 
 // CWarpStonePad::~CWarpStonePad @0x10fc0 - empty vtable-anchor dtor; folds the bare
@@ -141,14 +141,14 @@ LogicTypeId CTileTriggerSwitch::GetTypeTag() {
 RVA(0x00011050, 0x47)
 i32 CTileTriggerSwitch::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     if (!CUserLogic::SerializeMove(
-            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
+            ar,
             mode,
             a3,
             a4
         )) {
         return 0;
     }
-    return Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
+    return Chain(ar, mode, a3, a4) != 0;
 }
 
 // CTileTriggerSwitch::~CTileTriggerSwitch @0x110f0 - the 0x44 folded CUserLogic teardown.
@@ -170,14 +170,14 @@ LogicTypeId CTileTrigger::GetTypeTag() {
 RVA(0x000111f0, 0x47)
 i32 CTileTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     if (!CUserLogic::SerializeMove(
-            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
+            ar,
             mode,
             a3,
             a4
         )) {
         return 0;
     }
-    return Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
+    return Chain(ar, mode, a3, a4) != 0;
 }
 
 // ~CTileTrigger is inline (header) so it folds into the three leaf dtors instead of
@@ -268,14 +268,14 @@ LogicTypeId CTileTriggerTransition::GetTypeTag() {
 RVA(0x00011750, 0x47)
 i32 CTileTriggerTransition::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     if (!CUserLogic::SerializeMove(
-            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
+            ar,
             mode,
             a3,
             a4
         )) {
         return 0;
     }
-    return Chain(static_cast<CFileMemBase*>(ar), mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
+    return Chain(ar, mode, a3, a4) != 0;
 }
 
 // ~CTileTriggerTransition (0x0117f0) - THIS class's own out-of-line dtor COMDAT, not the
@@ -758,7 +758,7 @@ i32 CCheckpointTrigger::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGame
     if (!CUserLogic::SerializeMove(arc, mode, a3, a4)) {
         return 0;
     }
-    return Chain(sa, mode, a3, reinterpret_cast<CGameObject*>(a4)) ? 1 : 0;
+    return Chain(sa, mode, a3, a4) ? 1 : 0;
 }
 
 RVA(0x0010fa60, 0x19)

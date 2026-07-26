@@ -842,14 +842,14 @@ i32 CDroppedObjectShadow::Advance() {
 RVA(0x000c7b40, 0x76)
 i32 CDroppedObjectShadow::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(
-            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
+            ar,
             mode,
             c,
             d
         )) {
         return 0;
     }
-    if (!Chain(static_cast<CFileMemBase*>(ar), mode, c, d)) {
+    if (!Chain(ar, mode, c, d)) {
         return 0;
     }
     if (mode == 8) {

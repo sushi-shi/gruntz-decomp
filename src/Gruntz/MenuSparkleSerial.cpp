@@ -18,7 +18,7 @@ i32 CMenuSparkle::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject
     if (!CUserLogic::SerializeMove(static_cast<CFileMemBase*>(arc), mode, a3, a4)) {
         return 0;
     }
-    if (!Chain(static_cast<CFileMemBase*>(arc), mode, a3, reinterpret_cast<CGameObject*>(a4))) {
+    if (!Chain(static_cast<CFileMemBase*>(arc), mode, a3, a4)) {
         return 0;
     }
     if (mode != 4) {

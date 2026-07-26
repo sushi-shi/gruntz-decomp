@@ -113,15 +113,15 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 RVA(0x0003f040, 0x147)
 i32 CExitTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     if (!CUserLogic::SerializeMove(
-            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
+            ar,
             mode,
             a3,
             a4
         )) {
         return 0;
     }
-    CFileMemBase* arc = static_cast<CFileMemBase*>(ar);
-    if (!Chain(arc, mode, a3, reinterpret_cast<CGameObject*>(a4))) {
+    CFileMemBase* arc = ar;
+    if (!Chain(arc, mode, a3, a4)) {
         return 0;
     }
 

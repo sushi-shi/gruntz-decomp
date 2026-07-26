@@ -146,5 +146,5 @@ i32 CGruntSelectedSprite::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGa
         )) {
         return 0;
     }
-    return Chain(sa, mode, a3, reinterpret_cast<CGameObject*>(a4)) ? 1 : 0;
+    return Chain(sa, mode, a3, a4) ? 1 : 0;
 }

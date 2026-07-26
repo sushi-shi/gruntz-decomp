@@ -47,7 +47,7 @@ i32 CToyPeek::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4)
     if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
         return 0;
     }
-    if (Chain(ar, mode, a3, reinterpret_cast<CGameObject*>(a4)) == 0) {
+    if (Chain(ar, mode, a3, a4) == 0) {
         return 0;
     }
     // The two i64 timer fields sit contiguous (m_startClock @+0x58, m_countdown

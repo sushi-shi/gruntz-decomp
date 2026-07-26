@@ -129,7 +129,7 @@ i32 CGruntPowerupSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGame
     if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
         return 0;
     }
-    if (Chain(ar, mode, a3, reinterpret_cast<CGameObject*>(a4)) == 0) {
+    if (Chain(ar, mode, a3, a4) == 0) {
         return 0;
     }
     switch (mode) {

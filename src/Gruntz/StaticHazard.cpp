@@ -381,7 +381,7 @@ dispatch:
 
 RVA(0x000fc5b0, 0xf5)
 i32 CStaticHazard::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
-    CFileMemBase* arc = static_cast<CFileMemBase*>(ar);
+    CFileMemBase* arc = ar;
     switch (mode) {
         case 4:
             arc->Write(&m_pulseEpoch, 4);
@@ -401,12 +401,12 @@ i32 CStaticHazard::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject
             break;
     }
     if (!CUserLogic::SerializeMove(
-            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
+            ar,
             mode,
             a3,
             a4
         )) {
         return 0;
     }
-    return Chain(arc, mode, a3, reinterpret_cast<CGameObject*>(a4)) != 0;
+    return Chain(arc, mode, a3, a4) != 0;
 }

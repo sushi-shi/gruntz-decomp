@@ -148,9 +148,9 @@ i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject* 
         arc->Read(&m_2c, 4);
         arc->Read(&g_logicTypesRegistered, 4);
         arc->Read(&m_prevAnimSetNode, 4);
-        m_0c = reinterpret_cast<CGameObject*>(a4);
+        m_0c = a4;
         m_object = reinterpret_cast<CWwdGameObjectA*>(a4);
-        m_objAux = (reinterpret_cast<CGameObject*>(a4))->m_7c;
+        m_objAux = (a4)->m_7c;
         m_deferredCallback = 0;
         m_gatedCallback = 0;
         m_28 = 0x3e9;
