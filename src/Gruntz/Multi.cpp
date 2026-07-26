@@ -1660,7 +1660,7 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
         reinterpret_cast<void*>(4),
         buf,
         0,
-        reinterpret_cast<i32>(g_emptyString)
+        g_emptyString
     );
     if (enumResult == 0) {
         g_connectRptMgr->ReportNetError(0);
@@ -1668,7 +1668,7 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     }
 
     void* lp = reinterpret_cast<void*>(
-        Peer()->CreatePlayer(const_cast<char*>("Player"), reinterpret_cast<i32>(g_emptyString), 0)
+        Peer()->CreatePlayer(const_cast<char*>("Player"), g_emptyString, 0)
     );
     CNetSessionNode* node = static_cast<CNetSessionNode*>(lp);
     m_5bc = reinterpret_cast<i32>(node);
@@ -1714,8 +1714,8 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
     {
         lp = reinterpret_cast<void*>(Peer()->EnumPlayersCb(
             sel,
-            reinterpret_cast<i32>(static_cast<const char*>(GetString5a0())),
-            reinterpret_cast<i32>(g_emptyString),
+            static_cast<const char*>(GetString5a0()),
+            g_emptyString,
             0
         ));
     }
@@ -3624,7 +3624,7 @@ i32 CMulti::SetupTcpIpConfig() {
     {
         lp = reinterpret_cast<void*>(Peer()->CreatePlayer(
             const_cast<char*>(static_cast<const char*>(ch0->GetName())),
-            reinterpret_cast<i32>(g_emptyString),
+            g_emptyString,
             0
         ));
     }
@@ -3661,7 +3661,7 @@ i32 CMulti::CreateLocalPlayer() {
     {
         m_5bc = reinterpret_cast<i32>(reinterpret_cast<CNetSessionNode*>(Peer()->CreatePlayer(
             const_cast<char*>(static_cast<const char*>(GetString5a0())),
-            reinterpret_cast<i32>(g_emptyString),
+            g_emptyString,
             0
         )));
     }
@@ -3705,7 +3705,7 @@ i32 CMulti::OpenHostChannel(void* a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
     m_rngSeed = timeGetTime();
     m_5bc = Peer()->CreatePlayer(
         const_cast<char*>(static_cast<const char*>(GetString5a0())),
-        reinterpret_cast<i32>(g_emptyString),
+        g_emptyString,
         0
     );
     if (m_5bc == 0) {

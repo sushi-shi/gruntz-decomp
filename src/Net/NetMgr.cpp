@@ -485,7 +485,7 @@ i32 CNetMgr::ReadPlayerSel(void* hList) {
 // local. Same family as EnumPlayersInto/EnumGroupsRange; stack-buffer-size-drives-
 // frame.md. Final sweep.
 RVA(0x001788a0, 0x13c)
-CNetPlayerListNode* CNetMgr::EnumGroupsInto(void* a, void* b, i32 c, i32 d) {
+CNetPlayerListNode* CNetMgr::EnumGroupsInto(void* a, void* b, i32 c, const char* d) {
     char buf[0x50];
     memset(buf, 0, 0x50);
     i32* guid = reinterpret_cast<i32*>(&m_appGuid); // the GUID as its 4 dwords
@@ -498,8 +498,8 @@ CNetPlayerListNode* CNetMgr::EnumGroupsInto(void* a, void* b, i32 c, i32 d) {
     *reinterpret_cast<void**>((buf + 0x28)) = a;
     *reinterpret_cast<void**>((buf + 0x30)) = b;
     *reinterpret_cast<i32*>((buf + 0x40)) = c;
-    if (d != 0 && *reinterpret_cast<char*>(d) != 0) {
-        *reinterpret_cast<i32*>((buf + 0x34)) = d;
+    if (d != 0 && *d != 0) {
+        *reinterpret_cast<i32*>((buf + 0x34)) = reinterpret_cast<i32>(d);
     }
 
     IDirectPlay4Z* iface = m_directPlay;
@@ -532,7 +532,7 @@ CNetPlayerListNode* CNetMgr::EnumGroupsInto(void* a, void* b, i32 c, i32 d) {
 }
 
 RVA(0x001789e0, 0x59)
-i32 CNetMgr::EnumPlayersCb(void* a, i32 b, i32 c, i32 d) {
+i32 CNetMgr::EnumPlayersCb(void* a, const char* b, const char* c, i32 d) {
     if (a == 0) {
         return 0;
     }
@@ -543,7 +543,7 @@ i32 CNetMgr::EnumPlayersCb(void* a, i32 b, i32 c, i32 d) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x2dc, hr, 0);
         return 0;
     }
-    return CreatePlayer(reinterpret_cast<void*>(b), c, d);
+    return CreatePlayer(const_cast<char*>(b), c, d);
 }
 
 RVA(0x00178a40, 0x3e)
@@ -673,13 +673,13 @@ void CNetMgr::ClearSessionList() {
 // out-var onto a dead arg slot (frame 0x10 vs our 0x14) and materializes the zero
 // once in eax to seed every zeroed local where our /O2 stores immediates. Final sweep.
 RVA(0x00178cb0, 0x8b)
-i32 CNetMgr::CreatePlayer(void* a, i32 b, i32 c) {
+i32 CNetMgr::CreatePlayer(void* a, const char* b, i32 c) {
     i32 out = 0;
     i32 desc[4];
     desc[0] = 0x10;
     desc[1] = 0;
     desc[2] = reinterpret_cast<i32>(a);
-    desc[3] = b;
+    desc[3] = reinterpret_cast<i32>(b);
 
     IDirectPlay4Z* iface = m_directPlay;
     i32 hr = iface->GetSessionDesc(&desc[0], &out, c, 0, 0);

@@ -630,10 +630,10 @@ public:
     void PopulatePlayerList(void* hList);                // 0x178790  fill a Win32 player list box
     i32 EnumPlayersCb(
         void* a,
-        i32 b,
-        i32 c,
+        const char* name,
+        const char* longName,
         i32 d
-    );                                         // 0x1789e0  EnumPlayers slot wrapper -> CreatePlayer
+    ); // 0x1789e0  EnumPlayers slot wrapper -> CreatePlayer
     i32 EnumGroupsAll();                       // 0x178a40  EnumGroups (slot 0xc) wrapper
     i32 EnumGroupsRange(void* rec, i32 flags); // 0x178a80  EnumGroups (slot 0xc) over a record
     i32 AddSessionNode(
@@ -642,7 +642,7 @@ public:
         const char* nameB,
         i32 d
     ); // 0x178b30  (/GX) new session node -> InitSession + GetData5 -> +0x54 list
-    i32 CreatePlayer(void* a, i32 b, i32 c); // 0x178cb0  GetSessionDesc + AddSessionNode
+    i32 CreatePlayer(void* name, const char* longName, i32 c); // 0x178cb0
     void PopulateSessionList(void* hList);   // 0x178d40  (/GX) fill a Win32 session list box
 
     // The 0xbbxxx / 0xbcxxx connect/config helpers reconstructed in this TU.
@@ -668,7 +668,7 @@ public:
     i32 EnumServiceProviders(i32 validated);                // 0x178280
     InterfaceObject* AddGroupNode(void* guid, void* name);  // 0x178360
     CNetPlayerListNode*
-    EnumGroupsInto(void* a, void* b, i32 c, i32 d); // 0x1788a0 (returns the added player node)
+    EnumGroupsInto(void* a, void* b, i32 c, const char* longName); // 0x1788a0
 
     // The diagnostic error reporter (lives in the netmgrerror TU; static
     // __cdecl). Declared here so the wrappers can route HRESULTs through it.
