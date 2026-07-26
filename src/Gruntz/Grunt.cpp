@@ -809,10 +809,10 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
         m_38->m_1a0.Setup(m_poseAttackIdle);
         {
             CAniElement* desc = m_38->m_1a0.m_14;
-            i32* elem = desc->m_records.GetSize() > 0
-                            ? reinterpret_cast<i32*>(desc->m_records.GetAt(0))
+            CAniDesc* elem = desc->m_records.GetSize() > 0
+                            ? static_cast<CAniDesc*>(desc->m_records.GetAt(0))
                             : 0;
-            i32 frame = elem[0x14 / 4];
+            i32 frame = elem->m_param;
             i32 col = m_entranceCell.col;
             i32 row = m_entranceCell.row;
             i32 index = 3 * col + row;
@@ -850,9 +850,9 @@ idle:
     m_38->ApplyGeometryDirect(m_poseIdle[0], 0);
     {
         CAniElement* desc = m_38->m_1a0.m_14;
-        i32* elem =
-            desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
-        i32 frame = elem[0x14 / 4];
+        CAniDesc* elem =
+            desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+        i32 frame = elem->m_param;
         i32 col = rec.row;
         i32 row = rec.column;
         i32 index = 3 * col + row;

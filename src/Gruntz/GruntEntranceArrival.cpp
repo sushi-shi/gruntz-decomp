@@ -267,9 +267,9 @@ i32 CGrunt::ResetGeometry() {
     m_38->m_1a0.Setup(m_poseAttackIdle);
 
     CAniElement* desc = m_38->m_1a0.m_14;
-    i32* elem =
-        desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
-    i32 frame = elem[0x14 / 4];
+    CAniDesc* elem =
+        desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+    i32 frame = elem->m_param;
 
     GruntEntranceCell cell = m_entranceCell; // retail copies the whole triple; `reason` dead-spills
     i32 col = cell.col;
@@ -431,8 +431,8 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     p->m_1a0.Setup((&m_poseAttack1)[idx]);
 
     CAniElement* desc = m_38->m_1a0.m_14;
-    i32* el = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
-    i32 frame = el[0x14 / 4];
+    CAniDesc* el = desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+    i32 frame = el->m_param;
 
     GruntEntranceCell cell = m_entranceCell;
     i32 cc = cell.col;
@@ -466,8 +466,8 @@ i32 CGrunt::RearmAttackAnim2() {
     p->m_1a0.Setup(m_poseAttack2);
 
     CAniElement* desc = m_38->m_1a0.m_14;
-    i32* el = desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
-    i32 frame = el[0x14 / 4];
+    CAniDesc* el = desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+    i32 frame = el->m_param;
 
     GruntEntranceCell cell = m_entranceCell;
     i32 col = cell.col;
@@ -753,10 +753,10 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             m_38->ApplyGeometryDirect((&m_poseToy1)[toyIdx], 0);
 
             CAniElement* desc = m_38->m_1a0.m_14;
-            i32* el = desc->m_records.GetSize() > 0
-                          ? reinterpret_cast<i32*>(desc->m_records.GetAt(0))
+            CAniDesc* el = desc->m_records.GetSize() > 0
+                          ? static_cast<CAniDesc*>(desc->m_records.GetAt(0))
                           : 0;
-            i32 frame = el[0x14 / 4];
+            i32 frame = el->m_param;
             char* buf = (&m_448)->GetBuffer(0);
             m_38->ApplyLookupSprite(buf, frame);
 
@@ -858,9 +858,9 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(want);
         CAniElement* desc = m_38->m_1a0.m_14;
-        i32* el =
-            desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
-        i32 frame = el[0x14 / 4];
+        CAniDesc* el =
+            desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+        i32 frame = el->m_param;
         char* buf = (&m_448)->GetBuffer(0);
         m_38->ApplyLookupSprite(buf, frame);
     }
@@ -1154,9 +1154,9 @@ latch:
     CString key = reinterpret_cast<const char*>(&m_cells[3 * col + row].IdleName());
 
     CAniElement* desc = m_38->m_1a0.m_14;
-    i32* elem =
-        desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
-    m_38->ApplyLookupSprite(key, elem[0x14 / 4]);
+    CAniDesc* elem =
+        desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+    m_38->ApplyLookupSprite(key, elem->m_param);
 }
 
 RVA(0x000633e0, 0x2ca)
@@ -1508,11 +1508,11 @@ void CGrunt::LoadVehicleGruntAnimations() {
             m_38->ApplyGeometryDirect(m_poseToyBreak, 0);
 
             CAniElement* desc = m_38->m_1a0.m_14;
-            i32* elem = desc->m_records.GetSize() > 0
-                            ? reinterpret_cast<i32*>(desc->m_records.GetAt(0))
+            CAniDesc* elem = desc->m_records.GetSize() > 0
+                            ? static_cast<CAniDesc*>(desc->m_records.GetAt(0))
                             : 0;
             char* buf = (&m_448)->GetBuffer(0);
-            m_38->ApplyLookupSprite(buf, elem[0x14 / 4]);
+            m_38->ApplyLookupSprite(buf, elem->m_param);
 
             CWwdGameObjectA* h = m_object;
             CGruntzMgr* g = g_gameReg;
@@ -1663,8 +1663,8 @@ i32 CGrunt::BuildGruntExitAnimation() {
     }
 
     (reinterpret_cast<CEffect6b*>((&m_34)))->Apply(reinterpret_cast<i32>(found), 0);
-    i32* elem = reinterpret_cast<i32*>(m_38->m_1a0.m_14->AtChecked(0));
-    i32 frame = elem[0x14 / 4];
+    CAniDesc* elem = static_cast<CAniDesc*>(m_38->m_1a0.m_14->AtChecked(0));
+    i32 frame = elem->m_param;
     m_38->ApplyLookupSprite(s_GRUNTZ_EXITZ, frame);
     return 0;
 }
@@ -1900,13 +1900,13 @@ tail:
     i32 frame;
     {
         CAniElement* desc = m_38->m_1a0.m_14;
-        i32* elem;
+        CAniDesc* elem;
         if (desc->m_records.GetSize() > 0) {
-            elem = reinterpret_cast<i32*>(desc->m_records.GetAt(0));
+            elem = static_cast<CAniDesc*>(desc->m_records.GetAt(0));
         } else {
             elem = 0;
         }
-        frame = elem[0x14 / 4];
+        frame = elem->m_param;
     }
     {
         GruntEntranceCell cell = m_entranceCell;

@@ -37,6 +37,7 @@
 #include <Gruntz/Effect6b.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
+#include <DDrawMgr/AniAdvance.h> // CAniDesc (the m_records element)
 #include <rva.h>
 #include <math.h>
 #include <stdlib.h>
@@ -368,9 +369,9 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(found);
         CAniElement* desc = m_38->m_1a0.m_14;
-        i32* elem =
-            desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
-        m_38->ApplyLookupSprite(key, elem[0x14 / 4]);
+        CAniDesc* elem =
+            desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+        m_38->ApplyLookupSprite(key, elem->m_param);
     }
 }
 
@@ -497,9 +498,9 @@ void CGrunt::RearmEntranceDrop() {
         m_38->m_1a0.Setup(m_poseItem2);
 
         CAniElement* desc = m_38->m_1a0.m_14;
-        i32* elem =
-            desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
-        i32 frame = elem[0x14 / 4];
+        CAniDesc* elem =
+            desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+        i32 frame = elem->m_param;
 
         i32 col = m_entranceCell.col;
         i32 row = m_entranceCell.row;
@@ -750,9 +751,9 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(m_poseWalk);
         CAniElement* desc = m_38->m_1a0.m_14;
-        i32* elem =
-            desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
-        i32 frame = elem[0x14 / 4];
+        CAniDesc* elem =
+            desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+        i32 frame = elem->m_param;
         i32 idx = 3 * m_entranceCell.col + m_entranceCell.row;
         char* buf = m_cells[idx].WalkName().GetBuffer(0);
         m_38->ApplyLookupSprite(buf, frame);
@@ -765,9 +766,9 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(m_poseIdle[0]);
         CAniElement* desc = m_38->m_1a0.m_14;
-        i32* elem =
-            desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
-        i32 frame = elem[0x14 / 4];
+        CAniDesc* elem =
+            desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+        i32 frame = elem->m_param;
         i32 idx = 3 * m_entranceCell.col + m_entranceCell.row;
         char* buf = m_cells[idx].IdleName().GetBuffer(0);
         m_38->ApplyLookupSprite(buf, frame);
@@ -809,9 +810,9 @@ i32 CGrunt::UpdateEntranceAnim() {
         m_38->m_1a0.Setup(m_poseToyBreak);
 
         CAniElement* desc = m_38->m_1a0.m_14;
-        i32* elem =
-            desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
-        i32 frame = elem[0x14 / 4];
+        CAniDesc* elem =
+            desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+        i32 frame = elem->m_param;
 
         char* buf = (&m_448)->GetBuffer(0);
         m_38->ApplyLookupSprite(buf, frame);
@@ -1085,9 +1086,9 @@ finalize:
     m_38->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_FREEZE, 0);
     {
         CAniElement* desc = m_38->m_1a0.m_14;
-        i32* elem =
-            desc->m_records.GetSize() > 0 ? reinterpret_cast<i32*>(desc->m_records.GetAt(0)) : 0;
-        i32 frame = elem[0x14 / 4];
+        CAniDesc* elem =
+            desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+        i32 frame = elem->m_param;
         m_38->ApplyLookupSprite(s_GRUNTZ_DEATHZ_FREEZE, frame);
     }
     m_freezeUnfrozen = 0;
