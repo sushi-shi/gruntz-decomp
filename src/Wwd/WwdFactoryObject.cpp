@@ -945,8 +945,7 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
     if (m_14 != 0) {
         // the +0x0c owner (CLoadable::m_0c) carries the CDDrawSubMgrLeaf at +0x2c;
         // KeyOfValue returns the label for the map VALUE m_14 (CAniElement : CObject).
-        CString label = OwnerMgr()->m_animRegistry->KeyOfValue(m_14);
-        strcpy(buf, label);
+        strcpy(buf, OwnerMgr()->m_animRegistry->KeyOfValue(m_14));
     }
     ar->Write(buf, 0x80);
     return 1;

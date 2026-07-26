@@ -372,8 +372,7 @@ i32 CWwdGameObjectA::ReadState(i32 src) {
 
     memset(tmp, 0, 0x80);
     {
-        CString str = OwnerMgr()->m_soundRegistry->FindKeyOfValue(m_19c);
-        strcpy(tmp, str);
+        strcpy(tmp, OwnerMgr()->m_soundRegistry->FindKeyOfValue(m_19c));
     }
     ar->Write(tmp, 0x80);
     return 1;

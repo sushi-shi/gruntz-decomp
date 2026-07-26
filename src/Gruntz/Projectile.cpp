@@ -1017,8 +1017,7 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, i32 a4) {
                 g_serialCounter++;
                 memset(buf, 0, sizeof(buf));
                 if (m_frames[wi] != 0) {
-                    CString nm = reg->m_animRegistry->KeyOfValue(m_frames[wi]);
-                    strcpy(buf, nm);
+                    strcpy(buf, reg->m_animRegistry->KeyOfValue(m_frames[wi]));
                 }
                 s->Write(buf, 0x80);
             }
@@ -1069,8 +1068,7 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, i32 a4) {
         char blob[0x80];
         memset(blob, 0, sizeof(blob));
         if (m_value != 0) {
-            CString nm = m_3c->m_0c->m_animRegistry->KeyOfValue(m_value);
-            strcpy(blob, nm);
+            strcpy(blob, m_3c->m_0c->m_animRegistry->KeyOfValue(m_value));
         }
         s->Write(blob, 0x80);
         s->Write(m_blob, 0x10);
