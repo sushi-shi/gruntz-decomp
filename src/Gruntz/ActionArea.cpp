@@ -241,7 +241,7 @@ RVA_COMPGEN(0x000087b0, 0x7, ??1CUserBase@@UAE@XZ)
 // 0x8810 - the CUserBase scalar-deleting dtor (??_7CUserBase @0x1e70b4 slot 0
 // -> ILT 0x2be9 -> here): re-stamps ??_7CUserBase inline (the trivial ~ folds),
 // cond operator delete. Same COMDAT pool as the ??1s (this obj emits it).
-RVA_COMPGEN(0x00008810, 0x22, ??_GCUserBase@@UAEPAXI@Z)
+RVA_COMPGEN(0x00008810, 0x20, ??_GCUserBase@@UAEPAXI@Z)
 // 0x8860 - ??1CUserLogic@@UAE@XZ: the out-of-line COMDAT copy of the inline
 // ~CUserLogic (<Gruntz/UserLogic.h>), same pool. cl auto-emits it here (this obj's
 // /GX leaf ctors' partial-unwind funclets call it out-of-line - e.g. ~CWarlord's

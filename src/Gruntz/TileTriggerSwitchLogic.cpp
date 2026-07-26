@@ -763,7 +763,7 @@ CTileActionEvent::CTileActionEvent() {
     m_live = 0;
 }
 
-RVA(0x00112da0, 0x9e)
+RVA(0x00112da0, 0xf0) // span includes the inline switch jump table (base COMDAT 0xf0)
 i32 CTileActionEvent::SetActionCode(i32 code) {
     m_actionCode = code;
     if (m_playerFlags[g_curPlayer] == 0 && static_cast<u32>((code - 0x12f)) <= 0x1a) {
@@ -1026,7 +1026,7 @@ i32 CTileActionEvent::Process(i32 arg) {
     return newCode == 0x12d;
 }
 
-RVA(0x00113420, 0x1f2)
+RVA(0x00113420, 0x350) // span includes the 5 inline jump tables (base COMDAT 0x350)
 i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
     if (toolId == 0x22) {
         switch (m_actionCode) {

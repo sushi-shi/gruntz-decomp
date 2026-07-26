@@ -419,6 +419,17 @@ def read_functions(path, names_map=None, thunk_names=None):
                         print("[synth_pdb] 0x%x %r: Ghidra mis-carve %d B -> @size %d B"
                               % (rva, name, size, at_size), file=sys.stderr)
                         size = at_size
+                    elif at_size > size:
+                        # A curated @size GROWN past Ghidra's boundary is deliberate:
+                        # Ghidra's function model ends at the code (ret) while the
+                        # matcher-verified extent includes the fn's INLINE jump tables
+                        # (cl emits them inside the /Gy COMDAT, so the base obj's
+                        # symbol spans code+tables). Carving code-only leaves objdiff
+                        # comparing a 498-B target against an 836-B base -> false 0%.
+                        print("[synth_pdb] 0x%x %r: @size grows Ghidra boundary "
+                              "%d B -> %d B (inline-table span)"
+                              % (rva, name, size, at_size), file=sys.stderr)
+                        size = at_size
                     else:
                         print("[synth_pdb] WARN: 0x%x %r boundary mismatch - "
                               "functions.csv=%d B, @size=%d B; using functions.csv "

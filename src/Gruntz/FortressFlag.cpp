@@ -402,7 +402,7 @@ void CParticlez::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CParticlez::Update);
 }
 
-RVA(0x00047090, 0x4c)
+RVA(0x00047090, 0x39)
 i32 CParticlez::Update() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     CWwdGameObjectA* o = m_38;
