@@ -2575,8 +2575,8 @@ i32 g_profAccB;
 RVA(0x000c9e40, 0x1d7)
 i32 CPlay::ProfileInputFrame() {
     m_mgr->m_inputState->Retune( // 0x1a7d -> CWorldSoundSet::Retune (positional audio)
-        m_world->m_level->m_mainPlane->m_viewRect.left,
-        m_world->m_level->m_mainPlane->m_viewRect.top
+        m_world->m_level->m_mainPlane->m_snappedX,
+        m_world->m_level->m_mainPlane->m_snappedY
     ); // untimed
     DWORD(WINAPI * tg)(void) = ::timeGetTime;
 
