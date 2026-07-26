@@ -77,7 +77,7 @@ CActReg CActRegPool<CTileTriggerTransition>::s_table(2000, 2010);
 
 #define TILE_LOGIC_WORKER_PUMP(LEAF)                                                               \
     AnimWorkerObj* ctl = obj->m_7c;                                                                \
-    switch (reinterpret_cast<u32>(ctl->m_1c)) {                                                    \
+    switch (static_cast<u32>(ctl->ActKey())) {                                                    \
         case 0: {                                                                                  \
             ctl->SetActKey(0x3e8);                                            \
             LEAF* t = new LEAF(obj);                                                               \
@@ -313,7 +313,7 @@ i32 StepController(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileTriggerTransiti
 RVA(0x0010d290, 0xf4)
 i32 CreateCheckpointTrigger(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
-    switch (reinterpret_cast<u32>(ctl->m_1c)) {
+    switch (static_cast<u32>(ctl->ActKey())) {
         case 0: {
             ctl->SetActKey(0x3e8);
             CCheckpointTrigger* t = new CCheckpointTrigger(obj);

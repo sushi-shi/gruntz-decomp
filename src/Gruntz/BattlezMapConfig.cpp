@@ -6397,7 +6397,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     }
 
     // Map the candidate index, or grow/report a fresh slot.
-    i32 ci = reinterpret_cast<i32>(unit->m_objAux->m_1c);
+    i32 ci = unit->m_objAux->ActKey();
     char* sel;
     g_typeColl.m_grown = 0;
     if (ci >= g_typeColl.m_lo && ci <= g_typeColl.m_hi) {

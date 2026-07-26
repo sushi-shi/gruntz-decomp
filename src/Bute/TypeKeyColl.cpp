@@ -1027,7 +1027,7 @@ i32 ProjTypeXfer(CUserLogic* ar) {
         TypeResolve(ar->m_objAux->ActKey());
     FreeNodes();
     ar->XferName(entry->m_name.GetBuffer(0)); // 0x1ba11c ?GetBuffer@CString@@QAEPADH@Z
-    ar->FireActivation(reinterpret_cast<i32>(ar->m_objAux->m_1c));
+    ar->FireActivation(ar->m_objAux->ActKey());
 
     entry =
         TypeResolve(ar->m_objAux->ActKey());

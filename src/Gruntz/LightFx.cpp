@@ -202,7 +202,7 @@ i32 CLightFx::AdvanceAnim() {
 RVA(0x0009cdc0, 0xf1)
 i32 CreateLightFx(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
-    switch (static_cast<u32>(reinterpret_cast<size_t>(aux->m_1c))) {
+    switch (static_cast<u32>(static_cast<size_t>(aux->ActKey()))) {
         case 0:
             aux->SetActKey(0x3e8);
             {

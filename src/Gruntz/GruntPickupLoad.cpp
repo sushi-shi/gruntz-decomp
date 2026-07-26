@@ -44,21 +44,21 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         if (strcmp(
                 *reinterpret_cast<const char**>(
                     (static_cast<_zdvec*>(&g_typeColl))
-                        ->IndexToPtr(reinterpret_cast<i32>(m_objAux->m_1c))
+                        ->IndexToPtr(m_objAux->ActKey())
                 ),
                 "A"
             ) != 0
             && strcmp(
                    *reinterpret_cast<const char**>(
                        (static_cast<_zdvec*>(&g_typeColl))
-                           ->IndexToPtr(reinterpret_cast<i32>(m_objAux->m_1c))
+                           ->IndexToPtr(m_objAux->ActKey())
                    ),
                    s_codeD
                ) != 0
             && strcmp(
                    *reinterpret_cast<const char**>(
                        (static_cast<_zdvec*>(&g_typeColl))
-                           ->IndexToPtr(reinterpret_cast<i32>(m_objAux->m_1c))
+                           ->IndexToPtr(m_objAux->ActKey())
                    ),
                    "E"
                ) != 0) {

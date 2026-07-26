@@ -108,7 +108,7 @@ RVA_COMPGEN(0x000135a0, 0x44, ??1CVoiceTrigger@@UAE@XZ)
 RVA(0x00119620, 0xf1)
 i32 CreateGruntVoice(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
-    switch (reinterpret_cast<u32>(ctl->m_1c)) {
+    switch (static_cast<u32>(ctl->ActKey())) {
         case 0: {
             ctl->SetActKey(0x3e8);
             CGruntVoice* t = new CGruntVoice(obj);
@@ -146,7 +146,7 @@ i32 CreateGruntVoice(CGameObject* obj) {
 RVA(0x00119760, 0xf1)
 i32 CreateVoiceTrigger(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
-    switch (reinterpret_cast<u32>(ctl->m_1c)) {
+    switch (static_cast<u32>(ctl->ActKey())) {
         case 0: {
             ctl->SetActKey(0x3e8);
             CVoiceTrigger* t = new CVoiceTrigger(obj);

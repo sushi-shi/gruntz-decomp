@@ -49,7 +49,7 @@ i32 CInGameText::Update() {
     }
 
     char** node = reinterpret_cast<char**>(
-        g_typeColl._zvec::IndexToPtr(reinterpret_cast<i32>(found->m_objAux->m_1c))
+        g_typeColl._zvec::IndexToPtr(found->m_objAux->ActKey())
     );
     CString* p = reinterpret_cast<CString*>(
         g_typeColl.m_alloc

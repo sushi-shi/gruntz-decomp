@@ -127,7 +127,7 @@ RVA(0x0003c300, 0x183)
 // edx/[esp+0x20] vs retail's ecx/[esp+0x1c]. Not source-steerable; ~73% code-correct.
 i32 DemoAutoScrollStep(CGameObject* owner) {
     AnimWorkerObj* st = owner->m_7c;
-    switch (reinterpret_cast<i32>(st->m_1c)) {
+    switch (st->ActKey()) {
         case 1: {
             // step the current scroll position one unit toward the target.
             CGameLevel* gh = (static_cast<CDDrawSurfaceMgr*>(st->m_0c))->m_level;

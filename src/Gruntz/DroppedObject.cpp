@@ -114,7 +114,7 @@ RVA_COMPGEN(0x00012670, 0x44, ??1CDroppedObjectShadow@@UAE@XZ)
 RVA(0x000c5630, 0xf4)
 i32 CreateObjectDropper(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
-    switch (reinterpret_cast<u32>(aux->m_1c)) {
+    switch (static_cast<u32>(aux->ActKey())) {
         case 0: {
             aux->SetActKey(0x3e8);
             CObjectDropper* h = new CObjectDropper(obj);
@@ -152,7 +152,7 @@ i32 CreateObjectDropper(CGameObject* obj) {
 RVA(0x000c5770, 0xf1)
 i32 CreateDroppedObject(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
-    switch (reinterpret_cast<u32>(aux->m_1c)) {
+    switch (static_cast<u32>(aux->ActKey())) {
         case 0: {
             aux->SetActKey(0x3e8);
             CDroppedObject* h = new CDroppedObject(obj);
@@ -190,7 +190,7 @@ i32 CreateDroppedObject(CGameObject* obj) {
 RVA(0x000c58b0, 0xf1)
 i32 CreateDroppedObjectShadow(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
-    switch (reinterpret_cast<u32>(aux->m_1c)) {
+    switch (static_cast<u32>(aux->ActKey())) {
         case 0: {
             aux->SetActKey(0x3e8);
             CDroppedObjectShadow* h = new CDroppedObjectShadow(obj);

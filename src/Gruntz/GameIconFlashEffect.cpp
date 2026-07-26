@@ -6,7 +6,7 @@
 RVA(0x000ae360, 0x6f)
 i32 GameIconFlashEffect(CGameObject* obj) {
     AnimWorkerObj* w = obj->m_7c;
-    i32 state = reinterpret_cast<i32>(w->m_1c);
+    i32 state = w->ActKey();
     if (state != 0) {
         if (state == 5) {
             CAniAdvanceCursor* a =

@@ -92,7 +92,7 @@ typedef void (CMovingLogic::*MovingCallback)();
 RVA(0x00013c70, 0x47)
 void CMovingLogic::FinalizeStep(i32) {
     if (m_deferredCallback != 0) {
-        if (m_gatedCallback != 0 && reinterpret_cast<i32>(m_objAux->m_1c) == m_28) {
+        if (m_gatedCallback != 0 && m_objAux->ActKey() == m_28) {
             (this->*reinterpret_cast<MovingCallback&>(m_gatedCallback))();
             m_gatedCallback = 0;
         }

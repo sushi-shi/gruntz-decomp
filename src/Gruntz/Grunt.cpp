@@ -3337,7 +3337,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
     if (fresh == 0) {
         char* rec;
         {
-            i32 key = reinterpret_cast<i32>(m_objAux->m_1c);
+            i32 key = m_objAux->ActKey();
             g_typeColl.m_grown = 0;
             if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
                 rec = g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride;
@@ -3376,7 +3376,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             char* rec2;
             {
-                i32 key2 = reinterpret_cast<i32>(m_objAux->m_1c);
+                i32 key2 = m_objAux->ActKey();
                 g_typeColl.m_grown = 0;
                 if (key2 >= g_typeColl.m_lo && key2 <= g_typeColl.m_hi) {
                     rec2 = g_typeColl.m_base + (key2 - g_typeColl.m_lo) * g_typeColl.m_stride;

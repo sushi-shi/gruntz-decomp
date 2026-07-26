@@ -31,7 +31,7 @@ i32 LogicDispatchE(CGameObject* owner) {
         static_cast<u32>(rec->ActKey())
     ) { // m_1c: the documented int|ptr union (unsigned key -> ja/jbe)
         case kLogicStateInit:
-            rec->m_1c = reinterpret_cast<void*>(kLogicStateBuilt);
+            rec->SetActKey(kLogicStateBuilt);
             {
                 CUserLogic* obj = new CProjectile(owner);
                 obj->Activate(); // [6]
@@ -80,7 +80,7 @@ i32 LogicDispatchBoomerang(CGameObject* owner) {
         static_cast<u32>(rec->ActKey())
     ) { // m_1c: the documented int|ptr union (unsigned key -> ja/jbe)
         case kLogicStateInit:
-            rec->m_1c = reinterpret_cast<void*>(kLogicStateBuilt);
+            rec->SetActKey(kLogicStateBuilt);
             {
                 CUserLogic* obj = new CBoomerang(owner);
                 obj->Activate(); // [6]
@@ -121,7 +121,7 @@ i32 LogicDispatchD(CGameObject* owner) {
         static_cast<u32>(rec->ActKey())
     ) { // m_1c: the documented int|ptr union (unsigned key -> ja/jbe)
         case kLogicStateInit:
-            rec->m_1c = reinterpret_cast<void*>(kLogicStateBuilt);
+            rec->SetActKey(kLogicStateBuilt);
             {
                 CUserLogic* obj = new CTimeBomb(owner);
                 obj->Activate(); // [6]
@@ -162,7 +162,7 @@ i32 LogicDispatchA(CGameObject* owner) {
         static_cast<u32>(rec->ActKey())
     ) { // m_1c: the documented int|ptr union (unsigned key -> ja/jbe)
         case kLogicStateInit:
-            rec->m_1c = reinterpret_cast<void*>(kLogicStateBuilt);
+            rec->SetActKey(kLogicStateBuilt);
             {
                 CUserLogic* obj = new CStaticHazard(owner);
                 obj->Activate(); // [6]

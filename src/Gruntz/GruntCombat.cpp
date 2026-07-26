@@ -1086,7 +1086,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         return 1;
     }
     {
-        i32 coord = reinterpret_cast<i32>(m_objAux->m_1c);
+        i32 coord = m_objAux->ActKey();
         g_typeColl.m_grown = 0;
         i32 rec;
         if (coord < g_typeColl.m_lo || coord > g_typeColl.m_hi) {
@@ -1111,7 +1111,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         return 1;
     }
     {
-        i32 coord = reinterpret_cast<i32>(m_objAux->m_1c);
+        i32 coord = m_objAux->ActKey();
         g_typeColl.m_grown = 0;
         i32 rec;
         if (coord < g_typeColl.m_lo || coord > g_typeColl.m_hi) {

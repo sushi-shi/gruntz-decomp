@@ -48,7 +48,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
     }
 
     CAnimNameRecord* node = reinterpret_cast<CAnimNameRecord*>(
-        (static_cast<_zvec*>(&g_typeColl))->IndexToPtr(reinterpret_cast<i32>(m_objAux->m_1c))
+        (static_cast<_zvec*>(&g_typeColl))->IndexToPtr(m_objAux->ActKey())
     );
     void* p = static_cast<void*>(
         g_typeColl.m_alloc

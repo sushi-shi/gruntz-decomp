@@ -148,7 +148,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
                 && g->m_deathAnimStarted == 0 && g->m_entranceActive == 0 && g->m_poweredUp == 0) {
                 const char* nm =
                     (reinterpret_cast<CTypeNode*>(
-                         g_typeColl._zdvec::IndexToPtr(reinterpret_cast<i32>(g->m_objAux->m_1c))
+                         g_typeColl._zdvec::IndexToPtr(g->m_objAux->ActKey())
                      ))
                         ->m_0;
                 if (strcmp(nm, "I") != 0 && strcmp(nm, "G") != 0 && strcmp(nm, "L") != 0
