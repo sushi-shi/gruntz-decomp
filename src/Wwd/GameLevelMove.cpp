@@ -476,70 +476,56 @@ done_eq:
     return state;
 }
 
-// @early-stop
-// ~93%: the `for` form fixed the exit-block order (jg loop + two distinct screenX
-// exits). Residual is two byte-level codegen picks, NOT reloc: (1) the scheduler
-// hoists the `x-1` init above the limit computation and materializes col via
-// `lea ebx,[edx-1]` (x kept live) instead of retail's `mov ebx,[esp+N]; dec ebx`;
-// (2) the PROBE_TILE Y-clamp reads m_mainPlane into eax (our cl) vs ecx (retail) -
-// a free-register pick for a dead temp (the X-clamp matches at eax in both). Neither
-// is source-steerable. Deferred to the final sweep.
+// The scan reuses the incoming coordinate as the loop counter (retail's
+// `mov ebx,[esp+N]; dec ebx` inc-in-place form; a fresh `col` local hoists a
+// lea instead and caps the quartet at 93-97%).
 RVA(0x00167a20, 0x11b)
 i32 CGameLevel::ResolveRightX(CGameObject* t, i32 x, i32 y) {
     i32 limit = t->m_screenX + t->m_extent.right;
-    for (i32 col = x - 1; col > limit; col--) {
+    for (x--; x > limit; x--) {
         i32 result;
-        PROBE_TILE(this, col, y, result);
+        PROBE_TILE(this, x, y, result);
         if (result == kTilePassable) {
-            return col - t->m_extent.right;
+            return x - t->m_extent.right;
         }
     }
     return t->m_screenX;
 }
 
-// @early-stop
-// ~93%: `for`-form fixed exit-block order; residual = the x+1 init hoisted above the
-// limit compute + the Y-clamp mainPlane-temp register (eax vs ecx). See ResolveRightX.
 RVA(0x00167b40, 0x11b)
 i32 CGameLevel::ResolveLeftX(CGameObject* t, i32 x, i32 y) {
     i32 limit = t->m_screenX + t->m_extent.left;
-    for (i32 col = x + 1; col < limit; col++) {
+    for (x++; x < limit; x++) {
         i32 result;
-        PROBE_TILE(this, col, y, result);
+        PROBE_TILE(this, x, y, result);
         if (result == kTilePassable) {
-            return col - t->m_extent.left;
+            return x - t->m_extent.left;
         }
     }
     return t->m_screenX;
 }
 
-// @early-stop
-// ~96.8%: `for`-form fixed exit-block order; residual = the y-1 init hoist + the
-// Y-clamp mainPlane-temp register (eax vs ecx). See ResolveRightX.
 RVA(0x00167c60, 0x11b)
 i32 CGameLevel::ResolveBottomY(CGameObject* t, i32 x, i32 y) {
     i32 limit = t->m_screenY + t->m_extent.bottom;
-    for (i32 row = y - 1; row > limit; row--) {
+    for (y--; y > limit; y--) {
         i32 result;
-        PROBE_TILE(this, x, row, result);
+        PROBE_TILE(this, x, y, result);
         if (result == kTilePassable) {
-            return row - t->m_extent.bottom;
+            return y - t->m_extent.bottom;
         }
     }
     return t->m_screenY;
 }
 
-// @early-stop
-// ~96.8%: `for`-form fixed exit-block order; residual = the y+1 init hoist + the
-// Y-clamp mainPlane-temp register (eax vs ecx). See ResolveRightX.
 RVA(0x00167d80, 0x11b)
 i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
     i32 limit = t->m_screenY + t->m_extent.top;
-    for (i32 row = y + 1; row < limit; row++) {
+    for (y++; y < limit; y++) {
         i32 result;
-        PROBE_TILE(this, x, row, result);
+        PROBE_TILE(this, x, y, result);
         if (result == kTilePassable) {
-            return row - t->m_extent.top;
+            return y - t->m_extent.top;
         }
     }
     return t->m_screenY;
