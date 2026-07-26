@@ -142,25 +142,25 @@ public:
     // (ResolveEx/LoadByExt/LoadKeyed/UpdateOverlay moved to their REAL owners: xref
     // proves each body is reached ONLY through a DERIVED vtable slot - CFileImageSurface
     // slots 9/10/11, CPoolItemA88 slot 10 - never by a direct call on this base.)
-    i32 Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2); // 0x13e550 (ret 0x14)
+    i32 Resolve(class CDDrawPtrCollections* pal, void* buf, i32 type, u32 size, void* surf2); // 0x13e550 (ret 0x14)
 
     // Per-format decoders (Image.cpp). __thiscall on CDDSurface. arg1 is the source-palette
     // surface (downcast to CDDSurface* in each body); the class passes surfaces as void*.
-    void* DecodeBmp(void* surf, void* buf, u32 size);
-    void* DecodePcx(void* surf, void* buf, u32 size);
-    void* DecodePid(void* surf, void* buf, u32 size, void* surf2);
-    i32 DecodePcxData(void* surf, void* buf, i32 size, i32 a4, i32 a5);
+    void* DecodeBmp(class CDDrawPtrCollections* pal, void* buf, u32 size);
+    void* DecodePcx(class CDDrawPtrCollections* pal, struct PcxHeader* hdr, u32 size);
+    void* DecodePid(class CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, void* surf2);
+    i32 DecodePcxData(class CDDrawPtrCollections* dst, PidHeader* hdr, i32 size, i32 a4, i32 a5);
 
     // The file-backed BMP/PCX/PID loaders (Image.cpp): construct a stack CFile, open the
     // file, slurp it into an `operator new` buffer and call the matching decoder (the
     // CFile stack object forces a C++ EH frame -> /GX).
-    void* LoadBmp(char* name, char* path);
-    void* LoadPcx(char* name, char* path);
-    void* LoadPid(char* name, char* path, void* a3);
+    void* LoadBmp(class CDDrawPtrCollections* pal, char* path);
+    void* LoadPcx(class CDDrawPtrCollections* pal, char* path);
+    void* LoadPid(class CDDrawPtrCollections* pal, char* path, void* a3);
     // Extension-dispatch resource loader (0x13e5d0): strrchr the ext, _strcmpi
     // .BMP/.PCX/.PID, forward to the matching LoadBmp/LoadPcx/LoadPid on this.
-    i32 MakeImageKey(void* arg1, char* name, void* arg3);
-    i32 DecodePcxEx(void* surf, char* path, void* a3, void* a4); // arg1 = decode-target surface
+    i32 MakeImageKey(class CDDrawPtrCollections* pal, char* name, void* arg3);
+    i32 DecodePcxEx(class CDDrawPtrCollections* pal, char* path, void* a3, void* a4);
 
     // The surface-blit decoders ResolveEx dispatches to (ret 0x10 = 4 args). DecodeRun ==
     // the former DecodeBmpData @0x143cf0; Decode == DecodePcxData2 @0x144b30. Reconstructed

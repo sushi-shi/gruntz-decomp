@@ -250,23 +250,23 @@ void CDDSurface::FreeSurfaces() {
 }
 
 RVA(0x0013e550, 0x71)
-i32 CDDSurface::Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2) {
+i32 CDDSurface::Resolve(CDDrawPtrCollections* pal, void* buf, i32 type, u32 size, void* surf2) {
     if (size == 0) {
         return 0;
     }
     switch (type) {
         case FMT_PID:
-            if (!DecodePid(surf, buf, size, surf2)) {
+            if (!DecodePid(pal, static_cast<PidHeader*>(buf), size, surf2)) {
                 return 0;
             }
             break;
         case FMT_PCX:
-            if (!DecodePcx(surf, buf, size)) {
+            if (!DecodePcx(pal, static_cast<PcxHeader*>(buf), size)) {
                 return 0;
             }
             break;
         case FMT_BMP:
-            if (!DecodeBmp(surf, buf, size)) {
+            if (!DecodeBmp(pal, buf, size)) {
                 return 0;
             }
             break;
@@ -277,18 +277,18 @@ i32 CDDSurface::Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2) 
 }
 
 RVA(0x0013e5d0, 0xb1)
-i32 CDDSurface::MakeImageKey(void* arg1, char* name, void* arg3) {
+i32 CDDSurface::MakeImageKey(CDDrawPtrCollections* pal, char* name, void* arg3) {
     char* ext = strrchr(name, '.');
     if (ext && _strcmpi(ext, ".BMP") == 0) {
-        if (!LoadBmp(static_cast<char*>(arg1), name)) {
+        if (!LoadBmp(pal, name)) {
             return 0;
         }
     } else if (ext && _strcmpi(ext, ".PCX") == 0) {
-        if (!LoadPcx(static_cast<char*>(arg1), name)) {
+        if (!LoadPcx(pal, name)) {
             return 0;
         }
     } else if (ext && _strcmpi(ext, ".PID") == 0) {
-        if (!LoadPid(static_cast<char*>(arg1), name, arg3)) {
+        if (!LoadPid(pal, name, arg3)) {
             return 0;
         }
     }

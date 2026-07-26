@@ -239,7 +239,7 @@ i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
         return 0;
     }
     i32 r = m_surface->Resolve(
-        static_cast<void*>(OwnerMgr()->m_ptrColl),
+        OwnerMgr()->m_ptrColl,
         reinterpret_cast<void*>(buf),
         type,
         src->m_length,

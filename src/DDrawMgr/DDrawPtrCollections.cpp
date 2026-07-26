@@ -30,7 +30,8 @@ i32 CFileImageSurface::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 
     i32 c = ctrl | 0x40;
     switch (type) {
         case FMT_PID:
-            if (!DecodePcxData(surf, buf, size, c, trans)) {
+            if (!DecodePcxData(static_cast<CDDrawPtrCollections*>(surf), static_cast<PidHeader*>(buf),
+                               size, c, trans)) {
                 return 0;
             }
             break;
