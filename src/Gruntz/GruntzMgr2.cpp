@@ -10,5 +10,6 @@ void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
     CDDrawWorkerHost* grid = m_world->m_level->m_mainPlane;
     i32 idx = grid->m_colOffsets[col] + row;
     grid->m_tileGrid[idx] = value;
-    RezFree(static_cast<void*>(m_tileGrid));
+    // rel32 0x33f0 -> 0x77790 = CMapMgr::ComputeCellFlags (the ex-RezFree misbinding)
+    m_tileGrid->ComputeCellFlags(row, col, value);
 }
