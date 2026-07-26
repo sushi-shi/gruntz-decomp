@@ -103,12 +103,12 @@ void CLightFx::RegisterActs() {
 // schedule swaps (the node=0 zero relative to the arg pushes; the m_54/m_58 stores
 // vs the m_38 reload before the effect lookup). Logic 100% correct.
 RVA(0x0009d520, 0xfd)
-i32 CLightFx::Activate(i32 spec, i32 effect, i32 anchorA, i32 anchorB) {
+i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 anchorB) {
     i32 node = 0;
     CObject* nodeOb = 0;
     // spec lookup -> CMapStringToOb::Lookup (0x1b8008); out is CObject*& (reinterpret node).
     // The spec source is the worker's owner context (AnimWorkerObj::m_0c @+0xc).
-    m_3c->m_0c->m_imageRegistry->m_10map.Lookup(reinterpret_cast<const char*>(spec), nodeOb);
+    m_3c->m_0c->m_imageRegistry->m_10map.Lookup(spec, nodeOb);
     node = reinterpret_cast<i32>(nodeOb);
     i32 found = node;
     g_gameReg->m_logicPump->Push(reinterpret_cast<CDDrawWorker*>(found), anchorA, 7);
@@ -136,13 +136,13 @@ i32 CLightFx::Activate(i32 spec, i32 effect, i32 anchorA, i32 anchorB) {
     // effect lookup -> CMapStringToPtr::Lookup (0x1b8438) via the object's owner
     // context (CGameObject::m_0c @+0xc); out is void*&.
     m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(
-        reinterpret_cast<const char*>(effect),
+        effect,
         reinterpret_cast<void*&>(node)
     );
     if (node != 0) {
         node = 0;
         m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(
-            reinterpret_cast<const char*>(effect),
+            effect,
             reinterpret_cast<void*&>(node)
         );
         m_value = m_38->m_1a0.m_14;

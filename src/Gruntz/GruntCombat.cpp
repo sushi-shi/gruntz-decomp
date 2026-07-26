@@ -375,8 +375,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             spr->m_7c->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_7c->m_logic))
                 ->Activate(
-                    reinterpret_cast<i32>("GAME_LIGHTING_FLASH"),
-                    reinterpret_cast<i32>("GAME_FLASH"),
+                    "GAME_LIGHTING_FLASH",
+                    "GAME_FLASH",
                     9,
                     1
                 );
@@ -395,8 +395,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             spr->m_7c->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_7c->m_logic))
                 ->Activate(
-                    reinterpret_cast<i32>("GAME_LIGHTING_FLASH"),
-                    reinterpret_cast<i32>("GAME_FLASH"),
+                    "GAME_LIGHTING_FLASH",
+                    "GAME_FLASH",
                     2,
                     1
                 );
@@ -415,8 +415,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             spr->m_7c->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_7c->m_logic))
                 ->Activate(
-                    reinterpret_cast<i32>("GAME_LIGHTING_FLASH"),
-                    reinterpret_cast<i32>("GAME_FLASH"),
+                    "GAME_LIGHTING_FLASH",
+                    "GAME_FLASH",
                     8,
                     1
                 );
@@ -433,8 +433,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             spr->m_7c->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_7c->m_logic))
                 ->Activate(
-                    reinterpret_cast<i32>("GAME_LIGHTING_FLASH"),
-                    reinterpret_cast<i32>("GAME_FLASH"),
+                    "GAME_LIGHTING_FLASH",
+                    "GAME_FLASH",
                     7,
                     1
                 );
@@ -453,8 +453,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             spr->m_7c->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_7c->m_logic))
                 ->Activate(
-                    reinterpret_cast<i32>("GAME_LIGHTING_FLASH"),
-                    reinterpret_cast<i32>("GAME_FLASH"),
+                    "GAME_LIGHTING_FLASH",
+                    "GAME_FLASH",
                     3,
                     1
                 );

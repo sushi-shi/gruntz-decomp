@@ -411,8 +411,8 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
         m_shadow->m_7c->m_notify(m_shadow);
         (static_cast<CLightFx*>(m_shadow->m_7c->m_logic))
             ->Activate(
-                reinterpret_cast<i32>(static_cast<const char*>((key + "_SHADOW"))),
-                reinterpret_cast<i32>(static_cast<const char*>((key + "1"))),
+                static_cast<const char*>(key + "_SHADOW"),
+                static_cast<const char*>(key + "1"),
                 5,
                 1
             );

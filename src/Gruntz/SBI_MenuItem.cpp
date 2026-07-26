@@ -62,7 +62,7 @@ i32 CSBI_MenuItem::SetupImage(
     m_cmd = cmd;
     m_state = 1;
     m_enabled = 1;
-    return ResolveFrame(reinterpret_cast<i32>(key), frame) != 0;
+    return ResolveFrame(key, frame) != 0;
 }
 
 RVA(0x000e81a0, 0x8)
@@ -85,14 +85,14 @@ i32 CSBI_MenuItem::Refresh(i32) {
 }
 
 RVA(0x000e81e0, 0x8b)
-i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
+i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
     if (key == 0) {
-        return key;
+        return 0;
     }
     // m_10map IS a CMapStringToOb (Lookup 0x1b8008, mfc_class-proven) -> CObject& out-param.
     CObject* rec_v = 0;
     CDDrawSurfaceMgr* host = static_cast<CDDrawSurfaceMgr*>(m_24);
-    host->m_imageRegistry->m_10map.Lookup(reinterpret_cast<const char*>(key), rec_v);
+    host->m_imageRegistry->m_10map.Lookup(key, rec_v);
     CDDrawWorker* rec = static_cast<CDDrawWorker*>(rec_v);
     m_record = rec;
     if (rec == 0) {

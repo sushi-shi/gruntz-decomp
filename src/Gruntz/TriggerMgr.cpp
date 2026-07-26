@@ -757,8 +757,8 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
 arm:
     (static_cast<CLightFx*>(sprite->m_7c->m_logic))
         ->Activate(
-            reinterpret_cast<i32>("GAME_LIGHTING_TARGETCURSOR"),
-            reinterpret_cast<i32>("GAME_TARGETCURSOR"),
+            "GAME_LIGHTING_TARGETCURSOR",
+            "GAME_TARGETCURSOR",
             kindArg,
             1
         );
@@ -1838,8 +1838,8 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                                 spr->m_7c->m_notify(spr);
                                 (static_cast<CLightFx*>(spr->m_7c->m_logic))
                                     ->Activate(
-                                        reinterpret_cast<i32>(s_GAME_LIGHTING_FLASH),
-                                        reinterpret_cast<i32>(s_GAME_FLASH),
+                                        s_GAME_LIGHTING_FLASH,
+                                        s_GAME_FLASH,
                                         3,
                                         1
                                     );
@@ -1864,8 +1864,8 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         spr->m_7c->m_notify(spr);
                         (static_cast<CLightFx*>(spr->m_7c->m_logic))
                             ->Activate(
-                                reinterpret_cast<i32>(s_GAME_LIGHTING_FLASH),
-                                reinterpret_cast<i32>(s_GAME_FLASH),
+                                s_GAME_LIGHTING_FLASH,
+                                s_GAME_FLASH,
                                 2,
                                 1
                             );
@@ -1886,8 +1886,8 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         spr->m_7c->m_notify(spr);
                         (static_cast<CLightFx*>(spr->m_7c->m_logic))
                             ->Activate(
-                                reinterpret_cast<i32>(s_GAME_LIGHTING_FLASH),
-                                reinterpret_cast<i32>(s_GAME_FLASH),
+                                s_GAME_LIGHTING_FLASH,
+                                s_GAME_FLASH,
                                 7,
                                 1
                             );
@@ -1909,8 +1909,8 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         spr->m_7c->m_notify(spr);
                         (static_cast<CLightFx*>(spr->m_7c->m_logic))
                             ->Activate(
-                                reinterpret_cast<i32>(s_GAME_LIGHTING_FLASH),
-                                reinterpret_cast<i32>(s_GAME_FLASH),
+                                s_GAME_LIGHTING_FLASH,
+                                s_GAME_FLASH,
                                 9,
                                 1
                             );
@@ -2016,8 +2016,8 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
             spr->m_7c->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_7c->m_logic))
                 ->Activate(
-                    reinterpret_cast<i32>("GAME_LIGHTING_FLASH"),
-                    reinterpret_cast<i32>("GAME_FLASH"),
+                    "GAME_LIGHTING_FLASH",
+                    "GAME_FLASH",
                     8,
                     1
                 );

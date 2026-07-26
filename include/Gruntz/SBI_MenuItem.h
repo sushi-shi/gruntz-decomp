@@ -69,7 +69,7 @@ public:
     // slot-1 bodies - re-attributed to SBI_Image.h/.cpp, dossier #16.)
     // (InitItem was the real 0xe80e0 body under a second name - it IS the slot-11
     // SetupImage override declared above.)
-    i32 ResolveFrame(i32 key, i32 a); // 0xe81e0
+    i32 ResolveFrame(const char* key, i32 a); // 0xe81e0
     i32 SetState(i32 state, i32 a);   // 0xe8310
     i32 ProbeState(i32 state);        // 0xe8480
     i32 Blit();                       // 0xe84f0  conditional blit

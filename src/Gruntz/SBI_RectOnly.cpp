@@ -3485,7 +3485,7 @@ void CStatusBarMgr::BuildGameTabResumeButton(i32 show) {
         SetTabState(5, 3);
     }
     if (m_tabSprite5) {
-        m_tabSprite5->ResolveFrame(reinterpret_cast<i32>("GAME_STATUSBAR_TABZ_GAMETAB_RESUME"), 1);
+        m_tabSprite5->ResolveFrame("GAME_STATUSBAR_TABZ_GAMETAB_RESUME", 1);
         Deactivate();
         m_tabSprite5->SetSubtype(); // slot 10
     }
@@ -3495,7 +3495,7 @@ void CStatusBarMgr::BuildGameTabResumeButton(i32 show) {
 RVA(0x00102200, 0x37)
 void CStatusBarMgr::BuildGameTabPauseButton() {
     if (m_tabSprite5) {
-        m_tabSprite5->ResolveFrame(reinterpret_cast<i32>("GAME_STATUSBAR_TABZ_GAMETAB_PAUSE"), 1);
+        m_tabSprite5->ResolveFrame("GAME_STATUSBAR_TABZ_GAMETAB_PAUSE", 1);
         Deactivate();
         m_tabSprite5->SetSubtype(); // slot 10
     }
