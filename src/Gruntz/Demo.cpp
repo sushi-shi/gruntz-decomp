@@ -73,7 +73,7 @@ i32 CDemo::BuildWorldLevelPath(i32 unused) { // slot-42 override (ex BuildWorldL
     m_world->m_level->ReleaseChildren();
     CString key;
     key.Format("WORLDZ\\LEVEL%i", 1);
-    CParseSource* node = m_levelBank->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
+    CParseSource* node = m_levelBank->ResolveQualified(key, 0x575744);
     if (node == 0) {
         return 0;
     }

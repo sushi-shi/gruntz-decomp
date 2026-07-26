@@ -148,12 +148,12 @@ public:
     // Resolve a fully-qualified name by its last delimiter (0x13be40): split off
     // the trailing key, resolve the leading scope, then dispatch.
     struct CParseSource*
-    ResolveQualified(const char* name, void* arg); // returns the leaf parse record
+    ResolveQualified(const char* name, u32 fourcc); // returns the leaf parse record
 
     // Insert/resolve `key` directly into this scope's leaf table (+0x40), passing
     // m_owner->m_68 == 0 (0x13a000; the ResolveQualified tail). __thiscall extern,
     // no body -> reloc-masked. (Currently labeled ClassUnknown_14; a CSymTab method.)
-    struct CParseSource* Insert(const char* key, void* arg); // returns the leaf parse record
+    struct CParseSource* Insert(const char* key, u32 fourcc); // returns the leaf parse record
 
     // Look `key` up directly in this scope's leaf table (the +0x40 path); the read
     // counterpart of Insert (0x13a040, one-arg __thiscall). Reloc-masked extern.

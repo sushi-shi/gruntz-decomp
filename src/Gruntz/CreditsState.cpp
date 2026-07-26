@@ -67,7 +67,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
 
     CSymTab* midiz = static_cast<CSymTab*>(SymTab2c()->ResolvePath("MIDIZ"));
     if (midiz) {
-        CParseSource* e = midiz->Insert("PLAY", reinterpret_cast<void*>(0x584d49));
+        CParseSource* e = midiz->Insert("PLAY", 0x584d49);
         if (e) {
             char* val = e->BeginParse();
             if (val) {
@@ -80,7 +80,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     // MONOLITH block, pinning midiz in edi across the PLAY calls
     // (docs/patterns/redundant-sibling-guard-retest.md).
     if (midiz) {
-        CParseSource* e2 = midiz->Insert("MONOLITH", reinterpret_cast<void*>(0x584d49));
+        CParseSource* e2 = midiz->Insert("MONOLITH", 0x584d49);
         if (e2) {
             char* val = e2->BeginParse();
             if (val) {
@@ -414,7 +414,7 @@ RVA(0x00039a60, 0x179)
 i32 CCreditsState::SetupTitle() {
     // CSymTab::Insert resolves the "CREDITZ" section of FOURCC type 'TXT'
     // (== 0x545854, a tag value not an address); returns the section CParseSource as H.
-    CParseSource* sect = SymTab2c()->Insert("CREDITZ", reinterpret_cast<void*>('TXT'));
+    CParseSource* sect = SymTab2c()->Insert("CREDITZ", 'TXT');
     if (sect) {
         char* src = reinterpret_cast<char*>(sect->BeginParse());
         if (!src) {

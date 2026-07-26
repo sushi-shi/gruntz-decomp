@@ -182,7 +182,7 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     }
     char buf[0x34];
     sprintf(buf, "\\SCREENZ\\%s", name);
-    CParseSource* page = SymTab2c()->ResolveQualified(buf, &g_screenTag); // 0x13be40
+    CParseSource* page = SymTab2c()->ResolveQualified(buf, reinterpret_cast<u32>(&g_screenTag)); // 0x13be40
     if (page == 0) {
         return 0;
     }

@@ -509,7 +509,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     {
         CSymParser* mgr = m_symParser;
         CParseSource* stream =
-            mgr->ResolveQualified("GAME_ATTRIBUTEZ", reinterpret_cast<void*>('TXT'));
+            mgr->ResolveQualified("GAME_ATTRIBUTEZ", 'TXT');
         g_buteMgr.SetErrCallback(reinterpret_cast<ErrCallback>(&cb_401bc2));
         i32 ok = 0;
         if (stream) {
@@ -623,7 +623,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
         while (attract->ResolveQualified(
             static_cast<const char*>(*reinterpret_cast<void**>(&title)),
-            reinterpret_cast<void*>('PCX')
+            'PCX'
         )) {
             g_attractStateCount++;
             title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);

@@ -283,9 +283,9 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
 // Xref: both ctors are called only by CSymTab::FindOrAddSym (0x13a940) and the
 // dtor only by ~CSymTab (0x139ee0) - the same original TU.
 // @early-stop
-// ~99.1% register-assignment tail (this 4-arg ctor): body byte-faithful (the
-// IDENTICAL body gives the 3-arg overload 100%). The extra `d` param's stack
-// shift only flips cl's key<->owner GPR choice on the two trailing arg reloads
+// ~99.1% register-assignment tail (this 4-fourcc ctor): body byte-faithful (the
+// IDENTICAL body gives the 3-fourcc overload 100%). The extra `d` param's stack
+// shift only flips cl's key<->owner GPR choice on the two trailing fourcc reloads
 // + one store slot. Pure allocator coin-flip; source-order tuned to the best of 3.
 RVA(0x00139bf0, 0x71)
 CSymRec::CSymRec(i32 key, CSymTab* owner, i32 c, i32 d) : m_keyTable(c), m_valTable(d) {
@@ -410,8 +410,8 @@ CSymTab::~CSymTab() {
 }
 
 RVA(0x0013a000, 0x37)
-CParseSource* CSymTab::Insert(const char* key, void* arg) {
-    CSymRec* rec = static_cast<CSymRec*>(m_symbols.FindInt(reinterpret_cast<u32>(arg)));
+CParseSource* CSymTab::Insert(const char* key, u32 fourcc) {
+    CSymRec* rec = static_cast<CSymRec*>(m_symbols.FindInt(fourcc));
     if (!rec) {
         return 0;
     }
@@ -426,15 +426,15 @@ void* CSymTab::Find(const char* path) {
     char drive[4];
     char tmp[8];
     _splitpath(path, drive, dir, fname, ext);
-    void* arg;
+    u32 fourcc;
     if (strlen(ext) != 0) {
         strcpy(tmp, ext + 1);
         _strupr(tmp);
-        arg = reinterpret_cast<void*>(PackTag(tmp));
+        fourcc = static_cast<u32>(PackTag(tmp));
     } else {
-        arg = 0;
+        fourcc = 0;
     }
-    return Insert(fname, arg);
+    return Insert(fname, fourcc);
 }
 
 RVA(0x0013a0f0, 0x99)
@@ -591,7 +591,7 @@ CSymTab* CSymTab::CreateSub(const char* name) {
 
 // AddNamedValue (0x13a400): find/create the int-keyed record for `key`, and if `name`
 // is not already present in that record's value sub-table (+0x24), pop a parse-slot,
-// build a leaf record into it (the same 11-arg MakeSeed leftover-args trick as
+// build a leaf record into it (the same 11-fourcc MakeSeed leftover-args trick as
 // AddNodeEntry: str2/f3/f1 = 0, f2 = the seed, f6/arr = 0, stream = m_owner's active
 // node), splice it in and bump the parser's longest-leaf-name counter. Returns the
 // slot (0 when the name already existed / the pop failed). __thiscall, ret 0xc.
@@ -678,7 +678,7 @@ i32 CSymTab::AddNodeSubEntry(void* rec, void* found) {
 // @early-stop
 // regalloc wall (~70%): logic complete. Retail pins a2 in ebx and the shared 0
 // constant in ebp; the recompile swaps them (a2->ebp, 0->ebx), which cascades through
-// every null check + the recursion arg setup. Banked for the final sweep.
+// every null check + the recursion fourcc setup. Banked for the final sweep.
 RVA(0x0013a580, 0xb2)
 i32 CSymTab::ApplyRecursive(i32 a0, i32 a1, i32 a2, i32 a3) {
     i32 ok = 1;
@@ -708,11 +708,11 @@ i32 CSymTab::ApplyRecursive(i32 a0, i32 a1, i32 a2, i32 a3) {
 // @early-stop
 // >512 B (0x2f7) /GX leaf-builder loop: the body reproduces both record arms (sub-scope
 // merge into m_subTabs incl. the `new CSymTab` ctor-throw cleanup, and the leaf arm's
-// FindOrAddSym + +0x24 Walk + the 11-arg builder + the dword-array copy). The plateau is
+// FindOrAddSym + +0x24 Walk + the 11-fourcc builder + the dword-array copy). The plateau is
 // the documented heavy-regalloc + /GX trylevel wall plus the tail max-accumulator (a dead
 // store retail keeps but cl DCE's) and the differently-named Walk/builder reloc operands.
 // The 0x139710 builder's callee-cleanup (ret 0x2c) is inferred from the absence of an
-// `add esp,0x2c` after the call; the arg order is the reversed push sequence at 0x13a893.
+// `add esp,0x2c` after the call; the fourcc order is the reversed push sequence at 0x13a893.
 RVA(0x0013a640, 0x2f7)
 i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
     m_10 = 0;
@@ -813,7 +813,7 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
                     f6,
                     arr,
                     reinterpret_cast<CRezItmBase*>(a0)
-                ); // a0 rides as the retail i32 arg
+                ); // a0 rides as the retail i32 fourcc
                 rec->m_valTable.Insert(&slot->m_node1c);
                 m_10 = m_10 + slot->m_length;
                 if (static_cast<u32>(slot->m_base) < static_cast<u32>(m_baseOffset)) {
@@ -833,8 +833,8 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
 }
 
 // FindOrAddSym (0x13a940): look the int key up in m_symbols; if absent, `new CSymRec`
-// (Rez heap, ctor-throw cleanup) the right leaf-record flavor (4-arg when the parser's
-// m_6c is set, else 3-arg) and splice it into m_symbols via its +0x04 hash node.
+// (Rez heap, ctor-throw cleanup) the right leaf-record flavor (4-fourcc when the parser's
+// m_6c is set, else 3-fourcc) and splice it into m_symbols via its +0x04 hash node.
 // @early-stop
 // regalloc wall (~86%): logic complete. Retail dedicates a 4th callee-saved register
 // (ebp via FPO) to hold &m_symbols live across the alloc + ctor calls; the recompile
@@ -860,7 +860,7 @@ CSymRec* CSymTab::FindOrAddSym(i32 key) {
 
 // ---------------------------------------------------------------------------
 // CSymParser::CSymParser() (0x13aa10) - the DEFAULT ctor (Ghidra-mislabeled
-// CSymParseConfig::Construct; xref proves it: the 3-arg buf-ctor 0x13ab00 builds
+// CSymParseConfig::Construct; xref proves it: the 3-fourcc buf-ctor 0x13ab00 builds
 // its discarded `CSymParser tmp;` through it, and RezSync::Init (0x83450) +
 // CGruntzMgr::LoadWorldMode (0x91a40) new one). cl auto-stamps ??_7CSymParser @+0;
 // the m_list member ctor auto-stamps ??_7CObjList @+0x10; m_hash.Construct(1) builds the
@@ -921,7 +921,7 @@ CSymParser::CSymParser() {
 // it is pinned by mangled name.
 RVA_COMPGEN(0x0013aaf0, 0x7, ??1CParserObjList@@QAE@XZ)
 
-// 0x13ab00: the 3-arg buffer constructor. Construct the sub-object members (the +0x10
+// 0x13ab00: the 3-fourcc buffer constructor. Construct the sub-object members (the +0x10
 // object list, the +0x80 hash table, the +0x88 node list) + stamp the primary vtable,
 // build-then-discard a default CSymParser temp, then drive the buffer through
 // ParseBuffer. The destructible members + the temp force the /GX EH frame. __thiscall,
@@ -932,7 +932,7 @@ RVA_COMPGEN(0x0013aaf0, 0x7, ??1CParserObjList@@QAE@XZ)
 // stamped by cl @+0 at ctor entry; the
 // /GX frame, the member-init store sequence (m_list, the +0x80 hash Init(1), the
 // +0x88 node-list), the discarded default-temp ctor/dtor pair and the ParseBuffer
-// 3-arg tail are byte-faithful. Residual is the /GX trylevel state-NUMBERING wall
+// 3-fourcc tail are byte-faithful. Residual is the /GX trylevel state-NUMBERING wall
 // (docs/patterns/eh-state-numbering-base.md) + the vptr-first schedule. Final sweep.
 RVA(0x0013ab00, 0xac)
 CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
@@ -1135,8 +1135,8 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
 // 98.3% - STRUCTURALLY byte-exact (verified llvm-objdump -dr base vs target): every
 // opcode/ModRM, both nothrow-new null checks AND all three /GX ctor-throw state
 // writes (mov [esp+ehstate], 0 / 1 / -1) match retail exactly. The sole residual is
-// the MSVC5 scratch-register coin-flip on ~5 load-then-push arg sites (the two m_64
-// free cleanups, the ParseRecords/ApplyRecursive/Read arg loads): retail rotates
+// the MSVC5 scratch-register coin-flip on ~5 load-then-push fourcc sites (the two m_64
+// free cleanups, the ParseRecords/ApplyRecursive/Read fourcc loads): retail rotates
 // eax<-ecx<-edx where cl picks ecx<-edx<-eax for the same temps - identical
 // instruction stream, opposite scratch assignment, not source-steerable
 // (docs/patterns regalloc coin-flip). Plus the reloc-masked node-ctor / operator-new
@@ -1293,7 +1293,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
         }
         UnpackTag(extKey, unpackedTag);
         CSymRec* rec = node->FindOrAddSym(static_cast<i32>(extKey));
-        CParseSource* entry = node->Insert(fname, reinterpret_cast<void*>(extKey));
+        CParseSource* entry = node->Insert(fname, extKey);
         CParseSource* source = 0;
         if (entry == 0) {
             source = node->AddNodeEntry(static_cast<u32>(key), fname, rec, 0);
@@ -1312,7 +1312,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
 }
 
 // Clear (0x13b850): drop the active node (m_activeNode) + the +0x10 object list,
-// free the heap root CSymTab + the cached source buffer, then null m_parseArmed. The arg is unused;
+// free the heap root CSymTab + the cached source buffer, then null m_parseArmed. The fourcc is unused;
 // the return is the active node's slot[5] (Detach) result, left in eax.
 // @early-stop
 // regalloc wall: retail pins `this`->edi + the walked node->esi; recompile swaps
@@ -1529,7 +1529,7 @@ void* CSymTab::FindQualified(const char* name) {
 // (retail keeps `this` in esi; cl uses edx + extra stack reloads) + the tokenizer
 // induction variable. The write peer (Insert tail) of FindQualified. Logic byte-faithful.
 RVA(0x0013be40, 0x1ac)
-CParseSource* CSymTab::ResolveQualified(const char* name, void* arg) {
+CParseSource* CSymTab::ResolveQualified(const char* name, u32 fourcc) {
     char qual[0x100];
     char key[0x24];
     const char* p = name;
@@ -1553,7 +1553,7 @@ CParseSource* CSymTab::ResolveQualified(const char* name, void* arg) {
     const char* tail = p + i + 1;
     strcpy(qual, tail);
     if (i <= 0) {
-        return Insert(qual, arg);
+        return Insert(qual, fourcc);
     }
     strncpy(key, p, static_cast<u32>(i));
     key[i] = 0;
@@ -1561,7 +1561,7 @@ CParseSource* CSymTab::ResolveQualified(const char* name, void* arg) {
     if (!scope) {
         return 0;
     }
-    return scope->Insert(qual, arg);
+    return scope->Insert(qual, fourcc);
 }
 
 RVA(0x0013b900, 0x4)
@@ -1570,8 +1570,8 @@ CSymTab* CSymParser::GetRoot() {
 }
 
 RVA(0x0013bff0, 0x19)
-CParseSource* CSymParser::ResolveQualified(const char* name, void* arg) {
-    return GetRoot()->ResolveQualified(name, arg);
+CParseSource* CSymParser::ResolveQualified(const char* name, u32 fourcc) {
+    return GetRoot()->ResolveQualified(name, fourcc);
 }
 
 RVA(0x0013c030, 0x14)

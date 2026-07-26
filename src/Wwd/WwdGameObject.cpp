@@ -688,7 +688,7 @@ i32 CGameObject::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
             w->SetActKey(0x50);
             w->m_notify(this);
             w = m_7c;
-            if (w->m_1c == reinterpret_cast<void*>(0x50)) {
+            if (w->ActKey() == 0x50) {
                 w->m_1c = saved;
             }
             break;
@@ -705,7 +705,7 @@ i32 CGameObject::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
             w->SetActKey(0x51);
             w->m_notify(this);
             w = m_7c;
-            if (w->m_1c == reinterpret_cast<void*>(0x51)) {
+            if (w->ActKey() == 0x51) {
                 w->m_1c = saved;
             }
             break;
@@ -722,7 +722,7 @@ i32 CGameObject::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
             w->SetActKey(0x52);
             w->m_notify(this);
             w = m_7c;
-            if (w->m_1c == reinterpret_cast<void*>(0x52)) {
+            if (w->ActKey() == 0x52) {
                 w->m_1c = saved;
             }
             break;
@@ -750,7 +750,7 @@ i32 CGameObject::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
             w->SetActKey(0x53);
             w->m_notify(this);
             w = m_7c;
-            if (w->m_1c == reinterpret_cast<void*>(0x53)) {
+            if (w->ActKey() == 0x53) {
                 w->m_1c = saved;
             }
             break;

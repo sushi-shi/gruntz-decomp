@@ -21,7 +21,7 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
         if (m_mgr->m_128 != 0) {
             CString key = "BATTLEZ\\" + m_mgr->GetWorldFileName();
             CParseSource* node =
-                m_gameBank->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
+                m_gameBank->ResolveQualified(key, 0x575744);
             if (node == 0) {
                 return 0;
             }
@@ -31,7 +31,7 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
         } else if (m_mgr->m_12c != 0) {
             CString key = "MULTI\\" + m_mgr->GetWorldFileName();
             CParseSource* node =
-                m_gameBank->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
+                m_gameBank->ResolveQualified(key, 0x575744);
             if (node == 0) {
                 return 0;
             }
@@ -54,7 +54,7 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
         } else {
             key.Format("WORLDZ\\LEVEL%i", sel);
         }
-        CParseSource* node = m_levelBank->ResolveQualified(key, reinterpret_cast<void*>(0x575744));
+        CParseSource* node = m_levelBank->ResolveQualified(key, 0x575744);
         if (node == 0) {
             return 0;
         }

@@ -164,7 +164,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
     sprintf(buf, "PREVIEW%i", idx);
     m_1bc = buf;
     sprintf(buf, "\\SCREENZ\\%s", static_cast<const char*>(m_1bc));
-    SymTab2c()->ResolveQualified(buf, &g_screenTag);
+    SymTab2c()->ResolveQualified(buf, reinterpret_cast<u32>(&g_screenTag));
     i32 failed = 0;
     if (FadeInTitle(const_cast<char*>(static_cast<const char*>(m_1bc)), 0, 0, 0, 0, 1) == 0) {
         failed = 1;
@@ -218,7 +218,7 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
     }
     char buf[64];
     sprintf(buf, "\\SCREENZ\\%s", name);
-    CParseSource* sym = SymTab2c()->ResolveQualified(buf, &g_screenTag);
+    CParseSource* sym = SymTab2c()->ResolveQualified(buf, reinterpret_cast<u32>(&g_screenTag));
     if (sym == 0) {
         return 0;
     }

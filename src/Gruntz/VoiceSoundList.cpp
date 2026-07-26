@@ -50,7 +50,7 @@ CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
             void* res = static_cast<void*>((reinterpret_cast<CSymParser*>(m_owner->m_34))
                                                     ->ResolveQualified(
                                                         static_cast<LPCTSTR>(name),
-                                                        reinterpret_cast<void*>(0x574156)
+                                                        0x574156
                                                     ));
             if (res != 0) {
                 // retail copy-ctors `name` straight into the by-value arg slot

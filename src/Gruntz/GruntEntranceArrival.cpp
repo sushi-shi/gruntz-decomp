@@ -1689,7 +1689,7 @@ i32 CGrunt::StepWarpExit() {
         CString s;
         s.Format("WORLDZ\\LEVEL%i", lvl);
         if (st->m_levelBank
-                ->ResolveQualified(static_cast<LPCTSTR>(s), reinterpret_cast<void*>(REZ_TAG_WWD))) {
+                ->ResolveQualified(static_cast<LPCTSTR>(s), REZ_TAG_WWD)) {
             PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, GOTOLEVEL, lvl);
         }
     }
