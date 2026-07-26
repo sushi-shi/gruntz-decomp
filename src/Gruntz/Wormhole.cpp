@@ -74,18 +74,18 @@ VTBL(CWormhole, 0x001e817c);
 DATA(0x0020c1c0)
 char g_puddleSpriteKey[] = "GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2";
 
-static inline char* ResolveNameSlot(_zdvec* v, i32 idx) {
-    char* r;
+static inline CString* ResolveNameSlot(_zdvec* v, i32 idx) {
+    CString* r;
     v->m_grown = 0;
     if (idx >= v->m_lo && idx <= v->m_hi) {
-        r = v->m_base + (idx - v->m_lo) * v->m_stride;
+        r = reinterpret_cast<CString*>(v->m_base + (idx - v->m_lo) * v->m_stride);
     } else if (v->GrowTo(idx, 0)) {
-        r = v->m_base + (idx - v->m_lo) * v->m_stride;
+        r = reinterpret_cast<CString*>(v->m_base + (idx - v->m_lo) * v->m_stride);
     } else {
         void* sentinel = g_projActCache; // scratch cell @0x2bf464 reused as the zvec err sentinel
         g_retAddrBreadcrumb = GetRetAddr();
         v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
-        r = v->m_spare;
+        r = reinterpret_cast<CString*>(v->m_spare);
     }
     CString* slot = reinterpret_cast<CString*>(v->m_alloc);
     i32 n = v->m_grown;
@@ -260,8 +260,8 @@ void RegisterWormholeLogic() {
     i32 idx = ActFindId("A");
     if (idx == 0) {
         ActInsertId("A", g_typeCounter);
-        char* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
-        *reinterpret_cast<CString*>(slot) = "A";
+        CString* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
+        *slot = "A";
         g_typeCounter++;
     }
     char* dslot = ResolveSlot(&CActRegPool<CWormhole>::s_table, idx);
