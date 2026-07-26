@@ -751,8 +751,7 @@ i32 CSaveGame::VerifySlot(SaveSlot* slot) {
     i32 fc = slot->m_pathHi;
     i32 f8 = slot->m_pathLo;
     const char* name = (fc == 0 && f8 == 0) ? g_emptyString : slot->m_levelName;
-    CString s(name);
-    i32 r = g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId, s);
+    i32 r = g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId, CString(name));
     if (r == 0) {
         g_gameReg->EnterModalUI(
             "The level that this game was saved on does not exist!\n\nThis "
@@ -788,8 +787,9 @@ i32 CSaveGame::Register(SaveSlot* slot) {
     i32 fc = slot->m_pathHi;
     i32 f8 = slot->m_pathLo;
     const char* name = (fc == 0 && f8 == 0) ? g_emptyString : slot->m_levelName;
-    CString s(name);
-    return g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId, s);
+    // the by-value CString arg constructs INTO the pushed slot (callee-destroyed;
+    // a named local instead forces a caller EH frame retail doesn't have)
+    return g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId, CString(name));
 }
 
 // ---------------------------------------------------------------------------
