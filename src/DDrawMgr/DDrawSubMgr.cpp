@@ -1209,29 +1209,25 @@ RVA(0x001588f0, 0x1c5)
 i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
     // The real inline derived ctor: retail emits `call 0x158f30` (the out-of-line
     // CDrawSubWorker base ctor) + the own ??_7 stamp + m_surface = 0.
-    CDDrawSurfaceChildA* a = new CDDrawSurfaceChildA(m_ownerCtx, 0, 0);
-    m_frontPair = reinterpret_cast<CDDrawSurfacePair*>(a);
+    m_frontPair =
+        reinterpret_cast<CDDrawSurfacePair*>(new CDDrawSurfaceChildA(m_ownerCtx, 0, 0));
+    m_backPair = new CDDrawSurfacePair(m_ownerCtx, 1, 0);
+    m_overlayPair = new CDDrawSurfacePair(m_ownerCtx, 2, 0);
 
-    CDDrawSurfacePair* b = new CDDrawSurfacePair(m_ownerCtx, 1, 0);
-    m_backPair = b;
-
-    CDDrawSurfacePair* c = new CDDrawSurfacePair(m_ownerCtx, 2, 0);
-    m_overlayPair = c;
-
-    if (a->SetGeometry(a1, a2, a3) == 0) { // slot-9 dispatch [vtbl+0x24] (the mode-surface creator)
+    if (m_frontPair->SetGeometry(a1, a2, a3) == 0) { // slot-9 dispatch [vtbl+0x24]
         if (OwnerMgr()->m_lastError == 0) {
             OwnerMgr()->m_lastError = 0x7d1;
         }
         return 0;
     }
-    if (b->Create(a1, a2, a3, 0) == 0) {
+    if (m_backPair->Create(a1, a2, a3, 0) == 0) {
         if (OwnerMgr()->m_lastError == 0) {
             OwnerMgr()->m_lastError = 0x7d2;
         }
         return 0;
     }
     if (!(a4 & 1)) {
-        if (c->Create(a1, a2, a3, 0) == 0) {
+        if (m_overlayPair->Create(a1, a2, a3, 0) == 0) {
             if (OwnerMgr()->m_lastError == 0) {
                 OwnerMgr()->m_lastError = 0x7d3;
             }
