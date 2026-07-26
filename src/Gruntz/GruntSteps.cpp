@@ -1467,8 +1467,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         i32 id = m_pickupGeoSrc;
         if (id) {
-            CString nm = catalog->KeyOfValue(reinterpret_cast<CObject*>(id));
-            strcpy(buf, nm);
+            strcpy(buf, catalog->KeyOfValue(reinterpret_cast<CObject*>(id)));
         }
     }
     ar->Write(buf, 0x80);

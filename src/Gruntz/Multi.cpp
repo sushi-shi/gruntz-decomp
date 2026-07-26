@@ -1754,8 +1754,7 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
     packet[0xd] = 0xf;
     packet[0xe] = 0;
     *reinterpret_cast<i32*>((packet + 0x10)) = m_hostIndex;
-    CString name2 = GetString5a0();
-    strcpy(packet + 0x14, name2);
+    strcpy(packet + 0x14, GetString5a0());
     SendStatFrom(packet, 0x28, 1);
     return 1;
 }
@@ -2896,8 +2895,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
     if (toChat != 0) {
         GruntzPlayer* player =
             static_cast<GruntzPlayer*>(Mgr()->FindOptionsSlot(LocalPlayer()->m_id));
-        CString name = player->GetName();
-        sprintf(line, "%s: %s", static_cast<const char*>(name), text);
+        sprintf(line, "%s: %s", static_cast<const char*>(player->GetName()), text);
     } else {
         strcpy(line, text);
     }

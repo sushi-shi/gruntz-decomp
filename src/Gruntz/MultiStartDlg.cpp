@@ -151,8 +151,7 @@ i32 CMultiStartDlg::UpdateColorItems() {
     ::SendMessageA(it4ff->m_hWnd, 0x14e, static_cast<WPARAM>(-1), 0);
     m_6c = g_multiState->m_5b0;
     if (g_multiState->m_5b0 != 0) {
-        CString name = g_multiState->GetConfigNameB();
-        itChild->SetWindowTextA(name);
+        itChild->SetWindowTextA(g_multiState->GetConfigNameB());
     } else {
         CString cur;
         itChild->GetWindowTextA(cur);

@@ -196,8 +196,7 @@ CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
                 return e;
             }
         } else {
-            CString nm = e->GetName();
-            if (strcmp(name, nm) == 0) {
+            if (strcmp(name, e->GetName()) == 0) {
                 return e;
             }
         }

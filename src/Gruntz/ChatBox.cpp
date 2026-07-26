@@ -88,8 +88,7 @@ i32 CChatBox::Find(const char* s) {
     while (pos) {
         CMenuPage* payload = reinterpret_cast<CMenuPage*>(m_nodeList.GetNext(pos));
         if (payload) {
-            CString key = payload->GetKey();
-            if (strcmp(key, s) == 0) {
+            if (strcmp(payload->GetKey(), s) == 0) {
                 return reinterpret_cast<i32>(payload);
             }
         }
