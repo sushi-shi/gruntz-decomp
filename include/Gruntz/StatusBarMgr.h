@@ -237,7 +237,7 @@ public:
     // HUD click-at-point dispatch CPlay::DispatchHudClick runs on m_guts (thunk
     // 0x2559). Reloc-masked until reconstructed.
     i32 ClickAt_ff9d0(i32 a, i32 x, i32 y);
-    i32 ClickToggle(i32 x, i32 y, i32 z);
+    i32 ClickToggle(i32 btn, i32 x, i32 y);
     CStatusBarItem* HitTestRects(i32 x, i32 y);
     void ResetWidgets(i32 keepLists);
     void ClearTabGroup();

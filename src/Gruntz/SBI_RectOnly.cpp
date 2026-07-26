@@ -1701,13 +1701,13 @@ i32 CStatusBarMgr::ClickAt_ff9d0(i32, i32, i32) {
 }
 
 RVA(0x000ff9f0, 0xe4)
-i32 CStatusBarMgr::ClickToggle(i32 x, i32 y, i32 z) {
+i32 CStatusBarMgr::ClickToggle(i32 btn, i32 x, i32 y) {
     CStatusBarItem* r = HitTestRects(x, y);
     if (r == 0) {
         ClearTabSprites(-1);
         return 1;
     }
-    r->Click24(z, x, y);
+    r->Click24(btn, x, y);
     if (r->m_kind != 2) {
         ClearTabSprites(-1);
         return 1;

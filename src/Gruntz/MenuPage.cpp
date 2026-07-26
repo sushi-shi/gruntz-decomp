@@ -763,8 +763,8 @@ CMenuItem* CMenuPage::AddSubItem(
         }
         return 0;
     }
-    item->m_1c = tag;
     item->m_cmdParam = cmdParam;
+    item->m_1c = tag;
     return Append(item) ? item : 0;
 }
 

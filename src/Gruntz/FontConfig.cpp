@@ -31,7 +31,7 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
     // --- ARIAL UI font (fixed 12x8 bold ANSI) -------------------------------
     m_arialFont = CreateFontA(0xc, 8, 0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, "ARIAL");
     if (!m_arialFont) {
-        m_arialFont = CreateFontA(0xc, 8, 0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, "ARIAL");
+        m_arialFont = CreateFontA(0xc, 8, 0, 0, 0x2bc, 0, 0, 0, 1, 0, 0, 0, 0, 0);
     }
 
     // The ARIAL default-face CString temp - constructed here (just-in-time, after

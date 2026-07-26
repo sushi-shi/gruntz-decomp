@@ -1740,7 +1740,7 @@ i32 __stdcall WwdFile_CheckHeader(const char* name, void* headerOut) {
         return 0;
     }
 
-    strcpy(static_cast<char*>(headerOut), header); // inline strlen + rep movs
+    strcpy(static_cast<char*>(headerOut), header + 0x10); // the +0x10 header field; inline strlen + rep movs
     return 1;
 }
 
