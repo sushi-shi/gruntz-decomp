@@ -19,25 +19,6 @@ struct DecodeSrc {
 SIZE_UNKNOWN();
 #pragma pack(pop)
 
-struct BmpFileHeader {
-    char magic[2]; // +0x00  "BM"
-    char _02[0x06 - 0x02];
-    u32 bfSize;    // +0x06  (width*0x28 + 0x436)
-    u32 _0a;       // +0x0a
-    u32 bfOffBits; // +0x0e -> stored at struct +0x0e... (0x436)
-};
-SIZE_UNKNOWN();
-
-struct TgaHeader {
-    char magic[2]; // +0x00
-    char _02[0x06 - 0x02];
-    u32 size; // +0x06  (width*height*3 + 0x3a)
-    char _0a[0x10 - 0x0a];
-    i16 planes;   // +0x10
-    i16 bitCount; // +0x12
-};
-SIZE_UNKNOWN();
-
 struct RtBitmapResHeader {
     i32 m_0; // +0x00 (payload size; data follows at +m_0+0x400)
     i32 m_4; // +0x04 (stored into the surface desc width)

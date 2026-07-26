@@ -371,6 +371,47 @@ def blocks_diff(base_raw: str, tgt_raw: str) -> str:
     return "\n".join(out) + "\n"
 
 
+def dot(cfg, diff_idx=None, title="") -> str:
+    """Graphviz DOT for one side's CFG: solid = taken branch, dashed =
+    fallthrough, red = back-edge (loop), doubled = shared ret tail.
+    diff_idx (optional set of block indices) fills differing blocks red."""
+    import re as _re
+    npred = {}
+    for _, _, term in cfg:
+        for m in _re.finditer(r"B(\d+)", term or ""):
+            npred[int(m.group(1))] = npred.get(int(m.group(1)), 0) + 1
+    out = ["digraph cfg {",
+           '  graph [rankdir=TB, fontname="monospace"'
+           + (f', label="{title}", labelloc=t' if title else "") + "];",
+           '  node [shape=box, fontname="monospace", fontsize=10];']
+    for i, (a, body, term) in enumerate(cfg):
+        first = body[0] if body else ""
+        last = body[-1] if body else ""
+        label = f"B{i} @{a:x}  ({len(body)}i)\\l{first}\\l"
+        if len(body) > 1:
+            label += ("...\\l" if len(body) > 2 else "") + f"{last}\\l"
+        style = []
+        if term == "ret" and npred.get(i, 0) > 2:
+            style.append("peripheries=2")
+        if diff_idx is not None and i in diff_idx:
+            style.append('style=filled, fillcolor="#ffcccc"')
+        elif diff_idx is not None:
+            style.append('style=filled, fillcolor="#ccffcc"')
+        out.append(f'  B{i} [label="{label}"' +
+                   (", " + ", ".join(style) if style else "") + "];")
+        for m in _re.finditer(r"(jcc|jmp|fall) B(\d+)(\^?)", term or ""):
+            kind, tgt, back = m.group(1), int(m.group(2)), m.group(3)
+            attrs = []
+            if kind == "fall":
+                attrs.append("style=dashed")
+            if back:
+                attrs.append('color=red, constraint=false')
+            out.append(f"  B{i} -> B{tgt}" +
+                       (" [" + ", ".join(attrs) + "]" if attrs else "") + ";")
+    out.append("}")
+    return "\n".join(out) + "\n"
+
+
 def _debug_obj_for(unit: str, source: str, flags: list):
     """build/debug/<unit>.obj compiled `<flags> /Z7` (codegen-neutral CodeView),
     cached on source mtime - same artifact harvest_locals.py builds. Path or None."""
@@ -458,7 +499,44 @@ def rich(rva: str, want_lite: bool) -> str:
 
 def run(args) -> None:
     if getattr(args, "blocks", False):
+        if getattr(args, "dot", False):
+            if args.diff:
+                # target graph, blocks whose bodies differ from base filled red
+                import difflib
+                b, t = _cfg(base_text(args.rva)), _cfg(target_text(args.rva))
+                bs = ["\n".join(x[1] + [x[2] or ""]) for x in b]
+                ts = ["\n".join(x[1] + [x[2] or ""]) for x in t]
+                sm = difflib.SequenceMatcher(a=bs, b=ts, autojunk=False)
+                bad = set(range(len(t)))
+                for tag, i1, i2, j1, j2 in sm.get_opcodes():
+                    if tag == "equal":
+                        bad -= set(range(j1, j2))
+                print(dot(t, diff_idx=bad,
+                          title=f"{args.rva} TARGET (red = differs from base)"),
+                      end="")
+            else:
+                side = "BASE" if args.base else "TARGET"
+                text = base_text(args.rva) if args.base else target_text(args.rva)
+                print(dot(_cfg(text), title=f"{args.rva} {side}"), end="")
+            sys.exit(0)
         if args.diff:
+            if args.lite:
+                # skeleton-only side-by-side: per-block insn count + terminator,
+                # no bodies - shows WHERE the if/loop shape splits at a glance
+                b, t = _cfg(base_text(args.rva)), _cfg(target_text(args.rva))
+                print(f"[skeleton diff: base {len(b)} vs target {len(t)} blocks "
+                      f"@ {args.rva}]")
+                print(f"       {'BASE':34}    TARGET")
+                same = True
+                for i in range(max(len(b), len(t))):
+                    bl = (f"{len(b[i][1]):>3}i [{b[i][2]}]" if i < len(b) else "-")
+                    tl = (f"{len(t[i][1]):>3}i [{t[i][2]}]" if i < len(t) else "-")
+                    mark = "  " if (i < len(b) and i < len(t)
+                                    and b[i][2] == t[i][2]) else "!!"
+                    if mark == "!!":
+                        same = False
+                    print(f"  B{i:<3} {bl:34} {mark} {tl}")
+                sys.exit(0 if same else 1)
             print(f"[block diff: BASE (compiled) vs TARGET (retail) @ {args.rva}]")
             out = blocks_diff(base_text(args.rva), target_text(args.rva))
             print(out, end="")

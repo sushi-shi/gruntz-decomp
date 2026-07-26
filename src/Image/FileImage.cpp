@@ -331,9 +331,9 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
         } while (n != 0);
     }
 
-    BmpFileHeader fh;
-    memset(&fh, 0, 0xe); // only the 14-byte file-header portion; bfOffBits stored below
-    strcpy(fh.magic, g_bmpHeaderTemplate);
+    BITMAPFILEHEADER fh;
+    memset(&fh, 0, sizeof(fh));
+    strcpy(reinterpret_cast<char*>(&fh), g_bmpHeaderTemplate);
     fh.bfSize = bi.biSize * m_width + 0x436;
     fh.bfOffBits = 0x436;
 
@@ -348,6 +348,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
             m_ddSurface->Unlock(0);
             return 0;
         }
+        file.Seek(0, 2); // append mode: seek to end (create mode writes at 0)
     } else {
         if (!file.Open(path, 0x1001, 0)) {
             m_ddSurface->Unlock(0);
@@ -355,7 +356,6 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
         }
     }
 
-    file.Seek(0, 2);
     file.Write(&fh, 0xe);
     file.Write(&bi, 0x428);
 
@@ -502,14 +502,22 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
         return 0;
     }
 
-    TgaHeader hdr;
-    memset(&hdr, 0, 0x2c);
+    BITMAPINFOHEADER bi;
+    memset(&bi, 0, 0x2c); // dev slop: 0x2c over the 0x28 struct (retail rep stos 0xb dwords)
     i32 height = m_height;
-    strcpy(hdr.magic, g_bmpHeaderTemplate);
+    BITMAPFILEHEADER fh;
+    memset(&fh, 0, sizeof(fh));
     i32 width = m_width;
-    hdr.size = width * height * 3 + 0x3a;
-    hdr.planes = 1;
-    hdr.bitCount = 0x18;
+    strcpy(reinterpret_cast<char*>(&fh), g_bmpHeaderTemplate);
+    bi.biHeight = height;
+    bi.biSize = 0x28;
+    bi.biWidth = width;
+    fh.bfSize = height * width * 3 + 0x3a;
+    bi.biPlanes = 1;
+    bi.biBitCount = 0x18;
+    bi.biCompression = 0;
+    bi.biSizeImage = 0;
+    fh.bfOffBits = 0x3a;
 
     u8* buf = reinterpret_cast<u8*>(Lock(0));
     if (buf == 0) {
@@ -522,6 +530,7 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
             m_ddSurface->Unlock(0);
             return 0;
         }
+        file.Seek(0, 2); // append mode: seek to end (create mode writes at 0)
     } else {
         if (!file.Open(path, 0x1001, 0)) {
             m_ddSurface->Unlock(0);
@@ -529,12 +538,10 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
         }
     }
 
-    file.Seek(0, 2);
-    file.Write(&hdr, 0xe);
-    file.Write(&hdr, 0x2c);
+    file.Write(&fh, 0xe);
+    file.Write(&bi, 0x2c);
 
-    i32 row = height - 1;
-    while (row >= 0) {
+    for (i32 row = m_height - 1; row >= 0; row--) {
         i32 col = 0;
         if (m_width > 0) {
             do {
@@ -542,7 +549,6 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
                 ++col;
             } while (col < m_width);
         }
-        --row;
     }
 
     m_ddSurface->Unlock(0);
