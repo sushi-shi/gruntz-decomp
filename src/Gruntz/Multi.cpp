@@ -2548,8 +2548,7 @@ i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
             rec[5] = static_cast<char>(ch->m_readyFlag);
             rec[4] = static_cast<char>(ch->m_comboSel);
             *reinterpret_cast<i32*>((rec + 7)) = ch->m_slotKey;
-            CString name = ch->GetName();
-            strcpy(rec + 0xb, static_cast<const char*>(name));
+            strcpy(rec + 0xb, static_cast<const char*>(ch->GetName()));
         }
         rec += 0x20;
     }
