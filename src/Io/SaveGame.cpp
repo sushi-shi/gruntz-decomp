@@ -737,12 +737,8 @@ i32 CSaveGame::FillSlot2(SaveSlot* dst, i32 name, void* src) {
 // else succeed. Same name-fallback (g_emptyString) and BuildLevelRezPath shape
 // as Register.
 // @early-stop
-// EH-frame wall (same as Register, ~45%): retail builds the local CString name
-// temp WITHOUT a /GX unwind frame and never destroys it (no fs:0 prologue, no
-// ~CString); the faithful `CString s(name)` forces MSVC5 to emit the EH prolog +
-// dtor cleanup, shifting the frame. Field reads, name fallback, BuildLevelRezPath
-// args, both error branches and the checksum compare are all exact - only the
-// extra frame differs. Deferred to the final sweep.
+// EXACT: the by-value CString arg is constructed IN the call (temp into the
+// pushed slot, callee-destroyed) - no caller EH frame, matching retail.
 RVA(0x000e52c0, 0x99)
 i32 CSaveGame::VerifySlot(SaveSlot* slot) {
     if (slot == 0) {
@@ -774,11 +770,7 @@ i32 CSaveGame::VerifySlot(SaveSlot* slot) {
 // Build a CString from the slot's name (or the empty string) and hand the slot's
 // level id / flags to g_gameReg->BuildLevelRezPath().
 // @early-stop
-// EH-frame wall (~45%): retail builds the local CString temp WITHOUT a /GX unwind
-// frame and never destroys it (no fs:0 prologue, no ~CString); the reconstructed
-// `CString s(name)` local forces MSVC5 to emit the __EH_prolog + dtor cleanup.
-// Field reads, name-fallback (g_emptyString) and the BuildLevelRezPath args are
-// all exact - only the missing/extra frame differs. Deferred to the final sweep.
+// EXACT: same by-value-temp form as VerifySlot above.
 RVA(0x000e5390, 0x59)
 i32 CSaveGame::Register(SaveSlot* slot) {
     if (slot == 0) {

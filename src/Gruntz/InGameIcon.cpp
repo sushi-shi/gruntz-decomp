@@ -1082,9 +1082,11 @@ i32 CInGameText::SerializeMove(CFileMemBase* ar, i32 tag, i32 a, i32 b) {
 
 RVA(0x00099b10, 0x36)
 void CInGameIcon::SetupSprite(const char* category) {
-    void* found = 0; // CMapStringToPtr's value slot (Lookup 0x1b8438 takes void*&)
+    LeafCue* cue = 0;
     if (category != 0) {
+        void* found = 0; // CMapStringToPtr's value slot (Lookup 0x1b8438 takes void*&)
         g_gameReg->m_world->m_soundRegistry->m_10.Lookup(category, found);
+        cue = static_cast<LeafCue*>(found);
     }
-    m_cue = static_cast<LeafCue*>(found);
+    m_cue = cue;
 }
