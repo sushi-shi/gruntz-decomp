@@ -133,7 +133,7 @@ public:
     // arg, reading m_surface/m_3c pitch, the centre and the surf w/h. Non-virtual,
     // __thiscall, ret 0x18 (6 args). NOTE: Render works TRANSPOSED - it reads m_centerY
     // where ApplyInit stores X and vice-versa, and m_surfHeight for its width bound.
-    void Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5); // 0x180fb0
+    void Render(i32 a0, i32 a1, i32 a2, u8* src, u8* srcRow, u8* dstRow); // 0x180fb0
 
     // The light/shade effect state. ApplyInit (0x1804a0) captures the CFxModeT2
     // descriptor's surface/palette/centre, clips the centre to the surface rect and fills

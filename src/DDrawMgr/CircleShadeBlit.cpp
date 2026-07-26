@@ -16,7 +16,7 @@
 // verified base-vs-target with `gruntz sema disasm 0x00180fb0 --diff`.
 // docs/patterns/zero-register-pinning.md.
 RVA(0x00180fb0, 0x534)
-void CFaderLight::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
+void CFaderLight::Render(i32 a0, i32 a1, i32 a2, u8* a3, u8* a4, u8* a5) {
     i32 R = m_spanCount;
     if (R <= 0) {
         return;
@@ -30,12 +30,12 @@ void CFaderLight::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
 
     i32 srcpitch = m_surface->m_pitch;
     i32 srcCol = a0 * srcpitch;
-    i32 rowLsrc = a4 + row + srcCol;
+    u8* rowLsrc = a4 + row + srcCol;
     i32 dstpitch = m_dstSurface->m_pitch;
     i32 dstCol = a0 * dstpitch;
-    i32 rowLdst = a5 + row + dstCol;
-    i32 rowRsrc = (a4 - row) + srcCol + 2 * cy;
-    i32 rowRdst = (a5 - row) + dstCol + 2 * cy;
+    u8* rowLdst = a5 + row + dstCol;
+    u8* rowRsrc = (a4 - row) + srcCol + 2 * cy;
+    u8* rowRdst = (a5 - row) + dstCol + 2 * cy;
 
     i32 mid = m_surfHeight / 2;
     i32 mirSrc;
@@ -55,21 +55,21 @@ void CFaderLight::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
                 }
                 i32 cl = len - a2 + R;
                 if (row >= 0) {
-                    i32 p = *reinterpret_cast<u8*>(rowLdst);
-                    *reinterpret_cast<u8*>(rowLsrc) = *reinterpret_cast<u8*>((a3 + p * R + cl));
-                    i32 q = *reinterpret_cast<u8*>((rowLdst + mirDst));
-                    *reinterpret_cast<u8*>((rowLsrc + mirSrc)) =
-                        *reinterpret_cast<u8*>((a3 + q * m_spanCount + cl));
+                    i32 p = *rowLdst;
+                    *rowLsrc = *(a3 + p * R + cl);
+                    i32 q = *(rowLdst + mirDst);
+                    *(rowLsrc + mirSrc) =
+                        *(a3 + q * m_spanCount + cl);
                 }
                 rowLsrc++;
                 rowLdst++;
                 if (2 * cy - row < m_surfWidth) {
-                    i32 p = *reinterpret_cast<u8*>(rowRdst);
-                    *reinterpret_cast<u8*>(rowRsrc) =
-                        *reinterpret_cast<u8*>((a3 + p * m_spanCount + cl));
-                    i32 q = *reinterpret_cast<u8*>((rowRdst + mirDst));
-                    *reinterpret_cast<u8*>((rowRsrc + mirSrc)) =
-                        *reinterpret_cast<u8*>((a3 + q * m_spanCount + cl));
+                    i32 p = *rowRdst;
+                    *rowRsrc =
+                        *(a3 + p * m_spanCount + cl);
+                    i32 q = *(rowRdst + mirDst);
+                    *(rowRsrc + mirSrc) =
+                        *(a3 + q * m_spanCount + cl);
                 }
                 rowRsrc--;
                 rowRdst--;
@@ -88,15 +88,15 @@ void CFaderLight::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
             }
             i32 cl = len - a2 + R;
             if (row >= 0) {
-                i32 p = *reinterpret_cast<u8*>(rowLdst);
-                *reinterpret_cast<u8*>(rowLsrc) = *reinterpret_cast<u8*>((a3 + p * R + cl));
+                i32 p = *rowLdst;
+                *rowLsrc = *(a3 + p * R + cl);
             }
             rowLsrc++;
             rowLdst++;
             if (2 * cy - row < m_surfWidth) {
-                i32 p = *reinterpret_cast<u8*>(rowRdst);
-                *reinterpret_cast<u8*>(rowRsrc) =
-                    *reinterpret_cast<u8*>((a3 + p * m_spanCount + cl));
+                i32 p = *rowRdst;
+                *rowRsrc =
+                    *(a3 + p * m_spanCount + cl);
             }
             rowRsrc--;
             rowRdst--;
@@ -126,15 +126,15 @@ void CFaderLight::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
                 }
                 i32 cl = len - a2 + R;
                 if (row >= 0) {
-                    i32 p = *reinterpret_cast<u8*>(rowLdst);
-                    *reinterpret_cast<u8*>(rowLsrc) = *reinterpret_cast<u8*>((a3 + p * R + cl));
+                    i32 p = *rowLdst;
+                    *rowLsrc = *(a3 + p * R + cl);
                 }
                 rowLsrc++;
                 rowLdst++;
                 if (2 * cy - row < m_surfWidth) {
-                    i32 p = *reinterpret_cast<u8*>(rowRdst);
-                    *reinterpret_cast<u8*>(rowRsrc) =
-                        *reinterpret_cast<u8*>((a3 + p * m_spanCount + cl));
+                    i32 p = *rowRdst;
+                    *rowRsrc =
+                        *(a3 + p * m_spanCount + cl);
                 }
                 rowRsrc--;
                 rowRdst--;
@@ -155,21 +155,21 @@ void CFaderLight::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
             }
             i32 cl = len - a2 + R;
             if (row >= 0) {
-                i32 p = *reinterpret_cast<u8*>(rowLdst);
-                *reinterpret_cast<u8*>(rowLsrc) = *reinterpret_cast<u8*>((a3 + p * R + cl));
-                i32 q = *reinterpret_cast<u8*>((rowLdst - mirDst));
-                *reinterpret_cast<u8*>((rowLsrc - mirSrc)) =
-                    *reinterpret_cast<u8*>((a3 + q * m_spanCount + cl));
+                i32 p = *rowLdst;
+                *rowLsrc = *(a3 + p * R + cl);
+                i32 q = *(rowLdst - mirDst);
+                *(rowLsrc - mirSrc) =
+                    *(a3 + q * m_spanCount + cl);
             }
             rowLsrc++;
             rowLdst++;
             if (2 * cy - row < m_surfWidth) {
-                i32 p = *reinterpret_cast<u8*>(rowRdst);
-                *reinterpret_cast<u8*>(rowRsrc) =
-                    *reinterpret_cast<u8*>((a3 + p * m_spanCount + cl));
-                i32 q = *reinterpret_cast<u8*>((rowRdst - mirDst));
-                *reinterpret_cast<u8*>((rowRsrc - mirSrc)) =
-                    *reinterpret_cast<u8*>((a3 + q * m_spanCount + cl));
+                i32 p = *rowRdst;
+                *rowRsrc =
+                    *(a3 + p * m_spanCount + cl);
+                i32 q = *(rowRdst - mirDst);
+                *(rowRsrc - mirSrc) =
+                    *(a3 + q * m_spanCount + cl);
             }
             rowRsrc--;
             rowRdst--;
