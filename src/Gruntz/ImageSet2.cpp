@@ -36,7 +36,7 @@ i32 CImageSet2::GetStride() {
 RVA(0x00166990, 0x4c)
 i32 CImageSet2::Parse(void* record) {
     i32* p = reinterpret_cast<i32*>((reinterpret_cast<char*>(record) + 8));
-    m_04 = *p++;
+    m_width = *p++;
     m_08 = *p++;
     m_0c = *p++;
     m_10 = *p++;
@@ -97,7 +97,7 @@ i32 CImageSet2::Query_166ab0(i32 a, i32 b, i32* outA, i32* outB) {
         *outB = m_10;
         return 1;
     }
-    if (m_1c >= m_04 - 1) {
+    if (m_1c >= m_width - 1) {
         return 0;
     }
     *outA = m_1c + 1;
@@ -117,7 +117,7 @@ i32 CImageSet2::Query_166b20(i32 a, i32 b, i32 val, i32* out) {
         *out = m_14;
         return 1;
     }
-    if (m_1c >= m_04 - 1) {
+    if (m_1c >= m_width - 1) {
         return 0;
     }
     if (m_0c != val) {

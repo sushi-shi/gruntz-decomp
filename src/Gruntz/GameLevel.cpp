@@ -420,13 +420,13 @@ CTileImageSet* CGameLevel::ReadImageSet(void* record) {
     CTileImageSet* set;
     switch (*static_cast<i32*>(record)) {
         case 1:
-            set = reinterpret_cast<CTileImageSet*>(new CImageSet1);
+            set = new CImageSet1;
             break;
         case 2:
-            set = reinterpret_cast<CTileImageSet*>(new CImageSet2);
+            set = new CImageSet2;
             break;
         case 3:
-            set = reinterpret_cast<CTileImageSet*>(new CImageSet3);
+            set = new CImageSet3;
             break;
         default:
             return 0;

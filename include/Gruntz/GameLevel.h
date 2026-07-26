@@ -62,25 +62,7 @@ static const i32 TILE_CLEAR = -1;
         }                                                                                          \
     } while (0)
 
-// VTBL_ABSENT: abstract-in-practice family base - only the concrete CImageSet1/2/3
-// are constructed (each stamps its own vtable); the m_imageSets array dispatches
-// through this base, whose own ??_7 is never emitted.
-VTBL_ABSENT(CTileImageSet);
-class CTileImageSet : public CObject {
-public:
-    virtual i32 Parse(void* record); // slot 5 (+0x14)  init from the WWD record
-    virtual i32 VtSlot6();           // slot 6 (+0x18)  (CImageSet3: FreePixels; role per-variant)
-    virtual i32 VtSlot7();           // slot 7 (+0x1c)  (role unrecovered)
-    // +0x20  per-pixel collision-kind query: given sub-tile pixel (x, y) returns the
-    // tile's collision category there (0 = empty/passable; 1/2 = soft-blocking, a 2 is
-    // downgraded to 0 under the 0x400 target flag; 3 = hard-blocking; 4 = special).
-    // The movement/scroll steppers scan tiles pixel-by-pixel through this slot.
-    virtual i32 GetCollisionAt(i32 x, i32 y); // slot 8 (+0x20)
-    virtual i32 GetStride();                  // slot 9 (+0x24)  record byte length (cursor advance)
-
-    i32 m_width; // +0x04  tile/column width (ClampSpan span extent; == CImageSet3::m_width)
-};
-SIZE_UNKNOWN();
+#include <Gruntz/ImageSets.h> // CTileImageSet + the CImageSet1/2/3 family (moved)
 
 struct CParseSource;
 
