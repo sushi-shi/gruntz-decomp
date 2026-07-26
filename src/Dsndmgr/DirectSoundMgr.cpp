@@ -1493,8 +1493,8 @@ i32 DSoundVoice::Stop() {
 // 'fmt ' payload into out->m_fmt and 'data' ptr/len into *dataOut/*sizeOut; nonzero when
 // 'fmt ' seen before 'data'.
 // @early-stop
-// add-fold scheduling wall (98.2%): byte-identical except the per-chunk cursor advance -
-// source `p += 2` -> two `add $4` (retail) vs one `add $8` (MSVC5 /O2 fold). Not steerable.
+// 100%: the per-chunk cursor advance is TWO `*p++` reads (use between the
+// increments blocks the +8 fold) - the ex "add-fold wall" was the p+=2 spelling.
 RVA(0x00137110, 0x8d)
 i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut) {
     u32* p = reinterpret_cast<u32*>((reinterpret_cast<char*>(riff) + 4));
@@ -1512,9 +1512,8 @@ i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut) {
     out->m_fmt = 0;
     *dataOut = 0;
     while (reinterpret_cast<char*>(p) < end) {
-        u32 id = p[0];
-        u32 size = p[1];
-        p += 2;
+        u32 id = *p++;
+        u32 size = *p++;
         if (id == mmioFOURCC('f', 'm', 't', ' ')) {
             out->m_fmt = reinterpret_cast<WaveFormatX*>(p);
         } else if (id == mmioFOURCC('d', 'a', 't', 'a')) {
