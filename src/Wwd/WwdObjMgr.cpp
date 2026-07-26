@@ -1176,7 +1176,7 @@ i32 CDDrawChildGroup::CountActive() {
 }
 
 RVA(0x0015ac20, 0x81)
-i32 CDDrawChildGroup::ForEachDispatch(i32 a1, i32 a2, i32 a3) {
+i32 CDDrawChildGroup::ForEachDispatch(CFileMemBase* a1, i32 a2, i32 a3) {
     if (a1 == 0) {
         return 0;
     }
@@ -1195,7 +1195,7 @@ i32 CDDrawChildGroup::ForEachDispatch(i32 a1, i32 a2, i32 a3) {
 }
 
 RVA(0x0015acb0, 0x76)
-i32 CDDrawChildGroup::ForEachProbe(i32 a1, i32 a2) {
+i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* a1, i32 a2) {
     if (a1 == 0) {
         return 0;
     }
@@ -1357,7 +1357,7 @@ i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, i32 a2) {
         if (val != 0 && !(val->m_flags & 0x4000000)) {
             void* k = WwdKey(val);
             ar->Write(&k, 4);
-            if (val->Play(reinterpret_cast<i32>(ar), 4, a2, val) == 0) {
+            if (val->Play(ar, 4, a2, val) == 0) {
                 return 0;
             }
         }
@@ -1396,7 +1396,7 @@ i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, i32 flag) {
         if (obj->m_7c == 0) {
             return 0;
         }
-        if (obj->Play(reinterpret_cast<i32>(ar), 7, flag, obj) == 0) {
+        if (obj->Play(ar, 7, flag, obj) == 0) {
             return 0;
         }
     }

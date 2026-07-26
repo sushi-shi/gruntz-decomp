@@ -315,11 +315,11 @@ i32 CWwdGameObjectA::Test() {
 }
 
 RVA(0x00150a70, 0x89)
-i32 CWwdGameObjectA::Play(i32 a1, i32 type, i32 a3, void* self) {
+i32 CWwdGameObjectA::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
     if (a1 == 0) {
         return 0;
     }
-    if (m_1a0.Find(reinterpret_cast<CFileMemBase*>(a1), type, a3, reinterpret_cast<i32>(self))
+    if (m_1a0.Find(a1, type, a3, reinterpret_cast<i32>(self))
         == 0) {
         return 0;
     }
@@ -349,8 +349,8 @@ i32 CWwdGameObjectA::Play(i32 a1, i32 type, i32 a3, void* self) {
 // (base str@[esp+0x10]/flag@[esp+0x14]; retail flag@0x10/str@0x14) - one `lea ecx`
 // operand differs. Not steerable by decl/scope order (tried block/hoist/reorder).
 RVA(0x00150b00, 0x12b)
-i32 CWwdGameObjectA::ReadState(i32 src) {
-    CFileMemBase* ar = reinterpret_cast<CFileMemBase*>(src);
+i32 CWwdGameObjectA::ReadState(CFileMemBase* src) {
+    CFileMemBase* ar = src;
     if (ar == 0) {
         return 0;
     }
@@ -379,8 +379,8 @@ i32 CWwdGameObjectA::ReadState(i32 src) {
 }
 
 RVA(0x00150c30, 0x130)
-i32 CWwdGameObjectA::SerializeSpriteName(i32 src) {
-    CFileMemBase* ar = reinterpret_cast<CFileMemBase*>(src);
+i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
+    CFileMemBase* ar = src;
     if (ar == 0) {
         return 0;
     }
@@ -666,7 +666,7 @@ void CGameObject::AddLogicBump(char* key) {
 // tail. Logic complete; the per-case regalloc/tail-merge layout is a
 // compiler-internal choice not steerable from C.
 RVA(0x00151150, 0x175)
-i32 CGameObject::Play(i32 a1, i32 type, i32 a3, void* self) {
+i32 CGameObject::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
     if (a1 == 0) {
         return 0;
     }
@@ -759,8 +759,8 @@ i32 CGameObject::Play(i32 a1, i32 type, i32 a3, void* self) {
 }
 
 RVA(0x00151320, 0x454)
-i32 CGameObject::Serialize(i32 arParam) {
-    CFileMemBase* ar = reinterpret_cast<CFileMemBase*>(arParam);
+i32 CGameObject::Serialize(CFileMemBase* arParam) {
+    CFileMemBase* ar = arParam;
     if (ar == 0) {
         return 0;
     }
@@ -838,8 +838,8 @@ i32 CGameObject::Serialize(i32 arParam) {
 }
 
 RVA(0x00151780, 0x40d)
-i32 CGameObject::SerializeObjectState(i32 arParam) {
-    CFileMemBase* ar = reinterpret_cast<CFileMemBase*>(arParam);
+i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
+    CFileMemBase* ar = arParam;
     if (ar == 0) {
         return 0;
     }
@@ -968,8 +968,8 @@ i32 CGameObject::ResolveLinkedObject(i32 gate) {
 // Two __thiscall params (ret 8): dst = the archive (used), the 2nd is unused (retail
 // never reads [esp+0xb4]); modeling both fixes the epilogue ret operand.
 RVA(0x00151c00, 0x118)
-i32 CGameObject::WriteSnapshot(i32 dst, i32 unused) {
-    CFileMemBase* ar = reinterpret_cast<CFileMemBase*>(dst);
+i32 CGameObject::WriteSnapshot(CFileMemBase* dst, i32 unused) {
+    CFileMemBase* ar = dst;
     if (ar == 0) {
         return 0;
     }

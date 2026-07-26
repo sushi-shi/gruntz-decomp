@@ -92,8 +92,8 @@ public:
     void AddToMap48(CWwdGameObject* obj);
     void PruneList();
     i32 CountActive();
-    i32 ForEachDispatch(i32 a1, i32 a2, i32 a3);
-    i32 ForEachProbe(i32 a1, i32 a2);
+    i32 ForEachDispatch(CFileMemBase* a1, i32 a2, i32 a3);
+    i32 ForEachProbe(CFileMemBase* a1, i32 a2);
     i32 ForEachSerialize(class CFileMemBase* ar, i32 a2);
     i32 Deserialize(class CFileMemBase* ar, u32 count, i32 flag);
     i32 PruneOrphans();

@@ -252,13 +252,13 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     if (m_callback && cb(this, &S, 1, 0, 0) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachProbe(reinterpret_cast<i32>(&S), arg3) == 0) {
+    if (m_childGroup->ForEachProbe(&S, arg3) == 0) {
         return 0;
     }
     if (m_callback && cb(this, &S, 3, 0, 0) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachDispatch(reinterpret_cast<i32>(&S), 3, arg3) == 0) {
+    if (m_childGroup->ForEachDispatch(&S, 3, arg3) == 0) {
         return 0;
     }
     if (m_level->EditDispatch(static_cast<void*>(&S), 3, 0, 0) == 0) {
@@ -276,7 +276,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32
     if (m_callback && cb(this, &S, 5, 0, 0) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachDispatch(reinterpret_cast<i32>(&S), 5, arg3) == 0) {
+    if (m_childGroup->ForEachDispatch(&S, 5, arg3) == 0) {
         return 0;
     }
     if (m_level->EditDispatch(static_cast<void*>(&S), 5, 0, 0) == 0) {
@@ -341,7 +341,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_callback == 0 || m_callback(this, &S, 6, arg3, reinterpret_cast<i32>(header)) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachDispatch(reinterpret_cast<i32>(&S), 6, arg3) == 0) {
+    if (m_childGroup->ForEachDispatch(&S, 6, arg3) == 0) {
         return 0;
     }
     if (m_level->EditDispatch(static_cast<void*>(&S), 6, 0, 0) == 0) {
@@ -360,7 +360,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_callback == 0 || m_callback(this, &S, 8, arg3, reinterpret_cast<i32>(header)) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachDispatch(reinterpret_cast<i32>(&S), 8, arg3) == 0) {
+    if (m_childGroup->ForEachDispatch(&S, 8, arg3) == 0) {
         return 0;
     }
     if (m_level->EditDispatch(static_cast<void*>(&S), 8, 0, 0) == 0) {

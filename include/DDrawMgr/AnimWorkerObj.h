@@ -50,7 +50,7 @@ struct AnimWorkerObj : public CWapObj {
     // --- the record's runtime/IO method set (bodies: WwdGameObject.cpp /
     // WwdFactoryObject.cpp / DDrawMgr/LogicRecord.cpp) ---
     i32 Consume(i32 amount);                         // 0x15b340 (kill-cue budget m_20)
-    i32 Dispatch(i32 a, i32 mode, void* c, void* d); // 0x164830
+    i32 Dispatch(CFileMemBase* a, i32 mode, void* c, void* d); // 0x164830
     i32 CacheTargetId(void* a);                      // 0x164920 (Dispatch case 3)
     i32 Save(CFileMemBase* ar);                      // 0x164960 (writes, slot 12 +0x30)
     i32 Load(CFileMemBase* ar);                      // 0x164d80 (reads, slot 11 +0x2c;

@@ -62,7 +62,7 @@ public:
     virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) = 0; // slot 14
     // slot 15 - the 4-arg play/serialize dispatch (the flat model's Play
     // @0x151150 is the body).
-    virtual i32 Play(i32 ar, i32 mode, i32 a3, void* self); // slot 15 @0x151150
+    virtual i32 Play(CFileMemBase* ar, i32 mode, i32 a3, void* self); // slot 15 @0x151150
 
     // 0x15b650: per-tick notify - under flag bit 0x8 decrement the +0x128 budget
     // (latch the worker's error state on underflow); else fire the +0x80
@@ -71,9 +71,9 @@ public:
 
     // The 0x150xxx live method set (src/Wwd/WwdGameObject.cpp) - the ex-flat
     // CGameObject/CWwdGameObject models' methods, homed at their field level.
-    i32 Serialize(i32 ar);                  // 0x151320
-    i32 WriteSnapshot(i32 dst, i32 unused); // 0x151c00 (ret 8; 2nd arg unused)
-    i32 SerializeObjectState(i32 a1);       // 0x151780  resolve deserialized worker names
+    i32 Serialize(CFileMemBase* ar);        // 0x151320
+    i32 WriteSnapshot(CFileMemBase* dst, i32 unused); // 0x151c00 (ret 8; 2nd arg unused)
+    i32 SerializeObjectState(CFileMemBase* a1); // 0x151780  resolve deserialized worker names
     i32 ResolveLinkedObject(i32 gate);      // 0x151b90  cache the linked object
                                             //   (m_carrier) from the key m_184
     i32 EnsureWorker80(CGameObject* src);   // 0x150eb0  lazy worker @+0x80 (Hit)
@@ -200,7 +200,7 @@ public:
         OVERRIDE; // slot 13 @0x1506b0
     virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
         OVERRIDE; // slot 14 @0x1508a0
-    virtual i32 Play(i32 ar, i32 mode, i32 a3, void* self)
+    virtual i32 Play(CFileMemBase* ar, i32 mode, i32 a3, void* self)
         OVERRIDE; // slot 15 @0x150a70 (Dispatch: route by mode - 4 -> ReadState,
                   // 7 -> SerializeSpriteName - then the base Play body)
 
@@ -211,8 +211,8 @@ public:
     i32 LookupAnimSprite(const char* name);                             // 0x150610
     void ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault); // 0x58b60
     i32 Test();                      // 0x1509c0  on-screen visibility cull (the m_198 extent)
-    i32 SerializeSpriteName(i32 a1); // 0x150c30  (A-tail frame-cache reader; Play mode-7 route)
-    i32 ReadState(i32 src);          // 0x150b00
+    i32 SerializeSpriteName(CFileMemBase* a1); // 0x150c30  (A-tail frame-cache reader; Play mode-7 route)
+    i32 ReadState(CFileMemBase* src);    // 0x150b00
 
     i32 m_18c;       // +0x18c  (WwdFile stamp -1; the C kind reads its low byte as dot color)
     i32 m_190;       // +0x190  cached frame NUMBER (WwdFile stamp -1)

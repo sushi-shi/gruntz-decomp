@@ -22,7 +22,7 @@
 // (local-pin of mode, arg reorder) flips the allocation. ~79%; defer to the
 // final sweep.
 RVA(0x00164830, 0xd3)
-i32 AnimWorkerObj::Dispatch(i32 a, i32 mode, void* c, void* d) {
+i32 AnimWorkerObj::Dispatch(CFileMemBase* a, i32 mode, void* c, void* d) {
     if (a == 0) {
         return 0;
     }
@@ -35,13 +35,13 @@ i32 AnimWorkerObj::Dispatch(i32 a, i32 mode, void* c, void* d) {
             break;
         case 4:
             // the serialize walk (ForEachSerialize, WRITES the stream)
-            if (Save(reinterpret_cast<CFileMemBase*>(a)) == 0) {
+            if (Save(a) == 0) {
                 return 0;
             }
             break;
         case 7:
             // the deserialize walk (Deserialize, READS the stream)
-            if (Load(reinterpret_cast<CFileMemBase*>(a)) == 0) {
+            if (Load(a) == 0) {
                 return 0;
             }
             break;
@@ -59,7 +59,7 @@ i32 AnimWorkerObj::Dispatch(i32 a, i32 mode, void* c, void* d) {
     }
     if (m_logic) {
         if (m_logic->SerializeMove(
-                reinterpret_cast<CFileMemBase*>(a),
+                a,
                 mode,
                 reinterpret_cast<i32>(c),
                 reinterpret_cast<i32>(d)
