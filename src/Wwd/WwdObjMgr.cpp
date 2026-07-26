@@ -970,14 +970,9 @@ CWwdGameObject* CDDrawChildGroup::FindByTypeProbe(i32 type) {
 // return-0, our cl shares one return-0. The documented loop-epilogue-merge wall.
 RVA(0x0015a860, 0x57)
 CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, void* key) {
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
-    for (;;) {
-        if (node == 0) {
-            return 0;
-        }
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
+    POSITION pos = m_list.GetHeadPosition();
+    while (pos != 0) {
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == type) {
             // the worker notify fn doubles as the kind marker - match it against the
             // key worker (same idiom as the TriggerMgr grunt-notify compare)
@@ -987,6 +982,7 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, void* key) {
             }
         }
     }
+    return 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -1011,20 +1007,18 @@ RVA(0x0015a8c0, 0x7d)
 void* CDDrawChildGroup::Find(i32 id, const char* key) {
     CObject* found = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(key, found);
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
-    if (node == 0) {
+    POSITION pos = m_list.GetHeadPosition();
+    if (pos == 0) {
         return 0;
     }
     AnimWorkerObj* fp = static_cast<AnimWorkerObj*>(found);
     do {
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CGameObject* obj = cur->m_obj;
+        CGameObject* obj = static_cast<CGameObject*>(m_list.GetNext(pos));
         i32 tag = obj->GetClassId(); // vtable slot 8 (the type tag)
         if (tag == 5 && obj->m_id == id && obj->m_7c->m_notify == fp->m_notify) {
             return obj;
         }
-    } while (node != 0);
+    } while (pos != 0);
     return 0;
 }
 
@@ -1034,19 +1028,15 @@ void* CDDrawChildGroup::Find(i32 id, const char* key) {
 // 85% - same loop-epilogue-merge wall as FindByWorker.
 RVA(0x0015a940, 0x52)
 CWwdGameObject* CDDrawChildGroup::FindByField(i32 type, void* key) {
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
-    for (;;) {
-        if (node == 0) {
-            return 0;
-        }
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
+    POSITION pos = m_list.GetHeadPosition();
+    while (pos != 0) {
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == type
             && reinterpret_cast<void*>(obj->m_collCategory) == key) {
             return obj;
         }
     }
+    return 0;
 }
 
 RVA(0x0015a9a0, 0x23)
