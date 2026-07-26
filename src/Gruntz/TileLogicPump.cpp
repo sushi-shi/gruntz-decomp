@@ -112,7 +112,7 @@ CActReg CActRegPool<CTileTriggerTransition>::s_table(2000, 2010);
     return 1;
 
 RVA(0x00010f20, 0x47)
-i32 CWarpStonePad::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+i32 CWarpStonePad::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     if (!CUserLogic::SerializeMove(
             reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
             mode,
@@ -139,7 +139,7 @@ LogicTypeId CTileTriggerSwitch::GetTypeTag() {
 }
 
 RVA(0x00011050, 0x47)
-i32 CTileTriggerSwitch::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+i32 CTileTriggerSwitch::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     if (!CUserLogic::SerializeMove(
             reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
             mode,
@@ -168,7 +168,7 @@ LogicTypeId CTileTrigger::GetTypeTag() {
 }
 
 RVA(0x000111f0, 0x47)
-i32 CTileTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+i32 CTileTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     if (!CUserLogic::SerializeMove(
             reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
             mode,
@@ -188,11 +188,11 @@ RVA_COMPGEN(0x00011260, 0x1e, ??_GCTileTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011290, 0x44, ??1CTileTrigger@@UAE@XZ)
 
 RVA(0x00011320, 0x47)
-i32 CBrickz::SerializeMove(CFileMemBase* a, i32 b, i32 c, i32 d) {
+i32 CBrickz::SerializeMove(CFileMemBase* a, i32 b, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
-    return Chain(a, b, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(a, b, c, d) != 0;
 }
 
 // --- CBrickz leaf pool (the cbrickz stray, folded waveM-strays) --- ~CBrickz is
@@ -266,7 +266,7 @@ LogicTypeId CTileTriggerTransition::GetTypeTag() {
 }
 
 RVA(0x00011750, 0x47)
-i32 CTileTriggerTransition::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+i32 CTileTriggerTransition::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     if (!CUserLogic::SerializeMove(
             reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
             mode,
@@ -743,7 +743,7 @@ i32 CCheckpointTrigger::Act_10f970() {
 }
 
 RVA(0x0010f9a0, 0x8f)
-i32 CCheckpointTrigger::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
+i32 CCheckpointTrigger::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject* a4) {
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
     switch (mode) {
     case 7:

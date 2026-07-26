@@ -35,7 +35,7 @@ class CUserBase {
 public:
     CUserBase() {}
     virtual ~CUserBase() {} // inline: folds into leaf dtors (final base vptr store)
-    virtual i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4); // slot 1
+    virtual i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4); // slot 1
     virtual LogicTypeId
     GetTypeTag(); // slot 2 (per-class logic-type id)                                           // slot 2
 };
@@ -46,7 +46,7 @@ public:
     CUserLogic() {}
     CUserLogic(CGameObject* obj);
     virtual ~CUserLogic() OVERRIDE {} // inline: folds into leaf dtors (link teardown + vptr stores)
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                        // slot 2
     // slot 3 (+0x0c): the serialize name-in hook - ProjTypeXfer (0x16e4f0) resolves
     // the type name and dispatches it here virtually (`push name; call [vptr+0xc]`,
@@ -227,7 +227,7 @@ SIZE(0x20);
 
 class CTileTrigger : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                        // slot 2
 public:
     CTileTrigger();                 // 0x011160 (no-arg)

@@ -21,11 +21,11 @@ template<> DATA(0x002460b0)
 CActReg CActRegPool<CFrontCandyAni>::s_table(2000, 2010);
 
 RVA(0x0000fa60, 0x47)
-i32 CFrontCandy::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CFrontCandy::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(ar, tag, c, d) != 0;
 }
 
 // CFrontCandy::~CFrontCandy @0x0fb00 - empty vtable-anchor dtor; folds the CUserLogic
@@ -38,11 +38,11 @@ RVA_COMPGEN(0x0000fad0, 0x1e, ??_GCFrontCandy@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000fb00, 0x44, ??1CFrontCandy@@UAE@XZ)
 
 RVA(0x0000fdf0, 0x47)
-i32 CFrontCandyAni::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CFrontCandyAni::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(ar, tag, c, d) != 0;
 }
 
 // CFrontCandyAni::~CFrontCandyAni @0xfe90 - empty vtable-anchor dtor (??_7CFrontCandyAni
@@ -55,11 +55,11 @@ RVA_COMPGEN(0x0000fe60, 0x1e, ??_GCFrontCandyAni@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000fe90, 0x44, ??1CFrontCandyAni@@UAE@XZ)
 
 RVA(0x0000ff20, 0x47)
-i32 CEyeCandyAni::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CEyeCandyAni::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(ar, tag, c, d) != 0;
 }
 
 // CEyeCandyAni::~CEyeCandyAni @0x0ffc0 - empty vtable-anchor dtor; folds the

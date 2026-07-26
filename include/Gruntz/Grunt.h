@@ -268,7 +268,7 @@ class CGrunt : public CMovingLogic {
 public:
     // vtable overrides in slot order (see the base chain above):
     virtual ~CGrunt() OVERRIDE; // slot 0  @0xf2f0
-    virtual i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4)
+    virtual i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4)
         OVERRIDE; // slot 1  @0x53b80
     RVA(0x0000f2a0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {

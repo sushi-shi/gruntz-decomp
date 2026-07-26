@@ -81,11 +81,11 @@ RVA_COMPGEN(0x00010e60, 0x1e, ??_GCFortressFlag@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010e90, 0x44, ??1CFortressFlag@@UAE@XZ)
 
 RVA(0x00012cf0, 0x47)
-i32 CParticlez::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CParticlez::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(ar, tag, c, d) != 0;
 }
 
 // CParticlez::~CParticlez @0x012d90 - the leaf adds no destructible members
@@ -100,11 +100,11 @@ RVA_COMPGEN(0x00012d60, 0x1e, ??_GCParticlez@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012d90, 0x44, ??1CParticlez@@UAE@XZ)
 
 RVA(0x00012e20, 0x47)
-i32 CExplosion::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CExplosion::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(ar, tag, c, d) != 0;
 }
 
 // CExplosion::~CExplosion (0x12ec0) - the /GX leaf dtor folds the bare CUserLogic
@@ -223,11 +223,11 @@ i32 CFortressFlag::AdvanceAnim() {
 }
 
 RVA(0x00046410, 0x92)
-i32 CFortressFlag::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CFortressFlag::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {
+    if (!Chain(ar, tag, c, d)) {
         return 0;
     }
     if (tag == 8) {

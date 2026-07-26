@@ -959,7 +959,7 @@ i32 CInGameIcon::Reposition() {
 // A faithful reconstruction needs the corrected boundary first; pinned no-body so
 // its RVA registers and the unit builds. See report.
 RVA(0x00098c90, 0x31f)
-i32 CInGameIcon::SerializeMove(CFileMemBase*, i32, i32, i32) {
+i32 CInGameIcon::SerializeMove(CFileMemBase*, i32, i32, CGameObject*) {
     return 0;
 }
 
@@ -1057,7 +1057,7 @@ void RegisterTextLogic() {
 }
 
 RVA(0x00099a30, 0xaa)
-i32 CInGameText::SerializeMove(CFileMemBase* ar, i32 tag, i32 a, i32 b) {
+i32 CInGameText::SerializeMove(CFileMemBase* ar, i32 tag, i32 a, CGameObject* b) {
     if (ar == 0) {
         return 0;
     }

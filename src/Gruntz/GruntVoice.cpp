@@ -79,11 +79,11 @@ RVA(0x00013470, 0x4b)
 CVoiceTrigger::CVoiceTrigger() {}
 
 RVA(0x000134e0, 0x47)
-i32 CVoiceTrigger::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CVoiceTrigger::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(ar, tag, c, d) != 0;
 }
 
 // CVoiceTrigger::~CVoiceTrigger @0x0135a0 - the leaf adds no destructible members

@@ -15,11 +15,11 @@ template<> DATA(0x00245f70)
 CActReg CActRegPool<CSingleAnimation>::s_table(2000, 2010);
 
 RVA(0x000104a0, 0x47)
-i32 CSingleAnimation::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CSingleAnimation::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(ar, tag, c, d) != 0;
 }
 
 // CSingleAnimation::~CSingleAnimation @0x010540 - the leaf adds no destructible

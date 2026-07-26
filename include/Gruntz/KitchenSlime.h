@@ -9,7 +9,7 @@
 
 class CKitchenSlime : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
     RVA(0x000130b0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_KITCHENSLIME;

@@ -120,7 +120,7 @@ i32 CGruntToySprite::Update() {
 }
 
 RVA(0x0007fa20, 0x89)
-i32 CGruntToySprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+i32 CGruntToySprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     switch (mode) {
         case 4:
             ar->Write(&m_cellX, 8);

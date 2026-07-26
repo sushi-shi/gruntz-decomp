@@ -17,7 +17,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_VOICETRIGGER;
     }
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
     virtual void FireActivation(i32 id)
         OVERRIDE;               // 0x11a3a0 (vtable slot 4 body: per-coord PMF dispatch)
     static void RegisterActs(); // 0x11a500 (binds Tick to the activation key "A"; static:

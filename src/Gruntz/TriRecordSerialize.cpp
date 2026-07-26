@@ -4,7 +4,7 @@
 #include <Gruntz/SerialRecords.h>
 
 RVA(0x00058ee0, 0x5c)
-i32 CPairRecord::Serialize(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CPairRecord::Serialize(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     switch (tag) {
         case 4:
             ar->Write(&m_0, 8);

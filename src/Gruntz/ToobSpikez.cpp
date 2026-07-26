@@ -75,11 +75,11 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 }
 
 RVA(0x00012bc0, 0x47)
-i32 CToobSpikez::SerializeMove(CFileMemBase* a, i32 b, i32 c, i32 d) {
+i32 CToobSpikez::SerializeMove(CFileMemBase* a, i32 b, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
-    return Chain(a, b, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(a, b, c, d) != 0;
 }
 
 // CToobSpikez::~CToobSpikez @0x012c60 - the leaf adds no destructible members

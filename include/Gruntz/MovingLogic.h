@@ -16,7 +16,7 @@ extern u32 g_defaultZ;              // 0x5f04e8
 
 class CMovingLogic : public CUserLogic {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                        // slot 2
     // slot 5 (0x13c70; out-of-line body in Projectile.cpp - the deferred-callback
     // release + the MovingSlot16 tail; was bound as `CProjectile::ReleaseDeferred`,

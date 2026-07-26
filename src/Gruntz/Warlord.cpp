@@ -280,7 +280,7 @@ CWarlord::CWarlord(i32 arg)
 // Now the real override (gruntz.match.vtable_slot_binding).
 //
 // FULLY DECODED (R3, this session) - the complete body is understood; it is NOT a
-// blind stub. Signature: i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4)
+// blind stub. Signature: i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4)
 // where ar == CFileMemBase (Read @vtbl+0x2c / Write @vtbl+0x30), a4 is the referenced
 // object (int in the mangling, a CGameObject*). Structure:
 //   1. if (!CUserLogic::SerializeMove(ar,mode,a3,a4)) return 0;   (0x16e7f0)
@@ -317,7 +317,7 @@ CWarlord::CWarlord(i32 arg)
 // committing it would regress. Needs a dedicated frame-exact pass that can reproduce
 // the per-temp slot allocation (or a permuter run seeded with the decode above).
 RVA(0x00043670, 0xc20)
-i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     return 0;
 }
 

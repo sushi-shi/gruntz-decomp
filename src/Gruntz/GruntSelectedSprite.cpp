@@ -127,7 +127,7 @@ i32 CGruntSelectedSprite::Update() {
 }
 
 RVA(0x0007ea70, 0x6f)
-i32 CGruntSelectedSprite::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
+i32 CGruntSelectedSprite::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject* a4) {
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
     // Retail lays the mode==4 Write block out-of-line (cmp 4; je) with the mode==7
     // Read inline; this (mode != 4 ? maybe-Read : Write) form reproduces that layout.

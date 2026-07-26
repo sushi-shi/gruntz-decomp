@@ -99,11 +99,11 @@ CActReg CActRegPool<CGruntCreationPoint>::s_table(2000, 2010);
 // difference, not source-steerable), and it pins `this` in edi vs retail's esi. The
 // ctor @0x3e520 shares the same wall (~80%).
 RVA(0x0003e7a0, 0xd7)
-i32 CGruntCreationPoint::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CGruntCreationPoint::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {
+    if (!Chain(ar, tag, c, d)) {
         return 0;
     }
     if (tag != 4 && tag == 8) {

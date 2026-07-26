@@ -913,7 +913,7 @@ void CProjectile::ScanTargets(i32 impact) {
 // byte-faithful; residual is the MSVC5 scratch-buffer slot assignment +
 // outparam zero-init store positions. Not source-steerable.
 RVA(0x000e0d40, 0x6c2)
-i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, i32 a4) {
+i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, CGameObject* a4) {
     CDDrawSurfaceMgr* reg = g_gameReg->m_world;
     if (reg == 0) {
         return 0;
@@ -1282,7 +1282,7 @@ i32 CTimeBomb::LoadAttributes() {
 // consecutive 8-byte fields), where cl keeps `this` in edi and recomputes each
 // field address - a callee-saved-register coloring choice not steerable from C.
 RVA(0x000e2080, 0xc1)
-i32 CTimeBomb::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
+i32 CTimeBomb::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject* a4) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }

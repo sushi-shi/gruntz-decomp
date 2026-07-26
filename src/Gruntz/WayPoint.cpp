@@ -5,11 +5,11 @@
 #include <rva.h>
 
 RVA(0x00010240, 0x47)
-i32 CWayPoint::SerializeMove(CFileMemBase* a, i32 b, i32 c, i32 d) {
+i32 CWayPoint::SerializeMove(CFileMemBase* a, i32 b, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
-    return Chain(a, b, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(a, b, c, d) != 0;
 }
 
 // CWayPoint::~CWayPoint (0x102e0) - the /GX leaf dtor folds the bare CUserLogic

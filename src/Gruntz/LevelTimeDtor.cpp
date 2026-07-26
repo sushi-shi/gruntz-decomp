@@ -15,7 +15,7 @@
 
 VTBL(CLevelTime, 0x001e801c);
 RVA(0x000119b0, 0x47)
-i32 CLevelTime::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+i32 CLevelTime::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     if (!CUserLogic::SerializeMove(
             reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
             mode,

@@ -34,7 +34,7 @@ public:
     // ONE reference to that body: ??_7CActionArea+0x4, this slot; the
     // "pulse-highlight leaf" WAS this class): CUserLogic chain + CWapX Chain +
     // the raw +0x54..+0x67 pulse-block byte stream.
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE;
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
     // 0x8440 (ex "CPulseHighlight::Tick"): per-frame brightness ramp over the
     // bound sprite's image set. UNREFERENCED in retail (no /OPT:REF keeps it);
     // its ILT thunk 0x3517 has no referent either.

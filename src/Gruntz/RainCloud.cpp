@@ -94,7 +94,7 @@ CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
 // draw-fill triple (fill cmd 7 + the logic pump's shade table) - the exact
 // stores CRainCloud::CRainCloud performs at spawn.
 RVA(0x000b4cb0, 0x56)
-i32 CRainCloud::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, i32 d) {
+i32 CRainCloud::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObject* d) {
     if (!CPathHazard::SerializeMove(stream, tag, c, d)) {
         return 0;
     }

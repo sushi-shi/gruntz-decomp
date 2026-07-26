@@ -210,11 +210,11 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 }
 
 RVA(0x0003fed0, 0xa9)
-i32 CWormhole::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CWormhole::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {
+    if (!Chain(ar, tag, c, d)) {
         return 0;
     }
     if (tag == 8) {
@@ -524,11 +524,11 @@ i32 CGruntPuddle::Remove() {
 // this->m_10 before each store (aliasing-conservative) where retail caches m_object
 // once in edi. Hoisting m_object into a local made the asm byte-identical (160 insns).
 RVA(0x00040e50, 0x170)
-i32 CGruntPuddle::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CGruntPuddle::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {
+    if (!Chain(ar, tag, c, d)) {
         return 0;
     }
     switch (tag) {
@@ -631,11 +631,11 @@ i32 CTeleporter::ReapplyConfig() {
 }
 
 RVA(0x00041350, 0xee)
-i32 CTeleporter::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CTeleporter::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {
+    if (!Chain(ar, tag, c, d)) {
         return 0;
     }
     // The two i64 snapshots (+0x58 arm-clock, +0x60 interval) round-trip through one

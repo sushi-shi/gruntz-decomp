@@ -5,11 +5,11 @@
 #include <rva.h>
 
 RVA(0x00010370, 0x47)
-i32 CGuardPoint::SerializeMove(CFileMemBase* a, i32 b, i32 c, i32 d) {
+i32 CGuardPoint::SerializeMove(CFileMemBase* a, i32 b, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
-    return Chain(a, b, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(a, b, c, d) != 0;
 }
 
 // CGuardPoint::~CGuardPoint (0x10410) - the /GX leaf dtor folds the bare

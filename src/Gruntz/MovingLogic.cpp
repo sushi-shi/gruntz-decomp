@@ -130,7 +130,7 @@ istream& ReadCurve(istream& accum, CMotionState& c) {
 // one unit, so cl wraps the temps in an EH frame retail lacks. Fix = split the
 // movinglogic TU at the band boundary (docs/exe-map partition work), not source.
 RVA(0x0016e7f0, 0x1cf)
-i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
+i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject* a4) {
     if (arc == 0) {
         return 0;
     }
@@ -284,7 +284,7 @@ void CMovingLogic::MovingSlot16() {
 // byte-match retail under /GX-; this unit builds /GX for its 0x139xx ctor/dtor
 // band, so cl adds an EH frame retail lacks here. Split the TU to fix.
 RVA(0x0016f4a0, 0x1da)
-i32 CMovingLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
+i32 CMovingLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject* a4) {
     if (arc == 0) {
         return 0;
     }

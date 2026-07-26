@@ -380,7 +380,7 @@ dispatch:
 
 
 RVA(0x000fc5b0, 0xf5)
-i32 CStaticHazard::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+i32 CStaticHazard::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     CFileMemBase* arc = static_cast<CFileMemBase*>(ar);
     switch (mode) {
         case 4:

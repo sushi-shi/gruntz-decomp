@@ -153,7 +153,7 @@ i32 CLightFx::Activate(i32 spec, i32 effect, i32 anchorA, i32 anchorB) {
 }
 
 RVA(0x0009d660, 0xc8)
-i32 CLightFx::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+i32 CLightFx::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     if (CUserLogic::SerializeMove(
             reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
             mode,

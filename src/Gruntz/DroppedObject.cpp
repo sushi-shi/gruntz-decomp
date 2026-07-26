@@ -441,11 +441,11 @@ i32 CObjectDropper::Update() {
 }
 
 RVA(0x000c6680, 0x1b4)
-i32 CObjectDropper::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CObjectDropper::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {
+    if (!Chain(ar, tag, c, d)) {
         return 0;
     }
 
@@ -711,11 +711,11 @@ i32 CDroppedObject::UserLogicVfunc5() {
 }
 
 RVA(0x000c73a0, 0xb5)
-i32 CDroppedObject::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CDroppedObject::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {
+    if (!Chain(ar, tag, c, d)) {
         return 0;
     }
     switch (tag) {
@@ -840,7 +840,7 @@ i32 CDroppedObjectShadow::Advance() {
 }
 
 RVA(0x000c7b40, 0x76)
-i32 CDroppedObjectShadow::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, i32 d) {
+i32 CDroppedObjectShadow::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(
             reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
             mode,
@@ -849,7 +849,7 @@ i32 CDroppedObjectShadow::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, i32 d
         )) {
         return 0;
     }
-    if (!Chain(static_cast<CFileMemBase*>(ar), mode, c, reinterpret_cast<CGameObject*>(d))) {
+    if (!Chain(static_cast<CFileMemBase*>(ar), mode, c, d)) {
         return 0;
     }
     if (mode == 8) {

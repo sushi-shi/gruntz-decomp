@@ -111,7 +111,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // A branch-vs-branchless codegen coin-flip - the permuter found no operand-order
 // spelling that flips it (topic:wall topic:regalloc). Deferred to the final sweep.
 RVA(0x0003f040, 0x147)
-i32 CExitTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+i32 CExitTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     if (!CUserLogic::SerializeMove(
             reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(ar))),
             mode,

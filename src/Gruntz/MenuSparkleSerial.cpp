@@ -9,7 +9,7 @@ DATA(0x001ea3d8)
 i32 g_menuSparkleHi = 5000; // 0x5ea3d8
 
 RVA(0x000ae1c0, 0xae)
-i32 CMenuSparkle::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
+i32 CMenuSparkle::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject* a4) {
     if (arc == 0) {
         return 0;
     }

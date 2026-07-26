@@ -463,11 +463,11 @@ i32 CRollingBall::Update() {
 }
 
 RVA(0x000b0fe0, 0x1ab)
-i32 CRollingBall::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CRollingBall::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {
+    if (!Chain(ar, tag, c, d)) {
         return 0;
     }
 

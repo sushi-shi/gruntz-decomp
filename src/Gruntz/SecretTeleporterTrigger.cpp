@@ -32,11 +32,11 @@ static inline CActEntry* ActLookup(i32 coord) {
 }
 
 RVA(0x00010a10, 0x47)
-i32 CSecretTeleporterTrigger::SerializeMove(CFileMemBase* a, i32 b, i32 c, i32 d) {
+i32 CSecretTeleporterTrigger::SerializeMove(CFileMemBase* a, i32 b, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(a, b, c, d)) {
         return 0;
     }
-    return Chain(a, b, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(a, b, c, d) != 0;
 }
 
 // --- CSecretTeleporterTrigger::~CSecretTeleporterTrigger (0x010ab0) ---
@@ -56,11 +56,11 @@ RVA(0x00010b20, 0x4b)
 CSecretLevelTrigger::CSecretLevelTrigger() {}
 
 RVA(0x00010bb0, 0x47)
-i32 CSecretLevelTrigger::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CSecretLevelTrigger::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(ar, tag, c, d) != 0;
 }
 
 // CSecretLevelTrigger::~CSecretLevelTrigger @0x010c50 - the leaf adds no

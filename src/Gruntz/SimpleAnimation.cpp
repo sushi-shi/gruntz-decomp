@@ -16,11 +16,11 @@
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 RVA(0x0000f930, 0x47)
-i32 CSimpleAnimation::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CSimpleAnimation::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(ar, tag, c, d) != 0;
 }
 
 // CSimpleAnimation::~CSimpleAnimation @0x00f9d0 - the leaf adds no destructible

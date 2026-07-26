@@ -9,7 +9,7 @@ class CFileMemBase;
 
 class CDroppedObject : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
     // The "B" act handler PMF (0xc7be0): virtual-dispatch Unload, return its residue.
     i32 ActB(); // 0xc7be0
     RVA(0x00012560, 0x6)

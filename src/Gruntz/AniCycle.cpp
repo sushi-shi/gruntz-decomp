@@ -14,11 +14,11 @@ template<> DATA(0x00246088)
 CActReg CActRegPool<CAniCycle>::s_table(2000, 2010);
 
 RVA(0x0000f470, 0x47)
-i32 CAniCycle::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CAniCycle::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(ar, tag, c, d) != 0;
 }
 
 // CAniCycle::~CAniCycle @0x0f510 - empty vtable-anchor dtor; folds the CUserLogic

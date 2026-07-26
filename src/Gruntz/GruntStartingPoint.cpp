@@ -16,11 +16,11 @@
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 RVA(0x000105d0, 0x47)
-i32 CGruntStartingPoint::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CGruntStartingPoint::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(ar, tag, c, d) != 0;
 }
 
 // CGruntStartingPoint::~CGruntStartingPoint (0x10670) - the /GX leaf dtor folds

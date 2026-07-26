@@ -9,7 +9,7 @@
 class CGruntSelectedSprite : public CUserLogic, public CWapX {
 public:
 public:
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1 (0x07ea70)
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1 (0x07ea70)
     RVA(0x00011e30, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTSELECTEDSPRITE;

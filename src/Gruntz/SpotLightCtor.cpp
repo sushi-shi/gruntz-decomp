@@ -132,7 +132,7 @@ void CSpotLight::FireActivation(i32 id) {
 // the Write-id load `id = m_focus->m_188` uses ecx here vs eax in retail (a 1-byte
 // callee-saved reg choice), not source-steerable under MSVC5 /O2.
 RVA(0x000b2050, 0x295)
-i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, i32 d) {
+i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d) {
     if (CUserLogic::SerializeMove(
             reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(arc))),
             mode,
@@ -142,7 +142,7 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, i32 d) {
         == 0) {
         return 0;
     }
-    if (Chain(static_cast<CFileMemBase*>(arc), mode, c, reinterpret_cast<CGameObject*>(d)) == 0) {
+    if (Chain(static_cast<CFileMemBase*>(arc), mode, c, d) == 0) {
         return 0;
     }
     CGruntzMgr* reg = g_gameReg;

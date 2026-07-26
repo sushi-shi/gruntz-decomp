@@ -18,7 +18,7 @@ public:
     // trajectory block, the 7 sprite frames by registry key, the shadow by object
     // id, the hit list via the coord pool, then the CMovingLogic chain + the CWapX
     // record tail.
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE;
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE;
     RVA(0x00012960, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_PROJECTILE;

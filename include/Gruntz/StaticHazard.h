@@ -18,7 +18,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_STATICHAZARD;
     }
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
     CStaticHazard(CGameObject* obj);                                  // 0x0fb7a0 (1-arg ctor)
     static void RegisterActs();                   // 0x0fbd50 (binds "A"/"B" handlers)
     i32 LoadAttributes2();                        // 0x0fc0b0 (time-gated pulse)

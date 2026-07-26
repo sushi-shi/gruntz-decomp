@@ -6,11 +6,11 @@
 #include <rva.h>
 
 RVA(0x0000fb90, 0x47)
-i32 CBehindCandy::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CBehindCandy::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(ar, tag, c, d) != 0;
 }
 
 // CBehindCandy::~CBehindCandy @0x00fc30 - the leaf adds no destructible members

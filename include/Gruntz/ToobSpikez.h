@@ -21,7 +21,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TOOBSPIKEZ;
     }
-    virtual i32 SerializeMove(CFileMemBase*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
     virtual void FireActivation(i32 id) OVERRIDE;                     // 0x114860 (vtable slot 4)
     static void RegisterActs(); // 0x1149c0 (binds the logic handler to key "A";
     //  static: no this, called this-less by the factory)

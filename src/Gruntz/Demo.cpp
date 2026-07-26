@@ -237,7 +237,7 @@ void Orient3::StepB(i32 count) {
 }
 
 RVA(0x0003c8f0, 0x76)
-i32 CTriRecord::Serialize(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CTriRecord::Serialize(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     switch (tag) {
         case 4:
             ar->Write(&m_0, 4);

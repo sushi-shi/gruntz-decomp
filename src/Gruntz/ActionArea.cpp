@@ -206,14 +206,14 @@ i32 CActionArea::ApplyColor(i32 owner) {
 }
 
 RVA(0x00008600, 0xcd)
-i32 CActionArea::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CActionArea::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (ar == 0) {
         return 0;
     }
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    if (!Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d))) {
+    if (!Chain(ar, tag, c, d)) {
         return 0;
     }
     i64* p = &m_timestamp;

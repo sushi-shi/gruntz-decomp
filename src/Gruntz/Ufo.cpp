@@ -63,7 +63,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
 }
 
 RVA(0x000b4c40, 0x4b)
-i32 CUFO::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, i32 d) {
+i32 CUFO::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, CGameObject* d) {
     if (!CPathHazard::SerializeMove(ar, mode, c, d)) {
         return 0;
     }
@@ -91,13 +91,13 @@ static inline void SerQuadPair(CFileMemBase* s, i32 tag, char* p) {
 }
 
 RVA(0x000b4d30, 0x287)
-i32 CPathHazard::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, i32 d) {
+i32 CPathHazard::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObject* d) {
     CFileMemBase* s = stream;
     char* B = reinterpret_cast<char*>(this);
     if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
         return 0;
     }
-    if (Chain(static_cast<CFileMemBase*>(stream), tag, c, reinterpret_cast<CGameObject*>(d)) == 0) {
+    if (Chain(static_cast<CFileMemBase*>(stream), tag, c, d) == 0) {
         return 0;
     }
     SerQuadPair(s, tag, B + 0x108);

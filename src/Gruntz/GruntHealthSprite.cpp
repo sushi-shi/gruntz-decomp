@@ -174,7 +174,7 @@ i32 CGruntHealthSprite::HealthUpdate() {
 }
 
 RVA(0x0007f270, 0xa3)
-i32 CGruntHealthSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+i32 CGruntHealthSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     switch (mode) {
         case 4:
             ar->Write(&m_cellX, 8);

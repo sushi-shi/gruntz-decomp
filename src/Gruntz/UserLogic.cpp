@@ -31,7 +31,7 @@
 // calling the out-of-line helper.
 
 RVA(0x000087d0, 0x8)
-i32 CUserBase::SerializeMove(CFileMemBase*, i32, i32, i32) {
+i32 CUserBase::SerializeMove(CFileMemBase*, i32, i32, CGameObject*) {
     return 1;
 }
 

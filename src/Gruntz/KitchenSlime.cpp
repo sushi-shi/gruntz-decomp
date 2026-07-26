@@ -295,7 +295,7 @@ i32 CKitchenSlime::Tick() {
 }
 
 RVA(0x000b2ff0, 0x11b)
-i32 CKitchenSlime::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, i32 d) {
+i32 CKitchenSlime::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObject* d) {
     char* B = reinterpret_cast<char*>(this);
     CFileMemBase* s = stream;
     // Written as `if (tag != 4) { if (tag == 7) Read... } else Transfer...` so
@@ -323,7 +323,7 @@ i32 CKitchenSlime::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, i32 d) {
     if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
         return 0;
     }
-    return Chain(stream, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(stream, tag, c, d) != 0;
 }
 
 // @early-stop

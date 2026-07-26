@@ -8,11 +8,11 @@
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 RVA(0x00011880, 0x47)
-i32 CCursorSnapSprite::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CCursorSnapSprite::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(ar, tag, c, d) != 0;
 }
 
 // CCursorSnapSprite::~CCursorSnapSprite @0x011920 - the leaf adds no destructible

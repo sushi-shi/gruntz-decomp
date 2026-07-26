@@ -11,7 +11,7 @@ public:
     // unless a body is bound below; their vftable references reloc-mask).
     // The destructor is implicit: retail's compiler-generated body is only a
     // tail jump to CProjectile::~CProjectile, with no derived-vptr restamp.
-    virtual i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4)
+    virtual i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4)
         OVERRIDE; // slot 1 @0xe15d0
     RVA(0x000129b0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE { // slot 2  (origin CUserBase)

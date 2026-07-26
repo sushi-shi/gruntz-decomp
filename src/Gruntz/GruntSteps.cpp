@@ -1145,7 +1145,7 @@ modeDispatch: {
 }
 
 RVA(0x00053b80, 0x340)
-i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) {
+i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     if (ar == 0) {
         return 0;
     }

@@ -17,11 +17,11 @@ template<> DATA(0x00245f98)
 CActReg CActRegPool<CBehindCandyAni>::s_table(2000, 2010);
 
 RVA(0x00010050, 0x47)
-i32 CBehindCandyAni::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) {
+i32 CBehindCandyAni::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
         return 0;
     }
-    return Chain(ar, tag, c, reinterpret_cast<CGameObject*>(d)) != 0;
+    return Chain(ar, tag, c, d) != 0;
 }
 
 // CBehindCandyAni::~CBehindCandyAni @0x0100f0 - the leaf adds no destructible
