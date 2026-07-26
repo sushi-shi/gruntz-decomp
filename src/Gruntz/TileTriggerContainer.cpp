@@ -461,22 +461,18 @@ CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32 a3, i32* block9, i32 a5, i
 // callee-saved esi direct-deref.  See docs/patterns/linked-list-walk-node-eax-rotation.md
 RVA(0x00116e60, 0x59)
 i32 CTileTriggerContainer::DelFromList1(void* data) {
-    TtcNode* node = TtcHead(m_list1);
-    if (node == 0) {
-        return 0;
-    }
-    do {
-        TtcNode* cur = node;
-        node = node->m_next;
-        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(cur->m_data);
+    POSITION pos = m_list1.GetHeadPosition();
+    while (pos != 0) {
+        POSITION cur = pos;
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_list1.GetNext(pos));
         if (elem == static_cast<CTileTriggerLogic*>(data)) {
             // ~CTileTriggerLogic (non-virtual, inline) restamps the vptr
             // (??_7CTileTriggerLogic @0x5eaea4) + clears m_initGate, then ??3.
             delete elem;
-            m_list1.RemoveAt(reinterpret_cast<POSITION>(cur));
+            m_list1.RemoveAt(cur);
             return 1;
         }
-    } while (node != 0);
+    }
     return 0;
 }
 
@@ -613,21 +609,17 @@ i32 CTileTriggerContainer::FilterList2(void* arg) {
 // See docs/patterns/linked-list-walk-node-eax-rotation.md
 RVA(0x00117150, 0x53)
 i32 CTileTriggerContainer::MoveList1ToList2(void* data) {
-    TtcNode* node = TtcHead(m_list1);
-    if (node == 0) {
-        return 0;
-    }
-    do {
-        TtcNode* cur = node;
-        node = node->m_next;
-        void* elem = cur->m_data;
+    POSITION pos = m_list1.GetHeadPosition();
+    while (pos != 0) {
+        POSITION cur = pos;
+        void* elem = m_list1.GetNext(pos);
         if (elem == data) {
-            m_list1.RemoveAt(reinterpret_cast<POSITION>(cur));
+            m_list1.RemoveAt(cur);
             m_list2.AddTail(elem);
             *(reinterpret_cast<i32*>(elem) + 14) = 0; // elem+0x38
             return 1;
         }
-    } while (node != 0);
+    }
     return 0;
 }
 
