@@ -1350,19 +1350,17 @@ i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, i32 a2) {
         return 0;
     }
     POSITION pos = reinterpret_cast<POSITION>((m_map48.GetCount() != 0 ? -1 : 0));
-    if (pos != 0) {
-        do {
-            void* key = 0;
-            CWwdGameObject* val = 0;
-            m_map48.GetNextAssoc(pos, key, reinterpret_cast<void*&>(val));
-            if (val != 0 && !(val->m_flags & 0x4000000)) {
-                void* k = WwdKey(val);
-                ar->Write(&k, 4);
-                if (val->Play(reinterpret_cast<i32>(ar), 4, a2, val) == 0) {
-                    return 0;
-                }
+    while (pos != 0) {
+        void* key = 0;
+        CWwdGameObject* val = 0;
+        m_map48.GetNextAssoc(pos, key, reinterpret_cast<void*&>(val));
+        if (val != 0 && !(val->m_flags & 0x4000000)) {
+            void* k = WwdKey(val);
+            ar->Write(&k, 4);
+            if (val->Play(reinterpret_cast<i32>(ar), 4, a2, val) == 0) {
+                return 0;
             }
-        } while (pos != 0);
+        }
     }
     return 1;
 }
