@@ -115,6 +115,98 @@ def norm(text: str) -> list:
     return lines
 
 
+_JCC = ("jmp", "je", "jne", "jz", "jnz", "ja", "jae", "jb", "jbe", "jg", "jge",
+        "jl", "jle", "js", "jns", "jo", "jno", "jp", "jnp", "jcxz", "jecxz")
+
+
+def blocks(text: str) -> str:
+    """IDA-style basic-block view of one side's disasm: split at branch targets,
+    show each block's in-edges, branch destinations as block labels, back-edges
+    marked as loops and the shared ret tail(s) called out. Structure recovery
+    aid: 'jcc -> @tail' runs = a nested single-exit source shape."""
+    import re as _re
+    row = _re.compile(r"^\s*([0-9a-f]+):\s+(?:[0-9a-f]{2}\s)+\s*(\S.*?)\s*$")
+    insns = []          # (addr, text)
+    for ln in text.splitlines():
+        m = row.match(ln)
+        if not m:
+            continue
+        t = _re.sub(r"[ \t]+", " ", m.group(2))
+        if _re.fullmatch(r"(?:[0-9a-f]{2} ?)+", t):
+            continue    # byte-wrap continuation line
+        insns.append((int(m.group(1), 16), t))
+    if not insns:
+        return "(no instruction rows found)\n"
+    addrs = {a for a, _ in insns}
+    lo, hi = insns[0][0], insns[-1][0]
+
+    def branch_target(t: str):
+        m = _re.match(r"(\w+) (0x[0-9a-f]+)", t)
+        if m and (m.group(1) in _JCC or m.group(1).startswith("loop")):
+            tgt = int(m.group(2), 16)
+            return tgt if lo <= tgt <= hi and tgt in addrs else None
+        return None
+
+    leaders, edges = {lo}, {}   # edges: src addr -> [dst addrs]
+    for i, (a, t) in enumerate(insns):
+        op = t.split()[0]
+        tgt = branch_target(t)
+        nxt = insns[i + 1][0] if i + 1 < len(insns) else None
+        if tgt is not None:
+            leaders.add(tgt)
+            edges.setdefault(a, []).append(tgt)
+            if nxt and op != "jmp":
+                leaders.add(nxt)
+                edges.setdefault(a, []).append(nxt)
+        elif op == "jmp" or op.startswith("ret"):
+            if nxt:
+                leaders.add(nxt)
+        elif op in _JCC and nxt:   # jcc with out-of-range/unparsed target
+            leaders.add(nxt)
+    order = sorted(leaders)
+    blk_of = {}
+    for a, _ in insns:
+        while order and blk_of.get(a) is None:
+            import bisect
+            blk_of[a] = order[bisect.bisect_right(order, a) - 1]
+            break
+    preds = {}
+    for i, (a, t) in enumerate(insns):
+        for d in edges.get(a, []):
+            preds.setdefault(d, []).append(a)
+        # fallthrough into a leader from a non-branching insn
+        nxt = insns[i + 1][0] if i + 1 < len(insns) else None
+        op = t.split()[0]
+        if (nxt in leaders and branch_target(t) is None
+                and op != "jmp" and not op.startswith("ret")):
+            preds.setdefault(nxt, []).append(a)
+
+    out = []
+    wid = len(f"{hi:x}")
+    for i, (a, t) in enumerate(insns):
+        if a in leaders:
+            ins = preds.get(a, [])
+            tag = ""
+            if any(p > a for p in ins):
+                tag += "  <=== LOOP HEAD"
+            first = t.split()[0]
+            if first.startswith("ret") or (i + 1 < len(insns)
+                                           and len(ins) > 2
+                                           and any(x[1].startswith("ret")
+                                                   for x in insns[i:i + 8])):
+                if len(ins) > 2:
+                    tag += f"  <=== COMMON TAIL ({len(ins)} in-edges)"
+            src = ", ".join(f"@{p:x}" for p in sorted(ins)) or "entry"
+            out.append("")
+            out.append(f"block @{a:0{wid}x}:   in: {src}{tag}")
+        tgt = branch_target(t)
+        arrow = ""
+        if tgt is not None:
+            arrow = f"   -> @{tgt:0{wid}x}" + ("  ^loop" if tgt <= a else "")
+        out.append(f"  {a:0{wid}x}:  {t}{arrow}")
+    return "\n".join(out) + "\n"
+
+
 def _debug_obj_for(unit: str, source: str, flags: list):
     """build/debug/<unit>.obj compiled `<flags> /Z7` (codegen-neutral CodeView),
     cached on source mtime - same artifact harvest_locals.py builds. Path or None."""
@@ -201,6 +293,14 @@ def rich(rva: str, want_lite: bool) -> str:
 
 
 def run(args) -> None:
+    if getattr(args, "blocks", False):
+        if args.diff:
+            die("--blocks is a single-side view; drop --diff")
+        side = "BASE (compiled)" if args.base else "TARGET (retail)"
+        text = base_text(args.rva) if args.base else target_text(args.rva)
+        print(f"[basic blocks: {side} @ {args.rva}]")
+        print(blocks(text), end="")
+        sys.exit(0)
     if getattr(args, "rich", False):
         if args.target:
             die("--rich is BASE-only (retail GRUNTZ.EXE carries no line info); "

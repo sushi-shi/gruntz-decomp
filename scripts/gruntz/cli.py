@@ -1241,6 +1241,9 @@ def _add_sema(sub) -> None:
                     help="asm only - no addresses, no byte columns, no reloc blocks")
     sd.add_argument("--diff", action="store_true",
                     help="unified diff of base-vs-target asm (addresses masked; rc=1 if differs)")
+    sd.add_argument("--blocks", action="store_true",
+                    help="IDA-style basic-block view (either side): in-edges per block, "
+                         "branch arrows, loop back-edges, shared ret tails")
     sd.set_defaults(func=cmd_sema_disasm)
 
     st = ss.add_parser("strings", help="per-fn string set / --find reverse lookup")
