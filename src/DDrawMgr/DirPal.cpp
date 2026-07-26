@@ -91,10 +91,9 @@ void CDDPalette::Destroy() {
 // Deferred to the final sweep. docs/patterns/zero-register-pinning.md.
 RVA(0x00147590, 0x17e)
 i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
-    u8 hdr14[0xe];   // BITMAPFILEHEADER
-    u8 pe[0x400];    // expanded PALETTEENTRY[256]
-    u8 info[0x428];  // BITMAPINFOHEADER + the in-file palette region
-    u8 quads[0x400]; // 256-entry RGBQUAD palette
+    u8 hdr14[0xe];  // BITMAPFILEHEADER
+    u8 pe[0x400];   // expanded PALETTEENTRY[256]
+    u8 info[0x428]; // BITMAPINFOHEADER + the in-file RGBQUAD palette (at +0x28)
     CFile file;
     if (file.Open(filename, 0, 0) == 0) {
         return 0;
@@ -105,14 +104,15 @@ i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
     if (file.Read(info, 0x428) != 0x428) {
         return 0;
     }
-    if (file.Read(quads, 0x400) != 0x400) {
+    // the 256-entry RGBQUAD palette re-read straight over info's palette region
+    if (file.Read(info + 0x28, 0x400) != 0x400) {
         return 0;
     }
     for (i32 i = 0; i < 0x400; i += 4) {
-        pe[i + 0] = quads[i + 2]; // R <- RGBQUAD.rgbRed
-        pe[i + 1] = quads[i + 1]; // G <- rgbGreen
-        pe[i + 2] = quads[i + 0]; // B <- rgbBlue
-        pe[i + 3] = 0;            // peFlags
+        pe[i + 0] = (info + 0x28)[i + 2]; // R <- RGBQUAD.rgbRed
+        pe[i + 1] = (info + 0x28)[i + 1]; // G <- rgbGreen
+        pe[i + 2] = (info + 0x28)[i + 0]; // B <- rgbBlue
+        pe[i + 3] = 0;                    // peFlags
     }
     return Create(dd, pe, flags);
 }
