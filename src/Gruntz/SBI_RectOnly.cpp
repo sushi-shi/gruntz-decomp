@@ -978,9 +978,10 @@ i32 CStatusBarMgr::HlClickGroup2(i32 row) {
 // (no outer `!=`) so the equal case folds into the jge/jle pair like retail and the
 // two inc/dec branches share one store, not an extra top `je`.
 // @early-stop
-// ~95.7%: byte-exact except a 1-instr regalloc coin-flip in the m_gaugeSink->m_44 store
-// block (retail keeps the gauge value in eax + loads the vtable into edx; the
-// recompile uses edx for the value). Not steerable from C; deferred.
+// ~99.5%: byte-exact except the eax<->edx scratch coin-flip in the m_gaugeSink->m_44
+// store block (retail: value eax / vptr edx; ours swapped). The sink is loaded ONCE
+// after the notify call via the post-call `sink` local (95.7 -> 99.5); the remaining
+// swap is not steerable from C; deferred.
 RVA(0x00105480, 0x7d)
 void CStatusBarMgr::TickGauge() {
     i32 changed = 0;
@@ -1004,9 +1005,10 @@ noChange:;
     }
     if (changed) {
         if (m_gaugeSink && m_gaugeNotify) {
-            m_gaugeNotify->SetSubtype();        // slot 10
-            m_gaugeSink->m_fillScale = m_gauge; // +0x44
-            m_gaugeSink->SetSubtype();          // slot 10
+            m_gaugeNotify->SetSubtype(); // slot 10
+            CSBI_WellGoo* sink = m_gaugeSink;
+            sink->m_fillScale = m_gauge; // +0x44
+            sink->SetSubtype();          // slot 10
         }
     }
 }
