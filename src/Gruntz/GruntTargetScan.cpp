@@ -154,15 +154,15 @@ i32 CGrunt::ScanNearestTarget() {
     // Recompute the scan box (center +- (m_2dc + m_298 + 1)) and reject `best` when its
     // center falls outside it.
     i32 halfBox = m_defenderRadius + m_reachRadius + 1;
-    i32 pt[2];
-    GetScreenPos(reinterpret_cast<Coord*>(pt));
-    i32 by = pt[1] >> 5;
-    GetScreenPos(reinterpret_cast<Coord*>(pt));
-    i32 bx = pt[0] >> 5;
-    GetScreenPos(reinterpret_cast<Coord*>(pt));
-    i32 t3y = pt[1] >> 5;
-    GetScreenPos(reinterpret_cast<Coord*>(pt));
-    i32 t4x = pt[0] >> 5;
+    Coord pt;
+    GetScreenPos(&pt);
+    i32 by = pt.m_y >> 5;
+    GetScreenPos(&pt);
+    i32 bx = pt.m_x >> 5;
+    GetScreenPos(&pt);
+    i32 t3y = pt.m_y >> 5;
+    GetScreenPos(&pt);
+    i32 t4x = pt.m_x >> 5;
     RECT box;
     box.left = t4x - halfBox;
     box.top = t3y - halfBox;
