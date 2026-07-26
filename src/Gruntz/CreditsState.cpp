@@ -499,15 +499,16 @@ RVA(0x00039d00, 0x8c)
 i32 CCreditsState::FlashColor() {
     i32 color = 0xffffff;
     if (m_fxEnabled) {
-        if (m_flashTimer) {
+        if (m_flashTimer == 0) {
+            i32 r = rand() % 256;
+            i32 g = rand() % 256;
+            i32 b = rand() % 256;
+            m_flashTimer = 0x12c;
+            color = (b << 16) | ((r & 0xff) << 8) | (g & 0xff);
+            m_flashColor = color;
+        } else {
             return m_flashColor;
         }
-        i32 r = rand() % 256;
-        i32 g = rand() % 256;
-        i32 b = rand() % 256;
-        m_flashTimer = 0x12c;
-        color = (b << 16) | ((g & 0xff) << 8) | (r & 0xff);
-        m_flashColor = color;
     }
     return color;
 }
