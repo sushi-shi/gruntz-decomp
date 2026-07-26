@@ -100,7 +100,7 @@ DATA_SYMBOL(0x00002d0b, 0x0, _WarpDialogProcThunk)
 RVA(0x0008e470, 0x50)
 i32 CGruntzMgr::HandleDebugPosition() {
     i32 r = 0;
-    if (m_curState && m_curState->Update() == GAMESTATE_PLAY) {
+    if (m_curState->Update() == GAMESTATE_PLAY) {
         r = RunModalDialog("DEBUG_POSITION", static_cast<void*>(&WarpDialogProcThunk), 1);
         if (r == 1) {
             HWND hwnd = m_gameWnd->m_hwnd;
