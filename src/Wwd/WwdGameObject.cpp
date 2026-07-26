@@ -545,7 +545,7 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
 // push early (push &out; STORE; push key) where retail schedules it after both pushes
 // (push &out; push key; STORE). Same slot, independent store; MSVC5's scheduler places
 // it between the arg pushes. No source ordering of the init reproduces the late slot.
-RVA(0x00150f50, 0x33)
+RVA(0x00150f50, 0x35)
 void CGameObject::AddLogicHit(char* key) {
     CGameObject* handler = 0;
     CObject* handlerOb = 0;
@@ -598,7 +598,7 @@ i32 CGameObject::EnsureWorker88(CGameObject* src) {
 
 // @early-stop
 // same `handler = 0` scheduling coin-flip as AddLogicHit.
-RVA(0x00151030, 0x33)
+RVA(0x00151030, 0x35)
 void CGameObject::AddLogicAttack(char* key) {
     CGameObject* handler = 0;
     CObject* handlerOb = 0;
@@ -645,7 +645,7 @@ i32 CGameObject::EnsureWorker90(CGameObject* src) {
 
 // @early-stop
 // same `handler = 0` scheduling coin-flip as AddLogicHit.
-RVA(0x00151110, 0x33)
+RVA(0x00151110, 0x35)
 void CGameObject::AddLogicBump(char* key) {
     CGameObject* handler = 0;
     CObject* handlerOb = 0;
