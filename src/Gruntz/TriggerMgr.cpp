@@ -869,11 +869,9 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     name.Format("Level%i", lvl->m_levelIndex, 0);
     i32 color =
         g_buteMgr.GetIntDef(const_cast<char*>(static_cast<const char*>(name)), "WarpStone", 0);
-    i32 hx = col;
-    i32 hy = row;
-    if (hy >= g_gameReg->m_viewBounds.right || hy < g_gameReg->m_viewBounds.left
-        || hx >= g_gameReg->m_viewBounds.bottom || hx < g_gameReg->m_viewBounds.top) {
-        lvl->ResetGoals(hy, hx);
+    if (row >= g_gameReg->m_viewBounds.right || row < g_gameReg->m_viewBounds.left
+        || col >= g_gameReg->m_viewBounds.bottom || col < g_gameReg->m_viewBounds.top) {
+        lvl->ResetGoals(row, col);
     }
     // the main plane's coord wrap (thunk 0x295a -> ?WrapCoord@CDDrawWorkerHost@@ @0xa000;
     // receiver is level->m_mainPlane)

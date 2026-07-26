@@ -1570,7 +1570,7 @@ i32 CGameLevel::AltStepValidate(CGameObject* t, CGameObject* p, i32 a1, i32 a2, 
             goto fail;
         }
         if (cmpHi == tHi) {
-            if (tHi != boxT - 1) {
+            if (boxT - 1 != tHi) {
                 goto fail;
             }
         } else {

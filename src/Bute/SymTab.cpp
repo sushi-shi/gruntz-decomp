@@ -902,12 +902,12 @@ CSymParser::CSymParser() {
     m_70 = 0x13;
     m_74 = 0x13;
     m_24 = 1;
-    m_nextGeneratedFileKey = 0x77359400;
     m_40 = 1;
+    m_nextGeneratedFileKey = 0x77359400;
     m_08 = 1;
+    m_symbolBucketCount = 9;
     m_2c = 3;
     m_subTabBucketCount = 5;
-    m_symbolBucketCount = 9;
     m_parseSlotBlockCount = 0x64;
 }
 

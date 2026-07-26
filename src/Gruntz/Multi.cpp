@@ -295,8 +295,8 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     m_538 = 0;
     m_5ac = 0;
     m_pollAbort = 0;
-    m_568 = 0;
     m_56c = 0;
+    m_568 = 0;
     m_574 = 0;
     m_notifyLatch = 0;
     m_1c0 = 0;
