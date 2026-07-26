@@ -697,13 +697,10 @@ void CDDrawSubMgrLeafScan::Unload() { // slot 7 (CLoadable::Unload override; cle
 // sound-res map neighborhood - dossier #15).
 // ===========================================================================
 // @early-stop
-// Loop-rotation + EH-frame stack-slot wall (topic:regalloc; see
-// docs/patterns/stack-slot-coalesce-frame-4b.md + loop-preheader-vs-exit-block-
-// order.md). The logic + instruction selection are byte-identical to retail, but
-// (a) retail keeps ONE loop body (post-tested do-while); our cl peels the first
-// iteration into a second GetNextAssoc copy; (b) the {pos, key, value} stack
-// slots are assigned differently. The find-one-and-stop break is what flips
-// both. ~74.8%, logic complete; deferred to the final sweep.
+// 99.85: the natural `while (pos)` killed the peel (do-while echo was the bug;
+// see the DelFromList1 lesson) and `p == value` fixed the compare order; the
+// sole residue is the key/pos stack-slot SWAP (0x8 vs 0x20) - decl-order
+// permutations tried, all regress (stack-slot-coalesce-frame-4b.md).
 RVA(0x00157b00, 0xb2)
 void CDDrawSubMgrLeafScan::RemoveByValue(LeafCue* p) {
     if (p == 0) {
@@ -712,15 +709,13 @@ void CDDrawSubMgrLeafScan::RemoveByValue(LeafCue* p) {
     POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
     CString key;
     void* value = 0;
-    if (pos != static_cast<POSITION>(0)) {
-        do {
-            m_10.GetNextAssoc(pos, key, value);
-            if (value == p) {
-                m_10.RemoveKey(key);
-                delete p;
-                break;
-            }
-        } while (pos != static_cast<POSITION>(0));
+    while (pos != static_cast<POSITION>(0)) {
+        m_10.GetNextAssoc(pos, key, value);
+        if (p == value) {
+            m_10.RemoveKey(key);
+            delete p;
+            break;
+        }
     }
 }
 
