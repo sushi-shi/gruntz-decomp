@@ -54,7 +54,7 @@ namespace ApiCallerStubs {
 RVA(0x00118a30, 0xda)
 int HeapCheckDump(int walkOnBad) {
     _HEAPINFO hinfo;
-    char buf[80];
+    char buf[128];
     int status = _heapchk();
     OutputDebugStringA("Checking heap...\n");
     ApiCallerStubs::winapi_118b50_OutputDebugStringA(status);

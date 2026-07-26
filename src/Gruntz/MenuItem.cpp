@@ -32,11 +32,6 @@ i32 CMenuItem::OnInit() {
     return 0;
 }
 
-RVA(0x00185510, 0x5)
-void CMenuItem::Dispatch0c() {
-    Reset(); // devirtualized tail-jmp in retail (5 B)
-}
-
 RVA_COMPGEN(0x00184670, 0x1e, ??_GCMenuItem@@UAEPAXI@Z)
 RVA(0x00184690, 0x91)
 inline CMenuItem::~CMenuItem() {
@@ -126,6 +121,11 @@ i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     }
     return 1;
 }
+RVA(0x00185510, 0x5)
+void CMenuItem::Dispatch0c() {
+    Reset(); // devirtualized tail-jmp in retail (5 B)
+}
+
 RVA(0x00185520, 0x2c)
 i32 CMenuItem::GetFrameWidth() {
     CDDrawWorker* s = static_cast<CDDrawWorker*>(m_sprite);
