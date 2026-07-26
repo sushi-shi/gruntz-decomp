@@ -636,8 +636,7 @@ _zdvec::_zdvec(i32 stride, i32 lo, i32 hi, void* scratch) : _zvec(stride, lo, hi
 
 RVA_COMPGEN(0x0016dde0, 0x1e, ??_G_zdvec@@UAEPAXI@Z)
 
-RVA(0x0016de00, 0x5)
-_zdvec::~_zdvec() {}
+RVA_COMPGEN(0x0016de00, 0x5, ??1_zdvec@@UAE@XZ)
 
 // The dynamic-array 0x18-byte error slot, initialized by the retail helper at 0x16de20.
 // Its complete extent is 0x6bf468..0x6bf47f; the former u8 "tag" was only its

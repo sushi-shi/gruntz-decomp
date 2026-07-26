@@ -33,7 +33,8 @@ public:
     // 0x16dda0: construct the allocating base, then seed the element cursor/count.
     _zdvec(i32 stride, i32 lo, i32 hi, void* scratch);
     char* IndexToPtr(i32 i);    // 0x310f0 (base accessor + per-slot construction)
-    virtual ~_zdvec() OVERRIDE; // 0x16de00
+    // ~_zdvec is IMPLICIT: retail 0x16de00 is a bare 5-byte `jmp ??1_zvec` with NO
+    // vptr restamp - only the compiler-generated trivial dtor produces that form.
 };
 SIZE(0x24);
 
