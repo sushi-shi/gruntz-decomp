@@ -65,10 +65,8 @@ public:
     // interval (m_60), each a manually zero-extended i64 (lo stored, hi forced 0) so
     // the per-frame delta test compares them 64-bit; kept as lo/hi i32 pairs because
     // retail emits two separate 32-bit stores (not a sign-extending i64 assign).
-    i32 m_armClockLo;          // +0x58  running-clock snapshot (g_frameTime)
-    i32 m_armClockHi;          // +0x5c
-    i32 m_intervalLo;          // +0x60  bound object's per-tile-time (m_10->m_7c->m_bc)
-    i32 m_intervalHi;          // +0x64
+    i64 m_armClock;            // +0x58  running-clock snapshot (g_frameTime)
+    i64 m_interval;            // +0x60  bound object's per-tile-time (m_10->m_7c->m_bc)
     i32 m_tickHandled;         // +0x68  "tick handled" latch
     char m_pad6c[0x70 - 0x6c]; // +0x6c  (unmodeled tail; size proven 0x70 from
                                //         AnimWorkerHandlers `new CTeleporter`)

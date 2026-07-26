@@ -560,10 +560,8 @@ i32 CGruntPuddle::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d
 
 RVA(0x00041020, 0x170)
 CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_armClockLo = 0;
-    m_intervalLo = 0;
-    m_armClockHi = 0;
-    m_intervalHi = 0;
+    m_armClock = 0;
+    m_interval = 0;
     m_38->m_flags |= 0x2000002;
     if (m_object->m_sortKey != 0x1869f) {
         m_object->m_sortKey = 0x1869f;
@@ -630,17 +628,14 @@ i32 CTeleporter::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d)
     if (!Chain(ar, tag, c, d)) {
         return 0;
     }
-    // The two i64 snapshots (+0x58 arm-clock, +0x60 interval) round-trip through one
-    // hoisted base pointer that walks +8 (retail: lea ebx,[this+0x58] then add ebx,8).
-    i32* p = &m_armClockLo;
     if (tag != 4) {
         if (tag == 7) {
-            ar->Read(p, 8);
-            ar->Read(p + 2, 8);
+            ar->Read(&m_armClock, 8);
+            ar->Read(&m_interval, 8);
         }
     } else {
-        ar->Write(p, 8);
-        ar->Write(p + 2, 8);
+        ar->Write(&m_armClock, 8);
+        ar->Write(&m_interval, 8);
     }
     switch (tag) {
         case 4:
@@ -732,10 +727,8 @@ i32 CTeleporter::Begin() {
         return 0;
     }
 
-    m_intervalLo = m_object->m_7c->m_bc;
-    m_intervalHi = 0;
-    m_armClockLo = g_frameTime;
-    m_armClockHi = 0;
+    m_interval = static_cast<u32>(m_object->m_7c->m_bc);
+    m_armClock = static_cast<u32>(g_frameTime);
     m_value = m_38->m_1a0.m_14;
     m_object->ApplyLookupGeometry("GAME_TELEPORTER", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -794,8 +787,8 @@ i32 CTeleporter::Update() {
     CWwdGameObjectA* o = m_object;
     if (o->m_7c->m_bc != 0) {
         i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime))
-                    - *reinterpret_cast<i64*>(&m_armClockLo);
-        if (delta >= *reinterpret_cast<i64*>(&m_intervalLo)) {
+                    - m_armClock;
+        if (delta >= m_interval) {
             m_value = m_38->m_1a0.m_14;
             m_38->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
             m_object->m_7c->m_bc = 0;
