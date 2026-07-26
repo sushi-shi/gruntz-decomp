@@ -136,13 +136,11 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
             }
             u32 px = static_cast<u16>(a5);
             u32 py = static_cast<u16>(a6);
-            CGrunt* node = static_cast<CGrunt*>(m_mgr->m_cmdGrid->CellHitTest(
-                px,
-                py,
-                reinterpret_cast<i32*>(&a4),
-                reinterpret_cast<i32*>(&a8),
-                5
-            ));
+            i32 col = a4;
+            i32 row = a8;
+            CGrunt* node = static_cast<CGrunt*>(
+                m_mgr->m_cmdGrid->CellHitTest(px, py, &col, &row, 5)
+            );
             if (node == 0 || g->m_entranceActive != 0) {
                 g->m_arrivalActive = 0;
             } else {
@@ -153,16 +151,11 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                     node->m_object->m_screenY
                 );
             }
-            res = (isB == 0) ? m_mgr->m_cmdGrid->ApplyTriggerA(
-                                   player,
-                                   *reinterpret_cast<i32*>(&a4),
-                                   *reinterpret_cast<i32*>(&a8),
-                                   0
-                               )
+            res = (isB == 0) ? m_mgr->m_cmdGrid->ApplyTriggerA(player, col, row, 0)
                              : m_mgr->m_cmdGrid->ApplyTriggerB(
                                    player,
-                                   *reinterpret_cast<i32*>(&a4),
-                                   *reinterpret_cast<i32*>(&a8),
+                                   col,
+                                   row,
                                    0
                                );
             if (res != 0) {
