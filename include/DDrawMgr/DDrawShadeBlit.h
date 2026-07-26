@@ -13,7 +13,12 @@ SIZE_UNKNOWN();
 
 struct ShadeDescr {
     char m_00[0x8];
-    u8* m_lut; // +0x08 LUT/palette base
+    u8* m_lut; // +0x08 LUT/palette base (8bpp: palette bytes)
+    // The same LUT is a table of RGB565 WORDS on the 16bpp paths - the descriptor
+    // is genuinely dual-width, so the one word-view lives here.
+    u16* Lut16() const {
+        return reinterpret_cast<u16*>(m_lut);
+    }
 };
 SIZE_UNKNOWN();
 

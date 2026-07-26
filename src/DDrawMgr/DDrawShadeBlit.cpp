@@ -11,6 +11,12 @@
 DATA(0x002bed08)
 u8 g_scratch[1280]; // 0x6bed08 (0x500 B, up to g_shadeDescr208@0x6bf208; a 640-px 16bpp line)
 
+// The scratch line is read back as 8bpp bytes or RGB565 words depending on the
+// blit path - the one word-view of the buffer lives here.
+static inline u16* Scratch16() {
+    return Scratch16();
+}
+
 DATA(0x002bf218)
 ShadeDescr* g_blendDescr;
 
@@ -643,10 +649,10 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                                 break;
                             }
                             case 7: {
-                                u16* pal1 = reinterpret_cast<u16*>(m_palDescr->m_lut);
-                                u16* pal2 = reinterpret_cast<u16*>(g_blendDescr->m_lut);
+                                u16* pal1 = m_palDescr->Lut16();
+                                u16* pal2 = g_blendDescr->Lut16();
                                 memcpy(g_scratch, d, count * 2);
-                                u16* sc = reinterpret_cast<u16*>(g_scratch);
+                                u16* sc = Scratch16();
                                 i32 rd = pitch & ~1;
                                 for (i = count; i > 0; i--) {
                                     u32 idx = pal2[*sc++];
@@ -660,7 +666,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                             }
                             case 8: {
                                 memcpy(g_scratch, d, count * 2);
-                                u16* sc = reinterpret_cast<u16*>(g_scratch);
+                                u16* sc = Scratch16();
                                 u16* ss2 = reinterpret_cast<u16*>(s);
                                 i32 rd = pitch & ~1;
                                 if (m_blendVariant) {
@@ -707,9 +713,9 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                             break;
                         }
                         case 7: {
-                            u16* pal1 = reinterpret_cast<u16*>(m_palDescr->m_lut);
-                            u16* pal2 = reinterpret_cast<u16*>(g_blendDescr->m_lut);
-                            u16* sc = reinterpret_cast<u16*>(g_scratch);
+                            u16* pal1 = m_palDescr->Lut16();
+                            u16* pal2 = g_blendDescr->Lut16();
+                            u16* sc = Scratch16();
                             memcpy(g_scratch, d, count * 2);
                             for (i = count; i > 0; i--) {
                                 u32 idx = pal2[*sc++];
@@ -720,7 +726,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                             break;
                         }
                         case 10: {
-                            u16* pal = reinterpret_cast<u16*>(m_palDescr->m_lut);
+                            u16* pal = m_palDescr->Lut16();
                             for (i = count; i > 0; i--) {
                                 *reinterpret_cast<u16*>(d) = pal[*s++];
                                 d += 2;
@@ -730,7 +736,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                         case 8: {
                             memcpy(g_scratch, d, count * 2);
                             if (m_blendVariant) {
-                                u16* sd = reinterpret_cast<u16*>(g_scratch);
+                                u16* sd = Scratch16();
                                 u16* ss2 = reinterpret_cast<u16*>(s);
                                 for (i = count; i > 0; i--) {
                                     u32 a = *ss2++;
@@ -743,7 +749,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                                     d += 2;
                                 }
                             } else {
-                                u16* sd = reinterpret_cast<u16*>(g_scratch);
+                                u16* sd = Scratch16();
                                 u16* ss2 = reinterpret_cast<u16*>(s);
                                 for (i = count; i > 0; i--) {
                                     u32 a = *sd++;
@@ -759,10 +765,10 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                             break;
                         }
                         case 11: {
-                            u16* pal = reinterpret_cast<u16*>(m_palDescr->m_lut);
+                            u16* pal = m_palDescr->Lut16();
                             memcpy(g_scratch, d, count * 2);
                             if (m_blendVariant) {
-                                u16* sd = reinterpret_cast<u16*>(g_scratch);
+                                u16* sd = Scratch16();
                                 for (i = count; i > 0; i--) {
                                     u32 a = pal[*s++];
                                     u32 bb = *sd++;
@@ -774,7 +780,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                                     d += 2;
                                 }
                             } else {
-                                u16* sd = reinterpret_cast<u16*>(g_scratch);
+                                u16* sd = Scratch16();
                                 for (i = count; i > 0; i--) {
                                     u32 a = pal[*s++];
                                     u32 bb = *sd++;
@@ -1037,10 +1043,10 @@ void CDDrawShadeBlit::BlitMode_14b770(
                                 break;
                             }
                             case 7: {
-                                u16* pal1 = reinterpret_cast<u16*>(m_palDescr->m_lut);
-                                u16* pal2 = reinterpret_cast<u16*>(g_blendDescr->m_lut);
+                                u16* pal1 = m_palDescr->Lut16();
+                                u16* pal2 = g_blendDescr->Lut16();
                                 memcpy(g_scratch, d - count * 2 - 2, count * 2);
-                                u16* sc = reinterpret_cast<u16*>(&g_scratch[count * 2 - 2]);
+                                u16* sc = (Scratch16() + count - 1);
                                 i32 rd = pitch & ~1;
                                 for (i = count; i > 0; i--) {
                                     u32 idx = pal2[*sc--];
@@ -1054,7 +1060,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                             }
                             case 8: {
                                 memcpy(g_scratch, d - count * 2 - 2, count * 2);
-                                u16* sc = reinterpret_cast<u16*>(&g_scratch[count * 2 - 2]);
+                                u16* sc = (Scratch16() + count - 1);
                                 u16* ss2 = reinterpret_cast<u16*>(s);
                                 i32 rd = pitch & ~1;
                                 if (m_blendVariant) {
@@ -1103,10 +1109,10 @@ void CDDrawShadeBlit::BlitMode_14b770(
                             break;
                         }
                         case 7: {
-                            u16* pal1 = reinterpret_cast<u16*>(m_palDescr->m_lut);
-                            u16* pal2 = reinterpret_cast<u16*>(g_blendDescr->m_lut);
+                            u16* pal1 = m_palDescr->Lut16();
+                            u16* pal2 = g_blendDescr->Lut16();
                             memcpy(g_scratch, d - count * 2 - 2, count * 2);
-                            u16* sc = reinterpret_cast<u16*>(&g_scratch[count * 2 - 2]);
+                            u16* sc = (Scratch16() + count - 1);
                             for (i = count; i > 0; i--) {
                                 u32 idx = pal2[*sc--];
                                 idx += (*s++ >> 4) << 12;
@@ -1116,7 +1122,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                             break;
                         }
                         case 10: {
-                            u16* pal = reinterpret_cast<u16*>(m_palDescr->m_lut);
+                            u16* pal = m_palDescr->Lut16();
                             for (i = count; i > 0; i--) {
                                 *reinterpret_cast<u16*>(d) = pal[*s++];
                                 d -= 2;
@@ -1125,7 +1131,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                         }
                         case 8: {
                             memcpy(g_scratch, d - count * 2 - 2, count * 2);
-                            u16* sc = reinterpret_cast<u16*>(&g_scratch[count * 2 - 2]);
+                            u16* sc = (Scratch16() + count - 1);
                             u16* ss2 = reinterpret_cast<u16*>(s);
                             if (m_blendVariant) {
                                 for (i = count; i > 0; i--) {
@@ -1153,9 +1159,9 @@ void CDDrawShadeBlit::BlitMode_14b770(
                             break;
                         }
                         case 11: {
-                            u16* pal = reinterpret_cast<u16*>(m_palDescr->m_lut);
+                            u16* pal = m_palDescr->Lut16();
                             memcpy(g_scratch, d - count * 2 - 2, count * 2);
-                            u16* sc = reinterpret_cast<u16*>(&g_scratch[count * 2 - 2]);
+                            u16* sc = (Scratch16() + count - 1);
                             if (m_blendVariant) {
                                 for (i = count; i > 0; i--) {
                                     u32 a = pal[*s++];
@@ -1258,9 +1264,9 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             break;
         }
         case 7: {
-            u16* pal1 = reinterpret_cast<u16*>(m_palDescr->m_lut);
-            u16* pal2 = reinterpret_cast<u16*>(g_blendDescr->m_lut);
-            u16* sc = reinterpret_cast<u16*>(g_scratch);
+            u16* pal1 = m_palDescr->Lut16();
+            u16* pal2 = g_blendDescr->Lut16();
+            u16* sc = Scratch16();
             memcpy(g_scratch, dst, count * 2);
             for (i = count; i > 0; i--) {
                 u32 idx = pal2[*sc++];
@@ -1271,7 +1277,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             break;
         }
         case 10: {
-            u16* pal = reinterpret_cast<u16*>(m_palDescr->m_lut);
+            u16* pal = m_palDescr->Lut16();
             for (i = count; i > 0; i--) {
                 *reinterpret_cast<u16*>(dst) = pal[*src++];
                 dst += 2;
@@ -1281,7 +1287,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
         case 8: {
             memcpy(g_scratch, dst, count * 2);
             if (m_blendVariant) {
-                u16* sd = reinterpret_cast<u16*>(g_scratch);
+                u16* sd = Scratch16();
                 u16* ss = reinterpret_cast<u16*>(src);
                 for (i = count; i > 0; i--) {
                     u32 a = *ss++;
@@ -1293,7 +1299,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
                     dst += 2;
                 }
             } else {
-                u16* sd = reinterpret_cast<u16*>(g_scratch);
+                u16* sd = Scratch16();
                 u16* ss = reinterpret_cast<u16*>(src);
                 for (i = count; i > 0; i--) {
                     u32 a = *sd++;
@@ -1308,10 +1314,10 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             break;
         }
         case 11: {
-            u16* pal = reinterpret_cast<u16*>(m_palDescr->m_lut);
+            u16* pal = m_palDescr->Lut16();
             memcpy(g_scratch, dst, count * 2);
             if (m_blendVariant) {
-                u16* sd = reinterpret_cast<u16*>(g_scratch);
+                u16* sd = Scratch16();
                 for (i = count; i > 0; i--) {
                     u32 a = pal[*src++];
                     u32 b = *sd++;
@@ -1322,7 +1328,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
                     dst += 2;
                 }
             } else {
-                u16* sd = reinterpret_cast<u16*>(g_scratch);
+                u16* sd = Scratch16();
                 for (i = count; i > 0; i--) {
                     u32 a = pal[*src++];
                     u32 b = *sd++;
@@ -1404,10 +1410,10 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             break;
         }
         case 7: {
-            u16* pal1 = reinterpret_cast<u16*>(m_palDescr->m_lut);
-            u16* pal2 = reinterpret_cast<u16*>(g_blendDescr->m_lut);
+            u16* pal1 = m_palDescr->Lut16();
+            u16* pal2 = g_blendDescr->Lut16();
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
-            u16* sc = reinterpret_cast<u16*>(&g_scratch[count * 2 - 2]);
+            u16* sc = (Scratch16() + count - 1);
             for (i = count; i > 0; i--) {
                 u32 idx = pal2[*sc--];
                 idx += (*src++ >> 4) << 12;
@@ -1417,7 +1423,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             break;
         }
         case 10: {
-            u16* pal = reinterpret_cast<u16*>(m_palDescr->m_lut);
+            u16* pal = m_palDescr->Lut16();
             for (i = count; i > 0; i--) {
                 *reinterpret_cast<u16*>(dst) = pal[*src++];
                 dst -= 2;
@@ -1426,7 +1432,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
         }
         case 8: {
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
-            u16* sc = reinterpret_cast<u16*>(&g_scratch[count * 2 - 2]);
+            u16* sc = (Scratch16() + count - 1);
             u16* ss = reinterpret_cast<u16*>(src);
             if (m_blendVariant) {
                 for (i = count; i > 0; i--) {
@@ -1452,9 +1458,9 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             break;
         }
         case 11: {
-            u16* pal = reinterpret_cast<u16*>(m_palDescr->m_lut);
+            u16* pal = m_palDescr->Lut16();
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
-            u16* sc = reinterpret_cast<u16*>(&g_scratch[count * 2 - 2]);
+            u16* sc = (Scratch16() + count - 1);
             if (m_blendVariant) {
                 for (i = count; i > 0; i--) {
                     u32 a = pal[*src++];
@@ -1558,10 +1564,10 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
             break;
         }
         case 7: {
-            u16* pal1 = reinterpret_cast<u16*>(m_palDescr->m_lut);
-            u16* pal2 = reinterpret_cast<u16*>(g_blendDescr->m_lut);
+            u16* pal1 = m_palDescr->Lut16();
+            u16* pal2 = g_blendDescr->Lut16();
             memcpy(g_scratch, dst, count * 2);
-            u16* sc = reinterpret_cast<u16*>(g_scratch);
+            u16* sc = Scratch16();
             i32 rd = rowDelta & ~1;
             for (i = count; i > 0; i--) {
                 u32 idx = pal2[*sc++];
@@ -1575,7 +1581,7 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
         }
         case 8: {
             memcpy(g_scratch, dst, count * 2);
-            u16* sc = reinterpret_cast<u16*>(g_scratch);
+            u16* sc = Scratch16();
             u16* ss = reinterpret_cast<u16*>(src);
             i32 rd = rowDelta & ~1;
             if (m_blendVariant) {
@@ -1650,10 +1656,10 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
             break;
         }
         case 7: {
-            u16* pal1 = reinterpret_cast<u16*>(m_palDescr->m_lut);
-            u16* pal2 = reinterpret_cast<u16*>(g_blendDescr->m_lut);
+            u16* pal1 = m_palDescr->Lut16();
+            u16* pal2 = g_blendDescr->Lut16();
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
-            u16* sc = reinterpret_cast<u16*>(&g_scratch[count * 2 - 2]);
+            u16* sc = (Scratch16() + count - 1);
             i32 rd = rowDelta & ~1;
             for (i = count; i > 0; i--) {
                 u32 idx = pal2[*sc--];
@@ -1667,7 +1673,7 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
         }
         case 8: {
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
-            u16* sc = reinterpret_cast<u16*>(&g_scratch[count * 2 - 2]);
+            u16* sc = (Scratch16() + count - 1);
             u16* ss = reinterpret_cast<u16*>(src);
             i32 rd = rowDelta & ~1;
             if (m_blendVariant) {
