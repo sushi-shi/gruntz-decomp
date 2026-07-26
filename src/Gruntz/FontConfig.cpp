@@ -152,8 +152,7 @@ void CFontConfig::FreeNodes() {
     m_inputActive = 0;
 }
 
-RVA(0x00021c40, 0x8)
-FontItem::~FontItem() {}
+RVA_COMPGEN(0x00021c40, 0x8, ??1FontItem@@QAE@XZ)
 
 RVA(0x00021c60, 0xde)
 i32 CFontConfig::AddItem(const char* str, i32 type, i32 data) {

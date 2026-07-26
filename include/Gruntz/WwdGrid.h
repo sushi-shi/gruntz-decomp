@@ -24,7 +24,9 @@ SIZE_UNKNOWN();
 
 class CWwdGrid : public CObject {
 public:
-    CWwdGrid() {}
+    CWwdGrid() {
+        m_allocated = 0;
+    }
     virtual ~CWwdGrid() OVERRIDE {
         FreeBuckets();
     }

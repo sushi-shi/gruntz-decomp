@@ -85,7 +85,9 @@ struct FontItem {
     i32 type;     // +0x00
     i32 data;     // +0x04
     CString name; // +0x08
-    ~FontItem();  // 0x21c40  out-of-line member dtor (destroys name; add ecx,8; jmp ~CString)
+    // NO user-declared dtor: retail INLINES the member teardown (~CString on
+    // &name) at every delete site; 0x21c40 is the COMPILER-GENERATED ~FontItem
+    // COMDAT (RVA_COMPGEN pin in FontConfig.cpp).
 };
 SIZE_UNKNOWN();
 

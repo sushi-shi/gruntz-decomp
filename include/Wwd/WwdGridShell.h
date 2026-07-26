@@ -12,9 +12,7 @@ struct WwdRegion; // the grid bucket node (<Gruntz/WwdGridIter.h>)
 struct CWwdGridShell : public CWwdGrid {
     virtual ~CWwdGridShell() OVERRIDE;           // [1] +0x04; ??_G 0x168280, ??1 0x1682a0
     virtual void OnFound(WwdRegion* r) OVERRIDE; // [5] 0x168060 (GameLevelMove.cpp)
-    CWwdGridShell() {
-        m_allocated = 0;
-    }
+    CWwdGridShell() {}
 };
 SIZE(0x44);
 
