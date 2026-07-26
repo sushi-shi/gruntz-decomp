@@ -2947,39 +2947,38 @@ void CGruntzMgr::Close() {
         m_world->SetHwnd(0);
     }
     FreeFontsMemory(); // 0x1158f0 (retail Close's second call; ex 'OpenSettingsStore')
-    Utils::RegistryHelper* cfg = m_settings;
-    if (cfg) {
-        cfg->SetValueDword("Num_Runs", m_numRuns);
-        cfg->SetValueDword("Num_Movies", m_numMovies);
-        cfg->SetValueDword("Sound", m_soundEnabled);
-        cfg->SetValueDword("Voice", m_isVoiceEnabled);
-        cfg->SetValueDword("Ambient", m_isAmbientEnabled);
-        cfg->SetValueDword("Music", m_musicEnabled);
-        cfg->SetValueDword("Interlaced", m_isInterlaced);
-        cfg->SetValueDword("High_Detail", m_isHighDetail);
-        cfg->SetValueDword("Effects", m_isEffectsEnabled);
-        cfg->SetValueDword("Disable_Joystick", g_disableJoystick);
+    if (m_settings) {
+        m_settings->SetValueDword("Num_Runs", m_numRuns);
+        m_settings->SetValueDword("Num_Movies", m_numMovies);
+        m_settings->SetValueDword("Sound", m_soundEnabled);
+        m_settings->SetValueDword("Voice", m_isVoiceEnabled);
+        m_settings->SetValueDword("Ambient", m_isAmbientEnabled);
+        m_settings->SetValueDword("Music", m_musicEnabled);
+        m_settings->SetValueDword("Interlaced", m_isInterlaced);
+        m_settings->SetValueDword("High_Detail", m_isHighDetail);
+        m_settings->SetValueDword("Effects", m_isEffectsEnabled);
+        m_settings->SetValueDword("Disable_Joystick", g_disableJoystick);
         if (m_sound) {
-            cfg->SetValueDword("Music_Volume", m_sound->GetXMidiVolume());
+            m_settings->SetValueDword("Music_Volume", m_sound->GetXMidiVolume());
         }
         if (m_cueSink) {
-            cfg->SetValueDword("Voice_Volume", m_cueSink->m_voiceVolume);
+            m_settings->SetValueDword("Voice_Volume", m_cueSink->m_voiceVolume);
         }
         if (m_world && m_world->m_soundRegistry) {
-            cfg->SetValueDword("Sound_Volume", g_sndCueTag);
+            m_settings->SetValueDword("Sound_Volume", g_sndCueTag);
         }
-        cfg->SetValueDword("Scroll_Speed", m_scrollSpeed);
-        cfg->SetValueDword("Easy_Mode", m_isEasyMode);
+        m_settings->SetValueDword("Scroll_Speed", m_scrollSpeed);
+        m_settings->SetValueDword("Easy_Mode", m_isEasyMode);
         i32 res = RES_640x480;
         if (m_savedModeW == 0x400 && m_savedModeH == 0x300) {
             res = RES_1024x768;
         } else if (m_savedModeW == 0x320 && m_savedModeH == 0x258) {
             res = RES_800x600;
         }
-        cfg->SetValueDword("Resolution", res);
-        cfg->SetValueDword("Checkpoint_Prompts", m_isCheckpointPrompts);
-        cfg->SetValueDword("Enable_HiColor", m_colorDepth == 0x10 ? 1 : 0);
-        cfg->SetValueDword("Enable_TrueColor", 0);
+        m_settings->SetValueDword("Resolution", res);
+        m_settings->SetValueDword("Checkpoint_Prompts", m_isCheckpointPrompts);
+        m_settings->SetValueDword("Enable_HiColor", m_colorDepth == 0x10 ? 1 : 0);
+        m_settings->SetValueDword("Enable_TrueColor", 0);
     }
     ClearStateStack();
     if (m_curState) {
