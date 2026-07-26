@@ -2800,7 +2800,7 @@ i32 CMulti::BroadcastOneChannel(GruntzPlayer* ch) {
     v = ch->m_comboSel;
     packet[0x11] = static_cast<char>(v);
     v = ch->m_slotKey;
-    *reinterpret_cast<i32*>((packet + 0x18)) = v;
+    *reinterpret_cast<i32*>((packet + 0x14)) = v;
     strcpy(packet + 0x18, static_cast<const char*>(ch->GetName()));
 
     return SendStatFrom(packet, 0x2c, 1);
