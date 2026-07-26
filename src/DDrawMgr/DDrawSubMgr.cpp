@@ -1545,10 +1545,11 @@ i32 CDrawSubWorker::SetGeometry(i32 w, i32 h, i32 bpp) {
     if (w <= 0 || h <= 0) {
         return 0;
     }
+    m_bpp = bpp; // FIRST: retail materializes bpp into edi up-front (99.4; the
+                 // one-line residue is its store slot vs [0x10] - see the note)
     m_height = h;
     m_srcRect[3] = h;
     m_width = w;
-    m_bpp = bpp;
     m_srcRect[0] = 0;
     m_srcRect[1] = 0;
     m_srcRect[2] = w;
