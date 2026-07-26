@@ -925,6 +925,30 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
             section_offset, physical_size, 0, 0, "-", f"skipped-{status}", "",
         ))
 
+    # Delinker artifact: an ILT-thunk-reached function with inline .text jump
+    # tables is emitted TWICE - the real .text definition plus a size-0 UNDEFINED
+    # external of the same name. objdiff pairs the base function against the
+    # undefined copy and scores a byte-correct body 0%. Rename the undefined
+    # duplicate out of the pairing namespace; relocations reference it by index,
+    # so resolution is unaffected (and those sites are reloc-masked anyway).
+    defined_external_names = {
+        symbol.name for symbol in coff.symbols.values()
+        if symbol.section > 0 and symbol.storage_class == EXTERNAL_STORAGE
+    }
+    for symbol in coff.symbols.values():
+        if (symbol.section == 0 and symbol.value == 0 and
+                symbol.storage_class == EXTERNAL_STORAGE and
+                symbol.index not in renames and
+                symbol.name in defined_external_names):
+            # Prefix (not suffix) so the result no longer demangles - objdiff
+            # pairs on DEMANGLED names, and `?f@C@...$suffix` still demangles
+            # to the original signature.
+            renames[symbol.index] = "$dup$" + symbol.name
+            rows.append(CanonicalRow(
+                symbol.name, renames[symbol.index], "dup", "undefined",
+                0, 0, 0, 0, 0, "-", "undef-dup-of-definition", "",
+            ))
+
     normalized = _rewrite_names(coff, renames)
     normalized, jump_table_rewrites = _rewrite_jump_table_relocations(
         coff, normalized)
