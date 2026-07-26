@@ -48,22 +48,22 @@ CActReg CActRegPool<CDroppedObjectShadow>::s_table(2000, 2010);
 struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
 
-static inline char* ActNameLookup(i32 id) {
+static inline CString* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
-        return reinterpret_cast<char*>(
+        return reinterpret_cast<CString*>(
             (g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride)
         );
     }
     if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0))) {
-        return reinterpret_cast<char*>(
+        return reinterpret_cast<CString*>(
             (g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride)
         );
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
-    return reinterpret_cast<char*>(g_typeColl.m_spare);
+    return reinterpret_cast<CString*>(g_typeColl.m_spare);
 }
 
 static inline CDropEntry* DropLookup(i32 coord) {
@@ -333,18 +333,18 @@ void CObjectDropper::RegisterActs() {
     if (id == 0) {
         g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         id = g_typeCounter;
-        char* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(id);
         i32 cnt = g_typeColl.m_grown;
-        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
+        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
         if (cnt != 0) {
             do {
                 if (list != 0) {
-                    (reinterpret_cast<CString*>(list))->CString::~CString();
+                    list->CString::~CString();
                 }
                 list++;
             } while (--cnt);
         }
-        (reinterpret_cast<CString*>(slot))->operator=("A");
+        *slot = "A";
         g_typeCounter++;
     }
     (reinterpret_cast<CDropperActEntry*>(CActRegPool<CObjectDropper>::s_table.ResolveEntry(id)))
@@ -567,16 +567,16 @@ void CDroppedObject::RegisterActs() {
     if (id == 0) {
         id = g_typeCounter;
         g_buteTree.Insert("A", reinterpret_cast<void*>(id));
-        char* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
+        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                (reinterpret_cast<CString*>(list))->CString::~CString();
+                list->CString::~CString();
             }
             list++;
         }
-        (reinterpret_cast<CString*>(slot))->operator=("A");
+        *slot = "A";
         g_typeCounter++;
     }
     *reinterpret_cast<DropHandler*>(DropLookup(id)) =
@@ -586,16 +586,16 @@ void CDroppedObject::RegisterActs() {
     if (id2 == 0) {
         id2 = g_typeCounter;
         g_buteTree.Insert("B", reinterpret_cast<void*>(id2));
-        char* slot = ActNameLookup(id2);
+        CString* slot = ActNameLookup(id2);
         i32 n = g_typeColl.m_grown;
-        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
+        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                (reinterpret_cast<CString*>(list))->CString::~CString();
+                list->CString::~CString();
             }
             list++;
         }
-        (reinterpret_cast<CString*>(slot))->operator=("B");
+        *slot = "B";
         g_typeCounter++;
     }
     *reinterpret_cast<DropHandler*>(DropLookup(id2)) =
@@ -793,18 +793,18 @@ void CDroppedObjectShadow::RegisterActs() {
     if (id == 0) {
         g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         id = g_typeCounter;
-        char* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(id);
         i32 cnt = g_typeColl.m_grown;
-        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
+        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
         if (cnt != 0) {
             do {
                 if (list != 0) {
-                    (reinterpret_cast<CString*>(list))->CString::~CString();
+                    list->CString::~CString();
                 }
                 list++;
             } while (--cnt);
         }
-        (reinterpret_cast<CString*>(slot))->operator=("A");
+        *slot = "A";
         g_typeCounter++;
     }
     (reinterpret_cast<CShadowActEntry*>(

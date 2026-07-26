@@ -69,16 +69,16 @@ void CGruntPowerupSprite::RegisterActs() {
     if (id == 0) {
         id = g_typeCounter;
         g_buteTree.Insert("A", reinterpret_cast<void*>(id));
-        char* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
+        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                (reinterpret_cast<CString*>(list))->CString::~CString();
+                list->CString::~CString();
             }
             list++;
         }
-        (reinterpret_cast<CString*>(slot))->operator=("A");
+        *slot = "A";
         g_typeCounter++;
     }
     (reinterpret_cast<CPowerupActEntry*>(

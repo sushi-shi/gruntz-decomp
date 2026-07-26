@@ -14,7 +14,7 @@ static inline i32 RegisterActionName() {
         g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         i32 key = g_typeCounter;
         id = key;
-        char* slot = ActNameLookup(key);
+        CString* slot = ActNameLookup(key);
         i32 cnt = g_typeColl.m_grown;
         void** nodes = reinterpret_cast<void**>(g_typeColl.m_alloc);
         if (cnt != 0) {
@@ -25,7 +25,7 @@ static inline i32 RegisterActionName() {
                 nodes++;
             } while (--cnt);
         }
-        (reinterpret_cast<CString*>(slot))->operator=("A");
+        *slot = "A";
         g_typeCounter++;
     }
     return id;

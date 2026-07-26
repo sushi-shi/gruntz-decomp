@@ -308,16 +308,16 @@ void CGrunt::ComputeFacing(double dt) {
         if (id == 0) {                                                                             \
             g_buteTree.Insert(key, reinterpret_cast<void*>(g_typeCounter));                        \
             id = g_typeCounter;                                                                    \
-            char* slot = g_typeColl._zvec::IndexToPtr(id);                                         \
+            CString* slot = reinterpret_cast<CString*>(g_typeColl._zvec::IndexToPtr(id));                                         \
             i32 n = g_typeColl.m_grown;                                                            \
-            void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);                            \
+            CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);                            \
             while (n-- != 0) {                                                                     \
                 if (list != 0) {                                                                   \
-                    (reinterpret_cast<CString*>(list))->CString::~CString();                       \
+                    list->CString::~CString();                       \
                 }                                                                                  \
                 list++;                                                                            \
             }                                                                                      \
-            (reinterpret_cast<CString*>(slot))->operator=(key);                                    \
+            *slot = (key);                                    \
             g_typeCounter++;                                                                       \
         }                                                                                          \
         (reinterpret_cast<CGruntActEntry*>(CActRegPool<CGrunt>::s_table.Resolve(id)))->m_fn =      \

@@ -118,10 +118,10 @@ static inline char* ResolveSlot(_zdvec* v, i32 idx) {
 
 static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;
-    void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
+    CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
     while (n-- != 0) {
         if (list != 0) {
-            (reinterpret_cast<CString*>(list))->CString::~CString();
+            list->CString::~CString();
         }
         list++;
     }
@@ -385,9 +385,9 @@ void RegisterLogic() {
     if (id == 0) {
         g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         id = g_typeCounter;
-        char* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(id);
         FreeNameSlotNodes();
-        (reinterpret_cast<CString*>(slot))->operator=("A");
+        *slot = "A";
         g_typeCounter++;
     }
     *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id)) =
@@ -397,9 +397,9 @@ void RegisterLogic() {
     if (id2 == 0) {
         g_buteTree.Insert("B", reinterpret_cast<void*>(g_typeCounter));
         id2 = g_typeCounter;
-        char* slot = ActNameLookup(id2);
+        CString* slot = ActNameLookup(id2);
         FreeNameSlotNodes();
-        (reinterpret_cast<CString*>(slot))->operator=("B");
+        *slot = "B";
         g_typeCounter++;
     }
     *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id2)) =
@@ -693,9 +693,9 @@ void CTeleporter_RegisterActs() {
     if (id == 0) {
         g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         id = g_typeCounter;
-        char* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(id);
         FreeNameSlotNodes();
-        (reinterpret_cast<CString*>(slot))->operator=("A");
+        *slot = "A";
         g_typeCounter++;
     }
     *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntry(id)) =
@@ -705,9 +705,9 @@ void CTeleporter_RegisterActs() {
     if (id2 == 0) {
         g_buteTree.Insert("B", reinterpret_cast<void*>(g_typeCounter));
         id2 = g_typeCounter;
-        char* slot = ActNameLookup(id2);
+        CString* slot = ActNameLookup(id2);
         FreeNameSlotNodes();
-        (reinterpret_cast<CString*>(slot))->operator=("B");
+        *slot = "B";
         g_typeCounter++;
     }
     *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntry(id2)) =

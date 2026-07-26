@@ -16,22 +16,22 @@ struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/Type
 
 
 
-static inline char* ActNameLookup(i32 id) {
+static inline CString* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
-    char* slot;
+    CString* slot;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
-        slot = reinterpret_cast<char*>(
-            (g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride)
+        slot = reinterpret_cast<CString*>(
+            g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride
         );
     } else if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0))) {
-        slot = reinterpret_cast<char*>(
-            (g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride)
+        slot = reinterpret_cast<CString*>(
+            g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride
         );
     } else {
         void* item = g_projActCache;
         g_retAddrBreadcrumb = GetRetAddr();
         g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
-        slot = reinterpret_cast<char*>(g_typeColl.m_spare);
+        slot = reinterpret_cast<CString*>(g_typeColl.m_spare);
     }
     return slot;
 }

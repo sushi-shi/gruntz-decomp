@@ -50,7 +50,7 @@ static inline i32 RegisterActionName() {
         g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         i32 key = g_typeCounter;
         id = key;
-        char* slot = ActNameLookup(key);
+        CString* slot = ActNameLookup(key);
         i32 cnt = g_typeColl.m_grown;
         void** nodes = reinterpret_cast<void**>(g_typeColl.m_alloc);
         if (cnt != 0) {
@@ -61,7 +61,7 @@ static inline i32 RegisterActionName() {
                 nodes++;
             } while (--cnt);
         }
-        (reinterpret_cast<CString*>(slot))->operator=("A");
+        *slot = "A";
         g_typeCounter++;
     }
     return id;
@@ -200,16 +200,16 @@ void CFortressFlag::RegisterActs() {
     if (id == 0) {
         id = g_typeCounter;
         g_buteTree.Insert("A", reinterpret_cast<void*>(id));
-        char* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
+        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                (reinterpret_cast<CString*>(list))->CString::~CString();
+                list->CString::~CString();
             }
             list++;
         }
-        (reinterpret_cast<CString*>(slot))->operator=("A");
+        *slot = "A";
         g_typeCounter++;
     }
     (reinterpret_cast<CFortressFlagActEntry*>(CActRegPool<CFortressFlag>::s_table.ResolveEntry(id)))
@@ -386,16 +386,16 @@ void CParticlez::RegisterActs() {
     if (id == 0) {
         id = g_typeCounter;
         g_buteTree.Insert("A", reinterpret_cast<void*>(id));
-        char* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
+        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                (reinterpret_cast<CString*>(list))->CString::~CString();
+                list->CString::~CString();
             }
             list++;
         }
-        (reinterpret_cast<CString*>(slot))->operator=("A");
+        *slot = "A";
         g_typeCounter++;
     }
     (reinterpret_cast<CPartEntryI32*>(PartLookup(id)))->m_fn =

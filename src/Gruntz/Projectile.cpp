@@ -1086,22 +1086,22 @@ static inline CTBombEntry* TBombLookup(i32 coord) {
 }
 
 
-static inline char* ActNameLookup(i32 id) {
+static inline CString* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
-        return reinterpret_cast<char*>(
+        return reinterpret_cast<CString*>(
             (g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride)
         );
     }
     if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0))) {
-        return reinterpret_cast<char*>(
+        return reinterpret_cast<CString*>(
             (g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride)
         );
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
-    return reinterpret_cast<char*>(g_typeColl.m_spare);
+    return reinterpret_cast<CString*>(g_typeColl.m_spare);
 }
 
 RVA(0x000e1830, 0x102)
@@ -1130,16 +1130,16 @@ void CTimeBomb::RegisterActs() {
     if (id == 0) {
         id = g_typeCounter;
         g_buteTree.Insert("A", reinterpret_cast<void*>(id));
-        char* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
+        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
         while (n-- != 0) {
             if (list != 0) {
-                (reinterpret_cast<CString*>(list))->CString::~CString();
+                list->CString::~CString();
             }
             list++;
         }
-        (reinterpret_cast<CString*>(slot))->operator=("A");
+        *slot = "A";
         g_typeCounter++;
     }
     *reinterpret_cast<ProjActHandler*>(TBombLookup(id)) =

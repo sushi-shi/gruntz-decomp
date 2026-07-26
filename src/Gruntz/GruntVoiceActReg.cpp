@@ -7,10 +7,10 @@
 
 static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;
-    void** list = reinterpret_cast<void**>(g_typeColl.m_alloc);
+    CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
     while (n-- != 0) {
         if (list != 0) {
-            (reinterpret_cast<CString*>(list))->CString::~CString();
+            list->CString::~CString();
         }
         list++;
     }
@@ -29,9 +29,9 @@ void RegisterActs_6514d8() {
     if (id == 0) {
         g_buteTree.Insert("A", reinterpret_cast<void*>(g_typeCounter));
         id = g_typeCounter;
-        char* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(id);
         FreeNameSlotNodes();
-        (reinterpret_cast<CString*>(slot))->operator=("A");
+        *slot = "A";
         g_typeCounter++;
     }
     *reinterpret_cast<void**>(CActRegPool<CGruntVoice>::s_table.ResolveEntry(id)) =
@@ -41,9 +41,9 @@ void RegisterActs_6514d8() {
     if (id2 == 0) {
         g_buteTree.Insert("B", reinterpret_cast<void*>(g_typeCounter));
         id2 = g_typeCounter;
-        char* slot = ActNameLookup(id2);
+        CString* slot = ActNameLookup(id2);
         FreeNameSlotNodes();
-        (reinterpret_cast<CString*>(slot))->operator=("B");
+        *slot = "B";
         g_typeCounter++;
     }
     *reinterpret_cast<void**>(CActRegPool<CGruntVoice>::s_table.ResolveEntry(id2)) =
