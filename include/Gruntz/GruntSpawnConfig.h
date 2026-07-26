@@ -90,8 +90,7 @@ public:
     // --- fields (placeholders; offsets load-bearing) ---
     CSpawnOwner* m_owner;     // +0x00
     CSpawnTree* m_configTree; // +0x04  = owner->m_30 (config tree)
-    CGruntVoice* m_voice0;    // +0x08  voice-sprite pair
-    CGruntVoice* m_voice1;    // +0x0c
+    CGruntVoice* m_voices[2]; // +0x08/+0x0c  voice-sprite pair (indexed everywhere)
     StreamVoice* m_stream0;   // +0x10  owned voice-stream pair (the real Dsndmgr StreamVoice)
     StreamVoice* m_stream1;   // +0x14
     // ::CPtrArray, not CDWordArray: retail's ctor/SetSize calls land in [0x1b4f0b,

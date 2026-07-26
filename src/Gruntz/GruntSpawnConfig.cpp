@@ -33,8 +33,8 @@ BOOL CGruntSpawnConfig::Init(CSpawnOwner* owner) {
         return 0;
     }
     m_configTree = 0;
-    m_voice0 = 0;
-    m_voice1 = 0;
+    m_voices[0] = 0;
+    m_voices[1] = 0;
     m_stream0 = 0;
     m_stream1 = 0;
     m_owner = owner;
@@ -76,8 +76,8 @@ void CGruntSpawnConfig::Clear() {
     }
     m_owner = 0;
     m_configTree = 0;
-    m_voice0 = 0;
-    m_voice1 = 0;
+    m_voices[0] = 0;
+    m_voices[1] = 0;
     m_stream0 = 0;
     m_stream1 = 0;
 }
@@ -86,7 +86,7 @@ RVA(0x0011af00, 0x62)
 BOOL CGruntSpawnConfig::LoadGruntVoices() {
     ClearSprites();
     i32 i = 0;
-    void** slot = reinterpret_cast<void**>(&m_voice0);
+    void** slot = reinterpret_cast<void**>(m_voices);
     for (; i < 2; i++, slot++) {
         CGameObject* spr =
             m_configTree->m_08->CreateSprite(0, 0, 0, 0xdbba1, "GruntVoice", 0x4040003);
@@ -103,14 +103,17 @@ BOOL CGruntSpawnConfig::LoadGruntVoices() {
 // ClearSprites (0x11af90): null the m_08/m_0c voice-sprite pair. Out-of-line
 // (retail emits it standalone; the inline member folded away and never emitted).
 // @early-stop
-// base-register-bias wall: retail materializes the pair base (`add ecx,8`) then
-// stores through [ecx]/[ecx+4]; cl stores this-relative [ecx+8]/[ecx+0xc]. The
-// two zero stores are byte-identical bar the addressing form; neither `m_08=0/
-// m_0c=0` nor an &m_08 pointer spelling reproduces the in-place base bias.
+// base-register-bias wall (82%): the m_voices[2] loop form reproduces retail's
+// advanced-base addressing ([base]/[base+4]; was this-relative at 67.8); the last
+// line is the coalesce: retail folds the base into ecx (`add ecx,8`, this dead)
+// with the zero in eax; cl leas into eax with the zero in ecx. Likely an inlined
+// embedded-pair member in retail; not worth a struct+macro for 2 bytes.
 RVA(0x0011af90, 0xb)
 void CGruntSpawnConfig::ClearSprites() {
-    m_voice0 = 0;
-    m_voice1 = 0;
+    CGruntVoice** p = m_voices;
+    for (i32 i = 0; i < 2; i++) {
+        p[i] = 0;
+    }
 }
 
 // ===========================================================================
@@ -147,7 +150,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     i32 param_4,
     i32 param_5
 ) {
-    if (m_voice0 == 0 && !LoadGruntVoices()) {
+    if (m_voices[0] == 0 && !LoadGruntVoices()) {
         return 0;
     }
     if (param_1 == 0) {
@@ -179,7 +182,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
             param_4 = g_buteMgr.GetIntDef("GruntPriority", static_cast<LPCTSTR>(local_10), 1);
         }
     }
-    CGruntVoice** voices = &m_voice0;
+    CGruntVoice** voices = m_voices;
     for (i32 i = 0; i < 2; i++) {
         if (param_4 <= voices[i]->m_playFlags) {
             return 0;
@@ -189,8 +192,8 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     if (src == 0 || m_configTree->m_20 == 0) {
         return 0;
     }
-    CGruntVoice* v8 = m_voice0;
-    CGruntVoice* v0c = m_voice1;
+    CGruntVoice* v8 = m_voices[0];
+    CGruntVoice* v0c = m_voices[1];
     i32 a = v8->m_playFlags;
     i32 b = v0c->m_playFlags;
     i32 c = v8->m_source;
@@ -406,7 +409,7 @@ void CSpawnList::AddVoiceSound(CString s, i32 flag) {
 RVA(0x0011c6c0, 0x27)
 i32 CGruntSpawnConfig::AnyVoicePlaying() {
     i32 i = 0;
-    CGruntVoice** p = &m_voice0;
+    CGruntVoice** p = m_voices;
     for (; i < 2; i++, p++) {
         if (*p != 0 && (*p)->m_playFlags != 0) {
             return 1;
@@ -417,7 +420,7 @@ i32 CGruntSpawnConfig::AnyVoicePlaying() {
 
 RVA(0x0011c700, 0x20)
 i32 CGruntSpawnConfig::VoicePlaying(i32 i) {
-    CGruntVoice* v = (&m_voice0)[i];
+    CGruntVoice* v = m_voices[i];
     if (v != 0 && v->m_playFlags != 0) {
         return 1;
     }
@@ -426,28 +429,28 @@ i32 CGruntSpawnConfig::VoicePlaying(i32 i) {
 
 RVA(0x0011c730, 0x5c)
 void CGruntSpawnConfig::StopVoice(i32 id) {
-    i32 tag08 = m_voice0->m_source;
-    i32 tag0c = m_voice1->m_source;
+    i32 tag08 = m_voices[0]->m_source;
+    i32 tag0c = m_voices[1]->m_source;
     if (tag08 == id) {
         if (m_stream0 != 0) {
             m_stream0->m_feeder.Pause();
         }
-        if (m_voice0 != 0) {
-            m_voice0->Reset();
+        if (m_voices[0] != 0) {
+            m_voices[0]->Reset();
         }
     } else if (tag0c == id) {
         if (m_stream1 != 0) {
             m_stream1->m_feeder.Pause();
         }
-        if (m_voice1 != 0) {
-            m_voice1->Reset();
+        if (m_voices[1] != 0) {
+            m_voices[1]->Reset();
         }
     }
 }
 
 RVA(0x0011c7b0, 0x2d)
 void CGruntSpawnConfig::DtorBody() {
-    void** p = reinterpret_cast<void**>(&m_voice0);
+    void** p = reinterpret_cast<void**>(m_voices);
     for (i32 k = 0; k < 2; k++) {
         if (p[2] != 0) {
             (static_cast<StreamVoice*>(p[2]))->m_feeder.Pause();
