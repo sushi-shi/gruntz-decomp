@@ -108,20 +108,23 @@ i32 CGruntCreationPoint::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, i32 d) 
     }
     if (tag != 4 && tag == 8) {
         i32 idx;
-        if (g_gameReg->m_134 == 1) {
-            idx = m_object->m_124;
-        } else if (g_gameReg->m_options[m_object->m_124].m_liveGate != 0) {
-            idx = g_gameReg->m_options[m_object->m_124].m_008;
+        if (g_gameReg->m_134 != 1) {
+            if (g_gameReg->m_options[m_object->m_124].m_liveGate != 0) {
+                idx = g_gameReg->m_options[m_object->m_124].m_008;
+            } else {
+                idx = ChannelSlots_FindFree();
+            }
         } else {
-            idx = ChannelSlots_FindFree();
+            idx = m_object->m_124;
         }
         i32 sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
         if (sel == 0) {
             sel = g_gameReg->m_spriteFactory->GetSel(1, sel);
         }
-        m_object->m_drawActive = 1;
-        m_object->m_drawFillCmd = 0xa;
-        m_object->m_drawFillArg = sel;
+        CWwdGameObjectA* obj = m_object;
+        obj->m_drawActive = 1;
+        obj->m_drawFillCmd = 0xa;
+        obj->m_drawFillArg = sel;
     }
     return 1;
 }
