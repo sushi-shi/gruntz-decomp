@@ -13,18 +13,8 @@
 // but retail is frameless (arg at [esp+4], /Oy applied) while cl keeps the ebp frame
 // (push ebp / arg at [ebp+8]) - a whole-function /Oy decision not source-steerable.
 #include <Image/WarpTextureBlit.h> // own decls (C-linkage carriers)
-RVA(0x00145e00, 0x26)
-i32 WarpIsPow2(i32 x) {
-    i32 c = 0;
-    i32 i = 0x20;
-    do {
-        if ((x & 1) == 1) {
-            c++;
-        }
-        x >>= 1;
-    } while (--i);
-    return c == 1;
-}
+// WarpIsPow2 (0x145e00) REHOMED to ImagePolyClip.cpp (frameless TU; birth position
+// immediately before PolyIsConvexCW - this TU is /Oy- framed and cannot drop the frame).
 
 DATA(0x001efb18)
 const float g_rasterScale = 16384.0f; // C linkage from WarpTextureBlit.h

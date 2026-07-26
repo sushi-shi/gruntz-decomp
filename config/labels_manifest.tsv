@@ -171,7 +171,7 @@ heapdiag	8
 helpstate	33
 iconloaders	2
 imageowned	8
-imagepolyclip	2
+imagepolyclip	3
 imagepool	53
 imageprobe	1
 imagerle16encode	1
@@ -347,7 +347,7 @@ wap32rect	3
 wapuncompress	1
 warlord	19
 warpstonefly	3
-warptextureblit	2
+warptextureblit	1
 waypoint	5
 winapicdrom	4
 winapimodule	1

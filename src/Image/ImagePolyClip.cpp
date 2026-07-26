@@ -1,3 +1,4 @@
+#include <Image/WarpTextureBlit.h> // WarpIsPow2 (rehomed here by birth position)
 #include <Ints.h>
 
 #include <Image/RasterVtx.h> // ClipVtx + g_rasterVtx* + ImagePolyClipRect decl
@@ -25,6 +26,19 @@ i32 g_rasterVtxCount = 0; // decl in Image/RasterVtx.h
 // byte-faithful, but MSVC5's exact fld/fsub/fchs/fmulp/faddp ordering for the 2D cross
 // product (v0.x kept on the FP stack, v0.y spilled to a temp) is not source-steerable.
 // docs/patterns/x87-fp-stack-schedule.md.
+RVA(0x00145e00, 0x26)
+i32 WarpIsPow2(i32 x) {
+    i32 c = 0;
+    i32 i = 0x20;
+    do {
+        if ((x & 1) == 1) {
+            c++;
+        }
+        x >>= 1;
+    } while (--i);
+    return c == 1;
+}
+
 RVA(0x00145e30, 0x125)
 i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
     i32 sign = 0;
