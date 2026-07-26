@@ -272,11 +272,12 @@ i32 CDDSurface::SaveDispatch(char* a1, void* a2, void* a3) {
 // CFile). ret 0xc.
 //
 // @early-stop
-// large /GX export wall: the inline strlen+strcpy of g_bmpHeaderTemplate, the pointer-biased
-// 256-entry RGBQUAD palette swizzle, the BITMAPINFOHEADER field stores and the
-// bottom-up row-write loop are logic/offset/CFG-faithful, but the 0x44c-byte frame's
-// spill scheduling + the EH-state numbering diverge from retail; not source-steerable.
-// Deferred to the final sweep.
+// /GX export wall residue (~67%): CFG skeleton now matches retail block-for-block
+// (double spal guard + 0xe memset recovered); left: the quad-loop induction master
+// (retail rebases the 3 dest streams onto the src walker, ours keeps dest as master
+// - both spellings tried, coin lands wrong), retail's UNFOLDED bi.biSize*m_width
+// imul (ours constant-folds 0x28*w to lea*40; no source spelling found that blocks
+// cl5's constprop), and the fh-pointer spill + EH-state numbering that follow.
 RVA(0x001443b0, 0x284)
 i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
@@ -295,8 +296,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     if (src == 0) {
         return 0;
     }
-    u8* spal = src->m_srcPalette;
-    if (spal == 0) {
+    if (src->m_srcPalette == 0) {
         return 0;
     }
 
@@ -311,23 +311,28 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     bi.biCompression = 0;
     bi.biSizeImage = 0;
 
+    u8* spal = src->m_srcPalette;
+    if (spal == 0) {
+        return 0;
+    }
+
     // 256 RGBQUADs: copy the source palette's bytes 0/1/2 into the quad's B/G/R lanes.
     u8 quads[0x400];
     {
-        u8* d = quads;
+        i32 i = 0;
         i32 n = 0x100;
         do {
-            d[0] = spal[0];
-            d[1] = spal[1];
-            d[2] = spal[2];
+            quads[i + 2] = spal[0];
+            quads[i + 1] = spal[1];
+            quads[i] = spal[2];
             spal += 4;
-            d += 4;
+            i += 4;
             --n;
         } while (n != 0);
     }
 
     BmpFileHeader fh;
-    memset(&fh, 0, sizeof(fh));
+    memset(&fh, 0, 0xe); // only the 14-byte file-header portion; bfOffBits stored below
     strcpy(fh.magic, g_bmpHeaderTemplate);
     fh.bfSize = bi.biSize * m_width + 0x436;
     fh.bfOffBits = 0x436;

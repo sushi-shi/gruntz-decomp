@@ -207,6 +207,170 @@ def blocks(text: str) -> str:
     return "\n".join(out) + "\n"
 
 
+def _mask_insn(ln: str) -> str:
+    """One instruction -> the same normalized/masked spelling `norm` produces
+    (case/space unify, absolute addresses -> <addr>, branch targets -> <tgt>)."""
+    import re as _re
+    ln = _re.sub(r"[ \t]+", " ", ln.strip().lower())
+    ln = _re.sub(r"0x[0-9a-f]{6,8}\b", "<addr>", ln)
+    ln = _re.sub(r" ?([,+*]) ?", r"\1", ln)
+    ln = ln.replace("ds:", "")
+    ln = _re.sub(r"\bptr (<addr>|0x[0-9a-f]+)(?![\w\]])", r"ptr [\1]", ln)
+    ln = _re.sub(r"\[(0x[0-9a-f]+|<addr>)\]", "[<addr>]", ln)
+    if not ln.startswith(("push", "j", "call", "loop")):
+        ln = _re.sub(r"(?<=[ ,])<addr>(?=,|$)", "[<addr>]", ln)
+    ln = _re.sub(r"(dword|word|byte) ptr \[<addr>\]", "[<addr>]", ln)
+    ln = _re.sub(r"^((?:j[a-z]{1,3}|call|loop\w*) )(0x[0-9a-f]+|<addr>)( <[^>]*>)?$",
+                 r"\1<tgt>", ln)
+    return ln
+
+
+def _cfg(text: str):
+    """Parse one side's disasm into an ordered CFG: [(addr, [masked insns],
+    term)] where term describes the block's exit as block INDICES so base
+    (obj offsets) and target (RVAs) become comparable: ('jcc B4 | fall B2'),
+    ('jmp B9'), ('ret'), ('fall B3')."""
+    import re as _re
+    row = _re.compile(r"^\s*([0-9a-f]+):\s+(?:[0-9a-f]{2}\s)+\s*(\S.*?)\s*$")
+    insns = []
+    for ln in text.splitlines():
+        m = row.match(ln)
+        if not m:
+            continue
+        t = _re.sub(r"[ \t]+", " ", m.group(2))
+        if _re.fullmatch(r"(?:[0-9a-f]{2} ?)+", t):
+            continue
+        insns.append((int(m.group(1), 16), t))
+    if not insns:
+        return []
+    addrs = {a for a, _ in insns}
+    lo, hi = insns[0][0], insns[-1][0]
+
+    def btgt(t):
+        m = _re.match(r"(\w+) (0x[0-9a-f]+)", t)
+        if m and (m.group(1) in _JCC or m.group(1).startswith("loop")):
+            tgt = int(m.group(2), 16)
+            return tgt if lo <= tgt <= hi and tgt in addrs else None
+        return None
+
+    leaders = {lo}
+    for i, (a, t) in enumerate(insns):
+        op, tgt = t.split()[0], btgt(t)
+        nxt = insns[i + 1][0] if i + 1 < len(insns) else None
+        if tgt is not None:
+            leaders.add(tgt)
+            if nxt and op != "jmp":
+                leaders.add(nxt)
+        elif (op == "jmp" or op.startswith("ret") or op in _JCC) and nxt:
+            leaders.add(nxt)
+    order = sorted(leaders)
+    bidx = {a: i for i, a in enumerate(order)}
+
+    def blk_of(a):
+        import bisect
+        return bidx[order[bisect.bisect_right(order, a) - 1]]
+
+    blocks = [[a, [], None] for a in order]
+    for i, (a, t) in enumerate(insns):
+        b = blocks[blk_of(a)]
+        op, tgt = t.split()[0], btgt(t)
+        nxt = insns[i + 1][0] if i + 1 < len(insns) else None
+        last_of_block = nxt is None or nxt in bidx
+        b[1].append(_mask_insn(t))
+        if not last_of_block:
+            continue
+        if tgt is not None:
+            dst = f"B{blk_of(tgt)}" + ("^" if tgt <= a else "")
+            b[2] = (f"jmp {dst}" if op == "jmp"
+                    else f"jcc {dst} | fall B{blk_of(nxt)}" if nxt is not None
+                    else f"jcc {dst}")
+        elif op.startswith("ret"):
+            b[2] = "ret"
+        elif op == "jmp":
+            b[2] = "jmp <ext>"
+        else:
+            b[2] = f"fall B{blk_of(nxt)}" if nxt is not None else "end"
+    return [(a, body, term) for a, body, term in blocks]
+
+
+def blocks_diff(base_raw: str, tgt_raw: str) -> str:
+    """Block-aligned CFG diff: says whether the FLOW SHAPE matches and which
+    blocks' bodies differ. Blocks become comparable units (branch targets
+    rewritten to block indices); equal blocks align via SequenceMatcher,
+    replace-runs pair up index-wise (INSERT/DELETE = real flow divergence)."""
+    import difflib
+    b, t = _cfg(base_raw), _cfg(tgt_raw)
+    bs = ["\n".join(body + [term or ""]) for _, body, term in b]
+    ts = ["\n".join(body + [term or ""]) for _, body, term in t]
+    bflow = [x[2] or "" for x in b]
+    tflow = [x[2] or "" for x in t]
+    out = [f"[block diff: base {len(b)} blocks vs target {len(t)} blocks; "
+           f"flow {'SAME' if bflow == tflow else 'DIFFERS'}]"]
+    if bflow != tflow:
+        # where does the CFG SHAPE first split?  Compare the branch KIND
+        # (jcc/jmp/ret/fall) + direction, not absolute block indices - a
+        # single inserted block shifts every later index without changing
+        # the skeleton.
+        def kind(term, at):
+            import re as _re
+            parts = []
+            for tok in _re.findall(r"(jcc|jmp|ret|fall|end)( B(\d+)(\^?))?",
+                                   term or ""):
+                if tok[2]:
+                    parts.append(tok[0] + ("^" if tok[3] else
+                                           ">" if int(tok[2]) > at else "<"))
+                else:
+                    parts.append(tok[0])
+            return " ".join(parts)
+        bk = [kind(x, i) for i, x in enumerate(bflow)]
+        tk = [kind(x, i) for i, x in enumerate(tflow)]
+        k = next((i for i, (x, y) in enumerate(zip(bk, tk)) if x != y), None)
+        if k is not None:
+            out.append(f"[skeleton diverges at B{k}: base [{bflow[k]}]  vs  "
+                       f"target [{tflow[k]}]  (branch kinds identical before)]")
+        elif len(bk) != len(tk):
+            out.append(f"[same branch skeleton for the shared {min(len(bk), len(tk))} "
+                       f"blocks; {'base' if len(bk) > len(tk) else 'target'} has "
+                       f"{abs(len(bk) - len(tk))} extra block(s)]")
+        else:
+            out.append("[same branch-kind skeleton; only block-index targets differ "
+                       "(an inserted/moved block shifts later indices)]")
+    sm = difflib.SequenceMatcher(a=bs, b=ts, autojunk=False)
+    ndiff = 0
+    for tag, i1, i2, j1, j2 in sm.get_opcodes():
+        if tag == "equal":
+            for k in range(i2 - i1):
+                bi, tj = i1 + k, j1 + k
+                out.append(f"  B{tj} @{b[bi][0]:x}/@{t[tj][0]:x}  == "
+                           f"({len(t[tj][1])} insns)  [{t[tj][2]}]")
+            continue
+        for k in range(max(i2 - i1, j2 - j1)):
+            bi = i1 + k if i1 + k < i2 else None
+            tj = j1 + k if j1 + k < j2 else None
+            ndiff += 1
+            if bi is not None and tj is not None:
+                out.append(f"  B{tj} @{b[bi][0]:x}/@{t[tj][0]:x}  DIFFERS:")
+                for ln in difflib.unified_diff(
+                        b[bi][1] + [b[bi][2] or ""],
+                        t[tj][1] + [t[tj][2] or ""], lineterm="", n=2):
+                    if ln.startswith(("---", "+++", "@@")):
+                        continue
+                    out.append("      " + ln)
+            elif bi is not None:
+                out.append(f"  --  @{b[bi][0]:x}  BASE-ONLY block "
+                           f"({len(b[bi][1])} insns)  [{b[bi][2]}]:")
+                for ln in b[bi][1][:6]:
+                    out.append(f"      -{ln}")
+            else:
+                out.append(f"  B{tj} @{t[tj][0]:x}  TARGET-ONLY block "
+                           f"({len(t[tj][1])} insns)  [{t[tj][2]}]:")
+                for ln in t[tj][1][:6]:
+                    out.append(f"      +{ln}")
+    out.append(f"[{ndiff} block(s) differ]" if ndiff
+               else "[all aligned blocks identical]")
+    return "\n".join(out) + "\n"
+
+
 def _debug_obj_for(unit: str, source: str, flags: list):
     """build/debug/<unit>.obj compiled `<flags> /Z7` (codegen-neutral CodeView),
     cached on source mtime - same artifact harvest_locals.py builds. Path or None."""
@@ -295,7 +459,10 @@ def rich(rva: str, want_lite: bool) -> str:
 def run(args) -> None:
     if getattr(args, "blocks", False):
         if args.diff:
-            die("--blocks is a single-side view; drop --diff")
+            print(f"[block diff: BASE (compiled) vs TARGET (retail) @ {args.rva}]")
+            out = blocks_diff(base_text(args.rva), target_text(args.rva))
+            print(out, end="")
+            sys.exit(0 if "flow SAME]" in out and "0 block" in out else 1)
         side = "BASE (compiled)" if args.base else "TARGET (retail)"
         text = base_text(args.rva) if args.base else target_text(args.rva)
         print(f"[basic blocks: {side} @ {args.rva}]")
