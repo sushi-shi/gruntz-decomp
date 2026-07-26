@@ -246,10 +246,10 @@ i32 CSoundFxEmitter::FadeSceneClear1(i32 a1, i32 a2, i32 a3, i32 a4) {
     if (mgr == 0) {
         return 0;
     }
-    if (m_resChain->m_gate == 0) {
+    if (m_resChain->m_ptrColl == 0) {
         return 0;
     }
-    CDDSurface* chan = m_resChain->m_worker->m_frontPair->m_surface;
+    CDDSurface* chan = m_resChain->m_drawTarget->m_frontPair->m_surface;
     if (chan == 0) {
         return 0;
     }
@@ -268,7 +268,7 @@ i32 CSoundFxEmitter::FadeSceneClear1(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_gameMgr->StopBankIfActive();
     if (g_disableFades != 0) {
         ActiveWait(a3);
-        m_resChain->m_worker->m_frontPair->m_surface->Fill(0);
+        m_resChain->m_drawTarget->m_frontPair->m_surface->Fill(0);
     } else {
         f->RunFade(a3, a4, 0);
     }
@@ -289,14 +289,14 @@ i32 CSoundFxEmitter::FadeScene1(i32 a1, i32 a2, i32 a3, i32 a4) {
     if (mgr == 0) {
         return 0;
     }
-    if (m_resChain->m_gate == 0) {
+    if (m_resChain->m_ptrColl == 0) {
         return 0;
     }
-    CDDSurface* chanA = m_resChain->m_worker->m_frontPair->m_surface;
+    CDDSurface* chanA = m_resChain->m_drawTarget->m_frontPair->m_surface;
     if (chanA == 0) {
         return 0;
     }
-    CDDSurface* chanB = m_resChain->m_worker->m_backPair->m_surface;
+    CDDSurface* chanB = m_resChain->m_drawTarget->m_backPair->m_surface;
     if (chanB == 0) {
         return 0;
     }
@@ -315,7 +315,7 @@ i32 CSoundFxEmitter::FadeScene1(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_gameMgr->StopBankIfActive();
     if (g_disableFades != 0) {
         ActiveWait(a3);
-        m_resChain->m_worker->m_frontPair->m_surface->Blt(chanB);
+        m_resChain->m_drawTarget->m_frontPair->m_surface->Blt(chanB);
     } else {
         f->RunFade(a3, a4, 0);
     }
@@ -359,14 +359,14 @@ i32 CSoundFxEmitter::FadeScene2(i32 a1, i32 a2, i32 a3) {
     if (mgr == 0) {
         return 0;
     }
-    if (m_resChain->m_gate == 0) {
+    if (m_resChain->m_ptrColl == 0) {
         return 0;
     }
-    CDDSurface* chanA = m_resChain->m_worker->m_frontPair->m_surface;
+    CDDSurface* chanA = m_resChain->m_drawTarget->m_frontPair->m_surface;
     if (chanA == 0) {
         return 0;
     }
-    CDDSurface* chanB = m_resChain->m_worker->m_backPair->m_surface;
+    CDDSurface* chanB = m_resChain->m_drawTarget->m_backPair->m_surface;
     if (chanB == 0) {
         return 0;
     }
@@ -384,7 +384,7 @@ i32 CSoundFxEmitter::FadeScene2(i32 a1, i32 a2, i32 a3) {
     m_gameMgr->StopBankIfActive();
     if (g_disableFades != 0) {
         ActiveWait(a2);
-        m_resChain->m_worker->m_frontPair->m_surface->Blt(chanB);
+        m_resChain->m_drawTarget->m_frontPair->m_surface->Blt(chanB);
     } else {
         f->RunFade(a2, a3, 0);
     }
@@ -399,7 +399,7 @@ i32 CSoundFxEmitter::FadeScene2(i32 a1, i32 a2, i32 a3) {
 // the retail caller graph shows every screen state (CPreviewState/CAttract/CBootyState/
 // CCreditsState/CMulti/CPlay/...) invokes it on its OWN `this`, and the body reads only
 // the CState resource-chain facet - so it IS a CState-level helper. m_faderMgr is the
-// CState +0x10 member; fxRes() views the +0x0c holder as the emitter resource chain.
+// CState +0x10 member; walks the m_world (+0x0c) draw-target chain directly.
 // @early-stop
 // 98.4% - logic byte-faithful. Same chanA/chanB esi<->edi regalloc swap as
 // 0xfa790 plus the deferred-branch arg-temp register choice (see those notes);
@@ -410,18 +410,18 @@ i32 CState::RetireScene(i32 a1, i32 a2, i32 a3, i32 a4) {
     if (mgr == 0) {
         return 0;
     }
-    if (fxRes()->m_gate == 0) {
+    if (m_world->m_ptrColl == 0) {
         return 0;
     }
-    CDDSurface* chanA = fxRes()->m_worker->m_frontPair->m_surface;
+    CDDSurface* chanA = m_world->m_drawTarget->m_frontPair->m_surface;
     if (chanA == 0) {
         return 0;
     }
     CDDrawSurfacePair* holderB;
-    if (a4 != 0 && fxRes()->m_worker->HasOverlay() != 0) {
-        holderB = fxRes()->m_worker->m_overlayPair;
+    if (a4 != 0 && m_world->m_drawTarget->HasOverlay() != 0) {
+        holderB = m_world->m_drawTarget->m_overlayPair;
     } else {
-        holderB = fxRes()->m_worker->m_backPair;
+        holderB = m_world->m_drawTarget->m_backPair;
     }
     CDDSurface* chanB = holderB->m_surface;
     if (chanB == 0) {
@@ -440,7 +440,7 @@ i32 CState::RetireScene(i32 a1, i32 a2, i32 a3, i32 a4) {
 
     if (g_disableFades != 0) {
         ActiveWait(a2);
-        fxRes()->m_worker->m_frontPair->m_surface->Blt(chanB);
+        m_world->m_drawTarget->m_frontPair->m_surface->Blt(chanB);
     } else {
         f->RunFade(a2, a3, 0);
     }
@@ -454,10 +454,10 @@ i32 CSoundFxEmitter::FadeSceneClear2(i32 a1, i32 a2, i32 a3) {
     if (mgr == 0) {
         return 0;
     }
-    if (m_resChain->m_gate == 0) {
+    if (m_resChain->m_ptrColl == 0) {
         return 0;
     }
-    CDDSurface* chan = m_resChain->m_worker->m_frontPair->m_surface;
+    CDDSurface* chan = m_resChain->m_drawTarget->m_frontPair->m_surface;
     if (chan == 0) {
         return 0;
     }
@@ -475,7 +475,7 @@ i32 CSoundFxEmitter::FadeSceneClear2(i32 a1, i32 a2, i32 a3) {
     m_gameMgr->StopBankIfActive();
     if (g_disableFades != 0) {
         ActiveWait(a2);
-        m_resChain->m_worker->m_frontPair->m_surface->Fill(0);
+        m_resChain->m_drawTarget->m_frontPair->m_surface->Fill(0);
     } else {
         f->RunFade(a2, a3, 0);
     }
@@ -567,10 +567,10 @@ void CState::Present(i32 arg0) {
         g_suppress_64e360 = 0;
         return;
     }
-    fxRes()->m_worker->BlitPage(fxRes()->m_worker->m_backPair);
-    fxRes()->m_worker->m_backPair->m_surface->ShadeRect(arg0, static_cast<RECT*>(0));
-    fxRes()->m_worker->m_frontPair->m_surface->Flip(static_cast<CDDSurface*>(0));
-    fxRes()->m_worker->BlitPage(fxRes()->m_worker->m_backPair);
+    m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
+    m_world->m_drawTarget->m_backPair->m_surface->ShadeRect(arg0, static_cast<RECT*>(0));
+    m_world->m_drawTarget->m_frontPair->m_surface->Flip(static_cast<CDDSurface*>(0));
+    m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
 }
 
 RVA(0x000faf50, 0x31)

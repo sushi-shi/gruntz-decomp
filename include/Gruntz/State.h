@@ -14,7 +14,6 @@ class CSymTab;      // m_2c's symbol-table facet (ResolvePath/FindSub; <Bute/Sym
 class CFileMemBase; // HeaderWrite/HeaderRead's serialize stream (<Io/FileMem.h>)
 class CGruntzMgr;   // +0x04 owner back-ptr: the game-manager singleton (*g_gameReg).
 class CFaderMgr;    // +0x10 fader manager (the CSoundFxEmitter facet's fader mgr;
-struct FxResource;  // +0x0c viewed as the emitter resource chain (== m_c; the DDraw
 class CString;      // MFC - BuildAssetNamespacePrefixes' key arg (reference-only here)
 
 class CState {
@@ -185,12 +184,8 @@ public:
     // its own `this`. Direct rel32 => non-virtual. Definition in Attract.cpp (the unit that
     // owns the 0xfa.. band).
     void Present(i32 arg0); // 0x0faec0
-    // The emitter resource-chain view of the +0x0c holder (== m_c reinterpreted): its
-    // +0x04 DDraw worker + +0x1c gate are what RetireScene walks. Inline -> the same
-    // `mov reg,[this+0x0c]` as the direct member read (forward-declared facet).
-    FxResource* fxRes() {
-        return reinterpret_cast<FxResource*>(m_world);
-    }
+    // (the ex FxResource* fxRes() reinterpret view is DISSOLVED: its +0x04 m_worker
+    // and +0x1c m_gate are m_world's own m_drawTarget/m_ptrColl.)
     // (LoadGameAssetNamespaces is the slot-1 VIRTUAL above; the leaf loaders chain
     // the default body with the qualified CState:: spelling - direct rel32.)
     // The title cluster's typed views of the shared CState slots (m_c is the menu

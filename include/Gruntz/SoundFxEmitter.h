@@ -18,13 +18,8 @@ extern "C" i32 g_disableFades;
 
 void ActiveWait(u32 milliseconds); // 0x13dfe0 busy-wait
 
-struct FxResource {
-    char _00[0x04];
-    CDDrawSubMgrPages* m_worker; // +0x04 the shared DDraw worker manager
-    char _08[0x14];
-    i32 m_gate; // +0x1c gate field (must be set to proceed)
-};
-SIZE_UNKNOWN();
+// (the ex FxResource pad-struct is DISSOLVED: it was CDDrawSurfaceMgr viewed
+// through CState::m_world - +0x04 m_drawTarget, +0x1c m_ptrColl.)
 
 class CSoundFxEmitter {
 public:
@@ -40,8 +35,10 @@ public:
     class CGruntzMgr* m_gameMgr; // +0x04 the game-manager singleton (real class; the
                                  //        elaborated-type-specifier keeps this header MFC-free)
     char _08[0x04];
-    FxResource* m_resChain; // +0x0c resource chain root
-    CFaderMgr* m_faderMgr;  // +0x10 fader manager
+    // +0x0c the DDraw surface manager (mirrors CState::m_world - this facet views
+    // the same object; real class, ex the FxResource pad-struct)
+    class CDDrawSurfaceMgr* m_resChain;
+    CFaderMgr* m_faderMgr; // +0x10 fader manager
 };
 SIZE_UNKNOWN();
 
