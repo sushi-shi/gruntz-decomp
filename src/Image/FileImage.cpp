@@ -143,7 +143,7 @@ void* CDDSurface::DecodeBmp(void* surf, void* buf, u32 size) {
     i32 width = ih->biWidth;
     i32 bitcount = ih->biBitCount;
     i32 height = ih->biHeight;
-    if (m_width == width && m_height == height && (bitcount == 8 || bitcount == 0x18)) {
+    if (width == m_width && m_height == height && (bitcount == 8 || bitcount == 0x18)) {
         i32 remap = 0;
         i32 palBpp = pal->m_palBpp;
         if (palBpp != bitcount) {
@@ -237,8 +237,8 @@ i32 CDDSurface::Load(i32 a, char* name, i32 c) {
     memset(m_descWords, 0, sizeof(DDSURFACEDESC));
     m_descSize = sizeof(DDSURFACEDESC);
     m_surfaceCaps = c | 0x40;
-    m_descFlags = 7;
     m_width = p->m_4;
+    m_descFlags = 7;
     m_height = c;
     if (!Init1(reinterpret_cast<CDDrawPtrCollections*>(saved), 0)) {
         return 0;
@@ -590,7 +590,7 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, 
 
     i32 convert = 0;
     i32 curFmt = info->m_palBpp;
-    if (curFmt != srcFmt) {
+    if (srcFmt != curFmt) {
         convert = 1;
     }
     if (convert && curFmt == 8 && info->m_hasPalette == 0) {

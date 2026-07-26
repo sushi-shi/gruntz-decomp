@@ -15,10 +15,8 @@ struct ParseFmt {
     WaveFormatX* m_fmt; // +0x00  fmt-chunk WAVEFORMATEX pointer (into the RIFF blob)
     u32 m_reservedA;    // +0x04  (zeroed by Acquire; parser output slot, unused for WAVE)
     u32 m_flags;        // +0x08  parse flags (bit 0 -> force an 8-bit downconvert)
-    u32 m_reservedB;    // +0x0c
-    u32 m_reservedC;    // +0x10  (zeroed by Acquire)
 };
-SIZE(0x14); // 5-DWORD parser scratch descriptor (address escapes)
+SIZE(0xc); // 3-DWORD parser scratch (retail overlays it on the dead arg homes: frame 0x8)
 
 struct StreamVoice; // TickSubManagers instance-list node: the canonical per-stream voice
 

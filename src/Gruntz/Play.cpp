@@ -870,12 +870,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 g_areaPageSize = 4;
                 break;
             case 1:
-                g_areaPageSize = 0;
                 g_areaHazardParam = 0;
+                g_areaPageSize = 0;
                 break;
             case 2:
-                g_areaPageSize = 8;
                 g_areaHazardParam = 0;
+                g_areaPageSize = 8;
                 break;
             case 3:
                 g_areaPageSize = 8;
@@ -1122,7 +1122,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             char* a = const_cast<char*>(static_cast<const char*>(gameReg->GetWorldFileName()));
             char* b = const_cast<char*>(static_cast<const char*>(warp));
             i32 eq = 1;
-            while (*b == *a) {
+            while (*a == *b) {
                 if (*b == 0) {
                     break;
                 }

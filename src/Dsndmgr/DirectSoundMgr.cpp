@@ -1117,7 +1117,7 @@ DSoundCloneInst* SoundDevice::Acquire(void* riff, u32, u32) {
     ParseFmt po;
     void* data;
     u32 size;
-    po.m_reservedC = 0;
+    size = 0;
     po.m_flags = 0;
     po.m_reservedA = 0;
     if (ParseWaveChunks(riff, &po, &data, &size) == 0) {
@@ -1234,7 +1234,7 @@ i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, void* riff, u32 /*reserved*/) {
     ParseFmt po;
     void* data;
     u32 size;
-    po.m_reservedC = 0;
+    size = 0;
     po.m_flags = 0;
     po.m_reservedA = 0;
     if (ParseWaveChunks(riff, &po, &data, &size) == 0) {
