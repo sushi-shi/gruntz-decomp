@@ -603,8 +603,12 @@ i32 CTileSecretTriggerLogic::Tick() {
 // 0 (just turned on, one-shot of type 0x18) or -1 (just turned off, not 0x17).
 // ---------------------------------------------------------------------------
 // @early-stop
-// entropy-tail (~96%): logic + the single-ret1 convergence match; only the last
-// type==0x17 case's ret1 is tail-duplicated instead of merged into the shared tail.
+// entropy-tail (~96%): logic verified against the full retail decode 2026-07-26
+// (the overflow dutyOn!=1 guard returns 1 - NOT unconditional -1 - and the on-arm
+// type guard is the != inversion; both fixed). Residual: retail tail-duplicates
+// the late ret1 block (inlining `return 1` there restructures and craters to 74)
+// + the period add emits lea-with-both-live vs our 2-op add (operand order
+// canonicalizes; not source-steerable).
 // @interleaver CTileTriggerLogic::Classify emitted-in <boundary:
 // CTileSecretTriggerLogic::Tick @0x1128b0 (before, now THIS TU) +
 // CheckpointSwitchBuild.cpp BuildSmall @0x112a50 (after)>. A /Gy first-use
@@ -617,16 +621,17 @@ i32 CTileTriggerLogic::Classify(i32 arg) {
     }
     elapsed -= m_leadInSpan;
     {
-        u32 period = m_dutyOffSpan + m_dutyOnSpan;
+        u32 period = m_dutyOnSpan + m_dutyOffSpan;
         if (elapsed > period) {
             if (m_typeTag == TRIGID_TILE_TRIGGER_24) {
                 Tick();
                 return 0;
             }
             if (m_typeTag != TRIGID_TIME_TRIGGER_23) {
-                if (m_dutyOn == 1) {
-                    Tick();
+                if (m_dutyOn != 1) {
+                    goto ret1;
                 }
+                Tick();
                 return -1;
             }
         }
@@ -637,10 +642,10 @@ i32 CTileTriggerLogic::Classify(i32 arg) {
             }
             Tick();
             m_dutyOn = 1;
-            if (m_typeTag == TRIGID_TILE_TRIGGER_24) {
-                return 0;
+            if (m_typeTag != TRIGID_TILE_TRIGGER_24) {
+                goto ret1;
             }
-            goto ret1;
+            return 0;
         }
         if (m_dutyOn != 1) {
             goto ret1;
