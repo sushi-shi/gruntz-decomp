@@ -268,7 +268,7 @@ char* zDArray<CActHandler>::Resolve(i32 id) {
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    m_errSink->Set(this, reinterpret_cast<i32>(item), 0xc);
+    m_errSink->Set(this, item, 0xc);
     return m_spare;
 }
 

@@ -30,7 +30,7 @@ public:
     // fast path (CActReg::ResolveEntry spells the same two statements). It was modeled as a
     // .cpp-local `ZErrTarget` view {vptr@0, m_err@+0x04}: that IS this class's layout
     // (vptr@0, m_errSink@+0x04), so the view is dissolved onto zErrHandling.
-    void Report(i32 sentinel, i32 code); // 0x034960
+    void Report(void* sentinel, i32 code); // 0x034960
 
     CVariantSlot* m_errSink; // +0x04  the error sink this object registers with
 };

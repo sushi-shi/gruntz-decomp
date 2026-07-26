@@ -68,7 +68,7 @@ public:
 
     // Register a level's "GRUNTZ_PALETTEZ_<name>" palette into the sprite registry
     // (m_spriteMgrHolder->m_spriteMgr). src is the source resolver, name the level/name string. 0xe2d10.
-    i32 LoadGruntzPalette(i32 src, i32 name);
+    i32 LoadGruntzPalette(i32 src, const char* name);
 
     // Register every tool/toy color palette (34 fixed names) via LoadGruntzPalette;
     // returns 1 only when all succeed (short-circuits to 0 on the first miss). 0xe2980.

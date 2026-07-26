@@ -262,7 +262,7 @@ public:
     // virtual; appends/records identically. Public: CGruntzMgr::LoadMonologoSprite
     // builds the "MONOLITH" plane through it. (Ex ?ReadObjectPlane@CGameLevelPlanes@@
     // - that WwdFile.h view of THIS class is dissolved.)
-    CDDrawWorkerHost* ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
+    CDDrawWorkerHost* ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, const char* name);
 
 private:
     // The per-plane reader (@0x15d8d0, GameLevel.cpp; LoadWwd drives it per WWD

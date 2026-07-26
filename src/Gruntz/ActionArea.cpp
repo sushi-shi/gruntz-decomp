@@ -46,7 +46,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     (static_cast<CVariantSlot*>(g_typeColl.m_errSink))
-        ->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
+        ->Set(&g_typeColl, item, 0xc);
     return reinterpret_cast<CTypeNameEntry*>(
         g_typeColl.m_spare
     ); // m_spare is the i32-typed slow-path slot

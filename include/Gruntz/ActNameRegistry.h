@@ -35,7 +35,7 @@ static inline CString* ActNameLookup(i32 id) {
     } else {
         void* item = g_projActCache;
         g_retAddrBreadcrumb = GetRetAddr();
-        g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
+        g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
         slot = reinterpret_cast<CString*>(g_typeColl.m_spare);
     }
     return slot;

@@ -11,7 +11,7 @@
 // (m_index->m_04, m_owner->m_label).
 struct CVariantSlot {
     CVariantSlot(char* label);         // 0x16e1a0 (cursor ctor: typeTag=2, m_10=2)
-    void Set(void* obj, i32 a, i32 b); // 0x16d850
+    void Set(void* obj, void* item, i32 b); // 0x16d850  (item: the reported record/name)
     i32 Find(i32 key);                 // 0x16e1d0 (binary-search the g_recs23 key table)
     void* Add(void* key, void* val);   // 0x16e360 (keyed insert/update/remove; val==0 removes)
     void(__cdecl* m_callback)(char* buf, i32 v); // +0x00 (call [this]; the error callback)

@@ -1095,7 +1095,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
                     g_typeColl.m_base + (coord - g_typeColl.m_lo) * g_typeColl.m_stride
                 );
             } else {
-                g_typeColl.Report(reinterpret_cast<i32>(g_projActCache), 0xc);
+                g_typeColl.Report(g_projActCache, 0xc);
                 rec = reinterpret_cast<i32>(g_typeColl.m_spare);
             }
         } else {
@@ -1122,7 +1122,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
             } else {
                 void* item = g_projActCache;
                 g_retAddrBreadcrumb = GetRetAddr();
-                g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
+                g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
                 rec = reinterpret_cast<i32>(g_typeColl.m_spare);
             }
         } else {

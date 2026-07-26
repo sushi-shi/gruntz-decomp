@@ -17,7 +17,7 @@ char* _zdvec::IndexToPtr(i32 i) {
     } else if (GrowTo(i, 0)) {
         r = m_base + (i - m_lo) * m_stride;
     } else {
-        i32 sentinel = reinterpret_cast<i32>(g_projActCache);
+        void* sentinel = g_projActCache;
         g_retAddrBreadcrumb = GetRetAddr();
         m_errSink->Set(static_cast<void*>(this), sentinel, 0xc);
         r = m_spare;
@@ -58,7 +58,7 @@ char* _zvec::IndexToPtr(i32 idx) {
         idx *= m_stride;
         return base + idx;
     }
-    i32 sentinel = reinterpret_cast<i32>(g_projActCache);
+    void* sentinel = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     m_errSink->Set(static_cast<void*>(this), sentinel, 0xc);
     return m_spare;

@@ -465,10 +465,10 @@ CDDrawWorkerHost* CGameLevel::ReadPlane(void* planeData, void* blockBase, void* 
 
 RVA(0x0015d9a0, 0xdc)
 CDDrawWorkerHost*
-CGameLevel::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
+CGameLevel::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, const char* name) {
     CDDrawWorkerHost* plane = new CDDrawWorkerHost(OwnerMgr(), m_planes.GetSize(), 0);
 
-    if (plane->InitGeometry(a1, a2, a3, a4, a5, a6, &m_planeCtx, reinterpret_cast<char*>(a7))
+    if (plane->InitGeometry(a1, a2, a3, a4, a5, a6, &m_planeCtx, const_cast<char*>(name))
         == 0) {
         if (plane) {
             delete plane; // the virtual scalar-deleting dtor (vtable +0x4, flag 1)

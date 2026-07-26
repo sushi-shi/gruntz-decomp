@@ -6405,7 +6405,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     } else if (g_typeColl.GrowTo(ci, 0) != 0) {
         sel = g_typeColl.m_base + (ci - g_typeColl.m_lo) * g_typeColl.m_stride;
     } else {
-        g_typeColl.Report(reinterpret_cast<i32>(g_projActCache), 0xc);
+        g_typeColl.Report(g_projActCache, 0xc);
         sel = g_typeColl.m_spare;
     }
 
@@ -6423,7 +6423,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
 }
 
 RVA(0x00034960, 0x24)
-void zErrHandling::Report(i32 sentinel, i32 code) {
+void zErrHandling::Report(void* sentinel, i32 code) {
     g_retAddrBreadcrumb = GetRetAddr();
     m_errSink->Set(static_cast<void*>(this), sentinel, code);
 }

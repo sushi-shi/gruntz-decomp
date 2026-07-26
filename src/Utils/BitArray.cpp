@@ -62,6 +62,6 @@ i32 zBitVec::EnsureSize(i32 nbits) {
 fail:
     void* cache = g_projActCache;
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, reinterpret_cast<i32>(cache), 0xc);
+    m_errSink->Set(this, cache, 0xc);
     return 0;
 }

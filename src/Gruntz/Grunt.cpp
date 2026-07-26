@@ -3346,7 +3346,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else {
                 void* item = g_projActCache;
                 g_retAddrBreadcrumb = GetRetAddr();
-                g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
+                g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
                 rec = g_typeColl.m_spare;
             }
             ConstructGrownSlots();
@@ -3385,7 +3385,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 } else {
                     void* item2 = g_projActCache;
                     g_retAddrBreadcrumb = GetRetAddr();
-                    g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item2), 0xc);
+                    g_typeColl.m_errSink->Set(&g_typeColl, item2, 0xc);
                     rec2 = g_typeColl.m_spare;
                 }
                 ConstructGrownSlots();

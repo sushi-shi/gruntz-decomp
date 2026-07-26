@@ -446,7 +446,7 @@ static inline CTypeNameEntry* ProjTypeLookup(i32 key) {
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
+    g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
     return reinterpret_cast<CTypeNameEntry*>(
         g_typeColl.m_spare
     ); // m_spare is the i32-typed slow-path slot
@@ -1104,7 +1104,7 @@ static inline CString* ActNameLookup(i32 id) {
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
+    g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
     return reinterpret_cast<CString*>(g_typeColl.m_spare);
 }
 

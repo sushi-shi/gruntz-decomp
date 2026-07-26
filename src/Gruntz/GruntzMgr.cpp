@@ -1268,7 +1268,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
             geoB,
             -0x19,
             -0x19,
-            reinterpret_cast<i32>("MONOLITH")
+            const_cast<char*>("MONOLITH")
         );
         if (spr == 0) {
             return 0;

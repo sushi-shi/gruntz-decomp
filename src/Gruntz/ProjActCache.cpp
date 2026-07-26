@@ -32,7 +32,7 @@ void* CProjActMap::Insert(const char* key, void* value) {
     if (key == 0 || value == 0) {
         void* name = g_projActName;
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_4->Set(this, reinterpret_cast<i32>(name), 0x16);
+        m_4->Set(this, name, 0x16);
         return 0;
     }
 
@@ -131,6 +131,6 @@ void* CProjActMap::Insert(const char* key, void* value) {
 
     void* cache = g_projActCache;
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_4->Set(this, reinterpret_cast<i32>(cache), 0xc);
+    m_4->Set(this, cache, 0xc);
     return 0;
 }
