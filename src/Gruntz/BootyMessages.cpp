@@ -12,6 +12,7 @@
 #include <rva.h>
 #include <Gruntz/BootyWalkAnim.h> // ex Globals.h
 #include <Gruntz/SoundState.h>    // ex Globals.h transitive
+#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
 
 DATA(0x001e8fe4)
 BzGeomPair g_idleGeom[4] = {
@@ -260,7 +261,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
             if (ss->m_emitGate == 0) {
                 LeafCue* res = 0;
-                ss->m_10.Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", reinterpret_cast<void*&>(res));
+                MapLookup(ss->m_10, "GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", res);
                 if (res != 0) {
                     res->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }

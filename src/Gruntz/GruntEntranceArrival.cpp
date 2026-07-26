@@ -58,6 +58,7 @@
 #include <Gruntz/GameRegistry.h>      // canonical CGameRegistry (fire-view cast)
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>         // CGameObject (the created sprite + the bound object)
+#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
 
 DATA(0x001e9a68)
 double s_fpZero = 0.0; // 0x5e9a68
@@ -2247,7 +2248,7 @@ i32 CGrunt::StepEntranceRelatchB() {
     }
     CGameObject* found = 0;
     CGameObject* result = 0;
-    if (g->m_world->m_childGroup->m_map48.Lookup(cellObj, reinterpret_cast<void*&>(found))) {
+    if (MapLookup(g->m_world->m_childGroup->m_map48, cellObj, found)) {
         result = found;
     }
     if (result != 0) {

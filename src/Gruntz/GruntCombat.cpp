@@ -65,6 +65,7 @@
 #include <Gruntz/SoundState.h>           // ex Globals.h transitive
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 #include <Gruntz/GruntCombat.h>  // CActRegPool<CGrunt>::s_table decl
+#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
 #pragma intrinsic(strcmp, sqrt)
 
 static const char s_GRUNTZ_[] = "GRUNTZ_";
@@ -178,7 +179,7 @@ static const char s_gruntSec[] = "Grunt";
 #define LK(key)                                                                                    \
     do {                                                                                           \
         LeafCue* out = 0;                                                                          \
-        g_gameReg->m_world->m_soundRegistry->m_10.Lookup((key), reinterpret_cast<void*&>(out));    \
+        MapLookup(g_gameReg->m_world->m_soundRegistry->m_10, (key), out);    \
         cue = out;                                                                                 \
     } while (0)
 

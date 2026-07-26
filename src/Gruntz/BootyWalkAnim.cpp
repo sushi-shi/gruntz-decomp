@@ -16,6 +16,7 @@
 #include <Gruntz/SoundState.h>    // ex Globals.h transitive
 #include <Gruntz/Random.h>        // ex Globals.h transitive
 #include <Gruntz/BootyWalkAnim.h> // ex Globals.h
+#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
 
 DATA(0x001e9068)
 i32 g_idleSpriteIds[4] = {420, 475, 530, 585};
@@ -187,7 +188,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
             CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
             if (ss->m_emitGate == 0) {
                 LeafCue* res = 0;
-                ss->m_10.Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", reinterpret_cast<void*&>(res));
+                MapLookup(ss->m_10, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
                 if (res != 0) {
                     res->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
@@ -198,7 +199,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     if (m_soundStarted != 0) {
         CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
         LeafCue* res = 0;
-        ss->m_10.Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", reinterpret_cast<void*&>(res));
+        MapLookup(ss->m_10, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
         if (res == 0) {
             return 1;
         }
@@ -232,7 +233,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
                     if (ss->m_emitGate == 0) {
                         LeafCue* res = 0;
-                        ss->m_10.Lookup("GAME_FLAGRISE", reinterpret_cast<void*&>(res));
+                        MapLookup(ss->m_10, "GAME_FLAGRISE", res);
                         if (res != 0 && g_sndEnabled != 0) {
                             u32 clock = g_killCueClock;
                             if (clock - res->m_14 >= res->m_18) {

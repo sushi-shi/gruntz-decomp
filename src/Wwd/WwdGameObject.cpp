@@ -34,6 +34,7 @@
 #include <Image/ImageSet.h>               // CDDrawWorker (sparse CImage-frame collection)
 #include <Gruntz/AniAdvanceCursor.h>      // canonical CAniAdvanceCursor (Advance)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // OwnerMgr()->m_animRegistry (the +0x2c geometry-source catalog)
+#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
 // WwdGameObject.cpp - the 0x1504d0-0x152636 original TU (wave4-L dossier #15, block
 // S1): ONE first-link obj weaving the CWwdGameObject live methods + CWwdGameObjectA
 // render slots, the CGameObject sprite-resource/worker leaves (spriteresource +
@@ -113,7 +114,7 @@ void CWwdGameObjectA::ApplyName(const char* name) {
 RVA(0x001505b0, 0x5c)
 i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
     CDDrawWorker* spr = 0;
-    OwnerMgr()->m_animRegistry->m_10.Lookup(name, reinterpret_cast<void*&>(spr));
+    MapLookup(OwnerMgr()->m_animRegistry->m_10, name, spr);
     if (!spr) {
         return 0;
     }
@@ -136,7 +137,7 @@ i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
 RVA(0x00150610, 0x41)
 i32 CWwdGameObjectA::LookupAnimSprite(const char* name) {
     CDDrawWorker* spr = 0;
-    OwnerMgr()->m_soundRegistry->m_10.Lookup(name, reinterpret_cast<void*&>(spr));
+    MapLookup(OwnerMgr()->m_soundRegistry->m_10, name, spr);
     if (spr != 0) {
         m_19cSprite = spr; // +0x19c union: the cached anim sprite (vs a WwdFile stamp)
         return 1;

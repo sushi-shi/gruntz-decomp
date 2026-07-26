@@ -60,6 +60,7 @@
 
 #include <Gruntz/TriggerMgrViews.h>
 #include <Gruntz/SoundState.h> // ex Globals.h transitive
+#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
 
 DATA(0x00244ca4)
 i32 g_groupSentinel;
@@ -2152,7 +2153,7 @@ void CTriggerMgr::LoadFinishLevelSprite(i32 state) {
                 CDDrawSubMgrLeafScan* h28 = m_world->m_soundRegistry;
                 if (h28->m_emitGate == 0) {
                     p = 0;
-                    h28->m_10.Lookup("GAME\\FINISHLEVEL", reinterpret_cast<void*&>(p));
+                    MapLookup(h28->m_10, "GAME\\FINISHLEVEL", p);
                     if (p != 0 && g_sndEnabled != 0
                         && static_cast<u32>((g_killCueClock - p->m_14))
                                >= static_cast<u32>(p->m_18)) {

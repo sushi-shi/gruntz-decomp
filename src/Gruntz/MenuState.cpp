@@ -24,6 +24,7 @@
 #include <DDrawMgr/DDrawWorkerList.h>  // renderer B - the real CDDrawWorkerList (ClearWorkers)
 #include <Win32.h>                     // IsDlgButtonChecked + HWND (real USER32 header)
 #include <Gruntz/SoundState.h>         // ex Globals.h transitive
+#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
 
 DATA(0x00245574)
 CFixedPtrArray32* g_actorList = 0;
@@ -110,9 +111,9 @@ i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     m_1b4->m_row1Key = "MENU_ACTIVATE";
 
     LeafCue* e;
-    m_world->m_soundRegistry->m_10.Lookup("MENU_ACTIVATE", reinterpret_cast<void*&>(e));
+    MapLookup(m_world->m_soundRegistry->m_10, "MENU_ACTIVATE", e);
     if (e != 0) {
-        m_world->m_soundRegistry->m_10.Lookup("MENU_ACTIVATE", reinterpret_cast<void*&>(e));
+        MapLookup(m_world->m_soundRegistry->m_10, "MENU_ACTIVATE", e);
         m_1b8 = e->m_10->m_durationMs;
     } else {
         m_1b8 = 0;
@@ -123,8 +124,11 @@ i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
     }
 
     LeafCue* fm;
-    (static_cast<CDDrawSubMgrLeafScan*>(g_gameReg->m_world->m_soundRegistry))
-        ->m_10.Lookup("MENU_MENU", reinterpret_cast<void*&>(fm));
+    MapLookup(
+        (static_cast<CDDrawSubMgrLeafScan*>(g_gameReg->m_world->m_soundRegistry))->m_10,
+        "MENU_MENU",
+        fm
+    );
     m_1bc = fm;
     return 1;
 }

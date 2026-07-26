@@ -44,6 +44,7 @@
 #include <string.h>
 #include <Bute/ButeMgr.h>
 #include <Gruntz/GruntEntranceMove.h> // own exported globals (ex Globals.h)
+#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
 
 DATA(0x0020d7f4)
 char s_codeM[] = "M";
@@ -679,10 +680,10 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_cells[8].WalkName() = s_SE_ITEM;
 
         _out = 0;
-        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_WG_ITEM, reinterpret_cast<void*&>(_out));
+        MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_WG_ITEM, _out);
         m_poseWalk = _out;
         _out = 0;
-        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_WG_ITEM, reinterpret_cast<void*&>(_out));
+        MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_WG_ITEM, _out);
         m_poseIdle[2] = 0;
         m_poseIdle[0] = _out;
         m_poseIdle[1] = _out;
@@ -725,22 +726,22 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_cells[8].IdleName() = s_SE_IDLE;
 
         _out = 0;
-        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_WG_WALK, reinterpret_cast<void*&>(_out));
+        MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_WG_WALK, _out);
         m_poseWalk = _out;
         _out = 0;
-        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_WG_IDLE1, reinterpret_cast<void*&>(_out));
+        MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_WG_IDLE1, _out);
         m_poseIdle[0] = _out;
         _out = 0;
-        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_WG_IDLE2, reinterpret_cast<void*&>(_out));
+        MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_WG_IDLE2, _out);
         m_poseIdle[1] = _out;
         _out = 0;
-        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_WG_IDLE3, reinterpret_cast<void*&>(_out));
+        MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_WG_IDLE3, _out);
         m_poseIdle[2] = _out;
         _out = 0;
-        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_WG_IDLE4, reinterpret_cast<void*&>(_out));
+        MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_WG_IDLE4, _out);
         m_poseIdle4 = _out;
         _out = 0;
-        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_WG_IDLE5, reinterpret_cast<void*&>(_out));
+        MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_WG_IDLE5, _out);
         m_poseIdle5 = _out;
     }
 

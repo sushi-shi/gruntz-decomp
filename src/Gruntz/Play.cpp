@@ -67,6 +67,7 @@
 #include <string.h> // inlined memset / strcpy in Serialize (rep stos / rep movs)
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
 inline void* operator new(u32, void* p) {
     return p;
 }
@@ -1869,7 +1870,7 @@ i32 CPlay::SyncRead2f7c(CFileMemBase* ar) {
     // the serialize-referent class tag (retail keys the lookup off the spilled
     // grid-resolve slot; data flow preserved from the byte-validated shape).
     CGameObject* oe = 0;
-    res->m_childGroup->m_map48.Lookup(gridObj, reinterpret_cast<void*&>(oe));
+    MapLookup(res->m_childGroup->m_map48, gridObj, oe);
     CWwdGameObjectA* sink;
     if (oe == 0) {
         sink = 0;
@@ -6632,97 +6633,97 @@ RVA(0x000dc060, 0x51b)
 i32 CPlay::SetEffectSpriteDurations() {
     LeafCue* d;
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("GAME_PYRAMIDMOVE", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "GAME_PYRAMIDMOVE", d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("GAME_TELEPORTEROPEN", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "GAME_TELEPORTEROPEN", d);
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("GAME_TELEPORTERCLOSE", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "GAME_TELEPORTERCLOSE", d);
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("GAME_TELEPORTERALL", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "GAME_TELEPORTERALL", d);
     if (d != 0) {
         d->m_18 = 4000;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("GAME_BRICKBREAK", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "GAME_BRICKBREAK", d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("LEVEL_DEATHBRIDGEMOVE", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "LEVEL_DEATHBRIDGEMOVE", d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("LEVEL_WATERBRIDGEMOVE", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "LEVEL_WATERBRIDGEMOVE", d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("LEVEL_ROCKBREAK", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "LEVEL_ROCKBREAK", d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("LEVEL_LAVAGEYSER", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "LEVEL_LAVAGEYSER", d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("LEVEL_TRAPDOORCLOSE", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "LEVEL_TRAPDOORCLOSE", d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("LEVEL_TRAPDOOROPEN", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "LEVEL_TRAPDOOROPEN", d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("LEVEL_CANDLEIGNITE", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "LEVEL_CANDLEIGNITE", d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("LEVEL_CANDLEUP", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "LEVEL_CANDLEUP", d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("LEVEL_CANDLEDOWN", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "LEVEL_CANDLEDOWN", d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("LEVEL_GOLFBALLAIR2", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "LEVEL_GOLFBALLAIR2", d);
     if (d != 0) {
         d->m_18 = 250;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("LEVEL_GOLFBALLHOLE", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "LEVEL_GOLFBALLHOLE", d);
     if (d != 0) {
         d->m_18 = 250;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("LEVEL_GOLFBALLSINK", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "LEVEL_GOLFBALLSINK", d);
     if (d != 0) {
         d->m_18 = 250;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("GAME_EXPLOSION1", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "GAME_EXPLOSION1", d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("LEVEL_OUTLETHAZARD", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "LEVEL_OUTLETHAZARD", d);
     if (d != 0) {
         d->m_18 = 100;
     }
@@ -6759,7 +6760,7 @@ i32 CPlay::SetEffectSpriteDurations() {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("GRUNTZ_DEATHZ_RESSURECT", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "GRUNTZ_DEATHZ_RESSURECT", d);
     if (d != 0) {
         d->m_18 = 100;
     }
@@ -6772,12 +6773,12 @@ i32 CPlay::SetEffectSpriteDurations() {
         d->m_18 = 100;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("LEVEL_CLOUDHAZARDMOVE", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "LEVEL_CLOUDHAZARDMOVE", d);
     if (d != 0) {
         d->m_18 = 10000;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("LEVEL_CLOUDHAZARDKILL", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "LEVEL_CLOUDHAZARDKILL", d);
     if (d != 0) {
         d->m_18 = 3000;
     }
@@ -6814,7 +6815,7 @@ i32 CPlay::SetEffectSpriteDurations() {
         d->m_18 = 1000;
     }
     d = 0;
-    m_world->m_soundRegistry->m_10.Lookup("LEVEL_PLANEHAZARDFLY", reinterpret_cast<void*&>(d));
+    MapLookup(m_world->m_soundRegistry->m_10, "LEVEL_PLANEHAZARDFLY", d);
     if (d != 0) {
         d->m_18 = 5000;
     }

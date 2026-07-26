@@ -40,6 +40,7 @@
 #include <Win32.h>                     // SetRect + RECT
 #include <Wwd/WwdObjMgr.h>             // own exported globals (ex Globals.h)
 #include <DDrawMgr/DDrawWorkerHost.h>
+#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
 
 DATA(0x0021ab14)
 i32 g_wwdObjIdCounter = 1;
@@ -1150,7 +1151,7 @@ i32 CDDrawChildGroup::CountActive() {
         do {
             void* key = 0;
             CWwdGameObject* val = 0;
-            m_map48.GetNextAssoc(pos, key, reinterpret_cast<void*&>(val));
+            MapGetNext(m_map48, pos, key, val);
             if (val != 0 && !(val->m_flags & 0x4000000)) {
                 ++n;
             }
@@ -1169,7 +1170,7 @@ i32 CDDrawChildGroup::ForEachDispatch(CFileMemBase* a1, i32 a2, i32 a3) {
         do {
             void* key = 0;
             CWwdGameObject* val = 0;
-            m_map48.GetNextAssoc(pos, key, reinterpret_cast<void*&>(val));
+            MapGetNext(m_map48, pos, key, val);
             if (val != 0 && !(val->m_flags & 0x4000000)) {
                 val->Play(a1, a2, a3, val);
             }
@@ -1188,7 +1189,7 @@ i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* a1, i32 a2) {
         do {
             void* key = 0;
             CWwdGameObject* val = 0;
-            m_map48.GetNextAssoc(pos, key, reinterpret_cast<void*&>(val));
+            MapGetNext(m_map48, pos, key, val);
             if (val != 0 && !(val->m_flags & 0x4000000)) {
                 val->WriteSnapshot(a1, a2);
             }
@@ -1337,7 +1338,7 @@ i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, i32 a2) {
     while (pos != 0) {
         void* key = 0;
         CWwdGameObject* val = 0;
-        m_map48.GetNextAssoc(pos, key, reinterpret_cast<void*&>(val));
+        MapGetNext(m_map48, pos, key, val);
         if (val != 0 && !(val->m_flags & 0x4000000)) {
             void* k = WwdKey(val);
             ar->Write(&k, 4);
@@ -1371,7 +1372,7 @@ i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, i32 flag) {
             return 0;
         }
         CWwdGameObject* obj = 0;
-        if (!m_map48.Lookup(key, reinterpret_cast<void*&>(obj))) {
+        if (!MapLookup(m_map48, key, obj)) {
             obj = 0;
         }
         if (obj == 0) {
@@ -1401,7 +1402,7 @@ i32 CDDrawChildGroup::PruneOrphans() {
     while (pos != 0) {
         void* key = 0;
         CWwdGameObject* val = 0;
-        m_map48.GetNextAssoc(pos, key, reinterpret_cast<void*&>(val));
+        MapGetNext(m_map48, pos, key, val);
         if (val != 0) {
             void* found = 0;
             if (!m_map2c.Lookup(WwdKey(val), found)) {

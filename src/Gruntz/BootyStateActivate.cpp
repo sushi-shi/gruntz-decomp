@@ -26,6 +26,7 @@
 #include <Gruntz/WwdGameReg.h>  // WwdGameReg (g_gameReg; CheckPerfectBonus/Vslot09/QueryGruntSlots)
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr / CDDrawSubMgrLeafScan (CState::m_c draw+cue context)
 #include <Io/MoviePlayer.h> // CMoviePlayer (~; CMultiBootyState::ReleaseResources m_4->m_60)
+#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
 
 
 DATA(0x001e8fe8)
@@ -81,7 +82,7 @@ i32 CBootyState::Vslot09(i32) {
     i32 token = reg->m_soundVolume; // +0x11c (the ambient sound token this facet reads)
     if (set->m_emitGate == 0) {
         LeafCue* res = 0;
-        set->m_10.Lookup("BOOTY_LOOP", reinterpret_cast<void*&>(res));
+        MapLookup(set->m_10, "BOOTY_LOOP", res);
         if (res != 0 && g_sndEnabled != 0) {
             u32 now = g_killCueClock;
             if (now - static_cast<u32>(res->m_14) >= static_cast<u32>(res->m_18)) {
