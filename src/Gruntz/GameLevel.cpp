@@ -495,18 +495,16 @@ i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
     if (px < 0) {
         px = 0;
     } else {
-        CDDrawWorkerHost* pc = m_mainPlane;
-        if (px >= pc->m_wrapW) {
-            px = pc->m_wrapW - 1;
+        if (px >= m_mainPlane->m_wrapW) {
+            px = m_mainPlane->m_wrapW - 1;
         }
     }
     i32 py = limit;
     if (py < 0) {
         py = 0;
     } else {
-        CDDrawWorkerHost* pc = m_mainPlane;
-        if (py >= pc->m_wrapH) {
-            py = pc->m_wrapH - 1;
+        if (py >= m_mainPlane->m_wrapH) {
+            py = m_mainPlane->m_wrapH - 1;
         }
     }
     CDDrawWorkerHost* pl = m_mainPlane;
@@ -1641,17 +1639,15 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
     if (x < 0) {
         x = 0;
     } else {
-        CDDrawWorkerHost* pc = m_mainPlane;
-        if (x >= pc->m_wrapW) {
-            x = pc->m_wrapW - 1;
+        if (x >= m_mainPlane->m_wrapW) {
+            x = m_mainPlane->m_wrapW - 1;
         }
     }
     if (y < 0) {
         y = 0;
     } else {
-        CDDrawWorkerHost* pc = m_mainPlane;
-        if (y >= pc->m_wrapH) {
-            y = pc->m_wrapH - 1;
+        if (y >= m_mainPlane->m_wrapH) {
+            y = m_mainPlane->m_wrapH - 1;
         }
     }
     CDDrawWorkerHost* pl = m_mainPlane;
@@ -2002,9 +1998,6 @@ i32 CGameLevel::ScanSpanTop(CGameObject* t, i32 x, i32 y, i32 unused) {
 // (m_screenY + m_extent.bottom) while the tiles stay soft (1/2); the first non-soft
 // tile commits *out = row - m_extent.bottom and returns 1. An exhausted scan returns 0.
 //
-// @early-stop
-// register-scheduling wall: PROBE_TILE-shape spill/register entropy (this/limit/row
-// slots); logic + offsets + CFG exact. Deferred to the final sweep.
 RVA(0x0015f090, 0x127)
 i32 CGameLevel::SnapFloorDown(CGameObject* t, i32 x, i32 y, i32* out) {
     i32 limit = t->m_screenY + t->m_extent.bottom;
@@ -2024,9 +2017,6 @@ i32 CGameLevel::SnapFloorDown(CGameObject* t, i32 x, i32 y, i32* out) {
 // (m_screenY + m_extent.top - 1) while tiles stay soft (1); the first non-soft tile
 // commits *out = row - m_extent.top and returns 1. An exhausted scan returns 0.
 //
-// @early-stop
-// register-scheduling wall: PROBE_TILE-shape spill/register entropy; logic +
-// offsets + CFG exact. Deferred to the final sweep.
 RVA(0x0015f340, 0x124)
 i32 CGameLevel::SnapCeilUp(CGameObject* t, i32 x, i32 y, i32* out) {
     i32 limit = t->m_screenY + t->m_extent.top - 1;
@@ -2162,9 +2152,6 @@ i32 CGameLevel::StepGroundDown(CGameObject* t, i32 x, i32 y, i32* out, i32 flags
 // StepGroundUp (@0x15fb10): the mirror of StepGroundDown, probing the head row
 // (m_extent.top+y-1) at x. Same hard-tile / ClampSpan-midpoint behaviour.
 //
-// @early-stop
-// register-scheduling wall: same PROBE_TILE + ClampSpan shape as StepGroundDown;
-// logic + offsets + CFG exact. Deferred to the final sweep.
 RVA(0x0015fb10, 0x119)
 i32 CGameLevel::StepGroundUp(CGameObject* t, i32 x, i32 y, i32* out, i32 flags) {
     i32 probeY = t->m_extent.top + y - 1;

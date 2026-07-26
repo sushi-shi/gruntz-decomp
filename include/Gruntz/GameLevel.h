@@ -35,17 +35,15 @@ static const i32 TILE_CLEAR = -1;
         if (px_ < 0) {                                                                             \
             px_ = 0;                                                                               \
         } else {                                                                                   \
-            CDDrawWorkerHost* pc_ = (LVL)->m_mainPlane;                                            \
-            if (px_ >= pc_->m_wrapW) {                                                             \
-                px_ = pc_->m_wrapW - 1;                                                            \
+            if (px_ >= (LVL)->m_mainPlane->m_wrapW) {                                              \
+                px_ = (LVL)->m_mainPlane->m_wrapW - 1;                                             \
             }                                                                                      \
         }                                                                                          \
         if (py_ < 0) {                                                                             \
             py_ = 0;                                                                               \
         } else {                                                                                   \
-            CDDrawWorkerHost* pc_ = (LVL)->m_mainPlane;                                            \
-            if (py_ >= pc_->m_wrapH) {                                                             \
-                py_ = pc_->m_wrapH - 1;                                                            \
+            if (py_ >= (LVL)->m_mainPlane->m_wrapH) {                                              \
+                py_ = (LVL)->m_mainPlane->m_wrapH - 1;                                             \
             }                                                                                      \
         }                                                                                          \
         CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                \
