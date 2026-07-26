@@ -18,10 +18,10 @@
 
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
-        a4 = 0;                                                                                    \
-        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup((key), reinterpret_cast<void*&>(a4));        \
+        geo = 0;                                                                                   \
+        MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, (key), geo);                             \
         id = (idv);                                                                                \
-        m_pickupGeoSrc = a4;                                                                       \
+        m_pickupGeoSrc = geo;                                                                      \
     } while (0)
 
 // @early-stop
@@ -35,6 +35,7 @@
 // inner unit-type switch, cue-rect gate, sprite retire, geometry apply). ~47%; final sweep.
 RVA(0x00065e80, 0x12b8)
 i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
+    CAniElement* geo; // the resolved pickup anim (retail reuses the dead a4 slot)
     if (m_gruntKind == 0x39 || m_gruntKind == 0x3a) {
         return 0;
     }
@@ -233,12 +234,12 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
             break;
         case PICKUP_MEGAPHONE: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
-            a4 = 0;
+            geo = 0;
             m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(
                 "GRUNTZ_PICKUPS_MEGAPHONE",
-                reinterpret_cast<void*&>(a4)
+                reinterpret_cast<void*&>(geo)
             );
-            m_pickupGeoSrc = a4;
+            m_pickupGeoSrc = geo;
             i32 n = play->m_guts->GetActiveValue();
             if (a5 != 0) {
                 if (n >= PICKUP_BOMB && n <= PICKUP_WINGZ && n != PICKUP_WARPSTONE) {
@@ -472,7 +473,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         m_wingzTimeSprite = 0;
     }
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup(reinterpret_cast<CAniElement*>(m_pickupGeoSrc));
+    m_38->m_1a0.Setup(m_pickupGeoSrc);
     m_38->ApplyName("GRUNTZ_PICKUPS");
     return 1;
 }

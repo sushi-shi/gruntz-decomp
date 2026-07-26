@@ -709,7 +709,9 @@ public:
     CAniElement* m_poseToyBreak;   // +0x3cc (_TOY-BREAK)
     CAniElement* m_poseItem;       // +0x3d0 (_ITEM)
     CAniElement* m_poseItem2;      // +0x3d4 (_ITEM2)
-    i32 m_pickupGeoSrc; // +0x3d8  (LoadPickupSprites: resolved pickup-sprite handle / SetGeometry source; serialized by name)
+    // +0x3d8  the resolved pickup animation (LoadPickupSprites looks it up in the
+    // anim registry, Setup() consumes it, Serialize writes its registry name).
+    CAniElement* m_pickupGeoSrc;
     i32 m_3dc;          // +0x3dc (serialized)
     i32 m_3e0;          // +0x3e0 (serialized)
     i32 m_moveTileX; // +0x3e4 (destination tile X; ArrivalNotify6/Load6 arg, = PlayMoveSoundAtTile x)

@@ -1465,9 +1465,9 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        i32 id = m_pickupGeoSrc;
+        CAniElement* id = m_pickupGeoSrc;
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(reinterpret_cast<CObject*>(id)));
+            strcpy(buf, catalog->KeyOfValue(id));
         }
     }
     ar->Write(buf, 0x80);
