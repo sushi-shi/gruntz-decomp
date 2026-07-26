@@ -302,9 +302,9 @@ i32 CSoundFxEmitter::FadeScene1(i32 a1, i32 a2, i32 a3, i32 a4) {
     }
 
     CFxModeT2 t;
-    t.m_1c = a2;
-    t.m_10 = 0;
     t.m_18 = a1;
+    t.m_10 = 0;
+    t.m_1c = a2;
     t.m_04 = reinterpret_cast<i32>(chanA);
     t.m_08 = reinterpret_cast<i32>(chanB);
     CFader* f = mgr->Add(1, &t);

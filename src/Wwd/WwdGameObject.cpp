@@ -820,22 +820,19 @@ i32 CGameObject::Serialize(i32 arParam) {
 
     memset(tmp, 0, sizeof(tmp));
     if (m_80 != 0) {
-        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue(m_80);
-        strcpy(tmp, str);
+        strcpy(tmp, OwnerMgr()->m_workerCache->FindKeyOfValue(m_80));
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_88 != 0) {
-        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue(m_88);
-        strcpy(tmp, str);
+        strcpy(tmp, OwnerMgr()->m_workerCache->FindKeyOfValue(m_88));
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_collideWorker != 0) {
-        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue(m_collideWorker);
-        strcpy(tmp, str);
+        strcpy(tmp, OwnerMgr()->m_workerCache->FindKeyOfValue(m_collideWorker));
     }
     ar->Write(tmp, 0x80);
     return 1;
