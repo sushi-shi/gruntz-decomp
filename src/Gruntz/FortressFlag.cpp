@@ -202,7 +202,7 @@ void CFortressFlag::RegisterActs() {
         ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+        CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != 0) {
                 list->CString::~CString();
@@ -275,7 +275,7 @@ char* zDArray<CActHandler>::Resolve(i32 id) {
 RVA(0x00046850, 0xf1)
 i32 LogicDispatchC(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CParticlez(owner);
@@ -313,7 +313,7 @@ i32 LogicDispatchC(CGameObject* owner) {
 RVA(0x00046990, 0xf1)
 i32 CreateExplosion(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CExplosion(owner);
@@ -388,7 +388,7 @@ void CParticlez::RegisterActs() {
         ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+        CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != 0) {
                 list->CString::~CString();

@@ -393,7 +393,7 @@ void CWarpStonePad::RegisterActs() {
         ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+        CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != 0) {
                 list->CString::~CString();
@@ -446,7 +446,7 @@ void CTileTriggerSwitch::RegisterActs() {
         ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+        CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != 0) {
                 list->CString::~CString();
@@ -505,7 +505,7 @@ void CTileTrigger::RegisterActs() {
         ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+        CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != 0) {
                 list->CString::~CString();
@@ -578,7 +578,7 @@ void CBrickz::RegisterActs() {
         id = g_typeCounter;
         CString* slot = ActNameLookup(id);
         i32 cnt = g_typeColl.m_grown;
-        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+        CString* list = ActNameSlots();
         if (cnt != 0) {
             do {
                 if (list != 0) {
@@ -685,7 +685,7 @@ void CCheckpointTrigger::RegisterActs() {
         ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+        CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != 0) {
                 list->CString::~CString();
@@ -706,7 +706,7 @@ void CCheckpointTrigger::RegisterActs() {
         ActInsertId("B", id2);
         CString* slot = ActNameLookup(id2);
         i32 n = g_typeColl.m_grown;
-        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+        CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != 0) {
                 list->CString::~CString();
@@ -813,7 +813,7 @@ void CTileTriggerTransition::RegisterActs() {
         ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+        CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != 0) {
                 list->CString::~CString();

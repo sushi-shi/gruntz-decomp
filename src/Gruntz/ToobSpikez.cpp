@@ -18,7 +18,7 @@ RVA_COMPGEN(0x00012c60, 0x44, ??1CToobSpikez@@UAE@XZ)
 RVA(0x00114480, 0xf1)
 i32 CreateToobSpikez(CGameObject* obj) {
     AnimWorkerObj* rec = obj->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CToobSpikez* inst = new CToobSpikez(obj);
@@ -121,7 +121,7 @@ void CToobSpikez::RegisterActs() {
         ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+        CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != 0) {
                 list->CString::~CString();

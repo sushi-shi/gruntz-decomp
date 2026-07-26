@@ -12,7 +12,7 @@ CActReg CActRegPool<CSpotLight>::s_table(2000, 2010);
 
 static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;
-    CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+    CString* list = ActNameSlots();
     while (n-- != 0) {
         if (list != 0) {
             list->CString::~CString();

@@ -31,7 +31,7 @@ RVA_COMPGEN(0x00011920, 0x44, ??1CCursorSnapSprite@@UAE@XZ)
 RVA(0x0003a200, 0xf1)
 i32 CursorSnapWorkerPump(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CCursorSnapSprite(owner);

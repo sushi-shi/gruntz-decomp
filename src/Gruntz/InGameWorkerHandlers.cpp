@@ -9,7 +9,7 @@
 RVA(0x00095750, 0xf4)
 i32 CreateInGameIcon(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CInGameIcon(owner);
@@ -47,7 +47,7 @@ i32 CreateInGameIcon(CGameObject* owner) {
 RVA(0x00095890, 0xf1)
 i32 CreateInGameText(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CInGameText(owner);
@@ -85,7 +85,7 @@ i32 CreateInGameText(CGameObject* owner) {
 RVA(0x000959d0, 0xf1)
 i32 CreateToyPeek(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CToyPeek(owner);

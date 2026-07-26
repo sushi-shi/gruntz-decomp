@@ -385,7 +385,7 @@ i32 EditDwRectsTxt(void) {
 RVA(0x0003d2b0, 0xf1)
 i32 CreateGruntStartingPoint(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CGruntStartingPoint(owner);
@@ -423,7 +423,7 @@ i32 CreateGruntStartingPoint(CGameObject* owner) {
 RVA(0x0003d3f0, 0xf1)
 i32 CreateExitTrigger(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CExitTrigger(owner);
@@ -461,7 +461,7 @@ i32 CreateExitTrigger(CGameObject* owner) {
 RVA(0x0003d530, 0xf1)
 i32 CreateGruntCreationPoint(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CGruntCreationPoint(owner);
@@ -499,7 +499,7 @@ i32 CreateGruntCreationPoint(CGameObject* owner) {
 RVA(0x0003d670, 0xf1)
 i32 CreateWormhole(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CWormhole(owner);
@@ -537,7 +537,7 @@ i32 CreateWormhole(CGameObject* owner) {
 RVA(0x0003d7b0, 0xf1)
 i32 CreateGruntPuddle(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CGruntPuddle(owner);
@@ -575,7 +575,7 @@ i32 CreateGruntPuddle(CGameObject* owner) {
 RVA(0x0003d8f0, 0xf1)
 i32 CreateTeleporter(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CTeleporter(owner);
@@ -613,7 +613,7 @@ i32 CreateTeleporter(CGameObject* owner) {
 RVA(0x0003da30, 0xf1)
 i32 CreateSecretTeleporterTrigger(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CSecretTeleporterTrigger(owner);
@@ -651,7 +651,7 @@ i32 CreateSecretTeleporterTrigger(CGameObject* owner) {
 RVA(0x0003db70, 0xf4)
 i32 CreateWarlord(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CWarlord(reinterpret_cast<i32>(owner));
@@ -689,7 +689,7 @@ i32 CreateWarlord(CGameObject* owner) {
 RVA(0x0003dcb0, 0xf1)
 i32 CreateFortressFlag(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CFortressFlag(owner);
@@ -727,7 +727,7 @@ i32 CreateFortressFlag(CGameObject* owner) {
 RVA(0x0003ddf0, 0xf1)
 i32 CreateSecretLevelTrigger(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CSecretLevelTrigger(owner);

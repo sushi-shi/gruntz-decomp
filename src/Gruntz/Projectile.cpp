@@ -1086,6 +1086,10 @@ static inline CTBombEntry* TBombLookup(i32 coord) {
 }
 
 
+static inline CString* ActNameSlots() {
+    return reinterpret_cast<CString*>(g_typeColl.m_alloc);
+}
+
 static inline CString* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
@@ -1132,7 +1136,7 @@ void CTimeBomb::RegisterActs() {
         ActInsertId("A", id);
         CString* slot = ActNameLookup(id);
         i32 n = g_typeColl.m_grown;
-        CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+        CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != 0) {
                 list->CString::~CString();

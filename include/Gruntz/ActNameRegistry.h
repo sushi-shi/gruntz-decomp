@@ -16,6 +16,11 @@ struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/Type
 
 
 
+// The grow-scratch CString array base (the dtor sweeps walk it).
+static inline CString* ActNameSlots() {
+    return reinterpret_cast<CString*>(g_typeColl.m_alloc);
+}
+
 static inline CString* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
     CString* slot;

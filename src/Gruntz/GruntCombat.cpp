@@ -302,6 +302,10 @@ void CGrunt::ComputeFacing(double dt) {
     m_410 = static_cast<double>(h->m_screenY);
 }
 
+static inline CString* ActNameSlots() {
+    return reinterpret_cast<CString*>(g_typeColl.m_alloc);
+}
+
 #define REGISTER_KEY_644AF0(key, handler)                                                          \
     {                                                                                              \
         i32 id = ActFindId(key);                                      \
@@ -310,7 +314,7 @@ void CGrunt::ComputeFacing(double dt) {
             id = g_typeCounter;                                                                    \
             CString* slot = reinterpret_cast<CString*>(g_typeColl._zvec::IndexToPtr(id));                                         \
             i32 n = g_typeColl.m_grown;                                                            \
-            CString* list = reinterpret_cast<CString*>(g_typeColl.m_alloc);                            \
+            CString* list = ActNameSlots();                            \
             while (n-- != 0) {                                                                     \
                 if (list != 0) {                                                                   \
                     list->CString::~CString();                       \
@@ -1843,7 +1847,7 @@ CObject* CDDrawSubMgrLeafScan::Lookup(const char* key) {
 RVA(0x0005baf0, 0xf4)
 i32 GruntSpawnPump(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CGrunt(owner);

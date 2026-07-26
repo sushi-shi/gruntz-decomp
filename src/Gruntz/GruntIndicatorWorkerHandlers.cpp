@@ -13,7 +13,7 @@
 
 #define ANIM_WORKER_PUMP(LEAF)                                                                     \
     AnimWorkerObj* rec = owner->m_7c;                                                              \
-    switch (reinterpret_cast<u32>(rec->m_1c)) {                                                    \
+    switch (static_cast<u32>(rec->ActKey())) {                                                    \
         case 0: {                                                                                  \
             rec->m_1c = reinterpret_cast<void*>(0x3e8);                                            \
             CUserLogic* sub = new LEAF(owner);                                                     \
@@ -50,7 +50,7 @@
 RVA(0x0007db20, 0xf1)
 i32 CreateGruntSelectedSprite(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CGruntSelectedSprite(owner);
@@ -92,7 +92,7 @@ i32 CreateGruntHealthSprite(CGameObject* owner){ANIM_WORKER_PUMP(CGruntHealthSpr
 RVA(0x0007dda0, 0xf1)
 i32 CreateGruntToySprite(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
-    switch (reinterpret_cast<u32>(rec->m_1c)) {
+    switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->m_1c = reinterpret_cast<void*>(0x3e8);
             CUserLogic* sub = new CGruntToySprite(owner);

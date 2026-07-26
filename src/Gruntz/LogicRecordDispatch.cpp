@@ -28,7 +28,7 @@ RVA(0x000de8a0, 0xf4)
 i32 LogicDispatchE(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (
-        reinterpret_cast<u32>(rec->m_1c)
+        static_cast<u32>(rec->ActKey())
     ) { // m_1c: the documented int|ptr union (unsigned key -> ja/jbe)
         case kLogicStateInit:
             rec->m_1c = reinterpret_cast<void*>(kLogicStateBuilt);
@@ -77,7 +77,7 @@ RVA(0x000de9e0, 0xf4)
 i32 LogicDispatchBoomerang(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (
-        reinterpret_cast<u32>(rec->m_1c)
+        static_cast<u32>(rec->ActKey())
     ) { // m_1c: the documented int|ptr union (unsigned key -> ja/jbe)
         case kLogicStateInit:
             rec->m_1c = reinterpret_cast<void*>(kLogicStateBuilt);
@@ -118,7 +118,7 @@ RVA(0x000deb20, 0xf1)
 i32 LogicDispatchD(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (
-        reinterpret_cast<u32>(rec->m_1c)
+        static_cast<u32>(rec->ActKey())
     ) { // m_1c: the documented int|ptr union (unsigned key -> ja/jbe)
         case kLogicStateInit:
             rec->m_1c = reinterpret_cast<void*>(kLogicStateBuilt);
@@ -159,7 +159,7 @@ RVA(0x000fb660, 0xf1)
 i32 LogicDispatchA(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (
-        reinterpret_cast<u32>(rec->m_1c)
+        static_cast<u32>(rec->ActKey())
     ) { // m_1c: the documented int|ptr union (unsigned key -> ja/jbe)
         case kLogicStateInit:
             rec->m_1c = reinterpret_cast<void*>(kLogicStateBuilt);
