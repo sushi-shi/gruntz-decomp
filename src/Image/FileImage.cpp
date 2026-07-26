@@ -721,14 +721,14 @@ void* CDDSurface::DecodePcx(void* surf, void* buf, u32 size) {
                 void* palette = 0;
                 if (remap && bitcount == 8) {
                     u8* src = reinterpret_cast<u8*>(buf) + size - 0x300;
-                    i32 i = 0;
+                    i32 i = 1;
                     do {
+                        s_palPcx[i - 1] = *src++;
                         s_palPcx[i] = *src++;
                         s_palPcx[i + 1] = *src++;
-                        s_palPcx[i + 2] = *src++;
-                        s_palPcx[i + 3] = 0;
+                        s_palPcx[i + 2] = 0;
                         i += 4;
-                    } while (i < 0x400);
+                    } while (i < 0x401);
                     palette = s_palPcx;
                 } else if (remap && palBpp == 8) {
                     if (pal->m_hasPalette != 0) {

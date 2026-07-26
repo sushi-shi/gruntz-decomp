@@ -156,12 +156,11 @@ def blocks(text: str) -> str:
             leaders.add(tgt)
             edges.setdefault(a, []).append(tgt)
             if nxt and op != "jmp":
-                leaders.add(nxt)
                 edges.setdefault(a, []).append(nxt)
-        elif op == "jmp" or op.startswith("ret"):
-            if nxt:
-                leaders.add(nxt)
-        elif op in _JCC and nxt:   # jcc with out-of-range/unparsed target
+        # ANY branch/ret ends its block - the next insn is a leader even when
+        # unreachable (padding after a resolvable jmp must not be absorbed
+        # into the jmp's block, or it erases the terminator)
+        if nxt and (op in _JCC or op.startswith(("ret", "loop"))):
             leaders.add(nxt)
     order = sorted(leaders)
     blk_of = {}
@@ -259,9 +258,9 @@ def _cfg(text: str):
         nxt = insns[i + 1][0] if i + 1 < len(insns) else None
         if tgt is not None:
             leaders.add(tgt)
-            if nxt and op != "jmp":
-                leaders.add(nxt)
-        elif (op == "jmp" or op.startswith("ret") or op in _JCC) and nxt:
+        # every post-branch insn is a leader, unreachable padding included -
+        # absorbing it into a jmp's block would erase the terminator
+        if nxt and (op in _JCC or op.startswith(("ret", "loop"))):
             leaders.add(nxt)
     order = sorted(leaders)
     bidx = {a: i for i, a in enumerate(order)}
@@ -290,7 +289,11 @@ def _cfg(text: str):
             b[2] = "jmp <ext>"
         else:
             b[2] = f"fall B{blk_of(nxt)}" if nxt is not None else "end"
-    return [(a, body, term) for a, body, term in blocks]
+    out = [(a, body, term) for a, body, term in blocks]
+    # trailing COMDAT padding (all nop/int3) is not part of the flow
+    while out and all(x in ("nop", "int3") for x in out[-1][1]):
+        out.pop()
+    return out
 
 
 def blocks_diff(base_raw: str, tgt_raw: str) -> str:
@@ -526,17 +529,41 @@ def run(args) -> None:
                 b, t = _cfg(base_text(args.rva)), _cfg(target_text(args.rva))
                 print(f"[skeleton diff: base {len(b)} vs target {len(t)} blocks "
                       f"@ {args.rva}]")
-                print(f"       {'BASE':34}    TARGET")
-                same = True
+                print(f"       {'BASE':34}    TARGET   "
+                      "(== exact, ~= same kind/shifted targets, "
+                      "## size drift, !! kind mismatch)")
+                import re as _re
+
+                def kind(term, at):
+                    parts = []
+                    for tok in _re.findall(
+                            r"(jcc|jmp|ret|fall|end)( B(\d+)(\^?))?", term or ""):
+                        if tok[2]:
+                            parts.append(tok[0] + ("^" if tok[3] else
+                                                   ">" if int(tok[2]) > at else "<"))
+                        else:
+                            parts.append(tok[0])
+                    return " ".join(parts)
+                first_bad, worst = None, "=="
                 for i in range(max(len(b), len(t))):
                     bl = (f"{len(b[i][1]):>3}i [{b[i][2]}]" if i < len(b) else "-")
                     tl = (f"{len(t[i][1]):>3}i [{t[i][2]}]" if i < len(t) else "-")
-                    mark = "  " if (i < len(b) and i < len(t)
-                                    and b[i][2] == t[i][2]) else "!!"
-                    if mark == "!!":
-                        same = False
+                    if i >= len(b) or i >= len(t):
+                        mark = "!!"
+                    elif b[i][2] == t[i][2]:
+                        mark = ("==" if len(b[i][1]) == len(t[i][1]) else "##")
+                    elif kind(b[i][2], i) == kind(t[i][2], i):
+                        mark = "~="
+                    else:
+                        mark = "!!"
+                    if mark == "!!" and first_bad is None:
+                        first_bad = i
+                    if mark != "==":
+                        worst = "!!" if mark == "!!" else worst
                     print(f"  B{i:<3} {bl:34} {mark} {tl}")
-                sys.exit(0 if same else 1)
+                if first_bad is not None:
+                    print(f"[first true skeleton divergence: B{first_bad}]")
+                sys.exit(0 if worst == "==" else 1)
             print(f"[block diff: BASE (compiled) vs TARGET (retail) @ {args.rva}]")
             out = blocks_diff(base_text(args.rva), target_text(args.rva))
             print(out, end="")
