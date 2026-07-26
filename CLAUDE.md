@@ -76,6 +76,10 @@ FLIRT + leaked names) → exports. Not part of the build loop.
 - **Formatting is automated; don't hand-format.** Rust-like clang-format (root
   `.clang-format`) via a pre-commit hook + `gruntz format`; whitespace-only, so
   matching-neutral. **Never format `vendor/`.** Details: `docs/build-system.md`.
+- **MAX match is the metric — never revert on a current-% dip.** Per-fn MAX fuzzy
+  preserves best-ever; a byte-evidenced change (shape seen in the target disasm) is
+  KEPT even if its fn's current-% stalls, a sibling craters, or Overall drops. Revert
+  only when the change's OWN evidence fails or the build breaks. Gate on BUILD, not %.
 - **Builds are FAST — don't engineer around build time.** A full from-scratch
   `gruntz clean && gruntz init` is a few minutes; `gruntz build` (incremental) is faster.
   Run them in the foreground and verify changes with a real build — don't background out of

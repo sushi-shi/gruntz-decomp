@@ -416,8 +416,7 @@ RVA(0x0010dc40, 0x154)
 CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_flags |= 2;
-    m_38->m_flags |= 1;
+    m_38->m_flags |= 3;
     m_38->m_stateFlags |= 1;
 }
 

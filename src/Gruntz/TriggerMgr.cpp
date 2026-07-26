@@ -2529,8 +2529,8 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
 // residual is min/max register colouring + the doubled grid-lookup spill.  No EH.
 RVA(0x0007cf40, 0x12e)
 i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
-    CTmNode* n = reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition());
-    if (n == 0) {
+    POSITION pos = m_recList.GetHeadPosition();
+    if (pos == 0) {
         return 0;
     }
     CDDrawWorkerHost* dims = g_gameReg->m_world->m_level->m_mainPlane;
@@ -2540,8 +2540,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     i32 maxY = 0;
     i32 count = 0;
     do {
-        i32* k = n->m_payload; // the (x,y) record pair
-        n = n->m_next;
+        i32* k = static_cast<i32*>(m_recList.GetNext(pos)); // the (x,y) record pair
         CGrunt* cell = m_grid[k[0] * TM_GRID_COLS + k[1]];
         if (cell != 0) {
             count++;
@@ -2561,12 +2560,12 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
                 maxY = gy;
             }
         }
-    } while (n != 0);
+    } while (pos != 0);
     i32 cy = minY + (maxY - minY) / 2;
     i32 cx = minX + (maxX - minX) / 2;
     i32 r = (static_cast<CPlay*>(g_gameReg->m_curState))->ResetGoals(cx, cy);
     if (r != 0 && count == 1 && m_recList.GetCount() == 1) {
-        i32* head = (reinterpret_cast<CTmNode*>(m_recList.GetHeadPosition()))->m_payload;
+        i32* head = static_cast<i32*>(m_recList.GetHead());
         CGrunt* cell2 = m_grid[head[0] * TM_GRID_COLS + head[1]];
         if (cell2 != 0) {
             i32 v1f0 = cell2->m_tileOwnerLo;

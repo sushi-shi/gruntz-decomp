@@ -334,8 +334,8 @@ i32 CMenuPage::Layout(CDDrawSurfacePair* target) {
     }
     i32 x0 = m_rect.left;
     i32 x1 = m_rect.right;
-    i32 x = (((x1 - x0 + 1) / 2)) + m_offsetX + x0;
     i32 y = m_offsetY + m_rect.top;
+    i32 x = (((x1 - x0 + 1) / 2)) + m_offsetX + x0;
     CDDrawWorker* sub = m_subPage;
     if (sub) {
         CImage* head = static_cast<CImage*>(sub->m_items.GetAt(sub->m_minIndex));
