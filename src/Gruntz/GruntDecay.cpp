@@ -67,7 +67,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
         }
         m_idleTimerHi = 0;
         i64 e = static_cast<i64>(static_cast<u32>(g_frameTime))
-                - *reinterpret_cast<i64*>(&m_idleTimerLo);
+                - m_idleTimer;
         u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
         i32 r = static_cast<i32>(
             (static_cast<double>(elapsed) * 256.0
@@ -95,8 +95,8 @@ i32 CGrunt::LoadGruntDecayConfig() {
 // clock into a local regressed it. Not source-steerable.
 RVA(0x00061570, 0x11d)
 i32 CGrunt::LoadGruntDecayConfig2() {
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_idleTimerLo)
-        >= *reinterpret_cast<i64*>(&m_idleWindowLo)) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleTimer
+        >= m_idleWindow) {
         m_38->m_stateFlags |= 1;
         m_38->m_imageSet->SetAllTypes(1);
         if (m_36c == 0) {
@@ -106,7 +106,7 @@ i32 CGrunt::LoadGruntDecayConfig2() {
         return 0;
     }
     i64 e =
-        static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_idleTimerLo);
+        static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleTimer;
     u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
     i32 r = static_cast<i32>(
         (static_cast<double>(elapsed) * 256.0
