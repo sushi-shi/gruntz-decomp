@@ -3336,8 +3336,7 @@ i32 FillColorCombo(HWND hDlg, i32 nID, i32 curSel) {
     LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     pSend(cb, 0x14b, 0, 0);
     for (i32 i = 0; i < 0x11; i++) {
-        CString s = GetColorName(i, 0);
-        pSend(cb, 0x143, 0, reinterpret_cast<i32>(static_cast<const char*>(s)));
+        pSend(cb, 0x143, 0, reinterpret_cast<i32>(static_cast<const char*>(GetColorName(i, 0))));
     }
     if (curSel >= 0) {
         pSend(cb, 0x14e, curSel, 0);
@@ -3357,8 +3356,7 @@ i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
     LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     pSend(cb, 0x14b, 0, 0);
     for (i32 i = 0; i < 3; i++) {
-        CString s = GetDifficultyName(i, 0);
-        pSend(cb, 0x143, 0, reinterpret_cast<i32>(static_cast<const char*>(s)));
+        pSend(cb, 0x143, 0, reinterpret_cast<i32>(static_cast<const char*>(GetDifficultyName(i, 0))));
     }
     if (curSel >= 0) {
         pSend(cb, 0x14e, curSel, 0);

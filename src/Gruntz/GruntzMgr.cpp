@@ -707,8 +707,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 RVA(0x0008ee70, 0x7c)
 i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     if (m_world) {
-        CDDrawSubMgrPages* pages = m_world->m_drawTarget;
-        pages->BlitPage(pages->m_backPair);               // pause the back pair
+        m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair); // pause the back pair
         m_world->m_ptrColl->m_device->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
     i32 wasShown = ShowCursor(1);

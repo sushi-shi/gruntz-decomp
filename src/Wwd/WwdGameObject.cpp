@@ -1006,8 +1006,7 @@ i32 CGameObject::WriteSnapshot(i32 dst, i32 unused) {
     rec.m_10 = edi;
 
     {
-        CString str = OwnerMgr()->m_workerCache->FindKeyOfValue(m_7c);
-        strcpy(rec.m_name, str);
+        strcpy(rec.m_name, OwnerMgr()->m_workerCache->FindKeyOfValue(m_7c));
     }
     ar->Write(&rec, 0xa0);
     return 1;

@@ -1137,17 +1137,15 @@ InterfaceObject* CMulti::SetupServices() {
             if (store != 0 && g_serviceId != 0x3e7) {
                 store->SetValueDword("Service", g_serviceId);
                 {
-                    CString name = GetString5a0();
                     store->SetValueString(
                         "Player_Name",
-                        const_cast<char*>(static_cast<const char*>((name)))
+                        const_cast<char*>(static_cast<const char*>(GetString5a0()))
                     );
                 }
                 {
-                    CString gameName = GetString59c();
                     store->SetValueString(
                         "Game_Name",
-                        const_cast<char*>(static_cast<const char*>((gameName)))
+                        const_cast<char*>(static_cast<const char*>(GetString59c()))
                     );
                 }
             }
@@ -1159,10 +1157,9 @@ InterfaceObject* CMulti::SetupServices() {
                 if (g_serviceId != 0x3e7) {
                     store->SetValueDword("Service", g_serviceId);
                 }
-                CString name = GetString5a0();
                 store->SetValueString(
                     "Player_Name",
-                    const_cast<char*>(static_cast<const char*>((name)))
+                    const_cast<char*>(static_cast<const char*>(GetString5a0()))
                 );
             }
         }
@@ -1714,10 +1711,9 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
 
     void* lp;
     {
-        CString name = GetString5a0();
         lp = reinterpret_cast<void*>(Peer()->EnumPlayersCb(
             sel,
-            reinterpret_cast<i32>(static_cast<const char*>(name)),
+            reinterpret_cast<i32>(static_cast<const char*>(GetString5a0())),
             reinterpret_cast<i32>(g_emptyString),
             0
         ));
@@ -3654,9 +3650,8 @@ i32 CMulti::SetupTcpIpConfig() {
 RVA(0x000bc750, 0x151)
 i32 CMulti::CreateLocalPlayer() {
     {
-        CString name = GetString5a0();
         m_5bc = reinterpret_cast<i32>(reinterpret_cast<CNetSessionNode*>(Peer()->CreatePlayer(
-            const_cast<char*>(static_cast<const char*>(name)),
+            const_cast<char*>(static_cast<const char*>(GetString5a0())),
             reinterpret_cast<i32>(g_emptyString),
             0
         )));
@@ -3684,8 +3679,7 @@ i32 CMulti::CreateLocalPlayer() {
     pkt.m_e = 0;
     pkt.m_playerId = m_hostIndex;
     {
-        CString name = GetString5a0();
-        strcpy(pkt.m_playerName, static_cast<const char*>(name));
+        strcpy(pkt.m_playerName, static_cast<const char*>(GetString5a0()));
     }
     SendStatFrom(&pkt, 0x28, 1);
     return 1;
@@ -3840,12 +3834,10 @@ i32 CMulti::SaveConfig(CNetSessionNode* recipient) {
     blob.m_statId = STAT_CONFIG;
     blob.m_8 = m_5b0;
     {
-        CString a = GetConfigNameA();
-        wsprintfA(blob.m_nameA, static_cast<const char*>(a));
+        wsprintfA(blob.m_nameA, static_cast<const char*>(GetConfigNameA()));
     }
     {
-        CString b = GetConfigNameB();
-        wsprintfA(blob.m_nameB, static_cast<const char*>(b));
+        wsprintfA(blob.m_nameB, static_cast<const char*>(GetConfigNameB()));
     }
     blob.m_10c = m_5a4;
     blob.m_110 = m_drainReload;
