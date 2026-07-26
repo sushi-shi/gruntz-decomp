@@ -32,9 +32,9 @@ i32 CWarpStoneFly::Sync(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
     if (lvl == 0) {
         return 0;
     }
-    if (mode != 4) {
-        if (mode == 7) {
-            // READ the scalar block, then resolve the object reference.
+    switch (mode) {
+    case 7: {
+        // READ the scalar block, then resolve the object reference.
             arc->Read(&m_arrivalMode, 4);
             arc->Read(&m_targetX, 4);
             arc->Read(&m_targetY, 4);
@@ -61,9 +61,9 @@ i32 CWarpStoneFly::Sync(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
             } else {
                 m_sprite = static_cast<CImage*>(rec->m_items.GetAt(index));
             }
-            return 1;
-        }
-    } else {
+        return 1;
+    }
+    case 4: {
         // WRITE the scalar block, then the resolved object's name + index.
         arc->Write(&m_arrivalMode, 4);
         arc->Write(&m_targetX, 4);
@@ -84,6 +84,8 @@ i32 CWarpStoneFly::Sync(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
         }
         arc->Write(name, 0x80);
         arc->Write(&index, 4);
+        break;
+    }
     }
     return 1;
 }

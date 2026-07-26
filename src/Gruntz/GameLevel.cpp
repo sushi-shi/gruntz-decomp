@@ -1713,7 +1713,7 @@ i32 CGameLevel::IsValidWwd(const char* name, void* headerBuf) {
 
 RVA(0x00160660, 0x12b)
 i32 __stdcall WwdFile_CheckHeader(const char* name, void* headerOut) {
-    char header[0x5f4];
+    WwdHeader header;
 
     if (name == 0) {
         return 0;
@@ -1728,15 +1728,15 @@ i32 __stdcall WwdFile_CheckHeader(const char* name, void* headerOut) {
         return 0;
     }
 
-    if (stream.Read(header, 0x5f4) != 0x5f4) {
+    if (stream.Read(&header, 0x5f4) != 0x5f4) {
         return 0;
     }
 
-    if (*reinterpret_cast<u32*>(header) > 0x5f4) { // signature must be <= 1524
+    if (header.wwdSignature > 0x5f4) { // signature must be <= 1524
         return 0;
     }
 
-    strcpy(static_cast<char*>(headerOut), header + 0x10); // the +0x10 header field; inline strlen + rep movs
+    strcpy(static_cast<char*>(headerOut), header.levelName); // inline strlen + rep movs
     return 1;
 }
 
