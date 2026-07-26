@@ -168,12 +168,11 @@ i32 BuildQualifiedScopePath(void) {
     return 0;
 }
 
-// @identity-TODO (matcher-5): 0x139950 == the same orphan holder's `return this->m_10->m_name`
-// (mov eax,[ecx+0x10]; mov eax,[eax]; ret) - the current scope's (CSymTab) name. Same
-// unrecoverable receiver as 0x139810; homed as a stub, no fabricated view.
+// 0x139950: the receiver IS CParseSource (its +0x10 == m_owner, the CSymTab whose
+// +0x00 is m_name) - the ex "unrecoverable orphan" stub dissolves onto the real class.
 RVA(0x00139950, 0x6)
-i32 CurrentScopeName(void) {
-    return 0;
+char* CParseSource::CurrentScopeName() {
+    return m_owner->m_name;
 }
 
 RVA(0x00139960, 0x6b)

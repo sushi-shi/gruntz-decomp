@@ -41,6 +41,9 @@ struct CParseSource {
     i32 GetEntryTag();
     i32 BeginParse();
     i32 EndParse();
+    // 0x139950: the current scope's (m_owner CSymTab) name - `mov eax,[ecx+0x10];
+    // mov eax,[eax]` proves the thiscall receiver + the +0x10 owner deref.
+    char* CurrentScopeName();
     // Parse-slot init (0x1396f0): stamp the embedded hash-node (m_node1c), null the
     // bookkeeping fields, self-link m_selfLink. Returns this. (CSymParser::PopParseSlot.)
     CParseSource* Init();
