@@ -2553,9 +2553,11 @@ i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
     }
 
     if (recipient != 0) {
-        return SendStatPairRaw(recipient, packet, 0x88, 1);
+        SendStatPairRaw(recipient, packet, 0x88, 1);
+    } else {
+        SendStatFrom(packet, 0x88, 1);
     }
-    return SendStatFrom(packet, 0x88, 1);
+    return 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -2786,18 +2788,20 @@ i32 CMulti::BroadcastOneChannel(GruntzPlayer* ch) {
     *reinterpret_cast<i32*>((packet + 4)) = STAT_CHANNEL_ONE;
     *reinterpret_cast<i32*>((packet + 8)) = ch->m_playerIndex;
 
-    packet[0xd] = ch->m_008;
-    packet[0xe] = ch->m_014;
-    packet[0xf] = ch->m_configId;
-    packet[0x12] = ch->m_readyFlag;
+    i32 v = ch->m_008;
+    packet[0xd] = static_cast<char>(v);
+    v = ch->m_014;
+    packet[0xe] = static_cast<char>(v);
+    v = ch->m_configId;
+    packet[0xf] = static_cast<char>(v);
+    v = ch->m_readyFlag;
+    packet[0x12] = static_cast<char>(v);
     packet[0xc] = 1;
-    packet[0x11] = ch->m_comboSel;
-    {
-        i32 id = ch->m_slotKey;
-        CString name = ch->GetName();
-        *reinterpret_cast<i32*>((packet + 0x18)) = id;
-        strcpy(packet + 0x18, static_cast<const char*>(name));
-    }
+    v = ch->m_comboSel;
+    packet[0x11] = static_cast<char>(v);
+    v = ch->m_slotKey;
+    *reinterpret_cast<i32*>((packet + 0x18)) = v;
+    strcpy(packet + 0x18, static_cast<const char*>(ch->GetName()));
 
     return SendStatFrom(packet, 0x2c, 1);
 }
@@ -3842,9 +3846,11 @@ i32 CMulti::SaveConfig(CNetSessionNode* recipient) {
     blob.m_118 = m_rngSeed;
 
     if (recipient != 0) {
-        return SendStatPairRaw(recipient, &blob, 0x11c, 1);
+        SendStatPairRaw(recipient, &blob, 0x11c, 1);
+    } else {
+        SendStatFrom(&blob, 0x11c, 1);
     }
-    return SendStatFrom(&blob, 0x11c, 1);
+    return 1;
 }
 
 RVA(0x000bce80, 0x77)
