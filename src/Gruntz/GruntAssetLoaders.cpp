@@ -79,7 +79,7 @@ enum GruntDeathType {
                 m_object->m_screenX,                                                               \
                 m_object->m_screenY                                                                \
             )) {                                                                                   \
-            _g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), (tag), -1, 0, -1, -1);    \
+            _g->m_cueSink->SpawnVoiceDriver(this, (tag), -1, 0, -1, -1);    \
         }                                                                                          \
     } while (0)
 

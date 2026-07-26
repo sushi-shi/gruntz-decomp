@@ -75,7 +75,7 @@ public:
     // Two overloaded weighted grunt-voice spawn drivers (0x11b3b0 / 0x11b7c0).
     // Both consume this in ecx and return with callee-cleaned stack arguments; the
     // five-argument overload was formerly mis-modeled as a free __stdcall sibling.
-    i32 SpawnVoiceDriver(i32, i32, i32, i32, i32, i32); // 0x11b3b0
+    i32 SpawnVoiceDriver(void* spawner, i32, i32, i32, i32, i32); // 0x11b3b0
     i32 SpawnVoiceDriver(i32, i32, i32, i32, i32);      // 0x11b7c0
     CSpawnList* BuildVoiceSoundList(i32 i);             // 0x11c210 (defined in VoiceSoundList.cpp)
     i32 AnyVoicePlaying();   // 0x11c6c0 (either slot m_08/m_0c has a non-zero m_playFlags)

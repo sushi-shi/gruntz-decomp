@@ -4386,7 +4386,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(CGrunt* unit) {
             if (lvl->m_screenX < hit->right && lvl->m_screenX >= hit->left
                 && lvl->m_screenY < hit->bottom && lvl->m_screenY >= hit->top) {
                 (static_cast<CGruntSpawnConfig*>(static_cast<void*>(g_gameReg->m_cueSink)))
-                    ->SpawnVoiceDriver(reinterpret_cast<i32>(unit), 0x366, -1, 0, -1, -1);
+                    ->SpawnVoiceDriver(unit, 0x366, -1, 0, -1, -1);
             }
             *reinterpret_cast<__int64*>(&m_scratch78) = 0;
             m_scratch80 = 0x1388;

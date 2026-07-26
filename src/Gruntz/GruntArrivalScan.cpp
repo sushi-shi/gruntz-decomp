@@ -150,7 +150,7 @@ i32 CGrunt::ResolveArrivalReposition() {
                         if (vx < rect->right && vx >= rect->left && vy < rect->bottom
                             && vy >= rect->top) {
                             g_gameReg->m_cueSink->SpawnVoiceDriver(
-                                reinterpret_cast<i32>(this),
+                                this,
                                 0x366,
                                 -1,
                                 0,
@@ -349,7 +349,7 @@ L_ed006:
         i32 y = m_object->m_screenY;
         if (x < board->right && board->left <= x && y < board->bottom && board->top <= y) {
             g_gameReg->m_cueSink
-                ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
+                ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
         }
         m_390 = 0;
     }
@@ -553,7 +553,7 @@ i32 CGrunt::WanderStep() {
                                 )
                                 != 0) {
                                 g_gameReg->m_cueSink->SpawnVoiceDriver(
-                                    reinterpret_cast<i32>(this),
+                                    this,
                                     0x366,
                                     -1,
                                     0,
@@ -999,7 +999,7 @@ i32 CGrunt::UpdateArrival() {
                             );
                             if (r != 0) {
                                 g_gameReg->m_cueSink->SpawnVoiceDriver(
-                                    reinterpret_cast<i32>(this),
+                                    this,
                                     0x366,
                                     -1,
                                     0,
@@ -1269,7 +1269,7 @@ L_ed006b:
                     )
                     != 0) {
                     g_gameReg->m_cueSink
-                        ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
+                        ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                 }
                 m_390 = 0;
             }
@@ -1613,7 +1613,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
                 if (x < rect->right && x >= rect->left && y < rect->bottom && y >= rect->top) {
                     g_gameReg->m_cueSink
-                        ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
+                        ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                 }
             }
             goto tail;
@@ -1785,7 +1785,7 @@ i32 CGrunt::StepArrivalDefense() {
                 if (vx < rect->right && vx >= rect->left && vy < rect->bottom
                     && vy >= rect->top) {
                     g_gameReg->m_cueSink
-                        ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
+                        ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                 }
             }
             return 1;
@@ -1907,7 +1907,7 @@ i32 CGrunt::StepArrivalDefense() {
                     goto L_f318a;
                 }
                 g_gameReg->m_cueSink
-                    ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
+                    ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
             }
         L_f318a:
             m_dwell = 0;
@@ -2086,7 +2086,7 @@ i32 CGrunt::ArrivalScanC() {
             i32 y = m_object->m_screenY;
             if (x < board->right && board->left <= x && y < board->bottom && board->top <= y) {
                 g_gameReg->m_cueSink
-                    ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
+                    ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
             }
             m_390 = 0;
         }
@@ -2376,7 +2376,7 @@ state0: {
         == 0) {
         goto s0_reset;
     }
-    g_gameReg->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
+    g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
 s0_reset:
     m_390 = 0;
     goto common;
@@ -2581,7 +2581,7 @@ i32 CGrunt::SeekTarget() {
                     if (bx < board->right && board->left <= bx && by < board->bottom
                         && board->top <= by) {
                         g_gameReg->m_cueSink
-                            ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
+                            ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                     }
                 }
             }
@@ -2688,7 +2688,7 @@ i32 CGrunt::SeekTarget() {
             );
             if (r != 0) {
                 g_gameReg->m_cueSink
-                    ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
+                    ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
             }
             this->m_390 = 0;
             this->m_dwell = 0;
@@ -2770,7 +2770,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
             if (vx < rect->right && vx >= rect->left && vy < rect->bottom && vy >= rect->top) {
                 g_gameReg->m_cueSink
-                    ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
+                    ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
             }
         }
             m_defenderState = 1;
@@ -2791,7 +2791,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 if (vx < rect->right && vx >= rect->left && vy < rect->bottom
                     && vy >= rect->top) {
                     g_gameReg->m_cueSink
-                        ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
+                        ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                 }
             }
             return 1;

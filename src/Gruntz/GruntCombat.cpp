@@ -940,14 +940,14 @@ void CGrunt::OnStruck(i32 wasHit) {
             CGruntzMgr* g = g_gameReg;
             const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
             if (x < vr->right && x >= vr->left && y < vr->bottom && y >= vr->top) {
-                g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x370, -1, 0, -1, -1);
+                g->m_cueSink->SpawnVoiceDriver(this, 0x370, -1, 0, -1, -1);
             }
             return;
         }
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
         if (x < vr->right && x >= vr->left && y < vr->bottom && y >= vr->top) {
-            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x371, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(this, 0x371, -1, 0, -1, -1);
         } else {
             m_struckCount = 0;
         }
@@ -960,7 +960,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
         if (x < vr->right && x >= vr->left && y < vr->bottom && y >= vr->top) {
-            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x320, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(this, 0x320, -1, 0, -1, -1);
         }
         return;
     }
@@ -970,7 +970,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
         if (x < vr->right && x >= vr->left && y < vr->bottom && y >= vr->top) {
-            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x321, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(this, 0x321, -1, 0, -1, -1);
         }
         return;
     }
@@ -981,7 +981,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
         if (x < vr->right && x >= vr->left && y < vr->bottom && y >= vr->top) {
-            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x322, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(this, 0x322, -1, 0, -1, -1);
         }
     }
 }

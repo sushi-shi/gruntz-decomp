@@ -765,7 +765,7 @@ arm:
     return 1;
 
 reportError:
-    g_gameReg->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(cell), 0x324, -1, 0, -1, -1);
+    g_gameReg->m_cueSink->SpawnVoiceDriver(cell, 0x324, -1, 0, -1, -1);
     return 0;
 }
 

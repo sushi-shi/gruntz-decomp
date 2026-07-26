@@ -333,7 +333,7 @@ i32 CVoiceTrigger::Tick() {
         if (hx < g_gameReg->m_viewBounds.right && hx >= g_gameReg->m_viewBounds.left
             && hy < g_gameReg->m_viewBounds.bottom && hy >= g_gameReg->m_viewBounds.top) {
             if (g_gameReg->m_cueSink->SpawnVoiceDriver(
-                    reinterpret_cast<i32>(hit),
+                    hit,
                     m_object->m_124,
                     m_object->m_placeMode,
                     0,

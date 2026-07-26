@@ -769,7 +769,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
                 if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
                     != 0) {
                     g->m_cueSink
-                        ->SpawnVoiceDriver(reinterpret_cast<i32>(this), tier, 0, -1, -1, -1);
+                        ->SpawnVoiceDriver(this, tier, 0, -1, -1, -1);
                 }
             } else {
                 if (m_moveKind == 0) {
@@ -781,7 +781,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
                 if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
                     != 0) {
                     g->m_cueSink
-                        ->SpawnVoiceDriver(reinterpret_cast<i32>(this), tier, 0, -1, -1, -1);
+                        ->SpawnVoiceDriver(this, tier, 0, -1, -1, -1);
                 }
             }
             return 0;
@@ -1416,7 +1416,7 @@ i32 CGrunt::StepArrivalReroll() {
     );
     if (pick > 0x19) {
         if (xp < r->right && xp >= r->left && y < r->bottom && y >= r->top) {
-            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x15d, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(this, 0x15d, -1, 0, -1, -1);
         }
     } else {
         if (xp < r->right && xp >= r->left && y < r->bottom && y >= r->top) {
@@ -1634,7 +1634,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {
-            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x384, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(this, 0x384, -1, 0, -1, -1);
         }
     } else if (r > 0xa0) {
         found = static_cast<CDDrawWorker*>(
@@ -1646,7 +1646,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {
-            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x385, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(this, 0x385, -1, 0, -1, -1);
         }
     } else {
         found = static_cast<CDDrawWorker*>(
@@ -1658,7 +1658,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
                 m_object->m_screenX,
                 m_object->m_screenY
             )) {
-            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x386, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(this, 0x386, -1, 0, -1, -1);
         }
     }
 
@@ -2103,7 +2103,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
             (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_viewRect.left))
         );
         if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
-            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), cueId, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(this, cueId, -1, 0, -1, -1);
         }
 
         m_prevAnimSetNode = m_objAux->m_1c;

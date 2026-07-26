@@ -697,7 +697,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
             && obj->m_screenY >= plane->m_viewRect.top
             && obj->m_screenY < plane->m_viewRect.bottom) {
             g_gameReg->m_cueSink->SpawnVoiceDriver(
-                reinterpret_cast<i32>(cell), 0x38e, -1, 0, -1, -1
+                cell, 0x38e, -1, 0, -1, -1
             );
         }
     }

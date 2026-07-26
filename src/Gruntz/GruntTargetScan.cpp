@@ -303,7 +303,7 @@ i32 CGrunt::ScanNearestTarget() {
                     )
                     != 0) {
                     g_gameReg->m_cueSink
-                        ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
+                        ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                 }
             }
         L_scanDone:

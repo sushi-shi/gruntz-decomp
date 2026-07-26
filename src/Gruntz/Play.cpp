@@ -4119,7 +4119,7 @@ i32 CPlay::Vslot0e(i32 a, i32 x, i32 y) {
             }
         }
         if (placed == 0) {
-            g_gameReg->m_cueSink->SpawnVoiceDriver(placed, 0x340, -1, 1, -1, -1);
+            g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x340, -1, 1, -1, -1); // placed == 0 here
         }
         m_dragInhibit1 = 0;
         m_guts->CommitSlot(placed);
@@ -4299,7 +4299,7 @@ drag_box: {
         }
         if (slot != 0 && slot->m_entranceCommitted != 0) {
             g_gameReg->m_cueSink
-                ->SpawnVoiceDriver(reinterpret_cast<i32>(slot), 0x324, -1, 0, -1, -1);
+                ->SpawnVoiceDriver(slot, 0x324, -1, 0, -1, -1);
         }
     }
     LoadCursorSprites(0, 0);

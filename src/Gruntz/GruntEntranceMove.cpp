@@ -324,7 +324,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
                 reinterpret_cast<void*&>(found)
             );
             if (onScreen) {
-                g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x37a, -1, 0, -1, -1);
+                g->m_cueSink->SpawnVoiceDriver(this, 0x37a, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else if (r > 0xa0) {
@@ -333,7 +333,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
                 reinterpret_cast<void*&>(found)
             );
             if (onScreen) {
-                g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x37b, -1, 0, -1, -1);
+                g->m_cueSink->SpawnVoiceDriver(this, 0x37b, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else {
@@ -342,7 +342,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
                 reinterpret_cast<void*&>(found)
             );
             if (onScreen) {
-                g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x37c, -1, 0, -1, -1);
+                g->m_cueSink->SpawnVoiceDriver(this, 0x37c, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         }
@@ -446,7 +446,7 @@ void CGrunt::LoadEntranceConfig() {
         if (static_cast<void*>(found) == cached) {
             if (m_tileOwnerHi == g_curPlayer) {
                 g_gameReg->m_cueSink
-                    ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x33f, -1, 0, -1, -1);
+                    ->SpawnVoiceDriver(this, 0x33f, -1, 0, -1, -1);
             }
             m_tileMgr->ResetCell(m_tileOwnerHi, m_tileOwnerLo, 0, 0);
             m_entranceDropActive = 1;
@@ -1146,7 +1146,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             if (vx < rect->right && vx >= rect->left && vy < rect->bottom
                 && vy >= rect->top) {
                 g_gameReg->m_cueSink
-                    ->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x35c, -1, 0, -1, -1);
+                    ->SpawnVoiceDriver(this, 0x35c, -1, 0, -1, -1);
             }
             m_freezeUnfrozen = 1;
             m_freezeDelayDone = 1;

@@ -259,7 +259,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
 // scores 73-83% via the smaller-fn normalization artifact, so the highest-% version
 // (this stub) is kept per the REVERT rule. Final-sweep candidates.
 RVA(0x0011b3b0, 0x338)
-i32 CGruntSpawnConfig::SpawnVoiceDriver(i32, i32, i32, i32, i32, i32) {
+i32 CGruntSpawnConfig::SpawnVoiceDriver(void* /*spawner*/, i32, i32, i32, i32, i32) {
     return 0;
 }
 

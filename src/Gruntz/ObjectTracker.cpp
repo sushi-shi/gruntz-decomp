@@ -55,7 +55,7 @@ i32 CGrunt::StepPeerTracking() {
         CDDrawWorkerHost* r = g->m_world->m_level->m_mainPlane;
         if (x < r->m_viewRect.right && x >= r->m_viewRect.left && y < r->m_viewRect.bottom
             && y >= r->m_viewRect.top) {
-            g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 0x366, -1, 0, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
         }
     }
     m_390 = 0;
