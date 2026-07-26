@@ -695,7 +695,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
         return 0;
     }
     char* B = reinterpret_cast<char*>(this);
-    *reinterpret_cast<i32*>((B + 0x618)) = 0;
+    m_destructButton = 0;
     ResetWidgets(0);
 
     s->Read(B, 4);
@@ -1790,16 +1790,14 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     for (i = 0; i < 15; i++) {
         m_statObj[i] = 0;
     }
-    i32* sp = reinterpret_cast<i32*>((B + 0x204));
-    sp[0] = 0;
-    sp[1] = 0;
-    sp[2] = 0;
-    sp[3] = 0;
-    sp[4] = 0;
-    i32* gp = reinterpret_cast<i32*>((B + 0x308));
-    gp[0] = 0;
-    gp[1] = 0;
-    gp[2] = 0;
+    m_slotNotify[0] = 0;
+    m_slotNotify[1] = 0;
+    m_slotNotify[2] = 0;
+    m_slotNotify[3] = 0;
+    m_slotNotify[4] = 0;
+    m_groupNotify[0] = 0;
+    m_groupNotify[1] = 0;
+    m_groupNotify[2] = 0;
     for (i = 0; i < 12; i++) {
         m_hlNotify[i] = 0;
     }
