@@ -917,6 +917,10 @@ i32 __stdcall CDDrawPtrCollections::Compare(void* pa, void* pb) {
 // return-slot pointer: the pair returns BY VALUE; retail loads the slot ptr
 // into eax at each exit and stores through it - the ex "out-ptr loaded last"
 // regalloc wall was this mis-modeled signature).
+// @early-stop
+// ~80% (siblings FindFwd/FindBack flipped 100 on the by-value recovery): the
+// residual is the {-1,-1} arm's register materialization (retail or-reuses the
+// leftover arg regs); the arm-order swap regresses - shape as-is is right.
 RVA(0x00143420, 0x4b)
 CDdModePair CDDrawPtrCollections::FindMatch(u32 k0, u32 k1, i32 k2) {
     CDdModePair r;

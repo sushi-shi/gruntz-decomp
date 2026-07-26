@@ -771,20 +771,19 @@ CMenuItem* CMenuPage::AddSubItem(
 // `new CMenuItem2()` folded from the split RezAlloc(0x74)+placement-new (the derived
 // ctor runs the base ctor -> derived vptr stamp -> seeds +0x5c..+0x70), Init it
 // (vtable +0x4), then on success run its slot-14 setter (SetFrame) and append (else
-// delete). The fold recovers the /GX EH frame + inlined base ctor (34%->94%).
-// @early-stop
-// 93.9%: residual is the EH trylevel scheduling around the inlined 6-CString base
-// ctor (docs/patterns/rezalloc-placement-new-no-eh-frame.md); logic byte-exact.
+// delete). The fold recovers the /GX EH frame + inlined base ctor. 100%: the
+// ex "EH trylevel wall" was the 5-arg mis-signature (retail ret 0x18 = 6 args;
+// the Init arg list was reversed and SetFrame took a0 instead of a5).
 RVA(0x001836f0, 0x160)
-CMenuItem2* CMenuPage::AddItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
+CMenuItem2* CMenuPage::AddItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     CMenuItem2* item = new CMenuItem2();
-    if (item->Init(a4, a3, a2, a1, a0, reinterpret_cast<i32>(this)) == 0) {
+    if (item->Init(reinterpret_cast<i32>(this), a0, a1, a2, a3, a4) == 0) {
         if (item) {
             delete item;
         }
         return 0;
     }
-    item->SetFrame(a0);
+    item->SetFrame(a5);
     return Append(item) ? item : 0;
 }
 
@@ -796,14 +795,14 @@ CMenuItem2* CMenuPage::AddItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
 RVA(0x00183850, 0x13b)
 CMenuItem2* CMenuPage::AddSubItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
     CMenuItem2* item = new CMenuItem2();
-    if (item->Init(a6, a4, a2, a1, a0, reinterpret_cast<i32>(this)) == 0) {
+    if (item->Init(reinterpret_cast<i32>(this), a0, a1, a2, a5, a6) == 0) {
         if (item) {
             delete item;
         }
         return 0;
     }
     item->SetFrame(a7);
-    item->m_cmdParam = a2;
-    item->m_1c = a3;
+    item->m_cmdParam = a3;
+    item->m_1c = a4;
     return Append(item) ? item : 0;
 }

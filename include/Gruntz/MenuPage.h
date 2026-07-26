@@ -96,7 +96,7 @@ public:
     i32 LayoutOne(CDDrawSurfacePair* target);   // 0x183e50  single-column measure/place
 
     // 0x74-item factories (derived item @0x5f08f8) - mirror AddItem/AddSubItem:
-    CMenuItem2* AddItem2(i32, i32, i32, i32, i32);                   // 0x1836f0
+    CMenuItem2* AddItem2(i32, i32, i32, i32, i32, i32);              // 0x1836f0 (ret 0x18 = 6 args; Init(this, a0..a4) + SetFrame(a5))
     CMenuItem2* AddSubItem2(i32, i32, i32, i32, i32, i32, i32, i32); // 0x183850
     i32 Switch(i32 refocus); // 0x183df0  host SwitchToPage + refocus
     i32 CanWrap();           // 0x183e30  focus-wrap gate

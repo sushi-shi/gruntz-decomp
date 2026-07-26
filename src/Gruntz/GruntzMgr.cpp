@@ -3397,10 +3397,8 @@ CGruntzMgr::CGruntzMgr() {
     m_optionsCount = 3;
 }
 
-// @early-stop
-// reloc-masked plateau (~97%): code bytes exact; the only residual is the
-// call-rel32 operands to the unmatched engine callees ResolveHi (0x143510) and
-// SetVideoMode (0x8df00) - they pair when those siblings get named.
+// 100%: the finder returns the mode pair BY VALUE (hidden return-slot ptr);
+// the compares read through the returned pointer, not the stack local.
 RVA(0x0008e1d0, 0xa5)
 i32 CGruntzMgr::CheckDisplayBoundsA() {
     if (m_curState->Update() != GAMESTATE_PLAY && m_curState->Update() != GAMESTATE_NONE) {
@@ -3423,10 +3421,7 @@ i32 CGruntzMgr::CheckDisplayBoundsA() {
     return 0;
 }
 
-// @early-stop
-// reloc-masked plateau (~97%): code bytes exact; residual is the call-rel32
-// operands to unmatched engine callees ResolveLo (0x143590) + SetVideoMode
-// (0x8df00).
+// 100%: same by-value finder-return recovery as CheckDisplayBoundsA.
 RVA(0x0008e2b0, 0xb1)
 i32 CGruntzMgr::CheckDisplayBoundsB() {
     if (m_curState->Update() != GAMESTATE_PLAY && m_curState->Update() != GAMESTATE_NONE) {
