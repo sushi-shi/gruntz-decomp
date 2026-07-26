@@ -520,12 +520,13 @@ void CDDrawChildGroup::WalkDispatch34(i32 a1, i32 a2, i32 a3) {
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     if (n != 0) {
         do {
-            n->m_obj->BltDirtyEx(
+            CDDrawGroupNode* cur = n;
+            n = n->m_next;
+            cur->m_obj->BltDirtyEx(
                 reinterpret_cast<CDDrawSurfacePair*>(a1),
                 reinterpret_cast<CDDrawSurfacePair*>(a2),
                 a3
             );
-            n = n->m_next;
         } while (n != 0);
     }
     WalkDispatch30(a2, a3);
@@ -536,12 +537,13 @@ void CDDrawChildGroup::WalkDispatch38(i32 a1, i32 a2, i32 a3) {
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     if (n != 0) {
         do {
-            n->m_obj->BltDirtyRegions(
+            CDDrawGroupNode* cur = n;
+            n = n->m_next;
+            cur->m_obj->BltDirtyRegions(
                 reinterpret_cast<CDDrawSurfacePair*>(a1),
                 reinterpret_cast<CDDrawSurfacePair*>(a2),
                 a3
             );
-            n = n->m_next;
         } while (n != 0);
     }
     WalkDispatch30(a2, a3);
