@@ -243,26 +243,27 @@ CDDrawChildGroup::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
         new (obj + 0xb8) CWwdShadowRec();
         new (obj + 0xdc) CString();
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *reinterpret_cast<i32*>((obj + 0x5c)) = static_cast<i32>(0x80000000);
-        *reinterpret_cast<i32*>((obj + 0x78)) = 0;
+        CWwdGameObjectA* o = reinterpret_cast<CWwdGameObjectA*>(obj);
+        o->m_screenX = static_cast<i32>(0x80000000);
+        o->m_posCache = 0;
         // alloc + construct the real worker via the throwing operator new (test-else-0
         // shape == retail)
         AnimWorkerObj* worker = new AnimWorkerObj(root, a1, flags);
-        *reinterpret_cast<void**>((obj + 0x7c)) = worker;
-        *reinterpret_cast<i32*>((obj + 0x98)) = 0;
-        *reinterpret_cast<i32*>((obj + 0x80)) = 0;
-        *reinterpret_cast<i32*>((obj + 0x88)) = 0;
-        *reinterpret_cast<i32*>((obj + 0x90)) = 0;
-        *reinterpret_cast<i32*>((obj + 0x188)) = g_wwdObjIdCounter;
+        o->m_7c = worker;
+        o->m_carrier = 0;
+        o->m_80 = 0;
+        o->m_88 = 0;
+        o->m_collideWorker = 0;
+        o->m_188 = g_wwdObjIdCounter;
         g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
         new (obj + 0x1a0) CAniAdvanceCursor(root, a1, flags);
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *reinterpret_cast<i32*>((obj + 0x18c)) = -1;
-        *reinterpret_cast<i32*>((obj + 0x190)) = -1;
-        *reinterpret_cast<i32*>((obj + 0x198)) = 0;
-        *reinterpret_cast<i32*>((obj + 0x194)) = 0;
-        *reinterpret_cast<i32*>((obj + 0x19c)) = 0;
-        result = reinterpret_cast<CWwdGameObjectA*>(obj);
+        o->m_18c = -1;
+        o->m_190 = -1;
+        o->m_layer = 0;
+        o->m_194 = 0;
+        o->m_19c = 0;
+        result = o;
     } else {
         result = 0;
     }
