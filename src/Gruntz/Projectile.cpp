@@ -819,10 +819,10 @@ step:
 RVA(0x000e0b10, 0x1bd)
 void CProjectile::ScanTargets(i32 impact) {
     i32 tileY = 0;                            // [esp+0x10]  outer (row) counter
-    i32 projXlo = m_object->m_screenX - 0x10; // [esp+0x1c]  m_10 = owner CGameObject
-    i32 projYlo = m_object->m_screenY - 0x10; // [esp+0x20]
-    i32 projXhi = projXlo + 0x20;             // [esp+0x24]
-    i32 projYhi = projYlo + 0x20;             // [esp+0x28]
+    i32 projXlo = m_object->m_screenX - 0x10; // m_10 = owner CGameObject
+    i32 projXhi = projXlo + 0x20;
+    i32 projYlo = m_object->m_screenY - 0x10;
+    i32 projYhi = projYlo + 0x20;
     i32 rowBase = 0x1c;                       // [esp+0x18]  row byte stride base
     i32 colOff;                               // [esp+0x14]
     i32 col;                                  // ebp
