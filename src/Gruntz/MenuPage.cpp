@@ -60,11 +60,9 @@ void CMenuPage::InitDefaults() {
 
 RVA(0x001833c0, 0x2b)
 void CMenuPage::Clear() {
-    CMenuListNode* node = reinterpret_cast<CMenuListNode*>(m_items.GetHeadPosition());
+    POSITION node = m_items.GetHeadPosition();
     while (node) {
-        CMenuListNode* cur = node;
-        node = node->pNext;
-        CMenuItem* item = cur->data;
+        CMenuItem* item = NextItem(node);
         if (item) {
             delete item;
         }
@@ -103,11 +101,9 @@ i32 CMenuPage::ReleaseAll() {
         m_focus->Release();
         m_focus = 0;
     }
-    CMenuListNode* node = reinterpret_cast<CMenuListNode*>(m_items.GetHeadPosition());
+    POSITION node = m_items.GetHeadPosition();
     while (node) {
-        CMenuListNode* cur = node;
-        node = node->pNext;
-        CMenuItem* item = cur->data;
+        CMenuItem* item = NextItem(node);
         if (item) {
             item->Detach();
         }
@@ -126,11 +122,9 @@ i32 CMenuPage::ReleaseAll() {
 RVA(0x001839d0, 0xff)
 i32 CMenuPage::RestoreFocus() {
     if (!m_focusName.IsEmpty()) {
-        CMenuListNode* node = reinterpret_cast<CMenuListNode*>(m_items.GetHeadPosition());
+        POSITION node = m_items.GetHeadPosition();
         while (node) {
-            CMenuListNode* cur = node;
-            node = node->pNext;
-            CMenuItem* item = cur->data;
+            CMenuItem* item = NextItem(node);
             if (item) {
                 bool match = item->GetName() == m_focusName;
                 if (match) {
@@ -144,11 +138,9 @@ i32 CMenuPage::RestoreFocus() {
             }
         }
     }
-    CMenuListNode* node = reinterpret_cast<CMenuListNode*>(m_items.GetHeadPosition());
+    POSITION node = m_items.GetHeadPosition();
     while (node) {
-        CMenuListNode* cur = node;
-        node = node->pNext;
-        CMenuItem* item = cur->data;
+        CMenuItem* item = NextItem(node);
         if (item) {
             i32 k = item->m_state;
             if (k == 1 || k == 2) {
@@ -182,11 +174,9 @@ i32 CMenuPage::SetFocus(CMenuItem* item, i32 notify) {
 
 RVA(0x00183b30, 0x2c)
 i32 CMenuPage::NotifyAll(void* arg) {
-    CMenuListNode* node = reinterpret_cast<CMenuListNode*>(m_items.GetHeadPosition());
+    POSITION node = m_items.GetHeadPosition();
     while (node) {
-        CMenuListNode* cur = node;
-        node = node->pNext;
-        CMenuItem* item = cur->data;
+        CMenuItem* item = NextItem(node);
         if (item) {
             item->Notify(arg);
         }
@@ -206,16 +196,16 @@ i32 CMenuPage::FocusNext() {
     if (!m_focus) {
         return 0;
     }
-    CMenuListNode* pos = reinterpret_cast<CMenuListNode*>(m_focus->m_listPos);
+    POSITION pos = m_focus->m_listPos;
     if (!pos) {
         return 0;
     }
     CMenuItem* found = 0;
-    CMenuListNode* node = pos->pPrev;
+    POSITION node = pos;
+
+    PrevItem(node);
     while (node) {
-        CMenuListNode* cur = node;
-        node = node->pPrev;
-        found = cur->data;
+        found = PrevItem(node);
         if (found) {
             i32 k = found->m_state;
             if (k == 1 || k == 2) {
@@ -228,15 +218,15 @@ i32 CMenuPage::FocusNext() {
         if (!CanWrap()) {
             return 0;
         }
-        CMenuListNode* p2 = reinterpret_cast<CMenuListNode*>(m_focus->m_listPos);
+        POSITION p2 = m_focus->m_listPos;
         if (!p2) {
             return 0;
         }
-        CMenuListNode* n2 = p2->pNext;
+        POSITION n2 = p2;
+
+        NextItem(n2);
         while (n2) {
-            CMenuListNode* cur = n2;
-            n2 = n2->pNext;
-            CMenuItem* it = cur->data;
+            CMenuItem* it = NextItem(n2);
             if (it) {
                 i32 k = it->m_state;
                 if (k == 1 || k == 2) {
@@ -267,16 +257,17 @@ i32 CMenuPage::FocusPrev() {
     if (!m_focus) {
         return 0;
     }
-    CMenuListNode* pos = reinterpret_cast<CMenuListNode*>(m_focus->m_listPos);
+    POSITION pos = m_focus->m_listPos;
     if (!pos) {
         return 0;
     }
     CMenuItem* found = 0;
-    CMenuListNode* node = pos->pNext;
+    POSITION node = pos;
+
+    NextItem(node);
     while (node) {
-        CMenuListNode* cur = node;
-        node = node->pNext;
-        found = cur->data;
+
+        found = NextItem(node);
         if (found) {
             i32 k = found->m_state;
             if (k == 1 || k == 2) {
@@ -289,15 +280,15 @@ i32 CMenuPage::FocusPrev() {
         if (!CanWrap()) {
             return 0;
         }
-        CMenuListNode* p2 = reinterpret_cast<CMenuListNode*>(m_focus->m_listPos);
+        POSITION p2 = m_focus->m_listPos;
         if (!p2) {
             return 0;
         }
-        CMenuListNode* n2 = p2->pPrev;
+        POSITION n2 = p2;
+
+        PrevItem(n2);
         while (n2) {
-            CMenuListNode* cur = n2;
-            n2 = n2->pPrev;
-            CMenuItem* it = cur->data;
+            CMenuItem* it = PrevItem(n2);
             if (it) {
                 i32 k = it->m_state;
                 if (k == 1 || k == 2) {
@@ -345,11 +336,9 @@ i32 CMenuPage::Layout(CDDrawSurfacePair* target) {
             y += m_headGap + head->m_anchorY;
         }
     }
-    CMenuListNode* node = reinterpret_cast<CMenuListNode*>(m_items.GetHeadPosition());
+    POSITION node = m_items.GetHeadPosition();
     while (node) {
-        CMenuListNode* cur = node;
-        node = node->pNext;
-        CMenuItem* item = cur->data;
+        CMenuItem* item = NextItem(node);
         if (item) {
             y += item->GetWidth() / 2;
             item->Place(target, x, y);
@@ -432,11 +421,9 @@ i32 CMenuPage::LayoutOne(CDDrawSurfacePair* target) {
     i32 col = ((m_colWidth / 2)) + m_rect.left + m_colOffset;
     i32 ytop = y;
     i32 row = 0;
-    CMenuListNode* node = reinterpret_cast<CMenuListNode*>(m_items.GetHeadPosition());
+    POSITION node = m_items.GetHeadPosition();
     while (node) {
-        CMenuListNode* cur = node;
-        node = node->pNext;
-        CMenuItem* item = cur->data;
+        CMenuItem* item = NextItem(node);
         if (item) {
             y += item->GetWidth() / 2;
             item->Place(target, col, y);
@@ -564,11 +551,9 @@ i32 CMenuPage::Click(i32 a0, i32 a1) {
 
 RVA(0x00184100, 0x4a)
 CMenuItem* CMenuPage::HitTest(i32 x, i32 y) {
-    CMenuListNode* node = reinterpret_cast<CMenuListNode*>(m_items.GetHeadPosition());
+    POSITION node = m_items.GetHeadPosition();
     while (node) {
-        CMenuListNode* cur = node;
-        node = node->pNext;
-        CMenuItem* item = cur->data;
+        CMenuItem* item = NextItem(node);
         if (item) {
             if (item->Hit(x, y)) {
                 return item;
@@ -591,11 +576,9 @@ CMenuItem* CMenuPage::FindByName(const char* s) {
         return 0;
     }
     CString key(s);
-    CMenuListNode* node = reinterpret_cast<CMenuListNode*>(m_items.GetHeadPosition());
+    POSITION node = m_items.GetHeadPosition();
     while (node) {
-        CMenuListNode* cur = node;
-        node = node->pNext;
-        CMenuItem* item = cur->data;
+        CMenuItem* item = NextItem(node);
         if (item) {
             bool match = strcmp(key, item->GetName()) == 0;
             if (match) {

@@ -110,7 +110,15 @@ public:
     CString m_switchKey;       // +0x08 page-switch target key (Switch -> host SwitchToPage)
     CString m_key;             // +0x0c this page/item key (GetKey)
     CString m_focusName;       // +0x10 saved focus item name (RestoreFocus)
-    CPtrList m_items;          // +0x14 child items (m_pNodeHead @+0x18; node {next,prev,data@+8})
+    CPtrList m_items;          // +0x14 child items (m_pNodeHead @+0x18)
+    // Typed iteration over m_items: the ONE downcast to the stored item kind
+    // (this replaced the CMenuListNode raw-node view of the list internals).
+    CMenuItem* NextItem(POSITION& pos) {
+        return static_cast<CMenuItem*>(m_items.GetNext(pos));
+    }
+    CMenuItem* PrevItem(POSITION& pos) {
+        return static_cast<CMenuItem*>(m_items.GetPrev(pos));
+    }
     i32 m_flags;               // +0x30 flag bits: 0x1 wrap-on, 0x2 wrap-off, 0x4 grid, 0x8 no-draw
     RECT m_rect;               // +0x34  page rect (block-copied from CChatBox::m_rect8;
                                //        initial y = m_offsetY + m_rect.top; x center =
