@@ -97,19 +97,7 @@ def norm(text: str) -> list:
         ln = _re.sub(r"[ \t]+", " ", ln.strip().lower())
         if _re.fullmatch(r"(?:[0-9a-f]{2} )*[0-9a-f]{2}", ln):
             continue  # byte-dump continuation of a long insn (dump_target wrap)
-        ln = _re.sub(r"0x[0-9a-f]{6,8}\b", "<addr>", ln)
-        ln = _re.sub(r" ?([,+*]) ?", r"\1", ln)   # 'ebp, ecx'/'esp + 0xc' -> tight
-        ln = ln.replace("ds:", "")                 # default-segment prefix (dump_target)
-        ln = _re.sub(r"\bptr (<addr>|0x[0-9a-f]+)(?![\w\]])", r"ptr [\1]", ln)  # bare -> bracketed
-        ln = _re.sub(r"\[(0x[0-9a-f]+|<addr>)\]", "[<addr>]", ln)  # absolute mem ref
-        # bare <addr> as a mov-class operand is a memory ref (dump_target drops brackets)
-        ln = _re.sub(r"(?<=[ ,])<addr>(?=,|$)", "[<addr>]",
-                     ln) if not ln.startswith(("push", "j", "call", "loop")) else ln
-        ln = _re.sub(r"(dword|word|byte) ptr \[<addr>\]", "[<addr>]", ln)
-        # direct jump/call targets: base prints rel+symbol, target prints absolute
-        ln = _re.sub(r"^((?:j[a-z]{1,3}|call|loop\w*) )(0x[0-9a-f]+|<addr>)( <[^>]*>)?$",
-                     r"\1<tgt>", ln)
-        lines.append(ln)
+        lines.append(_mask_insn(ln))
     while lines and lines[-1] == "nop":
         lines.pop()  # COMDAT alignment padding (base only; absent in delinked target)
     return lines
@@ -208,11 +196,32 @@ def blocks(text: str) -> str:
 
 def _mask_insn(ln: str) -> str:
     """One instruction -> the same normalized/masked spelling `norm` produces
-    (case/space unify, absolute addresses -> <addr>, branch targets -> <tgt>)."""
+    (case/space unify, absolute addresses -> <addr>, branch targets -> <tgt>).
+    Also unifies the two disassembler flavors' SIB spellings (llvm-objdump
+    '4*ebx' / '[ecx+eax]' vs dump_target 'ebx*4' / '[ecx+eax*1]') so only
+    real byte differences survive."""
     import re as _re
     ln = _re.sub(r"[ \t]+", " ", ln.strip().lower())
-    ln = _re.sub(r"0x[0-9a-f]{6,8}\b", "<addr>", ln)
+    # llvm prints negative imms as '-0xN', dump_target as raw unsigned
+    # ('0xffffffff' / 'and al,0xfe') - unify on the unsigned spelling, sized
+    # by the destination operand's width
+    m = _re.search(r"(?<=[ ,])-0x([0-9a-f]+)$", ln)   # imm operand only (last)
+    if m:
+        v = int(m.group(1), 16)
+        if _re.search(r"\b[abcd][lh]\b|byte ptr", ln):
+            wrap = (0x100 - v) & 0xff
+        elif _re.search(r"\b[abcd]x\b|\b[sd]i\b|word ptr", ln.split(",")[0]):
+            wrap = (0x10000 - v) & 0xffff
+        else:
+            wrap = ((1 << 32) - v) & 0xffffffff
+        if v <= 0x80:
+            ln = ln[:m.start()] + f"0x{wrap:x}"
+    ln = _re.sub(r"0x(?!f)[0-9a-f]{6,8}\b", "<addr>", ln)
     ln = _re.sub(r" ?([,+*]) ?", r"\1", ln)
+    ln = _re.sub(r"(?<=[\w\]]) ?- ?(?=0x|\w)", "-", ln)   # binary minus only
+    ln = _re.sub(r"\b([1248])\*(e[a-z][a-z])", r"\2*\1", ln)  # 4*ebx -> ebx*4
+    ln = _re.sub(r"\*1(?=[+\]-])", "", ln)                # eax*1 -> eax
+    ln = _re.sub(r"\+0x0(?=\])", "", ln)                  # [..+0x0] -> [..]
     ln = ln.replace("ds:", "")
     ln = _re.sub(r"\bptr (<addr>|0x[0-9a-f]+)(?![\w\]])", r"ptr [\1]", ln)
     ln = _re.sub(r"\[(0x[0-9a-f]+|<addr>)\]", "[<addr>]", ln)
