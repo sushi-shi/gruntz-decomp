@@ -82,7 +82,7 @@ void CWwdGameObjectC::Render(CDDrawSurfacePair* a) {
 
     {
         CDDSurface* surf = a->m_surface;
-        i32 base = surf->Lock(static_cast<void*>(0));
+        u8* base = static_cast<u8*>(surf->Lock(0));
         if (base != 0) {
             i32 row = surf->m_pitch * y;
             i32 col = surf->m_bytesPerPixel * x;
@@ -123,7 +123,7 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
         i32 y = m_bc;
         char pixel;
         CDDSurface* sb = b->m_surface;
-        char* base = reinterpret_cast<char*>(sb->Lock(0));
+        char* base = static_cast<char*>(sb->Lock(0));
         if (base != 0) {
             pixel = base[sb->m_bytesPerPixel * x + sb->m_pitch * y];
             sb->m_ddSurface->Unlock(0);
@@ -131,7 +131,7 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
             pixel = 0;
         }
         CDDSurface* sa = a->m_surface;
-        char* base2 = reinterpret_cast<char*>(sa->Lock(0));
+        char* base2 = static_cast<char*>(sa->Lock(0));
         if (base2 != 0) {
             base2[sa->m_bytesPerPixel * x + sa->m_pitch * y] = pixel;
             sa->m_ddSurface->Unlock(0);

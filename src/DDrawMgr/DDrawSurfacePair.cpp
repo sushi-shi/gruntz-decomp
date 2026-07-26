@@ -310,7 +310,7 @@ void CDDrawSurfacePair::DrawBox(i32* rect, i32 color) {
     if (bottom < 0 || bottom >= m_height) {
         return;
     }
-    char* base = reinterpret_cast<char*>(m_surface->Lock(0));
+    char* base = static_cast<char*>(m_surface->Lock(0));
     if (base == 0) {
         return;
     }
@@ -389,7 +389,7 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     if (y + 4 >= m_height) {
         return;
     }
-    char* base = reinterpret_cast<char*>(m_surface->Lock(0));
+    char* base = static_cast<char*>(m_surface->Lock(0));
     if (base == 0) {
         return;
     }
@@ -1217,7 +1217,7 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
         char c = m_78b;
         CDDSurface* s = b->m_surface;
         i32 y = m_screenY;
-        char* base = reinterpret_cast<char*>(s->Lock(0));
+        char* base = static_cast<char*>(s->Lock(0));
         if (base != 0) {
             base[s->m_bytesPerPixel * x + s->m_pitch * y] = c;
             s->m_ddSurface->Unlock(0);
@@ -1228,7 +1228,7 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
         i32 y = m_screenY;
         i32 x = m_screenX;
         CDDSurface* s = a->m_surface;
-        char* base = reinterpret_cast<char*>(s->Lock(0));
+        char* base = static_cast<char*>(s->Lock(0));
         if (base != 0) {
             base[s->m_bytesPerPixel * x + y * s->m_pitch] = c;
             s->m_ddSurface->Unlock(0);

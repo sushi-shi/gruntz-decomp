@@ -143,7 +143,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
             return 0;
         }
     }
-    u16* base = reinterpret_cast<u16*>(m_surface->Lock(0));
+    u16* base = static_cast<u16*>(m_surface->Lock(0));
     if (base == 0) {
         return 0;
     }
@@ -361,7 +361,7 @@ void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
 RVA(0x000a3b50, 0xfa)
 void CLightFxRender::DrawBorder(RECT* r, CDDrawSurfacePair* ctx, i32 color) {
     CDDSurface* surf = ctx->m_surface;
-    u16* base = reinterpret_cast<u16*>(surf->Lock(0));
+    u16* base = static_cast<u16*>(surf->Lock(0));
     if (base == 0) {
         return;
     }

@@ -306,11 +306,11 @@ i32 CDDSurface::SetPalette(CDDPalette* pal, i32 unused) {
 }
 
 RVA(0x0013e6d0, 0x88)
-i32 CDDSurface::Lock(void* rect) {
+void* CDDSurface::Lock(void* rect) {
     i32 hr = m_ddSurface
                  ->Lock(static_cast<LPRECT>(rect), &m_apiDesc, 1, 0);
     if (hr == 0) {
-        return m_lockBits;
+        return reinterpret_cast<void*>(m_lockBits);
     }
     if (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (RestoreLost() == 0) {
@@ -318,7 +318,7 @@ i32 CDDSurface::Lock(void* rect) {
         }
         hr = m_ddSurface->Lock(0, &m_apiDesc, 1, 0);
         if (hr == 0) {
-            return m_lockBits;
+            return reinterpret_cast<void*>(m_lockBits);
         }
         CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x203, hr);
         return 0;
@@ -506,7 +506,7 @@ void CDDSurface::FlipVertical() {
     if (m_height <= 1) {
         return;
     }
-    u8* buf = reinterpret_cast<u8*>(Lock(0));
+    u8* buf = static_cast<u8*>(Lock(0));
     if (buf == 0) {
         return;
     }
@@ -564,7 +564,7 @@ void CDDSurface::FlipVertical() {
 
 RVA(0x0013ece0, 0xc7)
 i32 CDDSurface::BlitDirect(void* src, i32 mode) {
-    u8* locked = reinterpret_cast<u8*>(Lock(0));
+    u8* locked = static_cast<u8*>(Lock(0));
     if (locked == 0) {
         return 0;
     }
@@ -756,8 +756,8 @@ i32 CDDSurface::ShadeBlt(
         return 0;
     }
 
-    u16* dstBits = reinterpret_cast<u16*>(Lock(0));
-    u16* srcBits = reinterpret_cast<u16*>(src->Lock(0));
+    u16* dstBits = static_cast<u16*>(Lock(0));
+    u16* srcBits = static_cast<u16*>(src->Lock(0));
     i32 dstStride = m_pitch / 2;
     u16* dstPtr = dstBits + (dr.top * dstStride + dr.left);
     i32 srcStride = src->m_pitch / 2;
@@ -886,7 +886,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
         rc.bottom = m_height;
     }
     i32 scale = pct * 32 / 100;
-    u16* src = reinterpret_cast<u16*>(Lock(0));
+    u16* src = static_cast<u16*>(Lock(0));
     i32 rowPix = m_pitch / 2;
     u16* srcPix = src + rc.top * rowPix + rc.left;
     i32 stride = rc.left - rc.right + rowPix;
@@ -1160,7 +1160,7 @@ i32 CDDSurface::Blit168(void* srcv, void* palv, i32 mode) {
             ((static_cast<u32>(r) << g_rUp) | (static_cast<u32>(g) << g_gUp) | static_cast<u32>(b))
         );
     } while (lut < g_lut16 + 256);
-    u8* locked = reinterpret_cast<u8*>(Lock(0));
+    u8* locked = static_cast<u8*>(Lock(0));
     if (locked == 0) {
         return 0;
     }
@@ -1196,7 +1196,7 @@ i32 CDDSurface::Blit168(void* srcv, void* palv, i32 mode) {
 // codegen. Logic exact; documented MSVC5 /O2 register-allocation plateau.
 RVA(0x0013fce0, 0x17f)
 i32 CDDSurface::Blit1624(void* srcv, i32 mode) {
-    u8* locked = reinterpret_cast<u8*>(Lock(0));
+    u8* locked = static_cast<u8*>(Lock(0));
     if (locked == 0) {
         return 0;
     }
@@ -1267,7 +1267,7 @@ i32 CDDSurface::Blit248(void* srcv, void* palv, i32 mode) {
     if (pal == 0) {
         return 0;
     }
-    u8* locked = reinterpret_cast<u8*>(Lock(0));
+    u8* locked = static_cast<u8*>(Lock(0));
     if (locked == 0) {
         return 0;
     }
@@ -1299,7 +1299,7 @@ i32 CDDSurface::Blit248(void* srcv, void* palv, i32 mode) {
 
 RVA(0x0013ff80, 0x184)
 i32 CDDSurface::Blit2416(void* srcv, i32 mode) {
-    u8* locked = reinterpret_cast<u8*>(Lock(0));
+    u8* locked = static_cast<u8*>(Lock(0));
     if (locked == 0) {
         return 0;
     }
@@ -1356,7 +1356,7 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, i32 mode) {
     if (pal == 0) {
         return 0;
     }
-    u8* locked = reinterpret_cast<u8*>(Lock(0));
+    u8* locked = static_cast<u8*>(Lock(0));
     if (locked == 0) {
         return 0;
     }
@@ -1443,7 +1443,7 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
     if (pal == 0) {
         return 0;
     }
-    u8* locked = reinterpret_cast<u8*>(Lock(0));
+    u8* locked = static_cast<u8*>(Lock(0));
     if (locked == 0) {
         return 0;
     }
@@ -1704,7 +1704,7 @@ i32 CDDSurface::DecodeRun8(void* src) {
     i32 carry;
     u8 pixel;
     i32 width;
-    i32 locked;
+    u8* locked;
     i32 row;
     i32 run;
     u8* dst;
@@ -1718,7 +1718,7 @@ i32 CDDSurface::DecodeRun8(void* src) {
     height = this->GetHeight();
     carry = 0;
     sp = static_cast<u8*>(src);
-    locked = this->Lock(0);
+    locked = static_cast<u8*>(this->Lock(0));
     if (locked == 0) {
         return 0;
     }
@@ -1775,7 +1775,7 @@ i32 CDDSurface::DecodeRun24(void* src) {
     u8* sp;
     i32 carry;
     u8 pixel;
-    i32 locked;
+    u8* locked;
     i32 row;
     i32 run;
     u8* dst;
@@ -1784,7 +1784,7 @@ i32 CDDSurface::DecodeRun24(void* src) {
     if (src == 0) {
         return 0;
     }
-    locked = this->Lock(0);
+    locked = static_cast<u8*>(this->Lock(0));
     if (locked == 0) {
         return 0;
     }

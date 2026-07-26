@@ -89,7 +89,7 @@ public:
     // (`Init0` used to be declared here at 0x53edb0 = RVA 0x13edb0 - a SECOND, never-
     // defined declaration of `Clear` below. Its one caller (CLightFxRender::AllocSurface)
     // now calls Clear(0) directly; the fabricated symbol is gone.)
-    i32 Lock(void* rect);                        // 0x13e6d0
+    void* Lock(void* rect);                      // 0x13e6d0  the locked bits (m_lockBits)
     i32 SetPalette(CDDPalette* pal, i32 unused); // 0x13e690
     i32 Restore(void* arg1, i32 arg2);           // 0x13e7d0 (BoundaryUpper2.cpp)
     i32 Flip(CDDSurface* target);                // 0x13e850

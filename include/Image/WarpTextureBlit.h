@@ -5,9 +5,9 @@
 #include <Ints.h>
 #include <Image/RasterVtx.h>        // ClipVtx (for the extern below)
 
-extern "C" i32 g_rasterDestPtr; // 0x002becf4
+extern "C" i16* g_rasterDestPtr; // 0x002becf4
 
-extern "C" i32 g_rasterDestRow; // 0x002a2ce8
+extern "C" u8* g_rasterDestRow; // 0x002a2ce8
 
 extern "C" const float g_rasterScale;    // 0x001efb18  +16384.0f fixed-point scale
 extern "C" const float g_rasterScaleNeg; // 0x001efb1c  -16384.0f
@@ -19,7 +19,7 @@ i32 WarpIsPow2(i32 x); // 0x145e00 (defined in ImagePolyClip.cpp - birth positio
 
 extern i32 g_warpU;
 extern i32 g_warpV;
-extern i32 g_warpTexBase;
+extern void* g_warpTexBase;
 extern i32 g_warpUStep;
 extern i32 g_warpVStep;
 extern i32 g_warpUMask;

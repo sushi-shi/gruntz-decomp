@@ -118,7 +118,7 @@ void CDDrawShadeBlit::BlitMode_149950(
     i32 vflip
 ) {
     i32 pitch = surf->m_pitch;
-    u8* base = reinterpret_cast<u8*>(surf->Lock(0));
+    u8* base = static_cast<u8*>(surf->Lock(0));
 
     i32 row = 0, pos = 0, x = 0;
     // Prepass: skip the top clip->top rows of the RLE stream.
@@ -269,7 +269,7 @@ void CDDrawShadeBlit::BlitMode_149d00(
     i32 vflip
 ) {
     i32 pitch = surf->m_pitch;
-    u8* base = reinterpret_cast<u8*>(surf->Lock(0));
+    u8* base = static_cast<u8*>(surf->Lock(0));
 
     i32 row = 0, pos = 0, x = 0;
     if (clip->top > 0) {
@@ -474,7 +474,7 @@ void CDDrawShadeBlit::BlitMode_149d00(
 RVA(0x0014a200, 0x14f3)
 void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 vflip) {
     i32 pitch = src->m_pitch;
-    u8* base = reinterpret_cast<u8*>(src->Lock(0));
+    u8* base = static_cast<u8*>(src->Lock(0));
 
     i32 pos = 0, row = 0, x = 0;
     // Prepass: skip the top clip->top rows of the RLE stream.
@@ -870,7 +870,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
     i32 vflip
 ) {
     i32 pitch = surf->m_pitch;
-    u8* base = reinterpret_cast<u8*>(surf->Lock(0));
+    u8* base = static_cast<u8*>(surf->Lock(0));
 
     i32 pos = 0, row = 0, x = 0;
     // Prepass: skip the top clip->top rows of the RLE stream.

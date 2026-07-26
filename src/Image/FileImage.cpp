@@ -336,7 +336,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     fh.bfSize = bi.biSize * m_width + 0x436;
     fh.bfOffBits = 0x436;
 
-    u8* buf = reinterpret_cast<u8*>(Lock(0));
+    u8* buf = static_cast<u8*>(Lock(0));
     if (buf == 0) {
         return 0;
     }
@@ -431,7 +431,7 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, void* a3) {
         return 0;
     }
 
-    u8* locked = reinterpret_cast<u8*>(Lock(0));
+    u8* locked = static_cast<u8*>(Lock(0));
     if (locked == 0) {
         operator delete(line);
         return 0;
@@ -518,7 +518,7 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
     bi.biSizeImage = 0;
     fh.bfOffBits = 0x3a;
 
-    u8* buf = reinterpret_cast<u8*>(Lock(0));
+    u8* buf = static_cast<u8*>(Lock(0));
     if (buf == 0) {
         return 0;
     }

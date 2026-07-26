@@ -254,7 +254,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         rc.bottom = m.height;
     }
 
-    u16* bits = reinterpret_cast<u16*>(surf->Lock(0));
+    u16* bits = static_cast<u16*>(surf->Lock(0));
     if (bits == 0) {
         return;
     }

@@ -70,8 +70,8 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
         } while (--n != 0);
     }
     i32 stride = surf->m_pitch;
-    i32 bits = surf->Lock(0);
-    i32 rowPtr = bits + stride * minYi;
+    u8* bits = static_cast<u8*>(surf->Lock(0));
+    u8* rowPtr = bits + stride * minYi;
     g_rasterDestRow = rowPtr;
     if (minYi < maxYi) {
         i32 rowCount = maxYi - minYi;
@@ -88,8 +88,8 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
             }
             i32 width = hi - lo;
             if (width > 0) {
-                g_rasterDestPtr = rowPtr + lo * 2;
-                i16* p = reinterpret_cast<i16*>(g_rasterDestPtr);
+                g_rasterDestPtr = reinterpret_cast<i16*>(rowPtr) + lo;
+                i16* p = g_rasterDestPtr;
                 i32 w = width;
                 do {
                     *p++ = color;

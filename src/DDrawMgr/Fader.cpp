@@ -985,7 +985,7 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
             float vx = static_cast<float>(dx) * fade;
             float vy = static_cast<float>(dy) * fade;
             u8 pix;
-            i32 base = m_srcSurface->Lock(0);
+            u8* base = static_cast<u8*>(m_srcSurface->Lock(0));
             if (base != 0) {
                 pix = *reinterpret_cast<u8*>(
                     (base + m_srcSurface->m_bytesPerPixel * x + m_srcSurface->m_pitch * y)
@@ -1026,7 +1026,7 @@ void CFaderRadial::RenderFrame(i32 frame) {
     void* scratch = RezAlloc(dst->m_width); // per-width scratch (alloc'd, unused)
     dst->Clear(0);
     m_srcSurface->Lock(0);      // lock source (base unused here)
-    i32 base = dst->Lock(0);    // locked dest pixel base
+    u8* base = static_cast<u8*>(dst->Lock(0));    // locked dest pixel base
     if (m_table->m_data == 0) { // gate: is the shade table's buffer present?
         return;                 // retail bails w/o unlock/free (matched)
     }

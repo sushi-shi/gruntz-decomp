@@ -136,7 +136,7 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palett
         return 0;
     }
     m_colorKey = keyVal;
-    i32 bits = surf->Lock(0);
+    void* bits = surf->Lock(0);
     if (bits == 0) {
         return 0;
     }

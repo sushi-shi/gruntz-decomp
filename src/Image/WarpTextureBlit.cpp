@@ -29,20 +29,20 @@ i32 g_warpV = 0; // 0x6856f4  (v accumulator)
 DATA(0x002856f8)
 ClipVtx g_rasterEdgeR[4096]; // C linkage inherited from <Image/RasterVtx.h>
 DATA(0x002a16f8)
-i32 g_warpTexBase = 0; // 0x6a16f8  (locked texture base)
+void* g_warpTexBase = 0; // 0x6a16f8  (locked texture base)
 DATA(0x002a16fc)
 i32 g_warpUStep = 0; // 0x6a16fc  (u per-pixel step)
 DATA(0x002a1700)
 i32 g_warpVStep = 0; // 0x6a1700  (v per-pixel step)
 DATA(0x002a2ce8)
-i32 g_rasterDestRow = 0; // decl in Image/RasterVtx.h
+u8* g_rasterDestRow = 0; // decl in Image/RasterVtx.h
 DATA(0x002a2cf0)
 ClipVtx g_rasterEdgeL[4096]; // C linkage inherited from <Image/RasterVtx.h>
 DATA(0x002becf0)
 i32 g_warpUMask = 0; // 0x6becf0  (texture index row-mask)
 
 DATA(0x002becf4)
-i32 g_rasterDestPtr = 0; // decl in Image/RasterVtx.h
+i16* g_rasterDestPtr = 0; // decl in Image/RasterVtx.h
 DATA(0x002becfc)
 i16 g_warpColorkey = 0; // 0x6becfc
 
@@ -141,7 +141,7 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
     }
 
     g_warpTexBase = src->Lock(0);
-    i32 destBase = dst->Lock(0);
+    u8* destBase = static_cast<u8*>(dst->Lock(0));
     i32 dstPitch = dst->m_pitch;
     g_rasterDestRow = destBase + dstPitch * minY;
     g_warpUMask = ((src->m_width + 0x3ffff) << 0xe) << shift;
@@ -164,8 +164,8 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                 i32 dv = (lrow->fv - vv) / span;
                 g_warpV = vv << shift;
                 g_warpVStep = dv << shift;
-                g_rasterDestPtr = g_rasterDestRow + rx * 2;
-                i16* d = reinterpret_cast<i16*>(g_rasterDestPtr);
+                g_rasterDestPtr = reinterpret_cast<i16*>(g_rasterDestRow) + rx;
+                i16* d = g_rasterDestPtr;
                 i16* tex = reinterpret_cast<i16*>(g_warpTexBase);
                 i32 uu = g_warpU;
                 i32 va2 = g_warpV;
@@ -197,8 +197,8 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                 i32 dv = (lrow->fv - vv) / span;
                 g_warpV = vv << shift;
                 g_warpVStep = dv << shift;
-                g_rasterDestPtr = g_rasterDestRow + rx * 2;
-                i16* d = reinterpret_cast<i16*>(g_rasterDestPtr);
+                g_rasterDestPtr = reinterpret_cast<i16*>(g_rasterDestRow) + rx;
+                i16* d = g_rasterDestPtr;
                 i16* tex = reinterpret_cast<i16*>(g_warpTexBase);
                 i32 uu = g_warpU;
                 i32 va2 = g_warpV;
@@ -234,8 +234,8 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                 i32 dv = (lrow->fv - vv) / span;
                 g_warpV = vv << shift;
                 g_warpVStep = dv << shift;
-                g_rasterDestPtr = g_rasterDestRow + rx * 2;
-                i16* d = reinterpret_cast<i16*>(g_rasterDestPtr);
+                g_rasterDestPtr = reinterpret_cast<i16*>(g_rasterDestRow) + rx;
+                i16* d = g_rasterDestPtr;
                 i16* tex = reinterpret_cast<i16*>(g_warpTexBase);
                 i32 uu = g_warpU;
                 i32 va2 = g_warpV;
