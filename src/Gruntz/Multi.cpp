@@ -3614,9 +3614,8 @@ i32 CMulti::SetupTcpIpConfig() {
 
     void* lp;
     {
-        CString cn = ch0->GetName();
         lp = reinterpret_cast<void*>(Peer()->CreatePlayer(
-            const_cast<char*>(static_cast<const char*>(cn)),
+            const_cast<char*>(static_cast<const char*>(ch0->GetName())),
             reinterpret_cast<i32>(g_emptyString),
             0
         ));

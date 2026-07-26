@@ -752,10 +752,8 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
             }
             if (slot->m_liveGate) {
                 {
-                    CString name = slot->GetName();
-                    LPCTSTR pch = static_cast<LPCTSTR>(name);
                     force = 0;
-                    GetCtrlB(idx)->SetWindowTextA(pch);
+                    GetCtrlB(idx)->SetWindowTextA(slot->GetName());
                 }
                 if (slot->m_014) {
                     ::SendMessageA(GetCtrlE(idx)->m_hWnd, 0x14e, 4, 0);

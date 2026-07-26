@@ -28,12 +28,11 @@ i32 CLatencyList::FillCombo(i32 hDlg, i32 ctrlId) {
         i32 data = ((rec->m_param & 0xffff) << 16) | (rec->m_id & 0xffff);
         i32 idx;
         {
-            CString name = rec->GetName();
             idx = ::SendMessageA(
                 combo,
                 CB_ADDSTRING,
                 0,
-                reinterpret_cast<long>(static_cast<LPCTSTR>(name))
+                reinterpret_cast<long>(static_cast<LPCTSTR>(rec->GetName()))
             );
         }
         if (idx != -1) {

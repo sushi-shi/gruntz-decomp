@@ -752,8 +752,7 @@ void CMultiBootyState::DrawBattleStats() {
                     color = 0;
                     break;
             }
-            CString cn = g_gameReg->m_options[i].GetName();
-            s.Format("%s", static_cast<const char*>(cn));
+            s.Format("%s", static_cast<const char*>(g_gameReg->m_options[i].GetName()));
             copyRect(&rc, &g_colorRects[i]);
             DrawStatText(
                 m_world,
