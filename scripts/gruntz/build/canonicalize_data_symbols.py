@@ -575,7 +575,9 @@ def _rewrite_names(coff: CoffObject, renames: dict[int, str]) -> bytes:
 
 def _assert_only_canonical_changes(
         original: CoffObject, payload: bytes, renames: dict[int, str],
-        jump_table_rewrites: tuple[JumpTableRewrite, ...]) -> None:
+        jump_table_rewrites: tuple[JumpTableRewrite, ...],
+        dup_retargets: dict[int, int] | None = None) -> None:
+    dup_retargets = dup_retargets or {}
     normalized = CoffObject(payload)
     rewrites_by_offset = {
         rewrite.relocation_offset: rewrite for rewrite in jump_table_rewrites
@@ -615,8 +617,11 @@ def _assert_only_canonical_changes(
         raise RuntimeError("canonical COFF changed relocation count")
     for before, after in zip(original.relocations, normalized.relocations):
         rewrite = rewrites_by_offset.get(before.offset)
-        expected_symbol = (rewrite.owner_symbol_index if rewrite is not None
-                           else before.symbol_index)
+        if rewrite is not None:
+            expected_symbol = rewrite.owner_symbol_index
+        else:
+            expected_symbol = dup_retargets.get(
+                before.symbol_index, before.symbol_index)
         if (before.offset, before.section, before.site, before.typ) != (
                 after.offset, after.section, after.site, after.typ):
             raise RuntimeError("canonical COFF changed relocation site/type/order")
@@ -660,6 +665,10 @@ def _assert_only_canonical_changes(
                       rewrite.relocation_offset + 8] = bytes(4)
         after_prefix[rewrite.relocation_offset + 4:
                      rewrite.relocation_offset + 8] = bytes(4)
+    for relocation in original.relocations:
+        if relocation.symbol_index in dup_retargets:
+            before_prefix[relocation.offset + 4:relocation.offset + 8] = bytes(4)
+            after_prefix[relocation.offset + 4:relocation.offset + 8] = bytes(4)
     if before_prefix != after_prefix:
         raise RuntimeError(
             "canonical COFF changed bytes outside symbol names/jump-table relocations")
@@ -929,21 +938,24 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
     # tables is emitted TWICE - the real .text definition plus a size-0 UNDEFINED
     # external of the same name. objdiff pairs the base function against the
     # undefined copy and scores a byte-correct body 0%. Rename the undefined
-    # duplicate out of the pairing namespace; relocations reference it by index,
-    # so resolution is unaffected (and those sites are reloc-masked anyway).
-    defined_external_names = {
-        symbol.name for symbol in coff.symbols.values()
-        if symbol.section > 0 and symbol.storage_class == EXTERNAL_STORAGE
-    }
+    # duplicate out of the pairing namespace (`$dup$` PREFIX - objdiff pairs on
+    # DEMANGLED names and `?f@C@...$suffix` still demangles to the original
+    # signature), and RETARGET every relocation that referenced the duplicate to
+    # the real definition: both symbols resolve to the same linked address, so the
+    # retarget is byte-neutral, and call sites then co-name with the base side
+    # instead of displaying `call $dup$...` (an ARG_MISMATCH per site otherwise).
+    defined_external_index = {}
+    for symbol in coff.symbols.values():
+        if symbol.section > 0 and symbol.storage_class == EXTERNAL_STORAGE:
+            defined_external_index.setdefault(symbol.name, symbol.index)
+    dup_retargets = {}
     for symbol in coff.symbols.values():
         if (symbol.section == 0 and symbol.value == 0 and
                 symbol.storage_class == EXTERNAL_STORAGE and
                 symbol.index not in renames and
-                symbol.name in defined_external_names):
-            # Prefix (not suffix) so the result no longer demangles - objdiff
-            # pairs on DEMANGLED names, and `?f@C@...$suffix` still demangles
-            # to the original signature.
+                symbol.name in defined_external_index):
             renames[symbol.index] = "$dup$" + symbol.name
+            dup_retargets[symbol.index] = defined_external_index[symbol.name]
             rows.append(CanonicalRow(
                 symbol.name, renames[symbol.index], "dup", "undefined",
                 0, 0, 0, 0, 0, "-", "undef-dup-of-definition", "",
@@ -952,8 +964,18 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
     normalized = _rewrite_names(coff, renames)
     normalized, jump_table_rewrites = _rewrite_jump_table_relocations(
         coff, normalized)
+    if dup_retargets:
+        data = bytearray(normalized)
+        jt_offsets = {rw.relocation_offset for rw in jump_table_rewrites}
+        for relocation in coff.relocations:
+            if (relocation.symbol_index in dup_retargets and
+                    relocation.offset not in jt_offsets):
+                struct.pack_into(
+                    "<I", data, relocation.offset + 4,
+                    dup_retargets[relocation.symbol_index])
+        normalized = bytes(data)
     _assert_only_canonical_changes(
-        coff, normalized, renames, jump_table_rewrites)
+        coff, normalized, renames, jump_table_rewrites, dup_retargets)
     return CanonicalizedObject(normalized, tuple(rows))
 
 

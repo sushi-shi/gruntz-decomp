@@ -182,12 +182,9 @@ i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, i32 flags) {
         }
     }
     if (m_level != 0) {
-        // FLAG(cross-cast): m_level is the CGameLevel child (new(0x6d4),
-        // ctor 0x15ccd0), yet retail dispatches 0x155f60 - this class's own
-        // SetDimensions body - on it. Either CGameLevel exposes a same-layout
-        // SetCoords or the +0x24 head mirrors the owner's; unresolved, the cast
-        // preserves retail's call target. @identity-TODO.
-        if ((reinterpret_cast<CDDrawSurfaceMgr*>(m_level))->SetDimensions(x, y, 0) == 0) {
+        // Retail rel32 is 0x15d700 = CGameLevel::SetExtentsAndBuildAll(x, y) - the
+        // ex cross-cast "recursive SetDimensions" placeholder mis-read the target.
+        if (m_level->SetExtentsAndBuildAll(x, y) == 0) {
             return 0;
         }
     }
