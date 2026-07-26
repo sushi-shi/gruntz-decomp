@@ -2540,12 +2540,18 @@ i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* ch = &NetGameMgr()->m_options[i];
         if (ch != 0) {
-            rec[-1] = static_cast<char>(ch->m_liveGate);
-            rec[0] = static_cast<char>(ch->m_008);
-            rec[1] = static_cast<char>(ch->m_014);
-            rec[2] = static_cast<char>(ch->m_configId);
-            rec[5] = static_cast<char>(ch->m_readyFlag);
-            rec[4] = static_cast<char>(ch->m_comboSel);
+            i32 v = ch->m_liveGate;
+            rec[-1] = static_cast<char>(v);
+            v = ch->m_008;
+            rec[0] = static_cast<char>(v);
+            v = ch->m_014;
+            rec[1] = static_cast<char>(v);
+            v = ch->m_configId;
+            rec[2] = static_cast<char>(v);
+            v = ch->m_readyFlag;
+            rec[5] = static_cast<char>(v);
+            v = ch->m_comboSel;
+            rec[4] = static_cast<char>(v);
             *reinterpret_cast<i32*>((rec + 7)) = ch->m_slotKey;
             strcpy(rec + 0xb, static_cast<const char*>(ch->GetName()));
         }
