@@ -242,30 +242,6 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
         case 0x501:
             if (GetCtrlD(0)->IsWindowEnabled()) {
                 switch (m_host->m_options[0].m_008) {
-                    case 0:
-                        color = 0x0080ff;
-                        break;
-                    case 1:
-                        color = 0x00ff00;
-                        break;
-                    case 2:
-                        color = 0xff0000;
-                        break;
-                    case 3:
-                        color = 0x0000ff;
-                        break;
-                    case 4:
-                        color = 0x800080;
-                        break;
-                    case 5:
-                        color = 0x00ffff;
-                        break;
-                    case 6:
-                        color = 0x8000ff;
-                        break;
-                    case 7:
-                        color = 0;
-                        break;
                     case 8:
                         color = 0x800000;
                         break;
@@ -278,8 +254,8 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
                     case 11:
                         color = 0x000080;
                         break;
-                    case 12:
-                        color = 0xff00ff;
+                    case 4:
+                        color = 0x800080;
                         break;
                     case 13:
                         color = 0x008080;
@@ -287,12 +263,34 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
                     case 14:
                         color = 0x808080;
                         break;
+                    case 2:
+                        color = 0xff0000;
+                        break;
+                    case 1:
+                        color = 0x00ff00;
+                        break;
                     case 15:
                         color = 0xffff00;
+                        break;
+                    case 3:
+                        color = 0x0000ff;
+                        break;
+                    case 12:
+                        color = 0xff00ff;
+                        break;
+                    case 5:
+                        color = 0x00ffff;
                         break;
                     case 16:
                         color = 0xffffff;
                         break;
+                    case 0:
+                        color = 0x0080ff;
+                        break;
+                    case 6:
+                        color = 0x8000ff;
+                        break;
+                    case 7:
                     default:
                         color = 0;
                         break;
@@ -305,30 +303,6 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
         case 0x503:
             if (GetCtrlD(1)->IsWindowEnabled()) {
                 switch (m_host->m_options[1].m_008) {
-                    case 0:
-                        color = 0x0080ff;
-                        break;
-                    case 1:
-                        color = 0x00ff00;
-                        break;
-                    case 2:
-                        color = 0xff0000;
-                        break;
-                    case 3:
-                        color = 0x0000ff;
-                        break;
-                    case 4:
-                        color = 0x800080;
-                        break;
-                    case 5:
-                        color = 0x00ffff;
-                        break;
-                    case 6:
-                        color = 0x8000ff;
-                        break;
-                    case 7:
-                        color = 0;
-                        break;
                     case 8:
                         color = 0x800000;
                         break;
@@ -341,8 +315,8 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
                     case 11:
                         color = 0x000080;
                         break;
-                    case 12:
-                        color = 0xff00ff;
+                    case 4:
+                        color = 0x800080;
                         break;
                     case 13:
                         color = 0x008080;
@@ -350,12 +324,34 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
                     case 14:
                         color = 0x808080;
                         break;
+                    case 2:
+                        color = 0xff0000;
+                        break;
+                    case 1:
+                        color = 0x00ff00;
+                        break;
                     case 15:
                         color = 0xffff00;
+                        break;
+                    case 3:
+                        color = 0x0000ff;
+                        break;
+                    case 12:
+                        color = 0xff00ff;
+                        break;
+                    case 5:
+                        color = 0x00ffff;
                         break;
                     case 16:
                         color = 0xffffff;
                         break;
+                    case 0:
+                        color = 0x0080ff;
+                        break;
+                    case 6:
+                        color = 0x8000ff;
+                        break;
+                    case 7:
                     default:
                         color = 0;
                         break;
@@ -368,30 +364,6 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
         case 0x505:
             if (GetCtrlD(2)->IsWindowEnabled()) {
                 switch (m_host->m_options[2].m_008) {
-                    case 0:
-                        color = 0x0080ff;
-                        break;
-                    case 1:
-                        color = 0x00ff00;
-                        break;
-                    case 2:
-                        color = 0xff0000;
-                        break;
-                    case 3:
-                        color = 0x0000ff;
-                        break;
-                    case 4:
-                        color = 0x800080;
-                        break;
-                    case 5:
-                        color = 0x00ffff;
-                        break;
-                    case 6:
-                        color = 0x8000ff;
-                        break;
-                    case 7:
-                        color = 0;
-                        break;
                     case 8:
                         color = 0x800000;
                         break;
@@ -404,8 +376,8 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
                     case 11:
                         color = 0x000080;
                         break;
-                    case 12:
-                        color = 0xff00ff;
+                    case 4:
+                        color = 0x800080;
                         break;
                     case 13:
                         color = 0x008080;
@@ -413,12 +385,34 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
                     case 14:
                         color = 0x808080;
                         break;
+                    case 2:
+                        color = 0xff0000;
+                        break;
+                    case 1:
+                        color = 0x00ff00;
+                        break;
                     case 15:
                         color = 0xffff00;
+                        break;
+                    case 3:
+                        color = 0x0000ff;
+                        break;
+                    case 12:
+                        color = 0xff00ff;
+                        break;
+                    case 5:
+                        color = 0x00ffff;
                         break;
                     case 16:
                         color = 0xffffff;
                         break;
+                    case 0:
+                        color = 0x0080ff;
+                        break;
+                    case 6:
+                        color = 0x8000ff;
+                        break;
+                    case 7:
                     default:
                         color = 0;
                         break;
@@ -431,30 +425,6 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
         case 0x507:
             if (GetCtrlD(3)->IsWindowEnabled()) {
                 switch (m_host->m_options[3].m_008) {
-                    case 0:
-                        color = 0x0080ff;
-                        break;
-                    case 1:
-                        color = 0x00ff00;
-                        break;
-                    case 2:
-                        color = 0xff0000;
-                        break;
-                    case 3:
-                        color = 0x0000ff;
-                        break;
-                    case 4:
-                        color = 0x800080;
-                        break;
-                    case 5:
-                        color = 0x00ffff;
-                        break;
-                    case 6:
-                        color = 0x8000ff;
-                        break;
-                    case 7:
-                        color = 0;
-                        break;
                     case 8:
                         color = 0x800000;
                         break;
@@ -467,8 +437,8 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
                     case 11:
                         color = 0x000080;
                         break;
-                    case 12:
-                        color = 0xff00ff;
+                    case 4:
+                        color = 0x800080;
                         break;
                     case 13:
                         color = 0x008080;
@@ -476,12 +446,34 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
                     case 14:
                         color = 0x808080;
                         break;
+                    case 2:
+                        color = 0xff0000;
+                        break;
+                    case 1:
+                        color = 0x00ff00;
+                        break;
                     case 15:
                         color = 0xffff00;
+                        break;
+                    case 3:
+                        color = 0x0000ff;
+                        break;
+                    case 12:
+                        color = 0xff00ff;
+                        break;
+                    case 5:
+                        color = 0x00ffff;
                         break;
                     case 16:
                         color = 0xffffff;
                         break;
+                    case 0:
+                        color = 0x0080ff;
+                        break;
+                    case 6:
+                        color = 0x8000ff;
+                        break;
+                    case 7:
                     default:
                         color = 0;
                         break;
