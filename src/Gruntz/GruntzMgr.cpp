@@ -2595,7 +2595,8 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
         PlayStatusSlot* s = (reinterpret_cast<CPlayStateView*>(m_curState))->m_520;
         i32 done = 0;
         for (i32 d = 4; d != 0; d--) {
-            if (s && s->m_status == 3) {
+            i32* st = &s->m_status;
+            if (st && *st == 3) {
                 done++;
             }
             s++;
@@ -2624,9 +2625,9 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
             m_sound->StopAll();
         }
         m_curState->PauseGame();
-        if (full) {
-            return 1;
-        }
+    }
+    if (full) {
+        return 1;
     }
 
     if (m_musicEnabled) {
