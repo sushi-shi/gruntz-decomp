@@ -36,15 +36,15 @@ class CFaderMgr {
 public:
     CFaderMgr();                                                   // 0x17d8f0
     ~CFaderMgr();                                                  // 0x17d910
-    i32 SetConfig(i32 a, i32 b, class CDDrawPtrCollections* pool); // 0x17d980
+    i32 SetConfig(class CDDSurface* src, class CDDSurface* dst, class CDDrawPtrCollections* pool); // 0x17d980
     void FreeAll();                                                // 0x17d9a0
     CFader* Add(i32 nFaderType, class CFxModeDesc* pInit);         // 0x17d9c0 (pInit = the
     // per-type transition descriptor)
     void Remove(CFader* pFader); // 0x17e170
     void DeleteAll();            // 0x17e1d0
 
-    i32 m_timerArgA;   // +0x00
-    i32 m_timerArgB;   // +0x04
+    class CDDSurface* m_timerArgA;   // +0x00  default source surface handed to each fader
+    class CDDSurface* m_timerArgB;   // +0x04  default dest surface
     i32 m_active;      // +0x08
     i32 m_0c;          // +0x0c
     CFaderArray m_arr; // +0x10 element array subobject

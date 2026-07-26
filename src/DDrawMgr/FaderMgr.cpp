@@ -34,7 +34,7 @@ CFaderMgr::~CFaderMgr() {
 }
 
 RVA(0x0017d980, 0x1f)
-i32 CFaderMgr::SetConfig(i32 a, i32 b, CDDrawPtrCollections* pool) {
+i32 CFaderMgr::SetConfig(CDDSurface* a, CDDSurface* b, CDDrawPtrCollections* pool) {
     m_timerArgA = a;
     m_timerArgB = b;
     m_sharedPtrColl = pool;

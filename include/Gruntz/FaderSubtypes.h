@@ -5,17 +5,12 @@
 #include <Ints.h>
 #include <rva.h>
 
+#include <DDrawMgr/DDSurface.h> // CDDSurface - the real source/dest surface (was the FaderSrc phantom)
 #include <Gruntz/Fader.h>        // the polymorphic base (SetTimers/Set2c/virtual dtor)
 #include <Rez/RezBufferObject.h> // CRezBufferObject - CFaderMesh's +0x58 mesh buffer
 
 #include <Gruntz/FxModeDesc.h>
 
-struct FaderSrc {
-    char pad00[0x18];
-    i32 m_frameCount; // +0x18  frame count (w)
-    i32 m_count;      // +0x1c  element count
-};
-SIZE_UNKNOWN();
 class CDDSurface;  // the real DDraw surface every subtype's source/dest slots point at
 struct CDDPalette; // the real DDraw palette (its +0x0c m_cacheA is the 256-entry PalEntry
 
@@ -74,8 +69,8 @@ public:
     // ApplyInit latches the source boxes + geometry, range-checks the 0..100 intensity,
     // computes the scaled magnitude (m_54) via the FP pipeline, then fills four parallel
     // 2000-int arrays (three zeroed, one seeded with rand()%count) and scatters the last.
-    FaderSrc* m_srcBox;       // +0x38  active source box (else CFader::m_timerA)
-    FaderSrc* m_dstBox;       // +0x3c  active alt/dst source box (else CFader::m_timerB)
+    CDDSurface* m_srcBox;     // +0x38  active source surface (else CFader::m_timerA)
+    CDDSurface* m_dstBox;     // +0x3c  active alt/dst surface (else CFader::m_timerB)
     i32 m_boxParam;           // +0x40  count/param (=1 when m_dstBox is null)
     char _pad44[0x4c - 0x44]; // +0x44..+0x4b
     i32 m_frameCount;         // +0x4c  frame count (source +0x18)
@@ -105,8 +100,8 @@ public:
     // else the base's m_timerB default), the two scalars, the duration percent, and the
     // per-frame work array it RezAllocs. (Was the Fader.cpp-local `CFaderElem` view - the
     // RVA is CFaderFlat::ApplyInit, and its m_src/m_percent are these fields.)
-    i32 m_desc04;    // +0x38  desc +0x04 (else the base's m_timerA default)
-    FaderSrc* m_src; // +0x3c  animation source (frame count at +0x18)
+    CDDSurface* m_desc04;    // +0x38  desc +0x04 (else the base's m_timerA default)
+    CDDSurface* m_src; // +0x3c  animation source (frame count at +0x18)
     i32 m_desc0c;    // +0x40  desc +0x0c
     i32 m_percent;   // +0x44  duration-scale percent (desc +0x10; GetFrameCount)
     i32 m_desc14;    // +0x48  desc +0x14

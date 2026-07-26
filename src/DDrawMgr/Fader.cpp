@@ -47,7 +47,7 @@ void CFader::Wait(i32 delay) {
 }
 
 RVA(0x0017e760, 0x11)
-void CFader::SetTimers(i32 a, i32 b) {
+void CFader::SetTimers(CDDSurface* a, CDDSurface* b) {
     m_timerA = a;
     m_timerB = b;
 }
@@ -296,24 +296,24 @@ i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
     i32 i;
     m_20 = 0;
     m_boxParam = desc->m_0c;
-    FaderSrc* src = reinterpret_cast<FaderSrc*>(desc->m_04);
+    CDDSurface* src = desc->m_04;
     if (!src) {
-        src = reinterpret_cast<FaderSrc*>(m_timerA);
+        src = m_timerA;
     }
     m_srcBox = src;
-    i32 alt = desc->m_08;
+    CDDSurface* alt = desc->m_08;
     if (!alt) {
         alt = m_timerB;
     }
-    m_dstBox = reinterpret_cast<FaderSrc*>(alt);
+    m_dstBox = alt;
     if (!m_srcBox) {
         goto fail;
     }
     if (!m_dstBox) {
         m_boxParam = 1;
     }
-    m_elemCount = m_srcBox->m_count;
-    w = m_srcBox->m_frameCount;
+    m_elemCount = m_srcBox->m_width;
+    w = m_srcBox->m_height;
     m_frameCount = w;
     p = desc->m_10;
     if (p < 0) {
@@ -380,14 +380,14 @@ RVA(0x001804a0, 0x182)
 i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
     CFxModeT2* d = static_cast<CFxModeT2*>(desc); // fader type 1 -> the id-2 mode record
     m_20 = 0;
-    CDDSurface* s = reinterpret_cast<CDDSurface*>(d->m_04);
+    CDDSurface* s = d->m_04;
     if (s == 0) {
-        s = reinterpret_cast<CDDSurface*>(m_timerA); // the base's default-surface dword
+        s = m_timerA; // the base's default-surface dword
     }
     m_surface = s;
-    CDDSurface* b = reinterpret_cast<CDDSurface*>(d->m_08); // desc dword holds a surface
+    CDDSurface* b = d->m_08; // desc dword holds a surface
     if (b == 0) {
-        m_dstSurface = reinterpret_cast<CDDSurface*>(m_timerB);
+        m_dstSurface = m_timerB;
     } else {
         m_dstSurface = b;
     }
@@ -678,10 +678,10 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     CFxModeT6* cfg = static_cast<CFxModeT6*>(descOpaque);
     CRezBufferObject* mesh = &m_meshBuf;
 
-    m_dstSurface = cfg->m_04 ? reinterpret_cast<CDDSurface*>(cfg->m_04)
-                             : reinterpret_cast<CDDSurface*>(m_timerA);
-    m_bltSrc = cfg->m_08 ? reinterpret_cast<CDDSurface*>(cfg->m_08)
-                         : reinterpret_cast<CDDSurface*>(m_timerB);
+    m_dstSurface = cfg->m_04 ? cfg->m_04
+                             : m_timerA;
+    m_bltSrc = cfg->m_08 ? cfg->m_08
+                         : m_timerB;
     if (cfg->m_10 == 0) {
         return 0;
     }
@@ -880,22 +880,22 @@ void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
 RVA(0x0017f5e0, 0x7d)
 i32 CFaderFlat::ApplyInit(CFxModeDesc* desc) {
     CFxModeT5* s = static_cast<CFxModeT5*>(desc);
-    i32 a = s->m_04;
+    CDDSurface* a = s->m_04;
     if (!a) {
         a = m_timerA; // the base's default dword
     }
     m_desc04 = a;
     if (s->m_08) {
-        m_src = reinterpret_cast<FaderSrc*>(s->m_08);
+        m_src = s->m_08;
     } else {
-        m_src = reinterpret_cast<FaderSrc*>(m_timerB);
+        m_src = m_timerB;
     }
     m_desc0c = s->m_0c;
     m_percent = s->m_10;
     m_20 = 0;
     m_desc14 = s->m_14;
-    m_frames = static_cast<i32*>(RezAlloc(m_src->m_frameCount << 2));
-    for (i32 i = 0; i < m_src->m_frameCount; i++) {
+    m_frames = static_cast<i32*>(RezAlloc(m_src->m_height << 2));
+    for (i32 i = 0; i < m_src->m_height; i++) {
         m_frames[i] = 0;
     }
     return 1;
@@ -903,7 +903,7 @@ i32 CFaderFlat::ApplyInit(CFxModeDesc* desc) {
 
 RVA(0x0017f950, 0x24)
 i32 CFaderFlat::GetFrameCount() {
-    i32 n = m_src->m_frameCount;
+    i32 n = m_src->m_height;
     return n + (m_percent * n) / 100;
 }
 
@@ -935,15 +935,15 @@ RVA(0x0017fa40, 0x1f3)
 i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
     CFxModeT4* cfg = static_cast<CFxModeT4*>(desc);
     if (cfg->m_04 == 0) {
-        m_dstSurface = reinterpret_cast<CDDSurface*>(m_timerA);
+        m_dstSurface = m_timerA;
     } else {
-        m_dstSurface = reinterpret_cast<CDDSurface*>(cfg->m_04);
+        m_dstSurface = cfg->m_04;
     }
 
     if (cfg->m_08 == 0) {
-        m_srcSurface = reinterpret_cast<CDDSurface*>(m_timerB);
+        m_srcSurface = m_timerB;
     } else {
-        m_srcSurface = reinterpret_cast<CDDSurface*>(cfg->m_08);
+        m_srcSurface = cfg->m_08;
     }
 
     if (cfg->m_14 == 0) {
@@ -1093,9 +1093,9 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     }
 
     m_surfA = pInit->m_04 ? reinterpret_cast<CDDSurface*>(pInit->m_04)
-                          : reinterpret_cast<CDDSurface*>(m_timerA);
+                          : m_timerA;
     m_surfB = pInit->m_08 ? reinterpret_cast<CDDSurface*>(pInit->m_08)
-                          : reinterpret_cast<CDDSurface*>(m_timerB);
+                          : m_timerB;
     if (m_surfA == 0) {
         return 0;
     }

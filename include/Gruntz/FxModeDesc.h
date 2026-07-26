@@ -9,8 +9,8 @@ public:
     CFxModeDesc(); // 0x17e7b0 base init (type = 0)
 
     i32 m_type; // +0x00 discriminator
-    i32 m_04;
-    i32 m_08;
+    class CDDSurface* m_04; // the mode's source surface
+    class CDDSurface* m_08; // the mode's dest/alt surface
     i32 m_0c;
     i32 m_10;
 }; // 0x14 - the shared base; the upper fields (m_14..m_20) belong to whichever

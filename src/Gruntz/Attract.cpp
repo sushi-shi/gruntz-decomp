@@ -258,7 +258,7 @@ i32 CSoundFxEmitter::FadeSceneClear1(i32 a1, i32 a2, i32 a3, i32 a4) {
     t.m_10 = 1;
     t.m_18 = a1;
     t.m_1c = a2;
-    t.m_04 = reinterpret_cast<i32>(chan);
+    t.m_04 = chan;
     t.m_08 = 0;
     CFader* f = mgr->Add(1, &t);
     if (f == 0) {
@@ -305,8 +305,8 @@ i32 CSoundFxEmitter::FadeScene1(i32 a1, i32 a2, i32 a3, i32 a4) {
     t.m_18 = a1;
     t.m_10 = 0;
     t.m_1c = a2;
-    t.m_04 = reinterpret_cast<i32>(chanA);
-    t.m_08 = reinterpret_cast<i32>(chanB);
+    t.m_04 = chanA;
+    t.m_08 = chanB;
     CFader* f = mgr->Add(1, &t);
     if (f == 0) {
         return 0;
@@ -374,8 +374,8 @@ i32 CSoundFxEmitter::FadeScene2(i32 a1, i32 a2, i32 a3) {
     CFxModeT3 t;
     t.m_0c = 0;
     t.m_10 = a1;
-    t.m_04 = reinterpret_cast<i32>(chanA);
-    t.m_08 = reinterpret_cast<i32>(chanB);
+    t.m_04 = chanA;
+    t.m_08 = chanB;
     CFader* f = mgr->Add(2, &t);
     if (f == 0) {
         return 0;
@@ -431,8 +431,8 @@ i32 CState::RetireScene(i32 a1, i32 a2, i32 a3, i32 a4) {
     CFxModeT3 t;
     t.m_0c = 0;
     t.m_10 = a1;
-    t.m_04 = reinterpret_cast<i32>(chanA);
-    t.m_08 = reinterpret_cast<i32>(chanB);
+    t.m_04 = chanA;
+    t.m_08 = chanB;
     CFader* f = mgr->Add(2, &t);
     if (f == 0) {
         return 0;
@@ -465,7 +465,7 @@ i32 CSoundFxEmitter::FadeSceneClear2(i32 a1, i32 a2, i32 a3) {
     CFxModeT3 t;
     t.m_0c = 1;
     t.m_10 = a1;
-    t.m_04 = reinterpret_cast<i32>(chan);
+    t.m_04 = chan;
     t.m_08 = 0;
     CFader* f = mgr->Add(2, &t);
     if (f == 0) {
