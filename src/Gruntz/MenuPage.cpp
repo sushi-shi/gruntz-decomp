@@ -620,8 +620,7 @@ i32 CMenuPage::SelectFwd2() {
     if (!m_focus) {
         return 0;
     }
-    CString key = m_focus->GetNavFwdName();
-    CMenuItem* item = FindByName(key);
+    CMenuItem* item = FindByName(m_focus->GetNavFwdName());
     if (item) {
         i32 k = item->m_state;
         if (k != 1 && k != 2) {
@@ -643,8 +642,7 @@ i32 CMenuPage::SelectBack2() {
     if (!m_focus) {
         return 0;
     }
-    CString key = m_focus->GetNavBackName();
-    CMenuItem* item = FindByName(key);
+    CMenuItem* item = FindByName(m_focus->GetNavBackName());
     if (item) {
         i32 k = item->m_state;
         if (k != 1 && k != 2) {
@@ -670,8 +668,7 @@ i32 CMenuPage::SelectForward() {
     if (!m_focus) {
         return 0;
     }
-    CString key = m_focus->GetField54();
-    CMenuItem* item = FindByName(key);
+    CMenuItem* item = FindByName(m_focus->GetField54());
     if (item) {
         i32 k = item->m_state;
         if (k != 1 && k != 2) {
@@ -695,8 +692,7 @@ i32 CMenuPage::SelectBackward() {
     if (!m_focus) {
         return 0;
     }
-    CString key = m_focus->GetField58();
-    CMenuItem* item = FindByName(key);
+    CMenuItem* item = FindByName(m_focus->GetField58());
     if (item) {
         i32 k = item->m_state;
         if (k != 1 && k != 2) {
