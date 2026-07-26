@@ -194,7 +194,7 @@ void CGameObject::Notify(void* p) {
         i32 d = m_placeMode - (static_cast<CGameObject*>(p))->m_120;
         m_placeMode = d;
         if (d <= 0) {
-            m_7c->m_1c = reinterpret_cast<void*>(0x1c); // the m_1c int-role arm
+            m_7c->SetActKey(0x1c); // the m_1c int-role arm
         }
     } else {
         AnimWorkerObj* h = m_80;

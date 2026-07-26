@@ -34,7 +34,7 @@ i32 CreateStatusBarSprite(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_7c;
     switch (reinterpret_cast<u32>(ctl->m_1c)) {
         case 0: {
-            ctl->m_1c = reinterpret_cast<void*>(0x3e8);
+            ctl->SetActKey(0x3e8);
             CStatusBarSprite* t = new CStatusBarSprite(obj);
             t->Activate();
             ctl->m_logic = t;

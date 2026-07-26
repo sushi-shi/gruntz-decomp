@@ -86,7 +86,7 @@ public:
 
     i32 m_sortKey;  // +0x74  the manager z-order sort key (Setup stores a3;
                     //         CDDrawChildGroup::InsertSorted orders the list by it)
-    i32 m_posCache; // +0x78  CObList POSITION cache (InsertSorted stores the node;
+    POSITION m_posCache; // +0x78  CObList POSITION cache (InsertSorted stores the node;
                     //         TickKillCues/RemoveAndDelete unlink through it)
     // The worker/partner PAIR scheme (CollideBroadcast @0x159f00 is the proof): each
     // lazily-built handler worker at +0x80/+0x88/+0x90 has its partner slot right

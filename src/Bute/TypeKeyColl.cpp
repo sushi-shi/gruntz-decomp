@@ -985,22 +985,22 @@ i32 FirstDiffBit(const char* a, const char* b) {
     return c + n;
 }
 
-static inline char* TypeResolve(i32 key) {
+static inline CTypeNameEntry* TypeResolve(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return reinterpret_cast<char*>(
-            (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
+        return reinterpret_cast<CTypeNameEntry*>(
+            g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride
         );
     }
     if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0))) {
-        return reinterpret_cast<char*>(
-            (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
+        return reinterpret_cast<CTypeNameEntry*>(
+            g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride
         );
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, reinterpret_cast<i32>(item), 0xc);
-    return reinterpret_cast<char*>(g_typeColl.m_spare);
+    return reinterpret_cast<CTypeNameEntry*>(g_typeColl.m_spare);
 }
 
 static inline void FreeNodes() {
@@ -1024,13 +1024,13 @@ static inline void FreeNodes() {
 RVA(0x0016e4f0, 0x19b)
 i32 ProjTypeXfer(CUserLogic* ar) {
     CTypeNameEntry* entry =
-        reinterpret_cast<CTypeNameEntry*>(TypeResolve(reinterpret_cast<i32>(ar->m_objAux->m_1c)));
+        TypeResolve(ar->m_objAux->ActKey());
     FreeNodes();
     ar->XferName(entry->m_name.GetBuffer(0)); // 0x1ba11c ?GetBuffer@CString@@QAEPADH@Z
     ar->FireActivation(reinterpret_cast<i32>(ar->m_objAux->m_1c));
 
     entry =
-        reinterpret_cast<CTypeNameEntry*>(TypeResolve(reinterpret_cast<i32>(ar->m_objAux->m_1c)));
+        TypeResolve(ar->m_objAux->ActKey());
     FreeNodes();
     ar->FinalizeStep(reinterpret_cast<i32>(entry->m_name.GetBuffer(0)));
     return 1;

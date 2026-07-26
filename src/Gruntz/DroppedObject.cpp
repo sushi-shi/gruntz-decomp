@@ -116,7 +116,7 @@ i32 CreateObjectDropper(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
     switch (reinterpret_cast<u32>(aux->m_1c)) {
         case 0: {
-            aux->m_1c = reinterpret_cast<void*>(0x3e8);
+            aux->SetActKey(0x3e8);
             CObjectDropper* h = new CObjectDropper(obj);
             h->Activate();
             aux->m_logic = h;
@@ -154,7 +154,7 @@ i32 CreateDroppedObject(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
     switch (reinterpret_cast<u32>(aux->m_1c)) {
         case 0: {
-            aux->m_1c = reinterpret_cast<void*>(0x3e8);
+            aux->SetActKey(0x3e8);
             CDroppedObject* h = new CDroppedObject(obj);
             h->Activate();
             aux->m_logic = h;
@@ -192,7 +192,7 @@ i32 CreateDroppedObjectShadow(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_7c;
     switch (reinterpret_cast<u32>(aux->m_1c)) {
         case 0: {
-            aux->m_1c = reinterpret_cast<void*>(0x3e8);
+            aux->SetActKey(0x3e8);
             CDroppedObjectShadow* h = new CDroppedObjectShadow(obj);
             h->Activate();
             aux->m_logic = h;

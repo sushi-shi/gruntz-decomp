@@ -71,9 +71,12 @@ struct AnimWorkerObj : public CWapObj {
     CUserLogic* m_logic; // +0x18  the owned bound-logic leaf (CUserBase slot-0
                          //        scalar dtor via plain `delete`; slot-1
                          //        SerializeMove is the per-frame Step)
-    // the id-role read of the +0x1c int|ptr slot (the act-key compares)
+    // the id-role read/write of the +0x1c int|ptr slot (the act-key compares/latches)
     i32 ActKey() const {
         return reinterpret_cast<i32>(m_1c);
+    }
+    void SetActKey(i32 id) {
+        m_1c = reinterpret_cast<void*>(id);
     }
     void* m_1c;          // +0x1c  a genuine int|ptr role-union (no union per the
                          //        toolchain, kept void* with casts at the int sites):

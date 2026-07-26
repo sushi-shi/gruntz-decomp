@@ -277,7 +277,7 @@ i32 LogicDispatchC(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
-            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            rec->SetActKey(0x3e8);
             CUserLogic* sub = new CParticlez(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -315,7 +315,7 @@ i32 CreateExplosion(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
-            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            rec->SetActKey(0x3e8);
             CUserLogic* sub = new CExplosion(owner);
             sub->Activate();
             rec->m_logic = sub;

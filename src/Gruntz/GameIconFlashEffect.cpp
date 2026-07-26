@@ -21,6 +21,6 @@ i32 GameIconFlashEffect(CGameObject* obj) {
     }
     obj->m_flags |= 1;
     static_cast<CWwdGameObjectA*>(obj)->ApplyLookupGeometry("GAME_ICONFLASH", 0);
-    w->m_1c = reinterpret_cast<void*>(5);
+    w->SetActKey(5);
     return 1;
 }

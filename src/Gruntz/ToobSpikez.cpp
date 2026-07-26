@@ -20,7 +20,7 @@ i32 CreateToobSpikez(CGameObject* obj) {
     AnimWorkerObj* rec = obj->m_7c;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
-            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            rec->SetActKey(0x3e8);
             CToobSpikez* inst = new CToobSpikez(obj);
             inst->Activate(); // slot 6
             rec->m_logic = inst;

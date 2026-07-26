@@ -180,7 +180,7 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
             st->m_scrollTargetX = (rx == -1) ? (rand() % 2 - 1) : (rand() % (rx + 1));
             i32 ry = (static_cast<CDDrawSurfaceMgr*>(st->m_0c))->m_level->m_mainPlane->m_wrapH;
             st->m_scrollTargetY = (ry == -1) ? (rand() % 2 - 1) : (rand() % (ry + 1));
-            st->m_1c = reinterpret_cast<void*>(1);
+            st->SetActKey(1);
             break;
         }
     }
@@ -387,7 +387,7 @@ i32 CreateGruntStartingPoint(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
-            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            rec->SetActKey(0x3e8);
             CUserLogic* sub = new CGruntStartingPoint(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -425,7 +425,7 @@ i32 CreateExitTrigger(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
-            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            rec->SetActKey(0x3e8);
             CUserLogic* sub = new CExitTrigger(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -463,7 +463,7 @@ i32 CreateGruntCreationPoint(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
-            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            rec->SetActKey(0x3e8);
             CUserLogic* sub = new CGruntCreationPoint(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -501,7 +501,7 @@ i32 CreateWormhole(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
-            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            rec->SetActKey(0x3e8);
             CUserLogic* sub = new CWormhole(owner);
             sub->Activate(); // slot 6 (+0x18): activate
             rec->m_logic = sub;
@@ -539,7 +539,7 @@ i32 CreateGruntPuddle(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
-            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            rec->SetActKey(0x3e8);
             CUserLogic* sub = new CGruntPuddle(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -577,7 +577,7 @@ i32 CreateTeleporter(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
-            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            rec->SetActKey(0x3e8);
             CUserLogic* sub = new CTeleporter(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -615,7 +615,7 @@ i32 CreateSecretTeleporterTrigger(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
-            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            rec->SetActKey(0x3e8);
             CUserLogic* sub = new CSecretTeleporterTrigger(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -653,7 +653,7 @@ i32 CreateWarlord(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
-            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            rec->SetActKey(0x3e8);
             CUserLogic* sub = new CWarlord(reinterpret_cast<i32>(owner));
             sub->Activate();
             rec->m_logic = sub;
@@ -691,7 +691,7 @@ i32 CreateFortressFlag(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
-            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            rec->SetActKey(0x3e8);
             CUserLogic* sub = new CFortressFlag(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -729,7 +729,7 @@ i32 CreateSecretLevelTrigger(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
-            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            rec->SetActKey(0x3e8);
             CUserLogic* sub = new CSecretLevelTrigger(owner);
             sub->Activate();
             rec->m_logic = sub;

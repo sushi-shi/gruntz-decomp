@@ -14,7 +14,7 @@ i32 StateDispatch(CGameObject* obj) {
     // variant), read/written through the int view at this site.
     switch (reinterpret_cast<u32>(aux->m_1c)) {
         case 0: {
-            aux->m_1c = reinterpret_cast<void*>(0x3e8);
+            aux->SetActKey(0x3e8);
             CLevelTime* h = new CLevelTime(obj);
             h->Activate();
             aux->m_logic = h;

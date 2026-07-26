@@ -461,7 +461,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(killQueue.GetData()[i]);
         if (obj->m_flags & 0x80000) {
             AnimWorkerObj* rec = obj->m_7c;
-            rec->m_1c = reinterpret_cast<void*>(0x1d);
+            rec->SetActKey(0x1d);
             rec->m_notify(static_cast<CGameObject*>(obj));
         }
         if (obj->m_flags & 0x800) {
@@ -469,7 +469,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
                 delete obj;
             }
         } else {
-            m_list.RemoveAt(reinterpret_cast<POSITION>(obj->m_posCache));
+            m_list.RemoveAt(obj->m_posCache);
             m_map48.RemoveKey(WwdKey(obj));
             m_map2c.RemoveKey(WwdKey(obj));
             if (obj != 0) {
@@ -481,7 +481,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
     for (i = 0; i < sortQueue.GetSize(); i++) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(sortQueue.GetData()[i]);
         obj->m_flags &= ~0x20000;
-        m_list.RemoveAt(reinterpret_cast<POSITION>(obj->m_posCache));
+        m_list.RemoveAt(obj->m_posCache);
         InsertSorted(obj, 0);
     }
 }
@@ -565,7 +565,7 @@ void CDDrawChildGroup::RemoveAndDelete(CWwdGameObject* obj) {
         delete obj;
         return;
     }
-    m_list.RemoveAt(reinterpret_cast<POSITION>(obj->m_posCache));
+    m_list.RemoveAt(obj->m_posCache);
     m_map48.RemoveKey(WwdKey(obj));
     m_map2c.RemoveKey(WwdKey(obj));
     delete obj;
@@ -574,7 +574,7 @@ void CDDrawChildGroup::RemoveAndDelete(CWwdGameObject* obj) {
 RVA(0x00159e10, 0x2e)
 void CDDrawChildGroup::ReinsertUnflagged(CWwdGameObject* obj) {
     obj->m_flags &= 0xfffdffff;
-    m_list.RemoveAt(reinterpret_cast<POSITION>(obj->m_posCache));
+    m_list.RemoveAt(obj->m_posCache);
     InsertSorted(obj, 0);
 }
 
@@ -604,11 +604,11 @@ void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
         CWwdGameObject* data = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
         if (data->m_sortKey > key && !(data->m_flags & 0x20000)) {
             obj->m_posCache =
-                reinterpret_cast<i32>(m_list.InsertBefore(cur, static_cast<CObject*>(obj)));
+                (m_list.InsertBefore(cur, static_cast<CObject*>(obj)));
             return;
         }
     }
-    obj->m_posCache = reinterpret_cast<i32>(m_list.AddTail(static_cast<CObject*>(obj)));
+    obj->m_posCache = m_list.AddTail(static_cast<CObject*>(obj));
 }
 
 RVA(0x00159ef0, 0x5)
@@ -695,7 +695,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                                     if (v <= 0) {
                                         // latch the worker's error/death state (m_1c is
                                         // the documented int|ptr role-union)
-                                        oi->m_7c->m_1c = reinterpret_cast<void*>(0x1c);
+                                        oi->m_7c->SetActKey(0x1c);
                                     }
                                 } else {
                                     AnimWorkerObj* nf = oi->m_80;

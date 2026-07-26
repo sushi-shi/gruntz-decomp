@@ -11,7 +11,7 @@ i32 CreateInGameIcon(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
-            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            rec->SetActKey(0x3e8);
             CUserLogic* sub = new CInGameIcon(owner);
             sub->Activate(); // slot 6 (+0x18): activate
             rec->m_logic = sub;
@@ -49,7 +49,7 @@ i32 CreateInGameText(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
-            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            rec->SetActKey(0x3e8);
             CUserLogic* sub = new CInGameText(owner);
             sub->Activate(); // slot 6 (+0x18): activate
             rec->m_logic = sub;
@@ -87,7 +87,7 @@ i32 CreateToyPeek(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_7c;
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
-            rec->m_1c = reinterpret_cast<void*>(0x3e8);
+            rec->SetActKey(0x3e8);
             CUserLogic* sub = new CToyPeek(owner);
             sub->Activate(); // slot 6 (+0x18): activate
             rec->m_logic = sub;
