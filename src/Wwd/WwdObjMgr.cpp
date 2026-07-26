@@ -432,8 +432,8 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
     if (advance != 0) {
         u32 now = ::timeGetTime();
         u32 delta = now - g_killCueClock;
-        g_killCueClock = now;
         g_engineFrameDelta = delta;
+        g_killCueClock = now;
     }
 
     POSITION pos = m_list.GetHeadPosition();

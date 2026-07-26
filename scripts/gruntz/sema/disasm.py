@@ -223,6 +223,7 @@ def _mask_insn(ln: str) -> str:
     ln = _re.sub(r"\*1(?=[+\]-])", "", ln)                # eax*1 -> eax
     ln = _re.sub(r"\+0x0(?=\])", "", ln)                  # [..+0x0] -> [..]
     ln = _re.sub(r"^((?:sar|shl|shr|sal|rol|ror|rcl|rcr) [^,]+)$", r"\1,1", ln)  # D1-group: 'sar eax' == 'sar eax,1'
+    ln = _re.sub(r"\brep(ne|nz|e|z)? (stos|movs|scas|lods|cmps)[bwd]\b", r"rep\1 \2", ln)  # size suffix is in the operands
     ln = ln.replace("ds:", "")
     ln = _re.sub(r"\bptr (<addr>|0x[0-9a-f]+)(?![\w\]])", r"ptr [\1]", ln)
     ln = _re.sub(r"\[(0x[0-9a-f]+|<addr>)\]", "[<addr>]", ln)

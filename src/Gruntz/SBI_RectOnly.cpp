@@ -1110,10 +1110,8 @@ RVA(0x00100cb0, 0x8b)
 i32 CStatusBarMgr::Deactivate() {
     if (m_position == kSubtypeTag) {
         CGruntzMgr* g = g_gameReg;
-        i32 a = g->m_modeW;
-        i32 b = g->m_modeH;
-        i32 x = a - 0x45;
-        i32 y = b - 0x30;
+        i32 x = g->m_modeW - 0x45;
+        i32 y = g->m_modeH - 0x30;
         m_28 = y;
         m_24 = x;
         SetSpritePos(x, y);
