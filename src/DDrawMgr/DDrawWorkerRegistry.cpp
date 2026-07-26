@@ -324,15 +324,13 @@ i32 CDDrawWorkerRegistry::SumSizesEqual(const char* str, i32 a2) {
     CObject* val = 0;
     POSITION pos = m_10map.GetStartPosition();
     i32 total = 0;
-    if (pos != 0) {
-        do {
-            m_10map.GetNextAssoc(pos, key, val);
-            if (val != 0) {
-                if (str == 0 || *str == 0 || strncmp(key, str, strlen(str)) == 0) {
-                    total += (static_cast<CDDrawWorker*>(val))->GetMemoryUsage(a2);
-                }
+    while (pos != 0) {
+        m_10map.GetNextAssoc(pos, key, val);
+        if (val != 0) {
+            if (str == 0 || *str == 0 || strncmp(key, str, strlen(str)) == 0) {
+                total += (static_cast<CDDrawWorker*>(val))->GetMemoryUsage(a2);
             }
-        } while (pos != 0);
+        }
     }
     return total;
 }

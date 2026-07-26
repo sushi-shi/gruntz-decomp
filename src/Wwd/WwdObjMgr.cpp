@@ -1414,25 +1414,23 @@ RVA(0x0015b1d0, 0x9b)
 i32 CDDrawChildGroup::PruneOrphans() {
     i32 n = 0;
     POSITION pos = reinterpret_cast<POSITION>((m_map48.GetCount() != 0 ? -1 : 0));
-    if (pos != 0) {
-        do {
-            void* key = 0;
-            CWwdGameObject* val = 0;
-            m_map48.GetNextAssoc(pos, key, reinterpret_cast<void*&>(val));
-            if (val != 0) {
-                void* found = 0;
-                if (!m_map2c.Lookup(WwdKey(val), found)) {
-                    found = 0;
-                }
-                if (found == 0) {
-                    m_map48.RemoveKey(WwdKey(val));
-                    if (val != 0) {
-                        delete val;
-                    }
-                    ++n;
-                }
+    while (pos != 0) {
+        void* key = 0;
+        CWwdGameObject* val = 0;
+        m_map48.GetNextAssoc(pos, key, reinterpret_cast<void*&>(val));
+        if (val != 0) {
+            void* found = 0;
+            if (!m_map2c.Lookup(WwdKey(val), found)) {
+                found = 0;
             }
-        } while (pos != 0);
+            if (found == 0) {
+                m_map48.RemoveKey(WwdKey(val));
+                if (val != 0) {
+                    delete val;
+                }
+                ++n;
+            }
+        }
     }
     return n;
 }
