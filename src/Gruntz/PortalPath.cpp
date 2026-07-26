@@ -4,7 +4,8 @@
 #include <string.h> // inline strlen/strcat/strcpy
 
 #include <Gruntz/PortalPath.h>
-#include <Gruntz/HeapDiag.h> // FileExists (ex .cpp extern)
+#include <Gruntz/HeapDiag.h>  // FileExists (ex .cpp extern)
+#include <Gruntz/GruntzMgr.h> // CGruntzMgr - LaunchProcessInDir's owner class
 DATA(0x0020c5b8)
 char g_nameFmt[] = "%s"; // owner def (retail .data bytes: 25 73 00 00)
 
@@ -47,7 +48,7 @@ i32 __stdcall LaunchPortalExe(char* outPath) {
 }
 
 RVA(0x00090860, 0xd3)
-i32 __stdcall LaunchProcessInDir(char* exe, char* dir) {
+i32 CGruntzMgr::LaunchProcessInDir(char* exe, char* dir) {
     char cmdline[256];
     STARTUPINFOA si;
     PROCESS_INFORMATION pi;

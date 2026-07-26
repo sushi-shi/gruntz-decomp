@@ -68,6 +68,10 @@ public:
     // (LaunchPortalExe), spawn it in place (LaunchProcessInDir), and when `quitAfter`
     // is set schedule the delayed shutdown. Returns 1 on a successful launch, else 0.
     i32 LaunchPortal(i32 quitAfter);
+    // @0x090860 (PortalPath.cpp; ret 8) - CreateProcessA the exe in `dir`. A member
+    // that never reads `this` - the retail LaunchPortal call site materializes
+    // ecx=this (the byte-proven `mov ecx,esi`), so the original was thiscall.
+    i32 LaunchProcessInDir(char* exe, char* dir);
     // Clamp a command index into (0,0x29] and PostMessageA WM_COMMAND 0x807f to the
     // game window (wParam = index, or 1 when index==0x29). CPlay reaches it as
     // m_4->Post via the CState owner back-ptr (called by CPlay::Vslot15/Dispatch).
@@ -509,7 +513,6 @@ extern i32 g_debugDisplayFlags;
 CString RunCustomWorldDialog(i32 hwnd, CString* out);
 i32 FindProcessByName(const char* name, i32 flag, void** out);
 i32 __stdcall LaunchPortalExe(char* outPath);
-i32 __stdcall LaunchProcessInDir(char* exe, char* dir);
 
 
 // File-scope prototypes moved from the .cpp (external linkage
