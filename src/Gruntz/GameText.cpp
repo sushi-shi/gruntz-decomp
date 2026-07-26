@@ -31,6 +31,10 @@
 // content-addressed by canonicalize_data_symbols (paired by body and relocations,
 // not number). This TU's .text is multi-region, hence the distant family RVAs.
 
+// NOTE (2026-07-26): the ~89% score is the inline-jump-table measurement artifact
+// (both sides carry the 16-byte case table mid-function; objdiff desyncs across it
+// and the 5 duplicated ctor tails pair as retail-only). The dispatch + tails are
+// shape-correct; see the delinker-jumptable memory note for the pipeline fix.
 RVA(0x0001ec20, 0x8d)
 CString __stdcall GetWarlordName(i32 id) {
     // The target reserves and zero-inits one dead stack dword (`push ecx; mov
