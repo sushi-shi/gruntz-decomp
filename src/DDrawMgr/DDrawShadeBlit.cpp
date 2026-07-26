@@ -18,7 +18,7 @@ static inline u16* Scratch16() {
 }
 
 DATA(0x002bf218)
-ShadeDescr* g_blendDescr;
+CShadeTable* g_blendDescr;
 
 RVA(0x00149780, 0x69)
 i32 CDDrawShadeBlit::BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 p4) {
@@ -454,8 +454,8 @@ void CDDrawShadeBlit::BlitMode_149d00(
 // interlace fill. FULL-WIDTH inlines the row converter (ConvertRow / the
 // vertical-double ConvertRowDoubleFwd); the CLIPPED paths call the out-of-line
 // helper. The blend math is the ConvertRow/ConvertRowDoubleFwd nine-case switch
-// on (m_drawType - 2): 8/16-bit palette LUTs (m_palDescr->m_lut / g_blendDescr->
-// m_lut), RGB565 channel-split blends via m_lutBank0/1/2, the m_light fill/lerp.
+// on (m_drawType - 2): 8/16-bit palette LUTs (m_palDescr->m_data / g_blendDescr->
+// m_data), RGB565 channel-split blends via m_lutBank0/1/2, the m_light fill/lerp.
 // ===========================================================================
 // @early-stop
 // ~23% (0.06 -> 23.3, complete + correct). Full reconstruction: prepass, v-flip
@@ -624,7 +624,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                         u8* s = src0;
                         switch (m_drawType) {
                             case 2: {
-                                u8* pal = m_palDescr->m_lut;
+                                u8* pal = m_palDescr->m_data;
                                 memcpy(g_scratch, d, count);
                                 u8* sc = g_scratch;
                                 for (i = count; i > 0; i--) {
@@ -637,7 +637,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                                 break;
                             }
                             case 3: {
-                                u8* pal = m_palDescr->m_lut;
+                                u8* pal = m_palDescr->m_data;
                                 memcpy(g_scratch, d, count);
                                 u8* sc = g_scratch;
                                 for (i = count; i > 0; i--) {
@@ -704,7 +704,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                     u8* s = src0;
                     switch (m_drawType) {
                         case 2: {
-                            u8* pal = m_palDescr->m_lut;
+                            u8* pal = m_palDescr->m_data;
                             u8* sc = g_scratch;
                             memcpy(g_scratch, d, count);
                             for (i = count; i > 0; i--) {
@@ -795,7 +795,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                             break;
                         }
                         case 3: {
-                            u8* pbase = m_palDescr->m_lut;
+                            u8* pbase = m_palDescr->m_data;
                             u8* sc = g_scratch;
                             memcpy(g_scratch, d, count);
                             for (i = count; i > 0; i--) {
@@ -804,7 +804,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                             break;
                         }
                         case 4: {
-                            u8* pbase = m_palDescr->m_lut;
+                            u8* pbase = m_palDescr->m_data;
                             for (i = count; i > 0; i--) {
                                 *d++ = pbase[(*s++ << 8) + m_light];
                             }
@@ -817,7 +817,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                             break;
                         }
                         case 6: {
-                            u8* pal = m_palDescr->m_lut;
+                            u8* pal = m_palDescr->m_data;
                             u8* sc = g_scratch;
                             memcpy(g_scratch, d, count);
                             for (i = count; i > 0; i--) {
@@ -1018,7 +1018,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                         u8* s = src0;
                         switch (m_drawType) {
                             case 2: {
-                                u8* pbase = m_palDescr->m_lut;
+                                u8* pbase = m_palDescr->m_data;
                                 memcpy(g_scratch, d - count + 1, count);
                                 u8* sc = &g_scratch[count - 1];
                                 for (i = count; i > 0; i--) {
@@ -1031,7 +1031,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                                 break;
                             }
                             case 3: {
-                                u8* pbase = m_palDescr->m_lut;
+                                u8* pbase = m_palDescr->m_data;
                                 memcpy(g_scratch, d - count + 1, count);
                                 u8* sc = &g_scratch[count - 1];
                                 for (i = count; i > 0; i--) {
@@ -1098,7 +1098,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                     // inline ConvertRowFlip(dst0, src0, count)
                     u8* d = dst0;
                     u8* s = src0;
-                    u8* cbase = m_palDescr ? m_palDescr->m_lut : s;
+                    u8* cbase = m_palDescr ? m_palDescr->m_data : s;
                     switch (m_drawType) {
                         case 2: {
                             memcpy(g_scratch, d - count + 1, count);
@@ -1238,8 +1238,8 @@ void CDDrawShadeBlit::BlitMode_14b770(
 // @early-stop
 // ~56% (logic complete + correct). 1446 B dense-jump-table per-row format/blend
 // converter (one of the four tables the BlitLoop family dispatches). Nine cases
-// on (m_drawType - 2) over a single row: 8/16-bit palette LUTs (m_palDescr->m_lut /
-// g_blendDescr->m_lut), RGB565 channel-split blends via m_lutBank0/m_lutBank1/m_lutBank2, and a
+// on (m_drawType - 2) over a single row: 8/16-bit palette LUTs (m_palDescr->m_data /
+// g_blendDescr->m_data), RGB565 channel-split blends via m_lutBank0/m_lutBank1/m_lutBank2, and a
 // magic-divide (/255) alpha lerp (case 6). Each case body is within 1-3
 // instructions of retail (per-case insn counts: case 7 matches exactly). Two
 // stacked walls: (1) the jump-table .rdata region scoring artifact
@@ -1255,7 +1255,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
     i32 i;
     switch (m_drawType) {
         case 2: {
-            u8* pal = m_palDescr->m_lut;
+            u8* pal = m_palDescr->m_data;
             u8* sc = g_scratch;
             memcpy(g_scratch, dst, count);
             for (i = count; i > 0; i--) {
@@ -1342,7 +1342,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             break;
         }
         case 3: {
-            u8* base = m_palDescr->m_lut;
+            u8* base = m_palDescr->m_data;
             u8* sc = g_scratch;
             memcpy(g_scratch, dst, count);
             for (i = count; i > 0; i--) {
@@ -1351,7 +1351,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             break;
         }
         case 4: {
-            u8* base = m_palDescr->m_lut;
+            u8* base = m_palDescr->m_data;
             for (i = count; i > 0; i--) {
                 *dst++ = base[(*src++ << 8) + m_light];
             }
@@ -1364,7 +1364,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             break;
         }
         case 6: {
-            u8* pal = m_palDescr->m_lut;
+            u8* pal = m_palDescr->m_data;
             u8* sc = g_scratch;
             memcpy(g_scratch, dst, count);
             for (i = count; i > 0; i--) {
@@ -1385,7 +1385,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
 // cases, but the destination run is walked right-to-left and the saved-dest
 // scratch line is read back to front (rep-movs saves the run ending at dst). The
 // 8-bit cases write `*dst--`; the 16-bit RGB565 channel blends decrement by 2.
-// `base` = m_palDescr ? m_palDescr->m_lut : src (computed once before the switch).
+// `base` = m_palDescr ? m_palDescr->m_data : src (computed once before the switch).
 // ===========================================================================
 // @early-stop
 // Same stacked walls as ConvertRow (~56%): (1) the jump-table .rdata scoring
@@ -1398,7 +1398,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
 // scheduling parks it. Cases in retail .text body order (2,7,10,8,11,3,4,5,6).
 RVA(0x0014cfc0, 0x5f1)
 void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
-    u8* base = m_palDescr ? m_palDescr->m_lut : src;
+    u8* base = m_palDescr ? m_palDescr->m_data : src;
     i32 i;
     switch (m_drawType) {
         case 2: {
@@ -1539,7 +1539,7 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
     i32 i;
     switch (m_drawType) {
         case 2: {
-            u8* base = m_palDescr->m_lut;
+            u8* base = m_palDescr->m_data;
             memcpy(g_scratch, dst, count);
             u8* sc = g_scratch;
             for (i = count; i > 0; i--) {
@@ -1552,7 +1552,7 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
             break;
         }
         case 3: {
-            u8* base = m_palDescr->m_lut;
+            u8* base = m_palDescr->m_data;
             memcpy(g_scratch, dst, count);
             u8* sc = g_scratch;
             for (i = count; i > 0; i--) {
@@ -1631,7 +1631,7 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
     i32 i;
     switch (m_drawType) {
         case 2: {
-            u8* base = m_palDescr->m_lut;
+            u8* base = m_palDescr->m_data;
             memcpy(g_scratch, dst - count + 1, count);
             u8* sc = &g_scratch[count - 1];
             for (i = count; i > 0; i--) {
@@ -1644,7 +1644,7 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
             break;
         }
         case 3: {
-            u8* base = m_palDescr->m_lut;
+            u8* base = m_palDescr->m_data;
             memcpy(g_scratch, dst - count + 1, count);
             u8* sc = &g_scratch[count - 1];
             for (i = count; i > 0; i--) {

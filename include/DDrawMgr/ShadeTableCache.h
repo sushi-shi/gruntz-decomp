@@ -13,6 +13,13 @@ struct CShadeTable {
     u8* m_data;  // +0x08  byte/pixel buffer (RezAlloc'd blob)
     i32 m_key;   // +0x0c  id / lookup key
 
+    // The table is 8bpp palette BYTES or RGB565 WORDS depending on the blit path -
+    // genuinely dual-width, so the one word-view lives here. (This absorbed the
+    // duplicate `CShadeTable` view of the same record: its m_data IS m_data.)
+    u16* Lut16() const {
+        return reinterpret_cast<u16*>(m_data);
+    }
+
     CShadeTable();             // 0x150180
     i32 Set(u32 size, i32 id); // 0x1501a0
     void Reset();              // 0x150190

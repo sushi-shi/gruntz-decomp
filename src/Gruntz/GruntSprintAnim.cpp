@@ -33,7 +33,7 @@
 // jumptable-data-overlap.md + zero-register-pinning.md.
 RVA(0x00019920, 0x1c2)
 i32 CBootyState::BuildGruntSprintAnimation() {
-    i32 h = g_gameReg->m_spriteFactory->GetSel(0, 0);
+    CShadeTable* h = g_gameReg->m_spriteFactory->GetSel(0, 0);
     if (!h) {
         return 0;
     }

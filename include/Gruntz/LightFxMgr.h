@@ -5,7 +5,7 @@
 
 #include <Ints.h>
 
-struct ShadeDescr;
+struct CShadeTable;
 
 class CShadeTableCache;
 struct CShadeTable;
@@ -44,6 +44,6 @@ SIZE(0x3c);
 
 // File-scope prototypes moved from the .cpp (external linkage
 // belongs in the owner header).
-void SetShadeDescr(ShadeDescr* v, int mode); // 0x14dcf0
+void SetShadeDescr(CShadeTable* v, int mode); // 0x14dcf0
 
 #endif // GRUNTZ_GRUNTZ_LIGHTFXMGR_H

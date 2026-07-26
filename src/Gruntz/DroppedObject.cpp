@@ -294,7 +294,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (g_gameReg->m_134 == 1) {
         m_scrollMode = 1;
     }
-    i32 sel = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[5]);
+    CShadeTable* sel = g_gameReg->m_logicPump->m_tables[5];
     o->m_drawActive = 1;
     o->m_drawFillCmd = 7;
     o->m_drawFillArg = sel;
@@ -492,7 +492,7 @@ i32 CObjectDropper::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject*
             ar->Read(&m_scrollMode, 4);
             break;
         case 8: {
-            i32 fill = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[5]);
+            CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
             CWwdGameObjectA* o = m_object;
             o->m_drawActive = 1;
             o->m_drawFillArg = fill;
@@ -761,7 +761,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), 
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTSHADOW", 0);
     m_38->m_flags |= 0x2000002;
-    m_object->m_drawFillArg = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[5]);
+    m_object->m_drawFillArg = g_gameReg->m_logicPump->m_tables[5];
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = 7;
     if (m_object->m_sortKey != 0xcf84f) {
@@ -857,7 +857,7 @@ i32 CDroppedObjectShadow::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, CGame
         return 0;
     }
     if (mode == 8) {
-        i32 fill = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[5]);
+        CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
         CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 7;

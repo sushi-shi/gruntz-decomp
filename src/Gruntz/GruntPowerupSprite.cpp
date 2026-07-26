@@ -92,7 +92,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
     m_cellX = x;
     m_cellY = y;
     m_powerupId = powerup;
-    i32 rec = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[powerup]);
+    CShadeTable* rec = g_gameReg->m_logicPump->m_tables[powerup];
     CWwdGameObjectA* r = m_object;
     r->m_drawActive = 1;
     r->m_drawFillCmd = 7;
@@ -142,7 +142,7 @@ i32 CGruntPowerupSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGame
             ar->Read(&m_powerupId, 4);
             i32 id = m_powerupId;
             CWwdGameObjectA* r = m_object;
-            i32 v = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[id]);
+            CShadeTable* v = g_gameReg->m_logicPump->m_tables[id];
             r->m_drawActive = 1;
             r->m_drawFillArg = v;
             r->m_drawFillCmd = 7;

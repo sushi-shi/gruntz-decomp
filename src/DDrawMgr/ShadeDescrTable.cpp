@@ -2,27 +2,27 @@
 #include <DDrawMgr/DDrawShadeBlit.h>  // CDDrawShadeBlit - the REAL owner of Select @0x14dd90
 #include <DDrawMgr/ShadeDescrTable.h> // own exported globals (ex Globals.h)
 
-struct ShadeDescr;
+struct CShadeTable;
 
 DATA(0x002bf208)
-ShadeDescr* g_shadeDescr208 = 0;
+CShadeTable* g_shadeDescr208 = 0;
 DATA(0x002bf20c)
-ShadeDescr* g_shadeDescr20c = 0;
+CShadeTable* g_shadeDescr20c = 0;
 DATA(0x002bf210)
-ShadeDescr* g_shadeDescr210 = 0;
+CShadeTable* g_shadeDescr210 = 0;
 DATA(0x002bf214)
-ShadeDescr* g_shadeDescr214 = 0;
+CShadeTable* g_shadeDescr214 = 0;
 DATA(0x002bf21c)
-ShadeDescr* g_shadeDescr21c = 0;
+CShadeTable* g_shadeDescr21c = 0;
 DATA(0x002bf220)
-ShadeDescr* g_shadeDescr220 = 0;
+CShadeTable* g_shadeDescr220 = 0;
 
 // @early-stop
 // Code bytes byte-exact (all 8 global stores + reloc-named globals pair); residual is
 // the switch-jumptable-separate-comdat wall — MSVC emits the jump table as a separate
 // $L symbol, the delinker inlines it at fn+0x6c, so only the jmpl table reloc differs.
 RVA(0x0014dcf0, 0x69)
-void SetShadeDescr(ShadeDescr* v, int mode) {
+void SetShadeDescr(CShadeTable* v, int mode) {
     switch (mode) {
         case 2:
             g_shadeDescr208 = v;
@@ -56,7 +56,7 @@ void SetShadeDescr(ShadeDescr* v, int mode) {
 // the single jmpl table displacement); residual is the switch-jumptable-separate-comdat
 // wall (MSVC $L table symbol vs delinker inline-at-fn+0x74).
 RVA(0x0014dd90, 0x74)
-void CDDrawShadeBlit::Select(i32 mode, ShadeDescr* descr) {
+void CDDrawShadeBlit::Select(i32 mode, CShadeTable* descr) {
     m_drawType = mode;
     if (descr == 0) {
         switch (mode) {

@@ -116,11 +116,11 @@ void CBootyState::GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
 // ===========================================================================
 RVA(0x0001a040, 0x55e)
 i32 CBootyState::LoadGruntEffectSprites() {
-    i32 handleA = g_gameReg->m_spriteFactory->GetSel(0, 0);
+    CShadeTable* handleA = g_gameReg->m_spriteFactory->GetSel(0, 0);
     if (handleA == 0) {
         return 0;
     }
-    i32 handleB = g_gameReg->m_spriteFactory->GetSel(0, 1);
+    CShadeTable* handleB = g_gameReg->m_spriteFactory->GetSel(0, 1);
 
     void* img = m_gruntzBank->ResolvePath("IMAGEZ_GOKARTGRUNT");
     if (img == 0) {
@@ -145,9 +145,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     if (wh == 0) {
         return 0;
     }
-    i32 tint = reinterpret_cast<i32>(
-        g_gameReg->m_logicPump->m_tables[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)]
-    );
+    CShadeTable* tint = g_gameReg->m_logicPump->m_tables[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)];
     m_icons[7]->ApplyName("GAME_WORMHOLE");
     m_icons[7]->ApplyLookupGeometry("GAME_TELEPORTER", 0);
     CWwdGameObjectA* p318 = m_icons[7];

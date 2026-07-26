@@ -8,7 +8,7 @@
 
 #include <string.h> // memset -> inline rep stosd in Reset
 
-struct ShadeDescr;
+struct CShadeTable;
 
 RVA(0x0009dad0, 0x14a)
 i32 CLightFxMgr::Init(CGruntzMgr* reg, CGruntzMgr* owner) {
@@ -69,7 +69,7 @@ i32 CLightFxMgr::Init(CGruntzMgr* reg, CGruntzMgr* owner) {
     if (!m_tables[9]) {
         return 0;
     }
-    SetShadeDescr(reinterpret_cast<ShadeDescr*>(m_greyTable), 9);
+    SetShadeDescr(reinterpret_cast<CShadeTable*>(m_greyTable), 9);
     return 1;
 }
 
@@ -94,6 +94,6 @@ i32 CLightFxMgr::Push(CDDrawWorker* imgSet, i32 anchor, i32 slot) {
     imgSet->SetAllTypes(slot);
     // The engine hands the resolved shade table straight to SetAllFormats as the
     // frames' format word (a pointer-as-value the frame stores verbatim at +0x1c).
-    imgSet->SetAllFormats(reinterpret_cast<i32>(table));
+    imgSet->SetAllFormats(table);
     return 1;
 }

@@ -3,6 +3,7 @@
 
 #include <Gruntz/Loadable.h> // canonical CLoadable : CWapObj : CObject (9-slot base)
 #include <Ints.h>
+#include <DDrawMgr/ShadeTableCache.h> // CShadeTable - the +0x4c fill table
 #include <rva.h>
 
 class CResolveNode : public CLoadable {
@@ -68,7 +69,7 @@ public:
     i32 m_stateFlags;   // +0x40  (SetPosition zeroes)
     i32 m_44;           // +0x44  (SetPosition zeroes)
     i32 m_48;           // +0x48  (SetPosition reseeds 0x32)
-    i32 m_drawFillArg;  // +0x4c  (SetPosition zeroes; flat name carried)
+    CShadeTable* m_drawFillArg; // +0x4c  the fill shade table (SetPosition zeroes)
     i32 m_drawFillCmd;  // +0x50  (SetPosition reseeds 1; 0xb = decay fill-bar)
     i32 m_fillFraction; // +0x54  fill fraction (0..256)
     i32 m_drawActive;   // +0x58  dirty/active flag (SetPosition zeroes)

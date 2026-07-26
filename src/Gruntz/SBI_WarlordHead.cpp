@@ -55,7 +55,7 @@ i32 CSBI_WarlordHead::SetupImage(
 // `call WhShowItem` (0x14dd90) rel32 are reloc-masked against a differently-named
 // symbol (docs/patterns/reloc-typing-vptr-global.md). Exact once it co-names.
 RVA(0x000eb740, 0xb3)
-i32 CSBI_WarlordHead::ShowFrames(i32 show, ShadeDescr* palDescr) {
+i32 CSBI_WarlordHead::ShowFrames(i32 show, CShadeTable* palDescr) {
     CDDrawWorker* cfg = m_34;
     if (cfg == 0) {
         return 0;

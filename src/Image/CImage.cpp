@@ -998,7 +998,7 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_drawActive) {
-        m_owned->Select(info->m_drawFillCmd, reinterpret_cast<ShadeDescr*>(info->m_drawFillArg));
+        m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 0);
     info->m_lastX = d.left;
@@ -1090,7 +1090,7 @@ void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_drawActive) {
-        m_owned->Select(info->m_drawFillCmd, reinterpret_cast<ShadeDescr*>(info->m_drawFillArg));
+        m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 1);
     info->m_lastX = d.left;
@@ -1180,7 +1180,7 @@ void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_drawActive) {
-        m_owned->Select(info->m_drawFillCmd, reinterpret_cast<ShadeDescr*>(info->m_drawFillArg));
+        m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 0);
     info->m_lastX = d.left;
@@ -1269,7 +1269,7 @@ void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_drawActive) {
-        m_owned->Select(info->m_drawFillCmd, reinterpret_cast<ShadeDescr*>(info->m_drawFillArg));
+        m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 1);
     info->m_lastX = d.left;

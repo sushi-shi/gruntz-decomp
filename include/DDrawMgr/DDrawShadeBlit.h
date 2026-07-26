@@ -2,6 +2,7 @@
 #define GRUNTZ_CDDRAWSHADEBLIT_H
 
 #include <Ints.h>
+#include <DDrawMgr/ShadeTableCache.h> // CShadeTable - the shade/LUT record (was duplicated here as CShadeTable)
 #include <rva.h>
 #include <DDrawMgr/ShadeDescrTable.h> // ex Globals.h
 
@@ -11,16 +12,6 @@ class CDDSurface; // the held DirectDraw surface (Blit's src arg); <DDrawMgr/DDS
 typedef struct tagRECT ShadeRect; // (incomplete-ok: unifies with windows.h's tagRECT)
 SIZE_UNKNOWN();
 
-struct ShadeDescr {
-    char m_00[0x8];
-    u8* m_lut; // +0x08 LUT/palette base (8bpp: palette bytes)
-    // The same LUT is a table of RGB565 WORDS on the 16bpp paths - the descriptor
-    // is genuinely dual-width, so the one word-view lives here.
-    u16* Lut16() const {
-        return reinterpret_cast<u16*>(m_lut);
-    }
-};
-SIZE_UNKNOWN();
 
 class CImageBuildDesc {
 public:
@@ -87,7 +78,7 @@ public:
     // on the deleted ImageFrame.h view, and a __stdcall `ImageNotify` free function - which
     // was not even the right calling convention (retail leaves ecx = m_owned from the null
     // test at 0x152ffb and calls straight through, i.e. __thiscall on the owned sprite).
-    void Select(i32 mode, ShadeDescr* descr); // 0x14dd90
+    void Select(i32 mode, CShadeTable* descr); // 0x14dd90
     // The unselected (h-aligned) RLE blit; sel picks the h-flipped sibling. The
     // big inner loops decode the high-bit RLE sprite stream (m_rleData/m_rleLen) into
     // the Lock'd destination surface, clipping x to [clip->left, clip->right].
@@ -117,8 +108,8 @@ public:
     u8* m_rleData;  // +0x0c RLE sprite-stream base (decoded pixel buffer; new / RezFree)
     i32 m_rleLen;   // +0x10 RLE sprite-stream length (byte bound; pixel byte count)
     i32 m_drawType; // +0x14 draw type / row-convert selector (switch tag; ctor default 1)
-    i32 m_light; // +0x18 light level (ctor default 0x80): >>3 selects the LUT bank (Blit); low index into m_palDescr->m_lut (cases 3/4); alpha (case 6); fill byte (case 5)
-    ShadeDescr* m_palDescr; // +0x1c palette / source-descriptor pointer (ctor default 0)
+    i32 m_light; // +0x18 light level (ctor default 0x80): >>3 selects the LUT bank (Blit); low index into m_palDescr->m_data (cases 3/4); alpha (case 6); fill byte (case 5)
+    CShadeTable* m_palDescr; // +0x1c palette / source-descriptor pointer (ctor default 0)
     u8* m_palette; // +0x20 256-entry (0x400 B) palette byte buffer (Build/BuildRle; new 0x400 / RezFree)
     i32 m_colorKey; // +0x24 color key (ctor default -1)
     u8 m_srcBpp; // +0x28 source pixel size in bytes (1 or 2); RLE run stride, ==1 gate; ctor default 1
@@ -133,7 +124,7 @@ public:
 };
 SIZE(0x3c);
 
-extern ShadeDescr* g_blendDescr; // 0x002bf218
+extern CShadeTable* g_blendDescr; // 0x002bf218
 
 extern u8 g_scratch[];
 #endif // GRUNTZ_CDDRAWSHADEBLIT_H

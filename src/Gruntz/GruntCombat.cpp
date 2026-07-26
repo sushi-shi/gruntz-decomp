@@ -544,7 +544,7 @@ void CGrunt::SelectMoveIcon(i32 a) {
     if (a < 0 || a >= 0x11) {
         m_1f4_moveIcon = 0;
     }
-    i32 sel = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, m_entranceReason >= 0x17);
+    CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, m_entranceReason >= 0x17);
     CWwdGameObjectA* h = m_object;
     h->m_drawActive = 1;
     h->m_drawFillCmd = 0xa;

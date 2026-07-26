@@ -60,6 +60,7 @@
 #include <Mfc.h> // CString (the scratch name-vec element)
 #include <rva.h>
 #include <Wap32/zBitVec.h> // ex Globals.h
+#include <Gruntz/LightFxMgr.h> // CLightFxMgr::m_tables - the shade-table array
 
 template<> DATA(0x00244660)
 CActReg CActRegPool<CWormhole>::s_table(2000, 2010);
@@ -191,13 +192,11 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     i32 kind = m_object->m_124;
-    i32 color;
+    CShadeTable* color;
     if (kind == -1) {
-        i32* colorTable = (reinterpret_cast<i32**>(g_gameReg))[0x78 / 4];
-        color = colorTable[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3) + 0x14 / 4];
+                color = g_gameReg->m_logicPump->m_tables[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3)];
     } else {
-        i32* colorTable = (reinterpret_cast<i32**>(g_gameReg))[0x78 / 4];
-        color = colorTable[kind + 0x14 / 4];
+                color = g_gameReg->m_logicPump->m_tables[kind];
     }
     CWwdGameObjectA* s = m_object;
     s->m_drawActive = 1;
@@ -217,13 +216,11 @@ i32 CWormhole::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
         // Do NOT cache m_10 in a pointer local (pins it in esi); read the kind into
         // a value local (reused by the else index) and reload m_10 for the stores.
         i32 kind = m_object->m_124;
-        i32 color;
+        CShadeTable* color;
         if (kind == -1) {
-            i32* colorTable = (reinterpret_cast<i32**>(g_gameReg))[0x78 / 4];
-            color = colorTable[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3) + 0x14 / 4];
+                        color = g_gameReg->m_logicPump->m_tables[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3)];
         } else {
-            i32* colorTable = (reinterpret_cast<i32**>(g_gameReg))[0x78 / 4];
-            color = colorTable[kind + 0x14 / 4];
+                        color = g_gameReg->m_logicPump->m_tables[kind];
         }
         // Cache m_10 only for the store trio (retail reloads it into esi once here).
         CWwdGameObjectA* s = m_object;
@@ -429,7 +426,7 @@ i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
     m_placeArg3 = a3;
     m_gruntType = a0;
     m_placeIndex = a1;
-    i32 rec = g_gameReg->m_spriteFactory->GetSel(a1, 0);
+    CShadeTable* rec = g_gameReg->m_spriteFactory->GetSel(a1, 0);
     CWwdGameObjectA* obj = m_object;
     obj->m_drawActive = 1;
     obj->m_drawFillCmd = 0xa;
@@ -547,9 +544,9 @@ i32 CGruntPuddle::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d
             ar->Read(&m_placeIndex, 4);
             break;
         case 8: {
-            i32 sel = g_gameReg->m_spriteFactory->GetSel(m_placeIndex, 0);
+            CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(m_placeIndex, 0);
             if (sel == 0) {
-                sel = g_gameReg->m_spriteFactory->GetSel(1, sel);
+                sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
             }
             CGameObject* obj = m_object; // retail caches m_object once (mov edi,[edi+0x10])
             obj->m_drawFillArg = sel;
@@ -606,8 +603,7 @@ void CTeleporter::LoadColors() {
     // stores; g_gameReg[+0x78] is the color table, indexed at [m_128*4 + 0x14]
     // (== table[m_128 + 5]). Store order m_58 / m_50 / m_4c.
     CWwdGameObjectA* s = m_object;
-    i32* colorTable = (reinterpret_cast<i32**>(g_gameReg))[0x78 / 4];
-    i32 colorEntry = colorTable[s->m_placeMode + 0x14 / 4];
+    CShadeTable* colorEntry = g_gameReg->m_logicPump->m_tables[s->m_placeMode];
     s->m_drawActive = 1;
     s->m_drawFillCmd = 7;
     s->m_drawFillArg = colorEntry;

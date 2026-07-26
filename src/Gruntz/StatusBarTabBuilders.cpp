@@ -122,7 +122,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     if (s == 0) {
         return 0;
     }
-    i32 sel = g_gameReg->m_spriteFactory->GetSel(
+    CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(
         g_gameReg->m_options[g_curPlayer]
             .m_008, // ex the +0x138 rebased world-slot view (+0x138+0x20 == m_options+0x08)
         0

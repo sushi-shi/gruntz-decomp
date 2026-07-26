@@ -164,7 +164,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 3;
     i32 idx = g_gameReg->m_options[m_object->m_124]
                   .m_008; // the per-player sprite descriptor (GetSel arg)
-    i32 sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
+    CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
     CWwdGameObjectA* spr = m_object;
     spr->m_drawActive = 1;
     spr->m_drawFillCmd = 0xa;
@@ -234,7 +234,7 @@ i32 CFortressFlag::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* 
         CWwdGameObjectA* spr = m_object;
         i32 idx =
             g_gameReg->m_options[spr->m_124].m_008; // the per-player sprite descriptor (GetSel arg)
-        i32 sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
+        CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
         spr = m_object;
         spr->m_drawActive = 1;
         spr->m_drawFillCmd = 0xa;

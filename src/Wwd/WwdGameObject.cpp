@@ -1451,7 +1451,7 @@ i32 CDDrawWorker::SetAllField18(i32 value) {
 }
 
 RVA(0x00152520, 0x4b)
-i32 CDDrawWorker::SetAllFormats(i32 format) {
+i32 CDDrawWorker::SetAllFormats(CShadeTable* format) {
     if (!format) {
         return 0;
     }
@@ -1459,7 +1459,7 @@ i32 CDDrawWorker::SetAllFormats(i32 format) {
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
         if (frame && frame->m_owned) {
-            frame->m_owned->m_palDescr = reinterpret_cast<ShadeDescr*>(format);
+            frame->m_owned->m_palDescr = reinterpret_cast<CShadeTable*>(format);
             count++;
         }
     }

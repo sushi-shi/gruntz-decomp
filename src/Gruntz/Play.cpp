@@ -1498,15 +1498,12 @@ i32 CPlay::SyncState(CFileMemBase* ar, i32 mode, i32 a2, i32 a3) {
             if (m_gridHasSprite) {
                 CGruntzMgr* w = m_mgr;
                 i32 id = g_curPlayer;
-                void* spr =
-                    reinterpret_cast<void*>(w->m_spriteFactory->GetSel(w->m_options[id].m_008, 0));
+                CShadeTable* spr = w->m_spriteFactory->GetSel(w->m_options[id].m_008, 0);
                 if (spr == 0) {
-                    spr = reinterpret_cast<void*>(
-                        g_gameReg->m_spriteFactory->GetSel(1, reinterpret_cast<i32>(spr))
-                    );
+                    spr = g_gameReg->m_spriteFactory->GetSel(1, 0);
                 }
                 m_grid->SetAllTypes(0xa);
-                m_grid->SetAllFormats(reinterpret_cast<i32>(spr));
+                m_grid->SetAllFormats(spr);
             }
             char buf[0x40];
             wsprintfA(buf, "AMBIENT%d", GetAmbientId());
@@ -3730,7 +3727,7 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
     if (hasGrid != 0) {
         CGruntzMgr* w = m_mgr;
         i32 id = g_curPlayer;
-        i32 spr = w->m_spriteFactory->GetSel(w->m_options[id].m_008, 0);
+        CShadeTable* spr = w->m_spriteFactory->GetSel(w->m_options[id].m_008, 0);
         if (spr == 0) {
             spr = g_gameReg->m_spriteFactory->GetSel(1, 0);
         }

@@ -2,6 +2,7 @@
 #define GRUNTZ_SPRITEREFTABLE_H
 
 #include <Ints.h>
+#include <DDrawMgr/ShadeTableCache.h> // CShadeTable - the alpha/shade table
 #include <rva.h>
 
 class CSpriteRef {
@@ -9,7 +10,7 @@ public:
     i32 Build(i32 cache, void* shade, i32 kind); // 0xe2df0, ret 0xc
     void Free();                                 // 0xe32e0
     i32 m_cache;                                 // +0x00  CShadeTableCache*
-    i32 m_alphaKey;   // +0x04  CShadeTable* alpha key (returned by GetSel)
+    CShadeTable* m_alphaKey; // +0x04  the alpha/shade table (returned by GetSel)
     u16 m_teamColor1; // +0x08  192/255 shade
     u16 m_teamColor3; // +0x0a  128/255 shade
     u16 m_teamColor2; // +0x0c  full intensity
@@ -60,7 +61,7 @@ public:
 
     // Resolve slot i: pick bucket B when bAlt else bucket A, return its node's m_alphaKey
     // (the sprite/frame pointer), or null. 0xe23c0.
-    i32 GetSel(i32 i, i32 bAlt); // 0x0e23c0 (out-of-line)
+    CShadeTable* GetSel(i32 i, i32 bAlt); // 0x0e23c0 (out-of-line)
 
     // Look the named sprite up in m_spriteMgrHolder's hash table, build a CSpriteRef of the given
     // kind from it, and return the node (null on miss / alloc fail). 0xe2890.

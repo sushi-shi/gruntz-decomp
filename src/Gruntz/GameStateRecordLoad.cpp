@@ -308,7 +308,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     // Push the level-config event(s) into the grunt's HUD object (the
     // m_4c/m_50/m_58 move-icon triple, the SelectMoveIcon idiom).
     i32 flag = (m_entranceReason >= 0x17);
-    i32 r = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, flag);
+    CShadeTable* r = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, flag);
     CWwdGameObjectA* cb = m_object;
     cb->m_drawActive = 1;
     cb->m_drawFillCmd = 0xa;

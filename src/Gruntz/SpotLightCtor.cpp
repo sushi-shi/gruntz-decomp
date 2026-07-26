@@ -90,7 +90,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     } else {
         m_90 = 0;
     }
-    i32 looked = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[m_object->m_11c]);
+    CShadeTable* looked = g_gameReg->m_logicPump->m_tables[m_object->m_11c];
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = 7;
     m_object->m_drawFillArg = looked;
@@ -209,7 +209,7 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
             break;
         case 8: { // re-apply the level draw-fill color
             CWwdGameObjectA* o = m_object;
-            i32 fill = reinterpret_cast<i32>(reg->m_logicPump->m_tables[o->m_11c]);
+            CShadeTable* fill = reg->m_logicPump->m_tables[o->m_11c];
             o->m_drawActive = 1;
             o->m_drawFillArg = fill;
             o->m_drawFillCmd = 7;

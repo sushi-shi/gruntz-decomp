@@ -81,7 +81,7 @@ CSpriteRef* CSpriteRefTable::GetB(i32 i) {
 }
 
 RVA(0x000e23c0, 0x2d)
-i32 CSpriteRefTable::GetSel(i32 i, i32 bAlt) {
+CShadeTable* CSpriteRefTable::GetSel(i32 i, i32 bAlt) {
     if (static_cast<u32>(i) >= 0x11) {
         return 0;
     }

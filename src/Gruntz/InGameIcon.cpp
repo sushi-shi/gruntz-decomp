@@ -484,7 +484,7 @@ RVA(0x00097680, 0xf5)
 i32 CInGameIcon::HandleInput() {
     CWwdGameObjectA* obj = m_object;
     i32 cmd = obj->m_124;
-    i32 rec;
+    CShadeTable* rec;
     if (cmd == 0x55) {
         i32 key = obj->m_114;
         i32 sub = obj->m_118;
@@ -711,7 +711,7 @@ i32 CInGameIcon::PeekCycle() {
             x = g_randSeed;
         }
         g_randSeed = x * 214013 + 2531011;
-        i32 rec = g_gameReg->m_spriteFactory->GetSel(
+        CShadeTable* rec = g_gameReg->m_spriteFactory->GetSel(
             ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % 0x11,
             0
         );

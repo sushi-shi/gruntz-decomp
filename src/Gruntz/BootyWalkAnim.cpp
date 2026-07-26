@@ -54,7 +54,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
     if (g_gameReg->m_scoreHud->m_count > 0x24) {
         return 1;
     }
-    i32 sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
+    CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
     if (sel == 0) {
         return 0;
     }
@@ -227,7 +227,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     letter = "P";
                     break;
             }
-            i32 sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
+            CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
             if (sel != 0) {
                 if ((g_gameReg->m_scoreHud)->GetRecordValue(m_stepIndex) != 0) {
                     CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;

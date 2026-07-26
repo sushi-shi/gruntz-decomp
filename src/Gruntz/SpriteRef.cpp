@@ -21,7 +21,7 @@
 RVA(0x000e2df0, 0x39f)
 i32 CSpriteRef::Build(i32 cache, void* shade, i32 kind) {
     m_cache = cache;
-    m_alphaKey = reinterpret_cast<i32>(shade);
+    m_alphaKey = static_cast<CShadeTable*>(shade);
     u8 r1, g1, b1; // color 1 (192/255 shade) -> m_teamColor1
     u8 r2, g2, b2; // color 2 (full intensity) -> m_teamColor2
     u8 r3, g3, b3; // color 3 (128/255 shade)  -> m_teamColor3
@@ -238,7 +238,7 @@ RVA(0x000e32e0, 0x25)
 void CSpriteRef::Free() {
     CShadeTableCache* cache = reinterpret_cast<CShadeTableCache*>(m_cache);
     if (cache && m_alphaKey) {
-        cache->FindRemove(reinterpret_cast<CShadeTable*>(m_alphaKey));
+        cache->FindRemove(m_alphaKey);
         m_cache = 0;
         m_alphaKey = 0;
     }

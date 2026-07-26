@@ -212,7 +212,7 @@ CWarlord::CWarlord(i32 arg)
     if (cfg < 0 || cfg >= 0x11) {
         cfg = 0;
     }
-    i32 sel = g_gameReg->m_spriteFactory->GetSel(cfg, 0);
+    CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(cfg, 0);
     if (sel == 0) {
         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }

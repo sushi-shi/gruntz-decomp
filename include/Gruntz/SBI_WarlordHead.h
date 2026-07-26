@@ -7,7 +7,7 @@
 #include <Image/CImage.h>        // the canonical frame-record class (CImage::RenderFrame @0x153790)
 #include <Gruntz/SBI_ImageSet.h> // canonical CSBI_ImageSet (base Serialize external) + CFileMemBase
 
-struct ShadeDescr; // CImage::m_owned->m_palDescr type, latched by ShowFrames (CDDrawShadeBlit.h)
+struct CShadeTable; // CImage::m_owned->m_palDescr type, latched by ShowFrames (CDDrawShadeBlit.h)
 
 struct CWhRect {
     i32 m_0;
@@ -60,7 +60,7 @@ public:
     // the base qualified, so the alias is gone.)
 
     // 0xeb740: drive the show/hide of the two anchor frames (frame table slots 1/2).
-    i32 ShowFrames(i32 show, ShadeDescr* palDescr);
+    i32 ShowFrames(i32 show, CShadeTable* palDescr);
     // 0xeb830: latch the raw direction (m_direction) + the derived state (m_38 = 1 or 2).
     i32 SetState(i32 dir);
     // vtable slot 5 (0xeb880): the per-frame render of the head's two frames.

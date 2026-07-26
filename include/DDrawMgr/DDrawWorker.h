@@ -3,6 +3,7 @@
 #include <rva.h>
 
 #include <Ints.h>
+#include <DDrawMgr/ShadeTableCache.h> // CShadeTable - the per-frame shade table
 #include <Gruntz/Loadable.h> // canonical CLoadable : CWapObj : CObject (9-slot base)
 
 class CImage; // <Image/CImage.h>
@@ -57,7 +58,7 @@ public:
     // wwdgameobject at their retail RVAs). They were declared on a THIRD view of this
     // same 0x6c object; CreateFrame24/28/30 above are this vtable's own slots 11/12/13.
     i32 SetAllTypes(i32 type);     // 0x152480  walk [min,max], set each frame's draw type
-    i32 SetAllFormats(i32 format); // 0x152520  @fake-param: really a ShadeDescr*
+    i32 SetAllFormats(CShadeTable* shade); // 0x152520
     i32 SetAllField18(i32 value);  // 0x1524d0  walk [min,max], set each owned light level
     i32 GetFirstFrameState();      // 0x152570  lowest frame's owned draw type
     i32 GetMemoryUsage(i32 raw);   // 0x1523f0  sum decoded byte size over [min,max]

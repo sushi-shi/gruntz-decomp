@@ -76,7 +76,7 @@ i32 CRainCloud::HitTest(i32 a, i32 b) {
 RVA(0x000b49b0, 0xa8)
 CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     CWwdGameObjectA* o = m_object;
-    i32 n = reinterpret_cast<i32>(g_gameReg->m_logicPump->m_tables[5]); // reg->+0x78->+0x28
+    CShadeTable* n = g_gameReg->m_logicPump->m_tables[5]; // reg->+0x78->+0x28
     o->m_drawActive = 1;
     o->m_drawFillCmd = 0x7;
     o->m_drawFillArg = n;
@@ -103,7 +103,7 @@ i32 CRainCloud::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObject*
         CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 7;
-        o->m_drawFillArg = reinterpret_cast<i32>(x);
+        o->m_drawFillArg = x;
     }
     return 1;
 }

@@ -659,7 +659,7 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     } else {
         m_448 = s_GRUNTZ_ + m_animSetName;
     }
-    i32 sel = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, kind);
+    CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, kind);
     CWwdGameObjectA* h = m_object;
     i32 keep50 = h->m_drawFillCmd;
     h->m_drawActive = 1;
