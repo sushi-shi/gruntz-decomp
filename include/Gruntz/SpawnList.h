@@ -42,7 +42,12 @@ public:
     void AddVoiceSound(CString s, i32 flag);           // 0x11c560 (def: GruntSpawnConfig.cpp)
 
     CPtrList m_list;      // +0x00  the entry list (0x1c B; block size 10)
-    CSpawnNode* m_cursor; // +0x1c  scan cursor (LoadObject*Resources' re-scan)
+    // Typed iteration over m_list: the ONE downcast to the stored entry kind
+    // (this replaced the CSpawnNode raw-node view of the list internals).
+    CSpawnEntry* NextEntry(POSITION& pos) {
+        return static_cast<CSpawnEntry*>(m_list.GetNext(pos));
+    }
+    POSITION m_cursor;    // +0x1c  scan cursor (LoadObject*Resources' re-scan)
     i32 m_lastPicked;     // +0x20  last-picked index (-1; the weighted picker's memory)
 };
 SIZE(0x24);

@@ -184,9 +184,8 @@ void CAreaMgr::Reset() {
 // ---------------------------------------------------------------------------
 RVA(0x0009a0d0, 0x133)
 CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
-    for (CSpawnNode* n = reinterpret_cast<CSpawnNode*>(m_list.GetHeadPosition()); n != 0;
-         n = n->m_next) {
-        CSpawnEntry* e = n->m_entry;
+    for (POSITION n = m_list.GetHeadPosition(); n != 0;) {
+        CSpawnEntry* e = NextEntry(n);
         if (e == 0) {
             continue;
         }
@@ -220,9 +219,8 @@ CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
 RVA(0x0009a290, 0x138)
 CSpawnEntry* CSpawnList::FindByName(const CString& name) {
     CString key(name);
-    for (CSpawnNode* n = reinterpret_cast<CSpawnNode*>(m_list.GetHeadPosition()); n != 0;
-         n = n->m_next) {
-        CSpawnEntry* e = n->m_entry;
+    for (POSITION n = m_list.GetHeadPosition(); n != 0;) {
+        CSpawnEntry* e = NextEntry(n);
         if (e == 0) {
             continue;
         }
@@ -240,14 +238,12 @@ CSpawnEntry* CSpawnList::FindByName(const CString& name) {
 
 RVA(0x0009a420, 0x1c)
 void CSpawnList::ClearFlags() {
-    CSpawnNode* p = reinterpret_cast<CSpawnNode*>(m_list.GetHeadPosition());
+    POSITION p = m_list.GetHeadPosition();
     if (p == 0) {
         return;
     }
     do {
-        CSpawnNode* node = p;
-        p = node->m_next;
-        CSpawnEntry* e = node->m_entry;
+        CSpawnEntry* e = NextEntry(p);
         if (e != 0) {
             e->m_flag = 0;
         }
@@ -256,11 +252,9 @@ void CSpawnList::ClearFlags() {
 
 RVA(0x0009a450, 0x36)
 void CSpawnList::DeleteAllEntries() {
-    CSpawnNode* node = reinterpret_cast<CSpawnNode*>(m_list.GetHeadPosition());
+    POSITION node = m_list.GetHeadPosition();
     while (node != 0) {
-        CSpawnNode* cur = node;
-        node = node->m_next;
-        CSpawnEntry* e = cur->m_entry;
+        CSpawnEntry* e = NextEntry(node);
         if (e != 0) {
             // CSpawnEntry's only destructible member is m_name (CString @+0x00); retail
             // emits the trivial-forwarding entry dtor as a direct ~CString @0x1b9cde +
@@ -332,14 +326,12 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     toAdd.RemoveAll();
 
     CSpawnList* b = &m_spawnEntryList;
-    b->m_cursor = reinterpret_cast<CSpawnNode*>(b->m_list.GetHeadPosition());
+    b->m_cursor = b->m_list.GetHeadPosition();
     CSpawnEntry* e;
     if (b->m_cursor == 0) {
         e = 0;
     } else {
-        CSpawnNode* n = b->m_cursor;
-        b->m_cursor = n->m_next;
-        e = n->m_entry;
+        e = b->NextEntry(b->m_cursor);
     }
     while (e != 0) {
         if (e->m_flag == 0) {
@@ -358,9 +350,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
         if (b->m_cursor == 0) {
             e = 0;
         } else {
-            CSpawnNode* n = b->m_cursor;
-            b->m_cursor = n->m_next;
-            e = n->m_entry;
+            e = b->NextEntry(b->m_cursor);
         }
     }
     return 1;
@@ -434,14 +424,12 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     toAdd.RemoveAll();
 
     CSpawnList* b = &m_spawnEntryList;
-    b->m_cursor = reinterpret_cast<CSpawnNode*>(b->m_list.GetHeadPosition());
+    b->m_cursor = b->m_list.GetHeadPosition();
     CSpawnEntry* e;
     if (b->m_cursor == 0) {
         e = 0;
     } else {
-        CSpawnNode* n = b->m_cursor;
-        b->m_cursor = n->m_next;
-        e = n->m_entry;
+        e = b->NextEntry(b->m_cursor);
     }
     while (e != 0) {
         if (e->m_flag == 0) {
@@ -461,9 +449,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
         if (b->m_cursor == 0) {
             e = 0;
         } else {
-            CSpawnNode* n = b->m_cursor;
-            b->m_cursor = n->m_next;
-            e = n->m_entry;
+            e = b->NextEntry(b->m_cursor);
         }
     }
     return 1;
@@ -511,14 +497,12 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     toAdd.RemoveAll();
 
     CSpawnList* b = &m_spawnEntryList;
-    b->m_cursor = reinterpret_cast<CSpawnNode*>(b->m_list.GetHeadPosition());
+    b->m_cursor = b->m_list.GetHeadPosition();
     CSpawnEntry* e;
     if (b->m_cursor == 0) {
         e = 0;
     } else {
-        CSpawnNode* n = b->m_cursor;
-        b->m_cursor = n->m_next;
-        e = n->m_entry;
+        e = b->NextEntry(b->m_cursor);
     }
     while (e != 0) {
         if (e->m_flag == 0) {
@@ -538,9 +522,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
         if (b->m_cursor == 0) {
             e = 0;
         } else {
-            CSpawnNode* n = b->m_cursor;
-            b->m_cursor = n->m_next;
-            e = n->m_entry;
+            e = b->NextEntry(b->m_cursor);
         }
     }
     return 1;
