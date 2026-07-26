@@ -436,11 +436,9 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
         g_engineFrameDelta = delta;
     }
 
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
-    while (node != 0) {
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
+    POSITION pos = m_list.GetHeadPosition();
+    while (pos != 0) {
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
         AnimWorkerObj* rec = obj->m_7c;
         if (rec->Consume(static_cast<i32>(g_engineFrameDelta)) == 0) {
             i32* refc = &rec->m_24;
@@ -640,14 +638,13 @@ void CDDrawChildGroup::DestroyChildren_159ef0() {
 
 RVA(0x00159f00, 0x22e)
 void CDDrawChildGroup::CollideBroadcast() {
-    CDDrawGroupNode* outer = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
-    while (outer != 0) {
-        CGameObject* oi = outer->m_obj;
-        CDDrawGroupNode* nextOuter = outer->m_next;
+    POSITION pos = m_list.GetHeadPosition();
+    while (pos != 0) {
+        CGameObject* oi = static_cast<CGameObject*>(m_list.GetNext(pos));
         if (!(oi->m_flags & 1)) {
-            CDDrawGroupNode* inner = nextOuter;
-            for (; inner != 0; inner = inner->m_next) {
-                CGameObject* oj = inner->m_obj;
+            POSITION ip = pos;
+            while (ip != 0) {
+                CGameObject* oj = static_cast<CGameObject*>(m_list.GetNext(ip));
                 i32 fj = oj->m_flags;
                 if (fj & 1) {
                     continue;
@@ -734,7 +731,6 @@ void CDDrawChildGroup::CollideBroadcast() {
                 }
             }
         }
-        outer = nextOuter;
     }
 }
 
@@ -822,17 +818,16 @@ void CDDrawChildGroup::DrawObjectCounts() {
     if (!(m_flags & 0x200000)) {
         return;
     }
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
+    POSITION pos = m_list.GetHeadPosition();
     CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
     CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
-    if (node == 0) {
+    if (pos == 0) {
         return;
     }
     do {
-        char* obj = reinterpret_cast<char*>(node->m_obj);
-        node = node->m_next;
-        i32 ox = *reinterpret_cast<i32*>((obj + 0x5c));
-        i32 oy = *reinterpret_cast<i32*>((obj + 0x60));
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
+        i32 ox = obj->m_screenX;
+        i32 oy = obj->m_screenY;
         RECT box;
         SetRect(&box, ox - 0x20, oy - 8, ox + 0x20, oy + 8);
         RECT rc;
@@ -872,7 +867,7 @@ void CDDrawChildGroup::DrawObjectCounts() {
             reinterpret_cast<i32*>(&rc.bottom)
         ); // LONG*->i32* (same width; PAH sig)
         drawHost->DrawCount(&rc, *reinterpret_cast<i32*>((obj + 0x74)));
-    } while (node != 0);
+    } while (pos != 0);
 }
 
 // ---------------------------------------------------------------------------
