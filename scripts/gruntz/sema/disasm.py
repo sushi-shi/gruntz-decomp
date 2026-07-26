@@ -466,7 +466,22 @@ def run(args) -> None:
         side = "BASE (compiled)" if args.base else "TARGET (retail)"
         text = base_text(args.rva) if args.base else target_text(args.rva)
         print(f"[basic blocks: {side} @ {args.rva}]")
-        print(blocks(text), end="")
+        if args.lite:
+            cfg = _cfg(text)
+            npred = {}
+            for i, (_, _, term) in enumerate(cfg):
+                import re as _re
+                for m in _re.finditer(r"B(\d+)", term or ""):
+                    npred[int(m.group(1))] = npred.get(int(m.group(1)), 0) + 1
+            for i, (a, body, term) in enumerate(cfg):
+                first = body[0].split()[0] if body else "?"
+                tail = ("   <== tail" if (term == "ret" and npred.get(i, 0) > 2)
+                        else "")
+                loop = "   LOOP" if "^" in (term or "") else ""
+                print(f"  B{i:<3} @{a:<8x} {len(body):>3}i  "
+                      f"[{term}]{loop}{tail}   ({first}..)")
+        else:
+            print(blocks(text), end="")
         sys.exit(0)
     if getattr(args, "rich", False):
         if args.target:
