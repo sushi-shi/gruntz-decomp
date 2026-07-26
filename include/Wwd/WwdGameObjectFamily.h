@@ -2,7 +2,8 @@
 #define GRUNTZ_WWD_WWDGAMEOBJECTFAMILY_H
 
 #include <Ints.h>
-#include <Mfc.h> // CString (+0xdc) / CObList (+0x1dc)
+#include <Mfc.h>
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup - its typed child iteration // CString (+0xdc) / CObList (+0x1dc)
 #include <rva.h>
 #include <Gruntz/ResolveNode.h>      // CResolveNode - the REAL base (+0x00..+0x67)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor - A's +0x1a0 member
@@ -363,5 +364,16 @@ public:
     i32 m_18;
 };
 SIZE_UNKNOWN();
+
+
+// The typed m_list iteration declared in <DDrawMgr/DDrawChildGroup.h>: MFC's
+// GetNext yields the base CObject*, so the ONE downcast to the stored child kind
+// lives here (this replaced the CDDrawGroupNode raw-node view of the list).
+inline CGameObject* CDDrawChildGroup::NextChild(POSITION& pos) {
+    return static_cast<CGameObject*>(m_list.GetNext(pos));
+}
+inline CGameObject* CDDrawChildGroup::HeadChild() const {
+    return static_cast<CGameObject*>(m_list.GetHead());
+}
 
 #endif // GRUNTZ_WWD_WWDGAMEOBJECTFAMILY_H

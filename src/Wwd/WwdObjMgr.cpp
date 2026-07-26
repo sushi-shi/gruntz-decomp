@@ -69,11 +69,10 @@ void CDDrawChildGroup::DestroyChildren() {
             q->Prune();
         }
     }
-    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
+    POSITION n = m_list.GetHeadPosition();
     while (n != 0) {
-        CDDrawGroupNode* cur = n;
-        n = n->m_next;
-        CGameObject* obj = cur->m_obj;
+        CGameObject* cur_obj = NextChild(n);
+        CGameObject* obj = cur_obj;
         if (obj != 0) {
             delete obj;
         }
@@ -488,24 +487,22 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
 
 RVA(0x00159c90, 0x23)
 void CDDrawChildGroup::WalkDispatch2C(CDDrawSurfacePair* target) {
-    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
+    POSITION n = m_list.GetHeadPosition();
     if (n != 0) {
         do {
-            CDDrawGroupNode* cur = n;
-            n = n->m_next;
-            cur->m_obj->Render(target);
+            CGameObject* cur_obj = NextChild(n);
+            cur_obj->Render(target);
         } while (n != 0);
     }
 }
 
 RVA(0x00159cc0, 0x2a)
 void CDDrawChildGroup::WalkDispatch30(i32 a1, i32 a2) {
-    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
+    POSITION n = m_list.GetHeadPosition();
     if (n != 0) {
         do {
-            CDDrawGroupNode* cur = n;
-            n = n->m_next;
-            cur->m_obj->BltDirty(
+            CGameObject* cur_obj = NextChild(n);
+            cur_obj->BltDirty(
                 reinterpret_cast<CDDrawSurfacePair*>(a1),
                 reinterpret_cast<CDDrawSurfacePair*>(a2)
             );
@@ -515,12 +512,11 @@ void CDDrawChildGroup::WalkDispatch30(i32 a1, i32 a2) {
 
 RVA(0x00159cf0, 0x42)
 void CDDrawChildGroup::WalkDispatch34(i32 a1, i32 a2, i32 a3) {
-    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
+    POSITION n = m_list.GetHeadPosition();
     if (n != 0) {
         do {
-            CDDrawGroupNode* cur = n;
-            n = n->m_next;
-            cur->m_obj->BltDirtyEx(
+            CGameObject* cur_obj = NextChild(n);
+            cur_obj->BltDirtyEx(
                 reinterpret_cast<CDDrawSurfacePair*>(a1),
                 reinterpret_cast<CDDrawSurfacePair*>(a2),
                 a3
@@ -532,12 +528,11 @@ void CDDrawChildGroup::WalkDispatch34(i32 a1, i32 a2, i32 a3) {
 
 RVA(0x00159d40, 0x42)
 void CDDrawChildGroup::WalkDispatch38(i32 a1, i32 a2, i32 a3) {
-    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
+    POSITION n = m_list.GetHeadPosition();
     if (n != 0) {
         do {
-            CDDrawGroupNode* cur = n;
-            n = n->m_next;
-            cur->m_obj->BltDirtyRegions(
+            CGameObject* cur_obj = NextChild(n);
+            cur_obj->BltDirtyRegions(
                 reinterpret_cast<CDDrawSurfacePair*>(a1),
                 reinterpret_cast<CDDrawSurfacePair*>(a2),
                 a3
@@ -549,12 +544,11 @@ void CDDrawChildGroup::WalkDispatch38(i32 a1, i32 a2, i32 a3) {
 
 RVA(0x00159d90, 0x1c)
 void CDDrawChildGroup::ResetChildD8() {
-    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
+    POSITION n = m_list.GetHeadPosition();
     if (n != 0) {
         do {
-            CDDrawGroupNode* cur = n;
-            n = n->m_next;
-            cur->m_obj->m_d8 = -1;
+            CGameObject* cur_obj = NextChild(n);
+            cur_obj->m_d8 = -1;
         } while (n != 0);
     }
 }
@@ -883,9 +877,8 @@ void CDDrawChildGroup::DrawObjectCounts() {
 // codegen loop-rotation wall, not a source-shape bug.
 RVA(0x0015a780, 0x70)
 i32 CDDrawChildGroup::CheckSortOrder() {
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
-    CWwdGameObject* anchor = static_cast<CWwdGameObject*>(node->m_obj);
-    node = node->m_next;
+    POSITION node = m_list.GetHeadPosition();
+    CWwdGameObject* anchor = static_cast<CWwdGameObject*>(NextChild(node));
     if (anchor == 0) {
         return 1;
     }
@@ -897,9 +890,8 @@ i32 CDDrawChildGroup::CheckSortOrder() {
             if ((anchor->m_flags & 0x20000) == 0) {
                 break;
             }
-            CDDrawGroupNode* cur = node;
-            node = node->m_next;
-            anchor = static_cast<CWwdGameObject*>(cur->m_obj);
+            CGameObject* cur_obj = NextChild(node);
+            anchor = static_cast<CWwdGameObject*>(cur_obj);
         } while (node != 0);
     }
     if (anchor == 0) {
@@ -910,9 +902,8 @@ i32 CDDrawChildGroup::CheckSortOrder() {
         return 1;
     }
     do {
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
+        CGameObject* cur_obj = NextChild(node);
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if ((obj->m_flags & 0x20000) == 0) {
             i32 curKey = obj->m_sortKey;
             if (key > curKey) {
@@ -929,11 +920,10 @@ i32 CDDrawChildGroup::CheckSortOrder() {
 
 RVA(0x0015a7f0, 0x20)
 CWwdGameObject* CDDrawChildGroup::FindByType04(i32 type) {
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
+    POSITION node = m_list.GetHeadPosition();
     while (node != 0) {
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
+        CGameObject* cur_obj = NextChild(node);
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if (obj->m_id == type) {
             return obj;
         }
@@ -943,11 +933,10 @@ CWwdGameObject* CDDrawChildGroup::FindByType04(i32 type) {
 
 RVA(0x0015a810, 0x42)
 CWwdGameObject* CDDrawChildGroup::FindByTypeProbe(i32 type) {
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
+    POSITION node = m_list.GetHeadPosition();
     while (node != 0) {
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
+        CGameObject* cur_obj = NextChild(node);
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == type) {
             return obj;
         }
@@ -1036,11 +1025,10 @@ CWwdGameObject* CDDrawChildGroup::FindByField(i32 type, void* key) {
 
 RVA(0x0015a9a0, 0x23)
 CWwdGameObject* CDDrawChildGroup::FindByKey(void* key) {
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
+    POSITION node = m_list.GetHeadPosition();
     while (node != 0) {
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
+        CGameObject* cur_obj = NextChild(node);
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if (WwdKey(obj) == key) {
             return obj;
         }
@@ -1050,11 +1038,10 @@ CWwdGameObject* CDDrawChildGroup::FindByKey(void* key) {
 
 RVA(0x0015a9d0, 0x45)
 CWwdGameObject* CDDrawChildGroup::FindByStatusKey(void* key) {
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
+    POSITION node = m_list.GetHeadPosition();
     while (node != 0) {
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
+        CGameObject* cur_obj = NextChild(node);
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if (obj->GetClassId() == CLASSID_SERIALREF && WwdKey(obj) == key) {
             return obj;
         }
@@ -1065,11 +1052,10 @@ CWwdGameObject* CDDrawChildGroup::FindByStatusKey(void* key) {
 RVA(0x0015aa20, 0x3c)
 i32 CDDrawChildGroup::IsKindUnique(i32 kind) {
     CWwdGameObject* found = 0;
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
+    POSITION node = m_list.GetHeadPosition();
     while (node != 0) {
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
+        CGameObject* cur_obj = NextChild(node);
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if (obj->m_id == kind) {
             if (found != 0) {
                 return 0;
@@ -1083,11 +1069,10 @@ i32 CDDrawChildGroup::IsKindUnique(i32 kind) {
 RVA(0x0015aa60, 0x23)
 i32 CDDrawChildGroup::CountByKind(i32 kind) {
     i32 count = 0;
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
+    POSITION node = m_list.GetHeadPosition();
     while (node != 0) {
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
+        CGameObject* cur_obj = NextChild(node);
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         if (obj->m_id == kind) {
             ++count;
         }
@@ -1127,11 +1112,10 @@ RVA(0x0015aaf0, 0x35)
 i32 CDDrawChildGroup::SumWeighted() {
     i32 i = 0;
     i32 sum = 0;
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
+    POSITION node = m_list.GetHeadPosition();
     while (node != 0) {
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
+        CGameObject* cur_obj = NextChild(node);
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
         // @early-stop residue: retail sums (0x5c,0x74,0x60,0x4); every source order
         // (incl. stepwise +=) canonicalizes to (0x4,0x60,0x74,0x5c) - DAG-invariant.
         sum += i * (obj->m_screenX + obj->m_sortKey + obj->m_screenY + obj->m_id);

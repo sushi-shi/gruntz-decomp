@@ -125,6 +125,12 @@ public:
     // Was pads + raw m_head/m_count fields; the real member makes ~CDDrawChildGroup
     // emit the retail ~CObList teardown (0x1b5a2b) under its own /GX trylevel.
     CObList m_list;
+    // Typed iteration over m_list: MFC's GetNext yields the base CObject*, so the
+    // ONE downcast to the child kind lives here instead of at every walk site
+    // (this replaced the CDDrawGroupNode raw-node view of the list internals).
+    // (defined inline in <Wwd/WwdGameObjectFamily.h>, where the child kind is complete)
+    CGameObject* NextChild(POSITION& pos);
+    CGameObject* HeadChild() const;
     CMapPtrToPtr m_map2c; // +0x2c  key -> object, primary (Lookup 0x1b8760, FID-confirmed)
     CMapPtrToPtr m_map48; // +0x48  key -> object, serialize/dedup set (the ex GruntObjMap)
     // +0x64  transient list walk cursor (seeded from the list head;
