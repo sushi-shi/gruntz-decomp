@@ -115,7 +115,9 @@ void CNetSession::ResetSync() {
 // (a plain 4-member `=0` instead folds to direct `[ecx+N]` stores, 71%). Deferred.
 RVA(0x000bf120, 0x11)
 void CNetCmdSlot::ClearAckFlags() {
-    memset(m_ackFlags, 0, 16);
+    for (i32 i = 0; i < 4; i++) {
+        m_ackFlags[i] = 0;
+    }
 }
 
 // @early-stop
