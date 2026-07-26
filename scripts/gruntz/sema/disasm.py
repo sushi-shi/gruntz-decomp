@@ -222,6 +222,7 @@ def _mask_insn(ln: str) -> str:
     ln = _re.sub(r"\b([1248])\*(e[a-z][a-z])", r"\2*\1", ln)  # 4*ebx -> ebx*4
     ln = _re.sub(r"\*1(?=[+\]-])", "", ln)                # eax*1 -> eax
     ln = _re.sub(r"\+0x0(?=\])", "", ln)                  # [..+0x0] -> [..]
+    ln = _re.sub(r"^((?:sar|shl|shr|sal|rol|ror|rcl|rcr) [^,]+)$", r"\1,1", ln)  # D1-group: 'sar eax' == 'sar eax,1'
     ln = ln.replace("ds:", "")
     ln = _re.sub(r"\bptr (<addr>|0x[0-9a-f]+)(?![\w\]])", r"ptr [\1]", ln)
     ln = _re.sub(r"\[(0x[0-9a-f]+|<addr>)\]", "[<addr>]", ln)

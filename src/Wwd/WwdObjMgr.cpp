@@ -599,16 +599,14 @@ void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
         m_map2c[WwdKey(obj)] = obj;
         m_map48[WwdKey(obj)] = obj;
     }
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
+    POSITION pos = m_list.GetHeadPosition();
     i32 key = obj->m_sortKey;
-    while (node != 0) {
-        CDDrawGroupNode* cur = node;
-        CWwdGameObject* data = static_cast<CWwdGameObject*>(cur->m_obj);
-        node = node->m_next;
+    while (pos != 0) {
+        POSITION cur = pos;
+        CWwdGameObject* data = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
         if (data->m_sortKey > key && !(data->m_flags & 0x20000)) {
-            obj->m_posCache = reinterpret_cast<i32>(
-                m_list.InsertBefore(reinterpret_cast<POSITION>(cur), static_cast<CObject*>(obj))
-            );
+            obj->m_posCache =
+                reinterpret_cast<i32>(m_list.InsertBefore(cur, static_cast<CObject*>(obj)));
             return;
         }
     }
@@ -1121,13 +1119,12 @@ i32 CDDrawChildGroup::CountByKind(i32 kind) {
 // exact. docs/patterns/linked-list-walk-node-eax-rotation.md.
 RVA(0x0015aa90, 0x5d)
 void CDDrawChildGroup::PruneList() {
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
-    while (node != 0) {
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
+    POSITION pos = m_list.GetHeadPosition();
+    while (pos != 0) {
+        POSITION cur = pos;
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
         if (obj != 0 && !(obj->m_flags & 0x200)) {
-            m_list.RemoveAt(reinterpret_cast<POSITION>(cur));
+            m_list.RemoveAt(cur);
             m_map2c.RemoveKey(WwdKey(obj));
             m_map48.RemoveKey(WwdKey(obj));
             delete obj;
@@ -1143,13 +1140,15 @@ void CDDrawChildGroup::PruneList() {
 // first. Documented add-reassociation wall (permuter no-op).
 RVA(0x0015aaf0, 0x35)
 i32 CDDrawChildGroup::SumWeighted() {
-    i32 sum = 0;
     i32 i = 0;
+    i32 sum = 0;
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
+        // @early-stop residue: retail sums (0x5c,0x74,0x60,0x4); every source order
+        // (incl. stepwise +=) canonicalizes to (0x4,0x60,0x74,0x5c) - DAG-invariant.
         sum += i * (obj->m_screenX + obj->m_sortKey + obj->m_screenY + obj->m_id);
         ++i;
     }

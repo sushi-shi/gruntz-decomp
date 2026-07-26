@@ -235,48 +235,45 @@ WwdRegion* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
 // the remove-block reg assignment. Not source-steerable (member-bound LICM
 // choice; see docs/patterns/zero-register-pinning.md).
 RVA(0x00191c30, 0xcc)
+// @early-stop
+// ~90.6 (MAX 93.7 held by the OLD goto transcription, which was semantically
+// BROKEN - its walk loop never advanced m_cur). Correct nested-loop form kept;
+// residue: retail merges the m_next load into the walk back-edge block (re-enter
+// at the load) + moves the found/unlink handler after the rets; &&/||-continue
+// spellings canonicalize to the same base layout - not condition-steerable.
 WwdRegion* CWwdGridIter::GetNext() {
-    WwdRegion* node;
-top:
-    node = m_next;
-    m_cur = node;
-    if (node == 0) {
-    nextcell:
-        if (m_row < m_rowEnd) {
-            ++m_cell;
-            ++m_row;
-        } else {
-            if (m_col >= m_colEnd) {
-                return 0;
+    for (;;) {
+        m_cur = m_next;
+        while (m_cur == 0) {
+            if (m_row < m_rowEnd) {
+                ++m_cell;
+                ++m_row;
+            } else {
+                if (m_col >= m_colEnd) {
+                    return 0;
+                }
+                m_rowBase += m_grid->m_cols;
+                m_cell = m_rowBase;
+                m_row = m_rowStart;
+                ++m_col;
             }
-            m_rowBase += m_grid->m_cols;
-            m_cell = m_rowBase;
-            m_row = m_rowStart;
-            ++m_col;
+            m_cur = static_cast<WwdRegion*>(m_grid->m_buckets[m_cell].m_head);
         }
-        m_cur = static_cast<WwdRegion*>(m_grid->m_buckets[m_cell].m_head);
-        if (m_cur == 0) {
-            goto nextcell;
+        while (m_cur != 0) {
+            m_next = static_cast<WwdRegion*>(m_cur->m_next);
+            if (m_cur->m_x < m_rect.a || m_cur->m_y < m_rect.b || m_cur->m_x > m_rect.c
+                || m_cur->m_y > m_rect.d) {
+                m_cur = m_next;
+                continue;
+            }
+            if (m_remove) {
+                m_grid->m_buckets[m_cell].Unlink(m_cur);
+                m_cur->m_bucket = 0;
+                --m_grid->m_count;
+            }
+            return m_cur;
         }
     }
-    if (m_cur == 0) {
-        goto top;
-    }
-walk:
-    m_next = static_cast<WwdRegion*>(m_cur->m_next);
-    if (m_cur->m_x >= m_rect.a && m_cur->m_y >= m_rect.b && m_cur->m_x <= m_rect.c
-        && m_cur->m_y <= m_rect.d) {
-        if (m_remove) {
-            m_grid->m_buckets[m_cell].Unlink(m_cur);
-            m_cur->m_bucket = 0;
-            --m_grid->m_count;
-        }
-        return m_cur;
-    }
-    if (m_cur != 0) {
-        goto walk;
-    }
-    goto top;
 }
 
 RVA(0x00191d10, 0x1)

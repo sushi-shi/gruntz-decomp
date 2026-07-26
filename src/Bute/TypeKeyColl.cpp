@@ -822,7 +822,7 @@ i32 CVariantSlot::Find(i32 key) {
     i32 lo = 0;
     if (hi >= 0) {
         do {
-            i32 mid = (lo + hi) / 2;
+            i32 mid = (hi + lo) / 2;
             m_04 = mid;
             i32 d = g_recs23[mid].m_key - key;
             if (d < 0) {
