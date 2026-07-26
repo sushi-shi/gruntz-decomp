@@ -1750,25 +1750,22 @@ i32 CStatusBarMgr::ClickToggle(i32 btn, i32 x, i32 y) {
 // from C; documented regalloc wall, deferred to the final sweep.
 RVA(0x00100930, 0x16c)
 void CStatusBarMgr::ResetWidgets(i32 keepHost) {
-    char* B = reinterpret_cast<char*>(this);
-    char* list = B + 0x2c;
-    for (i32 outer = 8; outer != 0; outer--) {
-        POSITION n = (reinterpret_cast<CPtrList*>(list))->GetHeadPosition();
+    char* B = reinterpret_cast<char*>(this); // the +0x204/+0x308 tail views still need it
+    for (i32 t = 0; t < 8; t++) {
+        POSITION n = m_tabLists[t].GetHeadPosition();
         while (n) {
-            CStatusBarItem* cur =
-                static_cast<CStatusBarItem*>((reinterpret_cast<CPtrList*>(list))->GetNext(n));
+            CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[t].GetNext(n));
             if (cur) {
                 delete cur;
             }
         }
-        (reinterpret_cast<CPtrList*>(list))->RemoveAll();
-        list += 0x1c;
+        m_tabLists[t].RemoveAll();
     }
     if (keepHost) {
-        CSbiResetHost* h = *reinterpret_cast<CSbiResetHost**>((B + 8));
+        CSbiResetHost* h = reinterpret_cast<CSbiResetHost*>(m_barSprite);
         if (h) {
             h->m_40 |= 1;
-            h = *reinterpret_cast<CSbiResetHost**>((B + 8));
+            h = reinterpret_cast<CSbiResetHost*>(m_barSprite);
             h->m_8 |= 0x10000;
         }
     }
@@ -1873,7 +1870,7 @@ void CStatusBarMgr::ExitMode() {
 // steerable from C. Documented regalloc wall; deferred to the final sweep.
 RVA(0x00100b00, 0x139)
 void CStatusBarMgr::ClearTabGroup() {
-    char* B = reinterpret_cast<char*>(this);
+    char* B = reinterpret_cast<char*>(this); // the case-4 +0x204 view still needs it
     if (m_activeTab == 0) {
         return;
     }
@@ -1885,7 +1882,7 @@ void CStatusBarMgr::ClearTabGroup() {
             delete cur;
         }
     }
-    (reinterpret_cast<CPtrList*>((B + m_activeTab * 0x1c + 0x2c)))->RemoveAll();
+    m_tabLists[m_activeTab].RemoveAll();
     switch (m_activeTab) {
         case 1:
             m_tabSprite5 = 0;
