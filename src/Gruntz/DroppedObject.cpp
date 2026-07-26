@@ -59,7 +59,7 @@ static inline CString* ActNameLookup(i32 id) {
             (g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride)
         );
     }
-    if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0))) {
+    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) {
         return reinterpret_cast<CString*>(
             (g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride)
         );

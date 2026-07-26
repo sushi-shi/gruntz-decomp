@@ -328,7 +328,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         }
         {
             CWnd* w = GetDlgItem(0x511);
-            g_sharedFlag = (w == 0) ? 0 : reinterpret_cast<i32>(w->m_hWnd);
+            g_sharedFlag = (w == 0) ? 0 : w->m_hWnd;
         }
         g_multiState->m_netGate->m_sessionSel = 0;
         g_multiState->PollSession();

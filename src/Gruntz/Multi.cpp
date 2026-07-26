@@ -123,7 +123,7 @@ i32 g_chanStat422_id; // 0x246fdc
 DATA(0x00246fe0)
 i32 g_chanStat422_val; // 0x246fe0
 DATA(0x00248ce0)
-i32 g_sharedFlag = 0; // 0x248ce0
+HWND g_sharedFlag = 0; // 0x248ce0
 DATA(0x00248d04)
 i32 g_pauseGuard; // 0x248d04  OnMultiPause reentrancy guard
 DATA(0x00248d08)

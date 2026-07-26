@@ -379,7 +379,7 @@ extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x1f94
 
 // --- C-linkage carriers for the TU's extern-C definitions (the defs
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---
-extern "C" i32 g_sharedFlag;
+extern "C" HWND g_sharedFlag; // the cached dialog control window
 
 extern i32 g_dplayAppGuid[4];
 extern char s_GameKey[];

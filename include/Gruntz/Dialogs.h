@@ -17,7 +17,7 @@ struct HWND__;               // the opaque Win32 HWND (windows.h arrives with <G
 struct tagMEASUREITEMSTRUCT; // windows.h owner-draw measure (CWnd::OnMeasureItem arg)
 struct tagDRAWITEMSTRUCT;    // windows.h owner-draw item    (CWnd::OnDrawItem arg)
 
-extern "C" i32 g_sharedFlag;
+extern "C" HWND g_sharedFlag; // the cached dialog control window
 typedef LRESULT(WINAPI* WapSendMessageA)(HWND, UINT, WPARAM, LPARAM);
 
 

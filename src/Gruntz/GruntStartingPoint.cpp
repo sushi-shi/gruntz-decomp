@@ -66,7 +66,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
             (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
         );
     }
-    if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0))) {
+    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
         return reinterpret_cast<CTypeNameEntry*>(
             (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
         );
