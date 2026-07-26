@@ -973,10 +973,10 @@ CWwdGameObject* CDDrawChildGroup::FindByTypeProbe(i32 type) {
 RVA(0x0015a860, 0x57)
 CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, void* key) {
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
-    if (node == 0) {
-        return 0;
-    }
-    do {
+    for (;;) {
+        if (node == 0) {
+            return 0;
+        }
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
@@ -988,8 +988,7 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, void* key) {
                 return obj;
             }
         }
-    } while (node != 0);
-    return 0;
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1038,10 +1037,10 @@ void* CDDrawChildGroup::Find(i32 id, const char* key) {
 RVA(0x0015a940, 0x52)
 CWwdGameObject* CDDrawChildGroup::FindByField(i32 type, void* key) {
     CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition());
-    if (node == 0) {
-        return 0;
-    }
-    do {
+    for (;;) {
+        if (node == 0) {
+            return 0;
+        }
         CDDrawGroupNode* cur = node;
         node = node->m_next;
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur->m_obj);
@@ -1049,8 +1048,7 @@ CWwdGameObject* CDDrawChildGroup::FindByField(i32 type, void* key) {
             && reinterpret_cast<void*>(obj->m_collCategory) == key) {
             return obj;
         }
-    } while (node != 0);
-    return 0;
+    }
 }
 
 RVA(0x0015a9a0, 0x23)
