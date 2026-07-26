@@ -52,16 +52,12 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
     m_groupSelId = 0;
     m_playerSelId = 0;
     m_sessionSelId = 0;
-    i32* base = reinterpret_cast<i32*>((reinterpret_cast<char*>(this) + 4));
-    const i32* g =
-        reinterpret_cast<const i32*>(&appGuid); // the app GUID's 4 dwords -> the m_4 setup block
-    base[0] = g[0];
+    // the +0x4 block IS the app GUID (16-byte struct assign; the CGruntzMgr* m_4
+    // claim conflicts with this write - @identity-TODO resolve the +0x4 model)
+    *reinterpret_cast<GUID*>(&m_4) = appGuid;
     m_groupSel = a;
     m_playerSel = 0;
-    base[1] = g[1];
     m_sessionSel = 0;
-    base[2] = g[2];
-    base[3] = g[3];
     return 1;
 }
 

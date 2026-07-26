@@ -179,15 +179,15 @@ CHashElement* CHashBase::First() {
 RVA(0x00184b10, 0x29)
 CHashElement* CHashBase::Last() {
     u32 i = m_count - 1;
-    CHashSlot* p = &m_buckets[i];
+    DSoundLink** t = &m_buckets[i].m_chain.m_tail; // tail-anchored cursor (one lea)
     CHashElement* e;
     for (;;) {
-        e = FromLink(p->m_chain.m_tail);
-        if (i == 0) {
+        e = FromLink(*t);
+        if (i <= 0) {
             break;
         }
         --i;
-        --p;
+        t -= 4; // one CHashSlot (0x10) back, link-typed stride
         if (e != 0) {
             break;
         }
