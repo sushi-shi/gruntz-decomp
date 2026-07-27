@@ -96,8 +96,8 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
                                   : 0;
             m_joystick = d;
             m_deviceList = static_cast<SbzDeviceList*>(src->AddControllerArr(
-                reinterpret_cast<i32>(m_keyboard),
-                reinterpret_cast<i32>(d),
+                m_keyboard,
+                d,
                 0,
                 0,
                 0,
@@ -114,9 +114,9 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
             m_joystick = d;
             m_joystick2 = static_cast<CInputDevice*>(src->m_deviceB);
             m_deviceList = static_cast<SbzDeviceList*>(src->AddControllerArr(
-                reinterpret_cast<i32>(m_keyboard),
-                reinterpret_cast<i32>(d),
-                reinterpret_cast<i32>(m_joystick2),
+                m_keyboard,
+                d,
+                m_joystick2,
                 0,
                 0,
                 0,
@@ -128,8 +128,8 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
             m_keyboard = static_cast<CInputDevice*>(src->m_deviceA);
             m_joystick2 = static_cast<CInputDevice*>(src->m_deviceB);
             m_deviceList = static_cast<SbzDeviceList*>(src->AddControllerArr(
-                reinterpret_cast<i32>(m_keyboard),
-                reinterpret_cast<i32>(m_joystick2),
+                m_keyboard,
+                m_joystick2,
                 0,
                 0,
                 0,
