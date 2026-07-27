@@ -661,7 +661,11 @@ void CFileMem::Close() {
 
 RVA(0x00157a80, 0x51)
 i32 CAniAdvanceCursor::SelectCue(void* force) {
-    char* mgr = reinterpret_cast<char*>(m_ownerCtx); // the +0x0c owner (cue-role: the sub-manager)
+    // @identity-TODO m_ownerCtx is the family's deliberately-generic i32 owner slot, and
+    // this role reads +0x20 (a cue) and cue+0x78. If the owner here is CDDrawSurfaceMgr
+    // then +0x20 is m_soundStream, which does not fit a cue - so the owning class for
+    // THIS role is unsettled. Needs the 0x157a80 xref; a guessed type would be worse.
+    char* mgr = reinterpret_cast<char*>(m_ownerCtx);
     if (mgr == 0) {
         return 0;
     }
@@ -932,8 +936,8 @@ i32 CDDrawSubMgrLeafScan::SumField(const char* str) {
 }
 RVA(0x001581b0, 0x5b)
 i32 CDDrawSubMgrLeafScan::Fire(const char* key, i32 pos, i32 range1, i32 range2) {
-    char* p24 = reinterpret_cast<char*>(OwnerMgr()->m_level);
-    if (p24 != 0 && *reinterpret_cast<char**>((p24 + 0x5c)) != 0 && m_emitGate == 0) {
+    CGameLevel* lvl = OwnerMgr()->m_level;
+    if (lvl != 0 && lvl->m_mainPlane != 0 && m_emitGate == 0) {
         void* val = 0;
         m_10.Lookup(key, val);
         if (val != 0) {

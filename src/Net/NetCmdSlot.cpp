@@ -248,9 +248,9 @@ i32 CNetSession::DispatchMsg(LobbyMsg* m, i32 arg2) {
             return 1;
         case 5:
             if (m->m_04 == 1) {
-                void* p = reinterpret_cast<void*>(m->m_08);
-                m_session->OnPlayerLeft(reinterpret_cast<i32>(p));
-                m_session->ResetPlayerCommands(reinterpret_cast<i32>(p));
+                i32 playerId = m->m_08;
+                m_session->OnPlayerLeft(playerId);
+                m_session->ResetPlayerCommands(playerId);
                 return 1;
             }
             return 1;
