@@ -1211,7 +1211,8 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, i32 kind, i32 /*unusedC*/, i32 /*un
         }
     }
     // The three i64 timer pairs, snapshotted as raw 8-byte blocks (the GetA/GetB
-    // getters copy bytes); (char*)& keeps retail's one-lea + biased-second-push shape.
+    // getters copy bytes); the (char*)& form is byte-forced - it is what produces
+    // retail's one-lea + biased-second-push shape.
     SerBandPair(ar, kind, &m_timerBase);
     SerBandPair(ar, kind, &m_gooTimerBaseLo);
     char* blk2 = reinterpret_cast<char*>(&m_resourceTimerBaseLo);
@@ -1372,7 +1373,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     // (Lookup @0x1b8760); documented embedded-member offset (see SpriteFactory.h).
     CMapPtrToPtr* map = &m_world->m_childGroup->m_map48;
 
-    // the 4x15 placed-object grid (this[7..66], byte offsets +0x1c..+0x108)
+    // the 4x15 placed-object grid: dword 7..66 IS m_grid[0x3c] at +0x1c
     for (i32 base = 7; base < 0x43; base += 0xf) {
         for (i32 i = 0; i < 0xf; i++) {
             i32 key;
@@ -1389,7 +1390,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
                     return 0;
                 }
             }
-            (reinterpret_cast<void**>(this))[base + i] = cell;
+            m_grid[base - 7 + i] = static_cast<CGrunt*>(cell);
         }
     }
 
@@ -2715,6 +2716,9 @@ void CTriggerMgr::DestroyAllAnims() {
             // the grunt-notify stamp: workers bound to grunt logic carry
             // CGrunt::ReadConfigFromButeMgr as their raw notify fn (bit-compare)
             void (CGrunt::*tag)() = &CGrunt::ReadConfigFromButeMgr;
+            // language-forced: C++ has no way to compare a plain function pointer with
+            // a member-function pointer, and retail stores the method's bare code address
+            // in the notify slot (MSVC5 single-inheritance PMF IS that address).
             if (*reinterpret_cast<void**>(&desc->m_notify) == *reinterpret_cast<void**>(&tag)) {
                 (static_cast<CGrunt*>(desc->m_logic))->m_neighborCol = 0;
             }
