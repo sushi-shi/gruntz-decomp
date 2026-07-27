@@ -1,5 +1,4 @@
 #include <Gruntz/GameStateRecordLoad.h> // this TU's external declarations
-#include <Gruntz/GruntDataRecord.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Rez/RezAlloc.h>             // RezAlloc/RezFree
 #include <Gruntz/Grunt.h>             // canonical CGrunt (this) + CGruntHud + CDDrawChildGroup
@@ -238,7 +237,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     for (i32 gi = 0; gi < 3; ++gi) {
         CGruntCellRec* cell = row;
         for (i32 gj = 0; gj < 3; ++gj) {
-            if ((reinterpret_cast<GruntDataRecord*>(cell))->DeserializeStrings(ar) == 0) {
+            if (cell->DeserializeStrings(ar) == 0) {
                 return 0;
             }
             cell += 1;

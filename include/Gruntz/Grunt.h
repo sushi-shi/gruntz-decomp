@@ -234,6 +234,18 @@ struct CGruntCellRec {
     double m_stepY;   // +0x60  half-tile step Y (+-0.5)
     CGruntCellRec();  // 0x00f400 (ILT 0x401e9c; five-CString __ehvec_ctor callback)
     ~CGruntCellRec(); // 0x00f430 (ILT 0x4023a6; five-CString __ehvec_dtor callback)
+
+    // The record's own stream pair. These were declared on a `GruntDataRecord` pad-struct
+    // (deleted 2026-07-27) that was a field-for-field view of THIS record - `char*
+    // m_str[5]` over m_names, then the 0x10/0x10/0x10 blocks over m_14../m_24../m_34..
+    // and the 0x20 block over the four doubles, same 0x68 stride - which is why
+    // CGameStateRecord::Load had to reinterpret each cell to call them.
+    // Write the five names (as fixed 0x80 fields) + the four fixed blocks through `ar`;
+    // returns 0 if `ar` is null, else 1. (0x56da0, __thiscall, 1 stdcall arg.)
+    i32 SerializeStrings(class CFileMemBase* ar);
+    // The read counterpart (0x56eb0): read each fixed 0x80 name field into a temp and
+    // assign it to the owned CString member, then read the four blocks back verbatim.
+    i32 DeserializeStrings(class CFileMemBase* ar);
 };
 SIZE(0x68);
 struct GruntStrSub { // +0x44c / +0x448 / +0x1c0  (~CString 0x1b9cde)

@@ -2045,8 +2045,8 @@ gruntcreationpoint	?FireActivation@CGruntCreationPoint@@UAEXH@Z	100.0000	100.000
 gruntcreationpoint	?GetTypeTag@CGruntCreationPoint@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:ecd152db84a0	0x106e0
 gruntcreationpoint	?RegisterActs@CGruntCreationPoint@@SAXXZ	92.9130	92.9130	10	b605c3e2b77f	0x3eac0
 gruntcreationpoint	?SerializeMove@CGruntCreationPoint@@UAEHPAVCFileMemBase@@HHH@Z	100.0000	100.0000	5	74640a11d902	0x3e7a0
-gruntdatarecord	?DeserializeStrings@GruntDataRecord@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	3	52fc42ffaa32	0x56eb0
-gruntdatarecord	?SerializeStrings@GruntDataRecord@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	90ce9b7bf8b8	0x56da0
+gruntdatarecord	?DeserializeStrings@CGruntCellRec@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	3	52fc42ffaa32	0x56eb0
+gruntdatarecord	?SerializeStrings@CGruntCellRec@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	90ce9b7bf8b8	0x56da0
 gruntentrancearrival	?Apply@CEffect6b@@QAEXHH@Z	76.3333	76.3333	2	aa4ffe36331d	0x6b2e0
 gruntentrancearrival	?BuildGruntExitAnimation@CGrunt@@QAEHXZ	99.0509	99.0509	15	c2838316fefe	0x641b0
 gruntentrancearrival	?FinalizeStep@CGrunt@@UAEXH@Z	18.4693	18.4693	7	bfaa851e7131	0x5ecd0

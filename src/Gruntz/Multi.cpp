@@ -3539,6 +3539,17 @@ void CMulti::DropTimeout() {
 // itself returns CString by value. Same by-value shape as GetName.
 RVA(0x000bc3f0, 0x1e)
 CString CNetCmdSlot::BuildHostName() {
+    // @identity-TODO SlotInfo vs GruntzPlayer CONTRADICT at +0x04, so this cross-cast
+    // cannot be folded yet. Retail here does `mov ecx,[this+0xc]` (m_desc) and calls the
+    // 0x3e54 thunk -> 0x1f450, which is `add ecx,4; call ??0CString@@QAE@ABV0@@Z` - i.e.
+    // m_desc+0x04 is a CString. But CNetSession::SendGruntRecord (0xbfc70) reads the SAME
+    // slot as an integer DPID (`mov eax,[edx+0xc]; mov ecx,[eax+0x4]; push ecx` into
+    // CNetMgr::SetData), which is what SlotInfo::m_playerId models. Both cannot be right.
+    // What settles it: 0x1f450 has ~8 callers on apparently different receivers (CMulti,
+    // CMultiBootyState, CExitTrigger); MSVC5 has no /OPT:ICF, so they are all ONE class -
+    // identify that class from the new-sites of each receiver (`push <n>; call ??2`) and
+    // either GruntzPlayer::GetName is mis-attributed (the 0x157a80 pattern) or SlotInfo's
+    // +0x04 is. Do NOT fold on the name alone.
     return (reinterpret_cast<GruntzPlayer*>(m_desc))->GetName();
 }
 
