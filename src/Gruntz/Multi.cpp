@@ -1838,7 +1838,7 @@ i32 CMulti::PollSessionGated(i32 a1, i32 a2) {
 RVA(0x000b91f0, 0x31)
 i32 CMulti::SendStatBuf(CNetStatPacket* pkt, i32 flag) {
     pkt->m_0 |= 0x80;
-    i32 hr = Peer()->SetGroupDataFrom(LocalPlayer(), flag, reinterpret_cast<i32>(pkt), 0x10);
+    i32 hr = Peer()->SetGroupDataFrom(LocalPlayer(), flag, pkt, 0x10);
     return hr == 0;
 }
 
@@ -1865,7 +1865,7 @@ i32 CMulti::SendStatFrom(void* pkt, i32 b, i32 c) {
     if (pkt == 0) {
         return 0;
     }
-    i32 hr = Peer()->SetGroupDataFrom(LocalPlayer(), c, reinterpret_cast<i32>(pkt), b);
+    i32 hr = Peer()->SetGroupDataFrom(LocalPlayer(), c, pkt, b);
     return hr == 0;
 }
 
@@ -1875,7 +1875,7 @@ i32 CMulti::SendStatPair(CNetSessionNode* recipient, CNetStatPacket* pkt, i32 c)
         return 0;
     }
     pkt->m_0 |= 0x80;
-    i32 hr = Peer()->SetGroupData2(LocalPlayer(), recipient, c, reinterpret_cast<i32>(pkt), 0x10);
+    i32 hr = Peer()->SetGroupData2(LocalPlayer(), recipient, c, pkt, 0x10);
     return hr == 0;
 }
 
@@ -1897,7 +1897,7 @@ i32 CMulti::SendStat3(i32 id, u32 value, i32 flag) {
     pkt.m_0 |= 0x80;
     pkt.m_statId = value;
     pkt.m_value = LocalPlayer()->m_id;
-    i32 hr = Peer()->SetData(LocalPlayer()->m_id, id, flag, reinterpret_cast<i32>(&pkt), 0x10);
+    i32 hr = Peer()->SetData(LocalPlayer()->m_id, id, flag, &pkt, 0x10);
     return hr == 0;
 }
 
@@ -1921,7 +1921,7 @@ i32 CMulti::SendStatPairRaw(CNetSessionNode* recipient, void* pkt, i32 size, i32
     if (pkt == 0) {
         return 0;
     }
-    i32 hr = Peer()->SetGroupData2(LocalPlayer(), recipient, c, reinterpret_cast<i32>(pkt), size);
+    i32 hr = Peer()->SetGroupData2(LocalPlayer(), recipient, c, pkt, size);
     return hr == 0;
 }
 
@@ -1931,7 +1931,7 @@ i32 CMulti::SendStatValue(i32 id, i32 statId, i32 value, i32 flag) {
     pkt.m_0 |= 0x80;
     pkt.m_statId = statId;
     pkt.m_value = value;
-    i32 hr = Peer()->SetData(LocalPlayer()->m_id, id, flag, reinterpret_cast<i32>(&pkt), 0x10);
+    i32 hr = Peer()->SetData(LocalPlayer()->m_id, id, flag, &pkt, 0x10);
     return hr == 0;
 }
 
@@ -2843,7 +2843,7 @@ i32 CMulti::SendChannelStat422() {
     g_chanStat422_id = 0x422;
     g_chanStat422_flag |= 0x80;
     g_chanStat422_val = 0;
-    Peer()->SetGroupDataFrom(LocalPlayer(), 1, reinterpret_cast<i32>(&g_chanStat422_flag), 0xc);
+    Peer()->SetGroupDataFrom(LocalPlayer(), 1, &g_chanStat422_flag, 0xc);
     return 1;
 }
 
@@ -2852,7 +2852,7 @@ i32 CMulti::SendChannelStat423() {
     g_chanStat423_id = 0x423;
     g_chanStat423_flag |= 0x80;
     g_chanStat423_val = 0;
-    Peer()->SetGroupDataFrom(LocalPlayer(), 1, reinterpret_cast<i32>(&g_chanStat423_flag), 0xc);
+    Peer()->SetGroupDataFrom(LocalPlayer(), 1, &g_chanStat423_flag, 0xc);
     return 1;
 }
 
@@ -2925,7 +2925,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
     Peer()->SetGroupDataFrom(
         LocalPlayer(),
         1,
-        reinterpret_cast<i32>(&g_chatPacket_flag),
+        &g_chatPacket_flag,
         strlen(line) + 0xd
     );
     return 1;

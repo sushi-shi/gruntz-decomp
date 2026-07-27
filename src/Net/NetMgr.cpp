@@ -793,10 +793,10 @@ void* CNetMgr::GetPlayerData(i32 id) {
 }
 
 RVA(0x00178ef0, 0x5c)
-i32 CNetMgr::SetGroupData2(CNetSessionNode* a, CNetSessionNode* b, i32 c, i32 d, i32 e) {
+i32 CNetMgr::SetGroupData2(CNetSessionNode* a, CNetSessionNode* b, i32 c, void* data, i32 size) {
     i32 ida = a ? a->m_id : 0;
     i32 idb = b ? b->m_id : 0;
-    i32 hr = m_directPlay->SetData5(ida, idb, c, d, e);
+    i32 hr = m_directPlay->SetData5(ida, idb, c, data, size);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x46d, hr, 0);
     }
@@ -823,8 +823,8 @@ i32 CNetMgr::SendEx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h, i32 
 }
 
 RVA(0x00178fc0, 0x44)
-i32 CNetMgr::SetData(i32 a, i32 b, i32 c, i32 d, i32 e) {
-    i32 hr = m_directPlay->SetData5(a, b, c, d, e);
+i32 CNetMgr::SetData(i32 a, i32 b, i32 c, void* data, i32 size) {
+    i32 hr = m_directPlay->SetData5(a, b, c, data, size);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x492, hr, 0);
     }
@@ -849,9 +849,9 @@ i32 CNetMgr::Receive(
 }
 
 RVA(0x00179090, 0x4c)
-i32 CNetMgr::SetGroupDataFrom(CNetSessionNode* a, i32 c, i32 d, i32 e) {
+i32 CNetMgr::SetGroupDataFrom(CNetSessionNode* a, i32 c, void* data, i32 size) {
     i32 ida = a ? a->m_id : 0;
-    i32 hr = m_directPlay->SetData5(ida, 0, c, d, e);
+    i32 hr = m_directPlay->SetData5(ida, 0, c, data, size);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x4da, hr, 0);
     }

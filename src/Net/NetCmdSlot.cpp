@@ -356,7 +356,7 @@ i32 CNetCmdSlot::SendGruntRecord(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32
                    m_desc->m_playerId,
                    gruntId,
                    0,
-                   reinterpret_cast<i32>(&g_netGruntRecMsg),
+                   &g_netGruntRecMsg,
                    rec->m_payloadLen + offsetof(NetGruntRecMsg, m_payload)
                )
            == 0;
@@ -437,7 +437,7 @@ i32 CNetSession::SendOne(CNetCmdSlot* slot, i32 val) {
                m_localDesc->m_id,
                slot->m_desc->m_netId,
                0,
-               reinterpret_cast<i32>(&g_netCmdSendMsg),
+               &g_netCmdSendMsg,
                entry->m_payloadLen + offsetof(NetCmdSendMsg, m_payload)
            )
            == 0;

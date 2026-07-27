@@ -421,7 +421,7 @@ struct IDirectPlay4Z {
         void* lpData,
         i32* lpSize
     ) PURE;                                                           // slot 25 (+0x64)
-    STDMETHOD(SetData5)(i32 a, i32 b, i32 c, i32 d, i32 e) PURE;      // slot 26 (+0x68)
+    STDMETHOD(SetData5)(i32 a, i32 b, i32 c, void* data, i32 size) PURE; // slot 26 (+0x68)
     STDMETHOD(v1b)() PURE;                                            // slot 27
     STDMETHOD(v1c)() PURE;                                            // slot 28
     STDMETHOD(GetData5)(i32 id, void* lpData, i32 size, i32 fl) PURE; // slot 29 (+0x74)
@@ -684,9 +684,9 @@ public:
     i32 RemovePlayerNode(CNetPlayerListNode* node); // 0x1790e0  drop one +0x38 player node
     i32 EnumSessions2(void* ctx); // 0x179240  enum into a 0x28 desc, return desc+0x18
     void* GetPlayerData(i32 id);  // 0x178eb0
-    i32 SetGroupData2(CNetSessionNode* a, CNetSessionNode* b, i32 c, i32 d, i32 e); // 0x178ef0
+    i32 SetGroupData2(CNetSessionNode* a, CNetSessionNode* b, i32 c, void* data, i32 size); // 0x178ef0
     i32 SendEx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h, i32 i);      // 0x178f50
-    i32 SetData(i32 a, i32 b, i32 c, i32 d, i32 e);                                 // 0x178fc0
+    i32 SetData(i32 a, i32 b, i32 c, void* data, i32 size);                         // 0x178fc0
     i32 Receive(
         CNetSessionNode* from,
         CNetSessionNode* to,
@@ -694,7 +694,7 @@ public:
         void* lpData,
         i32* lpSize
     );                                                             // 0x179010
-    i32 SetGroupDataFrom(CNetSessionNode* a, i32 c, i32 d, i32 e); // 0x179090
+    i32 SetGroupDataFrom(CNetSessionNode* a, i32 c, void* data, i32 size); // 0x179090
     i32 GetGroupInfo(CNetSessionNode* a, void* desc, i32 flags);   // 0x179190
     i32 EnumSessions(void* desc, void* ctx);                       // 0x179130
 
