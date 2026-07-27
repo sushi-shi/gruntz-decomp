@@ -5563,8 +5563,8 @@ void* CBattlezMapConfig::PickSpawnCoord(void* out, CGrunt* unit, i32 kind) {
                 for (i32 j = 15; j != 0; j--) {
                     CGrunt* u = *row;
                     if (u != 0 && u->CoordCount() != 0) {
-                        i32* node = reinterpret_cast<i32*>(u->CoordTail()->m_coord);
-                        if (node[0] == cx && node[1] == cy) {
+                        GruntCoord* node = u->CoordTail()->m_coord;
+                        if (node->m_x == cx && node->m_y == cy) {
                             ok = 0;
                         }
                     }
@@ -6388,6 +6388,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         slot++;
         cnt--;
     }
+    // naming the element of the container's untyped byte pool is its one typed accessor
     return strcmp((reinterpret_cast<CAnimNameRecord*>(sel))->m_name, "R") != 0;
 }
 
@@ -6614,8 +6615,11 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         if (static_cast<u32>(unit->m_dwell) <= 0x7d0) {
             return 1;
         }
-        i32 y = *reinterpret_cast<i32*>((recB + 0xd4));
-        i32 x = *reinterpret_cast<i32*>((recB + 0xd0));
+        // NB the old spelling was `*(i32*)(recB + 0xd4)` on a CBattlezMapConfig* - that
+        // is pointer arithmetic in WHOLE STRUCTS, i.e. 0xd4 * sizeof(*recB) bytes out.
+        // +0xd0/+0xd4 are the declared m_markerX / m_markerY.
+        i32 y = recB->m_markerY;
+        i32 x = recB->m_markerX;
         unit->TileSwitch(x, y, 0, 0x987, 0, 0x4068);
         unit->m_dwell = 0;
         return 1;
