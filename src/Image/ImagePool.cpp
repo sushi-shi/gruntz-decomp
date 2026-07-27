@@ -5,6 +5,7 @@
 #include <Rez/RezMgr.h>             // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
 #include <rva.h>
 #include <string.h>
+#include <Image/FileImageRecords.h> // the real on-disk PcxHeader
 
 enum {
     RID_HEADER_SIZE = 0x20
@@ -763,23 +764,23 @@ i32 CRezImage::LoadBmp(char* name, void* a2, void* a3) {
 
 RVA(0x00176000, 0x18f)
 i32 CRezImage::DecodePcxData(void* buf, void* a2, void* a3) {
-    u8* hdr = static_cast<u8*>(buf);
-    i32 width = *reinterpret_cast<i16*>(hdr + 8) - *reinterpret_cast<i16*>(hdr + 4) + 1;
-    i32 height = *reinterpret_cast<i16*>(hdr + 0xa) - *reinterpret_cast<i16*>(hdr + 6) + 1;
-    if (hdr[3] != 8) {
+    PcxHeader* hdr = static_cast<PcxHeader*>(buf);
+    i32 width = hdr->m_xMax - hdr->m_xMin + 1;
+    i32 height = hdr->m_yMax - hdr->m_yMin + 1;
+    if (hdr->m_bitsPerPixel != 8) {
         return 0;
     }
-    if (!DecodeBmpHeader(a2, width, height, static_cast<i8>(hdr[0x41]) * 8, a3)) {
+    if (!DecodeBmpHeader(a2, width, height, static_cast<i8>(hdr->m_planes) * 8, a3)) {
         return 0;
     }
 
-    u8* src = hdr + 0x80;
-    i32 scanBytes = (width * static_cast<i8>(hdr[0x41]) * static_cast<i8>(hdr[3]) + 7) / 8;
+    u8* src = hdr->m_pixels; // the RLE stream at +0x80
+    i32 scanBytes = (width * static_cast<i8>(hdr->m_planes) * static_cast<i8>(hdr->m_bitsPerPixel) + 7) / 8;
     u8* scan = static_cast<u8*>(::operator new(scanBytes));
 
     for (i32 y = 0; y < height; y++) {
         u8* dst = m_pixels + m_rowOffsets[y];
-        i32 n = width * static_cast<i8>(hdr[0x41]);
+        i32 n = width * static_cast<i8>(hdr->m_planes);
         while (n > 0) {
             u8 c = *src++;
             if ((c & 0xc0) == 0xc0) {
@@ -797,11 +798,11 @@ i32 CRezImage::DecodePcxData(void* buf, void* a2, void* a3) {
             }
         }
 
-        if (static_cast<i8>(hdr[0x41]) == 1) {
+        if (static_cast<i8>(hdr->m_planes) == 1) {
             for (i32 x = width; x != 0; x--) {
                 *dst++ = scan[x - 1];
             }
-        } else if (static_cast<i8>(hdr[0x41]) == 3) {
+        } else if (static_cast<i8>(hdr->m_planes) == 3) {
             u8* g = scan + width * 2;
             u8* b = g + width;
             for (i32 x = width; x != 0; x--) {
