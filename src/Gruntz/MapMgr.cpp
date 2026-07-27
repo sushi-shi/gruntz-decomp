@@ -37,7 +37,7 @@ i32 CMapArrayA::Allocate(u32 count) {
     BrickzNode* block = static_cast<BrickzNode*>(::operator new(count * sizeof(BrickzNode)));
     m_0 = block;
     if (!block) {
-        return reinterpret_cast<i32>(block);
+        return 0;
     }
 
     m_block = block;

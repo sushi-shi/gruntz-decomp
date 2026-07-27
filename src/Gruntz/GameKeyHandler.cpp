@@ -589,9 +589,8 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         }
         i32 outA = 0;
         i32 outB = 0;
-        i32 r = reinterpret_cast<i32>(
-            host->m_cmdGrid->ScreenToCell(self->m_cursorX, self->m_cursorY, &outB, &outA, 5)
-        );
+        CGrunt* r =
+            host->m_cmdGrid->ScreenToCell(self->m_cursorX, self->m_cursorY, &outB, &outA, 5);
         if (r == 0) {
             return 1;
         }

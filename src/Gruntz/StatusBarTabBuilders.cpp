@@ -562,14 +562,14 @@ i32 CSBI_SideTab::BuildHandle() {
         gm_ob
     );
     CDDrawWorker* gm = static_cast<CDDrawWorker*>(gm_ob);
-    i32 glyph;
+    CImage* glyph;
     if (gm == 0 || val < gm->m_minIndex || val > gm->m_maxIndex) {
         glyph = 0;
     } else {
-        glyph = reinterpret_cast<i32>(static_cast<CImage*>(gm->m_items.GetAt(val)));
+        glyph = static_cast<CImage*>(gm->m_items.GetAt(val));
     }
     m_sampledValue = val;
-    m_bottomFrame = reinterpret_cast<CImage*>(glyph);
+    m_bottomFrame = glyph;
     return 1;
 }
 
