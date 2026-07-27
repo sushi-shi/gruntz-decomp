@@ -11,6 +11,10 @@ public:
     i32 m_type; // +0x00 discriminator
     class CDDSurface* m_04; // the mode's source surface
     class CDDSurface* m_08; // the mode's dest/alt surface
+    // +0x0c/+0x10 are MODE-TAGGED slots: the fader type selects what they hold.
+    // CFaderLight reads m_0c as a CDDPalette*, the flip fader reads m_0c/m_10 as
+    // CDDSurface*, and the box fader reads them as plain ints (m_boxParam). i32 is
+    // the honest declaration - a single pointer type would be wrong for two of three.
     i32 m_0c;
     i32 m_10;
 }; // 0x14 - the shared base; the upper fields (m_14..m_20) belong to whichever

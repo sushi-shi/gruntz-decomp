@@ -394,6 +394,7 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
     m_lightGate = d->m_10;
     m_centerX = d->m_18;
     m_centerY = d->m_1c;
+    // the mode-tagged desc slot read at this mode's own type (FxModeDesc.h)
     CDDPalette* pal = reinterpret_cast<CDDPalette*>(d->m_0c);
     m_palette = pal;
     i32 cnt = d->m_14;
@@ -442,6 +443,7 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
     if (m_spanCount > 0) {
         if (d->m_20 == 0) {
             m_table = m_cache.HueRampTable(
+                // the 0x400 palette blob walked entry-wise (the PalEntries seam)
                 reinterpret_cast<PalEntry*>(m_palette->m_cacheA),
                 m_spanCount,
                 0
@@ -685,7 +687,9 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     if (cfg->m_10 == 0) {
         return 0;
     }
+    // the mode-tagged desc slot read at this mode's own type (FxModeDesc.h)
     m_primeSrc = reinterpret_cast<CDDSurface*>(cfg->m_0c);
+    // the mode-tagged desc slot read at this mode's own type (FxModeDesc.h)
     m_flipTarget = reinterpret_cast<CDDSurface*>(cfg->m_10);
     m_48 = cfg->m_18;
     m_recOrderFlag = cfg->m_14;
@@ -949,7 +953,9 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
     if (cfg->m_14 == 0) {
         // build the fade shade table from the descriptor's palette (m_cache is the
         // CFader base's embedded CShadeTableCache at this+0x04)
+        // the mode-tagged desc slot read at this mode's own type (FxModeDesc.h)
         CDDPalette* pal = reinterpret_cast<CDDPalette*>(cfg->m_10);
+        // the 0x400 palette blob walked entry-wise (the PalEntries seam)
         m_table = m_cache.HueRampTable(reinterpret_cast<PalEntry*>(pal->m_cacheA), 0x10, 0);
         m_flag = 1; // we own it: ~CFader will FindRemove it
     } else {
@@ -1102,6 +1108,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     if (m_surfB == 0) {
         return 0;
     }
+    // the mode-tagged desc slot read at this mode's own type (FxModeDesc.h)
     m_surfC = pInit->m_0c ? reinterpret_cast<CDDSurface*>(pInit->m_0c) : m_surfB;
 
     if (!m_cache.Init()) {
@@ -1176,9 +1183,11 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
                 m_useLut = 0;
             }
         } else {
+            // the mode-tagged desc slot read at this mode's own type (FxModeDesc.h)
             CDDPalette* pal = reinterpret_cast<CDDPalette*>(pInit->m_28);
             m_table =
                 m_cache
+                    // the 0x400 palette blob walked entry-wise (the PalEntries seam)
                     .FlashTable(reinterpret_cast<PalEntry*>(pal->m_cacheA), 0x20, 0x20, 0x32, 0xc8);
         }
 
