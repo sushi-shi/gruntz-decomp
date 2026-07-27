@@ -776,8 +776,9 @@ void CDDrawWorkerCache::Unload() {
     m_10.RemoveAll();
 }
 
+// +0x1c is m_nCount INSIDE the +0x10 MFC map (vptr,hash,size,count) - GetCount().
 static inline i32 ReadWorkerCacheField1c(const CDDrawWorkerCache* p) {
-    return *reinterpret_cast<const i32*>((reinterpret_cast<const char*>(p) + 0x1c));
+    return p->m_10.GetCount();
 }
 static inline AnimWorkerObj* MakeAnimWorker(const CDDrawWorkerCache* parent) {
     AnimWorkerObj* w = new AnimWorkerObj;

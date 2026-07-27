@@ -45,8 +45,9 @@ inline void* operator new(u32, void* p) {
 // dissolved onto the real ??1CLoadable/??_GCLoadable identities.
 RVA_COMPGEN(0x000d5d70, 0x16, ??1CLoadable@@UAE@XZ)
 
+// +0x1c is m_nCount INSIDE the +0x10 MFC map (vptr,hash,size,count) - GetCount().
 static inline i32 ReadRegistryField1c(const CDDrawWorkerRegistry* p) {
-    return *reinterpret_cast<const i32*>((reinterpret_cast<const char*>(p) + 0x1c));
+    return p->m_10map.GetCount();
 }
 
 static inline CDDrawWorker* MakeWorker(const CDDrawWorkerRegistry* parent) {

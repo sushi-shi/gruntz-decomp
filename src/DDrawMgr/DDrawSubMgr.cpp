@@ -82,8 +82,9 @@ VTBL(CDDrawSurfacePair, 0x001eff30);
 VTBL(CDDrawSurfaceChildA, 0x001eff70); // ??_7CDDrawSurfaceChildA@@6B@ (11 slots)
 VTBL(CDrawSubWorker, 0x001effa0);      // ??_7CDrawSubWorker (11-slot CLoadable leaf)
 
+// +0x1c is m_nCount INSIDE the +0x10 MFC map (vptr,hash,size,count) - GetCount().
 static inline i32 LeafReadMapCount(const CDDrawSubMgrLeafScan* p) {
-    return *reinterpret_cast<const i32*>((reinterpret_cast<const char*>(p) + 0x1c));
+    return p->m_10.GetCount();
 }
 
 RVA(0x00114120, 0x70)
