@@ -2,7 +2,18 @@
 #define SRC_IMAGE_CFILEIMAGERECORDS_H
 
 #include <Ints.h>
+#include <Win32.h> // BITMAPINFOHEADER / RGBQUAD (inert when <Mfc.h> already pulled windows.h)
 #include <rva.h>
+
+// The 0x428-byte BMP info block CRezImage::SaveBmp builds on the stack and Writes
+// straight after the file header: a BITMAPINFOHEADER followed by the FULL 256-entry
+// colour table. wingdi's BITMAPINFO declares that table `[1]`, so the 8bpp form has
+// to be named separately (retail zeroes exactly 0x10a dwords = 0x428 B over it).
+struct Bmp256Info {
+    BITMAPINFOHEADER bmiHeader; // +0x000
+    RGBQUAD bmiColors[256];     // +0x028
+};
+SIZE(0x428);
 
 #pragma pack(push, 1)
 struct DecodeSrc {

@@ -1,6 +1,8 @@
 #include <Rez/DebugPrintf.h> // C-linkage decls for the ex-wrapped defs
 #include <rva.h>
 
+#include <stdarg.h>          // va_list / va_start - the real spelling of `(char*)(&fmt+1)`
+#include <stdarg.h>          // va_list / va_start - the real spelling of `(char*)(&fmt+1)`
 #include <stdlib.h>          // atol / getenv
 #include <string.h>          // inline strcpy (rep movs / repne scasb), strpbrk, strstr
 #include <Gruntz/RangeSet.h> // canonical CRangeSet + CRange (the debug-channel set)
@@ -129,12 +131,17 @@ void MonoNewline() {
         i32 i = 0xa0;
         do {
             i += 2;
+            // byte-forced: the MDA text page is a byte-addressed 80x25 grid of
+            // 2-byte (char,attr) cells; the scroll runs on the 0xa0-byte LINE
+            // stride, and retail scales the index *1 (`[ecx+eax*1-0xa2]`), which
+            // a u16[] model would emit as *2.
             *reinterpret_cast<u16*>((g_monoBuffer + i - 0xa2)) =
                 *reinterpret_cast<u16*>((g_monoBuffer + i - 2));
         } while (i < 0xfa0);
         i = 0xf00;
         do {
             i += 2;
+            // byte-forced: same byte-addressed 2-byte-cell page (retail `[ecx+eax*1-0x2]`)
             *reinterpret_cast<u16*>((g_monoBuffer + i - 2)) = 0x720;
         } while (i < 0xfa0);
         g_monoRow--;
@@ -144,16 +151,14 @@ void MonoNewline() {
 // 0x184db0 - MONO-console clear: blank the whole 80x25 word buffer (0x0720) and home
 // the cursor (row 0, column 0).
 // @early-stop
-// codegen-alias wall (~60%): the blank loop + cursor-home are correct, but retail
-// reloads g_monoBuffer into edx each iteration (cl caches it in esi -> push/pop) and
-// stores the 0x0720 immediate directly where cl hoists it into cx; the row/col=0 pair
-// reuses retail's zero reg. Same alias/hoist family as MonoNewline.
+// one row left (99%): SIB role swap ([eax+edx] vs [edx+eax*1]) - operand order can't
+// steer it. The old ~60% "codegen-alias wall" note was stale TU state: it cleared when
+// the Rez*Printf family stopped hand-rolling `(char*)(&fmt+1)` and used va_start.
 RVA(0x00184db0, 0x28)
-// @early-stop
-// one row: SIB role swap ([eax+edx] vs [edx+eax*1]) - operand order can't steer it.
 void MonoClear() {
     i32 i = 0;
     do {
+        // byte-forced: byte-addressed MDA page, 2-byte cells, retail indexes *1
         *reinterpret_cast<u16*>(g_monoBuffer + i) = 0x720;
         i += 2;
     } while (i < 0xfa0);
@@ -167,7 +172,9 @@ void RezAssertFail(char* fmt, ...) {
     char buf[256];
     if (g_debugPrintMode != 1 && g_debugPrintMode != 0
         && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(0)) {
-        vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
+        va_list ap;
+        va_start(ap, fmt);
+        vsprintf(buf, fmt, ap);
         DebugSink_184df0(buf);
     }
 }
@@ -179,7 +186,9 @@ void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
     if (g_debugPrintMode != 1 && g_debugPrintMode != 0
         && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(0)) {
         DebugSetCursorXY(x, y);
-        vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
+        va_list ap;
+        va_start(ap, fmt);
+        vsprintf(buf, fmt, ap);
         DebugSink_184df0(buf);
     }
 }
@@ -190,7 +199,9 @@ void RezDebugPrintfCh(i32 channel, char* fmt, ...) {
     char buf[256];
     if (g_debugPrintMode != 1 && g_debugPrintMode != 0
         && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(channel)) {
-        vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
+        va_list ap;
+        va_start(ap, fmt);
+        vsprintf(buf, fmt, ap);
         DebugSink_184df0(buf);
     }
 }
@@ -202,7 +213,9 @@ void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...) {
     if (g_debugPrintMode != 1 && g_debugPrintMode != 0
         && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(channel)) {
         DebugSetCursorXY(x, y);
-        vsprintf(buf, fmt, reinterpret_cast<char*>((&fmt + 1)));
+        va_list ap;
+        va_start(ap, fmt);
+        vsprintf(buf, fmt, ap);
         DebugSink_184df0(buf);
     }
 }

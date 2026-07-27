@@ -645,6 +645,9 @@ i32 CRezImage::Convert8To16(void* dc, CRezImage* src, void* pal) {
     }
     for (i32 y = 0; y < m_height; y++) {
         u8* sp = src->m_pixels + y * src->m_stride;
+        // byte-forced: m_pixels is the 8bpp byte plane, but DecodeBmpHeader(...,0x10,...)
+        // above just reconfigured `this` to 16bpp, so the same member now carries u16
+        // pixels at the m_stride*2 byte pitch (retail `lea edx,[edi+edx*2]`).
         u16* dp = reinterpret_cast<u16*>((m_pixels + y * m_stride * 2));
         for (i32 x = 0; x < m_width; x++) {
             u32 c = palette[*sp];
@@ -1076,7 +1079,14 @@ i32 CRezImage::Save(const char* filename, void* paletteObj) {
 // the scanlines bottom-up (m_pixels + m_rowOffsets[row], width bytes each). The
 // destructible stack CFile temp forces the exception frame (push -1 / handler / fs:0).
 // @early-stop
-// zero-register-pinning regalloc wall (~57%). Fixed a REAL bug first: the CFile temp
+// zero-register-pinning regalloc wall (58.17 -> 73.13 after the 2026-07-27 record fix:
+// the 0x428 byte buffer became the declared `Bmp256Info` (BITMAPINFOHEADER + the full
+// 256-entry table), the colour-table de-interleave was writing TWO BYTES LOW (ct[0]/
+// ct[-1]/ct[-2] off the table base, corrupting biClrImportant - retail's three `lea`
+// bases at esp+0x5c/0x5b/0x5a run against a cursor seeded at pal+2, i.e. rgbRed/
+// rgbGreen/rgbBlue of entry i), and the file header is an inline strcpy of the
+// 0x61aabc "BM" template over a zeroed record, not a 14-byte copy loop). Fixed a REAL
+// bug earlier too: the CFile temp
 // is 0x10 B on the frame (ctor@[esp+0x24], info@[esp+0x34]=file+0x10), not 0x440 -
 // the oversized view had inflated the frame to sub esp,0x878; now 0x448 (retail 0x44c,
 // off by one consequent spill slot). The EH prologue matches (push -1 + scope-table
@@ -1097,36 +1107,39 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
     }
 
     BITMAPFILEHEADER fileHdr; // real 0xe-byte packed file header ([esp+0x10])
-    char info[0x428];         // BITMAPINFOHEADER + 256-entry RGBQUAD table ([esp+0x34])
-    BITMAPINFOHEADER* bih = reinterpret_cast<BITMAPINFOHEADER*>(info);
-    memset(info, 0, 0x428);
-    bih->biSize = 0x28;
-    bih->biWidth = m_width;
-    bih->biHeight = m_height;
-    bih->biPlanes = 1;
-    bih->biBitCount = 8;
-    bih->biCompression = 0;
-    bih->biSizeImage = 0;
+    Bmp256Info info;          // BITMAPINFOHEADER + the 256-entry RGBQUAD table ([esp+0x34])
+    memset(&info, 0, sizeof(info));
+    info.bmiHeader.biSize = 0x28;
+    info.bmiHeader.biWidth = m_width;
+    info.bmiHeader.biHeight = m_height;
+    info.bmiHeader.biPlanes = 1;
+    info.bmiHeader.biBitCount = 8;
+    info.bmiHeader.biCompression = 0;
+    info.bmiHeader.biSizeImage = 0;
 
-    u8* pal = static_cast<u8*>(obj) + 8;
+    // +0x008 of the palette node is its LOGPALETTE entry table (Build assembles it there).
+    PALETTEENTRY* pal = static_cast<CImagePaletteNode*>(obj)->m_pal.palPalEntry;
     if (pal == 0) {
         return 0;
     }
-    // De-interleave the source RGBQUADs into the colour table (BMP BGR order).
-    u8* ct = reinterpret_cast<u8*>(info) + sizeof(BITMAPINFOHEADER); // the colour table
+    // De-interleave the node's R,G,B entries into the colour table's BGR order:
+    // retail stores red to [ct+2], green to [ct+1], blue to [ct+0] (the three
+    // `lea` bases at esp+0x5c/0x5b/0x5a against a cursor seeded at pal+2).
+    RGBQUAD* ct = info.bmiColors;
     for (i32 i = 0x100; i != 0; i--) {
-        ct[0] = pal[0];
-        *(ct - 1) = pal[1];
-        *(ct - 2) = pal[2];
-        ct += 4;
-        pal += 4;
+        ct->rgbRed = pal->peRed;
+        ct->rgbGreen = pal->peGreen;
+        ct->rgbBlue = pal->peBlue;
+        ct++;
+        pal++;
     }
 
-    // Copy the 14-byte file-header template, then patch bfSize / bfOffBits.
-    char* fh = reinterpret_cast<char*>(&fileHdr);
-    for (i32 b = 0; b < 0xe; b++) {
-        fh[b] = g_bmpHeaderTemplate[b];
-    }
+    // Zero the packed 0xe-byte on-disk header, stamp "BM" over it, then patch
+    // bfSize / bfOffBits. Retail inlines a strcpy here (repnz scasb over the
+    // 0x61aabc template, then rep movsd/movsb), not a 14-byte copy loop.
+    memset(&fileHdr, 0, sizeof(fileHdr));
+    // API-forced: strcpy takes char*, and the target is a packed on-disk header.
+    strcpy(reinterpret_cast<char*>(&fileHdr), g_bmpHeaderTemplate);
     fileHdr.bfSize = m_width * m_height + 0x436;
     fileHdr.bfOffBits = 0x436;
 
@@ -1135,7 +1148,7 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
         return 0;
     }
     file.Write(&fileHdr, 0xe);
-    file.Write(info, 0x428);
+    file.Write(&info, 0x428);
     for (i32 row = m_height - 1; row >= 0; row--) {
         file.Write(m_pixels + m_rowOffsets[row], m_width);
     }
@@ -1184,11 +1197,11 @@ i32 ApiCallerStubs::CImagePaletteNode::Build(PALETTEENTRY* src, i32 flags) {
     m_flags = flags;
     m_pal.palNumEntries = 0x100;
     m_pal.palVersion = 0x300;
-    DWORD* s = reinterpret_cast<DWORD*>(src);
+    PALETTEENTRY* s = src;
     PALETTEENTRY* d = m_pal.palPalEntry;
     i32 i = 0x100;
     do {
-        *reinterpret_cast<DWORD*>(d) = *s++;
+        *d = *s++; // 4-byte POD copy -> retail's single `mov ebp,[ecx] / mov [eax-3],ebp`
         d->peFlags = 0;
         d++;
     } while (--i);
