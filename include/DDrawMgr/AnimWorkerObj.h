@@ -86,21 +86,67 @@ struct AnimWorkerObj : public CWapObj {
     i32 m_30;            // +0x30  spawn-record param B / projectile hi bound A (0 => default MAX)
     i32 m_34;            // +0x34  projectile lo bound B (zeroed by Init)
     i32 m_38;            // +0x38  projectile hi bound B (zeroed by Init)
-    char m_pad3c[0x4c - 0x3c]; // +0x3c  flat serialized state (Save/Load stream it)
+    char m_pad3c[0x40 - 0x3c];
+    i32 m_40;   // +0x040  (serialized)
+    i32 m_44;   // +0x044  (serialized)
+    i32 m_48;   // +0x048  (serialized)
     i32 m_scrollTargetX;       // +0x4c  demo auto-scroll per-axis target (DemoAutoScrollStep,
     i32 m_scrollTargetY;       // +0x50  Demo.cpp; part of the flat serialized band)
-    char m_pad54[0xbc - 0x54]; // +0x54  flat serialized state (continued)
+    char m_pad54[0x58 - 0x54];
+    i32 m_58;   // +0x058  (serialized)
+    i32 m_5c;   // +0x05c  (serialized)
+    i32 m_60;   // +0x060  (serialized)
+    i32 m_64;   // +0x064  (serialized)
+    i32 m_68;   // +0x068  (serialized)
+    i32 m_6c;   // +0x06c  (serialized)
+    i32 m_70;   // +0x070  (serialized)
+    i32 m_74;   // +0x074  (serialized)
+    i32 m_78;   // +0x078  (serialized)
+    i32 m_7c;   // +0x07c  (serialized)
+    i32 m_80;   // +0x080  (serialized)
+    i32 m_84;   // +0x084  (serialized)
+    i32 m_88;   // +0x088  (serialized)
+    i32 m_8c;   // +0x08c  (serialized)
+    i32 m_90;   // +0x090  (serialized)
+    i32 m_94;   // +0x094  (serialized)
+    i32 m_98;   // +0x098  (serialized)
+    i32 m_9c;   // +0x09c  (serialized)
+    i32 m_a0;   // +0x0a0  (serialized)
+    i32 m_a4;   // +0x0a4  (serialized)
+    i32 m_a8;   // +0x0a8  (serialized)
+    i32 m_ac;   // +0x0ac  (serialized)
+    i32 m_b0;   // +0x0b0  (serialized)
+    i32 m_b4;   // +0x0b4  (serialized)
+    i32 m_b8;   // +0x0b8  (serialized)
     i32 m_bc;                  // +0xbc  per-tile time (teleporter reads the bound clock here;
                                //        rolling-ball speed in LoadGruntAbilityTuning)
-    char m_padc0[0xf0 - 0xc0];
+    char m_padc0[0xc4 - 0xc0];
+    i32 m_c4;   // +0x0c4  (serialized)
+    i32 m_c8;   // +0x0c8  (serialized)
+    i32 m_cc;   // +0x0cc  (serialized)
+    RECT m_d0; // +0x0d0  (serialized, 0x10 B)
+    RECT m_e0; // +0x0e0  (serialized, 0x10 B)
     // +0xf0/+0x100: the two REAL RECTs the tile-switch registrar takes BY VALUE
     // (CPlay::ValidateLevelTiles pushes both, 16 bytes each, into every
     // RegisterSwitchLogic call).
     RECT m_switchRectA; // +0xf0
     RECT m_switchRectB; // +0x100
-    char m_pad110[0x130 - 0x110];
+    char m_pad110[0x120 - 0x110];
+    RECT m_120; // +0x120  (serialized, 0x10 B)
     i32 m_130; // +0x130
-    char m_pad134[0x168 - 0x134];
+    char m_pad134[0x138 - 0x134];
+    i32 m_138;   // +0x138  (serialized)
+    i32 m_13c;   // +0x13c  (serialized)
+    i32 m_140;   // +0x140  (serialized)
+    i32 m_144;   // +0x144  (serialized)
+    i32 m_148;   // +0x148  (serialized)
+    i32 m_14c;   // +0x14c  (serialized)
+    i32 m_150;   // +0x150  (serialized)
+    i32 m_154;   // +0x154  (serialized)
+    i32 m_158;   // +0x158  (serialized)
+    i32 m_15c;   // +0x15c  (serialized)
+    i32 m_160;   // +0x160  (serialized)
+    i32 m_164;   // +0x164  (serialized)
     i32 m_168;             // +0x168 (zeroed by Init)
     i32 m_16c;             // +0x16c (zeroed by Init)
     CGameObject* m_target; // +0x170  resolved target object (ResolveTarget; id = its m_188)

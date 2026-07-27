@@ -78,70 +78,70 @@ i32 CUFO::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, CGameObject* d) {
 
 // (0xb4cb0 - CRainCloud::SerializeMove - moved to its owner RainCloud.cpp.)
 
-static inline void SerQuadPair(CFileMemBase* s, i32 tag, char* p) {
+// the +0x108/+0x120 deadline pairs stream as two adjacent 8-byte quads
+static inline void SerQuadPair(CFileMemBase* s, i32 tag, i64* p) {
     if (tag != 4) {
         if (tag == 7) {
             s->Read(p, 8);
-            s->Read(p + 8, 8);
+            s->Read(p + 1, 8);
         }
     } else {
         s->Write(p, 8);
-        s->Write(p + 8, 8);
+        s->Write(p + 1, 8);
     }
 }
 
 RVA(0x000b4d30, 0x287)
 i32 CPathHazard::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObject* d) {
     CFileMemBase* s = stream;
-    char* B = reinterpret_cast<char*>(this);
     if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
         return 0;
     }
     if (Chain(static_cast<CFileMemBase*>(stream), tag, c, d) == 0) {
         return 0;
     }
-    SerQuadPair(s, tag, B + 0x108);
-    SerQuadPair(s, tag, B + 0x120);
+    SerQuadPair(s, tag, &m_legDeadline);
+    SerQuadPair(s, tag, &m_strikeDeadline);
     if (tag != 4) {
         if (tag == 7) {
-            s->Read(B + 0x58, 8);
-            s->Read(B + 0x60, 8);
-            s->Read(B + 0x68, 8);
-            s->Read(B + 0x70, 8);
-            s->Read(B + 0x78, 8);
-            s->Read(B + 0x80, 8);
-            s->Read(B + 0x88, 8);
-            char* p = B + 0x90;
+            s->Read(&m_speed, 8);
+            s->Read(&m_posX, 8);
+            s->Read(&m_posY, 8);
+            s->Read(&m_unitX, 8);
+            s->Read(&m_unitY, 8);
+            s->Read(&m_roundBiasX, 8);
+            s->Read(&m_roundBiasY, 8);
+            CPathWaypoint* p = m_wp;
             i32 n = 13;
             do {
                 s->Read(p, 8);
-                p += 8;
+                p += 1;
             } while (--n != 0);
-            s->Read(B + 0xf8, 4);
-            s->Read(B + 0xfc, 4);
-            s->Read(B + 0x100, 4);
-            s->Read(B + 0x104, 4);
-            s->Read(B + 0x118, 4);
+            s->Read(&m_wpIndex, 4);
+            s->Read(&m_wpX, 4);
+            s->Read(&m_wpY, 4);
+            s->Read(&m_wpCount, 4);
+            s->Read(&m_strikeArmed, 4);
         }
     } else {
-        s->Write(B + 0x58, 8);
-        s->Write(B + 0x60, 8);
-        s->Write(B + 0x68, 8);
-        s->Write(B + 0x70, 8);
-        s->Write(B + 0x78, 8);
-        s->Write(B + 0x80, 8);
-        s->Write(B + 0x88, 8);
-        char* p = B + 0x90;
+        s->Write(&m_speed, 8);
+        s->Write(&m_posX, 8);
+        s->Write(&m_posY, 8);
+        s->Write(&m_unitX, 8);
+        s->Write(&m_unitY, 8);
+        s->Write(&m_roundBiasX, 8);
+        s->Write(&m_roundBiasY, 8);
+        CPathWaypoint* p = m_wp;
         i32 n = 13;
         do {
             s->Write(p, 8);
-            p += 8;
+            p += 1;
         } while (--n != 0);
-        s->Write(B + 0xf8, 4);
-        s->Write(B + 0xfc, 4);
-        s->Write(B + 0x100, 4);
-        s->Write(B + 0x104, 4);
-        s->Write(B + 0x118, 4);
+        s->Write(&m_wpIndex, 4);
+        s->Write(&m_wpX, 4);
+        s->Write(&m_wpY, 4);
+        s->Write(&m_wpCount, 4);
+        s->Write(&m_strikeArmed, 4);
     }
     return 1;
 }

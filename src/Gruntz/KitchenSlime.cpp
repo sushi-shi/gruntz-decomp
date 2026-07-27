@@ -300,22 +300,22 @@ i32 CKitchenSlime::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObje
     // Read; jmp; else: Transfer) - the retail dispatch order.
     if (tag != 4) {
         if (tag == 7) {
-            s->Read(B + 0x58, 8);
-            s->Read(B + 0x60, 8);
-            s->Read(B + 0x68, 8);
-            s->Read(B + 0x70, 8);
-            s->Read(B + 0x78, 8);
-            s->Read(B + 0x80, 8);
-            s->Read(B + 0x88, 8);
+            s->Read(&m_speed, 8);
+            s->Read(&m_posX, 8);
+            s->Read(&m_posY, 8);
+            s->Read(&m_dirX, 8);
+            s->Read(&m_dirY, 8);
+            s->Read(&m_tileX, 8);
+            s->Read(&m_stepMag, 8);
         }
     } else {
-        s->Write(B + 0x58, 8);
-        s->Write(B + 0x60, 8);
-        s->Write(B + 0x68, 8);
-        s->Write(B + 0x70, 8);
-        s->Write(B + 0x78, 8);
-        s->Write(B + 0x80, 8);
-        s->Write(B + 0x88, 8);
+        s->Write(&m_speed, 8);
+        s->Write(&m_posX, 8);
+        s->Write(&m_posY, 8);
+        s->Write(&m_dirX, 8);
+        s->Write(&m_dirY, 8);
+        s->Write(&m_tileX, 8);
+        s->Write(&m_stepMag, 8);
     }
     if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
         return 0;
