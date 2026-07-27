@@ -15,7 +15,6 @@ reinterpret_casts	577
 unexplained casts	122
 void* m_ members	9
 offset-cast macros	0
-offset-casts (C++ cast)	13
 cpp extern decls	0
 cpp external prototypes	0
 view classes (*Views.h)	0

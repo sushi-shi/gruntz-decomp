@@ -231,23 +231,23 @@ _NUMERIC_CAST = re.compile(
 _REINTERPRET_CAST = re.compile(r"\breinterpret_cast\s*<")
 
 
-# Offset-casts are BANNED OUTRIGHT - "named member `&x->m_field`, never even a C++
-# cast" (CLAUDE.md). The ban was only ever enforced against the C-style spelling
-# `(char*)x + N` and the offset-cast macros, both of which now read 0. The C++-cast
-# spelling walked straight through:
+# NOT A METRIC, deliberately - do not add `reinterpret_cast<char*>(x) + N` as a
+# ratcheted row. It looks like the banned offset-cast, and it was added here once on
+# that assumption, but all 13 tree-wide sites were checked and every one is byte
+# arithmetic over data that has no member to name:
 #
-#     reinterpret_cast<u8*>(src) + src->m_0a          // src/Image/FileImage.cpp:94
-#     reinterpret_cast<char*>(p) + p->m_0 + 0x400     // src/Image/FileImage.cpp:250
+#   RIFF chunk walking (chunks are variable-length by definition) - DirectSoundMgr
+#   BMP bfOffBits / DIB biSize + 0x400 palette                    - FileImage
+#   PCX + PID trailing 0x300 palettes, fixed header skips         - FileImage
+#   an RLE blob walked from its typed head                        - ImageOwned
+#   MFC's PRIVATE AFX_MODULE_STATE +4 slot                        - CustomLevelDlg
 #
-# Same banned construct, different lexeme - and it was invisible while two green 0s
-# said the ban was fully enforced. Counted here so it ratchets down with the rest.
-_OFFSET_CAST_CPP = re.compile(
-    r"reinterpret_cast\s*<\s*(?:const\s+)?(?:char|u8|i8|BYTE|void)\s*\*\s*>\s*"
-    r"\([^;()]*(?:\([^;()]*\)[^;()]*)*\)\s*\+")
-
-
-def _count_offset_casts_cpp(code: str) -> int:
-    return len(_OFFSET_CAST_CPP.findall(code))
+# The ban (CLAUDE.md) is on `(char*)obj + N` used to reach a MEMBER of a class WE
+# model - "named member &x->m_field" - because that is a mis-modeled declaration.
+# Serialized file formats and foreign layouts have no such member. Every row on this
+# board is contracted to reach 0, so a row that should NOT reach 0 would drive
+# someone to break correct code. The C-style spelling and the offset-cast macros
+# stay metered (both 0); they are the shapes that do indicate a mis-model.
 
 
 def _count_c_style_casts(code: str) -> int:
@@ -319,7 +319,6 @@ METRICS = (
     ("void* m_ members", re.compile(r"\bvoid ?\* m_"), False),
     # --- metric-evasion / placeholder hacks (2026-07-14 de-hack campaign; MAX-fuzzy gate) ---
     ("offset-cast macros", _count_offset_macro_casts, False),
-    ("offset-casts (C++ cast)", _count_offset_casts_cpp, False),
     ("cpp extern decls", _CPP_EXTERN, True),
     ("cpp external prototypes", _count_cpp_external_prototypes, True),
 )
