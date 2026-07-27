@@ -4100,7 +4100,7 @@ i32 CPlay::Vslot0e(i32 a, i32 x, i32 y) {
             RECT* wr = (&geom->m_planeCtx);
             if (xr < wr->right && xr >= wr->left && y < wr->bottom && y >= wr->top) {
                 if (FindStartPointAt(sx, sy, &x, &y)) {
-                    char tok = *reinterpret_cast<char*>(&g_curPlayer);
+                    char tok = static_cast<char>(g_curPlayer);
                     w->m_cmdSubMgr->EnqueueSingle(
                         1,
                         tok,
@@ -4136,7 +4136,7 @@ mode_36c:
     {
         RECT* gr = &m_guts->m_rect10;
         if (xr < gr->right && xr >= gr->left && y < gr->bottom && y >= gr->top) {
-            if (m_guts->SetFallRect(xr, y, *reinterpret_cast<char*>(&m_cursorFrame))) {
+            if (m_guts->SetFallRect(xr, y, static_cast<char>(m_cursorFrame))) {
                 m_dragInhibit2 = 0;
                 SetCursorFrame(0);
                 return 1;
@@ -4154,7 +4154,7 @@ mode_36c:
         CDDrawWorkerHost* cam = ds->m_mainPlane;
         i32 wx = cam->m_viewRect.left - ds->m_planeCtx.left + xr;
         i32 wy = cam->m_viewRect.top - ds->m_planeCtx.top + y;
-        i32 tok = *reinterpret_cast<char*>(&m_cursorFrame);
+        i32 tok = static_cast<char>(m_cursorFrame);
         if (g_gameReg->m_cmdGrid->CellHitTest(wx, wy, &x, &y, tok) != 0) {
             w->m_cmdSubMgr->EnqueueSingle(
                 1,
@@ -4197,7 +4197,7 @@ mode_36c:
 
 waypoint_cancel:
     m_dragInhibit2 = 0;
-    m_guts->EnterHlRow(0, *reinterpret_cast<char*>(&m_cursorFrame));
+    m_guts->EnterHlRow(0, static_cast<char>(m_cursorFrame));
     SetCursorFrame(0);
     return 1;
 
