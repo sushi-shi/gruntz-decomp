@@ -98,19 +98,21 @@ static inline CString* ResolveNameSlot(_zdvec* v, i32 idx) {
     return r;
 }
 
-static inline char* ResolveSlot(_zdvec* v, i32 idx) {
+// the act tables hold CActHandler (== every per-TU *ActHandler typedef), so the
+// element pun lives here, at the resolver, instead of at each slot read/write
+static inline CActHandler* ResolveSlot(_zdvec* v, i32 idx) {
     i32 lo = v->m_lo;
     v->m_grown = 0;
     if (idx >= lo && idx <= v->m_hi) {
-        return v->m_base + (idx - lo) * v->m_stride;
+        return reinterpret_cast<CActHandler*>(v->m_base + (idx - lo) * v->m_stride);
     }
     if (v->GrowTo(idx, 0)) {
-        return v->m_base + (idx - v->m_lo) * v->m_stride;
+        return reinterpret_cast<CActHandler*>(v->m_base + (idx - v->m_lo) * v->m_stride);
     }
     void* sentinel = g_projActCache; // scratch cell @0x2bf464 reused as the zvec err sentinel
     g_retAddrBreadcrumb = GetRetAddr();
     v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
-    return v->m_spare;
+    return reinterpret_cast<CActHandler*>(v->m_spare);
 }
 
 static inline void FreeNameSlotNodes() {
@@ -264,9 +266,12 @@ void RegisterWormholeLogic() {
         *slot = "A";
         g_typeCounter++;
     }
-    char* dslot = ResolveSlot(&CActRegPool<CWormhole>::s_table, idx);
-    *reinterpret_cast<WormholeActHandler*>(dslot) =
-        static_cast<WormholeActHandler>(&CWormhole::SpawnPartners);
+    CActHandler* dslot = ResolveSlot(&CActRegPool<CWormhole>::s_table, idx);
+    // @identity-TODO act-slot ABI: SpawnPartners is declared void() while the slot
+    // is the i32 CActHandler - the same tension GruntCombat.cpp's macro records.
+    *dslot = reinterpret_cast<CActHandler>(
+        static_cast<WormholeActHandler>(&CWormhole::SpawnPartners)
+    );
 }
 
 // ---------------------------------------------------------------------------

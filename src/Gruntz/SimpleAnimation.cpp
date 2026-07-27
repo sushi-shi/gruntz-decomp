@@ -64,19 +64,21 @@ static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
     return r;
 }
 
-static inline char* ResolveSlot(_zdvec* v, i32 idx) {
+// the act tables hold CActHandler (== every per-TU *ActHandler typedef), so the
+// element pun lives here, at the resolver, instead of at each slot read/write
+static inline CActHandler* ResolveSlot(_zdvec* v, i32 idx) {
     i32 lo = v->m_lo;
     v->m_grown = 0;
     if (idx >= lo && idx <= v->m_hi) {
-        return v->m_base + (idx - lo) * v->m_stride;
+        return reinterpret_cast<CActHandler*>(v->m_base + (idx - lo) * v->m_stride);
     }
     if (v->GrowTo(idx, 0)) {
-        return v->m_base + (idx - v->m_lo) * v->m_stride;
+        return reinterpret_cast<CActHandler*>(v->m_base + (idx - v->m_lo) * v->m_stride);
     }
     void* sentinel = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
-    return v->m_spare;
+    return reinterpret_cast<CActHandler*>(v->m_spare);
 }
 
 RVA(0x000ab940, 0x1b8)
@@ -132,7 +134,7 @@ void RegisterSimpleAnimLogic() {
         *slot = "A";
         g_typeCounter++;
     }
-    char* dslot = ResolveSlot(&CActRegPool<CSimpleAnimation>::s_table, idx);
+    CActHandler* dslot = ResolveSlot(&CActRegPool<CSimpleAnimation>::s_table, idx);
     *reinterpret_cast<SimpleAnimHandler*>(dslot) =
         static_cast<SimpleAnimHandler>(&CSimpleAnimation::AdvanceAnim);
 }

@@ -61,19 +61,21 @@ static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
     return r;
 }
 
-static inline char* ResolveSlot(_zdvec* v, i32 idx) {
+// the act tables hold CActHandler (== every per-TU *ActHandler typedef), so the
+// element pun lives here, at the resolver, instead of at each slot read/write
+static inline CActHandler* ResolveSlot(_zdvec* v, i32 idx) {
     i32 lo = v->m_lo;
     v->m_grown = 0;
     if (idx >= lo && idx <= v->m_hi) {
-        return v->m_base + (idx - lo) * v->m_stride;
+        return reinterpret_cast<CActHandler*>(v->m_base + (idx - lo) * v->m_stride);
     }
     if (v->GrowTo(idx, 0)) {
-        return v->m_base + (idx - v->m_lo) * v->m_stride;
+        return reinterpret_cast<CActHandler*>(v->m_base + (idx - v->m_lo) * v->m_stride);
     }
     void* sentinel = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
-    return v->m_spare;
+    return reinterpret_cast<CActHandler*>(v->m_spare);
 }
 
 // ===========================================================================
@@ -540,12 +542,10 @@ i32 CInGameIcon::HandleInput() {
 
 RVA(0x00097880, 0x102)
 void CInGameIcon::FireActivation(i32 id) {
-    if (*reinterpret_cast<IconActHandler*>(ResolveSlot(&CActRegPool<CInGameIcon>::s_table, id))
+    if (*ResolveSlot(&CActRegPool<CInGameIcon>::s_table, id)
         != 0) {
         (this
-             ->*(*reinterpret_cast<IconActHandler*>(
-                 ResolveSlot(&CActRegPool<CInGameIcon>::s_table, id)
-             )))();
+             ->*(*ResolveSlot(&CActRegPool<CInGameIcon>::s_table, id)))();
     }
 }
 
@@ -572,8 +572,8 @@ void RegisterIconActions() {
         *slot = "A";
         g_typeCounter++;
     }
-    char* dslotA = ResolveSlot(&CActRegPool<CInGameIcon>::s_table, idxA);
-    *reinterpret_cast<IconActHandler*>(dslotA) =
+    CActHandler* dslotA = ResolveSlot(&CActRegPool<CInGameIcon>::s_table, idxA);
+    *dslotA =
         static_cast<IconActHandler>(&CInGameIcon::PeekCycle);
 
     i32 idxB = ActFindId("B");
@@ -583,19 +583,17 @@ void RegisterIconActions() {
         *slot = "B";
         g_typeCounter++;
     }
-    char* dslotB = ResolveSlot(&CActRegPool<CInGameIcon>::s_table, idxB);
-    *reinterpret_cast<IconActHandler*>(dslotB) =
+    CActHandler* dslotB = ResolveSlot(&CActRegPool<CInGameIcon>::s_table, idxB);
+    *dslotB =
         static_cast<IconActHandler>(&CInGameIcon::Reposition);
 }
 
 RVA(0x00097de0, 0x102)
 void CToyPeek::FireActivation(i32 id) {
-    if (*reinterpret_cast<ToyPeekActHandler*>(ResolveSlot(&CActRegPool<CToyPeek>::s_table, id))
+    if (*ResolveSlot(&CActRegPool<CToyPeek>::s_table, id)
         != 0) {
         (this
-             ->*(*reinterpret_cast<ToyPeekActHandler*>(
-                 ResolveSlot(&CActRegPool<CToyPeek>::s_table, id)
-             )))();
+             ->*(*ResolveSlot(&CActRegPool<CToyPeek>::s_table, id)))();
     }
 }
 
@@ -620,8 +618,8 @@ void RegisterIconState() {
         *slot = "A";
         g_typeCounter++;
     }
-    char* dslot = ResolveSlot(&CActRegPool<CToyPeek>::s_table, idx);
-    *reinterpret_cast<ToyPeekActHandler*>(dslot) =
+    CActHandler* dslot = ResolveSlot(&CActRegPool<CToyPeek>::s_table, idx);
+    *dslot =
         static_cast<ToyPeekActHandler>(&CInGameIcon::RefreshCell);
 }
 
@@ -1048,8 +1046,8 @@ void RegisterTextLogic() {
         *slot = "A";
         g_typeCounter++;
     }
-    char* dslot = ResolveSlot(&CActRegPool<CInGameText>::s_table, idx);
-    *reinterpret_cast<IconActHandler*>(dslot) = static_cast<IconActHandler>(&CInGameText::Update);
+    CActHandler* dslot = ResolveSlot(&CActRegPool<CInGameText>::s_table, idx);
+    *dslot = static_cast<IconActHandler>(&CInGameText::Update);
 }
 
 RVA(0x00099a30, 0xaa)
