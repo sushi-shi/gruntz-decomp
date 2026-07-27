@@ -64,6 +64,8 @@ static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
 
 // the act tables hold CActHandler (== every per-TU *CActHandler typedef), so the
 // element pun lives here, at the resolver, instead of at each slot read/write
+// _zvec::m_base is the container's UNTYPED byte pool (one pool, every element
+// type), so naming the element at this accessor is zDArray<T>'s one seam.
 static inline CActHandler* ResolveSlot(_zdvec* v, i32 idx) {
     i32 lo = v->m_lo;
     v->m_grown = 0;

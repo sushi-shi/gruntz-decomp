@@ -252,6 +252,8 @@ i32 CFortressFlag::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* 
 // esi/edi regalloc wall: cl assigns this->esi, key->edi; retail swaps (key->esi,
 // this->edi). Full fast-range/GrowTo/breadcrumb logic + offsets byte-faithful;
 // not steerable.
+// _zvec::m_base is the container's UNTYPED byte pool (one pool, every element
+// type), so naming the element at this accessor is zDArray<T>'s one seam.
 template<> RVA(0x000464e0, 0x74)
 CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
     m_grown = 0;
