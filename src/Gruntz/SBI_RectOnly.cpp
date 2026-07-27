@@ -586,8 +586,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
         return 0;
     }
 
-    char* B = reinterpret_cast<char*>(this);
-    s->Write(B, 4); // offset 0 (vptr field)
+    s->Write(this, 4); // offset 0 - the vptr slot itself, not a member
     s->Write(&m_4, 4);
 
     g_serialCounter++;
@@ -694,11 +693,10 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     if (gm == 0) {
         return 0;
     }
-    char* B = reinterpret_cast<char*>(this);
     m_destructButton = 0;
     ResetWidgets(0);
 
-    s->Read(B, 4);
+    s->Read(this, 4); // offset 0 - the vptr slot itself, not a member
     s->Read(&m_4, 4);
 
     g_serialCounter++;
@@ -1748,7 +1746,6 @@ i32 CStatusBarMgr::ClickToggle(i32 btn, i32 x, i32 y) {
 // from C; documented regalloc wall, deferred to the final sweep.
 RVA(0x00100930, 0x16c)
 void CStatusBarMgr::ResetWidgets(i32 keepHost) {
-    char* B = reinterpret_cast<char*>(this); // the +0x204/+0x308 tail views still need it
     for (i32 t = 0; t < 8; t++) {
         POSITION n = m_tabLists[t].GetHeadPosition();
         while (n) {
@@ -1866,7 +1863,6 @@ void CStatusBarMgr::ExitMode() {
 // steerable from C. Documented regalloc wall; deferred to the final sweep.
 RVA(0x00100b00, 0x139)
 void CStatusBarMgr::ClearTabGroup() {
-    char* B = reinterpret_cast<char*>(this); // the case-4 +0x204 view still needs it
     if (m_activeTab == 0) {
         return;
     }
@@ -2222,7 +2218,6 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
 // the spills are not reproducible from C - a dead-store/scheduling wall; deferred.
 RVA(0x00107920, 0xb7)
 i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
-    char* B = reinterpret_cast<char*>(this);
     if (m_pendingHlRow == -1) {
         return 0;
     }
@@ -3072,7 +3067,6 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
             }
         }
 
-        char* B = reinterpret_cast<char*>(this);
         POSITION n = m_tabLists[0].GetHeadPosition();
         while (n) {
             CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));
@@ -3442,7 +3436,6 @@ i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
     }
     RefreshAll();
 
-    char* B = reinterpret_cast<char*>(this);
     POSITION n = m_tabLists[0].GetHeadPosition();
     while (n) {
         CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));

@@ -293,7 +293,6 @@ i32 CKitchenSlime::Tick() {
 
 RVA(0x000b2ff0, 0x11b)
 i32 CKitchenSlime::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObject* d) {
-    char* B = reinterpret_cast<char*>(this);
     CFileMemBase* s = stream;
     // Written as `if (tag != 4) { if (tag == 7) Read... } else Transfer...` so
     // MSVC lays the tag-7 (Read) block physically first (cmp 4/je else; cmp 7/jne;
