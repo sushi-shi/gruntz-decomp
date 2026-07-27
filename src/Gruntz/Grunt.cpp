@@ -813,6 +813,10 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
             i32 col = m_entranceCell.col;
             i32 row = m_entranceCell.row;
             i32 index = 3 * col + row;
+            // @identity-TODO retail really CALLS _zdvec::IndexToPtr here on what our
+            // model says is a CGruntCellRec (whose first member is CString m_names[5]).
+            // Either the cell record derives from the vector or the call is something
+            // else - needs the 0x310f0 disasm; a CString read would drop the call.
             const char* nm = reinterpret_cast<const char*>(
                 (reinterpret_cast<_zdvec*>(&m_cells[index]))->IndexToPtr(0)
             );
@@ -3348,6 +3352,8 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             ConstructGrownSlots();
         }
+        // the hand-inlined ScratchResolve tail: naming the element of the container's
+        // untyped byte pool is its one typed accessor (cf. g_typeColl.ScratchResolve)
         eq = (strcmp(reinterpret_cast<CAnimNameRecord*>(rec)->m_name, "H") == 0);
         if (eq) {
             CAniElement* el = m_38->m_1a0.m_14;
@@ -3387,7 +3393,9 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 }
                 ConstructGrownSlots();
             }
-            eq = (strcmp(reinterpret_cast<CAnimNameRecord*>(rec2)->m_name, "D") == 0);
+            // the hand-inlined ScratchResolve tail: naming the element of the container's
+        // untyped byte pool is its one typed accessor (cf. g_typeColl.ScratchResolve)
+        eq = (strcmp(reinterpret_cast<CAnimNameRecord*>(rec2)->m_name, "D") == 0);
             if (eq) {
                 GruntEntranceCell cell2 = m_entranceCell;
                 m_38->ApplyName(m_cells[cell2.col * 3 + cell2.row].m_names[2].GetBuffer(0));
@@ -3453,7 +3461,7 @@ void CGrunt::MovingSlot16() {
             GruntCoordNode* head = CoordHead();
             GruntCoord* co = head->m_coord;
             i32 fl =
-                (reinterpret_cast<i32*>(g_gameReg->m_tileGrid->m_rowBytes[co->m_y]))[co->m_x * 7];
+                g_gameReg->m_tileGrid->m_rowInts[co->m_y][co->m_x * 7];
             i32 mask = m_arrivalFlags & fl;
             if (!(fl & 0x20000000) && !(mask & 0x20000000)
                 && (mask == 0 || (m_arrivalNotified & fl) != 0)) {
@@ -3468,9 +3476,7 @@ void CGrunt::MovingSlot16() {
                     m_entrancePxY = (h2->m_y << 5) + 0x10;
                     if (CoordCount() != 0) {
                         GruntCoord* h3 = (CoordHead())->m_coord;
-                        i32 fl2 = (reinterpret_cast<i32*>(
-                            g_gameReg->m_tileGrid->m_rowBytes[h3->m_y]
-                        ))[h3->m_x * 7];
+                        i32 fl2 = g_gameReg->m_tileGrid->m_rowInts[h3->m_y][h3->m_x * 7];
                         if (!(fl2 & 0x20000000)) {
                             m_coordRetryCount = 0;
                             StepEntranceReinit();
