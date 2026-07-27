@@ -194,11 +194,11 @@ i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, i32 flags) {
 RVA(0x00155fc0, 0x2e)
 void CDDrawSurfaceMgr::FreeContext() {
     if (m_soundRegistry != 0) {
-        // FLAG(retype-deferred): the canonical types leafScan m_2c as its base
-        // SoundDevice*; this site proves the held object is a SoundStream (the
-        // non-virtual call 0x137a80 = SoundStream::Stop). The m_2c retype is
-        // deferred (DDrawSubMgrLeafScan.h is additive-only this session).
-        SoundStream* inner = static_cast<SoundStream*>(m_soundRegistry->m_2c);
+        // m_2c IS a SoundStream* on the canonical class (the cast that used to sit
+        // here is retired): CDDrawSubMgrLeafScan::BindSoundStream @0x157a80 assigns
+        // it straight from this manager's m_soundStream, and this site's
+        // non-virtual call 0x137a80 is SoundStream::Stop.
+        SoundStream* inner = m_soundRegistry->m_2c;
         if (inner != 0) {
             inner->Stop(); // 0x137a80 (leaf-scan +0x2c held stream: pause/reset)
         }
@@ -218,7 +218,7 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
 }
 
 RVA(0x00156020, 0x505)
-i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char * arg1, char* name, i32 arg3) {
+i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* arg1, char* name, i32 arg3) {
     if (cb == 0) {
         return 0;
     }
@@ -336,8 +336,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     }
     g_wwdObjIdCounter = header.m_objIdCounter;
     m_childGroup->DestroyChildren_159ef0();
-    if (m_childGroup->LoadObjects(&S, header.m_childCount, arg3)
-        == 0) {
+    if (m_childGroup->LoadObjects(&S, header.m_childCount, arg3) == 0) {
         return 0;
     }
     // API-forced: m_callback is a client-registered hook whose last parameter is an
@@ -356,8 +355,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_callback == 0 || m_callback(this, &S, 7, arg3, reinterpret_cast<i32>(&header)) == 0) {
         return 0;
     }
-    if (m_childGroup->Deserialize(&S, header.m_childCount, arg3)
-        == 0) {
+    if (m_childGroup->Deserialize(&S, header.m_childCount, arg3) == 0) {
         return 0;
     }
     if (m_level->EditDispatch(static_cast<void*>(&S), 7, 0, 0) == 0) {

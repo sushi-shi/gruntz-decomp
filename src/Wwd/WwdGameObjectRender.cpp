@@ -213,7 +213,11 @@ void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDD
 // only the two push operands in the large-delta path. Same addresses. The permuter found
 // no source spelling that flips the pair. docs/patterns/zero-register-pinning.md.
 RVA(0x001664a0, 0x133)
-void CWwdGameObjectC::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
+void CWwdGameObjectC::BltDirtyRegions(
+    CDDrawSurfacePair* a,
+    CDDrawSurfacePair* b,
+    CDDrawSurfacePair* c
+) {
     if (m_dirtyArmed != -1 && m_d8 != -1) { // both armed -> combined region
         i32 dx = abs(m_lastX - m_b8) + 1;
         i32 dy = abs(m_lastY - m_bc) + 1;
@@ -239,7 +243,7 @@ void CWwdGameObjectC::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b
 }
 
 RVA(0x001665e0, 0x55)
-i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, CObject* a4) {
+i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, AnimWorkerObj* tmpl) {
     POSITION pos = m_1dc.GetHeadPosition();
     while (pos != 0) {
         CObject* p = static_cast<CObject*>(static_cast<void*>(m_1dc.GetNext(pos)));
@@ -248,7 +252,7 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, CObject* a4) {
         }
     }
     m_1dc.RemoveAll();
-    return CGameObject::Setup(a1, a2, a3, a4) != 0;
+    return CGameObject::Setup(a1, a2, a3, tmpl) != 0;
 }
 
 // ===========================================================================
@@ -263,7 +267,8 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, CObject* a4) {
 // emits no frame.  docs/patterns/rezalloc-placement-new-no-eh-frame.md.
 // ===========================================================================
 RVA(0x00166640, 0x13b)
-CWwdGameObject* CWwdGameObject::CreateObject(int a1, int a2, int a3, int a4, CObject * a5, int a6) {
+CWwdGameObject*
+CWwdGameObject::CreateObject(int a1, int a2, int a3, int a4, AnimWorkerObj* tmpl, int a6) {
     char* obj = static_cast<char*>(RezAlloc(0x1dc));
     CWwdGameObjectA* result;
     if (obj != 0) {
@@ -292,7 +297,7 @@ CWwdGameObject* CWwdGameObject::CreateObject(int a1, int a2, int a3, int a4, COb
     if (result == 0) {
         return 0;
     }
-    if (result->Setup(a2, a3, a4, a5) == 0) {
+    if (result->Setup(a2, a3, a4, tmpl) == 0) {
         delete result; // virtual scalar-deleting dtor (slot 1)
         return 0;
     }
@@ -321,12 +326,16 @@ CWwdGameObject::CreateNamed(int a1, int a2, int a3, int a4, const char* name, in
     CObject* val = 0;
     // m_0c is the CLoadable owner int handle == the CDDrawSurfaceMgr; its worker-cache name
     // map (CMapStringToOb @+0x10, Lookup 0x1b8008 - disasm-confirmed, NOT the CMapStringToPtr
-    // the ex-view guessed) resolves `name` -> the child's arg5.
+    // the ex-view guessed) resolves `name` -> the registered type template. The out-param
+    // is CObject*& (the MFC container's own interface), so the narrowing to the map's one
+    // real value type is language-forced here, not a mis-model: CDDrawWorkerCache::
+    // CreateWorker @0x1652c0 is the map's ONLY writer and every value it stores is a
+    // 0x17c-byte ??_7AnimWorkerObj@@6B@-stamped record.
     OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
     if (val == 0) {
         return 0;
     }
-    return CreateObject(a1, a2, a3, a4, val, a6);
+    return CreateObject(a1, a2, a3, a4, static_cast<AnimWorkerObj*>(val), a6);
 }
 
 RVA(0x001667e0, 0x2f)
@@ -371,8 +380,7 @@ i32 CWwdGameObject::RemoveChild(CGameObject* child) {
 RVA(0x00166880, 0x29)
 i32 CWwdGameObject::WalkChildWorkers() {
     i32 count = 0;
-    for (CDDrawGroupNode* n = GroupHead(m_1dc);
-         n != 0;) {
+    for (CDDrawGroupNode* n = GroupHead(m_1dc); n != 0;) {
         CDDrawGroupNode* cur = n;
         n = n->m_next;
         CGameObject* o = cur->m_obj;
@@ -416,7 +424,11 @@ void CWwdGameObject::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDr
     }
 }
 RVA(0x00166950, 0x34)
-void CWwdGameObject::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
+void CWwdGameObject::BltDirtyRegions(
+    CDDrawSurfacePair* a,
+    CDDrawSurfacePair* b,
+    CDDrawSurfacePair* c
+) {
     CDDrawGroupNode* n = GroupHead(m_1dc);
     if (n != 0) {
         do {

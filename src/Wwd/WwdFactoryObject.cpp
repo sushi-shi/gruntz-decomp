@@ -34,10 +34,7 @@
 #include <Gruntz/AniElement.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the +0x0c owner: the canonical CDDrawSurfaceMgr
-namespace Rng {
-}
-
-
+namespace Rng {}
 
 VTBL(CWwdGameObjectC, 0x001effd0);   // ??_7 (19 slots)
 VTBL(CGameObject, 0x001f0020);       // ??_7 (base, 16 slots)
@@ -262,10 +259,10 @@ CWwdGameObjectA::~CWwdGameObjectA() {
 }
 
 RVA(0x0015b940, 0x38)
-i32 CWwdGameObjectA::Setup(i32 a1, i32 a2, i32 a3, CObject* a4) {
+i32 CWwdGameObjectA::Setup(i32 a1, i32 a2, i32 a3, AnimWorkerObj* tmpl) {
     m_19c = 0;
     m_1a0.Construct(this);
-    return CGameObject::Setup(a1, a2, a3, a4);
+    return CGameObject::Setup(a1, a2, a3, tmpl);
 }
 
 RVA(0x0015ba20, 0x1b)
@@ -317,8 +314,8 @@ CWwdGameObjectF::~CWwdGameObjectF() {
 }
 
 RVA(0x0015bc30, 0x16)
-i32 CWwdGameObjectF::SetupDeferred(i32 a3, CObject* a4) {
-    return CGameObject::Setup(0, 0, a3, a4);
+i32 CWwdGameObjectF::SetupDeferred(i32 a3, AnimWorkerObj* tmpl) {
+    return CGameObject::Setup(0, 0, a3, tmpl);
 }
 
 RVA(0x0015bcd0, 0xb)
@@ -403,9 +400,9 @@ CWwdGameObjectC::~CWwdGameObjectC() {
 }
 
 RVA(0x0015c1d0, 0x26)
-i32 CWwdGameObjectC::SetupFlagged(i32 a1, i32 a2, i32 a3, CObject* a4, i32 flag) {
+i32 CWwdGameObjectC::SetupFlagged(i32 a1, i32 a2, i32 a3, AnimWorkerObj* tmpl, i32 flag) {
     m_dotColor = static_cast<u8>(flag); // the C kind's own +0x18c byte - the reinterpret dies
-    return CGameObject::Setup(a1, a2, a3, a4);
+    return CGameObject::Setup(a1, a2, a3, tmpl);
 }
 
 // 0x15c290: blit-param init.

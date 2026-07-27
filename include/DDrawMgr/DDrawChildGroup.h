@@ -58,21 +58,40 @@ public:
     // delta, then slot 16 below.
     virtual void TickKillCues(i32 advance);                       // slot 9  +0x24
     virtual void WalkDispatch2C(class CDDrawSurfacePair* target); // slot 10 0x159c90 (child Render)
-    virtual void WalkDispatch30(CDDrawSurfacePair* a1, CDDrawSurfacePair* a2);         // slot 11 0x159cc0 (child BltDirty)
-    virtual void WalkDispatch34(CDDrawSurfacePair* a1, CDDrawSurfacePair* a2, CDDrawSurfacePair* a3); // slot 12 0x159cf0 (child BltDirtyEx)
-    virtual void WalkDispatch38(CDDrawSurfacePair* a1, CDDrawSurfacePair* a2, CDDrawSurfacePair* a3); // slot 13 0x159d40 (child BltDirtyRegions)
-    virtual void ResetChildD8();                         // slot 14 0x159d90
-    virtual void DestroyChildren();                      // slot 15 0x1591f0
-    virtual void CollideBroadcast();                     // slot 16 0x159f00 (pairwise collision)
+    virtual void WalkDispatch30(
+        CDDrawSurfacePair* a1,
+        CDDrawSurfacePair* a2
+    ); // slot 11 0x159cc0 (child BltDirty)
+    virtual void WalkDispatch34(
+        CDDrawSurfacePair* a1,
+        CDDrawSurfacePair* a2,
+        CDDrawSurfacePair* a3
+    ); // slot 12 0x159cf0 (child BltDirtyEx)
+    virtual void WalkDispatch38(
+        CDDrawSurfacePair* a1,
+        CDDrawSurfacePair* a2,
+        CDDrawSurfacePair* a3
+    );                               // slot 13 0x159d40 (child BltDirtyRegions)
+    virtual void ResetChildD8();     // slot 14 0x159d90
+    virtual void DestroyChildren();  // slot 15 0x1591f0
+    virtual void CollideBroadcast(); // slot 16 0x159f00 (pairwise collision)
 
     // --- the WWD collection / factory method set (bodies: WwdObjMgr.cpp + the
     // family pockets in CDDrawSubMgr.cpp / WwdSpatialMgr.cpp; the ex "CWwdObjMgr"
     // and "CSpriteFactory" names). ---
     // Per-kind object factories.
-    CWwdGameObject* CreateObject_159250(int a1, int a2, int a3, int a4, CObject * a5, int a6, int a7);
-    CWwdGameObject* CreateObject_159440(int a1, int a2, CObject * a3, int a4);
-    CWwdGameObjectA* CreateObject_159600(int a1, int a2, int a3, int a4, CObject* a5, int flags);
-    CWwdGameObject* CreateObject_1598d0(int a1, int a2, int a3, int a4, CObject * a5, int a6);
+    // The `tmpl` argument is the registered type template out of the owner's worker
+    // cache - an AnimWorkerObj (CDDrawWorkerCache::CreateWorker @0x1652c0 is the map's
+    // only writer and stamps ??_7AnimWorkerObj@@6B@ on a 0x17c-byte allocation). It is
+    // forwarded untouched to the object's slot-10 Setup, which copies its m_notify +
+    // m_08 into the new object's own worker.
+    CWwdGameObject*
+    CreateObject_159250(int a1, int a2, int a3, int a4, AnimWorkerObj* tmpl, int a6, int a7);
+    CWwdGameObject* CreateObject_159440(int a1, int a2, AnimWorkerObj* tmpl, int a4);
+    CWwdGameObjectA*
+    CreateObject_159600(int a1, int a2, int a3, int a4, AnimWorkerObj* tmpl, int flags);
+    CWwdGameObject*
+    CreateObject_1598d0(int a1, int a2, int a3, int a4, AnimWorkerObj* tmpl, int a6);
     // Name-resolving factory front-ends: resolve `name` through the owner's
     // worker-cache name map (OwnerMgr()->m_workerCache->m_10, the Ob-band Lookup
     // 0x1b8008) to an id, then forward it as the matching CreateObject argument.

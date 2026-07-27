@@ -674,22 +674,27 @@ i32 CDDrawWorkerHost::RebuildPlanes(i32 base, i32 count) {
 // two object ctors (0x15b390 / 0x156cb0) are unmatched engine code: the /GX frame over
 // four destructible CString temps + the reloc-masked ctor/Load/Apply* call chain.
 // Logic byte-faithful; deferred to the final sweep on size, not on a model wall.
+// 2026-07-27: "logic byte-faithful" was NOT true at the slot-10 build call - it passed
+// (logicLen, id, strCursor, (CObject*)id) where retail passes (m_x, m_y, m_z, the
+// worker-cache Lookup result), and it let an EMPTY image-set name fall through into
+// Setup instead of bailing. Both corrected below with the retail frame-slot proof;
+// measured 67.53% -> 73.38% on that fix alone. The rest of the residue stands.
 // The serialized plane-object record: a fixed 0x11c header of dwords followed by the
 // four length-prefixed strings INLINE. ReadPlaneObjects is the reader and the stream
 // cursor advances by the byte count it returns, which is the layout.
 struct PlaneObjectRecord {
-    i32 m_id;          // +0x00
-    u32 m_nameLen;     // +0x04
-    u32 m_logicLen;    // +0x08
-    u32 m_imageSetLen; // +0x0c
-    u32 m_soundLen;    // +0x10
-    i32 m_x;           // +0x14
-    i32 m_y;           // +0x18
-    i32 m_z;           // +0x1c
-    i32 m_gridIndex;   // +0x20
-    i32 m_addFlags;                  // +0x24
-    i32 m_tail[(0x11c - 0x28) / 4];  // +0x28  the scattered per-object fields
-    char m_strings[1];               // +0x11c  the four length-prefixed strings, inline
+    i32 m_id;                       // +0x00
+    u32 m_nameLen;                  // +0x04
+    u32 m_logicLen;                 // +0x08
+    u32 m_imageSetLen;              // +0x0c
+    u32 m_soundLen;                 // +0x10
+    i32 m_x;                        // +0x14
+    i32 m_y;                        // +0x18
+    i32 m_z;                        // +0x1c
+    i32 m_gridIndex;                // +0x20
+    i32 m_addFlags;                 // +0x24
+    i32 m_tail[(0x11c - 0x28) / 4]; // +0x28  the scattered per-object fields
+    char m_strings[1];              // +0x11c  the four length-prefixed strings, inline
 };
 
 RVA(0x00162af0, 0x806)
@@ -778,31 +783,37 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         return static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
     }
 
-    // If an image set is named, require it to be present in the level map.
-    i32 loaded = 1;
+    // The named image set must resolve to a registered type template in the owner's
+    // worker cache. CORRECTED 2026-07-27: an UNNAMED set bails too - retail 0x162d94
+    // reads the CString length out of the CStringData header (`mov edx,[eax-0x8]`) and
+    // `je 0x162dc3` jumps STRAIGHT to the same delete-and-bail a failed lookup takes.
+    // The old `i32 loaded = 1` default let an empty name fall through into Setup.
+    // The out-param is CObject*& (CMapStringToOb's interface); the narrowing is
+    // language-forced - CDDrawWorkerCache::CreateWorker @0x1652c0 is that map's only
+    // writer and every value it stores is a ??_7AnimWorkerObj@@6B@-stamped record.
+    AnimWorkerObj* tmpl = 0;
     if (imageSet.GetLength() != 0) {
-        void* found = 0;
         CObject* foundOb = 0;
-        loaded =
-            OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(imageSet), foundOb);
-        found = foundOb;
+        OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(imageSet), foundOb);
+        tmpl = static_cast<AnimWorkerObj*>(foundOb);
     }
-
-    if (!loaded) {
+    if (tmpl == 0) {
         delete obj;
         return static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
     }
 
-    // Run the object's load virtual (reads the fixed record into the object).
-    // @identity-TODO slot-10 arg4 is a CObject* worker template everywhere else; this
-    // site passes `id` again - one of the two transcriptions is wrong.
-    if (obj->Setup(
-            static_cast<i32>(logicLen),
-            id,
-            reinterpret_cast<i32>(strCursor),
-            reinterpret_cast<CObject*>(id)
-        )
-        == 0) {
+    // Slot-10 build. CORRECTED 2026-07-27 in ALL FOUR arguments (the old
+    // `Setup(logicLen, id, strCursor, (CObject*)id)` carried its own @identity-TODO
+    // saying one transcription had to be wrong - it was this one). Retail 0x162dd9:
+    //     mov ecx,[esp+0x38] / push eax / mov eax,[esp+0x48] / push eax / push edi /
+    //     push ecx / call [edx+0x28]
+    // -> a1=[esp+0x38], a2=edi=[esp+0x3c], a3=[esp+0x48], a4=the Lookup out-param.
+    // Those frame slots are pinned by the prologue's record walk (`lea ebp,[esi+4]` +
+    // `add ebp,4` => ebp = &m_logicLen at 0x162b2b; ebp+12/+16/+20 = m_x/m_y/m_z land
+    // in exactly those three slots), and the bounds guard above tests the first two
+    // against m_wrapW/m_wrapH. CGameObject::Setup's own body (m_screenX=a1,
+    // m_screenY=a2, m_sortKey=a3) independently confirms the x/y/z reading.
+    if (obj->Setup(x, y, z, tmpl) == 0) {
         delete obj;
         return 0;
     }

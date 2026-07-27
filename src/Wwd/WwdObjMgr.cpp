@@ -49,7 +49,6 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-
 // m_188 is the object id; m_map2c/m_map48 are ::CMapPtrToPtr, whose key type IS void*.
 // Widening the id to the map's key type is API-forced by MFC, and this inline is the
 // ONE seam where it happens - every map call below goes through it.
@@ -93,8 +92,15 @@ void CDDrawChildGroup::DestroyChildren() {
 // (sibling of 0x159600 @ 66.6%). docs/patterns/rezalloc-placement-new-no-eh-frame.md
 // ===========================================================================
 RVA(0x00159250, 0x185)
-CWwdGameObject*
-CDDrawChildGroup::CreateObject_159250(int a1, int a2, int a3, int a4, CObject * a5, int a6, int a7) {
+CWwdGameObject* CDDrawChildGroup::CreateObject_159250(
+    int a1,
+    int a2,
+    int a3,
+    int a4,
+    AnimWorkerObj* tmpl,
+    int a6,
+    int a7
+) {
     CWwdGameObjectC* obj = static_cast<CWwdGameObjectC*>(RezAlloc(0x190));
     CWwdGameObjectC* result; // the 0x190 kind (vtable 0x5effd0)
     if (obj != 0) {
@@ -124,7 +130,7 @@ CDDrawChildGroup::CreateObject_159250(int a1, int a2, int a3, int a4, CObject * 
     } else {
         result = 0;
     }
-    if (result->SetupFlagged(a2, a3, a4, a5, a6) == 0) {
+    if (result->SetupFlagged(a2, a3, a4, tmpl, a6) == 0) {
         if (result != 0) {
             delete result; // virtual scalar-deleting dtor (slot 1)
         }
@@ -157,7 +163,11 @@ CWwdGameObject* CDDrawChildGroup::CreateNamed_1593e0(
 ) {
     CObject* val = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
-    return CreateObject_159250(a1, a2, a3, a4, val, a6, a7);
+    // The out-param is CObject*& (CMapStringToOb's own interface), so the narrowing
+    // to the map's one real value type is language-forced: CDDrawWorkerCache::
+    // CreateWorker @0x1652c0 is the ONLY writer and every value it stores is a
+    // 0x17c-byte ??_7AnimWorkerObj@@6B@-stamped registration record.
+    return CreateObject_159250(a1, a2, a3, a4, static_cast<AnimWorkerObj*>(val), a6, a7);
 }
 
 // ===========================================================================
@@ -166,7 +176,7 @@ CWwdGameObject* CDDrawChildGroup::CreateNamed_1593e0(
 // rezalloc-placement-new wall (sibling of 0x159600). frame absent, body exact.
 // ===========================================================================
 RVA(0x00159440, 0x170)
-CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, CObject * a3, int a4) {
+CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, AnimWorkerObj* tmpl, int a4) {
     CWwdGameObjectF* obj = static_cast<CWwdGameObjectF*>(RezAlloc(0x18c));
     CWwdGameObjectF* result; // the 0x18c kind (vtable 0x5f0060)
     if (obj != 0) {
@@ -195,7 +205,7 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, CObject * 
     } else {
         result = 0;
     }
-    if (result->SetupDeferred(a2, a3) == 0) {
+    if (result->SetupDeferred(a2, tmpl) == 0) {
         if (result != 0) {
             delete result; // virtual scalar-deleting dtor (slot 1)
         }
@@ -217,7 +227,7 @@ RVA(0x001595b0, 0x44)
 CWwdGameObject* CDDrawChildGroup::CreateNamed_1595b0(int a1, int a2, const char* name, int a4) {
     CObject* val = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
-    return CreateObject_159440(a1, a2, val, a4);
+    return CreateObject_159440(a1, a2, static_cast<AnimWorkerObj*>(val), a4);
 }
 
 // ===========================================================================
@@ -235,8 +245,14 @@ CWwdGameObject* CDDrawChildGroup::CreateNamed_1595b0(int a1, int a2, const char*
 // retail frame. Logic/fields/offsets complete.
 // ===========================================================================
 RVA(0x00159600, 0x1ab)
-CWwdGameObjectA*
-CDDrawChildGroup::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, CObject* a5, i32 flags) {
+CWwdGameObjectA* CDDrawChildGroup::CreateObject_159600(
+    i32 a1,
+    i32 a2,
+    i32 a3,
+    i32 a4,
+    AnimWorkerObj* tmpl,
+    i32 flags
+) {
     CWwdGameObjectA* obj = static_cast<CWwdGameObjectA*>(RezAlloc(0x1dc));
     CWwdGameObjectA* result; // the 0x1dc kind (vtable 0x5f00a8)
     if (obj != 0) {
@@ -270,7 +286,7 @@ CDDrawChildGroup::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, CObject* a
     } else {
         result = 0;
     }
-    if (result->Setup(a2, a3, a4, a5) == 0) {
+    if (result->Setup(a2, a3, a4, tmpl) == 0) {
         if (result != 0) {
             delete result; // virtual scalar-deleting dtor (slot 1)
         }
@@ -295,7 +311,13 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
 ) {
     CObject* tmpl_ob = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(name, tmpl_ob);
-    CDDrawWorker* tmpl = static_cast<CDDrawWorker*>(tmpl_ob);
+    // CORRECTED 2026-07-27: this was `static_cast<CDDrawWorker*>` - a WRONG downcast.
+    // m_workerCache->m_10 is the worker cache, not the image registry; its only writer
+    // CDDrawWorkerCache::CreateWorker @0x1652c0 news 0x17c bytes and stamps
+    // ??_7AnimWorkerObj@@6B@, so every value is an AnimWorkerObj registration record.
+    // (The wrong type is what made CGameObject::Setup's tmpl+0x10 read look like it was
+    // hitting `CObArray m_items`, and kept that identity "unsettled" for a session.)
+    AnimWorkerObj* tmpl = static_cast<AnimWorkerObj*>(tmpl_ob);
     if (!tmpl) {
         return 0;
     }
@@ -332,7 +354,9 @@ i32 CDDrawChildGroup::AttachSprite(
     }
     CObject* tmpl_ob = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(name, tmpl_ob);
-    CDDrawWorker* tmpl = static_cast<CDDrawWorker*>(tmpl_ob);
+    // Same correction as CreateSprite above: the worker cache's values are
+    // AnimWorkerObj registration records, never CDDrawWorker sprites.
+    AnimWorkerObj* tmpl = static_cast<AnimWorkerObj*>(tmpl_ob);
     if (!tmpl) {
         return 0;
     }
@@ -357,7 +381,7 @@ i32 CDDrawChildGroup::AttachSprite(
 // ===========================================================================
 RVA(0x001598d0, 0x13d)
 CWwdGameObject*
-CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, CObject * a5, int a6) {
+CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, AnimWorkerObj* tmpl, int a6) {
     CWwdGameObject* obj = static_cast<CWwdGameObject*>(RezAlloc(0x1fc));
     CWwdGameObject* result; // the 0x1fc kind (vtable 0x5f00e8)
     if (obj != 0) {
@@ -382,7 +406,7 @@ CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, CObject * 
     } else {
         result = 0;
     }
-    if (result->Setup(a2, a3, a4, a5) == 0) {
+    if (result->Setup(a2, a3, a4, tmpl) == 0) {
         if (result != 0) {
             delete result; // virtual scalar-deleting dtor (slot 1)
         }
@@ -408,7 +432,7 @@ CDDrawChildGroup::CreateNamed_159a10(int a1, int a2, int a3, int a4, const char*
     if (val == 0) {
         return 0;
     }
-    return CreateObject_1598d0(a1, a2, a3, a4, val, a6);
+    return CreateObject_1598d0(a1, a2, a3, a4, static_cast<AnimWorkerObj*>(val), a6);
 }
 
 // ---------------------------------------------------------------------------
@@ -508,41 +532,38 @@ void CDDrawChildGroup::WalkDispatch30(CDDrawSurfacePair* a1, CDDrawSurfacePair* 
     if (n != 0) {
         do {
             CGameObject* cur_obj = NextChild(n);
-            cur_obj->BltDirty(
-                a1,
-                a2
-            );
+            cur_obj->BltDirty(a1, a2);
         } while (n != 0);
     }
 }
 
 RVA(0x00159cf0, 0x42)
-void CDDrawChildGroup::WalkDispatch34(CDDrawSurfacePair* a1, CDDrawSurfacePair* a2, CDDrawSurfacePair* a3) {
+void CDDrawChildGroup::WalkDispatch34(
+    CDDrawSurfacePair* a1,
+    CDDrawSurfacePair* a2,
+    CDDrawSurfacePair* a3
+) {
     POSITION n = m_list.GetHeadPosition();
     if (n != 0) {
         do {
             CGameObject* cur_obj = NextChild(n);
-            cur_obj->BltDirtyEx(
-                a1,
-                a2,
-                a3
-            );
+            cur_obj->BltDirtyEx(a1, a2, a3);
         } while (n != 0);
     }
     WalkDispatch30(a2, a3);
 }
 
 RVA(0x00159d40, 0x42)
-void CDDrawChildGroup::WalkDispatch38(CDDrawSurfacePair* a1, CDDrawSurfacePair* a2, CDDrawSurfacePair* a3) {
+void CDDrawChildGroup::WalkDispatch38(
+    CDDrawSurfacePair* a1,
+    CDDrawSurfacePair* a2,
+    CDDrawSurfacePair* a3
+) {
     POSITION n = m_list.GetHeadPosition();
     if (n != 0) {
         do {
             CGameObject* cur_obj = NextChild(n);
-            cur_obj->BltDirtyRegions(
-                a1,
-                a2,
-                a3
-            );
+            cur_obj->BltDirtyRegions(a1, a2, a3);
         } while (n != 0);
     }
     WalkDispatch30(a2, a3);
@@ -603,8 +624,7 @@ void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
         POSITION cur = pos;
         CWwdGameObject* data = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
         if (data->m_sortKey > key && !(data->m_flags & 0x20000)) {
-            obj->m_posCache =
-                (m_list.InsertBefore(cur, static_cast<CObject*>(obj)));
+            obj->m_posCache = (m_list.InsertBefore(cur, static_cast<CObject*>(obj)));
             return;
         }
     }
@@ -1249,7 +1269,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
                         desc.m_94,
                         desc.m_98,
                         desc.m_9c,
-                        val,
+                        static_cast<AnimWorkerObj*>(val),
                         0
                     );
                 }
@@ -1259,7 +1279,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
                 CObject* val;
                 OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(desc.m_14), val);
                 createdObj =
-                    CreateObject_159440(desc.m_00, desc.m_9c, val, 0);
+                    CreateObject_159440(desc.m_00, desc.m_9c, static_cast<AnimWorkerObj*>(val), 0);
                 break;
             }
             case 0x1b: {
@@ -1271,7 +1291,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
                         desc.m_94,
                         desc.m_98,
                         desc.m_9c,
-                        val,
+                        static_cast<AnimWorkerObj*>(val),
                         0
                     );
                 }
@@ -1292,15 +1312,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
                 }
                 rec->m_id = desc.m_00;
                 // 0x159830 == CDDrawChildGroup::AttachSprite (the manager IS the factory)
-                if (AttachSprite(
-                        rec,
-                        desc.m_94,
-                        desc.m_98,
-                        desc.m_9c,
-                        desc.m_14,
-                        0
-                    )
-                    == 0) {
+                if (AttachSprite(rec, desc.m_94, desc.m_98, desc.m_9c, desc.m_14, 0) == 0) {
                     return 0;
                 }
                 createdObj = rec;

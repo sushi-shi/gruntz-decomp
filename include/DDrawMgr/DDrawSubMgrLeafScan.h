@@ -78,6 +78,15 @@ public:
     // 0x158210, exactly where this body ends).
     i32 Fire(const char* key, i32 pos, i32 range1, i32 range2); // 0x1581b0
 
+    // 0x157a80 (body in DDrawSubMgr.cpp, immediately before Unload): (re)bind the
+    // owner's SoundStream into m_2c and reset the cue tag. `force` != 0 adopts the
+    // stream unconditionally (recording "no device" by opening m_emitGate); force ==
+    // 0 only adopts a live, initialised one. Sole retail caller: CDDrawSurfaceMgr::
+    // Init @0x155dee (`mov ecx,[esi+0x28]; push 1; call 0x157a80`) - which is what
+    // proves this is a method of THIS class and not of CAniAdvanceCursor, whose
+    // identical CLoadable header let the wrong owner compile.
+    i32 BindSoundStream(i32 force);
+
     CMapStringToPtr m_10; // +0x10  keyed asset cache (ends +0x2c)
     SoundStream* m_2c;    // +0x2c  held DSound stream (game TUs Stop() it on teardown)
     // +0x30: one field, two established readings (same semantics - nonzero = busy /

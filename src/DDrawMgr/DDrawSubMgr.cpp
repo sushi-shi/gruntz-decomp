@@ -659,33 +659,50 @@ void CFileMem::Close() {
     Reset(); // retail: the same `jmp [vptr+0xc]` slot-3 self-dispatch as the base
 }
 
+// ---------------------------------------------------------------------------
+// CDDrawSubMgrLeafScan::BindSoundStream (0x157a80) - IDENTITY SETTLED 2026-07-27.
+// It was declared CAniAdvanceCursor::SelectCue on a guess; the ONE retail caller
+// names the receiver outright:
+//     CDDrawSurfaceMgr::Init @0x155dee   mov ecx,[esi+0x28] / push 1 / call 0x157a80
+// and [esi+0x28] is the 0x38-byte object Init itself mints two blocks earlier,
+// stamping `mov [edi],0x5efca0` == ??_7CDDrawSubMgrLeafScan and `mov [edi+0xc],esi`
+// (its CLoadable m_ownerCtx = the CDDrawSurfaceMgr). So `this` is m_soundRegistry,
+// the owner IS the surface manager, and every offset lands on a canonical member:
+//   this+0x0c -> CLoadable::m_ownerCtx  -> OwnerMgr()
+//   mgr +0x20 -> CDDrawSurfaceMgr::m_soundStream (Init stores the 0x9c-byte
+//                object built by SoundStream::SoundStream @0x1376d0 there)
+//   snd +0x78 -> SoundDevice::m_initialized (inside the 0x94-byte device base)
+//   this+0x2c -> m_2c, already typed SoundStream* (the "held DSound stream")
+//   this+0x30 -> m_emitGate  (nonzero = suppress cue emission)
+// CAniAdvanceCursor merely shares the CLoadable header, which is why the wrong
+// class compiled and matched. The neighbouring Unload @0x157ae0 clears the SAME
+// +0x2c and calls it "the held stream" - it is this class's slot 7.
+// Role: (re)bind the owner's stream after the device came up or was torn down.
+// force=0 = only adopt a live, initialised stream; force=1 (Init's call) = adopt
+// whatever is there, recording "no stream" by opening the emit gate.
+// ---------------------------------------------------------------------------
 RVA(0x00157a80, 0x51)
-i32 CAniAdvanceCursor::SelectCue(void* force) {
-    // @identity-TODO m_ownerCtx is the family's deliberately-generic i32 owner slot, and
-    // this role reads +0x20 (a cue) and cue+0x78. If the owner here is CDDrawSurfaceMgr
-    // then +0x20 is m_soundStream, which does not fit a cue - so the owning class for
-    // THIS role is unsettled. Needs the 0x157a80 xref; a guessed type would be worse.
-    char* mgr = reinterpret_cast<char*>(m_ownerCtx);
+i32 CDDrawSubMgrLeafScan::BindSoundStream(i32 force) {
+    CDDrawSurfaceMgr* mgr = OwnerMgr();
     if (mgr == 0) {
         return 0;
     }
-    char* cue = *reinterpret_cast<char**>((mgr + 0x20)); // @identity-TODO (see above)
+    SoundStream* stream = mgr->m_soundStream;
     if (force == 0) {
-        if (cue == 0) {
+        if (stream == 0) {
             return 0;
         }
-        // @identity-TODO the cue's class follows from m_ownerCtx's, still unsettled
-        if (*reinterpret_cast<i32*>((cue + 0x78)) == 0) {
+        if (stream->m_initialized == 0) {
             return 0;
         }
     }
-    if (cue == 0) {
-        m_pendingDraw = 1; // +0x30 (cue-role: cue-absent flag)
+    if (stream == 0) {
+        m_emitGate = 1; // no device -> silent mode: RefreshAsset/Fire stop emitting
     } else {
-        m_pendingDraw = 0;
+        m_emitGate = 0;
     }
-    m_2c = reinterpret_cast<i32>(cue);
-    g_sndCueTag = 0x64;
+    m_2c = stream;
+    g_sndCueTag = SND_CUE_NEUTRAL;
     return 1;
 }
 
@@ -1196,7 +1213,7 @@ i32 CAniBlitTrigger::TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2) {
     i32 cue = g_sndCueTag;
     i32 amp = 100;
     i32 vscale;
-    if (cue == 100) {
+    if (cue == SND_CUE_NEUTRAL) {
         vscale = amp;
     } else {
         vscale = static_cast<i32>((amp * (cue * g_sndPanScale)));
@@ -1215,8 +1232,7 @@ RVA(0x001588f0, 0x1c5)
 i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
     // The real inline derived ctor: retail emits `call 0x158f30` (the out-of-line
     // CDrawSubWorker base ctor) + the own ??_7 stamp + m_surface = 0.
-    m_frontPair =
-        reinterpret_cast<CDDrawSurfacePair*>(new CDDrawSurfaceChildA(m_ownerCtx, 0, 0));
+    m_frontPair = reinterpret_cast<CDDrawSurfacePair*>(new CDDrawSurfaceChildA(m_ownerCtx, 0, 0));
     m_backPair = new CDDrawSurfacePair(m_ownerCtx, 1, 0);
     m_overlayPair = new CDDrawSurfacePair(m_ownerCtx, 2, 0);
 

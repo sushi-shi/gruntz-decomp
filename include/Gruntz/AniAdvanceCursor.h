@@ -28,12 +28,11 @@ public:
     // game-object path (Init 0x15b940 passes `this`), a worker source on the
     // blit path - reinterpreted internally, so it stays void* (one mangled
     // symbol across both).
-    void Construct(void* src);         // 0x15c290
-    void Setup(CAniElement* src);      // 0x15c2d0  bind a resolved geo source
-    void Recompute(i32 a1);            // 0x15c320  re-derive from the bound m_14
-    i32 SelectCue(void* force);        // 0x157a80  (cue-role: writes m_2c/m_pendingDraw)
-    i32 Serialize(CFileMemBase* ar);   // 0x15c970
-    i32 Deserialize(CFileMemBase* ar); // 0x15ca70
+    void Construct(void* src);                            // 0x15c290
+    void Setup(CAniElement* src);                         // 0x15c2d0  bind a resolved geo source
+    void Recompute(i32 a1);                               // 0x15c320  re-derive from the bound m_14
+    i32 Serialize(CFileMemBase* ar);                      // 0x15c970
+    i32 Deserialize(CFileMemBase* ar);                    // 0x15ca70
     i32 Find(CFileMemBase* ar, i32 type, i32 a3, i32 a4); // 0x15c900
     i32 Advance(u32 elapsed);                             // 0x15c360 (advance / set-geo-source)
 
@@ -47,9 +46,8 @@ public:
     u32 m_20;            // +0x20  per-frame timer remaining (ticks)
     i32 m_24;            // +0x24  "decrement-each-tick" flag
     i32 m_28;            // +0x28  paused/done flag
-    i32 m_2c;            // +0x2c  owns-buffer flag (consume the draw value on
-                         //        read); the cue role caches the cue ptr here
-    i32 m_pendingDraw;   // +0x30  pending draw value (cue role: present flag)
+    i32 m_2c;            // +0x2c  owns-buffer flag (consume the draw value on read)
+    i32 m_pendingDraw;   // +0x30  pending draw value
     i32 m_curDraw;       // +0x34  current draw value
     float m_scale;       // +0x38  float speed/scale multiplier (Advance compares
                          //        it as raw bits vs 0x3f800000 == 1.0f)
