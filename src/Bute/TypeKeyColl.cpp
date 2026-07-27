@@ -33,6 +33,7 @@ inline CTypeCollRuntime::CTypeCollRuntime()
     // a sentinel scratch argument, not an object - the container only tests it
     : _zdvec(sizeof(CString), 0x7d0, 0x7da, reinterpret_cast<void*>(1)) {
     // the container's untyped byte pool, named at its one typed accessor
+    // the container's untyped byte pool, named at its one typed accessor
     CString* item = reinterpret_cast<CString*>(m_alloc);
     i32 count = m_grown;
     if (item != 0 && count != 0) {
@@ -44,6 +45,7 @@ inline CTypeCollRuntime::CTypeCollRuntime()
 }
 
 CTypeCollRuntime::~CTypeCollRuntime() {
+    // the container's untyped byte pool, named at its one typed accessor
     // the container's untyped byte pool, named at its one typed accessor
     CString* item = reinterpret_cast<CString*>(m_base);
     i32 count = m_hi - m_lo + 1;
@@ -1005,11 +1007,13 @@ static inline CString* TypeResolve(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
         // the container's untyped byte pool, named at its one typed accessor
+        // the container's untyped byte pool, named at its one typed accessor
         return reinterpret_cast<CString*>(
             g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride
         );
     }
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
+        // the container's untyped byte pool, named at its one typed accessor
         // the container's untyped byte pool, named at its one typed accessor
         return reinterpret_cast<CString*>(
             g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride

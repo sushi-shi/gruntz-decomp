@@ -70,8 +70,9 @@ public:
     SoundDevice* m_owner;         // +0x10  owning device back-pointer
     u32 m_playFlags;              // +0x14  Play/looping flags (bit 0 = loop)
     u32 m_freq;                   // +0x18  cached frequency (GetFrequency)
-    i32 m_pan;                    // +0x1c  cached pan (GetPan)
-    i32 m_volume;                 // +0x20  cached volume (GetVolume)
+    long m_pan;                   // +0x1c  cached pan (LONG, the type GetPan writes;
+                                  //        spelt `long` so this header stays Win32-free)
+    long m_volume;                // +0x20  cached volume (LONG, GetVolume writes it)
     u32 m_setFreq;                // +0x24  cached SetFrequency value
     u32 m_durationMs;             // +0x28  duration (ComputeDuration)
     u32 m_sampleCount;            // +0x2c  sample count (set by the clone ctor)

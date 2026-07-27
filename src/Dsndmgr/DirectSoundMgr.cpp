@@ -144,7 +144,7 @@ DirectSoundMgr::DirectSoundMgr(IDirectSoundBuffer* buf, SoundDevice* owner) {
     m_setFreq = m_freq;
 
     if ((m_caps & DSBCAPS_CTRLPAN) == DSBCAPS_CTRLPAN) {
-        i32 hr = buf->GetPan(reinterpret_cast<LONG*>(&m_pan)) != 0;
+        i32 hr = buf->GetPan(&m_pan) != 0;
         if (hr) {
             GetErrorString(DSNDMGR_FILE, 0x60, hr);
         }
@@ -153,7 +153,7 @@ DirectSoundMgr::DirectSoundMgr(IDirectSoundBuffer* buf, SoundDevice* owner) {
     }
 
     if ((m_caps & DSBCAPS_CTRLVOLUME) == DSBCAPS_CTRLVOLUME) {
-        i32 hr = buf->GetVolume(reinterpret_cast<LONG*>(&m_volume)) != 0;
+        i32 hr = buf->GetVolume(&m_volume) != 0;
         if (hr) {
             GetErrorString(DSNDMGR_FILE, 0x68, hr);
         }
@@ -312,8 +312,8 @@ i32 DirectSoundMgr::GetVolume() {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 vol;
-    i32 hr = m_buffer->GetVolume(reinterpret_cast<LONG*>(&vol)) != 0;
+    long vol;
+    i32 hr = m_buffer->GetVolume(&vol) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x10e, hr);
         return 0;
@@ -382,8 +382,8 @@ i32 DirectSoundMgr::GetPan() {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 pan;
-    i32 hr = m_buffer->GetPan(reinterpret_cast<LONG*>(&pan)) != 0;
+    long pan;
+    i32 hr = m_buffer->GetPan(&pan) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x15e, hr);
         return 0;
@@ -1043,6 +1043,8 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     *reinterpret_cast<u32*>(&wf.wFormatTag) = *reinterpret_cast<u32*>(&fmt->wFormatTag);
     wf.nSamplesPerSec = fmt->nSamplesPerSec;
     wf.nAvgBytesPerSec = fmt->nAvgBytesPerSec;
+    // byte-forced: retail moves the two adjacent WAVEFORMAT u16 fields as ONE dword,
+    // and the SDK struct gives no combined member to name.
     *reinterpret_cast<u32*>(&wf.nBlockAlign) = *reinterpret_cast<u32*>(&fmt->nBlockAlign);
     wf.cbSize = fmt->cbSize;
 
@@ -1497,6 +1499,7 @@ i32 DSoundVoice::Stop() {
 // increments blocks the +8 fold) - the ex "add-fold wall" was the p+=2 spelling.
 RVA(0x00137110, 0x8d)
 i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut) {
+    // wire walk over the untyped RIFF buffer - byte-forced
     u32* p = reinterpret_cast<u32*>((static_cast<char*>(riff) + 4));
     u32 riffSize = *p;
     p++;
@@ -1518,7 +1521,8 @@ i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut) {
         u32 id = *p++;
         u32 size = *p++;
         if (id == mmioFOURCC('f', 'm', 't', ' ')) {
-            out->m_fmt = reinterpret_cast<WaveFormatX*>(p);
+            // the chunk body typed at the format boundary - byte-forced
+        out->m_fmt = reinterpret_cast<WaveFormatX*>(p);
         } else if (id == mmioFOURCC('d', 'a', 't', 'a')) {
             *dataOut = p;
             *sizeOut = size;
