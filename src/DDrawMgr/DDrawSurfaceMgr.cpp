@@ -236,17 +236,17 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char * arg1, char* name, 
 
     // Build the 0x120-byte header record (CTime stamp + the name strcpy).
     CTime now;
-    char header[0x120];
-    memset(header, 0, sizeof(header));
-    *reinterpret_cast<i32*>((header + 0x04)) = 1;
-    *reinterpret_cast<i32*>((header + 0x08)) = now.GetLocalTm(0)->tm_mon + 1;
-    *reinterpret_cast<i32*>((header + 0x0c)) = now.GetLocalTm(0)->tm_mday;
-    *reinterpret_cast<i32*>((header + 0x0c)) = now.GetLocalTm(0)->tm_year + 0x76c;
-    strcpy(header + 0x10, name);
+    CSnapshotHeader header;
+    memset(&header, 0, sizeof(header));
+    header.m_version = 1;
+    header.m_month = now.GetLocalTm(0)->tm_mon + 1;
+    header.m_dayThenYear = now.GetLocalTm(0)->tm_mday;
+    header.m_dayThenYear = now.GetLocalTm(0)->tm_year + 0x76c;
+    strcpy(header.m_name, name);
     i32 probe = m_childGroup->CountActive();
-    *reinterpret_cast<u32*>((header + 0x114)) = g_wwdObjIdCounter;
-    *reinterpret_cast<i32*>((header + 0x118)) = probe;
-    S.Write(static_cast<const void*>(header), 0x120);
+    header.m_objIdCounter = g_wwdObjIdCounter;
+    header.m_activeCount = probe;
+    S.Write(&header, sizeof(header));
 
     // ---- dispatch the five blit modes over the children ----
     if (m_callback && cb(this, &S, 1, 0, 0) == 0) {
@@ -326,19 +326,19 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
         return 0;
     }
 
-    char header[0x120];
-    S.Read(header, 0x120);
+    CSnapshotHeader header;
+    S.Read(&header, sizeof(header));
 
-    if (m_callback == 0 || m_callback(this, &S, 2, arg3, reinterpret_cast<i32>(header)) == 0) {
+    if (m_callback == 0 || m_callback(this, &S, 2, arg3, reinterpret_cast<i32>(&header)) == 0) {
         return 0;
     }
-    g_wwdObjIdCounter = *reinterpret_cast<u32*>((header + 0x114));
+    g_wwdObjIdCounter = header.m_objIdCounter;
     m_childGroup->DestroyChildren_159ef0();
-    if (m_childGroup->LoadObjects(&S, *reinterpret_cast<unsigned int*>((header + 0x110)), arg3)
+    if (m_childGroup->LoadObjects(&S, header.m_childCount, arg3)
         == 0) {
         return 0;
     }
-    if (m_callback == 0 || m_callback(this, &S, 6, arg3, reinterpret_cast<i32>(header)) == 0) {
+    if (m_callback == 0 || m_callback(this, &S, 6, arg3, reinterpret_cast<i32>(&header)) == 0) {
         return 0;
     }
     if (m_childGroup->ForEachDispatch(&S, 6, arg3) == 0) {
@@ -347,17 +347,17 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_level->EditDispatch(static_cast<void*>(&S), 6, 0, 0) == 0) {
         return 0;
     }
-    if (m_callback == 0 || m_callback(this, &S, 7, arg3, reinterpret_cast<i32>(header)) == 0) {
+    if (m_callback == 0 || m_callback(this, &S, 7, arg3, reinterpret_cast<i32>(&header)) == 0) {
         return 0;
     }
-    if (m_childGroup->Deserialize(&S, *reinterpret_cast<unsigned int*>((header + 0x110)), arg3)
+    if (m_childGroup->Deserialize(&S, header.m_childCount, arg3)
         == 0) {
         return 0;
     }
     if (m_level->EditDispatch(static_cast<void*>(&S), 7, 0, 0) == 0) {
         return 0;
     }
-    if (m_callback == 0 || m_callback(this, &S, 8, arg3, reinterpret_cast<i32>(header)) == 0) {
+    if (m_callback == 0 || m_callback(this, &S, 8, arg3, reinterpret_cast<i32>(&header)) == 0) {
         return 0;
     }
     if (m_childGroup->ForEachDispatch(&S, 8, arg3) == 0) {

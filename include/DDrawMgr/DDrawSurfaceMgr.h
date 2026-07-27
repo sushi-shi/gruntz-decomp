@@ -10,6 +10,23 @@ struct HWND__;
 typedef struct HWND__* HWND;
 #endif
 
+// The 0x120-byte snapshot header the child-group writer stamps and the reader
+// consumes - the two ends agree on every offset, which is the layout.
+#pragma pack(push, 1)
+struct CSnapshotHeader {
+    i32 m_00;                     // +0x000
+    i32 m_version;                // +0x004  1
+    i32 m_month;                  // +0x008  tm_mon + 1
+    i32 m_dayThenYear;            // +0x00c  tm_mday, then overwritten with tm_year+0x76c
+    char m_name[0x110 - 0x10];    // +0x010  the snapshot name (strcpy'd)
+    u32 m_childCount;             // +0x110  child count handed to LoadObjects/Deserialize
+    u32 m_objIdCounter;           // +0x114  g_wwdObjIdCounter
+    i32 m_activeCount;            // +0x118  CountActive() probe
+    char m_pad11c[0x120 - 0x11c]; // +0x11c
+};
+SIZE(0x120);
+#pragma pack(pop)
+
 class CLoadable;
 class CDDrawSubMgrPages;    // +0x04 the page/child factory (front/back/overlay surfaces)
 class CDDrawWorkerList;     // +0x0c the per-frame worker pump (vtbl 0x1efd88; slot-13 PruneWorkers)
