@@ -53,8 +53,8 @@ RVA(0x00102250, 0x1dcd)
 RVA_COMPGEN(0x00104cb0, 0x1e, ??_GCSBI_GruntMachine@@UAEPAXI@Z)
 i32 CStatusBarMgr::LoadTabSprites() {
     CDDrawSurfaceMgr* code = m_c; // the setup arg2 config host (spilled to [esp+0x10] in retail)
-    i32 bx = m_10;                // base x
-    i32 by = m_rect14.m_0;        // base y
+    i32 bx = m_rect10.left;                // base x
+    i32 by = m_rect10.top;        // base y
     // The item locals are typed by what each leaf actually IS. `it` covers every widget
     // that has the slot-11 setup (CSBI_ImageSet / WellGoo / WarlordHead all derive from
     // CSBI_Image); the four below do not fit that base and used to be reached by casting

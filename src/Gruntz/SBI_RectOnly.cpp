@@ -597,8 +597,8 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     }
     s->Write(&seq, 4);
 
-    s->Write(&m_10, 0x10);
-    s->Write(&m_rect14.m_c, 4);
+    s->Write(&m_rect10.left, 0x10);
+    s->Write(&m_20, 4);
     s->Write(&m_24, 4);
     s->Write(&m_28, 4);
     s->Write(&m_itemKind, 4);
@@ -720,8 +720,8 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
         return 0;
     }
 
-    s->Read(&m_10, 0x10);
-    s->Read(&m_rect14.m_c, 4);
+    s->Read(&m_rect10.left, 0x10);
+    s->Read(&m_20, 4);
     s->Read(&m_24, 4);
     s->Read(&m_28, 4);
     s->Read(&m_itemKind, 4);
@@ -1133,7 +1133,7 @@ i32 CStatusBarMgr::Deactivate() {
     }
 
     ClearTabSprites(-1);
-    m_rect14.m_c = 2;
+    m_20 = 2;
     return 1;
 }
 
@@ -1423,8 +1423,8 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             m_fallRectB = newHi;
             CSBI_ImageSet* w = m_extraNotify1;
             if (w) {
-                i32 sx = m_10;
-                i32 sy = m_rect14.m_0;
+                i32 sx = m_rect10.left;
+                i32 sy = m_rect10.top;
                 i32* p = &w->m_rect14.m_0; // the 4-int SbiRect block, walked flat
                 p[0] = m_fallRectL + sx;
                 p[1] = sy + newLo;
@@ -1501,9 +1501,9 @@ i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
     }
 
     CStatusBarMgr* base = m_owner;
-    i32 tx = base->m_10 + cx;
+    i32 tx = base->m_rect10.left + cx;
     m_targetX = tx;
-    i32 ty = base->m_rect14.m_0 + dy;
+    i32 ty = base->m_rect10.top + dy;
     m_targetY = ty;
 
     i32 dxv = tx - srcX;
@@ -2237,8 +2237,8 @@ i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
     } else if (x > xHi - 0x1a) {
         cx = xHi - 0x1a;
     }
-    i32 localX = cx - m_10;
-    i32 localY = 0x1b3 - m_rect14.m_0;
+    i32 localX = cx - m_rect10.left;
+    i32 localY = 0x1b3 - m_rect10.top;
     UpdateFallingItemStatusBar(item, localX, localY);
     EnterHlRow(1, item);
     return 1;
@@ -2358,7 +2358,7 @@ RVA(0x000fe460, 0x83)
 i32 CStatusBarMgr::RefreshA() {
     if (m_hlBusy == 0 && m_position != 1) {
         ResetWidgets(1);
-        SetRect(reinterpret_cast<LPRECT>(&m_10), 0, 0, 0xa0, 0x1e0);
+        SetRect(reinterpret_cast<LPRECT>(&m_rect10.left), 0, 0, 0xa0, 0x1e0);
         SetState(1);
         (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
         if (BuildStatusBarTabs() == 0) {
@@ -2385,7 +2385,7 @@ i32 CStatusBarMgr::winapi_0fe520_SetRect() {
     i32 w = g_gameReg->m_modeW;
     volatile POINT pt;
     pt.y = g_gameReg->m_modeH;
-    SetRect(reinterpret_cast<LPRECT>(&m_10), w - 0xa0, 0, w, 0x1e0);
+    SetRect(reinterpret_cast<LPRECT>(&m_rect10.left), w - 0xa0, 0, w, 0x1e0);
     SetState(0);
     (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
     if (BuildStatusBarTabs() == 0) {
@@ -2400,7 +2400,7 @@ RVA(0x000fe600, 0x49)
 i32 CStatusBarMgr::HideRect() {
     if (m_hlBusy == 0 && m_position != 2) {
         ResetWidgets(1);
-        SetRect(reinterpret_cast<LPRECT>(&m_10), -1, -1, -1, -1);
+        SetRect(reinterpret_cast<LPRECT>(&m_rect10.left), -1, -1, -1, -1);
         SetState(2);
         (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
     }
@@ -2551,8 +2551,8 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (m_c == 0) {
         return 0;
     }
-    i32 bx = m_10;
-    i32 by = m_rect14.m_0;
+    i32 bx = m_rect10.left;
+    i32 by = m_rect10.top;
     CDDrawSurfaceMgr* code = m_c;
     CStatusBarItem* it;
 
@@ -2888,8 +2888,8 @@ i32 CStatusBarMgr::winapi_107d00_SetRect() {
     m_machinePhase = 1;
     SetRect(reinterpret_cast<LPRECT>(&m_itemRectL), 0x49, 0xd7, 0x61, 0xef);
     if (m_extraNotify0) {
-        i32 x = m_10;
-        i32 y = m_rect14.m_0;
+        i32 x = m_rect10.left;
+        i32 y = m_rect10.top;
         m_extraNotify0->m_rect14.m_0 = m_itemRectL + x;
         m_extraNotify0->m_rect14.m_4 = m_itemRectT + y;
         m_extraNotify0->m_rect14.m_8 = m_itemRectR + x;
@@ -2927,13 +2927,13 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     i32 vx = g_gameReg->m_modeW;
     i32 vy = g_gameReg->m_modeH;
     SetRect(
-        reinterpret_cast<LPRECT>(&m_10),
+        reinterpret_cast<LPRECT>(&m_rect10.left),
         vx - 0xa0,
         0,
         vx,
         0x1e0
     ); // the +0x10..+0x1f tab-strip rect
-    m_rect14.m_c = 0;
+    m_20 = 0;
     m_24 = vx - 0x45;
     m_28 = vy - 0x30;
     m_itemKind = 5;
@@ -3030,18 +3030,18 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
 RVA(0x000fe6b0, 0x145)
 i32 CStatusBarMgr::LoadMainStatusBarSprite() {
     if (m_position != kSubtypeTag) {
-        if (m_rect14.m_c > 0) {
-            m_rect14.m_c--;
+        if (m_20 > 0) {
+            m_20--;
             i32 v = m_barFrameGate;
             if (v > 0x1e0) {
                 CDDSurface* tgt = (g_gameReg->m_world->m_drawTarget)->m_backPair->m_surface;
                 struct {
                     i32 a, b, c, d;
                 } rc;
-                rc.a = m_10;
+                rc.a = m_rect10.left;
                 rc.d = v;
-                rc.b = m_rect14.m_8;
-                rc.c = m_rect14.m_4;
+                rc.b = m_rect10.bottom;
+                rc.c = m_rect10.right;
                 tgt->Restore(&rc, 0);
             }
             CMapStringToOb* map = &m_c->m_imageRegistry->m_10map;
@@ -3059,8 +3059,8 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                             ->m_drawTarget; // the real pages (ex the CSbiMainL1 facet)
                     entry->RenderFrame(
                         l1->m_backPair,
-                        entry->m_anchorX + m_10,
-                        entry->m_anchorY + m_rect14.m_0,
+                        entry->m_anchorX + m_rect10.left,
+                        entry->m_anchorY + m_rect10.top,
                         0
                     );
                 }
@@ -4096,10 +4096,10 @@ void CStatusBarMgr::LoadChipMachineConfig() {
 
     if (m_extraNotify0) {
         if (rectFlag) {
-            m_extraNotify0->m_rect14.m_0 = m_itemRectL + m_10;
-            m_extraNotify0->m_rect14.m_4 = m_itemRectT + m_rect14.m_0;
-            m_extraNotify0->m_rect14.m_8 = m_itemRectR + m_10;
-            m_extraNotify0->m_rect14.m_c = m_itemRectB + m_rect14.m_0;
+            m_extraNotify0->m_rect14.m_0 = m_itemRectL + m_rect10.left;
+            m_extraNotify0->m_rect14.m_4 = m_itemRectT + m_rect10.top;
+            m_extraNotify0->m_rect14.m_8 = m_itemRectR + m_rect10.left;
+            m_extraNotify0->m_rect14.m_c = m_itemRectB + m_rect10.top;
         }
         if (refreshFlag) {
             NotifyAllSlots();
@@ -4135,10 +4135,10 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
     m_fallRectR = rr;
     m_fallRectB = b;
     if (n) {
-        i32 x = m_10;
+        i32 x = m_rect10.left;
         n->m_rect14.m_0 = l + x;
         n->m_rect14.m_8 = x + rr;
-        i32 y = m_rect14.m_0;
+        i32 y = m_rect10.top;
         n->m_rect14.m_4 = t + y;
         n->m_rect14.m_c = y + b;
     }

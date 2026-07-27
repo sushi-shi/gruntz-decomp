@@ -4093,9 +4093,7 @@ i32 CPlay::Vslot0e(i32 a, i32 x, i32 y) {
             goto mode_36c;
         }
         i32 placed = 0;
-        RECT* gr = reinterpret_cast<RECT*>(
-            &m_guts->m_10
-        ); // +0x10 widget rect (grouping conflict w/ SBI m_rect14)
+        RECT* gr = &m_guts->m_rect10;
         if (xr < gr->right && xr >= gr->left && y < gr->bottom && y >= gr->top) {
             // inside the guts HUD rect -> finalize with placed == 0
         } else {
@@ -4136,9 +4134,7 @@ mode_36c:
         goto drag_path;
     }
     {
-        RECT* gr = reinterpret_cast<RECT*>(
-            &m_guts->m_10
-        ); // +0x10 widget rect (grouping conflict w/ SBI m_rect14)
+        RECT* gr = &m_guts->m_rect10;
         if (xr < gr->right && xr >= gr->left && y < gr->bottom && y >= gr->top) {
             if (m_guts->SetFallRect(xr, y, *reinterpret_cast<char*>(&m_cursorFrame))) {
                 m_dragInhibit2 = 0;
@@ -4234,9 +4230,7 @@ drag_path: {
         goto drag_box;
     }
     // m_guts->m_position != 2: guts-rect dispatch
-    RECT* gr = reinterpret_cast<RECT*>(
-        &m_guts->m_10
-    ); // +0x10 widget rect (grouping conflict w/ SBI m_rect14)
+    RECT* gr = &m_guts->m_rect10;
     if (xr < gr->right && xr >= gr->left && y < gr->bottom && y >= gr->top) {
         FlushPendingOps();
         return m_guts->UpdateStatusBarTabHighlight(a, xr, y);
@@ -4398,8 +4392,8 @@ i32 CPlay::Vslot11(i32 a, i32 x, i32 y) {
     // the guts widget rect: {m_10, m_rect14.m_0/.m_4/.m_8} = the +0x10..+0x1c
     // left/top/right/bottom quad (the SBI side reads the same bytes as base-x +
     // SbiRect - a field-grouping conflict flagged for reconciliation).
-    if (x < m_guts->m_rect14.m_4 && x >= m_guts->m_10 && y < m_guts->m_rect14.m_8
-        && y >= m_guts->m_rect14.m_0) {
+    if (x < m_guts->m_rect10.right && x >= m_guts->m_rect10.left && y < m_guts->m_rect10.bottom
+        && y >= m_guts->m_rect10.top) {
         return 1;
     }
     i32 idx = m_guts->HitTest(x, y);

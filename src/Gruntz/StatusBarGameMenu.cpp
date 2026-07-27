@@ -59,8 +59,8 @@
 RVA(0x00101580, 0x806)
 void CStatusBarMgr::BuildGameMenu() {
     CDDrawSurfaceMgr* code = m_c; // the setup arg2 config host
-    i32 bx = m_10;
-    i32 by = m_rect14.m_0;
+    i32 bx = m_rect10.left;
+    i32 by = m_rect10.top;
     CSBI_Image* it;
     SbRect r;
 

@@ -280,9 +280,12 @@ public:
     // (`mov eax,[esp+8]` ... `mov ecx,[eax+0x10]`) to reach the lookup map - it is a
     // CDDrawSurfaceMgr*, not the `i32 code` the builders used to pass it as.
     CDDrawSurfaceMgr* m_c; // +0x0c
-    i32 m_10;              // +0x10  tab base x
-    // +0x14..0x23: a 4-int block. The tab builder reads m_rect14.m_0 as the tab base y.
-    SbiRect m_rect14; // +0x14
+    // +0x10..+0x1f is ONE RECT: CPlay's hit tests read it as {left,top,right,bottom}
+    // (`(RECT*)&m_guts->m_10` at 0x4092/0x4139/0x4237), and the tab builder's
+    // "tab base x/y" are exactly its left/top. The old m_10 + SbiRect m_rect14 pair
+    // split that rect one dword early.
+    RECT m_rect10;    // +0x10
+    i32 m_20;         // +0x20  (was m_rect14.m_c)
     i32 m_24;         // +0x24
     i32 m_28;         // +0x28
     // +0x2c: EIGHT CPtrLists, built by the EH-vector-ctor in CPlay::LoadGameAssetNamespaces
@@ -518,7 +521,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_tabSprite14 = 0;
     m_barSprite = 0;                             // +0x08
     m_c = 0;                                     // +0x0c
-    m_rect14.m_c = 0;                            // +0x20  (the rect block's 4th int; only this one)
+    m_20 = 0;                            // +0x20  (the rect block's 4th int; only this one)
     m_activeTab = 0;                             // +0x10c
     m_hitTestDisabled = 0;                       // +0x354
     m_tabsBuilt = 0;                             // +0x358

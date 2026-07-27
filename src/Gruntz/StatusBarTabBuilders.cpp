@@ -456,7 +456,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         }
         m_topFrame = v;
         m_bottomFrameDy = -1;
-        m_drawX = (p7 - p5) / 2 + parent->m_rect14.m_4;
+        m_drawX = (p7 - p5) / 2 + parent->m_rect10.right;
     } else {
         CDDrawWorker* n = 0;
         CObject* nOb = 0;
@@ -473,7 +473,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         }
         m_topFrame = v;
         m_bottomFrameDy = 1;
-        m_drawX = parent->m_10 - (p7 - p5) / 2;
+        m_drawX = parent->m_rect10.left - (p7 - p5) / 2;
     }
     m_drawY = p11 * 0x12 + 0xd1;
     if (m_topFrame == 0) {

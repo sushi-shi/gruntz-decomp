@@ -23,11 +23,11 @@ i32 CStatusBarMgr::BuildSideTabs() {
         i32 geomBase;
         i32 geomVal;
         if (m_position == 0) {
-            geomBase = m_10 - 0x1c;
-            geomVal = m_10;
+            geomBase = m_rect10.left - 0x1c;
+            geomVal = m_rect10.left;
         } else {
-            geomBase = m_rect14.m_4;
-            geomVal = m_rect14.m_4 + 0x1c;
+            geomBase = m_rect10.right;
+            geomVal = m_rect10.right + 0x1c;
         }
         CSBI_SideTab* newobj = new CSBI_SideTab;
         // `this` IS the builder - it is the parent the configure reads m_10/m_18 off. The
