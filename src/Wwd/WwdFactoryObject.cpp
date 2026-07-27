@@ -886,7 +886,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 // jump table, but MSVC5 folds our empty cases into a cmp/je-subtract chain.
 // Not source-steerable. docs/patterns/switch-cmpje-tree-vs-jumptable.md.
 RVA(0x0015c900, 0x42)
-i32 CAniAdvanceCursor::Find(CFileMemBase* ar, i32 type, i32 a3, i32 a4) {
+i32 CAniAdvanceCursor::Find(CFileMemBase* ar, i32 type, i32 a3, void* self) {
     if (ar == 0) {
         return 0;
     }

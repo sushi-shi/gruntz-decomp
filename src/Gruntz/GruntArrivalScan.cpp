@@ -1113,10 +1113,12 @@ i32 CGrunt::UpdateArrival() {
         // The active-move cell: (head node)->link is a [col,row]; gate on the grid
         // cell's flag byte (&0x20).
         Coord* cell = this->CoordHead()->m_coord;
-        u8* flags = reinterpret_cast<u8*>(
-            (g_gameReg->m_tileGrid->m_rowBytes[cell->m_y] + cell->m_x * 0x1c)
-        );
-        if ((flags[0] & 0x20) != 0) {
+        // The typed arm of the one row table: m_rows[y][x] IS the 0x1c-byte BrickzCell
+        // the byte-walk arm used to reach as `m_rowBytes[y] + x*0x1c`, and m_flagBytes is
+        // the cell's own byte view of its packed-flags dword - so the reinterpret was the
+        // union's job, not this site's.
+        BrickzCell& gc = g_gameReg->m_tileGrid->m_rows[cell->m_y][cell->m_x];
+        if ((gc.m_flagBytes[0] & 0x20) != 0) {
             SetEntrancePos(1, 1);
             if (this->CoordCount() != 0) {
                 CoordNode* p = this->CoordHead();

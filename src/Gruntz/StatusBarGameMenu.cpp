@@ -50,7 +50,7 @@
 #include <Mfc.h>
 #include <Gruntz/GameRegistry.h>
 
-#include <Gruntz/SbRect.h> // the by-value geometry rect each Configure takes (slot 0x2c)
+#include <Gruntz/SbGeom.h> // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
 #include <Gruntz/GameMenuMgrBuilders.h> // CGmFactory (the registry factory view)
 #include <Gruntz/StatusBarMgr.h>        // canonical CStatusBarMgr (== the ex-CGameMenuMgr)
 #include <Gruntz/SBI_MenuItem.h>        // canonical CSBI_MenuItem (12 slots, vtbl 0x5eab4c)
@@ -62,7 +62,7 @@ void CStatusBarMgr::BuildGameMenu() {
     i32 bx = m_rect10.left;
     i32 by = m_rect10.top;
     CSBI_Image* it;
-    SbRect r;
+    RECT r;
 
     // Non-briefing path is the fall-through (retail `je` sinks the briefing block to
     // the end): the `!=` gate keeps the common menu inline and the MISSIONSTATUS

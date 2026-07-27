@@ -139,7 +139,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
 // Unwind@... funclet), a reloc-typing artifact; (2) MSVC5 tail-merges the two `return 0`
 // guards differently than retail (one extra `jmp; xor eax,eax`).
 RVA(0x0017c2a0, 0x14e)
-int CMoviePlayer::CreateVideoWindow(i32 a0, i32 a1) {
+int CMoviePlayer::CreateVideoWindow(DDModeInfo* mode, u32 coopFlags) {
     CString cls(AfxRegisterWndClass(3, 0, 0, 0));
     if (m_videoWnd != 0) {
         return 0;
@@ -162,10 +162,9 @@ int CMoviePlayer::CreateVideoWindow(i32 a0, i32 a1) {
     }
     m_videoWnd->SetFocus();
     HWND h = m_videoWnd ? m_videoWnd->m_hWnd : 0;
-    // The bring-up is CMoviePlayer::Init @0x17c040 on this same object (a0 IS the
-    // DDModeInfo*, a1 the coop flags); the old ?Init@CMoviePlayer@@ fake-alias
-    // decl left this rel32 unresolved.
-    return Init(h, reinterpret_cast<DDModeInfo*>(a0), static_cast<u32>(a1));
+    // The bring-up is CMoviePlayer::Init @0x17c040 on this same object; the old
+    // ?Init@CMoviePlayer@@ fake-alias decl left this rel32 unresolved.
+    return Init(h, mode, coopFlags);
 }
 
 RVA(0x0017c3f0, 0x120)

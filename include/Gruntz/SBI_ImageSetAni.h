@@ -38,7 +38,7 @@ public:
         CDDrawSurfaceMgr* host,
         i32 a3,
         i32 a4,
-        SbRect rc,
+        RECT rc,
         const char* key,
         i32 b0,
         i32 b1,

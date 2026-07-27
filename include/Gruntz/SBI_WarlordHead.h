@@ -42,7 +42,7 @@ public:
         CDDrawSurfaceMgr* host,
         i32 a3,
         i32 a4,
-        SbRect rc,
+        RECT rc,
         const char* key,
         i32 a10,
         i32 a11
@@ -70,7 +70,7 @@ public:
     // no this.
 
     // ----- own fields (after CSBI_ImageSet @0x3c); base region reuses inherited
-    // m_rect14.m_0/m_4 (draw origin), m_28 (countdown), m_30 (frame, base-typed i32),
+    // m_rect14.left/m_4 (draw origin), m_28 (countdown), m_30 (frame, base-typed i32),
     // m_34 (config, the base's CDDrawWorker*), m_38 (state index).
     i32 m_direction; // +0x3c  direction (SetState writes the raw dir; Serialize + Render read it)
 };

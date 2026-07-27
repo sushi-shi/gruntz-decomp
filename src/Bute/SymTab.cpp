@@ -68,6 +68,8 @@ static inline CSlotNode* HeadSlotNode(DSoundList& list) {
     return static_cast<CSlotNode*>(list.m_head);
 }
 
+// byte-forced: the serialized record stream is packed bytes with a moving cursor,
+// so pulling a dword out of it has no declarable member; the pun lives here, once.
 static inline i32 PeekI32(const char* p) {
     return *reinterpret_cast<const i32*>(p);
 }

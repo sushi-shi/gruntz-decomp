@@ -308,7 +308,7 @@ i32 CWwdGameObjectA::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
     if (a1 == 0) {
         return 0;
     }
-    if (m_1a0.Find(a1, type, a3, reinterpret_cast<i32>(self)) == 0) {
+    if (m_1a0.Find(a1, type, a3, self) == 0) {
         return 0;
     }
     switch (type) {
@@ -1004,11 +1004,15 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, i32 unused) {
     }
 
     i32 serialTypeId = 0;
-    // The game-minted kind's save half: hand LoadObjects back the tag its factory
+    // The host-registered kind's save half: hand LoadObjects back the tag its factory
     // callback needs. A checked downcast - CWwdGameObjectSerial declares the slot-16
     // virtual (see <Gruntz/WwdGameObject.h> for the shape proof + the identity chase).
-    // Shipped DEAD in retail: nothing in either build returns 0x1c from slot 8, so
-    // the guard never passes and the OOB slot-16 dispatch never runs.
+    // The branch is LIVE: the symmetric reader CDDrawChildGroup::LoadObjects @0x15ad30
+    // has a `case 0x1c` arm that builds the object through
+    // OwnerMgr()->InvokeCallback(reader, 0xa, desc.m_0c, &rec) - a host-registered
+    // factory - and desc.m_0c is exactly the word this branch writes. Byte-evidenced at
+    // 0x151c4e `cmp eax,0x1c` / 0x151c56 `call [edx+0x40]`. Only the registrant's
+    // concrete identity is open (@identity-TODO), not the branch's reachability.
     if (this->GetClassId() == CLASSID_CALLBACKOBJ) {
         serialTypeId = static_cast<CWwdGameObjectSerial*>(this)->GetSerialTypeId();
     }
@@ -1381,7 +1385,7 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
                     p++;
                 }
                 i32 fi = atoi(p);
-                if (0 == ReloadFrame(reinterpret_cast<i32>(val), fi, 1)) {
+                if (0 == ReloadFrame(static_cast<CParseSource*>(val), fi, 1)) {
                     return -1;
                 }
                 matched++;
@@ -1394,7 +1398,7 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
 }
 
 RVA(0x001523b0, 0x3b)
-i32 CDDrawWorker::ReloadFrame(i32 rec, i32 n, i32 flag) {
+i32 CDDrawWorker::ReloadFrame(CParseSource* rec, i32 n, i32 flag) {
     CImage* el;
     if (n >= m_minIndex && n <= m_maxIndex) {
         el = static_cast<CImage*>(m_items.GetAt(n));
@@ -1404,9 +1408,7 @@ i32 CDDrawWorker::ReloadFrame(i32 rec, i32 n, i32 flag) {
     if (el == 0) {
         return 0;
     }
-    // slot 13 = CImage::Reload(src, flag); `rec` stays i32 because it is this
-    // virtual's own slot-signature word (the caller passes the CParseSource* as int).
-    return el->Reload(reinterpret_cast<CParseSource*>(rec), flag) != 0;
+    return el->Reload(rec, flag) != 0; // slot 13 = CImage::Reload(CParseSource*, i32)
 }
 
 // CDDrawWorker::GetMemoryUsage (__thiscall, ret 4). Walk every populated frame in

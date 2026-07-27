@@ -31,7 +31,7 @@ public:
 
     // 0xe9600: the side tab's own configure, run on the freshly-`new`ed child by
     // CStatusBarMgr::BuildSideTabs. `parent` is the mgr - the body reads parent->m_10 /
-    // parent->m_rect14.m_4, its geometry anchors - and `host` the config
+    // parent->m_rect14.top, its geometry anchors - and `host` the config
     // host, the same arg2 every setup in this family takes. It was DEFINED as
     // `CSbTab::BuildStatzTabStatusBar` while the caller referenced it on a 1-slot
     // CSBI_SideTab view: two mangled names, so the call resolved to no definition at link.

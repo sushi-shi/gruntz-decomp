@@ -20,13 +20,34 @@ struct CNetVersionMsg;       // version-check message arg (HandleVersionCheck)
 class GruntzPlayer;          // the 0x238 per-player/channel record (BroadcastOneChannel)
 struct CNetSession;          // the +0x520 command-session facet (Session() accessor)
 
-class CMultiLogicDesc {
-public:
-    u32 m_0;    // +0x00  the DPLCONNECTION dwSize dword (the desc overlays the blob)
-    u8 m_flags; // +0x04  bit 0x2 -> m_isHost latch
-    char m_pad5_8[0x8 - 0x5];
-    char* m_8;            // +0x08  host-name string
-    CMultiLogicDesc* m_c; // +0x0c  linked descriptor; its m_8 host-name is copied into a CString
+// The DirectPlay DPLCONNECTION (<dplay.h>) spelled out field-for-field, the same way
+// CNetSessionDesc spells DPSESSIONDESC2 (<Net/NetMgr.h>) - the Gruntz TUs cannot pull
+// dplay.h in (DPlayImports.h documents the DirectPlayEnumerate C2733 clash). This IS
+// the blob IDirectPlayLobby::GetConnectionSettings fills at CGruntzMgr::m_connSettings.
+// Identity PROVEN by the +0x08 consumer: CMulti::StartTitle hands lpSessionDesc to
+// CNetMgr::AddPlayerNode @0x1786d0, whose Init copies a 0x50-byte descriptor - and
+// sizeof(DPSESSIONDESC2) is exactly 0x50. +0x0c then reads a name string at ITS +0x08,
+// which is DPNAME::lpszShortNameA.
+class CNetSessionDesc; // <Net/NetMgr.h> - the spelled-out DPSESSIONDESC2
+
+struct CNetLobbyName { // == DPNAME
+    u32 m_dwSize;      // +0x00
+    u32 m_dwFlags;     // +0x04
+    char* m_shortName; // +0x08  lpszShortNameA
+    char* m_longName;  // +0x0c  lpszLongNameA
+};
+SIZE(0x10);
+
+struct CNetLobbyConnection { // == DPLCONNECTION
+    u32 m_dwSize;            // +0x00
+    // +0x04 dwFlags: DPLCONNECTION_CREATESESSION 0x1 / DPLCONNECTION_JOINSESSION 0x2.
+    // Retail tests it as a BYTE (`test BYTE PTR [esi+0x4],0x2` @0xb7401), which is how
+    // MSVC5 narrows a dword `& 2`; the dword is the SDK's own width.
+    u32 m_dwFlags;
+    CNetSessionDesc* m_sessionDesc; // +0x08  lpSessionDesc
+    CNetLobbyName* m_playerName;    // +0x0c  lpPlayerName
+    // +0x10 guidSP / +0x20 lpAddress / +0x24 dwAddressSize follow in the blob; no
+    // Gruntz code reads them, so they stay untranscribed rather than invented.
 };
 SIZE_UNKNOWN();
 
@@ -160,7 +181,11 @@ public:
     i32 StartTitle();      // 0x0b72c0  /GX: build "TITLE%d" + bind the net host
     void DropTimeout();    // 0x0bc2d0  /GX: drop a timed-out player
     // 0x0bc910  /GX: latch session params, create the host player, register the channel.
-    i32 OpenHostChannel(void* a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
+    // 0xbc910. a1 is the CHANNEL NAME: the body forwards it straight into
+    // RegisterChannelFrom(const char*, ...) @0xbaa90, the same slot the two sibling
+    // openers (0xb8b10 / 0xbc750) fill with a real string. No caller in .text (address-
+    // taken/dead), so the type comes from the callee, not from a call site.
+    i32 OpenHostChannel(void* a0, const char* name, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
 
     // External CMulti methods this TU calls but does not define (reloc-masked).
     void SendStatFlag(i32 code, i32 flag); // 0x0b9240 (__thiscall, reads m_5bc)

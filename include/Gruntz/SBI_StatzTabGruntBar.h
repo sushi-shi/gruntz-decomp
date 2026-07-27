@@ -4,7 +4,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/StatusBarItem.h> // canonical frameless CStatusBarItem base (real RTTI base)
-#include <Gruntz/SbRect.h>        // BuildMultiplayerTabStatusBar's by-value geometry rect
+#include <Gruntz/SbGeom.h> // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
 #include <Image/CImage.h>         // the glyph handles ARE CImage (RenderFrame @0x153790)
 
 class CStatusBarMgr;
@@ -74,7 +74,7 @@ public:
         CDDrawSurfaceMgr* host,
         i32 p3,
         i32 p4,
-        SbRect g,
+        RECT g,
         const char* key,
         i32 p10,
         i32 p11,

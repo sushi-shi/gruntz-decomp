@@ -455,10 +455,13 @@ namespace NetLobby {
     void NetDlgInitDropIn(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
             char buf[0x80];
-            // The pending drop-in player's name = g_str649618's CString data (m_pszData,
-            // the char* stored at 0x249618); its length lives 8 bytes before the data.
+            // The pending drop-in player's name is g_str649618's CString buffer. The
+            // `*(i32*)(pn - 8)` that used to stand here IS CString::GetLength(): MFC's
+            // CStringData sits immediately before m_pszData as {pRefData, nDataLength,
+            // nAllocLength}, so nDataLength is at -8 - i.e. the inline accessor emits
+            // this load, and spelling it out was a hand-inlined MFC internal.
             const char* pn = g_str649618;
-            if (*reinterpret_cast<const i32*>((pn - 8))) {
+            if (g_str649618.GetLength()) {
                 sprintf(buf, "New Player Drop-In Request: %s", pn);
                 SetDlgItemTextA(hWnd, 0x44b, buf);
             }

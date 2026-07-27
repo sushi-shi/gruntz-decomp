@@ -150,7 +150,7 @@ public:
     CHitMarker** markerData() {
         // API-forced: ::CPtrArray::GetData() is declared `void**` by MFC, so the element
         // type goes back on here - at one seam, this accessor, rather than at each of the
-        // marker walkers (the same shape CBattlezMapConfig::coordData() uses).
+        // marker walkers (the same shape CBattlezMapConfig::CoordAt() uses).
         return reinterpret_cast<CHitMarker**>(m_startMarkers.GetData());
     }
     i32 markerCount() { return m_startMarkers.GetSize(); }
@@ -440,7 +440,7 @@ public:
     // EnterHlRow/HitTestLayer/PlaceCursorTarget/UpdateStatusBarTabHighlight/
     // ClickToggle/ClearTabSprites/Deactivate/SetSpritePos/LoadDestructButtonSprite/
     // LoadMainStatusBarSprite/winapi_0fe520_SetRect/RefreshA/HideRect). The former
-    // m_rect10=={m_10,m_rect14.m_0/m_4/m_8}, m_mode==m_activeTab, m_548==m_hlBusy,
+    // m_rect10=={m_10,m_rect14.left/m_4/m_8}, m_mode==m_activeTab, m_548==m_hlBusy,
     // m_busyA/m_busyB==m_toggleActive/m_toggleHandle, m_snapPostSel==m_modeArmed,
     // m_614==m_barFrameGate.
     CStatusBarMgr* m_guts; // +0x2dc

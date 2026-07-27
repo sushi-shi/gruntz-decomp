@@ -652,7 +652,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
         return 0;
     }
 
-    m_connSettings = static_cast<u8*>(operator new(dwSize));
+    m_connSettings = static_cast<CNetLobbyConnection*>(operator new(dwSize));
     if (!m_connSettings) {
         m_lobby->Release();
         m_lobby = 0;
@@ -1534,11 +1534,11 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
 // [mem]`) instead of a register - so no frame is reserved. No source spelling flips
 // MSVC's dead-arg-slot reuse back to a fresh frame (regalloc family).
 RVA(0x00092250, 0xba)
-i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, ScanCb cb, i32 user) {
+i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, ScanCb cb, i32 user) {
     if (cb == 0) {
         return 0;
     }
-    RECT* r = reinterpret_cast<RECT*>(rect);
+    RECT* r = rect;
     if (r == 0) {
         return 0;
     }

@@ -28,7 +28,7 @@ i32 CSBI_RectOnly::Setup(
     CDDrawSurfaceMgr* host,
     i32 a3,
     i32 a4,
-    SbiRect rc,
+    RECT rc,
     i32 a9,
     i32 a10
 ) {
@@ -38,10 +38,10 @@ i32 CSBI_RectOnly::Setup(
     m_2c = owner;
     m_24 = host;
     m_tab = a4;
-    m_rect14.m_0 = rc.m_0;
-    m_rect14.m_4 = rc.m_4;
-    m_rect14.m_8 = rc.m_8;
-    m_rect14.m_c = rc.m_c;
+    m_rect14.left = rc.left;
+    m_rect14.top = rc.top;
+    m_rect14.right = rc.right;
+    m_rect14.bottom = rc.bottom;
     m_cmd = a3;
     m_enabled = 1;
     return 1;

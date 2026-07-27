@@ -3,7 +3,7 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Gruntz/SbRect.h>        // SetupImage args 5..8 - ONE by-value geometry rect
+#include <Gruntz/SbGeom.h> // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
 #include <Gruntz/StatusBarItem.h> // canonical frameless CStatusBarItem base
 
 class CDDrawSurfaceMgr;
@@ -28,9 +28,9 @@ public:
     // (NO slot-1 override: sema class says vtbl 0x1eab8c slot [1] is INHERITED
     // (CStatusBarItem::SerializeFields, thunk 0x1848). The `SbiVfunc0` the old merged TU
     // defined under this class name belonged to the host's fabricated vtable, not here.)
-    // slot 2 (0xe86e0). Args 5..8 are ONE by-value SbRect - see StatusBarItem.h.
+    // slot 2 (0xe86e0). Args 5..8 are ONE by-value RECT - see StatusBarItem.h.
     virtual i32
-    Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10)
+    Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i32 a4, RECT rc, i32 a9, i32 a10)
         OVERRIDE;
     virtual void Reset() OVERRIDE;       // slot 3 - 0xe8760 (ex DtorRect)
     virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
@@ -72,7 +72,7 @@ public:
     // the arg types (disasm 0xe6c80): entry `mov eax,[esp+8]` reads arg2 and later
     // `mov ecx,[eax+0x10]` DEREFERENCES it => arg2 is the CDDrawSurfaceMgr*; arg1 is only
     // null-tested and stored (m_2c = owner), and every call site passes the building
-    // manager's `this`. Args 5..8 are ONE by-value rect (the builders fill an SbRect and
+    // manager's `this`. Args 5..8 are ONE by-value rect (the builders fill an RECT and
     // pass it), arg9 the asset key string. This is the ONE signature: the tab builders
     // used to call it through a fabricated 15-slot `CSbConfigItem::Configure` view, which
     // made cl emit a 60 B ??_7CSBI_Image@@6B@ in statusbarmgr against retail's 48 B.
@@ -81,7 +81,7 @@ public:
         CDDrawSurfaceMgr* host,
         i32 a3,
         i32 a4,
-        SbRect rc,
+        RECT rc,
         const char* key,
         i32 a10,
         i32 a11

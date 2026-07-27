@@ -167,7 +167,10 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     // CTileImageSet, and returns the number read (or -1 on a bad pointer / failed
     // read). count is re-read from the record header each iteration (rec is spilled).
     if (hdr->tileDescriptionsOffset != 0) {
-        WwdTileDescTable* rec =
+        // same byte cursor as the plane loop - byte-forced by the on-disk format: the
+        // table is located by a RUNTIME dword offset from the mapped block, so no
+        // declared member can name it (retail 0x15d3a4 `mov eax,[edx+0x2e4]`)
+        WwdTileDescTable* rec = // byte-forced by the on-disk format (see above)
             reinterpret_cast<WwdTileDescTable*>(block + hdr->tileDescriptionsOffset);
         char* elem = rec->m_descriptors;
         if (elem == 0) {
@@ -321,9 +324,10 @@ i32 CGameLevel::LoadFromSource(CParseSource* arg) {
     if (handle == 0) {
         return 0;
     }
-    // handle = the in-memory WWD block here; BeginParse's return stays a generic
-    // i32 handle in the shared ParseSource.h (other sources yield RIFF blobs /
-    // sizes - see RezSync / DDrawSubMgrLeafScan), so the cast is the honest bridge.
+    // BeginParse is a PROVEN-heterogeneous slot: the same virtual yields a WWD block
+    // here, a RIFF blob in RezSync and a raw size in DDrawSubMgrLeafScan, so its return
+    // stays the generic handle the shared ParseSource.h declares and each consumer names
+    // the concrete record at its own seam. This is that one seam for the WWD source.
     if (LoadWwd(reinterpret_cast<WwdHeader*>(handle)) == 0) { // vtable +0x38 (slot 14) load virtual
         arg->EndParse();
         return 0;
@@ -1817,6 +1821,8 @@ Bytef* __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destL
     if (uncompress(
             dest + src->wwdSignature,
             &outLen,
+            // the deflate stream starts at the header's OWN length field, a runtime
+            // byte offset - byte-forced by the WWD format, no member can name it
             reinterpret_cast<Bytef*>(src) + src->wwdSignature,
             src->mainBlockLength
         )

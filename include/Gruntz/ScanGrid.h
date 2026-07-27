@@ -17,7 +17,7 @@ class CMapMgr; // canonical tile board (the former CScanGrid view)
 // CBattlezMapConfig::ScanRegion's m_0f0 elements are {x,y} goal points.
 // (CScanGoal DISSOLVED 2026-07-28: it was a second name for `Coord` ({i32 m_x, m_y},
 //  <Gruntz/CoordNode.h>) on the very same array - CBattlezMapConfig::m_0f0, which
-//  already had the typed coordData() accessor. Its one use site now reads that.)
+//  already had the typed CoordAt() accessor. Its one use site now reads that.)
 
 struct CScanSub10 {
     char _00[0x5c];

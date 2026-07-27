@@ -42,16 +42,16 @@ enum LoadableClassId {
     CLASSID_WWDOBJ_C = 6,    // CWwdGameObjectC::GetClassId @0x15c020
     CLASSID_WWDOBJ_F = 0x16, // CWwdGameObjectF::GetClassId @0x15ba60
     CLASSID_WWDOBJ_B = 0x1b, // CWwdGameObject::GetClassId @0x15bce0
-    // 0x1c - the GAME-MINTED kind: CDDrawChildGroup::LoadObjects @0x15ad30 has a
-    // real arm for it that does NOT call an engine factory but the registered
-    // callback (CDDrawSurfaceMgr::InvokeCallback mode 0xa) with the descriptor's
-    // serial tag; CGameObject::WriteSnapshot @0x151c00 writes that tag back. Both
-    // halves are DEAD in the shipped build: SerialObjectFactory @0xd2a0 routes
-    // mode 0xa to `xor eax,eax; ret` (@0xeadb), so the load arm always bails, and
-    // no slot-8 body anywhere returns 0x1c (exhaustive `b8 1c 00 00 00` .text scan
-    // of BOTH GRUNTZ.EXE and the demo), so the save compare @0x151c51 - the only
-    // `cmp eax,0x1c` in the image - never fires. Keep the immediate.
-    // (The old "CLASSID_WWDOBJ_A = 0x1c" claim was a doc bug: A's id IS 5, above.)
+    // 0x1c is the HOST-REGISTERED object kind, and it is LIVE, not dead (the old
+    // "shipped dead branch" note here was wrong, refuted independently by two passes):
+    // CDDrawChildGroup::LoadObjects @0x15ad30 has a real `case 0x1c` arm that calls no
+    // family factory - it builds the object through
+    // OwnerMgr()->InvokeCallback(reader, 0xa, desc.m_0c, &rec), a callback the HOST
+    // installed, so the concrete class comes from the registrant and not from this EXE.
+    // That is why the exhaustive `b8 1c 00 00 00` .text scan finds no slot-8 body
+    // returning 0x1c and the branch is still real: CGameObject::WriteSnapshot's
+    // `cmp eax,0x1c` @0x151c4e is the WRITE half of the same round-trip
+    // (rec.m_0c == desc.m_0c). NOT dead, and NOT "A" (A's id IS 5, above).
     CLASSID_CALLBACKOBJ = 0x1c,
 };
 

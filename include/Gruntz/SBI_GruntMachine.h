@@ -4,7 +4,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/StatusBarItem.h> // CStatusBarItem base
-#include <Gruntz/SbRect.h>        // BuildResourceTabStatusBar's by-value geometry rect
+#include <Gruntz/SbGeom.h> // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
 #include <Image/CImage.h>   // the canonical frame-record class (CImage::RenderFrame @0x153790)
 #include <Image/ImageSet.h> // the config record IS the canonical CDDrawWorker (SbiConfig.h fold)
 
@@ -46,7 +46,7 @@ public:
         CDDrawSurfaceMgr* host,
         i32 p3,
         i32 p4,
-        SbRect g,
+        RECT g,
         const char* key,
         i32 idxA,
         i32 idxB
@@ -61,7 +61,7 @@ public:
     // vtable slot 5 (0xe8cb0): the per-frame render of the machine's frames.
 
     // ----- own fields (after CStatusBarItem @0x30, which now owns m_2c); base draw
-    // origins reuse m_rect14.m_0/m_4 (@0x14/0x18), the frame countdown reuses m_28.
+    // origins reuse m_rect14.left/m_4 (@0x14/0x18), the frame countdown reuses m_28.
     CDDrawWorker* m_config; // +0x30  resolved config record (frame table host; ex CGmConfig view)
     CImage* m_frameA;       // +0x34  resolved frame for index m_frameIdxA
     i32 m_frameIdxA;        // +0x38  frame index A (resolved into m_frameA)

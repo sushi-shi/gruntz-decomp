@@ -472,21 +472,29 @@ i32 CPlay::Render() {
                     }
                 }
             } else {
-                // not yet: build a CString temp, CopyRect the viewport, HudDraw.
+                // Not yet: put the countdown HUD message up over the level's coord
+                // rect. Byte-evidenced end to end (@0x0c93bc..0x0c9444):
+                //   0x0c93bc  lea ecx,[esp+0x10]; call 0x1b9b93   CString tmp;
+                //   0x0c93cb  reloc -> 0x0060bdd4 == "%d"  (NOT "%s"), vararg = edi,
+                //             the function's zero register (xor edi,edi @0x0c9342)
+                //   0x0c93eb  mov edx,[ecx+0x24]; add edx,0x10 - the level pointer is
+                //             DEREFERENCED and its +0x10 RECT (CGameLevel::m_planeCtx,
+                //             a LevelCoordRect == tagRECT) copied dword-wise to a stack
+                //             local; the old spelling took the ADDRESS of the m_level
+                //             SLOT (&m_world->m_level) and reinterpreted the pointer
+                //             word itself as a rect
+                //   0x0c9416  CopyRect(&box /*[esp+0x2c]*/, &lvl /*[esp+0x1c]*/) - both
+                //             operands are stack rects; m_hudRect (this+0x310) is not
+                //             touched here
+                //   0x0c9444  call 0x31d9 -> 0x115520 ShowHudMessageAlt with NINE args
+                //             (the same shape as CBootyState's 0x6e call), not the
+                //             3-arg Eng_HudDraw this used to call.
                 CString tmp;
-                static_cast<void>(tmp); // [esp+0x10] CString temp
-                tmp.Format("%s", "");
-                // m_30 is the shared CDDrawSurfaceMgr; this WIP path reads it
-                // as a resource map whose +0x24 holds the CopyRect-source rect.
-                CopyRect(
-                    &m_hudRect,
-                    // This WIP path reads the four dwords AT &m_level (+0x24..+0x33 ==
-                    // m_level, m_soundRegistry, m_animRegistry, m_hWnd) as a RECT. They
-                    // are four unrelated members, so no type makes the read go away:
-                    // a faithful retail overlay, not a mis-model.
-                    reinterpret_cast<const RECT*>(&g_gameReg->m_world->m_level)
-                );
-                Eng_HudDraw(g_gameReg->m_world, &m_hudRect, 1);
+                tmp.Format("%d", 0);
+                RECT lvl = g_gameReg->m_world->m_level->m_planeCtx;
+                RECT box;
+                CopyRect(&box, &lvl);
+                ShowHudMessageAlt(g_gameReg->m_world, &tmp, &box, 0x82, 1, 0xff, 0xff, 0, 1);
             }
             // (CString temp dtor runs here under the EH frame)
         }
@@ -2945,45 +2953,55 @@ i32 CPlay::ClearPlacedObjects() {
         while (i < rec->GetSize()) {
             CHitMarker* obj = static_cast<CHitMarker*>(rec->GetAt(i));
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            CGameObject* cellObj = 0;
+            // BrickzCell::m_8 (cell int-arm +2) is the ID of the object OCCUPYING the
+            // cell, not a pointer - the same slot CInGameIcon::Reposition @0x98a90
+            // stores obj->m_188 into and feeds to MapLookupById (see <Gruntz/Brickz.h>).
+            i32 occupantId = 0;
             if (static_cast<u32>(obj->m_0) < static_cast<u32>(grid->m_width)
                 && static_cast<u32>(obj->m_4) < static_cast<u32>(grid->m_height)) {
                 i32 stride = obj->m_0 * 7;
                 i32* row = grid->m_rowInts[obj->m_4];
-                cellObj = reinterpret_cast<CGameObject*>(row[stride + 2]);
+                occupantId = row[stride + 2];
             }
-            if (cellObj == 0) {
-                restart = 1;
-                break;
-            }
-            void* out = 0;
-            // The factory's embedded +0x48 key->object map, reached as the real
-            // MFC CMapPtrToPtr (the documented SpriteFactory.h consumer pattern).
-            CMapPtrToPtr* map = &g_gameReg->m_world->m_childGroup->m_map48;
-            CGameObject* result = cellObj;
-            if (map->Lookup(cellObj, out)) {
-                result = static_cast<CGameObject*>(out);
-            }
-            if (result == 0) {
-                // cell vacated: clear the cell's occupant + flag bit and unlink.
-                CMapMgr* g = g_gameReg->m_tileGrid;
-                if (static_cast<u32>(obj->m_0) < static_cast<u32>(g->m_width)
-                    && static_cast<u32>(obj->m_4) < static_cast<u32>(g->m_height)) {
-                    i32 stride = obj->m_0 * 7;
-                    i32* row = g->m_rowInts[obj->m_4];
-                    row[stride + 2] = 0;
-                    i32* row2 = g->m_rowInts[obj->m_4];
-                    row2[stride] &= 0xfffbffff;
+            i32 stillPlaced = 0;
+            if (occupantId != 0) {
+                void* out = 0;
+                // The factory's embedded +0x48 key->object map, reached as the real
+                // MFC CMapPtrToPtr (the documented SpriteFactory.h consumer pattern).
+                CMapPtrToPtr* map = &g_gameReg->m_world->m_childGroup->m_map48;
+                // faithful: on a lookup MISS retail leaves the cell's raw ID in the
+                // result register and dereferences it - 0xda0b5 `je 0xda0bb` skips the
+                // `mov eax,[esp+0x14]` out-value reload, and 0xda0bf then reads [eax+0x124].
+                // A shipped latent bug, transcribed faithfully.
+                CGameObject* result = reinterpret_cast<CGameObject*>(occupantId);
+                if (MapLookupById(*map, occupantId, out)) {
+                    result = static_cast<CGameObject*>(out);
                 }
-                rec->RemoveAt(i, 1);
-                // return the placed-object node to the MFC free list (the node
-                // header sits g_coordPool.m_linkOffset bytes before the payload).
-                CoordPoolNode* node = g_coordPool.NodeOf(obj);
-                node->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = node;
-                return -1;
+                if (result == 0) {
+                    // cell vacated: clear the cell's occupant + flag bit and unlink.
+                    CMapMgr* g = g_gameReg->m_tileGrid;
+                    if (static_cast<u32>(obj->m_0) < static_cast<u32>(g->m_width)
+                        && static_cast<u32>(obj->m_4) < static_cast<u32>(g->m_height)) {
+                        i32 stride = obj->m_0 * 7;
+                        i32* row = g->m_rowInts[obj->m_4];
+                        row[stride + 2] = 0;
+                        i32* row2 = g->m_rowInts[obj->m_4];
+                        row2[stride] &= 0xfffbffff;
+                    }
+                    rec->RemoveAt(i, 1);
+                    // return the placed-object node to the MFC free list (the node
+                    // header sits g_coordPool.m_linkOffset bytes before the payload).
+                    CoordPoolNode* node = g_coordPool.NodeOf(obj);
+                    node->m_next = g_coordPool.m_freeHead;
+                    g_coordPool.m_freeHead = node;
+                    return -1;
+                }
+                stillPlaced = (result->m_124 == 0x14);
             }
-            if (result->m_124 != 0x14) {
+            // an empty cell joins the "not type 0x14" arm: retail's 0xda08f `je 0xda0c8`
+            // lands on the SAME `mov edi,1` as the type test, then falls into the shared
+            // 0xda0cd `inc ebx`. The old spelling broke out WITHOUT the ++i.
+            if (!stillPlaced) {
                 restart = 1;
             }
             ++i;
@@ -4308,9 +4326,9 @@ i32 CPlay::Vslot11(i32 a, i32 x, i32 y) {
             return 1;
         }
     }
-    // the guts widget rect: {m_10, m_rect14.m_0/.m_4/.m_8} = the +0x10..+0x1c
+    // the guts widget rect: {m_10, m_rect14.left/.m_4/.m_8} = the +0x10..+0x1c
     // left/top/right/bottom quad (the SBI side reads the same bytes as base-x +
-    // SbiRect - a field-grouping conflict flagged for reconciliation).
+    // RECT - a field-grouping conflict flagged for reconciliation).
     if (x < m_guts->m_rect10.right && x >= m_guts->m_rect10.left && y < m_guts->m_rect10.bottom
         && y >= m_guts->m_rect10.top) {
         return 1;

@@ -37,7 +37,7 @@ i32 CSBI_MenuItem::SetupImage(
     CDDrawSurfaceMgr* host,
     i32 cmd,
     i32 a4,
-    SbRect rc,
+    RECT rc,
     const char* key,
     i32 frame,
     i32 unused
@@ -54,11 +54,11 @@ i32 CSBI_MenuItem::SetupImage(
     m_tab = a4;
     m_kind = 2;
     m_frame = 0;
-    m_rect14.m_0 = rc.left;
+    m_rect14.left = rc.left;
     m_28 = 0;
-    m_rect14.m_4 = rc.top;
-    m_rect14.m_8 = rc.right;
-    m_rect14.m_c = rc.bottom;
+    m_rect14.top = rc.top;
+    m_rect14.right = rc.right;
+    m_rect14.bottom = rc.bottom;
     m_cmd = cmd;
     m_state = 1;
     m_enabled = 1;
@@ -140,8 +140,8 @@ i32 CSBI_MenuItem::Render() {
         if (f) {
             f->RenderFrame(
                 g_gameReg->m_world->m_drawTarget->m_backPair,
-                m_rect14.m_0 + f->m_anchorX,
-                m_rect14.m_4 + f->m_anchorY,
+                m_rect14.left + f->m_anchorX,
+                m_rect14.top + f->m_anchorY,
                 0
             );
         }

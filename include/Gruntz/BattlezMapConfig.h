@@ -203,9 +203,11 @@ public:
     // ---- shared array block 0xdc..0x12c -----------------------------------
     CPtrArray m_candArray; // +0x0dc  CPtrArray  (LoadConfig loop-1 start-coord array)
     CPtrArray m_0f0;       // +0x0f0  CPtrArray  (LoadConfig loop-3 start-coord array)
-    // CPtrArray hands out void**; the element type goes back on here, at one seam,
-    // rather than at each random-goal pick
-    Coord** coordData() { return reinterpret_cast<Coord**>(m_0f0.GetData()); }
+    // CPtrArray hands out void*; the element type goes back on here, at one seam,
+    // rather than at each random-goal pick. No pun needed: void* -> Coord* is a plain
+    // pointer conversion, and CPtrArray::GetAt is the inline m_pData[i] that
+    // GetData()[i] also lowers to - same bytes, no reinterpret.
+    Coord* CoordAt(i32 index) { return static_cast<Coord*>(m_0f0.GetAt(index)); }
     CDWordArray m_104;     // +0x104  CDWordArray
     CDWordArray m_118;     // +0x118  CDWordArray
 

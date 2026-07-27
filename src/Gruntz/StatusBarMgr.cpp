@@ -8,7 +8,7 @@
 
 #include <Mfc.h>
 
-#include <Gruntz/SbRect.h>               // the by-value geometry rect the setup virtuals take
+#include <Gruntz/SbGeom.h> // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
 #include <Gruntz/SpriteRefTable.h>       // g_gameReg->m_spriteFactory->GetSel (GRUNTOVEN palette)
 #include <Gruntz/StatusBarMgrBuilders.h> // canonical CStatusBarMgr + the canonical SBI leaves
 
@@ -19,7 +19,7 @@ VTBL(CSBI_GruntMachine, 0x001eadbc); // vtable_names -> code (RTTI game class)
 // CStatusBarMgr::LoadTabSprites  @0x102250
 // ===========================================================================
 // Per-tab builder. Every Configure passes arg2 = `code` (the saved m_c); `type` =
-// tab index (1..5), rect = base coords (bx=m_10/by=m_rect14.m_0) + per-item offsets. The per-item
+// tab index (1..5), rect = base coords (bx=m_10/by=m_rect14.left) + per-item offsets. The per-item
 // create idiom (new/base-ctor/stamp/Configure; on fail delete + bail) is identical at ~37
 // sites; the GRUNTOVEN/CHIP/HEAD/SMALLICONZ/WARPSTONE runs are loops. Built under a /GX EH
 // frame (the just-created item is EH-rolled-back if a later Configure throws).
@@ -66,7 +66,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
     CSBI_StatzTabArrow* arrow;
     CSBI_GruntMachine* mach;
     CSBI_StatzTabGruntBar* bar;
-    SbRect r;
+    RECT r;
     i32 i;
 
     // Cases are emitted in retail's PHYSICAL layout order (jump table @0x504020):

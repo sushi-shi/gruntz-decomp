@@ -27,6 +27,7 @@ class CDDrawWorker; // SetGruntColor's sink IS CDDrawWorker
 class CDDrawSurfaceMgr;
 
 struct IDirectPlayLobby;
+struct CNetLobbyConnection; // <Gruntz/Multi.h> - the DPLCONNECTION m_connSettings holds
 
 class CWorldSoundSet;
 
@@ -179,7 +180,10 @@ public:
     // per-object scan callback (early-out on 0); the walks pass every masked hit.
     typedef i32(__cdecl* ScanCb)(CGameObject* obj, i32 user);
     i32 ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb cb, i32 user);   // @0x092180
-    i32 ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, ScanCb cb, i32 user); // @0x092250
+    // 0x092250. `rect` IS a RECT*: the body immediately reads its four dwords as
+    // left/right/top/bottom (the sibling ScanObjectsInRadius takes the same shape).
+    // No caller in .text, so the type comes from the body, not from a call site.
+    i32 ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, ScanCb cb, i32 user);
     i32 SetColorDepth(i32 depth); // @0x091170 (set the packed g_surfaceColorKey color by depth)
     i32 LoadWorldMode(i32 mode);  // @0x091a40 (switch the world video/color mode + reload)
     i32 ResetWorldState();        // @0x091e20 (idle/exit-prep the world, reset cursor)
@@ -398,9 +402,11 @@ public:
     i32 m_isCheckpointPrompts;        // +0xb8  "Checkpoint_Prompts" enable (=1 in ctor)
     SaveSlot* m_saveInfoRec;          // +0xbc  last FillSaveInfo dst record
     struct IDirectPlayLobby* m_lobby; // +0xc0  the DirectPlay lobby interface (Released/recreated)
-    u8* m_connSettings;               // +0xc4  the launch connection-settings byte blob
-                                      //        (DPLCONNECTION-shaped; sized by
-                                      //        GetConnectionSettings, opaque to the engine)
+    // +0xc4  the launch connection-settings blob IDirectPlayLobby::GetConnectionSettings
+    //        fills. It IS a DPLCONNECTION (variable tail); its one reader,
+    //        CMulti::StartTitle @0xb72c0, walks dwFlags/lpSessionDesc/lpPlayerName, so
+    //        the member carries that type instead of a u8* the reader reinterprets.
+    CNetLobbyConnection* m_connSettings;
     CString m_strWorldFile;           // +0xc8  world file name (EH state 0)
     i32 m_cc;                         // +0xcc  (=0x1e in ctor)
     char m_driveLetter;               // +0xd0  cached CD drive letter

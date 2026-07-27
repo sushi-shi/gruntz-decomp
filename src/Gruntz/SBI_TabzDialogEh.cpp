@@ -39,7 +39,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 m_c,
                 0x321,
                 6,
-                SbRect(cx - 0x5e, cy - 0x3c, cx + 0x5e, cy + 0x3d),
+                SbGeom(cx - 0x5e, cy - 0x3c, cx + 0x5e, cy + 0x3d),
                 "GAME_STATUSBAR_TABZ_DIALOG_AREYOUSURE",
                 -1,
                 0
@@ -55,7 +55,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 m_c,
                 0x327,
                 6,
-                SbRect(cx - 0x45, cy + 0x11, cx - 0x12, cy + 0x28),
+                SbGeom(cx - 0x45, cy + 0x11, cx - 0x12, cy + 0x28),
                 "GAME_STATUSBAR_TABZ_DIALOG_YES",
                 -1,
                 0
@@ -72,7 +72,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 m_c,
                 0x328,
                 6,
-                SbRect(cx + 0xd, cy + 0x11, cx + 0x40, cy + 0x28),
+                SbGeom(cx + 0xd, cy + 0x11, cx + 0x40, cy + 0x28),
                 "GAME_STATUSBAR_TABZ_DIALOG_NO",
                 -1,
                 0
@@ -92,7 +92,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             m_c,
             0x321,
             6,
-            SbRect(cx - 0x8e, cy - 0x48, cx + 0x8e, cy + 0x48),
+            SbGeom(cx - 0x8e, cy - 0x48, cx + 0x8e, cy + 0x48),
             "GAME_STATUSBAR_TABZ_DIALOG",
             -1,
             0
@@ -112,7 +112,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 m_c,
                 0x322,
                 6,
-                SbRect(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
+                SbGeom(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
                 "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
                 1,
                 0
@@ -128,7 +128,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 m_c,
                 0x326,
                 6,
-                SbRect(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
+                SbGeom(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
                 "GAME_STATUSBAR_TABZ_DIALOG_REASON",
                 reason,
                 0
@@ -145,7 +145,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                     m_c,
                     0x324,
                     6,
-                    SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
+                    SbGeom(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
                     "GAME_STATUSBAR_TABZ_DIALOG_PLAYNEXTLEVEL",
                     -1,
                     0
@@ -162,7 +162,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                     m_c,
                     0x325,
                     6,
-                    SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
+                    SbGeom(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
                     "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
                     -1,
                     0
@@ -179,7 +179,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                     m_c,
                     0x325,
                     6,
-                    SbRect(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
+                    SbGeom(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
                     "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
                     -1,
                     0
@@ -200,7 +200,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             m_c,
             0x322,
             6,
-            SbRect(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
+            SbGeom(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
             "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
             2,
             0
@@ -216,7 +216,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             m_c,
             0x326,
             6,
-            SbRect(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
+            SbGeom(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
             "GAME_STATUSBAR_TABZ_DIALOG_REASON",
             reason,
             0
@@ -233,7 +233,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 m_c,
                 0x324,
                 6,
-                SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
+                SbGeom(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
                 "GAME_STATUSBAR_TABZ_DIALOG_REPLAYLEVEL",
                 -1,
                 0
@@ -250,7 +250,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 m_c,
                 0x325,
                 6,
-                SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
+                SbGeom(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
                 "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
                 -1,
                 0
@@ -279,7 +279,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 m_c,
                 0x324,
                 6,
-                SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
+                SbGeom(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
                 "GAME_STATUSBAR_TABZ_DIALOG_OBSERVE",
                 -1,
                 0
@@ -297,7 +297,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 m_c,
                 0x325,
                 6,
-                SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
+                SbGeom(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
                 "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
                 -1,
                 0
@@ -315,7 +315,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 m_c,
                 0x325,
                 6,
-                SbRect(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
+                SbGeom(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
                 "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
                 -1,
                 0
