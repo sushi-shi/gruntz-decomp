@@ -258,10 +258,13 @@ i32 CDDPalette::LoadDefault(IDirectDraw2* dd, char* filename, u32 flags) {
 // picks a different induction-var/SIB form + arg-register assignment than retail.
 // Same family as Create's copy-loop plateau. docs/patterns/zero-register-pinning.md.
 RVA(0x00147aa0, 0x6a)
-i32 CDDPalette::SetAndNotify(i32 start, i32 count, i32* data, i32 a4) {
+i32 CDDPalette::SetAndNotify(i32 start, i32 count, u8* data, i32 a4) {
+    // both sides are the file's 0x400-byte palette blob, walked dword-wise here and
+    // entry-wise at the SetEntries call below (the PalDword/PalEntries seams).
     i32* cache = reinterpret_cast<i32*>(m_cacheA);
+    i32* src = reinterpret_cast<i32*>(data);
     for (i32 i = 0; i < count; i++) {
-        cache[start + i] = data[i];
+        cache[start + i] = src[i];
     }
     if (g_DirectDrawMgr != 0) {
         IDirectDraw2* dd = g_DirectDrawMgr->m_device;
@@ -282,7 +285,7 @@ i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, u8* quads, i32 a4) {
         buf[i * 4 + 2] = quads[i * 4 + 0];
         buf[i * 4 + 3] = 0;
     }
-    i32 hr = SetAndNotify(start, count, reinterpret_cast<i32*>(buf), a4);
+    i32 hr = SetAndNotify(start, count, buf, a4);
     ::operator delete(buf);
     return hr;
 }
@@ -309,7 +312,7 @@ i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 a4) {
         d[3] = 0;
         d += 4;
     }
-    i32 hr = SetAndNotify(start, count, reinterpret_cast<i32*>(buf), a4);
+    i32 hr = SetAndNotify(start, count, buf, a4);
     ::operator delete(buf);
     return hr;
 }
@@ -595,7 +598,7 @@ void CDDPalette::Flush() {
     u8* v = m_targetPalette;
     m_active = 0;
     if (v != 0) {
-        SetAndNotify(m_firstColorIndex, m_colorCount, reinterpret_cast<i32*>(v), 0);
+        SetAndNotify(m_firstColorIndex, m_colorCount, v, 0);
         m_targetPalette = 0;
     } else {
         char buf[8];
@@ -690,7 +693,7 @@ i32 CDDPalette::CaptureSystemPalette() {
         dest[i].peGreen = lp.palPalEntry[i].peGreen;
         dest[i].peBlue = lp.palPalEntry[i].peBlue;
     }
-    i32 rc = SetAndNotify(0, 0x100, reinterpret_cast<i32*>(dest), 0);
+    i32 rc = SetAndNotify(0, 0x100, reinterpret_cast<u8*>(dest), 0);
     if (rc != 0) {
         CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x495, rc);
         return 0;

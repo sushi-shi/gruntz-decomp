@@ -58,7 +58,7 @@ public:
     i32 LoadDefault(IDirectDraw2* dd, char* filename, u32 flags); // 0x1479e0
     void Destroy();                                               // 0x147530
     i32 GetEntries();                                             // 0x147c30
-    i32 SetAndNotify(i32 start, i32 count, i32* data, i32 a4);    // 0x147aa0
+    i32 SetAndNotify(i32 start, i32 count, u8* data, i32 a4);     // 0x147aa0
     // Expand a dynamically-allocated block of source entries into PALETTEENTRYs
     // then SetAndNotify. Quad: 4-byte RGBQUAD source (R/B swapped). RGB: packed
     // 3-byte RGB source (straight). Both return the SetAndNotify HRESULT.
