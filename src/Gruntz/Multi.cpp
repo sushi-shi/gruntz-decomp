@@ -2784,28 +2784,28 @@ void CMulti::OnOutOfSync() {
 // BroadcastChannelTable; not steerable from source. Deferred to the final sweep.
 RVA(0x000baf00, 0xb2)
 i32 CMulti::BroadcastOneChannel(GruntzPlayer* ch) {
-    char packet[0x2c];
-    memset(packet, 0, 0x2c);
-    packet[0] |= 0x80;
-    *reinterpret_cast<i32*>((packet + 4)) = STAT_CHANNEL_ONE;
-    *reinterpret_cast<i32*>((packet + 8)) = ch->m_playerIndex;
+    CNetOneChannelPacket packet;
+    memset(&packet, 0, 0x2c);
+    packet.m_flags |= 0x80;
+    packet.m_statId = STAT_CHANNEL_ONE;
+    packet.m_playerIndex = ch->m_playerIndex;
 
     i32 v = ch->m_008;
-    packet[0xd] = static_cast<char>(v);
+    packet.m_008 = static_cast<u8>(v);
     v = ch->m_014;
-    packet[0xe] = static_cast<char>(v);
+    packet.m_014 = static_cast<u8>(v);
     v = ch->m_configId;
-    packet[0xf] = static_cast<char>(v);
+    packet.m_configId = static_cast<u8>(v);
     v = ch->m_readyFlag;
-    packet[0x12] = static_cast<char>(v);
-    packet[0xc] = 1;
+    packet.m_readyFlag = static_cast<u8>(v);
+    packet.m_present = 1;
     v = ch->m_comboSel;
-    packet[0x11] = static_cast<char>(v);
+    packet.m_comboSel = static_cast<u8>(v);
     v = ch->m_slotKey;
-    *reinterpret_cast<i32*>((packet + 0x14)) = v;
-    strcpy(packet + 0x18, static_cast<const char*>(ch->GetName()));
+    packet.m_slotKey = v;
+    strcpy(packet.m_name, static_cast<const char*>(ch->GetName()));
 
-    return SendStatFrom(packet, 0x2c, 1);
+    return SendStatFrom(&packet, 0x2c, 1);
 }
 
 RVA(0x000baff0, 0x88)
@@ -2813,8 +2813,8 @@ i32 CMulti::ParseOneChannel(void* rec) {
     if (rec == 0) {
         return 0;
     }
-    u8* r = static_cast<u8*>(rec);
-    i32 idx = *reinterpret_cast<i32*>((r + 8));
+    CNetOneChannelPacket* r = static_cast<CNetOneChannelPacket*>(rec);
+    i32 idx = r->m_playerIndex;
     if (idx < 0 || idx >= 4) {
         return 0;
     }
@@ -2823,17 +2823,17 @@ i32 CMulti::ParseOneChannel(void* rec) {
         return 0;
     }
 
-    ch->m_name = reinterpret_cast<char*>((r + 0x18));
-    ch->m_008 = r[0xd];
-    ch->m_configId = r[0xf];
-    if (r[0x12] != 0) {
+    ch->m_name = r->m_name;
+    ch->m_008 = r->m_008;
+    ch->m_configId = r->m_configId;
+    if (r->m_readyFlag != 0) {
         ch->m_readyFlag = 1;
     } else {
         ch->m_readyFlag = 0;
     }
-    ch->m_comboSel = r[0x11];
-    ch->m_014 = r[0xe];
-    ch->m_slotKey = *reinterpret_cast<i32*>((r + 0x14));
+    ch->m_comboSel = r->m_comboSel;
+    ch->m_014 = r->m_014;
+    ch->m_slotKey = r->m_slotKey;
     ch->m_liveGate = 1;
     return 1;
 }
