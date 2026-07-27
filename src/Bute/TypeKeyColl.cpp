@@ -30,7 +30,9 @@ DATA(0x002bf400)
 i32 g_helperRefCount; // owner def (zero-init .bss; C linkage via TypeKeyColl.h decl)
 
 inline CTypeCollRuntime::CTypeCollRuntime()
+    // a sentinel scratch argument, not an object - the container only tests it
     : _zdvec(sizeof(CString), 0x7d0, 0x7da, reinterpret_cast<void*>(1)) {
+    // the container's untyped byte pool, named at its one typed accessor
     CString* item = reinterpret_cast<CString*>(m_alloc);
     i32 count = m_grown;
     if (item != 0 && count != 0) {
@@ -42,6 +44,7 @@ inline CTypeCollRuntime::CTypeCollRuntime()
 }
 
 CTypeCollRuntime::~CTypeCollRuntime() {
+    // the container's untyped byte pool, named at its one typed accessor
     CString* item = reinterpret_cast<CString*>(m_base);
     i32 count = m_hi - m_lo + 1;
     if (item != 0 && count != 0) {
@@ -426,6 +429,8 @@ void CVariantSlot::Set(void* key, void* arg2, i32 arg3) {
     }
     i32 idx;
     if (g_recCount23 != 0) {
+        // the pointer-as-key table: g_recs23 keys on the CALLER'S ADDRESS, so the id IS
+        // a pointer - language-forced by the table's own i32 key column (see Set above).
         idx = this->Find(reinterpret_cast<i32>(key));
     } else {
         idx = -1;
@@ -434,6 +439,7 @@ void CVariantSlot::Set(void* key, void* arg2, i32 arg3) {
         if (m_typeTag == 2) {
             char buf[0x94];
             strcpy(buf, m_label);
+            // the reporter's address is formatted INTO the message text - it is the value
             Format_18d0f0(buf, reinterpret_cast<i32>(arg2), 0x4f);
             m_callback(buf, arg3);
         } else if (m_typeTag == 1) {
@@ -441,6 +447,8 @@ void CVariantSlot::Set(void* key, void* arg2, i32 arg3) {
         }
     } else {
         if (m_typeTag == 2) {
+            // the pointer-as-key table: g_recs23 keys on the CALLER'S ADDRESS, so the id IS
+            // a pointer - language-forced by the table's own i32 key column (see Set above).
             (static_cast<void(__cdecl*)(i32, i32)>(g_recs23[idx].m_4))(reinterpret_cast<i32>(arg2), arg3);
         } else if (m_typeTag == 1) {
             g_recs23[idx].m_8 = static_cast<short>(arg3);
@@ -893,6 +901,7 @@ void TmErrorHandler(char* prefix, i32 errNum) {
         *q++ = *s++;
     }
 
+    // the return-address breadcrumb is a code pointer carried as a word - byte-forced
     u32 v = 0xffff & reinterpret_cast<u32>(g_retAddrBreadcrumb);
     char* hp = &tmp[15];
     *hp = 0;
@@ -906,6 +915,7 @@ void TmErrorHandler(char* prefix, i32 errNum) {
             break;
         }
     } while (i-- != 0);
+    // the return-address breadcrumb is a code pointer carried as a word - byte-forced
     g_retAddrBreadcrumb = reinterpret_cast<void*>(v);
     while (*hp != 0) {
         *q++ = *hp++;
@@ -938,6 +948,8 @@ void* CVariantSlot::Add(void* key, void* val) {
     }
     int idx;
     if (count != 0) {
+        // the pointer-as-key table: g_recs23 keys on the CALLER'S ADDRESS, so the id IS
+        // a pointer - language-forced by the table's own i32 key column (see Set above).
         idx = Find(reinterpret_cast<i32>(key));
     } else {
         idx = -1;
@@ -954,6 +966,8 @@ void* CVariantSlot::Add(void* key, void* val) {
             );
         }
         g_recs23[m_04].m_4 = val;
+        // the pointer-as-key table: g_recs23 keys on the CALLER'S ADDRESS, so the id IS
+        // a pointer - language-forced by the table's own i32 key column (see Set above).
         g_recs23[m_04].m_key = reinterpret_cast<i32>(key);
         g_recCount23 = g_recCount23 + 1;
         g_recs23[m_04].m_8 = 0;
@@ -990,11 +1004,13 @@ i32 FirstDiffBit(const char* a, const char* b) {
 static inline CString* TypeResolve(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
+        // the container's untyped byte pool, named at its one typed accessor
         return reinterpret_cast<CString*>(
             g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride
         );
     }
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
+        // the container's untyped byte pool, named at its one typed accessor
         return reinterpret_cast<CString*>(
             g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride
         );
