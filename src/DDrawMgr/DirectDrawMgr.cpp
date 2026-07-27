@@ -397,7 +397,8 @@ i32 CDDrawPtrCollections::CreateDevice(
     if (bpp == 0) {
         DDSURFACEDESC desc;
         i32 j;
-        i32* d = reinterpret_cast<i32*>(&desc);
+        // retail zero-fills the opaque SDK desc with an explicit dword loop - byte-forced
+    i32* d = reinterpret_cast<i32*>(&desc);
         for (j = 0x1b; j != 0; j--) {
             *d++ = 0;
         }
@@ -542,6 +543,10 @@ CDDSurface* CDDrawPtrCollections::Createa58_1(i32 a) {
 RVA(0x00142560, 0xc8)
 CDDSurface* CDDrawPtrCollections::Createa58_3(i32 a, i32 b, i32 c) {
     CFileImageSurface* item = new CFileImageSurface;
+    // @identity-TODO CImage::Create hands this a CImageFrameDesc* while LoadByExt
+    // declares a `char* path`. One of the two is mis-typed; the desc's first member
+    // (_00[4]) may BE the path pointer, in which case the callee should take the desc.
+    // Needs the 0x142560 / LoadByExt disasm to settle - do not guess.
     if (!item->LoadByExt(this, reinterpret_cast<char*>(a), b, c)) {
         delete item;
         return 0;
@@ -1064,6 +1069,7 @@ RVA(0x00143740, 0x93)
 i32 CDDrawPtrCollections::GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp) {
     DDSURFACEDESC desc;
     i32 j;
+    // retail zero-fills the opaque SDK desc with an explicit dword loop - byte-forced
     i32* d = reinterpret_cast<i32*>(&desc);
     for (j = 0x1b; j != 0; j--) {
         *d++ = 0;
