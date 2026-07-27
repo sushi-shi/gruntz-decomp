@@ -2,7 +2,7 @@
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 
 #include <Image/Image.h>            // the single-source CDDSurface (the DIRSURF surface)
-#include <Image/FileImageRecords.h> // BmpFileHeader / TgaHeader / RtBitmapResHeader
+#include <Image/FileImageRecords.h> // BmpFileHeader / PcxHeader / TgaHeader
 #include <DDrawMgr/DDrawPtrCollections.h> // the palette-context (m_palBpp/m_palette/m_hasPalette) `info` points at
 
 #include <ddraw.h> // real IDirectDrawSurface dispatch (this->m_8->Unlock in the exporters)
@@ -233,26 +233,31 @@ i32 CDDSurface::Load(CDDrawPtrCollections * a, char* name, i32 c) {
     if (!hg) {
         return 0;
     }
-    RtBitmapResHeader* p = static_cast<RtBitmapResHeader*>(LockResource(hg));
-    if (!p) {
+    // An RT_BITMAP resource IS a BITMAPINFOHEADER, then the palette, then the bits.
+    // The ex-RtBitmapResHeader view spelled it m_0/m_4/m_8/m_e = biSize/biWidth/
+    // biHeight/biBitCount, and typed +0x08 as a CDDrawPtrCollections* purely so the
+    // Init1 call below would compile - retail passes this function's OWN pool arg.
+    BITMAPINFOHEADER* bih = static_cast<BITMAPINFOHEADER*>(LockResource(hg));
+    if (!bih) {
         return 0;
     }
-    CDDrawPtrCollections* saved = p->m_8;
-    if (p->m_e != 8) {
+    i32 height = bih->biHeight;
+    if (bih->biBitCount != 8) {
         return 0;
     }
     memset(m_descWords, 0, sizeof(DDSURFACEDESC));
     m_descSize = sizeof(DDSURFACEDESC);
     m_surfaceCaps = c | 0x40;
-    m_width = p->m_4;
+    m_width = bih->biWidth;
     m_descFlags = 7;
-    m_height = c;
-    if (!Init1(saved, 0)) {
+    m_height = height;
+    if (!CDDSurface::Init1(a, 0)) { // direct (qualified) call - retail does not dispatch
         return 0;
     }
-    // The Win32 DIB idiom: the bits start biSize (p->m_0, a RUNTIME value) plus the
-    // 256-entry RGBQUAD palette past the header, so the offset is API-forced.
-    BlitDirect(reinterpret_cast<char*>(p) + p->m_0 + 0x400, 2);
+    // byte-evidenced: retail forms the bits pointer as base + biSize + 0x400 in one
+    // lea - `mov ecx,[ebx]` (biSize) then `lea edx,[ebx+ecx*1+0x400]`. biSize is a
+    // RUNTIME value, so the 256-entry RGBQUAD palette cannot be skipped by type.
+    BlitDirect(reinterpret_cast<u8*>(bih) + bih->biSize + 256 * sizeof(RGBQUAD), 2);
     return 1;
 }
 

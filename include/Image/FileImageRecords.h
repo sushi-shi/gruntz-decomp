@@ -41,13 +41,8 @@ struct PcxHeader {
 SIZE(0x80); // header proper; m_pixels is the trailing stream
 #pragma pack(pop)
 
-struct RtBitmapResHeader {
-    i32 m_0; // +0x00 (payload size; data follows at +m_0+0x400)
-    i32 m_4; // +0x04 (stored into the surface desc width)
-    class CDDrawPtrCollections* m_8; // +0x08  the pool forwarded to the slot-2 init
-    char m_padc[0xe - 0xc];
-    i16 m_e; // +0x0e (must be 8)
-};
-SIZE_UNKNOWN(); // resource-header view (only the first 0x10 bytes pinned)
+// RtBitmapResHeader was a pad-view of BITMAPINFOHEADER (an RT_BITMAP resource IS
+// one): m_0/m_4/m_8/m_e were biSize/biWidth/biHeight/biBitCount. Its +0x08 was typed
+// as a CDDrawPtrCollections* only so a wrong Init1 call would compile. Do not revive.
 
 #endif // SRC_IMAGE_CFILEIMAGERECORDS_H
