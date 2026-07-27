@@ -48,7 +48,8 @@ public:
         return LOGIC_WARLORD;
     } // slot 2
 public:
-    CWarlord(i32); // 0x42d40 (the warlord ctor: base init + name/state setup)
+    // the family convention (CUserLogic/CMovingLogic both take the object)
+    CWarlord(CGameObject* obj); // 0x42d40 (base init + name/state setup)
     // NO user-declared destructor: retail's ~CWarlord (0x107f0) is the COMPILER-
     // GENERATED one. cl 5.0 elides the most-derived vptr re-stamp in an IMPLICIT
     // dtor (it knows no user body can observe the vptr) but always emits it for a

@@ -653,7 +653,7 @@ i32 CreateWarlord(CGameObject* owner) {
     switch (static_cast<u32>(rec->ActKey())) {
         case 0: {
             rec->SetActKey(0x3e8);
-            CUserLogic* sub = new CWarlord(reinterpret_cast<i32>(owner));
+            CUserLogic* sub = new CWarlord(owner);
             sub->Activate();
             rec->m_logic = sub;
             break;

@@ -184,9 +184,7 @@ typedef enum WarlordBattleTag {
 //     ctor) recovers exactly this order and measured +1.4% (79.15 -> 80.53) - an
 //     inheritance change owned by the Fable lane; left as a hand-off (see report).
 RVA(0x00042d40, 0x73e)
-CWarlord::CWarlord(i32 arg)
-    : CUserLogic(reinterpret_cast<CGameObject*>(arg)), CWapX(reinterpret_cast<CGameObject*>(arg)) {
-    CGameObject* obj = reinterpret_cast<CGameObject*>(arg);
+CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     // Two 64-bit stamp/window cooldown timers, cleared.
     m_cooldownStampLo = 0;
