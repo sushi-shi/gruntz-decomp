@@ -14,7 +14,6 @@ class CTileTriggerContainer; // +0x14 the tile-trigger container (FindChild/Find
 class CGrunt;                // <Gruntz/Grunt.h> - the grid units the spawn machine drives
 class CGruntzMgr;
 class CLevelInfo;      // real level record (m_levelInfo member)
-class CLevelSpawnInfo; // spawn-info handle
 
 class CBattlezMapConfig {
 public:

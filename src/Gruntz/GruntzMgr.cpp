@@ -77,7 +77,6 @@
 #include <Gruntz/SoundState.h>            // ex Globals.h transitive
 #include <Gruntz/Dialogs.h>
 #include <Net/NetLobby.h> // NetLobby::g_curDlg
-#include <Gruntz/PlayStateView.h>
 #include <Gruntz/GameObjectFactory.h>
 
 DATA(0x00248ce8)
@@ -2575,10 +2574,14 @@ i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, void* snapshot) {
 RVA(0x0008e980, 0x11e)
 i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
     if (m_curState && m_curState->Update() == GAMESTATE_NONE) {
-        PlayStatusSlot* s = (reinterpret_cast<CPlayStateView*>(m_curState))->m_520;
+        // +0x520 is CMulti::m_session (the state IS a CMulti - the pause poke two
+        // lines down runs CMulti::OnPauseChannel on the same ecx), and the stride-0x64
+        // walk from +0x20 is its four inline CNetCmdSlot m_slots. The ex CPlayStateView
+        // / PlayStatusSlot pad-views were that pair under invented names.
         i32 done = 0;
+        CNetCmdSlot* s = (static_cast<CMulti*>(m_curState))->m_session->m_slots;
         for (i32 d = 4; d != 0; d--) {
-            i32* st = &s->m_status;
+            i32* st = &s->m_state;
             if (st && *st == 3) {
                 done++;
             }

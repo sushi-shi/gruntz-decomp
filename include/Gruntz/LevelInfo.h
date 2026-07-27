@@ -11,11 +11,10 @@ class CTriggerMgr;           // <Gruntz/TriggerMgr.h>
 struct CGameObject;          // <Gruntz/UserLogic.h>
 class CTileTriggerContainer; // <Gruntz/TileTriggerContainer.h>
 
-struct CLevelSpawnInfo {
-    char m_pad00[0x2e4];
-    CTileTriggerContainer* m_2e4; // +0x2e4  the level's tile-trigger container
-};
-SIZE_UNKNOWN();
+// (The ex CLevelSpawnInfo pad-view is dissolved (2026-07-27): its single member,
+// +0x2e4 -> the tile-trigger container, is CPlay::m_beginMarker, and the pointer it
+// was reached through is the registry's +0x2c m_curState. CTriggerMgr::BuildRockBreak
+// Particles now downcasts CState* -> CPlay* for real.)
 
 class CDDrawWorkerHost;
 
@@ -46,7 +45,7 @@ struct CLevelInfo {
     // m_cellQuery - not on ctx+0x14. Not modeled here; see BattlezMapConfig.h.)
     CGameObject* m_10;            // +0x10  the level's active object (pixel pos @+0x5c/+0x60)
     char m_pad14[0x2c - 0x14];    // +0x14
-    CLevelSpawnInfo* m_spawnInfo; // +0x2c  spawn-info handle (LoadConfig)
+    class CPlay* m_spawnInfo; // +0x2c  the live PLAY state (== the registry's m_curState)
     CLevelList* m_objList;        // +0x30  object-list root (LoadConfig marker walk)
     char m_pad34[0x35 - 0x34];    // +0x34
     char m_path[0x68 - 0x35];     // +0x35  level file path (Open); buffer ends at m_68

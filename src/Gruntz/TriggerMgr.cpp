@@ -52,7 +52,6 @@
 #include <Gruntz/LeafCue.h>         // LeafCue (the finish-level looked-up cue)
 #include <Gruntz/LightFx.h>         // CLightFx (resurrect flash Activate)
 #include <Gruntz/BattlezMapConfig.h>
-#include <Gruntz/LevelInfo.h>              // CLevelSpawnInfo - the concrete state behind m_curState
 #include <Gruntz/TileTriggerContainer.h>   // canonical CTileTriggerContainer (rock-break)
 #include <Gruntz/TileActionEvent.h>        // canonical CTileActionEvent (rock-break)
 #include <Gruntz/TileTriggerSwitchLogic.h> // canonical CTileTriggerSwitchLogic (rock-break)
@@ -1585,13 +1584,10 @@ RVA(0x0007b440, 0x3f0)
 i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
     CombatCue(cx, cy, r, 6, a4);
 
-    // The concrete game-state behind CGameRegistry::m_curState (the base CState is
-    // proven <= 0x1c0, so a +0x2e4 read is a DERIVED state's field). Its shape here -
-    // pad to +0x2e4, then the tile-trigger/cell container - is the SAME object
-    // CBattlezMapConfig::LoadConfig reads as lvl->m_spawnInfo (also a +0x2c slot of its
-    // owner, also +0x2e4 -> the container): <Gruntz/LevelInfo.h>'s CLevelSpawnInfo.
-    // The downcast is the honest symptom of m_curState being typed as the base.
-    CLevelSpawnInfo* root = reinterpret_cast<CLevelSpawnInfo*>(g_gameReg->m_curState);
+    // The derived state behind CGameRegistry::m_curState: the base CState is proven
+    // <= 0x1c0, and +0x2e4 is CPlay::m_beginMarker, the level's CTileTriggerContainer
+    // (the ex CLevelSpawnInfo pad-view was exactly that one member). A real downcast.
+    CPlay* root = static_cast<CPlay*>(g_gameReg->m_curState);
     i32 tileCx = cx >> 5;
     i32 tileCy = cy >> 5;
     i32 hiX = tileCx + r;
@@ -1628,7 +1624,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
 
             if (type != 0x1e && type != 0x1f) {
                 if (type == 0x21) {
-                    CGiantRockLogic* gr = root->m_2e4->ScanNeighborhood(tx, ty);
+                    CGiantRockLogic* gr = root->m_beginMarker->ScanNeighborhood(tx, ty);
                     if (gr == 0) {
                         CString msg;
                         msg.Format("No giant rock logic found around: x=%d, y=%d", cx, cy);
@@ -1637,15 +1633,15 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                         return 0;
                     }
                     gr->BuildRockBreakInGameText();
-                    root->m_2e4->DelFromList1(gr);
+                    root->m_beginMarker->DelFromList1(gr);
                     continue;
                 }
                 if (type != 0x97 && type != 0x98 && type != 0x99) {
                     continue;
                 }
-                CTileActionEvent* o = root->m_2e4->FindByField0C(ty + (tx << 8));
+                CTileActionEvent* o = root->m_beginMarker->FindByField0C(ty + (tx << 8));
                 if (o->Process(0)) {
-                    root->m_2e4->DelFromList3(o);
+                    root->m_beginMarker->DelFromList3(o);
                 }
                 continue;
             }
@@ -1655,11 +1651,11 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             // CTileTriggerLogic's - the local was mis-declared CTileTriggerSwitchLogic*
             // (a separate 0x8c family, not a base), which forced a reinterpret on both
             // the store and the call. Declared at its real type, both casts are gone.
-            CTileTriggerLogic* lo = (static_cast<CTileTriggerContainer*>(root->m_2e4))
+            CTileTriggerLogic* lo = (root->m_beginMarker)
                                         ->FindInLists12(ty + (tx << 8), 0x1a);
             if (lo != 0) {
                 lo->ApplyMove(type);
-                (static_cast<CTileTriggerContainer*>(root->m_2e4))
+                (root->m_beginMarker)
                     ->DelFromList1(static_cast<void*>(lo));
             } else {
                 CDDrawWorkerHost* wg = g_gameReg->m_world->m_level->m_mainPlane;
