@@ -962,8 +962,8 @@ CSymParser::~CSymParser() {
         Clear(0);
     }
     CRezItmBase* p;
-    for (p = reinterpret_cast<CRezItmBase*>(m_list.m_head); p != 0;
-         p = reinterpret_cast<CRezItmBase*>(m_list.m_head)) {
+    for (p = m_list.HeadItem(); p != 0;
+         p = m_list.HeadItem()) {
         m_list.Remove(reinterpret_cast<CObjNode*>(p));
         m_list.m_count--;
         delete p; // the slot-1 scalar-deleting dtor (delete emits the same null test)
@@ -1329,8 +1329,8 @@ i32 CSymParser::Clear(i32 final) {
     delete m_activeNode; // slot-1 scalar dtor (delete emits the same null test)
     m_activeNode = 0;
     CRezItmBase* p;
-    for (p = reinterpret_cast<CRezItmBase*>(m_list.m_head); p != 0;
-         p = reinterpret_cast<CRezItmBase*>(m_list.m_head)) {
+    for (p = m_list.HeadItem(); p != 0;
+         p = m_list.HeadItem()) {
         p->Close();
         m_list.Remove(reinterpret_cast<CObjNode*>(p));
         m_list.m_count--;
@@ -1353,8 +1353,9 @@ u32 __stdcall PackTag(const char* s) {
     if (!s) {
         return 0;
     }
-    u32 r = 0;
-    u8* rb = reinterpret_cast<u8*>(&r);
+    DwordBytes r;
+    r.m_v = 0;
+    u8* rb = r.m_b;
     i32 len = static_cast<i32>(strlen(s));
     if (len > 0) {
         rb[len - 1] = s[0];
@@ -1368,7 +1369,7 @@ u32 __stdcall PackTag(const char* s) {
     if (len > 3) {
         rb[len - 4] = s[3];
     }
-    return r;
+    return r.m_v;
 }
 
 RVA(0x0013b970, 0x72)
@@ -1376,7 +1377,7 @@ void __stdcall UnpackTag(u32 tag, char* dst) {
     if (!dst) {
         return;
     }
-    u8* tb = reinterpret_cast<u8*>(&tag);
+    u8* tb = reinterpret_cast<DwordBytes*>(&tag)->m_b;
     i32 len = 0;
     if (tb[3]) {
         len = 4;
@@ -1418,7 +1419,7 @@ i32 CSymParser::Retry() {
 RVA(0x0013ba20, 0x27)
 i32 CSymParser::CheckNodes() {
     i32 ok = 1;
-    for (CRezItmBase* n = reinterpret_cast<CRezItmBase*>(m_list.m_head); n != 0; n = n->m_next) {
+    for (CRezItmBase* n = m_list.HeadItem(); n != 0; n = n->m_next) {
         if (n->Check() == 0) {
             ok = 0;
         }

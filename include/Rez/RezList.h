@@ -15,6 +15,13 @@ class CRezItmBase; // fwd - the intrusive element (see the AddHead/Remove seams)
 // only relocates it, and the caller-callee FAKE-VIEW gate correctly reads that as
 // an unresolved identity (0 -> 10 ARG-POINTEE edges). Settle the real hierarchy
 // and the casts fall out; do not hide them behind a seam.
+// A dword and its four bytes are the same storage - the BUTE tag/fourcc paths read
+// it both ways, so the two arms are a real union rather than a pun.
+union DwordBytes {
+    u32 m_v;
+    u8 m_b[4];
+};
+
 class CObjNode {
 public:
     void* m_base;     // +0x00  element base (vptr for a polymorphic element, else data)
@@ -37,6 +44,10 @@ struct CObjList : public CObjListBase {
     CObjNode* m_tail;             // +0x08
     void AddHead(CObjNode* node); // 0x1851e0
     void Remove(CObjNode* node);  // 0x1852e0
+    // READ side of the overlay: the head node IS the element head (see the note
+    // above CObjNode), and reading it back typed does not reach a differently-typed
+    // callee parameter, so unlike an AddHead overload this is safe to seam.
+    CRezItmBase* HeadItem() const { return reinterpret_cast<CRezItmBase*>(m_head); }
 };
 SIZE(0xc); // {vptr (CObjListBase), head, tail} - CRezList adds no data, same 0xc
 
