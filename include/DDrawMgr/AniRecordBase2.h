@@ -18,7 +18,8 @@ struct CAniRecordBase2 : public CWapObj {
     CDDPalette* m_buf; // +0x10  the owned work palette (FreeBuf returns it to the pool)
 
     // The owner at its real type (the surface mgr whose m_ptrColl pool the
-    // Alloc*/FreeBuf slots drive and whose m_drawTarget PushPalette walks).
+    // Alloc*/FreeBuf slots drive and whose m_drawTarget PushPalette walks). Same
+    // generic-i32-handle slot as CLoadable::m_ownerCtx: one seam, typed once here.
     CDDrawSurfaceMgr* OwnerMgr() {
         return reinterpret_cast<CDDrawSurfaceMgr*>(m_0c);
     }

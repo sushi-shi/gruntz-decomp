@@ -31,7 +31,7 @@ CAniRecordView::~CAniRecordView() {
     if (r->m_indices != 0) {
         ::operator delete(r->m_indices);
     }
-    r->m_owner = reinterpret_cast<CDDrawSurfaceMgr*>(0xffff); // sentinel
+    r->m_owner = 0xffff; // sentinel
     r->m_count = 0;
     r->m_indices = 0;
     // implicit grand-base re-stamp (masks 0x5e8cb4) folds in here as the last store.
@@ -63,8 +63,8 @@ i32 CAniRecordView::Parse(void* ctx, const i16* src) {
     const i16* p = src;
     m_flags = static_cast<u16>(*p++);
     m_08 = *p++;
-    m_owner = reinterpret_cast<CDDrawSurfaceMgr*>(*p++); // serialized handle
-    m_buf = reinterpret_cast<CDDPalette*>(*p++); // a serialized handle, like m_owner
+    m_owner = *p++;   // serialized handle
+    m_palette = *p++; // a serialized handle, like m_owner
     m_seedFrame = *p++;
     m_frameCount = *p++;
     m_1c = *p++;

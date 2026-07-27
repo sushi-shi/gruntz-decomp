@@ -1,5 +1,6 @@
 #include <Ints.h>
 #include <math.h>            // sin/cos -> fsin/fcos intrinsics at /O2 /Oi
+#include <DDrawMgr/DDSurface.h> // CDDSurface - the dst/src surfaces (ex RotateSrcImage view)
 #include <Image/RasterVtx.h> // ClipVtx + RotateRasterize decl
 #include <rva.h>
 
@@ -22,16 +23,19 @@ void ImageRotateBlit(
     i32 a1,
     i32 a2,
     i32* pivot,
-    void* a4,
-    void* inp,
+    CDDSurface* dst,
+    CDDSurface* src,
     float rot,
     float scale,
     i32 mode,
     i32 colorkey
 ) {
-    RotateSrcImage* in = static_cast<RotateSrcImage*>(inp);
-    i32 h = in->m_1c;
-    i32 w = in->m_18;
+    // +0x1c/+0x18 = the source surface's DDSURFACEDESC dwWidth/dwHeight, read in
+    // that order (retail `mov ecx,[eax+0x1c]; mov edx,[eax+0x18]`). The two locals
+    // keep the names the extent math below uses; which of the pair drives the x
+    // axis is NOT settled - the reads are byte-faithful either way.
+    i32 h = src->m_width;
+    i32 w = src->m_height;
 
     // The source quad corners, stored straight into the transform's texel slots.
     i32 sq[4];
@@ -88,8 +92,8 @@ void ImageRotateBlit(
     RotateRasterize(
         mtx,
         4,
-        reinterpret_cast<i32>(a4),
-        reinterpret_cast<i32>(inp),
+        dst,
+        src,
         mode,
         colorkey,
         -1,

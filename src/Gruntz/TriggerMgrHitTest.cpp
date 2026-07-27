@@ -77,13 +77,20 @@ i32 TmFlagsAllow(i32 a, i32 b, i32 c) {
 
 // 0x75af0: HitTestCell(x, y, outRow, outCol, exact) - sample the plane tile-attr at
 // (x>>5, y>>5); its high byte is the row, low byte the col. Look up grid[row*15+col]; if
-// live+clickable, either exact-match its world pos (exact) or its 30x30 bounds, then write
-// (row,col) through the out-ptrs. ret 0 on any miss. (__stdcall: ret 0x14.)
+// live+clickable, either exact-match its world pos (exact) or its +-7 box, then write
+// (row,col) through the out-ptrs and RETURN THE CELL. 0 on any miss. (__stdcall: ret 0x14.)
+//
+// The return is the CGrunt*, not a flag: BOTH success tails fall through to `ret 0x14`
+// with eax still holding `mov eax,[ecx+edx*4+0x1c]` (the m_grid load) - there is no
+// `mov eax,1` anywhere in the body. CSecretLevelTrigger::Tick @0x42ac0 then does
+// `cmp [eax+0x170],edx` / `cmp [eax+0x198],ecx` straight off that return, which is what
+// the CTrigger pad-view at those call sites stood in for. Neither out-ptr is null-checked
+// either, and the box test is (x-7 > ox+7 || x+7 < ox-7), not the +14 form we had.
 // @early-stop
-// regalloc + bounds-arith wall: the row/col high/low-byte split pins edi/ebp and the
-// ±7 box arithmetic spills to different slots than retail. Logic + offsets byte-exact.
+// regalloc wall: the row/col high/low-byte split pins edi/ebp and the box arithmetic
+// spills to different slots than retail. Logic + offsets byte-exact.
 RVA(0x00075af0, 0x111)
-i32 CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) {
+CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) {
     CMapMgr* plane = g_gameReg->m_tileGrid;
     i32 ix = x >> 5;
     i32 iy = y >> 5;
@@ -102,32 +109,30 @@ i32 CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) 
     if (cell == 0 || cell->m_entranceCommitted == 0) {
         return 0;
     }
-    if (exact != 0) {
+    // retail falls THROUGH into the box test and branches away to the exact
+    // compare (`test exact; jne`), so the box arm is written first here.
+    if (exact == 0) {
         CGameObject* o = cell->m_object;
-        if (o->m_screenX != x || o->m_screenY != y) {
+        i32 ylo = y - 7;
+        i32 yhi = y + 7;
+        i32 xlo = x - 7;
+        i32 xhi = x + 7;
+        i32 ox = o->m_screenX - 7;
+        i32 oy = o->m_screenY - 7;
+        if (xlo > ox + 14 || xhi < ox || ylo > oy + 14 || yhi < oy) {
             return 0;
         }
-        if (outRow != 0) {
-            *outRow = row;
-        }
-        if (outCol != 0) {
-            *outCol = col;
-        }
-        return 1;
+        *outRow = row;
+        *outCol = col;
+        return cell;
     }
     CGameObject* o = cell->m_object;
-    i32 ox = o->m_screenX;
-    i32 oy = o->m_screenY;
-    if (x + 7 > ox + 14 || x - 7 < ox - 7 || y + 7 > oy + 14 || y - 7 < oy - 7) {
+    if (o->m_screenX != x || o->m_screenY != y) {
         return 0;
     }
-    if (outRow != 0) {
-        *outRow = row;
-    }
-    if (outCol != 0) {
-        *outCol = col;
-    }
-    return 1;
+    *outRow = row;
+    *outCol = col;
+    return cell;
 }
 
 // 0x75c60: CTriggerMgr::FindGruntAt - given a pixel point + tile-span rect (or an

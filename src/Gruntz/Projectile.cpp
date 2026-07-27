@@ -430,21 +430,15 @@ static inline CActHandler* ProjActLookup(i32 coord) {
 static inline CString* ProjTypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return reinterpret_cast<CString*>(
-            (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
-        );
+        return g_typeColl.Elem(key);
     }
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
-        return reinterpret_cast<CString*>(
-            (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
-        );
+        return g_typeColl.Elem(key);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
-    return reinterpret_cast<CString*>(
-        g_typeColl.m_spare
-    ); // m_spare is the i32-typed slow-path slot
+    return g_typeColl.Scratch(); // the slow-path element slot
 }
 
 RVA(0x000df9a0, 0x102)
@@ -955,7 +949,7 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, CGameObject* a
             i32 key;
             s->Read(&key, 4);
             CGameObject* found = 0;
-            i32 r;
+            CWwdGameObjectA* r;
             if (reg->m_childGroup->m_map48
                     .Lookup(reinterpret_cast<void*>(key), reinterpret_cast<void*&>(found))
                 == 0) {
@@ -963,9 +957,11 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, CGameObject* a
             } else if (found == 0) {
                 r = 0;
             } else {
-                r = (found->GetClassId() == CLASSID_SERIALREF) ? reinterpret_cast<i32>(found) : 0;
+                r = (found->GetClassId() == CLASSID_SERIALREF)
+                        ? static_cast<CWwdGameObjectA*>(found)
+                        : 0;
             }
-            m_shadow = reinterpret_cast<CWwdGameObjectA*>(r);
+            m_shadow = r;
             if (m_shadow == 0 && key != 0) {
                 return 0;
             }

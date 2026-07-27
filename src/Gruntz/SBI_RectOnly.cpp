@@ -700,13 +700,11 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     // Resolve the serialized object id through the child group's serialize map
     // (m_map48: id -> CGameObject*, the same map GruntVoice/Play deserializers
     // consult); keep it only when GetClassId proves the CreateSprite kind.
-    void* obj = 0;
+    CGameObject* obj = 0;
     CWwdGameObjectA* m8 = 0;
     if (MapLookupById(gm->m_childGroup->m_map48, seq, obj)) {
         if (obj != 0) {
-            m8 = ((static_cast<CGameObject*>(obj))->GetClassId() == CLASSID_SERIALREF)
-                     ? reinterpret_cast<CWwdGameObjectA*>(obj)
-                     : 0;
+            m8 = (obj->GetClassId() == CLASSID_SERIALREF) ? static_cast<CWwdGameObjectA*>(obj) : 0;
         }
     }
     m_barSprite = m8;

@@ -23,15 +23,20 @@ struct CAniRecordView : public CObject {
     inline CAniRecordView() {
         m_count = 0;
         m_indices = 0;
-        m_owner = reinterpret_cast<CDDrawSurfaceMgr*>(0xffff);
+        m_owner = 0xffff;
     }
 
     // vptr implicit at +0x00
     u16 m_flags;               // +0x04  status word (bit 1 scaled, bit 2 has-name)
     u16 m_06;                  // +0x06
     i32 m_08;                  // +0x08
-    CDDrawSurfaceMgr* m_owner; // +0x0c  the owning surface mgr (seeded 0xffff sentinel)
-    CDDPalette* m_buf;         // +0x10  the owned pool work palette
+    // +0x0c/+0x10 are SERIALIZED HANDLES, not pointers: Parse @0x168c60 reads them
+    // straight out of the i16 record stream and the dtor stamps +0x0c with the 0xffff
+    // sentinel. Nothing in the tree ever dereferences either - they were typed
+    // CDDrawSurfaceMgr*/CDDPalette* (copied from CAniRecordBase2's same-offset pair),
+    // which cost four casts to write a 16-bit stream value into a pointer slot.
+    i32 m_owner;   // +0x0c  serialized owner handle (0xffff = unbound)
+    i32 m_palette; // +0x10  serialized palette handle
     i32 m_seedFrame;           // +0x14  parsed seed/start frame (SetAnimEx reads record[0]'s)
     i32 m_frameCount;          // +0x18  frame count (GetSize)
     i32 m_1c;                  // +0x1c

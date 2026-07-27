@@ -3,9 +3,9 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Wap32/ZVec.h> // _zvec::GrowTo (Find 0x16da80)
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/Grunt.h> // CGrunt - HitTestCell returns the placed cell (ex CTrigger pad view)
 #include <Gruntz/GameLevel.h> // canonical CGameLevel/CDDrawWorkerHost (m_world->m_level visible rect)      // CTriggerMgr::HitTestCell (0x75af0) / CellDispatch (0x6bcb0)
 #include <Gruntz/GruntSpawnConfig.h>  // CGruntSpawnConfig::SpawnVoiceDriver (the cue)
-#include <Gruntz/Trigger.h>           // CTrigger (point-probe result, its m_10 HUD sprite)
 #include <Gruntz/GameRegistry.h>      // the canonical *0x24556c singleton (m_world/m_cmdGrid/
 #include <Gruntz/BattlezData.h>       // CBattlezData (g_gameReg->m_scoreHud; +0x3c armed counter)
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
@@ -196,16 +196,14 @@ RVA(0x00042ac0, 0x90)
 i32 CSecretLevelTrigger::Tick() {
     i32 outA, outB;
     CWwdGameObjectA* spr = m_object;
-    CTrigger* hit = reinterpret_cast<CTrigger*>(
-        g_gameReg->m_cmdGrid->HitTestCell(spr->m_screenX, spr->m_screenY, &outB, &outA, 1)
-    );
+    CGrunt* hit = g_gameReg->m_cmdGrid->HitTestCell(spr->m_screenX, spr->m_screenY, &outB, &outA, 1);
     if (hit) {
         spr = m_object;
         i32 ok = 1;
         i32 lvl = spr->m_11c;
         i32 lyr = spr->m_120;
         // (m_11c/m_120 = required level/layer ids on the bound CGameObject)
-        if (lvl != 0 && hit->m_170 != lvl) {
+        if (lvl != 0 && hit->m_entranceReason != lvl) {
             ok = 0;
         }
         if (lyr != 0 && hit->m_198 != lyr) {
@@ -223,9 +221,7 @@ RVA(0x00042b80, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 loc0, loc4;
     CWwdGameObjectA* o = m_object;
-    CTrigger* hit = reinterpret_cast<CTrigger*>(
-        g_gameReg->m_cmdGrid->HitTestCell(o->m_screenX, o->m_screenY, &loc0, &loc4, 1)
-    );
+    CGrunt* hit = g_gameReg->m_cmdGrid->HitTestCell(o->m_screenX, o->m_screenY, &loc0, &loc4, 1);
     if (hit) {
         o = m_object;
         CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -246,7 +242,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             spr->m_114 = m_object->m_114;
             spr->m_118 = m_object->m_118;
             spr->m_placeMode = 0;
-            CGameObject* eo = hit->m_10;
+            CWwdGameObjectA* eo = hit->m_object;
             CGruntzMgr* g = g_gameReg;
             i32 ey = eo->m_screenY;
             i32 ex = eo->m_screenX;

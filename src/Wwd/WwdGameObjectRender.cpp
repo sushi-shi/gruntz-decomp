@@ -275,6 +275,10 @@ CWwdGameObject::CreateObject(int a1, int a2, int a3, int a4, AnimWorkerObj* tmpl
         int root =
             m_ownerCtx; // the CLoadable owner int handle (== this->m_ownerCtx, the CDDrawSurfaceMgr)
         new (obj) CWwdGameObjBaseCtor(root, a1, a6);
+        // CWwdGameObjBaseCtor is a CONSTRUCTION-SHAPE view of this same 0x1dc object
+        // (it spells the ctor's store order over WwdCtorBase); until it and
+        // CWwdGameObjectA are one class the RezAlloc block is re-typed here.
+        // @identity-TODO
         result = reinterpret_cast<CWwdGameObjectA*>(obj);
         // the embedded +0x1a0 CAniAdvanceCursor(owner=root, field04=a1, field08=a6): retail
         // INLINES the ctor here (no call), spelled out so the store shape matches; its 0x5f0128

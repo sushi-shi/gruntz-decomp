@@ -92,7 +92,7 @@ public:
     // shared base would be wrong for the others - so the concrete type lives here, in
     // ONE accessor, instead of a cast at every use site. Both ex-views (CDDrawWorker::m_c /
     // CDDrawWorker::m_owner) proved the type: it is handed to each created frame as
-    // CImage::m_parent (`new CImage(index, m_owner)`).
+    // CImage::m_parent (`new CImage(index, m_owner)`). This accessor IS that one seam.
     CImageParent* Owner() const {
         return reinterpret_cast<CImageParent*>(m_ownerCtx);
     }

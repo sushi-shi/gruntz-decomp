@@ -26,25 +26,17 @@ extern "C" i32 g_rasterVtxCount;   // 0x6becf8 (published by ImagePolyClipRect)
 extern "C" u8* g_rasterDestRow;    // 0x6a2ce8  current scanline base (engine scratch)
 extern "C" i16* g_rasterDestPtr;    // 0x6becf4  current span start (engine scratch)
 
-// The rotate-blit SOURCE image geometry: the object RotateRasterize (clipFlag==-1)
-// and ImageRotateBlit read the default clip box from - width @+0x18, height @+0x1c.
-// Shared by both rasterizer TUs (was the duplicated .cpp-local ClipImg / ImgRect
-// views). The concrete class of the rotate source is unrecovered (a3 flows opaquely
-// from ImageRotateBlit's surface arg; its w/h @0x18/0x1c do NOT match CDDSurface's
-// w/h @0x08/0x0c, so it is a distinct image representation); only the two offsets
-// are load-bearing. @identity-TODO: pin the source-image class.
-struct RotateSrcImage {
-    char p00[0x18];
-    i32 m_18; // +0x18  width
-    i32 m_1c; // +0x1c  height
-};
-SIZE_UNKNOWN();
+// (The ex RotateSrcImage pad-view is dissolved (2026-07-27): it IS CDDSurface. The
+// comment it carried - "w/h @0x18/0x1c do NOT match CDDSurface's w/h @0x08/0x0c" -
+// was simply wrong: CDDSurface's DDSURFACEDESC overlay puts dwHeight at +0x18 and
+// dwWidth at +0x1c, exactly the two words the view named, and CDDSurface::RotateBlit
+// @0x141040 hands ImageRotateBlit `this` for one of the pair. +0x08 is m_ddSurface.)
 
 i32 RotateRasterize(
     ClipVtx* verts,
     i32 n,
-    i32 a3,
-    i32 a4,
+    CDDSurface* dst,
+    CDDSurface* src,
     i32 a5,
     i32 a6,
     i32 clipFlag,

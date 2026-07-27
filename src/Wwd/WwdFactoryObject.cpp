@@ -675,8 +675,8 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             CAniDesc* dd = m_element;
             if (dd->m_flags & 0x4) {
                 i32 cue = c->m_screenX;
-                i32* tbl;
-                i32 entry;
+                LeafCue** tbl;
+                LeafCue* entry;
                 if (dd->m_randMod == 0) {
                     entry = 0;
                 } else {
@@ -684,14 +684,14 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     entry = tbl[Rng::Next2() % dd->m_randMod];
                 }
                 if (entry != 0) {
-                    // retail loads TriggerBlit's `this` from the +0x30 random table
-                    // (`mov ecx,[eax+edx*4]` at 0x15c360), NOT from the cursor - the
-                    // trigger is the table ENTRY, exactly like the LeafCue branch.
-                    (reinterpret_cast<CAniBlitTrigger*>(entry))->TriggerBlit(cue, 0, 0, 0);
+                    // @identity-TODO: CAniBlitTrigger IS LeafCue (proof + the blocked
+                    // fold in <DDrawMgr/AniAdvance.h>); this stays a cast only until
+                    // TriggerBlit moves onto LeafCue in DDrawSubMgr.cpp.
+                    reinterpret_cast<CAniBlitTrigger*>(entry)->TriggerBlit(cue, 0, 0, 0);
                 }
             } else {
-                i32* tbl;
-                i32 entry;
+                LeafCue** tbl;
+                LeafCue* entry;
                 if (dd->m_randMod == 0) {
                     entry = 0;
                 } else {
@@ -699,13 +699,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     entry = tbl[Rng::Next2() % dd->m_randMod];
                 }
                 if (entry != 0) {
-                    (reinterpret_cast<LeafCue*>(entry))
-                        ->PlayIfElapsed(
-                            g_sndCueTag,
-                            0,
-                            0,
-                            0
-                        ); // 0x61ab24 (the ex "g_aniCueItem" alias)
+                    entry->PlayIfElapsed(g_sndCueTag, 0, 0, 0); // 0x61ab24
                 }
             }
         }

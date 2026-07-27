@@ -453,6 +453,8 @@ i32 CMenuPage::FocusForwardN() {
     if (!(m_flags & 4)) {
         return 0;
     }
+    // language-forced: MFC keeps CPtrList::CNode private and POSITION opaque, so
+    // the n-step walk this page does by hand has to name the node itself.
     CMenuListNode* pos = reinterpret_cast<CMenuListNode*>(cur->m_listPos);
     if (!pos) {
         return 0;
@@ -493,6 +495,8 @@ i32 CMenuPage::FocusBackwardN() {
     if (!(m_flags & 4)) {
         return 0;
     }
+    // language-forced: MFC keeps CPtrList::CNode private and POSITION opaque, so
+    // the n-step walk this page does by hand has to name the node itself.
     CMenuListNode* pos = reinterpret_cast<CMenuListNode*>(cur->m_listPos);
     if (!pos) {
         return 0;

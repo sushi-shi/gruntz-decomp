@@ -834,7 +834,7 @@ i32 CTileActionEvent::SetActionCode(i32 code) {
 // pick its colored break animation by `effect`. Finally re-fire SetActionCode with
 // `newCode` if it changed; return (newCode == 0x12d).
 RVA(0x00112ee0, 0x35e)
-i32 CTileActionEvent::Process(i32 arg) {
+i32 CTileActionEvent::Process(CGrunt* brick) {
     i32 newCode = m_actionCode;
     i32 effect = 0;
     switch (m_actionCode) {
@@ -891,7 +891,7 @@ i32 CTileActionEvent::Process(i32 arg) {
             break;
         case 0x13e:
             effect = 0x13e;
-            if (arg != 0) {
+            if (brick != 0) {
                 break;
             }
             newCode = 0x12d;
@@ -901,7 +901,7 @@ i32 CTileActionEvent::Process(i32 arg) {
             break;
         case 0x140:
             effect = 0x13e;
-            if (arg != 0) {
+            if (brick != 0) {
                 break;
             }
             newCode = 0x12f;
@@ -914,7 +914,7 @@ i32 CTileActionEvent::Process(i32 arg) {
             break;
         case 0x143:
             effect = 0x13e;
-            if (arg != 0) {
+            if (brick != 0) {
                 break;
             }
             newCode = 0x130;
@@ -942,7 +942,6 @@ i32 CTileActionEvent::Process(i32 arg) {
             break;
     }
 
-    CGrunt* brick = reinterpret_cast<CGrunt*>(arg);
     if (effect != 0 && brick != 0) {
         if (effect == 0x132) {
             brick->LoadGruntTypeTable(0, 1, 0, 0);

@@ -131,21 +131,15 @@ i32 g_typeCounter = 2000;
 static inline CString* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return reinterpret_cast<CString*>(
-            (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
-        );
+        return g_typeColl.Elem(key);
     }
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
-        return reinterpret_cast<CString*>(
-            (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
-        );
+        return g_typeColl.Elem(key);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
-    return reinterpret_cast<CString*>(
-        g_typeColl.m_spare
-    ); // m_spare is the i32-typed slow-path slot
+    return g_typeColl.Scratch(); // the slow-path element slot
 }
 
 // CKitchenSlime::RegisterType @0x0b2aa0 - the level-load class registrar. Assign

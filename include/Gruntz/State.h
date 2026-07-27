@@ -217,7 +217,14 @@ public:
     // on the active game-state (g_gameReg->m_curState, a CState* -> its concrete CPlay).
     // (Ex the CNamespaceLoader fake-view facet - RTTI proves CState is a root and CPlay's
     // only base is CState, so that "class" was this method wearing a view owner.)
-    i32 BuildAssetNamespacePrefixes(const CString& name, i32 mode, i32 lightGate, i32 finishGate);
+    // finishGate is the multiplayer join-notify sink the loader acks when the image
+    // namespace lands; every in-tree caller passes 0 (single-player).
+    i32 BuildAssetNamespacePrefixes(
+        const CString& name,
+        i32 mode,
+        i32 lightGate,
+        class CMulti* finishGate
+    );
 
     // --- scalar members, at the offsets CState::CState pins ---
     // +0x04  owner back-ptr == the game-manager singleton (*g_gameReg). PROVEN one

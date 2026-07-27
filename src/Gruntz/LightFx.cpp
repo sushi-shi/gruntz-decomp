@@ -116,7 +116,7 @@ i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 an
         i32 key = en->m_minIndex;
         // m_194/m_layer(+0x198) are CGameObject's role-union fields (source-def /
         // z-clamp descriptor); LightFx overwrites them with the resolved set/frame.
-        m_38->m_194 = static_cast<char*>(found);
+        m_38->m_sprite = en;
         CImage* val;
         if (key < en->m_minIndex || key > en->m_maxIndex) {
             val = 0;
@@ -176,9 +176,8 @@ i32 CLightFx::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4)
             break;
         case 8:
             g_gameReg->m_logicPump
-                // m_194 is the role union above: this class parks the resolved worker
-                // in it, so reading it back as one is the union's own arm, not a cast
-                ->Push(reinterpret_cast<CDDrawWorker*>(m_38->m_194), m_anchorA, 7);
+                // the union's sprite arm - the same slot Setup() parked the worker in
+                ->Push(m_38->m_sprite, m_anchorA, 7);
             break;
     }
     return 1;

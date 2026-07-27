@@ -246,7 +246,7 @@ public:
 
     // 0x75af0: HitTestCell(x, y, outRow, outCol, exact) - sample the tile-attr index, map
     // it to (row,col), bounds-test the cell object, write (row,col). (ret 0x14.)
-    i32 HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact);
+    CGrunt* HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact);
 
     // 0x75c60: FindGruntAt(px, py, span, outCol, outRow, src) - scan the tile cells
     // around a pixel point (bounded by the tile-span rect, or an explicit source rect)

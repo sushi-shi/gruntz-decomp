@@ -980,7 +980,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     RegisterInputBindings();
     if (modeFlag != 0 && (g_gameReg)->m_134 == 1) {
-        BuildWarlordNameTable(reinterpret_cast<i32>(savedThis));
+        BuildWarlordNameTable(static_cast<CMulti*>(savedThis));
     }
     BuildHelpReveal(0);
     RegisterInputBindings();
@@ -1178,7 +1178,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             }
         } else {
             // load the level map + the four map sub-steps
-            if (LoadWarlordSprites(reinterpret_cast<i32>(savedThis), initScratch) /* 0x2b80 */
+            if (LoadWarlordSprites(static_cast<CMulti*>(savedThis), initScratch) /* 0x2b80 */
                 && ScanBuildTiles() /* 0x3553 */ && ValidateLevelTiles()          /* 0x345e */
                 && AddLevelGruntz() /* 0x17ee */) {
                 self->m_world->m_childGroup->TickKillCues(0);
@@ -4977,7 +4977,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 // at fn+0x218/+0x2a4; the table DATA + the 2 dispatch reloc operands never pair. Not
 // source-steerable (docs/patterns/jumptable-data-overlap.md, cf. LoadPowerupIconSprites).
 RVA(0x000dc6d0, 0x215)
-i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
+i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, CMulti* a4) {
     CString name("NORMALGRUNT");
     switch (typeIdx) {
         case GRUNT_TYPE_BOMB:
@@ -5418,7 +5418,7 @@ i32 CState::BuildAssetNamespacePrefixes(
     const CString& name,
     i32 mode,
     i32 lightGate,
-    i32 finishGate
+    CMulti* finishGate
 ) {
     i32 result;
     if (mode != 0) {
@@ -5442,7 +5442,7 @@ i32 CState::BuildAssetNamespacePrefixes(
             m_world->m_imageRegistry->InstallTree(tree, "GRUNTZ_" + name, "_"); // slot 18 (+0x48)
             g_resourceInstallActive = 0;
             if (finishGate != 0) {
-                (reinterpret_cast<CMulti*>(finishGate))->AckJoinFailure(); // 0x35e4, ecx=notify
+                finishGate->AckJoinFailure(); // 0x35e4, ecx=notify
             }
         }
         if (m_world->m_soundRegistry->HasKeyEqual("GRUNTZ_" + name) == 0) {
@@ -5469,7 +5469,7 @@ i32 CState::BuildAssetNamespacePrefixes(
     if (m_world->m_imageRegistry->HasKeyEqual("GRUNTZ_" + name) != 0) {
         m_world->m_imageRegistry->RemoveKeysEqual("GRUNTZ_" + name, "_");
         if (finishGate != 0) {
-            (reinterpret_cast<CMulti*>(finishGate))->AckJoinFailure(); // 0x35e4, ecx=notify
+            finishGate->AckJoinFailure(); // 0x35e4, ecx=notify
         }
     }
     if (m_world->m_soundRegistry->HasKeyEqual("GRUNTZ_" + name) != 0) {
@@ -6184,7 +6184,7 @@ i32 CPlay::AddLevelGruntz() {
 }
 
 RVA(0x000dd050, 0x24b)
-i32 CPlay::BuildGruntNamespaceList(i32 arg) {
+i32 CPlay::BuildGruntNamespaceList(CMulti* arg) {
     CString s;
     s = "NORMALGRUNT";
     if (!BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
@@ -6218,7 +6218,7 @@ i32 CPlay::BuildGruntNamespaceList(i32 arg) {
 }
 
 RVA(0x000dd340, 0x189)
-i32 CPlay::BuildWarlordNameTable(i32 arg) {
+i32 CPlay::BuildWarlordNameTable(CMulti* arg) {
     for (i32 id = GRUNT_TYPE_BOOMERANG; id <= GRUNT_TYPE_YOYO; id++) {
         if (!BuildGruntTypeNameTable(id, 0, 0, 0)) {
             return 0;
@@ -6258,7 +6258,7 @@ i32 CPlay::BuildWarlordNameTable(i32 arg) {
 // cleanup/dtor tail shifts + a few esi/edx/ecx spill recolors. Code shape + every
 // data/marker reloc match.
 RVA(0x000d65d0, 0x7a4)
-i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
+i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
     if (g_gameReg->m_134 != 1) {
         for (i32 id = GRUNT_TYPE_BOOMERANG; id <= GRUNT_TYPE_YOYO; id++) {
             if (loaded[id] == 0) {

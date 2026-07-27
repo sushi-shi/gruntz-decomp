@@ -236,7 +236,7 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
 
 RVA(0x000e32e0, 0x25)
 void CSpriteRef::Free() {
-    CShadeTableCache* cache = reinterpret_cast<CShadeTableCache*>(m_cache);
+    CShadeTableCache* cache = m_cache;
     if (cache && m_alphaKey) {
         cache->FindRemove(m_alphaKey);
         m_cache = 0;

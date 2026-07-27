@@ -29,8 +29,8 @@ public:
     void Push(void* p); // 0x0311b0
 
     // The payload->node back-step every recycle site performs: the element pointer
-    // minus m_linkOffset is its CoordPoolNode. m_linkOffset is a RUNTIME field (the
-    // pool's design), so the arithmetic lives here once, not open-coded per site.
+    // minus m_linkOffset is its CoordPoolNode. byte-forced - m_linkOffset is a RUNTIME
+    // field (the pool's design), so this is one seam, not open-coded per site.
     CoordPoolNode* NodeOf(void* payload) {
         return reinterpret_cast<CoordPoolNode*>(static_cast<char*>(payload) - m_linkOffset);
     }

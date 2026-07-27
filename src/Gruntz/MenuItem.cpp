@@ -5,7 +5,10 @@
 #include <Image/CImage.h>
 #include <DDrawMgr/DDrawWorker.h> // CDDrawWorker - the resolved m_sprite (frame strip Place indexes)
 
+#include <DDrawMgr/DDrawSurfaceMgr.h>   // CDDrawSurfaceMgr - m_owner (the catalog root)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // its +0x10 registry: the m_10map name->item catalog
 #include <Gruntz/MenuItem.h>
+#include <Gruntz/MenuPage.h> // CMenuPage - Init's a0 / m_template (ex CMenuItemTemplate view)
 #include <Gruntz/MenuItem2.h>
 
 #include <stdio.h> // engine sprintf (reloc-masked; CMenuItem2::Init)
@@ -88,14 +91,13 @@ void CMenuItem2::Reset() {
 }
 RVA(0x00185460, 0xa9)
 i32 CMenuItem::Init(CMenuPage* a0, const char* a1, const char* a2, i32 a3, const char* a4, i32 a5) {
-    CMenuItemTemplate* t = reinterpret_cast<CMenuItemTemplate*>(a0);
-    if (!t) {
+    if (!a0) {
         return 0;
     }
     m_flags = a5;
-    m_owner = t->m_0;
-    m_host = t->m_4;
-    m_template = t;
+    m_owner = a0->m_owner;
+    m_host = a0->m_host;
+    m_template = a0;
     m_name = a1;
     m_key = a4;
     m_cmdId = a3;
@@ -113,7 +115,7 @@ i32 CMenuItem::Init(CMenuPage* a0, const char* a1, const char* a2, i32 a3, const
         // Lookup is its own body at 0x1b8438 in a different .obj band.  The two classes
         // are code-identical, which is why every FID row there is AMBIG; the binary
         // names them itself (mfc_class 0x1b8008).
-        m_owner->m_catalog->m_10.Lookup(a2, slot);
+        m_owner->m_imageRegistry->m_10map.Lookup(a2, slot);
         m_sprite = slot;
         if (!slot) {
             return 0;
@@ -276,17 +278,17 @@ i32 CMenuItem2::Init(CMenuPage* a0, const char* a1, const char* a2, i32 a3, cons
 
     sprintf(name, "%s_NORMAL", a2);
     sprite = 0;
-    m_owner->m_catalog->m_10.Lookup(name, sprite);
+    m_owner->m_imageRegistry->m_10map.Lookup(name, sprite);
     m_spriteNormal = static_cast<CDDrawWorker*>(sprite);
 
     sprintf(name, "%s_SELECTED", a2);
     sprite = 0;
-    m_owner->m_catalog->m_10.Lookup(name, sprite);
+    m_owner->m_imageRegistry->m_10map.Lookup(name, sprite);
     m_spriteSelected = static_cast<CDDrawWorker*>(sprite);
 
     sprintf(name, "%s_DISABLED", a2);
     sprite = 0;
-    m_owner->m_catalog->m_10.Lookup(name, sprite);
+    m_owner->m_imageRegistry->m_10map.Lookup(name, sprite);
     m_spriteDisabled = static_cast<CDDrawWorker*>(sprite);
 
     return 1;

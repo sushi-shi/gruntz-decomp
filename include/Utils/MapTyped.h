@@ -50,6 +50,11 @@ inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, void*& out) {
 inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, CObject*& out) {
     return map.Lookup(reinterpret_cast<void*>(id), reinterpret_cast<void*&>(out));
 }
+// Same seam for the game-object maps, whose out-slot is a concrete class pointer.
+template <class T>
+inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, T*& out) {
+    return map.Lookup(reinterpret_cast<void*>(id), reinterpret_cast<void*&>(out));
+}
 
 
 #endif // GRUNTZ_UTILS_MAPTYPED_H

@@ -85,8 +85,9 @@ public:
     // The +0x0c owner context IS the CDDrawSurfaceMgr across the whole draw family
     // (surface pairs/children, workers, resolve nodes, cue leaves - every read site
     // agrees); plane/leaf embedders park OTHER context words in the same slot and
-    // never call this. One value-read of the generic i32 handle, typed once.
-    class CDDrawSurfaceMgr* OwnerMgr() {
+    // never call this - a PROVEN heterogeneous slot, so it stays a generic handle
+    // and this accessor is the one seam where the draw family's type goes back on.
+    class CDDrawSurfaceMgr* OwnerMgr() const {
         return reinterpret_cast<class CDDrawSurfaceMgr*>(m_ownerCtx);
     }
     // Field-reset base-subobject dtor: resets the three header fields; the grand-

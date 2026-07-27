@@ -250,6 +250,7 @@ void CWormhole::FireActivation(i32 idx) {
     // language-forced: the ActReg slot holds a pointer-to-MEMBER (CActHandler); the
     // presence probe reads the same 4 bytes as the raw slot the registrar wrote.
     if (*reinterpret_cast<void**>(ResolveSlot(&CActRegPool<CWormhole>::s_table, idx)) != 0) {
+        // language-forced, same slot as the probe above
         CActHandler fn =
             *reinterpret_cast<CActHandler*>(ResolveSlot(&CActRegPool<CWormhole>::s_table, idx));
         (this->*fn)();
@@ -814,9 +815,7 @@ i32 CTeleporter::Update() {
 
     i32 outA;
     i32 outB;
-    CGrunt* found =
-        reinterpret_cast<CGrunt*>((static_cast<CTriggerMgr*>(mgr->m_cmdGrid))
-                                      ->HitTestCell(o->m_screenX, o->m_screenY, &outB, &outA, 1));
+    CGrunt* found = mgr->m_cmdGrid->HitTestCell(o->m_screenX, o->m_screenY, &outB, &outA, 1);
     if (found == 0) {
         return 0;
     }

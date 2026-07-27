@@ -32,6 +32,8 @@ void CCheckpointDlg::DoDataExchange(CDataExchange* pDX) {
 
 RVA(0x00023570, 0x6)
 const AFX_MSGMAP* CCheckpointDlg::GetMessageMap() const {
+    // API-forced: MFC's message-map global is emitted as a raw datum and
+    // GetMessageMap's return type is fixed by CCmdTarget.
     return reinterpret_cast<const AFX_MSGMAP*>(
         &g_msgmap_CCheckpointDlg
     ); // msgmap global still a placeholder type

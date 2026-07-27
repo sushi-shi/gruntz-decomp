@@ -6,6 +6,7 @@
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/Grunt.h> // CGrunt - FindGruntAt's real return (ex CPathEntity pad view)
 #include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SoundCue.h> // the shared positional-sound cue subsystem
@@ -171,24 +172,24 @@ i32 CPathHazard::Tick() {
     // unconditionally: {left, top, right, bottom} around the bound object's
     // screen position, inset by the layer base (m_198->m_18/m_1c, re-read each
     // component as retail does) and a 7px margin.
-    i32 rect[4];
-    rect[0] = obj->m_screenX - obj->m_layer->m_anchorX + 7;
-    rect[2] = obj->m_layer->m_anchorX + obj->m_screenX - 7;
-    rect[1] = obj->m_screenY - obj->m_layer->m_anchorY + 7;
-    rect[3] = obj->m_layer->m_anchorY + obj->m_screenY - 7;
+    RECT rect;
+    rect.left = obj->m_screenX - obj->m_layer->m_anchorX + 7;
+    rect.right = obj->m_layer->m_anchorX + obj->m_screenX - 7;
+    rect.top = obj->m_screenY - obj->m_layer->m_anchorY + 7;
+    rect.bottom = obj->m_layer->m_anchorY + obj->m_screenY - 7;
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
         i32 outA, outB;
-        CPathEntity* ent = reinterpret_cast<CPathEntity*>(reg->m_cmdGrid->FindGruntAt(
+        CGrunt* ent = reg->m_cmdGrid->FindGruntAt(
             obj->m_screenX,
             obj->m_screenY,
             &obj->m_area,
             &outA,
             &outB,
-            reinterpret_cast<RECT*>(rect)
-        ));
-        if (ent != 0 && ent->m_258 != 0x38) {
+            &rect
+        );
+        if (ent != 0 && ent->m_gruntKind != 0x38) {
             if (g_gameReg->m_134 != 1 || outA != 0) {
                 if (this->HitTest(outA, outB) == 0) { // virtual slot 20 (+0x50)
                     return 0;
@@ -327,26 +328,26 @@ i32 CPathHazard::SiblingTick() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
 
     CWwdGameObjectA* obj = m_object;
-    i32 rect[4];
-    rect[0] = obj->m_screenX - obj->m_layer->m_anchorX + 7;
-    rect[2] = obj->m_layer->m_anchorX + obj->m_screenX - 7;
-    rect[1] = obj->m_screenY - obj->m_layer->m_anchorY + 7;
-    rect[3] = obj->m_layer->m_anchorY + obj->m_screenY - 7;
+    RECT rect;
+    rect.left = obj->m_screenX - obj->m_layer->m_anchorX + 7;
+    rect.right = obj->m_layer->m_anchorX + obj->m_screenX - 7;
+    rect.top = obj->m_screenY - obj->m_layer->m_anchorY + 7;
+    rect.bottom = obj->m_layer->m_anchorY + obj->m_screenY - 7;
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode != 0 && reg->m_134 == 1) {
         // window mode, skip the query
     } else {
         i32 outA, outB;
-        CPathEntity* ent = reinterpret_cast<CPathEntity*>(reg->m_cmdGrid->FindGruntAt(
+        CGrunt* ent = reg->m_cmdGrid->FindGruntAt(
             obj->m_screenX,
             obj->m_screenY,
             &obj->m_area,
             &outA,
             &outB,
-            reinterpret_cast<RECT*>(rect)
-        ));
-        if (ent != 0 && ent->m_258 != 0x38) {
+            &rect
+        );
+        if (ent != 0 && ent->m_gruntKind != 0x38) {
             if (g_gameReg->m_134 != 1 || outA != 0) {
                 if (this->HitTest(outA, outB) == 0) {
                     return 0;
