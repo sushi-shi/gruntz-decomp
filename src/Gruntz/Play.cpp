@@ -1146,7 +1146,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_mgr->SyncOptionsState(); // 0x2e14, ecx=m_4
     }
     self->m_mgr->m_saveSink
-        ->FillSlot2(reinterpret_cast<SaveSlot*>(&self->m_1d0), self->m_levelIndex, 0);
+        ->FillSlot2(&self->m_saveSlot, self->m_levelIndex, 0);
     {
         CString key; // [esp+0x18]
         gameReg = g_gameReg;
@@ -6069,7 +6069,7 @@ void CPlay::ReleaseResources() {
         m_mgr->m_128 = 0;
         m_mgr->m_strWorldFile.Empty(); // 0x1b9c69 CString::Empty (world-file name clear)
     }
-    m_1d0 = 0;
+    m_saveSlot.m_type = 0;
     i32 t = 0;
     do {
         g_gameReg->m_options[t].m_liveGate = 0;

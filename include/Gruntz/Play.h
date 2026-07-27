@@ -5,6 +5,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/GameRegistry.h>
+#include <Io/SaveGame.h> // SaveSlot - CPlay embeds one at +0x1d0
 #include <Gruntz/View.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the real CState::m_c sub-object classes (CDDrawSubMgrPages / CDDrawWorkerRegistry / CDDrawSubMgrLeafScan)
 #include <Gruntz/State.h>
@@ -423,8 +424,11 @@ public:
     i32 m_1c4; // +0x1c4  deferred-draw gate (LoadByMode sets 1; EnterMode consumes; serialized)
     i32 m_1c8; // +0x1c8  (CPlay ctor zero-init)
     i32 m_savedClock; // +0x1cc  saved game clock (PauseGame stashes / ResumeGame + teardown restore to g_frameTime)
-    i32 m_1d0; // +0x1d0  cleared by the ~CPlay teardown body
-    char m_pad1d4[0x2d0 - 0x1d4];
+    // +0x1d0  the state's own save record, 0x100 B - exactly the +0x1d0..+0x2d0 gap.
+    // Proven three ways: CSaveGame::CopySlot and ::FillSlot2 are both handed &m_1d0 as
+    // a SaveSlot*, and ModeObjInit zeroes precisely 0x40 dwords from it. The teardown
+    // "m_1d0 = 0" is the record's leading m_type/m_flags word going invalid.
+    SaveSlot m_saveSlot;
     i32 m_packetsRcvd; // +0x2d0  net packets received (debug HUD "Rcvd = %i")
     i32 m_packetsSent; // +0x2d4  net packets sent (debug HUD "Sent = %i")
     i32 m_rngSeed;     // +0x2d8  (CMulti RNG seed)

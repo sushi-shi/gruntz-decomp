@@ -355,13 +355,7 @@ i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         m_58c = 1;
     }
     NetGameMgr()->m_modalBusy = 0;
-    // rep stos: zero 0x40 dwords from this+0x1d0
-    {
-        i32* p = &m_1d0;
-        for (i32 i = 0; i < 0x40; i++) {
-            p[i] = 0;
-        }
-    }
+    memset(&m_saveSlot, 0, sizeof(m_saveSlot)); // rep stos over the save record
     m_590 = NetGameMgr()->m_isEffectsEnabled;
     NetGameMgr()->m_isEffectsEnabled = 1;
     if (LoadImageBanks() == 0) { // slot 29 (+0x74) virtual dispatch, ex "OnStart"

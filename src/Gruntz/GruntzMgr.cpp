@@ -2099,7 +2099,7 @@ i32 CGruntzMgr::Quicksave() {
     }
     // inlined GetSaveSource() guard: retail tests the ADDRESS of the play state's
     // +0x1d0 member (never 0 for a live state - an inlined &play->m_1d0 quirk).
-    if (&(static_cast<CPlay*>(m_curState))->m_1d0 == 0) {
+    if (&(static_cast<CPlay*>(m_curState))->m_saveSlot == 0) {
         return 0;
     }
     if (m_cueSink) {
@@ -2543,7 +2543,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, void* snapshot) {
     if (dst == 0) {
         return 0;
     }
-    char* src = reinterpret_cast<char*>(PickPlayOrPausedState());
+    CPlay* src = PickPlayOrPausedState();
     if (src == 0) {
         return 0;
     }
@@ -2558,7 +2558,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, void* snapshot) {
     dst->m_f8 = m_130;
     // The +0x58 sink IS CSaveGame; Store == CSaveGame::CopySlot (0xe51d0) copying the
     // source state's SaveSlot block (+0x1d0) into the record. Bind the real callee.
-    m_saveSink->CopySlot(dst, reinterpret_cast<const SaveSlot*>((src + 0x1d0)));
+    m_saveSink->CopySlot(dst, &src->m_saveSlot);
     m_saveInfoRec = dst;
     if (snapshot) {
         strncpy(static_cast<char*>(dst->m_snapshot), static_cast<char*>(snapshot), 0x20);
