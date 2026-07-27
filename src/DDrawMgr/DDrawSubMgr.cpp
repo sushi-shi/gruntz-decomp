@@ -706,7 +706,7 @@ void CDDrawSubMgrLeafScan::RemoveByValue(LeafCue* p) {
     if (p == 0) {
         return;
     }
-    POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
+    POSITION pos = m_10.GetStartPosition();
     CString key;
     void* value = 0;
     while (pos != static_cast<POSITION>(0)) {
@@ -730,7 +730,7 @@ void CDDrawSubMgrLeafScan::RemoveByValue(LeafCue* p) {
 RVA(0x00157bc0, 0xa2)
 i32 CDDrawSubMgrLeafScan::ClearMap() {
     void* val = 0;
-    POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
+    POSITION pos = m_10.GetStartPosition();
     CString key;
     if (*reinterpret_cast<volatile i32*>(&pos) != 0) {
         do {
@@ -947,7 +947,7 @@ LeafCue* CDDrawSubMgrLeafScan::GetFirstValue() {
     if (m_emitGate != 0) {
         return 0;
     }
-    POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
+    POSITION pos = m_10.GetStartPosition();
     if (pos == 0) {
         return 0;
     }
@@ -965,7 +965,7 @@ LeafCue* CDDrawSubMgrLeafScan::NextValueAfter(LeafCue* target) {
     if (m_emitGate != 0) {
         return 0;
     }
-    POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
+    POSITION pos = m_10.GetStartPosition();
     if (pos == 0) {
         return 0;
     }

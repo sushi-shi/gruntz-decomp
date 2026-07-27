@@ -59,7 +59,7 @@ void CGruntzSoundZ::StopAndFlush() {
     if (m_pCurrent != 0) {
         m_pCurrent->Stop();
     }
-    POSITION pos = reinterpret_cast<POSITION>((m_map.GetCount() != 0 ? -1 : 0));
+    POSITION pos = m_map.GetStartPosition();
     if (pos != static_cast<POSITION>(0)) {
         do {
             CString key;

@@ -275,7 +275,7 @@ void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
 RVA(0x001552b0, 0xa2)
 void CDDrawWorkerRegistry::MapTeardown() {
     CObject* val = 0;
-    POSITION pos = reinterpret_cast<POSITION>((m_10map.GetCount() != 0 ? -1 : 0));
+    POSITION pos = m_10map.GetStartPosition();
     CString key;
     if (*reinterpret_cast<volatile i32*>(&pos) != 0) {
         do {

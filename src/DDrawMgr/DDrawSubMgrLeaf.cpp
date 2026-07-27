@@ -89,7 +89,7 @@ void CDDrawSubMgrLeaf::RemoveValue(CAniElement* target) {
 RVA(0x00152720, 0xa2)
 i32 CDDrawSubMgrLeaf::FreeAll() {
     void* val = 0;
-    POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
+    POSITION pos = m_10.GetStartPosition();
     CString key;
     if (*reinterpret_cast<volatile i32*>(&pos) != 0) {
         do {

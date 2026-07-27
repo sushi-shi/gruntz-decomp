@@ -72,7 +72,7 @@ BOOL CCheatMgr::Init(i32 owner) {
 
 RVA(0x00022b00, 0xaf)
 void CCheatMgr::Empty() {
-    POSITION pos = reinterpret_cast<POSITION>((m_map.GetCount() != 0 ? -1 : 0));
+    POSITION pos = m_map.GetStartPosition();
     CString key;
     if (pos != static_cast<POSITION>(0)) {
         do {

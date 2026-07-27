@@ -1147,7 +1147,7 @@ void CDDrawChildGroup::AddToMap48(CWwdGameObject* obj) {
 RVA(0x0015abc0, 0x5e)
 i32 CDDrawChildGroup::CountActive() {
     i32 n = 0;
-    POSITION pos = reinterpret_cast<POSITION>((m_map48.GetCount() != 0 ? -1 : 0));
+    POSITION pos = m_map48.GetStartPosition();
     if (pos != 0) {
         do {
             void* key = 0;
@@ -1166,7 +1166,7 @@ i32 CDDrawChildGroup::ForEachDispatch(CFileMemBase* a1, i32 a2, i32 a3) {
     if (a1 == 0) {
         return 0;
     }
-    POSITION pos = reinterpret_cast<POSITION>((m_map48.GetCount() != 0 ? -1 : 0));
+    POSITION pos = m_map48.GetStartPosition();
     if (pos != 0) {
         do {
             void* key = 0;
@@ -1185,7 +1185,7 @@ i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* a1, i32 a2) {
     if (a1 == 0) {
         return 0;
     }
-    POSITION pos = reinterpret_cast<POSITION>((m_map48.GetCount() != 0 ? -1 : 0));
+    POSITION pos = m_map48.GetStartPosition();
     if (pos != 0) {
         do {
             void* key = 0;
@@ -1335,7 +1335,7 @@ i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, i32 a2) {
     if (ar == 0) {
         return 0;
     }
-    POSITION pos = reinterpret_cast<POSITION>((m_map48.GetCount() != 0 ? -1 : 0));
+    POSITION pos = m_map48.GetStartPosition();
     while (pos != 0) {
         void* key = 0;
         CWwdGameObject* val = 0;
@@ -1399,7 +1399,7 @@ i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, i32 flag) {
 RVA(0x0015b1d0, 0x9b)
 i32 CDDrawChildGroup::PruneOrphans() {
     i32 n = 0;
-    POSITION pos = reinterpret_cast<POSITION>((m_map48.GetCount() != 0 ? -1 : 0));
+    POSITION pos = m_map48.GetStartPosition();
     while (pos != 0) {
         void* key = 0;
         CWwdGameObject* val = 0;

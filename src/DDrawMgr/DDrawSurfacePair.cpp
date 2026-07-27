@@ -763,7 +763,7 @@ i32 CResolveNode::Init(
 RVA(0x00165210, 0xa2)
 void CDDrawWorkerCache::Unload() {
     CObject* val = 0;
-    POSITION pos = reinterpret_cast<POSITION>((m_10.GetCount() != 0 ? -1 : 0));
+    POSITION pos = m_10.GetStartPosition();
     CString key;
     if (*reinterpret_cast<volatile i32*>(&pos) != 0) {
         do {
@@ -957,7 +957,7 @@ void CAniElement::DeleteAll() {
 RVA(0x00165810, 0xa9)
 void CDDrawWorkerMapSmall::Unload() {
     CObject* val = 0;
-    POSITION pos = reinterpret_cast<POSITION>((m_map1.GetCount() != 0 ? -1 : 0));
+    POSITION pos = m_map1.GetStartPosition();
     CString key;
     if (*reinterpret_cast<volatile i32*>(&pos) != 0) {
         do {
@@ -1074,7 +1074,7 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CParseSource* a1, i32 a2, i32 a3) {
 RVA(0x00165b90, 0xa9)
 void CDDrawWorkerMapSmall::ResetSlots() {
     CObject* val = 0;
-    POSITION pos = reinterpret_cast<POSITION>((m_map1.GetCount() != 0 ? -1 : 0));
+    POSITION pos = m_map1.GetStartPosition();
     CString key;
     if (*reinterpret_cast<volatile i32*>(&pos) != 0) {
         do {
@@ -1094,7 +1094,7 @@ i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
         m_cachedWorker = 0;
     }
     CObject* val = 0;
-    POSITION pos = reinterpret_cast<POSITION>((m_map1.GetCount() != 0 ? -1 : 0));
+    POSITION pos = m_map1.GetStartPosition();
     CString key;
     while (*reinterpret_cast<volatile i32*>(&pos) != 0) {
         m_map1.GetNextAssoc(pos, key, val);
