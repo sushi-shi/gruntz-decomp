@@ -869,7 +869,7 @@ i32 CMulti::PumpA() {
         win->PurgeVoiceList(now);  // 0x136e20 (SoundDevice base)
         win->TickSubManagers(now); // 0x137ac0
     }
-    m_beginMarker->FilterList2(reinterpret_cast<void*>(g_frameDelta));
+    m_beginMarker->FilterList2(g_frameDelta);
     (static_cast<CMapMgr*>(Mgr()->m_tileGrid))
         ->UpdateDiagonals(
             Mgr()

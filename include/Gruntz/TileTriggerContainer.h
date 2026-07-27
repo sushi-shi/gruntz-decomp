@@ -52,7 +52,7 @@ public:
     // Scan m_list1 then m_list2 for the logic element with m_10 == a and
     // (b == 0 || m_typeTag == b).
     CTileTriggerLogic* FindInLists12(i32 a, i32 b); // 0x116f20
-    i32 FilterList2(void* arg);                     // 0x1170b0
+    i32 FilterList2(i32 arg);                       // 0x1170b0
     i32 MoveList1ToList2(void* data);               // 0x117150
     i32 DelFromList3(void* data);                   // 0x117200
 

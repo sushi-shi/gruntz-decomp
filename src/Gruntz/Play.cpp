@@ -280,7 +280,7 @@ i32 CPlay::Render() {
             m_world->m_soundStream->PurgeVoiceList(t);  // 0x136e20 (thiscall, SoundDevice base)
             m_world->m_soundStream->TickSubManagers(t); // 0x137ac0 (thiscall)
         }
-        m_beginMarker->FilterList2(reinterpret_cast<void*>(g_frameDelta)); // 0x2cc0  begin-marker
+        m_beginMarker->FilterList2(g_frameDelta); // 0x2cc0  begin-marker
         m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));  // 0x34bd  guts step
 
         // --- periodic AMBIENT-cue timer (+0x3f8, 0x1f4 ms; toggles m_cueToggle) ---
@@ -414,7 +414,7 @@ i32 CPlay::Render() {
                 m_world->m_drawTarget->m_overlayPair
             );
         }
-        m_beginMarker->FilterList2(reinterpret_cast<void*>(g_frameDelta));
+        m_beginMarker->FilterList2(g_frameDelta);
         m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
         w->m_tileGrid->UpdateDiagonals(w);
 
@@ -512,7 +512,7 @@ i32 CPlay::Render() {
             }
         }
 
-        m_beginMarker->FilterList2(reinterpret_cast<void*>(g_frameDelta));
+        m_beginMarker->FilterList2(g_frameDelta);
         winapi_0d0b30_CopyRect(0);
         if (m_worldReady != 0) { // optional HUD overlay draw
             Eng_HudDraw(
@@ -630,7 +630,7 @@ alt2:
                 }
             }
         }
-        m_beginMarker->FilterList2(reinterpret_cast<void*>(g_frameDelta));
+        m_beginMarker->FilterList2(g_frameDelta);
         winapi_0d0b30_CopyRect(0);
         m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
     }

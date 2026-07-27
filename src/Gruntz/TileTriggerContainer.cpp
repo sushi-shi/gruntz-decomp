@@ -578,12 +578,12 @@ void CTileTriggerContainer::RemoveAll() {
 // identical; same node-eax-rotation vs callee-saved-esi shape as the siblings.
 // See docs/patterns/linked-list-walk-node-eax-rotation.md
 RVA(0x001170b0, 0x72)
-i32 CTileTriggerContainer::FilterList2(void* arg) {
+i32 CTileTriggerContainer::FilterList2(i32 arg) {
     POSITION pos = m_list2.GetHeadPosition();
     while (pos != 0) {
         POSITION cur = pos;
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_list2.GetNext(pos));
-        i32 r = elem->Classify(reinterpret_cast<i32>(arg));
+        i32 r = elem->Classify(arg);
         if (r == 0) {
             m_list2.RemoveAt(cur);
             delete elem; // vptr 0x5eaea4 restamp + m_initGate = 0, then ??3
