@@ -415,6 +415,10 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
 // is the canonical one in <Bute/ButeTree.h>; Set (0x16d850) is defined here.
 
 RVA(0x0016d850, 0x11e)
+// `key` and `arg2` really are POINTERS at every call site (the reporting object,
+// a name/cache buffer) - the error registry keys entries by the reporter's ADDRESS
+// and binary-searches g_recs23 on it, so the pointer->i32 conversions below are the
+// language-forced half of a pointer-as-key table, not a mis-typed parameter.
 void CVariantSlot::Set(void* key, void* arg2, i32 arg3) {
     if (m_typeTag == 4) {
         m_valueWord = static_cast<u16>(arg3);
