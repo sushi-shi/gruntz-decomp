@@ -3861,14 +3861,15 @@ i32 CMulti::LoadConfig(void* cfg) {
         return 0;
     }
 
-    char* c = static_cast<char*>(cfg);
-    m_5b0 = *reinterpret_cast<i32*>((c + 8));
-    m_5b4 = static_cast<const char*>((c + 0xc));
-    m_5b8 = static_cast<const char*>((c + 0x8c));
-    m_5a4 = *reinterpret_cast<i32*>((c + 0x10c));
-    m_drainReload = *reinterpret_cast<i32*>((c + 0x110));
-    m_600 = *reinterpret_cast<i32*>((c + 0x114));
-    m_rngSeed = *reinterpret_cast<i32*>((c + 0x118));
+    // the same CNetConfigBlob SaveConfig ships
+    CNetConfigBlob* c = static_cast<CNetConfigBlob*>(cfg);
+    m_5b0 = c->m_8;
+    m_5b4 = c->m_nameA;
+    m_5b8 = c->m_nameB;
+    m_5a4 = c->m_10c;
+    m_drainReload = c->m_110;
+    m_600 = c->m_114;
+    m_rngSeed = c->m_118;
     return 1;
 }
 
