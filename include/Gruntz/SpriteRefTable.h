@@ -8,17 +8,14 @@
 class CSpriteRef {
 public:
     i32 Build(CShadeTableCache* cache, void* shade, i32 kind); // 0xe2df0, ret 0xc
-    void Free();                                 // 0xe32e0
-    CShadeTableCache* m_cache;                   // +0x00
+    void Free();                                               // 0xe32e0
+    CShadeTableCache* m_cache;                                 // +0x00
     CShadeTable* m_alphaKey; // +0x04  the alpha/shade table (returned by GetSel)
-    u16 m_teamColor1; // +0x08  192/255 shade
-    u16 m_teamColor3; // +0x0a  128/255 shade
-    u16 m_teamColor2; // +0x0c  full intensity
-    u16 m_pad0e;      // +0x0e  pad to 0x10
+    u16 m_teamColor1;        // +0x08  192/255 shade
+    u16 m_teamColor3;        // +0x0a  128/255 shade
+    u16 m_teamColor2;        // +0x0c  full intensity
+    u16 m_pad0e;             // +0x0e  pad to 0x10
 };
-SIZE_UNKNOWN();
-
-class CSpriteRefHashTable {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at the call
 SIZE_UNKNOWN();
 
 // Reduced reader views of the map value Add() resolves (`out`), only the two fields
@@ -79,7 +76,7 @@ public:
     // Build the 17-color tool/toy sprite-ref table: register the palettes
     // (LoadToolToyPalettes) then Add() each color's TOOL/TOY sprite into bucket A/B
     // at the color's kind slot; latches m_built when complete. 0xe2400.
-    i32 BuildToolToyColorTable(CSymParser * src);
+    i32 BuildToolToyColorTable(CSymParser* src);
 
     CShadeTableCache* m_factory;         // +0x00  Init arg0 (the alpha/shade-table factory)
     CDDrawSurfaceMgr* m_spriteMgrHolder; // +0x04  Init arg1 (holder->m_workerMap = the sprite mgr)

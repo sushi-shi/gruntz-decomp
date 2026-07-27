@@ -1,5 +1,5 @@
 #include <EmptyString.h>          // g_emptyString (ex .cpp extern)
-#include <Gruntz/String.h>        // MFC CString (Vslot09's CMapStringToOb/CObject); MFC-first
+#include <Gruntz/String.h>        // MFC CString (Vslot09's key buffer); MFC-first
 #include <Rez/FrameClock.h>       // frame-clock band (g_frameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -86,7 +86,7 @@ void CAttract::ReleaseResources() {
 // TITLE%d and run it (as the siblings do), advance the active menu page (BlitPage),
 // then - via the inline MS-CRT LCG (== Rng::Next, seeded through the cached timeGetTime
 // fn-ptr) - build a random "ATTRACT_TITLE%s" key, look it up in the registrar's
-// CMapStringToOb (m_28+0x10) to (re)acquire the host/sound sub-object (m_host), (re)play
+// CMapStringToPtr (m_28+0x10) to (re)acquire the host/sound sub-object (m_host), (re)play
 // its voice + latch the idle timeout (or a 0x1f40 default), then poke each g_actorList
 // actor's slot-5 virtual. Returns 1. Re-homed from src/Stub/GapFunctions.cpp.
 // @early-stop
@@ -127,13 +127,11 @@ i32 CAttract::Vslot09(i32 arg) {
     char buf[0x40];
     ::wsprintfA(buf, "ATTRACT_TITLE%s", pick);
 
-    // the PROVEN dual-band keep: CMapStringToOb and CMapStringToPtr are byte-identical
-    // classes and retail links BOTH bands on this one map (mfc_class-arbitrated).
-    CMapStringToOb* map = reinterpret_cast<CMapStringToOb*>(
-        &menuRoot()->m_soundRegistry->m_10
-    ); // the Ob-band read of the Ptr map (documented dual-band keep)
-    CObject* found = 0;
-    map->Lookup(buf, found);
+    // m_10 IS a CMapStringToPtr and retail calls the Ptr band (`call 0x1b8438`); the
+    // ex "dual-band keep" reinterpret_cast to CMapStringToOb bound the Ob-band Lookup
+    // COMDAT at 0x1b8008 instead - mfc_class --audit flagged it WRONG-CLASS.
+    void* found = 0;
+    menuRoot()->m_soundRegistry->m_10.Lookup(buf, found);
     m_host = static_cast<LeafCue*>(found);
     if (found != 0 && m_activeFlag != 0) {
         if (g_sndEnabled) {
