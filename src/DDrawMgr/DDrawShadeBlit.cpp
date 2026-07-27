@@ -16,6 +16,9 @@ u8 g_scratch[1280]; // 0x6bed08 (0x500 B, up to g_shadeDescr208@0x6bf208; a 640-
 // The surface cursor is a BYTE pointer (pitch and the row deltas are in bytes)
 // while the pixels are 16bpp - that pun is forced by the API, so it lives in
 // these two accessors instead of at every store/load in the blit loops.
+static inline u16* Pix16(void* p) {
+    return reinterpret_cast<u16*>(p);
+}
 static inline void Store16(u8* p, u16 v) {
     *reinterpret_cast<u16*>(p) = v;
 }
@@ -24,7 +27,7 @@ static inline u16 Load16(const u8* p) {
 }
 
 static inline u16* Scratch16() {
-    return reinterpret_cast<u16*>(g_scratch);
+    return Pix16(g_scratch);
 }
 
 DATA(0x002bf218)
@@ -85,11 +88,11 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* p0, CDDSurface* src, ShadeRect* clip, i32 s
     if (drawType == 8 || drawType == 0xb) {
         i32 bank = (m_light >> 3) * 0x800;
         m_lutBank0 =
-            reinterpret_cast<u16*>(g_clut + 0x20002 + bank); // g_clut interior plane R (0x673ca0)
+            Pix16(g_clut + 0x20002 + bank); // g_clut interior plane R (0x673ca0)
         m_lutBank1 =
-            reinterpret_cast<u16*>(g_clut + 0x2 + bank); // g_clut interior plane G (0x653ca0)
+            Pix16(g_clut + 0x2 + bank); // g_clut interior plane G (0x653ca0)
         m_lutBank2 =
-            reinterpret_cast<u16*>(g_clut + 0x10002 + bank); // g_clut interior plane B (0x663ca0)
+            Pix16(g_clut + 0x10002 + bank); // g_clut interior plane B (0x663ca0)
     }
 
     if (sel) {
@@ -333,8 +336,8 @@ void CDDrawShadeBlit::BlitMode_149d00(
                         *d-- = *sd++;
                     }
                 } else {
-                    u16* d = reinterpret_cast<u16*>(dbase);
-                    u16* sw = reinterpret_cast<u16*>(sd);
+                    u16* d = Pix16(dbase);
+                    u16* sw = Pix16(sd);
                     for (i32 k = bytes / 2; k > 0; k--) {
                         *d-- = *sw++;
                     }
@@ -377,8 +380,8 @@ void CDDrawShadeBlit::BlitMode_149d00(
                             *d-- = *s++;
                         }
                     } else {
-                        u16* d = reinterpret_cast<u16*>((base + clip->right * m_dstBpp));
-                        u16* sw = reinterpret_cast<u16*>(s);
+                        u16* d = Pix16(base + clip->right * m_dstBpp);
+                        u16* sw = Pix16(s);
                         for (i32 k = bytes / 2; k > 0; k--) {
                             *d-- = *sw++;
                         }
@@ -403,8 +406,8 @@ void CDDrawShadeBlit::BlitMode_149d00(
                             *d-- = *s++;
                         }
                     } else {
-                        u16* d = reinterpret_cast<u16*>((base + x * m_dstBpp));
-                        u16* sw = reinterpret_cast<u16*>(s);
+                        u16* d = Pix16(base + x * m_dstBpp);
+                        u16* sw = Pix16(s);
                         for (i32 k = cnt; k > 0; k--) {
                             *d-- = *sw++;
                         }
@@ -433,8 +436,8 @@ void CDDrawShadeBlit::BlitMode_149d00(
                         *d-- = *s++;
                     }
                 } else {
-                    u16* d = reinterpret_cast<u16*>((base + x * m_dstBpp));
-                    u16* sw = reinterpret_cast<u16*>(s);
+                    u16* d = Pix16(base + x * m_dstBpp);
+                    u16* sw = Pix16(s);
                     for (i32 k = cnt; k > 0; k--) {
                         *d-- = *sw++;
                     }
@@ -677,7 +680,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                             case 8: {
                                 memcpy(g_scratch, d, count * 2);
                                 u16* sc = Scratch16();
-                                u16* ss2 = reinterpret_cast<u16*>(s);
+                                u16* ss2 = Pix16(s);
                                 i32 rd = pitch & ~1;
                                 if (m_blendVariant) {
                                     for (i = count; i > 0; i--) {
@@ -747,7 +750,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                             memcpy(g_scratch, d, count * 2);
                             if (m_blendVariant) {
                                 u16* sd = Scratch16();
-                                u16* ss2 = reinterpret_cast<u16*>(s);
+                                u16* ss2 = Pix16(s);
                                 for (i = count; i > 0; i--) {
                                     u32 a = *ss2++;
                                     u32 bb = *sd++;
@@ -760,7 +763,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                                 }
                             } else {
                                 u16* sd = Scratch16();
-                                u16* ss2 = reinterpret_cast<u16*>(s);
+                                u16* ss2 = Pix16(s);
                                 for (i = count; i > 0; i--) {
                                     u32 a = *sd++;
                                     u32 bb = *ss2++;
@@ -1071,7 +1074,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                             case 8: {
                                 memcpy(g_scratch, d - count * 2 - 2, count * 2);
                                 u16* sc = (Scratch16() + count - 1);
-                                u16* ss2 = reinterpret_cast<u16*>(s);
+                                u16* ss2 = Pix16(s);
                                 i32 rd = pitch & ~1;
                                 if (m_blendVariant) {
                                     for (i = count; i > 0; i--) {
@@ -1142,7 +1145,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                         case 8: {
                             memcpy(g_scratch, d - count * 2 - 2, count * 2);
                             u16* sc = (Scratch16() + count - 1);
-                            u16* ss2 = reinterpret_cast<u16*>(s);
+                            u16* ss2 = Pix16(s);
                             if (m_blendVariant) {
                                 for (i = count; i > 0; i--) {
                                     u32 a = *ss2++;
@@ -1298,7 +1301,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             memcpy(g_scratch, dst, count * 2);
             if (m_blendVariant) {
                 u16* sd = Scratch16();
-                u16* ss = reinterpret_cast<u16*>(src);
+                u16* ss = Pix16(src);
                 for (i = count; i > 0; i--) {
                     u32 a = *ss++;
                     u32 b = *sd++;
@@ -1310,7 +1313,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
                 }
             } else {
                 u16* sd = Scratch16();
-                u16* ss = reinterpret_cast<u16*>(src);
+                u16* ss = Pix16(src);
                 for (i = count; i > 0; i--) {
                     u32 a = *sd++;
                     u32 b = *ss++;
@@ -1443,7 +1446,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
         case 8: {
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
             u16* sc = (Scratch16() + count - 1);
-            u16* ss = reinterpret_cast<u16*>(src);
+            u16* ss = Pix16(src);
             if (m_blendVariant) {
                 for (i = count; i > 0; i--) {
                     u32 a = *ss++;
@@ -1592,7 +1595,7 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
         case 8: {
             memcpy(g_scratch, dst, count * 2);
             u16* sc = Scratch16();
-            u16* ss = reinterpret_cast<u16*>(src);
+            u16* ss = Pix16(src);
             i32 rd = rowDelta & ~1;
             if (m_blendVariant) {
                 for (i = count; i > 0; i--) {
@@ -1684,7 +1687,7 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
         case 8: {
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
             u16* sc = (Scratch16() + count - 1);
-            u16* ss = reinterpret_cast<u16*>(src);
+            u16* ss = Pix16(src);
             i32 rd = rowDelta & ~1;
             if (m_blendVariant) {
                 for (i = count; i > 0; i--) {
