@@ -52,7 +52,7 @@ public:
     // the stream; mode 7 = read it back, rebuilding the queue.
     i32 Serialize(CFileMemBase* stream, i32 mode, i32 a3, i32 a4);
     // 0x024a90 - predicate: is the registry's multiplayer slot active?
-    i32 IsActive(i32 enable);
+    i32 IsActive(CFileMemBase * enable);
     // 0x023d90 - snap the cursor rect to the 0x20 tile grid and dispatch the
     // command-target tile-marker blit (thunk 0x2095). Body in GruntzCmdMgr.cpp
     // (ex `CObj23d90::Blit`, a placeholder view of THIS class: its receiver is

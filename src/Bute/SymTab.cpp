@@ -680,7 +680,7 @@ i32 CSymTab::AddNodeSubEntry(void* rec, void* found) {
 // constant in ebp; the recompile swaps them (a2->ebp, 0->ebx), which cascades through
 // every null check + the recursion fourcc setup. Banked for the final sweep.
 RVA(0x0013a580, 0xb2)
-i32 CSymTab::ApplyRecursive(i32 a0, i32 a1, i32 a2, i32 a3) {
+i32 CSymTab::ApplyRecursive(CRezItmBase * a0, i32 a1, i32 a2, i32 a3) {
     i32 ok = 1;
     if (a2 != 0) {
         CHashElement* e = m_subTabs.First();
@@ -714,7 +714,7 @@ i32 CSymTab::ApplyRecursive(i32 a0, i32 a1, i32 a2, i32 a3) {
 // The 0x139710 builder's callee-cleanup (ret 0x2c) is inferred from the absence of an
 // `add esp,0x2c` after the call; the fourcc order is the reversed push sequence at 0x13a893.
 RVA(0x0013a640, 0x2f7)
-i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
+i32 CSymTab::ApplyRange(CRezItmBase* a0, i32 a1, i32 a2, i32 a3) {
     m_10 = 0;
     m_baseOffset = -1;
     i32 maxVal = 0;
@@ -1117,7 +1117,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         m_symbolBucketCount
     );
     m_root = node;
-    node->ApplyRecursive(reinterpret_cast<i32>(reader), m_30, m_34, 0);
+    node->ApplyRecursive(reader, m_30, m_34, 0);
     return 1;
 }
 
@@ -1183,31 +1183,26 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
         return 0;
     }
 
-    char hdr[0xa8];
-    node->Read(0, 0, 0xa8, hdr);
+    SymTabFileHeader hdr;
+    node->Read(0, 0, 0xa8, &hdr);
     u32 v;
-    v = *reinterpret_cast<u32*>((hdr + 0x97));
+    v = static_cast<u32>(hdr.m_54);
     if (v > static_cast<u32>(m_54)) {
         m_54 = v;
     }
-    v = *reinterpret_cast<u32*>((hdr + 0x9b));
+    v = static_cast<u32>(hdr.m_longestScopeNameLen);
     if (v > static_cast<u32>(m_longestScopeNameLen)) {
         m_longestScopeNameLen = v;
     }
-    v = *reinterpret_cast<u32*>((hdr + 0x9f));
+    v = static_cast<u32>(hdr.m_longestLeafNameLen);
     if (v > static_cast<u32>(m_longestLeafNameLen)) {
         m_longestLeafNameLen = v;
     }
-    v = *reinterpret_cast<u32*>((hdr + 0xa3));
+    v = static_cast<u32>(hdr.m_60);
     if (v > static_cast<u32>(m_60)) {
         m_60 = v;
     }
-    m_root->ApplyRecursive(
-        reinterpret_cast<i32>(node),
-        *reinterpret_cast<i32*>((hdr + 0x83)),
-        *reinterpret_cast<i32*>((hdr + 0x87)),
-        flag
-    );
+    m_root->ApplyRecursive(node, hdr.m_scopeCount, hdr.m_leafCount, flag);
     return 1;
 }
 
@@ -1529,7 +1524,7 @@ void* CSymTab::FindQualified(const char* name) {
 // (retail keeps `this` in esi; cl uses edx + extra stack reloads) + the tokenizer
 // induction variable. The write peer (Insert tail) of FindQualified. Logic byte-faithful.
 RVA(0x0013be40, 0x1ac)
-CParseSource* CSymTab::ResolveQualified(const char* name, u32 fourcc) {
+CParseSource* CSymTab::ResolveQualified(const char* name, i32 fourcc) {
     char qual[0x100];
     char key[0x24];
     const char* p = name;

@@ -301,7 +301,7 @@ void DirectInputMgr2::FreeDeviceList() {
 }
 
 RVA(0x001331e0, 0x7c)
-void* DirectInputMgr2::AddController(i32 count, i32 a2, i32 a3) {
+void* DirectInputMgr2::AddController(i32 * count, i32 a2, i32 a3) {
     if (count == 0) {
         return 0;
     }
@@ -328,7 +328,7 @@ void* DirectInputMgr2::AddControllerArr(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, 
     buf[3] = a4;
     buf[4] = a5;
     buf[5] = a6;
-    return AddController(reinterpret_cast<i32>(buf), 6, a7);
+    return AddController(buf, 6, a7);
 }
 
 RVA(0x001332c0, 0x1e)

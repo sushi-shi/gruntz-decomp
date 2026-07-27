@@ -133,7 +133,7 @@ i32 CMapMgr::SearchEdge(
 // in ebx by pushing ebx first; MSVC5 here picks ebp) and the 4 stack-slot diagonal
 // neighbour layout; neither is source-steerable. Parked for the final sweep.
 RVA(0x00082030, 0x1a1)
-i32 CMapMgr::UpdateDiagonals(i32 unused) {
+i32 CMapMgr::UpdateDiagonals(CGruntzMgr * unused) {
     BrickzCell* cell = m_cellPool;
     if (m_dirty == 0) {
         return 1;

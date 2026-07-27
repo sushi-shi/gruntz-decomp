@@ -6,6 +6,7 @@
 #include <DDrawMgr/ShadeTableCache.h> // CShadeTable - the +0x4c fill table
 #include <rva.h>
 
+class CImageParent; // fwd
 class CResolveNode : public CLoadable {
 public:
     // Re-based onto the canonical 9-slot CLoadable: the m_04/m_08/m_0c header +
@@ -32,7 +33,7 @@ public:
         NO_SEED
     };
     CResolveNode(ENoSeed) {}
-    i32 Init(i32 owner, i32 field04, i32 resolveX, i32 resolveY, i32 field40, i32 field08);
+    i32 Init(CImageParent * owner, i32 field04, i32 resolveX, i32 resolveY, i32 field40, i32 field08);
     // ^ 0x1647e0 (T obj)
 
     // Dtor: disarm the live dirty-rect sentinels, then ~CLoadable (m_04/-1,

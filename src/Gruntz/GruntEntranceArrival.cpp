@@ -1659,7 +1659,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         }
     }
 
-    (reinterpret_cast<CEffect6b*>((&m_34)))->Apply(reinterpret_cast<i32>(found), 0);
+    (reinterpret_cast<CEffect6b*>((&m_34)))->Apply(found, 0);
     CAniDesc* elem = static_cast<CAniDesc*>(m_38->m_1a0.m_14->AtChecked(0));
     i32 frame = elem->m_param;
     m_38->ApplyLookupSprite(s_GRUNTZ_EXITZ, frame);
@@ -2291,7 +2291,7 @@ i32 CGrunt::StepEntranceRelatchB() {
 // stores m_prevDesc first. Not source-steerable (every operand/declaration reorder
 // reproduced the same coloring).
 RVA(0x0006b2e0, 0x39)
-void CEffect6b::Apply(i32 a, i32 b) {
+void CEffect6b::Apply(CDDrawWorker * a, i32 b) {
     CAniAdvanceCursor* anim = &m_player->m_1a0;
     m_prevDesc = m_player->m_1a0.m_14;
     anim->Setup(reinterpret_cast<CAniElement*>(a));

@@ -591,7 +591,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
 RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
     static CResolveNode clip; // magic-static guard @0x6bf314, ctor 0x1549d0 + atexit
-    if (clip.Init(reinterpret_cast<i32>(m_parent), 0, x, y, flags, 0)) {
+    if (clip.Init(m_parent, 0, x, y, flags, 0)) {
         this->RenderImage(&clip, target);
     }
 }
@@ -631,7 +631,7 @@ void CImage::RenderFrameClipped(
     CDDrawSurfacePair* target, i32 x, i32 y, RECT* clipRect, i32 flags
 ) {
     static CResolveNode clip; // magic-static guard @0x6bf29c, ctor 0x1549d0 + atexit
-    if (clip.Init(reinterpret_cast<i32>(m_parent), 0, x, y, flags, 0)) {
+    if (clip.Init(m_parent, 0, x, y, flags, 0)) {
         if (clipRect != 0) {
             g_imageClipRect[0] = clipRect->left;
             g_imageClipRect[1] = clipRect->top;

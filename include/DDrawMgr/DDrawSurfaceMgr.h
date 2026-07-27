@@ -59,7 +59,7 @@ public:
 
     // The recursive child serializer / deserializer (owner-TU DDrawSurfaceMgrSerialize
     // holds the bodies; GameSave drives SnapshotChildren). Non-virtual __thiscall /GX.
-    i32 SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32 arg3); // 0x156020
+    i32 SnapshotChildren(HP_Callback cb, char * arg1, char* name, i32 arg3); // 0x156020
     i32 RestoreChildren(HP_Callback cb, char* name, i32 arg3);            // 0x156530
 
     // +0x04  the page/child factory (front/back/overlay surfaces) - the game-side

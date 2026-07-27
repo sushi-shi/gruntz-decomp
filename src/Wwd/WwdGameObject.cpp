@@ -438,7 +438,7 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
 // 0x80000000 stores into the zero-fill run; retail loads them just-in-time.
 // Logic complete; the unrolled init-block store order is not steerable.
 RVA(0x00150d60, 0x14d)
-i32 CGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
+i32 CGameObject::Setup(i32 a1, i32 a2, i32 a3, CObject* a4) {
     CResolveNode::SetPosition(a1, a2); // qualified = retail direct rel32 -> 0x164790
     m_screenX = a1;
     m_screenY = a2;

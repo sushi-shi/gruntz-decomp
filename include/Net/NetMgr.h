@@ -150,7 +150,7 @@ struct CNetCmdSlot {
     CString
     BuildHostName(); // bc3f0  the slot's host name (by-value NRVO, fwds m_desc->GetName) [multi]
     i32 Init(
-        i32 a1,
+        CMulti * a1,
         SlotInfo* a2,
         i32 a3
     ); // c0b10  seed a fresh slot, then ClearCmds + reset both ranges

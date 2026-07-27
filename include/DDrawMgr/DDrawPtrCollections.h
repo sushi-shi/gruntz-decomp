@@ -7,6 +7,7 @@
 
 #include <DDrawMgr/DDSurface.h> // CDDSurface (the pool-A item base; CPoolItem* derive it)
 
+class CImageFrameDesc; // fwd
 struct CDDPalette;
 struct IDirectDraw;  // <ddraw.h> in the dispatching TU
 struct IDirectDraw2; // <ddraw.h> in the dispatching TU

@@ -226,7 +226,7 @@ public:
     );                                                                     // 0x141280
     i32 LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode); // 0x143e60
     i32 LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode);  // 0x144d80
-    i32 Load(i32 a, char* name, i32 c);                                    // 0x144270
+    i32 Load(CDDrawPtrCollections * a, char* name, i32 c);                                    // 0x144270
 
     // The surface blitters + raw run-decoders the decoders delegate to (external no-body,
     // reloc-masked). Blit does a palette-remap copy (ret 0x10 = 4 args), BlitDirect a

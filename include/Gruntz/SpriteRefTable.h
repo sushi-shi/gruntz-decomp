@@ -39,6 +39,7 @@ class CShadeTableCache;
 
 class CDDrawSurfaceMgr;
 
+class CSymParser; // fwd
 class CSpriteRefTable {
 public:
     // Cache the two engine sub-objects (m_factory, m_spriteMgrHolder) and clear both buckets; returns
@@ -69,16 +70,16 @@ public:
 
     // Register a level's "GRUNTZ_PALETTEZ_<name>" palette into the sprite registry
     // (m_spriteMgrHolder->m_spriteMgr). src is the source resolver, name the level/name string. 0xe2d10.
-    i32 LoadGruntzPalette(i32 src, const char* name);
+    i32 LoadGruntzPalette(CSymParser* src, const char* name);
 
     // Register every tool/toy color palette (34 fixed names) via LoadGruntzPalette;
     // returns 1 only when all succeed (short-circuits to 0 on the first miss). 0xe2980.
-    i32 LoadToolToyPalettes(i32 src);
+    i32 LoadToolToyPalettes(CSymParser* src);
 
     // Build the 17-color tool/toy sprite-ref table: register the palettes
     // (LoadToolToyPalettes) then Add() each color's TOOL/TOY sprite into bucket A/B
     // at the color's kind slot; latches m_built when complete. 0xe2400.
-    i32 BuildToolToyColorTable(i32 src);
+    i32 BuildToolToyColorTable(CSymParser * src);
 
     CShadeTableCache* m_factory;         // +0x00  Init arg0 (the alpha/shade-table factory)
     CDDrawSurfaceMgr* m_spriteMgrHolder; // +0x04  Init arg1 (holder->m_workerMap = the sprite mgr)

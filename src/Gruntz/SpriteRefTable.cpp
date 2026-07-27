@@ -137,7 +137,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
 // one 2-instr permutation, source-invariant under /O2. Logic + all bytes otherwise
 // exact (frame 0x40, epilogues, !!x normalize all match).
 RVA(0x000e2d10, 0xa1)
-i32 CSpriteRefTable::LoadGruntzPalette(i32 src, const char* name) {
+i32 CSpriteRefTable::LoadGruntzPalette(CSymParser* src, const char* name) {
     if (!src) {
         return 0;
     }
@@ -159,7 +159,7 @@ i32 CSpriteRefTable::LoadGruntzPalette(i32 src, const char* name) {
 }
 
 RVA(0x000e2980, 0x2cd)
-i32 CSpriteRefTable::LoadToolToyPalettes(i32 src) {
+i32 CSpriteRefTable::LoadToolToyPalettes(CSymParser* src) {
     // One short-circuit && chain so MSVC shares a single return-0 tail (each rung
     // `test;je fail`), matching retail's layout (an if/return-0 per rung inlines 35
     // epilogues and bloats the body).
@@ -203,7 +203,7 @@ i32 CSpriteRefTable::LoadToolToyPalettes(i32 src) {
 }
 
 RVA(0x000e2400, 0x39e)
-i32 CSpriteRefTable::BuildToolToyColorTable(i32 src) {
+i32 CSpriteRefTable::BuildToolToyColorTable(CSymParser * src) {
     if (!src) {
         return 0;
     }

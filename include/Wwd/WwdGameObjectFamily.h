@@ -54,7 +54,7 @@ public:
     // slots 8 (GetClassId @0x154a00) and 9 (SetPosition @0x164790) INHERITED.
     // slot 10 - the factories' 4-arg build dispatch (the flat model's Setup
     // @0x150d60 is the body; renamed onto the family in the flat-merge stage).
-    virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4); // slot 10 @0x150d60
+    virtual i32 Setup(i32 a1, i32 a2, i32 a3, CObject* a4); // slot 10 @0x150d60
     // slots 11-14 - per-object render + dirty-rect blit hooks: PURE in this base
     // (retail table holds __purecall @0x11fec0); every concrete kind overrides.
     virtual void Render(CDDrawSurfacePair* ctx) = 0;                                     // slot 11
@@ -194,7 +194,7 @@ public:
         CGameObject::Unload(); // the E pass (0x15b5d0 content)
     }
     virtual i32 GetClassId() OVERRIDE; // slot 8  @0x15b760 (5 = CLASSID_SERIALREF)
-    virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4) OVERRIDE; // slot 10 @0x15b940 (Init)
+    virtual i32 Setup(i32 a1, i32 a2, i32 a3, CObject* a4) OVERRIDE; // slot 10 @0x15b940 (Init)
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;       // slot 11 @0x15ba20 (ret 4)
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 @0x150660
     virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
@@ -257,7 +257,7 @@ public:
     }
     virtual i32 GetClassId() OVERRIDE; // slot 8  0x15bce0 (0x1b)
     // slot 10/11-14 overrides (bodies in WwdGameObjectRender.cpp).
-    virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4) OVERRIDE; // slot 10 0x1665e0
+    virtual i32 Setup(i32 a1, i32 a2, i32 a3, CObject* a4) OVERRIDE; // slot 10 0x1665e0
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;       // slot 11 0x1668b0 (broadcast)
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 0x1668e0
     virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
@@ -272,7 +272,7 @@ public:
     i32 WalkChildWorkers();              // 0x166880 (per-child worker cb + count)
     // The child-object factory pair (bodies in WwdGameObjectRender.cpp; the ex-CWwdObjMgrL
     // view is dissolved): build a child CWwdGameObjectA and publish it into m_1dc.
-    CWwdGameObject* CreateObject(int a1, int a2, int a3, int a4, int a5, int a6); // 0x166640
+    CWwdGameObject* CreateObject(int a1, int a2, int a3, int a4, CObject * a5, int a6); // 0x166640
     CWwdGameObject*
     CreateNamed(int a1, int a2, int a3, int a4, const char* name, int a6); // 0x166780
 
@@ -301,7 +301,7 @@ public:
         OVERRIDE; // slot 14 @0x15baa0
     // slot 16 (new) - the F kind's 2-arg build (the 0x159440 factory's `call
     // [eax+0x40]` pushes two args; body 0x15bc30 == the flat SetupDeferred(a3, a4)).
-    virtual i32 SetupDeferred(i32 a3, i32 a4); // slot 16 @0x15bc30 (new)
+    virtual i32 SetupDeferred(i32 a3, CObject* a4); // slot 16 @0x15bc30 (new)
 };
 SIZE(0x18c);
 
@@ -326,7 +326,7 @@ public:
     // Slots 16-18 unique to the C variant (0x5effd0 is a 19-slot table).
     // slot 16 - the C kind's 5-arg build (the 0x159250 factory's `call [eax+0x40]`
     // pushes five args; body 0x15c1d0 == the flat SetupFlagged(a1..a4, flag)).
-    virtual i32 SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag); // slot 16 @0x15c1d0
+    virtual i32 SetupFlagged(i32 a1, i32 a2, i32 a3, CObject* a4, i32 flag); // slot 16 @0x15c1d0
     virtual u8 GetDotColor();        // slot 17 @0x15c030 (`mov al,[this+0x18c]`)
     virtual void SetDotColor(u8 c8); // slot 18 @0x15c040 (byte store to +0x18c)
 

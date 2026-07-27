@@ -872,7 +872,7 @@ i32 CMulti::PumpA() {
     m_beginMarker->FilterList2(reinterpret_cast<void*>(g_frameDelta));
     (static_cast<CMapMgr*>(Mgr()->m_tileGrid))
         ->UpdateDiagonals(
-            reinterpret_cast<i32>(Mgr())
+            Mgr()
         ); // CMapMgr is a view of CGruntzMapMgr (+0x70)
     if (ready == 0) {
         PumpB();
@@ -905,7 +905,7 @@ void CMulti::PumpB() {
             return;
         }
         StepGridWalk(g_frameDelta);
-        winapi_0d0b30_CopyRect(reinterpret_cast<i32>(h));
+        winapi_0d0b30_CopyRect(h);
         (static_cast<CDDrawSurfacePair*>(mgr->m_drawTarget->m_frontPair))->m_surface->Flip(0);
         return;
     }
@@ -965,7 +965,7 @@ void CMulti::PumpB() {
     DrawDebugStats();
     Mgr()->m_cmdGrid->OverlayRelease();
     StepGridWalk(g_frameDelta);
-    winapi_0d0b30_CopyRect(reinterpret_cast<i32>(h));
+    winapi_0d0b30_CopyRect(h);
     if (m_worldReady != 0) {
         h->DrawBox(reinterpret_cast<i32*>(&m_hudRect), 0xff);
     }
@@ -2050,7 +2050,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_534 != 0) {
                 break;
             }
-            RecordDropPlayer2(reinterpret_cast<i32>(pd), sender);
+            RecordDropPlayer2(pd, sender);
             break;
 
         case 0x422: {
@@ -3024,7 +3024,7 @@ i32 CMulti::DropChannelPlayer(i32 idx) {
 // the m_534 latch) but retail pins this->esi / id->edi where cl assigns this->edi /
 // id->esi; the register choice is not steerable from source. Final sweep.
 RVA(0x000bb5e0, 0xd9)
-void CMulti::RecordDropPlayer2(i32 a, i32 id) {
+void CMulti::RecordDropPlayer2(CNetSessionNode * a, i32 id) {
     if (m_534 != 0) {
         return;
     }

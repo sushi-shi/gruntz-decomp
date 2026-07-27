@@ -209,7 +209,7 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
 // switches to ecx one deref early (8b 48 10). The SAME inline chain matches in
 // Vslot07 (different surrounding pressure) - a pure allocator choice, no source lever.
 RVA(0x000fa300, 0x3a)
-i32 CState::RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e) {
+i32 CState::RunTitle(const char * a, i32 b, i32 c, i32 d, i32 e) {
     if (!m_world) {
         return 0;
     }
@@ -237,7 +237,7 @@ i32 CState::RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d) {
     if (FadeInTitle(name, a, b, c, d, 0) == 0) {
         return 0;
     }
-    return RunTitle(reinterpret_cast<i32>(name), a, b, c, d) != 0;
+    return RunTitle(name, a, b, c, d) != 0;
 }
 
 RVA(0x000fa410, 0xf5)

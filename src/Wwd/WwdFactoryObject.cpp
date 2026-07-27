@@ -262,7 +262,7 @@ CWwdGameObjectA::~CWwdGameObjectA() {
 }
 
 RVA(0x0015b940, 0x38)
-i32 CWwdGameObjectA::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
+i32 CWwdGameObjectA::Setup(i32 a1, i32 a2, i32 a3, CObject* a4) {
     m_19c = 0;
     m_1a0.Construct(this);
     return CGameObject::Setup(a1, a2, a3, a4);
@@ -317,7 +317,7 @@ CWwdGameObjectF::~CWwdGameObjectF() {
 }
 
 RVA(0x0015bc30, 0x16)
-i32 CWwdGameObjectF::SetupDeferred(i32 a3, i32 a4) {
+i32 CWwdGameObjectF::SetupDeferred(i32 a3, CObject* a4) {
     return CGameObject::Setup(0, 0, a3, a4);
 }
 
@@ -403,7 +403,7 @@ CWwdGameObjectC::~CWwdGameObjectC() {
 }
 
 RVA(0x0015c1d0, 0x26)
-i32 CWwdGameObjectC::SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag) {
+i32 CWwdGameObjectC::SetupFlagged(i32 a1, i32 a2, i32 a3, CObject* a4, i32 flag) {
     m_dotColor = static_cast<u8>(flag); // the C kind's own +0x18c byte - the reinterpret dies
     return CGameObject::Setup(a1, a2, a3, a4);
 }

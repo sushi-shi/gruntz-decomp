@@ -6,6 +6,7 @@
 
 #include <Mfc.h>
 
+class CMenuPage; // fwd
 class CMenuItem;
 class CDDrawSurfacePair;
 
@@ -33,7 +34,7 @@ class CMenuItem {
 public:
     CMenuItem();          // inlined leaf ctor (CStrings + implicit vptr + sentinels)
     virtual ~CMenuItem(); // 0x184690  slot 0 (scalar-deleting-dtor thunk @0x184670)
-    virtual i32 Init(i32, i32, i32, i32, i32, i32); // 0x185460  slot 1
+    virtual i32 Init(CMenuPage* , const char* , const char* , i32 , const char* , i32 ); // 0x185460  slot 1
     // OUT-OF-LINE (MenuItem.cpp): the retail body is a 5-byte `jmp Reset` thunk
     // and the dtor CALLS it direct rel32 - an inline body here made cl inline it
     // into the dtor and dispatch Reset through the absolute vtable slot instead.

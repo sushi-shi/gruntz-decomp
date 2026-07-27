@@ -309,7 +309,7 @@ i32 CPlay::Render() {
         ); // 0x27a2  CTimer::Draw
         m_world->m_drawTarget->m_frontPair->m_surface->Flip(0); // 0x13e850  CDDSurface::Flip
         UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);      // 0x2356
-        winapi_0d0b30_CopyRect(reinterpret_cast<i32>(m_world->m_drawTarget->m_backPair)); // 0x1519
+        winapi_0d0b30_CopyRect(m_world->m_drawTarget->m_backPair); // 0x1519
         return 1; // -> draw tail
     }
 
@@ -416,7 +416,7 @@ i32 CPlay::Render() {
         }
         m_beginMarker->FilterList2(reinterpret_cast<void*>(g_frameDelta));
         m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
-        w->m_tileGrid->UpdateDiagonals(reinterpret_cast<i32>(w));
+        w->m_tileGrid->UpdateDiagonals(w);
 
         // On-screen overlay/banner: the retail block (0xc91b7..0xc9259) is the same
         // shape as CMulti::PumpB's - place the 120x120 overlay rect by HUD position,
@@ -1084,7 +1084,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         }
     }
     if (!(static_cast<CMapMgr*>(self->m_mgr->m_tileGrid))
-             ->UpdateDiagonals(reinterpret_cast<i32>(self->m_mgr))) {
+             ->UpdateDiagonals(self->m_mgr)) {
         goto fail0;
     }
 
@@ -3406,7 +3406,7 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, i32 kind, i32 a3, i32 a4) {
         ar->Write(&m_comboSel, 4);
     }
     return (static_cast<CBattlezMapConfig*>(&m_038))
-               ->SerializeState(reinterpret_cast<i32>(ar), reinterpret_cast<void*>(kind), a3, a4)
+               ->SerializeState(ar, reinterpret_cast<void*>(kind), a3, a4)
            != 0;
 }
 
@@ -4439,7 +4439,7 @@ i32 CPlay::Vslot11(i32 a, i32 x, i32 y) {
 // @source: winapi:CopyRect
 // @stub
 RVA(0x000d0b30, 0x200)
-i32 CPlay::winapi_0d0b30_CopyRect(i32) {
+i32 CPlay::winapi_0d0b30_CopyRect(CDDrawSurfacePair * ) {
     return 0;
 }
 

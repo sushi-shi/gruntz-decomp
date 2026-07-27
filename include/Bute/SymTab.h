@@ -121,12 +121,12 @@ public:
     // ApplyRecursive (0x13a580): clear each child's m_04, run the range operation
     // (0x13a640) over this scope, then recurse into children whose m_04 was set.
     // Returns 1 unless a recursion failed. (a2 == 0 is a no-op returning 1.)
-    i32 ApplyRecursive(i32 a0, i32 a1, i32 a2, i32 a3);
+    i32 ApplyRecursive(CRezItmBase * a0, i32 a1, i32 a2, i32 a3);
 
     // The big range operation 0x13a640 invoked by ApplyRecursive: reads a block of
     // (a0-stream) records into a temp buffer and folds each into this scope's tables
     // (sub-scope records -> m_subTabs; leaf records -> the leaf builder + m_symbols).
-    i32 ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3); // 0x13a640
+    i32 ApplyRange(CRezItmBase* a0, i32 a1, i32 a2, i32 a3); // 0x13a640
 
     // AddNodeEntry (0x13a4b0): pop a fresh parse-slot, build a leaf record into it from
     // (name=a1, rec=a2, f4=a0, stream=a3), splice it into rec's +0x24 sub-table, and
@@ -148,7 +148,7 @@ public:
     // Resolve a fully-qualified name by its last delimiter (0x13be40): split off
     // the trailing key, resolve the leading scope, then dispatch.
     struct CParseSource*
-    ResolveQualified(const char* name, u32 fourcc); // returns the leaf parse record
+    ResolveQualified(const char* name, i32 fourcc); // returns the leaf parse record
 
     // Insert/resolve `key` directly into this scope's leaf table (+0x40), passing
     // m_owner->m_68 == 0 (0x13a000; the ResolveQualified tail). __thiscall extern,

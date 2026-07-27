@@ -239,7 +239,7 @@ void CWwdGameObjectC::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b
 }
 
 RVA(0x001665e0, 0x55)
-i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
+i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, CObject* a4) {
     POSITION pos = m_1dc.GetHeadPosition();
     while (pos != 0) {
         CObject* p = static_cast<CObject*>(static_cast<void*>(m_1dc.GetNext(pos)));
@@ -263,7 +263,7 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
 // emits no frame.  docs/patterns/rezalloc-placement-new-no-eh-frame.md.
 // ===========================================================================
 RVA(0x00166640, 0x13b)
-CWwdGameObject* CWwdGameObject::CreateObject(int a1, int a2, int a3, int a4, int a5, int a6) {
+CWwdGameObject* CWwdGameObject::CreateObject(int a1, int a2, int a3, int a4, CObject * a5, int a6) {
     char* obj = static_cast<char*>(RezAlloc(0x1dc));
     CWwdGameObjectA* result;
     if (obj != 0) {
@@ -326,7 +326,7 @@ CWwdGameObject::CreateNamed(int a1, int a2, int a3, int a4, const char* name, in
     if (val == 0) {
         return 0;
     }
-    return CreateObject(a1, a2, a3, a4, reinterpret_cast<int>(val), a6);
+    return CreateObject(a1, a2, a3, a4, val, a6);
 }
 
 RVA(0x001667e0, 0x2f)

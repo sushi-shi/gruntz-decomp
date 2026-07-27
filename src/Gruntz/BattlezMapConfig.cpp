@@ -3200,7 +3200,7 @@ i32 CBattlezMapConfig::Deserialize(void* arArg) {
 }
 
 RVA(0x0002bfc0, 0x8a)
-i32 CBattlezMapConfig::SerializeState(i32 objArg, void* kindArg, i32, i32) {
+i32 CBattlezMapConfig::SerializeState(CFileMemBase * objArg, void* kindArg, i32, i32) {
     CFileMemBase* obj = reinterpret_cast<CFileMemBase*>(objArg);
     i32 kind = static_cast<i32>(reinterpret_cast<i32>(kindArg));
     switch (kind) {

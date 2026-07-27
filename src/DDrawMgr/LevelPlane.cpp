@@ -774,7 +774,15 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     }
 
     // Run the object's load virtual (reads the fixed record into the object).
-    if (obj->Setup(static_cast<i32>(logicLen), id, reinterpret_cast<i32>(strCursor), id) == 0) {
+    // @identity-TODO slot-10 arg4 is a CObject* worker template everywhere else; this
+    // site passes `id` again - one of the two transcriptions is wrong.
+    if (obj->Setup(
+            static_cast<i32>(logicLen),
+            id,
+            reinterpret_cast<i32>(strCursor),
+            reinterpret_cast<CObject*>(id)
+        )
+        == 0) {
         delete obj;
         return 0;
     }

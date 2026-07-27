@@ -216,7 +216,7 @@ i32 CDDSurface::LoadBmp(CDDrawPtrCollections* pal, char* path) {
 }
 
 RVA(0x00144270, 0xd2)
-i32 CDDSurface::Load(i32 a, char* name, i32 c) {
+i32 CDDSurface::Load(CDDrawPtrCollections * a, char* name, i32 c) {
     HRSRC hr = FindResourceA(g_resModule, name, reinterpret_cast<LPCSTR>(2));
     if (!hr) {
         return 0;

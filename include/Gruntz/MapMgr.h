@@ -41,6 +41,7 @@ struct MapCell {
 };
 SIZE_UNKNOWN();
 
+class CGruntzMgr; // fwd
 class CMapMgr {
 public:
     CMapMgr();
@@ -87,7 +88,7 @@ public:
         i32 maskA,
         i32 maskC
     );                                               // 0x081e10
-    i32 UpdateDiagonals(i32 unused);                 // 0x082030 diagonal-passability walk
+    i32 UpdateDiagonals(CGruntzMgr * unused);                 // 0x082030 diagonal-passability walk
     i32 LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1); // 0x082250 straight-line probe
     // (`Serialize` @0x09356c is GONE - it was never this class's, and never a function:
     //  0x9356c is the TAIL of CGruntzMgr::BroadcastCmd @0x093460, which already claims

@@ -60,10 +60,10 @@ public:
     // family pockets in CDDrawSubMgr.cpp / WwdSpatialMgr.cpp; the ex "CWwdObjMgr"
     // and "CSpriteFactory" names). ---
     // Per-kind object factories.
-    CWwdGameObject* CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, int a7);
-    CWwdGameObject* CreateObject_159440(int a1, int a2, int a3, int a4);
-    CWwdGameObjectA* CreateObject_159600(int a1, int a2, int a3, int a4, int a5, int flags);
-    CWwdGameObject* CreateObject_1598d0(int a1, int a2, int a3, int a4, int a5, int a6);
+    CWwdGameObject* CreateObject_159250(int a1, int a2, int a3, int a4, CObject * a5, int a6, int a7);
+    CWwdGameObject* CreateObject_159440(int a1, int a2, CObject * a3, int a4);
+    CWwdGameObjectA* CreateObject_159600(int a1, int a2, int a3, int a4, CObject* a5, int flags);
+    CWwdGameObject* CreateObject_1598d0(int a1, int a2, int a3, int a4, CObject * a5, int a6);
     // Name-resolving factory front-ends: resolve `name` through the owner's
     // worker-cache name map (OwnerMgr()->m_workerCache->m_10, the Ob-band Lookup
     // 0x1b8008) to an id, then forward it as the matching CreateObject argument.

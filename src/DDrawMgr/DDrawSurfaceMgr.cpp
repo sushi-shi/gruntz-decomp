@@ -218,7 +218,7 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
 }
 
 RVA(0x00156020, 0x505)
-i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32 arg3) {
+i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char * arg1, char* name, i32 arg3) {
     if (cb == 0) {
         return 0;
     }

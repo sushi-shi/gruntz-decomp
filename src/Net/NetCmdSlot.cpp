@@ -453,7 +453,7 @@ CNetCmdSlot* CNetSession::CreateSlot(i32 index, i32 owner) {
         return 0;
     }
     (static_cast<CNetCmdSlot*>(slot))->ResetAll();
-    return slot->Init(reinterpret_cast<i32>(m_session), &m_0[index].m_sel, owner) ? slot : 0;
+    return slot->Init(m_session, &m_0[index].m_sel, owner) ? slot : 0;
 }
 
 RVA(0x000c0070, 0x15)
@@ -688,7 +688,7 @@ i32 CNetSession::Verify() {
 // args in edx/ecx/edi, whereas cl pins 0 in edi (callee-saved, no re-zero) and
 // the args in ecx/eax. A zero-register + arg-register coin-flip; not source-steerable.
 RVA(0x000c0b10, 0x72)
-i32 CNetCmdSlot::Init(i32 a1, SlotInfo* a2, i32 a3) {
+i32 CNetCmdSlot::Init(CMulti * a1, SlotInfo* a2, i32 a3) {
     if (a2 == 0) {
         return 0;
     }

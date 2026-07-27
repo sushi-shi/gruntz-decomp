@@ -87,7 +87,7 @@ void CMenuItem2::Reset() {
     m_6c = 0;
 }
 RVA(0x00185460, 0xa9)
-i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
+i32 CMenuItem::Init(CMenuPage* a0, const char* a1, const char* a2, i32 a3, const char* a4, i32 a5) {
     CMenuItemTemplate* t = reinterpret_cast<CMenuItemTemplate*>(a0);
     if (!t) {
         return 0;
@@ -260,7 +260,7 @@ i32 CMenuItem::Hit(i32 x, i32 y) {
 // after both Lookup arg-pushes, the recompile hoists it adjacent to the &out lea. Not
 // source-steerable (no statement order forces a plain store past the call arg setup).
 RVA(0x00185750, 0x123)
-i32 CMenuItem2::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
+i32 CMenuItem2::Init(CMenuPage* a0, const char* a1, const char* a2, i32 a3, const char* a4, i32 a5) {
     if (!a0) {
         return 0;
     }

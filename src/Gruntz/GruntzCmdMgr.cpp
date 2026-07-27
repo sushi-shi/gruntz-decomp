@@ -626,7 +626,7 @@ i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, i32 mode, i32 a3, i32 a4) {
         return 1;
     }
     // write
-    if (!IsActive(reinterpret_cast<i32>(stream))) {
+    if (!IsActive(stream)) {
         return 0;
     }
     i32 count = m_base.GetCount();
@@ -647,7 +647,7 @@ i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, i32 mode, i32 a3, i32 a4) {
 }
 
 RVA(0x00024a90, 0x20)
-i32 CGruntzCmdMgr::IsActive(i32 enable) {
+i32 CGruntzCmdMgr::IsActive(CFileMemBase * enable) {
     if (!enable) {
         return 0;
     }

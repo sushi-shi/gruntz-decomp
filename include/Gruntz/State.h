@@ -168,7 +168,7 @@ public:
     // unit owns the 0xfa1f0.. RVAs) as CState:: methods; the callers stay cast-free
     // (CAttract is a sibling of CState, not a base). Reloc-masked.
     i32 FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa1f0
-    i32 RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e);                      // 0x0fa300
+    i32 RunTitle(const char * a, i32 b, i32 c, i32 d, i32 e);                      // 0x0fa300
     i32 RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d);        // 0x0fa350
     // RetireScene (0xfa8f0): the two-channel screen-transition emitter every screen state
     // runs on its own `this` (xref: CBootyState/CMultiBootyState/CCreditsState/CAttract/

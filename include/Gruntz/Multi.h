@@ -245,7 +245,7 @@ public:
     // Drop/wait helpers (moved off the conflated CNetMgr in the netmgr-vs-cmulti
     // split): both run on `this`==CMulti (they read the +0x520 session, the +0x604
     // drop-id CDWordArray, m_534, m_hostIndex).
-    void RecordDropPlayer2(i32 a, i32 id);                                       // 0x0bb5e0
+    void RecordDropPlayer2(CNetSessionNode * a, i32 id);                                       // 0x0bb5e0
     i32 WaitForOtherPlayers();                                                   // 0x0bb700
     i32 LoadMenuSelectSprite(void* evp);                                         // 0x0ba620
     i32 ParseChannelTable(void* packet);                                         // 0x0ba980

@@ -267,7 +267,7 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(void* /*spawner*/, i32, i32, i32, i32, i
 // twin of 0x11b3b0: same /GX EH single-epilogue wall; five-argument member overload,
 // stub kept as the highest-% version (full body ~47% vs stub-artifact 73-83%).
 RVA(0x0011b7c0, 0x304)
-i32 CGruntSpawnConfig::SpawnVoiceDriver(i32, i32, i32, i32, i32) {
+i32 CGruntSpawnConfig::SpawnVoiceDriver(i32 , i32, i32, i32, i32) {
     return 0;
 }
 

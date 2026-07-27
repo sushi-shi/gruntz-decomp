@@ -582,7 +582,7 @@ public:
     // pause-state pointer-click handler - the mouse-input twin of OnKeyCommand.
     // Gated resume/report/unpause chain, then an overlay probe + a HUD hit-test +
     // a grid-snapped world marker place/cancel.)
-    i32 winapi_0d0b30_CopyRect(i32);
+    i32 winapi_0d0b30_CopyRect(CDDrawSurfacePair * );
     i32 LoadCursorSprites(i32 frame, i32 flag);
     i32 LoadScrollSpeedOptions();
     i32 BuildGruntTypeNameTable(i32, i32, i32, i32);

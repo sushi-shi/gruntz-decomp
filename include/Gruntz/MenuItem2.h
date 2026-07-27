@@ -11,11 +11,12 @@
 
 #include <Image/ImageSet.h> // CDDrawWorker == CDDrawWorker (the ONE real class)
 
+class CMenuPage; // fwd
 class CMenuItem2 : public CMenuItem {
 public:
     CMenuItem2();                   // inlined derived ctor (base ctor + derived vptr + fields)
     virtual ~CMenuItem2() OVERRIDE; // 0x1847e0  slot 0 (scalar-deleting-dtor thunk @0x1847c0)
-    virtual i32 Init(i32, i32, i32, i32, i32, i32) OVERRIDE; // 0x185750  slot 1
+    virtual i32 Init(CMenuPage*, const char*, const char*, i32, const char*, i32) OVERRIDE; // 0x185750  slot 1
     virtual void Reset() OVERRIDE;                           // 0x184890  slot 3  (decl-only)
     virtual i32 GetWidth() OVERRIDE;                         // 0x185890  slot 4  (decl-only)
     virtual i32 GetFrameWidth() OVERRIDE;                    // 0x185880  slot 5  (decl-only)

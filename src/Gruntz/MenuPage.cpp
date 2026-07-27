@@ -699,11 +699,11 @@ CMenuItem* CMenuPage::AddItem(
     // Init keeps its mangling-pinned i32 slots (virtual); the string args cast at
     // the forward (same 4-byte pushes).
     if (item->Init(
-            reinterpret_cast<i32>(this),
-            reinterpret_cast<i32>(label),
-            reinterpret_cast<i32>(spriteKey),
+            this,
+            label,
+            spriteKey,
             cmdId,
-            reinterpret_cast<i32>(key),
+            key,
             flags
         )
         == 0) {
@@ -727,11 +727,11 @@ CMenuItem* CMenuPage::AddSubItem(
 ) {
     CMenuItem* item = new CMenuItem();
     if (item->Init(
-            reinterpret_cast<i32>(this),
-            reinterpret_cast<i32>(label),
-            reinterpret_cast<i32>(spriteKey),
+            this,
+            label,
+            spriteKey,
             cmdId,
-            reinterpret_cast<i32>(key),
+            key,
             flags
         )
         == 0) {
@@ -752,9 +752,9 @@ CMenuItem* CMenuPage::AddSubItem(
 // ex "EH trylevel wall" was the 5-arg mis-signature (retail ret 0x18 = 6 args;
 // the Init arg list was reversed and SetFrame took a0 instead of a5).
 RVA(0x001836f0, 0x160)
-CMenuItem2* CMenuPage::AddItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
+CMenuItem2* CMenuPage::AddItem2(const char* a0, const char* a1, i32 a2, const char* a3, i32 a4, i32 a5) {
     CMenuItem2* item = new CMenuItem2();
-    if (item->Init(reinterpret_cast<i32>(this), a0, a1, a2, a3, a4) == 0) {
+    if (item->Init(this, a0, a1, a2, a3, a4) == 0) {
         if (item) {
             delete item;
         }
@@ -770,9 +770,9 @@ CMenuItem2* CMenuPage::AddItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) 
 // 58%: same inlined-base-ctor EH-trylevel-scheduling residual as AddItem2, amplified
 // by the extra parent-link stores (docs/patterns/rezalloc-placement-new-no-eh-frame.md).
 RVA(0x00183850, 0x13b)
-CMenuItem2* CMenuPage::AddSubItem2(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
+CMenuItem2* CMenuPage::AddSubItem2(const char* a0, const char* a1, i32 a2, i32 a3, i32 a4, const char* a5, i32 a6, i32 a7) {
     CMenuItem2* item = new CMenuItem2();
-    if (item->Init(reinterpret_cast<i32>(this), a0, a1, a2, a5, a6) == 0) {
+    if (item->Init(this, a0, a1, a2, a5, a6) == 0) {
         if (item) {
             delete item;
         }

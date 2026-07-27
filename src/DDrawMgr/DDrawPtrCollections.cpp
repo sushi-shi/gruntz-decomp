@@ -102,7 +102,7 @@ i32 CFileImageSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 fla
             return 0;
         }
         doFill = 0;
-    } else if (this->Load(reinterpret_cast<i32>(info), path, flags) == 0) {
+    } else if (this->Load(info, path, flags) == 0) {
         return 0;
     }
     if (key != -1 && doFill != 0) {

@@ -29,7 +29,7 @@ public:
     i32 EnterDefenderMode(CGrunt*, i32);
     i32 PathCrossesMarkedTile(CGrunt*);
     i32 IsCoordOccupied(CGrunt*, i32, i32);
-    i32 SerializeState(i32, void*, i32, i32);
+    i32 SerializeState(CFileMemBase * , void*, i32, i32);
     i32 PathToNearbyUnit(CGrunt*); // 0x02ed90
     i32 Serialize(void*);
     i32 Deserialize(void*);

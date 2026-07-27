@@ -91,7 +91,7 @@ void CDDrawChildGroup::DestroyChildren() {
 // ===========================================================================
 RVA(0x00159250, 0x185)
 CWwdGameObject*
-CDDrawChildGroup::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, int a7) {
+CDDrawChildGroup::CreateObject_159250(int a1, int a2, int a3, int a4, CObject * a5, int a6, int a7) {
     CWwdGameObjectC* obj = static_cast<CWwdGameObjectC*>(RezAlloc(0x190));
     CWwdGameObjectC* result; // the 0x190 kind (vtable 0x5effd0)
     if (obj != 0) {
@@ -154,7 +154,7 @@ CWwdGameObject* CDDrawChildGroup::CreateNamed_1593e0(
 ) {
     CObject* val = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
-    return CreateObject_159250(a1, a2, a3, a4, reinterpret_cast<int>(val), a6, a7);
+    return CreateObject_159250(a1, a2, a3, a4, val, a6, a7);
 }
 
 // ===========================================================================
@@ -163,7 +163,7 @@ CWwdGameObject* CDDrawChildGroup::CreateNamed_1593e0(
 // rezalloc-placement-new wall (sibling of 0x159600). frame absent, body exact.
 // ===========================================================================
 RVA(0x00159440, 0x170)
-CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, int a3, int a4) {
+CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, CObject * a3, int a4) {
     CWwdGameObjectF* obj = static_cast<CWwdGameObjectF*>(RezAlloc(0x18c));
     CWwdGameObjectF* result; // the 0x18c kind (vtable 0x5f0060)
     if (obj != 0) {
@@ -214,7 +214,7 @@ RVA(0x001595b0, 0x44)
 CWwdGameObject* CDDrawChildGroup::CreateNamed_1595b0(int a1, int a2, const char* name, int a4) {
     CObject* val = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
-    return CreateObject_159440(a1, a2, reinterpret_cast<int>(val), a4);
+    return CreateObject_159440(a1, a2, val, a4);
 }
 
 // ===========================================================================
@@ -233,7 +233,7 @@ CWwdGameObject* CDDrawChildGroup::CreateNamed_1595b0(int a1, int a2, const char*
 // ===========================================================================
 RVA(0x00159600, 0x1ab)
 CWwdGameObjectA*
-CDDrawChildGroup::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 flags) {
+CDDrawChildGroup::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, CObject* a5, i32 flags) {
     CWwdGameObjectA* obj = static_cast<CWwdGameObjectA*>(RezAlloc(0x1dc));
     CWwdGameObjectA* result; // the 0x1dc kind (vtable 0x5f00a8)
     if (obj != 0) {
@@ -303,7 +303,7 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
         geoB,
         geoA,
         hint,
-        reinterpret_cast<i32>(tmpl),
+        tmpl,
         flags
     ); // the launder dies - one type now
 }
@@ -334,7 +334,7 @@ i32 CDDrawChildGroup::AttachSprite(
         return 0;
     }
     obj->m_flags = flags;
-    if (!obj->Setup(a1, a2, a3, reinterpret_cast<i32>(tmpl))) {
+    if (!obj->Setup(a1, a2, a3, tmpl)) {
         return 0;
     }
     // 0x159e40 is CDDrawChildGroup::InsertSorted (the factory IS the object manager -
@@ -354,7 +354,7 @@ i32 CDDrawChildGroup::AttachSprite(
 // ===========================================================================
 RVA(0x001598d0, 0x13d)
 CWwdGameObject*
-CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, int a5, int a6) {
+CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, CObject * a5, int a6) {
     char* obj = static_cast<char*>(RezAlloc(0x1fc));
     CWwdGameObject* result; // the 0x1fc kind (vtable 0x5f00e8)
     if (obj != 0) {
@@ -404,7 +404,7 @@ CDDrawChildGroup::CreateNamed_159a10(int a1, int a2, int a3, int a4, const char*
     if (val == 0) {
         return 0;
     }
-    return CreateObject_1598d0(a1, a2, a3, a4, reinterpret_cast<int>(val), a6);
+    return CreateObject_1598d0(a1, a2, a3, a4, val, a6);
 }
 
 // ---------------------------------------------------------------------------
@@ -1242,7 +1242,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
                         desc.m_94,
                         desc.m_98,
                         desc.m_9c,
-                        reinterpret_cast<i32>(val),
+                        val,
                         0
                     );
                 }
@@ -1252,7 +1252,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
                 CObject* val;
                 OwnerMgr()->m_workerCache->m_10.Lookup(static_cast<const char*>(desc.m_14), val);
                 createdObj =
-                    CreateObject_159440(desc.m_00, desc.m_9c, reinterpret_cast<i32>(val), 0);
+                    CreateObject_159440(desc.m_00, desc.m_9c, val, 0);
                 break;
             }
             case 0x1b: {
@@ -1264,7 +1264,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
                         desc.m_94,
                         desc.m_98,
                         desc.m_9c,
-                        reinterpret_cast<i32>(val),
+                        val,
                         0
                     );
                 }

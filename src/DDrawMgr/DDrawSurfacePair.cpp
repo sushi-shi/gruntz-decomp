@@ -737,14 +737,14 @@ i32 CResolveNode::SetPosition(i32 x, i32 y) {
 
 RVA(0x001647e0, 0x48)
 i32 CResolveNode::Init(
-    i32 owner,
+    CImageParent * owner,
     i32 field04,
     i32 resolveX,
     i32 resolveY,
     i32 field40,
     i32 field08
 ) {
-    m_ownerCtx = owner;
+    m_ownerCtx = reinterpret_cast<i32>(owner); // m_ownerCtx is still the untyped ctx slot
     m_id = field04;
     m_flags = field08;
     m_drawFillArg = 0;
