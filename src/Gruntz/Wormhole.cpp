@@ -190,7 +190,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_object->m_flags |= 0x20000;
     }
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
     i32 kind = m_object->m_124;
     CShadeTable* color;
     if (kind == -1) {
@@ -346,7 +346,7 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
     m_38->m_stateFlags |= 1;
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
@@ -433,7 +433,7 @@ i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
     obj->m_drawFillArg = rec;
     m_38->m_stateFlags &= ~1;
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("B");
+    m_objAux->m_1c = ActFindId("B");
     if (a1 == 0) {
         m_placed = 1;
         m_pending = 0;
@@ -613,7 +613,7 @@ i32 CTeleporter::ReapplyConfig() {
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_TELEPORTEROPEN", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
     m_armed = 1;
     m_tickHandled = 0;
     m_38->m_stateFlags &= ~1;
@@ -734,7 +734,7 @@ i32 CTeleporter::Begin() {
     m_value = m_38->m_1a0.m_14;
     m_object->ApplyLookupGeometry("GAME_TELEPORTER", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("B");
+    m_objAux->m_1c = ActFindId("B");
     return 0;
 }
 

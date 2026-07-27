@@ -79,7 +79,7 @@ CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj), CWapX(
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
     m_38->m_flags |= 2;
     m_38->m_stateFlags |= 1;
 }

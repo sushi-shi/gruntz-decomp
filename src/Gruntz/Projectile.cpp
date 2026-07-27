@@ -418,7 +418,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
 
     // Latch the class act key ("A"): save the old registry node, then re-point it.
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
     return 1;
 }
 
@@ -1171,7 +1171,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     m_38->ApplyName("GAME_TIMEBOMB");
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
     m_value = m_38->m_1a0.m_14;
     if (m_object->m_120 > 0) {
         m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);

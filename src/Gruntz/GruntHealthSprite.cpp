@@ -32,7 +32,7 @@ RVA(0x0007eb00, 0x170)
 CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->ApplyLookupSprite("GAME_GRUNTHEALTHSPRITE", 1);
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
     m_health = 0x64;
     if (m_object->m_sortKey != 0xdbba0) {
         m_object->m_sortKey = 0xdbba0;

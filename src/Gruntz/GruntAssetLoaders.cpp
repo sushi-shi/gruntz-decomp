@@ -151,7 +151,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
     m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1); // 0x78260
 
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_dAnimKeyC));
+    m_objAux->m_1c = ActFindId(s_dAnimKeyC);
 
     m_38->m_flags |= 1;
     if (m_object->m_sortKey != 0x15f90) {
@@ -365,7 +365,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_38->m_1a0.Setup(m_poseDeath);
             m_38->ApplyLookupSprite(s_dEXITZ, DEATH_FRAME());
             m_prevAnimSetNode = m_objAux->m_1c;
-            m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_dExitKeyB));
+            m_objAux->m_1c = ActFindId(s_dExitKeyB);
             goto tail;
         }
 

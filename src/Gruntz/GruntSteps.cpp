@@ -1073,7 +1073,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         }
         m_35c = 0;
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
+        m_objAux->m_1c = ActFindId(s_codeD);
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(m_poseWalk);
         // Stamp the first entrance-cell frame from m_cells[base].WalkName(). The by-value

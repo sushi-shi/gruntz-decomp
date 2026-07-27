@@ -672,7 +672,7 @@ i32 CGameObject::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
         return 0;
     }
     AnimWorkerObj* w;
-    void* saved;
+    i32 saved;
     i32 node;
     switch (type) {
         case 3: {
@@ -1014,12 +1014,12 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, i32 unused) {
 }
 
 RVA(0x00151d20, 0x3a)
-i32 CGameObject::NotifyHooked(void* arg) {
+i32 CGameObject::NotifyHooked(i32 arg) {
     AnimWorkerObj* p = m_7c;
     if (!p) {
         return 0;
     }
-    void* saved = p->m_1c;
+    i32 saved = p->m_1c;
     p->m_1c = arg;
     m_7c->m_notify(this);
     if (m_7c->m_1c == arg) {

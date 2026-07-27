@@ -71,19 +71,14 @@ struct AnimWorkerObj : public CWapObj {
     CUserLogic* m_logic; // +0x18  the owned bound-logic leaf (CUserBase slot-0
                          //        scalar dtor via plain `delete`; slot-1
                          //        SerializeMove is the per-frame Step)
-    // the id-role read/write of the +0x1c int|ptr slot (the act-key compares/latches)
-    i32 ActKey() const {
-        return reinterpret_cast<i32>(m_1c);
-    }
-    void SetActKey(i32 id) {
-        m_1c = reinterpret_cast<void*>(id);
-    }
-    void* m_1c;          // +0x1c  a genuine int|ptr role-union (no union per the
-                         //        toolchain, kept void* with casts at the int sites):
-                         //        the record/play state tag (0 = unbuilt, 0x1d/0x1e +
-                         //        0x50..0x53 = the play-state dance keys, 0x3e8 =
-                         //        built/idle, 0x1c = error latch) AND the bute-tree
-                         //        animset node the eyecandy leaves save/restore.
+    i32 ActKey() const { return m_1c; }
+    void SetActKey(i32 id) { m_1c = id; }
+    i32 m_1c;            // +0x1c  the act/anim-set ID: the record/play state tag
+                         //        (0 = unbuilt, 0x1d/0x1e + 0x50..0x53 = the
+                         //        play-state dance keys, 0x3e8 = built/idle,
+                         //        0x1c = error latch) or a g_buteTree act id
+                         //        (ActFindId). Never dereferenced - the bute tree
+                         //        just parks small ints in its void* value slot.
     i32 m_20;            // +0x20  kill-cue remaining budget (Consume debits it)
     i32 m_24;            // +0x24  kill-cue refcount (TickKillCues decrements)
     i32 m_28;            // +0x28  (zeroed by Init)

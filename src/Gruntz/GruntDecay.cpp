@@ -51,7 +51,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
     i32 mode = m_deathType;
     if (mode == 1 || mode == 2 || mode == 0xb || mode == 6) {
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = g_buteTree.Find("R");
+        m_objAux->m_1c = ActFindId("R");
         if (m_36c == 0) {
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
         }

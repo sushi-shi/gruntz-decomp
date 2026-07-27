@@ -51,7 +51,7 @@ RVA(0x000b1200, 0x2cb)
 // Logic complete; deferred to the final sweep.
 CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
     m_38->m_flags |= 2;
 
     i32 ax = (m_object->m_screenX & ~0x1f) + 0x10;
@@ -247,7 +247,7 @@ i32 CSpotLight::Tick() {
         );
         if (tgt != 0 && tgt->m_gruntKind != 0x38 && !(m_a4 != 0 && m_9c != 0)) {
             m_prevAnimSetNode = m_objAux->m_1c;
-            m_objAux->m_1c = g_buteTree.Find("B");
+            m_objAux->m_1c = ActFindId("B");
             CWwdGameObjectA* t = tgt->m_object;
             o->m_screenX = t->m_screenX;
             o->m_screenY = t->m_screenY;

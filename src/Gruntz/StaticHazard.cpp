@@ -119,7 +119,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_area.top = m_object->m_screenY - 7;
     m_object->m_area.bottom = m_object->m_area.top + 14;
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
     m_38->m_flags |= 0x2000002;
     m_object->m_1a0.m_2c = 0;
     m_object->m_124 = g_areaHazardParam;
@@ -237,7 +237,7 @@ i32 CStaticHazard::LoadAttributes2() {
         m_38->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_seedFrame);
     }
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("B");
+    m_objAux->m_1c = ActFindId("B");
     return 0;
 }
 
@@ -265,7 +265,7 @@ i32 CStaticHazard::LoadAttributes() {
         if (m_object->m_120 != 0) {
             // re-arm IDLE (cache the anim-set node first)
             m_prevAnimSetNode = m_objAux->m_1c;
-            m_objAux->m_1c = g_buteTree.Find("A");
+            m_objAux->m_1c = ActFindId("A");
             m_value = m_38->m_1a0.m_14;
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {

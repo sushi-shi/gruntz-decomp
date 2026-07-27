@@ -38,7 +38,7 @@ CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
 }
 
 RVA(0x000aaf80, 0x102)

@@ -1414,7 +1414,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     // Rebuild the active-anim-set type-name registry free list.
     char** typeRec =
         reinterpret_cast<char**>((static_cast<_zvec*>(&g_typeColl))
-                                     ->IndexToPtr(reinterpret_cast<i32>((this->m_objAux->m_1c))));
+                                     ->IndexToPtr(this->m_objAux->m_1c));
     if (g_typeColl.m_grown != 0) {
         char* p = reinterpret_cast<char*>(g_typeColl.m_alloc);
         i32 n = g_typeColl.m_grown;
@@ -1591,7 +1591,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         this->m_lastTilePxX = newX;
         this->m_lastTilePxY = newY;
         this->m_prevAnimSetNode = this->m_objAux->m_1c;
-        this->m_objAux->m_1c = g_buteTree.Find(s_typeO);
+        this->m_objAux->m_1c = ActFindId(s_typeO);
         double ddx = static_cast<double>(newX) - this->m_object->m_screenX;
         double ddy = static_cast<double>(newY) - this->m_object->m_screenY;
         double dist = sqrt(ddx * ddx + ddy * ddy);
@@ -1720,7 +1720,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
             SnapToLastTile(1);
             if (redo) {
                 m_prevAnimSetNode = m_objAux->m_1c;
-                m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
+                m_objAux->m_1c = ActFindId(s_codeD);
             }
         }
     }

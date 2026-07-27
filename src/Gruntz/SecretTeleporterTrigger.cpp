@@ -90,7 +90,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
         m_38->m_flags |= 2;
         m_38->m_stateFlags |= 1;
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = g_buteTree.Find("A");
+        m_objAux->m_1c = ActFindId("A");
         g_gameReg->m_scoreHud->m_3c++;
     }
 }
@@ -150,7 +150,7 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj), CW
         m_38->m_flags |= 2;
         m_38->m_stateFlags |= 1;
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = g_buteTree.Find("A");
+        m_objAux->m_1c = ActFindId("A");
     } else {
         m_38->m_flags |= 0x10000;
     }

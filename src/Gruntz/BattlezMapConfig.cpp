@@ -459,7 +459,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 i32 eq;
                 eq =
                     (strcmp(
-                         (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))),
+                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                          "I"
                      )
                      == 0);
@@ -468,7 +468,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 }
                 eq =
                     (strcmp(
-                         (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))),
+                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                          "G"
                      )
                      == 0);
@@ -477,7 +477,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 }
                 eq =
                     (strcmp(
-                         (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))),
+                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                          "L"
                      )
                      == 0);
@@ -486,7 +486,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 }
                 eq =
                     (strcmp(
-                         (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))),
+                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                          "P"
                      )
                      == 0);
@@ -495,7 +495,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 }
                 eq =
                     (strcmp(
-                         (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))),
+                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                          "J"
                      )
                      == 0);
@@ -504,7 +504,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 }
                 eq =
                     (strcmp(
-                         (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))),
+                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                          "C"
                      )
                      == 0);
@@ -513,7 +513,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 }
                 eq =
                     (strcmp(
-                         (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))),
+                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                          "R"
                      )
                      == 0);
@@ -764,7 +764,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             eq =
                                 (strcmp(
                                      (*g_typeColl.GetNameRecord(
-                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                         unit->m_objAux->m_1c
                                      )),
                                      "A"
                                  )
@@ -812,7 +812,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             eq =
                                 (strcmp(
                                      (*g_typeColl.GetNameRecord(
-                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                         unit->m_objAux->m_1c
                                      )),
                                      "I"
                                  )
@@ -821,7 +821,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 eq =
                                     (strcmp(
                                          (*g_typeColl.GetNameRecord(
-                                             static_cast<void*>((unit->m_objAux->m_1c))
+                                             unit->m_objAux->m_1c
                                          )),
                                          "G"
                                      )
@@ -830,7 +830,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     eq =
                                         (strcmp(
                                              (*g_typeColl.GetNameRecord(
-                                                 static_cast<void*>((unit->m_objAux->m_1c))
+                                                 unit->m_objAux->m_1c
                                              )),
                                              "L"
                                          )
@@ -839,7 +839,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                         eq =
                                             (strcmp(
                                                  (*g_typeColl.GetNameRecord(
-                                                     static_cast<void*>((unit->m_objAux->m_1c))
+                                                     unit->m_objAux->m_1c
                                                  )),
                                                  "P"
                                              )
@@ -848,7 +848,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                             eq =
                                                 (strcmp(
                                                      (*g_typeColl.GetNameRecord(
-                                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                                         unit->m_objAux->m_1c
                                                      )),
                                                      "J"
                                                  )
@@ -857,9 +857,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                 eq =
                                                     (strcmp(
                                                          (*g_typeColl.GetNameRecord(
-                                                             static_cast<void*>(
-                                                                 (unit->m_objAux->m_1c)
-                                                             )
+                                                             unit->m_objAux->m_1c
                                                          )),
                                                          "C"
                                                      )
@@ -868,9 +866,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                     eq =
                                                         (strcmp(
                                                              (*g_typeColl.GetNameRecord(
-                                                                 static_cast<void*>(
-                                                                     (unit->m_objAux->m_1c)
-                                                                 )
+                                                                 unit->m_objAux->m_1c
                                                              )),
                                                              "R"
                                                          )
@@ -1021,7 +1017,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             ne =
                                 (strcmp(
                                      (*g_typeColl.GetNameRecord(
-                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                         unit->m_objAux->m_1c
                                      )),
                                      "C"
                                  )
@@ -1030,7 +1026,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 ne =
                                     (strcmp(
                                          (*g_typeColl.GetNameRecord(
-                                             static_cast<void*>((unit->m_objAux->m_1c))
+                                             unit->m_objAux->m_1c
                                          )),
                                          "R"
                                      )
@@ -1039,7 +1035,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     ne =
                                         (strcmp(
                                              (*g_typeColl.GetNameRecord(
-                                                 static_cast<void*>((unit->m_objAux->m_1c))
+                                                 unit->m_objAux->m_1c
                                              )),
                                              "C"
                                          )
@@ -1048,7 +1044,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                         ne =
                                             (strcmp(
                                                  (*g_typeColl.GetNameRecord(
-                                                     static_cast<void*>((unit->m_objAux->m_1c))
+                                                     unit->m_objAux->m_1c
                                                  )),
                                                  "G"
                                              )
@@ -1057,7 +1053,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                             ne =
                                                 (strcmp(
                                                      (*g_typeColl.GetNameRecord(
-                                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                                         unit->m_objAux->m_1c
                                                      )),
                                                      "L"
                                                  )
@@ -1066,9 +1062,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                 ne =
                                                     (strcmp(
                                                          (*g_typeColl.GetNameRecord(
-                                                             static_cast<void*>(
-                                                                 (unit->m_objAux->m_1c)
-                                                             )
+                                                             unit->m_objAux->m_1c
                                                          )),
                                                          "P"
                                                      )
@@ -1077,9 +1071,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                     ne =
                                                         (strcmp(
                                                              (*g_typeColl.GetNameRecord(
-                                                                 static_cast<void*>(
-                                                                     (unit->m_objAux->m_1c)
-                                                                 )
+                                                                 unit->m_objAux->m_1c
                                                              )),
                                                              "J"
                                                          )
@@ -1244,7 +1236,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             eq =
                                 (strcmp(
                                      (*g_typeColl.GetNameRecord(
-                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                         unit->m_objAux->m_1c
                                      )),
                                      "I"
                                  )
@@ -1255,7 +1247,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             eq =
                                 (strcmp(
                                      (*g_typeColl.GetNameRecord(
-                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                         unit->m_objAux->m_1c
                                      )),
                                      "G"
                                  )
@@ -1266,7 +1258,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             eq =
                                 (strcmp(
                                      (*g_typeColl.GetNameRecord(
-                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                         unit->m_objAux->m_1c
                                      )),
                                      "L"
                                  )
@@ -1277,7 +1269,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             eq =
                                 (strcmp(
                                      (*g_typeColl.GetNameRecord(
-                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                         unit->m_objAux->m_1c
                                      )),
                                      "P"
                                  )
@@ -1288,7 +1280,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             eq =
                                 (strcmp(
                                      (*g_typeColl.GetNameRecord(
-                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                         unit->m_objAux->m_1c
                                      )),
                                      "J"
                                  )
@@ -1299,7 +1291,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             eq =
                                 (strcmp(
                                      (*g_typeColl.GetNameRecord(
-                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                         unit->m_objAux->m_1c
                                      )),
                                      "C"
                                  )
@@ -1310,7 +1302,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             eq =
                                 (strcmp(
                                      (*g_typeColl.GetNameRecord(
-                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                         unit->m_objAux->m_1c
                                      )),
                                      "R"
                                  )
@@ -1336,7 +1328,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             eq =
                                 (strcmp(
                                      (*g_typeColl.GetNameRecord(
-                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                         unit->m_objAux->m_1c
                                      )),
                                      "I"
                                  )
@@ -1345,7 +1337,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 eq =
                                     (strcmp(
                                          (*g_typeColl.GetNameRecord(
-                                             static_cast<void*>((unit->m_objAux->m_1c))
+                                             unit->m_objAux->m_1c
                                          )),
                                          "G"
                                      )
@@ -1354,7 +1346,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     eq =
                                         (strcmp(
                                              (*g_typeColl.GetNameRecord(
-                                                 static_cast<void*>((unit->m_objAux->m_1c))
+                                                 unit->m_objAux->m_1c
                                              )),
                                              "L"
                                          )
@@ -1363,7 +1355,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                         eq =
                                             (strcmp(
                                                  (*g_typeColl.GetNameRecord(
-                                                     static_cast<void*>((unit->m_objAux->m_1c))
+                                                     unit->m_objAux->m_1c
                                                  )),
                                                  "P"
                                              )
@@ -1372,7 +1364,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                             eq =
                                                 (strcmp(
                                                      (*g_typeColl.GetNameRecord(
-                                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                                         unit->m_objAux->m_1c
                                                      )),
                                                      "J"
                                                  )
@@ -1381,9 +1373,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                 eq =
                                                     (strcmp(
                                                          (*g_typeColl.GetNameRecord(
-                                                             static_cast<void*>(
-                                                                 (unit->m_objAux->m_1c)
-                                                             )
+                                                             unit->m_objAux->m_1c
                                                          )),
                                                          "C"
                                                      )
@@ -1392,9 +1382,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                     eq =
                                                         (strcmp(
                                                              (*g_typeColl.GetNameRecord(
-                                                                 static_cast<void*>(
-                                                                     (unit->m_objAux->m_1c)
-                                                                 )
+                                                                 unit->m_objAux->m_1c
                                                              )),
                                                              "R"
                                                          )
@@ -1457,7 +1445,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         ne =
                             (strcmp(
                                  (*g_typeColl.GetNameRecord(
-                                     static_cast<void*>((unit->m_objAux->m_1c))
+                                     unit->m_objAux->m_1c
                                  )),
                                  "I"
                              )
@@ -1466,7 +1454,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             ne =
                                 (strcmp(
                                      (*g_typeColl.GetNameRecord(
-                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                         unit->m_objAux->m_1c
                                      )),
                                      "G"
                                  )
@@ -1475,7 +1463,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 ne =
                                     (strcmp(
                                          (*g_typeColl.GetNameRecord(
-                                             static_cast<void*>((unit->m_objAux->m_1c))
+                                             unit->m_objAux->m_1c
                                          )),
                                          "L"
                                      )
@@ -1484,7 +1472,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     ne =
                                         (strcmp(
                                              (*g_typeColl.GetNameRecord(
-                                                 static_cast<void*>((unit->m_objAux->m_1c))
+                                                 unit->m_objAux->m_1c
                                              )),
                                              "P"
                                          )
@@ -1493,7 +1481,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                         ne =
                                             (strcmp(
                                                  (*g_typeColl.GetNameRecord(
-                                                     static_cast<void*>((unit->m_objAux->m_1c))
+                                                     unit->m_objAux->m_1c
                                                  )),
                                                  "J"
                                              )
@@ -1502,7 +1490,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                             ne =
                                                 (strcmp(
                                                      (*g_typeColl.GetNameRecord(
-                                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                                         unit->m_objAux->m_1c
                                                      )),
                                                      "C"
                                                  )
@@ -1511,9 +1499,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                 ne =
                                                     (strcmp(
                                                          (*g_typeColl.GetNameRecord(
-                                                             static_cast<void*>(
-                                                                 (unit->m_objAux->m_1c)
-                                                             )
+                                                             unit->m_objAux->m_1c
                                                          )),
                                                          "R"
                                                      )
@@ -1542,15 +1528,14 @@ i32 CBattlezMapConfig::StepRowUnits() {
                 && unit->m_entranceActive == 0 && unit->m_poweredUp == 0) {
                 eq =
                     (strcmp(
-                         (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))),
+                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                          "I"
                      )
                      == 0);
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c))
-                             )),
+                             (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                              "G"
                          )
                          == 0);
@@ -1558,7 +1543,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         eq =
                             (strcmp(
                                  (*g_typeColl.GetNameRecord(
-                                     static_cast<void*>((unit->m_objAux->m_1c))
+                                     unit->m_objAux->m_1c
                                  )),
                                  "L"
                              )
@@ -1567,7 +1552,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             eq =
                                 (strcmp(
                                      (*g_typeColl.GetNameRecord(
-                                         static_cast<void*>((unit->m_objAux->m_1c))
+                                         unit->m_objAux->m_1c
                                      )),
                                      "P"
                                  )
@@ -1576,7 +1561,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 eq =
                                     (strcmp(
                                          (*g_typeColl.GetNameRecord(
-                                             static_cast<void*>((unit->m_objAux->m_1c))
+                                             unit->m_objAux->m_1c
                                          )),
                                          "J"
                                      )
@@ -1585,7 +1570,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     eq =
                                         (strcmp(
                                              (*g_typeColl.GetNameRecord(
-                                                 static_cast<void*>((unit->m_objAux->m_1c))
+                                                 unit->m_objAux->m_1c
                                              )),
                                              "C"
                                          )
@@ -1594,7 +1579,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                         eq =
                                             (strcmp(
                                                  (*g_typeColl.GetNameRecord(
-                                                     static_cast<void*>((unit->m_objAux->m_1c))
+                                                     unit->m_objAux->m_1c
                                                  )),
                                                  "R"
                                              )
@@ -1664,9 +1649,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                     nd =
                                                         (strcmp(
                                                              (*g_typeColl.GetNameRecord(
-                                                                 static_cast<void*>(
-                                                                     (unit->m_objAux->m_1c)
-                                                                 )
+                                                                 unit->m_objAux->m_1c
                                                              )),
                                                              "D"
                                                          )
@@ -1686,9 +1669,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                     eq =
                                                         (strcmp(
                                                              (*g_typeColl.GetNameRecord(
-                                                                 static_cast<void*>(
-                                                                     (unit->m_objAux->m_1c)
-                                                                 )
+                                                                 unit->m_objAux->m_1c
                                                              )),
                                                              "I"
                                                          )
@@ -1697,9 +1678,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                         eq =
                                                             (strcmp(
                                                                  (*g_typeColl.GetNameRecord(
-                                                                     static_cast<void*>(
-                                                                         (unit->m_objAux->m_1c)
-                                                                     )
+                                                                     unit->m_objAux->m_1c
                                                                  )),
                                                                  "G"
                                                              )
@@ -1708,9 +1687,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                             eq =
                                                                 (strcmp(
                                                                      (*g_typeColl.GetNameRecord(
-                                                                         static_cast<void*>(
-                                                                             (unit->m_objAux->m_1c)
-                                                                         )
+                                                                         unit->m_objAux->m_1c
                                                                      )),
                                                                      "L"
                                                                  )
@@ -1719,10 +1696,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                 eq =
                                                                     (strcmp(
                                                                          (*g_typeColl.GetNameRecord(
-                                                                             static_cast<void*>((
-                                                                                 unit->m_objAux
-                                                                                     ->m_1c
-                                                                             ))
+                                                                             unit->m_objAux->m_1c
                                                                          )),
                                                                          "P"
                                                                      )
@@ -1732,11 +1706,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                         (strcmp(
                                                                              (*g_typeColl
                                                                                    .GetNameRecord(
-                                                                                       static_cast<
-                                                                                           void*>((
-                                                                                           unit->m_objAux
-                                                                                               ->m_1c
-                                                                                       ))
+                                                                                       unit->m_objAux->m_1c
                                                                                    )),
                                                                              "J"
                                                                          )
@@ -1746,11 +1716,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                             (strcmp(
                                                                                  (*g_typeColl
                                                                                        .GetNameRecord(
-                                                                                           static_cast<
-                                                                                               void*>((
-                                                                                               unit->m_objAux
-                                                                                                   ->m_1c
-                                                                                           ))
+                                                                                           unit->m_objAux->m_1c
                                                                                        )),
                                                                                  "C"
                                                                              )
@@ -1760,11 +1726,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                                 (strcmp(
                                                                                      (*g_typeColl
                                                                                            .GetNameRecord(
-                                                                                               static_cast<
-                                                                                                   void*>((
-                                                                                                   unit->m_objAux
-                                                                                                       ->m_1c
-                                                                                               ))
+                                                                                               unit->m_objAux->m_1c
                                                                                            )),
                                                                                      "R"
                                                                                  )
@@ -1855,7 +1817,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
         if (unit->CoordCount() != 0) {
             eq =
                 (strcmp(
-                     (*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))),
+                     (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                      "A"
                  )
                  == 0);
@@ -2902,27 +2864,27 @@ i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(CGrunt* unit, CGrunt* tgt) {
     }
     bool eq;
     eq =
-        (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "J") == 0);
+        (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "J") == 0);
     if (eq) {
         return 0;
     }
     eq =
-        (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "C") == 0);
+        (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "C") == 0);
     if (eq) {
         return 0;
     }
     eq =
-        (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "R") == 0);
+        (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "R") == 0);
     if (eq) {
         return 0;
     }
     eq =
-        (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "G") == 0);
+        (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "G") == 0);
     if (eq) {
         return 0;
     }
     eq =
-        (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "L") == 0);
+        (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "L") == 0);
     if (eq) {
         return 0;
     }
@@ -4237,27 +4199,27 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(CGrunt* unit) {
                 continue;
             }
             bool ne;
-            ne = strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((u->m_objAux->m_1c)))), "C")
+            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_1c)), "C")
                  != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((u->m_objAux->m_1c)))), "R")
+            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_1c)), "R")
                  != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((u->m_objAux->m_1c)))), "J")
+            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_1c)), "J")
                  != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((u->m_objAux->m_1c)))), "G")
+            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_1c)), "G")
                  != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((u->m_objAux->m_1c)))), "L")
+            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_1c)), "L")
                  != 0;
             if (!ne) {
                 continue;
@@ -4685,7 +4647,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     // docs/patterns/strcmp-eq-bool-local-setcc.md.
     bool eq;
     eq =
-        (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "I") == 0);
+        (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "I") == 0);
     if (eq) {
         return 0;
     }
@@ -4694,7 +4656,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     CString* slot;
     i32 cnt;
 
-    recs = g_typeColl.GetNameRecords(static_cast<void*>((unit->m_objAux->m_1c)));
+    recs = g_typeColl.GetNameRecords(unit->m_objAux->m_1c);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -4709,7 +4671,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords(static_cast<void*>((unit->m_objAux->m_1c)));
+    recs = g_typeColl.GetNameRecords(unit->m_objAux->m_1c);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -4724,7 +4686,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords(static_cast<void*>((unit->m_objAux->m_1c)));
+    recs = g_typeColl.GetNameRecords(unit->m_objAux->m_1c);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -4739,7 +4701,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords(static_cast<void*>((unit->m_objAux->m_1c)));
+    recs = g_typeColl.GetNameRecords(unit->m_objAux->m_1c);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -4754,7 +4716,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords(static_cast<void*>((unit->m_objAux->m_1c)));
+    recs = g_typeColl.GetNameRecords(unit->m_objAux->m_1c);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -4769,7 +4731,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords(static_cast<void*>((unit->m_objAux->m_1c)));
+    recs = g_typeColl.GetNameRecords(unit->m_objAux->m_1c);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -6331,17 +6293,17 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     // docs/patterns/return-bool-via-local-setcc.md.
     i32 eq;
     eq =
-        (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "I") == 0);
+        (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "I") == 0);
     if (eq) {
         return 0;
     }
     eq =
-        (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "G") == 0);
+        (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "G") == 0);
     if (eq) {
         return 0;
     }
     eq =
-        (strcmp((*g_typeColl.GetNameRecord(static_cast<void*>((unit->m_objAux->m_1c)))), "L") == 0);
+        (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "L") == 0);
     if (eq) {
         return 0;
     }
@@ -6351,7 +6313,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     CString* slot;
     i32 cnt;
 
-    recs = g_typeColl.GetNameRecords(static_cast<void*>((unit->m_objAux->m_1c)));
+    recs = g_typeColl.GetNameRecords(unit->m_objAux->m_1c);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -6366,7 +6328,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords(static_cast<void*>((unit->m_objAux->m_1c)));
+    recs = g_typeColl.GetNameRecords(unit->m_objAux->m_1c);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -6381,7 +6343,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords(static_cast<void*>((unit->m_objAux->m_1c)));
+    recs = g_typeColl.GetNameRecords(unit->m_objAux->m_1c);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {

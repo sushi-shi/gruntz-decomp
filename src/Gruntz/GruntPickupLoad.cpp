@@ -117,7 +117,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     }
 
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("J");
+    m_objAux->m_1c = ActFindId("J");
 
     i32 id = 0;
     a2 = 0; // force-cue local (reuses the consumed arg2 slot)

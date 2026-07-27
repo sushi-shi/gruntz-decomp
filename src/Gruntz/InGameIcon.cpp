@@ -163,7 +163,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     // swap the aux bute node (save old into m_30) + seed the cycle geometry
     AnimWorkerObj* aux = m_objAux;
     m_prevAnimSetNode = aux->m_1c;
-    aux->m_1c = g_buteTree.Find("A");
+    aux->m_1c = ActFindId("A");
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
@@ -839,7 +839,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         owner->m_stateFlags |= 1;
         AnimWorkerObj* aux = m_objAux;
         m_prevAnimSetNode = aux->m_1c;
-        aux->m_1c = g_buteTree.Find("B");
+        aux->m_1c = ActFindId("B");
         owner = m_38;
         m_driftPos = static_cast<u32>(owner->m_120);
         m_driftThresh = static_cast<u32>(g_frameTime);
@@ -883,7 +883,7 @@ i32 CInGameIcon::Reposition() {
         CWwdGameObjectA* r = m_38;
         r->m_stateFlags &= ~1;
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = g_buteTree.Find("A");
+        m_objAux->m_1c = ActFindId("A");
 
         CGruntzMgr* reg = g_gameReg;
         CWwdGameObjectA* obj = m_object;
@@ -975,7 +975,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         return;
     }
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_38->ApplyName("GAME_HELPBOX");

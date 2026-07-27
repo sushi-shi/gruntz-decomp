@@ -560,7 +560,7 @@ i32 CWarlord::ResolveMovingAnimation() {
     m_38->m_1a0.Setup(m_animMoving);
 
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_keyB);
+    m_objAux->m_1c = ActFindId(s_keyB);
 
     m_cooldownWindowLo = (GruntRand() % 0x5dc1 + 0x1770) * 10;
     m_cooldownWindowHi = 0;
@@ -598,7 +598,7 @@ i32 CWarlord::ResolveDeathAnimation() {
     m_38->ApplyName(s_GRUNTZ_ + m_54 + s__DEATH);
 
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_keyC);
+    m_objAux->m_1c = ActFindId(s_keyC);
     return 1;
 }
 
@@ -627,7 +627,7 @@ i32 CWarlord::RaiseBattleAlert() {
     m_38->ApplyName(s_GRUNTZ_ + m_54 + s__JOY);
 
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_keyE);
+    m_objAux->m_1c = ActFindId(s_keyE);
     return 1;
 }
 
@@ -663,7 +663,7 @@ i32 CWarlord::ResolveIdleAnimation() {
     m_38->ApplyLookupSprite(s_GRUNTZ_ + m_54 + s__IDLE, frame);
 
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_keyA);
+    m_objAux->m_1c = ActFindId(s_keyA);
     return 1;
 }
 
@@ -694,6 +694,6 @@ i32 CWarlord::ResolveBattlecryAnimation() {
     m_38->ApplyName(s_GRUNTZ_ + m_54 + s__BATTLECRY);
 
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_keyF);
+    m_objAux->m_1c = ActFindId(s_keyF);
     return 1;
 }

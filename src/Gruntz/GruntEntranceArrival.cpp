@@ -281,7 +281,7 @@ i32 CGrunt::ResetGeometry() {
     m_38->ApplyLookupSprite(name, frame);
 
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_animKeyA));
+    m_objAux->m_1c = ActFindId(s_animKeyA);
     return 0;
 }
 
@@ -374,7 +374,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     m_neighborCol = col;
     m_neighborRow = row;
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeF));
+    m_objAux->m_1c = ActFindId(s_codeF);
 
     m_combatActive = 1;
 
@@ -458,7 +458,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
 RVA(0x00061bc0, 0xb2)
 i32 CGrunt::RearmAttackAnim2() {
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeF));
+    m_objAux->m_1c = ActFindId(s_codeF);
 
     CWwdGameObjectA* p = m_38;
     m_value = p->m_1a0.m_14;
@@ -744,7 +744,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
 
         if (m_entranceReason == 0x1e) {
             m_prevAnimSetNode = m_objAux->m_1c;
-            m_objAux->m_1c = static_cast<void*>(g_buteTree.Find("P"));
+            m_objAux->m_1c = ActFindId("P");
             i32 toyIdx = rand() % 2;
             m_value = m_38->m_1a0.m_14;
             m_38->ApplyGeometryDirect((&m_poseToy1)[toyIdx], 0);
@@ -802,7 +802,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             ResetEntranceAnimation(1, 0, 0);
         }
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = static_cast<void*>(g_buteTree.Find("L"));
+        m_objAux->m_1c = ActFindId("L");
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(m_poseWalk);
         GruntEntranceCell cell = m_entranceCell;
@@ -819,7 +819,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
 
     // a1 == 0: the "G" re-latch + HUD z-clamp + toy-timer pose select + visible-bounds cue.
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = static_cast<void*>(g_buteTree.Find("G"));
+    m_objAux->m_1c = ActFindId("G");
 
     CWwdGameObjectA* h = m_object;
     i32 z = h->m_screenY + 0xc3500;
@@ -896,7 +896,7 @@ i32 CGrunt::StepEntranceRelatchA() {
             CreateToySprite();
         }
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = static_cast<void*>(g_buteTree.Find("A"));
+        m_objAux->m_1c = ActFindId("A");
         LoadGruntTypeTable(m_19c, 1, 0, 0);
         m_entranceActive = 0;
         CGruntzMgr* g = g_gameReg;
@@ -1113,7 +1113,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
 
 latch:
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_animKeyA));
+    m_objAux->m_1c = ActFindId(s_animKeyA);
 
     if (!applied && apply == 0) {
         return;
@@ -1304,7 +1304,7 @@ i32 CGrunt::StepEntranceReinit() {
     }
     if (!(flag & 0x20000000)) {
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
+        m_objAux->m_1c = ActFindId(s_codeD);
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(m_poseWalk);
     } else {
@@ -1323,7 +1323,7 @@ i32 CGrunt::StepEntranceReinit() {
         }
         m_entranceActive = 1;
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
+        m_objAux->m_1c = ActFindId(s_codeD);
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(m_poseWalk);
     }
@@ -1470,7 +1470,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
             CreateToySprite();
         }
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_animKeyA));
+        m_objAux->m_1c = ActFindId(s_animKeyA);
         LoadGruntTypeTable(m_19c, 1, 0, 0);
         m_entranceActive = 0;
 
@@ -1617,7 +1617,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
 
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_exitKeyB));
+    m_objAux->m_1c = ActFindId(s_exitKeyB);
 
     CDDrawWorker* found;
     i32 r = GruntRand() % 0x1e1;
@@ -1780,7 +1780,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
             }
             m_35c = 0;
             m_prevAnimSetNode = m_objAux->m_1c;
-            m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
+            m_objAux->m_1c = ActFindId(s_codeD);
             m_value = m_38->m_1a0.m_14;
             m_38->m_1a0.Setup(m_poseWalk);
             GruntEntranceCell cell = m_entranceCell;
@@ -1821,7 +1821,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
         SnapToLastTile(1);
         if (flag != 0) {
             m_prevAnimSetNode = m_objAux->m_1c;
-            m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
+            m_objAux->m_1c = ActFindId(s_codeD);
         }
     }
     goto tail;
@@ -1872,7 +1872,7 @@ tail:
         GruntScratchTeardown();
         if (strcmp(rec->m_name, s_codeO) != 0) {
             m_prevAnimSetNode = m_objAux->m_1c;
-            m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeH));
+            m_objAux->m_1c = ActFindId(s_codeH);
             void* cellObj = m_tileMgr->m_grid[a2 * TM_GRID_COLS + a3];
             if (cellObj != 0) {
                 CGameObject* oh = (static_cast<CGrunt*>(cellObj))->m_object;
@@ -2061,7 +2061,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
 
     if (m_entranceReason == 1) {
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeM));
+        m_objAux->m_1c = ActFindId(s_codeM);
         m_object->m_stateFlags &= ~8;
         m_timePerTile = g_buteMgr.GetDwordDef(s_BOMBGRUNT, s_RunningTimePerTile, 0x64);
         m_entranceActive = 1;
@@ -2070,7 +2070,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     } else if (m_entranceReason == 0x12) {
         m_entranceActive = 1;
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeN));
+        m_objAux->m_1c = ActFindId(s_codeN);
         m_coordToggle = (m_coordToggle == 0);
     } else if (m_entranceReason == 0x13) {
         i32 base;
@@ -2102,12 +2102,12 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
         }
 
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = static_cast<void*>(g_buteTree.Find("I"));
+        m_objAux->m_1c = ActFindId("I");
         m_entranceActive = 1;
         SetEntrancePos(1, 1);
     } else {
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = static_cast<void*>(g_buteTree.Find("I"));
+        m_objAux->m_1c = ActFindId("I");
         SetEntrancePos(1, 1);
     }
 
@@ -2211,7 +2211,7 @@ i32 CGrunt::StepEntranceRelatchB() {
         CreateToySprite();
     }
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = static_cast<void*>(g_buteTree.Find(s_codeD));
+    m_objAux->m_1c = ActFindId(s_codeD);
     CGruntzMgr* g = g_gameReg;
     CMapMgr* grid = g->m_tileGrid;
     i32 tx = m_lastTilePxX >> 5;

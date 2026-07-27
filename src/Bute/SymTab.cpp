@@ -444,7 +444,7 @@ i32 CRezDirNode::Load(i32 childFlag) {
     }
 
     RezSrc* src = m_src;
-    if (src->m_8 == 0 || static_cast<u32>(src->m_1c) > 1) {
+    if (src->m_8 == 0 || src->m_1c > 1) {
         RezAssertFail("CRezDir::Load Failed! (File is not sorted!)");
         return 0;
     }

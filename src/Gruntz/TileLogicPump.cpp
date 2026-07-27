@@ -363,7 +363,7 @@ CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_38->m_flags |= 0x10000;
     }
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
 }
 
 RVA(0x0010d8c0, 0x102)
@@ -415,7 +415,7 @@ i32 CWarpStonePad::AdvanceAnim() {
 RVA(0x0010dc40, 0x154)
 CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
     m_38->m_flags |= 3;
     m_38->m_stateFlags |= 1;
 }
@@ -470,7 +470,7 @@ i32 CTileTriggerSwitch::AdvanceAnim() {
 RVA(0x0010e220, 0x17d)
 CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
     m_38->m_flags |= 2;
     m_38->m_flags |= 1;
     m_38->m_stateFlags |= 1;
@@ -530,7 +530,7 @@ void CTileTrigger::RegisterActs() {
 RVA(0x0010e800, 0x17d)
 CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
     m_38->m_flags |= 2;
     m_38->m_flags |= 1;
     m_38->m_stateFlags |= 1;
@@ -614,7 +614,7 @@ i32 CTileTrigger::AdvanceAnim() {
 RVA(0x0010ee20, 0x27d)
 CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
     m_38->m_flags |= 2;
     m_38->m_flags |= 1;
     i32 zk = m_object->m_layer->m_anchorY + m_object->m_screenY + 0x186a0;
@@ -838,7 +838,7 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
         desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
     m_38->ApplyLookupSprite(sprite, elem->m_param);
     m_prevAnimSetNode = m_objAux->m_1c; // save the prev anim-set node (CUserLogic base field)
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
     return 1;
 }
 

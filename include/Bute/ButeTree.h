@@ -60,7 +60,7 @@ extern CButeTree g_buteTree;
 // ids stored in the void* slot. These wrappers keep that one reinterpret at the
 // boundary instead of at every call site.
 static inline i32 ActFindId(const char* key) {
-    return reinterpret_cast<i32>(g_buteTree.Find(key));
+    return ActFindId(key);
 }
 static inline void ActInsertId(const char* key, i32 id) {
     g_buteTree.Insert(key, reinterpret_cast<void*>(id));

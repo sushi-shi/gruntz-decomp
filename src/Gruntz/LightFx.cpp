@@ -189,7 +189,7 @@ i32 CLightFx::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4)
 RVA(0x0009d770, 0x25)
 i32 CLightFx::RebindNode() {
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
     return 0;
 }
 

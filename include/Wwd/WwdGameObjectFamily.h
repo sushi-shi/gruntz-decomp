@@ -83,7 +83,7 @@ public:
     void AddLogicHit(char* key);            // 0x150f50
     void AddLogicAttack(char* key);         // 0x151030
     void AddLogicBump(char* key);           // 0x151110
-    i32 NotifyHooked(void* arg);            // 0x151d20  hooked notify via the +0x7c aux
+    i32 NotifyHooked(i32 arg);              // 0x151d20  hooked notify via the +0x7c aux
 
     i32 m_sortKey;  // +0x74  the manager z-order sort key (Setup stores a3;
                     //         CDDrawChildGroup::InsertSorted orders the list by it)

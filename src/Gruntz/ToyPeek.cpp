@@ -39,7 +39,7 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_startClockLo = g_frameTime;
     m_startClockHi = 0;
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_1c = ActFindId("A");
 }
 
 RVA(0x000983e0, 0x98)

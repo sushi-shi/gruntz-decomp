@@ -2126,14 +2126,14 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
         }
         eq =
             (strcmp(
-                 (*g_typeColl.GetNameRecord(static_cast<void*>((m_objAux->m_1c)))),
+                 (*g_typeColl.GetNameRecord(m_objAux->m_1c)),
                  "A"
              )
              != 0);
         if (eq) {
             eq =
                 (strcmp(
-                     (*g_typeColl.GetNameRecord(static_cast<void*>((m_objAux->m_1c)))),
+                     (*g_typeColl.GetNameRecord(m_objAux->m_1c)),
                      "D"
                  )
                  != 0);

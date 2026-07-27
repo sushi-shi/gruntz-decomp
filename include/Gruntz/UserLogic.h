@@ -157,7 +157,7 @@ public:
     // - a base virtual cannot touch a derived field, so +0x30 is CUserLogic's.
     // Was declared THREE times in the derived worlds (TILE_LOGIC_TAIL, CTileLogic,
     // CGrunt) under this same name/offset/role: one inherited field, modeled thrice.
-    void* m_prevAnimSetNode; // +0x30
+    i32 m_prevAnimSetNode; // +0x30  the saved AnimWorkerObj::m_1c act id
 };
 SIZE(0x34); // base size 0x34 (see the NOTE). The tile-logic leaves'
 

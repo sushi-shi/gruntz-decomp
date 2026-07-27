@@ -18,14 +18,15 @@ public:
     CTypeCollRuntime();
     virtual ~CTypeCollRuntime() OVERRIDE;
 
-    char** GetNameRecord(void* node) {
-        return reinterpret_cast<char**>(_zdvec::IndexToPtr(reinterpret_cast<i32>(node)));
+    // the key IS the act id (AnimWorkerObj::m_1c / ActFindId), not a pointer
+    char** GetNameRecord(i32 key) {
+        return reinterpret_cast<char**>(_zdvec::IndexToPtr(key));
     }
-    CAnimNameRecord* GetNameRecords(void* node) {
-        return reinterpret_cast<CAnimNameRecord*>(_zvec::IndexToPtr(reinterpret_cast<i32>(node)));
+    CAnimNameRecord* GetNameRecords(i32 key) {
+        return reinterpret_cast<CAnimNameRecord*>(_zvec::IndexToPtr(key));
     }
-    CAnimNameRecord* ScratchResolve(void* node) {
-        return reinterpret_cast<CAnimNameRecord*>(_zvec::IndexToPtr(reinterpret_cast<i32>(node)));
+    CAnimNameRecord* ScratchResolve(i32 key) {
+        return reinterpret_cast<CAnimNameRecord*>(_zvec::IndexToPtr(key));
     }
 
     // The element type is CString: the band is byte-addressed (base + (id-lo)*stride),

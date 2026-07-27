@@ -134,7 +134,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_38->m_flags |= 0x10000;
     } else {
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = g_buteTree.Find("A");
+        m_objAux->m_1c = ActFindId("A");
         m_value = m_38->m_1a0.m_14;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
@@ -215,7 +215,7 @@ i32 CPathHazard::Tick() {
                 m_legDeadline =
                     static_cast<u32>(g_frameTime); // the running game clock seeds the leg deadline
                 m_prevAnimSetNode = m_objAux->m_1c;
-                m_objAux->m_1c = g_buteTree.Find("B");
+                m_objAux->m_1c = ActFindId("B");
                 return 0;
             }
             this->BeginLeg(); // virtual slot 19 (+0x4c)
@@ -366,7 +366,7 @@ i32 CPathHazard::SiblingTick() {
         o->m_drawFillArg = g_gameReg->m_logicPump->m_tables[5]; // [m_78 + 0x28]
         this->BeginLeg();
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = g_buteTree.Find("A");
+        m_objAux->m_1c = ActFindId("A");
         m_strikeArmed = 0;
     }
     return 0;
