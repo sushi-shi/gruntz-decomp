@@ -7,6 +7,7 @@
 #include <Io/FileMem.h>   // the serialize stream (CFileMemBase == the real CFileMemBase)
 
 #include <Gruntz/Grunt.h>
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid->m_grid (the 4x15 placed-grunt board @+0x1c)
 #include <Wwd/WwdFile.h>
 #include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_level: planeCtx bar rect + main plane)
 #include <string.h> // inlined memset / strcpy in Serialize (rep stos / repne scas + rep movs)
@@ -143,7 +144,8 @@ i32 CActionOptionsMenuBar::Activate(i32 a) {
 // frame is 6 bytes short of 310 (size mismatch -> no per-fn %). Logic exact.
 RVA(0x00009330, 0x136)
 i32 CActionOptionsMenuBar::Refresh() {
-    CGrunt* grunt = (reinterpret_cast<CGrunt**>(g_gameReg->m_cmdGrid))[m_gridX * 15 + m_gridY];
+    i32 cell = m_gridY + m_gridX * TM_GRID_COLS;
+    CGrunt* grunt = g_gameReg->m_cmdGrid->m_grid[cell];
     if (grunt != 0) {
         m_button1Icon = grunt->m_198;
         if (grunt->m_entranceReason >= 0x17) {
@@ -254,7 +256,9 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     if (!m_active) {
         return 1;
     }
-    if ((reinterpret_cast<CGrunt**>(g_gameReg->m_cmdGrid))[m_gridX * 15 + m_gridY] == 0) {
+    i32 cell = m_gridY + m_gridX * TM_GRID_COLS;
+    CGrunt* unit = g_gameReg->m_cmdGrid->m_grid[cell];
+    if (unit == 0) {
         return 1;
     }
     // Demote any held (==2) button back to armed (==1).

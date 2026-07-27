@@ -411,25 +411,21 @@ i32 CGruntVoice::Update() {
     if (m_owner == 0) {
         CGameObject* out = 0;
         i32 src = m_source;
-        i32 resolved = MapLookup(
-            g_gameReg->m_world->m_childGroup->m_map48,
-            // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
-            reinterpret_cast<void*>(src),
-            out
-        );
-        if (resolved != 0) {
-            if (out == 0) {
-                resolved = 0;
-            } else {
-                resolved =
-                    (out->GetClassId() == CLASSID_SERIALREF) ? reinterpret_cast<i32>(out) : 0;
-            }
+        CWwdGameObjectA* resolved = 0;
+        if (MapLookup(
+                g_gameReg->m_world->m_childGroup->m_map48,
+                // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
+                reinterpret_cast<void*>(src),
+                out
+            ) != 0
+            && out != 0 && out->GetClassId() == CLASSID_SERIALREF) {
+            resolved = static_cast<CWwdGameObjectA*>(out);
         }
         if (resolved == 0) {
             m_object->m_stateFlags |= 1;
             return 0;
         }
-        CUserLogic* logic = (reinterpret_cast<CGameObject*>(resolved))->m_7c->m_logic;
+        CUserLogic* logic = resolved->m_7c->m_logic;
         if (logic == 0) {
             m_object->m_stateFlags |= 1;
             return 0;
@@ -440,19 +436,15 @@ i32 CGruntVoice::Update() {
     } else {
         CGameObject* out = 0;
         i32 src = m_source;
-        i32 resolved = MapLookup(
-            g_gameReg->m_world->m_childGroup->m_map48,
-            // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
-            reinterpret_cast<void*>(src),
-            out
-        );
-        if (resolved != 0) {
-            if (out == 0) {
-                resolved = 0;
-            } else {
-                resolved =
-                    (out->GetClassId() == CLASSID_SERIALREF) ? reinterpret_cast<i32>(out) : 0;
-            }
+        CWwdGameObjectA* resolved = 0;
+        if (MapLookup(
+                g_gameReg->m_world->m_childGroup->m_map48,
+                // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
+                reinterpret_cast<void*>(src),
+                out
+            ) != 0
+            && out != 0 && out->GetClassId() == CLASSID_SERIALREF) {
+            resolved = static_cast<CWwdGameObjectA*>(out);
         }
         if (resolved == 0) {
             m_object->m_stateFlags |= 1;
@@ -460,13 +452,13 @@ i32 CGruntVoice::Update() {
         }
         m_object->m_stateFlags &= ~1;
         i32 dx = 0, dy = 0;
-        CImage* layer = (reinterpret_cast<CWwdGameObjectA*>(resolved))->m_layer;
+        CImage* layer = resolved->m_layer;
         if (layer != 0) {
             dx = layer->m_originX;
             dy = layer->m_originY;
         }
-        m_object->m_screenX = (reinterpret_cast<CGameObject*>(resolved))->m_screenX + dx;
-        m_object->m_screenY = (reinterpret_cast<CGameObject*>(resolved))->m_screenY + dy - 0x32;
+        m_object->m_screenX = resolved->m_screenX + dx;
+        m_object->m_screenY = resolved->m_screenY + dy - 0x32;
     }
     return 0;
 }

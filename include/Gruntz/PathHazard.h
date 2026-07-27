@@ -15,15 +15,6 @@ struct CPathWaypoint {
 };
 SIZE_UNKNOWN();
 
-struct CPathEntity {
-    char m_pad00[0x258];
-    i32 m_258; // +0x258
-};
-SIZE_UNKNOWN();
-
-struct CPathSubMgr {};
-SIZE_UNKNOWN();
-
 extern "C" u32 g_engineFrameDelta;
 
 extern "C" i32 g_frameDelta; // VA 0x645584

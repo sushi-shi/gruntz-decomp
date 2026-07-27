@@ -651,7 +651,9 @@ i32 CBattlezMapConfig::StepRowSpawn(i32) {
     if (cell == -1) {
         return 0;
     }
-    CGrunt* unit = (reinterpret_cast<CGrunt**>((m_ctx->m_cmdGrid)))[cell * 3 + m_curCell * 3];
+    // retail 0x26470: `lea ecx,[curCell+curCell*2]; lea edx,[cell+ecx*4]; add ecx,edx`
+    // == cell + curCell*15, then `[grid+ecx*4+0x1c]` - the +0x1c board, not a +0 pun.
+    CGrunt* unit = m_ctx->m_cmdGrid->m_grid[cell + m_curCell * TM_GRID_COLS];
     if (unit == 0) {
         return 0;
     }
@@ -3529,8 +3531,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                         }
                     } else {
                         if (k == 0x13e || k == 0x140 || k == 0x143) {
-                            (static_cast<CTileTriggerContainer*>(m_cellQuery))
-                                ->SetCell(fcx, fcy, m_curCell);
+                            m_cellQuery->SetCell(fcx, fcy, m_curCell);
                         }
                     }
                 }
@@ -5160,7 +5161,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     if (cell == -1) {
         return 0;
     }
-    CGrunt* unit = m_ctx->m_cmdGrid->m_grid[cell + m_curCell * 15];
+    CGrunt* unit = m_ctx->m_cmdGrid->m_grid[cell + m_curCell * TM_GRID_COLS];
     if (unit == 0) {
         return 0;
     }
@@ -5209,13 +5210,14 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
     // 0x67, else resolved through QueryA on the packed coordinate.
     BrickzCell* tile = &(static_cast<BrickzCell*>((m_board)->m_rows[row]))[col];
     CTileTriggerLogic* cell;
+    // Both arms run on the +0x14 tile-trigger container, NOT +0x04 (retail 0x30b20:
+    // `mov edx,[ebp+0x14]; mov edi,[edx+0x70]` and `mov ecx,[ebp+0x14]; call
+    // FindInLists12`). +0x70 is AddLogic's id-0x15 latch, which is what tile marker
+    // 0x67 selects - so the ex "ctx+0x70 IS the board" @identity-TODO was a wrong decode.
     if (tile->m_10 == 0x67) {
-        // ctx+0x70 IS the board (== this->m_board); walked below as the m_block
-        // slots - an unproven aliasing decode, kept flagged. @identity-TODO
-        cell = reinterpret_cast<CTileTriggerLogic*>(m_ctx->m_tileGrid);
+        cell = m_cellQuery->m_latchedLeaf;
     } else {
-        cell =
-            (reinterpret_cast<CTileTriggerContainer*>(m_ctx))->FindInLists12((col << 8) + row, 0);
+        cell = m_cellQuery->FindInLists12((col << 8) + row, 0);
     }
     i32 bestX = col;
     i32 bestY = col;
