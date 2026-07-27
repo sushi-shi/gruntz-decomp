@@ -2,7 +2,7 @@
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 
 #include <Image/Image.h>            // the single-source CDDSurface (the DIRSURF surface)
-#include <Image/FileImageRecords.h> // DecodeSrc / BmpFileHeader / TgaHeader / RtBitmapResHeader
+#include <Image/FileImageRecords.h> // BmpFileHeader / TgaHeader / RtBitmapResHeader
 #include <DDrawMgr/DDrawPtrCollections.h> // the palette-context (m_palBpp/m_palette/m_hasPalette) `info` points at
 
 #include <ddraw.h> // real IDirectDrawSurface dispatch (this->m_8->Unlock in the exporters)
@@ -28,7 +28,7 @@ static u8 s_palPidData[0x400]; // 0x684ef0 (CDDSurface::DecodePid)
 static u8 s_palPcxData[0x400]; // 0x6852f0 (CDDSurface::DecodePcxData)
 
 // ---------------------------------------------------------------------------
-// DecodeRun - decode a run-length image (`src`, the DecodeSrc shape) into
+// DecodeRun - decode a whole BMP file image (`srcv`) into
 // `info`. The source format is its +0x1c word (8/0x18); a convert pass runs when it
 // differs from info's current format (+0x538): an 8-bit source builds an RGB-reversed
 // ramp from its +0x36 palette into g_paletteRampBuf; a 24-bit-into-8-bit uses info's palette
@@ -42,8 +42,14 @@ static u8 s_palPcxData[0x400]; // 0x6852f0 (CDDSurface::DecodePcxData)
 // one allocation retail emitted. Deferred to the final sweep.
 RVA(0x00143cf0, 0x16b)
 i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
-    DecodeSrc* src = static_cast<DecodeSrc*>(srcv);
-    i32 srcFmt = src->m_1c;
+    // `srcv` is a whole BMP file image: BITMAPFILEHEADER, then BITMAPINFO (header +
+    // the 256-entry RGBQUAD palette at +0x36), then the bits at bfOffBits. The
+    // ex-DecodeSrc pad-view spelled exactly these fields as m_0a/m_12/m_16/m_1c -
+    // bfOffBits/biWidth/biHeight/biBitCount - and LoadBmp below already reads the same
+    // buffer through the real Win32 types.
+    BITMAPFILEHEADER* bfh = static_cast<BITMAPFILEHEADER*>(srcv);
+    BITMAPINFO* bmi = reinterpret_cast<BITMAPINFO*>(bfh + 1);
+    i32 srcFmt = bmi->bmiHeader.biBitCount;
     if (srcFmt != 8 && srcFmt != 0x18) {
         return 0;
     }
@@ -61,16 +67,15 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     if (convert) {
         if (srcFmt == 8) {
             u8* w = g_paletteRampBuf;
-            // BMP: the pixel data begins one BITMAPFILEHEADER past the buffer - byte-forced
-            u8* p = reinterpret_cast<u8*>(src) + sizeof(BITMAPFILEHEADER)
-                    + sizeof(BITMAPINFOHEADER); // the BMP palette
+            RGBQUAD* p = bmi->bmiColors; // the 256-entry palette at +0x36
             i32 i = 0;
             do {
-                g_paletteRampBuf[i] = p[2];
-                g_paletteRampBuf[i + 1] = p[1];
-                g_paletteRampBuf[i + 2] = p[0];
+                // BGR -> RGB: the ramp is the reversed palette
+                g_paletteRampBuf[i] = p->rgbRed;
+                g_paletteRampBuf[i + 1] = p->rgbGreen;
+                g_paletteRampBuf[i + 2] = p->rgbBlue;
                 g_paletteRampBuf[i + 3] = 0;
-                p += 4;
+                p++;
                 i += 4;
             } while (i < 0x400);
             pal = g_paletteRampBuf;
@@ -85,13 +90,13 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
         }
     }
 
-    if (CDDSurface::BlitSurf(info, src->m_12, src->m_16, 0, b)
+    if (CDDSurface::BlitSurf(info, bmi->bmiHeader.biWidth, bmi->bmiHeader.biHeight, 0, b)
         == 0) { // direct (qualified) slot-3 call
         return 0;
     }
 
-    // BMP: bfOffBits is a RUNTIME byte offset to the bits - byte-forced
-    void* run = reinterpret_cast<u8*>(src) + src->m_0a;
+    // bfOffBits is the format's own byte offset from the start of the file image
+    void* run = reinterpret_cast<u8*>(bfh) + bfh->bfOffBits;
     if (convert) {
         if (Blit(run, srcFmt, pal, 2) == 0) {
             return 0;

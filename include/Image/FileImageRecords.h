@@ -16,18 +16,9 @@ struct Bmp256Info {
 SIZE(0x428);
 
 #pragma pack(push, 1)
-struct DecodeSrc {
-    char _00[0x0a];
-    i32 m_0a; // +0x0a  run-data byte offset
-    char _0e[0x12 - 0x0e];
-    i32 m_12; // +0x12  dim a
-    i32 m_16; // +0x16  dim b
-    char _1a[0x1c - 0x1a];
-    u16 m_1c; // +0x1c  format word
-    char _1e[0x36 - 0x1e];
-    // +0x36  source palette the grayscale-ramp build reads
-};
-SIZE_UNKNOWN();
+// DecodeSrc was a pad-view of the standard BMP file image (BITMAPFILEHEADER +
+// BITMAPINFO); its m_0a/m_12/m_16/m_1c were bfOffBits/biWidth/biHeight/biBitCount.
+// DecodeRun now reads the real Win32 types - do not reintroduce it.
 #pragma pack(pop)
 
 #pragma pack(push, 1)
