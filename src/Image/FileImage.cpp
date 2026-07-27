@@ -247,14 +247,14 @@ i32 CDDSurface::Load(CDDrawPtrCollections * a, char* name, i32 c) {
 }
 
 RVA(0x00144350, 0x5f)
-i32 CDDSurface::SaveDispatch(char* a1, void* a2, void* a3) {
+i32 CDDSurface::SaveDispatch(char* a1, void* pal, i32 flag) {
     switch (m_bitDepth) {
         case 0x18:
-            return SaveTga(a1, a2, reinterpret_cast<i32>(a3)); // 24bpp -> 0x144900
+            return SaveTga(a1, pal, flag); // 24bpp -> 0x144900
         case 0x10:
-            return SaveRle16(a1, a2, a3);
+            return SaveRle16(a1, pal, flag);
         case 8:
-            return SaveBmp(a1, a2, reinterpret_cast<i32>(a3)); // 8bpp -> 0x1443b0
+            return SaveBmp(a1, pal, flag); // 8bpp -> 0x1443b0
         default:
             return 0;
     }
@@ -386,7 +386,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
 // (2) register-allocation entropy in the 16->24bpp conversion inner loop. Logic is
 // complete + correct; both are documented non-steerable plateaus.
 RVA(0x00144640, 0x2be)
-i32 CDDSurface::SaveRle16(void* a1, void* a2, void* a3) {
+i32 CDDSurface::SaveRle16(void* a1, void* a2, i32 flag) {
     if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
         return 0;
     }
@@ -439,7 +439,7 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, void* a3) {
 
     CFile file;
     i32 ok;
-    if (a3 != 0) {
+    if (flag != 0) {
         ok = file.Open(static_cast<char*>(a2), 0x2001, 0);
     } else {
         ok = file.Open(static_cast<char*>(a2), 0x1001, 0);

@@ -18,7 +18,7 @@ void SaveFrontBufferShot(
     i32 w,
     i32 h,
     char* name,
-    void* arg7
+    i32 arg7
 );
 
 #endif // GRUNTZ_GRUNTZMGRCMD_H

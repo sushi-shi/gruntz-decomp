@@ -126,15 +126,15 @@ public:
     // --- the surface SAVE/export path (DIRSURF.CPP) ---------------------------
     // SaveFile validates the surface + args, SaveDispatch picks the per-bit-depth writer
     // by m_bitDepth (8/16/24). Clear blanks the surface.
-    i32 SaveFile(char* buf, i32 type, void* a3, void* a4); // 0x13f910 (ret 0x10)
-    i32 SaveDispatch(char* a1, void* a2, void* a3);        // 0x144350 (ret 0xc)
+    i32 SaveFile(char* buf, i32 type, void* pal, i32 flag); // 0x13f910 (ret 0x10)
+    i32 SaveDispatch(char* a1, void* pal, i32 flag);       // 0x144350 (ret 0xc)
     void Clear(i32 white);                                 // 0x13edb0 (ret 4)
 
     // The per-bit-depth file writers SaveDispatch delegates to (ret 0xc = 3 args). SaveBmp
     // (0x1443b0) writes the 8bpp palettized BMP, SaveTga (0x144900) the 24bpp TGA,
     // SaveRle16 (0x144640) the 16bpp->24bpp BMP. SaveBmp/SaveTga are in FileImage.cpp.
     i32 SaveBmp(const char* path, void* pal, i32 mode); // 0x1443b0 (8bpp)
-    i32 SaveRle16(void* a1, void* a2, void* a3);        // 0x144640 (16bpp)
+    i32 SaveRle16(void* a1, void* a2, i32 flag);        // 0x144640 (16bpp)
     i32 SaveTga(const char* path, void* pal, i32 mode); // 0x144900 (24bpp)
 
     // --- format dispatchers (Image.cpp). __thiscall on CDDSurface --------------

@@ -1032,7 +1032,7 @@ void BuildColorChannelTables() {
 }
 
 RVA(0x0013f910, 0x4a)
-i32 CDDSurface::SaveFile(char* buf, i32 type, void* a3, void* a4) {
+i32 CDDSurface::SaveFile(char* buf, i32 type, void* pal, i32 flag) {
     if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
         return 0;
     }
@@ -1044,7 +1044,7 @@ i32 CDDSurface::SaveFile(char* buf, i32 type, void* a3, void* a4) {
     }
     switch (type) {
         case 1:
-            return SaveDispatch(buf, a3, a4);
+            return SaveDispatch(buf, pal, flag);
         default:
             return 0;
     }

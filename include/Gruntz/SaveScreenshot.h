@@ -16,7 +16,7 @@ i32 SaveScreenshot(
     i32 arg4,
     i32 arg5,
     char* name,
-    void* arg7
+    i32 arg7
 ); // 0x114ff0
 
 #endif // GRUNTZ_SAVESCREENSHOT_H

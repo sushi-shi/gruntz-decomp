@@ -27,7 +27,7 @@ i32 SaveScreenshot(
     i32 arg4,
     i32 arg5,
     char* name,
-    void* arg7
+    i32 arg7
 ) {
     char nameBuf[0x80];
     i32 descB[6];

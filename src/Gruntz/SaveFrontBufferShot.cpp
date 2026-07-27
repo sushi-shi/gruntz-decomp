@@ -17,7 +17,7 @@ void SaveFrontBufferShot(
     i32 w,
     i32 h,
     char* name,
-    void* arg7
+    i32 arg7
 ) {
     SaveFrontBufferShotImpl(bute, mgr, w, h, name, arg7);
 }
@@ -33,7 +33,7 @@ void SaveFrontBufferShotImpl(
     i32 w,
     i32 h,
     char* name,
-    void* arg7
+    i32 arg7
 ) {
     CDDrawSurfacePair* pair = mgr->m_world->m_drawTarget->m_frontPair;
     if (pair == 0) {
