@@ -40,8 +40,11 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x41, hr, 0);
         return 0;
     }
-    IDirectPlay4Z* raw = reinterpret_cast<IDirectPlay4Z*>(m_releaseIface);
-    hr = raw->QueryInterface(static_cast<void*>(&g_netDirectPlayRiid), &m_directPlay);
+    // The DirectPlayCreate'd object is NOT yet the IDirectPlay4-shaped session
+    // interface - it is the pre-QI object, which is exactly what m_releaseIface is
+    // declared as. QueryInterface is slot 0 of both, so the ex-reinterpret was
+    // pointless: call it on the pointer at its own type.
+    hr = m_releaseIface->QueryInterface(static_cast<void*>(&g_netDirectPlayRiid), &m_directPlay);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x50, hr, 0);
         Destroy();

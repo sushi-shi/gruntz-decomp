@@ -257,13 +257,7 @@ struct GruntRec {
 SIZE(0x410);
 
 class CGruntzCommand;
-
-struct LobbyMsg {
-    i32 m_type; // +0x00 message type
-    i32 m_04;   // +0x04
-    i32 m_08;   // +0x08
-};
-SIZE_UNKNOWN();
+struct CNetCtrlMsg; // the receive-buffer message header (ex the duplicate `LobbyMsg`)
 
 void* Unmatched_bf530(i32 zero); // bf530
 void RecycleCmd(void* cmd);      // bf580  __cdecl
@@ -311,8 +305,8 @@ struct CNetSession {
     ~CNetSession();      // b6220  ResetSync + vector-destroy the 4 slots [multi]
     void ResetSync();    // bf000  clear header, recycle each slot, drain pool
     i32 Poll(i32 delta); // bf5a0  advance active channels; drain the endpoint
-    i32 Dispatch(i32 a, LobbyMsg* b, i32 c); // bf700
-    i32 DispatchMsg(LobbyMsg* m, i32 arg2);  // bf7c0
+    i32 Dispatch(i32 a, CNetCtrlMsg* b, i32 c); // bf700
+    i32 DispatchMsg(CNetCtrlMsg* m, i32 arg2);  // bf7c0
     i32 Tick();                              // bf9e0  snapshot -> broadcast -> flush
     i32 SendAll();                           // bfb40
     i32 SendBatch();                         // bfd40
@@ -358,13 +352,30 @@ struct NetDPName {
 SIZE(0x10); // DirectPlay DPNAME (only the two name pointers are used)
 
 struct IDirectPlay4Z {
-    // External DirectPlay-shaped COM interface (abstract, __stdcall; no dplay.h in
-    // dx/Include, so the slot layout is hand-modeled). STDMETHOD == `virtual HRESULT
-    // __stdcall`, so `dp->Method(args)` lowers to `mov eax,[dp]; call [eax+slot]` -
-    // the runtime COM slot the engine never link-resolves. Only the called slots
-    // carry signatures; slot names follow the reconstructor's functional labels (the
-    // DirectPlay method identities are not all pinned - GetMessageCount slot 17 and
-    // Receive slot 25 land at their real DX indices, the rest are best-effort).
+    // External DirectPlay-shaped COM interface (abstract, __stdcall). STDMETHOD ==
+    // `virtual HRESULT __stdcall`, so `dp->Method(args)` lowers to `mov eax,[dp];
+    // call [eax+slot]` - the runtime COM slot the engine never link-resolves.
+    //
+    // IDENTITY (2026-07-27): this IS `IDirectPlay4` from vendor/directx6/Include/
+    // dplay.h - two names for one interface. Counting dplay.h's DECLARE_INTERFACE_
+    // (IDirectPlay4, IDirectPlay3) slot by slot lines every USED slot up with a real
+    // DirectPlay method of the SAME arity:
+    //     12 EnumGroupsCb(4)  = EnumPlayers(4)      13 EnumPlayers(5)  = EnumSessions(5)
+    //     14 Enum2(2)         = GetCaps(2)          17 GetMessageCount = GetMessageCount
+    //     19 GetGroupData(3)  = GetPlayerCaps(3)    20 GetData2(4)     = GetPlayerData(4)
+    //     22 GetPlayerData2(2)= GetSessionDesc(2)   24 EnumGroups(2)   = Open(2)
+    //     25 Receive          = Receive             26 SetData5(5)     = Send(5)
+    //     29 GetData5(4)      = SetPlayerData(4)
+    // so the local names below are FUNCTIONAL LABELS, and several are misleading
+    // (slot 24 "EnumGroups" is really Open; slot 26 "SetData5" is really Send).
+    // Slot 3 is the one that does NOT fit (ours takes 3 args, DirectPlay's slot 3 is
+    // AddPlayerToGroup(2)) - its ONE caller is CNetMgr::Init, whose receiver comes
+    // from the LOBBY, so that receiver is an IDirectPlayLobby (slot 3 =
+    // Connect(DWORD, LPDIRECTPLAY2*, IUnknown*), 3 args) and not this interface at all.
+    // DEFERRED FOLD: retype m_directPlay to the real IDirectPlay4 and rename all 11
+    // call sites in NetMgr.cpp/Multi.cpp to their real DirectPlay names; split
+    // CNetMgr::Init's receiver out as IDirectPlayLobby. Mechanical (same slot, same
+    // arity => same `call [eax+N]`) but wide, so it is its own change.
     STDMETHOD(QueryInterface)(void* riid, void* out) PURE;                 // slot 0
     STDMETHOD(v01)() PURE;                                                 // slot 1
     STDMETHOD(v02)() PURE;                                                 // slot 2
@@ -555,8 +566,13 @@ struct INetReleasable {
 };
 SIZE_UNKNOWN(); // external COM interface (opaque object); size TBD
 
+// The receive-buffer message header. The ex-`LobbyMsg` (m_type/m_04/m_08) was a
+// second name for THIS record: CNetSession::DispatchMsg switches on +0x00 and hands
+// the SAME pointer to CMulti::HandleControlMsg (0xba1a0) on cases 49/257 - identical
+// storage, identical offsets, so the two reinterprets between them were a two-names-
+// one-class artefact. Folded 2026-07-27, keeping the semantic field names.
 struct CNetCtrlMsg {
-    i32 m_code;     // +0x0  message code (switch tag)
+    i32 m_code;     // +0x0  message code (the DispatchMsg switch tag: 3/5/49/257)
     i32 m_subCode;  // +0x4  sub-code
     i32 m_playerId; // +0x8  payload (player id on the player-left path)
 };

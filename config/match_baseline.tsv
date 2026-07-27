@@ -2132,7 +2132,7 @@ gruntspawnconfig	?Clear@CGruntSpawnConfig@@QAEXXZ	68.0517	68.0517	10	f0ce7146fab
 gruntspawnconfig	?ClearSprites@CGruntSpawnConfig@@QAEXXZ	82.0000	82.0000	3	3c82cd64f656	0x11af90
 gruntspawnconfig	?DtorBody@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	6	e3ff064bf5f7	0x11c7b0
 gruntspawnconfig	?GetButeSlot@CGruntSpawnConfig@@QAEPAXPAUCSpawnButeConfig@@PAUCSpawnButeTarget@@@Z	73.3871	73.3871	4	a699e5fadc20	0x11bba0
-gruntspawnconfig	?Init@CGruntSpawnConfig@@QAEHPAUCSpawnOwner@@@Z	55.3478	55.3478	5	cb1ea7e6ea40	0x11adc0
+gruntspawnconfig	?Init@CGruntSpawnConfig@@QAEHPAVCGruntzMgr@@@Z	55.3478	55.3478	5	cb1ea7e6ea40	0x11adc0
 gruntspawnconfig	?IsReady@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	2	9e23fbdc0786	0x11c830
 gruntspawnconfig	?LoadGruntSpawnConfig@CGruntSpawnConfig@@QAEHHHHHH@Z	76.2470	76.2470	11	a921fb87803e	0x11afb0
 gruntspawnconfig	?LoadGruntVoices@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	12	d6d1cb85b38c	0x11af00
@@ -3127,8 +3127,8 @@ netcmdslot	?CheckLatency@CNetSession@@QAEHH@Z	100.0000	100.0000	3	8f589e555156	0
 netcmdslot	?ClearAckFlags@CNetCmdSlot@@QAEXXZ	84.2857	84.2857	1	9182e2d1f44a	0xbf120
 netcmdslot	?ClearCmds@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	3	9e97af317854	0xc12e0
 netcmdslot	?CreateSlot@CNetSession@@QAEPAUCNetCmdSlot@@HH@Z	100.0000	100.0000	4	0be6a3e82f91	0xbfff0
-netcmdslot	?Dispatch@CNetSession@@QAEHHPAULobbyMsg@@H@Z	93.1667	93.1667	3	3136738ad79c	0xbf700
-netcmdslot	?DispatchMsg@CNetSession@@QAEHPAULobbyMsg@@H@Z	0.0000	0.0000	3	5b62562ffe4b	0xbf7c0
+netcmdslot	?Dispatch@CNetSession@@QAEHHPAUCNetCtrlMsg@@H@Z	93.1667	93.1667	3	3136738ad79c	0xbf700
+netcmdslot	?DispatchMsg@CNetSession@@QAEHPAUCNetCtrlMsg@@H@Z	0.0000	0.0000	3	5b62562ffe4b	0xbf7c0
 netcmdslot	?FindCmd@CNetCmdSlot@@QAEPAUCNetCmd@@H@Z	100.0000	100.0000	5	8e39e6dc8f1e	0xc12b0
 netcmdslot	?FindCmdSlot@CNetSession@@QAEPAUCNetCmdSlot@@H@Z	100.0000	100.0000	2	e16768f6e142	0xc00a0
 netcmdslot	?FindSlot@CNetSession@@QAEPAUCNetCmdSlot@@I@Z	88.7500	88.7500	3	83508373076b	0xc0460
@@ -3481,11 +3481,11 @@ rezfile	?V0@CRezList@@UAEXXZ	100.0000	100.0000	1	3537132c0e0f	0x13c4d0
 rezfile	?Write@CRezDir@@UAEHHHIPAX@Z	100.0000	100.0000	1	25c187cec43d	0x13ca50
 rezfile	?Write@CRezFile@@UAEHHHIPAX@Z	100.0000	100.0000	2	3c72c61e671a	0x13cca0
 rezfile	?Write@CRezItm@@UAEHHHIPAX@Z	100.0000	100.0000	1	0ec94e06f049	0x13c6c0
-rezlist	?AddHead@CObjList@@QAEXPAVCObjNode@@@Z	100.0000	100.0000	1	2052120cab0f	0x1851e0
-rezlist	?AddTail@CRezList@@QAEXPAUCRezListNode@@@Z	100.0000	100.0000	3	3261a4e1ba85	0x185210
-rezlist	?InsertAfter@CRezList@@QAEXPAUCRezListNode@@0@Z	99.6774	99.6774	1	f739dff92b90	0x185240
-rezlist	?InsertBefore@CRezList@@QAEXPAUCRezListNode@@0@Z	99.6774	99.6774	1	15a5245d654e	0x185290
-rezlist	?Remove@CObjList@@QAEXPAVCObjNode@@@Z	100.0000	100.0000	1	f170008c33d6	0x1852e0
+rezlist	?AddHead@CObjList@@QAEXPAVCRezItmBase@@@Z	100.0000	100.0000	1	2052120cab0f	0x1851e0
+rezlist	?AddTail@CRezList@@QAEXPAVCRezItmBase@@@Z	100.0000	100.0000	3	3261a4e1ba85	0x185210
+rezlist	?InsertAfter@CRezList@@QAEXPAVCRezItmBase@@0@Z	99.6774	99.6774	1	f739dff92b90	0x185240
+rezlist	?InsertBefore@CRezList@@QAEXPAVCRezItmBase@@0@Z	99.6774	99.6774	1	15a5245d654e	0x185290
+rezlist	?Remove@CObjList@@QAEXPAVCRezItmBase@@@Z	100.0000	100.0000	1	f170008c33d6	0x1852e0
 rezmgr	?HandleDebugPosition@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	ee867722db21	0x8e470
 rezmgr	?MakeRezPath@CGruntzMgr@@QAEHXZ	92.7923	92.7923	2	c88af8746b20	0x91670
 rezmgr	?PerFrameTick@CGruntzMgr@@UAEHXZ	100.0000	100.0000	1	a6b920d100db	0x8b740
@@ -3845,7 +3845,7 @@ spritereftable	?Clear@CSpriteRefTable@@QAEXXZ	100.0000	100.0000	4	4f1d73cea9a6	0
 spritereftable	?GetA@CSpriteRefTable@@QAEPAVCSpriteRef@@H@Z	100.0000	100.0000	2	744984f46998	0xe2360
 spritereftable	?GetB@CSpriteRefTable@@QAEPAVCSpriteRef@@H@Z	100.0000	100.0000	2	39c705ca6877	0xe2390
 spritereftable	?GetSel@CSpriteRefTable@@QAEHHH@Z	100.0000	100.0000	2	570676d753b4	0xe23c0
-spritereftable	?Init@CSpriteRefTable@@QAEHHH@Z	100.0000	100.0000	6	2ebd617b5be4	0xe2250
+spritereftable	?Init@CSpriteRefTable@@QAEHPAVCShadeTableCache@@PAVCDDrawSurfaceMgr@@@Z	100.0000	100.0000	6	2ebd617b5be4	0xe2250
 spritereftable	?LoadGruntzPalette@CSpriteRefTable@@QAEHHH@Z	96.9231	96.9231	8	7659bc43244c	0xe2d10
 spritereftable	?LoadToolToyPalettes@CSpriteRefTable@@QAEHH@Z	100.0000	100.0000	5	7e13e9ba8be4	0xe2980
 spritereftable	?Reset@CSpriteRefTable@@QAEXXZ	100.0000	100.0000	3	b98326fd1a72	0xe2290

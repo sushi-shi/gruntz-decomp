@@ -171,8 +171,12 @@ i32 CNetSession::Poll(i32 delta) {
         avail = 0;
     } else {
         i32 got;
-        IDirectPlay4* ep = reinterpret_cast<IDirectPlay4*>(m_netMgr->m_directPlay);
-        i32 r = ep->GetMessageCount(m_localDesc->m_id, reinterpret_cast<LPDWORD>(&got));
+        // m_directPlay IS this interface: its GetMessageCount sits at slot 17 and
+        // Receive at slot 25, the same indices dplay.h gives IDirectPlay4 (see the
+        // IDirectPlay4Z note in <Net/NetMgr.h>), so the ex-reinterpret to the SDK name
+        // was a two-names-one-interface artefact, not a conversion.
+        IDirectPlay4Z* ep = m_netMgr->m_directPlay;
+        i32 r = ep->GetMessageCount(m_localDesc->m_id, &got);
         avail = (r == 0) ? got : 0;
     }
 
@@ -181,14 +185,8 @@ i32 CNetSession::Poll(i32 delta) {
     while (avail > 0 && m_session->m_pollAbort == 0) {
         i32 len = 0x800;
         i32 chan = m_localDesc->m_id;
-        IDirectPlay4* ep = reinterpret_cast<IDirectPlay4*>(m_netMgr->m_directPlay);
-        i32 st = ep->Receive(
-            reinterpret_cast<LPDPID>(&a),
-            reinterpret_cast<LPDPID>(&chan),
-            1,
-            g_lobbyRecvBuf,
-            reinterpret_cast<LPDWORD>(&len)
-        );
+        IDirectPlay4Z* ep = m_netMgr->m_directPlay;
+        i32 st = ep->Receive(&a, &chan, 1, g_lobbyRecvBuf, &len);
         if (st != 0) {
             CNetMgr::ReportError(const_cast<char*>("c:\\proj\\incs\\netmgr.h"), 0x141, st, 0);
             if (st != 0) {
@@ -198,7 +196,7 @@ i32 CNetSession::Poll(i32 delta) {
         received++;
         avail--;
         if (a != m_localDesc->m_id) {
-            Dispatch(a, reinterpret_cast<LobbyMsg*>(g_lobbyRecvBuf), len);
+            Dispatch(a, reinterpret_cast<CNetCtrlMsg*>(g_lobbyRecvBuf), len);
         }
     }
     return received;
@@ -208,7 +206,7 @@ i32 CNetSession::Poll(i32 delta) {
 // regalloc tie (~93%): logic byte-exact, retail keeps obj in eax / reads the flag
 // byte into cl; cl's MSVC spills obj to ecx then reads flag into al.
 RVA(0x000bf700, 0x82)
-i32 CNetSession::Dispatch(i32 a, LobbyMsg* b, i32 c) {
+i32 CNetSession::Dispatch(i32 a, CNetCtrlMsg* b, i32 c) {
     if (!b) {
         return 0;
     }
@@ -237,26 +235,26 @@ i32 CNetSession::Dispatch(i32 a, LobbyMsg* b, i32 c) {
 // the 0xff-byte index table + jump table as separate $L symbols while the delinker
 // folds them into the fn symbol, so the table region can't pair.
 RVA(0x000bf7c0, 0x95)
-i32 CNetSession::DispatchMsg(LobbyMsg* m, i32 arg2) {
+i32 CNetSession::DispatchMsg(CNetCtrlMsg* m, i32 arg2) {
     if (!m) {
         return 0;
     }
-    switch (m->m_type) {
+    switch (m->m_code) {
         case 3:
             m_session->LoadMenuSelectSprite(static_cast<void*>(m));
             return 1;
         case 5:
-            if (m->m_04 == 1) {
-                i32 playerId = m->m_08;
+            if (m->m_subCode == 1) {
+                i32 playerId = m->m_playerId;
                 m_session->OnPlayerLeft(playerId);
                 m_session->ResetPlayerCommands(playerId);
                 return 1;
             }
             return 1;
         case 49:
-            return m_session->HandleControlMsg(reinterpret_cast<CNetCtrlMsg*>(m), arg2);
+            return m_session->HandleControlMsg(m, arg2);
         case 257:
-            return m_session->HandleControlMsg(reinterpret_cast<CNetCtrlMsg*>(m), arg2);
+            return m_session->HandleControlMsg(m, arg2);
         default:
             return 1;
     }

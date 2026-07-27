@@ -1651,12 +1651,14 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             }
 
             // type == 0x1e || type == 0x1f: rock-break marker + particle
-            CTileTriggerSwitchLogic* lo = reinterpret_cast<CTileTriggerSwitchLogic*>(
-                (static_cast<CTileTriggerContainer*>(root->m_2e4))
-                    ->FindInLists12(ty + (tx << 8), 0x1a)
-            );
+            // FindInLists12 already RETURNS a CTileTriggerLogic* and ApplyMove is
+            // CTileTriggerLogic's - the local was mis-declared CTileTriggerSwitchLogic*
+            // (a separate 0x8c family, not a base), which forced a reinterpret on both
+            // the store and the call. Declared at its real type, both casts are gone.
+            CTileTriggerLogic* lo = (static_cast<CTileTriggerContainer*>(root->m_2e4))
+                                        ->FindInLists12(ty + (tx << 8), 0x1a);
             if (lo != 0) {
-                (reinterpret_cast<CTileTriggerLogic*>(lo))->ApplyMove(type);
+                lo->ApplyMove(type);
                 (static_cast<CTileTriggerContainer*>(root->m_2e4))
                     ->DelFromList1(static_cast<void*>(lo));
             } else {
