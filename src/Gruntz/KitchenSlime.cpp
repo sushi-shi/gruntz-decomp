@@ -111,8 +111,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         }
     }
 
-    m_stepMag = 0;
-    m_stepMagHi = 0;
+    m_stepMag = 0.0;
     if (LoadSprites() == 0) {
         m_38->m_flags |= 0x10000;
     }
@@ -400,44 +399,33 @@ i32 CKitchenSlime::LoadSprites() {
     i32 changed = (Level()->m_124 != savedDir);
     switch (Level()->m_124 - 1) {
         case 0: // north
-            m_posY = -static_cast<double>(*(&m_stepMag));
-            m_dirX = 0;
-            m_dirY = 0;
-            *reinterpret_cast<i32*>(&m_dirY) = 0;
-            *(reinterpret_cast<i32*>(&m_dirX) + 1) = 0;
-            *(reinterpret_cast<i32*>(&m_dirY) + 1) = 0xbff00000;
+            m_posY = -m_stepMag;
+            m_dirX = 0.0;
+            m_dirY = -1.0;
             if (changed) {
                 Anim()->ApplyName("LEVEL_KITCHENSLIME_NORTH");
             }
             break;
         case 1: // east
-            *reinterpret_cast<i32*>(&m_posX) = m_stepMag;
-            *(reinterpret_cast<i32*>(&m_posX) + 1) = *((&m_stepMag) + 1);
-            m_dirX = 0;
-            m_dirY = 0;
-            *(reinterpret_cast<i32*>(&m_dirX) + 1) = 0x3ff00000;
-            *(reinterpret_cast<i32*>(&m_dirY) + 1) = 0;
+            m_posX = m_stepMag;
+            m_dirX = 1.0;
+            m_dirY = 0.0;
             if (changed) {
                 Anim()->ApplyName("LEVEL_KITCHENSLIME_EAST");
             }
             break;
         case 2: // south
-            *reinterpret_cast<i32*>(&m_posY) = m_stepMag;
-            *(reinterpret_cast<i32*>(&m_posY) + 1) = *((&m_stepMag) + 1);
-            m_dirX = 0;
-            m_dirY = 0;
-            *(reinterpret_cast<i32*>(&m_dirY) + 1) = 0x3ff00000;
-            *(reinterpret_cast<i32*>(&m_dirX) + 1) = 0;
+            m_posY = m_stepMag;
+            m_dirY = 1.0;
+            m_dirX = 0.0;
             if (changed) {
                 Anim()->ApplyName("LEVEL_KITCHENSLIME_SOUTH");
             }
             break;
         case 3: // west
-            m_posX = -static_cast<double>(*(&m_stepMag));
-            m_dirX = 0;
-            m_dirY = 0;
-            *(reinterpret_cast<i32*>(&m_dirX) + 1) = 0xbff00000;
-            *(reinterpret_cast<i32*>(&m_dirY) + 1) = 0;
+            m_posX = -m_stepMag;
+            m_dirX = -1.0;
+            m_dirY = 0.0;
             if (changed) {
                 Anim()->ApplyName("LEVEL_KITCHENSLIME_WEST");
             }
@@ -468,17 +456,14 @@ i32 CKitchenSlime::LoadSprites() {
         if (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1) {
             player->m_190 = 1;
             player->m_layer = static_cast<CImage*>(spr->m_items.GetAt(1));
-            m_stepMag = 0;
-            m_stepMagHi = 0;
+            m_stepMag = 0.0;
             return 1;
         }
         player->m_190 = 1;
         player->m_layer = 0;
-        m_stepMag = 0;
-        m_stepMagHi = 0;
+        m_stepMag = 0.0;
         return 1;
     }
-    m_stepMag = 0;
-    m_stepMagHi = 0;
+    m_stepMag = 0.0;
     return 1;
 }

@@ -43,8 +43,7 @@ public:
     double m_dirY;   // +0x78  unit Y travel direction (-1.0 / 0.0 / +1.0)
     i32 m_tileX;     // +0x80  current target tile X (pixels)
     i32 m_tileY;     // +0x84  current target tile Y (pixels)
-    i32 m_stepMag;   // +0x88  per-step magnitude double {lo,hi}, overlaid as int pair
-    i32 m_stepMagHi; // +0x8c  per-step magnitude, hi dword
+    double m_stepMag; // +0x88  per-step magnitude
 };
 SIZE(0x90);
 
