@@ -755,7 +755,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     // ---- 2) mode/level-number resolve ----
     i32 modeFlag = (static_cast<i32>(Update()) == 0x11) ? 1 : 0;
-    void* savedThis = modeFlag ? self : 0; // [esp+0x10] = (-modeFlag) & self
+    CMulti* savedThis = modeFlag ? static_cast<CMulti*>(self) : 0; // [esp+0x10] = (-modeFlag) & self
     self->m_1c4 = 1;
     self->m_levelIndex = level;
     {
@@ -936,7 +936,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     BuildHelpReveal(0);
     FreeListTeardown(); // vtable +0x84 (CPlay slot 33)
     if (savedThis != 0) {
-        (static_cast<CMulti*>(savedThis))
+        (savedThis)
             ->AckJoinFailure(); // AckJoinFailure placeholder (0x35e4 on saved obj)
     }
     RegisterInputBindings();
@@ -958,13 +958,13 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
         BuildHelpReveal(0);
         if (savedThis != 0) {
-            (static_cast<CMulti*>(savedThis))->AckJoinFailure();
+            (savedThis)->AckJoinFailure();
         }
         RegisterInputBindings();
 
         BuildHelpReveal(0);
         if (savedThis != 0) {
-            (static_cast<CMulti*>(savedThis))->AckJoinFailure();
+            (savedThis)->AckJoinFailure();
         }
         RegisterInputBindings();
 
@@ -976,11 +976,11 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     // a tail of paired BeginStep(0)/EndStep brackets around the real init steps.
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
+        (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     if (modeFlag != 0 && (g_gameReg)->m_134 == 1) {
-        BuildWarlordNameTable(reinterpret_cast<i32>(savedThis));
+        BuildWarlordNameTable(savedThis);
     }
     BuildHelpReveal(0);
     RegisterInputBindings();
@@ -989,7 +989,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
+        (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!LoadGameImages(1) /* 0x3346 -> 0xdb8a0 */) {
@@ -997,10 +997,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
+        (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
-    if (!BuildSpriteImageKeyTable(static_cast<CMulti*>(savedThis)) /* 0x23b5 -> 0xdd540 */) {
+    if (!BuildSpriteImageKeyTable(savedThis) /* 0x23b5 -> 0xdd540 */) {
         goto fail0;
     }
     BuildHelpReveal(0);
@@ -1010,7 +1010,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
+        (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!LoadGameSounds(1) /* 0x2964 -> 0xdb930 */) {
@@ -1018,7 +1018,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
+        (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!LoadGruntSoundNamespaces(0) /* 0x2e9b -> 0xdd830 */) {
@@ -1026,12 +1026,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
+        (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     SetEffectSpriteDurations(); // 0x4458 -> 0xdc060
     if (savedThis != 0) {
-        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
+        (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!LoadLevelAnims(1) /* 0x2c07 -> 0xdb750 */) {
@@ -1039,7 +1039,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
+        (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!LoadGameAnims(1) /* 0x247d -> 0xdb9b0 */) {
@@ -1047,7 +1047,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
+        (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!BuildWorldLevelPath(1)) { // vtable +0xa8 (CPlay slot 42)
@@ -1055,7 +1055,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
+        (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
 
@@ -1069,7 +1069,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
+        (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
 
@@ -1178,7 +1178,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             }
         } else {
             // load the level map + the four map sub-steps
-            if (LoadWarlordSprites(reinterpret_cast<i32>(savedThis), initScratch) /* 0x2b80 */
+            if (LoadWarlordSprites(savedThis, initScratch) /* 0x2b80 */
                 && ScanBuildTiles() /* 0x3553 */ && ValidateLevelTiles()          /* 0x345e */
                 && AddLevelGruntz() /* 0x17ee */) {
                 self->m_world->m_childGroup->TickKillCues(0);
@@ -1197,7 +1197,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 }
                 BuildHelpReveal(0);
                 if (savedThis != 0) {
-                    (static_cast<CMulti*>(savedThis))->AckJoinFailure();
+                    (savedThis)->AckJoinFailure();
                 }
                 RegisterInputBindings();
                 if (BuildMusicCategoryTable(reload)) { // vtable +0xa4 (CPlay slot 41)
@@ -1211,13 +1211,13 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 okContinue:
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
+        (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     BuildHelpReveal(1);
     ActiveWait(0x64);
     if (savedThis != 0) {
-        (static_cast<CMulti*>(savedThis))->AckJoinFailure();
+        (savedThis)->AckJoinFailure();
     }
 
     gameReg = g_gameReg;
@@ -4977,7 +4977,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 // at fn+0x218/+0x2a4; the table DATA + the 2 dispatch reloc operands never pair. Not
 // source-steerable (docs/patterns/jumptable-data-overlap.md, cf. LoadPowerupIconSprites).
 RVA(0x000dc6d0, 0x215)
-i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
+i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, CMulti* a4) {
     CString name("NORMALGRUNT");
     switch (typeIdx) {
         case GRUNT_TYPE_BOMB:
@@ -5418,7 +5418,7 @@ i32 CState::BuildAssetNamespacePrefixes(
     const CString& name,
     i32 mode,
     i32 lightGate,
-    i32 finishGate
+    CMulti* finishGate
 ) {
     i32 result;
     if (mode != 0) {
@@ -5442,7 +5442,7 @@ i32 CState::BuildAssetNamespacePrefixes(
             m_world->m_imageRegistry->InstallTree(tree, "GRUNTZ_" + name, "_"); // slot 18 (+0x48)
             g_resourceInstallActive = 0;
             if (finishGate != 0) {
-                (reinterpret_cast<CMulti*>(finishGate))->AckJoinFailure(); // 0x35e4, ecx=notify
+                finishGate->AckJoinFailure(); // 0x35e4, ecx=notify
             }
         }
         if (m_world->m_soundRegistry->HasKeyEqual("GRUNTZ_" + name) == 0) {
@@ -5469,7 +5469,7 @@ i32 CState::BuildAssetNamespacePrefixes(
     if (m_world->m_imageRegistry->HasKeyEqual("GRUNTZ_" + name) != 0) {
         m_world->m_imageRegistry->RemoveKeysEqual("GRUNTZ_" + name, "_");
         if (finishGate != 0) {
-            (reinterpret_cast<CMulti*>(finishGate))->AckJoinFailure(); // 0x35e4, ecx=notify
+            finishGate->AckJoinFailure(); // 0x35e4, ecx=notify
         }
     }
     if (m_world->m_soundRegistry->HasKeyEqual("GRUNTZ_" + name) != 0) {
@@ -6167,6 +6167,9 @@ i32 CPlay::AddLevelGruntz() {
             g->m_12c,
             g->m_7c->m_2c,
             g->m_7c->m_30,
+            // byte-evidenced: PlaceObject's 13th slot is kind-dependent (the 0x6b6d0
+            // body compares it to 0x12 for other kinds); here retail pushes
+            // `lea edx,[esi+0x134]` (0xd59a2) - this RECT's address.
             reinterpret_cast<i32>(&g->m_extent.left)
         );
         if (r == -1) {
@@ -6184,7 +6187,7 @@ i32 CPlay::AddLevelGruntz() {
 }
 
 RVA(0x000dd050, 0x24b)
-i32 CPlay::BuildGruntNamespaceList(i32 arg) {
+i32 CPlay::BuildGruntNamespaceList(CMulti* arg) {
     CString s;
     s = "NORMALGRUNT";
     if (!BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
@@ -6218,7 +6221,7 @@ i32 CPlay::BuildGruntNamespaceList(i32 arg) {
 }
 
 RVA(0x000dd340, 0x189)
-i32 CPlay::BuildWarlordNameTable(i32 arg) {
+i32 CPlay::BuildWarlordNameTable(CMulti* arg) {
     for (i32 id = GRUNT_TYPE_BOOMERANG; id <= GRUNT_TYPE_YOYO; id++) {
         if (!BuildGruntTypeNameTable(id, 0, 0, 0)) {
             return 0;
@@ -6258,7 +6261,7 @@ i32 CPlay::BuildWarlordNameTable(i32 arg) {
 // cleanup/dtor tail shifts + a few esi/edx/ecx spill recolors. Code shape + every
 // data/marker reloc match.
 RVA(0x000d65d0, 0x7a4)
-i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
+i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
     if (g_gameReg->m_134 != 1) {
         for (i32 id = GRUNT_TYPE_BOOMERANG; id <= GRUNT_TYPE_YOYO; id++) {
             if (loaded[id] == 0) {

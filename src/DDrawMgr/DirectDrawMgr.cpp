@@ -481,9 +481,9 @@ void CDDrawPtrCollections::RemoveItemA(CDDSurface* item) {
 // AddItemA, else virtual-delete. /GX. ret 0x4. The failure (delete) path is the
 // fall-through (`if (!InitX)`), matching retail's `jne success` branch polarity.
 RVA(0x001421a0, 0xbe)
-CDDSurface* CDDrawPtrCollections::Create7f0_1(i32 a) {
+CDDSurface* CDDrawPtrCollections::Create7f0_1(const DDSURFACEDESC* desc) {
     CDDSurface* item = new CDDSurface;
-    if (!item->Init1(this, a)) {
+    if (!item->Init1(this, desc)) {
         delete item;
         return 0;
     }
@@ -535,9 +535,9 @@ CDDSurface* CDDrawPtrCollections::CreateB(i32 width, i32 height, i32 c, i32 d, i
 // Createa58_1 (0x1424a0).  new 0xc0 item; ctor (vtbl 0x5efa58); dispatch vtbl[0x08]
 // with 1 arg; AddItemA on success. /GX. ret 0x4.
 RVA(0x001424a0, 0xbe)
-CDDSurface* CDDrawPtrCollections::Createa58_1(i32 a) {
+CDDSurface* CDDrawPtrCollections::Createa58_1(const DDSURFACEDESC* desc) {
     CFileImageSurface* item = new CFileImageSurface;
-    if (!item->Init1(this, a)) {
+    if (!item->Init1(this, desc)) {
         delete item;
         return 0;
     }
@@ -639,9 +639,9 @@ CPoolItemA88::~CPoolItemA88() {}
 // Createa88_1 (0x142880).  new 0xc0 item; ctor (vtbl 0x5efa88); dispatch vtbl[0x08]
 // with 1 arg; AddItemA on success. /GX. ret 0x4.
 RVA(0x00142880, 0xbe)
-CDDSurface* CDDrawPtrCollections::Createa88_1(i32 a) {
+CDDSurface* CDDrawPtrCollections::Createa88_1(const DDSURFACEDESC* desc) {
     CPoolItemA88* item = new CPoolItemA88;
-    if (!item->Init1(this, a)) {
+    if (!item->Init1(this, desc)) {
         delete item;
         return 0;
     }
@@ -677,9 +677,9 @@ CPoolItemAB8::~CPoolItemAB8() {}
 // @early-stop
 // EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x00142aa0, 0xca)
-CDDSurface* CDDrawPtrCollections::Createab8_1(i32 a) {
+CDDSurface* CDDrawPtrCollections::Createab8_1(const DDSURFACEDESC* desc) {
     CPoolItemAB8* item = new CPoolItemAB8;
-    if (!item->Init1(this, a)) {
+    if (!item->Init1(this, desc)) {
         delete item;
         return 0;
     }
@@ -728,9 +728,9 @@ CPoolItemAE8::~CPoolItemAE8() {}
 // Createae8_1 (0x142da0).  new 0xc0 item; ctor (vtbl 0x5efae8); dispatch vtbl[0x08]
 // with 1 arg; AddItemA on success. /GX. ret 0x4.
 RVA(0x00142da0, 0xbe)
-CDDSurface* CDDrawPtrCollections::Createae8_1(i32 a) {
+CDDSurface* CDDrawPtrCollections::Createae8_1(const DDSURFACEDESC* desc) {
     CPoolItemAE8* item = new CPoolItemAE8;
-    if (!item->Init1(this, a)) {
+    if (!item->Init1(this, desc)) {
         delete item;
         return 0;
     }

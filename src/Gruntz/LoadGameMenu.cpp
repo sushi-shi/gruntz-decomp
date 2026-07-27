@@ -126,7 +126,7 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
             break;
     }
     if (idx != -1) {
-        g_slotState = reinterpret_cast<i32>(dlg->GetSlot(idx));
+        g_slotState = dlg->GetSlot(idx);
         if (g_slotState) {
             EnableWindow(hwnd, FALSE);
             g_gameReg->RunModalDialog("GAME_INFO", static_cast<void*>(LoadInfoDlgProc), 0);
@@ -168,7 +168,7 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
             break;
     }
     if (idx != -1) {
-        g_slotState = reinterpret_cast<i32>(dlg->GetSlot(idx));
+        g_slotState = dlg->GetSlot(idx);
         if (g_slotState) {
             EnableWindow(hwnd, FALSE);
             i32 r =

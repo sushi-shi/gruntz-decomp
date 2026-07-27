@@ -35,8 +35,8 @@
 #include <Gruntz/Wormhole.h>
 
 RVA(0x0003bfa0, 0x42)
-i32 CDemo::LoadGameAssetNamespaces(i32 ctx, i32 a1, i32 a2) {
-    (reinterpret_cast<CGruntzMgr*>(ctx))->m_strWorldFile.Empty();
+i32 CDemo::LoadGameAssetNamespaces(CGruntzMgr* ctx, i32 a1, i32 a2) {
+    ctx->m_strWorldFile.Empty();
     if (CPlay::LoadGameAssetNamespaces(ctx, a1, a2) == 0) {
         return 0;
     }

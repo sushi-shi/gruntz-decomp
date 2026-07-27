@@ -12,6 +12,7 @@
 #include <Wwd/WwdFile.h>         // CDDrawWorkerHost - the raw tile-grid facet of the main plane
 #include <Bute/ButeMgr.h>        // CButeMgr::GetInt (g_buteMgr @0x6453d8)
 #include <Gruntz/FreeNodePool.h> // g_coordPool @0x645540 + CoordPoolNode (recycled coord node)
+#include <Gruntz/GameObjectFactory.h> // CreateExitTrigger - the exit-footprint notify registrant
 
 #include <stdlib.h> // rand (0x11fee0, the engine rng)
 
@@ -332,9 +333,9 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     }
     while (obj != 0) {
         // The footprint kind is the object whose worker's post-create notify hook is
-        // &CreateExitTrigger (@0x40192e); m_notify is a raw fn-ptr, reinterpreted to int
-        // exactly as retail's `cmp [worker+0x10], 0x40192e`.
-        if (reinterpret_cast<i32>(obj->m_7c->m_notify) == 0x40192e) {
+        // &CreateExitTrigger (retail `cmp [worker+0x10],<reloc>`; the ex-0x40192e
+        // immediate was that thunk's address written out as a bare number).
+        if (obj->m_7c->m_notify == &CreateExitTrigger) {
             i32 tileX = (obj->m_screenX + (obj->m_screenX >> 31 & 0x1f)) >> 5;
             i32 tileY = (obj->m_screenY + (obj->m_screenY >> 31 & 0x1f)) >> 5;
             for (i32 xo = -1; xo < 2; xo++) {

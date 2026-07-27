@@ -33,7 +33,7 @@
 // docs/patterns/external-nobody-callee.md + reloc-typing-vptr-global.md.
 #include <Wap32/GameApp.h> // ex Globals.h
 RVA(0x000f9780, 0x8c)
-i32 CSplashState::LoadGameAssetNamespaces(i32 a, i32 b, i32 c) {
+i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 c) {
     if (CAssetRootStorage::s_value.GetLength() == 0) {
         return 0;
     }

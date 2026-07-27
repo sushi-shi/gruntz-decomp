@@ -148,10 +148,8 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
 }
 
 RVA(0x0009cab0, 0x23)
-i32 CDDrawWorkerCache::Find(const char* key) {
-    i32 local = 0;
-    CObject* localOb = 0;
-    m_10.Lookup(key, localOb);
-    local = reinterpret_cast<i32>(localOb);
-    return local;
+CObject* CDDrawWorkerCache::Find(const char* key) {
+    CObject* found = 0;
+    m_10.Lookup(key, found);
+    return found;
 }

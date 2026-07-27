@@ -441,7 +441,8 @@ void CVariantSlot::Set(void* key, void* arg2, i32 arg3) {
         if (m_typeTag == 2) {
             char buf[0x94];
             strcpy(buf, m_label);
-            // the reporter's address is formatted INTO the message text - it is the value
+            // API-forced: the reporter's raw word IS the formatter's value argument
+            // (the reported record's address is printed into the message text).
             Format_18d0f0(buf, reinterpret_cast<i32>(arg2), 0x4f);
             m_callback(buf, arg3);
         } else if (m_typeTag == 1) {

@@ -524,20 +524,21 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         if (stream) {
             g_buteMgr.m_10e = 1;
             char* esz = stream->BeginParse();
+            // @identity-TODO / overlay: this entry kind swaps the pair - +0x0c carries
+            // the bytes and BeginParse hands back the LENGTH - so the raw width is
+            // preserved at this ONE seam instead of at both stream constructions.
+            i32 eszLen = reinterpret_cast<i32>(esz);
             void* src = reinterpret_cast<void*>(
                 stream->m_length
             ); // +0x0c doubles as the data ptr for this entry kind
             // @identity-TODO: this entry kind carries the bytes in +0x0c and the
             // length through BeginParse - the two look swapped vs every other
             // caller, so the raw widths are preserved verbatim here.
-            istrstream* rdr = new istrstream(
-                static_cast<char*>(src),
-                reinterpret_cast<i32>(esz)
-            ); // ??0istrstream (0x169700)
+            istrstream* rdr = new istrstream(static_cast<char*>(src), eszLen); // 0x169700
             Blowfish_InitKey(reinterpret_cast<unsigned char*>(const_cast<char*>("1212C")));
             ostrstream* snk = new ostrstream(
                 static_cast<char*>(src),
-                reinterpret_cast<i32>(esz),
+                eszLen,
                 2
             ); // ??0ostrstream (0x1698c0)
             BitStreamBlowfishDecode(rdr, snk);

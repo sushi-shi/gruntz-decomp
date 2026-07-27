@@ -7,7 +7,7 @@
 
 class CPreviewState : public CState {
 public:
-    i32 Enter(void* mgr, i32 a1, i32 a2); // 0x0de030
+    i32 Enter(CGruntzMgr* mgr, i32 a1, i32 a2); // 0x0de030
     // LoadGameAssetNamespaces (0x0f9ea0) inherited from CState (called cast-free).
     i32 Tick(); // 0x0de200
     // RetireScene (0x0fa8f0) is a CState base method (inherited); the cast-free calls

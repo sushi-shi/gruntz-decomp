@@ -12,7 +12,7 @@ public:
     CDemo() {}
     virtual ~CDemo() OVERRIDE; // slot 0  0x8d0d0 (/GX dtor, GruntzMgr.cpp)
     // slot 1  0x3bfa0 (Demo.cpp; retail ??_7CDemo slot 1 = ILT 0x34f9 -> 0x3bfa0)
-    virtual i32 LoadGameAssetNamespaces(i32, i32, i32) OVERRIDE;
+    virtual i32 LoadGameAssetNamespaces(CGruntzMgr*, i32, i32) OVERRIDE;
     // slot 2: retail ??_7CDemo slot 2 holds 0x3c010 - itself a 5-byte jmp to ILT
     // 0x1dc5 -> 0xc8700 == CPlay::ReleaseResources (byte-verified). CDemo has NO
     // distinct slot-2 body of its own (the ex "DerivedCleanup" decl aliased that

@@ -154,7 +154,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         statusVal = -1;
         abilityVal = -1;
         overrideVal = -1;
-        selectVal = reinterpret_cast<i32>(unit); // null path keeps edi == unit (0)
+        selectVal = 0; // the null path (unit == 0; retail reuses the already-zero reg)
         timerVal = -1;
     } else {
         // status: health bands

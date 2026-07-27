@@ -14,6 +14,8 @@
 struct CVoiceSample {};
 SIZE_UNKNOWN();
 
+struct StreamVoice; // <Dsndmgr/StreamVoice.h> - the play request's sample object (m_sample)
+
 class CGruntVoice : public CUserLogic, public CWapX {
 public:
 public:
@@ -22,12 +24,12 @@ public:
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
     virtual void FireActivation(i32 id) OVERRIDE;    // 0x119e40
-    i32 Setup(i32 a0, void* sample, i32 a2, i32 a3); // 0x11a7e0
+    i32 Setup(i32 a0, StreamVoice* sample, i32 a2, i32 a3); // 0x11a7e0
     void Reset();                                    // 0x11a870
     i32 Update();                                    // 0x11a8e0 (per-frame: elapse + reposition)
 
     // --- CGruntVoice own fields (offsets load-bearing; roles from Setup/Reset) ---
-    i32 m_sample;     // +0x54  the play request's sample object (Setup stores, Reset clears)
+    StreamVoice* m_sample; // +0x54  the play request's sample object (Setup stores, Reset clears)
     i32 m_icon;       // +0x58  play-start stamp LO (an i64 pair w/ m_5c; the elapsed
                       //         check reads *(i64*)&m_icon - INTERLEAVED-zero keep, see task 23)
     i32 m_5c;         // +0x5c  play-start stamp HI

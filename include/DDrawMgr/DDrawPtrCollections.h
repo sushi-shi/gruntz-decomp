@@ -33,7 +33,7 @@ SIZE(0xc0);
 class CPoolItemAB8 : public CDDSurface {
 public:
     virtual ~CPoolItemAB8() OVERRIDE;                        // slot 0  ~ 0x142a40
-    virtual i32 Init1(CDDrawPtrCollections*, i32) OVERRIDE;  // slot 2  0x148b50
+    virtual i32 Init1(CDDrawPtrCollections*, const DDSURFACEDESC*) OVERRIDE; // slot 2  0x148b50
     virtual i32 GetPoolKind() OVERRIDE;                      // slot 6  0x143cd0 (POOLKIND_MODE)
     virtual i32 Setup(CDDrawPtrCollections*, i32, i32, i32); // slot 9  0x148af0 (4 args)
     virtual i32 InstallColorFormat();                        // slot 10 0x148b80
@@ -43,7 +43,7 @@ SIZE(0xc0);
 class CPoolItemAE8 : public CDDSurface {
 public:
     virtual ~CPoolItemAE8() OVERRIDE;                       // slot 0  ~ 0x142d40
-    virtual i32 Init1(CDDrawPtrCollections*, i32) OVERRIDE; // slot 2  0x148cc0
+    virtual i32 Init1(CDDrawPtrCollections*, const DDSURFACEDESC*) OVERRIDE; // slot 2 0x148cc0
     virtual i32 GetPoolKind() OVERRIDE;                     // slot 6  0x143ce0 (POOLKIND_BLIT47)
     virtual i32 Blit47(CDDrawPtrCollections*, i32, i32, i32, i32, i32, i32); // slot 9  0x148c40
 };
@@ -121,7 +121,7 @@ public:
     void AddItemB(CDDPalette* item);                        // 0x142eb0
     void RemoveItemA(CDDSurface* item);                     // 0x142160
     void RemoveItemB(CDDPalette* item);                     // 0x142f10
-    CDDSurface* Create7f0_1(i32 a); // 0x1421a0 (vtbl 7f0, slot 2)
+    CDDSurface* Create7f0_1(const DDSURFACEDESC* desc); // 0x1421a0 (vtbl 7f0, slot 2)
     // SETTLED 2026-07-27 (the "polymorphic first arg" reading was WRONG - it conflated
     // CreateA with its neighbour CreateB). Each of the two is MONOMORPHIC:
     //   CreateA  -> CFileImageSurface::ResolveEx  (slot 9  @0x148890). a1 reaches
@@ -137,7 +137,7 @@ public:
     //     different type in one slot.
     CDDSurface* CreateA(PidHeader* hdr, i32 type, u32 size, i32 ctrl, i32 trans); // 0x142260
     CDDSurface* CreateB(i32 width, i32 height, i32 c, i32 d, i32 e);                    // 0x1423c0
-    CDDSurface* Createa58_1(i32 a); // 0x1424a0 (vtbl a58, slot 2)
+    CDDSurface* Createa58_1(const DDSURFACEDESC* desc); // 0x1424a0 (vtbl a58, slot 2)
     // Createa58_3's a1 is a FILE PATH, proven from both ends: the callee
     // CFileImageSurface::LoadByExt (@0x148940) opens with `strrchr(a1,'.')` +
     // _stricmp against ".BMP"/".PCX"/".PID"; and the caller CreateRange (@0x142630)
@@ -159,13 +159,13 @@ public:
         i32 a7
     );                                            // 0x142630
     CDDSurface* Createa88_3(i32 a, i32 b, i32 c); // 0x142730 (vtbl a88, slot 9)
-    CDDSurface* Createa88_1(i32 a);               // 0x142880 (vtbl a88, slot 2)
+    CDDSurface* Createa88_1(const DDSURFACEDESC* desc); // 0x142880 (vtbl a88, slot 2)
     CDDSurface* Createab8_3(i32 a, i32 b, i32 c); // 0x142940 (vtbl ab8, slot 9, +538)
-    CDDSurface* Createab8_1(i32 a);               // 0x142aa0 (vtbl ab8, slot 2, +538)
+    CDDSurface* Createab8_1(const DDSURFACEDESC* desc); // 0x142aa0 (vtbl ab8, slot 2, +538)
     CDDSurface* Createab8_24_3(i32 a);            // 0x142b70 (vtbl ab8, slot 9 3-arg, +538)
     CDDSurface*
     Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);      // 0x142c40 (vtbl ae8, slot 9 6-arg)
-    CDDSurface* Createae8_1(i32 a);                             // 0x142da0 (vtbl ae8, slot 2)
+    CDDSurface* Createae8_1(const DDSURFACEDESC* desc); // 0x142da0 (vtbl ae8, slot 2)
     CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
     CDDPalette* MakeB(void* rgb, i32 flags);                    // 0x142fc0
     CDDPalette* Create(i32 a, i32 b);                           // 0x143040 (init via 0x147390)

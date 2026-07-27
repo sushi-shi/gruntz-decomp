@@ -1,6 +1,7 @@
 #include <Ints.h>
 #include <math.h>            // sin/cos -> fsin/fcos intrinsics at /O2 /Oi
-#include <Image/RasterVtx.h> // ClipVtx + RotateRasterize decl
+#include <Image/RasterVtx.h>     // ClipVtx + RotateRasterize decl
+#include <DDrawMgr/DDSurface.h>  // CDDSurface - the destination surface arg
 #include <rva.h>
 
 // @early-stop
@@ -22,16 +23,20 @@ void ImageRotateBlit(
     i32 a1,
     i32 a2,
     i32* pivot,
-    void* a4,
-    void* inp,
+    CDDSurface* dest,
+    CDDSurface* src,
     float rot,
     float scale,
     i32 mode,
     i32 colorkey
 ) {
-    RotateSrcImage* in = static_cast<RotateSrcImage*>(inp);
-    i32 h = in->m_1c;
-    i32 w = in->m_18;
+    // NB retail (0x145f63/0x145f66) takes the x/u extent from the source surface's
+    // +0x18 and the y/v extent from +0x1c - i.e. transposed against the embedded
+    // DDSURFACEDESC's own dwHeight/dwWidth naming. The offsets are what is
+    // load-bearing; `src` IS a CDDSurface (RotateRasterize forwards it into
+    // WarpTextureBlit's CDDSurface* src, which WarpIsPow2's the same +0x1c).
+    i32 h = src->m_width;  // +0x1c
+    i32 w = src->m_height; // +0x18
 
     // The source quad corners, stored straight into the transform's texel slots.
     i32 sq[4];
@@ -88,8 +93,8 @@ void ImageRotateBlit(
     RotateRasterize(
         mtx,
         4,
-        reinterpret_cast<i32>(a4),
-        reinterpret_cast<i32>(inp),
+        dest,
+        src,
         mode,
         colorkey,
         -1,

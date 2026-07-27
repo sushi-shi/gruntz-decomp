@@ -1,5 +1,6 @@
 #include <Ints.h>
 #include <Image/RasterVtx.h> // ClipVtx + RotateRasterize decl (shared with ImageRotate.cpp)
+#include <DDrawMgr/DDSurface.h> // CDDSurface - the clip-box destination (m_width/m_height)
 #include <rva.h>
 
 // @early-stop
@@ -18,8 +19,8 @@ RVA(0x00146550, 0x4ca)
 i32 RotateRasterize(
     ClipVtx* verts,
     i32 n,
-    i32 a3,
-    i32 a4,
+    CDDSurface* dest,
+    CDDSurface* src,
     i32 a5,
     i32 a6,
     i32 clipFlag,
@@ -29,14 +30,10 @@ i32 RotateRasterize(
 ) {
     float bound0, clip0, clip1, clip2;
     if (clipFlag == -1) {
-        // a3 is an i32 carrying a pointer, and the two ends disagree about WHICH
-        // pointer: ImageRotateBlit passes its `a4` here (while reading `inp` as the
-        // RotateSrcImage), yet this arm reads a3 as the RotateSrcImage and a4 as the
-        // CDDSurface. @identity-TODO - settle that before retyping either parameter.
-        RotateSrcImage* img = static_cast<RotateSrcImage*>(reinterpret_cast<void*>(a3));
+        // clipFlag == -1: clip to the whole destination surface.
         clip1 = 0.0f;
-        clip0 = static_cast<float>(img->m_1c);
-        clip2 = static_cast<float>(img->m_18);
+        clip0 = static_cast<float>(dest->m_width);
+        clip2 = static_cast<float>(dest->m_height);
         bound0 = 0.0f;
     } else {
         bound0 = static_cast<float>(clipFlag);
@@ -153,13 +150,8 @@ i32 RotateRasterize(
         return 0;
     }
 
-    WarpTextureBlit(
-        g_rasterVtxB,
-        n,
-        reinterpret_cast<CDDSurface*>(a4),
-        reinterpret_cast<CDDSurface*>(a4),
-        a5,
-        a6
-    );
+    // The two surface args are DISTINCT: retail's tail (0x1469ee) pushes
+    // [entry+0x0c] then [entry+0x10] - dest, then src. (Both were spelled `a4`.)
+    WarpTextureBlit(g_rasterVtxB, n, dest, src, a5, a6);
     return 1;
 }

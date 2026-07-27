@@ -26,9 +26,7 @@ i32 g_buildNumber; // 0x651614  sprintf("... Build %i ...", g_buildNumber)
 // TESTs it - the int fix lifted 73% -> ~94.5%) - re-homed onto CState so the ~7 leaf
 // callers bind cast-free. Final sweep.
 RVA(0x000f9ea0, 0x21d)
-i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
-    // the manager arrives as the slot-1 virtual's i32 arg; one cast at the seam.
-    CGruntzMgr* mgr = reinterpret_cast<CGruntzMgr*>(mgrArg);
+i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 a3) {
     m_mgr = mgr;
     m_symParser = mgr->m_symParser;
     m_world = mgr->m_world;

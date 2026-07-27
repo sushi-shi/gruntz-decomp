@@ -58,7 +58,7 @@ public:
     // probe - the tile-logic leaf ctors call it via thunk 0x1703 before dispatching
     // slot-9 CreateWorker to register a missing type (was the C9cab0::LookupPtr
     // placeholder / the CLogicTypeReg::Find view).
-    i32 Find(const char* key); // 0x9cab0
+    CObject* Find(const char* key); // 0x9cab0
 
     // 0x165360 (map scan): return by value the key of the first m_10 entry whose value's
     // +0x10 dword equals target's; empty CString if none. The ONLY callers (CWwdGameObject::

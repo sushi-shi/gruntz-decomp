@@ -62,6 +62,8 @@ extern CButeTree g_buteTree;
 // INDEXES g_typeColl by it. So the boundary reinterpret belongs here, once, rather
 // than at each of the ~15 call sites.
 static inline i32 ActFindId(const char* key) {
+    // PROVEN (see above): THIS tree instance stores small integer act ids in the
+    // void* value slot, so the boundary pun belongs here at one seam.
     return reinterpret_cast<i32>(g_buteTree.Find(key));
 }
 static inline void ActInsertId(const char* key, i32 id) {

@@ -359,7 +359,7 @@ install:
     {
         CState* st = m_curState;
         // slot 1 (+0x4) virtual dispatch - the state's asset/state loader.
-        i32 ok = st->LoadGameAssetNamespaces(reinterpret_cast<i32>(this), a2, local10);
+        i32 ok = st->LoadGameAssetNamespaces(this, a2, local10);
         st = m_curState;
         if (ok == 0) {
             if (st != 0) {

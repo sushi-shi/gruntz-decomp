@@ -26,7 +26,7 @@ DATA(0x0020b5bc)
 char s_dat60b5bc[] = "2";
 
 RVA(0x00013fb0, 0xd5)
-i32 CAttract::LoadGameAssetNamespaces(i32 a, i32 b, i32 mode) {
+i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 mode) {
     // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
     if (CState::LoadGameAssetNamespaces(a, b, mode) == 0) {
         return 0;

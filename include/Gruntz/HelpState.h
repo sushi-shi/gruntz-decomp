@@ -10,7 +10,7 @@ public:
     virtual ~CHelpState() OVERRIDE; // slot 0  (0x8cf30)
     // slot 1  0x095090 (HelpState.cpp; retail ??_7CHelpState slot 1 = ILT
     // 0x2f40 -> 0x95090, ex "LoadAssets") - the help asset loader.
-    virtual i32 LoadGameAssetNamespaces(i32, i32, i32) OVERRIDE;
+    virtual i32 LoadGameAssetNamespaces(CGruntzMgr*, i32, i32) OVERRIDE;
     virtual void ReleaseResources() OVERRIDE;    // slot 2  (0x95120, unreconstructed)
     virtual GameStateId Update() OVERRIDE;       // slot 4
     virtual i32 Render() OVERRIDE;               // slot 5

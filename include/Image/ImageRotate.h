@@ -4,12 +4,14 @@
 
 #include <Ints.h>
 
+class CDDSurface; // the destination surface (all three retail callers pass `this`)
+
 void ImageRotateBlit(
     i32 a1,
     i32 a2,
     i32* pivot,
-    void* dst,
-    void* in,
+    CDDSurface* dst,
+    CDDSurface* in,
     float rot,   // arg6 (deg->rad rotation)
     float scale, // arg7
     i32 mode,    // arg8

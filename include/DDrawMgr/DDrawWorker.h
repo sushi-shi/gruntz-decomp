@@ -93,9 +93,11 @@ public:
     // ONE accessor, instead of a cast at every use site. Both ex-views (CDDrawWorker::m_c /
     // CDDrawWorker::m_owner) proved the type: it is handed to each created frame as
     // CImage::m_parent (`new CImage(index, m_owner)`).
+    // PROVEN-heterogeneous base slot - one seam, here, per derived class.
     CImageParent* Owner() const {
         return reinterpret_cast<CImageParent*>(m_ownerCtx);
     }
+    // PROVEN-heterogeneous base slot - one seam, here, per derived class.
     void SetOwner(CImageParent* p) {
         m_ownerCtx = reinterpret_cast<i32>(p);
     }

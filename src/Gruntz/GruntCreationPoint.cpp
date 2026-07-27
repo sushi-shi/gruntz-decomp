@@ -65,6 +65,9 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
         idx = g_gameReg->m_options[key].m_008;
     } else {
         m_38->m_flags |= 0x10000;
+        // faithful: retail reloads the ctor's own `obj` argument out of its spilled
+        // slot here (0x3e6aa `mov ecx,[esp+0x30]` == entry+0x4) and pushes it as the
+        // selector index. A retail oddity, reproduced rather than corrected.
         idx = reinterpret_cast<i32>(obj);
     }
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);

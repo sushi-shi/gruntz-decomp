@@ -59,13 +59,9 @@ i32 g_bDown; // 0x683eb4  (== ex g_bDown)
 // g_imageCache's file-scope construction/destruction family.
 
 RVA(0x0013e0a0, 0x27)
-i32 CDDSurface::Init1(CDDrawPtrCollections* h, i32 a) {
-    if (a != 0) {
-        memcpy(
-            m_descWords,
-            reinterpret_cast<const void*>(a),
-            sizeof(DDSURFACEDESC)
-        );
+i32 CDDSurface::Init1(CDDrawPtrCollections* h, const DDSURFACEDESC* desc) {
+    if (desc != 0) {
+        memcpy(m_descWords, desc, sizeof(DDSURFACEDESC));
     }
     return BlitIntoDesc(h);
 }
@@ -1931,8 +1927,8 @@ i32 CDDSurface::RotateBlit(
         a1,
         a2,
         pivot,
-        static_cast<void*>(this),
-        rect,
+        this,
+        static_cast<CDDSurface*>(rect),
         0.0f,
         scale,
         mode,
@@ -1966,8 +1962,8 @@ i32 CDDSurface::ScaleBlit(
         a1,
         a2,
         pivot,
-        static_cast<void*>(this),
-        rect,
+        this,
+        static_cast<CDDSurface*>(rect),
         angle,
         1.0f,
         mode,
@@ -1991,8 +1987,8 @@ i32 CDDSurface::RotateScaleBlit(
         a1,
         a2,
         pivot,
-        static_cast<void*>(this),
-        rect,
+        this,
+        static_cast<CDDSurface*>(rect),
         angle,
         scale,
         mode,

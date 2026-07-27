@@ -23,17 +23,15 @@
 #include <Rez/RezSync.h>         // ex Globals.h
 #include <Wap32/GameApp.h>       // ex Globals.h
 #include <Gruntz/SoundState.h>   // ex Globals.h transitive
-#include <Gruntz/LevelPreview.h> // ex Globals.h
-
-DATA(0x00104358)
-i32 g_screenTag;
+#include <Gruntz/LevelPreview.h>    // ex Globals.h
+#include <Image/ImageFormatTag.h>   // IMGTAG_XCP - the screen-page format word
 
 RVA(0x000de030, 0xc2)
-i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
+i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 a1, i32 a2) {
     // The base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9;
     // CState::LoadGameAssetNamespaces is the slot-1 virtual now, and retail calls
     // the default body direct here).
-    if (CState::LoadGameAssetNamespaces(reinterpret_cast<i32>(mgr), a1, a2) == 0) {
+    if (CState::LoadGameAssetNamespaces(mgr, a1, a2) == 0) {
         return 0;
     }
     while (ShowCursor(FALSE) >= 0) {
@@ -164,9 +162,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
     sprintf(buf, "PREVIEW%i", idx);
     m_1bc = buf;
     sprintf(buf, "\\SCREENZ\\%s", static_cast<const char*>(m_1bc));
-    // API-forced: ResolveQualified's second parameter is a polymorphic word - one
-    // caller hands it the literal 'TXT' fourcc - so an address widens into it here
-    SymTab2c()->ResolveQualified(buf, reinterpret_cast<u32>(&g_screenTag));
+    SymTab2c()->ResolveQualified(buf, IMGTAG_XCP);
     i32 failed = 0;
     if (FadeInTitle(const_cast<char*>(static_cast<const char*>(m_1bc)), 0, 0, 0, 0, 1) == 0) {
         failed = 1;
@@ -220,9 +216,7 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
     }
     char buf[64];
     sprintf(buf, "\\SCREENZ\\%s", name);
-    // API-forced: ResolveQualified's second parameter is a polymorphic word - one
-    // caller hands it the literal 'TXT' fourcc - so an address widens into it here
-    CParseSource* sym = SymTab2c()->ResolveQualified(buf, reinterpret_cast<u32>(&g_screenTag));
+    CParseSource* sym = SymTab2c()->ResolveQualified(buf, IMGTAG_XCP);
     if (sym == 0) {
         return 0;
     }

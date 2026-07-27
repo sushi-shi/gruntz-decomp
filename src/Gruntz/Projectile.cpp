@@ -955,7 +955,7 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, CGameObject* a
             i32 key;
             s->Read(&key, 4);
             CGameObject* found = 0;
-            i32 r;
+            CGameObject* r;
             if (reg->m_childGroup->m_map48
                     .Lookup(reinterpret_cast<void*>(key), reinterpret_cast<void*&>(found))
                 == 0) {
@@ -963,9 +963,9 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, CGameObject* a
             } else if (found == 0) {
                 r = 0;
             } else {
-                r = (found->GetClassId() == CLASSID_SERIALREF) ? reinterpret_cast<i32>(found) : 0;
+                r = (found->GetClassId() == CLASSID_SERIALREF) ? found : 0;
             }
-            m_shadow = reinterpret_cast<CWwdGameObjectA*>(r);
+            m_shadow = static_cast<CWwdGameObjectA*>(r);
             if (m_shadow == 0 && key != 0) {
                 return 0;
             }

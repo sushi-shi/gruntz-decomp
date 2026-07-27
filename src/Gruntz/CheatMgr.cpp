@@ -112,6 +112,8 @@ void CCheatMgr::Empty() {
 RVA(0x00022be0, 0x71)
 BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
     void* existing = 0;
+    // byte-forced: retail ANDs the found-mask with the raw out-param word
+    // (docs/patterns/branchless-mask-and-explicit-vs-fused-test.md).
     i32 found = (m_map.Lookup(code, existing) ? -1 : 0) & reinterpret_cast<i32>(existing);
     if (found != 0) {
         return FALSE;

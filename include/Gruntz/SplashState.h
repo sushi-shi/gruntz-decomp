@@ -18,7 +18,7 @@ public:
     virtual ~CSplashState() OVERRIDE; // slot 0  (0x08d000)
     // slot 1  0x0f9780 (SplashState.cpp; retail ??_7CSplashState slot 1 = ILT
     // 0x1c0d -> 0xf9780, ex "LoadSounds") - the splash asset/sound loader.
-    virtual i32 LoadGameAssetNamespaces(i32 a, i32 b, i32 c) OVERRIDE;
+    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 c) OVERRIDE;
     virtual void ReleaseResources() OVERRIDE; // slot 2  0x0f9840 (SplashState.cpp; retail
                                               //   slot 2 = ILT 0x2919; ex "CGameModeBase::Reset")
     virtual GameStateId Update() OVERRIDE;    // slot 4
