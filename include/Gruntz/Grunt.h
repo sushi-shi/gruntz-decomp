@@ -106,9 +106,6 @@ inline GruntCoordNode* CoordHeadOf(const CObList& l) {
 inline GruntCoordNode* CoordHeadOf(const CPtrList& l) {
     return reinterpret_cast<GruntCoordNode*>(l.GetHeadPosition());
 }
-inline GruntCoordNode* CoordTailOf(const CPtrList& l) {
-    return reinterpret_cast<GruntCoordNode*>(l.GetTailPosition());
-}
 
 // The devs' coord-list extension (its one method is 0x29a30, ex
 // ?ListNodeAdvance@@YGPAXPAPAX@Z). IDENTITY, by the full xref chase: every retail

@@ -826,7 +826,7 @@ i32 CGrunt::PathScan() {
         grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
     }
 
-    GruntCoordNode* tail = CoordTailOf(m_31c);
+    GruntCoordNode* tail = CoordTail(); // the member accessor already holds this seam
     i32 tcol = tail->m_coord->m_x;
     i32 trow = tail->m_coord->m_y;
     i32 hits = 0;
