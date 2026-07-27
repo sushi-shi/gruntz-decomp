@@ -542,9 +542,14 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                     case kCheatPsyche:
                         RunModalDialog(
                             "PSYCHE",
+                            // 0x402649 is winapi_092a30_EndDialog's ILT thunk
+                            // (GruntzMgr.cpp:1849). Retail pushes it as a BARE
+                            // immediate with no relocation, so naming the function
+                            // would emit a reloc the target does not have - the
+                            // literal is the byte-faithful spelling here.
                             reinterpret_cast<void*>(0x402649),
                             0
-                        ); // bare imm matches the target (LAB_, no reloc/symbol)
+                        );
                         return 1;
                     case kCheatClearCheats:
                         PLAYCUE("GAME_MAJORCHEAT");
@@ -1023,6 +1028,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             }
             RunModalDialog(
                 "CONFIG_SETTINGS",
+                // 0x403ae4 is GameOptionsDlgProc's ILT thunk (VideoConfig.cpp:111);
+                // as above, retail pushes the bare imm with no reloc.
                 reinterpret_cast<void*>(0x403ae4),
                 0
             ); // bare imm matches the target (LAB_)
