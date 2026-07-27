@@ -26,6 +26,12 @@ static inline u16 Pack(i32 r, i32 g, i32 b) {
     );
 }
 
+// A locked surface row is BYTES with a byte pitch while the pixels are 16bpp - that
+// conversion is forced by the surface API, so it is named here.
+static inline u16* Pix16(void* p) {
+    return reinterpret_cast<u16*>(p);
+}
+
 RVA(0x000a32c0, 0x72)
 i32 CLightFxRender::Init(CGruntzMgr* mgr, i32 arg2) {
     if (mgr == 0) {
@@ -338,8 +344,8 @@ void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
     char* rp = static_cast<char*>(base) + r->right * m_surface->m_bytesPerPixel
                + r->top * m_surface->m_pitch;
     for (i32 v = 0; v < h; v++) {
-        *reinterpret_cast<u16*>(lp) = static_cast<u16>(color);
-        *reinterpret_cast<u16*>(rp) = static_cast<u16>(color);
+        *Pix16(lp) = static_cast<u16>(color);
+        *Pix16(rp) = static_cast<u16>(color);
         lp += m_surface->m_pitch;
         rp += m_surface->m_pitch;
     }
@@ -387,8 +393,8 @@ void CLightFxRender::DrawBorder(RECT* r, CDDrawSurfacePair* ctx, i32 color) {
     char* rp =
         reinterpret_cast<char*>(base) + r->right * surf->m_bytesPerPixel + r->top * surf->m_pitch;
     for (i32 v = 0; v < h; v++) {
-        *reinterpret_cast<u16*>(lp) = static_cast<u16>(color);
-        *reinterpret_cast<u16*>(rp) = static_cast<u16>(color);
+        *Pix16(lp) = static_cast<u16>(color);
+        *Pix16(rp) = static_cast<u16>(color);
         lp += surf->m_pitch;
         rp += surf->m_pitch;
     }

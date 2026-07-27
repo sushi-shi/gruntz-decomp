@@ -34,6 +34,15 @@ inline CShadeTableArray::~CShadeTableArray() {
 }
 VTBL(CShadeTableArray, 0x001efb28); // cl-emitted ??_7CShadeTableArray@@6B@
 
+// A locked surface / packed image row is BYTES with a byte pitch, while the pixels
+// are 16bpp - the conversion is forced by the surface API, so it is named here.
+static inline u16* Pix16(void* p) {
+    return reinterpret_cast<u16*>(p);
+}
+static inline const u16* Pix16(const void* p) {
+    return reinterpret_cast<const u16*>(p);
+}
+
 RVA(0x0014de30, 0x1a)
 CShadeTableCache::CShadeTableCache() {
     m_initialized = 0;
@@ -487,7 +496,7 @@ CShadeTable* CShadeTableCache::GreyTable() {
     i32 idx = m_arr.m_nSize;
     m_arr.SetSizeGrow(idx + 1, -1);
     m_arr.m_pData[idx] = t;
-    u16* out = reinterpret_cast<u16*>(t->m_data);
+    u16* out = Pix16(t->m_data);
     if (g_rDown == 3 && g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
         for (i32 v = 0; v < 0x10000; v++) {
             *out++ = static_cast<u16>(
@@ -530,7 +539,7 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
     i32 idx = m_arr.m_nSize;
     m_arr.SetSizeGrow(idx + 1, -1);
     m_arr.m_pData[idx] = t;
-    u16* out = reinterpret_cast<u16*>(t->m_data);
+    u16* out = Pix16(t->m_data);
     for (i32 v = 0; v < 0x100; v += 0x10) {
         for (i32 r = 8; r < 0x100; r += 0x10) {
             for (i32 g = 8; g < 0x100; g += 0x10) {
@@ -586,7 +595,7 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
     i32 idx = m_arr.m_nSize;
     m_arr.SetSizeGrow(idx + 1, -1);
     m_arr.m_pData[idx] = t;
-    u16* out = reinterpret_cast<u16*>(t->m_data);
+    u16* out = Pix16(t->m_data);
     i32 cr = color & 0xff;
     i32 cg = (color >> 8) & 0xff;
     i32 cb = (color >> 0x10) & 0xff;
@@ -635,7 +644,7 @@ CShadeTable* CShadeTableCache::AlphaTable(u8* pal) {
     i32 idx = m_arr.m_nSize;
     m_arr.SetSizeGrow(idx + 1, -1);
     m_arr.m_pData[idx] = t;
-    u16* out = reinterpret_cast<u16*>(t->m_data);
+    u16* out = Pix16(t->m_data);
     u8* p = pal;
     for (i32 i = 0x100; i != 0; i--) {
         u16 v = static_cast<u16>(
