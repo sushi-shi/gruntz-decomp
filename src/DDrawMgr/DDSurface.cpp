@@ -1918,7 +1918,7 @@ i32 CDDSurface::DecodeRun24(void* src) {
 
 RVA(0x00141040, 0x36)
 i32 CDDSurface::RotateBlit(
-    void* rect,
+    CDDSurface* src,
     i32* pivot,
     i32 a1,
     i32 a2,
@@ -1931,8 +1931,8 @@ i32 CDDSurface::RotateBlit(
         a1,
         a2,
         pivot,
-        static_cast<void*>(this),
-        rect,
+        this,
+        src,
         0.0f,
         scale,
         mode,
@@ -1953,7 +1953,7 @@ i32 BuildRotateBlitTransform(void) {
 
 RVA(0x00141200, 0x39)
 i32 CDDSurface::ScaleBlit(
-    void* rect,
+    CDDSurface* src,
     i32* pivot,
     i32 a1,
     i32 a2,
@@ -1966,8 +1966,8 @@ i32 CDDSurface::ScaleBlit(
         a1,
         a2,
         pivot,
-        static_cast<void*>(this),
-        rect,
+        this,
+        src,
         angle,
         1.0f,
         mode,
@@ -1978,7 +1978,7 @@ i32 CDDSurface::ScaleBlit(
 
 RVA(0x00141240, 0x39)
 i32 CDDSurface::RotateScaleBlit(
-    void* rect,
+    CDDSurface* src,
     i32* pivot,
     i32 a1,
     i32 a2,
@@ -1991,8 +1991,8 @@ i32 CDDSurface::RotateScaleBlit(
         a1,
         a2,
         pivot,
-        static_cast<void*>(this),
-        rect,
+        this,
+        src,
         angle,
         scale,
         mode,
