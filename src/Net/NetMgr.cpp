@@ -457,6 +457,8 @@ i32 CNetMgr::ReadPlayerSel(void* hList) {
         return 0;
     }
     m_playerSel =
+        // wire decode: the transport hands back BYTES, so naming the record at
+        // the receive boundary is language-forced (one seam per message type).
         reinterpret_cast<CNetPlayerListNode*>(data); // the LB item data IS the player node
     return data;
 }

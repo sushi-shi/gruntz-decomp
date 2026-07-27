@@ -2009,6 +2009,8 @@ i32 CMulti::PollSession() {
 // esi<->edi recolor, store-order permutation). Not further source-steerable. Final sweep.
 RVA(0x000b9750, 0x74e)
 i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
+    // wire decode: the transport hands back BYTES, so naming the record at
+    // the receive boundary is language-forced (one seam per message type).
     CNetMsg* msg = reinterpret_cast<CNetMsg*>(buf);
     if (msg == 0) {
         return 0;
@@ -2016,6 +2018,8 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
     if (sender == 0) {
         // sender 0 = the DirectPlay SYSTEM channel - the same buffer carries the
         // control-record wire format, decoded from the raw bytes
+        // wire decode: the transport hands back BYTES, so naming the record at
+        // the receive boundary is language-forced (one seam per message type).
         return HandleControlMsg(reinterpret_cast<CNetCtrlMsg*>(buf), size);
     }
 
@@ -2311,6 +2315,8 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             break;
 
         case 0x417:
+            // wire decode: the transport hands back BYTES, so naming the record at
+            // the receive boundary is language-forced (one seam per message type).
             HandleVersionCheck(reinterpret_cast<CNetVersionMsg*>(buf)); // wire decode
             break;
 

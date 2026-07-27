@@ -809,6 +809,8 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         p++;
         rem--;
     }
+    // wire decode: the transport hands back BYTES, so naming the record at
+    // the receive boundary is language-forced (one seam per message type).
     CNetCmdHdr* h = reinterpret_cast<CNetCmdHdr*>(p);
     i32 seq = h->m_sequence;
     i32 base = h->m_windowBase;
