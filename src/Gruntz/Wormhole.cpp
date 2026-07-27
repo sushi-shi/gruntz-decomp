@@ -59,7 +59,7 @@
 #include <Bute/ButeMgr.h>
 #include <Mfc.h> // CString (the scratch name-vec element)
 #include <rva.h>
-#include <Wap32/zBitVec.h> // ex Globals.h
+#include <Wap32/zBitVec.h>     // ex Globals.h
 #include <Gruntz/LightFxMgr.h> // CLightFxMgr::m_tables - the shade-table array
 
 template<> DATA(0x00244660)
@@ -138,7 +138,6 @@ static inline void FreeNameSlotNodes() {
     }
 }
 
-
 // ===========================================================================
 // CWormhole::~CWormhole  (0x010980)
 // The leaf adds no observed members, so its dtor folds the bare CUserLogic
@@ -207,9 +206,10 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     i32 kind = m_object->m_124;
     CShadeTable* color;
     if (kind == -1) {
-                color = g_gameReg->m_logicPump->m_tables[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3)];
+        color =
+            g_gameReg->m_logicPump->m_tables[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3)];
     } else {
-                color = g_gameReg->m_logicPump->m_tables[kind];
+        color = g_gameReg->m_logicPump->m_tables[kind];
     }
     CWwdGameObjectA* s = m_object;
     s->m_drawActive = 1;
@@ -231,9 +231,10 @@ i32 CWormhole::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
         i32 kind = m_object->m_124;
         CShadeTable* color;
         if (kind == -1) {
-                        color = g_gameReg->m_logicPump->m_tables[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3)];
+            color = g_gameReg->m_logicPump
+                        ->m_tables[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3)];
         } else {
-                        color = g_gameReg->m_logicPump->m_tables[kind];
+            color = g_gameReg->m_logicPump->m_tables[kind];
         }
         // Cache m_10 only for the store trio (retail reloads it into esi once here).
         CWwdGameObjectA* s = m_object;
@@ -321,13 +322,12 @@ i32 CWormhole::SpawnPartners() {
     if (list == 0) {
         return 0;
     }
-    CDDrawGroupNode* node = GroupHead(*list);
-    if (node == 0) {
+    POSITION pos = list->GetHeadPosition();
+    if (pos == 0) {
         return 0;
     }
     do {
-        CGameObject* obj = node->m_obj;
-        node = node->m_next;
+        CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
         if (obj != 0) {
             AnimWorkerObj* aux = obj->m_7c;
             if (aux->m_notify == &CreateTeleporter && obj->m_screenX == tx && obj->m_screenY == ty
@@ -335,7 +335,7 @@ i32 CWormhole::SpawnPartners() {
                 static_cast<CTeleporter*>(aux->m_logic)->ReapplyConfig();
             }
         }
-    } while (node != 0);
+    } while (pos != 0);
     return 0; // retail: xor eax,eax before the epilogue
 }
 
@@ -369,11 +369,9 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x00040750, 0x102)
 void CGruntPuddle::FireActivation(i32 id) {
-    CActHandler* e =
-        (CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id));
+    CActHandler* e = (CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id));
     if ((*e) != 0) {
-        CActHandler* e2 =
-            (CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id));
+        CActHandler* e2 = (CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id));
         (this->*((*e2)))();
     }
 }
@@ -397,7 +395,8 @@ void RegisterLogic() {
         g_typeCounter++;
     }
     // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id)) = static_cast<void*>(&PuddleActA);
+    *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id)) =
+        static_cast<void*>(&PuddleActA);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -409,7 +408,8 @@ void RegisterLogic() {
         g_typeCounter++;
     }
     // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id2)) = static_cast<void*>(&PuddleActB);
+    *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id2)) =
+        static_cast<void*>(&PuddleActB);
 }
 
 // ===========================================================================
@@ -695,7 +695,8 @@ void CTeleporter_RegisterActs() {
         g_typeCounter++;
     }
     // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntry(id)) = static_cast<void*>(&TeleporterActA);
+    *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntry(id)) =
+        static_cast<void*>(&TeleporterActA);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -707,7 +708,8 @@ void CTeleporter_RegisterActs() {
         g_typeCounter++;
     }
     // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntry(id2)) = static_cast<void*>(&TeleporterActB);
+    *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntry(id2)) =
+        static_cast<void*>(&TeleporterActB);
 }
 
 // CTeleporter::Begin @0x0419e0 - advance the +0x1a0 anim sub-mgr to the current
@@ -782,8 +784,8 @@ i32 CTeleporter::Update() {
         mgr = g_gameReg;
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
-        if (x < mgr->m_viewBounds.right && x >= mgr->m_viewBounds.left && y < mgr->m_viewBounds.bottom
-            && y >= mgr->m_viewBounds.top) {
+        if (x < mgr->m_viewBounds.right && x >= mgr->m_viewBounds.left
+            && y < mgr->m_viewBounds.bottom && y >= mgr->m_viewBounds.top) {
             (static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_teleportWanted =
                 1; // an on-screen wormhole keeps GAME_TELEPORTLOOP playing
         }
@@ -795,8 +797,7 @@ i32 CTeleporter::Update() {
 
     CWwdGameObjectA* o = m_object;
     if (o->m_7c->m_bc != 0) {
-        i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime))
-                    - m_armClock;
+        i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_armClock;
         if (delta >= m_interval) {
             m_value = m_38->m_1a0.m_14;
             m_38->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
@@ -855,8 +856,7 @@ i32 CTeleporter::Update() {
             static_cast<i32*>((static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_recList.GetHead());
         i32 row = pair[0];
         i32 col = pair[1];
-        current =
-            (static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_grid[row * 15 + col];
+        current = (static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_grid[row * 15 + col];
     }
     if (found == current && outB == g_curPlayer) {
         CGameObject* g = found->m_object;

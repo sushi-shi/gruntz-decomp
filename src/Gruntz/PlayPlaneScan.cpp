@@ -14,8 +14,6 @@
 #include <Gruntz/UserLogic.h>            // CGameObject + AnimWorkerObj (the placed objects)
 #include <Gruntz/GameLevel.h>            // CGameLevel + CDDrawWorkerHost (the tile grid)
 
-
-
 // ---------------------------------------------------------------------------
 // ScanBuildTiles (0x0d53d0): walk the renderer plane list; for each rock plane
 // rebuild its record onto the record sink (m_beginMarker->AddToList1), for each
@@ -37,11 +35,9 @@ i32 CPlay::ScanBuildTiles() {
     if (pl == 0) {
         return 0;
     }
-    CDDrawGroupNode* pos = GroupHead(*pl);
+    POSITION pos = pl->GetHeadPosition();
     while (pos != 0) {
-        CDDrawGroupNode* node = pos;
-        pos = node->m_next;
-        CGameObject* p = node->m_obj;
+        CGameObject* p = static_cast<CGameObject*>(pl->GetNext(pos));
         if (p == 0) {
             continue;
         }
@@ -172,7 +168,7 @@ i32 CPlay::ScanShuffleQuads() {
     if (pl == 0) {
         return 0;
     }
-    CDDrawGroupNode* pos = GroupHead(*pl);
+    POSITION pos = pl->GetHeadPosition();
 
     i32 perm[4];
     ::CByteArray arr;
@@ -194,9 +190,7 @@ i32 CPlay::ScanShuffleQuads() {
     arr.RemoveAt(0, 1);
 
     while (pos != 0) {
-        CDDrawGroupNode* node = pos;
-        pos = node->m_next;
-        CGameObject* p = node->m_obj;
+        CGameObject* p = static_cast<CGameObject*>(pl->GetNext(pos));
         if (p == 0) {
             continue;
         }

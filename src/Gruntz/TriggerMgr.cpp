@@ -1090,11 +1090,9 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
     i32 tx = x >> 5;
     i32 ty = y >> 5;
 
-    CDDrawGroupNode* node = GroupHead(fac->m_list);
-    while (node != 0) {
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CGameObject* obj = cur->m_obj;
+    POSITION pos = fac->m_list.GetHeadPosition();
+    while (pos != 0) {
+        CGameObject* obj = static_cast<CGameObject*>(fac->m_list.GetNext(pos));
         void* init = static_cast<void*>(obj->m_7c->m_notify);
         if (init == static_cast<void*>(&IconClassInitA)
             || init == static_cast<void*>(&IconClassInitB)) {
@@ -2633,11 +2631,10 @@ void CTriggerMgr::DestroyAllAnims() {
         r--;
     } while (r != 0);
 
-    CDDrawGroupNode* node = GroupHead(m_world->m_childGroup->m_list);
-    while (node != 0) {
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CGameObject* obj = cur->m_obj;
+    CObList& chain = m_world->m_childGroup->m_list;
+    POSITION pos = chain.GetHeadPosition();
+    while (pos != 0) {
+        CGameObject* obj = static_cast<CGameObject*>(chain.GetNext(pos));
         if (obj != 0) {
             AnimWorkerObj* desc = obj->m_7c;
             // the grunt-notify stamp: workers bound to grunt logic carry

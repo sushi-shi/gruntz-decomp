@@ -80,11 +80,8 @@
 #include <Gruntz/PlayStateView.h>
 #include <Gruntz/GameObjectFactory.h>
 
-
 DATA(0x00248ce8)
 i32 g_scoreTimeBase;
-
-
 
 // The Win32 dialog procedures handed to RunModalDialog. Each pushed code address is
 // the proc's ILT jmp-thunk (retail /INCREMENTAL routes an address-taken function
@@ -112,8 +109,6 @@ i32 g_sndCueTag = 100; // 0x61ab24  the cue-item id (retail .data init = 100)
 
 DATA(0x0024556c)
 CGruntzMgr* g_gameReg = 0;
-
-
 
 DATA(0x002455a4)
 u32 g_gruntDestruction;
@@ -498,11 +493,9 @@ void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
     if (list == 0) { // retail's dead null-guard on the lea (je exit)
         return;
     }
-    CDDrawGroupNode* node = GroupHead(*list);
-    while (node) {
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CGameObject* obj = cur->m_obj;
+    POSITION pos = list->GetHeadPosition();
+    while (pos != 0) {
+        CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
         if (obj) {
             obj->m_stateFlags ^= mask;
         }
@@ -1510,12 +1503,10 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
     }
     i32 r2 = radius * radius;
     i32 count = 0;
-    CDDrawGroupNode* node =
-        GroupHead(m_world->m_childGroup->m_list);
-    while (node) {
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CGameObject* obj = cur->m_obj;
+    CObList& chain = m_world->m_childGroup->m_list;
+    POSITION pos = chain.GetHeadPosition();
+    while (pos != 0) {
+        CGameObject* obj = static_cast<CGameObject*>(chain.GetNext(pos));
         if (obj->m_collCategory & mask) {
             i32 adx = abs(obj->m_screenX - x);
             i32 ady = abs(obj->m_screenY - y);
@@ -1557,12 +1548,10 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, ScanCb
     i32 loY = r->top + offY;
     i32 hiY = r->bottom + offY;
     i32 count = 0;
-    CDDrawGroupNode* node =
-        GroupHead(m_world->m_childGroup->m_list);
-    while (node) {
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CGameObject* obj = cur->m_obj;
+    CObList& chain = m_world->m_childGroup->m_list;
+    POSITION pos = chain.GetHeadPosition();
+    while (pos != 0) {
+        CGameObject* obj = static_cast<CGameObject*>(chain.GetNext(pos));
         if (obj->m_collCategory & mask) {
             i32 ox = obj->m_screenX;
             if (ox >= loX && ox <= hiX) {
@@ -3188,7 +3177,6 @@ void CGruntzMgr::DelayedQuit() {
         ::PostMessageA(m_gameWnd->m_hwnd, 0x10, 0, 0);
     }
 }
-
 
 // CGruntzMgr::LaunchPortal (0x0907c0, ret 4). Resolve the installed Portal
 // companion's exe path into a local buffer; if it resolves and the buffer is

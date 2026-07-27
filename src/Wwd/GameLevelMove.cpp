@@ -538,14 +538,13 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
     if (!(t->m_flags & 0x100)) {
         return 0;
     }
-    CDDrawGroupNode* node =
-        GroupHead(OwnerMgr()->m_childGroup->m_list);
-    if (node == 0) {
+    CObList& chain = OwnerMgr()->m_childGroup->m_list;
+    POSITION pos = chain.GetHeadPosition();
+    if (pos == 0) {
         return 0;
     }
     do {
-        CDDrawGroupNode* nx = node->m_next;
-        CGameObject* obj = node->m_obj;
+        CGameObject* obj = static_cast<CGameObject*>(chain.GetNext(pos));
         if (obj != t && (obj->m_flags & 0x100) && (t->m_collMask & obj->m_collCategory)
             && t->m_extent.left != AXIS_UNSET && obj->m_extent.left != AXIS_UNSET) {
             i32 tLeft = t->m_extent.left + t->m_screenX;
@@ -581,8 +580,7 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
                 }
             }
         }
-        node = nx;
-    } while (node != 0);
+    } while (pos != 0);
     return 0;
 }
 

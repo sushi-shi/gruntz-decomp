@@ -138,22 +138,6 @@ struct CNetChannelTablePacket {
 SIZE(0x88);
 #pragma pack(pop)
 
-struct CNetPlayerNode {
-    CNetPlayerNode* m_next; // +0x0
-    char m_pad4[4];
-    CNetSessionNode* m_8; // +0x8  the payload per-player record
-};
-SIZE_UNKNOWN(); // player-list node walk-view; retail size TBD
-
-// MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
-// hand-rolled node walk has to pun it - language-forced. One seam per type.
-inline CNetPlayerNode* NetPlayerHeadOf(const CObList& l) {
-    return reinterpret_cast<CNetPlayerNode*>(l.GetHeadPosition());
-}
-inline CNetPlayerNode* NetPlayerHeadOf(const CPtrList& l) {
-    return reinterpret_cast<CNetPlayerNode*>(l.GetHeadPosition());
-}
-
 struct CNetCmd {
     i32 m_seq; // +0x0  command sequence number
     i32 m_4;   // +0x4  payload word (resync compare)
@@ -236,22 +220,6 @@ struct CNetCmdSlot {
     i32 Ready(); // c1320
 };
 SIZE(0x64); // fully-laid-out inline command slot (array stride 0x64)
-
-struct CNetCmdNode {
-    CNetCmdNode* m_next; // +0x0
-    CNetCmdNode* m_prev; // +0x4
-    CNetCmd* m_data;     // +0x8  (this queue holds CNetCmd)
-};
-SIZE_UNKNOWN(); // CObList node walk-view; retail size TBD
-
-// MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
-// hand-rolled node walk has to pun it - language-forced. One seam per type.
-inline CNetCmdNode* NetCmdHeadOf(const CObList& l) {
-    return reinterpret_cast<CNetCmdNode*>(l.GetHeadPosition());
-}
-inline CNetCmdNode* NetCmdHeadOf(const CPtrList& l) {
-    return reinterpret_cast<CNetCmdNode*>(l.GetHeadPosition());
-}
 
 struct CNetCmdHdr {
     i32 m_sequence;   // +0x0  sequence
@@ -929,10 +897,10 @@ public:
         m_groupSel; // +0x070  group-list selected item data (ReadGroupSel / InitFromProvider)
     CNetPlayerListNode*
         m_playerSel; // +0x074  player-list selected item data (ReadPlayerSel / StartTitle)
-    CNetSessionNode* m_sessionSel;  // +0x078  session-list selected item data
-    POSITION m_groupSelId;          // +0x07c  group-list walk cursor (Find/PopulateGroupList)
-    POSITION m_playerSelId;         // +0x080  player-list walk cursor / selection id
-    CNetPlayerNode* m_sessionSelId; // +0x084  session-list walk cursor / selection id
+    CNetSessionNode* m_sessionSel; // +0x078  session-list selected item data
+    POSITION m_groupSelId;         // +0x07c  group-list walk cursor (Find/PopulateGroupList)
+    POSITION m_playerSelId;        // +0x080  player-list walk cursor / selection id
+    POSITION m_sessionSelId;       // +0x084  session-list walk cursor / selection id
     i32 m_88; // +0x088  (rounds the object to the observed RezAlloc/operator-new 0x8c size)
 
     // Inline ctor: the CObject base + three CObList members are auto-constructed by

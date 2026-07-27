@@ -485,8 +485,7 @@ CDDrawWorkerHost*
 CGameLevel::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, const char* name) {
     CDDrawWorkerHost* plane = new CDDrawWorkerHost(OwnerMgr(), m_planes.GetSize(), 0);
 
-    if (plane->InitGeometry(a1, a2, a3, a4, a5, a6, &m_planeCtx, const_cast<char*>(name))
-        == 0) {
+    if (plane->InitGeometry(a1, a2, a3, a4, a5, a6, &m_planeCtx, const_cast<char*>(name)) == 0) {
         if (plane) {
             delete plane; // the virtual scalar-deleting dtor (vtable +0x4, flag 1)
         }
@@ -799,7 +798,7 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
     if ((m_flags & 1) && chain != 0 && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0) != 0) {
         (static_cast<CDDrawWorkerHost*>((m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0)))
             ->Draw(static_cast<CPlaneDrawCtx*>(visitor));
-        CDDrawGroupNode* node = GroupHead(*chain);
+        POSITION pos = chain->GetHeadPosition();
 
         i32 i = 1;
         if (m_planes.GetSize() > i) {
@@ -809,27 +808,29 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
                                           : 0;
                 i32 zBound = p->m_zBound;
                 i32 blocked = 0;
-                while (node != 0 && blocked == 0) {
-                    CDDrawGroupNode* cur = node;
-                    node = node->m_next;
-                    CGameObject* pl = cur->m_obj;
+                while (pos != 0 && blocked == 0) {
+                    POSITION cur = pos;
+                    CGameObject* pl = static_cast<CGameObject*>(chain->GetNext(pos));
                     if (pl->m_sortKey < zBound) { // z-key vs the plane's z bound
                         pl->Render(static_cast<CDDrawSurfacePair*>(visitor));
                     } else {
-                        node = cur;
+                        pos = cur;
                         blocked = 1;
                     }
                 }
-                (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]))
+                // retail range-checks this second GetData too (`test ebp,ebp / jl`
+                // + `cmp ebp,[edi+0x3c] / jge`) - the same GetAt bound as above
+                (i >= 0 && i < m_planes.GetSize()
+                     ? static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i])
+                     : 0)
                     ->Draw(static_cast<CPlaneDrawCtx*>(visitor));
                 ++i;
             } while (i < m_planes.GetSize());
         }
 
-        while (node != 0) {
-            CDDrawGroupNode* cur = node;
-            node = node->m_next;
-            cur->m_obj->Render(static_cast<CDDrawSurfacePair*>(visitor));
+        while (pos != 0) {
+            static_cast<CGameObject*>(chain->GetNext(pos))
+                ->Render(static_cast<CDDrawSurfacePair*>(visitor));
         }
         return;
     }
@@ -1514,12 +1515,10 @@ i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 a1, i32 a2, i32* outY, i32 a3) {
         return 0;
     }
 
-    CDDrawGroupNode* node =
-        GroupHead(OwnerMgr()->m_childGroup->m_list);
-    while (node != 0) {
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CGameObject* pl = cur->m_obj;
+    CObList& chain = OwnerMgr()->m_childGroup->m_list;
+    POSITION pos = chain.GetHeadPosition();
+    while (pos != 0) {
+        CGameObject* pl = static_cast<CGameObject*>(chain.GetNext(pos));
         if (pl->m_collCategory == 0x80) {
             if (AltStepValidate(t, pl, a1, a2, outY, a3) != 0) {
                 t->m_moveMode = 1;

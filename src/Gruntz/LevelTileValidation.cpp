@@ -52,7 +52,7 @@
 #include <Wwd/WwdFile.h>      // CDDrawWorkerHost - the canonical plane (tile grid + transform)
 #include <rva.h>
 
-#include <Gruntz/FreeNodePool.h>     // the coord-node pool object @0x645540
+#include <Gruntz/FreeNodePool.h>      // the coord-node pool object @0x645540
 #include <Gruntz/GameObjectFactory.h> // the Create* registrants (the m_notify identities)
 
 static char s_BadSwitch[] = "Bad switch at: x=%d, y=%d\n";
@@ -116,19 +116,18 @@ i32 CPlay::PlaceStartGruntz() {
         return 0;
     }
     CGruntzMgr* reg = m_mgr;
-    CDDrawGroupNode* node = GroupHead(*list);
+    POSITION pos = list->GetHeadPosition();
     i32 result = 1;
     i32 counter = 0;
     i32 flag14 = 0;
     if (reg->m_134 == 1) {
         flag14 = 1;
     }
-    if (node == 0) {
+    if (pos == 0) {
         return result;
     }
     do {
-        CGameObject* obj = node->m_obj;
-        CDDrawGroupNode* next = node->m_next;
+        CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
         if (obj != 0) {
             AnimWorkerObj* aux = obj->m_7c;
             // +0x10 identifies WHICH leaf-class factory built this object; retail
@@ -184,8 +183,7 @@ i32 CPlay::PlaceStartGruntz() {
                 }
             }
         }
-        node = next;
-    } while (node != 0);
+    } while (pos != 0);
     return result;
 }
 
@@ -203,15 +201,14 @@ i32 CPlay::ValidateLevelTiles() {
     if (list == 0) {
         return 0;
     }
-    CDDrawGroupNode* node = GroupHead(*list);
-    if (node == 0) {
+    POSITION pos = list->GetHeadPosition();
+    if (pos == 0) {
         return 1;
     }
 
     i32 ok = 1;
     do {
-        CGameObject* obj = node->m_obj; // GetNext: data @+0x08
-        node = node->m_next;            //          pNext @+0x00
+        CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
         if (obj == 0) {
             continue;
         }
@@ -618,7 +615,7 @@ i32 CPlay::ValidateLevelTiles() {
                 }
             }
         }
-    } while (node != 0);
+    } while (pos != 0);
 
     return ok;
 }

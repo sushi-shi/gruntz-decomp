@@ -29,7 +29,6 @@ char g_idScratch[0x10]; // 0x24b6a0
 DATA(0x0024b6b0)
 char g_idListBuf[0x40]; // 0x24b6b0
 
-
 RVA(0x000bef80, 0x51)
 i32 CNetSession::Init(void* a1, CMulti* a2, void* a3) {
     if (a1 == 0) {
@@ -690,15 +689,14 @@ i32 CNetSession::Verify() {
 // args in edx/ecx/edi, whereas cl pins 0 in edi (callee-saved, no re-zero) and
 // the args in ecx/eax. A zero-register + arg-register coin-flip; not source-steerable.
 RVA(0x000c0b10, 0x72)
-i32 CNetCmdSlot::Init(CMulti * a1, SlotInfo* a2, i32 a3) {
+i32 CNetCmdSlot::Init(CMulti* a1, SlotInfo* a2, i32 a3) {
     if (a2 == 0) {
         return 0;
     }
     if (a1 == 0) {
         return 0;
     }
-    m_owner =
-        a1; // the session passes its owning CMulti in as an i32 handle
+    m_owner = a1; // the session passes its owning CMulti in as an i32 handle
     m_state = a3;
     m_isRemote = 0;
     m_latchedSeq = 0;
@@ -988,14 +986,16 @@ void CNetCmdSlot::AddCmd(CNetCmd* cmd) {
 
 RVA(0x000c11b0, 0x55)
 void CNetCmdSlot::RemoveCmd(i32 seq) {
-    CNetCmdNode* node = NetCmdHeadOf(m_cmds);
-    while (node != 0) {
-        CNetCmdNode* cur = node;
-        node = node->m_next;
-        CNetCmd* cmd = cur->m_data;
+    POSITION pos = m_cmds.GetHeadPosition();
+    while (pos != 0) {
+        CNetCmd* cmd = static_cast<CNetCmd*>(m_cmds.GetNext(pos));
         if (seq == cmd->m_seq) {
-            if (node != 0) {
-                m_cmds.RemoveAt(reinterpret_cast<POSITION>(node->m_prev));
+            if (pos != 0) {
+                // retail recovers the consumed node from the advanced position
+                // (`mov eax,[eax+4]`) instead of keeping a saved POSITION live -
+                // that is GetPrev's pPrev step, its returned data unused.
+                m_cmds.GetPrev(pos);
+                m_cmds.RemoveAt(pos);
             } else {
                 m_cmds.RemoveTail();
             }
@@ -1015,32 +1015,28 @@ void CNetCmdSlot::GetRange(i32* pMin, i32* pMax) {
     }
     *pMax = 0x80000001;
     *pMin = 0x7fffffff;
-    CNetCmdNode* node = NetCmdHeadOf(m_cmds);
-    if (node == 0) {
+    POSITION pos = m_cmds.GetHeadPosition();
+    if (pos == 0) {
         *pMax = 0;
         *pMin = 0;
         return;
     }
     do {
-        CNetCmdNode* cur = node;
-        node = node->m_next;
-        CNetCmd* cmd = cur->m_data;
+        CNetCmd* cmd = static_cast<CNetCmd*>(m_cmds.GetNext(pos));
         if (cmd->m_seq > *pMax) {
             *pMax = cmd->m_seq;
         }
         if (cmd->m_seq < *pMin) {
             *pMin = cmd->m_seq;
         }
-    } while (node != 0);
+    } while (pos != 0);
 }
 
 RVA(0x000c12b0, 0x1f)
 CNetCmd* CNetCmdSlot::FindCmd(i32 seq) {
-    CNetCmdNode* node = NetCmdHeadOf(m_cmds);
-    while (node != 0) {
-        CNetCmdNode* cur = node;
-        node = node->m_next;
-        CNetCmd* cmd = cur->m_data;
+    POSITION pos = m_cmds.GetHeadPosition();
+    while (pos != 0) {
+        CNetCmd* cmd = static_cast<CNetCmd*>(m_cmds.GetNext(pos));
         if (seq == cmd->m_seq) {
             return cmd;
         }

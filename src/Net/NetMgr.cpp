@@ -625,11 +625,10 @@ CNetSessionNode* CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* 
 
 RVA(0x00178c70, 0x3d)
 void CNetMgr::ClearSessionList() {
-    CNetPlayerNode* node = NetPlayerHeadOf(m_sessions);
-    while (node != 0) {
-        CNetPlayerNode* cur = node;
-        node = node->m_next;
-        delete cur->m_8; // implicit null-guard + virtual deleting-dtor dispatch
+    POSITION pos = m_sessions.GetHeadPosition();
+    while (pos != 0) {
+        // implicit null-guard + virtual deleting-dtor dispatch
+        delete static_cast<CNetSessionNode*>(m_sessions.GetNext(pos));
     }
     m_sessions.RemoveAll();
     m_sessionSelId = 0;
@@ -691,15 +690,9 @@ void CNetMgr::PopulateSessionList(void* hList) {
 
     SendMessageA(static_cast<HWND>(hList), LB_RESETCONTENT, 0, 0);
 
-    CNetPlayerNode* node = NetPlayerHeadOf(m_sessions);
-    m_sessionSelId = node;
-    CNetSessionNode* payload;
-    if (node != 0) {
-        m_sessionSelId = node->m_next;
-        payload = node->m_8;
-    } else {
-        payload = 0;
-    }
+    m_sessionSelId = m_sessions.GetHeadPosition();
+    CNetSessionNode* payload =
+        m_sessionSelId != 0 ? static_cast<CNetSessionNode*>(m_sessions.GetNext(m_sessionSelId)) : 0;
 
     while (payload != 0) {
         CString name = payload->GetName();
@@ -717,10 +710,9 @@ void CNetMgr::PopulateSessionList(void* hList) {
                 reinterpret_cast<LPARAM>(payload)
             );
         }
-        CNetPlayerNode* cur = m_sessionSelId;
-        if (cur != 0) {
-            payload = cur->m_8;
-            m_sessionSelId = cur->m_next;
+        if (m_sessionSelId != 0) {
+            payload = static_cast<CNetSessionNode*>(m_sessions.GetAt(m_sessionSelId));
+            m_sessions.GetNext(m_sessionSelId);
         } else {
             payload = 0;
         }
@@ -752,11 +744,9 @@ i32 CNetMgr::RemovePlayerById(i32 id) {
 
 RVA(0x00178e90, 0x20)
 CNetSessionNode* CNetMgr::FindPlayerById(i32 id) {
-    CNetPlayerNode* node = NetPlayerHeadOf(m_sessions);
-    while (node != 0) {
-        CNetPlayerNode* cur = node;
-        node = node->m_next;
-        CNetSessionNode* entry = cur->m_8;
+    POSITION pos = m_sessions.GetHeadPosition();
+    while (pos != 0) {
+        CNetSessionNode* entry = static_cast<CNetSessionNode*>(m_sessions.GetNext(pos));
         if (entry->m_id == id) {
             return entry;
         }
