@@ -225,7 +225,11 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
     if (row <= last) {
         i32 n = last - row + 1;
         CGrunt** cell = &m_grid[row * TM_GRID_COLS];
-        i32* perRow = m_rowStateB + row;
+        // The three per-row bands the loop clears: m_rowCount (+0x10c), m_rowStateB
+        // (+0x20c) and m_rowStateC (+0x21c). The old spelling reached the first two
+        // through one cursor (`(char*)perRow - 0x100` and `perRow[4]`); they are
+        // named arrays, so index them.
+        i32 r = row;
         i32 g2 = row * TM_GRID_COLS;
         do {
             i32 col = 0;
@@ -239,10 +243,10 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
                 col++;
                 cell++;
             } while (col < 15);
-            *reinterpret_cast<i32*>((reinterpret_cast<char*>(perRow) - 0x100)) = 0;
-            perRow[0] = 0;
-            perRow[4] = 0;
-            perRow++;
+            m_rowCount[r] = 0;
+            m_rowStateB[r] = 0;
+            m_rowStateC[r] = 0;
+            r++;
             g2 += 15;
             n--;
         } while (n != 0);
@@ -351,11 +355,11 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
         this->ResetSpawnState(); // self-call 0x6c068 (reloc-masked)
     }
     CoordPoolNode* node = g_coordPool.m_freeHead;
-    i32* slot = 0;
+    Coord* slot = 0;
     if (node->m_next != 0) {
-        slot = reinterpret_cast<i32*>(&node->m_coord);
-        slot[0] = col;
-        slot[1] = row;
+        slot = &node->m_coord;
+        slot->m_x = col;
+        slot->m_y = row;
         g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
     }
     m_recList.AddTail(slot);

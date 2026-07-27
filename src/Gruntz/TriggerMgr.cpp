@@ -891,7 +891,7 @@ void CTriggerMgr::ResetSpawnState() {
     if (m_byteArr.GetSize() > 0) {
         m_byteArr.RemoveAt(m_byteArr.GetSize() - 1, 1);
         CStatusBarMgr* ctx = world->m_guts;
-        if (*reinterpret_cast<i32*>(ctx) != 2 && ctx->m_activeTab == 5) {
+        if (ctx->m_position != kSubtypeTag && ctx->m_activeTab == 5) {
             ctx->ResetWidgets(0);
             world->m_guts->TryActivate();
         }
@@ -2348,16 +2348,15 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
     sel->RemoveAll();
     pos = m_recList.GetHeadPosition();
     while (pos != 0) {
-        i32* src = static_cast<i32*>(m_recList.GetNext(pos));
-        void** fh = reinterpret_cast<void**>(g_coordPool.m_freeHead);
-        CoordPoolNode* fhNode = reinterpret_cast<CoordPoolNode*>(fh);
-        i32* dst = 0;
+        Coord* src = static_cast<Coord*>(m_recList.GetNext(pos));
+        CoordPoolNode* fhNode = g_coordPool.m_freeHead;
+        Coord* dst = 0;
         if (fhNode->m_next != 0) {
-            dst = reinterpret_cast<i32*>(&fhNode->m_coord);
+            dst = &fhNode->m_coord;
             g_coordPool.m_freeHead = fhNode->m_next;
         }
-        dst[0] = src[0];
-        dst[1] = src[1];
+        dst->m_x = src->m_x;
+        dst->m_y = src->m_y;
         sel->AddTail(dst);
     }
     m_selSentinel = -1;
@@ -2798,11 +2797,11 @@ i32 CTriggerMgr::EnqueueGroupCells() {
     if (pos != 0) {
         i32 magic = g_curPlayer;
         do {
-            i32* p = static_cast<i32*>(m_recList.GetNext(pos));
-            x = *reinterpret_cast<char*>(p);
-            CGrunt* cell = m_grid[p[0] * TM_GRID_COLS + p[1]];
+            Coord* p = static_cast<Coord*>(m_recList.GetNext(pos));
+            x = static_cast<char>(p->m_x);
+            CGrunt* cell = m_grid[p->m_x * TM_GRID_COLS + p->m_y];
             if (cell->m_tileOwnerHi == magic && cell->m_entranceActive == 0) {
-                buf[count] = (reinterpret_cast<u8*>(p))[4];
+                buf[count] = static_cast<u8>(p->m_y);
                 count++;
             }
         } while (pos != 0);
