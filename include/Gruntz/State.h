@@ -16,6 +16,13 @@ class CGruntzMgr;   // +0x04 owner back-ptr: the game-manager singleton (*g_game
 class CFaderMgr;    // +0x10 fader manager (the CSoundFxEmitter facet's fader mgr;
 class CString;      // MFC - BuildAssetNamespacePrefixes' key arg (reference-only here)
 
+// The {x,y} edge-feed pair CState hands to the per-half input step (+0x188/+0x198).
+struct Edge {
+    i32 m_0;
+    i32 m_4;
+};
+SIZE(0x8);
+
 class CState {
 public:
     CState();
@@ -288,12 +295,11 @@ public:
     i32 m_17c;
     i32 m_180; // +0x180 (= 0x40)
     i32 m_184; // +0x184 (= 0x40)
-    i32 m_188; // +0x188 first-half {x,y} edge feed
-    i32 m_18c; // +0x18c
+    Edge m_188; // +0x188 first-half {x,y} edge feed (the pair StepInput hands out)
     i32 m_190;
     i32 m_194;
-    i32 m_198; // +0x198 second-half {x,y} edge feed
-    i32 m_19c;
+    Edge m_198; // +0x198 second-half {x,y} edge feed
+
     i32 m_1a0;
     i32 m_1a4;
     // +0x1a8..+0x1b0: the StepInputA input latches. The slot-8 base body

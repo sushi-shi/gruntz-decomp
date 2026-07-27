@@ -2309,11 +2309,11 @@ i32 CPlay::StepInputA() {
     void* halfPtr;
     if (m_inputHalfSel == 0) {
         half = m_scratchSurface0;
-        edge = reinterpret_cast<Edge*>(&m_188);
+        edge = &m_188;
         halfPtr = &m_168;
     } else {
         half = m_scratchSurface1;
-        edge = reinterpret_cast<Edge*>(&m_198);
+        edge = &m_198;
         halfPtr = &m_178;
     }
 

@@ -36,11 +36,6 @@ SIZE(0x8);
 
 
 
-struct Edge {
-    i32 m_0;
-    i32 m_4;
-};
-SIZE_UNKNOWN();
 
 
 class CFileMemBase;
