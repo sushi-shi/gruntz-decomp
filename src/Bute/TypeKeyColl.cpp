@@ -30,11 +30,11 @@ DATA(0x002bf400)
 i32 g_helperRefCount; // owner def (zero-init .bss; C linkage via TypeKeyColl.h decl)
 
 inline CTypeCollRuntime::CTypeCollRuntime()
-    // a sentinel scratch argument, not an object - the container only tests it
+    // language-forced: the ctor's 4th parameter is a void* - retail's own mangled name
+    // ??0_zdvec@@QAE@HHHPAX@Z pins it as PAX - and the value passed is the literal 1, a
+    // sentinel the container only ever tests. C++ has no implicit int -> void*.
     : _zdvec(sizeof(CString), 0x7d0, 0x7da, reinterpret_cast<void*>(1)) {
-    // the untyped byte pool named at the container's one seam
-    // the untyped byte pool named at the container's one seam
-    CString* item = reinterpret_cast<CString*>(m_alloc);
+    CString* item = Slots(); // the construction cursor, typed at the container's seam
     i32 count = m_grown;
     if (item != 0 && count != 0) {
         do {
@@ -45,9 +45,7 @@ inline CTypeCollRuntime::CTypeCollRuntime()
 }
 
 CTypeCollRuntime::~CTypeCollRuntime() {
-    // the untyped byte pool named at the container's one seam
-    // the untyped byte pool named at the container's one seam
-    CString* item = reinterpret_cast<CString*>(m_base);
+    CString* item = Elem(m_lo); // the band's first element (m_base + 0)
     i32 count = m_hi - m_lo + 1;
     if (item != 0 && count != 0) {
         do {
