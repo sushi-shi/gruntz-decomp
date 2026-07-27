@@ -591,17 +591,22 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
 // allocation; logic + offsets + CFG + the run-decoder dispatch are exact (the base
 // disasm is structurally byte-faithful). Deferred to the final sweep.
 RVA(0x00144b30, 0x250)
-i32 CDDSurface::Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, i32 mode) {
+i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 mode) {
     if (src == 0) {
         return 0;
     }
-    i32 height = src->m_boxBottom - src->m_boxTop + 1;
-    i32 width = src->m_boxRight - src->m_boxLeft + 1;
+    // NB the two locals keep retail's argument ORDER but their old names were
+    // backwards: +0x08-+0x04 is m_xMax-m_xMin, the WIDTH, and +0x0a-+0x06 the height.
+    // Renamed to what they hold; every downstream use is swapped to match, so this is
+    // a pure rename. That does mean RunDecode1/3 receive (height, width) in their
+    // slots - worth checking their parameter roles against the disasm.
+    i32 width = src->m_xMax - src->m_xMin + 1;
+    i32 height = src->m_yMax - src->m_yMin + 1;
 
     i32 srcFmt;
-    if (src->m_format == 1) {
+    if (src->m_planes == 1) {
         srcFmt = 8;
-    } else if (src->m_format == 3) {
+    } else if (src->m_planes == 3) {
         srcFmt = 0x18;
     } else {
         return 0;
@@ -647,7 +652,7 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, 
     }
 
     // PCX: the run data begins one fixed header past the buffer - byte-forced
-    void* run = reinterpret_cast<u8*>(src) + PCX_HEADER_SIZE;
+    void* run = src->m_pixels; // the RLE stream at +0x80
     void* buf = 0;
     i32 result;
     if (convert == 0) {
@@ -712,7 +717,7 @@ i32 CDDSurface::LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode)
         operator delete(buf);
         return 0;
     }
-    i32 result = Decode(info, static_cast<CFileImageSrc*>(buf), len, mode);
+    i32 result = Decode(info, static_cast<PcxHeader*>(buf), len, mode);
     operator delete(buf);
     return result;
 }

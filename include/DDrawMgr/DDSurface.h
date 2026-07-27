@@ -8,7 +8,7 @@
 
 struct CDDPalette;          // fwd (SetPalette takes a wrapper ptr; PAUCDDPalette => struct)
 class CDDrawPtrCollections; // fwd (the display/pool manager passed as the palette/init context)
-class CFileImageSrc;        // fwd (Decode's run-length source header; full def in <Image/Image.h>)
+struct PcxHeader;           // fwd (Decode's PCX source header; full def in <Image/FileImageRecords.h>)
 
 struct ClipRect16 {
     i32 a, b, c, d;
@@ -173,7 +173,7 @@ public:
     // - source bpp / palette / have-palette), NOT a 2nd surface.
     i32 DecodeRun(CDDrawPtrCollections* info, void* src, i32 a, i32 b); // 0x143cf0 (BMP run)
     i32
-    Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, i32 mode); // 0x144b30 (PCX run)
+    Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 mode); // 0x144b30 (PCX run)
 
     // The file-load + export path (FileImage.cpp == the DIRSURF.CPP surface). LoadFile2/
     // LoadFile slurp a .BMP/.PCX file into a heap buffer then run DecodeRun/Decode;

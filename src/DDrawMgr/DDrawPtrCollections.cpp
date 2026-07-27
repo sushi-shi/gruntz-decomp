@@ -38,7 +38,7 @@ i32 CFileImageSurface::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 
         case FMT_PCX:
             if (!Decode(
                     static_cast<CDDrawPtrCollections*>(surf),
-                    static_cast<CFileImageSrc*>(buf),
+                    static_cast<PcxHeader*>(buf),
                     static_cast<i32>(size),
                     c
                 )) {

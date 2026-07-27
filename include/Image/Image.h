@@ -145,18 +145,9 @@ public:
 };
 SIZE(0xc0);
 
-class CFileImageSrc {
-public:
-    char _00[0x04];
-    i16 m_boxTop;    // +0x04  box top
-    i16 m_boxLeft;   // +0x06  box left
-    i16 m_boxBottom; // +0x08  box bottom
-    i16 m_boxRight;  // +0x0a  box right
-    char _0c[0x41 - 0x0c];
-    u8 m_format; // +0x41  format (1 = 8-bit, 3 = 24-bit)
-};
-SIZE_UNKNOWN();
-SIZE_UNKNOWN();
+// CFileImageSrc was a second spelling of PcxHeader (<Image/FileImageRecords.h>) -
+// field-for-field, down to the _0c[0x41-0x0c] padding and the 1/3 planes word at
+// +0x41. Its box fields also had x and y transposed. Decode takes the real PcxHeader.
 
 class CFileImagePal {
 public:
