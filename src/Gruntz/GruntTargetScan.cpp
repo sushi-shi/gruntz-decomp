@@ -285,9 +285,9 @@ i32 CGrunt::ScanNearestTarget() {
                 goto L_scanDone;
             }
             {
-                i32 cc[4];
-                best->GetScreenPos(reinterpret_cast<Coord*>(cc));
-                if (this->TileSwitch(cc[0] >> 5, cc[1] >> 5, 0, m_arrivalFlags, 1, 0) == 0) {
+                Coord cc[2];
+                best->GetScreenPos(cc);
+                if (this->TileSwitch(cc[0].m_x >> 5, cc[0].m_y >> 5, 0, m_arrivalFlags, 1, 0) == 0) {
                     goto L_scanDone;
                 }
             }

@@ -238,12 +238,12 @@ i32 CGrunt::ArrivalScanA() {
     CMapMgr* grid = g_gameReg->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
-    i32 c1[4];
-    GetScreenPos(reinterpret_cast<Coord*>(c1));
-    i32 cx = c1[0] >> 5;
-    i32 c2[4];
-    GetScreenPos(reinterpret_cast<Coord*>(c2));
-    i32 cy = c2[1] >> 5;
+    Coord c1[2];
+    GetScreenPos(c1);
+    i32 cx = c1[0].m_x >> 5;
+    Coord c2[2];
+    GetScreenPos(c2);
+    i32 cy = c2[0].m_y >> 5;
 
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
@@ -539,9 +539,9 @@ i32 CGrunt::WanderStep() {
                 }
                 if (static_cast<u32>(m_dwell) > 0x3e8) {
                     if (GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
-                        i32 c[4];
-                        g->GetScreenPos(reinterpret_cast<Coord*>(c));
-                        if (TileSwitch(c[0] >> 5, c[1] >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
+                        Coord c[2];
+                        g->GetScreenPos(c);
+                        if (TileSwitch(c[0].m_x >> 5, c[0].m_y >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
                             SetEntrancePos(1, 1);
                             m_arrivalCol = g->m_tileOwnerHi;
                             m_arrivalRow = g->m_tileOwnerLo;
@@ -984,9 +984,9 @@ i32 CGrunt::UpdateArrival() {
                 }
                 if (g != 0 && static_cast<u32>(this->m_dwell) > 1000) {
                     if (g->GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
-                        i32 c[4];
-                        GetScreenPos(reinterpret_cast<Coord*>(c));
-                        if (TileSwitch(c[1] >> 5, c[0] >> 5, 0, this->m_arrivalFlags, 0, 0x20)
+                        Coord c[2];
+                        GetScreenPos(c);
+                        if (TileSwitch(c[0].m_y >> 5, c[0].m_x >> 5, 0, this->m_arrivalFlags, 0, 0x20)
                             != 0) {
                             SetEntrancePos(1, 1);
                             this->m_arrivalCol = g->m_tileOwnerHi;
@@ -1162,12 +1162,12 @@ i32 CGrunt::ArrivalScanB() {
     CMapMgr* grid = g_gameReg->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
-    i32 c1[4];
-    GetScreenPos(reinterpret_cast<Coord*>(c1));
-    i32 cx = c1[0] >> 5;
-    i32 c2[4];
-    GetScreenPos(reinterpret_cast<Coord*>(c2));
-    i32 cy = c2[1] >> 5;
+    Coord c1[2];
+    GetScreenPos(c1);
+    i32 cx = c1[0].m_x >> 5;
+    Coord c2[2];
+    GetScreenPos(c2);
+    i32 cy = c2[0].m_y >> 5;
 
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
@@ -1256,9 +1256,9 @@ L_ed006b:
         goto L_scanb;
     }
     {
-        i32 cc[4];
-        g->GetScreenPos(reinterpret_cast<Coord*>(cc));
-        if (TileSwitch(cc[0] >> 5, cc[1] >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
+        Coord cc[2];
+        g->GetScreenPos(cc);
+        if (TileSwitch(cc[0].m_x >> 5, cc[0].m_y >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
             if (m_390 != 0) {
                 i32 x = m_object->m_screenX;
                 i32 y = m_object->m_screenY;
@@ -1985,12 +1985,12 @@ i32 CGrunt::ArrivalScanC() {
     CMapMgr* grid = g_gameReg->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
-    i32 c1[4];
-    GetScreenPos(reinterpret_cast<Coord*>(c1));
-    i32 cx = c1[0] >> 5;
-    i32 c2[4];
-    GetScreenPos(reinterpret_cast<Coord*>(c2));
-    i32 cy = c2[1] >> 5;
+    Coord c1[2];
+    GetScreenPos(c1);
+    i32 cx = c1[0].m_x >> 5;
+    Coord c2[2];
+    GetScreenPos(c2);
+    i32 cy = c2[0].m_y >> 5;
 
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
@@ -2489,9 +2489,9 @@ i32 CGrunt::SeekTarget() {
         }
         // Adjacency probe: read this grunt's HUD center + the slot's, in tile units,
         // and require both axis deltas < 2 (the slot is the immediate neighbor).
-        i32 c0[4];
-        GetScreenPos(reinterpret_cast<Coord*>(c0));
-        i32 cy = c0[1] >> 5;
+        Coord c0[2];
+        GetScreenPos(c0);
+        i32 cy = c0[0].m_y >> 5;
         i32 d0[4];
         GetScreenPos(reinterpret_cast<Coord*>(d0));
         i32 e0[4];
