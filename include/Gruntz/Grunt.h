@@ -123,6 +123,7 @@ class CGruntCoordList : public CPtrList {
 public:
     void*& NextData(void*& pos); // 0x29a30 (advance pos; return the node's data slot)
 };
+SIZE_UNKNOWN(); // adds no storage over CPtrList; never instantiated (see above)
 
 struct CAnimSetNode {
     char m_pad0[0xc];

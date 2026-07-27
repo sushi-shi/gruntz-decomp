@@ -696,6 +696,7 @@ struct PlaneObjectRecord {
     i32 m_tail[(0x11c - 0x28) / 4]; // +0x28  the scattered per-object fields
     char m_strings[1];              // +0x11c  the four length-prefixed strings, inline
 };
+SIZE_UNKNOWN(); // variable length: the four inline length-prefixed strings trail it
 
 RVA(0x00162af0, 0x806)
 
