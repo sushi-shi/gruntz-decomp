@@ -17,8 +17,8 @@
 RVA(0x00115440, 0x45)
 void EngStr_DrawText(
     CDDrawSurfaceMgr* obj,
-    i32 a1,
-    i32 a2,
+    CString* a1,
+    RECT* a2,
     i32 a3,
     i32 a4,
     i32 a5,

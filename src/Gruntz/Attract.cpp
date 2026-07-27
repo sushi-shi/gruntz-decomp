@@ -529,14 +529,14 @@ i32 CState::InputVirtual() {
     if (g_playActive == 0) {
         SplashParams sp;
         sp.text.LoadString(0x81a9);
-        sp.m_08 = m_mgr->m_modeW;
-        sp.m_0c = m_mgr->m_modeH;
-        sp.m_10 = 0;
+        sp.rect.top = m_mgr->m_modeW;
+        sp.rect.right = m_mgr->m_modeH;
+        sp.rect.bottom = 0;
         sp.m_14 = 0;
         EngStr_DrawText(
             m_world,
-            reinterpret_cast<i32>(&sp),
-            reinterpret_cast<i32>(&sp.m_04),
+            &sp.text,
+            &sp.rect,
             0x78,
             1,
             0xff,

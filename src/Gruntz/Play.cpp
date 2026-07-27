@@ -1249,8 +1249,12 @@ okContinue:
         if (scr.LoadString(0x8128)) {
             EngStr_DrawText(
                 self->m_world,
-                reinterpret_cast<i32>(rect),
-                reinterpret_cast<i32>(nameBuf + 0x4),
+                // @identity-TODO the CString* slot receives the local rect buffer
+                // and the RECT* slot a name-buffer offset - the two look swapped
+                // against the neighbouring `scr` CString, but this is the byte-
+                // faithful arg order; settle it from the disasm before changing.
+                reinterpret_cast<CString*>(rect),
+                reinterpret_cast<RECT*>(nameBuf + 0x4),
                 0x78,
                 1,
                 0xff,
@@ -2357,8 +2361,8 @@ void CPlay::LoadSBITextEdges(char* name) {
 
     EngStr_DrawText(
         m_world,
-        reinterpret_cast<i32>(&s),
-        reinterpret_cast<i32>(&rect),
+        &s,
+        &rect,
         0x78,
         1,
         0xff,
@@ -2408,8 +2412,8 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
     } else {
         EngStr_DrawText(
             m_world,
-            reinterpret_cast<i32>(&m_cueText),
-            reinterpret_cast<i32>(&rect),
+            &m_cueText,
+            &rect,
             a2,
             1,
             a4,
@@ -2956,8 +2960,8 @@ i32 CPlay::DrawLevelInfoText() {
     SetRect(&r4, 0, 0x1b8, 0x280, 0x1e0);
     EngStr_DrawText(
         m_world,
-        reinterpret_cast<i32>(&s0),
-        reinterpret_cast<i32>(&r1),
+        &s0,
+        &r1,
         0x78,
         0,
         0,
@@ -2967,8 +2971,8 @@ i32 CPlay::DrawLevelInfoText() {
     );
     EngStr_DrawText(
         m_world,
-        reinterpret_cast<i32>(&s1),
-        reinterpret_cast<i32>(&r2),
+        &s1,
+        &r2,
         0x6e,
         0,
         0,
@@ -2978,8 +2982,8 @@ i32 CPlay::DrawLevelInfoText() {
     );
     EngStr_DrawText(
         m_world,
-        reinterpret_cast<i32>(&s2),
-        reinterpret_cast<i32>(&r3),
+        &s2,
+        &r3,
         0x6e,
         0,
         0,
@@ -2989,8 +2993,8 @@ i32 CPlay::DrawLevelInfoText() {
     );
     EngStr_DrawText(
         m_world,
-        reinterpret_cast<i32>(&s3),
-        reinterpret_cast<i32>(&r4),
+        &s3,
+        &r4,
         0x6e,
         0,
         0,
@@ -5518,8 +5522,8 @@ i32 CState::BuildAssetNamespacePrefixes(
                 CopyRect(&r2, &r);
                 EngStr_DrawText(
                     g_gameReg->m_world,
-                    reinterpret_cast<i32>(&cs),
-                    reinterpret_cast<i32>(&r2),
+                    &cs,
+                    &r2,
                     0x82,
                     1,
                     0xff,

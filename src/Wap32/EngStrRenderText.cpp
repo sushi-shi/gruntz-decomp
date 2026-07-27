@@ -19,8 +19,8 @@
 RVA(0x00115930, 0x15b)
 i32 EngStr_RenderText(
     void* self,
-    i32 a1,
-    i32 a2,
+    CString* a1,
+    RECT* a2,
     CDDSurface* drawSurface,
     i32 fontSel,
     i32 shadow,
@@ -55,8 +55,8 @@ i32 EngStr_RenderText(
             g_textObj.SetFont(&g_largeFont);
             break;
     }
-    CString* str = reinterpret_cast<CString*>(a1);
-    RECT* rc = reinterpret_cast<RECT*>(a2);
+    CString* str = a1;
+    RECT* rc = a2;
     if (shadow) {
         RECT sh;
         CopyRect(&sh, rc);

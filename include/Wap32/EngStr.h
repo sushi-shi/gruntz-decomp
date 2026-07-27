@@ -7,8 +7,8 @@ class CDDrawSurfaceMgr;
 
 extern "C" i32 EngStr_RenderText(
     void* self,
-    i32 a1,
-    i32 a2,
+    class CString* a1,
+    struct tagRECT* a2,
     class CDDSurface* drawSurface,
     i32 fontSel,
     i32 shadow,
@@ -20,8 +20,8 @@ extern "C" i32 EngStr_RenderText(
 
 void EngStr_DrawText(
     CDDrawSurfaceMgr* obj,
-    i32 a1,
-    i32 a2,
+    class CString* a1,
+    struct tagRECT* a2,
     i32 a3,
     i32 a4,
     i32 a5,
