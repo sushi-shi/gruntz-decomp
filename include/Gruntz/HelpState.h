@@ -36,5 +36,5 @@ public:
 };
 SIZE(0x1b8);
 
-extern u8 g_titleBuf;
+extern char g_titleBuf[]; // 0x2111b0  the "HELP" title string
 #endif // GRUNTZ_HELPSTATE_H

@@ -19,7 +19,10 @@
 #include <rva.h>
 
 DATA(0x002111b0)
-u8 g_titleBuf = 72;
+// The retail bytes at 0x2111b0 are "HELP\0" (then padding to the next .data string),
+// so this is the help screen's title STRING - it was declared as a lone u8 holding
+// its first character, 72 == 'H', which is why every use had to cast its address.
+char g_titleBuf[] = "HELP";
 
 RVA(0x0008cee0, 0x6)
 GameStateId CHelpState::Update() {
@@ -76,7 +79,7 @@ i32 CHelpState::Vslot09(i32 arg) {
         && m_world->m_drawTarget->CreateOverlay(0, 0x30000) == 0) {
         return 0;
     }
-    if (FadeInTitle(reinterpret_cast<const char*>(&g_titleBuf), 0, 0, 0, 0, 1) == 0) {
+    if (FadeInTitle(g_titleBuf, 0, 0, 0, 0, 1) == 0) {
         return 0;
     }
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
@@ -141,7 +144,7 @@ i32 CHelpState::InputVirtual() {
     while (ShowCursor(FALSE) >= 0) {
     }
     i32 r = RunTitleSeq(
-        reinterpret_cast<char*>(&g_titleBuf),
+        g_titleBuf,
         0,
         0,
         1,
@@ -160,7 +163,7 @@ i32 CHelpState::Vslot06() {
     while (ShowCursor(FALSE) >= 0) {
     }
     return RunTitleSeq(
-        reinterpret_cast<char*>(&g_titleBuf),
+        g_titleBuf,
         0,
         0,
         1,
