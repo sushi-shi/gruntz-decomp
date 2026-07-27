@@ -1150,6 +1150,9 @@ CString* CButeMgr::GetStringDef(const char* tag, const char* key, CString* def) 
 // regalloc coin-flip (99.63%): body byte-exact; retail holds tag/key in ebx/edi,
 // cl swaps to edi/ebx (+ the /GX scopetable push immediate, reloc-masked). Final sweep.
 RVA(0x001731d0, 0xb6)
+// The error paths return the ADDRESS of the static empty CString, not its buffer -
+// retail emits `mov eax, OFFSET s_empty`. `(const char*)s_empty` would emit a LOAD
+// instead, so the three casts below are byte-forced, not a modelling shortcut.
 char* CButeMgr::GetString(const char* tag, const char* key) {
     static CString s_empty("");
 
@@ -1625,6 +1628,9 @@ bool ButeMgr::ParseAttributeFile() {
             double x, y, z;
             sscanf(m_token, s_fmtRect3, &x, &y, &z);
             if (m_writeMode) {
+                // CButeRef7's six DWORDs are three doubles read whole - the same
+                // faithful {lo,hi}-pair spelling as the clock pairs; declaring
+                // doubles would change the ctor's store shape.
                 CButeRef7* r = GetRef7(m_tagName, m_str104);
                 double dx = *reinterpret_cast<double*>(&r->a);
                 double dy = *reinterpret_cast<double*>(&r->c);
