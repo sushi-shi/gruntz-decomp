@@ -258,16 +258,34 @@ char s_codeF[] = "F";
 template<> DATA(0x00244af0)
 CActReg CActRegPool<CGrunt>::s_table(2000, 2010);
 
+// Re-clip the board dirty rect to the whole board. Retail 0x581ce/0x5813d/0x585db:
+// the clip rect is a real CRect LOCAL (direct ctor), the source rect a CRect
+// TEMPORARY sliced into a RECT (ctor into a scratch slot + a four-dword copy). No
+// placement new anywhere - the earlier `new (&r) CRect(..)` spelling emitted a null
+// test per rect that retail does not have (27 spurious basic blocks).
 #define SCAN_BOUNDS(grid)                                                                          \
     {                                                                                              \
+        CRect rb(0, 0, (grid)->m_width, (grid)->m_height);                                         \
         RECT ra;                                                                                   \
+        ra = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                       \
+        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
+            (grid)->m_bounds = ra;                                                                 \
+        }                                                                                          \
+        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
+        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
+    }
+
+// The 0x58097 variant: same thing, but there the CLIP rect is four inline stores
+// rather than a CRect ctor call.
+#define SCAN_BOUNDS_PLAINCLIP(grid)                                                                \
+    {                                                                                              \
         RECT rb;                                                                                   \
-        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_width, (grid)->m_height));              \
-        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height));   \
-        ra.left = pb->left;                                                                        \
-        ra.top = pb->top;                                                                          \
-        ra.right = pb->right;                                                                      \
-        ra.bottom = pb->bottom;                                                                    \
+        rb.left = 0;                                                                               \
+        rb.top = 0;                                                                                \
+        rb.right = (grid)->m_width;                                                                \
+        rb.bottom = (grid)->m_height;                                                              \
+        RECT ra;                                                                                   \
+        ra = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                       \
         if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
             (grid)->m_bounds = ra;                                                                 \
         }                                                                                          \
@@ -745,50 +763,54 @@ void CGrunt::DestroyAnims() {
 RVA(0x00057db0, 0x8f8)
 i32 CGrunt::PathScan() {
     CMapMgr* grid = g_gameReg->m_tileGrid; // implicit upcast (CGruntzMapMgr : CMapMgr == CMapMgr)
-    if (CoordCount() == 0) {
+    // retail 0x57ddb caches `&m_31c` into a frame slot BEFORE the count gate and
+    // every out-of-line list call takes its `this` from there (0x5802f/0x5805c/
+    // 0x584f1/0x58518/0x5853a/0x585bb `mov ecx,[esp+0x10]`) - a local handle.
+    CPtrList* coordz = &m_31c;
+    if (coordz->GetCount() == 0) {
         return 1;
     }
-    GruntCoordNode* node = CoordHead();
+    GruntCoordNode* node = CoordHeadOf(*coordz);
 
     i32 col5 = m_object->m_screenX >> 5;
     i32 row5 = m_object->m_screenY >> 5;
-    // retail 0x57dfc..0x57e8c: the 5x5 dirty box is the +-2 cell box `r5` widened by
+    // retail 0x57dfc..0x57e8c: the 5x5 dirty box is the +-2 cell box `rs` widened by
     // one on right/bottom, but it is reached through a POINTER that is null-tested
     // (0x57e30 `lea edx,[esp+0x48]; test edx,edx; je`) - the null arm takes the whole
     // board instead. `gb` (the clip rect) is four inline stores here, not a CRect ctor.
-    RECT gb;
-    gb.left = 0;
-    gb.top = 0;
-    gb.right = grid->m_width;
-    gb.bottom = grid->m_height;
-    RECT r5;
-    r5.left = col5 - 2;
-    r5.top = row5 - 2;
-    r5.right = col5 + 2;
-    r5.bottom = row5 + 2;
-    RECT box;
-    const RECT* pr = &r5;
-    if (pr != 0) {
-        box.left = pr->left;
-        box.top = pr->top;
-        box.right = pr->right + 1;
-        box.bottom = pr->bottom + 1;
-    } else {
-        RECT rw;
-        RECT* pw = static_cast<RECT*>(new (&rw) CRect(0, 0, grid->m_width, grid->m_height));
-        box.left = pw->left;
-        box.top = pw->top;
-        box.right = pw->right;
-        box.bottom = pw->bottom;
+    // Braced so the three rects DIE here: retail's whole frame holds only four RECT
+    // slots (0x28/0x38/0x48/0x58) reused by every later bounds recompute.
+    {
+        RECT gb;
+        gb.left = 0;
+        gb.top = 0;
+        gb.right = grid->m_width;
+        gb.bottom = grid->m_height;
+        RECT rs;
+        rs.left = col5 - 2;
+        rs.top = row5 - 2;
+        rs.right = col5 + 2;
+        rs.bottom = row5 + 2;
+        RECT box;
+        const RECT* pr = &rs;
+        if (pr != 0) {
+            box.left = pr->left;
+            box.top = pr->top;
+            box.right = pr->right + 1;
+            box.bottom = pr->bottom + 1;
+        } else {
+            box = CRect(0, 0, grid->m_width, grid->m_height);
+        }
+        if (!IntersectRect(&grid->m_bounds, &box, &gb)) {
+            grid->m_bounds = box;
+        }
+        grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
+        grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
     }
-    if (!IntersectRect(&grid->m_bounds, &box, &gb)) {
-        grid->m_bounds = box;
-    }
-    grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
-    grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
 
-    i32 tcol = CoordTail()->m_coord->m_x;
-    i32 trow = CoordTail()->m_coord->m_y;
+    GruntCoordNode* tail = CoordTailOf(*coordz);
+    i32 tcol = tail->m_coord->m_x;
+    i32 trow = tail->m_coord->m_y;
     i32 hits = 0;
 
     while (node != 0) {
@@ -842,17 +864,17 @@ i32 CGrunt::PathScan() {
                         // Same drain as the ring tail's, but here MFC's inline
                         // CPtrList::GetNext is what walks it (0x58015's direct
                         // [pos]/[pos+8] loads), not CGruntCoordList::NextData.
-                        if (CoordCount() != 0) {
-                            POSITION pos = m_31c.GetHeadPosition();
+                        if (coordz->GetCount() != 0) {
+                            POSITION pos = coordz->GetHeadPosition();
                             if (pos != 0) {
                                 do {
-                                    void* d = m_31c.GetNext(pos);
+                                    void* d = coordz->GetNext(pos);
                                     if (d != 0) {
                                         g_coordPool.Push(d);
                                     }
                                 } while (pos != 0);
                             }
-                            m_31c.RemoveAll();
+                            coordz->RemoveAll();
                         }
                         // 0x58038: adopt the fresh route, dropping the entry that IS
                         // the grunt's current cell - that one is the list head and is
@@ -863,7 +885,7 @@ i32 CGrunt::PathScan() {
                                 GruntCoord* d = static_cast<GruntCoord*>(s.GetNext(p));
                                 if (d != 0) {
                                     if (d->m_x != col5 || d->m_y != row5) {
-                                        m_31c.AddTail(d);
+                                        coordz->AddTail(d);
                                     }
                                 }
                             } while (p != 0);
@@ -873,7 +895,7 @@ i32 CGrunt::PathScan() {
                             FREELIST_PUSH(elem);
                         }
                         s.RemoveAll();
-                        SCAN_BOUNDS(grid);
+                        SCAN_BOUNDS_PLAINCLIP(grid);
                         return 1;
                     }
                 } else {
@@ -895,30 +917,25 @@ i32 CGrunt::PathScan() {
     // destination cell - and the point tested against it is the grunt's own cell
     // (col5,row5): "only re-scan the neighbourhood when I am within 4 cells of my
     // goal". (It was col5/row5 on BOTH sides here, i.e. tautological.)
-    RECT nbox;
-    nbox.left = tcol - 4;
-    nbox.top = trow - 4;
-    nbox.right = tcol + 4;
-    nbox.bottom = trow + 4;
-    if (col5 < nbox.right && col5 >= nbox.left && row5 < nbox.bottom && row5 >= nbox.top) {
+    RECT nb;
+    nb.left = tcol - 4;
+    nb.top = trow - 4;
+    nb.right = tcol + 4;
+    nb.bottom = trow + 4;
+    if (col5 < nb.right && col5 >= nb.left && row5 < nb.bottom && row5 >= nb.top) {
         // retail 0x582ae: the same null-tested-pointer bounds set as the head block
         // (0x582c3 `lea ecx,[esp+0x48]; test ecx,ecx; je`), only here the source rect
-        // is `nbox` and the clip rect IS a real CRect local (0x582be's direct ctor).
+        // is the +-4 box and the clip rect IS a real CRect local (0x582be's ctor).
         CRect rb(0, 0, grid->m_width, grid->m_height);
         RECT ra;
-        const RECT* pn = &nbox;
+        const RECT* pn = &nb;
         if (pn != 0) {
             ra.left = pn->left;
             ra.top = pn->top;
             ra.right = pn->right + 1;
             ra.bottom = pn->bottom + 1;
         } else {
-            RECT rw;
-            RECT* pw = static_cast<RECT*>(new (&rw) CRect(0, 0, grid->m_width, grid->m_height));
-            ra.left = pw->left;
-            ra.top = pw->top;
-            ra.right = pw->right;
-            ra.bottom = pw->bottom;
+            ra = CRect(0, 0, grid->m_width, grid->m_height);
         }
         if (!IntersectRect(&grid->m_bounds, &ra, &rb)) {
             grid->m_bounds = ra;
@@ -981,23 +998,23 @@ i32 CGrunt::PathScan() {
                     }
                     // 0x584d9: recycle the grunt's own coordz (the function's ONLY
                     // call 0x29a30, at 0x584fa) ...
-                    if (CoordCount() != 0) {
-                        void* pos = m_31c.GetHeadPosition();
+                    if (coordz->GetCount() != 0) {
+                        void* pos = coordz->GetHeadPosition();
                         if (pos != 0) {
                             do {
-                                void* d = CoordListOps()->NextData(pos);
+                                void* d = static_cast<CGruntCoordList*>(coordz)->NextData(pos);
                                 if (d != 0) {
                                     g_coordPool.Push(d);
                                 }
                             } while (pos != 0);
                         }
-                        m_31c.RemoveAll();
+                        coordz->RemoveAll();
                     }
                     // ... then 0x58521 transfers the fresh route into it.
                     POSITION p = s.GetHeadPosition();
                     if (p != 0) {
                         do {
-                            m_31c.AddTail(s.GetNext(p));
+                            coordz->AddTail(s.GetNext(p));
                         } while (p != 0);
                     }
                     s.RemoveAll();
@@ -1017,7 +1034,7 @@ i32 CGrunt::PathScan() {
                                 POSITION q = s.GetHeadPosition();
                                 if (q != 0) {
                                     do {
-                                        m_31c.AddTail(s.GetNext(q));
+                                        coordz->AddTail(s.GetNext(q));
                                     } while (q != 0);
                                 }
                                 s.RemoveAll();
