@@ -256,10 +256,7 @@ void CSpawnList::DeleteAllEntries() {
     while (node != 0) {
         CSpawnEntry* e = NextEntry(node);
         if (e != 0) {
-            // CSpawnEntry's only destructible member is m_name (CString @+0x00); retail
-            // emits the trivial-forwarding entry dtor as a direct ~CString @0x1b9cde +
-            // operator delete, so spell the delete through the CString subobject.
-            delete reinterpret_cast<CString*>(e);
+            delete e;
         }
     }
     m_list.RemoveAll();

@@ -266,9 +266,11 @@ CRezDir::~CRezDir() {
     // Typed intrusive-list access: the children are CRezItmBase-derived nodes
     // (each `delete` dispatches the node's slot-1 scalar-deleting dtor).
     while (m_openList.m_head != 0) {
+        // language-forced element->node overlay (RezList.h)
         delete reinterpret_cast<CRezItmBase*>(m_openList.m_head);
     }
     while (m_closedList.m_head != 0) {
+        // language-forced element->node overlay (RezList.h)
         delete reinterpret_cast<CRezItmBase*>(m_closedList.m_head);
     }
 }
