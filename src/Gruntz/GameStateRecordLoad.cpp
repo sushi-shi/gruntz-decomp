@@ -20,7 +20,7 @@ static const char s_Powerupz[] = "Powerupz";                                 // 
 static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 0x60d900
 
 
-#define SERIALREF(off)                                                                             \
+#define SERIALREF(field)                                                                             \
     do {                                                                                           \
         ++g_serialCounter;                                                                         \
         ar->Read(&id, 4);                                                                          \
@@ -33,27 +33,27 @@ static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 
         } else {                                                                                   \
             r = 0;                                                                                 \
         }                                                                                          \
-        *reinterpret_cast<void**>(p + (off)) = r;                                                  \
+        (field) = static_cast<CWwdGameObjectA*>(r);                                                \
         if (r == 0 && id != 0) {                                                                   \
             return 0;                                                                              \
         }                                                                                          \
     } while (0)
-#define READCSTR(off)                                                                              \
+#define READCSTR(field)                                                                              \
     do {                                                                                           \
         ++g_serialCounter;                                                                         \
         ar->Read(buf, 0x80);                                                                       \
-        *reinterpret_cast<CString*>(p + (off)) = buf;                                              \
+        (field) = buf;                                                                             \
     } while (0)
-#define NAMEREF(off)                                                                               \
+#define NAMEREF(field)                                                                               \
     do {                                                                                           \
         ++g_serialCounter;                                                                         \
         ar->Read(buf, 0x80);                                                                       \
         if (strlen(buf) != 0) {                                                                    \
             obj = 0;                                                                               \
             dir->m_animRegistry->m_10.Lookup(buf, obj);                                            \
-            *reinterpret_cast<void**>(p + (off)) = obj;                                            \
+            (field) = static_cast<CAniElement*>(obj);                                              \
         } else {                                                                                   \
-            *reinterpret_cast<void**>(p + (off)) = 0;                                              \
+            (field) = 0;                                                                           \
         }                                                                                          \
     } while (0)
 
@@ -78,7 +78,6 @@ static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 
 // in full per the no-stub mandate.
 RVA(0x000555e0, 0x12f8)
 i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
-    char* p = reinterpret_cast<char*>(this);
     if (ar == 0) {
         return 0;
     }
@@ -91,171 +90,171 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     void* obj; // the CMapPtrToPtr value type; the CObject-map call below re-types it
     char buf[0x80];
 
-    *reinterpret_cast<void**>((p + 0x424)) = 0;
-    *reinterpret_cast<void**>((p + 0x428)) = 0;
-    *reinterpret_cast<void**>((p + 0x264)) = 0;
-    *reinterpret_cast<void**>((p + 0x268)) = 0;
-    *reinterpret_cast<void**>((p + 0x270)) = 0;
-    *reinterpret_cast<void**>((p + 0x26c)) = 0;
-    *reinterpret_cast<void**>((p + 0x274)) = 0;
+    m_struckSlotSound = 0;
+    m_struckVoiceSound = 0;
+    m_struckCount = 0;
+    m_struckClockLo = 0;
+    m_struckTimerLo = 0;
+    m_struckClockHi = 0;
+    m_struckTimerHi = 0;
 
     // 7 serial-id object refs (unrolled).
-    SERIALREF(0x1b8);
-    SERIALREF(0x1bc);
-    SERIALREF(0x1c4);
-    SERIALREF(0x1c8);
-    SERIALREF(0x1cc);
-    SERIALREF(0x1d0);
-    SERIALREF(0x1d4);
+    SERIALREF(m_selectedSprite);
+    SERIALREF(m_toySprite);
+    SERIALREF(m_healthSprite);
+    SERIALREF(m_staminaSprite);
+    SERIALREF(m_toyTimeSprite);
+    SERIALREF(m_wingzTimeSprite);
+    SERIALREF(m_powerupSprite);
 
     // 3 CString fields.
-    READCSTR(0x1c0);
-    READCSTR(0x448);
-    READCSTR(0x44c);
+    READCSTR(m_animSetName);
+    READCSTR(m_448);
+    READCSTR(m_44c);
 
     // 18 name-ref fields (0x394..0x3d8 step 4, unrolled).
-    NAMEREF(0x394);
-    NAMEREF(0x398);
-    NAMEREF(0x39c);
-    NAMEREF(0x3a0);
-    NAMEREF(0x3a4);
-    NAMEREF(0x3a8);
-    NAMEREF(0x3ac);
-    NAMEREF(0x3b0);
-    NAMEREF(0x3b4);
-    NAMEREF(0x3b8);
-    NAMEREF(0x3bc);
-    NAMEREF(0x3c0);
-    NAMEREF(0x3c4);
-    NAMEREF(0x3c8);
-    NAMEREF(0x3cc);
-    NAMEREF(0x3d0);
-    NAMEREF(0x3d4);
-    NAMEREF(0x3d8);
+    NAMEREF(m_poseWalk);
+    NAMEREF(m_poseAttack1);
+    NAMEREF(m_poseAttack2);
+    NAMEREF(m_poseAttackIdle);
+    NAMEREF(m_poseStruck1);
+    NAMEREF(m_poseStruck2);
+    NAMEREF(m_poseIdle[0]);
+    NAMEREF(m_poseIdle[1]);
+    NAMEREF(m_poseIdle[2]);
+    NAMEREF(m_poseIdle4);
+    NAMEREF(m_poseIdle5);
+    NAMEREF(m_poseDeath);
+    NAMEREF(m_poseToy1);
+    NAMEREF(m_poseToy2);
+    NAMEREF(m_poseToyBreak);
+    NAMEREF(m_poseItem);
+    NAMEREF(m_poseItem2);
+    NAMEREF(m_pickupGeoSrc);
 
     // ~100 plain scalar/struct reads (in retail order).
-    ar->Read(p + 0x18c, 4);
-    ar->Read(p + 0x190, 4);
-    ar->Read(p + 0x194, 4);
-    ar->Read(p + 0x170, 4);
-    ar->Read(p + 0x198, 4);
-    ar->Read(p + 0x19c, 4);
-    ar->Read(p + 0x1a0, 4);
-    ar->Read(p + 0x1a4, 4);
-    ar->Read(p + 0x1a8, 4);
-    ar->Read(p + 0x1ac, 4);
-    ar->Read(p + 0x1b0, 4);
-    ar->Read(p + 0x1b4, 4);
-    ar->Read(p + 0x1d8, 4);
-    ar->Read(p + 0x174, 8);
-    ar->Read(p + 0x17c, 8);
-    ar->Read(p + 0x184, 8);
-    ar->Read(p + 0x1dc, 8);
-    ar->Read(p + 0x1e4, 4);
-    ar->Read(p + 0x1e8, 4);
-    ar->Read(p + 0x1ec, 4);
-    ar->Read(p + 0x1f0, 4);
-    ar->Read(p + 0x1f4, 4);
-    ar->Read(p + 0x1f8, 4);
-    ar->Read(p + 0x1fc, 4);
-    ar->Read(p + 0x200, 8);
-    ar->Read(p + 0x208, 8);
-    ar->Read(p + 0x210, 4);
-    ar->Read(p + 0x214, 4);
-    ar->Read(p + 0x218, 4);
-    ar->Read(p + 0x21c, 4);
-    ar->Read(p + 0x220, 4);
-    ar->Read(p + 0x224, 4);
-    ar->Read(p + 0x228, 4);
-    ar->Read(p + 0x22c, 4);
-    ar->Read(p + 0x230, 4);
-    ar->Read(p + 0x290, 0x10);
-    ar->Read(p + 0x2a0, 0x10);
-    ar->Read(p + 0x2b0, 0x10);
-    ar->Read(p + 0x2c0, 0x10);
-    ar->Read(p + 0x3ec, 4);
-    ar->Read(p + 0x3f0, 4);
-    ar->Read(p + 0x3f4, 4);
-    ar->Read(p + 0x3f8, 4);
-    ar->Read(p + 0x400, 8);
-    ar->Read(p + 0x418, 4);
-    ar->Read(p + 0x42c, 4);
-    ar->Read(p + 0x430, 4);
-    ar->Read(p + 0x434, 4);
-    ar->Read(p + 0x438, 4);
-    ar->Read(p + 0x2d0, 4);
-    ar->Read(p + 0x2d4, 4);
-    ar->Read(p + 0x2d8, 4);
-    ar->Read(p + 0x2dc, 4);
-    ar->Read(p + 0x2e0, 4);
-    ar->Read(p + 0x2e4, 4);
-    ar->Read(p + 0x2ec, 4);
-    ar->Read(p + 0x2f0, 8);
-    ar->Read(p + 0x300, 8);
-    ar->Read(p + 0x354, 4);
-    ar->Read(p + 0x358, 4);
-    ar->Read(p + 0x35c, 4);
-    ar->Read(p + 0x3dc, 8);
-    ar->Read(p + 0x3e4, 8);
-    ar->Read(p + 0x450, 4);
-    ar->Read(p + 0x41c, 4);
-    ar->Read(p + 0x408, 8);
-    ar->Read(p + 0x410, 8);
-    ar->Read(p + 0x8d0, 4);
-    ar->Read(p + 0x234, 4);
-    ar->Read(p + 0x238, 4);
-    ar->Read(p + 0x23c, 4);
-    ar->Read(p + 0x240, 4);
-    ar->Read(p + 0x244, 4);
-    ar->Read(p + 0x248, 4);
-    ar->Read(p + 0x24c, 4);
-    ar->Read(p + 0x258, 4);
-    ar->Read(p + 0x25c, 4);
-    ar->Read(p + 0x360, 4);
-    ar->Read(p + 0x364, 4);
-    ar->Read(p + 0x318, 4);
-    ar->Read(p + 0x2f8, 8);
-    ar->Read(p + 0x36c, 4);
-    ar->Read(p + 0x454, 4);
-    ar->Read(p + 0x370, 4);
-    ar->Read(p + 0x420, 4);
-    ar->Read(p + 0x368, 4);
-    ar->Read(p + 0x458, 8);
-    ar->Read(p + 0x250, 4);
-    ar->Read(p + 0x254, 4);
-    ar->Read(p + 0x374, 4);
-    ar->Read(p + 0x37c, 4);
-    ar->Read(p + 0x380, 4);
-    ar->Read(p + 0x384, 4);
-    ar->Read(p + 0x388, 4);
-    ar->Read(p + 0x390, 4);
-    ar->Read(p + 0x378, 4);
-    ar->Read(p + 0x38c, 4);
-    ar->Read(p + 0x460, 4);
-    ar->Read(p + 0x2e8, 4);
-    ar->Read(p + 0x288, 8);
+    ar->Read(&m_18c, 4);
+    ar->Read(&m_toyBlendPct, 4);
+    ar->Read(&m_194, 4);
+    ar->Read(&m_entranceReason, 4);
+    ar->Read(&m_198, 4);
+    ar->Read(&m_19c, 4);
+    ar->Read(&m_moveMode, 4);
+    ar->Read(&m_1a4, 4);
+    ar->Read(&m_1a8, 4);
+    ar->Read(&m_1ac, 4);
+    ar->Read(&m_1b0, 4);
+    ar->Read(&m_1b4, 4);
+    ar->Read(&m_arrived, 4);
+    ar->Read(&m_entrancePxX, 8);
+    ar->Read(&m_lastTilePxX, 8);
+    ar->Read(&m_commitPxX, 8);
+    ar->Read(&m_1dc, 8);
+    ar->Read(&m_entranceActive, 4);
+    ar->Read(&m_arrivalPending, 4);
+    ar->Read(&m_tileOwnerHi, 4);
+    ar->Read(&m_tileOwnerLo, 4);
+    ar->Read(&m_1f4_moveIcon, 4);
+    ar->Read(&m_1f8, 4);
+    ar->Read(&m_entranceCommitted, 4);
+    ar->Read(&m_neighborCol, 8);
+    ar->Read(&m_208, 8);
+    ar->Read(&m_210, 4);
+    ar->Read(&m_214, 4);
+    ar->Read(&m_combatActive, 4);
+    ar->Read(&m_neighborValid, 4);
+    ar->Read(&m_poweredUp, 4);
+    ar->Read(&m_224, 4);
+    ar->Read(&m_entranceStamped, 4);
+    ar->Read(&m_22c, 4);
+    ar->Read(&m_arrivalActive, 4);
+    ar->Read(&m_reachRectLeft, 0x10);
+    ar->Read(&m_2a0, 0x10);
+    ar->Read(&m_2b0, 0x10);
+    ar->Read(&m_2c0, 0x10);
+    ar->Read(&m_health, 4);
+    ar->Read(&m_stamina, 4);
+    ar->Read(&m_toyTime, 4);
+    ar->Read(&m_wingzTime, 4);
+    ar->Read(&m_400, 8);
+    ar->Read(&m_418, 4);
+    ar->Read(&m_42c, 4);
+    ar->Read(&m_430, 4);
+    ar->Read(&m_434, 4);
+    ar->Read(&m_438, 4);
+    ar->Read(&m_arrivalState, 4);
+    ar->Read(&m_defenderState, 4);
+    ar->Read(&m_2d8, 4);
+    ar->Read(&m_defenderRadius, 4);
+    ar->Read(&m_2e0, 4);
+    ar->Read(&m_2e4, 4);
+    ar->Read(&m_dwell, 4);
+    ar->Read(&m_arrivalCol, 8);
+    ar->Read(&m_defenderX, 8);
+    ar->Read(&m_354, 4);
+    ar->Read(&m_358, 4);
+    ar->Read(&m_35c, 4);
+    ar->Read(&m_3dc, 8);
+    ar->Read(&m_moveTileX, 8);
+    ar->Read(&m_arrivalPhase, 4);
+    ar->Read(&m_timePerTile, 4);
+    ar->Read(&m_408, 8);
+    ar->Read(&m_410, 8);
+    ar->Read(&m_8d0, 4);
+    ar->Read(&m_coordToggle, 4);
+    ar->Read(&m_wingzEnabled, 4);
+    ar->Read(&m_freezeDelayDone, 4);
+    ar->Read(&m_freezeUnfrozen, 4);
+    ar->Read(&m_resetApplied, 4);
+    ar->Read(&m_arrivalFlags, 4);
+    ar->Read(&m_24c, 4);
+    ar->Read(&m_gruntKind, 4);
+    ar->Read(&m_entranceArmed, 4);
+    ar->Read(&m_deathType, 4);
+    ar->Read(&m_entranceDropActive, 4);
+    ar->Read(&m_318, 4);
+    ar->Read(&m_2f8, 8);
+    ar->Read(&m_36c, 4);
+    ar->Read(&m_454, 4);
+    ar->Read(&m_370, 4);
+    ar->Read(&m_tileClaimed, 4);
+    ar->Read(&m_deathAnimStarted, 4);
+    ar->Read(&m_458, 8);
+    ar->Read(&m_250, 4);
+    ar->Read(&m_254, 4);
+    ar->Read(&m_374, 4);
+    ar->Read(&m_moveKind, 4);
+    ar->Read(&m_moveVariant, 4);
+    ar->Read(&m_coordRetryCount, 4);
+    ar->Read(&m_toyTileIndex, 4);
+    ar->Read(&m_390, 4);
+    ar->Read(&m_378, 4);
+    ar->Read(&m_38c, 4);
+    ar->Read(&m_lowStaminaCued, 4);
+    ar->Read(&m_2e8, 4);
+    ar->Read(&m_288, 8);
 
     // 3x3 array of 0x68-byte sub-records (outer stride 0x138, inner 0x68).
-    char* row = p + 0x468;
+    CGruntCellRec* row = m_cells;
     for (i32 gi = 0; gi < 3; ++gi) {
-        char* cell = row;
+        CGruntCellRec* cell = row;
         for (i32 gj = 0; gj < 3; ++gj) {
             if ((reinterpret_cast<GruntDataRecord*>(cell))->DeserializeStrings(ar) == 0) {
                 return 0;
             }
-            cell += 0x68;
+            cell += 1;
         }
-        row += 0x138;
+        row += 3;
     }
 
     // Drain the m_320 list back to the engine free-list, then RemoveAll(m_31c).
-    if (*reinterpret_cast<void**>((p + 0x328)) != 0) {
-        void* node = *reinterpret_cast<void**>((p + 0x320));
+    if (m_31c.GetCount() != 0) {
+        GruntCoordNode* node = CoordHeadOf(m_31c);
         if (node != 0) {
             CoordPoolNode* fl = g_coordPool.m_freeHead;
             do {
-                void* next = *static_cast<void**>(node);
-                char* buf = *reinterpret_cast<char**>((static_cast<char*>(node) + 8));
+                GruntCoordNode* next = node->m_next;
+                char* buf = reinterpret_cast<char*>(node->m_coord);
                 if (buf != 0) {
                     CoordPoolNode* n2 = g_coordPool.NodeOf(buf);
                     n2->m_next = fl;
@@ -265,7 +264,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
                 node = next;
             } while (node != 0);
         }
-        (reinterpret_cast<CPtrList*>((p + 0x31c)))->RemoveAll();
+        (&m_31c)->RemoveAll();
     }
 
     // Rebuild m_31c from a count of 8-byte free-list nodes.
@@ -280,15 +279,12 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
             g_coordPool.m_freeHead = nf;
         }
         ar->Read(item, 8);
-        (reinterpret_cast<CPtrList*>((p + 0x31c)))->AddTail(item);
+        (&m_31c)->AddTail(item);
     }
 
     // Drain + free the m_338 list.
-    while (*reinterpret_cast<void**>((p + 0x344)) != 0
-           && *reinterpret_cast<i32*>(
-                  (static_cast<char*>(*reinterpret_cast<void**>((p + 0x33c))) + 8)
-              ) != 0) {
-        void* rem = (reinterpret_cast<CPtrList*>((p + 0x338)))->RemoveHead();
+    while (m_338.GetCount() != 0 && GruntListHeadOf(m_338)->m_data != 0) {
+        void* rem = (&m_338)->RemoveHead();
         RezFree(rem);
     }
 
@@ -302,7 +298,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
             item = mem;
         }
         ar->Read(item, 0x2c);
-        (reinterpret_cast<CPtrList*>((p + 0x338)))->AddTail(item);
+        (&m_338)->AddTail(item);
     }
 
     // Push the level-config event(s) into the grunt's HUD object (the
