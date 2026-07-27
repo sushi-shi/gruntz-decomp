@@ -300,13 +300,13 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
                     slot = 0;
                 }
             } else {
-                // m_488 is the documented MFC DUAL-BAND object: retail calls BOTH the
-                // CPtrArray band (GetAt/SetSize, typed below/in Play.cpp) and the
-                // CDWordArray band (RemoveAt/InsertAt/SetAtGrow, the casts here) on this
-                // ONE array - byte-identical classes, both COMDAT bands linked. The casts
-                // are band selectors, retail-faithful (same verdict as the m_10map pair).
+                // m_488 is a plain ::CPtrArray. The "dual-band" story that used to sit
+                // here was a guess: `mfc_class --audit` reads retail's CRuntimeClass set
+                // for this function and gets {CMapStringToPtr, CPtrArray} - retail never
+                // enters the CDWordArray band at all, so the band-selector casts were
+                // calling the wrong library COMDAT.
                 slot = static_cast<Coord*>(self->m_488.GetAt(0));
-                (reinterpret_cast<CDWordArray*>(&self->m_488))->RemoveAt(0, 1);
+                self->m_488.RemoveAt(0, 1);
                 i32 c = self->m_49c - 1;
                 self->m_49c = c;
                 if (c < 0) {
@@ -316,13 +316,11 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
             slot->m_x = v0;
             slot->m_y = v1;
             if (self->m_49c != self->arr488Count() - 1) {
-                (reinterpret_cast<CDWordArray*>(&self->m_488))
-                    ->InsertAt(self->m_49c + 1, reinterpret_cast<DWORD>(slot), 1);
+                self->m_488.InsertAt(self->m_49c + 1, slot, 1);
                 self->m_49c = self->m_49c + 1;
                 return 1;
             }
-            (reinterpret_cast<CDWordArray*>(&self->m_488))
-                ->SetAtGrow(self->arr488Count(), reinterpret_cast<DWORD>(slot));
+            self->m_488.SetAtGrow(self->arr488Count(), slot);
             self->m_49c = self->m_49c + 1;
             return 1;
         }
@@ -356,7 +354,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
             return 1;
         }
         CoordPoolNode* node = g_coordPool.NodeOf(self->m_488.GetAt(cur));
-        (reinterpret_cast<CDWordArray*>(&self->m_488))->RemoveAt(cur, 1);
+        self->m_488.RemoveAt(cur, 1);
         node->m_next = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
         g_coordPool.m_freeHead = node;
         i32 c = self->m_49c - 1;
