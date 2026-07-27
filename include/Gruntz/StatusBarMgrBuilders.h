@@ -4,7 +4,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Mfc.h>                 // CPtrList (embedded tab lists in CStatusBarMgr)
-#include <Gruntz/SbRect.h>       // the by-value geometry rect the setup virtuals take
+#include <Gruntz/SbGeom.h> // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr
 #include <Gruntz/SbiConfig.h>    // canonical CDDrawSurfaceMgr (the setup virtuals' arg2)
 

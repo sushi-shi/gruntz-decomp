@@ -42,11 +42,15 @@ enum LoadableClassId {
     CLASSID_WWDOBJ_C = 6,    // CWwdGameObjectC::GetClassId @0x15c020
     CLASSID_WWDOBJ_F = 0x16, // CWwdGameObjectF::GetClassId @0x15ba60
     CLASSID_WWDOBJ_B = 0x1b, // CWwdGameObject::GetClassId @0x15bce0
-    // 0x1c: NO slot-8 body anywhere returns 0x1c (exhaustive .text scan) - the
-    // old "CLASSID_WWDOBJ_A = 0x1c" claim was a doc bug (A's id IS 5, above).
-    // The one retail compare (WriteSnapshot @0x151c4e, `cmp eax,0x1c`) can never
-    // be true for family receivers - a shipped dead branch; keep the immediate.
-    CLASSID_SNAPSHOT_STALE = 0x1c,
+    // 0x1c is the HOST-REGISTERED object kind: CDDrawChildGroup::LoadObjects @0x15ad30
+    // has a `case 0x1c` arm that does NOT call a family factory - it builds the object
+    // through OwnerMgr()->InvokeCallback(reader, 0xa, desc.m_0c, &rec), i.e. hands the
+    // descriptor to a callback the host installed, and the created class comes from
+    // there. That is why no slot-8 body in this EXE returns 0x1c (the exhaustive .text
+    // scan is correct) and why CGameObject::WriteSnapshot's `cmp eax,0x1c` @0x151c4e
+    // still guards a live branch - it is the WRITE side of the same round-trip
+    // (rec.m_0c == desc.m_0c). NOT a dead branch, and NOT "A" (A's id IS 5, above).
+    CLASSID_HOST_CALLBACK = 0x1c,
 };
 
 class CLoadable : public CWapObj {

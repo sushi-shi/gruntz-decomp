@@ -17,11 +17,12 @@ void __stdcall BitStreamBlowfishEncode(istream* src, ostream* dst) {
         unsigned int rec[2];
         rec[0] = 0;
         rec[1] = 0;
-        // CFile's read/write take BYTES; handing them the 8-byte record is the
-    // stream interface's own boundary - language-forced.
-    src->read(reinterpret_cast<char*>(rec), 8);
+        // istream/ostream read+write take a char* BYTE buffer; handing them the 8-byte
+        // two-dword cipher record is the stream interface's own boundary - language-forced.
+        src->read(reinterpret_cast<char*>(rec), 8);
         last = src->gcount();
         Blowfish_encipher(&rec[0], &rec[1]);
+        // language-forced by ostream::write's char* buffer, same as the read above
         dst->write(reinterpret_cast<const char*>(rec), 8);
     }
     dst->put(static_cast<unsigned char>(last));

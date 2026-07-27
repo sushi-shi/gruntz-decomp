@@ -28,6 +28,10 @@ i32 SfDeviceInitKeys() {
     g_sfMidiLocation.m_PresetIndex = 0;
     for (i32 i = 1; i <= 0x7f; i++) {
         g_sfMidiLocation.m_BankIndex = static_cast<WORD>(i);
+        // byte-forced: retail calls this slot with TWO args, not the three the vendored
+        // SFMAN 1.01 header declares - 0x0f8ee6 `push 0x64dacc; push eax; call [ecx+0x34];
+        // add esp,0x8`. Gruntz was built against an earlier SFMAN revision, so the SDK's
+        // own prototype is wrong for this binary - byte-forced through the 2-arg type.
         (reinterpret_cast<SfGetLoadedBankPathname2>(g_sfDevice->SF_GetLoadedBankPathname))(
             g_sfDeviceId,
             &g_sfMidiLocation

@@ -1049,16 +1049,13 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
         goto fail;
     }
 
-    // The 16-byte WAVEFORMATEX copy: retail moves it as dword@0, dword@4, dword@8,
-    // dword@0xc, word@0x10 (verified). The two u16-pair fields (wFormatTag|nChannels
-    // and nBlockAlign|wBitsPerSample) must be punned to a single dword store -
-    // field-by-field would emit two 16-bit moves. Language-forced (verified by disasm).
-    *reinterpret_cast<u32*>(&wf.wFormatTag) = *reinterpret_cast<u32*>(&fmt->wFormatTag);
+    // The 16-byte header copy: retail moves it as dword@0, dword@4, dword@8, dword@0xc,
+    // word@0x10 (verified). The two u16 PAIRS move as single dwords - which WaveFormatX
+    // now names (m_formatWord / m_blockWord), so this needs no pun.
+    wf.m_formatWord = fmt->m_formatWord;
     wf.nSamplesPerSec = fmt->nSamplesPerSec;
     wf.nAvgBytesPerSec = fmt->nAvgBytesPerSec;
-    // byte-forced: retail moves the two adjacent WAVEFORMAT u16 fields as ONE dword,
-    // and the SDK struct gives no combined member to name.
-    *reinterpret_cast<u32*>(&wf.nBlockAlign) = *reinterpret_cast<u32*>(&fmt->nBlockAlign);
+    wf.m_blockWord = fmt->m_blockWord;
     wf.cbSize = fmt->cbSize;
 
     out = 0;
@@ -1080,8 +1077,7 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     // Global operator new is RezAlloc; the constructor call gives MSVC the
     // retail ctor-in-flight /GX state and stamps the leaf vptr.
     voice = new DSoundCloneInst(out, this);
-    voice->m_freq =
-        *reinterpret_cast<u32*>(&wf.wFormatTag); // +0x18  format word (wFormatTag|nChannels)
+    voice->m_freq = wf.m_formatWord; // +0x18 (retail 0x136808 `mov edx,[esp+0x14]`)
     m_bufferList.InsertHead(voice ? &voice->m_link : 0);
     voice->m_rateBase = fmt->nAvgBytesPerSec;   // +0x38  avg bytes/sec
     voice->m_sampleRate = fmt->nAvgBytesPerSec; // +0x3c  duration divisor

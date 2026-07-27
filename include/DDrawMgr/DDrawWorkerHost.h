@@ -23,6 +23,7 @@ class CFileMemBase; // the abstract serialize stream (Read @+0x2c / Write @+0x30
 // before its own 0x5f0270 stamp - the base IS CLoadable (deriving CWapObj
 // directly made our compile emit a spurious ??_7CWapObj retail lacks).
 struct PlaneObjectRecord; // the serialized plane-object record (defined in LevelPlane.cpp)
+struct CPlaneFrame;       // <Wwd/WwdFile.h> - the m_frameSets element type
 
 class CDDrawWorkerHost : public CLoadable {
 public:
@@ -102,6 +103,16 @@ public:
     void WrapCoord(i32* px, i32* py);              // 0x00a000 wrap+transform a world coord
     void SnapToTileCenter(i32* out, i32 x, i32 y); // 0x0311e0 snap world (x,y) to tile centre
     i32 GetTileHandle(i32 row, i32 col);           // 0x0d53a0 m_tileGrid[m_colOffsets[col]+row]
+
+    // The +0x9c CObArray band holds CPlaneFrame*, and CPlaneFrame is a plain WWD record
+    // (<Wwd/WwdFile.h>), not a CObject - so naming the element type is the container's
+    // own pun, language-forced by MFC's CObject** element type. It lives at THIS one
+    // seam instead of at every `(CPlaneFrame**)m_frameSets.GetData()` in LevelPlane.cpp.
+    // Codegen-identical: CObArray::GetData() is inline `(CObject**)m_pData`.
+    CPlaneFrame* FrameSetAt(u32 index) {
+        // language-forced (MFC's CObject** element type), at this ONE seam
+        return reinterpret_cast<CPlaneFrame**>(m_frameSets.GetData())[index];
+    }
 
     // --- layout (the union of every facet's proven members; offsets load-bearing).
     // Where a union appears, TWO views recovered different readings of ONE retail

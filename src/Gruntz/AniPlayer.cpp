@@ -26,7 +26,7 @@ i32 CAniPlayer::Start(
     CDDrawSurfaceMgr* host,
     i32 a2,
     i32 a3,
-    SbRect rc,
+    RECT rc,
     const char* key,
     i32 b0,
     i32 b1,
@@ -88,8 +88,8 @@ i32 CAniPlayer::RenderCel() {
         CDDrawSurfacePair* surfaceCtx = g_gameReg->m_world->m_drawTarget->m_backPair;
         cel->RenderFrame(
             surfaceCtx,
-            cel->m_anchorX + m_rect14.m_0,
-            cel->m_anchorY + m_rect14.m_4,
+            cel->m_anchorX + m_rect14.left,
+            cel->m_anchorY + m_rect14.top,
             0
         );
     }

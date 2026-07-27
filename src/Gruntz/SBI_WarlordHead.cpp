@@ -34,7 +34,7 @@ i32 CSBI_WarlordHead::SetupImage(
     CDDrawSurfaceMgr* host,
     i32 a3,
     i32 a4,
-    SbRect rc,
+    RECT rc,
     const char* key,
     i32 a10,
     i32 a11
@@ -104,7 +104,7 @@ i32 CSBI_WarlordHead::SetState(i32 dir) {
 // countdown is non-positive; otherwise tick it down, pull the surface context from
 // the active drawable, and blit two frames: the direction frame (table slot 3 or 4
 // per m_3c) and the indexed frame (table slot m_38, latched into m_30). Each draws
-// at the base origin plus the frame record's own m_rect14.m_4/m_1c offset.
+// at the base origin plus the frame record's own m_rect14.top/m_1c offset.
 // @early-stop
 // 87.7 -> 95.4 via the shared-exit spelling; residual is the two RenderFrame
 // rel32 + g_gameReg DIR32 reloc-name pairing.
@@ -131,8 +131,8 @@ i32 CSBI_WarlordHead::Render() {
         if (f) {
             f->RenderFrame(
                 target,
-                m_rect14.m_0 + f->m_anchorX,
-                m_rect14.m_4 + f->m_anchorY,
+                m_rect14.left + f->m_anchorX,
+                m_rect14.top + f->m_anchorY,
                 0
             );
         }
@@ -146,8 +146,8 @@ i32 CSBI_WarlordHead::Render() {
         if (g) {
             g->RenderFrame(
                 target,
-                m_rect14.m_0 + g->m_anchorX,
-                m_rect14.m_4 + g->m_anchorY,
+                m_rect14.left + g->m_anchorX,
+                m_rect14.top + g->m_anchorY,
                 0
             );
         }

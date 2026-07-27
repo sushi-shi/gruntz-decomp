@@ -692,6 +692,7 @@ public:
         return static_cast<CGruntCoordList*>(&m_31c);
     }
     CoordNode* CoordTail() const {
+        // the same language-forced POSITION->node pun as CoordHead above
         return reinterpret_cast<CoordNode*>(m_31c.GetTailPosition());
     }
     i32 CoordCount() const {

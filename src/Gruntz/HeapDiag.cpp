@@ -171,15 +171,20 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
         return 0;
     }
 
-    PFN_CreateSnapshot pCreate =
+    // API-forced x3: GetProcAddress returns FARPROC and C++ has no implicit conversion
+    // to a concrete function-pointer type; the TOOLHELP32 entry points are resolved
+    // dynamically because they do not exist on NT 4.0.
+    PFN_CreateSnapshot pCreate = // API-forced: FARPROC -> typed function pointer
         reinterpret_cast<PFN_CreateSnapshot>(GetProcAddress(hK32, "CreateToolhelp32Snapshot"));
     if (pCreate == 0) {
         return 0;
     }
+    // API-forced: FARPROC -> typed function pointer
     PFN_Process32 pFirst = reinterpret_cast<PFN_Process32>(GetProcAddress(hK32, "Process32First"));
     if (pFirst == 0) {
         return 0;
     }
+    // API-forced: FARPROC -> typed function pointer
     PFN_Process32 pNext = reinterpret_cast<PFN_Process32>(GetProcAddress(hK32, "Process32Next"));
     if (pNext == 0) {
         return 0;

@@ -37,7 +37,7 @@ i32 CSBI_ImageSet::SetupImage(
     CDDrawSurfaceMgr* host,
     i32 cmd,
     i32 obj,
-    SbRect rect,
+    RECT rect,
     const char* key,
     i32 frame,
     i32 extra
@@ -48,14 +48,13 @@ i32 CSBI_ImageSet::SetupImage(
     }
     m_2c = owner;
     m_tab = obj;
-    i32* rc = reinterpret_cast<i32*>(&m_rect14);
     m_24 = host;
     m_28 = 0;
     m_enabled = 1;
-    rc[0] = rect.left;
-    rc[1] = rect.top;
-    rc[2] = rect.right;
-    rc[3] = rect.bottom;
+    m_rect14.left = rect.left;
+    m_rect14.top = rect.top;
+    m_rect14.right = rect.right;
+    m_rect14.bottom = rect.bottom;
     m_cmd = cmd;
     if (key == 0) {
         return 0;
@@ -115,8 +114,8 @@ i32 CSBI_ImageSet::Render() {
         if (cel != 0) {
             cel->RenderFrame(
                 g_gameReg->m_world->m_drawTarget->m_backPair,
-                cel->m_anchorX + m_rect14.m_0,
-                cel->m_anchorY + m_rect14.m_4,
+                cel->m_anchorX + m_rect14.left,
+                cel->m_anchorY + m_rect14.top,
                 0
             );
         }

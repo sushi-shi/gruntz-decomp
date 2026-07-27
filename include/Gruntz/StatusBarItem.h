@@ -1,6 +1,7 @@
 #ifndef STATUSBARITEM_H
 #define STATUSBARITEM_H
 
+#include <Gruntz/SbGeom.h> // RECT + SbGeom() - the geometry rect (was SbiRect/SbRect)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (== the real CFileMemBase) - the slot-1 arg
 #include <Ints.h>
 #include <rva.h>
@@ -8,15 +9,15 @@
 class CStatusBarMgr;    // the owning status-bar manager (Setup arg1 / m_2c)
 class CDDrawSurfaceMgr; // the config host (Setup arg2 / m_24)
 
-struct SbiRect {
-    i32 m_0; // +0x00 (rel +0x14)
-    i32 m_4; // +0x04 (rel +0x18)
-    i32 m_8; // +0x08 (rel +0x1c)
-    i32 m_c; // +0x0c (rel +0x20)
-    SbiRect() {}
-    SbiRect(i32 l, i32 t, i32 r, i32 b) : m_0(l), m_4(t), m_8(r), m_c(b) {}
-};
-SIZE_UNKNOWN();
+// The hand-rolled `SbiRect` (m_0/m_4/m_8/m_c) and `SbRect` (left/top/right/bottom) that
+// used to live here and in <Gruntz/SbRect.h> were ONE type - Win32 tagRECT - under two
+// names; both are now MFC's RECT. Proof: the two spellings met field-for-field in every
+// SBI setup body (CSBI_ImageSet::Setup assigned m_rect14.left/m_4/m_8/m_c straight from
+// an SbRect's left/top/right/bottom; StatusBarTabBuilders.cpp did the same from a plain
+// RECT `g`), and every construction site already used a 4-arg (l,t,r,b) ctor. RECT is
+// `class RECT : public tagRECT` - inline members, no vtable - so the 16-byte layout and
+// the 4-dword by-value push sequence are unchanged; only the mangled name of the setup
+// virtuals moves (USbiRect@@/USbRect@@ -> VCRect@@).
 
 class CStatusBarItem {
 public:
@@ -57,14 +58,14 @@ public:
     // id (a2) or owner (a1) is null, else stores the eight live args into the base-region
     // fields (the last two args are ABI-accepted but unused). CSBI_RectOnly overrides it
     // (0xe86e0) to additionally mark m_4 = 1 (active).
-    // Args 5..8 are ONE by-value SbRect, and the CALLER proves it: BuildStatusBarTabs
+    // Args 5..8 are ONE by-value RECT, and the CALLER proves it: BuildStatusBarTabs
     // (0xffde0) materializes them with `sub esp,0x10; mov ecx,esp; mov [ecx],<value>;
     // mov [ecx+4],..; mov [ecx+8],..; mov [ecx+0xc],..` - the struct is built DIRECTLY in
     // the outgoing arg frame from freshly-computed values, never from a named local.
     // Callee-side the two spellings are ABI-identical (10 dwords, same `ret`), so only the
     // call site can tell them apart. The sibling builder view <Gruntz/SbiTabzDialogViews.h>
-    // already had it right - its slot-11 Setup takes `SbiRect rc` by value and its call
-    // sites pass an INLINE TEMPORARY, `SbRect(cx - 0x5e, cy - 0x3c, ...)`. That temporary
+    // already had it right - its slot-11 Setup takes `RECT rc` by value and its call
+    // sites pass an INLINE TEMPORARY, `RECT(cx - 0x5e, cy - 0x3c, ...)`. That temporary
     // is the whole trick: a named local makes cl materialize the struct and copy it; an
     // inline temporary makes it build the struct in place, which is what retail does.
     virtual i32 Setup(
@@ -72,7 +73,7 @@ public:
         CDDrawSurfaceMgr* host,
         i32 a3,
         i32 a4,
-        SbiRect rc,
+        RECT rc,
         i32 a9,
         i32 a10
     );                          // slot 2
@@ -96,7 +97,7 @@ public:
     i32 m_tab;     // +0x10  Setup arg4: owning tab index
     // +0x14..0x20: a 4-int sub-block (a RECT-like record) that Setup fills through
     // a single base pointer (lea &m_14; [+0]/[+4]/[+8]/[+c]).
-    SbiRect m_rect14;             // +0x14  Setup args 5..8
+    RECT m_rect14;             // +0x14  Setup args 5..8
     class CDDrawSurfaceMgr* m_24; // +0x24  Setup arg2: the config host (surface mgr)
     i32 m_28;                     // +0x28
     class CStatusBarMgr* m_2c;    // +0x2c  Setup arg1: the owning status-bar mgr

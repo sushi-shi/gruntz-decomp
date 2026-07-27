@@ -9,7 +9,8 @@
 struct PidHeader; // the descriptor the CreateFrame slots take
 class CImage; // <Image/CImage.h>
 
-class CSymTab;      // Bute/SymTab.h - the name->record table slots 10/15 iterate
+class CSymTab;       // Bute/SymTab.h - the name->record table slots 10/15 iterate
+struct CParseSource; // Gruntz/ParseSource.h - the leaf parse record slot 16 reloads
 class CImageParent; // the +0x0c owning parent handed to each frame (== CImage::m_parent)
 
 class CDDrawWorker : public CLoadable {
@@ -63,7 +64,12 @@ public:
     // PAVCImage), not the `i32` the slots used to be declared with.
     virtual CImage* InsertFrame(void* rec, i32 n, i32 flag); // slot 14 @0x151f00
     virtual i32 ValidateFramesFromSymTab(CSymTab* tab);      // slot 15 @0x1522b0
-    virtual i32 ReloadFrame(i32 rec, i32 n, i32 flag);       // slot 16 @0x1523b0
+    // slot 16 @0x1523b0. `rec` IS a CParseSource*: the only caller is slot 15
+    // (ValidateFramesFromSymTab @0x1522b0) walking a CSymTab scope, whose payload it
+    // already reads as CParseSource (GetEntryTag / m_name), and the body hands it
+    // straight to CImage::Reload(CParseSource*, i32). Was declared i32, which forced a
+    // ptr->int cast at the call and an int->ptr cast in the body.
+    virtual i32 ReloadFrame(CParseSource* rec, i32 n, i32 flag);
     // ---- the ex-CDDrawWorker non-virtual methods (stage 5 of the fold; bodies in
     // wwdgameobject at their retail RVAs). They were declared on a THIRD view of this
     // same 0x6c object; CreateFrame24/28/30 above are this vtable's own slots 11/12/13.

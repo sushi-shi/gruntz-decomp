@@ -531,6 +531,7 @@ i32 CRezImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, i3
             // follows it in the same buffer (m_bih at +0x00, m_pal at +0x28)
             reinterpret_cast<BITMAPINFO*>(&m_bih),
             DIB_PAL_COLORS,
+            // API-forced: CreateDIBSection returns the bits through a `VOID**`.
             reinterpret_cast<void**>(&m_pixels),
             0,
             0
@@ -542,6 +543,7 @@ i32 CRezImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, i3
             // follows it in the same buffer (m_bih at +0x00, m_pal at +0x28)
             reinterpret_cast<BITMAPINFO*>(&m_bih),
             DIB_RGB_COLORS,
+            // API-forced: CreateDIBSection returns the bits through a `VOID**`.
             reinterpret_cast<void**>(&m_pixels),
             0,
             0

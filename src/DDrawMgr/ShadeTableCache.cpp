@@ -39,6 +39,7 @@ VTBL(CShadeTableArray, 0x001efb28); // cl-emitted ??_7CShadeTableArray@@6B@
 static inline u16* Pix16(void* p) {
     return reinterpret_cast<u16*>(p);
 }
+// const twin of the same API-forced byte-pitch -> 16bpp-pixel conversion
 static inline const u16* Pix16(const void* p) {
     return reinterpret_cast<const u16*>(p);
 }

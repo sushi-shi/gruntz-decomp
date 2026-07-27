@@ -3,7 +3,7 @@
 #include <Mfc.h>                  // CPtrList (the eight embedded tab lists) / CPtrArray
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
 #include <Gruntz/GameRegistry.h>  // canonical CGameRegistry (the one *0x24556c singleton)
-#include <Gruntz/SbRect.h>        // the geometry rect passed by value into the configure virtuals
+#include <Gruntz/SbGeom.h> // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
 #include <Gruntz/SbiConfig.h>     // canonical config-host family (one shape)
 #include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/StatusBarItem.h>
@@ -282,10 +282,10 @@ public:
     CDDrawSurfaceMgr* m_c; // +0x0c
     // +0x10..+0x1f is ONE RECT: CPlay's hit tests read it as {left,top,right,bottom}
     // (`(RECT*)&m_guts->m_10` at 0x4092/0x4139/0x4237), and the tab builder's
-    // "tab base x/y" are exactly its left/top. The old m_10 + SbiRect m_rect14 pair
+    // "tab base x/y" are exactly its left/top. The old m_10 + RECT m_rect14 pair
     // split that rect one dword early.
     RECT m_rect10;    // +0x10
-    i32 m_20;         // +0x20  (was m_rect14.m_c)
+    i32 m_20;         // +0x20  (was m_rect14.bottom)
     i32 m_24;         // +0x24
     i32 m_28;         // +0x28
     // +0x2c: EIGHT CPtrLists, built by the EH-vector-ctor in CPlay::LoadGameAssetNamespaces

@@ -81,7 +81,9 @@ public:
     // ----- ex CMoviePlayer (the Smacker playback half) -------------------------
     i32 Open(const char* path, i32 a2, i32 a3, i32 a4, POINT* origin, RECT* rect); // 0x17c6f0
     ~CMoviePlayer();                                                     // 0x038fc0
-    int CreateVideoWindow(i32 a0, i32 a1);                               // 0x17c2a0
+    // 0x17c2a0. Both args are forwarded verbatim into Init(HWND, DDModeInfo*, u32) at
+    // the tail, so they carry Init's types; no caller in .text constrains them otherwise.
+    int CreateVideoWindow(DDModeInfo* mode, u32 coopFlags);
     void Teardown();                                                     // 0x17c510
     i32 OpenLo(const char* src, i32 a2, i32 useDS, POINT* origin, RECT* rect);   // 0x17c570
     i32 OpenHi(i32 srcHandle, i32 a2, i32 useDS, POINT* origin, RECT* rect);   // 0x17c630

@@ -370,6 +370,8 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
 
 RVA(0x000c2620, 0x6)
 const AFX_MSGMAP* CMultiStartDlg::GetMessageMap() const {
+    // API-forced: MFC's message-map global is emitted as a raw datum and
+    // GetMessageMap's return type is fixed by CCmdTarget (same seam as CBattlezDlg).
     return reinterpret_cast<const AFX_MSGMAP*>(&g_msgmap_CMultiStartDlg);
 }
 

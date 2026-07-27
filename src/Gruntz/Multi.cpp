@@ -955,7 +955,7 @@ void CMulti::PumpB() {
     StepGridWalk(g_frameDelta);
     winapi_0d0b30_CopyRect(h);
     if (m_worldReady != 0) {
-        h->DrawBox(reinterpret_cast<i32*>(&m_hudRect), 0xff);
+        h->DrawBox(&m_hudRect, 0xff);
     }
     mgr->m_drawTarget->m_frontPair->m_surface->Flip(0);
     PumpBRefresh2356(g_gameReg, m_guts, m_region0Gate);
@@ -1024,23 +1024,23 @@ i32 CMulti::StartTitle() {
     if (!Mgr()->m_lobby) {
         return 0;
     }
-    CMultiLogicDesc* desc = reinterpret_cast<CMultiLogicDesc*>(Mgr()->m_connSettings);
+    CNetLobbyConnection* desc = Mgr()->m_connSettings;
     if (!desc) {
         return 0;
     }
-    m_isHost = (desc->m_flags & 2) ? 1 : 0;
+    m_isHost = (desc->m_dwFlags & 2) ? 1 : 0; // DPLCONNECTION_JOINSESSION
     // 0x178170 Init(lobby, appGuid-by-value): retail pushes m_lobby (the ecx live
     // from the b73ec load) + the 4 GUID dwords stored into the sub-esp,0x10 slot.
     if (m_netGate->Init(Mgr()->m_lobby, g_dplayAppGuid) == 0) {
         return 0;
     }
     m_netGate->ClearPlayerList();                                     // 0x178750
-    CNetPlayerListNode* player = m_netGate->AddPlayerNode(desc->m_8); // 0x1786d0
+    CNetPlayerListNode* player = m_netGate->AddPlayerNode(desc->m_sessionDesc); // 0x1786d0
     if (player == 0) {
         return 0;
     }
     m_netGate->m_playerSel = player; // +0x74 latch
-    CString hostName(desc->m_c->m_8);
+    CString hostName(desc->m_playerName->m_shortName);
     SetServiceName(hostName);
     char* grp = player->GroupName();
     CString grpName(grp);
@@ -1634,7 +1634,7 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     char buf[0x100];
     buf[0] = g_emptyString[0];
     memset(&buf[1], 0, 0xff);
-    Cfg_SetSection(buf, "%s", reinterpret_cast<i32&>(m_groupName)); // the CString buffer handle
+    Cfg_SetSection(buf, "%s", m_groupName); // CString -> LPCTSTR (its buffer handle)
     Cfg_AppendKeyVal(buf, "CMDDELAY", m_5a4);
     Cfg_AppendKeyVal(buf, "RESEND", m_drainReload);
     Cfg_AppendKeyVal(buf, "LEVEL", ResyncLParam());
@@ -3665,7 +3665,7 @@ i32 CMulti::CreateLocalPlayer() {
 }
 
 RVA(0x000bc910, 0xf6)
-i32 CMulti::OpenHostChannel(void* a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
+i32 CMulti::OpenHostChannel(void* a0, const char* name, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
     if (a0 == 0) {
         return 0;
     }
@@ -3683,7 +3683,7 @@ i32 CMulti::OpenHostChannel(void* a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
         return 0;
     }
     m_hostIndex = m_5bc->m_id; // +0x04 on the session node
-    return RegisterChannelFrom(reinterpret_cast<const char*>(a1), a2, -1, m_hostIndex) != 0;
+    return RegisterChannelFrom(name, a2, -1, m_hostIndex) != 0;
 }
 
 // ---------------------------------------------------------------------------

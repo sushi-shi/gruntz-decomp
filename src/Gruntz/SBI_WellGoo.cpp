@@ -25,7 +25,7 @@ VTBL(CSBI_WellGoo, 0x001eadfc); // vtable_names -> code (RTTI game class)
 // (dossier #16 identity: vtbl 0x1eadfc slot [2] jmps here). The ex-AniPlayer-TU
 // "StubOwner_e6020" placeholder host is DISSOLVED (2026-07-16) onto the declared
 // override in <Gruntz/SBI_WellGoo.h> - same 10-dword arg shape (a1..a4 + the
-// by-value SbiRect + a9/a10), same ret 0x28.
+// by-value RECT + a9/a10), same ret 0x28.
 // @early-stop
 // return-0 stub (the old ~86% score was a base-length normalization artifact of
 // the previous unit's epilogue alignment; in this unit it scores ~1% - equally
@@ -36,14 +36,14 @@ VTBL(CSBI_WellGoo, 0x001eadfc); // vtable_names -> code (RTTI game class)
 // frame + drops ebp - a uniform frame shift that mismatches every [esp+X]
 // operand. Frame/regalloc wall; full reconstruction deferred to the final sweep.
 RVA(0x000e6020, 0x288)
-i32 CSBI_WellGoo::Setup(CStatusBarMgr*, CDDrawSurfaceMgr*, i32, i32, SbiRect, i32, i32) {
+i32 CSBI_WellGoo::Setup(CStatusBarMgr*, CDDrawSurfaceMgr*, i32, i32, RECT, i32, i32) {
     return 0;
 }
 
 // vtable slot 5 (0xe6380): the per-frame goo Tick. Idle (return 1) while the
 // countdown is non-positive; then tick it down and idle again if no fill scale is
 // set; otherwise draw the base anim frame, compute the goo fill height as a
-// fraction of the (m_rect14.m_c - m_rect14.m_4) progress (FLOORED to 1.0, then ftol'd
+// fraction of the (m_rect14.bottom - m_rect14.top) progress (FLOORED to 1.0, then ftol'd
 // into m_fgTop), shade-blit + BltEx the goo source for that height, and finally draw
 // the foreground anim frame whose top sits at m_fgTop - 2. The m_drawGuard/m_blitGuard
 // inc-around-dec is a draw-depth re-entrancy guard spanning the BltEx (the guard
@@ -67,19 +67,19 @@ i32 CSBI_WellGoo::Render() {
     m_baseFrame->RenderFrame(
         ctx,
         m_drawX,
-        m_rect14.m_c + 3,
+        m_rect14.bottom + 3,
         0
     );
 
-    // Goo fill height: a fraction of the (m_rect14.m_c - m_rect14.m_4) progress,
+    // Goo fill height: a fraction of the (m_rect14.bottom - m_rect14.top) progress,
     // ceiling-clamped to 1.0, subtracted off the current water line and rounded to an
     // int. The (float) cast keeps the 0.01f/3.0f factors single-precision (fmuls/fsubs,
     // the 32-bit float constant pool) while the 1.0 clamp stays double (fcoml).
-    double fill = static_cast<float>((m_rect14.m_c - m_rect14.m_4)) * m_fillScale * 0.01f - 3.0f;
+    double fill = static_cast<float>((m_rect14.bottom - m_rect14.top)) * m_fillScale * 0.01f - 3.0f;
     if (fill <= 1.0) {
         fill = 1.0;
     }
-    m_fgTop = static_cast<i32>((static_cast<double>(m_rect14.m_c) - fill));
+    m_fgTop = static_cast<i32>((static_cast<double>(m_rect14.bottom) - fill));
 
     m_blitter->Blit(
         // @identity-TODO the +0x4c rect overlaps the guard members - see the header

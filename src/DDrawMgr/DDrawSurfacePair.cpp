@@ -298,20 +298,20 @@ i32 CDDrawSurfacePair::RestoreIfLost() {
 // while our build keeps `this` in esi + `rect` in ecx (sub esp,0x18), cascading
 // different [esp+N] slot choices through the body. Deferred to the final sweep.
 RVA(0x00163f40, 0x23e)
-void CDDrawSurfacePair::DrawBox(i32* rect, i32 color) {
-    i32 left = rect[0];
+void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
+    i32 left = rect->left;
     if (left < 0 || left >= m_width) {
         return;
     }
-    i32 top = rect[1];
+    i32 top = rect->top;
     if (top < 0 || top >= m_height) {
         return;
     }
-    i32 right = rect[2];
+    i32 right = rect->right;
     if (right < 0 || right >= m_width) {
         return;
     }
-    i32 bottom = rect[3];
+    i32 bottom = rect->bottom;
     if (bottom < 0 || bottom >= m_height) {
         return;
     }

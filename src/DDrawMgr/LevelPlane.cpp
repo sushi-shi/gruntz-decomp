@@ -429,7 +429,7 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
             dr.bottom = (yp) + ((srcp)->bottom - (srcp)->top);                                     \
             surf->BltEx(&dr, 0, 0, 0x1000400, &m_bltFx);                                           \
         } else if (h_ != 0xffffffff) {                                                             \
-            CPlaneFrame* fr_ = (reinterpret_cast<CPlaneFrame**>(m_frameSets.GetData()))[h_ >> 16]; \
+            CPlaneFrame* fr_ = FrameSetAt(h_ >> 16);                                           \
             i32 idx_ = static_cast<i32>(h_ & 0xffff);                                              \
             CPlaneTile* e_;                                                                        \
             if (idx_ >= fr_->m_lo && idx_ <= fr_->m_hi) {                                          \
@@ -1130,9 +1130,7 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
             if (handle == -1 || static_cast<u32>(handle) == 0xeeeeeeee) {
                 continue;
             }
-            CPlaneFrame* frame = (reinterpret_cast<CPlaneFrame**>(
-                m_frameSets.GetData()
-            ))[static_cast<u32>(handle) >> 16];
+            CPlaneFrame* frame = FrameSetAt(static_cast<u32>(handle) >> 16);
             if (frame == 0) {
                 result = 0;
                 if (errOut != 0) {

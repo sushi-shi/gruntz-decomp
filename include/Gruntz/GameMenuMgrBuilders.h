@@ -4,6 +4,6 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Mfc.h>           // CPtrList (embedded Game-tab widget list in CGameMenuMgr)
-#include <Gruntz/SbRect.h> // the by-value geometry rect each Configure takes (slot 0x2c)
+#include <Gruntz/SbGeom.h> // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
 
 #endif // GRUNTZ_CGAMEMENUMGR_BUILDERS_H
