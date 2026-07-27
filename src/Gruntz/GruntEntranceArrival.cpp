@@ -1083,7 +1083,10 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                         m_object->m_screenX,
                         m_object->m_screenY
                     )) {
-                    g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 4, -1, -1, -1);
+                    // API-forced: SpawnVoiceDriver's first parameter is a polymorphic payload - the
+        // CWarlord caller hands it m_object->m_188, a plain object id - so widening a
+        // `this` into it is the boundary, not a mis-typed parameter
+        g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 4, -1, -1, -1);
                 }
             } else if (focused || m_entranceReason != 0) {
                 if (idx == 1) {
@@ -1092,7 +1095,10 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                             m_object->m_screenX,
                             m_object->m_screenY
                         )) {
-                        g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 5, -1, -1, -1);
+                        // API-forced: SpawnVoiceDriver's first parameter is a polymorphic payload - the
+        // CWarlord caller hands it m_object->m_188, a plain object id - so widening a
+        // `this` into it is the boundary, not a mis-typed parameter
+        g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 5, -1, -1, -1);
                     }
                 } else if (idx == 2) {
                     if (CGameLevel::PointInBounds(
@@ -1100,7 +1106,10 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                             m_object->m_screenX,
                             m_object->m_screenY
                         )) {
-                        g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 6, -1, -1, -1);
+                        // API-forced: SpawnVoiceDriver's first parameter is a polymorphic payload - the
+        // CWarlord caller hands it m_object->m_188, a plain object id - so widening a
+        // `this` into it is the boundary, not a mis-typed parameter
+        g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 6, -1, -1, -1);
                     }
                 }
             }

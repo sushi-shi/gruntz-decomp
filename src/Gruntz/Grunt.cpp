@@ -815,6 +815,7 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
             // model says is a CGruntCellRec (whose first member is CString m_names[5]).
             // Either the cell record derives from the vector or the call is something
             // else - needs the 0x310f0 disasm; a CString read would drop the call.
+            // @identity-TODO unproven: needs the 0x310f0 disasm (noted just above)
             const char* nm = reinterpret_cast<const char*>(
                 (reinterpret_cast<_zdvec*>(&m_cells[index]))->IndexToPtr(0)
             );
@@ -855,6 +856,7 @@ idle:
         i32 col = rec.row;
         i32 row = rec.column;
         i32 index = 3 * col + row;
+        // @identity-TODO the m_cells element's real relation to _zdvec is unproven
         const char* nm = reinterpret_cast<const char*>(
             (reinterpret_cast<_zdvec*>(&m_cells[index].IdleName()))->IndexToPtr(0)
         );
@@ -871,6 +873,7 @@ walk:
         i32 col = rec.row;
         i32 row = rec.column;
         i32 index = 3 * col + row;
+        // @identity-TODO same unproven element/_zdvec relation as IdleName above
         const char* nm = reinterpret_cast<const char*>(
             (reinterpret_cast<_zdvec*>(&m_cells[index].WalkName()))->IndexToPtr(0)
         );

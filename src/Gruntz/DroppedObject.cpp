@@ -573,6 +573,9 @@ void CDroppedObject::RegisterActs() {
         g_typeCounter++;
     }
     *(DropLookup(id)) =
+        // language-forced: a DERIVED member pointer cannot enter the base-typed handler
+        // table without a cast, and the reinterpret is the bit copy retail emits (a
+        // static_cast to the base PMF would make cl emit a this-adjustment instead)
         reinterpret_cast<CActHandler>(static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::ActA));
 
     i32 id2 = ActFindId("B");
@@ -592,6 +595,9 @@ void CDroppedObject::RegisterActs() {
         g_typeCounter++;
     }
     *(DropLookup(id2)) =
+        // language-forced: a DERIVED member pointer cannot enter the base-typed handler
+        // table without a cast, and the reinterpret is the bit copy retail emits (a
+        // static_cast to the base PMF would make cl emit a this-adjustment instead)
         reinterpret_cast<CActHandler>(static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::ActB));
 }
 
