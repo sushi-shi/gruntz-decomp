@@ -38,8 +38,8 @@ void RegisterActs_646250() {
         *slot = "A";
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(CActRegPool<CPathHazard>::s_table.ResolveEntry(id)) =
-        static_cast<void*>(&PathHazardActA);
+    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
+    *reinterpret_cast<void**>(CActRegPool<CPathHazard>::s_table.ResolveEntry(id)) = static_cast<void*>(&PathHazardActA);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -50,6 +50,6 @@ void RegisterActs_646250() {
         *slot = "B";
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(CActRegPool<CPathHazard>::s_table.ResolveEntry(id2)) =
-        static_cast<void*>(&PathHazardActB);
+    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
+    *reinterpret_cast<void**>(CActRegPool<CPathHazard>::s_table.ResolveEntry(id2)) = static_cast<void*>(&PathHazardActB);
 }

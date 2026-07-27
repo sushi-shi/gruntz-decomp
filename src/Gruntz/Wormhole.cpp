@@ -383,8 +383,8 @@ void RegisterLogic() {
         *slot = "A";
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id)) =
-        static_cast<void*>(&PuddleActA);
+    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
+    *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id)) = static_cast<void*>(&PuddleActA);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -395,8 +395,8 @@ void RegisterLogic() {
         *slot = "B";
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id2)) =
-        static_cast<void*>(&PuddleActB);
+    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
+    *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id2)) = static_cast<void*>(&PuddleActB);
 }
 
 // ===========================================================================
@@ -685,8 +685,8 @@ void CTeleporter_RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntry(id)) =
-        static_cast<void*>(&TeleporterActA);
+    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
+    *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntry(id)) = static_cast<void*>(&TeleporterActA);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -697,8 +697,8 @@ void CTeleporter_RegisterActs() {
         *slot = "B";
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntry(id2)) =
-        static_cast<void*>(&TeleporterActB);
+    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
+    *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntry(id2)) = static_cast<void*>(&TeleporterActB);
 }
 
 // CTeleporter::Begin @0x0419e0 - advance the +0x1a0 anim sub-mgr to the current

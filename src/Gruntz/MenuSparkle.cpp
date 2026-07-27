@@ -88,10 +88,12 @@ typedef void (CUserLogic::*MenuSparkleActHandler)();
 
 RVA(0x000ade60, 0x102)
 void CMenuSparkle::FireActivation(i32 coord) {
-    char* e = CActRegPool<CMenuSparkle>::s_table.ResolveEntry(coord);
-    if (*reinterpret_cast<void**>(e) != 0) {
-        char* e2 = CActRegPool<CMenuSparkle>::s_table.ResolveEntry(coord);
-        MenuSparkleActHandler h = *reinterpret_cast<MenuSparkleActHandler*>(e2);
+    CActHandler* e = CActRegPool<CMenuSparkle>::s_table.ResolveEntry(coord);
+    if (*e != 0) {
+        CActHandler* e2 = CActRegPool<CMenuSparkle>::s_table.ResolveEntry(coord);
+        // @identity-TODO the registrants are `void()` while the slot is the i32
+        // CActHandler - the same act-ABI tension GruntCombat's macro documents.
+        MenuSparkleActHandler h = reinterpret_cast<MenuSparkleActHandler>(*e2);
         (this->*h)();
     }
 }
@@ -104,8 +106,8 @@ void CMenuSparkle::FireActivation(i32 coord) {
 RVA(0x000adfc0, 0x18d)
 void RegisterXLogic_646010() {
     i32 id = RegisterActionName();
-    *reinterpret_cast<void**>(CActRegPool<CMenuSparkle>::s_table.ResolveEntry(id)) =
-        static_cast<void*>(&MenuSparkleAct);
+    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
+    *reinterpret_cast<void**>(CActRegPool<CMenuSparkle>::s_table.ResolveEntry(id)) = static_cast<void*>(&MenuSparkleAct);
 }
 
 // CMenuSparkle::AdvanceAnim @0x0ae2a0 - the sparkle's per-frame handler. Tick down

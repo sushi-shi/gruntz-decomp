@@ -43,6 +43,6 @@ static inline i32 RegisterActionName() {
 RVA(0x0003a710, 0x18d)
 void RegisterXLogic_62bfa0() {
     i32 id = RegisterActionName();
-    *reinterpret_cast<void**>(CActRegPool<CCursorSnapSprite>::s_table.ResolveEntry(id)) =
-        static_cast<void*>(&CursorSnapAct);
+    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
+    *reinterpret_cast<void**>(CActRegPool<CCursorSnapSprite>::s_table.ResolveEntry(id)) = static_cast<void*>(&CursorSnapAct);
 }

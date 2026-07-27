@@ -457,8 +457,8 @@ void CExplosion::FireActivation(i32 id) {
 RVA(0x000474b0, 0x18d)
 void RegisterXLogic_6447f8() {
     i32 id = RegisterActionName();
-    *reinterpret_cast<void**>(CActRegPool<CExplosion>::s_table.ResolveEntry(id)) =
-        static_cast<void*>(&FortressFlagAct);
+    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
+    *reinterpret_cast<void**>(CActRegPool<CExplosion>::s_table.ResolveEntry(id)) = static_cast<void*>(&FortressFlagAct);
 }
 
 

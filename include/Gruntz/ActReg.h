@@ -16,18 +16,18 @@ template<class Tag> struct CActRegPool {
     static CActReg s_table;
 };
 
-template<class T> inline char* zDArray<T>::ResolveEntry(i32 id) {
+template<class T> inline T* zDArray<T>::ResolveEntry(i32 id) {
     m_grown = 0;
     if (id >= m_lo && id <= m_hi) {
-        return m_base + (id - m_lo) * m_stride;
+        return reinterpret_cast<T*>(m_base + (id - m_lo) * m_stride);
     }
     if (GrowTo(id, 0)) {
-        return m_base + (id - m_lo) * m_stride;
+        return reinterpret_cast<T*>(m_base + (id - m_lo) * m_stride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     m_errSink->Set(this, item, 0xc);
-    return m_spare;
+    return reinterpret_cast<T*>(m_spare);
 }
 
 #endif // GRUNTZ_GRUNTZ_ACTREG_H

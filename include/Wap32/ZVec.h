@@ -44,7 +44,7 @@ public:
     virtual ~zDArray() OVERRIDE;
 
     char* Resolve(i32 id);
-    char* ResolveEntry(i32 id);
+    T* ResolveEntry(i32 id); // the typed element slot
 };
 SIZE_UNKNOWN();
 

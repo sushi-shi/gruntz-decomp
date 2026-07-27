@@ -42,8 +42,8 @@ void RegisterActs_646188() {
         *slot = "A";
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(CActRegPool<CSpotLight>::s_table.ResolveEntry(id)) =
-        static_cast<void*>(&SpotLightActA);
+    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
+    *reinterpret_cast<void**>(CActRegPool<CSpotLight>::s_table.ResolveEntry(id)) = static_cast<void*>(&SpotLightActA);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -54,6 +54,6 @@ void RegisterActs_646188() {
         *slot = "B";
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(CActRegPool<CSpotLight>::s_table.ResolveEntry(id2)) =
-        static_cast<void*>(&SpotLightActB);
+    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
+    *reinterpret_cast<void**>(CActRegPool<CSpotLight>::s_table.ResolveEntry(id2)) = static_cast<void*>(&SpotLightActB);
 }

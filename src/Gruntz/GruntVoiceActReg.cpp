@@ -34,8 +34,8 @@ void RegisterActs_6514d8() {
         *slot = "A";
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(CActRegPool<CGruntVoice>::s_table.ResolveEntry(id)) =
-        static_cast<void*>(&GruntVoiceActA);
+    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
+    *reinterpret_cast<void**>(CActRegPool<CGruntVoice>::s_table.ResolveEntry(id)) = static_cast<void*>(&GruntVoiceActA);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -46,6 +46,6 @@ void RegisterActs_6514d8() {
         *slot = "B";
         g_typeCounter++;
     }
-    *reinterpret_cast<void**>(CActRegPool<CGruntVoice>::s_table.ResolveEntry(id2)) =
-        static_cast<void*>(&GruntVoiceActB);
+    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
+    *reinterpret_cast<void**>(CActRegPool<CGruntVoice>::s_table.ResolveEntry(id2)) = static_cast<void*>(&GruntVoiceActB);
 }
