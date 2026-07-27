@@ -799,11 +799,19 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
 // store. Returns 1 on a successful place, 0 on a reject.
 //
 // @early-stop
-// regalloc/scheduling wall (zero-register-pinning class): 780-byte dense body
-// with 5 pinned register vars (ebx=1, ebp, edi, esi=this, edx=g_gameReg). The
-// logic, the cell index, both call arg-sets, the on-screen bounds gates, the
-// shared tile-clear and the bute re-seed tail are all reconstructed; MSVC's exact
-// ebx/ebp/edi allocation across the two halves is not source-steerable. Deferred.
+// 69.1% - re-audited against the disasm. The residual is ONE cause and it is the
+// documented ONE/ZERO-register pinning (docs/patterns/zero-register-pinning.md, which
+// proves it a coin-flip on a structurally identical twin): retail materialises the
+// constant 1 in ebx up front and spends it BOTH on the reject gate (`cmp eax,ebx` for
+// `m_134 == 1`) and on `matchActive = 1` (`mov [esp+0x14],ebx`), then `xor ebx,ebx`
+// re-uses the same register as the zero. cl emits `mov edx,1` / immediates instead, and
+// the freed/occupied register cascades through the whole 780-byte body (it also lets
+// retail schedule `push edi` after the first compare and the g_gameReg load before the
+// pushes). TESTED: rewriting the reject as a positive gate wrapping the whole body -
+// the lever that took CInGameText::Update 79.5 -> 93.8 - is byte-IDENTICAL here (cl
+// canonicalises the negation), because this reject is a bare `return 0` with no side
+// effects for cl to have to place. Left in the literal `if (A && B && C) return 0;`
+// form, which is what retail's branch structure spells.
 RVA(0x000986b0, 0x30c)
 i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
     CGruntzMgr* reg = g_gameReg;
@@ -1129,12 +1137,25 @@ i32 CInGameText::SerializeMove(CFileMemBase* ar, i32 tag, i32 a, CGameObject* b)
     return 1;
 }
 
+// @early-stop
+// 64.2% on 54 bytes - logic and structure are identical; the residual is the documented
+// zero-register pinning (docs/patterns/zero-register-pinning.md). Retail materialises 0
+// in ecx and reuses it three ways (`cmp eax,ecx` for the null test, the out-param slot
+// store, and the null-path `m_cue = 0`), where cl emits `test ecx,ecx` + an immediate
+// store; and retail reads the parameter from [esp+4] BEFORE `push esi`. Three spellings
+// measured: collapsing cue+found into ONE variable to share the zero makes it WORSE
+// (56.4, and 55.6 with the g_gameReg hoist), which is the coin-flip the pattern doc
+// describes. Hoisting g_gameReg into its own local ahead of the out-param zero is the
+// one lever that did move it (63.4 -> 64.2) and is kept.
 RVA(0x00099b10, 0x36)
 void CInGameIcon::SetupSprite(const char* category) {
     LeafCue* cue = 0;
     if (category != 0) {
+        // the singleton is read BEFORE the out-param is zeroed - retail's
+        // `mov edx,[g_gameReg]` precedes `mov [esp+8],ecx` - so it needs its own local
+        CGruntzMgr* reg = g_gameReg;
         void* found = 0; // CMapStringToPtr's value slot (Lookup 0x1b8438 takes void*&)
-        g_gameReg->m_world->m_soundRegistry->m_10.Lookup(category, found);
+        reg->m_world->m_soundRegistry->m_10.Lookup(category, found);
         cue = static_cast<LeafCue*>(found);
     }
     m_cue = cue;
