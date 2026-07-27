@@ -91,7 +91,7 @@ i32 CDDrawSubMgrLeaf::FreeAll() {
     void* val = 0;
     POSITION pos = m_10.GetStartPosition();
     CString key;
-    if (*reinterpret_cast<volatile i32*>(&pos) != 0) {
+    if (pos != 0) {
         do {
             m_10.GetNextAssoc(pos, key, val);
             if (val != 0) {

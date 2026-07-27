@@ -277,7 +277,7 @@ void CDDrawWorkerRegistry::MapTeardown() {
     CObject* val = 0;
     POSITION pos = m_10map.GetStartPosition();
     CString key;
-    if (*reinterpret_cast<volatile i32*>(&pos) != 0) {
+    if (pos != 0) {
         do {
             m_10map.GetNextAssoc(pos, key, val);
             if (val != 0) {
