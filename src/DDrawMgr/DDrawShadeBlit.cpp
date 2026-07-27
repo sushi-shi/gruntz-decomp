@@ -13,6 +13,16 @@ u8 g_scratch[1280]; // 0x6bed08 (0x500 B, up to g_shadeDescr208@0x6bf208; a 640-
 
 // The scratch line is read back as 8bpp bytes or RGB565 words depending on the
 // blit path - the one word-view of the buffer lives here.
+// The surface cursor is a BYTE pointer (pitch and the row deltas are in bytes)
+// while the pixels are 16bpp - that pun is forced by the API, so it lives in
+// these two accessors instead of at every store/load in the blit loops.
+static inline void Store16(u8* p, u16 v) {
+    *reinterpret_cast<u16*>(p) = v;
+}
+static inline u16 Load16(const u8* p) {
+    return *reinterpret_cast<const u16*>(p);
+}
+
 static inline u16* Scratch16() {
     return reinterpret_cast<u16*>(g_scratch);
 }
@@ -658,8 +668,8 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                                     u32 idx = pal2[*sc++];
                                     idx += (*s++ >> 4) << 12;
                                     u16 v = pal1[idx];
-                                    *reinterpret_cast<u16*>(d) = v;
-                                    *reinterpret_cast<u16*>((d + rd)) = v;
+                                    Store16(d, static_cast<u16>(v));
+                                    Store16(d + rd, static_cast<u16>(v));
                                     d += 2;
                                 }
                                 break;
@@ -677,8 +687,8 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                                         r |= (m_lutBank1)
                                             [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)];
                                         r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                        *reinterpret_cast<u16*>(d) = static_cast<u16>(r);
-                                        *reinterpret_cast<u16*>((d + rd)) = static_cast<u16>(r);
+                                        Store16(d, static_cast<u16>(static_cast<u16>(r)));
+                                        Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
                                         d += 2;
                                     }
                                 } else {
@@ -689,8 +699,8 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                                         r |= (m_lutBank1)
                                             [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)];
                                         r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                        *reinterpret_cast<u16*>(d) = static_cast<u16>(r);
-                                        *reinterpret_cast<u16*>((d + rd)) = static_cast<u16>(r);
+                                        Store16(d, static_cast<u16>(static_cast<u16>(r)));
+                                        Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
                                         d += 2;
                                     }
                                 }
@@ -720,7 +730,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                             for (i = count; i > 0; i--) {
                                 u32 idx = pal2[*sc++];
                                 idx += (*s++ >> 4) << 12;
-                                *reinterpret_cast<u16*>(d) = pal1[idx];
+                                Store16(d, static_cast<u16>(pal1[idx]));
                                 d += 2;
                             }
                             break;
@@ -728,7 +738,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                         case 10: {
                             u16* pal = m_palDescr->Lut16();
                             for (i = count; i > 0; i--) {
-                                *reinterpret_cast<u16*>(d) = pal[*s++];
+                                Store16(d, static_cast<u16>(pal[*s++]));
                                 d += 2;
                             }
                             break;
@@ -745,7 +755,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                                     r |=
                                         (m_lutBank1)[((a >> 5) & 0x1f) + (((bb >> 5) & 0x1f) << 5)];
                                     r |= (m_lutBank0)[(a >> 0xa) + (bb & 0xffe0)];
-                                    *reinterpret_cast<u16*>(d) = static_cast<u16>(r);
+                                    Store16(d, static_cast<u16>(static_cast<u16>(r)));
                                     d += 2;
                                 }
                             } else {
@@ -758,7 +768,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                                         (m_lutBank0)[((a >> 6) & 0x1f) + (((bb >> 6) & 0x1f) << 5)];
                                     r |= (m_lutBank1)[((a >> 0xb)) + (bb & 0xffe0)];
                                     r |= (m_lutBank2)[(a & 0x1f) + ((bb & 0x1f) << 5)];
-                                    *reinterpret_cast<u16*>(d) = static_cast<u16>(r);
+                                    Store16(d, static_cast<u16>(static_cast<u16>(r)));
                                     d += 2;
                                 }
                             }
@@ -776,7 +786,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                                         (m_lutBank1)[((a >> 5) & 0x1f) + (((bb >> 5) & 0x1f) << 5)];
                                     r |= (m_lutBank0)[(a >> 0xa) + (bb & 0xffe0)];
                                     r |= (m_lutBank2)[(a & 0x1f) + ((bb & 0x1f) << 5)];
-                                    *reinterpret_cast<u16*>(d) = static_cast<u16>(r);
+                                    Store16(d, static_cast<u16>(static_cast<u16>(r)));
                                     d += 2;
                                 }
                             } else {
@@ -788,7 +798,7 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                                         (m_lutBank0)[((a >> 6) & 0x1f) + (((bb >> 6) & 0x1f) << 5)];
                                     r |= (m_lutBank1)[(a >> 0xb) + (bb & 0xffe0)];
                                     r |= (m_lutBank2)[(a & 0x1f) + ((bb & 0x1f) << 5)];
-                                    *reinterpret_cast<u16*>(d) = static_cast<u16>(r);
+                                    Store16(d, static_cast<u16>(static_cast<u16>(r)));
                                     d += 2;
                                 }
                             }
@@ -1052,8 +1062,8 @@ void CDDrawShadeBlit::BlitMode_14b770(
                                     u32 idx = pal2[*sc--];
                                     idx += (*s++ >> 4) << 12;
                                     u16 v = pal1[idx];
-                                    *reinterpret_cast<u16*>(d) = v;
-                                    *reinterpret_cast<u16*>((d + rd)) = v;
+                                    Store16(d, static_cast<u16>(v));
+                                    Store16(d + rd, static_cast<u16>(v));
                                     d -= 2;
                                 }
                                 break;
@@ -1072,8 +1082,8 @@ void CDDrawShadeBlit::BlitMode_14b770(
                                         r |= (m_lutBank1)
                                             [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)];
                                         r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                        *reinterpret_cast<u16*>(d) = static_cast<u16>(r);
-                                        *reinterpret_cast<u16*>((d + rd)) = static_cast<u16>(r);
+                                        Store16(d, static_cast<u16>(static_cast<u16>(r)));
+                                        Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
                                         d -= 2;
                                     }
                                 } else {
@@ -1085,8 +1095,8 @@ void CDDrawShadeBlit::BlitMode_14b770(
                                         r |= (m_lutBank1)
                                             [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)];
                                         r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                        *reinterpret_cast<u16*>(d) = static_cast<u16>(r);
-                                        *reinterpret_cast<u16*>((d + rd)) = static_cast<u16>(r);
+                                        Store16(d, static_cast<u16>(static_cast<u16>(r)));
+                                        Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
                                         d -= 2;
                                     }
                                 }
@@ -1116,7 +1126,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                             for (i = count; i > 0; i--) {
                                 u32 idx = pal2[*sc--];
                                 idx += (*s++ >> 4) << 12;
-                                *reinterpret_cast<u16*>(d) = pal1[idx];
+                                Store16(d, static_cast<u16>(pal1[idx]));
                                 d -= 2;
                             }
                             break;
@@ -1124,7 +1134,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                         case 10: {
                             u16* pal = m_palDescr->Lut16();
                             for (i = count; i > 0; i--) {
-                                *reinterpret_cast<u16*>(d) = pal[*s++];
+                                Store16(d, static_cast<u16>(pal[*s++]));
                                 d -= 2;
                             }
                             break;
@@ -1141,7 +1151,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                                         (m_lutBank1)[((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)];
                                     r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                     r |= (m_lutBank0)[(a >> 0xa) + (((dv >> 0xa) & 0x1f) << 5)];
-                                    *reinterpret_cast<u16*>(d) = static_cast<u16>(r);
+                                    Store16(d, static_cast<u16>(static_cast<u16>(r)));
                                     d -= 2;
                                 }
                             } else {
@@ -1152,7 +1162,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                                     r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                     r |=
                                         (m_lutBank1)[((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)];
-                                    *reinterpret_cast<u16*>(d) = static_cast<u16>(r);
+                                    Store16(d, static_cast<u16>(static_cast<u16>(r)));
                                     d -= 2;
                                 }
                             }
@@ -1170,7 +1180,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                                         (m_lutBank1)[((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)];
                                     r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                     r |= (m_lutBank0)[(a >> 0xa) + (((dv >> 0xa) & 0x1f) << 5)];
-                                    *reinterpret_cast<u16*>(d) = static_cast<u16>(r);
+                                    Store16(d, static_cast<u16>(static_cast<u16>(r)));
                                     d -= 2;
                                 }
                             } else {
@@ -1181,7 +1191,7 @@ void CDDrawShadeBlit::BlitMode_14b770(
                                         (m_lutBank1)[((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)];
                                     r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                     r |= (m_lutBank0)[(a >> 0xb) + (((dv >> 0xb) & 0x1f) << 5)];
-                                    *reinterpret_cast<u16*>(d) = static_cast<u16>(r);
+                                    Store16(d, static_cast<u16>(static_cast<u16>(r)));
                                     d -= 2;
                                 }
                             }
@@ -1271,7 +1281,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             for (i = count; i > 0; i--) {
                 u32 idx = pal2[*sc++];
                 idx += (*src++ >> 4) << 12;
-                *reinterpret_cast<u16*>(dst) = pal1[idx];
+                Store16(dst, static_cast<u16>(pal1[idx]));
                 dst += 2;
             }
             break;
@@ -1279,7 +1289,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
         case 10: {
             u16* pal = m_palDescr->Lut16();
             for (i = count; i > 0; i--) {
-                *reinterpret_cast<u16*>(dst) = pal[*src++];
+                Store16(dst, static_cast<u16>(pal[*src++]));
                 dst += 2;
             }
             break;
@@ -1295,7 +1305,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
                     u32 r = (m_lutBank2)[(a & 0x1f) + ((b & 0x1f) << 5)];
                     r |= (m_lutBank1)[((a >> 5) & 0x1f) + (((b >> 5) & 0x1f) << 5)];
                     r |= (m_lutBank0)[(a >> 0xa) + (b & 0xffe0)];
-                    *reinterpret_cast<u16*>(dst) = static_cast<u16>(r);
+                    Store16(dst, static_cast<u16>(static_cast<u16>(r)));
                     dst += 2;
                 }
             } else {
@@ -1307,7 +1317,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
                     u32 r = (m_lutBank0)[((a >> 6) & 0x1f) + (((b >> 6) & 0x1f) << 5)];
                     r |= (m_lutBank1)[((a >> 0xb)) + (b & 0xffe0)];
                     r |= (m_lutBank2)[(a & 0x1f) + ((b & 0x1f) << 5)];
-                    *reinterpret_cast<u16*>(dst) = static_cast<u16>(r);
+                    Store16(dst, static_cast<u16>(static_cast<u16>(r)));
                     dst += 2;
                 }
             }
@@ -1324,7 +1334,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
                     u32 r = (m_lutBank1)[((a >> 5) & 0x1f) + (((b >> 5) & 0x1f) << 5)];
                     r |= (m_lutBank0)[(a >> 0xa) + (b & 0xffe0)];
                     r |= (m_lutBank2)[(a & 0x1f) + ((b & 0x1f) << 5)];
-                    *reinterpret_cast<u16*>(dst) = static_cast<u16>(r);
+                    Store16(dst, static_cast<u16>(static_cast<u16>(r)));
                     dst += 2;
                 }
             } else {
@@ -1335,7 +1345,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
                     u32 r = (m_lutBank0)[((a >> 6) & 0x1f) + (((b >> 6) & 0x1f) << 5)];
                     r |= (m_lutBank1)[(a >> 0xb) + (b & 0xffe0)];
                     r |= (m_lutBank2)[(a & 0x1f) + ((b & 0x1f) << 5)];
-                    *reinterpret_cast<u16*>(dst) = static_cast<u16>(r);
+                    Store16(dst, static_cast<u16>(static_cast<u16>(r)));
                     dst += 2;
                 }
             }
@@ -1417,7 +1427,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             for (i = count; i > 0; i--) {
                 u32 idx = pal2[*sc--];
                 idx += (*src++ >> 4) << 12;
-                *reinterpret_cast<u16*>(dst) = pal1[idx];
+                Store16(dst, static_cast<u16>(pal1[idx]));
                 dst -= 2;
             }
             break;
@@ -1425,7 +1435,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
         case 10: {
             u16* pal = m_palDescr->Lut16();
             for (i = count; i > 0; i--) {
-                *reinterpret_cast<u16*>(dst) = pal[*src++];
+                Store16(dst, static_cast<u16>(pal[*src++]));
                 dst -= 2;
             }
             break;
@@ -1441,7 +1451,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
                     u32 r = (m_lutBank1)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
                     r |= (m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
                     r |= (m_lutBank0)[(a >> 0xa) + (((d >> 0xa) & 0x1f) << 5)];
-                    *reinterpret_cast<u16*>(dst) = static_cast<u16>(r);
+                    Store16(dst, static_cast<u16>(static_cast<u16>(r)));
                     dst -= 2;
                 }
             } else {
@@ -1451,7 +1461,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
                     u32 r = (m_lutBank0)[(a >> 0xb) + (((d >> 0xb) & 0x1f) << 5)];
                     r |= (m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
                     r |= (m_lutBank1)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
-                    *reinterpret_cast<u16*>(dst) = static_cast<u16>(r);
+                    Store16(dst, static_cast<u16>(static_cast<u16>(r)));
                     dst -= 2;
                 }
             }
@@ -1468,7 +1478,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
                     u32 r = (m_lutBank1)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
                     r |= (m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
                     r |= (m_lutBank0)[(a >> 0xa) + (((d >> 0xa) & 0x1f) << 5)];
-                    *reinterpret_cast<u16*>(dst) = static_cast<u16>(r);
+                    Store16(dst, static_cast<u16>(static_cast<u16>(r)));
                     dst -= 2;
                 }
             } else {
@@ -1478,7 +1488,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
                     u32 r = (m_lutBank1)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
                     r |= (m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
                     r |= (m_lutBank0)[(a >> 0xb) + (((d >> 0xb) & 0x1f) << 5)];
-                    *reinterpret_cast<u16*>(dst) = static_cast<u16>(r);
+                    Store16(dst, static_cast<u16>(static_cast<u16>(r)));
                     dst -= 2;
                 }
             }
@@ -1573,8 +1583,8 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
                 u32 idx = pal2[*sc++];
                 idx += (*src++ >> 4) << 12;
                 u16 v = pal1[idx];
-                *reinterpret_cast<u16*>(dst) = v;
-                *reinterpret_cast<u16*>((dst + rd)) = v;
+                Store16(dst, static_cast<u16>(v));
+                Store16(dst + rd, static_cast<u16>(v));
                 dst += 2;
             }
             break;
@@ -1591,8 +1601,8 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
                     u32 r = (m_lutBank0)[(a >> 0xa) + ((d >> 5) & 0xffe0)];
                     r |= (m_lutBank1)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
                     r |= (m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
-                    *reinterpret_cast<u16*>(dst) = static_cast<u16>(r);
-                    *reinterpret_cast<u16*>((dst + rd)) = static_cast<u16>(r);
+                    Store16(dst, static_cast<u16>(static_cast<u16>(r)));
+                    Store16(dst + rd, static_cast<u16>(static_cast<u16>(r)));
                     dst += 2;
                 }
             } else {
@@ -1602,8 +1612,8 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
                     u32 r = (m_lutBank0)[(a >> 0xb) + ((d >> 6) & 0xffe0)];
                     r |= (m_lutBank1)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
                     r |= (m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
-                    *reinterpret_cast<u16*>(dst) = static_cast<u16>(r);
-                    *reinterpret_cast<u16*>((dst + rd)) = static_cast<u16>(r);
+                    Store16(dst, static_cast<u16>(static_cast<u16>(r)));
+                    Store16(dst + rd, static_cast<u16>(static_cast<u16>(r)));
                     dst += 2;
                 }
             }
@@ -1665,8 +1675,8 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
                 u32 idx = pal2[*sc--];
                 idx += (*src++ >> 4) << 12;
                 u16 v = pal1[idx];
-                *reinterpret_cast<u16*>(dst) = v;
-                *reinterpret_cast<u16*>((dst + rd)) = v;
+                Store16(dst, static_cast<u16>(v));
+                Store16(dst + rd, static_cast<u16>(v));
                 dst -= 2;
             }
             break;
@@ -1683,8 +1693,8 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
                     u32 r = (m_lutBank0)[(a >> 0xa) + (((d >> 0xa) & 0x1f) << 5)];
                     r |= (m_lutBank1)[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
                     r |= (m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
-                    *reinterpret_cast<u16*>(dst) = static_cast<u16>(r);
-                    *reinterpret_cast<u16*>((dst + rd)) = static_cast<u16>(r);
+                    Store16(dst, static_cast<u16>(static_cast<u16>(r)));
+                    Store16(dst + rd, static_cast<u16>(static_cast<u16>(r)));
                     dst -= 2;
                 }
             } else {
@@ -1694,8 +1704,8 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
                     u32 r = (m_lutBank0)[(a >> 0xb) + (((d >> 0xb) & 0x1f) << 5)];
                     r |= (m_lutBank1)[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
                     r |= (m_lutBank2)[(a & 0x1f) + ((d & 0x1f) << 5)];
-                    *reinterpret_cast<u16*>(dst) = static_cast<u16>(r);
-                    *reinterpret_cast<u16*>((dst + rd)) = static_cast<u16>(r);
+                    Store16(dst, static_cast<u16>(static_cast<u16>(r)));
+                    Store16(dst + rd, static_cast<u16>(static_cast<u16>(r)));
                     dst -= 2;
                 }
             }
