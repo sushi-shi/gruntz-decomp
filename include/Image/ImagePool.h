@@ -39,14 +39,14 @@ public:
     CImagePaletteNode* AddPaletteRGB(void* rgb, i32 flags);                       // 0x175570
     CImagePaletteNode* AddImageFile(char* path, i32 arg);                         // 0x1755f0
     CImagePaletteNode* AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x175680
-    i32 EnsureSurface(CRezImage* img, i32 w, i32 h, i32 bitCount, void* flag);    // 0x175710
+    i32 EnsureSurface(CRezImage* img, i32 w, i32 h, i32 bitCount, i32 flag);    // 0x175710
     void B(CRezImage* node, i32 a, i32 b);                                        // 0x175780
 
     CRezImage* AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 flag);           // 0x174fe0
-    CRezImage* AddSurfaceBlit(i32 src, i32 width, i32 height, i32 bitCount, i32 flag); // 0x1750e0
+    CRezImage* AddSurfaceBlit(void* src, i32 width, i32 height, i32 bitCount, i32 flag); // 0x1750e0
     CRezImage* AddSurfaceOp(void* buf, i32 kind, i32 ctrl);                            // 0x1751f0
     CRezImage* AddSurfaceRez(i32 name, i32 ctrl);                                      // 0x1752f0
-    CRezImage* AddSurfaceConvert(i32 src, i32 pal);                                    // 0x1753f0
+    CRezImage* AddSurfaceConvert(void* src, void* pal);                                    // 0x1753f0
 
     HINSTANCE m_resourceModuleHandle; // +0x00  resource module handle (-> g_hResModule)
     HWND m_sourceHwnd;                // +0x04  source HWND (GetDC/ReleaseDC)

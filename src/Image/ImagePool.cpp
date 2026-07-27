@@ -144,7 +144,7 @@ CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 fl
             width,
             height,
             bitCount,
-            reinterpret_cast<void*>(flag)
+            flag
         )
         == 0) {
         if (m_selectedPalette) {
@@ -170,7 +170,7 @@ CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 fl
 // @early-stop
 // regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001750e0, 0x103)
-CRezImage* CImagePool::AddSurfaceBlit(i32 src, i32 width, i32 height, i32 bitCount, i32 flag) {
+CRezImage* CImagePool::AddSurfaceBlit(void* src, i32 width, i32 height, i32 bitCount, i32 flag) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node;
     CRezImage* raw = static_cast<CRezImage*>(::operator new(0x45c));
@@ -196,7 +196,7 @@ CRezImage* CImagePool::AddSurfaceBlit(i32 src, i32 width, i32 height, i32 bitCou
             width,
             height,
             bitCount,
-            reinterpret_cast<void*>(flag)
+            flag
         )
         == 0) {
         if (m_selectedPalette) {
@@ -242,7 +242,7 @@ CRezImage* CImagePool::AddSurfaceOp(void* buf, i32 kind, i32 ctrl) {
     } else {
         node = 0;
     }
-    if (node->DispatchDecode(buf, kind, static_cast<void*>(hdc), reinterpret_cast<void*>(ctrl))
+    if (node->DispatchDecode(buf, kind, static_cast<void*>(hdc), ctrl)
         == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
@@ -291,7 +291,7 @@ CRezImage* CImagePool::AddSurfaceRez(i32 name, i32 ctrl) {
     if (node->LoadFromRez(
             reinterpret_cast<char*>(name),
             static_cast<void*>(hdc),
-            reinterpret_cast<void*>(ctrl)
+            ctrl
         )
         == 0) {
         if (m_selectedPalette) {
@@ -317,7 +317,7 @@ CRezImage* CImagePool::AddSurfaceRez(i32 name, i32 ctrl) {
 // @early-stop
 // regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001753f0, 0xf4)
-CRezImage* CImagePool::AddSurfaceConvert(i32 src, i32 pal) {
+CRezImage* CImagePool::AddSurfaceConvert(void* src, void* pal) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node;
     CRezImage* raw = static_cast<CRezImage*>(::operator new(0x45c));
@@ -476,7 +476,7 @@ CImagePaletteNode* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i
 }
 
 RVA(0x00175710, 0x69)
-i32 CImagePool::EnsureSurface(CRezImage* img, i32 w, i32 h, i32 bitCount, void* flag) {
+i32 CImagePool::EnsureSurface(CRezImage* img, i32 w, i32 h, i32 bitCount, i32 flag) {
     if (img == 0) {
         return 0;
     }
@@ -500,7 +500,7 @@ void CImagePool::B(CRezImage* node, i32 a, i32 b) {
 }
 
 RVA(0x001757c0, 0x16f)
-i32 CRezImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, void* a3) {
+i32 CRezImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, i32 a3) {
     m_434 = 0;
     m_width = width;
     m_height = (height < 0) ? -height : height;
@@ -568,7 +568,7 @@ i32 CRezImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, vo
 // early-out (which restores just esi/ebx); cl pushes all four upfront. Not source-
 // steerable; docs/patterns/shrink-wrapped-callee-save-push.md. Final sweep.
 RVA(0x00175930, 0xc6)
-i32 CRezImage::DecodeBlit(void* src, void* a2, i32 width, i32 height, i32 bitcount, void* a3) {
+i32 CRezImage::DecodeBlit(void* src, void* a2, i32 width, i32 height, i32 bitcount, i32 a3) {
     if (!DecodeBmpHeader(a2, width, height, bitcount, a3)) {
         return 0;
     }
@@ -596,7 +596,7 @@ i32 CRezImage::DecodeBlit(void* src, void* a2, i32 width, i32 height, i32 bitcou
 // arg-forward schedule (regalloc). Dispatch + cases logically exact; relocs now align
 // to the real CRezImage decoders.
 RVA(0x00175a00, 0x74)
-i32 CRezImage::DispatchDecode(void* buf, i32 kind, void* dc, void* ctrl) {
+i32 CRezImage::DispatchDecode(void* buf, i32 kind, void* dc, i32 ctrl) {
     switch (kind) {
         case 2:
             return DecodePcxData(buf, dc, ctrl);
@@ -611,7 +611,7 @@ i32 CRezImage::DispatchDecode(void* buf, i32 kind, void* dc, void* ctrl) {
 }
 
 RVA(0x00175a90, 0xee)
-i32 CRezImage::LoadFromRez(char* name, void* a2, void* a3) {
+i32 CRezImage::LoadFromRez(char* name, void* a2, i32 a3) {
     char* ext = strrchr(name, '.');
 
     if (ext && _strcmpi(ext, ".BMP") == 0) {
@@ -677,7 +677,7 @@ void CRezImage::Free() {
 }
 
 RVA(0x00175ce0, 0x6b)
-i32 CRezImage::EnsureSize(void* dc, i32 w, i32 h, i32 bitCount, void* flag) {
+i32 CRezImage::EnsureSize(void* dc, i32 w, i32 h, i32 bitCount, i32 flag) {
     if (m_dibSection && m_pixels && m_rowOffsets && m_width == w && m_height == h) {
         return 1;
     }
@@ -705,7 +705,7 @@ void CRezImage::Fill(i32 value) {
 }
 
 RVA(0x00175e00, 0x3d)
-i32 CRezImage::DecodeResData(void* buf, void* a2, void* a3) {
+i32 CRezImage::DecodeResData(void* buf, void* a2, i32 a3) {
     BITMAPINFOHEADER* ih = static_cast<BITMAPINFOHEADER*>(buf);
     i32 bitcount = ih->biBitCount;
     i32 height = ih->biHeight;
@@ -732,7 +732,7 @@ i32 CRezImage::DecodeResData(void* buf, void* a2, void* a3) {
 // operand; the merged-TU compile hoists m_stride into esi first). Not source-
 // steerable (bpp-local spelling is byte-identical); everything else exact.
 RVA(0x00175e40, 0x1b3)
-i32 CRezImage::LoadBmp(char* name, void* a2, void* a3) {
+i32 CRezImage::LoadBmp(char* name, void* a2, i32 a3) {
     CFile file;
     BITMAPFILEHEADER fh;
     BITMAPINFOHEADER ih;
@@ -763,7 +763,7 @@ i32 CRezImage::LoadBmp(char* name, void* a2, void* a3) {
 }
 
 RVA(0x00176000, 0x18f)
-i32 CRezImage::DecodePcxData(void* buf, void* a2, void* a3) {
+i32 CRezImage::DecodePcxData(void* buf, void* a2, i32 a3) {
     PcxHeader* hdr = static_cast<PcxHeader*>(buf);
     i32 width = hdr->m_xMax - hdr->m_xMin + 1;
     i32 height = hdr->m_yMax - hdr->m_yMin + 1;
@@ -820,7 +820,7 @@ i32 CRezImage::DecodePcxData(void* buf, void* a2, void* a3) {
 }
 
 RVA(0x00176190, 0x126)
-i32 CRezImage::LoadPcx(char* name, void* a2, void* a3) {
+i32 CRezImage::LoadPcx(char* name, void* a2, i32 a3) {
     CFile file;
 
     if (!file.Open(name, 0, 0)) {
@@ -841,19 +841,19 @@ i32 CRezImage::LoadPcx(char* name, void* a2, void* a3) {
 }
 
 RVA(0x001762c0, 0x42)
-i32 CRezImage::DecodeRidData(void* buf, void* a2, void* a3) {
+i32 CRezImage::DecodeRidData(void* buf, void* a2, i32 a3) {
     i32* hdr = reinterpret_cast<i32*>((static_cast<char*>(buf) + 8));
     i32 width = hdr[0];
     i32 height = hdr[1];
     i32 ok = DecodeBlit(static_cast<char*>(buf) + RID_HEADER_SIZE, a2, width, height, 8, a3);
-    if (!(reinterpret_cast<i32>(a3) & 1)) {
+    if (!(a3 & 1)) {
         m_transparent = 0;
     }
     return ok;
 }
 
 RVA(0x00176310, 0x126)
-i32 CRezImage::LoadRid(char* name, void* a2, void* a3) {
+i32 CRezImage::LoadRid(char* name, void* a2, i32 a3) {
     CFile file;
 
     if (!file.Open(name, 0, 0)) {
@@ -874,7 +874,7 @@ i32 CRezImage::LoadRid(char* name, void* a2, void* a3) {
 }
 
 RVA(0x00176440, 0x25d)
-i32 CRezImage::DecodePidData(void* buf, void* a2, void* a3) {
+i32 CRezImage::DecodePidData(void* buf, void* a2, i32 a3) {
     PidHeader* hdr = static_cast<PidHeader*>(buf);
     u8* src = reinterpret_cast<u8*>((hdr + 1)); // pixel stream at buf + 0x20
     i32 width = hdr->width;
@@ -885,7 +885,7 @@ i32 CRezImage::DecodePidData(void* buf, void* a2, void* a3) {
     if (!DecodeBmpHeader(a2, width, height, 8, a3)) {
         return 0;
     }
-    if (!(reinterpret_cast<i32>(a3) & 1)) {
+    if (!(a3 & 1)) {
         m_transparent = 0;
     }
 
@@ -948,7 +948,7 @@ i32 CRezImage::DecodePidData(void* buf, void* a2, void* a3) {
 }
 
 RVA(0x001766a0, 0x126)
-i32 CRezImage::LoadPid(char* name, void* a2, void* a3) {
+i32 CRezImage::LoadPid(char* name, void* a2, i32 a3) {
     CFile file;
 
     if (!file.Open(name, 0, 0)) {
@@ -969,7 +969,7 @@ i32 CRezImage::LoadPid(char* name, void* a2, void* a3) {
 }
 
 RVA(0x001767d0, 0x64)
-i32 CRezImage::LoadDefault(char* name, void* a2, void* a3) {
+i32 CRezImage::LoadDefault(char* name, void* a2, i32 a3) {
     HINSTANCE hModule = g_hResModule;
     if (!hModule) {
         return 0;
