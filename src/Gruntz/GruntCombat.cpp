@@ -325,8 +325,12 @@ static inline CString* ActNameSlots() {
             *slot = (key);                                    \
             g_typeCounter++;                                                                       \
         }                                                                                          \
-        (reinterpret_cast<CGruntActEntry*>(CActRegPool<CGrunt>::s_table.Resolve(id)))->m_fn =      \
-            (handler);                                                                             \
+        /* CGruntActEntry re-types the slot to the DERIVED member pointer retail    */         \
+        /* actually stores: routing it through the pool's CActHandler needs a         */         \
+        /* base-conversion static_cast, which cl emits as an adjustment and costs     */         \
+        /* RegisterActs 94.69 -> 17.19. The one-member overlay is byte-forced.        */         \
+        (reinterpret_cast<CGruntActEntry*>(CActRegPool<CGrunt>::s_table.Resolve(id)))->m_fn =    \
+            reinterpret_cast<GruntActHandler>(handler);                                          \
     }
 
 // @early-stop
@@ -1090,20 +1094,16 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     {
         i32 coord = m_objAux->ActKey();
         g_typeColl.m_grown = 0;
-        i32 rec;
+        CString* rec;
         if (coord < g_typeColl.m_lo || coord > g_typeColl.m_hi) {
-            if (reinterpret_cast<i32>(g_typeColl.GrowTo(coord, 0)) != 0) {
-                rec = reinterpret_cast<i32>(
-                    g_typeColl.m_base + (coord - g_typeColl.m_lo) * g_typeColl.m_stride
-                );
+            if (g_typeColl.GrowTo(coord, 0) != 0) {
+                rec = g_typeColl.Elem(coord);
             } else {
                 g_typeColl.Report(g_projActCache, 0xc);
-                rec = reinterpret_cast<i32>(g_typeColl.m_spare);
+                rec = g_typeColl.Scratch();
             }
         } else {
-            rec = reinterpret_cast<i32>(
-                g_typeColl.m_base + (coord - g_typeColl.m_lo) * g_typeColl.m_stride
-            );
+            rec = g_typeColl.Elem(coord);
         }
         GruntScratchTeardown();
         static_cast<void>(rec);
@@ -1886,11 +1886,14 @@ i32 GruntSpawnPump(CGameObject* owner) {
 
 RVA(0x0005bcd0, 0x102)
 void CGrunt::FireActivation(i32 id) {
+    // the same byte-forced derived-member-pointer overlay as the register macro
     CGruntActEntry* e =
         reinterpret_cast<CGruntActEntry*>(CActRegPool<CGrunt>::s_table.ResolveEntry(id));
     if (e->m_fn != 0) {
         (this
-             ->*(reinterpret_cast<CGruntActEntry*>(CActRegPool<CGrunt>::s_table.ResolveEntry(id)))
+             ->*(reinterpret_cast<CGruntActEntry*>(
+                     CActRegPool<CGrunt>::s_table.ResolveEntry(id)
+                 ))
              ->m_fn)();
     }
 }
