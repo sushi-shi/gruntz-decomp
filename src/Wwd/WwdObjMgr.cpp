@@ -1225,7 +1225,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
         reader->Read(&desc, 0xa0);
 
         void* found;
-        if (m_map48.Lookup(reinterpret_cast<void*>(desc.m_04), found) && found != 0) {
+        if (MapLookupById(m_map48, desc.m_04, found) && found != 0) {
             return 0;
         }
 

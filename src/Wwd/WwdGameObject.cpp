@@ -731,7 +731,7 @@ i32 CGameObject::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
             node = m_184;
             if (node != 0) {
                 void* found = 0;
-                if (OwnerMgr()->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(node), found)
+                if (MapLookupById(OwnerMgr()->m_childGroup->m_map48, node, found)
                     == 0) {
                     m_carrier = 0;
                 } else {
@@ -946,7 +946,7 @@ i32 CGameObject::ResolveLinkedObject(i32 gate) {
     }
     if (m_184 != 0) {
         void* found = 0;
-        if (OwnerMgr()->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(m_184), found) == 0) {
+        if (MapLookupById(OwnerMgr()->m_childGroup->m_map48, m_184, found) == 0) {
             m_carrier = 0;
             return 1;
         }

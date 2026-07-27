@@ -15,6 +15,7 @@
 #include <string.h> // inline strlen / memset (rep scas / rep stos)
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+#include <Utils/MapTyped.h> // MapLookupById - the forced id->void* key pun
 
 static const char s_Powerupz[] = "Powerupz";                                 // 0x60d9b4
 static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 0x60d900
@@ -26,7 +27,7 @@ static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 
         ar->Read(&id, 4);                                                                          \
         obj = 0;                                                                                   \
         void* r;                                                                                   \
-        if (dir->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(id), obj) != 0               \
+        if (MapLookupById(dir->m_childGroup->m_map48, id, obj) != 0               \
             && obj != 0) {                                                                         \
             r = ((reinterpret_cast<CGameObject*>(obj))->GetClassId() == CLASSID_SERIALREF) ? obj   \
                                                                                            : 0;    \

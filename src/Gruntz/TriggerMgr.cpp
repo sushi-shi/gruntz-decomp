@@ -1254,7 +1254,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
             if (g != 0) {
                 id = g->m_object->m_188;
                 void* found = 0;
-                lvl->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(id), found);
+                MapLookupById(lvl->m_childGroup->m_map48, id, found);
             }
             ar->Write(&id, 4);
             cell++;
@@ -1319,7 +1319,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
         }
         i32 oid = obj->m_object->m_188;
         void* found = 0;
-        lvl->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(oid), found);
+        MapLookupById(lvl->m_childGroup->m_map48, oid, found);
         ar->Write(&oid, 4);
     }
     i32 hasOv = (m_overlay != 0) ? 1 : 0;

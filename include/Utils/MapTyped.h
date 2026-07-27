@@ -42,4 +42,13 @@ inline void MapGetNext(CMapPtrToPtr& map, POSITION& pos, K& key, void*& out) {
     map.GetNextAssoc(pos, key, out);
 }
 
+// The object maps are keyed by the object's serial ID, which MFC stores in a void*
+// slot - the id->key pun is forced by CMapPtrToPtr's signature, so it lives here.
+inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, void*& out) {
+    return map.Lookup(reinterpret_cast<void*>(id), out);
+}
+inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, CObject*& out) {
+    return map.Lookup(reinterpret_cast<void*>(id), reinterpret_cast<void*&>(out));
+}
+
 #endif // GRUNTZ_UTILS_MAPTYPED_H

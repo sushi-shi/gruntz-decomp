@@ -41,6 +41,7 @@
 #include <Gruntz/Random.h>     // ex Globals.h transitive
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 #include <Gruntz/SBI_WellGoo.h>  // CSBI_WellGoo - m_gaugeSink's real type (m_fillScale @+0x44)
+#include <Utils/MapTyped.h> // MapLookupById - the forced id->void* key pun
 
 DATA(0x00244c54)
 i32 g_curPlayer = 0; // owner def (C linkage from StatusBarItem.h)
@@ -704,7 +705,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     // consult); keep it only when GetClassId proves the CreateSprite kind.
     void* obj = 0;
     CWwdGameObjectA* m8 = 0;
-    if (gm->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(seq), obj)) {
+    if (MapLookupById(gm->m_childGroup->m_map48, seq, obj)) {
         if (obj != 0) {
             m8 = ((static_cast<CGameObject*>(obj))->GetClassId() == CLASSID_SERIALREF)
                      ? reinterpret_cast<CWwdGameObjectA*>(obj)

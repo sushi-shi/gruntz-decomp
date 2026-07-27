@@ -27,6 +27,7 @@
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells; ex CIconRecord)
 #include <Gruntz/SoundState.h> // ex Globals.h transitive
 #include <Gruntz/Random.h>     // ex Globals.h transitive
+#include <Utils/MapTyped.h> // MapLookupById - the forced id->void* key pun
 
 VTBL(CInGameText, 0x001e7cac);
 VTBL(CInGameIcon, 0x001e7d04);
@@ -903,7 +904,7 @@ i32 CInGameIcon::Reposition() {
         }
         if (cellVal != 0) {
             void* found = 0;
-            if (reg->m_world->m_childGroup->m_map48.Lookup(reinterpret_cast<void*>(cellVal), found)
+            if (MapLookupById(reg->m_world->m_childGroup->m_map48, cellVal, found)
                 && found != 0) {
                 (static_cast<CGameObject*>(found))->m_flags |= 0x10000;
             }
