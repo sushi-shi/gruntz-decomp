@@ -319,6 +319,8 @@ RVA(0x000a3a20, 0xe2)
 void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
     i32 w = r->right - r->left + 1;
     // Top edge (m_surface reloaded per block, matching the retail spill of `this`).
+    // byte-forced: `base` is the locked surface cursor and the row/column steps are
+    // the surface's BYTE quantities (m_pitch, m_bytesPerPixel); the pixels are 16bpp.
     u16* tp = reinterpret_cast<u16*>(
         (static_cast<char*>(base) + r->top * m_surface->m_pitch
          + r->left * m_surface->m_bytesPerPixel)
@@ -327,6 +329,7 @@ void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
         tp[t] = static_cast<u16>(color);
     }
     // Bottom edge.
+    // byte-forced: same m_pitch/m_bytesPerPixel byte arithmetic on the locked cursor.
     u16* bp = reinterpret_cast<u16*>(
         (static_cast<char*>(base) + r->bottom * m_surface->m_pitch
          + r->left * m_surface->m_bytesPerPixel)
@@ -409,12 +412,7 @@ i32 CLightFxRender::BuildShape(i32 shape) {
     if (shape > 8) {
         return 0;
     }
-    {
-        u32* p = reinterpret_cast<u32*>(m_buf);
-        for (i32 i = 0; i < 0xfa; i++) {
-            p[i] = 0;
-        }
-    }
+    memset(m_buf, 0, sizeof(m_buf)); // retail: mov ecx,0xfa / rep stos dword (1000 B)
     switch (shape - 1) {
         case 0:
             if (!Shape1()) {

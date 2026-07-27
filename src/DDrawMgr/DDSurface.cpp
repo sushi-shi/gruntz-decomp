@@ -808,9 +808,11 @@ i32 CDDSurface::ShadeBlt(
                         u16 v = *reinterpret_cast<u16*>(
                             ((g_clut + 0x10002) + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2)
                         );
+                        // byte-forced: same byte-addressed CLUT read as 16-bit entries
                         v |= *reinterpret_cast<u16*>(
                             ((g_clut + 0x20002) + bank + ((sp >> 0xa) + ((tp >> 5) & ~0x1f)) * 2)
                         );
+                        // byte-forced: same byte-addressed CLUT read as 16-bit entries
                         v |= *reinterpret_cast<u16*>(
                             ((g_clut + 0x2) + bank
                              + ((((tp >> 5) & 0x1f) << 5) + (0x1f & (sp >> 5))) * 2)
@@ -844,9 +846,11 @@ i32 CDDSurface::ShadeBlt(
                         u16 v = *reinterpret_cast<u16*>(
                             ((g_clut + 0x10002) + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2)
                         );
+                        // byte-forced: same byte-addressed CLUT read as 16-bit entries
                         v |= *reinterpret_cast<u16*>(
                             ((g_clut + 0x20002) + bank + ((sp >> 0xb) + ((tp >> 6) & ~0x1f)) * 2)
                         );
+                        // byte-forced: same byte-addressed CLUT read as 16-bit entries
                         v |= *reinterpret_cast<u16*>(
                             ((g_clut + 0x2) + bank
                              + ((((tp >> 6) & 0x1f) << 5) + ((sp >> 6) & 0x1f)) * 2)

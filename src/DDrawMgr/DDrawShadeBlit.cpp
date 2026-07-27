@@ -20,9 +20,11 @@ static inline u16* Pix16(void* p) {
     return reinterpret_cast<u16*>(p);
 }
 static inline void Store16(u8* p, u16 v) {
+    // byte-forced (one seam): byte cursor, 16bpp pixel
     *reinterpret_cast<u16*>(p) = v;
 }
 static inline u16 Load16(const u8* p) {
+    // byte-forced (one seam): byte cursor, 16bpp pixel
     return *reinterpret_cast<const u16*>(p);
 }
 

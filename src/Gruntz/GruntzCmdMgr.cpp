@@ -36,6 +36,7 @@ static inline i16 PeekI16(const void* p) {
     return *reinterpret_cast<const i16*>(p);
 }
 static inline void PokeI16(void* p, i16 v) {
+    // byte-forced (one seam): the command wire buffer is a packed byte stream
     *reinterpret_cast<i16*>(p) = v;
 }
 

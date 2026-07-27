@@ -3,9 +3,15 @@
 #include <rva.h>
 #include <Wap32/Object.h> // CObject base (pulls the single MFC ::CObject + CArchive)
 
+// The CFaderMesh warp record. Both ends prove the shape: ApplyInit (0x17ea00) fills a
+// 10-dword `pt[]` slot (two rects, then 0 and 0x3f800000 = 1.0f) and memcpy's it in;
+// RenderFrame (0x17ef00) reads exactly the two rects back and interpolates A -> B.
 struct RezElem40 {
-    RezElem40(); // 0x17f300
-    char m_b[0x28];
+    RezElem40();     // 0x17f300
+    i32 m_rectA[4];  // +0x00  rect A (left, top, right, bottom)
+    i32 m_rectB[4];  // +0x10  rect B (the interpolation target)
+    i32 m_20;        // +0x20  always 0
+    i32 m_scaleBits; // +0x24  always 0x3f800000 - 1.0f as its bit pattern
 };
 SIZE(0x28);
 

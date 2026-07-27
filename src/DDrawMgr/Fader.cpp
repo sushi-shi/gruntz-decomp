@@ -187,11 +187,13 @@ void CFaderMesh::RenderFrame(i32 frame) {
     }
     if (m_meshBuf.m_nSize > 0) {
         float ff = static_cast<float>(frame);
-        char* pData = reinterpret_cast<char*>(m_meshBuf.m_pData);
+        RezElem40* recs = m_meshBuf.m_pData;
         for (i32 i = 0; i < m_meshBuf.m_nSize; i++) {
-            i32* rec = reinterpret_cast<i32*>((pData + i * 0x28));
-            i32 r0 = rec[0], r1 = rec[1], r2 = rec[2], r3 = rec[3];
-            i32 r4 = rec[4], r5 = rec[5], r6 = rec[6], r7 = rec[7];
+            RezElem40* rec = &recs[i];
+            i32 r0 = rec->m_rectA[0], r1 = rec->m_rectA[1];
+            i32 r2 = rec->m_rectA[2], r3 = rec->m_rectA[3];
+            i32 r4 = rec->m_rectB[0], r5 = rec->m_rectB[1];
+            i32 r6 = rec->m_rectB[2], r7 = rec->m_rectB[3];
             float t = ff / static_cast<float>(GetFrameCount());
 
             i32 x0 = r0 + static_cast<i32>((static_cast<float>((r4 - r0)) * t));
