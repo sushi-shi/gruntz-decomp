@@ -39,8 +39,6 @@ typedef enum VideoConfigDlgId {
 DATA(0x0020ccc4)
 i32 g_videoResolutionMode = 1; // retail .data initial value 1
 
-
-
 DATA(0x0022bd64)
 i32 g_opt_22bd64 = 0;
 DATA(0x0022bd68)
@@ -104,8 +102,12 @@ i32 GetResolutionCode() {
 // pure codegen shaping: (1) the IDOK resolution-store register allocation (retail
 // caches g_gameReg once and puts w/h in ecx/edx; cl reloads it and uses eax/ecx),
 // (2) IsInPlayState's inline-vs-call bool normalization (GruntzMgr.h defines it inline,
-// so cl folds a neg/sbb/neg where retail keeps the call's raw bool test), and (3) the
-// outer msg-switch default placement (je-case vs jne-default fall-through). The
+// so cl folds a neg/sbb/neg where retail keeps the call's raw bool test). Item (3), the
+// outer msg-switch default placement, is FIXED (2026-07-27, 96.05 -> 97.64): base 12
+// rets / retail 10; making the WM_COMMAND arm's trailing unrouted-notification exit a
+// `break` instead of `return FALSE` merges it with the switch default, which parks that
+// block at the bottom (retail 0x36564) and inverts the ladder's last compare so
+// WM_HSCROLL falls through. The
 // cross-view dispatch (m_curState's game-manager/net dual role via the CNetMgr
 // cross-cast) is reloc-masked scaffolding pending those classes' shared modeling.
 RVA(0x00036410, 0x366)

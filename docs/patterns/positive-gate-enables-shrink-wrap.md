@@ -172,3 +172,119 @@ destructor keeps the per-site spelling.
 
 related: shrink-wrapped-callee-save-push.md, mfc-map-walk-while-not-guard-dowhile.md,
 retry-loop-bail-while-goto-no-peel.md, identical-return-epilogue-tailmerge.md
+
+## The four SPELLINGS the ret-count test resolves to (second sweep, 2026-07-27)
+
+`b_ret > t_ret` says *an exit block is duplicated*; it does not say which spelling fixes it.
+Measured over 21 functions (20 improved, 1 EXACT), the extra block is always one of four
+shapes, and each has its own rewrite. Read the retail block that the counts point at before
+picking one — the wrong one of these four can cost as much as the right one gains.
+
+### 1. Search loop — hoist the guard, write `if (c) { do {…} while (c); }`
+
+A `for`/`while` search whose fall-through is the miss `return 0` makes cl place a **second**
+miss epilogue right after the loop and take the back-edge conditionally. Retail instead
+branches **out** of the bottom test into the shared miss block and makes the back-edge an
+**unconditional `jmp`**:
+
+```asm
+; retail                                   ; base
+  cmp  edi,eax                               cmp  edi,eax
+  jge  <shared miss>                         jl   <loop top>
+  jmp  <loop top>                            xor  eax,eax   ; <- the duplicate
+                                             pop/pop/ret
+```
+
+Rewrite the loop with its guard hoisted (`i32 i = 0; if (i < n()) { do { … i++; } while (i < n()); }`).
+Folding the *other* `return 0`s into one statement is **not** enough on its own — measured:
+`CPlay::FindStartPointAt` did not move at all until the do-while went in.
+
+| function | rets | before → after |
+|---|---|---|
+| `MgrListFind` @0xf0db0 | 3 → 2 | 73.22 → **89.47** |
+| `CPlay::FindStartPointAt` @0xd5f90 | 3 → 2 | 83.22 → **93.49** |
+| `CTriggerMgr::CellHitTest` @0x6bea0 | 3 → 2 | 71.17 → **80.71** |
+| `CTriggerMgr::FindGruntAt` @0x75c60 | 3 → 2 | 74.75 → **79.42** |
+
+`MgrListFind` and `CellHitTest` had been filed as *regalloc* walls; the third callee-saved
+register fell out on its own once the layout was right.
+
+### 2. Window/dialog procs — `break`, not `return 0`, in a case arm
+
+When a `switch` arm's "not handled" exit is spelled `return 0` it gets its own epilogue AND
+cl emits the switch **default** inline in the compare ladder (`je <last case>`; default falls
+through). Make that arm `break` so it lands on the switch's trailing `return 0`: the default
+block moves to the bottom, the ladder's last compare **inverts** to `jne <default>`, and the
+last case becomes the ladder fall-through — retail's exact layout.
+
+| function | rets | before → after |
+|---|---|---|
+| `CGruntzWnd::PreDispatchMessage` @0x94790 | 6 → 3 | 77.64 → **98.19** |
+| `LevelPreviewDlgProc` @0xe3690 | 4 → 1 | 80.35 → **85.15** |
+| `GameOptionsDlgProc` @0x36410 | 12 → 10 | 96.05 → **97.64** |
+
+**And the dispatch has to actually BE a `switch`.** Chained `if (msg == X)` lowers to
+`cmp/jne` pairs; retail's `sub eax,0x110 / je / dec eax / jne` (and `dec eax / je / dec eax
+/ je` on wParam) is a switch. `ButeAttributezDlgProc` @0x3c990 needed **both** halves —
+merging the exits alone took it 27.94 → **14.94**, and adding the two switches took it to
+**100.00 EXACT**. Do not judge half of this fix by itself.
+
+### 3. Many gates — carry the value in a local, don't `goto fail`
+
+`goto fail; … fail: return 0;` still leaves cl laying the fail block *before* the success
+tail, i.e. two epilogues. What reproduces retail's single epilogue is carrying the result:
+
+```cpp
+i32 ok = 0;
+if (!Step1()) goto done;
+…
+ok = 1;
+done:
+return ok;          // the success tail FALLS INTO the one epilogue
+```
+
+`CBootyState::LoadGameAssetNamespaces` @0x18830, 2 rets → 1, 86.20 → **88.48**; retail's last
+five gates then need no `xor eax,eax` at all because eax is already 0.
+**Not universal:** the identical rewrite on `LevelPreviewDlgProc` regressed 85.15 → **79.79**
+(reverted) — a second lane had already measured the same thing there. Try it, keep the number.
+
+### 4. Two-arm store at a tail — retail selects the SLOT and stores once
+
+`if (d) p->a = v; else p->b = v;` immediately before a return gives cl two stores each with
+its own epilogue. Retail computes the destination and stores once
+(`lea eax,[esi+4]` / `je` / `mov eax,esi` / `mov [eax],…`):
+
+```cpp
+T** slot = &p->m_child[1];
+if (d) slot = &p->m_child[0];
+*slot = v;
+```
+
+`zPTree::Insert` @0x16db90 5→4 rets, 53.39 → **60.47**; `CProjActMap::Insert` @0x1933b0 4→3,
+58.21 → **63.58** (its `m_0`/`m_4` are the real `m_child[2]` array retail indexes).
+`CWarpStoneFly::Tick` @0x10a0f0 is the same shape with a `goto` (both y arms share one clamp
+store), 79.37 → **80.52**.
+
+### Also: a mid-function guard that duplicates a LATER shared exit
+
+`if (!CanWrap()) return 0;` sitting above a `if (!found) return 0;` is a duplicate of it —
+retail branches the first straight into the second. Writing the gate positively
+(`if (CanWrap()) { …wrap scan… }`) merges them: `CMenuPage::FocusNext`/`FocusPrev` @0x183c50/
+0x183d10, 8→7 rets, **77.13 → 97.18 each** (both were filed as regalloc walls).
+Same family: `CMulti::WaitForOtherPlayers` @0xbb700 4→3, 75.04 → **80.47**;
+`CMulti::VerifyCustomLevel` @0xb8fc0 6→1, 6.20 → **23.46**;
+`FindProcessByName` @0x118ce0 3→2, 86.14 → **93.54**;
+`CStatusBarMgr::ActivateSlot` @0x10b930 6→4, 71.11 → **83.63**;
+`CGruntVoice::Update` @0x11a8e0 6→4, 73.24 → **85.84**;
+`WapUncompress` @0x1853b0 3→2, 85.93 → **87.59**;
+`CGameLevel::MoveHandlerA` @0x15e130 4→3, 64.96 → **70.04** (that one was a genuine
+control-flow bug the count exposed: retail runs the held-flag tail on the probe MISS of both
+arms, so it is not an `else`).
+
+### Bound, re-confirmed
+
+`b_ret > t_ret` can also mean **the base is missing a whole inlined construction**, not a
+layout choice. `CDDrawWorkerRegistry::DispatchKeyed{2C,30,34,38}` @0x156xxx read 2 → 1, but
+retail inlines `operator new(0x6c)` + the field stores + an inner ctor under a `/GX` frame
+where the base just calls a factory. No layout edit can close that; screen it out by looking
+for the EH prologue the base does not have.

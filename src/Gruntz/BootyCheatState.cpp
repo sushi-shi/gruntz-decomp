@@ -22,7 +22,13 @@ i32 g_bootyCheatBuilt = 0; // 0x22af10
 
 // @source: string-xref
 // @early-stop
-// epilogue tail-merge layout wall (~86%): logic complete + verified vs retail - the
+// epilogue tail-merge layout wall, now PARTLY broken (measured 2026-07-27, 86.20 ->
+// 88.48): base 2 rets vs retail 1. `goto fail; ... fail: return 0;` still makes cl lay
+// the fail block BEFORE the success tail, i.e. two epilogues. Carrying the value in a
+// local instead (`i32 ok = 0; ... ok = 1; done: return ok;`) is what reproduces retail
+// 0x18b9b - ONE epilogue that the success tail falls into and every gate jumps to with
+// eax preloaded (the last five gates need no `xor` at all, eax is already 0).
+// Logic complete + verified vs retail - the
 // inline /GX prologue, the whole first-run cheat-table build (idiv %3 + reciprocal
 // /3, the 5-CString EH frame, the Format/GetIntDef/GetStringDef/op= chain, the
 // inline-strcpy rep-movs, the signed `jl` loop bound), the STATEZ_BOOTY/GAME/GRUNTZ

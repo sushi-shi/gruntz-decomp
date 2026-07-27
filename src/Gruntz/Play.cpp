@@ -5703,10 +5703,16 @@ i32 CPlay::Vslot09(i32 mode) {
 // m_228 cap) and the +0x68 per-slot table is m_cmdGrid->m_rowCount, both on the
 // canonical CGameRegistry.)
 // @early-stop
-// ~83% regalloc-coloring wall: logic + all relocs pair, but MSVC5 colors the
-// registry base into edx and the id*0x238 slot-index into ecx (we get the
-// opposite swap), cascading through the whole gate; plus a return-0 epilogue
-// tail-merge difference. Not source-steerable. docs/patterns/zero-register-pinning.md.
+// Exit-block layout FIXED (measured 2026-07-27, 83.22 -> 93.49). base 3 rets / retail 2.
+// TWO edits were needed and only the pair worked: (a) fold the two guards into one
+// positive `if (slot != 0 && rowCount < cap)` so the function has a single `return 0`
+// statement - alone this moved NOTHING; (b) additionally spell the scan as an explicit
+// `i32 i = 0; if (i < markerCount()) { do { ... i++; } while (i < markerCount()); }`.
+// A plain `for` leaves cl duplicating the miss epilogue as the loop's fall-through;
+// the hoisted-guard do-while makes the bottom test branch OUT to the shared miss block
+// and the back-edge an unconditional jmp, which is retail 0x5af1/0x5af5.
+// Residual is register coloring in the gate (registry base edx vs ecx).
+// docs/patterns/zero-register-pinning.md.
 RVA(0x000d5f90, 0xd7)
 i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
     i32 id = g_curPlayer;

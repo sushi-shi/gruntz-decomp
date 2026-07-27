@@ -92,7 +92,6 @@ i32 g_defaultProjActSize;
 DATA(0x0021adf4)
 const char s_out_of_memory[] = "out of memory"; // decl in <Gruntz/TypeKeyColl.h>
 
-
 DATA(0x002bf498)
 TypeKeyRec g_recs23[32];
 DATA(0x002bf618)
@@ -188,11 +187,8 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
             }
             m_capacity = that.m_capacity;
         }
-        const u32* src = (static_cast<u32>(that.m_capacity) > 0x20)
-                             ? that.m_words
-                             : &that.m_inline;
-        u32* dst =
-            (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
+        const u32* src = (static_cast<u32>(that.m_capacity) > 0x20) ? that.m_words : &that.m_inline;
+        u32* dst = (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
         memcpy(dst, src, static_cast<u32>(m_capacity) >> 3);
     }
     return *this;
@@ -287,8 +283,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
             ++q;
         }
         {
-            u32* band =
-                (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
+            u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
             band[static_cast<u32>(v) >> 5] |= 1u << (v & 0x1f);
         }
         if (*q == 0) {
@@ -318,9 +313,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
                 v2 = t;
             }
             for (i32 b = v + 1; b <= v2; ++b) {
-                u32* band = (static_cast<u32>(m_capacity) > 0x20)
-                                ? m_words
-                                : &m_inline;
+                u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
                 band[static_cast<u32>(b) >> 5] |= 1u << (b & 0x1f);
             }
             while (*q != 0 && !isdigit(*q)) {
@@ -396,8 +389,7 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, cache, 0xc);
     } else {
-        u32* base =
-            (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
+        u32* base = (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
         u32* slot = base + (static_cast<u32>(idx) >> 5);
         *slot |= 1u << (idx & 0x1f);
     }
@@ -451,7 +443,10 @@ void CVariantSlot::Set(void* key, void* arg2, i32 arg3) {
         if (m_typeTag == 2) {
             // the pointer-as-key table: g_recs23 keys on the CALLER'S ADDRESS, so the id IS
             // a pointer - language-forced by the table's own i32 key column (see Set above).
-            (static_cast<void(__cdecl*)(i32, i32)>(g_recs23[idx].m_4))(reinterpret_cast<i32>(arg2), arg3);
+            (static_cast<void(__cdecl*)(i32, i32)>(g_recs23[idx].m_4))(
+                reinterpret_cast<i32>(arg2),
+                arg3
+            );
         } else if (m_typeTag == 1) {
             g_recs23[idx].m_8 = static_cast<short>(arg3);
         }
@@ -539,6 +534,11 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
 // across the splice with address-merge stores, and tail-merges the two `m_root=node`
 // (cursor==0 / cur2==0) exits into one cold block - none reliably source-steerable
 // on a body this size. Complete + correct logic; deferred to the final sweep.
+// PARTLY cracked 2026-07-27 (53.39 -> 60.47) by the exit-count test: base 5 rets /
+// retail 4. The extra one was the final displaced-subtree link written as two arms
+// (`if (dir) m_child[0] = leaf; else m_child[1] = leaf;`), each with its own success
+// epilogue; retail 0x16dfe3 SELECTS the slot (`lea eax,[esi+4]` / `je` / `mov eax,esi`)
+// and stores once. The two `m_root=node` exits still do not merge.
 // docs/patterns/zero-register-pinning.md, const-materialize-into-reg-vs-immediate.md.
 RVA(0x0016db90, 0x206)
 void* zPTree::Insert(const char* key, void* value) {
@@ -686,8 +686,7 @@ _zvec::_zvec(i32 stride, i32 lo, i32 hi, void* scratch)
     m_stride = stride;
     if (lo > hi) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink
-            ->Set(static_cast<void*>(this), const_cast<char*>("Inconsistent bounds"), 0x16);
+        m_errSink->Set(static_cast<void*>(this), const_cast<char*>("Inconsistent bounds"), 0x16);
         return;
     }
     i32 total = (hi - lo + 1) * stride;
@@ -1045,14 +1044,12 @@ static inline void FreeNodes() {
 // The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x0016e4f0, 0x19b)
 i32 ProjTypeXfer(CUserLogic* ar) {
-    CString* entry =
-        TypeResolve(ar->m_objAux->ActKey());
+    CString* entry = TypeResolve(ar->m_objAux->ActKey());
     FreeNodes();
     ar->XferName(entry->GetBuffer(0)); // 0x1ba11c ?GetBuffer@CString@@QAEPADH@Z
     ar->FireActivation(ar->m_objAux->ActKey());
 
-    entry =
-        TypeResolve(ar->m_objAux->ActKey());
+    entry = TypeResolve(ar->m_objAux->ActKey());
     FreeNodes();
     ar->FinalizeStep(reinterpret_cast<i32>(entry->GetBuffer(0)));
     return 1;
