@@ -699,11 +699,15 @@ i32 CInGameIcon::RefreshCell() {
 // ({m_70}=0xfa, {m_68}=g_frameTime). Returns 0.
 //
 // @early-stop
-// regalloc/scheduling wall (zero-register-pinning class): the command dispatch, the
-// tile-cell flag test + occupancy clear, the i64 peek-timer compare, the inline
-// timeGetTime-seeded 214013/2531011 rand()%0x11, the GetSel + draw-field publish and the
-// timer re-arm are all reconstructed byte-faithfully; cl's exact ebx/edi/esi pin across
-// this 390-byte body differs from retail's and is not source-steerable. Deferred.
+// 83.7% - block topology is IDENTICAL (22 vs 22, every edge matching); the residual is
+// exactly FIVE instructions, and re-auditing pins the cause precisely: cl CSEs
+// `grid->m_width` (and m_height) out of the two bounds checks into a FIFTH callee-saved
+// register, so the prologue gains a `push ebp` and both epilogues a `pop ebp` (3 of the
+// 5), and the extra live value re-colors the rest. Retail re-reads `[edx+0xc]` /
+// `[edx+0x10]` at BOTH checks with no CSE - with no intervening store in either source
+// there is no legal way to ask cl not to hoist it. The other 2 are the occupancy clear:
+// retail materialises the cell address (`add eax,ecx`) and does the memory RMW
+// `and dword ptr [eax],0xfffbffff`, cl emits lea + load/and/store.
 RVA(0x000984b0, 0x186)
 i32 CInGameIcon::PeekCycle() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -916,11 +920,12 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
 // Returns 0.
 //
 // @early-stop
-// regalloc/scheduling wall (zero-register-pinning class): the logic, the i64 drift
-// compare, the bute-node swap, both tile-cell index computations, the +0x48 map
-// Lookup + flag, and the occupancy set/clear are all reconstructed byte-faithfully;
-// cl's exact reload/pin of g_gameReg + the grid across the three tile-cell blocks of
-// this 397-byte body differs from retail's and is not source-steerable. Deferred.
+// 97.4% - re-audited instruction by instruction: everything except ONE pair of
+// instructions is pure register RENAMING (ebx<->esi, ecx<->edx, edi<->ebx), i.e. the
+// same value in a different callee-saved home. The single real difference is in the
+// occupancy clear: retail materialises the cell address first (`add eax,ecx`) then
+// `mov ecx,[eax]`, while cl folds the add into the addressing mode (`mov ecx,[eax+edx]`)
+// and adds afterwards. Same operands, same count, different order.
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
     m_38->m_1a0.Advance(g_engineFrameDelta);

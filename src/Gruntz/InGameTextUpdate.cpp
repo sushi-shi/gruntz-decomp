@@ -19,13 +19,20 @@ DATA_SYMBOL(0x002bf3bc, 0x4, _g_engineFrameDelta)
 DATA_SYMBOL(0x002bf3c0, 0x4, _g_killCueClock)
 
 // @early-stop
-// regalloc/scheduling wall (~76%): complete + correct, verified instruction-by-
-// instruction vs retail (the whole front half is byte-exact modulo reloc names).
-// Residual: retail loads the __thiscall receivers into ecx eagerly and schedules the
-// member loads earlier, while this /O2 recompile defers the receiver to ecx after the
-// arg pushes - forcing a spill/reload at the Play call and an m_10-reg swap at
-// LoadPickupSprites - cascading regalloc through both epilogues. Not source-steerable.
-// See docs/patterns/pin-local-for-callee-saved-reg.md.
+// 96.6% - the old note called the whole residual a "regalloc wall"; three quarters of it
+// was source shape and is fixed (the miss handler's positive gate, the y-before-x screen
+// load, and taking g_gameReg into `reg` AFTER them so cl stops hoisting the singleton
+// above the coord loads: 79.5 -> 93.8 -> 95.6 -> 96.6). What is LEFT is genuinely
+// scheduling, in three spots, none of which moved under any tried spelling:
+//   * LoadPickupSprites - retail sets the receiver (`mov ecx,edi`) between the flag
+//     pushes and uses eax for the m_124 temp; cl uses ecx for the temp and reloads the
+//     receiver last. Hoisting m_124 into a local changes nothing.
+//   * the CMapStringToPtr::Lookup out-param - retail zeroes the slot AFTER both arg
+//     pushes (`mov [esp+0x18],0`), cl zeroes it before (out-param zero-init scheduling,
+//     docs/patterns/).
+//   * the success tail loads subId before areaId (source order is areaId first, as in
+//     retail) and the miss tail hoists the m_38 load above the `m_cachedSubId = -1`
+//     store. Both are pure instruction order; the bytes of every op match.
 RVA(0x000997c0, 0x1e7)
 i32 CInGameText::Update() {
     m_38->m_1a0.Advance(static_cast<i32>(g_engineFrameDelta));
@@ -36,64 +43,71 @@ i32 CInGameText::Update() {
         g_gameReg->m_cmdGrid
             ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1)
     );
-    if (found == 0) {
-        m_cachedSubId = -1;
-        m_38->m_stateFlags &= ~1;
-        return 0;
-    }
-    if (areaId != g_curPlayer) {
-        return 0;
-    }
-    if (m_cachedSubId != -1 && areaId == m_cachedAreaId && subId == m_cachedSubId) {
-        return 0;
-    }
-
-    char** node = reinterpret_cast<char**>(
-        g_typeColl._zvec::IndexToPtr(found->m_objAux->ActKey())
-    );
-    CString* p = g_typeColl.Slots(); // m_alloc is the i32-typed slot base (the _zvec spelling)
-    i32 n = g_typeColl.m_grown;
-    while (n-- != 0) {
-        if (p != 0) {
-            p->CString::CString();
+    // POSITIVE GATE: retail parks the miss handler at the very END of the function
+    // (0x9998f) where it falls into the `return 0` epilogue the three inner early
+    // exits also tail-merge into. Written as an early return it lands inline right
+    // after the test with its own 12-instruction epilogue, one block too many.
+    // docs/patterns/positive-gate-enables-shrink-wrap.md
+    if (found != 0) {
+        if (areaId != g_curPlayer) {
+            return 0;
         }
-        p++;
-    }
-    bool eq = (strcmp(*node, s_codeK) == 0);
-    if (eq) {
-        return 0;
-    }
+        if (m_cachedSubId != -1 && areaId == m_cachedAreaId && subId == m_cachedSubId) {
+            return 0;
+        }
 
-    if (!found->LoadPickupSprites(0x5e, 0, m_object->m_124, 0, 1)) {
-        return 0;
-    }
+        char** node = reinterpret_cast<char**>(
+            g_typeColl._zvec::IndexToPtr(found->m_objAux->ActKey())
+        );
+        // m_alloc is the i32-typed slot base (the _zvec spelling)
+        CString* p = g_typeColl.Slots();
+        i32 n = g_typeColl.m_grown;
+        while (n-- != 0) {
+            if (p != 0) {
+                p->CString::CString();
+            }
+            p++;
+        }
+        bool eq = (strcmp(*node, s_codeK) == 0);
+        if (eq) {
+            return 0;
+        }
 
-    CWwdGameObjectA* o = m_object;
-    i32 x = o->m_screenX;
-    i32 y = o->m_screenY;
-    if (x < g_gameReg->m_viewBounds.right && x >= g_gameReg->m_viewBounds.left
-        && y < g_gameReg->m_viewBounds.bottom && y >= g_gameReg->m_viewBounds.top) {
-        CDDrawSubMgrLeafScan* set = g_gameReg->m_world->m_soundRegistry;
-        if (set->m_emitGate == 0) {
-            void* res_ob = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
-            set->m_10.Lookup("GAME_HELPBOOK", res_ob);
-            LeafCue* res = static_cast<LeafCue*>(res_ob);
-            if (res != 0) {
-                i32 enable = g_sndEnabled;
-                i32 token = g_sndCueTag;
-                if (enable != 0) {
-                    u32 now = g_killCueClock;
-                    if (static_cast<u32>((now - res->m_14)) >= static_cast<u32>(res->m_18)) {
-                        res->m_14 = now;
-                        res->m_10->ConfigureItem(token, 0, 0, 0);
+        if (!found->LoadPickupSprites(0x5e, 0, m_object->m_124, 0, 1)) {
+            return 0;
+        }
+
+        CWwdGameObjectA* o = m_object;
+        i32 y = o->m_screenY; // y BEFORE x - retail loads +0x60 then +0x5c
+        i32 x = o->m_screenX;
+        CGruntzMgr* reg = g_gameReg; // ... and the singleton AFTER both, not hoisted
+        if (x < reg->m_viewBounds.right && x >= reg->m_viewBounds.left
+            && y < reg->m_viewBounds.bottom && y >= reg->m_viewBounds.top) {
+            CDDrawSubMgrLeafScan* set = reg->m_world->m_soundRegistry;
+            if (set->m_emitGate == 0) {
+                void* res_ob = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
+                set->m_10.Lookup("GAME_HELPBOOK", res_ob);
+                LeafCue* res = static_cast<LeafCue*>(res_ob);
+                if (res != 0) {
+                    i32 enable = g_sndEnabled;
+                    i32 token = g_sndCueTag;
+                    if (enable != 0) {
+                        u32 now = g_killCueClock;
+                        if (static_cast<u32>((now - res->m_14)) >= static_cast<u32>(res->m_18)) {
+                            res->m_14 = now;
+                            res->m_10->ConfigureItem(token, 0, 0, 0);
+                        }
                     }
                 }
             }
         }
-    }
 
-    m_cachedAreaId = areaId;
-    m_cachedSubId = subId;
-    m_38->m_stateFlags |= 1;
+        m_cachedAreaId = areaId;
+        m_cachedSubId = subId;
+        m_38->m_stateFlags |= 1;
+        return 0;
+    }
+    m_cachedSubId = -1;
+    m_38->m_stateFlags &= ~1;
     return 0;
 }
