@@ -92,32 +92,32 @@ void CDDrawChildGroup::DestroyChildren() {
 RVA(0x00159250, 0x185)
 CWwdGameObject*
 CDDrawChildGroup::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, int a7) {
-    char* obj = static_cast<char*>(RezAlloc(0x190));
+    CWwdGameObjectC* obj = static_cast<CWwdGameObjectC*>(RezAlloc(0x190));
     CWwdGameObjectC* result; // the 0x190 kind (vtable 0x5effd0)
     if (obj != 0) {
         int root = m_ownerCtx;
-        new (obj) CResolveNode(root, a1, a7);
-        CWwdSlot9c* s9c = reinterpret_cast<CWwdSlot9c*>((obj + 0x9c));
+        new (static_cast<void*>(obj)) CResolveNode(root, a1, a7);
+        CWwdSlot9c* s9c = static_cast<CWwdSlot9c*>(static_cast<void*>(&obj->m_region));
         new (s9c) CWwdSlot9c();
         s9c->m_18 = 0;
-        new (obj + 0xb8) CWwdShadowRec();
-        new (obj + 0xdc) CString();
+        new (&obj->m_b8) CWwdShadowRec();
+        new (&obj->m_dc) CString();
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *reinterpret_cast<int*>((obj + 0x5c)) = static_cast<int>(0x80000000);
-        *reinterpret_cast<int*>((obj + 0x78)) = 0;
+        obj->m_screenX = static_cast<int>(0x80000000);
+        obj->m_posCache = 0;
         // alloc + construct the real worker via the throwing operator new (test-else-0
         // shape == retail)
         AnimWorkerObj* worker = new AnimWorkerObj(root, a1, 0);
-        *reinterpret_cast<void**>((obj + 0x7c)) = worker;
-        *reinterpret_cast<int*>((obj + 0x98)) = 0;
-        *reinterpret_cast<int*>((obj + 0x80)) = 0;
-        *reinterpret_cast<int*>((obj + 0x88)) = 0;
-        *reinterpret_cast<int*>((obj + 0x90)) = 0;
-        *reinterpret_cast<int*>((obj + 0x188)) = g_wwdObjIdCounter;
+        obj->m_7c = worker;
+        obj->m_carrier = 0;
+        obj->m_80 = 0;
+        obj->m_88 = 0;
+        obj->m_collideWorker = 0;
+        obj->m_188 = g_wwdObjIdCounter;
         g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *static_cast<char*>((obj + 0x18c)) = 0;
-        result = reinterpret_cast<CWwdGameObjectC*>(obj);
+        obj->m_dotColor = 0;
+        result = obj;
     } else {
         result = 0;
     }
@@ -164,31 +164,31 @@ CWwdGameObject* CDDrawChildGroup::CreateNamed_1593e0(
 // ===========================================================================
 RVA(0x00159440, 0x170)
 CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, int a3, int a4) {
-    char* obj = static_cast<char*>(RezAlloc(0x18c));
+    CWwdGameObjectF* obj = static_cast<CWwdGameObjectF*>(RezAlloc(0x18c));
     CWwdGameObjectF* result; // the 0x18c kind (vtable 0x5f0060)
     if (obj != 0) {
         int root = m_ownerCtx;
-        new (obj) CResolveNode(root, a1, a4);
-        CWwdSlot9c* s9c = reinterpret_cast<CWwdSlot9c*>((obj + 0x9c));
+        new (static_cast<void*>(obj)) CResolveNode(root, a1, a4);
+        CWwdSlot9c* s9c = static_cast<CWwdSlot9c*>(static_cast<void*>(&obj->m_region));
         new (s9c) CWwdSlot9c();
         s9c->m_18 = 0;
-        new (obj + 0xb8) CWwdShadowRec();
-        new (obj + 0xdc) CString();
+        new (&obj->m_b8) CWwdShadowRec();
+        new (&obj->m_dc) CString();
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *reinterpret_cast<int*>((obj + 0x5c)) = static_cast<int>(0x80000000);
-        *reinterpret_cast<int*>((obj + 0x78)) = 0;
+        obj->m_screenX = static_cast<int>(0x80000000);
+        obj->m_posCache = 0;
         // alloc + construct the real worker via the throwing operator new (test-else-0
         // shape == retail)
         AnimWorkerObj* worker = new AnimWorkerObj(root, a1, 0);
-        *reinterpret_cast<void**>((obj + 0x7c)) = worker;
-        *reinterpret_cast<int*>((obj + 0x98)) = 0;
-        *reinterpret_cast<int*>((obj + 0x80)) = 0;
-        *reinterpret_cast<int*>((obj + 0x88)) = 0;
-        *reinterpret_cast<int*>((obj + 0x90)) = 0;
-        *reinterpret_cast<int*>((obj + 0x188)) = g_wwdObjIdCounter;
+        obj->m_7c = worker;
+        obj->m_carrier = 0;
+        obj->m_80 = 0;
+        obj->m_88 = 0;
+        obj->m_collideWorker = 0;
+        obj->m_188 = g_wwdObjIdCounter;
         g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        result = reinterpret_cast<CWwdGameObjectF*>(obj);
+        result = obj;
     } else {
         result = 0;
     }
@@ -234,16 +234,16 @@ CWwdGameObject* CDDrawChildGroup::CreateNamed_1595b0(int a1, int a2, const char*
 RVA(0x00159600, 0x1ab)
 CWwdGameObjectA*
 CDDrawChildGroup::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 flags) {
-    char* obj = static_cast<char*>(RezAlloc(0x1dc));
+    CWwdGameObjectA* obj = static_cast<CWwdGameObjectA*>(RezAlloc(0x1dc));
     CWwdGameObjectA* result; // the 0x1dc kind (vtable 0x5f00a8)
     if (obj != 0) {
         i32 root = m_ownerCtx;
-        new (obj) CResolveNode(root, a1, flags);
-        new (obj + 0x9c) CWwdSlot9cA();
-        new (obj + 0xb8) CWwdShadowRec();
-        new (obj + 0xdc) CString();
+        new (static_cast<void*>(obj)) CResolveNode(root, a1, flags);
+        new (&obj->m_region) CWwdSlot9cA();
+        new (&obj->m_b8) CWwdShadowRec();
+        new (&obj->m_dc) CString();
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        CWwdGameObjectA* o = reinterpret_cast<CWwdGameObjectA*>(obj);
+        CWwdGameObjectA* o = obj;
         o->m_screenX = static_cast<i32>(0x80000000);
         o->m_posCache = 0;
         // alloc + construct the real worker via the throwing operator new (test-else-0
@@ -256,7 +256,7 @@ CDDrawChildGroup::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
         o->m_collideWorker = 0;
         o->m_188 = g_wwdObjIdCounter;
         g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
-        new (obj + 0x1a0) CAniAdvanceCursor(root, a1, flags);
+        new (&obj->m_1a0) CAniAdvanceCursor(root, a1, flags);
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         o->m_18c = -1;
         o->m_190 = -1;
@@ -862,7 +862,7 @@ void CDDrawChildGroup::DrawObjectCounts() {
             reinterpret_cast<i32*>(&rc.right),
             reinterpret_cast<i32*>(&rc.bottom)
         ); // LONG*->i32* (same width; PAH sig)
-        drawHost->DrawCount(&rc, *reinterpret_cast<i32*>((obj + 0x74)));
+        drawHost->DrawCount(&rc, obj->m_sortKey);
     } while (pos != 0);
 }
 
