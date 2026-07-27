@@ -3411,7 +3411,7 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, i32 kind, i32 a3, i32 a4) {
         ar->Write(&m_comboSel, 4);
     }
     return (static_cast<CBattlezMapConfig*>(&m_038))
-               ->SerializeState(ar, reinterpret_cast<void*>(kind), a3, a4)
+               ->SerializeState(ar, kind, a3, a4)
            != 0;
 }
 

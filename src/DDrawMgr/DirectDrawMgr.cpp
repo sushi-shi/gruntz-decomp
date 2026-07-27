@@ -342,7 +342,8 @@ i32 CDDrawPtrCollections::CreateDevice(
             }
             return 0;
         }
-        chr = m_dd1->QueryInterface(IID_IDirectDraw2, reinterpret_cast<void**>(&m_device));
+        // QueryInterface's out-param is void** by the COM ABI - API-forced
+    chr = m_dd1->QueryInterface(IID_IDirectDraw2, reinterpret_cast<void**>(&m_device));
         if (chr != 0) {
             CDDrawPtrCollections::GetErrorString(0, 0, chr);
             if (m_lastError == 0) {
@@ -364,7 +365,8 @@ i32 CDDrawPtrCollections::CreateDevice(
     }
 
     i32 i;
-    // retail zero-fills both caps blocks with explicit 0x5f-dword loops
+    // retail zero-fills both SDK caps blocks with explicit 0x5f-dword loops (0x17c B
+    // each), so the struct -> dword cursor is byte-forced by that loop width
     i32* p = reinterpret_cast<i32*>(&m_driverCaps);
     for (i = 0x5f; i != 0; i--) {
         *p++ = 0;
@@ -1176,6 +1178,8 @@ void CDDrawPtrCollections::SetDisplayPaletteFrom(CDDPalette* pal, i32 tag) {
     if (pal == 0) {
         return;
     }
+    // the palette cache is a 0x400-byte blob copied dword-wise - byte-forced, same
+    // seam as DirPal's PalDword pair
     i32* src = reinterpret_cast<i32*>(pal->m_cacheA);
     if (src == 0) {
         return;

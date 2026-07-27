@@ -3207,9 +3207,9 @@ i32 CBattlezMapConfig::Deserialize(void* arArg) {
 }
 
 RVA(0x0002bfc0, 0x8a)
-i32 CBattlezMapConfig::SerializeState(CFileMemBase * objArg, void* kindArg, i32, i32) {
+i32 CBattlezMapConfig::SerializeState(CFileMemBase * objArg, i32 kindArg, i32, i32) {
     CFileMemBase* obj = objArg;
-    i32 kind = static_cast<i32>(reinterpret_cast<i32>(kindArg));
+    i32 kind = kindArg;
     switch (kind) {
         case 4:
             if (this->Serialize(obj) == 0) { // kind-4 validator @0x2b420
@@ -5997,7 +5997,6 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(CGrunt* unit) {
     CBattlezMapConfig* bundle = &m_ctx->m_options[band].m_038;
     i32 rx = bundle->m_markerX;
     i32 ry = bundle->m_markerY;
-    char* edge = reinterpret_cast<char*>(bundle); // bundle-relative cursor (offset reads below)
     if (unit->CoordCount() != 0) {
         if (unit->m_defenderState != 6) {
             return 1;
@@ -6052,7 +6051,8 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(CGrunt* unit) {
         i32 gx = unit->m_defenderX;
         if (gx == -1) {
             i32 x, y;
-            if (*reinterpret_cast<i32*>((edge + 0xf8)) != 0) {
+            // +0xf8 is m_0f0 (a CPtrArray at +0x0f0) plus 8 == MFC's m_nSize
+            if (bundle->m_0f0.GetSize() != 0) {
                 Coord out;
                 Coord* r =
                     static_cast<Coord*>(PickSpawnCoord(&out, unit, band));
