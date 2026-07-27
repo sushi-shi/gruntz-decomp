@@ -909,11 +909,11 @@ void CMultiStartDlg::Watchdog() {
 
 RVA(0x000c4b30, 0x1f)
 i32 CMultiStartDlg::GetSlotIndex() {
-    i32* slot = reinterpret_cast<i32*>(m_host->FindOptionsSlot(g_multiState->m_hostIndex));
+    GruntzPlayer* slot = m_host->FindOptionsSlot(g_multiState->m_hostIndex);
     if (slot == 0) {
         return -1;
     }
-    return *slot;
+    return slot->m_playerIndex;
 }
 
 // @early-stop

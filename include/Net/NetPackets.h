@@ -4,22 +4,11 @@
 #include <Ints.h>
 #include <rva.h>
 
-struct CNetJoinPacket {
-    u8 m_0; // +0x00  flag byte (bit7)
-    char m_pad1[3];
-    i32 m_statId;            // +0x04  stat id (0x3f9)
-    u8 m_8;                  // +0x08
-    u8 m_9;                  // +0x09
-    u8 m_a;                  // +0x0a
-    u8 m_b;                  // +0x0b
-    u8 m_c;                  // +0x0c
-    u8 m_d;                  // +0x0d
-    u8 m_e;                  // +0x0e
-    char m_padf;             // +0x0f
-    i32 m_playerId;          // +0x10  local player id (m_localPlayerId)
-    char m_playerName[0x14]; // +0x14  player name (strcpy)
-};
-SIZE(0x28);
+// (CNetJoinPacket DISSOLVED 2026-07-27: it was a second, unnamed view of the SAME
+// 0x28-byte stat-0x3f9 record that <Net/NetMgr.h>'s CNetChannelPacket already
+// names field-for-field - same flag byte, same statId slot, same +0x08..+0x0e byte
+// run, same i32 at +0x10 and 0x14-byte name at +0x14. CreateLocalPlayer now builds
+// the named one.)
 
 struct CNetConfigBlob {
     u8 m_0; // +0x000  flag byte (bit7)

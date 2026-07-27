@@ -593,13 +593,11 @@ i32 CMulti::Vslot15() {
 RVA(0x000b6580, 0x1eb)
 i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     g_optionsCursor = 0;
-    // FindOptionsSlot's OptionsSlot is defined in GruntzMgr.cpp; only its +0x00 field is
-    // read here (g_curPlayer = *host), so the row is taken as i32*.
-    i32* host = reinterpret_cast<i32*>(Mgr()->FindOptionsSlot(m_hostIndex));
+    GruntzPlayer* host = Mgr()->FindOptionsSlot(m_hostIndex);
     if (!host) {
         return 0;
     }
-    g_curPlayer = *host;
+    g_curPlayer = host->m_playerIndex;
     srand(m_rngSeed);
     g_activePlayerCount = 0;
     g_frameDelta = 0;
@@ -2128,7 +2126,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             g_playerLeftFlag = 1;
             break;
 
-        case 0x3f9:
+        case 0x3f9: {
             if (m_isHost == 0) {
                 break;
             }
@@ -2138,15 +2136,20 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (Mgr()->CountReadyOptionsSlots(1) >= 4) {
                 break;
             }
-            if (ChannelSlots_Get((reinterpret_cast<u8*>(&msg->m_8))[1]) == 0) {
-                (reinterpret_cast<u8*>(&msg->m_8))[1] = static_cast<u8>(ChannelSlots_FindFree());
+            // one seam: the 0x3f9 arm's wire record IS the 0x28-byte channel-
+            // registration packet - RegisterChannelRec below reads the same bytes
+            // back through CNetChannelPacket, and +0x09 is its m_kind.
+            CNetChannelPacket* chan = reinterpret_cast<CNetChannelPacket*>(msg);
+            if (ChannelSlots_Get(chan->m_kind) == 0) {
+                chan->m_kind = static_cast<u8>(ChannelSlots_FindFree());
             }
-            ChannelSlots_Set((reinterpret_cast<u8*>(&msg->m_8))[1], 0);
-            RegisterChannelRec(msg);
+            ChannelSlots_Set(chan->m_kind, 0);
+            RegisterChannelRec(chan);
             BroadcastChannelTable(0);
             SaveConfig(pd);
             g_playerLeftFlag = 1;
             break;
+        }
 
         case 0x3fa: {
             if (m_isHost == 0) {
@@ -3653,20 +3656,20 @@ i32 CMulti::CreateLocalPlayer() {
         return 0;
     }
 
-    CNetJoinPacket pkt;
+    CNetChannelPacket pkt;
     memset(&pkt, 0, 0x28);
-    pkt.m_0 = 0x80;
+    pkt.m_flags = 0x80;
     pkt.m_statId = STAT_PLAYER_JOINED;
-    pkt.m_8 = 1;
-    pkt.m_9 = 0;
-    pkt.m_a = 1;
-    pkt.m_b = 0;
-    pkt.m_c = 0x63;
-    pkt.m_d = 0xf;
-    pkt.m_e = 0;
-    pkt.m_playerId = m_hostIndex;
+    pkt.m_present = 1;
+    pkt.m_kind = 0;
+    pkt.m_slot = 1;
+    pkt.m_flagsB = 0;
+    pkt.m_configId = 0x63;
+    pkt.m_0d = 0xf;
+    pkt.m_0e = 0;
+    pkt.m_hostIndex = m_hostIndex;
     {
-        strcpy(pkt.m_playerName, static_cast<const char*>(GetString5a0()));
+        strcpy(pkt.m_name, static_cast<const char*>(GetString5a0()));
     }
     SendStatFrom(&pkt, 0x28, 1);
     return 1;
