@@ -422,6 +422,13 @@ void CAniAdvanceCursor::Construct(void* srcv) {
     m_14 = 0;
     m_scale = 1.0f;
     m_24 = 1;
+    // byte-evidenced, do not "fix" the dereference level: &ElementAt(0) is the array's
+    // STORAGE (m_pData at CAniElement+0x0c), and retail reads +0x34 off it with a single
+    // load - which is why this body sits at 94.75% with its offsets called byte-exact and
+    // only a register phase shift left. NOTE the discrepancy for whoever recovers the
+    // element type: GruntAssetLoaders' DEATH_FRAME reads the same m_records array as
+    // (i32*)GetAt(0) + 0x14/4, i.e. one dereference MORE. The two sites cannot both be
+    // right; this one is the byte-evidenced spelling - check that one against its own %.
     m_2c = *reinterpret_cast<i32*>((reinterpret_cast<char*>((&src->m_records.ElementAt(0))) + 0x34))
            & 0x40;
 }
