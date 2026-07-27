@@ -149,29 +149,18 @@ public:
     // (the m_4w() CWorld-cast accessor is GONE - CState::m_4 is the typed
     // CGruntzMgr* already; consumers deref it directly.)
 
-    // The start-point marker array (m_startMarkers) is a real CByteArray/CPtrArray whose
-    // data(+0x374)/count(+0x378) FindStartPointAt walks directly (byte-identical to
-    // the raw m_markerData/m_markerCount fields).
+    // The +4/+8 these walkers read are CPtrArray's own m_pData/m_nSize (the CObject
+    // vptr sits at +0), i.e. MFC's inline GetData()/GetSize() - not an offset pun.
     CHitMarker** markerData() {
-        return *reinterpret_cast<CHitMarker***>((reinterpret_cast<char*>(&m_startMarkers) + 4));
+        // CPtrArray is MFC's untyped void* array; naming the element type is the one
+        // cast the container's API leaves no way to avoid.
+        return reinterpret_cast<CHitMarker**>(m_startMarkers.GetData());
     }
-    i32 markerCount() {
-        return *reinterpret_cast<i32*>((reinterpret_cast<char*>(&m_startMarkers) + 8));
-    }
-    // The same data(+4)/count(+8) reads over the four +0x3a4 placed-object arrays
-    // and the +0x488 array (the serialize/free-list walks read them raw).
-    void** arrData(i32 k) {
-        return *reinterpret_cast<void***>((reinterpret_cast<char*>(&m_3a4[k]) + 4));
-    }
-    i32 arrCount(i32 k) {
-        return *reinterpret_cast<i32*>((reinterpret_cast<char*>(&m_3a4[k]) + 8));
-    }
-    void** arr488Data() {
-        return *reinterpret_cast<void***>((reinterpret_cast<char*>(&m_488) + 4));
-    }
-    i32 arr488Count() {
-        return *reinterpret_cast<i32*>((reinterpret_cast<char*>(&m_488) + 8));
-    }
+    i32 markerCount() { return m_startMarkers.GetSize(); }
+    void** arrData(i32 k) { return m_3a4[k].GetData(); }
+    i32 arrCount(i32 k) { return m_3a4[k].GetSize(); }
+    void** arr488Data() { return m_488.GetData(); }
+    i32 arr488Count() { return m_488.GetSize(); }
 
     // CPlay's own per-frame helper methods (the thunks Render dispatches to
     // with `mov ecx,esi`). External no-body -> reloc-masked.
