@@ -794,7 +794,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (ins == 0) {
                 return 0;
             }
-            void* desc = reinterpret_cast<void*>((static_cast<CParseSource*>(set))->BeginParse());
+            void* desc = (static_cast<CParseSource*>(set))->BeginParse();
             if (desc == 0) {
                 goto fail0;
             }
@@ -825,7 +825,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (ins == 0) {
                 return 0;
             }
-            void* desc = reinterpret_cast<void*>((static_cast<CParseSource*>(set))->BeginParse());
+            void* desc = (static_cast<CParseSource*>(set))->BeginParse();
             if (desc == 0) {
                 goto fail0;
             }

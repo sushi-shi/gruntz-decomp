@@ -191,7 +191,7 @@ CRezImage* CImagePool::AddSurfaceBlit(void* src, i32 width, i32 height, i32 bitC
         node = 0;
     }
     if (node->DecodeBlit(
-            reinterpret_cast<void*>(src),
+            src,
             static_cast<void*>(hdc),
             width,
             height,
@@ -340,7 +340,7 @@ CRezImage* CImagePool::AddSurfaceConvert(void* src, void* pal) {
     if (node->Convert8To16(
             static_cast<void*>(hdc),
             reinterpret_cast<CRezImage*>(src),
-            reinterpret_cast<void*>(pal)
+            pal
         )
         == 0) {
         if (m_selectedPalette) {
@@ -974,7 +974,7 @@ i32 CRezImage::LoadDefault(char* name, void* a2, i32 a3) {
     if (!hModule) {
         return 0;
     }
-    HRSRC hRsrc = FindResourceA(hModule, name, reinterpret_cast<LPCSTR>(RT_BITMAP));
+    HRSRC hRsrc = FindResourceA(hModule, name, RT_BITMAP);
     if (!hRsrc) {
         return 0;
     }

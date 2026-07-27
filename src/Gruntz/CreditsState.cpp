@@ -72,7 +72,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
             char* val = e->BeginParse();
             if (val) {
                 m_mgr->m_sound
-                    ->CreateBank(reinterpret_cast<void*>(val), e->m_length, "CREDITZ"); // 0x138670
+                    ->CreateBank(val, e->m_length, "CREDITZ"); // 0x138670
             }
         }
     }
@@ -85,7 +85,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
             char* val = e2->BeginParse();
             if (val) {
                 m_mgr->m_sound->CreateBank(
-                    reinterpret_cast<void*>(val),
+                    val,
                     e2->m_length,
                     "MONOLITH"
                 ); // 0x138670

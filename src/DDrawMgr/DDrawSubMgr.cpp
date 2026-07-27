@@ -1117,7 +1117,7 @@ i32 LeafCue::Configure(CParseSource* src) {
         src->EndParse();
         return 0;
     }
-    DSoundCloneInst* buf = dev->Acquire(reinterpret_cast<void*>(blob), 0x100ea, 0);
+    DSoundCloneInst* buf = dev->Acquire(blob, 0x100ea, 0);
     m_10 = buf;
     i32 ok = buf != 0;
     src->EndParse();

@@ -434,7 +434,7 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
     // src->m_length its byte size, g_surfaceColorKey lands in the (PID-only) surf2 slot.
     return m_surface->Resolve(
         m_parent->m_1c,
-        reinterpret_cast<void*>(resolved),
+        resolved,
         index,
         static_cast<u32>(src->m_length),
         reinterpret_cast<void*>(g_surfaceColorKey)

@@ -277,7 +277,7 @@ i32 CGrunt::ResetGeometry() {
     i32 row = cell.row;
     i32 index = 3 * col + row;
     const char* name =
-        reinterpret_cast<const char*>((reinterpret_cast<_zdvec*>(&m_cells[index]))->IndexToPtr(0));
+        (reinterpret_cast<_zdvec*>(&m_cells[index]))->IndexToPtr(0);
     m_38->ApplyLookupSprite(name, frame);
 
     m_prevAnimSetNode = m_objAux->m_1c;

@@ -1008,7 +1008,7 @@ i32 InterfaceObject::IsInterface1() {
     if (!m_guid) {
         return 0;
     }
-    return memcmp(reinterpret_cast<const void*>(m_guid), g_guid1, 16) == 0 ? 1 : 0;
+    return memcmp(m_guid, g_guid1, 16) == 0 ? 1 : 0;
 }
 
 RVA(0x001794e0, 0x21)
@@ -1016,7 +1016,7 @@ i32 InterfaceObject::IsInterface2() {
     if (!m_guid) {
         return 0;
     }
-    return memcmp(reinterpret_cast<const void*>(m_guid), g_guid2, 16) == 0 ? 1 : 0;
+    return memcmp(m_guid, g_guid2, 16) == 0 ? 1 : 0;
 }
 
 RVA(0x00179510, 0x21)
@@ -1024,7 +1024,7 @@ i32 InterfaceObject::IsInterface3() {
     if (!m_guid) {
         return 0;
     }
-    return memcmp(reinterpret_cast<const void*>(m_guid), g_guid3, 16) == 0 ? 1 : 0;
+    return memcmp(m_guid, g_guid3, 16) == 0 ? 1 : 0;
 }
 
 RVA(0x00179540, 0x21)
@@ -1032,7 +1032,7 @@ i32 InterfaceObject::IsInterface4() {
     if (!m_guid) {
         return 0;
     }
-    return memcmp(reinterpret_cast<const void*>(m_guid), g_guid4, 16) == 0 ? 1 : 0;
+    return memcmp(m_guid, g_guid4, 16) == 0 ? 1 : 0;
 }
 
 RVA(0x00179570, 0x21)
@@ -1040,7 +1040,7 @@ i32 InterfaceObject::IsInterface5() {
     if (!m_guid) {
         return 0;
     }
-    return memcmp(reinterpret_cast<const void*>(m_guid), g_guid5, 16) == 0 ? 1 : 0;
+    return memcmp(m_guid, g_guid5, 16) == 0 ? 1 : 0;
 }
 
 RVA(0x00179680, 0x3a)

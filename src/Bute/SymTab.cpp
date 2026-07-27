@@ -196,7 +196,7 @@ char* CParseSource::BeginParse() {
     if (m_buffer == 0) {
         return 0;
     }
-    if (m_reader->Read(m_base, 0, m_length, reinterpret_cast<void*>(m_buffer))
+    if (m_reader->Read(m_base, 0, m_length, m_buffer)
         != static_cast<i32>(m_length)) {
         ::operator delete(m_buffer);
         m_buffer = 0;
@@ -221,7 +221,7 @@ i32 CParseSource::ReadAt(void* dst, i32 pos, u32 len) {
         return 1;
     }
     if (m_buffer != 0) {
-        memcpy(dst, reinterpret_cast<const void*>((m_buffer + pos)), len);
+        memcpy(dst, (m_buffer + pos), len);
         return 1;
     }
     return m_reader->Read(m_base, pos, len, dst) == static_cast<i32>(len);
@@ -267,7 +267,7 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
             return want;
         }
         if (m_buffer) {
-            const char* base = reinterpret_cast<const char*>((m_buffer + pos));
+            const char* base = (m_buffer + pos);
             memcpy(dst, base, want);
             m_cursor += want;
             return want;

@@ -240,7 +240,7 @@ i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
     }
     i32 r = m_surface->Resolve(
         OwnerMgr()->m_ptrColl,
-        reinterpret_cast<void*>(buf),
+        buf,
         type,
         src->m_length,
         0
@@ -901,7 +901,7 @@ i32 CAniElement::Configure(void* ctx, void* entry, i32 flags) {
         return 0;
     }
     m_flags = flags;
-    void* src = reinterpret_cast<void*>((static_cast<CParseSource*>(entry))->BeginParse());
+    void* src = (static_cast<CParseSource*>(entry))->BeginParse();
     if (src == 0) {
         return 0;
     }
