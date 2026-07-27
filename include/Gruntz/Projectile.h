@@ -65,8 +65,8 @@ public:
     double m_posY;              // +0x1a8  render position Y (double)
     double m_velX;              // +0x1b0  velocity X basis (unit dir)
     double m_velY;              // +0x1b8  velocity Y basis (unit dir)
-    i32 m_roundXLo, m_roundXHi; // +0x1c0/+0x1c4  X round-bias double {lo,hi} (0.0/+-0.5)
-    i32 m_roundYLo, m_roundYHi; // +0x1c8/+0x1cc  Y round-bias double {lo,hi}
+    double m_roundX; // +0x1c0  X round bias (0.0 / +-0.5)
+    double m_roundY; // +0x1c8  Y round bias
     i32 m_curX, m_curY;         // +0x1d0/+0x1d4  current screen pos (init = owner muzzle)
     i32 m_isArcing;             // +0x1d8  arced trajectory (per-type; drives 5-tier sprites)
     i32 m_arrived;              // +0x1dc  one-shot arrival latch (gates LoadProjectileEffects)

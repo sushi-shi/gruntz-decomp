@@ -378,22 +378,20 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_posY = dy / len;
     m_velX = vx;
     m_velY = dy / len;
-    // sign(dx): +0.5 / 0.0 / -0.5 stored as a double {lo=0, hi=+-0x3fe00000}
-    m_roundXLo = 0;
+    // sign(dx): +0.5 / 0.0 / -0.5 (retail stores the two dwords of the double)
     if (vx > 0.0) {
-        m_roundXHi = 0x3fe00000;
+        m_roundX = 0.5;
     } else if (vx < 0.0) {
-        m_roundXHi = static_cast<i32>(0xbfe00000);
+        m_roundX = -0.5;
     } else {
-        m_roundXHi = 0;
+        m_roundX = 0.0;
     }
-    m_roundYLo = 0;
     if (dy > 0.0) {
-        m_roundYHi = 0x3fe00000;
+        m_roundY = 0.5;
     } else if (dy < 0.0) {
-        m_roundYHi = static_cast<i32>(0xbfe00000);
+        m_roundY = -0.5;
     } else {
-        m_roundYHi = 0;
+        m_roundY = 0.0;
     }
     m_flightDist = len < 0.0 ? -len : len;
     m_curX = owner->m_screenX;
@@ -540,8 +538,8 @@ void CProjectile::MovingSlot16() {
         }
         m_posX = m_posX + static_cast<double>(static_cast<u32>(g_frameDelta)) * m_velX * m_velScale;
         m_posY = m_posY + static_cast<double>(static_cast<u32>(g_frameDelta)) * m_velY * m_velScale;
-        i32 xRes = static_cast<i32>((*reinterpret_cast<double*>(&m_roundXLo) + m_posX));
-        i32 yRes = static_cast<i32>((*reinterpret_cast<double*>(&m_roundYLo) + m_posY));
+        i32 xRes = static_cast<i32>((m_roundX + m_posX));
+        i32 yRes = static_cast<i32>((m_roundY + m_posY));
         i32 localX = xRes;
         if (m_velX > 0.0) {
             if (xRes > m_targetX) {
@@ -934,8 +932,8 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, CGameObject* a
             s->Read(&m_posY, 8);
             s->Read(&m_velX, 8);
             s->Read(&m_velY, 8);
-            s->Read(&m_roundXLo, 8);
-            s->Read(&m_roundYLo, 8);
+            s->Read(&m_roundX, 8);
+            s->Read(&m_roundY, 8);
             s->Read(&m_curX, 4);
             s->Read(&m_curY, 4);
             s->Read(&m_isArcing, 4);
@@ -1002,8 +1000,8 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, CGameObject* a
             s->Write(&m_posY, 8);
             s->Write(&m_velX, 8);
             s->Write(&m_velY, 8);
-            s->Write(&m_roundXLo, 8);
-            s->Write(&m_roundYLo, 8);
+            s->Write(&m_roundX, 8);
+            s->Write(&m_roundY, 8);
             s->Write(&m_curX, 4);
             s->Write(&m_curY, 4);
             s->Write(&m_isArcing, 4);
@@ -1190,8 +1188,8 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     i32 cy = m_object->m_screenY >> 5;
     CMapMgr* g = g_gameReg->m_tileGrid;
     if (cx < g->m_width && cy < g->m_height) {
-        char* row = reinterpret_cast<char*>(g->m_rows[cy]);
-        *reinterpret_cast<i32*>((row + cx * 0x1c)) |= 0x1000000;
+        i32* row = g->m_rowInts[cy];
+        row[cx * 7] |= 0x1000000;
     }
     m_object->m_124 = -1;
 }
@@ -1202,8 +1200,8 @@ static inline i32 TBombGridCell(CGameObject* obj) {
     i32 cy = obj->m_screenY >> 5;
     if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
         && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
-        char* row = reinterpret_cast<char*>(g->m_rows[cy]);
-        return *reinterpret_cast<i32*>((row + cx * 0x1c));
+        i32* row = g->m_rowInts[cy];
+        return row[cx * 7];
     }
     return 1;
 }
@@ -1213,8 +1211,8 @@ static inline void TBombGridClear(CGameObject* obj) {
     i32 cy = obj->m_screenY >> 5;
     if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
         && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
-        char* row = reinterpret_cast<char*>(g->m_rows[cy]);
-        *reinterpret_cast<i32*>((row + cx * 0x1c)) &= ~0x1000000;
+        i32* row = g->m_rowInts[cy];
+        row[cx * 7] &= ~0x1000000;
     }
 }
 
