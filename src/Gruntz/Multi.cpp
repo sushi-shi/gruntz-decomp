@@ -1747,7 +1747,13 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
 // have the same level"; agreement -> 1. The by-value CString rez-path arg + the
 // name temp run under the /GX frame.
 // @early-stop
-// /GX CString-by-value EH-frame-layout wall (7%): the instruction SEQUENCE is
+// /GX CString-by-value EH-frame-layout wall - but the exit layout was ALSO wrong and
+// dominated (measured 2026-07-27, 6.20 -> 23.46). base 6 rets / retail 1: every refusal
+// path had its own SEH-unwinding epilogue where retail 0xb90b6 has ONE `xor eax,eax` +
+// unwind that all five gates jump into (the m_530==0 arm's PollSession block sits
+// immediately above it as the fall-through). `goto notVerified;` + one bottom
+// `notVerified: return 0;` reproduces that block order.
+// Residual is the frame itself: the instruction SEQUENCE is
 // faithful (the arg1/arg2/m_530 guards, the GetConfigNameA/B selection, the
 // BuildRezPath by-value CString copy-ctor, the multi-temp destruct bitmask, the
 // g_connectRptMgr Poll dispatch and both ShowModal reports), but retail reserves two
@@ -1771,29 +1777,29 @@ i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
     }
 
     {
-    i32 token;
-    if (m_5b0 != 0) {
-        CString b = GetConfigNameB();
-        token = (g_gameReg)->BuildLevelRezPath(0, m_5b0, 0, 0, b);
-    } else {
-        CString a = GetConfigNameA();
-        token = (g_gameReg)->BuildLevelRezPath(0, m_5b0, 0, 0, a);
-    }
+        i32 token;
+        if (m_5b0 != 0) {
+            CString b = GetConfigNameB();
+            token = (g_gameReg)->BuildLevelRezPath(0, m_5b0, 0, 0, b);
+        } else {
+            CString a = GetConfigNameA();
+            token = (g_gameReg)->BuildLevelRezPath(0, m_5b0, 0, 0, a);
+        }
 
-    g_connectRptMgr->m_levelVerifyResult = 0;
-    if (g_connectRptMgr->Poll(token) == 0) {
-        m_530 = 0;
-        (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
-            ->EnterModalUI("Unable to verify custom level with other players");
-        goto notVerified;
-    }
-    if (g_connectRptMgr->m_levelVerifyResult == 0) {
-        (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
-            ->EnterModalUI("Not all players have the (same) custom level.");
-        m_530 = 0;
-        goto notVerified;
-    }
-    return 1;
+        g_connectRptMgr->m_levelVerifyResult = 0;
+        if (g_connectRptMgr->Poll(token) == 0) {
+            m_530 = 0;
+            (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
+                ->EnterModalUI("Unable to verify custom level with other players");
+            goto notVerified;
+        }
+        if (g_connectRptMgr->m_levelVerifyResult == 0) {
+            (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
+                ->EnterModalUI("Not all players have the (same) custom level.");
+            m_530 = 0;
+            goto notVerified;
+        }
+        return 1;
     }
 notVerified:
     return 0;
@@ -3073,10 +3079,10 @@ void CMulti::RecordDropPlayer2(CNetSessionNode* a, i32 id) {
 // Complete, structurally-faithful reconstruction (~75%); parks below 100% on three
 // compounding codegen walls, NOT reloc artifacts (verified base-vs-target with
 // llvm-objdump -dr - every REL32 callee / DIR32 data referent is named/masked):
-//   (1) tail-merge/block-layout: retail folds the two `m_534=1; return 1` early
-//       exits (peer-ready and no-state-3-slot) into one shared epilogue block both
-//       sites `je`; MSVC5 duplicates the epilogue inline at each site. Not steerable
-//       (same family as the sibling Poll 0xbba10 @early-stop epilogue tail-dup wall).
+//   (1) FIXED 2026-07-27 (75.04 -> 80.47) - and "not steerable" was wrong. base 4 rets
+//       / retail 3: hoisting the two no-wait gates into `goto ready;` with ONE bottom
+//       `ready: m_534 = 1; return 1;` gives retail's single shared latch block
+//       (0xbbc44) that both sites `je` into.
 //   (2) status-text SetRect/EngStr_DrawText arg block: the GruntInfoText register-
 //       rotation wall (docs/patterns/select-zero-mask-dest-register.md family) -
 //       retail threads modeW/modeH/rect through a register rotation cl won't
@@ -3096,72 +3102,72 @@ i32 CMulti::WaitForOtherPlayers() {
         goto ready;
     }
     {
-    i32 count = 0;
-    CNetCmdSlot* slot = m_session->m_slots;
-    for (i32 j = 4; j != 0; j--) {
-        if (slot != 0 && slot->m_state == 3) {
-            count++;
+        i32 count = 0;
+        CNetCmdSlot* slot = m_session->m_slots;
+        for (i32 j = 4; j != 0; j--) {
+            if (slot != 0 && slot->m_state == 3) {
+                count++;
+            }
+            slot++;
         }
-        slot++;
-    }
-    if (count == 0) {
-        goto ready;
-    }
+        if (count == 0) {
+            goto ready;
+        }
 
-    SendStatFlag(0x3ed, 1);
-    CString waitStr("Waiting for other playerz...");
-    CGruntzMgr* g = g_gameReg;
-    RECT rc;
-    rc.left = 0;
-    rc.top = 0;
-    rc.right = g->m_modeW;
-    rc.bottom = g->m_modeH;
-    EngStr_DrawText(g->m_world, &waitStr, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
+        SendStatFlag(0x3ed, 1);
+        CString waitStr("Waiting for other playerz...");
+        CGruntzMgr* g = g_gameReg;
+        RECT rc;
+        rc.left = 0;
+        rc.top = 0;
+        rc.right = g->m_modeW;
+        rc.bottom = g->m_modeH;
+        EngStr_DrawText(g->m_world, &waitStr, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 
-    i32 resend = 0x1388;
-    i32 abort = 0x1d4c0;
-    while (m_534 == 0) {
-        u32 start = timeGetTime();
-        Sleep(0x32);
-        PollSession();
-        if (GetAsyncKeyState(0x1b) & 0x80000000) {
-            return 0;
-        }
-        u32 elapsed = timeGetTime() - start;
-        if (elapsed >= static_cast<u32>(resend)) {
-            resend = 0;
-        } else {
-            resend -= elapsed;
-        }
-        if (elapsed >= static_cast<u32>(abort)) {
-            abort = 0;
-        } else {
-            abort -= elapsed;
-        }
-        for (i32 i = 0; i < 4; i++) {
-            CNetCmdSlot* s = &m_session->m_slots[i];
-            if (s->m_state == 3) {
-                s->m_latency += elapsed;
+        i32 resend = 0x1388;
+        i32 abort = 0x1d4c0;
+        while (m_534 == 0) {
+            u32 start = timeGetTime();
+            Sleep(0x32);
+            PollSession();
+            if (GetAsyncKeyState(0x1b) & 0x80000000) {
+                return 0;
+            }
+            u32 elapsed = timeGetTime() - start;
+            if (elapsed >= static_cast<u32>(resend)) {
+                resend = 0;
+            } else {
+                resend -= elapsed;
+            }
+            if (elapsed >= static_cast<u32>(abort)) {
+                abort = 0;
+            } else {
+                abort -= elapsed;
+            }
+            for (i32 i = 0; i < 4; i++) {
+                CNetCmdSlot* s = &m_session->m_slots[i];
+                if (s->m_state == 3) {
+                    s->m_latency += elapsed;
+                }
+            }
+            if (abort == 0) {
+                DropTimeout();
+                abort = 0x1d4c0;
+            }
+            if (resend == 0) {
+                resend = 0x1388;
+                AckJoinFailure();
+                SendStatFlag(0x3ed, 1);
             }
         }
-        if (abort == 0) {
-            DropTimeout();
-            abort = 0x1d4c0;
-        }
-        if (resend == 0) {
-            resend = 0x1388;
-            AckJoinFailure();
-            SendStatFlag(0x3ed, 1);
-        }
-    }
 
-    g_scoreTimeBase = timeGetTime();
-    if (g->m_musicEnabled != 0) { // the CGameMgr base's music-on flag gates the ambient cue
-        char buf[0x40];
-        wsprintfA(buf, "AMBIENT%d", GetAmbientId());
-        NetGameMgr()->m_sound->PlayByName(buf, 1);
-    }
-    return 1;
+        g_scoreTimeBase = timeGetTime();
+        if (g->m_musicEnabled != 0) { // the CGameMgr base's music-on flag gates the ambient cue
+            char buf[0x40];
+            wsprintfA(buf, "AMBIENT%d", GetAmbientId());
+            NetGameMgr()->m_sound->PlayByName(buf, 1);
+        }
+        return 1;
     }
     // retail 0xbbc44: ONE shared latch-and-return block both no-wait gates `je` into
 ready:

@@ -41,11 +41,10 @@
 #include <Gruntz/Random.h>     // ex Globals.h transitive
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 #include <Gruntz/SBI_WellGoo.h>  // CSBI_WellGoo - m_gaugeSink's real type (m_fillScale @+0x44)
-#include <Utils/MapTyped.h> // MapLookupById - the forced id->void* key pun
+#include <Utils/MapTyped.h>      // MapLookupById - the forced id->void* key pun
 
 DATA(0x00244c54)
 i32 g_curPlayer = 0; // owner def (C linkage from StatusBarItem.h)
-
 
 // CStatusBarMgr's destructor is inline in the shared header because retail inlines
 // it at the allocation-failure cleanup in CPlay::LoadGameAssetNamespaces. Retail
@@ -2234,11 +2233,15 @@ i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
 // ready. Validate handle 0x66, play the GAME_TABHIGHLIGHT1 cue on the draw-clock
 // window, then latch the active slot, mark its value, and notify its pointer.
 // @early-stop
-// ~68%: both the find-first-ready and the indexed branch - the handle validation,
-// the cue play, the activeSlot/value latch and the slot notify - are byte-correct;
-// the residual is the identical-return-epilogue wall (the three `return 0` paths
-// tail-merge where retail inlines them, flipping the busy-gate je/jne) plus a
-// one-instruction eager read in the find-slot loop. Documented walls; deferred.
+// 71.11 -> 83.63 (measured 2026-07-27). The old note had the tail-merge direction
+// BACKWARDS: base 6 rets / retail 4 - it is cl that inlines and retail that merges.
+// Four refusals (busy gate + both arms' cursor-frame gate + the indexed state gate)
+// share ONE block at retail 0x10bda2, so they are `goto notActivated;` over a single
+// bottom `notActivated: return 0;`; the scan-exhausted miss is the exception and keeps
+// its own fall-through exit. The "one-instruction eager read" was the `while` peel -
+// spelling the scan `for (;;) { if (ready) break; ...; if (slot >= 5) return 0; }`
+// removes it (retail has one `cmp [eax],2` at the loop top, not two).
+// Residual is scheduling in the cue-play block.
 RVA(0x0010b930, 0x1a7)
 i32 CStatusBarMgr::ActivateSlot(i32 idx) {
     // ONE shared refusal block (retail 0x10bda2) for the busy gate and both arms'
@@ -2288,38 +2291,38 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
         return 1;
     }
     {
-    if (m_slots[idx].m_state != kSlotReady) {
-        goto notActivated;
-    }
-    if (!(static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
-        goto notActivated;
-    }
-    CDDrawSubMgrLeafScan* host =
-        g_gameReg->m_world
-            ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
-    if (host->m_emitGate == 0) {
-        void* found = 0;
-        CMapStringToPtr* map =
-            &host->m_10; // CMapStringToPtr per the mfc_class audit (the facet said Ob - the documented band inversion)
-        map->Lookup("GAME_TABHIGHLIGHT1", found);
-        if (found) {
-            i32 gate = g_sndEnabled;
-            i32 item = g_sndCueTag;
-            if (gate != 0) {
-                LeafCue* p = static_cast<LeafCue*>(found);
-                if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
-                    p->m_14 = g_killCueClock;
-                    p->m_10->ConfigureItem(item, 0, 0, 0);
+        if (m_slots[idx].m_state != kSlotReady) {
+            goto notActivated;
+        }
+        if (!(static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
+            goto notActivated;
+        }
+        CDDrawSubMgrLeafScan* host =
+            g_gameReg->m_world
+                ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+        if (host->m_emitGate == 0) {
+            void* found = 0;
+            CMapStringToPtr* map =
+                &host->m_10; // CMapStringToPtr per the mfc_class audit (the facet said Ob - the documented band inversion)
+            map->Lookup("GAME_TABHIGHLIGHT1", found);
+            if (found) {
+                i32 gate = g_sndEnabled;
+                i32 item = g_sndCueTag;
+                if (gate != 0) {
+                    LeafCue* p = static_cast<LeafCue*>(found);
+                    if (g_killCueClock - static_cast<u32>(p->m_14) >= static_cast<u32>(p->m_18)) {
+                        p->m_14 = g_killCueClock;
+                        p->m_10->ConfigureItem(item, 0, 0, 0);
+                    }
                 }
             }
         }
-    }
-    m_activeSlot = idx;
-    m_slots[idx].m_value = 1;
-    if (m_slotNotify[idx]) {
-        m_slotNotify[idx]->Notify(1);
-    }
-    return 1;
+        m_activeSlot = idx;
+        m_slots[idx].m_value = 1;
+        if (m_slotNotify[idx]) {
+            m_slotNotify[idx]->Notify(1);
+        }
+        return 1;
     }
 notActivated:
     return 0;

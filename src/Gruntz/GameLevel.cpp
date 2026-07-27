@@ -1016,11 +1016,21 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 a1, i32 a2, i32 a3) {
 // whose [lo,hi] midpoint replaces the new coord (gated by the arg3 0x10 bit). The
 // no-block tail drives Hold/FreeMove off the target's +0x10 held flag.
 //
+// @early-stop
+// 64.96 -> 70.04 (measured 2026-07-27). The old note called this a pure
+// "register-scheduling wall"; it was a CONTROL-FLOW bug the exit-count screen exposed
+// (base 4 rets / retail 1). Two real corrections, both byte-evidenced:
 // The held-flag tail is NOT an `else` arm: retail 0x15e207/0x15e276 jump the
 // probe-MISS of both bit0 and bit1 arms straight into it (0x15e5a7), so it runs
 // whenever no hard tile blocked - only a hard tile (m_moveMode = 6) skips it.
 // Both arms then converge on ONE bracket-commit block (0x15e58f) that re-tests
-// the cached arg3 0x10 bit, which is why `mid` is a separate local.
+// the cached arg3 0x10 bit, which is why `mid` is a separate local (the sibling
+// MoveHandlerB already spelled it that way).
+// Residual (base still 3 rets): cl tail-DUPLICATES the small commit block into all
+// three predecessors instead of keeping the one `goto commit` target, because the two
+// arms' `if (a3&0x10) coord = mid; m_moveMode = 6;` tails come out with a different
+// instruction ORDER (the coord reload lands before vs after the store) and so fail its
+// identical-suffix merge. Not steerable from here. topic:tail-merge.
 RVA(0x0015e130, 0x1bb)
 i32 CGameLevel::MoveHandlerA(CGameObject* t, i32 a1, i32 a2, i32 a3) {
     i32 result = 0;

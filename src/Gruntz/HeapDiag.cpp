@@ -42,8 +42,7 @@ i32 FileExists(char* szPath) {
     return OpenFile(szPath, &of, 0x4000 /*OF_EXIST*/) != -1;
 }
 
-namespace ApiCallerStubs {
-} // namespace ApiCallerStubs
+namespace ApiCallerStubs {} // namespace ApiCallerStubs
 
 // The walk gate is POSITIVE-form so cl shrink-wraps `push esi` into the
 // conditionally-entered walk block (retail saves only ebx/edi at entry) -
@@ -145,13 +144,17 @@ typedef i32(WINAPI* PFN_Process32)(HANDLE hSnapshot, PROCESSENTRY32* pe);
 // opens the process (PROCESS_QUERY_INFORMATION) into *pHandleOut. Returns 1 once
 // `wantCount` matches are seen, else 0.
 // @early-stop
-// memset-lowering + scheduling wall (86.1%): logic + all control flow (the two
-// duplicated stricmp arms, OpenProcess-on-first, Process32Next loop) byte-exact.
-// Residual is MSVC /O2 inline-memset shape on the two Toolhelp snapshot records:
-// retail splits the leading dwSize dword out of the `rep stosd` (count N-1 from
-// struct+4, dwSize stored via the live zero-reg / DSE'd), and hoists the
-// th32ModuleID load out of the me-memset region; our build emits the full-width
-// `rep stosd` from struct+0. Not source-steerable. Final-sweep.
+// memset-lowering wall. The exit-block-layout half is FIXED (measured 2026-07-27,
+// 86.14 -> 93.54): the ret-count screen read base 3 / retail 2, and the extra one was
+// the Process32First failure carrying its own `CloseHandle; return 0` epilogue where
+// retail 0x11914d branches it into the loop's shared CloseHandle tail. Wrapping the
+// walk in `if (pFirst(...)) { ... }` over a single trailing CloseHandle+return-0
+// reproduced retail's block layout.
+// Residual is the MSVC /O2 inline-memset shape on the two Toolhelp snapshot records:
+// retail splits the leading dwSize dword out of the `rep stosd` (count 0x49 from
+// struct+4, dwSize stored separately / from the live zero-reg), our build emits the
+// full-width `rep stosd` (0x4a) from struct+0. Not exit layout; not source-steerable
+// from `memset(&pe,0,sizeof pe); pe.dwSize = sizeof pe;`. Final-sweep.
 RVA(0x00118ce0, 0x1f5)
 i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
     if (name == 0 || *name == 0) {
@@ -197,33 +200,35 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
     // retail 0x11914d: ONE CloseHandle + return-0 tail - the Process32First failure
     // branches straight into it with hSnap still live, it is not its own exit
     if (pFirst(hSnap, &pe)) {
-    do {
-        MODULEENTRY32 me;
-        memset(&me, 0, sizeof(me));
-        if (LegacyFindModule(pe.th32ProcessID, pe.th32ModuleID, &me, sizeof(me))) {
-            if (isFullPath) {
-                if (_stricmp(name, me.szExePath) == 0) {
-                    matchCount++;
-                    if (matchCount == 1 && pHandleOut != 0) {
-                        *pHandleOut = OpenProcess(PROCESS_QUERY_INFORMATION, 0, me.th32ProcessID);
+        do {
+            MODULEENTRY32 me;
+            memset(&me, 0, sizeof(me));
+            if (LegacyFindModule(pe.th32ProcessID, pe.th32ModuleID, &me, sizeof(me))) {
+                if (isFullPath) {
+                    if (_stricmp(name, me.szExePath) == 0) {
+                        matchCount++;
+                        if (matchCount == 1 && pHandleOut != 0) {
+                            *pHandleOut =
+                                OpenProcess(PROCESS_QUERY_INFORMATION, 0, me.th32ProcessID);
+                        }
+                        if (matchCount >= wantCount) {
+                            return 1;
+                        }
                     }
-                    if (matchCount >= wantCount) {
-                        return 1;
-                    }
-                }
-            } else {
-                if (_stricmp(name, me.szModule) == 0) {
-                    matchCount++;
-                    if (matchCount == 1 && pHandleOut != 0) {
-                        *pHandleOut = OpenProcess(PROCESS_QUERY_INFORMATION, 0, me.th32ProcessID);
-                    }
-                    if (matchCount >= wantCount) {
-                        return 1;
+                } else {
+                    if (_stricmp(name, me.szModule) == 0) {
+                        matchCount++;
+                        if (matchCount == 1 && pHandleOut != 0) {
+                            *pHandleOut =
+                                OpenProcess(PROCESS_QUERY_INFORMATION, 0, me.th32ProcessID);
+                        }
+                        if (matchCount >= wantCount) {
+                            return 1;
+                        }
                     }
                 }
             }
-        }
-    } while (pNext(hSnap, &pe));
+        } while (pNext(hSnap, &pe));
     }
 
     CloseHandle(hSnap);

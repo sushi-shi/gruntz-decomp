@@ -9,13 +9,14 @@
 // stops at Z_OK without reaching Z_STREAM_END, else the deflate error.
 // ===========================================================================
 // @early-stop
-// ~86% regalloc register-choice wall: control flow and every instruction's shape
-// are identical to retail. MSVC pins the long-lived pDestLen in ebx where retail
-// uses edi (the allocator's 2nd-callee-saved pick {esi,ebx} vs {esi,edi}), which
-// also flips the coupled avail_in/next_in store order at the top. The three zlib
-// entry-point rel32 calls are now correctly named (deflateInit_/deflate/deflateEnd
-// are library-anchored), so the earlier reloc-name artifact is resolved; only the
-// register-coloring residual remains. Not source-steerable.
+// regalloc register-choice wall (measured 2026-07-27, 85.93 -> 87.59 after the exit
+// fix): base had 3 rets against retail's 2 - the Z_BUF_ERROR return carried its own
+// epilogue where retail preloads eax=-5 and `je`s into the shared exit that the
+// init-error and the deflateEnd result also use. Nesting the body under
+// `if (err == 0) { ... }` over one trailing `return err` reproduces that.
+// Residual: MSVC pins the long-lived pDestLen in ebx where retail uses edi (the
+// allocator's 2nd-callee-saved pick {esi,ebx} vs {esi,edi}), which also flips the
+// coupled avail_in/next_in store order at the top. Not source-steerable.
 RVA(0x001853b0, 0xa6)
 int WapUncompress(
     unsigned char* dest,

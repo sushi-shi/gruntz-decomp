@@ -275,11 +275,14 @@ CGrunt* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 
 // (px,py). startRow==5 means "rows 0..3"; otherwise just that one row. Writes the hit
 // (row,col) through the out-ptrs and returns the cell pointer (0 when none).
 // @early-stop
-// 70.9->71.2: the "5 = all" decode is now the if/else form (row/last kept in eax/edx).
+// 71.2 -> 80.71 (measured 2026-07-27): the "tail-merges the loop exit" half of the old
+// note WAS steerable. base 3 rets / retail 2; hoisting the row gate out of the `while`
+// (`if (row <= last) { do { ... } while (row <= last); }`) makes the outer bottom test
+// branch to the shared miss block with an unconditional back-edge, which is retail
+// 0x6bf6d/0x6bf71.
 // Residual regalloc wall: retail spills px to [esp+0x1c] and reloads it for each box-edge
-// compare (freeing esi to precompute y0+30), and tail-merges the loop exit; our cl pins px
-// in ebx. High register pressure (5 args + this + nested loop) -> different spill picks.
-// Logic + offsets byte-exact. topic:wall topic:regalloc.
+// compare (freeing esi to precompute y0+30); our cl pins px in ebx. High register
+// pressure (5 args + this + nested loop) -> different spill picks. topic:regalloc.
 RVA(0x0006bea0, 0xe2)
 CGrunt* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 startRow) {
     i32 row, last;

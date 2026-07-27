@@ -14,9 +14,9 @@ extern "C" i32 FirstDiffBit(const char* a, const char* b); // 0x16e480
 struct CTrieNode {
     CTrieNode* m_child[2]; // +0x0/+0x4  the crit-bit children (retail indexes the
                            // pair as one array: `lea eax,[node+4]` / `add eax,4`)
-    i32 m_8;        // +0x8  crit-bit index
-    char* m_c;      // +0xc  owned key copy
-    void* m_10;     // +0x10 stored value
+    i32 m_8;               // +0x8  crit-bit index
+    char* m_c;             // +0xc  owned key copy
+    void* m_10;            // +0x10 stored value
 };
 SIZE_UNKNOWN();
 

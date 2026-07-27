@@ -1,7 +1,7 @@
 #include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
-#include <Mfc.h>              // CMapPtrToPtr (the id->object map, Lookup @0x1b8760)
-#include <Gruntz/CurPlayer.h> // g_curPlayer
-#include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
+#include <Mfc.h>                      // CMapPtrToPtr (the id->object map, Lookup @0x1b8760)
+#include <Gruntz/CurPlayer.h>         // g_curPlayer
+#include <Gruntz/GruntzMgr.h>         // complete CGruntzMgr (g_gameReg real type)
 #include <rva.h>
 
 #include <Gruntz/GruntVoice.h>
@@ -27,7 +27,7 @@
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
 #include <Gruntz/GruntVoiceActReg.h> // CActRegPool<CGruntVoice>::s_table (ex .cpp extern)
 #include <Wap32/zBitVec.h>           // ex Globals.h
-#include <Utils/MapTyped.h> // typed MFC map lookups
+#include <Utils/MapTyped.h>          // typed MFC map lookups
 template<> DATA(0x002514d8)
 CActReg CActRegPool<CGruntVoice>::s_table(2000, 2010);
 template<> DATA(0x00251500)
@@ -276,11 +276,9 @@ void CGruntVoice::FireActivation(i32 coord) {
 
 RVA(0x0011a3a0, 0x102)
 void CVoiceTrigger::FireActivation(i32 coord) {
-    CActHandler* e =
-        (CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(coord));
+    CActHandler* e = (CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(coord));
     if ((*e) != 0) {
-        CActHandler* e2 =
-            (CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(coord));
+        CActHandler* e2 = (CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(coord));
         (this->*((*e2)))();
     }
 }
@@ -333,14 +331,8 @@ i32 CVoiceTrigger::Tick() {
         i32 hx = hs->m_screenX;
         if (hx < g_gameReg->m_viewBounds.right && hx >= g_gameReg->m_viewBounds.left
             && hy < g_gameReg->m_viewBounds.bottom && hy >= g_gameReg->m_viewBounds.top) {
-            if (g_gameReg->m_cueSink->SpawnVoiceDriver(
-                    hit,
-                    m_object->m_124,
-                    m_object->m_placeMode,
-                    0,
-                    -1,
-                    -1
-                )) {
+            if (g_gameReg->m_cueSink
+                    ->SpawnVoiceDriver(hit, m_object->m_124, m_object->m_placeMode, 0, -1, -1)) {
                 m_38->m_flags |= 0x10000;
             }
         }
@@ -395,6 +387,16 @@ void CGruntVoice::Reset() {
     m_source = 0;
 }
 
+// @early-stop
+// 73.24 -> 85.84 (measured 2026-07-27, exit-block layout): base 6 rets / retail 4. The
+// three "lost the source object" refusals (both arms' resolve miss + the logic-null
+// gate) each carried their own `m_object->m_stateFlags |= 1; return 0;` block with a
+// full epilogue; retail 0x11aa1e has ONE such block that all three jump into. Hoisted
+// to a single bottom `stopped:` label.
+// Residual: retail does NOT fold the `MapLookup(...) != 0` test into the following
+// `resolved == 0` test - it emits `test eax,eax; je <merge>` then a separate
+// `cmp edi,eax` against the materialized zero-register - where cl merges them into one
+// branch. A zero-register-pinning artifact; not source-steerable from this spelling.
 RVA(0x0011a8e0, 0x198)
 i32 CGruntVoice::Update() {
     if (m_sample == 0

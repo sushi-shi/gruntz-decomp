@@ -186,11 +186,13 @@ i32 CMenuPage::NotifyAll(u32 dt) {
 
 // move focus to the next focusable item, wrapping if allowed.
 // @early-stop
-// regalloc wall (~75%): the two focusable-scan loops + the wrap + SetFocus are
-// byte-aligned, but `this` stays live to the tail (SetFocus/CanWrap) so the
-// recompile pins it in a 3rd callee-saved reg (ebx) where retail folds it into
-// edi and pushes only esi/edi; the extra push/reg-pairing diverges the prologue
-// and the per-loop node pointer. Logic complete; deferred to the final sweep.
+// 77.13 -> 97.18 (measured 2026-07-27) - the "regalloc wall" note was a misdiagnosis;
+// it was exit-block layout, and the third callee-saved register fell out with it.
+// base 8 rets / retail 7: the no-wrap gate was written `if (!CanWrap()) return 0;`,
+// its own epilogue, where retail 0x183dbc branches it into the SHARED post-wrap
+// `found == 0` return. Writing the wrap positively (`if (CanWrap()) { ... }` with the
+// single `if (!found) return 0;` after it) reproduces retail's block order.
+// Residual is the last few percent of scheduling only.
 RVA(0x00183c50, 0xbc)
 i32 CMenuPage::FocusNext() {
     if (!m_focus) {
@@ -251,8 +253,9 @@ i32 CMenuPage::FocusNext() {
 
 // move focus to the previous focusable item, wrapping if allowed.
 // @early-stop
-// same regalloc wall as FocusNext (~75%): mirror walk (pNext then pPrev), logic
-// complete, deferred.
+// same as FocusNext and fixed the same way (2026-07-27, 77.13 -> 97.18): the no-wrap
+// gate is not its own exit, it branches into the shared post-wrap `found == 0` return
+// (retail 0x183e7c). Mirror walk (pNext then pPrev); residual is scheduling only.
 RVA(0x00183d10, 0xbc)
 i32 CMenuPage::FocusPrev() {
     if (!m_focus) {
@@ -704,15 +707,7 @@ CMenuItem* CMenuPage::AddItem(
     CMenuItem* item = new CMenuItem();
     // Init keeps its mangling-pinned i32 slots (virtual); the string args cast at
     // the forward (same 4-byte pushes).
-    if (item->Init(
-            this,
-            label,
-            spriteKey,
-            cmdId,
-            key,
-            flags
-        )
-        == 0) {
+    if (item->Init(this, label, spriteKey, cmdId, key, flags) == 0) {
         if (item) {
             delete item;
         }
@@ -732,15 +727,7 @@ CMenuItem* CMenuPage::AddSubItem(
     i32 flags
 ) {
     CMenuItem* item = new CMenuItem();
-    if (item->Init(
-            this,
-            label,
-            spriteKey,
-            cmdId,
-            key,
-            flags
-        )
-        == 0) {
+    if (item->Init(this, label, spriteKey, cmdId, key, flags) == 0) {
         if (item) {
             delete item;
         }
@@ -758,7 +745,8 @@ CMenuItem* CMenuPage::AddSubItem(
 // ex "EH trylevel wall" was the 5-arg mis-signature (retail ret 0x18 = 6 args;
 // the Init arg list was reversed and SetFrame took a0 instead of a5).
 RVA(0x001836f0, 0x160)
-CMenuItem2* CMenuPage::AddItem2(const char* a0, const char* a1, i32 a2, const char* a3, i32 a4, i32 a5) {
+CMenuItem2*
+CMenuPage::AddItem2(const char* a0, const char* a1, i32 a2, const char* a3, i32 a4, i32 a5) {
     CMenuItem2* item = new CMenuItem2();
     if (item->Init(this, a0, a1, a2, a3, a4) == 0) {
         if (item) {
@@ -776,7 +764,16 @@ CMenuItem2* CMenuPage::AddItem2(const char* a0, const char* a1, i32 a2, const ch
 // 58%: same inlined-base-ctor EH-trylevel-scheduling residual as AddItem2, amplified
 // by the extra parent-link stores (docs/patterns/rezalloc-placement-new-no-eh-frame.md).
 RVA(0x00183850, 0x13b)
-CMenuItem2* CMenuPage::AddSubItem2(const char* a0, const char* a1, i32 a2, i32 a3, i32 a4, const char* a5, i32 a6, i32 a7) {
+CMenuItem2* CMenuPage::AddSubItem2(
+    const char* a0,
+    const char* a1,
+    i32 a2,
+    i32 a3,
+    i32 a4,
+    const char* a5,
+    i32 a6,
+    i32 a7
+) {
     CMenuItem2* item = new CMenuItem2();
     if (item->Init(this, a0, a1, a2, a5, a6) == 0) {
         if (item) {

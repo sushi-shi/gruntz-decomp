@@ -1,6 +1,6 @@
 #include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
 #include <Gruntz/Demo.h>
-#include <Gruntz/Grunt.h> // the GruntEntranceCell / GruntDirectionCell triples
+#include <Gruntz/Grunt.h>       // the GruntEntranceCell / GruntDirectionCell triples
 #include <Gruntz/DemoHelpers.h> // CDemoSetup / Orient3 (the TU's helper types)
 #include <Io/FileMem.h>         // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr / CGameMgr::m_gameWnd -> CGameWnd::m_hwnd (Render's exit post)
@@ -277,9 +277,13 @@ char g_buteEditBuf[0x10000];
 // The two scoped streams are exactly what makes cl emit the ??_Difstream /
 // ??_Dofstream vbase-destructor COMDATs retail carries at 0x3cbc0/0x3cbf0
 // (byte-identical to a cl 5.0 probe; retail keeps them unreferenced - no /OPT:REF).
-// @early-stop
-// structural reconstruction (ex a `return 0` stub + two hand-written ??_D bodies);
-// the /GX trylevel schedule over the stream/CString temps still needs a matcher pass.
+// 100% EXACT (2026-07-27). The exit-count screen read base 4 rets / retail 2 and the
+// fix needed BOTH halves: (a) the msg dispatch is a SWITCH, not chained `if (msg == ..)`
+// compares - retail's `sub eax,0x110 / je / dec eax / jne` ladder - and the command
+// dispatch is a nested switch on wParam (`dec eax / je / dec eax / je`); (b) the
+// not-handled exit is shared by the msg default AND the command default, and both
+// handled commands fall into the ONE `return 1`. With (b) alone the score went
+// 27.94 -> 14.94; only the pair lands it.
 RVA(0x0003c990, 0x1bc)
 INT_PTR CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     static_cast<void>(lParam);

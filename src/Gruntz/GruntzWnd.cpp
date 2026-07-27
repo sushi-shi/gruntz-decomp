@@ -20,6 +20,10 @@ CGruntzWnd::~CGruntzWnd() {
     Destroy();
 }
 
+RVA(0x00094770, 0x5)
+i32 CGruntzWnd::Wap32GameWndVfunc2(i32, i32, i32) {
+    return 0;
+}
 
 // -------------------------------------------------------------------------
 // CGruntzWnd::PreDispatchMessage (vtable slot 1). The window's pre-translate hook,
@@ -29,20 +33,15 @@ CGruntzWnd::~CGruntzWnd() {
 // pumps the manager RefreshGameClock when the game manager + its sound chain are live. All
 // other messages fall through as not-handled here (0 = keep dispatching).
 // @early-stop
-// 73%: complete + correct logic/control-flow (the 3-message compare ladder aligns via
-// the switch form). Residual is a codegen-layout wall: (1) `this` lands in edi (retail
-// ebx), the msg-compare scheduled after the reg-saves not interleaved; (2) the default /
-// case-0x112 `return 0` blocks tail-merge differently (retail runs the 0x3b9 case as the
-// ladder fall-through with a shared ret-0, our cl emits the default ret-0 inline + jumps
-// into the 0x3b9 body). Not source-steerable (3 spellings + permuter no-change). On top,
-// the reloc-masked/plateau operands: the IAT-mirror calls (IsIconic/SendMessageA bare-
-// absolute ds slots), the g_curDlg DIR32, the unnamed empty-hook 0x138940 target.
-// topic:regalloc topic:tail-merge.
-RVA(0x00094770, 0x5)
-i32 CGruntzWnd::Wap32GameWndVfunc2(i32, i32, i32) {
-    return 0;
-}
-
+// Exit-block layout FIXED (measured 2026-07-27, 77.64 -> 98.19): the old note called
+// item (2) "not source-steerable" and it was simply wrong. base 6 rets / retail 3.
+// Writing the WM_SYSCOMMAND arm's three `return 0` exits as `break` (i.e. the switch's
+// shared trailing `return 0`) makes cl park that block at the bottom, invert the last
+// ladder compare to `jne <default>` and run case 0x3b9 as the fall-through - retail's
+// exact block order, every branch target now aligned.
+// Residual is ONE register rotation: retail colours this->ebx / wParam->esi /
+// isIconic->edi, cl picks esi / edi / ebx. Prologue push order and every instruction
+// otherwise match. topic:regalloc.
 RVA(0x00094790, 0xcd)
 i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {

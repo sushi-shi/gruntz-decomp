@@ -12,7 +12,6 @@
 #include <stdlib.h> // _itoa
 #include <string.h> // memset -> inline rep stos
 
-
 char* g_areaNames[8]; // 0x6454e8
 DATA(0x00213a9c)
 i32 g_savedMenuCmd = -1;
@@ -21,7 +20,7 @@ CImagePool* g_previewMgr; // 0x64c814
 DATA(0x0024c864)
 SaveSlot* g_slotState; // 0x64c864  the record the save/load dialogs describe
 DATA(0x0024c868)
-void* g_previewImage;                     // 0x64c868  (CRezImage* previewed DIB)
+void* g_previewImage; // 0x64c868  (CRezImage* previewed DIB)
 
 // LevelPreviewDlgProc (0x0e3690) - the level-select preview dialog proc. WM_INITDIALOG
 // builds the g_previewMgr image pool + the level title; WM_COMMAND (IDOK/IDCANCEL)
@@ -35,20 +34,24 @@ void* g_previewImage;                     // 0x64c868  (CRezImage* previewed DIB
 // (1) the /GX SEH prologue order (`push -1` vs `mov eax,fs:0` first + esi/edi
 // shrink-wrap; docs/patterns/shrink-wrapped-callee-save-push.md, topic:wall);
 // (2) epilogue tail-merge - retail funnels every return to ONE shared `mov eax,1` +
-// epilogue via jmp, cl duplicates the epilogue per return (single-return `r` var
-// tried: regressed to 77%); (3) the pool local coloring - cl reuses the hDlg-arg
+// epilogue via jmp, cl duplicates the epilogue per return. HALF of this is fixed
+// (measured 2026-07-27, 80.35 -> 85.15): base 4 rets / retail 1; writing the
+// WM_INITDIALOG SetHandles failure as `break` merged it with the switch DEFAULT, which
+// is what parks the default block at the bottom (retail 0xe37ae) and inverts the
+// ladder's last compare so WM_COMMAND falls through. The rest does NOT come out: the
+// single-result-variable form (`i32 result; ... done: return result;`) was re-tested
+// this pass and regressed 85.15 -> 79.79, so cl will not fold the remaining three
+// epilogues here - unlike the sibling CBootyState::LoadGameAssetNamespaces where the
+// same spelling worked. Reverted; (3) the pool local coloring - cl reuses the hDlg-arg
 // stack slot [esp+0x78] where retail reuses the msg slot [esp+0x7c], shifting the
 // front-half displacements. None are source-steerable.
 RVA(0x000e3690, 0x2ec)
 i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-    // ONE epilogue (retail 0xe39c7): every arm loads its result into eax and jumps in
-    i32 result;
     switch (msg) {
         case WM_PAINT: {
             HWND item = GetDlgItem(hDlg, 0x51d);
             if (g_previewMgr == 0 || g_previewImage == 0 || item == 0) {
-                result = 1;
-                goto done;
+                return 1;
             }
             RECT wr;
             GetWindowRect(item, &wr);
@@ -112,14 +115,12 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 );
             }
             EndPaint(hDlg, &ps);
-            result = 1;
-            goto done;
+            return 1;
         }
         case WM_INITDIALOG: {
             if (g_slotState == 0) {
                 EndDialog(hDlg, 0);
-                result = 1;
-                goto done;
+                return 1;
             }
             g_previewMgr = new CImagePool;
             // Retail dataflow (byte-proven at 0xe37c6..0xe3803): BOTH the pool's
@@ -128,12 +129,7 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             // the old spelling passed g_previewMgr through two nonsense casts.
             // the failure exit is the switch's shared `return 0` (retail 0xe37ae is
             // the DEFAULT arm's block, reached by fall-through from this gate)
-            if (g_previewMgr->SetHandles(
-                    g_gameReg->m_owner->m_hInstance,
-                    hDlg,
-                    0
-                )
-                == 0) {
+            if (g_previewMgr->SetHandles(g_gameReg->m_owner->m_hInstance, hDlg, 0) == 0) {
                 break;
             }
             BuildLevelTitleString(
@@ -141,13 +137,11 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 g_gameReg->m_saveSink,
                 g_slotState
             );
-            result = 1;
-            goto done;
+            return 1;
         }
         case WM_COMMAND: {
             if (wParam != 2 && wParam != 1) {
-                result = 0;
-                goto done;
+                return 0;
             }
             if (g_previewMgr != 0) {
                 if (g_previewImage != 0) {
@@ -157,13 +151,10 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 g_previewMgr = 0;
             }
             EndDialog(hDlg, 0);
-            result = 1;
-            goto done;
+            return 1;
         }
     }
-    result = 0;
-done:
-    return result;
+    return 0;
 }
 
 RVA(0x000e3a40, 0xb0)

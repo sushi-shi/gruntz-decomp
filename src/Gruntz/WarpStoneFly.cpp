@@ -26,7 +26,11 @@ CWarpStoneFly::CWarpStoneFly() {
 // x87 FP-stack schedule wall (docs/patterns/x87-fp-stack-schedule.md): the integer
 // scaffolding + control flow + member stores + every __ftol round are byte-exact;
 // only the dense fld/fxch/fmul/fadd choreography of the velocity-integration block
-// diverges. ~60-75% plateau, deferred to the final sweep.
+// diverges. Deferred to the final sweep.
+// The exit-layout half is fixed (measured 2026-07-27, 79.37 -> 80.52): base 3 rets vs
+// retail 2 - the y-clamp store was duplicated per arm with a full epilogue each, where
+// retail 0x10a26b has ONE clamp store both arms reach (jmp from >0, fall-through from
+// <0). The x arms already shared. Small gain because the x87 residue dominates.
 RVA(0x0010a0f0, 0x184)
 i32 CWarpStoneFly::Tick(i32 dt) {
     if (static_cast<i32>(m_currentX) == m_targetX && static_cast<i32>(m_currentY) == m_targetY) {

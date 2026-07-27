@@ -21,7 +21,7 @@
 // temps in these leaves; byte-neutral).
 #include <Gruntz/Grunt.h>         // CGrunt IS CGrunt (folded) - the cells are dereferenced here
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
-#include <Gruntz/Brickz.h> // BrickzCell complete (the 0x1c grid cell)
+#include <Gruntz/Brickz.h>        // BrickzCell complete (the 0x1c grid cell)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h>
 
@@ -144,11 +144,15 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exa
 // HitGrid views folded onto CGrunt / CTmDisplay / CMapMgr.)
 //
 // @early-stop
-// 75% - nested-loop regalloc wall: identical instruction selection/logic, but MSVC5
-// assigns the point/rect args to a permuted register set (a0->edi, a1->esi vs retail
-// a0->ebx/a1->edi) and spills one fewer local, so the frame is 0x1c vs retail 0x20 and
-// every [esp+N] stack offset shifts. Not steerable from source (llvm-objdump -dr: same
-// mnemonics, shifted operands).
+// 74.75 -> 79.42 (measured 2026-07-27). The old note's "identical instruction
+// selection" claim was false: base had 3 rets against retail's 2, i.e. an extra whole
+// basic block. The outer column `for` let cl duplicate the miss epilogue as the loop's
+// fall-through; hoisting the gate (`if ((u32)x <= (u32)xEnd) { do { ... x++; } while
+// (...); }`) gives retail 0x75f8d/0x75f91 - bottom test branches out to the shared miss
+// block, back-edge unconditional.
+// Residual: MSVC5 assigns the point/rect args to a permuted register set (a0->edi,
+// a1->esi vs retail a0->ebx/a1->edi) and spills one fewer local, so the frame is 0x1c vs
+// retail 0x20 and every [esp+N] offset shifts. topic:regalloc.
 RVA(0x00075c60, 0x1ba)
 CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* outRow, RECT* src) {
     i32 tcol = px >> 5;
@@ -170,45 +174,46 @@ CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* o
     // ONE miss exit (retail 0x75faa): the column gate and the column loop's bottom
     // test both branch into it, so the outer back-edge is an unconditional jmp
     if (static_cast<u32>(x) <= static_cast<u32>(xEnd)) {
-    do {
-        i32 yEnd = span->bottom + trow + 1;
-        for (i32 y = trow - span->top - 1; static_cast<u32>(y) <= static_cast<u32>(yEnd); y++) {
-            if (static_cast<u32>(x) >= static_cast<u32>(g_gameReg->m_tileGrid->m_width)) {
-                continue;
+        do {
+            i32 yEnd = span->bottom + trow + 1;
+            for (i32 y = trow - span->top - 1; static_cast<u32>(y) <= static_cast<u32>(yEnd); y++) {
+                if (static_cast<u32>(x) >= static_cast<u32>(g_gameReg->m_tileGrid->m_width)) {
+                    continue;
+                }
+                CMapMgr* grid = g_gameReg->m_tileGrid;
+                if (static_cast<u32>(y) >= static_cast<u32>(grid->m_height)) {
+                    continue;
+                }
+                i32 val;
+                if (static_cast<u32>(x) < static_cast<u32>(grid->m_width)
+                    && static_cast<u32>(y) < static_cast<u32>(grid->m_height)) {
+                    val = grid->m_rows[y][x].m_4;
+                } else {
+                    val = -1;
+                }
+                if (val == -1) {
+                    continue;
+                }
+                i32 col = val & 0xff;
+                i32 row = (val >> 8) & 0xff;
+                CGrunt* g = m_grid[col + row * TM_GRID_COLS];
+                if (!g) {
+                    continue;
+                }
+                if (!g->m_entranceCommitted) {
+                    continue;
+                }
+                i32 sx = g->m_object->m_screenX - 7;
+                i32 sy = g->m_object->m_screenY - 7;
+                if (rc.left <= sx + 0xe && rc.right >= sx && rc.top <= sy + 0xe
+                    && rc.bottom >= sy) {
+                    *outCol = row;
+                    *outRow = col;
+                    return g;
+                }
             }
-            CMapMgr* grid = g_gameReg->m_tileGrid;
-            if (static_cast<u32>(y) >= static_cast<u32>(grid->m_height)) {
-                continue;
-            }
-            i32 val;
-            if (static_cast<u32>(x) < static_cast<u32>(grid->m_width)
-                && static_cast<u32>(y) < static_cast<u32>(grid->m_height)) {
-                val = grid->m_rows[y][x].m_4;
-            } else {
-                val = -1;
-            }
-            if (val == -1) {
-                continue;
-            }
-            i32 col = val & 0xff;
-            i32 row = (val >> 8) & 0xff;
-            CGrunt* g = m_grid[col + row * TM_GRID_COLS];
-            if (!g) {
-                continue;
-            }
-            if (!g->m_entranceCommitted) {
-                continue;
-            }
-            i32 sx = g->m_object->m_screenX - 7;
-            i32 sy = g->m_object->m_screenY - 7;
-            if (rc.left <= sx + 0xe && rc.right >= sx && rc.top <= sy + 0xe && rc.bottom >= sy) {
-                *outCol = row;
-                *outRow = col;
-                return g;
-            }
-        }
-        x++;
-    } while (static_cast<u32>(x) <= static_cast<u32>(xEnd));
+            x++;
+        } while (static_cast<u32>(x) <= static_cast<u32>(xEnd));
     }
     return 0;
 }
