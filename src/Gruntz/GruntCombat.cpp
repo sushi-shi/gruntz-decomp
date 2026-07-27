@@ -752,16 +752,35 @@ i32 CGrunt::PathScan() {
 
     i32 col5 = m_object->m_screenX >> 5;
     i32 row5 = m_object->m_screenY >> 5;
-    RECT box;
-    box.left = col5 - 2;
-    box.top = row5 - 2;
-    box.right = col5 + 3;
-    box.bottom = row5 + 3;
+    // retail 0x57dfc..0x57e8c: the 5x5 dirty box is the +-2 cell box `r5` widened by
+    // one on right/bottom, but it is reached through a POINTER that is null-tested
+    // (0x57e30 `lea edx,[esp+0x48]; test edx,edx; je`) - the null arm takes the whole
+    // board instead. `gb` (the clip rect) is four inline stores here, not a CRect ctor.
     RECT gb;
     gb.left = 0;
     gb.top = 0;
     gb.right = grid->m_width;
     gb.bottom = grid->m_height;
+    RECT r5;
+    r5.left = col5 - 2;
+    r5.top = row5 - 2;
+    r5.right = col5 + 2;
+    r5.bottom = row5 + 2;
+    RECT box;
+    const RECT* pr = &r5;
+    if (pr != 0) {
+        box.left = pr->left;
+        box.top = pr->top;
+        box.right = pr->right + 1;
+        box.bottom = pr->bottom + 1;
+    } else {
+        RECT rw;
+        RECT* pw = static_cast<RECT*>(new (&rw) CRect(0, 0, grid->m_width, grid->m_height));
+        box.left = pw->left;
+        box.top = pw->top;
+        box.right = pw->right;
+        box.bottom = pw->bottom;
+    }
     if (!IntersectRect(&grid->m_bounds, &box, &gb)) {
         grid->m_bounds = box;
     }
@@ -777,33 +796,78 @@ i32 CGrunt::PathScan() {
         node = node->m_next;
         GruntCoord* co = cur->m_coord;
         if (co != 0) {
-            i32 c = co->m_x;
-            i32 r = co->m_y;
-            i32 fire = 1;
-            if (grid->m_rows[r][c].m_flagBytes[3] & 0x20) {
-                fire = (co->m_x == tcol && co->m_y == trow) ? 1 : 0;
-            }
-            if (fire) {
+            // retail 0x57f21: a cell already carrying the 0x20 mark is skipped
+            // UNLESS it is the route's own tail - no `fire` temp, the || just
+            // short-circuits into the probe (0x57f26 je / 0x57f30 + 0x57f36 jne).
+            if ((grid->m_rows[co->m_y][co->m_x].m_flagBytes[3] & 0x20) == 0
+                || (co->m_x == tcol && co->m_y == trow)) {
+                // retail 0x57f38: arg5 IS the route list `s` itself (0x57f5b's
+                // `lea ecx,[esp+0x70]` names the same address the 0x57f3a ctor
+                // does), and the "did it find one" test at 0x57f84 reads
+                // [esp+0x74] == s+0xc == CPtrList::m_nCount. There is no separate
+                // out-int. Args 1/2 are the GRUNT's cell (col5,row5), args 3/4 the
+                // coord being probed.
                 CPtrList s(0xa);
-                i32 scanHit = 0; // SearchEdge's out-slot (NOT a list field: `s` is
-                                 // never passed to it - only this cell's address is)
                 i32 res = grid->SearchEdge(
-                    c,
-                    r,
+                    col5,
+                    row5,
                     co->m_x,
                     co->m_y,
-                    &scanHit,
+                    &s,
                     1,
                     m_arrivalFlags | 0x20000000,
                     m_24c
                 );
                 if (res != 0) {
-                    if (scanHit != 0) {
-                        // retail 0x58080: the hit exit lives INSIDE the loop and works
-                        // on the local route list `s` (the [esp+0x68] CPtrList the
-                        // 0x58092 RemoveAll / 0x5812e ~CPtrList both name) - there is
-                        // no coord recycle and no 0x29a30 drain on this path (the
-                        // function's ONLY call 0x29a30 is at 0x584fa, in the 3x3 tail).
+                    if (s.GetCount() != 0) {
+                        // 0x57fbe: SearchEdge only routed as far as this coord, so
+                        // the REST of the old route (from `node` on) is appended to
+                        // the fresh one - each entry a coord popped off g_coordPool's
+                        // free list and filled from the old node.
+                        while (node != 0) {
+                            GruntCoordNode* rest = node;
+                            node = node->m_next;
+                            GruntCoord* src = rest->m_coord;
+                            Coord* fresh = 0;
+                            CoordPoolNode* free = g_coordPool.m_freeHead;
+                            if (free->m_next != 0) {
+                                fresh = &free->m_coord;
+                                fresh->m_x = src->m_x;
+                                fresh->m_y = src->m_y;
+                                g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
+                            }
+                            s.AddTail(fresh);
+                        }
+                        // 0x58001: recycle the grunt's own coordz back to the pool.
+                        // Same drain as the ring tail's, but here MFC's inline
+                        // CPtrList::GetNext is what walks it (0x58015's direct
+                        // [pos]/[pos+8] loads), not CGruntCoordList::NextData.
+                        if (CoordCount() != 0) {
+                            POSITION pos = m_31c.GetHeadPosition();
+                            if (pos != 0) {
+                                do {
+                                    void* d = m_31c.GetNext(pos);
+                                    if (d != 0) {
+                                        g_coordPool.Push(d);
+                                    }
+                                } while (pos != 0);
+                            }
+                            m_31c.RemoveAll();
+                        }
+                        // 0x58038: adopt the fresh route, dropping the entry that IS
+                        // the grunt's current cell - that one is the list head and is
+                        // handed straight back to the free list just below.
+                        POSITION p = s.GetHeadPosition();
+                        if (p != 0) {
+                            do {
+                                GruntCoord* d = static_cast<GruntCoord*>(s.GetNext(p));
+                                if (d != 0) {
+                                    if (d->m_x != col5 || d->m_y != row5) {
+                                        m_31c.AddTail(d);
+                                    }
+                                }
+                            } while (p != 0);
+                        }
                         void* elem = s.RemoveHead();
                         if (elem != 0) {
                             FREELIST_PUSH(elem);
@@ -817,30 +881,64 @@ i32 CGrunt::PathScan() {
                 }
             }
         }
+        // retail 0x57fab: the five-miss break has its OWN bounds recompute at
+        // 0x5813d, on top of the common one after the loop (0x581ce).
         if (hits == 5) {
+            SCAN_BOUNDS(grid);
             break;
         }
     }
 
     // ---- no hit: 3x3 neighbour re-scan ----
     SCAN_BOUNDS(grid);
-    i32 nl = col5 - 4;
-    i32 nr = col5 + 4;
-    i32 nt = row5 - 4;
-    i32 nb = row5 + 4;
-    if (col5 >= nl && col5 < nr && row5 >= nt && row5 < nb) {
-        SCAN_BOUNDS(grid);
+    // retail 0x5825c: the +-4 box is centred on the ROUTE TAIL (tcol,trow) - the
+    // destination cell - and the point tested against it is the grunt's own cell
+    // (col5,row5): "only re-scan the neighbourhood when I am within 4 cells of my
+    // goal". (It was col5/row5 on BOTH sides here, i.e. tautological.)
+    RECT nbox;
+    nbox.left = tcol - 4;
+    nbox.top = trow - 4;
+    nbox.right = tcol + 4;
+    nbox.bottom = trow + 4;
+    if (col5 < nbox.right && col5 >= nbox.left && row5 < nbox.bottom && row5 >= nbox.top) {
+        // retail 0x582ae: the same null-tested-pointer bounds set as the head block
+        // (0x582c3 `lea ecx,[esp+0x48]; test ecx,ecx; je`), only here the source rect
+        // is `nbox` and the clip rect IS a real CRect local (0x582be's direct ctor).
+        CRect rb(0, 0, grid->m_width, grid->m_height);
+        RECT ra;
+        const RECT* pn = &nbox;
+        if (pn != 0) {
+            ra.left = pn->left;
+            ra.top = pn->top;
+            ra.right = pn->right + 1;
+            ra.bottom = pn->bottom + 1;
+        } else {
+            RECT rw;
+            RECT* pw = static_cast<RECT*>(new (&rw) CRect(0, 0, grid->m_width, grid->m_height));
+            ra.left = pw->left;
+            ra.top = pw->top;
+            ra.right = pw->right;
+            ra.bottom = pw->bottom;
+        }
+        if (!IntersectRect(&grid->m_bounds, &ra, &rb)) {
+            grid->m_bounds = ra;
+        }
+        grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
+        grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
         // retail 0x58371: the ring is dy,dx = -1..1 with the CENTRE skipped
         // (0x58397 `if (dy != 0) body; if (dx == 0) next`), the bounds test is
-        // width-then-height on (col5+dx, row5+dy), and the cell read walks the row
-        // by 0x1c bytes per dx step (== m_rowInts[rr][(col5+dx)*7]).
+        // width-then-height on (tcol+dx, trow+dy), and the cell read walks the row
+        // by 0x1c bytes per dx step (== m_rowInts[rr][(tcol+dx)*7]; retail hoists
+        // the `(tcol-1)*7*4` byte base to the OUTER loop head at 0x58384).
+        // Centre = the route TAIL, not the grunt: the ring probes the goal's
+        // neighbours for a reachable substitute cell.
         for (i32 dy = -1; dy < 2; dy++) {
             for (i32 dx = -1; dx < 2; dx++) {
                 if (dy == 0 && dx == 0) {
                     continue;
                 }
-                i32 rr = row5 + dy;
-                i32 cc = col5 + dx;
+                i32 rr = trow + dy;
+                i32 cc = tcol + dx;
                 i32 cf = 1;
                 if (static_cast<u32>(cc) < static_cast<u32>(grid->m_width)
                     && static_cast<u32>(rr) < static_cast<u32>(grid->m_height)) {
@@ -853,52 +951,81 @@ i32 CGrunt::PathScan() {
                     continue;
                 }
                 CPtrList s(0xa);
-                i32 scanHit = 0; // SearchEdge's out-slot (NOT a list field: `s` is
-                                 // never passed to it - only this cell's address is)
                 i32 res = grid->SearchEdge(
                     col5,
                     row5,
                     cc,
                     rr,
-                    &scanHit,
+                    &s,
                     0,
                     m_arrivalFlags | 0x20040002,
                     m_24c
                 );
                 if (res != 0) {
-                    // retail 0x5849f / 0x584cd: TWO separate `if (scanHit)` blocks -
-                    // `scanHit` is address-taken, so the RemoveHead call between them
-                    // forces the reload cl emits.
-                    if (scanHit != 0) {
-                        void* elem = s.RemoveHead();
-                        if (elem != 0) {
-                            FREELIST_PUSH(elem);
-                        }
+                    // retail 0x5849f / 0x584cd: TWO separate `s.GetCount()` reads -
+                    // the RemoveHead between them invalidates the cached count, so cl
+                    // reloads [esp+0x74] (== s.m_nCount). Both empty cases bail out
+                    // through the SAME `Clip(0); return 0` the function ends with
+                    // (0x58686, the copy that also runs ~CPtrList on `s`).
+                    if (s.GetCount() == 0) {
+                        grid->Clip(0);
+                        return 0;
                     }
-                    if (scanHit != 0) {
-                        // 0x584d9: recycle the grunt's own coordz (the function's ONLY
-                        // call 0x29a30, at 0x584fa) ...
-                        if (CoordCount() != 0) {
-                            void* pos = m_31c.GetHeadPosition();
-                            if (pos != 0) {
-                                do {
-                                    void* d = CoordListOps()->NextData(pos);
-                                    if (d != 0) {
-                                        g_coordPool.Push(d);
-                                    }
-                                } while (pos != 0);
-                            }
-                            m_31c.RemoveAll();
-                        }
-                        // ... then 0x58521 transfers the fresh route into it.
-                        POSITION p = s.GetHeadPosition();
-                        if (p != 0) {
+                    void* elem = s.RemoveHead();
+                    if (elem != 0) {
+                        FREELIST_PUSH(elem);
+                    }
+                    if (s.GetCount() == 0) {
+                        grid->Clip(0);
+                        return 0;
+                    }
+                    // 0x584d9: recycle the grunt's own coordz (the function's ONLY
+                    // call 0x29a30, at 0x584fa) ...
+                    if (CoordCount() != 0) {
+                        void* pos = m_31c.GetHeadPosition();
+                        if (pos != 0) {
                             do {
-                                m_31c.AddTail(s.GetNext(p));
-                            } while (p != 0);
+                                void* d = CoordListOps()->NextData(pos);
+                                if (d != 0) {
+                                    g_coordPool.Push(d);
+                                }
+                            } while (pos != 0);
                         }
-                        s.RemoveAll();
+                        m_31c.RemoveAll();
                     }
+                    // ... then 0x58521 transfers the fresh route into it.
+                    POSITION p = s.GetHeadPosition();
+                    if (p != 0) {
+                        do {
+                            m_31c.AddTail(s.GetNext(p));
+                        } while (p != 0);
+                    }
+                    s.RemoveAll();
+                    // 0x58555: the SECOND leg - route on from the neighbour cell
+                    // (cc,rr) to the original goal (tcol,trow), this time with the
+                    // RAW arrival flags (no 0x20040002 punch) and clearFlag 1. Its
+                    // route is appended to the one just adopted. Whatever it returns,
+                    // the grunt now has a path: recompute the bounds and report 1.
+                    if (grid->SearchEdge(cc, rr, tcol, trow, &s, 1, m_arrivalFlags, m_24c)
+                        != 0) {
+                        if (s.GetCount() != 0) {
+                            void* e2 = s.RemoveHead();
+                            if (e2 != 0) {
+                                FREELIST_PUSH(e2);
+                            }
+                            if (s.GetCount() != 0) {
+                                POSITION q = s.GetHeadPosition();
+                                if (q != 0) {
+                                    do {
+                                        m_31c.AddTail(s.GetNext(q));
+                                    } while (q != 0);
+                                }
+                                s.RemoveAll();
+                            }
+                        }
+                    }
+                    SCAN_BOUNDS(grid);
+                    return 1;
                 }
             }
         }
