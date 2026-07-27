@@ -85,6 +85,43 @@ while (n-- != 0) {
 (Same idiom as [`test-old-value-decrement-loop-while-postdec.md`](test-old-value-decrement-loop-while-postdec.md);
 this file records where the family lives and that it is the *registrar* archetype.)
 
+## 3. Not every block in a registrar uses the SAME accessor — check the last one
+
+`RegisterActs_644af0` (0x5be30, 19 keys) still sat at 97.49% after §1, with one block's worth
+of residual. The keys are *not* interchangeable: `g_typeColl` has **two** index accessors and the
+devs used both in the same function.
+
+| retail call | via ILT | what it does |
+|---|---|---|
+| `_zvec::IndexToPtr` @0x312a0 | 0x3864 | the plain base accessor; the caller open-codes the `m_grown` free loop after it |
+| `_zdvec::IndexToPtr` @0x310f0 | 0x437c | the DERIVED accessor — the same index math with the free loop **already inlined in its body** (@0x31156) |
+
+Eighteen blocks call the base form and open-code the loop. The nineteenth calls the derived form
+and has **no loop at the site at all**:
+
+```asm
+call  <ActInsertId>
+mov   esi,ds:[g_typeCounter]   ; id  -- ONE consumer, so cl loads straight into callee-saved esi
+push  <key>                    ; the operator= arg, pushed early
+push  esi                      ; the accessor arg = `id`, NOT the global
+mov   ecx,<&g_typeColl>
+call  0x437c                   ; _zdvec::IndexToPtr
+mov   ecx,eax
+call  <CString::operator=>
+inc   ds:[g_typeCounter]
+```
+
+Note the argument flips back to `id` here — §1's "always pass the global" is not a blanket rule,
+it is a *readout of the consumer count*. `push eax; mov edi,eax` (materialise + copy) means two
+consumers ⇒ pass the global; `mov esi,[g]; push esi` (load straight into a callee-saved home)
+means one ⇒ pass the local. Read the tell, do not apply the rule blindly.
+
+Give the odd block its own macro rather than open-coding it, and factor the shared
+`*pool.Resolve(id) = reinterpret_cast<CActHandler>(handler)` tail into a third macro both call —
+otherwise the duplicated PMF reinterpret trips the cast ratchet.
+
+**97.49% → 100.00% EXACT.**
+
 ## Result
 
 Applied mechanically across the family (31 + 13 + 7 + 11 + 6 sites): **2838 → 2880 exact**

@@ -323,13 +323,24 @@ static inline CString* ActNameSlots() {
     return g_typeColl.Slots();
 }
 
+// The shared tail of every 0x5be30 block: bind `handler` into the pool at `id`.
+// (A derived-to-base member-pointer conversion is a reinterpret - a bit copy - never a
+// static_cast: cl emits a this-adjustment thunk for the latter. Written once, here, so
+// the one legitimate PMF seam has exactly one site.)
+#define BIND_ACT_644AF0(id, handler)                                                               \
+    *CActRegPool<CGrunt>::s_table.Resolve(id) = reinterpret_cast<CActHandler>(handler)
+
 #define REGISTER_KEY_644AF0(key, handler)                                                          \
     {                                                                                              \
         i32 id = ActFindId(key);                                                                   \
         if (id == 0) {                                                                             \
             ActInsertId(key, g_typeCounter);                                                       \
             id = g_typeCounter;                                                                    \
-            CString* slot = reinterpret_cast<CString*>(g_typeColl._zvec::IndexToPtr(id));          \
+            /* the name-slot lookup reads the GLOBAL, not `id`: retail CSEs the reload */          \
+            /* across two consumers (`push eax; mov edi,eax`) - feeding it `id` gives   */         \
+            /* the load one consumer and cl coalesces it into edi, dropping the copy.   */         \
+            CString* slot =                                                                        \
+                reinterpret_cast<CString*>(g_typeColl._zvec::IndexToPtr(g_typeCounter));           \
             i32 n = g_typeColl.m_grown;                                                            \
             CString* list = ActNameSlots();                                                        \
             while (n-- != 0) {                                                                     \
@@ -341,9 +352,24 @@ static inline CString* ActNameSlots() {
             *slot = (key);                                                                         \
             g_typeCounter++;                                                                       \
         }                                                                                          \
-        /* a derived-to-base member-pointer conversion is a reinterpret (bit copy),   */           \
-        /* never a static_cast - cl emits an adjustment for the latter.                */          \
-        *CActRegPool<CGrunt>::s_table.Resolve(id) = reinterpret_cast<CActHandler>(handler);        \
+        BIND_ACT_644AF0(id, handler);                                                              \
+    }
+
+// The variant the devs wrote for the LAST key of 0x5be30: the slot comes from the DERIVED
+// accessor _zdvec::IndexToPtr (0x310f0, via ILT 0x437c), whose body ALREADY contains the
+// per-slot CString fixup loop @0x31156 - so the loop is not open-coded here, and the arg
+// is `id` (retail loads g_typeCounter once into callee-saved esi and pushes esi: one
+// consumer, versus the `push eax; mov edi,eax` two-consumer form above).
+#define REGISTER_KEY_644AF0_DERIVED(key, handler)                                                  \
+    {                                                                                              \
+        i32 id = ActFindId(key);                                                                   \
+        if (id == 0) {                                                                             \
+            ActInsertId(key, g_typeCounter);                                                       \
+            id = g_typeCounter;                                                                    \
+            *g_typeColl.SlotOf(id) = (key);                                                        \
+            g_typeCounter++;                                                                       \
+        }                                                                                          \
+        BIND_ACT_644AF0(id, handler);                                                              \
     }
 
 // @early-stop
@@ -2031,12 +2057,12 @@ void CGrunt::FireActivation(i32 id) {
     }
 }
 
-// @early-stop
-// count-down free-loop induction wall (~94.7%): every Find/Insert/name-lookup/
-// Assign/table-store + all 19 keys and handlers are byte-faithful, both lookups
-// outline to the shared helper as retail does and all 19 blocks expand inline.
-// Sole residual is the `ecx=cnt; eax=cnt-1; lea ebx,[eax+1]` node-free idiom + the
-// slot-vs-id callee-saved coloring repeated per block. Not source-steerable.
+// (The "count-down free-loop induction / slot-vs-id callee-saved coloring wall" that
+// stood here was not a wall - it was the act-registrar bug of
+// docs/patterns/act-registrar-counter-cse-and-freeloop.md, twice: the name-slot lookup
+// read the local `id` instead of the global g_typeCounter in the 18 macro blocks, and
+// the 19th key was expanded through the macro at all when retail writes it through the
+// derived accessor. Both fixed; EXACT.)
 RVA(0x0005be30, 0x9e5)
 void RegisterActs_644af0() {
     REGISTER_KEY_644AF0("A", &CGrunt::ResolveEntranceArrival);
@@ -2057,7 +2083,7 @@ void RegisterActs_644af0() {
     REGISTER_KEY_644AF0("P", &CGrunt::UpdateEntranceAnim);
     REGISTER_KEY_644AF0(s_codeQ, &CGrunt::LoadFreezeSpellAssets);
     REGISTER_KEY_644AF0("R", &CGrunt::LoadGruntDecayConfig2);
-    REGISTER_KEY_644AF0(k_60df94, &CGrunt::FinishEntranceMove);
+    REGISTER_KEY_644AF0_DERIVED(k_60df94, &CGrunt::FinishEntranceMove);
 }
 // ---------------------------------------------------------------------------
 // CGrunt::Activate()   @0x5caa0   (__thiscall, ret 0)
