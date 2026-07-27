@@ -61,7 +61,14 @@ static __inline i32 IsTokenChar(const char* delims, char ch) {
 // (an explicit ctor call is not legal C++). Logic + layout complete; ??_7 named via VTBL.
 // ===========================================================================
 // The serialized symbol-table records are a PACKED byte stream walked with a moving
-// cursor, so reading a dword out of it is a forced pun; it lives here, once.
+// cursor, so pulling a dword out of it is byte-forced; the pun lives here, once.
+// CSlotNode's intrusive m_link sits at offset 0, so the list's head link IS the node.
+// The container-of step is language-forced (an intrusive list stores links, not
+// elements); it lives here at one seam rather than at each teardown read.
+static inline CSlotNode* HeadSlotNode(DSoundList& list) {
+    return reinterpret_cast<CSlotNode*>(list.m_head);
+}
+
 static inline i32 PeekI32(const char* p) {
     return *reinterpret_cast<const i32*>(p);
 }
@@ -649,6 +656,9 @@ CSymTab::AddNodeEntry(u32 key, const char* name, CSymRec* rec, CRezItmBase* stre
     slot->Build(
         this,
         name,
+        // Build's third arg is a polymorphic payload - the ScopeWalk caller above
+        // hands it &rec->m_valTable, an object address, so the parameter is void* and
+        // an integer key is API-forced back into it here
         reinterpret_cast<void*>(key),
         rec,
         0,
@@ -810,6 +820,7 @@ i32 CSymTab::ApplyRange(CRezItmBase* a0, i32 a1, i32 a2, i32 a3) {
                 slot->Build(
                     this,
                     name1,
+                    // same polymorphic payload as above - API-forced
                     reinterpret_cast<void*>(f4), // the DEAD slot - the record's dword
                     rec,
                     str2,
@@ -982,8 +993,7 @@ CSymParser::~CSymParser() {
         ::operator delete(m_delims);
         m_delims = 0;
     }
-    // chain head points at &node->m_link (offset 0 in CSlotNode) - direct reinterpret
-    CSlotNode* node = reinterpret_cast<CSlotNode*>(m_nodes.m_head);
+    CSlotNode* node = HeadSlotNode(m_nodes);
     m_parseArmed = 0;
     m_activeNode = 0;
     m_30 = 0;
@@ -1006,7 +1016,7 @@ CSymParser::~CSymParser() {
             ::operator delete(node->m_buffer);
             m_nodes.Unlink(&node->m_link);
             ::operator delete(node);
-            node = reinterpret_cast<CSlotNode*>(m_nodes.m_head);
+            node = HeadSlotNode(m_nodes);
         } while (node);
     }
     // m_hash (RemoveAll) then m_list (vptr restore to 0x5ef760) auto-destruct here,
@@ -1384,6 +1394,7 @@ void __stdcall UnpackTag(u32 tag, char* dst) {
     if (!dst) {
         return;
     }
+    // the tag is unpacked byte-by-byte from a dword - the pun is the whole point
     u8* tb = reinterpret_cast<DwordBytes*>(&tag)->m_b;
     i32 len = 0;
     if (tb[3]) {
