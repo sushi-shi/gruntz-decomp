@@ -798,8 +798,8 @@ i32 CTriggerMgr::DestroyGroup(i32 a1, i32 a2, i32 a3, i32 a4) {
         return 0;
     }
     i32* rec = (TmHead(m_recList))->m_payload;
-    char* cellp = reinterpret_cast<char*>(m_grid[rec[1] + rec[0] * TM_GRID_COLS]);
-    if (cellp == 0 || *reinterpret_cast<i32*>((cellp + 0x1ec)) != g_curPlayer) {
+    CGrunt* cellp = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
+    if (cellp == 0 || cellp->m_tileOwnerHi != g_curPlayer) {
         return 0;
     }
     if (ov->Init(
@@ -807,8 +807,8 @@ i32 CTriggerMgr::DestroyGroup(i32 a1, i32 a2, i32 a3, i32 a4) {
             0,
             a2,
             a4,
-            *reinterpret_cast<i32*>((cellp + 0x1ec)),
-            *reinterpret_cast<i32*>((cellp + 0x1f0))
+            cellp->m_tileOwnerHi,
+            cellp->m_tileOwnerLo
         )
         == 0) {
         return 0;
