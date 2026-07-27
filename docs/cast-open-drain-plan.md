@@ -149,6 +149,34 @@ honest floor of the campaign, not laziness — `our-guesses-cite-themselves-as-e
   `CShadeTableCache*`→`CDDrawSurfaceMgr*`).
 - Warlord's 6 ILT-thunk PMF handlers (free functions cannot enter the PMF table).
 
+## Matcher lanes — keep 4 in flight
+
+T4 items are blocked on a function nobody has reconstructed, or on an identity nobody has
+proven. Those are matcher work, not cast work: reconstruct the function and the casts fall
+out. Run **four matchers continuously**, each in a REUSED worktree
+(`.claude/worktrees/matcher-N`, `classifier-1`) — never `isolation: worktree`, which mints
+a cold one without `build/`, the wine prefix or the Ghidra DB.
+
+In flight (2026-07-27): PickWeighted 0x11bee0 (+ its signature) | tree-wide inlined-MFC-
+accessor sweep | CGameObject::Setup 0x150d60 + SelectCue 0x157a80 owner identities |
+CDDrawPtrCollections factory signatures 0x142f40/0x142560/0x142260.
+
+**Refill queue** — when a lane frees, dispatch the next one immediately (cherry-pick first,
+then re-dispatch; the verify build gates the BLESS, not the refill):
+
+1. `_zdvec::IndexToPtr` 0x310f0 — unblocks Grunt's `m_cells` x3 and the TypeCollRuntime
+   accessor family; a leaf, so high value per byte.
+2. The 11 `return reinterpret_cast<i32>(ptr)` residue carriers (`CLoadable::Unload` and the
+   DDrawSubMgrLeaf slots) — settle the slot signature via the bare-`c3` void proof
+   (memory: `unload-scheme-void-slot-proof`), not by editing casts.
+3. `CMoviePlayer::OpenHi` — the Smacker first argument is dual-use (a HANDLE from
+   `CFecFile::Lookup` at one caller); prove which.
+4. RezSync's two cross-class casts (`CSpriteRefTable*`->`CTriggerMgr*`,
+   `CShadeTableCache*`->`CDDrawSurfaceMgr*`) — per the no-cross-casts rule both are
+   mis-models; find the real relation.
+5. Warlord's 6 ILT-thunk PMF handlers — unresolved thunk targets modelled as free
+   functions, which is why they can only enter the PMF table through a raw slot write.
+
 ## Method (learned this session, applies to every tier)
 
 1. **Fix the declaration, not the cast.** The cast is the symptom.
