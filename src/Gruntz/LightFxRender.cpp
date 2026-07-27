@@ -149,17 +149,14 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
             return 0;
         }
     }
-    u16* base = static_cast<u16*>(m_surface->Lock(0));
+    char* base = static_cast<char*>(m_surface->Lock(0)); // the lock hands back bytes
     if (base == 0) {
         return 0;
     }
     CTriggerMgr* board = m_cmdGrid;
     for (u32 y = 0; y < grid->m_height; y++) {
         for (u32 x = 0; x < grid->m_width; x++) {
-            u16* dst = reinterpret_cast<u16*>(
-                (reinterpret_cast<char*>(base) + y * m_surface->m_pitch
-                 + x * m_surface->m_bytesPerPixel)
-            );
+            u16* dst = Pix16(base + y * m_surface->m_pitch + x * m_surface->m_bytesPerPixel);
             i32 tile;
             if (x < grid->m_width && y < grid->m_height) {
                 tile = grid->m_rows[y][x].m_4;
@@ -367,31 +364,25 @@ void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
 RVA(0x000a3b50, 0xfa)
 void CLightFxRender::DrawBorder(RECT* r, CDDrawSurfacePair* ctx, i32 color) {
     CDDSurface* surf = ctx->m_surface;
-    u16* base = static_cast<u16*>(surf->Lock(0));
+    char* base = static_cast<char*>(surf->Lock(0)); // the lock hands back bytes
     if (base == 0) {
         return;
     }
     i32 w = r->right - r->left + 1;
     // Top edge.
-    u16* tp = reinterpret_cast<u16*>(
-        (reinterpret_cast<char*>(base) + r->top * surf->m_pitch + r->left * surf->m_bytesPerPixel)
-    );
+    u16* tp = Pix16(base + r->top * surf->m_pitch + r->left * surf->m_bytesPerPixel);
     for (i32 t = 0; t < w; t++) {
         tp[t] = static_cast<u16>(color);
     }
     // Bottom edge.
-    u16* bp = reinterpret_cast<u16*>((
-        reinterpret_cast<char*>(base) + r->bottom * surf->m_pitch + r->left * surf->m_bytesPerPixel
-    ));
+    u16* bp = Pix16(base + r->bottom * surf->m_pitch + r->left * surf->m_bytesPerPixel);
     for (i32 b = 0; b < w; b++) {
         bp[b] = static_cast<u16>(color);
     }
     // Left / right edges (column step = m_20 per row).
     i32 h = r->bottom - r->top + 1;
-    char* lp =
-        reinterpret_cast<char*>(base) + r->left * surf->m_bytesPerPixel + r->top * surf->m_pitch;
-    char* rp =
-        reinterpret_cast<char*>(base) + r->right * surf->m_bytesPerPixel + r->top * surf->m_pitch;
+    char* lp = base + r->left * surf->m_bytesPerPixel + r->top * surf->m_pitch;
+    char* rp = base + r->right * surf->m_bytesPerPixel + r->top * surf->m_pitch;
     for (i32 v = 0; v < h; v++) {
         *Pix16(lp) = static_cast<u16>(color);
         *Pix16(rp) = static_cast<u16>(color);

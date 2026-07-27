@@ -630,8 +630,7 @@ i32 CDroppedObject::ActA() {
             i32 cy = m_landY >> 5;
             if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
                 && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
-                cell =
-                    *reinterpret_cast<i32*>((reinterpret_cast<char*>(g->m_rows[cy]) + cx * 0x1c));
+                cell = g->m_rows[cy][cx].m_0;
             } else {
                 cell = 1;
             }

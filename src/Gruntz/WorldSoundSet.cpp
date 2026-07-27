@@ -861,8 +861,7 @@ void SpawnPosSound(PosSoundObj* obj) {
         if (sound == 0) {
             return;
         }
-        CPtrList* arr =
-            reinterpret_cast<CPtrList*>((reinterpret_cast<char*>(g_gameReg->m_inputState) + 8));
+        CPtrList* arr = &g_gameReg->m_inputState->m_list;
         if (sound->m_voice != 0) {
             sound->m_voice->StopAndRewind();
             sound->m_isPlaying = 0;

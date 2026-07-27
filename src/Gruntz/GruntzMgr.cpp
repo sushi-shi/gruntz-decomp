@@ -1660,7 +1660,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     CWorldSoundSet* in = m_inputState;
     if (in) {
         in->Deactivate();
-        (reinterpret_cast<CPtrList*>((reinterpret_cast<char*>(in) + 8)))->CPtrList::~CPtrList();
+        in->m_list.CPtrList::~CPtrList();
         RezFree(in);
     }
     m_inputState = 0;

@@ -67,8 +67,7 @@ CString RunCustomWorldDialog(i32 id, CString* outSource) {
     g_pathStr.Empty();
     i32 v = id;
     if (id == 0) {
-        // m_gameWnd (CGameWnd*, CGameMgr+0x4) -> +0x4 window handle (raw offset read).
-        v = *reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg->m_gameWnd) + 4));
+        v = reinterpret_cast<i32>(g_gameReg->m_gameWnd->m_hwnd); // HWND -> the dialog parent
     }
     g_customWorldParent = reinterpret_cast<HWND>(v);
     g_dat62c268 = g_gameReg->m_world;

@@ -89,7 +89,7 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
             }
         }
         if (isPlay) {
-            table[*reinterpret_cast<u8*>((reinterpret_cast<char*>(obj) + 4))] = obj;
+            table[obj->m_targetIndex] = obj;
         } else {
             obj->Select(sp);
             obj->Deselect();

@@ -1001,9 +1001,9 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     pt.m_y = cell->m_lastTilePxY;
     CGruntzMapMgr* tg = g_gameReg->m_tileGrid;
     i32 rowIdx = pt.m_y >> 5;
-    i32 colByte = (pt.m_x >> 5) * 28; // 7-dword cell stride (the grid HitTestCell walks)
-    (reinterpret_cast<char*>(tg->m_rows[rowIdx]))[colByte + 0x3] &= 0xdf;
-    *reinterpret_cast<i32*>((reinterpret_cast<char*>(tg->m_rows[rowIdx]) + colByte + 0x4)) = -1;
+    i32 cellCol = pt.m_x >> 5;
+    tg->m_rows[rowIdx][cellCol].m_flagBytes[3] &= 0xdf;
+    tg->m_rows[rowIdx][cellCol].m_4 = -1;
     m_grid[idx] = 0;
     m_rowCount[col] -= 1;
     if (z != 0) {

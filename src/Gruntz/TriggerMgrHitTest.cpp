@@ -21,6 +21,7 @@
 // temps in these leaves; byte-neutral).
 #include <Gruntz/Grunt.h>         // CGrunt IS CGrunt (folded) - the cells are dereferenced here
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/Brickz.h> // BrickzCell complete (the 0x1c grid cell)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h>
 
@@ -173,9 +174,7 @@ CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* o
             i32 val;
             if (static_cast<u32>(x) < static_cast<u32>(grid->m_width)
                 && static_cast<u32>(y) < static_cast<u32>(grid->m_height)) {
-                val = *reinterpret_cast<i32*>(
-                    (reinterpret_cast<char*>(grid->m_rows[y]) + x * 0x1c + 4)
-                );
+                val = grid->m_rows[y][x].m_4;
             } else {
                 val = -1;
             }
