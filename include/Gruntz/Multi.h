@@ -266,7 +266,7 @@ public:
     i32 ResetPlayerCommands(i32 id);                                             // 0x0bcf20
     u32 GetMaxAckLatency();                                                      // 0x0bd030
     void HandleVersionCheck(CNetVersionMsg* msg);                                // 0x0bd0b0
-    void AnnounceVersion(i32 param);                                             // 0x0bd180
+    void AnnounceVersion(CNetSessionNode* param);                                // 0x0bd180
     // External thunked helpers the cluster fires (no body here so the call reloc-masks).
     // (ProbeLatency moved to CGruntzMgr - retail probes it on m_4, called via Mgr())
     void ApplyDynSetting(CString s);               // 0xb76c0

@@ -2461,11 +2461,10 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
     if (ev->m_armed != 1) {
         return 0;
     }
-    void* node = Peer()->GetPlayerData(ev->m_id);
+    CNetSessionNode* node = static_cast<CNetSessionNode*>(Peer()->GetPlayerData(ev->m_id));
     if (node == 0) {
-        node = Peer()->AddSessionNode(
-            ev->m_id, ev->m_nameA, ev->m_nameB, reinterpret_cast<i32>(node)
-        );
+        // node is provably null in this arm, so the 4th arg is the same zero
+        node = Peer()->AddSessionNode(ev->m_id, ev->m_nameA, ev->m_nameB, 0);
         if (node == 0) {
             return 0;
         }
@@ -2477,7 +2476,7 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
                 return 0;
             }
             if (m_isHost != 0) {
-                AnnounceVersion(reinterpret_cast<i32>(node));
+                AnnounceVersion(node);
             }
         }
         CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
@@ -3702,7 +3701,7 @@ i32 CMulti::OpenHostChannel(void* a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
         ReportNetError(0);
         return 0;
     }
-    m_hostIndex = (reinterpret_cast<i32*>(m_5bc))[1];
+    m_hostIndex = m_5bc->m_id; // +0x04 on the session node
     return RegisterChannelFrom(reinterpret_cast<const char*>(a1), a2, -1, m_hostIndex) != 0;
 }
 
@@ -3984,7 +3983,7 @@ void CMulti::HandleVersionCheck(CNetVersionMsg* msg) {
 // packet field stores and the stack-arg-block setup at a different anchor than cl;
 // an instruction-schedule permutation of the same store multiset. Final sweep.
 RVA(0x000bd180, 0x66)
-void CMulti::AnnounceVersion(i32 param) {
+void CMulti::AnnounceVersion(CNetSessionNode* param) {
     CNetVersionPacket packet;
     memset(&packet, 0, sizeof(packet));
 
@@ -3995,7 +3994,7 @@ void CMulti::AnnounceVersion(i32 param) {
     packet.m_localVersion = g_localVersion;
     packet.m_statId = STAT_VERSIONPACKET;
 
-    SendStatPairRaw(reinterpret_cast<CNetSessionNode*>(param), &packet, 0x20, 1);
+    SendStatPairRaw(param, &packet, 0x20, 1);
 }
 
 RVA(0x000bd210, 0x14d)
