@@ -283,35 +283,41 @@ char g_buteEditBuf[0x10000];
 RVA(0x0003c990, 0x1bc)
 INT_PTR CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     static_cast<void>(lParam);
-    if (msg == 0x110) { // WM_INITDIALOG
-        ifstream in("attributez.txt", ios::nocreate | ios::binary);
-        if (in.fail()) {
-            EndDialog(hDlg, 1);
-        } else {
-            in.read(g_buteEditBuf, 0xffff);
-            g_buteEditLen = in.gcount();
-            g_buteEditBuf[g_buteEditLen] = 0;
-            SetDlgItemTextA(hDlg, 0x435, g_buteEditBuf);
-            in.close();
+    // ONE not-handled exit (retail 0x3c9c2), shared by the msg-switch default and the
+    // command switch's default; both handled commands fall into the ONE `return 1`.
+    // Both dispatches are SWITCHes - retail's `sub eax,0x110 / je / dec eax / jne` and
+    // `dec eax / je / dec eax / je` ladders, not chained `if (msg == ...)` compares.
+    switch (msg) {
+        case 0x110: { // WM_INITDIALOG
+            ifstream in("attributez.txt", ios::nocreate | ios::binary);
+            if (in.fail()) {
+                EndDialog(hDlg, 1);
+            } else {
+                in.read(g_buteEditBuf, 0xffff);
+                g_buteEditLen = in.gcount();
+                g_buteEditBuf[g_buteEditLen] = 0;
+                SetDlgItemTextA(hDlg, 0x435, g_buteEditBuf);
+                in.close();
+            }
+            return 1;
         }
-        return 1;
-    }
-    if (msg != 0x111) { // WM_COMMAND
-        return 0;
-    }
-    if (wParam == 1) { // IDOK
-        GetDlgItemTextA(hDlg, 0x435, g_buteEditBuf, 0xffff);
-        ofstream out("Attributez.txt", ios::binary);
-        g_buteEditLen = strlen(g_buteEditBuf);
-        out.write(g_buteEditBuf, g_buteEditLen);
-        out.close();
-        g_buteMgr.Parse("Attributez.txt", 0);
-        EndDialog(hDlg, 1);
-        return 1;
-    }
-    if (wParam == 2) { // IDCANCEL
-        EndDialog(hDlg, 0);
-        return 1;
+        case 0x111: // WM_COMMAND
+            switch (wParam) {
+                case 1: { // IDOK
+                    GetDlgItemTextA(hDlg, 0x435, g_buteEditBuf, 0xffff);
+                    ofstream out("Attributez.txt", ios::binary);
+                    g_buteEditLen = strlen(g_buteEditBuf);
+                    out.write(g_buteEditBuf, g_buteEditLen);
+                    out.close();
+                    g_buteMgr.Parse("Attributez.txt", 0);
+                    EndDialog(hDlg, 1);
+                    return 1;
+                }
+                case 2: // IDCANCEL
+                    EndDialog(hDlg, 0);
+                    return 1;
+            }
+            break;
     }
     return 0;
 }

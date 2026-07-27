@@ -60,13 +60,13 @@ i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
                 }
             }
             if (!isIconic(m_hwnd)) {
-                return 0;
+                break;
             }
             if (NetLobby::g_curDlg == 0) {
-                return 0;
+                break;
             }
             ::SendMessageA(NetLobby::g_curDlg, 0x112, wParam, lParam);
-            return 0;
+            break;
         }
         case 0x3b9: {
             CGruntzMgr* mgr = GameMgr();

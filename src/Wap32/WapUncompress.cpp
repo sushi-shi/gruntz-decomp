@@ -32,17 +32,18 @@ int WapUncompress(
     s.zfree = 0;
     s.opaque = 0;
     int err = deflateInit_(&s, -1, "1.0.4", sizeof(z_stream));
-    if (err != 0) {
-        return err;
-    }
-    err = deflate(&s, 4);
-    if (err != 1) {
-        deflateEnd(&s);
-        if (err == 0) {
-            return -5;
+    if (err == 0) {
+        err = deflate(&s, 4);
+        if (err != 1) {
+            deflateEnd(&s);
+            if (err != 0) {
+                return err;
+            }
+            err = -5;
+        } else {
+            *pDestLen = s.total_out;
+            err = deflateEnd(&s);
         }
-        return err;
     }
-    *pDestLen = s.total_out;
-    return deflateEnd(&s);
+    return err;
 }

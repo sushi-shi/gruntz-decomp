@@ -624,12 +624,14 @@ void* zPTree::Insert(const char* key, void* value) {
                 *s1 = node;
             }
 
-            // Link the node's other child to the displaced subtree.
+            // Link the node's other child to the displaced subtree. Retail 0x16dfe3
+            // selects the SLOT and stores once (one success tail), it does not emit
+            // a store+epilogue per arm.
+            CButeTreeNode** other = &node->m_child[1];
             if (dir) {
-                node->m_child[0] = m_candidateLeaf;
-            } else {
-                node->m_child[1] = m_candidateLeaf;
+                other = &node->m_child[0];
             }
+            *other = m_candidateLeaf;
             m_nodeCount++;
             return value;
         }

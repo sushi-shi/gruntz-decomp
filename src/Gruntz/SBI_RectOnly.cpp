@@ -2241,19 +2241,24 @@ i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
 // one-instruction eager read in the find-slot loop. Documented walls; deferred.
 RVA(0x0010b930, 0x1a7)
 i32 CStatusBarMgr::ActivateSlot(i32 idx) {
+    // ONE shared refusal block (retail 0x10bda2) for the busy gate and both arms'
+    // cursor-frame gate; only the scan-exhausted miss keeps its own fall-through exit
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 != 0) {
-        return 0;
+        goto notActivated;
     }
     if (idx == -1) {
         i32 slot = 0;
-        while (m_slots[slot].m_state != kSlotReady) {
+        for (;;) {
+            if (m_slots[slot].m_state == kSlotReady) {
+                break;
+            }
             slot++;
             if (slot >= 5) {
                 return 0;
             }
         }
         if (!(static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
-            return 0;
+            goto notActivated;
         }
         CDDrawSubMgrLeafScan* host =
             g_gameReg->m_world
@@ -2282,11 +2287,12 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
         }
         return 1;
     }
+    {
     if (m_slots[idx].m_state != kSlotReady) {
-        return 0;
+        goto notActivated;
     }
     if (!(static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
-        return 0;
+        goto notActivated;
     }
     CDDrawSubMgrLeafScan* host =
         g_gameReg->m_world
@@ -2314,6 +2320,9 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
         m_slotNotify[idx]->Notify(1);
     }
     return 1;
+    }
+notActivated:
+    return 0;
 }
 
 RVA(0x000fe3e0, 0x55)

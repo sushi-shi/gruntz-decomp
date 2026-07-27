@@ -215,22 +215,23 @@ i32 CMenuPage::FocusNext() {
         found = 0;
     }
     if (!found) {
-        if (!CanWrap()) {
-            return 0;
-        }
-        POSITION p2 = m_focus->m_listPos;
-        if (!p2) {
-            return 0;
-        }
-        POSITION n2 = p2;
+        // the no-wrap gate is NOT its own exit: retail 0x183dbc/0x183e7c branches it
+        // into the shared post-wrap `found == 0` return
+        if (CanWrap()) {
+            POSITION p2 = m_focus->m_listPos;
+            if (!p2) {
+                return 0;
+            }
+            POSITION n2 = p2;
 
-        NextItem(n2);
-        while (n2) {
-            CMenuItem* it = NextItem(n2);
-            if (it) {
-                i32 k = it->m_state;
-                if (k == 1 || k == 2) {
-                    found = it;
+            NextItem(n2);
+            while (n2) {
+                CMenuItem* it = NextItem(n2);
+                if (it) {
+                    i32 k = it->m_state;
+                    if (k == 1 || k == 2) {
+                        found = it;
+                    }
                 }
             }
         }
@@ -277,22 +278,23 @@ i32 CMenuPage::FocusPrev() {
         found = 0;
     }
     if (!found) {
-        if (!CanWrap()) {
-            return 0;
-        }
-        POSITION p2 = m_focus->m_listPos;
-        if (!p2) {
-            return 0;
-        }
-        POSITION n2 = p2;
+        // the no-wrap gate is NOT its own exit: retail 0x183dbc/0x183e7c branches it
+        // into the shared post-wrap `found == 0` return
+        if (CanWrap()) {
+            POSITION p2 = m_focus->m_listPos;
+            if (!p2) {
+                return 0;
+            }
+            POSITION n2 = p2;
 
-        PrevItem(n2);
-        while (n2) {
-            CMenuItem* it = PrevItem(n2);
-            if (it) {
-                i32 k = it->m_state;
-                if (k == 1 || k == 2) {
-                    found = it;
+            PrevItem(n2);
+            while (n2) {
+                CMenuItem* it = PrevItem(n2);
+                if (it) {
+                    i32 k = it->m_state;
+                    if (k == 1 || k == 2) {
+                        found = it;
+                    }
                 }
             }
         }

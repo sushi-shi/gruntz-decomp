@@ -1016,11 +1016,11 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 a1, i32 a2, i32 a3) {
 // whose [lo,hi] midpoint replaces the new coord (gated by the arg3 0x10 bit). The
 // no-block tail drives Hold/FreeMove off the target's +0x10 held flag.
 //
-// @early-stop
-// register-scheduling wall: 4 saved regs across 8 distinct sibling dispatches, the
-// spilled loc/result/bracket slots and the held-flag tail schedule into a register
-// assignment MSVC reproduces only for one spill order; logic + offsets + CFG +
-// every sibling convention are exact. Deferred to the final sweep.
+// The held-flag tail is NOT an `else` arm: retail 0x15e207/0x15e276 jump the
+// probe-MISS of both bit0 and bit1 arms straight into it (0x15e5a7), so it runs
+// whenever no hard tile blocked - only a hard tile (m_moveMode = 6) skips it.
+// Both arms then converge on ONE bracket-commit block (0x15e58f) that re-tests
+// the cached arg3 0x10 bit, which is why `mid` is a separate local.
 RVA(0x0015e130, 0x1bb)
 i32 CGameLevel::MoveHandlerA(CGameObject* t, i32 a1, i32 a2, i32 a3) {
     i32 result = 0;
@@ -1039,37 +1039,48 @@ i32 CGameLevel::MoveHandlerA(CGameObject* t, i32 a1, i32 a2, i32 a3) {
     if (a3 & 1) {
         i32 limit = t->m_extent.top + a2 - 1;
         if (AxisProbe(coord, limit) == kTileHard) {
+            i32 mid = coord;
             if (a3 & 0x10) {
                 i32 lo = coord;
                 i32 hi = coord;
                 if (ClampSpan(coord, limit, &lo, &hi) != 0) {
-                    coord = (hi + lo) / 2;
+                    mid = (hi + lo) / 2;
                 }
             }
+            if (a3 & 0x10) {
+                coord = mid;
+            }
             t->m_moveMode = 6;
+            goto commit;
         }
     } else if (a3 & 2) {
         i32 limit = t->m_extent.bottom + a2 + 2;
         if (AxisProbe(coord, limit) == kTileHard) {
+            i32 mid = coord;
             if (a3 & 0x10) {
                 i32 lo = coord;
                 i32 hi = coord;
                 if (ClampSpan(coord, limit, &lo, &hi) != 0) {
-                    coord = (hi + lo) / 2;
+                    mid = (hi + lo) / 2;
                 }
             }
-            t->m_moveMode = 6;
-        }
-    } else {
-        if (t->m_flags & 0x10) {
-            if (HoldMove(t, t->m_carrier, coord, a2, a3) == 0) {
-                t->m_moveMode = 4;
+            if (a3 & 0x10) {
+                coord = mid;
             }
-        } else {
-            a2 = FreeMove(t, coord, a2, a3);
+            t->m_moveMode = 6;
+            goto commit;
         }
     }
 
+    if (t->m_flags & 0x10) {
+        if (HoldMove(t, t->m_carrier, coord, a2, a3) == 0) {
+            t->m_moveMode = 4;
+        }
+    } else {
+        a2 = FreeMove(t, coord, a2, a3);
+    }
+
+commit:
     t->m_screenX = coord;
     t->m_screenY = a2;
     return result;
