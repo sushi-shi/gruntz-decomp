@@ -31,6 +31,8 @@ template<class T> inline T* zDArray<T>::ResolveEntry(i32 id) {
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     m_errSink->Set(this, item, 0xc);
+    // byte-forced, same seam as the two in-range returns above: m_spare is the
+    // untyped slow-path element slot of a runtime-strided band.
     return reinterpret_cast<T*>(m_spare);
 }
 

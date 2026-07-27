@@ -29,6 +29,7 @@ inline i32 SerTriRecord(void* band, CFileMemBase* ar, i32 tag, i32 c, CGameObjec
     return reinterpret_cast<CTriRecord*>(band)->Serialize(ar, tag, c, d);
 }
 inline i32 SerPairRecord(void* band, CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+    // the same member-band overlay as SerTriRecord above
     return reinterpret_cast<CPairRecord*>(band)->Serialize(ar, tag, c, d);
 }
 

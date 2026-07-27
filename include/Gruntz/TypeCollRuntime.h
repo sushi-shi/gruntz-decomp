@@ -47,15 +47,21 @@ public:
     // one retail call under two invented names: that accessor was bound to ILT 0x3864
     // and this one to 0x312a0 direct, and `xref --callees` on the thunk proves
     // 0x3864 -> 0x312a0. Thunk-vs-direct is the linker's choice, not a second call.)
+    // byte-forced (as every accessor here): the band is byte-addressed by a RUNTIME
+    // m_stride, so the CString element type goes back on at this one seam.
     CString* ScratchResolve(i32 key) { return reinterpret_cast<CString*>(_zvec::IndexToPtr(key)); }
 
     CString* Elem(i32 id) {
+        // byte-forced: `m_base + (id-m_lo)*m_stride` is the base's runtime byte math
         return reinterpret_cast<CString*>(m_base + (id - m_lo) * m_stride);
     }
     // the typed spelling of GetNameRecord (identical call), for the act-registration
     // macros that want the CString rather than its buffer
+    // the three remaining seams, all byte-forced by the same runtime-strided band:
     CString* SlotOf(i32 id) { return reinterpret_cast<CString*>(_zdvec::IndexToPtr(id)); }
+    // byte-forced: m_alloc is the raw construction cursor
     CString* Slots() { return reinterpret_cast<CString*>(m_alloc); }
+    // byte-forced: m_spare is the raw slow-path element slot
     CString* Scratch() { return reinterpret_cast<CString*>(m_spare); }
 };
 SIZE_UNKNOWN(); // _zdvec base (0x24) + no own fields; size not pinned

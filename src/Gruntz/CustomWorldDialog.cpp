@@ -286,7 +286,8 @@ i32 WwdFile::ValidateMainBlock(CString name) {
     }
 
     // ValidateMainBlock passes the LEVEL OBJECT pointer into CheckHeader's
-    // `const char* name` slot - retail's own pun, kept spelled on the typed member.
+    // `const char* name` slot: the pun is retail's own, kept spelled on the typed
+    // member rather than hidden behind a second overload.
     if (WwdFile_CheckHeader(reinterpret_cast<const char*>(g_gameReg->m_world->m_level), header)
         == 0) {
         return -1;

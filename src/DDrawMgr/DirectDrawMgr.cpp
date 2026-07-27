@@ -1250,9 +1250,9 @@ CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
     }
     m_hasPalette = 1;
     m_940 = z;
-    return reinterpret_cast<CDDPalette*>(
-        1
-    ); // retail returns the success flag as the CDDPalette* result
+    // byte-forced: retail sets eax=1 and returns it through the CDDPalette* slot
+    // this loader shares with its siblings - a bare imm, no reloc.
+    return reinterpret_cast<CDDPalette*>(1);
 }
 
 // ---------------------------------------------------------------------------

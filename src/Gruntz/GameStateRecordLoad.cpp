@@ -26,7 +26,7 @@ static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 
         obj = 0;                                                                                   \
         void* r;                                                                                   \
         if (MapLookupById(dir->m_childGroup->m_map48, id, obj) != 0 && obj != 0) {                 \
-            r = ((reinterpret_cast<CGameObject*>(obj))->GetClassId() == CLASSID_SERIALREF) ? obj   \
+            r = ((static_cast<CGameObject*>(obj))->GetClassId() == CLASSID_SERIALREF) ? obj      \
                                                                                            : 0;    \
         } else {                                                                                   \
             r = 0;                                                                                 \
