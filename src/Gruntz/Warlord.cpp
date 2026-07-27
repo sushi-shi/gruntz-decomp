@@ -81,7 +81,7 @@ CActReg CActRegPool<CWarlord>::s_table(2000, 2010);
         if (id_ == 0) {                                                                            \
             ActInsertId(key, g_typeCounter);                        \
             id_ = g_typeCounter;                                                                   \
-            CString* slot_ = reinterpret_cast<CString*>(g_typeColl.IndexToPtr(id_));               \
+            CString* slot_ = g_typeColl.SlotOf(id_);                                               \
             CString* p_ = g_typeColl.Slots();                          \
             for (i32 n_ = g_typeColl.m_grown; n_--; p_++) {                                        \
                 ::new (static_cast<void*>(p_)) CString;                                            \
@@ -163,7 +163,9 @@ typedef enum WarlordBattleTag {
     {                                                                                              \
         void* h = 0;                                                                               \
         m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_GRUNTZ_ + m_54 + (suffix), h);             \
-        dst = reinterpret_cast<CAniElement*>(h);                                                   \
+        /* CMapStringToPtr::Lookup's out-param is void*& - the element type is */                  \
+        /* API-forced back on at the call, and void*->T* is a static_cast       */                  \
+        dst = static_cast<CAniElement*>(h);                                                        \
     }
 
 // @early-stop  (~79%; complete correct body, up from a 3.7% stub)

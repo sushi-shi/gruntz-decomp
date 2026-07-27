@@ -35,6 +35,9 @@ public:
     CString* Elem(i32 id) {
         return reinterpret_cast<CString*>(m_base + (id - m_lo) * m_stride);
     }
+    // the same pun for the out-of-line accessor (0x310f0: base address + per-slot
+    // construction), so the act-registration macros never re-spell it either
+    CString* SlotOf(i32 id) { return reinterpret_cast<CString*>(_zdvec::IndexToPtr(id)); }
     CString* Slots() { return reinterpret_cast<CString*>(m_alloc); }
     CString* Scratch() { return reinterpret_cast<CString*>(m_spare); }
 };
