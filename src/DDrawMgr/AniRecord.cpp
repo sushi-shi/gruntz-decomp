@@ -161,8 +161,8 @@ i32 CAniRecordView::GetSize() {
 RVA_COMPGEN(0x00168e70, 0x27, ?GetAt@CStringArray@@QBE?AVCString@@H@Z)
 
 RVA(0x00168ea0, 0x40)
-i32 CAniRecordBase2::AllocBufMakeB2(void* data, i32 flag) {
-    CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB2(data, 0x44);
+i32 CAniRecordBase2::AllocBufMakeB2(char* path, i32 flag) {
+    CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB2(path, 0x44);
     m_buf = buf;
     if (buf == 0) {
         return 0;

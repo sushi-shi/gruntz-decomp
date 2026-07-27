@@ -7,7 +7,9 @@
 
 class CDDrawSubMgrLeafScan; // the token-map ctx (ex CAniMapOwner - its +0x10 Ptr map is m_10)
 class CDDrawSurfaceMgr;
-class CDDPalette; // the +0x10 work palette     // the record owner (ex CAniRecordOwner - m_ptrColl/m_drawTarget)
+// struct, NOT class - CDDPalette is defined as a struct; the class-key of the FIRST
+// decl a TU sees is what MSVC mangles into its references (see AniRecordBase2.h).
+struct CDDPalette; // the +0x10 work palette
 
 struct CAniRecordView : public CObject {
     virtual ~CAniRecordView() OVERRIDE; // [1] 0x1657a0 real primary-facet teardown dtor

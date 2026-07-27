@@ -496,12 +496,10 @@ CDDSurface* CDDrawPtrCollections::Create7f0_1(i32 a) {
 // dispatch vtbl[0x24]; on success register via AddItemA, else virtual-delete. /GX.
 // Failure path is the fall-through (retail's `jne success` polarity).
 RVA(0x00142260, 0xd2)
-CDDSurface* CDDrawPtrCollections::CreateA(i32 a, i32 b, i32 c, i32 d, i32 e) {
+CDDSurface*
+CDDrawPtrCollections::CreateA(CImageFrameDesc* hdr, i32 type, u32 size, i32 ctrl, i32 trans) {
     CFileImageSurface* item = new CFileImageSurface;
-    // the create slot's first arg is polymorphic - CImage passes a frame desc here, the
-    // surface-pair path passes a width - so the i32 param is right and widening it to
-    // ResolveEx's void* is API-forced at this one seam
-    if (!item->ResolveEx(this, reinterpret_cast<void*>(a), b, c, d, e)) {
+    if (!item->ResolveEx(this, hdr, type, size, ctrl, trans)) {
         delete item;
         return 0;
     }
@@ -517,10 +515,15 @@ CFileImageSurface::~CFileImageSurface() {}
 
 // ---------------------------------------------------------------------------
 // CreateB (0x1423c0).  Same as CreateA but dispatches vtbl[0x2c]. /GX.
+// a1/a2 ARE a pixel width/height pair (NOT the desc CreateA takes - the two neighbours
+// are different slots, which is what the old shared "polymorphic first arg" note
+// conflated): LoadKeyed @0x148840 forwards them to CDDSurface::BlitSurf @0x13e0d0,
+// which stores them into the surface's +0x1c / +0x18 - the very fields CImage::Create
+// then reads back as m_width / m_height.
 RVA(0x001423c0, 0xd2)
-CDDSurface* CDDrawPtrCollections::CreateB(i32 a, i32 b, i32 c, i32 d, i32 e) {
+CDDSurface* CDDrawPtrCollections::CreateB(i32 width, i32 height, i32 c, i32 d, i32 e) {
     CFileImageSurface* item = new CFileImageSurface;
-    if (!item->LoadKeyed(this, a, b, c, d, e)) {
+    if (!item->LoadKeyed(this, width, height, c, d, e)) {
         delete item;
         return 0;
     }
@@ -545,14 +548,20 @@ CDDSurface* CDDrawPtrCollections::Createa58_1(i32 a) {
 // ---------------------------------------------------------------------------
 // Createa58_3 (0x142560).  new 0xc0 item; ctor (vtbl 0x5efa58); dispatch vtbl[0x28]
 // with 3 args; AddItemA on success. /GX. ret 0xc.
+// SETTLED 2026-07-27 (was @identity-TODO): a1 is a FILE PATH, and LoadByExt's `char*
+// path` was the correct side of the pair. Proof from both ends -
+//   callee: LoadByExt @0x148940 starts `mov ebx,[esp+0xc]` (= a1) then
+//     `push 0x2e; push ebx; call strrchr`, and _stricmp's the tail against ".BMP"
+//     (0x61a0e4) / ".PCX" (0x61a0dc) / ".PID" (0x61a0d4) to pick a loader;
+//   caller: CreateRange @0x1426ed pushes `lea edx,[esp+0x1c]` - the stack buffer it
+//     just built with sprintf("%s%i", base, i) + strcat(".") + strcat(suffix).
+// The mis-typed link is UPSTREAM and OUT OF SCOPE here: CImage::Create's own arg1
+// (declared CImageFrameDesc*) is forwarded verbatim into this path, so it too is a
+// path - see the note at its call site in src/Image/CImage.cpp.
 RVA(0x00142560, 0xc8)
-CDDSurface* CDDrawPtrCollections::Createa58_3(i32 a, i32 b, i32 c) {
+CDDSurface* CDDrawPtrCollections::Createa58_3(char* path, i32 caps, i32 colorKey) {
     CFileImageSurface* item = new CFileImageSurface;
-    // @identity-TODO CImage::Create hands this a CImageFrameDesc* while LoadByExt
-    // declares a `char* path`. One of the two is mis-typed; the desc's first member
-    // (_00[4]) may BE the path pointer, in which case the callee should take the desc.
-    // Needs the 0x142560 / LoadByExt disasm to settle - do not guess.
-    if (!item->LoadByExt(this, reinterpret_cast<char*>(a), b, c)) {
+    if (!item->LoadByExt(this, path, caps, colorKey)) {
         delete item;
         return 0;
     }
@@ -598,8 +607,7 @@ i32 CDDrawPtrCollections::CreateRange(
             }
             strcat(buf, suffix);
         }
-        // Createa58_3's first param is the same polymorphic create arg - API-forced
-        CDDSurface* item = Createa58_3(reinterpret_cast<i32>(buf), a6, a7);
+        CDDSurface* item = Createa58_3(buf, a6, a7);
         if (item == 0) {
             break;
         }
@@ -762,16 +770,23 @@ void CDDrawPtrCollections::RemoveItemB(CDDPalette* item) {
     }
 }
 
+// SETTLED 2026-07-27 (was @identity-TODO): a1 IS the path, and CreateWorker2C's
+// separate `key` is the CACHE KEY, not a rival name - the routing was already right.
+// The chain is statically resolved end-to-end, so no caller can vary the type:
+//   CreateWorker2C @0x165a10 stamps ??_7CAniRecordBase2 into the object it just
+//     new'd (reloc @0x165a37) and THEN dispatches its +0x2c, so that slot is
+//     provably AllocBufMakeB2 @0x168ea0 - no derived class can intervene;
+//   AllocBufMakeB2 forwards a1 unchanged (`push 0x44; push eax`) to MakeB2;
+//   MakeB2 forwards it to CDDPalette::LoadFromFile @0x147410, whose first act is
+//     `strrchr(a1, '.')` + an _stricmp dispatch on ".BMP"/".PCX"/".PAL".
+// CreateWorker2C's a2 is only ever the CMapStringToOb subscript (0x165a75), and the
+// twin CreateWorker28 takes the MEMORY form instead (its +0x28 slot reaches MakeB,
+// whose loader @0x1474d0 reads 256 RGB triples out of the buffer) - i.e. the pair is
+// "load palette from file" vs "load palette from memory", both cached under `key`.
 RVA(0x00142f40, 0x7c)
-CDDPalette* CDDrawPtrCollections::MakeB2(void* a, i32 b) {
+CDDPalette* CDDrawPtrCollections::MakeB2(char* path, i32 flags) {
     CDDPalette* item = new CDDPalette;
-    // @identity-TODO NARROWED 2026-07-27: CDDPalette::LoadFromFile provably takes a
-    // PATH - its body is strrchr(filename,'.') + a .BMP/.PCX/.PAL extension dispatch -
-    // so this void* carries a path. But the chain above is void*: AllocBufMakeB2(void*
-    // data) and CreateWorker2C(void* a1, const char* key, i32) carry a SEPARATE key
-    // string, so either a1 is the path or the arg routing there is wrong. Retyping the
-    // chain needs the 0x165a10 / 0x142f40 disasm - do not guess.
-    if (!item->LoadFromFile(m_device, reinterpret_cast<char*>(a), b)) {
+    if (!item->LoadFromFile(m_device, path, flags)) {
         if (item) {
             item->Destroy();
             ::operator delete(item);

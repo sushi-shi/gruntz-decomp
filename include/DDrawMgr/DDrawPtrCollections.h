@@ -121,13 +121,28 @@ public:
     void AddItemB(CDDPalette* item);                        // 0x142eb0
     void RemoveItemA(CDDSurface* item);                     // 0x142160
     void RemoveItemB(CDDPalette* item);                     // 0x142f10
-    CDDSurface* Create7f0_1(i32 a);                         // 0x1421a0 (vtbl 7f0, slot 2)
-    // NB the first arg is POLYMORPHIC: CImage passes a CImageFrameDesc*, the
-    // surface-pair passes a pixel WIDTH. i32 is the honest declaration.
-    CDDSurface* CreateA(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142260
-    CDDSurface* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x1423c0
-    CDDSurface* Createa58_1(i32 a);                         // 0x1424a0 (vtbl a58, slot 2)
-    CDDSurface* Createa58_3(i32 a, i32 b, i32 c);           // 0x142560 (vtbl a58, slot 10)
+    CDDSurface* Create7f0_1(i32 a); // 0x1421a0 (vtbl 7f0, slot 2)
+    // SETTLED 2026-07-27 (the "polymorphic first arg" reading was WRONG - it conflated
+    // CreateA with its neighbour CreateB). Each of the two is MONOMORPHIC:
+    //   CreateA  -> CFileImageSurface::ResolveEx  (slot 9  @0x148890). a1 reaches
+    //     0x1457a0, which reads it at +0x04 (`test dl,0x4`/`0x2`), +0x08 (`test bl,0x3`)
+    //     and +0x0c => a STRUCT ptr, never a scalar. Its one retail caller
+    //     (CImage::LoadDispatch @0x152fb0) hands it the same pointer it itself reads at
+    //     +0x04/+0x10/+0x14 => CImageFrameDesc*. a3 is a byte SIZE: 0x145847 does
+    //     `cmp eax,0x300; jbe fail` then `lea eax,[eax+edi-0x300]` (the 768-byte palette
+    //     sits at buf+size-0x300).
+    //   CreateB  -> CFileImageSurface::LoadKeyed (slot 11 @0x148840) -> BlitSurf
+    //     @0x13e0d0, which stores a1/a2 into the surface's +0x1c/+0x18 (w/h). THAT is
+    //     the "surface-pair passes a WIDTH" path; it is a different slot, not a
+    //     different type in one slot.
+    CDDSurface* CreateA(CImageFrameDesc* hdr, i32 type, u32 size, i32 ctrl, i32 trans); // 0x142260
+    CDDSurface* CreateB(i32 width, i32 height, i32 c, i32 d, i32 e);                    // 0x1423c0
+    CDDSurface* Createa58_1(i32 a); // 0x1424a0 (vtbl a58, slot 2)
+    // Createa58_3's a1 is a FILE PATH, proven from both ends: the callee
+    // CFileImageSurface::LoadByExt (@0x148940) opens with `strrchr(a1,'.')` +
+    // _stricmp against ".BMP"/".PCX"/".PID"; and the caller CreateRange (@0x142630)
+    // hands it a stack buffer built by sprintf("%s%i") + strcat(".") + strcat(ext).
+    CDDSurface* Createa58_3(char* path, i32 caps, i32 colorKey); // 0x142560 (vtbl a58, slot 10)
 
     // CreateRange (0x142630). Create a numbered sequence of a58 pool items: for each
     // index in [start, start+count) build the name "<base><index>" (or, when a suffix
@@ -154,8 +169,12 @@ public:
     CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
     CDDPalette* MakeB(void* rgb, i32 flags);                    // 0x142fc0
     CDDPalette* Create(i32 a, i32 b);                           // 0x143040 (init via 0x147390)
-    CDDPalette* MakeB2(void* data, i32 b);                       // 0x142f40 (init via 0x147410)
-    CDDPalette* MakeB3(void* a, u32 b, i32 c);                    // 0x1430c0 (init via 0x147840)
+    // MakeB2's a1 is a FILE PATH: it forwards verbatim to CDDPalette::LoadFromFile
+    // (@0x147410), whose first act is `strrchr(a1,'.')` followed by an _stricmp
+    // dispatch over ".BMP"/".PCX"/".PAL". (Contrast the sibling MakeB, whose `rgb`
+    // is an in-memory blob: its loader @0x1474d0 reads 256 RGB triples out of it.)
+    CDDPalette* MakeB2(char* path, i32 flags); // 0x142f40 (init via 0x147410)
+    CDDPalette* MakeB3(void* a, u32 b, i32 c); // 0x1430c0 (init via 0x147840)
 
     // Read the trailing 0x300-byte palette from a file and register a pool-B item built
     // from it (0x143150 -> MakeB; 0x143a30 -> Make950, the sibling builder).

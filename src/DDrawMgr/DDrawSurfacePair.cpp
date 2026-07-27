@@ -1013,9 +1013,9 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(CParseSource* a1, const char* key, i3
 // the real ctor fixed the regalloc; residual is only the vptr store position (cl 1st vs
 // retail 4th).
 RVA(0x00165990, 0x77)
-void* CDDrawWorkerMapSmall::CreateWorker28(void* a1, const char* key, i32 a3) {
+void* CDDrawWorkerMapSmall::CreateWorker28(void* data, const char* key, i32 flags) {
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
-    if (w->AllocBufMakeB(a1, a3) == 0) {
+    if (w->AllocBufMakeB(data, flags) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -1025,14 +1025,19 @@ void* CDDrawWorkerMapSmall::CreateWorker28(void* a1, const char* key, i32 a3) {
     return w;
 }
 
-// As CreateWorker28 but dispatches the worker's +0x2c virtual.
+// As CreateWorker28 but dispatches the worker's +0x2c virtual - which makes a1 a FILE
+// PATH rather than a memory blob. The dispatch is statically resolved: the vptr this
+// function stamps into the new worker IS ??_7CAniRecordBase2 (reloc @0x165a37), so
+// +0x2c is provably AllocBufMakeB2 @0x168ea0 -> MakeB2 -> CDDPalette::LoadFromFile
+// @0x147410, whose first act is `strrchr(a1,'.')`. `key` (the only other string here)
+// is unrelated: its sole use is the m_map1 subscript at 0x165a75.
 // @early-stop
 // vptr-scheduler wall (see docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md):
 // residual is only the vptr store position (cl 1st vs retail 4th).
 RVA(0x00165a10, 0x77)
-void* CDDrawWorkerMapSmall::CreateWorker2C(void* a1, const char* key, i32 a3) {
+void* CDDrawWorkerMapSmall::CreateWorker2C(char* path, const char* key, i32 flags) {
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
-    if (w->AllocBufMakeB2(a1, a3) == 0) {
+    if (w->AllocBufMakeB2(path, flags) == 0) {
         if (w != 0) {
             delete w;
         }

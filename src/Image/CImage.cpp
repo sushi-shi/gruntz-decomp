@@ -130,7 +130,19 @@ i32 CImage::Create(CImageFrameDesc* desc, i32 keyed) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CDDSurface* item = m_parent->m_1c->Createa58_3(reinterpret_cast<i32>(desc), capArg, flagsArg);
+    // PROVEN 2026-07-27: what travels here is a FILE PATH, not a descriptor -
+    // Createa58_3 forwards it verbatim to CFileImageSurface::LoadByExt @0x148940,
+    // which opens with `strrchr(a1,'.')` + an _stricmp over ".BMP"/".PCX"/".PID".
+    // So THIS function's `CImageFrameDesc* desc` param is the mis-typed link (it is a
+    // `char* path`), and so are its two feeders CDDrawWorker::CreateFrame30 @0x151fb0
+    // and CDDrawWorkerRegistry::DispatchKeyed34/Forward34 @0x154be0/0x154f00 - each
+    // passes arg1 straight through. Blocked from being fixed here: the only caller of
+    // this slot is CreateFrame30 in src/Wwd/WwdGameObject.cpp, owned by another lane.
+    CDDSurface* item = m_parent->m_1c->Createa58_3(
+        reinterpret_cast<char*>(desc), // @identity-TODO `desc` is a char* path (see above)
+        capArg,
+        flagsArg
+    );
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -227,11 +239,19 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
+    // CreateA is MONOMORPHIC (the old "polymorphic first arg" note was a conflation
+    // with the neighbouring CreateB, which really does take a width/height pair via
+    // LoadKeyed -> BlitSurf @0x13e0d0). CreateA's a1 lands in ResolveEx's `buf`, which
+    // 0x1457a0 reads at +0x04/+0x08/+0x0c => this very desc; its a3 lands in ResolveEx's
+    // `size`, gated by `cmp eax,0x300; jbe fail` at 0x145847 => a byte count.
+    // The remaining cast is on `a`: THIS function's own `void* a` param is the mis-typed
+    // one (it is the blob size, not a pointer). Blocked from being fixed here because
+    // the only caller of this slot is CDDrawWorker::CreateFrame28 in
+    // src/Wwd/WwdGameObject.cpp, which another lane owns.
     CDDSurface* item = m_parent->m_1c->CreateA(
-        // the create slot's first arg is polymorphic (a desc here, a width elsewhere)
-        reinterpret_cast<i32>(desc),
+        desc,
         static_cast<i32>(mode),
-        reinterpret_cast<i32>(a),
+        reinterpret_cast<u32>(a), // @identity-TODO `a` is a byte SIZE; retype with CreateFrame28
         capArg,
         flagsArg
     );

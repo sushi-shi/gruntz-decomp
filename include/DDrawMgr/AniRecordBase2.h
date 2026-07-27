@@ -6,7 +6,11 @@
 #include <rva.h>
 
 class CDDrawSurfaceMgr; // the m_0c owner (the pool + draw-target root)
-class CDDPalette;       // the +0x10 owned work palette
+// struct, NOT class: CDDPalette is DEFINED as a struct (<DDrawMgr/DirectDrawMgr.h>) and
+// every other fwd decl agrees. MSVC mangles the class-key of the first declaration the
+// TU sees, so a stray `class` here made AniRecord.cpp emit PAVCDDPalette references
+// against the PAU definitions - 6 FAKE relocs (assert_relocs), a link break.
+struct CDDPalette; // the +0x10 owned work palette
 
 struct CAniRecordBase2 : public CWapObj {
     i32 m_04, m_08; // +0x04/+0x08 CObject-header fields (base-2 dtor resets them)
@@ -45,9 +49,14 @@ struct CAniRecordBase2 : public CWapObj {
     // Slots 9-12: the buffer (de)allocation virtuals - each wraps one
     // CDDrawPtrCollections pool entrypoint (Create/MakeB/MakeB2/MakeB3) with the
     // 0x44 palette kind + the optional system-palette capture.
-    virtual i32 AllocBufCreate(i32 handle, i32 flag);      // [9]  0x168f20
-    virtual i32 AllocBufMakeB(void* data, i32 flag);       // [10] 0x168ee0
-    virtual i32 AllocBufMakeB2(void* data, i32 flag);      // [11] 0x168ea0
+    // Slot 9/10/11/12 arg1 types are NOT a single polymorphic arg - each slot wraps a
+    // DIFFERENT pool entrypoint, so each has its own first-arg type: [9] a handle
+    // (Create takes an int), [10]/[12] an in-memory palette blob (MakeB's loader
+    // @0x1474d0 reads 256 RGB triples out of it), [11] a FILE PATH (MakeB2's loader,
+    // CDDPalette::LoadFromFile @0x147410, opens with `strrchr(a1,'.')`).
+    virtual i32 AllocBufCreate(i32 handle, i32 flag);            // [9]  0x168f20
+    virtual i32 AllocBufMakeB(void* data, i32 flag);             // [10] 0x168ee0
+    virtual i32 AllocBufMakeB2(char* path, i32 flag);            // [11] 0x168ea0
     virtual i32 AllocBufMakeB3(void* data, i32 size, i32 flag); // [12] 0x168f60
     virtual i32 PushPalette();                               // [13] 0x168fd0
 };
