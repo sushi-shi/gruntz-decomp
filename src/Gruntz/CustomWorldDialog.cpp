@@ -63,13 +63,13 @@ namespace m4 {
 // delinker's Ghidra simple-labels which a foreign TU cannot name-match; they go
 // exact once those library/manager functions are reconstructed. Logic complete.
 RVA(0x0003ad90, 0x97)
-CString RunCustomWorldDialog(i32 id, CString* outSource) {
+CString RunCustomWorldDialog(HWND parent, CString* outSource) {
     g_pathStr.Empty();
-    i32 v = id;
-    if (id == 0) {
-        v = reinterpret_cast<i32>(g_gameReg->m_gameWnd->m_hwnd); // HWND -> the dialog parent
+    HWND v = parent;
+    if (parent == 0) {
+        v = g_gameReg->m_gameWnd->m_hwnd;
     }
-    g_customWorldParent = reinterpret_cast<HWND>(v);
+    g_customWorldParent = v;
     g_dat62c268 = g_gameReg->m_world;
     // m_owner (CGameApp*, CGameMgr+0x8) -> +0xc HINSTANCE (raw offset read).
     g_customWorldInst = g_gameReg->m_owner->m_hInstance;

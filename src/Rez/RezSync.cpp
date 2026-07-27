@@ -78,7 +78,7 @@ DATA(0x002455e4)
 i32 g_enableEmulation = 0; // "Enable Emulation"
 
 DATA(0x00245210)
-i32 g_appHInstance;
+HINSTANCE g_appHInstance;
 
 // =====================================================================
 // @early-stop
@@ -278,7 +278,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     // --- Phase 6: surface manager + game level -----------------------
-    g_appHInstance = reinterpret_cast<i32>(m_owner->m_hInstance);
+    g_appHInstance = m_owner->m_hInstance;
     char dpBuf[0x114];
     strcpy(dpBuf, szCmdLine);
     ::AfxWinInit(m_owner->m_hInstance, 0, dpBuf, 1); // 0x1d3eff (NAFXCW)
@@ -348,7 +348,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     m_cheatMgr = new CCheatMgr;
-    if (!m_cheatMgr->Init(reinterpret_cast<i32>(m_gameWnd->m_hwnd))) {
+    if (!m_cheatMgr->Init(m_gameWnd->m_hwnd)) {
         ReportError(0x800a, 0x40b);
         return 0;
     }

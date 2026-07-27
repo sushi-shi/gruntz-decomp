@@ -62,8 +62,8 @@ DATA(0x0020c920)
 char s_cheat_20c920[8] = "\x8a\x8d\x83\x8d\x90";                                      // "MPFPS"
 
 RVA(0x00022ad0, 0x1f)
-BOOL CCheatMgr::Init(i32 owner) {
-    m_count = owner;
+BOOL CCheatMgr::Init(HWND owner) {
+    m_owner = owner;
     m_flag = 0;
     m_120 = 0;
     m_124 = 0;
@@ -84,7 +84,7 @@ void CCheatMgr::Empty() {
         } while (pos != static_cast<POSITION>(0));
     }
     m_map.RemoveAll();
-    m_count = 0;
+    m_owner = 0;
     m_flag = 0;
     m_120 = 0;
     m_124 = 0;
@@ -198,7 +198,7 @@ void CCheatMgr::LoadCheatConfig() {
 // ===========================================================================
 // A player-typed code (passed by value) is uppercased then de-obfuscated (+0x3d
 // per byte) to match the stored keys; on a map hit with a positive command id,
-// post the WM_COMMAND to the owner (m_count) and update the armed-cheat state.
+// post the WM_COMMAND to the owner (m_owner) and update the armed-cheat state.
 // The by-value CString forces the /GX EH frame.
 // @early-stop
 // CString/EH plateau: logic + the branchless Lookup mask-AND idiom + the SetAt
@@ -216,7 +216,7 @@ BOOL CCheatMgr::CheckCode(CString code) {
         reinterpret_cast<CheatEntry*>(((m_map.Lookup(static_cast<const char*>(code), value) ? -1 : 0) & reinterpret_cast<i32>(value)));
     if (found != 0) {
         if (found->commandId > 0) {
-            PostMessageA(reinterpret_cast<HWND>(m_count), 0x111, found->commandId, 0);
+            PostMessageA(m_owner, 0x111, found->commandId, 0);
             if ((found->flag & 1) == 0) {
                 m_124 = 1;
             }

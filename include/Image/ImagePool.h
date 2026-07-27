@@ -29,7 +29,7 @@ public:
         Clear();
     }
 
-    i32 SetHandles(i32 a, i32 b, i32 c);                                          // 0x174e90
+    i32 SetHandles(HINSTANCE resModule, HWND src, i32 c);                         // 0x174e90
     void Clear();                                                                 // 0x174eb0
     void Free(CRezImage* node);                                                   // 0x174ed0
     void RemovePalette(CImagePaletteNode* node);                                  // 0x174f30

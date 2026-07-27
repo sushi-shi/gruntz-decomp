@@ -14,7 +14,7 @@ SIZE_UNKNOWN();
 
 class CCheatMgr {
 public:
-    BOOL Init(i32 owner);                                 // 0x22ad0  seed +0, clear scalars
+    BOOL Init(HWND owner);                                // 0x22ad0  seed +0, clear scalars
     void Empty();                                         // 0x22b00  free entries + clear
     BOOL AddCheat(const char* code, i32 cmdId, i32 flag); // 0x22be0
     void RegisterCheats();                                // 0x22c80  seed built-ins + load
@@ -23,7 +23,7 @@ public:
     ~CCheatMgr();                                         // 0x85e60
 
     // --- fields (placeholders; offsets load-bearing) ---
-    i32 m_count;           // +0x00
+    HWND m_owner;          // +0x00  the window the armed cheat posts WM_COMMAND to
     CMapStringToPtr m_map; // +0x04  (vptr@+0x04 .. +0x20) - 0x1c bytes
     u8 m_flag;             // +0x20
     char m_21[0x120 - 0x21];

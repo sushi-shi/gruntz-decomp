@@ -29,9 +29,9 @@ DATA(0x0021aabc)
 char g_bmpHeaderTemplate[4] = "BM"; // 0x61aabc  = 42 4d 00 00
 
 RVA(0x00174e90, 0x1c)
-i32 CImagePool::SetHandles(i32 a, i32 b, i32 c) {
-    m_resourceModuleHandle = reinterpret_cast<HINSTANCE>(a);
-    m_sourceHwnd = reinterpret_cast<HWND>(b);
+i32 CImagePool::SetHandles(HINSTANCE resModule, HWND src, i32 c) {
+    m_resourceModuleHandle = resModule;
+    m_sourceHwnd = src;
     m_08 = c;
     return 1;
 }

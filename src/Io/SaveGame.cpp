@@ -117,8 +117,8 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             // hDlg (stack arg), and the gate is g_gameReg->m_saveSink pushed raw -
             // the old spelling passed g_previewMgr through two nonsense casts.
             if (g_previewMgr->SetHandles(
-                    reinterpret_cast<i32>(g_gameReg->m_owner->m_hInstance),
-                    reinterpret_cast<i32>(hDlg),
+                    g_gameReg->m_owner->m_hInstance,
+                    hDlg,
                     0
                 )
                 == 0) {

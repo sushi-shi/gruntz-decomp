@@ -858,7 +858,7 @@ i32 CGruntzMgr::CaptureWorldFile() {
     if (st != GAMESTATE_MENU && st != GAMESTATE_ATTRACT && st != GAMESTATE_PLAY && st != 7) {
         return 0;
     }
-    CString name = RunCustomWorldDialog(reinterpret_cast<i32>(m_gameWnd->m_hwnd), 0);
+    CString name = RunCustomWorldDialog(m_gameWnd->m_hwnd, 0);
     if (name.GetLength() == 0) {
         return 0;
     }
