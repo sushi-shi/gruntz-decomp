@@ -49,9 +49,9 @@ public:
     // delta, then slot 16 below.
     virtual void TickKillCues(i32 advance);                       // slot 9  +0x24
     virtual void WalkDispatch2C(class CDDrawSurfacePair* target); // slot 10 0x159c90 (child Render)
-    virtual void WalkDispatch30(i32 a1, i32 a2);         // slot 11 0x159cc0 (child BltDirty)
-    virtual void WalkDispatch34(i32 a1, i32 a2, i32 a3); // slot 12 0x159cf0 (child BltDirtyEx)
-    virtual void WalkDispatch38(i32 a1, i32 a2, i32 a3); // slot 13 0x159d40 (child BltDirtyRegions)
+    virtual void WalkDispatch30(CDDrawSurfacePair* a1, CDDrawSurfacePair* a2);         // slot 11 0x159cc0 (child BltDirty)
+    virtual void WalkDispatch34(CDDrawSurfacePair* a1, CDDrawSurfacePair* a2, CDDrawSurfacePair* a3); // slot 12 0x159cf0 (child BltDirtyEx)
+    virtual void WalkDispatch38(CDDrawSurfacePair* a1, CDDrawSurfacePair* a2, CDDrawSurfacePair* a3); // slot 13 0x159d40 (child BltDirtyRegions)
     virtual void ResetChildD8();                         // slot 14 0x159d90
     virtual void DestroyChildren();                      // slot 15 0x1591f0
     virtual void CollideBroadcast();                     // slot 16 0x159f00 (pairwise collision)

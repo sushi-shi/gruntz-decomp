@@ -59,8 +59,8 @@ public:
     // (retail table holds __purecall @0x11fec0); every concrete kind overrides.
     virtual void Render(CDDrawSurfacePair* ctx) = 0;                                     // slot 11
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) = 0;               // slot 12
-    virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) = 0;      // slot 13
-    virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) = 0; // slot 14
+    virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) = 0;      // slot 13
+    virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) = 0; // slot 14
     // slot 15 - the 4-arg play/serialize dispatch (the flat model's Play
     // @0x151150 is the body).
     virtual i32 Play(CFileMemBase* ar, i32 mode, i32 a3, void* self); // slot 15 @0x151150
@@ -197,9 +197,9 @@ public:
     virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4) OVERRIDE; // slot 10 @0x15b940 (Init)
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;       // slot 11 @0x15ba20 (ret 4)
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 @0x150660
-    virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
+    virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
         OVERRIDE; // slot 13 @0x1506b0
-    virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
+    virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
         OVERRIDE; // slot 14 @0x1508a0
     virtual i32 Play(CFileMemBase* ar, i32 mode, i32 a3, void* self)
         OVERRIDE; // slot 15 @0x150a70 (Dispatch: route by mode - 4 -> ReadState,
@@ -260,9 +260,9 @@ public:
     virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4) OVERRIDE; // slot 10 0x1665e0
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE;       // slot 11 0x1668b0 (broadcast)
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 0x1668e0
-    virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
+    virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
         OVERRIDE; // slot 13 0x166910
-    virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
+    virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
         OVERRIDE; // slot 14 0x166950
     // slot 15 INHERITED from A (retail table: 0x150a70).
 
@@ -295,9 +295,9 @@ public:
     virtual i32 GetClassId() OVERRIDE;                    // slot 8  @0x15ba60 (0x16)
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE; // slot 11 @0x15ba70 (ret 4 - empty)
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 @0x15ba80
-    virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
+    virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
         OVERRIDE; // slot 13 @0x15ba90
-    virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
+    virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
         OVERRIDE; // slot 14 @0x15baa0
     // slot 16 (new) - the F kind's 2-arg build (the 0x159440 factory's `call
     // [eax+0x40]` pushes two args; body 0x15bc30 == the flat SetupDeferred(a3, a4)).
@@ -319,9 +319,9 @@ public:
     virtual i32 GetClassId() OVERRIDE;                    // slot 8  @0x15c020 (6)
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE; // slot 11 @0x1660f0 (RenderDot)
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 @0x1661d0
-    virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
+    virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
         OVERRIDE; // slot 13 @0x1662a0
-    virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
+    virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
         OVERRIDE; // slot 14 @0x1664a0
     // Slots 16-18 unique to the C variant (0x5effd0 is a 19-slot table).
     // slot 16 - the C kind's 5-arg build (the 0x159250 factory's `call [eax+0x40]`

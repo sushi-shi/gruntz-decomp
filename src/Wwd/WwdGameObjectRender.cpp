@@ -159,7 +159,7 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 // steerable (separate rc buffers fix the merge but re-inflate the frame; permuter
 // no-op). docs/patterns/zero-register-pinning.md / tail-merge layout.
 RVA(0x001662a0, 0x1fa)
-void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
+void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
     i32 rc[4];                              // one reused src+dst rect buffer
     if (m_dirtyArmed != -1 && m_d8 != -1) { // both armed
         i32 dx = abs(m_lastX - m_b8) + 1;
@@ -213,7 +213,7 @@ void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32
 // only the two push operands in the large-delta path. Same addresses. The permuter found
 // no source spelling that flips the pair. docs/patterns/zero-register-pinning.md.
 RVA(0x001664a0, 0x133)
-void CWwdGameObjectC::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
+void CWwdGameObjectC::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
     if (m_dirtyArmed != -1 && m_d8 != -1) { // both armed -> combined region
         i32 dx = abs(m_lastX - m_b8) + 1;
         i32 dy = abs(m_lastY - m_bc) + 1;
@@ -405,7 +405,7 @@ void CWwdGameObject::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     }
 }
 RVA(0x00166910, 0x34)
-void CWwdGameObject::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
+void CWwdGameObject::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition());
     if (n != 0) {
         do {
@@ -416,7 +416,7 @@ void CWwdGameObject::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 
     }
 }
 RVA(0x00166950, 0x34)
-void CWwdGameObject::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
+void CWwdGameObject::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
     CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition());
     if (n != 0) {
         do {

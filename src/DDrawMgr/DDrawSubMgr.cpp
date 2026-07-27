@@ -1293,10 +1293,7 @@ void CDDrawSubMgrPages::FlipAndNotify() {
     CDDrawSurfaceMgr* n = OwnerMgr();
     CDDrawChildGroup* c = n->m_childGroup;
     CDDrawSubMgrPages* s = n->m_drawTarget;
-    c->WalkDispatch30(
-        reinterpret_cast<i32>(s->m_backPair),
-        reinterpret_cast<i32>(s->m_overlayPair)
-    );
+    c->WalkDispatch30(s->m_backPair, s->m_overlayPair);
 }
 
 RVA(0x00158bc0, 0x2e)

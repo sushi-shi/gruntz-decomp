@@ -499,28 +499,28 @@ void CDDrawChildGroup::WalkDispatch2C(CDDrawSurfacePair* target) {
 }
 
 RVA(0x00159cc0, 0x2a)
-void CDDrawChildGroup::WalkDispatch30(i32 a1, i32 a2) {
+void CDDrawChildGroup::WalkDispatch30(CDDrawSurfacePair* a1, CDDrawSurfacePair* a2) {
     POSITION n = m_list.GetHeadPosition();
     if (n != 0) {
         do {
             CGameObject* cur_obj = NextChild(n);
             cur_obj->BltDirty(
-                reinterpret_cast<CDDrawSurfacePair*>(a1),
-                reinterpret_cast<CDDrawSurfacePair*>(a2)
+                a1,
+                a2
             );
         } while (n != 0);
     }
 }
 
 RVA(0x00159cf0, 0x42)
-void CDDrawChildGroup::WalkDispatch34(i32 a1, i32 a2, i32 a3) {
+void CDDrawChildGroup::WalkDispatch34(CDDrawSurfacePair* a1, CDDrawSurfacePair* a2, CDDrawSurfacePair* a3) {
     POSITION n = m_list.GetHeadPosition();
     if (n != 0) {
         do {
             CGameObject* cur_obj = NextChild(n);
             cur_obj->BltDirtyEx(
-                reinterpret_cast<CDDrawSurfacePair*>(a1),
-                reinterpret_cast<CDDrawSurfacePair*>(a2),
+                a1,
+                a2,
                 a3
             );
         } while (n != 0);
@@ -529,14 +529,14 @@ void CDDrawChildGroup::WalkDispatch34(i32 a1, i32 a2, i32 a3) {
 }
 
 RVA(0x00159d40, 0x42)
-void CDDrawChildGroup::WalkDispatch38(i32 a1, i32 a2, i32 a3) {
+void CDDrawChildGroup::WalkDispatch38(CDDrawSurfacePair* a1, CDDrawSurfacePair* a2, CDDrawSurfacePair* a3) {
     POSITION n = m_list.GetHeadPosition();
     if (n != 0) {
         do {
             CGameObject* cur_obj = NextChild(n);
             cur_obj->BltDirtyRegions(
-                reinterpret_cast<CDDrawSurfacePair*>(a1),
-                reinterpret_cast<CDDrawSurfacePair*>(a2),
+                a1,
+                a2,
                 a3
             );
         } while (n != 0);

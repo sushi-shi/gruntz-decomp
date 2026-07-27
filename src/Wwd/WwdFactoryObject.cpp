@@ -299,10 +299,10 @@ RVA(0x0015ba80, 0x3)
 void CWwdGameObjectF::BltDirty(CDDrawSurfacePair*, CDDrawSurfacePair*) {}
 
 RVA(0x0015ba90, 0x3)
-void CWwdGameObjectF::BltDirtyEx(CDDrawSurfacePair*, CDDrawSurfacePair*, i32) {}
+void CWwdGameObjectF::BltDirtyEx(CDDrawSurfacePair*, CDDrawSurfacePair*, CDDrawSurfacePair*) {}
 
 RVA(0x0015baa0, 0x3)
-void CWwdGameObjectF::BltDirtyRegions(CDDrawSurfacePair*, CDDrawSurfacePair*, i32) {}
+void CWwdGameObjectF::BltDirtyRegions(CDDrawSurfacePair*, CDDrawSurfacePair*, CDDrawSurfacePair*) {}
 
 // ---------------------------------------------------------------------------
 // 0x15bad0 - the 0x159440-final variant: thin derived class (vtable 0x5f0060) on top

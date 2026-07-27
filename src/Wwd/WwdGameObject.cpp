@@ -169,7 +169,7 @@ void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 // BltEx(rc,b->m_surface,rc,...) calls where retail keeps them inline, plus a callee-saved
 // record-base coloring swap. Not source-steerable. docs/patterns/zero-register-pinning.md.
 RVA(0x001506b0, 0x1ec)
-void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
+void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
     i32 rc[4]; // reused src+dst blit rect buffer
     if (m_dirtyArmed != -1 && m_d8 != -1) {
         RECT ir;
@@ -231,7 +231,7 @@ void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32
 // (absent in the twin) adds the register pressure that keeps this below the twin's 99.7%.
 // Permuter found no operand-order gain. docs/patterns/zero-register-pinning.md.
 RVA(0x001508a0, 0x117)
-void CWwdGameObjectA::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
+void CWwdGameObjectA::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
     if (m_dirtyArmed != -1 && m_d8 != -1) {
         RECT ir;
         if (IntersectRect(
