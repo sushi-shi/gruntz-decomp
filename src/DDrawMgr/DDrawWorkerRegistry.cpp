@@ -107,7 +107,7 @@ CImage* CDDrawWorkerRegistry::DispatchKeyed38(void* rec, const char* key, i32 a3
 }
 
 RVA(0x00154be0, 0xfc)
-CImage* CDDrawWorkerRegistry::DispatchKeyed34(i32 a1, const char* key, i32 a3, i32 a4) {
+CImage* CDDrawWorkerRegistry::DispatchKeyed34(CImageFrameDesc* a1, const char* key, i32 a3, i32 a4) {
     CDDrawWorker* worker = FindOrCreateWorker(this, key);
     if (worker == 0) {
         return 0;
@@ -116,7 +116,7 @@ CImage* CDDrawWorkerRegistry::DispatchKeyed34(i32 a1, const char* key, i32 a3, i
 }
 
 RVA(0x00154ce0, 0x101)
-CImage* CDDrawWorkerRegistry::DispatchKeyed30(i32 a1, i32 a2, const char* key, i32 a4, i32 a5) {
+CImage* CDDrawWorkerRegistry::DispatchKeyed30(CImageFrameDesc* a1, i32 a2, const char* key, i32 a4, i32 a5) {
     CDDrawWorker* worker = FindOrCreateWorker(this, key);
     if (worker == 0) {
         return 0;
@@ -125,7 +125,7 @@ CImage* CDDrawWorkerRegistry::DispatchKeyed30(i32 a1, i32 a2, const char* key, i
 }
 
 RVA(0x00154df0, 0x101)
-CImage* CDDrawWorkerRegistry::DispatchKeyed2C(i32 a1, i32 a2, const char* key, i32 a4, i32 a5) {
+CImage* CDDrawWorkerRegistry::DispatchKeyed2C(CImageFrameDesc* a1, i32 a2, const char* key, i32 a4, i32 a5) {
     CDDrawWorker* worker = FindOrCreateWorker(this, key);
     if (worker == 0) {
         return 0;
@@ -134,7 +134,7 @@ CImage* CDDrawWorkerRegistry::DispatchKeyed2C(i32 a1, i32 a2, const char* key, i
 }
 
 RVA(0x00154f00, 0x1b)
-CImage* CDDrawWorkerRegistry::Forward34(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4) {
+CImage* CDDrawWorkerRegistry::Forward34(CImageFrameDesc* a1, CDDrawWorker* worker, i32 a3, i32 a4) {
     return worker->CreateFrame30(a1, a3, a4);
 }
 
@@ -144,12 +144,12 @@ CImage* CDDrawWorkerRegistry::Forward38(void* rec, CDDrawWorker* worker, i32 a3,
 }
 
 RVA(0x00154f40, 0x20)
-CImage* CDDrawWorkerRegistry::Forward30(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5) {
+CImage* CDDrawWorkerRegistry::Forward30(CImageFrameDesc* a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5) {
     return worker->CreateFrame28(a1, a2, a4, a5);
 }
 
 RVA(0x00154f60, 0x20)
-CImage* CDDrawWorkerRegistry::Forward2C(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5) {
+CImage* CDDrawWorkerRegistry::Forward2C(CImageFrameDesc* a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5) {
     return worker->CreateFrame24(a1, a2, a4, a5);
 }
 

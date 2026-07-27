@@ -11,6 +11,7 @@ class CDDrawWorker; // 0x6c-byte keyed worker (canonical def <DDrawMgr/DDrawWork
 class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
 class CImage;  // the frame element (AnyValueMatches probes each set for it)
+class CImageFrameDesc; // the descriptor the create/dispatch slots take
 class CSymTab; // Bute/SymTab.h (the dir-tree cursor InstallTree/LoadNamespace walk)
 
 class CDDrawWorkerRegistry : public CLoadable {
@@ -22,14 +23,14 @@ public:
     virtual i32 IsReady() OVERRIDE;    // [ 6] 0x154aa0 (re-seeds the 25-dword blt-fx scratch)
     virtual void Unload() OVERRIDE;    // [ 7] 0x154ac0 (self-dispatch MapTeardown + clear flags)
     virtual i32 GetClassId() OVERRIDE; // [ 8] 0x156de0 (CLASSID_WORKERREGISTRY = 0x12)
-    virtual CImage* DispatchKeyed2C(i32 a1, i32 a2, const char* key, i32 a4, i32 a5); // [ 9] 0x154df0
-    virtual CImage* Forward2C(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);  // [10] 0x154f60
-    virtual CImage* Forward30(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);  // [11] 0x154f40
-    virtual CImage* DispatchKeyed30(i32 a1, i32 a2, const char* key, i32 a4, i32 a5); // [12] 0x154ce0
+    virtual CImage* DispatchKeyed2C(CImageFrameDesc* a1, i32 a2, const char* key, i32 a4, i32 a5); // [ 9] 0x154df0
+    virtual CImage* Forward2C(CImageFrameDesc* a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);  // [10] 0x154f60
+    virtual CImage* Forward30(CImageFrameDesc* a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);  // [11] 0x154f40
+    virtual CImage* DispatchKeyed30(CImageFrameDesc* a1, i32 a2, const char* key, i32 a4, i32 a5); // [12] 0x154ce0
     virtual CImage* Forward38(void* rec, CDDrawWorker* worker, i32 a3, i32 a4);       // [13] 0x154f20
     virtual CImage* DispatchKeyed38(void* rec, const char* key, i32 a3, i32 a4);      // [14] 0x154ae0
-    virtual CImage* Forward34(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4);          // [15] 0x154f00
-    virtual CImage* DispatchKeyed34(i32 a1, const char* key, i32 a3, i32 a4);         // [16] 0x154be0
+    virtual CImage* Forward34(CImageFrameDesc* a1, CDDrawWorker* worker, i32 a3, i32 a4);          // [15] 0x154f00
+    virtual CImage* DispatchKeyed34(CImageFrameDesc* a1, const char* key, i32 a3, i32 a4);         // [16] 0x154be0
     // [17] 0x156e80 (DDrawSubMgr.cpp) - probe a resolved sub-key, install its tree.
     virtual i32 ProbeWorkerKey(class CSymParser* arg1, i32 arg2);
     // [18] 0x154f80 - install a resolved symbol TREE under a (name, separator) prefix;

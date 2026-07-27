@@ -1197,14 +1197,14 @@ CImage* CDDrawWorker::InsertFrame(void* src, i32 n, i32 mode) {
 // base-class ctor. (The other diff, `[eax+edi*4]` vs `[eax+4*edi]`, is a byte-neutral
 // disasm-spelling artifact.)
 RVA(0x00151fb0, 0xa4)
-CImage* CDDrawWorker::CreateFrame30(i32 a0, i32 index, i32 a2) {
+CImage* CDDrawWorker::CreateFrame30(CImageFrameDesc* desc, i32 index, i32 a2) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
         return 0;
     }
 
     CImage* nf = new CImage(index, Owner()); // real frame ctor (vptr interleaved)
 
-    if (nf->Create(reinterpret_cast<CImageFrameDesc*>(a0), a2)
+    if (nf->Create(desc, a2)
         == 0) { // slot 12 @+0x30  CImage::Create
         if (nf != 0) {
             delete nf; // slot 1 @+0x04  scalar-deleting dtor
@@ -1227,7 +1227,7 @@ CImage* CDDrawWorker::CreateFrame30(i32 a0, i32 index, i32 a2) {
 // @early-stop
 // Same vptr-scheduler wall as CreateFrame30 (see there). 99.5%.
 RVA(0x00152060, 0xab)
-CImage* CDDrawWorker::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
+CImage* CDDrawWorker::CreateFrame28(CImageFrameDesc* desc, i32 a1, i32 index, i32 a3) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
         return 0;
     }
@@ -1236,7 +1236,7 @@ CImage* CDDrawWorker::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
 
     // slot 10 @+0x28  CImage::LoadDispatch
     if (nf->LoadDispatch(
-            reinterpret_cast<CImageFrameDesc*>(a0),
+            desc,
             static_cast<u32>(a1),
             reinterpret_cast<void*>(a3),
             1
@@ -1263,14 +1263,14 @@ CImage* CDDrawWorker::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
 // @early-stop
 // Same vptr-scheduler wall as CreateFrame30 (see there). 99.5%.
 RVA(0x00152110, 0xa9)
-CImage* CDDrawWorker::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
+CImage* CDDrawWorker::CreateFrame24(CImageFrameDesc* desc, i32 a1, i32 index, i32 a3) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
         return 0;
     }
 
     CImage* nf = new CImage(index, Owner()); // real frame ctor (vptr interleaved)
 
-    if (nf->Create24(reinterpret_cast<CImageFrameDesc*>(a0), a1, a3)
+    if (nf->Create24(desc, a1, a3)
         == 0) { // slot 9 @+0x24  CImage::Create24
         if (nf != 0) {
             delete nf; // slot 1 @+0x04  scalar-deleting dtor
