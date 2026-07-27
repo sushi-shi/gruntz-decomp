@@ -100,11 +100,11 @@ i32 g_localVersion = 1; // 0x20fa70  local protocol/rez-sync version word
 DATA(0x0020fa74)
 i32 g_remoteVersion = 1; // 0x20fa74  protocol version word (local build = 1)
 DATA(0x0020fab8)
-i32 g_dplayAppGuid[4] = {
-    static_cast<i32>(0xf41cf640),
-    0x11d191b2,
-    static_cast<i32>(0x6000fc8d),
-    0x1ea89f97
+GUID g_dplayAppGuid = {
+    0xf41cf640,
+    0x91b2,
+    0x11d1,
+    { 0x8d, 0xfc, 0x00, 0x60, 0x97, 0x9f, 0xa8, 0x1e }
 }; // 0x20fab8  DirectPlay app GUID / net-bind template
 DATA(0x00211d88)
 i32 g_dropPlayerId = -999; // 0x211d88  saved dropped-player id (sentinel -999)
@@ -1043,7 +1043,7 @@ i32 CMulti::StartTitle() {
     m_isHost = (desc->m_flags & 2) ? 1 : 0;
     // 0x178170 Init(lobby, appGuid-by-value): retail pushes m_lobby (the ecx live
     // from the b73ec load) + the 4 GUID dwords stored into the sub-esp,0x10 slot.
-    if (m_netGate->Init(Mgr()->m_lobby, *reinterpret_cast<const GUID*>(g_dplayAppGuid)) == 0) {
+    if (m_netGate->Init(Mgr()->m_lobby, g_dplayAppGuid) == 0) {
         return 0;
     }
     m_netGate->ClearPlayerList();                                     // 0x178750
@@ -1095,7 +1095,7 @@ i32 CMulti::Open() {
     if (!descriptor) {
         return 0;
     }
-    if (!Peer()->InitFromProvider(descriptor, *reinterpret_cast<const GUID*>(g_dplayAppGuid))) {
+    if (!Peer()->InitFromProvider(descriptor, g_dplayAppGuid)) {
         return 0;
     }
     if (g_isHost_648cf0) {

@@ -379,7 +379,7 @@ extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x1f94
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---
 extern "C" HWND g_sharedFlag; // the cached dialog control window
 
-extern i32 g_dplayAppGuid[4];
+extern GUID g_dplayAppGuid; // the DirectPlay app GUID (4 dwords, as GUID lays out)
 extern char s_GameKey[];
 extern u32 g_ackThrottleDeadline;
 
