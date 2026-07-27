@@ -137,7 +137,7 @@ namespace m4 {
     // FID-carved) over <io.h>'s _finddata_t.
 
     // The "reentrancy lock" guarding the directory walk is the MFC wait cursor:
-    // AfxGetModuleState()->m_pCurrentWinApp->Begin/EndWaitCursor (<Gruntz/WaitCursorApp.h>).
+    // AfxGetApp()->Begin/EndWaitCursor (<Gruntz/WaitCursorApp.h>).
 
     // The settings-manager singleton == *g_gameReg (the real CGruntzMgr, the MFC view of
     // the file-global g_gameReg above); IsBattlezMapFile takes the display name by value
@@ -175,7 +175,7 @@ namespace m4 {
         _finddata_t fd;
         i32 h = _findfirst(pattern, &fd);
         i32 found = (h != -1);
-        static_cast<CCmdTarget*>(AfxGetModuleState()->m_pCurrentWinApp)->BeginWaitCursor();
+        AfxGetApp()->BeginWaitCursor();
         if (found) {
             do {
                 char disp[260];
@@ -190,7 +190,7 @@ namespace m4 {
             } while (_findnext(h, &fd) != -1);
         }
         CustomGate(g_dotDot);
-        static_cast<CCmdTarget*>(AfxGetModuleState()->m_pCurrentWinApp)->EndWaitCursor();
+        AfxGetApp()->EndWaitCursor();
         return 1;
     }
 

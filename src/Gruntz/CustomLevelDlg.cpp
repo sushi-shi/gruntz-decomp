@@ -21,7 +21,7 @@ RVA(0x000180e0, 0x23f)
 void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
     CListBox* item = static_cast<CListBox*>(GetDlgItem(0x516));
     if (pDX->m_bSaveAndValidate == 0) {
-        static_cast<CCmdTarget*>(AfxGetModuleState()->m_pCurrentWinApp)->BeginWaitCursor();
+        AfxGetApp()->BeginWaitCursor();
         {
             char buf[0x400];
             _getcwd(buf, 0x400);
@@ -44,7 +44,7 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
             }
             ::SendMessageA(item->m_hWnd, 0x186, 0, 0);
         }
-        static_cast<CCmdTarget*>(AfxGetModuleState()->m_pCurrentWinApp)->EndWaitCursor();
+        AfxGetApp()->EndWaitCursor();
         return;
     }
     i32 sel = static_cast<i32>(::SendMessageA(item->m_hWnd, 0x188, 0, 0));

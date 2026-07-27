@@ -1171,6 +1171,10 @@ DSoundCloneInst* SoundDevice::AcquireResource(const char* name, u32 flags, u32 r
     if (m_initialized == 0) {
         return 0;
     }
+    // afxCurrentInstanceHandle - MFC's own documented spelling for this (AFXWIN.H:3880).
+    // The inline AfxGetInstanceHandle() needs <afxwin.h>, whose inlines clang rejects in
+    // this TU (the _AFX_ENABLE_INLINES guard); a NAMED member of MFC's own struct, not a
+    // positional reach.
     HINSTANCE mod1 = AfxGetModuleState()->m_hCurrentInstanceHandle;
     HRSRC hRsrc = FindResourceA(mod1, name, "WAVE");
     if (!hRsrc) {
@@ -1286,6 +1290,10 @@ i32 SoundDevice::ReloadResource(DirectSoundMgr* probe, const char* name, u32 res
     if (probe->IsLooping() == 0) {
         return 1;
     }
+    // afxCurrentInstanceHandle - MFC's own documented spelling for this (AFXWIN.H:3880).
+    // The inline AfxGetInstanceHandle() needs <afxwin.h>, whose inlines clang rejects in
+    // this TU (the _AFX_ENABLE_INLINES guard); a NAMED member of MFC's own struct, not a
+    // positional reach.
     HINSTANCE mod1 = AfxGetModuleState()->m_hCurrentInstanceHandle;
     HRSRC hRsrc = FindResourceA(mod1, name, "WAVE");
     if (!hRsrc) {
