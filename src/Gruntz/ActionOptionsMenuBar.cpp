@@ -183,6 +183,9 @@ i32 CActionOptionsMenuBar::Refresh() {
         switch (p[-4]) {
             case 1: {
                 CDDrawWorker* s = m_normChipSprite;
+                // the two buttons' frame/icon/state fields are walked as ONE i32 band
+                // (`p[-2]`/`p[-4]` off &m_button0Icon), so the resolved CImage* is
+                // stored through that i32 slot - byte-forced by retail's own walk.
                 frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
                             ? 0
                             : reinterpret_cast<i32>(static_cast<CImage*>(s->m_items.GetAt(*p)));
@@ -190,6 +193,9 @@ i32 CActionOptionsMenuBar::Refresh() {
             }
             case 2: {
                 CDDrawWorker* s = m_highChipSprite;
+                // the two buttons' frame/icon/state fields are walked as ONE i32 band
+                // (`p[-2]`/`p[-4]` off &m_button0Icon), so the resolved CImage* is
+                // stored through that i32 slot - byte-forced by retail's own walk.
                 frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
                             ? 0
                             : reinterpret_cast<i32>(static_cast<CImage*>(s->m_items.GetAt(*p)));
@@ -197,6 +203,9 @@ i32 CActionOptionsMenuBar::Refresh() {
             }
             case 3: {
                 CDDrawWorker* s = m_greyChipSprite;
+                // the two buttons' frame/icon/state fields are walked as ONE i32 band
+                // (`p[-2]`/`p[-4]` off &m_button0Icon), so the resolved CImage* is
+                // stored through that i32 slot - byte-forced by retail's own walk.
                 frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
                             ? 0
                             : reinterpret_cast<i32>(static_cast<CImage*>(s->m_items.GetAt(*p)));
