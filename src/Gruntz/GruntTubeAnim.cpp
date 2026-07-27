@@ -50,16 +50,15 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
     CString* node = reinterpret_cast<CString*>(
         (static_cast<_zvec*>(&g_typeColl))->IndexToPtr(m_objAux->ActKey())
     );
-    void* p = static_cast<void*>(
-        g_typeColl.m_alloc
-    ); // m_alloc is the i32-typed slot base (the _zvec spelling)
+    // the hand-inlined _zdvec::IndexToPtr fixup: m_alloc is the construction cursor over
+    // the same CString band, walked in steps of a CONSTANT 4 (retail 0x31156 `add ebx,4`)
+    CString* p = g_typeColl.Slots();
     i32 count = g_typeColl.m_grown;
     for (i32 i = count; i != 0; i--) {
         if (p != 0) {
-            (static_cast<CString*>(p))
-                ->CString::CString(); // 0x1b9b93 re-init the freed registry slot
+            p->CString::CString(); // 0x1b9b93 re-init the freed registry slot
         }
-        p = static_cast<char*>(p) + 4;
+        p++;
     }
 
     if (strcmp(*node, "D") == 0) {
