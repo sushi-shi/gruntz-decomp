@@ -2308,7 +2308,7 @@ state2: {
 build_tail: {
     CMapMgr* pl2 = g_gameReg->m_tileGrid;
     GRID_BOUNDS(pl2);
-    (reinterpret_cast<CByteArray*>(&acc))->~CByteArray();
+    acc.~CDWordArray();
     goto common;
 }
 }

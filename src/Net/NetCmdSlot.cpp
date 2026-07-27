@@ -21,7 +21,7 @@ DATA(0x0024a8a8)
 NetGruntRecMsg g_netGruntRecMsg; // 0x24a8a8 (packed wire message; see NetCmdSlot.h)
 
 template<> DATA(0x0024aca8)
-CPtrList CPtrListPool<CNetCmdPacket>::s_freeList(0xa);
+CPtrList CPtrListPool<GruntRec>::s_freeList(0xa);
 
 DATA(0x0024b6a0)
 char g_idScratch[0x10]; // 0x24b6a0
@@ -30,7 +30,7 @@ DATA(0x0024b6b0)
 char g_idListBuf[0x40]; // 0x24b6b0
 
 RVA(0x000bef80, 0x51)
-i32 CNetSession::Init(void* a1, CMulti* a2, void* a3) {
+i32 CNetSession::Init(CGruntzMgr* a1, CMulti* a2, CNetMgr* a3) {
     if (a1 == 0) {
         return 0;
     }
@@ -40,9 +40,9 @@ i32 CNetSession::Init(void* a1, CMulti* a2, void* a3) {
     if (a3 == 0) {
         return 0;
     }
-    m_0 = static_cast<CNetCmdBuf*>(a1);
+    m_mgr = a1;
     m_session = a2; // the owning CMulti (kept as the +0x4 handle CreateSlot re-passes)
-    m_netMgr = static_cast<CNetMgr*>(a3);
+    m_netMgr = a3;
     Reset();
     m_period = a2->m_5a4;
     return 1;
@@ -57,7 +57,7 @@ i32 CNetSession::Init(void* a1, CMulti* a2, void* a3) {
 // then drain the recycled-node free pool.
 RVA(0x000bf000, 0xd5)
 void CNetSession::ResetSync() {
-    m_0 = 0;
+    m_mgr = 0;
     m_session = 0;
     m_netMgr = 0;
     m_localDesc = 0;
@@ -94,7 +94,7 @@ void CNetSession::ResetSync() {
         r->m_checksum = 0;
         r++;
     } while (--k);
-    CPtrList& freeList = CPtrListPool<CNetCmdPacket>::s_freeList;
+    CPtrList& freeList = CPtrListPool<GruntRec>::s_freeList;
     while (freeList.GetCount() != 0) {
         void* p = freeList.RemoveTail();
         if (p) {
@@ -145,7 +145,7 @@ void CNetSession::Reset() {
 
 RVA(0x000bf580, 0x10)
 void RecycleCmd(void* cmd) {
-    CPtrListPool<CNetCmdPacket>::s_freeList.AddTail(cmd);
+    CPtrListPool<GruntRec>::s_freeList.AddTail(cmd);
 }
 
 // @early-stop
@@ -295,17 +295,18 @@ i32 CNetSession::Tick() {
     return SendBatch() + SendAll();
 }
 
-// @early-stop
-// regalloc/spill wall (~67%): logic correct, retail spills `this` (dead slot) +
-// caches &m_slots[0]; this cl allocates the slot pointers differently.
 RVA(0x000bfb20, 0x1)
 void NoopSync(CGruntzCommand*) {}
 
+// SendAll @0xbfb40 caches &m_slots[0] in [esp+0x28] and `this` in [esp+0x24], and the
+// SendGruntRecord call loads `mov ecx,[esp+0x28]` AFTER a `push ecx` has moved esp
+// down 4 - i.e. it reloads [esp_orig+0x24] == `this`. The old reading (receiver ==
+// &m_slots[0]) is what forced SendGruntRecord onto CNetCmdSlot.
 RVA(0x000bfb40, 0xe2)
 i32 CNetSession::SendAll() {
     i32 count = 0;
     CNetCmdSlot* outer = m_slots;
-    for (i32 oi = 0; oi < 4; oi++) {
+    for (i32 oi = 0; oi < 4; oi++, outer++) {
         if (outer && outer->m_state == 3 && outer->m_isRemote != 0) {
             i32 lo, hi;
             outer->GetRange(&lo, &hi);
@@ -314,11 +315,15 @@ i32 CNetSession::SendAll() {
             do {
                 if (inner && inner->m_state == 3 && inner->m_isRemote == 0) {
                     for (i32 v = lo; v <= hi; v++) {
-                        GruntRec* r = reinterpret_cast<GruntRec*>(outer->FindCmd(v));
+                        GruntRec* r = outer->FindCmd(v);
                         if (r) {
-                            i32 flag = (v == hi) ? 3 : 1;
-                            if (m_slots[0]
-                                    .SendGruntRecord(v, r, flag, oi, inner->m_desc->m_netId)) {
+                            // retail stores this local with two BYTE immediates into a
+                            // dedicated dword slot and pushes the dword (`mov edx,[esp+0x18]`)
+                            u8 flag = 1;
+                            if (v == hi) {
+                                flag = 3;
+                            }
+                            if (SendGruntRecord(v, r, flag, oi, inner->m_desc->m_slotKey)) {
                                 count++;
                             }
                         }
@@ -327,17 +332,21 @@ i32 CNetSession::SendAll() {
                 inner++;
             } while (--in);
         }
-        outer++;
     }
     return count;
 }
 
+// 0xbfc70  CNetSession::SendGruntRecord - the same `m_netMgr->SetData(m_localDesc->m_id,
+// <peer dpid>, 0, msg, len)` send shape as SendOne @0xbfeb0, one slot's grunt record.
 // @early-stop
-// one-register regalloc tie (~90%): byte-identical except retail holds `seq` in
-// esi where this cl holds it in ecx (mov esi/ecx,[esp+0x10]); non-steerable.
-// 0xbfc70  (CNetCmdSlot method: this == the channel base slot)
+// two regalloc/idiom residuals (90.3%): (a) retail parks `seq` in esi (freeing cl to
+// preload the flag byte one instruction early), cl parks it in ecx; (b) the `== 0`
+// return lowers to `xor edx,edx / test eax,eax / sete dl / mov eax,edx` in retail vs
+// cl's `neg eax / sbb eax,eax / inc eax` - the same value, a different MSVC5 boolean
+// idiom. `== 0`, `!x` and an if/else-return all produce cl's neg/sbb/inc form (tested);
+// no source lever. Structure, owner and every store are byte-faithful. Final sweep.
 RVA(0x000bfc70, 0x9c)
-i32 CNetCmdSlot::SendGruntRecord(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32 gruntId) {
+i32 CNetSession::SendGruntRecord(i32 seq, GruntRec* rec, u8 flag, i32 slot, i32 dpTo) {
     if (!rec) {
         return 0;
     }
@@ -345,20 +354,19 @@ i32 CNetCmdSlot::SendGruntRecord(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32
         return 1;
     }
     g_netGruntRecMsg.m_seq = seq;
-    g_netGruntRecMsg.m_flags = static_cast<unsigned char>(flag);
+    g_netGruntRecMsg.m_flags = flag;
     g_netGruntRecMsg.m_slot = static_cast<unsigned char>(slot);
     g_netGruntRecMsg.m_checksum = rec->m_checksum;
     g_netGruntRecMsg.m_count = rec->m_count;
     memcpy(g_netGruntRecMsg.m_payload, rec->m_payload, rec->m_payloadLen);
     // header (0xf) + payload = the wire length.
-    return (reinterpret_cast<CNetMgr*>(m_latchedSeq))
-               ->SetData(
-                   m_desc->m_playerId,
-                   gruntId,
-                   0,
-                   &g_netGruntRecMsg,
-                   rec->m_payloadLen + offsetof(NetGruntRecMsg, m_payload)
-               )
+    return m_netMgr->SetData(
+               m_localDesc->m_id,
+               dpTo,
+               0,
+               &g_netGruntRecMsg,
+               rec->m_payloadLen + offsetof(NetGruntRecMsg, m_payload)
+           )
            == 0;
 }
 
@@ -435,7 +443,7 @@ i32 CNetSession::SendOne(CNetCmdSlot* slot, i32 val) {
     // header (0xe) + payload = the wire length.
     return m_netMgr->SetData(
                m_localDesc->m_id,
-               slot->m_desc->m_netId,
+               slot->m_desc->m_slotKey,
                0,
                &g_netCmdSendMsg,
                entry->m_payloadLen + offsetof(NetCmdSendMsg, m_payload)
@@ -453,7 +461,7 @@ CNetCmdSlot* CNetSession::CreateSlot(i32 index, i32 owner) {
         return 0;
     }
     (static_cast<CNetCmdSlot*>(slot))->ResetAll();
-    return slot->Init(m_session, &m_0[index].m_sel, owner) ? slot : 0;
+    return slot->Init(m_session, &m_mgr->m_options[index], owner) ? slot : 0;
 }
 
 RVA(0x000c0070, 0x15)
@@ -466,7 +474,7 @@ void CNetSession::ResetCmdBuffers() {
 RVA(0x000c00a0, 0x31)
 CNetCmdSlot* CNetSession::FindCmdSlot(i32 playerId) {
     for (i32 i = 0; i < 4; i++) {
-        if (m_slots[i].m_desc->m_netId == playerId) {
+        if (m_slots[i].m_desc->m_slotKey == playerId) {
             return &m_slots[i];
         }
     }
@@ -500,9 +508,9 @@ void CNetSession::Reconcile() {
         do {
             if (s && s->m_state == 3) {
                 s->FullReset(); // 0xc0c20
-                SlotInfo* p = s->m_desc;
+                GruntzPlayer* p = s->m_desc;
                 s->m_state = 1;
-                p->m_dirty = 1;
+                p->m_doneFlag = 1;
             }
             s++;
         } while (--n);
@@ -512,9 +520,9 @@ void CNetSession::Reconcile() {
         do {
             if (s && s->m_state == 3 && s->m_isRemote != 0 && m_seq > s->m_latchedSeq + 2) {
                 s->FullReset(); // 0xc0c20
-                SlotInfo* p = s->m_desc;
+                GruntzPlayer* p = s->m_desc;
                 s->m_state = 1;
-                p->m_dirty = 1;
+                p->m_doneFlag = 1;
             }
             s++;
         } while (--n);
@@ -668,8 +676,8 @@ i32 CNetSession::Verify() {
         for (i32 i = 0; i < 4; i++) {
             CNetCmdSlot* slot = &m_slots[i];
             if (slot != 0 && slot->m_state == 3 && slot->m_isRemote == 0) {
-                CNetCmd* c = static_cast<CNetCmd*>(slot->FindCmd(seq));
-                if (c != 0 && c->m_4 != e->m_checksum) {
+                GruntRec* c = slot->FindCmd(seq);
+                if (c != 0 && c->m_checksum != e->m_checksum) {
                     return 0;
                 }
             }
@@ -688,7 +696,7 @@ i32 CNetSession::Verify() {
 // args in edx/ecx/edi, whereas cl pins 0 in edi (callee-saved, no re-zero) and
 // the args in ecx/eax. A zero-register + arg-register coin-flip; not source-steerable.
 RVA(0x000c0b10, 0x72)
-i32 CNetCmdSlot::Init(CMulti* a1, SlotInfo* a2, i32 a3) {
+i32 CNetCmdSlot::Init(CMulti* a1, GruntzPlayer* a2, i32 a3) {
     if (a2 == 0) {
         return 0;
     }
@@ -790,7 +798,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         return 1;
     }
     if (opcode & 0x80) {
-        return m_owner->DispatchRecvMsg(m_desc->m_netId, static_cast<char*>(rec), size);
+        return m_owner->DispatchRecvMsg(m_desc->m_slotKey, static_cast<char*>(rec), size);
     }
     if (odd == 0) {
         if (m_isRemote != 0) {
@@ -813,7 +821,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     CNetCmdHdr* h = reinterpret_cast<CNetCmdHdr*>(p);
     i32 seq = h->m_sequence;
     i32 base = h->m_windowBase;
-    i32 flags = h->m_flags;
+    i32 checksum = h->m_checksum;
     u8 count = h->m_entryCount;
     char* cursor = p + 13;
     rem -= 13;
@@ -824,7 +832,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
             return 0;
         }
         if (opcode & 2) {
-            i32 pid = slot->m_desc->m_cmdWord & 0xff;
+            i32 pid = slot->m_desc->m_playerIndex & 0xff;
             m_ackFlags[pid] = 1;
             if (seq > m_latchedSeq) {
                 m_latchedSeq = seq;
@@ -848,13 +856,14 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     }
     AdvanceSeq(seq);
 
-    CNetCmdPacket* pkt = static_cast<CNetCmdPacket*>(Unmatched_bf530(0));
-    pkt->m_sequence = seq;
-    pkt->m_owner = this;
-    pkt->m_flags = static_cast<u8>(flags);
-    pkt->m_payloadLength = rem;
+    // retail order: +0x08 count byte, +0x04 checksum, +0x00 seq, +0x0c length
+    GruntRec* pkt = static_cast<GruntRec*>(Unmatched_bf530(0));
+    pkt->m_count = count;
+    pkt->m_checksum = checksum;
+    pkt->m_seq = seq;
+    pkt->m_payloadLen = rem;
     memcpy(pkt->m_payload, cursor, rem);
-    AddCmd(reinterpret_cast<CNetCmd*>(pkt));
+    AddCmd(pkt);
 
     for (i32 i = count & 0xff; i > 0; i--) {
         u8 b = static_cast<u8>(*cursor);
@@ -977,7 +986,7 @@ char* __stdcall NetCmdIdToString(i32* arr) {
 }
 
 RVA(0x000c1170, 0x26)
-void CNetCmdSlot::AddCmd(CNetCmd* cmd) {
+void CNetCmdSlot::AddCmd(GruntRec* cmd) {
     if (cmd != 0 && FindCmd(cmd->m_seq) == 0) {
         m_cmds.AddTail(cmd);
     }
@@ -987,7 +996,7 @@ RVA(0x000c11b0, 0x55)
 void CNetCmdSlot::RemoveCmd(i32 seq) {
     POSITION pos = m_cmds.GetHeadPosition();
     while (pos != 0) {
-        CNetCmd* cmd = static_cast<CNetCmd*>(m_cmds.GetNext(pos));
+        GruntRec* cmd = static_cast<GruntRec*>(m_cmds.GetNext(pos));
         if (seq == cmd->m_seq) {
             if (pos != 0) {
                 // retail recovers the consumed node from the advanced position
@@ -1021,7 +1030,7 @@ void CNetCmdSlot::GetRange(i32* pMin, i32* pMax) {
         return;
     }
     do {
-        CNetCmd* cmd = static_cast<CNetCmd*>(m_cmds.GetNext(pos));
+        GruntRec* cmd = static_cast<GruntRec*>(m_cmds.GetNext(pos));
         if (cmd->m_seq > *pMax) {
             *pMax = cmd->m_seq;
         }
@@ -1032,10 +1041,10 @@ void CNetCmdSlot::GetRange(i32* pMin, i32* pMax) {
 }
 
 RVA(0x000c12b0, 0x1f)
-CNetCmd* CNetCmdSlot::FindCmd(i32 seq) {
+GruntRec* CNetCmdSlot::FindCmd(i32 seq) {
     POSITION pos = m_cmds.GetHeadPosition();
     while (pos != 0) {
-        CNetCmd* cmd = static_cast<CNetCmd*>(m_cmds.GetNext(pos));
+        GruntRec* cmd = static_cast<GruntRec*>(m_cmds.GetNext(pos));
         if (seq == cmd->m_seq) {
             return cmd;
         }
@@ -1046,7 +1055,7 @@ CNetCmd* CNetCmdSlot::FindCmd(i32 seq) {
 RVA(0x000c12e0, 0x2c)
 void CNetCmdSlot::ClearCmds() {
     while (m_cmds.GetCount() != 0) {
-        CNetCmd* cmd = static_cast<CNetCmd*>(m_cmds.RemoveHead());
+        GruntRec* cmd = static_cast<GruntRec*>(m_cmds.RemoveHead());
         if (cmd != 0) {
             RecycleCmd(cmd);
         }

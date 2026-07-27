@@ -3,6 +3,6 @@
 
 #include <Utils/PtrListPool.h>
 
-struct CNetCmdPacket;
+struct GruntRec;
 
 #endif // NET_CMDPOOL_H

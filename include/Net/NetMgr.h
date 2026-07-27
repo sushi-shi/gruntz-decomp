@@ -19,6 +19,8 @@ void ActiveWait(u32 milliseconds); // 0x13dfe0
 CString __stdcall operator+(const CString& lhs, const char* rhs);
 
 class GruntzPlayer;     // <Gruntz/GruntzPlayer.h>  - the leaving-player slot
+class CGruntzMgr;       // <Gruntz/GruntzMgr.h> - CNetSession::m_mgr (its m_options[4] IS
+                        //                       the per-channel roster CreateSlot binds)
 class CGruntzCmdMgr;    // <Gruntz/GruntzCmdMgr.h>  - the m_4 game-mgr's +0x6c command manager
 class CNetMgr;          // defined below; the command slot caches one as its +0x1c owner
 class CMulti;           // <Gruntz/Multi.h> - the multiplayer game-state (owns CNetSession::Init a2)
@@ -138,34 +140,37 @@ struct CNetChannelTablePacket {
 SIZE(0x88);
 #pragma pack(pop)
 
-struct CNetCmd {
-    i32 m_seq; // +0x0  command sequence number
-    i32 m_4;   // +0x4  payload word (resync compare)
-};
-SIZE_UNKNOWN(); // queued-command view (2 fields pinned); retail size TBD
+// (CNetCmd + CNetCmdPacket DISSOLVED 2026-07-27: both were views of GruntRec, the
+// ONE queued/resync command record. PROVEN by the pool allocator Unmatched_bf530
+// @0xbf530 - `push 0x410; call ??2@YAPAXI@Z` and a `rep stos` of 0x104 dwords, i.e.
+// sizeof(GruntRec) - and by the field roles: ProcessCmd @0xc0c70 fills the fresh
+// record +0x00=seq, +0x04=the header dword at hdr+0x8, +0x08(byte)=hdr+0xc, +0x0c=len,
+// +0x10=payload, and SendGruntRecord @0xbfc70 ships exactly those back out as
+// m_checksum/m_count/m_payload. CNetSession::Verify's compare
+// (`FindCmd(seq)->+0x4 != m_records[..].m_checksum`) closes it: +0x04 IS the checksum
+// on both sides. CNetCmdPacket's "m_owner" (+0x04 = the slot `this`) was fabricated -
+// retail stores the header checksum there.)
 
-// The per-slot record embedded at CNetCmdBuf+0x150 (the ex-CColorSlot view merged
-// in - its m_slotHead was the m_cmdWord dword, its color-owner id sits at +0x08).
-struct SlotInfo {
-    i32 m_cmdWord;              // +0x00 current command word (Dispatch arg; low byte = pid)
-    i32 m_playerId;             // +0x04 DirectPlay player id (SetData `a`, Recv/Read channel)
-    i32 m_currentOwnerPlayerId; // +0x08 current color-owner player id
-    char pad0c[0x18 - 0x0c];
-    i32 m_netId; // +0x18 peer/target id (SetData `b`)
-    char pad1c[0x2c - 0x1c];
-    i32 m_dirty; // +0x2c set on slot re-init
-};
-SIZE_UNKNOWN();
+// (SlotInfo DISSOLVED 2026-07-27: it was a fake view of GruntzPlayer. PROVEN by
+// CNetSession::CreateSlot @0xbfff0, whose descriptor argument is computed as
+// `[this+0x00] + 0x238*index + 0x150` == &CGruntzMgr::m_options[index] (the 4x0x238
+// per-player array at +0x150), and by CMulti::CreateSession @0xbbc90, which walks the
+// SAME `[CMulti+0x04] + 0x150 + i*0x238` records (`edi` steps 0x238 to 0x8e0) reading
+// their +0x14/+0x18/+0x20 before calling CreateSlot. Field map:
+//   m_cmdWord -> m_playerIndex (+0x00), m_currentOwnerPlayerId -> m_008 (+0x08),
+//   m_netId -> m_slotKey (+0x18), m_dirty -> m_doneFlag (+0x2c).
+// The ex-m_playerId (+0x04) never existed: the only read of a descriptor +0x04 as an
+// integer DPID was 0xbfc70, which is CNetSession::SendGruntRecord (not a slot method)
+// reading its OWN m_localDesc->m_id. GruntzPlayer +0x04 is the m_name CString that
+// GetName @0x1f450 (`add ecx,4` + CString copy-ctor) returns.
 
 struct CNetCmdSlot {
     i32 m_state;    // +0x0   "armed"/slot-state flag (AckDropPlayer sets it to 1; ==3 => active)
     i32 m_isRemote; // +0x4  0 = local channel (the ex-"m_resetGuard" ==0 tests
                     // were the same local-channel gate - ONE role)
-    // +0x8  command: latched sequence (Touch copies m_baseSeq here); sync reuses the
-    // same i32 as a counter / a CNetMgr* it casts (SendGruntRecord). One canonical name.
-    i32 m_latchedSeq;
-    SlotInfo* m_desc; // +0xc  the player descriptor (the ex-"m_cmdHead" i32* reads
-                      // were its fields: [0]=m_cmdWord, [6]=m_netId, [0xb]=m_dirty)
+    i32 m_latchedSeq;    // +0x8  latched sequence (Touch copies m_baseSeq here)
+    GruntzPlayer* m_desc; // +0xc  the roster record this channel drives: a pointer
+                          //       straight into CGruntzMgr::m_options[index]
     i32 m_latency;    // +0x10  the channel activity clock (+= elapsed; CheckLatency
                       // compares vs the cap - the ex-"m_timer" was the same counter)
     i32 m_baseSeq;    // +0x14  base command sequence number (both views)
@@ -195,22 +200,19 @@ struct CNetCmdSlot {
     i32 NetCmdIdFind(i32* arr, i32 v);   // c0fd0  is `v` one of the three ids in `arr`?
     void NetCmdIdAdd(i32* arr, i32 v);   // c1010  add `v` to the first free (-1) slot
     void NetCmdIdClear(i32* arr, i32 v); // c1060  clear (-1) the first slot equal to `v`
-    void AddCmd(CNetCmd* cmd);           // c1170  enqueue a command (dedup by seq)
+    void AddCmd(GruntRec* cmd);          // c1170  enqueue a command (dedup by seq)
     void RemoveCmd(i32 seq);             // c11b0  drop one queued command
     void GetRange(i32* pMin, i32* pMax); // c1230  min/max queued sequence
-    CNetCmd* FindCmd(i32 seq);           // c12b0  find a queued command by seq
+    GruntRec* FindCmd(i32 seq);          // c12b0  find a queued command by seq
     void ClearCmds();                    // c12e0  drain + recycle the queue
     void Touch();                        // c1390  latch the slot (sets +4, +8)
     void FullReset();                    // c0c20  zero the command fields + both ranges
     void ClearAckFlags(); // bf120  zero the +0x3c..+0x48 ack-flag dwords (sync InitSub3c)
-    // Lobby-sync: emit one grunt-state record for the channel (sync SendAll's per-slot
-    // send; reads m_08 as CNetMgr* + m_desc as the descriptor, ships via SetData).
-    i32 SendGruntRecord(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32 gruntId); // bfc70
     CString
     BuildHostName(); // bc3f0  the slot's host name (by-value NRVO, fwds m_desc->GetName) [multi]
     i32 Init(
         CMulti* a1,
-        SlotInfo* a2,
+        GruntzPlayer* a2,
         i32 a3
     ); // c0b10  seed a fresh slot, then ClearCmds + reset both ranges
     i32 ProcessCmd(i32 playerId, void* rec, i32 size); // c0c70  parse/dispatch a command record
@@ -221,30 +223,24 @@ struct CNetCmdSlot {
 };
 SIZE(0x64); // fully-laid-out inline command slot (array stride 0x64)
 
+// The 13-byte on-the-wire header a command record carries in front of its payload
+// (ProcessCmd walks it field-by-field then advances the cursor by exactly 13). Packed
+// like its NetCmdSendMsg/NetGruntRecMsg siblings - the wire has no padding.
+#pragma pack(push, 1)
 struct CNetCmdHdr {
     i32 m_sequence;   // +0x0  sequence
     i32 m_windowBase; // +0x4  window base
-    i32 m_flags;      // +0x8  flags word
+    i32 m_checksum;   // +0x8  game-state checksum (lands in the record's GruntRec::m_checksum;
+                      //       Verify compares it against the resync ring's copy)
     u8 m_entryCount;  // +0xc  entry count
 };
-SIZE_UNKNOWN(); // record header prefix (payload follows); full record size TBD
+SIZE(0xd); // 4+4+4+1, packed: ProcessCmd's cursor advances +4/+4/+5 over exactly these
+#pragma pack(pop)
 
-struct CNetCmdPacket {
-    i32 m_sequence;       // +0x0  sequence
-    CNetCmdSlot* m_owner; // +0x4  owning slot (this)
-    u8 m_flags;           // +0x8  flag byte
-    char m_pad9[0xc - 9];
-    i32 m_payloadLength; // +0xc  payload length
-    char m_payload[1];   // +0x10 payload
-};
-SIZE_UNKNOWN(); // trailing-payload packet (flexible array); fixed size TBD
-
-struct CNetCmdBuf {
-    char m_pad0[0x150]; // +0x000
-    SlotInfo m_sel;     // +0x150  the per-slot record (ex the CColorSlot 0xc-view)
-    char m_pad180[0x238 - 0x180];
-};
-SIZE(0x238); // fully-known command buffer (array stride 0x238)
+// (CNetCmdBuf DISSOLVED 2026-07-27: the "0x238-byte command buffer array" was
+// CGruntzMgr itself - its 0x150 header plus the GruntzPlayer m_options[4] array whose
+// element stride IS 0x238. CMulti::CreateSession @0xbbc90 passes `[CMulti+0x04]`
+// (CState::m_4, the CGruntzMgr singleton) as CNetSession::Init's a1.)
 
 struct GruntRec {
     i32 m_seq;             // +0x00 sequence number
@@ -266,13 +262,13 @@ struct CNetSession {
     // per offset, so each carries a single canonical (typed/semantic) name - the
     // former hex/command-view aliases (m_00/m_4/m_8/m_c/m_10/m_14/m_18/m_1c/m_1b0)
     // are folded onto them.
-    CNetCmdBuf*
-        m_0; // +0x00  base of the per-slot command-buffer array (Init a1); ResetSync clears it
+    CGruntzMgr* m_mgr; // +0x00  the game-manager singleton (Init a1 == CMulti::m_4);
+                       //        CreateSlot hands slot[i] &m_mgr->m_options[i]
     CMulti*
         m_session; // +0x04  owning CMulti (Init a2, kept as an i32 handle re-passed to CreateSlot)
     CNetMgr* m_netMgr;            // +0x08  the DirectPlay CNetMgr peer (Init a3; endpoint at +0x18)
-    CNetSessionNode* m_localDesc; // +0x0c  the LOCAL player session record (its m_id
-                                  //        +0x4 was the ex-SlotInfo view m_playerId)
+    CNetSessionNode* m_localDesc; // +0x0c  the LOCAL player session record; its m_id (+0x4)
+                                  //        is the `idFrom` every SetData send passes
     i32 m_tick;                   // +0x10  sub-tick counter (also the lobby slot-count-id base)
     i32 m_snapshotDone;           // +0x14  per-period snapshot-built flag
     i32 m_seq;                    // +0x18  reconcile-period sequence (Verify: (m_seq-2)%128)
@@ -297,9 +293,9 @@ struct CNetSession {
     // Scan the four inline command slots for the first active (m_state==3),
     // un-reset (m_isRemote==0) slot whose latency exceeds key (unsigned).
     CNetCmdSlot* FindSlot(u32 key); // c0460
-    // Wiring init (caches the owner pointers then Reset()s). a1=command-buffer array.
-    i32
-    Init(void* a1, class CMulti* a2, void* a3); // bef80  (a2 is the owning CMulti; reads a2->m_5a4)
+    // Wiring init (caches the owner pointers then Reset()s). CMulti::CreateSession
+    // @0xbbc90 pushes ([CMulti+0x04] = CGruntzMgr*, this, [CMulti+0x524] = CNetMgr*).
+    i32 Init(CGruntzMgr* a1, class CMulti* a2, CNetMgr* a3); // bef80 (reads a2->m_5a4)
 
     // --- lobby-sync methods (ex-CLobbySync, folded onto the same object) ---
     ~CNetSession();      // b6220  ResetSync + vector-destroy the 4 slots [multi]
@@ -308,9 +304,16 @@ struct CNetSession {
     i32 Dispatch(i32 a, CNetCtrlMsg* b, i32 c); // bf700
     i32 DispatchMsg(CNetCtrlMsg* m, i32 arg2);  // bf7c0
     i32 Tick();                              // bf9e0  snapshot -> broadcast -> flush
-    i32 SendAll();                           // bfb40
-    i32 SendBatch();                         // bfd40
-    i32 SendOne(CNetCmdSlot* s, i32 v);      // bfeb0
+    i32 SendAll();   // bfb40
+    // Ship one grunt-state record to `dpTo` (0xbfc70). Retail's receiver is the
+    // SESSION, not a slot: it reads [this+0x08] as the CNetMgr peer and [this+0x0c]+4
+    // as `idFrom` - exactly SendOne's `m_netMgr->SetData(m_localDesc->m_id, ...)`
+    // shape - and SendAll @0xbfb40 passes it the saved `this` ([esp+0x24]), not
+    // &m_slots[0]. (Was declared on CNetCmdSlot, which forced a CNetMgr* pun on the
+    // slot's m_latchedSeq and an integer read of m_desc+0x04.)
+    i32 SendGruntRecord(i32 seq, GruntRec* rec, u8 flag, i32 slot, i32 dpTo); // bfc70
+    i32 SendBatch();                                                          // bfd40
+    i32 SendOne(CNetCmdSlot* s, i32 v);                                       // bfeb0
     void Reconcile();                        // c00f0
     i32 Advance();                           // c01d0
     CGruntzCommand* GetSlotPtr(i32 v);       // c0430  id-map fetch (ex "GlyphTable::Get")

@@ -77,7 +77,6 @@
 #include <Gruntz/SoundState.h>            // ex Globals.h transitive
 #include <Gruntz/Dialogs.h>
 #include <Net/NetLobby.h> // NetLobby::g_curDlg
-#include <Gruntz/PlayStateView.h>
 #include <Gruntz/GameObjectFactory.h>
 
 DATA(0x00248ce8)
@@ -2566,20 +2565,22 @@ i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, void* snapshot) {
 // game is still in play, flushes the +0x54/+0x68 controllers, notifies slot 25
 // (+0x64), ticks the input singleton and runs the post-switch hook. Returns 1.
 // @early-stop
-// regalloc wall (~84%): logic is exact + the paused-status block matches byte for
-// byte. Retail reserves edi at entry (push edi) and reuses it - first as the
-// status-done counter, then as arg0 (`full`) across the teardown - so the second
-// half's [esp+N] offsets all sit +4 from mine (MSVC here keeps the counter in edx
-// and re-reads `full`/`stopBank` off the stack, no edi push). Pure register-
-// reuse/stack-offset shift; see docs/patterns/pin-local-for-callee-saved-reg.md.
+// two-instruction regalloc residual (99.90%): the whole body - including the
+// m_session->m_slots walk - is byte-faithful. Retail parks m_sound in eax for the
+// `m_pCurrent ? IsBusy() : 0` chain (`mov eax,[esi+0x48] / mov ecx,[eax+0x1c]`)
+// where cl reuses ecx for both (`mov ecx,[esi+0x48] / mov ecx,[ecx+0x1c]`).
+// Hoisting m_sound into a named local makes it WORSE (96.06%, tested); no lever.
+// (The old "~84% / edi stack-offset shift" note was stale - see git history.)
 RVA(0x0008e980, 0x11e)
 i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
     if (m_curState && m_curState->Update() == GAMESTATE_NONE) {
-        PlayStatusSlot* s = (reinterpret_cast<CPlayStateView*>(m_curState))->m_520;
+        // retail: `mov eax,[m_curState+0x520] / add eax,0x20` then the standard
+        // 4x0x64 slot walk testing m_state==3 - i.e. CMulti::m_session->m_slots,
+        // not a "+0x520 status array" (the ex-CPlayStateView/PlayStatusSlot views).
         i32 done = 0;
+        CNetCmdSlot* s = static_cast<CMulti*>(m_curState)->m_session->m_slots;
         for (i32 d = 4; d != 0; d--) {
-            i32* st = &s->m_status;
-            if (st && *st == 3) {
+            if (s != 0 && s->m_state == 3) {
                 done++;
             }
             s++;

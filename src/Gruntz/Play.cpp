@@ -3854,7 +3854,9 @@ i32 CPlay::PostActionCue(i32 cueId) {
 RVA(0x000d72c0, 0x128)
 i32 CPlay::BuildHelpReveal(i32 final) {
     static_cast<void>(final);
-    CImage* view = reinterpret_cast<CImage*>(m_world->m_drawTarget->m_backPair);
+    // only null-tested (retail: `mov eax,[..+0x14] / test eax,eax`), so the ex-CImage
+    // reinterpret carried no information - the slot's own type is enough
+    CDDrawSurfacePair* view = m_world->m_drawTarget->m_backPair;
     if (view == 0) {
         return 0;
     }

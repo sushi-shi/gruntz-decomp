@@ -82,7 +82,10 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     img->m_width,
                     img->m_height,
                     img->m_pixels,
-                    reinterpret_cast<BITMAPINFO*>(img),
+                    // API-forced: BITMAPINFO is a BITMAPINFOHEADER immediately followed
+                    // by its colour table, which is exactly CRezImage +0x00 m_bih +
+                    // +0x28 m_pal - the SDK has no separate "header+table" type
+                    reinterpret_cast<BITMAPINFO*>(&img->m_bih),
                     DIB_PAL_COLORS,
                     SRCCOPY
                 );
@@ -98,7 +101,10 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     img->m_width,
                     img->m_height,
                     img->m_pixels,
-                    reinterpret_cast<BITMAPINFO*>(img),
+                    // API-forced: BITMAPINFO is a BITMAPINFOHEADER immediately followed
+                    // by its colour table, which is exactly CRezImage +0x00 m_bih +
+                    // +0x28 m_pal - the SDK has no separate "header+table" type
+                    reinterpret_cast<BITMAPINFO*>(&img->m_bih),
                     DIB_RGB_COLORS,
                     SRCCOPY
                 );

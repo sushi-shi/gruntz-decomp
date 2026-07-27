@@ -527,6 +527,8 @@ i32 CRezImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, i3
         }
         m_dibSection = CreateDIBSection(
             static_cast<HDC>(a2),
+            // API-forced: BITMAPINFO == BITMAPINFOHEADER + the colour table that
+            // follows it in the same buffer (m_bih at +0x00, m_pal at +0x28)
             reinterpret_cast<BITMAPINFO*>(&m_bih),
             DIB_PAL_COLORS,
             reinterpret_cast<void**>(&m_pixels),
@@ -536,6 +538,8 @@ i32 CRezImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, i3
     } else {
         m_dibSection = CreateDIBSection(
             static_cast<HDC>(a2),
+            // API-forced: BITMAPINFO == BITMAPINFOHEADER + the colour table that
+            // follows it in the same buffer (m_bih at +0x00, m_pal at +0x28)
             reinterpret_cast<BITMAPINFO*>(&m_bih),
             DIB_RGB_COLORS,
             reinterpret_cast<void**>(&m_pixels),

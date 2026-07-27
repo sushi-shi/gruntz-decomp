@@ -2433,7 +2433,7 @@ void CMulti::AckDropPlayer(i32 id) {
             slot->Touch();
             slot->FullReset();
             slot->m_state = 1;
-            slot->m_desc->m_dirty = 1;
+            slot->m_desc->m_doneFlag = 1;
         }
         return;
     }
@@ -3382,7 +3382,7 @@ CNetCmdSlot::CNetCmdSlot() {
 // CNetSyncCheck::AllSlotsReady ~79%); not source-steerable. Final sweep.
 RVA(0x000bbf80, 0xb7)
 void CNetSession::ResetAll() {
-    m_0 = 0;
+    m_mgr = 0;
     m_session = 0;
     m_netMgr = 0;
     m_localDesc = 0;
@@ -3530,7 +3530,7 @@ void CMulti::DropTimeout() {
     if (slot == 0) {
         return;
     }
-    g_dropPlayerId = slot->m_desc->m_netId;
+    g_dropPlayerId = slot->m_desc->m_slotKey;
     g_sessionName = slot->BuildHostName(); // NRVO: nm constructed directly from m_desc->GetName()
     SendNetStat(0x40c, g_dropPlayerId, 1);
     OnDropPlayer();
@@ -3542,18 +3542,7 @@ void CMulti::DropTimeout() {
 // itself returns CString by value. Same by-value shape as GetName.
 RVA(0x000bc3f0, 0x1e)
 CString CNetCmdSlot::BuildHostName() {
-    // @identity-TODO SlotInfo vs GruntzPlayer CONTRADICT at +0x04, so this cross-cast
-    // cannot be folded yet. Retail here does `mov ecx,[this+0xc]` (m_desc) and calls the
-    // 0x3e54 thunk -> 0x1f450, which is `add ecx,4; call ??0CString@@QAE@ABV0@@Z` - i.e.
-    // m_desc+0x04 is a CString. But CNetSession::SendGruntRecord (0xbfc70) reads the SAME
-    // slot as an integer DPID (`mov eax,[edx+0xc]; mov ecx,[eax+0x4]; push ecx` into
-    // CNetMgr::SetData), which is what SlotInfo::m_playerId models. Both cannot be right.
-    // What settles it: 0x1f450 has ~8 callers on apparently different receivers (CMulti,
-    // CMultiBootyState, CExitTrigger); MSVC5 has no /OPT:ICF, so they are all ONE class -
-    // identify that class from the new-sites of each receiver (`push <n>; call ??2`) and
-    // either GruntzPlayer::GetName is mis-attributed (the 0x157a80 pattern) or SlotInfo's
-    // +0x04 is. Do NOT fold on the name alone.
-    return (reinterpret_cast<GruntzPlayer*>(m_desc))->GetName();
+    return m_desc->GetName();
 }
 
 RVA(0x000bc420, 0x2b)
@@ -3891,7 +3880,7 @@ i32 CMulti::ResetPlayerCommands(i32 id) {
     i32 end = seq + static_cast<i32>(m_5a4) * 3;
     for (; seq < end; seq++) {
         NetGameMgr()->m_cmdSubMgr->RemoveMatchingTarget(
-            static_cast<char>(slot->m_desc->m_cmdWord),
+            static_cast<char>(slot->m_desc->m_playerIndex),
             static_cast<char>(seq)
         );
         slot->RemoveCmd(seq / static_cast<i32>(m_5a4));

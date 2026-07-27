@@ -5,7 +5,7 @@
 
 RVA(0x000bf530, 0x3b)
 void* Unmatched_bf530(int bClear) {
-    CPtrList& freeList = CPtrListPool<CNetCmdPacket>::s_freeList;
+    CPtrList& freeList = CPtrListPool<GruntRec>::s_freeList;
     if (freeList.GetCount()) {
         void* p = freeList.RemoveTail();
         if (bClear) {

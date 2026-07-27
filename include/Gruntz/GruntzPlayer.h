@@ -61,7 +61,10 @@ public:
     i32 Deactivate(); // 0x0db2f0 (ex "Cdb2f0::Finalize"; clears the board bundle + m_020)
     CString GetDefaultName(i32); // 0x0dafb0 (/GX, returns "Player"; ret 0x8 = thiscall + 1 arg)
 
-    i32 m_playerIndex;  // +0x000  = -1 (default) / index (seeded)
+    // +0x000  = -1 (default) / index (seeded). The net layer ships its low byte as the
+    // per-command player id (CNetCmdSlot::ProcessCmd's `m_desc->m_playerIndex & 0xff`
+    // ack-flag index; CMulti's `(char)slot->m_desc->m_playerIndex` wire field).
+    i32 m_playerIndex;
     CString m_name;     // +0x004  name ("Player")
     i32 m_008;          // +0x008  per-player selected sprite descriptor/index (CPlay's
                         //         grid walk feeds m_options[g_curPlayer].m_008 to the
@@ -70,12 +73,16 @@ public:
     i32 m_00c;          // +0x00c  (serialized) per-mode id / sound id / key word
     i32 m_configId;     // +0x010  = 0; per-slot config id (LoadConfig arg; roster combo base)
     i32 m_014;          // +0x014  = 1; armed / arrival gate (roster: human-vs-computer)
-    i32 m_slotKey;      // +0x018  = -2; slot key (CGruntzMgr::FindOptionsSlot match)
+    // +0x018  = -2; the DirectPlay player id owning this roster slot (CGruntzMgr::
+    // FindOptionsSlot's match key; compared against CMulti::m_hostIndex; the net layer
+    // uses it as SetData's `idTo` and as CNetSession::FindCmdSlot's lookup key).
+    i32 m_slotKey;
     i32 m_readyFlag;    // +0x01c  (serialized) roster: ready flag
     i32 m_liveGate;     // +0x020  = 0; loaded / live gate
     i32 m_clearedRound; // +0x024  (serialized) "already cleared this round"
     i32 m_joined;       // +0x028  joined
-    i32 m_doneFlag;     // +0x02c  = 0; done
+    i32 m_doneFlag;     // +0x02c  = 0; done (CNetSession::Reconcile + CMulti set it on the
+                        //          player whose channel just got reset/dropped)
     i32 m_030;          // +0x030  = 0
     char m_pad034[0x38 - 0x34]; // +0x034
     // The REAL embedded spawn/board bundle. Proven by the array element ctor/dtor

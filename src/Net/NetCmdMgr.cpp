@@ -1,5 +1,5 @@
 #include <Ints.h>
-#include <Net/NetMgr.h>       // shared CNetCmdBuf / SlotInfo (0x238-byte command buffer)
+#include <Net/NetMgr.h>       // shared CNetSession / CNetCmdSlot
 #include <Gruntz/Multi.h>     // the g_multiState singleton is a CMulti (xref-proven)
 #include <Gruntz/Dialogs.h>   // CMultiStartDlg - SelectColor's real receiver (ex CNetSessHost)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr - m_slots (its m_options[] is the slot array)
