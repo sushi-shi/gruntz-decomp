@@ -498,6 +498,9 @@ CDDSurface* CDDrawPtrCollections::Create7f0_1(i32 a) {
 RVA(0x00142260, 0xd2)
 CDDSurface* CDDrawPtrCollections::CreateA(i32 a, i32 b, i32 c, i32 d, i32 e) {
     CFileImageSurface* item = new CFileImageSurface;
+    // the create slot's first arg is polymorphic - CImage passes a frame desc here, the
+    // surface-pair path passes a width - so the i32 param is right and widening it to
+    // ResolveEx's void* is API-forced at this one seam
     if (!item->ResolveEx(this, reinterpret_cast<void*>(a), b, c, d, e)) {
         delete item;
         return 0;
@@ -595,6 +598,7 @@ i32 CDDrawPtrCollections::CreateRange(
             }
             strcat(buf, suffix);
         }
+        // Createa58_3's first param is the same polymorphic create arg - API-forced
         CDDSurface* item = Createa58_3(reinterpret_cast<i32>(buf), a6, a7);
         if (item == 0) {
             break;
@@ -761,6 +765,12 @@ void CDDrawPtrCollections::RemoveItemB(CDDPalette* item) {
 RVA(0x00142f40, 0x7c)
 CDDPalette* CDDrawPtrCollections::MakeB2(void* a, i32 b) {
     CDDPalette* item = new CDDPalette;
+    // @identity-TODO NARROWED 2026-07-27: CDDPalette::LoadFromFile provably takes a
+    // PATH - its body is strrchr(filename,'.') + a .BMP/.PCX/.PAL extension dispatch -
+    // so this void* carries a path. But the chain above is void*: AllocBufMakeB2(void*
+    // data) and CreateWorker2C(void* a1, const char* key, i32) carry a SEPARATE key
+    // string, so either a1 is the path or the arg routing there is wrong. Retyping the
+    // chain needs the 0x165a10 / 0x142f40 disasm - do not guess.
     if (!item->LoadFromFile(m_device, reinterpret_cast<char*>(a), b)) {
         if (item) {
             item->Destroy();
@@ -789,6 +799,8 @@ CDDPalette* CDDrawPtrCollections::MakeB(void* rgb, i32 flags) {
 RVA(0x00143040, 0x7c)
 CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
     CDDPalette* item = new CDDPalette;
+    // AllocBufCreate hands this an i32 handle; CDDPalette::Create's second param is
+    // void* entries (it takes either a palette-entry block or a handle) - API-forced
     if (!item->Create(m_device, reinterpret_cast<void*>(a), b)) {
         if (item) {
             item->Destroy();
