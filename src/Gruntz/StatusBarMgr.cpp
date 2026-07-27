@@ -102,16 +102,16 @@ i32 CStatusBarMgr::LoadTabSprites() {
             // GetSel + SetAllTypes/Formats. Pointer locals (aptr/bptr/y) match retail's
             // incremented [esp+0x18]/[esp+0x28]/[esp+0x20] induction variables.
             {
-                i32* aptr = reinterpret_cast<i32*>(m_slotNotify); // +0x204, stride 4
+                CSBI_ImageSet** aptr = m_slotNotify; // +0x204, stride 4
                 i32* bptr = &m_slots[0].m_value;                  // +0x224, stride 0x18
                 i32 y = by + 0xfe;
                 for (i = 0; i < 5; i++) {
-                    it = new CSBI_ImageSet;
+                    CSBI_ImageSet* set = new CSBI_ImageSet;
                     r.left = bx + 0xe;
                     r.top = y - 0x32;
                     r.right = bx + 0x39;
                     r.bottom = y;
-                    if (!it->SetupImage(
+                    if (!set->SetupImage(
                             this,
                             code,
                             0x64 + i,
@@ -121,13 +121,13 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             *bptr,
                             0
                         )) {
-                        if (it) {
-                            delete it;
+                        if (set) {
+                            delete set;
                         }
                         return 0;
                     }
-                    m_tabLists[2].AddTail(it);
-                    *aptr = reinterpret_cast<i32>(it);
+                    m_tabLists[2].AddTail(set);
+                    *aptr = set;
                     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(
                         g_gameReg->m_options[g_curPlayer].m_008,
                         0
@@ -135,9 +135,9 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (sel == 0) {
                         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
                     }
-                    (static_cast<CDDrawWorker*>((static_cast<CSBI_ImageSet*>(it))->m_34))
+                    (static_cast<CDDrawWorker*>(set->m_34))
                         ->SetAllTypes(10);
-                    (static_cast<CDDrawWorker*>((static_cast<CSBI_ImageSet*>(it))->m_34))
+                    (static_cast<CDDrawWorker*>(set->m_34))
                         ->SetAllFormats(sel);
                     aptr++;
                     bptr += 6;
@@ -430,16 +430,16 @@ i32 CStatusBarMgr::LoadTabSprites() {
             // uses c-4/c/c+4. ebp is reused as the item pointer (by is dead here).
             {
                 i32* cfgp = &m_hlGrid[4].m_value;                     // +0x3dc, stride 0x18
-                i32* cachep = reinterpret_cast<i32*>(&m_hlNotify[4]); // +0x4a8, stride 4
+                CSBI_ImageSet** cachep = &m_hlNotify[4]; // +0x4a8, stride 4
                 i32 y = by + 0x155;
                 i32 c = 0xd7;
                 for (i = 0; i < 4; i++) {
-                    it = new CSBI_ImageSet;
+                    CSBI_ImageSet* set = new CSBI_ImageSet;
                     r.left = bx + 0x1d;
                     r.top = y - 0x17;
                     r.right = bx + 0x34;
                     r.bottom = y;
-                    if (!it->SetupImage(
+                    if (!set->SetupImage(
                             this,
                             code,
                             c - 4,
@@ -449,19 +449,19 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             cfgp[-24],
                             0
                         )) {
-                        if (it) {
-                            delete it;
+                        if (set) {
+                            delete set;
                         }
                         return 0;
                     }
-                    m_tabLists[3].AddTail(it);
-                    cachep[-4] = reinterpret_cast<i32>(it);
-                    it = new CSBI_ImageSet;
+                    m_tabLists[3].AddTail(set);
+                    cachep[-4] = set;
+                    set = new CSBI_ImageSet;
                     r.left = bx + 0x45;
                     r.top = y - 0x17;
                     r.right = bx + 0x5c;
                     r.bottom = y;
-                    if (!it->SetupImage(
+                    if (!set->SetupImage(
                             this,
                             code,
                             c,
@@ -471,19 +471,19 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             cfgp[0],
                             0
                         )) {
-                        if (it) {
-                            delete it;
+                        if (set) {
+                            delete set;
                         }
                         return 0;
                     }
-                    m_tabLists[3].AddTail(it);
-                    cachep[0] = reinterpret_cast<i32>(it);
-                    it = new CSBI_ImageSet;
+                    m_tabLists[3].AddTail(set);
+                    cachep[0] = set;
+                    set = new CSBI_ImageSet;
                     r.left = bx + 0x6d;
                     r.top = y - 0x17;
                     r.right = bx + 0x84;
                     r.bottom = y;
-                    if (!it->SetupImage(
+                    if (!set->SetupImage(
                             this,
                             code,
                             c + 4,
@@ -493,13 +493,13 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             cfgp[24],
                             0
                         )) {
-                        if (it) {
-                            delete it;
+                        if (set) {
+                            delete set;
                         }
                         return 0;
                     }
-                    m_tabLists[3].AddTail(it);
-                    cachep[4] = reinterpret_cast<i32>(it);
+                    m_tabLists[3].AddTail(set);
+                    cachep[4] = set;
                     cfgp += 6;
                     cachep += 1;
                     y += 0x20;
@@ -844,7 +844,6 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32 arrowL = bx + aOff;
                 i32 arrowR = bx + cOff;
                 i32 y = by + 0xd9;
-                i32* p = m_statFlags; // +0x114 (p[0x1e] reaches m_statObj)
                 for (i = 0; i < 15; i++) {
                     i32 id = 0x13b + i;
                     arrow = new CSBI_StatzTabArrow;
@@ -871,8 +870,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         return 0;
                     }
                     m_tabLists[1].AddTail(arrow);
-                    p[0x1e] = reinterpret_cast<i32>(arrow);
-                    if (p[0] != 0) {
+                    m_statObj[i] = arrow;
+                    if (m_statFlags[i] != 0) {
                     } else {
                         arrow->SetDirection(m_position, 0);
                     }
@@ -898,7 +897,6 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         return 0;
                     }
                     m_tabLists[1].AddTail(bar);
-                    p++;
                     y += 0x12;
                 }
             }
