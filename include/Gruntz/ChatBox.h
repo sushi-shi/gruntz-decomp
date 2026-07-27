@@ -23,25 +23,27 @@ public:
     // resource holder + the game window's HWND, copy/derive the region rect. The ex
     // MenuRegion view of this same `this` is dissolved onto CChatBox.
     i32 InitRegion(CDDrawSurfaceMgr* src, HWND wnd, RECT* rc, i32 d, i32 e, i32 f); // 0x182ab0
-    void Reset();                             // 0x182b30 - free the node list, re-zero the rows
-    void Clear();                             // 0x182b60 - free node payloads, empty the list
-    i32 Find(const char* s);                  // 0x182be0 - find a node by string key
+    void Reset(); // 0x182b30 - free the node list, re-zero the rows
+    void Clear(); // 0x182b60 - free node payloads, empty the list
+    // 0x182be0 - find a node by string key. Returns the NODE (retail's tail is
+    // `mov eax,edi` on the matched payload), not a BOOL.
+    CMenuPage* Find(const char* s);
     ~CChatBox();                              // 0x182bxx teardown
-    i32 AddNode(void* node);                  // 0x182ba0
-    i32 AttachNode(void* n);                  // 0x182da0
-    i32 ReplaceNode(void* n);                 // 0x182dd0
+    i32 AddNode(CMenuPage* node);             // 0x182ba0
+    i32 AttachNode(CMenuPage* n);             // 0x182da0
+    i32 ReplaceNode(const char* key);         // 0x182dd0 - Find(key) then AttachNode
     i32 AdvanceRow0(void* key, i32 x, i32 y); // 0x182df0
     i32 AdvanceRow1(void* key, i32 x, i32 y); // 0x182e60
     i32 Step(i32 dt);                         // 0x182ed0
     i32 Draw(CDDrawSurfacePair* target, CMenuItem* sprite, i32 x, i32 y); // 0x182f90
-    i32 ScrollRow0();                                 // 0x183030
-    i32 ScrollRow1();                                 // 0x1830b0
-    i32 FocusSelect(i32 x, i32 y);                    // 0x183170 (page FocusAndSelect(x,y))
-    i32 HitTest0(i32 x, i32 y);                       // 0x1831a0
-    i32 HitTest1();                                   // 0x183210
-    i32 HitTest2();                                   // 0x183230
-    i32 HitTest3();                                   // 0x1831d0
-    i32 HitTest4();                                   // 0x1831f0
+    i32 ScrollRow0();                                                     // 0x183030
+    i32 ScrollRow1();                                                     // 0x1830b0
+    i32 FocusSelect(i32 x, i32 y); // 0x183170 (page FocusAndSelect(x,y))
+    i32 HitTest0(i32 x, i32 y);    // 0x1831a0
+    i32 HitTest1();                // 0x183210
+    i32 HitTest2();                // 0x183230
+    i32 HitTest3();                // 0x1831d0
+    i32 HitTest4();                // 0x1831f0
 
     // The front-end menu drive (the menu state's m_1b4 object IS a CChatBox): each
     // per-frame entity-flag scan fires one of these, then Step/Pre/Post run the

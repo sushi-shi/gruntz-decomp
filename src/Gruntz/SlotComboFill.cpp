@@ -13,11 +13,11 @@
 // ebp; our cl puts `this`->esi, spills `next`, `data`->esi. One `this`-register choice
 // cascades into the next-spill; no source lever under /O2.
 RVA(0x00037ff0, 0xe7)
-i32 CLatencyList::FillCombo(i32 hDlg, i32 ctrlId) {
+i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
     if (m_list.GetCount() <= 0) {
         return 0;
     }
-    HWND combo = ::GetDlgItem(reinterpret_cast<HWND>(hDlg), ctrlId);
+    HWND combo = ::GetDlgItem(hDlg, ctrlId);
     if (combo == 0) {
         return 0;
     }
@@ -56,8 +56,8 @@ CString CLatencyItem::GetName() {
 }
 
 RVA(0x00038150, 0x91)
-i32 CLatencyList::SelectItem(i32 hDlg, i32 id, i32 lo, i32 hi) {
-    HWND list = ::GetDlgItem(reinterpret_cast<HWND>(hDlg), id);
+i32 CLatencyList::SelectItem(HWND hDlg, i32 id, i32 lo, i32 hi) {
+    HWND list = ::GetDlgItem(hDlg, id);
     if (!list) {
         return 0;
     }

@@ -1768,7 +1768,7 @@ i32 __stdcall WwdFile_CheckHeader(const char* name, void* headerOut) {
 // and spills destLen. The register swap propagates through the whole body. Not steerable
 // from C (same # uses either way; declaration/order-neutral).
 RVA(0x00160790, 0xd2)
-i32 __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen) {
+Bytef* __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen) {
     uLongf outLen;
 
     if (src == 0) {
@@ -1803,7 +1803,7 @@ i32 __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen)
         return 0;
     }
 
-    return outLen == src->mainBlockLength ? reinterpret_cast<i32>(dest) : 0;
+    return outLen == src->mainBlockLength ? dest : 0;
 }
 
 RVA(0x00160870, 0x43)

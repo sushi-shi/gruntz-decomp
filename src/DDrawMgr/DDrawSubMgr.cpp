@@ -746,15 +746,13 @@ void CDDrawSubMgrLeafScan::RemoveByValue(LeafCue* p) {
 // 0x157bc0: iterate every entry of the name-keyed map via GetNextAssoc, destroying
 // each value through its scalar-deleting destructor (vtbl +0x4 arg 1), then
 // RemoveAll. /GX EH frame for the local CString key.
-// @early-stop
-// store-scheduling coin-flip (~94%): byte-identical to retail except the `val = 0`
-// store position + the reloc-masked EH-state push (same family wall as
-// FreeAll). docs/patterns/zero-register-pinning.md.
+// VOID, proven: retail's epilogue never loads eax, and push esi/pop esi are
+// shrink-wrapped INSIDE the `if (pos)` block (see the twin FreeAll 0x152720).
 RVA(0x00157bc0, 0xa2)
-i32 CDDrawSubMgrLeafScan::ClearMap() {
-    void* val = 0;
+void CDDrawSubMgrLeafScan::ClearMap() {
     POSITION pos = m_10.GetStartPosition();
     CString key;
+    void* val = 0;
     if (pos != 0) {
         do {
             m_10.GetNextAssoc(pos, key, val);
@@ -764,8 +762,6 @@ i32 CDDrawSubMgrLeafScan::ClearMap() {
         } while (pos != 0);
     }
     m_10.RemoveAll();
-    return reinterpret_cast<i32>(val); // i32 (Unload's residue-carrier): retail returns the
-                                       // trailing ~CString(key) eax; val (0 at exit) stands in.
 }
 
 RVA(0x00157c70, 0xf8)
@@ -1043,17 +1039,18 @@ i32 CDDrawSubMgrLeafScan::ProbeFirst(i32 arg) {
 RVA(0x001584f0, 0x80)
 i32 CDDrawSubMgrLeafScan::MatchSub(LeafCue* arg1, i32 arg2) {
     if (arg1 == 0) {
-        return reinterpret_cast<i32>(arg1);
+        return 0;
     }
     if (m_2c == 0) {
         return 0;
     }
-    char fmt[0x12]; // WAVEFORMATEX scratch (0x12 = 18 bytes)
+    // ONE WAVEFORMATEX (0x12 = 18 bytes): read the cue's format, then hand that same
+    // buffer to the primary buffer. Retail passes esp+0x4 to both calls.
+    char fmt[0x12];
     if (arg1->m_10->GetFormat(fmt, 0x12, 0) == 0) {
         return 0;
     }
-    i32 prep;
-    if (m_2c->SetPrimaryFormat(&prep) == 0) {
+    if (m_2c->SetPrimaryFormat(fmt) == 0) {
         return 0;
     }
     if (arg2 != 0) {

@@ -59,7 +59,7 @@ public:
     i32 MatchSub(LeafCue* arg1, i32 arg2);
 
     // These two landed in the SIBLING CDDrawSubMgrLeaf.cpp (name-preserving union):
-    i32 ClearMap(); // 0x157bc0 (non-virtual map teardown; i32 residue feeds Unload)
+    void ClearMap(); // 0x157bc0 (non-virtual map teardown; void - retail never loads eax)
     // Remove one m_10 entry by VALUE, destroying it (0x157b00, DDrawSubMgr.cpp; ex
     // the CSoundResMap/CSoundRes view pair - the values are LeafCue elements).
     void RemoveByValue(struct LeafCue* p);

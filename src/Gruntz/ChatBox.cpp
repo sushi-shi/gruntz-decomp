@@ -61,7 +61,7 @@ void CChatBox::Clear() {
 }
 
 RVA(0x00182ba0, 0x35)
-i32 CChatBox::AddNode(void* node) {
+i32 CChatBox::AddNode(CMenuPage* node) {
     if (!node) {
         return 0;
     }
@@ -72,24 +72,17 @@ i32 CChatBox::AddNode(void* node) {
     return 1;
 }
 
-// @early-stop
-// EH-frame contradiction wall (topic:eh topic:wall): retail Find destructs its
-// GetKey CString temp with NO fs:0 frame (a non-/GX shape), but this TU MUST be
-// /GX for Clear + the ??1CMenuPage COMDAT (see the unit note in units.toml) -
-// under /GX cl frames this fn (73.8 -> 47.9). One retail fn per flag choice
-// diverges; suspected retail TU split around 0x182be0 (this region is already
-// split: InitRegion 0x182ab0 lives in menustateassets). Underneath sits the
-// older regalloc residual (node walk pinned ebp-vs-edi + an extra `push ecx`
-// slot); logic is complete.
 // find the message node whose key matches s (linear scan + strcmp).
+// (The old "EH-frame contradiction wall" @early-stop here is dead: the chatbox_eh
+// unit split settled it - `sema disasm 0x182be0 --diff` now reports identical asm.)
 RVA(0x00182be0, 0x8d)
-i32 CChatBox::Find(const char* s) {
+CMenuPage* CChatBox::Find(const char* s) {
     POSITION pos = m_nodeList.GetHeadPosition();
     while (pos) {
         CMenuPage* payload = static_cast<CMenuPage*>(m_nodeList.GetNext(pos));
         if (payload) {
             if (strcmp(payload->GetKey(), s) == 0) {
-                return reinterpret_cast<i32>(payload);
+                return payload;
             }
         }
     }
@@ -185,19 +178,19 @@ i32 CChatBox::FocusSelect(i32 x, i32 y) {
 }
 
 RVA(0x00182da0, 0x2a)
-i32 CChatBox::AttachNode(void* n) {
+i32 CChatBox::AttachNode(CMenuPage* n) {
     if (!n) {
         return 0;
     }
-    m_activeNode = static_cast<CMenuPage*>(n);
-    (static_cast<CMenuPage*>(n))->ReleaseAll();
+    m_activeNode = n;
+    n->ReleaseAll();
     m_activeNode->RestoreFocus();
     return 1;
 }
 
 RVA(0x00182dd0, 0x19)
-i32 CChatBox::ReplaceNode(void* n) {
-    return AttachNode(reinterpret_cast<void*>(Find(static_cast<const char*>(n))));
+i32 CChatBox::ReplaceNode(const char* key) {
+    return AttachNode(Find(key));
 }
 
 // @early-stop

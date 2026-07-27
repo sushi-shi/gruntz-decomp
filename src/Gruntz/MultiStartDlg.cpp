@@ -197,7 +197,7 @@ i32 CMultiStartDlg::BuildSlotList() {
         }
     }
     m_slotList->Dispatch(count);
-    i32 v = GetSafe1c();
+    HWND v = GetSafe1c();
     m_slotList->FillCombo(v, 0x527);
     m_slotList->SelectItem(v, 0x527, 0, 0);
     reg->m_600 = 1;
@@ -228,7 +228,7 @@ i32 CMultiStartDlg::UpdateSlot() {
         enable = 0;
     }
     w->EnableWindow(enable);
-    i32 v = GetSafe1c();
+    HWND v = GetSafe1c();
     CMulti* reg2 = g_multiState;
     if (reg2->m_600) {
         m_slotList->SelectItem(v, 0x527, 0, 0);
@@ -263,7 +263,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
     Utils::RegistryHelper* reg = static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings);
     if (pDX->m_bSaveAndValidate == 0) {
         GetDlgItem(0x512)->SetWindowTextA(g_multiState->GetString59c());
-        NetLobby::g_curDlg = reinterpret_cast<HWND__*>(GetSafe1c());
+        NetLobby::g_curDlg = GetSafe1c();
         if (!SetupWorldCombo()) {
             return;
         }

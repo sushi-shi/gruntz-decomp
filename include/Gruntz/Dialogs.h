@@ -88,7 +88,7 @@ public:
     // Slot/option helpers reached via ILT thunks (own CBattlezDlg methods, owned
     // as RVA stubs in src/Stub/ApiCallers.cpp; external/no-body here so the calls
     // reloc-mask). ToggleRow sets the active option N; RefreshOptionState refreshes.
-    i32 ToggleRow(
+    void ToggleRow(
         i32 option
     ); // 0x015fe0 (canonical ?ToggleRow@CBattlezDlg, homed in BattlezDlgRow.cpp)
     void RefreshOptionState(); // 0x0173e0
@@ -326,8 +326,8 @@ public:
     // The GetSafeHwnd-style accessor the builders fold inline (CWnd::m_hWnd @+0x1c): (this != 0) ?
     // (handle @ +0x1c) : 0. Inline member so MSVC inlines it and keeps the null
     // test (matching retail's `test esi,esi; jne; xor eax,eax; mov eax,[esi+0x1c]`).
-    i32 GetSafe1c() {
-        return this == 0 ? 0 : reinterpret_cast<i32>(m_hWnd);
+    HWND GetSafe1c() {
+        return this == 0 ? 0 : m_hWnd;
     }
 
     class CGruntzMgr* m_host; // +0x5c  (= a0) the game manager (ex "heterogeneous handle":

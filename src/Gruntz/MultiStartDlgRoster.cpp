@@ -1002,8 +1002,8 @@ void CMultiStartDlg::CommitLatencyOption() {
         return;
     }
     i32 lo, hi;
-    i32 h = GetSafe1c();
-    GetSelItemData(reinterpret_cast<HWND>(h), 0x527, &lo, &hi);
+    HWND h = GetSafe1c();
+    GetSelItemData(h, 0x527, &lo, &hi);
     if (lo != 0 || hi != 0) {
         g_multiState->m_5a4 = lo;
         g_multiState->m_drainReload = hi;

@@ -70,20 +70,23 @@ void CSBI_MenuItem::Reset() {
     m_frame = 0;
 }
 
-// CSBI_MenuItem::ResolveFrame - look up the keyed config record in the host's
-// map; if found and in range, latch its frame handle into m_30. Returns whether
-// a frame was resolved. 2-arg __thiscall (ret 8).
-// @early-stop
-// per-path idiom/scheduling wall (~46%): logic byte-correct. The residual is two
-// retail micro-idioms not steerable from C: (1) the two null guards `return` the
-// already-zero key/rec register instead of `xor eax,eax`; (2) the a==-1 default
-// path stores m_30 then RE-READS it for the `setne`, while the in-range path tests
-// the loaded value pre-store. Each return is inline (no shared fail tail). Deferred.
 RVA(0x000e81c0, 0x8)
 i32 CSBI_MenuItem::Refresh(i32) {
     return 1;
 }
 
+// CSBI_MenuItem::ResolveFrame - look up the keyed config record in the host's
+// map; if found and in range, latch its frame handle into m_30. Returns whether
+// a frame was resolved. 2-arg __thiscall (ret 8).
+// @early-stop
+// store-schedule + value-register wall: the CFG, the three inline `pop esi; ret 8`
+// tails and both zero-reusing guards now match retail exactly (the old 46% was the
+// tail-merge caused by writing a per-arm `return`; the real shape is ONE trailing
+// `return m_frame != 0` that cl duplicates into every arm). Residue is (1) the
+// `rec_v = 0` store scheduled before the two arg pushes instead of after, and
+// (2) the in-range/out-of-range arms landing the frame value in eax where retail
+// picks ecx (so retail zeroes eax early and forwards the store past the test).
+// Decl-order permutations and the per-arm-local spelling both regress; /O2 coin-flip.
 RVA(0x000e81e0, 0x8b)
 i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
     if (key == 0) {
@@ -96,21 +99,20 @@ i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
     CDDrawWorker* rec = static_cast<CDDrawWorker*>(rec_v);
     m_record = rec;
     if (rec == 0) {
-        return reinterpret_cast<i32>(rec);
+        return 0;
     }
+    // ONE trailing `return m_frame != 0`, tail-DUPLICATED by cl into all three arms
+    // (that is why each arm ends in its own `pop esi; ret 8` and why the arms differ
+    // only in which register the store-forward left the value in).
     CDDrawWorker* r = rec;
     if (a == -1) {
-        i32 lo = r->m_minIndex;
-        m_frame = static_cast<CImage*>(r->m_items.GetAt(lo));
-        return m_frame != 0;
+        m_frame = static_cast<CImage*>(r->m_items.GetAt(r->m_minIndex));
+    } else if (a >= r->m_minIndex && a <= r->m_maxIndex) {
+        m_frame = static_cast<CImage*>(r->m_items.GetAt(a));
+    } else {
+        m_frame = 0;
     }
-    if (a >= r->m_minIndex && a <= r->m_maxIndex) {
-        CImage* v = static_cast<CImage*>(r->m_items.GetAt(a));
-        m_frame = v;
-        return v != 0;
-    }
-    m_frame = 0;
-    return 0;
+    return m_frame != 0;
 }
 
 // ---------------------------------------------------------------------------

@@ -113,7 +113,7 @@ extern void operator delete(void* p);
 
 extern "C" i32 uncompress(Bytef* dest, uLongf* destLen, const Bytef* source, uLong sourceLen);
 
-extern "C" i32 __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen);
+extern "C" Bytef* __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen);
 
 i32 __stdcall WwdFile_CheckHeader(const char* name, void* headerOut);
 

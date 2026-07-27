@@ -31,7 +31,7 @@ public:
     // class's slot-7 virtual; it operated on a LeafScan `this`, so it was re-homed there.)
     CObject* LookupValue(const char* key);
     void RemoveValue(CAniElement* target);
-    i32 FreeAll(); // i32 residue feeds the slot-7 Unload override
+    void FreeAll(); // void: retail 0x152720 never loads eax (slot-7 Unload tail-jmps it)
     i32 RemoveKeysEqual(const char* base, const char* str);
     i32 HasKeyPrefix(const char* str);
     CString KeyOfValue(CObject* target);

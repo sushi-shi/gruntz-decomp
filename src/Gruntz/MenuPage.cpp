@@ -365,7 +365,7 @@ i32 CMenuPage::Switch(i32 refocus) {
     if (m_switchKey.GetLength() == 0) {
         return 0;
     }
-    if (!m_host->ReplaceNode(const_cast<char*>(static_cast<const char*>(m_switchKey)))) {
+    if (!m_host->ReplaceNode(m_switchKey)) {
         return 0;
     }
     if (refocus) {

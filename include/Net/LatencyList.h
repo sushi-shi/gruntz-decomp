@@ -32,11 +32,11 @@ public:
 
     // 0x37ff0: reset the (hDlg,ctrlId) combo, walk the node list, and for each row
     // add GetName() text keyed by MAKELONG(m_param,m_id) item-data. Returns m_nCount.
-    i32 FillCombo(i32 hDlg, i32 ctrlId);
+    i32 FillCombo(HWND hDlg, i32 ctrlId);
 
     // 0x38150: find the combo item whose data == MAKELONG(lo,hi) and select it
     // (ignores `this` - a pure dialog-item scan). Returns 1 if found.
-    i32 SelectItem(i32 hDlg, i32 id, i32 lo, i32 hi);
+    i32 SelectItem(HWND hDlg, i32 id, i32 lo, i32 hi);
 };
 SIZE(0x20);
 

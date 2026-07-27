@@ -80,17 +80,14 @@ void CDDrawSubMgrLeaf::RemoveValue(CAniElement* target) {
 // Free-all: iterate every entry in m_10 via GetNextAssoc, destroying each value
 // via its scalar-deleting destructor (vtbl +0x4 arg 1), then RemoveAll the map.
 // Same source as the 100%-matched CDDrawWorkerRegistry::MapTeardown.
-// @early-stop
-// store-scheduling coin-flip (~94.7%) - complete & correct: byte-identical to
-// retail EXCEPT the `CObject* val = 0` store position (retail schedules it after
-// the CString ctor; MSVC5 here emits it before the count read) + the reloc-masked
-// EH-state push. The surrounding symbol set re-rolls the allocator; the identical
-// sibling source matched 100% elsewhere. docs/patterns/zero-register-pinning.md.
+// VOID, proven: retail's epilogue never loads eax (the last write to it is
+// ~CString's own residue), and retail shrink-wraps push esi/pop esi INSIDE the
+// `if (pos)` block - impossible if a value had to stay live across the tail.
 RVA(0x00152720, 0xa2)
-i32 CDDrawSubMgrLeaf::FreeAll() {
-    void* val = 0;
+void CDDrawSubMgrLeaf::FreeAll() {
     POSITION pos = m_10.GetStartPosition();
     CString key;
+    void* val = 0;
     if (pos != 0) {
         do {
             m_10.GetNextAssoc(pos, key, val);
@@ -100,9 +97,6 @@ i32 CDDrawSubMgrLeaf::FreeAll() {
         } while (pos != 0);
     }
     m_10.RemoveAll();
-    return reinterpret_cast<i32>(val); // i32 (the CLoadable::Unload slot type): retail returns
-                                       // the trailing ~CString(key) eax residue; val (0 at exit)
-                                       // stands in - unused by every caller.
 }
 
 // ---------------------------------------------------------------------------

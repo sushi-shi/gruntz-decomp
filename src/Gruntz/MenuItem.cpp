@@ -232,7 +232,7 @@ RVA(0x001856d0, 0x25)
 i32 CMenuItem::Trigger() {
     m_host->ScrollRow1();
     NotifyCmd();
-    m_host->ReplaceNode(*reinterpret_cast<void**>(&m_key));
+    m_host->ReplaceNode(m_key);
     return 1;
 }
 RVA(0x00185700, 0x4b)

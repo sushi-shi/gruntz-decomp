@@ -56,9 +56,14 @@ VTBL(CButeTree, 0x001f04e0); // ??_7CButeTree@@6B@ (1-slot scalar-deleting-dtor 
 
 extern CButeTree g_buteTree;
 
-// The act-registry id convention: the tree VALUES for act keys are small integer
-// ids stored in the void* slot. These wrappers keep that one reinterpret at the
-// boundary instead of at every call site.
+// PROVEN-heterogeneous slot, not a mis-model: CButeTree::Find's void* is genuinely
+// per-INSTANCE typed. CButeMgr's trees (Tree()/Tree48()) store record pointers -
+// GetStringDef/GetRef5..8 @0x173180/0x173720.. all return real CButeRefN*/CString*
+// from the same Find @0x16d190 - while THIS instance (g_buteTree, teardown =
+// ButeTreeNopFree, a no-op) stores small integer act ids: ActInsertId writes
+// g_typeCounter and every reader feeds the result to ActNameLookup(id), which
+// INDEXES g_typeColl by it. So the boundary reinterpret belongs here, once, rather
+// than at each of the ~15 call sites.
 static inline i32 ActFindId(const char* key) {
     return reinterpret_cast<i32>(g_buteTree.Find(key));
 }
