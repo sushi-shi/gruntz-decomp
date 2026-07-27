@@ -289,12 +289,12 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
             CDDrawWorkerHost* obj = self->m_world->m_level->m_mainPlane;
             i32 v0 = obj->m_snappedX;
             i32 v1 = obj->m_snappedY;
-            i32* slot;
+            Coord* slot;
             if (self->arr488Count() < 4) {
                 CoordPoolNode* head = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
                 CoordPoolNode* nx = head->m_next;
                 if (nx != 0) {
-                    slot = reinterpret_cast<i32*>(&head->m_coord);
+                    slot = &head->m_coord;
                     g_coordPool.m_freeHead = nx;
                 } else {
                     slot = 0;
@@ -305,7 +305,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
                 // CDWordArray band (RemoveAt/InsertAt/SetAtGrow, the casts here) on this
                 // ONE array - byte-identical classes, both COMDAT bands linked. The casts
                 // are band selectors, retail-faithful (same verdict as the m_10map pair).
-                slot = static_cast<i32*>(self->m_488.GetAt(0));
+                slot = static_cast<Coord*>(self->m_488.GetAt(0));
                 (reinterpret_cast<CDWordArray*>(&self->m_488))->RemoveAt(0, 1);
                 i32 c = self->m_49c - 1;
                 self->m_49c = c;
@@ -313,8 +313,8 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
                     self->m_49c = self->arr488Count() - 1;
                 }
             }
-            slot[0] = v0;
-            slot[1] = v1;
+            slot->m_x = v0;
+            slot->m_y = v1;
             if (self->m_49c != self->arr488Count() - 1) {
                 (reinterpret_cast<CDWordArray*>(&self->m_488))
                     ->InsertAt(self->m_49c + 1, reinterpret_cast<DWORD>(slot), 1);

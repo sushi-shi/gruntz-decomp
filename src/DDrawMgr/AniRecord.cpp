@@ -131,6 +131,8 @@ void CAniRecordView::ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str
             CString t = tokens.GetAt(i);
             void* v = 0;
             owner->m_10.Lookup(t, v);
+            // MFC's void* map slot carries a small integer index - language-forced,
+            // the same convention ActFindId documents. One seam at the Lookup.
             m_indices[i] = reinterpret_cast<i32>(v);
         }
     }

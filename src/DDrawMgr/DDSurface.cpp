@@ -613,6 +613,8 @@ i32 CDDSurface::BlitDirect(void* src, i32 mode) {
 RVA(0x0013edb0, 0x78)
 void CDDSurface::Clear(i32 white) {
     DDBLTFX fx;
+    // retail zero-fills the opaque Win32 struct with an explicit 25-dword loop, so
+    // walking it as dwords is byte-forced (a memset would emit rep stos instead).
     i32* p = reinterpret_cast<i32*>(&fx);
     for (i32 i = 0x19; i != 0; i--) {
         *p++ = 0;
