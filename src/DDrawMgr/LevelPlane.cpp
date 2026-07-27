@@ -590,7 +590,7 @@ i32 CDDrawWorkerHost::Prune() {
 // polymorphic outer object), so a plain `new CWwdSpatialMgr` cannot express this; the
 // embedded-object-at-offset re-stamp is the only expressible form (wall).
 RVA(0x001628f0, 0x1fc)
-i32 CDDrawWorkerHost::RebuildPlanes(i32 base, i32 count) {
+i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
     if (base == 0) {
         return 0;
     }
@@ -655,7 +655,8 @@ i32 CDDrawWorkerHost::RebuildPlanes(i32 base, i32 count) {
     }
 
     for (i32 i = 0; i < count; i++) {
-        // the stream cursor crossing into the record IS the format's boundary
+        // byte-forced: the cursor crossing into a record IS the on-disk format's
+        // boundary - the block is a byte stream of variable-length records
         i32 r = ReadPlaneObjects(reinterpret_cast<const PlaneObjectRecord*>(base));
         if (r == 0) {
             return 0;

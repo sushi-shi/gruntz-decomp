@@ -95,7 +95,9 @@ public:
     // spatial worker, allocate + Init a fresh one from the map-data geometry, then read
     // `count` object records. `this` IS the plane - the view read m_mapData@+0x0c and
     // (as "grid extents") m_wrapW/m_wrapH@+0x30/+0x34, and the worker slot IS m_scroll.
-    i32 RebuildPlanes(i32 base, i32 count);
+    // `base` is a byte CURSOR over the serialized object block, not a number: the loop
+    // advances it by the byte count ReadPlaneObjects returns.
+    i32 RebuildPlanes(const char* base, i32 count);
     i32 ReadPlaneObjects(const PlaneObjectRecord* src);
     void WrapCoord(i32* px, i32* py);              // 0x00a000 wrap+transform a world coord
     void SnapToTileCenter(i32* out, i32 x, i32 y); // 0x0311e0 snap world (x,y) to tile centre
