@@ -196,6 +196,9 @@ i32 CNetSession::Poll(i32 delta) {
         received++;
         avail--;
         if (a != m_localDesc->m_id) {
+            // one seam: IDirectPlay4::Receive fills g_lobbyRecvBuf as an untyped
+            // 0x800-byte LPVOID blob (the SDK picks the type), and the control-message
+            // header is applied at this single dispatch boundary
             Dispatch(a, reinterpret_cast<CNetCtrlMsg*>(g_lobbyRecvBuf), len);
         }
     }
@@ -219,9 +222,8 @@ i32 CNetSession::Dispatch(i32 a, CNetCtrlMsg* b, i32 c) {
     }
     obj->m_latency = 0;
     CNetCmdSlot* target = obj;
-    unsigned char* p = reinterpret_cast<unsigned char*>(b);
-    if (!(p[0] & 0x80) && (p[0] & 1)) {
-        target = &m_slots[p[1]];
+    if (!(b->m_route.m_routeFlags & 0x80) && (b->m_route.m_routeFlags & 1)) {
+        target = &m_slots[b->m_route.m_routeSlot];
         if (!target) {
             return 0;
         }

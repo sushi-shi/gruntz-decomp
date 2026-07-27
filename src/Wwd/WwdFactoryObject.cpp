@@ -72,10 +72,10 @@ CResolveNode::CResolveNode(i32 owner, i32 field04, i32 field08) {
 // class forces cl's implicit vptr-first store at ctor entry. Field-store order
 // preserved; only the vptr position diverges (mandate: convert anyway).
 RVA(0x0015b300, 0x40)
-AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* a, i32 b, i32 c) {
-    m_04 = b;
-    m_08 = c;
-    m_0c = a;
+AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags) {
+    m_04 = id;
+    m_08 = stateFlags;
+    m_0c = owner;
     m_notify = 0;
     m_payload = 0;
     m_logic = 0;
@@ -126,11 +126,12 @@ i32 CGameObject::IsLoaded() {
 }
 
 RVA(0x0015b390, 0x128)
-CWwdGameObjBaseCtor::CWwdGameObjBaseCtor(CDDrawSurfaceMgr* a, int b, int c) : WwdCtorBase(a, b, c) {
+CWwdGameObjBaseCtor::CWwdGameObjBaseCtor(CDDrawSurfaceMgr* owner, int id, int stateFlags)
+    : WwdCtorBase(owner, id, stateFlags) {
     // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
     m_screenX = static_cast<int>(0x80000000);
     m_78 = 0;
-    m_7c = new AnimWorkerObj(a, b); // `a` is already the typed owner context
+    m_7c = new AnimWorkerObj(owner, id);
     m_98 = 0;
     m_80 = 0;
     m_88 = 0;
@@ -709,8 +710,8 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         i32 reload = rd->m_frameTime;
         m_20 = reload;
         m_24 = (~rd->m_flags) & 1;
-        // byte-forced: retail compares the float's RAW BITS against 1.0f with an
-        // integer cmp, not an FPU compare - the pun is what produces that instruction.
+        // byte-forced: retail compares the float's RAW BITS against 0x3f800000 with an
+        // integer `cmp` (no FPU compare), so the 1.0f test is spelled on the bit pattern
         if (*reinterpret_cast<i32*>(&m_scale) != 0x3f800000) {
             m_20 = static_cast<i32>((static_cast<double>(static_cast<u32>(reload)) * m_scale));
         }

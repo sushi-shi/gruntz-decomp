@@ -14,11 +14,12 @@ void __stdcall BitStreamBlowfishDecode(istream* in, ostream* out) {
         in->read(reinterpret_cast<char*>(&blk[0]), 8);
         int sample = in->gcount();
         if (sample == 1) {
-            // the pun: a 1-byte read leaves the wire length in blk[0]'s low byte
+            // byte-forced: retail 0x16f760 sign-extends ONE byte out of the dword block
+            // (`movsx`), so the 1-byte tail block's length is read as a signed char
             sample = *reinterpret_cast<signed char*>(&blk[0]);
         }
         if (!first) {
-            // API-forced: ostream::write takes const char*, the block is a dword array
+            // API-forced: ostream::write takes const char*; blk is the dword cipher block
             out->write(reinterpret_cast<const char*>(&blk[3]), sample);
         } else {
             first = false;

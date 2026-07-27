@@ -96,7 +96,9 @@ i16 InitializeBlowfish(u8* key, i16 keybytes) {
         g_bfP[i] = g_bfInitP[i];
     }
     for (i = 0; i < 1024; i++) {
-        // same forced 2D->1D flatten on the init table
+        // language-forced, the same 2D->1D flatten as the BF_S macro above: the
+        // init table is a u32[4][256] (its brace-nested BF_PI_S_INIT pins the rank)
+        // copied into the ONE 1024-entry S-box the cipher indexes linearly
         BF_S[i] = (reinterpret_cast<const u32*>(g_bfInitS))[i];
     }
 
@@ -127,6 +129,9 @@ i16 InitializeBlowfish(u8* key, i16 keybytes) {
 }
 
 RVA(0x0016f6c0, 0x12)
-void __stdcall Blowfish_InitKey(u8* key) {
-    InitializeBlowfish(key, 4);
+void __stdcall Blowfish_InitKey(const char* key) {
+    // byte-forced (one seam): the schedule indexes the key as UNSIGNED bytes (retail
+    // zero-extends each one - `xor eax,eax; mov al,BYTE PTR [...]`), so the caller's
+    // string key becomes u8* here rather than at every call site
+    InitializeBlowfish(reinterpret_cast<u8*>(const_cast<char*>(key)), 4);
 }

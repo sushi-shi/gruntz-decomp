@@ -364,10 +364,13 @@ i32 CDDrawPtrCollections::CreateDevice(
         return 0;
     }
 
-    // retail zero-fills both SDK caps blocks with `mov ecx,0x5f; xor eax,eax; rep stosd`
-    // == an inline memset of exactly sizeof(DDCAPS) (0x17c B), not a dword loop.
-    memset(&m_driverCaps, 0, sizeof(DDCAPS));
-    memset(&m_helCaps, 0, sizeof(DDCAPS));
+    // Retail zero-fills both SDK caps blocks with `mov ecx,0x5f; xor eax,eax; rep
+    // stosd` (0x141e46 / 0x141e57) - i.e. the inlined memset of a 0x17c-byte DDCAPS,
+    // not a hand-written dword loop. (The ex `i32* p = (i32*)&m_driverCaps; for(...)`
+    // spelling produced the same rep stosd, so the dword cursor was never forced -
+    // it was just an unrecovered memset.)
+    memset(&m_driverCaps, 0, sizeof(m_driverCaps));
+    memset(&m_helCaps, 0, sizeof(m_helCaps));
     m_driverCaps.dwSize = sizeof(DDCAPS);
     m_helCaps.dwSize = sizeof(DDCAPS);
     hr = m_device->GetCaps(&m_driverCaps, &m_helCaps);

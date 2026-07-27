@@ -35,7 +35,6 @@
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/GameStateRecord.h> // CWapX::Chain (0x8c00) - the ex-CSerialObjRef
 #include <Gruntz/BoundaryLowerMethodsViews.h>
-#include <Gruntz/Effect6b.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/GruntSpawnConfig.h> // StopVoice on m_cueSink
@@ -80,9 +79,10 @@ static const char s_GOKARTGRUNT[] = "GOKARTGRUNT";         // s_..._0060da38
 static const char s_POGOSTICKGRUNT[] = "POGOSTICKGRUNT";   // s_..._0060d9fc
 
 // The tile records are 0x1c bytes walked with BYTE strides (the grid is exposed as
-// char** for exactly that), while each record's flag word is a dword at +0 - the
-// mixed view is the table's own design, so it is punned here once.
+// char** for exactly that), while each record's flag word is a dword at +0.
 static inline i32 TileFlags(const char* rec) {
+    // byte-forced (one seam): the mixed byte-stride / dword-field view is the tile
+    // table's own design - the pun lives here, once
     return *reinterpret_cast<const i32*>(rec);
 }
 
@@ -1160,9 +1160,9 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     }
     // then the +0x150 CWapX base subobject's Chain (0x8c00 via the 0x1aff thunk).
     // CGrunt's RTTI CHD @VA 0x5f2c40 proves CWapX is a DIRECT second base at mdisp
-    // +0x150 (past the 0x150 CMovingLogic spine), so this is real inheritance, not a
-    // view - but the Grunt.h ODR world is not converted to MI yet.
-    // @identity-TODO(deferred): reached by cast until that MI conversion lands.
+    // +0x150 (past the 0x150 CMovingLogic spine). The Grunt.h ODR world is not
+    // converted yet, so the subobject is reached by cast until that MI conversion
+    // lands - @identity-TODO(deferred, MI1 flagged item 1).
     if ((reinterpret_cast<CWapX*>(&m_34))->Chain(ar, mode, a3, a4) == 0) {
         return 0;
     }
@@ -1223,10 +1223,15 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     if (!ar) {
         return 0;
     }
-    // m_3c (+0x158) is declared AnimWorkerObj* in Gruntz/Grunt.h but holds the grunt
-    // TYPE CATALOG on this path; the ex-`*(void**)&m_3c` round-trip just hid that. The
-    // member's real declaration is another lane's header - one honest cast until then.
-    CDDrawSubMgrLeaf* catalog = reinterpret_cast<CGruntTypeCatalog*>(m_3c)->m_c;
+    // retail 0x53fa8: `mov eax,[ebp+0x158]; mov eax,[eax+0xc]` - ONE load off the
+    // bound worker, i.e. AnimWorkerObj::m_0c, and the value goes straight into
+    // CDDrawSubMgrLeaf::KeyOfValue (0x152d30) below.
+    // (This replaces the `CGruntTypeCatalog` pad-view, which was AnimWorkerObj with
+    // m_c == m_0c.) <DDrawMgr/AnimWorkerObj.h> types m_0c as CDDrawSurfaceMgr*
+    // (: CObject) while this path uses it as CDDrawSubMgrLeaf* (: CLoadable) - two
+    // unrelated hierarchies at one slot, so ONE of the two models is wrong:
+    // @identity-TODO, reinterpret at this single seam until +0x0c is settled.
+    CDDrawSubMgrLeaf* catalog = reinterpret_cast<CDDrawSubMgrLeaf*>(m_3c->m_0c);
     if (!catalog) {
         return 0;
     }

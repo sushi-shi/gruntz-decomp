@@ -15,8 +15,14 @@ extern i32 g_dlgVal_64555c, g_dlgVal_645560, g_dlgVal_645564, g_dlgVal_645568;
 // failure path. Typed, so the `(CGruntSpawnConfig*)` cast at the Init call is gone.
 extern "C" char* StrUpr(char*); // 0x18d330
 extern "C" void cb_403193();
-extern "C" void cb_401bc2(const char*); // CButeMgr::SetErrCallback's ErrCallback
-                                        // (extern "C": the symbol is unchanged)
+// The bute parse-error sink handed to CButeMgr::SetErrCallback. Its ARITY is proven
+// from the body the 0x1bc2 ILT thunk jumps to (RVA 0x119320, 0x15 B):
+//   mov ecx,[0x64556c]; test ecx,ecx; je ret; mov eax,[esp+4]; push eax; call <sink>
+// - one __cdecl stack argument, the message string, forwarded to a global sink when
+// one is installed. The ex `void cb_401bc2()` decl had the WRONG arity, which is why
+// the call site needed a reinterpret_cast to ErrCallback. Still declared-only: the
+// 0x119320 body is not reconstructed yet (@identity-TODO: its owning TU).
+extern "C" void ButeParseErrorSink(const char* msg);
 
 // --- C-linkage carriers for the TU's extern-C definitions (the defs
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---

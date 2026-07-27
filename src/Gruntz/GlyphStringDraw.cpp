@@ -39,9 +39,12 @@ i32 DrawGlyphString(
         i32 c = static_cast<signed char>(str[i]);
         i32 glyph;
         if (c >= font->m_minIndex && c <= font->m_maxIndex) {
-            glyph = reinterpret_cast<i32>(
-                static_cast<CImage*>(font->m_items.GetAt(c))
-            ); // the CImage* frame, as an opaque worker-factory handle
+            // CreateWorkerB28's a3 lands in the SHARED virtual Vfunc2C(i32,i32,i32),
+            // whose slot is PROVEN heterogeneous - CDDrawWorkerA @0x157110 stores it
+            // as a char flag (`m_78b = (char)a3`) while CDDrawWorkerB @0x1572f0 stores
+            // the whole dword handle. The slot therefore cannot be typed CImage*:
+            // language-forced pun, at one seam.
+            glyph = reinterpret_cast<i32>(static_cast<CImage*>(font->m_items.GetAt(c)));
         } else {
             glyph = 0;
         }

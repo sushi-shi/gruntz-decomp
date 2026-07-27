@@ -39,7 +39,6 @@
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/BoundaryLowerMethodsViews.h>
-#include <Gruntz/Effect6b.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <rva.h>
@@ -325,8 +324,9 @@ static inline CString* ActNameSlots() {
 
 // The shared tail of every 0x5be30 block: bind `handler` into the pool at `id`.
 // (A derived-to-base member-pointer conversion is a reinterpret - a bit copy - never a
-// static_cast: cl emits a this-adjustment thunk for the latter. Written once, here, so
-// the one legitimate PMF seam has exactly one site.)
+// static_cast: cl emits a this-adjustment thunk for the latter.)
+// language-forced, at one seam: C++ has no derived->base PMF conversion that keeps the
+// retail bit copy, so the PMF pun is written once, here.
 #define BIND_ACT_644AF0(id, handler)                                                               \
     *CActRegPool<CGrunt>::s_table.Resolve(id) = reinterpret_cast<CActHandler>(handler)
 
@@ -339,8 +339,7 @@ static inline CString* ActNameSlots() {
             /* the name-slot lookup reads the GLOBAL, not `id`: retail CSEs the reload */          \
             /* across two consumers (`push eax; mov edi,eax`) - feeding it `id` gives   */         \
             /* the load one consumer and cl coalesces it into edi, dropping the copy.   */         \
-            CString* slot =                                                                        \
-                reinterpret_cast<CString*>(g_typeColl._zvec::IndexToPtr(g_typeCounter));           \
+            CString* slot = g_typeColl.ScratchResolve(g_typeCounter);                              \
             i32 n = g_typeColl.m_grown;                                                            \
             CString* list = ActNameSlots();                                                        \
             while (n-- != 0) {                                                                     \
@@ -1286,22 +1285,18 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     {
         i32 coord = m_objAux->ActKey();
         g_typeColl.m_grown = 0;
-        i32 rec;
+        CString* rec;
         if (coord < g_typeColl.m_lo || coord > g_typeColl.m_hi) {
-            if (reinterpret_cast<i32>(g_typeColl.GrowTo(coord, 0)) != 0) {
-                rec = reinterpret_cast<i32>(
-                    g_typeColl.m_base + (coord - g_typeColl.m_lo) * g_typeColl.m_stride
-                );
+            if (g_typeColl.GrowTo(coord, 0) != 0) {
+                rec = g_typeColl.Elem(coord);
             } else {
                 void* item = g_projActCache;
                 g_retAddrBreadcrumb = GetRetAddr();
                 g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
-                rec = reinterpret_cast<i32>(g_typeColl.m_spare);
+                rec = g_typeColl.Scratch();
             }
         } else {
-            rec = reinterpret_cast<i32>(
-                g_typeColl.m_base + (coord - g_typeColl.m_lo) * g_typeColl.m_stride
-            );
+            rec = g_typeColl.Elem(coord);
         }
         GruntScratchTeardown();
         static_cast<void>(rec);
@@ -1583,9 +1578,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     // Rebuild the active-anim-set type-name registry free list.
-    char** typeRec = reinterpret_cast<char**>(
-        (static_cast<_zvec*>(&g_typeColl))->IndexToPtr(this->m_objAux->m_1c)
-    );
+    CString* typeRec = g_typeColl.ScratchResolve(this->m_objAux->m_1c);
     if (g_typeColl.m_grown != 0) {
         CString* p = g_typeColl.Slots();
         i32 n = g_typeColl.m_grown;

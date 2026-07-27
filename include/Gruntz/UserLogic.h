@@ -210,6 +210,13 @@ public:
                 // pinned by RVA_COMPGEN in ActionArea.cpp
     // Serialize the referenced object by its registry key name (read/write per mode).
     i32 Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj); // 0x8c00
+    // 0x6b2e0 (body in GruntEntranceArrival.cpp, its only caller's TU): cache the
+    // bound sprite's active descriptor into m_value, seed its embedded anim cursor
+    // with `a`, and (when the flag is set) advance it by the frame delta.
+    // Was the DUPLICATE `CEffect6b` view (Effect6b.h): its _00 / m_player / _08 /
+    // m_prevDesc were m_34 / m_38 / m_3c / m_value field-for-field, and both were
+    // reached as CGrunt's +0x150 sub-object - one class under two names, FOLDED.
+    void Apply(class CAniElement* a, i32 b);
 
     // Field names keep the tile-leaf +0x34 spellings (this class is reached at THREE
     // displacements - see the note above - so no one spelling can be offset-accurate).

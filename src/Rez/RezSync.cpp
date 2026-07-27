@@ -298,14 +298,14 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     {
-        i32 rect[4];
-        rect[0] = 0;
-        rect[1] = 0;
-        rect[2] = 0x1df;
-        rect[3] = 0x1df;
+        LevelCoordRect rect; // == tagRECT (<DDrawMgr/DDrawWorkerHost.h>)
+        rect.left = 0;
+        rect.top = 0;
+        rect.right = 0x1df;
+        rect.bottom = 0x1df;
         m_modeW = 0x280;
         m_modeH = 0x1e0;
-        world->m_level->BuildAllPlanes(reinterpret_cast<LevelCoordRect*>(rect));
+        world->m_level->BuildAllPlanes(&rect);
     }
     world->SetHwnd(static_cast<void*>(&cb_403193));
     world->m_level->m_maxStepX = 0xe;
@@ -326,7 +326,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_symParser = new CSymParser;
     {
         CString fn = GetRezPath();
-        i32 ok = m_symParser->ParseBuffer(*reinterpret_cast<void**>(&fn), 1, 0) != 0;
+        // ParseBuffer's void* is really the char* source buffer (its body casts it to
+        // char* four times); the CString hands over its m_pchData through the inline
+        // operator LPCTSTR - the same spelling GruntzMgr.cpp's call site uses.
+        i32 ok =
+            m_symParser->ParseBuffer(const_cast<char*>(static_cast<const char*>(fn)), 1, 0) != 0;
         if (!ok) {
             ReportError(0x800b, 0x409);
             return 0;
@@ -519,7 +523,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         CSymParser* mgr = m_symParser;
         CParseSource* stream =
             mgr->ResolveQualified("GAME_ATTRIBUTEZ", 'TXT');
-        g_buteMgr.SetErrCallback(&cb_401bc2);
+        g_buteMgr.SetErrCallback(&ButeParseErrorSink);
         i32 ok = 0;
         if (stream) {
             g_buteMgr.m_10e = 1;
@@ -535,7 +539,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             // length through BeginParse - the two look swapped vs every other
             // caller, so the raw widths are preserved verbatim here.
             istrstream* rdr = new istrstream(static_cast<char*>(src), eszLen); // 0x169700
-            Blowfish_InitKey(reinterpret_cast<unsigned char*>(const_cast<char*>("1212C")));
+            Blowfish_InitKey("1212C");
             ostrstream* snk = new ostrstream(
                 static_cast<char*>(src),
                 eszLen,

@@ -747,6 +747,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         return 0;
     }
 
+    // PROVEN-heterogeneous slot (Loadable.h): the base ctor's owner-context word.
     new (obj) CWwdGameObjBaseCtor(OwnerMgr(), id, 0);
 
     // Construct the embedded sub-object at +0x1A0, then re-stamp both vtables (the

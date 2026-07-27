@@ -515,10 +515,10 @@ public:
                             //        (name/password strdup'd in place at +0x34/+0x38)
     __POSITION* m_54;       // +0x54  cached AddTail position
 
-    // Zero the descriptor + m_54. The retail ctor AddPlayerNode inlines is a single
-    // coalesced vptr stamp 0x5f0760, then `mov ecx,0x14; xor eax,eax; lea edi,[esi+4];
-    // rep stosd` - a rep-stosd memset of exactly sizeof(m_desc) (0x50 B), NOT the
-    // hand-written dword loop this ctor used to spell.
+    // Zero the descriptor + m_54. Retail's AddPlayerNode (0x1786d0) inlines exactly
+    // this: the coalesced vptr stamp 0x5f0760, then `mov ecx,0x14; xor eax,eax;
+    // lea edi,[esi+4]; rep stosd` (== memset over the 0x50-byte descriptor), then
+    // `mov [esi+0x54],eax`.
     CNetPlayerListNode() {
         memset(&m_desc, 0, sizeof(m_desc));
         m_54 = 0;
@@ -596,7 +596,18 @@ SIZE_UNKNOWN(); // external COM interface (opaque object); size TBD
 // storage, identical offsets, so the two reinterprets between them were a two-names-
 // one-class artefact. Folded 2026-07-27, keeping the semantic field names.
 struct CNetCtrlMsg {
-    i32 m_code;     // +0x0  message code (the DispatchMsg switch tag: 3/5/49/257)
+    // +0x0 is read TWO ways and the bytes prove both: CNetSession::DispatchMsg
+    // switches on the whole dword (3/5/49/257), while CNetSession::Dispatch @0xbf749
+    // reads it as a byte pair - `mov cl,BYTE PTR [esi]; test cl,0x80; test cl,0x1`
+    // then `xor eax,eax; mov al,BYTE PTR [esi+0x1]` as the destination slot index.
+    // A real overlay, so it is declared as one instead of reinterpreted at the site.
+    union {
+        i32 m_code; // +0x0  message code (the DispatchMsg switch tag: 3/5/49/257)
+        struct {
+            u8 m_routeFlags; // +0x0  bit7 = do not re-route, bit0 = per-slot route
+            u8 m_routeSlot;  // +0x1  destination slot index when bit0 is set
+        } m_route;
+    };
     i32 m_subCode;  // +0x4  sub-code
     i32 m_playerId; // +0x8  payload (player id on the player-left path)
 };
