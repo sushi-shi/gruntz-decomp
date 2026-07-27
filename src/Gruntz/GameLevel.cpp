@@ -86,6 +86,19 @@ CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) {
     m_rectCHeight = 576;
 }
 
+// The tile-descriptions table inside the WWD image: a packed on-disk record whose
+// count sits at +0x08 and whose variable-stride descriptors begin at +0x20 (each
+// advanced by CTileImageSet::GetStride). Typing it turns the old *(u32*)(rec + 8)
+// offset-cast into a plain member read; only the file-base cast remains, and that
+// one is byte-forced by the format (the table is located by a runtime offset).
+struct WwdTileDescTable {
+    char m_00[0x8];
+    u32 m_count; // +0x08  descriptor count (re-read from the record each iteration)
+    char m_0c[0x20 - 0xc];
+    char m_descriptors[1]; // +0x20  first descriptor
+};
+SIZE_UNKNOWN();
+
 RVA(0x0015d280, 0x279)
 i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     ReleaseChildren(); // vtable +0x44 (slot 17), the pre-load reset
@@ -102,6 +115,8 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     // to hdr at the top makes its live range begin at the hdr load, which is why the
     // retail compiler pins `block` in the callee-saved register and reloads `hdr`'s
     // own fields through a spilled pointer for the rest of the function.
+    // the header IS the head of the file image and every table below is located by a
+    // runtime offset from it - the byte cursor is byte-forced by the on-disk format
     char* block = reinterpret_cast<char*>(hdr);
     Bytef* ehAlloc = 0; // inflate buffer freed on every exit path
 
@@ -118,6 +133,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
             return 0;
         }
 
+        // same cursor, now over the inflated image - byte-forced by the format
         block = reinterpret_cast<char*>(WwdFile_InflateMainBlock(hdr, buf, allocSize - 0x20));
         if (block == 0) {
             operator delete(buf);
@@ -151,8 +167,9 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     // CTileImageSet, and returns the number read (or -1 on a bad pointer / failed
     // read). count is re-read from the record header each iteration (rec is spilled).
     if (hdr->tileDescriptionsOffset != 0) {
-        char* rec = block + hdr->tileDescriptionsOffset;
-        char* elem = rec + 0x20;
+        WwdTileDescTable* rec =
+            reinterpret_cast<WwdTileDescTable*>(block + hdr->tileDescriptionsOffset);
+        char* elem = rec->m_descriptors;
         if (elem == 0) {
             result = -1;
         } else if (rec == 0) {
@@ -160,7 +177,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         } else {
             i32 n = 0;
             i32 j = 0;
-            while (static_cast<u32>(j) < *reinterpret_cast<u32*>((rec + 0x8))) {
+            while (static_cast<u32>(j) < rec->m_count) {
                 CTileImageSet* set = ReadImageSet(elem);
                 if (set == 0) {
                     result = -1;
