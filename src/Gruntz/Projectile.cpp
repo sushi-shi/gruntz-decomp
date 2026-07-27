@@ -819,18 +819,14 @@ void CProjectile::ScanTargets(i32 impact) {
     i32 projXhi = projXlo + 0x20;
     i32 projYlo = m_object->m_screenY - 0x10;
     i32 projYhi = projYlo + 0x20;
-    i32 rowBase = 0x1c;                       // [esp+0x18]  row byte stride base
+    i32 rowBase = 0;                          // [esp+0x18]  row base index into m_grid
     i32 colOff;                               // [esp+0x14]
     i32 col;                                  // ebp
     do {
         col = 0;
         colOff = rowBase;
-        for (; col < 0xf; col++, colOff += 4) {
-            // authentic: sliding-window grid access - 0x1c row-stride overlaps the
-            // 4-byte column pitch, so it is raw byte arithmetic, not a 2D pointer array.
-            CGrunt* g = *reinterpret_cast<CGrunt**>(
-                (reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + colOff)
-            );
+        for (; col < 0xf; col++, colOff++) {
+            CGrunt* g = g_gameReg->m_cmdGrid->m_grid[colOff];
             if (g == 0) {
                 continue;
             }
@@ -883,9 +879,9 @@ void CProjectile::ScanTargets(i32 impact) {
             m_hitList.AddTail(slot);
             g->StepCombatReaction(m_kind, 1, m_srcRow, m_srcCol, m_targetId, m_ownerId, 1, 0);
         }
-        rowBase += 0x3c;
+        rowBase += 15;
         tileY++;
-    } while (rowBase < 0x10c);
+    } while (rowBase < 0x3c);
 }
 
 // ---------------------------------------------------------------------------

@@ -4287,9 +4287,8 @@ drag_box: {
         CTriggerMgr* cg = g_gameReg->m_cmdGrid;
         CGrunt* slot = 0;
         if (1 == cg->m_recList.GetCount()) { // exactly one record node
-            i32* sel = *reinterpret_cast<i32**>(
-                (*reinterpret_cast<char**>(reinterpret_cast<char*>(&cg->m_recList) + 4) + 8)
-            );
+            // +4 is CPtrList::m_pNodeHead and +8 that node's data - GetHead() exactly.
+            i32* sel = static_cast<i32*>(cg->m_recList.GetHead());
             slot = cg->m_grid[sel[1] * 15 + sel[0]];
         }
         if (slot != 0 && slot->m_entranceCommitted != 0) {

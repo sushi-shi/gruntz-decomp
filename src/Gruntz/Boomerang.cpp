@@ -1,6 +1,7 @@
 #include <Gruntz/Boomerang.h> // CBoomerang : CProjectile (+return-trajectory fields, sizeof 0x260)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr complete (m_grid: the 4x15 launcher-cell board)
 #include <Gruntz/Grunt.h>        // CGrunt (launcher grunt return-record) + CFileMemBase
 #include <Gruntz/GameRegistry.h> // g_gameReg (m_world gate, m_cmdGrid launcher-cell grid)
 #include <rva.h>
@@ -75,9 +76,7 @@ i32 CBoomerang::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i3
     m_dirY = originY - static_cast<double>(owner->m_screenY);
     m_phase = 0.0;
     m_velScale = d;
-    CGrunt* g = *reinterpret_cast<CGrunt**>(
-        (reinterpret_cast<char*>(g_gameReg->m_cmdGrid) + (15 * a + b) * 4 + 0x1c)
-    );
+    CGrunt* g = g_gameReg->m_cmdGrid->m_grid[15 * a + b];
     if (g != 0) {
         g->m_280 = static_cast<i32>((d * m_flightDist * g_boomRetC3 - g_boomRetC4));
         g->m_284 = 0;

@@ -168,10 +168,10 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
         return 0;
     }
     memset(m_cellPool, 0, count * 0x1c);
-    i32 stride = width * 0x1c;
+    i32 stride = width;
     i32 off = 0;
     for (i32 i = 0; i < height; i++) {
-        m_rows[i] = reinterpret_cast<BrickzCell*>((reinterpret_cast<char*>(m_cellPool) + off));
+        m_rows[i] = m_cellPool + off;
         off += stride;
     }
     if ((reinterpret_cast<CMapArrayA*>(&m_colA.m_block))->Allocate(count * 5) == 0) {
@@ -262,11 +262,9 @@ i32 CMapMgr::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 m
     // Reset the per-cell open counts across all m_cellCount cells.
     if (m_cellCount != 0) {
         u32 i = 0;
-        i32 off = 0;
         do {
-            *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_cellPool) + off + 0x14)) = 0;
+            m_cellPool[i].m_count = 0;
             i++;
-            off += 0x1c;
         } while (i < m_cellCount);
     }
     if (x1 == x2 && y1 == y2) {
