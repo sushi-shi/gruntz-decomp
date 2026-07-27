@@ -181,22 +181,24 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
                 i32 id;
                 s->Read(&id, 4);
                 CGameObject* out = 0;
-                i32 resolved = MapLookup(
-                    reg->m_world->m_childGroup->m_map48,
-                    // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
-                    reinterpret_cast<void*>(id),
-                    out
-                );
-                if (resolved != 0) {
-                    if (out == 0) {
-                        resolved = 0;
-                    } else {
-                        resolved = (out->GetClassId() == CLASSID_SERIALREF)
-                                       ? reinterpret_cast<i32>(out)
-                                       : 0;
-                    }
+                // one slot, every arm stores (see GruntVoice::Update's note)
+                CWwdGameObjectA* resolved;
+                if (MapLookup(
+                        reg->m_world->m_childGroup->m_map48,
+                        // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
+                        reinterpret_cast<void*>(id),
+                        out
+                    )
+                    == 0) {
+                    resolved = 0;
+                } else if (out == 0) {
+                    resolved = 0;
+                } else {
+                    resolved = (out->GetClassId() == CLASSID_SERIALREF)
+                                   ? static_cast<CWwdGameObjectA*>(out)
+                                   : 0;
                 }
-                m_focus = reinterpret_cast<CWwdGameObjectA*>(resolved);
+                m_focus = resolved;
                 if (m_focus == 0 && id != 0) {
                     return 0;
                 }

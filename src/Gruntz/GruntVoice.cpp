@@ -411,15 +411,24 @@ i32 CGruntVoice::Update() {
     if (m_owner == 0) {
         CGameObject* out = 0;
         i32 src = m_source;
-        CWwdGameObjectA* resolved = 0;
+        // retail keeps ONE slot that first holds the Lookup BOOL and is then
+        // overwritten with the object, so every arm STORES (the `xor eax,eax; jmp`
+        // in the out==0 arm); an initialized declaration folds that store away.
+        CWwdGameObjectA* resolved;
         if (MapLookup(
                 g_gameReg->m_world->m_childGroup->m_map48,
                 // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
                 reinterpret_cast<void*>(src),
                 out
-            ) != 0
-            && out != 0 && out->GetClassId() == CLASSID_SERIALREF) {
-            resolved = static_cast<CWwdGameObjectA*>(out);
+            )
+            == 0) {
+            resolved = 0;
+        } else if (out == 0) {
+            resolved = 0;
+        } else {
+            resolved = (out->GetClassId() == CLASSID_SERIALREF)
+                           ? static_cast<CWwdGameObjectA*>(out)
+                           : 0;
         }
         if (resolved == 0) {
             m_object->m_stateFlags |= 1;
@@ -436,15 +445,24 @@ i32 CGruntVoice::Update() {
     } else {
         CGameObject* out = 0;
         i32 src = m_source;
-        CWwdGameObjectA* resolved = 0;
+        // retail keeps ONE slot that first holds the Lookup BOOL and is then
+        // overwritten with the object, so every arm STORES (the `xor eax,eax; jmp`
+        // in the out==0 arm); an initialized declaration folds that store away.
+        CWwdGameObjectA* resolved;
         if (MapLookup(
                 g_gameReg->m_world->m_childGroup->m_map48,
                 // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
                 reinterpret_cast<void*>(src),
                 out
-            ) != 0
-            && out != 0 && out->GetClassId() == CLASSID_SERIALREF) {
-            resolved = static_cast<CWwdGameObjectA*>(out);
+            )
+            == 0) {
+            resolved = 0;
+        } else if (out == 0) {
+            resolved = 0;
+        } else {
+            resolved = (out->GetClassId() == CLASSID_SERIALREF)
+                           ? static_cast<CWwdGameObjectA*>(out)
+                           : 0;
         }
         if (resolved == 0) {
             m_object->m_stateFlags |= 1;
