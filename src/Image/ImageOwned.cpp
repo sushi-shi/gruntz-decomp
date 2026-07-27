@@ -225,14 +225,20 @@ i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
                 ::operator delete(m_palette);
             }
             m_palette = static_cast<u8*>(::operator new(0x400));
+            // src heads a blob - 0x20 header, then the RLE stream, then (flags & 0x80)
+            // a trailing 0x300 palette - so src + m_rleLen + 0x20 IS that palette's
+            // first byte. Walking the blob from the typed head is byte-forced by the
+            // format, and the base/index split below is byte-evidenced: retail forms
+            // src+m_rleLen as the base with i as the scaled index (see the note above),
+            // so do not "simplify" these three reads.
             i32 i = 0;
             i32 d = 0;
             do {
                 d += 4;
-                m_palette[d - 4] = (reinterpret_cast<u8*>(src) + m_rleLen)[i + 0x20];
+                m_palette[d - 4] = (reinterpret_cast<u8*>(src) + m_rleLen)[i + 0x20]; // byte-forced
                 i += 3;
-                m_palette[d - 3] = (reinterpret_cast<u8*>(src) + m_rleLen)[i + 0x1e];
-                m_palette[d - 2] = (reinterpret_cast<u8*>(src) + m_rleLen)[i + 0x1f];
+                m_palette[d - 3] = (reinterpret_cast<u8*>(src) + m_rleLen)[i + 0x1e]; // byte-forced
+                m_palette[d - 2] = (reinterpret_cast<u8*>(src) + m_rleLen)[i + 0x1f]; // byte-forced
             } while (i < 0x300);
         }
     }

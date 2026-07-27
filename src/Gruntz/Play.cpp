@@ -675,7 +675,11 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     i32 reload = 0; // [esp+0x20] warp-cache reload flag (-> the vtable +0xa4 arg)
     // one contiguous stack buffer: the AREA%i/Level%i name at +0x00, a 148-byte
     // zeroed sub-block at +0x20 (retail's [esp+0x58] rep-stos region / LoadMap arg).
-    char nameBuf[0xb4]; // [esp+0x38]
+    // TWO locals, not one 0xb4 blob: the name string ([esp+0x38]) and the zeroed
+    // dword scratch handed to LoadWarlordSprites ([esp+0x58]). 0x20 + 0x25*4 == 0xb4,
+    // which is the whole of the block the frame reads as one.
+    char nameBuf[0x20];      // [esp+0x38]
+    i32 initScratch[0x25];   // [esp+0x58]
 
     // ---- 1) reset prior-level scroll/area globals ----
     self->m_hudSuppressed = 1;
@@ -931,7 +935,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     DrawLevelInfoText();            // 0x14b5 -> 0xd95f0
     self->m_2c = 0;
     {
-        i32* z = reinterpret_cast<i32*>(nameBuf + 0x20); // scratch tail of the local buffer
+        i32* z = initScratch;
         i32 n = 0x25;
         while (n--) {
             *z++ = 0;
@@ -1187,7 +1191,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             // load the level map + the four map sub-steps
             if (LoadWarlordSprites(
                     reinterpret_cast<i32>(savedThis),
-                    reinterpret_cast<i32*>(nameBuf + 0x20)
+                    initScratch
                 )                                                        /* 0x2b80 */
                 && ScanBuildTiles() /* 0x3553 */ && ValidateLevelTiles() /* 0x345e */
                 && AddLevelGruntz() /* 0x17ee */) {
