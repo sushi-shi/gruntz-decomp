@@ -119,7 +119,7 @@ i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
         return 0;
     }
     // +0x1a0 is the per-class anim sub-object (raw offset by CGameObject convention).
-    m_1a0.Setup(reinterpret_cast<CAniElement*>(reinterpret_cast<i32>(spr)));
+    m_1a0.Setup(reinterpret_cast<CAniElement*>(spr));
     if (applyDefault) {
         m_1a0.Advance(g_engineFrameDelta);
     }

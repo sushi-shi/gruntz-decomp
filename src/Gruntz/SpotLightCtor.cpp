@@ -135,7 +135,7 @@ void CSpotLight::FireActivation(i32 id) {
 RVA(0x000b2050, 0x295)
 i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d) {
     if (CUserLogic::SerializeMove(
-            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(arc))),
+            arc,
             mode,
             c,
             d

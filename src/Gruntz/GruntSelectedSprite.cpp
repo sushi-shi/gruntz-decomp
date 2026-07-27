@@ -139,7 +139,7 @@ i32 CGruntSelectedSprite::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGa
         sa->Write(&m_cellX, 8);
     }
     if (!CUserLogic::SerializeMove(
-            reinterpret_cast<CFileMemBase*>((reinterpret_cast<i32>(arc))),
+            arc,
             mode,
             a3,
             a4
