@@ -448,9 +448,9 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     i32 row = m_object->m_screenY >> 5;
     if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
         && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
-        char* cell = reinterpret_cast<char*>(grid->m_rowInts[row]) + col * 0x1c;
+        char* cell = grid->m_rowBytes[row] + col * 0x1c;
         *reinterpret_cast<i32*>((cell + 8)) = mv;
-        char* cell0 = reinterpret_cast<char*>(grid->m_rowInts[row]) + col * 0x1c;
+        char* cell0 = grid->m_rowBytes[row] + col * 0x1c;
         if (mv != 0) {
             *reinterpret_cast<i32*>(cell0) |= 0x40000;
         } else {
@@ -733,16 +733,12 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
     i32 tileY = owner->m_screenX >> 5;
     if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_width)
         && static_cast<u32>(tileX) < static_cast<u32>(grid->m_height)) {
-        i32 rowByte = tileX * 4;
-        i32 cellOff = (tileY * 8 - tileY) * 4;
-        char* cell0 = reinterpret_cast<char*>(
-            *reinterpret_cast<i32**>((reinterpret_cast<char*>(grid->m_rows) + rowByte))
-        );
-        *reinterpret_cast<i32*>((cell0 + cellOff + 8)) = 0;
-        char* cell1 = reinterpret_cast<char*>(
-            *reinterpret_cast<i32**>((reinterpret_cast<char*>(grid->m_rows) + rowByte))
-        );
-        *reinterpret_cast<i32*>((cell1 + cellOff)) &= ~0x40000;
+        // the walk is transposed here: row = tileX, cell = tileY (7 ints per cell)
+        i32 cellInt = tileY * 8 - tileY;
+        i32* cell0 = grid->m_rowInts[tileX];
+        cell0[cellInt + 2] = 0;
+        i32* cell1 = grid->m_rowInts[tileX];
+        cell1[cellInt] &= ~0x40000;
     }
 }
 
