@@ -588,7 +588,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
 
     char* B = reinterpret_cast<char*>(this);
     s->Write(B, 4); // offset 0 (vptr field)
-    s->Write(B + 0x4, 4);
+    s->Write(&m_4, 4);
 
     g_serialCounter++;
     i32 seq = 0;
@@ -598,68 +598,68 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     }
     s->Write(&seq, 4);
 
-    s->Write(B + 0x10, 0x10);
-    s->Write(B + 0x20, 4);
-    s->Write(B + 0x24, 4);
-    s->Write(B + 0x28, 4);
-    s->Write(B + 0x110, 4);
-    s->Write(B + 0x62c, 4);
+    s->Write(&m_10, 0x10);
+    s->Write(&m_rect14.m_c, 4);
+    s->Write(&m_24, 4);
+    s->Write(&m_28, 4);
+    s->Write(&m_itemKind, 4);
+    s->Write(&m_tabCycle, 4);
 
-    char* p = B + 0x114;
+    i32* p = m_statFlags;
     for (i32 i = 0; i < 15; i++) {
         s->Write(p, 4);
-        p += 4;
+        p += 1;
     }
 
-    s->Write(B + 0x34c, 4);
-    s->Write(B + 0x350, 4);
-    s->Write(B + 0x354, 4);
-    s->Write(B + 0x35c, 4);
-    s->Write(B + 0x360, 4);
-    s->Write(B + 0x10c, 4);
-    s->Write(B + 0x298, 4);
-    s->Write(B + 0x29c, 4);
-    s->Write(B + 0x524, 4);
-    s->Write(B + 0x52c, 4);
-    s->Write(B + 0x528, 4);
-    s->Write(B + 0x544, 4);
-    s->Write(B + 0x504, 0x10);
-    s->Write(B + 0x514, 0x10);
-    s->Write(B + 0x548, 4);
-    s->Write(B + 0x550, 4);
-    s->Write(B + 0x554, 4);
-    s->Write(B + 0x4c8, 4);
-    s->Write(B + 0x4cc, 4);
-    s->Write(B + 0x4e8, 4);
-    s->Write(B + 0x4ec, 4);
-    s->Write(B + 0x318, 4);
-    s->Write(B + 0x31c, 4);
-    s->Write(B + 0x330, 4);
-    s->Write(B + 0x334, 4);
-    s->Write(B + 0x558, 4);
-    s->Write(B + 0x55c, 4);
-    s->Write(B + 0x574, 4);
-    s->Write(B + 0x578, 4);
+    s->Write(&m_34c, 4);
+    s->Write(&m_350, 4);
+    s->Write(&m_hitTestDisabled, 4);
+    s->Write(&m_activeSlot, 4);
+    s->Write(&m_pendingHlRow, 4);
+    s->Write(&m_activeTab, 4);
+    s->Write(&m_gauge, 4);
+    s->Write(&m_gaugeTarget, 4);
+    s->Write(&m_itemBaseX, 4);
+    s->Write(&m_rezTick, 4);
+    s->Write(&m_rezActive, 4);
+    s->Write(&m_544, 4);
+    s->Write(&m_fallRectL, 0x10);
+    s->Write(&m_itemRectL, 0x10);
+    s->Write(&m_hlBusy, 4);
+    s->Write(&m_toggleActive, 4);
+    s->Write(&m_toggleHandle, 4);
+    s->Write(&m_machinePhase, 4);
+    s->Write(&m_extraNotifyArg0, 4);
+    s->Write(&m_fallActive, 4);
+    s->Write(&m_extraNotifyArg1, 4);
+    s->Write(&m_machineB, 4);
+    s->Write(&m_machineB.m_value, 4);
+    s->Write(&m_machineA, 4);
+    s->Write(&m_machineA.m_value, 4);
+    s->Write(&m_destructWarnActive, 4);
+    s->Write(&m_modeState, 4);
+    s->Write(&m_modeArmed, 4);
+    s->Write(&m_578, 4);
 
-    char* q = B + 0x224;
+    char* q = reinterpret_cast<char*>(&m_slots[0].m_value);
     for (i32 j = 0; j < 5; j++) {
         s->Write(q - 4, 4);
         s->Write(q, 4);
         q += 0x18;
     }
-    char* r = B + 0x2c4;
+    char* r = reinterpret_cast<char*>(&m_groupSlots[0].m_value);
     for (i32 k = 0; k < 3; k++) {
         s->Write(r - 4, 4);
         s->Write(r, 4);
         r += 0x18;
     }
-    char* nb = B + 0x378;
+    CSbiHlRow* nb = m_hlGrid;
     i32 outer = 3;
     do {
         for (i32 m = 0; m < 4; m++) {
-            s->Write(nb, 4);
-            s->Write(nb + 4, 4);
-            nb += 0x18;
+            s->Write(&nb->m_state, 4);
+            s->Write(&nb->m_value, 4);
+            nb += 1;
         }
     } while (--outer);
 
@@ -699,7 +699,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     ResetWidgets(0);
 
     s->Read(B, 4);
-    s->Read(B + 0x4, 4);
+    s->Read(&m_4, 4);
 
     g_serialCounter++;
     i32 seq = 0;
@@ -722,68 +722,68 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
         return 0;
     }
 
-    s->Read(B + 0x10, 0x10);
-    s->Read(B + 0x20, 4);
-    s->Read(B + 0x24, 4);
-    s->Read(B + 0x28, 4);
-    s->Read(B + 0x110, 4);
-    s->Read(B + 0x62c, 4);
+    s->Read(&m_10, 0x10);
+    s->Read(&m_rect14.m_c, 4);
+    s->Read(&m_24, 4);
+    s->Read(&m_28, 4);
+    s->Read(&m_itemKind, 4);
+    s->Read(&m_tabCycle, 4);
 
-    char* p = B + 0x114;
+    i32* p = m_statFlags;
     for (i32 i = 0; i < 15; i++) {
         s->Read(p, 4);
-        p += 4;
+        p += 1;
     }
 
-    s->Read(B + 0x34c, 4);
-    s->Read(B + 0x350, 4);
-    s->Read(B + 0x354, 4);
-    s->Read(B + 0x35c, 4);
-    s->Read(B + 0x360, 4);
-    s->Read(B + 0x10c, 4);
-    s->Read(B + 0x298, 4);
-    s->Read(B + 0x29c, 4);
-    s->Read(B + 0x524, 4);
-    s->Read(B + 0x52c, 4);
-    s->Read(B + 0x528, 4);
-    s->Read(B + 0x544, 4);
-    s->Read(B + 0x504, 0x10);
-    s->Read(B + 0x514, 0x10);
-    s->Read(B + 0x548, 4);
-    s->Read(B + 0x550, 4);
-    s->Read(B + 0x554, 4);
-    s->Read(B + 0x4c8, 4);
-    s->Read(B + 0x4cc, 4);
-    s->Read(B + 0x4e8, 4);
-    s->Read(B + 0x4ec, 4);
-    s->Read(B + 0x318, 4);
-    s->Read(B + 0x31c, 4);
-    s->Read(B + 0x330, 4);
-    s->Read(B + 0x334, 4);
-    s->Read(B + 0x558, 4);
-    s->Read(B + 0x55c, 4);
-    s->Read(B + 0x574, 4);
-    s->Read(B + 0x578, 4);
+    s->Read(&m_34c, 4);
+    s->Read(&m_350, 4);
+    s->Read(&m_hitTestDisabled, 4);
+    s->Read(&m_activeSlot, 4);
+    s->Read(&m_pendingHlRow, 4);
+    s->Read(&m_activeTab, 4);
+    s->Read(&m_gauge, 4);
+    s->Read(&m_gaugeTarget, 4);
+    s->Read(&m_itemBaseX, 4);
+    s->Read(&m_rezTick, 4);
+    s->Read(&m_rezActive, 4);
+    s->Read(&m_544, 4);
+    s->Read(&m_fallRectL, 0x10);
+    s->Read(&m_itemRectL, 0x10);
+    s->Read(&m_hlBusy, 4);
+    s->Read(&m_toggleActive, 4);
+    s->Read(&m_toggleHandle, 4);
+    s->Read(&m_machinePhase, 4);
+    s->Read(&m_extraNotifyArg0, 4);
+    s->Read(&m_fallActive, 4);
+    s->Read(&m_extraNotifyArg1, 4);
+    s->Read(&m_machineB, 4);
+    s->Read(&m_machineB.m_value, 4);
+    s->Read(&m_machineA, 4);
+    s->Read(&m_machineA.m_value, 4);
+    s->Read(&m_destructWarnActive, 4);
+    s->Read(&m_modeState, 4);
+    s->Read(&m_modeArmed, 4);
+    s->Read(&m_578, 4);
 
-    char* q = B + 0x224;
+    char* q = reinterpret_cast<char*>(&m_slots[0].m_value);
     for (i32 j = 0; j < 5; j++) {
         s->Read(q - 4, 4);
         s->Read(q, 4);
         q += 0x18;
     }
-    char* r = B + 0x2c4;
+    char* r = reinterpret_cast<char*>(&m_groupSlots[0].m_value);
     for (i32 k = 0; k < 3; k++) {
         s->Read(r - 4, 4);
         s->Read(r, 4);
         r += 0x18;
     }
-    char* nb = B + 0x378;
+    CSbiHlRow* nb = m_hlGrid;
     i32 outer = 3;
     do {
         for (i32 m = 0; m < 4; m++) {
-            s->Read(nb, 4);
-            s->Read(nb + 4, 4);
-            nb += 0x18;
+            s->Read(&nb->m_state, 4);
+            s->Read(&nb->m_value, 4);
+            nb += 1;
         }
     } while (--outer);
 
@@ -1813,10 +1813,10 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     m_notify2 = 0;
     m_notify3 = 0;
     m_notify1 = 0;
-    *reinterpret_cast<i32*>((B + 0x348)) = 0;
+    m_machineDisplay = 0;
     m_gaugeNotify = 0;
     m_gaugeSink = 0;
-    *reinterpret_cast<i32*>((B + 0x358)) = 0;
+    m_tabsBuilt = 0;
 }
 
 RVA(0x0010b210, 0xc5)
@@ -1904,22 +1904,20 @@ void CStatusBarMgr::ClearTabGroup() {
             break;
         }
         case 4: {
-            i32* p = reinterpret_cast<i32*>((B + 0x204));
-            p[0] = 0;
-            p[1] = 0;
-            p[2] = 0;
-            p[3] = 0;
-            p[4] = 0;
+            m_slotNotify[0] = 0;
+            m_slotNotify[1] = 0;
+            m_slotNotify[2] = 0;
+            m_slotNotify[3] = 0;
+            m_slotNotify[4] = 0;
             m_gaugeNotify = 0;
             m_gaugeSink = 0;
             break;
         }
         case 5: {
-            i32* p = reinterpret_cast<i32*>((B + 0x308));
-            p[0] = 0;
-            p[1] = 0;
-            p[2] = 0;
-            *reinterpret_cast<i32*>((B + 0x348)) = 0;
+            m_groupNotify[0] = 0;
+            m_groupNotify[1] = 0;
+            m_groupNotify[2] = 0;
+            m_machineDisplay = 0;
             for (i32 i = 0; i < 12; i++) {
                 m_hlNotify[i] = 0;
             }
@@ -2244,8 +2242,8 @@ i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
     } else if (x > xHi - 0x1a) {
         cx = xHi - 0x1a;
     }
-    i32 localX = cx - *reinterpret_cast<i32*>((B + 0x10));
-    i32 localY = 0x1b3 - *reinterpret_cast<i32*>((B + 0x14));
+    i32 localX = cx - m_10;
+    i32 localY = 0x1b3 - m_rect14.m_0;
     UpdateFallingItemStatusBar(item, localX, localY);
     EnterHlRow(1, item);
     return 1;
