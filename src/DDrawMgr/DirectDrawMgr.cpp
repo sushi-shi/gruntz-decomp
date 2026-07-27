@@ -365,7 +365,7 @@ i32 CDDrawPtrCollections::CreateDevice(
     }
 
     // Retail zero-fills both SDK caps blocks with `mov ecx,0x5f; xor eax,eax; rep
-    // stosd` (0x141e05 / 0x141e12) - i.e. the inlined memset of a 0x17c-byte DDCAPS,
+    // stosd` (0x141e46 / 0x141e57) - i.e. the inlined memset of a 0x17c-byte DDCAPS,
     // not a hand-written dword loop. (The ex `i32* p = (i32*)&m_driverCaps; for(...)`
     // spelling produced the same rep stosd, so the dword cursor was never forced -
     // it was just an unrecovered memset.)

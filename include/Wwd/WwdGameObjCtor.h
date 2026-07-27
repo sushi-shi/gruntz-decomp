@@ -33,8 +33,8 @@ struct WwdCtorBase {
         m_d8 = -1;
     }
     char _vft0[4]; // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    int m_04;    // +0x04  CLoadable::m_id     (per-child id / liveness latch)
-    int m_08;    // +0x08  CLoadable::m_flags  (collision/state flag word)
+    int m_04;               // +0x04  CLoadable::m_id     (per-child id / liveness latch)
+    int m_08;               // +0x08  CLoadable::m_flags  (collision/state flag word)
     CDDrawSurfaceMgr* m_0c; // +0x0c  owner context == CLoadable::m_ownerCtx, typed
     char _p10[0x20 - 0x10];
     int m_20;
