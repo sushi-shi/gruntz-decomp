@@ -1150,9 +1150,17 @@ CString* CButeMgr::GetStringDef(const char* tag, const char* key, CString* def) 
 // regalloc coin-flip (99.63%): body byte-exact; retail holds tag/key in ebx/edi,
 // cl swaps to edi/ebx (+ the /GX scopetable push immediate, reloc-masked). Final sweep.
 RVA(0x001731d0, 0xb6)
-// The error paths return the ADDRESS of the static empty CString, not its buffer -
-// retail emits `mov eax, OFFSET s_empty`. `(const char*)s_empty` would emit a LOAD
-// instead, so the three casts below are byte-forced, not a modelling shortcut.
+// The error paths return the ADDRESS of the static empty CString, not its buffer:
+// retail ends them `mov eax,0x6bf698` == OFFSET s_empty, with no load. Writing
+// `(const char*)s_empty` would emit the m_pchData LOAD instead, so the three casts
+// below are byte-forced.
+//
+// VERIFIED 2026-07-28 that s_empty really is a static CString and not a plain char[]
+// (which would need no cast at all): 0x1731d0's prologue carries the magic-static
+// guard and the atexit registration a char[] cannot have -
+//   mov cl,BYTE PTR ds:0x6bf6b8 / test al,cl / jne   (the guard byte)
+//   mov ecx,0x6bf698 / push 0x6293f4 / call 0x1b9d4c (CString::CString(const char*))
+//   push 0x573290 / call 0x11f490                    (atexit the dtor thunk)
 char* CButeMgr::GetString(const char* tag, const char* key) {
     static CString s_empty("");
 
@@ -1164,13 +1172,13 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
                 return static_cast<char*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, key, tag);
-            return reinterpret_cast<char*>(&s_empty); // byte-forced (see the note above) // byte-forced (see the note above) // byte-forced (see the note above)
+            return reinterpret_cast<char*>(&s_empty); // byte-forced: see GetString's header note
         }
         ReportError(s_fmtNotFound, key, tag);
-        return reinterpret_cast<char*>(&s_empty); // byte-forced (see the note above) // byte-forced (see the note above)
+        return reinterpret_cast<char*>(&s_empty); // byte-forced: see GetString's header note
     }
     ReportError(s_fmtInvalidTag, tag);
-    return reinterpret_cast<char*>(&s_empty); // byte-forced (see the note above)
+    return reinterpret_cast<char*>(&s_empty); // byte-forced: see GetString's header note
 }
 
 RVA(0x00173720, 0x4e)
