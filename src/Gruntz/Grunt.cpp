@@ -2074,13 +2074,13 @@ i32 CUserLogic::Place(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32
 // sites here reach the BASE accessor / the open-coded fast path and run it
 // themselves).
 static inline void ConstructGrownSlots() {
-    char* slot = g_typeColl.m_alloc;
+    CString* slot = g_typeColl.Slots();
     i32 n = g_typeColl.m_grown;
     while (n-- != 0) {
         if (slot) {
-            new (static_cast<void*>(slot)) CString();
+            new (slot) CString();
         }
-        slot += 4;
+        slot++;
     }
 }
 

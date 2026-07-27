@@ -1403,13 +1403,13 @@ i32 CGrunt::LoadGruntCombatAnimations(
         (static_cast<_zvec*>(&g_typeColl))->IndexToPtr(this->m_objAux->m_1c)
     );
     if (g_typeColl.m_grown != 0) {
-        char* p = g_typeColl.m_alloc;
+        CString* p = g_typeColl.Slots();
         i32 n = g_typeColl.m_grown;
         do {
             if (p != 0) {
-                new (static_cast<void*>(p)) CString();
+                new (p) CString();
             }
-            p += 4;
+            p++;
         } while (--n != 0);
     }
     if (strcmp(*typeRec, s_typeO) == 0) {
