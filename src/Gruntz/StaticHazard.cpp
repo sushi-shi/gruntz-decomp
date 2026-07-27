@@ -58,6 +58,23 @@ static inline CActHandler* HaznLookup(i32 coord) {
     return (CActRegPool<CStaticHazard>::s_table.ResolveEntry(coord));
 }
 
+// The same two lookups one inline level shallower: the grow-fail tail stays as the
+// out-of-line zErrHandling::Report call (0x34960) instead of expanding. cl5 spends its
+// inline budget from the outside in, so the TWO-key registrar keeps the tail outlined
+// at three of its four lookups while the one-key registrars expand both.
+// docs/patterns/act-registrar-report-outline-budget.md
+static inline CString* ActNameLookupCallReport(i32 id) {
+    g_typeColl.m_grown = 0;
+    if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
+        return g_typeColl.Elem(id);
+    }
+    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) { // _zvec::GrowTo @0x16da80
+        return g_typeColl.Elem(id);
+    }
+    g_typeColl.Report(g_projActCache, 0xc);
+    return g_typeColl.Scratch();
+}
+
 // ---------------------------------------------------------------------------
 // CStaticHazard::~CStaticHazard @0x012b30 - the leaf adds no destructible members
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown; the
@@ -152,19 +169,17 @@ void CStaticHazard::FireActivation(i32 coord) {
 // in the hazard registry. Two back-to-back single-key registrations; the SAME
 // archetype as CTimeBomb::RegisterActs done twice.
 //
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md +
-// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
-// byte-faithful (both intern/name-resolve blocks + the OWN-registry resolves + the
-// `mov [entry],offset handler` stores match retail); residual is the slot-vs-id
-// callee-saved register choice cascading into the free-loop counts. Deferred.
+// Two-key registrar: cl5 spends its inline budget from the outside in, so only the
+// SECOND key's name lookup expands the grow-fail report; the other three lookups keep
+// it as the out-of-line zErrHandling::Report call.
+// docs/patterns/act-registrar-report-outline-budget.md
 RVA(0x000fbd50, 0x2ac)
 void CStaticHazard::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
+        CString* slot = ActNameLookupCallReport(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
@@ -176,7 +191,7 @@ void CStaticHazard::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*HaznLookup(id)) = static_cast<CActHandler>(&CStaticHazard::LoadAttributes2);
+    (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id)) = static_cast<CActHandler>(&CStaticHazard::LoadAttributes2);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -194,7 +209,7 @@ void CStaticHazard::RegisterActs() {
         *slot = "B";
         g_typeCounter++;
     }
-    (*HaznLookup(id2)) = static_cast<CActHandler>(&CStaticHazard::LoadAttributes);
+    (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id2)) = static_cast<CActHandler>(&CStaticHazard::LoadAttributes);
 }
 
 // ---------------------------------------------------------------------------

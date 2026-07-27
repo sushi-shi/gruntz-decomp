@@ -34,4 +34,23 @@ template<class T> inline T* zDArray<T>::ResolveEntry(i32 id) {
     return reinterpret_cast<T*>(m_spare);
 }
 
+// The same accessor with the grow-fail tail left OUTLINED (`zErrHandling::Report`,
+// 0x34960) instead of expanded - retail's shape at every act-table lookup inside a
+// TWO-key registrar. See the ResolveEntryCallReport note in <Wap32/ZVec.h>.
+template<class T> inline T* zDArray<T>::ResolveEntryCallReport(i32 id) {
+    char* r;
+    m_grown = 0;
+    if (id >= m_lo && id <= m_hi) {
+        r = m_base + (id - m_lo) * m_stride;
+    } else if (GrowTo(id, 0)) {
+        r = m_base + (id - m_lo) * m_stride;
+    } else {
+        Report(g_projActCache, 0xc);
+        r = m_spare;
+    }
+    // byte-forced: m_stride is a RUNTIME width, so the band is byte-addressed and the
+    // element type goes back on here - this accessor IS that one seam
+    return reinterpret_cast<T*>(r);
+}
+
 #endif // GRUNTZ_GRUNTZ_ACTREG_H

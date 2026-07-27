@@ -25,25 +25,23 @@ static inline void FreeNameSlotNodes() {
 // RegisterActs_646188 @0x0b1790 - bind handler "A" (0x4025db) and handler "B"
 // (0x402414) into the per-class registry @0x646188.
 // ===========================================================================
-// @early-stop
-// A/B inline asymmetry + register-pinning wall: retail outlines handler-A's name
-// rebuild (call 0x34960, the shared GetRetAddr()+Insert helper) while inlining
-// handler-B's identical sequence; plus the slot-vs-id callee-saved coloring ->
-// free-loop count materialization. Logic + offsets + every call/immediate/branch/
-// store are byte-faithful.
+// Two-key registrar: cl5 spends its inline budget from the outside in, so only the
+// SECOND key's name lookup expands the grow-fail report; the other three lookups keep
+// it as the out-of-line zErrHandling::Report call.
+// docs/patterns/act-registrar-report-outline-budget.md
 RVA(0x000b1790, 0x2ac)
 void RegisterActs_646188() {
     i32 id = ActFindId("A");
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
+        CString* slot = ActNameLookupCallReport(g_typeCounter);
         FreeNameSlotNodes();
         *slot = "A";
         g_typeCounter++;
     }
     // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CSpotLight>::s_table.ResolveEntry(id)) = static_cast<void*>(&SpotLightActA);
+    *reinterpret_cast<void**>(CActRegPool<CSpotLight>::s_table.ResolveEntryCallReport(id)) = static_cast<void*>(&SpotLightActA);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -55,5 +53,5 @@ void RegisterActs_646188() {
         g_typeCounter++;
     }
     // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CSpotLight>::s_table.ResolveEntry(id2)) = static_cast<void*>(&SpotLightActB);
+    *reinterpret_cast<void**>(CActRegPool<CSpotLight>::s_table.ResolveEntryCallReport(id2)) = static_cast<void*>(&SpotLightActB);
 }

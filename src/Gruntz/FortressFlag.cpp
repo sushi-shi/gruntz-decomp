@@ -244,28 +244,28 @@ i32 CFortressFlag::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* 
 // the small per-class dispatchers inline ResolveEntry. Ex fake view
 // "CTypeColl464" (its m_4/m_buf/m_buf2/m_20 were CActReg's canonical
 // m_coll2/m_base/m_cur/m_scratch).
-// @early-stop
-// esi/edi regalloc wall: cl assigns this->esi, key->edi; retail swaps (key->esi,
-// this->edi). Full fast-range/GrowTo/breadcrumb logic + offsets byte-faithful;
-// not steerable.
+// ONE result variable assigned in each arm and returned once - the same single-return
+// shape as _zvec::IndexToPtr (src/Wap32/ZVec.cpp). That is what pins id in esi and
+// this in edi the way retail does (and produces the `mov eax,esi` return); the
+// multiple-return spelling reversed the pair and capped the fn at ~83%.
 // _zvec::m_base is the container's UNTYPED byte pool (one pool, every element
 // type), so naming the element at this accessor is zDArray<T>'s one seam.
 template<> RVA(0x000464e0, 0x74)
 CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
+    char* r;
     m_grown = 0;
     if (id >= m_lo && id <= m_hi) {
-        // the untyped byte pool named at the container's one seam
-        return reinterpret_cast<CActHandler*>(m_base + (id - m_lo) * m_stride);
+        r = m_base + (id - m_lo) * m_stride;
+    } else if (GrowTo(id, 0)) { // 0x16da80 = _zvec::GrowTo (inherited)
+        r = m_base + (id - m_lo) * m_stride;
+    } else {
+        void* item = g_projActCache;
+        g_retAddrBreadcrumb = GetRetAddr();
+        m_errSink->Set(this, item, 0xc);
+        r = m_spare;
     }
-    if (GrowTo(id, 0)) { // 0x16da80 = _zvec::GrowTo (inherited)
-        // the untyped byte pool named at the container's one seam
-        return reinterpret_cast<CActHandler*>(m_base + (id - m_lo) * m_stride);
-    }
-    void* item = g_projActCache;
-    g_retAddrBreadcrumb = GetRetAddr();
-    m_errSink->Set(this, item, 0xc);
     // the untyped byte pool named at the container's one seam
-    return reinterpret_cast<CActHandler*>(m_spare);
+    return reinterpret_cast<CActHandler*>(r);
 }
 
 RVA(0x00046850, 0xf1)

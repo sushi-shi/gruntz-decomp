@@ -380,21 +380,23 @@ void CGruntPuddle::FireActivation(i32 id) {
 // (0x403418) into the logic dispatch table @0x6445e8 (the CGruntPuddle logic
 // registration; moved from LogicActRegistrars.cpp - text-contained in this TU).
 // ===========================================================================
-// @early-stop
-// A/B inline asymmetry + register-pinning wall (see LogicActRegistrars.cpp header).
+// Two-key registrar: cl5 spends its inline budget from the outside in, so only the
+// SECOND key's name lookup expands the grow-fail report; the other three lookups keep
+// it as the out-of-line zErrHandling::Report call.
+// docs/patterns/act-registrar-report-outline-budget.md
 RVA(0x000408b0, 0x2ac)
 void RegisterLogic() {
     i32 id = ActFindId("A");
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
+        CString* slot = ActNameLookupCallReport(g_typeCounter);
         FreeNameSlotNodes();
         *slot = "A";
         g_typeCounter++;
     }
     // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id)) =
+    *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntryCallReport(id)) =
         static_cast<void*>(&PuddleActA);
 
     i32 id2 = ActFindId("B");
@@ -407,7 +409,7 @@ void RegisterLogic() {
         g_typeCounter++;
     }
     // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id2)) =
+    *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntryCallReport(id2)) =
         static_cast<void*>(&PuddleActB);
 }
 
@@ -680,21 +682,23 @@ void CTeleporter::FireActivation(i32 coord) {
 // @0x6446b0; built by CTeleporter::InitActReg @0x414a0). (Moved from
 // LogicActRegistrars.cpp - text-contained in this TU.)
 // ===========================================================================
-// @early-stop
-// A/B inline asymmetry + register-pinning wall (see LogicActRegistrars.cpp header).
+// Two-key registrar: cl5 spends its inline budget from the outside in, so only the
+// SECOND key's name lookup expands the grow-fail report; the other three lookups keep
+// it as the out-of-line zErrHandling::Report call.
+// docs/patterns/act-registrar-report-outline-budget.md
 RVA(0x00041680, 0x2ac)
 void CTeleporter_RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
+        CString* slot = ActNameLookupCallReport(g_typeCounter);
         FreeNameSlotNodes();
         *slot = "A";
         g_typeCounter++;
     }
     // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntry(id)) =
+    *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntryCallReport(id)) =
         static_cast<void*>(&TeleporterActA);
 
     i32 id2 = ActFindId("B");
@@ -707,7 +711,7 @@ void CTeleporter_RegisterActs() {
         g_typeCounter++;
     }
     // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntry(id2)) =
+    *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntryCallReport(id2)) =
         static_cast<void*>(&TeleporterActB);
 }
 

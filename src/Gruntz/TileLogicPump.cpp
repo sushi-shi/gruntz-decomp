@@ -651,19 +651,17 @@ void CCheckpointTrigger::FireActivation(i32 coord) {
 }
 
 // CCheckpointTrigger::RegisterActs (0x10f340) - intern "A" and "B", bind each handler.
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md +
-// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
-// byte-faithful (both intern/name-resolve blocks + the OWN-registry resolves + the
-// handler stores match retail); residual is the slot-vs-id callee-saved register
-// choice cascading into the free-loop counts. Deferred.
+// Two-key registrar: cl5 spends its inline budget from the outside in, so only the
+// SECOND key's name lookup expands the grow-fail report; the other three lookups keep
+// it as the out-of-line zErrHandling::Report call.
+// docs/patterns/act-registrar-report-outline-budget.md
 RVA(0x0010f340, 0x2ac)
 void CCheckpointTrigger::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
+        CString* slot = ActNameLookupCallReport(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
@@ -675,7 +673,7 @@ void CCheckpointTrigger::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CCheckpointTrigger>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act);
+    (*((CActRegPool<CCheckpointTrigger>::s_table.ResolveEntryCallReport(id)))) = static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -693,7 +691,7 @@ void CCheckpointTrigger::RegisterActs() {
         *slot = "B";
         g_typeCounter++;
     }
-    (*((CActRegPool<CCheckpointTrigger>::s_table.ResolveEntry(id2)))) = static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act_10f970);
+    (*((CActRegPool<CCheckpointTrigger>::s_table.ResolveEntryCallReport(id2)))) = static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act_10f970);
 }
 
 // @confidence: high

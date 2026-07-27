@@ -25,21 +25,23 @@ static inline void FreeNameSlotNodes() {
 // RegisterActs_646250 @0x0b3cc0 - bind handler "A" (0x4021d5) and handler "B"
 // (0x402252) into the per-class registry @0x646250.
 // ===========================================================================
-// @early-stop
-// A/B inline asymmetry + register-pinning wall (see SpotLightActReg.cpp header).
+// Two-key registrar: cl5 spends its inline budget from the outside in, so only the
+// SECOND key's name lookup expands the grow-fail report; the other three lookups keep
+// it as the out-of-line zErrHandling::Report call.
+// docs/patterns/act-registrar-report-outline-budget.md
 RVA(0x000b3cc0, 0x2ac)
 void RegisterActs_646250() {
     i32 id = ActFindId("A");
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
+        CString* slot = ActNameLookupCallReport(g_typeCounter);
         FreeNameSlotNodes();
         *slot = "A";
         g_typeCounter++;
     }
     // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CPathHazard>::s_table.ResolveEntry(id)) = static_cast<void*>(&PathHazardActA);
+    *reinterpret_cast<void**>(CActRegPool<CPathHazard>::s_table.ResolveEntryCallReport(id)) = static_cast<void*>(&PathHazardActA);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -51,5 +53,5 @@ void RegisterActs_646250() {
         g_typeCounter++;
     }
     // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CPathHazard>::s_table.ResolveEntry(id2)) = static_cast<void*>(&PathHazardActB);
+    *reinterpret_cast<void**>(CActRegPool<CPathHazard>::s_table.ResolveEntryCallReport(id2)) = static_cast<void*>(&PathHazardActB);
 }

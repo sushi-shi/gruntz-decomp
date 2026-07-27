@@ -71,8 +71,15 @@ public:
     zDArray(i32 lo, i32 hi);
     virtual ~zDArray() OVERRIDE;
 
-    T* Resolve(i32 id); // out-of-line; the typed element slot
+    T* Resolve(i32 id);      // out-of-line; the typed element slot
     T* ResolveEntry(i32 id); // the typed element slot
+    // Same accessor, one inline level shallower: the grow-fail tail is left as the
+    // out-of-line zErrHandling::Report call instead of expanded. cl5 spends its inline
+    // budget from the OUTSIDE in - a one-key registrar (0x18d) expands the tail at both
+    // of its lookups, a two-key registrar (0x2ac) keeps it outlined at three of four,
+    // and the 19-key registrar outlines the whole accessor (`Resolve`).
+    // docs/patterns/act-registrar-report-outline-budget.md
+    T* ResolveEntryCallReport(i32 id);
 };
 SIZE_UNKNOWN();
 

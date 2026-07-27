@@ -84,6 +84,37 @@ static inline CActHandler* ResolveSlot(_zdvec* v, i32 idx) {
     return reinterpret_cast<CActHandler*>(v->m_spare);
 }
 
+// The same two resolvers one inline level shallower: the grow-fail tail stays as the
+// out-of-line zErrHandling::Report call (0x34960) instead of expanding. cl5 spends its
+// inline budget from the outside in, so the TWO-key registrar below keeps the tail
+// outlined at three of its four lookups while the one-key registrars expand both.
+// docs/patterns/act-registrar-report-outline-budget.md
+static inline CString* ResolveNameSlotCallReport(CTypeCollRuntime* v, i32 idx) {
+    CString* r;
+    v->m_grown = 0;
+    if (idx >= v->m_lo && idx <= v->m_hi) {
+        r = v->Elem(idx);
+    } else if (v->GrowTo(idx, 0)) {
+        r = v->Elem(idx);
+    } else {
+        v->Report(g_projActCache, 0xc);
+        r = v->Scratch();
+    }
+    CString* slot = v->Slots();
+    i32 n = v->m_grown;
+    while (n-- != 0) {
+        if (slot) {
+            slot->CString::CString();
+        }
+        slot++;
+    }
+    return r;
+}
+
+// (the act-table side of the same lever is zDArray<T>::ResolveEntryCallReport, called
+// DIRECTLY on s_table below - routing it through a wrapper here costs enough inline
+// budget that cl outlines the whole accessor.)
+
 // ===========================================================================
 // CInGameIcon::~CInGameIcon  (0x011d00)
 // ===========================================================================
@@ -563,23 +594,21 @@ void CInGameIcon::FireActivation(i32 id) {
 // scratch zDArray<CString> when absent, bump the counter), resolve the table
 // slot for the key index, load the handler member-fn-ptr.
 // ---------------------------------------------------------------------------
-// @early-stop
-// inlined _zdvec/zvec IndexToPtr regalloc wall (the documented ZVec family, see
-// ZVec.cpp + RegisterTextLogic): both register blocks + the CString-ctor fixup
-// loops are reconstructed faithfully, but cl pins the index/this/base across the
-// grow branches differently than retail. Logic + find/insert + the fn-ptr stores
-// correct; the register assignment is not source-steerable.
+// Two-key registrar: cl5 spends its inline budget from the outside in, so only the
+// SECOND key's name lookup expands the grow-fail report; the other three lookups keep
+// it as the out-of-line zErrHandling::Report call.
+// docs/patterns/act-registrar-report-outline-budget.md
 RVA(0x000979e0, 0x2ac)
 void RegisterIconActions() {
     i32 idxA = ActFindId("A");
     if (idxA == 0) {
         ActInsertId("A", g_typeCounter);
         idxA = g_typeCounter;
-        CString* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
+        CString* slot = ResolveNameSlotCallReport(&g_typeColl, g_typeCounter);
         *slot = "A";
         g_typeCounter++;
     }
-    CActHandler* dslotA = ResolveSlot(&CActRegPool<CInGameIcon>::s_table, idxA);
+    CActHandler* dslotA = CActRegPool<CInGameIcon>::s_table.ResolveEntryCallReport(idxA);
     *dslotA =
         static_cast<CActHandler>(&CInGameIcon::PeekCycle);
 
@@ -591,7 +620,7 @@ void RegisterIconActions() {
         *slot = "B";
         g_typeCounter++;
     }
-    CActHandler* dslotB = ResolveSlot(&CActRegPool<CInGameIcon>::s_table, idxB);
+    CActHandler* dslotB = CActRegPool<CInGameIcon>::s_table.ResolveEntryCallReport(idxB);
     *dslotB =
         static_cast<CActHandler>(&CInGameIcon::Reposition);
 }
