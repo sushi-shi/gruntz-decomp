@@ -49,8 +49,14 @@ struct BrickzCell {
         i32 m_0;           // +0x00  packed terrain flags
         u8 m_flagBytes[4]; //        byte view; [3] & 0x20 = the stepped/visited bit
     };
-    i32 m_4;            // +0x04  per-cell edge/id payload
-    BrickzCell* m_8;    // +0x08  per-cell link (CGruntzMapMgr::LoadAttributes zeroes it)
+    i32 m_4; // +0x04  per-cell edge/id payload
+    // +0x08 is the id of the object currently OCCUPYING the cell, not a link. Retail
+    // CInGameIcon::Reposition @0x98a90 stores the bound object's id (obj->m_188) into this
+    // slot, reads the slot of the tile it is leaving back out and passes it to
+    // MapLookupById as the KEY, then clears it; CInGameIcon::PeekCycle @0x984b0 clears it
+    // the same way. Nothing anywhere DEREFERENCES it (the only other writer, BrickzLoad,
+    // just zeroes it), so the old `BrickzCell*` was a guess with no site behind it.
+    i32 m_8; // +0x08  occupying-object id (0 = free)
     i32 m_c;            // +0x0c  id3 payload (ComputeCellFlags)
     i32 m_10;           // +0x10  bute type code (ComputeCellFlags)
     i32 m_count;        // +0x14  per-cell open-list reference count

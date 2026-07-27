@@ -700,15 +700,18 @@ i32 CInGameIcon::RefreshCell() {
 // ({m_70}=0xfa, {m_68}=g_frameTime). Returns 0.
 //
 // @early-stop
-// 83.7% - block topology is IDENTICAL (22 vs 22, every edge matching); the residual is
-// exactly FIVE instructions, and re-auditing pins the cause precisely: cl CSEs
-// `grid->m_width` (and m_height) out of the two bounds checks into a FIFTH callee-saved
-// register, so the prologue gains a `push ebp` and both epilogues a `pop ebp` (3 of the
-// 5), and the extra live value re-colors the rest. Retail re-reads `[edx+0xc]` /
-// `[edx+0x10]` at BOTH checks with no CSE - with no intervening store in either source
-// there is no legal way to ask cl not to hoist it. The other 2 are the occupancy clear:
-// retail materialises the cell address (`add eax,ecx`) and does the memory RMW
-// `and dword ptr [eax],0xfffbffff`, cl emits lea + load/and/store.
+// 88.2% - block topology is IDENTICAL (22 vs 22, every edge matching). Two of the five
+// residual instructions are gone now that the tile cell is spelled as the BrickzCell it
+// is (retail scales x*28 into a byte offset ONCE and uses it as [row+off+8] then
+// [row+off], i.e. struct indexing - it emits the memory RMW `and [eax],0xfffbffff` by
+// itself). The remaining FOUR are one cause: cl CSEs `grid->m_width` out of the two
+// bounds checks into a FIFTH callee-saved register, so the prologue gains `push ebp`,
+// both epilogues a `pop ebp`, and the extra live value re-colors everything downstream.
+// Retail re-reads `[edx+0xc]`/`[edx+0x10]` at BOTH checks. TESTED and not steerable -
+// five spellings of the second gate all reproduce the CSE: operand swap (87.2, worse),
+// De Morgan, dropping the redundant u32 cast, hoisting the clear into an inline helper,
+// and hoisting BOTH gates into inline helpers (all 88.2 exactly). With no store between
+// the two loads the CSE is legal and cl always takes it.
 RVA(0x000984b0, 0x186)
 i32 CInGameIcon::PeekCycle() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -722,7 +725,7 @@ i32 CInGameIcon::PeekCycle() {
         i32 cell;
         if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
             && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-            cell = grid->m_rowInts[tileY][tileX * 7];
+            cell = grid->m_rows[tileY][tileX].m_0;
         } else {
             cell = 1;
         }
@@ -929,6 +932,10 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
 // occupancy clear: retail materialises the cell address first (`add eax,ecx`) then
 // `mov ecx,[eax]`, while cl folds the add into the addressing mode (`mov ecx,[eax+edx]`)
 // and adds afterwards. Same operands, same count, different order.
+// The typed-BrickzCell spelling that took PeekCycle 83.7 -> 88.2 goes the OTHER way here
+// (measured: read block 97.4->96.3 alone, clear block -1.2, the m_188 publish block -7.0,
+// all three -8.2), which is exactly why CMapMgr carries the m_rows/m_rowInts union:
+// retail walks this band both ways and this function is on the int-walk side.
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
