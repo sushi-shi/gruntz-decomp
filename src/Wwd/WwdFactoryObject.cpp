@@ -114,7 +114,7 @@ i32 AnimWorkerObj::Consume(i32 amount) {
 // `::operator new`+placement REGRESSED (57.2%), a declared worker dtor is neutral,
 // out-of-lining the worker ctor would mismatch retail's inline stores.
 // docs/patterns/eh-state-numbering-base.md + throwing-operator-new-eh-state-transition.md.
-RVA(0x0015b370, 0x1a)
+RVA(0x0015b370, 0x1d)
 i32 CGameObject::IsLoaded() {
     if (m_7c == 0) {
         return 0;
@@ -272,7 +272,7 @@ void CWwdGameObjectA::Render(CDDrawSurfacePair* pair) {
     }
 }
 
-RVA(0x0015ba40, 0x1a)
+RVA(0x0015ba40, 0x1d)
 i32 CWwdGameObjectF::IsLoaded() {
     if (m_7c == 0) {
         return 0;
@@ -367,7 +367,7 @@ i32 __stdcall RectsOverlap(CDDrawRect* a, CDDrawRect* b) {
 // @early-stop
 // zero-register-pinning regalloc wall: two-level fold + byte-flag clear + double
 // worker pass + trylevel chain reproduced; residual is callee-saved const coloring.
-RVA(0x0015c000, 0x1a)
+RVA(0x0015c000, 0x1d)
 i32 CWwdGameObjectC::IsLoaded() {
     if (m_7c == 0) {
         return 0;

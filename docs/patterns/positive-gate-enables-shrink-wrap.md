@@ -95,5 +95,80 @@ carried it to 96.59%.)
 So: whenever the recompile has an early-exit block cl placed inline and the target has the same
 handler parked at the END of the function, that is this pattern, not regalloc.
 
+## The MECHANICAL test — and the bound (measured 2026-07-27, tree-wide sweep)
+
+The lever is **exit-block LAYOUT**, and shrink-wrap is a side effect of it. So the test that
+decides whether to apply it is *where the miss handler lives on each side*, not the prologue:
+
+    ret_frac(side) = index of the first `ret` / instruction count      # sema disasm --lite
+
+| base | target | verdict |
+|---|---|---|
+| low (miss INLINE at top) | high (miss at BOTTOM) | **apply** the positive gate / shared exit |
+| both low (miss inline on both sides) | | **already correct** — the prologue delta has another cause |
+| high | low | **inverse** — the source must be the *early return*; the positive form is wrong |
+
+Equivalently and more robustly: **count `ret`s on each side.** `b_ret > t_ret` = retail
+tail-merges exits our spelling inlines. `b_ret == t_ret` = the gate spelling is already right.
+
+**Applying it where the counts already agree makes things WORSE.** Measured, all reverted:
+`CDDrawWorkerHost::CenterScrollA/B` 87.9 -> 72.8, `CGrunt::UpdateGruntStatus` 94.5 -> 77.1,
+`CChatBox::ScrollRow0/1` byte-identical (cl canonicalizes both spellings). In all four, retail's
+miss handler is INLINE at the top *and* the pushes are still shrink-wrapped — i.e. the two halves
+are separable and cl5 will not give you the shrink-wrap from either gate spelling. Those are real
+walls; the layout lever is not the fix.
+
+**Apply it in PROPORTION.** `DirectSoundMgr::Play` has base 5 rets / retail 4 — merging *all*
+exits (95.5 -> 93.8) over-applied it. Merge as many as retail merges, no more.
+
+## Third form: `goto fail` — the shared-exit spelling for many-early-return functions
+
+A nested positive-form `if` chain is unwritable past ~4 gates. cl emits the **same single bottom
+epilogue** for `if (x) goto fail;` … `fail: return 0;`, and this is what retail's many-gate
+validators look like (one `xor eax,eax` + one unwind that every gate `jmp`s into):
+
+```cpp
+i32 F() {
+    T a; U b;                   // declarations hoisted: cl5 rejects a goto that
+    if (!p) goto fail;          // skips an initialisation (error C2362)
+    ...
+    a = ...;                    // assign, don't initialise
+    if (!q) goto fail;
+    ...
+    return 1;
+fail:
+    return 0;
+}
+```
+
+Measured on this exact signature (`b_ret` >> `t_ret`):
+
+| function | rets base->retail | before -> after |
+|---|---|---|
+| `CDDPalette::CaptureSystemPalette` @0x1485b0 | 6 -> 2 | 68.39 -> **100.00 EXACT** |
+| `CSBI_GruntMachine::Render` @0xe8cb0 | 2 -> 1 | 88.59 -> **100.00 EXACT** |
+| `CDDrawChildGroup::CheckSortOrder` @0x15a780 | 2 -> 1 | 78.70 -> **100.00 EXACT** |
+| `HeapCheckDump` @0x118a30 | 1 -> 1 (shrink-wrap half) | 96.70 -> **100.00 EXACT** |
+| `CStatusBarMgr::PlaceCursorTarget` @0x105800 | 3 -> 2 | 70.91 -> 97.82 |
+| `CFaderShape::ApplyInit` @0x1817e0 (13 gates) | 14 -> 2 | 40.18 -> 72.56 |
+| `SoundDevice::CreateBuffer` @0x1366f0 | 7 -> 1 | 35.61 -> 53.52 |
+| `CChatBoxOwner::HitTest` @0x21140 | 8 -> 3 | 38.11 -> 63.06 |
+| `SoundStream::CreateStreamBuffer` @0x137780 | 7 -> 1 | 40.70 -> 54.73 |
+| `CRezItm::Close` @0x13c830 | 3 -> 2 | 81.28 -> 93.08 |
+| `CSBI_WarlordHead::Render` @0xeb880 | 2 -> 1 | 87.72 -> 95.45 |
+| `CCheckpointTriggerSwitchLogic::BuildSmall` @0x112a50 | 6 -> 4 | 62.39 -> 72.55 |
+| `CLatencyList::FillCombo` @0x37ff0 | 2 -> 1 | 63.45 -> 72.01 |
+| `CMapMgr::UpdateDiagonals` @0x82030 | 2 -> 1 | 52.13 -> 54.43 |
+| `CFontConfig::RenderInputText` @0x22160 | 2 -> 1 | 75.22 -> 74.22 (layout right, other residue) |
+
+**Does NOT apply when the base is missing structure the target has.** Screened but rejected
+because the base lacks retail's `/GX` frame entirely (a destructible-local modelling gap, not a
+layout choice): `RebuildPlanes` @0x1628f0, `InstallTree` @0x154f80, `FillCustomLevelList` @0x3af90,
+`CWwdGameObject::CreateObject` @0x166640, the `CDDrawChildGroup::CreateObject_*` family.
+**Also does not apply** to `CStatusBarMgr::BuildGameMenu` @0x101580 (11 -> 2 rets): the `goto fail`
+form DID collapse the exits (11 -> 3) but cl then dropped the `/GX` frame the `new`-expression
+cleanup requires, 58.97 -> 49.36. Reverted. A /GX function whose shared-exit block itself runs a
+destructor keeps the per-site spelling.
+
 related: shrink-wrapped-callee-save-push.md, mfc-map-walk-while-not-guard-dowhile.md,
-retry-loop-bail-while-goto-no-peel.md
+retry-loop-bail-while-goto-no-peel.md, identical-return-epilogue-tailmerge.md

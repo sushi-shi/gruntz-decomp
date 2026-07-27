@@ -338,60 +338,58 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
 // renders it into the rect. thiscall member, /GX (destructible CString).
 // (PwdStr is an MFC CString.)
 // @early-stop
-// regalloc/EH-state wall. Complete correct reconstruction: the /GX frame, the
-// arg-null gate before the CString copy, the Ctrl-held '*'-mask loop, the
-// g_frameDelta/g_caretBlinkTimer countdown + g_caretBlinkOn toggle, the blink-off-empty caret branch,
-// the font SelectObject save/restore, the DT_CALCRECT measure + overflow
-// right-align, and both DrawTextA renders align by shape (llvm-objdump -dr).
-// Residual is MSVC5 pinning the shared zero in edi + reusing dead arg slots for the
-// CString/RECT locals differently, shifting the [esp+N] operands and EH scope addend.
+// EH-state/regalloc residue. The hdc gate is POSITIVE-form so its `return 0`
+// tail-merges into the shared /GX epilogue (retail: `xor eax,eax; jmp <epi>`,
+// the early-return spelling emitted a full 8-instruction inline unwind) -
+// docs/patterns/positive-gate-enables-shrink-wrap.md. Residual is the [esp+N]
+// local-slot assignment + the EH scope addend.
 RVA(0x00022160, 0x18e)
 i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
-    if (hdc == 0) {
-        return 0;
-    }
-    CString text(m_inputText);
-    if (::GetAsyncKeyState(0x11) & 0x8000) {
-        for (i32 i = 0; i < text.GetLength(); i++) {
-            text.SetAt(i, '*');
+    if (hdc != 0) {
+        CString text(m_inputText);
+        if (::GetAsyncKeyState(0x11) & 0x8000) {
+            for (i32 i = 0; i < text.GetLength(); i++) {
+                text.SetAt(i, '*');
+            }
         }
-    }
-    i32 t;
-    if (static_cast<u32>(g_frameDelta) < static_cast<u32>(g_caretBlinkMs)) {
-        t = g_caretBlinkMs - g_frameDelta;
-    } else {
-        t = 0;
-    }
-    g_caretBlinkMs = t;
-    if (t == 0) {
-        g_caretBlinkMs = 0xc8;
-        g_caretBlinkOn ^= 1;
-    }
-    if (g_caretBlinkOn != 0 && text.GetLength() == 0) {
-        MeasureLabel(hdc, rect); // via ILT 0x258b
-    } else {
-        HGDIOBJ prev = 0;
-        if (m_arialFont) {
-            prev = ::SelectObject(hdc, m_arialFont);
+        i32 t;
+        if (static_cast<u32>(g_frameDelta) < static_cast<u32>(g_caretBlinkMs)) {
+            t = g_caretBlinkMs - g_frameDelta;
+        } else {
+            t = 0;
         }
-        if (g_caretBlinkOn) {
+        g_caretBlinkMs = t;
+        if (t == 0) {
+            g_caretBlinkMs = 0xc8;
+            g_caretBlinkOn ^= 1;
+        }
+        if (g_caretBlinkOn != 0 && text.GetLength() == 0) {
             MeasureLabel(hdc, rect); // via ILT 0x258b
+        } else {
+            HGDIOBJ prev = 0;
+            if (m_arialFont) {
+                prev = ::SelectObject(hdc, m_arialFont);
+            }
+            if (g_caretBlinkOn) {
+                MeasureLabel(hdc, rect); // via ILT 0x258b
+            }
+            int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = ::DrawTextA;
+            RECT rc;
+            rc.left = rect->left;
+            rc.top = rect->top;
+            rc.right = rect->right;
+            rc.bottom = rect->bottom;
+            pDraw(hdc, text, text.GetLength(), &rc, 0x420);
+            i32 fmt = ((rc.right - rc.left) <= maxWidth) ? 0x20 : 0x22;
+            g_lastDrawTextFormat = fmt;
+            pDraw(hdc, text, text.GetLength(), rect, fmt);
+            if (prev) {
+                ::SelectObject(hdc, prev);
+            }
         }
-        int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = ::DrawTextA;
-        RECT rc;
-        rc.left = rect->left;
-        rc.top = rect->top;
-        rc.right = rect->right;
-        rc.bottom = rect->bottom;
-        pDraw(hdc, text, text.GetLength(), &rc, 0x420);
-        i32 fmt = ((rc.right - rc.left) <= maxWidth) ? 0x20 : 0x22;
-        g_lastDrawTextFormat = fmt;
-        pDraw(hdc, text, text.GetLength(), rect, fmt);
-        if (prev) {
-            ::SelectObject(hdc, prev);
-        }
+        return 1;
     }
-    return 1;
+    return 0;
 }
 
 typedef enum FontItemFlag {

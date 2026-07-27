@@ -1095,9 +1095,10 @@ RVA(0x001817e0, 0x315)
 i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     CFxModeT1* pInit = static_cast<CFxModeT1*>(desc);
     i32 i;
+    i32 mx;
     m_20 = 0;
     if (pInit == 0) {
-        return 0;
+        goto fail;
     }
 
     m_surfA = pInit->m_04 ? pInit->m_04
@@ -1105,16 +1106,16 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     m_surfB = pInit->m_08 ? pInit->m_08
                           : m_timerB;
     if (m_surfA == 0) {
-        return 0;
+        goto fail;
     }
     if (m_surfB == 0) {
-        return 0;
+        goto fail;
     }
     // forced by the mode-tagged desc slot: the fader type picks the arm (FxModeDesc.h)
     m_surfC = pInit->m_0c ? reinterpret_cast<CDDSurface*>(pInit->m_0c) : m_surfB;
 
     if (!m_cache.Init()) {
-        return 0;
+        goto fail;
     }
 
     // +0x60/+0x64 (etc) take the surface's +0x1c (dwWidth) then +0x18 (dwHeight).
@@ -1125,29 +1126,29 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     m_spanC = m_surfC->m_width;
     m_rowCountC = m_surfC->m_height;
     if (m_span != m_spanB) {
-        return 0;
+        goto fail;
     }
     if (m_rowCount != m_rowCountB) {
-        return 0;
+        goto fail;
     }
     if (m_span != m_spanC) {
-        return 0;
+        goto fail;
     }
     if (m_rowCount != m_rowCountC) {
-        return 0;
+        goto fail;
     }
     if (m_spanC != m_spanB) {
-        return 0;
+        goto fail;
     }
     if (m_rowCountC != m_rowCountB) {
-        return 0;
+        goto fail;
     }
 
     if (pInit->m_14 == 0) {
-        return 0;
+        goto fail;
     }
     if (static_cast<u32>(pInit->m_14) >= 4) {
-        return 0;
+        goto fail;
     }
     m_mode = pInit->m_14;
     m_stripCopy = pInit->m_18;
@@ -1155,7 +1156,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
 
     if (m_mode == 1 || m_mode == 2) {
         if (m_span < static_cast<i32>((static_cast<double>(m_halfWidth) * 3.141592653589793))) {
-            return 0;
+            goto fail;
         }
     }
 
@@ -1212,9 +1213,11 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         m_rowOfsC[i] = m_surfC->m_pitch * i;
     }
 
-    i32 mx = (m_rowCount > m_span) ? m_rowCount : m_span;
+    mx = (m_rowCount > m_span) ? m_rowCount : m_span;
     m_lineBuf = static_cast<u8*>(RezAlloc(m_surfA->m_bytesPerPixel * mx));
     return 1;
+fail:
+    return 0;
 }
 
 // ===========================================================================

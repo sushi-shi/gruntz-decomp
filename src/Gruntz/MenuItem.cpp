@@ -51,7 +51,7 @@ void CMenuItem::Reset() {
     m_54.Empty();
     m_58.Empty();
 }
-RVA(0x00184780, 0x14)
+RVA(0x00184780, 0x17)
 void CMenuItem2::Disable(i32 mode) {
     i32 frameLimit = m_70;
     m_state = mode;
@@ -291,7 +291,7 @@ i32 CMenuItem2::Init(CMenuPage* a0, const char* a1, const char* a2, i32 a3, cons
 
     return 1;
 }
-RVA(0x00185880, 0xa)
+RVA(0x00185880, 0xe)
 i32 CMenuItem2::GetFrameWidth() {
     CImage* f = GetCurrentFrame();
     if (!f) {
@@ -300,7 +300,7 @@ i32 CMenuItem2::GetFrameWidth() {
     return f->m_width;
 }
 
-RVA(0x00185890, 0xa)
+RVA(0x00185890, 0xe)
 i32 CMenuItem2::GetWidth() {
     CImage* f = GetCurrentFrame();
     if (!f) {

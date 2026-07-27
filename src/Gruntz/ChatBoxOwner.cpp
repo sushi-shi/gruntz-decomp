@@ -51,21 +51,37 @@ void CChatBoxOwner::Configure(i32 mode) {
 // dead-global-read-spill wall (docs/patterns/dead-global-read-spill-dce.md): retail
 // keeps 4 dead viewport-width loads+spills (`mov [esp+8],reg`); our cl DCEs them all,
 // freeing the registers -> the whole regalloc/code-motion diverges. Logic exact.
+// The m_10 gate is POSITIVE-form so its `return 0` tail-merges into the shared
+// bottom epilogue (docs/patterns/positive-gate-enables-shrink-wrap.md).
 RVA(0x00021140, 0xda)
 i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
-    if (!m_10) {
-        return 0;
-    }
-    // The dev read both viewport coords (width + height) per height test but uses
-    // only height; retail keeps the dead width loads+spills (see the marker above
-    // + docs/patterns/dead-global-read-spill-dce.md).
-    if (m_8 == 3) {
+    if (m_10) {
+        // The dev read both viewport coords (width + height) per height test but uses
+        // only height; retail keeps the dead width loads+spills (see the marker above
+        // + docs/patterns/dead-global-read-spill-dce.md).
+        if (m_8 == 3) {
+            if (x < 0x40) {
+                if (y >= g_gameReg->m_modeH - 0x40) {
+                    return 1;
+                }
+            }
+            if (x <= 0x40) {
+                return 0;
+            }
+            if (y < g_gameReg->m_modeH - 0x20) {
+                return 0;
+            }
+            return 1;
+        }
         if (x < 0x40) {
             if (y >= g_gameReg->m_modeH - 0x40) {
                 return 1;
             }
         }
-        if (x <= 0x40) {
+        if (x <= m_0 + 0x40) {
+            return 0;
+        }
+        if (x >= m_0 + 0x1e0) {
             return 0;
         }
         if (y < g_gameReg->m_modeH - 0x20) {
@@ -73,21 +89,7 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
         }
         return 1;
     }
-    if (x < 0x40) {
-        if (y >= g_gameReg->m_modeH - 0x40) {
-            return 1;
-        }
-    }
-    if (x <= m_0 + 0x40) {
-        return 0;
-    }
-    if (x >= m_0 + 0x1e0) {
-        return 0;
-    }
-    if (y < g_gameReg->m_modeH - 0x20) {
-        return 0;
-    }
-    return 1;
+    return 0;
 }
 
 // ===========================================================================

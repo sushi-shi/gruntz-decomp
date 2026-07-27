@@ -126,50 +126,48 @@ i32 CMapMgr::SearchEdge(
 // and re-set it if any opposite neighbour pair (UP/DOWN, RIGHT/LEFT, UR/DL, UL/DR)
 // is both passable (no 0x939 bit). Clears m_5c and returns 1.
 // @early-stop
-// 8-neighbour spill-walk regalloc wall (~54%): logic byte-correct - the dirty gate,
-// the per-cell `test ah,1` / `and ah,0xef` / `or ah,0x10` byte-flag ops, and the
-// goto-cascade that sets the 0x1000 bit at one shared site all match retail. The
-// residual is the shrink-wrapped callee-save push order (retail pins the cell walker
-// in ebx by pushing ebx first; MSVC5 here picks ebp) and the 4 stack-slot diagonal
-// neighbour layout; neither is source-steerable. Parked for the final sweep.
+// The dirty gate is POSITIVE-form so its `return 1` tail-merges with the normal
+// exit into retail's single bottom epilogue (the early-return spelling emitted a
+// separate inline `mov eax,1; pop ebp; add esp,0x1c; ret 4`) -
+// docs/patterns/positive-gate-enables-shrink-wrap.md. Residual is the 4 stack-slot
+// diagonal-neighbour layout.
 RVA(0x00082030, 0x1a1)
 i32 CMapMgr::UpdateDiagonals(CGruntzMgr * unused) {
     BrickzCell* cell = m_cellPool;
-    if (m_dirty == 0) {
-        return 1;
-    }
-    for (u32 r = 0; r < m_height; r++) {
-        for (u32 c = 0; c < m_width; c++) {
-            i32 nf = cell->m_0;
-            if ((nf & 0x100) != 0) {
-                BrickzCell* up = (r != 0) ? cell - m_width : 0;
-                BrickzCell* down = (r < m_height - 1) ? cell + m_width : 0;
-                BrickzCell* right = (c < m_width - 1) ? cell + 1 : 0;
-                BrickzCell* left = (c != 0) ? cell - 1 : 0;
-                BrickzCell* ur = (up && right) ? up + 1 : 0;
-                BrickzCell* dl = (down && left) ? down - 1 : 0;
-                BrickzCell* ul = (up && left) ? up - 1 : 0;
-                BrickzCell* dr = (down && right) ? down + 1 : 0;
-                nf &= ~0x1000;
-                cell->m_0 = nf;
-                if (up && down && !(up->m_0 & 0x939) && !(down->m_0 & 0x939)) {
-                    goto setbit;
+    if (m_dirty != 0) {
+        for (u32 r = 0; r < m_height; r++) {
+            for (u32 c = 0; c < m_width; c++) {
+                i32 nf = cell->m_0;
+                if ((nf & 0x100) != 0) {
+                    BrickzCell* up = (r != 0) ? cell - m_width : 0;
+                    BrickzCell* down = (r < m_height - 1) ? cell + m_width : 0;
+                    BrickzCell* right = (c < m_width - 1) ? cell + 1 : 0;
+                    BrickzCell* left = (c != 0) ? cell - 1 : 0;
+                    BrickzCell* ur = (up && right) ? up + 1 : 0;
+                    BrickzCell* dl = (down && left) ? down - 1 : 0;
+                    BrickzCell* ul = (up && left) ? up - 1 : 0;
+                    BrickzCell* dr = (down && right) ? down + 1 : 0;
+                    nf &= ~0x1000;
+                    cell->m_0 = nf;
+                    if (up && down && !(up->m_0 & 0x939) && !(down->m_0 & 0x939)) {
+                        goto setbit;
+                    }
+                    if (right && left && !(right->m_0 & 0x939) && !(left->m_0 & 0x939)) {
+                        goto setbit;
+                    }
+                    if (ur && dl && !(ur->m_0 & 0x939) && !(dl->m_0 & 0x939)) {
+                        goto setbit;
+                    }
+                    if (ul && dr && !(ul->m_0 & 0x939) && !(dr->m_0 & 0x939)) {
+                    setbit:
+                        cell->m_0 = nf | 0x1000;
+                    }
                 }
-                if (right && left && !(right->m_0 & 0x939) && !(left->m_0 & 0x939)) {
-                    goto setbit;
-                }
-                if (ur && dl && !(ur->m_0 & 0x939) && !(dl->m_0 & 0x939)) {
-                    goto setbit;
-                }
-                if (ul && dr && !(ul->m_0 & 0x939) && !(dr->m_0 & 0x939)) {
-                setbit:
-                    cell->m_0 = nf | 0x1000;
-                }
+                cell++;
             }
-            cell++;
         }
+        m_dirty = 0;
     }
-    m_dirty = 0;
     return 1;
 }
 

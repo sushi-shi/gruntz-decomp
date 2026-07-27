@@ -225,27 +225,34 @@ void SoundStream::Free() {
 // DSoundCloneInst derivation: plain `new T` over the ::operator-new(==RezAlloc)
 // allocator now emits the retail /GX frame (byte-identical prologue).
 // @early-stop
-// /O2 cross-jump residue: retail tail-merges every early-out `return 0` through
-// ONE shared fs:0-restoring epilogue (`xor eax,eax; jmp <epi>`) and pins arg `a`
-// in ebp (4 callee-saves); cl here inlines the epilogue at each return and uses 3
-// saves. Structure (plain `new`, the proven dev shape) correct; permuter/final-
-// sweep territory. See the UPDATE in the pattern doc.
+// 40.7 -> 54.7 via the shared-exit spelling; residual is the callee-saved count
+// (retail pins arg `a` in ebp, 4 saves vs our 3).
+// Every early-out `return 0` is a `goto fail` onto ONE shared bottom exit, which
+// is what retail emits: a single fs:0-restoring epilogue that all six gates
+// `jmp` into (the per-return spelling inlined the whole 8-instruction unwind at
+// each of them - 7 rets vs retail's 1).
+// docs/patterns/positive-gate-enables-shrink-wrap.md (shared-exit half).
 RVA(0x00137780, 0x171)
 StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c) {
+    WaveFormatX wf;
+    IDirectSoundBuffer* out;
+    DSBUFFERDESC desc;
+    i32 hr;
+    StreamVoice* voice;
+
     if (m_initialized == 0) {
-        return 0;
+        goto fail;
     }
     if (bytes == 0) {
-        return 0;
+        goto fail;
     }
     if (fmt == 0) {
-        return 0;
+        goto fail;
     }
     if (fmt->wFormatTag != 1) {
-        return 0;
+        goto fail;
     }
 
-    WaveFormatX wf;
     wf.wFormatTag = fmt->wFormatTag;
     wf.nChannels = fmt->nChannels;
     wf.nSamplesPerSec = fmt->nSamplesPerSec;
@@ -254,33 +261,34 @@ StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a,
     wf.wBitsPerSample = fmt->wBitsPerSample;
     wf.cbSize = fmt->cbSize;
 
-    IDirectSoundBuffer* out = 0;
-    DSBUFFERDESC desc;
+    out = 0;
     desc.dwSize = 0x14;
     desc.dwFlags = a;
     desc.dwBufferBytes = bytes;
     desc.dwReserved = 0;
     desc.lpwfxFormat = reinterpret_cast<LPWAVEFORMATEX>(&wf);
 
-    i32 hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
+    hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGSR_FILE, 0x678, hr);
-        return 0;
+        goto fail;
     }
     if (out == 0) {
-        return 0;
+        goto fail;
     }
 
     // Plain `new StreamVoice` - ::operator new IS RezAlloc (0x1b9b46; reloc-masked
     // same callee), cl emits the null-guard + the /GX delete-on-throw EH state for
     // the now-really-throwing ctor (the real DSoundCloneInst base).
-    StreamVoice* voice = new StreamVoice(out, this, b, c);
+    voice = new StreamVoice(out, this, b, c);
     m_voices.InsertHead(voice ? &voice->m_link : 0);
     voice->m_rateBase = fmt->nAvgBytesPerSec;
     voice->m_sampleRate = fmt->nAvgBytesPerSec;
     voice->m_sampleCount = bytes;
     voice->ComputeDuration();
     return voice;
+fail:
+    return 0;
 }
 
 // ---------------------------------------------------------------------------

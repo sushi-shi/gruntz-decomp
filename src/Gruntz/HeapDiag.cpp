@@ -45,12 +45,9 @@ i32 FileExists(char* szPath) {
 namespace ApiCallerStubs {
 } // namespace ApiCallerStubs
 
-// @early-stop
-// 96.7%: body byte-exact. Residual is the shrink-wrapped `push esi` - retail defers
-// the esi callee-save into the (conditionally-entered) walk block; cl pushes all 3
-// callee-saved regs at the prologue. The 4-byte esp shift cascades through the first
-// _HEAPINFO zero-stores + flips two je targets + the epilogue pop order. Not
-// source-steerable (docs/patterns/shrink-wrapped-callee-save-push.md).
+// The walk gate is POSITIVE-form so cl shrink-wraps `push esi` into the
+// conditionally-entered walk block (retail saves only ebx/edi at entry) -
+// docs/patterns/positive-gate-enables-shrink-wrap.md.
 RVA(0x00118a30, 0xda)
 int HeapCheckDump(int walkOnBad) {
     _HEAPINFO hinfo;
@@ -58,27 +55,26 @@ int HeapCheckDump(int walkOnBad) {
     int status = _heapchk();
     OutputDebugStringA("Checking heap...\n");
     ApiCallerStubs::winapi_118b50_OutputDebugStringA(status);
-    if (walkOnBad == 0 || status == _HEAPOK) {
-        return status;
+    if (walkOnBad != 0 && status != _HEAPOK) {
+        memset(&hinfo, 0, sizeof(hinfo));
+        _heapwalk(&hinfo);
+        OutputDebugStringA("Walking heap...\n");
+        hinfo._pentry = 0;
+        int r = _heapwalk(&hinfo);
+        while (r == _HEAPOK) {
+            r = _heapwalk(&hinfo);
+        }
+        sprintf(
+            buf,
+            "HEAP: %6s block at %Fp of size %4.4X\n",
+            hinfo._useflag == _USEDENTRY ? "USED" : "FREE",
+            hinfo._pentry,
+            hinfo._size
+        );
+        OutputDebugStringA(buf);
+        ApiCallerStubs::winapi_118b50_OutputDebugStringA(r);
+        OutputDebugStringA("Finished walking heap.");
     }
-    memset(&hinfo, 0, sizeof(hinfo));
-    _heapwalk(&hinfo);
-    OutputDebugStringA("Walking heap...\n");
-    hinfo._pentry = 0;
-    int r = _heapwalk(&hinfo);
-    while (r == _HEAPOK) {
-        r = _heapwalk(&hinfo);
-    }
-    sprintf(
-        buf,
-        "HEAP: %6s block at %Fp of size %4.4X\n",
-        hinfo._useflag == _USEDENTRY ? "USED" : "FREE",
-        hinfo._pentry,
-        hinfo._size
-    );
-    OutputDebugStringA(buf);
-    ApiCallerStubs::winapi_118b50_OutputDebugStringA(r);
-    OutputDebugStringA("Finished walking heap.");
     return status;
 }
 

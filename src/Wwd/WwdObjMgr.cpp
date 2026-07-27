@@ -897,51 +897,36 @@ void CDDrawChildGroup::DrawObjectCounts() {
 // the rest. Each subsequent un-flagged object with a sort key >= the anchor's
 // becomes the new anchor; one with a SMALLER key triggers a status-probe (slot
 // +0x20) on BOTH the anchor and the offender. Always returns 1.
-// @early-stop
-// 78.7% - loop B, the phase-2 setup and the epilogue are byte-exact; the residual
-// is the loop-A rotation only (cl rotates the loop so the 0x20000 flag-test
-// becomes the header). Tried while / for(;;) / do-while / explicit-goto - a
-// codegen loop-rotation wall, not a source-shape bug.
+// Loop A is a plain 3-condition `while` header (node / anchor / flag), and every
+// bail is a POSITIVE-form nest onto retail's single bottom `ret` - the
+// do-while + inline `return 1` spelling emitted a second epilogue and rotated the
+// loop. docs/patterns/positive-gate-enables-shrink-wrap.md.
 RVA(0x0015a780, 0x70)
 i32 CDDrawChildGroup::CheckSortOrder() {
     POSITION node = m_list.GetHeadPosition();
     CWwdGameObject* anchor = static_cast<CWwdGameObject*>(NextChild(node));
-    if (anchor == 0) {
-        return 1;
-    }
-    if (node != 0) {
-        do {
-            if (anchor == 0) {
-                return 1;
-            }
-            if ((anchor->m_flags & 0x20000) == 0) {
-                break;
-            }
-            CGameObject* cur_obj = NextChild(node);
-            anchor = static_cast<CWwdGameObject*>(cur_obj);
-        } while (node != 0);
-    }
-    if (anchor == 0) {
-        return 1;
-    }
-    i32 key = anchor->m_sortKey;
-    if (node == 0) {
-        return 1;
-    }
-    do {
-        CGameObject* cur_obj = NextChild(node);
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
-        if ((obj->m_flags & 0x20000) == 0) {
-            i32 curKey = obj->m_sortKey;
-            if (key > curKey) {
-                anchor->GetClassId();
-                obj->GetClassId();
-            } else {
-                key = curKey;
-                anchor = obj;
+    if (anchor != 0) {
+        while (node != 0 && anchor != 0 && (anchor->m_flags & 0x20000) != 0) {
+            anchor = static_cast<CWwdGameObject*>(NextChild(node));
+        }
+        if (anchor != 0) {
+            i32 key = anchor->m_sortKey;
+            while (node != 0) {
+                CGameObject* cur_obj = NextChild(node);
+                CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
+                if ((obj->m_flags & 0x20000) == 0) {
+                    i32 curKey = obj->m_sortKey;
+                    if (key > curKey) {
+                        anchor->GetClassId();
+                        obj->GetClassId();
+                    } else {
+                        key = curKey;
+                        anchor = obj;
+                    }
+                }
             }
         }
-    } while (node != 0);
+    }
     return 1;
 }
 

@@ -156,13 +156,9 @@ void CSBI_GruntMachine::Reset() {
 // frames: the standalone handle (m_44), the second resolved record (m_3c, drawn
 // shifted +0x2c in x), and the first resolved record (m_34). Each draws at the base
 // origin plus the frame record's own m_rect14.m_4/m_1c offset.
-// @early-stop
-// reloc-residual plateau + TU-merge ripple (~87%, was 92% in the standalone
-// sbi_gruntmachine TU with identical source): the RenderFrame rel32s + g_gameReg
-// DIR32 are reloc-masked against differently-named symbols
-// (docs/patterns/reloc-typing-vptr-global.md), and the merged (retail-shaped) TU
-// additionally flips the m_28 early-out layout (retail jle-to-end vs inline
-// return-1) plus the commutative anchor adds - operand flips don't steer it.
+// The m_28 countdown gate is POSITIVE-form: retail has ONE `ret` (the idle path
+// tail-merges into the shared bottom epilogue and `push edi` moves up to the
+// prologue) - docs/patterns/positive-gate-enables-shrink-wrap.md.
 RVA(0x000e8c90, 0x8)
 i32 CSBI_GruntMachine::Refresh(i32) {
     return 1;
@@ -170,49 +166,33 @@ i32 CSBI_GruntMachine::Refresh(i32) {
 
 RVA(0x000e8cb0, 0xc4)
 i32 CSBI_GruntMachine::Render() {
-    if (m_28 <= 0) {
-        return 1;
-    }
-    i32 idx = m_frameIdxA;
-    m_28--;
-    CDDrawWorker* cfg = m_config;
+    if (m_28 > 0) {
+        i32 idx = m_frameIdxA;
+        m_28--;
+        CDDrawWorker* cfg = m_config;
 
-    m_frameA = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex)
-                   ? 0
-                   : static_cast<CImage*>(cfg->m_items.GetAt(idx));
-    idx = m_frameIdxB;
-    m_frameB = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex)
-                   ? 0
-                   : static_cast<CImage*>(cfg->m_items.GetAt(idx));
+        m_frameA = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex)
+                       ? 0
+                       : static_cast<CImage*>(cfg->m_items.GetAt(idx));
+        idx = m_frameIdxB;
+        m_frameB = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex)
+                       ? 0
+                       : static_cast<CImage*>(cfg->m_items.GetAt(idx));
 
-    CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
+        CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
 
-    CImage* f = m_standaloneFrame;
-    if (f) {
-        f->RenderFrame(
-            ctx,
-            m_rect14.m_0 + f->m_anchorX,
-            m_rect14.m_4 + f->m_anchorY,
-            0
-        );
-    }
-    f = m_frameB;
-    if (f) {
-        f->RenderFrame(
-            ctx,
-            m_rect14.m_0 + f->m_anchorX + 0x2c,
-            m_rect14.m_4 + f->m_anchorY,
-            0
-        );
-    }
-    f = m_frameA;
-    if (f) {
-        f->RenderFrame(
-            ctx,
-            m_rect14.m_0 + f->m_anchorX,
-            m_rect14.m_4 + f->m_anchorY,
-            0
-        );
+        CImage* f = m_standaloneFrame;
+        if (f) {
+            f->RenderFrame(ctx, m_rect14.m_0 + f->m_anchorX, m_rect14.m_4 + f->m_anchorY, 0);
+        }
+        f = m_frameB;
+        if (f) {
+            f->RenderFrame(ctx, m_rect14.m_0 + f->m_anchorX + 0x2c, m_rect14.m_4 + f->m_anchorY, 0);
+        }
+        f = m_frameA;
+        if (f) {
+            f->RenderFrame(ctx, m_rect14.m_0 + f->m_anchorX, m_rect14.m_4 + f->m_anchorY, 0);
+        }
     }
     return 1;
 }
@@ -585,18 +565,8 @@ RVA(0x000e99c0, 0x4c)
 i32 CSBI_SideTab::Render() {
     if (m_drawGate) {
         CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
-        m_topFrame->RenderFrame(
-            ctx,
-            m_drawX,
-            m_drawY,
-            0
-        );
-        m_bottomFrame->RenderFrame(
-            ctx,
-            m_drawX + m_bottomFrameDy,
-            m_drawY,
-            0
-        );
+        m_topFrame->RenderFrame(ctx, m_drawX, m_drawY, 0);
+        m_bottomFrame->RenderFrame(ctx, m_drawX + m_bottomFrameDy, m_drawY, 0);
     }
     return 1;
 }

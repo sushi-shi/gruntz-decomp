@@ -126,36 +126,33 @@ void CStatusBarMgr::SetGauge(i32 value) {
 // (when `commit` is set and the active object accepts the scroll) latch the placed
 // column/row and reload the camera sprite. Always returns 1 past the two probes.
 // @early-stop
-// ~71%: the code bytes are byte-exact vs retail (same regs/order/offsets; verified by
-// llvm-objdump -dr base vs target). The residual is purely the reloc-symbol-naming
-// scoring tail - this TU models the g_gameReg singleton as ?g_gameReg@@3PAUCGameReg@@A
-// while the retail obj names it _g_mgrSettings, so the three DIR32 data relocs don't
-// pair (weighted heavily on a short function). g_curPlayer + the ILT call thunks already
-// pair. A TU-wide g_gameReg rename, not a per-function fix; matcher.md reloc artifact.
+// 70.9 -> 97.8 via the shared-exit spelling; residual is one store-schedule slot.
+// Both probes are POSITIVE-form so their two `return 0` exits tail-merge into
+// retail's single bottom epilogue instead of each getting an inline 4-instruction
+// copy - docs/patterns/positive-gate-enables-shrink-wrap.md.
 RVA(0x00105800, 0x9e)
 i32 CStatusBarMgr::PlaceCursorTarget(i32 row, i32 commit) {
     i32 col = g_curPlayer;
-    if (g_gameReg->m_cmdGrid->ResetCell(col, row, 0, 0) == 0) {
-        return 0;
-    }
-    // the grid cell is the real CGrunt (CGrunt typedef); its m_10 HUD carries the
-    // on-screen origin pair.
-    CGrunt* entry = g_gameReg->m_cmdGrid->m_grid[row + col * TM_GRID_COLS];
-    if (entry == 0) {
-        return 0;
-    }
-    (static_cast<CPlay*>(g_gameReg->m_curState))
-        ->ResetGoals(entry->m_object->m_screenX, entry->m_object->m_screenY);
-    if (commit != 0) {
-        CTriggerMgr* obj = g_gameReg->m_cmdGrid;
-        if (obj->RecordListHas(col, row)) {
-            obj->m_recX = col;
-            obj->m_recY = row;
-            obj->m_armed = 1;
-            obj->LoadCameraSprite();
+    if (g_gameReg->m_cmdGrid->ResetCell(col, row, 0, 0) != 0) {
+        // the grid cell is the real CGrunt (CGrunt typedef); its m_10 HUD carries
+        // the on-screen origin pair.
+        CGrunt* entry = g_gameReg->m_cmdGrid->m_grid[row + col * TM_GRID_COLS];
+        if (entry != 0) {
+            (static_cast<CPlay*>(g_gameReg->m_curState))
+                ->ResetGoals(entry->m_object->m_screenX, entry->m_object->m_screenY);
+            if (commit != 0) {
+                CTriggerMgr* obj = g_gameReg->m_cmdGrid;
+                if (obj->RecordListHas(col, row)) {
+                    obj->m_recX = col;
+                    obj->m_recY = row;
+                    obj->m_armed = 1;
+                    obj->LoadCameraSprite();
+                }
+            }
+            return 1;
         }
     }
-    return 1;
+    return 0;
 }
 
 RVA(0x001058d0, 0x34)

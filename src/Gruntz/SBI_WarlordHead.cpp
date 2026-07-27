@@ -106,51 +106,51 @@ i32 CSBI_WarlordHead::SetState(i32 dir) {
 // per m_3c) and the indexed frame (table slot m_38, latched into m_30). Each draws
 // at the base origin plus the frame record's own m_rect14.m_4/m_1c offset.
 // @early-stop
-// ~87.4% (reloc-residual plateau): code bytes byte-identical to retail; the two
-// `call RenderFrame` (0x153790) rel32 + the g_gameReg DIR32 are reloc-masked against
-// differently-named symbols (docs/patterns/reloc-typing-vptr-global.md). Same
-// plateau as CSBI_SideTab::Render (87.8%).
+// 87.7 -> 95.4 via the shared-exit spelling; residual is the two RenderFrame
+// rel32 + g_gameReg DIR32 reloc-name pairing.
+// The countdown gate is POSITIVE-form: retail has ONE `ret` (the idle path
+// tail-merges into the shared bottom epilogue), the early-return spelling gave
+// two - docs/patterns/positive-gate-enables-shrink-wrap.md.
 RVA(0x000eb880, 0xbd)
 i32 CSBI_WarlordHead::Render() {
-    if (m_28 <= 0) {
-        return 1;
-    }
-    m_28--;
-    CDDrawSurfacePair* target = g_gameReg->m_world->m_drawTarget->m_backPair;
+    if (m_28 > 0) {
+        m_28--;
+        CDDrawSurfacePair* target = g_gameReg->m_world->m_drawTarget->m_backPair;
 
-    CDDrawWorker* cfg = m_34;
-    CImage* f;
-    if (m_direction == 1) {
-        f = (cfg->m_minIndex > 3 || cfg->m_maxIndex < 3)
-                ? 0
-                : static_cast<CImage*>(cfg->m_items.GetAt(3));
-    } else {
-        f = (cfg->m_minIndex > 4 || cfg->m_maxIndex < 4)
-                ? 0
-                : static_cast<CImage*>(cfg->m_items.GetAt(4));
-    }
-    if (f) {
-        f->RenderFrame(
-            target,
-            m_rect14.m_0 + f->m_anchorX,
-            m_rect14.m_4 + f->m_anchorY,
-            0
-        );
-    }
-
-    cfg = m_34;
-    i32 idx = m_38;
-    CImage* g = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex)
+        CDDrawWorker* cfg = m_34;
+        CImage* f;
+        if (m_direction == 1) {
+            f = (cfg->m_minIndex > 3 || cfg->m_maxIndex < 3)
                     ? 0
-                    : static_cast<CImage*>(cfg->m_items.GetAt(idx));
-    m_frame = g;
-    if (g) {
-        g->RenderFrame(
-            target,
-            m_rect14.m_0 + g->m_anchorX,
-            m_rect14.m_4 + g->m_anchorY,
-            0
-        );
+                    : static_cast<CImage*>(cfg->m_items.GetAt(3));
+        } else {
+            f = (cfg->m_minIndex > 4 || cfg->m_maxIndex < 4)
+                    ? 0
+                    : static_cast<CImage*>(cfg->m_items.GetAt(4));
+        }
+        if (f) {
+            f->RenderFrame(
+                target,
+                m_rect14.m_0 + f->m_anchorX,
+                m_rect14.m_4 + f->m_anchorY,
+                0
+            );
+        }
+
+        cfg = m_34;
+        i32 idx = m_38;
+        CImage* g = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex)
+                        ? 0
+                        : static_cast<CImage*>(cfg->m_items.GetAt(idx));
+        m_frame = g;
+        if (g) {
+            g->RenderFrame(
+                target,
+                m_rect14.m_0 + g->m_anchorX,
+                m_rect14.m_4 + g->m_anchorY,
+                0
+            );
+        }
     }
     return 1;
 }

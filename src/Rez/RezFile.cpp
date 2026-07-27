@@ -175,37 +175,36 @@ i32 CRezItm::Open(char* filename, i32 readonly, i32 write) {
 // read buffer and reset the cursor. Returns 1 on success, 0 if there was no open
 // FILE* or the gate gave up.
 // @early-stop
-// regalloc wall (zero-register-pinning): structure is byte-exact but retail pins
-// this->esi / the loop-flag ok->edi, while my cl swaps them (this->edi, ok->esi)
-// -- the prologue interleave `push esi; mov ecx,esi; push edi` vs mine
-// `push esi; push edi; mov ecx,edi`, cascading the esi<->edi names through the
-// whole body. `while(ok==0)`+`ok=0` init beats `do-while` (81.3% vs 56.5%); the
-// swap is the documented MSVC5 callee-save coin-flip, not source-steerable.
+// 81.3 -> 93.1 via the shared-exit spelling; residual is the callee-saved role
+// swap (retail this->esi / ok->edi, cl this->edi / ok->esi).
+// The FILE* gate is POSITIVE-form so the guard's `return 0` tail-merges with the
+// Retry()-gave-up `return 0` into retail's single bottom epilogue @0x13c88e, and
+// cl sinks `push edi` past `mov esi,ecx`
+// (docs/patterns/positive-gate-enables-shrink-wrap.md).
 RVA(0x0013c830, 0x63)
 i32 CRezItm::Close() {
-    if (m_fp == 0) {
-        return 0;
-    }
-
-    i32 ok = 0;
-    while (ok == 0) {
-        if (fclose(m_fp) == 0) {
-            ok = 1;
-        } else {
-            ok = 0;
-            if (m_parent->Retry() == 0) {
-                return 0;
+    if (m_fp != 0) {
+        i32 ok = 0;
+        while (ok == 0) {
+            if (fclose(m_fp) == 0) {
+                ok = 1;
+            } else {
+                ok = 0;
+                if (m_parent->Retry() == 0) {
+                    return 0;
+                }
             }
         }
-    }
 
-    m_fp = 0;
-    if (m_readBuf != 0) {
-        ::operator delete(m_readBuf);
+        m_fp = 0;
+        if (m_readBuf != 0) {
+            ::operator delete(m_readBuf);
+        }
+        m_readBuf = 0;
+        m_pos = -1;
+        return ok;
     }
-    m_readBuf = 0;
-    m_pos = -1;
-    return ok;
+    return 0;
 }
 
 RVA(0x0013c8a0, 0x45)

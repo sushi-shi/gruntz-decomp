@@ -7,39 +7,36 @@
 // ::SendMessageA call is an uncached memory-indirect `ff 15 [::SendMessageA]` (the
 // global is called directly, never hoisted into a register).
 // @early-stop
-// regalloc coin-flip wall (docs/patterns/zero-register-pinning.md), ~61%: with the
-// USER32 fn-ptr globals now correct (reloc names match), the residual is the callee-
-// saved assignment - retail keeps `this`->edi, the loop-carried `next`->esi, `data`->
-// ebp; our cl puts `this`->esi, spills `next`, `data`->esi. One `this`-register choice
-// cascades into the next-spill; no source lever under /O2.
+// Both gates are POSITIVE-form so their `return 0` exits tail-merge into retail's
+// shared /GX epilogue (docs/patterns/positive-gate-enables-shrink-wrap.md);
+// residual is the callee-saved assignment (retail this->edi, next->esi, data->ebp).
 RVA(0x00037ff0, 0xe7)
 i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
-    if (m_list.GetCount() <= 0) {
-        return 0;
-    }
-    HWND combo = ::GetDlgItem(hDlg, ctrlId);
-    if (combo == 0) {
-        return 0;
-    }
-    ::SendMessageA(combo, CB_RESETCONTENT, 0, 0);
-    POSITION pos = m_list.GetHeadPosition();
-    while (pos != 0) {
-        CLatencyItem* rec = static_cast<CLatencyItem*>(m_list.GetNext(pos));
-        i32 data = ((rec->m_param & 0xffff) << 16) | (rec->m_id & 0xffff);
-        i32 idx;
-        {
-            idx = ::SendMessageA(
-                combo,
-                CB_ADDSTRING,
-                0,
-                reinterpret_cast<long>(static_cast<LPCTSTR>(rec->GetName()))
-            );
+    if (m_list.GetCount() > 0) {
+        HWND combo = ::GetDlgItem(hDlg, ctrlId);
+        if (combo != 0) {
+            ::SendMessageA(combo, CB_RESETCONTENT, 0, 0);
+            POSITION pos = m_list.GetHeadPosition();
+            while (pos != 0) {
+                CLatencyItem* rec = static_cast<CLatencyItem*>(m_list.GetNext(pos));
+                i32 data = ((rec->m_param & 0xffff) << 16) | (rec->m_id & 0xffff);
+                i32 idx;
+                {
+                    idx = ::SendMessageA(
+                        combo,
+                        CB_ADDSTRING,
+                        0,
+                        reinterpret_cast<long>(static_cast<LPCTSTR>(rec->GetName()))
+                    );
+                }
+                if (idx != -1) {
+                    ::SendMessageA(combo, CB_SETITEMDATA, idx, data);
+                }
+            }
+            return m_list.GetCount();
         }
-        if (idx != -1) {
-            ::SendMessageA(combo, CB_SETITEMDATA, idx, data);
-        }
     }
-    return m_list.GetCount();
+    return 0;
 }
 
 // 0x38120 (re-homed from src/Stub/BoundaryTail.cpp): CLatencyItem::GetName - return

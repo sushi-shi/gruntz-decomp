@@ -650,63 +650,53 @@ void CDDPalette::BlendRange(i32 pct, i32 start, i32 count, i32 r, i32 g, i32 b) 
 // CDDPalette::CaptureSystemPalette (0x1485b0, __thiscall; the ex-DirPal view) -
 // snapshot the Windows system-reserved palette entries (the low + high halves GDI
 // keeps for the shell) into the working cache (m_cacheA), then install them.
-// @early-stop
-// reloc-typing scoring artifact (~68%, was a 1.6% `return 0` stub). The CODE
-// BYTES match retail instruction-for-instruction (verified base-vs-target with
-// llvm-objdump -dr: prologue, both GDI-reserved copy loops - cl's strength-
-// reduced single-induction/base-biased pointer walk - and the install/error
-// tail are all byte-identical). The residual is only that retail reaches GDI
-// through its own fn-ptr table (PTR_CreateDCA_006c3e20 etc.) while our base
-// emits `ff 15 [__imp_*]`: same `ff 15` DIR32 form, differently-classed reloc
-// target, so objdiff scores the ~9 relocated call sites as fuzzy. Routing
-// through the named game globals instead scored LOWER (65%), confirming this is
-// reloc-typing, not a codegen miss.
+// Every gate is POSITIVE-form: retail has exactly TWO epilogues - the inline
+// `mov eax,1` success and one shared bottom `xor eax,eax` that all four failure
+// gates plus the SetAndNotify error tail fall into. The early-return spelling
+// gave each gate its own 6-instruction inline epilogue (6 rets vs retail's 2)
+// - docs/patterns/positive-gate-enables-shrink-wrap.md.
 RVA(0x001485b0, 0x162)
 i32 CDDPalette::CaptureSystemPalette() {
     HDC hdc = CreateDCA("DISPLAY", 0, 0, 0);
-    if (!hdc) {
-        return 0;
+    if (hdc) {
+        i32 sizePal = GetDeviceCaps(hdc, SIZEPALETTE);
+        i32 half = GetDeviceCaps(hdc, NUMRESERVED) / 2;
+        LogPal256 lp;
+        lp.palVersion = 0x300;
+        lp.palNumEntries = 0x100;
+        if (GetSystemPaletteEntries(hdc, 0, half, lp.palPalEntry)
+            && GetSystemPaletteEntries(
+                hdc,
+                sizePal - half,
+                half,
+                &lp.palPalEntry[lp.palNumEntries - half]
+            )) {
+            DeleteDC(hdc);
+            PALETTEENTRY* dest = PalEntries(m_cacheA);
+            if (dest) {
+                i32 i;
+                for (i = 0; i < half; i++) {
+                    dest[i].peRed = lp.palPalEntry[i].peRed;
+                    dest[i].peGreen = lp.palPalEntry[i].peGreen;
+                    dest[i].peBlue = lp.palPalEntry[i].peBlue;
+                }
+                for (i = sizePal - half; i < sizePal; i++) {
+                    dest[i].peRed = lp.palPalEntry[i].peRed;
+                    dest[i].peGreen = lp.palPalEntry[i].peGreen;
+                    dest[i].peBlue = lp.palPalEntry[i].peBlue;
+                }
+                // the SDK's PALETTEENTRY array IS the blob SetAndNotify takes -
+                // byte-forced at the one seam between the two spellings of the
+                // same 0x400 bytes
+                i32 rc = SetAndNotify(0, 0x100, reinterpret_cast<u8*>(dest), 0);
+                if (rc == 0) {
+                    return 1;
+                }
+                CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x495, rc);
+            }
+        }
     }
-    i32 sizePal = GetDeviceCaps(hdc, SIZEPALETTE);
-    i32 half = GetDeviceCaps(hdc, NUMRESERVED) / 2;
-    LogPal256 lp;
-    lp.palVersion = 0x300;
-    lp.palNumEntries = 0x100;
-    if (!GetSystemPaletteEntries(hdc, 0, half, lp.palPalEntry)) {
-        return 0;
-    }
-    if (!GetSystemPaletteEntries(
-            hdc,
-            sizePal - half,
-            half,
-            &lp.palPalEntry[lp.palNumEntries - half]
-        )) {
-        return 0;
-    }
-    DeleteDC(hdc);
-    PALETTEENTRY* dest = PalEntries(m_cacheA);
-    if (!dest) {
-        return 0;
-    }
-    i32 i;
-    for (i = 0; i < half; i++) {
-        dest[i].peRed = lp.palPalEntry[i].peRed;
-        dest[i].peGreen = lp.palPalEntry[i].peGreen;
-        dest[i].peBlue = lp.palPalEntry[i].peBlue;
-    }
-    for (i = sizePal - half; i < sizePal; i++) {
-        dest[i].peRed = lp.palPalEntry[i].peRed;
-        dest[i].peGreen = lp.palPalEntry[i].peGreen;
-        dest[i].peBlue = lp.palPalEntry[i].peBlue;
-    }
-    // the SDK's PALETTEENTRY array IS the blob SetAndNotify takes - byte-forced at the
-    // one seam between the two spellings of the same 0x400 bytes
-    i32 rc = SetAndNotify(0, 0x100, reinterpret_cast<u8*>(dest), 0);
-    if (rc != 0) {
-        CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x495, rc);
-        return 0;
-    }
-    return 1;
+    return 0;
 }
 
 // BlackoutSystemPalette (0x148720, __cdecl) - build an all-black 256-entry

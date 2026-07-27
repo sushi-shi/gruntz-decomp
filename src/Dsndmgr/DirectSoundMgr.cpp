@@ -1022,26 +1022,37 @@ void SoundDevice::Shutdown() {
 // CreateBuffer (/GX EH frame): validate PCM fmt, CreateSoundBuffer, construct a
 // DSoundCloneInst leaf, thread it on the +0x04 list, and seed its format,
 // avg-bytes, byte-count, and duration.
+// @early-stop
+// 35.6 -> 53.5: every early-out is a `goto fail` onto ONE shared bottom epilogue,
+// which is retail's shape (a single fs:0-restoring exit all six gates jmp into;
+// the per-return spelling inlined the whole unwind at each - 7 rets vs retail's 1).
+// docs/patterns/positive-gate-enables-shrink-wrap.md (shared-exit half). Residual
+// is the callee-saved count (same family as SoundStream::CreateStreamBuffer).
 RVA(0x001366f0, 0x168)
 DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags) {
+    WaveFormatX wf;
+    IDirectSoundBuffer* out;
+    DSBUFFERDESC desc;
+    i32 hr;
+    DSoundCloneInst* voice;
+
     if (m_initialized == 0) {
-        return 0;
+        goto fail;
     }
     if (bytes == 0) {
-        return 0;
+        goto fail;
     }
     if (fmt == 0) {
-        return 0;
+        goto fail;
     }
     if (fmt->wFormatTag != 1) {
-        return 0;
+        goto fail;
     }
 
     // The 16-byte WAVEFORMATEX copy: retail moves it as dword@0, dword@4, dword@8,
     // dword@0xc, word@0x10 (verified). The two u16-pair fields (wFormatTag|nChannels
     // and nBlockAlign|wBitsPerSample) must be punned to a single dword store -
     // field-by-field would emit two 16-bit moves. Language-forced (verified by disasm).
-    WaveFormatX wf;
     *reinterpret_cast<u32*>(&wf.wFormatTag) = *reinterpret_cast<u32*>(&fmt->wFormatTag);
     wf.nSamplesPerSec = fmt->nSamplesPerSec;
     wf.nAvgBytesPerSec = fmt->nAvgBytesPerSec;
@@ -1050,26 +1061,25 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     *reinterpret_cast<u32*>(&wf.nBlockAlign) = *reinterpret_cast<u32*>(&fmt->nBlockAlign);
     wf.cbSize = fmt->cbSize;
 
-    IDirectSoundBuffer* out = 0;
-    DSBUFFERDESC desc;
+    out = 0;
     desc.dwSize = DSBUFFERDESC_SIZE;
     desc.dwFlags = flags;
     desc.dwBufferBytes = bytes;
     desc.dwReserved = 0;
     desc.lpwfxFormat = reinterpret_cast<LPWAVEFORMATEX>(&wf);
 
-    i32 hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
+    hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x422, hr);
-        return 0;
+        goto fail;
     }
     if (out == 0) {
-        return 0;
+        goto fail;
     }
 
     // Global operator new is RezAlloc; the constructor call gives MSVC the
     // retail ctor-in-flight /GX state and stamps the leaf vptr.
-    DSoundCloneInst* voice = new DSoundCloneInst(out, this);
+    voice = new DSoundCloneInst(out, this);
     voice->m_freq =
         *reinterpret_cast<u32*>(&wf.wFormatTag); // +0x18  format word (wFormatTag|nChannels)
     m_bufferList.InsertHead(voice ? &voice->m_link : 0);
@@ -1078,6 +1088,8 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     voice->m_sampleCount = bytes;               // +0x2c  byte count
     voice->ComputeDuration();
     return voice; // DSoundCloneInst* -> DirectSoundMgr* base view (CreateBuffer's return)
+fail:
+    return 0;
 }
 
 RVA(0x00136860, 0xa9)
