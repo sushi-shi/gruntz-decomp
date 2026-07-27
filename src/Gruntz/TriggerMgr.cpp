@@ -59,8 +59,8 @@
 #include <Gruntz/TileGridCommand.h>        // canonical CTileTriggerLogic (rock-break)
 
 #include <Gruntz/TriggerMgrViews.h>
-#include <Gruntz/SoundState.h> // ex Globals.h transitive
-#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
+#include <Gruntz/SoundState.h>    // ex Globals.h transitive
+#include <Utils/MapTyped.h>       // typed MFC map lookups (the forced void*& pun at one boundary)
 #include <Gruntz/SerialRecords.h> // SerBandPair - the 0x10-byte timer-band stream
 
 DATA(0x00244ca4)
@@ -173,36 +173,34 @@ i32 CTriggerMgr::RemoveCellRecord(i32 x, i32 y, i32 fromSelection) {
         CPtrList* list = m_selLists;
         i32 k = 10;
         do {
-            CTmNode* n = TmHead(*list);
-            while (n != 0) {
-                CTmNode* cur = n;
-                n = n->m_next;
-                i32* p = cur->m_payload;
+            POSITION pos = list->GetHeadPosition();
+            while (pos != 0) {
+                POSITION cur = pos;
+                i32* p = static_cast<i32*>(list->GetNext(pos));
                 if (p[0] == x && p[1] == y) {
                     CoordPoolNode* slot = g_coordPool.NodeOf(p);
                     slot->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = slot;
-                    list->RemoveAt(reinterpret_cast<POSITION>(cur));
+                    list->RemoveAt(cur);
                 }
             }
             list++;
             k--;
         } while (k != 0);
     }
-    CTmNode* n = TmHead(m_recList);
-    if (n == 0) {
+    POSITION pos = m_recList.GetHeadPosition();
+    if (pos == 0) {
         return 0;
     }
-    CTmNode* cur;
+    POSITION cur;
     i32* p;
     do {
-        cur = n;
-        n = n->m_next;
-        p = cur->m_payload;
+        cur = pos;
+        p = static_cast<i32*>(m_recList.GetNext(pos));
         if (p[0] == x && p[1] == y) {
             goto found;
         }
-    } while (n != 0);
+    } while (pos != 0);
     return 0;
 found:
     if (m_recList.GetCount() == 1) {
@@ -228,7 +226,7 @@ found:
     CoordPoolNode* slot = g_coordPool.NodeOf(p);
     slot->m_next = g_coordPool.m_freeHead;
     g_coordPool.m_freeHead = slot;
-    m_recList.RemoveAt(reinterpret_cast<POSITION>(cur));
+    m_recList.RemoveAt(cur);
     return 1;
 }
 
@@ -257,22 +255,18 @@ found:
 // Correct shape, accepted cost - do NOT revert to recover the 0.61%.
 RVA(0x00078430, 0x7f)
 void CTriggerMgr::ResetAll() {
-    CTmNode* n = TmHead(m_recList);
-    if (n != 0) {
-        do {
-            CTmNode* cur = n;
-            n = n->m_next;
-            i32* payload = cur->m_payload;
-            i32 idx = payload[1] + TM_GRID_COLS * payload[0];
-            CGrunt* cell = m_grid[idx];
-            if (cell != 0) {
-                (static_cast<CGrunt*>(cell))
-                    ->ClearAllSprites(); // CGrunt IS CGrunt (0x4b240); bridge-cast, see note
-                CoordPoolNode* slot = g_coordPool.NodeOf(payload);
-                slot->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = slot;
-            }
-        } while (n != 0);
+    POSITION pos = m_recList.GetHeadPosition();
+    while (pos != 0) {
+        i32* payload = static_cast<i32*>(m_recList.GetNext(pos));
+        i32 idx = payload[1] + TM_GRID_COLS * payload[0];
+        CGrunt* cell = m_grid[idx];
+        if (cell != 0) {
+            (static_cast<CGrunt*>(cell))
+                ->ClearAllSprites(); // CGrunt IS CGrunt (0x4b240); bridge-cast, see note
+            CoordPoolNode* slot = g_coordPool.NodeOf(payload);
+            slot->m_next = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = slot;
+        }
     }
     m_recList.RemoveAll();
     StopPendingFx();
@@ -291,11 +285,9 @@ void CTriggerMgr::ResetAll() {
 // `xor eax,eax`. docs/patterns/identical-return-epilogue-tailmerge.md
 RVA(0x000784d0, 0x3a)
 i32 CTriggerMgr::RecordListHas(i32 x, i32 y) {
-    CTmNode* n = TmHead(m_recList);
-    while (n != 0) {
-        CTmNode* cur = n;
-        n = n->m_next;
-        i32* p = cur->m_payload;
+    POSITION pos = m_recList.GetHeadPosition();
+    while (pos != 0) {
+        i32* p = static_cast<i32*>(m_recList.GetNext(pos));
         if (p[0] == x && p[1] == y) {
             return 1;
         }
@@ -315,17 +307,15 @@ void CTriggerMgr::ReportRecordsA(i32 tag, i32 gx, i32 gy) {
     u8 count = 0;
     u8 firstByte = 0;
     u8 bytes[0x70];
-    CTmNode* n = TmHead(m_recList);
-    while (n != 0) {
-        CTmNode* next = n->m_next;
-        i32* payload = n->m_payload;
+    POSITION pos = m_recList.GetHeadPosition();
+    while (pos != 0) {
+        i32* payload = static_cast<i32*>(m_recList.GetNext(pos));
         firstByte = static_cast<u8>(payload[0]);
         CGrunt* cell = m_grid[payload[1] + payload[0] * TM_GRID_COLS];
         if (cell->m_tileOwnerHi == g_curPlayer && cell->m_entranceActive == 0) {
             bytes[count] = static_cast<u8>(payload[1]);
             count++;
         }
-        n = next;
     }
     CGruntzCmdMgr* rep = g_gameReg->m_cmdSubMgr;
     if (count == 1) {
@@ -364,17 +354,15 @@ void CTriggerMgr::ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag) {
     u8 count = 0;
     u8 firstByte = 0;
     u8 bytes[0x70];
-    CTmNode* n = TmHead(m_recList);
-    while (n != 0) {
-        CTmNode* next = n->m_next;
-        i32* payload = n->m_payload;
+    POSITION pos = m_recList.GetHeadPosition();
+    while (pos != 0) {
+        i32* payload = static_cast<i32*>(m_recList.GetNext(pos));
         firstByte = static_cast<u8>(payload[0]);
         CGrunt* cell = m_grid[payload[1] + payload[0] * TM_GRID_COLS];
         if (cell->m_tileOwnerHi == g_curPlayer && cell->m_entranceActive == 0) {
             bytes[count] = static_cast<u8>(payload[1]);
             count++;
         }
-        n = next;
     }
     CGruntzCmdMgr* rep = g_gameReg->m_cmdSubMgr;
     if (count == 1) {
@@ -437,18 +425,16 @@ void CTriggerMgr::ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag) {
 // with the pushes. docs/patterns/zero-store-before-loop-inline-bound.md
 RVA(0x00078880, 0x3c)
 void CTriggerMgr::ClearRecords() {
-    CTmNode* n = TmHead(m_recList);
-    if (n != 0) {
+    POSITION pos = m_recList.GetHeadPosition();
+    if (pos != 0) {
         i32 bias = g_coordPool.m_linkOffset;
         void* head = g_coordPool.m_freeHead;
         do {
-            CTmNode* cur = n;
-            n = n->m_next;
-            CoordPoolNode* slot = g_coordPool.NodeOf(cur->m_payload);
+            CoordPoolNode* slot = g_coordPool.NodeOf(m_recList.GetNext(pos));
             slot->m_next = static_cast<CoordPoolNode*>(head);
             head = slot;
             g_coordPool.m_freeHead = static_cast<CoordPoolNode*>(head);
-        } while (n != 0);
+        } while (pos != 0);
     }
     m_recList.RemoveAll();
 }
@@ -537,7 +523,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     if (m_recList.GetCount() != 1) {
         cell = 0;
     } else {
-        i32* rec = (TmHead(m_recList))->m_payload;
+        i32* rec = static_cast<i32*>(m_recList.GetHead());
         cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     }
     if (cell == 0) {
@@ -649,7 +635,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
     if (m_recList.GetCount() != 1) {
         cell = 0;
     } else {
-        i32* rec = (TmHead(m_recList))->m_payload;
+        i32* rec = static_cast<i32*>(m_recList.GetHead());
         cell = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
     }
 
@@ -757,12 +743,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
 
 arm:
     (static_cast<CLightFx*>(sprite->m_7c->m_logic))
-        ->Activate(
-            "GAME_LIGHTING_TARGETCURSOR",
-            "GAME_TARGETCURSOR",
-            kindArg,
-            1
-        );
+        ->Activate("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", kindArg, 1);
     return 1;
 
 reportError:
@@ -798,20 +779,12 @@ i32 CTriggerMgr::DestroyGroup(i32 a1, i32 a2, i32 a3, i32 a4) {
     if (ov->m_active != 0 || m_recList.GetCount() != 1) {
         return 0;
     }
-    i32* rec = (TmHead(m_recList))->m_payload;
+    i32* rec = static_cast<i32*>(m_recList.GetHead());
     CGrunt* cellp = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
     if (cellp == 0 || cellp->m_tileOwnerHi != g_curPlayer) {
         return 0;
     }
-    if (ov->Init(
-            0,
-            0,
-            a2,
-            a4,
-            cellp->m_tileOwnerHi,
-            cellp->m_tileOwnerLo
-        )
-        == 0) {
+    if (ov->Init(0, 0, a2, a4, cellp->m_tileOwnerHi, cellp->m_tileOwnerLo) == 0) {
         return 0;
     }
     CGameLevel* view = m_world->m_level;
@@ -1080,13 +1053,12 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
         g_gameReg->ReportError(0x8009, 0x401); // dual-view bridge; see SpawnPuddle
         return 0;
     }
-    CTmRecNode* n = TmRecHeadOf(m_baseList);
+    POSITION pos = m_baseList.GetHeadPosition();
     i32 manyFlag = (m_baseList.GetCount() > 0x3b) ? 1 : 0;
     i32 unlinked = 0;
-    while (n != 0 && unlinked == 0) {
-        CTmRecNode* cur = n;
-        n = n->m_next;
-        CGruntPuddle* o = cur->m_obj;
+    while (pos != 0 && unlinked == 0) {
+        POSITION cur = pos;
+        CGruntPuddle* o = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
         if (o->m_tileX == tgt->m_tileX && o->m_tileY == tgt->m_tileY) {
             if (o->m_pending != 0) {
                 tgt->m_38->m_flags |= 0x10000;
@@ -1098,14 +1070,13 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
         }
     }
     if (manyFlag != 0 && unlinked == 0) {
-        n = TmRecHeadOf(m_baseList);
-        while (n != 0) {
-            CTmRecNode* cur = n;
-            n = n->m_next;
-            CGruntPuddle* o = cur->m_obj;
+        pos = m_baseList.GetHeadPosition();
+        while (pos != 0) {
+            POSITION cur = pos;
+            CGruntPuddle* o = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
             if (o->m_pending == 0) {
                 o->m_38->m_flags |= 0x10000;
-                m_baseList.RemoveAt(reinterpret_cast<POSITION>(cur));
+                m_baseList.RemoveAt(cur);
             }
         }
     }
@@ -1275,22 +1246,18 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     }
     i32 flag24c = m_recList.GetCount();
     ar->Write(&flag24c, 4);
-    CTmNode* n = TmHead(m_recList);
-    while (n != 0) {
-        CTmNode* cur = n;
-        n = n->m_next;
-        ar->Write(cur->m_payload, 8);
+    POSITION pos = m_recList.GetHeadPosition();
+    while (pos != 0) {
+        ar->Write(m_recList.GetNext(pos), 8);
     }
     CPtrList* list = m_selLists;
     i32 k = 10;
     do {
         i32 cnt2 = list->GetCount();
         ar->Write(&cnt2, 4);
-        CTmNode* m = TmHead(*list);
-        while (m != 0) {
-            CTmNode* cur = m;
-            m = m->m_next;
-            ar->Write(cur->m_payload, 8);
+        POSITION p2 = list->GetHeadPosition();
+        while (p2 != 0) {
+            ar->Write(list->GetNext(p2), 8);
         }
         list++;
         k--;
@@ -1310,11 +1277,9 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     ar->Write(m_274, 0x10);
     i32 cntC = m_baseList.GetCount();
     ar->Write(&cntC, 4);
-    CTmRecNode* rn = TmRecHeadOf(m_baseList);
-    while (rn != 0) {
-        CTmRecNode* cur = rn;
-        rn = rn->m_next;
-        CGruntPuddle* obj = cur->m_obj;
+    pos = m_baseList.GetHeadPosition();
+    while (pos != 0) {
+        CGruntPuddle* obj = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
         if (obj == 0) {
             return 0;
         }
@@ -1345,7 +1310,6 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     ar->Write(&m_selSentinel, 4);
     return 1;
 }
-
 
 // 0x7abc0: Load(ar) - deserialize the whole trigger-mgr state (see the header). The
 // grid + list loads resolve each stored key through the level's map, validating the
@@ -1557,7 +1521,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     if (m_recList.GetCount() != 1) { // negated-far cell decode (see ToggleRegionA)
         cell = 0;
     } else {
-        i32* rec = (TmHead(m_recList))->m_payload;
+        i32* rec = static_cast<i32*>(m_recList.GetHead());
         cell = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -1821,12 +1785,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                                 done = 1;
                                 spr->m_7c->m_notify(spr);
                                 (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                                    ->Activate(
-                                        s_GAME_LIGHTING_FLASH,
-                                        s_GAME_FLASH,
-                                        3,
-                                        1
-                                    );
+                                    ->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 3, 1);
                             }
                         } while (done == 0);
                         break;
@@ -1847,12 +1806,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                                 ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
                         spr->m_7c->m_notify(spr);
                         (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                            ->Activate(
-                                s_GAME_LIGHTING_FLASH,
-                                s_GAME_FLASH,
-                                2,
-                                1
-                            );
+                            ->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 2, 1);
                         break;
                     }
                     case 5: { // toyz
@@ -1869,12 +1823,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                                 ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
                         spr->m_7c->m_notify(spr);
                         (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                            ->Activate(
-                                s_GAME_LIGHTING_FLASH,
-                                s_GAME_FLASH,
-                                7,
-                                1
-                            );
+                            ->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 7, 1);
                         break;
                     }
                     case 4: { // freeze
@@ -1892,12 +1841,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         );
                         spr->m_7c->m_notify(spr);
                         (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                            ->Activate(
-                                s_GAME_LIGHTING_FLASH,
-                                s_GAME_FLASH,
-                                9,
-                                1
-                            );
+                            ->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 9, 1);
                         break;
                     }
                 }
@@ -1935,9 +1879,10 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
     rect.top = hy - r;
     rect.bottom = hy + r;
 
-    for (CTmRecNode* node = TmRecHeadOf(m_baseList); node != 0;
-         node = node->m_next) {
-        CGruntPuddle* g = node->m_obj;
+    POSITION pos = m_baseList.GetHeadPosition();
+    while (pos != 0) {
+        POSITION cur = pos;
+        CGruntPuddle* g = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
         if (g->m_pending != 0) {
             continue;
         }
@@ -1992,19 +1937,15 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
 
         if (ok) {
             g->m_38->m_flags |= 0x10000;
-            m_baseList.RemoveAt(
-                reinterpret_cast<POSITION>(node)
-            ); // 0x1b4ac7 (retail then reads node->m_next)
+            // 0x1b4ac7 RemoveAt on the SAVED position - retail advanced pos at the loop
+            // head (`mov ebx,[eax+8]; mov ecx,[eax]; [esp+0x14]=eax; [esp+0x34]=ecx`),
+            // which is exactly GetNext's body.
+            m_baseList.RemoveAt(cur);
             CGameObject* spr = g_gameReg->m_world->m_childGroup
                                    ->CreateSprite(0, px, py, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                ->Activate(
-                    "GAME_LIGHTING_FLASH",
-                    "GAME_FLASH",
-                    8,
-                    1
-                );
+                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
         }
     }
     return 1;
@@ -2127,11 +2068,7 @@ void CTriggerMgr::LoadFinishLevelSprite(i32 state) {
         case 1:
             if (m_phase != 2) {
                 LeafCue* p = 0;
-                MapLookup(
-                    m_world->m_soundRegistry->m_10,
-                    "GAME\\FINISHLEVEL",
-                    p
-                );
+                MapLookup(m_world->m_soundRegistry->m_10, "GAME\\FINISHLEVEL", p);
                 m_timerWindow = static_cast<u32>((p->m_10->m_durationMs + 500));
                 m_timerBase = g_frameTime;
                 CDDrawSubMgrLeafScan* h28 = m_world->m_soundRegistry;
@@ -2395,27 +2332,23 @@ i32 CTriggerMgr::LoadPowerupIconSprites(
 RVA(0x0007cc60, 0xa7)
 i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
     CPtrList* sel = &m_selLists[idx];
-    CTmNode* n = reinterpret_cast<CTmNode*>(m_selLists[idx].GetHeadPosition());
-    if (n != 0) {
+    POSITION pos = m_selLists[idx].GetHeadPosition();
+    if (pos != 0) {
         void* head = g_coordPool.m_freeHead;
         do {
-            CTmNode* cur = n;
-            n = n->m_next;
-            i32* payload = cur->m_payload;
+            i32* payload = static_cast<i32*>(m_selLists[idx].GetNext(pos));
             if (payload != 0) {
                 CoordPoolNode* slot = g_coordPool.NodeOf(payload);
                 slot->m_next = static_cast<CoordPoolNode*>(head);
                 head = slot;
                 g_coordPool.m_freeHead = static_cast<CoordPoolNode*>(head);
             }
-        } while (n != 0);
+        } while (pos != 0);
     }
     sel->RemoveAll();
-    CTmNode* rec = TmHead(m_recList);
-    while (rec != 0) {
-        CTmNode* cur = rec;
-        rec = rec->m_next;
-        i32* src = cur->m_payload;
+    pos = m_recList.GetHeadPosition();
+    while (pos != 0) {
+        i32* src = static_cast<i32*>(m_recList.GetNext(pos));
         void** fh = reinterpret_cast<void**>(g_coordPool.m_freeHead);
         CoordPoolNode* fhNode = reinterpret_cast<CoordPoolNode*>(fh);
         i32* dst = 0;
@@ -2451,8 +2384,8 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     if (ov != 0 && ov->m_active != 0) {
         OverlayTick();
     }
-    CTmNode* n = reinterpret_cast<CTmNode*>(m_selLists[slot].GetHeadPosition());
-    if (n == 0) {
+    POSITION pos = m_selLists[slot].GetHeadPosition();
+    if (pos == 0) {
         m_selSentinel = -1;
         return 0;
     }
@@ -2462,9 +2395,8 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     i32 minX = grid->m_wrapW - 1;
     i32 minY = grid->m_wrapH - 1;
     do {
-        CTmNode* cur = n;
-        n = n->m_next;
-        i32* payload = cur->m_payload;
+        POSITION cur = pos;
+        i32* payload = static_cast<i32*>(m_selLists[slot].GetNext(pos));
         i32 idx = payload[1] + TM_GRID_COLS * payload[0];
         CGrunt* cell = m_grid[idx];
         if (cell != 0) {
@@ -2490,9 +2422,9 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
             CoordPoolNode* node = g_coordPool.NodeOf(payload);
             node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
-            m_selLists[slot].RemoveAt(reinterpret_cast<POSITION>(cur));
+            m_selLists[slot].RemoveAt(cur);
         }
-    } while (n != 0);
+    } while (pos != 0);
     if (m_selSentinel == slot) {
         (static_cast<CPlay*>(g_gameReg->m_curState))
             ->ResetGoals(
@@ -2569,20 +2501,18 @@ void CTriggerMgr::ClearSelections() {
     CPtrList* list = m_selLists;
     i32 k = 10;
     do {
-        CTmNode* n = TmHead(*list);
-        if (n != 0) {
+        POSITION pos = list->GetHeadPosition();
+        if (pos != 0) {
             void* head = g_coordPool.m_freeHead;
             do {
-                CTmNode* cur = n;
-                n = n->m_next;
-                i32* payload = cur->m_payload;
+                i32* payload = static_cast<i32*>(list->GetNext(pos));
                 if (payload != 0) {
                     CoordPoolNode* slot = g_coordPool.NodeOf(payload);
                     slot->m_next = static_cast<CoordPoolNode*>(head);
                     head = slot;
                     g_coordPool.m_freeHead = static_cast<CoordPoolNode*>(head);
                 }
-            } while (n != 0);
+            } while (pos != 0);
         }
         list->RemoveAll();
         list++;
@@ -2660,11 +2590,9 @@ i32 CTriggerMgr::SelectionListFind(i32 key, i32 y) {
     i32 i = 0;
     CPtrList* list = m_selLists;
     do {
-        CTmNode* n = TmHead(*list);
-        while (n != 0) {
-            CTmNode* cur = n;
-            n = n->m_next;
-            i32* payload = cur->m_payload;
+        POSITION pos = list->GetHeadPosition();
+        while (pos != 0) {
+            i32* payload = static_cast<i32*>(list->GetNext(pos));
             if (payload[0] == key && payload[1] == y) {
                 if (result != 0) {
                     return 10;
@@ -2705,8 +2633,7 @@ void CTriggerMgr::DestroyAllAnims() {
         r--;
     } while (r != 0);
 
-    CDDrawGroupNode* node =
-        GroupHead(m_world->m_childGroup->m_list);
+    CDDrawGroupNode* node = GroupHead(m_world->m_childGroup->m_list);
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -2772,7 +2699,7 @@ i32 CTriggerMgr::ToggleRegionA() {
     if (m_recList.GetCount() != 1) {
         cell = 0;
     } else {
-        i32* rec = (TmHead(m_recList))->m_payload;
+        i32* rec = static_cast<i32*>(m_recList.GetHead());
         cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     }
     if (cell == 0) {
@@ -2822,7 +2749,7 @@ i32 CTriggerMgr::ToggleRegionB() {
     if (m_recList.GetCount() != 1) { // negated-far cell decode (see ToggleRegionA)
         cell = 0;
     } else {
-        i32* rec = (TmHead(m_recList))->m_payload;
+        i32* rec = static_cast<i32*>(m_recList.GetHead());
         cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     }
     if (cell == 0) {
@@ -2868,20 +2795,18 @@ i32 CTriggerMgr::EnqueueGroupCells() {
     u8 buf[0x68];
     u8 count = 0;
     char x = 0;
-    CTmNode* n = TmHead(m_recList);
-    if (n != 0) {
+    POSITION pos = m_recList.GetHeadPosition();
+    if (pos != 0) {
         i32 magic = g_curPlayer;
         do {
-            CTmNode* cur = n;
-            n = n->m_next;
-            i32* p = cur->m_payload;
+            i32* p = static_cast<i32*>(m_recList.GetNext(pos));
             x = *reinterpret_cast<char*>(p);
             CGrunt* cell = m_grid[p[0] * TM_GRID_COLS + p[1]];
             if (cell->m_tileOwnerHi == magic && cell->m_entranceActive == 0) {
                 buf[count] = (reinterpret_cast<u8*>(p))[4];
                 count++;
             }
-        } while (n != 0);
+        } while (pos != 0);
     }
     if (count == 1) {
         g_gameReg->m_cmdSubMgr->EnqueueSingle(1, x, static_cast<char>(buf[0]), 5, 0, 0, 0, 0);

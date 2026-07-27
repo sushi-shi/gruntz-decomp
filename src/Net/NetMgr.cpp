@@ -11,7 +11,6 @@ VTBL(CNetSessionNode, 0x001f0778);    // own (final) vtable
 DATA(0x002bf840)
 i32 g_spEnumValidated = 0; // 0x6bf840 (owner def; C linkage from NetMgr.h)
 
-
 // ---------------------------------------------------------------------------
 // CNetMgr::InitFromProvider  (__thiscall; ret 0x14, 5 args).
 // The service-provider Init variant: DirectPlayCreate's a fresh DirectPlay object
@@ -191,13 +190,11 @@ InterfaceObject* CNetMgr::AddGroupNode(void* guid, void* name) {
 
 RVA(0x00178430, 0x3a)
 void CNetMgr::ClearGroupList() {
-    CGroupNode* node = NetGroupHeadOf(m_groups);
-    while (node != 0) {
-        CGroupNode* cur = node;
-        node = node->m_next;
+    POSITION pos = m_groups.GetHeadPosition();
+    while (pos != 0) {
         // `delete`'s implicit null-guard IS retail's one test+je (then the virtual
         // scalar-deleting-dtor dispatch, push 1 / call [vtbl+4]).
-        delete cur->m_data;
+        delete static_cast<InterfaceObject*>(m_groups.GetNext(pos));
     }
     m_groups.RemoveAll();
     m_groupSelId = 0;
@@ -226,22 +223,15 @@ void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
     }
     SendMessageA(hList, LB_RESETCONTENT, 0, 0);
 
-    CGroupNode* node = NetGroupHeadOf(m_groups);
-    m_groupSelId = node;
-    InterfaceObject* obj;
-    if (node != 0) {
-        m_groupSelId = node->m_next;
-        obj = node->m_data;
-    } else {
-        obj = 0;
-    }
+    m_groupSelId = m_groups.GetHeadPosition();
+    InterfaceObject* obj =
+        m_groupSelId != 0 ? static_cast<InterfaceObject*>(m_groups.GetNext(m_groupSelId)) : 0;
 
     while (obj != 0) {
         if (((flag & 1) && obj->IsInterface2()) || ((flag & 2) && obj->IsInterface1())) {
-            CGroupNode* cur = m_groupSelId;
-            if (cur != 0) {
-                obj = cur->m_data;
-                m_groupSelId = cur->m_next;
+            if (m_groupSelId != 0) {
+                obj = static_cast<InterfaceObject*>(m_groups.GetAt(m_groupSelId));
+                m_groups.GetNext(m_groupSelId);
             } else {
                 obj = 0;
             }
@@ -259,10 +249,9 @@ void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
             if (idx != -1) {
                 SendMessageA(hList, LB_SETITEMDATA, idx, reinterpret_cast<LPARAM>(obj));
             }
-            CGroupNode* cur = m_groupSelId;
-            if (cur != 0) {
-                obj = cur->m_data;
-                m_groupSelId = cur->m_next;
+            if (m_groupSelId != 0) {
+                obj = static_cast<InterfaceObject*>(m_groups.GetAt(m_groupSelId));
+                m_groups.GetNext(m_groupSelId);
             } else {
                 obj = 0;
             }
@@ -370,11 +359,10 @@ CNetPlayerListNode* CNetMgr::AddPlayerNode(void* playerDesc) {
 
 RVA(0x00178750, 0x3d)
 void CNetMgr::ClearPlayerList() {
-    CNetListNode* node = NetListHeadOf(m_players);
-    while (node != 0) {
-        CNetListNode* cur = node;
-        node = node->m_next;
-        delete cur->m_data; // implicit null-guard + virtual deleting-dtor dispatch
+    POSITION pos = m_players.GetHeadPosition();
+    while (pos != 0) {
+        // implicit null-guard + virtual deleting-dtor dispatch
+        delete static_cast<CNetPlayerListNode*>(m_players.GetNext(pos));
     }
     m_players.RemoveAll();
     m_playerSelId = 0;
@@ -401,15 +389,9 @@ void CNetMgr::PopulatePlayerList(void* hList) {
 
     SendMessageA(static_cast<HWND>(hList), LB_RESETCONTENT, 0, 0);
 
-    CNetListNode* node = NetListHeadOf(m_players);
-    m_playerSelId = node;
-    CNetPlayerListNode* payload;
-    if (node != 0) {
-        m_playerSelId = node->m_next;
-        payload = node->m_data;
-    } else {
-        payload = 0;
-    }
+    m_playerSelId = m_players.GetHeadPosition();
+    CNetPlayerListNode* payload =
+        m_playerSelId != 0 ? static_cast<CNetPlayerListNode*>(m_players.GetNext(m_playerSelId)) : 0;
 
     while (payload != 0) {
         i32 r = static_cast<i32>(SendMessageA(
@@ -426,10 +408,9 @@ void CNetMgr::PopulatePlayerList(void* hList) {
                 reinterpret_cast<LPARAM>(payload)
             );
         }
-        CNetListNode* cur = m_playerSelId;
-        if (cur != 0) {
-            payload = cur->m_data;
-            m_playerSelId = cur->m_next;
+        if (m_playerSelId != 0) {
+            payload = static_cast<CNetPlayerListNode*>(m_players.GetAt(m_playerSelId));
+            m_players.GetNext(m_playerSelId);
         } else {
             payload = 0;
         }
@@ -485,7 +466,8 @@ i32 CNetMgr::ReadPlayerSel(void* hList) {
 // local. Same family as EnumPlayersInto/EnumGroupsRange; stack-buffer-size-drives-
 // frame.md. Final sweep.
 RVA(0x001788a0, 0x13c)
-CNetPlayerListNode* CNetMgr::EnumGroupsInto(i32 maxPlayers, char* sessionName, i32 user1, const char* password) {
+CNetPlayerListNode*
+CNetMgr::EnumGroupsInto(i32 maxPlayers, char* sessionName, i32 user1, const char* password) {
     CNetSessionDesc buf;
     memset(&buf, 0, sizeof(buf));
     buf.m_dwSize = sizeof(buf);
@@ -528,7 +510,8 @@ CNetPlayerListNode* CNetMgr::EnumGroupsInto(i32 maxPlayers, char* sessionName, i
 }
 
 RVA(0x001789e0, 0x59)
-CNetSessionNode* CNetMgr::EnumPlayersCb(CNetPlayerListNode* a, const char* b, const char* c, i32 d) {
+CNetSessionNode*
+CNetMgr::EnumPlayersCb(CNetPlayerListNode* a, const char* b, const char* c, i32 d) {
     if (a == 0) {
         return 0;
     }
@@ -683,12 +666,7 @@ CNetSessionNode* CNetMgr::CreatePlayer(void* a, const char* b, i32 c) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x3bb, hr, 0);
         return 0;
     }
-    return AddSessionNode(
-        out,
-        reinterpret_cast<const char*>(a),
-        b,
-        0
-    );
+    return AddSessionNode(out, reinterpret_cast<const char*>(a), b, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -943,15 +921,9 @@ i32 CNetMgr::EnumSessions2(void* ctx) {
 // docs/patterns/linked-list-walk-node-eax-rotation.md. Logic complete.
 RVA(0x00179270, 0x89)
 InterfaceObject* CNetMgr::Find(i32 kind) {
-    CGroupNode* node = NetGroupHeadOf(m_groups);
-    m_groupSelId = node;
-    InterfaceObject* item;
-    if (node) {
-        m_groupSelId = node->m_next;
-        item = node->m_data;
-    } else {
-        item = 0;
-    }
+    m_groupSelId = m_groups.GetHeadPosition();
+    InterfaceObject* item =
+        m_groupSelId != 0 ? static_cast<InterfaceObject*>(m_groups.GetNext(m_groupSelId)) : 0;
     while (item) {
         switch (kind) {
             case 1:
@@ -970,10 +942,9 @@ InterfaceObject* CNetMgr::Find(i32 kind) {
                 }
                 break;
         }
-        CGroupNode* cur = m_groupSelId;
-        if (cur) {
-            item = cur->m_data;
-            m_groupSelId = cur->m_next;
+        if (m_groupSelId != 0) {
+            item = static_cast<InterfaceObject*>(m_groups.GetAt(m_groupSelId));
+            m_groups.GetNext(m_groupSelId);
         } else {
             item = 0;
         }

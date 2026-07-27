@@ -16,7 +16,6 @@
 
 void ActiveWait(u32 milliseconds); // 0x13dfe0
 
-
 CString __stdcall operator+(const CString& lhs, const char* rhs);
 
 class GruntzPlayer;     // <Gruntz/GruntzPlayer.h>  - the leaving-player slot
@@ -57,7 +56,6 @@ struct CNetVersionPacket {
 };
 SIZE(0x20); // fully-known stack packet
 
-
 // (CNetSessionNode DISSOLVED: it was a second view of CNetSessionNode - same
 // m_sessions payload, id @+0x4, name CString @+0x8,
 // GetName the same +0x8 fetch. All entry-typed methods take CNetSessionNode* now.)
@@ -77,18 +75,18 @@ SIZE_UNKNOWN(); // 0x10-byte stat-packet header view; full record size TBD
 // CMulti::RegisterChannelRec - the two agree on every offset, which is the layout.
 #pragma pack(push, 1)
 struct CNetChannelPacket {
-    u8 m_flags;      // +0x00  bit7 set
-    char m_pad01[3]; // +0x01
-    i32 m_statId;    // +0x04  0x3f9
-    u8 m_present;    // +0x08  gate: 0 = no channel in this record
-    u8 m_kind;       // +0x09  -> RegisterChannel arg 2
-    u8 m_slot;       // +0x0a  -> arg 3
-    u8 m_flagsB;     // +0x0b  -> arg 4
-    u8 m_configId;   // +0x0c  -> arg 5
-    u8 m_0d;         // +0x0d
-    u8 m_0e;         // +0x0e
-    char m_pad0f[1]; // +0x0f
-    i32 m_hostIndex; // +0x10  -> arg 6
+    u8 m_flags;               // +0x00  bit7 set
+    char m_pad01[3];          // +0x01
+    i32 m_statId;             // +0x04  0x3f9
+    u8 m_present;             // +0x08  gate: 0 = no channel in this record
+    u8 m_kind;                // +0x09  -> RegisterChannel arg 2
+    u8 m_slot;                // +0x0a  -> arg 3
+    u8 m_flagsB;              // +0x0b  -> arg 4
+    u8 m_configId;            // +0x0c  -> arg 5
+    u8 m_0d;                  // +0x0d
+    u8 m_0e;                  // +0x0e
+    char m_pad0f[1];          // +0x0f
+    i32 m_hostIndex;          // +0x10  -> arg 6
     char m_name[0x28 - 0x14]; // +0x14  the channel name (strcpy'd)
 };
 SIZE(0x28);
@@ -97,19 +95,19 @@ SIZE(0x28);
 // layout from the 0x28 above). BroadcastOneChannel writes it and ParseOneChannel
 // reads it back; the two agree on every offset, which is the layout.
 struct CNetOneChannelPacket {
-    u8 m_flags;      // +0x00  bit7 set
-    char m_pad01[3]; // +0x01
-    i32 m_statId;    // +0x04  STAT_CHANNEL_ONE
-    i32 m_playerIndex; // +0x08  the roster slot this record describes
-    u8 m_present;    // +0x0c  = 1
-    u8 m_008;        // +0x0d  GruntzPlayer::m_008
-    u8 m_014;        // +0x0e  GruntzPlayer::m_014
-    u8 m_configId;   // +0x0f
-    char m_pad10[1]; // +0x10
-    u8 m_comboSel;   // +0x11
-    u8 m_readyFlag;  // +0x12
-    char m_pad13[1]; // +0x13
-    i32 m_slotKey;   // +0x14
+    u8 m_flags;               // +0x00  bit7 set
+    char m_pad01[3];          // +0x01
+    i32 m_statId;             // +0x04  STAT_CHANNEL_ONE
+    i32 m_playerIndex;        // +0x08  the roster slot this record describes
+    u8 m_present;             // +0x0c  = 1
+    u8 m_008;                 // +0x0d  GruntzPlayer::m_008
+    u8 m_014;                 // +0x0e  GruntzPlayer::m_014
+    u8 m_configId;            // +0x0f
+    char m_pad10[1];          // +0x10
+    u8 m_comboSel;            // +0x11
+    u8 m_readyFlag;           // +0x12
+    char m_pad13[1];          // +0x13
+    i32 m_slotKey;            // +0x14
     char m_name[0x2c - 0x18]; // +0x18  the channel name (strcpy'd)
 };
 SIZE(0x2c);
@@ -227,7 +225,7 @@ struct CNetCmdSlot {
     CString
     BuildHostName(); // bc3f0  the slot's host name (by-value NRVO, fwds m_desc->GetName) [multi]
     i32 Init(
-        CMulti * a1,
+        CMulti* a1,
         SlotInfo* a2,
         i32 a3
     ); // c0b10  seed a fresh slot, then ClearCmds + reset both ranges
@@ -441,30 +439,30 @@ struct IDirectPlay4Z {
         i32 flags,
         void* lpData,
         i32* lpSize
-    ) PURE;                                                           // slot 25 (+0x64)
+    ) PURE;                                                              // slot 25 (+0x64)
     STDMETHOD(SetData5)(i32 a, i32 b, i32 c, void* data, i32 size) PURE; // slot 26 (+0x68)
-    STDMETHOD(v1b)() PURE;                                            // slot 27
-    STDMETHOD(v1c)() PURE;                                            // slot 28
-    STDMETHOD(GetData5)(i32 id, void* lpData, i32 size, i32 fl) PURE; // slot 29 (+0x74)
-    STDMETHOD(v1e)() PURE;                                            // slot 30
-    STDMETHOD(v1f)() PURE;                                            // slot 31
-    STDMETHOD(v20)() PURE;                                            // slot 32
-    STDMETHOD(v21)() PURE;                                            // slot 33
-    STDMETHOD(v22)() PURE;                                            // slot 34
-    STDMETHOD(v23)() PURE;                                            // slot 35
-    STDMETHOD(v24)() PURE;                                            // slot 36
-    STDMETHOD(v25)() PURE;                                            // slot 37
-    STDMETHOD(v26)() PURE;                                            // slot 38
-    STDMETHOD(v27)() PURE;                                            // slot 39
-    STDMETHOD(v28)() PURE;                                            // slot 40
-    STDMETHOD(v29)() PURE;                                            // slot 41
-    STDMETHOD(v2a)() PURE;                                            // slot 42
-    STDMETHOD(v2b)() PURE;                                            // slot 43
-    STDMETHOD(v2c)() PURE;                                            // slot 44
-    STDMETHOD(v2d)() PURE;                                            // slot 45
-    STDMETHOD(v2e)() PURE;                                            // slot 46
-    STDMETHOD(v2f)() PURE;                                            // slot 47
-    STDMETHOD(v30)() PURE;                                            // slot 48
+    STDMETHOD(v1b)() PURE;                                               // slot 27
+    STDMETHOD(v1c)() PURE;                                               // slot 28
+    STDMETHOD(GetData5)(i32 id, void* lpData, i32 size, i32 fl) PURE;    // slot 29 (+0x74)
+    STDMETHOD(v1e)() PURE;                                               // slot 30
+    STDMETHOD(v1f)() PURE;                                               // slot 31
+    STDMETHOD(v20)() PURE;                                               // slot 32
+    STDMETHOD(v21)() PURE;                                               // slot 33
+    STDMETHOD(v22)() PURE;                                               // slot 34
+    STDMETHOD(v23)() PURE;                                               // slot 35
+    STDMETHOD(v24)() PURE;                                               // slot 36
+    STDMETHOD(v25)() PURE;                                               // slot 37
+    STDMETHOD(v26)() PURE;                                               // slot 38
+    STDMETHOD(v27)() PURE;                                               // slot 39
+    STDMETHOD(v28)() PURE;                                               // slot 40
+    STDMETHOD(v29)() PURE;                                               // slot 41
+    STDMETHOD(v2a)() PURE;                                               // slot 42
+    STDMETHOD(v2b)() PURE;                                               // slot 43
+    STDMETHOD(v2c)() PURE;                                               // slot 44
+    STDMETHOD(v2d)() PURE;                                               // slot 45
+    STDMETHOD(v2e)() PURE;                                               // slot 46
+    STDMETHOD(v2f)() PURE;                                               // slot 47
+    STDMETHOD(v30)() PURE;                                               // slot 48
     STDMETHOD(SendEx)(
         i32 idFrom,
         i32 idTo,
@@ -486,40 +484,24 @@ SIZE_UNKNOWN(); // external DirectPlay COM interface (opaque object); size TBD
 // the real virtual dtor.)
 class CNetPlayerListNode; // defined below (the m_players 0x58 node, vptr 0x5f0760)
 
-struct CNetListNode {
-    CNetListNode* m_next;       // +0x00  next node
-    char m_pad4[4];             // +0x04  prev node (unused)
-    CNetPlayerListNode* m_data; // +0x08  payload player node (polymorphic; virtual dtor)
-};
-SIZE_UNKNOWN(); // CObList node walk-view (m_players); retail size TBD
-
-// MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
-// hand-rolled node walk has to pun it - language-forced. One seam per type.
-inline CNetListNode* NetListHeadOf(const CObList& l) {
-    return reinterpret_cast<CNetListNode*>(l.GetHeadPosition());
-}
-inline CNetListNode* NetListHeadOf(const CPtrList& l) {
-    return reinterpret_cast<CNetListNode*>(l.GetHeadPosition());
-}
-
 // The DirectPlay DPSESSIONDESC2 (<dplay.h>), spelled out field-for-field: the
 // engine builds it on the stack for EnumPlayers/EnumGroups and deep-copies it into
 // CNetPlayerListNode. Same 0x50 bytes, so every raw `desc + 0xNN` poke is a member.
 struct CNetSessionDesc {
-    i32 m_dwSize;            // +0x00  dwSize (forced to 0x50)
-    i32 m_dwFlags;           // +0x04  DPSESSION_xxx
-    GUID m_guidInstance;     // +0x08  guidInstance
-    GUID m_guidApplication;  // +0x18  guidApplication (the app GUID)
-    i32 m_dwMaxPlayers;      // +0x28
-    i32 m_dwCurrentPlayers;  // +0x2c  (read-only)
-    char* m_lpszName;        // +0x30  lpszSessionNameA
-    char* m_lpszPassword;    // +0x34  lpszPasswordA
-    i32 m_dwReserved1;       // +0x38
-    i32 m_dwReserved2;       // +0x3c
-    i32 m_dwUser1;           // +0x40
-    i32 m_dwUser2;           // +0x44
-    i32 m_dwUser3;           // +0x48
-    i32 m_dwUser4;           // +0x4c
+    i32 m_dwSize;           // +0x00  dwSize (forced to 0x50)
+    i32 m_dwFlags;          // +0x04  DPSESSION_xxx
+    GUID m_guidInstance;    // +0x08  guidInstance
+    GUID m_guidApplication; // +0x18  guidApplication (the app GUID)
+    i32 m_dwMaxPlayers;     // +0x28
+    i32 m_dwCurrentPlayers; // +0x2c  (read-only)
+    char* m_lpszName;       // +0x30  lpszSessionNameA
+    char* m_lpszPassword;   // +0x34  lpszPasswordA
+    i32 m_dwReserved1;      // +0x38
+    i32 m_dwReserved2;      // +0x3c
+    i32 m_dwUser1;          // +0x40
+    i32 m_dwUser2;          // +0x44
+    i32 m_dwUser3;          // +0x48
+    i32 m_dwUser4;          // +0x4c
 };
 SIZE(0x50); // == sizeof(DPSESSIONDESC2)
 
@@ -656,22 +638,6 @@ struct CNetCreateCtx {
 };
 SIZE_UNKNOWN(); // create-context view (only +0x74 pinned); retail size TBD
 
-struct CGroupNode {
-    CGroupNode* m_next;      // +0x00  CObList CNode pNext
-    CGroupNode* m_prev;      // +0x04  CObList CNode pPrev (not walked here)
-    InterfaceObject* m_data; // +0x08  payload service-provider node
-};
-SIZE_UNKNOWN(); // traversal view of the +0x1c group list node
-
-// MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
-// hand-rolled node walk has to pun it - language-forced. One seam per type.
-inline CGroupNode* NetGroupHeadOf(const CObList& l) {
-    return reinterpret_cast<CGroupNode*>(l.GetHeadPosition());
-}
-inline CGroupNode* NetGroupHeadOf(const CPtrList& l) {
-    return reinterpret_cast<CGroupNode*>(l.GetHeadPosition());
-}
-
 class CNetMgr : public CObject {
 public:
     virtual ~CNetMgr() OVERRIDE; // slot 1  (dtor; ??1 @0xb6000, ??_G @0x260d thunk)
@@ -705,19 +671,20 @@ public:
     i32 RemovePlayerNode(CNetPlayerListNode* node); // 0x1790e0  drop one +0x38 player node
     i32 EnumSessions2(void* ctx); // 0x179240  enum into a 0x28 desc, return desc+0x18
     void* GetPlayerData(i32 id);  // 0x178eb0
-    i32 SetGroupData2(CNetSessionNode* a, CNetSessionNode* b, i32 c, void* data, i32 size); // 0x178ef0
-    i32 SendEx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h, i32 i);      // 0x178f50
-    i32 SetData(i32 a, i32 b, i32 c, void* data, i32 size);                         // 0x178fc0
+    i32
+    SetGroupData2(CNetSessionNode* a, CNetSessionNode* b, i32 c, void* data, i32 size); // 0x178ef0
+    i32 SendEx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h, i32 i);          // 0x178f50
+    i32 SetData(i32 a, i32 b, i32 c, void* data, i32 size);                             // 0x178fc0
     i32 Receive(
         CNetSessionNode* from,
         CNetSessionNode* to,
         i32 flags,
         void* lpData,
         i32* lpSize
-    );                                                             // 0x179010
+    );                                                                     // 0x179010
     i32 SetGroupDataFrom(CNetSessionNode* a, i32 c, void* data, i32 size); // 0x179090
-    i32 GetGroupInfo(CNetSessionNode* a, void* desc, i32 flags);   // 0x179190
-    i32 EnumSessions(void* desc, void* ctx);                       // 0x179130
+    i32 GetGroupInfo(CNetSessionNode* a, void* desc, i32 flags);           // 0x179190
+    i32 EnumSessions(void* desc, void* ctx);                               // 0x179130
 
     // The session-list cluster (engine CNetMgr base; ~0x178xxx). The three managed
     // collections at +0x1c/+0x38/+0x54 each have a clear-loop that self-destructs
@@ -747,7 +714,7 @@ public:
         const char* name,
         const char* longName,
         i32 d
-    ); // 0x1789e0  EnumPlayers slot wrapper -> CreatePlayer
+    );                                         // 0x1789e0  EnumPlayers slot wrapper -> CreatePlayer
     i32 EnumGroupsAll();                       // 0x178a40  EnumGroups (slot 0xc) wrapper
     i32 EnumGroupsRange(void* rec, i32 flags); // 0x178a80  EnumGroups (slot 0xc) over a record
     CNetSessionNode* AddSessionNode(
@@ -757,7 +724,7 @@ public:
         i32 d
     ); // 0x178b30  (/GX) new session node -> InitSession + GetData5 -> +0x54 list
     CNetSessionNode* CreatePlayer(void* name, const char* longName, i32 c); // 0x178cb0
-    void PopulateSessionList(void* hList);   // 0x178d40  (/GX) fill a Win32 session list box
+    void PopulateSessionList(void* hList); // 0x178d40  (/GX) fill a Win32 session list box
 
     // The 0xbbxxx / 0xbcxxx connect/config helpers reconstructed in this TU.
     i32 DropChannelPlayer(i32 idx); // 0xbb510  drop the player on channel[idx]
@@ -963,8 +930,8 @@ public:
     CNetPlayerListNode*
         m_playerSel; // +0x074  player-list selected item data (ReadPlayerSel / StartTitle)
     CNetSessionNode* m_sessionSel;  // +0x078  session-list selected item data
-    CGroupNode* m_groupSelId;       // +0x07c  group-list walk cursor (Find/PopulateGroupList)
-    CNetListNode* m_playerSelId;    // +0x080  player-list walk cursor / selection id
+    POSITION m_groupSelId;          // +0x07c  group-list walk cursor (Find/PopulateGroupList)
+    POSITION m_playerSelId;         // +0x080  player-list walk cursor / selection id
     CNetPlayerNode* m_sessionSelId; // +0x084  session-list walk cursor / selection id
     i32 m_88; // +0x088  (rounds the object to the observed RezAlloc/operator-new 0x8c size)
 

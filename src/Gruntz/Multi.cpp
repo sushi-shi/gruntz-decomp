@@ -41,7 +41,7 @@
 #include <Utils/DebugTiming.h>     // ActiveWait (ex .cpp extern)
 #include <Net/NetMgrReportError.h> // ex Globals.h
 #include <Gruntz/SoundState.h>     // ex Globals.h transitive
-#include <Net/InterfaceObject.h> // the shared DirectPlay group-node class (Find/predicates)
+#include <Net/InterfaceObject.h>   // the shared DirectPlay group-node class (Find/predicates)
 #include <Gruntz/LeafCue.h>
 #include <Bute/SymParser.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
@@ -52,16 +52,16 @@
 #include <Net/NetMgr.h>
 #include <Net/NetPackets.h> // the fixed-layout stat-0x3f9 / stat-0x416 wire structs
 #include <rva.h>
-#include <string.h> // memset (inlined rep stosl for the version packet)
-#include <stdio.h>  // sprintf (the chat-line formatter)
-#include <stdlib.h> // atoi (0x11ffb0) / srand (0x11fed0)
+#include <string.h>              // memset (inlined rep stosl for the version packet)
+#include <stdio.h>               // sprintf (the chat-line formatter)
+#include <stdlib.h>              // atoi (0x11ffb0) / srand (0x11fed0)
 #include <Gruntz/GruntzPlayer.h> // OnPlayerLeft derefs the leaving player's slot
 #include <Gruntz/GruntzCmdMgr.h> // CGruntzMgr::m_cmdSubMgr command manager (ResetPlayerCommands Dispatch)
 #include <Gruntz/SoundCue.h> // DispatchRecvMsg's chat cue (m_c sound sub-mgr -> "GAME_CHAT")
 #include <Bute/SymParser.h>  // the REAL CSymParser (CState::m_8; ResolvePath @0x13c030)
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (CMulti::Open m_c->m_drawTarget)
 #include <Gruntz/Play.h>               // ChannelSlots_InitAll (ex .cpp extern)
-VTBL(CNetMgr, 0x001ea42c);         // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emitted
+VTBL(CNetMgr, 0x001ea42c);             // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emitted
 DATA(0x002455fc)
 i32 g_optionsCursor = 0; // decl in Multi.h
 
@@ -104,7 +104,7 @@ GUID g_dplayAppGuid = {
     0xf41cf640,
     0x91b2,
     0x11d1,
-    { 0x8d, 0xfc, 0x00, 0x60, 0x97, 0x9f, 0xa8, 0x1e }
+    {0x8d, 0xfc, 0x00, 0x60, 0x97, 0x9f, 0xa8, 0x1e}
 }; // 0x20fab8  DirectPlay app GUID / net-bind template
 DATA(0x00211d88)
 i32 g_dropPlayerId = -999; // 0x211d88  saved dropped-player id (sentinel -999)
@@ -158,7 +158,6 @@ enum {
     STAT_VERSIONMISMATCH = 0x418,  // announce: host/client version mismatch
     STAT_ACKLATENCY = 0x421,       // report: current worst ack latency
 };
-
 
 DATA(0x00248cec)
 i32 g_activePlayerCount = 0;
@@ -550,7 +549,6 @@ i32 CMulti::Vslot09(i32 arg) {
     return 1;
 }
 
-
 // ===========================================================================
 // CMulti::FrameSlot28  @ 0x0b63f0  (vtable slot 10 / +0x28) - the HUD status/
 // pause overlay.  BYTE-IDENTICAL to CPlay::FrameSlot28 (Play.cpp): both freeze
@@ -865,9 +863,7 @@ i32 CMulti::PumpA() {
     }
     m_beginMarker->FilterList2(g_frameDelta);
     (static_cast<CMapMgr*>(Mgr()->m_tileGrid))
-        ->UpdateDiagonals(
-            Mgr()
-        ); // CMapMgr is a view of CGruntzMapMgr (+0x70)
+        ->UpdateDiagonals(Mgr()); // CMapMgr is a view of CGruntzMapMgr (+0x70)
     if (ready == 0) {
         PumpB();
     }
@@ -1595,15 +1591,11 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
         return;
     }
     ::SendMessageA(hList, LB_RESETCONTENT, 0, 0);
-    CNetListNode* node = NetListHeadOf(sess->m_players);
-    sess->m_playerSelId = node;
-    CNetPlayerListNode* player;
-    if (node) {
-        sess->m_playerSelId = node->m_next;
-        player = node->m_data;
-    } else {
-        player = 0;
-    }
+    sess->m_playerSelId = sess->m_players.GetHeadPosition();
+    CNetPlayerListNode* player =
+        sess->m_playerSelId != 0
+            ? static_cast<CNetPlayerListNode*>(sess->m_players.GetNext(sess->m_playerSelId))
+            : 0;
     while (player) {
         const char* str;
         if (NetFormatKeyed(buf + 4, player->m_desc.m_lpszName, "NAME")) {
@@ -1616,10 +1608,9 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
         if (idx != -1) {
             ::SendMessageA(hList, LB_SETITEMDATA, idx, reinterpret_cast<LPARAM>(player));
         }
-        CNetListNode* pos = sess->m_playerSelId;
-        if (pos) {
-            player = pos->m_data;
-            sess->m_playerSelId = pos->m_next;
+        if (sess->m_playerSelId != 0) {
+            player = static_cast<CNetPlayerListNode*>(sess->m_players.GetAt(sess->m_playerSelId));
+            sess->m_players.GetNext(sess->m_playerSelId);
         } else {
             player = 0;
         }
@@ -1703,12 +1694,8 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
 
     CNetSessionNode* node;
     {
-        node = Peer()->EnumPlayersCb(
-            sel,
-            static_cast<const char*>(GetString5a0()),
-            g_emptyString,
-            0
-        );
+        node =
+            Peer()->EnumPlayersCb(sel, static_cast<const char*>(GetString5a0()), g_emptyString, 0);
     }
     m_5bc = node;
     if (node == 0) {
@@ -2676,8 +2663,14 @@ RVA(0x000bac40, 0x38)
 i32 CMulti::RegisterChannelRec(void* rec) {
     CNetChannelPacket* r = static_cast<CNetChannelPacket*>(rec);
     if (r->m_present != 0) {
-        RegisterChannel(r->m_name, r->m_kind, r->m_slot, r->m_flagsB, r->m_configId,
-                        r->m_hostIndex);
+        RegisterChannel(
+            r->m_name,
+            r->m_kind,
+            r->m_slot,
+            r->m_flagsB,
+            r->m_configId,
+            r->m_hostIndex
+        );
     }
     return 1;
 }
@@ -2917,12 +2910,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
     g_chatPacket_val = 0;
     strcpy(&g_chatPacket_buf, line);
     g_chatPacket_flag |= 0x80;
-    Peer()->SetGroupDataFrom(
-        LocalPlayer(),
-        1,
-        &g_chatPacket_flag,
-        strlen(line) + 0xd
-    );
+    Peer()->SetGroupDataFrom(LocalPlayer(), 1, &g_chatPacket_flag, strlen(line) + 0xd);
     return 1;
 }
 
@@ -3013,7 +3001,7 @@ i32 CMulti::DropChannelPlayer(i32 idx) {
 // the m_534 latch) but retail pins this->esi / id->edi where cl assigns this->edi /
 // id->esi; the register choice is not steerable from source. Final sweep.
 RVA(0x000bb5e0, 0xd9)
-void CMulti::RecordDropPlayer2(CNetSessionNode * a, i32 id) {
+void CMulti::RecordDropPlayer2(CNetSessionNode* a, i32 id) {
     if (m_534 != 0) {
         return;
     }
@@ -3122,17 +3110,7 @@ i32 CMulti::WaitForOtherPlayers() {
     rc.top = 0;
     rc.right = g->m_modeW;
     rc.bottom = g->m_modeH;
-    EngStr_DrawText(
-        g->m_world,
-        &waitStr,
-        &rc,
-        0x82,
-        1,
-        0xff,
-        0xff,
-        0,
-        1
-    );
+    EngStr_DrawText(g->m_world, &waitStr, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 
     i32 resend = 0x1388;
     i32 abort = 0x1d4c0;
