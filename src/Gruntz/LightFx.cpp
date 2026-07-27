@@ -113,18 +113,18 @@ i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 an
     if (found != 0) {
         // The spec lookup result IS a CDDrawWorker (it is pushed to the pump as one);
         // read the lowest-indexed frame in its [m_minIndex, m_maxIndex] range.
-        CDDrawWorker* en = reinterpret_cast<CDDrawWorker*>(found);
+        CDDrawWorker* en = static_cast<CDDrawWorker*>(found);
         i32 key = en->m_minIndex;
         // m_194/m_layer(+0x198) are CGameObject's role-union fields (source-def /
         // z-clamp descriptor); LightFx overwrites them with the resolved set/frame.
-        m_38->m_194 = reinterpret_cast<char*>(found);
-        i32 val;
+        m_38->m_194 = static_cast<char*>(found);
+        CImage* val;
         if (key < en->m_minIndex || key > en->m_maxIndex) {
             val = 0;
         } else {
-            val = reinterpret_cast<i32>(static_cast<CImage*>(en->m_items.GetAt(key)));
+            val = static_cast<CImage*>(en->m_items.GetAt(key));
         }
-        m_38->m_layer = reinterpret_cast<CImage*>(val);
+        m_38->m_layer = val;
         m_38->m_190 = key;
     }
     node = 0;
@@ -177,6 +177,8 @@ i32 CLightFx::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4)
             break;
         case 8:
             g_gameReg->m_logicPump
+                // m_194 is the role union above: this class parks the resolved worker
+                // in it, so reading it back as one is the union's own arm, not a cast
                 ->Push(reinterpret_cast<CDDrawWorker*>(m_38->m_194), m_anchorA, 7);
             break;
     }
