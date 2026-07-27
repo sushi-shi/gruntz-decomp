@@ -183,6 +183,7 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
                 CGameObject* out = 0;
                 i32 resolved = MapLookup(
                     reg->m_world->m_childGroup->m_map48,
+                    // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
                     reinterpret_cast<void*>(id),
                     out
                 );

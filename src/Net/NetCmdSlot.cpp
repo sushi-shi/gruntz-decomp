@@ -288,6 +288,7 @@ i32 CNetSession::Tick() {
             }
         }
         m_session->WriteTag("[end]\n");
+        // language-forced: a pointer difference needs both sides at the same type
         rec->m_payloadLen = static_cast<i32>((payload - reinterpret_cast<char*>(rec) - 0x10));
         m_snapshotDone = 1;
     }
@@ -856,7 +857,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     AddCmd(reinterpret_cast<CNetCmd*>(pkt));
 
     for (i32 i = count & 0xff; i > 0; i--) {
-        u8 b = *reinterpret_cast<u8*>(cursor);
+        u8 b = static_cast<u8>(*cursor);
         CGruntzCommand* obj;
         if (b & 1) {
             obj = CGruntzSingleCommand::Allocate();

@@ -65,6 +65,7 @@ static inline i32 ActFindId(const char* key) {
     return reinterpret_cast<i32>(g_buteTree.Find(key));
 }
 static inline void ActInsertId(const char* key, i32 id) {
+    // API-forced: CMapStringToPtr's VALUE slot is void*; the act id is the value
     g_buteTree.Insert(key, reinterpret_cast<void*>(id));
 }
 

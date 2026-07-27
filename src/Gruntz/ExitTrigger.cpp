@@ -136,6 +136,7 @@ i32 CExitTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject*
                 CGameObject* found = 0;
                 CGameObject* obj = MapLookup(
                                        holder->m_childGroup->m_map48,
+                                       // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
                                        reinterpret_cast<void*>(key),
                                        found
                                    )

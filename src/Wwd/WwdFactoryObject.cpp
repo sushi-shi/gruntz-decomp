@@ -946,9 +946,7 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
     ar->Write(&m_curDraw, 4);
     ar->Write(&m_scale, 4);
     char buf[0x80];
-    for (i32 i = 0; i < 0x20; ++i) {
-        (reinterpret_cast<i32*>(buf))[i] = 0;
-    }
+    memset(buf, 0, sizeof(buf)); // 0x20 dwords = the whole 0x80-byte name buffer
     if (m_14 != 0) {
         // the +0x0c owner (CLoadable::m_0c) carries the CDDrawSubMgrLeaf at +0x2c;
         // KeyOfValue returns the label for the map VALUE m_14 (CAniElement : CObject).

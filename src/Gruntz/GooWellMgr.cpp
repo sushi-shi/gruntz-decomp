@@ -141,6 +141,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                             CGameObject* out = 0;
                             if (MapLookup(
                                     g_gameReg->m_world->m_childGroup->m_map48,
+                                    // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
                                     reinterpret_cast<void*>(slot->m_00c),
                                     out
                                 )
@@ -161,6 +162,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                             CGameObject* out = 0;
                             if (MapLookup(
                                     g_gameReg->m_world->m_childGroup->m_map48,
+                                    // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
                                     reinterpret_cast<void*>(lastSlot->m_00c),
                                     out
                                 )

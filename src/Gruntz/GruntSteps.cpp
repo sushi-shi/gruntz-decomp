@@ -126,6 +126,8 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
         return 1;
     }
     char* cur = board->m_rowBytes[ty] + tx * 7 * 4;
+    // byte-forced: TileFlags(const char*) walks the board by BYTE stride - the
+    // sibling reads here are at odd byte offsets (cur[0x1d], cur[stride + 1]).
     char* tg = reinterpret_cast<char*>(tgt);
     i32 stride = board->m_width * 7 * 4; // bytes per board row
     if (dx > 0) {

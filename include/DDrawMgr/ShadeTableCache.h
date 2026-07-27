@@ -17,6 +17,7 @@ struct CShadeTable {
     // genuinely dual-width, so the one word-view lives here. (This absorbed the
     // duplicate `CShadeTable` view of the same record: its m_data IS m_data.)
     u16* Lut16() const {
+        // byte-forced: m_data is the 8bpp palette-BYTE table; this is its RGB565 arm
         return reinterpret_cast<u16*>(m_data);
     }
 

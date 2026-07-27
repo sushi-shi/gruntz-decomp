@@ -1237,7 +1237,9 @@ CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
         return 0;
     }
     const u8* src = static_cast<const u8*>(buf);
-    // the palette object's entry table read blob-wise (the PalEntries seam)
+    // byte-forced: m_palette is stored/copied as i32[0x100] entries, but this path
+    // COMPOSES each entry from an unaligned packed 3-byte RGB stream, so the
+    // destination has to be walked a byte at a time.
     u8* dst = reinterpret_cast<u8*>(m_palette);
     for (i32 i = 0; i < 256; i++) {
         dst[0] = *src++; // post-inc read (mov bl,[eax]; inc eax), not fixed src[0..2]+src+=3

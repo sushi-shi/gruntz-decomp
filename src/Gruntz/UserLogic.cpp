@@ -172,9 +172,7 @@ i32 CWapX::Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj) {
     }
     case 4: {
         // WRITE: re-derive the value's name into the key buffer, then write both.
-        for (i32 i = 0; i < 0x20; i++) {
-            (reinterpret_cast<i32*>(name))[i] = 0;
-        }
+        memset(name, 0, sizeof(name)); // 0x20 dwords = the whole 0x80-byte key buffer
         if (m_value != 0) {
             CString nm = m_3c->m_0c->m_animRegistry->KeyOfValue(m_value);
             strcpy(name, static_cast<const char*>(nm));

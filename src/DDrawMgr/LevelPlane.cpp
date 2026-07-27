@@ -853,8 +853,6 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         return 0;
     }
 
-    i32* sub = reinterpret_cast<i32*>(anim);
-
     // Apply name -> sprite first-frame cache (indexed when src[?] != -1).
     if (logic.GetLength() != 0) {
         if (z != -1) {
@@ -881,7 +879,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
 
     obj->m_flags |= static_cast<u32>(*p++); // dynamicFlags       (+0x08)
     obj->m_stateFlags = *p++;               // drawFlags          (+0x40)
-    sub[0x28 / 4] = *p++;                   // userFlags
+    anim->m_28 = *p++;                      // userFlags
     // The six-int "user-value" union (+0x114..+0x128). These are the WWD object
     // record's canonical Score/Points/Powerup/Damage/Smarts/Health fields (the
     // names the Gruntz Level Editor's Edit-Objects "Attributes" dialog uses), each
@@ -927,38 +925,38 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         obj->m_switchRect.left = static_cast<i32>(0x80000000);
     }
 
-    sub[0xf0 / 4] = *p++;
-    sub[0xf4 / 4] = *p++;
-    sub[0xf8 / 4] = *p++;
-    sub[0xfc / 4] = *p++;
-    sub[0x100 / 4] = *p++;
-    sub[0x104 / 4] = *p++;
-    sub[0x108 / 4] = *p++;
-    sub[0x10c / 4] = *p++;
-    sub[0x64 / 4] = *p++;
-    sub[0x68 / 4] = *p++;
-    sub[0x6c / 4] = *p++;
-    sub[0x70 / 4] = *p++;
-    sub[0x74 / 4] = *p++;
-    sub[0x78 / 4] = *p++;
-    sub[0x7c / 4] = *p++;
-    sub[0x80 / 4] = *p++;
-    sub[0x2c / 4] = *p++;
-    sub[0x34 / 4] = *p++;
-    sub[0x30 / 4] = *p++;
-    sub[0x38 / 4] = *p++;
+    anim->m_switchRectA.left = *p++;
+    anim->m_switchRectA.top = *p++;
+    anim->m_switchRectA.right = *p++;
+    anim->m_switchRectA.bottom = *p++;
+    anim->m_switchRectB.left = *p++;
+    anim->m_switchRectB.top = *p++;
+    anim->m_switchRectB.right = *p++;
+    anim->m_switchRectB.bottom = *p++;
+    anim->m_64 = *p++;
+    anim->m_68 = *p++;
+    anim->m_6c = *p++;
+    anim->m_70 = *p++;
+    anim->m_74 = *p++;
+    anim->m_78 = *p++;
+    anim->m_7c = *p++;
+    anim->m_80 = *p++;
+    anim->m_2c = *p++;
+    anim->m_34 = *p++;
+    anim->m_30 = *p++;
+    anim->m_38 = *p++;
     obj->m_164 = *p++;
     obj->m_168 = *p++;
-    sub[0x44 / 4] = *p++;
-    sub[0x48 / 4] = *p++;
-    sub[0xb8 / 4] = *p++;
-    sub[0xbc / 4] = *p++;
-    sub[0xc8 / 4] = *p++;
-    sub[0xcc / 4] = *p++;
+    anim->m_44 = *p++;
+    anim->m_48 = *p++;
+    anim->m_b8 = *p++;
+    anim->m_bc = *p++;
+    anim->m_c8 = *p++;
+    anim->m_cc = *p++;
     obj->m_12c = *p++;
     obj->m_130 = *p++;
-    sub[0x20 / 4] = *p++;
-    sub[0x24 / 4] = *p++;
+    anim->m_20 = *p++;
+    anim->m_24 = *p++;
     obj->m_collCategory = *p++; // +0xe8
     obj->m_ec = *p++;           // +0xec
 

@@ -33,8 +33,9 @@ public:
 
     // the key IS the act id (AnimWorkerObj::m_1c / ActFindId), not a pointer
     char** GetNameRecord(i32 key) {
-        // same slot + same call as SlotOf below, spelled as the raw char* the 159 call
-        // sites read; CString's only member IS that char* (m_pchData)
+        // the pun: a CString's ONLY member is its char* (m_pchData), so the element
+        // slot and the char* it holds are the same 4 bytes - this is the raw spelling
+        // the 159 call sites read.
         return reinterpret_cast<char**>(_zdvec::IndexToPtr(key));
     }
     // Same CString element, reached through the BASE _zvec::IndexToPtr - so no

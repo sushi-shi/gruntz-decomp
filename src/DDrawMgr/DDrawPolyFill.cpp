@@ -88,6 +88,8 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
             }
             i32 width = hi - lo;
             if (width > 0) {
+                // byte-forced: rowPtr came from Lock() stepped by the BYTE pitch
+                // (m_pitch * minYi); the pixels it addresses are 16bpp.
                 g_rasterDestPtr = reinterpret_cast<i16*>(rowPtr) + lo;
                 i16* p = g_rasterDestPtr;
                 i32 w = width;

@@ -86,7 +86,7 @@ void CWwdGameObjectC::Render(CDDrawSurfacePair* a) {
         if (base != 0) {
             i32 row = surf->m_pitch * y;
             i32 col = surf->m_bytesPerPixel * x;
-            *reinterpret_cast<char*>((base + row + col)) = m_dotColor;
+            base[row + col] = m_dotColor;
             surf->m_ddSurface->Unlock(0);
         }
     }

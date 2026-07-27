@@ -413,6 +413,7 @@ i32 CGruntVoice::Update() {
         i32 src = m_source;
         i32 resolved = MapLookup(
             g_gameReg->m_world->m_childGroup->m_map48,
+            // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
             reinterpret_cast<void*>(src),
             out
         );
@@ -441,6 +442,7 @@ i32 CGruntVoice::Update() {
         i32 src = m_source;
         i32 resolved = MapLookup(
             g_gameReg->m_world->m_childGroup->m_map48,
+            // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
             reinterpret_cast<void*>(src),
             out
         );

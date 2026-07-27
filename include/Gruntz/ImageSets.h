@@ -165,8 +165,8 @@ struct CImageSet3 : public CTileImageSet {
     i32 m_byteSize;   // +0x10  width*height (byte size)
     // +0x14 the owned pixel plane. Typed u8* on the binary's own evidence, not a
     // guess: EVERY reader indexes it as bytes - GetCollisionAt does
-    // `reinterpret_cast<u8*>(m_pixels) + ((y << m_heightLog2) + x)` and the whole scan family does
-    // `((u8*)m_pixels)[off]` (18 sites, not one of them casting to anything else),
+    // a byte-cursor add of `(y << m_heightLog2) + x`, and the whole scan family
+    // indexes it as bytes (18 sites, not one of them reading any other width),
     // and m_byteSize is width*height, i.e. ONE byte per pixel. The void* was what
     // forced all 18 casts.
     u8* m_pixels; // +0x14  owned pixel plane (1 byte/pixel; m_byteSize = w*h)
