@@ -122,7 +122,7 @@ static const char s_pose_TOYBREAK[] = "_TOY-BREAK";
 // CUserLogic_* stubs @0x4b370 / 0x4c170 / 0x52fb0 / 0x5f310 / 0x6a6d0). Each
 // resolves the grunt's current anim-set node name
 // (g_typeColl.GetNameRecord(m_objAux->m_1c), or the scratch-teardown
-// GetNameRecords form) and dispatches on its single-letter type code
+// ScratchResolve form) and dispatches on its single-letter type code
 // (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's movement/arrival state, recycling
 // its occupied-coord nodes onto the shared freelist, and re-latching m_objAux->m_1c to
 // a new anim set via g_entranceAnimSrc.LookupAnimSet. The inline-strcmp `== bool` setcc
@@ -3427,7 +3427,7 @@ void CGrunt::XferName(char* name) {}
 // TRUNCATED reconstruction (~9%): the coord-probe head (claim the head coord's tile if
 // free, else retry within m_coordRetryCount) + the scratch-resolver "D" reject are the
 // only reconstructed part. Retail is 938 insns; the base is ~132. The missing ~800 are
-// the arrival-commit block at 0x5f490 (a second GetNameRecords/scratch-teardown + a
+// the arrival-commit block at 0x5f490 (a second ScratchResolve/scratch-teardown + a
 // "D"-gated arrival-processing body: pathfinder re-probe, tile release/claim, the
 // per-direction m_cells[base] {m_dirX..m_stepY} double movement-integration tail). This
 // is the same arrival-commit tail inlined into StepArrivalDrop; nothing stands in for
@@ -3468,11 +3468,11 @@ void CGrunt::MovingSlot16() {
             }
         }
     }
-    // The scratch-resolver D-code reject cascade (each via GetNameRecords + the
+    // The scratch-resolver D-code reject cascade (each via ScratchResolve + the
     // scratch CString teardown).
     GruntScratchTeardown();
     bool eq2;
-    eq2 = (strcmp(*g_typeColl.GetNameRecords(m_objAux->m_1c), s_codeD) == 0);
+    eq2 = (strcmp(*g_typeColl.ScratchResolve(m_objAux->m_1c), s_codeD) == 0);
     static_cast<void>(eq2);
     GruntScratchTeardown();
     LoadWingzGruntSprites(0);

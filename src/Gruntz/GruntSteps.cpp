@@ -174,7 +174,7 @@ static __inline void SerRecord(CFileMemBase* ar, i32 mode, void* p) {
 // CUserLogic_* stubs @0x4b370 / 0x4c170 / 0x52fb0 / 0x5f310 / 0x6a6d0). Each
 // resolves the grunt's current anim-set node name
 // (g_typeColl.GetNameRecord(m_objAux->m_1c), or the scratch-teardown
-// GetNameRecords form) and dispatches on its single-letter type code
+// ScratchResolve form) and dispatches on its single-letter type code
 // (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's movement/arrival state, recycling
 // its occupied-coord nodes onto the shared freelist, and re-latching m_objAux->m_1c to
 // a new anim set via g_entranceAnimSrc.LookupAnimSet. The inline-strcmp `== bool` setcc

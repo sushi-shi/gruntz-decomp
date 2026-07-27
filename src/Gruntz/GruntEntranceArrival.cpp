@@ -101,7 +101,7 @@ static __inline i32 s_TileFlags(CMapMgr* b, i32 tx, i32 ty) {
 // CUserLogic_* stubs @0x4b370 / 0x4c170 / 0x52fb0 / 0x5f310 / 0x6a6d0). Each
 // resolves the grunt's current anim-set node name
 // (g_typeColl.GetNameRecord(m_objAux->m_1c), or the scratch-teardown
-// GetNameRecords form) and dispatches on its single-letter type code
+// ScratchResolve form) and dispatches on its single-letter type code
 // (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's movement/arrival state, recycling
 // its occupied-coord nodes onto the shared freelist, and re-latching m_objAux->m_1c to
 // a new anim set via g_entranceAnimSrc.LookupAnimSet. The inline-strcmp `== bool` setcc
@@ -1716,7 +1716,7 @@ i32 CGrunt::StepWarpExit() {
 // large anim-dispatch state-machine plateau (the same family as StepEntranceReinit /
 // RunEntranceMove in this TU): the +0x1fc/+0x364 gate, the HUD-scroll clamp, the 10
 // inline-strcmp dispatch arms + their state transitions, the m_1a0 move-mode switch,
-// the combat-timeout re-arm, the 8-arg forward, the two scratch-resolver (GetNameRecords
+// the combat-timeout re-arm, the 8-arg forward, the two scratch-resolver (ScratchResolve
 // + scratch CString teardown) re-latches, the cell-frame restamp and the on-screen
 // spawn-cue gate are all reconstructed in shape/order. Residue is the shared
 // strcmp-eq setcc/zero-register pinning (no source spelling), the scratch loop-
@@ -1865,7 +1865,7 @@ tail:
     }
 
     {
-        CString* rec = g_typeColl.GetNameRecords(m_objAux->m_1c);
+        CString* rec = g_typeColl.ScratchResolve(m_objAux->m_1c);
         GruntScratchTeardown();
         if (strcmp(*rec, s_codeF) == 0) {
             if (m_entranceCommitted != 0) {
@@ -1875,7 +1875,7 @@ tail:
     }
     m_entranceActive = 1;
     {
-        CString* rec = g_typeColl.GetNameRecords(m_objAux->m_1c);
+        CString* rec = g_typeColl.ScratchResolve(m_objAux->m_1c);
         GruntScratchTeardown();
         if (strcmp(*rec, s_codeO) != 0) {
             m_prevAnimSetNode = m_objAux->m_1c;

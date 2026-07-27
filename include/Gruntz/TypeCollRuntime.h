@@ -42,8 +42,10 @@ public:
     // (Was the `struct { char* m_name; }` CAnimNameRecord stand-in: one 4-byte slot in
     // this very band, whose sole member IS CString::m_pchData. `rec->m_name` and the
     // inline `operator LPCTSTR()` both lower to `mov eax,[eax]`, which is why the
-    // stand-in was invisible.)
-    CString* GetNameRecords(i32 key) { return reinterpret_cast<CString*>(_zvec::IndexToPtr(key)); }
+    // stand-in was invisible. It was also spelled GetNameRecords at ~half its sites -
+    // one retail call under two invented names: that accessor was bound to ILT 0x3864
+    // and this one to 0x312a0 direct, and `xref --callees` on the thunk proves
+    // 0x3864 -> 0x312a0. Thunk-vs-direct is the linker's choice, not a second call.)
     CString* ScratchResolve(i32 key) { return reinterpret_cast<CString*>(_zvec::IndexToPtr(key)); }
 
     CString* Elem(i32 id) {

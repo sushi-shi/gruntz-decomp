@@ -91,7 +91,7 @@ void CGrunt::ApplyMoveKind(i32 v) {} // thunk_0x3c29 (0x57100); external/reloc-m
 // CUserLogic_* stubs @0x4b370 / 0x4c170 / 0x52fb0 / 0x5f310 / 0x6a6d0). Each
 // resolves the grunt's current anim-set node name
 // (g_typeColl.GetNameRecord(m_objAux->m_1c), or the scratch-teardown
-// GetNameRecords form) and dispatches on its single-letter type code
+// ScratchResolve form) and dispatches on its single-letter type code
 // (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's movement/arrival state, recycling
 // its occupied-coord nodes onto the shared freelist, and re-latching m_objAux->m_1c to
 // a new anim set via g_entranceAnimSrc.LookupAnimSet. The inline-strcmp `== bool` setcc
@@ -151,7 +151,7 @@ static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
 // CGrunt::RunEntranceMove()   @0x67850   (ret 0)
 // @early-stop
 // large-state-machine plateau: the armed-but-not-running sub-player gate, the
-// scratch-resolver "D" re-latch (GetNameRecords + the scratch CString teardown),
+// scratch-resolver "D" re-latch (ScratchResolve + the scratch CString teardown),
 // the on-arrival HUD-stat-sprite creation, the entrance-cell frame re-stamp, and the
 // +0x1a0 move-mode dispatch are reconstructed in shape/order. Residue is the
 // scratch loop-strength-reduction (shared, no source spelling), the short-circuit
@@ -166,7 +166,7 @@ i32 CGrunt::RunEntranceMove() {
     }
 
     m_entranceActive = 0;
-    const char* nm0 = *g_typeColl.GetNameRecords(m_prevAnimSetNode);
+    const char* nm0 = *g_typeColl.ScratchResolve(m_prevAnimSetNode);
     GruntScratchTeardown();
     bool eq;
     eq = (strcmp(nm0, s_codeD) == 0);
@@ -977,7 +977,7 @@ i32 CGrunt::StepArrivalCommit() {
         goto finalize;
     }
     {
-        const char* prev = *g_typeColl.GetNameRecords(m_objAux->m_1c);
+        const char* prev = *g_typeColl.ScratchResolve(m_objAux->m_1c);
         GruntScratchTeardown();
         eq = (strcmp(prev, s_codeM) == 0);
         if (eq) {

@@ -4481,7 +4481,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     CString* slot;
     i32 cnt;
 
-    recs = g_typeColl.GetNameRecords(unit->m_objAux->m_1c);
+    recs = g_typeColl.ScratchResolve(unit->m_objAux->m_1c);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -4496,7 +4496,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords(unit->m_objAux->m_1c);
+    recs = g_typeColl.ScratchResolve(unit->m_objAux->m_1c);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -4511,7 +4511,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords(unit->m_objAux->m_1c);
+    recs = g_typeColl.ScratchResolve(unit->m_objAux->m_1c);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -4526,7 +4526,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords(unit->m_objAux->m_1c);
+    recs = g_typeColl.ScratchResolve(unit->m_objAux->m_1c);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -4541,7 +4541,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords(unit->m_objAux->m_1c);
+    recs = g_typeColl.ScratchResolve(unit->m_objAux->m_1c);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -4556,7 +4556,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords(unit->m_objAux->m_1c);
+    recs = g_typeColl.ScratchResolve(unit->m_objAux->m_1c);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -6140,7 +6140,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     CString* slot;
     i32 cnt;
 
-    recs = g_typeColl.GetNameRecords(unit->m_objAux->m_1c);
+    recs = g_typeColl.ScratchResolve(unit->m_objAux->m_1c);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -6155,7 +6155,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords(unit->m_objAux->m_1c);
+    recs = g_typeColl.ScratchResolve(unit->m_objAux->m_1c);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -6170,7 +6170,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords(unit->m_objAux->m_1c);
+    recs = g_typeColl.ScratchResolve(unit->m_objAux->m_1c);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {

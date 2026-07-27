@@ -113,7 +113,7 @@ static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeou
 // CUserLogic_* stubs @0x4b370 / 0x4c170 / 0x52fb0 / 0x5f310 / 0x6a6d0). Each
 // resolves the grunt's current anim-set node name
 // (g_typeColl.GetNameRecord(m_objAux->m_1c), or the scratch-teardown
-// GetNameRecords form) and dispatches on its single-letter type code
+// ScratchResolve form) and dispatches on its single-letter type code
 // (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's movement/arrival state, recycling
 // its occupied-coord nodes onto the shared freelist, and re-latching m_objAux->m_1c to
 // a new anim set via g_entranceAnimSrc.LookupAnimSet. The inline-strcmp `== bool` setcc
@@ -1757,7 +1757,7 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
     }
     {
         // retail defers the ->m_name load past the (inlined) scratch teardown loop
-        CString* rec = g_typeColl.GetNameRecords(m_objAux->m_1c);
+        CString* rec = g_typeColl.ScratchResolve(m_objAux->m_1c);
         GruntScratchTeardown();
         bool eq = (strcmp(*rec, s_codeF) == 0);
         if (eq) {

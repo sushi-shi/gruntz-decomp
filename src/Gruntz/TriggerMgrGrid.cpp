@@ -736,7 +736,7 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
     if (cell->m_entranceActive != 0) {
         return 0;
     }
-    const char* name = *g_typeColl.GetNameRecords(cell->m_objAux->m_1c);
+    const char* name = *g_typeColl.ScratchResolve(cell->m_objAux->m_1c);
     if (strcmp(name, "I") == 0) {
         i32 px = cell->m_moveTileX;
         i32 py = cell->m_moveTileY;
@@ -765,7 +765,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     if (cell == 0 || kind != g_curPlayer) {
         return;
     }
-    const char* name = *g_typeColl.GetNameRecords(cell->m_objAux->m_1c);
+    const char* name = *g_typeColl.ScratchResolve(cell->m_objAux->m_1c);
     bool differ = strcmp(name, "B") != 0;
     if (!differ) {
         return;
