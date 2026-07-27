@@ -52,7 +52,7 @@ public:
     void Reset();                      // 0x000e4d20: Init() + m_name.Empty()
     void Init();                       // 0x000e4d50: zero all 10 slots, set header field = 0x25
     i32 Load();                        // 0x000e4d90
-    i32 Save(i32 a, i32 b);            // 0x000e4ea0
+    i32 Save(char* path, i32 b);       // 0x000e4ea0  (the slot's m_savePath / m_serial)
     void ComputeAll();                 // 0x000e50a0
     i32 Verify();                      // 0x000e50f0
     i32 FillSlot(SaveSlot* dst, const char* name, void* src); // 0x000e5130
@@ -63,7 +63,7 @@ public:
     i32 Encode(u8* buf);                                      // 0x000e5410
     i32 Decode(u8* buf);                                      // 0x000e5460
     SaveSlot* GetSlot(i32 i);                                 // 0x000e54b0
-    i32 FillSlotByIndex(i32 idx, i32 name, void* src);        // 0x000e54e0
+    i32 FillSlotByIndex(i32 idx, const char* name, void* src); // 0x000e54e0
     i32 StoreSlot(i32 idx, const SaveSlot* src);              // 0x000e5520
     void SetMaxLevel(i32 v); // 0x0e5620 (out-of-line: clamped max-level update)
     void SetCurLevel(i32 v); // 0x0e5660 (out-of-line: clamped cur-level update)

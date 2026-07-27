@@ -2106,7 +2106,7 @@ i32 CGruntzMgr::Quicksave() {
         m_cueSink->DtorBody(); // 0x11c7b0 (the cue-timer flush; ex the "Stop" alias)
     }
     FillSaveInfo(m_saveInfoRec, 0);
-    if (g_gameReg->m_saveSink->Save(reinterpret_cast<i32>(m_saveInfoRec->m_serial), 0x81a7)) {
+    if (g_gameReg->m_saveSink->Save(m_saveInfoRec->m_serial, 0x81a7)) {
         m_chatLog->AddItem("Game Quicksaved successfully.", 0, 0x11);
         return 1;
     }

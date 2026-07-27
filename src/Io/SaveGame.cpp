@@ -457,10 +457,10 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
             }
         }
     }
-    obj->FillSlotByIndex(slot, reinterpret_cast<i32>(name), g_gameReg);
+    obj->FillSlotByIndex(slot, name, g_gameReg);
     g_gameReg->FillSaveInfo(obj->GetSlot(slot), static_cast<void*>(name));
     EndDialog(hDlg, 1);
-    if (!obj->Save(reinterpret_cast<i32>(obj->GetSlot(slot)) + 0x35, 0x81a6)) {
+    if (!obj->Save(obj->GetSlot(slot)->m_savePath, 0x81a6)) {
         g_gameReg->EnterModalUI("ERROR - Cannot Save Game.");
     }
     return 1;
@@ -627,7 +627,7 @@ i32 CSaveGame::Load() {
 // wait-cursor / module-state internals and the two divergent error paths are not
 // yet modeled; logic outline below, byte-match deferred to the final sweep.
 RVA(0x000e4ea0, 0x18c)
-i32 CSaveGame::Save(i32 a, i32 b) {
+i32 CSaveGame::Save(char* path, i32 b) {
     CFile file;
     i32 ok = 0;
     if (file.Open(m_name, 0x1000, 0)) {
@@ -640,7 +640,7 @@ i32 CSaveGame::Save(i32 a, i32 b) {
             ok = 1;
         }
     }
-    static_cast<void>(a);
+    static_cast<void>(path);
     static_cast<void>(b);
     static_cast<void>(ok);
     return 1;
@@ -838,10 +838,10 @@ SaveSlot* CSaveGame::GetSlot(i32 i) {
 }
 
 RVA(0x000e54e0, 0x25)
-i32 CSaveGame::FillSlotByIndex(i32 idx, i32 name, void* src) {
+i32 CSaveGame::FillSlotByIndex(i32 idx, const char* name, void* src) {
     // retail forwards to FillSlot (0xe5130, the const char* name-string variant), not
-    // FillSlot2 (0xe5240); `name` flows in as a char* (see DrawSaveGameMenu's caller).
-    return FillSlot(GetSlot(idx), reinterpret_cast<const char*>(name), src);
+    // FillSlot2 (0xe5240).
+    return FillSlot(GetSlot(idx), name, src);
 }
 
 RVA(0x000e5520, 0x20)
