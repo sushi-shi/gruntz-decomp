@@ -6,7 +6,6 @@
 
 #include <Wap32/ZVec.h> // the canonical _zdvec allocating base (ex-CZArray2D)
 
-class CAnimNameRecord;
 class CString;
 
 // Its own 1-slot vtable. VTBL names the datum ??_7CTypeCollRuntime@@6B@ (a typed vtable,
@@ -38,16 +37,14 @@ public:
         // sites read; CString's only member IS that char* (m_pchData)
         return reinterpret_cast<char**>(_zdvec::IndexToPtr(key));
     }
-    // CAnimNameRecord (TypeKeyColl.h) is `struct { char* m_name; }` - the same 4-byte
-    // slot in the same band, i.e. a stand-in for CString. Folding it is a follow-up:
-    // 31 use sites over 6 files (`rec->m_name` -> the inline operator LPCTSTR, same
-    // `mov eax,[eax]`), which is a wider sweep than this seam.
-    CAnimNameRecord* GetNameRecords(i32 key) {
-        return reinterpret_cast<CAnimNameRecord*>(_zvec::IndexToPtr(key));
-    }
-    CAnimNameRecord* ScratchResolve(i32 key) {
-        return reinterpret_cast<CAnimNameRecord*>(_zvec::IndexToPtr(key));
-    }
+    // Same CString element, reached through the BASE _zvec::IndexToPtr - so no
+    // construction fixup runs and the caller tears the scratch down itself.
+    // (Was the `struct { char* m_name; }` CAnimNameRecord stand-in: one 4-byte slot in
+    // this very band, whose sole member IS CString::m_pchData. `rec->m_name` and the
+    // inline `operator LPCTSTR()` both lower to `mov eax,[eax]`, which is why the
+    // stand-in was invisible.)
+    CString* GetNameRecords(i32 key) { return reinterpret_cast<CString*>(_zvec::IndexToPtr(key)); }
+    CString* ScratchResolve(i32 key) { return reinterpret_cast<CString*>(_zvec::IndexToPtr(key)); }
 
     CString* Elem(i32 id) {
         return reinterpret_cast<CString*>(m_base + (id - m_lo) * m_stride);

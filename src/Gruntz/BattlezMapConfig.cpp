@@ -4477,7 +4477,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
     // G / L / P / J / C / R (each via GetRecords, with the scratch CString teardown).
-    CAnimNameRecord* recs;
+    CString* recs;
     CString* slot;
     i32 cnt;
 
@@ -4491,7 +4491,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         slot++;
         cnt--;
     }
-    eq = (strcmp(recs->m_name, "G") == 0);
+    eq = (strcmp(*recs, "G") == 0);
     if (eq) {
         return 0;
     }
@@ -4506,7 +4506,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         slot++;
         cnt--;
     }
-    eq = (strcmp(recs->m_name, "L") == 0);
+    eq = (strcmp(*recs, "L") == 0);
     if (eq) {
         return 0;
     }
@@ -4521,7 +4521,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         slot++;
         cnt--;
     }
-    eq = (strcmp(recs->m_name, "P") == 0);
+    eq = (strcmp(*recs, "P") == 0);
     if (eq) {
         return 0;
     }
@@ -4536,7 +4536,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         slot++;
         cnt--;
     }
-    eq = (strcmp(recs->m_name, "J") == 0);
+    eq = (strcmp(*recs, "J") == 0);
     if (eq) {
         return 0;
     }
@@ -4551,7 +4551,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         slot++;
         cnt--;
     }
-    eq = (strcmp(recs->m_name, "C") == 0);
+    eq = (strcmp(*recs, "C") == 0);
     if (eq) {
         return 0;
     }
@@ -4566,7 +4566,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         slot++;
         cnt--;
     }
-    eq = (strcmp(recs->m_name, "R") == 0);
+    eq = (strcmp(*recs, "R") == 0);
     if (eq) {
         return 0;
     }
@@ -6136,7 +6136,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     }
     // The remaining codes resolve through GetRecords (which fills the scratch
     // CString array torn down after each call): P / J / C.
-    CAnimNameRecord* recs;
+    CString* recs;
     CString* slot;
     i32 cnt;
 
@@ -6150,7 +6150,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         slot++;
         cnt--;
     }
-    eq = (strcmp(recs->m_name, "P") == 0);
+    eq = (strcmp(*recs, "P") == 0);
     if (eq) {
         return 0;
     }
@@ -6165,7 +6165,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         slot++;
         cnt--;
     }
-    eq = (strcmp(recs->m_name, "J") == 0);
+    eq = (strcmp(*recs, "J") == 0);
     if (eq) {
         return 0;
     }
@@ -6180,7 +6180,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         slot++;
         cnt--;
     }
-    eq = (strcmp(recs->m_name, "C") == 0);
+    eq = (strcmp(*recs, "C") == 0);
     if (eq) {
         return 0;
     }
@@ -6209,7 +6209,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         cnt--;
     }
     // the untyped byte pool named at the container's one seam
-    return strcmp((reinterpret_cast<CAnimNameRecord*>(sel))->m_name, "R") != 0;
+    return strcmp(*reinterpret_cast<CString*>(sel), "R") != 0;
 }
 
 RVA(0x00034960, 0x24)

@@ -1574,10 +1574,10 @@ label_4c6e4:
     if (flagHead & 0x80) {
         m_entranceActive = 1;
     } else {
-        CAnimNameRecord* r = g_typeColl.ScratchResolve(m_objAux->m_1c);
+        CString* r = g_typeColl.ScratchResolve(m_objAux->m_1c);
         GruntScratchTeardown();
         bool ne;
-        ne = (strcmp(r->m_name, "L") != 0);
+        ne = (strcmp(*r, "L") != 0);
         if (ne) {
             m_entranceActive = 0;
         }
@@ -2820,7 +2820,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             m_24c = 1;
             m_animSetName = "BABYWALKERGRUNT";
-            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -2843,7 +2843,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             m_24c = 1;
             m_animSetName = "BEACHBALLGRUNT";
-            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -2865,7 +2865,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             m_24c = 1;
             m_animSetName = "BIGWHEELGRUNT";
-            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -2888,7 +2888,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             m_24c = 1;
             m_animSetName = "GOKARTGRUNT";
-            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -2910,7 +2910,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             m_24c = 1;
             m_animSetName = "JACKINTHEBOXGRUNT";
-            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -2932,7 +2932,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             m_24c = 1;
             m_animSetName = "JUMPROPEGRUNT";
-            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -2955,7 +2955,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             m_24c = 1;
             m_animSetName = "POGOSTICKGRUNT";
-            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -2979,7 +2979,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             m_moveVariant = variant;
             m_24c = 1;
             m_animSetName = "SCROLLGRUNT";
-            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -3001,7 +3001,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             m_24c = 1;
             m_animSetName = "SQUEAKTOYGRUNT";
-            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -3023,7 +3023,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             m_24c = 1;
             m_animSetName = "YOYOGRUNT";
-            char* rec = g_typeColl.ScratchResolve(m_objAux->m_1c)->m_name;
+            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_1c);
             ConstructGrownSlots();
             eq = (strcmp(rec, "D") == 0);
             if (eq) {
@@ -3333,9 +3333,9 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             ConstructGrownSlots();
         }
-        // the hand-inlined ScratchResolve tail: naming the element of the container's
-        // the untyped byte pool named at the container's one seam
-        eq = (strcmp(reinterpret_cast<CAnimNameRecord*>(rec)->m_name, "H") == 0);
+        // the hand-inlined ScratchResolve tail: the untyped byte pool named at the
+        // container's one seam
+        eq = (strcmp(*reinterpret_cast<CString*>(rec), "H") == 0);
         if (eq) {
             CAniElement* el = m_38->m_1a0.m_14;
             CAniDesc* first;
@@ -3374,9 +3374,9 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 }
                 ConstructGrownSlots();
             }
-            // the hand-inlined ScratchResolve tail: naming the element of the container's
-            // the untyped byte pool named at the container's one seam
-            eq = (strcmp(reinterpret_cast<CAnimNameRecord*>(rec2)->m_name, "D") == 0);
+            // the hand-inlined ScratchResolve tail: the untyped byte pool named at the
+            // container's one seam
+            eq = (strcmp(*reinterpret_cast<CString*>(rec2), "D") == 0);
             if (eq) {
                 GruntEntranceCell cell2 = m_entranceCell;
                 m_38->ApplyName(m_cells[cell2.col * 3 + cell2.row].m_names[2].GetBuffer(0));
@@ -3472,7 +3472,7 @@ void CGrunt::MovingSlot16() {
     // scratch CString teardown).
     GruntScratchTeardown();
     bool eq2;
-    eq2 = (strcmp(g_typeColl.GetNameRecords(m_objAux->m_1c)->m_name, s_codeD) == 0);
+    eq2 = (strcmp(*g_typeColl.GetNameRecords(m_objAux->m_1c), s_codeD) == 0);
     static_cast<void>(eq2);
     GruntScratchTeardown();
     LoadWingzGruntSprites(0);

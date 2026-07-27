@@ -206,9 +206,9 @@ void CGrunt::FinalizeStep(i32 arg) {
         return;
     }
     // scratch-resolved branch: tear down the scratch CString[], latch on k_60df94.
-    CAnimNameRecord* rec = g_typeColl.ScratchResolve(m_objAux->m_1c);
+    CString* rec = g_typeColl.ScratchResolve(m_objAux->m_1c);
     GruntPosScratchTeardown();
-    if (strcmp(rec->m_name, k_60df94) == 0) {
+    if (strcmp(*rec, k_60df94) == 0) {
         if (m_object->m_screenX == m_lastTilePxX && m_object->m_screenY == m_lastTilePxY) {
             return;
         }
@@ -1865,9 +1865,9 @@ tail:
     }
 
     {
-        CAnimNameRecord* rec = g_typeColl.GetNameRecords(m_objAux->m_1c);
+        CString* rec = g_typeColl.GetNameRecords(m_objAux->m_1c);
         GruntScratchTeardown();
-        if (strcmp(rec->m_name, s_codeF) == 0) {
+        if (strcmp(*rec, s_codeF) == 0) {
             if (m_entranceCommitted != 0) {
                 return 0;
             }
@@ -1875,9 +1875,9 @@ tail:
     }
     m_entranceActive = 1;
     {
-        CAnimNameRecord* rec = g_typeColl.GetNameRecords(m_objAux->m_1c);
+        CString* rec = g_typeColl.GetNameRecords(m_objAux->m_1c);
         GruntScratchTeardown();
-        if (strcmp(rec->m_name, s_codeO) != 0) {
+        if (strcmp(*rec, s_codeO) != 0) {
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = ActFindId(s_codeH);
             void* cellObj = m_tileMgr->m_grid[a2 * TM_GRID_COLS + a3];

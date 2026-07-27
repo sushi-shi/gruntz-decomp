@@ -6,12 +6,6 @@
 #include <Gruntz/TypeCollRuntime.h>
 #include <Bute/ButeTree.h>                                    // CButeTree (for the extern below)
 
-class CAnimNameRecord {
-public:
-    char* m_name; // +0x00
-};
-SIZE_UNKNOWN();
-
 extern CTypeCollRuntime g_typeColl;
 
 extern i32 g_typeCounter;

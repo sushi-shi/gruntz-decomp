@@ -1757,9 +1757,9 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
     }
     {
         // retail defers the ->m_name load past the (inlined) scratch teardown loop
-        CAnimNameRecord* rec = g_typeColl.GetNameRecords(m_objAux->m_1c);
+        CString* rec = g_typeColl.GetNameRecords(m_objAux->m_1c);
         GruntScratchTeardown();
-        bool eq = (strcmp(rec->m_name, s_codeF) == 0);
+        bool eq = (strcmp(*rec, s_codeF) == 0);
         if (eq) {
             goto fail;
         }

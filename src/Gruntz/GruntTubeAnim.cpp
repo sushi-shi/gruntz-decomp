@@ -8,7 +8,7 @@
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // m_0c->m_animRegistry (the anim-key catalog)            // canonical CGrunt (+ CEntranceAnimPlayer/CGruntCellRec/etc.)
 #include <Gruntz/AniAdvanceCursor.h>  // CAniAdvanceCursor::Setup (the +0x1a0 blit param)
 #include <Gruntz/State.h> // CState::BuildAssetNamespacePrefixes (ex CNamespaceLoader facet, m_curState)
-#include <Gruntz/TypeKeyColl.h>  // g_typeColl (+ CAnimNameRecord, _zvec::IndexToPtr)
+#include <Gruntz/TypeKeyColl.h>  // g_typeColl (the CString anim-name band, _zvec::IndexToPtr)
 #include <Gruntz/GameRegistry.h> // g_gameReg
 
 #include <Wap32/ZVec.h> // _zvec
@@ -47,7 +47,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
         ResetEntranceAnimation(0, 0, 1);
     }
 
-    CAnimNameRecord* node = reinterpret_cast<CAnimNameRecord*>(
+    CString* node = reinterpret_cast<CString*>(
         (static_cast<_zvec*>(&g_typeColl))->IndexToPtr(m_objAux->ActKey())
     );
     void* p = static_cast<void*>(
@@ -62,7 +62,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
         p = static_cast<char*>(p) + 4;
     }
 
-    if (strcmp(node->m_name, "D") == 0) {
+    if (strcmp(*node, "D") == 0) {
         GruntEntranceCell cell = m_entranceCell;
         i32 idx = cell.col * 3 + cell.row;
         char* buf = m_cells[idx].WalkName().GetBuffer(0);

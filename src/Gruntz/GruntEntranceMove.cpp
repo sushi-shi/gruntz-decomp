@@ -166,7 +166,7 @@ i32 CGrunt::RunEntranceMove() {
     }
 
     m_entranceActive = 0;
-    char* nm0 = g_typeColl.GetNameRecords(m_prevAnimSetNode)->m_name;
+    const char* nm0 = *g_typeColl.GetNameRecords(m_prevAnimSetNode);
     GruntScratchTeardown();
     bool eq;
     eq = (strcmp(nm0, s_codeD) == 0);
@@ -732,9 +732,9 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     }
 
     // Re-stamp the current entrance-cell frame keyed by the active anim type.
-    CAnimNameRecord* rec = g_typeColl.ScratchResolve(m_objAux->m_1c);
+    CString* rec = g_typeColl.ScratchResolve(m_objAux->m_1c);
     GruntScratchTeardown();
-    if (strcmp(rec->m_name, s_codeD) == 0) {
+    if (strcmp(*rec, s_codeD) == 0) {
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(m_poseWalk);
         CAniElement* desc = m_38->m_1a0.m_14;
@@ -747,9 +747,9 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         return 1;
     }
 
-    CAnimNameRecord* rec2 = g_typeColl.ScratchResolve(m_objAux->m_1c);
+    CString* rec2 = g_typeColl.ScratchResolve(m_objAux->m_1c);
     GruntScratchTeardown();
-    if (strcmp(rec2->m_name, "A") == 0) {
+    if (strcmp(*rec2, "A") == 0) {
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(m_poseIdle[0]);
         CAniElement* desc = m_38->m_1a0.m_14;
@@ -977,7 +977,7 @@ i32 CGrunt::StepArrivalCommit() {
         goto finalize;
     }
     {
-        char* prev = g_typeColl.GetNameRecords(m_objAux->m_1c)->m_name;
+        const char* prev = *g_typeColl.GetNameRecords(m_objAux->m_1c);
         GruntScratchTeardown();
         eq = (strcmp(prev, s_codeM) == 0);
         if (eq) {
