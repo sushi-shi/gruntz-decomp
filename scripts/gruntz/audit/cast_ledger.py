@@ -44,9 +44,18 @@ FORCED = [
 ]
 
 # ...and a cast whose own line (or the line above) says one of these is explained.
+# The reason VOCABULARY is deliberately small and closed - a cast is accounted for
+# only when its lines say, in one of these terms, why it cannot be modelled away:
+#   language-forced / API-forced / forced by   - C++ or an API leaves no alternative
+#   byte-forced / byte-evidenced / no reloc / bare imm - the target's bytes require it
+#   one seam / at one seam / the pun / overlay - it IS the single named boundary
+#   faithful                                    - it is what the devs wrote (proved)
+#   PROVEN / proven                             - the shape was established from bytes
+#   @identity-TODO                              - an open identity, evidence recorded
 REASON = re.compile(
-    r"language-forced|API-forced|forced by|one seam|at one seam|byte-evidenced|"
-    r"@identity-TODO|no reloc|bare imm|PROVEN|proven|overlay|the pun",
+    r"language-forced|API-forced|forced by|byte-forced|byte-evidenced|no reloc|"
+    r"bare imm|one seam|at one seam|the pun|overlay|faithful|PROVEN|proven|"
+    r"@identity-TODO",
     re.I,
 )
 
