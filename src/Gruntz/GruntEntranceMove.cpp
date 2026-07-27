@@ -105,11 +105,11 @@ void CGrunt::ApplyMoveKind(i32 v) {} // thunk_0x3c29 (0x57100); external/reloc-m
 // giant ~0x46c layout tractable.
 
 static void GruntScratchTeardown() {
-    CAnimScratchString* slot = (reinterpret_cast<CAnimScratchString*>(g_typeColl.m_alloc));
+    CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
-            (reinterpret_cast<CString*>(slot))->~CString();
+            slot->~CString();
         }
         slot++;
         cnt--;

@@ -4,10 +4,9 @@
 
 #include <Bute/ButeMgr.h> // CButeTree
 #include <Bute/ButeTree.h>
-#include <Gruntz/StringNode.h>    // the type-name teardown slot
+#include <Mfc.h> // real MFC CString
 #include <Gruntz/TypeColl.h>      // the shared type-name registry collection
 #include <Gruntz/TypeColl2.h>     // its Insert facet
-#include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Wap32/ZVec.h>
 #include <rva.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype (CActRegPool<CGruntStartingPoint>::s_table)
@@ -59,22 +58,22 @@ CActReg CActRegPool<CGruntStartingPoint>::s_table(2000, 2010);
 DATA(0x002bf464)
 void* g_projActCache;
 
-static inline CTypeNameEntry* TypeLookup(i32 key) {
+static inline CString* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return reinterpret_cast<CTypeNameEntry*>(
+        return reinterpret_cast<CString*>(
             (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
         );
     }
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
-        return reinterpret_cast<CTypeNameEntry*>(
+        return reinterpret_cast<CString*>(
             (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
         );
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
-    return reinterpret_cast<CTypeNameEntry*>(
+    return reinterpret_cast<CString*>(
         g_typeColl.m_spare
     ); // m_spare is the i32-typed slow-path slot
 }
@@ -111,18 +110,18 @@ void ActReg4RegisterType() {
         ActInsertId("A", g_typeCounter);
         i32 key = g_typeCounter;
         id = key;
-        CTypeNameEntry* slot = TypeLookup(key);
+        CString* slot = TypeLookup(key);
         i32 cnt = g_typeColl.m_grown;
-        CStringNode* nodes = reinterpret_cast<CStringNode*>(g_typeColl.m_alloc);
+        CString* nodes = g_typeColl.Slots();
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
-                    (reinterpret_cast<CString*>(nodes))->~CString();
+                    nodes->~CString();
                 }
                 nodes++;
             } while (--cnt);
         }
-        slot->m_name = "A";
+        (*slot) = "A";
         g_typeCounter++;
     }
     // raw-slot store: a plain fn ptr into the PMF slot (the registrar's own idiom;

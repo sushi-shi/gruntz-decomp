@@ -70,12 +70,6 @@ extern GruntDirectionCell g_gruntDirWest;      // 0x00244ad0
 extern GruntDirectionCell g_gruntDirNorthWest; // 0x00244b18
 extern GruntDirectionCell g_gruntDirCenter;    // 0x00244b38
 
-struct CAnimScratchString {
-    char* m_str; // +0x00  (4-byte stride)
-    // Release @0x1b9b93 IS CString::~CString; cast at each call.
-};
-SIZE_UNKNOWN();
-
 struct GruntEntranceCell {
     i32 col;
     i32 row;

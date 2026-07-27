@@ -15,8 +15,6 @@
 #include <Gruntz/TriggerMgr.h>   // canonical CTriggerMgr (m_cmdGrid: LoadExplosionSprites @0x7b330)
 #include <Gruntz/State.h>        // CState (reg->m_curState: the level-type descriptor)
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
-#include <Gruntz/TypeNameEntry.h>     // the shared type-name-registry record (CString m_name)
-#include <Gruntz/StringNode.h>        // the shared type-name teardown slot (CStringNode::Free)
 #include <Gruntz/ActReg.h>
 #include <Bute/ButeMgr.h> // CButeTree (the type-registry funnel)
 #include <math.h>         // sin / cos (StepMotion's parabola)
@@ -432,22 +430,22 @@ static inline CProjActEntry* ProjActLookup(i32 coord) {
     return reinterpret_cast<CProjActEntry*>(CActRegPool<CProjectile>::s_table.ResolveEntry(coord));
 }
 
-static inline CTypeNameEntry* ProjTypeLookup(i32 key) {
+static inline CString* ProjTypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return reinterpret_cast<CTypeNameEntry*>(
+        return reinterpret_cast<CString*>(
             (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
         );
     }
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
-        return reinterpret_cast<CTypeNameEntry*>(
+        return reinterpret_cast<CString*>(
             (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
         );
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
-    return reinterpret_cast<CTypeNameEntry*>(
+    return reinterpret_cast<CString*>(
         g_typeColl.m_spare
     ); // m_spare is the i32-typed slow-path slot
 }
@@ -476,18 +474,18 @@ void CProjectile::RegisterType() {
         ActInsertId("A", g_typeCounter);
         i32 key = g_typeCounter;
         id = key;
-        CTypeNameEntry* slot = ProjTypeLookup(key);
+        CString* slot = ProjTypeLookup(key);
         i32 cnt = g_typeColl.m_grown;
-        CStringNode* nodes = reinterpret_cast<CStringNode*>(g_typeColl.m_alloc);
+        CString* nodes = g_typeColl.Slots();
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
-                    (reinterpret_cast<CString*>(nodes))->~CString();
+                    nodes->~CString();
                 }
                 nodes++;
             } while (--cnt);
         }
-        slot->m_name = "A";
+        (*slot) = "A";
         g_typeCounter++;
     }
     *reinterpret_cast<void**>(ProjActLookup(id)) = static_cast<void*>(&ProjActivationHandler);

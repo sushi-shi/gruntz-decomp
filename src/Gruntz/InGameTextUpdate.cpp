@@ -51,9 +51,7 @@ i32 CInGameText::Update() {
     char** node = reinterpret_cast<char**>(
         g_typeColl._zvec::IndexToPtr(found->m_objAux->ActKey())
     );
-    CString* p = reinterpret_cast<CString*>(
-        g_typeColl.m_alloc
-    ); // m_alloc is the i32-typed slot base (the _zvec spelling)
+    CString* p = g_typeColl.Slots(); // m_alloc is the i32-typed slot base (the _zvec spelling)
     i32 n = g_typeColl.m_grown;
     while (n-- != 0) {
         if (p != 0) {

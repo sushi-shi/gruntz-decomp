@@ -151,11 +151,11 @@ void GruntRecycleCoords(CGrunt* g) {
 }
 
 static void GruntScratchTeardown() {
-    CAnimScratchString* slot = (reinterpret_cast<CAnimScratchString*>(g_typeColl.m_alloc));
+    CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
-            (reinterpret_cast<CString*>(slot))->~CString();
+            slot->~CString();
         }
         slot++;
         cnt--;

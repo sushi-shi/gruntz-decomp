@@ -36,7 +36,7 @@ CActReg CActRegPool<CVoiceTrigger>::s_table(2000, 2010);
 VTBL(CVoiceTrigger, 0x001e885c);
 VTBL(CGruntVoice, 0x001eaf6c);
 
-struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
+struct CString; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
 static inline CVActEntry* VActLookup(i32 coord) {
     return reinterpret_cast<CVActEntry*>(CActRegPool<CGruntVoice>::s_table.ResolveEntry(coord));

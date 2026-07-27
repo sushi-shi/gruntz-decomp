@@ -45,7 +45,7 @@ CActReg CActRegPool<CDroppedObject>::s_table(2000, 2010);
 template<> DATA(0x0024bf00)
 CActReg CActRegPool<CDroppedObjectShadow>::s_table(2000, 2010);
 
-struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
+struct CString; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
 
 static inline CString* ActNameSlots() {

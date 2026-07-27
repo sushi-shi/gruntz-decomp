@@ -16,11 +16,11 @@ static inline i32 RegisterActionName() {
         id = key;
         CString* slot = ActNameLookup(key);
         i32 cnt = g_typeColl.m_grown;
-        void** nodes = reinterpret_cast<void**>(g_typeColl.m_alloc);
+        CString* nodes = g_typeColl.Slots();
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
-                    (reinterpret_cast<CString*>(nodes))->CString::~CString();
+                    nodes->CString::~CString();
                 }
                 nodes++;
             } while (--cnt);

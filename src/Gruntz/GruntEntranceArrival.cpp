@@ -64,11 +64,11 @@ DATA(0x001e9a68)
 double s_fpZero = 0.0; // 0x5e9a68
 
 static void GruntPosScratchTeardown() {
-    CAnimScratchString* slot = (reinterpret_cast<CAnimScratchString*>(g_typeColl.m_alloc));
+    CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
-            (reinterpret_cast<CString*>(slot))->~CString();
+            slot->~CString();
         }
         slot++;
         cnt--;
@@ -115,11 +115,11 @@ static __inline i32 s_TileFlags(CMapMgr* b, i32 tx, i32 ty) {
 // giant ~0x46c layout tractable.
 
 static void GruntScratchTeardown() {
-    CAnimScratchString* slot = (reinterpret_cast<CAnimScratchString*>(g_typeColl.m_alloc));
+    CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
-            (reinterpret_cast<CString*>(slot))->~CString();
+            slot->~CString();
         }
         slot++;
         cnt--;

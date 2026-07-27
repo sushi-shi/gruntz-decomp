@@ -12,12 +12,10 @@
 #include <math.h>   // floor (0x120580) / ceil (0x120480) / fabs (inline d9 e1)
 #include <string.h> // inline strcmp for the ctor's direction-name match
 #include <Bute/ButeMgr.h>
-#include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) + CGameObject::ApplyName (0x150540)
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance (0x15c360) - the +0x1a0 sub-object
 #include <Gruntz/Sprite.h>        // CDDrawWorker (frame-data value; the looked-up direction sprite)
 #include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
-#include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/SerialArchive.h> // shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
@@ -131,22 +129,22 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 DATA(0x0021aea8)
 i32 g_typeCounter = 2000;
 
-static inline CTypeNameEntry* TypeLookup(i32 key) {
+static inline CString* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return reinterpret_cast<CTypeNameEntry*>(
+        return reinterpret_cast<CString*>(
             (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
         );
     }
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
-        return reinterpret_cast<CTypeNameEntry*>(
+        return reinterpret_cast<CString*>(
             (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
         );
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
-    return reinterpret_cast<CTypeNameEntry*>(
+    return reinterpret_cast<CString*>(
         g_typeColl.m_spare
     ); // m_spare is the i32-typed slow-path slot
 }
@@ -170,18 +168,18 @@ void CKitchenSlime::RegisterType() {
         ActInsertId("A", g_typeCounter);
         i32 key = g_typeCounter;
         id = key;
-        CTypeNameEntry* slot = TypeLookup(key);
+        CString* slot = TypeLookup(key);
         i32 cnt = g_typeColl.m_grown;
-        CStringNode* nodes = reinterpret_cast<CStringNode*>(g_typeColl.m_alloc);
+        CString* nodes = g_typeColl.Slots();
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
-                    (reinterpret_cast<CString*>(nodes))->~CString();
+                    nodes->~CString();
                 }
                 nodes++;
             } while (--cnt);
         }
-        slot->m_name = "A";
+        (*slot) = "A";
         g_typeCounter++;
     }
     *reinterpret_cast<void**>(KSlimeLookup(id)) = static_cast<void*>(&KSlimeActivationHandler);

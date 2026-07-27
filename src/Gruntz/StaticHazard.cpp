@@ -33,7 +33,7 @@ CActReg CActRegPool<CStaticHazard>::s_table(2000, 2010);
 RVA_COMPGEN(0x00012b00, 0x1e, ??_GCStaticHazard@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012b30, 0x44, ??1CStaticHazard@@UAE@XZ)
 
-struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
+struct CString; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
 
 static inline CString* ActNameSlots() {

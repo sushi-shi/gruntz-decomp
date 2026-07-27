@@ -4695,7 +4695,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     i32 cnt;
 
     recs = g_typeColl.GetNameRecords(static_cast<void*>((unit->m_objAux->m_1c)));
-    slot = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+    slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
@@ -4710,7 +4710,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     }
 
     recs = g_typeColl.GetNameRecords(static_cast<void*>((unit->m_objAux->m_1c)));
-    slot = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+    slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
@@ -4725,7 +4725,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     }
 
     recs = g_typeColl.GetNameRecords(static_cast<void*>((unit->m_objAux->m_1c)));
-    slot = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+    slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
@@ -4740,7 +4740,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     }
 
     recs = g_typeColl.GetNameRecords(static_cast<void*>((unit->m_objAux->m_1c)));
-    slot = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+    slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
@@ -4755,7 +4755,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     }
 
     recs = g_typeColl.GetNameRecords(static_cast<void*>((unit->m_objAux->m_1c)));
-    slot = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+    slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
@@ -4770,7 +4770,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     }
 
     recs = g_typeColl.GetNameRecords(static_cast<void*>((unit->m_objAux->m_1c)));
-    slot = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+    slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
@@ -6352,7 +6352,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     i32 cnt;
 
     recs = g_typeColl.GetNameRecords(static_cast<void*>((unit->m_objAux->m_1c)));
-    slot = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+    slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
@@ -6367,7 +6367,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     }
 
     recs = g_typeColl.GetNameRecords(static_cast<void*>((unit->m_objAux->m_1c)));
-    slot = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+    slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
@@ -6382,7 +6382,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     }
 
     recs = g_typeColl.GetNameRecords(static_cast<void*>((unit->m_objAux->m_1c)));
-    slot = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+    slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
@@ -6410,7 +6410,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     }
 
     // Tear down the scratch again, then compare the selected name to "R".
-    slot = reinterpret_cast<CString*>(g_typeColl.m_alloc);
+    slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {

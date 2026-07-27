@@ -5,9 +5,7 @@
 #include <Gruntz/ActionArea.h>
 #include <Image/ImageSet.h> // CDDrawWorker::SetAllTypes (0x152480) / SetAllField18 (0x1524d0)
 #include <Bute/ButeTree.h>
-#include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h>
-#include <Gruntz/TypeNameEntry.h>     // the shared type-name-registry record (CString m_name)
 #include <Gruntz/ObjTypeRegistrars.h> // CProjActObj registrar-shell decl (RegisterType @0x8240)
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeColl2.h>
@@ -31,15 +29,15 @@ static inline CActionAreaActEntry* R3Lookup(i32 coord) {
 }
 
 
-static inline CTypeNameEntry* TypeLookup(i32 key) {
+static inline CString* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return reinterpret_cast<CTypeNameEntry*>(
+        return reinterpret_cast<CString*>(
             (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
         );
     }
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
-        return reinterpret_cast<CTypeNameEntry*>(
+        return reinterpret_cast<CString*>(
             (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
         );
     }
@@ -47,7 +45,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     g_retAddrBreadcrumb = GetRetAddr();
     (static_cast<CVariantSlot*>(g_typeColl.m_errSink))
         ->Set(&g_typeColl, item, 0xc);
-    return reinterpret_cast<CTypeNameEntry*>(
+    return reinterpret_cast<CString*>(
         g_typeColl.m_spare
     ); // m_spare is the i32-typed slow-path slot
 }
@@ -143,18 +141,18 @@ void CProjActObj::RegisterType() {
         ActInsertId("A", g_typeCounter);
         i32 key = g_typeCounter;
         id = key;
-        CTypeNameEntry* slot = TypeLookup(key);
+        CString* slot = TypeLookup(key);
         i32 cnt = g_typeColl.m_grown;
-        CStringNode* nodes = reinterpret_cast<CStringNode*>(g_typeColl.m_alloc);
+        CString* nodes = g_typeColl.Slots();
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
-                    (reinterpret_cast<CString*>(nodes))->~CString();
+                    nodes->~CString();
                 }
                 nodes++;
             } while (--cnt);
         }
-        slot->m_name = "A";
+        (*slot) = "A";
         g_typeCounter++;
     }
     *reinterpret_cast<void**>(R3Lookup(id)) = static_cast<void*>(&ProjActHandlerThunk);

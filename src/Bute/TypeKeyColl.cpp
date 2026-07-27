@@ -15,10 +15,8 @@
 #undef isdigit
 #pragma function(memcpy)
 
-#include <Gruntz/StringNode.h>     // the type-name teardown slot
 #include <Gruntz/TypeKeyColl.h>    // the corrected _zvec/_zdvec/type-collection hierarchy
 #include <Gruntz/TypeKeyCollStr.h> // s_out_of_memory (owner-only decl header)
-#include <Gruntz/TypeNameEntry.h>  // the shared type-name-registry record (CString m_name)
 #include <Gruntz/XferArchive.h>    // canonical CXferArchive/CXferField (ProjTypeXfer arg)
 #include <Wap32/ZVec.h>
 
@@ -985,31 +983,31 @@ i32 FirstDiffBit(const char* a, const char* b) {
     return c + n;
 }
 
-static inline CTypeNameEntry* TypeResolve(i32 key) {
+static inline CString* TypeResolve(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return reinterpret_cast<CTypeNameEntry*>(
+        return reinterpret_cast<CString*>(
             g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride
         );
     }
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
-        return reinterpret_cast<CTypeNameEntry*>(
+        return reinterpret_cast<CString*>(
             g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride
         );
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
-    return reinterpret_cast<CTypeNameEntry*>(g_typeColl.m_spare);
+    return g_typeColl.Scratch();
 }
 
 static inline void FreeNodes() {
-    CStringNode* nodes = reinterpret_cast<CStringNode*>(g_typeColl.m_alloc);
+    CString* nodes = g_typeColl.Slots();
     i32 cnt = g_typeColl.m_grown;
     if (cnt != 0) {
         do {
             if (nodes != 0) {
-                (reinterpret_cast<CString*>(nodes))->~CString();
+                nodes->~CString();
             }
             ++nodes;
         } while (--cnt);
@@ -1023,16 +1021,16 @@ static inline void FreeNodes() {
 // inlined lookup + the slot conventions are byte-faithful. Deferred to the final sweep.
 RVA(0x0016e4f0, 0x19b)
 i32 ProjTypeXfer(CUserLogic* ar) {
-    CTypeNameEntry* entry =
+    CString* entry =
         TypeResolve(ar->m_objAux->ActKey());
     FreeNodes();
-    ar->XferName(entry->m_name.GetBuffer(0)); // 0x1ba11c ?GetBuffer@CString@@QAEPADH@Z
+    ar->XferName(entry->GetBuffer(0)); // 0x1ba11c ?GetBuffer@CString@@QAEPADH@Z
     ar->FireActivation(ar->m_objAux->ActKey());
 
     entry =
         TypeResolve(ar->m_objAux->ActKey());
     FreeNodes();
-    ar->FinalizeStep(reinterpret_cast<i32>(entry->m_name.GetBuffer(0)));
+    ar->FinalizeStep(reinterpret_cast<i32>(entry->GetBuffer(0)));
     return 1;
 }
 

@@ -82,7 +82,7 @@ CActReg CActRegPool<CWarlord>::s_table(2000, 2010);
             ActInsertId(key, g_typeCounter);                        \
             id_ = g_typeCounter;                                                                   \
             CString* slot_ = reinterpret_cast<CString*>(g_typeColl.IndexToPtr(id_));               \
-            CString* p_ = reinterpret_cast<CString*>(g_typeColl.m_alloc);                          \
+            CString* p_ = g_typeColl.Slots();                          \
             for (i32 n_ = g_typeColl.m_grown; n_--; p_++) {                                        \
                 ::new (static_cast<void*>(p_)) CString;                                            \
             }                                                                                      \

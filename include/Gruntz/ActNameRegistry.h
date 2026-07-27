@@ -11,7 +11,7 @@
 #include <Mfc.h> // real CString (CActName was a fake view over it)
 
 class CVariantSlot; // folded CActColl2
-struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
+struct CString; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
 
 
