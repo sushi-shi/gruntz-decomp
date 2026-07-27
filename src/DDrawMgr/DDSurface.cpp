@@ -326,7 +326,7 @@ void* CDDSurface::Lock(void* rect) {
     i32 hr = m_ddSurface
                  ->Lock(static_cast<LPRECT>(rect), &m_apiDesc, 1, 0);
     if (hr == 0) {
-        return reinterpret_cast<void*>(m_lockBits);
+        return m_lockBits;
     }
     if (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (RestoreLost() == 0) {
@@ -334,7 +334,7 @@ void* CDDSurface::Lock(void* rect) {
         }
         hr = m_ddSurface->Lock(0, &m_apiDesc, 1, 0);
         if (hr == 0) {
-            return reinterpret_cast<void*>(m_lockBits);
+            return m_lockBits;
         }
         CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x203, hr);
         return 0;

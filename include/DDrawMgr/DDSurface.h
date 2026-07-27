@@ -274,7 +274,7 @@ public:
             i32 m_mipMapCount;          // +0x28  dwMipMapCount / dwZBufferBitDepth
             i32 m_alphaBitDepth;        // +0x2c  dwAlphaBitDepth
             i32 m_descReserved;         // +0x30  dwReserved
-            i32 m_lockBits;             // +0x34  lpSurface (32-bit pointer carrier)
+            void* m_lockBits;           // +0x34  lpSurface (DDSURFACEDESC's own type)
             char m_colorKeys[0x20];      // +0x38  four DDCOLORKEY records
             i32 m_pixelFormatSize;       // +0x58  ddpfPixelFormat.dwSize
             i32 m_pixelFormatFlags;      // +0x5c  ddpfPixelFormat.dwFlags
