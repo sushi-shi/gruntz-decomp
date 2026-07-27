@@ -24,10 +24,5 @@ public:
 };
 SIZE(0x54);
 
-typedef i32 (CUserLogic::*SecretActHandler)();
-struct CSecretActEntry {
-    SecretActHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CSECRETLEVELTRIGGER_H

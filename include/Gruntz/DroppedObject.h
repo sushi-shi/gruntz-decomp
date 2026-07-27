@@ -33,12 +33,7 @@ public:
 };
 SIZE_UNKNOWN();
 
-typedef void (CUserLogic::*DropHandler)();
 // (ActB @0xc7be0 - the "B" PMF: virtual-dispatch Unload; declared on the class below.)
-struct CDropEntry {
-    DropHandler m_fn; // [entry]
-};
-SIZE_UNKNOWN();
 
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the

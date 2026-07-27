@@ -40,16 +40,10 @@ CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj), CW
 
 RVA(0x00080020, 0x102)
 void CGruntPowerupSprite::FireActivation(i32 id) {
-    if ((reinterpret_cast<CPowerupActEntry*>(
-             CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)
-         ))
-            ->m_fn
+    if ((*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id))))
         != 0) {
         (this
-             ->*(reinterpret_cast<CPowerupActEntry*>(
-                 CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)
-             ))
-             ->m_fn)();
+             ->*(*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -81,10 +75,7 @@ void CGruntPowerupSprite::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CPowerupActEntry*>(
-         CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)
-     ))
-        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CGruntPowerupSprite::Update);
+    (*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CGruntPowerupSprite::Update);
 }
 
 RVA(0x00080380, 0x6c)

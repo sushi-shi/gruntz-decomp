@@ -89,8 +89,11 @@ CActReg CActRegPool<CWarlord>::s_table(2000, 2010);
             *slot_ = key;                                                                          \
             ++g_typeCounter;                                                                       \
         }                                                                                          \
-        void** aslot_ = reinterpret_cast<void**>(CActRegPool<CWarlord>::s_table.Resolve(id_));     \
-        *aslot_ = reinterpret_cast<void*>(handler);                                                \
+        /* @identity-TODO the 6 handlers are ILT-thunk targets not yet resolved to their  */       \
+        /* CWarlord methods, so they are modeled as free functions; a free function cannot  */       \
+        /* enter the PMF table except through the raw slot.                                 */       \
+        *reinterpret_cast<void**>(CActRegPool<CWarlord>::s_table.Resolve(id_)) =                   \
+            reinterpret_cast<void*>(handler);                                                      \
     } while (0)
 // ===========================================================================
 // CWarlord::~CWarlord  (0x0107f0)  - COMPILER-GENERATED, no source body
@@ -329,9 +332,8 @@ void CWarlord::FireActivation(i32 key) {
     if (*slot != 0) {
         // the handler is a __thiscall dispatched on this warlord (`mov ecx,this;
         // call [slot2]`); a complete-class PMF gives the plain 4-byte code-ptr call.
-        typedef i32 (CUserLogic::*StateHandler)();
-        StateHandler h =
-            *reinterpret_cast<StateHandler*>(CActRegPool<CWarlord>::s_table.ResolveEntry(key));
+                CActHandler h =
+            *(CActRegPool<CWarlord>::s_table.ResolveEntry(key));
         (this->*h)();
     }
 }

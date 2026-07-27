@@ -21,10 +21,5 @@ public:
 };
 SIZE(0x54);
 
-typedef i32 (CUserLogic::*TileTriggerSwitchHandler)();
-struct CTileTriggerSwitchActEntry {
-    TileTriggerSwitchHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CTILETRIGGERSWITCH_H

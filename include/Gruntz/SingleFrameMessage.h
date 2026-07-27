@@ -31,11 +31,6 @@ public:
 };
 SIZE(0x54);
 
-typedef i32 (CUserLogic::*SingleFrameHandler)();
-struct CSingleFrameActEntry {
-    SingleFrameHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 
 #endif // GRUNTZ_CSINGLEFRAMEMESSAGE_H

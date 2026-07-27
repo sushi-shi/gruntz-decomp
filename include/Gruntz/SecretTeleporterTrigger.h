@@ -29,17 +29,6 @@ public:
 };
 SIZE(0x54);
 
-typedef i32 (CUserLogic::*ActHandler)(); // == CActHandler (the slot type)
-struct CActEntry {
-    ActHandler m_fn; // [entry]
-};
-SIZE_UNKNOWN();
-typedef i32 (CUserLogic::*SpawnHandler)();
-struct CTelActEntry {
-    SpawnHandler m_fn;
-};
-SIZE_UNKNOWN();
-
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

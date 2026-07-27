@@ -25,10 +25,5 @@ public:
 };
 SIZE(0x68);
 
-typedef void (CUserLogic::*TBombHandler)();
-struct CTBombEntry {
-    TBombHandler m_fn; // [entry]
-};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CTIMEBOMB_H

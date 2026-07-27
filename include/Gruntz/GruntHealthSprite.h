@@ -44,10 +44,5 @@ public:
 };
 SIZE_UNKNOWN();
 
-typedef i32 (CUserLogic::*HealthActHandler)();
-struct CHealthActEntry {
-    HealthActHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CGRUNTHEALTHSPRITE_H

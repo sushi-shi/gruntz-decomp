@@ -55,11 +55,6 @@ public:
 };
 SIZE(0xa0);
 
-typedef i32 (CUserLogic::*RollingBallHandler)();
-struct CRollingBallActEntry {
-    RollingBallHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the

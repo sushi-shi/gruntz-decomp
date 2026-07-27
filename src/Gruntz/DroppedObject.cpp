@@ -66,8 +66,8 @@ static inline CString* ActNameLookup(i32 id) {
     return g_typeColl.Scratch();
 }
 
-static inline CDropEntry* DropLookup(i32 coord) {
-    return reinterpret_cast<CDropEntry*>(CActRegPool<CDroppedObject>::s_table.ResolveEntry(coord));
+static inline CActHandler* DropLookup(i32 coord) {
+    return (CActRegPool<CDroppedObject>::s_table.ResolveEntry(coord));
 }
 
 
@@ -304,16 +304,10 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x000c5f80, 0x102)
 void CObjectDropper::FireActivation(i32 actId) {
-    if ((reinterpret_cast<CDropperActEntry*>(
-             CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId)
-         ))
-            ->m_fn
+    if ((*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId))))
         != 0) {
         (this
-             ->*((reinterpret_cast<CDropperActEntry*>(
-                      CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId)
-                  ))
-                     ->m_fn))();
+             ->*((*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId))))))();
     }
 }
 
@@ -347,8 +341,7 @@ void CObjectDropper::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CDropperActEntry*>(CActRegPool<CObjectDropper>::s_table.ResolveEntry(id)))
-        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CObjectDropper::Update);
+    (*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CObjectDropper::Update);
 }
 
 RVA(0x000c62e0, 0x2dd)
@@ -543,10 +536,10 @@ CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x000c6bd0, 0x102)
 void CDroppedObject::FireActivation(i32 coord) {
-    CDropEntry* e = DropLookup(coord);
-    if (e->m_fn != 0) {
-        CDropEntry* e2 = DropLookup(coord);
-        (this->*(e2->m_fn))();
+    CActHandler* e = DropLookup(coord);
+    if ((*e) != 0) {
+        CActHandler* e2 = DropLookup(coord);
+        (this->*((*e2)))();
     }
 }
 
@@ -579,8 +572,8 @@ void CDroppedObject::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    *reinterpret_cast<DropHandler*>(DropLookup(id)) =
-        reinterpret_cast<DropHandler>(static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::ActA));
+    *(DropLookup(id)) =
+        reinterpret_cast<CActHandler>(static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::ActA));
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -598,8 +591,8 @@ void CDroppedObject::RegisterActs() {
         *slot = "B";
         g_typeCounter++;
     }
-    *reinterpret_cast<DropHandler*>(DropLookup(id2)) =
-        reinterpret_cast<DropHandler>(static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::ActB));
+    *(DropLookup(id2)) =
+        reinterpret_cast<CActHandler>(static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::ActB));
 }
 
 // CDroppedObject::ActA @0x0c7090 - the per-frame "A" activation handler (bound into
@@ -768,16 +761,10 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), 
 
 RVA(0x000c7750, 0x102)
 void CDroppedObjectShadow::FireActivation(i32 coord) {
-    if ((reinterpret_cast<CShadowActEntry*>(
-             CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord)
-         ))
-            ->m_fn
+    if ((*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord))))
         != 0) {
         (this
-             ->*((reinterpret_cast<CShadowActEntry*>(
-                      CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord)
-                  ))
-                     ->m_fn))();
+             ->*((*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord))))))();
     }
 }
 
@@ -807,10 +794,7 @@ void CDroppedObjectShadow::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CShadowActEntry*>(
-         CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(id)
-     ))
-        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CDroppedObjectShadow::Advance);
+    (*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CDroppedObjectShadow::Advance);
 }
 
 // CDroppedObjectShadow::Advance (0xc7ab0): the per-frame act handler - advance

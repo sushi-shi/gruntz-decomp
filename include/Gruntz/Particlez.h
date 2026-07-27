@@ -29,15 +29,4 @@ public:
 };
 SIZE_UNKNOWN();
 
-typedef void (CUserLogic::*PartHandler)();
-struct CPartEntry {
-    PartHandler m_fn; // [entry]
-};
-SIZE_UNKNOWN();
-typedef i32 (CUserLogic::*PartHandlerI32)();
-struct CPartEntryI32 {
-    PartHandlerI32 m_fn;
-};
-SIZE_UNKNOWN();
-
 #endif // GRUNTZ_CPARTICLEZ_H

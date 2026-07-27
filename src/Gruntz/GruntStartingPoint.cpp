@@ -78,18 +78,16 @@ static inline CString* TypeLookup(i32 key) {
     ); // m_spare is the i32-typed slow-path slot
 }
 
-static inline StartActEntry* R4Lookup(i32 coord) {
-    return reinterpret_cast<StartActEntry*>(
-        CActRegPool<CGruntStartingPoint>::s_table.ResolveEntry(coord)
-    );
+static inline CActHandler* R4Lookup(i32 coord) {
+    return (CActRegPool<CGruntStartingPoint>::s_table.ResolveEntry(coord));
 }
 
 RVA(0x0003e1a0, 0x102)
 void CGruntStartingPoint::FireActivation(i32 coord) {
-    StartActEntry* e = R4Lookup(coord);
-    if (e->m_fn != 0) {
-        StartActEntry* e2 = R4Lookup(coord);
-        (this->*(e2->m_fn))();
+    CActHandler* e = R4Lookup(coord);
+    if ((*e) != 0) {
+        CActHandler* e2 = R4Lookup(coord);
+        (this->*((*e2)))();
     }
 }
 

@@ -48,15 +48,10 @@ VTBL(CSingleFrameMessage, 0x001e864c);
 
 RVA(0x000ab5b0, 0x102)
 void CSingleFrameMessage::FireActivation(i32 id) {
-    CSingleFrameActEntry* e = reinterpret_cast<CSingleFrameActEntry*>(
-        CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id)
-    );
-    if (e->m_fn != 0) {
+    CActHandler* e = (CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id));
+    if ((*e) != 0) {
         (this
-             ->*(reinterpret_cast<CSingleFrameActEntry*>(
-                 CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id)
-             ))
-             ->m_fn)();
+             ->*(*((CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -88,10 +83,7 @@ void CSingleFrameMessage::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CSingleFrameActEntry*>(
-         CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id)
-     ))
-        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CSingleFrameMessage::AdvanceAnim);
+    (*((CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CSingleFrameMessage::AdvanceAnim);
 }
 
 

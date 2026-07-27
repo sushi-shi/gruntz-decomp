@@ -62,7 +62,6 @@ public:
 };
 SIZE(0x80); // new-site ground truth (0x95750 `push 0x80; call ??2`)
 
-typedef i32 (CUserLogic::*IconActHandler)();
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).

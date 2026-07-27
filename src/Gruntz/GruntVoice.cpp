@@ -38,8 +38,8 @@ VTBL(CGruntVoice, 0x001eaf6c);
 
 struct CString; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
-static inline CVActEntry* VActLookup(i32 coord) {
-    return reinterpret_cast<CVActEntry*>(CActRegPool<CGruntVoice>::s_table.ResolveEntry(coord));
+static inline CActHandler* VActLookup(i32 coord) {
+    return (CActRegPool<CGruntVoice>::s_table.ResolveEntry(coord));
 }
 
 static inline CString* ActNameSlots() {
@@ -267,21 +267,21 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x00119e40, 0x102)
 void CGruntVoice::FireActivation(i32 coord) {
-    CVActEntry* e = VActLookup(coord);
-    if (e->m_fn != 0) {
-        CVActEntry* e2 = VActLookup(coord);
-        (this->*(e2->m_fn))();
+    CActHandler* e = VActLookup(coord);
+    if ((*e) != 0) {
+        CActHandler* e2 = VActLookup(coord);
+        (this->*((*e2)))();
     }
 }
 
 RVA(0x0011a3a0, 0x102)
 void CVoiceTrigger::FireActivation(i32 coord) {
-    CVTrigEntry* e =
-        reinterpret_cast<CVTrigEntry*>(CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(coord));
-    if (e->m_fn != 0) {
-        CVTrigEntry* e2 =
-            reinterpret_cast<CVTrigEntry*>(CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(coord));
-        (this->*(e2->m_fn))();
+    CActHandler* e =
+        (CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(coord));
+    if ((*e) != 0) {
+        CActHandler* e2 =
+            (CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(coord));
+        (this->*((*e2)))();
     }
 }
 
@@ -312,8 +312,8 @@ void CVoiceTrigger::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    *reinterpret_cast<VActHandler*>(CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(id)) =
-        reinterpret_cast<VActHandler>(static_cast<i32 (CUserLogic::*)()>(&CVoiceTrigger::Tick));
+    *(CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(id)) =
+        reinterpret_cast<CActHandler>(static_cast<i32 (CUserLogic::*)()>(&CVoiceTrigger::Tick));
 }
 
 RVA(0x0011a700, 0xae)

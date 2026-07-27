@@ -424,8 +424,8 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
 template<> DATA(0x0024c758)
 CActReg CActRegPool<CProjectile>::s_table(2000, 2010);
 
-static inline CProjActEntry* ProjActLookup(i32 coord) {
-    return reinterpret_cast<CProjActEntry*>(CActRegPool<CProjectile>::s_table.ResolveEntry(coord));
+static inline CActHandler* ProjActLookup(i32 coord) {
+    return (CActRegPool<CProjectile>::s_table.ResolveEntry(coord));
 }
 
 static inline CString* ProjTypeLookup(i32 key) {
@@ -450,9 +450,9 @@ static inline CString* ProjTypeLookup(i32 key) {
 
 RVA(0x000df9a0, 0x102)
 void CProjectile::FireActivation(i32 coord) {
-    CProjActEntry* e = ProjActLookup(coord);
-    if (e->m_fn != 0) {
-        (this->*(ProjActLookup(coord)->m_fn))();
+    CActHandler* e = ProjActLookup(coord);
+    if ((*e) != 0) {
+        (this->*((*ProjActLookup(coord))))();
     }
 }
 
@@ -1077,8 +1077,8 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, CGameObject* a
 template<> DATA(0x0024c780)
 CActReg CActRegPool<CTimeBomb>::s_table(2000, 2010);
 
-static inline CTBombEntry* TBombLookup(i32 coord) {
-    return reinterpret_cast<CTBombEntry*>(CActRegPool<CTimeBomb>::s_table.ResolveEntry(coord));
+static inline CActHandler* TBombLookup(i32 coord) {
+    return (CActRegPool<CTimeBomb>::s_table.ResolveEntry(coord));
 }
 
 
@@ -1102,10 +1102,10 @@ static inline CString* ActNameLookup(i32 id) {
 
 RVA(0x000e1830, 0x102)
 void CTimeBomb::FireActivation(i32 coord) {
-    CTBombEntry* e = TBombLookup(coord);
-    if (e->m_fn != 0) {
-        CTBombEntry* e2 = TBombLookup(coord);
-        (this->*(e2->m_fn))();
+    CActHandler* e = TBombLookup(coord);
+    if ((*e) != 0) {
+        CActHandler* e2 = TBombLookup(coord);
+        (this->*((*e2)))();
     }
 }
 
@@ -1138,8 +1138,8 @@ void CTimeBomb::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    *reinterpret_cast<ProjActHandler*>(TBombLookup(id)) =
-        static_cast<ProjActHandler>(&CTimeBomb::LoadAttributes);
+    *(TBombLookup(id)) =
+        static_cast<CActHandler>(&CTimeBomb::LoadAttributes);
 }
 
 // ---------------------------------------------------------------------------

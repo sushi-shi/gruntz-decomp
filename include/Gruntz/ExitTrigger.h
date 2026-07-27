@@ -34,10 +34,5 @@ public:
 };
 SIZE(0x5c);
 
-typedef i32 (CUserLogic::*ExitTriggerHandler)();
-struct CExitActEntry {
-    ExitTriggerHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CEXITTRIGGER_H

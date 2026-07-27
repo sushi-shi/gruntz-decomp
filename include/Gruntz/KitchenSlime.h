@@ -54,11 +54,6 @@ SIZE(0x90);
 // (Retail's grow-path allocs 0xc-byte nodes, so the real record may carry 2 more
 // fields at +4/+8 that no code touches - @identity-TODO; the addressing stride is a
 // runtime DATA value, so the 4-byte model is byte-exact here.)
-typedef void (CUserLogic::*KSlimeHandler)();
-struct CKSlimeEntry {
-    KSlimeHandler m_fn; // [entry]
-};
-SIZE_UNKNOWN();
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).

@@ -15,7 +15,6 @@
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 #include <Gruntz/Play.h>          // ChannelSlots_FindFree (ex .cpp extern)
 
-typedef i32 (CUserLogic::*CreationPointHandler)();
 
 VTBL(CGruntCreationPoint, 0x001e81d4);
 
@@ -131,13 +130,9 @@ i32 CGruntCreationPoint::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameOb
 
 RVA(0x0003e960, 0x102)
 void CGruntCreationPoint::FireActivation(i32 coord) {
-    CreationPointHandler* e = reinterpret_cast<CreationPointHandler*>(
-        CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(coord)
-    );
+    CActHandler* e = (CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(coord));
     if (*e != 0) {
-        CreationPointHandler* e2 = reinterpret_cast<CreationPointHandler*>(
-            CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(coord)
-        );
+        CActHandler* e2 = (CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(coord));
         (this->*(*e2))();
     }
 }
@@ -170,9 +165,7 @@ void CGruntCreationPoint::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    *reinterpret_cast<CreationPointHandler*>(
-        CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(id)
-    ) = static_cast<i32 (CUserLogic::*)()>(&CGruntCreationPoint::AdvanceAnim);
+    *(CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(id)) = static_cast<i32 (CUserLogic::*)()>(&CGruntCreationPoint::AdvanceAnim);
 }
 
 RVA(0x0003ecc0, 0x17)

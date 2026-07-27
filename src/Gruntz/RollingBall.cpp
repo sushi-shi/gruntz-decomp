@@ -172,15 +172,10 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x000afde0, 0x102)
 void CRollingBall::FireActivation(i32 id) {
-    CRollingBallActEntry* e = reinterpret_cast<CRollingBallActEntry*>(
-        CActRegPool<CRollingBall>::s_table.ResolveEntry(id)
-    );
-    if (e->m_fn != 0) {
+    CActHandler* e = (CActRegPool<CRollingBall>::s_table.ResolveEntry(id));
+    if ((*e) != 0) {
         (this
-             ->*(reinterpret_cast<CRollingBallActEntry*>(
-                 CActRegPool<CRollingBall>::s_table.ResolveEntry(id)
-             ))
-             ->m_fn)();
+             ->*(*((CActRegPool<CRollingBall>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -212,8 +207,7 @@ void CRollingBall::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CRollingBallActEntry*>(CActRegPool<CRollingBall>::s_table.ResolveEntry(id)))
-        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CRollingBall::Update);
+    (*((CActRegPool<CRollingBall>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CRollingBall::Update);
 }
 
 // CRollingBall::Update - the per-tick rolling-ball state machine (__thiscall).

@@ -45,10 +45,6 @@ public:
 };
 SIZE(0xa8);
 
-struct CSpotActEntry {
-    i32 (CUserLogic::*m_fn)();
-};
-SIZE_UNKNOWN();
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

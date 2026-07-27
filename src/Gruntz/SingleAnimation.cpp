@@ -44,15 +44,10 @@ CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(ob
 
 RVA(0x000aea20, 0x102)
 void CSingleAnimation::FireActivation(i32 id) {
-    CSingleAnimActEntry* e = reinterpret_cast<CSingleAnimActEntry*>(
-        CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id)
-    );
-    if (e->m_fn != 0) {
+    CActHandler* e = (CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id));
+    if ((*e) != 0) {
         (this
-             ->*(reinterpret_cast<CSingleAnimActEntry*>(
-                 CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id)
-             ))
-             ->m_fn)();
+             ->*(*((CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -84,10 +79,7 @@ void CSingleAnimation::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CSingleAnimActEntry*>(
-         CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id)
-     ))
-        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CSingleAnimation::AdvanceAnim);
+    (*((CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CSingleAnimation::AdvanceAnim);
 }
 
 RVA(0x000aed80, 0x39)

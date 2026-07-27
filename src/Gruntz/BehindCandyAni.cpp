@@ -64,15 +64,10 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
 
 RVA(0x000ad850, 0x102)
 void CBehindCandyAni::FireActivation(i32 id) {
-    CBehindCandyActEntry* e = reinterpret_cast<CBehindCandyActEntry*>(
-        CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id)
-    );
-    if (e->m_fn != 0) {
+    CActHandler* e = (CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id));
+    if ((*e) != 0) {
         (this
-             ->*(reinterpret_cast<CBehindCandyActEntry*>(
-                 CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id)
-             ))
-             ->m_fn)();
+             ->*(*((CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -104,10 +99,7 @@ void CBehindCandyAni::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CBehindCandyActEntry*>(
-         CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id)
-     ))
-        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CBehindCandyAni::AdvanceAnim);
+    (*((CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CBehindCandyAni::AdvanceAnim);
 }
 
 RVA(0x000adbb0, 0x17)

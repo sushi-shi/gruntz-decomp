@@ -98,7 +98,7 @@ static inline CString* ResolveNameSlot(_zdvec* v, i32 idx) {
     return r;
 }
 
-// the act tables hold CActHandler (== every per-TU *ActHandler typedef), so the
+// the act tables hold CActHandler (== every per-TU *CActHandler typedef), so the
 // element pun lives here, at the resolver, instead of at each slot read/write
 static inline CActHandler* ResolveSlot(_zdvec* v, i32 idx) {
     i32 lo = v->m_lo;
@@ -126,7 +126,6 @@ static inline void FreeNameSlotNodes() {
     }
 }
 
-typedef i32 (CUserLogic::*LogicFn)();
 
 // ===========================================================================
 // CWormhole::~CWormhole  (0x010980)
@@ -236,8 +235,8 @@ i32 CWormhole::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
 RVA(0x00040050, 0x102)
 void CWormhole::FireActivation(i32 idx) {
     if (*reinterpret_cast<void**>(ResolveSlot(&CActRegPool<CWormhole>::s_table, idx)) != 0) {
-        LogicFn fn =
-            *reinterpret_cast<LogicFn*>(ResolveSlot(&CActRegPool<CWormhole>::s_table, idx));
+        CActHandler fn =
+            *reinterpret_cast<CActHandler*>(ResolveSlot(&CActRegPool<CWormhole>::s_table, idx));
         (this->*fn)();
     }
 }
@@ -267,7 +266,7 @@ void RegisterWormholeLogic() {
         g_typeCounter++;
     }
     CActHandler* dslot = ResolveSlot(&CActRegPool<CWormhole>::s_table, idx);
-    *dslot = static_cast<WormholeActHandler>(&CWormhole::SpawnPartners);
+    *dslot = static_cast<CActHandler>(&CWormhole::SpawnPartners);
 }
 
 // ---------------------------------------------------------------------------
@@ -358,12 +357,12 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x00040750, 0x102)
 void CGruntPuddle::FireActivation(i32 id) {
-    CPuddleActEntry* e =
-        reinterpret_cast<CPuddleActEntry*>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id));
-    if (e->m_fn != 0) {
-        CPuddleActEntry* e2 =
-            reinterpret_cast<CPuddleActEntry*>(CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id));
-        (this->*(e2->m_fn))();
+    CActHandler* e =
+        (CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id));
+    if ((*e) != 0) {
+        CActHandler* e2 =
+            (CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id));
+        (this->*((*e2)))();
     }
 }
 
@@ -657,14 +656,10 @@ i32 CTeleporter::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d)
 
 RVA(0x00041520, 0x102)
 void CTeleporter::FireActivation(i32 coord) {
-    CTeleporterActEntry* e = reinterpret_cast<CTeleporterActEntry*>(
-        CActRegPool<CTeleporter>::s_table.ResolveEntry(coord)
-    );
-    if (e->m_fn != 0) {
-        CTeleporterActEntry* e2 = reinterpret_cast<CTeleporterActEntry*>(
-            CActRegPool<CTeleporter>::s_table.ResolveEntry(coord)
-        );
-        (this->*(e2->m_fn))();
+    CActHandler* e = (CActRegPool<CTeleporter>::s_table.ResolveEntry(coord));
+    if ((*e) != 0) {
+        CActHandler* e2 = (CActRegPool<CTeleporter>::s_table.ResolveEntry(coord));
+        (this->*((*e2)))();
     }
 }
 

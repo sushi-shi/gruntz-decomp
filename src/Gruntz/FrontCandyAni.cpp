@@ -129,14 +129,11 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x000acbb0, 0x102)
 void CEyeCandyAni::FireActivation(i32 id) {
-    CEyeCandyActEntry* e =
-        reinterpret_cast<CEyeCandyActEntry*>(CActRegPool<CEyeCandy>::s_table.ResolveEntry(id));
-    if (e->m_fn != 0) {
+    CActHandler* e =
+        (CActRegPool<CEyeCandy>::s_table.ResolveEntry(id));
+    if ((*e) != 0) {
         (this
-             ->*(reinterpret_cast<CEyeCandyActEntry*>(
-                 CActRegPool<CEyeCandy>::s_table.ResolveEntry(id)
-             ))
-             ->m_fn)();
+             ->*(*((CActRegPool<CEyeCandy>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -169,7 +166,7 @@ void CEyeCandyAni::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CEyeCandyActEntry*>(CActRegPool<CEyeCandy>::s_table.ResolveEntry(id)))->m_fn =
+    (*((CActRegPool<CEyeCandy>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CEyeCandyAni::AdvanceAnim);
 }
 
@@ -199,14 +196,10 @@ VTBL(CFrontCandy, 0x001e84ec);
 
 RVA(0x000ad1b0, 0x102)
 void CFrontCandyAni::FireActivation(i32 coord) {
-    CFrontCandyActEntry* e = reinterpret_cast<CFrontCandyActEntry*>(
-        CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(coord)
-    );
-    if (e->m_fn != 0) {
-        CFrontCandyActEntry* e2 = reinterpret_cast<CFrontCandyActEntry*>(
-            CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(coord)
-        );
-        (this->*(e2->m_fn))();
+    CActHandler* e = (CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(coord));
+    if ((*e) != 0) {
+        CActHandler* e2 = (CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(coord));
+        (this->*((*e2)))();
     }
 }
 
@@ -238,8 +231,7 @@ void CFrontCandyAni::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CFrontCandyActEntry*>(CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(id)))
-        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CFrontCandyAni::AdvanceAnim);
+    (*((CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CFrontCandyAni::AdvanceAnim);
 }
 
 RVA(0x000ad510, 0x17)

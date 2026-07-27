@@ -32,11 +32,6 @@ public:
 };
 SIZE(0x54);
 
-typedef i32 (CUserLogic::*BehindCandyHandler)();
-struct CBehindCandyActEntry {
-    BehindCandyHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 
 #endif // GRUNTZ_CBEHINDCANDYANI_H

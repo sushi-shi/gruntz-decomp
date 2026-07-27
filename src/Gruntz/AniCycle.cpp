@@ -43,14 +43,11 @@ CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x000aaf80, 0x102)
 void CAniCycle::FireActivation(i32 id) {
-    CAniCycleActEntry* e =
-        reinterpret_cast<CAniCycleActEntry*>(CActRegPool<CAniCycle>::s_table.ResolveEntry(id));
-    if (e->m_fn != 0) {
+    CActHandler* e =
+        (CActRegPool<CAniCycle>::s_table.ResolveEntry(id));
+    if ((*e) != 0) {
         (this
-             ->*(reinterpret_cast<CAniCycleActEntry*>(
-                 CActRegPool<CAniCycle>::s_table.ResolveEntry(id)
-             ))
-             ->m_fn)();
+             ->*(*((CActRegPool<CAniCycle>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -82,7 +79,7 @@ void CAniCycle::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CAniCycleActEntry*>(CActRegPool<CAniCycle>::s_table.ResolveEntry(id)))->m_fn =
+    (*((CActRegPool<CAniCycle>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CAniCycle::AdvanceAnim);
 }
 

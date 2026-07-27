@@ -40,11 +40,6 @@ SIZE_UNKNOWN();
 // ONE entry type: the registered handlers (LoadAttributes/LoadAttributes2) return
 // i32; the dispatcher ignores the result. (The ex-CHaznEntry2 void-return twin was
 // the same 4-byte slot.)
-typedef i32 (CUserLogic::*HaznHandler)();
-struct CHaznEntry {
-    HaznHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

@@ -33,11 +33,6 @@ public:
 };
 SIZE(0x54);
 
-typedef i32 (CUserLogic::*FortressFlagHandler)();
-struct CFortressFlagActEntry {
-    FortressFlagHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 
 

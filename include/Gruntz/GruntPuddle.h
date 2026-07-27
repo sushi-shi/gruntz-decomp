@@ -59,10 +59,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-typedef i32 (CUserLogic::*PuddleActHandler)();
-struct CPuddleActEntry {
-    PuddleActHandler m_fn;
-};
 SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
 #endif // GRUNTZ_GRUNTZ_CGRUNTPUDDLE_H

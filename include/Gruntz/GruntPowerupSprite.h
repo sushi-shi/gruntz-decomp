@@ -35,11 +35,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-typedef i32 (CUserLogic::*PowerupActHandler)();
-struct CPowerupActEntry {
-    PowerupActHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 
 #endif // GRUNTZ_CGRUNTPOWERUPSPRITE_H

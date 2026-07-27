@@ -30,7 +30,7 @@ SIZE_UNKNOWN();
 
 
 // The act-table slot type (the registry stores CUserLogic member pointers).
-typedef i32 (CUserLogic::*WormholeActHandler)(); // == CActHandler (the slot type)
+typedef i32 (CUserLogic::*CActHandler)(); // == CActHandler (the slot type)
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).

@@ -36,10 +36,5 @@ public:
 };
 SIZE_UNKNOWN();
 
-typedef i32 (CUserLogic::*TileTriggerHandler)();
-struct CTileTriggerActEntry {
-    TileTriggerHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_TILETRIGGER_H

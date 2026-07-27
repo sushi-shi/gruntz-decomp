@@ -45,16 +45,10 @@ CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj), 
 
 RVA(0x0007e660, 0x102)
 void CGruntSelectedSprite::FireActivation(i32 id) {
-    if ((reinterpret_cast<CSelectedActEntry*>(
-             CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)
-         ))
-            ->m_fn
+    if ((*((CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id))))
         != 0) {
         (this
-             ->*(reinterpret_cast<CSelectedActEntry*>(
-                 CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)
-             ))
-             ->m_fn)();
+             ->*(*((CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -86,10 +80,7 @@ void CGruntSelectedSprite::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CSelectedActEntry*>(
-         CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)
-     ))
-        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CGruntSelectedSprite::Update);
+    (*((CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CGruntSelectedSprite::Update);
 }
 
 RVA(0x0007e9c0, 0x16)

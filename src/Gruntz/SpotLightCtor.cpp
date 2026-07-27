@@ -109,14 +109,11 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x000b1630, 0x102)
 void CSpotLight::FireActivation(i32 id) {
-    CSpotActEntry* e =
-        reinterpret_cast<CSpotActEntry*>(CActRegPool<CSpotLight>::s_table.ResolveEntry(id));
-    if (e->m_fn != 0) {
+    CActHandler* e =
+        (CActRegPool<CSpotLight>::s_table.ResolveEntry(id));
+    if ((*e) != 0) {
         (this
-             ->*(reinterpret_cast<CSpotActEntry*>(
-                 CActRegPool<CSpotLight>::s_table.ResolveEntry(id)
-             ))
-             ->m_fn)();
+             ->*(*((CActRegPool<CSpotLight>::s_table.ResolveEntry(id)))))();
     }
 }
 

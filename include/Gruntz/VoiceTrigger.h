@@ -29,10 +29,5 @@ public:
 };
 SIZE(0x54);
 
-typedef void (CUserLogic::*VTrigHandler)();
-struct CVTrigEntry {
-    VTrigHandler m_fn; // [entry]  the registered handler PMF
-};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CVOICETRIGGER_H

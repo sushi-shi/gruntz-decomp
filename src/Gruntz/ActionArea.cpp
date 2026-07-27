@@ -22,10 +22,8 @@ VTBL(CUserBase, 0x001e70b4);  // ??_7CUserBase@@6B@ (the RTTI base vtable; catal
 template<> DATA(0x00229388)
 CActReg CActRegPool<CActionArea>::s_table(2000, 2010);
 
-static inline CActionAreaActEntry* R3Lookup(i32 coord) {
-    return reinterpret_cast<CActionAreaActEntry*>(
-        CActRegPool<CActionArea>::s_table.ResolveEntry(coord)
-    );
+static inline CActHandler* R3Lookup(i32 coord) {
+    return (CActRegPool<CActionArea>::s_table.ResolveEntry(coord));
 }
 
 
@@ -116,10 +114,10 @@ RVA_COMPGEN(0x00007fd0, 0x44, ??1CActionArea@@UAE@XZ)
 
 RVA(0x000080e0, 0x102)
 void CActionArea::FireActivation(i32 coord) {
-    CActionAreaActEntry* e = R3Lookup(coord);
-    if (e->m_fn != 0) {
-        CActionAreaActEntry* e2 = R3Lookup(coord);
-        (this->*(e2->m_fn))();
+    CActHandler* e = R3Lookup(coord);
+    if ((*e) != 0) {
+        CActHandler* e2 = R3Lookup(coord);
+        (this->*((*e2)))();
     }
 }
 

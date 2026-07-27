@@ -32,10 +32,5 @@ public:
 };
 SIZE(0x54);
 
-typedef i32 (CUserLogic::*EyeCandyHandler)();
-struct CEyeCandyActEntry {
-    EyeCandyHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CEYECANDYANI_H

@@ -24,8 +24,6 @@
 #include <rva.h>
 #include <Wap32/ZVec.h>
 
-struct CHaznEntry; // an entry: first dword is the registered handler
-
 VTBL(CStaticHazard, 0x001e7824);
 template<> DATA(0x0024e3d0)
 CActReg CActRegPool<CStaticHazard>::s_table(2000, 2010);
@@ -56,8 +54,8 @@ static inline CString* ActNameLookup(i32 id) {
     return g_typeColl.Scratch();
 }
 
-static inline CHaznEntry* HaznLookup(i32 coord) {
-    return reinterpret_cast<CHaznEntry*>(CActRegPool<CStaticHazard>::s_table.ResolveEntry(coord));
+static inline CActHandler* HaznLookup(i32 coord) {
+    return (CActRegPool<CStaticHazard>::s_table.ResolveEntry(coord));
 }
 
 // ---------------------------------------------------------------------------
@@ -142,10 +140,10 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x000fbbf0, 0x102)
 void CStaticHazard::FireActivation(i32 coord) {
-    CHaznEntry* e = HaznLookup(coord);
-    if (e->m_fn != 0) {
-        CHaznEntry* e2 = HaznLookup(coord);
-        (this->*(e2->m_fn))();
+    CActHandler* e = HaznLookup(coord);
+    if ((*e) != 0) {
+        CActHandler* e2 = HaznLookup(coord);
+        (this->*((*e2)))();
     }
 }
 
@@ -178,7 +176,7 @@ void CStaticHazard::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    HaznLookup(id)->m_fn = static_cast<HaznHandler>(&CStaticHazard::LoadAttributes2);
+    (*HaznLookup(id)) = static_cast<CActHandler>(&CStaticHazard::LoadAttributes2);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -196,7 +194,7 @@ void CStaticHazard::RegisterActs() {
         *slot = "B";
         g_typeCounter++;
     }
-    HaznLookup(id2)->m_fn = static_cast<HaznHandler>(&CStaticHazard::LoadAttributes);
+    (*HaznLookup(id2)) = static_cast<CActHandler>(&CStaticHazard::LoadAttributes);
 }
 
 // ---------------------------------------------------------------------------

@@ -142,14 +142,11 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x000b3b60, 0x102)
 void CPathHazard::FireActivation(i32 id) {
-    CPathHazardActEntry* e =
-        reinterpret_cast<CPathHazardActEntry*>(CActRegPool<CPathHazard>::s_table.ResolveEntry(id));
-    if (e->m_fn != 0) {
+    CActHandler* e =
+        (CActRegPool<CPathHazard>::s_table.ResolveEntry(id));
+    if ((*e) != 0) {
         (this
-             ->*(reinterpret_cast<CPathHazardActEntry*>(
-                 CActRegPool<CPathHazard>::s_table.ResolveEntry(id)
-             ))
-             ->m_fn)();
+             ->*(*((CActRegPool<CPathHazard>::s_table.ResolveEntry(id)))))();
     }
 }
 

@@ -44,14 +44,11 @@ RVA_COMPGEN(0x00012430, 0x44, ??1CLightFx@@UAE@XZ)
 
 RVA(0x0009d1c0, 0x102)
 void CLightFx::FireActivation(i32 id) {
-    CLightFxActEntry* e =
-        reinterpret_cast<CLightFxActEntry*>(CActRegPool<CLightFx>::s_table.ResolveEntry(id));
-    if (e->m_fn != 0) {
+    CActHandler* e =
+        (CActRegPool<CLightFx>::s_table.ResolveEntry(id));
+    if ((*e) != 0) {
         (this
-             ->*(reinterpret_cast<CLightFxActEntry*>(
-                 CActRegPool<CLightFx>::s_table.ResolveEntry(id)
-             ))
-             ->m_fn)();
+             ->*(*((CActRegPool<CLightFx>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -83,7 +80,7 @@ void CLightFx::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CLightFxActEntry*>(CActRegPool<CLightFx>::s_table.ResolveEntry(id)))->m_fn =
+    (*((CActRegPool<CLightFx>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CLightFx::AdvanceAnim);
 }
 

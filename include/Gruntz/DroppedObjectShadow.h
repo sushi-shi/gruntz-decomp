@@ -30,9 +30,5 @@ public:
 };
 SIZE(0x54);
 
-struct CShadowActEntry {
-    i32 (CUserLogic::*m_fn)();
-};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CDROPPEDOBJECTSHADOW_H

@@ -73,10 +73,6 @@ public:
 };
 SIZE(0x70);
 
-typedef i32 (CUserLogic::*TeleporterHandler)();
-struct CTeleporterActEntry {
-    TeleporterHandler m_fn;
-};
 SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
 #endif // GRUNTZ_CTELEPORTER_H

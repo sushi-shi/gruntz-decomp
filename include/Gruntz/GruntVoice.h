@@ -41,11 +41,7 @@ public:
 };
 SIZE(0x78);
 
-typedef i32 (CUserLogic::*VActHandler)(); // == CActHandler (the slot type)
-struct CVActEntry {
-    VActHandler m_fn; // [entry]
-};
-SIZE_UNKNOWN();
+typedef i32 (CUserLogic::*CActHandler)(); // == CActHandler (the slot type)
 
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the

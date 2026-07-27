@@ -47,10 +47,7 @@ public:
 };
 SIZE_UNKNOWN();
 
-typedef i32 (CUserLogic::*ProjActHandler)(); // == CActHandler (the slot type)
-struct CActionAreaActEntry {
-    ProjActHandler m_fn; // [entry] - the registered handler
-};
+typedef i32 (CUserLogic::*CActHandler)(); // == CActHandler (the slot type)
 SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the

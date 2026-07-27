@@ -29,11 +29,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-typedef i32 (CUserLogic::*SelectedActHandler)();
-struct CSelectedActEntry {
-    SelectedActHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 
 #endif // GRUNTZ_CGRUNTSELECTEDSPRITE_H

@@ -40,6 +40,5 @@ public:
 };
 SIZE_UNKNOWN();
 
-typedef i32 (CUserLogic::*ToyPeekActHandler)();
 
 #endif // GRUNTZ_CTOYPEEK_H

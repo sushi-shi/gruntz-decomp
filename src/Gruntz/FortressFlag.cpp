@@ -23,7 +23,7 @@
 #include <rva.h>
 #include <rva.h>
 
-// The handler entry record (FortressFlagHandler/CFortressFlagActEntry, the PMF slot,
+// The handler entry record (CActHandler/CActHandler, the PMF slot,
 // proven at 0x46080/0x461e0) is defined in <Gruntz/FortressFlag.h> after the
 // complete class. (The retail grow-path allocs 0xc-byte nodes, so the real record may
 // carry 2 more fields at +4/+8 that no code in this TU touches - @identity-TODO; the
@@ -40,8 +40,8 @@ CActReg CActRegPool<CParticlez>::s_table(2000, 2010);
 template<> DATA(0x002447f8)
 CActReg CActRegPool<CExplosion>::s_table(2000, 2010);
 
-static inline CPartEntry* PartLookup(i32 coord) {
-    return reinterpret_cast<CPartEntry*>(CActRegPool<CParticlez>::s_table.ResolveEntry(coord));
+static inline CActHandler* PartLookup(i32 coord) {
+    return (CActRegPool<CParticlez>::s_table.ResolveEntry(coord));
 }
 
 static inline i32 RegisterActionName() {
@@ -173,14 +173,10 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x00046080, 0x102)
 void CFortressFlag::FireActivation(i32 coord) {
-    CFortressFlagActEntry* e = reinterpret_cast<CFortressFlagActEntry*>(
-        CActRegPool<CFortressFlag>::s_table.ResolveEntry(coord)
-    );
-    if (e->m_fn != 0) {
-        CFortressFlagActEntry* e2 = reinterpret_cast<CFortressFlagActEntry*>(
-            CActRegPool<CFortressFlag>::s_table.ResolveEntry(coord)
-        );
-        (this->*(e2->m_fn))();
+    CActHandler* e = (CActRegPool<CFortressFlag>::s_table.ResolveEntry(coord));
+    if ((*e) != 0) {
+        CActHandler* e2 = (CActRegPool<CFortressFlag>::s_table.ResolveEntry(coord));
+        (this->*((*e2)))();
     }
 }
 
@@ -212,8 +208,7 @@ void CFortressFlag::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CFortressFlagActEntry*>(CActRegPool<CFortressFlag>::s_table.ResolveEntry(id)))
-        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CFortressFlag::AdvanceAnim);
+    (*((CActRegPool<CFortressFlag>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CFortressFlag::AdvanceAnim);
 }
 
 RVA(0x000463e0, 0x17)
@@ -258,18 +253,18 @@ i32 CFortressFlag::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* 
 // this->edi). Full fast-range/GrowTo/breadcrumb logic + offsets byte-faithful;
 // not steerable.
 template<> RVA(0x000464e0, 0x74)
-char* zDArray<CActHandler>::Resolve(i32 id) {
+CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
     m_grown = 0;
     if (id >= m_lo && id <= m_hi) {
-        return m_base + (id - m_lo) * m_stride;
+        return reinterpret_cast<CActHandler*>(m_base + (id - m_lo) * m_stride);
     }
     if (GrowTo(id, 0)) { // 0x16da80 = _zvec::GrowTo (inherited)
-        return m_base + (id - m_lo) * m_stride;
+        return reinterpret_cast<CActHandler*>(m_base + (id - m_lo) * m_stride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     m_errSink->Set(this, item, 0xc);
-    return m_spare;
+    return reinterpret_cast<CActHandler*>(m_spare);
 }
 
 RVA(0x00046850, 0xf1)
@@ -362,10 +357,10 @@ CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x00046d30, 0x102)
 void CParticlez::FireActivation(i32 coord) {
-    CPartEntry* e = PartLookup(coord);
-    if (e->m_fn != 0) {
-        CPartEntry* e2 = PartLookup(coord);
-        (this->*(e2->m_fn))();
+    CActHandler* e = PartLookup(coord);
+    if ((*e) != 0) {
+        CActHandler* e2 = PartLookup(coord);
+        (this->*((*e2)))();
     }
 }
 
@@ -398,7 +393,7 @@ void CParticlez::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CPartEntryI32*>(PartLookup(id)))->m_fn =
+    (*((PartLookup(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CParticlez::Update);
 }
 
@@ -437,13 +432,11 @@ CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x00047350, 0x102)
 void CExplosion::FireActivation(i32 id) {
-    CExplosionActEntry* e =
-        reinterpret_cast<CExplosionActEntry*>(CActRegPool<CExplosion>::s_table.ResolveEntry(id));
-    if (e->m_fn != 0) {
-        CExplosionActEntry* e2 = reinterpret_cast<CExplosionActEntry*>(
-            CActRegPool<CExplosion>::s_table.ResolveEntry(id)
-        );
-        (this->*(e2->m_fn))();
+    CActHandler* e =
+        (CActRegPool<CExplosion>::s_table.ResolveEntry(id));
+    if ((*e) != 0) {
+        CActHandler* e2 = (CActRegPool<CExplosion>::s_table.ResolveEntry(id));
+        (this->*((*e2)))();
     }
 }
 
@@ -462,6 +455,6 @@ void RegisterXLogic_6447f8() {
 }
 
 
-// (CFortressFlagActEntry/CPartEntry/CPartEntryI32 SIZE_UNKNOWN live beside their
+// (the act-slot registries live beside their
 //  CActReg.) The ex-WwdRefSlot "+0x158 ref-index array" view is DISSOLVED: it was
 //  m_options[i].m_008 - the per-player sprite descriptor (stride 0x238, base +0x150+8).

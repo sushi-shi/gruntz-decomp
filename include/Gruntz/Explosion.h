@@ -28,10 +28,6 @@ public:
 };
 SIZE(0x54);
 
-typedef i32 (CUserLogic::*ExplosionActHandler)();
-struct CExplosionActEntry {
-    ExplosionActHandler m_fn;
-};
 SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
 #endif // GRUNTZ_CEXPLOSION_H

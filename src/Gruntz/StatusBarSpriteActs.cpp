@@ -89,14 +89,10 @@ CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj), CWapX(ob
 
 RVA(0x0010c4b0, 0x102)
 void CStatusBarSprite::FireActivation(i32 coord) {
-    CStatusBarSpriteActEntry* e = reinterpret_cast<CStatusBarSpriteActEntry*>(
-        CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(coord)
-    );
-    if (e->m_fn != 0) {
-        CStatusBarSpriteActEntry* e2 = reinterpret_cast<CStatusBarSpriteActEntry*>(
-            CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(coord)
-        );
-        (this->*(e2->m_fn))();
+    CActHandler* e = (CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(coord));
+    if ((*e) != 0) {
+        CActHandler* e2 = (CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(coord));
+        (this->*((*e2)))();
     }
 }
 
@@ -128,10 +124,7 @@ void CStatusBarSprite::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CStatusBarSpriteActEntry*>(
-         CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(id)
-     ))
-        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CStatusBarSprite::AdvanceAnim);
+    (*((CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CStatusBarSprite::AdvanceAnim);
 }
 
 RVA(0x0010c810, 0x17)

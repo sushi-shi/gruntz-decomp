@@ -1,7 +1,7 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/Wormhole.h>        // (kept: Wormhole.cpp shares this TU-header's registry note)
-#include <Gruntz/ExitTrigger.h>     // the owning class (act dispatcher + CExitActEntry)
+#include <Gruntz/ExitTrigger.h>     // the owning class (act dispatcher)
 #include <Gruntz/UserLogic.h>
 
 #include <rva.h>
@@ -21,13 +21,11 @@ CActReg CActRegPool<CExitTrigger>::s_table(2000, 2010);
 // archetype as CParticlez::FireActivation (double ResolveEntry + PMF dispatch).
 RVA(0x0003f290, 0x102)
 void CExitTrigger::FireActivation(i32 coord) {
-    CExitActEntry* e =
-        reinterpret_cast<CExitActEntry*>(CActRegPool<CExitTrigger>::s_table.ResolveEntry(coord));
-    if (e->m_fn != 0) {
-        CExitActEntry* e2 = reinterpret_cast<CExitActEntry*>(
-            CActRegPool<CExitTrigger>::s_table.ResolveEntry(coord)
-        );
-        (this->*(e2->m_fn))();
+    CActHandler* e =
+        (CActRegPool<CExitTrigger>::s_table.ResolveEntry(coord));
+    if ((*e) != 0) {
+        CActHandler* e2 = (CActRegPool<CExitTrigger>::s_table.ResolveEntry(coord));
+        (this->*((*e2)))();
     }
 }
 
@@ -59,6 +57,6 @@ void CExitTrigger::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CExitActEntry*>(CActRegPool<CExitTrigger>::s_table.ResolveEntry(id)))->m_fn =
+    (*((CActRegPool<CExitTrigger>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CExitTrigger::AdvanceAnim);
 }

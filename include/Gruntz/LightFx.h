@@ -49,11 +49,6 @@ public:
 };
 SIZE(0x5c);
 
-typedef i32 (CUserLogic::*LightFxHandler)();
-struct CLightFxActEntry {
-    LightFxHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 
 #endif // GRUNTZ_GRUNTZ_CLIGHTFX_H

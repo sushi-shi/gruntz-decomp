@@ -33,11 +33,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-typedef i32 (CUserLogic::*FrontCandyHandler)();
-struct CFrontCandyActEntry {
-    FrontCandyHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 
 #endif // GRUNTZ_CFRONTCANDYANI_H

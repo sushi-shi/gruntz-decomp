@@ -1127,9 +1127,6 @@ public:
 SIZE(0x8d8);
 
 typedef i32 (CGrunt::*GruntActHandler)();
-struct CGruntActEntry {
-    GruntActHandler m_fn;
-};
 SIZE(0x4);
 
 bool CGrunt_IsSameType(CGrunt* a, CGrunt* b);

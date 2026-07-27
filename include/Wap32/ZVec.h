@@ -43,7 +43,7 @@ public:
     zDArray(i32 lo, i32 hi);
     virtual ~zDArray() OVERRIDE;
 
-    char* Resolve(i32 id);
+    T* Resolve(i32 id); // out-of-line; the typed element slot
     T* ResolveEntry(i32 id); // the typed element slot
 };
 SIZE_UNKNOWN();

@@ -25,10 +25,6 @@ public:
 };
 SIZE(0x54);
 
-typedef i32 (CUserLogic::*StartActHandler)();
-struct StartActEntry {
-    StartActHandler m_fn;
-};
 SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the

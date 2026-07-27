@@ -86,13 +86,11 @@ CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj), CWapX(
 
 RVA(0x0003a5b0, 0x102)
 void CCursorSnapSprite::FireActivation(i32 id) {
-    CSnapActEntry* e =
-        reinterpret_cast<CSnapActEntry*>(CActRegPool<CCursorSnapSprite>::s_table.ResolveEntry(id));
-    if (e->m_fn != 0) {
-        CSnapActEntry* e2 = reinterpret_cast<CSnapActEntry*>(
-            CActRegPool<CCursorSnapSprite>::s_table.ResolveEntry(id)
-        );
-        (this->*(e2->m_fn))();
+    CActHandler* e =
+        (CActRegPool<CCursorSnapSprite>::s_table.ResolveEntry(id));
+    if ((*e) != 0) {
+        CActHandler* e2 = (CActRegPool<CCursorSnapSprite>::s_table.ResolveEntry(id));
+        (this->*((*e2)))();
     }
 }
 

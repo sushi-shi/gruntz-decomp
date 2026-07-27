@@ -39,11 +39,6 @@ public:
 };
 SIZE(0x54);
 
-typedef i32 (CUserLogic::*AniCycleHandler)();
-struct CAniCycleActEntry {
-    AniCycleHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 
 #endif // GRUNTZ_CANICYCLE_H

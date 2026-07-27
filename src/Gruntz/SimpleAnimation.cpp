@@ -64,7 +64,7 @@ static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
     return r;
 }
 
-// the act tables hold CActHandler (== every per-TU *ActHandler typedef), so the
+// the act tables hold CActHandler (== every per-TU *CActHandler typedef), so the
 // element pun lives here, at the resolver, instead of at each slot read/write
 static inline CActHandler* ResolveSlot(_zdvec* v, i32 idx) {
     i32 lo = v->m_lo;
@@ -99,13 +99,12 @@ CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(ob
     }
 }
 
-typedef i32 (CUserLogic::*LogicFn)();
 
 RVA(0x000abc10, 0x102)
 void CSimpleAnimation::FireActivation(i32 idx) {
     if (*reinterpret_cast<void**>(ResolveSlot(&CActRegPool<CSimpleAnimation>::s_table, idx)) != 0) {
-        LogicFn fn =
-            *reinterpret_cast<LogicFn*>(ResolveSlot(&CActRegPool<CSimpleAnimation>::s_table, idx));
+        CActHandler fn =
+            *reinterpret_cast<CActHandler*>(ResolveSlot(&CActRegPool<CSimpleAnimation>::s_table, idx));
         (this->*fn)();
     }
 }
@@ -135,8 +134,8 @@ void RegisterSimpleAnimLogic() {
         g_typeCounter++;
     }
     CActHandler* dslot = ResolveSlot(&CActRegPool<CSimpleAnimation>::s_table, idx);
-    *reinterpret_cast<SimpleAnimHandler*>(dslot) =
-        static_cast<SimpleAnimHandler>(&CSimpleAnimation::AdvanceAnim);
+    *reinterpret_cast<CActHandler*>(dslot) =
+        static_cast<CActHandler>(&CSimpleAnimation::AdvanceAnim);
 }
 
 RVA(0x000abf70, 0x17)

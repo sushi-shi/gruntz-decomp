@@ -325,12 +325,9 @@ static inline CString* ActNameSlots() {
             *slot = (key);                                    \
             g_typeCounter++;                                                                       \
         }                                                                                          \
-        /* CGruntActEntry re-types the slot to the DERIVED member pointer retail    */         \
-        /* actually stores: routing it through the pool's CActHandler needs a         */         \
-        /* base-conversion static_cast, which cl emits as an adjustment and costs     */         \
-        /* RegisterActs 94.69 -> 17.19. The one-member overlay is byte-forced.        */         \
-        (reinterpret_cast<CGruntActEntry*>(CActRegPool<CGrunt>::s_table.Resolve(id)))->m_fn =    \
-            reinterpret_cast<GruntActHandler>(handler);                                          \
+        /* a derived-to-base member-pointer conversion is a reinterpret (bit copy),   */        \
+        /* never a static_cast - cl emits an adjustment for the latter.                */        \
+        *CActRegPool<CGrunt>::s_table.Resolve(id) = reinterpret_cast<CActHandler>(handler);      \
     }
 
 // @early-stop
@@ -1886,15 +1883,9 @@ i32 GruntSpawnPump(CGameObject* owner) {
 
 RVA(0x0005bcd0, 0x102)
 void CGrunt::FireActivation(i32 id) {
-    // the same byte-forced derived-member-pointer overlay as the register macro
-    CGruntActEntry* e =
-        reinterpret_cast<CGruntActEntry*>(CActRegPool<CGrunt>::s_table.ResolveEntry(id));
-    if (e->m_fn != 0) {
-        (this
-             ->*(reinterpret_cast<CGruntActEntry*>(
-                     CActRegPool<CGrunt>::s_table.ResolveEntry(id)
-                 ))
-             ->m_fn)();
+    CActHandler* e = CActRegPool<CGrunt>::s_table.ResolveEntry(id);
+    if (*e != 0) {
+        (this->*(*CActRegPool<CGrunt>::s_table.ResolveEntry(id)))();
     }
 }
 

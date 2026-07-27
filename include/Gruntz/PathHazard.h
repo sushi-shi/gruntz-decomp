@@ -104,9 +104,5 @@ public:
 };
 SIZE(0x130);
 
-struct CPathHazardActEntry {
-    i32 (CUserLogic::*m_fn)();
-};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CPATHHAZARD_H

@@ -25,10 +25,8 @@ CActReg CActRegPool<CSecretTeleporterTrigger>::s_table(2000, 2010);
 template<> DATA(0x00244598)
 CActReg CActRegPool<CSecretLevelTrigger>::s_table(2000, 2010);
 
-static inline CActEntry* ActLookup(i32 coord) {
-    return reinterpret_cast<CActEntry*>(
-        CActRegPool<CSecretTeleporterTrigger>::s_table.ResolveEntry(coord)
-    );
+static inline CActHandler* ActLookup(i32 coord) {
+    return (CActRegPool<CSecretTeleporterTrigger>::s_table.ResolveEntry(coord));
 }
 
 RVA(0x00010a10, 0x47)
@@ -97,10 +95,10 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
 
 RVA(0x00042150, 0x102)
 void CSecretTeleporterTrigger::FireActivation(i32 coord) {
-    CActEntry* e = ActLookup(coord);
-    if (e->m_fn != 0) {
-        CActEntry* e2 = ActLookup(coord);
-        (this->*(e2->m_fn))();
+    CActHandler* e = ActLookup(coord);
+    if ((*e) != 0) {
+        CActHandler* e2 = ActLookup(coord);
+        (this->*((*e2)))();
     }
 }
 
@@ -134,7 +132,7 @@ void CSecretTeleporterTrigger::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CTelActEntry*>(ActLookup(id)))->m_fn =
+    (*((ActLookup(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CSecretTeleporterTrigger::SpawnTeleporter);
 }
 
@@ -158,14 +156,10 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj), CW
 
 RVA(0x00042760, 0x102)
 void CSecretLevelTrigger::FireActivation(i32 coord) {
-    CSecretActEntry* e = reinterpret_cast<CSecretActEntry*>(
-        CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(coord)
-    );
-    if (e->m_fn != 0) {
-        CSecretActEntry* e2 = reinterpret_cast<CSecretActEntry*>(
-            CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(coord)
-        );
-        (this->*(e2->m_fn))();
+    CActHandler* e = (CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(coord));
+    if ((*e) != 0) {
+        CActHandler* e2 = (CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(coord));
+        (this->*((*e2)))();
     }
 }
 
@@ -197,8 +191,7 @@ void CSecretLevelTrigger::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CSecretActEntry*>(CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(id)))
-        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CSecretLevelTrigger::Tick);
+    (*((CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CSecretLevelTrigger::Tick);
 }
 
 RVA(0x00042ac0, 0x90)

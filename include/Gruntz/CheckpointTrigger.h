@@ -25,9 +25,5 @@ public:
 };
 SIZE(0x94);
 
-struct CCheckpointActEntry {
-    i32 (CUserLogic::*m_fn)();
-};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CCHECKPOINTTRIGGER_H

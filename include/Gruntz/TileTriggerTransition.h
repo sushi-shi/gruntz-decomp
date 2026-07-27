@@ -29,10 +29,5 @@ public:
 };
 SIZE_UNKNOWN();
 
-typedef i32 (CUserLogic::*TileActHandler)();
-struct TileActEntry {
-    TileActHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_TILETRIGGERTRANSITION_H

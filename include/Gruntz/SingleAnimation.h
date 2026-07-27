@@ -33,11 +33,6 @@ public:
 };
 SIZE(0x54);
 
-typedef i32 (CUserLogic::*SingleAnimHandler)();
-struct CSingleAnimActEntry {
-    SingleAnimHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 
 #endif // GRUNTZ_CSINGLEANIMATION_H

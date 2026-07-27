@@ -34,8 +34,8 @@ const double g_slimeSpeedNum = 32.0;
 template<> DATA(0x00246228)
 CActReg CActRegPool<CKitchenSlime>::s_table(2000, 2010);
 
-static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
-    return reinterpret_cast<CKSlimeEntry*>(CActRegPool<CKitchenSlime>::s_table.ResolveEntry(coord));
+static inline CActHandler* KSlimeLookup(i32 coord) {
+    return (CActRegPool<CKitchenSlime>::s_table.ResolveEntry(coord));
 }
 
 // CKitchenSlime::~CKitchenSlime @0x013100 - the leaf adds no destructible members
@@ -186,10 +186,10 @@ void CKitchenSlime::RegisterType() {
 
 RVA(0x000b2940, 0x102)
 void CKitchenSlime::FireActivation(i32 coord) {
-    CKSlimeEntry* e = KSlimeLookup(coord);
-    if (e->m_fn != 0) {
-        CKSlimeEntry* e2 = KSlimeLookup(coord);
-        (this->*(e2->m_fn))();
+    CActHandler* e = KSlimeLookup(coord);
+    if ((*e) != 0) {
+        CActHandler* e2 = KSlimeLookup(coord);
+        (this->*((*e2)))();
     }
 }
 

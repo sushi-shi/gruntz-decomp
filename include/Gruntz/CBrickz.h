@@ -43,10 +43,5 @@ public:
 };
 SIZE(0x54); // CUserLogic (0x34) + CWapX (0x20)
 
-typedef i32 (CUserLogic::*BrickzHandler)();
-struct CBrickzActEntry {
-    BrickzHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CBRICKZ_H

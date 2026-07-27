@@ -41,14 +41,10 @@ CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
 
 RVA(0x0007f5c0, 0x102)
 void CGruntToySprite::FireActivation(i32 id) {
-    if ((reinterpret_cast<CToyActEntry*>(CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))
-            ->m_fn
+    if ((*((CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id))))
         != 0) {
         (this
-             ->*(reinterpret_cast<CToyActEntry*>(
-                 CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)
-             ))
-             ->m_fn)();
+             ->*(*((CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -80,8 +76,7 @@ void CGruntToySprite::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CToyActEntry*>(CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))
-        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CGruntToySprite::Update);
+    (*((CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CGruntToySprite::Update);
 }
 
 RVA(0x0007f920, 0x21)

@@ -43,16 +43,10 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj), CWap
 
 RVA(0x0007ed70, 0x102)
 void CGruntHealthSprite::FireActivation(i32 id) {
-    if ((reinterpret_cast<CHealthActEntry*>(
-             CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)
-         ))
-            ->m_fn
+    if ((*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id))))
         != 0) {
         (this
-             ->*(reinterpret_cast<CHealthActEntry*>(
-                 CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)
-             ))
-             ->m_fn)();
+             ->*(*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -95,8 +89,7 @@ void CGruntHealthSprite::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (reinterpret_cast<CHealthActEntry*>(CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))
-        ->m_fn = static_cast<i32 (CUserLogic::*)()>(&CGruntHealthSprite::HealthUpdate);
+    (*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CGruntHealthSprite::HealthUpdate);
 }
 
 RVA(0x0007f0d0, 0x6e)

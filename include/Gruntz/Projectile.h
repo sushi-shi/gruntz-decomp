@@ -88,10 +88,6 @@ public:
     // the derived CBoomerang (<Gruntz/Boomerang.h>), NOT here - see StepMotion.
 };
 
-typedef i32 (CUserLogic::*ProjActHandler)();
-struct CProjActEntry {
-    ProjActHandler m_fn;
-};
 SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
 
 extern const double g_movingLogicMax; // 0x1f04b8 (2147483646.0)

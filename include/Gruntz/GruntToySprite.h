@@ -38,11 +38,6 @@ public:
 };
 SIZE(0x60); // new-site ground truth (0x7dda0 `push 0x60; call ??2`)
 
-typedef i32 (CUserLogic::*ToyActHandler)();
-struct CToyActEntry {
-    ToyActHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 
 #endif // GRUNTZ_CGRUNTTOYSPRITE_H

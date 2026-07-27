@@ -84,14 +84,14 @@ static inline i32 RegisterActionName() {
     return id;
 }
 
-typedef i32 (CUserLogic::*MenuSparkleActHandler)(); // == CActHandler (the slot type)
+typedef i32 (CUserLogic::*CActHandler)(); // == CActHandler (the slot type)
 
 RVA(0x000ade60, 0x102)
 void CMenuSparkle::FireActivation(i32 coord) {
     CActHandler* e = CActRegPool<CMenuSparkle>::s_table.ResolveEntry(coord);
     if (*e != 0) {
         CActHandler* e2 = CActRegPool<CMenuSparkle>::s_table.ResolveEntry(coord);
-        MenuSparkleActHandler h = *e2;
+        CActHandler h = *e2;
         (this->*h)();
     }
 }

@@ -62,7 +62,7 @@ static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
     return r;
 }
 
-// the act tables hold CActHandler (== every per-TU *ActHandler typedef), so the
+// the act tables hold CActHandler (== every per-TU *CActHandler typedef), so the
 // element pun lives here, at the resolver, instead of at each slot read/write
 static inline CActHandler* ResolveSlot(_zdvec* v, i32 idx) {
     i32 lo = v->m_lo;
@@ -575,7 +575,7 @@ void RegisterIconActions() {
     }
     CActHandler* dslotA = ResolveSlot(&CActRegPool<CInGameIcon>::s_table, idxA);
     *dslotA =
-        static_cast<IconActHandler>(&CInGameIcon::PeekCycle);
+        static_cast<CActHandler>(&CInGameIcon::PeekCycle);
 
     i32 idxB = ActFindId("B");
     if (idxB == 0) {
@@ -586,7 +586,7 @@ void RegisterIconActions() {
     }
     CActHandler* dslotB = ResolveSlot(&CActRegPool<CInGameIcon>::s_table, idxB);
     *dslotB =
-        static_cast<IconActHandler>(&CInGameIcon::Reposition);
+        static_cast<CActHandler>(&CInGameIcon::Reposition);
 }
 
 RVA(0x00097de0, 0x102)
@@ -621,7 +621,7 @@ void RegisterIconState() {
     }
     CActHandler* dslot = ResolveSlot(&CActRegPool<CToyPeek>::s_table, idx);
     *dslot =
-        static_cast<ToyPeekActHandler>(&CInGameIcon::RefreshCell);
+        static_cast<CActHandler>(&CInGameIcon::RefreshCell);
 }
 
 RVA(0x00098340, 0x71)
@@ -958,7 +958,6 @@ i32 CInGameIcon::SerializeMove(CFileMemBase*, i32, i32, CGameObject*) {
     return 0;
 }
 
-typedef i32 (CUserLogic::*LogicFn)();
 
 // CInGameText::CInGameText @0x099110 - fold the shared CUserLogic(obj) init, then
 // (unless the registry is in the no-place mode m_134==2) bind the "A" bute node,
@@ -1016,8 +1015,8 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 RVA(0x00099460, 0x102)
 void CInGameText::FireActivation(i32 idx) {
     if (*reinterpret_cast<void**>(ResolveSlot(&CActRegPool<CInGameText>::s_table, idx)) != 0) {
-        LogicFn fn =
-            *reinterpret_cast<LogicFn*>(ResolveSlot(&CActRegPool<CInGameText>::s_table, idx));
+        CActHandler fn =
+            *reinterpret_cast<CActHandler*>(ResolveSlot(&CActRegPool<CInGameText>::s_table, idx));
         (this->*fn)();
     }
 }
@@ -1048,7 +1047,7 @@ void RegisterTextLogic() {
         g_typeCounter++;
     }
     CActHandler* dslot = ResolveSlot(&CActRegPool<CInGameText>::s_table, idx);
-    *dslot = static_cast<IconActHandler>(&CInGameText::Update);
+    *dslot = static_cast<CActHandler>(&CInGameText::Update);
 }
 
 RVA(0x00099a30, 0xaa)

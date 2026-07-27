@@ -49,9 +49,5 @@ public:
 };
 SIZE(0x98);
 
-struct CDropperActEntry {
-    i32 (CUserLogic::*m_fn)();
-};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_COBJECTDROPPER_H

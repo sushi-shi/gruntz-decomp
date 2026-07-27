@@ -26,10 +26,5 @@ public:
 };
 SIZE(0x54);
 
-typedef i32 (CUserLogic::*WarpStonePadHandler)();
-struct CWarpStonePadActEntry {
-    WarpStonePadHandler m_fn;
-};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CWARPSTONEPAD_H
