@@ -193,8 +193,8 @@ public:
     // +0x008/+0x184: the driver + HEL DDCAPS blocks (0x17c B each; the SDK DDCAPS'
     // sizeof differs across DX versions, so raw dword storage + LPDDCAPS casts at
     // the GetCaps call - the CMoviePlayer view models its copy the same way).
-    i32 m_driverCaps[0x5f]; // +0x008  driver DDCAPS (GetCapsChecked fills)
-    i32 m_helCaps[0x5f];    // +0x184  HEL DDCAPS (GetCapsChecked fills)
+    DDCAPS m_driverCaps; // +0x008  driver caps (GetCapsChecked fills; 0x17c == 0x5f*4)
+    DDCAPS m_helCaps;    // +0x184  HEL caps
     char _pad300[0x47c - 0x300];
     CPtrList m_poolA; // +0x47c  (block size 0xa) - CFileImageSurface* (pool-A items)
     CPtrList m_poolB; // +0x498  (block size 0xa) - CDDPalette*
