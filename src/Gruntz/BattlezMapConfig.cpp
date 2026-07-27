@@ -499,18 +499,38 @@ i32 CBattlezMapConfig::StepBoard() {
                     unit->m_defenderState = 0;
                 }
                 (static_cast<CGrunt*>(unit))->LoadPickupSprites(unit->m_2e4, 0, 0, 1, 1);
-                if (mode == 0x12 || (mode == 0x16 && unit->CoordCount() != 0)) {
-                    GruntCoordNode* n = unit->CoordHead();
-                    while (n != 0) {
-                        GruntCoordNode* cur = n;
-                        n = n->m_next;
-                        if (cur->m_coord != 0) {
-                            CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
-                            node->m_next = g_coordPool.m_freeHead;
-                            g_coordPool.m_freeHead = node;
+                // retail 0x2623e: TWO separate guarded recycles (0x26283 for mode
+                // 0x12, 0x26248 for 0x16), each `if (CoordCount()) { walk; RemoveAll; }`
+                // - cl tail-merges only the shared RemoveAll at 0x262bc, so the source
+                // really does spell the block twice.
+                if (mode == 0x12) {
+                    if (unit->CoordCount() != 0) {
+                        GruntCoordNode* n = unit->CoordHead();
+                        while (n != 0) {
+                            GruntCoordNode* cur = n;
+                            n = n->m_next;
+                            if (cur->m_coord != 0) {
+                                CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
+                                node->m_next = g_coordPool.m_freeHead;
+                                g_coordPool.m_freeHead = node;
+                            }
                         }
+                        unit->m_31c.RemoveAll();
                     }
-                    unit->m_31c.RemoveAll();
+                } else if (mode == 0x16) {
+                    if (unit->CoordCount() != 0) {
+                        GruntCoordNode* n = unit->CoordHead();
+                        while (n != 0) {
+                            GruntCoordNode* cur = n;
+                            n = n->m_next;
+                            if (cur->m_coord != 0) {
+                                CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
+                                node->m_next = g_coordPool.m_freeHead;
+                                g_coordPool.m_freeHead = node;
+                            }
+                        }
+                        unit->m_31c.RemoveAll();
+                    }
                 }
                 break;
             }
@@ -4973,10 +4993,12 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
         if (unit->m_2d8 == 0xb) {
             continue;
         }
+        // retail 0x30600: only TWO guards (count, head) then straight into the body -
+        // the walk is a do/while, not a `while` (which would peel a third test).
         if (unit->CoordCount() != 0 && unit->CoordHead() != 0) {
             CMapMgr* board = m_board;
             GruntCoordNode* node = unit->CoordHead();
-            while (node != 0) {
+            do {
                 GruntCoordNode* cur = node;
                 node = node->m_next;
                 GruntCoord* c = cur->m_coord;
@@ -4992,7 +5014,7 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
                 if ((tile & 4) && x == qx && y == qy) {
                     return 1;
                 }
-            }
+            } while (node != 0);
         }
         if ((unit->m_entrancePxX >> 5) == qx && (unit->m_entrancePxY >> 5) == qy) {
             return 1;
@@ -5528,7 +5550,12 @@ inflight: {
     {
         CGameObject* s = cur->m_object;
         if (g->RectContains(s->m_screenX, s->m_screenY) != 0) {
-            // arrived on this tile: latch the move
+            // arrived on this tile: latch the move.  retail 0x3191e recycles the
+            // tracked coordz FIRST (guard + walk + RemoveAll, tail-merged with the
+            // 0x318a3 copy at 0x262bc-style shared exit) - this block was missing.
+            if (g->CoordCount() != 0) {
+                MOVE_RECYCLE(g);
+            }
             g->m_arrivalCol = -1;
             g->m_arrivalRow = -1;
             winapi_02ae00_IntersectRect(g, cur);
@@ -6230,7 +6257,9 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
             return 1;
         }
         unit->m_2d8 = 4;
-        {
+        // retail 0x34d2e re-reads CoordCount here (TileSwitch above can have
+        // re-populated the list) - the guard was missing.
+        if (unit->CoordCount() != 0) {
             GruntCoordNode* n = unit->CoordHead();
             while (n != 0) {
                 GruntCoordNode* cur = n;
@@ -6239,8 +6268,8 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
                     g_coordPool.Push(cur->m_coord);
                 }
             }
+            unit->m_31c.RemoveAll();
         }
-        unit->m_31c.RemoveAll();
     } else {
         unit->m_2d8 = 4;
         if (unit->CoordCount() != 0) {
