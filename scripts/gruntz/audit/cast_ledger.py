@@ -113,9 +113,17 @@ def main() -> int:
         print("   %6d  %s" % (n, name))
 
     if not args.summary:
+        # Print EVERY file. This listing is the campaign worklist, so a cap does not
+        # tidy the output - it silently hides work. A [:40] here left 29 single-site
+        # files invisible while the header still said "122 OPEN", and the by-file
+        # column summed to 93. Partitioning off that list would have retired the
+        # campaign with those sites never looked at.
         print("\nOPEN by file (the campaign worklist - each needs a model fix or a reason):")
-        for f, rows in sorted(openv.items(), key=lambda kv: -len(kv[1]))[:40]:
+        listed = 0
+        for f, rows in sorted(openv.items(), key=lambda kv: (-len(kv[1]), str(kv[0]))):
             print("   %4d  %s" % (len(rows), f))
+            listed += len(rows)
+        assert listed == n_open, "by-file listing (%d) != OPEN total (%d)" % (listed, n_open)
 
     if args.max is not None and n_open > args.max:
         print("cast-ledger: OPEN %d exceeds the %d ratchet" % (n_open, args.max))
