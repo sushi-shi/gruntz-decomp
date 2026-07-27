@@ -2063,12 +2063,12 @@ i32 CPlay::ClampViewport2(i32 stride) {
     CGruntzMgr* w = m_mgr;
     CStatusBarMgr* guts = m_guts;
 
-    i32* rp = reinterpret_cast<i32*>(&v->m_level->m_planeCtx);
+    const LevelCoordRect& rp = v->m_level->m_planeCtx; // LevelCoordRect IS tagRECT
     RECT r;
-    r.left = rp[0];
-    r.top = rp[1];
-    r.right = rp[2];
-    r.bottom = rp[3];
+    r.left = rp.left;
+    r.top = rp.top;
+    r.right = rp.right;
+    r.bottom = rp.bottom;
 
     i32 hlimit = w->m_modeW;
     i32 vlimit = w->m_modeH;
@@ -2229,16 +2229,16 @@ i32 CPlay::OnRegion4(i32 z) // (region-3 / gate m_region3Gate, timer +0x460)
 RVA(0x000d9050, 0xc7)
 i32 CPlay::NotifyVisibleEntities() {
     CDDrawSurfaceMgr* v = m_world;
-    i32* vp = reinterpret_cast<i32*>(&v->m_level->m_planeCtx);
+    const LevelCoordRect& vp = v->m_level->m_planeCtx; // LevelCoordRect IS tagRECT
     CDDrawSurfacePair* held = v->m_drawTarget->m_backPair;
     CDDrawGroupNode* node =
         GroupHead(v->m_childGroup->m_list);
 
     RECT r;
-    r.left = vp[0];
-    r.top = vp[1];
-    r.right = vp[2] + 1;
-    r.bottom = vp[3] + 1;
+    r.left = vp.left;
+    r.top = vp.top;
+    r.right = vp.right + 1;
+    r.bottom = vp.bottom + 1;
     held->m_surface->Restore(&r, 0);
 
     while (node != 0) {
