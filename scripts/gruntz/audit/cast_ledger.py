@@ -6,13 +6,26 @@ mis-modeled (a member typed i32 that is really a pointer, a byte band standing i
 for a struct, a phantom view of a real class). Driving them out means fixing the
 declaration, not deleting the cast.
 
-Some casts are nonetheless FORCED - by MFC's API, by the Win32 ABI, or by a layout
-that C++ inheritance genuinely cannot express. Those are fine, but they must be
-*named*, not merely tolerated: an unexplained cast is indistinguishable from
-un-started work. So this ledger sorts every remaining cast into
+Some casts LOOK forced - by MFC's API, by the Win32 ABI, or by a layout C++ seems
+unable to express. Those must at least be *named*, because an unexplained cast is
+indistinguishable from un-started work. So this ledger sorts every remaining cast into
 
-  FORCED  - it sits in a recognised seam, or its line carries a reason
-  OPEN    - nobody has explained it yet; it is the campaign's worklist
+  PARKED  - it sits in a recognised seam, or its line carries a reason
+  OPEN    - nobody has examined it yet
+
+**PARKED IS NOT DONE** (user ruling, 2026-07-28): "reasons are never trusted and were
+always disproven. The only thing they can give is a bit higher confidence. We will
+still go through them in the future and most likely all of them will fold."
+
+The track record earns that. Reasons retested in one session: "API-forced:
+AFX_MODULE_STATE's layout lives in MFC's PRIVATE afxstat_.h" (false three ways - it
+ships in the include set, and the slot is just AfxGetApp()); "byte-forced" BMP header
+skips (a pad-view of BITMAPFILEHEADER/BITMAPINFO); "the PROVEN dual-band keep"; a
+"PROVEN dual-role slot" that was a pun propping up a wrong owner. None survived.
+
+So the number to drive to zero is the TOTAL, which `reinterpret_casts` already
+ratchets. OPEN reaching 0 means every cast has been LOOKED at once - a milestone, not
+the finish line. `gruntz.audit.cast_reasons` orders the parked ones for the next pass.
 
 and prints the OPEN ones grouped by file so the next pass has a work list rather
 than a number.  A cast counts as explained when the seam it lives in matches one
@@ -107,8 +120,10 @@ def main() -> int:
     n_open = sum(len(v) for v in openv.values())
     n_forced = sum(forced.values())
 
-    print("cast ledger: %d total  |  %d accounted for  |  %d OPEN"
-          % (n_forced + n_open, n_forced, n_open))
+    # Word this so PARKED can never be read as finished: the total is the metric.
+    print("cast ledger: %d casts total (the number to drive to 0)  |  %d never examined"
+          "  |  %d examined + parked, still expected to fold"
+          % (n_forced + n_open, n_open, n_forced))
     for name, n in forced.most_common():
         print("   %6d  %s" % (n, name))
 

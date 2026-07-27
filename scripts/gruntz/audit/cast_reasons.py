@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
-"""cast_reasons.py - is an "accounted for" cast actually accounted for?
+"""cast_reasons.py - order the parked casts for the next fold pass.
 
 `cast_ledger` sorts every reinterpret_cast into FORCED or OPEN, and drives OPEN to
 zero. But its FORCED test is lexical: a cast counts as explained the moment one of
 the closed-vocabulary words (`byte-forced`, `PROVEN`, `faithful`, ...) appears within
-three lines. That is the right gate for "did anyone look at this", and the wrong gate
-for "is the reason true" - a comment reading
+three lines. That is a fine gate for "did anyone look at this", and no gate at all on
+whether the reason is TRUE - a comment reading
 
     // byte-forced (see the note above)
 
 closes a site while asserting nothing a reviewer can check.
 
 So OPEN reaching 0 does not mean the campaign is finished; it means no site is
-UNTOUCHED. This tool asks the second question: of the prose-explained casts, which
-reasons carry something checkable against the binary?
+UNTOUCHED. This tool asks the follow-up: of the parked casts, which reasons carry
+anything checkable against the binary?
 
   CITED  the window names a retail RVA, a relocation, a mangled symbol, an x86
          mnemonic or register, or a concrete layout fact (sizeof/vtable/slot). A
@@ -21,10 +21,14 @@ reasons carry something checkable against the binary?
   SOFT   the vocabulary word is there and nothing else is. Indistinguishable from
          an unexamined cast that someone labelled.
 
-SOFT is not an accusation - plenty of these are real and just tersely written. It is
-a review queue, ordered so the least-supported claims get looked at first. The rule
-it enforces is the standing one: our own guesses do not get to cite themselves as
-evidence.
+Neither bucket is a keep. Per the standing ruling, a reason buys a little confidence
+and nothing more - essentially all of these are expected to fold on a real second
+pass, and every reason retested so far has. CITED has not "passed" anything; it is
+just better supported than SOFT.
+
+So read this as TRIAGE ORDER for the fold campaign - SOFT first, because those claims
+rest on nothing - not as a quality bar that closes sites. The number that has to reach
+zero is the total cast count, which `reinterpret_casts` ratchets.
 
     python -m gruntz.audit.cast_reasons             # counts + the SOFT queue
     python -m gruntz.audit.cast_reasons --summary   # counts only
