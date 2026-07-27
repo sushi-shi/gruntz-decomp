@@ -103,8 +103,9 @@ public:
     // (SoundStream::DestroyVoice/OpenStream).
     CDDrawSurfaceMgr* m_configTree;
     CGruntVoice* m_voices[2]; // +0x08/+0x0c  voice-sprite pair (indexed everywhere)
-    StreamVoice* m_stream0;   // +0x10  owned voice-stream pair (the real Dsndmgr StreamVoice)
-    StreamVoice* m_stream1;   // +0x14
+    // +0x10/+0x14: the owned voice-stream PAIR (the real Dsndmgr StreamVoice). It is
+    // an array, not two scalars - Clear/PickVoice/DtorBody all walk it with one cursor.
+    StreamVoice* m_streams[2];
     // ::CPtrArray, not CDWordArray: retail's ctor/SetSize calls land in [0x1b4f0b,
     // 0x1b527e), whose head stamps ??_7CPtrArray@@6B@ (mfc_class --audit).
     CPtrArray m_voiceLists; // +0x18  (vptr@0x18, m_pData@0x1c, m_nSize@0x20) - 0x14 bytes

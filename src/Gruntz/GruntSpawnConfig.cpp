@@ -39,8 +39,8 @@ BOOL CGruntSpawnConfig::Init(CGruntzMgr* owner) {
     m_configTree = 0;
     m_voices[0] = 0;
     m_voices[1] = 0;
-    m_stream0 = 0;
-    m_stream1 = 0;
+    m_streams[0] = 0;
+    m_streams[1] = 0;
     m_owner = owner;
     m_voiceVolume = 0x64;
     m_configTree = owner->m_world;
@@ -69,10 +69,10 @@ void CGruntSpawnConfig::Clear() {
     }
     m_voiceLists.SetSize(0, -1);
     if (m_configTree != 0 && m_configTree->m_soundStream != 0) {
-        void** p = reinterpret_cast<void**>(&m_stream0);
+        StreamVoice** p = m_streams;
         for (i32 k = 0; k < 2; k++) {
             if (p[0] != 0) {
-                m_configTree->m_soundStream->DestroyVoice(static_cast<StreamVoice*>(p[0]));
+                m_configTree->m_soundStream->DestroyVoice(p[0]);
                 p[0] = 0;
             }
             p++;
@@ -82,20 +82,20 @@ void CGruntSpawnConfig::Clear() {
     m_configTree = 0;
     m_voices[0] = 0;
     m_voices[1] = 0;
-    m_stream0 = 0;
-    m_stream1 = 0;
+    m_streams[0] = 0;
+    m_streams[1] = 0;
 }
 
 RVA(0x0011af00, 0x62)
 BOOL CGruntSpawnConfig::LoadGruntVoices() {
     ClearSprites();
     i32 i = 0;
-    void** slot = reinterpret_cast<void**>(m_voices);
+    CGruntVoice** slot = m_voices;
     for (; i < 2; i++, slot++) {
         CGameObject* spr =
             m_configTree->m_childGroup->CreateSprite(0, 0, 0, 0xdbba1, "GruntVoice", 0x4040003);
         spr->m_7c->m_notify(spr);
-        void* got = spr->m_7c->m_logic;
+        CGruntVoice* got = static_cast<CGruntVoice*>(spr->m_7c->m_logic);
         *slot = got;
         if (got == 0) {
             return 0;
@@ -199,7 +199,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     i32 b = v0c->m_playFlags;
     i32 c = v8->m_source;
     i32 d = v0c->m_source;
-    StreamVoice** streams = &m_stream0;
+    StreamVoice** streams = m_streams;
     // `who` IS the gate: the ex-CSpawnButeConfig view was CGrunt (its +0x10/+0x170/
     // +0x234/+0x258 are m_object/m_entranceReason/m_coordToggle/m_gruntKind), and the
     // ex-CSpawnActiveVoice at +0x10 was the bound CGameObject, whose +0x188 IS the
@@ -560,15 +560,15 @@ void CGruntSpawnConfig::StopVoice(i32 id) {
     i32 tag08 = m_voices[0]->m_source;
     i32 tag0c = m_voices[1]->m_source;
     if (tag08 == id) {
-        if (m_stream0 != 0) {
-            m_stream0->m_feeder.Pause();
+        if (m_streams[0] != 0) {
+            m_streams[0]->m_feeder.Pause();
         }
         if (m_voices[0] != 0) {
             m_voices[0]->Reset();
         }
     } else if (tag0c == id) {
-        if (m_stream1 != 0) {
-            m_stream1->m_feeder.Pause();
+        if (m_streams[1] != 0) {
+            m_streams[1]->m_feeder.Pause();
         }
         if (m_voices[1] != 0) {
             m_voices[1]->Reset();
@@ -578,15 +578,15 @@ void CGruntSpawnConfig::StopVoice(i32 id) {
 
 RVA(0x0011c7b0, 0x2d)
 void CGruntSpawnConfig::DtorBody() {
-    void** p = reinterpret_cast<void**>(m_voices);
+    // The two parallel pairs the old "p[2]" cursor spanned: m_voices[] @+0x08 and
+    // m_streams[] @+0x10 (p[2] was simply m_streams[k]).
     for (i32 k = 0; k < 2; k++) {
-        if (p[2] != 0) {
-            (static_cast<StreamVoice*>(p[2]))->m_feeder.Pause();
+        if (m_streams[k] != 0) {
+            m_streams[k]->m_feeder.Pause();
         }
-        if (p[0] != 0) {
-            (static_cast<CGruntVoice*>(p[0]))->Reset();
+        if (m_voices[k] != 0) {
+            m_voices[k]->Reset();
         }
-        p++;
     }
 }
 

@@ -149,6 +149,9 @@ void CProjActObj::RegisterType() {
         (*slot) = "A";
         g_typeCounter++;
     }
+    // language-forced: the slot type is a pointer-to-MEMBER (CActHandler =
+    // i32 (CUserLogic::*)()) and the registrar has a plain function address;
+    // C++ defines no conversion between them, so the store goes through the slot.
     *reinterpret_cast<void**>(R3Lookup(id)) = static_cast<void*>(&ProjActHandlerThunk);
 }
 

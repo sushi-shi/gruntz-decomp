@@ -247,6 +247,8 @@ i32 CWormhole::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
 
 RVA(0x00040050, 0x102)
 void CWormhole::FireActivation(i32 idx) {
+    // language-forced: the ActReg slot holds a pointer-to-MEMBER (CActHandler); the
+    // presence probe reads the same 4 bytes as the raw slot the registrar wrote.
     if (*reinterpret_cast<void**>(ResolveSlot(&CActRegPool<CWormhole>::s_table, idx)) != 0) {
         CActHandler fn =
             *reinterpret_cast<CActHandler*>(ResolveSlot(&CActRegPool<CWormhole>::s_table, idx));

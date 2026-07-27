@@ -119,7 +119,8 @@ void ActReg4RegisterType() {
         (*slot) = "A";
         g_typeCounter++;
     }
-    // raw-slot store: a plain fn ptr into the PMF slot (the registrar's own idiom;
-    // MSVC5 has no fn-ptr->PMF conversion, so the write goes through the raw slot).
+    // language-forced: a plain fn ptr into the pointer-to-MEMBER slot (CActHandler =
+    // i32 (CUserLogic::*)()); C++ defines no fn-ptr->PMF conversion, so the write
+    // goes through the raw slot.
     *reinterpret_cast<void**>(R4Lookup(id)) = static_cast<void*>(&ActReg4Handler);
 }
