@@ -19,7 +19,7 @@ i32 WarpIsPow2(i32 x); // 0x145e00 (defined in ImagePolyClip.cpp - birth positio
 
 extern i32 g_warpU;
 extern i32 g_warpV;
-extern void* g_warpTexBase;
+extern i16* g_warpTexBase;
 extern i32 g_warpUStep;
 extern i32 g_warpVStep;
 extern i32 g_warpUMask;

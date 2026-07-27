@@ -556,24 +556,32 @@ i32 CMultiBootyState::FrameSlot28(i32) {
     return 1;
 }
 
-// CMultiBootyState::QueryGruntSlots() (0x1ecf0): scan the four per-player registry
-// records (g_gameReg+0x174, stride 0x238); the first whose +0x4 is set but +0x0 is
-// clear yields its +0x150 field; none -> 0. (`this`/ecx is unused.)
+// CMultiBootyState::QueryGruntSlots() (0x1ecf0): return the index of the first player
+// who has JOINED but has not yet cleared this round; none -> 0. (`this`/ecx is unused.)
+// The retail walk is `g_gameReg+0x174 + i*0x238` reading +4/+0/-0x24, which is exactly
+// g_gameReg->m_options[i] (GruntzPlayer[4] at +0x150, stride 0x238) at its named fields
+// m_joined/m_clearedRound/m_playerIndex - the cursor just points into the record's
+// middle. Kept as a pointer cursor (`p++` == retail's `add eax,0x238`); an indexed
+// m_options[i] would cost an imul on the non-power-of-two stride.
 // @early-stop
-// 1-instruction-order wall (~94%): the `je`/test/loop shape is byte-exact; the sole
-// residual is the loop tail's `inc ecx` vs `add eax,0x238` order (a /O2 scheduling
-// coin-flip; the natural for-loop form is kept).
+// Retail BIASES the induction pointer into the middle of the record: its cursor holds
+// &m_options[i].m_clearedRound, so the three loads encode as [eax+4]/[eax]/[eax-0x24].
+// Our cl keeps the cursor at the record base and encodes [eax+0x24]/[eax+0x28]/[eax],
+// which costs the displacement bytes (~74% vs the ~94% the old raw-offset spelling got).
+// That spelling reached 94% only by hand-writing `(char*)g_gameReg + 0x174` - a banned
+// offset-cast that hid the array behind a byte cursor. The typed form is the real shape;
+// the residual is cl choosing a different induction bias, plus the tail's `inc ecx` vs
+// `add eax,0x238` order. MAX keeps the 94%.
 RVA(0x0001ecf0, 0x2a)
 i32 CMultiBootyState::QueryGruntSlots() {
-    char* base = reinterpret_cast<char*>(g_gameReg);
+    GruntzPlayer* p = g_gameReg->m_options;
     i32 i = 0;
-    char* rec = base + 0x174;
     while (i < 4) {
-        if (*reinterpret_cast<i32*>((rec + 4)) != 0 && *reinterpret_cast<i32*>(rec) == 0) {
-            return *reinterpret_cast<i32*>((rec - 0x24));
+        if (p->m_joined != 0 && p->m_clearedRound == 0) {
+            return p->m_playerIndex;
         }
         i++;
-        rec += 0x238;
+        p++;
     }
     return 0;
 }

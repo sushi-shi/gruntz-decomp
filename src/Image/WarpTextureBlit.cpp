@@ -29,7 +29,8 @@ i32 g_warpV = 0; // 0x6856f4  (v accumulator)
 DATA(0x002856f8)
 ClipVtx g_rasterEdgeR[4096]; // C linkage inherited from <Image/RasterVtx.h>
 DATA(0x002a16f8)
-void* g_warpTexBase = 0; // 0x6a16f8  (locked texture base)
+// this blitter is 16bpp throughout - texture, span and dest are all i16
+i16* g_warpTexBase = 0; // 0x6a16f8  (locked texture base)
 DATA(0x002a16fc)
 i32 g_warpUStep = 0; // 0x6a16fc  (u per-pixel step)
 DATA(0x002a1700)
@@ -140,7 +141,7 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
         } while (--count);
     }
 
-    g_warpTexBase = src->Lock(0);
+    g_warpTexBase = static_cast<i16*>(src->Lock(0));
     u8* destBase = static_cast<u8*>(dst->Lock(0));
     i32 dstPitch = dst->m_pitch;
     g_rasterDestRow = destBase + dstPitch * minY;
@@ -164,9 +165,11 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                 i32 dv = (lrow->fv - vv) / span;
                 g_warpV = vv << shift;
                 g_warpVStep = dv << shift;
+                // the row cursor advances by the surface PITCH (bytes) while the span
+                // is written as 16bpp pixels - the u8*->i16* step is that byte-forced seam
                 g_rasterDestPtr = reinterpret_cast<i16*>(g_rasterDestRow) + rx;
                 i16* d = g_rasterDestPtr;
-                i16* tex = reinterpret_cast<i16*>(g_warpTexBase);
+                i16* tex = g_warpTexBase;
                 i32 uu = g_warpU;
                 i32 va2 = g_warpV;
                 for (i32 c = span; c != 0; c--) {
@@ -197,9 +200,11 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                 i32 dv = (lrow->fv - vv) / span;
                 g_warpV = vv << shift;
                 g_warpVStep = dv << shift;
+                // the row cursor advances by the surface PITCH (bytes) while the span
+                // is written as 16bpp pixels - the u8*->i16* step is that byte-forced seam
                 g_rasterDestPtr = reinterpret_cast<i16*>(g_rasterDestRow) + rx;
                 i16* d = g_rasterDestPtr;
-                i16* tex = reinterpret_cast<i16*>(g_warpTexBase);
+                i16* tex = g_warpTexBase;
                 i32 uu = g_warpU;
                 i32 va2 = g_warpV;
                 for (i32 c = span; c != 0; c--) {
@@ -234,9 +239,11 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                 i32 dv = (lrow->fv - vv) / span;
                 g_warpV = vv << shift;
                 g_warpVStep = dv << shift;
+                // the row cursor advances by the surface PITCH (bytes) while the span
+                // is written as 16bpp pixels - the u8*->i16* step is that byte-forced seam
                 g_rasterDestPtr = reinterpret_cast<i16*>(g_rasterDestRow) + rx;
                 i16* d = g_rasterDestPtr;
-                i16* tex = reinterpret_cast<i16*>(g_warpTexBase);
+                i16* tex = g_warpTexBase;
                 i32 uu = g_warpU;
                 i32 va2 = g_warpV;
                 for (i32 c = span; c != 0; c--) {
