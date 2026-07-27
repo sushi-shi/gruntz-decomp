@@ -448,13 +448,13 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     i32 row = m_object->m_screenY >> 5;
     if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
         && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
-        char* cell = grid->m_rowBytes[row] + col * 0x1c;
-        *reinterpret_cast<i32*>((cell + 8)) = mv;
-        char* cell0 = grid->m_rowBytes[row] + col * 0x1c;
+        i32* cell = &grid->m_rowInts[row][col * 7];
+        cell[2] = mv;
+        i32* cell0 = &grid->m_rowInts[row][col * 7];
         if (mv != 0) {
-            *reinterpret_cast<i32*>(cell0) |= 0x40000;
+            cell0[0] |= 0x40000;
         } else {
-            *reinterpret_cast<i32*>(cell0) &= ~0x40000;
+            cell0[0] &= ~0x40000;
         }
     }
     m_object->m_stateFlags &= ~1;
