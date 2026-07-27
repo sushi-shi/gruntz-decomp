@@ -1241,20 +1241,16 @@ okContinue:
         CString scr; // [esp+0x14]
         self->m_inGame = 1;
         self->m_hudSuppressed = 0;
-        i32 rect[4];
-        rect[0] = 0;
-        rect[1] = 0;
-        rect[2] = 0x280;
-        rect[3] = 0x1e0;
+        RECT rect; // the full-screen caption box
+        rect.left = 0;
+        rect.top = 0;
+        rect.right = 0x280;
+        rect.bottom = 0x1e0;
         if (scr.LoadString(0x8128)) {
             EngStr_DrawText(
                 self->m_world,
-                // @identity-TODO the CString* slot receives the local rect buffer
-                // and the RECT* slot a name-buffer offset - the two look swapped
-                // against the neighbouring `scr` CString, but this is the byte-
-                // faithful arg order; settle it from the disasm before changing.
-                reinterpret_cast<CString*>(rect),
-                reinterpret_cast<RECT*>(nameBuf + 0x4),
+                &scr,
+                &rect,
                 0x78,
                 1,
                 0xff,
