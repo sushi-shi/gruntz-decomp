@@ -25,6 +25,7 @@
 
 #include <Gruntz/Grunt.h>      // canonical CGrunt (LoadPickupSprites/LoadGruntTypeTable)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells; ex CIconRecord)
+#include <Gruntz/Brickz.h>   // canonical BrickzCell - the 0x1c-byte tile cell at m_rows[y][x]
 #include <Gruntz/SoundState.h> // ex Globals.h transitive
 #include <Gruntz/Random.h>     // ex Globals.h transitive
 #include <Utils/MapTyped.h> // MapLookupById - the forced id->void* key pun
@@ -728,8 +729,10 @@ i32 CInGameIcon::PeekCycle() {
         if ((cell & 0x939) != 0 || (cell & 2) != 0) {
             if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
                 && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-                grid->m_rowInts[tileY][tileX * 7 + 2] = 0;
-                grid->m_rowInts[tileY][tileX * 7] &= ~0x40000;
+                BrickzCell* row0 = grid->m_rows[tileY];
+                row0[tileX].m_8 = 0;
+                BrickzCell* row1 = grid->m_rows[tileY];
+                row1[tileX].m_0 &= ~0x40000;
             }
             m_38->m_flags |= 0x10000;
         }
