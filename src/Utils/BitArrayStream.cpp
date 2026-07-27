@@ -11,7 +11,7 @@ ostream& operator<<(ostream& accum, const zBitVec& bits) {
     for (i32 i = 0; i < bits.m_capacity; i++) {
         const u32* words = static_cast<u32>(bits.m_capacity) > 0x20
                                ? bits.m_words
-                               : reinterpret_cast<const u32*>(&bits.m_words);
+                               : &bits.m_inline;
         if (words[i >> 5] & (1 << (i & 0x1f))) {
             if (!first) {
                 accum << ' ';

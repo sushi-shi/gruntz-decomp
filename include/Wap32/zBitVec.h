@@ -51,7 +51,12 @@ public:
 
     i32 m_capacity; // +0x08  capacity in bits (signed: SetSize's round-up matches as
                     // int; the ctor/EnsureSize cast (u32) for the unsigned `>0x20` jbe)
-    u32* m_words;   // +0x0c  SBO word band (inline u32 when m_capacity <= 0x20)
+    // +0x0c is a small-buffer slot with two PROVEN arms - every accessor picks
+    // between them on the same test: `(u32)m_capacity > 0x20 ? m_words : &m_inline`.
+    union {
+        u32* m_words; // heap word band (capacity > 0x20 bits)
+        u32 m_inline; // the single inline word when the vector fits in the slot
+    };
 };
 SIZE(0x10);
 

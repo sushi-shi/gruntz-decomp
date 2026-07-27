@@ -185,9 +185,9 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
         }
         const u32* src = (static_cast<u32>(that.m_capacity) > 0x20)
                              ? that.m_words
-                             : reinterpret_cast<const u32*>(&that.m_words);
+                             : &that.m_inline;
         u32* dst =
-            (static_cast<u32>(m_capacity) > 0x20) ? m_words : reinterpret_cast<u32*>(&m_words);
+            (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
         memcpy(dst, src, static_cast<u32>(m_capacity) >> 3);
     }
     return *this;
@@ -283,7 +283,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
         }
         {
             u32* band =
-                (static_cast<u32>(m_capacity) > 0x20) ? m_words : reinterpret_cast<u32*>(&m_words);
+                (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
             band[static_cast<u32>(v) >> 5] |= 1u << (v & 0x1f);
         }
         if (*q == 0) {
@@ -315,7 +315,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
             for (i32 b = v + 1; b <= v2; ++b) {
                 u32* band = (static_cast<u32>(m_capacity) > 0x20)
                                 ? m_words
-                                : reinterpret_cast<u32*>(&m_words);
+                                : &m_inline;
                 band[static_cast<u32>(b) >> 5] |= 1u << (b & 0x1f);
             }
             while (*q != 0 && !isdigit(*q)) {
@@ -392,7 +392,7 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
         m_errSink->Set(this, cache, 0xc);
     } else {
         u32* base =
-            (static_cast<u32>(m_capacity) > 0x20) ? m_words : reinterpret_cast<u32*>(&m_words);
+            (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
         u32* slot = base + (static_cast<u32>(idx) >> 5);
         *slot |= 1u << (idx & 0x1f);
     }
