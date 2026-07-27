@@ -242,6 +242,8 @@ i32 CDDSurface::Load(CDDrawPtrCollections * a, char* name, i32 c) {
     if (!Init1(reinterpret_cast<CDDrawPtrCollections*>(saved), 0)) {
         return 0;
     }
+    // The Win32 DIB idiom: the bits start biSize (p->m_0, a RUNTIME value) plus the
+    // 256-entry RGBQUAD palette past the header, so the offset is API-forced.
     BlitDirect(reinterpret_cast<char*>(p) + p->m_0 + 0x400, 2);
     return 1;
 }

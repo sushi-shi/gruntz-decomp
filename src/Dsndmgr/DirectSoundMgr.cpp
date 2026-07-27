@@ -1502,6 +1502,8 @@ i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut) {
     p++;
     u32 waveTag = *p;
     p++;
+    // A RIFF walk over an untyped buffer: the chunk bounds and the pad-to-even
+    // advance below are BYTES, so the byte arithmetic IS the format - byte-forced.
     char* end = reinterpret_cast<char*>(p) + riffSize - 4;
     if (*static_cast<u32*>(riff) != mmioFOURCC('R', 'I', 'F', 'F')) {
         return 0;
