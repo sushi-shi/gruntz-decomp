@@ -4178,10 +4178,12 @@ mode_36c:
         box.top = wy - 0xf;
         box.right = wx + 0xf;
         box.bottom = wy + 0xf;
-        i32 out28[2] = {0, 0};
+        // FindGruntAt READS all four of span's fields (left/top/right/bottom); the old
+        // spelling passed an 8-byte i32[2], so ->right and ->bottom came off the stack
+        // past the buffer. It is a zeroed RECT.
+        RECT span = {0, 0, 0, 0};
         i32 col = 0;
-        CGrunt* p = g_gameReg->m_cmdGrid
-                        ->FindGruntAt(wx, wy, reinterpret_cast<RECT*>(out28), &col, &y, &box);
+        CGrunt* p = g_gameReg->m_cmdGrid->FindGruntAt(wx, wy, &span, &col, &y, &box);
         if (p == 0 || g_curPlayer != p->m_tileOwnerHi) {
             goto waypoint_cancel;
         }
