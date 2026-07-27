@@ -988,10 +988,10 @@ i32 CGrunt::TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
 RVA(0x0004b370, 0xafd)
 i32 CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
     CGruntzMapMgr* grid;
-    GruntCoordNode* n;
-    GruntCoordNode* cur;
+    CoordNode* n;
+    CoordNode* cur;
     CoordPoolNode* pooled;
-    GruntCoord* tail;
+    Coord* tail;
     POSITION pos;
     i32 lastX, lastY, tileX, tileY;
     i32 maskC, cnt, headFlags, lastFlags, hit;
@@ -1354,14 +1354,14 @@ i32 CGrunt::StepGruntMovement() {
         goto label_dropRet0;
     }
     if (m_arrivalState != 0x11) {
-        GruntCoord* co = static_cast<GruntCoord*>(m_31c.RemoveHead());
+        Coord* co = static_cast<Coord*>(m_31c.RemoveHead());
         coordX = co->m_x;
         coordY = co->m_y;
         CoordPoolNode* p = g_coordPool.NodeOf(co);
         p->m_next = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = p;
     } else {
-        GruntCoord* co = CoordHead()->m_coord;
+        Coord* co = CoordHead()->m_coord;
         coordX = co->m_x;
         coordY = co->m_y;
     }
@@ -1496,7 +1496,7 @@ i32 CGrunt::StepGruntMovement() {
         goto label_4cb2a;
     }
     {
-        GruntCoord* co = CoordHead()->m_coord;
+        Coord* co = CoordHead()->m_coord;
         i32 cx = co->m_x;
         i32 cy = co->m_y;
         tgtPxX = (cx << 5) + 0x10;
@@ -1548,7 +1548,7 @@ i32 CGrunt::StepGruntMovement() {
             SetEntrancePos(1, 0);
             return 0;
         }
-        GruntCoord* co2 = static_cast<GruntCoord*>(m_31c.RemoveHead());
+        Coord* co2 = static_cast<Coord*>(m_31c.RemoveHead());
         CoordPoolNode* p = g_coordPool.NodeOf(co2);
         p->m_next = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = p;
@@ -1569,7 +1569,7 @@ label_4c68b:
 
 label_4c6e4:
     if (m_arrivalState == 0x11 && CoordCount() != 0) {
-        GruntCoord* co = static_cast<GruntCoord*>(m_31c.RemoveHead());
+        Coord* co = static_cast<Coord*>(m_31c.RemoveHead());
         CoordPoolNode* p = g_coordPool.NodeOf(co);
         p->m_next = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = p;
@@ -1629,7 +1629,7 @@ label_4c6e4:
             goto label_4cb2a;
         }
         if (CoordCount() != 0 && m_arrivalState != 0x11) {
-            GruntCoord* co = static_cast<GruntCoord*>(m_31c.RemoveHead());
+            Coord* co = static_cast<Coord*>(m_31c.RemoveHead());
             if (co->m_x == btx && co->m_y == bty) {
                 CoordPoolNode* p = g_coordPool.NodeOf(co);
                 p->m_next = g_coordPool.m_freeHead;
@@ -2383,9 +2383,9 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             if (m_arrivalState == 0x11) {
                 if (m_2d8 != 4) {
                     if (CoordCount() != 0) {
-                        GruntCoordNode* p = CoordHead();
+                        CoordNode* p = CoordHead();
                         while (p != 0) {
-                            GruntCoordNode* c = p;
+                            CoordNode* c = p;
                             p = p->m_next;
                             if (c->m_coord != 0) {
                                 g_coordPool.Push(c->m_coord);
@@ -3442,8 +3442,8 @@ void CGrunt::MovingSlot16() {
         bool eq;
         eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "A") == 0);
         if (eq && CoordCount() != 0) {
-            GruntCoordNode* head = CoordHead();
-            GruntCoord* co = head->m_coord;
+            CoordNode* head = CoordHead();
+            Coord* co = head->m_coord;
             i32 fl = g_gameReg->m_tileGrid->m_rowInts[co->m_y][co->m_x * 7];
             i32 mask = m_arrivalFlags & fl;
             if (!(fl & 0x20000000) && !(mask & 0x20000000)
@@ -3454,11 +3454,11 @@ void CGrunt::MovingSlot16() {
                 StepEntranceReinit();
             } else if (m_coordRetryCount <= 5) {
                 if (PathScan() != 0) {
-                    GruntCoord* h2 = (CoordHead())->m_coord;
+                    Coord* h2 = (CoordHead())->m_coord;
                     m_entrancePxX = (h2->m_x << 5) + 0x10;
                     m_entrancePxY = (h2->m_y << 5) + 0x10;
                     if (CoordCount() != 0) {
-                        GruntCoord* h3 = (CoordHead())->m_coord;
+                        Coord* h3 = (CoordHead())->m_coord;
                         i32 fl2 = g_gameReg->m_tileGrid->m_rowInts[h3->m_y][h3->m_x * 7];
                         if (!(fl2 & 0x20000000)) {
                             m_coordRetryCount = 0;

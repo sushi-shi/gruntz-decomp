@@ -1305,7 +1305,7 @@ i32 CGrunt::StepEntranceReinit() {
 
     // The head occupied-coord's tile is clear of the spawn-block bit -> re-latch a
     // fresh "D" anim set and re-stamp the first entrance-cell frame.
-    GruntCoord* co = static_cast<GruntCoord*>(m_31c.GetHead());
+    Coord* co = static_cast<Coord*>(m_31c.GetHead());
     CMapMgr* b = g_gameReg->m_tileGrid;
     i32 flag;
     if (static_cast<u32>(co->m_x) >= static_cast<u32>(b->m_width)

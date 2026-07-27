@@ -1,6 +1,9 @@
 #include <Mfc.h> // the REAL MFC CPtrList (m_31c/m_338 are value members) + POSITION
 #include <Ints.h>
 #include <Gruntz/LogicTypeId.h>
+// THE Coord {x,y} pair + CoordNode list node (this header used to redefine both
+// field-for-field under the names GruntCoord / GruntCoordNode).
+#include <Gruntz/CoordNode.h>
 #include <rva.h> // SIZE_UNKNOWN/VTBL class-metadata macros used below
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/UserBaseLink.h>   // shared CUserBaseLink (+0x18 link; ~EngStr 0x16d2a0)
@@ -86,25 +89,17 @@ SIZE_UNKNOWN();
 
 extern FreeNodePool g_coordPool; // DAT_00645540
 
-struct GruntCoord {
-    i32 m_x; // +0x00
-    i32 m_y; // +0x04
-};
-SIZE_UNKNOWN();
-struct GruntCoordNode {
-    GruntCoordNode* m_next; // +0x00
-    char m_pad4[0x4];
-    GruntCoord* m_coord; // +0x08
-};
-SIZE_UNKNOWN();
+// (Coord / CoordNode live in <Gruntz/CoordNode.h>, included at the top of this
+// header. The two records defined here were byte-identical duplicates of that
+// pair - one {x,y} and one {next, pad, Coord*} node - and are folded onto it.)
 
 // MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
 // hand-rolled node walk has to pun it - language-forced. One seam per type.
-inline GruntCoordNode* CoordHeadOf(const CObList& l) {
-    return reinterpret_cast<GruntCoordNode*>(l.GetHeadPosition());
+inline CoordNode* CoordHeadOf(const CObList& l) {
+    return reinterpret_cast<CoordNode*>(l.GetHeadPosition());
 }
-inline GruntCoordNode* CoordHeadOf(const CPtrList& l) {
-    return reinterpret_cast<GruntCoordNode*>(l.GetHeadPosition());
+inline CoordNode* CoordHeadOf(const CPtrList& l) {
+    return reinterpret_cast<CoordNode*>(l.GetHeadPosition());
 }
 
 // The devs' coord-list extension (its one method is 0x29a30, ex
@@ -679,8 +674,8 @@ public:
     //   m_338: vptr@338  head@33c  tail@340  count@344  free@348 blocks@34c blk@350
     // Read them through the public inline accessors (GetCount/GetHeadPosition/
     // GetHead/GetTail) - they compile to the same [esi+0x320]/[esi+0x328] loads.
-    // A POSITION here IS a GruntCoordNode* (MFC CNode = {pNext, pPrev, data}, and
-    // GruntCoord* m_coord is the +8 data slot).
+    // A POSITION here IS a CoordNode* (MFC CNode = {pNext, pPrev, data}, and
+    // Coord* m_coord is the +8 data slot).
     CPtrList m_31c; // +0x31c  occupied-coord list (block size 0xa); ends +0x338
     CPtrList m_338; // +0x338  serialized-payload list (block size 0xa); ends +0x354
 
@@ -689,15 +684,15 @@ public:
     // [esi+0x324] / [esi+0x328] loads the hand-declared fields used to emit. The
     // POSITION -> node cast is the one language-forced cast here: MFC keeps CNode
     // private, and a CPtrList POSITION *is* that node ({pNext, pPrev, data}), whose
-    // +8 data slot is GruntCoord* m_coord.
-    GruntCoordNode* CoordHead() const {
-        return reinterpret_cast<GruntCoordNode*>(m_31c.GetHeadPosition());
+    // +8 data slot is Coord* m_coord.
+    CoordNode* CoordHead() const {
+        return reinterpret_cast<CoordNode*>(m_31c.GetHeadPosition());
     }
     CGruntCoordList* CoordListOps() {
         return static_cast<CGruntCoordList*>(&m_31c);
     }
-    GruntCoordNode* CoordTail() const {
-        return reinterpret_cast<GruntCoordNode*>(m_31c.GetTailPosition());
+    CoordNode* CoordTail() const {
+        return reinterpret_cast<CoordNode*>(m_31c.GetTailPosition());
     }
     i32 CoordCount() const {
         return m_31c.GetCount();

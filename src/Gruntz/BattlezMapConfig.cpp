@@ -505,9 +505,9 @@ i32 CBattlezMapConfig::StepBoard() {
                 // really does spell the block twice.
                 if (mode == 0x12) {
                     if (unit->CoordCount() != 0) {
-                        GruntCoordNode* n = unit->CoordHead();
+                        CoordNode* n = unit->CoordHead();
                         while (n != 0) {
-                            GruntCoordNode* cur = n;
+                            CoordNode* cur = n;
                             n = n->m_next;
                             if (cur->m_coord != 0) {
                                 CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
@@ -519,9 +519,9 @@ i32 CBattlezMapConfig::StepBoard() {
                     }
                 } else if (mode == 0x16) {
                     if (unit->CoordCount() != 0) {
-                        GruntCoordNode* n = unit->CoordHead();
+                        CoordNode* n = unit->CoordHead();
                         while (n != 0) {
-                            GruntCoordNode* cur = n;
+                            CoordNode* cur = n;
                             n = n->m_next;
                             if (cur->m_coord != 0) {
                                 CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
@@ -732,7 +732,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
         }
         if (unit != 0) {
             if (unit->CoordCount() != 0) {
-                GruntCoord* hc = (unit->CoordHead())->m_coord;
+                Coord* hc = (unit->CoordHead())->m_coord;
                 scratch.m_x = hc->m_x;
                 scratch.m_x = m_board->m_width;
                 scratch.m_y = hc->m_y;
@@ -753,7 +753,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                         }
                         if (unit->CoordCount() != 0) {
-                            GruntCoord* ac = (unit->CoordHead())->m_coord;
+                            Coord* ac = (unit->CoordHead())->m_coord;
                             i32 ax = ac->m_x;
                             i32 ay = ac->m_y;
                             Coord sp;
@@ -1664,7 +1664,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
         if (unit->CoordCount() != 0) {
             eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "A") == 0);
             if (eq) {
-                GruntCoord* gc = (unit->CoordHead())->m_coord;
+                Coord* gc = (unit->CoordHead())->m_coord;
                 i32 gx = gc->m_x;
                 i32 gy = gc->m_y;
                 i32 sx = unit->m_object->m_screenX >> 5;
@@ -1711,10 +1711,10 @@ i32 CBattlezMapConfig::StepRowUnits() {
                     goto nexti;
                 LR:
                     if (unit->CoordCount() != 0) {
-                        GruntCoordNode* n = unit->CoordHead();
+                        CoordNode* n = unit->CoordHead();
                         if (n != 0) {
                             do {
-                                GruntCoordNode* cur = n;
+                                CoordNode* cur = n;
                                 n = n->m_next;
                                 if (cur->m_coord != 0) {
                                     CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
@@ -1927,7 +1927,7 @@ flagsArm: {
         return 1;
     }
     {
-        GruntCoord* tc = (unit->CoordTail())->m_coord;
+        Coord* tc = (unit->CoordTail())->m_coord;
         unit->m_entrancePxX = (tc->m_x << 5) + 0x10;
         unit->m_entrancePxY = (tc->m_y << 5) + 0x10;
         unit->StepEntranceReinit();
@@ -1936,7 +1936,7 @@ flagsArm: {
 }
 
 tailArm2: {
-    GruntCoord* tc = (unit->CoordTail())->m_coord;
+    Coord* tc = (unit->CoordTail())->m_coord;
     unit->m_entrancePxX = (tc->m_x << 5) + 0x10;
     unit->m_entrancePxY = (tc->m_y << 5) + 0x10;
     unit->StepEntranceReinit();
@@ -2045,7 +2045,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
     }
     // --- geometry-drift head: recycle-and-bail if the unit's stored first coord and
     //     its live screen cell have drifted >= 2 cells apart. ---
-    GruntCoord* c0 = unit->CoordHead()->m_coord;
+    Coord* c0 = unit->CoordHead()->m_coord;
     i32 ux = c0->m_x;
     i32 uy = c0->m_y;
     Coord pt;
@@ -2073,9 +2073,9 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             if (unit->CoordCount() == 0) {
                 return 0;
             }
-            GruntCoordNode* n = unit->CoordHead();
+            CoordNode* n = unit->CoordHead();
             while (n != 0) {
-                GruntCoordNode* cur = n;
+                CoordNode* cur = n;
                 n = n->m_next;
                 if (cur->m_coord != 0) {
                     g_coordPool.Push(cur->m_coord);
@@ -2137,9 +2137,9 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             if (rec->m_typeId == 2) {
                 unit->m_defenderState = 0;
                 if (unit->CoordCount() != 0) {
-                    GruntCoordNode* n = unit->CoordHead();
+                    CoordNode* n = unit->CoordHead();
                     while (n != 0) {
-                        GruntCoordNode* cur = n;
+                        CoordNode* cur = n;
                         n = n->m_next;
                         if (cur->m_coord != 0) {
                             g_coordPool.Push(cur->m_coord);
@@ -2159,11 +2159,11 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             p11 = unit->m_19c;
         }
         if (p11 == 0x11 && unit->CoordCount() >= 2) {
-            GruntCoordNode* node = unit->CoordHead();
-            GruntCoord* ca = node->m_coord;
-            GruntCoordNode* nn = node->m_next;
+            CoordNode* node = unit->CoordHead();
+            Coord* ca = node->m_coord;
+            CoordNode* nn = node->m_next;
             i32 ax = ca->m_x;
-            GruntCoord* cb = nn->m_coord;
+            Coord* cb = nn->m_coord;
             i32 ay = ca->m_y;
             i32 bx = cb->m_x;
             i32 by = cb->m_y;
@@ -2209,9 +2209,9 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 );
                 unit->m_defenderState = 0;
                 if (unit->CoordCount() != 0) {
-                    GruntCoordNode* n = unit->CoordHead();
+                    CoordNode* n = unit->CoordHead();
                     while (n != 0) {
-                        GruntCoordNode* cur = n;
+                        CoordNode* cur = n;
                         n = n->m_next;
                         if (cur->m_coord != 0) {
                             g_coordPool.Push(cur->m_coord);
@@ -2222,12 +2222,12 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 return 0;
             }
             if (PathCrossesMarkedTile(unit) == 0 && unit->m_defenderState == 7) {
-                GruntCoordNode* head = unit->CoordHead();
+                CoordNode* head = unit->CoordHead();
                 if (head != 0) {
-                    GruntCoordNode* n = head->m_next;
+                    CoordNode* n = head->m_next;
                     if (n != 0) {
                         while (n != 0) {
-                            GruntCoordNode* cur = n;
+                            CoordNode* cur = n;
                             n = n->m_next;
                             if (cur->m_coord != 0) {
                                 CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
@@ -2360,9 +2360,9 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                         oy * 0x20 + 0x10
                     );
                     if (unit->CoordCount() != 0) {
-                        GruntCoordNode* n = unit->CoordHead();
+                        CoordNode* n = unit->CoordHead();
                         while (n != 0) {
-                            GruntCoordNode* cur = n;
+                            CoordNode* cur = n;
                             n = n->m_next;
                             if (cur->m_coord != 0) {
                                 CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
@@ -2384,9 +2384,9 @@ recycleBail:
         return 0;
     }
     {
-        GruntCoordNode* n = unit->CoordHead();
+        CoordNode* n = unit->CoordHead();
         while (n != 0) {
-            GruntCoordNode* cur = n;
+            CoordNode* cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
                 g_coordPool.Push(cur->m_coord);
@@ -2441,15 +2441,15 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
     }
     board->m_gridW = board->m_bounds.right - board->m_bounds.left;
     board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
-    GruntCoord* tailCoord = (unit->CoordTail())->m_coord;
+    Coord* tailCoord = (unit->CoordTail())->m_coord;
     i32 tx = tailCoord->m_x;
     i32 ty = tailCoord->m_y;
     i32 iter = 0;
-    GruntCoordNode* node = *static_cast<GruntCoordNode**>(pos);
+    CoordNode* node = *static_cast<CoordNode**>(pos);
     while (node != 0 && iter < 3) {
-        GruntCoordNode* cur = node;
+        CoordNode* cur = node;
         node = node->m_next;
-        GruntCoord* coord = cur->m_coord;
+        Coord* coord = cur->m_coord;
         if (coord == 0) {
             continue;
         }
@@ -2499,9 +2499,9 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
             if (list.GetCount() != 0) {
                 // Recycle the unit's current path coords onto g_coordPool, empty it.
                 if (unit->CoordCount() != 0) {
-                    GruntCoordNode* p = unit->CoordHead();
+                    CoordNode* p = unit->CoordHead();
                     while (p != 0) {
-                        GruntCoordNode* c2 = p;
+                        CoordNode* c2 = p;
                         p = p->m_next;
                         if (c2->m_coord != 0) {
                             g_coordPool.Push(c2->m_coord);
@@ -2510,9 +2510,9 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                     unit->m_31c.RemoveAll();
                 }
                 // AddTail every route node's coord onto the unit's coord list.
-                GruntCoordNode* q = CoordHeadOf(list);
+                CoordNode* q = CoordHeadOf(list);
                 while (q != 0) {
-                    GruntCoordNode* c3 = q;
+                    CoordNode* c3 = q;
                     q = q->m_next;
                     if (c3->m_coord != 0) {
                         unit->m_31c.AddTail(c3->m_coord);
@@ -2534,7 +2534,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 }
                 board->m_gridW = board->m_bounds.right - board->m_bounds.left;
                 board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
-                GruntCoord* nt = (unit->CoordTail())->m_coord;
+                Coord* nt = (unit->CoordTail())->m_coord;
                 unit->m_entrancePxX = (nt->m_x << 5) + 0x10;
                 unit->m_entrancePxY = (nt->m_y << 5) + 0x10;
                 list.RemoveAll();
@@ -3252,9 +3252,9 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(CGrunt* unit) {
 
 #define ARR_RECYCLE(g)                                                                             \
     if ((g)->CoordCount() != 0) {                                                                  \
-        GruntCoordNode* nd = (g)->CoordHead();                                                     \
+        CoordNode* nd = (g)->CoordHead();                                                     \
         while (nd != 0) {                                                                          \
-            GruntCoordNode* cur = nd;                                                              \
+            CoordNode* cur = nd;                                                              \
             nd = nd->m_next;                                                                       \
             if (cur->m_coord != 0) {                                                               \
                 g_coordPool.Push(cur->m_coord);                                                    \
@@ -3309,7 +3309,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         return 0;
     }
 
-    GruntCoord* fc = g->CoordHead()->m_coord;
+    Coord* fc = g->CoordHead()->m_coord;
     i32 fcx = fc->m_x; // grunt head coord x (long-lived)
     i32 fcy = fc->m_y; // grunt head coord y
 
@@ -3661,9 +3661,9 @@ i32 CBattlezMapConfig::ClaimTilesAround(CGrunt* a4, i32 col, i32 row, i32 a5) {
                 g_stepCol = col;
                 g_stepRow = row;
                 if (head != 0) {
-                    GruntCoordNode* n = static_cast<GruntCoordNode*>(head);
+                    CoordNode* n = static_cast<CoordNode*>(head);
                     while (n != 0) {
-                        GruntCoordNode* cur = n;
+                        CoordNode* cur = n;
                         n = n->m_next;
                         CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
                         node->m_next = g_coordPool.m_freeHead;
@@ -3700,9 +3700,9 @@ i32 CBattlezMapConfig::ClaimTilesAround(CGrunt* a4, i32 col, i32 row, i32 a5) {
                     g_stepCol = col;
                     g_stepRow = row;
                     if (head != 0) {
-                        GruntCoordNode* n = static_cast<GruntCoordNode*>(head);
+                        CoordNode* n = static_cast<CoordNode*>(head);
                         while (n != 0) {
-                            GruntCoordNode* cur = n;
+                            CoordNode* cur = n;
                             n = n->m_next;
                             CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
                             node->m_next = g_coordPool.m_freeHead;
@@ -3746,9 +3746,9 @@ i32 CBattlezMapConfig::ClaimTilesAround(CGrunt* a4, i32 col, i32 row, i32 a5) {
                 g_stepCol = col;
                 g_stepRow = row;
                 if (head != 0) {
-                    GruntCoordNode* n = static_cast<GruntCoordNode*>(head);
+                    CoordNode* n = static_cast<CoordNode*>(head);
                     while (n != 0) {
-                        GruntCoordNode* cur = n;
+                        CoordNode* cur = n;
                         n = n->m_next;
                         CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
                         node->m_next = g_coordPool.m_freeHead;
@@ -3907,7 +3907,7 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(CGrunt* unit, i32 a1, i32 a2,
         }
         i32 flag = (tile0 >> 2) & 1;
         if (unit->CoordCount() != 0) {
-            GruntCoord* c = (unit->CoordTail())->m_coord;
+            Coord* c = (unit->CoordTail())->m_coord;
             i32 cx = c->m_x;
             i32 cy = c->m_y;
             i32 tile1;
@@ -4243,11 +4243,11 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
         found = 1;
     } else {
         // Find the unit's first occupied coord that sits on a blocked tile.
-        GruntCoordNode* n = unit->CoordHead();
+        CoordNode* n = unit->CoordHead();
         while (n != 0) {
-            GruntCoordNode* cur = n;
+            CoordNode* cur = n;
             n = n->m_next;
-            GruntCoord* c = cur->m_coord;
+            Coord* c = cur->m_coord;
             if (c != 0) {
                 BrickzCell* row = static_cast<BrickzCell*>((m_board)->m_rows[c->m_y]);
                 if ((reinterpret_cast<i32*>(&row[c->m_x]))[0] & 4) {
@@ -4271,9 +4271,9 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
     if (IsCoordOccupied(unit, tx, ty) != 0) {
         // Already colliding there: recycle the unit's path + reset state.
         if (unit->CoordCount() != 0) {
-            GruntCoordNode* n = unit->CoordHead();
+            CoordNode* n = unit->CoordHead();
             while (n != 0) {
-                GruntCoordNode* cur = n;
+                CoordNode* cur = n;
                 n = n->m_next;
                 if (cur->m_coord != 0) {
                     CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
@@ -4292,8 +4292,8 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
     if (PathCrossesMarkedTile(unit) != 0) {
         // Path is blocked: a reserved-tile bit on the first path coord aborts.
         if (unit->CoordCount() != 0) {
-            GruntCoordNode* p = unit->CoordHead();
-            GruntCoord* c = p->m_coord;
+            CoordNode* p = unit->CoordHead();
+            Coord* c = p->m_coord;
             i32 word;
             CMapMgr* b = m_board;
             if (static_cast<u32>(c->m_x) < static_cast<u32>(b->m_width)
@@ -4392,9 +4392,9 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                                     g_coordPool.m_freeHead = node;
                                 }
                                 if (unit->CoordCount() != 0) {
-                                    GruntCoordNode* nn = unit->CoordHead();
+                                    CoordNode* nn = unit->CoordHead();
                                     while (nn != 0) {
-                                        GruntCoordNode* cur = nn;
+                                        CoordNode* cur = nn;
                                         nn = nn->m_next;
                                         if (cur->m_coord != 0) {
                                             CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
@@ -4404,9 +4404,9 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                                     }
                                     unit->m_31c.RemoveAll();
                                 }
-                                GruntCoordNode* p = CoordHeadOf(list);
+                                CoordNode* p = CoordHeadOf(list);
                                 while (p != 0) {
-                                    GruntCoordNode* cur = p;
+                                    CoordNode* cur = p;
                                     p = p->m_next;
                                     unit->m_31c.AddTail(cur->m_coord);
                                 }
@@ -4668,9 +4668,9 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
                 (static_cast<CGrunt*>(u))->LoadPickupSprites(3, 1, 0, 0, 1);
                 u->m_2d8 = 3;
                 if (u->CoordCount() != 0) {
-                    GruntCoordNode* n = u->CoordHead();
+                    CoordNode* n = u->CoordHead();
                     while (n != 0) {
-                        GruntCoordNode* curn = n;
+                        CoordNode* curn = n;
                         n = n->m_next;
                         if (curn->m_coord != 0) {
                             CoordPoolNode* node = g_coordPool.NodeOf(curn->m_coord);
@@ -4695,9 +4695,9 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         }
         if (mode == 0x12) {
             if (unit->CoordCount() != 0) {
-                GruntCoordNode* n = unit->CoordHead();
+                CoordNode* n = unit->CoordHead();
                 while (n != 0) {
-                    GruntCoordNode* curn = n;
+                    CoordNode* curn = n;
                     n = n->m_next;
                     if (curn->m_coord != 0) {
                         CoordPoolNode* node = g_coordPool.NodeOf(curn->m_coord);
@@ -4709,9 +4709,9 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
             }
         } else if (mode == 0x16) {
             if (unit->CoordCount() != 0) {
-                GruntCoordNode* n = unit->CoordHead();
+                CoordNode* n = unit->CoordHead();
                 while (n != 0) {
-                    GruntCoordNode* curn = n;
+                    CoordNode* curn = n;
                     n = n->m_next;
                     if (curn->m_coord != 0) {
                         CoordPoolNode* node = g_coordPool.NodeOf(curn->m_coord);
@@ -4823,9 +4823,9 @@ i32 CBattlezMapConfig::RouteUnitTo(CGrunt* unit, i32 gx, i32 gy, i32 a4, i32 a5,
     // Recycle the unit's current path-coord nodes onto the coord pool, empty its
     // path list.
     if (unit->CoordCount() != 0) {
-        GruntCoordNode* n = unit->CoordHead();
+        CoordNode* n = unit->CoordHead();
         while (n != 0) {
-            GruntCoordNode* cur = n;
+            CoordNode* cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
                 g_coordPool.Push(cur->m_coord);
@@ -4834,16 +4834,16 @@ i32 CBattlezMapConfig::RouteUnitTo(CGrunt* unit, i32 gx, i32 gy, i32 a4, i32 a5,
         unit->m_31c.RemoveAll();
     }
     // AddTail every new path node's coord onto the unit's path list.
-    GruntCoordNode* p = CoordHeadOf(list);
+    CoordNode* p = CoordHeadOf(list);
     while (p != 0) {
-        GruntCoordNode* cur = p;
+        CoordNode* cur = p;
         p = p->m_next;
         if (cur->m_coord != 0) {
             unit->m_31c.AddTail(cur->m_coord);
         }
     }
     list.RemoveAll();
-    GruntCoord* tail = (unit->CoordTail())->m_coord;
+    Coord* tail = (unit->CoordTail())->m_coord;
     unit->m_entrancePxX = (tail->m_x << 5) + 0x10;
     unit->m_entrancePxY = (tail->m_y << 5) + 0x10;
     return 1;
@@ -4879,12 +4879,12 @@ i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, i32 gx, i32 gy, i32 a4, i32
         }
     }
     // Scan the unit's path for a node already on the goal (match = the node after it).
-    GruntCoordNode* match = 0;
-    GruntCoordNode* n = unit->CoordHead();
+    CoordNode* match = 0;
+    CoordNode* n = unit->CoordHead();
     while (n != 0) {
-        GruntCoordNode* cur3 = n;
+        CoordNode* cur3 = n;
         n = n->m_next;
-        GruntCoord* coord = cur3->m_coord;
+        Coord* coord = cur3->m_coord;
         if (coord != 0 && coord->m_x == gx && coord->m_y == gy) {
             match = n;
             break;
@@ -4915,9 +4915,9 @@ i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, i32 gx, i32 gy, i32 a4, i32
     }
     // Recycle the unit's existing coord nodes onto g_coordPool.m_freeHead, then empty its path.
     if (unit->CoordCount() != 0) {
-        GruntCoordNode* p = unit->CoordHead();
+        CoordNode* p = unit->CoordHead();
         while (p != 0) {
-            GruntCoordNode* cur4 = p;
+            CoordNode* cur4 = p;
             p = p->m_next;
             if (cur4->m_coord != 0) {
                 CoordPoolNode* node = g_coordPool.NodeOf(cur4->m_coord);
@@ -4928,9 +4928,9 @@ i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, i32 gx, i32 gy, i32 a4, i32
         unit->m_31c.RemoveAll();
     }
     // AddTail every new route node's coord onto the unit's path list.
-    GruntCoordNode* q = CoordHeadOf(list);
+    CoordNode* q = CoordHeadOf(list);
     while (q != 0) {
-        GruntCoordNode* cur5 = q;
+        CoordNode* cur5 = q;
         q = q->m_next;
         if (cur5->m_coord != 0) {
             unit->m_31c.AddTail(cur5->m_coord);
@@ -4945,15 +4945,15 @@ i32 CBattlezMapConfig::PathCrossesMarkedTile(CGrunt* unit) {
     if (unit->CoordCount() == 0) {
         return 0;
     }
-    GruntCoordNode* node = unit->CoordHead();
+    CoordNode* node = unit->CoordHead();
     if (node == 0) {
         return 0;
     }
     BrickzCell** rows = ((m_board)->m_rows);
     while (node != 0) {
-        GruntCoordNode* cur = node;
+        CoordNode* cur = node;
         node = node->m_next;
-        GruntCoord* c = cur->m_coord;
+        Coord* c = cur->m_coord;
         i32 y = c->m_y;
         i32 x = c->m_x;
         if (rows[y][x].m_0 & 4) {
@@ -4995,11 +4995,11 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
         // the walk is a do/while, not a `while` (which would peel a third test).
         if (unit->CoordCount() != 0 && unit->CoordHead() != 0) {
             CMapMgr* board = m_board;
-            GruntCoordNode* node = unit->CoordHead();
+            CoordNode* node = unit->CoordHead();
             do {
-                GruntCoordNode* cur = node;
+                CoordNode* cur = node;
                 node = node->m_next;
-                GruntCoord* c = cur->m_coord;
+                Coord* c = cur->m_coord;
                 i32 x = c->m_x;
                 i32 y = c->m_y;
                 i32 tile;
@@ -5315,9 +5315,9 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
     }
     // Recycle the unit's current path-coord nodes onto g_coordPool.m_freeHead, empty its list.
     if (unit->CoordCount() != 0) {
-        GruntCoordNode* n = unit->CoordHead();
+        CoordNode* n = unit->CoordHead();
         while (n != 0) {
-            GruntCoordNode* cur = n;
+            CoordNode* cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
                 CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
@@ -5328,13 +5328,13 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
         unit->m_31c.RemoveAll();
     }
     // AddTail every new path node's coord onto the unit's path list.
-    GruntCoordNode* p = CoordHeadOf(list);
+    CoordNode* p = CoordHeadOf(list);
     while (p != 0) {
-        GruntCoordNode* cur = p;
+        CoordNode* cur = p;
         p = p->m_next;
         unit->m_31c.AddTail(cur->m_coord);
     }
-    GruntCoord* tail = (unit->CoordTail())->m_coord;
+    Coord* tail = (unit->CoordTail())->m_coord;
     unit->m_entrancePxX = (tail->m_x << 5) + 0x10;
     unit->m_entrancePxY = (tail->m_y << 5) + 0x10;
     unit->m_defenderState = 5;
@@ -5386,7 +5386,7 @@ void* CBattlezMapConfig::PickSpawnCoord(void* out, CGrunt* unit, i32 kind) {
                 for (i32 j = 15; j != 0; j--) {
                     CGrunt* u = *row;
                     if (u != 0 && u->CoordCount() != 0) {
-                        GruntCoord* node = u->CoordTail()->m_coord;
+                        Coord* node = u->CoordTail()->m_coord;
                         if (node->m_x == cx && node->m_y == cy) {
                             ok = 0;
                         }
@@ -5417,9 +5417,9 @@ void* CBattlezMapConfig::PickSpawnCoord(void* out, CGrunt* unit, i32 kind) {
 
 #define MOVE_RECYCLE(g)                                                                            \
     {                                                                                              \
-        GruntCoordNode* nd = (g)->CoordHead();                                                     \
+        CoordNode* nd = (g)->CoordHead();                                                     \
         while (nd != 0) {                                                                          \
-            GruntCoordNode* cur = nd;                                                              \
+            CoordNode* cur = nd;                                                              \
             nd = nd->m_next;                                                                       \
             if (cur->m_coord != 0) {                                                               \
                 g_coordPool.Push(static_cast<void*>(cur->m_coord));                                \
@@ -5708,10 +5708,10 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(CGrunt* unit) {
         unit->m_2d8 = 4;
         unit->m_defenderY = -1;
         if (unit->CoordCount() != 0) {
-            GruntCoordNode* n = unit->CoordHead();
+            CoordNode* n = unit->CoordHead();
             if (n != 0) {
                 do {
-                    GruntCoordNode* cur = n;
+                    CoordNode* cur = n;
                     n = n->m_next;
                     void* coord = cur->m_coord;
                     if (coord != 0) {
@@ -5833,9 +5833,9 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(CGrunt* unit) {
             // Reset the goal: recycle the unit's coords onto g_coordPool.m_freeHead.
             unit->m_defenderState = 0;
             if (unit->CoordCount() != 0) {
-                GruntCoordNode* n = unit->CoordHead();
+                CoordNode* n = unit->CoordHead();
                 while (n != 0) {
-                    GruntCoordNode* cur = n;
+                    CoordNode* cur = n;
                     n = n->m_next;
                     if (cur->m_coord != 0) {
                         CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
@@ -5855,9 +5855,9 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(CGrunt* unit) {
         if (dx * dx + dy * dy > 0x10) {
             return 1;
         }
-        GruntCoordNode* n = unit->CoordHead();
+        CoordNode* n = unit->CoordHead();
         while (n != 0) {
-            GruntCoordNode* cur = n;
+            CoordNode* cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
                 CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
@@ -5918,9 +5918,9 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(CGrunt* unit) {
             // Reset the goal: recycle the unit's coords onto g_coordPool.
             unit->m_defenderState = 0;
             if (unit->CoordCount() != 0) {
-                GruntCoordNode* n = unit->CoordHead();
+                CoordNode* n = unit->CoordHead();
                 while (n != 0) {
-                    GruntCoordNode* cur = n;
+                    CoordNode* cur = n;
                     n = n->m_next;
                     if (cur->m_coord != 0) {
                         g_coordPool.Push(cur->m_coord);
@@ -6062,10 +6062,10 @@ void CGrunt::RecycleCoords() {
     if (CoordCount() == 0) {
         return;
     }
-    GruntCoordNode* n = CoordHead();
+    CoordNode* n = CoordHead();
     if (n != 0) {
         do {
-            GruntCoordNode* cur = n;
+            CoordNode* cur = n;
             n = n->m_next;
             void* coord = cur->m_coord;
             if (coord != 0) {
@@ -6260,9 +6260,9 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
         // retail 0x34d2e re-reads CoordCount here (TileSwitch above can have
         // re-populated the list) - the guard was missing.
         if (unit->CoordCount() != 0) {
-            GruntCoordNode* n = unit->CoordHead();
+            CoordNode* n = unit->CoordHead();
             while (n != 0) {
-                GruntCoordNode* cur = n;
+                CoordNode* cur = n;
                 n = n->m_next;
                 if (cur->m_coord != 0) {
                     g_coordPool.Push(cur->m_coord);
@@ -6273,9 +6273,9 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
     } else {
         unit->m_2d8 = 4;
         if (unit->CoordCount() != 0) {
-            GruntCoordNode* n = unit->CoordHead();
+            CoordNode* n = unit->CoordHead();
             while (n != 0) {
-                GruntCoordNode* cur = n;
+                CoordNode* cur = n;
                 n = n->m_next;
                 if (cur->m_coord != 0) {
                     CoordPoolNode* slot = g_coordPool.NodeOf(cur->m_coord);
@@ -6455,9 +6455,9 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         return 1;
     }
     if (recA->m_014 == 0 && *reinterpret_cast<i32*>(cfgB) == 0) {
-        GruntCoordNode* n = unit->CoordHead();
+        CoordNode* n = unit->CoordHead();
         while (n != 0) {
-            GruntCoordNode* cur = n;
+            CoordNode* cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
                 g_coordPool.Push(cur->m_coord);
@@ -6499,9 +6499,9 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
     if (unit->CoordCount() == 0) {
         return 1;
     }
-    GruntCoordNode* n = unit->CoordHead();
+    CoordNode* n = unit->CoordHead();
     while (n != 0) {
-        GruntCoordNode* cur = n;
+        CoordNode* cur = n;
         n = n->m_next;
         if (cur->m_coord != 0) {
             CoordPoolNode* slot = g_coordPool.NodeOf(cur->m_coord);

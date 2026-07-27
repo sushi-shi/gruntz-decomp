@@ -785,7 +785,7 @@ i32 CGrunt::PathScan() {
     if (CoordCount() == 0) {
         return 1;
     }
-    GruntCoordNode* node = CoordHeadOf(*coordz);
+    CoordNode* node = CoordHeadOf(*coordz);
 
     i32 col5 = m_object->m_screenX >> 5;
     i32 row5 = m_object->m_screenY >> 5;
@@ -826,15 +826,15 @@ i32 CGrunt::PathScan() {
         grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
     }
 
-    GruntCoordNode* tail = CoordTail(); // the member accessor already holds this seam
+    CoordNode* tail = CoordTail(); // the member accessor already holds this seam
     i32 tcol = tail->m_coord->m_x;
     i32 trow = tail->m_coord->m_y;
     i32 hits = 0;
 
     while (node != 0) {
-        GruntCoordNode* cur = node;
+        CoordNode* cur = node;
         node = node->m_next;
-        GruntCoord* co = cur->m_coord;
+        Coord* co = cur->m_coord;
         if (co != 0) {
             // retail 0x57f21: a cell already carrying the 0x20 mark is skipped
             // UNLESS it is the route's own tail - no `fire` temp, the || just
@@ -865,9 +865,9 @@ i32 CGrunt::PathScan() {
                         // the fresh one - each entry a coord popped off g_coordPool's
                         // free list and filled from the old node.
                         while (node != 0) {
-                            GruntCoordNode* rest = node;
+                            CoordNode* rest = node;
                             node = node->m_next;
-                            GruntCoord* src = rest->m_coord;
+                            Coord* src = rest->m_coord;
                             Coord* fresh = 0;
                             CoordPoolNode* free = g_coordPool.m_freeHead;
                             if (free->m_next != 0) {
@@ -900,7 +900,7 @@ i32 CGrunt::PathScan() {
                         POSITION p = s.GetHeadPosition();
                         if (p != 0) {
                             do {
-                                GruntCoord* d = static_cast<GruntCoord*>(s.GetNext(p));
+                                Coord* d = static_cast<Coord*>(s.GetNext(p));
                                 if (d != 0) {
                                     if (d->m_x != col5 || d->m_y != row5) {
                                         coordz->AddTail(d);

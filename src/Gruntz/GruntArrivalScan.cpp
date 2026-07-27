@@ -45,9 +45,9 @@
 
 #define RECYCLE_COORDS(head)                                                                       \
     {                                                                                              \
-        GruntCoordNode* n = (head);                                                                \
+        CoordNode* n = (head);                                                                \
         while (n != 0) {                                                                           \
-            GruntCoordNode* next = n->m_next;                                                      \
+            CoordNode* next = n->m_next;                                                      \
             void* pay = n->m_coord;                                                                \
             if (pay != 0) {                                                                        \
                 CoordPoolNode* slot = g_coordPool.NodeOf(pay);                                     \
@@ -96,9 +96,9 @@
 
 #define DRAIN_COORDS()                                                                             \
     if (CoordCount() != 0) {                                                                       \
-        GruntCoordNode* n = CoordHeadOf(m_31c);            \
+        CoordNode* n = CoordHeadOf(m_31c);            \
         while (n != 0) {                                                                           \
-            GruntCoordNode* cur = n;                                                               \
+            CoordNode* cur = n;                                                               \
             n = cur->m_next;                                                                       \
             if (cur->m_coord != 0) {                                                               \
                 g_coordPool.Push(cur->m_coord);                                                    \
@@ -357,7 +357,7 @@ L_ed006:
 
 L_ed153:
     if (CoordCount() != 0) {
-        GruntCoord* coord = (CoordHeadOf(m_31c))->m_coord;
+        Coord* coord = (CoordHeadOf(m_31c))->m_coord;
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         BrickzCell* cell = &grid->m_rows[row][col];
@@ -524,9 +524,9 @@ i32 CGrunt::WanderStep() {
                         void* node = m_31c.GetHeadPosition();
                         if (node != 0) {
                             do {
-                                GruntCoordNode* cur = static_cast<GruntCoordNode*>(node);
+                                CoordNode* cur = static_cast<CoordNode*>(node);
                                 node = *static_cast<void**>(node);
-                                GruntCoord* data = cur->m_coord;
+                                Coord* data = cur->m_coord;
                                 if (data != 0) {
                                     g_coordPool.Push(static_cast<void*>(data));
                                 }
@@ -860,7 +860,7 @@ i32 CGrunt::ArrivalReticleScan() {
                 occ->m_lastTilePxY
             );
             if (CoordCount()) {
-                for (GruntCoordNode* n = CoordHead(); n; n = n->m_next) {
+                for (CoordNode* n = CoordHead(); n; n = n->m_next) {
                     if (n->m_coord) {
                         g_coordPool.Push(n->m_coord);
                     }
@@ -871,7 +871,7 @@ i32 CGrunt::ArrivalReticleScan() {
         }
         if (occOnTile) {
             if (CoordCount()) {
-                for (GruntCoordNode* n = CoordHead(); n; n = n->m_next) {
+                for (CoordNode* n = CoordHead(); n; n = n->m_next) {
                     if (n->m_coord) {
                         g_coordPool.Push(n->m_coord);
                     }
@@ -1112,17 +1112,17 @@ i32 CGrunt::UpdateArrival() {
     if (this->CoordCount() != 0) {
         // The active-move cell: (head node)->link is a [col,row]; gate on the grid
         // cell's flag byte (&0x20).
-        GruntCoord* cell = this->CoordHead()->m_coord;
+        Coord* cell = this->CoordHead()->m_coord;
         u8* flags = reinterpret_cast<u8*>(
             (g_gameReg->m_tileGrid->m_rowBytes[cell->m_y] + cell->m_x * 0x1c)
         );
         if ((flags[0] & 0x20) != 0) {
             SetEntrancePos(1, 1);
             if (this->CoordCount() != 0) {
-                GruntCoordNode* p = this->CoordHead();
+                CoordNode* p = this->CoordHead();
                 while (p != 0) {
-                    GruntCoordNode* next = p->m_next;
-                    GruntCoord** link = &p->m_coord;
+                    CoordNode* next = p->m_next;
+                    Coord** link = &p->m_coord;
                     p = next;
                     if (*link != 0) {
                         CoordPoolNode* n2 = g_coordPool.NodeOf(*link);
@@ -1271,7 +1271,7 @@ L_ed006b:
 
 L_scanb:
     if (CoordCount() != 0) {
-        GruntCoord* coord = (CoordHeadOf(m_31c))->m_coord;
+        Coord* coord = (CoordHeadOf(m_31c))->m_coord;
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         if (CellTargetable(col, row) != 0) {
@@ -2087,7 +2087,7 @@ i32 CGrunt::ArrivalScanC() {
 
 L_tailc:
     if (CoordCount() != 0) {
-        GruntCoord* coord = (CoordHeadOf(m_31c))->m_coord;
+        Coord* coord = (CoordHeadOf(m_31c))->m_coord;
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         BrickzCell* cell = &grid->m_rows[row][col];
@@ -2377,10 +2377,10 @@ s0_reset:
 common: {
     i32 st = m_defenderState;
     if (st != 4 && st != 0x19 && CoordCount() >= 2) {
-        GruntCoordNode* head = CoordHead();
+        CoordNode* head = CoordHead();
         i32 bx = head->m_coord->m_x;
         i32 by = head->m_coord->m_y;
-        GruntCoord* nc = head->m_next->m_coord;
+        Coord* nc = head->m_next->m_coord;
         i32 fx = nc->m_x;
         i32 fy = nc->m_y;
         CMapMgr* pl = g_gameReg->m_tileGrid;
@@ -2407,7 +2407,7 @@ common: {
     if (CoordCount() == 0) {
         return 1;
     }
-    GruntCoord* p1 = CoordHead()->m_coord;
+    Coord* p1 = CoordHead()->m_coord;
     CMapMgr* pl2 = g_gameReg->m_tileGrid;
     i32 gx = p1->m_x;
     i32 gy = p1->m_y;
@@ -2444,10 +2444,10 @@ i32 CGrunt::SeekTarget() {
     this->m_defenderY = this->m_lastTilePxY;
     if (this->CoordCount() != 0
         && g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCol] == 0) {
-        GruntCoordNode* p = this->CoordHead();
+        CoordNode* p = this->CoordHead();
         while (p != 0) {
-            GruntCoordNode* next = p->m_next;
-            GruntCoord** link = &p->m_coord;
+            CoordNode* next = p->m_next;
+            Coord** link = &p->m_coord;
             p = next;
             if (*link != 0) {
                 g_coordPool.Push(*link);
@@ -2465,10 +2465,10 @@ i32 CGrunt::SeekTarget() {
         CGrunt* slot = g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + reason];
         if (slot == 0 || slot->m_entranceCommitted == 0) {
             if (this->CoordCount() != 0) {
-                GruntCoordNode* p = this->CoordHead();
+                CoordNode* p = this->CoordHead();
                 while (p != 0) {
-                    GruntCoordNode* next = p->m_next;
-                    GruntCoord** link = &p->m_coord;
+                    CoordNode* next = p->m_next;
+                    Coord** link = &p->m_coord;
                     p = next;
                     if (*link != 0) {
                         g_coordPool.Push(*link);
@@ -2504,10 +2504,10 @@ i32 CGrunt::SeekTarget() {
                 if (this->CoordCount() == 0) {
                     return 1;
                 }
-                GruntCoordNode* p = this->CoordHead();
+                CoordNode* p = this->CoordHead();
                 while (p != 0) {
-                    GruntCoordNode* next = p->m_next;
-                    GruntCoord** link = &p->m_coord;
+                    CoordNode* next = p->m_next;
+                    Coord** link = &p->m_coord;
                     p = next;
                     if (*link != 0) {
                         g_coordPool.Push(*link);

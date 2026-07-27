@@ -9,7 +9,7 @@
 
 class CTriggerMgr;
 class CTileTriggerSwitchLogic; // FindChild's element type
-struct GruntCoord; // <Gruntz/Grunt.h> - m_0f0's element type
+struct Coord; // <Gruntz/CoordNode.h> - m_0f0's element type
 class CTileTriggerContainer; // +0x14 the tile-trigger container (FindChild/FindByField0C receiver)
 class CGrunt;                // <Gruntz/Grunt.h> - the grid units the spawn machine drives
 class CGruntzMgr;
@@ -206,7 +206,7 @@ public:
     CPtrArray m_0f0;       // +0x0f0  CPtrArray  (LoadConfig loop-3 start-coord array)
     // CPtrArray hands out void**; the element type goes back on here, at one seam,
     // rather than at each random-goal pick
-    GruntCoord** coordData() { return reinterpret_cast<GruntCoord**>(m_0f0.GetData()); }
+    Coord** coordData() { return reinterpret_cast<Coord**>(m_0f0.GetData()); }
     CDWordArray m_104;     // +0x104  CDWordArray
     CDWordArray m_118;     // +0x118  CDWordArray
 
