@@ -267,7 +267,7 @@ CRezImage* CImagePool::AddSurfaceOp(void* buf, i32 kind, i32 ctrl) {
 // @early-stop
 // regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001752f0, 0xfc)
-CRezImage* CImagePool::AddSurfaceRez(i32 name, i32 ctrl) {
+CRezImage* CImagePool::AddSurfaceRez(char* name, i32 ctrl) {
     HDC hdc = GetDC(m_sourceHwnd);
     g_hResModule = m_resourceModuleHandle;
     CRezImage* node;
@@ -289,7 +289,7 @@ CRezImage* CImagePool::AddSurfaceRez(i32 name, i32 ctrl) {
         node = 0;
     }
     if (node->LoadFromRez(
-            reinterpret_cast<char*>(name),
+            name,
             static_cast<void*>(hdc),
             ctrl
         )
@@ -317,7 +317,7 @@ CRezImage* CImagePool::AddSurfaceRez(i32 name, i32 ctrl) {
 // @early-stop
 // regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001753f0, 0xf4)
-CRezImage* CImagePool::AddSurfaceConvert(void* src, void* pal) {
+CRezImage* CImagePool::AddSurfaceConvert(CRezImage* src, void* pal) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node;
     CRezImage* raw = static_cast<CRezImage*>(::operator new(0x45c));
@@ -339,7 +339,7 @@ CRezImage* CImagePool::AddSurfaceConvert(void* src, void* pal) {
     }
     if (node->Convert8To16(
             static_cast<void*>(hdc),
-            reinterpret_cast<CRezImage*>(src),
+            src,
             pal
         )
         == 0) {
@@ -491,12 +491,12 @@ i32 CImagePool::EnsureSurface(CRezImage* img, i32 w, i32 h, i32 bitCount, i32 fl
 }
 
 RVA(0x00175780, 0x3f)
-void CImagePool::B(CRezImage* node, i32 a, i32 b) {
+void CImagePool::B(CRezImage* node, void* paletteNode, i32 b) {
     if (node->m_paletteNode && node->m_paletteScalar) {
         RemovePalette(node->m_paletteNode);
         node->SetPalette(0, 0);
     }
-    node->SetPalette(reinterpret_cast<void*>(a), b);
+    node->SetPalette(paletteNode, b);
 }
 
 RVA(0x001757c0, 0x16f)
@@ -1402,6 +1402,7 @@ i32 ApiCallerStubs::CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
         dst[3] = 0;
         dst += 4;
     }
+    // the 0x400 palette blob handed to the SDK-typed entry API (the PalEntries seam)
     return Build(reinterpret_cast<PALETTEENTRY*>(rgbq), arg);
 }
 
