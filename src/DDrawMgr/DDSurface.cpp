@@ -797,6 +797,10 @@ i32 CDDSurface::ShadeBlt(
                     do {
                         u32 tp = *t;
                         u32 sp = *srcPtr;
+                        // the CLUT is a byte-addressed table read as 16-bit entries;
+                        // byte-forced - routing it through Clut16 re-associates
+                        // g_clut + (off) vs (g_clut + off) + bank and costs ShadeBlt/
+                        // ShadeRect ~3-7%.
                         u16 v = *reinterpret_cast<u16*>(
                             ((g_clut + 0x10002) + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2)
                         );
@@ -829,6 +833,10 @@ i32 CDDSurface::ShadeBlt(
                     do {
                         u32 tp = *t;
                         u32 sp = *srcPtr;
+                        // the CLUT is a byte-addressed table read as 16-bit entries;
+                        // byte-forced - routing it through Clut16 re-associates
+                        // g_clut + (off) vs (g_clut + off) + bank and costs ShadeBlt/
+                        // ShadeRect ~3-7%.
                         u16 v = *reinterpret_cast<u16*>(
                             ((g_clut + 0x10002) + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2)
                         );
@@ -1902,8 +1910,8 @@ i32 CDDSurface::DecodeRun24(void* src) {
 
 RVA(0x00141040, 0x36)
 i32 CDDSurface::RotateBlit(
-    i32 rect,
-    i32 pivot,
+    void* rect,
+    i32* pivot,
     i32 a1,
     i32 a2,
     float scale,
@@ -1914,9 +1922,9 @@ i32 CDDSurface::RotateBlit(
     ImageRotateBlit(
         a1,
         a2,
-        reinterpret_cast<i32*>(pivot),
+        pivot,
         static_cast<void*>(this),
-        reinterpret_cast<void*>(rect),
+        rect,
         0.0f,
         scale,
         mode,
@@ -1937,8 +1945,8 @@ i32 BuildRotateBlitTransform(void) {
 
 RVA(0x00141200, 0x39)
 i32 CDDSurface::ScaleBlit(
-    i32 rect,
-    i32 pivot,
+    void* rect,
+    i32* pivot,
     i32 a1,
     i32 a2,
     float angle,
@@ -1949,9 +1957,9 @@ i32 CDDSurface::ScaleBlit(
     ImageRotateBlit(
         a1,
         a2,
-        reinterpret_cast<i32*>(pivot),
+        pivot,
         static_cast<void*>(this),
-        reinterpret_cast<void*>(rect),
+        rect,
         angle,
         1.0f,
         mode,
@@ -1962,8 +1970,8 @@ i32 CDDSurface::ScaleBlit(
 
 RVA(0x00141240, 0x39)
 i32 CDDSurface::RotateScaleBlit(
-    i32 rect,
-    i32 pivot,
+    void* rect,
+    i32* pivot,
     i32 a1,
     i32 a2,
     float angle,
@@ -1974,9 +1982,9 @@ i32 CDDSurface::RotateScaleBlit(
     ImageRotateBlit(
         a1,
         a2,
-        reinterpret_cast<i32*>(pivot),
+        pivot,
         static_cast<void*>(this),
-        reinterpret_cast<void*>(rect),
+        rect,
         angle,
         scale,
         mode,

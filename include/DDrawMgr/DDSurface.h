@@ -184,8 +184,8 @@ public:
     // by the ImageRotateBlit (float rot/scale, int mode/colorkey) slot it feeds so
     // the pushes match retail. (Orphan copies.)
     i32 RotateBlit(
-        i32 rect,
-        i32 pivot,
+        void* rect,
+        i32* pivot,
         i32 a1,
         i32 a2,
         float scale,
@@ -193,8 +193,8 @@ public:
         i32 colorkey
     ); // 0x141040
     i32 ScaleBlit(
-        i32 rect,
-        i32 pivot,
+        void* rect,
+        i32* pivot,
         i32 a1,
         i32 a2,
         float angle,
@@ -202,8 +202,8 @@ public:
         i32 colorkey
     ); // 0x141200
     i32 RotateScaleBlit(
-        i32 rect,
-        i32 pivot,
+        void* rect,
+        i32* pivot,
         i32 a1,
         i32 a2,
         float angle,
