@@ -182,15 +182,15 @@ void CGrunt::FinalizeStep(i32 arg) {
         i32 col = (c.col == 0) ? 2 : (c.col == 2 ? 0 : c.col);
         i32 row = (c.row == 0) ? 2 : (c.row == 2 ? 0 : c.row);
         i32 base = 3 * col + row;
-        char* cell = reinterpret_cast<char*>(&m_cells[base]);
-        double d48 = *reinterpret_cast<double*>((cell + 0x48));
-        double d50 = *reinterpret_cast<double*>((cell + 0x50));
+        CGruntCellRec* cell = &m_cells[base];
+        double d48 = cell->m_dirX;
+        double d50 = cell->m_dirY;
         m_408 = static_cast<double>(static_cast<i64>(static_cast<u32>(g_frameDelta))) * d48 * m_400
                 + m_408;
         m_410 = static_cast<double>(static_cast<i64>(static_cast<u32>(g_frameDelta))) * d50 * m_400
                 + m_410;
-        i32 nx = static_cast<i32>((*reinterpret_cast<double*>(cell + 0x58) + m_408));
-        i32 ny = static_cast<i32>((*reinterpret_cast<double*>(cell + 0x60) + m_410));
+        i32 nx = static_cast<i32>((cell->m_stepX + m_408));
+        i32 ny = static_cast<i32>((cell->m_stepY + m_410));
         if ((d48 > s_fpZero && nx > m_lastTilePxX) || (d48 < s_fpZero && nx < m_lastTilePxX)) {
             nx = m_lastTilePxX;
         }
@@ -216,15 +216,15 @@ void CGrunt::FinalizeStep(i32 arg) {
         }
         GruntEntranceCell c = m_entranceCell;
         i32 base = 3 * c.col + c.row;
-        char* cell = reinterpret_cast<char*>(&m_cells[base]);
-        double d48 = *reinterpret_cast<double*>((cell + 0x48));
-        double d50 = *reinterpret_cast<double*>((cell + 0x50));
+        CGruntCellRec* cell = &m_cells[base];
+        double d48 = cell->m_dirX;
+        double d50 = cell->m_dirY;
         m_408 = static_cast<double>(static_cast<i64>(static_cast<u32>(g_frameDelta))) * d48 * m_400
                 + m_408;
         m_410 = static_cast<double>(static_cast<i64>(static_cast<u32>(g_frameDelta))) * d50 * m_400
                 + m_410;
-        i32 nx = static_cast<i32>((*reinterpret_cast<double*>(cell + 0x58) + m_408));
-        i32 ny = static_cast<i32>((*reinterpret_cast<double*>(cell + 0x60) + m_410));
+        i32 nx = static_cast<i32>((cell->m_stepX + m_408));
+        i32 ny = static_cast<i32>((cell->m_stepY + m_410));
         if ((d48 > s_fpZero && nx > m_lastTilePxX) || (d48 < s_fpZero && nx < m_lastTilePxX)) {
             nx = m_lastTilePxX;
         }
