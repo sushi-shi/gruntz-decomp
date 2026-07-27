@@ -18,25 +18,21 @@ struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/Type
 
 // The grow-scratch CString array base (the dtor sweeps walk it).
 static inline CString* ActNameSlots() {
-    return reinterpret_cast<CString*>(g_typeColl.m_alloc);
+    return g_typeColl.Slots();
 }
 
 static inline CString* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
     CString* slot;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
-        slot = reinterpret_cast<CString*>(
-            g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride
-        );
-    } else if (reinterpret_cast<i32>((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0))) {
-        slot = reinterpret_cast<CString*>(
-            g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride
-        );
+        slot = g_typeColl.Elem(id);
+    } else if (g_typeColl._zvec::GrowTo(id, 0) != 0) {
+        slot = g_typeColl.Elem(id);
     } else {
         void* item = g_projActCache;
         g_retAddrBreadcrumb = GetRetAddr();
         g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
-        slot = reinterpret_cast<CString*>(g_typeColl.m_spare);
+        slot = g_typeColl.Scratch();
     }
     return slot;
 }

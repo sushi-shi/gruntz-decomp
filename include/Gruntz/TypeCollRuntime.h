@@ -7,6 +7,7 @@
 #include <Wap32/ZVec.h> // the canonical _zdvec allocating base (ex-CZArray2D)
 
 class CAnimNameRecord;
+class CString;
 
 // Its own 1-slot vtable. VTBL names the datum ??_7CTypeCollRuntime@@6B@ (a typed vtable,
 // not the ex-DATA `void* const CTypeCollRuntime_vtbl` global). The real dtor below (the
@@ -26,6 +27,15 @@ public:
     CAnimNameRecord* ScratchResolve(void* node) {
         return reinterpret_cast<CAnimNameRecord*>(_zvec::IndexToPtr(reinterpret_cast<i32>(node)));
     }
+
+    // The element type is CString: the band is byte-addressed (base + (id-lo)*stride),
+    // so the char* -> CString* pun lives here, at the one seam, instead of at every
+    // per-TU act-name lookup.
+    CString* Elem(i32 id) {
+        return reinterpret_cast<CString*>(m_base + (id - m_lo) * m_stride);
+    }
+    CString* Slots() { return reinterpret_cast<CString*>(m_alloc); }
+    CString* Scratch() { return reinterpret_cast<CString*>(m_spare); }
 };
 SIZE_UNKNOWN(); // _zdvec base (0x24) + no own fields; size not pinned
 

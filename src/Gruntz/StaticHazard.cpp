@@ -37,27 +37,23 @@ struct CTypeNameEntry; // canonical g_typeColl.m_spare slot record (<Gruntz/Type
 
 
 static inline CString* ActNameSlots() {
-    return reinterpret_cast<CString*>(g_typeColl.m_alloc);
+    return g_typeColl.Slots();
 }
 
 static inline CString* ActNameLookup(i32 id) {
     g_typeColl.m_grown = 0;
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
-        return reinterpret_cast<CString*>(
-            (g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride)
-        );
+        return g_typeColl.Elem(id);
     }
     if (reinterpret_cast<i32>(
             (static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0)
         )) { // slow lookup == _zvec::GrowTo @0x16da80
-        return reinterpret_cast<CString*>(
-            (g_typeColl.m_base + (id - g_typeColl.m_lo) * g_typeColl.m_stride)
-        );
+        return g_typeColl.Elem(id);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
-    return reinterpret_cast<CString*>(g_typeColl.m_spare);
+    return g_typeColl.Scratch();
 }
 
 static inline CHaznEntry* HaznLookup(i32 coord) {

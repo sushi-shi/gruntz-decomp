@@ -304,7 +304,7 @@ void CGrunt::ComputeFacing(double dt) {
 }
 
 static inline CString* ActNameSlots() {
-    return reinterpret_cast<CString*>(g_typeColl.m_alloc);
+    return g_typeColl.Slots();
 }
 
 #define REGISTER_KEY_644AF0(key, handler)                                                          \
