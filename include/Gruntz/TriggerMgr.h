@@ -474,6 +474,9 @@ public:
     CWwdGameObjectA* m_goal;          // +0x23c  the "DoNothing" camera-sprite goal object
                                       //         (LoadCameraSprite; released via m_flags|=0x10000)
     CPtrList m_recList;               // +0x240  record list (per-cell undo/record nodes)
+    // m_recList holds Coord* records; CPtrList hands them back as void*, so the
+    // element type is reapplied here once instead of at every cheat-command probe
+    Coord* HeadRec() { return static_cast<Coord*>(m_recList.GetHead()); }
     CActionOptionsMenuBar* m_overlay; // +0x25c  the allocated overlay sub-object (0x40 B)
     CByteArray m_byteArr;             // +0x260  byte-table array
     char m_274[0x10];                 // +0x274  serialized 16-byte region

@@ -66,21 +66,15 @@
     {                                                                                              \
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
-        CGrunt* _cell =                                                                            \
-            m_cmdGrid->m_recList.GetCount() == 1                                                   \
-                ? static_cast<CGrunt*>(                                                            \
-                      m_cmdGrid->m_grid                                                            \
-                          [reinterpret_cast<Coord*>(m_cmdGrid->m_recList.GetHead())->m_y           \
-                           + reinterpret_cast<Coord*>(m_cmdGrid->m_recList.GetHead())->m_x * 15]   \
-                  )                                                                                \
-                : 0;                                                                               \
+        CGrunt* _cell = m_cmdGrid->m_recList.GetCount() == 1                                        \
+                            ? m_cmdGrid->m_grid[m_cmdGrid->HeadRec()->m_y                          \
+                                                + m_cmdGrid->HeadRec()->m_x * 15]                  \
+                            : 0;                                                                   \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_tileOwnerHi != g_curPlayer)                                                   \
             return 0;                                                                              \
-        CGrunt* _c2 = reinterpret_cast<CGrunt*>(                                                   \
-            m_cmdGrid->m_grid[_cell->m_tileOwnerLo + _cell->m_tileOwnerHi * 15]                    \
-        );                                                                                         \
+        CGrunt* _c2 = m_cmdGrid->m_grid[_cell->m_tileOwnerLo + _cell->m_tileOwnerHi * 15];          \
         i32 _r = (_c2 && _c2->m_entranceCommitted) ? _c2->LoadPickupSprites(ID, 0, 0, 0, 1) : 0;   \
         if (!_r)                                                                                   \
             return 0;                                                                              \
@@ -92,14 +86,10 @@
     {                                                                                              \
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
-        CGrunt* _cell =                                                                            \
-            m_cmdGrid->m_recList.GetCount() == 1                                                   \
-                ? static_cast<CGrunt*>(                                                            \
-                      m_cmdGrid->m_grid                                                            \
-                          [reinterpret_cast<Coord*>(m_cmdGrid->m_recList.GetHead())->m_y           \
-                           + reinterpret_cast<Coord*>(m_cmdGrid->m_recList.GetHead())->m_x * 15]   \
-                  )                                                                                \
-                : 0;                                                                               \
+        CGrunt* _cell = m_cmdGrid->m_recList.GetCount() == 1                                        \
+                            ? m_cmdGrid->m_grid[m_cmdGrid->HeadRec()->m_y                          \
+                                                + m_cmdGrid->HeadRec()->m_x * 15]                  \
+                            : 0;                                                                   \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_tileOwnerHi != g_curPlayer)                                                   \
@@ -357,6 +347,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                             return 0;
                         }
                         m_cmdGrid->ClearRowAndRefresh(5);
+                        // m_map48 is a ::CMapPtrToPtr, so its key type IS void* - widening
+                        // the slot's id word to it is API-forced by MFC
                         void* _key = reinterpret_cast<void*>(
                             g_gameReg->m_options[0].m_00c
                         ); // death/monologo sprite key
