@@ -64,5 +64,36 @@ Residual in both is the unrelated `add eax,0x290` disp8 rebase (see the `@early-
 The INVERSE direction in `shrink-wrapped-callee-save-push.md` (retail eager-pushes, recompile
 shrink-wraps, `CWormhole::SpawnPartners`) is still a wall — this lever only runs one way.
 
+## Second, independent effect: BLOCK LAYOUT + epilogue tail-merge
+
+The same lever also decides *where the miss handler physically lands*, and that is worth more than
+the push. `CInGameText::Update` @0x997c0 has four `return 0` exits. Retail lays them out as
+
+```asm
+    ...body...
+    <success tail>
+    xor eax,eax ; pop edi/esi/ebp/ebx ; add esp,0xc ; ret     ; epilogue A
+0x9998f:
+    mov  DWORD PTR [ebp+0x58],0xffffffff
+    mov  eax,DWORD PTR [ebp+0x38]
+    and  DWORD PTR [eax+0x40],0xfffffffe                      ; <- memory RMW
+0x9999d:
+    pop edi ; pop esi ; pop ebp ; xor eax,eax ; pop ebx ; add esp,0xc ; ret   ; epilogue B
+```
+
+The miss handler sits **past** the success return and *falls into* epilogue B, which the three
+inner early exits (`jne 0x9999d` / `je 0x9999d`) tail-merge into. Written as an early return
+(`if (found == 0) { …; return 0; }`) cl emits that handler INLINE right after the test with its
+own 12-instruction epilogue — one basic block too many, and the diff then cascades through every
+register assignment downstream. Written as the positive gate with the miss tail after the closing
+brace, the layout and the tail-merge both reproduce, and the `&= ~1` even switches from
+load/and/store to retail's `and DWORD PTR [mem],imm8` RMW on its own. **79.46% → 93.83%** in one
+edit. (Two further shape fixes in the same function — the screen coords loading y before x, and
+taking `g_gameReg` into a local *after* both coord loads so cl stops hoisting the singleton —
+carried it to 96.59%.)
+
+So: whenever the recompile has an early-exit block cl placed inline and the target has the same
+handler parked at the END of the function, that is this pattern, not regalloc.
+
 related: shrink-wrapped-callee-save-push.md, mfc-map-walk-while-not-guard-dowhile.md,
 retry-loop-bail-while-goto-no-peel.md
