@@ -327,6 +327,7 @@ CRezFile::CRezFile(void* parent, char* nameSrc, CRezDir* dir) : CRezItmBase(pare
     // Enroll into the dir's closed list (new files start closed). The node param
     // is the type-erased CRezListNode view (AddHead links any node by its +4/+8
     // words, which CRezItmBase carries at the same offsets).
+    // language-forced element->node overlay (RezList.h: the element head IS the node)
     m_dir->m_closedList.AddHead(reinterpret_cast<CObjNode*>(this));
 }
 
@@ -340,6 +341,7 @@ CRezFile::~CRezFile() {
     if (m_name) {
         ::operator delete(m_name);
     }
+    // language-forced element->node overlay (RezList.h: the element head IS the node)
     m_dir->m_closedList.Remove(reinterpret_cast<CObjNode*>(this));
 }
 
@@ -454,7 +456,9 @@ i32 CRezFile::OpenFile() {
             break;
         }
     }
+    // language-forced element->node overlay (RezList.h: the element head IS the node)
     m_dir->m_closedList.Remove(reinterpret_cast<CObjNode*>(this));
+    // language-forced element->node overlay (RezList.h: the element head IS the node)
     m_dir->m_openList.AddHead(reinterpret_cast<CObjNode*>(this));
     m_dir->m_openCount++;
     return 1;
@@ -473,7 +477,9 @@ i32 CRezFile::CloseFile() {
         ok = (fclose(m_handle) == 0);
     }
     m_dir->m_openCount--;
+    // language-forced element->node overlay (RezList.h: the element head IS the node)
     m_dir->m_openList.Remove(reinterpret_cast<CObjNode*>(this));
+    // language-forced element->node overlay (RezList.h: the element head IS the node)
     m_dir->m_closedList.AddHead(reinterpret_cast<CObjNode*>(this));
     m_handle = 0;
     return ok;

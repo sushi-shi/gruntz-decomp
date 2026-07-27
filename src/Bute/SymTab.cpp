@@ -964,6 +964,7 @@ CSymParser::~CSymParser() {
     CRezItmBase* p;
     for (p = m_list.HeadItem(); p != 0;
          p = m_list.HeadItem()) {
+        // language-forced element->node overlay (RezList.h: the element head IS the node)
         m_list.Remove(reinterpret_cast<CObjNode*>(p));
         m_list.m_count--;
         delete p; // the slot-1 scalar-deleting dtor (delete emits the same null test)
@@ -1045,6 +1046,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
             return 0;
         }
         m_activeNode = reader;
+        // language-forced element->node overlay (RezList.h: the element head IS the node)
         m_list.AddHead(reinterpret_cast<CObjNode*>(reader));
         m_list.m_count++;
         if (reader->Open(static_cast<char*>(buf), a, b) == 0) {
@@ -1073,6 +1075,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         return 0;
     }
     m_activeNode = reader;
+    // language-forced element->node overlay (RezList.h: the element head IS the node)
     m_list.AddHead(reinterpret_cast<CObjNode*>(reader));
     m_list.m_count++;
     if (reader->Open(static_cast<char*>(buf), a, b) == 0) {
@@ -1167,6 +1170,7 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
             m_cachedSourceBuffer = 0;
             return 0;
         }
+        // language-forced element->node overlay (RezList.h: the element head IS the node)
         m_list.AddHead(reinterpret_cast<CObjNode*>(node));
         m_list.m_count++;
         if (node->Open(name, 1, 0) == 0) {
@@ -1183,6 +1187,7 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
         m_cachedSourceBuffer = 0;
         return 0;
     }
+    // language-forced element->node overlay (RezList.h: the element head IS the node)
     m_list.AddHead(reinterpret_cast<CObjNode*>(node));
     m_list.m_count++;
     if (node->Open(name, 1, 0) == 0) {
@@ -1324,6 +1329,7 @@ RVA(0x0013b850, 0xa8)
 i32 CSymParser::Clear(i32 final) {
     static_cast<void>(final);
     i32 r = m_activeNode->Close(); // [5] (the view's "Detach")
+    // language-forced element->node overlay (RezList.h: the element head IS the node)
     m_list.Remove(reinterpret_cast<CObjNode*>(m_activeNode));
     m_list.m_count--;
     delete m_activeNode; // slot-1 scalar dtor (delete emits the same null test)
@@ -1332,6 +1338,7 @@ i32 CSymParser::Clear(i32 final) {
     for (p = m_list.HeadItem(); p != 0;
          p = m_list.HeadItem()) {
         p->Close();
+        // language-forced element->node overlay (RezList.h: the element head IS the node)
         m_list.Remove(reinterpret_cast<CObjNode*>(p));
         m_list.m_count--;
         delete p;
