@@ -213,9 +213,12 @@ BOOL CCheatMgr::CheckCode(CString code) {
         code.SetAt(i, static_cast<char>(((static_cast<const char*>(code))[i] + 0x3d)));
     }
 
+    // retail 0x230fe: `neg esi; sbb esi,esi; and esi,ecx` - the branchless
+    // `hit ? value : 0` MSVC emits for a BOOL-guarded pointer select.
     void* value = 0;
-    CheatEntry* found =
-        reinterpret_cast<CheatEntry*>(((m_map.Lookup(static_cast<const char*>(code), value) ? -1 : 0) & reinterpret_cast<i32>(value)));
+    CheatEntry* found = m_map.Lookup(static_cast<const char*>(code), value)
+                            ? static_cast<CheatEntry*>(value)
+                            : 0;
     if (found != 0) {
         if (found->commandId > 0) {
             PostMessageA(m_owner, 0x111, found->commandId, 0);

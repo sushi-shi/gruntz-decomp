@@ -116,7 +116,7 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_159250(
         obj->m_posCache = 0;
         // alloc + construct the real worker via the throwing operator new (test-else-0
         // shape == retail)
-        AnimWorkerObj* worker = new AnimWorkerObj(root, a1, 0);
+        AnimWorkerObj* worker = new AnimWorkerObj(OwnerMgr(), a1, 0);
         obj->m_7c = worker;
         obj->m_carrier = 0;
         obj->m_80 = 0;
@@ -192,7 +192,7 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, AnimWorker
         obj->m_posCache = 0;
         // alloc + construct the real worker via the throwing operator new (test-else-0
         // shape == retail)
-        AnimWorkerObj* worker = new AnimWorkerObj(root, a1, 0);
+        AnimWorkerObj* worker = new AnimWorkerObj(OwnerMgr(), a1, 0);
         obj->m_7c = worker;
         obj->m_carrier = 0;
         obj->m_80 = 0;
@@ -267,7 +267,7 @@ CWwdGameObjectA* CDDrawChildGroup::CreateObject_159600(
         o->m_posCache = 0;
         // alloc + construct the real worker via the throwing operator new (test-else-0
         // shape == retail)
-        AnimWorkerObj* worker = new AnimWorkerObj(root, a1, flags);
+        AnimWorkerObj* worker = new AnimWorkerObj(OwnerMgr(), a1, flags);
         o->m_7c = worker;
         o->m_carrier = 0;
         o->m_80 = 0;
@@ -386,7 +386,7 @@ CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, AnimWorker
     CWwdGameObject* result; // the 0x1fc kind (vtable 0x5f00e8)
     if (obj != 0) {
         int root = m_ownerCtx;
-        new (static_cast<void*>(obj)) CWwdGameObjBaseCtor(root, a1, a6);
+        new (static_cast<void*>(obj)) CWwdGameObjBaseCtor(OwnerMgr(), a1, a6);
         // the embedded anim cursor's CLoadable base (ctor 0x156cb0)
         new (&obj->m_1a0) CLoadable(root, a1, a6);
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
@@ -882,11 +882,19 @@ void CDDrawChildGroup::DrawObjectCounts() {
         }
         rc.left = wl - view->m_viewRect.left + view->m_bounds50.left;
         rc.top = wt - view->m_viewRect.top + view->m_bounds50.top;
+        // Retail (0x15a712) hands WrapCoord `lea ecx,[esp+0x20]` / `lea eax,[esp+0x24]`
+        // - i.e. &rc.right and &rc.bottom of the SAME rect it then passes to
+        // DrawCount(RECT*, n) - so the two out-params are genuinely this RECT's
+        // right/bottom fields. Nothing in the image names WrapCoord's parameter TYPE
+        // (no PDB; its mangled name here is our own label), and int*/long* are
+        // codegen-identical, so the choice is a source-side one: its other EIGHT call
+        // sites (CImage.cpp) pass plain `i32 x, y` locals with no cast, so the
+        // declaration is i32* and the LONG*->int* conversion - language-forced,
+        // C++ keeps int and long distinct at identical width - lands at THIS one site.
         view->WrapCoord(
-            reinterpret_cast<i32*>(&rc.right),
-            reinterpret_cast<i32*>(&rc.bottom)
-        ); // language-forced: RECT's fields are LONG, WrapCoord's proven signature
-           // takes int* (PAH) - distinct types at identical width
+            reinterpret_cast<i32*>(&rc.right), // language-forced (LONG* -> int*)
+            reinterpret_cast<i32*>(&rc.bottom) // language-forced (LONG* -> int*)
+        );
         drawHost->DrawCount(&rc, obj->m_sortKey);
     } while (pos != 0);
 }

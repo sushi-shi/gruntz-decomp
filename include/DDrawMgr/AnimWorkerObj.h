@@ -28,16 +28,26 @@ struct AnimWorkerObj : public CWapObj {
     virtual i32 Init(GameObjNotifyFn callback, i32 frame); // slot 9  0x151e20
 
     AnimWorkerObj() {}
-    // The full 3-arg seed ctor (0x15b300, out-of-line in WwdFactoryObject.cpp;
-    // the CDDrawChildGroup factories construct through it): m_04=b, m_08=c, m_0c=a,
-    // zero the rest. The arg-store order (b,c,a) is load-bearing.
-    AnimWorkerObj(i32 a, i32 b, i32 c);
+    // The full 3-arg seed ctor (0x15b300, out-of-line in WwdFactoryObject.cpp; the
+    // CDDrawChildGroup factories construct through it): m_04=id, m_08=stateFlags,
+    // m_0c=owner, zero the rest. The arg-STORE order (id, stateFlags, owner) is
+    // load-bearing.
+    //
+    // All three args are typed/named from the slots they land in, not from the
+    // creation chain's i32 spelling. `owner` IS the owning CDDrawSurfaceMgr (the
+    // factories now pass CLoadable::OwnerMgr() - the ONE seam where the proven-
+    // heterogeneous +0x0c handle becomes the draw family's type - instead of the raw
+    // i32 each ctor re-cast). `id` and `stateFlags` are the SAME pair CLoadable
+    // names m_id (+0x04 per-child id / liveness latch) and m_flags (+0x08 the
+    // collision/state flag word): the object factories hand this ctor and the
+    // CLoadable/CResolveNode base ctor the identical (owner, a1, flags) triple.
+    AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags);
     // The inline 2-arg construction the 0x15b390 game-object ctor folds (was the
     // WwdAnimWorkerInit view): same stores with m_08 = 0.
-    AnimWorkerObj(i32 a, i32 b) {
-        m_04 = b;
+    AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id) {
+        m_04 = id;
         m_08 = 0;
-        m_0c = reinterpret_cast<CDDrawSurfaceMgr*>(a); // (mangling-pinned i32 arg; a IS the mgr)
+        m_0c = owner;
         m_notify = 0;
         m_payload = 0;
         m_logic = 0;

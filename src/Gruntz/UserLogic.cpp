@@ -114,18 +114,16 @@ void CUserLogic::XferName(char* name) {
 RVA(0x00008b70, 0x3)
 void CUserLogic::FireActivation(i32) {}
 
-typedef void (CUserLogic::*UserLogicCallback)(); // 4 bytes (complete class, single inheritance)
-
 RVA(0x00008b90, 0x40)
 void CUserLogic::FinalizeStep(i32 /*unused*/) {
     if (m_deferredCallback == 0) {
         return;
     }
     if (m_gatedCallback != 0 && m_objAux->ActKey() == m_28) {
-        (this->*reinterpret_cast<UserLogicCallback&>(m_gatedCallback))();
+        (this->*m_gatedCallback)();
         m_gatedCallback = 0;
     }
-    (this->*reinterpret_cast<UserLogicCallback&>(m_deferredCallback))();
+    (this->*m_deferredCallback)();
     m_deferredCallback = 0;
     m_28 = 0x3e9;
 }

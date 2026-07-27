@@ -137,8 +137,14 @@ public:
     // virtual above; retail's slot holds its ILT thunk 0x3913, which
     // reloc_fidelity thunk-resolves onto the body.)
     i32 Place(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32); // 0x4d800
-    i32 m_deferredCallback;                                                // +0x04
-    i32 m_gatedCallback;                                                   // +0x08
+    // The two pending act callbacks. They ARE pointers-to-member (FinalizeStep calls
+    // them as `(this->*cb)()`, and the act pool they come from is typed
+    // `zDArray<int (CUserLogic::*)(void)>` by retail's own RTTI), so they are declared
+    // as the member-pointer they hold instead of a bare i32. MSVC5 gives a PMF into
+    // the class currently being defined the 4-byte single-inheritance representation
+    // (probed: sizeof == 4, class size unchanged), so the layout is untouched.
+    i32 (CUserLogic::*m_deferredCallback)(); // +0x04
+    i32 (CUserLogic::*m_gatedCallback)();    // +0x08
     CGameObject* m_0c;                                                     // +0x0c
     // +0x10  bound game object (== m_38): the created A-kind sprite (every binding
     // site hands a CreateSprite/ReadPlaneObjects product; leaves read its m_1a0
@@ -200,6 +206,13 @@ public:
                 // pinned by RVA_COMPGEN in ActionArea.cpp
     // Serialize the referenced object by its registry key name (read/write per mode).
     i32 Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj); // 0x8c00
+    // 0x6b2e0 (body in GruntEntranceArrival.cpp, its only caller's TU): cache the
+    // bound sprite's active descriptor into m_value, seed its embedded anim cursor
+    // with `a`, and (when the flag is set) advance it by the frame delta.
+    // Was the DUPLICATE `CEffect6b` view (Effect6b.h): its _00 / m_player / _08 /
+    // m_prevDesc were m_34 / m_38 / m_3c / m_value field-for-field, and both were
+    // reached as CGrunt's +0x150 sub-object - one class under two names, FOLDED.
+    void Apply(class CAniElement* a, i32 b);
 
     // Field names keep the tile-leaf +0x34 spellings (this class is reached at THREE
     // displacements - see the note above - so no one spelling can be offset-accurate).

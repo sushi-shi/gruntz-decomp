@@ -21,7 +21,6 @@
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/BoundaryLowerMethodsViews.h>
-#include <Gruntz/Effect6b.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <rva.h>

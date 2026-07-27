@@ -144,12 +144,10 @@ inline CGruntLiveNode* LiveHeadOf(const CPtrList& l) {
     return reinterpret_cast<CGruntLiveNode*>(l.GetHeadPosition());
 }
 
-struct CGruntTypeCatalog {
-    char m_pad0[0xc];
-    CDDrawSubMgrLeaf* m_c; // +0x0c  owner -> name-id map
-};
-SIZE_UNKNOWN();
-
+// (CGruntTypeCatalog DISSOLVED 2026-07-28: it was a 2-field pad-view of
+// AnimWorkerObj - its m_c @+0x0c IS AnimWorkerObj::m_0c. CGrunt::Save now reads
+// `m_3c->m_0c` directly; see the @identity-TODO at GruntSteps.cpp for the
+// CDDrawSurfaceMgr-vs-CDDrawSubMgrLeaf conflict that slot still carries.)
 
 struct CGruntListNode {
     CGruntListNode* m_next; // +0x00
@@ -692,6 +690,7 @@ public:
         return static_cast<CGruntCoordList*>(&m_31c);
     }
     CoordNode* CoordTail() const {
+        // language-forced, same MFC POSITION-is-the-node pun as CoordHead above
         return reinterpret_cast<CoordNode*>(m_31c.GetTailPosition());
     }
     i32 CoordCount() const {

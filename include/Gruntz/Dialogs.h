@@ -155,13 +155,22 @@ public:
     // stamp for a user-written body only, so the dtor is compiler-generated. The COMDAT is
     // still emitted (the vtable slot takes its address) and bound by RVA_COMPGEN in
     // src/Gruntz/Dialogs.cpp.
-    virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (0x183d0; OrphanLeaves.cpp)
+    // The REAL MFC message map (0x1e8e98 + its entries at 0x1e8ea0), modeled the way
+    // CMultiHelpDlg's is: {&CDialog::messageMap, _messageEntries} then one
+    // ON_CONTROL(LBN_DBLCLK, 0x516, PickIfSelected) row and the AfxSig_end sentinel.
+    // The retail bytes pin every field (nCode 2 = LBN_DBLCLK, nID/nLastID 0x516,
+    // nSig 0x0c = AfxSig_vv, pfn 0x403d5f = PickIfSelected's ILT thunk).
+    static const AFX_MSGMAP messageMap;
+    virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (0x183d0)
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35
-    // 0x183f0 (OrphanLeaves.cpp): the custom-level listbox (0x516) confirm - the
-    // message-map handler at messageMap+0x1c (LB dbl-click -> OnOK when selected).
+    // 0x183f0: the custom-level listbox (0x516) confirm - the message-map handler
+    // at messageMap+0x1c (LB dbl-click -> OnOK when selected).
     void PickIfSelected();
 
     CString m_customName; // +0x5c  (default CString)
+
+private:
+    static const AFX_MSGMAP_ENTRY _messageEntries[];
 };
 SIZE_UNKNOWN();
 

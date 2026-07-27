@@ -30,9 +30,8 @@ i32 CGruntzCommand::Parse(void*, i32) {
     return 0;
 }
 
-// The command wire buffer is a PACKED byte stream, so pulling a 16-bit field out of
-// it is a forced pun; it lives here, once.
 static inline i16 PeekI16(const void* p) {
+    // byte-forced (one seam): the command wire buffer is a packed byte stream
     return *reinterpret_cast<const i16*>(p);
 }
 static inline void PokeI16(void* p, i16 v) {

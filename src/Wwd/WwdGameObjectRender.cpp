@@ -274,7 +274,7 @@ CWwdGameObject::CreateObject(int a1, int a2, int a3, int a4, AnimWorkerObj* tmpl
     if (obj != 0) {
         int root =
             m_ownerCtx; // the CLoadable owner int handle (== this->m_ownerCtx, the CDDrawSurfaceMgr)
-        new (obj) CWwdGameObjBaseCtor(root, a1, a6);
+        new (obj) CWwdGameObjBaseCtor(OwnerMgr(), a1, a6);
         // CWwdGameObjBaseCtor is a CONSTRUCTION-SHAPE view of this same 0x1dc object
         // (it spells the ctor's store order over WwdCtorBase); until it and
         // CWwdGameObjectA are one class the RezAlloc block is re-typed here.

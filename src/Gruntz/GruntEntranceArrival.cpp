@@ -42,7 +42,6 @@
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/BoundaryLowerMethodsViews.h>
-#include <Gruntz/Effect6b.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/GameRegistry.h> // canonical CGameRegistry (the reconciled singleton view)
@@ -1666,7 +1665,10 @@ i32 CGrunt::BuildGruntExitAnimation() {
         }
     }
 
-    (reinterpret_cast<CEffect6b*>((&m_34)))->Apply(found, 0);
+    // CGrunt's RTTI CHD @VA 0x5f2c40 proves CWapX is a DIRECT second base at mdisp
+    // +0x150; until that MI conversion lands the sub-object is reached by cast -
+    // @identity-TODO(deferred, MI1 flagged item 1; same seam as GruntSteps.cpp).
+    (reinterpret_cast<CWapX*>((&m_34)))->Apply(found, 0);
     CAniDesc* elem = static_cast<CAniDesc*>(m_38->m_1a0.m_14->AtChecked(0));
     i32 frame = elem->m_param;
     m_38->ApplyLookupSprite(s_GRUNTZ_EXITZ, frame);
@@ -2270,14 +2272,17 @@ i32 CGrunt::StepEntranceRelatchB() {
 }
 
 // ---------------------------------------------------------------------------
-// CEffect6b::Apply (0x6b2e0) - homed here from the former OrphanMethods.cpp holding
+// CWapX::Apply (0x6b2e0) - homed here from the former OrphanMethods.cpp holding
 // TU. OWNER PROVEN BY XREF, not by RVA: `gruntz sema xref 0x6b2e0` gives exactly ONE
 // caller - CGrunt::BuildGruntExitAnimation (0x641b0), which is THIS TU's own body
-// (line ~1828: `((CEffect6b*)(&m_150))->Apply((i32)found, 0)`), and this TU already
-// includes <Gruntz/Effect6b.h>. CEffect6b is CGrunt's embedded +0x150 exit-animation
-// facet (`this` == &CGrunt::m_150; m_player == CGrunt::m_154, m_prevDesc ==
-// CGrunt::m_prevEntranceDesc +0x15c), so its class home is CGrunt and its only user
-// is this obj.
+// (`((CWapX*)(&m_34))->Apply(found, 0)` below). `this` is CGrunt's +0x150
+// sub-object, which RTTI (CGrunt's CHD @VA 0x5f2c40) proves is the CWapX second base.
+//
+// DISSOLVED VIEW (2026-07-28): this method used to be declared on a .h-local
+// `CEffect6b` whose fields _00 / m_player / _08 / m_prevDesc were CWapX's
+// m_34 / m_38 / m_3c / m_value field-for-field, reached at the same +0x150
+// displacement - one class under two names. Effect6b.h is deleted; the body now
+// spells the CWapX members and the class's own note carries the evidence.
 //
 // Its RVA (0x6b2e0) is COMDAT-POOLED and so sits outside this obj's 0x5ecd0..0x65df5
 // run - the 0x6b26x..0x6b33x band packs five tiny bodies from five unrelated classes
@@ -2290,19 +2295,20 @@ i32 CGrunt::StepEntranceRelatchB() {
 // BootyStateActivate.cpp). Owner-by-xref wins; the span outlier is the pool's, not a
 // partition defect.
 //
-// Cache the owner's active descriptor into m_prevDesc, run the owner's embedded anim
-// sub-object (+0x1a0) advance, and (when the flag arg is set) re-target its draw-delta.
+// Cache the owner's active descriptor into m_value, run the bound sprite's embedded
+// anim sub-object (+0x1a0) advance, and (when the flag arg is set) re-target its
+// draw-delta.
 // @early-stop
 // 76%: every instruction (lea anim, descriptor read, m_prevDesc store, arg push, both
 // calls) is byte-faithful; the residual is pure register coloring + a 2-instr
 // scheduling flip in this 0x39-byte leaf - retail keeps m_1b4 in edx and hoists the
-// `a` load into eax before the m_prevDesc store; cl colors the descriptor in eax and
-// stores m_prevDesc first. Not source-steerable (every operand/declaration reorder
+// `a` load into eax before the m_value store; cl colors the descriptor in eax and
+// stores m_value first. Not source-steerable (every operand/declaration reorder
 // reproduced the same coloring).
 RVA(0x0006b2e0, 0x39)
-void CEffect6b::Apply(CAniElement* a, i32 b) {
-    CAniAdvanceCursor* anim = &m_player->m_1a0;
-    m_prevDesc = m_player->m_1a0.m_14;
+void CWapX::Apply(CAniElement* a, i32 b) {
+    CAniAdvanceCursor* anim = &m_38->m_1a0;
+    m_value = m_38->m_1a0.m_14;
     anim->Setup(a);
     if (b != 0) {
         anim->Advance(static_cast<i32>(g_engineFrameDelta));

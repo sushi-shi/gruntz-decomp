@@ -6,10 +6,24 @@
 
 #include <io.h>     // _finddata_t / _findfirst / _findnext (the custom-level dir walk)
 #include <direct.h> // _getcwd (0x11fc10; the "game dir" resolver == current directory)
-#include <Gruntz/CustomLevelDlg.h> // ex Globals.h
 
+// The dialog's REAL MFC message map. The ex `void* g_battlezCustomMsgMap` was a
+// 4-byte phantom standing in for the 8-byte AFX_MSGMAP record here, and left its
+// entry array at 0x1e8ea0 unbound. Retail's bytes: {0x005eb068, 0x005e8ea0} - the
+// base map pointer is CDialog::messageMap (byte-identical to CMultiHelpDlg's
+// @0x1ea448), and the one entry is {WM_COMMAND, 2, 0x516, 0x516, 0x0c, 0x00403d5f}
+// == ON_CONTROL(LBN_DBLCLK, 0x516, PickIfSelected) followed by the end sentinel.
 DATA(0x001e8e98)
-void* g_battlezCustomMsgMap;
+const AFX_MSGMAP CBattlezDlgCustom::messageMap = {
+    &CDialog::messageMap,
+    &CBattlezDlgCustom::_messageEntries[0],
+};
+
+DATA(0x001e8ea0)
+const AFX_MSGMAP_ENTRY CBattlezDlgCustom::_messageEntries[] = {
+    ON_CONTROL(LBN_DBLCLK, 0x516, CBattlezDlgCustom::PickIfSelected) // 0x183f0 via ILT 0x3d5f
+    {0, 0, 0, 0, AfxSig_end, 0},
+};
 
 // @early-stop
 // stack-buffer-placement wall (same as sibling CBattlezDlg::FillCustomLevelList
@@ -61,7 +75,7 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
 
 RVA(0x000183d0, 0x6)
 const AFX_MSGMAP* CBattlezDlgCustom::GetMessageMap() const {
-    return reinterpret_cast<const AFX_MSGMAP*>(&g_battlezCustomMsgMap);
+    return &messageMap;
 }
 
 // ---------------------------------------------------------------------------
@@ -84,10 +98,8 @@ void CBattlezDlgCustom::PickIfSelected() {
 
 RVA(0x00018430, 0xd)
 void EndWaitCursorOnThread() {
-    // API-forced: AFX_MODULE_STATE's layout lives in MFC's PRIVATE afxstat_.h, which the
-    // public include set does not carry, so the +4 current-app/thread slot can only be
-    // reached positionally - the same reason the mfc-position bucket exists.
-    CCmdTarget* thread =
-        *reinterpret_cast<CCmdTarget**>((reinterpret_cast<char*>(AfxGetModuleState()) + 4));
-    thread->EndWaitCursor();
+    // The +4 slot IS AFX_MODULE_STATE::m_pCurrentWinApp (AFXSTAT_.H: CNoTrackObject's
+    // vptr at +0, the CWinApp* right after) - the same member the two wait-cursor
+    // sites above already name.
+    static_cast<CCmdTarget*>(AfxGetModuleState()->m_pCurrentWinApp)->EndWaitCursor();
 }

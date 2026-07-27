@@ -37,6 +37,10 @@ namespace ApiCallerStubs {
             out[i + 2] = raw[i + 0];
             out[i + 3] = 0;
         }
+        // retail's swizzle @0x177575 is a FLAT byte loop over the 0x400-byte BMP colour
+        // table (`mov cl,[esp+eax+0x452]` ... `add eax,4; cmp eax,0x400`), so the
+        // staging buffer is byte-forced; the SDK's PALETTEENTRY* goes back on at the
+        // Build boundary, once.
         return Build(reinterpret_cast<PALETTEENTRY*>(out), 0);
     }
 
