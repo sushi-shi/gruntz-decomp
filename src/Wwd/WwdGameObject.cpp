@@ -535,6 +535,12 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
     if (m_80 == 0) {
         return 0;
     }
+    // @identity-TODO `src` is the value AddLogicHit (0x150f50) pulls out of the
+    // worker-name map at [[this->m_ownerCtx+0x14]+0x10], and retail really does read
+    // its +0x10 as the notify fn (`mov eax,[ebx+0x10]; push eax; call [edx+0x24]`).
+    // The transcription is right; what is unresolved is the MAP's value type - it is
+    // not CDDrawWorker (whose +0x10 is a CObArray) nor CGameObject's plot-state slot.
+    // Settle the map's element type and this cast goes with it.
     return m_80->Init(reinterpret_cast<GameObjNotifyFn>(src->m_10), 0);
 }
 
@@ -594,6 +600,12 @@ i32 CGameObject::EnsureWorker88(CGameObject* src) {
     if (m_88 == 0) {
         return 0;
     }
+    // @identity-TODO `src` is the value AddLogicHit (0x150f50) pulls out of the
+    // worker-name map at [[this->m_ownerCtx+0x14]+0x10], and retail really does read
+    // its +0x10 as the notify fn (`mov eax,[ebx+0x10]; push eax; call [edx+0x24]`).
+    // The transcription is right; what is unresolved is the MAP's value type - it is
+    // not CDDrawWorker (whose +0x10 is a CObArray) nor CGameObject's plot-state slot.
+    // Settle the map's element type and this cast goes with it.
     return m_88->Init(reinterpret_cast<GameObjNotifyFn>(src->m_10), 0);
 }
 
@@ -641,6 +653,12 @@ i32 CGameObject::EnsureWorker90(CGameObject* src) {
     if (m_collideWorker == 0) {
         return 0;
     }
+    // @identity-TODO `src` is the value AddLogicHit (0x150f50) pulls out of the
+    // worker-name map at [[this->m_ownerCtx+0x14]+0x10], and retail really does read
+    // its +0x10 as the notify fn (`mov eax,[ebx+0x10]; push eax; call [edx+0x24]`).
+    // The transcription is right; what is unresolved is the MAP's value type - it is
+    // not CDDrawWorker (whose +0x10 is a CObArray) nor CGameObject's plot-state slot.
+    // Settle the map's element type and this cast goes with it.
     return m_collideWorker->Init(reinterpret_cast<GameObjNotifyFn>(src->m_10), 0);
 }
 
