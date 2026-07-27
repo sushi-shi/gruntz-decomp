@@ -2,6 +2,7 @@
 #include <Bute/SymParser.h>
 
 #include <Bute/ButeMgr.h>            // canonical CButeMgr (one shape)
+#include <Gruntz/Enums.h>            // REZ_TAG_WAV ('WAV')
 #include <Gruntz/GruntSpawnConfig.h> // canonical CGruntSpawnConfig (this) + CSpawnResolver
 #include <Gruntz/SpawnList.h>        // canonical CSpawnList (the built voice list)
 #include <rva.h>
@@ -47,11 +48,9 @@ CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
                     static_cast<LPCTSTR>(sub)
                 );
             }
-            void* res = static_cast<void*>((reinterpret_cast<CSymParser*>(m_owner->m_34))
-                                                    ->ResolveQualified(
-                                                        static_cast<LPCTSTR>(name),
-                                                        0x574156
-                                                    ));
+            void* res = static_cast<void*>(
+                m_owner->m_34->ResolveQualified(static_cast<LPCTSTR>(name), REZ_TAG_WAV)
+            );
             if (res != 0) {
                 // retail copy-ctors `name` straight into the by-value arg slot
                 // (push 0; push ecx; mov ecx,esp; copy-ctor) - no local temp.

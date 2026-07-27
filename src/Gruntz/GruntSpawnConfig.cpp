@@ -5,7 +5,11 @@
 #include <Dsndmgr/StreamFeeder.h>
 #include <Gruntz/GameRegistry.h>
 
-#include <Bute/ButeMgr.h> // CButeMgr g_buteMgr (GetIntDef)
+#include <Bute/ButeMgr.h>   // CButeMgr g_buteMgr (GetIntDef)
+#include <Bute/SymParser.h> // CSpawnOwner::m_34 - the real 'WAV' resolver
+#include <Gruntz/Enums.h>   // REZ_TAG_WAV ('WAV')
+#include <Gruntz/Grunt.h>   // CGruntCoordList - the out-of-line node walker (0x29a30)
+#include <Gruntz/Random.h>  // g_randSeed / g_randSeeded (the lazily-seeded LCG)
 #include <rva.h>
 
 RVA(0x00085df0, 0x4a)
@@ -145,10 +149,10 @@ void CGruntSpawnConfig::ClearSprites() {
 RVA(0x0011afb0, 0x321)
 BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     CGrunt* who,
-    i32 param_2,
-    i32 param_3,
-    i32 param_4,
-    i32 param_5
+    i32 cue,
+    i32 which,
+    i32 priority,
+    i32 percent
 ) {
     if (m_voices[0] == 0 && !LoadGruntVoices()) {
         return 0;
@@ -159,36 +163,33 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     if (!IsReady()) {
         return 0;
     }
-    void* index = GetButeSlot(
-        reinterpret_cast<CSpawnButeConfig*>(who),
-        reinterpret_cast<CSpawnButeTarget*>(param_2)
-    );
+    i32 voiceId = GetButeSlot(reinterpret_cast<CSpawnButeConfig*>(who), cue);
     CString local_10;
     CString local_14;
-    local_14.Format("SG%i", reinterpret_cast<int>(index));
-    local_10.Format("G%i", param_2);
-    if (param_5 == -1) {
-        param_5 = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(local_14), "Per", -1);
-        if (param_5 == -1) {
-            param_5 = g_buteMgr.GetIntDef("GruntPercent", static_cast<LPCTSTR>(local_10), 0);
+    local_14.Format("SG%i", voiceId);
+    local_10.Format("G%i", cue);
+    if (percent == -1) {
+        percent = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(local_14), "Per", -1);
+        if (percent == -1) {
+            percent = g_buteMgr.GetIntDef("GruntPercent", static_cast<LPCTSTR>(local_10), 0);
         }
     }
-    if (param_5 < 100 && param_5 < g_gameReg->Rand() % 0x65) {
+    if (percent < 100 && percent < g_gameReg->Rand() % 0x65) {
         return 0;
     }
-    if (param_4 == -1) {
-        param_4 = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(local_14), "Pri", -1);
-        if (param_4 == -1) {
-            param_4 = g_buteMgr.GetIntDef("GruntPriority", static_cast<LPCTSTR>(local_10), 1);
+    if (priority == -1) {
+        priority = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(local_14), "Pri", -1);
+        if (priority == -1) {
+            priority = g_buteMgr.GetIntDef("GruntPriority", static_cast<LPCTSTR>(local_10), 1);
         }
     }
     CGruntVoice** voices = m_voices;
     for (i32 i = 0; i < 2; i++) {
-        if (param_4 <= voices[i]->m_playFlags) {
+        if (priority <= voices[i]->m_playFlags) {
             return 0;
         }
     }
-    i32 src = PickWeighted(reinterpret_cast<i32>(index), param_3);
+    CParseSource* src = PickWeighted(voiceId, which);
     if (src == 0 || m_configTree->m_20 == 0) {
         return 0;
     }
@@ -227,9 +228,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         }
     }
     if (streams[chosen] == 0) {
-        streams[chosen] =
-            m_configTree->m_20
-                ->OpenStream(reinterpret_cast<CParseSource*>(src), 0x5000, 0x1400, 0x100e0, 0, 0);
+        streams[chosen] = m_configTree->m_20->OpenStream(src, 0x5000, 0x1400, 0x100e0, 0, 0);
         if (streams[chosen] == 0) {
             return 0;
         }
@@ -237,11 +236,11 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     StreamVoice* stream = streams[chosen];
     i32 vol = m_voiceVolume;
     stream->m_feeder.Pause();
-    if (stream->SetSource(reinterpret_cast<CParseSource*>(src)) != 0) {
+    if (stream->SetSource(src) != 0) {
         stream->Configure(vol, 0, 0, 0);
     }
     CGruntVoice* voice = voices[chosen];
-    return voice->Setup(gate->m_10->m_188, static_cast<void*>(stream), param_4, 0) != 0;
+    return voice->Setup(gate->m_10->m_188, static_cast<void*>(stream), priority, 0) != 0;
 }
 
 // ===========================================================================
@@ -267,7 +266,7 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(void* /*spawner*/, i32, i32, i32, i32, i
 // twin of 0x11b3b0: same /GX EH single-epilogue wall; five-argument member overload,
 // stub kept as the highest-% version (full body ~47% vs stub-artifact 73-83%).
 RVA(0x0011b7c0, 0x304)
-i32 CGruntSpawnConfig::SpawnVoiceDriver(i32 , i32, i32, i32, i32) {
+i32 CGruntSpawnConfig::SpawnVoiceDriver(i32, i32, i32, i32, i32) {
     return 0;
 }
 
@@ -286,106 +285,231 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(i32 , i32, i32, i32, i32) {
 // base reloc against a $L label vs the target's switchdataD self-reloc. The code
 // IS matched; the % undercounts it. No source change applies - stop chasing.
 RVA(0x0011bba0, 0x1f4)
-void* CGruntSpawnConfig::GetButeSlot(CSpawnButeConfig* config, CSpawnButeTarget* target) {
+i32 CGruntSpawnConfig::GetButeSlot(CSpawnButeConfig* config, i32 cue) {
     if (config == 0) {
         return 0;
     }
     if (config->m_258 == 0x3a) {
-        return target->m_data + 0x17c;
+        return VOICE_CUES_PER_BAND * 19 + cue;
     }
     if (config->m_258 == 0x39) {
-        return target->m_data + 0x104;
+        return VOICE_CUES_PER_BAND * 13 + cue;
     }
     switch (static_cast<u32>(config->m_170)) {
         case 0:
-            return target->m_data + 0x154;
+            return VOICE_CUES_PER_BAND * 17 + cue;
         case 1:
-            return target->m_data + 0x3c;
+            return VOICE_CUES_PER_BAND * 3 + cue;
         case 2:
-            return target->m_data + 0x50;
+            return VOICE_CUES_PER_BAND * 4 + cue;
         case 3:
-            return target->m_data + 0x64;
+            return VOICE_CUES_PER_BAND * 5 + cue;
         case 4:
-            return target->m_data + 0x78;
+            return VOICE_CUES_PER_BAND * 6 + cue;
         case 5:
-            return target->m_data + 0x8c;
+            return VOICE_CUES_PER_BAND * 7 + cue;
         case 6:
-            return target->m_data + 0xa0;
+            return VOICE_CUES_PER_BAND * 8 + cue;
         case 7:
-            return target->m_data + 0xc8;
+            return VOICE_CUES_PER_BAND * 10 + cue;
         case 8:
-            return target->m_data + 0xdc;
+            return VOICE_CUES_PER_BAND * 11 + cue;
         case 9:
-            return target->m_data + 0xf0;
+            return VOICE_CUES_PER_BAND * 12 + cue;
         case 10:
-            return target->m_data + 0x140;
+            return VOICE_CUES_PER_BAND * 16 + cue;
         case 11:
-            return target->m_data + 0x190;
+            return VOICE_CUES_PER_BAND * 20 + cue;
         case 12:
-            return target->m_data + 0x1b8;
+            return VOICE_CUES_PER_BAND * 22 + cue;
         case 13:
-            return target->m_data + 0x1cc;
+            return VOICE_CUES_PER_BAND * 23 + cue;
         case 14:
-            return target->m_data + 0x1e0;
+            return VOICE_CUES_PER_BAND * 24 + cue;
         case 15:
-            return target->m_data + 0x1f4;
+            return VOICE_CUES_PER_BAND * 25 + cue;
         case 16:
-            return target->m_data + 0x21c;
+            return VOICE_CUES_PER_BAND * 27 + cue;
         case 17:
-            return target->m_data + 0x230;
+            return VOICE_CUES_PER_BAND * 28 + cue;
         case 18:
             if (config->m_234 != 0) {
-                return target->m_data + 0x258;
+                return VOICE_CUES_PER_BAND * 30 + cue;
             }
-            return target->m_data + 0x244;
+            return VOICE_CUES_PER_BAND * 29 + cue;
         case 19:
-            return target->m_data + 0x26c;
+            return VOICE_CUES_PER_BAND * 31 + cue;
         case 20:
-            return target->m_data + 0x280;
+            return VOICE_CUES_PER_BAND * 32 + cue;
         case 21:
-            return target->m_data + 0x294;
+            return VOICE_CUES_PER_BAND * 33 + cue;
         case 22:
-            return target->m_data + 0x2a8;
+            return VOICE_CUES_PER_BAND * 34 + cue;
         case 23:
-            return target->m_data + 0x0;
+            return cue; // band 0
         case 24:
-            return target->m_data + 0x14;
+            return VOICE_CUES_PER_BAND * 1 + cue;
         case 25:
-            return target->m_data + 0x28;
+            return VOICE_CUES_PER_BAND * 2 + cue;
         case 26:
-            return target->m_data + 0xb4;
+            return VOICE_CUES_PER_BAND * 9 + cue;
         case 27:
-            return target->m_data + 0x118;
+            return VOICE_CUES_PER_BAND * 14 + cue;
         case 28:
-            return target->m_data + 0x12c;
+            return VOICE_CUES_PER_BAND * 15 + cue;
         case 29:
-            return target->m_data + 0x168;
+            return VOICE_CUES_PER_BAND * 18 + cue;
         case 30:
-            return target->m_data + 0x1a4;
+            return VOICE_CUES_PER_BAND * 21 + cue;
         case 31:
-            return target->m_data + 0x208;
+            return VOICE_CUES_PER_BAND * 26 + cue;
         case 32:
-            return target->m_data + 0x2bc;
+            return VOICE_CUES_PER_BAND * 35 + cue;
         default:
             return 0;
     }
 }
 
+// ===========================================================================
+// CGruntSpawnConfig::PickWeighted  (0x11bee0)
+// ===========================================================================
+// Resolve voice-list `voiceId` to its .WAV parse record. `which` names an explicit
+// entry; -1 (or an index past the end) rolls a random one, then re-rolls up to five
+// times so the list does not repeat its own previous pick. The winning index is
+// memoized in the list's m_lastPicked, the list is walked that many nodes, and the
+// entry's name is resolved through the owner's CSymParser under the 'WAV' tag.
+//
+// The three lazily-seeded LCG expansions are retail's own spelling, not an artifact:
+// the FIRST roll calls the shared out-of-line CGruntzMgr::Rand() (`mov ecx,g_gameReg;
+// call 0x39ae`) while BOTH arms of the re-roll loop expand the recurrence in line -
+// exactly the split retail emits, and the same hand-inlined idiom as
+// CRandomAmbientSound::Init2 (0xcd70). The `span == 0` arms are the degenerate-range
+// guard: with lo == 0 the endpoint select collapses to MSVC's mask form
+// (`and esi,0x10000; neg; sbb; not; and esi,edi`).
+//
 // @early-stop
-// rand()-inline wall + >512B: the weighted-random entry picker. MSVC inlines the
-// MSVC LCG rand() (x=x*214013+2531011, the 0xcd00 body) THREE times - once with
-// the seeded-flag check (mov al,[0x6c127d]; test al,1; or al,1; call ebp) and
-// twice in the inner re-roll loop - plus an idiv-by-count reduction and a CString
-// tail under the /GX EH frame. The seed/seeded globals (0x6c1288/0x6c127d) and
-// the timeGetTime ptr (0x6c4650) are reloc-masked DATA. Reproducing the
-// inline-vs-call rand split + the idiv scheduling from a single source spelling
-// is a known wall; left as a documented stub for the final sweep / a leaf-first
-// redo (per matcher.md: a >512B non-converging fn is left stubbed, not half-done).
+// seed-coalescing wall (~93%): every branch, offset, immediate, call and the whole
+// control-flow graph match retail. The residual is ONE register-coalescing tie-break,
+// in the two re-roll arms only. Retail coalesces the re-roll `seed` onto ecx - the
+// register already holding the value-numbered g_randSeed - so the lazy arm pays the
+// copy (`call ebp; mov ecx,eax`) and `al` stays free for the flag (`or al,1; mov
+// [g_randSeeded],al`). cl 5.0 here instead binds `seed` to timeGetTime's eax, so the
+// CACHED arm pays the copy (`mov eax,ecx` + a `jmp`) and, with al clobbered, the flag
+// update degrades to the memory form (`or BYTE PTR [g_randSeeded],1`). Both spellings
+// are the same instruction count; it is purely which side of the phi gets the move.
+// Five source spellings were measured against it: lazy-arm-first if/else (91.96),
+// arm-local `seed = g_randSeed` pre-init (91.96, adds cl/al shuffles), LCG as a
+// self-update (worse - swaps esi/edi roles too), cached-arm-first if/else (92.66, kept
+// - it at least restores the hoisted `mov al,[g_randSeeded]`), and hoisting the flag
+// into its own u8 to force the register form (89.57). `permute fn` also exhausted 300
+// iterations with no change. Site 1's non-loop roll and the whole list walk are exact;
+// the same coloring flip is what shifts the GetName/ResolveQualified tail scheduling.
+// The two `fs:0` prologue/epilogue rows are the usual /GX reloc-display artifact.
 RVA(0x0011bee0, 0x230)
-i32 CGruntSpawnConfig::PickWeighted(i32 index, i32 seed) {
-    static_cast<void>(index);
-    static_cast<void>(seed);
-    return 0;
+CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId, i32 which) {
+    if (voiceId < 0) {
+        return 0;
+    }
+    if (voiceId == 0) {
+        return 0;
+    }
+    if (voiceId >= m_voiceLists.GetSize()) {
+        return 0;
+    }
+    CSpawnList* list = static_cast<CSpawnList*>(m_voiceLists[voiceId]);
+    if (list == 0) {
+        return 0;
+    }
+
+    i32 pick = which;
+    if (pick == -1 || pick >= list->m_list.GetCount()) {
+        i32 hi = list->m_list.GetCount() - 1;
+        // Retail loads the registry pointer next to the timeGetTime import slot,
+        // above the span test, not down in the arm that calls Rand().
+        CGruntzMgr* reg = g_gameReg;
+        i32 span = hi + 1;
+        if (span == 0) {
+            i32 seed;
+            if (!(g_randSeeded & 1)) {
+                g_randSeeded |= 1;
+                seed = timeGetTime();
+            } else {
+                seed = g_randSeed;
+            }
+            g_randSeed = seed * 214013 + 2531011;
+            pick = (g_randSeed & 0x10000) ? 0 : hi;
+        } else {
+            pick = reg->Rand() % span;
+        }
+        if (list->m_list.GetCount() > 1) {
+            i32 tries = 5;
+            while (pick == list->m_lastPicked && tries > 0) {
+                i32 rehi = list->m_list.GetCount() - 1;
+                i32 respan = rehi + 1;
+                // Inside the loop g_randSeed is already register-cached, so retail's
+                // seed lives in THAT register and only the lazy-seed arm needs a move
+                // (`call ebp; mov ecx,eax`). Priming each arm from the cache - rather
+                // than an if/else, which homes the seed in timeGetTime's eax and costs
+                // a `jmp` plus the reversed move - is what reproduces it. The two
+                // declarations stay arm-local: one shared across both arms widens the
+                // live range and MSVC then materializes it into eax up front. Site 1
+                // above has no cache yet, so it keeps the if/else (and matches).
+                if (respan == 0) {
+                    i32 seed;
+                    if (g_randSeeded & 1) {
+                        seed = g_randSeed;
+                    } else {
+                        g_randSeeded |= 1;
+                        seed = timeGetTime();
+                    }
+                    g_randSeed = seed * 214013 + 2531011;
+                    pick = (g_randSeed & 0x10000) ? 0 : rehi;
+                } else {
+                    i32 seed;
+                    if (g_randSeeded & 1) {
+                        seed = g_randSeed;
+                    } else {
+                        g_randSeeded |= 1;
+                        seed = timeGetTime();
+                    }
+                    g_randSeed = seed * 214013 + 2531011;
+                    pick = ((g_randSeed >> 0x10) & 0x7fff) % respan;
+                }
+                tries--;
+            }
+        }
+    }
+
+    list->m_lastPicked = pick;
+    CSpawnEntry* entry;
+    if (pick >= list->m_list.GetCount()) {
+        entry = 0;
+    } else {
+        // Retail walks through the OUT-OF-LINE node helper (`mov ecx,list; call
+        // 0x29a30`), not MFC's inline CPtrList::GetNext - unlike the sibling walk in
+        // CAreaMgr::LoadObjectImageResources (0x9a510), which really is inline. The
+        // POSITION <-> void* pun is the language-forced seam Grunt.h documents for
+        // this helper; it stays local to the one call site that needs it.
+        CGruntCoordList* nodes = static_cast<CGruntCoordList*>(&list->m_list);
+        void*& cursor = reinterpret_cast<void*&>(list->m_cursor);
+        cursor = list->m_list.GetHeadPosition();
+        if (cursor == 0) {
+            entry = 0;
+        } else {
+            entry = static_cast<CSpawnEntry*>(nodes->NextData(cursor));
+        }
+        for (i32 i = pick; i > 0; i--) {
+            if (cursor == 0) {
+                entry = 0;
+            } else {
+                entry = static_cast<CSpawnEntry*>(nodes->NextData(cursor));
+            }
+        }
+    }
+    if (entry == 0) {
+        return 0;
+    }
+    return m_owner->m_34->ResolveQualified(static_cast<LPCTSTR>(entry->GetName()), REZ_TAG_WAV);
 }
 
 RVA(0x0011c1a0, 0x46)

@@ -16,11 +16,30 @@ class CGruntVoice;  // folded CGruntVoice
 struct StreamVoice; // m_10/m_14 owned voice streams (the real <Dsndmgr/StreamVoice.h>)
 struct CSpawnTree;
 
-// The bute key getter (0x11bba0) is handed a (config, target) pair; it returns a
-// pointer to one of `target`'s fields, chosen by config->m_170 (a 0..0x20 switch)
-// plus two early specials on config->m_258. `target` is a flat bag of i32 slots
-// the switch indexes by byte offset; modeled as a raw byte bag so each case is a
-// `lea eax,[target+N]`.
+// A voice-list id is a dense (band, cue) pair: `id = VOICE_CUES_PER_BAND * band + cue`.
+// The band comes from the grunt's own state (CGrunt +0x170, plus two early specials on
+// +0x258); the cue is what the caller is announcing (arrival, entrance, death, ...).
+//
+// PROVEN, not inferred:
+//   - all 36 arms of GetButeSlot's switch are exact multiples of 20 decimal, covering
+//     bands 0..35 with no gap and no duplicate (a permutation, so the switch really is
+//     a band lookup table);
+//   - BuildVoiceList (0x11c1a0) fills exactly 0x4b0 = 60 * 20 entries;
+//   - every retail caller of LoadGruntSpawnConfig passes a small literal cue
+//     (1, 2, 3, 8, 0xa, 0xb, 0xc) into `m_cueSink`, all well inside [0, 20).
+// The individual band MEANINGS are not recovered, so the arms carry their band number
+// and no invented name.
+enum {
+    VOICE_CUES_PER_BAND = 20
+};
+
+// The bute key getter (0x11bba0) is handed (config, cue) and returns that i32 id. It is
+// integer arithmetic, NOT a pointer: retail's sole caller (LoadGruntSpawnConfig 0x11afb0)
+// pushes the result straight into `CString::Format("SG%i", it)`, and PickWeighted
+// bounds-checks it `< 0` / `== 0` / `>= m_voiceLists.GetSize()` before using it as
+// `m_voiceLists[it]`. The ex-`CSpawnButeTarget` 0x2c0-byte "raw byte bag" was a fake
+// view of this integer (its `m_data + N` spelled the band constants as struct
+// offsets); dissolved 2026-07-27.
 // param_1's +0x10 sub-object: LoadGruntSpawnConfig reads +0x188 as the currently-active
 // voice id (compared to each voice's m_source; passed to CGruntVoice::Setup).
 // @identity-TODO: the exact class of this active-voice holder is unrecovered (candidate
@@ -41,17 +60,13 @@ struct CSpawnButeConfig {
     i32 m_258; // +0x258  early-special selector (0x39 / 0x3a)
 };
 SIZE_UNKNOWN();
-struct CSpawnButeTarget {
-    char m_data[0x2c0];
-};
-SIZE_UNKNOWN();
-
-struct CSpawnResolver {};
-SIZE_UNKNOWN();
 struct CSpawnOwner {
     char m_00[0x30];
-    CSpawnTree* m_30;     // +0x30  -> the config tree stashed in m_04
-    CSpawnResolver* m_34; // +0x34  the 'WAV' resource resolver
+    CSpawnTree* m_30; // +0x30  -> the config tree stashed in m_04
+    // +0x34 the 'WAV' resource resolver. PROVEN CSymParser (not the ex-CSpawnResolver
+    // empty placeholder): both retail readers land on 0x13bff0, whose mangled name is
+    // ?ResolveQualified@CSymParser@@QAEPAUCParseSource@@PBDI@Z.
+    class CSymParser* m_34;
     char m_38[0x100 - 0x38];
     i32 m_100; // +0x100 the "ready" flag the @0x11c830 probe tests
 };
@@ -65,13 +80,19 @@ public:
     void Clear();                  // 0x11ae30
     BOOL LoadGruntVoices();        // 0x11af00
     void ClearSprites();           // 0x11af90 (out-of-line: m_08 = 0; m_0c = 0)
-    void* GetButeSlot(CSpawnButeConfig*, CSpawnButeTarget*); // 0x11bba0
-    i32 PickWeighted(i32 index, i32 seed);                   // 0x11bee0
-    BOOL BuildVoiceList();                                   // 0x11c1a0
+    i32 GetButeSlot(CSpawnButeConfig* config, i32 cue); // 0x11bba0
+    // The weighted voice-line picker (0x11bee0): resolve m_voiceLists[voiceId] to a
+    // .WAV parse record, re-rolling up to 5 times to avoid repeating the list's last
+    // pick. `which` selects an explicit entry; -1 (or out of range) means roll.
+    // Returns the CSymParser record - proven by the tail `mov esi,eax` over
+    // ?ResolveQualified@CSymParser@@QAEPAUCParseSource@@PBDI@Z, returned unchanged.
+    struct CParseSource* PickWeighted(i32 voiceId, i32 which); // 0x11bee0
+    BOOL BuildVoiceList();                                     // 0x11c1a0
     // The percent/priority-gated voice spawn driver (0x11afb0); re-homed from the
-    // ApiCaller backlog. param_1=config, param_2=target/index, param_3=pick seed,
-    // param_4=priority, param_5=percent.
-    BOOL LoadGruntSpawnConfig(class CGrunt* who, i32 param_2, i32 param_3, i32 param_4, i32 param_5);
+    // ApiCaller backlog. `cue` picks the voice band slot (see VOICE_CUES_PER_BAND);
+    // `which` selects an explicit list entry (-1 = roll one). `priority`/`percent`
+    // default from the bute "Pri"/"Per" keys - which is what names them.
+    BOOL LoadGruntSpawnConfig(class CGrunt* who, i32 cue, i32 which, i32 priority, i32 percent);
     // Two overloaded weighted grunt-voice spawn drivers (0x11b3b0 / 0x11b7c0).
     // Both consume this in ecx and return with callee-cleaned stack arguments; the
     // five-argument overload was formerly mis-modeled as a free __stdcall sibling.
