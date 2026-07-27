@@ -313,17 +313,13 @@ RVA(0x00178610, 0x8c)
 i32 CNetMgr::EnumPlayersInto(void* a, void* b) {
     ClearPlayerList();
 
-    char desc[0x50];
-    memset(desc, 0, 0x50);
-    i32* guid = reinterpret_cast<i32*>(&m_appGuid); // the GUID as its 4 dwords
-    *reinterpret_cast<i32*>((desc + 0x00)) = 0x50;
-    *reinterpret_cast<i32*>((desc + 0x18)) = guid[0];
-    *reinterpret_cast<i32*>((desc + 0x1c)) = guid[1];
-    *reinterpret_cast<i32*>((desc + 0x20)) = guid[2];
-    *reinterpret_cast<i32*>((desc + 0x24)) = guid[3];
+    CNetSessionDesc desc;
+    memset(&desc, 0, sizeof(desc));
+    desc.m_dwSize = sizeof(desc);
+    desc.m_guidApplication = m_appGuid;
 
     IDirectPlay4Z* com = m_directPlay;
-    i32 hr = com->EnumPlayers(desc, a, static_cast<void*>(&NetEnumPlayerCb), this, b);
+    i32 hr = com->EnumPlayers(&desc, a, static_cast<void*>(&NetEnumPlayerCb), this, b);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x1c9, hr, 0);
         return hr;
@@ -485,25 +481,21 @@ i32 CNetMgr::ReadPlayerSel(void* hList) {
 // local. Same family as EnumPlayersInto/EnumGroupsRange; stack-buffer-size-drives-
 // frame.md. Final sweep.
 RVA(0x001788a0, 0x13c)
-CNetPlayerListNode* CNetMgr::EnumGroupsInto(void* a, void* b, i32 c, const char* d) {
-    char buf[0x50];
-    memset(buf, 0, 0x50);
-    i32* guid = reinterpret_cast<i32*>(&m_appGuid); // the GUID as its 4 dwords
-    *reinterpret_cast<i32*>((buf + 0x00)) = 0x50;
-    *reinterpret_cast<i32*>((buf + 0x04)) = 0xa044;
-    *reinterpret_cast<i32*>((buf + 0x18)) = guid[0];
-    *reinterpret_cast<i32*>((buf + 0x1c)) = guid[1];
-    *reinterpret_cast<i32*>((buf + 0x20)) = guid[2];
-    *reinterpret_cast<i32*>((buf + 0x24)) = guid[3];
-    *reinterpret_cast<void**>((buf + 0x28)) = a;
-    *reinterpret_cast<void**>((buf + 0x30)) = b;
-    *reinterpret_cast<i32*>((buf + 0x40)) = c;
-    if (d != 0 && *d != 0) {
-        *reinterpret_cast<i32*>((buf + 0x34)) = reinterpret_cast<i32>(d);
+CNetPlayerListNode* CNetMgr::EnumGroupsInto(i32 maxPlayers, char* sessionName, i32 user1, const char* password) {
+    CNetSessionDesc buf;
+    memset(&buf, 0, sizeof(buf));
+    buf.m_dwSize = sizeof(buf);
+    buf.m_dwFlags = 0xa044;
+    buf.m_guidApplication = m_appGuid;
+    buf.m_dwMaxPlayers = maxPlayers;
+    buf.m_lpszName = sessionName;
+    buf.m_dwUser1 = user1;
+    if (password != 0 && *password != 0) {
+        buf.m_lpszPassword = const_cast<char*>(password);
     }
 
     IDirectPlay4Z* iface = m_directPlay;
-    i32 hr = iface->EnumGroups(buf, 2);
+    i32 hr = iface->EnumGroups(&buf, 2);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x29e, hr, 0);
         return 0;

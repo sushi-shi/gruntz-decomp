@@ -77,6 +77,7 @@ struct CNetPlayerNode {
     char m_pad4[4];
     CNetSessionNode* m_8; // +0x8  the payload per-player record
 };
+SIZE_UNKNOWN(); // player-list node walk-view; retail size TBD
 
 // MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
 // hand-rolled node walk has to pun it - language-forced. One seam per type.
@@ -86,7 +87,6 @@ inline CNetPlayerNode* NetPlayerHeadOf(const CObList& l) {
 inline CNetPlayerNode* NetPlayerHeadOf(const CPtrList& l) {
     return reinterpret_cast<CNetPlayerNode*>(l.GetHeadPosition());
 }
-SIZE_UNKNOWN(); // player-list node walk-view; retail size TBD
 
 struct CNetCmd {
     i32 m_seq; // +0x0  command sequence number
@@ -176,6 +176,7 @@ struct CNetCmdNode {
     CNetCmdNode* m_prev; // +0x4
     CNetCmd* m_data;     // +0x8  (this queue holds CNetCmd)
 };
+SIZE_UNKNOWN(); // CObList node walk-view; retail size TBD
 
 // MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
 // hand-rolled node walk has to pun it - language-forced. One seam per type.
@@ -185,7 +186,6 @@ inline CNetCmdNode* NetCmdHeadOf(const CObList& l) {
 inline CNetCmdNode* NetCmdHeadOf(const CPtrList& l) {
     return reinterpret_cast<CNetCmdNode*>(l.GetHeadPosition());
 }
-SIZE_UNKNOWN(); // CObList node walk-view; retail size TBD
 
 struct CNetCmdHdr {
     i32 m_sequence;   // +0x0  sequence
@@ -423,6 +423,7 @@ struct CNetListNode {
     char m_pad4[4];             // +0x04  prev node (unused)
     CNetPlayerListNode* m_data; // +0x08  payload player node (polymorphic; virtual dtor)
 };
+SIZE_UNKNOWN(); // CObList node walk-view (m_players); retail size TBD
 
 // MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
 // hand-rolled node walk has to pun it - language-forced. One seam per type.
@@ -432,18 +433,27 @@ inline CNetListNode* NetListHeadOf(const CObList& l) {
 inline CNetListNode* NetListHeadOf(const CPtrList& l) {
     return reinterpret_cast<CNetListNode*>(l.GetHeadPosition());
 }
-SIZE_UNKNOWN(); // CObList node walk-view (m_players); retail size TBD
 
+// The DirectPlay DPSESSIONDESC2 (<dplay.h>), spelled out field-for-field: the
+// engine builds it on the stack for EnumPlayers/EnumGroups and deep-copies it into
+// CNetPlayerListNode. Same 0x50 bytes, so every raw `desc + 0xNN` poke is a member.
 struct CNetSessionDesc {
-    i32 m_dwSize; // +0x00  dwSize (forced to 0x50 by Init)
-    char m_pad04[0x08 - 0x04];
-    GUID m_guidInstance; // +0x08  guidInstance (EnumGroupsRange streams it to EnumGroups)
-    char m_pad18[0x30 - 0x18];
-    char* m_lpszName;     // +0x30  lpszSessionName
-    char* m_lpszPassword; // +0x34  lpszPassword
-    char m_pad38[0x50 - 0x38];
+    i32 m_dwSize;            // +0x00  dwSize (forced to 0x50)
+    i32 m_dwFlags;           // +0x04  DPSESSION_xxx
+    GUID m_guidInstance;     // +0x08  guidInstance
+    GUID m_guidApplication;  // +0x18  guidApplication (the app GUID)
+    i32 m_dwMaxPlayers;      // +0x28
+    i32 m_dwCurrentPlayers;  // +0x2c  (read-only)
+    char* m_lpszName;        // +0x30  lpszSessionNameA
+    char* m_lpszPassword;    // +0x34  lpszPasswordA
+    i32 m_dwReserved1;       // +0x38
+    i32 m_dwReserved2;       // +0x3c
+    i32 m_dwUser1;           // +0x40
+    i32 m_dwUser2;           // +0x44
+    i32 m_dwUser3;           // +0x48
+    i32 m_dwUser4;           // +0x4c
 };
-SIZE(0x50); // the 0x50-byte DPSESSIONDESC2
+SIZE(0x50); // == sizeof(DPSESSIONDESC2)
 
 class CNetPlayerListNode : public CObject {
 public:
@@ -583,6 +593,7 @@ struct CGroupNode {
     CGroupNode* m_prev;      // +0x04  CObList CNode pPrev (not walked here)
     InterfaceObject* m_data; // +0x08  payload service-provider node
 };
+SIZE_UNKNOWN(); // traversal view of the +0x1c group list node
 
 // MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
 // hand-rolled node walk has to pun it - language-forced. One seam per type.
@@ -592,7 +603,6 @@ inline CGroupNode* NetGroupHeadOf(const CObList& l) {
 inline CGroupNode* NetGroupHeadOf(const CPtrList& l) {
     return reinterpret_cast<CGroupNode*>(l.GetHeadPosition());
 }
-SIZE_UNKNOWN(); // traversal view of the +0x1c group list node
 
 class CNetMgr : public CObject {
 public:
@@ -704,7 +714,7 @@ public:
     i32 EnumServiceProviders(i32 validated);                // 0x178280
     InterfaceObject* AddGroupNode(void* guid, void* name);  // 0x178360
     CNetPlayerListNode*
-    EnumGroupsInto(void* a, void* b, i32 c, const char* longName); // 0x1788a0
+    EnumGroupsInto(i32 maxPlayers, char* sessionName, i32 user1, const char* password); // 0x1788a0
 
     // The diagnostic error reporter (lives in the netmgrerror TU; static
     // __cdecl). Declared here so the wrappers can route HRESULTs through it.

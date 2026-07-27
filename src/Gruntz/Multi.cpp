@@ -1657,7 +1657,7 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     Cfg_AppendKeyVal(buf, "LEVEL", ResyncLParam());
 
     CNetPlayerListNode* enumResult = g_groupEnumMgr->EnumGroupsInto(
-        reinterpret_cast<void*>(4),
+        4, // dwMaxPlayers - the 4-player Gruntz cap
         buf,
         0,
         g_emptyString
