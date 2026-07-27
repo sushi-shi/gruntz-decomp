@@ -95,8 +95,8 @@ void CParseSource::Build(
     void* str2,
     i32 f3,
     i32 f1,
-    void* f2,
-    void* f6,
+    i32 f2,
+    i32 f6,
     void* arr,
     CRezItmBase* stream
 ) {
@@ -623,7 +623,7 @@ i32 CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
         0,
         0,
         0,
-        reinterpret_cast<void*>(m_owner->MakeSeed()),
+        m_owner->MakeSeed(),
         0,
         0,
         m_owner->m_activeNode
@@ -654,7 +654,7 @@ CSymTab::AddNodeEntry(u32 key, const char* name, CSymRec* rec, CRezItmBase* stre
         0,
         0,
         0,
-        reinterpret_cast<void*>(m_owner->MakeSeed()),
+        m_owner->MakeSeed(),
         0,
         0,
         stream
@@ -766,19 +766,19 @@ i32 CSymTab::ApplyRange(CRezItmBase* a0, i32 a1, i32 a2, i32 a3) {
             }
         } else {
             // leaf record: { tag, f1, f3, f2, f4, f5(key), f6, name\0, str2\0, dwords[f6] }
-            void* f1 = *reinterpret_cast<void**>((p + 4));
+            i32 f1 = PeekI32(p + 4);
             p += 8;
-            void* f3 = *reinterpret_cast<void**>(p);
-            void* f2 = *reinterpret_cast<void**>((p + 4));
+            i32 f3 = PeekI32(p);
+            i32 f2 = PeekI32(p + 4);
             p += 8;
-            void* f4 = *reinterpret_cast<void**>(p);
-            void* f5 = *reinterpret_cast<void**>((p + 4));
+            i32 f4 = PeekI32(p);
+            i32 f5 = PeekI32(p + 4);
             p += 8;
-            void* f6 = *reinterpret_cast<void**>(p);
+            i32 f6 = PeekI32(p);
             p += 4;
             char* name1 = p;
             p += strlen(name1) + 1;
-            CSymRec* rec = FindOrAddSym(reinterpret_cast<i32>(f5));
+            CSymRec* rec = FindOrAddSym(f5);
             i32 skip = 0;
             void* found = rec->m_valTable.Walk(name1, 1);
             if (found) {
@@ -795,13 +795,13 @@ i32 CSymTab::ApplyRange(CRezItmBase* a0, i32 a1, i32 a2, i32 a3) {
             p += strlen(p) + 1;
             void* arr;
             if (f6 != 0) {
-                arr = ::operator new(static_cast<u32>((reinterpret_cast<i32>(f6) * 4)));
-                for (i32 i = reinterpret_cast<i32>(f6); i != 0; i--) {
-                    *static_cast<void**>(arr) = *reinterpret_cast<void**>(p);
+                arr = ::operator new(static_cast<u32>((f6 * 4)));
+                for (i32 i = f6; i != 0; i--) {
+                    *static_cast<i32*>(arr) = PeekI32(p);
                     arr = static_cast<char*>(arr) + 4;
                     p += 4;
                 }
-                arr = static_cast<char*>(arr) - reinterpret_cast<i32>(f6) * 4;
+                arr = static_cast<char*>(arr) - f6 * 4;
             } else {
                 arr = 0;
             }
@@ -810,11 +810,11 @@ i32 CSymTab::ApplyRange(CRezItmBase* a0, i32 a1, i32 a2, i32 a3) {
                 slot->Build(
                     this,
                     name1,
-                    f4,
+                    reinterpret_cast<void*>(f4), // the DEAD slot - the record's dword
                     rec,
                     str2,
-                    reinterpret_cast<i32>(f3),
-                    reinterpret_cast<i32>(f1),
+                    f3,
+                    f1,
                     f2,
                     f6,
                     arr,
@@ -1303,7 +1303,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
             source = node->AddNodeEntry(static_cast<u32>(key), fname, rec, 0);
         }
         if (source != 0) {
-            source->m_typeTag = reinterpret_cast<void*>(fd.time_write);
+            source->m_typeTag = static_cast<i32>(fd.time_write);
             source->m_length = static_cast<u32>(fd.size);
             source->m_reader = new CRezFile(this, full, static_cast<CRezDir*>(reader));
         }

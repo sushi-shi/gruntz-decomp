@@ -52,13 +52,13 @@ struct CParseSource {
     void Build(
         CSymTab* owner,
         const char* name,
-        void* f4,
+        void* f4, // DEAD in the body; one caller hands a hash ptr, another an id
         void* rec,
         void* str2,
         i32 f3,
         i32 f1,
-        void* f2,
-        void* f6,
+        i32 f2,
+        i32 f6,
         void* arr,
         CRezItmBase* stream
     );
@@ -69,7 +69,7 @@ struct CParseSource {
 
     char* m_name;     // +0x00 source name
     void* m_entry;    // +0x04 keyed-store entry (first dword = tag)
-    void* m_typeTag;  // +0x08  type tag (the Build f2 slot)
+    i32 m_typeTag;    // +0x08  type tag (1/2/4; the Build f2 slot)
     u32 m_length;     // +0x0c total byte length / limit
     CSymTab* m_owner; // +0x10  owning scope (Build stores it; the stream side
                       //        reads its m_baseOffset/m_mappedBuf as the mapped window)
