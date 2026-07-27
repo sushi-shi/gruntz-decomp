@@ -674,7 +674,6 @@ i32 CDDrawWorkerHost::RebuildPlanes(i32 base, i32 count) {
 // two object ctors (0x15b390 / 0x156cb0) are unmatched engine code: the /GX frame over
 // four destructible CString temps + the reloc-masked ctor/Load/Apply* call chain.
 // Logic byte-faithful; deferred to the final sweep on size, not on a model wall.
-RVA(0x00162af0, 0x806)
 // The serialized plane-object record: a fixed 0x11c header of dwords followed by the
 // four length-prefixed strings INLINE. ReadPlaneObjects is the reader and the stream
 // cursor advances by the byte count it returns, which is the layout.
@@ -692,6 +691,8 @@ struct PlaneObjectRecord {
     i32 m_tail[(0x11c - 0x28) / 4];  // +0x28  the scattered per-object fields
     char m_strings[1];               // +0x11c  the four length-prefixed strings, inline
 };
+
+RVA(0x00162af0, 0x806)
 
 i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     if (src == 0) {

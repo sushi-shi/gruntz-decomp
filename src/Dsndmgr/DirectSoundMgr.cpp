@@ -1513,6 +1513,7 @@ i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut) {
     }
     out->m_fmt = 0;
     *dataOut = 0;
+    // the chunk cursor is a BYTE position in the untyped RIFF buffer - byte-forced
     while (reinterpret_cast<char*>(p) < end) {
         u32 id = *p++;
         u32 size = *p++;

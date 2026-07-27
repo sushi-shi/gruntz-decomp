@@ -261,6 +261,7 @@ RVA(0x00147aa0, 0x6a)
 i32 CDDPalette::SetAndNotify(i32 start, i32 count, u8* data, i32 a4) {
     // both sides are the file's 0x400-byte palette blob, walked dword-wise here and
     // entry-wise at the SetEntries call below (the PalDword/PalEntries seams).
+    // both sides are the 0x400-byte palette blob (the PalDword/PalEntries seams)
     i32* cache = reinterpret_cast<i32*>(m_cacheA);
     i32* src = reinterpret_cast<i32*>(data);
     for (i32 i = 0; i < count; i++) {
@@ -693,6 +694,7 @@ i32 CDDPalette::CaptureSystemPalette() {
         dest[i].peGreen = lp.palPalEntry[i].peGreen;
         dest[i].peBlue = lp.palPalEntry[i].peBlue;
     }
+    // the SDK's PALETTEENTRY array IS the blob SetAndNotify takes - one boundary
     i32 rc = SetAndNotify(0, 0x100, reinterpret_cast<u8*>(dest), 0);
     if (rc != 0) {
         CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x495, rc);
