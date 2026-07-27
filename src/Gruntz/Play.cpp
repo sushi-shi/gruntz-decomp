@@ -465,8 +465,11 @@ i32 CPlay::Render() {
                 // walk the level tree (CMapPtrToPtr::Lookup):
                 if (g_gameReg->m_options[0].m_00c != 0) {
                     void* out = 0;
-                    if (g_gameReg->m_world->m_childGroup->m_map48
-                            .Lookup(reinterpret_cast<void*>(g_gameReg->m_options[0].m_00c), out)) {
+                    if (MapLookupById(
+                            g_gameReg->m_world->m_childGroup->m_map48,
+                            g_gameReg->m_options[0].m_00c,
+                            out
+                        )) {
                         CGameObject* object = static_cast<CGameObject*>(out);
                         if (object != 0 && object->m_7c->m_logic != 0) {
                             static_cast<CWarlord*>(object->m_7c->m_logic)->ResolveDeathAnimation();
@@ -1765,7 +1768,7 @@ i32 CPlay::SyncRead2f7c(CFileMemBase* ar) {
             CoordPoolNode* head = g_coordPool.m_freeHead;
             CoordPoolNode* next = head->m_next;
             if (next) {
-                node = reinterpret_cast<char*>(&head->m_coord);
+                node = &head->m_coord;
                 g_coordPool.m_freeHead = next;
             }
             ar->Read(node, 8);
@@ -1923,7 +1926,7 @@ i32 CPlay::SyncRead2f7c(CFileMemBase* ar) {
             CoordPoolNode* head = g_coordPool.m_freeHead;
             CoordPoolNode* next = head->m_next;
             if (next) {
-                node = reinterpret_cast<char*>(&head->m_coord);
+                node = &head->m_coord;
                 g_coordPool.m_freeHead = next;
             }
             ar->Read(node, 8);
@@ -3334,7 +3337,7 @@ i32 FillColorCombo(HWND hDlg, i32 nID, i32 curSel) {
     LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     pSend(cb, 0x14b, 0, 0);
     for (i32 i = 0; i < 0x11; i++) {
-        pSend(cb, 0x143, 0, reinterpret_cast<i32>(static_cast<const char*>(GetColorName(i, 0))));
+        pSend(cb, 0x143, 0, reinterpret_cast<LPARAM>(static_cast<const char*>(GetColorName(i, 0))));
     }
     if (curSel >= 0) {
         pSend(cb, 0x14e, curSel, 0);
@@ -3354,7 +3357,7 @@ i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
     LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     pSend(cb, 0x14b, 0, 0);
     for (i32 i = 0; i < 3; i++) {
-        pSend(cb, 0x143, 0, reinterpret_cast<i32>(static_cast<const char*>(GetDifficultyName(i, 0))));
+        pSend(cb, 0x143, 0, reinterpret_cast<LPARAM>(static_cast<const char*>(GetDifficultyName(i, 0))));
     }
     if (curSel >= 0) {
         pSend(cb, 0x14e, curSel, 0);
