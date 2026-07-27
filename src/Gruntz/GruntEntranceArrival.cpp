@@ -253,8 +253,9 @@ void CGrunt::FinalizeStep(i32 arg) {
 // CGrunt::ResetGeometry() @0x616e0 - re-arms the entrance player's geometry to
 // the m_poseAttackIdle source, re-stamps the active anim-set node, and re-applies the
 // per-cell entrance frame. Reads the active-anim descriptor's first element's
-// frame (+0x14), looks the per-cell name up by the m_entranceCell {col,row} triple (cell
-// stride 0x68 at +0x468), applies the frame, then latches a fresh idle anim-set
+// frame (+0x14), reads the per-cell AttackName buffer via CString::GetBuffer(0) keyed
+// by the m_entranceCell {col,row} triple (cell stride 0x68 at +0x468), applies the
+// frame, then latches a fresh idle anim-set
 // node (g_entranceAnimSrc.LookupAnimSet) into m_objAux->m_1c. __thiscall, ret 0.
 // @early-stop
 // ~95.7% - copying the whole GruntEntranceCell triple (below) fixed the missing
@@ -276,8 +277,10 @@ i32 CGrunt::ResetGeometry() {
     i32 col = cell.col;
     i32 row = cell.row;
     i32 index = 3 * col + row;
-    const char* name =
-        (reinterpret_cast<_zdvec*>(&m_cells[index]))->IndexToPtr(0);
+    // 0x61749: `lea ecx,[esi+eax*8+0x468]; call 0x1ba11c` = CString::GetBuffer(0) on
+    // m_cells[index].m_names[0] (AttackName) - 0x1ba11c is ?GetBuffer@CString@@QAEPADH@Z,
+    // not _zdvec::IndexToPtr @0x310f0 (same PADH@Z shape, different callee).
+    const char* name = m_cells[index].AttackName().GetBuffer(0);
     m_38->ApplyLookupSprite(name, frame);
 
     m_prevAnimSetNode = m_objAux->m_1c;

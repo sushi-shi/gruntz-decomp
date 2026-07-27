@@ -7,6 +7,11 @@
 
 struct CVariantSlot; // fwd (pointer member m_err; full def at the overflow call sites)
 
+// The UNTYPED byte vector. Its element pointer is `m_base + (idx - m_lo) * m_stride`
+// with m_stride read from the object at RUN TIME (0x312c0 `imul esi,[edi+0x18]`), so
+// `char*` is not a placeholder here - it is the only return type consistent with the
+// instructions. Typed element access is the CALLER's job (see _zdvec / zDArray<T>);
+// there is nothing to "type" on this class.
 class _zvec : public zErrHandling {
 public:
     // 0x16de30: allocate the [lo, hi] element band and scratch slot.
@@ -28,11 +33,34 @@ public:
 };
 SIZE(0x24);
 
+// The CString-element vector. Same address math as the base, plus a fixup loop over
+// the slots GrowTo just added. The loop is what pins the element type: 0x31156..0x31173
+// walks `m_alloc` in steps of a CONSTANT 4 (not m_stride) for `m_grown` iterations and
+// calls 0x1b9b93 == ??0CString@@QAE@XZ on each non-null slot. A 4-byte element with a
+// CString default ctor IS a CString, so _zdvec is one concrete instantiation, not a
+// generic. The same body appears INLINED at call sites that read the two globals
+// directly (CInGameText::Update @0x997c0: `call <_zvec::IndexToPtr>` then
+// `mov esi,[0x6bf66c]` / `mov eax,[0x6bf670]` == g_typeColl.m_alloc / .m_grown, then
+// the identical `call ??0CString` loop) - so this is an inline/header member whose
+// out-of-line COMDAT copy lives at 0x310f0.
+//
+// It still returns char*: the address math is the base's byte math (runtime m_stride),
+// and the element type is reapplied by the caller (CTypeCollRuntime::SlotOf etc.).
+//
+// Both accessors are header-INLINE members that also got out-of-line COMDAT copies,
+// which is why they show up three different ways in the image and why so many callers
+// carry an "inlined IndexToPtr regalloc wall" @early-stop:
+//   * 0x310f0 - the derived COMDAT, with the BASE body inlined into it (its callees are
+//     GrowTo/GetRetAddr/Set/??0CString - it never calls 0x312a0);
+//   * 0x312a0 - the base COMDAT alone (same callees minus ??0CString);
+//   * fully expanded at a call site - CInGameText::Update @0x997c0 inlines the derived
+//     member but spends its inline budget before the nested base one, so it emits
+//     `call <0x312a0>` followed by the CString loop over the two globals.
 class _zdvec : public _zvec {
 public:
     // 0x16dda0: construct the allocating base, then seed the element cursor/count.
     _zdvec(i32 stride, i32 lo, i32 hi, void* scratch);
-    char* IndexToPtr(i32 i);    // 0x310f0 (base accessor + per-slot construction)
+    char* IndexToPtr(i32 i);    // 0x310f0 (base accessor + per-slot CString construction)
     // ~_zdvec is IMPLICIT: retail 0x16de00 is a bare 5-byte `jmp ??1_zvec` with NO
     // vptr restamp - only the compiler-generated trivial dtor produces that form.
 };

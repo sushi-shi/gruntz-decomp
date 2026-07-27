@@ -811,14 +811,12 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
             i32 col = m_entranceCell.col;
             i32 row = m_entranceCell.row;
             i32 index = 3 * col + row;
-            // @identity-TODO retail really CALLS _zdvec::IndexToPtr here on what our
-            // model says is a CGruntCellRec (whose first member is CString m_names[5]).
-            // Either the cell record derives from the vector or the call is something
-            // else - needs the 0x310f0 disasm; a CString read would drop the call.
-            // @identity-TODO unproven: needs the 0x310f0 disasm (noted just above)
-            const char* nm = reinterpret_cast<const char*>(
-                (reinterpret_cast<_zdvec*>(&m_cells[index]))->IndexToPtr(0)
-            );
+            // 0x4ae3a -> 0x4af8e: `push 0; lea ecx,[edi+eax*8+0x468]; call 0x1ba11c`.
+            // 0x1ba11c is ??0/GetBuffer - ?GetBuffer@CString@@QAEPADH@Z (it walks the
+            // CStringData header at [m_pchData-0xc/-0x8/-0x4] and calls AllocBeforeWrite
+            // /FreeData) - NOT _zdvec::IndexToPtr @0x310f0. Same PADH@Z shape, different
+            // callee. +0x468 is m_cells[index].m_names[0] = AttackName().
+            const char* nm = m_cells[index].AttackName().GetBuffer(0);
             m_38->ApplyLookupSprite(nm, frame);
         }
         goto store;
@@ -856,10 +854,9 @@ idle:
         i32 col = rec.row;
         i32 row = rec.column;
         i32 index = 3 * col + row;
-        // @identity-TODO the m_cells element's real relation to _zdvec is unproven
-        const char* nm = reinterpret_cast<const char*>(
-            (reinterpret_cast<_zdvec*>(&m_cells[index].IdleName()))->IndexToPtr(0)
-        );
+        // 0x4af87: `lea ecx,[edi+eax*8+0x474]` (= m_names[3], IdleName) then
+        // `call 0x1ba11c` = CString::GetBuffer(0), not _zdvec::IndexToPtr.
+        const char* nm = m_cells[index].IdleName().GetBuffer(0);
         m_38->ApplyLookupSprite(nm, frame);
     }
     goto store;
@@ -873,10 +870,9 @@ walk:
         i32 col = rec.row;
         i32 row = rec.column;
         i32 index = 3 * col + row;
-        // @identity-TODO same unproven element/_zdvec relation as IdleName above
-        const char* nm = reinterpret_cast<const char*>(
-            (reinterpret_cast<_zdvec*>(&m_cells[index].WalkName()))->IndexToPtr(0)
-        );
+        // 0x4afdb: `lea ecx,[edi+edx*8+0x470]` (= m_names[2], WalkName) then
+        // `call 0x1ba11c` = CString::GetBuffer(0), not _zdvec::IndexToPtr.
+        const char* nm = m_cells[index].WalkName().GetBuffer(0);
         m_38->ApplyName(nm);
     }
 

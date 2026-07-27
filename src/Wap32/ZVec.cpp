@@ -34,32 +34,27 @@ char* _zdvec::IndexToPtr(i32 i) {
 }
 
 // _zvec::IndexToPtr(idx) - the plain accessor; grows on a bounds miss. 0x312a0.
+// Byte-identical body to the _zdvec override above minus the construction loop:
+// one result variable assigned in each arm and returned once (cl duplicates the
+// two-pop epilogue into all three arms). That single-return shape is what pins
+// idx in esi / this in edi the way retail does; the earlier multiple-return
+// spelling reversed the pair and capped the fn at ~83%.
 // @interleaver _zvec::IndexToPtr emitted-in <boundary: QueueDrainHost.cpp Drain
 // @0x31250 (before) + BattlezMapConfig.cpp Step @0x31610 (after)>. A template-accessor
 // COMDAT the /Gy linker placed by first-use between two OTHER units, not this TU block.
-// @early-stop
-// regalloc wall: retail pins idx in esi / this in edi (arg-before-this) and
-// merges the in-range + grow-success offset tails; our recompile mirrors the
-// esi/edi assignment and duplicates the tail, ~83%. Logic exact. The derived
-// override (0x310f0) matches because its trailing fixup loop shifts the reg
-// pressure; the loop-less base accessor does not flip. Not source-steerable.
 RVA(0x000312a0, 0x74)
 char* _zvec::IndexToPtr(i32 idx) {
-    i32 lo = m_lo;
+    char* r;
     m_grown = 0;
-    if (idx >= lo && idx <= m_hi) {
-        idx -= lo;
-        idx *= m_stride;
-        return m_base + idx;
+    if (idx >= m_lo && idx <= m_hi) {
+        r = m_base + (idx - m_lo) * m_stride;
+    } else if (GrowTo(idx, 0)) {
+        r = m_base + (idx - m_lo) * m_stride;
+    } else {
+        void* sentinel = g_projActCache;
+        g_retAddrBreadcrumb = GetRetAddr();
+        m_errSink->Set(static_cast<void*>(this), sentinel, 0xc);
+        r = m_spare;
     }
-    if (GrowTo(idx, 0)) {
-        char* base = m_base;
-        idx -= m_lo;
-        idx *= m_stride;
-        return base + idx;
-    }
-    void* sentinel = g_projActCache;
-    g_retAddrBreadcrumb = GetRetAddr();
-    m_errSink->Set(static_cast<void*>(this), sentinel, 0xc);
-    return m_spare;
+    return r;
 }

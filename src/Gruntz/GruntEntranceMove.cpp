@@ -491,10 +491,13 @@ i32 CGrunt::LoadEntranceConfig() {
 // owner) or marks the entrance committed (m_1fc=1). __thiscall, ret 0.
 // @early-stop
 // scheduling tail: logic/CFG/member-offsets/calls exact (same entrance cell-math
-// `(3*col+row+0xb)*0x68`, SetGeoSourceR/SetGeometry/GetName/SetAnimFrame/LookupTile/
-// SetTile all match). Residue = cl hoists the GetName(0) `push 0` + reuses the
-// `m_154+0x1a0` address in a reg earlier than mine (same entropy-class scheduling
-// as ResetGeometry @0x616e0) - no source lever flips it. ~88.5%.
+// `(3*col+row+0xb)*0x68` - cl folds the +0x478 ItemName offset into the index because
+// 0x478 == 0x68*11 exactly; SetGeoSourceR/SetGeometry/CString::GetBuffer/SetAnimFrame/
+// LookupTile/SetTile all match). Residue = retail re-materializes the m_1a0 sub-object
+// pointer (`add eax,0x1a0`, then [eax+0x28]/[eax+0x20]) where cl indexes m_38 directly
+// at [eax+0x1c8]/[eax+0x1c0]. Spelling the sub-object as a `CAniAdvanceCursor*` local
+// does NOT flip it - it costs ~7 points (96.9 -> 90.1, measured) by also rewriting the
+// call-site scheduling. Same entropy-class as ResetGeometry @0x616e0.
 RVA(0x00068370, 0x14c)
 i32 CGrunt::RearmEntranceDrop() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
@@ -509,14 +512,13 @@ i32 CGrunt::RearmEntranceDrop() {
             desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = elem->m_param;
 
-        i32 col = m_entranceCell.col;
-        i32 row = m_entranceCell.row;
-        // The retail call really is _zdvec::IndexToPtr(0) on the m_item CString slot
-        // (the two classes share the head layout); the old (3col+row+0xb)*0x68 spelling
-        // was the m_cells base folded into the index - array form proven byte-identical.
-        const char* name = reinterpret_cast<const char*>(
-            reinterpret_cast<_zdvec*>(&m_cells[3 * col + row].ItemName())->IndexToPtr(0)
-        );
+        GruntEntranceCell cell = m_entranceCell; // whole triple: `reason` dead-spills to [esp+0x1c]
+        i32 col = cell.col;
+        i32 row = cell.row;
+        // The retail call is CString::GetBuffer(0) (0x1ba11c) on the cell's m_names[4]
+        // (ItemName) slot, NOT _zdvec::IndexToPtr @0x310f0 - the two share the
+        // ?..@@QAEPADH@Z shape, which is what the old spelling matched on.
+        const char* name = m_cells[3 * col + row].ItemName().GetBuffer(0);
         m_38->ApplyLookupSprite(name, frame);
     }
 
