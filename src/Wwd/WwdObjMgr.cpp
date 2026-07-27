@@ -882,11 +882,12 @@ void CDDrawChildGroup::DrawObjectCounts() {
         }
         rc.left = wl - view->m_viewRect.left + view->m_bounds50.left;
         rc.top = wt - view->m_viewRect.top + view->m_bounds50.top;
+        // RECT's fields are LONG; WrapCoord's proven signature takes int* (PAH) -
+        // distinct types at identical width, so both out-params are language-forced.
         view->WrapCoord(
             reinterpret_cast<i32*>(&rc.right),
             reinterpret_cast<i32*>(&rc.bottom)
-        ); // language-forced: RECT's fields are LONG, WrapCoord's proven signature
-           // takes int* (PAH) - distinct types at identical width
+        );
         drawHost->DrawCount(&rc, obj->m_sortKey);
     } while (pos != 0);
 }

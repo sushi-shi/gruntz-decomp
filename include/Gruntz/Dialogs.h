@@ -140,9 +140,16 @@ public:
     void OnActionBtn1();
     void OnActionBtn2();
     void OnActionBtn3();
-    // 0x14b10 (first fn in the TU): a message-map handler that just runs MFC's
-    // default processing - `return Default();` tail-jmps to CWnd::Default.
-    long DoDefault();
+    // 0x14b10 (first fn in the TU): the WM_PAINT entry of the message map below -
+    // it just runs MFC's default processing, `return Default();` tail-jmps to
+    // CWnd::Default.
+    long OnPaint();
+
+protected:
+    static const AFX_MSGMAP messageMap; // 0x1e88b0 {&CDialog::messageMap, _messageEntries}
+
+private:
+    static const AFX_MSGMAP_ENTRY _messageEntries[]; // 0x1e88b8 (25 handlers + terminator)
 };
 SIZE_UNKNOWN();
 
@@ -162,6 +169,12 @@ public:
     void PickIfSelected();
 
     CString m_customName; // +0x5c  (default CString)
+
+protected:
+    static const AFX_MSGMAP messageMap; // 0x1e8e98 {&CDialog::messageMap, _messageEntries}
+
+private:
+    static const AFX_MSGMAP_ENTRY _messageEntries[]; // 0x1e8ea0 (1 handler + terminator)
 };
 SIZE_UNKNOWN();
 
@@ -392,7 +405,6 @@ extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 extern "C" i32 CALLBACK WndProc_15a10(HWND, UINT, WPARAM, LPARAM); // 0x15a10 (C linkage carrier)
 
-extern const i32 g_msgmap_CBattlezDlg;
 extern const i32 g_msgmap_CBattlezDlgColors;
 extern const i32 g_msgmap_CMultiStartDlg;
 #endif // SRC_GRUNTZ_DIALOGS_H

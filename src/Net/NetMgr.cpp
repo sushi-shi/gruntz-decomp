@@ -123,16 +123,14 @@ void CNetMgr::Destroy() {
         m_releaseIface->Release();
         m_releaseIface = 0;
     }
-    // The DirectPlay interface releases through the same IUnknown-shaped vtable
-    // (Slot10 then a re-read + Release) - the same COM object, viewed as
-    // INetReleasable. The reference re-reads m_directPlay before each call,
-    // matching retail's reload of [this+0x18].
-    INetReleasable*& dp = *reinterpret_cast<INetReleasable**>(&m_directPlay);
-    if (dp != 0) {
-        dp->Slot10();
-        INetReleasable* again = dp;
-        again->Release();
-        dp = 0;
+    // The DirectPlay interface is released through its OWN vtable - slot 4 (+0x10),
+    // then a re-read of [this+0x18] and slot 2 (+0x08) == IUnknown::Release. The
+    // ex-`INetReleasable*&` alias here was a second name for IDirectPlay4Z (same
+    // object, same two slots), not a distinct interface.
+    if (m_directPlay != 0) {
+        m_directPlay->v04();
+        m_directPlay->Release();
+        m_directPlay = 0;
     }
 }
 
@@ -889,14 +887,12 @@ i32 CNetMgr::EnumSessions2(void* ctx) {
     // agreeing facts - the abstract interface's slot 14 (+0x38) is IDirectPlay::GetCaps
     // (so "Enum2" is GetCaps and "EnumSessions" is its wrapper), DPCAPS is exactly 0x28
     // bytes with dwSize first (which is why EnumSessions memsets 0x28 then stores 0x28 at
-    // offset 0), and dwLatency lands at +0x18 in dplay.h's field order.
-    // NOT typed here on purpose: this TU cannot see <dplay.h> - DPlayImports.h documents
-    // the C2733 clash (dplay.h #defines DirectPlayEnumerate -> ...A) - and hand-rolling an
-    // SDK struct is banned by convention. So the read stays byte-forced until the import
-    // split is reworked; the names above are the finding, not a guess.
-    char desc[0x28];
-    i32 ok = EnumSessions(desc, ctx);
-    return ok ? *reinterpret_cast<i32*>((desc + 0x18)) : 0;
+    // offset 0), and dwLatency lands at +0x18 in dplay.h's field order. Now declared as
+    // the real record (CNetCaps in NetMgr.h, the same treatment CNetSessionDesc gives
+    // DPSESSIONDESC2), so the `desc + 0x18` byte cursor is a named member.
+    CNetCaps caps;
+    i32 ok = EnumSessions(&caps, ctx);
+    return ok ? caps.m_dwLatency : 0;
 }
 
 // @early-stop

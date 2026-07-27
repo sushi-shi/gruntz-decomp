@@ -23,6 +23,7 @@ i32 CInputDevRoot::Create(IDirectInputA* di, const void* deviceGuid, HWND hwnd) 
     if (m_device == 0) {
         return 0;
     }
+    // API-forced: COM QueryInterface's out-param is void**
     hr = m_device->QueryInterface(IID_IDirectInputDevice2A, reinterpret_cast<void**>(&m_device2));
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x3e, hr);

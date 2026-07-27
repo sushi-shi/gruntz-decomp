@@ -1159,10 +1159,10 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
         return 0;
     }
     // then the +0x150 CWapX base subobject's Chain (0x8c00 via the 0x1aff thunk).
-    // @identity-TODO(deferred): CGrunt's RTTI CHD @VA 0x5f2c40 proves CWapX is a
-    // DIRECT second base at mdisp +0x150 (past the 0x150 CMovingLogic spine). The
-    // Grunt.h ODR world is not converted yet, so the subobject is reached by cast
-    // until that MI conversion lands (MI1 flagged item 1).
+    // CGrunt's RTTI CHD @VA 0x5f2c40 proves CWapX is a DIRECT second base at mdisp
+    // +0x150 (past the 0x150 CMovingLogic spine), so this is real inheritance, not a
+    // view - but the Grunt.h ODR world is not converted to MI yet.
+    // @identity-TODO(deferred): reached by cast until that MI conversion lands.
     if ((reinterpret_cast<CWapX*>(&m_34))->Chain(ar, mode, a3, a4) == 0) {
         return 0;
     }
@@ -1223,8 +1223,10 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     if (!ar) {
         return 0;
     }
-    CDDrawSubMgrLeaf* catalog =
-        (static_cast<CGruntTypeCatalog*>(*reinterpret_cast<void**>(&m_3c)))->m_c;
+    // m_3c (+0x158) is declared AnimWorkerObj* in Gruntz/Grunt.h but holds the grunt
+    // TYPE CATALOG on this path; the ex-`*(void**)&m_3c` round-trip just hid that. The
+    // member's real declaration is another lane's header - one honest cast until then.
+    CDDrawSubMgrLeaf* catalog = reinterpret_cast<CGruntTypeCatalog*>(m_3c)->m_c;
     if (!catalog) {
         return 0;
     }

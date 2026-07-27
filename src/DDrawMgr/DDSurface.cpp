@@ -176,6 +176,7 @@ i32 CDDSurface::BlitIntoDesc(void* a) {
         return 0;
     }
 
+    // API-forced: COM QueryInterface's out-param is void**
     hr = m_ddSurfaceBack->QueryInterface(
         IID_IDirectDrawSurface3,
         reinterpret_cast<void**>(&m_ddSurface)

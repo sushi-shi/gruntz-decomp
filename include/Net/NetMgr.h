@@ -2,6 +2,7 @@
 #define NET_NETMGR_H
 
 #include <Ints.h>
+#include <string.h>       // memset (CNetPlayerListNode's inline ctor zeroes m_desc)
 #include <rva.h>          // SIZE_UNKNOWN/VTBL class-metadata macros used below
 #include <Wap32/Object.h> // CObject - the shared CObject-like grand-base
 
@@ -380,8 +381,10 @@ struct IDirectPlay4Z {
     // CNetMgr::Init's receiver out as IDirectPlayLobby. Mechanical (same slot, same
     // arity => same `call [eax+N]`) but wide, so it is its own change.
     STDMETHOD(QueryInterface)(void* riid, void* out) PURE;                 // slot 0
-    STDMETHOD(v01)() PURE;                                                 // slot 1
-    STDMETHOD(v02)() PURE;                                                 // slot 2
+    STDMETHOD(v01)() PURE;    // slot 1  (IUnknown::AddRef)
+    STDMETHOD(Release)() PURE; // slot 2  (+0x08) IUnknown::Release - the one slot every
+                               // COM vtable pins by definition; Destroy calls it after
+                               // slot 4 on a re-read of [this+0x18].
     STDMETHOD(Open)(void* a, void* b, i32 c) PURE;                         // slot 3  (+0x0c)
     STDMETHOD(v04)() PURE;                                                 // slot 4
     STDMETHOD(v05)() PURE;                                                 // slot 5
@@ -487,19 +490,37 @@ struct CNetSessionDesc {
 };
 SIZE(0x50); // == sizeof(DPSESSIONDESC2)
 
+// The DirectPlay DPCAPS (<dplay.h>), spelled out the same way CNetSessionDesc
+// spells DPSESSIONDESC2 - this TU cannot include dplay.h (the DirectPlayEnumerate
+// -> ...A #define clashes, see DPlayImports.h). EnumSessions/GetGroupInfo build it
+// on the stack: memset 0x28 then store 0x28 into m_dwSize, which is what fixes the
+// size AND the identity (DPCAPS is exactly 0x28 bytes with dwSize first).
+struct CNetCaps {
+    i32 m_dwSize;            // +0x00  forced to 0x28
+    i32 m_dwFlags;           // +0x04  DPCAPS_xxx
+    i32 m_dwMaxBufferSize;   // +0x08
+    i32 m_dwMaxQueueSize;    // +0x0c  (obsolete)
+    i32 m_dwMaxPlayers;      // +0x10
+    i32 m_dwHundredBaud;     // +0x14
+    i32 m_dwLatency;         // +0x18  what EnumSessions2 returns
+    i32 m_dwMaxLocalPlayers; // +0x1c
+    i32 m_dwHeaderLength;    // +0x20
+    i32 m_dwTimeout;         // +0x24
+};
+SIZE(0x28); // == sizeof(DPCAPS)
+
 class CNetPlayerListNode : public CObject {
 public:
     CNetSessionDesc m_desc; // +0x04  the deep-copied 0x50-byte DPSESSIONDESC2
                             //        (name/password strdup'd in place at +0x34/+0x38)
     __POSITION* m_54;       // +0x54  cached AddTail position
 
-    // Zero the 0x14-dword body + m_54 (the retail ctor sequence AddPlayerNode
-    // inlines: single coalesced vptr stamp 0x5f0760 then the zero loop).
+    // Zero the descriptor + m_54. The retail ctor AddPlayerNode inlines is a single
+    // coalesced vptr stamp 0x5f0760, then `mov ecx,0x14; xor eax,eax; lea edi,[esi+4];
+    // rep stosd` - a rep-stosd memset of exactly sizeof(m_desc) (0x50 B), NOT the
+    // hand-written dword loop this ctor used to spell.
     CNetPlayerListNode() {
-        i32* body = reinterpret_cast<i32*>(&m_desc);
-        for (i32 i = 0; i < 0x14; i++) {
-            body[i] = 0;
-        }
+        memset(&m_desc, 0, sizeof(m_desc));
         m_54 = 0;
     }
     virtual ~CNetPlayerListNode() OVERRIDE; // 0x1793b0 (NetSessionNode.cpp)

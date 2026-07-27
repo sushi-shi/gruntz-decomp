@@ -1183,17 +1183,7 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, i32 kind, i32 /*unusedC*/, i32 /*un
     // retail's one-lea + biased-second-push shape.
     SerBandPair(ar, kind, &m_timerBase);
     SerBandPair(ar, kind, &m_gooTimerBaseLo);
-    char* blk2 = reinterpret_cast<char*>(&m_resourceTimerBaseLo);
-    if (kind != 4) {
-        if (kind == 7) {
-            ar->Read(blk2, 8);
-            ar->Read(blk2 + 8, 8);
-        }
-    } else {
-        ar->Write(blk2, 8);
-        ar->Write(blk2 + 8, 8);
-        return 1;
-    }
+    SerBandPair(ar, kind, &m_resourceTimerBaseLo);
     return 1;
 }
 

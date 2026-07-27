@@ -63,6 +63,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     if (DirectDrawCreate(0, &m_dd, 0) != 0) {
         return 0;
     }
+    // API-forced: COM QueryInterface's out-param is void**
     if (m_dd->QueryInterface(IID_IDirectDraw2, reinterpret_cast<void**>(&m_dd2)) != 0) {
         return 0;
     }
@@ -84,6 +85,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
         return 0;
     }
 
+    // API-forced: COM QueryInterface's out-param is void**
     if (m_primaryRaw->QueryInterface(IID_IDirectDrawSurface3, reinterpret_cast<void**>(&m_primary))
         != 0) {
         return 0;

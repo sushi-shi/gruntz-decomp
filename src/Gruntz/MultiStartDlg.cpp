@@ -366,6 +366,15 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
     FlashCtrlD();
 }
 
+// DEFERRED (blocked on 10 handler reconstructions, 2026-07-27): the retail bytes at
+// 0x1ea578 are an 8-byte AFX_MSGMAP {&CDialog::messageMap (0x5eb068), &_messageEntries
+// (0x5ea580)} - NOT the 4-byte `const i32` below, whose value 0x5eabe8 is not even the
+// base map's address. 0x1ea580 is a 30-entry AFX_MSGMAP_ENTRY table; 20 of its handlers
+// already exist as CMultiStartDlg methods, but ten do NOT yet: 0xc2c80 (ON_WM_TIMER),
+// 0xc30d0 (ON_WM_MEASUREITEM), 0xc4e40/0xc4e60/0xc4e80/0xc4ea0 (ON_CONTROL 0x300 on
+// 0x50a..0x50d) and 0xc51c0/0xc51e0/0xc5200/0xc5220 (ON_BN_CLICKED 0x51f/0x523/0x524/
+// 0x525). Declaring them without bodies would trip the declared-only gate, so the map
+// converts (exactly as CBattlezDlg's did in Dialogs.cpp) once those ten are built.
 RVA(0x000c2620, 0x6)
 const AFX_MSGMAP* CMultiStartDlg::GetMessageMap() const {
     return reinterpret_cast<const AFX_MSGMAP*>(&g_msgmap_CMultiStartDlg);

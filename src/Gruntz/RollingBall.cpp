@@ -362,7 +362,8 @@ i32 CRollingBall::Update() {
     // ----- the direction sub-switch (state +0x12c -> NORTH/SOUTH/EAST/WEST) -----
     // m_subX/m_subY are doubles; the direction arms zero/seed them (and m_moveDelta)
     // as int pairs in this exact interleaved store order, so their halves are
-    // addressed as ints via ((i32*)&member)[0/1] (matching retail's dword stores).
+    // addressed as ints via ((i32*)&member)[0/1] - a faithful {lo,hi} overlay of
+    // retail's two dword stores per double, the same call as the i64 timer pairs.
     (reinterpret_cast<i32*>(&m_subX))[0] = 0;
     // m_subY is a double and retail clears it with two dword stores; the {lo,hi} pair
     // spelling is faithful, the same call as the i64 timer pairs

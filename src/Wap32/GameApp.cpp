@@ -219,10 +219,9 @@ i32 CGameApp::RunMessageLoop() {
 
 RVA(0x0013d9b0, 0xa0)
 void CGameApp::InitializeDefaultWindowClass() {
-    i32 i;
-    for (i = 0; i < 10; i++) {
-        (reinterpret_cast<i32*>(&m_wc))[i] = 0;
-    }
+    // retail: `mov ecx,0xa; xor eax,eax; lea edi,[esi+0x1e8]; rep stosd` == an inline
+    // memset of exactly sizeof(WNDCLASSA) (10 dwords), not a hand-written dword loop.
+    memset(&m_wc, 0, sizeof(m_wc));
 
     HCURSOR hCursor = LoadCursorA(m_hInstance, m_gameInfo.szGameIdentifier);
     if (m_gameInfo.windowClassFlags & 1) {
@@ -243,10 +242,9 @@ void CGameApp::InitializeDefaultWindowClass() {
 
 RVA(0x0013da50, 0x10b)
 void CGameApp::InitializeDefaultCreateStruct() {
-    i32 i;
-    for (i = 0; i < 12; i++) {
-        (reinterpret_cast<i32*>(&m_createStruct))[i] = 0;
-    }
+    // retail: `mov ecx,0xc; xor eax,eax; lea edi,[esi+0x210]; rep stosd` == an inline
+    // memset of exactly sizeof(CREATESTRUCTA) (12 dwords).
+    memset(&m_createStruct, 0, sizeof(m_createStruct));
 
     HMENU hMenu = 0;
     if (m_gameInfo.windowClassFlags & 1) {

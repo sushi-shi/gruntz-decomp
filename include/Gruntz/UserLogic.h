@@ -137,8 +137,12 @@ public:
     // virtual above; retail's slot holds its ILT thunk 0x3913, which
     // reloc_fidelity thunk-resolves onto the body.)
     i32 Place(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32); // 0x4d800
-    i32 m_deferredCallback;                                                // +0x04
-    i32 m_gatedCallback;                                                   // +0x08
+    // +0x04/+0x08: the deferred + gated act callbacks. They are POINTERS TO MEMBER
+    // FUNCTIONS (4 bytes - CUserLogic is single-inheritance, so cl uses the smallest
+    // representation; SIZE(0x34) below is the proof), not the i32 they were declared
+    // as, which is why both dispatch sites had to reinterpret them through a ref.
+    void (CUserLogic::*m_deferredCallback)(); // +0x04
+    void (CUserLogic::*m_gatedCallback)();    // +0x08
     CGameObject* m_0c;                                                     // +0x0c
     // +0x10  bound game object (== m_38): the created A-kind sprite (every binding
     // site hands a CreateSprite/ReadPlaneObjects product; leaves read its m_1a0

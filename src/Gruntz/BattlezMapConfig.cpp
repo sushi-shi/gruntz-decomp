@@ -3049,17 +3049,18 @@ i32 CBattlezMapConfig::SerializeState(CFileMemBase* objArg, i32 kindArg, i32, i3
             }
             break;
     }
-    char* scratch = reinterpret_cast<char*>(&m_scratch78);
+    // The scratch band is two 8-byte blocks: {m_scratch78,m_scratch7c} and
+    // {m_scratch80,m_scratch84} - the same i64 timer-pair shape line 4168 reads.
+    // CFileMemBase::Read/Write already take void*, so each block is its own member
+    // address, not a byte cursor walked off the first one.
     switch (kind) {
         case 4:
-            obj->Write(scratch, 8);
-            scratch += 8;
-            obj->Write(scratch, 8);
+            obj->Write(&m_scratch78, 8);
+            obj->Write(&m_scratch80, 8);
             break;
         case 7:
-            obj->Read(scratch, 8);
-            scratch += 8;
-            obj->Read(scratch, 8);
+            obj->Read(&m_scratch78, 8);
+            obj->Read(&m_scratch80, 8);
             break;
     }
     return 1;
@@ -4250,7 +4251,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
             GruntCoord* c = cur->m_coord;
             if (c != 0) {
                 BrickzCell* row = static_cast<BrickzCell*>((m_board)->m_rows[c->m_y]);
-                if ((reinterpret_cast<i32*>(&row[c->m_x]))[0] & 4) {
+                if (row[c->m_x].m_0 & 4) {
                     tx = c->m_x;
                     ty = c->m_y;
                     found = 1;

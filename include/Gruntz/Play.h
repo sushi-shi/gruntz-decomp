@@ -148,8 +148,8 @@ public:
     // The +4/+8 these walkers read are CPtrArray's own m_pData/m_nSize (the CObject
     // vptr sits at +0), i.e. MFC's inline GetData()/GetSize() - not an offset pun.
     CHitMarker** markerData() {
-        // CPtrArray is MFC's untyped void* array; naming the element type is the one
-        // cast the container's API leaves no way to avoid.
+        // API-forced, at one seam: CPtrArray is MFC's untyped void* array, so naming
+        // the element type is the one cast the container's API leaves no way to avoid.
         return reinterpret_cast<CHitMarker**>(m_startMarkers.GetData());
     }
     i32 markerCount() { return m_startMarkers.GetSize(); }

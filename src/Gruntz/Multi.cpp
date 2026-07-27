@@ -955,7 +955,7 @@ void CMulti::PumpB() {
     StepGridWalk(g_frameDelta);
     winapi_0d0b30_CopyRect(h);
     if (m_worldReady != 0) {
-        h->DrawBox(reinterpret_cast<i32*>(&m_hudRect), 0xff);
+        h->DrawBox(&m_hudRect, 0xff);
     }
     (static_cast<CDDrawSurfacePair*>(mgr->m_drawTarget->m_frontPair))->m_surface->Flip(0);
     PumpBRefresh2356(g_gameReg, m_guts, m_region0Gate);
@@ -1634,7 +1634,7 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     char buf[0x100];
     buf[0] = g_emptyString[0];
     memset(&buf[1], 0, 0xff);
-    Cfg_SetSection(buf, "%s", reinterpret_cast<i32&>(m_groupName)); // the CString buffer handle
+    Cfg_SetSection(buf, "%s", static_cast<const char*>(m_groupName));
     Cfg_AppendKeyVal(buf, "CMDDELAY", m_5a4);
     Cfg_AppendKeyVal(buf, "RESEND", m_drainReload);
     Cfg_AppendKeyVal(buf, "LEVEL", ResyncLParam());

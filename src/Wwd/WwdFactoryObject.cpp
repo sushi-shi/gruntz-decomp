@@ -715,8 +715,9 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         i32 reload = rd->m_frameTime;
         m_20 = reload;
         m_24 = (~rd->m_flags) & 1;
-        if (*reinterpret_cast<i32*>(&m_scale)
-            != 0x3f800000) { // raw-bits compare vs 1.0f (retail int cmp)
+        // byte-forced: retail compares the float's RAW BITS against 1.0f with an
+        // integer cmp, not an FPU compare - the pun is what produces that instruction.
+        if (*reinterpret_cast<i32*>(&m_scale) != 0x3f800000) {
             m_20 = static_cast<i32>((static_cast<double>(static_cast<u32>(reload)) * m_scale));
         }
 

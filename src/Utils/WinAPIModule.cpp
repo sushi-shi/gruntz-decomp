@@ -25,6 +25,7 @@ namespace Utils {
                 return 0;
             }
 
+            // language-forced: GetProcAddress returns FARPROC
             PFNCREATESNAPSHOT pCreateSnapshot = reinterpret_cast<PFNCREATESNAPSHOT>(
                 GetProcAddress(k32, "CreateToolhelp32Snapshot")
             );
@@ -32,12 +33,14 @@ namespace Utils {
                 return 0;
             }
 
+            // language-forced: GetProcAddress returns FARPROC
             PFNMODULEWALK pModuleFirst =
                 reinterpret_cast<PFNMODULEWALK>(GetProcAddress(k32, "Module32First"));
             if (!pModuleFirst) {
                 return 0;
             }
 
+            // language-forced: GetProcAddress returns FARPROC
             PFNMODULEWALK pModuleNext =
                 reinterpret_cast<PFNMODULEWALK>(GetProcAddress(k32, "Module32Next"));
             if (!pModuleNext) {
