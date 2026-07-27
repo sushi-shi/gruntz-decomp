@@ -2166,14 +2166,8 @@ i32 CGruntzMgr::LoadOptionsSlotName(
     i32 /*a7*/
 ) {
     if (CheckPlayState()) {
-        // Authentic codegen idiom: the base folds the array's +0x150 into the
-        // field displacements (+0x170 = m_20, +0x154 = m_name), so cl emits the
-        // slot lea with disp 0; naming via &m_options[slot] shifts the lea base
-        // and drops the match (verified -3%). Kept raw.
-        char* s = reinterpret_cast<char*>(this) + slot * 0x238;
-        if (*reinterpret_cast<i32*>((s + 0x170)) == 0) { // slot.m_020  (options base +0x150 +0x20)
-            *reinterpret_cast<CString*>((s + 0x154)) =
-                val; // slot.m_name (options base +0x150 +0x04)
+        if (m_options[slot].m_liveGate == 0) {
+            m_options[slot].m_name = val;
         }
     }
     return 0;

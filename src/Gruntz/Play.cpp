@@ -737,9 +737,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     for (i32 t = 0; t < 4; ++t) {
         CGruntzMgr* hostBase = self->m_mgr;
         gameReg = g_gameReg;
-        GruntzPlayer* team = reinterpret_cast<GruntzPlayer*>(
-            (reinterpret_cast<char*>(hostBase) + t * 0x48 * 8 - t * 8 + 0x150)
-        ); // [edx+ecx*8+0x150]
+        GruntzPlayer* team = &hostBase->m_options[t];
         if (gameReg->m_134 == 1) {
             team->SeedForSlot(0);
             if (t == 0) {
@@ -6067,11 +6065,11 @@ void CPlay::ReleaseResources() {
         m_mgr->m_strWorldFile.Empty(); // 0x1b9c69 CString::Empty (world-file name clear)
     }
     m_1d0 = 0;
-    i32 off = 0;
+    i32 t = 0;
     do {
-        off += 0x238;
-        *reinterpret_cast<i32*>((reinterpret_cast<char*>(g_gameReg) + off - 0xc8)) = 0;
-    } while (off < 0x8e0);
+        g_gameReg->m_options[t].m_liveGate = 0;
+        t++;
+    } while (t < 4);
     if (m_mgr && m_mgr->m_chatLog) {
         m_mgr->m_chatLog->FreeNodes();
     }

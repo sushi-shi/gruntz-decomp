@@ -524,13 +524,13 @@ CNetPlayerListNode* CNetMgr::EnumGroupsInto(i32 maxPlayers, char* sessionName, i
 }
 
 RVA(0x001789e0, 0x59)
-CNetSessionNode* CNetMgr::EnumPlayersCb(void* a, const char* b, const char* c, i32 d) {
+CNetSessionNode* CNetMgr::EnumPlayersCb(CNetPlayerListNode* a, const char* b, const char* c, i32 d) {
     if (a == 0) {
         return 0;
     }
 
     IDirectPlay4Z* iface = m_directPlay;
-    i32 hr = iface->EnumGroups(reinterpret_cast<char*>(a) + 4, 1);
+    i32 hr = iface->EnumGroups(&a->m_desc, 1); // the node's +0x04 DPSESSIONDESC2
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x2dc, hr, 0);
         return 0;

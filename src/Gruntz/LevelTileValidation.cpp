@@ -560,11 +560,12 @@ i32 CPlay::ValidateLevelTiles() {
             i32 col = obj->m_screenX >> 5;
             i32 rowBase = obj->m_screenY >> 5;
             i32 stride = (col << 3) - col; // col*7
-            i32 ebp = stride * 4 - 0x1c;
-            for (i32 dy = -1; dy < 2; dy++, ebp += 0x1c) {
+            // the pool is walked as DWORDS: 7 per 0x1c cell (the m_rowInts union arm)
+            i32 ebp = stride - 7;
+            for (i32 dy = -1; dy < 2; dy++, ebp += 7) {
                 i32 row = rowBase;
-                i32 ofs = rowBase * 4 - 4;
-                for (i32 k = 3; k != 0; k--, ofs += 4, row++) {
+                i32 ofs = rowBase - 1;
+                for (i32 k = 3; k != 0; k--, ofs++, row++) {
                     i32 gx = dy + col;
                     i32 gyy = row - 1;
                     CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
@@ -598,9 +599,8 @@ i32 CPlay::ValidateLevelTiles() {
                         || static_cast<u32>(gyy) >= gg->m_height) {
                         continue;
                     }
-                    i32* cellRow =
-                        reinterpret_cast<i32*>((reinterpret_cast<char*>(gg->m_rows[0]) + ofs));
-                    *reinterpret_cast<i32*>((reinterpret_cast<char*>(cellRow) + ebp)) |= bit;
+                    i32* cellRow = gg->m_rowInts[0] + ofs;
+                    cellRow[ebp] |= bit;
                 }
             }
         } else if (who == CreateToobSpikez) {

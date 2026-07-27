@@ -722,7 +722,7 @@ public:
     CNetPlayerListNode* AddPlayerNode(void* playerDesc); // 0x1786d0  new player node -> +0x38 list
     void PopulatePlayerList(void* hList);                // 0x178790  fill a Win32 player list box
     CNetSessionNode* EnumPlayersCb(
-        void* a,
+        CNetPlayerListNode* a,
         const char* name,
         const char* longName,
         i32 d

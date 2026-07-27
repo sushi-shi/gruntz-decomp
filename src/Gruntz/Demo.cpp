@@ -1,5 +1,6 @@
 #include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
 #include <Gruntz/Demo.h>
+#include <Gruntz/Grunt.h> // CGrunt complete (the +8 CUserLogic callback slot)
 #include <Gruntz/DemoHelpers.h> // CDemoSetup / Orient3 (the TU's helper types)
 #include <Io/FileMem.h>         // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr / CGameMgr::m_gameWnd -> CGameWnd::m_hwnd (Render's exit post)
@@ -187,11 +188,10 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
     return 1;
 }
 
-class CGrunt;
 RVA(0x0003c7f0, 0x18)
 bool CGrunt_IsSameType(CGrunt* a, CGrunt* b) {
-    return *reinterpret_cast<void**>((reinterpret_cast<char*>(a) + 8))
-           == *reinterpret_cast<void**>((reinterpret_cast<char*>(b) + 8));
+    // +8 is CUserLogic::m_gatedCallback (CGrunt's primary base sits at +0)
+    return a->m_gatedCallback == b->m_gatedCallback;
 }
 
 DATA(0x0020d008)
