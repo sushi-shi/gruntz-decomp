@@ -25,6 +25,8 @@ i32 CDDPalette::Create(IDirectDraw2* dd, void* entries, u32 flags) {
     // Plateau note: byte-for-byte except the copy loop's SIB base/index roles
     // (retail encodes [entries+i]/[m_cacheA+i] with i as the index; MSVC here makes i
     // the base) - a 1-byte-per-insn encoding choice, semantically identical.
+    // the palette is a 0x400-byte blob on both sides and retail copies it dword-wise,
+    // so the byte-cursor -> dword read is byte-forced by the copy width
     for (i32 i = 0; i < 0x400; i += 4) {
         PalDword(m_cacheA + i) =
             *reinterpret_cast<i32*>((static_cast<char*>(entries) + i));
@@ -261,7 +263,8 @@ RVA(0x00147aa0, 0x6a)
 i32 CDDPalette::SetAndNotify(i32 start, i32 count, u8* data, i32 a4) {
     // both sides are the file's 0x400-byte palette blob, walked dword-wise here and
     // entry-wise at the SetEntries call below (the PalDword/PalEntries seams).
-    // both sides are the 0x400-byte palette blob (the PalDword/PalEntries seams)
+    // both sides are the 0x400-byte palette blob, copied dword-wise - byte-forced at
+    // this one seam (the PalDword/PalEntries pair)
     i32* cache = reinterpret_cast<i32*>(m_cacheA);
     i32* src = reinterpret_cast<i32*>(data);
     for (i32 i = 0; i < count; i++) {
@@ -603,6 +606,8 @@ void CDDPalette::Flush() {
         m_targetPalette = 0;
     } else {
         char buf[8];
+        // m_fixedR/G/B + their flags pad are four adjacent bytes at +0x1c..+0x1f - one
+        // PALETTEENTRY's worth - and retail moves them as ONE dword: byte-forced
         PalDword(buf) = *reinterpret_cast<i32*>(&m_fixedR);
         SetRange(
             m_firstColorIndex,
@@ -694,7 +699,8 @@ i32 CDDPalette::CaptureSystemPalette() {
         dest[i].peGreen = lp.palPalEntry[i].peGreen;
         dest[i].peBlue = lp.palPalEntry[i].peBlue;
     }
-    // the SDK's PALETTEENTRY array IS the blob SetAndNotify takes - one boundary
+    // the SDK's PALETTEENTRY array IS the blob SetAndNotify takes - byte-forced at the
+    // one seam between the two spellings of the same 0x400 bytes
     i32 rc = SetAndNotify(0, 0x100, reinterpret_cast<u8*>(dest), 0);
     if (rc != 0) {
         CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x495, rc);
@@ -726,6 +732,8 @@ i32 BlackoutSystemPalette() {
             lp.palPalEntry[i].peBlue = 0;
             lp.palPalEntry[i].peFlags = 4; // PC_NOCOLLAPSE
         }
+        // LOGPALETTE declares palPalEntry[1]; a 256-entry palette needs the larger
+        // local, and handing it to the SDK is the API-forced Win32 idiom
         HPALETTE hpal = ::CreatePalette(reinterpret_cast<LOGPALETTE*>(&lp));
         if (hpal != 0) {
             HPALETTE(WINAPI * pSelect)(HDC, HPALETTE, BOOL) = ::SelectPalette;
