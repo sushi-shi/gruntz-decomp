@@ -61,6 +61,7 @@
 #include <Gruntz/TriggerMgrViews.h>
 #include <Gruntz/SoundState.h> // ex Globals.h transitive
 #include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
+#include <Gruntz/SerialRecords.h> // SerBandPair - the 0x10-byte timer-band stream
 
 DATA(0x00244ca4)
 i32 g_groupSentinel;
@@ -1211,26 +1212,8 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, i32 kind, i32 /*unusedC*/, i32 /*un
     }
     // The three i64 timer pairs, snapshotted as raw 8-byte blocks (the GetA/GetB
     // getters copy bytes); (char*)& keeps retail's one-lea + biased-second-push shape.
-    char* blk0 = reinterpret_cast<char*>(&m_timerBase);
-    if (kind != 4) {
-        if (kind == 7) {
-            ar->Read(blk0, 8);
-            ar->Read(blk0 + 8, 8);
-        }
-    } else {
-        ar->Write(blk0, 8);
-        ar->Write(blk0 + 8, 8);
-    }
-    char* blk1 = reinterpret_cast<char*>(&m_gooTimerBaseLo);
-    if (kind != 4) {
-        if (kind == 7) {
-            ar->Read(blk1, 8);
-            ar->Read(blk1 + 8, 8);
-        }
-    } else {
-        ar->Write(blk1, 8);
-        ar->Write(blk1 + 8, 8);
-    }
+    SerBandPair(ar, kind, &m_timerBase);
+    SerBandPair(ar, kind, &m_gooTimerBaseLo);
     char* blk2 = reinterpret_cast<char*>(&m_resourceTimerBaseLo);
     if (kind != 4) {
         if (kind == 7) {

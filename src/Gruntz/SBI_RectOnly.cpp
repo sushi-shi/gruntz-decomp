@@ -640,17 +640,13 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_modeArmed, 4);
     s->Write(&m_578, 4);
 
-    char* q = reinterpret_cast<char*>(&m_slots[0].m_value);
     for (i32 j = 0; j < 5; j++) {
-        s->Write(q - 4, 4);
-        s->Write(q, 4);
-        q += 0x18;
+        s->Write(&m_slots[j].m_state, 4);
+        s->Write(&m_slots[j].m_value, 4);
     }
-    char* r = reinterpret_cast<char*>(&m_groupSlots[0].m_value);
     for (i32 k = 0; k < 3; k++) {
-        s->Write(r - 4, 4);
-        s->Write(r, 4);
-        r += 0x18;
+        s->Write(&m_groupSlots[k].m_state, 4);
+        s->Write(&m_groupSlots[k].m_value, 4);
     }
     CSbiHlRow* nb = m_hlGrid;
     i32 outer = 3;
@@ -763,17 +759,13 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     s->Read(&m_modeArmed, 4);
     s->Read(&m_578, 4);
 
-    char* q = reinterpret_cast<char*>(&m_slots[0].m_value);
     for (i32 j = 0; j < 5; j++) {
-        s->Read(q - 4, 4);
-        s->Read(q, 4);
-        q += 0x18;
+        s->Read(&m_slots[j].m_state, 4);
+        s->Read(&m_slots[j].m_value, 4);
     }
-    char* r = reinterpret_cast<char*>(&m_groupSlots[0].m_value);
     for (i32 k = 0; k < 3; k++) {
-        s->Read(r - 4, 4);
-        s->Read(r, 4);
-        r += 0x18;
+        s->Read(&m_groupSlots[k].m_state, 4);
+        s->Read(&m_groupSlots[k].m_value, 4);
     }
     CSbiHlRow* nb = m_hlGrid;
     i32 outer = 3;

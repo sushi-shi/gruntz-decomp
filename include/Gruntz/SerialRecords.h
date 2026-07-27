@@ -4,7 +4,7 @@
 #include <Ints.h>
 #include <rva.h>
 
-class CFileMemBase;
+#include <Io/FileMem.h> // CFileMemBase complete (SerBandPair streams through it)
 struct CGameObject;
 
 struct CTriRecord {
@@ -30,6 +30,22 @@ inline i32 SerTriRecord(void* band, CFileMemBase* ar, i32 tag, i32 c, CGameObjec
 }
 inline i32 SerPairRecord(void* band, CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     return reinterpret_cast<CPairRecord*>(band)->Serialize(ar, tag, c, d);
+}
+
+// The 0x10-byte timer/clock BANDS the archive snapshots as two 8-byte blocks. The
+// band base is a member address, so the void* parameter keeps retail's single-lea
+// shape without a cast at each call.
+inline void SerBandPair(CFileMemBase* ar, i32 mode, void* band) {
+    char* p = static_cast<char*>(band);
+    if (mode != 4) {
+        if (mode == 7) {
+            ar->Read(p, 8);
+            ar->Read(p + 8, 8);
+        }
+    } else {
+        ar->Write(p, 8);
+        ar->Write(p + 8, 8);
+    }
 }
 
 #endif // GRUNTZ_SERIALRECORDS_H
