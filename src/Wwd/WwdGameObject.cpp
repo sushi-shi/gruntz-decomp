@@ -285,9 +285,7 @@ i32 CWwdGameObjectA::Test() {
     if (m_flags & 0x40000) {
         // The camera cull rect is the main plane's +0x40 Win32 RECT (the level's +0x24
         // CGameLevel -> +0x5c CDDrawWorkerHost == the former WwdCamHolder->m_5c camera object).
-        RECT* r = reinterpret_cast<RECT*>(
-            (reinterpret_cast<char*>(OwnerMgr()->m_level->m_mainPlane) + 0x40)
-        );
+        RECT* r = &OwnerMgr()->m_level->m_mainPlane->m_viewRect;
         if (right < r->left) {
             return 0;
         }
@@ -541,7 +539,7 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
     // The transcription is right; what is unresolved is the MAP's value type - it is
     // not CDDrawWorker (whose +0x10 is a CObArray) nor CGameObject's plot-state slot.
     // Settle the map's element type and this cast goes with it.
-    return m_80->Init(reinterpret_cast<GameObjNotifyFn>(src->m_10), 0);
+    return m_80->Init(reinterpret_cast<GameObjNotifyFn>(src->m_10), 0); // @identity-TODO map value type
 }
 
 // CGameObject's three built-in logic-handler registrars: look the logic-name key
@@ -606,7 +604,7 @@ i32 CGameObject::EnsureWorker88(CGameObject* src) {
     // The transcription is right; what is unresolved is the MAP's value type - it is
     // not CDDrawWorker (whose +0x10 is a CObArray) nor CGameObject's plot-state slot.
     // Settle the map's element type and this cast goes with it.
-    return m_88->Init(reinterpret_cast<GameObjNotifyFn>(src->m_10), 0);
+    return m_88->Init(reinterpret_cast<GameObjNotifyFn>(src->m_10), 0); // @identity-TODO map value type
 }
 
 // @early-stop
@@ -659,7 +657,7 @@ i32 CGameObject::EnsureWorker90(CGameObject* src) {
     // The transcription is right; what is unresolved is the MAP's value type - it is
     // not CDDrawWorker (whose +0x10 is a CObArray) nor CGameObject's plot-state slot.
     // Settle the map's element type and this cast goes with it.
-    return m_collideWorker->Init(reinterpret_cast<GameObjNotifyFn>(src->m_10), 0);
+    return m_collideWorker->Init(reinterpret_cast<GameObjNotifyFn>(src->m_10), 0); // @identity-TODO map value type
 }
 
 // @early-stop
