@@ -50,6 +50,9 @@ inline void* operator new(u32, void* p) {
 }
 
 
+// m_188 is the object id; m_map2c/m_map48 are ::CMapPtrToPtr, whose key type IS void*.
+// Widening the id to the map's key type is API-forced by MFC, and this inline is the
+// ONE seam where it happens - every map call below goes through it.
 inline void* WwdKey(CGameObject* o) {
     return reinterpret_cast<void*>(o->m_188);
 }
@@ -862,7 +865,8 @@ void CDDrawChildGroup::DrawObjectCounts() {
         view->WrapCoord(
             reinterpret_cast<i32*>(&rc.right),
             reinterpret_cast<i32*>(&rc.bottom)
-        ); // LONG*->i32* (same width; PAH sig)
+        ); // language-forced: RECT's fields are LONG, WrapCoord's proven signature
+           // takes int* (PAH) - distinct types at identical width
         drawHost->DrawCount(&rc, obj->m_sortKey);
     } while (pos != 0);
 }
@@ -1018,6 +1022,8 @@ CWwdGameObject* CDDrawChildGroup::FindByField(i32 type, void* key) {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != 0) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
+        // same void*-key convention as WwdKey/FindByWorker (the class keys on
+        // CMapPtrToPtr's void*), applied here to the +0xe8 field - API-forced
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == type
             && reinterpret_cast<void*>(obj->m_collCategory) == key) {
             return obj;
@@ -1272,7 +1278,11 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
                 break;
             }
             case 0x1c: {
-                void* rec = 0;
+                // the callback's out-param IS the created object - every use below is
+                // CWwdGameObject* (the +4 store is its inherited CLoadable::m_id). The
+                // i32 on &rec is the callback ABI: m_callback's payload word is opaque
+                // by construction, so that one is API-forced, not a mis-model.
+                CWwdGameObject* rec = 0;
                 if (OwnerMgr()->InvokeCallback(reader, 0xa, desc.m_0c, reinterpret_cast<i32>(&rec))
                     == 0) {
                     return 0;
@@ -1280,10 +1290,10 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
                 if (rec == 0) {
                     return 0;
                 }
-                *reinterpret_cast<i32*>((static_cast<char*>(rec) + 4)) = desc.m_00;
+                rec->m_id = desc.m_00;
                 // 0x159830 == CDDrawChildGroup::AttachSprite (the manager IS the factory)
                 if (AttachSprite(
-                        static_cast<CWwdGameObject*>(rec),
+                        rec,
                         desc.m_94,
                         desc.m_98,
                         desc.m_9c,
@@ -1293,7 +1303,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
                     == 0) {
                     return 0;
                 }
-                createdObj = static_cast<CWwdGameObject*>(rec);
+                createdObj = rec;
                 break;
             }
             default:
@@ -1308,7 +1318,8 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
             return 0;
         }
         if (desc.m_10 != 0) {
-            void* child = 0;
+            // same callback ABI; the out-param is the bound logic object
+            CUserLogic* child = 0;
             if (OwnerMgr()->InvokeCallback(reader, 9, desc.m_10, reinterpret_cast<i32>(&child))
                 == 0) {
                 return 0;
@@ -1317,7 +1328,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
                 return 0;
             }
             // the worker's owned bound-logic slot (AnimWorkerObj::m_logic)
-            createdObj->m_7c->m_logic = static_cast<CUserLogic*>(child);
+            createdObj->m_7c->m_logic = child;
         }
     }
     return 1;
