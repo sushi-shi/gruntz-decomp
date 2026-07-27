@@ -1566,14 +1566,14 @@ i32 CGrunt::LoadGruntCombatAnimations(
         if (m_31c.GetCount() != 0) {
             POSITION pos = m_31c.GetHeadPosition();
             if (pos != 0) {
-                CoordPoolNode* fl = g_coordPool.m_freeHead;
                 do {
                     Coord* data = static_cast<Coord*>(m_31c.GetNext(pos));
                     if (data != 0) {
+                        // retail stores the CACHED reg back (`mov [eax],edx; mov edx,eax;
+                        // mov ds:g_freeList,edx`) - no source-level cached local.
                         CoordPoolNode* slot = g_coordPool.NodeOf(data);
-                        slot->m_next = fl;
-                        fl = slot;
-                        g_coordPool.m_freeHead = fl;
+                        slot->m_next = g_coordPool.m_freeHead;
+                        g_coordPool.m_freeHead = slot;
                     }
                 } while (pos != 0);
             }

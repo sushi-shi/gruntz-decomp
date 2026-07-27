@@ -662,13 +662,14 @@ i32 CGrunt::WanderStep() {
             m_358 = 0;
             if (CoordCount() != 0) {
                 POSITION pos = m_31c.GetHeadPosition();
-                CoordPoolNode* prev = g_coordPool.m_freeHead;
                 while (pos != 0) {
                     void* data = m_31c.GetNext(pos);
                     if (data != 0) {
+                        // retail 0xee136: `mov [eax],edx; mov edx,eax; mov
+                        // ds:g_freeList,edx` - the store reads the CACHED register, so
+                        // there is no source-level `prev` local (that makes cl store eax).
                         CoordPoolNode* fslot = g_coordPool.NodeOf(data);
-                        fslot->m_next = prev;
-                        prev = fslot;
+                        fslot->m_next = g_coordPool.m_freeHead;
                         g_coordPool.m_freeHead = fslot;
                     }
                 }
@@ -1119,16 +1120,14 @@ i32 CGrunt::UpdateArrival() {
             SetEntrancePos(1, 1);
             if (this->CoordCount() != 0) {
                 GruntCoordNode* p = this->CoordHead();
-                CoordPoolNode* prev = g_coordPool.m_freeHead;
                 while (p != 0) {
                     GruntCoordNode* next = p->m_next;
                     GruntCoord** link = &p->m_coord;
                     p = next;
                     if (*link != 0) {
                         CoordPoolNode* n2 = g_coordPool.NodeOf(*link);
-                        n2->m_next = prev;
+                        n2->m_next = g_coordPool.m_freeHead;
                         g_coordPool.m_freeHead = n2;
-                        prev = n2;
                     }
                 }
                 m_31c.RemoveAll();

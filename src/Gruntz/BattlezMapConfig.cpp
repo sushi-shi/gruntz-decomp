@@ -1714,15 +1714,13 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         GruntCoordNode* n = unit->CoordHead();
                         if (n != 0) {
                             do {
-                                CoordPoolNode* h = g_coordPool.m_freeHead;
                                 GruntCoordNode* cur = n;
                                 n = n->m_next;
                                 if (cur->m_coord != 0) {
                                     CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
-                                    node->m_next = h;
-                                    h = node;
+                                    node->m_next = g_coordPool.m_freeHead;
+                                    g_coordPool.m_freeHead = node;
                                 }
-                                g_coordPool.m_freeHead = h;
                             } while (n != 0);
                         }
                         unit->m_31c.RemoveAll();
@@ -5709,16 +5707,14 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(CGrunt* unit) {
         if (unit->CoordCount() != 0) {
             GruntCoordNode* n = unit->CoordHead();
             if (n != 0) {
-                CoordPoolNode* head = g_coordPool.m_freeHead;
                 do {
                     GruntCoordNode* cur = n;
                     n = n->m_next;
                     void* coord = cur->m_coord;
                     if (coord != 0) {
                         CoordPoolNode* slot = g_coordPool.NodeOf(coord);
-                        slot->m_next = head;
-                        head = slot;
-                        g_coordPool.m_freeHead = head;
+                        slot->m_next = g_coordPool.m_freeHead;
+                        g_coordPool.m_freeHead = slot;
                     }
                 } while (n != 0);
             }
@@ -6065,16 +6061,17 @@ void CGrunt::RecycleCoords() {
     }
     GruntCoordNode* n = CoordHead();
     if (n != 0) {
-        CoordPoolNode* head = g_coordPool.m_freeHead;
         do {
             GruntCoordNode* cur = n;
             n = n->m_next;
             void* coord = cur->m_coord;
             if (coord != 0) {
+                // no cached local: retail stores the CACHED reg back to g_freeList
+                // (`mov [eax],esi; mov esi,eax; mov ds:g_freeList,esi`); a source-level
+                // `head` local makes cl store the fresh reg instead.
                 CoordPoolNode* slot = g_coordPool.NodeOf(coord);
-                slot->m_next = head;
-                head = slot;
-                g_coordPool.m_freeHead = head;
+                slot->m_next = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = slot;
             }
         } while (n != 0);
     }
