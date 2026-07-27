@@ -2472,9 +2472,7 @@ i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
         node = reinterpret_cast<CSbiFreeNode*>(&head->m_4);
         node->m_0 = a;
         node->m_4 = b;
-        g_coordPool.m_freeHead = reinterpret_cast<CoordPoolNode*>(
-            (reinterpret_cast<CSbiFreeNode*>(g_coordPool.m_freeHead))->m_0
-        );
+        g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
     }
     i32 n = m_ptrPool.GetSize();
     i32 i = 0;

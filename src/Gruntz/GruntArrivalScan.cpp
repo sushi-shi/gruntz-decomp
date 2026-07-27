@@ -665,7 +665,7 @@ i32 CGrunt::WanderStep() {
             if (CoordCount() != 0) {
                 void* node = m_31c.GetHeadPosition();
                 if (node != 0) {
-                    i32 prev = reinterpret_cast<i32>(g_coordPool.m_freeHead);
+                    CoordPoolNode* prev = g_coordPool.m_freeHead;
                     do {
                         void* cur = node;
                         node = *static_cast<void**>(node);
@@ -673,8 +673,8 @@ i32 CGrunt::WanderStep() {
                         if (data != 0) {
                             CoordPoolNode* fslot =
                                 g_coordPool.NodeOf(reinterpret_cast<void*>(data));
-                            fslot->m_next = reinterpret_cast<CoordPoolNode*>(prev);
-                            prev = reinterpret_cast<i32>(fslot);
+                            fslot->m_next = prev;
+                            prev = fslot;
                             g_coordPool.m_freeHead = fslot;
                         }
                     } while (node != 0);
@@ -1126,14 +1126,14 @@ i32 CGrunt::UpdateArrival() {
             SetEntrancePos(1, 1);
             if (this->CoordCount() != 0) {
                 GruntCoordNode* p = this->CoordHead();
-                void* prev = g_coordPool.m_freeHead;
+                CoordPoolNode* prev = g_coordPool.m_freeHead;
                 while (p != 0) {
                     GruntCoordNode* next = p->m_next;
                     GruntCoord** link = &p->m_coord;
                     p = next;
                     if (*link != 0) {
                         CoordPoolNode* n2 = g_coordPool.NodeOf(*link);
-                        n2->m_next = static_cast<CoordPoolNode*>(prev);
+                        n2->m_next = prev;
                         g_coordPool.m_freeHead = n2;
                         prev = n2;
                     }

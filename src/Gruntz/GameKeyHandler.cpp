@@ -355,9 +355,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         if (cur < 0) {
             return 1;
         }
-        CoordPoolNode* node = reinterpret_cast<CoordPoolNode*>(
-            (static_cast<char*>(self->m_488.GetAt(cur)) - g_coordPool.m_linkOffset)
-        );
+        CoordPoolNode* node = g_coordPool.NodeOf(self->m_488.GetAt(cur));
         (reinterpret_cast<CDWordArray*>(&self->m_488))->RemoveAt(cur, 1);
         node->m_next = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
         g_coordPool.m_freeHead = node;

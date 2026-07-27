@@ -443,8 +443,7 @@ void CTriggerMgr::ClearRecords() {
         do {
             CTmNode* cur = n;
             n = n->m_next;
-            CoordPoolNode* slot =
-                reinterpret_cast<CoordPoolNode*>(reinterpret_cast<char*>(cur->m_payload) - bias);
+            CoordPoolNode* slot = g_coordPool.NodeOf(cur->m_payload);
             slot->m_next = static_cast<CoordPoolNode*>(head);
             head = slot;
             g_coordPool.m_freeHead = static_cast<CoordPoolNode*>(head);
