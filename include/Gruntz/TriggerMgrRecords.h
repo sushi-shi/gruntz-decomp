@@ -27,7 +27,7 @@ struct CTmNode {
 };
 SIZE_UNKNOWN();
 
-// MFC's POSITION for a CObList/CPtrList IS the node pointer (see GroupHead).
+// MFC POSITION for a CObList/CPtrList IS the internal node pointer.
 inline CTmNode* TmHead(CObList& list) {
     return reinterpret_cast<CTmNode*>(list.GetHeadPosition());
 }

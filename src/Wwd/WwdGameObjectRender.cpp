@@ -20,7 +20,7 @@
 #include <Wwd/WwdGameObjectFamily.h>   // the CGameObject/A/F/B/C hierarchy
 #include <Gruntz/WwdGameObject.h>      // canonical CWwdGameObject
 #include <DDrawMgr/AnimWorkerObj.h>    // the canonical +0x7c worker (m_notify fire callback)
-#include <DDrawMgr/DDrawChildGroup.h>  // CDDrawGroupNode (the broadcast child-list node)
+#include <DDrawMgr/DDrawChildGroup.h>  // CDDrawChildGroup (the broadcast child list)
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // the CWwdGameObject owner (m_0c) real class
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
 #include <Wwd/WwdGameObjCtor.h>        // CWwdGameObjBaseCtor - the shared 0x15b390 base-object ctor

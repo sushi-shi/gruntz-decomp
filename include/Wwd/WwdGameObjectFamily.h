@@ -389,7 +389,7 @@ SIZE_UNKNOWN();
 
 // The typed m_list iteration declared in <DDrawMgr/DDrawChildGroup.h>: MFC's
 // GetNext yields the base CObject*, so the ONE downcast to the stored child kind
-// lives here (this replaced the CDDrawGroupNode raw-node view of the list).
+// lives here (this replaced the raw-node view of the list).
 inline CGameObject* CDDrawChildGroup::NextChild(POSITION& pos) {
     return static_cast<CGameObject*>(m_list.GetNext(pos));
 }

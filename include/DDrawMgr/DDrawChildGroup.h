@@ -23,24 +23,6 @@ struct CGameObject;
 struct CGameObject;    // <Gruntz/UserLogic.h> (game-side reading of the same object)
 class CWwdGameObjectA; // the created-sprite kind (CreateSprite's product type)
 class CWwdGameObject;  // <Gruntz/WwdGameObject.h> (WWD collection reading)
-struct CDDrawGroupNode {
-    CDDrawGroupNode* m_next; // +0x00
-    CDDrawGroupNode* m_prev; // +0x04  (pPrev; rarely walked)
-    // +0x08  the wide game object (any kind - the item base; the ex m_wwd/m_gameObj
-    // arms were per-view spellings; derived readers downcast).
-    CGameObject* m_obj;
-};
-SIZE_UNKNOWN();
-
-// MFC's POSITION for a CObList/CPtrList IS the node pointer, so the head-node walk
-// is a language-forced pun; keep it at this one seam instead of at every loop head.
-inline CDDrawGroupNode* GroupHead(CObList& list) {
-    return reinterpret_cast<CDDrawGroupNode*>(list.GetHeadPosition());
-}
-inline CDDrawGroupNode* GroupHead(CPtrList& list) {
-    return reinterpret_cast<CDDrawGroupNode*>(list.GetHeadPosition());
-}
-
 // (B)-form re-base 2026-07-22: CDDrawSurfaceMgr::Init constructs this with the
 // CLoadable 3-arg base ctor 0x156cb0 (retail decode), and vtbl 0x5efdc0 slots
 // 5-8 are the CLoadable scheme (IsLoaded/IsReady/Unload/GetClassId 0x10).
@@ -148,14 +130,14 @@ public:
     // is OwnerMgr() == the ex "m_parent" CDDrawSurfaceMgr world root.)
     // +0x10  the REAL CObList (0x1c bytes: vptr, pNodeHead@+0x14, pTail, nCount@+0x1c,
     // free/blocks/blocksize). The intrusive walkers read the head via the inline
-    // GetHeadPosition() (same `mov reg,[this+0x14]` bytes) cast to CDDrawGroupNode
+    // GetHeadPosition() (same `mov reg,[this+0x14]` bytes) as a POSITION
     // (the CNode shape); DrawDebugStats reads GetCount() (inline m_nCount @+0x1c).
     // Was pads + raw m_head/m_count fields; the real member makes ~CDDrawChildGroup
     // emit the retail ~CObList teardown (0x1b5a2b) under its own /GX trylevel.
     CObList m_list;
     // Typed iteration over m_list: MFC's GetNext yields the base CObject*, so the
     // ONE downcast to the child kind lives here instead of at every walk site
-    // (this replaced the CDDrawGroupNode raw-node view of the list internals).
+    // (this replaced the raw-node view of the list internals).
     // (defined inline in <Wwd/WwdGameObjectFamily.h>, where the child kind is complete)
     CGameObject* NextChild(POSITION& pos);
     CGameObject* HeadChild() const;
@@ -163,10 +145,10 @@ public:
     CMapPtrToPtr m_map48; // +0x48  key -> object, serialize/dedup set (the ex GruntObjMap)
     // +0x64  transient list walk cursor (seeded from the list head;
     // CGruntzMapMgr::LoadAttributes footprint pass @0x0810f0).
-    CDDrawGroupNode* m_walkCursor;
+    POSITION m_walkCursor;
     // +0x68  second walk cursor: the battlez spawn-scan pop cursor Drain drains
     // (re-seeded from the list head). Ex the CQueueDrainHost::m_scan view field.
-    CDDrawGroupNode* m_scanCursor;
+    POSITION m_scanCursor;
 
     // Engine-label backlog stub.
     void DrawObjectCounts(); // 0x15a650  per-object debug-count overlay

@@ -64,22 +64,18 @@ static inline Coord** CoordArrayData(CPtrArray& a) {
 }
 
 static inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
-    CDDrawGroupNode* n = GroupHead(list->m_list);
-    list->m_walkCursor = n;
-    if (n == 0) {
+    list->m_walkCursor = list->m_list.GetHeadPosition();
+    if (list->m_walkCursor == 0) {
         return 0;
     }
-    list->m_walkCursor = n->m_next;
-    return n->m_obj;
+    return static_cast<CGameObject*>(list->m_list.GetNext(list->m_walkCursor));
 }
 
 static inline CGameObject* ListGetNext(CDDrawChildGroup* list) {
-    CDDrawGroupNode* n = list->m_walkCursor;
-    if (n == 0) {
+    if (list->m_walkCursor == 0) {
         return 0;
     }
-    list->m_walkCursor = n->m_next;
-    return n->m_obj;
+    return static_cast<CGameObject*>(list->m_list.GetNext(list->m_walkCursor));
 }
 
 // ===========================================================================
@@ -178,8 +174,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     //     cursor idiom on every step. ---
     for (CGameObject* cur = ListGetFirst(mgr->m_world->m_childGroup); cur != 0;
          cur = ListGetNext(mgr->m_world->m_childGroup)) {
-        if (cur->m_7c->m_notify == &CreateGruntCreationPoint
-            && cur->m_124 == id) {
+        if (cur->m_7c->m_notify == &CreateGruntCreationPoint && cur->m_124 == id) {
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             i32* slot = 0;
             if (p->m_next != 0) {
@@ -196,8 +191,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     //     and stop (fall straight into loop 3). ---
     for (CGameObject* cur2 = ListGetFirst(mgr->m_world->m_childGroup); cur2 != 0;
          cur2 = ListGetNext(mgr->m_world->m_childGroup)) {
-        if (cur2->m_7c->m_notify == &CreateExitTrigger
-            && cur2->m_124 == id) {
+        if (cur2->m_7c->m_notify == &CreateExitTrigger && cur2->m_124 == id) {
             m_markerX = cur2->m_screenX / 32;
             m_markerY = cur2->m_screenY / 32;
             break;
@@ -208,8 +202,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     //     (arithmetic floor), and set bit 0x10000 in the matched object's flags. ---
     for (CGameObject* cur3 = ListGetFirst(mgr->m_world->m_childGroup); cur3 != 0;
          cur3 = ListGetNext(mgr->m_world->m_childGroup)) {
-        if (cur3->m_7c->m_notify == &CreateWayPoint
-            && cur3->m_124 == id) {
+        if (cur3->m_7c->m_notify == &CreateWayPoint && cur3->m_124 == id) {
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             i32* slot = 0;
             if (p->m_next != 0) {
@@ -464,66 +457,31 @@ i32 CBattlezMapConfig::StepBoard() {
                     continue;
                 }
                 i32 eq;
-                eq =
-                    (strcmp(
-                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
-                         "I"
-                     )
-                     == 0);
+                eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "I") == 0);
                 if (eq) {
                     continue;
                 }
-                eq =
-                    (strcmp(
-                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
-                         "G"
-                     )
-                     == 0);
+                eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "G") == 0);
                 if (eq) {
                     continue;
                 }
-                eq =
-                    (strcmp(
-                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
-                         "L"
-                     )
-                     == 0);
+                eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "L") == 0);
                 if (eq) {
                     continue;
                 }
-                eq =
-                    (strcmp(
-                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
-                         "P"
-                     )
-                     == 0);
+                eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "P") == 0);
                 if (eq) {
                     continue;
                 }
-                eq =
-                    (strcmp(
-                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
-                         "J"
-                     )
-                     == 0);
+                eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "J") == 0);
                 if (eq) {
                     continue;
                 }
-                eq =
-                    (strcmp(
-                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
-                         "C"
-                     )
-                     == 0);
+                eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "C") == 0);
                 if (eq) {
                     continue;
                 }
-                eq =
-                    (strcmp(
-                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
-                         "R"
-                     )
-                     == 0);
+                eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "R") == 0);
                 if (eq) {
                     continue;
                 }
@@ -763,18 +721,12 @@ i32 CBattlezMapConfig::StepRowUnits() {
         {
             {
                 if (unit != 0) {
-                    if (static_cast<i64>(static_cast<u32>(g_frameTime))
-                            - unit->m_arrivalReroll64
+                    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - unit->m_arrivalReroll64
                         >= unit->m_arrivalRerollWindow64) {
                         winapi_02c140_IntersectRect_PtInRect(unit);
                         if (unit->m_poweredUp != 0) {
                             eq =
-                                (strcmp(
-                                     (*g_typeColl.GetNameRecord(
-                                         unit->m_objAux->m_1c
-                                     )),
-                                     "A"
-                                 )
+                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "A")
                                  == 0);
                             if (eq) {
                                 goto resetEntrance;
@@ -817,37 +769,23 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             && unit->m_deathAnimStarted == 0 && unit->m_entranceActive == 0
                             && unit->m_poweredUp == 0) {
                             eq =
-                                (strcmp(
-                                     (*g_typeColl.GetNameRecord(
-                                         unit->m_objAux->m_1c
-                                     )),
-                                     "I"
-                                 )
+                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "I")
                                  == 0);
                             if (!eq) {
                                 eq =
-                                    (strcmp(
-                                         (*g_typeColl.GetNameRecord(
-                                             unit->m_objAux->m_1c
-                                         )),
-                                         "G"
-                                     )
+                                    (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "G")
                                      == 0);
                                 if (!eq) {
                                     eq =
                                         (strcmp(
-                                             (*g_typeColl.GetNameRecord(
-                                                 unit->m_objAux->m_1c
-                                             )),
+                                             (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                                              "L"
                                          )
                                          == 0);
                                     if (!eq) {
                                         eq =
                                             (strcmp(
-                                                 (*g_typeColl.GetNameRecord(
-                                                     unit->m_objAux->m_1c
-                                                 )),
+                                                 (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                                                  "P"
                                              )
                                              == 0);
@@ -1022,37 +960,23 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         {
                             char ne;
                             ne =
-                                (strcmp(
-                                     (*g_typeColl.GetNameRecord(
-                                         unit->m_objAux->m_1c
-                                     )),
-                                     "C"
-                                 )
+                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "C")
                                  != 0);
                             if (ne) {
                                 ne =
-                                    (strcmp(
-                                         (*g_typeColl.GetNameRecord(
-                                             unit->m_objAux->m_1c
-                                         )),
-                                         "R"
-                                     )
+                                    (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "R")
                                      != 0);
                                 if (ne) {
                                     ne =
                                         (strcmp(
-                                             (*g_typeColl.GetNameRecord(
-                                                 unit->m_objAux->m_1c
-                                             )),
+                                             (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                                              "C"
                                          )
                                          != 0);
                                     if (ne) {
                                         ne =
                                             (strcmp(
-                                                 (*g_typeColl.GetNameRecord(
-                                                     unit->m_objAux->m_1c
-                                                 )),
+                                                 (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                                                  "G"
                                              )
                                              != 0);
@@ -1178,9 +1102,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                 board->m_bounds = clamp;
                                                             }
                                                             board->m_gridW = board->m_bounds.right
-                                                                - board->m_bounds.left;
+                                                                             - board->m_bounds.left;
                                                             board->m_gridH = board->m_bounds.bottom
-                                                                - board->m_bounds.top;
+                                                                             - board->m_bounds.top;
                                                             for (i32 row = rowBeg; row < rowEnd;
                                                                  row++) {
                                                                 CMapMgr* b = m_board;
@@ -1190,8 +1114,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                             < b->m_width
                                                                         && static_cast<u32>(row)
                                                                                < b->m_height) {
-                                                                        if (b->m_rows[row][col]
-                                                                                .m_0
+                                                                        if (b->m_rows[row][col].m_0
                                                                             & 0x1000000) {
                                                                             goto perimSweep;
                                                                         }
@@ -1241,78 +1164,43 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 special = 0;
                             }
                             eq =
-                                (strcmp(
-                                     (*g_typeColl.GetNameRecord(
-                                         unit->m_objAux->m_1c
-                                     )),
-                                     "I"
-                                 )
+                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "I")
                                  == 0);
                             if (eq) {
                                 special = 0;
                             }
                             eq =
-                                (strcmp(
-                                     (*g_typeColl.GetNameRecord(
-                                         unit->m_objAux->m_1c
-                                     )),
-                                     "G"
-                                 )
+                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "G")
                                  == 0);
                             if (eq) {
                                 special = 0;
                             }
                             eq =
-                                (strcmp(
-                                     (*g_typeColl.GetNameRecord(
-                                         unit->m_objAux->m_1c
-                                     )),
-                                     "L"
-                                 )
+                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "L")
                                  == 0);
                             if (eq) {
                                 special = 0;
                             }
                             eq =
-                                (strcmp(
-                                     (*g_typeColl.GetNameRecord(
-                                         unit->m_objAux->m_1c
-                                     )),
-                                     "P"
-                                 )
+                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "P")
                                  == 0);
                             if (eq) {
                                 return 0;
                             }
                             eq =
-                                (strcmp(
-                                     (*g_typeColl.GetNameRecord(
-                                         unit->m_objAux->m_1c
-                                     )),
-                                     "J"
-                                 )
+                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "J")
                                  == 0);
                             if (eq) {
                                 special = 0;
                             }
                             eq =
-                                (strcmp(
-                                     (*g_typeColl.GetNameRecord(
-                                         unit->m_objAux->m_1c
-                                     )),
-                                     "C"
-                                 )
+                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "C")
                                  == 0);
                             if (eq) {
                                 special = 0;
                             }
                             eq =
-                                (strcmp(
-                                     (*g_typeColl.GetNameRecord(
-                                         unit->m_objAux->m_1c
-                                     )),
-                                     "R"
-                                 )
+                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "R")
                                  == 0);
                             if (eq) {
                                 special = 0;
@@ -1333,37 +1221,23 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             && unit->m_deathAnimStarted == 0 && unit->m_entranceActive == 0
                             && unit->m_poweredUp == 0) {
                             eq =
-                                (strcmp(
-                                     (*g_typeColl.GetNameRecord(
-                                         unit->m_objAux->m_1c
-                                     )),
-                                     "I"
-                                 )
+                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "I")
                                  == 0);
                             if (!eq) {
                                 eq =
-                                    (strcmp(
-                                         (*g_typeColl.GetNameRecord(
-                                             unit->m_objAux->m_1c
-                                         )),
-                                         "G"
-                                     )
+                                    (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "G")
                                      == 0);
                                 if (!eq) {
                                     eq =
                                         (strcmp(
-                                             (*g_typeColl.GetNameRecord(
-                                                 unit->m_objAux->m_1c
-                                             )),
+                                             (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                                              "L"
                                          )
                                          == 0);
                                     if (!eq) {
                                         eq =
                                             (strcmp(
-                                                 (*g_typeColl.GetNameRecord(
-                                                     unit->m_objAux->m_1c
-                                                 )),
+                                                 (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                                                  "P"
                                              )
                                              == 0);
@@ -1449,47 +1323,26 @@ i32 CBattlezMapConfig::StepRowUnits() {
                     if (unit->m_entranceCommitted != 0 && unit->m_deathAnimStarted == 0
                         && unit->m_entranceActive == 0 && unit->m_poweredUp == 0) {
                         char ne;
-                        ne =
-                            (strcmp(
-                                 (*g_typeColl.GetNameRecord(
-                                     unit->m_objAux->m_1c
-                                 )),
-                                 "I"
-                             )
-                             != 0);
+                        ne = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "I") != 0);
                         if (ne) {
                             ne =
-                                (strcmp(
-                                     (*g_typeColl.GetNameRecord(
-                                         unit->m_objAux->m_1c
-                                     )),
-                                     "G"
-                                 )
+                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "G")
                                  != 0);
                             if (ne) {
                                 ne =
-                                    (strcmp(
-                                         (*g_typeColl.GetNameRecord(
-                                             unit->m_objAux->m_1c
-                                         )),
-                                         "L"
-                                     )
+                                    (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "L")
                                      != 0);
                                 if (ne) {
                                     ne =
                                         (strcmp(
-                                             (*g_typeColl.GetNameRecord(
-                                                 unit->m_objAux->m_1c
-                                             )),
+                                             (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                                              "P"
                                          )
                                          != 0);
                                     if (ne) {
                                         ne =
                                             (strcmp(
-                                                 (*g_typeColl.GetNameRecord(
-                                                     unit->m_objAux->m_1c
-                                                 )),
+                                                 (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                                                  "J"
                                              )
                                              != 0);
@@ -1533,61 +1386,30 @@ i32 CBattlezMapConfig::StepRowUnits() {
                 && unit->m_lastTilePxY == unit->m_object->m_screenY
                 && unit->m_entranceCommitted != 0 && unit->m_deathAnimStarted == 0
                 && unit->m_entranceActive == 0 && unit->m_poweredUp == 0) {
-                eq =
-                    (strcmp(
-                         (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
-                         "I"
-                     )
-                     == 0);
+                eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "I") == 0);
                 if (!eq) {
-                    eq =
-                        (strcmp(
-                             (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
-                             "G"
-                         )
-                         == 0);
+                    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "G") == 0);
                     if (!eq) {
-                        eq =
-                            (strcmp(
-                                 (*g_typeColl.GetNameRecord(
-                                     unit->m_objAux->m_1c
-                                 )),
-                                 "L"
-                             )
-                             == 0);
+                        eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "L") == 0);
                         if (!eq) {
                             eq =
-                                (strcmp(
-                                     (*g_typeColl.GetNameRecord(
-                                         unit->m_objAux->m_1c
-                                     )),
-                                     "P"
-                                 )
+                                (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "P")
                                  == 0);
                             if (!eq) {
                                 eq =
-                                    (strcmp(
-                                         (*g_typeColl.GetNameRecord(
-                                             unit->m_objAux->m_1c
-                                         )),
-                                         "J"
-                                     )
+                                    (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "J")
                                      == 0);
                                 if (!eq) {
                                     eq =
                                         (strcmp(
-                                             (*g_typeColl.GetNameRecord(
-                                                 unit->m_objAux->m_1c
-                                             )),
+                                             (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                                              "C"
                                          )
                                          == 0);
                                     if (!eq) {
                                         eq =
                                             (strcmp(
-                                                 (*g_typeColl.GetNameRecord(
-                                                     unit->m_objAux->m_1c
-                                                 )),
+                                                 (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
                                                  "R"
                                              )
                                              == 0);
@@ -1624,14 +1446,11 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                             POINT pt;
                                                                             pt.x = o->m_object
                                                                                        ->m_screenX
-                                                                                >> 5;
+                                                                                   >> 5;
                                                                             pt.y = o->m_object
                                                                                        ->m_screenY
-                                                                                >> 5;
-                                                                            if (PtInRect(
-                                                                                    &spell,
-                                                                                    pt
-                                                                                )
+                                                                                   >> 5;
+                                                                            if (PtInRect(&spell, pt)
                                                                                 != 0) {
                                                                                 goto spellHit;
                                                                             }
@@ -1665,8 +1484,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                         ResolveArrival(unit);
                                                     }
                                                 }
-                                                if (unit->m_object->m_screenX
-                                                        == unit->m_lastTilePxX
+                                                if (unit->m_object->m_screenX == unit->m_lastTilePxX
                                                     && unit->m_object->m_screenY
                                                            == unit->m_lastTilePxY
                                                     && unit->m_entranceCommitted != 0
@@ -1713,7 +1531,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                         (strcmp(
                                                                              (*g_typeColl
                                                                                    .GetNameRecord(
-                                                                                       unit->m_objAux->m_1c
+                                                                                       unit->m_objAux
+                                                                                           ->m_1c
                                                                                    )),
                                                                              "J"
                                                                          )
@@ -1723,7 +1542,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                             (strcmp(
                                                                                  (*g_typeColl
                                                                                        .GetNameRecord(
-                                                                                           unit->m_objAux->m_1c
+                                                                                           unit->m_objAux
+                                                                                               ->m_1c
                                                                                        )),
                                                                                  "C"
                                                                              )
@@ -1731,10 +1551,10 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                         if (!eq) {
                                                                             eq =
                                                                                 (strcmp(
-                                                                                     (*g_typeColl
-                                                                                           .GetNameRecord(
-                                                                                               unit->m_objAux->m_1c
-                                                                                           )),
+                                                                                     (*g_typeColl.GetNameRecord(
+                                                                                         unit->m_objAux
+                                                                                             ->m_1c
+                                                                                     )),
                                                                                      "R"
                                                                                  )
                                                                                  == 0);
@@ -1822,12 +1642,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
             }
         }
         if (unit->CoordCount() != 0) {
-            eq =
-                (strcmp(
-                     (*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)),
-                     "A"
-                 )
-                 == 0);
+            eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "A") == 0);
             if (eq) {
                 GruntCoord* gc = (unit->CoordHead())->m_coord;
                 i32 gx = gc->m_x;
@@ -2388,8 +2203,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 }
                 return 0;
             }
-            if (PathCrossesMarkedTile(unit) == 0
-                && unit->m_defenderState == 7) {
+            if (PathCrossesMarkedTile(unit) == 0 && unit->m_defenderState == 7) {
                 GruntCoordNode* head = unit->CoordHead();
                 if (head != 0) {
                     GruntCoordNode* n = head->m_next;
@@ -2870,28 +2684,23 @@ i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(CGrunt* unit, CGrunt* tgt) {
         return 0;
     }
     bool eq;
-    eq =
-        (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "J") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "J") == 0);
     if (eq) {
         return 0;
     }
-    eq =
-        (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "C") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "C") == 0);
     if (eq) {
         return 0;
     }
-    eq =
-        (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "R") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "R") == 0);
     if (eq) {
         return 0;
     }
-    eq =
-        (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "G") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "G") == 0);
     if (eq) {
         return 0;
     }
-    eq =
-        (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "L") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "L") == 0);
     if (eq) {
         return 0;
     }
@@ -3207,7 +3016,7 @@ i32 CBattlezMapConfig::Deserialize(void* arArg) {
 }
 
 RVA(0x0002bfc0, 0x8a)
-i32 CBattlezMapConfig::SerializeState(CFileMemBase * objArg, i32 kindArg, i32, i32) {
+i32 CBattlezMapConfig::SerializeState(CFileMemBase* objArg, i32 kindArg, i32, i32) {
     CFileMemBase* obj = objArg;
     i32 kind = kindArg;
     switch (kind) {
@@ -3322,11 +3131,10 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(CGrunt* unit) {
     board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     // Iterate the scene collection for kind-matching units inside the box.
     CDDrawChildGroup* coll = m_ctx->m_world->m_childGroup;
-    coll->m_scanCursor = GroupHead(coll->m_list);
+    coll->m_scanCursor = coll->m_list.GetHeadPosition();
     CGameObject* g = static_cast<CGameObject*>(coll->Drain());
     while (g != 0) {
-        if (g->m_7c->m_notify == &CreateInGameIcon
-            && (g->m_stateFlags & 1) == 0) {
+        if (g->m_7c->m_notify == &CreateInGameIcon && (g->m_stateFlags & 1) == 0) {
             i32 special = 0;
             switch (g->m_124) {
                 case 0x33:
@@ -3409,9 +3217,10 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(CGrunt* unit) {
         CDDrawChildGroup* c = m_ctx->m_world->m_childGroup;
         g = 0;
         if (c->m_scanCursor != 0) {
-            CDDrawGroupNode* nd = c->m_scanCursor;
-            c->m_scanCursor = nd->m_next;
-            CGameObject* pp = nd->m_obj;
+            // the inlined Drain copy: retail reads the cursor twice here (peek then
+            // advance), unlike Drain itself - GetAt + GetNext, measured +0.4%
+            CGameObject* pp = static_cast<CGameObject*>(c->m_list.GetAt(c->m_scanCursor));
+            c->m_list.GetNext(c->m_scanCursor);
             if (pp->GetClassId() == CLASSID_SERIALREF) {
                 g = pp;
             } else {
@@ -4206,28 +4015,23 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(CGrunt* unit) {
                 continue;
             }
             bool ne;
-            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_1c)), "C")
-                 != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_1c)), "C") != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_1c)), "R")
-                 != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_1c)), "R") != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_1c)), "J")
-                 != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_1c)), "J") != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_1c)), "G")
-                 != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_1c)), "G") != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_1c)), "L")
-                 != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord(u->m_objAux->m_1c)), "L") != 0;
             if (!ne) {
                 continue;
             }
@@ -4315,8 +4119,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(CGrunt* unit) {
     }
     Coord bc;
     (static_cast<CUserLogic*>(best))->GetScreenPos((&bc));
-    if (RouteUnitTo(unit, bc.m_x >> 5, bc.m_y >> 5, 0x1000d8f, flags, 1)
-        == 0) {
+    if (RouteUnitTo(unit, bc.m_x >> 5, bc.m_y >> 5, 0x1000d8f, flags, 1) == 0) {
         // Re-path failed: re-clamp the board dirty-rect, clear the cooldown, ret 0.
         RECT fb;
         fb.left = 0;
@@ -4350,8 +4153,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(CGrunt* unit) {
             CGameObject* lvl = unit->m_object;
             // On-screen test against the main plane's tile origin/extent quad
             // (+0x40..+0x4c), overlaid as a RECT (the sanctioned int-quad read).
-            RECT* hit =
-                &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+            RECT* hit = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
             if (lvl->m_screenX < hit->right && lvl->m_screenX >= hit->left
                 && lvl->m_screenY < hit->bottom && lvl->m_screenY >= hit->top) {
                 (static_cast<CGruntSpawnConfig*>(static_cast<void*>(g_gameReg->m_cueSink)))
@@ -4584,8 +4386,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                                     }
                                     unit->m_31c.RemoveAll();
                                 }
-                                GruntCoordNode* p =
-                                    CoordHeadOf(list);
+                                GruntCoordNode* p = CoordHeadOf(list);
                                 while (p != 0) {
                                     GruntCoordNode* cur = p;
                                     p = p->m_next;
@@ -4653,8 +4454,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     // setcc'd bool (the `bool eq` local, not the inline neg/sbb form) - see
     // docs/patterns/strcmp-eq-bool-local-setcc.md.
     bool eq;
-    eq =
-        (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "I") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "I") == 0);
     if (eq) {
         return 0;
     }
@@ -6054,8 +5854,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(CGrunt* unit) {
             // +0xf8 is m_0f0 (a CPtrArray at +0x0f0) plus 8 == MFC's m_nSize
             if (bundle->m_0f0.GetSize() != 0) {
                 Coord out;
-                Coord* r =
-                    static_cast<Coord*>(PickSpawnCoord(&out, unit, band));
+                Coord* r = static_cast<Coord*>(PickSpawnCoord(&out, unit, band));
                 x = r->m_x;
                 y = r->m_y;
             } else {
@@ -6299,18 +6098,15 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     // result is materialized as a bool (setcc form) - see
     // docs/patterns/return-bool-via-local-setcc.md.
     i32 eq;
-    eq =
-        (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "I") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "I") == 0);
     if (eq) {
         return 0;
     }
-    eq =
-        (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "G") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "G") == 0);
     if (eq) {
         return 0;
     }
-    eq =
-        (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "L") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_1c)), "L") == 0);
     if (eq) {
         return 0;
     }

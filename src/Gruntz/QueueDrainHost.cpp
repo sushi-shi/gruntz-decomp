@@ -13,9 +13,7 @@ CGameObject* CDDrawChildGroup::Drain() {
         if (m_scanCursor == 0) {
             return 0;
         }
-        CDDrawGroupNode* head = m_scanCursor;
-        m_scanCursor = head->m_next;
-        CGameObject* data = head->m_obj;
+        CGameObject* data = static_cast<CGameObject*>(m_list.GetNext(m_scanCursor));
         if (data->GetClassId() == CLASSID_SERIALREF) {
             return data;
         }

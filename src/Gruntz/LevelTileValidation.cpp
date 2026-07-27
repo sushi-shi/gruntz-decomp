@@ -46,7 +46,7 @@
 #include <Gruntz/Play.h>              // ::CPlay - the REAL class of this TU's CLevelValidator view
 #include <Gruntz/GruntzMgr.h>         // ::CGruntzMgr - the RTTI-true *0x24556c singleton AND
 #include <Gruntz/UserLogic.h>         // CGameObject + AnimWorkerObj - the objects being validated
-#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup + CDDrawGroupNode - the live-object list
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup - the live-object list
 #include <Gruntz/GameLevel.h> // CGameLevel - the +0x24 level (image sets @+0x48, plane @+0x5c)
 #include <Gruntz/ImageSets.h> // CImageSet1 - the tile-attrib class (GetCollisionAt, slot 8)
 #include <Wwd/WwdFile.h>      // CDDrawWorkerHost - the canonical plane (tile grid + transform)

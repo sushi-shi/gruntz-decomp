@@ -27,7 +27,7 @@
 #include <Wap32/Object.h>             // CObject grand-base (CWwdGridShell's base)
 #include <Gruntz/UserLogic.h>         // canonical CGameObject (the movement target)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (the chain owner)
-#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup/CDDrawGroupNode (the object chain)
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (the object chain)
 #include <rva.h>
 
 VTBL(CWwdGridShell, 0x001f0310); // ??_7CWwdGridShell (was g_subVtbl_5f0310)

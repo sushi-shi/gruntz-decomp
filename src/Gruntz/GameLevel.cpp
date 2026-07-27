@@ -7,7 +7,7 @@
 #include <Gruntz/ParseSource.h>       // canonical CParseSource (BeginParse/EndParse)
 #include <Gruntz/UserLogic.h>         // canonical CGameObject (the movement target)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the m_0c world root (the chain owner)
-#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup/CDDrawGroupNode (the object chain)
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (the object chain)
 #include <Io/FileStream.h>            // CFile (Open/Read/GetLength/ctor/dtor reloc-masked)
 #include <Gruntz/ImageSets.h>         // CImageSet1/2/3 variant records + RezAlloc/RezFree
 #include <DDrawMgr/DDrawWorkerHost.h> // the REAL plane class (CDDrawWorkerHost == CDDrawWorkerHost)

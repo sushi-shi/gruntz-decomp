@@ -42,7 +42,7 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/UserLogic.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h> // g_gameReg->m_world (the world root)
-#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup/CDDrawGroupNode (the object chain)
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (the object chain)
 #include <Wap32/ZVec.h> // zDArray<member-fn-ptr> dispatch table + the shared registration infra
 #include <Gruntz/LogicFnTable.h>   // the shared CActReg dispatch-table shape
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)

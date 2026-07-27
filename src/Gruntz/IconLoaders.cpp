@@ -3,7 +3,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/String.h>
-#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup + CDDrawGroupNode shape
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup shape
 #include <Gruntz/UserLogic.h>         // CGameObject (the created sprite) + AnimWorkerObj
 #include <Gruntz/PickupType.h>        // the shared object/pickup/grunt-kind type id space
 #include <Bute/ButeMgr.h>

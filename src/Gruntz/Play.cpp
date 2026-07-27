@@ -67,16 +67,12 @@
 #include <string.h> // inlined memset / strcpy in Serialize (rep stos / rep movs)
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
+#include <Utils/MapTyped.h>      // typed MFC map lookups (the forced void*& pun at one boundary)
 inline void* operator new(u32, void* p) {
     return p;
 }
 
-
-
-
 class CImage;
-
 
 typedef enum {
     CUE_INTERVAL_MS = 0x1f4,           // 500 ms  ambient/win-lose cue toggle
@@ -169,7 +165,6 @@ typedef enum {
     CURSOR_TOOL_SQUEAKTOYZ = 0xe7,
     CURSOR_TOOL_YOYOZ = 0xe8
 } ToolCursorId;
-
 
 // ===========================================================================
 // CPlay::FrameSlot28  (vtable slot 10 / +0x28) - the HUD status/pause overlay.
@@ -280,8 +275,8 @@ i32 CPlay::Render() {
             m_world->m_soundStream->PurgeVoiceList(t);  // 0x136e20 (thiscall, SoundDevice base)
             m_world->m_soundStream->TickSubManagers(t); // 0x137ac0 (thiscall)
         }
-        m_beginMarker->FilterList2(g_frameDelta); // 0x2cc0  begin-marker
-        m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));  // 0x34bd  guts step
+        m_beginMarker->FilterList2(g_frameDelta);                         // 0x2cc0  begin-marker
+        m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta)); // 0x34bd  guts step
 
         // --- periodic AMBIENT-cue timer (+0x3f8, 0x1f4 ms; toggles m_cueToggle) ---
         {
@@ -302,15 +297,15 @@ i32 CPlay::Render() {
             return 1; // no view -> bail
         }
 
-        m_frameMarker->Tick(static_cast<i32>(g_frameDelta));    // 0x3710  CTimer::Tick
+        m_frameMarker->Tick(static_cast<i32>(g_frameDelta)); // 0x3710  CTimer::Tick
         m_frameMarker->Draw(
             static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair),
             1
-        ); // 0x27a2  CTimer::Draw
-        m_world->m_drawTarget->m_frontPair->m_surface->Flip(0); // 0x13e850  CDDSurface::Flip
-        UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);      // 0x2356
+        );                                                         // 0x27a2  CTimer::Draw
+        m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);    // 0x13e850  CDDSurface::Flip
+        UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);         // 0x2356
         winapi_0d0b30_CopyRect(m_world->m_drawTarget->m_backPair); // 0x1519
-        return 1; // -> draw tail
+        return 1;                                                  // -> draw tail
     }
 
     // m_inGame == 0
@@ -678,8 +673,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     // TWO locals, not one 0xb4 blob: the name string ([esp+0x38]) and the zeroed
     // dword scratch handed to LoadWarlordSprites ([esp+0x58]). 0x20 + 0x25*4 == 0xb4,
     // which is the whole of the block the frame reads as one.
-    char nameBuf[0x20];      // [esp+0x38]
-    i32 initScratch[0x25];   // [esp+0x58]
+    char nameBuf[0x20];    // [esp+0x38]
+    i32 initScratch[0x25]; // [esp+0x58]
 
     // ---- 1) reset prior-level scroll/area globals ----
     self->m_hudSuppressed = 1;
@@ -791,11 +786,9 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (set == 0) {
                 goto fail0;
             }
-            CParseSource* ins = (static_cast<CSymTab*>(set))
-                                    ->Insert(
-                                        static_cast<const char*>(self->m_mgr->GetWorldFileName()),
-                                        0
-                                    );
+            CParseSource* ins =
+                (static_cast<CSymTab*>(set))
+                    ->Insert(static_cast<const char*>(self->m_mgr->GetWorldFileName()), 0);
             if (ins == 0) {
                 return 0;
             }
@@ -822,11 +815,9 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (set == 0) {
                 goto fail0;
             }
-            CParseSource* ins = (static_cast<CSymTab*>(set))
-                                    ->Insert(
-                                        static_cast<const char*>(self->m_mgr->GetWorldFileName()),
-                                        0
-                                    );
+            CParseSource* ins =
+                (static_cast<CSymTab*>(set))
+                    ->Insert(static_cast<const char*>(self->m_mgr->GetWorldFileName()), 0);
             if (ins == 0) {
                 return 0;
             }
@@ -1090,8 +1081,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             goto fail0;
         }
     }
-    if (!(static_cast<CMapMgr*>(self->m_mgr->m_tileGrid))
-             ->UpdateDiagonals(self->m_mgr)) {
+    if (!(static_cast<CMapMgr*>(self->m_mgr->m_tileGrid))->UpdateDiagonals(self->m_mgr)) {
         goto fail0;
     }
 
@@ -1149,8 +1139,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (self->m_mgr->m_134 == 3) {
         self->m_mgr->SyncOptionsState(); // 0x2e14, ecx=m_4
     }
-    self->m_mgr->m_saveSink
-        ->FillSlot2(&self->m_saveSlot, self->m_levelIndex, 0);
+    self->m_mgr->m_saveSink->FillSlot2(&self->m_saveSlot, self->m_levelIndex, 0);
     {
         CString key; // [esp+0x18]
         gameReg = g_gameReg;
@@ -1189,11 +1178,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             }
         } else {
             // load the level map + the four map sub-steps
-            if (LoadWarlordSprites(
-                    reinterpret_cast<i32>(savedThis),
-                    initScratch
-                )                                                        /* 0x2b80 */
-                && ScanBuildTiles() /* 0x3553 */ && ValidateLevelTiles() /* 0x345e */
+            if (LoadWarlordSprites(reinterpret_cast<i32>(savedThis), initScratch) /* 0x2b80 */
+                && ScanBuildTiles() /* 0x3553 */ && ValidateLevelTiles()          /* 0x345e */
                 && AddLevelGruntz() /* 0x17ee */) {
                 self->m_world->m_childGroup->TickKillCues(0);
                 self->m_guts->winapi_107d00_SetRect();
@@ -1252,17 +1238,7 @@ okContinue:
         rect.right = 0x280;
         rect.bottom = 0x1e0;
         if (scr.LoadString(0x8128)) {
-            EngStr_DrawText(
-                self->m_world,
-                &scr,
-                &rect,
-                0x78,
-                1,
-                0xff,
-                0xff,
-                0,
-                1
-            );
+            EngStr_DrawText(self->m_world, &scr, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
         }
     } else {
         self->m_hudSuppressed = 1;
@@ -1448,12 +1424,10 @@ i32 CPlay::CountObjectsByCategory(i32 category) {
     if (container == 0) {
         return 0;
     }
-    CDDrawGroupNode* node = GroupHead(*container);
+    POSITION pos = container->GetHeadPosition();
     i32 count = 0;
-    while (node != 0) {
-        CDDrawGroupNode* p = node;
-        node = node->m_next;
-        CGameObject* sprite = p->m_obj;
+    while (pos != 0) {
+        CGameObject* sprite = static_cast<CGameObject*>(container->GetNext(pos));
         if (sprite != 0 && sprite->m_collCategory == static_cast<u32>(category)) {
             count++;
         }
@@ -2232,8 +2206,8 @@ i32 CPlay::NotifyVisibleEntities() {
     CDDrawSurfaceMgr* v = m_world;
     const LevelCoordRect& vp = v->m_level->m_planeCtx; // LevelCoordRect IS tagRECT
     CDDrawSurfacePair* held = v->m_drawTarget->m_backPair;
-    CDDrawGroupNode* node =
-        GroupHead(v->m_childGroup->m_list);
+    CObList& chain = v->m_childGroup->m_list;
+    POSITION pos = chain.GetHeadPosition();
 
     RECT r;
     r.left = vp.left;
@@ -2242,10 +2216,8 @@ i32 CPlay::NotifyVisibleEntities() {
     r.bottom = vp.bottom + 1;
     held->m_surface->Restore(&r, 0);
 
-    while (node != 0) {
-        CDDrawGroupNode* cur = node;
-        node = node->m_next;
-        CGameObject* o = cur->m_obj;
+    while (pos != 0) {
+        CGameObject* o = static_cast<CGameObject*>(chain.GetNext(pos));
         void* id = static_cast<void*>(o->m_7c->m_notify);
         if (id == static_cast<void*>(VisFn_40fe90) || id == static_cast<void*>(VisFn_4bf150)
             || id == static_cast<void*>(VisFn_423b40) || id == static_cast<void*>(VisFn_Roll)
@@ -2279,10 +2251,8 @@ void CPlay::StepScroll() {
     CGameLevel* v = m_world->m_level;
     CDDrawWorkerHost* geom = v->m_mainPlane;
 
-    i32 y =
-        m_cursorY + (geom->m_viewRect.top - v->m_planeCtx.top); // [edx+4]-m_14; +=m_cursorY
-    i32 x = geom->m_viewRect.left
-        + (m_cursorX - v->m_planeCtx.left); // [edx]; +=m_cursorX-m_10
+    i32 y = m_cursorY + (geom->m_viewRect.top - v->m_planeCtx.top);   // [edx+4]-m_14; +=m_cursorY
+    i32 x = geom->m_viewRect.left + (m_cursorX - v->m_planeCtx.left); // [edx]; +=m_cursorX-m_10
 
     y = (y & ~0x1f) + 0x10; // align down 0x20 (and al,0xe0); + 0x10
     x = (x & ~0x1f) + 0x10; // align down 0x20 (and edi,~0x1f); + 0x10
@@ -2362,17 +2332,7 @@ void CPlay::LoadSBITextEdges(char* name) {
     i32 left = l + g_buteMgr.GetInt("Font", "TextLeftEdge");
     SetRect(&rect, left, top, right, bottom);
 
-    EngStr_DrawText(
-        m_world,
-        &s,
-        &rect,
-        0x78,
-        1,
-        0xff,
-        0xff,
-        0,
-        1
-    );
+    EngStr_DrawText(m_world, &s, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
     m_stepCountdown = 2;
 }
 
@@ -2413,17 +2373,7 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
     if (a3 != 0) {
         ShowHudMessageAlt(m_world, &m_cueText, &rect, a2, 1, a4, a5, a6, a7);
     } else {
-        EngStr_DrawText(
-            m_world,
-            &m_cueText,
-            &rect,
-            a2,
-            1,
-            a4,
-            a5,
-            a6,
-            a7
-        );
+        EngStr_DrawText(m_world, &m_cueText, &rect, a2, 1, a4, a5, a6, a7);
     }
 }
 
@@ -2961,50 +2911,10 @@ i32 CPlay::DrawLevelInfoText() {
     SetRect(&r2, 0, 0x2b, 0x280, 0x59);
     SetRect(&r3, 0, 0x176, 0x280, 0x1a2);
     SetRect(&r4, 0, 0x1b8, 0x280, 0x1e0);
-    EngStr_DrawText(
-        m_world,
-        &s0,
-        &r1,
-        0x78,
-        0,
-        0,
-        0,
-        0,
-        1
-    );
-    EngStr_DrawText(
-        m_world,
-        &s1,
-        &r2,
-        0x6e,
-        0,
-        0,
-        0,
-        0,
-        1
-    );
-    EngStr_DrawText(
-        m_world,
-        &s2,
-        &r3,
-        0x6e,
-        0,
-        0,
-        0,
-        0,
-        1
-    );
-    EngStr_DrawText(
-        m_world,
-        &s3,
-        &r4,
-        0x6e,
-        0,
-        0,
-        0,
-        0,
-        1
-    );
+    EngStr_DrawText(m_world, &s0, &r1, 0x78, 0, 0, 0, 0, 1);
+    EngStr_DrawText(m_world, &s1, &r2, 0x6e, 0, 0, 0, 0, 1);
+    EngStr_DrawText(m_world, &s2, &r3, 0x6e, 0, 0, 0, 0, 1);
+    EngStr_DrawText(m_world, &s3, &r4, 0x6e, 0, 0, 0, 0, 1);
     return 1;
 }
 
@@ -3163,8 +3073,6 @@ i32 CPlay::PostHudRect() {
     m_dragSnapActive = 0;
     return 1;
 }
-
-
 
 // ===========================================================================
 // GruntzPlayer::GruntzPlayer()  (0x0da790) - THE default constructor
@@ -3361,7 +3269,12 @@ i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
     LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = ::SendMessageA;
     pSend(cb, 0x14b, 0, 0);
     for (i32 i = 0; i < 3; i++) {
-        pSend(cb, 0x143, 0, reinterpret_cast<LPARAM>(static_cast<const char*>(GetDifficultyName(i, 0))));
+        pSend(
+            cb,
+            0x143,
+            0,
+            reinterpret_cast<LPARAM>(static_cast<const char*>(GetDifficultyName(i, 0)))
+        );
     }
     if (curSel >= 0) {
         pSend(cb, 0x14e, curSel, 0);
@@ -3414,9 +3327,7 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, i32 kind, i32 a3, i32 a4) {
         ar->Write(&m_focusY, 4);
         ar->Write(&m_comboSel, 4);
     }
-    return (static_cast<CBattlezMapConfig*>(&m_038))
-               ->SerializeState(ar, kind, a3, a4)
-           != 0;
+    return (static_cast<CBattlezMapConfig*>(&m_038))->SerializeState(ar, kind, a3, a4) != 0;
 }
 
 RVA(0x000dafb0, 0x71)
@@ -3627,11 +3538,8 @@ i32 CPlay::Vslot10(i32 msg, i32 x, i32 y) {
         CDDrawSubMgrLeafScan* set = m_mgr->m_world->m_soundRegistry;
         if (set->m_emitGate == 0) {
             LeafCue* e = 0;
-            MapLookup(
-                set->m_10,
-                "GAME_TABHIGHLIGHT1",
-                e
-            ); // Ptr map out-param idiom
+            MapLookup(set->m_10, "GAME_TABHIGHLIGHT1",
+                      e); // Ptr map out-param idiom
             if (e != 0) {
                 e->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
             }
@@ -4299,8 +4207,7 @@ drag_box: {
             slot = cg->m_grid[sel[1] * 15 + sel[0]];
         }
         if (slot != 0 && slot->m_entranceCommitted != 0) {
-            g_gameReg->m_cueSink
-                ->SpawnVoiceDriver(slot, 0x324, -1, 0, -1, -1);
+            g_gameReg->m_cueSink->SpawnVoiceDriver(slot, 0x324, -1, 0, -1, -1);
         }
     }
     LoadCursorSprites(0, 0);
@@ -4443,7 +4350,7 @@ i32 CPlay::Vslot11(i32 a, i32 x, i32 y) {
 // @source: winapi:CopyRect
 // @stub
 RVA(0x000d0b30, 0x200)
-i32 CPlay::winapi_0d0b30_CopyRect(CDDrawSurfacePair * ) {
+i32 CPlay::winapi_0d0b30_CopyRect(CDDrawSurfacePair*) {
     return 0;
 }
 
@@ -5182,7 +5089,6 @@ i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
     return BuildAssetNamespacePrefixes(name, a2, a3, a4);
 }
 
-
 RVA(0x000cffe0, 0x3c)
 i32 CPlay::LoadImageBanks() {
     CPlay* self = this;
@@ -5524,17 +5430,7 @@ i32 CState::BuildAssetNamespacePrefixes(
                 RECT r = *(&g_gameReg->m_world->m_level->m_planeCtx);
                 RECT r2;
                 CopyRect(&r2, &r);
-                EngStr_DrawText(
-                    g_gameReg->m_world,
-                    &cs,
-                    &r2,
-                    0x82,
-                    1,
-                    0xff,
-                    0xff,
-                    0,
-                    1
-                );
+                EngStr_DrawText(g_gameReg->m_world, &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
             }
             g_resourceInstallActive = 1;
             void* tree = m_gruntzBank->ResolvePath("IMAGEZ_" + name);
@@ -5945,7 +5841,6 @@ i32 CPlay::ResetPlayState() {
     return 1;
 }
 
-
 DATA(0x002455f0)
 i32 g_levelBias100 = 0;
 
@@ -6234,11 +6129,10 @@ finish:
 // the 13-arg AddGrunt + CString-temp EH frame keep it reloc-fuzzy.
 RVA(0x000d5960, 0x160)
 i32 CPlay::AddLevelGruntz() {
-    CDDrawGroupNode* node =
-        GroupHead(m_world->m_childGroup->m_list);
-    while (node != 0) {
-        CGameObject* g = node->m_obj;
-        node = node->m_next;
+    CObList& chain = m_world->m_childGroup->m_list;
+    POSITION pos = chain.GetHeadPosition();
+    while (pos != 0) {
+        CGameObject* g = static_cast<CGameObject*>(chain.GetNext(pos));
         if (g == 0) {
             continue;
         }
@@ -6413,11 +6307,10 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
     if (!head) {
         return 0;
     }
-    CDDrawGroupNode* node =
-        GroupHead(this->m_world->m_childGroup->m_list);
-    while (node) {
-        CGameObject* obj = node->m_obj;
-        CDDrawGroupNode* nxt = node->m_next;
+    CObList& chain = this->m_world->m_childGroup->m_list;
+    POSITION pos = chain.GetHeadPosition();
+    while (pos != 0) {
+        CGameObject* obj = static_cast<CGameObject*>(chain.GetNext(pos));
         if (obj) {
             void* marker = static_cast<void*>(obj->m_7c->m_notify);
             if (marker == static_cast<void*>(CreateGruntStartingPoint)) {
@@ -6608,7 +6501,6 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                 }
             }
         }
-        node = nxt;
     }
     return 1;
 }
@@ -6726,38 +6618,22 @@ i32 CPlay::SetEffectSpriteDurations() {
         d->m_18 = 100;
     }
     d = 0;
-    MapLookup(
-        m_world->m_soundRegistry->m_10,
-        "GRUNTZ_DEATHZ_DEATHZFREEZE1A",
-        d
-    );
+    MapLookup(m_world->m_soundRegistry->m_10, "GRUNTZ_DEATHZ_DEATHZFREEZE1A", d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    MapLookup(
-        m_world->m_soundRegistry->m_10,
-        "GRUNTZ_DEATHZ_DEATHZFREEZE2A",
-        d
-    );
+    MapLookup(m_world->m_soundRegistry->m_10, "GRUNTZ_DEATHZ_DEATHZFREEZE2A", d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    MapLookup(
-        m_world->m_soundRegistry->m_10,
-        "GRUNTZ_DEATHZ_DEATHZUNFREEZE1A",
-        d
-    );
+    MapLookup(m_world->m_soundRegistry->m_10, "GRUNTZ_DEATHZ_DEATHZUNFREEZE1A", d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    MapLookup(
-        m_world->m_soundRegistry->m_10,
-        "GRUNTZ_DEATHZ_DEATHZUNFREEZE1A",
-        d
-    );
+    MapLookup(m_world->m_soundRegistry->m_10, "GRUNTZ_DEATHZ_DEATHZUNFREEZE1A", d);
     if (d != 0) {
         d->m_18 = 100;
     }
@@ -6767,11 +6643,7 @@ i32 CPlay::SetEffectSpriteDurations() {
         d->m_18 = 100;
     }
     d = 0;
-    MapLookup(
-        m_world->m_soundRegistry->m_10,
-        "GRUNTZ_DEATHZ_DEATHZSQUASH1A",
-        d
-    );
+    MapLookup(m_world->m_soundRegistry->m_10, "GRUNTZ_DEATHZ_DEATHZSQUASH1A", d);
     if (d != 0) {
         d->m_18 = 100;
     }
@@ -6786,38 +6658,22 @@ i32 CPlay::SetEffectSpriteDurations() {
         d->m_18 = 3000;
     }
     d = 0;
-    MapLookup(
-        m_world->m_soundRegistry->m_10,
-        "GRUNTZ_DEATHZ_DEATHZELECTROCUTE1A",
-        d
-    );
+    MapLookup(m_world->m_soundRegistry->m_10, "GRUNTZ_DEATHZ_DEATHZELECTROCUTE1A", d);
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    MapLookup(
-        m_world->m_soundRegistry->m_10,
-        "GRUNTZ_NERFGUNGRUNT_NERFGUNZGRUNTP1AS1",
-        d
-    );
+    MapLookup(m_world->m_soundRegistry->m_10, "GRUNTZ_NERFGUNGRUNT_NERFGUNZGRUNTP1AS1", d);
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    MapLookup(
-        m_world->m_soundRegistry->m_10,
-        "GRUNTZ_GUNHATGRUNT_GUNHATGRUNTP1AS1",
-        d
-    );
+    MapLookup(m_world->m_soundRegistry->m_10, "GRUNTZ_GUNHATGRUNT_GUNHATGRUNTP1AS1", d);
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    MapLookup(
-        m_world->m_soundRegistry->m_10,
-        "GRUNTZ_WELDERGRUNT_WELDERZGRUNTP1AS1",
-        d
-    );
+    MapLookup(m_world->m_soundRegistry->m_10, "GRUNTZ_WELDERGRUNT_WELDERZGRUNTP1AS1", d);
     if (d != 0) {
         d->m_18 = 1000;
     }

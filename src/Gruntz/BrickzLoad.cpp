@@ -6,7 +6,7 @@
 #include <Gruntz/GruntzMapMgr.h>      // CGruntzMapMgr : CMapMgr (the +0x70 grid container)
 #include <Gruntz/Brickz.h>            // BrickzCell (the 0x1c-byte grid cell)
 #include <Gruntz/GameRegistry.h>      // CGameRegistry (*0x64556c); m_world == CDDrawSurfaceMgr
-#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (object mgr) + CDDrawGroupNode (live list)
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (object mgr + live list)
 #include <Gruntz/UserLogic.h>    // CGameObject (walked sprite) + AnimWorkerObj (m_7c) + g_buteMgr
 #include <Gruntz/GameLevel.h>    // CGameLevel (m_world->m_level; m_mainPlane @+0x5c)
 #include <Wwd/WwdFile.h>         // CDDrawWorkerHost - the raw tile-grid facet of the main plane
@@ -323,12 +323,10 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     // Freelist-recycle pass: for each moving object of the footprint kind, seed a
     // 3x3 footprint of recycled free nodes, then commit them into the grid.
     CDDrawChildGroup* mgr = g_gameReg->m_world->m_childGroup;
-    mgr->m_walkCursor = GroupHead(mgr->m_list);
+    mgr->m_walkCursor = mgr->m_list.GetHeadPosition();
     CGameObject* obj;
     if (mgr->m_walkCursor != 0) {
-        CDDrawGroupNode* n = mgr->m_walkCursor;
-        mgr->m_walkCursor = n->m_next;
-        obj = n->m_obj;
+        obj = static_cast<CGameObject*>(mgr->m_list.GetNext(mgr->m_walkCursor));
     } else {
         obj = 0;
     }
@@ -371,9 +369,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
             m_arr.SetSize(0, -1);
         }
         if (mgr->m_walkCursor != 0) {
-            CDDrawGroupNode* n = mgr->m_walkCursor;
-            mgr->m_walkCursor = n->m_next;
-            obj = n->m_obj;
+            obj = static_cast<CGameObject*>(mgr->m_list.GetNext(mgr->m_walkCursor));
         } else {
             obj = 0;
         }

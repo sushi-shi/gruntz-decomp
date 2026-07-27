@@ -14,7 +14,7 @@
 #include <afxwin.h>
 #include <new>
 #include <Gruntz/LeafCue.h>
-#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup/CDDrawGroupNode (m_world->m_childGroup live-object list)
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup (m_world->m_childGroup live-object list)
 #include <Gruntz/UserLogic.h> // CGameObject (the scanned live objects: m_screenX/Y, m_collCategory)
 #include <Image/CImage.h>     // the "Gruntz" set's frames the cheats read ARE CImages
 #include <DDrawMgr/DDrawShadeBlit.h> // CImage::m_owned - the shaded sprite the cheats retype/relight
