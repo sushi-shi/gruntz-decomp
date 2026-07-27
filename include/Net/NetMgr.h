@@ -721,7 +721,7 @@ public:
     //          (the app GUID by value - 4 dwords, like InitFromProvider)
     CNetPlayerListNode* AddPlayerNode(void* playerDesc); // 0x1786d0  new player node -> +0x38 list
     void PopulatePlayerList(void* hList);                // 0x178790  fill a Win32 player list box
-    i32 EnumPlayersCb(
+    CNetSessionNode* EnumPlayersCb(
         void* a,
         const char* name,
         const char* longName,
@@ -729,13 +729,13 @@ public:
     ); // 0x1789e0  EnumPlayers slot wrapper -> CreatePlayer
     i32 EnumGroupsAll();                       // 0x178a40  EnumGroups (slot 0xc) wrapper
     i32 EnumGroupsRange(void* rec, i32 flags); // 0x178a80  EnumGroups (slot 0xc) over a record
-    i32 AddSessionNode(
+    CNetSessionNode* AddSessionNode(
         i32 id,
         const char* nameA,
         const char* nameB,
         i32 d
     ); // 0x178b30  (/GX) new session node -> InitSession + GetData5 -> +0x54 list
-    i32 CreatePlayer(void* name, const char* longName, i32 c); // 0x178cb0
+    CNetSessionNode* CreatePlayer(void* name, const char* longName, i32 c); // 0x178cb0
     void PopulateSessionList(void* hList);   // 0x178d40  (/GX) fill a Win32 session list box
 
     // The 0xbbxxx / 0xbcxxx connect/config helpers reconstructed in this TU.
@@ -786,7 +786,7 @@ public:
     // VerifyCustomLevel (0xb8fc0, /GX EH): build the level-name rez path from the
     // config name CStrings, run it past the active session (Poll), and pop the
     // appropriate g_gameReg error modal on failure / level mismatch.
-    i32 VerifyCustomLevel(i32 a1, i32 a2); // 0xb8fc0
+    i32 VerifyCustomLevel(void* a1, CNetSessionNode* a2); // 0xb8fc0
 
     // Poll the active session for the verify response (0xbba10, reloc-masked).
     i32 Poll(i32 token); // 0xbba10

@@ -106,11 +106,9 @@ public:
     CNetMgr* Peer() {
         return m_netGate;
     }
-    // The local player descriptor at +0x5bc (the roster/dialog TUs view the slot as an
-    // i32 token, so the canonical member stays i32; this accessor is the typed view).
-    CNetSessionNode* LocalPlayer() {
-        return reinterpret_cast<CNetSessionNode*>(m_5bc);
-    }
+    // The local player descriptor at +0x5bc. Every writer stores a CNetSessionNode*
+    // and the only "token" reader just null-tests it, so the member IS the pointer.
+    CNetSessionNode* LocalPlayer() { return m_5bc; }
     // The game manager again: the net methods historically reached it through a
     // CNetGameMgr facet view - the facet is FOLDED onto CGruntzMgr; same object.
     CGruntzMgr* NetGameMgr() {
@@ -175,7 +173,7 @@ public:
     i32 Poll(i32 token);            // 0x0bba10  (via ILT 0x1249; verify-custom-level poll)
     i32 ResolveLocalPlayer();       // 0x0ba7d0
     void ReportAckLatency();        // 0x0bd000
-    i32 VerifyCustomLevel(void* h, i32 token); // 0x0b8fc0
+    i32 VerifyCustomLevel(void* h, CNetSessionNode* token); // 0x0b8fc0
     i32 PollSession();                         // 0x0b95f0 (drain the receive queue; ret i32)
     i32 AutoTuneCmdDelay(); // 0x0bcc10 (returns int; early 1 / tail WriteCmdDelay)
     // (CPlay::ReleaseResources @0xc8700, the CPlay slot-2 body ex "CPlayDtorBody",
@@ -313,7 +311,7 @@ public:
     i32 m_5b0;               // +0x5b0
     CString m_5b4;           // +0x5b4  config name CString A
     CString m_5b8;           // +0x5b8  config name CString B
-    i32 m_5bc;               // +0x5bc  local player descriptor (typed via LocalPlayer())
+    CNetSessionNode* m_5bc;               // +0x5bc  local player descriptor (typed via LocalPlayer())
     i32 m_hostIndex;         // +0x5c0  (== Frankenstein m_localPlayerId)
     i32 m_lastSenderId;      // +0x5c4
     char _p5c4[0x5cc - 0x5c8];

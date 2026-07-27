@@ -1671,7 +1671,7 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
         Peer()->CreatePlayer(const_cast<char*>("Player"), g_emptyString, 0)
     );
     CNetSessionNode* node = static_cast<CNetSessionNode*>(lp);
-    m_5bc = reinterpret_cast<i32>(node);
+    m_5bc = node;
     if (lp == 0) {
         ReportNetError(0);
         return 0;
@@ -1720,7 +1720,7 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
         ));
     }
     CNetSessionNode* node = static_cast<CNetSessionNode*>(lp);
-    m_5bc = reinterpret_cast<i32>(node);
+    m_5bc = node;
     if (lp == 0) {
         ReportNetError(0);
         return 0;
@@ -1783,7 +1783,7 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
 // CMultiStartDlg::OnOK (0xc4c00, parked ~55%); not source-steerable.
 // See docs/patterns/gx-scoped-local-eh-frame-size.md. Final sweep.
 RVA(0x000b8fc0, 0x151)
-i32 CMulti::VerifyCustomLevel(void* h, i32 playerTok) {
+i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
     if (h == 0) {
         return 0;
     }
@@ -2512,7 +2512,7 @@ i32 CMulti::ResolveLocalPlayer() {
     if (Peer() == 0) {
         return 0;
     }
-    m_5bc = reinterpret_cast<i32>(Peer()->FindPlayerById(m_hostIndex));
+    m_5bc = Peer()->FindPlayerById(m_hostIndex);
     return LocalPlayer() != 0;
 }
 
@@ -3623,7 +3623,7 @@ i32 CMulti::SetupTcpIpConfig() {
         ));
     }
     CNetSessionNode* node = static_cast<CNetSessionNode*>(lp);
-    m_5bc = reinterpret_cast<i32>(node);
+    m_5bc = node;
     if (lp == 0) {
         ReportNetError(0);
         return 0;
@@ -3653,11 +3653,11 @@ i32 CMulti::SetupTcpIpConfig() {
 RVA(0x000bc750, 0x151)
 i32 CMulti::CreateLocalPlayer() {
     {
-        m_5bc = reinterpret_cast<i32>(reinterpret_cast<CNetSessionNode*>(Peer()->CreatePlayer(
+        m_5bc = reinterpret_cast<CNetSessionNode*>(Peer()->CreatePlayer(
             const_cast<char*>(static_cast<const char*>(GetString5a0())),
             g_emptyString,
             0
-        )));
+        ));
     }
     if (LocalPlayer() == 0) {
         ReportNetError(0);
@@ -3703,7 +3703,7 @@ i32 CMulti::OpenHostChannel(void* a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
         0
     );
     if (m_5bc == 0) {
-        ReportNetError(m_5bc);
+        ReportNetError(0);
         return 0;
     }
     m_hostIndex = (reinterpret_cast<i32*>(m_5bc))[1];

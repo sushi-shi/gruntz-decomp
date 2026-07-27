@@ -524,7 +524,7 @@ CNetPlayerListNode* CNetMgr::EnumGroupsInto(i32 maxPlayers, char* sessionName, i
 }
 
 RVA(0x001789e0, 0x59)
-i32 CNetMgr::EnumPlayersCb(void* a, const char* b, const char* c, i32 d) {
+CNetSessionNode* CNetMgr::EnumPlayersCb(void* a, const char* b, const char* c, i32 d) {
     if (a == 0) {
         return 0;
     }
@@ -613,7 +613,7 @@ BOOL __stdcall NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlag
 // module-global index) and retail's 2-dword EH-state reserve (sub esp,8) vs our
 // 1-dword (push ecx), a 4-byte frame delta that cascades the stack offsets. Final sweep.
 RVA(0x00178b30, 0x140)
-i32 CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d) {
+CNetSessionNode* CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d) {
     CNetSessionNode* node = new CNetSessionNode();
 
     if (node->InitSession(id, nameA, nameB, d) != 0) {
@@ -633,7 +633,7 @@ i32 CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d)
             node->m_listPosition = pos;
         }
     }
-    return reinterpret_cast<i32>(node);
+    return node;
 }
 
 RVA(0x00178c70, 0x3d)
@@ -665,7 +665,7 @@ void CNetMgr::ClearSessionList() {
 // out-var onto a dead arg slot (frame 0x10 vs our 0x14) and materializes the zero
 // once in eax to seed every zeroed local where our /O2 stores immediates. Final sweep.
 RVA(0x00178cb0, 0x8b)
-i32 CNetMgr::CreatePlayer(void* a, const char* b, i32 c) {
+CNetSessionNode* CNetMgr::CreatePlayer(void* a, const char* b, i32 c) {
     i32 out = 0;
     i32 desc[4];
     desc[0] = 0x10;
