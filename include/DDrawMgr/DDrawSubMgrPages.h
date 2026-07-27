@@ -51,7 +51,22 @@ public:
     i32 TransExit();                         // 0x158ee0
 
     // (+0x04..+0x0c = the INHERITED CLoadable header trio; owner via OwnerMgr().)
-    CDDrawSurfacePair* m_frontPair;   // +0x10  front (Flip target; the "child A" element)
+    // +0x10  front (the Flip target).
+    // DEFERRED FOLD, fully proven, needs one edit this lane was not allowed to make:
+    // this slot holds a CDDrawSurfaceChildA*, NOT a CDDrawSurfacePair*. CreateChildren
+    // (0x1588f0) stamps ??_7CDDrawSurfaceChildA at reloc 0x158935 into THIS slot and
+    // ??_7CDDrawSurfacePair into the other two, and the two classes are SIBLINGS (both
+    // `: CDrawSubWorker`; ChildA is 0x30 with no own fields, the pair adds m_ownsSurface
+    // at +0x30 - neither derives from the other). The wrong declared type is exactly what
+    // forces the reinterpret_cast at the store in CreateChildren. Every consumer reads
+    // only base fields (m_surface/m_width/m_height/m_bpp) or dispatches SetGeometry /
+    // SetGeom / Probe, all of which are CDrawSubWorker's (Probe was moved there in this
+    // change for that reason), so the retype is mechanical: flip this declaration and the
+    // ~10 local declarations that spell `CDDrawSurfacePair* x = ...->m_frontPair`
+    // (DDrawSubMgr.cpp x4, AniRecord.cpp, DDrawSurfaceMgr.cpp, GlyphStringDraw.cpp,
+    // Multi.cpp, EngStr.cpp, SaveFrontBufferShot.cpp and src/Wwd/WwdGameObject.cpp:290 -
+    // that last file is owned by another lane, which is the only reason this is parked).
+    CDDrawSurfacePair* m_frontPair;
     CDDrawSurfacePair* m_backPair;    // +0x14  back (Fill/geometry source)
     CDDrawSurfacePair* m_overlayPair; // +0x18  overlay (composite)
 };
@@ -95,6 +110,12 @@ public:
     virtual i32 SetGeometry(i32 w, i32 h, i32 bpp); // [9] 0x158fd0
     // [10] 0x159020: SetGeometry with bpp-in-{8,16,24,32} validation (G obj def).
     virtual i32 SetGeom(i32 w, i32 h, i32 bpp); // [10] 0x159020
+    // Surface-lost probe (0x164660, body in DDrawSurfacePair.cpp). Declared HERE, on the
+    // base: the body touches only m_surface (+0x2c, a base field) and retail's sole caller
+    // - CDDrawSubMgrPages::PagesReady - invokes it on m_frontPair, a CDDrawSurfaceChildA,
+    // not a CDDrawSurfacePair. Declaring it on the pair sibling is what forced the
+    // CDDrawSurfaceChildA* -> CDDrawSurfacePair* reinterpret at the m_frontPair store.
+    i32 Probe();
     // slot-1 dtor: INLINE so the derived dtors fold these very resets (retail
     // ~CDDrawSurfaceChildA @0x1591b0 is m_04/m_width/m_08/m_0c inline, no base
     // call); the linker-kept out-of-line COMDAT copy is the retail ??1 @0x158fb0

@@ -672,7 +672,7 @@ void CDDrawSurfacePair::BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* s
 // same non-steerable regalloc coin-flip as the sibling RestoreIfLost (0x163f00,
 // 98.67%).  docs/patterns/reread-member-view-pointer.md / zero-register-pinning.md.
 RVA(0x00164660, 0x46)
-i32 CDDrawSurfacePair::Probe() {
+i32 CDrawSubWorker::Probe() {
     return m_surface == 0 || (m_surface->m_ddSurface != 0 && m_surface->m_ddSurface->IsLost() == 0)
            || m_surface->m_ddSurface->Restore() == 0 || m_surface->m_ddSurface->Restore() == 0;
 }

@@ -69,7 +69,9 @@ public:
     // CWwdGameObjectC blit dispatch (Slot34/38) calls it per (pos,size) region on
     // the front pair. Reconstructed as an empty body so the 3-byte stub matches.
     void BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size);
-    i32 Probe(); // 0x164660  (surface-lost probe)
+    // (Probe 0x164660 moved to the CDrawSubWorker base - see <DDrawMgr/DDrawSubMgrPages.h>:
+    //  its body reads only this+0x2c, a BASE field, and retail's sole caller invokes it on
+    //  CDDrawSubMgrPages::m_frontPair, which is a CDDrawSurfaceChildA - our sibling.)
 
     // --- layout: m_width/m_height/m_bpp/m_srcRect/m_surface INHERITED from
     // CDrawSubWorker (base ends at +0x30); this class adds one field -----------
