@@ -258,7 +258,7 @@ void CMoviePlayer::Teardown() {
 }
 
 RVA(0x0017c570, 0xc0)
-i32 CMoviePlayer::OpenLo(i32 src, i32 a2, i32 useDS, POINT* origin, RECT* rect) {
+i32 CMoviePlayer::OpenLo(const char* src, i32 a2, i32 useDS, POINT* origin, RECT* rect) {
     if (!m_initialized) {
         return 0;
     }
@@ -273,7 +273,7 @@ i32 CMoviePlayer::OpenLo(i32 src, i32 a2, i32 useDS, POINT* origin, RECT* rect) 
         flags = 0;
     }
     flags |= 0xfe000;
-    m_smackHandle = SmackOpen(reinterpret_cast<const char*>(src), flags, -1);
+    m_smackHandle = SmackOpen(src, flags, -1);
     if (!m_smackHandle) {
         return 0;
     }
@@ -295,7 +295,7 @@ i32 CMoviePlayer::OpenLo(i32 src, i32 a2, i32 useDS, POINT* origin, RECT* rect) 
 }
 
 RVA(0x0017c630, 0xc0)
-i32 CMoviePlayer::OpenHi(i32 src, i32 a2, i32 useDS, POINT* origin, RECT* rect) {
+i32 CMoviePlayer::OpenHi(i32 srcHandle, i32 a2, i32 useDS, POINT* origin, RECT* rect) {
     if (!m_initialized) {
         return 0;
     }
@@ -310,7 +310,9 @@ i32 CMoviePlayer::OpenHi(i32 src, i32 a2, i32 useDS, POINT* origin, RECT* rect) 
         flags = 0;
     }
     flags |= 0xff000;
-    m_smackHandle = SmackOpen(reinterpret_cast<const char*>(src), flags, -1);
+    // API-forced: CFecFile::Lookup hands back m_stream.m_hFile (a Win32 file HANDLE),
+    // and Smack's first arg is dual-use - a path, or a handle when the flags say so.
+    m_smackHandle = SmackOpen(reinterpret_cast<const char*>(srcHandle), flags, -1);
     if (!m_smackHandle) {
         return 0;
     }
@@ -332,14 +334,14 @@ i32 CMoviePlayer::OpenHi(i32 src, i32 a2, i32 useDS, POINT* origin, RECT* rect) 
 }
 
 RVA(0x0017c6f0, 0x9c)
-i32 CMoviePlayer::Open(i32 a1, i32 a2, i32 a3, i32 a4, POINT* origin, RECT* rect) {
+i32 CMoviePlayer::Open(const char* path, i32 a2, i32 a3, i32 a4, POINT* origin, RECT* rect) {
     if (m_initialized == 0) {
         return 0;
     }
     if (!m_decodeStore.Init()) {
         return 0;
     }
-    if (!m_decodeStore.ReadArchive(reinterpret_cast<const char*>(a1))) {
+    if (!m_decodeStore.ReadArchive(path)) {
         m_decodeStore.Close();
         return 0;
     }
@@ -812,7 +814,7 @@ i32 CMoviePlayer::RemoveAt(i32 idx) {
     // buffers are the three ::operator delete calls retail makes at 0x17d63e/50/63.
     PLAYLISTINFOSTRUCT* rec = m_playlist[idx - 1];
     if (rec->m_src) {
-        ::operator delete(reinterpret_cast<void*>(rec->m_src));
+        ::operator delete(rec->m_src);
         rec->m_src = 0;
     }
     if (rec->m_origin) {

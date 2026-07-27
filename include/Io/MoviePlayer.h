@@ -17,7 +17,7 @@ struct DDModeInfo; // Init's {w,h,bpp} mode arg (<DDrawMgr/DirectDrawMgr.h>; poi
 
 
 struct PLAYLISTINFOSTRUCT {
-    i32 m_src;       // +0x00  source handle (0 => stop the run / invalid entry)
+    char* m_src;     // +0x00  the owned .SMK path (SmackOpen'd; operator delete'd)
     i32 m_openArg;   // +0x04  0 => OpenLo, else Open's second arg
     i32 m_08;        // +0x08
     i32 m_useDS;     // +0x0c
@@ -79,12 +79,12 @@ public:
         struct IDirectSound* dsound
     ); // 0x17c3f0
     // ----- ex CMoviePlayer (the Smacker playback half) -------------------------
-    i32 Open(i32 a1, i32 a2, i32 a3, i32 a4, POINT* origin, RECT* rect); // 0x17c6f0
+    i32 Open(const char* path, i32 a2, i32 a3, i32 a4, POINT* origin, RECT* rect); // 0x17c6f0
     ~CMoviePlayer();                                                     // 0x038fc0
     int CreateVideoWindow(i32 a0, i32 a1);                               // 0x17c2a0
     void Teardown();                                                     // 0x17c510
-    i32 OpenLo(i32 src, i32 a2, i32 useDS, POINT* origin, RECT* rect);   // 0x17c570
-    i32 OpenHi(i32 src, i32 a2, i32 useDS, POINT* origin, RECT* rect);   // 0x17c630
+    i32 OpenLo(const char* src, i32 a2, i32 useDS, POINT* origin, RECT* rect);   // 0x17c570
+    i32 OpenHi(i32 srcHandle, i32 a2, i32 useDS, POINT* origin, RECT* rect);   // 0x17c630
     i32 Pump(i32 flags, i32 count);                                      // 0x17c790
     // 0x17c8e0: render one frame onto `target`, then restore the previous target.
     // arg1 is a SURFACE, not a command - it is null-checked, stored into m_primary
