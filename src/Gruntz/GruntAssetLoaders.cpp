@@ -372,7 +372,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
         default:
             m_value = m_38->m_1a0.m_14;
             m_38->m_1a0.Setup(m_poseDeath);
-            m_38->ApplyName(*reinterpret_cast<char**>(&m_44c));
+            m_38->ApplyName(static_cast<const char*>(m_44c));
             {
                 CGruntzMgr* g = g_gameReg;
                 CCueRect* r =
@@ -392,7 +392,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
     }
 
 pathA:
-    m_38->ApplyName(*reinterpret_cast<char**>(&m_44c));
+    m_38->ApplyName(static_cast<const char*>(m_44c));
     {
         CGruntzMgr* g = g_gameReg;
         if (CGameLevel::PointInBounds(

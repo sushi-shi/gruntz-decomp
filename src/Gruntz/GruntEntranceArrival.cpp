@@ -627,7 +627,7 @@ i32 CGrunt::StepAttackFire() {
 
         // impact tail (0x61f08)
         m_entranceActive = 1;
-        i32 dt = g_buteMgr.GetDword(*reinterpret_cast<char**>(&m_animSetName), "AttackDowntime");
+        i32 dt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), "AttackDowntime");
         if (m_gruntKind == GRUNT_ROIDZ) {
             dt = 0; // Roidz grunt: no attack recovery time
         }
@@ -785,7 +785,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             }
             return 0;
         } else {
-            DWORD tt = g_buteMgr.GetDword(*reinterpret_cast<char**>(&m_animSetName), s_ToyTime);
+            DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_ToyTime);
             m_toyDuration = static_cast<u32>(tt);
             m_toyClock = static_cast<u32>(g_frameTime);
             m_toyTime = 0x64;
@@ -813,7 +813,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         char* nm = m_cells[basev].WalkName().GetBuffer(0);
         m_38->ApplyName(nm);
 
-        DWORD tt = g_buteMgr.GetDword(*reinterpret_cast<char**>(&m_animSetName), s_ToyTime);
+        DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_ToyTime);
         m_idleDelay = static_cast<u32>(static_cast<i32>((tt >> 1)));
         m_idleAnchor = static_cast<u32>(static_cast<i32>(g_frameTime));
         return 0;
@@ -1148,7 +1148,7 @@ latch:
         }
     }
 
-    CString key = reinterpret_cast<const char*>(&m_cells[3 * col + row].IdleName());
+    CString key = static_cast<const char*>(m_cells[3 * col + row].IdleName());
 
     CAniElement* desc = m_38->m_1a0.m_14;
     CAniDesc* elem =
