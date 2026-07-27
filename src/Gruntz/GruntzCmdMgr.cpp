@@ -246,9 +246,9 @@ i32 CGruntzCommand::SetMaskFromList(char a0, char a1, char a2, i16 a3, i16 a4, i
     // +0x10 is dual-width: a 2-byte flag word here, a single byte at the
     // m_10 = a5 / m_10 = *buf++ stores - retail writes both widths, so the
     // char member plus this word pun is the faithful pair.
-    *reinterpret_cast<u16*>(&m_10) = 0;
+    m_flagWord = 0;
     for (i32 i = 0; i < (count & 0xff); i++) {
-        *reinterpret_cast<u16*>(&m_10) |= g_cmdBitTable[buf[i]];
+        m_flagWord |= g_cmdBitTable[buf[i]];
     }
     return 1;
 }
@@ -281,7 +281,7 @@ i32 CGruntzSingleCommand::Parse(void* data, i32 /*len*/) {
     m_10 = *buf++;
     // read m_5 as an unsigned byte (retail `cmp byte,8; jb`) via the &-address form so
     // the codegen is identical to an unsigned member conversion without a member cast.
-    if (*reinterpret_cast<u8*>(&m_5) >= 8) {
+    if (static_cast<u8>(m_5) >= 8) {
         m_11 = *buf++;
     }
     return buf - static_cast<char*>(data);
@@ -306,7 +306,7 @@ i32 CGruntzMultiCommand::Parse(void* data, i32 /*len*/) {
     buf += 2;
     m_a = PeekI16(buf);
     buf += 2;
-    *reinterpret_cast<i16*>(&m_10) = PeekI16(buf);
+    m_flagWord = static_cast<u16>(PeekI16(buf));
     buf += 2;
     return buf - static_cast<char*>(data);
 }
@@ -344,7 +344,7 @@ i32 CGruntzMultiCommand::Pack(char* buf, i32 /*unused*/) {
     w += 2;
     PokeI16(w, static_cast<i16>(m_a));
     w += 2;
-    PokeI16(w, static_cast<i16>(*reinterpret_cast<i16*>(&m_10)));
+    PokeI16(w, static_cast<i16>(m_flagWord));
     w += 2;
     return w - start;
 }
@@ -368,7 +368,7 @@ i32 CGruntzMultiCommand::Select(CState* state) {
     }
     i32 ok = 1;
     for (i32 i = 0; i < 16; i++) {
-        if (g_cmdBitTable[i] & *reinterpret_cast<u16*>(&m_10)) {
+        if (g_cmdBitTable[i] & m_flagWord) {
             if (!p->ExecCommand(
                     m_targetIndex,
                     static_cast<char>(i),

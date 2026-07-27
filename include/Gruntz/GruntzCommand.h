@@ -51,8 +51,16 @@ public:
     i32 m_submitted;  // +0x0c  submit-context latch (serialized by Save/Load): net
                       //         parse path sets =1, the cmd-mgr sets =2 (playing) /
                       //         =4 (ready) by game state before enqueue
-    char m_10;        // +0x10
-    char m_11;        // +0x11
+    // +0x10..+0x11: retail writes this pair BOTH ways - byte-wise on the parse path
+    // and as one 16-bit flag word on the bit-table path - so the two arms are a real
+    // union over the same storage, not a pun.
+    union {
+        struct {
+            char m_10; // +0x10
+            char m_11; // +0x11
+        };
+        u16 m_flagWord; // +0x10  the g_cmdBitTable accumulator
+    };
     i16 m_12;         // +0x12 (pad -> 0x14)
 
     virtual ~CGruntzCommand() {} // slot 0 (the non-deleting dtor; trivial -> vptr stamp only)
