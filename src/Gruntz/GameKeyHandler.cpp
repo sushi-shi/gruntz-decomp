@@ -534,8 +534,8 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         h->m_cmdSubMgr->BlitTileMarker(
             1,
             g_curPlayer,
-            *reinterpret_cast<i16*>(&self->m_cursorX),
-            *reinterpret_cast<i16*>(&self->m_cursorY),
+            static_cast<i16>(self->m_cursorX),
+            static_cast<i16>(self->m_cursorY),
             0
         );
         return 1;

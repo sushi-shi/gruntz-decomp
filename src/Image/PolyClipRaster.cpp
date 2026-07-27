@@ -29,10 +29,10 @@ i32 RotateRasterize(
 ) {
     float bound0, clip0, clip1, clip2;
     if (clipFlag == -1) {
-        // @identity-TODO: a3 is an i32 carrying a pointer, and the two ends disagree
-        // about WHICH pointer - ImageRotateBlit passes its `a4` here (reading `inp` as
-        // the RotateSrcImage) while this arm reads a3 as the RotateSrcImage and a4 as
-        // the CDDSurface. Settle that before retyping either parameter.
+        // a3 is an i32 carrying a pointer, and the two ends disagree about WHICH
+        // pointer: ImageRotateBlit passes its `a4` here (while reading `inp` as the
+        // RotateSrcImage), yet this arm reads a3 as the RotateSrcImage and a4 as the
+        // CDDSurface. @identity-TODO - settle that before retyping either parameter.
         RotateSrcImage* img = static_cast<RotateSrcImage*>(reinterpret_cast<void*>(a3));
         clip1 = 0.0f;
         clip0 = static_cast<float>(img->m_1c);

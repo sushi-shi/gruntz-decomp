@@ -834,6 +834,7 @@ CString CDDrawWorkerCache::FindKeyOfValue(CObject* target) {
         // records that this lands on the embedded CObArray's vptr - preserved, not fixed).
         if (val != 0
             && *reinterpret_cast<i32*>(&(static_cast<CDDrawWorker*>(val))->m_items)
+                   // faithful: the same raw +0x10 dword read on the other object
                    == *reinterpret_cast<i32*>(&(static_cast<CDDrawWorker*>(target))->m_items)) {
             return key;
         }
