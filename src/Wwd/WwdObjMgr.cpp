@@ -355,26 +355,27 @@ i32 CDDrawChildGroup::AttachSprite(
 RVA(0x001598d0, 0x13d)
 CWwdGameObject*
 CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, CObject * a5, int a6) {
-    char* obj = static_cast<char*>(RezAlloc(0x1fc));
+    CWwdGameObject* obj = static_cast<CWwdGameObject*>(RezAlloc(0x1fc));
     CWwdGameObject* result; // the 0x1fc kind (vtable 0x5f00e8)
     if (obj != 0) {
         int root = m_ownerCtx;
-        new (obj) CWwdGameObjBaseCtor(root, a1, a6);
-        new (obj + 0x1a0) CLoadable(root, a1, a6); // the embedded loadable (ctor 0x156cb0)
+        new (static_cast<void*>(obj)) CWwdGameObjBaseCtor(root, a1, a6);
+        // the embedded anim cursor's CLoadable base (ctor 0x156cb0)
+        new (&obj->m_1a0) CLoadable(root, a1, a6);
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *reinterpret_cast<int*>((obj + 0x1b0)) = 0;
-        *reinterpret_cast<int*>((obj + 0x1b4)) = 0;
-        *reinterpret_cast<int*>((obj + 0x1b8)) = 0;
+        obj->m_1a0.m_10 = 0;
+        obj->m_1a0.m_14 = 0;
+        obj->m_1a0.m_element = 0;
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *reinterpret_cast<int*>((obj + 0x18c)) = -1;
-        *reinterpret_cast<int*>((obj + 0x190)) = -1;
-        *reinterpret_cast<int*>((obj + 0x198)) = 0;
-        *reinterpret_cast<int*>((obj + 0x194)) = 0;
-        *reinterpret_cast<int*>((obj + 0x19c)) = 0;
-        new (obj + 0x1dc) CObList(0xa);
+        obj->m_18c = -1;
+        obj->m_190 = -1;
+        obj->m_layer = 0;
+        obj->m_194 = 0;
+        obj->m_19c = 0;
+        new (&obj->m_1dc) CObList(0xa);
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *reinterpret_cast<int*>((obj + 0x1f8)) = 0;
-        result = reinterpret_cast<CWwdGameObject*>(obj);
+        obj->m_1f8 = 0;
+        result = obj;
     } else {
         result = 0;
     }
