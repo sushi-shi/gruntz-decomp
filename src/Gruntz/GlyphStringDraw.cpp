@@ -63,8 +63,9 @@ i32 LayerBlitFrame(CDDrawSurfaceMgr* host, CImage* src, i32 x, i32 y, i32 useFro
     }
     // Front page is the SurfaceA frame page, back is the SurfaceB draw page; both expose
     // their target surface at +0x2c (SurfaceA's Surface2c* is used as a CDDSurface here).
-    // The two pages are SIBLINGS (front = CDDrawSurfaceChildA, back = CDDrawSurfacePair);
-    // their one common type is the CDrawSubWorker base that owns m_surface (+0x2c).
+    // The two pages are SIBLING leaves of CDrawSubWorker (front = CDDrawSurfaceChildA,
+    // back = CDDrawSurfacePair), so the common local type is their shared base - which
+    // is also where the only field this reads, m_surface (+0x2c), lives.
     CDrawSubWorker* node;
     if (useFront) {
         node = host->m_drawTarget->m_frontPair;

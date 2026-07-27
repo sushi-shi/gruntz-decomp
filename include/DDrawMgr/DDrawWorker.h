@@ -79,8 +79,11 @@ public:
         if (index < m_minIndex || index > m_maxIndex) {
             return 0;
         }
-        // the CObArray band stores CImage*; CImage is not a CObject in our model,
-        // so the element pun is the container's - language-forced here.
+        // A real DOWNCAST, not a cross-cast: CImage : CWapObj : CObject, so the
+        // CObArray band genuinely stores CImage*. It is spelled reinterpret_cast
+        // only because CImage is INCOMPLETE here (fwd-declared) and static_cast
+        // needs the definition; pulling <Image/CImage.h> into this widely-included
+        // header is the (unmade) fix - see the seams-stay-local rule.
         return reinterpret_cast<CImage*>(m_items.GetAt(index));
     }
 
