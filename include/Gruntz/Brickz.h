@@ -21,14 +21,20 @@ struct BrickzNode {
         BrickzNode* m_prev; //        free-list back-link
     };
     union {
-        BrickzNode* m_8;    // +0x08  fwd-link (free/active list) / g cost
+        BrickzNode* m_8;    // +0x08  fwd-link (free/active list)
         BrickzNode* m_next; //        bucket next (same slot, pool-walk name)
+        // Third arm, both readers proven: the pool/free-list walk dereferences it
+        // (`slot->m_8->m_4 = ...`) while the A* relax reads it as the accumulated
+        // g cost (`node->m_gCost + cost`, `ng >= closed->m_gCost`).
+        i32 m_gCost; //             A* accumulated cost
     };
     i32 m_c;          // +0x0c  priority key
     i32 m_10;         // +0x10  sort key / total f
     BrickzNode* m_14; // +0x14  list link A (prev / next)
     BrickzNode* m_18; // +0x18  list link B (next / prev)
-    i32 m_1c;         // +0x1c  payload (search data)
+    // +0x1c is the A* parent back-pointer, NOT an int payload: every write stores a
+    // BrickzNode* and the only read walks it as one (no integer reader anywhere).
+    BrickzNode* m_parent; // +0x1c
     BrickzNode* m_20; // +0x20  owning bucket-node / parent back-pointer
 };
 SIZE_UNKNOWN();

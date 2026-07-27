@@ -298,7 +298,7 @@ i32 CMapMgr::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 m
     seed->m_10 = h;
     seed->m_14 = 0;
     seed->m_18 = 0;
-    seed->m_1c = 0;
+    seed->m_parent = 0;
     Insert(seed);
     (&m_rows[y1][x1])->m_count++;
     BrickzNode* node = 0;
@@ -338,7 +338,7 @@ reached:
             g_coordPool.m_freeHead = reinterpret_cast<CoordPoolNode*>(rec->m_0);
         }
         (static_cast<CRezList*>(list))->AddHead(reinterpret_cast<CRezListNode*>(slot));
-        p = reinterpret_cast<BrickzNode*>(p->m_1c);
+        p = p->m_parent;
     } while (p != 0);
     if (m_stepCb != 0) {
         m_stepCb();
@@ -369,7 +369,7 @@ reached:
 // neither flips with a local-pin here. Parked for the final sweep.
 RVA(0x0009f010, 0x2a1)
 i32 CMapMgr::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
-    i32 ng = reinterpret_cast<i32>(node->m_8) + cost;
+    i32 ng = node->m_gCost + cost;
     i32 ncol = node->m_0 + dx;
     i32 nrow = node->m_4 + dy;
     BrickzNode* found0 = 0;
@@ -379,8 +379,8 @@ i32 CMapMgr::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
     if (static_cast<u32>((nrow - m_bounds.top)) >= static_cast<u32>(m_gridH)) {
         return 1;
     }
-    i32* ncell = reinterpret_cast<i32*>(&m_rows[nrow][ncol]);
-    i32 nflags = *ncell;
+    BrickzCell* ncell = &m_rows[nrow][ncol];
+    i32 nflags = ncell->m_0;
     i32* cell = reinterpret_cast<i32*>(&m_rows[node->m_4][node->m_0]);
     if ((m_edgeMask & nflags) != 0) {
         return 1;
@@ -411,23 +411,23 @@ i32 CMapMgr::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
     }
 relax:
     BrickzNode* closed = 0;
-    BrickzNode* head = (reinterpret_cast<BrickzCell*>(ncell))->m_head;
+    BrickzNode* head = ncell->m_head;
     if (head != 0) {
-        closed = reinterpret_cast<BrickzNode*>(head->m_0);
+        closed = static_cast<BrickzNode*>(head->m_child);
     }
     if (closed != 0) {
-        if (ng >= reinterpret_cast<i32>(closed->m_8)) {
+        if (ng >= closed->m_gCost) {
             return 1;
         }
     }
     BrickzNode* open;
-    if ((reinterpret_cast<BrickzCell*>(ncell))->m_count != 0) {
+    if (ncell->m_count != 0) {
         open = Find(ncol, nrow);
     } else {
         open = found0;
     }
     if (open != 0) {
-        i32 og = reinterpret_cast<i32>(open->m_8);
+        i32 og = open->m_gCost;
         if (ng >= og) {
             return 1;
         }
@@ -437,20 +437,20 @@ relax:
             }
             Unlink(open);
             open->m_10 = ng + open->m_c;
-            open->m_1c = reinterpret_cast<i32>(node);
-            open->m_8 = reinterpret_cast<BrickzNode*>(ng);
+            open->m_parent = node;
+            open->m_gCost = ng;
             Insert(open);
             return 1;
         }
     }
     if (closed != 0) {
-        if (ng < reinterpret_cast<i32>(closed->m_8)) {
+        if (ng < closed->m_gCost) {
             CellPop(closed, 0);
-            closed->m_1c = reinterpret_cast<i32>(node);
-            closed->m_8 = reinterpret_cast<BrickzNode*>(ng);
+            closed->m_parent = node;
+            closed->m_gCost = ng;
             closed->m_10 = closed->m_c + ng;
             Insert(closed);
-            (reinterpret_cast<BrickzCell*>(ncell))->m_count++;
+            ncell->m_count++;
             return 1;
         }
         CellPop(closed, 1);
@@ -471,18 +471,18 @@ relax:
     }
     rec->m_0 = ncol;
     rec->m_4 = nrow;
-    rec->m_8 = reinterpret_cast<BrickzNode*>(ng);
+    rec->m_gCost = ng;
     i32 hy = abs(m_goalY - nrow);
     i32 hx = abs(m_goalX - ncol);
     i32 h = (hy + hx) * 2;
-    rec->m_1c = reinterpret_cast<i32>(node);
+    rec->m_parent = node;
     rec->m_c = h;
     rec->m_10 = ng + h;
     rec->m_14 = 0;
     rec->m_18 = 0;
     rec->m_20 = 0;
     Insert(rec);
-    (reinterpret_cast<BrickzCell*>(ncell))->m_count++;
+    ncell->m_count++;
     return 1;
 }
 
@@ -597,9 +597,9 @@ RVA(0x0009f540, 0x40)
 BrickzNode* CMapMgr::FindCellNode(i32 col, i32 row) {
     BrickzNode* n = m_rows[row][col].m_head;
     while (n != 0) {
-        BrickzNode* child = reinterpret_cast<BrickzNode*>(n->m_0);
+        BrickzNode* child = static_cast<BrickzNode*>(n->m_child);
         if (child->m_0 == col && child->m_4 == row) {
-            return reinterpret_cast<BrickzNode*>(n->m_0);
+            return static_cast<BrickzNode*>(n->m_child);
         }
         n = n->m_8;
     }
@@ -646,7 +646,7 @@ void CMapMgr::ResetCells() {
         while (node != 0) {
             BrickzNode** link = &node->m_8;
             BrickzNode* next = *link;
-            BrickzNode* child = reinterpret_cast<BrickzNode*>(node->m_0);
+            BrickzNode* child = static_cast<BrickzNode*>(node->m_child);
             child->m_14 = m_colA.m_block;
             child->m_18 = 0;
             m_colA.m_block->m_18 = child;
@@ -706,22 +706,22 @@ RVA(0x0009f710, 0xa7)
 void CMapMgr::CellPop(BrickzNode* node, i32 flag) {
     BrickzNode** head = &m_rows[node->m_4][node->m_0].m_head;
     BrickzNode* slot = node->m_20;
-    if (reinterpret_cast<BrickzNode*>(slot->m_4) != 0) {
+    if (slot->m_prev != 0) {
         if (slot->m_8 != 0) {
-            (reinterpret_cast<BrickzNode*>(slot->m_4))->m_8 = slot->m_8;
+            slot->m_prev->m_8 = slot->m_8;
             slot->m_8->m_4 = slot->m_4;
         }
     } else if (slot->m_8 == 0) {
         *head = 0;
-    } else if (reinterpret_cast<BrickzNode*>(slot->m_4) == 0) {
+    } else if (slot->m_prev == 0) {
         BrickzNode* next = slot->m_8;
         if (next != 0) {
             *head = next;
             next->m_4 = 0;
         }
     }
-    if (reinterpret_cast<BrickzNode*>(slot->m_4) != 0 && slot->m_8 == 0) {
-        (reinterpret_cast<BrickzNode*>(slot->m_4))->m_8 = 0;
+    if (slot->m_prev != 0 && slot->m_8 == 0) {
+        slot->m_prev->m_8 = 0;
     }
     node->m_18 = 0;
     node->m_14 = 0;
