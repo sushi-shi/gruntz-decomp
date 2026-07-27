@@ -734,6 +734,14 @@ void CGrunt::DestroyAnims() {
 // Residual walls: the overlapping stack-slot schedule of the box/coord temps, the
 // per-iteration CObList EH-state stamps and the 8-arg Probe20f4 push ordering diverge from
 // retail's regalloc - re-attack leaf-first in the sweep.
+// KNOWN-UNLANDED (measured 2026-07-27, next-sweep work): retail's 3x3 ring tail does NOT
+// fall out of the loop. After the transfer at 0x58521 it runs a SECOND probe (0x58555,
+// args (cc, rr, col5, row5, &scanHit, 1, m_arrivalFlags, m_24c) - raw flags, arg6=1) with
+// the same pop+transfer, then SCAN_BOUNDS + `return 1` at 0x5867c; every `scanHit == 0`
+// path jumps to 0x58686 = `grid->Clip(0); return 0`. Transcribing that literally MEASURED
+// 36.14 -> 27.26 (and 32.41 with only the early returns), so one of the ring's outer
+// guards (the tautological nl/nr/nt/nb box below) is still mis-modelled and must be fixed
+// first; the tail is parked rather than landed backwards.
 RVA(0x00057db0, 0x8f8)
 i32 CGrunt::PathScan() {
     CMapMgr* grid = g_gameReg->m_tileGrid; // implicit upcast (CGruntzMapMgr : CMapMgr == CMapMgr)
