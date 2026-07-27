@@ -682,7 +682,7 @@ i32 CNetMgr::CreatePlayer(void* a, const char* b, i32 c) {
     return AddSessionNode(
         out,
         reinterpret_cast<const char*>(a),
-        reinterpret_cast<const char*>(b),
+        b,
         0
     );
 }

@@ -1064,7 +1064,7 @@ i32 CInGameText::SerializeMove(CFileMemBase* ar, i32 tag, i32 a, CGameObject* b)
     if (CUserLogic::SerializeMove(ar, tag, a, b) == 0) {
         return 0;
     }
-    if (Chain(ar, tag, a, reinterpret_cast<CGameObject*>(b)) == 0) {
+    if (Chain(ar, tag, a, b) == 0) {
         return 0;
     }
     switch (tag) {

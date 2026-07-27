@@ -764,7 +764,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     // The cached m_warlordHead slots ARE the four CSBI_WarlordHead items created
                     // just above; SetState/ShowFrames are that class's own helpers
                     // (0xeb830 / 0xeb740), not the fabricated base's.
-                    (*slot)->ShowFrames(0xa, reinterpret_cast<CShadeTable*>(sel));
+                    (*slot)->ShowFrames(0xa, sel);
                     slot++;
                     pi++;
                     p++;

@@ -235,7 +235,7 @@ i32 CKitchenSlime::Tick() {
     double step =
         static_cast<double>(static_cast<i64>(static_cast<u64>(static_cast<u32>(g_frameDelta))))
         * m_speed;
-    double* m88d = reinterpret_cast<double*>(&m_stepMag);
+    double* m88d = &m_stepMag;
 
     i32 newX;
     if (m_dirX > 0.0) {

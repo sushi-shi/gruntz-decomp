@@ -696,7 +696,7 @@ i32 CNetCmdSlot::Init(CMulti * a1, SlotInfo* a2, i32 a3) {
         return 0;
     }
     m_owner =
-        reinterpret_cast<CMulti*>(a1); // the session passes its owning CMulti in as an i32 handle
+        a1; // the session passes its owning CMulti in as an i32 handle
     m_state = a3;
     m_isRemote = 0;
     m_latchedSeq = 0;

@@ -2087,7 +2087,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
 
         case 0x3f0: {
             if (g_sharedFlag != 0) {
-                NetLobby::AppendEditLine(reinterpret_cast<HWND>(g_sharedFlag), msg->m_c);
+                NetLobby::AppendEditLine(g_sharedFlag, msg->m_c);
                 break;
             }
             if (m_connected == 0) {
@@ -2331,7 +2331,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             }
             if (g_sharedFlag != 0) {
                 NetLobby::AppendEditLine(
-                    reinterpret_cast<HWND>(g_sharedFlag),
+                    g_sharedFlag,
                     const_cast<char*>(static_cast<const char*>(result))
                 );
             } else {

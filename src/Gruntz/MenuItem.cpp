@@ -96,8 +96,8 @@ i32 CMenuItem::Init(CMenuPage* a0, const char* a1, const char* a2, i32 a3, const
     m_owner = t->m_0;
     m_host = t->m_4;
     m_template = t;
-    m_name = reinterpret_cast<const char*>(a1);
-    m_key = reinterpret_cast<const char*>(a4);
+    m_name = a1;
+    m_key = a4;
     m_cmdId = a3;
     m_1c = 0;
     m_cmdParam = 0;
@@ -113,7 +113,7 @@ i32 CMenuItem::Init(CMenuPage* a0, const char* a1, const char* a2, i32 a3, const
         // Lookup is its own body at 0x1b8438 in a different .obj band.  The two classes
         // are code-identical, which is why every FID row there is AMBIG; the binary
         // names them itself (mfc_class 0x1b8008).
-        m_owner->m_catalog->m_10.Lookup(reinterpret_cast<const char*>(a2), slot);
+        m_owner->m_catalog->m_10.Lookup(a2, slot);
         m_sprite = slot;
         if (!slot) {
             return 0;
@@ -274,17 +274,17 @@ i32 CMenuItem2::Init(CMenuPage* a0, const char* a1, const char* a2, i32 a3, cons
     char name[0x80];
     CObject* sprite; // CMapStringToOb's value slot (Lookup @0x1b8008 takes CObject*&)
 
-    sprintf(name, "%s_NORMAL", reinterpret_cast<const char*>(a2));
+    sprintf(name, "%s_NORMAL", a2);
     sprite = 0;
     m_owner->m_catalog->m_10.Lookup(name, sprite);
     m_spriteNormal = static_cast<CDDrawWorker*>(sprite);
 
-    sprintf(name, "%s_SELECTED", reinterpret_cast<const char*>(a2));
+    sprintf(name, "%s_SELECTED", a2);
     sprite = 0;
     m_owner->m_catalog->m_10.Lookup(name, sprite);
     m_spriteSelected = static_cast<CDDrawWorker*>(sprite);
 
-    sprintf(name, "%s_DISABLED", reinterpret_cast<const char*>(a2));
+    sprintf(name, "%s_DISABLED", a2);
     sprite = 0;
     m_owner->m_catalog->m_10.Lookup(name, sprite);
     m_spriteDisabled = static_cast<CDDrawWorker*>(sprite);

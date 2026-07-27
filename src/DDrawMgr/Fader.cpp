@@ -1041,7 +1041,7 @@ void CFaderRadial::RenderFrame(i32 frame) {
             i32 px = m_centerX + static_cast<i32>((c->m_vx / sf));
             i32 py = m_centerY - static_cast<i32>((c->m_vy / sf));
             if (px > 0 && px < dst->m_width && py > 0 && py < dst->m_height) {
-                (reinterpret_cast<u8*>(base))[py * dst->m_pitch + px] = static_cast<u8>(c->m_pixel);
+                (base)[py * dst->m_pitch + px] = static_cast<u8>(c->m_pixel);
             }
         }
     }
@@ -1092,9 +1092,9 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         return 0;
     }
 
-    m_surfA = pInit->m_04 ? reinterpret_cast<CDDSurface*>(pInit->m_04)
+    m_surfA = pInit->m_04 ? pInit->m_04
                           : m_timerA;
-    m_surfB = pInit->m_08 ? reinterpret_cast<CDDSurface*>(pInit->m_08)
+    m_surfB = pInit->m_08 ? pInit->m_08
                           : m_timerB;
     if (m_surfA == 0) {
         return 0;

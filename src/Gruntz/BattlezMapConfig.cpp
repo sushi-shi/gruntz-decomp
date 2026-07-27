@@ -171,7 +171,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     //     cursor idiom on every step. ---
     for (CGameObject* cur = ListGetFirst(mgr->m_world->m_childGroup); cur != 0;
          cur = ListGetNext(mgr->m_world->m_childGroup)) {
-        if (cur->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(&CreateGruntCreationPoint)
+        if (cur->m_7c->m_notify == &CreateGruntCreationPoint
             && cur->m_124 == id) {
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             i32* slot = 0;
@@ -189,7 +189,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     //     and stop (fall straight into loop 3). ---
     for (CGameObject* cur2 = ListGetFirst(mgr->m_world->m_childGroup); cur2 != 0;
          cur2 = ListGetNext(mgr->m_world->m_childGroup)) {
-        if (cur2->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(&CreateExitTrigger)
+        if (cur2->m_7c->m_notify == &CreateExitTrigger
             && cur2->m_124 == id) {
             m_markerX = cur2->m_screenX / 32;
             m_markerY = cur2->m_screenY / 32;
@@ -201,7 +201,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     //     (arithmetic floor), and set bit 0x10000 in the matched object's flags. ---
     for (CGameObject* cur3 = ListGetFirst(mgr->m_world->m_childGroup); cur3 != 0;
          cur3 = ListGetNext(mgr->m_world->m_childGroup)) {
-        if (cur3->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(&CreateWayPoint)
+        if (cur3->m_7c->m_notify == &CreateWayPoint
             && cur3->m_124 == id) {
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             i32* slot = 0;
@@ -3201,7 +3201,7 @@ i32 CBattlezMapConfig::Deserialize(void* arArg) {
 
 RVA(0x0002bfc0, 0x8a)
 i32 CBattlezMapConfig::SerializeState(CFileMemBase * objArg, void* kindArg, i32, i32) {
-    CFileMemBase* obj = reinterpret_cast<CFileMemBase*>(objArg);
+    CFileMemBase* obj = objArg;
     i32 kind = static_cast<i32>(reinterpret_cast<i32>(kindArg));
     switch (kind) {
         case 4:
@@ -3318,7 +3318,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(CGrunt* unit) {
     coll->m_scanCursor = GroupHead(coll->m_list);
     CGameObject* g = static_cast<CGameObject*>(coll->Drain());
     while (g != 0) {
-        if (g->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(&CreateInGameIcon)
+        if (g->m_7c->m_notify == &CreateInGameIcon
             && (g->m_stateFlags & 1) == 0) {
             i32 special = 0;
             switch (g->m_124) {

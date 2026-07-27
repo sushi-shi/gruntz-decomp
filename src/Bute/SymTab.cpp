@@ -728,7 +728,7 @@ i32 CSymTab::ApplyRange(CRezItmBase* a0, i32 a1, i32 a2, i32 a3) {
     if (!buf) {
         return 0;
     }
-    CRezItmBase* stream = reinterpret_cast<CRezItmBase*>(a0);
+    CRezItmBase* stream = a0;
     if (stream->Read(a1, 0, a2, buf) != a2) {
         ::operator delete(buf);
         return 0;
@@ -818,8 +818,8 @@ i32 CSymTab::ApplyRange(CRezItmBase* a0, i32 a1, i32 a2, i32 a3) {
                     f2,
                     f6,
                     arr,
-                    reinterpret_cast<CRezItmBase*>(a0)
-                ); // a0 rides as the retail i32 fourcc
+                    a0
+                );
                 rec->m_valTable.Insert(&slot->m_node1c);
                 m_10 = m_10 + slot->m_length;
                 if (static_cast<u32>(slot->m_base) < static_cast<u32>(m_baseOffset)) {

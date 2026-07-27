@@ -1459,7 +1459,7 @@ i32 CDDrawWorker::SetAllFormats(CShadeTable* format) {
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
         if (frame && frame->m_owned) {
-            frame->m_owned->m_palDescr = reinterpret_cast<CShadeTable*>(format);
+            frame->m_owned->m_palDescr = format;
             count++;
         }
     }

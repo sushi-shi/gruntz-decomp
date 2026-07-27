@@ -69,7 +69,7 @@ i32 CLightFxMgr::Init(CGruntzMgr* reg, CGruntzMgr* owner) {
     if (!m_tables[9]) {
         return 0;
     }
-    SetShadeDescr(reinterpret_cast<CShadeTable*>(m_greyTable), 9);
+    SetShadeDescr(m_greyTable, 9);
     return 1;
 }
 

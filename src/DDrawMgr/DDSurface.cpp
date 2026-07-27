@@ -1720,7 +1720,7 @@ i32 CDDSurface::DecodeRun8(void* src) {
         return 0;
     }
     for (row = 0; row < height; row++) {
-        dst = reinterpret_cast<u8*>((locked + this->Scale(row)));
+        dst = (locked + this->Scale(row));
         cols = width;
         if (carry > 0) {
             for (k = 0; k < carry; k++) {
@@ -1789,7 +1789,7 @@ i32 CDDSurface::DecodeRun24(void* src) {
     sp = static_cast<u8*>(src);
     dst = 0;
     for (row = 0; row < this->GetHeight(); row++) {
-        dst = reinterpret_cast<u8*>((locked + this->Scale(row) + 2));
+        dst = (locked + this->Scale(row) + 2);
         cols = this->GetWidth();
         if (carry > 0) {
             for (k = 0; k < carry; k++) {
@@ -1821,7 +1821,7 @@ i32 CDDSurface::DecodeRun24(void* src) {
                 cols--;
             }
         }
-        dst = reinterpret_cast<u8*>((locked + this->Scale(row) + 1));
+        dst = (locked + this->Scale(row) + 1);
         cols = this->GetWidth();
         if (carry > 0) {
             for (k = 0; k < carry; k++) {
@@ -1853,7 +1853,7 @@ i32 CDDSurface::DecodeRun24(void* src) {
                 cols--;
             }
         }
-        dst = reinterpret_cast<u8*>((locked + this->Scale(row)));
+        dst = (locked + this->Scale(row));
         cols = this->GetWidth();
         if (carry > 0) {
             for (k = 0; k < carry; k++) {

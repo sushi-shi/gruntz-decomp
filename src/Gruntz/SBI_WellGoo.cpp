@@ -220,21 +220,21 @@ i32 CSBI_WellGoo::SerializeFields(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
                 fr->m_owned->Select(0xa, 0);
             }
             if (node != 0 && m_frame->m_owned != 0) {
-                m_frame->m_owned->m_palDescr = reinterpret_cast<CShadeTable*>(node);
+                m_frame->m_owned->m_palDescr = node;
             }
             fr = m_baseFrame;
             if (fr->m_owned != 0) {
                 fr->m_owned->Select(0xa, 0);
             }
             if (node != 0 && m_baseFrame->m_owned != 0) {
-                m_baseFrame->m_owned->m_palDescr = reinterpret_cast<CShadeTable*>(node);
+                m_baseFrame->m_owned->m_palDescr = node;
             }
             fr = m_fgFrame;
             if (fr->m_owned != 0) {
                 fr->m_owned->Select(0xa, 0);
             }
             if (node != 0 && m_fgFrame->m_owned != 0) {
-                m_fgFrame->m_owned->m_palDescr = reinterpret_cast<CShadeTable*>(node);
+                m_fgFrame->m_owned->m_palDescr = node;
             }
             break;
         }

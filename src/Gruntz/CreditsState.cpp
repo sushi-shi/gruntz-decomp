@@ -416,7 +416,7 @@ i32 CCreditsState::SetupTitle() {
     // (== 0x545854, a tag value not an address); returns the section CParseSource as H.
     CParseSource* sect = SymTab2c()->Insert("CREDITZ", 'TXT');
     if (sect) {
-        char* src = reinterpret_cast<char*>(sect->BeginParse());
+        char* src = sect->BeginParse();
         if (!src) {
             return 0;
         }

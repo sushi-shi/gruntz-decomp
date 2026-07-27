@@ -2899,7 +2899,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
     if (count == 1) {
         g_gameReg->m_cmdSubMgr->EnqueueSingle(1, x, static_cast<char>(buf[0]), 5, 0, 0, 0, 0);
     } else {
-        g_gameReg->m_cmdSubMgr->EnqueueMulti(1, x, count, reinterpret_cast<u8*>(buf), 5, 0, 0, 0);
+        g_gameReg->m_cmdSubMgr->EnqueueMulti(1, x, count, buf, 5, 0, 0, 0);
     }
     return 1;
 }
