@@ -148,12 +148,8 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     // --- CInGameIcon own-field zero-init (retail store order @0x95c00) ---
     m_driftPos = 0;
     m_driftThresh = 0;
-    m_driftPosHi = 0;
-    m_driftThreshHi = 0;
     m_68 = 0;
     m_70 = 0;
-    m_6c = 0;
-    m_74 = 0;
 
     // snap owner's screen pos to the 0x20 tile grid centre
     obj->m_screenX = (obj->m_screenX & ~0x1f) + 0x10;
@@ -178,8 +174,6 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_glitterSprite = 0;
     m_68 = 0;
     m_70 = 0;
-    m_6c = 0;
-    m_74 = 0;
 
     i32 glitter = 0;
     char* rec = static_cast<CWwdGameObjectA*>(obj)->m_194; // the handed obj IS the A-kind sprite
@@ -631,8 +625,8 @@ i32 CInGameIcon::RefreshCell() {
     i32 tileY = obj->m_screenX >> 5;
     i32 tileX = (obj->m_screenY + 0x18) >> 5;
     i64 delta =
-        static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_driftPos);
-    if (delta < *reinterpret_cast<i64*>(&m_driftThresh)) {
+        static_cast<i64>(static_cast<u32>(g_frameTime)) - m_driftPos;
+    if (delta < m_driftThresh) {
         CMapMgr* grid = g_gameReg->m_tileGrid;
         i32 cell;
         if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_width)
@@ -701,8 +695,8 @@ i32 CInGameIcon::PeekCycle() {
     if (obj->m_130 != 0) {
         return 0;
     }
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_68)
-        >= *reinterpret_cast<i64*>(&m_70)) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_68
+        >= m_70) {
         u32 x;
         if (!(g_randSeeded & 1)) {
             g_randSeeded |= 1;
@@ -720,9 +714,7 @@ i32 CInGameIcon::PeekCycle() {
         o->m_drawFillCmd = 0xa;
         o->m_drawFillArg = rec;
         m_70 = 0xfa;
-        m_74 = 0;
-        m_68 = g_frameTime;
-        m_6c = 0;
+        m_68 = static_cast<u32>(g_frameTime);
     }
     return 0;
 }
@@ -849,10 +841,8 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         m_prevAnimSetNode = aux->m_1c;
         aux->m_1c = g_buteTree.Find("B");
         owner = m_38;
-        m_driftPos = owner->m_120;
-        m_driftPosHi = 0;
-        m_driftThresh = g_frameTime;
-        m_driftThreshHi = 0;
+        m_driftPos = static_cast<u32>(owner->m_120);
+        m_driftThresh = static_cast<u32>(g_frameTime);
         return 1;
     }
     CWwdGameObjectA* rend = m_glitterSprite;
@@ -888,8 +878,8 @@ RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     i64 delta =
-        static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_driftPos);
-    if (delta >= *reinterpret_cast<i64*>(&m_driftThresh)) {
+        static_cast<i64>(static_cast<u32>(g_frameTime)) - m_driftPos;
+    if (delta >= m_driftThresh) {
         CWwdGameObjectA* r = m_38;
         r->m_stateFlags &= ~1;
         m_prevAnimSetNode = m_objAux->m_1c;

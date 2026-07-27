@@ -785,15 +785,13 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     // timer's accum/lap/running/current block.
     CTimer* sub = world->m_frameMarker;
     i64 diff =
-        static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&sub->m_38);
+        static_cast<i64>(static_cast<u32>(g_frameTime)) - sub->m_38;
     if (diff < 0) {
         diff = 0;
     }
     g_gameReg->m_scoreHud->m_score += static_cast<i32>(diff);
     sub->m_40 = 0;
-    sub->m_44 = 0;
-    sub->m_accumLo = 0;           // +0x30
-    sub->m_accumHi = 0;           // +0x34
+    sub->m_accum = 0;             // +0x30
     sub->m_running = 0;           // +0x48
     sub->m_currentMs = 0;         // +0x4c
     world->ArmSnapshot(0, 0xbb7); // 0xd9240

@@ -689,9 +689,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     CTimer* worker = self->m_frameMarker;
     if (worker != 0) {
         worker->m_40 = 0;
-        worker->m_44 = 0;
-        worker->m_accumLo = 0;
-        worker->m_accumHi = 0;
+        worker->m_accum = 0;
         worker->m_running = 0;
         worker->m_currentMs = 0;
     }
@@ -5909,19 +5907,14 @@ i32 CPlay::ResetPlayState() {
     m_winLoseBanner = 0;
     CTimer* fm = m_frameMarker;
     if (fm != 0) {
-        fm->m_40 = -1;
-        fm->m_44 = 0;
+        fm->m_40 = static_cast<u32>(-1);
         if (fm->m_currentMs != 0) {
-            fm->m_38 = g_frameTime;
-            fm->m_3c = 0;
-            fm->m_accumLo = fm->m_currentMs;
-            fm->m_accumHi = 0;
-            fm->m_baseTimeLo = g_frameTime;
-            fm->m_baseTimeHi = 0;
+            fm->m_38 = static_cast<u32>(g_frameTime);
+            fm->m_accum = static_cast<u32>(fm->m_currentMs);
+            fm->m_baseTime = static_cast<u32>(g_frameTime);
             fm->m_running = 1;
         } else {
-            fm->m_38 = g_frameTime;
-            fm->m_3c = 0;
+            fm->m_38 = static_cast<u32>(g_frameTime);
         }
     }
     CTriggerMgr* tl = m_mgr->m_cmdGrid;

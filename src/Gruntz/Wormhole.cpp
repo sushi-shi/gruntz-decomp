@@ -628,14 +628,16 @@ i32 CTeleporter::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d)
     if (!Chain(ar, tag, c, d)) {
         return 0;
     }
+    // the two i64 snapshots round-trip through one hoisted base pointer that walks +8
+    i64* p = &m_armClock;
     if (tag != 4) {
         if (tag == 7) {
-            ar->Read(&m_armClock, 8);
-            ar->Read(&m_interval, 8);
+            ar->Read(p, 8);
+            ar->Read(p + 1, 8);
         }
     } else {
-        ar->Write(&m_armClock, 8);
-        ar->Write(&m_interval, 8);
+        ar->Write(p, 8);
+        ar->Write(p + 1, 8);
     }
     switch (tag) {
         case 4:

@@ -1854,11 +1854,9 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         }
                         g->m_health = 0x64;
                         g->CreateHealthSprite();
-                        g->m_combatTimeoutLo =
-                            g_buteMgr.GetIntDef(s_Grunt, s_CombatTimeout, 0x1388);
-                        g->m_combatTimeoutHi = 0;
-                        g->m_combatClockLo = g_frameTime;
-                        g->m_combatClockHi = 0;
+                        g->m_combatTimeout = static_cast<u32>(
+                            g_buteMgr.GetIntDef(s_Grunt, s_CombatTimeout, 0x1388));
+                        g->m_combatClock = static_cast<u32>(g_frameTime);
                         CGameObject* spr =
                             g_gameReg->m_world->m_childGroup
                                 ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);

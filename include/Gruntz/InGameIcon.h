@@ -48,14 +48,10 @@ public:
     i32 Reposition();                   // 0x098a90 (drift re-place refresh)
     // --- CInGameIcon own fields (+0x44/+0x68..+0x74 roles still unproven) ---
     LeafCue* m_cue;      // +0x54  sound-registry cue selected by SetupSprite
-    i32 m_driftPos;      // +0x58  drift-tracked position lo (i64 {m_driftPos:m_driftPosHi})
-    i32 m_driftPosHi;    // +0x5c  drift-tracked position hi
-    i32 m_driftThresh;   // +0x60  drift threshold lo (i64 {m_driftThresh:m_driftThreshHi})
-    i32 m_driftThreshHi; // +0x64  drift threshold hi
-    i32 m_68;            // +0x68  icon idle-timer LO (i64 pair w/ m_6c; interleaved keep)
-    i32 m_6c;            // +0x6c  icon idle-timer HI
-    i32 m_70;            // +0x70  icon idle-window LO (i64 pair w/ m_74)
-    i32 m_74;            // +0x74  icon idle-window HI
+    i64 m_driftPos; // +0x58  drift-tracked position (i64)
+    i64 m_driftThresh; // +0x60  drift threshold (i64)
+    i64 m_68; // +0x68  icon idle-timer anchor (i64)
+    i64 m_70; // +0x70  icon idle-window (i64)
     CWwdGameObjectA* m_glitterSprite; // +0x78  glitter overlay FX sprite (A-kind)
     i32 m_7c;                         // +0x7c  (role unproven; the new-site 0x95750
                                       //        pushes 0x80 - the object IS 0x80 B)

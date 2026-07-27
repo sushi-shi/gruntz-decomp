@@ -402,10 +402,8 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
 
     CreateHealthSprite();
 
-    m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
-    m_combatTimeoutHi = 0;
-    m_combatClockLo = static_cast<i32>(g_frameTime);
-    m_combatClockHi = 0;
+    m_combatTimeout = static_cast<u32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
+    m_combatClock = static_cast<u32>(g_frameTime);
 
     {
         CWwdGameObjectA* h = m_object;
@@ -633,10 +631,8 @@ i32 CGrunt::StepAttackFire() {
         if (m_gruntKind == GRUNT_ROIDZ) {
             dt = 0; // Roidz grunt: no attack recovery time
         }
-        m_attackDowntimeLo = dt;
-        m_attackDowntimeHi = 0;
-        m_860 = static_cast<i32>(g_frameTime);
-        m_864 = 0;
+        m_attackDowntime = static_cast<u32>(dt);
+        m_860 = static_cast<u32>(static_cast<i32>(g_frameTime));
         m_lowStaminaCued = 0;
         m_stamina = 0; // stamina drains fully at each attack
         if (m_healthSprite != 0) {
@@ -816,8 +812,8 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         m_38->ApplyName(nm);
 
         DWORD tt = g_buteMgr.GetDword(*reinterpret_cast<char**>(&m_animSetName), s_ToyTime);
-        m_idleDelay = static_cast<u32>(static_cast<i32>((tt >> 1)));
-        m_idleAnchor = static_cast<u32>(static_cast<i32>(g_frameTime));
+        m_idleDelay = static_cast<u32>((tt >> 1));
+        m_idleAnchor = static_cast<u32>(g_frameTime);
         return 0;
     }
 
@@ -1051,10 +1047,10 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(m_poseIdle[0]);
         m_idleWindow = static_cast<u32>(0x3a98);
-        m_idleTimer = static_cast<u32>(static_cast<i32>(g_frameTime));
+        m_idleTimer = static_cast<u32>(g_frameTime);
         i32 n = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530)) + 1;
         m_idleDelay = static_cast<u32>(GruntRand() % n + 0x7530);
-        m_idleAnchor = static_cast<u32>(static_cast<i32>(g_frameTime));
+        m_idleAnchor = static_cast<u32>(g_frameTime);
         applied = 1;
     } else if (m_poseIdle[1] == 0) {
         // Single geometry source: re-arm it (no flag set).
@@ -1071,7 +1067,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
             i32 d = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530));
             applied = 1;
             m_idleDelay = static_cast<u32>(GruntRand() % (d - 0x4e1f) + 0x4e20);
-            m_idleAnchor = static_cast<u32>(static_cast<i32>(g_frameTime));
+            m_idleAnchor = static_cast<u32>(g_frameTime);
         }
     } else {
         // Cycle among the available sources, with the focused-grunt cue.
@@ -1852,10 +1848,8 @@ reject:
 
 tail:
     CreateHealthSprite();
-    m_combatTimeoutLo = g_buteMgr.GetIntDef(s_Grunt, s_CombatTimeout, 0x1388);
-    m_combatTimeoutHi = 0;
-    m_combatClockLo = static_cast<i32>(g_frameTime);
-    m_combatClockHi = 0;
+    m_combatTimeout = static_cast<u32>(g_buteMgr.GetIntDef(s_Grunt, s_CombatTimeout, 0x1388));
+    m_combatClock = static_cast<u32>(g_frameTime);
     if (m_object->m_screenX != m_lastTilePxX || m_object->m_screenY != m_lastTilePxY) {
         ConsiderArrival(1);
     }
@@ -2146,10 +2140,8 @@ i32 CGrunt::LoadWandGruntItemConfig() {
             if (m_gruntKind == GRUNT_ROIDZ) { // Roidz: no item downtime either
                 downtime = 0;
             }
-            m_attackDowntimeLo = downtime;
-            m_attackDowntimeHi = 0;
-            m_860 = g_frameTime;
-            m_864 = 0;
+            m_attackDowntime = static_cast<u32>(downtime);
+            m_860 = static_cast<u32>(g_frameTime);
             m_lowStaminaCued = 0;
             m_stamina = 0;
             if (m_healthSprite != 0) {

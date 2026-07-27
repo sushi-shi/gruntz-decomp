@@ -1188,7 +1188,7 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_entranceClockLo));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_850));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_860));
-    SerRecord(ar, mode, reinterpret_cast<char*>(&m_combatClockLo));
+    SerRecord(ar, mode, reinterpret_cast<char*>(&m_combatClock));
     SerRecord(ar, mode, reinterpret_cast<char*>(&m_880));
     (reinterpret_cast<CPairRecord*>((&m_wingzClockLo)))
         ->Serialize(ar, mode, a3, a4);

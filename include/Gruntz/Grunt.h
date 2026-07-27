@@ -797,15 +797,11 @@ public:
     // i64} shape as the combat/wingz timers below; SerializeMove round-trips it
     // from m_860). The attack-fire step (UserLogicVfunc7) stamps it at each impact:
     // clock = g_frameTime (lo) / 0 (hi), duration = "AttackDowntime" bute (lo) / 0.
-    i32 m_860;              // +0x860 (attack timer: anchor clock lo = g_frameTime)
-    i32 m_864;              // +0x864 (attack timer: anchor clock hi = 0)
-    i32 m_attackDowntimeLo; // +0x868 (attack timer: duration lo = AttackDowntime config)
-    i32 m_attackDowntimeHi; // +0x86c (attack timer: duration hi = 0)
+    i64 m_860;            // +0x860 (attack timer: anchor clock = g_frameTime)
+    i64 m_attackDowntime; // +0x868 (attack timer: duration = AttackDowntime config)
     // Combat/wingz state timers (the GruntAssetLoaders cluster fills them).
-    i32 m_combatClockLo; // +0x870 (combat timer: anchor clock lo = g_frameTime; i64 w/ m_combatClockHi)
-    i32 m_combatClockHi;   // +0x874 (combat timer: anchor clock hi = 0)
-    i32 m_combatTimeoutLo; // +0x878 (combat timer: duration lo = CombatTimeout config)
-    i32 m_combatTimeoutHi; // +0x87c (combat timer: duration hi = 0)
+    i64 m_combatClock; // +0x870 combat timer: anchor clock = g_frameTime (i64)
+    i64 m_combatTimeout; // +0x878 combat timer: duration = CombatTimeout config (i64)
     i32 m_880; // +0x880 (timer record base, SerializeMove; == combat timer base = game clock)
     i32 m_884; // +0x884
     // +0x888 - the trigger leaves read this as the combat timeout the +0x880 timer base is
