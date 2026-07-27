@@ -84,10 +84,8 @@ void CBattlezDlgCustom::PickIfSelected() {
 
 RVA(0x00018430, 0xd)
 void EndWaitCursorOnThread() {
-    // API-forced: AFX_MODULE_STATE's layout lives in MFC's PRIVATE afxstat_.h, which the
-    // public include set does not carry, so the +4 current-app/thread slot can only be
-    // reached positionally - the same reason the mfc-position bucket exists.
-    CCmdTarget* thread =
-        *reinterpret_cast<CCmdTarget**>((reinterpret_cast<char*>(AfxGetModuleState()) + 4));
-    thread->EndWaitCursor();
+    // AfxGetApp() IS the "+4 slot": afxCurrentWinApp is AfxGetModuleState()->m_pCurrentWinApp
+    // (AFXWIN.H), the first member past CNoTrackObject's vptr. Retail inlines exactly that -
+    // call AfxGetModuleState / mov ecx,[eax+4] / jmp EndWaitCursor.
+    AfxGetApp()->EndWaitCursor();
 }
