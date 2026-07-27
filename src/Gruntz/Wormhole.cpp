@@ -74,24 +74,20 @@ VTBL(CWormhole, 0x001e817c);
 DATA(0x0020c1c0)
 char g_puddleSpriteKey[] = "GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2";
 
-static inline CString* ResolveNameSlot(_zdvec* v, i32 idx) {
+static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
     CString* r;
     v->m_grown = 0;
     if (idx >= v->m_lo && idx <= v->m_hi) {
-        // the untyped byte pool named at the container's one seam
-        r = reinterpret_cast<CString*>(v->m_base + (idx - v->m_lo) * v->m_stride);
+        r = v->Elem(idx);
     } else if (v->GrowTo(idx, 0)) {
-        // the untyped byte pool named at the container's one seam
-        r = reinterpret_cast<CString*>(v->m_base + (idx - v->m_lo) * v->m_stride);
+        r = v->Elem(idx);
     } else {
         void* sentinel = g_projActCache; // scratch cell @0x2bf464 reused as the zvec err sentinel
         g_retAddrBreadcrumb = GetRetAddr();
         v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
-        // the untyped byte pool named at the container's one seam
-        r = reinterpret_cast<CString*>(v->m_spare);
+        r = v->Scratch();
     }
-    // the untyped byte pool named at the container's one seam
-    CString* slot = reinterpret_cast<CString*>(v->m_alloc);
+    CString* slot = v->Slots();
     i32 n = v->m_grown;
     while (n-- != 0) {
         if (slot) {
