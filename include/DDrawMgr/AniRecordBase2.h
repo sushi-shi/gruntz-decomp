@@ -6,11 +6,12 @@
 #include <rva.h>
 
 class CDDrawSurfaceMgr; // the m_0c owner (the pool + draw-target root)
+class CDDPalette;       // the +0x10 owned work palette
 
 struct CAniRecordBase2 : public CWapObj {
     i32 m_04, m_08; // +0x04/+0x08 CObject-header fields (base-2 dtor resets them)
     i32 m_0c;       // +0x0c  owner handle (the CLoadable-family int owner idiom)
-    i32 m_buf;      // +0x10  owned work buffer (a CDDPalette handle; FreeBuf frees it)
+    CDDPalette* m_buf; // +0x10  the owned work palette (FreeBuf returns it to the pool)
 
     // The owner at its real type (the surface mgr whose m_ptrColl pool the
     // Alloc*/FreeBuf slots drive and whose m_drawTarget PushPalette walks).

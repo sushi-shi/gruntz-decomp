@@ -1017,9 +1017,9 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
 }
 
 RVA(0x0015cc30, 0x1e)
-i32 CDDrawWorker::GetFrame(i32 n) {
+CImage* CDDrawWorker::GetFrame(i32 n) {
     if (n >= m_minIndex && n <= m_maxIndex) {
-        return reinterpret_cast<i32>(static_cast<CImage*>(m_items.GetAt(n)));
+        return static_cast<CImage*>(m_items.GetAt(n));
     }
     return 0;
 }
@@ -1041,7 +1041,7 @@ void CAniRenderCtx::ClampFirst() {
     i32 n = seq->m_minIndex;
     m_frameCursor = n;
     if (n >= seq->m_minIndex && n <= seq->m_maxIndex) {
-        m_curFrame = reinterpret_cast<i32>(static_cast<CImage*>(seq->m_items.GetAt(n)));
+        m_curFrame = static_cast<CImage*>(seq->m_items.GetAt(n));
     } else {
         m_curFrame = 0;
     }
@@ -1058,7 +1058,7 @@ void CAniRenderCtx::ClampLast() {
     i32 n = seq->m_maxIndex;
     m_frameCursor = n;
     if (n >= seq->m_minIndex && n <= seq->m_maxIndex) {
-        m_curFrame = reinterpret_cast<i32>(static_cast<CImage*>(seq->m_items.GetAt(n)));
+        m_curFrame = static_cast<CImage*>(seq->m_items.GetAt(n));
     } else {
         m_curFrame = 0;
     }

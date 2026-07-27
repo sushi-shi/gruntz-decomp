@@ -76,7 +76,7 @@ public:
 
     // Bounds-read a frame pointer against [m_minIndex, m_maxIndex] (0x15cc30, the ex
     // CDDrawWorker::GetFrame; out-of-line in the spriteresource unit).
-    i32 GetFrame(i32 n); // 0x15cc30
+    CImage* GetFrame(i32 n); // 0x15cc30
     // The +0x0c owning parent context, typed. CLoadable models m_0c as a plain i32
     // because each of its derivatives owns a DIFFERENT parent type - retyping the
     // shared base would be wrong for the others - so the concrete type lives here, in

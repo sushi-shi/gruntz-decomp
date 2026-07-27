@@ -27,7 +27,7 @@ public:
     char m_pad64[0x190 - 0x64]; // +0x64..0x18f
     i32 m_frameCursor;          // +0x190  sequence frame cursor
     CDDrawWorker* m_frameSeq;   // +0x194  active frame sequence
-    i32 m_curFrame;             // +0x198  resolved current frame pointer
+    CImage* m_curFrame;         // +0x198  the resolved current frame
 };
 SIZE_UNKNOWN();
 

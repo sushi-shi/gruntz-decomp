@@ -566,10 +566,10 @@ void CMapMgr::CellPush(BrickzNode* node) {
         *head = slot;
         slot->m_4 = 0;
         slot->m_8 = 0;
-        slot->m_0 = reinterpret_cast<i32>(node);
+        slot->m_child = node;
         node->m_20 = slot;
     } else {
-        slot->m_4 = reinterpret_cast<i32>(old);
+        slot->m_prev = old;
         slot->m_8 = (*head)->m_8;
         *head = slot;
         node->m_20 = slot;
@@ -651,7 +651,7 @@ void CMapMgr::ResetCells() {
             m_colA.m_block = child;
             node->m_4 = 0;
             *link = m_colB.m_block;
-            m_colB.m_block->m_4 = reinterpret_cast<i32>(node);
+            m_colB.m_block->m_prev = node;
             m_colB.m_block = node;
             node = next;
         }
@@ -726,7 +726,7 @@ void CMapMgr::CellPop(BrickzNode* node, i32 flag) {
     node->m_20 = 0;
     slot->m_8 = m_colB.m_block;
     slot->m_4 = 0;
-    m_colB.m_block->m_4 = reinterpret_cast<i32>(slot);
+    m_colB.m_block->m_prev = slot;
     m_colB.m_block = slot;
     if (flag != 0) {
         node->m_18 = 0;

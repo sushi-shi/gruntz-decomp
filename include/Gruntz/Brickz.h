@@ -14,7 +14,7 @@ struct BrickzNode {
     // as union arms (the ex-MapElemB twin is MERGED here).
     union {
         i32 m_0;       // +0x00  key1 / col
-        void* m_child; //         bucket child ptr (the pool-init null)
+        BrickzNode* m_child; //   bucket child ptr (the pool-init null)
     };
     union {
         i32 m_4;            // +0x04  key2 / row

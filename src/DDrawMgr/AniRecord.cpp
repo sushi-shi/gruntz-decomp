@@ -64,7 +64,7 @@ i32 CAniRecordView::Parse(void* ctx, const i16* src) {
     m_flags = static_cast<u16>(*p++);
     m_08 = *p++;
     m_owner = reinterpret_cast<CDDrawSurfaceMgr*>(*p++); // serialized handle
-    m_buf = *p++;
+    m_buf = reinterpret_cast<CDDPalette*>(*p++); // a serialized handle, like m_owner
     m_seedFrame = *p++;
     m_frameCount = *p++;
     m_1c = *p++;
@@ -159,7 +159,7 @@ RVA_COMPGEN(0x00168e70, 0x27, ?GetAt@CStringArray@@QBE?AVCString@@H@Z)
 RVA(0x00168ea0, 0x40)
 i32 CAniRecordBase2::AllocBufMakeB2(void* data, i32 flag) {
     CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB2(data, 0x44);
-    m_buf = reinterpret_cast<i32>(buf);
+    m_buf = buf;
     if (buf == 0) {
         return 0;
     }
@@ -173,7 +173,7 @@ i32 CAniRecordBase2::AllocBufMakeB2(void* data, i32 flag) {
 RVA(0x00168ee0, 0x40)
 i32 CAniRecordBase2::AllocBufMakeB(void* data, i32 flag) {
     CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB(data, 0x44);
-    m_buf = reinterpret_cast<i32>(buf);
+    m_buf = buf;
     if (buf == 0) {
         return 0;
     }
@@ -187,7 +187,7 @@ i32 CAniRecordBase2::AllocBufMakeB(void* data, i32 flag) {
 RVA(0x00168f20, 0x40)
 i32 CAniRecordBase2::AllocBufCreate(i32 handle, i32 flag) {
     CDDPalette* buf = OwnerMgr()->m_ptrColl->Create(handle, 0x44);
-    m_buf = reinterpret_cast<i32>(buf);
+    m_buf = buf;
     if (buf == 0) {
         return 0;
     }
@@ -201,7 +201,7 @@ i32 CAniRecordBase2::AllocBufCreate(i32 handle, i32 flag) {
 RVA(0x00168f60, 0x45)
 i32 CAniRecordBase2::AllocBufMakeB3(void* data, i32 size, i32 flag) {
     CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB3(data, size, 0x44);
-    m_buf = reinterpret_cast<i32>(buf);
+    m_buf = buf;
     if (buf == 0) {
         return 0;
     }
@@ -214,9 +214,9 @@ i32 CAniRecordBase2::AllocBufMakeB3(void* data, i32 size, i32 flag) {
 
 RVA(0x00168fb0, 0x1f)
 void CAniRecordBase2::FreeBuf() {
-    i32 buf = m_buf;
+    CDDPalette* buf = m_buf;
     if (buf != 0) {
-        OwnerMgr()->m_ptrColl->RemoveItemB(reinterpret_cast<CDDPalette*>(buf));
+        OwnerMgr()->m_ptrColl->RemoveItemB(buf);
         m_buf = 0;
     }
 }
@@ -232,7 +232,7 @@ i32 CAniRecordBase2::PushPalette() {
     if (sd->m_bpp != 8) {
         return 1;
     }
-    return sd->m_surface->SetPalette(reinterpret_cast<CDDPalette*>(m_buf), 0);
+    return sd->m_surface->SetPalette(m_buf, 0);
 }
 
 // 0x16b230 was a mis-homed, mis-identified "gap orphan" here. The old @identity-TODO

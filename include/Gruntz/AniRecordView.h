@@ -6,7 +6,8 @@
 #include <Mfc.h> // real MFC CObject (the primary-facet base)
 
 class CDDrawSubMgrLeafScan; // the token-map ctx (ex CAniMapOwner - its +0x10 Ptr map is m_10)
-class CDDrawSurfaceMgr;     // the record owner (ex CAniRecordOwner - m_ptrColl/m_drawTarget)
+class CDDrawSurfaceMgr;
+class CDDPalette; // the +0x10 work palette     // the record owner (ex CAniRecordOwner - m_ptrColl/m_drawTarget)
 
 struct CAniRecordView : public CObject {
     virtual ~CAniRecordView() OVERRIDE; // [1] 0x1657a0 real primary-facet teardown dtor
@@ -28,7 +29,7 @@ struct CAniRecordView : public CObject {
     u16 m_06;                  // +0x06
     i32 m_08;                  // +0x08
     CDDrawSurfaceMgr* m_owner; // +0x0c  the owning surface mgr (seeded 0xffff sentinel)
-    i32 m_buf;                 // +0x10  pool work buffer
+    CDDPalette* m_buf;         // +0x10  the owned pool work palette
     i32 m_seedFrame;           // +0x14  parsed seed/start frame (SetAnimEx reads record[0]'s)
     i32 m_frameCount;          // +0x18  frame count (GetSize)
     i32 m_1c;                  // +0x1c
