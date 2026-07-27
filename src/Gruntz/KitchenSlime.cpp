@@ -165,18 +165,15 @@ void CKitchenSlime::RegisterType() {
     i32 id = ActFindId("A");
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
-        i32 key = g_typeCounter;
-        id = key;
-        CString* slot = TypeLookup(key);
+        id = g_typeCounter;
+        CString* slot = TypeLookup(g_typeCounter);
         i32 cnt = g_typeColl.m_grown;
         CString* nodes = g_typeColl.Slots();
-        if (cnt != 0) {
-            do {
-                if (nodes != 0) {
-                    nodes->~CString();
-                }
-                nodes++;
-            } while (--cnt);
+        while (cnt-- != 0) {
+            if (nodes != 0) {
+                nodes->~CString();
+            }
+            nodes++;
         }
         (*slot) = "A";
         g_typeCounter++;

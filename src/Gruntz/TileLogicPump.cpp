@@ -376,18 +376,18 @@ void CWarpStonePad::FireActivation(i32 coord) {
 }
 
 // CWarpStonePad::RegisterActs @0x10da20 - bind AdvanceAnim to key "A".
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md +
-// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
-// byte-faithful; residual is the slot-vs-id callee-saved register choice cascading
-// into the free-loop count materialization. Deferred.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x0010da20, 0x18d)
 void CWarpStonePad::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        ActInsertId("A", id);
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
@@ -425,17 +425,18 @@ void CTileTriggerSwitch::FireActivation(i32 coord) {
 }
 
 // CTileTriggerSwitch::RegisterActs @0x10e000 - bind AdvanceAnim to key "A".
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md +
-// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
-// byte-faithful; residual is the slot-vs-id callee-saved register choice. Deferred.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x0010e000, 0x18d)
 void CTileTriggerSwitch::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        ActInsertId("A", id);
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
@@ -477,17 +478,18 @@ void CTileTrigger::FireActivation(i32 coord) {
 }
 
 // CTileTrigger::RegisterActs (0x10e600) - bind AdvanceAnim to key "A".
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md +
-// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
-// byte-faithful; residual is the slot-vs-id callee-saved register choice. Deferred.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x0010e600, 0x18d)
 void CTileTrigger::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        ActInsertId("A", id);
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
@@ -549,26 +551,25 @@ void CBrickz::FireActivation(i32 coord) {
 }
 
 // CBrickz::RegisterActs (0x10ebe0) - the register-"A"-then-bind archetype.
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md +
-// test-old-value-decrement-loop-while-postdec.md): logic + every byte faithful; only
-// the regalloc/free-loop-count materialization diverges. Deferred.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x0010ebe0, 0x18d)
 void CBrickz::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 cnt = g_typeColl.m_grown;
         CString* list = ActNameSlots();
-        if (cnt != 0) {
-            do {
-                if (list != 0) {
-                    list->CString::~CString();
-                }
-                list++;
-            } while (--cnt);
+        while (cnt-- != 0) {
+            if (list != 0) {
+                list->CString::~CString();
+            }
+            list++;
         }
         *slot = "A";
         g_typeCounter++;
@@ -660,9 +661,9 @@ RVA(0x0010f340, 0x2ac)
 void CCheckpointTrigger::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        ActInsertId("A", id);
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
@@ -678,9 +679,9 @@ void CCheckpointTrigger::RegisterActs() {
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
+        ActInsertId("B", g_typeCounter);
         id2 = g_typeCounter;
-        ActInsertId("B", id2);
-        CString* slot = ActNameLookup(id2);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
@@ -768,19 +769,18 @@ void CTileTriggerTransition::FireActivation(i32 coord) {
 
 // RegisterActs (0x10fe70) - intern this class's activation key "A" into the shared bute-tree
 // name map, then bind that id to this class's per-frame handler (TransitionAct).
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md +
-// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
-// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset Handler` store
-// match retail); residual is the slot-vs-id callee-saved register choice cascading into the
-// name-list free-loop count materialization - identical wall to CSecretLevelTrigger::RegisterActs.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x0010fe70, 0x18d)
 void CTileTriggerTransition::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        ActInsertId("A", id);
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {

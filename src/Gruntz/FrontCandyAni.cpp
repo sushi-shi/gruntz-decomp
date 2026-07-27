@@ -142,19 +142,18 @@ void CEyeCandyAni::FireActivation(i32 id) {
 // then bind id->entry in the class's coordinate registry (CActRegPool<CEyeCandy>::s_table
 // @0x646060, CActReg facet). The SAME archetype as CFrontCandyAni::RegisterActs (0x0ad310).
 //
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md +
-// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
-// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset
-// AdvanceAnim` handler store match retail); residual is the slot-vs-id callee-saved
-// register choice cascading into the free-loop count materialization. Deferred.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000acd10, 0x18d)
 void CEyeCandyAni::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        ActInsertId("A", id);
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
@@ -207,19 +206,18 @@ void CFrontCandyAni::FireActivation(i32 coord) {
 // (AdvanceAnim @0x0ad510) to the activation key "A" via the shared name registry.
 // The SAME archetype as CBehindCandyAni::RegisterActs.
 //
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md +
-// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
-// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset
-// AdvanceAnim` handler store match retail); residual is the slot-vs-id callee-saved
-// register choice cascading into the free-loop count materialization. Deferred.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000ad310, 0x18d)
 void CFrontCandyAni::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        ActInsertId("A", id);
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {

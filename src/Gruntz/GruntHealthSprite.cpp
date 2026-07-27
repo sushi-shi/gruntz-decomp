@@ -58,26 +58,18 @@ void CGruntHealthSprite::FireActivation(i32 id) {
 // The id is then resolved to an entry in the class registry and the handler PMF
 // stored there.
 //
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md, topic:wall
-// topic:regalloc): the logic is byte-faithful and the instruction SELECTION is
-// exact end-to-end - the bute Find/Insert, the shared-name-registry resolve, the
-// inlined CString-list free loop (the `while (n-- != 0)` spelling reproduces
-// retail's `mov eax,N; mov ecx,eax; dec eax; test ecx; je; lea ebp,[eax+1]`
-// count-recover per test-old-value-decrement-loop-while-postdec.md +
-// predecrement-guard-lea-recover-count.md), operator=, the id-bump, and the
-// per-class id->entry resolve with the `mov [entry],offset HealthUpdate` handler
-// store. ~93%; the SOLE residual is which callee-saved register holds the name
-// slot vs the live id - retail pins the slot in esi / id in edi, cl swaps them
-// (slot->edi / id->esi), a whole-function allocation choice not source-steerable.
-// Logic complete; deferred to the final sweep.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x0007eed0, 0x18d)
 void CGruntHealthSprite::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        ActInsertId("A", id);
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {

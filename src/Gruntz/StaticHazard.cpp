@@ -162,9 +162,9 @@ RVA(0x000fbd50, 0x2ac)
 void CStaticHazard::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        ActInsertId("A", id);
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
@@ -180,9 +180,9 @@ void CStaticHazard::RegisterActs() {
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
+        ActInsertId("B", g_typeCounter);
         id2 = g_typeCounter;
-        ActInsertId("B", id2);
-        CString* slot = ActNameLookup(id2);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {

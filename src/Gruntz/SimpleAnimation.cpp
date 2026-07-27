@@ -107,11 +107,8 @@ CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(ob
 
 RVA(0x000abc10, 0x102)
 void CSimpleAnimation::FireActivation(i32 idx) {
-    // language-forced: the act table stores PMFs and the resolver hands back the raw
-    // slot, so the element type is put back on at this seam
-    if (*reinterpret_cast<void**>(ResolveSlot(&CActRegPool<CSimpleAnimation>::s_table, idx)) != 0) {
-        CActHandler fn =
-            *reinterpret_cast<CActHandler*>(ResolveSlot(&CActRegPool<CSimpleAnimation>::s_table, idx));
+    if (*ResolveSlot(&CActRegPool<CSimpleAnimation>::s_table, idx) != 0) {
+        CActHandler fn = *ResolveSlot(&CActRegPool<CSimpleAnimation>::s_table, idx);
         (this->*fn)();
     }
 }
@@ -124,25 +121,23 @@ void CSimpleAnimation::FireActivation(i32 idx) {
 // Either way, resolve the dispatch-table slot for the key index and load it with
 // the handler member-fn-ptr (0x4028b0).
 // ---------------------------------------------------------------------------
-// @early-stop
-// inlined _zdvec/zvec IndexToPtr regalloc wall (the documented ZVec family - see
-// ZVec.cpp's IndexToPtr/GrowTo @early-stops + RegisterTextLogic/RegisterIconState
-// ~96%): the two inlined accessors + the CString-ctor fixup loop are reconstructed
-// faithfully, but cl pins the index/this/base across the grow branches differently
-// than retail. Logic + the bute find/insert + the fn-ptr store are correct; the
-// register assignment is not source-steerable.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000abd70, 0x18d)
 void RegisterSimpleAnimLogic() {
     i32 idx = ActFindId("A");
     if (idx == 0) {
         ActInsertId("A", g_typeCounter);
+        idx = g_typeCounter;
         CString* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
         *slot = "A";
         g_typeCounter++;
     }
     CActHandler* dslot = ResolveSlot(&CActRegPool<CSimpleAnimation>::s_table, idx);
-    *reinterpret_cast<CActHandler*>(dslot) =
-        static_cast<CActHandler>(&CSimpleAnimation::AdvanceAnim);
+    *dslot = static_cast<CActHandler>(&CSimpleAnimation::AdvanceAnim);
 }
 
 RVA(0x000abf70, 0x17)

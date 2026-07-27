@@ -100,19 +100,18 @@ void CStatusBarSprite::FireActivation(i32 coord) {
 // @0x10c810) to the activation key "A" via the shared name registry. The SAME
 // archetype as CWarpStonePad::RegisterActs, driving the status-bar-sprite registry.
 //
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md +
-// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
-// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset
-// AdvanceAnim` handler store match retail); residual is the slot-vs-id callee-saved
-// register choice cascading into the free-loop count materialization. Deferred.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x0010c610, 0x18d)
 void CStatusBarSprite::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        ActInsertId("A", id);
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {

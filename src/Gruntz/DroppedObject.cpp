@@ -314,29 +314,25 @@ void CObjectDropper::FireActivation(i32 actId) {
 // CObjectDropper::RegisterActs (0xc60e0): register "A" in the shared name registry
 // (first caller only), then bind Update into the class registry slot.
 //
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md +
-// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): every
-// call/immediate/branch/offset + the `mov [entry],offset` handler store is
-// byte-faithful; the residual is the slot-vs-id callee-saved register choice that
-// cascades into the free-loop trip-count materialization (`ecx=cnt; eax=cnt-1; lea
-// ebp,[eax+1]`). Identical to CAniCycle::RegisterActs. Deferred to the final sweep.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000c60e0, 0x18d)
 void CObjectDropper::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 cnt = g_typeColl.m_grown;
         CString* list = ActNameSlots();
-        if (cnt != 0) {
-            do {
-                if (list != 0) {
-                    list->CString::~CString();
-                }
-                list++;
-            } while (--cnt);
+        while (cnt-- != 0) {
+            if (list != 0) {
+                list->CString::~CString();
+            }
+            list++;
         }
         *slot = "A";
         g_typeCounter++;
@@ -558,9 +554,9 @@ RVA(0x000c6d30, 0x2ac)
 void CDroppedObject::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        ActInsertId("A", id);
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
@@ -573,16 +569,16 @@ void CDroppedObject::RegisterActs() {
         g_typeCounter++;
     }
     *(DropLookup(id)) =
-        // language-forced: a DERIVED member pointer cannot enter the base-typed handler
-        // table without a cast, and the reinterpret is the bit copy retail emits (a
-        // static_cast to the base PMF would make cl emit a this-adjustment instead)
-        reinterpret_cast<CActHandler>(static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::ActA));
+        // the static_cast to the base PMF is the whole conversion (CUserLogic is the
+        // primary base, so it is a zero-delta bit copy); CActHandler IS that type, so no
+        // reinterpret is needed on top of it
+        static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::ActA);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
+        ActInsertId("B", g_typeCounter);
         id2 = g_typeCounter;
-        ActInsertId("B", id2);
-        CString* slot = ActNameLookup(id2);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
@@ -595,10 +591,7 @@ void CDroppedObject::RegisterActs() {
         g_typeCounter++;
     }
     *(DropLookup(id2)) =
-        // language-forced: a DERIVED member pointer cannot enter the base-typed handler
-        // table without a cast, and the reinterpret is the bit copy retail emits (a
-        // static_cast to the base PMF would make cl emit a this-adjustment instead)
-        reinterpret_cast<CActHandler>(static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::ActB));
+        static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::ActB);
 }
 
 // CDroppedObject::ActA @0x0c7090 - the per-frame "A" activation handler (bound into
@@ -776,25 +769,25 @@ void CDroppedObjectShadow::FireActivation(i32 coord) {
 // CDroppedObjectShadow::RegisterActs (0xc78b0): same archetype as
 // CObjectDropper::RegisterActs, binding Advance into the class registry.
 //
-// @early-stop
-// same register-pinning wall as CObjectDropper::RegisterActs above (logic + every
-// byte byte-faithful; only the regalloc/free-loop-count materialization diverges).
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000c78b0, 0x18d)
 void CDroppedObjectShadow::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 cnt = g_typeColl.m_grown;
         CString* list = ActNameSlots();
-        if (cnt != 0) {
-            do {
-                if (list != 0) {
-                    list->CString::~CString();
-                }
-                list++;
-            } while (--cnt);
+        while (cnt-- != 0) {
+            if (list != 0) {
+                list->CString::~CString();
+            }
+            list++;
         }
         *slot = "A";
         g_typeCounter++;

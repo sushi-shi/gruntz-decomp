@@ -1028,21 +1028,19 @@ static inline CString* TypeResolve(i32 key) {
 static inline void FreeNodes() {
     CString* nodes = g_typeColl.Slots();
     i32 cnt = g_typeColl.m_grown;
-    if (cnt != 0) {
-        do {
-            if (nodes != 0) {
-                nodes->~CString();
-            }
-            ++nodes;
-        } while (--cnt);
+    while (cnt-- != 0) {
+        if (nodes != 0) {
+            nodes->~CString();
+        }
+        ++nodes;
     }
 }
 
-// @early-stop
-// register-scheduling wall: the two inlined TypeResolve copies + the node-free
-// count-down loops + the interleaved archive slot dispatches pin the saved regs in
-// a spill order MSVC reproduces only for one allocation; logic + offsets + the
-// inlined lookup + the slot conventions are byte-faithful. Deferred to the final sweep.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x0016e4f0, 0x19b)
 i32 ProjTypeXfer(CUserLogic* ar) {
     CString* entry =

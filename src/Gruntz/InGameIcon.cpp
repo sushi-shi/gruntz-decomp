@@ -574,6 +574,7 @@ void RegisterIconActions() {
     i32 idxA = ActFindId("A");
     if (idxA == 0) {
         ActInsertId("A", g_typeCounter);
+        idxA = g_typeCounter;
         CString* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
         *slot = "A";
         g_typeCounter++;
@@ -585,6 +586,7 @@ void RegisterIconActions() {
     i32 idxB = ActFindId("B");
     if (idxB == 0) {
         ActInsertId("B", g_typeCounter);
+        idxB = g_typeCounter;
         CString* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
         *slot = "B";
         g_typeCounter++;
@@ -610,16 +612,17 @@ void CToyPeek::FireActivation(i32 id) {
 // bute-tree Find (Insert + cache the name when absent, bump the counter),
 // resolve the table slot for the key index, load the handler member-fn-ptr.
 // ---------------------------------------------------------------------------
-// @early-stop
-// inlined _zdvec/zvec IndexToPtr regalloc wall (the documented ZVec family, see
-// ZVec.cpp + RegisterTextLogic ~96%): faithfully reconstructed; cl's index/this
-// register assignment across the grow branches differs from retail and is not
-// source-steerable. Logic + find/insert + the fn-ptr store correct.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x00097f40, 0x18d)
 void RegisterIconState() {
     i32 idx = ActFindId("A");
     if (idx == 0) {
         ActInsertId("A", g_typeCounter);
+        idx = g_typeCounter;
         CString* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
         *slot = "A";
         g_typeCounter++;
@@ -1024,11 +1027,8 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x00099460, 0x102)
 void CInGameText::FireActivation(i32 idx) {
-    // language-forced: the act table stores PMFs and the resolver hands back the raw
-    // slot, so the element type is put back on at this seam
-    if (*reinterpret_cast<void**>(ResolveSlot(&CActRegPool<CInGameText>::s_table, idx)) != 0) {
-        CActHandler fn =
-            *reinterpret_cast<CActHandler*>(ResolveSlot(&CActRegPool<CInGameText>::s_table, idx));
+    if (*ResolveSlot(&CActRegPool<CInGameText>::s_table, idx) != 0) {
+        CActHandler fn = *ResolveSlot(&CActRegPool<CInGameText>::s_table, idx);
         (this->*fn)();
     }
 }
@@ -1042,18 +1042,17 @@ void CInGameText::FireActivation(i32 idx) {
 // bump the counter. Either way, resolve the dispatch-table slot for the key index
 // and load it with the handler member-fn-ptr (FUN_00402013).
 // ---------------------------------------------------------------------------
-// @early-stop
-// inlined _zdvec/zvec IndexToPtr regalloc wall (the documented ZVec family - see
-// ZVec.cpp's IndexToPtr/GrowTo @early-stops, ~80%): the two inlined accessors +
-// the CString-ctor fixup loop are reconstructed faithfully, but cl pins the
-// index/this/base across the grow branches differently than retail and permutes
-// the two-block offset tails. Logic + the bute find/insert + the fn-ptr store are
-// correct; the register assignment is not source-steerable.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000995c0, 0x18d)
 void RegisterTextLogic() {
     i32 idx = ActFindId("A");
     if (idx == 0) {
         ActInsertId("A", g_typeCounter);
+        idx = g_typeCounter;
         CString* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
         *slot = "A";
         g_typeCounter++;

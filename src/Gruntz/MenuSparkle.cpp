@@ -65,18 +65,15 @@ static inline i32 RegisterActionName() {
     i32 id = ActFindId("A");
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
-        i32 key = g_typeCounter;
-        id = key;
-        CString* slot = ActNameLookup(key);
+        id = g_typeCounter;
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 cnt = g_typeColl.m_grown;
         CString* nodes = g_typeColl.Slots();
-        if (cnt != 0) {
-            do {
-                if (nodes != 0) {
-                    nodes->CString::~CString();
-                }
-                nodes++;
-            } while (--cnt);
+        while (cnt-- != 0) {
+            if (nodes != 0) {
+                nodes->CString::~CString();
+            }
+            nodes++;
         }
         *slot = "A";
         g_typeCounter++;
@@ -98,9 +95,11 @@ void CMenuSparkle::FireActivation(i32 coord) {
 
 // RegisterXLogic_646010 @0x0adfc0 - bind this leaf to its activation handler. Same
 // archetype/wall as 0x03a710.
-// @early-stop
-// register-pinning wall (see CursorSnapActReg.cpp): logic byte-faithful, residual is
-// the action-id register coloring + count-down induction. Deferred.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000adfc0, 0x18d)
 void RegisterXLogic_646010() {
     i32 id = RegisterActionName();

@@ -29,7 +29,7 @@ void RegisterActs_6514d8() {
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         FreeNameSlotNodes();
         *slot = "A";
         g_typeCounter++;
@@ -41,7 +41,7 @@ void RegisterActs_6514d8() {
     if (id2 == 0) {
         ActInsertId("B", g_typeCounter);
         id2 = g_typeCounter;
-        CString* slot = ActNameLookup(id2);
+        CString* slot = ActNameLookup(g_typeCounter);
         FreeNameSlotNodes();
         *slot = "B";
         g_typeCounter++;

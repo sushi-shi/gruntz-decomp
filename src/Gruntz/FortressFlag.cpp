@@ -48,18 +48,15 @@ static inline i32 RegisterActionName() {
     i32 id = ActFindId("A");
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
-        i32 key = g_typeCounter;
-        id = key;
-        CString* slot = ActNameLookup(key);
+        id = g_typeCounter;
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 cnt = g_typeColl.m_grown;
         CString* nodes = g_typeColl.Slots();
-        if (cnt != 0) {
-            do {
-                if (nodes != 0) {
-                    nodes->CString::~CString();
-                }
-                nodes++;
-            } while (--cnt);
+        while (cnt-- != 0) {
+            if (nodes != 0) {
+                nodes->CString::~CString();
+            }
+            nodes++;
         }
         *slot = "A";
         g_typeCounter++;
@@ -184,19 +181,18 @@ void CFortressFlag::FireActivation(i32 coord) {
 // @0x0463e0) to the activation key "A" via the shared name registry. The SAME
 // archetype as CBehindCandyAni::RegisterActs.
 //
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md +
-// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
-// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset
-// AdvanceAnim` handler store match retail); residual is the slot-vs-id callee-saved
-// register choice cascading into the free-loop count materialization. Deferred.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000461e0, 0x18d)
 void CFortressFlag::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        ActInsertId("A", id);
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
@@ -374,19 +370,18 @@ void CParticlez::FireActivation(i32 coord) {
 // id->entry in the class's own coordinate registry (CActRegPool<CParticlez>::s_table). The SAME
 // archetype as CSecretTeleporterTrigger::RegisterActs.
 //
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md +
-// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
-// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset
-// Update` handler store match retail); residual is the slot-vs-id callee-saved
-// register choice cascading into the free-loop count materialization. Deferred.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x00046e90, 0x18d)
 void CParticlez::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        ActInsertId("A", id);
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {
@@ -448,10 +443,11 @@ void CExplosion::FireActivation(i32 id) {
 // RegisterXLogic_6447f8 @0x0474b0 - bind the CExplosion logic class to its
 // activation handler under the shared action name "A". (Moved from
 // LogicActReg.cpp - text-contained in this TU.)
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md): logic
-// byte-faithful, residual is the action-id register coloring + count-down
-// induction. Deferred.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000474b0, 0x18d)
 void RegisterXLogic_6447f8() {
     i32 id = RegisterActionName();

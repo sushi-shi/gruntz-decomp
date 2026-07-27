@@ -459,28 +459,25 @@ void CProjectile::FireActivation(i32 coord) {
 // archetype as CKitchenSlime::RegisterType): assign the class a type-id via the
 // global bute-tree, record the name into the shared type-name table, then store
 // the projectile's activation handler (0x403896) into the per-class table.
-// @early-stop
-// ~91%: byte-correct operations/offsets/strings/calls; the residual is the same
-// regalloc + count-down induction wall RegisterType carries (type-id register
-// coloring + the `ecx=cnt; eax=cnt-1; lea ebp,[eax+1]` node-free loop idiom). Not
-// source-steerable; deferred to the final sweep.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000dfb00, 0x18d)
 void CProjectile::RegisterType() {
     i32 id = ActFindId("A");
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
-        i32 key = g_typeCounter;
-        id = key;
-        CString* slot = ProjTypeLookup(key);
+        id = g_typeCounter;
+        CString* slot = ProjTypeLookup(g_typeCounter);
         i32 cnt = g_typeColl.m_grown;
         CString* nodes = g_typeColl.Slots();
-        if (cnt != 0) {
-            do {
-                if (nodes != 0) {
-                    nodes->~CString();
-                }
-                nodes++;
-            } while (--cnt);
+        while (cnt-- != 0) {
+            if (nodes != 0) {
+                nodes->~CString();
+            }
+            nodes++;
         }
         (*slot) = "A";
         g_typeCounter++;
@@ -1111,19 +1108,18 @@ void CTimeBomb::FireActivation(i32 coord) {
 // registration commentary above. The SAME archetype as CParticlez::RegisterActs /
 // RegisterSimpleAnimLogic.
 //
-// @early-stop
-// zvec/name-vec IndexToPtr regalloc wall (docs/patterns/zero-register-pinning.md +
-// the documented ZVec family): logic + the bute find/insert + the fn-ptr store are
-// byte-faithful; cl pins the index/this/base across the grow branches differently
-// than retail (the slot-vs-id callee-saved choice cascading into the free-loop
-// count). Not source-steerable; the SAME plateau as CParticlez::RegisterActs.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000e1990, 0x18d)
 void CTimeBomb::RegisterActs() {
     i32 id = ActFindId("A");
     if (id == 0) {
+        ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        ActInsertId("A", id);
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 n = g_typeColl.m_grown;
         CString* list = ActNameSlots();
         while (n-- != 0) {

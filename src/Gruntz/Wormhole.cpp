@@ -262,18 +262,17 @@ void CWormhole::FireActivation(i32 idx) {
 // Either way, resolve the dispatch-table slot for the key index and load it with
 // the handler member-fn-ptr (0x40181b).
 // ---------------------------------------------------------------------------
-// @early-stop
-// inlined _zdvec/zvec IndexToPtr regalloc wall (the documented ZVec family - see
-// ZVec.cpp's IndexToPtr/GrowTo @early-stops + RegisterTextLogic/RegisterIconState
-// ~96%): the two inlined accessors + the CString-ctor fixup loop are reconstructed
-// faithfully, but cl pins the index/this/base across the grow branches differently
-// than retail. Logic + the bute find/insert + the fn-ptr store are correct; the
-// register assignment is not source-steerable.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x000401b0, 0x18d)
 void RegisterWormholeLogic() {
     i32 idx = ActFindId("A");
     if (idx == 0) {
         ActInsertId("A", g_typeCounter);
+        idx = g_typeCounter;
         CString* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
         *slot = "A";
         g_typeCounter++;
@@ -389,7 +388,7 @@ void RegisterLogic() {
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         FreeNameSlotNodes();
         *slot = "A";
         g_typeCounter++;
@@ -402,7 +401,7 @@ void RegisterLogic() {
     if (id2 == 0) {
         ActInsertId("B", g_typeCounter);
         id2 = g_typeCounter;
-        CString* slot = ActNameLookup(id2);
+        CString* slot = ActNameLookup(g_typeCounter);
         FreeNameSlotNodes();
         *slot = "B";
         g_typeCounter++;
@@ -689,7 +688,7 @@ void CTeleporter_RegisterActs() {
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        CString* slot = ActNameLookup(id);
+        CString* slot = ActNameLookup(g_typeCounter);
         FreeNameSlotNodes();
         *slot = "A";
         g_typeCounter++;
@@ -702,7 +701,7 @@ void CTeleporter_RegisterActs() {
     if (id2 == 0) {
         ActInsertId("B", g_typeCounter);
         id2 = g_typeCounter;
-        CString* slot = ActNameLookup(id2);
+        CString* slot = ActNameLookup(g_typeCounter);
         FreeNameSlotNodes();
         *slot = "B";
         g_typeCounter++;

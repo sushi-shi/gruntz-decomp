@@ -96,28 +96,25 @@ void CGruntStartingPoint::FireActivation(i32 coord) {
 // the class a type-id via the global bute-tree, record the name in the shared
 // type-name table, then store the activation handler (0x4040a2) into the R4 table
 // at that id.
-// @early-stop
-// ~91%: every operation/offset/string/call is byte-correct; the residual is the
-// SAME regalloc + count-down-induction wall the other RegisterTypes carry (the
-// node-free loop's `ecx=cnt; eax=cnt-1; lea ebp,[eax+1]` strength-reduced idiom +
-// the type-id register coloring). Not source-steerable; deferred to the final sweep.
+// The create path feeds the name-slot lookup the GLOBAL g_typeCounter (not the local
+// id copy), and the scratch-slot free loop is the POST-decrement `while (n-- != 0)`
+// form - together they are retail's `mov eax,[g_typeCounter]; push eax; mov <id>,eax`
+// CSE and its `mov ecx,n; dec eax; test ecx,ecx; je; lea <cnt>,[eax+1]` trip count.
+// The old note called this a register-pinning wall; it was a source bug. Now EXACT.
 RVA(0x0003e300, 0x18d)
 void ActReg4RegisterType() {
     i32 id = ActFindId("A");
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
-        i32 key = g_typeCounter;
-        id = key;
-        CString* slot = TypeLookup(key);
+        id = g_typeCounter;
+        CString* slot = TypeLookup(g_typeCounter);
         i32 cnt = g_typeColl.m_grown;
         CString* nodes = g_typeColl.Slots();
-        if (cnt != 0) {
-            do {
-                if (nodes != 0) {
-                    nodes->~CString();
-                }
-                nodes++;
-            } while (--cnt);
+        while (cnt-- != 0) {
+            if (nodes != 0) {
+                nodes->~CString();
+            }
+            nodes++;
         }
         (*slot) = "A";
         g_typeCounter++;
