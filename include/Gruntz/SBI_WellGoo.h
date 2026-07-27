@@ -58,6 +58,13 @@ public:
     CImage* m_baseFrame;        // +0x40  base frame record (first RenderFrame `this`)
     i32 m_fillScale;            // +0x44  fill scale factor (int, fimul); 0 => skip fill
     i32 m_drawX;                // +0x48  draw x origin
+    // @identity-TODO LAYOUT CONTRADICTION (2026-07-27). Blit takes ShadeRect*, and
+    // ShadeRect is `typedef struct tagRECT` - 16 bytes. So a rect based at +0x4c spans
+    // +0x4c..+0x5b, which swallows m_drawGuard (+0x54) and m_blitGuard (+0x58) below;
+    // likewise a rect at m_dstRect (+0x5c) would swallow m_fgTop (+0x60). Either those
+    // four "guard/top" members are rect fields, or the rect bases are elsewhere. The
+    // guards' inc/dec-around-BltEx behaviour argues they are real counters, so this needs
+    // the Blit-site disasm to settle - do not pick one and declare it.
     i32 m_srcRect; // +0x4c  src-rect base (lea &m_srcRect: Blit p0/clip, BltEx srcRect)
     char m_pad50[0x54 - 0x50];
     i32 m_drawGuard; // +0x54  draw-depth guard counter (inc around BltEx, dec after)

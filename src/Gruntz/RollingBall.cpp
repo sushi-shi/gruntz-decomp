@@ -365,6 +365,8 @@ i32 CRollingBall::Update() {
     // as int pairs in this exact interleaved store order, so their halves are
     // addressed as ints via ((i32*)&member)[0/1] (matching retail's dword stores).
     (reinterpret_cast<i32*>(&m_subX))[0] = 0;
+    // m_subY is a double and retail clears it with two dword stores; the {lo,hi} pair
+    // spelling is faithful, the same call as the i64 timer pairs
     (reinterpret_cast<i32*>(&m_subY))[0] = 0;
     (reinterpret_cast<i32*>(&m_subX))[1] = 0;
     (reinterpret_cast<i32*>(&m_subY))[1] = 0;

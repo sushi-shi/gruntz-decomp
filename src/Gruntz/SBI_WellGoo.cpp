@@ -82,8 +82,10 @@ i32 CSBI_WellGoo::Render() {
     m_fgTop = static_cast<i32>((static_cast<double>(m_rect14.m_c) - fill));
 
     m_blitter->Blit(
+        // @identity-TODO the +0x4c rect overlaps the guard members - see the header
         reinterpret_cast<ShadeRect*>(&m_srcRect),
         m_gooSrc,
+        // @identity-TODO the +0x4c rect overlaps the guard members - see the header
         reinterpret_cast<ShadeRect*>(&m_srcRect),
         0,
         0

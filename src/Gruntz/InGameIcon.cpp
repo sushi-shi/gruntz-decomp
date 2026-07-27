@@ -1024,6 +1024,8 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x00099460, 0x102)
 void CInGameText::FireActivation(i32 idx) {
+    // language-forced: the act table stores PMFs and the resolver hands back the raw
+    // slot, so the element type is put back on at this seam
     if (*reinterpret_cast<void**>(ResolveSlot(&CActRegPool<CInGameText>::s_table, idx)) != 0) {
         CActHandler fn =
             *reinterpret_cast<CActHandler*>(ResolveSlot(&CActRegPool<CInGameText>::s_table, idx));
