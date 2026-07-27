@@ -5,6 +5,9 @@
 #include <Ints.h>
 #include <DDrawMgr/ShadeTableCache.h> // CShadeTable - the per-frame shade table
 #include <Gruntz/Loadable.h> // canonical CLoadable : CWapObj : CObject (9-slot base)
+#include <Image/CImage.h> // CImage COMPLETE - GetAt downcasts the CObArray band element
+                          // (CImage.h pulls only rva/Ints/WapObj, so there is no cycle
+                          //  and no weight: WapObj is already in via Loadable.h)
 
 struct PidHeader; // the descriptor the CreateFrame slots take
 class CImage; // <Image/CImage.h>
@@ -79,9 +82,8 @@ public:
         if (index < m_minIndex || index > m_maxIndex) {
             return 0;
         }
-        // the CObArray band stores CImage*; CImage is not a CObject in our model,
-        // so the element pun is the container's - language-forced here.
-        return reinterpret_cast<CImage*>(m_items.GetAt(index));
+        // CImage : CWapObj : CObject, so the CObArray band element is a plain downcast.
+        return static_cast<CImage*>(m_items.GetAt(index));
     }
 
     // Bounds-read a frame pointer against [m_minIndex, m_maxIndex] (0x15cc30, the ex

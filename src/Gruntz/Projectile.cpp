@@ -85,16 +85,14 @@ RVA_COMPGEN(0x00012980, 0x1e, ??_GCProjectile@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012a40, 0x1e, ??_GCTimeBomb@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012a70, 0x44, ??1CTimeBomb@@UAE@XZ)
 
-typedef void (CMovingLogic::*MovingCallback)();
-
 RVA(0x00013c70, 0x47)
-void CMovingLogic::FinalizeStep(i32) {
+void CMovingLogic::FinalizeStep(char*) {
     if (m_deferredCallback != 0) {
         if (m_gatedCallback != 0 && m_objAux->ActKey() == m_28) {
-            (this->*reinterpret_cast<MovingCallback&>(m_gatedCallback))();
+            (this->*m_gatedCallback)();
             m_gatedCallback = 0;
         }
-        (this->*reinterpret_cast<MovingCallback&>(m_deferredCallback))();
+        (this->*m_deferredCallback)();
         m_deferredCallback = 0;
         m_28 = 0x3e9;
     }

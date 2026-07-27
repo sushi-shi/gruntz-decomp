@@ -43,27 +43,11 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         if (m_entranceActive != 0) {
             return 0;
         }
-        if (strcmp(
-                *reinterpret_cast<const char**>(
-                    (static_cast<_zdvec*>(&g_typeColl))
-                        ->IndexToPtr(m_objAux->ActKey())
-                ),
-                "A"
-            ) != 0
-            && strcmp(
-                   *reinterpret_cast<const char**>(
-                       (static_cast<_zdvec*>(&g_typeColl))
-                           ->IndexToPtr(m_objAux->ActKey())
-                   ),
-                   s_codeD
-               ) != 0
-            && strcmp(
-                   *reinterpret_cast<const char**>(
-                       (static_cast<_zdvec*>(&g_typeColl))
-                           ->IndexToPtr(m_objAux->ActKey())
-                   ),
-                   "E"
-               ) != 0) {
+        // GetNameRecord IS the _zdvec::IndexToPtr call (0x310f0) with the band's CString
+        // element type put back on at that one accessor seam - no cast needed here.
+        if (strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), "A") != 0
+            && strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), s_codeD) != 0
+            && strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), "E") != 0) {
             return 0;
         }
     }

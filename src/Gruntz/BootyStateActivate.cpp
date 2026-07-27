@@ -25,7 +25,7 @@
 #include <Gruntz/BattlezData.h> // CBattlezData::InBounds (CheckPerfectBonus frame-ready gate)
 #include <Gruntz/WwdGameReg.h>  // WwdGameReg (g_gameReg; CheckPerfectBonus/Vslot09/QueryGruntSlots)
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr / CDDrawSubMgrLeafScan (CState::m_c draw+cue context)
-#include <Io/MoviePlayer.h> // CMoviePlayer (~; CMultiBootyState::ReleaseResources m_4->m_60)
+#include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig::PauseAllVoices (the m_4->m_60 cue-sink flush)
 #include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
 
 
@@ -486,7 +486,8 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr*, i32, i32) {
 
 // CMultiBootyState::ReleaseResources() (slot 2 / +0x8, 0x1e520): free the leaf-registry
 // pooled resource (if set), release the "BOOTY" set on the leaf registry, run a teardown
-// on the owner's m_4->m_60 sub-object (~CMoviePlayer), then chain CState::ReleaseResources.
+// on the owner's m_4->m_60 cue sink (CGruntSpawnConfig::PauseAllVoices), then chain
+// CState::ReleaseResources.
 // @early-stop
 // near-exact (~98.5%): structure/offsets/calls all match; the sole non-reloc residual is
 // the m_4 deref landing in eax vs retail's edx (single-register coin-flip).
@@ -498,11 +499,12 @@ void CMultiBootyState::ReleaseResources() {
         r->Stop();
     }
     m_world->m_soundRegistry->RemoveKeysEqual("BOOTY", "_");
-    // m_4 (CState::m_4) IS the CGruntzMgr singleton; the sub-object it tears down here is
-    // its +0x60 slot. GruntzMgr.h types that slot TimerObj* (m_timer) while this teardown
-    // runs ~CMoviePlayer on it - a real substance divergence on ONE field, flagged (the
-    // cast marks it) rather than forked into a second per-TU view of the manager.
-    (reinterpret_cast<CMoviePlayer*>(m_mgr->m_cueSink))->~CMoviePlayer();
+    // m_4 (CState::m_4) IS the CGruntzMgr singleton; the +0x60 slot it flushes here is
+    // m_cueSink. PROVEN 2026-07-28: retail `mov ecx,[edx+0x60]; call 0x20a4` and the ILT
+    // thunk 0x20a4 jumps to 0x11c7b0 == CGruntSpawnConfig::PauseAllVoices - the SAME callee
+    // every other m_cueSink site uses (GruntzMgr.cpp 2094/2111/2656). The old
+    // `(CMoviePlayer*)...->~CMoviePlayer()` bound the call to the wrong function.
+    m_mgr->m_cueSink->PauseAllVoices(); // 0x11c7b0 (the cue-timer flush)
     CState::ReleaseResources(); // 0xfa150 (chain the base slot-2 teardown; direct)
 }
 

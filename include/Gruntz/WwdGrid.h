@@ -50,10 +50,10 @@ public:
     i32 m_cellCount;       // +0x1c  numCells = cols*rows
     i32 m_width;           // +0x20
     i32 m_height;          // +0x24
-    i32 m_minX;            // +0x28
-    i32 m_minY;            // +0x2c
-    i32 m_maxX;            // +0x30
-    i32 m_maxY;            // +0x34
+    // +0x28..+0x37: the grid's full bounds. These four adjacent ints ARE one
+    // WwdRect - CWwdGridIter::Start @0x191ad0 block-copies them straight into
+    // its `WwdRect rect` by-value argument - so they are declared as one.
+    WwdRect m_bounds;      // +0x28  m_minX/m_minY/m_maxX/m_maxY
     i32 m_cellH;           // +0x38  2^shiftY
     i32 m_cellW;           // +0x3c  2^shiftX
     BucketHead* m_buckets; // +0x40

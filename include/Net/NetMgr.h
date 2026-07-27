@@ -379,11 +379,13 @@ struct IDirectPlay4Z {
     // call sites in NetMgr.cpp/Multi.cpp to their real DirectPlay names; split
     // CNetMgr::Init's receiver out as IDirectPlayLobby. Mechanical (same slot, same
     // arity => same `call [eax+N]`) but wide, so it is its own change.
+    // Slots 0/1/2 are IUnknown's by the COM ABI (QueryInterface/AddRef/Release), which
+    // is what CNetMgr::Destroy's teardown of m_directPlay dispatches (slot 4 then slot 2).
     STDMETHOD(QueryInterface)(void* riid, void* out) PURE;                 // slot 0
-    STDMETHOD(v01)() PURE;                                                 // slot 1
-    STDMETHOD(v02)() PURE;                                                 // slot 2
+    STDMETHOD(AddRef)() PURE;                                              // slot 1
+    STDMETHOD(Release)() PURE;                                             // slot 2  (+0x08)
     STDMETHOD(Open)(void* a, void* b, i32 c) PURE;                         // slot 3  (+0x0c)
-    STDMETHOD(v04)() PURE;                                                 // slot 4
+    STDMETHOD(v04)() PURE;                                                 // slot 4  (+0x10)
     STDMETHOD(v05)() PURE;                                                 // slot 5
     STDMETHOD(GetSessionDesc)(void* a, void* b, i32 c, i32 d, i32 e) PURE; // slot 6 (+0x18)
     STDMETHOD(v07)() PURE;                                                 // slot 7
@@ -710,7 +712,9 @@ public:
         const char* nameB,
         i32 d
     ); // 0x178b30  (/GX) new session node -> InitSession + GetData5 -> +0x54 list
-    CNetSessionNode* CreatePlayer(void* name, const char* longName, i32 c); // 0x178cb0
+    // `name` is the short name string: the body feeds it to DPNAME::lpszShortNameA AND
+    // to AddSessionNode(const char*), and both callers pass a const_cast<char*> literal.
+    CNetSessionNode* CreatePlayer(char* name, const char* longName, i32 c); // 0x178cb0
     void PopulateSessionList(void* hList); // 0x178d40  (/GX) fill a Win32 session list box
 
     // The 0xbbxxx / 0xbcxxx connect/config helpers reconstructed in this TU.

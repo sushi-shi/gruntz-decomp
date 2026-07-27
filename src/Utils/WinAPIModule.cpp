@@ -25,6 +25,9 @@ namespace Utils {
                 return 0;
             }
 
+            // language-forced (all three below): GetProcAddress is typed FARPROC by the
+            // Win32 ABI and C++ has no implicit FARPROC -> typed-function-pointer
+            // conversion. The SDK chose the return type; we only name it at the call.
             PFNCREATESNAPSHOT pCreateSnapshot = reinterpret_cast<PFNCREATESNAPSHOT>(
                 GetProcAddress(k32, "CreateToolhelp32Snapshot")
             );
@@ -32,12 +35,14 @@ namespace Utils {
                 return 0;
             }
 
+            // language-forced: FARPROC -> typed fn ptr (see the note above).
             PFNMODULEWALK pModuleFirst =
                 reinterpret_cast<PFNMODULEWALK>(GetProcAddress(k32, "Module32First"));
             if (!pModuleFirst) {
                 return 0;
             }
 
+            // language-forced: FARPROC -> typed fn ptr (see the note above).
             PFNMODULEWALK pModuleNext =
                 reinterpret_cast<PFNMODULEWALK>(GetProcAddress(k32, "Module32Next"));
             if (!pModuleNext) {

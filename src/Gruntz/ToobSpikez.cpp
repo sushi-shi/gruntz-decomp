@@ -130,7 +130,7 @@ void CToobSpikez::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    *reinterpret_cast<i32 (CUserLogic::**)()>(CActRegPool<CToobSpikez>::s_table.ResolveEntry(id)) =
+    (*(CActRegPool<CToobSpikez>::s_table.ResolveEntry(id))) =
         static_cast<i32 (CUserLogic::*)()>(&CToobSpikez::AdvanceAnim);
 }
 

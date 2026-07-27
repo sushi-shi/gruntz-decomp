@@ -72,10 +72,10 @@ CResolveNode::CResolveNode(i32 owner, i32 field04, i32 field08) {
 // class forces cl's implicit vptr-first store at ctor entry. Field-store order
 // preserved; only the vptr position diverges (mandate: convert anyway).
 RVA(0x0015b300, 0x40)
-AnimWorkerObj::AnimWorkerObj(i32 a, i32 b, i32 c) {
+AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* a, i32 b, i32 c) {
     m_04 = b;
     m_08 = c;
-    m_0c = reinterpret_cast<CDDrawSurfaceMgr*>(a); // (mangling-pinned i32 arg; a IS the mgr)
+    m_0c = a;
     m_notify = 0;
     m_payload = 0;
     m_logic = 0;
@@ -126,11 +126,11 @@ i32 CGameObject::IsLoaded() {
 }
 
 RVA(0x0015b390, 0x128)
-CWwdGameObjBaseCtor::CWwdGameObjBaseCtor(int a, int b, int c) : WwdCtorBase(a, b, c) {
+CWwdGameObjBaseCtor::CWwdGameObjBaseCtor(CDDrawSurfaceMgr* a, int b, int c) : WwdCtorBase(a, b, c) {
     // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
     m_screenX = static_cast<int>(0x80000000);
     m_78 = 0;
-    m_7c = new AnimWorkerObj(a, b);
+    m_7c = new AnimWorkerObj(a, b); // `a` is already the typed owner context
     m_98 = 0;
     m_80 = 0;
     m_88 = 0;

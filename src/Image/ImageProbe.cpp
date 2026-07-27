@@ -25,6 +25,8 @@ i32 CMoviePlayer::CheckGrid() {
     if (m_dd2->CreateSurface(&m_srcDesc, &m_srcSurfRaw, 0) != 0) {
         return 0;
     }
+    // API-forced: IUnknown::QueryInterface's out parameter is `void**` by the COM ABI,
+    // so the typed IDirectDrawSurface3** goes through a cast at the interface boundary.
     if (m_srcSurfRaw->QueryInterface(IID_IDirectDrawSurface3, reinterpret_cast<void**>(&m_srcSurf))
         != 0) {
         return 0;

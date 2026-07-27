@@ -881,6 +881,10 @@ i32 CAniElement::Build(void* ctx, CAniSource* src, i32 flags) {
     i32 i;
     for (i = 0; i < src->m_count; i++) {
         rec = new CAniRecordView;
+        // byte-forced: `cursor` walks the blob in BYTES (it is advanced by the runtime
+        // `g_aniParsedNameLen + 0x14` below and the name copy reads it a char at a time),
+        // while the record prefix Parse consumes is ten consecutive i16 fields. The width
+        // changes at this one seam because the stride either side of it differs.
         if (rec->Parse(ctx, reinterpret_cast<const i16*>(cursor)) == 0) {
             goto fail;
         }
@@ -1068,9 +1072,7 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CParseSource* a1, i32 a2, i32 a3) {
     if (data == 0) {
         return 0;
     }
-    const char* keyHandle = reinterpret_cast<const char*>(
-        a1->m_length
-    ); // +0x0c doubles as the key handle for this entry kind
+    const char* keyHandle = a1->m_keyHandle; // +0x0c's XCP arm (see <Gruntz/ParseSource.h>)
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
     // faithful: retail pushes the CParseSource POINTER itself into the slot-12
     // size argument here (0x165b0c `push ecx` = the a1 stack arg) - the slot is
@@ -1264,9 +1266,9 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 // scheduling wall (topic:regalloc): body byte-exact; only residue is WHERE the
 // Lookup out-param zero-init lands (a 1-instruction reorder). ~95%.
 RVA(0x00166040, 0x66)
-i32 CDDrawWorkerB::Helper(i32 key, i32 idx) {
+i32 CDDrawWorkerB::Helper(const char* key, i32 idx) {
     CObject* obj = 0;
-    OwnerMgr()->m_imageRegistry->m_10map.Lookup(reinterpret_cast<const char*>(key), obj);
+    OwnerMgr()->m_imageRegistry->m_10map.Lookup(key, obj);
     // the map is CDDrawWorkerRegistry::m_10map, whose ONLY writer is FindOrCreateWorker
     // (`m_10map[key] = static_cast<CObject*>(worker)` on a MakeWorker result), so the
     // element class is CDDrawWorker - the ex-CDDrawWorkerObj view was it with pads:
@@ -1275,9 +1277,8 @@ i32 CDDrawWorkerB::Helper(i32 key, i32 idx) {
     CDDrawWorker* p = static_cast<CDDrawWorker*>(obj);
     CImage* v;
     if (p != 0 && idx >= p->m_minIndex && idx <= p->m_maxIndex) {
-        // language-forced: the CObArray band stores CImage*, which is not a CObject
-        // in our model - the same one pun CDDrawWorker::GetAt carries.
-        v = reinterpret_cast<CImage*>(p->m_items.GetAt(idx));
+        // CImage : CWapObj : CObject, so the CObArray band element is a plain downcast.
+        v = static_cast<CImage*>(p->m_items.GetAt(idx));
     } else {
         v = 0;
     }

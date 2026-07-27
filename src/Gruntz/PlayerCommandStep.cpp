@@ -78,6 +78,10 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
             }
             if (m_world->m_soundRegistry->m_emitGate == 0) { // the sound host's busy/emit gate
                 if (BadSelect(s_gameBadSelect) != 0) {
+                    // Retail runs this thiscall on whatever ecx survived the previous call
+                    // and never loads a receiver, so the source must not name one that would
+                    // emit a load; the tag global is a stand-in that compiles to nothing.
+                    // byte-forced stale-ecx thiscall (the InGameIcon sites are its twins).
                     (reinterpret_cast<LeafCue*>(&g_sndCueTag))->PlayIfElapsed(0, 0, 0, 0);
                 }
             }

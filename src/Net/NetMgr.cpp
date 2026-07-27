@@ -123,16 +123,14 @@ void CNetMgr::Destroy() {
         m_releaseIface->Release();
         m_releaseIface = 0;
     }
-    // The DirectPlay interface releases through the same IUnknown-shaped vtable
-    // (Slot10 then a re-read + Release) - the same COM object, viewed as
-    // INetReleasable. The reference re-reads m_directPlay before each call,
-    // matching retail's reload of [this+0x18].
-    INetReleasable*& dp = *reinterpret_cast<INetReleasable**>(&m_directPlay);
-    if (dp != 0) {
-        dp->Slot10();
-        INetReleasable* again = dp;
+    // The DirectPlay interface's own slots 4 and 2 ARE the teardown pair (+0x10 then
+    // the IUnknown +0x08 Release); the ex INetReleasable** alias was a second view of
+    // the same object. The local re-read matches retail's reload of [this+0x18].
+    if (m_directPlay != 0) {
+        m_directPlay->v04();
+        IDirectPlay4Z* again = m_directPlay;
         again->Release();
-        dp = 0;
+        m_directPlay = 0;
     }
 }
 
@@ -284,7 +282,10 @@ i32 CNetMgr::ReadGroupSel(void* hList) {
     if (data == 0) {
         return 0;
     }
-    m_groupSel = reinterpret_cast<InterfaceObject*>(data); // the LB item data IS the group node
+    // API-forced: LB_GETITEMDATA hands the item cookie back as an LRESULT (an integer by
+    // the Win32 ABI); the cookie IS the group node pointer the list box was populated with
+    // (LB_SETITEMDATA in PopulateGroupList), so the pointer type goes back on here.
+    m_groupSel = reinterpret_cast<InterfaceObject*>(data);
     return data;
 }
 
@@ -648,12 +649,12 @@ void CNetMgr::ClearSessionList() {
 // out-var onto a dead arg slot (frame 0x10 vs our 0x14) and materializes the zero
 // once in eax to seed every zeroed local where our /O2 stores immediates. Final sweep.
 RVA(0x00178cb0, 0x8b)
-CNetSessionNode* CNetMgr::CreatePlayer(void* a, const char* b, i32 c) {
+CNetSessionNode* CNetMgr::CreatePlayer(char* a, const char* b, i32 c) {
     i32 out = 0;
     NetDPName desc;
     desc.dwSize = sizeof(NetDPName);
     desc.dwFlags = 0;
-    desc.lpszShortNameA = static_cast<char*>(a);
+    desc.lpszShortNameA = a;
     desc.lpszLongNameA = const_cast<char*>(b);
 
     IDirectPlay4Z* iface = m_directPlay;
@@ -662,7 +663,7 @@ CNetSessionNode* CNetMgr::CreatePlayer(void* a, const char* b, i32 c) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x3bb, hr, 0);
         return 0;
     }
-    return AddSessionNode(out, reinterpret_cast<const char*>(a), b, 0);
+    return AddSessionNode(out, a, b, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -894,9 +895,9 @@ i32 CNetMgr::EnumSessions2(void* ctx) {
     // the C2733 clash (dplay.h #defines DirectPlayEnumerate -> ...A) - and hand-rolling an
     // SDK struct is banned by convention. So the read stays byte-forced until the import
     // split is reworked; the names above are the finding, not a guess.
-    char desc[0x28];
+    i32 desc[0x28 / 4];
     i32 ok = EnumSessions(desc, ctx);
-    return ok ? *reinterpret_cast<i32*>((desc + 0x18)) : 0;
+    return ok ? desc[6] : 0; // desc[6] == +0x18 == DPCAPS::dwLatency
 }
 
 // @early-stop

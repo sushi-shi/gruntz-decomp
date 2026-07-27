@@ -149,8 +149,8 @@ char s_codeQ[] = "Q"; // RVA-contiguous with s_codeN/s_codeO (ex GruntEntranceMo
 // (out of the Gap stub) as a real CGrunt method so its 0x5ecd0 symbol resolves for
 // callers; the % is a codegen wall, not a shape error.
 RVA(0x0005ecd0, 0x4f3)
-void CGrunt::FinalizeStep(i32 arg) {
-    CUserLogic::FinalizeStep(arg); // direct base call (retail `call 0x3913`)
+void CGrunt::FinalizeStep(char* name) {
+    CUserLogic::FinalizeStep(name); // direct base call (retail `call 0x3913`)
     MovingSlot16();
     if (m_struckSlotSound != 0) {
         bool neL = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "L") != 0);

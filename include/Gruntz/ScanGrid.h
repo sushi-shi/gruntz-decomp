@@ -15,10 +15,9 @@ class CMapMgr; // canonical tile board (the former CScanGrid view)
 // (<Gruntz/BattlezMapConfig.h>); the body stays in TileScan.cpp (retail placement).
 
 // CBattlezMapConfig::ScanRegion's m_0f0 elements are {x,y} goal points.
-struct CScanGoal {
-    i32 m_0, m_4;
-};
-SIZE_UNKNOWN();
+// (CScanGoal DISSOLVED 2026-07-28: it was a second name for `Coord` ({i32 m_x, m_y},
+//  <Gruntz/CoordNode.h>) on the very same array - CBattlezMapConfig::m_0f0, which
+//  already had the typed coordData() accessor. Its one use site now reads that.)
 
 struct CScanSub10 {
     char _00[0x5c];

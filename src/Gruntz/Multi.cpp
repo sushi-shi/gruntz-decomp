@@ -27,7 +27,7 @@
 #include <Gruntz/Attract.h> // g_attractStateCount (attract-title-index divisor)
 
 #include <Gruntz/GruntzMgr.h>        // CGruntzMgr - the REAL CState::m_4 game mgr
-#include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig - CGruntzMgr::m_timer (+0x60; DtorBody)
+#include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig - CGruntzMgr::m_timer (+0x60; PauseAllVoices)
 #include <Gruntz/Dialogs.h> // CMultiStartDlg (stack-constructed by ShowMultiStartDlg @0xb86c0)
 #include <Gruntz/LightFxRender.h> // CLightFxRender (the +0x320 attract overlay; teardown Ctor @0xa3360)
 #include <Gruntz/TileTriggerContainer.h>
@@ -561,7 +561,7 @@ i32 CMulti::Vslot09(i32 arg) {
 // /GX RECT+CString frame-packing difference (0x14 vs retail 0x10). See Play.cpp.
 RVA(0x000b63f0, 0x11b)
 i32 CMulti::FrameSlot28(i32 arg) {
-    m_mgr->m_cueSink->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
+    m_mgr->m_cueSink->PauseAllVoices(); // 0x20a4 -> CGruntSpawnConfig::PauseAllVoices @0x11c7b0
     m_savedClock = static_cast<i32>(g_frameTime);
     if (m_notifyLatch) {
         QuitToMenu();
@@ -650,7 +650,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     m_574 = 0;
     Mgr()->m_chatLog->FreeNodes();
     m_session->Reset(); // 0xbf150
-    Mgr()->m_cueSink->DtorBody();
+    Mgr()->m_cueSink->PauseAllVoices();
     return 1;
 }
 
@@ -3496,7 +3496,7 @@ i32 CMulti::RunErrorDialog(char* tmpl, void* handler, i32 lparam) {
     if (!Mgr()) {
         return 2;
     }
-    Mgr()->m_cueSink->DtorBody();
+    Mgr()->m_cueSink->PauseAllVoices();
     i32 r = Mgr()->RunModalDialog(tmpl, handler, lparam);
     SetActiveAndFocus(Mgr()->m_gameWnd->m_hwnd);
     AckJoinFailure();

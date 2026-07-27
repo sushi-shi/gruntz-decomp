@@ -3,7 +3,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/Grunt.h>    // CGrunt (the scanned arg) + CGameRegistry/CFocusSlot (this->m_4)
-#include <Gruntz/ScanGrid.h>         // CScanGoal/CScanSub10 (shared scan tags)
+#include <Gruntz/ScanGrid.h>         // CScanSub10 (shared scan tags)
 #include <Gruntz/BattlezMapConfig.h> // the Scan owner (ex-CTileScan, folded)
 
 // The scanned arg is a real CGrunt: m_2e8 the focus-slot id, m_dwell (+0x2ec) the

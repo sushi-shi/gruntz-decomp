@@ -891,7 +891,10 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         CWwdGameObjectA* o = m_object;
         if (o->m_screenX < reg->m_viewBounds.right && o->m_screenX >= reg->m_viewBounds.left
             && o->m_screenY < reg->m_viewBounds.bottom && o->m_screenY >= reg->m_viewBounds.top) {
-            // retail bug: stale-ecx thiscall (see the sibling site above).
+            // Retail runs this thiscall on whatever ecx survived the previous call and
+            // never loads a receiver, so the source must not name one that would emit a
+            // load; the tag global is a stand-in that compiles to nothing.
+            // byte-forced, same stale-ecx thiscall as the sibling site above.
             reinterpret_cast<LeafCue*>(&g_sndCueTag)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
             reg = g_gameReg;
         }
