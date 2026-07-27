@@ -1185,8 +1185,9 @@ CImage* CDDrawWorker::InsertFrame(void* src, i32 n, i32 mode) {
 // CDDrawWorker::CreateFrame30 (__thiscall, ret 0xc). Refuse if a frame already
 // occupies `index`; else allocate a CImage frame, run its loader virtual at slot
 // +0x30, insert it (SetAtGrow at `index`) and widen the populated index range.
-// The (CImageFrameDesc*) casts on a0 are honest: CreateFrame*'s `i32 a0` params are
-// still the fake type (the callers hand in a descriptor pointer as an int).
+// arg1 is a FILE PATH: retail 0x152006 pushes [esp+0x14] (= arg1) last into
+// `call [edx+0x30]` = CImage::Create @0x152e90, which hands it to Createa58_3 ->
+// CFileImageSurface::LoadByExt @0x148940 -> strrchr(path,'.') (SETTLED 2026-07-27).
 // @early-stop
 // vptr-scheduler wall (99.5%): the real `new CImage(index, Owner())` ctor
 // (docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md) fixed the whole regalloc
@@ -1198,14 +1199,14 @@ CImage* CDDrawWorker::InsertFrame(void* src, i32 n, i32 mode) {
 // base-class ctor. (The other diff, `[eax+edi*4]` vs `[eax+4*edi]`, is a byte-neutral
 // disasm-spelling artifact.)
 RVA(0x00151fb0, 0xa4)
-CImage* CDDrawWorker::CreateFrame30(CImageFrameDesc* desc, i32 index, i32 a2) {
+CImage* CDDrawWorker::CreateFrame30(char* path, i32 index, i32 keyed) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
         return 0;
     }
 
     CImage* nf = new CImage(index, Owner()); // real frame ctor (vptr interleaved)
 
-    if (nf->Create(desc, a2) == 0) { // slot 12 @+0x30  CImage::Create
+    if (nf->Create(path, keyed) == 0) { // slot 12 @+0x30  CImage::Create
         if (nf != 0) {
             delete nf; // slot 1 @+0x04  scalar-deleting dtor
         }
@@ -1223,11 +1224,13 @@ CImage* CDDrawWorker::CreateFrame30(CImageFrameDesc* desc, i32 index, i32 a2) {
 }
 
 // CreateFrame28 (__thiscall, ret 0x10). As CreateFrame30, but the loader
-// virtual is at slot +0x28 and takes (a0, a1, a3, 1).
+// virtual is at slot +0x28 and takes (desc, mode, size, 1). SETTLED 2026-07-27:
+// arg4 is the blob's byte LENGTH - it reaches CDDrawShadeBlit::Build @0x1490d0,
+// which mallocs `size-0x20` and `rep movs` exactly that many bytes.
 // @early-stop
 // Same vptr-scheduler wall as CreateFrame30 (see there). 99.5%.
 RVA(0x00152060, 0xab)
-CImage* CDDrawWorker::CreateFrame28(CImageFrameDesc* desc, i32 a1, i32 index, i32 a3) {
+CImage* CDDrawWorker::CreateFrame28(CImageFrameDesc* desc, i32 mode, i32 index, u32 size) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
         return 0;
     }
@@ -1235,7 +1238,7 @@ CImage* CDDrawWorker::CreateFrame28(CImageFrameDesc* desc, i32 a1, i32 index, i3
     CImage* nf = new CImage(index, Owner()); // real frame ctor (vptr interleaved)
 
     // slot 10 @+0x28  CImage::LoadDispatch
-    if (nf->LoadDispatch(desc, static_cast<u32>(a1), reinterpret_cast<void*>(a3), 1) == 0) {
+    if (nf->LoadDispatch(desc, static_cast<u32>(mode), size, 1) == 0) {
         if (nf != 0) {
             delete nf; // slot 1 @+0x04  scalar-deleting dtor
         }
@@ -1253,18 +1256,20 @@ CImage* CDDrawWorker::CreateFrame28(CImageFrameDesc* desc, i32 a1, i32 index, i3
 }
 
 // CreateFrame24 (__thiscall, ret 0x10). As CreateFrame30, but the loader
-// virtual is at slot +0x24 and takes (a0, a1, a3).
+// virtual is at slot +0x24 and takes (width, height, keyed). SETTLED 2026-07-27:
+// args 1/2 are a GEOMETRY pair, not a descriptor+mode - they end up in
+// CDDSurface::BlitSurf's +0x1c/+0x18 (see the CImage::Create24 proof block).
 // @early-stop
 // Same vptr-scheduler wall as CreateFrame30 (see there). 99.5%.
 RVA(0x00152110, 0xa9)
-CImage* CDDrawWorker::CreateFrame24(CImageFrameDesc* desc, i32 a1, i32 index, i32 a3) {
+CImage* CDDrawWorker::CreateFrame24(i32 width, i32 height, i32 index, i32 keyed) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
         return 0;
     }
 
     CImage* nf = new CImage(index, Owner()); // real frame ctor (vptr interleaved)
 
-    if (nf->Create24(desc, a1, a3) == 0) { // slot 9 @+0x24  CImage::Create24
+    if (nf->Create24(width, height, keyed) == 0) { // slot 9 @+0x24  CImage::Create24
         if (nf != 0) {
             delete nf; // slot 1 @+0x04  scalar-deleting dtor
         }

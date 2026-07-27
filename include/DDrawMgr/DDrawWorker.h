@@ -35,9 +35,18 @@ public:
     // (slot 16). m_0c is the owning CDDrawSurfaceMgr (single-frame flag m_flags&0x100).
     virtual i32 SetKey(const char* key);             // slot 9  @0x155810 (key copy)
     virtual i32 BuildFramesFromSymTab(CSymTab* tab); // slot 10 @0x1521f0
-    virtual CImage* CreateFrame24(CImageFrameDesc* desc, i32 a1, i32 index, i32 a3); // slot 11 @0x152110
-    virtual CImage* CreateFrame28(CImageFrameDesc* desc, i32 a1, i32 index, i32 a3); // slot 12 @0x152060
-    virtual CImage* CreateFrame30(CImageFrameDesc* desc, i32 index, i32 a2);         // slot 13 @0x151fb0
+    // The three frame-create slots each seed a CImage and run ONE of its loader
+    // virtuals; their leading args are just that loader's args, forwarded verbatim
+    // (retail 0x152166 / 0x1520b6 / 0x152006 push them straight through). So their
+    // types are the loader's - see the proof block over CImage::Create24 /
+    // LoadDispatch / Create in <Image/CImage.h> (SETTLED 2026-07-27):
+    //   slot 11 -> CImage::Create24    (a1/a2 = width/height)
+    //   slot 12 -> CImage::LoadDispatch (a1 = blob desc, a2 = mode, a4 = blob LENGTH)
+    //   slot 13 -> CImage::Create      (a1 = file PATH)
+    virtual CImage* CreateFrame24(i32 width, i32 height, i32 index, i32 keyed); // slot 11 @0x152110
+    virtual CImage*
+    CreateFrame28(CImageFrameDesc* desc, i32 mode, i32 index, u32 size); // slot 12 @0x152060
+    virtual CImage* CreateFrame30(char* path, i32 index, i32 keyed);     // slot 13 @0x151fb0
     // FOLD (stage 4, DONE for CDDrawWorker): the ex `CDDrawWorker` (<Gruntz/Sprite.h>) IS this
     // class - it is now a typedef of it. Slot 14's body @0x151f00 was declared as
     // ?InsertFrame@CDDrawWorker@@ while BEING this vtable's slot-14 body: its own code reads

@@ -23,14 +23,28 @@ public:
     virtual i32 IsReady() OVERRIDE;    // [ 6] 0x154aa0 (re-seeds the 25-dword blt-fx scratch)
     virtual void Unload() OVERRIDE;    // [ 7] 0x154ac0 (self-dispatch MapTeardown + clear flags)
     virtual i32 GetClassId() OVERRIDE; // [ 8] 0x156de0 (CLASSID_WORKERREGISTRY = 0x12)
-    virtual CImage* DispatchKeyed2C(CImageFrameDesc* a1, i32 a2, const char* key, i32 a4, i32 a5); // [ 9] 0x154df0
-    virtual CImage* Forward2C(CImageFrameDesc* a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);  // [10] 0x154f60
-    virtual CImage* Forward30(CImageFrameDesc* a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);  // [11] 0x154f40
-    virtual CImage* DispatchKeyed30(CImageFrameDesc* a1, i32 a2, const char* key, i32 a4, i32 a5); // [12] 0x154ce0
-    virtual CImage* Forward38(void* rec, CDDrawWorker* worker, i32 a3, i32 a4);       // [13] 0x154f20
-    virtual CImage* DispatchKeyed38(void* rec, const char* key, i32 a3, i32 a4);      // [14] 0x154ae0
-    virtual CImage* Forward34(CImageFrameDesc* a1, CDDrawWorker* worker, i32 a3, i32 a4);          // [15] 0x154f00
-    virtual CImage* DispatchKeyed34(CImageFrameDesc* a1, const char* key, i32 a3, i32 a4);         // [16] 0x154be0
+    // Slots 9-16 are four PAIRS (find-the-worker-by-key / take-the-worker-directly)
+    // over the same four CDDrawWorker create slots, and each pair forwards its leading
+    // args verbatim. Their types are therefore the worker slot's - see the proof block
+    // over CDDrawWorker::CreateFrame24/28/30 in <DDrawMgr/DDrawWorker.h>
+    // (SETTLED 2026-07-27): 2C -> CreateFrame24 (width,height), 30 -> CreateFrame28
+    // (desc,mode,...,size), 34 -> CreateFrame30 (path), 38 -> InsertFrame (record).
+    virtual CImage*
+    DispatchKeyed2C(i32 width, i32 height, const char* key, i32 index, i32 keyed); // [ 9] 0x154df0
+    virtual CImage*
+    Forward2C(i32 width, i32 height, CDDrawWorker* worker, i32 index, i32 keyed); // [10] 0x154f60
+    // [11] 0x154f40
+    virtual CImage*
+    Forward30(CImageFrameDesc* desc, i32 mode, CDDrawWorker* worker, i32 index, u32 size);
+    // [12] 0x154ce0
+    virtual CImage*
+    DispatchKeyed30(CImageFrameDesc* desc, i32 mode, const char* key, i32 index, u32 size);
+    virtual CImage* Forward38(void* rec, CDDrawWorker* worker, i32 a3, i32 a4);  // [13] 0x154f20
+    virtual CImage* DispatchKeyed38(void* rec, const char* key, i32 a3, i32 a4); // [14] 0x154ae0
+    virtual CImage*
+    Forward34(char* path, CDDrawWorker* worker, i32 index, i32 keyed); // [15] 0x154f00
+    virtual CImage*
+    DispatchKeyed34(char* path, const char* key, i32 index, i32 keyed); // [16] 0x154be0
     // [17] 0x156e80 (DDrawSubMgr.cpp) - probe a resolved sub-key, install its tree.
     virtual i32 ProbeWorkerKey(class CSymParser* arg1, const char* key);
     // [18] 0x154f80 - install a resolved symbol TREE under a (name, separator) prefix;

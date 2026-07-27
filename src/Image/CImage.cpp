@@ -111,11 +111,19 @@ CImage::~CImage() {
 }
 
 // ---------------------------------------------------------------------------
-// (vtable slot 12): Create. The Create24 sibling without the mode args:
-// allocate a surface from the parent pool's 3-arg create (CreateC @0x142560) for
-// (desc, capArg, flagsArg) - where flagsArg = keyed ? g_surfaceColorKey : -1 and
-// capArg = g_resourceInstallActive ? 0x800 : 0 - then cache the surface geometry (w/h,
-// halved) and clear the m_originX/m_originY origin. __thiscall, ret 8 (2 stack args).
+// (vtable slot 12): Create. Load a surface BY FILE NAME: hand the path to the parent
+// pool's 3-arg create (Createa58_3 @0x142560) as (path, capArg, flagsArg) - where
+// flagsArg = keyed ? g_surfaceColorKey : -1 and capArg = g_resourceInstallActive ?
+// 0x800 : 0 - then cache the surface geometry (w/h, halved) and clear the
+// m_originX/m_originY origin. __thiscall, ret 8 (2 stack args).
+//
+// SETTLED 2026-07-27 (the cast here carried an open identity TODO): arg1 is a
+// `char* path`, not a descriptor. Retail 0x152ea9 loads [esp+0x10] (= arg1) and pushes
+// it LAST of the three -> it is Createa58_3's FIRST parameter. Createa58_3 @0x1425c5
+// then pushes that same slot last into `call [eax+0x28]` (vtable 0x5efa58 slot 10 =
+// CFileImageSurface::LoadByExt @0x148940), whose first act is
+// `push 0x2e / push arg2 / call strrchr` followed by _stricmp against
+// ".BMP" / ".PCX" / ".PID". A path, end to end.
 // @early-stop
 // 99.09% - structurally identical to the 100% sibling Create24, plus the two
 // g_resourceInstallActive/B DIR32 reloc artifacts. The lone code residual is the geometry
@@ -124,25 +132,13 @@ CImage::~CImage() {
 // call allocator state - not steerable from Create's own source.
 // ---------------------------------------------------------------------------
 RVA(0x00152e90, 0x8b)
-i32 CImage::Create(CImageFrameDesc* desc, i32 keyed) {
+i32 CImage::Create(char* path, i32 keyed) {
     i32 flagsArg = (keyed != 0) ? g_surfaceColorKey : -1;
     i32 capArg = 0;
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    // PROVEN 2026-07-27: what travels here is a FILE PATH, not a descriptor -
-    // Createa58_3 forwards it verbatim to CFileImageSurface::LoadByExt @0x148940,
-    // which opens with `strrchr(a1,'.')` + an _stricmp over ".BMP"/".PCX"/".PID".
-    // So THIS function's `CImageFrameDesc* desc` param is the mis-typed link (it is a
-    // `char* path`), and so are its two feeders CDDrawWorker::CreateFrame30 @0x151fb0
-    // and CDDrawWorkerRegistry::DispatchKeyed34/Forward34 @0x154be0/0x154f00 - each
-    // passes arg1 straight through. Blocked from being fixed here: the only caller of
-    // this slot is CreateFrame30 in src/Wwd/WwdGameObject.cpp, owned by another lane.
-    CDDSurface* item = m_parent->m_1c->Createa58_3(
-        reinterpret_cast<char*>(desc), // @identity-TODO `desc` is a char* path (see above)
-        capArg,
-        flagsArg
-    );
+    CDDSurface* item = m_parent->m_1c->Createa58_3(path, capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -186,10 +182,12 @@ i32 CImage::Resolve(CParseSource* src, i32 arg) {
     if (resolved == 0) {
         return 0;
     }
+    // The 3rd argument is the blob LENGTH (m_length) - the independent corroboration
+    // that LoadDispatch's slot-10 `size` parameter is a byte count, not a pointer.
     i32 result = this->LoadDispatch(
         reinterpret_cast<CImageFrameDesc*>(resolved),
         static_cast<u32>(index),
-        reinterpret_cast<void*>(src->m_length),
+        src->m_length,
         arg
     );
     src->EndParse();
@@ -211,12 +209,12 @@ i32 CImage::Resolve(CParseSource* src, i32 arg) {
 // named symbols); the code bytes match. See MEMORY objdiff-reloc-scoring.
 // ---------------------------------------------------------------------------
 RVA(0x00152fb0, 0x123)
-i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
+i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, u32 size, i32 keyed) {
     if (mode != 1 && mode != 2 && mode != 3 && mode != 4) {
         return 0;
     }
     if (mode == 4 && (desc->m_flags & 0x20)) {
-        if (!BuildSlot13(desc, a)) {
+        if (!BuildSlot13(desc, size)) {
             return 0;
         }
         if (m_owned != 0 && (desc->m_flags & 0x40)) {
@@ -225,7 +223,7 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
         }
         return 1;
     }
-    i32 flagsArg = (b != 0) ? g_surfaceColorKey : -1;
+    i32 flagsArg = (keyed != 0) ? g_surfaceColorKey : -1;
     if (mode == 4 || mode == 3) {
         i32 g10 = desc->m_originX;
         i32 g14 = desc->m_originY;
@@ -243,18 +241,12 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
     // with the neighbouring CreateB, which really does take a width/height pair via
     // LoadKeyed -> BlitSurf @0x13e0d0). CreateA's a1 lands in ResolveEx's `buf`, which
     // 0x1457a0 reads at +0x04/+0x08/+0x0c => this very desc; its a3 lands in ResolveEx's
-    // `size`, gated by `cmp eax,0x300; jbe fail` at 0x145847 => a byte count.
-    // The remaining cast is on `a`: THIS function's own `void* a` param is the mis-typed
-    // one (it is the blob size, not a pointer). Blocked from being fixed here because
-    // the only caller of this slot is CDDrawWorker::CreateFrame28 in
-    // src/Wwd/WwdGameObject.cpp, which another lane owns.
-    CDDSurface* item = m_parent->m_1c->CreateA(
-        desc,
-        static_cast<i32>(mode),
-        reinterpret_cast<u32>(a), // @identity-TODO `a` is a byte SIZE; retype with CreateFrame28
-        capArg,
-        flagsArg
-    );
+    // `size` and thence in DecodePcxData's, gated by `cmp eax,0x300 / jbe fail` at
+    // 0x145847 followed by `lea eax,[eax+edi-0x300]` => a byte count with the 768-byte
+    // palette at the blob tail. SETTLED 2026-07-27: the ex-`void* a` parameter IS that
+    // count (this argument used to be a `void*` carrying an open identity TODO).
+    CDDSurface* item =
+        m_parent->m_1c->CreateA(desc, static_cast<i32>(mode), size, capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -273,15 +265,23 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
     return 1;
 }
 
+// (vtable slot 9): Create24. Allocate a BLANK surface of the given geometry from the
+// parent pool's 5-arg create (CreateB @0x1423c0), then cache back the surface's own
+// w/h. SETTLED 2026-07-27: arg1/arg2 are a WIDTH and a HEIGHT, not a descriptor+mode.
+// Retail 0x153107 pushes [esp+0xc]=arg1 last and [esp+0x14]=arg2 next-to-last into
+// CreateB; CreateB @0x142425 forwards them as LoadKeyed's a2/a3 (`call [eax+0x2c]`,
+// vtable 0x5efa58 slot 11 = 0x148840), which forwards them again to
+// CDDSurface::BlitSurf @0x13e0d0 - and 0x13e0f1/0x13e0f8 store them into the
+// surface's +0x18/+0x1c, the exact two fields this function reads back below as
+// m_height/m_width. (`0` in the 3rd CreateB slot is BlitSurf's format arg.)
 RVA(0x001530e0, 0x92)
-i32 CImage::Create24(CImageFrameDesc* desc, i32 mode, i32 keyed) {
+i32 CImage::Create24(i32 width, i32 height, i32 keyed) {
     i32 flagsArg = (keyed != 0) ? g_surfaceColorKey : -1;
     i32 capArg = 0;
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CDDSurface* item =
-        m_parent->m_1c->CreateB(reinterpret_cast<i32>(desc), mode, 0, capArg, flagsArg);
+    CDDSurface* item = m_parent->m_1c->CreateB(width, height, 0, capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -323,7 +323,7 @@ i32 CImage::Create24(CImageFrameDesc* desc, i32 mode, i32 keyed) {
 // deferred to the final sweep.
 // ---------------------------------------------------------------------------
 RVA(0x00153180, 0xda)
-i32 CImage::BuildSlot13(CImageFrameDesc* desc, void* a) {
+i32 CImage::BuildSlot13(CImageFrameDesc* desc, u32 size) {
     CDDrawShadeBlit* owned = new CDDrawShadeBlit();
     m_owned = owned;
     if (owned == 0) {
@@ -331,7 +331,7 @@ i32 CImage::BuildSlot13(CImageFrameDesc* desc, void* a) {
     }
     if (!owned->Build(
             reinterpret_cast<CImageBuildDesc*>(desc),
-            reinterpret_cast<i32>(a),
+            static_cast<i32>(size),
             m_parent->m_04->m_10[0x18 / 4]
         )) {
         return 0;

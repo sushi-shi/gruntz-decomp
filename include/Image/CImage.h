@@ -105,10 +105,25 @@ public:
     // decls, so the vtable slots bind the real CWapObj bodies.
     virtual void FreeAll();   // slot 7  0x153260
     virtual i32 GetClassId(); // slot 8  0x0042aa -> 0x0d5de0: return 10 (class type tag)
-    virtual i32 Create24(CImageFrameDesc* desc, i32 mode, i32 keyed);          // slot 9  0x1530e0
-    virtual i32 LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b); // slot 10 0x152fb0
-    virtual i32 Resolve(CParseSource* src, i32 arg);                           // slot 11 0x152f20
-    virtual i32 Create(CImageFrameDesc* desc, i32 keyed);                      // slot 12 0x152e90
+    // The three loader slots take THREE DIFFERENT first arguments - proven by following
+    // each one all the way down to the byte that consumes it (2026-07-27):
+    //   [ 9] Create24    -> CDDrawPtrCollections::CreateB -> CFileImageSurface::LoadKeyed
+    //        -> CDDSurface::BlitSurf @0x13e0d0, which stores its a2/a3 into the surface's
+    //        +0x1c/+0x18 - the very fields Create reads back as m_width/m_height. So a1/a2
+    //        are a WIDTH and a HEIGHT, never a descriptor.
+    //   [10] LoadDispatch -> CDDrawPtrCollections::CreateA -> CFileImageSurface::ResolveEx
+    //        -> CDDSurface::DecodePcxData @0x1457a0, whose 0x145847 does
+    //        `cmp size,0x300 / jbe fail / lea eax,[size+hdr-0x300]` (the 768-byte palette
+    //        at the blob TAIL); the same value reaches CDDrawShadeBlit::Build @0x1490d0,
+    //        which mallocs `size-0x20` and `rep movs` exactly that many bytes. A LENGTH.
+    //        CImage::Resolve corroborates: it passes CParseSource::m_length here.
+    //   [12] Create      -> CDDrawPtrCollections::Createa58_3 -> CFileImageSurface::LoadByExt
+    //        @0x148940, which opens with `strrchr(a2,'.')` + _stricmp ".BMP"/".PCX"/".PID".
+    //        A FILE PATH.
+    virtual i32 Create24(i32 width, i32 height, i32 keyed);           // slot 9  0x1530e0
+    virtual i32 LoadDispatch(CImageFrameDesc* desc, u32 mode, u32 size, i32 keyed); // [10] 0x152fb0
+    virtual i32 Resolve(CParseSource* src, i32 arg);                  // slot 11 0x152f20
+    virtual i32 Create(char* path, i32 keyed);                        // slot 12 0x152e90
     virtual i32 Reload(CParseSource* src, i32 arg);                            // slot 13 0x153380
     virtual void RenderImage(CResolveNode* info, CDDrawSurfacePair* dst);      // slot 14 0x153470
     virtual void FlipVertical(void* a);                                        // slot 15 (external)
@@ -116,8 +131,9 @@ public:
     virtual void FlipBoth(void* a);       // slot 17: forward arg to slots 15 then 16
 
     // Non-virtual members (direct-called; not in the vtable).
-    i32
-    BuildSlot13(CImageFrameDesc* desc, void* a); // 0x153180  (non-virtual /GX builder, external)
+    // 0x153180 (non-virtual /GX builder): `size` is LoadDispatch's own blob length,
+    // forwarded verbatim to CDDrawShadeBlit::Build (which mallocs size-0x20).
+    i32 BuildSlot13(CImageFrameDesc* desc, u32 size);
     i32 CopyFrom(CImage* other);                 // 0x1532b0  (clone the surface from another image)
     i32
     SetOrigin(CImageFrameDesc* desc, i32 mode); // 0x153330 (copy desc origin for mode 3/4, else 0)
