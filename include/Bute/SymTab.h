@@ -116,7 +116,7 @@ public:
     // build a leaf record for it and splice it into the record's +0x24 sub-table,
     // bumping the parser's longest-leaf-name counter. Returns the slot (0 if the name
     // already existed or the slot pop failed). Higher-level twin of AddNodeEntry.
-    i32 AddNamedValue(void* a1, void* name, i32 key); // 0x13a400
+    struct CParseSource* AddNamedValue(void* a1, void* name, i32 key); // 0x13a400
 
     // ApplyRecursive (0x13a580): clear each child's m_04, run the range operation
     // (0x13a640) over this scope, then recurse into children whose m_04 was set.

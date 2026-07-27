@@ -122,6 +122,8 @@ public:
     void RemoveItemA(CDDSurface* item);                     // 0x142160
     void RemoveItemB(CDDPalette* item);                     // 0x142f10
     CDDSurface* Create7f0_1(i32 a);                         // 0x1421a0 (vtbl 7f0, slot 2)
+    // NB the first arg is POLYMORPHIC: CImage passes a CImageFrameDesc*, the
+    // surface-pair passes a pixel WIDTH. i32 is the honest declaration.
     CDDSurface* CreateA(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142260
     CDDSurface* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x1423c0
     CDDSurface* Createa58_1(i32 a);                         // 0x1424a0 (vtbl a58, slot 2)

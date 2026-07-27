@@ -120,7 +120,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
     } else {
         node = 0;
     }
-    if (node->Build(reinterpret_cast<i32>(m_factory), alpha, kind) == 0) {
+    if (node->Build(m_factory, alpha, kind) == 0) {
         if (node) {
             node->Free();
             ::operator delete(node);

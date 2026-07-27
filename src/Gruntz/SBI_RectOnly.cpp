@@ -1023,9 +1023,7 @@ i32 CStatusBarMgr::EnsureSub(i32 a, i32 b, i32 c) {
     CWarpStoneFly* o = new CWarpStoneFly();
     m_retabNotify = o;
     if (o == 0) {
-        return reinterpret_cast<i32>(
-            o
-        ); // retail returns the null pointer already in eax (no re-xor)
+        return 0; // o is null here; retail returns the null already in eax (no re-xor)
     }
     return o->Init(this, a, b, c);
 }

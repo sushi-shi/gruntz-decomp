@@ -28,7 +28,7 @@ CGameWnd* g_activeGameWnd; // 0x653c68
 RVA(0x0013cf20, 0x8f)
 i32 CGameWnd::CreateAndShow(CREATESTRUCTA* pParams, CGameApp* pOwner) {
     if (!pParams) {
-        return reinterpret_cast<i32>(pParams);
+        return 0;
     }
     if (!pOwner) {
         return 0;

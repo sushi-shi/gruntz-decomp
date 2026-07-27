@@ -228,6 +228,7 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
         capArg = 0x800;
     }
     CDDSurface* item = m_parent->m_1c->CreateA(
+        // the create slot's first arg is polymorphic (a desc here, a width elsewhere)
         reinterpret_cast<i32>(desc),
         static_cast<i32>(mode),
         reinterpret_cast<i32>(a),

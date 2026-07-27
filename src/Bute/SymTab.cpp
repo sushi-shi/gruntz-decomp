@@ -609,7 +609,7 @@ CSymTab* CSymTab::CreateSub(const char* name) {
 // operand-order fix (not source-steerable); same wall its siblings CreateSub/
 // ApplyRecursive @early-stop on. Banked for the final sweep.
 RVA(0x0013a400, 0xa9)
-i32 CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
+CParseSource* CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
     CSymRec* rec = FindOrAddSym(key);
     if (rec->m_valTable.Walk(static_cast<const char*>(name), m_owner->m_68 == 0) != 0) {
         return 0;
@@ -636,7 +636,7 @@ i32 CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
     if (static_cast<u32>(m_owner->m_longestLeafNameLen) <= len) {
         m_owner->m_longestLeafNameLen = len + 1;
     }
-    return reinterpret_cast<i32>(slot);
+    return slot;
 }
 
 RVA(0x0013a4b0, 0x75)

@@ -7,9 +7,9 @@
 
 class CSpriteRef {
 public:
-    i32 Build(i32 cache, void* shade, i32 kind); // 0xe2df0, ret 0xc
+    i32 Build(CShadeTableCache* cache, void* shade, i32 kind); // 0xe2df0, ret 0xc
     void Free();                                 // 0xe32e0
-    i32 m_cache;                                 // +0x00  CShadeTableCache*
+    CShadeTableCache* m_cache;                   // +0x00
     CShadeTable* m_alphaKey; // +0x04  the alpha/shade table (returned by GetSel)
     u16 m_teamColor1; // +0x08  192/255 shade
     u16 m_teamColor3; // +0x0a  128/255 shade

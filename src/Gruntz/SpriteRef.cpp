@@ -19,7 +19,7 @@
 // delinked target's self-relocs. ~93.7% unit, the remainder is that data region.
 #include <Io/GameSave.h> // g_savedMenuCmd (ex .cpp extern)
 RVA(0x000e2df0, 0x39f)
-i32 CSpriteRef::Build(i32 cache, void* shade, i32 kind) {
+i32 CSpriteRef::Build(CShadeTableCache* cache, void* shade, i32 kind) {
     m_cache = cache;
     m_alphaKey = static_cast<CShadeTable*>(shade);
     u8 r1, g1, b1; // color 1 (192/255 shade) -> m_teamColor1
