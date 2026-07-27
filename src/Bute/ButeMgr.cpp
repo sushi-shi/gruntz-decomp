@@ -1172,13 +1172,16 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
                 return static_cast<char*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, key, tag);
-            return reinterpret_cast<char*>(&s_empty); // byte-forced: see GetString's header note
+            // byte-forced: retail ends here mov eax,0x6bf698 == OFFSET s_empty, no load
+            return reinterpret_cast<char*>(&s_empty);
         }
         ReportError(s_fmtNotFound, key, tag);
-        return reinterpret_cast<char*>(&s_empty); // byte-forced: see GetString's header note
+        // byte-forced: retail ends here mov eax,0x6bf698 == OFFSET s_empty, no load
+        return reinterpret_cast<char*>(&s_empty);
     }
     ReportError(s_fmtInvalidTag, tag);
-    return reinterpret_cast<char*>(&s_empty); // byte-forced: see GetString's header note
+    // byte-forced: retail ends here mov eax,0x6bf698 == OFFSET s_empty, no load
+    return reinterpret_cast<char*>(&s_empty);
 }
 
 RVA(0x00173720, 0x4e)
