@@ -96,7 +96,7 @@
 
 #define DRAIN_COORDS()                                                                             \
     if (CoordCount() != 0) {                                                                       \
-        GruntCoordNode* n = reinterpret_cast<GruntCoordNode*>(m_31c.GetHeadPosition());            \
+        GruntCoordNode* n = CoordHeadOf(m_31c);            \
         while (n != 0) {                                                                           \
             GruntCoordNode* cur = n;                                                               \
             n = cur->m_next;                                                                       \
@@ -357,7 +357,7 @@ L_ed006:
 
 L_ed153:
     if (CoordCount() != 0) {
-        GruntCoord* coord = (reinterpret_cast<GruntCoordNode*>(m_31c.GetHeadPosition()))->m_coord;
+        GruntCoord* coord = (CoordHeadOf(m_31c))->m_coord;
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         BrickzCell* cell = &grid->m_rows[row][col];
@@ -1279,7 +1279,7 @@ L_ed006b:
 
 L_scanb:
     if (CoordCount() != 0) {
-        GruntCoord* coord = (reinterpret_cast<GruntCoordNode*>(m_31c.GetHeadPosition()))->m_coord;
+        GruntCoord* coord = (CoordHeadOf(m_31c))->m_coord;
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         if (CellTargetable(col, row) != 0) {
@@ -1331,7 +1331,7 @@ L_scanb:
     i32 bestX = 0;
     i32 bestY = 0;
     CGruntLiveNode* node =
-        reinterpret_cast<CGruntLiveNode*>(m_tileMgr->m_baseList.GetHeadPosition());
+        LiveHeadOf(m_tileMgr->m_baseList);
     while (node != 0) {
         CGruntPuddle* gg = node->m_entry;
         node = node->m_next;
@@ -2095,7 +2095,7 @@ i32 CGrunt::ArrivalScanC() {
 
 L_tailc:
     if (CoordCount() != 0) {
-        GruntCoord* coord = (reinterpret_cast<GruntCoordNode*>(m_31c.GetHeadPosition()))->m_coord;
+        GruntCoord* coord = (CoordHeadOf(m_31c))->m_coord;
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         BrickzCell* cell = &grid->m_rows[row][col];

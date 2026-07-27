@@ -1601,7 +1601,7 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
         return;
     }
     ::SendMessageA(hList, LB_RESETCONTENT, 0, 0);
-    CNetListNode* node = reinterpret_cast<CNetListNode*>(sess->m_players.GetHeadPosition());
+    CNetListNode* node = NetListHeadOf(sess->m_players);
     sess->m_playerSelId = node;
     CNetPlayerListNode* player;
     if (node) {

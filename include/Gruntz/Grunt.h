@@ -98,6 +98,15 @@ struct GruntCoordNode {
 };
 SIZE_UNKNOWN();
 
+// MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
+// hand-rolled node walk has to pun it - language-forced. One seam per type.
+inline GruntCoordNode* CoordHeadOf(const CObList& l) {
+    return reinterpret_cast<GruntCoordNode*>(l.GetHeadPosition());
+}
+inline GruntCoordNode* CoordHeadOf(const CPtrList& l) {
+    return reinterpret_cast<GruntCoordNode*>(l.GetHeadPosition());
+}
+
 // The devs' coord-list extension (its one method is 0x29a30, ex
 // ?ListNodeAdvance@@YGPAXPAPAX@Z). IDENTITY, by the full xref chase: every retail
 // caller (the four CBattlezMapConfig steppers, StepRowUnits/Step/031ca0/032060) sets
@@ -130,6 +139,15 @@ struct CGruntLiveNode {
 };
 SIZE_UNKNOWN();
 
+// MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
+// hand-rolled node walk has to pun it - language-forced. One seam per type.
+inline CGruntLiveNode* LiveHeadOf(const CObList& l) {
+    return reinterpret_cast<CGruntLiveNode*>(l.GetHeadPosition());
+}
+inline CGruntLiveNode* LiveHeadOf(const CPtrList& l) {
+    return reinterpret_cast<CGruntLiveNode*>(l.GetHeadPosition());
+}
+
 struct CGruntTypeCatalog {
     char m_pad0[0xc];
     CDDrawSubMgrLeaf* m_c; // +0x0c  owner -> name-id map
@@ -143,6 +161,15 @@ struct CGruntListNode {
     u8* m_data; // +0x08  serialized payload blob (0x2c bytes)
 };
 SIZE_UNKNOWN();
+
+// MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
+// hand-rolled node walk has to pun it - language-forced. One seam per type.
+inline CGruntListNode* GruntListHeadOf(const CObList& l) {
+    return reinterpret_cast<CGruntListNode*>(l.GetHeadPosition());
+}
+inline CGruntListNode* GruntListHeadOf(const CPtrList& l) {
+    return reinterpret_cast<CGruntListNode*>(l.GetHeadPosition());
+}
 
 class CArchive; // (unused MFC fwd; Save uses CFileMemBase)
 

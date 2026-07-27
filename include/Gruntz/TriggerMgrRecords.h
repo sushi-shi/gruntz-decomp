@@ -47,6 +47,15 @@ struct CTmRecNode {
 };
 SIZE_UNKNOWN();
 
+// MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
+// hand-rolled node walk has to pun it - language-forced. One seam per type.
+inline CTmRecNode* TmRecHeadOf(const CObList& l) {
+    return reinterpret_cast<CTmRecNode*>(l.GetHeadPosition());
+}
+inline CTmRecNode* TmRecHeadOf(const CPtrList& l) {
+    return reinterpret_cast<CTmRecNode*>(l.GetHeadPosition());
+}
+
 struct CGridCell {
     i32 m_0;
     char _pad[0x1c - 4];

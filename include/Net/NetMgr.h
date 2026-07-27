@@ -77,6 +77,15 @@ struct CNetPlayerNode {
     char m_pad4[4];
     CNetSessionNode* m_8; // +0x8  the payload per-player record
 };
+
+// MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
+// hand-rolled node walk has to pun it - language-forced. One seam per type.
+inline CNetPlayerNode* NetPlayerHeadOf(const CObList& l) {
+    return reinterpret_cast<CNetPlayerNode*>(l.GetHeadPosition());
+}
+inline CNetPlayerNode* NetPlayerHeadOf(const CPtrList& l) {
+    return reinterpret_cast<CNetPlayerNode*>(l.GetHeadPosition());
+}
 SIZE_UNKNOWN(); // player-list node walk-view; retail size TBD
 
 struct CNetCmd {
@@ -167,6 +176,15 @@ struct CNetCmdNode {
     CNetCmdNode* m_prev; // +0x4
     CNetCmd* m_data;     // +0x8  (this queue holds CNetCmd)
 };
+
+// MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
+// hand-rolled node walk has to pun it - language-forced. One seam per type.
+inline CNetCmdNode* NetCmdHeadOf(const CObList& l) {
+    return reinterpret_cast<CNetCmdNode*>(l.GetHeadPosition());
+}
+inline CNetCmdNode* NetCmdHeadOf(const CPtrList& l) {
+    return reinterpret_cast<CNetCmdNode*>(l.GetHeadPosition());
+}
 SIZE_UNKNOWN(); // CObList node walk-view; retail size TBD
 
 struct CNetCmdHdr {
@@ -405,6 +423,15 @@ struct CNetListNode {
     char m_pad4[4];             // +0x04  prev node (unused)
     CNetPlayerListNode* m_data; // +0x08  payload player node (polymorphic; virtual dtor)
 };
+
+// MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
+// hand-rolled node walk has to pun it - language-forced. One seam per type.
+inline CNetListNode* NetListHeadOf(const CObList& l) {
+    return reinterpret_cast<CNetListNode*>(l.GetHeadPosition());
+}
+inline CNetListNode* NetListHeadOf(const CPtrList& l) {
+    return reinterpret_cast<CNetListNode*>(l.GetHeadPosition());
+}
 SIZE_UNKNOWN(); // CObList node walk-view (m_players); retail size TBD
 
 struct CNetSessionDesc {
@@ -556,6 +583,15 @@ struct CGroupNode {
     CGroupNode* m_prev;      // +0x04  CObList CNode pPrev (not walked here)
     InterfaceObject* m_data; // +0x08  payload service-provider node
 };
+
+// MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
+// hand-rolled node walk has to pun it - language-forced. One seam per type.
+inline CGroupNode* NetGroupHeadOf(const CObList& l) {
+    return reinterpret_cast<CGroupNode*>(l.GetHeadPosition());
+}
+inline CGroupNode* NetGroupHeadOf(const CPtrList& l) {
+    return reinterpret_cast<CGroupNode*>(l.GetHeadPosition());
+}
 SIZE_UNKNOWN(); // traversal view of the +0x1c group list node
 
 class CNetMgr : public CObject {

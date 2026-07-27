@@ -2671,7 +2671,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                     unit->m_31c.RemoveAll();
                 }
                 // AddTail every route node's coord onto the unit's coord list.
-                GruntCoordNode* q = reinterpret_cast<GruntCoordNode*>(list.GetHeadPosition());
+                GruntCoordNode* q = CoordHeadOf(list);
                 while (q != 0) {
                     GruntCoordNode* c3 = q;
                     q = q->m_next;
@@ -4578,7 +4578,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                                     unit->m_31c.RemoveAll();
                                 }
                                 GruntCoordNode* p =
-                                    reinterpret_cast<GruntCoordNode*>(list.GetHeadPosition());
+                                    CoordHeadOf(list);
                                 while (p != 0) {
                                     GruntCoordNode* cur = p;
                                     p = p->m_next;
@@ -5009,7 +5009,7 @@ i32 CBattlezMapConfig::RouteUnitTo(CGrunt* unit, i32 gx, i32 gy, i32 a4, i32 a5,
         unit->m_31c.RemoveAll();
     }
     // AddTail every new path node's coord onto the unit's path list.
-    GruntCoordNode* p = reinterpret_cast<GruntCoordNode*>(list.GetHeadPosition());
+    GruntCoordNode* p = CoordHeadOf(list);
     while (p != 0) {
         GruntCoordNode* cur = p;
         p = p->m_next;
@@ -5103,7 +5103,7 @@ i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, i32 gx, i32 gy, i32 a4, i32
         unit->m_31c.RemoveAll();
     }
     // AddTail every new route node's coord onto the unit's path list.
-    GruntCoordNode* q = reinterpret_cast<GruntCoordNode*>(list.GetHeadPosition());
+    GruntCoordNode* q = CoordHeadOf(list);
     while (q != 0) {
         GruntCoordNode* cur5 = q;
         q = q->m_next;
@@ -5498,7 +5498,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
         unit->m_31c.RemoveAll();
     }
     // AddTail every new path node's coord onto the unit's path list.
-    GruntCoordNode* p = reinterpret_cast<GruntCoordNode*>(list.GetHeadPosition());
+    GruntCoordNode* p = CoordHeadOf(list);
     while (p != 0) {
         GruntCoordNode* cur = p;
         p = p->m_next;

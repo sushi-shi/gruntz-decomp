@@ -1080,7 +1080,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
         g_gameReg->ReportError(0x8009, 0x401); // dual-view bridge; see SpawnPuddle
         return 0;
     }
-    CTmRecNode* n = reinterpret_cast<CTmRecNode*>(m_baseList.GetHeadPosition());
+    CTmRecNode* n = TmRecHeadOf(m_baseList);
     i32 manyFlag = (m_baseList.GetCount() > 0x3b) ? 1 : 0;
     i32 unlinked = 0;
     while (n != 0 && unlinked == 0) {
@@ -1098,7 +1098,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
         }
     }
     if (manyFlag != 0 && unlinked == 0) {
-        n = reinterpret_cast<CTmRecNode*>(m_baseList.GetHeadPosition());
+        n = TmRecHeadOf(m_baseList);
         while (n != 0) {
             CTmRecNode* cur = n;
             n = n->m_next;
@@ -1327,7 +1327,7 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     ar->Write(m_274, 0x10);
     i32 cntC = m_baseList.GetCount();
     ar->Write(&cntC, 4);
-    CTmRecNode* rn = reinterpret_cast<CTmRecNode*>(m_baseList.GetHeadPosition());
+    CTmRecNode* rn = TmRecHeadOf(m_baseList);
     while (rn != 0) {
         CTmRecNode* cur = rn;
         rn = rn->m_next;
@@ -1952,7 +1952,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
     rect.top = hy - r;
     rect.bottom = hy + r;
 
-    for (CTmRecNode* node = reinterpret_cast<CTmRecNode*>(m_baseList.GetHeadPosition()); node != 0;
+    for (CTmRecNode* node = TmRecHeadOf(m_baseList); node != 0;
          node = node->m_next) {
         CGruntPuddle* g = node->m_obj;
         if (g->m_pending != 0) {

@@ -15,6 +15,15 @@ struct CSoundNode {
 };
 SIZE_UNKNOWN();
 
+// MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
+// hand-rolled node walk has to pun it - language-forced. One seam per type.
+inline CSoundNode* SoundHeadOf(const CObList& l) {
+    return reinterpret_cast<CSoundNode*>(l.GetHeadPosition());
+}
+inline CSoundNode* SoundHeadOf(const CPtrList& l) {
+    return reinterpret_cast<CSoundNode*>(l.GetHeadPosition());
+}
+
 class CAmbientPosSound;
 class CRandomAmbientSound;
 struct AmbientPoint;
