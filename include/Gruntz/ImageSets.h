@@ -6,6 +6,18 @@
 
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
+// The WWD tile-image record every CTileImageSet::Parse is handed: an 8-byte record
+// header, then a dword field run at +0x08 that each kind walks with an ADVANCING CURSOR
+// (retail's `add eax,8; mov (eax); add eax,4`, which is why the cursor form is kept in
+// all three Parse bodies rather than indexed member reads). Kind 3's tile pixels follow
+// its two dwords, at +0x10 == &m_fields[2]. The run's length varies by kind, so it is
+// declared as the usual trailing array.
+struct WwdTileImageRecord {
+    char m_header[8]; // +0x00  record header (not read by Parse)
+    i32 m_fields[1];  // +0x08  parsed field run
+};
+SIZE_UNKNOWN();
+
 // VTBL_ABSENT: abstract-in-practice family base - only the concrete CImageSet1/2/3
 // are constructed (each stamps its own vtable); the m_imageSets array dispatches
 // through this base, whose own ??_7 is never emitted.
