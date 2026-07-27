@@ -11,7 +11,10 @@ class CWwdGrid;    // the canonical grid (<Gruntz/WwdGrid.h>); the cursor holds 
 struct BucketHead; // a grid cell's {head,tail} bucket (<Gruntz/WwdGrid.h>)
 
 struct WwdRect {
-    i32 a, b, c, d;
+    i32 m_minX; // +0x00
+    i32 m_minY; // +0x04
+    i32 m_maxX; // +0x08
+    i32 m_maxY; // +0x0c
 };
 SIZE_UNKNOWN();
 

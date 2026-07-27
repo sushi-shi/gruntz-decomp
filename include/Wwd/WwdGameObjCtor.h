@@ -8,8 +8,10 @@
 
 struct AnimWorkerObj; // <DDrawMgr/AnimWorkerObj.h> - the owned +0x7c worker (canonical
 
+class CDDrawSurfaceMgr; // <DDrawMgr/DDrawSurfaceMgr.h> - the +0x0c owner context
+
 struct WwdCtorBase {
-    WwdCtorBase(int a, int b, int c) {
+    WwdCtorBase(CDDrawSurfaceMgr* a, int b, int c) {
         m_08 = c;
         m_04 = b;
         m_0c = a;
@@ -27,7 +29,8 @@ struct WwdCtorBase {
         m_d8 = -1;
     }
     char _vft0[4]; // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    int m_04, m_08, m_0c;
+    int m_04, m_08;
+    CDDrawSurfaceMgr* m_0c; // +0x0c  owner context (== CLoadable::m_ownerCtx's draw arm)
     char _p10[0x20 - 0x10];
     int m_20;
     char _p24[0x38 - 0x24];
@@ -61,7 +64,7 @@ struct CWwdGameObjBaseCtor : public WwdCtorBase {
     CString m_label; // +0xdc  ??0CString (0x1b9b93)
     char _pe0[0x188 - 0xe0];
     int m_188;                                // +0x188  object id
-    CWwdGameObjBaseCtor(int a, int b, int c); // 0x15b390 (I obj)
+    CWwdGameObjBaseCtor(CDDrawSurfaceMgr* a, int b, int c); // 0x15b390 (I obj)
 };
 SIZE_UNKNOWN(); // 0x15b390 per-kind wide-object ctor (CResolveNode base)
 

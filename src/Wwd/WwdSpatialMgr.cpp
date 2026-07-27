@@ -56,25 +56,25 @@ i32 CWwdSpatialMgr::ScrollTo(i32 dx, i32 dy) {
     m_scrollY = dy;
 
     WwdRect r0;
-    r0.a = dx - m_org0x;
-    r0.b = dy - m_org0y;
-    r0.c = m_org0x + dx;
-    r0.d = m_org0y + dy;
-    i32 n = m_grid0->Query(r0.a, r0.b, r0.c, r0.d, 1);
+    r0.m_minX = dx - m_org0x;
+    r0.m_minY = dy - m_org0y;
+    r0.m_maxX = m_org0x + dx;
+    r0.m_maxY = m_org0y + dy;
+    i32 n = m_grid0->Query(r0.m_minX, r0.m_minY, r0.m_maxX, r0.m_maxY, 1);
 
     WwdRect r1;
-    r1.a = dx - m_org1x;
-    r1.b = dy - m_org1y;
-    r1.c = m_org1x + dx;
-    r1.d = m_org1y + dy;
-    n += m_grid1->Query(r1.a, r1.b, r1.c, r1.d, 1);
+    r1.m_minX = dx - m_org1x;
+    r1.m_minY = dy - m_org1y;
+    r1.m_maxX = m_org1x + dx;
+    r1.m_maxY = m_org1y + dy;
+    n += m_grid1->Query(r1.m_minX, r1.m_minY, r1.m_maxX, r1.m_maxY, 1);
 
     WwdRect r2;
-    r2.a = dx - m_org2x;
-    r2.b = dy - m_org2y;
-    r2.c = m_org2x + dx;
-    r2.d = m_org2y + dy;
-    n += m_grid2->Query(r2.a, r2.b, r2.c, r2.d, 1);
+    r2.m_minX = dx - m_org2x;
+    r2.m_minY = dy - m_org2y;
+    r2.m_maxX = m_org2x + dx;
+    r2.m_maxY = m_org2y + dy;
+    n += m_grid2->Query(r2.m_minX, r2.m_minY, r2.m_maxX, r2.m_maxY, 1);
 
     return n;
 }

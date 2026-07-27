@@ -562,7 +562,7 @@ i32 CBattlezMapConfig::StepBoard() {
 // the choice cascades through the two 15-slot scans' operands. The foreign render/
 // level chains (m_ctx->m_world->m_24->m_5c) are modeled by raw offset. Final sweep.
 RVA(0x00026470, 0x29d)
-i32 CBattlezMapConfig::StepRowSpawn(i32) {
+i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
     CGrunt** row = &m_triggerMgr->m_grid[m_curCell * 15];
     i32 occupied = 0;
     for (i32 c = 15; c != 0; c--) {
@@ -581,24 +581,24 @@ i32 CBattlezMapConfig::StepRowSpawn(i32) {
     Coord** cands = CoordArrayData(m_candArray);
     Coord* cand = 0;
     i32 i = 0;
-    i32 tileRec[7];
-    i32 slot38;
+    BrickzCell tileRec;
     for (;;) {
         cand = cands[i];
         i32 usable = 1;
         if (cand != 0) {
-            i32* tilePtr = reinterpret_cast<i32*>(
-                &(static_cast<BrickzCell*>((m_board)->m_rows[cand->m_y]))[cand->m_x]
-            );
-            for (i32 t = 0; t < 7; t++) {
-                tileRec[t] = tilePtr[t];
-            }
+            // retail @0x264fa computes the cell address on the m_rowInts arm - `x*7` then
+            // `*4` (`shl edi,3; sub edi,eax; lea esi,[ecx+edi*4]`), not an x*0x1c stride -
+            // and copies the whole 0x1c-byte cell with `mov ecx,7; rep movsd`.
+            const i32* tilePtr = &m_board->m_rowInts[cand->m_y][cand->m_x * 7];
+            memcpy(&tileRec, tilePtr, sizeof(tileRec));
             usable = 1;
-            if (tileRec[0] & 0x20000000) {
-                if (static_cast<u8>(tileRec[1]) != static_cast<u8>(m_curCell)) {
+            if (tileRec.m_0 & 0x20000000) {
+                // retail 0x26517 `cmp eax,ecx / jne +2 / xor esi,esi`: usable is cleared
+                // when the reserved cell's owner byte EQUALS m_curCell.
+                if (tileRec.m_4Bytes[1] == m_curCell) {
                     usable = 0;
                 }
-                if (slot38 == 0) {
+                if (allowReserved == 0) {
                     usable = 0;
                 }
             }
@@ -612,10 +612,9 @@ i32 CBattlezMapConfig::StepRowSpawn(i32) {
         }
     }
     Coord screen;
-    m_ctx->m_world->m_level->m_mainPlane
-        ->SnapToTileCenter(reinterpret_cast<i32*>(&screen), cand->m_x << 5, cand->m_y << 5);
+    m_ctx->m_world->m_level->m_mainPlane->SnapToTileCenter(&screen, cand->m_x << 5, cand->m_y << 5);
     i32 cell;
-    if (slot38 != 0) {
+    if (allowReserved != 0) {
         cell = m_ctx->m_cmdGrid->PlaceObject(
             m_curCell,
             screen.m_x,
@@ -657,7 +656,9 @@ i32 CBattlezMapConfig::StepRowSpawn(i32) {
     if (unit == 0) {
         return 0;
     }
-    slot38 = rand() % 100;
+    // retail parks this roll in the SAME stack slot as the (now dead) argument -
+    // [esp+0x38] at 0x26620 - which is why the two used to be one conflated local.
+    i32 roll = rand() % 100;
     i32 freeCount = 0;
     CGrunt** r2 = &m_triggerMgr->m_grid[m_curCell * 15];
     for (i32 k = 15; k != 0; k--) {
@@ -671,7 +672,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32) {
         (static_cast<double>(m_ctx->m_options[m_curCell].m_comboSel)
          * static_cast<double>(m_budgetMul) * g_diffScale)
     );
-    if (slot38 >= m_spawnPct || freeCount >= budget) {
+    if (roll >= m_spawnPct || freeCount >= budget) {
         unit->m_2d8 = 4;
     } else {
         unit->m_2d8 = 0;
@@ -3051,10 +3052,8 @@ i32 CBattlezMapConfig::SerializeState(CFileMemBase* objArg, i32 kindArg, i32, i3
             }
             break;
     }
-    // The scratch band is two 8-byte blocks: {m_scratch78,m_scratch7c} and
-    // {m_scratch80,m_scratch84} - the same i64 timer-pair shape line 4168 reads.
-    // CFileMemBase::Read/Write already take void*, so each block is its own member
-    // address, not a byte cursor walked off the first one.
+    // the two 8-byte scratch pairs (+0x78/+0x7c and +0x80/+0x84) stream as themselves;
+    // Read/Write take a void* so no cast is needed.
     switch (kind) {
         case 4:
             obj->Write(&m_scratch78, 8);
@@ -3940,7 +3939,7 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(CGrunt* unit, i32 a1, i32 a2,
         i32 colOff = (dl * 7) << 2;
         for (i32 w = dr - dl; w != 0; w--) {
             for (i32 r = dt; r < db; r++) {
-                reinterpret_cast<u8*>(board->m_rowBytes[r])[colOff + 2] &= 0xfd;
+                board->m_rowBytes[r][colOff + 2] &= 0xfd;
             }
             colOff += 0x1c;
         }
@@ -4251,7 +4250,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
             n = n->m_next;
             Coord* c = cur->m_coord;
             if (c != 0) {
-                BrickzCell* row = static_cast<BrickzCell*>((m_board)->m_rows[c->m_y]);
+                BrickzCell* row = m_board->m_rows[c->m_y];
                 if (row[c->m_x].m_0 & 4) {
                     tx = c->m_x;
                     ty = c->m_y;
@@ -4300,9 +4299,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
             CMapMgr* b = m_board;
             if (static_cast<u32>(c->m_x) < static_cast<u32>(b->m_width)
                 && static_cast<u32>(c->m_y) < static_cast<u32>(b->m_height)) {
-                word = (reinterpret_cast<i32*>(
-                    &(static_cast<BrickzCell*>(b->m_rows[c->m_y]))[c->m_x]
-                ))[0];
+                word = b->m_rows[c->m_y][c->m_x].m_0;
             } else {
                 word = 1;
             }
@@ -6460,7 +6457,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         unit->m_arrivalRow = -1;
         return 1;
     }
-    if (recA->m_014 == 0 && *reinterpret_cast<i32*>(cfgB) == 0) {
+    if (recA->m_014 == 0 && cfgB->m_active == 0) {
         CoordNode* n = unit->CoordHead();
         while (n != 0) {
             CoordNode* cur = n;

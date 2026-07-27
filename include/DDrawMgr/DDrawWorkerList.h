@@ -42,7 +42,7 @@ public:
         i32 a4,
         i32 addHead
     ); // slot 11 0x157330
-    virtual void* CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4,
+    virtual void* CreateWorkerB30(i32 a1, i32 a2, const char* key, i32 a4,
                                   i32 addHead); // slot 12 0x157150
     // slot 13 - the per-frame worker pump the play states "present" through
     // (0x163bf0, T obj): dispatch each worker's RenderFrame(a, b) onto the two

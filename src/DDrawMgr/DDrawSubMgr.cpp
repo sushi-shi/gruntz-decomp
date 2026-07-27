@@ -42,6 +42,7 @@
 #include <Gruntz/AniAdvanceCursor.h>      // CAniAdvanceCursor
 #include <Gruntz/SerialArchive.h>         // the shared CFileMemBase stream
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // canonical CDDrawSurfaceMgr
+#include <Image/CImage.h> // CImage complete - PlaceFrame downcasts the CObArray band element
 #include <DDrawMgr/DDrawSubMgrPages.h>    // single-source CDDrawSubMgrPages (surface ops)
 #include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup (the 3-map dtor-host twin)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (real polymorphic)
@@ -310,9 +311,9 @@ i32 CDDrawWorkerA::Vfunc2C(i32 a1, i32 a2, i32 a3) {
 }
 
 RVA(0x00157150, 0xa5)
-void* CDDrawWorkerList::CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead) {
+void* CDDrawWorkerList::CreateWorkerB30(i32 a1, i32 a2, const char* key, i32 a4, i32 addHead) {
     CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
-    if (w->PlaceBound(a1, a2, a3, a4) == 0) {
+    if (w->PlaceBound(a1, a2, key, a4) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -360,21 +361,23 @@ CDDrawWorkerB::~CDDrawWorkerB() {
 }
 
 RVA(0x00157280, 0x30)
-i32 CDDrawWorkerB::PlaceBound(i32 a1, i32 a2, i32 a3, i32 a4) {
-    Helper(a3, a4);
+i32 CDDrawWorkerB::PlaceBound(i32 a1, i32 a2, const char* key, i32 a4) {
+    Helper(key, a4);
     m_refCount = 2;
     return CResolveNode::SetPosition(a1, a2); // direct base call (retail rel32 0x164790)
 }
 
 RVA(0x001572b0, 0x38)
 i32 CDDrawWorkerB::PlaceFrame(i32 a1, i32 a2, CDDrawWorker* src, i32 a4) {
-    i32 frame;
+    CImage* frame;
     if (a4 >= src->m_minIndex && a4 <= src->m_maxIndex) {
-        frame = reinterpret_cast<i32>(src->m_items[a4]); // CObArray operator[] inline = m_pData[a4]
+        // CObArray operator[] inline = m_pData[a4]; CImage : CWapObj : CObject, so the
+        // band element downcasts (no reinterpret).
+        frame = static_cast<CImage*>(src->m_items[a4]);
     } else {
         frame = 0;
     }
-    m_78 = frame;
+    m_frame = frame;
     m_refCount = 2;
     return CResolveNode::SetPosition(a1, a2); // direct base call (retail rel32 0x164790)
 }

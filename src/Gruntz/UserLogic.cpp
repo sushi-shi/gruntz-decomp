@@ -115,7 +115,7 @@ RVA(0x00008b70, 0x3)
 void CUserLogic::FireActivation(i32) {}
 
 RVA(0x00008b90, 0x40)
-void CUserLogic::FinalizeStep(i32 /*unused*/) {
+void CUserLogic::FinalizeStep(char* /*name*/) {
     if (m_deferredCallback == 0) {
         return;
     }

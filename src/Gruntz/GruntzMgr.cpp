@@ -2091,7 +2091,7 @@ i32 CGruntzMgr::Quicksave() {
         return 0;
     }
     if (m_cueSink) {
-        m_cueSink->DtorBody(); // 0x11c7b0 (the cue-timer flush; ex the "Stop" alias)
+        m_cueSink->PauseAllVoices(); // 0x11c7b0 (the cue-timer flush; ex the "Stop" alias)
     }
     FillSaveInfo(m_saveInfoRec, 0);
     if (g_gameReg->m_saveSink->Save(m_saveInfoRec->m_serial, 0x81a7)) {
@@ -2108,7 +2108,7 @@ i32 CGruntzMgr::Quickload() {
         return 0;
     }
     if (m_cueSink) {
-        m_cueSink->DtorBody();
+        m_cueSink->PauseAllVoices();
     }
     if (m_saveInfoRec && (m_saveInfoRec->m_flags & 1)) {
         // The +0x58 sink IS CSaveGame; Check == CSaveGame::VerifySlot (0xe52c0) and
@@ -2653,7 +2653,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
         return;
     }
     if (m_cueSink) {
-        m_cueSink->DtorBody(); // 0x11c7b0 (the cue-timer flush; ex the "Stop" alias)
+        m_cueSink->PauseAllVoices(); // 0x11c7b0 (the cue-timer flush; ex the "Stop" alias)
     }
     if (m_world) {
         m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
@@ -2678,7 +2678,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
 RVA(0x000903f0, 0x10c)
 i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
     if (m_cueSink) {
-        m_cueSink->DtorBody(); // 0x11c7b0 (the cue-timer flush; ex the "Stop" alias)
+        m_cueSink->PauseAllVoices(); // 0x11c7b0 (the cue-timer flush; ex the "Stop" alias)
     }
     if (m_cmdGrid && m_soundEnabled) {
         m_cmdGrid->DestroyAllAnims();
@@ -3235,7 +3235,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
         return 0;
     }
     if (m_cueSink) {
-        m_cueSink->DtorBody(); // 0x11c7b0 (the cue-timer flush; ex the "Stop" alias)
+        m_cueSink->PauseAllVoices(); // 0x11c7b0 (the cue-timer flush; ex the "Stop" alias)
     }
     if (m_cmdGrid && m_soundEnabled) {
         m_cmdGrid->DestroyAllAnims();

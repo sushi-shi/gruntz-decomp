@@ -39,10 +39,9 @@ i32 CInGameText::Update() {
 
     i32 areaId;
     i32 subId;
-    CGrunt* found = reinterpret_cast<CGrunt*>(
+    CGrunt* found =
         g_gameReg->m_cmdGrid
-            ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1)
-    );
+            ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1);
     // POSITIVE GATE: retail parks the miss handler at the very END of the function
     // (0x9998f) where it falls into the `return 0` epilogue the three inner early
     // exits also tail-merge into. Written as an early return it lands inline right
@@ -56,9 +55,9 @@ i32 CInGameText::Update() {
             return 0;
         }
 
-        char** node = reinterpret_cast<char**>(
-            g_typeColl._zvec::IndexToPtr(found->m_objAux->ActKey())
-        );
+        // ScratchResolve IS the base _zvec::IndexToPtr call (0x312a0) with the band's
+        // CString element type put back on at that one accessor seam.
+        CString* node = g_typeColl.ScratchResolve(found->m_objAux->ActKey());
         // m_alloc is the i32-typed slot base (the _zvec spelling)
         CString* p = g_typeColl.Slots();
         i32 n = g_typeColl.m_grown;

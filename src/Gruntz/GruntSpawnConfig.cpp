@@ -577,7 +577,7 @@ void CGruntSpawnConfig::StopVoice(i32 id) {
 }
 
 RVA(0x0011c7b0, 0x2d)
-void CGruntSpawnConfig::DtorBody() {
+void CGruntSpawnConfig::PauseAllVoices() {
     // The two parallel pairs the old "p[2]" cursor spanned: m_voices[] @+0x08 and
     // m_streams[] @+0x10 (p[2] was simply m_streams[k]).
     for (i32 k = 0; k < 2; k++) {
@@ -592,7 +592,7 @@ void CGruntSpawnConfig::DtorBody() {
 
 RVA(0x0011c7f0, 0x2b)
 void CGruntSpawnConfig::ResetPicks() {
-    DtorBody();
+    PauseAllVoices();
     for (i32 i = 0; i < m_voiceLists.GetSize(); i++) {
         CSpawnList* e = static_cast<CSpawnList*>(m_voiceLists[i]);
         if (e != 0) {

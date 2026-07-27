@@ -32,6 +32,10 @@
 // recovered as (link - 4). One seam per walk site; there is no member to name.
 RVA(0x001848b0, 0x47)
 CHashElement* CHashElement::Next() {
+    // byte-forced (retail 0x1848b0: `mov eax,[ecx+4]; test eax,eax; je +; add eax,-4`):
+    // the chain stores the address of the SUCCESSOR's +4 link field, so the element is
+    // recovered as (link - 4). C++ has no CONTAINING_RECORD without a cast; one seam
+    // per walk site, and there is no member whose address this is.
     CHashElement* n =
         m_link.m_next ? reinterpret_cast<CHashElement*>(reinterpret_cast<char*>(m_link.m_next) - 4)
                       : 0;

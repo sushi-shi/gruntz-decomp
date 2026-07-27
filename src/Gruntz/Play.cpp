@@ -181,7 +181,7 @@ typedef enum {
 // or decl-order steerable - tried both). Permuter candidate for the final sweep.
 RVA(0x000c8b80, 0x11b)
 i32 CPlay::FrameSlot28(i32 arg) {
-    m_mgr->m_cueSink->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
+    m_mgr->m_cueSink->PauseAllVoices(); // 0x20a4 -> CGruntSpawnConfig::PauseAllVoices @0x11c7b0
     m_savedClock = static_cast<i32>(g_frameTime);
     if (m_notifyLatch) {
         QuitToMenu();
@@ -709,7 +709,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     self->m_mgr->m_sound->StopAndFlush();
     self->m_mgr->m_inputState->Teardown();
-    self->m_mgr->m_cueSink->DtorBody();
+    self->m_mgr->m_cueSink->PauseAllVoices();
     self->m_mgr->m_cueSink->ClearSprites();
     self->m_mgr->RestoreVideoMode(0);
 
@@ -5426,7 +5426,7 @@ i32 CState::BuildAssetNamespacePrefixes(
     i32 result;
     if (mode != 0) {
         if (m_world->m_imageRegistry->HasKeyEqual("GRUNTZ_" + name) == 0) {
-            g_gameReg->m_cueSink->DtorBody();
+            g_gameReg->m_cueSink->PauseAllVoices();
             (static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))->DestroyAllAnims();
             if (lightGate != 0) {
                 CString cs;
@@ -5692,7 +5692,7 @@ i32 CPlay::Vslot09(i32 mode) {
         }
         (static_cast<CTriggerMgr*>(m_mgr->m_cmdGrid))
             ->DestroyAllAnims(); // reg m_68 CTriggerMgr @0x7d330
-        (static_cast<CGruntSpawnConfig*>(m_mgr->m_cueSink))->DtorBody();
+        (static_cast<CGruntSpawnConfig*>(m_mgr->m_cueSink))->PauseAllVoices();
     }
     return 1;
 }

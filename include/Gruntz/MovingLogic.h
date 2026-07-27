@@ -21,7 +21,7 @@ public:
     // slot 5 (0x13c70; out-of-line body in Projectile.cpp - the deferred-callback
     // release + the MovingSlot16 tail; was bound as `CProjectile::ReleaseDeferred`,
     // but the slot lives in ??_7CMovingLogic @0x1e87ac - CProjectile INHERITS it).
-    virtual void FinalizeStep(i32 unused) OVERRIDE;
+    virtual void FinalizeStep(char* unused) OVERRIDE;
     // NO back-pointer fields at +0x34..+0x3c (MI1, 2026-07-17). They used to be spelled
     // here (the blanket ex-TILE_LOGIC_TAIL injection, from when this class was thought to
     // derive the fake CTileLogic) and they were a FABRICATION: retail's CProjectile ctor

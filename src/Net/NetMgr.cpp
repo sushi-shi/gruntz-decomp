@@ -123,13 +123,13 @@ void CNetMgr::Destroy() {
         m_releaseIface->Release();
         m_releaseIface = 0;
     }
-    // The DirectPlay interface is released through its OWN vtable - slot 4 (+0x10),
-    // then a re-read of [this+0x18] and slot 2 (+0x08) == IUnknown::Release. The
-    // ex-`INetReleasable*&` alias here was a second name for IDirectPlay4Z (same
-    // object, same two slots), not a distinct interface.
+    // The DirectPlay interface's own slots 4 and 2 ARE the teardown pair (+0x10 then
+    // the IUnknown +0x08 Release); the ex INetReleasable** alias was a second view of
+    // the same object. The local re-read matches retail's reload of [this+0x18].
     if (m_directPlay != 0) {
         m_directPlay->v04();
-        m_directPlay->Release();
+        IDirectPlay4Z* again = m_directPlay;
+        again->Release();
         m_directPlay = 0;
     }
 }
@@ -282,7 +282,10 @@ i32 CNetMgr::ReadGroupSel(void* hList) {
     if (data == 0) {
         return 0;
     }
-    m_groupSel = reinterpret_cast<InterfaceObject*>(data); // the LB item data IS the group node
+    // API-forced: LB_GETITEMDATA hands the item cookie back as an LRESULT (an integer by
+    // the Win32 ABI); the cookie IS the group node pointer the list box was populated with
+    // (LB_SETITEMDATA in PopulateGroupList), so the pointer type goes back on here.
+    m_groupSel = reinterpret_cast<InterfaceObject*>(data);
     return data;
 }
 
@@ -646,12 +649,12 @@ void CNetMgr::ClearSessionList() {
 // out-var onto a dead arg slot (frame 0x10 vs our 0x14) and materializes the zero
 // once in eax to seed every zeroed local where our /O2 stores immediates. Final sweep.
 RVA(0x00178cb0, 0x8b)
-CNetSessionNode* CNetMgr::CreatePlayer(void* a, const char* b, i32 c) {
+CNetSessionNode* CNetMgr::CreatePlayer(char* a, const char* b, i32 c) {
     i32 out = 0;
     NetDPName desc;
     desc.dwSize = sizeof(NetDPName);
     desc.dwFlags = 0;
-    desc.lpszShortNameA = static_cast<char*>(a);
+    desc.lpszShortNameA = a;
     desc.lpszLongNameA = const_cast<char*>(b);
 
     IDirectPlay4Z* iface = m_directPlay;
@@ -660,7 +663,7 @@ CNetSessionNode* CNetMgr::CreatePlayer(void* a, const char* b, i32 c) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x3bb, hr, 0);
         return 0;
     }
-    return AddSessionNode(out, reinterpret_cast<const char*>(a), b, 0);
+    return AddSessionNode(out, a, b, 0);
 }
 
 // ---------------------------------------------------------------------------

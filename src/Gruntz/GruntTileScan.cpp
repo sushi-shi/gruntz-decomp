@@ -122,6 +122,8 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
             }
             SCAN_RECT_BOUNDS(grid);
             if (m_0f0.GetSize() != 0) {
+                // coordData() is m_0f0's one typed-element seam; the ex-CScanGoal was a
+                // second name for Coord ({i32,i32}) on this very array.
                 Coord* e = coordData()[rand() % m_0f0.GetSize()];
                 g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
             }

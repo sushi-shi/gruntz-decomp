@@ -41,7 +41,7 @@ public:
     void* PickSpawnCoord(void*, CGrunt*, i32);
     i32 RouteUnitTo(CGrunt*, i32, i32, i32, i32, i32);
     i32 RouteUnitToGoal(CGrunt*, i32, i32, i32, i32);
-    i32 StepRowSpawn(i32);
+    i32 StepRowSpawn(i32 allowReserved); // 0x026470 (arg read at [esp+0x38]; callers pass 0/1)
     i32 CanPlaySpecialAnim(CGrunt*);
     i32 StepBoard();
     i32 ChooseIdleBehavior(CGrunt*);

@@ -49,7 +49,13 @@ struct BrickzCell {
         i32 m_0;           // +0x00  packed terrain flags
         u8 m_flagBytes[4]; //        byte view; [3] & 0x20 = the stepped/visited bit
     };
-    i32 m_4; // +0x04  per-cell edge/id payload
+    // +0x04 is likewise read BOTH ways: as a dword payload, and as the single BYTE at
+    // +0x05 (StepRowSpawn @0x26502 does `xor eax,eax; mov al,[cell+5]; cmp eax,m_curCell`
+    // - a byte load, not a dword mask). Same 4 bytes, no cast.
+    union {
+        i32 m_4;          // +0x04  per-cell edge/id payload
+        u8 m_4Bytes[4];   //        byte view; [1] = the owning cell/player index
+    };
     // +0x08 is the id of the object currently OCCUPYING the cell, not a link. Retail
     // CInGameIcon::Reposition @0x98a90 stores the bound object's id (obj->m_188) into this
     // slot, reads the slot of the tile it is leaving back out and passes it to

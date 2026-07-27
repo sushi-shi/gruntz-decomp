@@ -70,7 +70,15 @@ struct CParseSource {
     char* m_name;     // +0x00 source name
     void* m_entry;    // +0x04 keyed-store entry (first dword = tag)
     i32 m_typeTag;    // +0x08  type tag (1/2/4; the Build f2 slot)
-    u32 m_length;     // +0x0c total byte length / limit
+    // +0x0c is PROVEN heterogeneous: for most entry kinds it is the byte length, but for
+    // the XCP kind it holds the entry's key STRING. CDDrawWorkerMapSmall::Factory_165a90
+    // reads it at 0x165ad4, tests it against 0 at 0x165b3c and, when non-null, runs
+    // `repnz scas` (strlen) + a block copy straight off it at 0x165b4c - i.e. it is
+    // dereferenced as a char*. Two arms of the same 4 bytes, so a union, not a cast.
+    union {
+        u32 m_length;        // +0x0c total byte length / limit
+        const char* m_keyHandle; // +0x0c (XCP entries) the entry's key string
+    };
     CSymTab* m_owner; // +0x10  owning scope (Build stores it; the stream side
                       //        reads its m_baseOffset/m_mappedBuf as the mapped window)
     i32 m_base;       // +0x14 source base ptr

@@ -77,7 +77,12 @@ public:
     // tail) and CGrunt's 0x5ecd0 (`ret 4`, NO exit materializes eax -> void).
     // Was the no-arg/i32 `UserLogicVfunc3` placeholder + a non-virtual
     // FinalizeStep twin of the same 0x8b90 body.
-    virtual void FinalizeStep(i32 unused);
+    // ARG TYPE PROVEN char* (2026-07-28): the slot's ONE retail caller, ProjTypeXfer
+    // @0x16e4f0, pushes `CString::GetBuffer(0)` (call 0x1ba11c) into it at 0x16e669
+    // -> `call [edi+0x14]`, the identical value it pushed into slot 3 XferName(char*)
+    // at 0x16e5ad -> `call [edi+0xc]`. No override reads the arg, so nothing contests
+    // it; it was `i32` only because the caller's cast hid the type.
+    virtual void FinalizeStep(char* name);
     // slots 6/11 (Activate/Vfunc9): VOID - the base defaults (0x88d0/0x8970) are
     // bare `c3` (cl5 C2561 forbids a return-less i32 body), and the CGrunt
     // override tails (0x5caa0/0x48360) materialize NO eax either. Every dispatch
@@ -137,12 +142,13 @@ public:
     // virtual above; retail's slot holds its ILT thunk 0x3913, which
     // reloc_fidelity thunk-resolves onto the body.)
     i32 Place(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32); // 0x4d800
-    // +0x04/+0x08: the deferred + gated act callbacks. They are POINTERS TO MEMBER
-    // FUNCTIONS (4 bytes - CUserLogic is single-inheritance, so cl uses the smallest
-    // representation; SIZE(0x34) below is the proof), not the i32 they were declared
-    // as, which is why both dispatch sites had to reinterpret them through a ref.
-    void (CUserLogic::*m_deferredCallback)(); // +0x04
-    void (CUserLogic::*m_gatedCallback)();    // +0x08
+    // The two act callbacks. They ARE pointers-to-member: the only writers store 0 and
+    // the only readers do `(this->*cb)()` (0x8b90/0x13c70), and the act tables that feed
+    // them (CActRegPool<T>::s_table, <Gruntz/ActReg.h>) hold `i32 (CUserLogic::*)()`.
+    // Single-inheritance CUserLogic => 4 bytes each, so the +0x04/+0x08 layout is intact.
+    typedef i32 (CUserLogic::*ActCallback)();
+    ActCallback m_deferredCallback; // +0x04
+    ActCallback m_gatedCallback;    // +0x08
     CGameObject* m_0c;                                                     // +0x0c
     // +0x10  bound game object (== m_38): the created A-kind sprite (every binding
     // site hands a CreateSprite/ReadPlaneObjects product; leaves read its m_1a0

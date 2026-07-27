@@ -86,7 +86,7 @@ RVA_COMPGEN(0x00012a40, 0x1e, ??_GCTimeBomb@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012a70, 0x44, ??1CTimeBomb@@UAE@XZ)
 
 RVA(0x00013c70, 0x47)
-void CMovingLogic::FinalizeStep(i32) {
+void CMovingLogic::FinalizeStep(char*) {
     if (m_deferredCallback != 0) {
         if (m_gatedCallback != 0 && m_objAux->ActKey() == m_28) {
             (this->*m_gatedCallback)();

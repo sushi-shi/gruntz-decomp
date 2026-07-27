@@ -1052,7 +1052,7 @@ i32 ProjTypeXfer(CUserLogic* ar) {
 
     entry = TypeResolve(ar->m_objAux->ActKey());
     FreeNodes();
-    ar->FinalizeStep(reinterpret_cast<i32>(entry->GetBuffer(0)));
+    ar->FinalizeStep(entry->GetBuffer(0));
     return 1;
 }
 

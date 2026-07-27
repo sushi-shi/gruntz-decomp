@@ -17,7 +17,7 @@ class CBattlezData;   // CWorld::m_7c score/HUD sink (BattlezData.h; the per-kin
 class CChatBoxOwner;  // +0x2e0 hit-test/region sink (real type; deref TUs include ChatBoxOwner.h)
 class CFontConfig;    // CWorld::m_5c  (TypeChar @0x21e20 - the chat/key text layer)
 class CWorldSoundSet; // CWorld::m_54  (Teardown @0xb660 / Resume @0xbcf0 / Retune @0xbd60)
-class CGruntSpawnConfig; // CWorld::m_60  (ClearSprites @0x11af90 / DtorBody @0x11c7b0)
+class CGruntSpawnConfig; // CWorld::m_60  (ClearSprites @0x11af90 / PauseAllVoices @0x11c7b0)
 class CGruntzCmdMgr;     // CWorld::m_6c  (EnqueueSingle @0x23c30 - the marker/waypoint queue)
 class CTriggerMgr;       // CWorld::m_68  (== g_gameReg->m_cmdGrid; TriggerMgr.h)
 class
@@ -148,8 +148,9 @@ public:
     // The +4/+8 these walkers read are CPtrArray's own m_pData/m_nSize (the CObject
     // vptr sits at +0), i.e. MFC's inline GetData()/GetSize() - not an offset pun.
     CHitMarker** markerData() {
-        // API-forced, at one seam: CPtrArray is MFC's untyped void* array, so naming
-        // the element type is the one cast the container's API leaves no way to avoid.
+        // API-forced: ::CPtrArray::GetData() is declared `void**` by MFC, so the element
+        // type goes back on here - at one seam, this accessor, rather than at each of the
+        // marker walkers (the same shape CBattlezMapConfig::coordData() uses).
         return reinterpret_cast<CHitMarker**>(m_startMarkers.GetData());
     }
     i32 markerCount() { return m_startMarkers.GetSize(); }

@@ -47,8 +47,9 @@ i32 ProjectWallQuad(
     double c = cos(ang);
     double hw = static_cast<double>(p5);
 
-    // The workspace is written as a flat float grid (7 floats == one ClipVtx record).
-    float* w = reinterpret_cast<float*>(g_rasterVtxB);
+    // The workspace is written as a flat float grid (7 floats == one ClipVtx record),
+    // walked from the first record's leading float member - no cast.
+    float* w = &g_rasterVtxB[0].x;
     w[0] = static_cast<float>((-s));
     w[1] = static_cast<float>(len);
     w[5] = static_cast<float>(c);

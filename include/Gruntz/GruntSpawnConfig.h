@@ -84,9 +84,9 @@ public:
     i32 AnyVoicePlaying();   // 0x11c6c0 (either slot m_08/m_0c has a non-zero m_playFlags)
     i32 VoicePlaying(i32 i); // 0x11c700 (slot i's m_playFlags is non-zero)
     void StopVoice(i32 id);  // 0x11c730 (selective per-id voice teardown)
-    void DtorBody();         // 0x11c7b0 (the 2-iter pair teardown; == m_timer->Flush)
+    void PauseAllVoices();         // 0x11c7b0 (the 2-iter pair teardown; == m_timer->Flush)
     void Stop();             // reloc-masked (per-frame poll stop, via CGruntzMgr::m_timer)
-    void ResetPicks();       // 0x11c7f0 (DtorBody + reset entry m_20s)
+    void ResetPicks();       // 0x11c7f0 (PauseAllVoices + reset entry m_20s)
     BOOL IsReady();          // 0x11c830 (out-of-line: m_owner->m_isVoiceEnabled != 0)
     ~CGruntSpawnConfig();    // 0x85df0
 
@@ -104,7 +104,7 @@ public:
     CDDrawSurfaceMgr* m_configTree;
     CGruntVoice* m_voices[2]; // +0x08/+0x0c  voice-sprite pair (indexed everywhere)
     // +0x10/+0x14: the owned voice-stream PAIR (the real Dsndmgr StreamVoice). It is
-    // an array, not two scalars - Clear/PickVoice/DtorBody all walk it with one cursor.
+    // an array, not two scalars - Clear/PickVoice/PauseAllVoices all walk it with one cursor.
     StreamVoice* m_streams[2];
     // ::CPtrArray, not CDWordArray: retail's ctor/SetSize calls land in [0x1b4f0b,
     // 0x1b527e), whose head stamps ??_7CPtrArray@@6B@ (mfc_class --audit).

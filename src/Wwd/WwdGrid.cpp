@@ -55,8 +55,8 @@ void CWwdGrid::FreeBuckets() {
 
 RVA(0x00191840, 0x48)
 i32 CWwdGrid::Add(WwdRegion* r) {
-    i32 col = (r->m_y - m_minY) >> m_shiftX;
-    i32 row = (r->m_x - m_minX) >> m_shiftY;
+    i32 col = (r->m_y - m_bounds.m_minY) >> m_shiftX;
+    i32 row = (r->m_x - m_bounds.m_minX) >> m_shiftY;
     BucketHead* bucket = m_buckets + (col * m_cols + row);
     r->m_bucket = bucket;
     bucket->InsertHead(r); // DSoundList::InsertHead @0x1390e0 (r upcasts to DSoundLink*)
@@ -85,34 +85,34 @@ void CWwdGrid::Remove(WwdRegion* r) {
 RVA(0x001918c0, 0x1a2)
 i32 CWwdGrid::Query(i32 a0, i32 a1, i32 a2, i32 a3, i32 doRemove) {
     i32 fired = 0;
-    if (a0 > m_maxX) {
+    if (a0 > m_bounds.m_maxX) {
         return 0;
     }
-    if (a2 < m_minX) {
+    if (a2 < m_bounds.m_minX) {
         return 0;
     }
-    if (a1 > m_maxY) {
+    if (a1 > m_bounds.m_maxY) {
         return 0;
     }
-    if (a3 < m_minY) {
+    if (a3 < m_bounds.m_minY) {
         return 0;
     }
-    if (a0 < m_minX) {
-        a0 = m_minX;
+    if (a0 < m_bounds.m_minX) {
+        a0 = m_bounds.m_minX;
     }
-    if (a2 > m_maxX) {
-        a2 = m_maxX;
+    if (a2 > m_bounds.m_maxX) {
+        a2 = m_bounds.m_maxX;
     }
-    if (a1 < m_minY) {
-        a1 = m_minY;
+    if (a1 < m_bounds.m_minY) {
+        a1 = m_bounds.m_minY;
     }
-    if (a3 > m_maxY) {
-        a3 = m_maxY;
+    if (a3 > m_bounds.m_maxY) {
+        a3 = m_bounds.m_maxY;
     }
-    i32 colA = (a1 - m_minY) >> m_shiftX;
-    i32 rowA = (a0 - m_minX) >> m_shiftY;
-    i32 colB = (a3 - m_minY) >> m_shiftX;
-    i32 rowB = (a2 - m_minX) >> m_shiftY;
+    i32 colA = (a1 - m_bounds.m_minY) >> m_shiftX;
+    i32 rowA = (a0 - m_bounds.m_minX) >> m_shiftY;
+    i32 colB = (a3 - m_bounds.m_minY) >> m_shiftX;
+    i32 rowB = (a2 - m_bounds.m_minX) >> m_shiftY;
     i32 base = colA * m_cols + rowA;
     if (colA <= colB) {
         i32 colN = colB - colA + 1;
@@ -164,14 +164,9 @@ i32 CWwdGrid::Clear() {
 
 RVA(0x00191ad0, 0x34)
 WwdRegion* CWwdGridIter::Start(CWwdGrid* grid, i32 remove) {
-    // The grid's full bounds rect: the four bounds ints at +0x28..+0x34 ARE the query
-    // rect, so they are copied field by field (retail's 16-byte block copy is the same
-    // four dword moves) instead of viewed through a cast on &m_minX.
-    WwdRect full;
-    full.a = grid->m_minX;
-    full.b = grid->m_minY;
-    full.c = grid->m_maxX;
-    full.d = grid->m_maxY;
+    // The grid's full bounds rect (+0x28..+0x34) copied as a contiguous 16-byte block:
+    // the four bounds ints ARE one WwdRect, so this is a plain struct copy.
+    WwdRect full = grid->m_bounds;
     return Init(grid, full, remove);
 }
 
@@ -191,34 +186,34 @@ WwdRegion* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
     m_grid = grid;
     m_rect = rect;
     m_remove = remove;
-    if (m_rect.a > grid->m_maxX) {
+    if (m_rect.m_minX > grid->m_bounds.m_maxX) {
         return 0;
     }
-    if (m_rect.c < grid->m_minX) {
+    if (m_rect.m_maxX < grid->m_bounds.m_minX) {
         return 0;
     }
-    if (m_rect.b > grid->m_maxY) {
+    if (m_rect.m_minY > grid->m_bounds.m_maxY) {
         return 0;
     }
-    if (m_rect.d < grid->m_minY) {
+    if (m_rect.m_maxY < grid->m_bounds.m_minY) {
         return 0;
     }
-    if (m_rect.a < grid->m_minX) {
-        m_rect.a = grid->m_minX;
+    if (m_rect.m_minX < grid->m_bounds.m_minX) {
+        m_rect.m_minX = grid->m_bounds.m_minX;
     }
-    if (m_rect.c > grid->m_maxX) {
-        m_rect.c = grid->m_maxX;
+    if (m_rect.m_maxX > grid->m_bounds.m_maxX) {
+        m_rect.m_maxX = grid->m_bounds.m_maxX;
     }
-    if (m_rect.b < grid->m_minY) {
-        m_rect.b = grid->m_minY;
+    if (m_rect.m_minY < grid->m_bounds.m_minY) {
+        m_rect.m_minY = grid->m_bounds.m_minY;
     }
-    if (m_rect.d > grid->m_maxY) {
-        m_rect.d = grid->m_maxY;
+    if (m_rect.m_maxY > grid->m_bounds.m_maxY) {
+        m_rect.m_maxY = grid->m_bounds.m_maxY;
     }
-    m_colStart = (m_rect.b - grid->m_minY) >> grid->m_shiftX;
-    m_rowStart = (m_rect.a - grid->m_minX) >> grid->m_shiftY;
-    m_colEnd = (m_rect.d - grid->m_minY) >> grid->m_shiftX;
-    m_rowEnd = (m_rect.c - grid->m_minX) >> grid->m_shiftY;
+    m_colStart = (m_rect.m_minY - grid->m_bounds.m_minY) >> grid->m_shiftX;
+    m_rowStart = (m_rect.m_minX - grid->m_bounds.m_minX) >> grid->m_shiftY;
+    m_colEnd = (m_rect.m_maxY - grid->m_bounds.m_minY) >> grid->m_shiftX;
+    m_rowEnd = (m_rect.m_maxX - grid->m_bounds.m_minX) >> grid->m_shiftY;
     i32 base = m_colStart * grid->m_cols + m_rowStart;
     m_col = m_colStart;
     m_row = m_rowStart;
@@ -234,7 +229,7 @@ WwdRegion* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
 // optionally unlink it and return it.
 // @early-stop
 // ~93.7% - LICM/regalloc wall: the cell-advance block + the whole control flow
-// are byte-identical, but cl hoists the loop-invariant query bound m_rect.a
+// are byte-identical, but cl hoists the loop-invariant query bound m_rect.m_minX
 // (+0x10) into a callee-saved register (extra push ebx) where retail reloads it
 // from memory each iteration; this cascades the walk's m_y0 reg (ebx vs edi) and
 // the remove-block reg assignment. Not source-steerable (member-bound LICM
@@ -266,8 +261,8 @@ WwdRegion* CWwdGridIter::GetNext() {
         }
         while (m_cur != 0) {
             m_next = static_cast<WwdRegion*>(m_cur->m_next);
-            if (m_cur->m_x < m_rect.a || m_cur->m_y < m_rect.b || m_cur->m_x > m_rect.c
-                || m_cur->m_y > m_rect.d) {
+            if (m_cur->m_x < m_rect.m_minX || m_cur->m_y < m_rect.m_minY || m_cur->m_x > m_rect.m_maxX
+                || m_cur->m_y > m_rect.m_maxY) {
                 m_cur = m_next;
                 continue;
             }
@@ -297,10 +292,10 @@ BucketHead::~BucketHead() {}
 RVA(0x001915c0, 0x15d)
 i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     m_count = 0;
-    m_minX = rect.left;
-    m_minY = rect.top;
-    m_maxX = rect.right;
-    m_maxY = rect.bottom;
+    m_bounds.m_minX = rect.left;
+    m_bounds.m_minY = rect.top;
+    m_bounds.m_maxX = rect.right;
+    m_bounds.m_maxY = rect.bottom;
     i32 lox = rect.left, hix = rect.right;
     if (rect.right < rect.left) {
         lox = rect.right;

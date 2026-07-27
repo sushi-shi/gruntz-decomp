@@ -1083,7 +1083,7 @@ public:
     // toward the target tile using the per-cell velocity records (m_cells[base]
     // +0x48..+0x60 doubles), clamping on overshoot, and mark the HUD scroll
     // dirty. (Was the plain RVA method RunPositionInterpStep.)
-    virtual void FinalizeStep(i32 arg) OVERRIDE;
+    virtual void FinalizeStep(char* name) OVERRIDE;
     // (FinalizeStep is GONE from here - it was a PHANTOM duplicate: nothing ever
     //  defined ?FinalizeStep@CGrunt@@, and 0x8b90 is CUserLogic::FinalizeStep, which
     //  CGrunt INHERITS. Its call site resolves to the base method, cast-free.)

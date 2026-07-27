@@ -101,7 +101,9 @@ public:
     i32 RebuildPlanes(const char* base, i32 count);
     i32 ReadPlaneObjects(const PlaneObjectRecord* src);
     void WrapCoord(i32* px, i32* py);              // 0x00a000 wrap+transform a world coord
-    void SnapToTileCenter(i32* out, i32 x, i32 y); // 0x0311e0 snap world (x,y) to tile centre
+    // `out` is the {x,y} pair the body fills (out[0]/out[1]); its one caller hands it a
+    // Coord, so the pair type goes on the declaration instead of at the call.
+    void SnapToTileCenter(struct Coord* out, i32 x, i32 y); // 0x0311e0 snap (x,y) to tile centre
     i32 GetTileHandle(i32 row, i32 col);           // 0x0d53a0 m_tileGrid[m_colOffsets[col]+row]
 
     // --- layout (the union of every facet's proven members; offsets load-bearing).

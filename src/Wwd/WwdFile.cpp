@@ -2,6 +2,7 @@
 #include <rva.h>
 
 #include <Mfc.h>
+#include <Gruntz/CoordNode.h> // Coord - SnapToTileCenter's {x,y} out pair
 
 // ---------------------------------------------------------------------------
 // CDDrawWorkerHost::WrapCoord (__thiscall, ret 0x8). Maps a world coordinate
@@ -64,13 +65,13 @@ void CDDrawWorkerHost::WrapCoord(i32* px, i32* py) {
 // scattered god-TU (proximity only). This is one of WwdFile.cpp's 3 far-flung
 // CDDrawWorkerHost strays awaiting individual birth-position attribution; leave + flag.)
 RVA(0x000311e0, 0x4c)
-void CDDrawWorkerHost::SnapToTileCenter(i32* out, i32 x, i32 y) {
+void CDDrawWorkerHost::SnapToTileCenter(Coord* out, i32 x, i32 y) {
     i32 sx = m_shiftX;
     i32 sy = m_shiftY;
     i32 rx = ((x >> sx) << sx) + m_tilePxW / 2;
     i32 ry = ((y >> sy) << sy) + m_tilePxH / 2;
-    out[0] = rx;
-    out[1] = ry;
+    out->m_x = rx;
+    out->m_y = ry;
 }
 
 RVA(0x000d53a0, 0x19)

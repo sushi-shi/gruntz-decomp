@@ -116,7 +116,7 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_159250(
         obj->m_posCache = 0;
         // alloc + construct the real worker via the throwing operator new (test-else-0
         // shape == retail)
-        AnimWorkerObj* worker = new AnimWorkerObj(root, a1, 0);
+        AnimWorkerObj* worker = new AnimWorkerObj(OwnerMgr(), a1, 0);
         obj->m_7c = worker;
         obj->m_carrier = 0;
         obj->m_80 = 0;
@@ -192,7 +192,7 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, AnimWorker
         obj->m_posCache = 0;
         // alloc + construct the real worker via the throwing operator new (test-else-0
         // shape == retail)
-        AnimWorkerObj* worker = new AnimWorkerObj(root, a1, 0);
+        AnimWorkerObj* worker = new AnimWorkerObj(OwnerMgr(), a1, 0);
         obj->m_7c = worker;
         obj->m_carrier = 0;
         obj->m_80 = 0;
@@ -267,7 +267,7 @@ CWwdGameObjectA* CDDrawChildGroup::CreateObject_159600(
         o->m_posCache = 0;
         // alloc + construct the real worker via the throwing operator new (test-else-0
         // shape == retail)
-        AnimWorkerObj* worker = new AnimWorkerObj(root, a1, flags);
+        AnimWorkerObj* worker = new AnimWorkerObj(OwnerMgr(), a1, flags);
         o->m_7c = worker;
         o->m_carrier = 0;
         o->m_80 = 0;
@@ -386,7 +386,7 @@ CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, AnimWorker
     CWwdGameObject* result; // the 0x1fc kind (vtable 0x5f00e8)
     if (obj != 0) {
         int root = m_ownerCtx;
-        new (static_cast<void*>(obj)) CWwdGameObjBaseCtor(root, a1, a6);
+        new (static_cast<void*>(obj)) CWwdGameObjBaseCtor(OwnerMgr(), a1, a6);
         // the embedded anim cursor's CLoadable base (ctor 0x156cb0)
         new (&obj->m_1a0) CLoadable(root, a1, a6);
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)

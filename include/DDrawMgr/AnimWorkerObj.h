@@ -31,13 +31,13 @@ struct AnimWorkerObj : public CWapObj {
     // The full 3-arg seed ctor (0x15b300, out-of-line in WwdFactoryObject.cpp;
     // the CDDrawChildGroup factories construct through it): m_04=b, m_08=c, m_0c=a,
     // zero the rest. The arg-store order (b,c,a) is load-bearing.
-    AnimWorkerObj(i32 a, i32 b, i32 c);
+    AnimWorkerObj(CDDrawSurfaceMgr* a, i32 b, i32 c);
     // The inline 2-arg construction the 0x15b390 game-object ctor folds (was the
     // WwdAnimWorkerInit view): same stores with m_08 = 0.
-    AnimWorkerObj(i32 a, i32 b) {
+    AnimWorkerObj(CDDrawSurfaceMgr* a, i32 b) {
         m_04 = b;
         m_08 = 0;
-        m_0c = reinterpret_cast<CDDrawSurfaceMgr*>(a); // (mangling-pinned i32 arg; a IS the mgr)
+        m_0c = a;
         m_notify = 0;
         m_payload = 0;
         m_logic = 0;
