@@ -6,6 +6,8 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/Sprite.h> // CDDrawWorker - the active frame sequence (m_frameSeq)
 
+struct LeafCue; // <Gruntz/LeafCue.h> - the +0x30 random cue table's element
+
 class DSoundCloneInst; // the pooled cue player (ex DSoundCloneInst; Dsndmgr/DirectSoundMgr.h)
 
 class CAniRenderCtx {
@@ -46,10 +48,25 @@ public:
     i32 m_posDY;               // +0x24  pos delta Y
     char m_pad28[0x2c - 0x28]; // +0x28
     i32 m_randMod;             // +0x2c  random modulus
-    i32* m_randTable;          // +0x30  random-trigger table
+    // +0x30  random SOUND-CUE table: retail 0x15c360 loads the dispatch `this`
+    // straight out of it (`mov ecx,[eax+edx*4]`) for BOTH the trigger-blit and
+    // the throttled-play arm, and both entrypoints are LeafCue methods.
+    LeafCue** m_randTable;
 };
 SIZE_UNKNOWN();
 
+// @identity-TODO (evidence complete, fold BLOCKED on src/DDrawMgr/DDrawSubMgr.cpp,
+// which another lane owns): CAniBlitTrigger IS LeafCue. Three independent proofs -
+//   layout: +0x00..0x0b is the CLoadable header, +0x0c is CLoadable::m_ownerCtx (the
+//     CDDrawSurfaceMgr) and +0x10 is LeafCue::m_10, the DSoundCloneInst;
+//   body: TriggerBlit 0x1587f0 and LeafCue::PlayIfElapsed 0x1f940 open with the SAME
+//     `ds:0x61ab20` sound gate, both `ret 0x10`, and both end `mov ecx,[this+0x10];
+//     call 0x1360d0` - one player slot, one play entrypoint;
+//   owner: CDDrawSubMgrLeafScan::Fire dispatches TriggerBlit on a value out of the
+//     very map whose sibling accessor GetFirstValue returns LeafCue*.
+// The fold is: declare TriggerBlit on LeafCue, retype m_ctx -> OwnerMgr() and
+// m_soundPlayer -> m_10, move the 0x1587f0 body to LeafCue::TriggerBlit, delete this
+// class. It needs the two DDrawSubMgr.cpp edits (Fire @958, the body @1179).
 class CAniBlitTrigger {
 public:
     i32 TriggerBlit(

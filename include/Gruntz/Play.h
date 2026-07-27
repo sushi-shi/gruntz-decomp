@@ -194,7 +194,7 @@ public:
     // Body in PlayMessageImage.cpp.
     void DrawMessageFrame(i32 index, i32 useFront); // 0x0d1650
     void LoadSBITextEdges(char* name);              // 0x0d1710 (THIS TU)
-    i32 BuildGruntNamespaceList(i32 arg);           // 0x0dd050 (THIS TU)
+    i32 BuildGruntNamespaceList(CMulti* arg);       // 0x0dd050 (THIS TU)
     // The namespace-register op IS CState::BuildAssetNamespacePrefixes
     // (0xdca70, State.h) - reached directly (CPlay inherits it from CState).
     // (MarkerBegin is GONE - it is m_beginMarker->FilterList2 (0x1170b0, a
@@ -385,7 +385,7 @@ public:
     i32 SetEffectSpriteDurations(); // 0x0dc060
     // BuildWarlordNameTable (0x0dd340): probe the 0x39/0x3a warlord ids then bind the
     // NAPOLEAN/VIKING/PATTON CString names. CString temps force the /GX EH frame.
-    i32 BuildWarlordNameTable(i32 arg); // 0x0dd340
+    i32 BuildWarlordNameTable(CMulti* arg); // 0x0dd340
     // ResetPlayState's own reloc-masked CPlay-thiscall leaves (external):
     // FreeListTeardown's reloc-masked CPlay-thiscall leaf (external):
     // BuildWarlordNameTable/LoadWarlordSprites leaves: ProbeWarlord IS
@@ -396,7 +396,7 @@ public:
     // placed-object display list (renderer A's m_10). Re-homed from the ApiCaller
     // backlog; reuses ProbeWarlord (0x12da) + BindWarlordName (0x2bc1). WarlordLoadTick
     // (0x1019) is the per-set progress tick.
-    i32 LoadWarlordSprites(i32 ctx, i32* loaded); // 0x0d65d0
+    i32 LoadWarlordSprites(CMulti* ctx, i32* loaded); // 0x0d65d0
     // (WarlordLoadTick is GONE - thunk 0x1019 IS BuildHelpReveal (0xd72c0): the
     // per-set "progress tick" is literally one loading-bar wipe tick.)
 
@@ -573,7 +573,7 @@ public:
     i32 winapi_0d0b30_CopyRect(CDDrawSurfacePair * );
     i32 LoadCursorSprites(i32 frame, i32 flag);
     i32 LoadScrollSpeedOptions();
-    i32 BuildGruntTypeNameTable(i32, i32, i32, i32);
+    i32 BuildGruntTypeNameTable(i32, i32, i32, CMulti*);
 
     // (HandleMousePress 0x0ce660 folded onto the slot-16 virtual Vslot10 - the
     // "vtable slot 16 (+0x40)" note here was always right, it was just declared
