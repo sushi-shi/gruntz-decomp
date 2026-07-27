@@ -60,6 +60,12 @@ static __inline i32 IsTokenChar(const char* delims, char ch) {
 // not construct this node with placement new; the no-guard spelling is unrecovered
 // (an explicit ctor call is not legal C++). Logic + layout complete; ??_7 named via VTBL.
 // ===========================================================================
+// The serialized symbol-table records are a PACKED byte stream walked with a moving
+// cursor, so reading a dword out of it is a forced pun; it lives here, once.
+static inline i32 PeekI32(const char* p) {
+    return *reinterpret_cast<const i32*>(p);
+}
+
 RVA(0x001396f0, 0x1a)
 CParseSource* CParseSource::Init() {
     new (&m_node1c) CParseSlotHashNode; // stamps the vptr + zeroes m_record (+0x30)
@@ -730,12 +736,12 @@ i32 CSymTab::ApplyRange(CRezItmBase* a0, i32 a1, i32 a2, i32 a3) {
     char* p = buf;
     char* end = buf + a2;
     while (p < end) {
-        if (*reinterpret_cast<i32*>(p) == 1) {
+        if (PeekI32(p) == 1) {
             // sub-scope record: { tag, fA, fB, fC, name\0 }
-            i32 fA = *reinterpret_cast<i32*>((p + 4));
+            i32 fA = PeekI32(p + 4);
             p += 8;
-            i32 fB = *reinterpret_cast<i32*>(p);
-            i32 fC = *reinterpret_cast<i32*>((p + 4));
+            i32 fB = PeekI32(p);
+            i32 fC = PeekI32(p + 4);
             p += 8;
             char* name = p;
             p += strlen(name) + 1;
