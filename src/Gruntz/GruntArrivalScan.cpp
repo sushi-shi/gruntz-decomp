@@ -170,7 +170,7 @@ i32 CGrunt::ResolveArrivalReposition() {
     }
 
     {
-        u32 dwell = *reinterpret_cast<u32*>(&m_dwell);
+        u32 dwell = static_cast<u32>(m_dwell);
         if (dwell > 0x3e8 && m_resetApplied == 0 && m_318 != 0 && dwell > 0xbb8) {
             if (static_cast<i64>(static_cast<u32>(g_frameTime))
                     - m_arrivalReroll64
@@ -2492,14 +2492,14 @@ i32 CGrunt::SeekTarget() {
         Coord c0[2];
         GetScreenPos(c0);
         i32 cy = c0[0].m_y >> 5;
-        i32 d0[4];
-        GetScreenPos(reinterpret_cast<Coord*>(d0));
-        i32 e0[4];
-        GetScreenPos(reinterpret_cast<Coord*>(e0));
-        i32 f0[4];
-        GetScreenPos(reinterpret_cast<Coord*>(f0));
-        i32 dx = (f0[1] >> 5) - (f0[3] >> 5);
-        i32 dy = cy - (e0[3] >> 5);
+        Coord d0[2]; // same 16 bytes as c0 above
+        GetScreenPos(d0);
+        Coord e0[2]; // same 16 bytes as c0 above
+        GetScreenPos(e0);
+        Coord f0[2]; // same 16 bytes as c0 above
+        GetScreenPos(f0);
+        i32 dx = (f0[0].m_y >> 5) - (f0[1].m_y >> 5);
+        i32 dy = cy - (e0[1].m_y >> 5);
         if (((dy ^ (dy >> 31)) - (dy >> 31)) < 2 && ((dx ^ (dx >> 31)) - (dx >> 31)) < 2) {
             i32 r2 = slot->m_entranceReason;
             if (r2 > 0x16) {
@@ -2603,6 +2603,9 @@ i32 CGrunt::SeekTarget() {
         if (g != 0) {
             i32 x = g->m_object->m_screenX;
             if (x == g->m_lastTilePxX && g->m_object->m_screenY == g->m_lastTilePxY
+                // RectContains(x, y) takes COORDINATES: 8 call sites pass ints and only these
+                // two cast a pointer, so the param is right and THIS site is the open question.
+                // @identity-TODO (the documented 'unanimous among cast sites' trap).
                 && g->RectContains(x, reinterpret_cast<i32>(g->m_object)) != 0) {
                 atTarget = true;
             }
@@ -2657,6 +2660,9 @@ i32 CGrunt::SeekTarget() {
         if (this->m_poweredUp == 0 && this->m_stamina > 99) {
             i32 x = g->m_object->m_screenX;
             if (x == g->m_lastTilePxX && g->m_object->m_screenY == g->m_lastTilePxY
+                // RectContains(x, y) takes COORDINATES: 8 call sites pass ints and only these
+                // two cast a pointer, so the param is right and THIS site is the open question.
+                // @identity-TODO (the documented 'unanimous among cast sites' trap).
                 && g->RectContains(x, reinterpret_cast<i32>(g->m_object)) != 0) {
                 CommitNeighbor(
                     g->m_tileOwnerHi,
