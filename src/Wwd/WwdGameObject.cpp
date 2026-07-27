@@ -459,11 +459,24 @@ i32 CGameObject::Setup(i32 a1, i32 a2, i32 a3, CObject* a4) {
     m_168 = 0;
     m_e0 = 0;
     m_180 = 0;
-    // a4 is a foreign notify-source object (heterogeneous, no recovered concrete class):
-    // its +0x10 is the notify fn passed to the worker's Init, its +0x08 the frame stamp.
-    // The offset access is the deliberate foreign-object read (only the offsets are load-bearing).
-    char* src = reinterpret_cast<char*>(a4);
+    // @identity-TODO SHARPENED 2026-07-27. The old note here ("heterogeneous, no
+    // recovered concrete class") is not what the evidence says, and the evidence
+    // CONTRADICTS ITSELF - which is why these two reads are still offset-casts instead
+    // of member reads:
+    //   * WwdObjMgr.cpp:340 provably passes a CDDrawWorker* (m_workerCache->m_10.Lookup
+    //     by name, then static_cast<CDDrawWorker*>), so a4 has a recovered class there;
+    //   * but CDDrawWorker is a CLoadable, so +0x08 is m_flags (consistent with "frame
+    //     stamp") while +0x10 is `CObArray m_items` - i.e. the ARRAY'S VPTR, which
+    //     cannot be the GameObjNotifyFn that AnimWorkerObj::Init(GameObjNotifyFn, i32)
+    //     wants.
+    // So either the other three slot-10 callers (WwdObjMgr 273/385,
+    // WwdGameObjectRender 295) pass a different class, or this body's offsets are
+    // misreconstructed. Settle with the 0x150d60 disasm; modelling a record type on a
+    // contradiction would just freeze the wrong answer in place.
+    char* src = reinterpret_cast<char*>(a4); // @identity-TODO (see above)
     if (w->Init(
+            // @identity-TODO both reads: the +0x10-is-a-notify-fn reading contradicts
+            // the one provably-known caller's CDDrawWorker* (there +0x10 is m_items)
             reinterpret_cast<GameObjNotifyFn>(*reinterpret_cast<i32*>((src + 0x10))),
             *reinterpret_cast<i32*>((src + 0x08))
         )
