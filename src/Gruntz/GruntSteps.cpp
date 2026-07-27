@@ -79,6 +79,13 @@ static const char s_BIGWHEELGRUNT[] = "BIGWHEELGRUNT";     // s_..._0060da48
 static const char s_GOKARTGRUNT[] = "GOKARTGRUNT";         // s_..._0060da38
 static const char s_POGOSTICKGRUNT[] = "POGOSTICKGRUNT";   // s_..._0060d9fc
 
+// The tile records are 0x1c bytes walked with BYTE strides (the grid is exposed as
+// char** for exactly that), while each record's flag word is a dword at +0 - the
+// mixed view is the table's own design, so it is punned here once.
+static inline i32 TileFlags(const char* rec) {
+    return *reinterpret_cast<const i32*>(rec);
+}
+
 static __inline i32 s_TileFlags(CGruntzMapMgr* b, i32 tx, i32 ty) {
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
         || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
@@ -124,28 +131,28 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     if (dx > 0) {
         if (dy > 0) {
             if ((cur[0x1d] & 0x20) || (cur[stride + 1] & 0x20)
-                || (*reinterpret_cast<i32*>((tg - 0x1c)) & 0x2000)
-                || (*reinterpret_cast<i32*>((tg - stride)) & 0x2000)) {
+                || (TileFlags(tg - 0x1c) & 0x2000)
+                || (TileFlags(tg - stride) & 0x2000)) {
                 return 0;
             }
         } else {
-            if ((cur[0x1d] & 0x20) || (*reinterpret_cast<i32*>((cur - stride)) & 0x2000)
-                || (*reinterpret_cast<i32*>((tg - 0x1c)) & 0x2000)
-                || (*reinterpret_cast<i32*>((tg + stride)) & 0x2000)) {
+            if ((cur[0x1d] & 0x20) || (TileFlags(cur - stride) & 0x2000)
+                || (TileFlags(tg - 0x1c) & 0x2000)
+                || (TileFlags(tg + stride) & 0x2000)) {
                 return 0;
             }
         }
     } else {
         if (dy > 0) {
             if ((cur[-0x1b] & 0x20) || (cur[stride + 1] & 0x20)
-                || (*reinterpret_cast<i32*>((tg + 0x1c)) & 0x2000)
-                || (*reinterpret_cast<i32*>((tg - stride)) & 0x2000)) {
+                || (TileFlags(tg + 0x1c) & 0x2000)
+                || (TileFlags(tg - stride) & 0x2000)) {
                 return 0;
             }
         } else {
-            if ((cur[-0x1b] & 0x20) || (*reinterpret_cast<i32*>((cur - stride)) & 0x2000)
-                || (*reinterpret_cast<i32*>((tg + 0x1c)) & 0x2000)
-                || (*reinterpret_cast<i32*>((tg + stride)) & 0x2000)) {
+            if ((cur[-0x1b] & 0x20) || (TileFlags(cur - stride) & 0x2000)
+                || (TileFlags(tg + 0x1c) & 0x2000)
+                || (TileFlags(tg + stride) & 0x2000)) {
                 return 0;
             }
         }
