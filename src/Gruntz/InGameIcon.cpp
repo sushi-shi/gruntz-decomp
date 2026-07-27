@@ -37,20 +37,20 @@ CActReg CActRegPool<CToyPeek>::s_table(2000, 2010);
 template<> DATA(0x00245950)
 CActReg CActRegPool<CInGameText>::s_table(2000, 2010);
 
-static inline CString* ResolveNameSlot(_zdvec* v, i32 idx) {
+static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
     CString* r;
     v->m_grown = 0;
     if (idx >= v->m_lo && idx <= v->m_hi) {
-        r = reinterpret_cast<CString*>(v->m_base + (idx - v->m_lo) * v->m_stride);
+        r = v->Elem(idx);
     } else if (v->GrowTo(idx, 0)) {
-        r = reinterpret_cast<CString*>(v->m_base + (idx - v->m_lo) * v->m_stride);
+        r = v->Elem(idx);
     } else {
         void* sentinel = g_projActCache;
         g_retAddrBreadcrumb = GetRetAddr();
         v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
-        r = reinterpret_cast<CString*>(v->m_spare);
+        r = v->Scratch();
     }
-    CString* slot = reinterpret_cast<CString*>(v->m_alloc);
+    CString* slot = v->Slots();
     i32 n = v->m_grown;
     while (n-- != 0) {
         if (slot) {
