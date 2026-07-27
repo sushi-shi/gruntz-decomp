@@ -1303,11 +1303,11 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(buf, 0x80);
     g_serialCounter++;
     memset(buf, 0, 0x80);
-    strcpy(buf, *reinterpret_cast<const char**>(&m_448));
+    strcpy(buf, m_448); // CString::operator LPCTSTR
     ar->Write(buf, 0x80);
     g_serialCounter++;
     memset(buf, 0, 0x80);
-    strcpy(buf, *reinterpret_cast<const char**>(&m_44c));
+    strcpy(buf, m_44c); // CString::operator LPCTSTR
     ar->Write(buf, 0x80);
     g_serialCounter++;
     memset(buf, 0, 0x80);

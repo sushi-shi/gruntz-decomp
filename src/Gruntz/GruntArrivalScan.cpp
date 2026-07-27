@@ -610,16 +610,14 @@ i32 CGrunt::WanderStep() {
             );
             m_358 = 0;
             if (CoordCount() != 0) {
-                void* node = m_31c.GetHeadPosition();
-                if (node != 0) {
-                    do {
-                        void* cur = node;
-                        node = *static_cast<void**>(node);
-                        i32 data = *reinterpret_cast<i32*>((static_cast<char*>(cur) + 8));
-                        if (data != 0) {
-                            g_coordPool.Push(reinterpret_cast<void*>((data)));
-                        }
-                    } while (node != 0);
+                // the hand walk was CPtrList::GetNext inlined by hand (pNext at +0,
+                // data at +8 of MFC's CNode) - say it with the real accessor
+                POSITION pos = m_31c.GetHeadPosition();
+                while (pos != 0) {
+                    void* data = m_31c.GetNext(pos);
+                    if (data != 0) {
+                        g_coordPool.Push(data);
+                    }
                 }
                 m_31c.RemoveAll();
             }
@@ -663,21 +661,16 @@ i32 CGrunt::WanderStep() {
             );
             m_358 = 0;
             if (CoordCount() != 0) {
-                void* node = m_31c.GetHeadPosition();
-                if (node != 0) {
-                    CoordPoolNode* prev = g_coordPool.m_freeHead;
-                    do {
-                        void* cur = node;
-                        node = *static_cast<void**>(node);
-                        i32 data = *reinterpret_cast<i32*>((static_cast<char*>(cur) + 8));
-                        if (data != 0) {
-                            CoordPoolNode* fslot =
-                                g_coordPool.NodeOf(reinterpret_cast<void*>(data));
-                            fslot->m_next = prev;
-                            prev = fslot;
-                            g_coordPool.m_freeHead = fslot;
-                        }
-                    } while (node != 0);
+                POSITION pos = m_31c.GetHeadPosition();
+                CoordPoolNode* prev = g_coordPool.m_freeHead;
+                while (pos != 0) {
+                    void* data = m_31c.GetNext(pos);
+                    if (data != 0) {
+                        CoordPoolNode* fslot = g_coordPool.NodeOf(data);
+                        fslot->m_next = prev;
+                        prev = fslot;
+                        g_coordPool.m_freeHead = fslot;
+                    }
                 }
                 m_31c.RemoveAll();
             }
