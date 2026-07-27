@@ -241,6 +241,24 @@ def _count_c_style_casts(code: str) -> int:
 
 # (label, matcher, cpp_only). matcher = compiled regex (findall count) OR a callable
 # code->int for structural counts. Occurrences summed over stripped code.
+def _count_unexplained_casts(code: str) -> int:
+    """The reinterpret_casts the cast ledger cannot account for (see
+    gruntz.audit.cast_ledger for what counts as explained)."""
+    from gruntz.audit.cast_ledger import CAST, FORCED, REASON
+    import re as _re
+    lines = code.split("\n")
+    n = 0
+    for i, line in enumerate(lines):
+        for _ in CAST.finditer(line):
+            ctx = " ".join(lines[max(0, i - 3):i + 2])
+            if any(_re.search(pat, line) or _re.search(pat, ctx) for _, pat in FORCED):
+                continue
+            if REASON.search(ctx):
+                continue
+            n += 1
+    return n
+
+
 METRICS = (
     ("m_<hex> fields", re.compile(r"\bm_[0-9a-f]{2,}\b"), False),
     ("Unknown ids", re.compile(r"\b\w*[Uu]nknown\w*\b"), False),
@@ -269,6 +287,10 @@ METRICS = (
     # --- casts: C-style is forbidden; reinterpret_cast debt may only decrease ---
     ("C-style casts", _count_c_style_casts, False),
     ("reinterpret_casts", _REINTERPRET_CAST, False),
+    # The count above is raw; THIS one is the campaign's real worklist - the casts
+    # nobody has explained yet (gruntz.audit.cast_ledger sorts the forced/seamed ones
+    # out). An unexplained cast is indistinguishable from un-started work.
+    ("unexplained casts", _count_unexplained_casts, False),
     ("void* m_ members", re.compile(r"\bvoid ?\* m_"), False),
     # --- metric-evasion / placeholder hacks (2026-07-14 de-hack campaign; MAX-fuzzy gate) ---
     ("offset-cast macros", _count_offset_macro_casts, False),
@@ -345,6 +367,7 @@ def _caller_callee_counts() -> dict[str, int]:
 _RATCHET = _VIEW_METRICS | set(_CALLER_CALLEE_LABELS) | {
     "C-style casts",
     "reinterpret_casts",
+    "unexplained casts",
     "cpp extern decls",
     "cpp external prototypes",
 }
