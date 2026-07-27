@@ -3653,7 +3653,7 @@ i32 CMulti::SetupTcpIpConfig() {
 RVA(0x000bc750, 0x151)
 i32 CMulti::CreateLocalPlayer() {
     {
-        m_5bc = reinterpret_cast<CNetSessionNode*>(Peer()->CreatePlayer(
+        m_5bc = static_cast<CNetSessionNode*>(Peer()->CreatePlayer(
             const_cast<char*>(static_cast<const char*>(GetString5a0())),
             g_emptyString,
             0

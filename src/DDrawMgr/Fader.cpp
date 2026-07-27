@@ -987,7 +987,7 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
             u8 pix;
             u8* base = static_cast<u8*>(m_srcSurface->Lock(0));
             if (base != 0) {
-                pix = *reinterpret_cast<u8*>(
+                pix = *static_cast<u8*>(
                     (base + m_srcSurface->m_bytesPerPixel * x + m_srcSurface->m_pitch * y)
                 );
                 m_srcSurface->UnlockThunk();

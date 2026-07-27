@@ -69,6 +69,8 @@ public:
         if (index < m_minIndex || index > m_maxIndex) {
             return 0;
         }
+        // the CObArray band stores CImage*; CImage is not a CObject in our model,
+        // so the element pun is the container's - language-forced here.
         return reinterpret_cast<CImage*>(m_items.GetAt(index));
     }
 
