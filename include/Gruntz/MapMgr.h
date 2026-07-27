@@ -171,11 +171,8 @@ SIZE_UNKNOWN();
 
 SIZE_UNKNOWN();
 
-struct BrickzFreeRec {
-    i32 m_0; // +0x00  next-free link
-    i32 m_4; // +0x04  path col
-    i32 m_8; // +0x08  path row
-};
-SIZE_UNKNOWN();
+// BrickzFreeRec DISSOLVED 2026-07-27: it was CoordPoolNode (<Gruntz/FreeNodePool.h>) -
+// m_0 is the free-list link m_next, m_4/m_8 the inline Coord payload's x/y. Same view
+// CSbiFreeNode was, on the same pool.
 
 #endif // SRC_GRUNTZ_MAPMGR_H

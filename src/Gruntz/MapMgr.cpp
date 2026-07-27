@@ -255,7 +255,7 @@ i32 CMapMgr::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 m
     m_maskC = maskC;
     m_maskB = maskB;
     m_maskA = maskA;
-    i32 flags = *reinterpret_cast<i32*>(&m_rows[y2][x2]);
+    i32 flags = m_rows[y2][x2].m_0;
     if ((maskA & flags) != 0 && (maskC & flags) != 0) {
         return 0;
     }
@@ -327,13 +327,13 @@ i32 CMapMgr::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 m
 reached:
     BrickzNode* p = node;
     do {
-        BrickzFreeRec* rec = reinterpret_cast<BrickzFreeRec*>(g_coordPool.m_freeHead);
-        i32* slot = 0;
-        if (rec->m_0 != 0) {
-            slot = &rec->m_4;
-            rec->m_4 = p->m_0;
-            rec->m_8 = p->m_4;
-            g_coordPool.m_freeHead = reinterpret_cast<CoordPoolNode*>(rec->m_0);
+        CoordPoolNode* rec = g_coordPool.m_freeHead;
+        Coord* slot = 0;
+        if (rec->m_next != 0) {
+            slot = &rec->m_coord;
+            rec->m_coord.m_x = p->m_0;
+            rec->m_coord.m_y = p->m_4;
+            g_coordPool.m_freeHead = rec->m_next;
         }
         (static_cast<CRezList*>(list))->AddHead(reinterpret_cast<CRezListNode*>(slot));
         p = p->m_parent;
@@ -379,7 +379,7 @@ i32 CMapMgr::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
     }
     BrickzCell* ncell = &m_rows[nrow][ncol];
     i32 nflags = ncell->m_0;
-    i32* cell = reinterpret_cast<i32*>(&m_rows[node->m_4][node->m_0]);
+    BrickzCell* cell = &m_rows[node->m_4][node->m_0];
     if ((m_edgeMask & nflags) != 0) {
         return 1;
     }
@@ -387,23 +387,23 @@ i32 CMapMgr::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
         return 1;
     }
     if (diag != 0 && m_maskB != 0) {
-        i32 *cellA, *cellB;
+        BrickzCell *cellA, *cellB;
         if (dx > 0 && dy > 0) {
-            cellB = cell + (m_width * 7);
-            cellA = cell + 7;
+            cellB = cell + m_width;
+            cellA = cell + 1;
         } else if (dx < 0 && dy > 0) {
-            cellB = cell + (m_width * 7);
-            cellA = cell - 7;
+            cellB = cell + m_width;
+            cellA = cell - 1;
         } else if (dx > 0 && dy < 0) {
-            cellB = cell - (m_width * 7);
-            cellA = cell + 7;
+            cellB = cell - m_width;
+            cellA = cell + 1;
         } else if (dx < 0 && dy < 0) {
-            cellB = cell - (m_width * 7);
-            cellA = cell - 7;
+            cellB = cell - m_width;
+            cellA = cell - 1;
         } else {
             goto relax;
         }
-        if ((m_maskB & *cellA) != 0 || (m_maskB & *cellB) != 0) {
+        if ((m_maskB & cellA->m_0) != 0 || (m_maskB & cellB->m_0) != 0) {
             return 1;
         }
     }
