@@ -98,19 +98,21 @@ static inline CString* ResolveNameSlot(_zdvec* v, i32 idx) {
     return r;
 }
 
-static inline char* ResolveSlot(_zdvec* v, i32 idx) {
+// the act tables hold CActHandler (== every per-TU *ActHandler typedef), so the
+// element pun lives here, at the resolver, instead of at each slot read/write
+static inline CActHandler* ResolveSlot(_zdvec* v, i32 idx) {
     i32 lo = v->m_lo;
     v->m_grown = 0;
     if (idx >= lo && idx <= v->m_hi) {
-        return v->m_base + (idx - lo) * v->m_stride;
+        return reinterpret_cast<CActHandler*>(v->m_base + (idx - lo) * v->m_stride);
     }
     if (v->GrowTo(idx, 0)) {
-        return v->m_base + (idx - v->m_lo) * v->m_stride;
+        return reinterpret_cast<CActHandler*>(v->m_base + (idx - v->m_lo) * v->m_stride);
     }
     void* sentinel = g_projActCache; // scratch cell @0x2bf464 reused as the zvec err sentinel
     g_retAddrBreadcrumb = GetRetAddr();
     v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
-    return v->m_spare;
+    return reinterpret_cast<CActHandler*>(v->m_spare);
 }
 
 static inline void FreeNameSlotNodes() {
@@ -264,12 +266,8 @@ void RegisterWormholeLogic() {
         *slot = "A";
         g_typeCounter++;
     }
-    char* dslot = ResolveSlot(&CActRegPool<CWormhole>::s_table, idx);
-    // @identity-TODO act-slot ABI: SpawnPartners is declared void() while the slot
-    // is the i32 CActHandler - the same tension GruntCombat.cpp's macro records, so
-    // a typed resolver here would only move the bridge, not remove it.
-    *reinterpret_cast<WormholeActHandler*>(dslot) =
-        static_cast<WormholeActHandler>(&CWormhole::SpawnPartners);
+    CActHandler* dslot = ResolveSlot(&CActRegPool<CWormhole>::s_table, idx);
+    *dslot = static_cast<WormholeActHandler>(&CWormhole::SpawnPartners);
 }
 
 // ---------------------------------------------------------------------------
@@ -287,7 +285,7 @@ void RegisterWormholeLogic() {
 // eager-pushes ebp in the prologue while cl shrink-wraps it to the loop preheader;
 // frame-layout decision, not source-steerable. ~93%. See docs/patterns/.
 RVA(0x000403b0, 0xa5)
-void CWormhole::SpawnPartners() {
+i32 CWormhole::SpawnPartners() {
     // The geo-call dereferences m_38 once (its own ecx); the gate block then
     // re-reads m_38 ONCE into a scratch and reuses it for all three field reads
     // (the target keeps this=esi live across both, loading [esi+0x38] twice).
@@ -297,7 +295,7 @@ void CWormhole::SpawnPartners() {
     // already paired (m_1c0 clear); then mark it paired-in-progress (m_08 |= 0x10000).
     CWwdGameObjectA* g = m_38;
     if (g->m_1a0.m_28 == 0 || g->m_1a0.m_20 != 0) {
-        return;
+        return 0;
     }
     g->m_flags |= 0x10000;
 
@@ -305,16 +303,16 @@ void CWormhole::SpawnPartners() {
     i32 tx = m_object->m_164;
     i32 ty = m_object->m_168;
     if (tx == 0 || ty == 0) {
-        return;
+        return 0;
     }
 
     CObList* list = &g_gameReg->m_world->m_childGroup->m_list;
     if (list == 0) {
-        return;
+        return 0;
     }
     CDDrawGroupNode* node = GroupHead(*list);
     if (node == 0) {
-        return;
+        return 0;
     }
     do {
         CGameObject* obj = node->m_obj;
@@ -327,6 +325,7 @@ void CWormhole::SpawnPartners() {
             }
         }
     } while (node != 0);
+    return 0; // retail: xor eax,eax before the epilogue
 }
 
 // ===========================================================================

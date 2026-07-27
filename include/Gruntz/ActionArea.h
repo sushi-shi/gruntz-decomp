@@ -47,7 +47,7 @@ public:
 };
 SIZE_UNKNOWN();
 
-typedef void (CUserLogic::*ProjActHandler)();
+typedef i32 (CUserLogic::*ProjActHandler)(); // == CActHandler (the slot type)
 struct CActionAreaActEntry {
     ProjActHandler m_fn; // [entry] - the registered handler
 };

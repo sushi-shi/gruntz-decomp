@@ -1157,7 +1157,7 @@ latch:
 }
 
 RVA(0x000633e0, 0x2ca)
-void CGrunt::ResolveEntranceArrival() {
+i32 CGrunt::ResolveEntranceArrival() {
     if (m_entranceActive != 0 && m_object->m_screenX == m_lastTilePxX
         && m_object->m_screenY == m_lastTilePxY) {
         CGruntzMgr* g = g_gameReg;
@@ -1230,12 +1230,13 @@ tail:
         if (m_38->m_1a0.m_28 == 0 && m_38->m_1a0.m_20 != 0) {
             ResetEntranceAnimation(0, 0, 0);
         }
-        return;
+        return 0;
     }
     if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleAnchor >= m_idleDelay
         && ready == 1) {
         ResetEntranceAnimation(0, 1, 1);
     }
+    return 0; // retail: xor eax,eax before the epilogue
 }
 
 // ---------------------------------------------------------------------------
@@ -1457,7 +1458,7 @@ static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNT
 // Residue = the toy-break-setup edx/eax push-order + elapsed `xor` register coin-flips
 // (the documented regalloc tail).
 RVA(0x00063db0, 0x32f)
-void CGrunt::LoadVehicleGruntAnimations() {
+i32 CGrunt::LoadVehicleGruntAnimations() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
 
     CAniAdvanceCursor* sub = &m_38->m_1a0;
@@ -1486,7 +1487,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
             SetEntrancePos(1, 1);
             m_tileMgr->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
         }
-        return;
+        return 0;
     }
 
     i64 elapsed = static_cast<i64>(static_cast<u64>(g_frameTime)) - m_toyClock;
@@ -1517,11 +1518,11 @@ void CGrunt::LoadVehicleGruntAnimations() {
             if (x < rect.right && x >= rect.left && y < rect.bottom && y >= rect.top) {
                 g->m_cueSink->LoadGruntSpawnConfig(this, 0xc, -1, -1, -1);
                 ClearSubA();
-                return;
+                return 0;
             }
         }
         ClearSubA();
-        return;
+        return 0;
     }
 
     i64 elapsed2 = static_cast<i64>(static_cast<u64>(g_frameTime)) - m_idleAnchor;
@@ -1544,15 +1545,16 @@ void CGrunt::LoadVehicleGruntAnimations() {
         && hy >= g2->m_viewBounds.top) {
         if (m_entranceReason == 0x1a) {
             EnsureStruckSlot(s_GRUNTZ_GOKARTGRUNT);
-            return;
+            return 0;
         }
         if (m_entranceReason == 0x19) {
             EnsureStruckSlot(s_GRUNTZ_BIGWHEELGRUNT);
-            return;
+            return 0;
         }
-        return;
+        return 0;
     }
     ClearSubA();
+    return 0; // retail: xor eax,eax before the epilogue
 }
 
 RVA(0x000641b0, 0x2c1)

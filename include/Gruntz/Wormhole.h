@@ -22,7 +22,7 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE; // slot 4: 0x040050 (logic-command
                                                   // dispatch via g_wormholeDispatch)
     CWormhole(CGameObject* obj);                  // 0x03fc70 (1-arg leaf ctor, /GX frame)
-    void SpawnPartners();                         // 0x0403b0
+    i32 SpawnPartners();                         // 0x0403b0
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 };
@@ -30,7 +30,7 @@ SIZE_UNKNOWN();
 
 
 // The act-table slot type (the registry stores CUserLogic member pointers).
-typedef void (CUserLogic::*WormholeActHandler)();
+typedef i32 (CUserLogic::*WormholeActHandler)(); // == CActHandler (the slot type)
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).

@@ -84,16 +84,14 @@ static inline i32 RegisterActionName() {
     return id;
 }
 
-typedef void (CUserLogic::*MenuSparkleActHandler)();
+typedef i32 (CUserLogic::*MenuSparkleActHandler)(); // == CActHandler (the slot type)
 
 RVA(0x000ade60, 0x102)
 void CMenuSparkle::FireActivation(i32 coord) {
     CActHandler* e = CActRegPool<CMenuSparkle>::s_table.ResolveEntry(coord);
     if (*e != 0) {
         CActHandler* e2 = CActRegPool<CMenuSparkle>::s_table.ResolveEntry(coord);
-        // @identity-TODO the registrants are `void()` while the slot is the i32
-        // CActHandler - the same act-ABI tension GruntCombat's macro documents.
-        MenuSparkleActHandler h = reinterpret_cast<MenuSparkleActHandler>(*e2);
+        MenuSparkleActHandler h = *e2;
         (this->*h)();
     }
 }

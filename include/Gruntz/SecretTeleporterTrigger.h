@@ -29,7 +29,7 @@ public:
 };
 SIZE(0x54);
 
-typedef void (CUserLogic::*ActHandler)();
+typedef i32 (CUserLogic::*ActHandler)(); // == CActHandler (the slot type)
 struct CActEntry {
     ActHandler m_fn; // [entry]
 };

@@ -41,7 +41,7 @@ public:
 };
 SIZE(0x78);
 
-typedef void (CUserLogic::*VActHandler)();
+typedef i32 (CUserLogic::*VActHandler)(); // == CActHandler (the slot type)
 struct CVActEntry {
     VActHandler m_fn; // [entry]
 };

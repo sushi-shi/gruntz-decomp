@@ -376,7 +376,7 @@ public:
     // animation (rand-bucketed ONE/TWO/THREE variant + on-screen cue). __thiscall ret 0.
     i32 BuildGruntExitAnimation();
     // @0x63db0 - (re)loads the vehicle-grunt (gokart/bigwheel) entrance animation set.
-    void LoadVehicleGruntAnimations();
+    i32 LoadVehicleGruntAnimations();
     // @0x050a50 (ret 4) - the "toob" (pipe) grunt entrance-anim setup: reset the
     // +0x290/+0x2a0 reach-rect blocks, latch m_coordToggle, pick the TOOB(WATER)GRUNT
     // anim-set into m_animSetName + Register it, run the three reset helpers, gate the
@@ -861,10 +861,10 @@ public:
     // Engine-label backlog stubs. (0x048400 is CGrunt::ReadConfigFromButeMgr, declared above.)
     void LoadCellAnimNames(i32 a, i32 b); // (2-arg; called from LoadEntranceConfig tail)
     void ResetEntranceAnimation(i32 a, i32 b, i32 c); // (ret 0xc) - 3-arg entrance reset
-    void ResolveEntranceArrival();
+    i32 ResolveEntranceArrival();
     void ClearAllSprites(); // thunk_FUN_0044b240 (void this-method, external)
     void BuildEntranceAnimation(i32 mode);
-    void LoadEntranceConfig();
+    i32 LoadEntranceConfig();
     // LoadEntranceConfig tail helpers (this-methods reached via incremental-link
     // thunks; external/no-body, reloc-masked).
     void SetEntrancePos(i32 a, i32 b); // thunk_FUN_0044d060 (2-arg; arrival commit)
@@ -910,13 +910,13 @@ public:
     void EntranceTileOffset(i32* out); // @0x56f80 (ret 4) adjacent-tile pixel pos
     void ComputeFacing(double dt);     // @0x57060 (ret 8)
     i32 ResetGeometry();               // @0x616e0
-    void DispatchVtbl24();             // 0x6b260 (out-of-line in Grunt.cpp)
+    i32 DispatchVtbl24();             // 0x6b260 (out-of-line in Grunt.cpp)
 
     void PlayMoveSound(i32 x, i32 y);                  // @0x511b0 (ret 8)
     void PlaySound(i32 range, GruntDirectionCell rec); // @0x4ac10 (ret 0x10) external
     void OnStruck(i32 wasHit);                         // @0x588f0 (ret 4)
     i32 ResolveArrivalNeighbor();                      // @0xf26f0 (ret 0)
-    void RearmEntranceDrop();                          // @0x68370 (ret 0)
+    i32 RearmEntranceDrop();                          // @0x68370 (ret 0)
 
     // ---- the move/timer record serializer (@0x53b80, ret 0x10) ----
     // SerializeMove(ar, mode) drives the grunt move/idle-timer state through an

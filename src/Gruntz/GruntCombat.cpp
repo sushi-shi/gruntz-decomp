@@ -325,12 +325,8 @@ static inline CString* ActNameSlots() {
             *slot = (key);                                    \
             g_typeCounter++;                                                                       \
         }                                                                                          \
-        /* @identity-TODO five of the 19 registrants are declared `void` (their retail  */         \
-        /* bodies end bare-c3) while the table slot is `i32 (CGrunt::*)()`, so ONE of the */         \
-        /* two spellings is wrong and the cast is what bridges them today. Settle the    */         \
-        /* act-handler ABI - all i32, or a void table - and it goes away.                */         \
         (reinterpret_cast<CGruntActEntry*>(CActRegPool<CGrunt>::s_table.Resolve(id)))->m_fn =      \
-            reinterpret_cast<GruntActHandler>(handler);                                            \
+            (handler);                                                                             \
     }
 
 // @early-stop

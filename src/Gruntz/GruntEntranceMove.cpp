@@ -382,7 +382,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
 }
 
 RVA(0x00067f80, 0x313)
-void CGrunt::LoadEntranceConfig() {
+i32 CGrunt::LoadEntranceConfig() {
     if (m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
         CGruntzMgr* g = g_gameReg;
         CWwdGameObjectA* h = m_object;
@@ -475,9 +475,10 @@ void CGrunt::LoadEntranceConfig() {
     }
 
     if (m_38->m_1a0.m_28 == 0 || m_38->m_1a0.m_20 != 0) {
-        return;
+        return 0;
     }
     ResetEntranceAnimation(1, 0, 0);
+    return 0; // retail: xor eax,eax before the epilogue
 }
 
 // ---------------------------------------------------------------------------
@@ -495,7 +496,7 @@ void CGrunt::LoadEntranceConfig() {
 // `m_154+0x1a0` address in a reg earlier than mine (same entropy-class scheduling
 // as ResetGeometry @0x616e0) - no source lever flips it. ~88.5%.
 RVA(0x00068370, 0x14c)
-void CGrunt::RearmEntranceDrop() {
+i32 CGrunt::RearmEntranceDrop() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
 
     if (m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) {
@@ -530,6 +531,7 @@ void CGrunt::RearmEntranceDrop() {
             m_entranceCommitted = 1;
         }
     }
+    return 0; // retail: xor eax,eax before the epilogue
 }
 
 // ---------------------------------------------------------------------------
@@ -1522,6 +1524,7 @@ kArm:
 }
 
 RVA(0x0006b260, 0x5)
-void CGrunt::DispatchVtbl24() {
-    StepAttackFire(); // the slot-9 (+0x24) virtual self-dispatch (tail jmp [vt+0x24])
+i32 CGrunt::DispatchVtbl24() {
+    // forwards the slot's own return - retail is a bare `jmp [vt+0x24]` tail call
+    return StepAttackFire();
 }
