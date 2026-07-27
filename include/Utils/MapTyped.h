@@ -51,4 +51,5 @@ inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, CObject*& out) {
     return map.Lookup(reinterpret_cast<void*>(id), reinterpret_cast<void*&>(out));
 }
 
+
 #endif // GRUNTZ_UTILS_MAPTYPED_H

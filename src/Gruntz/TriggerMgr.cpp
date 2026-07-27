@@ -1380,7 +1380,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
             void* cell = 0;
             if (key != 0) {
                 void* found = 0;
-                void* looked = map->Lookup(reinterpret_cast<void*>(key), found) ? found : 0;
+                void* looked = MapLookupById(*map, key, found) ? found : 0;
                 if (looked == 0) {
                     return 0;
                 }
@@ -1450,7 +1450,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         ar->Read(&key, 4);
         if (key != 0) {
             void* found = 0;
-            void* looked = map->Lookup(reinterpret_cast<void*>(key), found) ? found : 0;
+            void* looked = MapLookupById(*map, key, found) ? found : 0;
             void* obj = (looked != 0
                          && (static_cast<CGameObject*>(looked))->GetClassId() == CLASSID_SERIALREF)
                             ? looked
@@ -1468,7 +1468,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         ar->Read(&key, 4);
         if (key != 0) {
             void* found = 0;
-            void* looked = map->Lookup(reinterpret_cast<void*>(key), found) ? found : 0;
+            void* looked = MapLookupById(*map, key, found) ? found : 0;
             if (looked == 0) {
                 return 0;
             }
@@ -1494,7 +1494,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
             return 0;
         }
         void* found = 0;
-        void* looked = map->Lookup(reinterpret_cast<void*>(key), found) ? found : 0;
+        void* looked = MapLookupById(*map, key, found) ? found : 0;
         if (looked == 0) {
             return 0;
         }

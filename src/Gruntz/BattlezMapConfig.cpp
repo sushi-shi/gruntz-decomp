@@ -56,6 +56,13 @@ i32 g_diffTier;
 DATA(0x0022b7ec)
 i32 g_spawnState;
 
+// CPtrArray is MFC's UNTYPED void* array; naming the element type is the one cast its
+// API leaves no way to avoid. One seam for this TU rather than a cast at every walk
+// (and kept LOCAL - adding it to a shared header shifts every including TU's codegen).
+static inline Coord** CoordArrayData(CPtrArray& a) {
+    return reinterpret_cast<Coord**>(a.GetData());
+}
+
 static inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
     CDDrawGroupNode* n = GroupHead(list->m_list);
     list->m_walkCursor = n;
@@ -593,7 +600,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32) {
     if (n <= 0) {
         return 1;
     }
-    Coord** cands = reinterpret_cast<Coord**>(m_candArray.GetData());
+    Coord** cands = CoordArrayData(m_candArray);
     Coord* cand = 0;
     i32 i = 0;
     i32 tileRec[7];
@@ -5544,7 +5551,7 @@ void* CBattlezMapConfig::PickSpawnCoord(void* out, CGrunt* unit, i32 kind) {
         i32 r = rand() % count;
         i32 k = 0;
         if (count > 0) {
-            Coord** arr = reinterpret_cast<Coord**>(coords->GetData());
+            Coord** arr = CoordArrayData(*coords);
             CTriggerMgr* grid = m_triggerMgr;
             i32 cell = m_curCell;
             for (;;) {
@@ -5576,7 +5583,7 @@ void* CBattlezMapConfig::PickSpawnCoord(void* out, CGrunt* unit, i32 kind) {
             }
         }
         r = rand() % count;
-        Coord* cand = reinterpret_cast<Coord**>(coords->GetData())[r];
+        Coord* cand = CoordArrayData(*coords)[r];
         rx = cand->m_x;
         ry = cand->m_y;
     }
@@ -6587,7 +6594,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
             i32 x = b->m_markerX;
             i32 y = b->m_markerY;
             if (cnt != 0) {
-                Coord** arr = reinterpret_cast<Coord**>(b->m_0f0.GetData()); // the CPtrArray band
+                Coord** arr = CoordArrayData(b->m_0f0); // the CPtrArray band
                 Coord* pair = arr[rand() % cnt];
                 x = pair->m_x;
                 y = pair->m_y;
@@ -6644,7 +6651,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
     // +0xf0 is the config's CPtrArray: +0xf4 is its data, +0xf8 its count
     i32 cnt2 = cfgB->m_0f0.GetSize();
     if (cnt2 > 0) {
-        Coord** vec = reinterpret_cast<Coord**>(cfgB->m_0f0.GetData());
+        Coord** vec = CoordArrayData(cfgB->m_0f0);
         for (i32 j = cnt2; j > 0; j--) {
             Coord* pair = *vec;
             i32 dy = abs(pair->m_y - py);
