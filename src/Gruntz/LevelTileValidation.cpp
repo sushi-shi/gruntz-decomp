@@ -52,7 +52,8 @@
 #include <Wwd/WwdFile.h>      // CDDrawWorkerHost - the canonical plane (tile grid + transform)
 #include <rva.h>
 
-#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+#include <Gruntz/FreeNodePool.h>     // the coord-node pool object @0x645540
+#include <Gruntz/GameObjectFactory.h> // the Create* registrants (the m_notify identities)
 
 static char s_BadSwitch[] = "Bad switch at: x=%d, y=%d\n";
 static char s_BadMulti[] = "Bad multi switch at: x=%d, y=%d\n";
@@ -130,9 +131,10 @@ i32 CPlay::PlaceStartGruntz() {
         CDDrawGroupNode* next = node->m_next;
         if (obj != 0) {
             AnimWorkerObj* aux = obj->m_7c;
-            void* who =
-                static_cast<void*>(aux->m_notify); // +0x10: WHICH leaf class built this object
-            if (who == reinterpret_cast<void*>(0x4024a5)) {
+            // +0x10 identifies WHICH leaf-class factory built this object; retail
+            // compares the pointer against each registrant's address.
+            GameObjNotifyFn who = aux->m_notify;
+            if (who == CreateGruntStartingPoint) {
                 i32 idx = reg->m_cmdGrid->PlaceObject(
                     obj->m_124,
                     (obj->m_screenX & ~0x1f) + 0x10,
@@ -162,7 +164,7 @@ i32 CPlay::PlaceStartGruntz() {
                     return 0;
                 }
                 obj->m_flags |= 0x10000;
-            } else if (g_gameReg->m_134 != 1 && who == reinterpret_cast<void*>(0x4017e4)
+            } else if (g_gameReg->m_134 != 1 && who == CreateGruntCreationPoint
                        && obj->m_124 == g_curPlayer) {
                 // The per-player start record: m_options[k] (+0x150, stride 0x238); +0x228 is
                 // the cap on start gruntz for that player (the roster's m_comboSel field).
@@ -216,9 +218,9 @@ i32 CPlay::ValidateLevelTiles() {
 
         // 2-load leaf identity: [obj+0x7c] -> +0x10 == AnimWorkerObj::Init (the per-leaf
         // post-create driver fn-ptr). The constants are those leaves' Init thunks.
-        void* who = static_cast<void*>(obj->m_7c->m_notify);
+        GameObjNotifyFn who = obj->m_7c->m_notify;
 
-        if (who == reinterpret_cast<void*>(0x401799)) {
+        if (who == CreateTileTriggerSwitch) {
             CGameLevel* grid = LevelOf(m_world); // recomputed per-arm (retail spills it)
             i32 type = LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
             if (type == 0x21) {
@@ -481,15 +483,15 @@ i32 CPlay::ValidateLevelTiles() {
                 default:
                     break;
             }
-        } else if (who == reinterpret_cast<void*>(0x403bfc)) {
+        } else if (who == CreateTileTrigger) {
             i32 type = LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
             static_cast<void>(type);
             obj->m_flags |= 0x10000;
-        } else if (who == reinterpret_cast<void*>(0x4037b0)) {
+        } else if (who == CreateTileSecretTrigger) {
             i32 type = LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
             static_cast<void>(type);
             obj->m_flags |= 0x10000;
-        } else if (who == reinterpret_cast<void*>(0x401b09)) {
+        } else if (who == CreateLevelTime) {
             // seed the on-screen level timer from the marker's (min,sec) pair; the
             // callee is ?SetTime@CTimer@@ @0x9c090 (thunk 0x2de7) on m_frameMarker,
             // gated on the manager's m_134 mode (retail: cmp [this->m_4+0x134],2).
@@ -506,12 +508,12 @@ i32 CPlay::ValidateLevelTiles() {
                 m_frameMarker->SetTime(b, a);
             }
             obj->m_flags |= 0x10000;
-        } else if (who == reinterpret_cast<void*>(0x40288d)) {
+        } else if (who == CreateInGameIcon) {
             if (obj->m_124 == 0x32) {
                 // ?InsertPtr@CStatusBarMgr@@ @0x108410 (thunk 0x1d2f) on m_guts
                 m_guts->InsertPtr(obj->m_118, obj->m_114);
             }
-        } else if (who == reinterpret_cast<void*>(0x4017e4)) {
+        } else if (who == CreateGruntCreationPoint) {
             if (obj->m_124 == g_curPlayer) {
                 CoordPoolNode* cell = g_coordPool.m_freeHead;
                 void* slot = 0;
@@ -524,7 +526,7 @@ i32 CPlay::ValidateLevelTiles() {
                     (static_cast<i32*>(slot))[1] = (obj->m_screenY & ~0x1f) + 0x10;
                 }
             }
-        } else if (who == reinterpret_cast<void*>(0x4019bf)) {
+        } else if (who == CreateBrickz) {
             // resolve the raw tile handle at the object's grid cell (inlined
             // GetTileHandle - no collision query); tile ids 0x12f..0x149 register
             // a tile-action event with the extent rect (AddToList3 @0x116a40,
@@ -547,10 +549,10 @@ i32 CPlay::ValidateLevelTiles() {
                     obj->m_flags |= 0x10000;
                 }
             }
-        } else if (who == reinterpret_cast<void*>(0x402a68)) {
+        } else if (who == CreateGruntPuddle) {
             // ?PlacePuddle@CTriggerMgr@@ @0x7a240 (thunk 0x35fd) on the command grid
             m_mgr->m_cmdGrid->PlacePuddle(obj, 0);
-        } else if (who == reinterpret_cast<void*>(0x40164f)) {
+        } else if (who == CreateGuardPoint) {
             // 3x3 coarse-grid pressure-pad stamp into g_gameReg->m_tileGrid: for each
             // of the 3 rows and 3 columns around the object's coarse cell, bounds-
             // check against the registry grid, tally the per-kind counter, and OR
@@ -601,14 +603,14 @@ i32 CPlay::ValidateLevelTiles() {
                     *reinterpret_cast<i32*>((reinterpret_cast<char*>(cellRow) + ebp)) |= bit;
                 }
             }
-        } else if (who == reinterpret_cast<void*>(0x40182a)) {
+        } else if (who == CreateToobSpikez) {
             CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
             i32 cy = obj->m_screenX >> 5;
             i32 cx = obj->m_screenY >> 5;
             if (static_cast<u32>(cy) < gg->m_width && static_cast<u32>(cx) < gg->m_height) {
                 // poke the cell
             }
-        } else if (who == reinterpret_cast<void*>(0x401f0a)) {
+        } else if (who == CreateWarpStonePad) {
             if (g_gameReg->m_134 != ok) {
                 CoordPoolNode* cell = g_coordPool.m_freeHead;
                 if (cell->m_next != 0) {
