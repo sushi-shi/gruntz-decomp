@@ -498,7 +498,7 @@ void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
     if (list == 0) { // retail's dead null-guard on the lea (je exit)
         return;
     }
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(list->GetHeadPosition());
+    CDDrawGroupNode* node = GroupHead(*list);
     while (node) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -1511,7 +1511,7 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
     i32 r2 = radius * radius;
     i32 count = 0;
     CDDrawGroupNode* node =
-        reinterpret_cast<CDDrawGroupNode*>(m_world->m_childGroup->m_list.GetHeadPosition());
+        GroupHead(m_world->m_childGroup->m_list);
     while (node) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;
@@ -1558,7 +1558,7 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, ScanCb
     i32 hiY = r->bottom + offY;
     i32 count = 0;
     CDDrawGroupNode* node =
-        reinterpret_cast<CDDrawGroupNode*>(m_world->m_childGroup->m_list.GetHeadPosition());
+        GroupHead(m_world->m_childGroup->m_list);
     while (node) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;

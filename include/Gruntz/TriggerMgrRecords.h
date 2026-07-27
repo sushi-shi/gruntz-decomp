@@ -27,6 +27,14 @@ struct CTmNode {
 };
 SIZE_UNKNOWN();
 
+// MFC's POSITION for a CObList/CPtrList IS the node pointer (see GroupHead).
+inline CTmNode* TmHead(CObList& list) {
+    return reinterpret_cast<CTmNode*>(list.GetHeadPosition());
+}
+inline CTmNode* TmHead(CPtrList& list) {
+    return reinterpret_cast<CTmNode*>(list.GetHeadPosition());
+}
+
 extern CButeMgr g_buteMgr;
 extern "C" u32 g_frameTime; // DAT_00645588 (the level base score / id sentinel)
 

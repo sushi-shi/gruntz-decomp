@@ -57,7 +57,7 @@ DATA(0x0022b7ec)
 i32 g_spawnState;
 
 static inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
-    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(list->m_list.GetHeadPosition());
+    CDDrawGroupNode* n = GroupHead(list->m_list);
     list->m_walkCursor = n;
     if (n == 0) {
         return 0;
@@ -3315,7 +3315,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(CGrunt* unit) {
     board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     // Iterate the scene collection for kind-matching units inside the box.
     CDDrawChildGroup* coll = m_ctx->m_world->m_childGroup;
-    coll->m_scanCursor = reinterpret_cast<CDDrawGroupNode*>(coll->m_list.GetHeadPosition());
+    coll->m_scanCursor = GroupHead(coll->m_list);
     CGameObject* g = static_cast<CGameObject*>(coll->Drain());
     while (g != 0) {
         if (g->m_7c->m_notify == reinterpret_cast<GameObjNotifyFn>(&CreateInGameIcon)

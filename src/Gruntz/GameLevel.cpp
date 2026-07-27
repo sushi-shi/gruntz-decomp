@@ -782,7 +782,7 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
     if ((m_flags & 1) && chain != 0 && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0) != 0) {
         (static_cast<CDDrawWorkerHost*>((m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0)))
             ->Draw(static_cast<CPlaneDrawCtx*>(visitor));
-        CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(chain->GetHeadPosition());
+        CDDrawGroupNode* node = GroupHead(*chain);
 
         i32 i = 1;
         if (m_planes.GetSize() > i) {
@@ -1498,7 +1498,7 @@ i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 a1, i32 a2, i32* outY, i32 a3) {
     }
 
     CDDrawGroupNode* node =
-        reinterpret_cast<CDDrawGroupNode*>(OwnerMgr()->m_childGroup->m_list.GetHeadPosition());
+        GroupHead(OwnerMgr()->m_childGroup->m_list);
     while (node != 0) {
         CDDrawGroupNode* cur = node;
         node = node->m_next;

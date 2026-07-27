@@ -37,7 +37,7 @@ i32 CPlay::ScanBuildTiles() {
     if (pl == 0) {
         return 0;
     }
-    CDDrawGroupNode* pos = reinterpret_cast<CDDrawGroupNode*>(pl->GetHeadPosition());
+    CDDrawGroupNode* pos = GroupHead(*pl);
     while (pos != 0) {
         CDDrawGroupNode* node = pos;
         pos = node->m_next;
@@ -172,7 +172,7 @@ i32 CPlay::ScanShuffleQuads() {
     if (pl == 0) {
         return 0;
     }
-    CDDrawGroupNode* pos = reinterpret_cast<CDDrawGroupNode*>(pl->GetHeadPosition());
+    CDDrawGroupNode* pos = GroupHead(*pl);
 
     i32 perm[4];
     ::CByteArray arr;

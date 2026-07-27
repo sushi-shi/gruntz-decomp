@@ -309,7 +309,7 @@ void CWormhole::SpawnPartners() {
     if (list == 0) {
         return;
     }
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(list->GetHeadPosition());
+    CDDrawGroupNode* node = GroupHead(*list);
     if (node == 0) {
         return;
     }

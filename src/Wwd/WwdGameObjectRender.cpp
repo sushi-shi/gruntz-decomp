@@ -344,7 +344,7 @@ i32 CWwdGameObject::AddChild(CGameObject* child) {
 
 RVA(0x00166810, 0x32)
 void CWwdGameObject::Clear() {
-    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition());
+    CDDrawGroupNode* n = GroupHead(m_1dc);
     while (n) {
         CDDrawGroupNode* cur = n;
         n = n->m_next;
@@ -371,7 +371,7 @@ i32 CWwdGameObject::RemoveChild(CGameObject* child) {
 RVA(0x00166880, 0x29)
 i32 CWwdGameObject::WalkChildWorkers() {
     i32 count = 0;
-    for (CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition());
+    for (CDDrawGroupNode* n = GroupHead(m_1dc);
          n != 0;) {
         CDDrawGroupNode* cur = n;
         n = n->m_next;
@@ -384,7 +384,7 @@ i32 CWwdGameObject::WalkChildWorkers() {
 
 RVA(0x001668b0, 0x26)
 void CWwdGameObject::Render(CDDrawSurfacePair* ctx) {
-    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition());
+    CDDrawGroupNode* n = GroupHead(m_1dc);
     if (n != 0) {
         do {
             CDDrawGroupNode* cur = n;
@@ -395,7 +395,7 @@ void CWwdGameObject::Render(CDDrawSurfacePair* ctx) {
 }
 RVA(0x001668e0, 0x2d)
 void CWwdGameObject::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
-    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition());
+    CDDrawGroupNode* n = GroupHead(m_1dc);
     if (n != 0) {
         do {
             CDDrawGroupNode* cur = n;
@@ -406,7 +406,7 @@ void CWwdGameObject::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 }
 RVA(0x00166910, 0x34)
 void CWwdGameObject::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
-    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition());
+    CDDrawGroupNode* n = GroupHead(m_1dc);
     if (n != 0) {
         do {
             CDDrawGroupNode* cur = n;
@@ -417,7 +417,7 @@ void CWwdGameObject::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDr
 }
 RVA(0x00166950, 0x34)
 void CWwdGameObject::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
-    CDDrawGroupNode* n = reinterpret_cast<CDDrawGroupNode*>(m_1dc.GetHeadPosition());
+    CDDrawGroupNode* n = GroupHead(m_1dc);
     if (n != 0) {
         do {
             CDDrawGroupNode* cur = n;

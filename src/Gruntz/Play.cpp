@@ -1443,7 +1443,7 @@ i32 CPlay::CountObjectsByCategory(i32 category) {
     if (container == 0) {
         return 0;
     }
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(container->GetHeadPosition());
+    CDDrawGroupNode* node = GroupHead(*container);
     i32 count = 0;
     while (node != 0) {
         CDDrawGroupNode* p = node;
@@ -2228,7 +2228,7 @@ i32 CPlay::NotifyVisibleEntities() {
     i32* vp = reinterpret_cast<i32*>(&v->m_level->m_planeCtx);
     CDDrawSurfacePair* held = v->m_drawTarget->m_backPair;
     CDDrawGroupNode* node =
-        reinterpret_cast<CDDrawGroupNode*>(v->m_childGroup->m_list.GetHeadPosition());
+        GroupHead(v->m_childGroup->m_list);
 
     RECT r;
     r.left = vp[0];
@@ -6235,7 +6235,7 @@ finish:
 RVA(0x000d5960, 0x160)
 i32 CPlay::AddLevelGruntz() {
     CDDrawGroupNode* node =
-        reinterpret_cast<CDDrawGroupNode*>(m_world->m_childGroup->m_list.GetHeadPosition());
+        GroupHead(m_world->m_childGroup->m_list);
     while (node != 0) {
         CGameObject* g = node->m_obj;
         node = node->m_next;
@@ -6414,7 +6414,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
         return 0;
     }
     CDDrawGroupNode* node =
-        reinterpret_cast<CDDrawGroupNode*>(this->m_world->m_childGroup->m_list.GetHeadPosition());
+        GroupHead(this->m_world->m_childGroup->m_list);
     while (node) {
         CGameObject* obj = node->m_obj;
         CDDrawGroupNode* nxt = node->m_next;

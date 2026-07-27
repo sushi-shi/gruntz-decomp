@@ -302,7 +302,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
             CGrunt* focus = 0;
             CTriggerMgr* tm = g->m_cmdGrid;
             if (tm->m_recList.GetCount() == 1) {
-                CTmNode* nd = reinterpret_cast<CTmNode*>(tm->m_recList.GetHeadPosition());
+                CTmNode* nd = TmHead(tm->m_recList);
                 i32* vec = nd->m_payload;
                 i32 a = vec[0];
                 i32 b = vec[1];

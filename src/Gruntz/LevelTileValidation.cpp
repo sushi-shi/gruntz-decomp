@@ -115,7 +115,7 @@ i32 CPlay::PlaceStartGruntz() {
         return 0;
     }
     CGruntzMgr* reg = m_mgr;
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(list->GetHeadPosition());
+    CDDrawGroupNode* node = GroupHead(*list);
     i32 result = 1;
     i32 counter = 0;
     i32 flag14 = 0;
@@ -201,7 +201,7 @@ i32 CPlay::ValidateLevelTiles() {
     if (list == 0) {
         return 0;
     }
-    CDDrawGroupNode* node = reinterpret_cast<CDDrawGroupNode*>(list->GetHeadPosition());
+    CDDrawGroupNode* node = GroupHead(*list);
     if (node == 0) {
         return 1;
     }

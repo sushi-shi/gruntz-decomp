@@ -32,6 +32,15 @@ struct CDDrawGroupNode {
 };
 SIZE_UNKNOWN();
 
+// MFC's POSITION for a CObList/CPtrList IS the node pointer, so the head-node walk
+// is a language-forced pun; keep it at this one seam instead of at every loop head.
+inline CDDrawGroupNode* GroupHead(CObList& list) {
+    return reinterpret_cast<CDDrawGroupNode*>(list.GetHeadPosition());
+}
+inline CDDrawGroupNode* GroupHead(CPtrList& list) {
+    return reinterpret_cast<CDDrawGroupNode*>(list.GetHeadPosition());
+}
+
 // (B)-form re-base 2026-07-22: CDDrawSurfaceMgr::Init constructs this with the
 // CLoadable 3-arg base ctor 0x156cb0 (retail decode), and vtbl 0x5efdc0 slots
 // 5-8 are the CLoadable scheme (IsLoaded/IsReady/Unload/GetClassId 0x10).

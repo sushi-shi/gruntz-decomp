@@ -988,7 +988,7 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, void* key) {
 // +0x14 worker cache holds the name map this looks the key up in, exactly as
 // CreateNamed_1593e0/1595b0 do) and m_listHead @+0x14 is m_10's head node (the CObList sits
 // at +0x10). So Find is a plain CDDrawChildGroup method, walking the same list with the
-// same `reinterpret_cast<CDDrawGroupNode*>(m_list.GetHeadPosition())` idiom every sibling FindBy* here uses.
+// same `GroupHead(m_list)` idiom every sibling FindBy* here uses.
 RVA(0x0015a8c0, 0x7d)
 void* CDDrawChildGroup::Find(i32 id, const char* key) {
     CObject* found = 0;
