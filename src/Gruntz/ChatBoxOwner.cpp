@@ -240,19 +240,19 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     SetTextColor(hdc, 0);
     SetBkColor(hdc, 0);
 
-    void* rect[4];
+    RECT rect;
     if (self->m_8 == 3) {
-        rect[0] = reinterpret_cast<void*>((self->m_0 + 0x4c));
-        rect[2] = reinterpret_cast<void*>((self->m_0 + 0x267));
-        rect[1] = reinterpret_cast<void*>((self->m_4 + 0x2b));
-        rect[3] = reinterpret_cast<void*>((self->m_4 + 0x37));
-        self->m_14->RenderInputText(hdc, 0x21b, reinterpret_cast<RECT*>(rect));
+        rect.left = self->m_0 + 0x4c;
+        rect.right = self->m_0 + 0x267;
+        rect.top = self->m_4 + 0x2b;
+        rect.bottom = self->m_4 + 0x37;
+        self->m_14->RenderInputText(hdc, 0x21b, &rect);
     } else {
-        rect[0] = reinterpret_cast<void*>((self->m_0 + 0x4c));
-        rect[2] = reinterpret_cast<void*>((self->m_0 + 0x1c7));
-        rect[1] = reinterpret_cast<void*>((self->m_4 + 0x2b));
-        rect[3] = reinterpret_cast<void*>((self->m_4 + 0x37));
-        self->m_14->RenderInputText(hdc, 0x17b, reinterpret_cast<RECT*>(rect));
+        rect.left = self->m_0 + 0x4c;
+        rect.right = self->m_0 + 0x1c7;
+        rect.top = self->m_4 + 0x2b;
+        rect.bottom = self->m_4 + 0x37;
+        self->m_14->RenderInputText(hdc, 0x17b, &rect);
     }
     host->m_ddSurface->ReleaseDC(hdc);
     return 1;
