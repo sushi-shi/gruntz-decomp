@@ -27,6 +27,9 @@ u8 g_clut[0x30000]; // 0x653c9e
 static inline u16 Clut16(u32 byteOff) {
     return *reinterpret_cast<const u16*>(g_clut + byteOff);
 }
+static inline void ClutStore16(u32 byteOff, i16 v) {
+    *reinterpret_cast<i16*>(g_clut + byteOff) = v;
+}
 DATA(0x00283ca0)
 u16 g_lut16[256] = {0}; // 0x683ca0
 DATA(0x00283ea0)
@@ -987,11 +990,9 @@ void BuildColorChannelTables() {
                 do {
                     base += 2;
                     i32 sum = varD / 32 + bDiv;
-                    *reinterpret_cast<i16*>((g_clut + 0x20000 + base)) =
-                        static_cast<i16>((sum << 0xa));
-                    *reinterpret_cast<i16*>((g_clut + base)) = static_cast<i16>((sum << 5));
-                    *reinterpret_cast<i16*>((g_clut + 0x10000 + base)) =
-                        static_cast<i16>((sum << bShift));
+                    ClutStore16(0x20000 + base, static_cast<i16>((sum << 0xa)));
+                    ClutStore16(base, static_cast<i16>((sum << 5)));
+                    ClutStore16(0x10000 + base, static_cast<i16>((sum << bShift)));
                     varD += stepA;
                 } while (--k != 0);
                 varB += a;
@@ -1012,12 +1013,9 @@ void BuildColorChannelTables() {
                 do {
                     base += 2;
                     i32 sum = varD / 32 + bDiv;
-                    *reinterpret_cast<i16*>((g_clut + 0x20000 + base)) =
-                        static_cast<i16>((sum << g_rUp));
-                    *reinterpret_cast<i16*>((g_clut + base)) =
-                        static_cast<i16>(((sum << g_gUp) << 1));
-                    *reinterpret_cast<i16*>((g_clut + 0x10000 + base)) =
-                        static_cast<i16>((sum << g_bUp));
+                    ClutStore16(0x20000 + base, static_cast<i16>((sum << g_rUp)));
+                    ClutStore16(base, static_cast<i16>(((sum << g_gUp) << 1)));
+                    ClutStore16(0x10000 + base, static_cast<i16>((sum << g_bUp)));
                     varD += stepA;
                 } while (--k != 0);
                 varB += a;
