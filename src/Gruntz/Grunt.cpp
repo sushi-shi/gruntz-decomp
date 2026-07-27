@@ -499,18 +499,16 @@ i32 g_serialCounter;
 RVA(0x00048360, 0x7e)
 void CGrunt::UserLogicVfunc9() {
     if (CoordCount() != 0) {
-        void** node = reinterpret_cast<void**>(CoordHead());
-        if (node) {
-            do {
-                void* next = node[0];
-                void* buf = node[2];
-                if (buf) {
-                    CoordPoolNode* slot = g_coordPool.NodeOf(buf);
-                    slot->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = slot;
-                }
-                node = static_cast<void**>(next);
-            } while (node);
+        // this walked MFC's CNode by hand - pNext at +0, data at +8 - which is exactly
+        // CPtrList::GetNext's body; say it with the accessor
+        POSITION pos = m_31c.GetHeadPosition();
+        while (pos != 0) {
+            void* buf = m_31c.GetNext(pos);
+            if (buf) {
+                CoordPoolNode* slot = g_coordPool.NodeOf(buf);
+                slot->m_next = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = slot;
+            }
         }
         m_31c.RemoveAll();
     }
@@ -1839,18 +1837,16 @@ void CGrunt::SetEntrancePos(i32 a, i32 b) {
         m_arrivalActive = 0;
     }
     if (b && m_arrivalState != 0x11 && CoordCount() != 0) {
-        void** node = reinterpret_cast<void**>(CoordHead());
-        if (node) {
-            do {
-                void* next = node[0];
-                void* buf = node[2];
-                if (buf) {
-                    CoordPoolNode* slot = g_coordPool.NodeOf(buf);
-                    slot->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = slot;
-                }
-                node = static_cast<void**>(next);
-            } while (node);
+        // this walked MFC's CNode by hand - pNext at +0, data at +8 - which is exactly
+        // CPtrList::GetNext's body; say it with the accessor
+        POSITION pos = m_31c.GetHeadPosition();
+        while (pos != 0) {
+            void* buf = m_31c.GetNext(pos);
+            if (buf) {
+                CoordPoolNode* slot = g_coordPool.NodeOf(buf);
+                slot->m_next = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = slot;
+            }
         }
         m_31c.RemoveAll();
     }

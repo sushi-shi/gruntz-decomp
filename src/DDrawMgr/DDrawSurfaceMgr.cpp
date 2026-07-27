@@ -329,6 +329,8 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     CSnapshotHeader header;
     S.Read(&header, sizeof(header));
 
+    // API-forced: m_callback is a client-registered hook whose last parameter is an
+    // opaque payload word, so an out-pointer has to be widened into it
     if (m_callback == 0 || m_callback(this, &S, 2, arg3, reinterpret_cast<i32>(&header)) == 0) {
         return 0;
     }
@@ -338,6 +340,8 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
         == 0) {
         return 0;
     }
+    // API-forced: m_callback is a client-registered hook whose last parameter is an
+    // opaque payload word, so an out-pointer has to be widened into it
     if (m_callback == 0 || m_callback(this, &S, 6, arg3, reinterpret_cast<i32>(&header)) == 0) {
         return 0;
     }
@@ -347,6 +351,8 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_level->EditDispatch(static_cast<void*>(&S), 6, 0, 0) == 0) {
         return 0;
     }
+    // API-forced: m_callback is a client-registered hook whose last parameter is an
+    // opaque payload word, so an out-pointer has to be widened into it
     if (m_callback == 0 || m_callback(this, &S, 7, arg3, reinterpret_cast<i32>(&header)) == 0) {
         return 0;
     }
@@ -357,6 +363,8 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_level->EditDispatch(static_cast<void*>(&S), 7, 0, 0) == 0) {
         return 0;
     }
+    // API-forced: m_callback is a client-registered hook whose last parameter is an
+    // opaque payload word, so an out-pointer has to be widened into it
     if (m_callback == 0 || m_callback(this, &S, 8, arg3, reinterpret_cast<i32>(&header)) == 0) {
         return 0;
     }

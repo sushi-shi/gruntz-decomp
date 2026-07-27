@@ -172,7 +172,7 @@ i32 CBattlezMapConfig::Step33520(CGrunt* g) {
         if (dist > m_0a4) {
             if (m_0f0.GetSize() != 0) {
                 GruntCoord* e =
-                    (reinterpret_cast<GruntCoord**>(m_0f0.GetData()))[rand() % m_0f0.GetSize()];
+                    coordData()[rand() % m_0f0.GetSize()];
                 g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
             }
             g->m_arrivalCol = -1;
