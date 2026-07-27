@@ -231,6 +231,25 @@ _NUMERIC_CAST = re.compile(
 _REINTERPRET_CAST = re.compile(r"\breinterpret_cast\s*<")
 
 
+# Offset-casts are BANNED OUTRIGHT - "named member `&x->m_field`, never even a C++
+# cast" (CLAUDE.md). The ban was only ever enforced against the C-style spelling
+# `(char*)x + N` and the offset-cast macros, both of which now read 0. The C++-cast
+# spelling walked straight through:
+#
+#     reinterpret_cast<u8*>(src) + src->m_0a          // src/Image/FileImage.cpp:94
+#     reinterpret_cast<char*>(p) + p->m_0 + 0x400     // src/Image/FileImage.cpp:250
+#
+# Same banned construct, different lexeme - and it was invisible while two green 0s
+# said the ban was fully enforced. Counted here so it ratchets down with the rest.
+_OFFSET_CAST_CPP = re.compile(
+    r"reinterpret_cast\s*<\s*(?:const\s+)?(?:char|u8|i8|BYTE|void)\s*\*\s*>\s*"
+    r"\([^;()]*(?:\([^;()]*\)[^;()]*)*\)\s*\+")
+
+
+def _count_offset_casts_cpp(code: str) -> int:
+    return len(_OFFSET_CAST_CPP.findall(code))
+
+
 def _count_c_style_casts(code: str) -> int:
     """Every C-style `(T)expr` cast, one number: `)this`, `(T)m_x`, `(char*)`, numeric
     `(i32)`, and the offset-cast-hiding macros. All must be C++ named casts instead."""
@@ -243,13 +262,19 @@ def _count_c_style_casts(code: str) -> int:
 # code->int for structural counts. Occurrences summed over stripped code.
 def _count_unexplained_casts(code: str) -> int:
     """The reinterpret_casts the cast ledger cannot account for (see
-    gruntz.audit.cast_ledger for what counts as explained)."""
+    gruntz.audit.cast_ledger for what counts as explained).
+
+    Takes RAW text (see `_NEEDS_RAW`): the reasons this metric credits are written in
+    comments, so a stripped body can never match them. The per-line handling below is
+    kept identical to the ledger's scan() - drop the `//` tail before looking for a
+    cast, so a cast NAMED in prose is not counted as a site, but keep the comment in
+    the context window, which is where the reason lives."""
     from gruntz.audit.cast_ledger import CAST, FORCED, REASON
     import re as _re
     lines = code.split("\n")
     n = 0
     for i, line in enumerate(lines):
-        for _ in CAST.finditer(line):
+        for _ in CAST.finditer(line.split("//", 1)[0]):
             ctx = " ".join(lines[max(0, i - 3):i + 2])
             if any(_re.search(pat, line) or _re.search(pat, ctx) for _, pat in FORCED):
                 continue
@@ -294,6 +319,7 @@ METRICS = (
     ("void* m_ members", re.compile(r"\bvoid ?\* m_"), False),
     # --- metric-evasion / placeholder hacks (2026-07-14 de-hack campaign; MAX-fuzzy gate) ---
     ("offset-cast macros", _count_offset_macro_casts, False),
+    ("offset-casts (C++ cast)", _count_offset_casts_cpp, False),
     ("cpp extern decls", _CPP_EXTERN, True),
     ("cpp external prototypes", _count_cpp_external_prototypes, True),
 )
@@ -373,6 +399,16 @@ _RATCHET = _VIEW_METRICS | set(_CALLER_CALLEE_LABELS) | {
 }
 
 
+# Metrics whose evidence lives in COMMENTS, so they must see the raw file. `_strip`
+# removes every comment before a metric runs, which silently broke "unexplained casts":
+# its REASON regex only ever matches reason text written in a comment, so after
+# stripping it could never fire and the metric scored EVERY non-structurally-forced
+# cast as unexplained. It read 410 while the cast ledger - same rule, unstripped
+# source - read 122 OPEN; 577 total minus 167 structurally-forced is exactly 410, so
+# the metric was giving zero credit for every reason ever written.
+_NEEDS_RAW = {"unexplained casts"}
+
+
 def count() -> list[tuple[str, int]]:
     totals = {label: 0 for label, _, _ in METRICS}
     for root in ROOTS:
@@ -385,7 +421,8 @@ def count() -> list[tuple[str, int]]:
             is_cpp = path.suffix in _CPP
             scaffold = _is_scaffolding(path)   # stub/Views: excluded from the VIEW metrics
             try:
-                code = _strip(path.read_text(errors="ignore"))
+                raw = path.read_text(errors="ignore")
+                code = _strip(raw)
             except OSError:
                 continue
             for label, matcher, cpp_only in METRICS:
@@ -393,7 +430,8 @@ def count() -> list[tuple[str, int]]:
                     continue
                 if scaffold and label in _VIEW_METRICS:
                     continue
-                totals[label] += matcher(code) if callable(matcher) else len(matcher.findall(code))
+                text = raw if label in _NEEDS_RAW else code
+                totals[label] += matcher(text) if callable(matcher) else len(matcher.findall(text))
     rows = [(label, totals[label]) for label, _, _ in METRICS]
     # The *Views.h holding pens are EXCLUDED from the ratcheted view metrics above
     # (drain-campaign machinery), which made their resident view classes invisible
