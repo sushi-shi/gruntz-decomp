@@ -1744,20 +1744,20 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
         ResyncLParam() = atoi(buf);
     }
 
-    char packet[0x28];
-    memset(packet, 0, 0x28);
-    packet[0] |= 0x80;
-    *reinterpret_cast<i32*>((packet + 4)) = 0x3f9;
-    packet[8] = 1;
-    packet[9] = 0;
-    packet[0xa] = 1;
-    packet[0xb] = 0;
-    packet[0xc] = 0x63;
-    packet[0xd] = 0xf;
-    packet[0xe] = 0;
-    *reinterpret_cast<i32*>((packet + 0x10)) = m_hostIndex;
-    strcpy(packet + 0x14, GetString5a0());
-    SendStatFrom(packet, 0x28, 1);
+    CNetChannelPacket packet;
+    memset(&packet, 0, sizeof(packet));
+    packet.m_flags |= 0x80;
+    packet.m_statId = 0x3f9;
+    packet.m_present = 1;
+    packet.m_kind = 0;
+    packet.m_slot = 1;
+    packet.m_flagsB = 0;
+    packet.m_configId = 0x63;
+    packet.m_0d = 0xf;
+    packet.m_0e = 0;
+    packet.m_hostIndex = m_hostIndex;
+    strcpy(packet.m_name, GetString5a0());
+    SendStatFrom(&packet, sizeof(packet), 1);
     return 1;
 }
 
@@ -2679,16 +2679,10 @@ i32 CMulti::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32
 
 RVA(0x000bac40, 0x38)
 i32 CMulti::RegisterChannelRec(void* rec) {
-    u8* r = static_cast<u8*>(rec);
-    if (r[8] != 0) {
-        RegisterChannel(
-            reinterpret_cast<const char*>((r + 0x14)),
-            r[9],
-            r[0xa],
-            r[0xb],
-            r[0xc],
-            *reinterpret_cast<i32*>((r + 0x10))
-        );
+    CNetChannelPacket* r = static_cast<CNetChannelPacket*>(rec);
+    if (r->m_present != 0) {
+        RegisterChannel(r->m_name, r->m_kind, r->m_slot, r->m_flagsB, r->m_configId,
+                        r->m_hostIndex);
     }
     return 1;
 }

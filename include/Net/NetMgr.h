@@ -72,6 +72,28 @@ struct CNetStatPacket {
 };
 SIZE_UNKNOWN(); // 0x10-byte stat-packet header view; full record size TBD
 
+// The 0x28-byte channel-registration record that rides the stat channel. Written
+// field-for-field by CMulti::BroadcastChannel and read back by
+// CMulti::RegisterChannelRec - the two agree on every offset, which is the layout.
+#pragma pack(push, 1)
+struct CNetChannelPacket {
+    u8 m_flags;      // +0x00  bit7 set
+    char m_pad01[3]; // +0x01
+    i32 m_statId;    // +0x04  0x3f9
+    u8 m_present;    // +0x08  gate: 0 = no channel in this record
+    u8 m_kind;       // +0x09  -> RegisterChannel arg 2
+    u8 m_slot;       // +0x0a  -> arg 3
+    u8 m_flagsB;     // +0x0b  -> arg 4
+    u8 m_configId;   // +0x0c  -> arg 5
+    u8 m_0d;         // +0x0d
+    u8 m_0e;         // +0x0e
+    char m_pad0f[1]; // +0x0f
+    i32 m_hostIndex; // +0x10  -> arg 6
+    char m_name[0x28 - 0x14]; // +0x14  the channel name (strcpy'd)
+};
+SIZE(0x28);
+#pragma pack(pop)
+
 struct CNetPlayerNode {
     CNetPlayerNode* m_next; // +0x0
     char m_pad4[4];
