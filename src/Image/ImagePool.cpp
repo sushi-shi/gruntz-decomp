@@ -5,11 +5,8 @@
 #include <Rez/RezMgr.h>             // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
 #include <rva.h>
 #include <string.h>
+#include <DDrawMgr/DDSurface.h>      // PidHeader - .PID and .RID share the header
 #include <Image/FileImageRecords.h> // the real on-disk PcxHeader
-
-enum {
-    RID_HEADER_SIZE = 0x20
-}; // the .RID resource header (pixels follow)
 
 DATA(0x002bf6e0)
 HINSTANCE g_hResModule = 0; // 0x6bf6e0
@@ -842,10 +839,14 @@ i32 CRezImage::LoadPcx(char* name, void* a2, i32 a3) {
 
 RVA(0x001762c0, 0x42)
 i32 CRezImage::DecodeRidData(void* buf, void* a2, i32 a3) {
-    i32* hdr = reinterpret_cast<i32*>((static_cast<char*>(buf) + 8));
-    i32 width = hdr[0];
-    i32 height = hdr[1];
-    i32 ok = DecodeBlit(static_cast<char*>(buf) + RID_HEADER_SIZE, a2, width, height, 8, a3);
+    // .RID shares .PID's 0x20-byte header: width/height at +0x08/+0x0c and the pixel
+    // stream immediately after it. The old RID_HEADER_SIZE = 0x20 was just
+    // sizeof(PidHeader) spelled again, so it is gone with the offset arithmetic; only
+    // the pixel ENCODING differs between the two formats.
+    PidHeader* hdr = static_cast<PidHeader*>(buf);
+    i32 width = hdr->width;
+    i32 height = hdr->height;
+    i32 ok = DecodeBlit(hdr + 1, a2, width, height, 8, a3);
     if (!(a3 & 1)) {
         m_transparent = 0;
     }
@@ -876,7 +877,9 @@ i32 CRezImage::LoadRid(char* name, void* a2, i32 a3) {
 RVA(0x00176440, 0x25d)
 i32 CRezImage::DecodePidData(void* buf, void* a2, i32 a3) {
     PidHeader* hdr = static_cast<PidHeader*>(buf);
-    u8* src = reinterpret_cast<u8*>((hdr + 1)); // pixel stream at buf + 0x20
+    // the pixel stream begins one header past the buffer; reading it as bytes is
+    // byte-forced by the format (8bpp RLE), and `hdr + 1` is typed arithmetic
+    u8* src = reinterpret_cast<u8*>((hdr + 1));
     i32 width = hdr->width;
     i32 height = hdr->height;
     i32 flags = hdr->flags;
