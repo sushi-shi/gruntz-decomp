@@ -337,10 +337,8 @@ i32 CGrunt::UpdateGruntStatus() {
     CGruntzMgr* g = g_gameReg;
     i32 x = m_object->m_screenX;
     i32 y = m_object->m_screenY;
-    i32* vr = reinterpret_cast<i32*>(
-        (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_viewRect.left))
-    );
-    if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
+    const RECT& vr = g->m_world->m_level->m_mainPlane->m_viewRect;
+    if (x < vr.right && x >= vr.left && y < vr.bottom && y >= vr.top) {
         g->m_cueSink->LoadGruntSpawnConfig(this, 2, -1, -1, -1);
     }
     m_lowStaminaCued = 1;
@@ -947,10 +945,8 @@ i32 CGrunt::StepEntranceRelatchA() {
         CGruntzMgr* g = g_gameReg;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        CCueRect* r = reinterpret_cast<CCueRect*>(
-            (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_viewRect.left))
-        );
-        if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
+        const RECT& r = g->m_world->m_level->m_mainPlane->m_viewRect;
+        if (x < r.right && x >= r.left && y < r.bottom && y >= r.top) {
             g->m_cueSink->LoadGruntSpawnConfig(this, 0xc, -1, -1, -1);
         }
         return 0;
@@ -1412,15 +1408,13 @@ i32 CGrunt::StepArrivalReroll() {
     i32 y = h->m_screenY;
     i32 xp = h->m_screenX;
     CGruntzMgr* g = g_gameReg;
-    CCueRect* r = reinterpret_cast<CCueRect*>(
-        (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_viewRect.left))
-    );
+    const RECT& r = g->m_world->m_level->m_mainPlane->m_viewRect;
     if (pick > 0x19) {
-        if (xp < r->right && xp >= r->left && y < r->bottom && y >= r->top) {
+        if (xp < r.right && xp >= r.left && y < r.bottom && y >= r.top) {
             g->m_cueSink->SpawnVoiceDriver(this, 0x15d, -1, 0, -1, -1);
         }
     } else {
-        if (xp < r->right && xp >= r->left && y < r->bottom && y >= r->top) {
+        if (xp < r.right && xp >= r.left && y < r.bottom && y >= r.top) {
             g->m_cueSink->LoadGruntSpawnConfig(this, 9, -1, -1, -1);
         }
     }
@@ -1519,10 +1513,8 @@ void CGrunt::LoadVehicleGruntAnimations() {
             CGruntzMgr* g = g_gameReg;
             i32 x = h->m_screenX;
             i32 y = h->m_screenY;
-            i32* rect = reinterpret_cast<i32*>(
-                (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_viewRect.left))
-            );
-            if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
+            const RECT& rect = g->m_world->m_level->m_mainPlane->m_viewRect;
+            if (x < rect.right && x >= rect.left && y < rect.bottom && y >= rect.top) {
                 g->m_cueSink->LoadGruntSpawnConfig(this, 0xc, -1, -1, -1);
                 ClearSubA();
                 return;
@@ -1538,10 +1530,8 @@ void CGrunt::LoadVehicleGruntAnimations() {
         CGruntzMgr* g = g_gameReg;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        i32* rect = reinterpret_cast<i32*>(
-            (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_viewRect.left))
-        );
-        if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
+        const RECT& rect = g->m_world->m_level->m_mainPlane->m_viewRect;
+        if (x < rect.right && x >= rect.left && y < rect.bottom && y >= rect.top) {
             g->m_cueSink->LoadGruntSpawnConfig(this, 0xd, -1, -1, -1);
         }
     }
@@ -2100,10 +2090,8 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
         CGruntzMgr* g = g_gameReg;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        i32* rect = reinterpret_cast<i32*>(
-            (reinterpret_cast<i32>(&g->m_world->m_level->m_mainPlane->m_viewRect.left))
-        );
-        if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
+        const RECT& rect = g->m_world->m_level->m_mainPlane->m_viewRect;
+        if (x < rect.right && x >= rect.left && y < rect.bottom && y >= rect.top) {
             g->m_cueSink->SpawnVoiceDriver(this, cueId, -1, 0, -1, -1);
         }
 
