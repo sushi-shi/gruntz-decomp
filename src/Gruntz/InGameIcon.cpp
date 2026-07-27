@@ -70,17 +70,17 @@ static inline CActHandler* ResolveSlot(_zdvec* v, i32 idx) {
     i32 lo = v->m_lo;
     v->m_grown = 0;
     if (idx >= lo && idx <= v->m_hi) {
-        // the container's untyped byte pool, named at its one typed accessor
+        // the untyped byte pool named at the container's one seam
         return reinterpret_cast<CActHandler*>(v->m_base + (idx - lo) * v->m_stride);
     }
     if (v->GrowTo(idx, 0)) {
-        // the container's untyped byte pool, named at its one typed accessor
+        // the untyped byte pool named at the container's one seam
         return reinterpret_cast<CActHandler*>(v->m_base + (idx - v->m_lo) * v->m_stride);
     }
     void* sentinel = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
-    // the container's untyped byte pool, named at its one typed accessor
+    // the untyped byte pool named at the container's one seam
     return reinterpret_cast<CActHandler*>(v->m_spare);
 }
 

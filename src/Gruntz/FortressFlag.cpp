@@ -258,17 +258,17 @@ template<> RVA(0x000464e0, 0x74)
 CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
     m_grown = 0;
     if (id >= m_lo && id <= m_hi) {
-        // the container's untyped byte pool, named at its one typed accessor
+        // the untyped byte pool named at the container's one seam
         return reinterpret_cast<CActHandler*>(m_base + (id - m_lo) * m_stride);
     }
     if (GrowTo(id, 0)) { // 0x16da80 = _zvec::GrowTo (inherited)
-        // the container's untyped byte pool, named at its one typed accessor
+        // the untyped byte pool named at the container's one seam
         return reinterpret_cast<CActHandler*>(m_base + (id - m_lo) * m_stride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     m_errSink->Set(this, item, 0xc);
-    // the container's untyped byte pool, named at its one typed accessor
+    // the untyped byte pool named at the container's one seam
     return reinterpret_cast<CActHandler*>(m_spare);
 }
 

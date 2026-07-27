@@ -6388,7 +6388,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         slot++;
         cnt--;
     }
-    // naming the element of the container's untyped byte pool is its one typed accessor
+    // the untyped byte pool named at the container's one seam
     return strcmp((reinterpret_cast<CAnimNameRecord*>(sel))->m_name, "R") != 0;
 }
 

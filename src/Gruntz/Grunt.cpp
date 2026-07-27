@@ -3353,7 +3353,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             ConstructGrownSlots();
         }
         // the hand-inlined ScratchResolve tail: naming the element of the container's
-        // untyped byte pool is its one typed accessor (cf. g_typeColl.ScratchResolve)
+        // the untyped byte pool named at the container's one seam
         eq = (strcmp(reinterpret_cast<CAnimNameRecord*>(rec)->m_name, "H") == 0);
         if (eq) {
             CAniElement* el = m_38->m_1a0.m_14;
@@ -3394,7 +3394,7 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 ConstructGrownSlots();
             }
             // the hand-inlined ScratchResolve tail: naming the element of the container's
-        // untyped byte pool is its one typed accessor (cf. g_typeColl.ScratchResolve)
+        // the untyped byte pool named at the container's one seam
         eq = (strcmp(reinterpret_cast<CAnimNameRecord*>(rec2)->m_name, "D") == 0);
             if (eq) {
                 GruntEntranceCell cell2 = m_entranceCell;

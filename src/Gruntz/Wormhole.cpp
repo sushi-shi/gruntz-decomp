@@ -78,19 +78,19 @@ static inline CString* ResolveNameSlot(_zdvec* v, i32 idx) {
     CString* r;
     v->m_grown = 0;
     if (idx >= v->m_lo && idx <= v->m_hi) {
-        // the container's untyped byte pool, named at its one typed accessor
+        // the untyped byte pool named at the container's one seam
         r = reinterpret_cast<CString*>(v->m_base + (idx - v->m_lo) * v->m_stride);
     } else if (v->GrowTo(idx, 0)) {
-        // the container's untyped byte pool, named at its one typed accessor
+        // the untyped byte pool named at the container's one seam
         r = reinterpret_cast<CString*>(v->m_base + (idx - v->m_lo) * v->m_stride);
     } else {
         void* sentinel = g_projActCache; // scratch cell @0x2bf464 reused as the zvec err sentinel
         g_retAddrBreadcrumb = GetRetAddr();
         v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
-        // the container's untyped byte pool, named at its one typed accessor
+        // the untyped byte pool named at the container's one seam
         r = reinterpret_cast<CString*>(v->m_spare);
     }
-    // the container's untyped byte pool, named at its one typed accessor
+    // the untyped byte pool named at the container's one seam
     CString* slot = reinterpret_cast<CString*>(v->m_alloc);
     i32 n = v->m_grown;
     while (n-- != 0) {
@@ -110,20 +110,20 @@ static inline CActHandler* ResolveSlot(_zdvec* v, i32 idx) {
     i32 lo = v->m_lo;
     v->m_grown = 0;
     if (idx >= lo && idx <= v->m_hi) {
-        // the container's untyped byte pool, named at its one typed accessor
-        // the container's untyped byte pool, named at its one typed accessor
+        // the untyped byte pool named at the container's one seam
+        // the untyped byte pool named at the container's one seam
         return reinterpret_cast<CActHandler*>(v->m_base + (idx - lo) * v->m_stride);
     }
     if (v->GrowTo(idx, 0)) {
-        // the container's untyped byte pool, named at its one typed accessor
-        // the container's untyped byte pool, named at its one typed accessor
+        // the untyped byte pool named at the container's one seam
+        // the untyped byte pool named at the container's one seam
         return reinterpret_cast<CActHandler*>(v->m_base + (idx - v->m_lo) * v->m_stride);
     }
     void* sentinel = g_projActCache; // scratch cell @0x2bf464 reused as the zvec err sentinel
     g_retAddrBreadcrumb = GetRetAddr();
     v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
-    // the container's untyped byte pool, named at its one typed accessor
-    // the container's untyped byte pool, named at its one typed accessor
+    // the untyped byte pool named at the container's one seam
+    // the untyped byte pool named at the container's one seam
     return reinterpret_cast<CActHandler*>(v->m_spare);
 }
 
