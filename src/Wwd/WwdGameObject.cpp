@@ -1230,7 +1230,7 @@ CImage* CDDrawWorker::CreateFrame30(char* path, i32 index, i32 keyed) {
 // @early-stop
 // Same vptr-scheduler wall as CreateFrame30 (see there). 99.5%.
 RVA(0x00152060, 0xab)
-CImage* CDDrawWorker::CreateFrame28(CImageFrameDesc* desc, i32 mode, i32 index, u32 size) {
+CImage* CDDrawWorker::CreateFrame28(PidHeader* desc, i32 mode, i32 index, u32 size) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
         return 0;
     }

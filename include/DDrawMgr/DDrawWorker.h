@@ -6,7 +6,7 @@
 #include <DDrawMgr/ShadeTableCache.h> // CShadeTable - the per-frame shade table
 #include <Gruntz/Loadable.h> // canonical CLoadable : CWapObj : CObject (9-slot base)
 
-class CImageFrameDesc; // the descriptor the CreateFrame slots take
+struct PidHeader; // the descriptor the CreateFrame slots take
 class CImage; // <Image/CImage.h>
 
 class CSymTab;      // Bute/SymTab.h - the name->record table slots 10/15 iterate
@@ -45,7 +45,7 @@ public:
     //   slot 13 -> CImage::Create      (a1 = file PATH)
     virtual CImage* CreateFrame24(i32 width, i32 height, i32 index, i32 keyed); // slot 11 @0x152110
     virtual CImage*
-    CreateFrame28(CImageFrameDesc* desc, i32 mode, i32 index, u32 size); // slot 12 @0x152060
+    CreateFrame28(PidHeader* desc, i32 mode, i32 index, u32 size); // slot 12 @0x152060
     virtual CImage* CreateFrame30(char* path, i32 index, i32 keyed);     // slot 13 @0x151fb0
     // FOLD (stage 4, DONE for CDDrawWorker): the ex `CDDrawWorker` (<Gruntz/Sprite.h>) IS this
     // class - it is now a typedef of it. Slot 14's body @0x151f00 was declared as

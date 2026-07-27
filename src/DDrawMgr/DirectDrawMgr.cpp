@@ -497,7 +497,7 @@ CDDSurface* CDDrawPtrCollections::Create7f0_1(i32 a) {
 // Failure path is the fall-through (retail's `jne success` polarity).
 RVA(0x00142260, 0xd2)
 CDDSurface*
-CDDrawPtrCollections::CreateA(CImageFrameDesc* hdr, i32 type, u32 size, i32 ctrl, i32 trans) {
+CDDrawPtrCollections::CreateA(PidHeader* hdr, i32 type, u32 size, i32 ctrl, i32 trans) {
     CFileImageSurface* item = new CFileImageSurface;
     if (!item->ResolveEx(this, hdr, type, size, ctrl, trans)) {
         delete item;
@@ -556,7 +556,7 @@ CDDSurface* CDDrawPtrCollections::Createa58_1(i32 a) {
 //   caller: CreateRange @0x1426ed pushes `lea edx,[esp+0x1c]` - the stack buffer it
 //     just built with sprintf("%s%i", base, i) + strcat(".") + strcat(suffix).
 // The mis-typed link is UPSTREAM and OUT OF SCOPE here: CImage::Create's own arg1
-// (declared CImageFrameDesc*) is forwarded verbatim into this path, so it too is a
+// (declared PidHeader*) is forwarded verbatim into this path, so it too is a
 // path - see the note at its call site in src/Image/CImage.cpp.
 RVA(0x00142560, 0xc8)
 CDDSurface* CDDrawPtrCollections::Createa58_3(char* path, i32 caps, i32 colorKey) {

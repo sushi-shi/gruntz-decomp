@@ -185,7 +185,7 @@ i32 CImage::Resolve(CParseSource* src, i32 arg) {
     // The 3rd argument is the blob LENGTH (m_length) - the independent corroboration
     // that LoadDispatch's slot-10 `size` parameter is a byte count, not a pointer.
     i32 result = this->LoadDispatch(
-        reinterpret_cast<CImageFrameDesc*>(resolved),
+        reinterpret_cast<PidHeader*>(resolved),
         static_cast<u32>(index),
         src->m_length,
         arg
@@ -209,15 +209,18 @@ i32 CImage::Resolve(CParseSource* src, i32 arg) {
 // named symbols); the code bytes match. See MEMORY objdiff-reloc-scoring.
 // ---------------------------------------------------------------------------
 RVA(0x00152fb0, 0x123)
-i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, u32 size, i32 keyed) {
+i32 CImage::LoadDispatch(PidHeader* desc, u32 mode, u32 size, i32 keyed) {
     if (mode != 1 && mode != 2 && mode != 3 && mode != 4) {
         return 0;
     }
-    if (mode == 4 && (desc->m_flags & 0x20)) {
+    // PID_COMPRESSION is what routes to the slot-13 builder: BuildSlot13 -> Build
+    // decodes exactly that RLE stream (m_rleData/m_rleLen). 0x40 has no proven
+    // enumerator yet, so it stays a literal.
+    if (mode == 4 && (desc->flags & PID_COMPRESSION)) {
         if (!BuildSlot13(desc, size)) {
             return 0;
         }
-        if (m_owned != 0 && (desc->m_flags & 0x40)) {
+        if (m_owned != 0 && (desc->flags & 0x40)) {
             m_owned->Select(2, 0);
             return 1;
         }
@@ -225,8 +228,8 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, u32 size, i32 keyed) {
     }
     i32 flagsArg = (keyed != 0) ? g_surfaceColorKey : -1;
     if (mode == 4 || mode == 3) {
-        i32 g10 = desc->m_originX;
-        i32 g14 = desc->m_originY;
+        i32 g10 = desc->offsetX;
+        i32 g14 = desc->offsetY;
         m_originX = g10;
         m_originY = g14;
     } else {
@@ -323,17 +326,16 @@ i32 CImage::Create24(i32 width, i32 height, i32 keyed) {
 // deferred to the final sweep.
 // ---------------------------------------------------------------------------
 RVA(0x00153180, 0xda)
-i32 CImage::BuildSlot13(CImageFrameDesc* desc, u32 size) {
+i32 CImage::BuildSlot13(PidHeader* desc, u32 size) {
     CDDrawShadeBlit* owned = new CDDrawShadeBlit();
     m_owned = owned;
     if (owned == 0) {
         return 0;
     }
-    if (!owned->Build(
-            reinterpret_cast<CImageBuildDesc*>(desc),
-            static_cast<i32>(size),
-            m_parent->m_04->m_10[0x18 / 4]
-        )) {
+    // The cross-class reinterpret that used to sit on `desc` here is GONE: Build's
+    // source and this slot's descriptor are the same `struct PidHeader` (the
+    // CImageFrameDesc/CImageBuildDesc pair was two padded views of it).
+    if (!owned->Build(desc, static_cast<i32>(size), m_parent->m_04->m_10[0x18 / 4])) {
         return 0;
     }
     i32 w = m_owned->m_width;
@@ -343,8 +345,8 @@ i32 CImage::BuildSlot13(CImageFrameDesc* desc, u32 size) {
     m_loadResult = 0x11;
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
-    m_originX = desc->m_originX;
-    m_originY = desc->m_originY;
+    m_originX = desc->offsetX;
+    m_originY = desc->offsetY;
     return 1;
 }
 
@@ -390,10 +392,10 @@ i32 CImage::CopyFrom(CImage* other) {
 }
 
 RVA(0x00153330, 0x36)
-i32 CImage::SetOrigin(CImageFrameDesc* desc, i32 mode) {
+i32 CImage::SetOrigin(PidHeader* desc, i32 mode) {
     if (mode == 4 || mode == 3) {
-        i32 oy = desc->m_originY;
-        i32 ox = desc->m_originX;
+        i32 oy = desc->offsetY;
+        i32 ox = desc->offsetX;
         m_originX = ox;
         m_originY = oy;
     } else {

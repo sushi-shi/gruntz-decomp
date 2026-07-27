@@ -7,7 +7,7 @@
 
 #include <DDrawMgr/DDSurface.h> // CDDSurface (the pool-A item base; CPoolItem* derive it)
 
-class CImageFrameDesc; // fwd
+struct PidHeader; // fwd
 struct CDDPalette;
 struct IDirectDraw;  // <ddraw.h> in the dispatching TU
 struct IDirectDraw2; // <ddraw.h> in the dispatching TU
@@ -128,14 +128,14 @@ public:
     //     0x1457a0, which reads it at +0x04 (`test dl,0x4`/`0x2`), +0x08 (`test bl,0x3`)
     //     and +0x0c => a STRUCT ptr, never a scalar. Its one retail caller
     //     (CImage::LoadDispatch @0x152fb0) hands it the same pointer it itself reads at
-    //     +0x04/+0x10/+0x14 => CImageFrameDesc*. a3 is a byte SIZE: 0x145847 does
+    //     +0x04/+0x10/+0x14 => PidHeader*. a3 is a byte SIZE: 0x145847 does
     //     `cmp eax,0x300; jbe fail` then `lea eax,[eax+edi-0x300]` (the 768-byte palette
     //     sits at buf+size-0x300).
     //   CreateB  -> CFileImageSurface::LoadKeyed (slot 11 @0x148840) -> BlitSurf
     //     @0x13e0d0, which stores a1/a2 into the surface's +0x1c/+0x18 (w/h). THAT is
     //     the "surface-pair passes a WIDTH" path; it is a different slot, not a
     //     different type in one slot.
-    CDDSurface* CreateA(CImageFrameDesc* hdr, i32 type, u32 size, i32 ctrl, i32 trans); // 0x142260
+    CDDSurface* CreateA(PidHeader* hdr, i32 type, u32 size, i32 ctrl, i32 trans); // 0x142260
     CDDSurface* CreateB(i32 width, i32 height, i32 c, i32 d, i32 e);                    // 0x1423c0
     CDDSurface* Createa58_1(i32 a); // 0x1424a0 (vtbl a58, slot 2)
     // Createa58_3's a1 is a FILE PATH, proven from both ends: the callee

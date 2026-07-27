@@ -11,7 +11,7 @@ class CDDrawWorker; // 0x6c-byte keyed worker (canonical def <DDrawMgr/DDrawWork
 class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
 class CImage;  // the frame element (AnyValueMatches probes each set for it)
-class CImageFrameDesc; // the descriptor the create/dispatch slots take
+struct PidHeader; // the descriptor the create/dispatch slots take
 class CSymTab; // Bute/SymTab.h (the dir-tree cursor InstallTree/LoadNamespace walk)
 
 class CDDrawWorkerRegistry : public CLoadable {
@@ -35,10 +35,10 @@ public:
     Forward2C(i32 width, i32 height, CDDrawWorker* worker, i32 index, i32 keyed); // [10] 0x154f60
     // [11] 0x154f40
     virtual CImage*
-    Forward30(CImageFrameDesc* desc, i32 mode, CDDrawWorker* worker, i32 index, u32 size);
+    Forward30(PidHeader* desc, i32 mode, CDDrawWorker* worker, i32 index, u32 size);
     // [12] 0x154ce0
     virtual CImage*
-    DispatchKeyed30(CImageFrameDesc* desc, i32 mode, const char* key, i32 index, u32 size);
+    DispatchKeyed30(PidHeader* desc, i32 mode, const char* key, i32 index, u32 size);
     virtual CImage* Forward38(void* rec, CDDrawWorker* worker, i32 a3, i32 a4);  // [13] 0x154f20
     virtual CImage* DispatchKeyed38(void* rec, const char* key, i32 a3, i32 a4); // [14] 0x154ae0
     virtual CImage*

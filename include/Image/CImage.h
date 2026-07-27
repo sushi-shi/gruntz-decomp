@@ -48,15 +48,17 @@ public:
 };
 SIZE_UNKNOWN();
 
-class CImageFrameDesc {
-public:
-    char _00[0x04];
-    i32 m_flags; // +0x04  flag word (0x20 / 0x40)
-    char _08[0x10 - 0x08];
-    i32 m_originX; // +0x10
-    i32 m_originY; // +0x14
-};
-SIZE_UNKNOWN();
+// The blob header the loader slots take is the PID/RID resource header - the ONE
+// canonical `struct PidHeader` in <DDrawMgr/DDSurface.h> (SIZE 0x20 + the PidFlags
+// enum). This header used to carry a padded partial view of it named PidHeader
+// (`char _00[4]; i32 m_flags; char _08[8]; i32 m_originX; i32 m_originY;`) - dissolved
+// 2026-07-27: LoadDispatch hands the SAME pointer to CDDSurface::DecodePcxData
+// (declared PidHeader*) on one arm and to CDDrawShadeBlit::Build on the other, and the
+// two shapes agree field for field (+0x04 flags, +0x08/+0x0c w/h, +0x10/+0x14 origin,
+// +0x20 pixel stream). The `& 0x20` LoadDispatch tests to take the Build arm IS
+// PID_COMPRESSION; the `& 0x80` Build tests for the trailing palette IS
+// PID_EMBEDDED_PALETTE.
+struct PidHeader;
 
 extern i32 g_resourceInstallActive;
 extern i32 g_surfaceColorKey;
@@ -121,7 +123,7 @@ public:
     //        @0x148940, which opens with `strrchr(a2,'.')` + _stricmp ".BMP"/".PCX"/".PID".
     //        A FILE PATH.
     virtual i32 Create24(i32 width, i32 height, i32 keyed);           // slot 9  0x1530e0
-    virtual i32 LoadDispatch(CImageFrameDesc* desc, u32 mode, u32 size, i32 keyed); // [10] 0x152fb0
+    virtual i32 LoadDispatch(PidHeader* desc, u32 mode, u32 size, i32 keyed); // [10] 0x152fb0
     virtual i32 Resolve(CParseSource* src, i32 arg);                  // slot 11 0x152f20
     virtual i32 Create(char* path, i32 keyed);                        // slot 12 0x152e90
     virtual i32 Reload(CParseSource* src, i32 arg);                            // slot 13 0x153380
@@ -133,10 +135,10 @@ public:
     // Non-virtual members (direct-called; not in the vtable).
     // 0x153180 (non-virtual /GX builder): `size` is LoadDispatch's own blob length,
     // forwarded verbatim to CDDrawShadeBlit::Build (which mallocs size-0x20).
-    i32 BuildSlot13(CImageFrameDesc* desc, u32 size);
+    i32 BuildSlot13(PidHeader* desc, u32 size);
     i32 CopyFrom(CImage* other);                 // 0x1532b0  (clone the surface from another image)
     i32
-    SetOrigin(CImageFrameDesc* desc, i32 mode); // 0x153330 (copy desc origin for mode 3/4, else 0)
+    SetOrigin(PidHeader* desc, i32 mode); // 0x153330 (copy desc origin for mode 3/4, else 0)
     void RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags); // 0x153790
     void RenderFrameClipped(
         CDDrawSurfacePair* target, i32 x, i32 y, RECT* clipRect, i32 flags

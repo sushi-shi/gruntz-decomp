@@ -13,18 +13,17 @@ typedef struct tagRECT ShadeRect; // (incomplete-ok: unifies with windows.h's ta
 SIZE_UNKNOWN();
 
 
-class CImageBuildDesc {
-public:
-    char _00[0x04];
-    i32 m_flags;  // +0x04  decode flags
-    i32 m_width;  // +0x08  -> sprite width
-    i32 m_height; // +0x0c  -> sprite height
-    char _10[0x18 - 0x10];
-    u8 m_srcKey; // +0x18  -> sprite color key when 0x100 set
-    char _19[0x20 - 0x19];
-    u8 m_frameData[1]; // +0x20  raw frame data (palette + pixels)
-};
-SIZE_UNKNOWN();
+// Build decodes the PID/RID resource blob, so its source is the ONE canonical
+// `struct PidHeader` in <DDrawMgr/DDSurface.h> (SIZE 0x20 + the PidFlags enum).
+// This header used to carry a second padded view of it named CImageBuildDesc
+// (`char _00[4]; i32 m_flags; i32 m_width; i32 m_height; char _10[8]; u8 m_srcKey;
+// char _19[7]; u8 m_frameData[1];`) - dissolved 2026-07-27 together with
+// <Image/CImage.h>'s CImageFrameDesc: CImage::LoadDispatch hands the SAME pointer to
+// Build on one arm and to CDDSurface::DecodePcxData (declared PidHeader*) on the
+// other, and all three shapes agree field for field. The flags Build tests are the
+// enum's: 0x80 = PID_EMBEDDED_PALETTE (the trailing 768-byte VGA palette), 0x20 =
+// PID_COMPRESSION (the RLE stream). The pixel payload begins one header past `src`.
+struct PidHeader;
 
 struct CImageFrameRebuildDesc {
     i32 f0;
@@ -54,7 +53,7 @@ public:
     // Lock a source DirectDraw surface, RLE-encode its locked bits (via BuildRle) with
     // the surface's own width/height/pitch, then unlock it. Returns BuildRle's result.
     i32 BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palette); // 0x148f50
-    i32 Build(CImageBuildDesc* src, i32 size, i32 fmt);                // 0x1490d0
+    i32 Build(PidHeader* src, i32 size, i32 fmt);                // 0x1490d0
     // 0x1495d0 (body: src/Image/ImageRle16Encode.cpp; ex the fake CImageRle16 view).
     // Two-pass RLE re-encode: expands the 8bpp token stream through a palette->16bpp
     // table into a fresh 16bpp RLE buffer. Build uses it as the srcBpp==2 remap.
@@ -103,8 +102,8 @@ public:
     void ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta); // 0x14d950
 
     i32 m_00;       // +0x00
-    i32 m_width;    // +0x04 sprite row width (Build: src->m_width)
-    i32 m_height;   // +0x08 height (Build: src->m_height)
+    i32 m_width;    // +0x04 sprite row width (Build: src->width)
+    i32 m_height;   // +0x08 height (Build: src->height)
     u8* m_rleData;  // +0x0c RLE sprite-stream base (decoded pixel buffer; new / RezFree)
     i32 m_rleLen;   // +0x10 RLE sprite-stream length (byte bound; pixel byte count)
     i32 m_drawType; // +0x14 draw type / row-convert selector (switch tag; ctor default 1)

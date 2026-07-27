@@ -117,7 +117,7 @@ CImage* CDDrawWorkerRegistry::DispatchKeyed34(char* path, const char* key, i32 i
 
 RVA(0x00154ce0, 0x101)
 CImage* CDDrawWorkerRegistry::DispatchKeyed30(
-    CImageFrameDesc* desc,
+    PidHeader* desc,
     i32 mode,
     const char* key,
     i32 index,
@@ -157,7 +157,7 @@ CImage* CDDrawWorkerRegistry::Forward38(void* rec, CDDrawWorker* worker, i32 a3,
 
 RVA(0x00154f40, 0x20)
 CImage* CDDrawWorkerRegistry::Forward30(
-    CImageFrameDesc* desc,
+    PidHeader* desc,
     i32 mode,
     CDDrawWorker* worker,
     i32 index,

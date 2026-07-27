@@ -160,7 +160,7 @@ i32 CDDrawShadeBlit::LoadFromFile(CString name, i32 fmt) {
     }
     void* buf = ::operator new(file.GetLength());
     file.Read(buf, file.GetLength());
-    i32 r = Build(static_cast<CImageBuildDesc*>(buf), file.GetLength(), fmt);
+    i32 r = Build(static_cast<PidHeader*>(buf), file.GetLength(), fmt);
     file.Close();
     ::operator delete(buf);
     return r;
@@ -187,8 +187,8 @@ i32 CDDrawShadeBlit::LoadFromFile(CString name, i32 fmt) {
 // allocation. No source lever flips it under /O2. Logic complete; deferred to the
 // final sweep.
 RVA(0x001490d0, 0x173)
-i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
-    i32 flags = src->m_flags;
+i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
+    i32 flags = src->flags;
     if ((flags & 0x40) || (flags & 0x200)) {
         if (static_cast<u8>(fmt) == 0x10) {
             m_srcBpp = 1;
@@ -205,8 +205,8 @@ i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
         m_dstBpp = 1;
     }
 
-    if (src->m_flags & 0x100) {
-        m_colorKey = src->m_srcKey;
+    if (src->flags & 0x100) {
+        m_colorKey = static_cast<u8>(src->fill);
     } else {
         m_colorKey = -1;
     }
@@ -217,7 +217,9 @@ i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
         return 0;
     }
 
-    if (src->m_flags & 0x80) {
+    // PID_EMBEDDED_PALETTE: a 768-byte VGA palette rides the blob's tail, so it is
+    // not pixel payload - back it out of the RLE length and read it below.
+    if (src->flags & PID_EMBEDDED_PALETTE) {
         stride -= 0x300;
         m_rleLen = stride;
         if (static_cast<u8>(fmt) == 0x10) {
@@ -243,13 +245,17 @@ i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
         }
     }
 
-    m_width = src->m_width;
-    m_height = src->m_height;
+    m_width = src->width;
+    m_height = src->height;
     if (m_rleData != 0) {
         ::operator delete(m_rleData);
     }
     m_rleData = static_cast<u8*>(::operator new(m_rleLen));
-    memcpy(m_rleData, src->m_frameData, m_rleLen);
+    // `src + 1` IS the pixel stream: PidHeader is exactly 0x20 bytes and the payload
+    // starts right after it (retail: `add esi,0x20` before the rep movs). This
+    // replaced a fabricated `u8 m_frameData[1]` trailing member on the deleted
+    // CImageBuildDesc view - which would have made the header 0x24 bytes.
+    memcpy(m_rleData, src + 1, m_rleLen);
 
     if (m_srcBpp == 2) {
         void* remapped = EncodeRle16(m_rleData);
