@@ -1563,23 +1563,19 @@ i32 CGrunt::LoadGruntCombatAnimations(
         CMapMgr* g2 = static_cast<CMapMgr*>(g_gameReg->m_tileGrid); // GruntBoard==CMapMgr facet
         i32 ox = this->m_lastTilePxX >> 5;
         i32 oy = this->m_lastTilePxY >> 5;
-        i32* oc = g2->m_rowInts[oy] + ox * 7;
-        *(reinterpret_cast<unsigned char*>(oc) + 3) &= 0xdf;
-        i32* oc2 = g2->m_rowInts[oy] + ox * 7;
-        oc2[1] = -1;
-        i32* nc = g2->m_rowInts[nyt] + nxt * 7;
-        *(reinterpret_cast<unsigned char*>(nc) + 3) |= 0x20;
-        i32* nc2 = g2->m_rowInts[nyt] + nxt * 7;
-        nc2[1] = (this->m_tileOwnerHi << 8) | this->m_tileOwnerLo;
+        g2->m_rows[oy][ox].m_flagBytes[3] &= 0xdf;
+        g2->m_rows[oy][ox].m_4 = -1;
+        g2->m_rows[nyt][nxt].m_flagBytes[3] |= 0x20;
+        g2->m_rows[nyt][nxt].m_4 = (this->m_tileOwnerHi << 8) | this->m_tileOwnerLo;
 
         if (m_31c.GetCount() != 0) {
-            i32* node = 0;
+            Coord* node = 0;
             i32 rx = this->m_lastTilePxX >> 5;
             i32 ry = this->m_lastTilePxY >> 5;
-            if (*reinterpret_cast<void**>(g_coordPool.m_freeHead) != 0) {
-                node = reinterpret_cast<i32*>(&g_coordPool.m_freeHead->m_coord);
-                node[0] = rx;
-                node[1] = ry;
+            if (g_coordPool.m_freeHead->m_next != 0) {
+                node = &g_coordPool.m_freeHead->m_coord;
+                node->m_x = rx;
+                node->m_y = ry;
                 g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
             }
             m_31c.AddHead(node);
