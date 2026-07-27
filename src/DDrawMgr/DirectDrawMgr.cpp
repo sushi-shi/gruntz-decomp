@@ -364,17 +364,10 @@ i32 CDDrawPtrCollections::CreateDevice(
         return 0;
     }
 
-    i32 i;
-    // retail zero-fills both SDK caps blocks with explicit 0x5f-dword loops (0x17c B
-    // each), so the struct -> dword cursor is byte-forced by that loop width
-    i32* p = reinterpret_cast<i32*>(&m_driverCaps);
-    for (i = 0x5f; i != 0; i--) {
-        *p++ = 0;
-    }
-    i32* q = reinterpret_cast<i32*>(&m_helCaps);
-    for (i = 0x5f; i != 0; i--) {
-        *q++ = 0;
-    }
+    // retail zero-fills both SDK caps blocks with `mov ecx,0x5f; xor eax,eax; rep stosd`
+    // == an inline memset of exactly sizeof(DDCAPS) (0x17c B), not a dword loop.
+    memset(&m_driverCaps, 0, sizeof(DDCAPS));
+    memset(&m_helCaps, 0, sizeof(DDCAPS));
     m_driverCaps.dwSize = sizeof(DDCAPS);
     m_helCaps.dwSize = sizeof(DDCAPS);
     hr = m_device->GetCaps(&m_driverCaps, &m_helCaps);

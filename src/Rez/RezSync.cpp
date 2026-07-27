@@ -519,7 +519,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         CSymParser* mgr = m_symParser;
         CParseSource* stream =
             mgr->ResolveQualified("GAME_ATTRIBUTEZ", 'TXT');
-        g_buteMgr.SetErrCallback(reinterpret_cast<ErrCallback>(&cb_401bc2));
+        g_buteMgr.SetErrCallback(&cb_401bc2);
         i32 ok = 0;
         if (stream) {
             g_buteMgr.m_10e = 1;

@@ -47,7 +47,7 @@ CSFCapsObject g_sfCaps;
 DATA(0x0024df98)
 u16 g_remaining_64df98 = 0;
 DATA(0x0024df9c)
-u32 g_id_64df9c = 0; // packed device id
+DWORD g_id_64df9c = 0; // packed device id (SF_GetRouterID writes it through a PDWORD)
 DATA(0x0024dfa0)
 char g_sfDir[0x100];
 DATA(0x0024e0a0)
@@ -166,7 +166,7 @@ i32 SFManager_SelectBestDevice() {
     } else {
         g_sfDevice->SF_QueryStaticSampleMemorySize(g_sfDeviceId, &g_staticSampleBytes, &g_sfVer);
     }
-    g_sfDevice->SF_GetRouterID(g_sfDeviceId, reinterpret_cast<PDWORD>(&g_id_64df9c));
+    g_sfDevice->SF_GetRouterID(g_sfDeviceId, &g_id_64df9c);
     u32 v = g_id_64df9c;
     g_id0_613dff = static_cast<char>((v & 0x7f));
     g_id3_613e02 = static_cast<char>(((v >> 0x18) & 0x7f));

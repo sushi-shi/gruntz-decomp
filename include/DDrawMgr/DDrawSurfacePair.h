@@ -60,7 +60,7 @@ public:
     // --- non-virtual helpers (reconstructed in the owner TU) ------------------
     void BltSelf(CDDrawSurfacePair* src); // 0x03a1d0
     i32 RestoreIfLost();                  // 0x163f00  (surface-lost retry twin of Probe)
-    void DrawBox(i32* rect, i32 color);   // 0x163f40
+    void DrawBox(RECT* rect, i32 color);  // 0x163f40
     void DrawCross(i32 x, i32 y);         // 0x164180
     // (The 0x1644a0 DirectDraw mode-surface creator is CDDrawSurfaceChildA's
     //  slot-9 SetGeometry override - see DDrawSubMgrPages.h; the old

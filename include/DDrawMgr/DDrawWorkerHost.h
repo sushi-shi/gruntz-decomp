@@ -23,6 +23,7 @@ class CFileMemBase; // the abstract serialize stream (Read @+0x2c / Write @+0x30
 // before its own 0x5f0270 stamp - the base IS CLoadable (deriving CWapObj
 // directly made our compile emit a spurious ??_7CWapObj retail lacks).
 struct PlaneObjectRecord; // the serialized plane-object record (defined in LevelPlane.cpp)
+struct CPlaneFrame;       // m_frameSets' element type (defined in LevelPlane.cpp)
 
 class CDDrawWorkerHost : public CLoadable {
 public:
@@ -145,6 +146,9 @@ public:
     CObArray m_frameSets;     // +0x9c  frame-set array (elements: CPlaneFrame*; the
                               //        draw loop indexes m_pData by handle>>16;
                               //        ctor 0x1b55e9 / ~ 0x1b561c; ex "m_obArray")
+    // API-forced, at one seam: CObArray is MFC's untyped CObject* array, so the
+    // element type is named here once and the draw loop indexes the typed result.
+    CPlaneFrame** frameSetData() { return reinterpret_cast<CPlaneFrame**>(m_frameSets.GetData()); }
     CWwdSpatialMgr* m_scroll; // +0xb0  camera/scroll + spatial-grid worker
     char m_name[0xf4 - 0xb4]; // +0xb4  plane name (serialized as a fixed 0x80 field)
     // +0xf4  the plane's DDBLTFX (0x64 = 25 dwords; the ctor memsets it and seeds

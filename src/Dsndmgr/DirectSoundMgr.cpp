@@ -1080,8 +1080,9 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     // Global operator new is RezAlloc; the constructor call gives MSVC the
     // retail ctor-in-flight /GX state and stamps the leaf vptr.
     voice = new DSoundCloneInst(out, this);
-    voice->m_freq =
-        *reinterpret_cast<u32*>(&wf.wFormatTag); // +0x18  format word (wFormatTag|nChannels)
+    // byte-forced, the same pun as the WAVEFORMATEX copy above: retail reads the two
+    // adjacent u16 fields back out as ONE dword; the SDK struct has no combined member.
+    voice->m_freq = *reinterpret_cast<u32*>(&wf.wFormatTag); // +0x18  {wFormatTag,nChannels}
     m_bufferList.InsertHead(voice ? &voice->m_link : 0);
     voice->m_rateBase = fmt->nAvgBytesPerSec;   // +0x38  avg bytes/sec
     voice->m_sampleRate = fmt->nAvgBytesPerSec; // +0x3c  duration divisor

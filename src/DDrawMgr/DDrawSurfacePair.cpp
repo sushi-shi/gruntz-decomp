@@ -298,20 +298,20 @@ i32 CDDrawSurfacePair::RestoreIfLost() {
 // while our build keeps `this` in esi + `rect` in ecx (sub esp,0x18), cascading
 // different [esp+N] slot choices through the body. Deferred to the final sweep.
 RVA(0x00163f40, 0x23e)
-void CDDrawSurfacePair::DrawBox(i32* rect, i32 color) {
-    i32 left = rect[0];
+void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
+    i32 left = rect->left;
     if (left < 0 || left >= m_width) {
         return;
     }
-    i32 top = rect[1];
+    i32 top = rect->top;
     if (top < 0 || top >= m_height) {
         return;
     }
-    i32 right = rect[2];
+    i32 right = rect->right;
     if (right < 0 || right >= m_width) {
         return;
     }
-    i32 bottom = rect[3];
+    i32 bottom = rect->bottom;
     if (bottom < 0 || bottom >= m_height) {
         return;
     }
@@ -1266,6 +1266,10 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 RVA(0x00166040, 0x66)
 i32 CDDrawWorkerB::Helper(i32 key, i32 idx) {
     CObject* obj = 0;
+    // m_10map is a CMapStringToOb, so `key` IS a string. Its declaration cannot be
+    // fixed from here - the only caller is CDDrawWorkerB::PlaceBound(i32,i32,i32,i32)
+    // in DDrawSubMgr.cpp, so retyping this param means retyping PlaceBound's a3 too
+    // (that TU is another lane's): language-forced until that pair lands together.
     OwnerMgr()->m_imageRegistry->m_10map.Lookup(reinterpret_cast<const char*>(key), obj);
     // the map is CDDrawWorkerRegistry::m_10map, whose ONLY writer is FindOrCreateWorker
     // (`m_10map[key] = static_cast<CObject*>(worker)` on a MakeWorker result), so the

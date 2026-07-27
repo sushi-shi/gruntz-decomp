@@ -214,8 +214,15 @@ BOOL CCheatMgr::CheckCode(CString code) {
     }
 
     void* value = 0;
-    CheatEntry* found =
-        reinterpret_cast<CheatEntry*>(((m_map.Lookup(static_cast<const char*>(code), value) ? -1 : 0) & reinterpret_cast<i32>(value)));
+    // byte-forced, at one seam: retail folds the Lookup result into a branchless
+    // neg/sbb/and mask over the out-param (found = hit ? value : 0), so the pointer
+    // has to round-trip through the i32 the mask operates on. CMapStringToPtr's value
+    // type is void*; every value m_map holds is a CheatEntry* (AddCheat is the only
+    // writer), which is what the outer cast names.
+    CheatEntry* found = reinterpret_cast<CheatEntry*>(
+        ((m_map.Lookup(static_cast<const char*>(code), value) ? -1 : 0)
+         & reinterpret_cast<i32>(value))
+    );
     if (found != 0) {
         if (found->commandId > 0) {
             PostMessageA(m_owner, 0x111, found->commandId, 0);

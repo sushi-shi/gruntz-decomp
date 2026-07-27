@@ -48,14 +48,13 @@ i32 CSBI_ImageSet::SetupImage(
     }
     m_2c = owner;
     m_tab = obj;
-    i32* rc = reinterpret_cast<i32*>(&m_rect14);
     m_24 = host;
     m_28 = 0;
     m_enabled = 1;
-    rc[0] = rect.left;
-    rc[1] = rect.top;
-    rc[2] = rect.right;
-    rc[3] = rect.bottom;
+    m_rect14.m_0 = rect.left;
+    m_rect14.m_4 = rect.top;
+    m_rect14.m_8 = rect.right;
+    m_rect14.m_c = rect.bottom;
     m_cmd = cmd;
     if (key == 0) {
         return 0;

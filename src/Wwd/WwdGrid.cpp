@@ -164,9 +164,14 @@ i32 CWwdGrid::Clear() {
 
 RVA(0x00191ad0, 0x34)
 WwdRegion* CWwdGridIter::Start(CWwdGrid* grid, i32 remove) {
-    // The grid's full bounds rect (minX,minY,maxX,maxY @ +0x28..+0x34) copied as a
-    // contiguous 16-byte block - the four bounds ints ARE the query rect.
-    WwdRect full = *reinterpret_cast<WwdRect*>(&grid->m_minX);
+    // The grid's full bounds rect: the four bounds ints at +0x28..+0x34 ARE the query
+    // rect, so they are copied field by field (retail's 16-byte block copy is the same
+    // four dword moves) instead of viewed through a cast on &m_minX.
+    WwdRect full;
+    full.a = grid->m_minX;
+    full.b = grid->m_minY;
+    full.c = grid->m_maxX;
+    full.d = grid->m_maxY;
     return Init(grid, full, remove);
 }
 

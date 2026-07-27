@@ -130,8 +130,10 @@ void CToobSpikez::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    *reinterpret_cast<i32 (CUserLogic::**)()>(CActRegPool<CToobSpikez>::s_table.ResolveEntry(id)) =
-        static_cast<i32 (CUserLogic::*)()>(&CToobSpikez::AdvanceAnim);
+    // s_table is a zDArray<CActHandler>, so ResolveEntry already returns CActHandler*
+    // (== i32 (CUserLogic::**)()); the cast that used to wrap it was a no-op.
+    *CActRegPool<CToobSpikez>::s_table.ResolveEntry(id) =
+        static_cast<CActHandler>(&CToobSpikez::AdvanceAnim);
 }
 
 RVA(0x00114bc0, 0x17)

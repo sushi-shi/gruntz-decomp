@@ -361,7 +361,9 @@ struct CNetCreateCtx;
 class CFile;
 extern "C" CNetCreateCtx* g_netCreateCtx;
 extern "C" i32 g_serviceId;                                             // 0x611d8c
-extern "C" i32 Cfg_SetSection(char* buf, const char* fmt, i32 arg);     // 0xf9280
+extern "C" i32 Cfg_SetSection(char* buf, const char* fmt, const char* arg); // 0xf9280
+// (the "%s" arg is a STRING - it was declared i32, which forced every caller to
+//  reinterpret its CString through an i32&. extern "C", so the symbol is unchanged.)
 extern "C" i32 Cfg_AppendKeyVal(char* buf, const char* key, i32 val);   // 0xf93b0
 extern "C" CMulti* g_connectRptMgr;                                     // 0x648cf8
 extern "C" i32 Cfg_GetKey(char* out, const char* src, const char* key); // 0xf9160

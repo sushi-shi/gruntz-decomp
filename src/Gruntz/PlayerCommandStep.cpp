@@ -77,8 +77,16 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                 return 1;
             }
             if (m_world->m_soundRegistry->m_emitGate == 0) { // the sound host's busy/emit gate
-                if (BadSelect(s_gameBadSelect) != 0) {
-                    (reinterpret_cast<LeafCue*>(&g_sndCueTag))->PlayIfElapsed(0, 0, 0, 0);
+                // language-forced: retail 0xd1b60 is `call BadSelect; cmp eax,0; je;
+                // mov ecx,[0x61ab24]; push 0,0,0; push ecx; mov ecx,eax; call
+                // PlayIfElapsed` - the RECEIVER is BadSelect's return value and the
+                // FIRST ARG is g_sndCueTag (the ex-"stale ecx on the tag global" model
+                // had both wrong). BadSelect therefore returns a LeafCue*; its
+                // `extern "C" i32` prototype in Gruntz/Grunt.h is the mis-declaration
+                // (that header is another lane's - the cast stands in until it lands).
+                LeafCue* cue = reinterpret_cast<LeafCue*>(BadSelect(s_gameBadSelect));
+                if (cue != 0) {
+                    cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
             }
             return 0;

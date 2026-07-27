@@ -15,7 +15,8 @@ extern i32 g_dlgVal_64555c, g_dlgVal_645560, g_dlgVal_645564, g_dlgVal_645568;
 // failure path. Typed, so the `(CGruntSpawnConfig*)` cast at the Init call is gone.
 extern "C" char* StrUpr(char*); // 0x18d330
 extern "C" void cb_403193();
-extern "C" void cb_401bc2();
+extern "C" void cb_401bc2(const char*); // CButeMgr::SetErrCallback's ErrCallback
+                                        // (extern "C": the symbol is unchanged)
 
 // --- C-linkage carriers for the TU's extern-C definitions (the defs
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---

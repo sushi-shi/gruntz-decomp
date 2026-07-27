@@ -7,13 +7,66 @@
 #include <rva.h>
 #include <string.h> // inline strcmp (the empty-text WM_SETTEXT gate in the edit subclass)
 
+// The retail bytes at 0x1e88b0 are an 8-byte AFX_MSGMAP {&CDialog::messageMap
+// (0x5eb068), &_messageEntries[0] (0x5e88b8)}, not the 4-byte `const i32` this TU
+// used to declare - and the declared value 6205544 (0x5eabe8) was not even the base
+// map's address. 0x1e88b8 is the 26-entry AFX_MSGMAP_ENTRY table below; every pfn
+// resolves through its ILT thunk to a CBattlezDlg method already reconstructed here.
 DATA(0x001e88b0)
-const i32 g_msgmap_CBattlezDlg = 6205544;
+const AFX_MSGMAP CBattlezDlg::messageMap = {
+    &CDialog::messageMap,
+    &CBattlezDlg::_messageEntries[0],
+};
+
+DATA(0x001e88b8)
+const AFX_MSGMAP_ENTRY CBattlezDlg::_messageEntries[] = {
+    // The four per-option dropdowns are combo boxes (the accessors drive them with
+    // CB_GETCURSEL 0x147 / CB_SETCURSEL 0x14e), so notify code 1 is CBN_SELCHANGE.
+    ON_CBN_SELCHANGE(0x500, CBattlezDlg::ApplyOption0)  // 0x15de0
+    ON_CBN_SELCHANGE(0x50e, CBattlezDlg::ApplyOption1)  // 0x15e60
+    ON_CBN_SELCHANGE(0x50f, CBattlezDlg::ApplyOption2)  // 0x15ee0
+    ON_CBN_SELCHANGE(0x510, CBattlezDlg::ApplyOption3)  // 0x15f60
+    // The next three entries ARE ON_WM_MEASUREITEM/DRAWITEM/PAINT, written out because
+    // those SDK macros take the handler's address UNQUALIFIED (`&OnMeasureItem`), which
+    // only cl accepts - clang (the label pass) requires `&Class::Member`. MFC erases
+    // every handler to AFX_PMSG, so the pointer-to-member cast is the SDK's, not ours.
+    // API-forced (== ON_WM_MEASUREITEM())
+    {WM_MEASUREITEM, 0, 0, 0, AfxSig_vOWNER,
+     reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnMeasureItem)}, // 0x16570
+    // API-forced (== ON_WM_DRAWITEM())
+    {WM_DRAWITEM, 0, 0, 0, AfxSig_vOWNER,
+     reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnDrawItem)}, // 0x165a0
+    ON_BN_CLICKED(0x501, CBattlezDlg::ApplyColorSlot0)  // 0x16cd0
+    ON_BN_CLICKED(0x503, CBattlezDlg::ApplyColorSlot1)  // 0x16dc0
+    ON_BN_CLICKED(0x505, CBattlezDlg::ApplyColorSlot2)  // 0x16e90
+    ON_BN_CLICKED(0x507, CBattlezDlg::ApplyColorSlot3)  // 0x16f60
+    ON_BN_CLICKED(0x42b, CBattlezDlg::ShowCustomDlg)    // 0x17030
+    ON_CBN_SELCHANGE(0x4ff, CBattlezDlg::CopyComboSelToChild) // 0x171b0
+    // Notify codes 0x200/0x300 are the owner-draw slot control's own two
+    // notifications; MFC has no name for them, so they stay raw ON_CONTROL.
+    ON_CONTROL(0x200, 0x50a, CBattlezDlg::OnActionBtn0) // 0x172c0
+    ON_CONTROL(0x200, 0x50b, CBattlezDlg::OnActionBtn1) // 0x172e0
+    ON_CONTROL(0x200, 0x50c, CBattlezDlg::OnActionBtn2) // 0x17300
+    ON_CONTROL(0x200, 0x50d, CBattlezDlg::OnActionBtn3) // 0x17320
+    ON_CONTROL(0x300, 0x50b, CBattlezDlg::OnStubBtn1)   // 0x174e0
+    ON_CONTROL(0x300, 0x50a, CBattlezDlg::OnStubBtn0)   // 0x174c0
+    ON_CONTROL(0x300, 0x50c, CBattlezDlg::OnStubBtn2)   // 0x17500
+    ON_CONTROL(0x300, 0x50d, CBattlezDlg::OnStubBtn3)   // 0x17520
+    // API-forced: the ON_WM_PAINT() entry, qualified (see the note above).
+    {WM_PAINT, 0, 0, 0, AfxSig_vv,
+     reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnPaint)}, // 0x14b10
+    ON_CBN_SELCHANGE(0x51e, CBattlezDlg::SaveOptionCombo0) // 0x17560
+    ON_CBN_SELCHANGE(0x520, CBattlezDlg::SaveOptionCombo1) // 0x175a0
+    ON_CBN_SELCHANGE(0x521, CBattlezDlg::SaveOptionCombo2) // 0x175e0
+    ON_CBN_SELCHANGE(0x522, CBattlezDlg::SaveOptionCombo3) // 0x17620
+    {0, 0, 0, 0, AfxSig_end, 0},
+};
+
 DATA(0x001e8d10)
 const i32 g_msgmap_CBattlezDlgColors = 6205544;
 
 RVA(0x00014b10, 0x5)
-long CBattlezDlg::DoDefault() {
+long CBattlezDlg::OnPaint() {
     return Default();
 }
 
@@ -116,9 +169,7 @@ i32 CALLBACK WndProc_15a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 RVA(0x00015aa0, 0x6)
 const AFX_MSGMAP* CBattlezDlg::GetMessageMap() const {
-    // API-forced: MFC's message-map global is emitted as a raw datum and
-    // GetMessageMap's return type is fixed by CCmdTarget.
-    return reinterpret_cast<const AFX_MSGMAP*>(&g_msgmap_CBattlezDlg);
+    return &messageMap;
 }
 
 // ShowCustomDlg (0x17030) - stack-construct a CBattlezDlgCustom and DoModal it;

@@ -28,6 +28,9 @@ i32 SfDeviceInitKeys() {
     g_sfMidiLocation.m_PresetIndex = 0;
     for (i32 i = 1; i <= 0x7f; i++) {
         g_sfMidiLocation.m_BankIndex = static_cast<WORD>(i);
+        // API-forced: the vendored SFMAN.H declares SF_GetLoadedBankPathname with more
+        // parameters than retail passes (2), and vendor/ is never edited - so the SDK's
+        // own slot is called through the 2-arg prototype the game actually uses.
         (reinterpret_cast<SfGetLoadedBankPathname2>(g_sfDevice->SF_GetLoadedBankPathname))(
             g_sfDeviceId,
             &g_sfMidiLocation

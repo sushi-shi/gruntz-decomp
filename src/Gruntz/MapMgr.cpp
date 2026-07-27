@@ -173,7 +173,7 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
         m_rows[i] = m_cellPool + off;
         off += stride;
     }
-    if ((reinterpret_cast<CMapArrayA*>(&m_colA.m_block))->Allocate(count * 5) == 0) {
+    if (m_colA.Allocate(count * 5) == 0) {
         return 0;
     }
     if (m_colB.Allocate(count * 5) == 0) {

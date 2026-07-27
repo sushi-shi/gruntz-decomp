@@ -174,15 +174,18 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
         return 0;
     }
 
+    // language-forced: GetProcAddress returns FARPROC
     PFN_CreateSnapshot pCreate =
         reinterpret_cast<PFN_CreateSnapshot>(GetProcAddress(hK32, "CreateToolhelp32Snapshot"));
     if (pCreate == 0) {
         return 0;
     }
+    // language-forced: GetProcAddress returns FARPROC
     PFN_Process32 pFirst = reinterpret_cast<PFN_Process32>(GetProcAddress(hK32, "Process32First"));
     if (pFirst == 0) {
         return 0;
     }
+    // language-forced: GetProcAddress returns FARPROC
     PFN_Process32 pNext = reinterpret_cast<PFN_Process32>(GetProcAddress(hK32, "Process32Next"));
     if (pNext == 0) {
         return 0;

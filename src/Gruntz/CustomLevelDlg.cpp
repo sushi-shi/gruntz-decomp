@@ -6,10 +6,6 @@
 
 #include <io.h>     // _finddata_t / _findfirst / _findnext (the custom-level dir walk)
 #include <direct.h> // _getcwd (0x11fc10; the "game dir" resolver == current directory)
-#include <Gruntz/CustomLevelDlg.h> // ex Globals.h
-
-DATA(0x001e8e98)
-void* g_battlezCustomMsgMap;
 
 // @early-stop
 // stack-buffer-placement wall (same as sibling CBattlezDlg::FillCustomLevelList
@@ -61,8 +57,25 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
 
 RVA(0x000183d0, 0x6)
 const AFX_MSGMAP* CBattlezDlgCustom::GetMessageMap() const {
-    return reinterpret_cast<const AFX_MSGMAP*>(&g_battlezCustomMsgMap);
+    return &messageMap;
 }
+
+// The retail bytes at 0x1e8e98 are an 8-byte AFX_MSGMAP {&CDialog::messageMap
+// (0x5eb068), &_messageEntries[0] (0x5e8ea0)} - NOT the 4-byte `void*` this TU
+// used to declare - and 0x1e8ea0 is a 2-entry AFX_MSGMAP_ENTRY table whose one
+// handler is the ILT thunk 0x3d5f -> 0x183f0 == PickIfSelected, on listbox 0x516
+// with notify code 2 (LBN_DBLCLK).
+DATA(0x001e8e98)
+const AFX_MSGMAP CBattlezDlgCustom::messageMap = {
+    &CDialog::messageMap,
+    &CBattlezDlgCustom::_messageEntries[0],
+};
+
+DATA(0x001e8ea0)
+const AFX_MSGMAP_ENTRY CBattlezDlgCustom::_messageEntries[] = {
+    ON_LBN_DBLCLK(0x516, CBattlezDlgCustom::PickIfSelected) // 0x183f0
+    {0, 0, 0, 0, AfxSig_end, 0},
+};
 
 // ---------------------------------------------------------------------------
 // 0x183f0 (RVA-homed from src/Stub/ApiCallers.cpp) - CBattlezDlgCustom's

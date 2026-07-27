@@ -480,7 +480,10 @@ i32 CPlay::Render() {
                 // as a resource map whose +0x24 holds the CopyRect-source rect.
                 CopyRect(
                     &m_hudRect,
-                    // the WIP path reads the 4 dwords AT &m_level as a rect (retail quirk)
+                    // This WIP path reads the four dwords AT &m_level (+0x24..+0x33 ==
+                    // m_level, m_soundRegistry, m_animRegistry, m_hWnd) as a RECT. They
+                    // are four unrelated members, so no type makes the read go away:
+                    // a faithful retail overlay, not a mis-model.
                     reinterpret_cast<const RECT*>(&g_gameReg->m_world->m_level)
                 );
                 Eng_HudDraw(g_gameReg->m_world, &m_hudRect, 1);
