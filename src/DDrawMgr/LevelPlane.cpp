@@ -655,7 +655,8 @@ i32 CDDrawWorkerHost::RebuildPlanes(i32 base, i32 count) {
     }
 
     for (i32 i = 0; i < count; i++) {
-        i32 r = ReadPlaneObjects(reinterpret_cast<const i32*>(base));
+        // the stream cursor crossing into the record IS the format's boundary
+        i32 r = ReadPlaneObjects(reinterpret_cast<const PlaneObjectRecord*>(base));
         if (r == 0) {
             return 0;
         }
@@ -674,20 +675,38 @@ i32 CDDrawWorkerHost::RebuildPlanes(i32 base, i32 count) {
 // four destructible CString temps + the reloc-masked ctor/Load/Apply* call chain.
 // Logic byte-faithful; deferred to the final sweep on size, not on a model wall.
 RVA(0x00162af0, 0x806)
-i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
+// The serialized plane-object record: a fixed 0x11c header of dwords followed by the
+// four length-prefixed strings INLINE. ReadPlaneObjects is the reader and the stream
+// cursor advances by the byte count it returns, which is the layout.
+struct PlaneObjectRecord {
+    i32 m_id;          // +0x00
+    u32 m_nameLen;     // +0x04
+    u32 m_logicLen;    // +0x08
+    u32 m_imageSetLen; // +0x0c
+    u32 m_soundLen;    // +0x10
+    i32 m_x;           // +0x14
+    i32 m_y;           // +0x18
+    i32 m_z;           // +0x1c
+    i32 m_gridIndex;   // +0x20
+    i32 m_addFlags;                  // +0x24
+    i32 m_tail[(0x11c - 0x28) / 4];  // +0x28  the scattered per-object fields
+    char m_strings[1];               // +0x11c  the four length-prefixed strings, inline
+};
+
+i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     if (src == 0) {
         return 0;
     }
 
-    i32 id = src[0];
-    u32 nameLen = static_cast<u32>(src[1]);
-    u32 logicLen = static_cast<u32>(src[2]);
-    u32 imageSetLen = static_cast<u32>(src[3]);
-    u32 soundLen = static_cast<u32>(src[4]);
-    i32 x = src[5];
-    i32 y = src[6];
-    i32 z = src[7];
-    i32 gridIndex = src[8];
+    i32 id = src->m_id;
+    u32 nameLen = src->m_nameLen;
+    u32 logicLen = src->m_logicLen;
+    u32 imageSetLen = src->m_imageSetLen;
+    u32 soundLen = src->m_soundLen;
+    i32 x = src->m_x;
+    i32 y = src->m_y;
+    i32 z = src->m_z;
+    i32 gridIndex = src->m_gridIndex;
 
     CWwdGameObjectA* obj = static_cast<CWwdGameObjectA*>(operator new(0x1dc));
     if (obj == 0) {
@@ -715,7 +734,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
 
     // Copy the four trailing length-prefixed strings into stack CStrings. They
     // begin right after the fixed 0x11C record.
-    const char* strCursor = reinterpret_cast<const char*>(src) + 0x11c;
+    const char* strCursor = src->m_strings;
     char buf[0x400];
 
     i32 n;
@@ -755,7 +774,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // consumed so far (so the caller still advances over the bad record).
     if (x < 0 || x >= m_wrapW || y < 0 || y >= m_wrapH) {
         delete obj;
-        return static_cast<i32>((strCursor - reinterpret_cast<const char*>(src)));
+        return static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
     }
 
     // If an image set is named, require it to be present in the level map.
@@ -770,7 +789,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
 
     if (!loaded) {
         delete obj;
-        return static_cast<i32>((strCursor - reinterpret_cast<const char*>(src)));
+        return static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
     }
 
     // Run the object's load virtual (reads the fixed record into the object).
@@ -819,7 +838,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
 
     // Scatter the trailing record fields. `p` advances through the record from
     // its dynamic-flags field onward.
-    const i32* p = &src[10]; // record +0x28 (skip addFlags @+0x24)
+    const i32* p = src->m_tail; // record +0x28 (skip m_addFlags @+0x24)
 
     obj->m_flags |= static_cast<u32>(*p++); // dynamicFlags       (+0x08)
     obj->m_stateFlags = *p++;               // drawFlags          (+0x40)
@@ -919,7 +938,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // NAFXCW symbol; +0xb0 holds a POINTER, as RebuildPlanes' `new(0xb8)` store proves.)
     m_scroll->RemoveObject(static_cast<CWwdGameObject*>(obj));
 
-    return static_cast<i32>((strCursor - reinterpret_cast<const char*>(src)));
+    return static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
 }
 
 // ---------------------------------------------------------------------------

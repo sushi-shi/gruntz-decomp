@@ -22,6 +22,8 @@ class CFileMemBase; // the abstract serialize stream (Read @+0x2c / Write @+0x30
 // ??_7CLoadable @+0x2a (surviving across the m_frameSets CObArray member ctor)
 // before its own 0x5f0270 stamp - the base IS CLoadable (deriving CWapObj
 // directly made our compile emit a spurious ??_7CWapObj retail lacks).
+struct PlaneObjectRecord; // the serialized plane-object record (defined in LevelPlane.cpp)
+
 class CDDrawWorkerHost : public CLoadable {
 public:
     CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags); // 0x1615a0
@@ -94,7 +96,7 @@ public:
     // `count` object records. `this` IS the plane - the view read m_mapData@+0x0c and
     // (as "grid extents") m_wrapW/m_wrapH@+0x30/+0x34, and the worker slot IS m_scroll.
     i32 RebuildPlanes(i32 base, i32 count);
-    i32 ReadPlaneObjects(const i32* src);
+    i32 ReadPlaneObjects(const PlaneObjectRecord* src);
     void WrapCoord(i32* px, i32* py);              // 0x00a000 wrap+transform a world coord
     void SnapToTileCenter(i32* out, i32 x, i32 y); // 0x0311e0 snap world (x,y) to tile centre
     i32 GetTileHandle(i32 row, i32 col);           // 0x0d53a0 m_tileGrid[m_colOffsets[col]+row]

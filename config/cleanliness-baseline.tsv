@@ -4,15 +4,15 @@ g_<hex> globals	0
 Method/Stub/FUN/Gap	0
 virtual slot placeholders	0
 placeholder classes	0
-.cpp-local views	0
+.cpp-local views	1
 placeholder vtable slots	0
 *Vtbl structs	0
 ->vtbl accesses	0
 g_*Vtbl globals	0
 m_vtbl/m_vptr members	0
 C-style casts	0
-reinterpret_casts	1013
-unexplained casts	812
+reinterpret_casts	1009
+unexplained casts	808
 void* m_ members	11
 offset-cast macros	0
 cpp extern decls	0
