@@ -6,6 +6,7 @@
 #include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
 
 class CTileTriggerContainer; // owner container (back-stamped into m_14)
+class CGrunt;                // Process()'s brick argument
 
 class CTileActionEvent {
 public:
@@ -28,7 +29,7 @@ public:
 
     // Run the action: translate (m_actionCode, arg) into the effective event code, spawn the
     // tile/brick effect, mark the per-player flags and re-dispatch. 0x112ee0.
-    i32 Process(i32 arg);
+    i32 Process(CGrunt* brick); // arg is the brick grunt (LoadGruntTypeTable/m_entranceActive)
 
     // Apply a tool/key (toolId 0x22..0x26) to the current action code: advance
     // m_actionCode to the next code per a per-tool transition table, reset the

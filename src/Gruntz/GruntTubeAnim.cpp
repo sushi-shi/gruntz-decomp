@@ -47,9 +47,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
         ResetEntranceAnimation(0, 0, 1);
     }
 
-    CString* node = reinterpret_cast<CString*>(
-        (static_cast<_zvec*>(&g_typeColl))->IndexToPtr(m_objAux->ActKey())
-    );
+    CString* node = g_typeColl.ScratchResolve(m_objAux->ActKey());
     // the hand-inlined _zdvec::IndexToPtr fixup: m_alloc is the construction cursor over
     // the same CString band, walked in steps of a CONSTANT 4 (retail 0x31156 `add ebx,4`)
     CString* p = g_typeColl.Slots();

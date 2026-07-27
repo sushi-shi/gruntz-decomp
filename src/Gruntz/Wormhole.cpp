@@ -814,9 +814,7 @@ i32 CTeleporter::Update() {
 
     i32 outA;
     i32 outB;
-    CGrunt* found =
-        reinterpret_cast<CGrunt*>((static_cast<CTriggerMgr*>(mgr->m_cmdGrid))
-                                      ->HitTestCell(o->m_screenX, o->m_screenY, &outB, &outA, 1));
+    CGrunt* found = mgr->m_cmdGrid->HitTestCell(o->m_screenX, o->m_screenY, &outB, &outA, 1);
     if (found == 0) {
         return 0;
     }

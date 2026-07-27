@@ -692,9 +692,9 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
         LOAD_POSE(m_poseWalk, s_pose_WALK);
     } else {
         LOAD_POSE(m_poseToy1, s_pose_TOY1);
-        i32 x = (reinterpret_cast<CAnimSetNode*>(m_poseToy1))->m_10;
+        i32 x = m_poseToy1->m_records.GetSize(); // +0x10 == CObArray::m_nSize (the pose length)
         LOAD_POSE(m_poseToy2, s_pose_TOY2);
-        i32 y = (reinterpret_cast<CAnimSetNode*>(m_poseToy2))->m_10;
+        i32 y = m_poseToy2->m_records.GetSize();
         if (x >= y) {
             m_toyBlendPct = static_cast<i32>((100.0 / (static_cast<double>(x) / y - -1.0) - -0.5));
         } else {

@@ -10,25 +10,12 @@ class CMenuPage; // fwd
 class CMenuItem;
 class CDDrawSurfacePair;
 
-struct CMenuItemCatalog {
-    char pad0[0x10];
-    // ::CMapStringToOb - retail's Lookup here is 0x1b8008, which lies in
-    // [0x1b7e17, 0x1b8247), the band whose ctor stamps ??_7CMapStringToOb@@6B@.
-    // (There is NO fold: CMapStringToPtr's Lookup is a SEPARATE body at 0x1b8438.)
-    CMapStringToOb m_10; // +0x10 the string->item map base (real MFC)
-};
-SIZE_UNKNOWN();
-struct CMenuItemHostOwner {
-    char pad0[0x10];
-    CMenuItemCatalog* m_catalog; // +0x10 -> the catalog
-};
-SIZE_UNKNOWN();
-
-struct CMenuItemTemplate {
-    CMenuItemHostOwner* m_0; // +0x00 -> owner/catalog host
-    class CChatBox* m_4;     // +0x04 -> the chatbox
-};
-SIZE_UNKNOWN();
+// (The ex CMenuItemTemplate / CMenuItemHostOwner / CMenuItemCatalog pad-views are
+// dissolved (2026-07-27): Init's a0 IS the CMenuPage the signature already declares -
+// its +0x00/+0x04 are CMenuPage::m_owner/m_host - and that owner is the
+// CDDrawSurfaceMgr whose +0x10 CDDrawWorkerRegistry carries the CMapStringToOb
+// m_10map the catalog Lookups run on. Three names, one real chain.)
+class CDDrawSurfaceMgr;    // <DDrawMgr/DDrawSurfaceMgr.h> - the +0x04 owner (m_imageRegistry)
 
 class CMenuItem {
 public:
@@ -76,9 +63,10 @@ public:
     i32 Hit(i32 x, i32 y); // 0x185700  bounds test
 
     // implicit vptr                  // +0x00
-    CMenuItemHostOwner* m_owner; // +0x04  owner / catalog host (template->[0])
+    CDDrawSurfaceMgr* m_owner; // +0x04  owner (== the page's m_owner; catalog via
+                               //        m_imageRegistry->m_10map)
     class CChatBox* m_host; // +0x08  the on-screen chatbox (command window + Scroll/ReplaceNode)
-    CMenuItemTemplate* m_template; // +0x0c  the source template (Init arg a0)
+    CMenuPage* m_template;         // +0x0c  the source page (Init arg a0)
     CString m_name;                // +0x10  item name (GetName)
     CString m_key;                 // +0x14  key string (Trigger ReplaceNode payload)
     i32 m_cmdId;                   // +0x18  primary WM_COMMAND id (NotifyCmd wParam)
