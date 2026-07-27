@@ -164,6 +164,8 @@ void CPreviewState::LoadLevelPreviewScreen() {
     sprintf(buf, "PREVIEW%i", idx);
     m_1bc = buf;
     sprintf(buf, "\\SCREENZ\\%s", static_cast<const char*>(m_1bc));
+    // API-forced: ResolveQualified's second parameter is a polymorphic word - one
+    // caller hands it the literal 'TXT' fourcc - so an address widens into it here
     SymTab2c()->ResolveQualified(buf, reinterpret_cast<u32>(&g_screenTag));
     i32 failed = 0;
     if (FadeInTitle(const_cast<char*>(static_cast<const char*>(m_1bc)), 0, 0, 0, 0, 1) == 0) {
@@ -218,6 +220,8 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
     }
     char buf[64];
     sprintf(buf, "\\SCREENZ\\%s", name);
+    // API-forced: ResolveQualified's second parameter is a polymorphic word - one
+    // caller hands it the literal 'TXT' fourcc - so an address widens into it here
     CParseSource* sym = SymTab2c()->ResolveQualified(buf, reinterpret_cast<u32>(&g_screenTag));
     if (sym == 0) {
         return 0;

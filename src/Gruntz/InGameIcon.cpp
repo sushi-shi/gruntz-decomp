@@ -800,7 +800,12 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
                 // retail bug: the thiscall runs on whatever ecx survived the last
                 // call (no receiver load) - spelled on the tag global per the
                 // PlayerCommandStep precedent; reloc-masked either way.
-                reinterpret_cast<LeafCue*>(&g_sndCueTag)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                // byte-forced: retail runs this thiscall on whatever ecx survived the
+                // previous call and never loads a receiver, so the source must not name
+                // one that would emit a load; the tag global is a stand-in that compiles
+                // to nothing (reloc-masked either way, per the PlayerCommandStep case)
+                // byte-forced, same stale-ecx thiscall as the sibling site above
+            reinterpret_cast<LeafCue*>(&g_sndCueTag)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 reg = g_gameReg;
             }
         }

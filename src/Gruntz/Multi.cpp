@@ -1204,18 +1204,18 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
 
             char nameBuf[0xa];
             char gameBuf[0x40];
-            i32 cap = 0xa;
+            u32 cap = 0xa; // GetValueString takes u32* - declare it that way
             g_gameReg->m_settings->GetValueString(
                 const_cast<char*>(static_cast<const char*>(("Player_Name"))),
                 nameBuf,
-                reinterpret_cast<u32*>(&cap),
+                &cap,
                 "Player"
             );
             cap = 0x40;
             g_gameReg->m_settings->GetValueString(
                 const_cast<char*>(static_cast<const char*>(("Game_Name"))),
                 gameBuf,
-                reinterpret_cast<u32*>(&cap),
+                &cap,
                 "Multiplayer_Gruntz"
             );
             ::SendMessageA(::GetDlgItem(hDlg, 0x51b), 0xc5, 9, 0);
