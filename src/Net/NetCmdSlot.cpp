@@ -350,7 +350,9 @@ i32 CNetCmdSlot::SendGruntRecord(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32
     g_netGruntRecMsg.m_checksum = rec->m_checksum;
     g_netGruntRecMsg.m_count = rec->m_count;
     memcpy(g_netGruntRecMsg.m_payload, rec->m_payload, rec->m_payloadLen);
-    // header (0xf) + payload = the wire length.
+    // header (0xf) + payload = the wire length. m_latchedSeq is a PROVEN dual-role
+    // slot (a sequence counter on the command path, the peer CNetMgr on the sync
+    // path) - this is the one seam where the sync arm names the pointer.
     return (reinterpret_cast<CNetMgr*>(m_latchedSeq))
                ->SetData(
                    m_desc->m_playerId,

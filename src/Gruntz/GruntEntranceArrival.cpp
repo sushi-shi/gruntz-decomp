@@ -1626,10 +1626,10 @@ i32 CGrunt::BuildGruntExitAnimation() {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId(s_exitKeyB);
 
-    CDDrawWorker* found;
+    CAniElement* found;
     i32 r = GruntRand() % 0x1e1;
     if (r > 0x140) {
-        found = static_cast<CDDrawWorker*>(
+        found = static_cast<CAniElement*>(
             m_38->OwnerMgr()->m_animRegistry->LookupValue(s_GRUNTZ_EXITZ_ONE)
         );
         CGruntzMgr* g = g_gameReg;
@@ -1641,7 +1641,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
             g->m_cueSink->SpawnVoiceDriver(this, 0x384, -1, 0, -1, -1);
         }
     } else if (r > 0xa0) {
-        found = static_cast<CDDrawWorker*>(
+        found = static_cast<CAniElement*>(
             m_38->OwnerMgr()->m_animRegistry->LookupValue(s_GRUNTZ_EXITZ_TWO)
         );
         CGruntzMgr* g = g_gameReg;
@@ -1653,7 +1653,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
             g->m_cueSink->SpawnVoiceDriver(this, 0x385, -1, 0, -1, -1);
         }
     } else {
-        found = static_cast<CDDrawWorker*>(
+        found = static_cast<CAniElement*>(
             m_38->OwnerMgr()->m_animRegistry->LookupValue(s_GRUNTZ_EXITZ_THREE)
         );
         CGruntzMgr* g = g_gameReg;
@@ -2300,10 +2300,10 @@ i32 CGrunt::StepEntranceRelatchB() {
 // stores m_prevDesc first. Not source-steerable (every operand/declaration reorder
 // reproduced the same coloring).
 RVA(0x0006b2e0, 0x39)
-void CEffect6b::Apply(CDDrawWorker* a, i32 b) {
+void CEffect6b::Apply(CAniElement* a, i32 b) {
     CAniAdvanceCursor* anim = &m_player->m_1a0;
     m_prevDesc = m_player->m_1a0.m_14;
-    anim->Setup(reinterpret_cast<CAniElement*>(a));
+    anim->Setup(a);
     if (b != 0) {
         anim->Advance(static_cast<i32>(g_engineFrameDelta));
     }

@@ -12,7 +12,10 @@ struct CEffect6b {
     CWwdGameObjectA* m_player; // +0x04  == CGrunt::m_154 (the entrance-anim object)
     char _08[0xc - 8];         // +0x08  == CGrunt::m_158 (AnimWorkerObj*)
     CAniElement* m_prevDesc;   // +0x0c  == CGrunt::m_prevEntranceDesc
-    void Apply(CDDrawWorker * a, i32 b);  // 0x6b2e0
+    // `a` is the ANIM-registry descriptor, not a sprite strip: it goes straight into
+    // CAniAdvanceCursor::Setup(CAniElement*), whose m_14 this class caches as
+    // CAniElement* m_prevDesc one line earlier.
+    void Apply(CAniElement* a, i32 b); // 0x6b2e0
 };
 SIZE_UNKNOWN();
 

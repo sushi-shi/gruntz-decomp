@@ -30,22 +30,16 @@ static inline CActHandler* R3Lookup(i32 coord) {
 static inline CString* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return reinterpret_cast<CString*>(
-            (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
-        );
+        return g_typeColl.Elem(key);
     }
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
-        return reinterpret_cast<CString*>(
-            (g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride)
-        );
+        return g_typeColl.Elem(key);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     (static_cast<CVariantSlot*>(g_typeColl.m_errSink))
         ->Set(&g_typeColl, item, 0xc);
-    return reinterpret_cast<CString*>(
-        g_typeColl.m_spare
-    ); // m_spare is the i32-typed slow-path slot
+    return g_typeColl.Scratch(); // the slow-path element slot
 }
 
 // @early-stop
