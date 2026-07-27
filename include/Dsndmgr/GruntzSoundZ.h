@@ -73,7 +73,7 @@ class CGruntzSoundZ {
 public:
     ~CGruntzSoundZ(); // body at RVA 0x086040 (non-virtual; no own vtable in retail)
     // AIL driver bring-up: cache the digital/MIDI handles, optionally open the MIDI-out driver.
-    i32 Init(i32 mdiHandle, i32 digHandle, i32 skipInit); // RVA 0x138490
+    i32 Init(HINSTANCE hInst, HWND hwnd, i32 skipInit); // RVA 0x138490
     void Shutdown();     // RVA 0x1384f0 - StopAndFlush + AIL_shutdown teardown
     void StopAndFlush(); // RVA 0x138530 - stop current + destroy every map entry
     // XMIDI master-volume push/read. __thiscall on the m_sound bank (CGruntzMgr +0x48);

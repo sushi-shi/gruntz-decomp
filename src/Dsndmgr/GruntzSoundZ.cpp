@@ -26,12 +26,13 @@ CGruntzSoundZ::~CGruntzSoundZ() {
 }
 
 RVA(0x00138490, 0x5e)
-i32 CGruntzSoundZ::Init(i32 mdiHandle, i32 digHandle, i32 skipInit) {
-    m_mdiHandle = mdiHandle;
-    m_digHandle = digHandle;
+i32 CGruntzSoundZ::Init(HINSTANCE hInst, HWND hwnd, i32 skipInit) {
+    m_mdiHandle = reinterpret_cast<i32>(hInst);
+    m_digHandle = reinterpret_cast<i32>(hwnd);
     m_pCurrent = 0;
     m_enabled = 1;
-    g_ailDriver64 = reinterpret_cast<HMDIDRIVER>(mdiHandle);
+    // Miles takes the app instance through its driver-handle slot - API-forced
+    g_ailDriver64 = reinterpret_cast<HMDIDRIVER>(hInst);
     if (skipInit == 0) {
         AIL_startup();
         if (AIL_midiOutOpen(&g_ailMidiDriver, 0, -1) != 0 || g_ailMidiDriver == 0) {

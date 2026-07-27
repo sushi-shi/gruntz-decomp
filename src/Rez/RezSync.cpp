@@ -364,8 +364,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_sound = new CGruntzSoundZ;
     g_ailMidiDriver = 0;
     if (!m_sound->Init(
-            reinterpret_cast<i32>(m_owner->m_hInstance),
-            reinterpret_cast<i32>(m_gameWnd->m_hwnd),
+            m_owner->m_hInstance,
+            m_gameWnd->m_hwnd,
             0
         )) {
         ReportError(0x800a, 0x40c);
@@ -487,6 +487,10 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             m_spriteFactory->m_refB[k] = 0;
         }
     }
+    // @identity-TODO two CROSS-CLASS casts: m_spriteFactory is a CSpriteRefTable* and
+    // m_shadeCache a CShadeTableCache*, yet this calls CTriggerMgr::SetLevel on the one
+    // with the other. Retail has no class-to-class cross-casts, so at least one of the
+    // two member types (or SetLevel's owner) is wrong - needs the xref, not a reinterpret.
     if (!(reinterpret_cast<CTriggerMgr*>(m_spriteFactory))
              ->SetLevel(reinterpret_cast<CDDrawSurfaceMgr*>(m_shadeCache))) {
         ReportError(0x800a, 0x416);
@@ -622,7 +626,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         g_attractStateCount = 0;
         title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
         while (attract->ResolveQualified(
-            static_cast<const char*>(*reinterpret_cast<void**>(&title)),
+            static_cast<const char*>(title),
             'PCX'
         )) {
             g_attractStateCount++;
