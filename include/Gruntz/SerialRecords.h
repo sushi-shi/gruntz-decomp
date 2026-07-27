@@ -22,4 +22,14 @@ struct CPairRecord {
 };
 SIZE_UNKNOWN();
 
+// Retail serialises these records by `lea`-ing the owning class's member BAND and
+// calling Serialize on it - the record is a view of those bytes, not a member, so
+// the overlay is inherent to the call. Keep it at these two seams.
+inline i32 SerTriRecord(void* band, CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+    return reinterpret_cast<CTriRecord*>(band)->Serialize(ar, tag, c, d);
+}
+inline i32 SerPairRecord(void* band, CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
+    return reinterpret_cast<CPairRecord*>(band)->Serialize(ar, tag, c, d);
+}
+
 #endif // GRUNTZ_SERIALRECORDS_H

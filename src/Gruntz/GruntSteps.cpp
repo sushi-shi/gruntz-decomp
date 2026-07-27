@@ -1187,8 +1187,7 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
             m_tileMgr = g_gameReg->m_cmdGrid;
             break;
     }
-    (reinterpret_cast<CTriRecord*>((&m_entranceCell)))
-        ->Serialize(ar, mode, a3, a4);
+    SerTriRecord(&m_entranceCell, ar, mode, a3, a4);
     SerRecord(ar, mode, &m_toyClock);
     SerRecord(ar, mode, &m_idleAnchor);
     SerRecord(ar, mode, &m_idleTimer);
@@ -1197,18 +1196,12 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     SerRecord(ar, mode, &m_860);
     SerRecord(ar, mode, &m_combatClockLo);
     SerRecord(ar, mode, &m_880);
-    (reinterpret_cast<CPairRecord*>((&m_wingzClockLo)))
-        ->Serialize(ar, mode, a3, a4);
-    (reinterpret_cast<CPairRecord*>((&m_8a0)))
-        ->Serialize(ar, mode, a3, a4);
-    (reinterpret_cast<CPairRecord*>((&m_8b0)))
-        ->Serialize(ar, mode, a3, a4);
-    (reinterpret_cast<CPairRecord*>((&m_8c0)))
-        ->Serialize(ar, mode, a3, a4);
-    (reinterpret_cast<CPairRecord*>((&m_arrivalRerollLo)))
-        ->Serialize(ar, mode, a3, a4);
-    (reinterpret_cast<CPairRecord*>((&m_278)))
-        ->Serialize(ar, mode, a3, a4);
+    SerPairRecord(&m_wingzClockLo, ar, mode, a3, a4);
+    SerPairRecord(&m_8a0, ar, mode, a3, a4);
+    SerPairRecord(&m_8b0, ar, mode, a3, a4);
+    SerPairRecord(&m_8c0, ar, mode, a3, a4);
+    SerPairRecord(&m_arrivalRerollLo, ar, mode, a3, a4);
+    SerPairRecord(&m_278, ar, mode, a3, a4);
     return 1;
 }
 
