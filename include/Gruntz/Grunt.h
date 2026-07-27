@@ -1129,7 +1129,10 @@ SIZE(0x8d8);
 typedef i32 (CGrunt::*GruntActHandler)();
 SIZE(0x4);
 
-bool CGrunt_IsSameType(CGrunt* a, CGrunt* b);
+// 0x3c7f0: compare the THIRD dword of two cell triples. The only call site hands it
+// a GruntEntranceCell and a GruntDirectionCell (both {i32,i32,i32}), so the +8 it
+// reads is reason-vs-direction; the old CGrunt* declaration had no caller behind it.
+bool SameCellTag(const GruntEntranceCell* a, const GruntDirectionCell* b);
 
 void GruntRecycleCoords(CGrunt* g);                                           // 0x343f0
 void __stdcall TileSwitch(CGrunt* g, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x29af0

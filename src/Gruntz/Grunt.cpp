@@ -777,10 +777,7 @@ i32 CGrunt::winapi_04a9f0_CopyRect_OffsetRect() {
 RVA(0x0004ac10, 0x402)
 void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
     static_cast<void>(range);
-    if (CGrunt_IsSameType(
-            reinterpret_cast<CGrunt*>(&m_entranceCell),
-            reinterpret_cast<CGrunt*>(&rec)
-        )) {
+    if (SameCellTag(&m_entranceCell, &rec)) {
         return;
     }
 
