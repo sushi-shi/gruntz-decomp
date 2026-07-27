@@ -37,8 +37,11 @@ FORCED = [
     ("mfc-position",
      r"GetHeadPosition\(\)|GetStartPosition\(\)|<POSITION>|m_posCache"),
     ("mfc-voidref-out", r"void\s*\*\s*&"),
+    # A cast whose TARGET is a Win32/DirectX SDK pointer typedef (LPPOINT, LPRECT,
+    # LPDDCAPS, LPDDENUMCALLBACKA, ...) or a handle type is an API boundary by
+    # construction - the SDK chose the type, we only name it at the call.
     ("win32-abi",
-     r"<H[A-Z]\w*>|<LPARAM>|<WPARAM>|<LPDWORD>|<LRESULT>|<DLGPROC>|<WNDPROC>"),
+     r"<H[A-Z]\w*>|<LP[A-Z]\w*>|<LPARAM>|<WPARAM>|<LRESULT>|<DLGPROC>|<WNDPROC>"),
     ("i64-halves-pun",
      r"<i64\s*\*>\s*\(\s*&|<u64\s*\*>\s*\(\s*&"),
 ]
