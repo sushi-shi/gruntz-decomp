@@ -742,24 +742,39 @@ void CGrunt::DestroyAnims() {
     ClearSubB();
 }
 
+// CGrunt::PathScan() @0x57db0 - the per-tick route re-validation. Re-clip the board
+// dirty rect to the 5x5 box around the grunt, then walk the grunt's occupied-coord
+// route: for each coord not already marked (and not the route tail) re-route from the
+// grunt's cell to it. The first coord that still routes wins - splice the fresh route
+// in front of the remainder of the old one and report 1. After five failures (or the
+// whole route exhausted) and only if the grunt is within +-4 cells of its GOAL, probe
+// the goal's eight neighbours for a reachable substitute, route (grunt -> neighbour)
+// then (neighbour -> goal), and adopt that. If nothing routes, clear the board clip
+// and report 0.
+//
 // @early-stop
-// large grunt path-cell scan reconstruction (final-sweep candidate): the /GX EH frame
-// from the scratch CObList local, the coord-count gate, the 5x5 dirty box + IntersectRect
-// clamp, the tracked-coord scan loop firing Probe20f4 (m_arrivalFlags|0x20000000 / m_24c)
-// capped at five hits, the g_coordPool.m_freeHead pop/push + g_coordPool recycle drains, the 9x9
-// neighbour re-scan (flag 0x20040002) and the plane dirty-rect recompute are byte-shaped
-// and the DATA refs (g_gameReg / g_coordPool.m_freeHead family / g_coordPool / IntersectRect) pair.
-// Residual walls: the overlapping stack-slot schedule of the box/coord temps, the
-// per-iteration CObList EH-state stamps and the 8-arg Probe20f4 push ordering diverge from
-// retail's regalloc - re-attack leaf-first in the sweep.
-// KNOWN-UNLANDED (measured 2026-07-27, next-sweep work): retail's 3x3 ring tail does NOT
-// fall out of the loop. After the transfer at 0x58521 it runs a SECOND probe (0x58555,
-// args (cc, rr, col5, row5, &scanHit, 1, m_arrivalFlags, m_24c) - raw flags, arg6=1) with
-// the same pop+transfer, then SCAN_BOUNDS + `return 1` at 0x5867c; every `scanHit == 0`
-// path jumps to 0x58686 = `grid->Clip(0); return 0`. Transcribing that literally MEASURED
-// 36.14 -> 27.26 (and 32.41 with only the early returns), so one of the ring's outer
-// guards (the tautological nl/nr/nt/nb box below) is still mis-modelled and must be fixed
-// first; the tail is parked rather than landed backwards.
+// Complete and structurally aligned as of 2026-07-27: the base and retail basic-block
+// skeletons are 100 vs 101 blocks with B8..B29 and B42..B56 identical, and every
+// DATA ref (g_gameReg / g_coordPool.m_freeHead family / g_coordPool / IntersectRect)
+// pairs. Six evidenced logic fixes landed this pass (see the git log for the measured
+// steps) - most importantly that SearchEdge's arg5 IS the local CPtrList and the
+// +-4 gate/ring are centred on the ROUTE TAIL, which is what unblocked the 0x58555
+// second probe an earlier pass had measured backwards.
+//
+// Residual is regalloc/frame, in three named pieces:
+//  1. frame 0x8c vs retail 0x74 - retail's whole body fits FOUR RECT slots
+//     (0x28/0x38/0x48/0x58, with tcol/trow reusing the dead box.left/box.top) plus
+//     one CPtrList; cl gives our block-scoped SCAN_BOUNDS rects two extra slots, so
+//     every [esp+N] operand is displaced.
+//  2. the ring's outer loop (0x58371): retail re-reads tcol/trow/dx/dy from the frame
+//     each iteration; cl enregisters tcol in edi, strength-reduces `cc` into a second
+//     induction variable (`lea ebx,[edi-1]`) and therefore needs a `jmp`-to-condition
+//     entry block retail does not have (base B57/B58 vs target B57).
+//  3. block PLACEMENT of the cold `grid->Clip(0); return 0` copy that carries the
+//     ~CPtrList (retail 0x58686, at the very end of the function; cl emits it inline
+//     right after the first empty-list test). Sizes are identical, position is not.
+// No source lever found for any of the three; the permuter is the right tool if this
+// is re-attacked.
 RVA(0x00057db0, 0x8f8)
 i32 CGrunt::PathScan() {
     CMapMgr* grid = g_gameReg->m_tileGrid; // implicit upcast (CGruntzMapMgr : CMapMgr == CMapMgr)
@@ -767,7 +782,7 @@ i32 CGrunt::PathScan() {
     // every out-of-line list call takes its `this` from there (0x5802f/0x5805c/
     // 0x584f1/0x58518/0x5853a/0x585bb `mov ecx,[esp+0x10]`) - a local handle.
     CPtrList* coordz = &m_31c;
-    if (coordz->GetCount() == 0) {
+    if (CoordCount() == 0) {
         return 1;
     }
     GruntCoordNode* node = CoordHeadOf(*coordz);
@@ -794,10 +809,13 @@ i32 CGrunt::PathScan() {
         RECT box;
         const RECT* pr = &rs;
         if (pr != 0) {
-            box.left = pr->left;
-            box.top = pr->top;
-            box.right = pr->right + 1;
-            box.bottom = pr->bottom + 1;
+            // 0x57e3c is a whole-rect COPY then two post-increments, not four
+            // widened field reads: cl stores box.right twice (0x57e52 then
+            // 0x57e58, around the `inc eax`) and drops the dead first store to
+            // box.bottom - exactly 12 instructions, matching retail's block.
+            box = *pr;
+            box.right++;
+            box.bottom++;
         } else {
             box = CRect(0, 0, grid->m_width, grid->m_height);
         }
@@ -808,7 +826,7 @@ i32 CGrunt::PathScan() {
         grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
     }
 
-    GruntCoordNode* tail = CoordTailOf(*coordz);
+    GruntCoordNode* tail = CoordTailOf(m_31c);
     i32 tcol = tail->m_coord->m_x;
     i32 trow = tail->m_coord->m_y;
     i32 hits = 0;
@@ -864,11 +882,11 @@ i32 CGrunt::PathScan() {
                         // Same drain as the ring tail's, but here MFC's inline
                         // CPtrList::GetNext is what walks it (0x58015's direct
                         // [pos]/[pos+8] loads), not CGruntCoordList::NextData.
-                        if (coordz->GetCount() != 0) {
-                            POSITION pos = coordz->GetHeadPosition();
+                        if (CoordCount() != 0) {
+                            POSITION pos = m_31c.GetHeadPosition();
                             if (pos != 0) {
                                 do {
-                                    void* d = coordz->GetNext(pos);
+                                    void* d = m_31c.GetNext(pos);
                                     if (d != 0) {
                                         g_coordPool.Push(d);
                                     }
@@ -930,10 +948,9 @@ i32 CGrunt::PathScan() {
         RECT ra;
         const RECT* pn = &nb;
         if (pn != 0) {
-            ra.left = pn->left;
-            ra.top = pn->top;
-            ra.right = pn->right + 1;
-            ra.bottom = pn->bottom + 1;
+            ra = *pn; // 0x582cb: same copy-then-post-increment shape as the head
+            ra.right++;
+            ra.bottom++;
         } else {
             ra = CRect(0, 0, grid->m_width, grid->m_height);
         }
@@ -956,28 +973,26 @@ i32 CGrunt::PathScan() {
                 }
                 i32 rr = trow + dy;
                 i32 cc = tcol + dx;
-                i32 cf = 1;
+                // 0x583bc/0x583cb is a real if/ELSE (the out-of-bounds arm sets 1 in
+                // its own block and the in-bounds arm jmps past it), and 0x583d0
+                // computes the masked flags ONCE into eax for all three tests.
+                i32 cf;
                 if (static_cast<u32>(cc) < static_cast<u32>(grid->m_width)
                     && static_cast<u32>(rr) < static_cast<u32>(grid->m_height)) {
                     cf = ((grid->m_rowInts[rr]))[cc * 7];
+                } else {
+                    cf = 1;
                 }
-                if (((m_arrivalFlags | 0x20040002) & cf) & 0x20000000) {
+                i32 mf = (m_arrivalFlags | 0x20040002) & cf;
+                if (mf & 0x20000000) {
                     continue;
                 }
-                if (((m_arrivalFlags | 0x20040002) & cf) != 0 && (m_24c & cf) == 0) {
+                if (mf != 0 && (m_24c & cf) == 0) {
                     continue;
                 }
                 CPtrList s(0xa);
-                i32 res = grid->SearchEdge(
-                    col5,
-                    row5,
-                    cc,
-                    rr,
-                    &s,
-                    0,
-                    m_arrivalFlags | 0x20040002,
-                    m_24c
-                );
+                i32 res =
+                    grid->SearchEdge(col5, row5, cc, rr, &s, 0, m_arrivalFlags | 0x20040002, m_24c);
                 if (res != 0) {
                     // retail 0x5849f / 0x584cd: TWO separate `s.GetCount()` reads -
                     // the RemoveHead between them invalidates the cached count, so cl
@@ -998,8 +1013,8 @@ i32 CGrunt::PathScan() {
                     }
                     // 0x584d9: recycle the grunt's own coordz (the function's ONLY
                     // call 0x29a30, at 0x584fa) ...
-                    if (coordz->GetCount() != 0) {
-                        void* pos = coordz->GetHeadPosition();
+                    if (CoordCount() != 0) {
+                        void* pos = m_31c.GetHeadPosition();
                         if (pos != 0) {
                             do {
                                 void* d = static_cast<CGruntCoordList*>(coordz)->NextData(pos);
@@ -1023,8 +1038,7 @@ i32 CGrunt::PathScan() {
                     // RAW arrival flags (no 0x20040002 punch) and clearFlag 1. Its
                     // route is appended to the one just adopted. Whatever it returns,
                     // the grunt now has a path: recompute the bounds and report 1.
-                    if (grid->SearchEdge(cc, rr, tcol, trow, &s, 1, m_arrivalFlags, m_24c)
-                        != 0) {
+                    if (grid->SearchEdge(cc, rr, tcol, trow, &s, 1, m_arrivalFlags, m_24c) != 0) {
                         if (s.GetCount() != 0) {
                             void* e2 = s.RemoveHead();
                             if (e2 != 0) {
