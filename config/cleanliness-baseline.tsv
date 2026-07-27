@@ -11,8 +11,8 @@ placeholder vtable slots	0
 g_*Vtbl globals	0
 m_vtbl/m_vptr members	0
 C-style casts	0
-reinterpret_casts	806
-unexplained casts	635
+reinterpret_casts	799
+unexplained casts	628
 void* m_ members	10
 offset-cast macros	0
 cpp extern decls	0
