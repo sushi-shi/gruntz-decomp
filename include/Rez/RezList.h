@@ -5,6 +5,13 @@
 #include <rva.h>
 #include <Bute/ObjListBase.h>
 
+class CRezItmBase; // fwd - the intrusive element (see the AddHead/Remove seams)
+
+// NB CObjNode is an OVERLAY of the element head, not a base class: `m_base` names
+// the element's own vptr slot (CRezItmBase is vptr@0, m_next@4, m_prev@8 - byte
+// identical). Inheritance cannot express "my base's first member IS my vptr"
+// without emitting a second vtable retail does not have, so the element->node pun
+// is language-forced. The typed AddHead/Remove overloads below keep it at ONE seam.
 class CObjNode {
 public:
     void* m_base;     // +0x00  element base (vptr for a polymorphic element, else data)
@@ -27,6 +34,9 @@ struct CObjList : public CObjListBase {
     CObjNode* m_tail;             // +0x08
     void AddHead(CObjNode* node); // 0x1851e0
     void Remove(CObjNode* node);  // 0x1852e0
+    // the forced element-head pun, at one seam (see the note above CObjNode)
+    void AddHead(CRezItmBase* e) { AddHead(reinterpret_cast<CObjNode*>(e)); }
+    void Remove(CRezItmBase* e) { Remove(reinterpret_cast<CObjNode*>(e)); }
 };
 SIZE(0xc); // {vptr (CObjListBase), head, tail} - CRezList adds no data, same 0xc
 
