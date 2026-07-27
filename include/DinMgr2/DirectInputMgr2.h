@@ -6,6 +6,7 @@
 #include <Ints.h> // i32 / u32 (dinput.h below brings the real COM macros via objbase.h)
 
 #define DIRECTINPUT_VERSION 0x0500
+#include <Gruntz/FixedPtrArray32.h> // CFixedPtrArray32 - the node's real base
 #include <Mfc.h>
 #include <dinput.h>
 
@@ -13,15 +14,17 @@ class CInputDevBase;
 
 class CInputDevice;
 
-struct CDeviceListNode {
+// A device-list node IS a CFixedPtrArray32 - same 0x88 bytes, field for field (tag at
+// +0x00, count at +0x04, 32 element slots from +0x08), which is what this struct's own
+// comments used to say offset by offset. Modelled as real inheritance so the list code
+// calls FillFrom/Clear directly instead of reinterpreting between two names for one
+// class. The ctor is kept: retail's `new CDeviceListNode` zeroes the leading two dwords,
+// which a bare CFixedPtrArray32 does not.
+struct CDeviceListNode : public CFixedPtrArray32 {
     CDeviceListNode() {
         m_00 = 0;
-        m_04 = 0;
+        m_count = 0;
     }
-
-    i32 m_00;                 // +0x00  (CFixedPtrArray32 tag; zeroed by ctor, reset by FillFrom)
-    i32 m_04;                 // +0x04  (CFixedPtrArray32 count; zeroed by ctor)
-    char m_body[0x88 - 0x08]; // +0x08..0x87  element body (CFixedPtrArray32 items)
 };
 SIZE(0x88); // operator new(0x88) in AddController
 

@@ -184,12 +184,16 @@ i32 CActionArea::ApplyColor(i32 owner) {
     switch (owner) {
         case 1: {
             m_38->ApplyName("GAME_ACTIONAREA_BLUE");
+            // m_194 is the object's role union; this class parks a worker in it, so
+            // reading it back as one is the union's own arm - faithful, not a pun
             char* rec = m_38->m_194;
             (reinterpret_cast<CDDrawWorker*>(rec))->SetAllTypes(8);
             break;
         }
         case 2: {
             m_38->ApplyName("GAME_ACTIONAREA_RED");
+            // m_194 is the object's role union; this class parks a worker in it, so
+            // reading it back as one is the union's own arm - faithful, not a pun
             char* rec = m_38->m_194;
             (reinterpret_cast<CDDrawWorker*>(rec))->SetAllTypes(8);
             break;

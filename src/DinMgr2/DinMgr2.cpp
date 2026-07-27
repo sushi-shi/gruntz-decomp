@@ -293,7 +293,7 @@ void DirectInputMgr2::FreeDeviceList() {
     while (pos != 0) {
         CDeviceListNode* payload = static_cast<CDeviceListNode*>(m_deviceList.GetNext(pos));
         if (payload != 0) {
-            (reinterpret_cast<CFixedPtrArray32*>(payload))->Clear();
+            payload->Clear();
             operator delete(payload);
         }
     }
@@ -306,9 +306,9 @@ void* DirectInputMgr2::AddController(CInputDevBase** devices, i32 n, i32 a3) {
         return 0;
     }
     CDeviceListNode* node = new CDeviceListNode; // operator new(0x88) + ctor zeroes the links
-    if ((reinterpret_cast<CFixedPtrArray32*>(node))->FillFrom(devices, n, a3) == 0) {
+    if (node->FillFrom(devices, n, a3) == 0) {
         if (node != 0) {
-            (reinterpret_cast<CFixedPtrArray32*>(node))->Clear();
+            node->Clear();
             operator delete(node);
         }
         return 0;
