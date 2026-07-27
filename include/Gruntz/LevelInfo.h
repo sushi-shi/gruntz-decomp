@@ -31,6 +31,16 @@ struct CLevelList {
 };
 SIZE_UNKNOWN();
 
+// CONFLATION, recorded 2026-07-27 (not yet split): the +0x04 / +0x35 / +0x75 /
+// +0xf8 / +0xfc run of this struct is field-for-field <Io/SaveGame.h>'s SaveSlot
+// (level id, the two char buffers at exactly those bases, the two trailing flag
+// dwords, and both end at 0x100) - BuildLevelTitleString has been re-pointed at
+// SaveSlot on that evidence. The +0x10 / +0x2c / +0x30 / +0x68 / +0x70 POINTER
+// members, which overlap SaveSlot's +0x14 and +0x35 buffers, are a different
+// object: they line up with CGruntzMgr's m_curState(+0x2c) / m_world(+0x30) /
+// m_cmdGrid(+0x68) / m_tileGrid(+0x70), which is what BattlezMapConfig.h already
+// calls `CGruntzMgr* m_ctx // the LoadConfig lvl arg`. Splitting the two is the
+// open work; nothing here is safe to fold until it is done.
 struct CLevelInfo {
     char m_pad00[0x4];
     i32 m_levelNum;           // +0x04  level number (1..)

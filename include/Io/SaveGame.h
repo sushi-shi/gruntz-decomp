@@ -10,7 +10,6 @@
 
 #include <EmptyString.h> // g_emptyString (the shared "" constant)
 
-struct CLevelInfo;
 
 // The ONE 0x100 save record (the ex-SaveInfo twin is MERGED here: same layout,
 // the in-memory quickload code's role names live as union arms).
@@ -34,12 +33,14 @@ struct SaveSlot {
     };
     char m_levelName[0x83]; // +0x75  level path name (Register/VerifySlot; quickload strcpy)
     union {
-        i32 m_pathLo; // +0xf8  BuildLevelRezPath `lo` arg
-        i32 m_f8;     //        mirror of the manager's m_130 sub-mode gate
+        i32 m_pathLo;   // +0xf8  BuildLevelRezPath `lo` arg
+        i32 m_f8;       //        mirror of the manager's m_130 sub-mode gate
+        i32 m_isCustom; //        BuildLevelTitleString's custom-level flag
     };
     union {
-        i32 m_pathHi; // +0xfc  BuildLevelRezPath `hi` arg
-        i32 m_isWon;  //        "won" flag (FillSaveInfo writes m_134 == 3)
+        i32 m_pathHi;   // +0xfc  BuildLevelRezPath `hi` arg
+        i32 m_isWon;    //        "won" flag (FillSaveInfo writes m_134 == 3)
+        i32 m_isBattlez;//        BuildLevelTitleString's battlez-vs-questz flag
     };
 };
 SIZE(0x100); // 0x100-byte slot record (m_slots[] array stride)
@@ -107,6 +108,6 @@ int TempFileExists(SaveSlot* p); // 0x0e5700 (defined below)
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6); // 0x0e3e80
 i32 __stdcall CloseTempFile(SaveSlot* r); // defined below (0x0e5550)
 void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, SaveSlot* item);
-void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev);
+void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev);
 
 #endif                                                             // SRC_IO_SAVEGAME_H

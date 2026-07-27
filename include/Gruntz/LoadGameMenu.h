@@ -13,7 +13,8 @@ extern "C" void LoadInfoDlgProc();   // 0x1e3d (GAME_INFO)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-extern i32 g_slotState; // ?g_slotState@@3HA @0x64c864
+struct SaveSlot;             // <Io/SaveGame.h>
+extern SaveSlot* g_slotState; // @0x64c864 - the selected save record, not a flag
 
 
 struct SaveSlot;  // <Io/SaveGame.h>

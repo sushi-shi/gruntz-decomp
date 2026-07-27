@@ -1,7 +1,6 @@
 #include <Io/SaveGame.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/FontConfig.h>
-#include <Gruntz/LevelInfo.h> // the canonical CLevelInfo (BuildLevelTitleString arg3)
 #include <Image/ImagePool.h>  // the canonical CImagePool (g_previewMgr)
 #include <Image/Image.h>      // CRezImage (g_previewImage; the DIB StretchDIBits reads)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr (RunModalDialog/FillSaveInfo, DrawSaveGameMenu)
@@ -20,7 +19,7 @@ i32 g_savedMenuCmd = -1;
 DATA(0x0024c814)
 CImagePool* g_previewMgr; // 0x64c814
 DATA(0x0024c864)
-i32 g_slotState;
+SaveSlot* g_slotState;
 DATA(0x0024c868)
 void* g_previewImage;                     // 0x64c868  (CRezImage* previewed DIB)
 
@@ -127,7 +126,7 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             BuildLevelTitleString(
                 hDlg,
                 g_gameReg->m_saveSink,
-                reinterpret_cast<CLevelInfo*>(g_slotState)
+                g_slotState
             );
             return 1;
         }
@@ -154,13 +153,13 @@ i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
     switch (msg) {
         case 0x110:
             if (g_slotState == 0) {
-                EndDialog(hDlg, static_cast<INT_PTR>(g_slotState));
+                EndDialog(hDlg, reinterpret_cast<INT_PTR>(g_slotState)); // API-forced: nResult is INT_PTR
                 return 1;
             }
             winapi_0e4850_SetDlgItemTextA(
                 hDlg,
                 g_gameReg->m_saveSink,
-                reinterpret_cast<SaveSlot*>(g_slotState)
+                g_slotState
             );
             return 1;
         case 0x111:
@@ -169,7 +168,7 @@ i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
                 return 1;
             }
             if (wParam == 1) {
-                CloseTempFile(reinterpret_cast<SaveSlot*>(g_slotState));
+                CloseTempFile(g_slotState);
                 (static_cast<CSaveGame*>(g_gameReg->m_saveSink))->Save(0, 0x81a6);
                 EndDialog(hDlg, 1);
                 return 1;
@@ -184,13 +183,13 @@ i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
     switch (msg) {
         case 0x110:
             if (g_slotState == 0) {
-                EndDialog(hDlg, static_cast<INT_PTR>(g_slotState));
+                EndDialog(hDlg, reinterpret_cast<INT_PTR>(g_slotState)); // API-forced: nResult is INT_PTR
                 return 1;
             }
             winapi_0e4850_SetDlgItemTextA(
                 hDlg,
                 g_gameReg->m_saveSink,
-                reinterpret_cast<SaveSlot*>(g_slotState)
+                g_slotState
             );
             return 1;
         case 0x111:
@@ -337,7 +336,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
             break;
     }
     if (info != -1) {
-        g_slotState = reinterpret_cast<i32>(obj->GetSlot(info));
+        g_slotState = obj->GetSlot(info);
         if (g_slotState == 0) {
             return 0;
         }
@@ -385,7 +384,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
             break;
     }
     if (del != -1) {
-        g_slotState = reinterpret_cast<i32>(obj->GetSlot(del));
+        g_slotState = obj->GetSlot(del);
         if (g_slotState == 0) {
             return 0;
         }
@@ -443,7 +442,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         sprintf(name, "Saved Game #%i", slot + 1);
     }
     if (TempFileExists(obj->GetSlot(slot))) {
-        g_slotState = reinterpret_cast<i32>(obj->GetSlot(slot));
+        g_slotState = obj->GetSlot(slot);
         if (g_slotState != 0) {
             EnableWindow(hDlg, FALSE);
             i32 ok = g_gameReg->RunModalDialog(
@@ -478,7 +477,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
 //       reloc) vs retail's absolute IAT slot - reloc-typing scoring artifact,
 //       code bytes identical (reloc-typing-vptr-global.md).
 RVA(0x000e44e0, 0x2b2)
-void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev) {
+void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     char title[0x80];
     char readBuf[0x3843a];
 
@@ -497,7 +496,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev) {
         // Standard questz/training level. The "Training" CString lives inside the
         // wsprintf full-expression so its construction is branch-conditional and
         // its destruction flag-guarded (the /GX temp).
-        i32 n = lev->m_levelNum;
+        i32 n = lev->m_levelId;
         wsprintfA(
             title,
             "Questz: Stage %d of %s",
@@ -507,12 +506,12 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev) {
         );
     } else if (lev->m_isCustom == 0) {
         // Battlez level (named).
-        wsprintfA(title, "Battlez: %s", lev->m_name);
+        wsprintfA(title, "Battlez: %s", lev->m_levelName);
     } else {
         // Custom level: format "Custom <mode> Level[: <basename>]". The mode-keyed
         // format strings are branched (if/else) so cl tail-merges to one wsprintf
         // call with two literal pushes (boolarg-branch-push-not-sete).
-        char* bs = strrchr(lev->m_name, '\\');
+        char* bs = strrchr(lev->m_levelName, '\\');
         if (bs != 0) {
             if (lev->m_isBattlez) {
                 wsprintfA(title, "Custom Battlez Level: ");
@@ -537,7 +536,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev) {
     // (Open == 0 / Read != full) put the g_previewImage=0 failure store inline
     // after each test (retail's jne-to-success / je-to-success layout).
     CFile f;
-    if (f.Open(lev->m_path, 0x8000, 0) == 0) {
+    if (f.Open(lev->m_savePath, 0x8000, 0) == 0) {
         g_previewImage = 0;
     } else {
         f.Seek(-0x3843a, 2);

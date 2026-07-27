@@ -86,8 +86,10 @@ CSbiHlRow::CSbiHlRow() {
 RVA(0x000c7ec0, 0x5f5)
 i32 CPlay::LoadGameAssetNamespaces(i32 a1_i, i32 a2, i32 a3) {
     using namespace modeinit;
-    // a1 IS the CGruntzMgr singleton (the one cast is the mangling-locked i32 arg;
-    // the CState slot-1 HHH signature cannot be retyped).
+    // a1 IS the CGruntzMgr singleton, arriving through the slot-1 virtual's
+    // mangling-pinned i32 arg. Retyping it is a real fold but all-or-nothing across
+    // the ~10 overrides of CState::LoadGameAssetNamespaces, one of which lives in
+    // src/Gruntz/Multi.cpp (another lane owns it this session). @identity-TODO
     CGruntzMgr* a1 = reinterpret_cast<CGruntzMgr*>(a1_i);
     {
         if (a1 == 0) {

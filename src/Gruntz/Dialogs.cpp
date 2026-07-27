@@ -106,7 +106,8 @@ WNDPROC g_savedDlgWndProc; // the saved original proc (was i32; no writer in src
 RVA(0x00015a10, 0x70)
 i32 CALLBACK WndProc_15a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {
-        if (strcmp(g_emptyString, reinterpret_cast<const char*>(lParam)) == 0) {
+        // API-forced: Win32 hands the item text through LPARAM
+    if (strcmp(g_emptyString, reinterpret_cast<const char*>(lParam)) == 0) {
             return 0;
         }
     }
@@ -115,6 +116,8 @@ i32 CALLBACK WndProc_15a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 RVA(0x00015aa0, 0x6)
 const AFX_MSGMAP* CBattlezDlg::GetMessageMap() const {
+    // API-forced: MFC's message-map global is emitted as a raw datum and
+    // GetMessageMap's return type is fixed by CCmdTarget.
     return reinterpret_cast<const AFX_MSGMAP*>(&g_msgmap_CBattlezDlg);
 }
 
@@ -213,6 +216,8 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
 
 RVA(0x00017ac0, 0x6)
 const AFX_MSGMAP* CBattlezDlgColors::GetMessageMap() const {
+    // API-forced: MFC's message-map global is emitted as a raw datum and
+    // GetMessageMap's return type is fixed by CCmdTarget.
     return reinterpret_cast<const AFX_MSGMAP*>(
         &g_msgmap_CBattlezDlgColors
     ); // msgmap global still a placeholder type

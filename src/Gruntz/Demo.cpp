@@ -36,6 +36,10 @@
 
 RVA(0x0003bfa0, 0x42)
 i32 CDemo::LoadGameAssetNamespaces(i32 ctx, i32 a1, i32 a2) {
+    // The manager arrives through the slot-1 virtual's mangling-pinned i32 arg.
+    // Retyping it to CGruntzMgr* is a real fold, but it is all-or-nothing across the
+    // ~10 overrides of CState::LoadGameAssetNamespaces and one of them lives in
+    // src/Gruntz/Multi.cpp, which another lane owns this session. @identity-TODO
     (reinterpret_cast<CGruntzMgr*>(ctx))->m_strWorldFile.Empty();
     if (CPlay::LoadGameAssetNamespaces(ctx, a1, a2) == 0) {
         return 0;

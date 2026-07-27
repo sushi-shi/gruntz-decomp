@@ -1348,6 +1348,8 @@ void ApiCallerStubs::CImagePaletteNode::Tune() {
 
 RVA(0x00177160, 0x81)
 void ApiCallerStubs::winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD() {
+    // API-forced: LOGPALETTE is a GDI variable-length header, so the SDK's own
+    // idiom is a byte buffer overlaid with it.
     char buf[4 + 256 * sizeof(PALETTEENTRY)];
     LOGPALETTE* lp = reinterpret_cast<LOGPALETTE*>(buf);
     HDC hdc = GetDC(0);
@@ -1418,7 +1420,7 @@ i32 ApiCallerStubs::CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
         dst[3] = 0;
         dst += 4;
     }
-    // the 0x400 palette blob handed to the SDK-typed entry API (the PalEntries seam)
+    // API-forced: the 0x400 palette blob is handed to the SDK-typed entry API
     return Build(reinterpret_cast<PALETTEENTRY*>(rgbq), arg);
 }
 
