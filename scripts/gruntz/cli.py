@@ -399,6 +399,10 @@ def cmd_build(args) -> None:
     _gate("gruntz.audit.single_view", ["--ratchet"],
           "single-view ratchet violated - a global is declared with two types/"
           "linkages (python -m gruntz.audit.single_view)", "fast")
+    _gate("gruntz.audit.self_recursion", ["--gate"],
+          "self-recursion ratchet violated - a seam accessor returns a call to "
+          "ITSELF (a cast-seam sweep rewrote the seam's own body; it compiles and "
+          "the %% gate cannot see it) (python -m gruntz.audit.self_recursion)", "fast")
 
     if req == 0:  # fast tier: just the objdiff %, then stop (the cleanliness-board scan
         summarize(_report, full=False)  # + baseline writes below are normal+ only)
