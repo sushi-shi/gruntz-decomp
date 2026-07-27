@@ -122,7 +122,7 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
             }
             SCAN_RECT_BOUNDS(grid);
             if (m_0f0.GetSize() != 0) {
-                GruntCoord* e = coordData()[rand() % m_0f0.GetSize()];
+                Coord* e = coordData()[rand() % m_0f0.GetSize()];
                 g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
             }
             g->m_dwell = 0;
