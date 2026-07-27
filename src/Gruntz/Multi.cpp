@@ -2533,37 +2533,37 @@ i32 CMulti::ResolveLocalPlayer() {
 // inverse parse ParseChannelTable is 99.9%). Deferred to the final sweep.
 RVA(0x000ba810, 0x11c)
 i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
-    char packet[0x88];
-    memset(packet, 0, 0x88);
-    packet[0] |= 0x80;
-    *reinterpret_cast<i32*>((packet + 4)) = STAT_CHANNEL_TABLE;
+    CNetChannelTablePacket packet;
+    memset(&packet, 0, sizeof(packet));
+    packet.m_flags |= 0x80;
+    packet.m_statId = STAT_CHANNEL_TABLE;
 
-    char* rec = packet + 9;
+    CNetChannelRow* rec = packet.m_rows;
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* ch = &NetGameMgr()->m_options[i];
         if (ch != 0) {
             i32 v = ch->m_liveGate;
-            rec[-1] = static_cast<char>(v);
+            rec->m_liveGate = static_cast<u8>(v);
             v = ch->m_008;
-            rec[0] = static_cast<char>(v);
+            rec->m_008 = static_cast<u8>(v);
             v = ch->m_014;
-            rec[1] = static_cast<char>(v);
+            rec->m_014 = static_cast<u8>(v);
             v = ch->m_configId;
-            rec[2] = static_cast<char>(v);
+            rec->m_configId = static_cast<u8>(v);
             v = ch->m_readyFlag;
-            rec[5] = static_cast<char>(v);
+            rec->m_readyFlag = static_cast<u8>(v);
             v = ch->m_comboSel;
-            rec[4] = static_cast<char>(v);
-            *reinterpret_cast<i32*>((rec + 7)) = ch->m_slotKey;
-            strcpy(rec + 0xb, static_cast<const char*>(ch->GetName()));
+            rec->m_comboSel = static_cast<u8>(v);
+            rec->m_slotKey = ch->m_slotKey;
+            strcpy(rec->m_name, static_cast<const char*>(ch->GetName()));
         }
-        rec += 0x20;
+        rec += 1;
     }
 
     if (recipient != 0) {
-        SendStatPairRaw(recipient, packet, 0x88, 1);
+        SendStatPairRaw(recipient, &packet, sizeof(packet), 1);
     } else {
-        SendStatFrom(packet, 0x88, 1);
+        SendStatFrom(&packet, sizeof(packet), 1);
     }
     return 1;
 }
@@ -2589,27 +2589,27 @@ i32 CMulti::ParseChannelTable(void* packet) {
         ChannelSlots_InitAll();
     }
 
-    char* rec = reinterpret_cast<char*>(packet) + 9;
+    CNetChannelRow* rec = static_cast<CNetChannelTablePacket*>(packet)->m_rows;
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* ch = &NetGameMgr()->m_options[i];
         if (ch != 0) {
-            ch->m_liveGate = static_cast<u8>(rec[-1]);
-            ch->m_008 = static_cast<u8>(rec[0]);
-            ch->m_014 = static_cast<u8>(rec[1]);
-            ch->m_configId = static_cast<u8>(rec[2]);
-            if (rec[5] != 0) {
+            ch->m_liveGate = rec->m_liveGate;
+            ch->m_008 = rec->m_008;
+            ch->m_014 = rec->m_014;
+            ch->m_configId = rec->m_configId;
+            if (rec->m_readyFlag != 0) {
                 ch->m_readyFlag = 1;
             } else {
                 ch->m_readyFlag = 0;
             }
-            ch->m_comboSel = static_cast<u8>(rec[4]);
-            ch->m_name = rec + 0xb;
-            ch->m_slotKey = *reinterpret_cast<i32*>((rec + 7));
+            ch->m_comboSel = rec->m_comboSel;
+            ch->m_name = rec->m_name;
+            ch->m_slotKey = rec->m_slotKey;
             if (m_isHost == 0 && ch->m_liveGate != 0) {
                 ChannelSlots_Set(ch->m_008, 0);
             }
         }
-        rec += 0x20;
+        rec += 1;
     }
     return 1;
 }

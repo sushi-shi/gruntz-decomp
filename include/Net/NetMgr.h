@@ -92,6 +92,31 @@ struct CNetChannelPacket {
     char m_name[0x28 - 0x14]; // +0x14  the channel name (strcpy'd)
 };
 SIZE(0x28);
+
+// The 0x88 channel-TABLE broadcast: an 8-byte stat header then four 0x20 rows.
+// BroadcastChannelTable writes it and ParseChannelTable reads it back; the two
+// agree field-for-field, which is the layout.
+struct CNetChannelRow {
+    u8 m_liveGate;            // +0x00
+    u8 m_008;                 // +0x01
+    u8 m_014;                 // +0x02
+    u8 m_configId;            // +0x03
+    u8 m_pad04;               // +0x04
+    u8 m_comboSel;            // +0x05
+    u8 m_readyFlag;           // +0x06
+    u8 m_pad07;               // +0x07
+    i32 m_slotKey;            // +0x08
+    char m_name[0x20 - 0x0c]; // +0x0c
+};
+SIZE(0x20);
+
+struct CNetChannelTablePacket {
+    u8 m_flags;               // +0x00  bit7 set
+    char m_pad01[3];          // +0x01
+    i32 m_statId;             // +0x04
+    CNetChannelRow m_rows[4]; // +0x08 .. +0x87
+};
+SIZE(0x88);
 #pragma pack(pop)
 
 struct CNetPlayerNode {
