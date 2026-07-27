@@ -658,10 +658,10 @@ void CSaveGame::ComputeAll() {
     for (i32 i = 0; i < 10; i++) {
         sum += Encode(reinterpret_cast<u8*>(GetSlot(i)));
     }
-    *reinterpret_cast<i32*>(&m_header[0]) = 0;
-    *reinterpret_cast<i32*>(&m_header[4]) = 1;
-    *reinterpret_cast<i32*>(&m_header[8]) = sum;
-    *reinterpret_cast<i32*>(&m_header[0xc]) = 0;
+    m_header[0] = 0;
+    m_header[1] = 1;
+    m_header[2] = sum;
+    m_header[3] = 0;
 }
 
 RVA(0x000e50f0, 0x2f)
@@ -670,7 +670,7 @@ i32 CSaveGame::Verify() {
     for (i32 i = 0; i < 10; i++) {
         sum += Decode(reinterpret_cast<u8*>(GetSlot(i)));
     }
-    return *reinterpret_cast<i32*>(&m_header[8]) == sum;
+    return m_header[2] == sum;
 }
 
 RVA(0x000e5130, 0x78)

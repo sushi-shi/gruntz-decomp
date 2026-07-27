@@ -74,7 +74,7 @@ public:
     CString m_name; // +0x04  the file-name CString passed to CFile::Open
     // 0xa1c-byte header blob at +0x08 (Read/Write/memset as a whole); the three
     // scalar fields below are named overlays inside it, the rest is opaque tail.
-    char m_header[0x10];  // +0x08  header base (ComputeAll writes [0..0xc])
+    i32 m_header[4];      // +0x08  header: {0, 1, checksum, 0} (ComputeAll)
     u32 m_maxLevel;       // +0x18  (Init = 0x25; SetMaxLevel clamps, unsigned ja/jbe)
     u32 m_curLevel;       // +0x1c  (SetCurLevel; == 0x20 -> Init, unsigned jbe)
     u32 m_magic;          // +0x20  (CheckMagic == 0x42a)
