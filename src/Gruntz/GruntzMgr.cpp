@@ -801,12 +801,12 @@ i32 __stdcall LaunchWebBrowser(char* url) {
     if (strlen(cmd) < 3) {
         return 0;
     }
-    i32 quoted = 0;
+    HANDLE quoted = 0;
     // 0x18d330 = __strupr (LIBCMT): the command is UPPER-cased before the
     // "IEXPLORE.EXE" (uppercase) substring test below.
     _strupr(cmd);
     if (strstr(cmd, "IEXPLORE.EXE")) {
-        FindProcessByName("IEXPLORE.EXE", 1, reinterpret_cast<void**>(&quoted));
+        FindProcessByName("IEXPLORE.EXE", 1, &quoted);
     }
     char* dash = strchr(cmd, '-');
     i32 dn = dash - cmd + 1;
@@ -1693,7 +1693,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     m_symParser = new CSymParser;
 
     CString path = GetRezPath();
-    if (m_symParser->ParseBuffer(*reinterpret_cast<void**>(&path), 1, 0)) {
+    if (m_symParser->ParseBuffer(const_cast<char*>(static_cast<const char*>(path)), 1, 0)) {
         ReportError(0x800b, 0x441);
         return 0;
     }

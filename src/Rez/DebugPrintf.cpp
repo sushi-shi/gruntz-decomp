@@ -2,7 +2,6 @@
 #include <rva.h>
 
 #include <stdarg.h>          // va_list / va_start - the real spelling of `(char*)(&fmt+1)`
-#include <stdarg.h>          // va_list / va_start - the real spelling of `(char*)(&fmt+1)`
 #include <stdlib.h>          // atol / getenv
 #include <string.h>          // inline strcpy (rep movs / repne scasb), strpbrk, strstr
 #include <Gruntz/RangeSet.h> // canonical CRangeSet + CRange (the debug-channel set)
@@ -131,10 +130,10 @@ void MonoNewline() {
         i32 i = 0xa0;
         do {
             i += 2;
-            // byte-forced: the MDA text page is a byte-addressed 80x25 grid of
-            // 2-byte (char,attr) cells; the scroll runs on the 0xa0-byte LINE
-            // stride, and retail scales the index *1 (`[ecx+eax*1-0xa2]`), which
-            // a u16[] model would emit as *2.
+            // The MDA text page is a byte-addressed 80x25 grid of 2-byte (char,attr)
+            // cells; the scroll runs on its 0xa0-byte LINE stride.
+            // byte-forced: retail indexes it *1 (`[ecx+eax*1-0xa2]`) where a u16[]
+            // byte-forced: model would emit *2 - so the cursor has to stay a byte cursor.
             *reinterpret_cast<u16*>((g_monoBuffer + i - 0xa2)) =
                 *reinterpret_cast<u16*>((g_monoBuffer + i - 2));
         } while (i < 0xfa0);

@@ -871,8 +871,9 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     CGruntzMgr* g = g_gameReg;
     i32 yy = hud->m_screenY;
     i32 xx = hud->m_screenX;
-    // retail reads THROUGH the level's +0x5c slot WITHOUT the plane deref (a shipped
-    // quirk: the ints land inside m_levelName's tail) - the member-address spelling.
+    // faithful: retail reads THROUGH the level's +0x5c slot WITHOUT the plane deref
+    // (a shipped quirk - the ints land inside m_levelName's tail), so this has to stay
+    // the raw member-address spelling rather than a typed plane access.
     i32* rectBase = reinterpret_cast<i32*>(&g->m_world->m_level->m_mainPlane);
     i32 lim = rectBase[0x48 / 4];
     i32* rect = rectBase + 0x40 / 4;
@@ -2239,6 +2240,8 @@ i32 CGrunt::StepEntranceRelatchB() {
         || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
         cellObj = 0;
     } else {
+        // faithful: the board row IS an i32[] (7 ints per cell) and slot +2 parks the
+        // occupying object's address as a raw dword - the tilegrid pointer/DWORD store.
         cellObj = reinterpret_cast<void*>(((grid->m_rowInts[ty]))[tx * 7 + 2]);
     }
     if (cellObj == 0) {

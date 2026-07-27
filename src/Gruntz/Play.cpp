@@ -2337,7 +2337,7 @@ void CPlay::LoadSBITextEdges(char* name) {
 }
 
 RVA(0x000d1890, 0x1ba)
-void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 rectSrc) {
+void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, RECT* rectSrc) {
     RECT rect;
 
     if (cueId != m_lastCueId) {
@@ -2352,11 +2352,10 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
     }
 
     if (rectSrc != 0) {
-        i32* src = reinterpret_cast<i32*>(rectSrc);
-        i32 bottom = src[3] - g_buteMgr.GetInt("Font", "TextBottomEdge");
-        i32 right = src[2] - g_buteMgr.GetInt("Font", "TextRightEdge");
-        i32 top = src[1] + g_buteMgr.GetInt("Font", "TextTopEdge");
-        i32 left = src[0] + g_buteMgr.GetInt("Font", "TextLeftEdge");
+        i32 bottom = rectSrc->bottom - g_buteMgr.GetInt("Font", "TextBottomEdge");
+        i32 right = rectSrc->right - g_buteMgr.GetInt("Font", "TextRightEdge");
+        i32 top = rectSrc->top + g_buteMgr.GetInt("Font", "TextTopEdge");
+        i32 left = rectSrc->left + g_buteMgr.GetInt("Font", "TextLeftEdge");
         SetRect(&rect, left, top, right, bottom);
     } else {
         // the viewport rect (m_c->m_level->m_viewport) ptr (edx) does not survive
@@ -6309,7 +6308,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
         return 1;
     }
     // (retail tests the list-head SUB-OBJECT address, group+0x10 - kept as-is)
-    char* head = reinterpret_cast<char*>(&this->m_world->m_childGroup->m_list);
+    CObList* head = &this->m_world->m_childGroup->m_list;
     if (!head) {
         return 0;
     }

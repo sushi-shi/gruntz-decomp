@@ -404,11 +404,14 @@ i32 CGrunt::LoadEntranceConfig() {
 
         if (oldX != -1 && m_lastTilePxY != -1) {
             CMapMgr* og = g_gameReg->m_tileGrid; // implicit upcast (the one board class)
+            // byte-evidenced: retail clears this flag with a BYTE read-modify-write on
+            // the cell word's high byte (bit 29), not a dword `and` of 0xdfffffff.
             (reinterpret_cast<char*>(&og->m_rowInts[oldTileY][oldTileX * 7]))[3] &= ~0x20;
             og->m_rowInts[oldTileY][oldTileX * 7 + 1] = -1;
         }
         {
             CMapMgr* ng = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
+            // byte-evidenced: the matching BYTE read-modify-write that sets bit 29.
             (reinterpret_cast<char*>(&ng->m_rowInts[newTileY][newTileX * 7]))[3] |= 0x20;
             ng->m_rowInts[newTileY][newTileX * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
         }

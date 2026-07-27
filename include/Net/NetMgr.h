@@ -446,13 +446,13 @@ struct IDirectPlay4Z {
         i32 idFrom,
         i32 idTo,
         i32 flags,
-        void* lpData,
+        LPVOID lpData,
         i32 size,
         i32 pri,
         i32 timeout,
-        void* ctx,
-        i32* lpMsgId
-    ) PURE; // slot 49 (+0xc4)
+        LPVOID ctx,
+        LPDWORD lpMsgId
+    ) PURE; // slot 49 (+0xc4)  (the DirectPlay SDK's own parameter types)
 };
 SIZE_UNKNOWN(); // external DirectPlay COM interface (opaque object); size TBD
 

@@ -265,6 +265,7 @@ i32 CDDrawSurfacePair::ResolveImage_163ee0(CParseSource* src) {
     // filename, yet we hand it a CParseSource*. Either the parse source begins with the
     // name bytes inline or one of the two declarations is wrong - needs 0x163ee0 /
     // MakeImageKey disasm. Do not "fix" the cast without settling that.
+    // @identity-TODO: what CParseSource's leading bytes actually are.
     return m_surface->MakeImageKey(OwnerMgr()->m_ptrColl, reinterpret_cast<char*>(src), 0);
 }
 
@@ -829,6 +830,8 @@ CString CDDrawWorkerCache::FindKeyOfValue(CObject* target) {
         // ::CObArray's VPTR, so for two CObArray-holding objects this compare is a
         // constant-vs-itself and the scan returns the first key. That is pre-existing
         // and out of this fold's scope - the fold only preserves the same memory read.
+        // faithful: retail reads the raw +0x10 dword of both objects (the note above
+        // records that this lands on the embedded CObArray's vptr - preserved, not fixed).
         if (val != 0
             && *reinterpret_cast<i32*>(&(static_cast<CDDrawWorker*>(val))->m_items)
                    == *reinterpret_cast<i32*>(&(static_cast<CDDrawWorker*>(target))->m_items)) {

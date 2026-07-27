@@ -180,7 +180,7 @@ public:
         i32 a5,
         i32 a6,
         i32 a7,
-        i32 rectSrc
+        RECT* rectSrc
     ); // (THIS TU)
     // PostActionCue (0x0d7220): pause-and-post a cue by string-resource id - load
     // the cue text (m_cueText.LoadStringA), latch the id (m_lastCueId), freeze the

@@ -162,14 +162,19 @@ i32 CTimer::Tick(i32 dt) {
         if (slot != 0) {
             slot->m_clearedRound = 1;
         }
-        i32* key = reinterpret_cast<i32*>(g_gameReg->m_options[0].m_00c);
+        i32 key = g_gameReg->m_options[0].m_00c;
         if (key != 0) {
             i32 found = 0;
             // the +0x48 serialize map, probed directly (ex the CKeyTable::FindByKey shim -
             // FindByKey WAS CMapPtrToPtr::Lookup @0x1b8760 on the embedded m_map48)
             void* fv = 0;
-            found = g_gameReg->m_world->m_childGroup->m_map48.Lookup(static_cast<void*>(key), fv);
+            // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
+            found = g_gameReg->m_world->m_childGroup->m_map48.Lookup(
+                reinterpret_cast<void*>(key),
+                fv
+            );
             CGameObject* obj = static_cast<CGameObject*>(fv);
+            // faithful: on a miss retail uses the id itself as the object address
             CGameObject* hit = found ? obj : reinterpret_cast<CGameObject*>(key);
             if (hit != 0 && hit->m_7c->m_logic != 0) {
                 static_cast<CWarlord*>(hit->m_7c->m_logic)->ResolveDeathAnimation();
@@ -179,14 +184,19 @@ i32 CTimer::Tick(i32 dt) {
     }
 
     if (static_cast<u32>(v) < 0xea60) {
-        i32* key = reinterpret_cast<i32*>(g_gameReg->m_options[0].m_00c);
+        i32 key = g_gameReg->m_options[0].m_00c;
         if (key != 0) {
             i32 found = 0;
             // the +0x48 serialize map, probed directly (ex the CKeyTable::FindByKey shim -
             // FindByKey WAS CMapPtrToPtr::Lookup @0x1b8760 on the embedded m_map48)
             void* fv = 0;
-            found = g_gameReg->m_world->m_childGroup->m_map48.Lookup(static_cast<void*>(key), fv);
+            // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
+            found = g_gameReg->m_world->m_childGroup->m_map48.Lookup(
+                reinterpret_cast<void*>(key),
+                fv
+            );
             CGameObject* obj = static_cast<CGameObject*>(fv);
+            // faithful: on a miss retail uses the id itself as the object address
             CGameObject* hit = found ? obj : reinterpret_cast<CGameObject*>(key);
             if (hit != 0 && hit->m_7c->m_logic != 0) {
                 static_cast<CWarlord*>(hit->m_7c->m_logic)->NotifyFortUnderAttack();

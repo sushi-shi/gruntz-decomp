@@ -66,8 +66,8 @@ enum GruntDeathType {
 
 #define DEATH_FRAME()                                                                              \
     (m_38->m_1a0.m_14->m_records.GetSize() > 0                                                     \
-         ? (reinterpret_cast<i32*>(m_38->m_1a0.m_14->m_records.GetAt(0)))[0x14 / 4]                \
-         : ((i32*)0)[0x14 / 4])
+         ? static_cast<CAniRecordView*>(m_38->m_1a0.m_14->m_records.GetAt(0))->m_seedFrame         \
+         : static_cast<CAniRecordView*>(0)->m_seedFrame)
 
 #define DEATH_CUE(tag)                                                                             \
     do {                                                                                           \

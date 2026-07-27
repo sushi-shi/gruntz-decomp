@@ -558,16 +558,10 @@ i32 CNetMgr::EnumGroupsRange(void* rec, i32 flags) {
 
     // rec is the player-list node (roster m_playerSel / the create-ctx record) -
     // the 4 dwords are its descriptor GUID
-    i32* r =
-        reinterpret_cast<i32*>(&(static_cast<CNetPlayerListNode*>(rec))->m_desc.m_guidInstance);
-    i32 desc[4];
-    desc[0] = r[0];
-    desc[1] = r[1];
-    desc[2] = r[2];
-    desc[3] = r[3];
+    GUID desc = (static_cast<CNetPlayerListNode*>(rec))->m_desc.m_guidInstance;
 
     IDirectPlay4Z* iface = m_directPlay;
-    i32 hr = iface->EnumGroupsCb(desc, static_cast<void*>(&NetEnumCb), this, flags);
+    i32 hr = iface->EnumGroupsCb(&desc, static_cast<void*>(&NetEnumCb), this, flags);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x327, hr, 0);
         return hr;
@@ -784,12 +778,12 @@ i32 CNetMgr::SendEx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h, i32 
         a,
         b,
         c,
-        reinterpret_cast<void*>(d),
+        reinterpret_cast<LPVOID>(d),
         e,
         f,
         g,
-        reinterpret_cast<void*>(h),
-        reinterpret_cast<i32*>(i)
+        reinterpret_cast<LPVOID>(h),
+        reinterpret_cast<LPDWORD>(i)
     );
     if (hr && hr != static_cast<i32>(0x8000000a)) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x481, hr, 0);
