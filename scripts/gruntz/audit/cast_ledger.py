@@ -74,7 +74,12 @@ def scan():
                 continue
             lines = path.read_text(errors="replace").split("\n")
             for i, line in enumerate(lines):
-                for _ in CAST.finditer(line):
+                # A cast written INSIDE a comment is prose, not a site. Three of these
+                # were being counted as real casts (StatusBarMgr.h, ImageSets.h,
+                # ModeObjInit.cpp), which inflates the very number this tool exists to
+                # drive to zero. Strip the line comment before matching; a cast is never
+                # split across a `//`.
+                for _ in CAST.finditer(line.split("//", 1)[0]):
                     ctx = " ".join(lines[max(0, i - 3):i + 2])
                     label = None
                     for name, pat in FORCED:

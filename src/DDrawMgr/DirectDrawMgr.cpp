@@ -1264,7 +1264,7 @@ CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
 // as 0x143900/0x143950: retail keeps src in eax + dst in edx, materializes the m_hasPalette
 // 1 into a reused reg; MSVC on this source mirrors src/dst and stores the immediate.
 // Not source-steerable (permuter 150-iter marginal). docs/patterns/zero-register-pinning.md.
-RVA(0x001439b0, 0x3d)
+RVA(0x001439b0, 0x3f)
 void CDDrawPtrCollections::SetDisplayPaletteDirect(i32* rgbq, i32 tag) {
     if (rgbq == 0) {
         return;

@@ -283,7 +283,7 @@ fail:
 // m_pairA[0]=500 direct-immediate store, which cl hoists into the w-read/dec window while
 // retail emits it after the m_b8/m_pairB[1]=1000 stores. Inlining the block in retail's
 // store order regressed it further (74.8%); not source-steerable. Deferred.
-RVA(0x0015d030, 0x8f)
+RVA(0x0015d030, 0x92)
 i32 CGameLevel::SetCoordExtents(i32 w, i32 h) {
     m_planeCtx.left = 0;
     m_planeCtx.top = 0;

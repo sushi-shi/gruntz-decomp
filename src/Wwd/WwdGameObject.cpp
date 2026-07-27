@@ -111,7 +111,7 @@ void CWwdGameObjectA::ApplyName(const char* name) {
     m_layer = 0;
 }
 
-RVA(0x001505b0, 0x5c)
+RVA(0x001505b0, 0x5e)
 i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
     CDDrawWorker* spr = 0;
     MapLookup(OwnerMgr()->m_animRegistry->m_10, name, spr);

@@ -745,7 +745,7 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
     return 1;
 }
 
-RVA(0x001360d0, 0x7c)
+RVA(0x001360d0, 0x7e)
 i32 DSoundCloneInst::ConfigureItem(i32 vol, i32 pan, i32 freqPct, i32 loop) {
     if (!m_owner->m_initialized) {
         return 0;

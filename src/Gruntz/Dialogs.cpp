@@ -71,7 +71,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {}
 // CBrush reproduces every body below exactly (mod relocs). The former fake
 // CImgHolderBase/CImgHolder2/CImgHolder hierarchy (+ the "CImageList holder"
 // story) is RTTI-refuted (see the header note above).
-RVA_COMPGEN(0x000163e0, 0x1e, ??_GCObject@@UAEPAXI@Z)
+RVA_COMPGEN(0x000163e0, 0x20, ??_GCObject@@UAEPAXI@Z)
 RVA_COMPGEN(0x00016410, 0x7, ??1CObject@@UAE@XZ)
 RVA_COMPGEN(0x00016430, 0x1e, ??_GCGdiObject@@UAEPAXI@Z)
 RVA_COMPGEN(0x00016460, 0x46, ??1CGdiObject@@UAE@XZ)
@@ -617,7 +617,7 @@ void CBattlezDlg::FlashCtrlD() {
     }
 }
 
-RVA(0x00016570, 0x10)
+RVA(0x00016570, 0x12)
 void CBattlezDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
     CWnd::OnMeasureItem(nIDCtl, lpmis);
 }

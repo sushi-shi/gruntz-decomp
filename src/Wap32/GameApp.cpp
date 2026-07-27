@@ -444,7 +444,7 @@ i32 CGameMgr::PerFrameTick() {
     return 1;
 }
 
-RVA(0x0013de70, 0x23)
+RVA(0x0013de70, 0x26)
 void CGameMgr::InitTimeFields(i32 reset) {
     m_frameCounter = 0;
     m_windowStartTick = timeGetTime();

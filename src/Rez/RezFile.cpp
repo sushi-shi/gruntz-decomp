@@ -288,7 +288,7 @@ i32 CRezDir::Write(i32 base, i32 off, u32 count, void* buf) {
     return 0;
 }
 
-RVA(0x0013ca60, 0x14)
+RVA(0x0013ca60, 0x16)
 i32 CRezDir::Open(char* name, i32 readonly, i32 write) {
     m_readonly = readonly;
     m_write = write;

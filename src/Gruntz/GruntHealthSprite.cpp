@@ -124,7 +124,7 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
 // CGruntSelectedSprite::Update / CGruntPowerupSprite::Update carry. Not source-steerable
 // (the `reg` local + idx-split + cellY-first add spellings + the permuter all leave it);
 // see docs/patterns/zero-register-pinning.md. Deferred to the final sweep.
-RVA(0x0007f160, 0xb)
+RVA(0x0007f160, 0xd)
 i32 CGruntHealthSprite::Vslot16(CGrunt* g) {
     return g->m_health;
 }

@@ -30,7 +30,7 @@ void CKeyedList::Clear() {
 // 0x1b9c69 - with a trylevel bump between; a plain `CString m_key` member yields one),
 // plus the EH-state-table addend (push $0x8 vs $0x0, a per-unit scope-table offset)
 // and the this-register coloring (ebx vs edi). Documented EH/CString-ctor plateau.
-RVA(0x00037a70, 0x97)
+RVA(0x00037a70, 0x9a)
 CKeyedNode* CKeyedList::AddNode(const char* key, i32 a2, i32 a3) {
     CKeyedNode* node = new CKeyedNode;
     node->m_4 = 0;

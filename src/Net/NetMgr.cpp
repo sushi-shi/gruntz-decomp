@@ -772,7 +772,7 @@ i32 CNetMgr::SetGroupData2(CNetSessionNode* a, CNetSessionNode* b, i32 c, void* 
     return hr;
 }
 
-RVA(0x00178f50, 0x61)
+RVA(0x00178f50, 0x63)
 i32 CNetMgr::SendEx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h, i32 i) {
     i32 hr = m_directPlay->SendEx(
         a,
@@ -800,7 +800,7 @@ i32 CNetMgr::SetData(i32 a, i32 b, i32 c, void* data, i32 size) {
     return hr;
 }
 
-RVA(0x00179010, 0x76)
+RVA(0x00179010, 0x78)
 i32 CNetMgr::Receive(
     CNetSessionNode* from,
     CNetSessionNode* to,

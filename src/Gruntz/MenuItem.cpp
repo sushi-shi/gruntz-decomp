@@ -222,7 +222,7 @@ i32 CMenuItem::Configure(i32 notify) {
     Disable(2);
     return 1;
 }
-RVA(0x001856c0, 0xb)
+RVA(0x001856c0, 0xd)
 i32 CMenuItem::Release() {
     Disable(1);
     return 1;

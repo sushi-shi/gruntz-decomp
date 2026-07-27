@@ -43,7 +43,7 @@ i32 CGruntzWnd::Wap32GameWndVfunc2(i32, i32, i32) {
     return 0;
 }
 
-RVA(0x00094790, 0xc2)
+RVA(0x00094790, 0xcd)
 i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case 0x14:

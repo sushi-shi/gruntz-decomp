@@ -102,7 +102,7 @@ i32 CGameWnd::OnClose() {
     return 1;
 }
 
-RVA(0x0013d470, 0xd)
+RVA(0x0013d470, 0x12)
 i32 CGameWnd::OnActivateApp(WPARAM wParam, LPARAM /*lParam*/) {
     m_owner->m_appActive = wParam;
     return 0;

@@ -390,6 +390,11 @@ def cmd_build(args) -> None:
     # EVERY tier. (tu_order / label_style / view_typedef are NORMAL - see below: a TU
     # move is rare and label/typedef slips are trivial orchestrator fixups, none of
     # which the %-grind inner loop should carry.)
+    _gate("gruntz.audit.rva_size", ["--gate"],
+          "rva-size: an RVA(addr, size) label is SHORTER than the function's real extent, "
+          "so the delinker truncates the TARGET and objdiff scores a complete body against "
+          "a partial one - a silently capped score, not a code problem "
+          "(python -m gruntz.audit.rva_size)", "fast")
     _gate("gruntz.audit.compgen_order", ["--gate"],
           "compgen-order ratchet violated - move the RVA_COMPGEN invocation to its "
           "RVA-sorted slot (python -m gruntz.audit.compgen_order)", "fast")

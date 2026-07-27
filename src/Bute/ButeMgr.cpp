@@ -805,7 +805,7 @@ static const char s_strRBrack[] = "]";
 // 0x212e0 = the scalar-deleting destructor (vtable 0x1e94ac slot 0); 0x21600 = the
 // second-base adjustor flavor (vtable 0x1e949c slot 0, via ILT 0x1c30).
 // ===========================================================================
-RVA_COMPGEN(0x000212e0, 0x0, ??_GzPTree@@UAEPAXI@Z)
+RVA_COMPGEN(0x000212e0, 0x1e, ??_GzPTree@@UAEPAXI@Z)
 RVA_COMPGEN(0x00021310, 0x70, ??1zPTree@@UAE@XZ)
 
 // ---------------------------------------------------------------------------
@@ -843,7 +843,7 @@ CButeMgr::~CButeMgr() {}
 // the delink carve - no source body exists for it, and none must.
 RVA_COMPGEN(0x00021570, 0x70, ??1CBSecStream@@UAE@XZ)
 
-RVA_COMPGEN(0x00021600, 0x0, ??_EzPTree@@W7AEPAXI@Z)
+RVA_COMPGEN(0x00021600, 0x8, ??_EzPTree@@W7AEPAXI@Z)
 
 RVA(0x001706c0, 0x4b)
 void CButeMgr::ReportError(const char* fmt, ...) {

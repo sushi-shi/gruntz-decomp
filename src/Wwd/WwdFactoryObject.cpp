@@ -265,7 +265,7 @@ i32 CWwdGameObjectA::Setup(i32 a1, i32 a2, i32 a3, AnimWorkerObj* tmpl) {
     return CGameObject::Setup(a1, a2, a3, tmpl);
 }
 
-RVA(0x0015ba20, 0x1b)
+RVA(0x0015ba20, 0x1c)
 void CWwdGameObjectA::Render(CDDrawSurfacePair* pair) {
     if (m_layer) {
         m_layer->RenderImage(this, pair);
@@ -388,7 +388,7 @@ u8 CWwdGameObjectC::GetDotColor() {
     return m_dotColor;
 }
 
-RVA(0x0015c040, 0xb)
+RVA(0x0015c040, 0xd)
 void CWwdGameObjectC::SetDotColor(u8 c8) {
     m_dotColor = c8;
 }

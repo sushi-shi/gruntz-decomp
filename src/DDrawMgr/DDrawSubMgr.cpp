@@ -164,7 +164,7 @@ i32 CDDrawWorkerMapSmall::IsReady() {
     return 1;
 }
 
-RVA(0x00156dc0, 0x13)
+RVA(0x00156dc0, 0x16)
 i32 CDDrawWorkerRegistry::IsLoaded() {
     if (m_ownerCtx != 0 && m_id != -1) {
         return 1;
@@ -1518,7 +1518,7 @@ CDrawSubWorker::CDrawSubWorker(i32 a1, i32 a2, i32 a3) {
     m_ownerCtx = a1;
     m_width = 0;
 }
-RVA(0x00158f60, 0x1c)
+RVA(0x00158f60, 0x1d)
 i32 CDrawSubWorker::IsLoaded() {
     if (m_width <= 0) {
         return 0;

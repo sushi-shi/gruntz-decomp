@@ -259,7 +259,7 @@ i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
 // boolean) EXCEPT the register the m_surface->m_8 re-read lands in (retail eax / ours
 // edx) + the carried scratch reg in the setcc tail (ecx vs edx). Same values, same
 // stores; not source-steerable. docs/patterns/zero-register-pinning.md.
-RVA(0x00163ee0, 0x18)
+RVA(0x00163ee0, 0x19)
 i32 CDDrawSurfacePair::ResolveImage_163ee0(CParseSource* src) {
     // @identity-TODO MakeImageKey does strrchr(name, '.') on this, so it wants a real
     // filename, yet we hand it a CParseSource*. Either the parse source begins with the

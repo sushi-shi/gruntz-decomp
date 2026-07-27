@@ -589,7 +589,7 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
 // CWwdGrid leaves __purecall: hand the found region's game object (+0x18) to the
 // world's broadcast child-group for sorted (re)insertion, addToMaps=1. The world
 // hop is the CLoadable-family int owner handle (OwnerMgr()).
-RVA(0x00168060, 0x16)
+RVA(0x00168060, 0x18)
 void CWwdGridShell::OnFound(WwdRegion* r) {
     CGameObject* obj = r->m_object;
     obj->OwnerMgr()->m_childGroup->InsertSorted(obj, 1);

@@ -308,7 +308,7 @@ CActReg CActRegPool<CGrunt>::s_table(2000, 2010);
 //   m_400 = (sqrt(dx*dx + dy*dy) / m_41c) * dt   (dx=m_lastTilePxX-m_5c, dy=m_lastTilePxY-m_60)
 //   m_408 = (double)m_object->m_5c;  m_410 = (double)m_object->m_60
 // dt is the per-tile time step; m_41c is the configured TimePerTile.
-RVA(0x00057060, 0x6f)
+RVA(0x00057060, 0x72)
 void CGrunt::ComputeFacing(double dt) {
     CWwdGameObjectA* h = m_object;
     double dx = static_cast<double>(m_lastTilePxX) - static_cast<double>(h->m_screenX);

@@ -37,7 +37,7 @@ CAniRecordView::~CAniRecordView() {
     // implicit grand-base re-stamp (masks 0x5e8cb4) folds in here as the last store.
 }
 
-RVA(0x00165d90, 0x9)
+RVA(0x00165d90, 0xb)
 i32 CAniRecordBase2::IsLoaded() {
     return m_buf != 0;
 }
