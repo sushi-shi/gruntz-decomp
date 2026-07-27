@@ -61,6 +61,7 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     if (convert) {
         if (srcFmt == 8) {
             u8* w = g_paletteRampBuf;
+            // BMP: the pixel data begins one BITMAPFILEHEADER past the buffer - byte-forced
             u8* p = reinterpret_cast<u8*>(src) + sizeof(BITMAPFILEHEADER)
                     + sizeof(BITMAPINFOHEADER); // the BMP palette
             i32 i = 0;
@@ -89,6 +90,7 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
         return 0;
     }
 
+    // BMP: bfOffBits is a RUNTIME byte offset to the bits - byte-forced
     void* run = reinterpret_cast<u8*>(src) + src->m_0a;
     if (convert) {
         if (Blit(run, srcFmt, pal, 2) == 0) {
@@ -136,6 +138,7 @@ i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode
 
 RVA(0x00143fc0, 0x142)
 i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
+    // BMP: the info header sits inline in the read buffer - byte-forced
     BITMAPINFOHEADER* ih = reinterpret_cast<BITMAPINFOHEADER*>(
         static_cast<char*>(buf) + sizeof(BITMAPFILEHEADER)
     );
@@ -334,6 +337,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
 
     BITMAPFILEHEADER fh;
     memset(&fh, 0, sizeof(fh));
+    // the BM magic written into the header's leading bytes - byte-forced
     strcpy(reinterpret_cast<char*>(&fh), g_bmpHeaderTemplate);
     fh.bfSize = bi.biSize * m_width + 0x436;
     fh.bfOffBits = 0x436;
@@ -407,6 +411,7 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, i32 flag) {
     bih.biSize = 0;
     bih.biWidth = 0;
     bih.biHeight = 0;
+    // two adjacent SDK u16 fields (biPlanes|biBitCount) moved as ONE dword - byte-forced
     *reinterpret_cast<i32*>(&bih.biPlanes) = 0;
     bih.biSizeImage = 0;
     bih.biXPelsPerMeter = 0;
@@ -414,6 +419,7 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, i32 flag) {
     bih.biClrUsed = 0;
     bih.biClrImportant = 0;
 
+    // the BM magic written into the header's leading bytes - byte-forced
     strcpy(reinterpret_cast<char*>(&bfh), "BM");
     bfh.bfReserved1 = 0;
     bfh.bfReserved2 = 0;
@@ -460,6 +466,7 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, i32 flag) {
         u8* src = locked + row * this->m_pitch;
         u8* dst = line;
         for (i32 x = 0; x < width; x++) {
+            // a 16bpp pixel read off the byte cursor - byte-forced
             u16 px = *reinterpret_cast<u16*>(src);
             src += 2;
             dst[0] = static_cast<u8>((static_cast<u8>(px) << g_bDown));
@@ -509,6 +516,7 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
     BITMAPFILEHEADER fh;
     memset(&fh, 0, sizeof(fh));
     i32 width = m_width;
+    // the BM magic written into the header's leading bytes - byte-forced
     strcpy(reinterpret_cast<char*>(&fh), g_bmpHeaderTemplate);
     bi.biHeight = height;
     bi.biSize = 0x28;
@@ -602,6 +610,7 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, 
     if (convert) {
         if (srcFmt == 8) {
             // build the grayscale ramp from the source's trailing 0x300 palette
+            // PCX: the 0x300 palette trails the image data - byte-forced
             u8* p = reinterpret_cast<u8*>(src) + len - 0x300;
             i32 i = 0;
             do {
@@ -627,6 +636,7 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, 
         return 0;
     }
 
+    // PCX: the run data begins one fixed header past the buffer - byte-forced
     void* run = reinterpret_cast<u8*>(src) + PCX_HEADER_SIZE;
     void* buf = 0;
     i32 result;
@@ -1015,6 +1025,7 @@ i32 CDDSurface::DecodePcxData(CDDrawPtrCollections* dst, PidHeader* hdr, i32 siz
     i32 flags = static_cast<i32>(hdr->flags);
     i32 w = hdr->width;
     i32 h = hdr->height;
+    // PID: the pixel stream follows the fixed header inline - byte-forced
     u8* data = reinterpret_cast<u8*>(hdr + 1); // the pixel stream at +0x20
 
     if (w & 3) {
@@ -1040,6 +1051,7 @@ i32 CDDSurface::DecodePcxData(CDDrawPtrCollections* dst, PidHeader* hdr, i32 siz
         if (static_cast<u32>(size) <= 0x300) {
             return 0;
         }
+        // PID: the 0x300 palette trails the pixel data - byte-forced
         u8* src = reinterpret_cast<u8*>(hdr) + size - 0x300;
         i32 i = 0;
         do {
@@ -1125,6 +1137,7 @@ RVA(0x00145b10, 0x1b5)i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHe
     i32 flags = static_cast<i32>(hdr->flags);
     i32 width = hdr->width;
     i32 height = hdr->height;
+    // PID: the pixel stream follows the fixed header inline - byte-forced
     u8* p = reinterpret_cast<u8*>(hdr + 1); // the pixel stream at +0x20
 
     if (!(width & 3) && m_width == width && m_height == height) {
@@ -1143,6 +1156,7 @@ RVA(0x00145b10, 0x1b5)i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHe
             if (size <= 0x300) {
                 return 0;
             }
+            // PID: the 0x300 palette trails the pixel data - byte-forced
             u8* src = reinterpret_cast<u8*>(hdr) + size - 0x300; // trailing palette
             i32 i = 0;
             do {
