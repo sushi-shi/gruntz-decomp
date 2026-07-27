@@ -48,8 +48,8 @@ public:
     // vptr @+0x00 + m_04/m_08/m_0c inherited from CLoadable; own fields from +0x10.
     // (Names merged from the wide-object family's proven readers - the ex
     // WwdEdgeA/WwdEdgeB RAII scaffolding and the flat views' +0x10..+0x64 block.)
-    i32 m_10; // +0x10  (SetPosition zeroes; plot state)
-    i32 m_14; // +0x14  (SetPosition zeroes)
+    i32 m_plotDX; // +0x10  (SetPosition zeroes; plot state)
+    i32 m_plotDY; // +0x14  (SetPosition zeroes)
     // +0x18/+0x1c: the live dirty-rect / last-drawn position (RenderDot caches the
     // drawn column/row here; the 9-dword +0x18..+0x3c block is snapshotted to +0xb8).
     i32 m_lastX; // +0x18

@@ -81,31 +81,14 @@ struct CPlaneDrawCtx {
 };
 SIZE_UNKNOWN();
 
-// The palette tail hanging off CDDrawWorkerMapSmall::m_cachedWorker (+0x64).
-// @identity-TODO: these two are the ONLY links of the cascade still unproven - the
-// cached worker is a CObject* out of the map (RemoveByValue proves that much), but
-// WHICH palette-bearing worker class it is, no caller/new-site the xref DB can reach
-// names (its only reader is the plane's ResolveColorKey). Kept as honest named
-// records rather than a fabricated identity; the RGB888 table at +0xc is what is
-// load-bearing.
-//
-// LEAD for whoever closes it (do not treat as proof): CDDrawWorkerMapSmall's own
-// methods treat every m_map1 value as a CAniRecordBase2 (DestroyAll `delete
-// ((CAniRecordBase2*)val)`, RemoveByKey's cast), and +0x64 caches a map value - so
-// the cached worker is very likely a CAniRecordBase2, whose +0x10 "owned work
-// buffer" would then BE this palette array. What is missing is a byte that ties
-// that generic work buffer to the RGB888 layout; until one turns up this stays a
-// lead, and the slot keeps the map's own element type (CObject*).
-struct CPlanePalArr {
-    u8 pad_0[0xc];
-    u8* m_rgb; // +0xc  RGB888 triples (4 bytes/entry)
-};
-SIZE_UNKNOWN();
-struct CPlanePalOwner {
-    u8 pad_0[0x10];
-    CPlanePalArr* m_palette; // +0x10
-};
-SIZE_UNKNOWN();
+// (CPlanePalOwner + CPlanePalArr DISSOLVED 2026-07-27 - the @identity-TODO closed.
+// The palette tail hanging off CDDrawWorkerMapSmall::m_cachedWorker (+0x64) is
+// CAniRecordBase2::m_buf (+0x10, a CDDPalette*) -> CDDPalette::m_cacheA (+0x0c, the
+// live 0x400-byte 256-entry PALETTEENTRY table). The recorded LEAD was right - every
+// m_map1 value is already deleted as a CAniRecordBase2 - and the byte that was
+// missing is CDDPalette's own layout: m_cacheA sits at exactly +0x0c and a
+// PALETTEENTRY is 4 bytes {R,G,B,flags}, which is precisely the [i*4+0..2] stride the
+// plane's ResolveColorKey reads. m_cachedWorker is typed CAniRecordBase2* now.)
 class CFileMemBase;
 
 extern void* operator new(u32 size);

@@ -21,7 +21,7 @@
 #include <Gruntz/ResolveNode.h>      // canonical CResolveNode (3-arg ctor @0x15b2c0)
 #include <DDrawMgr/AnimWorkerObj.h>  // AnimWorkerObj (the 0x17c worker; 3-arg ctor @0x15b300)
 #include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (ctor/dtor/Advance)
-#include <DDrawMgr/AniAdvance.h>     // CAniRenderCtx/CAniDesc/CAniBlitTrigger satellites
+#include <DDrawMgr/AniAdvance.h>     // CAniDesc/CAniBlitTrigger satellites
 #include <Gruntz/AniElement.h>       // CAniElement (the descriptor playlist full def)
 #include <Gruntz/SerialArchive.h>    // the shared CFileMemBase stream (Read/Write)
 #include <Wwd/WwdFactoryObject.h>    // CWwdFactoryObject/CDDrawRect
@@ -405,29 +405,26 @@ i32 CWwdGameObjectC::SetupFlagged(i32 a1, i32 a2, i32 a3, AnimWorkerObj* tmpl, i
     return CGameObject::Setup(a1, a2, a3, tmpl);
 }
 
-// 0x15c290: blit-param init.
+// 0x15c290: bind the cursor to the wide game object that embeds it (+0x1a0) and seed
+// the per-frame state.
 // @early-stop
 // 94.75% - structure/offsets/stores byte-exact; retail pins `src` in edx and the
 // constant `1` in eax, our cl swaps them (eax<->edx phase shift), a regalloc
 // coin-flip with no source lever (docs/patterns/zero-register-pinning.md).
 RVA(0x0015c290, 0x2f)
-void CAniAdvanceCursor::Construct(void* srcv) {
-    // role-dependent src: the owning wide object (game path) or a worker source
-    CAniElement* src = static_cast<CAniElement*>(srcv);
-    m_10 = reinterpret_cast<CAniRenderCtx*>(src);
+void CAniAdvanceCursor::Construct(CWwdGameObjectA* src) {
+    m_10 = src;
     m_28 = 1;
     m_14 = 0;
     m_scale = 1.0f;
     m_24 = 1;
-    // byte-evidenced, do not "fix" the dereference level: &ElementAt(0) is the array's
-    // STORAGE (m_pData at CAniElement+0x0c), and retail reads +0x34 off it with a single
-    // load - which is why this body sits at 94.75% with its offsets called byte-exact and
-    // only a register phase shift left. NOTE the discrepancy for whoever recovers the
-    // element type: GruntAssetLoaders' DEATH_FRAME reads the same m_records array as
-    // (i32*)GetAt(0) + 0x14/4, i.e. one dereference MORE. The two sites cannot both be
-    // right; this one is the byte-evidenced spelling - check that one against its own %.
-    m_2c = *reinterpret_cast<i32*>((reinterpret_cast<char*>((&src->m_records.ElementAt(0))) + 0x34))
-           & 0x40;
+    // retail `mov edx,[edx+0xc] / mov edx,[edx+0x34] / and edx,0x40`: src+0x0c is the
+    // CLoadable owner handle and +0x34 off THAT is CDDrawSurfaceMgr::m_flags (caps).
+    // The old spelling read the same two loads as `&src->m_records.ElementAt(0) + 0x34`
+    // on a CAniElement - same bytes, wrong model, and the flagged "the two sites cannot
+    // both be right" note against GruntAssetLoaders' DEATH_FRAME resolves in that
+    // site's favour: this one was the mis-modelled one.
+    m_2c = src->OwnerMgr()->m_flags & 0x40;
 }
 
 RVA(0x0015c2c0, 0xc)
@@ -529,101 +526,101 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
     }
 
     if (m_28 == 0) {
-        CAniRenderCtx* ctx = m_10;
+        CWwdGameObjectA* ctx = m_10;
         CAniDesc* d = m_element;
 
         // --- step the active frame sequence one step (7-way on d->m_stepMode) --------
         switch (d->m_stepMode - 1) {
             case 0: { // advance + wrap-to-first on overrun
-                CAniRenderCtx* c = m_10;
-                CDDrawWorker* seq = c->m_frameSeq;
+                CWwdGameObjectA* c = m_10;
+                CDDrawWorker* seq = c->m_sprite;
                 if (seq == 0) {
                     break;
                 }
-                i32 idx = c->m_frameCursor + 1;
-                c->m_frameCursor = idx;
-                c->m_curFrame = seq->GetFrame(idx);
-                if (c->m_curFrame == 0) {
-                    i32 first = c->m_frameSeq->m_minIndex;
-                    c->m_frameCursor = first;
-                    c->m_curFrame = c->m_frameSeq->GetFrame(first);
+                i32 idx = c->m_190 + 1;
+                c->m_190 = idx;
+                c->m_layer = seq->GetFrame(idx);
+                if (c->m_layer == 0) {
+                    i32 first = c->m_sprite->m_minIndex;
+                    c->m_190 = first;
+                    c->m_layer = c->m_sprite->GetFrame(first);
                 }
                 break;
             }
             case 1: { // wrap-to-last when at first, else step back
-                CAniRenderCtx* c = m_10;
-                CDDrawWorker* seq = c->m_frameSeq;
+                CWwdGameObjectA* c = m_10;
+                CDDrawWorker* seq = c->m_sprite;
                 if (seq == 0) {
                     break;
                 }
-                i32 idx = c->m_frameCursor;
+                i32 idx = c->m_190;
                 if (idx == seq->m_minIndex) {
-                    c->m_frameCursor = seq->m_maxIndex;
+                    c->m_190 = seq->m_maxIndex;
                 } else {
-                    c->m_frameCursor = idx - 1;
+                    c->m_190 = idx - 1;
                 }
-                c->m_curFrame = seq->GetFrame(c->m_frameCursor);
+                c->m_layer = seq->GetFrame(c->m_190);
                 break;
             }
             case 2: { // jump to an explicit frame (d->m_param)
-                CAniRenderCtx* c = m_10;
+                CWwdGameObjectA* c = m_10;
                 i32 frame = d->m_param;
-                CDDrawWorker* seq = c->m_frameSeq;
+                CDDrawWorker* seq = c->m_sprite;
                 if (seq == 0) {
                     break;
                 }
-                c->m_curFrame = seq->GetFrame(frame);
-                c->m_frameCursor = frame;
+                c->m_layer = seq->GetFrame(frame);
+                c->m_190 = frame;
                 break;
             }
             case 3: { // reset to first
-                CAniRenderCtx* c = m_10;
-                CDDrawWorker* seq = c->m_frameSeq;
+                CWwdGameObjectA* c = m_10;
+                CDDrawWorker* seq = c->m_sprite;
                 if (seq == 0) {
                     break;
                 }
                 i32 first = seq->m_minIndex;
-                c->m_frameCursor = first;
-                c->m_curFrame = seq->GetFrame(first);
+                c->m_190 = first;
+                c->m_layer = seq->GetFrame(first);
                 break;
             }
             case 4: { // reset to last
-                CAniRenderCtx* c = m_10;
-                CDDrawWorker* seq = c->m_frameSeq;
+                CWwdGameObjectA* c = m_10;
+                CDDrawWorker* seq = c->m_sprite;
                 if (seq == 0) {
                     break;
                 }
                 i32 last = seq->m_maxIndex;
-                c->m_frameCursor = last;
-                c->m_curFrame = seq->GetFrame(last);
+                c->m_190 = last;
+                c->m_layer = seq->GetFrame(last);
                 break;
             }
             case 5: { // advance by d->m_param, clamp-last on overrun
-                CAniRenderCtx* c = m_10;
+                CWwdGameObjectA* c = m_10;
                 i32 step = d->m_param;
-                CDDrawWorker* seq = c->m_frameSeq;
+                CDDrawWorker* seq = c->m_sprite;
                 if (seq == 0) {
                     break;
                 }
-                i32 idx = c->m_frameCursor + step;
-                c->m_frameCursor = idx;
-                c->m_curFrame = seq->GetFrame(idx);
-                if (c->m_curFrame == 0) {
+                i32 idx = c->m_190 + step;
+                c->m_190 = idx;
+                c->m_layer = seq->GetFrame(idx);
+                if (c->m_layer == 0) {
                     c->ClampLast();
                 }
                 break;
             }
             case 6: { // retreat by d->m_param, clamp-first on underrun
-                CAniRenderCtx* c = m_10;
+                CWwdGameObjectA* c = m_10;
                 i32 step = d->m_param;
-                CDDrawWorker* seq = c->m_frameSeq;
+                CDDrawWorker* seq = c->m_sprite;
                 if (seq == 0) {
                     break;
                 }
-                i32 idx = c->m_frameCursor - step;
-                c->m_frameCursor = idx;
-                c->m_curFrame = seq->GetFrame(idx);
-                if (c->m_curFrame == 0) {
+                i32 idx = c->m_190 - step;
+                c->m_190 = idx;
+                c->m_layer = seq->GetFrame(idx);
+                if (c->m_layer == 0) {
                     c->ClampFirst();
                 }
                 break;
@@ -634,18 +631,18 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 
         // --- apply the per-frame position delta (3-way on d->m_posMode) ------------
         ctx = m_10;
-        ctx->m_posModeX = 0;
-        ctx->m_posModeY = 0;
+        ctx->m_plotDX = 0;
+        ctx->m_plotDY = 0;
         d = m_element;
         switch (d->m_posMode) {
             case 1:
-                m_10->m_posModeX = d->m_posDX;
-                m_10->m_posModeY = d->m_posDY;
+                m_10->m_plotDX = d->m_posDX;
+                m_10->m_plotDY = d->m_posDY;
                 break;
             case 2: {
-                CAniRenderCtx* c = m_10;
+                CWwdGameObjectA* c = m_10;
                 i32 x = c->m_screenX;
-                if (c->m_byteFlags & 0x2) {
+                if (c->m_stateFlags & 0x2) {
                     i32 dy = d->m_posDY;
                     i32 dx = d->m_posDX;
                     c->m_screenX = x - dx;
@@ -667,10 +664,10 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         }
 
         // --- per-frame draw/sound trigger -------------------------------------
-        CAniRenderCtx* c = m_10;
+        CWwdGameObjectA* c = m_10;
         i32 fire = 1;
         if (!(c->m_flags & 0x2000000) && !(m_element->m_flags & 0x8)) {
-            if (c->m_anchor == -1) {
+            if (c->m_dirtyArmed == -1) {
                 fire = 0;
             }
         }
@@ -763,8 +760,8 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case 1: { // advance only when the cursor's frame reached the descriptor param
-                CAniRenderCtx* c2 = m_10;
-                if (c2->m_frameCursor == m_element->m_param) {
+                CWwdGameObjectA* c2 = m_10;
+                if (c2->m_190 == m_element->m_param) {
                     if (modeWord != 9) {
                         CAniElement* a = m_14;
                         i32 j = m_index + 1;
@@ -783,25 +780,25 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case 2: { // advance only when the cursor reached the seq low frame
-                CAniRenderCtx* c2 = m_10;
-                CDDrawWorker* seq = c2->m_frameSeq;
-                if (c2->m_frameCursor == seq->m_minIndex) {
+                CWwdGameObjectA* c2 = m_10;
+                CDDrawWorker* seq = c2->m_sprite;
+                if (c2->m_190 == seq->m_minIndex) {
                     goto loop_restart;
                 }
                 break;
             }
             case 3: { // advance only when the cursor reached the seq high frame
-                CAniRenderCtx* c2 = m_10;
-                CDDrawWorker* seq = c2->m_frameSeq;
-                if (c2->m_frameCursor == seq->m_maxIndex) {
+                CWwdGameObjectA* c2 = m_10;
+                CDDrawWorker* seq = c2->m_sprite;
+                if (c2->m_190 == seq->m_maxIndex) {
                     goto loop_restart;
                 }
                 break;
             }
             case 4: { // advance one past the seq low frame
-                CAniRenderCtx* c2 = m_10;
-                CDDrawWorker* seq = c2->m_frameSeq;
-                if (c2->m_frameCursor == seq->m_minIndex + 1) {
+                CWwdGameObjectA* c2 = m_10;
+                CDDrawWorker* seq = c2->m_sprite;
+                if (c2->m_190 == seq->m_minIndex + 1) {
                     goto loop_restart;
                 }
                 break;
@@ -829,9 +826,9 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             case 5: { // advance only when the cursor reached one before the high frame
-                CAniRenderCtx* c2 = m_10;
-                CDDrawWorker* seq = c2->m_frameSeq;
-                if (c2->m_frameCursor == seq->m_maxIndex - 1) {
+                CWwdGameObjectA* c2 = m_10;
+                CDDrawWorker* seq = c2->m_sprite;
+                if (c2->m_190 == seq->m_maxIndex - 1) {
                     if (modeWord != 9) {
                         CAniElement* a = m_14;
                         i32 j = m_index + 1;
@@ -1026,7 +1023,7 @@ CImage* CDDrawWorker::GetFrame(i32 n) {
     return 0;
 }
 
-// CAniRenderCtx::ClampFirst (0x15cc50) / ClampLast (0x15cc90): clamp the +0x190
+// CWwdGameObjectA::ClampFirst (0x15cc50) / ClampLast (0x15cc90): clamp the +0x190
 // frame cursor to the active sequence's low/high frame and re-resolve +0x198
 // through the same bounds-checked fetch GetFrame (0x15cc30) inlines.
 // @early-stop
@@ -1035,33 +1032,33 @@ CImage* CDDrawWorker::GetFrame(i32 n) {
 // esi-pop epilogue inline per exit; cl hoists push esi to the prologue and
 // tail-merges the exits. Body byte-exact; not source-steerable.
 RVA(0x0015cc50, 0x38)
-void CAniRenderCtx::ClampFirst() {
-    CDDrawWorker* seq = m_frameSeq;
+void CWwdGameObjectA::ClampFirst() {
+    CDDrawWorker* seq = m_sprite;
     if (seq == 0) {
         return;
     }
     i32 n = seq->m_minIndex;
-    m_frameCursor = n;
+    m_190 = n;
     if (n >= seq->m_minIndex && n <= seq->m_maxIndex) {
-        m_curFrame = static_cast<CImage*>(seq->m_items.GetAt(n));
+        m_layer = static_cast<CImage*>(seq->m_items.GetAt(n));
     } else {
-        m_curFrame = 0;
+        m_layer = 0;
     }
 }
 
 // @early-stop
 // shrink-wrapped-callee-save-push wall (~62%); twin of ClampFirst above.
 RVA(0x0015cc90, 0x38)
-void CAniRenderCtx::ClampLast() {
-    CDDrawWorker* seq = m_frameSeq;
+void CWwdGameObjectA::ClampLast() {
+    CDDrawWorker* seq = m_sprite;
     if (seq == 0) {
         return;
     }
     i32 n = seq->m_maxIndex;
-    m_frameCursor = n;
+    m_190 = n;
     if (n >= seq->m_minIndex && n <= seq->m_maxIndex) {
-        m_curFrame = static_cast<CImage*>(seq->m_items.GetAt(n));
+        m_layer = static_cast<CImage*>(seq->m_items.GetAt(n));
     } else {
-        m_curFrame = 0;
+        m_layer = 0;
     }
 }

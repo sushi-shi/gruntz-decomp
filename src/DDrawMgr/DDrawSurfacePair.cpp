@@ -1,7 +1,6 @@
 #include <rva.h>
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDrawFrameNode.h> // the CDDrawWorkerObj element-array view
 #include <DDrawMgr/DDSurface.h> // the held CDDSurface (m_surface) full def (Lock/BltFast/IsValid/m_8/m_pitch/m_b0)
 #include <Gruntz/ParseSource.h> // CParseSource (LoadImage's byte-reader arg: GetEntryTag/BeginParse/EndParse)
 #include <Win32.h>              // windows.h base types (ddraw.h needs them first)
@@ -728,8 +727,8 @@ i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, i32 bpp) {
 RVA(0x00164790, 0x41)
 i32 CResolveNode::SetPosition(i32 x, i32 y) {
     m_screenX = x;
-    m_10 = 0;
-    m_14 = 0;
+    m_plotDX = 0;
+    m_plotDY = 0;
     m_stateFlags = 0;
     m_44 = 0;
     m_drawFillArg = 0;
@@ -1105,7 +1104,8 @@ void CDDrawWorkerMapSmall::ResetSlots() {
 
 RVA(0x00165c40, 0xe7)
 i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
-    if (m_cachedWorker == obj) {
+    CAniRecordBase2* w = static_cast<CAniRecordBase2*>(obj);
+    if (m_cachedWorker == w) {
         m_cachedWorker = 0;
     }
     CObject* val = 0;
@@ -1115,8 +1115,8 @@ i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
         m_map1.GetNextAssoc(pos, key, val);
         if (val == obj) {
             m_map1.RemoveKey(key);
-            if (obj != 0) {
-                delete (static_cast<CAniRecordBase2*>(obj));
+            if (w != 0) {
+                delete w;
             }
             return 1;
         }
@@ -1137,7 +1137,7 @@ i32 CDDrawWorkerMapSmall::RemoveByKey(const char* key) {
         return 0;
     }
     CAniRecordBase2* w = static_cast<CAniRecordBase2*>(val);
-    if (m_cachedWorker == val) {
+    if (m_cachedWorker == w) {
         m_cachedWorker = 0;
     }
     m_map1.RemoveKey(key);
@@ -1260,10 +1260,15 @@ RVA(0x00166040, 0x66)
 i32 CDDrawWorkerB::Helper(i32 key, i32 idx) {
     CObject* obj = 0;
     OwnerMgr()->m_imageRegistry->m_10map.Lookup(reinterpret_cast<const char*>(key), obj);
-    CDDrawWorkerObj* p = reinterpret_cast<CDDrawWorkerObj*>(obj);
+    // the map is CDDrawWorkerRegistry::m_10map, whose ONLY writer is FindOrCreateWorker
+    // (`m_10map[key] = static_cast<CObject*>(worker)` on a MakeWorker result), so the
+    // element class is CDDrawWorker - the ex-CDDrawWorkerObj view was it with pads:
+    // its m_14 element array is m_items.m_pData (CObArray at +0x10) and its m_64/m_68
+    // are m_minIndex/m_maxIndex (MakeWorker seeds exactly those two).
+    CDDrawWorker* p = static_cast<CDDrawWorker*>(obj);
     i32 v;
-    if (p != 0 && idx >= p->m_64 && idx <= p->m_68) {
-        v = reinterpret_cast<i32>(p->m_14[idx]);
+    if (p != 0 && idx >= p->m_minIndex && idx <= p->m_maxIndex) {
+        v = reinterpret_cast<i32>(p->m_items.GetAt(idx));
     } else {
         v = 0;
     }

@@ -4,32 +4,21 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/Sprite.h> // CDDrawWorker - the active frame sequence (m_frameSeq)
+#include <Gruntz/Sprite.h> // CDDrawWorker - the bound frame sequence (CWwdGameObjectA::m_sprite)
 
 class DSoundCloneInst; // the pooled cue player (ex DSoundCloneInst; Dsndmgr/DirectSoundMgr.h)
 
-class CAniRenderCtx {
-public:
-    void ClampFirst();  // 0x15cc50  __thiscall on the context (I obj)
-    void ClampLast();   // 0x15cc90  __thiscall on the context (I obj)
-    char m_pad00[0x08]; // +0x00..0x07
-    i32 m_flags;        // +0x08  flags (bit 0x2000000 tested)
-    char m_pad0c[0x10 - 0x0c];
-    i32 m_posModeX; // +0x10  pos-mode X
-    i32 m_posModeY; // +0x14  pos-mode Y
-    char m_pad18[0x38 - 0x18];
-    i32 m_anchor;              // +0x38  pos anchor (compared to -1)
-    char m_pad3c[0x40 - 0x3c]; // +0x3c
-    char m_byteFlags;          // +0x40  byte flags (bit 0x2 tested)
-    char m_pad41[0x5c - 0x41];
-    i32 m_screenX;              // +0x5c  screen X
-    i32 m_screenY;              // +0x60  screen Y
-    char m_pad64[0x190 - 0x64]; // +0x64..0x18f
-    i32 m_frameCursor;          // +0x190  sequence frame cursor
-    CDDrawWorker* m_frameSeq;   // +0x194  active frame sequence
-    CImage* m_curFrame;         // +0x198  the resolved current frame
-};
-SIZE_UNKNOWN();
+// (CAniRenderCtx DISSOLVED 2026-07-27: it was CWwdGameObjectA read through pads - the
+// owner CAniAdvanceCursor::m_10 points back at. PROVEN by the cursor's only binder,
+// CWwdGameObjectA::Setup @0x15b940, which does `push esi / lea ecx,[esi+0x1a0] / call
+// Construct` - it passes its own `this`. Every field matched an existing member:
+//   +0x08 m_flags      -> CLoadable::m_flags
+//   +0x10/+0x14        -> CResolveNode::m_10 / m_14 (the per-frame plot deltas)
+//   +0x38 m_anchor     -> CResolveNode::m_dirtyArmed (the -1 "disarmed" sentinel it tests)
+//   +0x40 m_byteFlags  -> CResolveNode::m_stateFlags
+//   +0x5c/+0x60        -> CResolveNode::m_screenX / m_screenY (same names already)
+//   +0x190/+0x194/+0x198 -> CWwdGameObjectA::m_190 / m_sprite / m_layer
+// Its ClampFirst/ClampLast (0x15cc50/0x15cc90) are CWwdGameObjectA methods now.)
 
 class CAniDesc : public CObject { // the CObArray-stored frame record (vptr from CObject)
 public:

@@ -230,6 +230,12 @@ public:
     i32 LookupAnimSprite(const char* name);                             // 0x150610
     void ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault); // 0x58b60
     i32 Test(); // 0x1509c0  on-screen visibility cull (the m_198 extent)
+    // Clamp the +0x190 frame cursor to the bound sprite's low/high frame and re-resolve
+    // +0x198 through the same bounds-checked fetch GetFrame (0x15cc30) inlines. (Ex
+    // CAniRenderCtx::ClampFirst/ClampLast - that view WAS this class; bodies in
+    // WwdFactoryObject.cpp.)
+    void ClampFirst(); // 0x15cc50
+    void ClampLast();  // 0x15cc90
     i32 SerializeSpriteName(
         CFileMemBase* a1
     );                                // 0x150c30  (A-tail frame-cache reader; Play mode-7 route)

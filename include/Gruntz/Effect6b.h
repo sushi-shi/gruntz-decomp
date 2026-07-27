@@ -12,7 +12,11 @@ struct CEffect6b {
     CWwdGameObjectA* m_player; // +0x04  == CGrunt::m_154 (the entrance-anim object)
     char _08[0xc - 8];         // +0x08  == CGrunt::m_158 (AnimWorkerObj*)
     CAniElement* m_prevDesc;   // +0x0c  == CGrunt::m_prevEntranceDesc
-    void Apply(CDDrawWorker * a, i32 b);  // 0x6b2e0
+    // `a` is the ANI-catalog entry, a CAniElement: CAniAdvanceCursor::Setup @0x15c2d0
+    // (what this forwards it to) reads m_records.m_pData/.m_nSize (+0x0c/+0x10), m_name
+    // (+0x1c) and m_scale (+0x20) off it, and CDDrawSubMgrLeaf's catalog is built by
+    // CreateAniEntry, whose retail mangled name returns PAVCAniElement@@.
+    void Apply(CAniElement* a, i32 b); // 0x6b2e0
 };
 SIZE_UNKNOWN();
 

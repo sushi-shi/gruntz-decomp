@@ -37,14 +37,16 @@ public:
     CMapStringToOb m_map2; // +0x2c  worker-by-key map 2 (0x2c..0x47)
     CMapStringToOb m_map3; // +0x48  worker-by-key map 3 (0x48..0x63)
     // +0x64  the cached/current worker out of m_map1. NOT the "entry counter" this
-    // was typed as (i32 m_64): RemoveByValue @0x165c40 compares it against the
-    // CObject* worker being removed and nulls it on a hit, and the teardown nulls it
-    // too - a counter is neither compared to a worker pointer nor dereferenced.
-    // The plane host's ResolveColorKey reads THIS slot's +0x10 palette -> +0x0c RGB888
-    // triples, so the pointee is a palette-bearing worker; its concrete class is the
-    // one link of that chain still unproven (@identity-TODO, see <Wwd/WwdFile.h>), so
-    // the slot keeps the map's element type and that one reader casts.
-    CObject* m_cachedWorker;
+    // was typed as (i32 m_64): RemoveByValue @0x165c40 compares it against the worker
+    // being removed and nulls it on a hit, and the teardown nulls it too - a counter is
+    // neither compared to a worker pointer nor dereferenced.
+    // IDENTITY CLOSED 2026-07-27: it is a CAniRecordBase2, the class every m_map1 value
+    // already is here (DestroyAll/RemoveByValue/RemoveByKey all `delete` values as one).
+    // The plane host's ResolveColorKey walks +0x10 -> +0x0c and indexes it [i*4+0..2]:
+    // CAniRecordBase2::m_buf IS at +0x10 (a CDDPalette*), and CDDPalette::m_cacheA IS at
+    // +0x0c - a 0x400-byte 256-entry PALETTEENTRY table, i.e. R/G/B at stride 4. Both
+    // links match, so the ex-CPlanePalOwner/CPlanePalArr views are gone.
+    CAniRecordBase2* m_cachedWorker;
 
     // Non-vtable teardown/remove helpers (T obj).
     void ResetSlots();                // 0x165b90

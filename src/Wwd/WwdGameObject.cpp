@@ -819,8 +819,8 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
     ar->Write(&m_deltaY, 4);
     ar->Write(&m_17c, 4);
     ar->Write(&m_180, 4);
-    ar->Write(&m_10, 4);
-    ar->Write(&m_14, 4);
+    ar->Write(&m_plotDX, 4);
+    ar->Write(&m_plotDY, 4);
     ar->Write(&m_lastX, 0x24); // +0x18 render-state block
     ar->Write(&m_stateFlags, 4);
     ar->Write(&m_44, 4);
@@ -897,8 +897,8 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(&m_deltaY, 4);
     ar->Read(&m_17c, 4);
     ar->Read(&m_180, 4);
-    ar->Read(&m_10, 4);
-    ar->Read(&m_14, 4);
+    ar->Read(&m_plotDX, 4);
+    ar->Read(&m_plotDY, 4);
     ar->Read(&m_lastX, 0x24); // +0x18 render-state block
     ar->Read(&m_stateFlags, 4);
     ar->Read(&m_44, 4);

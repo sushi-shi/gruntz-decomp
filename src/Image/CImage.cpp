@@ -534,8 +534,8 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     }
 
     // The plain-surface path (no flip, no owned sprite): compute + clip the rect, BltFast.
-    i32 x = m_originX - m_anchorX + info->m_10 + info->m_screenX;
-    i32 y = m_originY - m_anchorY + info->m_14 + info->m_screenY;
+    i32 x = m_originX - m_anchorX + info->m_plotDX + info->m_screenX;
+    i32 y = m_originY - m_anchorY + info->m_plotDY + info->m_screenY;
     if (info->m_flags & 0x40000) {
         info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
@@ -676,8 +676,8 @@ void CImage::RenderFrameClipped(
 // operand artifacts. Code bytes otherwise byte-exact (clip + struct-copy end).
 RVA(0x001538c0, 0x257)
 void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
-    i32 x = info->m_screenX - m_originX - info->m_10 - m_anchorX;
-    i32 y = info->m_screenY - m_originY - info->m_14 - m_anchorY;
+    i32 x = info->m_screenX - m_originX - info->m_plotDX - m_anchorX;
+    i32 y = info->m_screenY - m_originY - info->m_plotDY - m_anchorY;
     if (info->m_flags & 0x40000) {
         info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
@@ -770,8 +770,8 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
 // the WrapCoord/CopyRect reloc-name artifacts.
 RVA(0x00153b20, 0x270)
 void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
-    i32 x = info->m_screenX - info->m_10 - m_anchorX - m_originX;
-    i32 y = m_originY - m_anchorY + info->m_14 + info->m_screenY;
+    i32 x = info->m_screenX - info->m_plotDX - m_anchorX - m_originX;
+    i32 y = m_originY - m_anchorY + info->m_plotDY + info->m_screenY;
     if (info->m_flags & 0x40000) {
         info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
@@ -860,8 +860,8 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
 // WrapCoord/CopyRect reloc-name artifacts.
 RVA(0x00153d90, 0x259)
 void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
-    i32 x = info->m_10 - m_anchorX + m_originX + info->m_screenX;
-    i32 y = info->m_screenY - m_originY - m_anchorY - info->m_14;
+    i32 x = info->m_plotDX - m_anchorX + m_originX + info->m_screenX;
+    i32 y = info->m_screenY - m_originY - m_anchorY - info->m_plotDY;
     if (info->m_flags & 0x40000) {
         info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
@@ -954,8 +954,8 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
 // reloc-name operand artifacts. Clip + inclusive-rect struct-copy end match.
 RVA(0x00153ff0, 0x280)
 void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
-    i32 x = info->m_screenX - m_anchorX + m_originX + info->m_10;
-    i32 y = info->m_screenY - m_anchorY + m_originY + info->m_14;
+    i32 x = info->m_screenX - m_anchorX + m_originX + info->m_plotDX;
+    i32 y = info->m_screenY - m_anchorY + m_originY + info->m_plotDY;
     if (info->m_flags & 0x40000) {
         info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
@@ -1046,8 +1046,8 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
 // all other code bytes byte-exact. %-hit accepted per structure-recovery doctrine.
 RVA(0x00154270, 0x257)
 void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
-    i32 x = info->m_screenX - m_originX - m_anchorX - info->m_10;
-    i32 y = info->m_screenY - m_originY - m_anchorY - info->m_14;
+    i32 x = info->m_screenX - m_originX - m_anchorX - info->m_plotDX;
+    i32 y = info->m_screenY - m_originY - m_anchorY - info->m_plotDY;
     if (info->m_flags & 0x40000) {
         info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
@@ -1136,8 +1136,8 @@ void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
 // End-store struct-copy matches retail.
 RVA(0x001544d0, 0x275)
 void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
-    i32 x = info->m_screenX - m_anchorX - info->m_10 - m_originX;
-    i32 y = m_originY + info->m_14 + info->m_screenY - m_anchorY;
+    i32 x = info->m_screenX - m_anchorX - info->m_plotDX - m_originX;
+    i32 y = m_originY + info->m_plotDY + info->m_screenY - m_anchorY;
     if (info->m_flags & 0x40000) {
         info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }
@@ -1225,8 +1225,8 @@ void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
 // operand artifacts. Clip + inclusive-rect struct-copy end match retail.
 RVA(0x00154750, 0x275)
 void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
-    i32 x = info->m_10 + m_originX + info->m_screenX - m_anchorX;
-    i32 y = info->m_screenY - m_originY - info->m_14 - m_anchorY;
+    i32 x = info->m_plotDX + m_originX + info->m_screenX - m_anchorX;
+    i32 y = info->m_screenY - m_originY - info->m_plotDY - m_anchorY;
     if (info->m_flags & 0x40000) {
         info->m_level->m_mainPlane->WrapCoord(&x, &y);
     }

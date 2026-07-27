@@ -34,7 +34,8 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry->m_10map
 #include <DDrawMgr/DDrawWorkerCache.h>    // m_workerCache->m_10
-#include <DDrawMgr/DDrawWorkerMapSmall.h> // m_workerMap->m_palOwner
+#include <DDrawMgr/DDrawWorkerMapSmall.h> // m_workerMap->m_cachedWorker (a CAniRecordBase2)
+#include <DDrawMgr/DirectDrawMgr.h>      // CDDPalette - the cached worker's m_buf palette
 #include <DDrawMgr/DDrawSubMgrPages.h>    // m_drawTarget->m_frontPair
 #include <DDrawMgr/DDrawSurfacePair.h>    // ->m_bpp (the ex CPlaneSurfDesc::m_format)
 #include <DDrawMgr/DDrawChildGroup.h>     // m_childGroup (the worker source)
@@ -1204,16 +1205,15 @@ void CDDrawWorkerHost::ResolveColorKey() {
         return;
     }
 
-    // The cached worker's palette chain (+0x64 -> +0x10 -> +0x0c RGB888). The cast
-    // is the flagged @identity-TODO tail of the cascade: the slot's element type is
-    // the map's CObject*, and this worker's concrete palette-bearing class is the one
-    // link no caller/new-site names (see <Wwd/WwdFile.h>).
-    CPlanePalOwner* owner =
-        reinterpret_cast<CPlanePalOwner*>(OwnerMgr()->m_workerMap->m_cachedWorker);
+    // The cached worker's palette chain (+0x64 -> +0x10 -> +0x0c). Identity closed:
+    // the cached worker is a CAniRecordBase2 (what every m_map1 value already is) and
+    // its m_buf is a CDDPalette, whose m_cacheA at +0x0c is the live 256-entry
+    // PALETTEENTRY table - hence the [i*4+0..2] R/G/B reads below.
+    CAniRecordBase2* owner = OwnerMgr()->m_workerMap->m_cachedWorker;
     if (owner == 0) {
         return;
     }
-    u8* rgb = owner->m_palette->m_rgb;
+    u8* rgb = owner->m_buf->m_cacheA;
     if (rgb == 0) {
         return;
     }
