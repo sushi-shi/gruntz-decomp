@@ -96,7 +96,9 @@ i32 CNetMgr::Init(void* a, GUID appGuid) {
     m_groupSelId = 0;
     m_playerSelId = 0;
     m_sessionSelId = 0;
-    i32* base = reinterpret_cast<i32*>(&m_appGuid); // the GUID as its 4 dwords
+    // a GUID copied dword-wise: the SDK type is 16 bytes with no dword accessor,
+    // so walking it as 4 dwords is language-forced at this one boundary.
+    i32* base = reinterpret_cast<i32*>(&m_appGuid);
     const i32* g =
         reinterpret_cast<const i32*>(&appGuid); // the app GUID's 4 dwords -> the m_4 setup block
     base[0] = g[0];
@@ -669,14 +671,14 @@ void CNetMgr::ClearSessionList() {
 RVA(0x00178cb0, 0x8b)
 CNetSessionNode* CNetMgr::CreatePlayer(void* a, const char* b, i32 c) {
     i32 out = 0;
-    i32 desc[4];
-    desc[0] = 0x10;
-    desc[1] = 0;
-    desc[2] = reinterpret_cast<i32>(a);
-    desc[3] = reinterpret_cast<i32>(b);
+    NetDPName desc;
+    desc.dwSize = sizeof(NetDPName);
+    desc.dwFlags = 0;
+    desc.lpszShortNameA = static_cast<char*>(a);
+    desc.lpszLongNameA = const_cast<char*>(b);
 
     IDirectPlay4Z* iface = m_directPlay;
-    i32 hr = iface->GetSessionDesc(&desc[0], &out, c, 0, 0);
+    i32 hr = iface->GetSessionDesc(&desc, &out, c, 0, 0);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x3bb, hr, 0);
         return 0;
