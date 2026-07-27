@@ -725,6 +725,8 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
         }
         if (n2 > 0) {
             char* d = static_cast<char*>(p2);
+            // second half of a wrapped ring copy: n1 is a RUNTIME byte length from the
+            // DirectSound lock, so stepping the 16-bit source by it is byte-forced
             i16* s = reinterpret_cast<i16*>((static_cast<char*>(src) + n1));
             char* end = static_cast<char*>(p2) + n2;
             while (d < end) {
@@ -1528,6 +1530,8 @@ i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut) {
             *sizeOut = size;
             return out->m_fmt != 0;
         }
+        // the RIFF chunk walk: advance by the chunk's own size, word-aligned up. Chunks
+        // are variable-length by definition, so this cursor is byte-forced by the format
         p = reinterpret_cast<u32*>((reinterpret_cast<char*>(p) + ((size + 1) & ~1)));
     }
     return 0;

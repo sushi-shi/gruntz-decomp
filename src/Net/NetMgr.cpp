@@ -920,6 +920,15 @@ i32 CNetMgr::GetGroupInfo(CNetSessionNode* a, void* desc, i32 flags) {
 
 RVA(0x00179240, 0x22)
 i32 CNetMgr::EnumSessions2(void* ctx) {
+    // IDENTIFIED 2026-07-27: this buffer is a DPCAPS and +0x18 is its dwLatency. Three
+    // agreeing facts - the abstract interface's slot 14 (+0x38) is IDirectPlay::GetCaps
+    // (so "Enum2" is GetCaps and "EnumSessions" is its wrapper), DPCAPS is exactly 0x28
+    // bytes with dwSize first (which is why EnumSessions memsets 0x28 then stores 0x28 at
+    // offset 0), and dwLatency lands at +0x18 in dplay.h's field order.
+    // NOT typed here on purpose: this TU cannot see <dplay.h> - DPlayImports.h documents
+    // the C2733 clash (dplay.h #defines DirectPlayEnumerate -> ...A) - and hand-rolling an
+    // SDK struct is banned by convention. So the read stays byte-forced until the import
+    // split is reworked; the names above are the finding, not a guess.
     char desc[0x28];
     i32 ok = EnumSessions(desc, ctx);
     return ok ? *reinterpret_cast<i32*>((desc + 0x18)) : 0;

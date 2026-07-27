@@ -669,11 +669,12 @@ i32 CAniAdvanceCursor::SelectCue(void* force) {
     if (mgr == 0) {
         return 0;
     }
-    char* cue = *reinterpret_cast<char**>((mgr + 0x20));
+    char* cue = *reinterpret_cast<char**>((mgr + 0x20)); // @identity-TODO (see above)
     if (force == 0) {
         if (cue == 0) {
             return 0;
         }
+        // @identity-TODO the cue's class follows from m_ownerCtx's, still unsettled
         if (*reinterpret_cast<i32*>((cue + 0x78)) == 0) {
             return 0;
         }

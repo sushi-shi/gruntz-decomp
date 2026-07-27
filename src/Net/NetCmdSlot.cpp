@@ -285,6 +285,8 @@ i32 CNetSession::Tick() {
             if (obj) {
                 NoopSync(obj);
                 rec->m_count++;
+                // remaining room in the 0x410-byte record: language-forced, a pointer
+                // difference needs both sides at the same type
                 payload += obj->Pack(payload, reinterpret_cast<char*>(rec) - payload + 0x410);
             }
         }
