@@ -683,6 +683,12 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     entry = tbl[Rng::Next2() % dd->m_randMod];
                 }
                 if (entry != 0) {
+                    // @identity-TODO CAniBlitTrigger overlays this cursor's head
+                    // exactly (pad[0..b] = the CLoadable vptr/id/flags, m_ctx = its
+                    // m_ownerCtx, m_soundPlayer = m_10), so either TriggerBlit is a
+                    // CAniAdvanceCursor member or the two are siblings on a shared
+                    // base. 0x1587f0's `this` has to be xref'd to settle it; the
+                    // cross-cast stays until then rather than guess a hierarchy.
                     (reinterpret_cast<CAniBlitTrigger*>(this))->TriggerBlit(cue, 0, 0, 0);
                 }
             } else {

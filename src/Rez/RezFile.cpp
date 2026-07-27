@@ -327,7 +327,7 @@ CRezFile::CRezFile(void* parent, char* nameSrc, CRezDir* dir) : CRezItmBase(pare
     // Enroll into the dir's closed list (new files start closed). The node param
     // is the type-erased CRezListNode view (AddHead links any node by its +4/+8
     // words, which CRezItmBase carries at the same offsets).
-    m_dir->m_closedList.AddHead(reinterpret_cast<CRezListNode*>(this));
+    m_dir->m_closedList.AddHead(this);
 }
 
 RVA_COMPGEN(0x0013cb60, 0x1e, ??_GCRezFile@@UAEPAXI@Z)
@@ -455,7 +455,7 @@ i32 CRezFile::OpenFile() {
         }
     }
     m_dir->m_closedList.Remove(this);
-    m_dir->m_openList.AddHead(reinterpret_cast<CRezListNode*>(this));
+    m_dir->m_openList.AddHead(this);
     m_dir->m_openCount++;
     return 1;
 }
@@ -474,7 +474,7 @@ i32 CRezFile::CloseFile() {
     }
     m_dir->m_openCount--;
     m_dir->m_openList.Remove(this);
-    m_dir->m_closedList.AddHead(reinterpret_cast<CRezListNode*>(this));
+    m_dir->m_closedList.AddHead(this);
     m_handle = 0;
     return ok;
 }
