@@ -24,6 +24,12 @@ u8 g_clut[0x30000]; // 0x653c9e
 // The 3-bank CLUT is a BYTE array (the bank bases and the row deltas are byte
 // offsets) whose entries are 16-bit - that pun is inherent to the table, so it
 // lives here instead of at every lookup.
+// A locked surface hands back BYTES and its pitch is in bytes, but a 16bpp row is
+// u16 pixels - the conversion is forced by the DirectDraw API, so it lives here.
+static inline u16* Row16(u8* locked, i32 row, i32 pitch) {
+    return reinterpret_cast<u16*>(locked + row * pitch);
+}
+
 static inline u16 Clut16(u32 byteOff) {
     return *reinterpret_cast<const u16*>(g_clut + byteOff);
 }
@@ -1164,7 +1170,7 @@ i32 CDDSurface::Blit168(void* srcv, void* palv, i32 mode) {
     u8* src = static_cast<u8*>(srcv);
     if (mode == 2) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
-            u16* dst = reinterpret_cast<u16*>((locked + row * this->m_pitch));
+            u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
                 u8 idx = *src++;
                 *dst++ = g_lut16[idx];
@@ -1172,7 +1178,7 @@ i32 CDDSurface::Blit168(void* srcv, void* palv, i32 mode) {
         }
     } else {
         for (i32 row = 0; row < this->m_height; row++) {
-            u16* dst = reinterpret_cast<u16*>((locked + row * this->m_pitch));
+            u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
                 u8 idx = *src++;
                 *dst++ = g_lut16[idx];
@@ -1200,7 +1206,7 @@ i32 CDDSurface::Blit1624(void* srcv, i32 mode) {
     u8* src = static_cast<u8*>(srcv);
     if (mode == 2) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
-            u16* dst = reinterpret_cast<u16*>((locked + row * this->m_pitch));
+            u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
                 u8 b = src[0];
                 u8 g = src[1];
@@ -1216,7 +1222,7 @@ i32 CDDSurface::Blit1624(void* srcv, i32 mode) {
         }
     } else {
         for (i32 row = 0; row < this->m_height; row++) {
-            u16* dst = reinterpret_cast<u16*>((locked + row * this->m_pitch));
+            u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
                 u8 b = src[0];
                 u8 g = src[1];
@@ -1303,7 +1309,7 @@ i32 CDDSurface::Blit2416(void* srcv, i32 mode) {
     u16* src = static_cast<u16*>(srcv);
     if (mode == 2) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
-            u16* dst = reinterpret_cast<u16*>((locked + row * this->m_pitch));
+            u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
                 u16 px = *src++;
                 dst[0] = static_cast<u16>(
@@ -1318,7 +1324,7 @@ i32 CDDSurface::Blit2416(void* srcv, i32 mode) {
         }
     } else {
         for (i32 row = 0; row < this->m_height; row++) {
-            u16* dst = reinterpret_cast<u16*>((locked + row * this->m_pitch));
+            u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
                 u16 px = *src++;
                 dst[0] = static_cast<u16>(
