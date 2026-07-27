@@ -34,7 +34,7 @@
 //                            the +0x10f tail object (@early-stop on the EH-region
 //                            granularity wall; see its definition below).
 //
-// The getters funnel through one __thiscall find-by-key helper (CButeTree::Find):
+// The getters funnel through one __thiscall find-by-key helper (zPTree::Find):
 // outer Find(tag) on m_tree (+0x18) yields the tag sub-tree;
 // inner Find(key) yields the typed value record { int type; void* pValue; }. Each
 // getter checks the record's type then reads the value through pValue. On any miss
@@ -889,7 +889,7 @@ RVA(0x00171aa0, 0x50)
 i32 CButeMgr::GetIntDef(const char* tag, const char* key, i32 def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeInt) {
                 return *static_cast<i32*>(rec->pValue);
@@ -904,7 +904,7 @@ RVA(0x00171af0, 0x86)
 i32 CButeMgr::GetInt(const char* tag, const char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeInt) {
                 return *static_cast<i32*>(rec->pValue);
@@ -1013,7 +1013,7 @@ RVA(0x001721e0, 0x5a)
 DWORD CButeMgr::GetDwordDef(const char* tag, const char* key, DWORD def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             switch (rec->type) {
                 case kButeDword:
@@ -1029,7 +1029,7 @@ RVA(0x00172240, 0x7d)
 DWORD CButeMgr::GetDword(const char* tag, const char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             switch (rec->type) {
                 case kButeDword:
@@ -1049,7 +1049,7 @@ RVA(0x001726c0, 0x6b)
 float CButeMgr::GetFloatDef(const char* tag, const char* key, float def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             switch (rec->type) {
                 case kButeInt:
@@ -1067,7 +1067,7 @@ RVA(0x00172730, 0x9a)
 float CButeMgr::GetFloat(const char* tag, const char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             switch (rec->type) {
                 case kButeInt:
@@ -1089,7 +1089,7 @@ RVA(0x00172bd0, 0x6c)
 double CButeMgr::GetDoubleDef(const char* tag, const char* key, double def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             switch (rec->type) {
                 case kButeInt:
@@ -1107,7 +1107,7 @@ RVA(0x00172c40, 0x9b)
 double CButeMgr::GetDouble(const char* tag, const char* key) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             switch (rec->type) {
                 case kButeInt:
@@ -1129,7 +1129,7 @@ RVA(0x00173180, 0x4e)
 CString* CButeMgr::GetStringDef(const char* tag, const char* key, CString* def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeString) {
                 return static_cast<CString*>(rec->pValue);
@@ -1158,7 +1158,7 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
 
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeString) {
                 return static_cast<char*>(rec->pValue);
@@ -1177,7 +1177,7 @@ RVA(0x00173720, 0x4e)
 CButeRef5* CButeMgr::GetRef5(const char* tag, const char* key, CButeRef5* def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeRef5) {
                 return static_cast<CButeRef5*>(rec->pValue);
@@ -1219,7 +1219,7 @@ RVA(0x00173cb0, 0x4e)
 CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key, CButeRef6* def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeRef6) {
                 return static_cast<CButeRef6*>(rec->pValue);
@@ -1261,7 +1261,7 @@ RVA(0x001741f0, 0x4e)
 CButeRef7* CButeMgr::GetRef7(const char* tag, const char* key, CButeRef7* def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeRef7) {
                 return static_cast<CButeRef7*>(rec->pValue);
@@ -1276,7 +1276,7 @@ RVA(0x00174770, 0x4e)
 CButeRef8* CButeMgr::GetRef8(const char* tag, const char* key, CButeRef8* def) {
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeRef8) {
                 return static_cast<CButeRef8*>(rec->pValue);
@@ -1297,17 +1297,16 @@ bool CButeMgr::ParseTagLine() {
     m_tagName = tok;
 
     if (!m_writeMode) {
-        CButeTree* t = Tree();
+        CBSecStream* t = Tree();
         if (t->Find(tok)) {
             ReportError(s_fmtDupTag, tok);
             return false;
         }
         CButeNode* node = new CButeNode(&ButeValueTeardown, 2);
-        // The node IS the per-tag keyed store; ParseAttributeFile reaches it as a
-        // CButeTree. The bridging cast flags the deferred CButeNode-derives-CButeTree
-        // dedup (see ButeTree.h) - once modeled, this cast vanishes too.
-        // @identity-TODO the deferred CButeNode-derives-CButeTree dedup (ButeTree.h)
-        m_pNode = reinterpret_cast<CButeTree*>(node);
+        // The node IS the per-tag keyed store; ParseAttributeFile reaches it through the
+        // shared zPTree store operations, so this is a plain upcast now (the ex
+        // CButeNode*->CButeTree* reinterpret was the sibling-class symptom).
+        m_pNode = node;
         t->Insert(tok, node);
     }
 
@@ -1719,7 +1718,7 @@ CButeRef5* CButeMgr::GetRef5(const char* tag, const char* key) {
 
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeRef5) {
                 return static_cast<CButeRef5*>(rec->pValue);
@@ -1740,7 +1739,7 @@ CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key) {
 
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeRef6) {
                 return static_cast<CButeRef6*>(rec->pValue);
@@ -1767,7 +1766,7 @@ CButeRef7* CButeMgr::GetRef7(const char* tag, const char* key) {
 
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeRef7) {
                 return static_cast<CButeRef7*>(rec->pValue);
@@ -1791,7 +1790,7 @@ CButeRef8* CButeMgr::GetRef8(const char* tag, const char* key) {
 
     void* grp = Tree()->Find(tag);
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeTree*>(grp))->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             if (rec->type == kButeRef8) {
                 return static_cast<CButeRef8*>(rec->pValue);
@@ -2052,7 +2051,9 @@ bool CButeMgr::ParseGroup() {
             return false;
         }
         if (m_writeMode) {
-            CButeTree* grp = static_cast<CButeTree*>(Tree48()->Find(m_tagName));
+            // The stored group node is the `new CButeNode` ParseTagLine inserts (its store
+            // ops come from the shared zPTree base).
+            CButeNode* grp = static_cast<CButeNode*>(Tree48()->Find(m_tagName));
             if (grp) {
                 grp->Walk(&ButeGroup_Apply, m_pText, 0);
             }
@@ -2085,7 +2086,7 @@ bool CButeMgr::Exists(const char* tag, const char* key) {
         if (key == 0) {
             return true;
         }
-        if ((static_cast<CButeTree*>(grp))->Find(key)) {
+        if ((static_cast<CButeNode*>(grp))->Find(key)) {
             return true;
         }
     }

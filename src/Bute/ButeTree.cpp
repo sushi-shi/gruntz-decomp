@@ -3,7 +3,7 @@
 #include <rva.h>
 
 RVA(0x00193340, 0x61)
-void CButeTree::Walk(
+void zPTree::Walk(
     void(__cdecl* fn)(char* key, void* value, void* ctx),
     void* ctx,
     CButeTreeNode* node

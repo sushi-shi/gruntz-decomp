@@ -55,10 +55,23 @@ public:
         ClearRecursive(0);
     }
 
+    // The crit-bit store itself. These three live on zPTree, not on CButeTree: all
+    // THREE data-less zPTree subclasses (CButeTree, CBSecStream, CButeNode) are used
+    // interchangeably as the keyed store, and declaring the operations on one of the
+    // siblings is what forced the sibling-to-sibling reinterprets in ButeMgr
+    // (CBSecStream*->CButeTree* in Tree()/Tree48(), CButeNode*->CButeTree* at
+    // m_pNode). On the base they are reached by inheritance and the casts are gone.
+    void* Find(const char* key);                // 0x16d190 (TypeKeyColl.cpp)
+    void* Insert(const char* key, void* value); // 0x16db90 (TypeKeyColl.cpp)
+    // Walk (0x193340, ButeTree.cpp) - invoke fn(key, value, ctx) for each node of the
+    // crit-bit trie, recursing left (child[0]) and iterating right (child[1]) while a
+    // child's crit-bit index still exceeds the node's; `node`==0 starts from m_root.
+    void Walk(void(__cdecl* fn)(char* key, void* value, void* ctx), void* ctx, CButeTreeNode* node);
+
     CButeTreeNode* m_root;          // +0x18  trie/store root (ctor zeroes it)
-    CButeTreeNode* m_descentCursor; // +0x1c  crit-bit descent cursor (CButeTree)
-    CButeTreeNode* m_candidateLeaf; // +0x20  candidate leaf (CButeTree)
-    i32 m_keyBitLength;             // +0x24  strlen*8 + 7 (CButeTree)
+    CButeTreeNode* m_descentCursor; // +0x1c  crit-bit descent cursor (Find/Insert)
+    CButeTreeNode* m_candidateLeaf; // +0x20  candidate leaf (Find/Insert)
+    i32 m_keyBitLength;             // +0x24  strlen*8 + 7 (Find/Insert)
     i32 m_lookupPending;            // +0x28  lookup-pending / store reset field
 };
 SIZE(0x2c); // measured: new(0x2c) -> ctor 0x16dff0

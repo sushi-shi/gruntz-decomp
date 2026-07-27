@@ -40,16 +40,13 @@ struct CButeTreeNode {
 };
 SIZE(0x14);
 
+// Find / Insert / Walk moved to the zPTree base (<Bute/PTreeNode.h>) - see the note
+// there: all three data-less zPTree subclasses use them, so declaring them on this one
+// sibling is what forced the sibling-to-sibling reinterprets. CButeTree adds no data
+// and no operations of its own; it is the g_buteTree instantiation's class.
 class CButeTree : public zPTree {
 public:
     CButeTree(void(__cdecl* teardown)(void*), i32 n);
-    void* Find(const char* key);                // 0x16d190
-    void* Insert(const char* key, void* value); // 0x16db90
-    // Walk (0x193340) - invoke fn(key, value, ctx) for each node of the crit-bit
-    // trie, recursing left (child[0]) and iterating right (child[1]) while a child's
-    // crit-bit index still exceeds the node's; `node`==0 starts from m_root.
-    void Walk(void(__cdecl* fn)(char* key, void* value, void* ctx), void* ctx, CButeTreeNode* node);
-
 };
 SIZE_UNKNOWN();
 VTBL(CButeTree, 0x001f04e0); // ??_7CButeTree@@6B@ (1-slot scalar-deleting-dtor vtable)

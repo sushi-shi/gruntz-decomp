@@ -763,7 +763,7 @@ butenode	?ButeValueTeardown@@YAXPAX@Z	99.3182	99.3182	2	f7d89fa519fa	0x174df0
 butesectionctor	??0CButeMgr@@QAE@XZ	100.0000	100.0000	1	3f94c5bb8e9f	0x170210
 butesectionctor	??_GCBSecStream@@UAEPAXI@Z	100.0000	100.0000	1	cpp:dd654627e71e	0x174d30
 butestoreclear	?ResetCopy@CButeStoreResetCopyClear@@QAEXXZ	100.0000	100.0000	1	bab6b2e3326e	0x212a0
-butetree	?Walk@CButeTree@@QAEXP6AXPADPAX1@Z1PAUCButeTreeNode@@@Z	100.0000	100.0000	1	4a2a61ea1c8a	0x193340
+butetree	?Walk@zPTree@@QAEXP6AXPADPAX1@Z1PAUCButeTreeNode@@@Z	100.0000	100.0000	1	4a2a61ea1c8a	0x193340
 bzkinddispatch	?Dispatch@CLatencyList@@QAEHH@Z	79.3103	79.3103	12	cccd94f6bc01	0x37910
 chainforward	?ChainForward14@@YAXPAVRegistryHelper@Utils@@PAVCGruntzMgr@@HHPADPAX@Z	87.6923	87.6923	2	86298f4fa40d	0x114f50
 chainforward	?ChainForward@@YAXPAVRegistryHelper@Utils@@PAVCGruntzMgr@@HHPADPAX@Z	87.6923	87.6923	2	20e331e46a62	0x114fa0
@@ -4273,11 +4273,11 @@ typekeycoll	??_GzBitVec@@UAEPAXI@Z	100.0000	100.0000	1	cpp:96e5b671ff77	0x16d2d0
 typekeycoll	?Add@CVariantSlot@@QAEPAXPAX0@Z	88.3000	88.3000	2	b1ed69c20c4b	0x16e360
 typekeycoll	?ButeTreeNopFree@@YAXPAX@Z	100.0000	100.0000	1	66fb96efb8ca	0x16ea10
 typekeycoll	?ClearRecursive@zPTree@@QAEXPAUCButeTreeNode@@@Z	100.0000	100.0000	1	a2e0fa3211f0	0x16e070
-typekeycoll	?Find@CButeTree@@QAEPAXPBD@Z	90.6038	90.6038	4	32e1ef973cce	0x16d190
+typekeycoll	?Find@zPTree@@QAEPAXPBD@Z	90.6038	90.6038	4	32e1ef973cce	0x16d190
 typekeycoll	?Find@CVariantSlot@@QAEHH@Z	99.6875	99.6875	1	abb1c5d06d28	0x16e1d0
 typekeycoll	?GetCallerRetAddr@@YAPAXXZ	100.0000	100.0000	1	9f81347cf374	0x16e0f0
 typekeycoll	?GrowTo@_zvec@@QAEPAXHH@Z	77.9734	77.9734	3	2432bfd7fb75	0x16da80
-typekeycoll	?Insert@CButeTree@@QAEPAXPBDPAX@Z	53.3866	53.3866	4	fbab8f636555	0x16db90
+typekeycoll	?Insert@zPTree@@QAEPAXPBDPAX@Z	53.3866	53.3866	4	fbab8f636555	0x16db90
 typekeycoll	?ProjTypeXfer@@YAHPAVCUserLogic@@@Z	95.0394	95.0394	2	036befa58e6c	0x16e4f0
 typekeycoll	?Set@CVariantSlot@@QAEXPAXHH@Z	99.8526	99.8526	6	38a0f575946e	0x16d850
 typekeycoll	?SetSize@zBitVec@@QAEHH@Z	85.2979	85.2979	3	baff1db59de0	0x16e100

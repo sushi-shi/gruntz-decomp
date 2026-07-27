@@ -143,14 +143,15 @@ public:
     // its own descending trylevel (reverse declaration order).
     ~CButeMgr();
 
-    // Accessor for the +0x18 store tree (CButeTree is data-less; address the store
-    // member so its `this` resolves to `this+0x18` -> `lea ecx,[esi+0x18]`).
-    CButeTree* Tree() {
-        return reinterpret_cast<CButeTree*>(&m_tree);
+    // Accessor for the +0x18 store tree. Find/Insert live on the zPTree base now, so
+    // the store member is addressed at its OWN type (`lea ecx,[esi+0x18]`, unchanged) -
+    // the ex sibling-to-sibling reinterpret to CButeTree is gone.
+    CBSecStream* Tree() {
+        return &m_tree;
     }
     // The second keyed sub-tree at +0x48 (ParseGroup reaches it).
-    CButeTree* Tree48() {
-        return reinterpret_cast<CButeTree*>(&m_tree48);
+    CBSecStream* Tree48() {
+        return &m_tree48;
     }
 
     i32 m_streamBase;             // +0x00  stream base offset (NextChar's `- m_00`)
@@ -163,7 +164,11 @@ public:
     ErrCallback m_errCallback;    // +0x14  optional error-callback fn-ptr
     CBSecStream m_tree;           // +0x18  the keyed store root (0x2c bytes; the ctor's
                                   //         0x1f0510 stamps prove the concrete type)
-    CButeTree* m_pNode;           // +0x44  active store node (a CButeNode used as a keyed tree)
+    // +0x44 the active store node. Declared at the zPTree base: ParseTagLine stores a
+    // `new CButeNode` here and the getters use it as a keyed store, which only works
+    // because the store operations are the BASE's (they were on CButeTree, forcing a
+    // CButeNode* -> CButeTree* sibling reinterpret).
+    zPTree* m_pNode;
     CBSecStream m_tree48;         // +0x48  second store sub-tree
     CBSecStream m_tree74;         // +0x74  third store sub-tree
     istream* m_stream;            // +0xa0  input source stream: a real CRT istream* (the

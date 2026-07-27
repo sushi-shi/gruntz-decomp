@@ -113,7 +113,7 @@ i32 g_recCount23;
 // couple of member reloads. Not source-steerable (tried slot-form, node-reuse,
 // mask-local, name-hoist). See docs/patterns/zero-register-pinning.md. Final sweep.
 RVA(0x0016d190, 0x101)
-void* CButeTree::Find(const char* key) {
+void* zPTree::Find(const char* key) {
     if (key == 0) {
         void* name = g_projActName;
         g_retAddrBreadcrumb = GetCallerRetAddr();
@@ -541,7 +541,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
 // on a body this size. Complete + correct logic; deferred to the final sweep.
 // docs/patterns/zero-register-pinning.md, const-materialize-into-reg-vs-immediate.md.
 RVA(0x0016db90, 0x206)
-void* CButeTree::Insert(const char* key, void* value) {
+void* zPTree::Insert(const char* key, void* value) {
     if (m_lookupPending == 0) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, const_cast<char*>("No prior lookup"), 0x16);
