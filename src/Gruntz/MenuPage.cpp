@@ -87,12 +87,12 @@ i32 CMenuPage::ResolveSubPage(const char* key) {
 }
 
 RVA(0x00183430, 0x24)
-void* CMenuPage::Append(CMenuItem* item) {
+i32 CMenuPage::Append(CMenuItem* item) {
     if (!item) {
         return 0;
     }
     item->m_listPos = m_items.AddTail(item);
-    return reinterpret_cast<void*>(1);
+    return 1;
 }
 
 RVA(0x00183990, 0x38)

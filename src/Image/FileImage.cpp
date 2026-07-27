@@ -135,7 +135,7 @@ i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode
 }
 
 RVA(0x00143fc0, 0x142)
-void* CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
+i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
     BITMAPINFOHEADER* ih = reinterpret_cast<BITMAPINFOHEADER*>(
         static_cast<char*>(buf) + sizeof(BITMAPFILEHEADER)
     );
@@ -177,10 +177,10 @@ void* CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
                 if (!Blit(pixels, bitcount, palette, 2)) {
                     return 0;
                 }
-                return reinterpret_cast<void*>(1);
+                return 1;
             }
             if (BlitDirect(pixels, 2)) {
-                return reinterpret_cast<void*>(1);
+                return 1;
             }
         }
     }
@@ -188,7 +188,7 @@ void* CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
 }
 
 RVA(0x00144110, 0x156)
-void* CDDSurface::LoadBmp(CDDrawPtrCollections* pal, char* path) {
+i32 CDDSurface::LoadBmp(CDDrawPtrCollections* pal, char* path) {
     CFile file;
 
     if (!file.Open(path, 0, 0)) {
@@ -210,7 +210,7 @@ void* CDDSurface::LoadBmp(CDDrawPtrCollections* pal, char* path) {
         return 0;
     }
 
-    void* result = DecodeBmp(pal, buf, len);
+    i32 result = DecodeBmp(pal, buf, len);
     operator delete(buf);
     return result;
 }
@@ -696,7 +696,7 @@ i32 CDDSurface::LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode)
 }
 
 RVA(0x00144ee0, 0x225)
-void* CDDSurface::DecodePcx(CDDrawPtrCollections* pal, PcxHeader* hdr, u32 size) {
+i32 CDDSurface::DecodePcx(CDDrawPtrCollections* pal, PcxHeader* hdr, u32 size) {
     if (hdr != 0) {
         i32 width = hdr->m_xMax - hdr->m_xMin + 1;
         i32 height = hdr->m_yMax - hdr->m_yMin + 1;
@@ -777,7 +777,7 @@ void* CDDSurface::DecodePcx(CDDrawPtrCollections* pal, PcxHeader* hdr, u32 size)
                 if (decoded) {
                     operator delete(decoded);
                 }
-                return reinterpret_cast<void*>(1);
+                return 1;
             }
         }
     }
@@ -785,7 +785,7 @@ void* CDDSurface::DecodePcx(CDDrawPtrCollections* pal, PcxHeader* hdr, u32 size)
 }
 
 RVA(0x00145110, 0x156)
-void* CDDSurface::LoadPcx(CDDrawPtrCollections* pal, char* path) {
+i32 CDDSurface::LoadPcx(CDDrawPtrCollections* pal, char* path) {
     CFile file;
 
     if (!file.Open(path, 0, 0)) {
@@ -807,7 +807,7 @@ void* CDDSurface::LoadPcx(CDDrawPtrCollections* pal, char* path) {
         return 0;
     }
 
-    void* result = DecodePcx(pal, static_cast<PcxHeader*>(buf), len);
+    i32 result = DecodePcx(pal, static_cast<PcxHeader*>(buf), len);
     operator delete(buf);
     return result;
 }
@@ -1121,7 +1121,7 @@ i32 CDDSurface::DecodePcxEx(CDDrawPtrCollections* pal, char* path, void* a3, voi
 }
 
 RVA(0x00145b10, 0x1b5)
-void* CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, void* surf2) {
+i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, void* surf2) {
     i32 flags = static_cast<i32>(hdr->flags);
     i32 width = hdr->width;
     i32 height = hdr->height;
@@ -1190,13 +1190,13 @@ void* CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size,
         if (flags & PID_TRANSPARENCY) {
             FillPalette(reinterpret_cast<u32>(surf2));
         }
-        return reinterpret_cast<void*>(1);
+        return 1;
     }
     return 0;
 }
 
 RVA(0x00145cd0, 0x130)
-void* CDDSurface::LoadPid(CDDrawPtrCollections* pal, char* path, void* a3) {
+i32 CDDSurface::LoadPid(CDDrawPtrCollections* pal, char* path, void* a3) {
     CFile file;
 
     if (!file.Open(path, 0, 0)) {
@@ -1214,7 +1214,7 @@ void* CDDSurface::LoadPid(CDDrawPtrCollections* pal, char* path, void* a3) {
         return 0;
     }
 
-    void* result = DecodePid(pal, static_cast<PidHeader*>(buf), len, a3);
+    i32 result = DecodePid(pal, static_cast<PidHeader*>(buf), len, a3);
     operator delete(buf);
     return result;
 }

@@ -58,7 +58,7 @@ public:
     void InitDefaults();                 // 0x1833a0  Clear + zero scalars
     void Clear();                        // 0x1833c0  free child items + RemoveAll
     i32 ResolveSubPage(const char* key); // 0x1833f0  catalog Lookup -> cache m_subPage
-    void* Append(CMenuItem* item);       // 0x183430  AddTail(item) -> item->m_2c
+    i32 Append(CMenuItem* item);       // 0x183430  AddTail(item) -> item->m_2c
     // 0x183460 (ret 0x14 = 5 args, __thiscall): alloc + construct a CMenuItem,
     // Init(this, a0..a4), append. Semantic sig (binary-proven: BuildMainMenuTree's
     // pushes are $SG string relocs; Init routes label -> m_name, spriteKey -> the

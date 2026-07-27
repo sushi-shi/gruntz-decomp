@@ -157,59 +157,59 @@ i32 CAniRecordView::GetSize() {
 RVA_COMPGEN(0x00168e70, 0x27, ?GetAt@CStringArray@@QBE?AVCString@@H@Z)
 
 RVA(0x00168ea0, 0x40)
-void* CAniRecordBase2::AllocBufMakeB2(void* data, i32 flag) {
+i32 CAniRecordBase2::AllocBufMakeB2(void* data, i32 flag) {
     CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB2(data, 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
-        return static_cast<void*>(0); // tail returns 1 only on the success path below
+        return 0;
     }
     if (flag & 0x1) {
         m_08 |= 0x1;
         buf->CaptureSystemPalette();
     }
-    return reinterpret_cast<void*>(1);
+    return 1;
 }
 
 RVA(0x00168ee0, 0x40)
-void* CAniRecordBase2::AllocBufMakeB(void* data, i32 flag) {
+i32 CAniRecordBase2::AllocBufMakeB(void* data, i32 flag) {
     CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB(data, 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
-        return static_cast<void*>(0);
+        return 0;
     }
     if (flag & 0x1) {
         m_08 |= 0x1;
         buf->CaptureSystemPalette();
     }
-    return reinterpret_cast<void*>(1);
+    return 1;
 }
 
 RVA(0x00168f20, 0x40)
-void* CAniRecordBase2::AllocBufCreate(i32 handle, i32 flag) {
+i32 CAniRecordBase2::AllocBufCreate(i32 handle, i32 flag) {
     CDDPalette* buf = OwnerMgr()->m_ptrColl->Create(handle, 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
-        return static_cast<void*>(0);
+        return 0;
     }
     if (flag & 0x1) {
         m_08 |= 0x1;
         buf->CaptureSystemPalette();
     }
-    return reinterpret_cast<void*>(1);
+    return 1;
 }
 
 RVA(0x00168f60, 0x45)
-void* CAniRecordBase2::AllocBufMakeB3(void* data, i32 size, i32 flag) {
+i32 CAniRecordBase2::AllocBufMakeB3(void* data, i32 size, i32 flag) {
     CDDPalette* buf = OwnerMgr()->m_ptrColl->MakeB3(data, size, 0x44);
     m_buf = reinterpret_cast<i32>(buf);
     if (buf == 0) {
-        return static_cast<void*>(0);
+        return 0;
     }
     if (flag & 0x1) {
         m_08 |= 0x1;
         buf->CaptureSystemPalette();
     }
-    return reinterpret_cast<void*>(1);
+    return 1;
 }
 
 RVA(0x00168fb0, 0x1f)
