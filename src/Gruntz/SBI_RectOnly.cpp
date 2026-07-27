@@ -1748,11 +1748,10 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
         m_tabLists[t].RemoveAll();
     }
     if (keepHost) {
-        CSbiResetHost* h = reinterpret_cast<CSbiResetHost*>(m_barSprite);
-        if (h) {
-            h->m_40 |= 1;
-            h = reinterpret_cast<CSbiResetHost*>(m_barSprite);
-            h->m_8 |= 0x10000;
+        if (m_barSprite) {
+            // +0x40 / +0x08 are named in the sprite's own base chain
+            m_barSprite->m_stateFlags |= 1;
+            m_barSprite->m_flags |= 0x10000;
         }
     }
     m_tabSprite0 = 0;
@@ -2457,21 +2456,22 @@ i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
 // reaches append via an extra jmp. Not source-steerable; deferred to the final sweep.
 RVA(0x00108410, 0x8e)
 i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
-    CSbiFreeNode* head = reinterpret_cast<CSbiFreeNode*>(g_coordPool.m_freeHead);
-    CSbiFreeNode* node = 0;
-    if (head->m_0 != 0) {
-        node = reinterpret_cast<CSbiFreeNode*>(&head->m_4);
-        node->m_0 = a;
-        node->m_4 = b;
+    CoordPoolNode* head = g_coordPool.m_freeHead;
+    Coord* node = 0;
+    if (head->m_next != 0) {
+        node = &head->m_coord;
+        node->m_x = a;
+        node->m_y = b;
         g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
     }
     i32 n = m_ptrPool.GetSize();
     i32 i = 0;
     if (n > 0) {
-        CSbiFreeNode** t = reinterpret_cast<CSbiFreeNode**>(m_ptrPool.GetData());
+        // CPtrArray hands out void** - the element type is API-forced at this one seam
+        Coord** t = reinterpret_cast<Coord**>(m_ptrPool.GetData());
         do {
-            CSbiFreeNode* e = *t;
-            if (e != 0 && b < e->m_4) {
+            Coord* e = *t;
+            if (e != 0 && b < e->m_y) {
                 m_ptrPool.InsertAt(i, node, 1);
                 return 1;
             }

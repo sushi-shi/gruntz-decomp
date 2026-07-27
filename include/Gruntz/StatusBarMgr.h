@@ -430,17 +430,13 @@ SIZE(0x630);
 // CLASSID_SERIALREF - byte-proven as CWwdGameObjectA's own class id
 // (slot 8 @0x15b760: mov eax,5). Deserialize consults it directly.)
 
-struct CSbiResetHost {
-    char m_pad0[0x8];
-    i32 m_8; // +0x08  status flags (|= 0x10000)
-    char m_padc[0x40 - 0xc];
-    i32 m_40; // +0x40  control flags (|= 1)
-};
-SIZE_UNKNOWN();
+// CSbiResetHost DISSOLVED 2026-07-27: it was a pad-struct over m_barSprite (a
+// CWwdGameObjectA), and both fields are already named in its own base chain -
+// +0x08 is CLoadable::m_flags, +0x40 is CResolveNode::m_stateFlags.
 
-struct CSbiFreeNode {
-    i32 m_0, m_4;
-};
+// CSbiFreeNode DISSOLVED 2026-07-27: it was Coord (<Gruntz/CoordNode.h>), the {x,y}
+// payload CoordPoolNode already carries inline at +0x04. InsertPtr's `&head->m_4`
+// offset-view was just &node->m_coord.
 SIZE_UNKNOWN();
 
 struct SbiTabFrameSub {
