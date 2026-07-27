@@ -20,8 +20,8 @@ class CGruntzMgr;
 class CDDrawSurfaceMgr;
 
 // A voice-list id is a dense (band, cue) pair: `id = VOICE_CUES_PER_BAND * band + cue`.
-// The band comes from the grunt's own state (CGrunt +0x170, plus two early specials on
-// +0x258); the cue is what the caller is announcing (arrival, entrance, death, ...).
+// The band comes from the grunt's own state (CGrunt::m_entranceReason, plus two early
+// specials on m_gruntKind); the cue is what the caller announces (arrival, death, ...).
 //
 // PROVEN, not inferred:
 //   - all 36 arms of GetButeSlot's switch are exact multiples of 20 decimal, covering
@@ -43,27 +43,15 @@ enum {
 // `m_voiceLists[it]`. The ex-`CSpawnButeTarget` 0x2c0-byte "raw byte bag" was a fake
 // view of this integer (its `m_data + N` spelled the band constants as struct
 // offsets); dissolved 2026-07-27.
-// param_1's +0x10 sub-object: LoadGruntSpawnConfig reads +0x188 as the currently-active
-// voice id (compared to each voice's m_source; passed to CGruntVoice::Setup).
-// @identity-TODO: the exact class of this active-voice holder is unrecovered (candidate
-// CGruntHud, whose m_188 sits at the same offset), so it stays a modeled sub-object.
-struct CSpawnActiveVoice {
-    char m_00[0x188];
-    i32 m_188; // +0x188  currently-active voice id
-};
-SIZE_UNKNOWN();
-struct CSpawnButeConfig {
-    char m_00[0x10];
-    CSpawnActiveVoice* m_10; // +0x10  the active-voice sub-object (was the CSpawnGate view)
-    char m_14[0x170 - 0x14];
-    i32 m_170; // +0x170  the switch selector
-    char m_174[0x234 - 0x174];
-    i32 m_234; // +0x234  a "has-slot" flag tested by case fallthrough
-    char m_238[0x258 - 0x238];
-    i32 m_258; // +0x258  early-special selector (0x39 / 0x3a)
-};
-SIZE_UNKNOWN();
-class CGrunt; // CueA/CueSpawn first arg
+// The band selectors are read off the CGrunt itself, not a view. The ex
+// `CSpawnButeConfig` pad-struct's +0x10 / +0x170 / +0x234 / +0x258 are CGrunt's
+// m_object / m_entranceReason / m_coordToggle / m_gruntKind at exactly those offsets
+// (m_gruntKind == the 0x39/0x3a early-special selector is the semantic clincher:
+// GetButeSlot's two pre-switch specials ARE grunt kinds), and the ex
+// `CSpawnActiveVoice` at +0x10 was the bound CGameObject, whose +0x188 is the object id
+// every CGruntVoice caches as m_source - CWarlord already passes that same
+// m_object->m_188 into the sibling driver. Both dissolved 2026-07-27.
+class CGrunt; // the voice-cue subject (GetButeSlot / LoadGruntSpawnConfig arg 1)
 
 class CGruntSpawnConfig {
 public:
@@ -71,7 +59,7 @@ public:
     void Clear();                  // 0x11ae30
     BOOL LoadGruntVoices();        // 0x11af00
     void ClearSprites();           // 0x11af90 (out-of-line: m_08 = 0; m_0c = 0)
-    i32 GetButeSlot(CSpawnButeConfig* config, i32 cue); // 0x11bba0
+    i32 GetButeSlot(CGrunt* who, i32 cue); // 0x11bba0
     // The weighted voice-line picker (0x11bee0): resolve m_voiceLists[voiceId] to a
     // .WAV parse record, re-rolling up to 5 times to avoid repeating the list's last
     // pick. `which` selects an explicit entry; -1 (or out of range) means roll.
@@ -99,7 +87,7 @@ public:
     void DtorBody();         // 0x11c7b0 (the 2-iter pair teardown; == m_timer->Flush)
     void Stop();             // reloc-masked (per-frame poll stop, via CGruntzMgr::m_timer)
     void ResetPicks();       // 0x11c7f0 (DtorBody + reset entry m_20s)
-    BOOL IsReady();          // 0x11c830 (out-of-line: m_00->m_100 != 0)
+    BOOL IsReady();          // 0x11c830 (out-of-line: m_owner->m_isVoiceEnabled != 0)
     ~CGruntSpawnConfig();    // 0x85df0
 
     // --- fields (placeholders; offsets load-bearing) ---

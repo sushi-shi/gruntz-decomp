@@ -139,12 +139,12 @@ void CGruntSpawnConfig::ClearSprites() {
 // retail's state ids differ). Logic complete; deferred to the final sweep.
 // g_gameReg viewed for the LCG rand (__thiscall, ecx = the registry) + the master
 // volume the duck halves.
-// The bute config gate (param_1) is a CSpawnButeConfig: its +0x10 active-voice
-// sub-object holds the currently-active voice id at +0x188 (folded into the header;
-// the former CSpawnGate/CSpawnGateInner .cpp-local views are dissolved). The two owned
+// The bute config gate IS the CGrunt itself: its +0x10 bound CGameObject holds the
+// currently-active voice id at +0x188 (the ex CSpawnButeConfig / CSpawnActiveVoice /
+// CSpawnGate / CSpawnGateInner views are all dissolved onto the two real classes). The two owned
 // voice streams (m_10/m_14) are real Dsndmgr StreamVoices (SetSource 0x1374c0 /
 // Configure 0x137520 / the embedded StreamVoiceFeeder at +0x6c).
-// (OpenStream lives on the SoundStream at m_04->m_20; see the header.)
+// (OpenStream lives on the SoundStream at m_configTree->m_soundStream; see the header.)
 
 RVA(0x0011afb0, 0x321)
 BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
@@ -163,7 +163,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     if (!IsReady()) {
         return 0;
     }
-    i32 voiceId = GetButeSlot(reinterpret_cast<CSpawnButeConfig*>(who), cue);
+    i32 voiceId = GetButeSlot(who, cue);
     CString local_10;
     CString local_14;
     local_14.Format("SG%i", voiceId);
@@ -200,11 +200,15 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     i32 c = v8->m_source;
     i32 d = v0c->m_source;
     StreamVoice** streams = &m_stream0;
-    CSpawnButeConfig* gate = reinterpret_cast<CSpawnButeConfig*>(who);
+    // `who` IS the gate: the ex-CSpawnButeConfig view was CGrunt (its +0x10/+0x170/
+    // +0x234/+0x258 are m_object/m_entranceReason/m_coordToggle/m_gruntKind), and the
+    // ex-CSpawnActiveVoice at +0x10 was the bound CGameObject, whose +0x188 IS the
+    // object id each CGruntVoice caches as m_source.
+    CGameObject* gate = who->m_object;
     i32 chosen;
     if (b < a) {
         chosen = 1;
-        if (c == gate->m_10->m_188) {
+        if (c == gate->m_188) {
             chosen = 0;
             if (b != 0 && streams[1] != 0) {
                 (static_cast<DirectSoundMgr*>(streams[1]))
@@ -216,7 +220,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         }
     } else {
         chosen = 0;
-        if (d == gate->m_10->m_188) {
+        if (d == gate->m_188) {
             chosen = 1;
             if (a != 0 && streams[0] != 0) {
                 (static_cast<DirectSoundMgr*>(streams[0]))
@@ -240,7 +244,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         stream->Configure(vol, 0, 0, 0);
     }
     CGruntVoice* voice = voices[chosen];
-    return voice->Setup(gate->m_10->m_188, static_cast<void*>(stream), priority, 0) != 0;
+    return voice->Setup(gate->m_188, static_cast<void*>(stream), priority, 0) != 0;
 }
 
 // ===========================================================================
@@ -273,9 +277,9 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(i32, i32, i32, i32, i32) {
 // ===========================================================================
 // CGruntSpawnConfig::GetButeSlot  (0x11bba0)
 // ===========================================================================
-// Return a pointer to one of `target`'s fields, chosen by config->m_170 (a switch
-// over 0..0x20), plus two early specials on config->m_258 (0x3a -> +0x17c,
-// 0x39 -> +0x104). A null config or out-of-range selector returns 0.
+// Return the grunt's voice-list band id, chosen by the CGrunt's m_entranceReason (a
+// switch over 0..0x20), plus two early specials on m_gruntKind (0x3a, 0x39). A null
+// grunt or out-of-range selector returns 0.
 //
 // @early-stop
 // jump-table scoring-artifact wall (docs/patterns/jumptable-data-overlap.md): the
@@ -285,17 +289,17 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(i32, i32, i32, i32, i32) {
 // base reloc against a $L label vs the target's switchdataD self-reloc. The code
 // IS matched; the % undercounts it. No source change applies - stop chasing.
 RVA(0x0011bba0, 0x1f4)
-i32 CGruntSpawnConfig::GetButeSlot(CSpawnButeConfig* config, i32 cue) {
+i32 CGruntSpawnConfig::GetButeSlot(CGrunt* config, i32 cue) {
     if (config == 0) {
         return 0;
     }
-    if (config->m_258 == 0x3a) {
+    if (config->m_gruntKind == 0x3a) {
         return VOICE_CUES_PER_BAND * 19 + cue;
     }
-    if (config->m_258 == 0x39) {
+    if (config->m_gruntKind == 0x39) {
         return VOICE_CUES_PER_BAND * 13 + cue;
     }
-    switch (static_cast<u32>(config->m_170)) {
+    switch (static_cast<u32>(config->m_entranceReason)) {
         case 0:
             return VOICE_CUES_PER_BAND * 17 + cue;
         case 1:
@@ -333,7 +337,7 @@ i32 CGruntSpawnConfig::GetButeSlot(CSpawnButeConfig* config, i32 cue) {
         case 17:
             return VOICE_CUES_PER_BAND * 28 + cue;
         case 18:
-            if (config->m_234 != 0) {
+            if (config->m_coordToggle != 0) {
                 return VOICE_CUES_PER_BAND * 30 + cue;
             }
             return VOICE_CUES_PER_BAND * 29 + cue;

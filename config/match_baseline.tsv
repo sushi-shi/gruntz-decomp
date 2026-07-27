@@ -2131,10 +2131,10 @@ gruntspawnconfig	?BuildVoiceList@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	4	7
 gruntspawnconfig	?Clear@CGruntSpawnConfig@@QAEXXZ	68.0517	68.0517	10	f0ce7146fab5	0x11ae30
 gruntspawnconfig	?ClearSprites@CGruntSpawnConfig@@QAEXXZ	82.0000	82.0000	3	3c82cd64f656	0x11af90
 gruntspawnconfig	?DtorBody@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	6	e3ff064bf5f7	0x11c7b0
-gruntspawnconfig	?GetButeSlot@CGruntSpawnConfig@@QAEPAXPAUCSpawnButeConfig@@PAUCSpawnButeTarget@@@Z	73.3871	73.3871	4	a699e5fadc20	0x11bba0
+gruntspawnconfig	?GetButeSlot@CGruntSpawnConfig@@QAEHPAVCGrunt@@H@Z	73.3871	73.3871	4	a699e5fadc20	0x11bba0
 gruntspawnconfig	?Init@CGruntSpawnConfig@@QAEHPAVCGruntzMgr@@@Z	55.3478	55.3478	5	cb1ea7e6ea40	0x11adc0
 gruntspawnconfig	?IsReady@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	2	9e23fbdc0786	0x11c830
-gruntspawnconfig	?LoadGruntSpawnConfig@CGruntSpawnConfig@@QAEHHHHHH@Z	76.2470	76.2470	11	a921fb87803e	0x11afb0
+gruntspawnconfig	?LoadGruntSpawnConfig@CGruntSpawnConfig@@QAEHPAVCGrunt@@HHHH@Z	76.2470	76.2470	11	a921fb87803e	0x11afb0
 gruntspawnconfig	?LoadGruntVoices@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	12	d6d1cb85b38c	0x11af00
 gruntspawnconfig	?PickWeighted@CGruntSpawnConfig@@QAEHHH@Z	1.0870	1.0870	3	240c5f372899	0x11bee0
 gruntspawnconfig	?ResetPicks@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	5	297e8cee3813	0x11c7f0

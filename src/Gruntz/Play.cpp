@@ -5852,8 +5852,8 @@ i32 g_areaPageSize; // owner def (zero-init .bss)
 // conflation, reached by cast), CRtImageReg==CGameLevel (its slot-17 "Teardown"
 // with the FABRICATED 17-filler vtable is the REAL CGameLevel::ReleaseChildren
 // virtual), CRtSoundReg==CDDrawSubMgrLeafScan, CRtReg==CGameRegistry, CRtTimeline==CTriggerMgr
-// (m_260==m_byteArr - kept behind the retail-proven CPtrArray::SetSize cast, the
-// CByteArray-vs-CPtrArray library ambiguity is a container-identity TODO - m_284,
+// (m_260==m_byteArr - a real CByteArray; the ex "CPtrArray::SetSize" cast named the
+// wrong band for 0x1b52e8, which is CByteArray::SetSize - m_284,
 // m_2a0==m_pendingFx, Reset1b48a6/OverlayTick), CRtArr==the raw data/count reads
 // over the real MFC arrays (markerData()/arrData()/arr488Data() accessors).)
 // @early-stop
@@ -5896,8 +5896,14 @@ void CPlay::FreeListTeardown() {
     m_scrollSink = 0;
     m_mgr->m_cmdGrid->OverlayTick();
     CTriggerMgr* tl68 = m_mgr->m_cmdGrid;
-    (reinterpret_cast<CPtrArray*>(&tl68->m_byteArr))
-        ->SetSize(0, -1); // retail-proven CPtrArray::SetSize @0x1b52e8
+    // 0x1b52e8 is ?SetSize@CByteArray@@QAEXHH@Z, NOT CPtrArray's (that is 0x1b4f75,
+    // three other call sites in this very function). The old comment had the address
+    // right and the CLASS wrong, and the reinterpret_cast bound the call to the wrong
+    // library COMDAT - the CPlay::m_488 / CAttract::Vslot09 bug a third time.
+    // `mfc_class --audit` was already reporting the miss (retail enters CByteArray here,
+    // we did not). m_byteArr really is a CByteArray: every other user reads
+    // GetData() as u8* and InsertAt/RemoveAt/SetAtGrow it bytewise.
+    tl68->m_byteArr.SetSize(0, -1);
     tl68->m_284 = 0;
     m_mgr->m_cmdGrid->m_baseList
         .RemoveAll(); // ?RemoveAll@CPtrList@@ @0x1b48a6 (+0 member; ex Reset1b48a6)
