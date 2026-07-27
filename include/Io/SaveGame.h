@@ -106,7 +106,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 command, CSaveGame* saveGame); // 0x0e3f40
 int TempFileExists(SaveSlot* p); // 0x0e5700 (defined below)
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6); // 0x0e3e80
 i32 __stdcall CloseTempFile(SaveSlot* r); // defined below (0x0e5550)
-void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);
+void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, SaveSlot* item);
 void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev);
 
 #endif                                                             // SRC_IO_SAVEGAME_H

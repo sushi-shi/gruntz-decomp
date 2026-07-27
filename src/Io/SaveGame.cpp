@@ -160,7 +160,7 @@ i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
             winapi_0e4850_SetDlgItemTextA(
                 hDlg,
                 g_gameReg->m_saveSink,
-                reinterpret_cast<char*>(g_slotState)
+                reinterpret_cast<SaveSlot*>(g_slotState)
             );
             return 1;
         case 0x111:
@@ -190,7 +190,7 @@ i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
             winapi_0e4850_SetDlgItemTextA(
                 hDlg,
                 g_gameReg->m_saveSink,
-                reinterpret_cast<char*>(g_slotState)
+                reinterpret_cast<SaveSlot*>(g_slotState)
             );
             return 1;
         case 0x111:
@@ -553,9 +553,9 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, CLevelInfo* lev) {
 }
 
 RVA(0x000e4850, 0x29)
-void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item) {
+void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, SaveSlot* item) {
     if (hWnd && gate && item) {
-        SetDlgItemTextA(hWnd, 0x40d, item + 0x14);
+        SetDlgItemTextA(hWnd, 0x40d, item->m_name);
     }
 }
 
@@ -597,9 +597,7 @@ void CSaveGame::Init() {
     for (i32 i = 0; i < 10; i++) {
         SaveSlot* p = GetSlot(i);
         if (p != 0) {
-            for (i32 j = 0; j < 0x40; j++) {
-                (reinterpret_cast<i32*>(p))[j] = 0;
-            }
+            memset(p, 0, sizeof(SaveSlot)); // retail: mov ecx,0x40 / rep stos dword
         }
     }
 }
@@ -656,6 +654,8 @@ RVA(0x000e50a0, 0x3e)
 void CSaveGame::ComputeAll() {
     i32 sum = 0;
     for (i32 i = 0; i < 10; i++) {
+        // byte-forced: Encode is a byte checksum - retail walks `mov dl,[ecx+esi*1]`
+        // over all 0x100 bytes of the record, XOR-folding byte i with i.
         sum += Encode(reinterpret_cast<u8*>(GetSlot(i)));
     }
     m_header[0] = 0;
@@ -668,6 +668,7 @@ RVA(0x000e50f0, 0x2f)
 i32 CSaveGame::Verify() {
     i32 sum = 0;
     for (i32 i = 0; i < 10; i++) {
+        // byte-forced: Decode is the byte-wise inverse of Encode over the 0x100-byte record
         sum += Decode(reinterpret_cast<u8*>(GetSlot(i)));
     }
     return m_header[2] == sum;
