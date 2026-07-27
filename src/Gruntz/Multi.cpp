@@ -894,7 +894,7 @@ void CMulti::PumpB() {
         }
         StepGridWalk(g_frameDelta);
         winapi_0d0b30_CopyRect(h);
-        (static_cast<CDDrawSurfacePair*>(mgr->m_drawTarget->m_frontPair))->m_surface->Flip(0);
+        mgr->m_drawTarget->m_frontPair->m_surface->Flip(0);
         return;
     }
     StepInputA();
@@ -957,7 +957,7 @@ void CMulti::PumpB() {
     if (m_worldReady != 0) {
         h->DrawBox(reinterpret_cast<i32*>(&m_hudRect), 0xff);
     }
-    (static_cast<CDDrawSurfacePair*>(mgr->m_drawTarget->m_frontPair))->m_surface->Flip(0);
+    mgr->m_drawTarget->m_frontPair->m_surface->Flip(0);
     PumpBRefresh2356(g_gameReg, m_guts, m_region0Gate);
     if (mgr->m_level->m_mainPlane != 0) {
         (mgr->m_level->m_mainPlane)->CenterScrollB();

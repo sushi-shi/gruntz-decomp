@@ -42,11 +42,17 @@ enum LoadableClassId {
     CLASSID_WWDOBJ_C = 6,    // CWwdGameObjectC::GetClassId @0x15c020
     CLASSID_WWDOBJ_F = 0x16, // CWwdGameObjectF::GetClassId @0x15ba60
     CLASSID_WWDOBJ_B = 0x1b, // CWwdGameObject::GetClassId @0x15bce0
-    // 0x1c: NO slot-8 body anywhere returns 0x1c (exhaustive .text scan) - the
-    // old "CLASSID_WWDOBJ_A = 0x1c" claim was a doc bug (A's id IS 5, above).
-    // The one retail compare (WriteSnapshot @0x151c4e, `cmp eax,0x1c`) can never
-    // be true for family receivers - a shipped dead branch; keep the immediate.
-    CLASSID_SNAPSHOT_STALE = 0x1c,
+    // 0x1c - the GAME-MINTED kind: CDDrawChildGroup::LoadObjects @0x15ad30 has a
+    // real arm for it that does NOT call an engine factory but the registered
+    // callback (CDDrawSurfaceMgr::InvokeCallback mode 0xa) with the descriptor's
+    // serial tag; CGameObject::WriteSnapshot @0x151c00 writes that tag back. Both
+    // halves are DEAD in the shipped build: SerialObjectFactory @0xd2a0 routes
+    // mode 0xa to `xor eax,eax; ret` (@0xeadb), so the load arm always bails, and
+    // no slot-8 body anywhere returns 0x1c (exhaustive `b8 1c 00 00 00` .text scan
+    // of BOTH GRUNTZ.EXE and the demo), so the save compare @0x151c51 - the only
+    // `cmp eax,0x1c` in the image - never fires. Keep the immediate.
+    // (The old "CLASSID_WWDOBJ_A = 0x1c" claim was a doc bug: A's id IS 5, above.)
+    CLASSID_CALLBACKOBJ = 0x1c,
 };
 
 class CLoadable : public CWapObj {

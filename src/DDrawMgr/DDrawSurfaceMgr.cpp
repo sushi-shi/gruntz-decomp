@@ -175,7 +175,7 @@ void CDDrawSurfaceMgr::SetHwnd(void* hWnd) {
 
 RVA(0x00155f60, 0x56)
 i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, i32 flags) {
-    CDDrawSurfacePair* child = m_drawTarget->m_frontPair;
+    CDDrawSurfaceChildA* child = m_drawTarget->m_frontPair;
     if (child->m_width != x || child->m_height != y) {
         if (m_drawTarget->ResizePages(x, y, flags) == 0) {
             return 0;

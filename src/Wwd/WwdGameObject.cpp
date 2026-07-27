@@ -113,13 +113,15 @@ void CWwdGameObjectA::ApplyName(const char* name) {
 
 RVA(0x001505b0, 0x5e)
 i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
-    CDDrawWorker* spr = 0;
+    // The ANI catalog's values ARE CAniElement* - CDDrawSubMgrLeaf::CreateAniEntry
+    // (the map's only writer) returns one, and it is what m_1a0.Setup consumes;
+    // the by-name twin ApplyGeometryDirect @0x58b60 already takes CAniElement*.
+    CAniElement* spr = 0;
     MapLookup(OwnerMgr()->m_animRegistry->m_10, name, spr);
     if (!spr) {
         return 0;
     }
-    // +0x1a0 is the per-class anim sub-object (raw offset by CGameObject convention).
-    m_1a0.Setup(reinterpret_cast<CAniElement*>(spr));
+    m_1a0.Setup(spr);
     if (applyDefault) {
         m_1a0.Advance(g_engineFrameDelta);
     }
@@ -287,7 +289,7 @@ i32 CWwdGameObjectA::Test() {
     } else {
         // The non-camera cull bounds are the DRAW SURFACE's extent (front pair's
         // m_width/m_height) - the former "grid limits" view.
-        CDDrawSurfacePair* g = OwnerMgr()->m_drawTarget->m_frontPair;
+        CDDrawSurfaceChildA* g = OwnerMgr()->m_drawTarget->m_frontPair;
         if (right < 0) {
             return 0;
         }
@@ -1001,12 +1003,14 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, i32 unused) {
         w->m_notify(this);
     }
 
-    i32 ebx = 0;
-    // Shipped DEAD branch: no family GetClassId ever returns 0x1c (A's real id
-    // is CLASSID_SERIALREF=5), so the OOB slot-16 quirk below never fires.
-    if (this->GetClassId() == CLASSID_SNAPSHOT_STALE) {
-        // the OOB slot-16 quirk - retail's shipped bug (see WwdGameObject.h)
-        ebx = reinterpret_cast<WwdRetailSlot16Facet*>(this)->GetSnapshotSubId();
+    i32 serialTypeId = 0;
+    // The game-minted kind's save half: hand LoadObjects back the tag its factory
+    // callback needs. A checked downcast - CWwdGameObjectSerial declares the slot-16
+    // virtual (see <Gruntz/WwdGameObject.h> for the shape proof + the identity chase).
+    // Shipped DEAD in retail: nothing in either build returns 0x1c from slot 8, so
+    // the guard never passes and the OOB slot-16 dispatch never runs.
+    if (this->GetClassId() == CLASSID_CALLBACKOBJ) {
+        serialTypeId = static_cast<CWwdGameObjectSerial*>(this)->GetSerialTypeId();
     }
 
     w = m_7c;
@@ -1022,7 +1026,7 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, i32 unused) {
     rec.m_94 = m_screenX;
     rec.m_98 = m_screenY;
     rec.m_9c = m_sortKey;
-    rec.m_0c = ebx;
+    rec.m_serialTypeId = serialTypeId;
     rec.m_10 = edi;
 
     {

@@ -231,7 +231,7 @@ void CAniRecordBase2::FreeBuf() {
 
 RVA(0x00168fd0, 0x24)
 i32 CAniRecordBase2::PushPalette() {
-    CDDrawSurfacePair* sd =
+    CDDrawSurfaceChildA* sd =
         OwnerMgr()->m_drawTarget->m_frontPair; // the ex AniImageHost/AniSurfDesc chain, all canon
     if (sd->m_bpp != 8) {
         return 1;
