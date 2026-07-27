@@ -1221,7 +1221,7 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, i32 kind, i32 /*unusedC*/, i32 /*un
         ar->Write(blk0, 8);
         ar->Write(blk0 + 8, 8);
     }
-    char* blk1 = reinterpret_cast<char*>(&m_gooTimerBase);
+    char* blk1 = reinterpret_cast<char*>(&m_gooTimerBaseLo);
     if (kind != 4) {
         if (kind == 7) {
             ar->Read(blk1, 8);
@@ -1231,7 +1231,7 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, i32 kind, i32 /*unusedC*/, i32 /*un
         ar->Write(blk1, 8);
         ar->Write(blk1 + 8, 8);
     }
-    char* blk2 = reinterpret_cast<char*>(&m_resourceTimerBase);
+    char* blk2 = reinterpret_cast<char*>(&m_resourceTimerBaseLo);
     if (kind != 4) {
         if (kind == 7) {
             ar->Read(blk2, 8);

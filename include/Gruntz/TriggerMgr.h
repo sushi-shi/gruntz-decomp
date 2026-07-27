@@ -501,10 +501,18 @@ public:
     i32 m_countdownActive;   // +0x2a4  countdown armed gate (serialized; ex m_2a4)
     i32 m_pendingFxKind;     // +0x2a8  active pending overlay-fx kind
     char _pad2ac[0x4];       // +0x2ac
-    i64 m_gooTimerBase;      // +0x2b0  goo respawn timer base ("TimePerGoo")
-    i64 m_gooInterval;       // +0x2b8  goo respawn interval
-    i64 m_resourceTimerBase; // +0x2c0  resource respawn timer base ("TimePerResource")
-    i64 m_resourceInterval;  // +0x2c8  resource respawn interval
+    // Four 64-bit respawn timers held as i32 HALVES, like every other clock pair in
+    // the tree: the reset below stores them lo(base), lo(window), hi(base),
+    // hi(window) per pair, which is source order for i32s and NOT what cl emits for
+    // adjacent __int64 zero-assignments. See [[i64-timer-pairs-are-faithful]].
+    i32 m_gooTimerBaseLo;      // +0x2b0  goo respawn timer base ("TimePerGoo")
+    i32 m_gooTimerBaseHi;      // +0x2b4
+    i32 m_gooIntervalLo;       // +0x2b8  goo respawn interval
+    i32 m_gooIntervalHi;       // +0x2bc
+    i32 m_resourceTimerBaseLo; // +0x2c0  resource respawn timer base ("TimePerResource")
+    i32 m_resourceTimerBaseHi; // +0x2c4
+    i32 m_resourceIntervalLo;  // +0x2c8  resource respawn interval
+    i32 m_resourceIntervalHi;  // +0x2cc
     CPtrList m_selLists[10]; // +0x2d0  ten selection lists (stride 0x1c)
     i32 m_selSentinel;       // +0x3e8  selection-group latch (-1 when idle)
     i32 m_3ec;               // +0x3ec  serialized scalar (LoadFinishLevelSprite: last state)

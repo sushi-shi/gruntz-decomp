@@ -5922,16 +5922,14 @@ i32 CPlay::ResetPlayState() {
     tl->m_countdownActive = 1;
     tl->m_phase = 0;
     tl->m_pendingFxKind = 0;
-    // zero the goo/resource i64 timer pairs half-by-half, preserving retail's
-    // lo(base), lo(window), hi(base), hi(window) store order per pair
-    (reinterpret_cast<i32*>(&tl->m_gooTimerBase))[0] = 0;
-    (reinterpret_cast<i32*>(&tl->m_gooInterval))[0] = 0;
-    (reinterpret_cast<i32*>(&tl->m_gooTimerBase))[1] = 0;
-    (reinterpret_cast<i32*>(&tl->m_gooInterval))[1] = 0;
-    (reinterpret_cast<i32*>(&tl->m_resourceTimerBase))[0] = 0;
-    (reinterpret_cast<i32*>(&tl->m_resourceInterval))[0] = 0;
-    (reinterpret_cast<i32*>(&tl->m_resourceTimerBase))[1] = 0;
-    (reinterpret_cast<i32*>(&tl->m_resourceInterval))[1] = 0;
+    tl->m_gooTimerBaseLo = 0;
+    tl->m_gooIntervalLo = 0;
+    tl->m_gooTimerBaseHi = 0;
+    tl->m_gooIntervalHi = 0;
+    tl->m_resourceTimerBaseLo = 0;
+    tl->m_resourceIntervalLo = 0;
+    tl->m_resourceTimerBaseHi = 0;
+    tl->m_resourceIntervalHi = 0;
     tl->m_3ec = 0;
     tl->m_rollingballWanted = 0;
     tl->m_teleportWanted = 0;

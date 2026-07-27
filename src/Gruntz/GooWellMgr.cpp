@@ -201,16 +201,16 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             return 0;
         }
         // Goo respawn timer.
-        if (static_cast<i64>(g_frameTime) - m_gooTimerBase >= m_gooInterval) {
+        if (static_cast<i64>(g_frameTime) - m_gooTimerBaseLo >= m_gooIntervalLo) {
             obj->m_guts->AdvanceGauge(1);
-            m_gooInterval = g_buteMgr.GetDwordDef("Multiplayer", "TimePerGoo", 0x258);
-            m_gooTimerBase = g_frameTime;
+            m_gooIntervalLo = g_buteMgr.GetDwordDef("Multiplayer", "TimePerGoo", 0x258);
+            m_gooTimerBaseLo = g_frameTime;
         }
         // Resource respawn timer.
-        if (static_cast<i64>(g_frameTime) - m_resourceTimerBase >= m_resourceInterval) {
+        if (static_cast<i64>(g_frameTime) - m_resourceTimerBaseLo >= m_resourceIntervalLo) {
             obj->m_guts->UpdateRezMachineWakeStatusBar();
-            m_resourceInterval = g_buteMgr.GetDwordDef("Multiplayer", "TimePerResource", 0x7530);
-            m_resourceTimerBase = g_frameTime;
+            m_resourceIntervalLo = g_buteMgr.GetDwordDef("Multiplayer", "TimePerResource", 0x7530);
+            m_resourceTimerBaseLo = g_frameTime;
         }
         // Last-player-standing: any other live player blocks the win Notify.
         for (i32 i = 0; i < 4; i++) {
