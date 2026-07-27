@@ -33,6 +33,10 @@ static const char s_playerDefenderRadius[] = "PlayerDefenderRadius"; // 0x60e1ac
 // identical suffixes). The 11-case logic + grunt-state resets + cell lookups are
 // byte-faithful. Final-sweep permuter candidate (pure /O2 regalloc residue).
 RVA(0x000d1b60, 0xc2f)
+// The &a4/&a8 reads below are byte-forced by the ABI: a `char` parameter still owns a
+// whole 4-byte stack slot, and retail threads PathProbe's i32 outputs back through
+// those slots rather than spending fresh locals (the ret 0x1c frame proves the
+// arity). Reading the slot as i32 is what the target's bytes do.
 i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char a8) {
     CGruntzMgr* mgr = m_mgr;
     if (mgr->m_frameGate != 0) {

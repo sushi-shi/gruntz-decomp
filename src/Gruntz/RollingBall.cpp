@@ -371,27 +371,25 @@ i32 CRollingBall::Update() {
     CWwdGameObjectA* lg = m_object;
     switch (lg->m_12c) {
         case 1:
-            m_subY = -*reinterpret_cast<double*>(&m_moveDeltaLo);
+            m_subY = -m_moveDelta;
             m_targetX -= 0x20;
             m_stepDirX = -1;
             m_stepDirY = -1;
             break;
         case 2:
-            (reinterpret_cast<i32*>(&m_subX))[0] = m_moveDeltaLo;
-            (reinterpret_cast<i32*>(&m_subX))[1] = m_moveDeltaHi;
+            m_subX = m_moveDelta;
             m_targetX += 0x20;
             m_stepDirX = 1;
             m_stepDirY = 0;
             break;
         case 4:
-            (reinterpret_cast<i32*>(&m_subY))[0] = m_moveDeltaLo;
-            (reinterpret_cast<i32*>(&m_subY))[1] = m_moveDeltaHi;
+            m_subY = m_moveDelta;
             m_targetX += 0x20;
             m_stepDirX = 0;
             m_stepDirY = 1;
             break;
         case 3:
-            m_subX = -*reinterpret_cast<double*>(&m_moveDeltaLo);
+            m_subX = -m_moveDelta;
             m_targetX -= 0x20;
             m_stepDirX = -1;
             m_stepDirY = 0;

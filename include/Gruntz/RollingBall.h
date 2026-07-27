@@ -50,8 +50,17 @@ public:
     i32 m_explodeStartHi;      // +0x8c  explosion start clock (i64 hi)
     i32 m_explodeWindowLo;     // +0x90  explosion window (i64 lo)
     i32 m_explodeWindowHi;     // +0x94  explosion window (i64 hi)
-    i32 m_moveDeltaLo;         // +0x98  move delta (i64 lo)
-    i32 m_moveDeltaHi;         // +0x9c  move delta (i64 hi)
+    // +0x98  the per-step move delta. It is READ as a double (the direction arms
+    // assign it straight into the m_subX/m_subY doubles), and the class is already
+    // 8-aligned from m_subX, so declaring it double is layout-free. The dword arms
+    // stay available for the stores whose ORDER retail pins.
+    union {
+        double m_moveDelta;
+        struct {
+            i32 m_moveDeltaLo;
+            i32 m_moveDeltaHi;
+        };
+    };
 };
 SIZE(0xa0);
 
