@@ -2309,6 +2309,8 @@ i32 CPlay::StepInputA() {
     }
 
     CDDSurface* half;
+    // the +0x188 / +0x198 feed blocks are streamed as 0x10-byte records; Edge names
+    // the first two dwords of whichever half is live - the pun is that overlay
     Edge* edge;
     void* halfPtr;
     if (m_inputHalfSel == 0) {
