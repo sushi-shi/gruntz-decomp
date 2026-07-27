@@ -449,7 +449,7 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
             m_flag = 1;
             return 1;
         }
-        m_table = reinterpret_cast<CShadeTable*>(d->m_20);
+        m_table = d->m_20;
     }
     return 1;
 }
@@ -953,7 +953,7 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
         m_table = m_cache.HueRampTable(reinterpret_cast<PalEntry*>(pal->m_cacheA), 0x10, 0);
         m_flag = 1; // we own it: ~CFader will FindRemove it
     } else {
-        m_table = reinterpret_cast<CShadeTable*>(cfg->m_14);
+        m_table = cfg->m_14;
         m_flag = 0;
     }
     if (m_table == 0) {
@@ -1169,7 +1169,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     if (m_useLut != 0) {
         if (pInit->m_20) {
             m_flag = 0; // a caller-supplied table: ~CFader must NOT FindRemove it
-            m_table = reinterpret_cast<CShadeTable*>(pInit->m_20);
+            m_table = pInit->m_20;
         } else if (_access(pInit->m_24, 0) == 0) {
             m_table = m_cache.AddFromArray(pInit->m_24);
             if (m_table == 0) {

@@ -11,8 +11,8 @@ public:
     i32 m_14;
     i32 m_18;
     i32 m_1c;
-    i32 m_20;
-    CString m_24; // +0x24
+    class CShadeTable* m_20; // the fader's shade table (null = none)
+    CString m_24;            // +0x24
     i32 m_28;     // +0x28
 };
 SIZE(0x2c);

@@ -22,7 +22,7 @@ public:
     i32 m_14;
     i32 m_18;
     i32 m_1c;
-    i32 m_20;
+    class CShadeTable* m_20; // the fader's shade table (null = none)
 }; // 0x24
 SIZE_UNKNOWN();
 
@@ -35,7 +35,7 @@ SIZE_UNKNOWN();
 class CFxModeT4 : public CFxModeDesc {
 public:
     CFxModeT4(); // 0x17e8b0
-    i32 m_14;
+    class CShadeTable* m_14; // the fader's shade table (null = none)
 }; // 0x18
 SIZE_UNKNOWN();
 
