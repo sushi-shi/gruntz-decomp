@@ -1667,12 +1667,9 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
         return 0;
     }
 
-    void* lp = reinterpret_cast<void*>(
-        Peer()->CreatePlayer(const_cast<char*>("Player"), g_emptyString, 0)
-    );
-    CNetSessionNode* node = static_cast<CNetSessionNode*>(lp);
+    CNetSessionNode* node = Peer()->CreatePlayer(const_cast<char*>("Player"), g_emptyString, 0);
     m_5bc = node;
-    if (lp == 0) {
+    if (node == 0) {
         ReportNetError(0);
         return 0;
     }
@@ -1710,18 +1707,17 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
         return 0;
     }
 
-    void* lp;
+    CNetSessionNode* node;
     {
-        lp = reinterpret_cast<void*>(Peer()->EnumPlayersCb(
+        node = Peer()->EnumPlayersCb(
             sel,
             static_cast<const char*>(GetString5a0()),
             g_emptyString,
             0
-        ));
+        );
     }
-    CNetSessionNode* node = static_cast<CNetSessionNode*>(lp);
     m_5bc = node;
-    if (lp == 0) {
+    if (node == 0) {
         ReportNetError(0);
         return 0;
     }
@@ -2467,8 +2463,8 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
     }
     void* node = Peer()->GetPlayerData(ev->m_id);
     if (node == 0) {
-        node = reinterpret_cast<void*>(
-            Peer()->AddSessionNode(ev->m_id, ev->m_nameA, ev->m_nameB, reinterpret_cast<i32>(node))
+        node = Peer()->AddSessionNode(
+            ev->m_id, ev->m_nameA, ev->m_nameB, reinterpret_cast<i32>(node)
         );
         if (node == 0) {
             return 0;
@@ -3616,11 +3612,11 @@ i32 CMulti::SetupTcpIpConfig() {
 
     void* lp;
     {
-        lp = reinterpret_cast<void*>(Peer()->CreatePlayer(
+        lp = Peer()->CreatePlayer(
             const_cast<char*>(static_cast<const char*>(ch0->GetName())),
             g_emptyString,
             0
-        ));
+        );
     }
     CNetSessionNode* node = static_cast<CNetSessionNode*>(lp);
     m_5bc = node;
