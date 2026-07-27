@@ -20,6 +20,13 @@ DATA(0x00253c88)
 CPtrArray g_imageCache;
 DATA(0x00253c9e)
 u8 g_clut[0x30000]; // 0x653c9e
+
+// The 3-bank CLUT is a BYTE array (the bank bases and the row deltas are byte
+// offsets) whose entries are 16-bit - that pun is inherent to the table, so it
+// lives here instead of at every lookup.
+static inline u16 Clut16(u32 byteOff) {
+    return *reinterpret_cast<const u16*>(g_clut + byteOff);
+}
 DATA(0x00283ca0)
 u16 g_lut16[256] = {0}; // 0x683ca0
 DATA(0x00283ea0)
@@ -907,15 +914,11 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                     u32 green = hi & 0x1f;
                     u32 red = hi & 0xffffffe0;
                     *srcPix++ = static_cast<u16>(
-                        (*reinterpret_cast<u16*>(
-                             (reinterpret_cast<char*>((g_clut + 0x10002)) + off + (blue << 6))
+                        (Clut16(0x10002 + off + (blue << 6)
                          )
-                         | *reinterpret_cast<u16*>(
-                             (reinterpret_cast<char*>((g_clut + 0x2)) + off + (green << 6))
+                         | Clut16(0x2 + off + (green << 6)
                          )
-                         | *reinterpret_cast<u16*>(
-                             (reinterpret_cast<char*>((g_clut + 0x20002)) + off + red * 2)
-                         ))
+                         | Clut16(0x20002 + off + red * 2))
                     );
                 }
                 srcPix += stride;
@@ -931,15 +934,11 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                     u32 green = hi & 0x1f;
                     u32 red = hi & 0xffffffe0;
                     *srcPix++ = static_cast<u16>(
-                        (*reinterpret_cast<u16*>(
-                             (reinterpret_cast<char*>((g_clut + 0x10002)) + off + (blue << 6))
+                        (Clut16(0x10002 + off + (blue << 6)
                          )
-                         | *reinterpret_cast<u16*>(
-                             (reinterpret_cast<char*>((g_clut + 0x2)) + off + (green << 6))
+                         | Clut16(0x2 + off + (green << 6)
                          )
-                         | *reinterpret_cast<u16*>(
-                             (reinterpret_cast<char*>((g_clut + 0x20002)) + off + red * 2)
-                         ))
+                         | Clut16(0x20002 + off + red * 2))
                     );
                 }
                 srcPix += stride;
