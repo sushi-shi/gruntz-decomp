@@ -26,7 +26,7 @@ void EngStr_DrawText(
     i32 a7,
     i32 a8
 ) {
-    CDDrawSurfacePair* pair =
+    CDDrawSurfaceChildA* pair =
         obj->m_drawTarget->m_frontPair; // the real chain (ex the Sub/Cfg facets)
     if (pair == 0) {
         return;

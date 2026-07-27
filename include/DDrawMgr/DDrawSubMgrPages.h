@@ -6,9 +6,10 @@
 #include <Wap32/WapObj.h>    // CWapObj : CObject - the real 7-slot grand-base
 #include <Gruntz/Loadable.h> // CLoadable - the real base (+ the CDrawSubWorker family base)
 
-class CDDrawSurfaceMgr;  // +0x0c root manager back-pointer
-class CDDSurface;        // the held surface (CDDrawSurfaceChildA::m_surface)
-class CDDrawSurfacePair; // +0x10/+0x14/+0x18 front/back/overlay surface elements
+class CDDrawSurfaceMgr;    // +0x0c root manager back-pointer
+class CDDSurface;          // the held surface (CDDrawSurfaceChildA::m_surface)
+class CDDrawSurfaceChildA; // +0x10 front element (defined below)
+class CDDrawSurfacePair;   // +0x14/+0x18 back/overlay surface elements
 
 // (B)-form re-base 2026-07-22: vtbl 0x5efe08 slots 5-8 are the CLoadable scheme
 // (IsLoaded/IsReady/Unload/GetClassId 0xf).
@@ -51,22 +52,13 @@ public:
     i32 TransExit();                         // 0x158ee0
 
     // (+0x04..+0x0c = the INHERITED CLoadable header trio; owner via OwnerMgr().)
-    // +0x10  front (the Flip target).
-    // DEFERRED FOLD, fully proven, needs one edit this lane was not allowed to make:
-    // this slot holds a CDDrawSurfaceChildA*, NOT a CDDrawSurfacePair*. CreateChildren
-    // (0x1588f0) stamps ??_7CDDrawSurfaceChildA at reloc 0x158935 into THIS slot and
-    // ??_7CDDrawSurfacePair into the other two, and the two classes are SIBLINGS (both
+    // +0x10  front (the Flip target). A CDDrawSurfaceChildA, NOT a pair: CreateChildren
+    // (0x1588f0) allocates 0x30 bytes (`push 0x30; call ??2@YAPAXI@Z`) and stamps
+    // ??_7CDDrawSurfaceChildA (reloc @0x158935) into THIS slot, while +0x14/+0x18 get
+    // 0x34-byte allocations stamped ??_7CDDrawSurfacePair. The two are SIBLINGS (both
     // `: CDrawSubWorker`; ChildA is 0x30 with no own fields, the pair adds m_ownsSurface
-    // at +0x30 - neither derives from the other). The wrong declared type is exactly what
-    // forces the reinterpret_cast at the store in CreateChildren. Every consumer reads
-    // only base fields (m_surface/m_width/m_height/m_bpp) or dispatches SetGeometry /
-    // SetGeom / Probe, all of which are CDrawSubWorker's (Probe was moved there in this
-    // change for that reason), so the retype is mechanical: flip this declaration and the
-    // ~10 local declarations that spell `CDDrawSurfacePair* x = ...->m_frontPair`
-    // (DDrawSubMgr.cpp x4, AniRecord.cpp, DDrawSurfaceMgr.cpp, GlyphStringDraw.cpp,
-    // Multi.cpp, EngStr.cpp, SaveFrontBufferShot.cpp and src/Wwd/WwdGameObject.cpp:290 -
-    // that last file is owned by another lane, which is the only reason this is parked).
-    CDDrawSurfacePair* m_frontPair;
+    // at +0x30) - neither derives from the other, so any cast between them is a mis-model.
+    CDDrawSurfaceChildA* m_frontPair;
     CDDrawSurfacePair* m_backPair;    // +0x14  back (Fill/geometry source)
     CDDrawSurfacePair* m_overlayPair; // +0x18  overlay (composite)
 };

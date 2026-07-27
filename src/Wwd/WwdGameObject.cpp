@@ -287,7 +287,7 @@ i32 CWwdGameObjectA::Test() {
     } else {
         // The non-camera cull bounds are the DRAW SURFACE's extent (front pair's
         // m_width/m_height) - the former "grid limits" view.
-        CDDrawSurfacePair* g = OwnerMgr()->m_drawTarget->m_frontPair;
+        CDDrawSurfaceChildA* g = OwnerMgr()->m_drawTarget->m_frontPair;
         if (right < 0) {
             return 0;
         }

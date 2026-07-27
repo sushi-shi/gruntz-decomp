@@ -35,7 +35,7 @@ void SaveFrontBufferShotImpl(
     char* name,
     i32 arg7
 ) {
-    CDDrawSurfacePair* pair = mgr->m_world->m_drawTarget->m_frontPair;
+    CDDrawSurfaceChildA* pair = mgr->m_world->m_drawTarget->m_frontPair;
     if (pair == 0) {
         return;
     }

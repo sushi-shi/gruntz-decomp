@@ -1229,7 +1229,7 @@ RVA(0x001588f0, 0x1c5)
 i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
     // The real inline derived ctor: retail emits `call 0x158f30` (the out-of-line
     // CDrawSubWorker base ctor) + the own ??_7 stamp + m_surface = 0.
-    m_frontPair = reinterpret_cast<CDDrawSurfacePair*>(new CDDrawSurfaceChildA(m_ownerCtx, 0, 0));
+    m_frontPair = new CDDrawSurfaceChildA(m_ownerCtx, 0, 0);
     m_backPair = new CDDrawSurfacePair(m_ownerCtx, 1, 0);
     m_overlayPair = new CDDrawSurfacePair(m_ownerCtx, 2, 0);
 
@@ -1328,7 +1328,7 @@ i32 CDDrawSubMgrPages::PagesReady() {
 
 RVA(0x00158bf0, 0x7f)
 i32 CDDrawSubMgrPages::ResizePages(i32 a1, i32 a2, i32 a3) {
-    CDDrawSurfacePair* p = m_frontPair;
+    CDDrawSurfaceChildA* p = m_frontPair;
     if (p->m_width != a1 || p->m_height != a2 || p->m_bpp != a3) {
         if (!m_frontPair->SetGeom(a1, a2, a3)) {
             return 0;
@@ -1409,7 +1409,7 @@ void CDDrawSubMgrPages::ClearAllPages(i32 a1) {
 // docs/patterns/zero-register-pinning.md.
 RVA(0x00158dc0, 0x7d)
 i32 CDDrawSubMgrPages::PresentBackPage() {
-    CDDrawSurfacePair* p10 = m_frontPair;
+    CDDrawSurfaceChildA* p10 = m_frontPair;
     i32 ok = 0;
     if (p10 && p10->m_surface) {
         CDDSurface* s10 = p10->m_surface;
@@ -1427,7 +1427,7 @@ i32 CDDrawSubMgrPages::PresentBackPage() {
     }
     m_frontPair->m_surface->Flip(0);
     CDDrawSurfacePair* a = m_backPair;
-    CDDrawSurfacePair* b = m_frontPair;
+    CDDrawSurfaceChildA* b = m_frontPair;
     if (!b) {
         return 0;
     }
@@ -1461,7 +1461,7 @@ i32 CDDrawSubMgrPages::TransEnter() {
         return 0;
     }
     CDDrawSurfacePair* a = m_overlayPair;
-    CDDrawSurfacePair* b = m_frontPair;
+    CDDrawSurfaceChildA* b = m_frontPair;
     if (!b) {
         return 0;
     }
