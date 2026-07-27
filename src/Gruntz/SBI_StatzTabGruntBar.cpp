@@ -194,8 +194,8 @@ i32 CSBI_StatzTabGruntBar::Update() {
         if (unit->m_arrived == 0) {
             timerVal = -1;
         } else if (static_cast<i64>(static_cast<u32>(g_frameTime))
-                       - m_timerAnchor
-                   >= m_timerWindow) {
+                       - *reinterpret_cast<i64*>(&m_timerAnchorLo)
+                   >= *reinterpret_cast<i64*>(&m_timerWindowLo)) {
             if (timerVal > 0) {
                 timerVal++;
                 if (timerVal > 0xa) {
@@ -204,8 +204,10 @@ i32 CSBI_StatzTabGruntBar::Update() {
             } else {
                 timerVal = 1;
             }
-            m_timerWindow = 0x32;
-            m_timerAnchor = static_cast<u32>(g_frameTime);
+            m_timerWindowLo = 0x32;
+            m_timerWindowHi = 0;
+            m_timerAnchorLo = g_frameTime;
+            m_timerAnchorHi = 0;
         }
     }
 

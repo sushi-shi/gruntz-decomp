@@ -34,13 +34,20 @@ public:
     CImage* m_frameSecOnes; // +0x1c units-of-seconds digit frame
     CImage* m_frameColon;   // +0x20 colon frame (static frame 11, drawn centre)
     char m_pad24[0x28 - 0x24];
-    i64 m_baseTime; // +0x28 base (limit) time (i64)
-    i64 m_accum; // +0x30 accumulated added-time (i64; the 0x8107 cheat zeroes it)
+    i32 m_baseTimeLo; // +0x28 base (limit) time lo
+    i32 m_baseTimeHi; // +0x2c base (limit) time hi
+    i32 m_accumLo;    // +0x30 accumulated added-time lo (0x8107 cheat zeroes)
+    i32 m_accumHi;    // +0x34 accumulated added-time hi (0x8107 cheat zeroes)
     // +0x38:+0x3c is the level/lap START STAMP - a 64-bit game-clock value held as two
     // dword halves (CGruntzMgr::AccrueScoreTime subtracts the pair from the 64-bit clock
-    // with a sub/sbb; CTimer::HandleEvent streams it as one 8-byte field).
-    i64 m_38;        // +0x38  level/lap start stamp
-    i64 m_40;        // +0x40  (cleared on expiry and by the 0x8107 cheat)
+    // with a sub/sbb; CTimer::HandleEvent streams it as one 8-byte field). It stays two
+    // i32s because CTimer::Init INTERLEAVES the halves with the +0x40 pair
+    // (m_38, m_40, m_3c, m_44) - a single i64 member cannot emit that store order. Read
+    // it 64-bit the way the +0x30 pair already is: `*reinterpret_cast<i64*>(&t)->m_38`.
+    i32 m_38;        // +0x38  level/lap start stamp, lo
+    i32 m_3c;        // +0x3c  ... hi
+    i32 m_40;        // +0x40  (serialized 64-bit pair m_40:m_44; cleared on expiry
+    i32 m_44;        // +0x44   and by the 0x8107 cheat)
     i32 m_running;   // +0x48 running flag (0x8107 cheat zeroes)
     i32 m_currentMs; // +0x4c decoded current/remaining value (ms within hour;
                      //        0x8107 cheat zeroes)

@@ -18,8 +18,10 @@ public:
     // "unset" (-1) so the first Update latches them. Store order preserved from the
     // retail new-site ctor fold.
     CSBI_StatzTabGruntBar() {
-        m_timerAnchor = 0;
-        m_timerWindow = 0;
+        m_timerAnchorLo = 0;
+        m_timerWindowLo = 0;
+        m_timerAnchorHi = 0;
+        m_timerWindowHi = 0;
         m_kind = 6;
         m_statusGlyphLatched = 0;
         m_abilityGlyphLatched = 0;
@@ -102,8 +104,10 @@ public:
     CImage* m_timerGlyph;           // +0x6c  timer glyph (resolved by Update)
     i32 m_timerValue;               // +0x70  timer value (tracked)
     CDDrawWorker* m_glyphMap;       // +0x74  glyph map for the first four values (a CDDrawWorker)
-    i64 m_timerAnchor; // +0x78  timer anchor (g_frameTime at last bump, i64)
-    i64 m_timerWindow; // +0x80  timer window (i64)
+    i32 m_timerAnchorLo;            // +0x78  timer anchor lo (g_frameTime at last bump)
+    i32 m_timerAnchorHi;            // +0x7c  timer anchor hi
+    i32 m_timerWindowLo;            // +0x80  timer window lo
+    i32 m_timerWindowHi;            // +0x84  timer window hi
 };
 SIZE_UNKNOWN();
 

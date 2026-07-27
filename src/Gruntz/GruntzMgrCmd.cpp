@@ -382,7 +382,9 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         }
                         CTimer* _t = _g->m_frameMarker;
                         _t->m_40 = 0;
-                        _t->m_accum = 0;
+                        _t->m_44 = 0;
+                        _t->m_accumLo = 0;
+                        _t->m_accumHi = 0;
                         _t->m_running = 0;
                         _t->m_currentMs = 0;
                         PLAYCUE("GAME_MAJORCHEAT");

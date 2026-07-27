@@ -42,16 +42,14 @@ i32 CPlay::LoadLoadingBarSprite() {
 
 RVA(0x0009bab0, 0x35)
 CTimer* CTimer::Init() {
-    // @early-stop
-    // cl5 batches the pending HIGH-dword stores of adjacent i64 zero-assignments:
-    // four in a row emit 28,30,38,40 then 2c,34,3c,44, but retail flushes per PAIR
-    // (28,30,2c,34 | 38,40,3c,44). An inlined ResetLap() helper does not create that
-    // barrier; the residue is 2 store slots. The i64 model itself is proven by the
-    // 64-bit reads (HandleEvent streams each pair as one 8-byte field).
-    m_baseTime = 0;
-    m_accum = 0;
+    m_baseTimeLo = 0;
+    m_accumLo = 0;
+    m_baseTimeHi = 0;
+    m_accumHi = 0;
     m_38 = 0;
     m_40 = 0;
+    m_3c = 0;
+    m_44 = 0;
     m_sprite = 0;
     m_frameMinTens = 0;
     m_frameMinOnes = 0;
@@ -139,16 +137,18 @@ i32 CTimer::Tick(i32 dt) {
     if (!m_running) {
         return 1;
     }
-    // remaining = m_accum - g_frameTime + m_baseTime, clamped at 0.
-    i64 rem = m_accum - static_cast<u32>(g_frameTime)
-              + m_baseTime;
+    // remaining = (m_accumLo:m_accumHi) - g_frameTime + (m_baseTimeLo:m_baseTimeHi), clamped at 0.
+    i64 rem = *reinterpret_cast<i64*>(&m_accumLo) - static_cast<u32>(g_frameTime)
+              + *reinterpret_cast<i64*>(&m_baseTimeLo);
     i32 v = (rem > 0) ? static_cast<i32>(rem) : 0;
     m_currentMs = v;
 
     if (v == 0) {
         // expired: clear, stamp the level "time up" command + clock snapshot.
         m_40 = 0;
-        m_accum = 0;
+        m_44 = 0;
+        m_accumLo = 0;
+        m_accumHi = 0;
         m_running = 0;
         m_currentMs = 0;
         CPlay* ls = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -312,14 +312,14 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
         secs = 0x63 - cur / 60000 - carry;
     }
     u32 total = (mins + secs * 60) * 1000;
-    m_accum += total;
+    *reinterpret_cast<u64*>(&m_accumLo) += total;
 }
 
 // ---------------------------------------------------------------------------
 // CTimer::HandleEvent (0x9c1c0) - save (kind==4) / load (kind==7) the timer
 // through the archive: dispatch the whole-object serializer (kind 4 ->
 // Serialize 0x9c2e0, kind 7 -> Deserialize 0x9c650) then stream the two 64-bit
-// clock pairs (m_baseTime/m_accum and m_38/m_40) 8 bytes at a time via the archive's
+// clock pairs (m_baseTimeLo/m_accumLo and m_38/m_40) field by field via the archive's
 // Read(+0x2c)/Write(+0x30) virtuals.
 // ---------------------------------------------------------------------------
 // @early-stop
@@ -344,26 +344,26 @@ i32 CTimer::HandleEvent(CFileMemBase* ar, i32 kind, i32 a3, i32 a4) {
         }
     }
 
-    i64* p = &m_baseTime;
+    i32* p = &m_baseTimeLo;
     if (kind == 4) {
         ar->Write(p, 8);
-        p += 1;
+        p += 2;
         ar->Write(p, 8);
     } else if (kind == 7) {
         ar->Read(p, 8);
-        p += 1;
+        p += 2;
         ar->Read(p, 8);
     }
 
     p = &m_38;
     if (kind == 4) {
         ar->Write(p, 8);
-        p += 1;
+        p += 2;
         ar->Write(p, 8);
         return 1;
     } else if (kind == 7) {
         ar->Read(p, 8);
-        p += 1;
+        p += 2;
         ar->Read(p, 8);
     }
     return 1;

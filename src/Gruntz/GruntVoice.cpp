@@ -199,7 +199,9 @@ i32 CreateVoiceTrigger(CGameObject* obj) {
 RVA(0x001198a0, 0x195)
 CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_icon = 0;
+    m_5c = 0;
     m_durationMs = 0;
+    m_64 = 0;
     m_38->ApplyName("GAME_EXCLAMATION");
     if (m_object->m_sortKey != 0xdbba1) {
         m_object->m_sortKey = 0xdbba1;
@@ -208,6 +210,8 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_sample = 0;
     m_icon = 0;
     m_durationMs = 0;
+    m_5c = 0;
+    m_64 = 0;
     m_38->m_flags |= 0x4000002;
     m_38->m_stateFlags |= 1;
     m_playFlags = 0;
@@ -372,8 +376,10 @@ i32 CGruntVoice::Setup(i32 a0, void* sample, i32 a2, i32 a3) {
     m_source = a0;
     m_owner = a3;
     m_sample = reinterpret_cast<i32>(sample);
-    m_durationMs = static_cast<u32>((static_cast<StreamVoice*>(sample))->ComputeRatio());
-    m_icon = static_cast<u32>(g_frameTime);
+    m_durationMs = (static_cast<StreamVoice*>(sample))->ComputeRatio();
+    m_64 = 0;
+    m_icon = g_frameTime;
+    m_5c = 0;
     m_playFlags = a2;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("B");
@@ -392,8 +398,8 @@ void CGruntVoice::Reset() {
 RVA(0x0011a8e0, 0x198)
 i32 CGruntVoice::Update() {
     if (m_sample == 0
-        || static_cast<i64>(g_frameTime) - m_icon
-               >= m_durationMs) {
+        || static_cast<i64>(g_frameTime) - *reinterpret_cast<i64*>(&m_icon)
+               >= *reinterpret_cast<i64*>(&m_durationMs)) {
         m_sample = 0;
         m_source = 0;
         m_object->m_stateFlags |= 1;

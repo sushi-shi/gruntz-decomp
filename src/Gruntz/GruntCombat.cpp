@@ -1672,8 +1672,10 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     }
 
     CreateHealthSprite();
-    m_combatTimeout = g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388);
-    m_combatClock = static_cast<u32>(g_frameTime);
+    m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
+    m_combatTimeoutHi = 0;
+    m_combatClockLo = static_cast<i32>(g_frameTime);
+    m_combatClockHi = 0;
     m_358 = 1;
 
     CGrunt* nb = m_tileMgr->m_grid[a * TM_GRID_COLS + b];
@@ -1732,8 +1734,11 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     }
     m_poweredUp = 1;
     nb->CreateHealthSprite();
-    nb->m_combatTimeout = g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388);
-    nb->m_combatClock = static_cast<u32>(g_frameTime);
+    nb->m_combatTimeoutLo =
+        static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
+    nb->m_combatTimeoutHi = 0;
+    nb->m_combatClockLo = static_cast<i32>(g_frameTime);
+    nb->m_combatClockHi = 0;
     ArrivalRecycle(c, d, 1, a, b);
     m_neighborCol = a;
     m_neighborRow = b;
@@ -1787,8 +1792,10 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
     m_combatActive = 1;
     CreateHealthSprite();
 
-    m_combatTimeout = static_cast<u32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
-    m_combatClock = static_cast<u32>(g_frameTime);
+    m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
+    m_combatTimeoutHi = 0;
+    m_combatClockLo = static_cast<i32>(g_frameTime);
+    m_combatClockHi = 0;
     m_358 = 1;
     m_208 = a;
     m_20c = b;
