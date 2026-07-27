@@ -428,18 +428,20 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
     // Run every m_list2 then m_list1 logic child that claims the switch's key.
     i32 anyHit = 0;
-    TtcNode* n;
+    POSITION pos;
     trig = state->m_beginMarker;
-    for (n = TtcHead(trig->m_list2); n != 0; n = n->m_next) {
-        CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(n->m_data);
+    pos = trig->m_list2.GetHeadPosition();
+    while (pos != 0) {
+        CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(trig->m_list2.GetNext(pos));
         if (el->FindIndexByKey(sw->m_key1) != 0) {
             anyHit = 1; // retail branches into the shared success tail (0x6cc7e)
             break;
         }
     }
     trig = state->m_beginMarker;
-    for (n = TtcHead(trig->m_list1); n != 0; n = n->m_next) {
-        CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(n->m_data);
+    pos = trig->m_list1.GetHeadPosition();
+    while (pos != 0) {
+        CTileTriggerLogic* el = static_cast<CTileTriggerLogic*>(trig->m_list1.GetNext(pos));
         if (el->FindIndexByKey(sw->m_key1) != 0) {
             el->RecordMove();
             anyHit = 1;
@@ -656,8 +658,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
     }
 
     char* hitName = *g_typeColl.GetNameRecord(hit->m_objAux->m_1c);
-    if (strcmp(hitName, "G") == 0 || strcmp(hitName, "L") == 0
-        || strcmp(hitName, "P") == 0) {
+    if (strcmp(hitName, "G") == 0 || strcmp(hitName, "L") == 0 || strcmp(hitName, "P") == 0) {
         return 0;
     }
 
@@ -692,13 +693,10 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
     if (hit->m_tileOwnerHi != col) {
         CGameObject* obj = cell->m_object;
         CDDrawWorkerHost* plane = g_gameReg->m_world->m_level->m_mainPlane;
-        if (obj->m_screenX >= plane->m_viewRect.left
-            && obj->m_screenX < plane->m_viewRect.right
+        if (obj->m_screenX >= plane->m_viewRect.left && obj->m_screenX < plane->m_viewRect.right
             && obj->m_screenY >= plane->m_viewRect.top
             && obj->m_screenY < plane->m_viewRect.bottom) {
-            g_gameReg->m_cueSink->SpawnVoiceDriver(
-                cell, 0x38e, -1, 0, -1, -1
-            );
+            g_gameReg->m_cueSink->SpawnVoiceDriver(cell, 0x38e, -1, 0, -1, -1);
         }
     }
     return 1;

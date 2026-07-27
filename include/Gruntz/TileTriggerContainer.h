@@ -7,30 +7,14 @@
 #include <Gruntz/TileActionEvent.h> // CTileActionEvent - the 0x28 m_list3 element (was TtcMark)
 #include <Gruntz/TileTriggerWiring.h> // CTrigParam / CTrigSourceRecord (AddLogic marshaling blocks)
 #include <rva.h>                      // SIZE_UNKNOWN class-metadata macros used below
-#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
+#include <Rez/RezAlloc.h>             // RezAlloc/RezFree (the global allocator pair)
 
 class CTileTriggerContainer;
 class CTileTriggerLogic;       // the per-id logic leaf AddLogic news (def in TileTriggerLogic.h)
 class CGiantRockLogic;         // the 0xc8 m_list1 rock element (def in TileTriggerLogic.h)
 class CTileTriggerSwitchLogic; // the 0x8c m_base element family (def in TileTriggerSwitchLogic.h)
 
-
 extern "C" u32 g_frameTime;
-
-struct TtcNode {
-    TtcNode* m_next; // +0x00
-    char _pad04[4];  // +0x04 (prev)
-    // +0x08  the CPtrList node payload: a genuine heterogeneous CObject* slot - the
-    // four lists store DIFFERENT element types (TtcElem / TtcMark / TtcTrigElem /
-    // plain i32 records), downcast per walker. Authentic void* (MFC container payload).
-    void* m_data;
-};
-SIZE_UNKNOWN();
-
-typedef ::CPtrList TtcObList;
-inline TtcNode* TtcHead(const ::CPtrList& l) {
-    return reinterpret_cast<TtcNode*>(l.GetHeadPosition());
-}
 
 i32 __stdcall
 SerializeApplyA(CFileMemBase* s, i32 a2, i32 a3, i32 a4, CTileTriggerSwitchLogic* o); // 0x117630
@@ -178,10 +162,10 @@ public:
     // The base sub-object's own destructor; runs RemoveAll then clears +0x74.
     void DtorBase(); // 0x115f30
 
-    TtcObList m_base;                 // +0x00 (head @ +0x04)  the base CPtrList sub-object
-    TtcObList m_list1;                // +0x1c (head @ +0x20)
-    TtcObList m_list2;                // +0x38 (head @ +0x3c)
-    TtcObList m_list3;                // +0x54 (head @ +0x58)
+    CPtrList m_base;                  // +0x00 (head @ +0x04)  the base CPtrList sub-object
+    CPtrList m_list1;                 // +0x1c (head @ +0x20)
+    CPtrList m_list2;                 // +0x38 (head @ +0x3c)
+    CPtrList m_list3;                 // +0x54 (head @ +0x58)
     CTileTriggerLogic* m_latchedLeaf; // +0x70  id-0x15 latches the built logic leaf here
     i32 m_built; // +0x74  gates DtorBase's RemoveAll call, then cleared (0/nonzero)
 };

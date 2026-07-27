@@ -8,22 +8,6 @@
 
 class CAmbientSound;
 
-struct CSoundNode {
-    CSoundNode* m_next;    // +0x00
-    CSoundNode* m_prev;    // +0x04
-    CAmbientSound* m_data; // +0x08  the channel (family base; see the note above)
-};
-SIZE_UNKNOWN();
-
-// MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
-// hand-rolled node walk has to pun it - language-forced. One seam per type.
-inline CSoundNode* SoundHeadOf(const CObList& l) {
-    return reinterpret_cast<CSoundNode*>(l.GetHeadPosition());
-}
-inline CSoundNode* SoundHeadOf(const CPtrList& l) {
-    return reinterpret_cast<CSoundNode*>(l.GetHeadPosition());
-}
-
 class CAmbientPosSound;
 class CRandomAmbientSound;
 struct AmbientPoint;

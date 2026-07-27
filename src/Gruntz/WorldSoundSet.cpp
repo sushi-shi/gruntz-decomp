@@ -22,7 +22,6 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-
 // ---------------------------------------------------------------------------
 // 0x87b0 IS ??1CUserBase@@UAE@XZ - the out-of-line COMDAT copy of the INLINE
 // ~CUserBase (<Gruntz/UserLogic.h>), now bound by RVA_COMPGEN in ActionArea.cpp
@@ -66,11 +65,9 @@ void CWorldSoundSet::Deactivate() {
 
 RVA(0x0000b660, 0x2b)
 void CWorldSoundSet::Teardown() {
-    CSoundNode* node = SoundHeadOf(m_list);
-    while (node != 0) {
-        CSoundNode* cur = node;
-        node = node->m_next;
-        CAmbientSound* ch = cur->m_data;
+    POSITION pos = m_list.GetHeadPosition();
+    while (pos != 0) {
+        CAmbientSound* ch = static_cast<CAmbientSound*>(m_list.GetNext(pos));
         if (ch != 0) {
             delete ch;
         }
@@ -224,11 +221,9 @@ void CWorldSoundSet::Restart(i32 a1) {
     if (m_world->m_soundDev != 0) {
         m_world->m_soundDev->FreeSamples();
     }
-    CSoundNode* node = SoundHeadOf(m_list);
-    while (node != 0) {
-        CSoundNode* cur = node;
-        node = node->m_next;
-        CAmbientSound* ch = cur->m_data;
+    POSITION pos = m_list.GetHeadPosition();
+    while (pos != 0) {
+        CAmbientSound* ch = static_cast<CAmbientSound*>(m_list.GetNext(pos));
         if (ch != 0) {
             ch->Recompute(static_cast<i32>(a1));
         }
@@ -240,11 +235,9 @@ void CWorldSoundSet::Stop() {
     if (m_world != 0 && m_world->m_soundDev != 0) {
         m_world->m_soundDev->FreeSamples();
     }
-    CSoundNode* node = SoundHeadOf(m_list);
-    while (node != 0) {
-        CSoundNode* cur = node;
-        node = node->m_next;
-        CAmbientSound* ch = cur->m_data;
+    POSITION pos = m_list.GetHeadPosition();
+    while (pos != 0) {
+        CAmbientSound* ch = static_cast<CAmbientSound*>(m_list.GetNext(pos));
         if (ch != 0 && ch->m_voice != 0) {
             ch->m_voice->StopAndRewind();
             ch->m_isPlaying = 0;
@@ -263,11 +256,9 @@ void CWorldSoundSet::Stop() {
 // one byte. No source lever flips the dead-this reuse. See zero-register-pinning.md.
 RVA(0x0000bcf0, 0x43)
 void CWorldSoundSet::Resume() {
-    CSoundNode* node = SoundHeadOf(m_list);
-    while (node != 0) {
-        CSoundNode* cur = node;
-        node = node->m_next;
-        CAmbientSound* ch = cur->m_data;
+    POSITION pos = m_list.GetHeadPosition();
+    while (pos != 0) {
+        CAmbientSound* ch = static_cast<CAmbientSound*>(m_list.GetNext(pos));
         if (ch != 0) {
             ch->m_isPlaying = 0;
             ch->Update(m_listenerX, m_listenerY, 1);
@@ -294,11 +285,9 @@ RVA(0x0000bd60, 0x4b)
 void CWorldSoundSet::Retune(i32 x, i32 y) {
     m_listenerX = x;
     m_listenerY = y;
-    CSoundNode* node = SoundHeadOf(m_list);
-    while (node != 0) {
-        CSoundNode* cur = node;
-        node = node->m_next;
-        CAmbientSound* ch = cur->m_data;
+    POSITION pos = m_list.GetHeadPosition();
+    while (pos != 0) {
+        CAmbientSound* ch = static_cast<CAmbientSound*>(m_list.GetNext(pos));
         if (ch != 0) {
             ch->Update(x, y, 0);
         }

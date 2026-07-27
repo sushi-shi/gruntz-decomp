@@ -8,7 +8,7 @@
 
 #include <Gruntz/GruntzMgr.h> // the REAL singleton class
 #include <Gruntz/TileTriggerSwitchLogic.h>
-#include <Gruntz/TileTriggerContainer.h> // the owner container (m_owner; TtcNode/TtcHead)
+#include <Gruntz/TileTriggerContainer.h> // the owner container (m_owner and its four CPtrLists)
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TileGridCommand.h>
 #include <Gruntz/TileActionEvent.h>
@@ -177,8 +177,7 @@ i32 CTileTriggerLogic::Tick() {
         POINT pt;
         pt.x = sx;
         pt.y = sy;
-        if (!PtInRect(&g_gameReg->m_viewBounds, pt) || srcId == 0x68
-            || srcId == 0x67) {
+        if (!PtInRect(&g_gameReg->m_viewBounds, pt) || srcId == 0x68 || srcId == 0x67) {
             transId = 0;
         } else {
             CGameObject* trig =
@@ -246,16 +245,14 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
     }
     // walk the owner CONTAINER's m_list1 (head @ container+0x20) - the 0x9c
     // CTileTriggerLogic children live there.
-    TtcNode* node = TtcHead(m_owner->m_list1);
+    POSITION pos = m_owner->m_list1.GetHeadPosition();
     i32 found = 0;
     CTileTriggerLogic* child = 0;
-    while (node != 0) {
+    while (pos != 0) {
         if (found != 0) {
             break;
         }
-        TtcNode* cur = node;
-        node = node->m_next;
-        child = static_cast<CTileTriggerLogic*>(cur->m_data);
+        child = static_cast<CTileTriggerLogic*>(m_owner->m_list1.GetNext(pos));
         if (child != 0 && child->FindIndexByKey(m_key1) != 0) {
             found = 1;
         }
@@ -323,8 +320,10 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
         if (node->m_key1 != m_key1 && node->m_linkGate != 0) {
             node->SwitchUp(); // virtual slot 3
             i32 any = 0;
-            for (TtcNode* it = TtcHead(m_owner->m_list1); it != 0; it = it->m_next) {
-                CTileTriggerLogic* o = static_cast<CTileTriggerLogic*>(it->m_data);
+            POSITION pos = m_owner->m_list1.GetHeadPosition();
+            while (pos != 0) {
+                CTileTriggerLogic* o =
+                    static_cast<CTileTriggerLogic*>(m_owner->m_list1.GetNext(pos));
                 if (o != 0 && o->FindIndexByKey(node->m_key1)) {
                     o->Tick(); // slot 0
                     counter++;
@@ -721,16 +720,14 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
     }
     // walk the owner CONTAINER's m_list1 (head @ container+0x20) - the 0x9c
     // CTileTriggerLogic children live there.
-    TtcNode* node = TtcHead(m_owner->m_list1);
+    POSITION pos = m_owner->m_list1.GetHeadPosition();
     i32 found = 0;
     CTileTriggerLogic* child = 0;
-    while (node != 0) {
+    while (pos != 0) {
         if (found != 0) {
             break;
         }
-        TtcNode* cur = node;
-        node = node->m_next;
-        child = static_cast<CTileTriggerLogic*>(cur->m_data);
+        child = static_cast<CTileTriggerLogic*>(m_owner->m_list1.GetNext(pos));
         if (child != 0 && child->FindIndexByKey(m_key1) != 0) {
             found = 1;
         }
