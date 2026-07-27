@@ -1,11 +1,11 @@
 #include <Gruntz/Boomerang.h> // CBoomerang : CProjectile (+return-trajectory fields, sizeof 0x260)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr complete (m_grid: the 4x15 launcher-cell board)
+#include <Gruntz/TriggerMgr.h>   // CTriggerMgr complete (m_grid: the 4x15 launcher-cell board)
 #include <Gruntz/Grunt.h>        // CGrunt (launcher grunt return-record) + CFileMemBase
 #include <Gruntz/GameRegistry.h> // g_gameReg (m_world gate, m_cmdGrid launcher-cell grid)
 #include <rva.h>
-#include <Io/FileMem.h> // CFileMemBase - the CFileMemBase stream (Read/Write dispatch)
+#include <Io/FileMem.h>          // CFileMemBase - the CFileMemBase stream (Read/Write dispatch)
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 
 VTBL(CBoomerang, 0x001e792c);
@@ -28,7 +28,6 @@ CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
     // vptr stamp is IMPLICIT (real polymorphic class).
     m_38->m_flags |= 0x2000002;
 }
-
 
 DATA(0x001eaad8)
 const double g_boomHalf = 0.5; // midpoint scale (0.5) (decl in Boomerang.h)
@@ -83,16 +82,14 @@ i32 CBoomerang::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i3
         g->m_278 = g_frameTime;
         g->m_27c = 0;
         if (g->CoordCount() != 0) {
-            GruntCoordNode* n = g->CoordHead();
-            while (n != 0) {
-                GruntCoordNode* next = n->m_next;
-                GruntCoord* data = n->m_coord;
+            POSITION pos = g->m_31c.GetHeadPosition();
+            while (pos != 0) {
+                void* data = g->m_31c.GetNext(pos);
                 if (data != 0) {
                     CoordPoolNode* p = g_coordPool.NodeOf(data);
                     p->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = p;
                 }
-                n = next;
             }
             g->m_31c.RemoveAll();
         }
@@ -115,26 +112,26 @@ i32 CBoomerang::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a
         return 0;
     }
     switch (mode) {
-    case 7:
-        ar->Read(&m_launchX, 4);
-        ar->Read(&m_launchY, 4);
-        ar->Read(&m_dirX, 8);
-        ar->Read(&m_dirY, 8);
-        ar->Read(&m_originX, 8);
-        ar->Read(&m_originY, 8);
-        ar->Read(&m_phase, 8);
-        ar->Read(&m_launched, 4);
-        break;
-    case 4:
-        ar->Write(&m_launchX, 4);
-        ar->Write(&m_launchY, 4);
-        ar->Write(&m_dirX, 8);
-        ar->Write(&m_dirY, 8);
-        ar->Write(&m_originX, 8);
-        ar->Write(&m_originY, 8);
-        ar->Write(&m_phase, 8);
-        ar->Write(&m_launched, 4);
-        break;
+        case 7:
+            ar->Read(&m_launchX, 4);
+            ar->Read(&m_launchY, 4);
+            ar->Read(&m_dirX, 8);
+            ar->Read(&m_dirY, 8);
+            ar->Read(&m_originX, 8);
+            ar->Read(&m_originY, 8);
+            ar->Read(&m_phase, 8);
+            ar->Read(&m_launched, 4);
+            break;
+        case 4:
+            ar->Write(&m_launchX, 4);
+            ar->Write(&m_launchY, 4);
+            ar->Write(&m_dirX, 8);
+            ar->Write(&m_dirY, 8);
+            ar->Write(&m_originX, 8);
+            ar->Write(&m_originY, 8);
+            ar->Write(&m_phase, 8);
+            ar->Write(&m_launched, 4);
+            break;
     }
     return CProjectile::SerializeMove(ar, mode, a3, a4) ? 1 : 0;
 }

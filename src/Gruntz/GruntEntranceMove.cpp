@@ -29,7 +29,7 @@
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniAdvanceCursor.h>  // CAniAdvanceCursor::Advance (0x15c360)
 #include <Gruntz/TriggerMgr.h>        // CTriggerMgr::NotifyCell (0x79fb0) + CellDispatch (0x6bcb0)
-#include <Gruntz/TriggerMgrRecords.h> // CTmNode - the rec-list node the focus peek walks
+#include <Gruntz/TriggerMgrRecords.h> // CTriggerMgr records (the rec-list the focus peek reads)
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/MovingLogicSerial.h>
@@ -75,7 +75,6 @@ static char s_RunningTimePerTile[] = "RunningTimePerTile"; // 0x60e264
 
 static const char s_animKeyA[] = "A";
 static const char s_animKeyK[] = "K";
-
 
 static __inline i32 s_TileFlags(CGruntzMapMgr* b, i32 tx, i32 ty) {
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
@@ -302,8 +301,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
             CGrunt* focus = 0;
             CTriggerMgr* tm = g->m_cmdGrid;
             if (tm->m_recList.GetCount() == 1) {
-                CTmNode* nd = TmHead(tm->m_recList);
-                i32* vec = nd->m_payload;
+                i32* vec = static_cast<i32*>(tm->m_recList.GetHead());
                 i32 a = vec[0];
                 i32 b = vec[1];
                 focus = tm->m_grid[a * TM_GRID_COLS + b];
@@ -321,49 +319,29 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     if (mode == 1) {
         i32 r = GruntRand() % 0x1e1;
         if (r > 0x140) {
-            MapLookup(
-                m_38->OwnerMgr()->m_animRegistry->m_10,
-                s_GRUNTZ_ENTRANCEZ_ONE,
-                found
-            );
+            MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_GRUNTZ_ENTRANCEZ_ONE, found);
             if (onScreen) {
                 g->m_cueSink->SpawnVoiceDriver(this, 0x37a, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else if (r > 0xa0) {
-            MapLookup(
-                m_38->OwnerMgr()->m_animRegistry->m_10,
-                s_GRUNTZ_ENTRANCEZ_TWO,
-                found
-            );
+            MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_GRUNTZ_ENTRANCEZ_TWO, found);
             if (onScreen) {
                 g->m_cueSink->SpawnVoiceDriver(this, 0x37b, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else {
-            MapLookup(
-                m_38->OwnerMgr()->m_animRegistry->m_10,
-                s_GRUNTZ_ENTRANCEZ_THREE,
-                found
-            );
+            MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_GRUNTZ_ENTRANCEZ_THREE, found);
             if (onScreen) {
                 g->m_cueSink->SpawnVoiceDriver(this, 0x37c, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         }
     } else if (mode == 2) {
-        MapLookup(
-            m_38->OwnerMgr()->m_animRegistry->m_10,
-            s_GRUNTZ_ENTRANCEZ_DROP,
-            found
-        );
+        MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_GRUNTZ_ENTRANCEZ_DROP, found);
         base = s_GRUNTZ_ENTRANCEZ_DROP;
     } else {
-        MapLookup(
-            m_38->OwnerMgr()->m_animRegistry->m_10,
-            s_GRUNTZ_ENTRANCEZ_RESSURECT,
-            found
-        );
+        MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_GRUNTZ_ENTRANCEZ_RESSURECT, found);
         base = s_GRUNTZ_DEATHZ_MELT;
     }
 
@@ -452,8 +430,7 @@ i32 CGrunt::LoadEntranceConfig() {
         CAniElement* found = static_cast<CAniElement*>(found_ob);
         if (static_cast<void*>(found) == cached) {
             if (m_tileOwnerHi == g_curPlayer) {
-                g_gameReg->m_cueSink
-                    ->SpawnVoiceDriver(this, 0x33f, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x33f, -1, 0, -1, -1);
             }
             m_tileMgr->ResetCell(m_tileOwnerHi, m_tileOwnerLo, 0, 0);
             m_entranceDropActive = 1;
@@ -1154,10 +1131,8 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             i32 vx = h->m_screenX;
             i32 vy = h->m_screenY;
             const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-            if (vx < rect->right && vx >= rect->left && vy < rect->bottom
-                && vy >= rect->top) {
-                g_gameReg->m_cueSink
-                    ->SpawnVoiceDriver(this, 0x35c, -1, 0, -1, -1);
+            if (vx < rect->right && vx >= rect->left && vy < rect->bottom && vy >= rect->top) {
+                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x35c, -1, 0, -1, -1);
             }
             m_freezeUnfrozen = 1;
             m_freezeDelayDone = 1;

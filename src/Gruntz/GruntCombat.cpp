@@ -63,8 +63,8 @@
 #include <new>
 #include <Gruntz/GruntEntranceArrival.h> // ex Globals.h
 #include <Gruntz/SoundState.h>           // ex Globals.h transitive
-#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-#include <Gruntz/GruntCombat.h>  // CActRegPool<CGrunt>::s_table decl
+#include <Gruntz/FreeNodePool.h>         // the coord-node pool object @0x645540
+#include <Gruntz/GruntCombat.h>          // CActRegPool<CGrunt>::s_table decl
 #include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
 #pragma intrinsic(strcmp, sqrt)
 
@@ -107,7 +107,6 @@ static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafe
 static char s_IdleDelay[] = "IdleDelay";                       // s_IdleDelay_0060e1a0
 static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius"; // s_PlayerDefenderRadius_0060e1ac
 static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeout_0060df84
-
 
 // ===========================================================================
 // The 5 grunt movement / anim-name dispatch state machines (formerly the
@@ -179,7 +178,7 @@ static const char s_gruntSec[] = "Grunt";
 #define LK(key)                                                                                    \
     do {                                                                                           \
         LeafCue* out = 0;                                                                          \
-        MapLookup(g_gameReg->m_world->m_soundRegistry->m_10, (key), out);    \
+        MapLookup(g_gameReg->m_world->m_soundRegistry->m_10, (key), out);                          \
         cue = out;                                                                                 \
     } while (0)
 
@@ -248,7 +247,6 @@ void CGrunt::EntranceTileOffset(i32* out) {
     out[1] = y;
 }
 
-
 DATA(0x0020d7fc)
 char s_codeH[] = "H";
 
@@ -309,25 +307,25 @@ static inline CString* ActNameSlots() {
 
 #define REGISTER_KEY_644AF0(key, handler)                                                          \
     {                                                                                              \
-        i32 id = ActFindId(key);                                      \
+        i32 id = ActFindId(key);                                                                   \
         if (id == 0) {                                                                             \
-            ActInsertId(key, g_typeCounter);                        \
+            ActInsertId(key, g_typeCounter);                                                       \
             id = g_typeCounter;                                                                    \
-            CString* slot = reinterpret_cast<CString*>(g_typeColl._zvec::IndexToPtr(id));                                         \
+            CString* slot = reinterpret_cast<CString*>(g_typeColl._zvec::IndexToPtr(id));          \
             i32 n = g_typeColl.m_grown;                                                            \
-            CString* list = ActNameSlots();                            \
+            CString* list = ActNameSlots();                                                        \
             while (n-- != 0) {                                                                     \
                 if (list != 0) {                                                                   \
-                    list->CString::~CString();                       \
+                    list->CString::~CString();                                                     \
                 }                                                                                  \
                 list++;                                                                            \
             }                                                                                      \
-            *slot = (key);                                    \
+            *slot = (key);                                                                         \
             g_typeCounter++;                                                                       \
         }                                                                                          \
-        /* a derived-to-base member-pointer conversion is a reinterpret (bit copy),   */        \
-        /* never a static_cast - cl emits an adjustment for the latter.                */        \
-        *CActRegPool<CGrunt>::s_table.Resolve(id) = reinterpret_cast<CActHandler>(handler);      \
+        /* a derived-to-base member-pointer conversion is a reinterpret (bit copy),   */           \
+        /* never a static_cast - cl emits an adjustment for the latter.                */          \
+        *CActRegPool<CGrunt>::s_table.Resolve(id) = reinterpret_cast<CActHandler>(handler);        \
     }
 
 // @early-stop
@@ -359,11 +357,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     CDDrawSubMgrLeafScan* slot = (static_cast<CDDrawSurfaceMgr*>(m_3c->m_0c))->m_soundRegistry;
     if (slot->m_emitGate == 0) {
         LeafCue* sout = 0;
-        MapLookup(
-            slot->m_10,
-            s_GAME_ATTACK,
-            sout
-        ); // CMapStringToPtr @0x1b8438
+        MapLookup(slot->m_10, s_GAME_ATTACK,
+                  sout); // CMapStringToPtr @0x1b8438
         if (sout != 0) {
             // retail reloads the looked-up cue into ecx and __thiscalls 0x1f940
             sout->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
@@ -377,12 +372,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                ->Activate(
-                    "GAME_LIGHTING_FLASH",
-                    "GAME_FLASH",
-                    9,
-                    1
-                );
+                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 9, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -397,12 +387,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                ->Activate(
-                    "GAME_LIGHTING_FLASH",
-                    "GAME_FLASH",
-                    2,
-                    1
-                );
+                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 2, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -417,12 +402,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                ->Activate(
-                    "GAME_LIGHTING_FLASH",
-                    "GAME_FLASH",
-                    8,
-                    1
-                );
+                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
             return m_tileMgr->LoadGruntResurrectTuning(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -435,12 +415,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                ->Activate(
-                    "GAME_LIGHTING_FLASH",
-                    "GAME_FLASH",
-                    7,
-                    1
-                );
+                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -455,12 +430,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_notify(spr);
             (static_cast<CLightFx*>(spr->m_7c->m_logic))
-                ->Activate(
-                    "GAME_LIGHTING_FLASH",
-                    "GAME_FLASH",
-                    3,
-                    1
-                );
+                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -1231,8 +1201,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
     LeafCue* cue = 0;
     i32 vx = this->m_object->m_screenX;
     i32 vy = this->m_object->m_screenY;
-    if (vx < reg->m_viewBounds.right && vx >= reg->m_viewBounds.left && vy < reg->m_viewBounds.bottom
-        && vy >= reg->m_viewBounds.top) {
+    if (vx < reg->m_viewBounds.right && vx >= reg->m_viewBounds.left
+        && vy < reg->m_viewBounds.bottom && vy >= reg->m_viewBounds.top) {
         if (a7 == 0x3a) {
             LK(s_DEATHTOUCHHIT);
             goto L_cue;
@@ -1409,9 +1379,9 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     // Rebuild the active-anim-set type-name registry free list.
-    char** typeRec =
-        reinterpret_cast<char**>((static_cast<_zvec*>(&g_typeColl))
-                                     ->IndexToPtr(this->m_objAux->m_1c));
+    char** typeRec = reinterpret_cast<char**>(
+        (static_cast<_zvec*>(&g_typeColl))->IndexToPtr(this->m_objAux->m_1c)
+    );
     if (g_typeColl.m_grown != 0) {
         char* p = g_typeColl.m_alloc;
         i32 n = g_typeColl.m_grown;
@@ -1594,20 +1564,18 @@ i32 CGrunt::LoadGruntCombatAnimations(
         m_410 = static_cast<double>((this->m_object->m_screenY));
 
         if (m_31c.GetCount() != 0) {
-            CoordNode* node = reinterpret_cast<CoordNode*>(m_31c.GetHeadPosition());
-            if (node != 0) {
+            POSITION pos = m_31c.GetHeadPosition();
+            if (pos != 0) {
                 CoordPoolNode* fl = g_coordPool.m_freeHead;
                 do {
-                    CoordNode* cur = node;
-                    node = cur->m_next;
-                    Coord* data = cur->m_coord;
+                    Coord* data = static_cast<Coord*>(m_31c.GetNext(pos));
                     if (data != 0) {
                         CoordPoolNode* slot = g_coordPool.NodeOf(data);
                         slot->m_next = fl;
                         fl = slot;
                         g_coordPool.m_freeHead = fl;
                     }
-                } while (node != 0);
+                } while (pos != 0);
             }
             m_31c.RemoveAll();
         }

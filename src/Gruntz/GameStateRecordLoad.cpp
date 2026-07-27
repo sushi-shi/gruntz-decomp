@@ -15,20 +15,18 @@
 #include <string.h> // inline strlen / memset (rep scas / rep stos)
 
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
-#include <Utils/MapTyped.h> // MapLookupById - the forced id->void* key pun
+#include <Utils/MapTyped.h>      // MapLookupById - the forced id->void* key pun
 
 static const char s_Powerupz[] = "Powerupz";                                 // 0x60d9b4
 static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 0x60d900
 
-
-#define SERIALREF(field)                                                                             \
+#define SERIALREF(field)                                                                           \
     do {                                                                                           \
         ++g_serialCounter;                                                                         \
         ar->Read(&id, 4);                                                                          \
         obj = 0;                                                                                   \
         void* r;                                                                                   \
-        if (MapLookupById(dir->m_childGroup->m_map48, id, obj) != 0               \
-            && obj != 0) {                                                                         \
+        if (MapLookupById(dir->m_childGroup->m_map48, id, obj) != 0 && obj != 0) {                 \
             r = ((reinterpret_cast<CGameObject*>(obj))->GetClassId() == CLASSID_SERIALREF) ? obj   \
                                                                                            : 0;    \
         } else {                                                                                   \
@@ -39,13 +37,13 @@ static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 
             return 0;                                                                              \
         }                                                                                          \
     } while (0)
-#define READCSTR(field)                                                                              \
+#define READCSTR(field)                                                                            \
     do {                                                                                           \
         ++g_serialCounter;                                                                         \
         ar->Read(buf, 0x80);                                                                       \
         (field) = buf;                                                                             \
     } while (0)
-#define NAMEREF(field)                                                                               \
+#define NAMEREF(field)                                                                             \
     do {                                                                                           \
         ++g_serialCounter;                                                                         \
         ar->Read(buf, 0x80);                                                                       \
@@ -250,20 +248,18 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
 
     // Drain the m_320 list back to the engine free-list, then RemoveAll(m_31c).
     if (m_31c.GetCount() != 0) {
-        GruntCoordNode* node = CoordHeadOf(m_31c);
-        if (node != 0) {
+        POSITION pos = m_31c.GetHeadPosition();
+        if (pos != 0) {
             CoordPoolNode* fl = g_coordPool.m_freeHead;
             do {
-                GruntCoordNode* next = node->m_next;
-                char* buf = reinterpret_cast<char*>(node->m_coord);
+                void* buf = m_31c.GetNext(pos);
                 if (buf != 0) {
                     CoordPoolNode* n2 = g_coordPool.NodeOf(buf);
                     n2->m_next = fl;
                     fl = n2;
                     g_coordPool.m_freeHead = n2;
                 }
-                node = next;
-            } while (node != 0);
+            } while (pos != 0);
         }
         (&m_31c)->RemoveAll();
     }
@@ -284,7 +280,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     }
 
     // Drain + free the m_338 list.
-    while (m_338.GetCount() != 0 && GruntListHeadOf(m_338)->m_data != 0) {
+    while (m_338.GetCount() != 0 && m_338.GetHead() != 0) {
         void* rem = (&m_338)->RemoveHead();
         RezFree(rem);
     }

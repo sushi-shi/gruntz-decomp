@@ -26,8 +26,8 @@
         if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
             (grid)->m_bounds = ra;                                                                 \
         }                                                                                          \
-        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                           \
-        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                           \
+        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
+        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
     }
 
 // @early-stop  ~72% fuzzy (was 0.53% stub)
@@ -52,7 +52,7 @@ RVA(0x00032ce0, 0x448)
 i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
     if (g->m_stamina >= 0x64) {
         if (g->CoordCount() != 0) {
-            Coord* c = reinterpret_cast<Coord*>(g->CoordTail()->m_coord);
+            Coord* c = static_cast<Coord*>(g->m_31c.GetTail());
             i32 col = c->m_x;
             i32 row = c->m_y;
             CMapMgr* grid = m_board;
@@ -64,12 +64,11 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
                 flags = 1;
             }
             if ((flags & 0x4000) && grid->m_rows[row][col].m_10 == 0x99) {
-                GruntCoordNode* n = g->CoordHead();
-                while (n != 0) {
-                    GruntCoordNode* cur = n;
-                    n = n->m_next;
-                    if (cur->m_coord != 0) {
-                        g_coordPool.Push(static_cast<void*>((cur->m_coord)));
+                POSITION pos = g->m_31c.GetHeadPosition();
+                while (pos != 0) {
+                    void* coord = g->m_31c.GetNext(pos);
+                    if (coord != 0) {
+                        g_coordPool.Push(coord);
                     }
                 }
                 g->m_31c.RemoveAll();

@@ -15,15 +15,12 @@ typedef enum TmGridDim {
     TM_GRID_ROWS = 4,  // rows (m_rowCount/m_rowStateB/m_rowStateC are per-row)
 } TmGridDim;
 
-
 class CGrunt;
 class CWarlord;
 struct CGameObject; // <Gruntz/UserLogic.h> - what CDDrawChildGroup::CreateSprite returns
 
 class CDDrawSurfaceMgr;
-class DirectSoundMgr; // Dsndmgr/DirectSoundMgr.h (StopAndRewind)
-struct CTmNode;
-struct CTmRecNode;
+class DirectSoundMgr;  // Dsndmgr/DirectSoundMgr.h (StopAndRewind)
 struct CTmOverlay;     // the allocated overlay sub-object (+0x25c); completed in each TU
 class CWwdGameObjectA; // <Wwd/WwdGameObjectFamily.h> - the goal camera sprite's real class
 class CActionOptionsMenuBar;
@@ -455,7 +452,7 @@ public:
     // their member teardown: 2 scalar ??1CObList CALLs (m_baseList/m_recList) + the
     // m_selLists[10] array teardown, whose __ehvec_dtor takes ??1CObList as a function
     // POINTER (that is ~CTriggerMgr's DATA reloc), + 1 ??1CByteArray CALL. No casts remain.
-    CPtrList m_baseList;  // +0x000  base object-list (holds CTmRecNode payloads)
+    CPtrList m_baseList;  // +0x000  base object-list (holds CGruntPuddle payloads)
     CGrunt* m_grid[0x3c]; // +0x01c  the 4x15 placed grid-object cells (stride 4)
     i32 m_rowCount[4];    // +0x10c  per-row placed count (bumped/serialized 0x10 B)
     i32 m_cellFlag[0x3c]; // +0x11c  parallel 4x15 per-cell flag grid; also holds the
@@ -468,15 +465,17 @@ public:
     CDDrawSurfaceMgr* m_world;
     // +0x230: the multiplayer armed gate (ex-CMultiSub68 view's m_armed) ==
     // the companion state word cleared by SetLevel; serialized at 0x1339/0x1545.
-    i32 m_armed;                      // +0x230
-    i32 m_recX;                       // +0x234  active-record x
-    i32 m_recY;                       // +0x238  active-record y
-    CWwdGameObjectA* m_goal;          // +0x23c  the "DoNothing" camera-sprite goal object
-                                      //         (LoadCameraSprite; released via m_flags|=0x10000)
-    CPtrList m_recList;               // +0x240  record list (per-cell undo/record nodes)
+    i32 m_armed;             // +0x230
+    i32 m_recX;              // +0x234  active-record x
+    i32 m_recY;              // +0x238  active-record y
+    CWwdGameObjectA* m_goal; // +0x23c  the "DoNothing" camera-sprite goal object
+                             //         (LoadCameraSprite; released via m_flags|=0x10000)
+    CPtrList m_recList;      // +0x240  record list (per-cell undo/record nodes)
     // m_recList holds Coord* records; CPtrList hands them back as void*, so the
     // element type is reapplied here once instead of at every cheat-command probe
-    Coord* HeadRec() { return static_cast<Coord*>(m_recList.GetHead()); }
+    Coord* HeadRec() {
+        return static_cast<Coord*>(m_recList.GetHead());
+    }
     CActionOptionsMenuBar* m_overlay; // +0x25c  the allocated overlay sub-object (0x40 B)
     CByteArray m_byteArr;             // +0x260  byte-table array
     char m_274[0x10];                 // +0x274  serialized 16-byte region
@@ -500,10 +499,10 @@ public:
     // +0x2a0: the pending-fx GRUNT (the spawned fx sprite's bound logic). Ex-CTmPendingFx
     // view; its `Pulse()` was ?ResolveDeathAnimation@CGrunt@@QAEHXZ @0x455f0 all along
     // (ILT 0x3a1c at both call sites), and the deserializer stores m_7c->m_logic here.
-    CWarlord* m_pendingFx;   // +0x2a0  local player's warlord logic
-    i32 m_countdownActive;   // +0x2a4  countdown armed gate (serialized; ex m_2a4)
-    i32 m_pendingFxKind;     // +0x2a8  active pending overlay-fx kind
-    char _pad2ac[0x4];       // +0x2ac
+    CWarlord* m_pendingFx; // +0x2a0  local player's warlord logic
+    i32 m_countdownActive; // +0x2a4  countdown armed gate (serialized; ex m_2a4)
+    i32 m_pendingFxKind;   // +0x2a8  active pending overlay-fx kind
+    char _pad2ac[0x4];     // +0x2ac
     // Four 64-bit respawn timers held as i32 HALVES, like every other clock pair in
     // the tree: the reset below stores them lo(base), lo(window), hi(base),
     // hi(window) per pair, which is source order for i32s and NOT what cl emits for
@@ -516,9 +515,9 @@ public:
     i32 m_resourceTimerBaseHi; // +0x2c4
     i32 m_resourceIntervalLo;  // +0x2c8  resource respawn interval
     i32 m_resourceIntervalHi;  // +0x2cc
-    CPtrList m_selLists[10]; // +0x2d0  ten selection lists (stride 0x1c)
-    i32 m_selSentinel;       // +0x3e8  selection-group latch (-1 when idle)
-    i32 m_3ec;               // +0x3ec  serialized scalar (LoadFinishLevelSprite: last state)
+    CPtrList m_selLists[10];   // +0x2d0  ten selection lists (stride 0x1c)
+    i32 m_selSentinel;         // +0x3e8  selection-group latch (-1 when idle)
+    i32 m_3ec;                 // +0x3ec  serialized scalar (LoadFinishLevelSprite: last state)
     // +0x3f0..+0x3fc: the two looping-sound channels + their per-frame wanted flags.
     // Names PROVEN by the goo-well update's lookup keys: "LEVEL_ROLLINGBALL" plays
     // into +0x3f0 gated by +0x3f8, "GAME_TELEPORTLOOP" into +0x3f4 gated by +0x3fc.

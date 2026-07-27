@@ -420,7 +420,6 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     return 1;
 }
 
-
 template<> DATA(0x0024c758)
 CActReg CActRegPool<CProjectile>::s_table(2000, 2010);
 
@@ -523,7 +522,8 @@ void CProjectile::MovingSlot16() {
         CWwdGameObjectA* owner = m_object;
         CGruntzMgr* reg = g_gameReg;
         if (owner->m_screenX < reg->m_viewBounds.right && owner->m_screenX >= reg->m_viewBounds.left
-            && owner->m_screenY < reg->m_viewBounds.bottom && owner->m_screenY >= reg->m_viewBounds.top) {
+            && owner->m_screenY < reg->m_viewBounds.bottom
+            && owner->m_screenY >= reg->m_viewBounds.top) {
             LaunchSound("GRUNTZ_WINGZGRUNT_PROJECTILELOOP");
         } else if (m_sound != 0) {
             m_sound->StopAndRewind();
@@ -684,8 +684,10 @@ void CProjectile::MovingSlot16() {
                         break;
                     default:
                         // level death tile: spill the death-splash then hide
-                        if (m_targetX < reg->m_viewBounds.right && m_targetX >= reg->m_viewBounds.left
-                            && m_targetY < reg->m_viewBounds.bottom && m_targetY >= reg->m_viewBounds.top) {
+                        if (m_targetX < reg->m_viewBounds.right
+                            && m_targetX >= reg->m_viewBounds.left
+                            && m_targetY < reg->m_viewBounds.bottom
+                            && m_targetY >= reg->m_viewBounds.top) {
                             CWwdGameObjectA* fx = reg->m_world->m_childGroup->CreateSprite(
                                 0,
                                 m_targetX,
@@ -819,9 +821,9 @@ void CProjectile::ScanTargets(i32 impact) {
     i32 projXhi = projXlo + 0x20;
     i32 projYlo = m_object->m_screenY - 0x10;
     i32 projYhi = projYlo + 0x20;
-    i32 rowBase = 0;                          // [esp+0x18]  row base index into m_grid
-    i32 colOff;                               // [esp+0x14]
-    i32 col;                                  // ebp
+    i32 rowBase = 0; // [esp+0x18]  row base index into m_grid
+    i32 colOff;      // [esp+0x14]
+    i32 col;         // ebp
     do {
         col = 0;
         colOff = rowBase;
@@ -1024,9 +1026,9 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, CGameObject* a
             i32 v2 = m_hitList.GetCount();
             s->Write(&v2, 4);
 
-            for (CoordNode* n = reinterpret_cast<CoordNode*>(m_hitList.GetHeadPosition()); n != 0;
-                 n = n->m_next) {
-                s->Write(n->m_coord, 8);
+            POSITION pos = m_hitList.GetHeadPosition();
+            while (pos != 0) {
+                s->Write(m_hitList.GetNext(pos), 8);
             }
             break;
         }
@@ -1040,32 +1042,32 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, CGameObject* a
     }
 
     switch (mode) {
-    case 7: {
-        s->Read(buf, 0x80);
-        s->Read(m_blob, 0x10);
-        CGameObject* obj = a4;
-        m_34 = obj;
-        m_38 = static_cast<CWwdGameObjectA*>(obj); // the bound obj IS the created A-kind sprite
-        m_3c = obj->m_7c;
-        if (strlen(buf) == 0) {
-            m_value = 0;
+        case 7: {
+            s->Read(buf, 0x80);
+            s->Read(m_blob, 0x10);
+            CGameObject* obj = a4;
+            m_34 = obj;
+            m_38 = static_cast<CWwdGameObjectA*>(obj); // the bound obj IS the created A-kind sprite
+            m_3c = obj->m_7c;
+            if (strlen(buf) == 0) {
+                m_value = 0;
+                return 1;
+            }
+            void* out = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
+            m_3c->m_0c->m_animRegistry->m_10.Lookup(buf, out);
+            m_value = static_cast<CAniElement*>(out);
             return 1;
         }
-        void* out = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
-        m_3c->m_0c->m_animRegistry->m_10.Lookup(buf, out);
-        m_value = static_cast<CAniElement*>(out);
-        return 1;
-    }
-    case 4: {
-        char blob[0x80];
-        memset(blob, 0, sizeof(blob));
-        if (m_value != 0) {
-            strcpy(blob, m_3c->m_0c->m_animRegistry->KeyOfValue(m_value));
+        case 4: {
+            char blob[0x80];
+            memset(blob, 0, sizeof(blob));
+            if (m_value != 0) {
+                strcpy(blob, m_3c->m_0c->m_animRegistry->KeyOfValue(m_value));
+            }
+            s->Write(blob, 0x80);
+            s->Write(m_blob, 0x10);
+            return 1;
         }
-        s->Write(blob, 0x80);
-        s->Write(m_blob, 0x10);
-        return 1;
-    }
     }
     return 1;
 }
@@ -1076,7 +1078,6 @@ CActReg CActRegPool<CTimeBomb>::s_table(2000, 2010);
 static inline CActHandler* TBombLookup(i32 coord) {
     return (CActRegPool<CTimeBomb>::s_table.ResolveEntry(coord));
 }
-
 
 static inline CString* ActNameSlots() {
     return g_typeColl.Slots();
@@ -1134,8 +1135,7 @@ void CTimeBomb::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    *(TBombLookup(id)) =
-        static_cast<CActHandler>(&CTimeBomb::LoadAttributes);
+    *(TBombLookup(id)) = static_cast<CActHandler>(&CTimeBomb::LoadAttributes);
 }
 
 // ---------------------------------------------------------------------------
@@ -1280,22 +1280,22 @@ i32 CTimeBomb::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject* a
     }
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
     switch (mode) {
-    case 7:
-        sa->Read(&m_startTime, 8);
-        sa->Read(&m_duration, 8);
-        break;
-    case 4:
-        sa->Write(&m_startTime, 8);
-        sa->Write(&m_duration, 8);
-        break;
+        case 7:
+            sa->Read(&m_startTime, 8);
+            sa->Read(&m_duration, 8);
+            break;
+        case 4:
+            sa->Write(&m_startTime, 8);
+            sa->Write(&m_duration, 8);
+            break;
     }
     switch (mode) {
-    case 7:
-        sa->Read(&m_fastPhase, 4);
-        break;
-    case 4:
-        sa->Write(&m_fastPhase, 4);
-        break;
+        case 7:
+            sa->Read(&m_fastPhase, 4);
+            break;
+        case 4:
+            sa->Write(&m_fastPhase, 4);
+            break;
     }
     if (!CUserLogic::SerializeMove(arc, mode, a3, a4)) {
         return 0;

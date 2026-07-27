@@ -130,29 +130,25 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     i32 stride = board->m_width * 7 * 4; // bytes per board row
     if (dx > 0) {
         if (dy > 0) {
-            if ((cur[0x1d] & 0x20) || (cur[stride + 1] & 0x20)
-                || (TileFlags(tg - 0x1c) & 0x2000)
+            if ((cur[0x1d] & 0x20) || (cur[stride + 1] & 0x20) || (TileFlags(tg - 0x1c) & 0x2000)
                 || (TileFlags(tg - stride) & 0x2000)) {
                 return 0;
             }
         } else {
             if ((cur[0x1d] & 0x20) || (TileFlags(cur - stride) & 0x2000)
-                || (TileFlags(tg - 0x1c) & 0x2000)
-                || (TileFlags(tg + stride) & 0x2000)) {
+                || (TileFlags(tg - 0x1c) & 0x2000) || (TileFlags(tg + stride) & 0x2000)) {
                 return 0;
             }
         }
     } else {
         if (dy > 0) {
-            if ((cur[-0x1b] & 0x20) || (cur[stride + 1] & 0x20)
-                || (TileFlags(tg + 0x1c) & 0x2000)
+            if ((cur[-0x1b] & 0x20) || (cur[stride + 1] & 0x20) || (TileFlags(tg + 0x1c) & 0x2000)
                 || (TileFlags(tg - stride) & 0x2000)) {
                 return 0;
             }
         } else {
             if ((cur[-0x1b] & 0x20) || (TileFlags(cur - stride) & 0x2000)
-                || (TileFlags(tg + 0x1c) & 0x2000)
-                || (TileFlags(tg + stride) & 0x2000)) {
+                || (TileFlags(tg + 0x1c) & 0x2000) || (TileFlags(tg + stride) & 0x2000)) {
                 return 0;
             }
         }
@@ -1165,9 +1161,7 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     // DIRECT second base at mdisp +0x150 (past the 0x150 CMovingLogic spine). The
     // Grunt.h ODR world is not converted yet, so the subobject is reached by cast
     // until that MI conversion lands (MI1 flagged item 1).
-    if ((reinterpret_cast<CWapX*>(&m_34))
-            ->Chain(ar, mode, a3, a4)
-        == 0) {
+    if ((reinterpret_cast<CWapX*>(&m_34))->Chain(ar, mode, a3, a4) == 0) {
         return 0;
     }
     switch (mode) {
@@ -1572,8 +1566,9 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_2e8, 4);
     ar->Write(&m_288, 8);
 
-    for (CGruntListNode* node = PayloadHead(); node; node = node->m_next) {
-        ar->Write(node->m_data, 0x2c);
+    POSITION pos = m_338.GetHeadPosition();
+    while (pos != 0) {
+        ar->Write(m_338.GetNext(pos), 0x2c);
     }
     return 1;
 }

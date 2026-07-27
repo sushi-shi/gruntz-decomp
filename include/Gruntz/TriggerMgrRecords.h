@@ -20,41 +20,10 @@ enum {
 
 class CGruntPuddle;
 
-struct CTmNode {
-    CTmNode* m_next; // +0x00
-    i32 m_4;         // +0x04
-    i32* m_payload;  // +0x08  -> { x@+0, y@+4 }
-};
-SIZE_UNKNOWN();
-
-// MFC POSITION for a CObList/CPtrList IS the internal node pointer.
-inline CTmNode* TmHead(CObList& list) {
-    return reinterpret_cast<CTmNode*>(list.GetHeadPosition());
-}
-inline CTmNode* TmHead(CPtrList& list) {
-    return reinterpret_cast<CTmNode*>(list.GetHeadPosition());
-}
-
 extern CButeMgr g_buteMgr;
 extern "C" u32 g_frameTime; // DAT_00645588 (the level base score / id sentinel)
 
 void Str_Free(void* node); // CString teardown, 0x1b9b93
-
-struct CTmRecNode {
-    CTmRecNode* m_next;  // +0x00
-    char p0[0x4];        // +0x04
-    CGruntPuddle* m_obj; // +0x08  placed object (the baseList puddle element)
-};
-SIZE_UNKNOWN();
-
-// MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
-// hand-rolled node walk has to pun it - language-forced. One seam per type.
-inline CTmRecNode* TmRecHeadOf(const CObList& l) {
-    return reinterpret_cast<CTmRecNode*>(l.GetHeadPosition());
-}
-inline CTmRecNode* TmRecHeadOf(const CPtrList& l) {
-    return reinterpret_cast<CTmRecNode*>(l.GetHeadPosition());
-}
 
 struct CGridCell {
     i32 m_0;

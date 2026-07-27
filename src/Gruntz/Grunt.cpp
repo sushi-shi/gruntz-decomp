@@ -30,14 +30,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <Bute/ButeMgr.h>
-#include <Gruntz/BattlezData.h> // CBattlezData (the score-HUD one-off arms)
-#include <Gruntz/Play.h>          // CPlay (BuildGruntTypeNameTable/OnRegion*/PostActionCue/m_guts)
-#include <Gruntz/StatusBarMgr.h>  // CStatusBarMgr (the kind-0x32 rez-machine wake arm)
-#include <Gruntz/Timer.h>         // CTimer::AddTime (the stopwatch arm)
-#include <Gruntz/CurPlayer.h>     // g_curPlayer (region/pending-fx gates)
-#include <Wap32/zBitVec.h>        // GetRetAddr/g_projActCache/g_retAddrBreadcrumb (zvec grow path)
-#include <DDrawMgr/AniAdvance.h>  // CAniDesc (the "H" health-pose record)
-#include <new>                    // placement new (the g_typeColl slot construction)
+#include <Gruntz/BattlezData.h>  // CBattlezData (the score-HUD one-off arms)
+#include <Gruntz/Play.h>         // CPlay (BuildGruntTypeNameTable/OnRegion*/PostActionCue/m_guts)
+#include <Gruntz/StatusBarMgr.h> // CStatusBarMgr (the kind-0x32 rez-machine wake arm)
+#include <Gruntz/Timer.h>        // CTimer::AddTime (the stopwatch arm)
+#include <Gruntz/CurPlayer.h>    // g_curPlayer (region/pending-fx gates)
+#include <Wap32/zBitVec.h>       // GetRetAddr/g_projActCache/g_retAddrBreadcrumb (zvec grow path)
+#include <DDrawMgr/AniAdvance.h> // CAniDesc (the "H" health-pose record)
+#include <new>                   // placement new (the g_typeColl slot construction)
 
 VTBL(CGrunt, 0x001e8754);
 
@@ -65,7 +65,6 @@ static const char s_keyF[] = "F";
 
 i32 g_movingSeed;
 
-
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
 static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98
@@ -89,7 +88,6 @@ i32 g_traitorMode; // 0x6455b0 - DEFINED once here; GruntCombat.cpp defined it t
 
 static const char s_animKeyA[] = "A";
 static const char s_animKeyK[] = "K";
-
 
 static const char s_pose_WALK[] = "_WALK";
 static const char s_pose_ATTACK1[] = "_ATTACK1";
@@ -137,12 +135,11 @@ static const char s_pose_TOYBREAK[] = "_TOY-BREAK";
 // giant ~0x46c layout tractable.
 
 void GruntRecycleCoords(CGrunt* g) {
-    GruntCoordNode* n = g->CoordHead();
-    while (n != 0) {
-        GruntCoordNode* cur = n;
-        n = n->m_next;
-        if (cur->m_coord != 0) {
-            CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
+    POSITION pos = g->m_31c.GetHeadPosition();
+    while (pos != 0) {
+        void* coord = g->m_31c.GetNext(pos);
+        if (coord != 0) {
+            CoordPoolNode* node = g_coordPool.NodeOf(coord);
             node->m_next = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
         }
@@ -805,8 +802,8 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
         {
             CAniElement* desc = m_38->m_1a0.m_14;
             CAniDesc* elem = desc->m_records.GetSize() > 0
-                            ? static_cast<CAniDesc*>(desc->m_records.GetAt(0))
-                            : 0;
+                                 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0))
+                                 : 0;
             i32 frame = elem->m_param;
             i32 col = m_entranceCell.col;
             i32 row = m_entranceCell.row;
@@ -1640,8 +1637,7 @@ label_4c6e4:
         }
         i32 hudY = m_object->m_screenY;
         i32 hudX = m_object->m_screenX;
-        CCueRect* rr =
-            &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+        CCueRect* rr = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
         if (hudX < rr->right && hudX >= rr->left && hudY < rr->bottom && hudY >= rr->top) {
             g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 8, -1, -1, -1);
         }
@@ -2128,19 +2124,9 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
         if (m_entranceActive != 0) {
             goto fail;
         }
-        eq =
-            (strcmp(
-                 (*g_typeColl.GetNameRecord(m_objAux->m_1c)),
-                 "A"
-             )
-             != 0);
+        eq = (strcmp((*g_typeColl.GetNameRecord(m_objAux->m_1c)), "A") != 0);
         if (eq) {
-            eq =
-                (strcmp(
-                     (*g_typeColl.GetNameRecord(m_objAux->m_1c)),
-                     "D"
-                 )
-                 != 0);
+            eq = (strcmp((*g_typeColl.GetNameRecord(m_objAux->m_1c)), "D") != 0);
             if (eq) {
                 goto fail;
             }
@@ -3389,8 +3375,8 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 ConstructGrownSlots();
             }
             // the hand-inlined ScratchResolve tail: naming the element of the container's
-        // the untyped byte pool named at the container's one seam
-        eq = (strcmp(reinterpret_cast<CAnimNameRecord*>(rec2)->m_name, "D") == 0);
+            // the untyped byte pool named at the container's one seam
+            eq = (strcmp(reinterpret_cast<CAnimNameRecord*>(rec2)->m_name, "D") == 0);
             if (eq) {
                 GruntEntranceCell cell2 = m_entranceCell;
                 m_38->ApplyName(m_cells[cell2.col * 3 + cell2.row].m_names[2].GetBuffer(0));
@@ -3455,8 +3441,7 @@ void CGrunt::MovingSlot16() {
         if (eq && CoordCount() != 0) {
             GruntCoordNode* head = CoordHead();
             GruntCoord* co = head->m_coord;
-            i32 fl =
-                g_gameReg->m_tileGrid->m_rowInts[co->m_y][co->m_x * 7];
+            i32 fl = g_gameReg->m_tileGrid->m_rowInts[co->m_y][co->m_x * 7];
             i32 mask = m_arrivalFlags & fl;
             if (!(fl & 0x20000000) && !(mask & 0x20000000)
                 && (mask == 0 || (m_arrivalNotified & fl) != 0)) {

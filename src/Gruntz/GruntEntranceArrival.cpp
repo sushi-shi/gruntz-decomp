@@ -88,7 +88,6 @@ static char s_RunningTimePerTile[] = "RunningTimePerTile"; // 0x60e264
 static const char s_animKeyA[] = "A";
 static const char s_animKeyK[] = "K";
 
-
 static __inline i32 s_TileFlags(CMapMgr* b, i32 tx, i32 ty) {
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
         || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
@@ -125,7 +124,6 @@ static void GruntScratchTeardown() {
         cnt--;
     }
 }
-
 
 DATA(0x0020df94)
 char k_60df94[] = "S";
@@ -167,8 +165,8 @@ void CGrunt::FinalizeStep(i32 arg) {
             CGruntzMgr* g = g_gameReg;
             i32 x = m_object->m_screenX;
             i32 y = m_object->m_screenY;
-            if (!(x < g->m_viewBounds.right && x >= g->m_viewBounds.left && y < g->m_viewBounds.bottom
-                  && y >= g->m_viewBounds.top)) {
+            if (!(x < g->m_viewBounds.right && x >= g->m_viewBounds.left
+                  && y < g->m_viewBounds.bottom && y >= g->m_viewBounds.top)) {
                 ClearSubB();
             }
         }
@@ -433,7 +431,8 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     p->m_1a0.Setup((&m_poseAttack1)[idx]);
 
     CAniElement* desc = m_38->m_1a0.m_14;
-    CAniDesc* el = desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+    CAniDesc* el =
+        desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
     i32 frame = el->m_param;
 
     GruntEntranceCell cell = m_entranceCell;
@@ -468,7 +467,8 @@ i32 CGrunt::RearmAttackAnim2() {
     p->m_1a0.Setup(m_poseAttack2);
 
     CAniElement* desc = m_38->m_1a0.m_14;
-    CAniDesc* el = desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
+    CAniDesc* el =
+        desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
     i32 frame = el->m_param;
 
     GruntEntranceCell cell = m_entranceCell;
@@ -723,16 +723,16 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
 
         // Recycle the occupied-coord list (+0x320) onto the free pool, then RemoveAll.
         if (CoordCount() != 0) {
-            void** node = reinterpret_cast<void**>(CoordHead());
-            while (node != 0) {
-                void* next = node[0];
-                void* buf = node[2];
+            // this walked MFC's CNode by hand - pNext at +0, data at +8 - which is
+            // exactly CPtrList::GetNext's body; say it with the accessor
+            POSITION pos = m_31c.GetHeadPosition();
+            while (pos != 0) {
+                void* buf = m_31c.GetNext(pos);
                 if (buf != 0) {
                     CoordPoolNode* sp = g_coordPool.NodeOf(buf);
                     sp->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = sp;
                 }
-                node = static_cast<void**>(next);
             }
             m_31c.RemoveAll();
         }
@@ -756,8 +756,8 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
 
             CAniElement* desc = m_38->m_1a0.m_14;
             CAniDesc* el = desc->m_records.GetSize() > 0
-                          ? static_cast<CAniDesc*>(desc->m_records.GetAt(0))
-                          : 0;
+                               ? static_cast<CAniDesc*>(desc->m_records.GetAt(0))
+                               : 0;
             i32 frame = el->m_param;
             char* buf = (&m_448)->GetBuffer(0);
             m_38->ApplyLookupSprite(buf, frame);
@@ -770,8 +770,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
                 const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_viewRect;
                 if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
                     != 0) {
-                    g->m_cueSink
-                        ->SpawnVoiceDriver(this, tier, 0, -1, -1, -1);
+                    g->m_cueSink->SpawnVoiceDriver(this, tier, 0, -1, -1, -1);
                 }
             } else {
                 if (m_moveKind == 0) {
@@ -782,8 +781,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
                 const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_viewRect;
                 if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
                     != 0) {
-                    g->m_cueSink
-                        ->SpawnVoiceDriver(this, tier, 0, -1, -1, -1);
+                    g->m_cueSink->SpawnVoiceDriver(this, tier, 0, -1, -1, -1);
                 }
             }
             return 0;
@@ -1087,9 +1085,9 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                         m_object->m_screenY
                     )) {
                     // API-forced: SpawnVoiceDriver's first parameter is a polymorphic payload - the
-        // CWarlord caller hands it m_object->m_188, a plain object id - so widening a
-        // `this` into it is the boundary, not a mis-typed parameter
-        g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 4, -1, -1, -1);
+                    // CWarlord caller hands it m_object->m_188, a plain object id - so widening a
+                    // `this` into it is the boundary, not a mis-typed parameter
+                    g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 4, -1, -1, -1);
                 }
             } else if (focused || m_entranceReason != 0) {
                 if (idx == 1) {
@@ -1099,9 +1097,9 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                             m_object->m_screenY
                         )) {
                         // API-forced: SpawnVoiceDriver's first parameter is a polymorphic payload - the
-        // CWarlord caller hands it m_object->m_188, a plain object id - so widening a
-        // `this` into it is the boundary, not a mis-typed parameter
-        g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 5, -1, -1, -1);
+                        // CWarlord caller hands it m_object->m_188, a plain object id - so widening a
+                        // `this` into it is the boundary, not a mis-typed parameter
+                        g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 5, -1, -1, -1);
                     }
                 } else if (idx == 2) {
                     if (CGameLevel::PointInBounds(
@@ -1110,9 +1108,9 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                             m_object->m_screenY
                         )) {
                         // API-forced: SpawnVoiceDriver's first parameter is a polymorphic payload - the
-        // CWarlord caller hands it m_object->m_188, a plain object id - so widening a
-        // `this` into it is the boundary, not a mis-typed parameter
-        g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 6, -1, -1, -1);
+                        // CWarlord caller hands it m_object->m_188, a plain object id - so widening a
+                        // `this` into it is the boundary, not a mis-typed parameter
+                        g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 6, -1, -1, -1);
                     }
                 }
             }
@@ -1517,8 +1515,8 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
 
             CAniElement* desc = m_38->m_1a0.m_14;
             CAniDesc* elem = desc->m_records.GetSize() > 0
-                            ? static_cast<CAniDesc*>(desc->m_records.GetAt(0))
-                            : 0;
+                                 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0))
+                                 : 0;
             char* buf = (&m_448)->GetBuffer(0);
             m_38->ApplyLookupSprite(buf, elem->m_param);
 
@@ -1692,8 +1690,7 @@ i32 CGrunt::StepWarpExit() {
         i32 lvl = st->m_levelIndex + 0x64; // secret level = level + 100
         CString s;
         s.Format("WORLDZ\\LEVEL%i", lvl);
-        if (st->m_levelBank
-                ->ResolveQualified(static_cast<LPCTSTR>(s), REZ_TAG_WWD)) {
+        if (st->m_levelBank->ResolveQualified(static_cast<LPCTSTR>(s), REZ_TAG_WWD)) {
             PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, GOTOLEVEL, lvl);
         }
     }
@@ -2051,8 +2048,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     } else {
         CWwdGameObjectA* h = m_object;
         CGruntzMgr* g = g_gameReg;
-        const LevelCoordRect* bounds =
-            &g->m_world->m_level->m_mainPlane->m_viewRect;
+        const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_viewRect;
         if (CGameLevel::PointInBounds(bounds, h->m_screenX, h->m_screenY)) {
             g->m_cueSink->LoadGruntSpawnConfig(this, 8, -1, -1, -1);
         }
@@ -2301,7 +2297,7 @@ i32 CGrunt::StepEntranceRelatchB() {
 // stores m_prevDesc first. Not source-steerable (every operand/declaration reorder
 // reproduced the same coloring).
 RVA(0x0006b2e0, 0x39)
-void CEffect6b::Apply(CDDrawWorker * a, i32 b) {
+void CEffect6b::Apply(CDDrawWorker* a, i32 b) {
     CAniAdvanceCursor* anim = &m_player->m_1a0;
     m_prevDesc = m_player->m_1a0.m_14;
     anim->Setup(reinterpret_cast<CAniElement*>(a));
