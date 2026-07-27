@@ -617,7 +617,7 @@ i32 CGrunt::TryPowerupAtTile() {
         || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
         flags = 1;
     } else {
-        flags = (reinterpret_cast<i32*>(b->m_rowBytes[ty]))[tx * 7];
+        flags = b->m_rowInts[ty][tx * 7];
     }
     if ((flags & 0x939) || (flags & 2)) {
         return 0;
@@ -1668,7 +1668,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
             || static_cast<u32>(ty) >= static_cast<u32>(bd->m_height)) {
             flags = 1;
         } else {
-            flags = (reinterpret_cast<i32*>(bd->m_rowBytes[ty]))[tx * 7];
+            flags = bd->m_rowInts[ty][tx * 7];
         }
         if (flags & 0x80) {
             return 0;

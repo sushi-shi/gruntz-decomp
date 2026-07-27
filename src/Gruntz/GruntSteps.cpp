@@ -91,7 +91,7 @@ static __inline i32 s_TileFlags(CGruntzMapMgr* b, i32 tx, i32 ty) {
         || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
         return 1;
     }
-    return (reinterpret_cast<i32*>(b->m_rowBytes[ty]))[tx * 7];
+    return b->m_rowInts[ty][tx * 7];
 }
 
 static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
@@ -108,7 +108,7 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
         || static_cast<u32>(mty) >= static_cast<u32>(board->m_height)) {
         return 0;
     }
-    i32* tgt = &(reinterpret_cast<i32*>(board->m_rowBytes[mty]))[mtx * 7];
+    i32* tgt = &board->m_rowInts[mty][mtx * 7];
     i32 tflags = *tgt;
     i32 hit = arr & tflags;
     if (hit & 0x20000000) {
@@ -160,15 +160,15 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     return 1;
 }
 
-static __inline void SerRecord(CFileMemBase* ar, i32 mode, char* p) {
+static __inline void SerRecord(CFileMemBase* ar, i32 mode, void* p) {
     switch (mode) {
         case 4:
             ar->Write(p, 8);
-            ar->Write(p + 8, 8);
+            ar->Write(static_cast<char*>(p) + 8, 8);
             break;
         case 7:
             ar->Read(p, 8);
-            ar->Read(p + 8, 8);
+            ar->Read(static_cast<char*>(p) + 8, 8);
             break;
     }
 }
@@ -196,7 +196,7 @@ static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
         || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
         return 1;
     }
-    return (reinterpret_cast<i32*>(b->m_rowBytes[ty]))[tx * 7];
+    return b->m_rowInts[ty][tx * 7];
 }
 
 RVA(0x00050ca0, 0x2b)
@@ -601,7 +601,7 @@ i32 CGrunt::StepCompassMove() {
 
     if (s_TileFlags(board, tx, ty) & 0x80) {
         // The current tile carries a move command at field +0x10 (4th dword).
-        i32 cmd = (reinterpret_cast<i32*>(board->m_rowBytes[ty]))[tx * 7 + 4];
+        i32 cmd = board->m_rowInts[ty][tx * 7 + 4];
         switch (cmd - 0xb) {
             case 0:
             case 4:
@@ -675,7 +675,7 @@ i32 CGrunt::StepCompassMove() {
                 || static_cast<u32>(mty) >= static_cast<u32>(board->m_height)) {
                 owner = -1;
             } else {
-                owner = (reinterpret_cast<i32*>(board->m_rowBytes[mty]))[mtx * 7 + 1];
+                owner = board->m_rowInts[mty][mtx * 7 + 1];
             }
             m_tileMgr->CellDispatch((owner >> 8) & 0xff, owner & 0xff, 2, m_tileOwnerHi);
         }
@@ -831,7 +831,7 @@ commit:
         i32 ox = m_lastTilePxX >> 5;
         i32 oy = m_lastTilePxY >> 5;
         b->m_rowBytes[oy][ox * 7 * 4 + 3] &= 0xdf;
-        *reinterpret_cast<i32*>(&b->m_rowBytes[oy][ox * 7 * 4 + 4]) = -1;
+        b->m_rowInts[oy][ox * 7 + 1] = -1;
     }
     {
         CGruntzMapMgr* b = g_gameReg->m_tileGrid;
@@ -839,7 +839,7 @@ commit:
         i32 ny = moveY >> 5;
         i32 owner = (m_tileOwnerHi << 8) | m_tileOwnerLo;
         b->m_rowBytes[ny][nx * 7 * 4 + 3] |= 0x20;
-        *reinterpret_cast<i32*>(&b->m_rowBytes[ny][nx * 7 * 4 + 4]) = owner;
+        b->m_rowInts[ny][nx * 7 + 1] = owner;
     }
     m_lastTilePxX = moveX;
     m_lastTilePxY = moveY;
@@ -915,7 +915,7 @@ i32 CGrunt::ClaimSwitchTile() {
         || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
         flags = 1;
     } else {
-        flags = (reinterpret_cast<i32*>(b->m_rowBytes[ty]))[tx * 7];
+        flags = b->m_rowInts[ty][tx * 7];
     }
     if ((flags & 0x20000939) || (flags & 0x80)) {
         return 0;
@@ -1189,14 +1189,14 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     }
     (reinterpret_cast<CTriRecord*>((&m_entranceCell)))
         ->Serialize(ar, mode, a3, a4);
-    SerRecord(ar, mode, reinterpret_cast<char*>(&m_toyClock));
-    SerRecord(ar, mode, reinterpret_cast<char*>(&m_idleAnchor));
-    SerRecord(ar, mode, reinterpret_cast<char*>(&m_idleTimer));
-    SerRecord(ar, mode, reinterpret_cast<char*>(&m_entranceClockLo));
-    SerRecord(ar, mode, reinterpret_cast<char*>(&m_850));
-    SerRecord(ar, mode, reinterpret_cast<char*>(&m_860));
-    SerRecord(ar, mode, reinterpret_cast<char*>(&m_combatClockLo));
-    SerRecord(ar, mode, reinterpret_cast<char*>(&m_880));
+    SerRecord(ar, mode, &m_toyClock);
+    SerRecord(ar, mode, &m_idleAnchor);
+    SerRecord(ar, mode, &m_idleTimer);
+    SerRecord(ar, mode, &m_entranceClockLo);
+    SerRecord(ar, mode, &m_850);
+    SerRecord(ar, mode, &m_860);
+    SerRecord(ar, mode, &m_combatClockLo);
+    SerRecord(ar, mode, &m_880);
     (reinterpret_cast<CPairRecord*>((&m_wingzClockLo)))
         ->Serialize(ar, mode, a3, a4);
     (reinterpret_cast<CPairRecord*>((&m_8a0)))

@@ -82,7 +82,7 @@ static __inline i32 s_TileFlags(CGruntzMapMgr* b, i32 tx, i32 ty) {
         || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
         return 1;
     }
-    return (reinterpret_cast<i32*>(b->m_rowBytes[ty]))[tx * 7];
+    return b->m_rowInts[ty][tx * 7];
 }
 
 void CGrunt::ApplyMoveKind(i32 v) {} // thunk_0x3c29 (0x57100); external/reloc-masked
@@ -853,7 +853,7 @@ i32 CGrunt::UpdateEntranceAnim() {
         || static_cast<u32>(ty) >= static_cast<u32>(board->m_height)) {
         flags = 1;
     } else {
-        flags = (reinterpret_cast<i32*>(board->m_rowBytes[ty]))[tx * 7];
+        flags = board->m_rowInts[ty][tx * 7];
     }
 
     if (flags & 0x80) {
@@ -1219,7 +1219,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
         || static_cast<u32>(tileY) >= static_cast<u32>(b->m_height)) {
         dir = 0;
     } else {
-        dir = (reinterpret_cast<i32*>(b->m_rowBytes[tileY]))[tileX * 7 + 3];
+        dir = b->m_rowInts[tileY][tileX * 7 + 3];
     }
 
     i32 sel = state->m_levelType;
