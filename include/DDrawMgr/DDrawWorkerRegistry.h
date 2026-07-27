@@ -32,7 +32,7 @@ public:
     virtual CImage* Forward34(CImageFrameDesc* a1, CDDrawWorker* worker, i32 a3, i32 a4);          // [15] 0x154f00
     virtual CImage* DispatchKeyed34(CImageFrameDesc* a1, const char* key, i32 a3, i32 a4);         // [16] 0x154be0
     // [17] 0x156e80 (DDrawSubMgr.cpp) - probe a resolved sub-key, install its tree.
-    virtual i32 ProbeWorkerKey(class CSymParser* arg1, i32 arg2);
+    virtual i32 ProbeWorkerKey(class CSymParser* arg1, const char* key);
     // [18] 0x154f80 - install a resolved symbol TREE under a (name, separator) prefix;
     // recurses over child scopes through THIS slot (virtual self-dispatch). The
     // ex-CDDrawWorkerRegistry/ObjImageRegistry "Install"/"LoadTree"/"InsertWorkerKey" names

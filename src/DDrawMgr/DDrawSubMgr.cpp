@@ -194,8 +194,8 @@ CDDrawWorkerRegistry::~CDDrawWorkerRegistry() {
 }
 
 RVA(0x00156e80, 0x38)
-i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymParser* arg1, i32 arg2) {
-    void* result = arg1->GetRoot()->FindSub(reinterpret_cast<const char*>(arg2));
+i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymParser* arg1, const char* key) {
+    void* result = arg1->GetRoot()->FindSub(key);
     // retail: the InstallTree path is the fall-through, return 0 out-of-line at the tail.
     if (result != 0) {
         return InstallTree(result, g_emptyString, "_"); // slot-18 self-dispatch

@@ -261,6 +261,10 @@ i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
 // stores; not source-steerable. docs/patterns/zero-register-pinning.md.
 RVA(0x00163ee0, 0x18)
 i32 CDDrawSurfacePair::ResolveImage_163ee0(CParseSource* src) {
+    // @identity-TODO MakeImageKey does strrchr(name, '.') on this, so it wants a real
+    // filename, yet we hand it a CParseSource*. Either the parse source begins with the
+    // name bytes inline or one of the two declarations is wrong - needs 0x163ee0 /
+    // MakeImageKey disasm. Do not "fix" the cast without settling that.
     return m_surface->MakeImageKey(OwnerMgr()->m_ptrColl, reinterpret_cast<char*>(src), 0);
 }
 
