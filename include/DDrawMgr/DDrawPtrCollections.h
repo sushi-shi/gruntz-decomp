@@ -90,7 +90,7 @@ public:
     // Internal setup helpers reached from CreateDevice (defined in other DDrawMgr
     // TUs; modeled as no-body externs so their rel32 calls are reloc-masked).
     void SetupCaps();                             // 0x143240
-    void* CreatePoolItem(void* arg0, void* arg1); // 0x143630
+    void* CreatePoolItem(void* arg0, i32 kind); // 0x143630  (kind: 2 or 4; unused by the body)
     // Pool/mode comparator - the selection-sort predicate (free __stdcall, no this).
     static i32 __stdcall Compare(void* a, void* b); // 0x1433d0
 

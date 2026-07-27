@@ -127,6 +127,8 @@ i32 CAttract::Vslot09(i32 arg) {
     char buf[0x40];
     ::wsprintfA(buf, "ATTRACT_TITLE%s", pick);
 
+    // the PROVEN dual-band keep: CMapStringToOb and CMapStringToPtr are byte-identical
+    // classes and retail links BOTH bands on this one map (mfc_class-arbitrated).
     CMapStringToOb* map = reinterpret_cast<CMapStringToOb*>(
         &menuRoot()->m_soundRegistry->m_10
     ); // the Ob-band read of the Ptr map (documented dual-band keep)

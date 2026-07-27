@@ -142,7 +142,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         m_surface = static_cast<CDDSurface*>(mgr->m_ptrColl->CreatePoolItem(
             static_cast<void*>(mgr->m_drawTarget->m_frontPair->m_surface),
-            reinterpret_cast<void*>(4)
+            4
         ));
         if (m_surface == 0) {
             if (OwnerMgr()->m_lastError == 0) {
@@ -462,7 +462,7 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, i32 bpp) {
             CDDrawSurfaceMgr* mgr = OwnerMgr();
             m_surface = static_cast<CDDSurface*>(mgr->m_ptrColl->CreatePoolItem(
                 static_cast<void*>(mgr->m_drawTarget->m_frontPair->m_surface),
-                reinterpret_cast<void*>(4)
+                4
             ));
             if (m_surface == 0) {
                 return 0;
@@ -571,6 +571,7 @@ i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, i32 bpp) {
     if (mgr->m_flags & 0x10) {
         hr = pool->CreateDevice(
             static_cast<void*>(mgr->m_hWnd),
+            // a sentinel code in the hwnd slot, not a window - byte-forced
             reinterpret_cast<void*>(2),
             w,
             h,

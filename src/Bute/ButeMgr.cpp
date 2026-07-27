@@ -1306,6 +1306,7 @@ bool CButeMgr::ParseTagLine() {
         // The node IS the per-tag keyed store; ParseAttributeFile reaches it as a
         // CButeTree. The bridging cast flags the deferred CButeNode-derives-CButeTree
         // dedup (see ButeTree.h) - once modeled, this cast vanishes too.
+        // @identity-TODO the deferred CButeNode-derives-CButeTree dedup (ButeTree.h)
         m_pNode = reinterpret_cast<CButeTree*>(node);
         t->Insert(tok, node);
     }

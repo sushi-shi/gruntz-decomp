@@ -1040,7 +1040,7 @@ CDdModePair CDDrawPtrCollections::FindBack(i32 k0, i32 k1, i32 k2) {
 // Residual is the /GX ctor-in-flight EH-state index of the throwing CPtrArray member ctor
 // (the Create7f0_1/CreateA factory-EH family wall; code bytes match, EH-frame state differs).
 RVA(0x00143630, 0x10d)
-void* CDDrawPtrCollections::CreatePoolItem(void* arg0v, void* arg1) {
+void* CDDrawPtrCollections::CreatePoolItem(void* arg0v, i32 kind) {
     CDdCreateArg* arg0 = static_cast<CDdCreateArg*>(arg0v);
     void* outA = 0;
     void* outB;
