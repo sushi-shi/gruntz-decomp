@@ -55,7 +55,7 @@ void* CProjActMap::Insert(const char* key, void* value) {
             i32 b = node->m_8;
             dir = (1 << (b & 7)) & static_cast<i32>(static_cast<signed char>(key[b >> 3]));
             *p++ = dir;
-            CTrieNode* child = dir ? node->m_4 : node->m_0;
+            CTrieNode* child = dir ? node->m_child[1] : node->m_child[0];
             m_20 = child;
             if (child == 0) {
                 break;
@@ -88,9 +88,9 @@ void* CProjActMap::Insert(const char* key, void* value) {
             i32 selfdir = (1 << (critbit & 7))
                           & static_cast<i32>(static_cast<signed char>(key[critbit >> 3]));
             if (selfdir) {
-                nn->m_4 = nn;
+                nn->m_child[1] = nn;
             } else {
-                nn->m_0 = nn;
+                nn->m_child[0] = nn;
             }
 
             if (m_1c == 0) {
@@ -103,27 +103,31 @@ void* CProjActMap::Insert(const char* key, void* value) {
                     do {
                         i32 d = *pp++;
                         m_1c = m_20;
-                        m_20 = d ? m_20->m_4 : m_20->m_0;
+                        m_20 = d ? m_20->m_child[1] : m_20->m_child[0];
                     } while (m_20->m_8 <= critbit);
                 }
                 if (m_1c == 0) {
                     m_18 = nn;
-                } else if (pp[-1]) {
-                    m_1c->m_4 = nn;
                 } else {
-                    m_1c->m_0 = nn;
+                    // retail 0x1935da selects the child SLOT then stores once
+                    CTrieNode** s = &m_1c->m_child[0];
+                    if (pp[-1]) {
+                        s = &m_1c->m_child[1];
+                    }
+                    *s = nn;
                 }
             } else if (dir) {
-                m_1c->m_4 = nn;
+                m_1c->m_child[1] = nn;
             } else {
-                m_1c->m_0 = nn;
+                m_1c->m_child[0] = nn;
             }
 
+            // retail 0x1935eb: ONE store into the selected slot, ONE success tail
+            CTrieNode** other = &nn->m_child[1];
             if (selfdir) {
-                nn->m_0 = m_20;
-            } else {
-                nn->m_4 = m_20;
+                other = &nn->m_child[0];
             }
+            *other = m_20;
             m_14++;
             return value;
         }

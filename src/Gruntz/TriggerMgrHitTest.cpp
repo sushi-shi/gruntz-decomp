@@ -161,7 +161,11 @@ CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* o
         );
     }
     i32 xEnd = span->right + tcol + 1;
-    for (i32 x = tcol - span->left - 1; static_cast<u32>(x) <= static_cast<u32>(xEnd); x++) {
+    i32 x = tcol - span->left - 1;
+    // ONE miss exit (retail 0x75faa): the column gate and the column loop's bottom
+    // test both branch into it, so the outer back-edge is an unconditional jmp
+    if (static_cast<u32>(x) <= static_cast<u32>(xEnd)) {
+    do {
         i32 yEnd = span->bottom + trow + 1;
         for (i32 y = trow - span->top - 1; static_cast<u32>(y) <= static_cast<u32>(yEnd); y++) {
             if (static_cast<u32>(x) >= static_cast<u32>(g_gameReg->m_tileGrid->m_width)) {
@@ -198,6 +202,8 @@ CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* o
                 return g;
             }
         }
+        x++;
+    } while (static_cast<u32>(x) <= static_cast<u32>(xEnd));
     }
     return 0;
 }

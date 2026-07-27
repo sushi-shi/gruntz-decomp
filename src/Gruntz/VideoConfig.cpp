@@ -180,7 +180,9 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 OnToggleCk5Option(hDlg);
                 return FALSE;
             }
-            return FALSE;
+            // the unrouted-notification exit IS the switch default (retail 0x36564),
+            // so the ladder's last compare inverts and WM_HSCROLL falls through
+            break;
 
         case WM_INITDIALOG: { // 0x110
             LoadGameOptionsToDialog(hDlg);

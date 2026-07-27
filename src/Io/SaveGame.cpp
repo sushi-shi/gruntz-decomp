@@ -42,11 +42,14 @@ void* g_previewImage;                     // 0x64c868  (CRezImage* previewed DIB
 // front-half displacements. None are source-steerable.
 RVA(0x000e3690, 0x2ec)
 i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    // ONE epilogue (retail 0xe39c7): every arm loads its result into eax and jumps in
+    i32 result;
     switch (msg) {
         case WM_PAINT: {
             HWND item = GetDlgItem(hDlg, 0x51d);
             if (g_previewMgr == 0 || g_previewImage == 0 || item == 0) {
-                return 1;
+                result = 1;
+                goto done;
             }
             RECT wr;
             GetWindowRect(item, &wr);
@@ -110,36 +113,42 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 );
             }
             EndPaint(hDlg, &ps);
-            return 1;
+            result = 1;
+            goto done;
         }
         case WM_INITDIALOG: {
             if (g_slotState == 0) {
                 EndDialog(hDlg, 0);
-                return 1;
+                result = 1;
+                goto done;
             }
             g_previewMgr = new CImagePool;
             // Retail dataflow (byte-proven at 0xe37c6..0xe3803): BOTH the pool's
             // second handle and the title call's window are edi = the dialog's own
             // hDlg (stack arg), and the gate is g_gameReg->m_saveSink pushed raw -
             // the old spelling passed g_previewMgr through two nonsense casts.
+            // the failure exit is the switch's shared `return 0` (retail 0xe37ae is
+            // the DEFAULT arm's block, reached by fall-through from this gate)
             if (g_previewMgr->SetHandles(
                     g_gameReg->m_owner->m_hInstance,
                     hDlg,
                     0
                 )
                 == 0) {
-                return 0;
+                break;
             }
             BuildLevelTitleString(
                 hDlg,
                 g_gameReg->m_saveSink,
                 reinterpret_cast<CLevelInfo*>(g_slotState)
             );
-            return 1;
+            result = 1;
+            goto done;
         }
         case WM_COMMAND: {
             if (wParam != 2 && wParam != 1) {
-                return 0;
+                result = 0;
+                goto done;
             }
             if (g_previewMgr != 0) {
                 if (g_previewImage != 0) {
@@ -149,10 +158,13 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 g_previewMgr = 0;
             }
             EndDialog(hDlg, 0);
-            return 1;
+            result = 1;
+            goto done;
         }
     }
-    return 0;
+    result = 0;
+done:
+    return result;
 }
 
 RVA(0x000e3a40, 0xb0)

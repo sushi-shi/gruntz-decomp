@@ -60,15 +60,20 @@ i32 CWarpStoneFly::Tick(i32 dt) {
         }
     }
 
+    // both y arms share ONE clamp store (retail 0x10a26b), reached by jmp from the
+    // >0 arm and by fall-through from the <0 arm - not a per-arm store+epilogue
     if (m_yDirection > 0.0) {
         if (static_cast<i32>(newY) > m_targetY) {
-            m_currentY = static_cast<double>(m_targetY);
+            goto clampY;
         }
     } else if (m_yDirection < 0.0) {
         if (static_cast<i32>(newY) < m_targetY) {
-            m_currentY = static_cast<double>(m_targetY);
+            goto clampY;
         }
     }
+    return 1;
+clampY:
+    m_currentY = static_cast<double>(m_targetY);
     return 1;
 }
 

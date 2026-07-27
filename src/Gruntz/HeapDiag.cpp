@@ -194,11 +194,9 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
     memset(&pe, 0, sizeof(pe));
     pe.dwSize = sizeof(pe);
     i32 matchCount = 0;
-    if (!pFirst(hSnap, &pe)) {
-        CloseHandle(hSnap);
-        return 0;
-    }
-
+    // retail 0x11914d: ONE CloseHandle + return-0 tail - the Process32First failure
+    // branches straight into it with hSnap still live, it is not its own exit
+    if (pFirst(hSnap, &pe)) {
     do {
         MODULEENTRY32 me;
         memset(&me, 0, sizeof(me));
@@ -226,6 +224,7 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
             }
         }
     } while (pNext(hSnap, &pe));
+    }
 
     CloseHandle(hSnap);
     return 0;

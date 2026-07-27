@@ -290,28 +290,32 @@ CGrunt* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 s
         last = startRow;
         row = startRow;
     }
-    while (row <= last) {
-        CGrunt** cell = &m_grid[row * TM_GRID_COLS];
-        for (i32 col = 0; col < 15; col++) {
-            CGrunt* g = cell[col];
-            if (g != 0 && g->m_entranceCommitted != 0) {
-                CWwdGameObjectA* o = g->m_object;
-                if (o->m_layer != 0) {
-                    i32 x0 = o->m_screenX - 15;
-                    i32 y0 = o->m_screenY - 15;
-                    if (px < x0 + 30 && px >= x0 && py < y0 + 30 && py >= y0) {
-                        if (outRow != 0) {
-                            *outRow = row;
+    // ONE miss exit (retail 0x6bf76): the row gate and the row loop's bottom test
+    // both branch into it, so the outer back-edge is an unconditional jmp
+    if (row <= last) {
+        do {
+            CGrunt** cell = &m_grid[row * TM_GRID_COLS];
+            for (i32 col = 0; col < 15; col++) {
+                CGrunt* g = cell[col];
+                if (g != 0 && g->m_entranceCommitted != 0) {
+                    CWwdGameObjectA* o = g->m_object;
+                    if (o->m_layer != 0) {
+                        i32 x0 = o->m_screenX - 15;
+                        i32 y0 = o->m_screenY - 15;
+                        if (px < x0 + 30 && px >= x0 && py < y0 + 30 && py >= y0) {
+                            if (outRow != 0) {
+                                *outRow = row;
+                            }
+                            if (outCol != 0) {
+                                *outCol = col;
+                            }
+                            return m_grid[row * TM_GRID_COLS + col];
                         }
-                        if (outCol != 0) {
-                            *outCol = col;
-                        }
-                        return m_grid[row * TM_GRID_COLS + col];
                     }
                 }
             }
-        }
-        row++;
+            row++;
+        } while (row <= last);
     }
     return 0;
 }

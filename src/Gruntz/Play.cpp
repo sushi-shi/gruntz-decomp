@@ -5712,22 +5712,24 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
     i32 id = g_curPlayer;
     CGruntzMgr* reg = g_gameReg;
     GruntzPlayer* slot = &reg->m_options[id];
-    if (slot == 0) {
-        return 0;
-    }
-    if (reg->m_cmdGrid->m_rowCount[id] >= slot->m_comboSel) {
-        return 0;
-    }
-    for (i32 i = 0; i < markerCount(); i++) {
-        CHitMarker* m = markerData()[i];
-        if (m != 0) {
-            RECT rc;
-            SetRect(&rc, m->m_0 - 0x20, m->m_4 - 0x20, m->m_0 + 0x20, m->m_4 + 0x20);
-            if (x < rc.right && x >= rc.left && y < rc.bottom && y >= rc.top) {
-                *outX = m->m_0;
-                *outY = m->m_4;
-                return 1;
-            }
+    // ONE miss exit (retail 0xd6017): both gates AND the loop's bottom test branch
+    // into it, so the loop's back-edge is an unconditional jmp
+    if (slot != 0 && reg->m_cmdGrid->m_rowCount[id] < slot->m_comboSel) {
+        i32 i = 0;
+        if (i < markerCount()) {
+            do {
+                CHitMarker* m = markerData()[i];
+                if (m != 0) {
+                    RECT rc;
+                    SetRect(&rc, m->m_0 - 0x20, m->m_4 - 0x20, m->m_0 + 0x20, m->m_4 + 0x20);
+                    if (x < rc.right && x >= rc.left && y < rc.bottom && y >= rc.top) {
+                        *outX = m->m_0;
+                        *outY = m->m_4;
+                        return 1;
+                    }
+                }
+                i++;
+            } while (i < markerCount());
         }
     }
     return 0;

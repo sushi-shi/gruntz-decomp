@@ -426,13 +426,11 @@ i32 CGruntVoice::Update() {
             }
         }
         if (resolved == 0) {
-            m_object->m_stateFlags |= 1;
-            return 0;
+            goto stopped;
         }
         CUserLogic* logic = (reinterpret_cast<CGameObject*>(resolved))->m_7c->m_logic;
         if (logic == 0) {
-            m_object->m_stateFlags |= 1;
-            return 0;
+            goto stopped;
         }
         m_object->m_stateFlags &= ~1;
         m_object->m_screenX = logic->m_object->m_screenX;
@@ -455,8 +453,7 @@ i32 CGruntVoice::Update() {
             }
         }
         if (resolved == 0) {
-            m_object->m_stateFlags |= 1;
-            return 0;
+            goto stopped;
         }
         m_object->m_stateFlags &= ~1;
         i32 dx = 0, dy = 0;
@@ -468,5 +465,10 @@ i32 CGruntVoice::Update() {
         m_object->m_screenX = (reinterpret_cast<CGameObject*>(resolved))->m_screenX + dx;
         m_object->m_screenY = (reinterpret_cast<CGameObject*>(resolved))->m_screenY + dy - 0x32;
     }
+    return 0;
+    // retail 0x11aa1e: ONE "lost the source object" tail; all three resolve-miss
+    // gates in both arms branch into it
+stopped:
+    m_object->m_stateFlags |= 1;
     return 0;
 }

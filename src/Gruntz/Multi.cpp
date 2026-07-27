@@ -1760,16 +1760,17 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
 RVA(0x000b8fc0, 0x151)
 i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
     if (h == 0) {
-        return 0;
+        goto notVerified;
     }
     if (playerTok == 0) {
-        return 0;
+        goto notVerified;
     }
     if (m_530 == 0) {
         PollSession();
-        return 0;
+        goto notVerified;
     }
 
+    {
     i32 token;
     if (m_5b0 != 0) {
         CString b = GetConfigNameB();
@@ -1784,15 +1785,18 @@ i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
         m_530 = 0;
         (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
             ->EnterModalUI("Unable to verify custom level with other players");
-        return 0;
+        goto notVerified;
     }
     if (g_connectRptMgr->m_levelVerifyResult == 0) {
         (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
             ->EnterModalUI("Not all players have the (same) custom level.");
         m_530 = 0;
-        return 0;
+        goto notVerified;
     }
     return 1;
+    }
+notVerified:
+    return 0;
 }
 
 RVA(0x000b9180, 0x4a)
@@ -3089,9 +3093,9 @@ i32 CMulti::WaitForOtherPlayers() {
         votes->SetAtGrow(votes->GetSize(), 0);
     }
     if (Peer()->m_sessions.GetCount() == 1) {
-        m_534 = 1;
-        return 1;
+        goto ready;
     }
+    {
     i32 count = 0;
     CNetCmdSlot* slot = m_session->m_slots;
     for (i32 j = 4; j != 0; j--) {
@@ -3101,8 +3105,7 @@ i32 CMulti::WaitForOtherPlayers() {
         slot++;
     }
     if (count == 0) {
-        m_534 = 1;
-        return 1;
+        goto ready;
     }
 
     SendStatFlag(0x3ed, 1);
@@ -3158,6 +3161,11 @@ i32 CMulti::WaitForOtherPlayers() {
         wsprintfA(buf, "AMBIENT%d", GetAmbientId());
         NetGameMgr()->m_sound->PlayByName(buf, 1);
     }
+    return 1;
+    }
+    // retail 0xbbc44: ONE shared latch-and-return block both no-wait gates `je` into
+ready:
+    m_534 = 1;
     return 1;
 }
 
