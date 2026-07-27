@@ -149,7 +149,7 @@ public:
     i32 DecodeBmp(class CDDrawPtrCollections* pal, void* buf, u32 size);
     i32 DecodePcx(class CDDrawPtrCollections* pal, struct PcxHeader* hdr, u32 size);
     i32 DecodePid(class CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, void* surf2);
-    i32 DecodePcxData(class CDDrawPtrCollections* dst, PidHeader* hdr, i32 size, i32 a4, i32 a5);
+    i32 DecodePcxData(class CDDrawPtrCollections* dst, PidHeader* hdr, i32 size, i32 caps, u32 key);
 
     // The file-backed BMP/PCX/PID loaders (Image.cpp): construct a stack CFile, open the
     // file, slurp it into an `operator new` buffer and call the matching decoder (the
@@ -160,7 +160,7 @@ public:
     // Extension-dispatch resource loader (0x13e5d0): strrchr the ext, _strcmpi
     // .BMP/.PCX/.PID, forward to the matching LoadBmp/LoadPcx/LoadPid on this.
     i32 MakeImageKey(class CDDrawPtrCollections* pal, char* name, void* arg3);
-    i32 DecodePcxEx(class CDDrawPtrCollections* pal, char* path, void* a3, void* a4);
+    i32 DecodePcxEx(class CDDrawPtrCollections* pal, char* path, i32 caps, u32 key);
 
     // The surface-blit decoders ResolveEx dispatches to (ret 0x10 = 4 args). DecodeRun ==
     // the former DecodeBmpData @0x143cf0; Decode == DecodePcxData2 @0x144b30. Reconstructed

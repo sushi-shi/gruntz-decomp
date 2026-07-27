@@ -42,7 +42,7 @@ SIZE(0x80); // header proper; m_pixels is the trailing stream
 struct RtBitmapResHeader {
     i32 m_0; // +0x00 (payload size; data follows at +m_0+0x400)
     i32 m_4; // +0x04 (stored into the surface desc width)
-    i32 m_8; // +0x08 (forwarded to the slot-2 init)
+    class CDDrawPtrCollections* m_8; // +0x08  the pool forwarded to the slot-2 init
     char m_padc[0xe - 0xc];
     i16 m_e; // +0x0e (must be 8)
 };

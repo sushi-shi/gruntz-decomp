@@ -97,7 +97,7 @@ i32 CFileImageSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 fla
             return 0;
         }
     } else if (ext != 0 && _strcmpi(ext, ".PID") == 0) {
-        if (DecodePcxEx(info, path, reinterpret_cast<void*>(flags), reinterpret_cast<void*>(key))
+        if (DecodePcxEx(info, path, flags, key)
             == 0) {
             return 0;
         }

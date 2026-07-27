@@ -229,7 +229,7 @@ i32 CDDSurface::Load(CDDrawPtrCollections * a, char* name, i32 c) {
     if (!p) {
         return 0;
     }
-    i32 saved = p->m_8;
+    CDDrawPtrCollections* saved = p->m_8;
     if (p->m_e != 8) {
         return 0;
     }
@@ -239,7 +239,7 @@ i32 CDDSurface::Load(CDDrawPtrCollections * a, char* name, i32 c) {
     m_width = p->m_4;
     m_descFlags = 7;
     m_height = c;
-    if (!Init1(reinterpret_cast<CDDrawPtrCollections*>(saved), 0)) {
+    if (!Init1(saved, 0)) {
         return 0;
     }
     // The Win32 DIB idiom: the bits start biSize (p->m_0, a RUNTIME value) plus the
@@ -1011,7 +1011,7 @@ i32 CDDSurface::RunDecode3(void* dstBuf, void* src, i32 width, i32 height) {
 #pragma optimize("", on)
 
 RVA(0x001457a0, 0x22c)
-i32 CDDSurface::DecodePcxData(CDDrawPtrCollections* dst, PidHeader* hdr, i32 size, i32 a4, i32 a5) {
+i32 CDDSurface::DecodePcxData(CDDrawPtrCollections* dst, PidHeader* hdr, i32 size, i32 caps, u32 key) {
     i32 flags = static_cast<i32>(hdr->flags);
     i32 w = hdr->width;
     i32 h = hdr->height;
@@ -1021,9 +1021,9 @@ i32 CDDSurface::DecodePcxData(CDDrawPtrCollections* dst, PidHeader* hdr, i32 siz
         return 0;
     }
     if (flags & PID_SYSTEM_MEMORY) {
-        a4 = (a4 & ~0x4000) | 0x800;
+        caps = (caps & ~0x4000) | 0x800;
     } else if (flags & PID_VIDEO_MEMORY) {
-        a4 = a4 & ~0x800;
+        caps = caps & ~0x800;
     }
 
     void* palette = 0;
@@ -1061,7 +1061,7 @@ i32 CDDSurface::DecodePcxData(CDDrawPtrCollections* dst, PidHeader* hdr, i32 siz
         }
     }
 
-    if (!CDDSurface::BlitSurf(dst, w, h, 0, a4)) { // direct (qualified) slot-3 call
+    if (!CDDSurface::BlitSurf(dst, w, h, 0, caps)) { // direct (qualified) slot-3 call
         return 0;
     }
 
@@ -1091,13 +1091,13 @@ i32 CDDSurface::DecodePcxData(CDDrawPtrCollections* dst, PidHeader* hdr, i32 siz
         operator delete(decoded);
     }
     if (flags & PID_TRANSPARENCY) {
-        FillPalette(a5);
+        FillPalette(key);
     }
     return 1;
 }
 
 RVA(0x001459d0, 0x135)
-i32 CDDSurface::DecodePcxEx(CDDrawPtrCollections* pal, char* path, void* a3, void* a4) {
+i32 CDDSurface::DecodePcxEx(CDDrawPtrCollections* pal, char* path, i32 caps, u32 key) {
     CFile file;
 
     if (!file.Open(path, 0, 0)) {
@@ -1116,14 +1116,12 @@ i32 CDDSurface::DecodePcxEx(CDDrawPtrCollections* pal, char* path, void* a3, voi
     }
 
     i32 result =
-        DecodePcxData(pal, static_cast<PidHeader*>(buf), len, reinterpret_cast<i32>(a3),
-                      reinterpret_cast<i32>(a4));
+        DecodePcxData(pal, static_cast<PidHeader*>(buf), len, caps, key);
     operator delete(buf);
     return result;
 }
 
-RVA(0x00145b10, 0x1b5)
-i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, void* surf2) {
+RVA(0x00145b10, 0x1b5)i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, void* surf2) {
     i32 flags = static_cast<i32>(hdr->flags);
     i32 width = hdr->width;
     i32 height = hdr->height;
@@ -1197,8 +1195,7 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, v
     return 0;
 }
 
-RVA(0x00145cd0, 0x130)
-i32 CDDSurface::LoadPid(CDDrawPtrCollections* pal, char* path, void* a3) {
+RVA(0x00145cd0, 0x130)i32 CDDSurface::LoadPid(CDDrawPtrCollections* pal, char* path, void* a3) {
     CFile file;
 
     if (!file.Open(path, 0, 0)) {
