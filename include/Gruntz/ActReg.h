@@ -19,9 +19,13 @@ template<class Tag> struct CActRegPool {
 template<class T> inline T* zDArray<T>::ResolveEntry(i32 id) {
     m_grown = 0;
     if (id >= m_lo && id <= m_hi) {
+        // byte-forced: m_stride is a RUNTIME width, so the band is byte-addressed and the
+        // element type goes back on here - this accessor IS that one seam
         return reinterpret_cast<T*>(m_base + (id - m_lo) * m_stride);
     }
     if (GrowTo(id, 0)) {
+        // byte-forced: m_stride is a RUNTIME width, so the band is byte-addressed and the
+        // element type goes back on here - this accessor IS that one seam
         return reinterpret_cast<T*>(m_base + (id - m_lo) * m_stride);
     }
     void* item = g_projActCache;

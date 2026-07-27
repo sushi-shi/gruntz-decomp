@@ -31,9 +31,13 @@ static inline u16* Row16(u8* locked, i32 row, i32 pitch) {
 }
 
 static inline u16 Clut16(u32 byteOff) {
+    // byte-forced: g_clut is a u8 band indexed by BYTE offsets (DDrawShadeBlit's bank
+    // seeds keep the same byte-granular arithmetic). A typed seam here was measured and
+    // cost ShadeBlt/ShadeRect 3-7% - it re-associates the addend.
     return *reinterpret_cast<const u16*>(g_clut + byteOff);
 }
 static inline void ClutStore16(u32 byteOff, i16 v) {
+    // byte-forced, same band as the reader above
     *reinterpret_cast<i16*>(g_clut + byteOff) = v;
 }
 DATA(0x00283ca0)

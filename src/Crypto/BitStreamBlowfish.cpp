@@ -9,6 +9,8 @@ void __stdcall BitStreamBlowfishDecode(istream* in, ostream* out) {
     unsigned int blk[4];
     bool first = true;
     while (!in->eof()) {
+        // API-forced: istream::read / ostream::write take char*, and the block is a dword
+        // array; the 1-byte case then reads the length out of its first byte
         in->read(reinterpret_cast<char*>(&blk[0]), 8);
         int sample = in->gcount();
         if (sample == 1) {

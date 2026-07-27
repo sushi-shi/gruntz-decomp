@@ -20,12 +20,16 @@ public:
 
     // the key IS the act id (AnimWorkerObj::m_1c / ActFindId), not a pointer
     char** GetNameRecord(i32 key) {
+        // _zdvec/_zvec are UNTYPED byte vectors - IndexToPtr returns char* - so every
+        // typed accessor here is the one seam that puts the element type back on
         return reinterpret_cast<char**>(_zdvec::IndexToPtr(key));
     }
     CAnimNameRecord* GetNameRecords(i32 key) {
+        // the same one seam: untyped byte vector in, element type out
         return reinterpret_cast<CAnimNameRecord*>(_zvec::IndexToPtr(key));
     }
     CAnimNameRecord* ScratchResolve(i32 key) {
+        // the same one seam: untyped byte vector in, element type out
         return reinterpret_cast<CAnimNameRecord*>(_zvec::IndexToPtr(key));
     }
 

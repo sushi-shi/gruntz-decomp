@@ -1164,13 +1164,13 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
                 return static_cast<char*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, key, tag);
-            return reinterpret_cast<char*>(&s_empty);
+            return reinterpret_cast<char*>(&s_empty); // byte-forced (see the note above) // byte-forced (see the note above) // byte-forced (see the note above)
         }
         ReportError(s_fmtNotFound, key, tag);
-        return reinterpret_cast<char*>(&s_empty);
+        return reinterpret_cast<char*>(&s_empty); // byte-forced (see the note above) // byte-forced (see the note above)
     }
     ReportError(s_fmtInvalidTag, tag);
-    return reinterpret_cast<char*>(&s_empty);
+    return reinterpret_cast<char*>(&s_empty); // byte-forced (see the note above)
 }
 
 RVA(0x00173720, 0x4e)
@@ -1634,7 +1634,7 @@ bool ButeMgr::ParseAttributeFile() {
                 // doubles would change the ctor's store shape.
                 CButeRef7* r = GetRef7(m_tagName, m_str104);
                 double dx = *reinterpret_cast<double*>(&r->a);
-                double dy = *reinterpret_cast<double*>(&r->c);
+                double dy = *reinterpret_cast<double*>(&r->c); // faithful {lo,hi} pair
                 double dz = *reinterpret_cast<double*>(&r->e);
                 (m_pText->accum << s_strLt) << static_cast<double>(dx);
                 (m_pText->accum << s_strComma) << static_cast<double>(dy);
@@ -1664,7 +1664,7 @@ bool ButeMgr::ParseAttributeFile() {
             if (m_writeMode) {
                 CButeRef8* r = GetRef8(m_tagName, m_str104);
                 double dx = *reinterpret_cast<double*>(&r->a);
-                double dy = *reinterpret_cast<double*>(&r->c);
+                double dy = *reinterpret_cast<double*>(&r->c); // faithful {lo,hi} pair
                 (m_pText->accum << s_strLBrack) << static_cast<double>(dx);
                 (m_pText->accum << s_strComma) << static_cast<double>(dy);
                 m_pText->accum << s_strRBrack;

@@ -12,6 +12,7 @@ struct DSoundLink {
 SIZE(0x8); // 2-word intrusive chain link
 
 template<class T> inline T* elemOf(DSoundLink* link) {
+    // language-forced container-of, same shape as Bute/Hash.h: the link sits at +4 of T
     return link ? reinterpret_cast<T*>((reinterpret_cast<char*>(link) - 4)) : 0;
 }
 
