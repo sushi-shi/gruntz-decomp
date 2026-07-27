@@ -27,10 +27,18 @@ So the number to drive to zero is the TOTAL, which `reinterpret_casts` already
 ratchets. OPEN reaching 0 means every cast has been LOOKED at once - a milestone, not
 the finish line. `gruntz.audit.cast_reasons` orders the parked ones for the next pass.
 
-and prints the OPEN ones grouped by file so the next pass has a work list rather
-than a number.  A cast counts as explained when the seam it lives in matches one
-of the FORCED patterns below, or when its own line (or the line above it) mentions
-one of the reason keywords - which is what every seam this campaign added does.
+The OPEN ones print grouped by file, so a pass gets a work list rather than a number.
+A cast counts as parked when the seam it lives in matches one of the FORCED patterns
+below, or when its nearby lines mention one of the closed reason keywords.
+
+THE WINDOW IS THREE LINES (lines[i-3:i+2]) AND IT BITES. A reason must sit within
+three lines ABOVE its cast. Writing a fuller, five-line justification pushes the
+vocabulary word out of range and the cast silently goes OPEN again - that has now
+happened twice while ADDING evidence. Put the citation first and the vocabulary term
+on the line nearest the cast, or keep the block to three lines. Equally, a cast can be
+counted as explained by a NEIGHBOUR's comment: deleting unrelated lines nearby can
+un-explain it (see TypeKeyColl's sentinel cast, which rode on the words "one seam" in
+a comment about something else).
 
   python -m gruntz.audit.cast_ledger              # summary + the OPEN worklist
   python -m gruntz.audit.cast_ledger --summary    # just the bucket counts

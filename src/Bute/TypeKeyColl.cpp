@@ -421,8 +421,9 @@ void CVariantSlot::Set(void* key, void* arg2, i32 arg3) {
     }
     i32 idx;
     if (g_recCount23 != 0) {
-        // the pointer-as-key table: g_recs23 keys on the CALLER'S ADDRESS, so the id IS
-        // a pointer - language-forced by the table's own i32 key column (see Set above).
+        // g_recs23 keys on the CALLER'S ADDRESS, but its key column is a signed INT:
+        // ?Find@CVariantSlot@@QAEHH@Z takes H, and 0x16e1d0 probes with `sub edx,ebx;
+        // jns` - an integer compare. language-forced narrowing to that int key.
         idx = this->Find(reinterpret_cast<i32>(key));
     } else {
         idx = -1;
@@ -440,8 +441,8 @@ void CVariantSlot::Set(void* key, void* arg2, i32 arg3) {
         }
     } else {
         if (m_typeTag == 2) {
-            // the pointer-as-key table: g_recs23 keys on the CALLER'S ADDRESS, so the id IS
-            // a pointer - language-forced by the table's own i32 key column (see Set above).
+            // the g_recs23 key column is a signed int: ?Find@CVariantSlot@@QAEHH@Z takes H
+            // and 0x16e1d0 probes with `sub edx,ebx; jns`. language-forced narrowing.
             (static_cast<void(__cdecl*)(i32, i32)>(g_recs23[idx].m_4))(
                 reinterpret_cast<i32>(arg2),
                 arg3
@@ -950,8 +951,9 @@ void* CVariantSlot::Add(void* key, void* val) {
     }
     int idx;
     if (count != 0) {
-        // the pointer-as-key table: g_recs23 keys on the CALLER'S ADDRESS, so the id IS
-        // a pointer - language-forced by the table's own i32 key column (see Set above).
+        // g_recs23 keys on the CALLER'S ADDRESS, but its key column is a signed INT:
+        // ?Find@CVariantSlot@@QAEHH@Z takes H, and 0x16e1d0 probes with `sub edx,ebx;
+        // jns` - an integer compare. language-forced narrowing to that int key.
         idx = Find(reinterpret_cast<i32>(key));
     } else {
         idx = -1;
@@ -968,8 +970,9 @@ void* CVariantSlot::Add(void* key, void* val) {
             );
         }
         g_recs23[m_04].m_4 = val;
-        // the pointer-as-key table: g_recs23 keys on the CALLER'S ADDRESS, so the id IS
-        // a pointer - language-forced by the table's own i32 key column (see Set above).
+        // g_recs23 keys on the CALLER'S ADDRESS, but its key column is a signed INT:
+        // ?Find@CVariantSlot@@QAEHH@Z takes H, and 0x16e1d0 probes with `sub edx,ebx;
+        // jns` - an integer compare. language-forced narrowing to that int key.
         g_recs23[m_04].m_key = reinterpret_cast<i32>(key);
         g_recCount23 = g_recCount23 + 1;
         g_recs23[m_04].m_8 = 0;
