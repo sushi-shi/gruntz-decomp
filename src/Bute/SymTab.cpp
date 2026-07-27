@@ -62,11 +62,10 @@ static __inline i32 IsTokenChar(const char* delims, char ch) {
 // ===========================================================================
 // The serialized symbol-table records are a PACKED byte stream walked with a moving
 // cursor, so pulling a dword out of it is byte-forced; the pun lives here, once.
-// CSlotNode's intrusive m_link sits at offset 0, so the list's head link IS the node.
-// The container-of step is language-forced (an intrusive list stores links, not
-// elements); it lives here at one seam rather than at each teardown read.
+// CSlotNode derives from DSoundLink, so the list head IS the node at offset 0 - this is
+// a plain downcast off the generic link type the list stores.
 static inline CSlotNode* HeadSlotNode(DSoundList& list) {
-    return reinterpret_cast<CSlotNode*>(list.m_head);
+    return static_cast<CSlotNode*>(list.m_head);
 }
 
 static inline i32 PeekI32(const char* p) {
@@ -1013,7 +1012,7 @@ CSymParser::~CSymParser() {
     if (node) {
         do {
             ::operator delete(node->m_buffer);
-            m_nodes.Unlink(&node->m_link);
+            m_nodes.Unlink(node);
             ::operator delete(node);
             node = HeadSlotNode(m_nodes);
         } while (node);
@@ -1654,7 +1653,7 @@ CParseSource* CSymParser::PopParseSlot() {
             el->m_node1c.m_record = el;
             m_hash.Insert(&el->m_node1c);
         }
-        m_nodes.InsertHead(&node->m_link);
+        m_nodes.InsertHead(node);
         e = m_hash.First();
         rec = e->m_record;
     }

@@ -19,6 +19,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // the +0x0c owner (m_soundRegistry = the ANI Configure ctx)
 #include <Gruntz/AniElement.h>        // canonical CAniElement (the 0x28 'ANI' element)
 #include <Bute/SymTab.h>              // CSymTab - the directory/scope tree the walker iterates
+#include <Gruntz/Enums.h>             // REZ_TAG_ANI (the walker's entry-tag filter)
 #include <stdio.h>                    // sprintf (the %s%s%s path-join, 0x11f890)
 #include <string.h>                   // strcpy inline CRT (rep movs / repnz scas)
 
@@ -203,9 +204,13 @@ i32 CDDrawSubMgrLeaf::ScanTree(CSymTab* tree, const char* prefix, const char* su
     void* grp = tree->FirstSym();
     if (grp != 0) {
         do {
-            CSymTab* fn = static_cast<CSymTab*>(tree->NextSym2(grp));
+            // The FirstSym/NextSym2/NextSym3 walk yields LEAF SYMBOL records, i.e.
+            // CParseSource - only FirstSub/NextSub above yield CSymTab sub-scopes. It
+            // was declared CSymTab* and reinterpreted to CParseSource* for the tag read;
+            // at its real type both the tag and m_name (+0x00 on either) read straight.
+            CParseSource* fn = static_cast<CParseSource*>(tree->NextSym2(grp));
             while (fn != 0) {
-                if ((reinterpret_cast<CParseSource*>(fn))->GetEntryTag() == 0x414e49) {
+                if (fn->GetEntryTag() == REZ_TAG_ANI) {
                     if (prefix != 0 && *prefix != 0) {
                         sprintf(buf, g_fmtPathJoin, prefix, suffix, fn->m_name);
                     } else {
@@ -215,7 +220,7 @@ i32 CDDrawSubMgrLeaf::ScanTree(CSymTab* tree, const char* prefix, const char* su
                         ++count;
                     }
                 }
-                fn = static_cast<CSymTab*>(tree->NextSym3(fn));
+                fn = static_cast<CParseSource*>(tree->NextSym3(fn));
             }
             grp = tree->NextSym(grp);
         } while (grp != 0);

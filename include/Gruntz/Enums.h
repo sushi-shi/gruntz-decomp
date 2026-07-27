@@ -68,6 +68,7 @@ typedef enum GruntDeathKind {
 typedef enum RezTypeTag {
     REZ_TAG_WWD = 0x575744, // 'WWD' - level world-data file
     REZ_TAG_WAV = 0x574156, // 'WAV' - sound sample file
+    REZ_TAG_ANI = 0x414e49, // 'ANI' - animation entry (CDDrawSubMgrLeaf::ScanTree filter)
 } RezTypeTag;
 
 enum Tool {

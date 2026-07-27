@@ -18,19 +18,8 @@ public:
 };
 SIZE_UNKNOWN();
 
-// Reduced reader views of the map value Add() resolves (`out`), only the two fields
-// Add() reads. @identity-TODO: the sprite value's concrete class needs an xref chase
-// from the sprite LOADER side (it is NOT CAniRecordBase2). Kept minimal until then.
-struct CLookupSprite {
-    char m_pad00[0xc];
-    u8* m_frameData; // +0x0c  the frame's raw RLE/pixel payload
-};
-SIZE_UNKNOWN();
-struct CLookupResult {
-    char m_pad00[0x10];
-    CLookupSprite* m_sprite; // +0x10
-};
-SIZE_UNKNOWN();
+// (The ex CLookupResult / CLookupSprite reader views are dissolved - see the note on
+// Add() below: the map value IS a CAniRecordBase2 and its +0x10 IS a CDDPalette.)
 
 class CShadeTableCache;
 
@@ -63,8 +52,16 @@ public:
     // (the sprite/frame pointer), or null. 0xe23c0.
     CShadeTable* GetSel(i32 i, i32 bAlt); // 0x0e23c0 (out-of-line)
 
-    // Look the named sprite up in m_spriteMgrHolder's hash table, build a CSpriteRef of the given
-    // kind from it, and return the node (null on miss / alloc fail). 0xe2890.
+    // Look the named PALETTE up in m_spriteMgrHolder's worker map, build a CSpriteRef of
+    // the given kind from it, and return the node (null on miss / alloc fail). 0xe2890.
+    //
+    // The map value's identity is SETTLED (2026-07-27), replacing the @identity-TODO that
+    // claimed "it is NOT CAniRecordBase2": every writer of CDDrawWorkerMapSmall::m_map1 -
+    // Factory_1658c0 / CreateWorker28 / the two siblings, i.e. all of them - stores a
+    // `new CAniRecordBase2`, and LoadGruntzPalette below is what put these very entries
+    // in. So the ex CLookupResult IS CAniRecordBase2 (its +0x10 is m_buf) and the ex
+    // CLookupSprite IS CDDPalette (its +0x0c is m_cacheA, the live 0x400-byte
+    // PALETTEENTRY cache) - which is exactly what CShadeTableCache::AlphaTable wants.
     CSpriteRef* Add(char* szName, i32 kind);
 
     // Register a level's "GRUNTZ_PALETTEZ_<name>" palette into the sprite registry

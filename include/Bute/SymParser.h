@@ -23,8 +23,12 @@ SIZE(0x10); // { vptr, head, tail, count }
 
 struct CParseSource; // the 0x3c leaf parse record (ex 'CSymLeafBuilder')
 
-struct CSlotNode {
-    DSoundLink m_link;      // +0x00  intrusive chain node { next, prev }
+// A DSoundList element: the intrusive link IS the node's head, so the relation is real
+// inheritance, not a pun. (It used to be a `DSoundLink m_link` member, which forced a
+// DSoundLink* -> CSlotNode* reinterpret at every list-head read; as a base, the same
+// zero-offset step is a plain downcast. Layout is unchanged - DSoundLink is 8 bytes
+// with no vtable, so m_buffer still lands at +0x08 and the type is still 0xc.)
+struct CSlotNode : public DSoundLink {
     CParseSource* m_buffer; // +0x08  owned parse-slot block (RezFree'd)
 };
 SIZE(0xc);

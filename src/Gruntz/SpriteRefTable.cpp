@@ -5,6 +5,8 @@
 #include <Gruntz/SpriteRefTable.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // m_spriteMgrHolder's canonical CDDrawSurfaceMgr
 #include <DDrawMgr/DDrawWorkerMapSmall.h> // its +0x18 m_workerMap (the sprite/palette registry)
+#include <DDrawMgr/AniRecordBase2.h>      // the map value class (m_buf = the work palette)
+#include <DDrawMgr/DirectDrawMgr.h>       // CDDPalette (m_cacheA = the live entries)
 
 #include <rva.h>
 
@@ -12,11 +14,10 @@
 
 void* ::operator new(u32); // matches ??2@YAPAXI@Z
 
-// The object Lookup writes into `out`: +0x10 is the sprite, whose +0xc holds the
-// frame data fed to the alpha factory. The reduced reader views CLookupSprite /
-// CLookupResult live in <Gruntz/SpriteRefTable.h> (@identity-TODO - the sprite value's
-// concrete class needs an xref chase from the sprite LOADER side; it is NOT
-// CAniRecordBase2, whose +0x10 m_10 is a plain i32 buffer, not a sprite ptr).
+// The object Lookup writes into `out` is a CAniRecordBase2 (the ONLY thing any writer of
+// CDDrawWorkerMapSmall::m_map1 stores), and its m_buf a CDDPalette - so the chain
+// out->m_buf->m_cacheA is the live PALETTEENTRY block the alpha factory consumes. The
+// ex CLookupResult / CLookupSprite reader views are dissolved onto those two classes.
 
 RVA(0x000e2250, 0x26)
 i32 CSpriteRefTable::Init(CShadeTableCache* cache, CDDrawSurfaceMgr* holder) {
@@ -103,11 +104,13 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
     if (!out) {
         return 0;
     }
-    void* sprite = (reinterpret_cast<CLookupResult*>(out))->m_sprite->m_frameData;
-    if (!sprite) {
+    // The map value is a CAniRecordBase2 (every m_map1 writer news one) and its m_buf a
+    // CDDPalette, whose m_cacheA is the live PALETTEENTRY block AlphaTable consumes.
+    u8* entries = (static_cast<CAniRecordBase2*>(out))->m_buf->m_cacheA;
+    if (!entries) {
         return 0;
     }
-    void* alpha = m_factory->AlphaTable(static_cast<unsigned char*>(sprite));
+    void* alpha = m_factory->AlphaTable(entries);
     if (!alpha) {
         return 0;
     }
