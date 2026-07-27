@@ -763,7 +763,6 @@ i32 CGrunt::PathScan() {
     i32 tcol = CoordTail()->m_coord->m_x;
     i32 trow = CoordTail()->m_coord->m_y;
     i32 hits = 0;
-    i32 hitFound = 0;
 
     while (node != 0) {
         GruntCoordNode* cur = node;
@@ -792,8 +791,18 @@ i32 CGrunt::PathScan() {
                 );
                 if (res != 0) {
                     if (scanHit != 0) {
-                        hitFound = 1;
-                        break;
+                        // retail 0x58080: the hit exit lives INSIDE the loop and works
+                        // on the local route list `s` (the [esp+0x68] CPtrList the
+                        // 0x58092 RemoveAll / 0x5812e ~CPtrList both name) - there is
+                        // no coord recycle and no 0x29a30 drain on this path (the
+                        // function's ONLY call 0x29a30 is at 0x584fa, in the 3x3 tail).
+                        void* elem = s.RemoveHead();
+                        if (elem != 0) {
+                            FREELIST_PUSH(elem);
+                        }
+                        s.RemoveAll();
+                        SCAN_BOUNDS(grid);
+                        return 1;
                     }
                 } else {
                     hits++;
@@ -805,40 +814,7 @@ i32 CGrunt::PathScan() {
         }
     }
 
-    if (hitFound) {
-        // recover the remaining tracked nodes onto the free-list
-        while (node != 0) {
-            GruntCoordNode* cur = node;
-            node = node->m_next;
-            if (g_coordPool.m_freeHead != 0) {
-                GruntCoord* co = cur->m_coord;
-                void** fn = reinterpret_cast<void**>(g_coordPool.m_freeHead);
-                fn[0] = reinterpret_cast<void*>(co->m_x);
-                fn[1] = reinterpret_cast<void*>(co->m_y);
-                g_coordPool.m_freeHead = static_cast<CoordPoolNode*>(*fn);
-                m_31c.AddTail(fn);
-            }
-        }
-        if (CoordCount() != 0) {
-            void* pos = m_31c.GetHeadPosition();
-            while (pos != 0) {
-                void* d = CoordListOps()->NextData(pos);
-                if (d != 0) {
-                    g_coordPool.Push(d);
-                }
-            }
-            m_31c.RemoveAll();
-        }
-        void* elem = m_31c.RemoveHead();
-        if (elem != 0) {
-            FREELIST_PUSH(elem);
-        }
-        m_31c.RemoveAll();
-        SCAN_BOUNDS(grid);
-        return 1;
-    }
-
-    // ---- no hit: 9x9 neighbour re-scan ----
+    // ---- no hit: 3x3 neighbour re-scan ----
     SCAN_BOUNDS(grid);
     i32 nl = col5 - 4;
     i32 nr = col5 + 4;
@@ -846,14 +822,21 @@ i32 CGrunt::PathScan() {
     i32 nb = row5 + 4;
     if (col5 >= nl && col5 < nr && row5 >= nt && row5 < nb) {
         SCAN_BOUNDS(grid);
-        for (i32 dy = 0; dy < 2; dy++) {
-            for (i32 dx = 0; dx < 2; dx++) {
+        // retail 0x58371: the ring is dy,dx = -1..1 with the CENTRE skipped
+        // (0x58397 `if (dy != 0) body; if (dx == 0) next`), the bounds test is
+        // width-then-height on (col5+dx, row5+dy), and the cell read walks the row
+        // by 0x1c bytes per dx step (== m_rowInts[rr][(col5+dx)*7]).
+        for (i32 dy = -1; dy < 2; dy++) {
+            for (i32 dx = -1; dx < 2; dx++) {
+                if (dy == 0 && dx == 0) {
+                    continue;
+                }
                 i32 rr = row5 + dy;
-                i32 cc = col5 * 7 + dx;
+                i32 cc = col5 + dx;
                 i32 cf = 1;
-                if (static_cast<u32>(rr) < static_cast<u32>(grid->m_height)
-                    && static_cast<u32>(cc) < static_cast<u32>(grid->m_width)) {
-                    cf = ((grid->m_rowInts[rr]))[cc];
+                if (static_cast<u32>(cc) < static_cast<u32>(grid->m_width)
+                    && static_cast<u32>(rr) < static_cast<u32>(grid->m_height)) {
+                    cf = ((grid->m_rowInts[rr]))[cc * 7];
                 }
                 if (((m_arrivalFlags | 0x20040002) & cf) & 0x20000000) {
                     continue;
@@ -867,17 +850,46 @@ i32 CGrunt::PathScan() {
                 i32 res = grid->SearchEdge(
                     col5,
                     row5,
-                    col5,
-                    row5,
+                    cc,
+                    rr,
                     &scanHit,
-                    1,
+                    0,
                     m_arrivalFlags | 0x20040002,
                     m_24c
                 );
-                if (res != 0 && scanHit != 0) {
-                    void* elem = s.RemoveHead();
-                    if (elem != 0) {
-                        FREELIST_PUSH(elem);
+                if (res != 0) {
+                    // retail 0x5849f / 0x584cd: TWO separate `if (scanHit)` blocks -
+                    // `scanHit` is address-taken, so the RemoveHead call between them
+                    // forces the reload cl emits.
+                    if (scanHit != 0) {
+                        void* elem = s.RemoveHead();
+                        if (elem != 0) {
+                            FREELIST_PUSH(elem);
+                        }
+                    }
+                    if (scanHit != 0) {
+                        // 0x584d9: recycle the grunt's own coordz (the function's ONLY
+                        // call 0x29a30, at 0x584fa) ...
+                        if (CoordCount() != 0) {
+                            void* pos = m_31c.GetHeadPosition();
+                            if (pos != 0) {
+                                do {
+                                    void* d = CoordListOps()->NextData(pos);
+                                    if (d != 0) {
+                                        g_coordPool.Push(d);
+                                    }
+                                } while (pos != 0);
+                            }
+                            m_31c.RemoveAll();
+                        }
+                        // ... then 0x58521 transfers the fresh route into it.
+                        POSITION p = s.GetHeadPosition();
+                        if (p != 0) {
+                            do {
+                                m_31c.AddTail(s.GetNext(p));
+                            } while (p != 0);
+                        }
+                        s.RemoveAll();
                     }
                 }
             }
