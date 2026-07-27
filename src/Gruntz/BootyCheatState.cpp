@@ -36,7 +36,7 @@ i32 g_bootyCheatBuilt = 0; // 0x22af10
 // is the allocator's block-layout decision, not source-steerable. See
 // docs/patterns/identical-return-epilogue-tailmerge.md (reverse direction).
 RVA(0x00018830, 0x380)
-i32 CBootyState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
+i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
     // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
     if (!CState::LoadGameAssetNamespaces(a1, a2, a3)) {
         goto fail;
@@ -49,8 +49,8 @@ i32 CBootyState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
         CString text;
         CString desc;
         i32 i = 0;
-        // byte-forced: retail's loop guard is a SIGNED compare (jl), which a C++
-        // pointer relation cannot express - that lowers to the unsigned jb form.
+        // byte-forced: retail's end test is `cmp ebp,0x62aef0; jl` - a SIGNED
+        // compare (0x188cf/0x189bf relocs). A char* < char* lowers to `jb`.
         for (char* p = g_cheatTable;
              reinterpret_cast<i32>(p) < reinterpret_cast<i32>(g_cheatTableEnd);
              p += 0xa0) {

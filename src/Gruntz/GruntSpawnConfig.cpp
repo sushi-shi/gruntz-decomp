@@ -244,7 +244,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         stream->Configure(vol, 0, 0, 0);
     }
     CGruntVoice* voice = voices[chosen];
-    return voice->Setup(gate->m_188, static_cast<void*>(stream), priority, 0) != 0;
+    return voice->Setup(gate->m_188, stream, priority, 0) != 0;
 }
 
 // ===========================================================================

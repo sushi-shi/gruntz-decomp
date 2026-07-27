@@ -15,6 +15,7 @@ class CFileMemBase; // HeaderWrite/HeaderRead's serialize stream (<Io/FileMem.h>
 class CGruntzMgr;   // +0x04 owner back-ptr: the game-manager singleton (*g_gameReg).
 class CFaderMgr;    // +0x10 fader manager (the CSoundFxEmitter facet's fader mgr;
 class CString;      // MFC - BuildAssetNamespacePrefixes' key arg (reference-only here)
+class CMulti;       // BuildAssetNamespacePrefixes' finishGate: the multiplayer state to ack
 
 // The {x,y} edge-feed pair CState hands to the per-half input step (+0x188/+0x198).
 struct Edge {
@@ -42,7 +43,7 @@ public:
     // RTTI slot-map + ILT-proven) and chains back via the qualified
     // CState::LoadGameAssetNamespaces() base call (direct rel32, the retail
     // shape). Returns 1 on success, 0 on bail.
-    virtual i32 LoadGameAssetNamespaces(i32 mgr, i32 areaArg, i32 a3); // slot 1
+    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 a3); // slot 1
     // slot 2 (+0x8) - the resource teardown. Default body @0xfa150
     // (StateReleaseResources.cpp; retail ??_7CState slot 2 = ILT 0x3f53 -> 0xfa150):
     // release the four owned blit surfaces, clear m_ready. Leaf states override it
@@ -217,8 +218,9 @@ public:
     // on the active game-state (g_gameReg->m_curState, a CState* -> its concrete CPlay).
     // (Ex the CNamespaceLoader fake-view facet - RTTI proves CState is a root and CPlay's
     // only base is CState, so that "class" was this method wearing a view owner.)
-    // finishGate is the multiplayer join-notify sink the loader acks when the image
-    // namespace lands; every in-tree caller passes 0 (single-player).
+    // finishGate is the multiplayer state to poke between namespace installs: the body
+    // calls CMulti::AckJoinFailure on it (0x35e4, ecx = the arg), and every non-multi
+    // caller passes 0. Typed, not an i32 handle.
     i32 BuildAssetNamespacePrefixes(
         const CString& name,
         i32 mode,

@@ -69,6 +69,7 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     ::SendMessageA(combo->m_hWnd, CB_SETCURSEL, 0, 0);
     HWND__* h = child->m_hWnd;
     g_savedMultiWndProc = GetWindowLongA(h, GWL_WNDPROC);
+    // API-forced: SetWindowLong's GWL_WNDPROC value is a LONG-wide procedure word.
     SetWindowLongA(h, GWL_WNDPROC, reinterpret_cast<i32>(WndProc_c1a10));
     CommitWorldHost();
     return 1;

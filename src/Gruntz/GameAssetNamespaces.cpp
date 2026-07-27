@@ -26,12 +26,7 @@ i32 g_buildNumber; // 0x651614  sprintf("... Build %i ...", g_buildNumber)
 // TESTs it - the int fix lifted 73% -> ~94.5%) - re-homed onto CState so the ~7 leaf
 // callers bind cast-free. Final sweep.
 RVA(0x000f9ea0, 0x21d)
-i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
-    // The manager arrives through the slot-1 virtual's mangling-pinned i32 arg.
-    // Retyping it to CGruntzMgr* is a real fold, but it is all-or-nothing across the
-    // ~10 overrides of CState::LoadGameAssetNamespaces and one of them lives in
-    // src/Gruntz/Multi.cpp, which another lane owns this session. @identity-TODO
-    CGruntzMgr* mgr = reinterpret_cast<CGruntzMgr*>(mgrArg);
+i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 a3) {
     m_mgr = mgr;
     m_symParser = mgr->m_symParser;
     m_world = mgr->m_world;

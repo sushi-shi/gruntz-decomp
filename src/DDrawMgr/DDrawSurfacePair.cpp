@@ -27,6 +27,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // canonical CDDrawSurfaceMgr (OwnerMgr() / m_0c parent)
 #include <DDrawMgr/DDrawPtrCollections.h> // canonical CDDrawPtrCollections (the +0x1c surface pool)
 #include <DDrawMgr/AniRecord.h>           // ex Globals.h
+#include <Image/ImageFormatTag.h>        // IMGTAG_XCP - the PCX entry-tag gate
 
 // The locked-surface pixel geometry is read straight off the held CDDSurface:
 // its byte-pitch (m_pitch @+0x20), its bytes-per-pixel divisor (m_b0 @+0xb0), and
@@ -749,7 +750,10 @@ i32 CResolveNode::Init(
     i32 field40,
     i32 field08
 ) {
-    m_ownerCtx = reinterpret_cast<i32>(owner); // m_ownerCtx is still the untyped ctx slot
+    // PROVEN-heterogeneous slot: CLoadable::m_ownerCtx is a generic i32 context word
+    // because each derived family parks a DIFFERENT owner class in it (see Loadable.h);
+    // the typed read lives in one accessor per class, not in the shared base.
+    m_ownerCtx = reinterpret_cast<i32>(owner);
     m_id = field04;
     m_flags = field08;
     m_drawFillArg = 0;
@@ -1057,7 +1061,7 @@ void* CDDrawWorkerMapSmall::CreateWorker2C(char* path, const char* key, i32 flag
 // residual is the vptr store position (cl 1st vs retail 4th) + the /GX EH-state schedule.
 RVA(0x00165a90, 0xf4)
 void* CDDrawWorkerMapSmall::Factory_165a90(CParseSource* a1, i32 a2, i32 a3) {
-    if (a1->GetEntryTag() != 0x504358) {
+    if (a1->GetEntryTag() != IMGTAG_XCP) {
         return 0;
     }
     char* data = a1->BeginParse();
@@ -1068,6 +1072,9 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CParseSource* a1, i32 a2, i32 a3) {
         a1->m_length
     ); // +0x0c doubles as the key handle for this entry kind
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
+    // faithful: retail pushes the CParseSource POINTER itself into the slot-12
+    // size argument here (0x165b0c `push ecx` = the a1 stack arg) - the slot is
+    // polymorphic across this factory's two kinds.
     if (w->AllocBufMakeB3(data, reinterpret_cast<i32>(a1), a3) == 0) {
         if (w != 0) {
             delete w;
@@ -1266,13 +1273,15 @@ i32 CDDrawWorkerB::Helper(i32 key, i32 idx) {
     // its m_14 element array is m_items.m_pData (CObArray at +0x10) and its m_64/m_68
     // are m_minIndex/m_maxIndex (MakeWorker seeds exactly those two).
     CDDrawWorker* p = static_cast<CDDrawWorker*>(obj);
-    i32 v;
+    CImage* v;
     if (p != 0 && idx >= p->m_minIndex && idx <= p->m_maxIndex) {
-        v = reinterpret_cast<i32>(p->m_items.GetAt(idx));
+        // language-forced: the CObArray band stores CImage*, which is not a CObject
+        // in our model - the same one pun CDDrawWorker::GetAt carries.
+        v = reinterpret_cast<CImage*>(p->m_items.GetAt(idx));
     } else {
         v = 0;
     }
-    m_78 = v;
+    m_frame = v;
     return v != 0;
 }
 

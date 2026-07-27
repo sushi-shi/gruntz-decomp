@@ -16,12 +16,7 @@
 #include <Win32.h>                     // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h>                     // real IDirectDrawSurface dispatch (m_8->IsLost/Restore)
 
-enum ImageFormatTag {
-    IMGTAG_PMB = 0x424d50, // "PMB" -> BMP loader (index 1)
-    IMGTAG_XCP = 0x504358, // "XCP" -> PCX loader (index 2)
-    IMGTAG_DIR = 0x524944, // "DIR" -> loader index 3
-    IMGTAG_DIP = 0x504944, // "DIP" -> loader index 4
-};
+#include <Image/ImageFormatTag.h> // the shared 4-char format codes (ex this TU's local enum)
 
 // ===========================================================================
 // wave4-L (dossier #15): the 0x0d5xxx block below are COMDAT-at-usage exiles of

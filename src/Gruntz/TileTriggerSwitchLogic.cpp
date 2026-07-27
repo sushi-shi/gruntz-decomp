@@ -165,7 +165,7 @@ RVA(0x00110c10, 0xe3f)
 i32 CTileTriggerLogic::Tick() {
     CDDrawSurfaceMgr* world = g_gameReg->m_world; // ebx (spilled to [esp+0x24])
     CGameLevel* level = world->m_level;           // edx
-    i32 transId = 0;                              // [esp+0x1c] transition logic handle
+    CUserLogic* transId = 0;                      // [esp+0x1c] transition logic handle
 
     // ---- resolve the source cell id at this trigger's tile (the switch key) ----
     i32 srcId = PbResolveCell(level, m_tileX, m_tileY); // [esp+0x18]
@@ -186,7 +186,7 @@ i32 CTileTriggerLogic::Tick() {
                 return 0; // the pre-CString early exit (0x111140)
             }
             trig->m_7c->m_notify(trig);
-            transId = reinterpret_cast<i32>(trig->m_7c->m_logic);
+            transId = trig->m_7c->m_logic;
         }
     }
 

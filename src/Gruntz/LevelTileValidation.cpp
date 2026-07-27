@@ -147,6 +147,9 @@ i32 CPlay::PlaceStartGruntz() {
                     obj->m_12c,
                     aux->m_2c,
                     aux->m_30,
+                    // byte-evidenced: PlaceObject's 13th slot is kind-dependent (the
+                    // 0x6b6d0 body compares it to 0x12 for other kinds); at the grunt
+                    // kind retail pushes `lea edx,[obj+0x134]` - this RECT's address.
                     reinterpret_cast<i32>(&obj->m_extent.left)
                 );
                 if (idx == -1) {

@@ -43,9 +43,8 @@ static inline CString* ActNameLookup(i32 id) {
     if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
         return g_typeColl.Elem(id);
     }
-    if (reinterpret_cast<i32>(
-            (static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0)
-        )) { // slow lookup == _zvec::GrowTo @0x16da80
+    // slow lookup == _zvec::GrowTo @0x16da80 (a pointer result, tested for null)
+    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) {
         return g_typeColl.Elem(id);
     }
     void* item = g_projActCache;

@@ -84,13 +84,8 @@ CSbiHlRow::CSbiHlRow() {
 // it contributes no state at all on our side. Logic, member identities, call targets and
 // every fail-path shape are complete and binary-proven against the full 0x5f5 disasm.
 RVA(0x000c7ec0, 0x5f5)
-i32 CPlay::LoadGameAssetNamespaces(i32 a1_i, i32 a2, i32 a3) {
+i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
     using namespace modeinit;
-    // a1 IS the CGruntzMgr singleton, arriving through the slot-1 virtual's
-    // mangling-pinned i32 arg. Retyping it is a real fold but all-or-nothing across
-    // the ~10 overrides of CState::LoadGameAssetNamespaces, one of which lives in
-    // src/Gruntz/Multi.cpp (another lane owns it this session). @identity-TODO
-    CGruntzMgr* a1 = reinterpret_cast<CGruntzMgr*>(a1_i);
     {
         if (a1 == 0) {
             return 0;
@@ -113,7 +108,7 @@ i32 CPlay::LoadGameAssetNamespaces(i32 a1_i, i32 a2, i32 a3) {
         m_scrollEdgeLock = 0;
         m_frameMarker = 0;
         // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
-        if (!CState::LoadGameAssetNamespaces(a1_i, a2, a3)) {
+        if (!CState::LoadGameAssetNamespaces(a1, a2, a3)) {
             return 0;
         }
 

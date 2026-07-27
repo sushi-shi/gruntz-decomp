@@ -1,6 +1,7 @@
 #include <Ints.h>
 #include <DDrawMgr/DDSurface.h> // CDDSurface - the dst/src surfaces (ex RotateSrcImage view)
 #include <Image/RasterVtx.h> // ClipVtx + RotateRasterize decl (shared with ImageRotate.cpp)
+#include <DDrawMgr/DDSurface.h> // CDDSurface - the clip-box destination (m_width/m_height)
 #include <rva.h>
 
 // @early-stop

@@ -75,8 +75,8 @@ RVA(0x001615a0, 0x9a)
 CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags) {
     m_id = field04;
     m_flags = flags;
-    m_ownerCtx =
-        reinterpret_cast<i32>(mapData); // (fused CLoadable ctor stores - the CResolveNode shape)
+    // PROVEN-heterogeneous slot (Loadable.h): the fused CLoadable ctor stores.
+    m_ownerCtx = reinterpret_cast<i32>(mapData);
     // m_frameSets (::CObArray) default-constructed here (0x1b55e9).
     m_tileGrid = 0;
     m_colOffsets = 0;
@@ -747,6 +747,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         return 0;
     }
 
+    // PROVEN-heterogeneous slot (Loadable.h): the base ctor's owner-context word.
     new (obj) CWwdGameObjBaseCtor(reinterpret_cast<i32>(OwnerMgr()), id, 0);
 
     // Construct the embedded sub-object at +0x1A0, then re-stamp both vtables (the

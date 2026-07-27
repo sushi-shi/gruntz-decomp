@@ -66,7 +66,9 @@ public:
     virtual ~CDDSurface(); // slot 0  0x141350 (??_G 0x141330; implicit vptr stamp lands stamp-first)
     virtual i32
     Refresh(IDirectDrawSurface* surf); // slot 1  0x13e140  (GetSurfaceDesc-driven re-cache)
-    virtual i32 Init1(CDDrawPtrCollections* h, i32 a); // slot 2  0x13e0a0
+    // slot 2 0x13e0a0: `desc` is the descriptor to adopt (memcpy'd whole into
+    // m_descWords) before the slot-8 Apply; 0 means "the caller already filled it".
+    virtual i32 Init1(CDDrawPtrCollections* h, const DDSURFACEDESC* desc);
     virtual i32 BlitSurf(
         void* surf,
         i32 width,

@@ -28,6 +28,7 @@
 
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree/RemoveKeysEqual)
 #include <Gruntz/LevelPreview.h>          // ex Globals.h
+#include <Image/ImageFormatTag.h> // IMGTAG_XCP - ResolveQualified's screen-page format word
 
 DATA(0x0024e360)
 i32 g_suppress_64e360 = 0; // 0x24e360
@@ -182,7 +183,7 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     }
     char buf[0x34];
     sprintf(buf, "\\SCREENZ\\%s", name);
-    CParseSource* page = SymTab2c()->ResolveQualified(buf, reinterpret_cast<u32>(&g_screenTag)); // 0x13be40
+    CParseSource* page = SymTab2c()->ResolveQualified(buf, IMGTAG_XCP); // 0x13be40
     if (page == 0) {
         return 0;
     }

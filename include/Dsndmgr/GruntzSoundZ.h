@@ -28,11 +28,11 @@ public:
     virtual i32 Load(const char* path, const char* name); // [6] 0x138aa0 load a bank from a file
     virtual void ReleaseHandle();            // [7]  0x138dd0  Stop + free seq handle & buffer
     virtual i32 IsStarted();                 // [8]  0x138a10  m_seqHandle != 0
-    virtual i32 Play(i32 hDriver, i32 mode); // [9]  0x138e10  start on the digital driver
+    virtual i32 Play(HWND hOwner, i32 mode); // [9]  0x138e10  start on the digital driver
     virtual i32 StopAll();                   // [10] 0x138e90  pause (nest via m_pauseDepth)
     virtual i32 StopBank(i32 bank);          // [11] 0x138ed0  resume (unnest via m_pauseDepth)
     virtual i32 Stop();                      // [12] 0x138e60  AIL_end_sequence
-    virtual i32 Retrigger(); // [13] 0x138f20  re-Play(m_playDriver,m_playMode) if idle
+    virtual i32 Retrigger(); // [13] 0x138f20  re-Play(m_playOwner,m_playMode) if idle
     // [14] 0x138a20  `mov eax,1; retn` const-true predicate. Declared-only own slot of
     // this class (like the sibling slots, no PDB name survives): named descriptively for
     // the MIDI/XMIDI sequence object it interrogates; exact original identity unrecovered.
@@ -45,7 +45,7 @@ public:
         m_name[0] = 0;
         m_pauseDepth = 0;
         m_playMode = 0;
-        m_playDriver = 0;
+        m_playOwner = 0;
         m_tempoPct = 0x64;
         m_volumePct = 0x64;
         m_seqHandle = 0;
@@ -61,7 +61,7 @@ public:
     char m_name[0x40];     // +0x04  inline map key/name buffer
     i32 m_pauseDepth;      // +0x44  pause nesting counter (StopAll++ / StopBank-- ; 0 = playing)
     i32 m_playMode;        // +0x48  saved Play() mode arg (loop flag; re-used by Retrigger)
-    i32 m_playDriver;      // +0x4c  saved Play() digital-driver handle (re-used by Retrigger)
+    HWND m_playOwner;      // +0x4c  saved Play() owner window (re-used by Retrigger)
     i32 m_volumePct;       // +0x50  seeded 0x64 (AIL volume percent default 100)
     i32 m_tempoPct;        // +0x54  seeded 0x64 (AIL tempo percent default 100)
     HSEQUENCE m_seqHandle; // +0x58  AIL sequence handle (queried by IsBusy)
@@ -95,8 +95,8 @@ public:
 
     CMapStringToOb m_map;           // +0x00  name -> CGruntzSoundInnerZ* bank map (0x1c bytes)
     CGruntzSoundInnerZ* m_pCurrent; // +0x1c
-    i32 m_digHandle;                // +0x20
-    i32 m_mdiHandle;                // +0x24
+    HWND m_ownerWnd;                // +0x20  the game window CGruntzSoundZ::Init was handed
+    HINSTANCE m_hInstance;          // +0x24  the app instance CGruntzSoundZ::Init was handed
     i32 m_enabled;                  // +0x28
 };
 SIZE(0x2c); // 0x1c CMapStringToOb member + 4 dwords

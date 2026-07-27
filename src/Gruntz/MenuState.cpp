@@ -51,12 +51,12 @@ CMenuState::~CMenuState() {
 // the new-obj-vs-EH-state interleave - all allocator choices, not source-steerable.
 // See docs/patterns/zero-register-pinning.md + identical-return-epilogue-tailmerge.md.
 RVA(0x0009fe50, 0x343)
-i32 CMenuState::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
+i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
     if (a3 == 0) {
         return 0;
     }
     // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
-    if (!CState::LoadGameAssetNamespaces(a2, a3, a3)) {
+    if (!CState::LoadGameAssetNamespaces(a1, a2, a3)) {
         return 0;
     }
     m_mgr->RestoreVideoMode(0);

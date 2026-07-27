@@ -4,5 +4,4 @@
 
 #include <rva.h>
 
-extern i32 g_screenTag;
 #endif // GRUNTZ_GRUNTZ_LEVELPREVIEW_H

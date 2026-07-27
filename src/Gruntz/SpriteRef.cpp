@@ -245,7 +245,7 @@ void CSpriteRef::Free() {
 }
 
 DATA(0x0024c86c)
-i32 g_dlg64c86c = 0; // DAT_0064c86c (the active save-sink; owner-TU definition)
+CSaveGame* g_saveDlgSink = 0; // 0x64c86c  the save dialog's active CSaveGame (owner-TU definition)
 RVA(0x000e35f0, 0x77)
 i32 CALLBACK winapi_0e35f0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
@@ -254,17 +254,17 @@ i32 CALLBACK winapi_0e35f0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
                 EndDialog(hDlg, 0);
                 return 1;
             }
-            if (DrawSaveGameMenu(hDlg, wParam, reinterpret_cast<CSaveGame*>(g_dlg64c86c)) != 0) {
+            if (DrawSaveGameMenu(hDlg, wParam, g_saveDlgSink) != 0) {
                 return 1;
             }
             // falls through to the shared "return 0" default
         default:
             return 0;
         case 0x110: {
-            i32 v = reinterpret_cast<i32>(g_gameReg->m_saveSink);
+            CSaveGame* v = g_gameReg->m_saveSink;
             g_savedMenuCmd = -1;
-            g_dlg64c86c = v;
-            FillSaveDialog(hDlg, reinterpret_cast<CSaveGame*>(v));
+            g_saveDlgSink = v;
+            FillSaveDialog(hDlg, v);
             return 1;
         }
     }

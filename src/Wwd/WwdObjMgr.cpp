@@ -1317,6 +1317,8 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
         if (desc.m_10 != 0) {
             // same callback ABI; the out-param is the bound logic object
             CUserLogic* child = 0;
+            // API-forced: InvokeCallback forwards its last word untouched to the
+            // client-registered hook - the payload slot is opaque by construction.
             if (OwnerMgr()->InvokeCallback(reader, 9, desc.m_10, reinterpret_cast<i32>(&child))
                 == 0) {
                 return 0;

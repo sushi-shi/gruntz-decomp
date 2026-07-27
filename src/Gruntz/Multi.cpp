@@ -255,7 +255,7 @@ CFile g_obj646778;
 //     71.2 -> 66.6 from these shape deltas; the structure (real classes, real sizes,
 //     real teardown order) is now correct per drive-to-0.
 RVA(0x000b5460, 0x914)
-i32 CMulti::LoadGameAssetNamespaces(i32 a1, i32 a2, i32 a3) {
+i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
     // Connect-state fields reached cast-free through the real classes: `this` is a
     // CMulti (its CPlay/CState base carries the 0x2c..0x4b8 connect-state members and
     // CMulti owns 0x520..0x600), and NetGameMgr() is the CState::m_4 game-mgr's network

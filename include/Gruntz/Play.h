@@ -60,7 +60,7 @@ public:
     virtual i32 Render() OVERRIDE; // THE per-frame heart (this TU)
     // slot 1 (CState override): the PLAY mode/object initializer @0xc7ec0
     // (ModeObjInit.cpp; retail ??_7CPlay slot 1 = ILT 0x132a -> 0xc7ec0).
-    virtual i32 LoadGameAssetNamespaces(i32, i32, i32) OVERRIDE;
+    virtual i32 LoadGameAssetNamespaces(CGruntzMgr*, i32, i32) OVERRIDE;
     // slot 2 (CState override): the ~CPlay teardown body @0xc8700 (Play.cpp; retail
     // ??_7CPlay slot 2 = ILT 0x1dc5 -> 0xc8700, ex "CPlayDtorBody") - free the
     // per-frame workers (m_320/m_guts/m_hitTest/m_beginMarker/m_frameMarker), clear

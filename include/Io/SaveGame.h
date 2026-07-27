@@ -35,12 +35,12 @@ struct SaveSlot {
     union {
         i32 m_pathLo;   // +0xf8  BuildLevelRezPath `lo` arg
         i32 m_f8;       //        mirror of the manager's m_130 sub-mode gate
-        i32 m_isCustom; //        BuildLevelTitleString's custom-level flag
+        i32 m_isCustom; //        custom-level flag (BuildLevelTitleString @0xe44f9)
     };
     union {
-        i32 m_pathHi;   // +0xfc  BuildLevelRezPath `hi` arg
-        i32 m_isWon;    //        "won" flag (FillSaveInfo writes m_134 == 3)
-        i32 m_isBattlez;//        BuildLevelTitleString's battlez-vs-questz flag
+        i32 m_pathHi;    // +0xfc  BuildLevelRezPath `hi` arg
+        i32 m_isWon;     //        "won" flag (FillSaveInfo writes m_134 == 3)
+        i32 m_isBattlez; //        battlez-vs-questz flag (BuildLevelTitleString @0xe44ff)
     };
 };
 SIZE(0x100); // 0x100-byte slot record (m_slots[] array stride)
@@ -108,6 +108,14 @@ int TempFileExists(SaveSlot* p); // 0x0e5700 (defined below)
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6); // 0x0e3e80
 i32 __stdcall CloseTempFile(SaveSlot* r); // defined below (0x0e5550)
 void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, SaveSlot* item);
+// The record the GAME_INFO dialog is describing IS the save slot g_slotState points
+// at: retail hands BuildLevelTitleString the very global winapi_0e4850_SetDlgItemTextA
+// reads m_name (+0x14) off, and the five fields it touches (+0x04/+0x35/+0x75/+0xf8/
+// +0xfc) are SaveSlot's, not CLevelInfo's. The `CLevelInfo*` spelling was a mis-decl.
 void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev);
+
+// 0x64c864 - the save/load dialog family's "record under the cursor". Every writer
+// stores a CSaveGame::GetSlot() result and every reader dereferences a SaveSlot.
+extern SaveSlot* g_slotState;
 
 #endif                                                             // SRC_IO_SAVEGAME_H

@@ -30,12 +30,13 @@ void ImageRotateBlit(
     i32 mode,
     i32 colorkey
 ) {
-    // +0x1c/+0x18 = the source surface's DDSURFACEDESC dwWidth/dwHeight, read in
-    // that order (retail `mov ecx,[eax+0x1c]; mov edx,[eax+0x18]`). The two locals
-    // keep the names the extent math below uses; which of the pair drives the x
-    // axis is NOT settled - the reads are byte-faithful either way.
-    i32 h = src->m_width;
-    i32 w = src->m_height;
+    // NB retail (0x145f63/0x145f66) takes the x/u extent from the source surface's
+    // +0x18 and the y/v extent from +0x1c - i.e. transposed against the embedded
+    // DDSURFACEDESC's own dwHeight/dwWidth naming. The offsets are what is
+    // load-bearing; `src` IS a CDDSurface (RotateRasterize forwards it into
+    // WarpTextureBlit's CDDSurface* src, which WarpIsPow2's the same +0x1c).
+    i32 h = src->m_width;  // +0x1c
+    i32 w = src->m_height; // +0x18
 
     // The source quad corners, stored straight into the transform's texel slots.
     i32 sq[4];

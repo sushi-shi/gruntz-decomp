@@ -26,7 +26,7 @@ public:
     // slot 1  0x013fb0 (AttractState.cpp; retail ??_7CAttract slot 1 = ILT
     // 0x211c -> 0x13fb0, ex "EnterAttractMode") - enter (or re-enter) the attract
     // scene. Chains the base default via CState::LoadGameAssetNamespaces().
-    virtual i32 LoadGameAssetNamespaces(i32 a, i32 b, i32 mode) OVERRIDE;
+    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 mode) OVERRIDE;
     // Own vtable slots (RTTI vtbl@0x5ea194, 26 slots; slot order anchored by
     // CState). Every slot CAttract overrides is declared here in slot order; the
     // two slots whose bodies live elsewhere / are deferred are declared-only (the

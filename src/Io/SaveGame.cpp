@@ -19,7 +19,7 @@ i32 g_savedMenuCmd = -1;
 DATA(0x0024c814)
 CImagePool* g_previewMgr; // 0x64c814
 DATA(0x0024c864)
-SaveSlot* g_slotState;
+SaveSlot* g_slotState; // 0x64c864  the record the save/load dialogs describe
 DATA(0x0024c868)
 void* g_previewImage;                     // 0x64c868  (CRezImage* previewed DIB)
 
@@ -159,7 +159,9 @@ i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
     switch (msg) {
         case 0x110:
             if (g_slotState == 0) {
-                EndDialog(hDlg, reinterpret_cast<INT_PTR>(g_slotState)); // API-forced: nResult is INT_PTR
+                // API-forced: EndDialog's nResult is an INT_PTR and retail pushes the
+                // just-loaded (provably null) record pointer straight into it.
+                EndDialog(hDlg, reinterpret_cast<INT_PTR>(g_slotState));
                 return 1;
             }
             winapi_0e4850_SetDlgItemTextA(
@@ -189,7 +191,9 @@ i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
     switch (msg) {
         case 0x110:
             if (g_slotState == 0) {
-                EndDialog(hDlg, reinterpret_cast<INT_PTR>(g_slotState)); // API-forced: nResult is INT_PTR
+                // API-forced: EndDialog's nResult is an INT_PTR and retail pushes the
+                // just-loaded (provably null) record pointer straight into it.
+                EndDialog(hDlg, reinterpret_cast<INT_PTR>(g_slotState));
                 return 1;
             }
             winapi_0e4850_SetDlgItemTextA(

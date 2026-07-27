@@ -51,7 +51,8 @@ public:
     // vptr stamp; see docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md.
     CDDrawWorkerBase(CDDrawSurfaceMgr* ctx) : CResolveNode(NO_SEED) {
         m_id = 0;
-        m_ownerCtx = reinterpret_cast<i32>(ctx); // the CLoadable-family int owner handle
+        // PROVEN-heterogeneous slot (Loadable.h): the shared base's context word.
+        m_ownerCtx = reinterpret_cast<i32>(ctx);
         m_flags = 0;
         m_dirtyRect.left = static_cast<i32>(0x80000000);
         m_dirtyArmed = -1;

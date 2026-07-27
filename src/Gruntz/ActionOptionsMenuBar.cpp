@@ -179,6 +179,9 @@ i32 CActionOptionsMenuBar::Refresh() {
         } else if (p[-4] == 0) {
             p[-4] = 1;
         }
+        // byte-forced: retail walks the two buttons' parallel state/frame/icon members
+        // through ONE i32 cursor (p[-4]=state, p[-2]=frame, *p=icon), so the CImage*
+        // frame is stored as the cursor's element word.
         i32 frame;
         switch (p[-4]) {
             case 1: {
@@ -188,6 +191,7 @@ i32 CActionOptionsMenuBar::Refresh() {
                 // stored through that i32 slot - byte-forced by retail's own walk.
                 frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
                             ? 0
+                            // byte-forced: the p[-2] element word (see the cursor note)
                             : reinterpret_cast<i32>(static_cast<CImage*>(s->m_items.GetAt(*p)));
                 break;
             }
@@ -198,6 +202,7 @@ i32 CActionOptionsMenuBar::Refresh() {
                 // stored through that i32 slot - byte-forced by retail's own walk.
                 frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
                             ? 0
+                            // byte-forced: the p[-2] element word (see the cursor note)
                             : reinterpret_cast<i32>(static_cast<CImage*>(s->m_items.GetAt(*p)));
                 break;
             }
@@ -208,6 +213,7 @@ i32 CActionOptionsMenuBar::Refresh() {
                 // stored through that i32 slot - byte-forced by retail's own walk.
                 frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
                             ? 0
+                            // byte-forced: the p[-2] element word (see the cursor note)
                             : reinterpret_cast<i32>(static_cast<CImage*>(s->m_items.GetAt(*p)));
                 break;
             }

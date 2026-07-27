@@ -122,16 +122,16 @@ i32 CFileImageSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 fla
 // loads a2 first, swapping the eax/ecx assignment + a couple store slots. Logic complete.
 RVA(0x00148a50, 0x6b)
 i32 CPoolItemA88::Blit7(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4) {
-    u32 desc[(0x7c - 0x10) / 4]; // 0x6c-byte DDSURFACEDESC scratch
-    memset(desc, 0, 0x6c);
-    desc[3] = a2;
-    desc[0x1a] = a4 | 0x80;
-    desc[2] = a3;
-    desc[0x10] = 1;
-    desc[0x11] = 1;
-    desc[0] = 0x6c;
-    desc[1] = 7;
-    return CDDSurface::Init1(info, reinterpret_cast<i32>(desc)) != 0;
+    DDSURFACEDESC desc;
+    memset(&desc, 0, sizeof(desc));
+    desc.dwWidth = a2;
+    desc.ddsCaps.dwCaps = a4 | DDSCAPS_OVERLAY;
+    desc.dwHeight = a3;
+    desc.ddckCKSrcBlt.dwColorSpaceLowValue = 1;
+    desc.ddckCKSrcBlt.dwColorSpaceHighValue = 1;
+    desc.dwSize = sizeof(desc);
+    desc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
+    return CDDSurface::Init1(info, &desc) != 0;
 }
 
 RVA(0x00148ac0, 0x2b)
@@ -166,8 +166,8 @@ i32 CPoolItemAB8::Setup(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4) {
 }
 
 RVA(0x00148b50, 0x2c)
-i32 CPoolItemAB8::Init1(CDDrawPtrCollections* h, i32 a) {
-    if (CDDSurface::Init1(h, a) == 0) {
+i32 CPoolItemAB8::Init1(CDDrawPtrCollections* h, const DDSURFACEDESC* desc) {
+    if (CDDSurface::Init1(h, desc) == 0) {
         return 0;
     }
     InstallColorFormat();
@@ -258,18 +258,18 @@ i32 CPoolItemAE8::Blit47(
     i32 a7
 ) {
     static_cast<void>(a6);
-    u32 desc[(0x7c - 0x10) / 4]; // 0x6c-byte DDSURFACEDESC scratch
-    memset(desc, 0, 0x6c);
-    desc[3] = a2;
-    desc[0x1a] = a5 | a4 | 0x20000;
-    desc[6] = a7;
-    desc[2] = a3;
-    desc[0] = 0x6c;
-    desc[1] = 0x47;
-    return CDDSurface::Init1(info, reinterpret_cast<i32>(desc)) != 0;
+    DDSURFACEDESC desc;
+    memset(&desc, 0, sizeof(desc));
+    desc.dwWidth = a2;
+    desc.ddsCaps.dwCaps = a5 | a4 | DDSCAPS_ZBUFFER;
+    desc.dwZBufferBitDepth = a7;
+    desc.dwHeight = a3;
+    desc.dwSize = sizeof(desc);
+    desc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_ZBUFFERBITDEPTH;
+    return CDDSurface::Init1(info, &desc) != 0;
 }
 
 RVA(0x00148cc0, 0x18)
-i32 CPoolItemAE8::Init1(CDDrawPtrCollections* h, i32 a) {
-    return CDDSurface::Init1(h, a) != 0;
+i32 CPoolItemAE8::Init1(CDDrawPtrCollections* h, const DDSURFACEDESC* desc) {
+    return CDDSurface::Init1(h, desc) != 0;
 }

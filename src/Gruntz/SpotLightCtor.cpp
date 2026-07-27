@@ -22,7 +22,9 @@
 #include <Gruntz/SpotLightActReg.h> // CActRegPool<CSpotLight>::s_table (ex .cpp extern)
 #include <Gruntz/Random.h>          // ex Globals.h transitive
 #include <Gruntz/SpotLight.h>
-#include <Utils/MapTyped.h> // typed MFC map lookups
+#include <Utils/MapTyped.h>         // typed MFC map lookups
+#include <Gruntz/LeafCue.h>         // LeafCue - the sound registry's cue element
+#include <Dsndmgr/DirectSoundMgr.h> // DSoundCloneInst::ConfigureItem (0x1360d0)
 VTBL(CSpotLight, 0x001e75bc);
 DATA(0x001ea3f0)
 const double g_spotRateNum = 3.1415927; // 0x5ea3f0
@@ -181,8 +183,7 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
                 i32 id;
                 s->Read(&id, 4);
                 CGameObject* out = 0;
-                // one slot, every arm stores (see GruntVoice::Update's note)
-                CWwdGameObjectA* resolved;
+                CGameObject* resolved;
                 if (MapLookup(
                         reg->m_world->m_childGroup->m_map48,
                         // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
@@ -194,11 +195,9 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
                 } else if (out == 0) {
                     resolved = 0;
                 } else {
-                    resolved = (out->GetClassId() == CLASSID_SERIALREF)
-                                   ? static_cast<CWwdGameObjectA*>(out)
-                                   : 0;
+                    resolved = (out->GetClassId() == CLASSID_SERIALREF) ? out : 0;
                 }
-                m_focus = resolved;
+                m_focus = static_cast<CWwdGameObjectA*>(resolved);
                 if (m_focus == 0 && id != 0) {
                     return 0;
                 }
@@ -266,9 +265,17 @@ i32 CSpotLight::Tick() {
                 name.Format("LEVEL_UFOHAZARDLASER%d", laser);
                 CDDrawSubMgrLeafScan* obj = reg->m_world->m_soundRegistry; // the name->cue map host
                 if (obj->m_emitGate == 0) {
-                    void* out = 0;
-                    if (obj->m_10.Lookup(name, out) && out != 0 && g_sndEnabled != 0) {
-                        SoundPlay_1360d0(reinterpret_cast<i32>(out), 0, 0, g_sndCueTag);
+                    // The ex `SoundPlay_1360d0(i32,...)` extern was a phantom: 0x1360d0
+                    // is DSoundCloneInst::ConfigureItem, a __thiscall reached through the
+                    // cue's m_10 (retail `mov ecx,[eax+0x10]` at 0xb1ca9, no `add esp`).
+                    LeafCue* cue = 0;
+                    MapLookup(obj->m_10, name, cue);
+                    if (cue != 0 && g_sndEnabled != 0) {
+                        u32 clk = g_killCueClock;
+                        if (clk - cue->m_14 >= static_cast<u32>(cue->m_18)) {
+                            cue->m_14 = clk;
+                            cue->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                        }
                     }
                 }
             } else {

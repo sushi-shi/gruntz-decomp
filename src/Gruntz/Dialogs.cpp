@@ -206,7 +206,8 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
             }
             if (avail) {
                 long idx =
-                    pSend(lb->m_hWnd, 0x180, 0, reinterpret_cast<long>("Color")); // LB_ADDSTRING
+                    // API-forced: LB_ADDSTRING carries the item text in the LPARAM word.
+        pSend(lb->m_hWnd, 0x180, 0, reinterpret_cast<long>("Color")); // LB_ADDSTRING
                 pSend(lb->m_hWnd, 0x19a, idx, i);                                 // LB_SETITEMDATA
             }
         }

@@ -480,7 +480,7 @@ i32 CBootyState::Vslot0c(i32, i32) {
 // @source: decomp-xref
 // @stub
 RVA(0x0001d440, 0xd7d)
-i32 CMultiBootyState::LoadGameAssetNamespaces(i32, i32, i32) {
+i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr*, i32, i32) {
     return 0;
 }
 

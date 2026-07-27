@@ -27,8 +27,8 @@ CGruntzSoundZ::~CGruntzSoundZ() {
 
 RVA(0x00138490, 0x5e)
 i32 CGruntzSoundZ::Init(HINSTANCE hInst, HWND hwnd, i32 skipInit) {
-    m_mdiHandle = reinterpret_cast<i32>(hInst);
-    m_digHandle = reinterpret_cast<i32>(hwnd);
+    m_hInstance = hInst;
+    m_ownerWnd = hwnd;
     m_pCurrent = 0;
     m_enabled = 1;
     // Miles takes the app instance through its driver-handle slot - API-forced
@@ -49,7 +49,7 @@ void CGruntzSoundZ::Shutdown() {
         m_pCurrent->Stop();
     }
     StopAndFlush();
-    m_digHandle = 0;
+    m_ownerWnd = 0;
     m_pCurrent = 0;
     g_ailMidiDriver = 0;
     AIL_shutdown();
@@ -123,7 +123,7 @@ void CGruntzSoundZ::Insert(CGruntzSoundInnerZ* inner) {
 
 RVA(0x00138730, 0x41)
 CGruntzSoundInnerZ* CGruntzSoundZ::FindBank(const char* key) {
-    if (m_digHandle == 0) {
+    if (m_ownerWnd == 0) {
         return 0;
     }
     if (key == 0) {
@@ -146,7 +146,7 @@ i32 CGruntzSoundZ::PlayCreate2(const char* path, i32 playMode, const char* name)
         return 0;
     }
     StopCurrent();
-    if (inner->Play(m_digHandle, playMode) == 0) {
+    if (inner->Play(m_ownerWnd, playMode) == 0) {
         return 0;
     }
     m_pCurrent = inner;
@@ -163,7 +163,7 @@ i32 CGruntzSoundZ::PlayCreate3(const void* buf, u32 len, i32 playMode, const cha
         return 0;
     }
     StopCurrent();
-    if (inner->Play(m_digHandle, playMode) == 0) {
+    if (inner->Play(m_ownerWnd, playMode) == 0) {
         return 0;
     }
     m_pCurrent = inner;
@@ -180,7 +180,7 @@ i32 CGruntzSoundZ::PlayByName(const char* name, i32 playMode) {
         return 0;
     }
     StopCurrent();
-    if (inner->Play(m_digHandle, playMode) == 0) {
+    if (inner->Play(m_ownerWnd, playMode) == 0) {
         return 0;
     }
     m_pCurrent = inner;
@@ -201,7 +201,7 @@ i32 CGruntzSoundZ::Restart(i32 playMode) {
         return 0;
     }
     m_pCurrent->Stop();
-    return m_pCurrent->Play(m_digHandle, playMode);
+    return m_pCurrent->Play(m_ownerWnd, playMode);
 }
 
 RVA(0x001388f0, 0xf)
@@ -359,11 +359,11 @@ void CGruntzSoundInnerZ::ReleaseHandle() {
 }
 
 RVA(0x00138e10, 0x4a)
-i32 CGruntzSoundInnerZ::Play(i32 hDriver, i32 mode) {
+i32 CGruntzSoundInnerZ::Play(HWND hOwner, i32 mode) {
     if (IsStarted() == 0) {
         return 0;
     }
-    m_playDriver = hDriver;
+    m_playOwner = hOwner;
     m_playMode = mode;
     AIL_start_sequence(m_seqHandle);
     if (mode != 0) {
@@ -427,7 +427,7 @@ i32 CGruntzSoundInnerZ::Retrigger() {
         return 0;
     }
     m_pauseDepth = 0;
-    Play(m_playDriver, m_playMode);
+    Play(m_playOwner, m_playMode);
     return 1;
 }
 
