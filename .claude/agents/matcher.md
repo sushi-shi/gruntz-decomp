@@ -409,6 +409,15 @@ wrapper, still runnable as `python -m gruntz.<...>`):
     `--lite`.
   - `--lite` — bare asm, no addresses/bytes/reloc noise (for reading + hand-diffing).
   - `--target` — the retail side, explicit (the default).
+  - `--blocks` — IDA-style BASIC-BLOCK view (either side): in-edges per block; with
+    `--lite` a skeleton, with `--diff` a block-aligned diff. `--dot` emits the CFG
+    as graphviz.
+  - **START HERE on any new function:**
+    `gruntz sema disasm <rva> --blocks --diff --lite` — topology + what still
+    differs, condensed. Reading a flat instruction stream and rebuilding the
+    control flow by hand is wasted effort when this exists. Go to `--rich` once
+    the shape is right and you are chasing which STATEMENT produced which
+    instructions.
 - the Ghidra decomp + its xrefs — field readers/writers, new-sites, vtable slots.
 An identity/ownership/aliasing judgment backed only by a name-pattern grep is a GUESS —
 cite the `sema` evidence for it in your report instead.
@@ -446,6 +455,11 @@ reinterprets, delete local decl-only proximity hosts).
       match     : 100.00% fuzzy  (EXACT)
     # -> already EXACT in `gruntzapp` -> skip it (STOP-EARLY). The library row is an
     #    AMBIG FID false-positive (it is NOT really CMetaFileDC) — don't trust it.
+
+    $ gruntz sema disasm 0x00080850 --blocks --diff --lite   # FIRST LOOK at any function:
+    #    basic-block topology + what still differs, condensed. Do this before the flat
+    #    stream below - you get the control-flow shape handed to you instead of
+    #    rebuilding it from jump targets by hand.
 
     $ gruntz sema disasm 0x00080850        # use when: reading instruction selection + relocs
     Relocations (address operands — reloc-masked in objdiff):
