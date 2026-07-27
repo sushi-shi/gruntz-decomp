@@ -86,14 +86,14 @@ void CBattlezData::SetCount(i32 count) {
 RVA(0x000fcb50, 0x2b)
 void CBattlezData::MarkFlag(i32 y, i32 x) {
     if (y >= 0 && y <= 4 && x >= 0 && x <= 4) {
-        m_flags[x + y * 4] = 1;
+        m_flags[y][x] = 1;
     }
 }
 
 RVA(0x000fcb90, 0x12)
 void CBattlezData::ClearFlags() {
     for (i32 i = 0; i < 16; i++) {
-        m_flags[i] = 0;
+        (&m_flags[0][0])[i] = 0;
     }
 }
 
@@ -103,7 +103,7 @@ i32 CBattlezData::SumFlags(i32 y) {
         return 0;
     }
     i32 sum = 0;
-    i32* p = m_flags;
+    i32* p = &m_flags[0][0];
     for (i32 r = 0; r < 4; r++) {
         for (i32 c = 0; c < 4; c++) {
             sum += *p++;
@@ -115,7 +115,7 @@ i32 CBattlezData::SumFlags(i32 y) {
 RVA(0x000fcc10, 0x2f)
 i32 CBattlezData::GetFlag(i32 x, i32 y) {
     if (x >= 0 && x <= 4 && y >= 0 && y <= 4) {
-        return *reinterpret_cast<i32*>((reinterpret_cast<char*>(m_flags) + x * 0x10 + y * 4));
+        return m_flags[x][y];
     }
     return 0;
 }
@@ -123,21 +123,21 @@ i32 CBattlezData::GetFlag(i32 x, i32 y) {
 RVA(0x000fcc50, 0x2a)
 void CBattlezData::BumpWin(i32 y, i32 x) {
     if (y >= 0 && y <= 4 && x >= 0 && x <= 4 && y != x) {
-        m_wins[x + y * 4]++;
+        m_wins[y][x]++;
     }
 }
 
 RVA(0x000fcc90, 0xf)
 void CBattlezData::ClearWins() {
     for (i32 i = 0; i < 16; i++) {
-        m_wins[i] = 0;
+        (&m_wins[0][0])[i] = 0;
     }
 }
 
 RVA(0x000fccb0, 0x21)
 i32 CBattlezData::SumWinRow(i32 y) {
     i32 sum = 0;
-    i32* p = reinterpret_cast<i32*>((reinterpret_cast<char*>(m_wins) + y * 0x10));
+    i32* p = m_wins[y];
     for (i32 c = 0; c < 4; c++) {
         sum += *p++;
     }
@@ -368,25 +368,25 @@ i32 CBattlezData::GetRecordValue(i32 b) {
 
 RVA(0x000fd330, 0x84)
 void CBattlezData::FillRecord(i32 index, i32 phase) {
-    i32* rec = reinterpret_cast<i32*>((reinterpret_cast<char*>(m_records) + index * 0x40 - 0x40));
+    BattlezRecord* rec = &m_records[index - 1]; // 1-based slot index
     if (phase == 0) {
-        rec[0] = 1;
-        rec[2] = m_score;
-        rec[3] = m_toyzCount;
-        rec[4] = m_weaponCount;
-        rec[5] = m_1c;
-        rec[6] = m_20;
-        rec[7] = m_powerupCount;
-        rec[8] = m_28;
-        rec[9] = m_2c;
-        rec[10] = m_scoreValue;
-        rec[1] = g_gameReg->m_isEasyMode;
+        rec->m_populated = 1;
+        rec->m_08 = m_score;
+        rec->m_0c = m_toyzCount;
+        rec->m_10 = m_weaponCount;
+        rec->m_14 = m_1c;
+        rec->m_18 = m_20;
+        rec->m_1c = m_powerupCount;
+        rec->m_20 = m_28;
+        rec->m_24 = m_2c;
+        rec->m_scoreValue = m_scoreValue;
+        rec->m_04 = g_gameReg->m_isEasyMode;
     } else {
-        rec[11] = m_30;
-        rec[12] = m_34;
-        rec[13] = m_38;
-        rec[14] = m_3c;
-        rec[15] = m_40;
+        rec->m_2c = m_30;
+        rec->m_30 = m_34;
+        rec->m_34 = m_38;
+        rec->m_38 = m_3c;
+        rec->m_3c = m_40;
     }
 }
 
@@ -430,13 +430,13 @@ i32 CBattlezData::Serialize(CFileMemBase* s, i32 op, i32 a2, i32 a3) {
             for (p = m_counts, i = 0; i < 4; i++, p++) {
                 s->Read(p, 4);
             }
-            p = m_wins;
+            p = &m_wins[0][0];
             for (r = 0; r < 4; r++) {
                 for (c = 0; c < 4; c++, p++) {
                     s->Read(p, 4);
                 }
             }
-            p = m_flags;
+            p = &m_flags[0][0];
             for (r = 0; r < 4; r++) {
                 for (c = 0; c < 4; c++, p++) {
                     s->Read(p, 4);
@@ -489,13 +489,13 @@ i32 CBattlezData::Serialize(CFileMemBase* s, i32 op, i32 a2, i32 a3) {
     for (p = m_counts, i = 0; i < 4; i++, p++) {
         s->Write(p, 4);
     }
-    p = m_wins;
+    p = &m_wins[0][0];
     for (r = 0; r < 4; r++) {
         for (c = 0; c < 4; c++, p++) {
             s->Write(p, 4);
         }
     }
-    p = m_flags;
+    p = &m_flags[0][0];
     for (r = 0; r < 4; r++) {
         for (c = 0; c < 4; c++, p++) {
             s->Write(p, 4);

@@ -62,8 +62,8 @@ public:
     i32 m_powerupCount; // +0x24  powerupz picked up
     i32 m_28, m_2c, m_30, m_34, m_38, m_3c, m_40, m_scoreValue;
     i32 m_counts[4]; // +0x48  per-row placed-object counters
-    i32 m_wins[16];  // +0x58  4x4
-    i32 m_flags[16]; // +0x98  4x4
+    i32 m_wins[4][4];  // +0x58  win grid [y][x] (retail's row stride is 0x10)
+    i32 m_flags[4][4]; // +0x98  flag grid; GetFlag's x*0x10+y*4 IS [x][y]
     // Per-owner x per-pickup-type counters (LoadPickupSprites bumps
     // [N*owner + (type - band-base-type)]; Serialize round-trips each as 4 x N).
     // The retail displacements fold the PickupType id base into the array base:
