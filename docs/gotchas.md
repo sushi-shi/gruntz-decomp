@@ -26,12 +26,35 @@ Hard-won traps that cost real time. Grouped by area. The deeper codegen idioms l
   jump tables can't be aligned across the table region, so its *current* % measures
   alignment luck, not byte-correctness — **a byte-BETTER reconstruction can show a LOWER
   current %** (keep it; MAX-fuzzy preserves the best; see structure-over-current-%).
-- **Delinker duplicate-symbol → false 0%.** A function reached via an ILT thunk that also
-  contains inline jump tables whose self-target relocs reference its own symbol gets emitted
-  TWICE in the delinked obj (real `.text` def + a size-0 UNDEFINED external); objdiff pairs
-  the size-0 copy → hard **0%** despite a byte-correct body. Undercounts exact tree-wide.
-  Detect: delinked objs with a size-0 undefined symbol that also has a `.text` def. This is a
-  DELINKER/attribution fix, not a source fix (e.g. `MorphByTool`, `SetActionCode`).
+- **A function with NO `fuzzy_match_percent` key in `report.json` is at exactly 0.0%, NOT
+  unpaired.** objdiff serializes with serde's skip-the-default rule, so a true 0.0 vanishes
+  from the JSON and looks, by key presence, like a function it never diffed. It is not:
+  objdiff's own `objdiff-cli diff … --format json` carries `"match_percent": 0.0` **with a
+  live `target_symbol` link** for every one of them. **Always read the field as
+  `float(fn.get("fuzzy_match_percent") or 0.0)`** — or, in-package, via
+  `gruntz.core.report.fn_fuzzy()`. Two readers guessed and both guessed wrong, silently:
+  `permute_sweep` defaulted the missing key to **100.0** and so skipped exactly the
+  0%-matching functions from its worklist, and `Report.fn_pct` returned `None` so
+  `gruntz sema rva` printed *no match line at all* for them. Pinned by
+  `gate_selftest.TestOmittedZeroFuzzyPercent`.
+- **The "delinker duplicate-symbol pairs the size-0 copy" story is DEAD — do not repeat it.**
+  It is a stale diagnosis that outlived its fix and has since mis-explained the 0% functions
+  to at least two lanes. The delinker really does emit ~2385 name collisions (a real `.text`
+  def plus a size-0 UNDEFINED external reached through an ILT thunk), but `canonicalize_coff`
+  has renamed the redundant undefined copy to `$dup$<name>` and retargeted its relocations to
+  the real definition since `b1f3a0c52`/`1db37b32b`. Both sides now pair the real definition;
+  in `grunt` 29 of the 30 symbols in the same packed `.text` section score normally.
+- **The real cause of the residual 0% functions is a target/base symbol EXTENT mismatch.**
+  Measured 2026-07-27, the whole population is **8 functions**, every one jump-table or
+  thunk adjacent, and in each the delinked symbol's size disagrees with the base's because
+  the carve is wrong — too long (`CFaderMgr::Add` 1926 vs 1408: it swallowed its neighbour),
+  too short and ending mid-flow on a `jmp` instead of a `ret`
+  (`CActionOptionsMenuBar::Refresh` 310 vs 290), or excluding the inline jump table the base
+  symbol *includes* (`CGrunt::StepArrivalDrop` 2813 vs 2560 — objdiff renders the base tail
+  as `.dword ?StepArrivalDrop@…+0x1f4` data rows). objdiff still scores these **0.0** even
+  with 36–151 byte-identical instructions, so — exactly like the jump-table alignment bullet
+  above — **their current % is not a proxy for byte-correctness.** This is a delinker/carve
+  fix, not a source fix; MAX-fuzzy already records 0.0000 for them, so they cost nothing.
 
 ## Build / worktree state (pool worktrees carry stale build state across resets)
 

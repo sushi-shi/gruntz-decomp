@@ -31,6 +31,7 @@ import argparse
 import contextlib
 import io
 import json
+import os
 import struct
 import sys
 import tempfile
@@ -41,10 +42,12 @@ from gruntz.audit import tu_layout
 from gruntz.cleanliness import board as cleanliness
 from gruntz.cleanliness import class_sizes
 from gruntz.core import class_meta
+from gruntz.core import report
 from gruntz.core import library_labels
 from gruntz.build import canonicalize_data_symbols, labels, synth_pdb
 from gruntz.cleanliness import vtable_slot_binding as vsb
 from gruntz.match import high_water, status
+from gruntz.permute import permute_sweep
 from gruntz.match import verify_unique_names as vun
 
 
@@ -763,6 +766,101 @@ class TestClassMetaScanner(unittest.TestCase):
         the real declaration that follows on the same line."""
         with _Tree({"a.cpp": 'const char* u = "http://x";\nstruct CAfter {};\nSIZE(0x40);\n'}):
             self.assertIn("CAfter", class_meta.size_annotated_names())
+
+
+class TestOmittedZeroFuzzyPercent(unittest.TestCase):
+    """A function scored at exactly 0.0% has NO `fuzzy_match_percent` key.
+
+    objdiff serializes report.json with serde's skip-the-default rule, so a true 0.0%
+    is indistinguishable BY KEY PRESENCE from a function it never diffed - and it is
+    NOT the latter: objdiff's one-shot `diff` carries `"match_percent": 0.0` with a
+    live `target_symbol` link for exactly these. Measured 2026-07-27: 8 tree functions
+    sit at a true 0.0%.
+
+    Two readers guessed the missing key and both guessed wrong, silently:
+      * `permute_sweep._pcts` defaulted it to 100.0, so its "<100%" worklist SKIPPED
+        every 0%-matching function - the ones most in need of permuting.
+      * `Report.fn_pct` returned None, so `gruntz sema rva` printed no match line at
+        all for them (a dossier that omits the worst score is worse than no dossier).
+    """
+
+    _ZERO = {"name": "?Zero@@QAEHXZ", "size": "100", "address": "0"}  # key omitted == 0.0
+    _HALF = {"name": "?Half@@QAEHXZ", "size": "100", "address": "100",
+             "fuzzy_match_percent": 50.0}
+
+    def _report(self, root):
+        (root / "report.json").write_text(json.dumps({
+            "measures": {}, "units": [{"name": "u", "measures": {},
+                                       "functions": [self._ZERO, self._HALF]}]}))
+        return root / "report.json"
+
+    def test_fn_fuzzy_reads_the_omitted_key_as_zero(self):
+        self.assertEqual(report.fn_fuzzy(self._ZERO), 0.0)
+        self.assertEqual(report.fn_fuzzy(self._HALF), 50.0)
+        self.assertNotEqual(report.fn_fuzzy(self._ZERO), 100.0)
+
+    def test_fn_pct_distinguishes_scored_zero_from_absent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            saved = report.REPORT
+            report.REPORT = self._report(Path(tmp))
+            try:
+                r = report.Report()
+                # present-and-zero is a NUMBER, so `sema rva` prints "0.00% fuzzy" ...
+                self.assertEqual(r.fn_pct("?Zero@@QAEHXZ"), 0.0)
+                self.assertIsNotNone(r.fn_pct("?Zero@@QAEHXZ"))
+                self.assertEqual(r.fn_pct("?Half@@QAEHXZ"), 50.0)
+                # ... and only a name the report never lists is None.
+                self.assertIsNone(r.fn_pct("?Missing@@QAEHXZ"))
+            finally:
+                report.REPORT = saved
+
+    def _sweep_tree(self, tmp):
+        """A minimal tree `permute_sweep` can read: report.json + symbol_names.csv + src."""
+        root = Path(tmp)
+        (root / "build" / "objdiff").mkdir(parents=True)
+        (root / "build" / "gen").mkdir(parents=True)
+        (root / "build" / "objdiff" / "report.json").write_text(json.dumps({
+            "units": [{"name": "u", "functions": [self._ZERO, self._HALF]}]}))
+        (root / "build" / "gen" / "symbol_names.csv").write_text(
+            "rva,name,unit,size,kind\n"
+            "0x00001000,?Zero@@QAEHXZ,u,0x64,func\n"
+            "0x00002000,?Half@@QAEHXZ,u,0x64,func\n")
+        (root / "u.cpp").write_text("RVA(0x00001000, 0x64)\nx\nRVA(0x00002000, 0x64)\ny\n")
+        return root
+
+    def test_permute_sweep_does_not_read_a_zero_as_a_hundred(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._sweep_tree(tmp)
+            cwd = Path.cwd()
+            os.chdir(root)
+            try:
+                pcts = permute_sweep._pcts("u")
+            finally:
+                os.chdir(cwd)
+            self.assertEqual(pcts["?Zero@@QAEHXZ"], 0.0)
+            self.assertEqual(pcts["?Half@@QAEHXZ"], 50.0)
+            self.assertLess(pcts["?Zero@@QAEHXZ"], 100.0)
+
+    def test_the_sweep_worklist_contains_the_zero_percent_function(self):
+        """THE BUG, end to end: `_ordered` selects the unit's <100% functions, and the
+        0%-matching one - the function most in need of the permuter - must be in it."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._sweep_tree(tmp)
+            cwd = Path.cwd()
+            os.chdir(root)
+            try:
+                got = permute_sweep._ordered("u", str(root / "u.cpp"))
+            finally:
+                os.chdir(cwd)
+            self.assertEqual(got, [("?Zero@@QAEHXZ", 0.0), ("?Half@@QAEHXZ", 50.0)])
+
+    def test_importing_the_sweep_neither_exits_nor_chdirs(self):
+        """An importable module must not sys.exit()/chdir() at module scope - that is
+        what made the bug above untestable in the first place."""
+        import importlib
+        cwd = Path.cwd()
+        importlib.reload(permute_sweep)          # would SystemExit if argv were parsed here
+        self.assertEqual(Path.cwd(), cwd)
 
 
 def main() -> int:

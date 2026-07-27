@@ -15,15 +15,17 @@ first so build/objdiff/{target,report.json} are current):
 """
 import subprocess, re, json, sys, os, tomllib, pathlib
 
-_CWD = pathlib.Path.cwd()
-ROOT = next((str(p) for p in [_CWD, *_CWD.parents] if (p / "flake.nix").exists()),
-            os.environ.get("REPO") or str(_CWD))
-os.chdir(ROOT)
+def _root():
+    """The repo/worktree root (nearest ancestor holding flake.nix), else $REPO/cwd."""
+    cwd = pathlib.Path.cwd()
+    return next((str(p) for p in [cwd, *cwd.parents] if (p / "flake.nix").exists()),
+                os.environ.get("REPO") or str(cwd))
 
-if len(sys.argv) < 2:
-    sys.exit("usage: python3 -m gruntz.permute.permute_sweep <unit> [iters]")
-UNIT = sys.argv[1]
-ITERS = sys.argv[2] if len(sys.argv) > 2 else "60"
+
+# NB: the argv parse and the chdir live in main(), NOT at module scope. A module that
+# sys.exit()s and chdir()s on IMPORT cannot be unit-tested, and that is why the
+# `_pcts` default-to-100.0 bug below went unnoticed - see gate_selftest
+# TestOmittedZeroFuzzyPercent.
 
 
 def _src_of(unit):
@@ -36,11 +38,16 @@ def _src_of(unit):
 
 
 def _pcts(unit):
-    """mangled name -> fuzzy_match_percent for `unit`, from build/objdiff/report.json."""
+    """mangled name -> fuzzy_match_percent for `unit`, from build/objdiff/report.json.
+
+    A missing key is 0.0, NOT 100.0: objdiff omits the field for a function scored at
+    exactly 0.0% (serde skips the f32 default). Defaulting it to 100.0 made this sweep
+    treat a 0%-matching function as already perfect and skip it - see
+    gruntz.core.report."""
     d = json.load(open("build/objdiff/report.json"))
     for u in d.get("units", []):
         if u.get("name") == unit:
-            return {f["name"]: f.get("fuzzy_match_percent", 100.0)
+            return {f["name"]: float(f.get("fuzzy_match_percent") or 0.0)
                     for f in (u.get("functions") or []) if f.get("name")}
     sys.exit(f"unit '{unit}' not in report.json - run `gruntz build`.")
 
@@ -59,19 +66,26 @@ def _ordered(unit, src):
         if not m:
             continue
         sym = rva2sym.get(int(m.group(1), 16))
-        if sym and pct.get(sym, 100.0) < 99.995:
-            out.append((sym, pct.get(sym, 0.0)))
+        if sym is None or sym not in pct:
+            continue  # not measured in this unit's report - nothing to climb toward
+        if pct[sym] < 99.995:
+            out.append((sym, pct[sym]))
     return out
 
 
-def main():
-    src = _src_of(UNIT)
-    funcs = _ordered(UNIT, src)
-    print(f"sweep {UNIT} ({src}): {len(funcs)} functions <100%, top-down", flush=True)
+def main(argv=None):
+    argv = sys.argv[1:] if argv is None else list(argv)
+    if not argv:
+        sys.exit("usage: python3 -m gruntz.permute.permute_sweep <unit> [iters]")
+    unit, iters = argv[0], (argv[1] if len(argv) > 1 else "60")
+    os.chdir(_root())
+    src = _src_of(unit)
+    funcs = _ordered(unit, src)
+    print(f"sweep {unit} ({src}): {len(funcs)} functions <100%, top-down", flush=True)
     wins = []
     for sym, p0 in funcs:
         short = re.sub(r'^\?([A-Za-z0-9_]+)@.*', r'\1', sym)
-        r = subprocess.run(["python3", "-m", "gruntz.permute.permute", src, UNIT, sym, ITERS],
+        r = subprocess.run(["python3", "-m", "gruntz.permute.permute", src, unit, sym, iters],
                            capture_output=True, text=True)
         m = re.search(r'FINAL ([0-9.]+)', r.stdout)
         p1 = float(m.group(1)) if m else p0
