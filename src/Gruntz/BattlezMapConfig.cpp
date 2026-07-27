@@ -5208,14 +5208,17 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
     // The cell record for (col,row): a direct table slot when its tile marker is
     // 0x67, else resolved through QueryA on the packed coordinate.
     BrickzCell* tile = &(static_cast<BrickzCell*>((m_board)->m_rows[row]))[col];
+    // BOTH arms run on m_cellQuery (+0x14), not m_ctx (+0x04): retail loads
+    // `mov edx,[ebp+0x14] / mov edi,[edx+0x70]` and `mov ecx,[ebp+0x14] / call
+    // FindInLists12`. The old m_ctx reading survived only because CGruntzMgr::
+    // m_tileGrid sits at +0x70 too, so the trailing displacement matched by accident
+    // while the base slot was wrong; +0x70 here is CTileTriggerContainer::
+    // m_latchedLeaf, already the CTileTriggerLogic* this needs.
     CTileTriggerLogic* cell;
     if (tile->m_10 == 0x67) {
-        // ctx+0x70 IS the board (== this->m_board); walked below as the m_block
-        // slots - an unproven aliasing decode, kept flagged. @identity-TODO
-        cell = reinterpret_cast<CTileTriggerLogic*>(m_ctx->m_tileGrid);
+        cell = m_cellQuery->m_latchedLeaf;
     } else {
-        cell =
-            (reinterpret_cast<CTileTriggerContainer*>(m_ctx))->FindInLists12((col << 8) + row, 0);
+        cell = m_cellQuery->FindInLists12((col << 8) + row, 0);
     }
     i32 bestX = col;
     i32 bestY = col;
