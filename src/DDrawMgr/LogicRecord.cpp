@@ -23,7 +23,7 @@
 // (local-pin of mode, arg reorder) flips the allocation. ~79%; defer to the
 // final sweep.
 RVA(0x00164830, 0xd3)
-i32 AnimWorkerObj::Dispatch(CFileMemBase* a, i32 mode, void* c, void* d) {
+i32 AnimWorkerObj::Dispatch(CFileMemBase* a, i32 mode, i32 c, void* d) {
     if (a == 0) {
         return 0;
     }
@@ -59,7 +59,7 @@ i32 AnimWorkerObj::Dispatch(CFileMemBase* a, i32 mode, void* c, void* d) {
             break;
     }
     if (m_logic) {
-        if (m_logic->SerializeMove(a, mode, reinterpret_cast<i32>(c), static_cast<CGameObject*>(d))
+        if (m_logic->SerializeMove(a, mode, c, static_cast<CGameObject*>(d))
             == 0) {
             return 0;
         }

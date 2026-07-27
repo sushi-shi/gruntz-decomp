@@ -94,7 +94,7 @@ i32 CChatBox::Step(u32 dt) {
     if (!m_activeNode) {
         return 0;
     }
-    if (!m_activeNode->NotifyAll(reinterpret_cast<void*>(dt))) {
+    if (!m_activeNode->NotifyAll(dt)) {
         return 0;
     }
     return Step(static_cast<i32>(dt)) != 0;

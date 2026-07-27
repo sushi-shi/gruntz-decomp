@@ -517,7 +517,7 @@ void CMoviePlayer::HandleError() {
         memset(&fx, 0, sizeof(fx));
         fx.dwSize = 0x64;
         fx.dwROP = 0x42;
-        void* rc = reinterpret_cast<void*>(m_primary->Blt(0, 0, 0, 0x1020000, &fx));
+        HRESULT rc = m_primary->Blt(0, 0, 0, 0x1020000, &fx);
         if (rc) {
             memset(&fx, 0, sizeof(fx));
             fx.dwSize = 0x64;

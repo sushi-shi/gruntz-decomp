@@ -771,7 +771,7 @@ i32 CGameObject::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
             break;
         }
     }
-    return m_7c->Dispatch(a1, type, reinterpret_cast<void*>(a3), self) != 0;
+    return m_7c->Dispatch(a1, type, a3, self) != 0;
 }
 
 RVA(0x00151320, 0x454)

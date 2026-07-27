@@ -61,7 +61,7 @@ SfManagerFactory* g_factory_64e0ac = 0; // the "SFManager" data export (ptr-to-f
 DATA(0x0024e0b0)
 SFMANL101API* g_sfDevice = 0; // SFMAN32 device interface
 DATA(0x0024e0b8)
-void* g_sfReady = 0; // device-selected flag (1 = ready)
+i32 g_sfReady = 0; // device-selected flag (1 = ready); every use is a 0/1 test
 DATA(0x0024e0c0)
 u8 g_ratings_64e0c0[344] = {0}; // per-device rating bytes
 
@@ -169,7 +169,7 @@ i32 SFManager_SelectBestDevice() {
     u32 v = g_id_64df9c;
     g_id0_613dff = static_cast<char>((v & 0x7f));
     g_id3_613e02 = static_cast<char>(((v >> 0x18) & 0x7f));
-    g_sfReady = reinterpret_cast<void*>(1);
+    g_sfReady = 1;
     g_id1_613e00 = static_cast<char>(((v >> 8) & 0x7f));
     g_id2_613e01 = static_cast<char>(((v >> 0x10) & 0x7f));
     return 1;

@@ -270,13 +270,13 @@ void CDDSurface::FreeSurfaces() {
 }
 
 RVA(0x0013e550, 0x71)
-i32 CDDSurface::Resolve(CDDrawPtrCollections* pal, void* buf, i32 type, u32 size, void* surf2) {
+i32 CDDSurface::Resolve(CDDrawPtrCollections* pal, void* buf, i32 type, u32 size, u32 colorKey) {
     if (size == 0) {
         return 0;
     }
     switch (type) {
         case FMT_PID:
-            if (!DecodePid(pal, static_cast<PidHeader*>(buf), size, surf2)) {
+            if (!DecodePid(pal, static_cast<PidHeader*>(buf), size, colorKey)) {
                 return 0;
             }
             break;
@@ -297,7 +297,7 @@ i32 CDDSurface::Resolve(CDDrawPtrCollections* pal, void* buf, i32 type, u32 size
 }
 
 RVA(0x0013e5d0, 0xb1)
-i32 CDDSurface::MakeImageKey(CDDrawPtrCollections* pal, char* name, void* arg3) {
+i32 CDDSurface::MakeImageKey(CDDrawPtrCollections* pal, char* name, u32 colorKey) {
     char* ext = strrchr(name, '.');
     if (ext && _strcmpi(ext, ".BMP") == 0) {
         if (!LoadBmp(pal, name)) {
@@ -308,7 +308,7 @@ i32 CDDSurface::MakeImageKey(CDDrawPtrCollections* pal, char* name, void* arg3) 
             return 0;
         }
     } else if (ext && _strcmpi(ext, ".PID") == 0) {
-        if (!LoadPid(pal, name, arg3)) {
+        if (!LoadPid(pal, name, colorKey)) {
             return 0;
         }
     }

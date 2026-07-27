@@ -460,7 +460,7 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
         resolved,
         index,
         static_cast<u32>(src->m_length),
-        reinterpret_cast<void*>(g_surfaceColorKey)
+        g_surfaceColorKey
     );
 }
 

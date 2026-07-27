@@ -169,16 +169,16 @@ i32 CMenuPage::SetFocus(CMenuItem* item, i32 notify) {
         m_focus->Release();
     }
     m_focus = item;
-    return item->Configure(reinterpret_cast<void*>(notify)) != 0;
+    return item->Configure(notify) != 0;
 }
 
 RVA(0x00183b30, 0x2c)
-i32 CMenuPage::NotifyAll(void* arg) {
+i32 CMenuPage::NotifyAll(u32 dt) {
     POSITION node = m_items.GetHeadPosition();
     while (node) {
         CMenuItem* item = NextItem(node);
         if (item) {
-            item->Notify(arg);
+            item->Notify(dt);
         }
     }
     return 1;

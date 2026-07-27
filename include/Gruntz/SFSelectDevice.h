@@ -17,6 +17,6 @@ extern void* g_sfDll;
 struct SFMANL101TAG;
 typedef struct SFMANL101TAG SFMANL101API;
 extern SFMANL101API* g_sfDevice;
-extern void* g_sfReady;
+extern i32 g_sfReady;
 extern u8 g_ratings_64e0c0[];
 #endif // GRUNTZ_GRUNTZ_SFSELECTDEVICE_H

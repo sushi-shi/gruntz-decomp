@@ -46,9 +46,13 @@ public:
                                               // main-menu builder Disables gated items w/ 3;
                                               // Configure chains it w/ 2)
     virtual i32 Detach();                     // 0x1855d0  slot 7  (return-1 default)
-    virtual i32 Notify(void* arg);            // 0x1855e0  slot 8  (declared-only)
+    // slot 8 takes the frame DELTA, not a pointer: CMenuItem2::Notify (0x1858a0)
+    // compares it against m_6c and subtracts it - it is a u32 countdown tick.
+    virtual i32 Notify(u32 dt);               // 0x1855e0  slot 8
     virtual i32 Place(CDDrawSurfacePair* target, i32 x, i32 y); // 0x1855f0  slot 9
-    virtual i32 Configure(void* notify);      // 0x185690  slot 10 (0x185690)
+    // slot 10 takes a boolean flag (the body only tests it); CMenuPage::SetFocus
+    // passes its own i32 `notify` argument straight through.
+    virtual i32 Configure(i32 notify);        // 0x185690  slot 10
     virtual i32 Release();                    // 0x1856c0  slot 11 (Disable(1) + return 1)
     virtual i32 Trigger();                    // 0x1856d0  slot 12
     virtual i32 OnInit();                     // 0x184660  slot 13 (return-0 default)

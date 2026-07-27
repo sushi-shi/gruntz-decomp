@@ -179,7 +179,7 @@ i32 CMenuItem::Detach() {
 }
 
 RVA(0x001855e0, 0x8)
-i32 CMenuItem::Notify(void*) {
+i32 CMenuItem::Notify(u32) {
     return 1;
 }
 
@@ -215,7 +215,7 @@ i32 CMenuItem::Place(CDDrawSurfacePair* target, i32 x, i32 y) {
     return 1;
 }
 RVA(0x00185690, 0x25)
-i32 CMenuItem::Configure(void* notify) {
+i32 CMenuItem::Configure(i32 notify) {
     if (notify) {
         m_host->ScrollRow0();
     }
@@ -310,8 +310,7 @@ i32 CMenuItem2::GetWidth() {
 }
 
 RVA(0x001858a0, 0x2b)
-i32 CMenuItem2::Notify(void* arg) {
-    u32 a = reinterpret_cast<u32>(arg);
+i32 CMenuItem2::Notify(u32 a) {
     if (a >= static_cast<u32>(m_6c)) {
         m_6c = m_70;
         NextFrame();

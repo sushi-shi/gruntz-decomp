@@ -82,7 +82,7 @@ public:
     i32 ReleaseAll();                          // 0x183990  release focus + items
     i32 RestoreFocus();                        // 0x1839d0  focus saved name / first focusable
     i32 SetFocus(CMenuItem* item, i32 notify); // 0x183ad0
-    i32 NotifyAll(void* arg);                  // 0x183b30
+    i32 NotifyAll(u32 dt);                     // 0x183b30
     i32 Layout(CDDrawSurfacePair* target);      // 0x183b60  measure/place children
     i32 FocusNext();                           // 0x183c50
     i32 FocusPrev();                           // 0x183d10

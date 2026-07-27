@@ -298,7 +298,7 @@ void CWorldSoundSet::Retune(i32 x, i32 y) {
 }
 
 RVA(0x0000bdd0, 0x53)
-void* CAmbientSound::Init6(
+i32 CAmbientSound::Init6(
     CRandomAmbientWorld* world,
     const char* key,
     i32 a3,
@@ -310,9 +310,9 @@ void* CAmbientSound::Init6(
     world->m_map.Lookup(key, out_ob);
     AmbSoundRecord* out = static_cast<AmbSoundRecord*>(out_ob);
     if (out == 0) {
-        return static_cast<void*>(out);
+        return 0;
     }
-    return reinterpret_cast<void*>(Init5(out->m_mgr, a3, a4, box, a6));
+    return Init5(out->m_mgr, a3, a4, box, a6);
 }
 
 RVA(0x0000be50, 0x8f)

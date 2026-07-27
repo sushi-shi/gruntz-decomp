@@ -72,7 +72,7 @@ public:
     // construction. Init6 (0xbdd0, ex "Dispatch") resolves the mgr record for
     // `key` from the world's cue map, then seeds via Init5 (0xbe50, ex "Setup"):
     // mgr handle + play params, copy/clear the primary box, clear the secondary.
-    void* Init6(
+    i32 Init6(
         CRandomAmbientWorld* world,
         const char* key,
         i32 a3,
