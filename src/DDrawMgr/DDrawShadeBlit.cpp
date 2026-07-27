@@ -14,7 +14,7 @@ u8 g_scratch[1280]; // 0x6bed08 (0x500 B, up to g_shadeDescr208@0x6bf208; a 640-
 // The scratch line is read back as 8bpp bytes or RGB565 words depending on the
 // blit path - the one word-view of the buffer lives here.
 static inline u16* Scratch16() {
-    return Scratch16();
+    return reinterpret_cast<u16*>(g_scratch);
 }
 
 DATA(0x002bf218)
