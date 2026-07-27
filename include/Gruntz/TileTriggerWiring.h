@@ -2,11 +2,22 @@
 #define GRUNTZ_TILETRIGGERWIRING_H
 
 #include <Ints.h>
+#include <Win32.h> // tagRECT - CTrigParam is a RECT (see below)
 #include <rva.h>
 
+// CTrigParam IS a RECT. Two unrelated classes prove it at five offsets: this file's
+// CTrigSourceRecord m_134/m_144/m_154 land exactly on CWwdGameObject's m_extent/m_area/
+// m_switchRect, and CTrigRecordSub m_f0/m_100 on CAnimWorkerObj's m_switchRectA/B - both
+// already documented there as REAL RECTs the registrar takes BY VALUE.
+//
+// It cannot simply BE tagRECT: AddLogicDefaults builds six zeroed blocks, and MSVC5 will
+// not value-init a POD (`CTrigParam()` on a ctor-less struct copied garbage, 27%->76%),
+// so the zeroing ctor is load-bearing. Hence a RECT-named struct that converts FROM a
+// RECT - callers pass their rect members directly, no reinterpret at the boundary.
 struct CTrigParam {
-    i32 m0, m4, m8, mc;
-    CTrigParam() : m0(0), m4(0), m8(0), mc(0) {} // VC5 won't value-init -> zero by ctor
+    i32 left, top, right, bottom;
+    CTrigParam() : left(0), top(0), right(0), bottom(0) {} // VC5 won't value-init
+    CTrigParam(const RECT& r) : left(r.left), top(r.top), right(r.right), bottom(r.bottom) {}
 };
 SIZE_UNKNOWN();
 
