@@ -30,6 +30,15 @@ i32 CGruntzCommand::Parse(void*, i32) {
     return 0;
 }
 
+// The command wire buffer is a PACKED byte stream, so pulling a 16-bit field out of
+// it is a forced pun; it lives here, once.
+static inline i16 PeekI16(const void* p) {
+    return *reinterpret_cast<const i16*>(p);
+}
+static inline void PokeI16(void* p, i16 v) {
+    *reinterpret_cast<i16*>(p) = v;
+}
+
 RVA(0x000239d0, 0xf)
 i32 CGruntzCmdMgr::SetMgr(CGruntzMgr* mgr) {
     m_38 = mgr;
@@ -234,6 +243,9 @@ i32 CGruntzCommand::SetMaskFromList(char a0, char a1, char a2, i16 a3, i16 a4, i
     if (!CGruntzCommand::SetParams(a0, a1, a2, a3, a4)) {
         return 0;
     }
+    // +0x10 is dual-width: a 2-byte flag word here, a single byte at the
+    // m_10 = a5 / m_10 = *buf++ stores - retail writes both widths, so the
+    // char member plus this word pun is the faithful pair.
     *reinterpret_cast<u16*>(&m_10) = 0;
     for (i32 i = 0; i < (count & 0xff); i++) {
         *reinterpret_cast<u16*>(&m_10) |= g_cmdBitTable[buf[i]];
@@ -262,9 +274,9 @@ i32 CGruntzSingleCommand::Parse(void* data, i32 /*len*/) {
     m_targetIndex = *buf++;
     m_5 = *buf++;
     m_targetType = *buf++;
-    m_8 = *reinterpret_cast<i16*>(buf);
+    m_8 = PeekI16(buf);
     buf += 2;
-    m_a = *reinterpret_cast<i16*>(buf);
+    m_a = PeekI16(buf);
     buf += 2;
     m_10 = *buf++;
     // read m_5 as an unsigned byte (retail `cmp byte,8; jb`) via the &-address form so
@@ -290,11 +302,11 @@ i32 CGruntzMultiCommand::Parse(void* data, i32 /*len*/) {
     m_targetIndex = *buf++;
     m_5 = *buf++;
     m_targetType = *buf++;
-    m_8 = *reinterpret_cast<i16*>(buf);
+    m_8 = PeekI16(buf);
     buf += 2;
-    m_a = *reinterpret_cast<i16*>(buf);
+    m_a = PeekI16(buf);
     buf += 2;
-    *reinterpret_cast<i16*>(&m_10) = *reinterpret_cast<i16*>(buf);
+    *reinterpret_cast<i16*>(&m_10) = PeekI16(buf);
     buf += 2;
     return buf - static_cast<char*>(data);
 }
@@ -307,9 +319,9 @@ i32 CGruntzSingleCommand::Pack(char* buf, i32 /*unused*/) {
     *++buf = m_5;
     *++buf = m_targetType;
     char* w = buf + 1;
-    *reinterpret_cast<i16*>(w) = m_8;
+    PokeI16(w, static_cast<i16>(m_8));
     w += 2;
-    *reinterpret_cast<i16*>(w) = m_a;
+    PokeI16(w, static_cast<i16>(m_a));
     w += 2;
     *w = m_10;
     w++;
@@ -328,11 +340,11 @@ i32 CGruntzMultiCommand::Pack(char* buf, i32 /*unused*/) {
     *++buf = m_5;
     *++buf = m_targetType;
     char* w = buf + 1;
-    *reinterpret_cast<i16*>(w) = m_8;
+    PokeI16(w, static_cast<i16>(m_8));
     w += 2;
-    *reinterpret_cast<i16*>(w) = m_a;
+    PokeI16(w, static_cast<i16>(m_a));
     w += 2;
-    *reinterpret_cast<i16*>(w) = *reinterpret_cast<i16*>(&m_10);
+    PokeI16(w, static_cast<i16>(*reinterpret_cast<i16*>(&m_10)));
     w += 2;
     return w - start;
 }
