@@ -102,31 +102,6 @@ static inline CString* ResolveNameSlot(_zdvec* v, i32 idx) {
     return r;
 }
 
-// the act tables hold CActHandler (== every per-TU *CActHandler typedef), so the
-// element pun lives here, at the resolver, instead of at each slot read/write
-// _zvec::m_base is the container's UNTYPED byte pool (one pool, every element
-// type), so naming the element at this accessor is zDArray<T>'s one seam.
-static inline CActHandler* ResolveSlot(_zdvec* v, i32 idx) {
-    i32 lo = v->m_lo;
-    v->m_grown = 0;
-    if (idx >= lo && idx <= v->m_hi) {
-        // the untyped byte pool named at the container's one seam
-        // the untyped byte pool named at the container's one seam
-        return reinterpret_cast<CActHandler*>(v->m_base + (idx - lo) * v->m_stride);
-    }
-    if (v->GrowTo(idx, 0)) {
-        // the untyped byte pool named at the container's one seam
-        // the untyped byte pool named at the container's one seam
-        return reinterpret_cast<CActHandler*>(v->m_base + (idx - v->m_lo) * v->m_stride);
-    }
-    void* sentinel = g_projActCache; // scratch cell @0x2bf464 reused as the zvec err sentinel
-    g_retAddrBreadcrumb = GetRetAddr();
-    v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
-    // the untyped byte pool named at the container's one seam
-    // the untyped byte pool named at the container's one seam
-    return reinterpret_cast<CActHandler*>(v->m_spare);
-}
-
 static inline void FreeNameSlotNodes() {
     i32 n = g_typeColl.m_grown;
     CString* list = ActNameSlots();
@@ -249,10 +224,10 @@ RVA(0x00040050, 0x102)
 void CWormhole::FireActivation(i32 idx) {
     // language-forced: the ActReg slot holds a pointer-to-MEMBER (CActHandler); the
     // presence probe reads the same 4 bytes as the raw slot the registrar wrote.
-    if (*reinterpret_cast<void**>(ResolveSlot(&CActRegPool<CWormhole>::s_table, idx)) != 0) {
+    if (*reinterpret_cast<void**>(CActRegPool<CWormhole>::s_table.ResolveEntry(idx)) != 0) {
         // language-forced, same slot as the probe above
         CActHandler fn =
-            *reinterpret_cast<CActHandler*>(ResolveSlot(&CActRegPool<CWormhole>::s_table, idx));
+            *reinterpret_cast<CActHandler*>(CActRegPool<CWormhole>::s_table.ResolveEntry(idx));
         (this->*fn)();
     }
 }
@@ -280,7 +255,7 @@ void RegisterWormholeLogic() {
         *slot = "A";
         g_typeCounter++;
     }
-    CActHandler* dslot = ResolveSlot(&CActRegPool<CWormhole>::s_table, idx);
+    CActHandler* dslot = CActRegPool<CWormhole>::s_table.ResolveEntry(idx);
     *dslot = static_cast<CActHandler>(&CWormhole::SpawnPartners);
 }
 

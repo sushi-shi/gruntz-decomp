@@ -63,28 +63,6 @@ static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
     return r;
 }
 
-// the act tables hold CActHandler (== every per-TU *CActHandler typedef), so the
-// element pun lives here, at the resolver, instead of at each slot read/write
-// _zvec::m_base is the container's UNTYPED byte pool (one pool, every element
-// type), so naming the element at this accessor is zDArray<T>'s one seam.
-static inline CActHandler* ResolveSlot(_zdvec* v, i32 idx) {
-    i32 lo = v->m_lo;
-    v->m_grown = 0;
-    if (idx >= lo && idx <= v->m_hi) {
-        // the untyped byte pool named at the container's one seam
-        return reinterpret_cast<CActHandler*>(v->m_base + (idx - lo) * v->m_stride);
-    }
-    if (v->GrowTo(idx, 0)) {
-        // the untyped byte pool named at the container's one seam
-        return reinterpret_cast<CActHandler*>(v->m_base + (idx - v->m_lo) * v->m_stride);
-    }
-    void* sentinel = g_projActCache;
-    g_retAddrBreadcrumb = GetRetAddr();
-    v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
-    // the untyped byte pool named at the container's one seam
-    return reinterpret_cast<CActHandler*>(v->m_spare);
-}
-
 // The same two resolvers one inline level shallower: the grow-fail tail stays as the
 // out-of-line zErrHandling::Report call (0x34960) instead of expanding. cl5 spends its
 // inline budget from the outside in, so the TWO-key registrar below keeps the tail
@@ -580,10 +558,10 @@ i32 CInGameIcon::HandleInput() {
 
 RVA(0x00097880, 0x102)
 void CInGameIcon::FireActivation(i32 id) {
-    if (*ResolveSlot(&CActRegPool<CInGameIcon>::s_table, id)
+    if (*CActRegPool<CInGameIcon>::s_table.ResolveEntry(id)
         != 0) {
         (this
-             ->*(*ResolveSlot(&CActRegPool<CInGameIcon>::s_table, id)))();
+             ->*(*CActRegPool<CInGameIcon>::s_table.ResolveEntry(id)))();
     }
 }
 
@@ -628,10 +606,10 @@ void RegisterIconActions() {
 
 RVA(0x00097de0, 0x102)
 void CToyPeek::FireActivation(i32 id) {
-    if (*ResolveSlot(&CActRegPool<CToyPeek>::s_table, id)
+    if (*CActRegPool<CToyPeek>::s_table.ResolveEntry(id)
         != 0) {
         (this
-             ->*(*ResolveSlot(&CActRegPool<CToyPeek>::s_table, id)))();
+             ->*(*CActRegPool<CToyPeek>::s_table.ResolveEntry(id)))();
     }
 }
 
@@ -657,7 +635,7 @@ void RegisterIconState() {
         *slot = "A";
         g_typeCounter++;
     }
-    CActHandler* dslot = ResolveSlot(&CActRegPool<CToyPeek>::s_table, idx);
+    CActHandler* dslot = CActRegPool<CToyPeek>::s_table.ResolveEntry(idx);
     *dslot =
         static_cast<CActHandler>(&CInGameIcon::RefreshCell);
 }
@@ -1075,8 +1053,8 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x00099460, 0x102)
 void CInGameText::FireActivation(i32 idx) {
-    if (*ResolveSlot(&CActRegPool<CInGameText>::s_table, idx) != 0) {
-        CActHandler fn = *ResolveSlot(&CActRegPool<CInGameText>::s_table, idx);
+    if (*CActRegPool<CInGameText>::s_table.ResolveEntry(idx) != 0) {
+        CActHandler fn = *CActRegPool<CInGameText>::s_table.ResolveEntry(idx);
         (this->*fn)();
     }
 }
@@ -1105,7 +1083,7 @@ void RegisterTextLogic() {
         *slot = "A";
         g_typeCounter++;
     }
-    CActHandler* dslot = ResolveSlot(&CActRegPool<CInGameText>::s_table, idx);
+    CActHandler* dslot = CActRegPool<CInGameText>::s_table.ResolveEntry(idx);
     *dslot = static_cast<CActHandler>(&CInGameText::Update);
 }
 

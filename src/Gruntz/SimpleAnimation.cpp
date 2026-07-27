@@ -64,28 +64,6 @@ static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
     return r;
 }
 
-// the act tables hold CActHandler (== every per-TU *CActHandler typedef), so the
-// element pun lives here, at the resolver, instead of at each slot read/write
-// _zvec::m_base is the container's UNTYPED byte pool (one pool, every element
-// type), so naming the element at this accessor is zDArray<T>'s one seam.
-static inline CActHandler* ResolveSlot(_zdvec* v, i32 idx) {
-    i32 lo = v->m_lo;
-    v->m_grown = 0;
-    if (idx >= lo && idx <= v->m_hi) {
-        // the untyped byte pool named at the container's one seam
-        return reinterpret_cast<CActHandler*>(v->m_base + (idx - lo) * v->m_stride);
-    }
-    if (v->GrowTo(idx, 0)) {
-        // the untyped byte pool named at the container's one seam
-        return reinterpret_cast<CActHandler*>(v->m_base + (idx - v->m_lo) * v->m_stride);
-    }
-    void* sentinel = g_projActCache;
-    g_retAddrBreadcrumb = GetRetAddr();
-    v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
-    // the untyped byte pool named at the container's one seam
-    return reinterpret_cast<CActHandler*>(v->m_spare);
-}
-
 RVA(0x000ab940, 0x1b8)
 CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -107,8 +85,8 @@ CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(ob
 
 RVA(0x000abc10, 0x102)
 void CSimpleAnimation::FireActivation(i32 idx) {
-    if (*ResolveSlot(&CActRegPool<CSimpleAnimation>::s_table, idx) != 0) {
-        CActHandler fn = *ResolveSlot(&CActRegPool<CSimpleAnimation>::s_table, idx);
+    if (*CActRegPool<CSimpleAnimation>::s_table.ResolveEntry(idx) != 0) {
+        CActHandler fn = *CActRegPool<CSimpleAnimation>::s_table.ResolveEntry(idx);
         (this->*fn)();
     }
 }
@@ -136,7 +114,7 @@ void RegisterSimpleAnimLogic() {
         *slot = "A";
         g_typeCounter++;
     }
-    CActHandler* dslot = ResolveSlot(&CActRegPool<CSimpleAnimation>::s_table, idx);
+    CActHandler* dslot = CActRegPool<CSimpleAnimation>::s_table.ResolveEntry(idx);
     *dslot = static_cast<CActHandler>(&CSimpleAnimation::AdvanceAnim);
 }
 
