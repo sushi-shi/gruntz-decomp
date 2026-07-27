@@ -19,12 +19,12 @@ void* ::operator new(u32); // matches ??2@YAPAXI@Z
 // CAniRecordBase2, whose +0x10 m_10 is a plain i32 buffer, not a sprite ptr).
 
 RVA(0x000e2250, 0x26)
-i32 CSpriteRefTable::Init(i32 p0, i32 p1) {
-    if (!p0) {
-        return p0;
+i32 CSpriteRefTable::Init(CShadeTableCache* cache, CDDrawSurfaceMgr* holder) {
+    if (!cache) {
+        return 0;
     }
-    m_factory = reinterpret_cast<CShadeTableCache*>(p0);
-    m_spriteMgrHolder = reinterpret_cast<CDDrawSurfaceMgr*>(p1);
+    m_factory = cache;
+    m_spriteMgrHolder = holder;
     m_built = 0;
     return 1;
 }

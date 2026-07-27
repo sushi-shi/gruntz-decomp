@@ -6,7 +6,7 @@
 #include <Gruntz/GameRegistry.h>
 
 #include <Bute/ButeMgr.h>   // CButeMgr g_buteMgr (GetIntDef)
-#include <Bute/SymParser.h> // CSpawnOwner::m_34 - the real 'WAV' resolver
+#include <Bute/SymParser.h> // CGruntzMgr::m_symParser - the real 'WAV' resolver
 #include <Gruntz/Enums.h>   // REZ_TAG_WAV ('WAV')
 #include <Gruntz/Grunt.h>   // CGruntCoordList - the out-of-line node walker (0x29a30)
 #include <Gruntz/Random.h>  // g_randSeed / g_randSeeded (the lazily-seeded LCG)
@@ -32,7 +32,7 @@ CGruntSpawnConfig::~CGruntSpawnConfig() {
 // xor edx,edx early (cmp edx,eax) and stores flat - a 1-instr phase shift not
 // source-steerable. ~55% on a 68-byte fn; deferred to the final sweep.
 RVA(0x0011adc0, 0x44)
-BOOL CGruntSpawnConfig::Init(CSpawnOwner* owner) {
+BOOL CGruntSpawnConfig::Init(CGruntzMgr* owner) {
     if (owner == 0) {
         return 0;
     }
@@ -43,7 +43,7 @@ BOOL CGruntSpawnConfig::Init(CSpawnOwner* owner) {
     m_stream1 = 0;
     m_owner = owner;
     m_voiceVolume = 0x64;
-    m_configTree = owner->m_30;
+    m_configTree = owner->m_world;
     return BuildVoiceList() != 0;
 }
 
@@ -68,11 +68,11 @@ void CGruntSpawnConfig::Clear() {
         delete e; // ~CSpawnList non-virtual (0x99ca0, defined in AreaMgr.cpp) + ??3
     }
     m_voiceLists.SetSize(0, -1);
-    if (m_configTree != 0 && m_configTree->m_20 != 0) {
+    if (m_configTree != 0 && m_configTree->m_soundStream != 0) {
         void** p = reinterpret_cast<void**>(&m_stream0);
         for (i32 k = 0; k < 2; k++) {
             if (p[0] != 0) {
-                m_configTree->m_20->DestroyVoice(static_cast<StreamVoice*>(p[0]));
+                m_configTree->m_soundStream->DestroyVoice(static_cast<StreamVoice*>(p[0]));
                 p[0] = 0;
             }
             p++;
@@ -93,7 +93,7 @@ BOOL CGruntSpawnConfig::LoadGruntVoices() {
     void** slot = reinterpret_cast<void**>(m_voices);
     for (; i < 2; i++, slot++) {
         CGameObject* spr =
-            m_configTree->m_08->CreateSprite(0, 0, 0, 0xdbba1, "GruntVoice", 0x4040003);
+            m_configTree->m_childGroup->CreateSprite(0, 0, 0, 0xdbba1, "GruntVoice", 0x4040003);
         spr->m_7c->m_notify(spr);
         void* got = spr->m_7c->m_logic;
         *slot = got;
@@ -190,7 +190,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         }
     }
     CParseSource* src = PickWeighted(voiceId, which);
-    if (src == 0 || m_configTree->m_20 == 0) {
+    if (src == 0 || m_configTree->m_soundStream == 0) {
         return 0;
     }
     CGruntVoice* v8 = m_voices[0];
@@ -228,7 +228,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         }
     }
     if (streams[chosen] == 0) {
-        streams[chosen] = m_configTree->m_20->OpenStream(src, 0x5000, 0x1400, 0x100e0, 0, 0);
+        streams[chosen] = m_configTree->m_soundStream->OpenStream(src, 0x5000, 0x1400, 0x100e0, 0, 0);
         if (streams[chosen] == 0) {
             return 0;
         }
@@ -509,7 +509,7 @@ CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId, i32 which) {
     if (entry == 0) {
         return 0;
     }
-    return m_owner->m_34->ResolveQualified(static_cast<LPCTSTR>(entry->GetName()), REZ_TAG_WAV);
+    return m_owner->m_symParser->ResolveQualified(static_cast<LPCTSTR>(entry->GetName()), REZ_TAG_WAV);
 }
 
 RVA(0x0011c1a0, 0x46)
@@ -599,5 +599,5 @@ void CGruntSpawnConfig::ResetPicks() {
 
 RVA(0x0011c830, 0x12)
 BOOL CGruntSpawnConfig::IsReady() {
-    return m_owner->m_100 != 0;
+    return m_owner->m_isVoiceEnabled != 0;
 }

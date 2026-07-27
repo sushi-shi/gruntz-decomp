@@ -487,14 +487,19 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             m_spriteFactory->m_refB[k] = 0;
         }
     }
-    // @identity-TODO two CROSS-CLASS casts: m_spriteFactory is a CSpriteRefTable* and
-    // m_shadeCache a CShadeTableCache*, yet this calls CTriggerMgr::SetLevel on the one
-    // with the other. Retail has no class-to-class cross-casts, so at least one of the
-    // two member types (or SetLevel's owner) is wrong - needs the xref, not a reinterpret.
-    if (!(reinterpret_cast<CTriggerMgr*>(m_spriteFactory))
-             ->SetLevel(reinterpret_cast<CDDrawSurfaceMgr*>(m_shadeCache))) {
+    // RETAIL-PROVEN (0x84537): `mov edx,[this+0x30]; mov ecx,[this+0x50]; push edx;
+    // push ecx; mov ecx,eax; call 0x321f -> 0xe2250` == CSpriteRefTable::Init(m_shadeCache,
+    // m_world) - a TWO-arg call on the table itself, not the 1-arg CTriggerMgr::SetLevel
+    // the two ex-reinterpret_casts were papering over.
+    if (!m_spriteFactory->Init(m_shadeCache, m_world)) {
+        if (m_spriteFactory) {
+            m_spriteFactory->Reset();
+            RezFree(m_spriteFactory);
+            m_spriteFactory = 0;
+        }
+        // retail (0x84573) FALLS THROUGH here: this arm has no `return 0`, unlike
+        // every other ReportError arm in Run.
         ReportError(0x800a, 0x416);
-        return 0;
     }
 
     // --- Phase 14: register mgr + probe 4 settings subobjects -------
@@ -579,7 +584,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         g_buteMgr.GetDwordDef("General", "RezSync", static_cast<u32>(g_localVersion))
     );
     m_cueSink = new CGruntSpawnConfig;
-    if (!m_cueSink->Init(reinterpret_cast<CSpawnOwner*>(this))) {
+    if (!m_cueSink->Init(this)) {
         ReportError(0x800a, 0x45f);
         return 0;
     }

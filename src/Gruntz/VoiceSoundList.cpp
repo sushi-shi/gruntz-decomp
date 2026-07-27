@@ -3,7 +3,8 @@
 
 #include <Bute/ButeMgr.h>            // canonical CButeMgr (one shape)
 #include <Gruntz/Enums.h>            // REZ_TAG_WAV ('WAV')
-#include <Gruntz/GruntSpawnConfig.h> // canonical CGruntSpawnConfig (this) + CSpawnResolver
+#include <Gruntz/GruntSpawnConfig.h> // canonical CGruntSpawnConfig (this)
+#include <Gruntz/GruntzMgr.h>        // CGruntzMgr - m_owner's real class (m_symParser)
 #include <Gruntz/SpawnList.h>        // canonical CSpawnList (the built voice list)
 #include <rva.h>
 
@@ -49,7 +50,7 @@ CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
                 );
             }
             void* res = static_cast<void*>(
-                m_owner->m_34->ResolveQualified(static_cast<LPCTSTR>(name), REZ_TAG_WAV)
+                m_owner->m_symParser->ResolveQualified(static_cast<LPCTSTR>(name), REZ_TAG_WAV)
             );
             if (res != 0) {
                 // retail copy-ctors `name` straight into the by-value arg slot

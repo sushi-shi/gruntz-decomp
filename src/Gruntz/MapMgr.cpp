@@ -5,7 +5,6 @@
 #include <Gruntz/SerialArchive.h> // CFileMemBase (Read @+0x2c / Write @+0x30)
 #include <Gruntz/Brickz.h>        // CMapMgr (the pathfinding core homed here)
 #include <Gruntz/GameMode.h> // canonical CGMVerRect g_versionRect (SetVersionRect's version RECT)
-#include <Rez/RezList.h>     // CRezList::AddHead (Search's result hand-off)
 #include <rva.h>
 #include <stdlib.h> // abs (/Oi intrinsic: |goal-cur| lowers to cdq/xor/sub, not jns)
 #include <string.h> // memset (/Oi intrinsic: shr/rep stosd/and/rep stosb)
@@ -335,7 +334,12 @@ reached:
             rec->m_coord.m_y = p->m_4;
             g_coordPool.m_freeHead = rec->m_next;
         }
-        (static_cast<CRezList*>(list))->AddHead(reinterpret_cast<CRezListNode*>(slot));
+        // RETAIL-PROVEN (0x9ef18): `mov ecx,[esp+0x24]; push eax; call 0x1b4967` ==
+        // ?AddHead@CPtrList@@QAEPAU__POSITION@@PAX@Z. The result list is the MFC
+        // CPtrList, NOT the Rez CObjList (0x1851e0) the old CRezList/CRezListNode
+        // reinterpret was binding to - a wrong-COMDAT band, exactly the CPlay::m_488
+        // class of bug. `slot` converts to the void* element with no cast.
+        static_cast<CPtrList*>(list)->AddHead(slot);
         p = p->m_parent;
     } while (p != 0);
     if (m_stepCb != 0) {

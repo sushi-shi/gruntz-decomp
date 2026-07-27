@@ -39,9 +39,11 @@ class CDDrawSurfaceMgr;
 class CSymParser; // fwd
 class CSpriteRefTable {
 public:
-    // Cache the two engine sub-objects (m_factory, m_spriteMgrHolder) and clear both buckets; returns
-    // 1 (FALSE only when p0 is null). 0xe2250.
-    i32 Init(i32 p0, i32 p1);
+    // Cache the two engine sub-objects (m_factory, m_spriteMgrHolder) and clear m_built;
+    // returns 1 (FALSE only when `cache` is null). 0xe2250. The two params were `i32`
+    // (with a reinterpret_cast per store) until the sole retail caller - CGruntzMgr::Run
+    // @0x84537 - was read: it pushes m_world (+0x30) then m_shadeCache (+0x50) straight in.
+    i32 Init(CShadeTableCache* cache, CDDrawSurfaceMgr* holder);
 
     // Free both buckets, then zero m_factory/m_spriteMgrHolder/m_built and re-null both bucket arrays
     // (the teardown / clear-all). 0xe2290.

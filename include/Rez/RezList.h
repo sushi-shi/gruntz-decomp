@@ -5,33 +5,26 @@
 #include <rva.h>
 #include <Bute/ObjListBase.h>
 
-class CRezItmBase; // fwd - the intrusive element (see the AddHead/Remove seams)
+// The intrusive element. CRezItmBase IS the list's node type - it is not a separate
+// `CObjNode` overlay. PROVEN (2026-07-27), replacing the old "language-forced pun"
+// note that kept 16 reinterpret_casts alive:
+//   - AddHead (0x1851e0) and Remove (0x1852e0) touch ONLY node+0x04 / node+0x08, which
+//     are exactly CRezItmBase::m_next / m_prev; nothing ever reads node+0x00, so the
+//     ex-CObjNode's `m_base` field had zero binary backing;
+//   - every retail caller of both (ParseBuffer / LoadEntry / ~CSymParser / Clear /
+//     CRezFile's ctor+dtor / OpenFile / CloseFile - `sema xref`) enrols a
+//     CRezItmBase-derived element (CRezDir, CRezItm, CRezFile);
+//   - CObjList's own m_head/m_tail are read back as CRezItmBase* at every use.
+// The one apparent counter-example (CMapMgr::Search handing its result to a list) is
+// not one: retail's call there is ?AddHead@CPtrList@@ (0x1b4967), a real MFC CPtrList.
+class CRezItmBase;
 
-// NB CObjNode is an OVERLAY of the element head, not a base class: `m_base` names
-// the element's own vptr slot (CRezItmBase is vptr@0, m_next@4, m_prev@8 - byte
-// identical). Inheritance cannot express "my base's first member IS my vptr"
-// without emitting a second vtable retail does not have, so the element->node pun
-// is language-forced AND STAYS AT THE CALL SITES: a typed AddHead/Remove overload
-// only relocates it, and the caller-callee FAKE-VIEW gate correctly reads that as
-// an unresolved identity (0 -> 10 ARG-POINTEE edges). Settle the real hierarchy
-// and the casts fall out; do not hide them behind a seam.
 // A dword and its four bytes are the same storage - the BUTE tag/fourcc paths read
 // it both ways, so the two arms are a real union rather than a pun.
 union DwordBytes {
     u32 m_v;
     u8 m_b[4];
 };
-
-class CObjNode {
-public:
-    void* m_base;     // +0x00  element base (vptr for a polymorphic element, else data)
-    CObjNode* m_next; // +0x04
-    CObjNode* m_prev; // +0x08
-};
-SIZE_UNKNOWN(); // a view of the (variably-sized) list elements
-
-struct CRezListNode : public CObjNode {};
-SIZE_UNKNOWN();
 
 struct CObjList : public CObjListBase {
     // V0 (slot 0) stays pure here - CObjList is only ever a base in the Rez model.
@@ -40,14 +33,10 @@ struct CObjList : public CObjListBase {
     // rule), and cl then emits no ??_7CObjList anywhere, matching retail (whose
     // dtor chains restamp only the CObjListBase table). A user `~CObjList() {}`
     // would instead force a phantom vtable, so it is deliberately absent.
-    CObjNode* m_head;             // +0x04
-    CObjNode* m_tail;             // +0x08
-    void AddHead(CObjNode* node); // 0x1851e0
-    void Remove(CObjNode* node);  // 0x1852e0
-    // READ side of the overlay: the head node IS the element head (see the note
-    // above CObjNode), and reading it back typed does not reach a differently-typed
-    // callee parameter, so unlike an AddHead overload this is safe to seam.
-    CRezItmBase* HeadItem() const { return reinterpret_cast<CRezItmBase*>(m_head); }
+    CRezItmBase* m_head;             // +0x04
+    CRezItmBase* m_tail;             // +0x08
+    void AddHead(CRezItmBase* node); // 0x1851e0
+    void Remove(CRezItmBase* node);  // 0x1852e0
 };
 SIZE(0xc); // {vptr (CObjListBase), head, tail} - CRezList adds no data, same 0xc
 
@@ -61,12 +50,12 @@ struct CRezList : public CObjList {
     // EH-funclet-referenced standalone COMDAT copy is retail 0x13ca30 (bound by
     // RezFile.cpp's RVA_COMPGEN).
     ~CRezList() {}
-    void AddTail(CRezListNode* node); // 0x185210
+    void AddTail(CRezItmBase* node); // 0x185210
     // Positional inserts: splice `node` after/before `pos` (null pos -> AddHead /
     // AddTail respectively). Each branch re-reads pos->m_next/m_prev after the
     // aliasing store, and MSVC duplicates the common link tail into both arms.
-    void InsertAfter(CRezListNode* pos, CRezListNode* node);  // 0x185240
-    void InsertBefore(CRezListNode* pos, CRezListNode* node); // 0x185290
+    void InsertAfter(CRezItmBase* pos, CRezItmBase* node);  // 0x185240
+    void InsertBefore(CRezItmBase* pos, CRezItmBase* node); // 0x185290
 };
 SIZE(0xc); // {vptr,head,tail}
 

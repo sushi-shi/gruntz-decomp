@@ -14,7 +14,10 @@
 
 class CGruntVoice;  // folded CGruntVoice
 struct StreamVoice; // m_10/m_14 owned voice streams (the real <Dsndmgr/StreamVoice.h>)
-struct CSpawnTree;
+// The owner/config-tree pair. The ex `CSpawnOwner` / `CSpawnTree` pad-structs were fake
+// views of these two REAL classes; dissolved 2026-07-27 (see the m_owner note below).
+class CGruntzMgr;
+class CDDrawSurfaceMgr;
 
 // A voice-list id is a dense (band, cue) pair: `id = VOICE_CUES_PER_BAND * band + cue`.
 // The band comes from the grunt's own state (CGrunt +0x170, plus two early specials on
@@ -60,23 +63,11 @@ struct CSpawnButeConfig {
     i32 m_258; // +0x258  early-special selector (0x39 / 0x3a)
 };
 SIZE_UNKNOWN();
-struct CSpawnOwner {
-    char m_00[0x30];
-    CSpawnTree* m_30; // +0x30  -> the config tree stashed in m_04
-    // +0x34 the 'WAV' resource resolver. PROVEN CSymParser (not the ex-CSpawnResolver
-    // empty placeholder): both retail readers land on 0x13bff0, whose mangled name is
-    // ?ResolveQualified@CSymParser@@QAEPAUCParseSource@@PBDI@Z.
-    class CSymParser* m_34;
-    char m_38[0x100 - 0x38];
-    i32 m_100; // +0x100 the "ready" flag the @0x11c830 probe tests
-};
-SIZE_UNKNOWN();
-
 class CGrunt; // CueA/CueSpawn first arg
 
 class CGruntSpawnConfig {
 public:
-    BOOL Init(CSpawnOwner* owner); // 0x11adc0
+    BOOL Init(CGruntzMgr* owner); // 0x11adc0
     void Clear();                  // 0x11ae30
     BOOL LoadGruntVoices();        // 0x11af00
     void ClearSprites();           // 0x11af90 (out-of-line: m_08 = 0; m_0c = 0)
@@ -112,8 +103,17 @@ public:
     ~CGruntSpawnConfig();    // 0x85df0
 
     // --- fields (placeholders; offsets load-bearing) ---
-    CSpawnOwner* m_owner;     // +0x00
-    CSpawnTree* m_configTree; // +0x04  = owner->m_30 (config tree)
+    // +0x00 the owning CGruntzMgr. PROVEN, not inferred: Init (0x11adc0) has exactly ONE
+    // retail caller - CGruntzMgr::Run @0x84018 passes its own `this` - and every field the
+    // ex-CSpawnOwner view spelled lands on a real CGruntzMgr member at the same offset:
+    // +0x30 m_world (CDDrawSurfaceMgr*), +0x34 m_symParser (CSymParser*, the 'WAV' resolver
+    // that both readers reach via ?ResolveQualified@CSymParser@@...), +0x100
+    // m_isVoiceEnabled (exactly what IsReady @0x11c830 probes).
+    CGruntzMgr* m_owner;
+    // +0x04 = owner->m_world. The ex-CSpawnTree view's two fields ARE CDDrawSurfaceMgr's:
+    // +0x08 m_childGroup (CDDrawChildGroup::CreateSprite) and +0x20 m_soundStream
+    // (SoundStream::DestroyVoice/OpenStream).
+    CDDrawSurfaceMgr* m_configTree;
     CGruntVoice* m_voices[2]; // +0x08/+0x0c  voice-sprite pair (indexed everywhere)
     StreamVoice* m_stream0;   // +0x10  owned voice-stream pair (the real Dsndmgr StreamVoice)
     StreamVoice* m_stream1;   // +0x14
@@ -123,16 +123,6 @@ public:
     i32 m_voiceVolume;      // +0x2c  = 0x64
 };
 SIZE_UNKNOWN();
-
-struct CSpawnTree {
-    char m_pad00[8];
-    CDDrawChildGroup* m_08; // +0x08  the sprite factory (LoadGruntVoices)
-    char m_pad0c[0x20 - 0xc];
-    class SoundStream* m_20; // +0x20  the sound-stream mgr (DestroyVoice/OpenStream;
-                             //        ex the empty CSpawnRemoveColl marker view)
-};
-SIZE_UNKNOWN();
-
 
 extern "C" i32 SpawnResolveName(void* resolver, void* nameStr, i32 mode); // FUN_0053bff0
 

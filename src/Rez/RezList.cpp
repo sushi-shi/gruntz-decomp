@@ -1,9 +1,9 @@
 #include <rva.h>
 
-#include <Rez/RezList.h>
+#include <Rez/RezMgr.h> // CRezItmBase - the list's node type (m_next/m_prev at +4/+8)
 
 RVA(0x001851e0, 0x2a)
-void CObjList::AddHead(CObjNode* node) {
+void CObjList::AddHead(CRezItmBase* node) {
     node->m_next = m_head;
     node->m_prev = 0;
     if (m_head) {
@@ -16,7 +16,7 @@ void CObjList::AddHead(CObjNode* node) {
 }
 
 RVA(0x00185210, 0x2a)
-void CRezList::AddTail(CRezListNode* node) {
+void CRezList::AddTail(CRezItmBase* node) {
     node->m_next = 0;
     node->m_prev = m_tail;
     if (m_tail) {
@@ -37,7 +37,7 @@ void CRezList::AddTail(CRezListNode* node) {
 // pos->m_next into ecx where retail reuses eax (the tested register stays hot in the
 // non-tail arm but goes cold after the m_tail store). Permuter confirms no steer.
 RVA(0x00185240, 0x48)
-void CRezList::InsertAfter(CRezListNode* pos, CRezListNode* node) {
+void CRezList::InsertAfter(CRezItmBase* pos, CRezItmBase* node) {
     if (pos == 0) {
         AddHead(node);
     }
@@ -62,7 +62,7 @@ void CRezList::InsertAfter(CRezListNode* pos, CRezListNode* node) {
 // pos->m_prev into ecx where retail reuses eax (mirror of InsertAfter). Permuter
 // confirms no steer.
 RVA(0x00185290, 0x48)
-void CRezList::InsertBefore(CRezListNode* pos, CRezListNode* node) {
+void CRezList::InsertBefore(CRezItmBase* pos, CRezItmBase* node) {
     if (pos == 0) {
         AddTail(node);
     }
@@ -80,7 +80,7 @@ void CRezList::InsertBefore(CRezListNode* pos, CRezListNode* node) {
 }
 
 RVA(0x001852e0, 0x35)
-void CObjList::Remove(CObjNode* node) {
+void CObjList::Remove(CRezItmBase* node) {
     if (node->m_prev) {
         node->m_prev->m_next = node->m_next;
     } else {
