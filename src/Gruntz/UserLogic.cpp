@@ -150,35 +150,35 @@ i32 CWapX::Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj) {
         return 0;
     }
     switch (mode) {
-    case 7: {
-        // READ: pull the key name + the 0x10 blob, then resolve the key.
-        arc->Read(name, 0x80);
-        arc->Read(m_blob, 0x10);
-        m_34 = obj;
-        m_38 = static_cast<CWwdGameObjectA*>(obj); // the bound obj IS the A-kind sprite
-        m_3c = obj->m_7c;
-        if (strlen(name) == 0) {
-            m_value = 0;
+        case 7: {
+            // READ: pull the key name + the 0x10 blob, then resolve the key.
+            arc->Read(name, 0x80);
+            arc->Read(m_blob, 0x10);
+            m_34 = obj;
+            m_38 = static_cast<CWwdGameObjectA*>(obj); // the bound obj IS the A-kind sprite
+            m_3c = obj->m_7c;
+            if (strlen(name) == 0) {
+                m_value = 0;
+                return 1;
+            }
+            void* val = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
+            m_3c->m_ownerCtx->m_animRegistry->m_10.Lookup(name, val);
+            m_value = static_cast<CAniElement*>(
+                val
+            ); // the map stores void*; KeyOfValue takes the CObject* upcast
             return 1;
         }
-        void* val = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
-        m_3c->m_0c->m_animRegistry->m_10.Lookup(name, val);
-        m_value = static_cast<CAniElement*>(
-            val
-        ); // the map stores void*; KeyOfValue takes the CObject* upcast
-        return 1;
-    }
-    case 4: {
-        // WRITE: re-derive the value's name into the key buffer, then write both.
-        memset(name, 0, sizeof(name)); // 0x20 dwords = the whole 0x80-byte key buffer
-        if (m_value != 0) {
-            CString nm = m_3c->m_0c->m_animRegistry->KeyOfValue(m_value);
-            strcpy(name, static_cast<const char*>(nm));
+        case 4: {
+            // WRITE: re-derive the value's name into the key buffer, then write both.
+            memset(name, 0, sizeof(name)); // 0x20 dwords = the whole 0x80-byte key buffer
+            if (m_value != 0) {
+                CString nm = m_3c->m_ownerCtx->m_animRegistry->KeyOfValue(m_value);
+                strcpy(name, static_cast<const char*>(nm));
+            }
+            arc->Write(name, 0x80);
+            arc->Write(m_blob, 0x10);
+            break;
         }
-        arc->Write(name, 0x80);
-        arc->Write(m_blob, 0x10);
-        break;
-    }
     }
     return 1;
 }

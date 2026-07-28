@@ -417,7 +417,7 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
 
 // ---------------------------------------------------------------------------
 // Setup (0x150d60, vtbl +0x28): wire 3 args + worker, init the wide state
-// block, init the worker (vtbl +0x24), and fold its flag bits into m_08.
+// block, init the worker (vtbl +0x24), and fold its flag bits into m_flags.
 //
 // `tmpl` IDENTITY SETTLED 2026-07-27 (the previous note here called the evidence
 // self-contradictory; it was the CALLER's static_cast that was wrong, not this
@@ -433,7 +433,7 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
 //      map is an AnimWorkerObj holding one RegisterGameObjectTypes registration;
 //   3. this body then reads tmpl+0x10 and tmpl+0x08 and feeds them to the SAME
 //      AnimWorkerObj::Init on m_7c, which writes them back to +0x10 / +0x08. A
-//      field-for-field copy at identical offsets - m_notify and m_08;
+//      field-for-field copy at identical offsets - m_notify and m_flags;
 //   4. CDDrawWorkerCache::FindKeyOfValue @0x165360 (the reverse lookup used by
 //      Serialize to write an object's TYPE NAME) compares each map value's +0x10
 //      against `m_7c`'s +0x10 - only coherent if both sides are AnimWorkerObj.
@@ -478,7 +478,7 @@ i32 CGameObject::Setup(i32 a1, i32 a2, i32 a3, AnimWorkerObj* tmpl) {
     // Adopt the registered type's factory callback + flag word (see the header
     // comment for the identity proof). Retail: `mov ebx,[eax+8]; mov eax,[eax+0x10];
     // push ebx; push eax; call [edx+0x24]` - slot 9 == AnimWorkerObj::Init.
-    if (w->Init(tmpl->m_notify, tmpl->m_08) == 0) {
+    if (w->Init(tmpl->m_notify, tmpl->m_flags) == 0) {
         return 0;
     }
     m_80 = 0;
@@ -497,7 +497,7 @@ i32 CGameObject::Setup(i32 a1, i32 a2, i32 a3, AnimWorkerObj* tmpl) {
     m_region.m_object = this;
     m_region.m_x = m_screenX;
     m_region.m_y = m_screenY;
-    i32 wf = m_7c->m_08;
+    i32 wf = m_7c->m_flags;
     if (wf & 1) {
         m_flags |= 0x800000;
         return 1;
@@ -521,13 +521,13 @@ i32 CGameObject::EnsureWorker80(AnimWorkerObj* src) {
         return 0;
     }
     if (m_80 != 0) {
-        m_80->Clear();
+        m_80->Unload();
     } else {
         AnimWorkerObj* w = static_cast<AnimWorkerObj*>(::operator new(0x17c));
         if (w != 0) {
-            w->m_04 = m_id;
-            w->m_08 = 0;
-            w->m_0c = OwnerMgr();
+            w->m_id = m_id;
+            w->m_flags = 0;
+            w->m_ownerCtx = OwnerMgr();
             StampWorkerVtbl(w);
             w->m_notify = 0;
             w->m_payload = 0;
@@ -569,7 +569,7 @@ void CGameObject::AddLogicHit(char* key) {
 
 // CGameObject::EnsureWorker88 (0x150f90): lazily build the +0x88 worker - if one
 // already exists, just re-run its slot-7 reuse hook; otherwise operator new a
-// fresh 0x17c-byte worker (seeded m_04=this->m_4, m_08=0, m_0c=this->m_c, all other
+// fresh 0x17c-byte worker (seeded m_id=this->m_id, m_flags=0, m_ownerCtx=OwnerMgr(), all other
 // fields 0), stow it at +0x88, then feed src->m_10 through slot 9.
 // @early-stop
 // zero-register-pinning wall (docs/patterns/zero-register-pinning.md): the whole
@@ -583,13 +583,13 @@ i32 CGameObject::EnsureWorker88(AnimWorkerObj* src) {
         return 0;
     }
     if (m_88 != 0) {
-        m_88->Clear();
+        m_88->Unload();
     } else {
         AnimWorkerObj* w = static_cast<AnimWorkerObj*>(::operator new(0x17c));
         if (w != 0) {
-            w->m_04 = m_id;
-            w->m_08 = 0;
-            w->m_0c = OwnerMgr();
+            w->m_id = m_id;
+            w->m_flags = 0;
+            w->m_ownerCtx = OwnerMgr();
             StampWorkerVtbl(w);
             w->m_notify = 0;
             w->m_payload = 0;
@@ -633,13 +633,13 @@ i32 CGameObject::EnsureWorker90(AnimWorkerObj* src) {
         return 0;
     }
     if (m_collideWorker != 0) {
-        m_collideWorker->Clear();
+        m_collideWorker->Unload();
     } else {
         AnimWorkerObj* w = static_cast<AnimWorkerObj*>(::operator new(0x17c));
         if (w != 0) {
-            w->m_04 = m_id;
-            w->m_08 = 0;
-            w->m_0c = OwnerMgr();
+            w->m_id = m_id;
+            w->m_flags = 0;
+            w->m_ownerCtx = OwnerMgr();
             StampWorkerVtbl(w);
             w->m_notify = 0;
             w->m_payload = 0;
@@ -1089,10 +1089,8 @@ AnimWorkerObj::~AnimWorkerObj() {
         m_logic = 0;
     }
     m_target = 0;
-    m_08 = 0;
-    m_0c = 0;
-    m_04 = -1;
-    // base-subobject vptr restore is compiler-managed via the CObject base
+    // the m_flags/m_ownerCtx/m_id resets at 0x151e00-0x151e06 are ~CLoadable's,
+    // now emitted by the base dtor chain instead of hand-spelled here
 }
 
 RVA(0x00151e20, 0x46)
@@ -1101,7 +1099,7 @@ i32 AnimWorkerObj::Init(GameObjNotifyFn callback, i32 frame) {
         return 0;
     }
     m_notify = callback;
-    m_08 = frame;
+    m_flags = frame;
     m_payload = 0;
     m_logic = 0;
     m_20 = 0;
@@ -1117,7 +1115,7 @@ i32 AnimWorkerObj::Init(GameObjNotifyFn callback, i32 frame) {
 }
 
 RVA(0x00151e70, 0x3b)
-void AnimWorkerObj::Clear() {
+void AnimWorkerObj::Unload() {
     m_notify = 0;
     if (m_payload) {
         ::operator delete(m_payload);

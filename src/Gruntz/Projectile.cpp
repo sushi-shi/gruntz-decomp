@@ -1046,7 +1046,7 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, CGameObject* a
                 return 1;
             }
             void* out = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
-            m_3c->m_0c->m_animRegistry->m_10.Lookup(buf, out);
+            m_3c->m_ownerCtx->m_animRegistry->m_10.Lookup(buf, out);
             m_value = static_cast<CAniElement*>(out);
             return 1;
         }
@@ -1054,7 +1054,7 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, CGameObject* a
             char blob[0x80];
             memset(blob, 0, sizeof(blob));
             if (m_value != 0) {
-                strcpy(blob, m_3c->m_0c->m_animRegistry->KeyOfValue(m_value));
+                strcpy(blob, m_3c->m_ownerCtx->m_animRegistry->KeyOfValue(m_value));
             }
             s->Write(blob, 0x80);
             s->Write(m_blob, 0x10);

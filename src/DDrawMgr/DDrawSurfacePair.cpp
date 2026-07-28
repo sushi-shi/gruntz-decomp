@@ -785,9 +785,9 @@ static inline AnimWorkerObj* MakeAnimWorker(const CDDrawWorkerCache* parent) {
     if (w != 0) {
         i32 field1c = ReadWorkerCacheField1c(parent);
         CDDrawSurfaceMgr* surfaceMgr = parent->OwnerMgr();
-        w->m_04 = field1c;
-        w->m_08 = 0;
-        w->m_0c = surfaceMgr;
+        w->m_id = field1c;
+        w->m_flags = 0;
+        w->m_ownerCtx = surfaceMgr;
         w->m_notify = 0;
         w->m_payload = 0;
         w->m_logic = 0;

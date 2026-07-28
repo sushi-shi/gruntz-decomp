@@ -105,7 +105,7 @@ i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
     CWwdGridIter it;
     for (WwdRegion* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
         CGameObject* w = obj->m_object;
-        if ((w->m_flags & 0x2) || (w->m_7c->m_08 & 0x4)) {
+        if ((w->m_flags & 0x2) || (w->m_7c->m_flags & 0x4)) {
             m_mgr->InsertSorted(w, 1);
             grid->Remove(obj);
             ++count;

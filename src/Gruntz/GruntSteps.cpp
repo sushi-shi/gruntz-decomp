@@ -1229,7 +1229,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     if (!ar) {
         return 0;
     }
-    // retail 0x53fb8: `mov eax,[ebp+0x158]; mov eax,[eax+0xc]` = m_3c->m_0c, spilled
+    // retail 0x53fb8: `mov eax,[ebp+0x158]; mov eax,[eax+0xc]` = m_3c->m_ownerCtx, spilled
     // to [esp+0x14]; the 18 name-id blocks then each reload it and take a SECOND hop
     // `mov ecx,[edx+0x2c]` @0x5425b before `call 0x152d30` (KeyOfValue). +0x2c IS
     // CDDrawSurfaceMgr::m_animRegistry, so m_0c is the MANAGER, not the leaf - the
@@ -1237,7 +1237,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     // slot order is load-bearing: retail's frame is buf@[esp+0x1c] over exactly
     // three dwords, handed out high-to-low in declaration order (0x18/0x14/0x10);
     // the row-pointer temp then packs into mgr's slot once mgr dies.
-    CDDrawSurfaceMgr* mgr = m_3c->m_0c;
+    CDDrawSurfaceMgr* mgr = m_3c->m_ownerCtx;
     if (!mgr) {
         return 0;
     }

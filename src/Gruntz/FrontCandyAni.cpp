@@ -82,8 +82,8 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         if (aux->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
             || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
             if (m_object->m_7c != 0) {
-                m_object->m_7c->m_08 &= ~6;
-                m_object->m_7c->m_08 |= 1;
+                m_object->m_7c->m_flags &= ~6;
+                m_object->m_7c->m_flags |= 1;
                 m_38->m_flags &= ~0x1000002;
                 m_38->m_flags |= 0x800000;
             }
@@ -118,8 +118,8 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         if (aux->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
             || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
             if (m_object->m_7c != 0) {
-                m_object->m_7c->m_08 &= ~6;
-                m_object->m_7c->m_08 |= 1;
+                m_object->m_7c->m_flags &= ~6;
+                m_object->m_7c->m_flags |= 1;
                 m_38->m_flags &= ~0x1000002;
                 m_38->m_flags |= 0x800000;
             }
@@ -129,11 +129,9 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x000acbb0, 0x102)
 void CEyeCandyAni::FireActivation(i32 id) {
-    CActHandler* e =
-        (CActRegPool<CEyeCandy>::s_table.ResolveEntry(id));
+    CActHandler* e = (CActRegPool<CEyeCandy>::s_table.ResolveEntry(id));
     if ((*e) != 0) {
-        (this
-             ->*(*((CActRegPool<CEyeCandy>::s_table.ResolveEntry(id)))))();
+        (this->*(*((CActRegPool<CEyeCandy>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -229,7 +227,8 @@ void CFrontCandyAni::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CFrontCandyAni::AdvanceAnim);
+    (*((CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CFrontCandyAni::AdvanceAnim);
 }
 
 RVA(0x000ad510, 0x17)
@@ -237,4 +236,3 @@ i32 CFrontCandyAni::AdvanceAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     return 0;
 }
-

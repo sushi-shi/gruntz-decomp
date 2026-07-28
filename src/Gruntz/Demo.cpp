@@ -131,7 +131,7 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
     switch (st->ActKey()) {
         case 1: {
             // step the current scroll position one unit toward the target.
-            CGameLevel* gh = (static_cast<CDDrawSurfaceMgr*>(st->m_0c))->m_level;
+            CGameLevel* gh = st->m_ownerCtx->m_level;
             i32 curX = gh->m_mainPlane->m_viewRect.left;
             i32 curY = gh->m_mainPlane->m_viewRect.top;
             if (curX < st->m_scrollTargetX) {
@@ -177,9 +177,9 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
         }
         case 0: {
             // pick a fresh random per-axis target within the main plane's wrap range.
-            i32 rx = (static_cast<CDDrawSurfaceMgr*>(st->m_0c))->m_level->m_mainPlane->m_wrapW;
+            i32 rx = st->m_ownerCtx->m_level->m_mainPlane->m_wrapW;
             st->m_scrollTargetX = (rx == -1) ? (rand() % 2 - 1) : (rand() % (rx + 1));
-            i32 ry = (static_cast<CDDrawSurfaceMgr*>(st->m_0c))->m_level->m_mainPlane->m_wrapH;
+            i32 ry = st->m_ownerCtx->m_level->m_mainPlane->m_wrapH;
             st->m_scrollTargetY = (ry == -1) ? (rand() % 2 - 1) : (rand() % (ry + 1));
             st->SetActKey(1);
             break;

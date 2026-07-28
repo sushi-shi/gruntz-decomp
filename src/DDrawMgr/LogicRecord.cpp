@@ -1,6 +1,6 @@
 #include <DDrawMgr/LogicRecord.h> // own extern surface
 #include <DDrawMgr/AnimWorkerObj.h>
-#include <Utils/MapTyped.h> // MapLookupById (the id->void* key pun at one boundary)
+#include <Utils/MapTyped.h>           // MapLookupById (the id->void* key pun at one boundary)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // m_0c (the owner/world root)
 #include <DDrawMgr/DDrawChildGroup.h> // m_childGroup->m_map48 (the id->object resolver)
 #include <Gruntz/UserLogic.h> // CUserLogic (m_logic SerializeMove dispatch) + CGameObject (m_170)
@@ -49,18 +49,16 @@ i32 AnimWorkerObj::Dispatch(CFileMemBase* a, i32 mode, i32 c, void* d) {
         case 8:
             if (m_targetId) {
                 void* out = 0;
-                CMapPtrToPtr* res = &m_0c->m_childGroup->m_map48;
-                m_target = MapLookupById(*res, m_targetId, out)
-                               ? static_cast<CGameObject*>(out)
-                               : static_cast<CGameObject*>(0);
+                CMapPtrToPtr* res = &m_ownerCtx->m_childGroup->m_map48;
+                m_target = MapLookupById(*res, m_targetId, out) ? static_cast<CGameObject*>(out)
+                                                                : static_cast<CGameObject*>(0);
             }
             break;
         default: // 5, 6
             break;
     }
     if (m_logic) {
-        if (m_logic->SerializeMove(a, mode, c, static_cast<CGameObject*>(d))
-            == 0) {
+        if (m_logic->SerializeMove(a, mode, c, static_cast<CGameObject*>(d)) == 0) {
             return 0;
         }
     }
@@ -255,7 +253,7 @@ i32 AnimWorkerObj::ResolveTarget(void* a) {
         return 0;
     }
     if (m_targetId) {
-        CMapPtrToPtr* res = &m_0c->m_childGroup->m_map48;
+        CMapPtrToPtr* res = &m_ownerCtx->m_childGroup->m_map48;
         void* out = 0;
         if (!MapLookupById(*res, m_targetId, out)) {
             m_target = 0;

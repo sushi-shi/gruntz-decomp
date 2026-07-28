@@ -68,14 +68,14 @@ CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
 // m_04/m_08/m_0c) is load-bearing. (Was the WorkerFull view - folded onto the
 // canonical AnimWorkerObj, whose ??_7 @0x1efb80 this ctor stamps.)
 // @early-stop
-// vptr-last wall: retail stamps the vptr AFTER m_04/m_08/m_0c, but a real-virtual
-// class forces cl's implicit vptr-first store at ctor entry. Field-store order
-// preserved; only the vptr position diverges (mandate: convert anyway).
+// vptr-last wall: retail stamps the vptr AFTER m_id/m_flags/m_ownerCtx, but a
+// real-virtual class forces cl's implicit vptr-first store at ctor entry. Field-store
+// order preserved; only the vptr position diverges (mandate: convert anyway).
 RVA(0x0015b300, 0x40)
 AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags) {
-    m_04 = id;
-    m_08 = stateFlags;
-    m_0c = owner;
+    m_id = id;
+    m_flags = stateFlags;
+    m_ownerCtx = owner;
     m_notify = 0;
     m_payload = 0;
     m_logic = 0;

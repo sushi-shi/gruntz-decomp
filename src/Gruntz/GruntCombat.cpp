@@ -397,7 +397,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     }
 
     // the sprite's worker -> owner context (CDDrawSurfaceMgr facet) -> cue host
-    CDDrawSubMgrLeafScan* slot = (static_cast<CDDrawSurfaceMgr*>(m_3c->m_0c))->m_soundRegistry;
+    CDDrawSubMgrLeafScan* slot =
+        (static_cast<CDDrawSurfaceMgr*>(m_3c->m_ownerCtx))->m_soundRegistry;
     if (slot->m_emitGate == 0) {
         LeafCue* sout = 0;
         MapLookup(slot->m_10, s_GAME_ATTACK,
@@ -1342,7 +1343,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             // worker -> owner context (the world holder facet) -> cue host; retail
             // keeps the host in ecx from the gate test into the Lookup __thiscall.
             CDDrawSubMgrLeafScan* host =
-                (static_cast<CDDrawSurfaceMgr*>(m_3c->m_0c))->m_soundRegistry;
+                (static_cast<CDDrawSurfaceMgr*>(m_3c->m_ownerCtx))->m_soundRegistry;
             if (host->m_emitGate == 0) {
                 LeafCue* cc = static_cast<LeafCue*>(host->Lookup(s_CONVERSIONHIT));
                 if (cc != 0) {
