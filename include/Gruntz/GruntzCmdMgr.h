@@ -22,8 +22,11 @@ SIZE_UNKNOWN();
 class CGruntzCmdMgr {
 public:
     // 0x023b40 - find the first base-queue target matching (indexByte, typeByte)
-    // and remove+deselect it.
-    void RemoveMatchingTarget(char indexByte, char typeByte);
+    // and remove+deselect it. The params are i32, NOT char: retail's caller
+    // (CMulti::ResetPlayerCommands) pushes both operands whole (`mov eax,[edx];
+    // push eax`), which a char param would have narrowed to `mov al,[edx]`. The
+    // body reads only the low byte of each, so the definition is byte-unchanged.
+    void RemoveMatchingTarget(i32 indexByte, i32 typeByte);
     // 0x0239d0 - install the manager pointer; returns 1. Out-of-line.
     i32 SetMgr(CGruntzMgr* mgr); // 0x0239d0
     // 0x0239f0 - null the manager then drain everything (tail-calls Clear). Out-of-line.
@@ -52,7 +55,7 @@ public:
     // the stream; mode 7 = read it back, rebuilding the queue.
     i32 Serialize(CFileMemBase* stream, i32 mode, i32 a3, i32 a4);
     // 0x024a90 - predicate: is the registry's multiplayer slot active?
-    i32 IsActive(CFileMemBase * enable);
+    i32 IsActive(CFileMemBase* enable);
     // 0x023d90 - snap the cursor rect to the 0x20 tile grid and dispatch the
     // command-target tile-marker blit (thunk 0x2095). Body in GruntzCmdMgr.cpp
     // (ex `CObj23d90::Blit`, a placeholder view of THIS class: its receiver is
@@ -67,7 +70,6 @@ public:
     CGruntzMgr* m_38; // +0x38  the game-manager singleton (RezSync::Init self-registers)
 };
 SIZE_UNKNOWN();
-
 
 // File-scope prototypes moved from the .cpp: an unqualified
 // declaration at file scope has EXTERNAL linkage, so it belongs in

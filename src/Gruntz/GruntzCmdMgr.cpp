@@ -13,7 +13,6 @@
 #include <Rez/RezSync.h>          // g_dlgVal_645538
 #include <rva.h>
 
-
 i32 CGruntzCommand::Serialize(CFileMemBase*, i32, i32, i32) {
     return 1;
 }
@@ -110,7 +109,7 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
 }
 
 RVA(0x00023b40, 0x53)
-void CGruntzCmdMgr::RemoveMatchingTarget(char indexByte, char typeByte) {
+void CGruntzCmdMgr::RemoveMatchingTarget(i32 indexByte, i32 typeByte) {
     for (i32 i = 0; i < m_base.GetCount(); i++) {
         POSITION pos = m_base.FindIndex(i);
         CGruntzCommand* obj = static_cast<CGruntzCommand*>(m_base.GetAt(pos));
@@ -659,7 +658,7 @@ i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, i32 mode, i32 a3, i32 a4) {
 }
 
 RVA(0x00024a90, 0x20)
-i32 CGruntzCmdMgr::IsActive(CFileMemBase * enable) {
+i32 CGruntzCmdMgr::IsActive(CFileMemBase* enable) {
     if (!enable) {
         return 0;
     }
