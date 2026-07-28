@@ -24,6 +24,7 @@ struct BmpFileImage {
     BITMAPFILEHEADER fh; // +0x000  packed to 14 B
     Bmp256Info info;     // +0x00e  BITMAPINFOHEADER + bmiColors[256]
 };
+SIZE(0x436); // 0xe packed file header + the 0x428 info block
 #pragma pack(pop)
 
 #pragma pack(push, 1)

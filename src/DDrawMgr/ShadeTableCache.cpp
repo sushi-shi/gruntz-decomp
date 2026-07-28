@@ -632,7 +632,7 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
 // EH-frame wall (rezalloc-placement-new-no-eh-frame.md): body byte-exact, the
 // /GX ctor-in-flight frame is absent on MSVC5; ~66%.
 RVA(0x0014f5b0, 0x10a)
-CShadeTable* CShadeTableCache::AlphaTable(u8* pal) {
+CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
@@ -646,15 +646,15 @@ CShadeTable* CShadeTableCache::AlphaTable(u8* pal) {
     m_arr.SetSizeGrow(idx + 1, -1);
     m_arr.m_pData[idx] = t;
     u16* out = Pix16(t->m_data);
-    u8* p = pal;
+    PALETTEENTRY* p = pal;
     for (i32 i = 0x100; i != 0; i--) {
         u16 v = static_cast<u16>(
-            ((static_cast<u8>((p[0] >> static_cast<u8>(g_rDown))) << g_rUp)
-             | (static_cast<u8>((p[1] >> static_cast<u8>(g_gDown))) << g_gUp)
-             | static_cast<u8>((p[2] >> static_cast<u8>(g_bDown))))
+            ((static_cast<u8>((p->peRed >> static_cast<u8>(g_rDown))) << g_rUp)
+             | (static_cast<u8>((p->peGreen >> static_cast<u8>(g_gDown))) << g_gUp)
+             | static_cast<u8>((p->peBlue >> static_cast<u8>(g_bDown))))
         );
         *out++ = v;
-        p += 4;
+        p++;
     }
     return t;
 }

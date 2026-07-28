@@ -802,9 +802,9 @@ CDDPalette* CDDrawPtrCollections::MakeB(void* rgb, i32 flags) {
 RVA(0x00143040, 0x7c)
 CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
     CDDPalette* item = new CDDPalette;
-    // AllocBufCreate hands this an i32 handle; CDDPalette::Create's second param is
-    // void* entries (it takes either a palette-entry block or a handle) - API-forced
-    if (!item->Create(m_device, reinterpret_cast<void*>(a), b)) {
+    // AllocBufCreate hands this the entry block as a bare i32 (retail 0x14306b pushes
+    // the arg dword straight through to 0x147390) - byte-forced int-to-pointer.
+    if (!item->Create(m_device, reinterpret_cast<PALETTEENTRY*>(a), b)) {
         if (item) {
             item->Destroy();
             ::operator delete(item);
