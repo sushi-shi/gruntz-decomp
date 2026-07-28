@@ -249,11 +249,9 @@ void CWorldSoundSet::Stop() {
 // Resume: clear each channel's +0x14, retune it (vtbl slot 3 with the pending
 // pan/vol and flag 1), then rewind the world handle to the start (-1).
 // ---------------------------------------------------------------------------
-// @early-stop
-// regalloc-coinflip wall (~99.7%, the entropy tail) - code byte-exact and all
-// relocs paired; the only diff is the final world load picking eax vs retail's
-// edi (this is dead, so retail reuses it: `mov edi,[edi]` vs our `mov eax,[edi]`),
-// one byte. No source lever flips the dead-this reuse. See zero-register-pinning.md.
+// (The ex "dead-this reuse coin-flip" was the same one-line fix as its twin Retune:
+// bind the world holder to a local instead of re-reading the m_world->m_soundDev
+// chain in both the guard and the call.)
 RVA(0x0000bcf0, 0x43)
 void CWorldSoundSet::Resume() {
     POSITION pos = m_list.GetHeadPosition();
@@ -264,8 +262,9 @@ void CWorldSoundSet::Resume() {
             ch->Update(m_listenerX, m_listenerY, 1);
         }
     }
-    if (m_world->m_soundDev != 0) {
-        m_world->m_soundDev->PurgeVoiceList(-1);
+    CRandomAmbientWorld* world = m_world;
+    if (world->m_soundDev != 0) {
+        world->m_soundDev->PurgeVoiceList(-1);
     }
 }
 

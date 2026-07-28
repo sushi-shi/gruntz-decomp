@@ -822,8 +822,8 @@ CVariantSlot::CVariantSlot(char* label) {
 
 RVA(0x0016e1d0, 0x4b)
 i32 CVariantSlot::Find(i32 key) {
-    i32 hi = g_recCount23 - 1;
     i32 lo = 0;
+    i32 hi = g_recCount23 - 1;
     if (hi >= 0) {
         do {
             i32 mid = (hi + lo) / 2;
