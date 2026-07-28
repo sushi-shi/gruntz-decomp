@@ -1202,13 +1202,13 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
 }
 
 // @early-stop
-// frame-slot wall: 1595 vs 1595 instructions, same opcodes/operands throughout -
-// the only residue is which of the three dword local slots each value gets.
-// Retail hands 0x18 to the GetCount temp and packs BOTH loop induction values
-// into tmp@0x10 / mgr@0x14; cl gives our named `row` a slot of its own, so the
-// trio comes out permuted (mgr@0x18, tmp@0x14, row@0x10). Making `row` a
-// compiler temp is not expressible; adding a named `n` for the counts instead
-// grows the frame to 0x90 (measured, worse).
+// frame-slot wall, FIVE instructions: 1595 vs 1595, every opcode/operand equal,
+// tmp@0x10 + mgr@0x14 + both loop induction values packed exactly as retail. The
+// only residue is the GetCount temp - retail parks it in the third slot 0x18, cl
+// merges it into tmp@0x10 (both dead-range merges are legal). Six declaration
+// shapes measured: this one 99.98; `n` at function scope 99.94 (or frame 0x90 if
+// it cannot merge); `n` first in the tail block 99.94; buf-first and
+// row/col-in-a-block are neutral. No spelling reaches slot 0x18.
 // (The previous note here - "byte-exact, residual is ~35 unnamed call operands" -
 // was WRONG: the body was missing 58 instructions, the whole +0x468 cell walk and
 // both CPtrList GetCount writes. Re-derived from the target stream 2026-07-28.)
@@ -1237,7 +1237,6 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     // slot order is load-bearing: retail's frame is buf@[esp+0x1c] over exactly
     // three dwords, handed out high-to-low in declaration order (0x18/0x14/0x10);
     // the row-pointer temp then packs into mgr's slot once mgr dies.
-    i32 row, col;
     CDDrawSurfaceMgr* mgr = m_3c->m_0c;
     if (!mgr) {
         return 0;
@@ -1586,27 +1585,34 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     // 0x138 = 3 * sizeof(CGruntCellRec), inner 0x68), each cell's string block
     // through the 0x3bf7 thunk -> CGruntCellRec::SerializeStrings @0x56da0; a
     // zero return aborts the whole save.
-    for (row = 0; row < 3; row++) {
-        for (col = 0; col < 3; col++) {
-            if (m_cells[3 * row + col].SerializeStrings(ar) == 0) {
-                return 0;
+    {
+        i32 row, col;
+        for (row = 0; row < 3; row++) {
+            for (col = 0; col < 3; col++) {
+                if (m_cells[3 * row + col].SerializeStrings(ar) == 0) {
+                    return 0;
+                }
             }
         }
     }
     // the two CPtrList tails: each writes GetCount() from a stack temp
     // (0x550d0 [ebp+0x328], 0x55107 [ebp+0x344] = the lists' m_nCount) and then
     // every node's +8 data slot.
-    tmp = m_31c.GetCount();
-    ar->Write(&tmp, 4);
-    POSITION cpos = m_31c.GetHeadPosition();
-    while (cpos != 0) {
-        ar->Write(m_31c.GetNext(cpos), 8);
+    {
+        i32 n = m_31c.GetCount();
+        ar->Write(&n, 4);
+        POSITION cpos = m_31c.GetHeadPosition();
+        while (cpos != 0) {
+            ar->Write(m_31c.GetNext(cpos), 8);
+        }
     }
-    tmp = m_338.GetCount();
-    ar->Write(&tmp, 4);
-    POSITION pos = m_338.GetHeadPosition();
-    while (pos != 0) {
-        ar->Write(m_338.GetNext(pos), 0x2c);
+    {
+        i32 n = m_338.GetCount();
+        ar->Write(&n, 4);
+        POSITION pos = m_338.GetHeadPosition();
+        while (pos != 0) {
+            ar->Write(m_338.GetNext(pos), 0x2c);
+        }
     }
     return 1;
 }
