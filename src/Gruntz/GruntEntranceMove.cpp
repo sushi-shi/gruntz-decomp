@@ -440,8 +440,8 @@ i32 CGrunt::LoadEntranceConfig() {
             m_entranceSafeTimeHi = 0;
             m_entranceClockLo = g_frameTime;
             m_entranceClockHi = 0;
-            m_858 = 0;
-            m_85c = 0;
+            m_flashWindowLo = 0;
+            m_flashWindowHi = 0;
         } else {
             if (m_tileMgr->RecordListHas(m_tileOwnerHi, m_tileOwnerLo)) {
                 CommitArrival();

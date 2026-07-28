@@ -492,6 +492,16 @@ public:
     // (CheckPerfectBonus @0x1c0f0 is GONE from here - it is CBootyState::, proven by its
     // [this+0x2f8] reads and its sole caller CBootyState::Render.)
     i32 QueryGruntSlots(); // 0x1ecf0 - scan 4 reg records for an empty slot
+    // Both are __thiscall MEMBERS, not free functions: their ONLY caller is this
+    // class's own slot-1 loader (`sema xref` on 0x1e720 / 0x1ec20 gives exactly
+    // 0x1d440) and EVERY one of its seven call sites sets `mov ecx,<this>` right
+    // before the call. Neither body reads `this`, so the callee bytes are identical
+    // to the free-__stdcall spelling they used to carry (same stack-arg offsets,
+    // same `ret 8`) - only the call sites gain the receiver load retail has.
+    // 0x1e720 - build the "GAME_INGAMEICONZ<KEY>" icon key for `key` into `reg`.
+    void BuildPowerupIconKeys(CString* reg, i32 key); // body in IconLoaders.cpp
+    // 0x1ec20 - the warlord display name for player id 0..3.
+    CString GetWarlordName(i32 id); // body in GameText.cpp
 
     // (The ex "BuildPage" @0xfa8f0 alias is GONE - it IS the inherited
     // CState::RetireScene; FadeInTitle @0xfa1f0 likewise inherited, cast-free.)
@@ -511,31 +521,28 @@ public:
     // forwarders tail-call it on `this`.
     i32 PostCommandIfKey();
 
-    // --- CMultiBootyState members (placeholders, beyond the CState layout) ---
-    // The +0x1ec and +0x204 sprite-ptr arrays overlap (the two animators index the
-    // same letter set from different bases) - accessed by offset in the bodies, not
-    // declared as fields here. Only the directly-stored scalars are named.
+    // --- CMultiBootyState members, beyond the CState layout ---
+    // RECOVERED 2026-07-28 from the slot-1 loader (0x1d440), which builds every one of
+    // them: the tail used to be a COPY of CBootyState's letter/spiral band
+    // (m_letterIdx/m_radius/m_trailSprites/m_sprintSprites), inherited from the two
+    // mis-attributed animators that have since gone back to CBootyState. This class's
+    // real tail is TEN per-player sprite bands, walked by ONE induction pointer 0x10
+    // apart (retail 0x1d5cb: `lea esi,[this+0x1cc]`, then [esi-0x10]/[esi]/[esi+0x10]
+    // /[esi+0x20]/[esi+0x30]/[esi+0x40]) - four players per band.
     i32 m_1b4; // +0x1b4 anim-mode gate (0 = trig path, !=0 = table path)
     i32 m_1b8; // +0x1b8 Render's one-shot battle-stats latch (0x64 -> draws once -> 0xc7)
-    char m_pad1bc[0x1d8 - 0x1bc];
-    i32 m_letterIdx; // +0x1d8 active letter count / index
-    i32 m_radius;    // +0x1dc sine-spiral radius (loaded (float) for sin/cos; shrinks to 0)
-    i32 m_angleStep; // +0x1e0 spiral angle/step counter (advances by 5)
-    i32 m_scratchX;  // +0x1e4 computed scratch X (sin(ang)*r + tableX)
-    i32 m_scratchY;  // +0x1e8 computed scratch Y (cos(ang)*r + tableY)
-    CWwdGameObjectA* m_trailSprites[4]; // +0x1ec  the 4 warp-letter glitter / trailing idle
-                                        //         sprites (walked 0..m_letterIdx, %4-bounded)
-    CWwdGameObjectA* m_cursorLetter;    // +0x1fc the trailing/cursor letter sprite
+    CWwdGameObjectA* m_puddleSprites[4]; // +0x1bc  GRUNTZ_GRUNTPUDDLE, one per player
+    CWwdGameObjectA* m_gruntSprites[4];  // +0x1cc  the winner's EXITZ / the losers' IDLE
+    CWwdGameObjectA* m_weaponIcons[4];   // +0x1dc  best weapon-pickup icon (key best+1)
+    CWwdGameObjectA* m_toyIcons[4];      // +0x1ec  best toy-pickup icon    (key best+0x17)
+    CWwdGameObjectA* m_powerupIcons[4];  // +0x1fc  best powerup icon       (key best+0x36)
+    CWwdGameObjectA* m_miscIcons[4];     // +0x20c  best misc icon          (key best+0x3d)
+    CWwdGameObjectA* m_tabSprites[4];    // +0x21c  GAME_STATUSBAR_TABZ_MULTIPLAYERT%d
+    CWwdGameObjectA* m_flagSprites[4];   // +0x22c  GAME_FORTRESSFLAGZ_<warlord>
+    CWwdGameObjectA* m_warlordBooty;     // +0x23c  GRUNTZ_WARLORDZ_<name>_JOY/_BOOTY
+    CWwdGameObjectA* m_fortSprite;       // +0x240  LEVEL_FORT
     // ENDS AT 0x244 - the allocation-proven size (TransitionState @0x8c056:
     // `push 0x244; call ??2@YAPAXI@Z`, then the ??_7CMultiBootyState (0x5e9bdc) stamp).
-    // The out-of-bounds `m_bonusState` @+0x2f8 that used to sit here is GONE, and so is its
-    // reader (CheckPerfectBonus @0x1c0f0): both were CBootyState's. That body reads
-    // [this+0x2f8] off its own `this`, 0xb4 bytes past this class's end, and its only caller
-    // is CBootyState::Render. This class is whole again - the fourth and last of the
-    // out-of-bounds @identity-TODOs to close by the allocation-site bound.
-    i32 m_levelCompleteGate;             // +0x200  level-complete gate (mirrors CBootyState)
-    CWwdGameObjectA* m_sprintSprites[8]; // +0x204..+0x223  the 8 directional sprint sprites
-    char m_pad224[0x244 - 0x224];
 };
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();

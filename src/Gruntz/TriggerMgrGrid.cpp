@@ -346,10 +346,10 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
         cell->CreateHealthSprite();
         cell->CreateStaminaSprite();
         cell->CreateToySprite();
-        cell->m_888 = g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388);
-        cell->m_88c = 0;
-        cell->m_880 = g_frameTime;
-        cell->m_884 = 0;
+        cell->m_hudRetireWindowLo = g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388);
+        cell->m_hudRetireWindowHi = 0;
+        cell->m_hudRetireClockLo = g_frameTime;
+        cell->m_hudRetireClockHi = 0;
         return 0;
     }
     if (force != 0) {

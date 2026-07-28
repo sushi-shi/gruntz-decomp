@@ -584,11 +584,22 @@ public:
     // thunk-resolution table above). Fwd-declared via <Gruntz/GameRegistry.h>;
     // TUs that dispatch on it include <Gruntz/TriggerMgr.h>.
     class CTriggerMgr* m_tileMgr;
-    i32 m_struckCount;   // +0x264 (struck-reaction counter; cue tier 5/0xa)
-    i32 m_struckClockLo; // +0x268 (= g_frameTime game clock at last struck)
-    i32 m_struckClockHi; // +0x26c (= 0)
-    i32 m_struckTimerLo; // +0x270 (= 0xfa0 struck cooldown window)
-    i32 m_struckTimerHi; // +0x274 (= 0)
+    i32 m_struckCount; // +0x264 (struck-reaction counter; cue tier 5/0xa)
+    // The struck cooldown: same {anchor i64, window i64} shape as the +0x840 family.
+    union {
+        i64 m_struckClock64; // +0x268
+        struct {
+            i32 m_struckClockLo; // +0x268 (= g_frameTime game clock at last struck)
+            i32 m_struckClockHi; // +0x26c (= 0)
+        };
+    };
+    union {
+        i64 m_struckTimer64; // +0x270
+        struct {
+            i32 m_struckTimerLo; // +0x270 (= 0xfa0 struck cooldown window)
+            i32 m_struckTimerHi; // +0x274 (= 0)
+        };
+    };
     // +0x278/+0x280: a 64-bit hold-off pair (anchor clock + window; Boomerang seeds
     // m_278 = g_frameTime, m_280 = the computed return time; StepRowUnits gates on
     // (i64)g_frameTime - anchor < window). The i32 halves stay for the serializers'
@@ -809,51 +820,146 @@ public:
             i32 m_idleWindowLo, m_idleWindowHi;
         };
     }; // +0x838 (= 0x3a98)
-    i32 m_entranceClockLo;    // +0x840 (entrance: = g_frameTime game clock, low dword)
-    i32 m_entranceClockHi;    // +0x844 (entrance: = 0, high dword)
-    i32 m_entranceSafeTimeLo; // +0x848 (entrance: = EntranceSafeTime config)
-    i32 m_entranceSafeTimeHi; // +0x84c (entrance: = 0)
-    i32 m_850;                // +0x850 (timer record base, SerializeMove)
-    i32 m_854;                // +0x854
-    i32 m_858;                // +0x858 (entrance: = 0)
-    i32 m_85c;                // +0x85c (entrance: = 0)
+    // +0x840..+0x8bf: eleven {anchor-clock i64, window i64} timer records. Every
+    // writer stamps the halves as (lo, hi=0); every reader is a 64-bit
+    // `(i64)(u32)g_frameTime - anchor >= window` compare. Both spellings are the
+    // SAME eight bytes - the i32 halves stay for the serializers' per-dword stores,
+    // the i64 arms are the comparison view (one shape, no reinterpret casts).
+    union {
+        i64 m_entranceClock64; // +0x840
+        struct {
+            i32 m_entranceClockLo; // +0x840 (entrance: = g_frameTime game clock, low dword)
+            i32 m_entranceClockHi; // +0x844 (entrance: = 0, high dword)
+        };
+    };
+    union {
+        i64 m_entranceSafeTime64; // +0x848
+        struct {
+            i32 m_entranceSafeTimeLo; // +0x848 (entrance: = EntranceSafeTime config)
+            i32 m_entranceSafeTimeHi; // +0x84c (entrance: = 0)
+        };
+    };
+    // +0x850/+0x858: the entrance-drop SAFE-FLASH timer. XferName re-arms it every
+    // time the window expires: window = "SafeFlashTime" (or, when "AccelerateFlash"
+    // is on, the (elapsed/EntranceSafeTime - 1)^2 * 750 ramp), floored at 0x1e.
+    union {
+        i64 m_flashClock64; // +0x850
+        struct {
+            i32 m_flashClockLo; // +0x850 (timer record base, SerializeMove)
+            i32 m_flashClockHi; // +0x854
+        };
+    };
+    union {
+        i64 m_flashWindow64; // +0x858
+        struct {
+            i32 m_flashWindowLo; // +0x858 (entrance: = 0)
+            i32 m_flashWindowHi; // +0x85c (entrance: = 0)
+        };
+    };
     // +0x860..+0x86f: the attack-downtime timer record (same {clock i64, duration
     // i64} shape as the combat/wingz timers below; SerializeMove round-trips it
-    // from m_860). The attack-fire step (UserLogicVfunc7) stamps it at each impact:
+    // from m_attackClockLo). The attack-fire step (UserLogicVfunc7) stamps it at each impact:
     // clock = g_frameTime (lo) / 0 (hi), duration = "AttackDowntime" bute (lo) / 0.
-    i32 m_860;              // +0x860 (attack timer: anchor clock lo = g_frameTime)
-    i32 m_864;              // +0x864 (attack timer: anchor clock hi = 0)
-    i32 m_attackDowntimeLo; // +0x868 (attack timer: duration lo = AttackDowntime config)
-    i32 m_attackDowntimeHi; // +0x86c (attack timer: duration hi = 0)
+    // XferName reads the pair back as the stamina recharge ramp.
+    union {
+        i64 m_attackClock64; // +0x860
+        struct {
+            i32 m_attackClockLo; // +0x860 (attack timer: anchor clock lo = g_frameTime)
+            i32 m_attackClockHi; // +0x864 (attack timer: anchor clock hi = 0)
+        };
+    };
+    union {
+        i64 m_attackDowntime64; // +0x868
+        struct {
+            i32 m_attackDowntimeLo; // +0x868 (attack timer: duration lo = AttackDowntime config)
+            i32 m_attackDowntimeHi; // +0x86c (attack timer: duration hi = 0)
+        };
+    };
     // Combat/wingz state timers (the GruntAssetLoaders cluster fills them).
-    i32 m_combatClockLo; // +0x870 (combat timer: anchor clock lo = g_frameTime; i64 w/ m_combatClockHi)
-    i32 m_combatClockHi;   // +0x874 (combat timer: anchor clock hi = 0)
-    i32 m_combatTimeoutLo; // +0x878 (combat timer: duration lo = CombatTimeout config)
-    i32 m_combatTimeoutHi; // +0x87c (combat timer: duration hi = 0)
-    i32 m_880; // +0x880 (timer record base, SerializeMove; == combat timer base = game clock)
-    i32 m_884; // +0x884
-    // +0x888 - the trigger leaves read this as the combat timeout the +0x880 timer base is
-    // compared against. CGrunt already names a CombatTimeout at +0x878/+0x87c, so this one
-    // keeps its offset name until the two roles are reconciled (do not guess).
-    i32 m_888;          // +0x888
-    i32 m_88c;          // +0x88c
-    i32 m_wingzClockLo; // +0x890 (wingz timer: anchor clock lo = g_frameTime; i64 w/ m_wingzClockHi)
-    i32 m_wingzClockHi;    // +0x894 (wingz timer: anchor clock hi = 0)
-    i32 m_wingzDurationLo; // +0x898 (wingz timer: duration lo = (long)(m_wingzTime*scale-bias))
-    i32 m_wingzDurationHi; // +0x89c (wingz timer: duration hi = 0)
-    i32 m_8a0;             // +0x8a0 (sub-ser record base, SerializeMove)
-    i32 m_8a4;             // +0x8a4
-    i32 m_8a8;             // +0x8a8
-    i32 m_8ac;             // +0x8ac
-    i32 m_8b0;             // +0x8b0 (sub-ser record base, SerializeMove)
-    i32 m_8b4;             // +0x8b4
-    i32 m_8b8;             // +0x8b8
-    i32 m_8bc;             // +0x8bc
-    i32 m_8c0;             // +0x8c0
-    i32 m_8c4;             // +0x8c4
-    i32 m_8c8;             // +0x8c8
-    i32 m_8cc;             // +0x8cc
-    i32 m_8d0;             // +0x8d0
+    union {
+        i64 m_combatClock64; // +0x870
+        struct {
+            i32 m_combatClockLo; // +0x870 (combat timer: anchor clock lo = g_frameTime)
+            i32 m_combatClockHi; // +0x874 (combat timer: anchor clock hi = 0)
+        };
+    };
+    union {
+        i64 m_combatTimeout64; // +0x878
+        struct {
+            i32 m_combatTimeoutLo; // +0x878 (combat timer: duration lo = CombatTimeout config)
+            i32 m_combatTimeoutHi; // +0x87c (combat timer: duration hi = 0)
+        };
+    };
+    // +0x880/+0x888 - the HUD-sprite retire timer: when it expires with the grunt not
+    // arrived, XferName retires the health/toy/stamina sprites. (The trigger leaves
+    // read the +0x888 half as a combat timeout; CGrunt already names a CombatTimeout
+    // at +0x878, so the halves keep their offset names until the roles reconcile.)
+    union {
+        i64 m_hudRetireClock64; // +0x880
+        struct {
+            i32 m_hudRetireClockLo; // +0x880 (timer record base, SerializeMove)
+            i32 m_hudRetireClockHi; // +0x884
+        };
+    };
+    union {
+        i64 m_hudRetireWindow64; // +0x888
+        struct {
+            i32 m_hudRetireWindowLo; // +0x888
+            i32 m_hudRetireWindowHi; // +0x88c
+        };
+    };
+    union {
+        i64 m_wingzClock64; // +0x890
+        struct {
+            i32 m_wingzClockLo; // +0x890 (wingz timer: anchor clock lo = g_frameTime)
+            i32 m_wingzClockHi; // +0x894 (wingz timer: anchor clock hi = 0)
+        };
+    };
+    union {
+        i64 m_wingzDuration64; // +0x898
+        struct {
+            i32 m_wingzDurationLo; // +0x898 (wingz: duration lo = (long)(m_wingzTime*scale-bias))
+            i32 m_wingzDurationHi; // +0x89c (wingz timer: duration hi = 0)
+        };
+    };
+    // +0x8a0/+0x8a8: the powerup CONVERSION timer (grunt kind 0x39 - the "Powerupz"
+    // ConversionTime bute re-arms the window each tick the grunt survives a -5 health
+    // bite). The +0x8a0 anchor doubles as the ghost/flicker fade base below 0xbb8 ms.
+    union {
+        i64 m_convertClock64; // +0x8a0
+        struct {
+            i32 m_convertClockLo; // +0x8a0 (sub-ser record base, SerializeMove)
+            i32 m_convertClockHi; // +0x8a4
+        };
+    };
+    union {
+        i64 m_convertTime64; // +0x8a8
+        struct {
+            i32 m_convertTimeLo; // +0x8a8
+            i32 m_convertTimeHi; // +0x8ac
+        };
+    };
+    // +0x8b0/+0x8b8: the powerup SHIMMER timer (grunt kind 0x38 - re-rolls the
+    // sprite-ref palette selection each time the window expires).
+    union {
+        i64 m_shimmerClock64; // +0x8b0
+        struct {
+            i32 m_shimmerClockLo; // +0x8b0 (sub-ser record base, SerializeMove)
+            i32 m_shimmerClockHi; // +0x8b4
+        };
+    };
+    union {
+        i64 m_shimmerWindow64; // +0x8b8
+        struct {
+            i32 m_shimmerWindowLo; // +0x8b8
+            i32 m_shimmerWindowHi; // +0x8bc
+        };
+    };
+    i32 m_8c0; // +0x8c0
+    i32 m_8c4; // +0x8c4
+    i32 m_8c8; // +0x8c8
+    i32 m_8cc; // +0x8cc
+    i32 m_8d0; // +0x8d0
     i32 m_8d4; // +0x8d4  (trailing member; sizeof(CGrunt) == 0x8d8, the `new CGrunt` size)
 
     // The grunt's spawn constructor @0x47a10 (__thiscall, the CMovingLogic-base

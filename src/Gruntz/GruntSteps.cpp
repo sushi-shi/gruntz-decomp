@@ -1188,13 +1188,13 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     SerRecord(ar, mode, &m_idleAnchor);
     SerRecord(ar, mode, &m_idleTimer);
     SerRecord(ar, mode, &m_entranceClockLo);
-    SerRecord(ar, mode, &m_850);
-    SerRecord(ar, mode, &m_860);
+    SerRecord(ar, mode, &m_flashClockLo);
+    SerRecord(ar, mode, &m_attackClockLo);
     SerRecord(ar, mode, &m_combatClockLo);
-    SerRecord(ar, mode, &m_880);
+    SerRecord(ar, mode, &m_hudRetireClockLo);
     SerPairRecord(&m_wingzClockLo, ar, mode, a3, a4);
-    SerPairRecord(&m_8a0, ar, mode, a3, a4);
-    SerPairRecord(&m_8b0, ar, mode, a3, a4);
+    SerPairRecord(&m_convertClockLo, ar, mode, a3, a4);
+    SerPairRecord(&m_shimmerClockLo, ar, mode, a3, a4);
     SerPairRecord(&m_8c0, ar, mode, a3, a4);
     SerPairRecord(&m_arrivalRerollLo, ar, mode, a3, a4);
     SerPairRecord(&m_278, ar, mode, a3, a4);

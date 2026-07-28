@@ -4,6 +4,7 @@
 #endif
 #include <afxwin.h>
 #include <Gruntz/GameText.h>
+#include <Gruntz/GameMode.h> // CMultiBootyState - GetWarlordName is its __thiscall member
 #include <rva.h>
 #include <Bute/ButeMgr.h>         // the one CButeMgr (its 0x170210 ctor; the 0x82b20 in-place init)
 #include <Gruntz/Attract.h>       // g_attractStateCount C-linkage declaration
@@ -36,7 +37,7 @@
 // and the 5 duplicated ctor tails pair as retail-only). The dispatch + tails are
 // shape-correct; see the delinker-jumptable memory note for the pipeline fix.
 RVA(0x0001ec20, 0x8d)
-CString __stdcall GetWarlordName(i32 id) {
+CString CMultiBootyState::GetWarlordName(i32 id) {
     // The target reserves and zero-inits one dead stack dword (`push ecx; mov
     // [esp+4],0; ...; pop ecx`) that no path reads - an MSVC5 return-slot/NRV
     // bookkeeping artifact. A `volatile int = 0` reproduces it exactly (the
