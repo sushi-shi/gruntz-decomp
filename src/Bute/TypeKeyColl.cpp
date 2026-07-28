@@ -167,7 +167,8 @@ zBitVec::~zBitVec() {
 // that.m_capacity<=0x20 shortcut and from malloc-succeeded) uses eax in retail and ecx in
 // cl. Retail re-LOADS [that+8] there even on the path where eax already holds it, exactly
 // as we do, so the shape is identical; cl simply will not spend eax at a join whose other
-// predecessor left the malloc result there. No source lever reaches a single scratch pick.
+// predecessor left the malloc result there. No source lever reaches a single scratch pick;
+// match_variants --state-trials 64 --max-depth 3 exhausted 512 variants without a win.
 RVA_COMPGEN(0x0016d2d0, 0x1e, ??_GzBitVec@@UAEPAXI@Z)
 RVA(0x0016d2f0, 0xac)
 zBitVec& zBitVec::operator=(const zBitVec& that) {

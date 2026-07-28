@@ -1871,6 +1871,9 @@ void CGrunt::SetEntrancePos(i32 a, i32 b) {
     }
 }
 
+// @early-stop
+// same ecx/edx SetHealthGlyph temp phase as CreateToyTimeSprite @0x4d3e0 (four bytes);
+// see the mechanism + the exhausted wall-breaker run there.
 RVA(0x0004d130, 0xb5)
 i32 CGrunt::CreateHealthSprite() {
     if (m_healthSprite || m_health <= 0) {
@@ -1922,6 +1925,9 @@ i32 CGrunt::CreateToySprite() {
     return 1;
 }
 
+// @early-stop
+// same ecx/edx SetHealthGlyph temp phase as CreateToyTimeSprite @0x4d3e0 (four bytes);
+// see the mechanism + the exhausted wall-breaker run there.
 RVA(0x0004d2f0, 0xb4)
 i32 CGrunt::CreateStaminaSprite() {
     if (m_staminaSprite || m_stamina == 0x64) {
@@ -1956,7 +1962,8 @@ i32 CGrunt::CreateStaminaSprite() {
 // fields and the two `push` opcodes. CreateHealthSprite / CreateStaminaSprite /
 // CreateWingzTimeSprite carry the SAME four bytes from the same call shape. Not source-
 // steerable: explicit `i32` locals for the two values are copy-propagated away by cl and
-// the pick does not move. Same family as global-store-temp-alternates-ecx-edx.md.
+// the pick does not move, and match_variants --state-trials 48 --max-depth 3 exhausted 256
+// variants without a win. Same family as global-store-temp-alternates-ecx-edx.md.
 RVA(0x0004d3e0, 0xf5)
 i32 CGrunt::CreateToyTimeSprite() {
     if (m_toyTimeSprite || m_toyTime == 0) {
@@ -1992,6 +1999,9 @@ i32 CGrunt::CreateToyTimeSprite() {
     return 1;
 }
 
+// @early-stop
+// same ecx/edx SetHealthGlyph temp phase as CreateToyTimeSprite @0x4d3e0 (four bytes);
+// see the mechanism + the exhausted wall-breaker run there.
 RVA(0x0004d520, 0xe3)
 i32 CGrunt::CreateWingzTimeSprite() {
     if (m_wingzTimeSprite || m_wingzEnabled == 0 || m_wingzTime == 0) {

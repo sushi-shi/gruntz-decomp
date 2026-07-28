@@ -89,7 +89,8 @@ void CLightFxRender::FreeSurface() {
 // because eax is the `info` base being overwritten) while retail emits them ascending by
 // offset (`[info+0xc]` -> edx, `[info+0x10]` -> eax). Two modrm bytes + the two `push`
 // opcodes; the pushed VALUES and their order are identical. Explicit `i32 w`/`i32 h`
-// locals do not move it - cl copy-propagates them back into the call.
+// locals do not move it - cl copy-propagates them back into the call - and match_variants
+// --state-trials 48 --max-depth 3 exhausted 384 variants without a win.
 RVA(0x000a33e0, 0x55)
 i32 CLightFxRender::AllocSurface() {
     if (m_tileGrid == 0) {

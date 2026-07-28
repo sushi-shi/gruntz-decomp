@@ -89,6 +89,7 @@ void CWwdGrid::Remove(WwdRegion* r) {
 // reload only feeds the post-loop `base += m_cols`, so both orders are legal and the two
 // instructions are otherwise byte-identical). The frame is now exact - the 16-byte
 // cell-rect aggregate above closed the 0x18-vs-0x20 frame + every slot number.
+// match_variants --state-trials 48 --max-depth 3 exhausted 384 variants without a win.
 RVA(0x001918c0, 0x1a2)
 i32 CWwdGrid::Query(i32 a0, i32 a1, i32 a2, i32 a3, i32 doRemove) {
     i32 fired = 0;
