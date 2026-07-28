@@ -19,6 +19,9 @@ class
 // quartet [5..8] below is the CLoadable scheme.)
 class CDDrawWorkerList : public CLoadable {
 public:
+    // INLINE ctor - expanded in place by CDDrawSurfaceMgr::Init @0x1559f1 (base call
+    // 0x156cb0, the CObList member ctor at +0x10, the ??_7 stamp 0x5efd88).
+    CDDrawWorkerList(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0) {}
     // slot 1 - real dtor body @0x156f50 (G obj, DDrawSubMgr.cpp); ??_G @0x156f30.
     virtual ~CDDrawWorkerList() OVERRIDE;
     // [5] 0x156f00 (G obj) - loaded iff the +0x0c owner is bound and the +0x04
@@ -42,8 +45,13 @@ public:
         i32 a4,
         i32 addHead
     ); // slot 11 0x157330
-    virtual void* CreateWorkerB30(i32 a1, i32 a2, const char* key, i32 a4,
-                                  i32 addHead); // slot 12 0x157150
+    virtual void* CreateWorkerB30(
+        i32 a1,
+        i32 a2,
+        const char* key,
+        i32 a4,
+        i32 addHead
+    ); // slot 12 0x157150
     // slot 13 - the per-frame worker pump the play states "present" through
     // (0x163bf0, T obj): dispatch each worker's RenderFrame(a, b) onto the two
     // surface pairs, decrement its m_refCount, prune the expired.

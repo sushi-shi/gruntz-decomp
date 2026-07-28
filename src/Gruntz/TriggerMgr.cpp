@@ -1982,7 +1982,9 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     // reconstruction stored the sprite, which is why the cell offsets never lined up with the
     // sprite's. The downcast to the concrete leaf is the authentic one every creator does.
     CGrunt* logic = static_cast<CGrunt*>(sprite->m_7c->m_logic);
-    if (logic->Place(col, row, vis, k, 0, 0, 0, 0, 0, 0, 0, 0) == 0) {
+    // arg1 is this CTriggerMgr (retail @0x7c22c pushes esi last of the twelve);
+    // the old spelling was one arg short and shifted every following slot.
+    if (logic->Place(this, row, free, vis, k, 0, 0, 0, 0, 0, 0, 0) == 0) {
         logic->m_38->m_flags |= 0x10000;
         return 0;
     }

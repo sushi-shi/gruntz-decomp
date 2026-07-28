@@ -28,13 +28,10 @@ class DSoundCloneInst; // the pooled cue player (Dsndmgr/DirectSoundMgr.h)
 
 class DirectSoundMgr;
 
-
 typedef struct tagRECT CCueRect;
 SIZE_UNKNOWN();
 
 class CGruntSpawnConfig; // the +0x60 registry object (one class, three ex-names)
-
-
 
 CString __stdcall operator+(const char* lhs, const CString& rhs);
 CString __stdcall operator+(const CString& lhs, const char* rhs);
@@ -50,7 +47,6 @@ public:
     // GetName @0x310f0 IS _zdvec::IndexToPtr; cast at each call.
 };
 SIZE_UNKNOWN();
-
 
 struct GruntDirectionCell {
     GruntDirectionCell() {}
@@ -611,8 +607,8 @@ public:
             i32 m_284; // +0x284
         };
     };
-    i32 m_288;           // +0x288 (serialized)
-    i32 m_28c;           // +0x28c (serialized)
+    i32 m_288; // +0x288 (serialized)
+    i32 m_28c; // +0x28c (serialized)
     // The grunt's reach/collision bounds rect (tile-space {left,top,right,bottom};
     // RectContains reads it via &m_reachRectLeft). m_reachRadius is the rect's right
     // edge AND a scalar reach radius (GruntInRadius radius-sum). GruntTubeAnim seeds
@@ -663,7 +659,7 @@ public:
             i32 m_arrivalRerollWindowHi; // +0x314
         };
     };
-    i32 m_318;                   // +0x318
+    i32 m_318; // +0x318
     // The two owned lists are REAL MFC CPtrLists (0x1c B each), not views: the ctor
     // calls 0x1b4867 and ~CGrunt calls 0x1b48c6 - the band whose vtable (0x1eb054)
     // slot-0 GetRuntimeClass returns the CRuntimeClass naming "CPtrList". Their
@@ -740,8 +736,8 @@ public:
     // +0x3d8  the resolved pickup animation (LoadPickupSprites looks it up in the
     // anim registry, Setup() consumes it, Serialize writes its registry name).
     CAniElement* m_pickupGeoSrc;
-    i32 m_3dc;          // +0x3dc (serialized)
-    i32 m_3e0;          // +0x3e0 (serialized)
+    i32 m_3dc;       // +0x3dc (serialized)
+    i32 m_3e0;       // +0x3e0 (serialized)
     i32 m_moveTileX; // +0x3e4 (destination tile X; ArrivalNotify6/Load6 arg, = PlayMoveSoundAtTile x)
     i32 m_moveTileY; // +0x3e8 (destination tile Y; ArrivalNotify6/Load6 arg, = PlayMoveSoundAtTile y)
     i32 m_health;    // +0x3ec
@@ -754,7 +750,7 @@ public:
     double m_410;      // +0x410
     i32 m_418;         // +0x418
     u32 m_timePerTile; // +0x41c (TimePerTile config, unsigned: retail halves it with `shr`; ComputeFacing time divisor; halved for kind 0x37)
-    i32 m_tileClaimed;                 // +0x420 (arrival-claimed latch)
+    i32 m_tileClaimed; // +0x420 (arrival-claimed latch)
     DirectSoundMgr* m_struckSlotSound; // +0x424 (struck-slot sound sample; freed via StopAndRewind)
     DirectSoundMgr*
         m_struckVoiceSound;           // +0x428 (struck-voice sound sample; freed via StopAndRewind)
@@ -917,13 +913,13 @@ public:
     void EntranceTileOffset(i32* out); // @0x56f80 (ret 4) adjacent-tile pixel pos
     void ComputeFacing(double dt);     // @0x57060 (ret 8)
     i32 ResetGeometry();               // @0x616e0
-    i32 DispatchVtbl24();             // 0x6b260 (out-of-line in Grunt.cpp)
+    i32 DispatchVtbl24();              // 0x6b260 (out-of-line in Grunt.cpp)
 
     void PlayMoveSound(i32 x, i32 y);                  // @0x511b0 (ret 8)
     void PlaySound(i32 range, GruntDirectionCell rec); // @0x4ac10 (ret 0x10) external
     void OnStruck(i32 wasHit);                         // @0x588f0 (ret 4)
     i32 ResolveArrivalNeighbor();                      // @0xf26f0 (ret 0)
-    i32 RearmEntranceDrop();                          // @0x68370 (ret 0)
+    i32 RearmEntranceDrop();                           // @0x68370 (ret 0)
 
     // ---- the move/timer record serializer (@0x53b80, ret 0x10) ----
     // SerializeMove(ar, mode) drives the grunt move/idle-timer state through an
@@ -1117,6 +1113,25 @@ public:
     // "<NAME>GRUNT" namespace, and on a switch tile (0x41/0x42) at the committed
     // tile re-fire ApplySwitch + WireTileSwitchLogic on m_tileMgr.
     i32 LoadVehicleGruntSprites(i32 kind); // 0x50ce0
+    // 0x4d800 - the grid placement driver CTriggerMgr::SpawnGrunt / PlaceObject run on the
+    // freshly-created "Grunt" sprite's bound logic. RE-ATTRIBUTED from CUserLogic (which is
+    // 0x34 bytes; this body writes +0x194..+0x460 and calls eight CGrunt:: methods on its
+    // own `this`). arg1 is the caller's CTriggerMgr `this` (SpawnGrunt @0x7c22c pushes esi),
+    // arg11 the tile-span RECT the reach bounds are derived from.
+    i32 Place(
+        class CTriggerMgr* board,
+        i32 col,
+        i32 row,
+        i32 moveIcon,
+        i32 typeKind,
+        i32 vehicleKind,
+        i32 kind,
+        i32 a8,
+        i32 a9,
+        i32 a10,
+        RECT* span,
+        i32 entranceMode
+    ); // 0x4d800
 
     // @0xee800 (ret 4, /GX) - the arrival/defender reticle scan (mis-homed under
     // ?winapi_0ee800_IntersectRect_PtInRect@CUserLogic before xref recovery: this
@@ -1162,7 +1177,6 @@ extern "C" i32 GameRand();                       // 0x51fee0 (__cdecl)
 extern "C" void __stdcall GruntCue(CGrunt* g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x4039f4
 extern "C" i32 BadSelect(const char* msg);                     // 0x402cca (__cdecl)
 extern "C" i32 PickupCheck(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x403c6a (__cdecl)
-
 
 // File-scope prototypes moved from the .cpp: an unqualified
 // declaration at file scope has EXTERNAL linkage, so it belongs in

@@ -2063,12 +2063,183 @@ i32 CGrunt::CreateSelectedSprite() {
 // own blocked-move note (the play-TU move is header-gated).
 // ===========================================================================
 
-// @confidence: low
-// @source: winapi:CopyRect
-// @stub
+// ===========================================================================
+// CGrunt::Place  @0x04d800  (1059 B, __thiscall, ret 0x30 = 12 stack args)
+// The grid placement driver: seed the tile-attribute mask from `kind`, reset the
+// whole arrival/move/entrance state block, load the vehicle + type tables, derive
+// the bound object's reach rect from the caller's tile span, pick the shade table
+// for the move icon, and then either build the entrance animation (entranceMode
+// set) or commit the placement - stamp the board cell's owner word, reload the
+// config/anim-name tables and dispatch the per-kind arrival seed.
+//
+// OWNER RE-ATTRIBUTED (2026-07-28): was declared `CUserLogic::Place` (a 0x34-byte
+// class). This body writes `this` at +0x194 .. +0x460 and calls EIGHT `CGrunt::`
+// methods on that same `this` (LoadVehicleGruntSprites/LoadGruntTypeTable/
+// BuildEntranceAnimation/ReadConfigFromButeMgr/LoadCellAnimNames/LoadAnimNameTable/
+// ResetEntranceAnimation/StepArrivalDrop) - it is CGrunt's. `board` (arg1) is the
+// CALLER's CTriggerMgr `this`: SpawnGrunt @0x7c22c pushes esi (its own this) as the
+// last of the twelve args, and the value lands in CGrunt::m_tileMgr (+0x260).
+// ===========================================================================
+// @early-stop
+// ~81% (was a 0.x% stub bound to the wrong class). The instruction STREAM is
+// essentially retail's - 280 base instructions vs 284, same order bar four windows.
+// Residues, all codegen placement:
+//   * FRAME SIZE. retail is `sub esp,0x18`, cl is `sub esp,0x10`: retail reserves two
+//     dwords at [esp+0x10]/[esp+0x14] that NOTHING in the body reads or writes (verified
+//     over the whole 0x423), so its RECT sits at +0x18 and every [esp+disp] in the body
+//     is 8 higher than ours. Declaring two extra ints ahead of the rect does not
+//     reproduce it (cl enregisters them and keeps the frame at 0x10) - it is a dead
+//     regalloc spill slot, not a source-visible local.
+//   * cl sinks `mov ebx,1` into all THREE arms of the head mask nest where retail
+//     hoists one copy above the branch, and loads the `kind` argument before the
+//     `sub esp` rather than after the three callee-saved pushes.
+//   * the board-stamp tail: retail pre-reads +0x1f0 and spills it to the (dead) arg2
+//     home so the final OR is register-to-register; cl folds it into the `or` as a
+//     memory operand. Spelling it with a local costs 0.5% (measured, reverted).
+// topic:wall topic:regalloc.
 RVA(0x0004d800, 0x423)
-i32 CUserLogic::Place(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {
-    return 0;
+i32 CGrunt::Place(
+    CTriggerMgr* board,
+    i32 col,
+    i32 row,
+    i32 moveIcon,
+    i32 typeKind,
+    i32 vehicleKind,
+    i32 kind,
+    i32 a8,
+    i32 a9,
+    i32 a10,
+    RECT* span,
+    i32 entranceMode
+) {
+    // Negated form: retail lays the kind==0 arm LAST (`cmp kind,ebx0 / je <far>`) and
+    // the generic mask arm as the fall-through, which is what the inverted nest emits.
+    if (kind != 0) {
+        if (kind != 0x11) {
+            m_arrivalFlags = 0x1c000d83;
+        } else {
+            m_arrivalFlags = 0x4000983;
+        }
+    } else {
+        m_arrivalFlags = 0x4000901;
+        if (g_gameReg->m_134 == 1) {
+            m_arrivalFlags = 0x4000911;
+        }
+    }
+    m_288 = -1;
+    m_28c = -1;
+    m_defenderX = -1;
+    m_defenderY = -1;
+    m_378 = 0;
+    m_390 = 1;
+    m_struckCount = 0;
+    m_toyTileIndex = 0;
+    m_moveMode = -1;
+    m_coordRetryCount = 0;
+    m_moveKind = 0;
+    m_374 = 0;
+    m_moveVariant = 0;
+    m_1a4 = 0;
+    m_arrivalState = kind;
+    m_194 = 0x22;
+    m_tileOwnerHi = col;
+    m_2e0 = a9;
+    m_tileOwnerLo = row;
+    m_arrivalCol = -1;
+    m_arrivalRow = -1;
+    m_2e4 = a10;
+    m_defenderRadius = a8 + 1;
+    m_arrivalRerollLo = 0;
+    m_arrivalRerollWindowLo = 0;
+    m_arrivalRerollHi = 0;
+    m_arrivalRerollWindowHi = 0;
+    m_278 = 0;
+    m_280 = 0;
+    m_27c = 0;
+    m_284 = 0;
+    m_1f4_moveIcon = moveIcon;
+    m_tileMgr = board;
+    m_224 = 1;
+    m_arrivalPhase = 0;
+    m_354 = 1;
+    m_tileClaimed = 0;
+    m_358 = 1;
+    m_35c = 0;
+    m_entranceArmed = 0;
+    m_entranceDropActive = 0;
+    m_deathType = -1;
+    m_454 = 0;
+    m_36c = 0;
+    m_370 = -1;
+    m_24c = 0;
+    m_1f8 = -1;
+    m_lowStaminaCued = 0;
+    m_2e8 = -1;
+    LoadVehicleGruntSprites(vehicleKind);
+    LoadGruntTypeTable(typeKind, 1, 0, 0);
+    if (span != 0) {
+        m_object->m_extent.left = (m_lastTilePxX >> 5) - span->left;
+        m_object->m_extent.right = span->right + (m_lastTilePxX >> 5);
+        m_object->m_extent.top = (m_lastTilePxY >> 5) - span->top;
+        m_object->m_extent.bottom = span->bottom + (m_lastTilePxY >> 5);
+    }
+    RECT reach;
+    ::CopyRect(&reach, &m_object->m_extent);
+    if (reach.right - reach.left == 0 && reach.top - reach.bottom == 0) {
+        m_318 = 0;
+    } else {
+        m_318 = 1;
+    }
+    if (m_1f4_moveIcon < 0 || m_1f4_moveIcon >= 0x11) {
+        m_1f4_moveIcon = 0;
+    }
+    CShadeTable* shade = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, 0);
+    if (shade == 0) {
+        shade = g_gameReg->m_spriteFactory->GetSel(1, 0);
+    }
+    m_object->m_drawFillArg = shade;
+    m_object->m_drawActive = 1;
+    m_object->m_drawFillCmd = 0xa;
+    if (entranceMode != 0) {
+        BuildEntranceAnimation(entranceMode);
+        return 1;
+    }
+
+    CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
+    i32 tx = m_lastTilePxX >> 5;
+    i32 ty = m_lastTilePxY >> 5;
+    plane->m_rowInts[ty][tx * 7] |= 0x20000000;
+    plane->m_rowInts[ty][tx * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
+    m_entranceActive = 0;
+    ReadConfigFromButeMgr();
+    LoadCellAnimNames(0, 0);
+    LoadAnimNameTable(0, 0);
+    ResetEntranceAnimation(1, 0, 0);
+    switch (kind) {
+        case 5:
+            m_defenderX = m_lastTilePxX;
+            m_defenderY = m_lastTilePxY;
+            break;
+        case 6:
+            if (a9 == 0 && a10 == 0) {
+                m_defenderX = m_lastTilePxX;
+                m_defenderY = m_lastTilePxY;
+                m_arrivalState = 5;
+            } else {
+                i32 px = (a9 << 5) + 0x10;
+                i32 py = (a10 << 5) + 0x10;
+                m_defenderX = px;
+                m_defenderY = py;
+                StepArrivalDrop(px, py - 0x20, 0, -1, 1, 0);
+            }
+            break;
+        case 4:
+        case 7:
+            m_defenderX = m_lastTilePxX;
+            m_defenderY = m_lastTilePxY;
+            break;
+    }
+    return 1;
 }
 
 // Construct a CString into every slot the last g_typeColl lookup grew (the

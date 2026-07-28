@@ -27,7 +27,6 @@
 
 extern "C" void __stdcall GM_SimpleAnim(i32 z); // (stdcall, 1 arg)
 
-
 extern "C" tagRECT g_versionRect; // (the 4-int source @c8/cc/d0/d4)
 extern "C" i32 g_frameDelta;      // (last-frame delta, fed to Step)
 
@@ -38,7 +37,6 @@ struct BzGeomPair {
 SIZE_UNKNOWN();
 
 extern RECT g_levelMsgRectsB[8];
-
 
 struct LeafCue;        // CMenuState::m_1bc - the menu-music sound cue (Gruntz/LeafCue.h)
 class CMoviePlayer;    // CCreditsState::m_videoHandle - real Smacker video player
@@ -329,8 +327,15 @@ public:
     //   Init2 -> 0x19920 - was ?BuildGruntSprintAnimation@CGruntSprintAnim@@ (a view class).
     //   Init5 -> 0x1c070 - was ?BuildBootyPerfectAnimation@EngineLabelBacklog@@ (a stub class).
     i32 BuildWarpStoneGlitterAnimation(); // 0x19540  the 4 warp-letter glitter anims
-    i32 BuildGruntSprintAnimation();      // 0x19920  the 8 directional sprint sprites
-    i32 BuildBootyPerfectAnimation();     // 0x1c070  the BOOTY_PERFECT celebration sprite
+    // 0x196c0 / 0x19b90 - RE-ATTRIBUTED here from CMultiBootyState (2026-07-28) by the
+    // same xref argument that moved BuildWarpStoneGlitterAnimation: Render (slot 5) is
+    // their only entry and calls them on its own `this`. StepGlitterAnim RETURNS i32
+    // (Render gates the case-101 arm on it; retail's two exits are `xor eax,eax` and a
+    // live eax==1) - it was modeled `void`, which is why its caller could not be written.
+    i32 StepGlitterAnim();            // 0x196c0  the trig glitter/spawn positioner
+    void MoveLettersByDir();          // 0x19b90  the 8-direction letter walk (jump-table)
+    i32 BuildGruntSprintAnimation();  // 0x19920  the 8 directional sprint sprites
+    i32 BuildBootyPerfectAnimation(); // 0x1c070  the BOOTY_PERFECT celebration sprite
     // 0x1c0f0 - scroll that same sprite in from off-screen left (x = -0x82, the very value
     // BuildBootyPerfectAnimation spawns it at) by 0xa a frame, cueing BOOTY_PERFECT on the
     // frame it appears and latching the done bit past x >= 0x302. RE-HOMED from
@@ -355,11 +360,26 @@ public:
     i32 m_1b8;        // +0x1b8  cleared by the slot-1 loader before the build chain
     i32 m_activation; // +0x1bc  activation / overlay-animation state id
     // +0x1c0..+0x1d0: the four mode words the slot-1 loader stamps last
-    // (m_1c8 = 0x21, m_1cc = 0, m_1c0 = g_frameTime, m_1c4 = 0).
-    i32 m_1c0;
-    i32 m_1c4;
-    i32 m_1c8;
-    i32 m_1cc;
+    // (m_1c8 = 0x21, m_1cc = 0, m_1c0 = g_frameTime, m_1c4 = 0). The two dword PAIRS
+    // are a 64-bit frame throttle: Render (slot 5, 0x1c210) computes
+    // (i64)(u32)g_frameTime - {m_1c0,m_1c4} and compares it against {m_1c8,m_1cc}
+    // (`sub/sbb` then `jg/jl/jae`), then restamps both. Same union shape as CGrunt's
+    // +0x278/+0x280 hold-off pair: the i32 arms stay for the per-dword writers, the
+    // i64 arms are the arithmetic view - one shape, no casts.
+    union {
+        i64 m_frameStamp64; // +0x1c0
+        struct {
+            i32 m_1c0; // +0x1c0
+            i32 m_1c4; // +0x1c4
+        };
+    };
+    union {
+        i64 m_frameInterval64; // +0x1c8
+        struct {
+            i32 m_1c8; // +0x1c8
+            i32 m_1cc; // +0x1cc
+        };
+    };
     i32 m_initOnce;         // +0x1d0  init-once gate
     i32 m_secretBannerOnce; // +0x1d4  secret-banner once gate
     // +0x1d8..+0x1ec: the warp-stone glitter block BuildWarpStoneGlitterAnimation drives
@@ -456,8 +476,14 @@ public:
     // method. Its ONLY caller is 0x18830, CBootyState's own vtable slot 1, calling it with
     // `mov ecx,esi` - its own `this`. CMultiBootyState is a SIBLING of CBootyState, not a
     // base, so a CBootyState method could never have called it on itself.)
-    void StepGlitterAnim();  // 0x196c0 - the trig glitter/spawn positioner
-    void MoveLettersByDir(); // 0x19b90 - the 8-direction letter walk (jump-table)
+    // (StepGlitterAnim @0x196c0 and MoveLettersByDir @0x19b90 are GONE from here too -
+    // same argument, same evidence class. `sema xref --tree` gives StepGlitterAnim
+    // exactly ONE caller, CBootyState::Render @0x1c210 (vtable slot 5 of ??_7CBootyState,
+    // so an unambiguous CBootyState `this`), invoking it `mov ecx,esi` on that `this`;
+    // MoveLettersByDir's only two callers are that same Render and StepGlitterAnim
+    // itself. A sibling class cannot be called on another sibling's `this`. Every field
+    // they touch (m_1b4/m_letterIdx/m_radius/m_angleStep/m_scratchX/Y/m_trailSprites/
+    // m_cursorLetter/m_sprintSprites) exists at the SAME offset on CBootyState.)
     // 0x1ed30 - the BATTLE-STATZ scoreboard draw (its m_c @+0x0c is CState::m_c at the
     // same offset). Both call sites
     // (Render 0x1f480 / InputVirtual 0x1f6f0) invoke it with `mov ecx,this` on their own

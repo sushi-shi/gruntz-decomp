@@ -30,8 +30,6 @@
 RVA_COMPGEN(0x00010890, 0x1e, ??_GCExitTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x000108c0, 0x44, ??1CExitTrigger@@UAE@XZ)
 
-
-
 VTBL(CExitTrigger, 0x001e822c);
 
 // CExitTrigger::CExitTrigger(CGameObject*) @0x03ecf0 - the 1-arg leaf ctor: the
@@ -104,21 +102,19 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // object and re-binds its logic. g_serialCounter is bumped each id write.
 //
 // @early-stop
-// ~93.7%: body byte-faithful (both chain gates, the mode-4/7 switch layout, the
+// ~96.7%: body byte-faithful (both chain gates, the mode-4/7 switch layout, the
 // m_resolved stream, the write-side id/counter path, the read-side Lookup + aux
-// deref + m_54 store). Residual is MSVC's branchless lowering of the read-side
-// `Lookup(key,found) ? found : 0` ternary (retail spells it branchy: test/je/
-// mov eax,found) + the mirrored key/found stack-slot assignment (esp+0x1c<->0x20).
-// A branch-vs-branchless codegen coin-flip - the permuter found no operand-order
-// spelling that flips it (topic:wall topic:regalloc). Deferred to the final sweep.
+// deref + m_54 store). The old branchless-ternary residue is FIXED (2026-07-28,
+// +3.0%): the `Lookup(...) ? found : 0` ternary if-converted to `neg/sbb/and`;
+// the STATEMENT form (`T* o = 0; if (Lookup(...)) o = found;`) emits retail's
+// `test eax,eax / je / mov eax,[found]` - see docs/patterns/map-lookup-ternary-
+// ifconverts.md. Remaining residue: the mirrored key/found stack-slot assignment
+// (esp+0x1c<->0x20, declaration-order-insensitive - tried) and the pre-zeroed
+// `obj` register (retail reuses the FALSE return value in eax at the merge).
+// topic:wall topic:regalloc. Deferred to the final sweep.
 RVA(0x0003f040, 0x147)
 i32 CExitTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
-    if (!CUserLogic::SerializeMove(
-            ar,
-            mode,
-            a3,
-            a4
-        )) {
+    if (!CUserLogic::SerializeMove(ar, mode, a3, a4)) {
         return 0;
     }
     CFileMemBase* arc = ar;
@@ -134,14 +130,13 @@ i32 CExitTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject*
             arc->Read(&key, 4);
             if (key != 0) {
                 CGameObject* found = 0;
-                CGameObject* obj = MapLookup(
-                                       holder->m_childGroup->m_map48,
-                                       // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
-                                       reinterpret_cast<void*>(key),
-                                       found
-                                   )
-                                       ? found
-                                       : 0;
+                // The `? :` spelling if-converts to `neg/sbb/and`; the STATEMENT form is
+                // what retail emits (test/je/mov) - see FortConquered.cpp's twin site.
+                CGameObject* obj = 0;
+                // MapLookupById keeps the id->void* key pun at the one MapTyped seam.
+                if (MapLookupById(holder->m_childGroup->m_map48, key, found)) {
+                    obj = found;
+                }
                 m_warlordLogic = static_cast<CWarlord*>(obj->m_7c->m_logic);
                 if (m_warlordLogic == 0) {
                     return 0;

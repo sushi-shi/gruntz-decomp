@@ -93,6 +93,19 @@ public:
     // stores in their own ctor body (over the default base ctor), reproducing the
     // fused shape without a second definition.
     CLoadable(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08);
+    // The 1-arg INLINE sibling of the ctor above (owner only; both header words 0).
+    // BYTE-PROVEN by CDDrawSurfaceMgr::Init @0x155900: four of its eleven children
+    // (WorkerRegistry / WorkerCache / SubMgrLeafScan / SubMgrLeaf) get the base part
+    // spelled INLINE - `mov [p],??_7CLoadable; [p+4]=0; [p+8]=0; [p+0xc]=owner` - the
+    // vptr stamp then the three stores in DECLARATION order, where the out-of-line
+    // 3-arg body at 0x156cb0 schedules them m_id / vptr / m_flags / m_ownerCtx. Two
+    // different constructors, so this is a second overload, not the same body inlined.
+    // The other seven children call the 3-arg one.
+    CLoadable(class CDDrawSurfaceMgr* owner) {
+        m_id = 0;
+        m_flags = 0;
+        m_ownerCtx = owner;
+    }
     // The +0x0c owner context IS the CDDrawSurfaceMgr across the whole draw family -
     // surface pairs/children, workers, resolve nodes, cue leaves. Now that the member
     // carries that type, this is a plain read.

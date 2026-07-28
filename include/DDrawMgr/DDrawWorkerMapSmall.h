@@ -14,6 +14,11 @@
 // CDDrawWorkerMapBase" flat words).
 class CDDrawWorkerMapSmall : public CLoadable {
 public:
+    // INLINE ctor - expanded in place by CDDrawSurfaceMgr::Init @0x155acd (base call
+    // 0x156cb0, the three map member ctors, the ??_7 stamp 0x5efcc8, +0x64 zeroed).
+    CDDrawWorkerMapSmall(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0) {
+        m_cachedWorker = 0;
+    }
     virtual i32 IsLoaded() OVERRIDE; // [5]  0x156cd0 (G obj; the worker-gate)
     virtual i32 IsReady() OVERRIDE;  // [6]  0x156db0 (G obj; own return-1 copy)
     virtual void Unload() OVERRIDE;  // [7]  0x165810 (T obj; ex "DestroyAll")
@@ -30,7 +35,7 @@ public:
     // key in both (its only use is the m_map1 subscript), not a rival name.
     virtual void* CreateWorker28(void* data, const char* key, i32 flags); // [10] 0x165990
     virtual void* CreateWorker2C(char* path, const char* key, i32 flags); // [11] 0x165a10
-    virtual void* Factory_165a90(CParseSource* a1, i32 a2, i32 a3);          // [12] 0x165a90
+    virtual void* Factory_165a90(CParseSource* a1, i32 a2, i32 a3);       // [12] 0x165a90
     virtual ~CDDrawWorkerMapSmall() OVERRIDE; // overrides slot [1]; 0x156d20 (G obj)
 
     CMapStringToOb m_map1; // +0x10  worker-by-key map 1 (0x10..0x2b)

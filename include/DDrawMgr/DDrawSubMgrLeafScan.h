@@ -18,6 +18,13 @@ struct CParseSource; // the element's draw-source (BeginParse/EndParse; STRUCT k
 
 class CDDrawSubMgrLeafScan : public CLoadable {
 public:
+    // INLINE ctor - expanded in place by CDDrawSurfaceMgr::Init @0x155b66 (1-arg
+    // CLoadable base, the +0x10 map member ctor, ??_7 stamp 0x5efca0, +0x2c/+0x34
+    // zeroed - the +0x30 emit gate is deliberately left alone, as retail does).
+    CDDrawSubMgrLeafScan(CDDrawSurfaceMgr* owner) : CLoadable(owner) {
+        m_2c = 0;
+        m_34 = 0;
+    }
     // 9-slot vtable (??_7CDDrawSubMgrLeafScan @0x5efca0): the CObject slots + slots 5/7
     // overriding CLoadable's, slot 6 IsReady INHERITED from CWapObj, slot 8 GetClassId
     // INHERITED from CLoadable. Slot 5/7 bodies live in the sibling CDDrawSubMgrLeaf TU.

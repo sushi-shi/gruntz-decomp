@@ -1,5 +1,5 @@
 #include <Gruntz/BootyStateActivate.h> // this TU's external declarations
-#include <Gruntz/BootyMessages.h> // DrawStatText / g_bootyLetterCoords (ex .cpp externs)
+#include <Gruntz/BootyMessages.h>      // DrawStatText / g_bootyLetterCoords (ex .cpp externs)
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h>
@@ -26,16 +26,17 @@
 #include <Gruntz/WwdGameReg.h>  // WwdGameReg (g_gameReg; CheckPerfectBonus/Vslot09/QueryGruntSlots)
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr / CDDrawSubMgrLeafScan (CState::m_c draw+cue context)
 #include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig::PauseAllVoices (the m_4->m_60 cue-sink flush)
-#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
-
+#include <Utils/MapTyped.h>      // typed MFC map lookups (the forced void*& pun at one boundary)
+#include <Gruntz/Play.h>         // g_levelBias100 (CBootyState::Render's world-completed gate)
+#include <Dsndmgr/SoundStream.h> // the +0x20 stream Render ticks (PurgeVoiceList/TickSubManagers)
 
 DATA(0x001e8fe8)
 // .rdata; C linkage inherited from <Gruntz/BootyMessages.h>.
 const i32 g_bootyLetterCoords[32] = {
-    472, 101, 525, 98,  474, 146, 525, 144,       // four (x,y) anchors
-    127, 170, 215, 262, 301, 345, 386, 427,       // row 1 column x-positions
-    127, 170, 215, 262, 301, 345, 386, 427,       // row 2 (identical)
-    127, 170, 215, 262, 301, 345, 386, 427,       // row 3 (identical)
+    472, 101, 525, 98,  474, 146, 525, 144, // four (x,y) anchors
+    127, 170, 215, 262, 301, 345, 386, 427, // row 1 column x-positions
+    127, 170, 215, 262, 301, 345, 386, 427, // row 2 (identical)
+    127, 170, 215, 262, 301, 345, 386, 427, // row 3 (identical)
 };
 
 static const float kGlitterPhaseBias = -225.0f;  // was g_5e93b4 (fsub'd, hence negative)
@@ -168,21 +169,28 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     return 1;
 }
 
-// CMultiBootyState::StepGlitterAnim() (0x196c0): the glitter/spawn positioner. With
-// m_1b4 set it snaps the eight letter sprites to the static spawn table; otherwise it
+// CBootyState::StepGlitterAnim() (0x196c0): the glitter/spawn positioner. With
+// m_initGate set it snaps the eight letter sprites to the static spawn table; otherwise it
 // walks a sine spiral (radius m_radius, angle (m_angleStep+225)*pi/180), advances the
 // step by 5, shrinks the radius along the 350.0-step*0.002*350.0 curve, then latches the
 // trailing sprite's spawn flag when the radius reaches zero.
+//
+// RE-ATTRIBUTED from CMultiBootyState + RETYPED void -> i32 (2026-07-28): its sole
+// caller is CBootyState::Render (vtable slot 5 @0x1c210, `mov ecx,esi` on its own
+// `this`), and that caller GATES on the result (`test eax,eax; je <merge>`). Retail has
+// two exits - `xor eax,eax` when the radius has not run out, and one reached with eax
+// still holding the 1 the `m_sortKey != 1` comparisons materialised - so it returns
+// 0/1, not void.
 // @early-stop
 // regalloc wall (~80%): the float branch is byte-exact (sin/cos/__ftol chain matches);
 // the residual is the two integer letter-loops + the final latch block, a pure
 // register-allocation coin-flip (docs/patterns/zero-register-pinning.md).
 RVA(0x000196c0, 0x1d3)
-void CMultiBootyState::StepGlitterAnim() {
-    if (m_1b4) {
+i32 CBootyState::StepGlitterAnim() {
+    if (m_initGate) {
         if (m_letterIdx >= 0) {
-            const i32* tbl = g_bootyLetterCoords + 1;    // walks: tbl[-1]=x, tbl[0]=y; advances by 2
-            CWwdGameObjectA** ap = m_trailSprites; // walks the array by 1
+            const i32* tbl = g_bootyLetterCoords + 1; // walks: tbl[-1]=x, tbl[0]=y; advances by 2
+            CWwdGameObjectA** ap = m_trailSprites;    // walks the array by 1
             for (i32 i = 0; i <= m_letterIdx; i++) {
                 CWwdGameObjectA* e = *ap;
                 e->m_screenX = tbl[-1];
@@ -199,7 +207,7 @@ void CMultiBootyState::StepGlitterAnim() {
         }
         m_cursorLetter->m_screenX = g_bootyLetterCoords[m_letterIdx * 2];
         m_cursorLetter->m_screenY = g_bootyLetterCoords[m_letterIdx * 2 + 1];
-        return;
+        return 1;
     }
 
     i32 step = m_angleStep;
@@ -222,7 +230,7 @@ void CMultiBootyState::StepGlitterAnim() {
     CWwdGameObjectA** arr1ec = m_trailSprites;
     if (idx > 0) {
         const i32* tbl = g_bootyLetterCoords + 1; // ecx: tbl[-1]=x, tbl[0]=y
-        CWwdGameObjectA** ap = arr1ec;      // eax
+        CWwdGameObjectA** ap = arr1ec;            // eax
         do {
             CWwdGameObjectA* e = *ap;
             i++;
@@ -241,16 +249,18 @@ void CMultiBootyState::StepGlitterAnim() {
 
     MoveLettersByDir();
 
-    if (m_radius == 0) {
-        CWwdGameObjectA* e = arr1ec[i];
-        if (e->m_sortKey != 1) {
-            e->m_sortKey = 1;
-            e->m_flags |= 0x20000;
-        }
+    if (m_radius != 0) {
+        return 0;
     }
+    CWwdGameObjectA* e = arr1ec[i];
+    if (e->m_sortKey != 1) {
+        e->m_sortKey = 1;
+        e->m_flags |= 0x20000;
+    }
+    return 1;
 }
 
-// CMultiBootyState::MoveLettersByDir() (0x19b90): if the anim-mode latch (m_1b4) is set,
+// CBootyState::MoveLettersByDir() (0x19b90): if the anim-mode latch (m_initGate) is set,
 // OR the spawn bit into all eight letters' flags; otherwise step each of the eight
 // letters one cell (+/-4 px) along its compass direction (an 8-way jump table), flagging
 // any that leave the [0,0x280]x[0,0x1e0] play field.
@@ -259,8 +269,8 @@ void CMultiBootyState::StepGlitterAnim() {
 // pure register allocation (docs/patterns/zero-register-pinning.md). The 8-way switch
 // body itself is byte-aligned.
 RVA(0x00019b90, 0xd7)
-void CMultiBootyState::MoveLettersByDir() {
-    if (m_1b4) {
+void CBootyState::MoveLettersByDir() {
+    if (m_initGate) {
         CWwdGameObjectA** p = m_sprintSprites;
         i32 n = 8;
         do {
@@ -433,14 +443,170 @@ i32 CBootyState::CheckPerfectBonus() {
     return 1;
 }
 
-// CBootyState::Render (slot 5 / +0x14, 0x1c210): the per-frame bonus-state draw (1205B).
-// Still a reconstruction target - stub body marks the slot.
-// @confidence: med
-// @source: string-xref
-// @stub
+// CBootyState::Render (slot 5 / +0x14, 0x1c210): the per-frame bonus-state draw.
+// Lost-surface recovery, the sound-stream tick, a 64-bit 0x21 ms frame throttle over the
+// {m_1c0,m_1c4} stamp / {m_1c8,m_1cc} interval pair, then a FALL-THROUGH cascade over
+// m_activation (100 -> 101 -> 102 -> 103 -> 199 -> 200) that runs one stage per throttled
+// frame: the BOOTY_WARP cue, the glitter step + the BOOTY_BOOM cue + the "World/Level
+// Completed!" banner, the letter walk + the level-message HUD, the walking-gruntz tick,
+// and finally the secret-bonus message. Every arm merges into the shared frame tail
+// (kill-cue tick, worker walk, front-page Flip + overlay BltFast, voice reap).
+// @early-stop
+// 67% objdiff / CODE BYTE-EXACT bar one 7-instruction scheduling window. Verified by a
+// reloc-masked raw byte compare of base vs 0x1c210..0x1c6c5: the ONLY reordering is the
+// switch preamble - cl hoists `mov eax,[esi+0x1bc]` (the m_activation load) and its
+// `add/cmp` ABOVE the four throttle-stamp stores, where retail issues them after
+// `mov edi,0x64` and the +0x1c0/+0x1c4 pair. Both spellings (plain i32 stores and
+// `*(i64*)&m_1c8 = ...` pair stores) emit byte-identical output, so the hoist is not
+// alias-blockable from source. The rest of the gap is the DOCUMENTED jump-table-data
+// scoring artifact (docs/patterns/jumptable-data-overlap.md): the 6-case index+jump
+// table pair lands in a `$L` COMDAT whose reloc operands can never match the delinked
+// self-relocs, and it is counted against the function (same artifact caps
+// CBootyState::FormatHudText in this TU).
 RVA(0x0001c210, 0x4b5)
 i32 CBootyState::Render() {
-    return 0;
+    IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
+    if (frameSurf == 0 || frameSurf->IsLost() != 0) {
+        if (InputVirtual() == 0) {
+            m_mgr->ReportError(0x8006, 0x459);
+            return 0;
+        }
+    }
+    SoundStream* snd = m_world->m_soundStream;
+    if (snd != 0) {
+        i32 now = static_cast<i32>(timeGetTime());
+        snd->PurgeVoiceList(now);
+        snd->TickSubManagers(now);
+    }
+    // The {+0x1c0,+0x1c4} last-frame stamp and the {+0x1c8,+0x1cc} interval are the
+    // class's two i64 union arms (the i32 halves stay for the per-dword writers).
+    i64 elapsed = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_frameStamp64;
+    if (elapsed < m_frameInterval64) {
+        return 0;
+    }
+    m_1c8 = 0x21;
+    m_1cc = 0;
+    m_1c0 = g_frameTime;
+    m_1c4 = 0;
+
+    switch (m_activation) {
+        case 100: {
+            m_activation = 101;
+            CDDrawSubMgrLeafScan* set = g_gameReg->m_world->m_soundRegistry;
+            if (set->m_emitGate == 0) {
+                LeafCue* cue = 0;
+                MapLookup(set->m_10, "BOOTY_WARP", cue);
+                if (cue != 0) {
+                    cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                }
+            }
+        }
+        // FALL THROUGH - one stage per throttled frame is retail's shape: each arm
+        // gates on its own step and drops into the next.
+        case 101: {
+            if (StepGlitterAnim() == 0) {
+                break;
+            }
+            m_activation = 102;
+            CDDrawSubMgrLeafScan* set = g_gameReg->m_world->m_soundRegistry;
+            if (set->m_emitGate == 0) {
+                LeafCue* cue = 0;
+                MapLookup(set->m_10, "BOOTY_BOOM", cue);
+                if (cue != 0) {
+                    cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                }
+            }
+            if (m_initOnce != 0 && g_gameReg->m_scoreHud->m_allDone != 0 && g_levelBias100 == 0) {
+                RECT rc;
+                rc.left = 0;
+                rc.top = 0x24;
+                rc.right = 0x1ea;
+                rc.bottom = 0x64;
+                CString s("World Completed!");
+                m_levelCompleteGate = 1;
+                ShowHudMessage(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
+            } else {
+                RECT rc;
+                rc.left = 0;
+                rc.top = 0x24;
+                rc.right = 0x1ea;
+                rc.bottom = 0x64;
+                CString s("Level Completed!");
+                m_levelCompleteGate = 1;
+                ShowHudMessage(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
+            }
+        }
+        // FALL THROUGH
+        case 102:
+            MoveLettersByDir();
+            if (LevelMsgHudDriver() == 0) {
+                break;
+            }
+            m_activation = 103;
+        // FALL THROUGH
+        case 103:
+            LevelMsgHudDriver();
+            if (UpdateBootyWalkingGruntz() == 0) {
+                break;
+            }
+            m_activation = 0xc7;
+            break;
+        case 199: {
+            LevelMsgHudDriver();
+            UpdateBootyWalkingGruntz();
+            CheckPerfectBonus();
+            if (m_1b8 == 0 && g_gameReg->m_scoreHud->m_08 == 0) {
+                CString s;
+                RECT rc;
+                CBattlezData* hud = g_gameReg->m_scoreHud;
+                if (hud->m_count > 0x24) {
+                    // if/else, NOT `?:` - the ternary selects the literal into a register
+                    // and pushes once; retail pushes the literal inside each arm and
+                    // cross-jumps the shared `call operator=`.
+                    if (hud->m_allDone != 0) {
+                        s = "You have completed training! Now, grab the pebble from my hand.";
+                    } else {
+                        s = "You are closer to achieving mastery! Keep training!";
+                    }
+                    SetRect(&rc, 0x194, 0xaa, 0x263, 0x1e0);
+                } else {
+                    if (hud->m_allDone != 0) {
+                        if (hud->GroupAllScored()) {
+                            s.Format(
+                                "WARP letterz recovered! Prepare to receive your cheat codez!"
+                            );
+                        } else {
+                            s = "WARP letterz not recovered! No cheatz for you.";
+                        }
+                    } else if (hud->m_scoreValue != 0) {
+                        s = "Keep finding those WARP letterz!";
+                    } else {
+                        s = "Collect all four WARP letterz to receive secret bonus!";
+                    }
+                    SetRect(&rc, 0x194, 0xe6, 0x263, 0x1e0);
+                }
+                m_secretGate = 1;
+                ShowHudMessage(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
+                m_1b8 = 1;
+            } else if (g_gameReg->m_scoreHud->m_08 != 0) {
+                m_1b8 = 1;
+            }
+            break;
+        }
+        case 200:
+            return 1;
+    }
+
+    m_world->m_childGroup->TickKillCues(1);
+    m_world->m_childGroup->WalkDispatch2C(m_world->m_drawTarget->m_backPair);
+    CDDrawSubMgrPages* dt = m_world->m_drawTarget;
+    dt->m_frontPair->m_surface->Flip(0);
+    dt->m_backPair->m_surface
+        ->BltFast(0, 0, dt->m_overlayPair->m_surface, &dt->m_overlayPair->m_srcRect, 0x10);
+    if (m_world->m_soundRegistry->m_2c != 0) {
+        m_world->m_soundRegistry->m_2c->PurgeVoiceList(-1);
+    }
+    return 1;
 }
 
 RVA(0x0001ce10, 0xc)
@@ -505,7 +671,7 @@ void CMultiBootyState::ReleaseResources() {
     // every other m_cueSink site uses (GruntzMgr.cpp 2094/2111/2656). The old
     // `(CMoviePlayer*)...->~CMoviePlayer()` bound the call to the wrong function.
     m_mgr->m_cueSink->PauseAllVoices(); // 0x11c7b0 (the cue-timer flush)
-    CState::ReleaseResources(); // 0xfa150 (chain the base slot-2 teardown; direct)
+    CState::ReleaseResources();         // 0xfa150 (chain the base slot-2 teardown; direct)
 }
 
 RVA(0x0001e570, 0xb4)
