@@ -1,9 +1,33 @@
-# Replay verdicts — does our reconstruction do what retail's does?
+# Replay verdicts — FROZEN RECORD (the tool that produced these is gone)
 
-One row per function that has been run through `recomp/replay/verdict.py`. The column
-that matters is **VERDICT**, not the match %: a function at 54% that is behaviourally
-identical to retail and one that computes the wrong answer look the same on the
-scoreboard, and this is the only thing that tells them apart.
+**The `recomp/replay` harness was removed on 2026-07-28** by user ruling: it launched real
+`GRUNTZ.EXE` windows repeatedly, which is disruptive, and the campaign's return per unit of
+effort is far better in ordinary byte-matching. Do not rebuild it. The `harness/` half —
+which fabricates its inputs and never launches anything — stays.
+
+These verdicts are kept because they are **evidence, not tooling**. Each row cost a real
+capture and none of it is reproducible now, so treat the file as read-only history. Two
+things it is still good for:
+
+- **An AGREE row retires a function.** Five of them are `@early-stop`-parked bodies whose
+  correctness was previously unknown; `CMapMgr::ComputeCellFlags` sits at 0.00% and its
+  parked note *claimed* the zero was a delinker artefact — that is now confirmed on 19
+  inputs rather than asserted. Do not spend a lane re-litigating these.
+- **The DISAGREE row is a live lead, and it is chaseable statically.** See the
+  `CLightFxRender::Shape3` section below: the channel signature points at `g_clut`
+  sub-table addressing, and the sibling `CDDrawShadeBlit` already names the three planes
+  (`+0x20002` R, `+0x2` G, `+0x10002` B). No session is needed to test it.
+
+One caveat that limits the Shape rows specifically: they were measured against
+`lightfxrender.obj` at commit `2bebf202f`, which **predates** the palette rebuild merged at
+`605e35287`. Whether that fix moved them was never re-measured and now cannot be.
+
+---
+
+One row per function that was run through the removed `verdict.py`. The column that
+matters is **VERDICT**, not the match %: a function at 54% that is behaviourally identical
+to retail and one that computes the wrong answer look the same on the scoreboard, and this
+was the only thing that told them apart.
 
 Read a row as: *our compiled bytes, run on the state the real game produced, wrote the
 same bytes and returned the same value as retail's own machine code did, over the whole

@@ -9,28 +9,32 @@ much: `build.sh` links OUR compiled object out of `build/objdiff/base/`, so the
 comparison is retail's bytes against the bytes we actually ship, not against a
 transcription of our source into the harness.
 
-Five functions are covered so far. Four agree with retail on every input tried. The
-fifth, `CGrunt::RectSegProbe`, **did not** - it carried two logic bugs that byte-matching
-at 78.77% never showed, and returned the wrong answer on 6.5% of random inputs. Both are
+**Nothing here runs as part of the build.** It is opt-in and invoked by hand.
+
+Five functions are covered. Four agree with retail on every input tried. The fifth,
+`CGrunt::RectSegProbe`, **did not** — it carried two logic bugs that byte-matching at
+78.77% never showed, and returned the wrong answer on 6.5% of random inputs. Both are
 fixed. See `docs/harnesses.md`.
 
-`replay/` has since produced verdicts on functions no fabricated harness could reach:
-seven AGREE (including one scoring 0.00% and four `@early-stop`-parked bodies), and the
-whole `CLightFxRender::Shape1..8` family DISAGREES - at 67-77% it drops RGB565 colour
-channels, 257 of the 524 bytes one call writes. See `docs/verdicts.md`.
+## Scope: FABRICATED inputs only — no game sessions
 
-## Two ways in
+A harness stands its target's inputs up synthetically (a buffer, a palette, a few
+scalars) and calls retail's copy and ours on the same bytes. Nothing launches
+`GRUNTZ.EXE`, and nothing may.
 
-`harness/` FABRICATES the input state, so it reaches a function only if we can build
-that state by hand - which is why `recomp_islands` ranks candidates by how few struct
-fields a body dereferences.
+There was a `replay/` half that captured state from the running game and replayed it at
+its original addresses. **It has been removed** (2026-07-28, user ruling): it launched
+real game windows repeatedly, which is disruptive, and the campaign's return per unit of
+effort is far better in ordinary byte-matching. Do not rebuild it, and do not add a
+harness that needs a live process.
 
-**`replay/` records the state from the running game instead**, restores it at its
-original addresses, and full-diffs writable memory against the recorded exit. Nothing
-has to be fabricated, so a `CGruntzMgr*` parameter costs nothing, and the comparison
-catches effects nobody thought to check. See `replay/README.md`; the reachability
-question it answers is a different one (`python -m gruntz.audit.iat_tiers`: does the
-call closure ever leave the process?) and the answer is much larger.
+What it proved is kept in `docs/verdicts.md` as a frozen record — seven functions
+verified behaviourally correct (including one scoring 0.00% and four `@early-stop`-parked
+bodies whose correctness was previously unknown), and the `CLightFxRender::Shape1..8`
+family shown to drop RGB565 colour channels. That last one is a live lead and is
+chaseable **statically**: the sibling `CDDrawShadeBlit` names the three `g_clut` planes
+(`+0x20002` R, `+0x2` G, `+0x10002` B), and a missing `+0x10000`/`+0x20000` on a channel
+read produces exactly the observed signature.
 
 ## Layout
 
@@ -39,21 +43,17 @@ call closure ever leave the process?) and the answer is much larger.
     harness/build.sh   build.sh <name> [unit ...] - builds any harness and links
                        our compiled objects in
     harness/*.c(pp)    one harness per reachable function or family
-    replay/            record-and-replay: capture.c (injected DLL), replay.cpp,
-                       objbind.py (bind our object to the restored image),
-                       reach.py, verdict.py, fuzz.py - see replay/README.md
     docs/harnesses.md  what each harness assumes, and why a target is reachable
-    docs/verdicts.md   the verdict ledger: which functions agree with retail
+    docs/verdicts.md   frozen: the verdicts the removed replay half produced
 
 One harness per reachable function or family. Keep them small and independent — a harness
 that needs the CRT stood up has stopped being a harness.
 
 ## What is reachable, and how to find out
 
-    python -m gruntz.audit.recomp_islands   # for harness/  - can we FABRICATE the state?
-    python -m gruntz.audit.iat_tiers       # for replay/   - does execution leave the process?
+    python -m gruntz.audit.recomp_islands   # can we FABRICATE the state?
 
-For `harness/`, two conditions must BOTH hold, and they are separate questions:
+Two conditions must BOTH hold, and they are separate questions:
 
 1. **Self-contained code** — `ISLAND` (no relocs, no calls), `SELF-CALL`, or `DATA-ONLY`
    (relocs only to constant tables / static scratch, which you map beside the code).
@@ -61,10 +61,9 @@ For `harness/`, two conditions must BOTH hold, and they are separate questions:
 2. **Cheap state** — measured as the count of distinct struct offsets the body actually
    dereferences. **The parameter types do not tell you this.** `CMapMgr::UpdateDiagonals`
    takes a `CGruntzMgr*`, which reads as "the whole engine", and touches exactly eleven
-   fields; `CSaveGame::Encode`/`Decode` are members that touch zero.
-
-Current census: 752 functions have self-contained code, 171 of those touch ≤12 fields,
-and **65 of those are not yet exact** — the worklist.
+   fields; `CSaveGame::Encode`/`Decode` are members that touch zero. A `__thiscall` member
+   whose body never dereferences `this` is as reachable as a free function — 311 of 693
+   self-contained members turn out never to.
 
 This is **not** limited to serialization. Serialization is merely the easiest case,
 because its state is a byte buffer. The qualifying set also holds crypto
@@ -72,12 +71,14 @@ because its state is a byte buffer. The qualifying set also holds crypto
 (`CMapMgr::Unlink`, 2), table lookups (`CTriggerMgr::ByteTableHas`, 2), geometry
 (`RectSegProbe`, `PolyIsConvexCW`, 3) and colour matching (`FindNearestColor`, 3).
 
-Known under-count: a `__thiscall` member whose body never dereferences `this` is as
-reachable as a free function — that is exactly why `RunDecode1` worked — but the audit
-still charges it. So the worklist is a lower bound.
+`python -m gruntz.audit.iat_tiers` remains as a static census of the binary — transitive
+import reachability, which established that two thirds of the engine never touches the
+IAT because the CRT and MFC are statically linked. That fact is independent of any oracle.
 
 ## The point is not the percentage
 
 A function at 54% that is *behaviourally identical* to retail and one that is *computing
-the wrong answer* look the same on the scoreboard. The oracle is the only thing that
-tells them apart, and that is worth more than the score.
+the wrong answer* look the same on the scoreboard. `FindNearestColor` is behaviourally
+exact at 64.32%; `RectSegProbe` was broken at 78.77%. An oracle is the only thing that
+tells those apart — but it is a supplement to byte-matching, not a substitute, and
+byte-matching is what the campaign runs on.

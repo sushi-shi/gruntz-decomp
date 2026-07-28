@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
-"""iat_tiers.py - TRANSITIVE import reachability: what can a replay oracle actually run?
+"""iat_tiers.py - TRANSITIVE import reachability: how much of the engine leaves the process?
 
-`recomp_islands` classifies a function by its OWN relocations. That is the right question
-for a hand-written harness, which must stand up everything the body touches directly. It
-is the WRONG question for a snapshot-and-replay oracle, where the state arrives for free
-and the only thing that matters is whether execution ever leaves the process.
+This walks the CALL GRAPH from every function and asks: following every edge, do we ever
+reach an IAT thunk? That is a different question from `recomp_islands`, which classifies a
+function by its OWN relocations.
 
-So this walks the CALL GRAPH from every function and asks: following every edge, do we
-reach an IAT thunk?
+It was written to size a snapshot-and-replay oracle. **That oracle has been removed**
+(2026-07-28 user ruling - it launched game windows; see `recomp/README.md`), so the tiers
+no longer gate anything. The census is kept because it is a durable STATIC FACT about the
+binary, useful well beyond its original purpose: it establishes that two thirds of the
+engine never touches the IAT at all, because the CRT and MFC are statically linked here.
+That tells you which code is pure computation over its own data - which is exactly the code
+whose behaviour is determined by the bytes and nothing else.
 
 The answer is much better than the direct classification suggests, for one structural
 reason: **the CRT and MFC are STATICALLY LINKED in this binary.** malloc, memcpy, sprintf,
