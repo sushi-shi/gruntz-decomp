@@ -922,10 +922,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         host = self->m_mgr;
         if (host->m_strWorldFile.GetLength() != 0) {
             if (host->m_128 == 0 && host->m_12c == 0) {
-                sprintf(nameBuf, "CUSTOMLEVEL", 0);
+                sprintf(nameBuf, "CUSTOMLEVEL");
             }
         } else if (level > 0x24) {
-            sprintf(nameBuf, "TRAINING", 0);
+            sprintf(nameBuf, "TRAINING");
         }
         static_cast<void>(prevTiles);
     }
@@ -1294,11 +1294,12 @@ fail0:
 #undef PTR
 
 // @early-stop
-// ~95% regalloc wall: logic + all 5 relocs pair; retail threads the reloaded registry
-// global through eax for all three accesses (m_70 -> eax -> ecx) where MSVC5 here
-// colors the first store's load into ecx (and the m_70 deref straight into ecx).
-// Not source-steerable (eax/ecx coloring of a thrice-reloaded global).
-// docs/patterns/zero-register-pinning.md.
+// 94.8%, two register nits: (1) the FIRST `g_gameReg->m_128 = 0` store temp - cl picks
+// ecx, retail eax (the ecx/edx/eax phase of docs/patterns/
+// global-store-temp-alternates-ecx-edx.md, so a temp is missing upstream); (2) retail
+// materializes the grid before the virtual call (`mov eax,[eax+0x70]; mov ecx,eax;
+// mov edx,[eax]`) where cl loads it straight into the receiver (`mov ecx,[eax+0x70];
+// mov edx,[ecx]`). A named local for the grid is FOLDED back by cl (tried).
 RVA(0x000cb400, 0x58)
 void CPlay::OnExit() {
     ForwardReady();
@@ -1323,18 +1324,15 @@ void CPlay::OnExit() {
 // device (CDDrawWorkerRegistry::MapTeardown) and the +0x24 slot-17
 // teardown is CGameLevel::ReleaseChildren - a REAL virtual on the real class.)
 // ===========================================================================
-// @early-stop
-// reload-register regalloc tail (99.62%): logic byte-exact and every call reloc
-// pairs; the only residual is 4 bytes - the intermediate register cl picks for the
-// re-read of m_c before `m_28->ClearMap` and of m_4 before `m_54->Teardown` (cl
-// folds into ecx/edx, retail loads via eax/ecx). The view ptr IS re-read each block
-// as retail does; reread-member-view-pointer.md regalloc residual, not
-// source-steerable (the surrounding standalone blocks already match). Final sweep.
 RVA(0x000cb740, 0x8f)
 void CPlay::ModeCleanup() {
     if (m_world) {
-        if (m_world->m_soundRegistry->m_soundStream) {
-            m_world->m_soundRegistry->m_soundStream->Stop();
+        {
+            // pointer-chain-hoist-intermediate-local.md: bind the MIDDLE link
+            CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+            if (reg->m_soundStream) {
+                reg->m_soundStream->Stop();
+            }
         }
         m_world->m_soundRegistry->ClearMap();
     }
@@ -1945,9 +1943,8 @@ i32 CPlay::SyncRead2f7c(CFileMemBase* ar) {
 RVA(0x000d8c60, 0xea)
 i32 CPlay::ResetViewport() {
     CGruntzMgr* w = m_mgr;
-    CStatusBarMgr* guts = m_guts;
     i32 right = w->m_modeW;
-    i32 state = guts->m_position;
+    i32 state = m_guts->m_position;
     i32 bottom = w->m_modeH;
     RECT r;
     if (state == 1) {
@@ -1971,6 +1968,11 @@ i32 CPlay::ResetViewport() {
     return 1;
 }
 
+// @early-stop
+// tail-merge tie-break (85.5%): retail lays the `mode == IDLE` early return out inline
+// (`jne next; ret`), cl folds it into the function's trailing `ret` (`je end`) - 4 B.
+// Every spelling tried (if-chain, explicit per-arm returns, switch) picks the fold;
+// the switch form is strictly worse (it lowers to `sub 0; je; dec; je`).
 RVA(0x000d8d90, 0x1e)
 void CPlay::StepC() {
     i32 mode = m_viewMode;
@@ -1979,9 +1981,9 @@ void CPlay::StepC() {
     }
     if (mode == VIEW_MODE_A) {
         ClampViewport(4);
-    } else {
-        ClampViewport2(4);
+        return;
     }
+    ClampViewport2(4);
 }
 
 // ===========================================================================
@@ -1991,23 +1993,13 @@ void CPlay::StepC() {
 // on the draw-surface (SetClipRect), re-prepare the held surface, and run the guts +
 // world apply-steps. Returns 1 if clamped, 0 otherwise. __thiscall, ret 4.
 // ===========================================================================
-// @early-stop
-// ~94% regalloc wall - the whole clamp body + the apply-tail call chain are byte-
-// faithful and all relocs pair; retail pins `clamped` in edx and the rect-base copy
-// in ebx where MSVC5 here colors them edi/ebx-swapped (a cascade off the entry
-// `xor edx,edx` vs `xor edi,edi`). Not source-steerable (tried explicit rect-base
-// pointer + reordered the clamped init). docs/patterns/zero-register-pinning.md.
 RVA(0x000d8dc0, 0xce)
 i32 CPlay::ClampViewport(i32 inset) {
     CDDrawSurfaceMgr* v = m_world;
-    LevelCoordRect* vp = &v->m_level->m_planeCtx;
-    RECT r;
-    r.left = vp->left;
-    r.top = vp->top;
-    r.right = vp->right;
-    r.bottom = vp->bottom;
-
     i32 clamped = 0;
+    LevelCoordRect* vp = &v->m_level->m_planeCtx;
+    RECT r = *vp;
+
     if (r.right - r.left > 0xc0) {
         r.left += inset;
         r.right -= inset;
@@ -2038,15 +2030,12 @@ i32 CPlay::ClampViewport(i32 inset) {
 // otherwise install the clamped rect + run the apply-tail. __thiscall, ret 4.
 // ===========================================================================
 // @early-stop
-// ~86% regalloc wall - the asymmetric clamp logic, the guts-gated horizontal bound
-// (m_8c / m_8c-0xa0, inlined ternary so it stays in edi not a spill), both axis
-// [0, limit-1] clamps, and the 4-call apply-tail are byte-faithful with all relocs
-// pairing. The residual: retail carries the `clamped` accumulator through `ecx`
-// across the two blocks (allocating an extra spill slot -> `sub esp,0x1c`) where
-// MSVC5 here writes it straight to [esp+0x10] (`sub esp,0x18`), shifting the rect
-// slots by 4 and renaming the block-2 temps. Not source-steerable (the two-block
-// boolean-OR register-merge is the compiler's spill choice).
-// docs/patterns/zero-register-pinning.md.
+// 91.3% (was 86%): the frame, the `clamped`-in-ecx merge and the rect-pointer
+// materialization all fell out once the rect became a real COPY (`RECT r = *rp`) and
+// the two mode extents became one SIZE aggregate. Sole residual is a five-register
+// permutation (ecx/eax/edi/edx/ebp) rooted in ONE scheduling choice: retail loads
+// m_guts third, right after m_world and m_mgr, where cl sinks that load to its single
+// use in the ternary. Neither the named-local nor the deleted-local spelling moves it.
 RVA(0x000d8ed0, 0x128)
 i32 CPlay::ClampViewport2(i32 stride) {
     i32 clamped = 0;
@@ -2054,35 +2043,36 @@ i32 CPlay::ClampViewport2(i32 stride) {
     CGruntzMgr* w = m_mgr;
     CStatusBarMgr* guts = m_guts;
 
-    const LevelCoordRect& rp = v->m_level->m_planeCtx; // LevelCoordRect IS tagRECT
-    RECT r;
-    r.left = rp.left;
-    r.top = rp.top;
-    r.right = rp.right;
-    r.bottom = rp.bottom;
+    LevelCoordRect* rp = &v->m_level->m_planeCtx; // LevelCoordRect IS tagRECT
+    RECT r = *rp;
 
-    i32 hlimit = w->m_modeW;
-    i32 vlimit = w->m_modeH;
+    // frame-slot-holes-prove-a-local-aggregate.md: retail's frame is one dword bigger
+    // than the six slots it writes, and the hole sits directly below the spilled
+    // height - the two mode extents are ONE aggregate whose width cl enregisters.
+    SIZE
+    limit;
+    limit.cx = w->m_modeW;
+    limit.cy = w->m_modeH;
 
-    if (r.right - r.left < (guts->m_position == 2 ? hlimit : hlimit - 0xa0)) {
+    if (r.right - r.left < (guts->m_position == 2 ? limit.cx : limit.cx - 0xa0)) {
         r.left -= stride;
         r.right += stride;
         if (r.left < 0) {
             r.left = 0;
         }
-        if (r.right >= hlimit) {
-            r.right = hlimit - 1;
+        if (r.right >= limit.cx) {
+            r.right = limit.cx - 1;
         }
         clamped = 1;
     }
-    if (r.bottom - r.top < vlimit) {
+    if (r.bottom - r.top < limit.cy) {
         r.top -= stride;
         r.bottom += stride;
         if (r.top < 0) {
             r.top = 0;
         }
-        if (r.bottom >= vlimit) {
-            r.bottom = vlimit - 1;
+        if (r.bottom >= limit.cy) {
+            r.bottom = limit.cy - 1;
         }
         clamped = 1;
     }
@@ -2206,15 +2196,13 @@ i32 CPlay::OnRegion4(i32 z) // (region-3 / gate m_region3Gate, timer +0x460)
 // match retail 1:1 but the 12 DIR32 operands are differently-named (thunk vs direct)
 // reloc-masked symbols.
 // ===========================================================================
-// @early-stop
-// Two real bugs fixed (76.4%->85.5%): (1) the type-discriminator chain had only 11
-// distinct compares - VisFn_40fe90 appeared TWICE (positions 1 and 7), so cl CSE'd
-// them to 11 cmps where retail has 12 distinct (the 7th is the fn at 0x47e160 via
-// thunk 0x402d24); (2) the entity-list walk processed-then-advanced, where retail's
-// inlined GetNext advances the node FIRST (cur=node; node=node->m_next; use cur).
-// Residual: the head/RECT pointer-setup regalloc (retail derives vp/held via add
-// reg,0x10; cl colours the three base pointers differently) + the 12 DIR32 reloc-name
-// masks (retail compares ILT thunk addresses, delinker has no thunk symbols).
+// Four real bugs, no wall: (1) the type-discriminator chain had only 11 distinct
+// compares - VisFn_40fe90 appeared TWICE (positions 1 and 7), so cl CSE'd them to 11
+// cmps where retail has 12 distinct (the 7th is the fn at 0x47e160 via thunk
+// 0x402d24); (2) the entity-list walk processed-then-advanced, where retail's inlined
+// GetNext advances the node FIRST (cur=node; node=node->m_next; use cur); (3) the
+// viewport rect is COPIED then bumped, not built field-by-field; (4) the list head is
+// read AFTER the Restore call, from a cached `&m_list` (`add esi,0x10`).
 // ===========================================================================
 
 RVA(0x000d9050, 0xc7)
@@ -2223,14 +2211,18 @@ i32 CPlay::NotifyVisibleEntities() {
     const LevelCoordRect& vp = v->m_level->m_planeCtx; // LevelCoordRect IS tagRECT
     CDDrawSurfacePair* held = v->m_drawTarget->m_backPair;
     CObList& chain = v->m_childGroup->m_list;
-    POSITION pos = chain.GetHeadPosition();
 
-    RECT r;
-    r.left = vp.left;
-    r.top = vp.top;
-    r.right = vp.right + 1;
-    r.bottom = vp.bottom + 1;
+    // struct-copy-dead-member-store-frame.md: retail COPIES the rect then bumps two
+    // members - `mov [esp+0x14],eax; inc eax; ...; mov [esp+0x14],eax` is the copy's
+    // own (dead) `right` store still standing in front of `right + 1`.
+    RECT r = vp;
+    r.right = r.right + 1;
+    r.bottom = r.bottom + 1;
     held->m_surface->Restore(&r, 0);
+
+    // AFTER the Restore: retail caches `&m_list` (`add esi,0x10`) across the call and
+    // reads the head from it afterwards (`mov esi,[esi+4]`).
+    POSITION pos = chain.GetHeadPosition();
 
     while (pos != 0) {
         CGameObject* o = static_cast<CGameObject*>(chain.GetNext(pos));
@@ -2255,20 +2247,16 @@ i32 CPlay::NotifyVisibleEntities() {
 // (m_cursorX/m_cursorY), aligns each axis DOWN to a 0x20 boundary (+0x10 bias) and
 // stores the result into the scroll-offset sink m_scrollSink (+0x5c X, +0x60 Y).
 // ===========================================================================
-// @early-stop
-// register-coloring wall (~81.6%). Logic + all member offsets are byte-faithful;
-// retail pins the draw-surface ptr in edx and geom in esi, our cl swaps them to
-// esi/edx, which renames the temp regs and floats two scheduled adds by one slot.
-// Not source-steerable (no local-pin/re-read variant flips the edx<->esi choice);
-// confirmed coexists with ApplyGameOptions at top/absent/adjacent placement.
-// See docs/patterns/zero-register-pinning.md.
 RVA(0x000d1ac0, 0x4f)
 void CPlay::StepScroll() {
     CGameLevel* v = m_world->m_level;
-    CDDrawWorkerHost* geom = v->m_mainPlane;
+    // The view rect is reached through a POINTER local: retail materializes
+    // `add edx,0x40` once and reads `[edx]`/`[edx+4]`, where `geom->m_viewRect.top`
+    // written inline folds the +0x40 into the two disp8 loads.
+    RECT* vr = &v->m_mainPlane->m_viewRect;
 
-    i32 y = m_cursorY + (geom->m_viewRect.top - v->m_planeCtx.top);   // [edx+4]-m_14; +=m_cursorY
-    i32 x = geom->m_viewRect.left + (m_cursorX - v->m_planeCtx.left); // [edx]; +=m_cursorX-m_10
+    i32 y = m_cursorY + (vr->top - v->m_planeCtx.top);   // [edx+4]-m_14; +=m_cursorY
+    i32 x = vr->left + (m_cursorX - v->m_planeCtx.left); // [edx]; +=m_cursorX-m_10
 
     y = (y & ~0x1f) + 0x10; // align down 0x20 (and al,0xe0); + 0x10
     x = (x & ~0x1f) + 0x10; // align down 0x20 (and edi,~0x1f); + 0x10
@@ -2326,24 +2314,20 @@ i32 CPlay::StepInputA() {
 // the viewport rect inset by the "Font" Text{Left,Top,Right,Bottom}Edge margins,
 // then arm a 2-frame step countdown. /GX EH frame (the CString local).
 // ===========================================================================
-// @early-stop
-// ~97.8%: every instruction matches except retail reserves a 0x24 local frame vs
-// our 0x18, which shifts the [esp+N] displacements by 0xc throughout. The ctor/
-// assign/GetInt x4/SetRect/EngStr_DrawText sequence + the single `top` spill are
-// byte-identical; the residual is MSVC's total-frame/EH-scratch sizing (tried rect-
-// before-CString reorder, no change). Logic byte-faithful.
 RVA(0x000d1710, 0x122)
 void CPlay::LoadSBITextEdges(char* name) {
     CString s;
     s = name;
 
     RECT rect;
-    LevelCoordRect& vp = m_world->m_level->m_planeCtx;
-    i32 l = vp.left, t = vp.top, r = vp.right, b = vp.bottom;
-    i32 bottom = b - g_buteMgr.GetInt("Font", "TextBottomEdge");
-    i32 right = r - g_buteMgr.GetInt("Font", "TextRightEdge");
-    i32 top = t + g_buteMgr.GetInt("Font", "TextTopEdge");
-    i32 left = l + g_buteMgr.GetInt("Font", "TextLeftEdge");
+    // frame-slot-holes-prove-a-local-aggregate.md: retail's frame is 0xc BIGGER than
+    // the slots it writes and only `top` is spilled - a 4-member aggregate with THREE
+    // members enregistered, i.e. a RECT copy of the viewport, not four scalars.
+    RECT vp = m_world->m_level->m_planeCtx;
+    i32 bottom = vp.bottom - g_buteMgr.GetInt("Font", "TextBottomEdge");
+    i32 right = vp.right - g_buteMgr.GetInt("Font", "TextRightEdge");
+    i32 top = vp.top + g_buteMgr.GetInt("Font", "TextTopEdge");
+    i32 left = vp.left + g_buteMgr.GetInt("Font", "TextLeftEdge");
     SetRect(&rect, left, top, right, bottom);
 
     EngStr_DrawText(m_world, &s, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -2372,14 +2356,14 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
         i32 left = rectSrc->left + g_buteMgr.GetInt("Font", "TextLeftEdge");
         SetRect(&rect, left, top, right, bottom);
     } else {
-        // the viewport rect (m_c->m_level->m_viewport) ptr (edx) does not survive
-        // the GetInt calls, so all 4 corners are read up front.
-        LevelCoordRect& vp = m_world->m_level->m_planeCtx;
-        i32 l = vp.left, t = vp.top, r = vp.right, b = vp.bottom;
-        i32 bottom = b - g_buteMgr.GetInt("Font", "TextBottomEdge");
-        i32 right = r - g_buteMgr.GetInt("Font", "TextRightEdge");
-        i32 top = t + g_buteMgr.GetInt("Font", "TextTopEdge");
-        i32 left = l + g_buteMgr.GetInt("Font", "TextLeftEdge");
+        // frame-slot-holes-prove-a-local-aggregate.md: a RECT COPY of the viewport (the
+        // frame reserves its four dwords even though cl enregisters them all), not four
+        // scalars - the same shape LoadSBITextEdges uses.
+        RECT vp = m_world->m_level->m_planeCtx;
+        i32 bottom = vp.bottom - g_buteMgr.GetInt("Font", "TextBottomEdge");
+        i32 right = vp.right - g_buteMgr.GetInt("Font", "TextRightEdge");
+        i32 top = vp.top + g_buteMgr.GetInt("Font", "TextTopEdge");
+        i32 left = vp.left + g_buteMgr.GetInt("Font", "TextLeftEdge");
         SetRect(&rect, left, top, right, bottom);
     }
 
@@ -2396,15 +2380,15 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
 // the draw clock, present (m_c->m_childGroup->vtbl[+0x24]), the m_4->m_68 frame-timer step,
 // the optional mode-3 reg cue, then the m_guts guts step.
 // ===========================================================================
-// @early-stop
-// regalloc/scheduling wall — structure byte-identical, only temp-register naming
-// (eax vs edx in the pointer-chain derefs) + one m_4/global load-order in the
-// Step-call setup differ; see docs/patterns/zero-register-pinning.md.
 RVA(0x000c9c20, 0x79)
 void CPlay::DrawWorldFrame() {
     TickStateMgrs(); // slot 38, this->vtbl[+0x98]() (begin-frame virtual, thiscall; ex "Vslot26")
-    if (m_world->m_level->m_mainPlane != 0) {
-        m_world->m_level->m_mainPlane->CenterScrollA();
+    {
+        // pointer-chain-hoist-intermediate-local.md
+        CGameLevel* lvl = m_world->m_level;
+        if (lvl->m_mainPlane != 0) {
+            lvl->m_mainPlane->CenterScrollA();
+        }
     }
     g_killCueClock = g_lastNow;
     g_engineFrameDelta = g_frameDelta;
@@ -2435,13 +2419,21 @@ i32 CPlay::DrawWorldFrames() {
     i32 steps = static_cast<i32>(
         (static_cast<u32>(delta) / FIXED_SUBSTEP_MS)
     ); // 0x38e38e39 magic-div by 18
-    i32 now = static_cast<i32>(g_lastNow);
-    i32 accum = static_cast<i32>(g_frameTime);
-    i32 rem = delta - steps * FIXED_SUBSTEP_MS;
+    // decl-order-and-assign-order-are-two-knobs.md: DECLARATION order picks which load
+    // cl emits first (retail: g_lastNow then g_frameTime), ASSIGNMENT order picks the
+    // callee-saved register (the LAST-assigned takes ebx - retail's `now`).
+    i32 now;
+    i32 accum;
+    now = static_cast<i32>(g_lastNow);
+    accum = static_cast<i32>(g_frameTime);
+    // `rem` is UNSIGNED: the in-loop test compiles to `test eax,eax; ja` in retail,
+    // and `ja` is only reachable from an unsigned `> 0` (a signed `> 0` gives `jg`,
+    // and `!= 0` gives `jne`). The entry test reuses the `sub`'s ZF, so it stays `je`.
+    u32 rem = static_cast<u32>(delta - steps * FIXED_SUBSTEP_MS);
+    i32 saveNow = now;     // [esp+0x24]
     i32 saveDelta = delta; // [esp+0x1c]
     i32 saveAccum = accum; // [esp+0x20]
-    i32 saveNow = now;     // [esp+0x24]
-    if (rem != 0) {
+    if (rem > 0) {
         steps = steps + 1;
     }
     now -= delta;
@@ -2450,19 +2442,24 @@ i32 CPlay::DrawWorldFrames() {
         i32 last = steps - 1;
         i32 i = 0;
         do {
-            i32 dt = (i == last && rem != 0) ? rem : FIXED_SUBSTEP_MS;
+            i32 dt = (i == last && rem > 0) ? static_cast<i32>(rem) : FIXED_SUBSTEP_MS;
             accum += dt;
             now += dt;
             m_mgr->SetGameClock(now, dt,
                                 accum); // 0x3404 -> @0x8f7b0 (retail ecx=m_4)
             if (i > 0 && i < last) {
-                if (m_world->m_level->m_mainPlane != 0) {
-                    m_world->m_level->m_mainPlane->CenterScrollB();
+                // pointer-chain-hoist-intermediate-local.md
+                CGameLevel* lvl = m_world->m_level;
+                if (lvl->m_mainPlane != 0) {
+                    lvl->m_mainPlane->CenterScrollB();
                 }
             }
             TickStateMgrs(); // slot 38, this->vtbl[+0x98]()
-            if (m_world->m_level->m_mainPlane != 0) {
-                m_world->m_level->m_mainPlane->CenterScrollA();
+            {
+                CGameLevel* lvl = m_world->m_level;
+                if (lvl->m_mainPlane != 0) {
+                    lvl->m_mainPlane->CenterScrollA();
+                }
             }
             m_world->m_childGroup->TickKillCues(0);
             m_mgr->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
@@ -2532,18 +2529,6 @@ i32 g_profAccB;
 // times are stashed in the cross-frame accumulators (g_profAccA/g_profAccB read
 // at log time = the PREVIOUS frame's flush/draw-B). __thiscall, ret 0.
 // ===========================================================================
-// @early-stop
-// profiler-scheduling wall: the body is the complete, correct reconstruction (the
-// nine phase brackets in order, the BeginScene(1)/m_68->Step/m_guts->Step update
-// block, the PushView/Present draw block, the m_guts status-bar tick, the 11-arg
-// ProfLog with the cross-frame g_profAccA/g_profAccB accumulators, then the timed
-// flush + draw-B writing those globals for next frame, and the ProfReport tail).
-// MSVC pins the ::timeGetTime fn-ptr in esi across all 14 calls as retail does,
-// but the seven live phase-times spill to a different set of stack slots / the
-// ebx/ebp coloring of deact/update differs, so the slot-reuse schedule diverges
-// despite identical logic. Same idiom as ProfileDeltaFrame (byte-exact); the extra
-// phases push it onto the documented register/stack-scheduling plateau. Deferred
-// to the final sweep. docs/patterns/zero-register-pinning.md.
 RVA(0x000c9e40, 0x1d7)
 i32 CPlay::ProfileInputFrame() {
     m_mgr->m_inputState->Retune( // 0x1a7d -> CWorldSoundSet::Retune (positional audio)
@@ -2552,39 +2537,43 @@ i32 CPlay::ProfileInputFrame() {
     ); // untimed
     DWORD(WINAPI * tg)(void) = ::timeGetTime;
 
-    u32 t1 = tg();
+    i32 activateMs = static_cast<i32>(tg());
     TickStateMgrs(); // slot 38, this->vtbl[+0x98]
-    i32 activateMs = static_cast<i32>((tg() - t1));
+    activateMs = static_cast<i32>(tg() - static_cast<u32>(activateMs));
 
-    u32 t3 = tg();
-    if (m_world->m_level->m_mainPlane != 0) {
-        m_world->m_level->m_mainPlane->CenterScrollA();
+    i32 deactMs = static_cast<i32>(tg());
+    {
+        // pointer-chain-hoist-intermediate-local.md (same as ProfileDeltaFrame's tail)
+        CGameLevel* lvl = m_world->m_level;
+        if (lvl->m_mainPlane != 0) {
+            lvl->m_mainPlane->CenterScrollA();
+        }
     }
-    i32 deactMs = static_cast<i32>((tg() - t3));
+    deactMs = static_cast<i32>(tg() - static_cast<u32>(deactMs));
 
-    u32 t5 = tg();
+    i32 updateMs = static_cast<i32>(tg());
     m_world->m_childGroup->TickKillCues(1);
     m_mgr->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
     m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
-    i32 updateMs = static_cast<i32>((tg() - t5));
+    updateMs = static_cast<i32>(tg() - static_cast<u32>(updateMs));
 
-    u32 t7 = tg();
-    i32 hitTestMs = static_cast<i32>((tg() - t7));
+    i32 hitTestMs = static_cast<i32>(tg());
+    hitTestMs = static_cast<i32>(tg() - static_cast<u32>(hitTestMs));
 
-    u32 t9 = tg();
+    i32 drawMs = static_cast<i32>(tg());
     m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-    i32 drawMs = static_cast<i32>((tg() - t9));
+    drawMs = static_cast<i32>(tg() - static_cast<u32>(drawMs));
 
-    u32 t11 = tg();
+    i32 fixedMs = static_cast<i32>(tg());
     m_world->m_workerList->PruneWorkers(
         m_world->m_drawTarget->m_backPair,
         m_world->m_drawTarget->m_overlayPair
     );
-    i32 fixedMs = static_cast<i32>((tg() - t11));
+    fixedMs = static_cast<i32>(tg() - static_cast<u32>(fixedMs));
 
-    u32 t13 = tg();
+    i32 statusBarMs = static_cast<i32>(tg());
     m_guts->LoadMainStatusBarSprite(); // 0xfe6b0
-    i32 statusBarMs = static_cast<i32>((tg() - t13));
+    statusBarMs = static_cast<i32>(tg() - static_cast<u32>(statusBarMs));
 
     ProfLog(
         &g_brickText1,
@@ -2606,8 +2595,11 @@ i32 CPlay::ProfileInputFrame() {
     m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
     g_profAccB = static_cast<i32>((tg() - static_cast<u32>(g_profAccB)));
     g_profAccA = static_cast<i32>(tg());
-    if (m_world->m_level->m_mainPlane != 0) {
-        m_world->m_level->m_mainPlane->CenterScrollB();
+    {
+        CGameLevel* lvl = m_world->m_level;
+        if (lvl->m_mainPlane != 0) {
+            lvl->m_mainPlane->CenterScrollB();
+        }
     }
     g_profAccA = static_cast<i32>((tg() - static_cast<u32>(g_profAccA)));
     UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate); // 0xebd70
@@ -2652,19 +2644,19 @@ i32 CPlay::RegisterInputBindings() {
 // CPlay::ArmSnapshot (0x0d9240) - thiscall(active, dur). When `active`, latch the
 // snapshot duration (dur) and base clock (g_frameTime) 64-bit timers; always store
 // `active` into m_snapshotActive. Migrated from engine_boundary (CPlay).
-// @early-stop
-// scheduling wall (99.2%): logic + regalloc byte-exact except the two independent
-// 64-bit-base stores (m_snapBaseLo/m_snapBaseHi) emit in hi,lo order where retail
-// emits lo,hi; cl fills the g_frameTime load-use latency gap with the hi=0 store.
-// Loading the clock into a local forces lo,hi but diverges the whole regalloc
-// (push edi / immediates) to 62% — not source-steerable.
 RVA(0x000d9240, 0x3c)
 i32 CPlay::ArmSnapshot(i32 active, i32 dur) {
     if (active != 0) {
+        // The two 64-bit latches are written as PAIRS (the `*(i64*)&m_lo` idiom this
+        // codebase uses to READ them - see the CTimer/frame-time sites): retail emits
+        // lo,hi back-to-back right after the g_frameTime load, which loose i32 stores
+        // never produce - cl hoists whichever store is free into the load-use gap
+        // (proven both ways: lo-then-hi and hi-then-lo both emit hi first).
+        // The MEMBERS stay i32 pairs - sizeof(CPlay) 0x51c is not 8-aligned, so the
+        // class cannot hold an __int64; only the STORE is 64-bit.
         m_snapDur = dur;
         m_snapDurHi = 0;
-        m_snapBaseLo = g_frameTime;
-        m_snapBaseHi = 0;
+        *reinterpret_cast<i64*>(&m_snapBaseLo) = static_cast<u32>(g_frameTime);
     }
     m_snapshotActive = active;
     return 1;
@@ -3111,11 +3103,6 @@ i32 CPlay::PostHudRect() {
 // /O2-inlined here exactly as retail inlines it: the -1 / -2 / 1 / 0xf sentinels + the
 // empty-string assign into m_name). Three destructible members drive the /GX frame
 // (which is why the EH state tops out at 2, not 1 - see PlayerLatency's note).
-// @early-stop
-// The EH-state wall is GONE (2026-07-28). Sole residual, 7 B, shared verbatim with
-// Clear (0x0da960) and Reset (0x0da9e0): the `m_comboSel = 0xf` IMMEDIATE store, which
-// cl sinks to the tail of the zero-store cluster while retail keeps it in source
-// position between the m_224 and m_02c stores.
 RVA(0x000da790, 0xb0)
 GruntzPlayer::GruntzPlayer() {
     m_playerIndex = -1;
@@ -3131,8 +3118,7 @@ GruntzPlayer::GruntzPlayer() {
     m_comboSel = 0xf;
     m_doneFlag = 0;
     m_030 = 0;
-    m_latency.m_avg = 0;
-    m_latency.m_count = 0;
+    m_latency.Clear();
 }
 
 // ===========================================================================
@@ -3171,8 +3157,7 @@ i32 GruntzPlayer::SeedForSlot(i32 index) {
     m_doneFlag = 0;
     m_030 = 0;
     m_name = GetDefaultName(0);
-    m_latency.m_avg = 0;
-    m_latency.m_count = 0;
+    m_latency.Clear();
     return 1;
 }
 
@@ -3195,12 +3180,6 @@ i32 GruntzPlayer::SeedForSlot(i32 index) {
 // retail): that pins the zero in callee-saved edi (surviving the call) as retail does,
 // which lifted this 52->94.65% (writing them AFTER the call let cl use a caller-saved
 // zero + a different frame).
-// @early-stop
-// immediate-float scheduling wall (94.65%, identical to the Reset sibling @0x0da9e0):
-// the sole residual is the `m_comboSel = 0xf` (m_228) IMMEDIATE store - MSVC floats it to
-// the tail of the store cluster where retail keeps it in source position (between m_224
-// and m_02c). Reordering / hoisting to a local does not flip it (the scheduler re-floats
-// the imm - proven on the sibling).
 // ===========================================================================
 RVA(0x000da960, 0x5b)
 void GruntzPlayer::Clear() {
@@ -3216,8 +3195,7 @@ void GruntzPlayer::Clear() {
     m_comboSel = 0xf;
     m_doneFlag = 0;
     m_030 = 0;
-    m_latency.m_avg = 0;
-    m_latency.m_count = 0;
+    m_latency.Clear();
 }
 
 // ===========================================================================
@@ -3226,12 +3204,6 @@ void GruntzPlayer::Clear() {
 // the MFC empty string, NO default ctor / no EH frame since the member is already
 // constructed) and re-seed the scalar config block. Returns 1 (success).
 // ===========================================================================
-// @early-stop
-// store-scheduling wall: every instruction (the op= to g_emptyString + all 14 field
-// stores) is byte-correct, but MSVC's scheduler floats the m_228 = 0xf IMMEDIATE
-// store to the tail of the register-store cluster, where retail keeps it in source
-// position (between m_224 and m_02c). Reordering the source / hoisting to a local
-// does not flip it (the scheduler re-floats the imm). ~94.9%.
 RVA(0x000da9e0, 0x60)
 i32 GruntzPlayer::Reset() {
     m_playerIndex = -1;
@@ -3246,8 +3218,7 @@ i32 GruntzPlayer::Reset() {
     m_comboSel = 0xf;
     m_doneFlag = 0;
     m_030 = 0;
-    m_latency.m_avg = 0;
-    m_latency.m_count = 0;
+    m_latency.Clear();
     return 1;
 }
 
@@ -3257,8 +3228,7 @@ i32 GruntzPlayer::ClearRoundState() {
     m_readyFlag = 0;
     m_doneFlag = 0;
     m_030 = 0;
-    m_latency.m_avg = 0;
-    m_latency.m_count = 0;
+    m_latency.Clear();
     return 1;
 }
 
@@ -4624,25 +4594,35 @@ i32 CPlay::Vslot12(i32, i32, i32) {
 // pair preceded by a renderer begin-scene(1) - then push the view, present, and
 // tick the manager. Migrated from engine_boundary (CPlay: the m_c draw chain +
 // m_4 manager). All draw callees are out-of-line / reloc-masked.
-// @early-stop
-// ~99%: code structure byte-exact; residual is (a) a 1-2 byte regalloc nit in
-// the first m_c->m_level->m_5c chain load (cl spreads to ecx where retail reuses
-// eax) and (b) the reloc-masked callee symbols (CameraGeom DrawA/DrawB, PushView,
-// ManagerTick) which pair once those engine fns are named.
 RVA(0x000cefc0, 0xa2)
 i32 CPlay::DrawWorldPresent() {
-    if (m_world->m_level->m_mainPlane != 0) {
-        m_world->m_level->m_mainPlane->CenterScrollB();
+    // pointer-chain-hoist-intermediate-local.md: only the FIRST chain needs the middle
+    // link bound (retail chains `mov eax,[eax+0x24]` there); every later chain re-reads
+    // m_world, so `lvl` must die here.
+    {
+        CGameLevel* lvl = m_world->m_level;
+        if (lvl->m_mainPlane != 0) {
+            lvl->m_mainPlane->CenterScrollB();
+        }
     }
-    if (m_world->m_level->m_mainPlane != 0) {
-        m_world->m_level->m_mainPlane->CenterScrollA();
+    {
+        CGameLevel* lvl = m_world->m_level;
+        if (lvl->m_mainPlane != 0) {
+            lvl->m_mainPlane->CenterScrollA();
+        }
     }
     m_world->m_childGroup->TickKillCues(1);
-    if (m_world->m_level->m_mainPlane != 0) {
-        m_world->m_level->m_mainPlane->CenterScrollB();
+    {
+        CGameLevel* lvl = m_world->m_level;
+        if (lvl->m_mainPlane != 0) {
+            lvl->m_mainPlane->CenterScrollB();
+        }
     }
-    if (m_world->m_level->m_mainPlane != 0) {
-        m_world->m_level->m_mainPlane->CenterScrollA();
+    {
+        CGameLevel* lvl = m_world->m_level;
+        if (lvl->m_mainPlane != 0) {
+            lvl->m_mainPlane->CenterScrollA();
+        }
     }
     m_world->m_childGroup->TickKillCues(1);
     m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
@@ -4668,13 +4648,12 @@ i32 CPlay::Vslot06() {
     if (IsActive() == 0) {
         return 0;
     }
-    CGruntzMgr* w = m_mgr;
-    i32 savedW = w->m_savedModeW;
-    i32 liveW = w->m_modeW;
-    i32 savedH = w->m_savedModeH;
-    i32 liveH = w->m_modeH;
+    i32 savedW = m_mgr->m_savedModeW;
+    i32 liveW = m_mgr->m_modeW;
+    i32 savedH = m_mgr->m_savedModeH;
+    i32 liveH = m_mgr->m_modeH;
     if (savedW != liveW || savedH != liveH) {
-        if ((static_cast<CGruntzMgr*>(w))->SetVideoMode(savedW, savedH, 1) == 0) {
+        if (m_mgr->SetVideoMode(savedW, savedH, 1) == 0) {
             return 0;
         }
     }
@@ -4800,21 +4779,16 @@ void CPlay::TickStateMgrs() {
 // the m_1bc gate is set, else advance via the manager (m_4->Post, level index + 1). The
 // PostMessageA calls go through the cached ::PostMessageA fn-ptr (bare 0x6c44c8, no
 // import symbol).
-// @early-stop
-// regalloc-rotation wall (98.4%): logic, instruction selection, hop counts and
-// order are byte-identical (llvm-objdump -dr / sema disasm --diff). The only
-// residual is the scratch register that holds the reloaded m_4 (CWorld) pointer
-// across the three quiesce sub-calls - retail colors it ecx/edx/eax, cl picks
-// edx/eax/ecx (a symmetric reload coin-flip); the same rotation shifts the
-// PostMessageA HWND chain's registers. Not source-steerable.
 RVA(0x000cfbd0, 0x8f)
 i32 CPlay::Vslot15() {
     if (m_levelIndex == 0x20) {
         m_1c0 = 1;
         m_notifyLatch = 1;
-        SoundStream* stream = m_world->m_soundRegistry->m_soundStream;
-        if (stream) {
-            stream->Stop();
+        // pointer-chain-hoist-intermediate-local.md: bind the MIDDLE link, not the last
+        // one - retail chains `mov eax,[eax+0x28]` and only m_soundStream lands in ecx.
+        CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+        if (reg->m_soundStream) {
+            reg->m_soundStream->Stop();
         }
         m_mgr->m_sound->StopAndFlush();
         m_mgr->m_inputState->Teardown();  // 0x28ab -> CWorldSoundSet::Teardown @0xb660
@@ -5086,11 +5060,27 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
 // clamped to 100 px, committing the new offset when anything moved. speed =
 // (int)((double)m_4->m_124 * 0.01 * range + min). The bute getter, timeGetTime
 // ptr and the ApplyScroll tail are reloc-masked; only offsets + code bytes bind.
+// Four real bugs, found 2026-07-28 (90.0% -> 93.9%): (1) the per-edge nudge divides
+// by 1000, not 100 - retail's magic is 0x10624dd3 + `shr edx,6`, ours was 0x51eb851f +
+// `shr edx,5`, and `--diff` MASKS the magic so only the shift showed; (2) the scroll
+// origin is the plane's SNAPPED position (+0x84/+0x88), not m_viewRect.left/top
+// (+0x40/+0x44); (3) MaxScrollSpeed is called FIRST and subtracted into its own
+// register (`sub edi,eax`), which needs the local; (4) the TOP edge - alone of the
+// four - also sets `changed` when the edge merely becomes active (its two arms share
+// the timeGetTime tail, which cross-jumping can only do when both set it).
 // @early-stop
-// scheduling wall (85.9%, from 0% stub): logic + all four edge blocks byte-faithful.
-// Residual is MSVC's interleave of the geom pointer-chase (sx/sy loads) into the
-// float speed-computation FPU latency gaps (fild/fmul/fimul/fiadd/ftol) + the
-// trailing nop padding - not source-steerable (zero-register-pinning family).
+// residual (93.9%): cl canonicalizes the two speed multiplies (it emits the int
+// `fimul` before the double `fmul` whichever order the source spells them, proven both
+// ways), so the FPU/integer interleave differs by two instruction slots.
+
+DATA(0x0024c01c)
+u8 g_scrollLoadFlags; // 0x64c01c  owner def (zero-init .bss)
+
+DATA(0x0024c270)
+i32 g_scrollSpeedRange; // 0x64c270  owner def (zero-init .bss)
+
+DATA(0x0024c274)
+i32 g_scrollMinSpeed; // 0x64c274  owner def (zero-init .bss)
 
 RVA(0x000d12b0, 0x2d5)
 i32 CPlay::LoadScrollSpeedOptions() {
@@ -5100,27 +5090,38 @@ i32 CPlay::LoadScrollSpeedOptions() {
     }
     if (!(g_scrollLoadFlags & 2)) {
         g_scrollLoadFlags |= 2;
-        g_scrollSpeedRange = g_buteMgr.GetInt("Optionz", "MaxScrollSpeed")
-                             - g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
+        // Max is bound to a local: retail calls Max FIRST and subtracts into ITS
+        // register (`mov edi,eax; call Min; sub edi,eax`); written as one expression
+        // cl evaluates Min first and ends up with `sub eax,edi`.
+        i32 maxSpeed = g_buteMgr.GetInt("Optionz", "MaxScrollSpeed");
+        g_scrollSpeedRange = maxSpeed - g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
     }
 
     CPlay* self = this;
     CGruntzMgr* w = m_mgr;
     i32 changed = 0;
+    CDDrawWorkerHost* g = w->m_world->m_level->m_mainPlane;
+    // +0x84/+0x88 (the SNAPPED scroll position), not m_viewRect.left/top at +0x40/+0x44:
+    // retail reads `[eax+0x84]`/`[eax+0x88]`, and ResetGoals below re-snaps from these.
+    i32 sx = g->m_snappedX;
+    i32 sy = g->m_snappedY;
     i32 speed = static_cast<i32>(
         (static_cast<double>(w->m_scrollSpeed) * g_scrollSpeedScale * g_scrollSpeedRange
          + g_scrollMinSpeed)
     );
-    CDDrawWorkerHost* g = w->m_world->m_level->m_mainPlane;
-    i32 sx = g->m_viewRect.left;
-    i32 sy = g->m_viewRect.top;
-    i32 extentX = w->m_modeW;
-    i32 extentY = w->m_modeH;
+    // frame-slot-holes-prove-a-local-aggregate.md: retail reserves FIVE dwords
+    // (sub esp,0x14) but only writes four - the hole at [esp+0x20] sits right above the
+    // spilled width at [esp+0x1c], i.e. the two mode extents are ONE aggregate whose
+    // height cl enregisters (edi).
+    SIZE
+    extent;
+    extent.cx = w->m_modeW;
+    extent.cy = w->m_modeH;
 
     // LEFT edge
     if (self->m_cursorX < 0xc || (self->m_scrollEdgeLock & 1)) {
         if (self->m_scrollEdgeActive & 1) {
-            i32 d = (::timeGetTime() - self->m_lastScrollTimeX) * speed / 100;
+            i32 d = (::timeGetTime() - self->m_lastScrollTimeX) * speed / 1000;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
@@ -5138,9 +5139,9 @@ i32 CPlay::LoadScrollSpeedOptions() {
     }
 
     // RIGHT edge
-    if (self->m_cursorX > extentX - 0xc || (self->m_scrollEdgeLock & 4)) {
+    if (self->m_cursorX > extent.cx - 0xc || (self->m_scrollEdgeLock & 4)) {
         if (self->m_scrollEdgeActive & 4) {
-            i32 d = (::timeGetTime() - self->m_lastScrollTimeX) * speed / 100;
+            i32 d = (::timeGetTime() - self->m_lastScrollTimeX) * speed / 1000;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
@@ -5160,7 +5161,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
     // TOP edge
     if (self->m_cursorY < 0xf || (self->m_scrollEdgeLock & 2)) {
         if (self->m_scrollEdgeActive & 2) {
-            i32 d = (::timeGetTime() - self->m_lastScrollTimeY) * speed / 100;
+            i32 d = (::timeGetTime() - self->m_lastScrollTimeY) * speed / 1000;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
@@ -5172,15 +5173,21 @@ i32 CPlay::LoadScrollSpeedOptions() {
         } else {
             self->m_scrollEdgeActive |= 2;
             self->m_lastScrollTimeY = ::timeGetTime();
+            // FAITHFUL asymmetry: the TOP edge - and ONLY the top edge - also marks the
+            // view changed when the edge merely BECOMES active. Retail proves it: this is
+            // the one block whose two arms share `call timeGetTime; mov m_lastScrollTimeY;
+            // mov ebp,1` (0xd14dc), which cross-jumping can only do when the `changed = 1`
+            // is in BOTH. The other three blocks keep it in the moved-arm only.
+            changed = 1;
         }
     } else {
         self->m_scrollEdgeActive &= ~2;
     }
 
     // BOTTOM edge
-    if (self->m_cursorY > extentY - 0xf || (self->m_scrollEdgeLock & 8)) {
+    if (self->m_cursorY > extent.cy - 0xf || (self->m_scrollEdgeLock & 8)) {
         if (self->m_scrollEdgeActive & 8) {
-            i32 d = (::timeGetTime() - self->m_lastScrollTimeY) * speed / 100;
+            i32 d = (::timeGetTime() - self->m_lastScrollTimeY) * speed / 1000;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
@@ -6107,11 +6114,6 @@ i32 g_areaPageSize; // owner def (zero-init .bss)
 // wrong band for 0x1b52e8, which is CByteArray::SetSize - m_284,
 // m_2a0==m_pendingFx, Reset1b48a6/OverlayTick), CRtArr==the raw data/count reads
 // over the real MFC arrays (markerData()/arrData()/arr488Data() accessors).)
-// @early-stop
-// ~99% register-coloring plateau: logic + all relocs pair; the only residual is
-// MSVC5 coloring the reloaded m_4/m_c base pointers into eax/edx/ecx differently
-// than retail across the six teardown-call setups. Not source-steerable.
-// docs/patterns/zero-register-pinning.md.
 RVA(0x000cb480, 0x22c)
 void CPlay::FreeListTeardown() {
     i32 i;
@@ -6126,8 +6128,14 @@ void CPlay::FreeListTeardown() {
         m_mgr->m_cmdGrid->ClearGridRange(5);
     }
     ForwardReady();
-    if (m_world->m_soundRegistry->m_soundStream != 0) {
-        m_world->m_soundRegistry->m_soundStream->Stop();
+    {
+        // pointer-chain-hoist-intermediate-local.md: bind the MIDDLE link so retail's
+        // `mov eax,[eax+0x28]` chain (not `mov ecx,[eax+0x28]`) falls out; the whole
+        // tail's base-pointer colouring follows from it.
+        CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+        if (reg->m_soundStream != 0) {
+            reg->m_soundStream->Stop();
+        }
     }
     m_mgr->m_sound->StopAndFlush();
     m_mgr->m_inputState->Teardown();
@@ -6208,16 +6216,16 @@ void CPlay::FreeListTeardown() {
 // REAL Vslot20 virtual), DtorWorld was CWorld (m_5c CFontConfig / m_128), and the
 // +0xc8 "list dtor" was NEITHER ~CPtrList nor ~CObList: retail calls 0x1b9c69 ==
 // ?Empty@CString@@QAEXXZ (NAFXCW, anchored) - CGruntzMgr::m_strWorldFile @+0xc8.)
-// @early-stop
-// hard-regalloc wall: ebp pinned to the zero-const + the cached free-list head
-// in edx across the m_markerData/m_3a4/m_48c flush loops are not source-steerable
-// (same coloring plateau as FreeListTeardown 0xcb480, ~99%).
 RVA(0x000c8700, 0x1f4)
 void CPlay::ReleaseResources() {
     i32 i;
-    if (m_lightFx) {
-        m_lightFx->Ctor();
-        ::operator delete(m_lightFx);
+    // The three `p = m_x; if (p) { p->...; ::operator delete(p); m_x = 0; }` blocks below
+    // read the member ONCE: retail keeps it in esi and pushes THAT (`mov ecx,esi` /
+    // `push esi`) where the inline spelling re-reads `[edi+off]` for the delete.
+    CLightFxRender* fx = m_lightFx;
+    if (fx) {
+        fx->Ctor();
+        ::operator delete(fx);
         m_lightFx = 0;
     }
     OnExit(); // slot 32 (+0x80) - the real CPlay virtual
@@ -6238,18 +6246,20 @@ void CPlay::ReleaseResources() {
         delete m_guts;
         m_guts = 0;
     }
-    if (m_hitTest) {
-        m_hitTest->Deactivate();
-        ::operator delete(m_hitTest);
+    CChatBoxOwner* hit = m_hitTest;
+    if (hit) {
+        hit->Deactivate();
+        ::operator delete(hit);
         m_hitTest = 0;
     }
     if (m_beginMarker) {
         delete m_beginMarker; // ~CTileTriggerContainer non-virtual (0xc8640) + ??3
         m_beginMarker = 0;
     }
-    if (m_frameMarker) {
-        m_frameMarker->Reset();
-        ::operator delete(m_frameMarker);
+    CTimer* fm = m_frameMarker;
+    if (fm) {
+        fm->Reset();
+        ::operator delete(fm);
         m_frameMarker = 0;
     }
     for (i = 0; i < markerCount(); i++) {

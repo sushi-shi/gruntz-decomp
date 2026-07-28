@@ -54,6 +54,14 @@ struct PlayerLatency {
         m_count = 0;
     }
     ~PlayerLatency() {}
+    // Zeroing the pair through the sub-object (not two loose `m_latency.m_x = 0`
+    // statements) is what keeps the preceding `m_comboSel = 0xf` IMMEDIATE store in
+    // source position: cl floats a lone imm store to the end of a same-register store
+    // RUN, and the inlined member call ends that run.
+    void Clear() {
+        m_avg = 0;
+        m_count = 0;
+    }
 
     i32 m_avg;   // +0x00 (0x22c) running mean round-trip time (the roster displays it)
     i32 m_count; // +0x04 (0x230) samples already folded into the mean
