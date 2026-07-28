@@ -73,15 +73,14 @@ CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(ob
         if (aux->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
             || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
             if (m_object->m_7c != 0) {
-                m_object->m_7c->m_08 &= ~6;
-                m_object->m_7c->m_08 |= 1;
+                m_object->m_7c->m_flags &= ~6;
+                m_object->m_7c->m_flags |= 1;
                 m_38->m_flags &= ~0x1000002;
                 m_38->m_flags |= 0x800000;
             }
         }
     }
 }
-
 
 RVA(0x000abc10, 0x102)
 void CSimpleAnimation::FireActivation(i32 idx) {
@@ -123,4 +122,3 @@ i32 CSimpleAnimation::AdvanceAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     return 0;
 }
-

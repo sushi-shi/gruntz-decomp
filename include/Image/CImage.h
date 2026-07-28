@@ -9,44 +9,31 @@ struct
 
 class CDDrawPtrCollections; // folded CImageSurfacePool
 
-
 class CString;           // real MFC CString (4-byte ptr); completed via <Mfc.h> in the .cpp
 class CResolveNode;      // the blit/draw request IS the resolve node (ex-CBlitInfo view)
 class CDDrawSurfacePair; // the blit destination (ex the "CImage* dst" mistype)
 
-class CImageParent; // +0x0c parent (CDDrawPtrCollections); defined below
+// +0x0c parent. DISSOLVED 2026-07-28 - this was the `CImageParent` pad-view (and with
+// it `CDDrawSurfaceDesc` and `CBlitClipOwner`, the two pad-views its fields pointed
+// at). It IS CDDrawSurfaceMgr, three-for-three on the offsets the view declared:
+//   +0x04 "display-mode descriptor"->m_10->[0x18]  = m_drawTarget (CDDrawSubMgrPages)
+//         ->m_frontPair (CDDrawSurfaceChildA) ->m_bpp  (CDrawSubWorker +0x18)
+//   +0x1c "the surface pool"                       = m_ptrColl - already the SAME
+//         declared class, CDDrawPtrCollections*
+//   +0x24 "clip owner", RECT at its +0x10         = m_level (CGameLevel) ->m_planeCtx,
+//         a LevelCoordRect at +0x10 - and LevelCoordRect IS `struct tagRECT`
+// The pointer itself arrives as CDDrawWorker::m_ownerCtx (MakeWorker copies it from
+// the registry, which got it from CDDrawSurfaceMgr::Init), so the chain never held
+// anything else. This is the counterexample Loadable.h cited for the +0x0c slot being
+// "PROVEN heterogeneous" - it is not one.
+class CDDrawSurfaceMgr;
 
 class CDDSurface;
 
 class CDDrawShadeBlit;
 
-class CDDrawSurfaceDesc {
-public:
-    char _00[0x10];
-    i32* m_10; // +0x10  active surface (its +0x18 is the format)
-};
-SIZE_UNKNOWN();
-
 typedef struct tagRECT BlitRect;
 SIZE(0x10); // {left,top,right,bottom} RECT
-
-class CBlitClipOwner {
-public:
-    char _00[0x10];
-    BlitRect m_clipRect; // +0x10  clip RECT {left, top, right, bottom}
-};
-SIZE_UNKNOWN();
-
-class CImageParent {
-public:
-    char _00[0x04];
-    CDDrawSurfaceDesc* m_04; // +0x04  display-mode descriptor
-    char _08[0x1c - 0x08];
-    CDDrawPtrCollections* m_1c; // +0x1c  the surface pool
-    char _20[0x24 - 0x20];
-    CBlitClipOwner* m_24; // +0x24  clip-region owner (its +0x10 is the clip RECT)
-};
-SIZE_UNKNOWN();
 
 // The blob header the loader slots take is the PID/RID resource header - the ONE
 // canonical `struct PidHeader` in <DDrawMgr/DDSurface.h> (SIZE 0x20 + the PidFlags
@@ -78,9 +65,9 @@ public:
     // to avoid churning CImage.cpp; the index reading is better-evidenced and is a rename
     // for a follow-up. (The rest of the 0x34 layout was ALREADY complete below - the views
     // added no field knowledge this class did not have, only worse names.)
-    i32 m_status;           // +0x04  status word (-1 inactive) / frame index
-    i32 m_08;               // +0x08
-    CImageParent* m_parent; // +0x0c  parent CDDrawPtrCollections (its surface pool at +0x1c)
+    i32 m_status;               // +0x04  status word (-1 inactive) / frame index
+    i32 m_08;                   // +0x08
+    CDDrawSurfaceMgr* m_parent; // +0x0c  the owning world manager (see the note above)
 
     // The frame ctor (inline; the 4 construction sites - CDDrawWorker::CreateFrame24/28/30
     // @0x151fb0/152060/152110 and CDDrawWorker::InsertFrame @0x151f00 - all build a CImage
@@ -89,7 +76,7 @@ public:
     // m_status/m_08/m_parent, before m_width) - see
     // docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md. Member-init ORDER here
     // reproduces retail's store order.
-    CImage(i32 index, CImageParent* parent) {
+    CImage(i32 index, CDDrawSurfaceMgr* parent) {
         m_status = index;
         m_08 = 0;
         m_parent = parent;
@@ -122,13 +109,13 @@ public:
     //   [12] Create      -> CDDrawPtrCollections::Createa58_3 -> CFileImageSurface::LoadByExt
     //        @0x148940, which opens with `strrchr(a2,'.')` + _stricmp ".BMP"/".PCX"/".PID".
     //        A FILE PATH.
-    virtual i32 Create24(i32 width, i32 height, i32 keyed);           // slot 9  0x1530e0
+    virtual i32 Create24(i32 width, i32 height, i32 keyed);                   // slot 9  0x1530e0
     virtual i32 LoadDispatch(PidHeader* desc, u32 mode, u32 size, i32 keyed); // [10] 0x152fb0
-    virtual i32 Resolve(CParseSource* src, i32 arg);                  // slot 11 0x152f20
-    virtual i32 Create(char* path, i32 keyed);                        // slot 12 0x152e90
-    virtual i32 Reload(CParseSource* src, i32 arg);                            // slot 13 0x153380
-    virtual void RenderImage(CResolveNode* info, CDDrawSurfacePair* dst);      // slot 14 0x153470
-    virtual void FlipVertical(void* a);                                        // slot 15 (external)
+    virtual i32 Resolve(CParseSource* src, i32 arg);                          // slot 11 0x152f20
+    virtual i32 Create(char* path, i32 keyed);                                // slot 12 0x152e90
+    virtual i32 Reload(CParseSource* src, i32 arg);                           // slot 13 0x153380
+    virtual void RenderImage(CResolveNode* info, CDDrawSurfacePair* dst);     // slot 14 0x153470
+    virtual void FlipVertical(void* a);                                       // slot 15 (external)
     virtual void FlipHorizontal(void* a); // slot 16 (ILT 0x002d6a; no-op sink)
     virtual void FlipBoth(void* a);       // slot 17: forward arg to slots 15 then 16
 
@@ -136,12 +123,15 @@ public:
     // 0x153180 (non-virtual /GX builder): `size` is LoadDispatch's own blob length,
     // forwarded verbatim to CDDrawShadeBlit::Build (which mallocs size-0x20).
     i32 BuildSlot13(PidHeader* desc, u32 size);
-    i32 CopyFrom(CImage* other);                 // 0x1532b0  (clone the surface from another image)
-    i32
-    SetOrigin(PidHeader* desc, i32 mode); // 0x153330 (copy desc origin for mode 3/4, else 0)
+    i32 CopyFrom(CImage* other);              // 0x1532b0  (clone the surface from another image)
+    i32 SetOrigin(PidHeader* desc, i32 mode); // 0x153330 (copy desc origin for mode 3/4, else 0)
     void RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags); // 0x153790
     void RenderFrameClipped(
-        CDDrawSurfacePair* target, i32 x, i32 y, RECT* clipRect, i32 flags
+        CDDrawSurfacePair* target,
+        i32 x,
+        i32 y,
+        RECT* clipRect,
+        i32 flags
     ); // 0x153810
 
     // The 5 sprite blit/clip routines (0x1538c0..0x1544d0): compute the on-screen

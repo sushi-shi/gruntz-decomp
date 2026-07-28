@@ -12,6 +12,15 @@ struct CVariantSlot; // fwd (pointer member m_err; full def at the overflow call
 // `char*` is not a placeholder here - it is the only return type consistent with the
 // instructions. Typed element access is the CALLER's job (see _zdvec / zDArray<T>);
 // there is nothing to "type" on this class.
+// The "band is never overflowed, do not allocate a scratch element" sentinel both
+// _zdvec ctor call sites hand down. It lands in m_spare at 0x16de65 and the only
+// thing that ever looks at it is `if (m_spare != 0)` at 0x16decd.
+inline void* ZVecNoScratch() {
+    // bare imm: retail pushes the literal 1 (zDArray's ctor @0x8717); never
+    // dereferenced, so no object exists to point at - this is the whole sentinel.
+    return reinterpret_cast<void*>(1);
+}
+
 class _zvec : public zErrHandling {
 public:
     // 0x16de30: allocate the [lo, hi] element band and scratch slot.
@@ -60,7 +69,7 @@ class _zdvec : public _zvec {
 public:
     // 0x16dda0: construct the allocating base, then seed the element cursor/count.
     _zdvec(i32 stride, i32 lo, i32 hi, void* scratch);
-    char* IndexToPtr(i32 i);    // 0x310f0 (base accessor + per-slot CString construction)
+    char* IndexToPtr(i32 i); // 0x310f0 (base accessor + per-slot CString construction)
     // ~_zdvec is IMPLICIT: retail 0x16de00 is a bare 5-byte `jmp ??1_zvec` with NO
     // vptr restamp - only the compiler-generated trivial dtor produces that form.
 };
@@ -80,6 +89,13 @@ public:
     // and the 19-key registrar outlines the whole accessor (`Resolve`).
     // docs/patterns/act-registrar-report-outline-budget.md
     T* ResolveEntryCallReport(i32 id);
+
+    // THE one seam of the typed container. _zvec addresses its band by a RUNTIME
+    // m_stride (0x312c0 `imul esi,[edi+0x18]`) - byte-forced, so the element type
+    // can only go back on here; every typed accessor routes through this one line.
+    static T* AsElem(char* p) {
+        return reinterpret_cast<T*>(p);
+    }
 };
 SIZE_UNKNOWN();
 

@@ -56,7 +56,7 @@ static inline CDDrawWorker* MakeWorker(const CDDrawWorkerRegistry* parent) {
     CDDrawWorker* w = new CDDrawWorker;
     if (w != 0) {
         i32 field1c = ReadRegistryField1c(parent);
-        i32 surfaceMgr = parent->m_ownerCtx;
+        CDDrawSurfaceMgr* surfaceMgr = parent->m_ownerCtx;
         w->m_id = field1c;
         w->m_flags = 0;
         w->m_ownerCtx = surfaceMgr;
@@ -167,13 +167,8 @@ CImage* CDDrawWorkerRegistry::Forward30(
 }
 
 RVA(0x00154f60, 0x20)
-CImage* CDDrawWorkerRegistry::Forward2C(
-    i32 width,
-    i32 height,
-    CDDrawWorker* worker,
-    i32 index,
-    i32 keyed
-) {
+CImage*
+CDDrawWorkerRegistry::Forward2C(i32 width, i32 height, CDDrawWorker* worker, i32 index, i32 keyed) {
     return worker->CreateFrame24(width, height, index, keyed);
 }
 

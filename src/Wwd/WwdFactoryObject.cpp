@@ -50,7 +50,7 @@ VTBL(CAniAdvanceCursor, 0x001f0128); // ??_7CAniAdvanceCursor@@6B@ (9-slot CLoad
 // m_38 (-1) store to different positions than retail; 3 field-order spellings all
 // ~60%. Source steers which arg lands in edx, not the store schedule. Logic complete.
 RVA(0x0015b2c0, 0x3d)
-CResolveNode::CResolveNode(i32 owner, i32 field04, i32 field08) {
+CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
     m_id = field04;
     m_flags = field08;
     m_ownerCtx = owner;
@@ -68,14 +68,14 @@ CResolveNode::CResolveNode(i32 owner, i32 field04, i32 field08) {
 // m_04/m_08/m_0c) is load-bearing. (Was the WorkerFull view - folded onto the
 // canonical AnimWorkerObj, whose ??_7 @0x1efb80 this ctor stamps.)
 // @early-stop
-// vptr-last wall: retail stamps the vptr AFTER m_04/m_08/m_0c, but a real-virtual
-// class forces cl's implicit vptr-first store at ctor entry. Field-store order
-// preserved; only the vptr position diverges (mandate: convert anyway).
+// vptr-last wall: retail stamps the vptr AFTER m_id/m_flags/m_ownerCtx, but a
+// real-virtual class forces cl's implicit vptr-first store at ctor entry. Field-store
+// order preserved; only the vptr position diverges (mandate: convert anyway).
 RVA(0x0015b300, 0x40)
 AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags) {
-    m_04 = id;
-    m_08 = stateFlags;
-    m_0c = owner;
+    m_id = id;
+    m_flags = stateFlags;
+    m_ownerCtx = owner;
     m_notify = 0;
     m_payload = 0;
     m_logic = 0;
@@ -230,7 +230,7 @@ CAniAdvanceCursor::~CAniAdvanceCursor() {
 // ctor body stamps before it. The 100% spelling needs the base ctor inline
 // (`: CLoadable(...)`), which contradicts its proven out-of-line 0x156cb0 body.
 RVA(0x0015b730, 0x2b)
-CAniAdvanceCursor::CAniAdvanceCursor(i32 owner, i32 field04, i32 field08) {
+CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
     m_id = field04;
     m_flags = field08;
     m_ownerCtx = owner;

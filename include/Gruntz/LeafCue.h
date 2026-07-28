@@ -24,7 +24,7 @@ struct LeafCue : public CLoadable {
 
     // Inline factory ctor (folded into CDDrawSubMgrLeafScan::CreateEntry*): seed the
     // CLoadable header (map count, 0, owner handle) + the zeroed tail, +0x18 first.
-    LeafCue(i32 count, i32 handle);
+    LeafCue(i32 count, class CDDrawSurfaceMgr* handle);
 
     // The three buffer loaders (all cache into m_10; bodies in DDrawSubMgr.cpp).
     // The owner handle in CLoadable::m_0c is the CDDrawSurfaceMgr whose +0x20
@@ -42,7 +42,7 @@ struct LeafCue : public CLoadable {
     i32 m_18;              // +0x18  cooldown interval (seeded from the cache's m_34)
 };
 SIZE(0x1c);
-inline LeafCue::LeafCue(i32 count, i32 handle) {
+inline LeafCue::LeafCue(i32 count, CDDrawSurfaceMgr* handle) {
     m_id = count;
     m_flags = 0;
     m_ownerCtx = handle;

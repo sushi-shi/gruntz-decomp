@@ -38,10 +38,10 @@
 #include <Bute/SymTab.h>     // CSymTab::FindSub
 #include <string.h>
 #include <DDrawMgr/DirectDrawMgr.h>
-#include <DDrawMgr/DDrawSurfacePair.h>    // single-source CDDrawSurfacePair
-#include <Gruntz/AniAdvanceCursor.h>      // CAniAdvanceCursor
-#include <Gruntz/SerialArchive.h>         // the shared CFileMemBase stream
-#include <DDrawMgr/DDrawSurfaceMgr.h>     // canonical CDDrawSurfaceMgr
+#include <DDrawMgr/DDrawSurfacePair.h> // single-source CDDrawSurfacePair
+#include <Gruntz/AniAdvanceCursor.h>   // CAniAdvanceCursor
+#include <Gruntz/SerialArchive.h>      // the shared CFileMemBase stream
+#include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical CDDrawSurfaceMgr
 #include <Image/CImage.h> // CImage complete - PlaceFrame downcasts the CObArray band element
 #include <DDrawMgr/DDrawSubMgrPages.h>    // single-source CDDrawSubMgrPages (surface ops)
 #include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup (the 3-map dtor-host twin)
@@ -116,7 +116,7 @@ i32 CDDrawSubMgrLeafScan::RefreshAsset(const char* key) {
 }
 
 RVA(0x00156cb0, 0x20)
-CLoadable::CLoadable(i32 owner, i32 field04, i32 field08) {
+CLoadable::CLoadable(CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
     m_id = field04;
     m_flags = field08;
     m_ownerCtx = owner;
@@ -1515,10 +1515,10 @@ i32 CDDrawSubMgrPages::TransExit() {
 }
 
 RVA(0x00158f30, 0x27)
-CDrawSubWorker::CDrawSubWorker(i32 a1, i32 a2, i32 a3) {
+CDrawSubWorker::CDrawSubWorker(CDDrawSurfaceMgr* owner, i32 a2, i32 a3) {
     m_id = a2;
     m_flags = a3;
-    m_ownerCtx = a1;
+    m_ownerCtx = owner;
     m_width = 0;
 }
 RVA(0x00158f60, 0x1d)

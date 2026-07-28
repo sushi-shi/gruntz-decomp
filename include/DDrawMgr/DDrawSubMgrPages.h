@@ -81,7 +81,7 @@ SIZE(0x1c);
 class CDrawSubWorker : public CLoadable {
 public:
     // Out-of-line @0x158f30; ChildA calls this retained copy.
-    CDrawSubWorker(i32 a1, i32 a2, i32 a3);
+    CDrawSubWorker(CDDrawSurfaceMgr* owner, i32 a2, i32 a3);
 
 protected:
     // CDDrawSurfacePair's construction path has the same base initialization
@@ -90,7 +90,8 @@ protected:
     enum InlineCtorTag {
         INLINE_CTOR
     };
-    CDrawSubWorker(InlineCtorTag, i32 a1, i32 a2, i32 a3) : CLoadable(a1, a2, a3) {
+    CDrawSubWorker(InlineCtorTag, CDDrawSurfaceMgr* owner, i32 a2, i32 a3)
+        : CLoadable(owner, a2, a3) {
         m_width = 0;
     }
 
@@ -130,7 +131,7 @@ class CDDrawSurfaceChildA : public CDrawSubWorker {
 public:
     // Inline ctor - retail CreateChildren shows exactly this expansion:
     // `call 0x158f30` (the out-of-line base ctor) + own ??_7 stamp + m_surface=0.
-    CDDrawSurfaceChildA(i32 handle, i32 a2, i32 a3) : CDrawSubWorker(handle, a2, a3) {
+    CDDrawSurfaceChildA(CDDrawSurfaceMgr* owner, i32 a2, i32 a3) : CDrawSubWorker(owner, a2, a3) {
         m_surface = 0;
     }
     // slot-1 ??1 @0x1591b0 / ??_G @0x159190 (DDrawSubMgr.cpp). The out-of-line

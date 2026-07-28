@@ -53,8 +53,8 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
         if (m_object->m_layer->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
             || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
             if (m_object->m_7c != 0) {
-                m_object->m_7c->m_08 &= ~6;
-                m_object->m_7c->m_08 |= 1;
+                m_object->m_7c->m_flags &= ~6;
+                m_object->m_7c->m_flags |= 1;
                 m_38->m_flags &= ~0x1000002;
                 m_38->m_flags |= 0x800000;
             }
@@ -66,8 +66,7 @@ RVA(0x000ad850, 0x102)
 void CBehindCandyAni::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id));
     if ((*e) != 0) {
-        (this
-             ->*(*((CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id)))))();
+        (this->*(*((CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -98,7 +97,8 @@ void CBehindCandyAni::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CBehindCandyAni::AdvanceAnim);
+    (*((CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CBehindCandyAni::AdvanceAnim);
 }
 
 RVA(0x000adbb0, 0x17)
@@ -106,4 +106,3 @@ i32 CBehindCandyAni::AdvanceAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     return 0;
 }
-

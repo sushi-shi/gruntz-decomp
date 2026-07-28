@@ -72,10 +72,15 @@ public:
     // IsLoaded gates on `m_id != -1`.
     i32 m_id;
     i32 m_flags; // +0x08  (reset to 0; the wide-object collision/state flag word)
-    // +0x0c  the owner-context handle (the CDDrawSurfaceMgr across the draw family
-    // - read via OwnerMgr(); plane/leaf embedders park other context words here,
-    // which is why the slot stays a generic i32). Reset to 0 on teardown.
-    i32 m_ownerCtx;
+    // +0x0c  the owning CDDrawSurfaceMgr. The "plane/leaf embedders park OTHER
+    // context words here, so the slot must stay a generic i32" claim is DISPROVED
+    // (2026-07-28): its one cited counterexample was CResolveNode::Init taking a
+    // `CImageParent*`, and CImageParent was a pad-view OF CDDrawSurfaceMgr (offsets
+    // +0x04/+0x1c/+0x24 all line up - see the dissolution note in <Image/CImage.h>).
+    // Every other writer already had the manager in hand and cast it down to i32
+    // here (CDDrawWorkerHost's ctor, CDDrawWorkerBase's ctor, CResolveNode::Init);
+    // every reader casts it back. Typed, all of those casts go away.
+    class CDDrawSurfaceMgr* m_ownerCtx;
 
     CLoadable() {}
     // Arg-taking base ctor - OUT-OF-LINE at 0x156cb0 (DDrawSubMgr.cpp; the ex
@@ -84,17 +89,15 @@ public:
     // words. Retail call sites: CDDrawSurfaceMgr::Init 0x155900, CDDrawSubMgrPages::
     // CreateChildren 0x1588f0, CDDrawChildGroup::CreateObject 0x1598d0, CDDrawWorkerHost::
     // ReadPlaneObjects 0x162af0. NB retail ALSO shows the store triple fused into
-    // ctors like CResolveNode(i32,i32,i32) @0x15b2c0 - those leaves spell the three
+    // ctors like CResolveNode(CDDrawSurfaceMgr*,i32,i32) @0x15b2c0 - those leaves spell the three
     // stores in their own ctor body (over the default base ctor), reproducing the
     // fused shape without a second definition.
-    CLoadable(i32 owner, i32 field04, i32 field08);
-    // The +0x0c owner context IS the CDDrawSurfaceMgr across the whole draw family
-    // (surface pairs/children, workers, resolve nodes, cue leaves - every read site
-    // agrees); plane/leaf embedders park OTHER context words in the same slot and
-    // never call this - a PROVEN heterogeneous slot, so it stays a generic handle
-    // and this accessor is the one seam where the draw family's type goes back on.
+    CLoadable(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08);
+    // The +0x0c owner context IS the CDDrawSurfaceMgr across the whole draw family -
+    // surface pairs/children, workers, resolve nodes, cue leaves. Now that the member
+    // carries that type, this is a plain read.
     class CDDrawSurfaceMgr* OwnerMgr() const {
-        return reinterpret_cast<class CDDrawSurfaceMgr*>(m_ownerCtx);
+        return m_ownerCtx;
     }
     // Field-reset base-subobject dtor: resets the three header fields; the grand-
     // base 0x5e8cb4 re-stamp folds in automatically via ~CWapObj -> ~CObject

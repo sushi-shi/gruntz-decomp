@@ -27,7 +27,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // canonical CDDrawSurfaceMgr (OwnerMgr() / m_0c parent)
 #include <DDrawMgr/DDrawPtrCollections.h> // canonical CDDrawPtrCollections (the +0x1c surface pool)
 #include <DDrawMgr/AniRecord.h>           // ex Globals.h
-#include <Image/ImageFormatTag.h>        // IMGTAG_XCP - the PCX entry-tag gate
+#include <Image/ImageFormatTag.h>         // IMGTAG_XCP - the PCX entry-tag gate
 
 // The locked-surface pixel geometry is read straight off the held CDDSurface:
 // its byte-pitch (m_pitch @+0x20), its bytes-per-pixel divisor (m_b0 @+0xb0), and
@@ -238,13 +238,7 @@ i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
     if (buf == 0) {
         return 0;
     }
-    i32 r = m_surface->Resolve(
-        OwnerMgr()->m_ptrColl,
-        buf,
-        type,
-        src->m_length,
-        0
-    );
+    i32 r = m_surface->Resolve(OwnerMgr()->m_ptrColl, buf, type, src->m_length, 0);
     src->EndParse();
     return r;
 }
@@ -743,17 +737,14 @@ i32 CResolveNode::SetPosition(i32 x, i32 y) {
 
 RVA(0x001647e0, 0x48)
 i32 CResolveNode::Init(
-    CImageParent * owner,
+    CDDrawSurfaceMgr* owner,
     i32 field04,
     i32 resolveX,
     i32 resolveY,
     i32 field40,
     i32 field08
 ) {
-    // PROVEN-heterogeneous slot: CLoadable::m_ownerCtx is a generic i32 context word
-    // because each derived family parks a DIFFERENT owner class in it (see Loadable.h);
-    // the typed read lives in one accessor per class, not in the shared base.
-    m_ownerCtx = reinterpret_cast<i32>(owner);
+    m_ownerCtx = owner;
     m_id = field04;
     m_flags = field08;
     m_drawFillArg = 0;
@@ -794,9 +785,9 @@ static inline AnimWorkerObj* MakeAnimWorker(const CDDrawWorkerCache* parent) {
     if (w != 0) {
         i32 field1c = ReadWorkerCacheField1c(parent);
         CDDrawSurfaceMgr* surfaceMgr = parent->OwnerMgr();
-        w->m_04 = field1c;
-        w->m_08 = 0;
-        w->m_0c = surfaceMgr;
+        w->m_id = field1c;
+        w->m_flags = 0;
+        w->m_ownerCtx = surfaceMgr;
         w->m_notify = 0;
         w->m_payload = 0;
         w->m_logic = 0;

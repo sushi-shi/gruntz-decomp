@@ -37,7 +37,7 @@ public:
     // Inline in CreateChildren: CDrawSubWorker itself inlines, leaving the nested
     // CLoadable call @0x156cb0 followed by m_width, this vptr, m_surface, and the
     // ownership flag in normal base/member construction order.
-    CDDrawSurfacePair(i32 mgr, i32 kind, i32 flags)
+    CDDrawSurfacePair(CDDrawSurfaceMgr* mgr, i32 kind, i32 flags)
         : CDrawSubWorker(INLINE_CTOR, mgr, kind, flags) {
         m_surface = 0;
         m_ownsSurface = 1;
@@ -64,7 +64,7 @@ public:
     // bottom in that order and its only caller hands it CPlay::m_hudRect (a RECT), so
     // the parameter is a RECT*, not the i32[4] it used to be declared as.
     void DrawBox(RECT* rect, i32 color);
-    void DrawCross(i32 x, i32 y);         // 0x164180
+    void DrawCross(i32 x, i32 y); // 0x164180
     // (The 0x1644a0 DirectDraw mode-surface creator is CDDrawSurfaceChildA's
     //  slot-9 SetGeometry override - see DDrawSubMgrPages.h; the old
     //  "directx_wrapper_caller_1644a0" decl here was a caller-less duplicate name.)

@@ -33,10 +33,11 @@ public:
 
     // the key IS the act id (AnimWorkerObj::m_1c / ActFindId), not a pointer
     char** GetNameRecord(i32 key) {
-        // the pun: a CString's ONLY member is its char* (m_pchData), so the element
-        // slot and the char* it holds are the same 4 bytes - this is the raw spelling
-        // the 159 call sites read.
-        return reinterpret_cast<char**>(_zdvec::IndexToPtr(key));
+        // the pun: a CString's ONLY member is its char* (m_pchData), so the slot and
+        // the char* it holds are the same 4 bytes; MFC keeps m_pchData private, so
+        // `&slot->m_pchData` cannot be spelled - language-forced, and the SECOND
+        // (last) seam on this class after AsSlot below.
+        return reinterpret_cast<char**>(SlotOf(key));
     }
     // Same CString element, reached through the BASE _zvec::IndexToPtr - so no
     // construction fixup runs and the caller tears the scratch down itself.
@@ -47,22 +48,33 @@ public:
     // one retail call under two invented names: that accessor was bound to ILT 0x3864
     // and this one to 0x312a0 direct, and `xref --callees` on the thunk proves
     // 0x3864 -> 0x312a0. Thunk-vs-direct is the linker's choice, not a second call.)
-    // byte-forced (as every accessor here): the band is byte-addressed by a RUNTIME
-    // m_stride, so the CString element type goes back on at this one seam.
-    CString* ScratchResolve(i32 key) { return reinterpret_cast<CString*>(_zvec::IndexToPtr(key)); }
+    CString* ScratchResolve(i32 key) {
+        return AsSlot(_zvec::IndexToPtr(key));
+    }
 
+    // The four typed views of the band, all cast-free - they funnel through AsSlot.
     CString* Elem(i32 id) {
-        // byte-forced: `m_base + (id-m_lo)*m_stride` is the base's runtime byte math
-        return reinterpret_cast<CString*>(m_base + (id - m_lo) * m_stride);
+        return AsSlot(m_base + (id - m_lo) * m_stride);
     }
     // the typed spelling of GetNameRecord (identical call), for the act-registration
     // macros that want the CString rather than its buffer
-    // the three remaining seams, all byte-forced by the same runtime-strided band:
-    CString* SlotOf(i32 id) { return reinterpret_cast<CString*>(_zdvec::IndexToPtr(id)); }
-    // byte-forced: m_alloc is the raw construction cursor
-    CString* Slots() { return reinterpret_cast<CString*>(m_alloc); }
-    // byte-forced: m_spare is the raw slow-path element slot
-    CString* Scratch() { return reinterpret_cast<CString*>(m_spare); }
+    CString* SlotOf(i32 id) {
+        return AsSlot(_zdvec::IndexToPtr(id));
+    }
+    CString* Slots() {
+        return AsSlot(m_alloc);
+    } // the construction cursor
+    CString* Scratch() {
+        return AsSlot(m_spare);
+    } // the slow-path element slot
+
+private:
+    // THE one seam. _zvec addresses its band by a RUNTIME m_stride (0x312c0
+    // `imul esi,[edi+0x18]`) - byte-forced, so the CString element type can only go
+    // back on here, at this single line that every accessor above routes through.
+    static CString* AsSlot(char* p) {
+        return reinterpret_cast<CString*>(p);
+    }
 };
 SIZE_UNKNOWN(); // _zdvec base (0x24) + no own fields; size not pinned
 

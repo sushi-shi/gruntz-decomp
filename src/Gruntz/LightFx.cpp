@@ -1,5 +1,5 @@
 #include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
-#include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Gruntz/ActNameRegistry.h>   // the shared activation-name registry archetype
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -44,11 +44,9 @@ RVA_COMPGEN(0x00012430, 0x44, ??1CLightFx@@UAE@XZ)
 
 RVA(0x0009d1c0, 0x102)
 void CLightFx::FireActivation(i32 id) {
-    CActHandler* e =
-        (CActRegPool<CLightFx>::s_table.ResolveEntry(id));
+    CActHandler* e = (CActRegPool<CLightFx>::s_table.ResolveEntry(id));
     if ((*e) != 0) {
-        (this
-             ->*(*((CActRegPool<CLightFx>::s_table.ResolveEntry(id)))))();
+        (this->*(*((CActRegPool<CLightFx>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -105,7 +103,7 @@ i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 an
     CObject* nodeOb = 0;
     // spec lookup -> CMapStringToOb::Lookup (0x1b8008); out is CObject*& (reinterpret node).
     // The spec source is the worker's owner context (AnimWorkerObj::m_0c @+0xc).
-    m_3c->m_0c->m_imageRegistry->m_10map.Lookup(spec, nodeOb);
+    m_3c->m_ownerCtx->m_imageRegistry->m_10map.Lookup(spec, nodeOb);
     node = nodeOb;
     void* found = node;
     g_gameReg->m_logicPump->Push(static_cast<CDDrawWorker*>(found), anchorA, 7);
@@ -132,18 +130,10 @@ i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 an
     m_anchorB = anchorB;
     // effect lookup -> CMapStringToPtr::Lookup (0x1b8438) via the object's owner
     // context (CGameObject::m_0c @+0xc); out is void*&.
-    MapLookup(
-        m_38->OwnerMgr()->m_animRegistry->m_10,
-        effect,
-        node
-    );
+    MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, effect, node);
     if (node != 0) {
         node = 0;
-        MapLookup(
-            m_38->OwnerMgr()->m_animRegistry->m_10,
-            effect,
-            node
-        );
+        MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, effect, node);
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(static_cast<CAniElement*>(node));
         RebindNode();
@@ -153,13 +143,7 @@ i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 an
 
 RVA(0x0009d660, 0xc8)
 i32 CLightFx::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
-    if (CUserLogic::SerializeMove(
-            ar,
-            mode,
-            a3,
-            a4
-        )
-        == 0) {
+    if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
         return 0;
     }
     if (Chain(ar, mode, a3, a4) == 0) {
@@ -175,7 +159,8 @@ i32 CLightFx::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4)
             (ar)->Read(&m_anchorB, 4);
             break;
         case 8:
-            g_gameReg->m_logicPump
+            g_gameReg
+                ->m_logicPump
                 // the union's sprite arm - the same slot Setup() parked the worker in
                 ->Push(m_38->m_sprite, m_anchorA, 7);
             break;
