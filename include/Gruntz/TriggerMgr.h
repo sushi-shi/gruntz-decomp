@@ -56,6 +56,15 @@ class CActionOptionsMenuBar;
 // scans walk the placed puddles. Consumers include GruntPuddle.h for the members.
 class CGruntPuddle;
 
+// The {base tick, window} 64-bit clock pair that lives at CTriggerMgr +0x290 (and, as
+// i32 halves, at +0x2b0/+0x2c0). Named as one sub-object because the warlord fort-battle
+// arm reaches all four dwords through a single materialized base (`add eax,0x290`).
+struct CueTimer {
+    i64 m_base;   // +0x00
+    i64 m_window; // +0x08
+};
+SIZE(0x10);
+
 class CTriggerMgr {
 public:
     // 0x7abc0: Load(ar) - deserialize the whole trigger-mgr state from the reader
@@ -267,6 +276,16 @@ public:
     // a dense jump table over the logic kind, with two coordinate sub-tables). Builds the
     // object, dispatches by kind, stashes the cell. Reconstructed to plateau. (ret 0x18.)
     i32 PlaceObjectFull(i32 x, i32 y);
+
+    // 0x6da60 / 0x6daa0 (thunks 0x275c / 0x2c48): the two verb-6 / verb-7 command
+    // helpers. Their BODIES never touch `this` - which makes a 2-arg __thiscall method
+    // and a 2-arg __stdcall free function byte-identical (`ret 8`) - but both call sites
+    // (CGrunt::CommitArrival @0x4b130, CGrunt::ResolveEntranceArrival @0x633e0) load
+    // `mov ecx,[esi+0x260]` (the grunt's m_tileMgr) straight into the receiver register
+    // before the call, which only real __thiscall linkage emits.
+    // docs/patterns/dead-receiver-load-proves-a-method.md
+    void GridAction6(i32 hi, i32 lo);
+    void GridAction7(i32 hi, i32 lo);
 
     // 0x79520: ResetGroup - drain the magic-group cells, clearing each cell's sub-state and
     // recycling its record node, then refresh. Reconstructed to plateau. (__thiscall.)
@@ -497,8 +516,13 @@ public:
     // countdown (0x6eb80), the finish-level cue timer (0x7c3d0, base=g_frameTime,
     // window=cueDuration+500 or 3000), and the warlord fort-battle cue window
     // (CWarlord::AdvanceMovingAnim, window=0x3e8).
-    i64 m_timerBase;   // +0x290  timer pair 0: base tick
-    i64 m_timerWindow; // +0x298  timer pair 0: window/length
+    union {
+        CueTimer m_cueTimer; // +0x290  the pair as one sub-object (see CueTimer)
+        struct {
+            i64 m_timerBase;   // +0x290  timer pair 0: base tick
+            i64 m_timerWindow; // +0x298  timer pair 0: window/length
+        };
+    };
     // +0x2a0: the pending-fx GRUNT (the spawned fx sprite's bound logic). Ex-CTmPendingFx
     // view; its `Pulse()` was ?ResolveDeathAnimation@CGrunt@@QAEHXZ @0x455f0 all along
     // (ILT 0x3a1c at both call sites), and the deserializer stores m_7c->m_logic here.
@@ -531,12 +555,6 @@ public:
     i32 m_groupFlag;                   // +0x400  magic-group active flag
 };
 SIZE_UNKNOWN();
-
-// 0x6da60 / 0x6daa0 (thunks 0x275c / 0x2c48): free __stdcall command
-// helpers. Each forwards (1, hi, lo, N, 0,0,0,0) to CGruntzCmdMgr and never
-// receives or reads a CTriggerMgr receiver.
-void __stdcall GridAction6(i32 hi, i32 lo);
-void __stdcall GridAction7(i32 hi, i32 lo);
 
 i32 __stdcall SpawnTileFx(i32 px, i32 py, i32 kind);
 

@@ -1203,7 +1203,7 @@ i32 CGrunt::ResolveEntranceArrival() {
             if (slot != 0 && slot->m_014 != 0) {
                 if (m_tileClaimed == 0 && m_arrivalNotified == 0 && mode == 2
                     && g_curPlayer == m_tileOwnerHi && m_arrived == 0) {
-                    GridAction6(m_tileOwnerHi, m_tileOwnerLo); // 0x275c -> 0x6da60
+                    m_tileMgr->GridAction6(m_tileOwnerHi, m_tileOwnerLo); // 0x275c -> 0x6da60
                     m_arrivalNotified = 1;
                     goto tail;
                 }
