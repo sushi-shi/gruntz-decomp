@@ -60,8 +60,32 @@ if (child->m_width != x || child->m_height != y) {
 99.88% -> **100% EXACT**, and a real behavioural bug (a redundant full level
 rebuild on every no-op SetDimensions) removed.
 
+## Scan it in bulk — the ordered jcc sequence is a cheap whole-campaign sieve
+
+Because the masking hides both the displacement AND (implicitly) the block
+layout, a batch scan pays. For each sub-100% function, disassemble both sides
+WITH addresses, extract the ordered list of `(offset, mnemonic, target)` for
+every in-range branch, and compare:
+
+- **branch present on one side only** -> extra/missing basic block;
+- **same count, 1-4 differing MNEMONICS at matching positions** -> the gold:
+  - `jg/ja`, `jle/jbe`, `jl/jb` pairs = a **SIGNEDNESS** bug (retype the member
+    or the loop counter unsigned - never the function PARAMETER, that rewrites
+    the mangled name);
+  - `je/jne` = **block-layout polarity** (see positive-gate-enables-shrink-wrap
+    and negated-condition-far-block);
+- **same mnemonics, displacements shifted by a constant** -> noise, a size
+  difference upstream. Ignore.
+
+Run 2026-07-28 over all 1309 sub-100% functions: 105 same-count 1-4-flip hits,
+of which 6 SIGNEDNESS and 53 pure je/jne polarity. Four signedness fixes and one
+polarity fix landed straight away (`CRezDirNode::Load` 98.97 -> 100 EXACT,
+`DirectSoundMgr::Play` 95.52 -> 100 EXACT).
+
 ## Related
 
 - `--blocks --diff --lite` gives the basic-block topology, where a divergent
   in-edge shows up directly; use it as the first look on any function whose
   flat `--diff` looks clean but does not score 100.
+- [positive-gate-enables-shrink-wrap](positive-gate-enables-shrink-wrap.md) —
+  what to do with a je/jne polarity hit (count the `ret`s first).

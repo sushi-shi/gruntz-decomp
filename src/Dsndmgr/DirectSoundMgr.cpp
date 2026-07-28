@@ -813,6 +813,10 @@ DSoundBaseSub::DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner)
 RVA(0x00136260, 0xb)
 DSoundBaseSub::~DSoundBaseSub() {}
 
+// The reacquire-failure path FALLS INTO the shared `return 0` that also ends the
+// non-BUFFERLOST error arm (retail's `je 0x1362f0` lands on the `xor eax,eax` the
+// GetErrorString(0x356) arm falls through to). Spelling the reacquire gate
+// positively is what merges those two epilogues instead of inlining one each.
 RVA(0x00136270, 0x8b)
 i32 DirectSoundMgr::Play() {
     if (m_owner->m_initialized == 0) {
@@ -821,18 +825,18 @@ i32 DirectSoundMgr::Play() {
     i32 hr = m_buffer->Play(0, 0, m_playFlags) != 0;
     if (hr != 0) {
         if (hr == DSERR_BUFFERLOST) {
-            if (m_reacquireOwner->ReacquireBuffer() == 0) {
-                return 0;
-            }
-            i32 hr2 = m_buffer->Play(0, 0, m_playFlags) != 0;
-            if (hr2 != 0) {
+            if (m_reacquireOwner->ReacquireBuffer() != 0) {
+                i32 hr2 = m_buffer->Play(0, 0, m_playFlags) != 0;
+                if (hr2 == 0) {
+                    return 1;
+                }
                 GetErrorString(DSNDMGR_FILE, 0x34c, hr2);
                 return 0;
             }
         } else {
             GetErrorString(DSNDMGR_FILE, 0x356, hr);
-            return 0;
         }
+        return 0;
     }
     return 1;
 }
