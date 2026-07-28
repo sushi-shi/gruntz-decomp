@@ -14,7 +14,6 @@
 #include <Gruntz/GruntzPlayer.h>
 class CGruntzCmdMgr; // +0x6c (real class; ~CGruntzCmdMgr @0x85bd0). FWD-declared, not included:
 
-
 class CFileMemBase;
 
 class CDDrawSubMgrLeafScan;
@@ -179,7 +178,7 @@ public:
     // as i32 (the consumers cast) to keep this widely-included header dependency-free.
     // per-object scan callback (early-out on 0); the walks pass every masked hit.
     typedef i32(__cdecl* ScanCb)(CGameObject* obj, i32 user);
-    i32 ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb cb, i32 user);   // @0x092180
+    i32 ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb cb, i32 user); // @0x092180
     // 0x092250. `rect` IS a RECT*: the body immediately reads its four dwords as
     // left/right/top/bottom (the sibling ScanObjectsInRadius takes the same shape).
     // No caller in .text, so the type comes from the body, not from a call site.
@@ -407,27 +406,27 @@ public:
     //        CMulti::StartTitle @0xb72c0, walks dwFlags/lpSessionDesc/lpPlayerName, so
     //        the member carries that type instead of a u8* the reader reinterprets.
     CNetLobbyConnection* m_connSettings;
-    CString m_strWorldFile;           // +0xc8  world file name (EH state 0)
-    i32 m_cc;                         // +0xcc  (=0x1e in ctor)
-    char m_driveLetter;               // +0xd0  cached CD drive letter
-    char m_padD1[3];                  // +0xd1
-    i32 m_driveLetterProbed;          // +0xd4  drive-letter probed flag
-    CPtrArray m_stateStack; // +0xd8  CState* push-down stack (0x14 B; EH state 1). CPtrArray,
-                            //        not CByteArray - see the note above.
-    CString m_strRezPath;   // +0xec  assembled Gruntz.REZ archive path (EH state 2;
-                            //        MakeRezPath fills it; GetRezPath returns it)
-    CString m_strMoviePath; // +0xf0  resolved movie path (EH state 3)
-    i32 m_inGameDir;        // +0xf4  (=1 in ctor) MakeRezPath: CD drive == cwd drive
-    i32 m_haveRez;          // +0xf8  MakeRezPath: found via the <drive>:\DATA fallback
-    i32 m_haveMoviez;       // +0xfc  MakeRezPath: front-end archive found on the CD
-    i32 m_isVoiceEnabled;   // +0x100  "Voice"      enable (=1 in ctor)
-    i32 m_isAmbientEnabled; // +0x104  "Ambient"    enable (=1 in ctor)
-    i32 m_isInterlaced;     // +0x108  "Interlaced" flag
-    i32 m_isHighDetail;     // +0x10c  "High_Detail" flag (=1 in ctor)
-    i32 m_isEffectsEnabled; // +0x110  "Effects"    enable (=1 in ctor)
-    i32 m_114;              // +0x114
-    i32 m_isEasyMode;       // +0x118  "Easy Mode" flag (Run also stores the registry
-                            //         "Resolution" index (1/2/3) through this slot)
+    CString m_strWorldFile;  // +0xc8  world file name (EH state 0)
+    i32 m_cc;                // +0xcc  (=0x1e in ctor)
+    char m_driveLetter;      // +0xd0  cached CD drive letter
+    char m_padD1[3];         // +0xd1
+    i32 m_driveLetterProbed; // +0xd4  drive-letter probed flag
+    CPtrArray m_stateStack;  // +0xd8  CState* push-down stack (0x14 B; EH state 1). CPtrArray,
+                             //        not CByteArray - see the note above.
+    CString m_strRezPath;    // +0xec  assembled Gruntz.REZ archive path (EH state 2;
+                             //        MakeRezPath fills it; GetRezPath returns it)
+    CString m_strMoviePath;  // +0xf0  resolved movie path (EH state 3)
+    i32 m_inGameDir;         // +0xf4  (=1 in ctor) MakeRezPath: CD drive == cwd drive
+    i32 m_haveRez;           // +0xf8  MakeRezPath: found via the <drive>:\DATA fallback
+    i32 m_haveMoviez;        // +0xfc  MakeRezPath: front-end archive found on the CD
+    i32 m_isVoiceEnabled;    // +0x100  "Voice"      enable (=1 in ctor)
+    i32 m_isAmbientEnabled;  // +0x104  "Ambient"    enable (=1 in ctor)
+    i32 m_isInterlaced;      // +0x108  "Interlaced" flag
+    i32 m_isHighDetail;      // +0x10c  "High_Detail" flag (=1 in ctor)
+    i32 m_isEffectsEnabled;  // +0x110  "Effects"    enable (=1 in ctor)
+    i32 m_114;               // +0x114
+    i32 m_isEasyMode;        // +0x118  "Easy Mode" flag (Run also stores the registry
+                             //         "Resolution" index (1/2/3) through this slot)
     // The three options-dialog slider values (RETAIL-PROVEN, Run @0x83898-0x838a4
     // stores the registry "Sound Volume"/"Voice Volume"/"Scroll Speed" reads here;
     // the options dialog sliders 0x470/0x476/0x478 write them back; music volume is
@@ -440,9 +439,9 @@ public:
                        //         it (0..100) into the Min..MaxScrollSpeed range)
     i32 m_128, m_12c, m_130, m_134; // +0x128..+0x134  (m_134==3 -> "won"; FillSaveInfo)
     i32 m_optionsCount;             // +0x138  options-cycle high index (=3 in ctor -> 4 slots)
-    RECT m_viewBounds;            // +0x13c..+0x148  expanded visible-world bounds
-    char m_pad14c[0x150 - 0x14c]; // +0x14c..+0x150 gap
-    GruntzPlayer m_options[4];    // +0x150 (4x0x238 per-player records; EH state 4) -> 0xa30
+    RECT m_viewBounds;              // +0x13c..+0x148  expanded visible-world bounds
+    char m_pad14c[0x150 - 0x14c];   // +0x14c..+0x150 gap
+    GruntzPlayer m_options[4];      // +0x150 (4x0x238 per-player records; EH state 4) -> 0xa30
 };
 SIZE(0xa30);
 
@@ -481,7 +480,6 @@ extern "C" u32 g_gooPuddlez;
 extern "C" u32 g_explosionz;
 extern "C" u32 g_resolutionChanged; // DAT_00245600 (owner-TU definition, .bss)
 extern "C" CGruntzMgr* g_gameReg;
-extern "C" i32 __stdcall SvmApply(i32 w, i32 h, i32 depth);
 extern "C" i32 SubstringMatch(const char* haystack, const char* needle);
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
@@ -520,14 +518,12 @@ CString RunCustomWorldDialog(HWND parent, CString* out);
 i32 FindProcessByName(const char* name, i32 flag, void** out);
 i32 __stdcall LaunchPortalExe(char* outPath);
 
-
 // File-scope prototypes moved from the .cpp (external linkage
 // belongs in the owner header).
 char GetGruntzDriveLetter();  // 0x1ffe0 (WinAPICdRom.cpp)
 i32 FileExists(char* szPath); // 0x1189c0 (HeapDiag.cpp)
-void operator delete(void*); // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member teardown
-void ChannelSlots_InitAll(); // 0xdb1d0
-
+void operator delete(void*);  // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member teardown
+void ChannelSlots_InitAll();  // 0xdb1d0
 
 // Dialog proc, declared in the owner header (file-scope prototypes have
 // external linkage).

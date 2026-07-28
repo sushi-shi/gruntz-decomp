@@ -37,8 +37,30 @@ i32 pos = 0;
 const char* names = blockBase + pd->imageSetsOffset;
 ```
 
+## What does NOT work (measured, so you can stop early)
+
+The declaration order is the ONLY lever. On `CVariantSlot::Find` (0x16e1d0) and the
+three `CHashBase` bucket helpers these all produced byte-identical output:
+
+- reversing the source operand order (`lo + hi` for `hi + lo`, `idx + arr` for
+  `arr + idx`, even the legal `idx[arr]` spelling) - cl canonicalizes the addition;
+- binding the address to a named local (`CHashSlot* b = &m_buckets[idx]; b->…`);
+- re-reading the member instead of the local index;
+- routing the subscript through an inline accessor (`Bucket(idx)->…`), so the index
+  becomes an inline formal materialised at the call.
+
+**Corollary: with only ONE local in play there is no lever.** `MonoClear` (0x184db0)
+indexes a GLOBAL buffer by its single loop counter; giving the buffer a local turns the
+loop into `rep stos` (a much bigger change), so its one SIB byte is parked.
+
 ## Evidence
 
-`CDDrawWorkerHost::Read` (0x161640): three `mov al,[edi+esi]` sites in the image-set
-name tokenizer, all fixed by the swap. (In the same function the index also had to be
-`i32`, not `u32` - a `u32` loop cursor kept a different form.)
+- `CDDrawWorkerHost::Read` (0x161640): three `mov al,[edi+esi]` sites in the image-set
+  name tokenizer, all fixed by the swap. (In the same function the index also had to be
+  `i32`, not `u32` - a `u32` loop cursor kept a different form.)
+- `CVariantSlot::Find` (0x16e1d0), 2026-07-28: the binary search's `lea eax,[esi+edi]`
+  (`(hi + lo) / 2`). Declaring `lo` before `hi` - **not** writing `lo + hi` - flipped the
+  SIB byte; 99.69 -> **100 EXACT**.
+- Still open in the same family, both with the pointer coming from a MEMBER rather than a
+  local: `CHashBase::Insert` 0x184a70 / `Remove` 0x184ab0 / `Last` 0x184b10 (one SIB byte
+  each; note Insert/Remove and Last want OPPOSITE roles, so it is not a global convention).

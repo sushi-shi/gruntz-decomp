@@ -3583,18 +3583,13 @@ INT_PTR CALLBACK LevelNumberDialogProc8e8c0(HWND hDlg, UINT msg, WPARAM wParam, 
 // RestoreVideoMode/CheckSavedMode call sites (previously the Boundary_08df00 stub).
 // The loaded map's playable extent (m_world->m_level->m_mainPlane) is the shared CDDrawWorkerHost;
 // SetVideoMode reads its +0x30/+0x34 field width/height limits.
-// The engine display-mode apply (0x155f60, __stdcall(w,h,depth) -> nonzero ok).
-
-// @early-stop
-// regalloc wall (~92%): the control flow, every branch/call, the two play-state
-// Update() pairs, the guts (m_2dc) poke order, the ShowCursor hide loop and the
-// "Resolution is now" log are byte-for-byte the same SHAPE. The residual is a
-// pure register-allocation tiebreak: retail dedicates ebp (the 4th callee-saved
-// reg) to `w` and keeps m_curState in edi separately, while MSVC5 here coalesces
-// `w` into edi (reusing it for m_curState once w is dead) -> 3 saved regs not 4,
-// so `sub esp,0x70` vs retail's 0x80 and every later [esp+N] sits -4. Logic is
-// complete + correct; defining this symbol also pairs the SetVideoMode call in
-// CheckSavedMode (-> 100%) + CheckDisplayBoundsA/B. See pin-local-for-callee-saved-reg.md.
+// The display-mode apply is m_world->SetDimensions(w, h, depth) @0x155f60 - a
+// __thiscall on the world manager, NOT the free `__stdcall SvmApply` this TU used
+// to declare. The fake extern hid the `mov ecx,[esi+0x30]` receiver load, and the
+// log buffer is 0x80 not 0x70; together those two are the whole of what was filed
+// here as a "3-vs-4 saved registers regalloc wall" (both sides push four). Found
+// by `python -m gruntz.audit.base_size` - the compiled body was 16 bytes short of
+// the annotated 0x238. See docs/patterns/compensating-error-signatures.md.
 RVA(0x0008df00, 0x238)
 i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     if (w == m_modeW && h == m_modeH) {
@@ -3636,7 +3631,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
             }
         }
     }
-    if (!SvmApply(w, h, m_colorDepth)) {
+    if (!m_world->SetDimensions(w, h, m_colorDepth)) {
         return 0;
     }
     while (::ShowCursor(0) >= 0) {
@@ -3665,7 +3660,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     RefreshGameClock();   // 0x8f620 (thunk 0x3d23)
     if (g_resolutionChanged != 0) {
         g_resolutionChanged = 0;
-        char buf[0x70];
+        char buf[0x80];
         sprintf(buf, "Resolution is now %ix%ix%i", m_modeW, m_modeH, m_colorDepth);
         AppendChatMessage(buf); // 0x8f9c0 (thunk 0x1b54)
     }

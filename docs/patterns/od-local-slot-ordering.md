@@ -57,8 +57,24 @@ right bucket. Do not settle for semantically wrong names — the candidate pools
 are large enough that a sensible chain exists (both solutions above use only
 plain `sp/hold/tok/y/len/dstp/k/cols/base`).
 
-Still open in this family, same method applies: `CDDSurface::DecodeRun8`
-(0x140aa0, 99.50) and `DecodeRun24` (0x140c50, 99.54) in `ddsurface`.
+`CDDSurface::DecodeRun8` (0x140aa0) and `DecodeRun24` (0x140c50) closed the same way
+(99.50/99.54 -> **100 EXACT**), and they show the one gotcha: **the hash order depends on
+how MANY locals are in the table**, so a solved name set does NOT carry over between
+functions. RunDecode1's eight names produce a different order once DecodeRun8's three
+extra locals join them - each function must be ranked from scratch. Their solutions are
+`sp/hold/tok/w/pbits/y/runx/dstp/kj/height/nleft` and
+`inp/rest/pm/ln/nrow/cnt/dst/k/cols` respectively.
+
+Two practical notes from those two:
+- **Read the required permutation off the disassembly, don't identify roles by hand.** The
+  instruction STREAM is identical between base and target, so zipping the two
+  `[ebp-N]` displacement sequences gives the base-slot -> target-slot map directly, and
+  the number of positions that already agree is a fine-grained search score (73 and 184
+  positions respectively - far better signal than a boolean).
+- **Beautify afterwards.** Solve first with a wide pool, then try nicer names one role at
+  a time keeping only those that preserve a perfect score. That turned DecodeRun24's
+  `sn/ru/dp/kx` into `inp/cnt/dst/k`. Two of its locals (`pm`, `ln`) have no descriptive
+  name in the right bucket - an 11x11 pair sweep found none - so the comment names them.
 
 ## Distinguish from
 

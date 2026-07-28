@@ -117,6 +117,16 @@ Each recurred and banked exact/near-exact matches. Grep-able signatures:
   CSE-folds a `cmp` retail keeps distinct.
 - **List-walk order** — retail's inlined `GetNext` advances first (`cur=node; node=node->m_next;
   use cur`) vs your process-then-advance.
+- **COMPENSATING ERRORS — two bugs that cancel, leaving a "regalloc coin-flip".** A swapped
+  argument pair colours the parameters into the opposite registers, so the pushes cancel and
+  only the argument LOADS differ (`CButeMgr::GetString`). Wrong member offsets that fit in
+  `disp8` where the right ones need `disp32` shrink the body by tens of bytes while `--diff`
+  shows two operand mismatches (`CPlay::DrawDebugStats`, 812 bytes vs an annotated 862).
+  Two cheap checks before you write an `@early-stop` on a register rename:
+  `python -m gruntz.audit.base_size --min-pct 99` (compiled LENGTH vs the RVA() size - the
+  invariant every instruction-aligned view is blind to), and a source diff against the
+  function's SIBLINGS (a constant / argument order / offset that differs in exactly one
+  member of an obvious family is a bug). See docs/patterns/compensating-error-signatures.md.
 
 ## Reconstruction targeting
 

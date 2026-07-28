@@ -148,7 +148,10 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4) {
             s->Read(buf, 0x80);
             if (strlen(buf)) {
                 CDDrawWorker* out;
-                CObject* outOb;
+                // Zero-initialised: retail seeds the out-param slot with the (already
+                // zero) eax left by the strlen scan - `mov [esp+0x18],eax` before the
+                // Lookup call. An uninitialised declaration drops that store.
+                CObject* outOb = 0;
                 reg->m_imageRegistry->m_10map.Lookup(buf, outOb);
                 out = static_cast<CDDrawWorker*>(outOb);
                 m_34 = out;
