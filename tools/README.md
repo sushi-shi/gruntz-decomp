@@ -47,6 +47,7 @@ REZ=/path/to/GRUNTDEM.REZ
 ./target/release/gruntz-oracle --rez "$REZ" census
 ./target/release/gruntz-oracle --rez "$REZ" roundtrip --literals any
 ./target/release/gruntz-oracle --rez "$REZ" decoders
+./target/release/gruntz-oracle --rez "$REZ" rle16
 
 # the third implementation (needs wine + $GRUNTZ_EXE)
 ../tools/recomp/build.sh
@@ -87,6 +88,16 @@ See the module docs for the per-field disassembly citations; the short version:
   `CDDSurface::RunDecode1` clamps and carries, `CRezImage::DecodePidData` writes
   the whole run and spills. They consume a *different number of tokens*, so one
   such run desynchronises them permanently. No shipped sprite contains one.
+* **The RLE16 row-end split is unobservable.** `EncodeRle16` ends a scanline at
+  `x >= width - 1`, `DecodePidData` at `x >= width`. Only sprites with neither
+  `0x40` nor `0x200` reach `EncodeRle16` at all: **0 of 6 940** in the demo,
+  **5 of 13 037** in retail (`AREA8\IMAGEZ\UFO\FRAME001..005`), and on those
+  five both rules walk the stream identically. Neither is "the bug".
+* **Every flag bit has a reader.** An earlier pass called four of them
+  unverified; widening the search to `DecodePcxData`, `CDDrawShadeBlit::Build`
+  and `CImage::LoadDispatch` found one for each. `0x02`/`0x04` edit the
+  `DDSCAPS_VIDEOMEMORY`/`DDSCAPS_SYSTEMMEMORY` surface caps; `0x40`/`0x200` say
+  the payload is 8bpp indices (`0x40` also selects shade draw-type 2).
 * **The `0x0C` trailing byte** on 11 % of sprites is the PCX end-of-image palette
   marker, left behind by the PCX->PID conversion. Harmless: retail addresses the
   palette from EOF and stops the token loop when the last row fills.

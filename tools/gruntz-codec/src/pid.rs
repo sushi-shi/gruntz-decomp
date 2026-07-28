@@ -99,9 +99,12 @@ impl FillRunCap {
 
 /// The `+0x04` flag word.
 ///
-/// Only four of these bits are *read* by any code path this crate transcribes.
-/// The rest are listed because the archives contain them, not because their
-/// meaning is proven — see [`UNVERIFIED`] and [`UNEXPLAINED`].
+/// **Every bit here is bound to the retail instruction that reads it.** An
+/// earlier revision of this module called four of them unverified or
+/// unexplained; that was an artefact of only having read `DecodePid` and
+/// `DecodePidData`. Widening the search to `CDDSurface::DecodePcxData`,
+/// `CDDrawShadeBlit::Build` and `CImage::LoadDispatch` produced a reader for
+/// each. The retraction is left visible on the constants themselves.
 ///
 /// Every flag word present in the shipped archives (demo / retail counts):
 ///
@@ -119,8 +122,11 @@ pub mod flags {
     /// `FillPalette(colorKey)`).
     pub const TRANSPARENCY: u32 = 0x01;
     /// Selects the skip/fill grammar instead of the 0xC0 run grammar. Read by
-    /// `CRezImage::DecodePidData` @0x1764ce (`test cl,0x20`). Note the sense:
-    /// the bit being **clear** selects the run-length grammar.
+    /// `CRezImage::DecodePidData` @0x1764ce (`test cl,0x20`) and by
+    /// `CImage::LoadDispatch` @0x152fde. Note the sense: the bit being **clear**
+    /// selects the run-length grammar, so "compression" is a misnomer - both
+    /// settings are run-length coded. The C++ side now spells it
+    /// `PID_GRAMMAR_SKIPRUN`; the name here is kept for API stability.
     pub const COMPRESSION: u32 = 0x20;
     /// A 768-byte VGA palette is appended at end-of-resource. Read by
     /// `CDDSurface::DecodePid` @0x145b85 (`test BYTE PTR [esp+0x18],0x80`).
@@ -129,25 +135,29 @@ pub mod flags {
     /// `CRezImage::DecodePidData` @0x1764b2 (`test ch,1`).
     pub const FILL_IS_WORD: u32 = 0x100;
 
-    /// Named in the C++ reconstruction's `PidFlags` but **not verified here**:
-    /// no code path this crate transcribes reads either bit, and no shipped
-    /// sprite sets `0x02` at all. Kept only so the numbering is not silently
-    /// re-used.
+    /// Prefer video memory: `CDDSurface::DecodePcxData` @0x1457ed
+    /// (`test dl,2` -> `and ah,0xf7`) clears `DDSCAPS_SYSTEMMEMORY` (0x800)
+    /// from the surface caps. The name is proven by that caps edit — but the
+    /// path is **dead in shipped data**: no PID in either archive sets it.
     pub const VIDEO_MEMORY: u32 = 0x02;
-    /// See [`VIDEO_MEMORY`]. `0x04` *is* set on every `SkipRun` sprite, but
-    /// nothing reads it, so "system memory" is inherited folklore.
+    /// Force system memory: `CDDSurface::DecodePcxData` @0x1457dc
+    /// (`test dl,4` -> `and ah,0xbf` + `or ah,8`) clears `DDSCAPS_VIDEOMEMORY`
+    /// (0x4000) and sets `DDSCAPS_SYSTEMMEMORY` (0x800). Set on every
+    /// `SkipRun` sprite in both archives.
     pub const SYSTEM_MEMORY: u32 = 0x04;
 
-    /// Bits present in the archives that no transcribed code path reads.
-    ///
-    /// `0x40` appears on exactly the `SkipRun` sprites that have **no**
-    /// embedded palette (flag word `0x0165`), and `0x200` on exactly those that
-    /// **do** (`0x03a4`/`0x03a5`) - which is suggestive, and is as far as the
-    /// evidence goes.
-    pub const UNEXPLAINED: u32 = 0x40 | 0x200;
-
-    /// The bits above that are declared but unproven.
-    pub const UNVERIFIED: u32 = VIDEO_MEMORY | SYSTEM_MEMORY;
+    /// The RLE payload is 8bpp indices rather than 16bpp pixels
+    /// (`CDDrawShadeBlit::Build` @0x1490df, `test al,0x40` -> `m_srcBpp = 1`),
+    /// **and** the frame selects shade draw-type 2
+    /// (`CImage::LoadDispatch` @0x153006 -> `Select(2, 0)`).
+    /// Census: rides exactly the `SkipRun` sprites with **no** embedded palette.
+    pub const SRC_8BPP_SHADE: u32 = 0x40;
+    /// The RLE payload is 8bpp indices (`CDDrawShadeBlit::Build` @0x1490e3,
+    /// `test bl,ah` with `bl == 2`, i.e. bit 9 -> the same `m_srcBpp = 1`
+    /// branch). Unlike [`SRC_8BPP_SHADE`] it is not read by
+    /// `CImage::LoadDispatch`, so it selects no shade type.
+    /// Census: rides exactly the `SkipRun` sprites **with** an embedded palette.
+    pub const SRC_8BPP: u32 = 0x200;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

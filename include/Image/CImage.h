@@ -43,7 +43,7 @@ SIZE(0x10); // {left,top,right,bottom} RECT
 // (declared PidHeader*) on one arm and to CDDrawShadeBlit::Build on the other, and the
 // two shapes agree field for field (+0x04 flags, +0x08/+0x0c w/h, +0x10/+0x14 origin,
 // +0x20 pixel stream). The `& 0x20` LoadDispatch tests to take the Build arm IS
-// PID_COMPRESSION; the `& 0x80` Build tests for the trailing palette IS
+// PID_GRAMMAR_SKIPRUN; the `& 0x80` Build tests for the trailing palette IS
 // PID_EMBEDDED_PALETTE.
 struct PidHeader;
 

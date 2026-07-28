@@ -215,14 +215,14 @@ i32 CImage::LoadDispatch(PidHeader* desc, u32 mode, u32 size, i32 keyed) {
     if (mode != 1 && mode != 2 && mode != 3 && mode != 4) {
         return 0;
     }
-    // PID_COMPRESSION is what routes to the slot-13 builder: BuildSlot13 -> Build
-    // decodes exactly that RLE stream (m_rleData/m_rleLen). 0x40 has no proven
-    // enumerator yet, so it stays a literal.
-    if (mode == 4 && (desc->flags & PID_COMPRESSION)) {
+    // The skip/fill grammar is what routes to the slot-13 builder: BuildSlot13 ->
+    // Build decodes exactly that stream (m_rleData/m_rleLen).
+    if (mode == 4 && (desc->flags & PID_GRAMMAR_SKIPRUN)) {
         if (!BuildSlot13(desc, size)) {
             return 0;
         }
-        if (m_owned != 0 && (desc->flags & 0x40)) {
+        // 0x153006 `test BYTE PTR [edi+4],0x40` gates the shade-type select.
+        if (m_owned != 0 && (desc->flags & PID_SRC_8BPP_SHADE)) {
             m_owned->Select(2, 0);
             return 1;
         }

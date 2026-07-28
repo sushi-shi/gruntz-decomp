@@ -182,7 +182,9 @@ i32 CDDrawShadeBlit::LoadFromFile(CString name, i32 fmt) {
 RVA(0x001490d0, 0x173)
 i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
     i32 flags = src->flags;
-    if ((flags & 0x40) || (flags & 0x200)) {
+    // 0x1490df `test al,0x40` then 0x1490e3 `test bl,ah` (bl==2, i.e. bit 9):
+    // either bit says the RLE payload is already 8bpp indices.
+    if ((flags & PID_SRC_8BPP_SHADE) || (flags & PID_SRC_8BPP)) {
         if (static_cast<u8>(fmt) == 0x10) {
             m_srcBpp = 1;
             m_dstBpp = 2;
@@ -198,7 +200,7 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
         m_dstBpp = 1;
     }
 
-    if (src->flags & 0x100) {
+    if (src->flags & PID_FILL_IS_WORD) {
         m_colorKey = static_cast<u8>(src->fill);
     } else {
         m_colorKey = -1;

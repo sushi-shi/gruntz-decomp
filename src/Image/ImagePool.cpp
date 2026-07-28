@@ -822,6 +822,28 @@ i32 CRezImage::LoadRid(char* name, void* a2, i32 a3) {
     return result;
 }
 
+// @early-stop
+// 72.8% is CODEGEN RESIDUE, NOT A LOGIC BUG - do not go hunting for one. Both
+// grammars were re-derived from the bytes and differentially tested against the
+// 29,798 shipped PID resources (tools/gruntz-oracle): the flag test, the token
+// grammars, the row-end rule and the fill semantics below all reproduce retail
+// exactly. Two things here look like mistakes and are faithful:
+//
+//   * the 0xC0 arm does NOT clamp a run to the scanline. `n -= count` may go
+//     negative and `dst += count` may spill into the next row - that is retail
+//     (0x176646 `rep stos` of the full count, unclamped), and it is what makes
+//     this decoder DIFFER from CDDSurface::RunDecode1 @0x145270, which clamps
+//     and carries the remainder into the next row. The two consume a DIFFERENT
+//     number of tokens once a run crosses a row, so they desynchronise for
+//     good. No shipped sprite contains such a run, which is why nothing has
+//     ever noticed. Do not "fix" this arm to match RunDecode1.
+//   * the row advance is `x >= m_width` (0x176597 `cmp edx,[eax+0x438]`), NOT
+//     `m_width - 1`. CDDrawShadeBlit::EncodeRle16 @0x149694 uses `width - 1` on
+//     its own stream; see the note there before reconciling them.
+//
+// Residual is register/scheduling: retail keeps the row cursor and the token
+// index in esi/ebp across both arms and re-derives `this` from the frame after
+// each rep-stos, where cl spills them.
 RVA(0x00176440, 0x25d)
 i32 CRezImage::DecodePidData(void* buf, void* a2, i32 a3) {
     PidHeader* hdr = static_cast<PidHeader*>(buf);
@@ -840,13 +862,13 @@ i32 CRezImage::DecodePidData(void* buf, void* a2, i32 a3) {
         m_transparent = 0;
     }
 
-    if (flags & 0x100) {
+    if (flags & PID_FILL_IS_WORD) {
         fill &= 0xffff;
     } else {
         fill = 0;
     }
 
-    if (flags & PID_COMPRESSION) {
+    if (flags & PID_GRAMMAR_SKIPRUN) {
         m_transparent = 1;
         u8* dstRow = m_pixels + m_rowOffsets[0];
         i32 x = 0;
