@@ -10,7 +10,6 @@
 
 #include <EmptyString.h> // g_emptyString (the shared "" constant)
 
-
 // The ONE 0x100 save record (the ex-SaveInfo twin is MERGED here: same layout,
 // the in-memory quickload code's role names live as union arms).
 struct SaveSlot {
@@ -56,16 +55,16 @@ public:
     i32 Save(char* path, i32 b);       // 0x000e4ea0  (the slot's m_savePath / m_serial)
     void ComputeAll();                 // 0x000e50a0
     i32 Verify();                      // 0x000e50f0
-    i32 FillSlot(SaveSlot* dst, const char* name, void* src); // 0x000e5130
-    i32 CopySlot(SaveSlot* dst, const SaveSlot* src);         // 0x000e51d0
-    i32 FillSlot2(SaveSlot* dst, i32 name, void* src);        // 0x000e5240
-    i32 VerifySlot(SaveSlot* slot);                           // 0x000e52c0
-    i32 Register(SaveSlot* slot);                             // 0x000e5390
-    i32 Encode(u8* buf);                                      // 0x000e5410
-    i32 Decode(u8* buf);                                      // 0x000e5460
-    SaveSlot* GetSlot(i32 i);                                 // 0x000e54b0
+    i32 FillSlot(SaveSlot* dst, const char* name, void* src);  // 0x000e5130
+    i32 CopySlot(SaveSlot* dst, const SaveSlot* src);          // 0x000e51d0
+    i32 FillSlot2(SaveSlot* dst, i32 name, void* src);         // 0x000e5240
+    i32 VerifySlot(SaveSlot* slot);                            // 0x000e52c0
+    i32 Register(SaveSlot* slot);                              // 0x000e5390
+    i32 Encode(u8* buf);                                       // 0x000e5410
+    i32 Decode(u8* buf);                                       // 0x000e5460
+    SaveSlot* GetSlot(i32 i);                                  // 0x000e54b0
     i32 FillSlotByIndex(i32 idx, const char* name, void* src); // 0x000e54e0
-    i32 StoreSlot(i32 idx, const SaveSlot* src);              // 0x000e5520
+    i32 StoreSlot(i32 idx, const SaveSlot* src);               // 0x000e5520
     void SetMaxLevel(i32 v); // 0x0e5620 (out-of-line: clamped max-level update)
     void SetCurLevel(i32 v); // 0x0e5660 (out-of-line: clamped cur-level update)
     i32 CheckMagic();        // 0x000e5690
@@ -88,11 +87,20 @@ public:
 };
 SIZE_UNKNOWN(); // fully modeled but tail not proven; owner may upgrade
 
-// TU-local thunk/table names this TU registers (moved from the .cpp; the
-// addresses are ILT thunk VAs, reloc-masked at every use).
-extern "C" void SaveOverwriteProc();
-extern "C" void SaveDeleteProc();
-extern "C" void SaveInfoProc();
+// The save/load modal dialog procs. They used to be three `extern "C" void ...Proc();`
+// ILT-thunk placeholders; every thunk resolves (E9 rel32 out of retail's ILT band, and
+// the DrawSaveGameMenu @0xe3f40 call-site relocations agree) to a proc defined right
+// here: 0x2892 -> InfoLineDialogProc, 0x121c -> winapi_0e3a40_EndDialog,
+// 0x1e3d -> LevelPreviewDlgProc. LoadGameMenu.cpp's GAME_INFO/GAME_DELETE sites push
+// the SAME two thunks, so its LoadInfoDlgProc/LoadDeleteDlgProc placeholders were
+// duplicates of these.
+i32 CALLBACK winapi_0e35f0_EndDialog(HWND, UINT, WPARAM, LPARAM); // 0xe35f0 GAME_SAVE
+i32 CALLBACK LevelPreviewDlgProc(HWND, UINT, WPARAM, LPARAM);     // 0xe3690 GAME_INFO
+i32 CALLBACK winapi_0e3a40_EndDialog(HWND, UINT, WPARAM, LPARAM); // 0xe3a40 GAME_DELETE
+i32 CALLBACK InfoLineDialogProc(HWND, UINT, WPARAM, LPARAM);      // 0xe3b20 GAME_OVERWRITE
+i32 CALLBACK OkCancelDialogProc(HWND, UINT, WPARAM, LPARAM);      // 0xe3be0 GAME_SAVEMSG
+
+extern CSaveGame* g_saveDlgSink; // 0x24c86c  the save dialog's active CSaveGame
 
 extern char* g_areaNames[];
 class CImagePool;
@@ -118,4 +126,4 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev);
 // stores a CSaveGame::GetSlot() result and every reader dereferences a SaveSlot.
 extern SaveSlot* g_slotState;
 
-#endif                                                             // SRC_IO_SAVEGAME_H
+#endif // SRC_IO_SAVEGAME_H

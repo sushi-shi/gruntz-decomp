@@ -24,7 +24,6 @@
 // retail /INCREMENTAL link routes it through the proc's ILT jmp-thunk 0x305d (jmp 0x3b600),
 // so the DIR32 stored is 0x305d, not the body 0x3b600. Bind the address-taken symbol to
 // the THUNK rva (same idiom as GruntzApp's _ErrorDialogProcThunk @0x33c8) so have==want.
-DATA_SYMBOL(0x0000305d, 0x0, _CustomWorldInfoDlgProcThunk@16)
 
 DATA(0x0022c010)
 char g_mapNameBuf[0x200] = {0}; // 0x62c010  GetMapBaseName filename scratch
@@ -72,7 +71,7 @@ CString RunCustomWorldDialog(HWND parent, CString* outSource) {
     g_dat62c268 = g_gameReg->m_world;
     // m_owner (CGameApp*, CGameMgr+0x8) -> +0xc HINSTANCE (raw offset read).
     g_customWorldInst = g_gameReg->m_owner->m_hInstance;
-    if (g_gameReg->RunModalDialog("CUSTOM_WORLD", static_cast<void*>(CustomWorldDlgProc), 0) == 0) {
+    if (g_gameReg->RunModalDialog("CUSTOM_WORLD", CustomWorldDlgProc, 0) == 0) {
         g_pathStr.Empty();
     }
     g_dat62c268 = 0;
@@ -368,7 +367,7 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
         g_customWorldInst,
         "CUSTOM_WORLDINFO",
         g_customWorldParent,
-        CustomWorldInfoDlgProcThunk, // ILT thunk 0x305d -> 0x3b600 (retail stores &thunk)
+        CustomWorldInfoDlgProc, // retail stores the ILT thunk 0x305d, which jmps here
         0
     );
     return 1;

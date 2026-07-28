@@ -244,28 +244,6 @@ void CSpriteRef::Free() {
     }
 }
 
-DATA(0x0024c86c)
-CSaveGame* g_saveDlgSink = 0; // 0x64c86c  the save dialog's active CSaveGame (owner-TU definition)
-RVA(0x000e35f0, 0x77)
-i32 CALLBACK winapi_0e35f0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-    switch (msg) {
-        case 0x111:
-            if (wParam == 2) {
-                EndDialog(hDlg, 0);
-                return 1;
-            }
-            if (DrawSaveGameMenu(hDlg, wParam, g_saveDlgSink) != 0) {
-                return 1;
-            }
-            // falls through to the shared "return 0" default
-        default:
-            return 0;
-        case 0x110: {
-            CSaveGame* v = g_gameReg->m_saveSink;
-            g_savedMenuCmd = -1;
-            g_saveDlgSink = v;
-            FillSaveDialog(hDlg, v);
-            return 1;
-        }
-    }
-}
+// (The GAME_SAVE dialog proc 0xe35f0 and its g_saveDlgSink (0x24c86c) moved to
+// src/Io/SaveGame.cpp - the proc calls that TU's DrawSaveGameMenu/FillSaveDialog and
+// g_saveDlgSink is the word after that TU's g_slotState (0x24c864) in one .bss run.)

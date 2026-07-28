@@ -11,8 +11,6 @@
 DATA(0x00245ca4)
 CSaveGame* g_dlgLoadSink = 0; // DAT_00645ca4  (owner-TU definition)
 
-
-
 RVA(0x0009dff0, 0x8c)
 i32 CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
@@ -129,7 +127,7 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
         g_slotState = dlg->GetSlot(idx);
         if (g_slotState) {
             EnableWindow(hwnd, FALSE);
-            g_gameReg->RunModalDialog("GAME_INFO", static_cast<void*>(LoadInfoDlgProc), 0);
+            g_gameReg->RunModalDialog("GAME_INFO", LevelPreviewDlgProc, 0);
             EnableWindow(hwnd, TRUE);
         }
         return 0;
@@ -171,8 +169,7 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
         g_slotState = dlg->GetSlot(idx);
         if (g_slotState) {
             EnableWindow(hwnd, FALSE);
-            i32 r =
-                g_gameReg->RunModalDialog("GAME_DELETE", static_cast<void*>(LoadDeleteDlgProc), 0);
+            i32 r = g_gameReg->RunModalDialog("GAME_DELETE", winapi_0e3a40_EndDialog, 0);
             EnableWindow(hwnd, TRUE);
             if (r) {
                 FillGameInfoDialog(hwnd, dlg);

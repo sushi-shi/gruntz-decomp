@@ -21,6 +21,37 @@ DATA(0x0024c864)
 SaveSlot* g_slotState; // 0x64c864  the record the save/load dialogs describe
 DATA(0x0024c868)
 void* g_previewImage; // 0x64c868  (CRezImage* previewed DIB)
+DATA(0x0024c86c)
+CSaveGame* g_saveDlgSink = 0; // 0x64c86c  the save dialog's active CSaveGame
+
+// The GAME_SAVE modal proc, re-homed here from SpriteRef.cpp. Evidence: retail's
+// ILT thunk 0x1041 (the one CGruntzMgr's GAME_SAVE RunModalDialog pushes) resolves
+// to 0xe35f0; the body calls DrawSaveGameMenu/FillSaveDialog (0xe3f40/0xe44e0, this
+// TU) and drives g_savedMenuCmd + g_saveDlgSink, whose rva 0x24c86c is the next word
+// after this TU's g_slotState (0x24c864) in the same .bss run.
+RVA(0x000e35f0, 0x77)
+i32 CALLBACK winapi_0e35f0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case 0x111:
+            if (wParam == 2) {
+                EndDialog(hDlg, 0);
+                return 1;
+            }
+            if (DrawSaveGameMenu(hDlg, wParam, g_saveDlgSink) != 0) {
+                return 1;
+            }
+            // falls through to the shared "return 0" default
+        default:
+            return 0;
+        case 0x110: {
+            CSaveGame* v = g_gameReg->m_saveSink;
+            g_savedMenuCmd = -1;
+            g_saveDlgSink = v;
+            FillSaveDialog(hDlg, v);
+            return 1;
+        }
+    }
+}
 
 // LevelPreviewDlgProc (0x0e3690) - the level-select preview dialog proc. WM_INITDIALOG
 // builds the g_previewMgr image pool + the level title; WM_COMMAND (IDOK/IDCANCEL)
@@ -342,7 +373,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
             return 0;
         }
         EnableWindow(hDlg, FALSE);
-        g_gameReg->RunModalDialog("GAME_INFO", static_cast<void*>(SaveInfoProc), 0);
+        g_gameReg->RunModalDialog("GAME_INFO", LevelPreviewDlgProc, 0);
         EnableWindow(hDlg, TRUE);
         return 0;
     }
@@ -390,7 +421,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
             return 0;
         }
         EnableWindow(hDlg, FALSE);
-        i32 ok = g_gameReg->RunModalDialog("GAME_DELETE", static_cast<void*>(SaveDeleteProc), 0);
+        i32 ok = g_gameReg->RunModalDialog("GAME_DELETE", winapi_0e3a40_EndDialog, 0);
         EnableWindow(hDlg, TRUE);
         if (ok == 0) {
             return 0;
@@ -446,11 +477,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         g_slotState = obj->GetSlot(slot);
         if (g_slotState != 0) {
             EnableWindow(hDlg, FALSE);
-            i32 ok = g_gameReg->RunModalDialog(
-                "GAME_OVERWRITE",
-                static_cast<void*>(SaveOverwriteProc),
-                0
-            );
+            i32 ok = g_gameReg->RunModalDialog("GAME_OVERWRITE", InfoLineDialogProc, 0);
             EnableWindow(hDlg, TRUE);
             if (ok == 0) {
                 return 1;

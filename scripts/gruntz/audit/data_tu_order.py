@@ -90,6 +90,27 @@ def load_manifest(root):
     return rva2storage, comdat
 
 
+def exec_ranges():
+    """The retail image's EXECUTABLE rva ranges, or [] if the EXE is unreadable.
+
+    A DATA()/DATA_SYMBOL()/VTBL() whose rva lands in .text is NOT a data definition -
+    it names a CODE address (an /INCREMENTAL ILT jmp-thunk, e.g.
+    DATA_SYMBOL(0x113b, 0x0, _MultiPauseCallback), or an address-taken proc). Such a
+    row emits no storage in .data/.rdata/.bss, so it must not join the per-(TU,
+    storage) band model: counted as data it drags a TU's band down to ~0x1000 and
+    turns it into a multi-file 'pool', which then EXEMPTS the TU from the ordering
+    check. That is exactly how Multi.cpp's four ILT rows masked a real interleave."""
+    try:
+        from gruntz.core.pe import PE
+        return PE().exec_ranges
+    except Exception:
+        return []
+
+
+def is_code_rva(rva, ranges):
+    return any(lo <= rva < hi for lo, hi in ranges)
+
+
 def strip_line_comment(s):
     # remove a trailing // comment (naive: no // inside strings in these decls)
     i = s.find("//")
@@ -200,13 +221,19 @@ def parse_file(path):
     return blocks
 
 
-def within_file_audit(files):
+def data_blocks(path, ranges):
+    """parse_file minus the rows that name a CODE address (see exec_ranges)."""
+    return [b for b in parse_file(path) if not is_code_rva(b.rva, ranges)]
+
+
+def within_file_audit(files, ranges=None):
     """Detect out-of-order DATA within a contiguous run (only blocks whose file
     lines are 'close' - separated by <= GAP lines, i.e. a globals section rather
     than globals scattered next to their functions)."""
+    ranges = exec_ranges() if ranges is None else ranges
     problems = []
     for path in files:
-        blocks = parse_file(path)
+        blocks = data_blocks(path, ranges)
         if len(blocks) < 2:
             continue
         # group into runs: consecutive blocks whose line distance is small
@@ -228,7 +255,7 @@ def within_file_audit(files):
     return problems
 
 
-def cross_file_audit(files, pool_threshold=4, rva2storage=None, comdat=None):
+def cross_file_audit(files, pool_threshold=4, rva2storage=None, comdat=None, ranges=None):
     """Band ORDINARY (non-COMDAT) data per (file, storage) and find defs sitting
     strictly inside ANOTHER file's SAME-storage band.
 
@@ -236,9 +263,11 @@ def cross_file_audit(files, pool_threshold=4, rva2storage=None, comdat=None):
     .rdata/.data/.bss, so bands are keyed by (file, storage) - a single all-storage
     envelope (the old model) engulfed every multi-segment TU into a false pool.
     COMDAT data (vtables/RTTI/strings/guards) is linker-pooled, not linearly
-    attributed, so it is excluded from the band model entirely."""
+    attributed, so it is excluded from the band model entirely. Rows naming a CODE
+    address (ILT thunks etc.) are excluded too - see exec_ranges()."""
     rva2storage = rva2storage or {}
     comdat = comdat or set()
+    ranges = exec_ranges() if ranges is None else ranges
 
     def is_comdat(rva, name):
         return (rva in comdat) or (name is not None and COMDAT_NAME_RE.match(name)) \
@@ -247,7 +276,7 @@ def cross_file_audit(files, pool_threshold=4, rva2storage=None, comdat=None):
     # (rva, path, name, storage) for every ordinary storage-emitting def
     defs = []
     for path in files:
-        for b in parse_file(path):
+        for b in data_blocks(path, ranges):
             if not b.is_def or is_comdat(b.rva, b.name):
                 continue
             storage = rva2storage.get(b.rva, "data")

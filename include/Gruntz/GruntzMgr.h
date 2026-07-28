@@ -289,7 +289,7 @@ public:
     // The modal-dialog runner sibling (a __thiscall (template, dlgProc, flag) ->
     // i32; reloc-masked). The leading Ghidra label winapi_090260_DialogBoxParamA
     // is the engine's DialogBoxParamA wrapper.
-    i32 RunModalDialog(const char* tmpl, void* dlgProc, i32 flag); // @0x090260
+    i32 RunModalDialog(const char* tmpl, DLGPROC dlgProc, i32 flag); // @0x090260
 
     // The WM_COMMAND / accelerator + cheat-code dispatcher (the binary's single
     // largest function; body in GruntzMgrCmd.cpp).
@@ -449,19 +449,16 @@ i32 __stdcall LaunchWebBrowser(char* url); // @0x08f120 (thunk 0x235b)
 
 extern "C" i32 g_scoreTimeBase; // 0x00248ce8
 
-extern "C" void GruntzLoadGameDlgProc(); // thunk 0x2167 -> body 0x9dff0 (LoadGameMenu.cpp)
-
-extern "C" void GruntzDebugGruntTypeProc(); // thunk 0x21e9
-
-extern "C" void GruntzSaveGameDlgProc(); // thunk 0x1041 (GAME_SAVE)
-
-extern "C" void GruntzSaveMsgDlgProc(); // thunk 0x11d1 (GAME_SAVEMSG)
-
-extern "C" void LevelNumberDialogProcThunk(); // thunk 0x2ab8 -> body 0x8e7c0
-
-// TU-local thunk/table names this TU registers (moved from the .cpp; the
-// addresses are ILT thunk VAs, reloc-masked at every use).
-extern "C" void ModeResetCallback(); // LAB_00403193
+// (The six `extern "C" void <Name>DlgProc();` ILT-thunk placeholders that used to
+// live here are gone. Every one of retail's /INCREMENTAL thunk rvas resolves - read
+// straight out of the ILT band's E9 rel32 - to a proc this tree already reconstructs:
+//   0x2167 -> 0x09dff0 GruntzLoadGameDlgProc      (LoadGameMenu.cpp)
+//   0x21e9 -> 0x092ab0 winapi_092ab0_EndDialog    (GruntzCmdMgr.cpp)
+//   0x1041 -> 0x0e35f0 winapi_0e35f0_EndDialog    (SpriteRef.cpp)
+//   0x11d1 -> 0x0e3be0 OkCancelDialogProc         (SaveGame.cpp)
+//   0x2ab8 -> 0x08e7c0 LevelNumberDialogProc8e7c0 (this TU)
+//   0x3193 -> 0x08b8c0 PumpIdleFrame              (this TU)
+// The address-take is reloc-masked, so naming the real proc is byte-neutral.)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
@@ -491,7 +488,6 @@ extern "C" i32 g_monologoShown;    // the MONOLITH logo is on screen (LoadMonolo
 extern "C" i32 g_cdPromptResult;
 extern i32 g_debugDisplayFlags; // bits: 1 obj count, 4 world pos, 0x10 frame rate,
 extern "C" u32 g_explosionz;    // "Explosionz"
-extern i32 g_isHost_648cf0;
 extern CString g_brickText1;
 extern CString g_brickText2;
 
@@ -529,5 +525,15 @@ void ChannelSlots_InitAll();  // 0xdb1d0
 // external linkage).
 INT_PTR CALLBACK
     LevelNumberDialogProc8e8c0(HWND, UINT, WPARAM, LPARAM); // DEBUG_SETSKILL proc (thunk 0x1947)
+INT_PTR
+CALLBACK WarpDialogProc(HWND, UINT, WPARAM, LPARAM); // 0x08e4e0 DEBUG_POSITION (thunk 0x2d0b)
+INT_PTR
+CALLBACK winapi_092a30_EndDialog(HWND, UINT, WPARAM, LPARAM); // 0x092a30 PSYCHE (thunk 0x2649)
+INT_PTR CALLBACK LevelNumberDialogProc8e7c0(
+    HWND,
+    UINT,
+    WPARAM,
+    LPARAM
+); // 0x08e7c0 DEBUG_JUMPLEVEL (thunk 0x2ab8)
 
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

@@ -651,8 +651,10 @@ u32 g_engineFrameDelta = 0; // 0x2bf3bc  draw-DELTA mirror  (= g_frameDelta / g_
 DATA(0x002bf3c0)
 u32 g_killCueClock = 0; // 0x2bf3c0  draw-CLOCK mirror (= g_lastNow)
 
-DATA(0x0021139c)
-CAreaMgr* g_pAreaMgr = &g_areaMgr;
+// (g_pAreaMgr (0x21139c) is DEFINED in src/Gruntz/AreaMgr.cpp - it is the ordinary
+// .data word that opens AreaMgr.obj's retail run, immediately before that object's
+// 'IMAGEZ_%s'/'OBJECTZ_'/'SOUNDZ_%s'/'ANIZ_%s' literals at 0x2113a0..0x2113cf, and it
+// is initialized to &g_areaMgr, which AreaMgr.cpp owns. CPlay::LoadByMode only reads it.)
 
 // ---------------------------------------------------------------------------
 // The methods below are the DEFERRED remainder, grouped by why they aren't

@@ -13,6 +13,7 @@
 
 #include <Gruntz/GameRegistry.h>     // CGameRegistry (g_gameReg) + CDDrawSurfaceMgr
 #include <Gruntz/GruntzCommandId.h>  // GruntzCommand enum (nID param + the case labels)
+#include <Gruntz/VideoConfig.h>      // GameOptionsDlgProc - the CONFIG_SETTINGS modal
 #include <Gruntz/GruntzMgr.h>        // the real CGruntzMgr (this) + SaveInfo.h + SoundCue.h
 #include <Gruntz/CheatMgr.h>         // CCheatMgr (m_cheatMgr->m_124 - the "Cheatz cleared" flag)
 #include <Gruntz/Play.h>             // CPlay (the cheat receiver) + CTimer (m_frameMarker)
@@ -530,16 +531,11 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                         );
                         return 1;
                     case kCheatPsyche:
-                        RunModalDialog(
-                            "PSYCHE",
-                            // 0x402649 is winapi_092a30_EndDialog's ILT thunk
-                            // (GruntzMgr.cpp:1849). Retail pushes it as a BARE
-                            // immediate with no relocation, so naming the function
-                            // would emit a reloc the target does not have - the
-                            // literal is the byte-faithful spelling here.
-                            reinterpret_cast<void*>(0x402649),
-                            0
-                        );
+                        // Retail DOES relocate this push: the base-reloc table has a
+                        // HIGHLOW site at 0x88465 over the `68 49 26 40 00`, so the
+                        // address-take is reloc-masked and naming the proc is
+                        // byte-neutral (ILT thunk 0x2649 -> 0x92a30).
+                        RunModalDialog("PSYCHE", winapi_092a30_EndDialog, 0);
                         return 1;
                     case kCheatClearCheats:
                         PLAYCUE("GAME_MAJORCHEAT");
@@ -832,7 +828,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             return 1;
         case kCmdMultiJoin:
             m_134 = 2;
-            g_isHost_648cf0 = 0;
+            g_hostServicesMode = 0;
             if (TransitionState(0x11, 1, 0, 0)) {
                 return 1;
             }
@@ -843,7 +839,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
             return 1;
         case kCmdMultiHost:
             m_134 = 2;
-            g_isHost_648cf0 = 1;
+            g_hostServicesMode = 1;
             if (TransitionState(0x11, 1, 0, 0)) {
                 return 1;
             }
@@ -1016,13 +1012,9 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                 mus = static_cast<CMenuState*>(m_curState);
                 (static_cast<CMenuState*>(m_curState))->StopMusicChain();
             }
-            RunModalDialog(
-                "CONFIG_SETTINGS",
-                // 0x403ae4 is GameOptionsDlgProc's ILT thunk (VideoConfig.cpp:111);
-                // as above, retail pushes the bare imm with no reloc.
-                reinterpret_cast<void*>(0x403ae4),
-                0
-            ); // bare imm matches the target (LAB_)
+            // Reloc site 0x89e76 over the `68 e4 3a 40 00` (ILT thunk 0x3ae4 ->
+            // 0x36410 GameOptionsDlgProc) - reloc-masked, so the name is byte-neutral.
+            RunModalDialog("CONFIG_SETTINGS", GameOptionsDlgProc, 0);
             if (mus) {
                 mus->StartMusic();
             }

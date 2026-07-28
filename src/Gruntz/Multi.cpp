@@ -71,9 +71,6 @@ i32 g_optionsCursor = 0; // decl in Multi.h
 // closes Play.cpp's @identity-TODO. Its `M(void*)` was a PHANTOM (?M@Cdb200@@QAEHPAX@Z,
 // defined by no obj); the call now binds to the real ?SwapChannel@GruntzPlayer@@QAEHH@Z.)
 
-DATA(0x00248cf4)
-CNetCreateCtx* g_netCreateCtx;
-
 // (The former local CGruntzMgr shadow is gone: m_4's game-mgr methods are now declared
 // directly on the game mgr, so m_4->Method() needs no cross-cast.)
 // LoadGameAssetNamespaces (0xf9ea0) is now CState::LoadGameAssetNamespaces; CMulti
@@ -92,23 +89,29 @@ CNetCreateCtx* g_netCreateCtx;
 //     offset dtors are documented terminal @early-stop walls (vtbl un-catalogued / member-
 //     by-value modeling deferred to the final sweep).
 
-DATA(0x0020fa70)
-// = 1, read straight out of the retail image: [0x20fa70,+4) holds 01 00 00 00,
-// file-backed in .data's raw span (which ends at 0x229400), matching its
-// adjacent sibling g_remoteVersion. It was `= 0` here, which cl folds into
-// .bss - so the base emitted no bytes where retail has an initializer.
-i32 g_localVersion = 1; // 0x20fa70  local protocol/rez-sync version word
-DATA(0x0020fa74)
-i32 g_remoteVersion = 1; // 0x20fa74  protocol version word (local build = 1)
-DATA(0x0020fab8)
-GUID g_dplayAppGuid = {
-    0xf41cf640,
-    0x91b2,
-    0x11d1,
-    {0x8d, 0xfc, 0x00, 0x60, 0x97, 0x9f, 0xa8, 0x1e}
-}; // 0x20fab8  DirectPlay app GUID / net-bind template
+// The "no DirectPlay service provider selected" sentinel g_serviceId carries.
+typedef enum NetServiceId {
+    NETSERVICE_NONE = 999, // 0x3e7 - the combo has no selection yet
+} NetServiceId;
+
+// g_localVersion (0x20fa70), g_remoteVersion (0x20fa74) and g_dplayAppGuid (0x20fab8)
+// used to be DEFINED here. They are not this object's data. Retail's .data is laid
+// out one contiguous run per contributing .obj, and CMulti's run is [0x211d88,
+// 0x2121e0) - g_dropPlayerId, then ??_R0?AVCNetMgr@@@8 and every MULTI_*/net literal.
+// The three above sit 8 KB lower, in the run [0x20fa70,0x20fae0) that ALSO holds
+// g_pendingFrame (0x20fac8, already homed in GruntzMgr.cpp) and is immediately
+// followed by the CGameLevel area titles + the CGameMgr/CGruntzMgr RTTI + every
+// CGruntzMgr::Run/Close/HandleCommand literal. One .obj cannot own two runs, so they
+// are the GruntzMgr-family object's - and CGruntzMgr::Run (0x83450) is the only
+// WRITER of g_localVersion (it loads it from GRUNTZ.CFG [General] RezSync). Their
+// definitions now live in src/Gruntz/GruntzMgr.cpp; CMulti only reads them.
 DATA(0x00211d88)
 i32 g_dropPlayerId = -999; // 0x211d88  saved dropped-player id (sentinel -999)
+DATA(0x00211d8c)
+// Retail's [0x211d8c,+4) holds 000003e7 == NETSERVICE_NONE; it was declared extern in
+// Multi.h and DEFINED NOWHERE (an UNDEFINED-DATA link defect). It is the second word of
+// CMulti's own .data run, right after g_dropPlayerId.
+i32 g_serviceId = NETSERVICE_NONE; // 0x211d8c  selected DirectPlay service provider id
 DATA(0x00211ec4)
 char s_GameKey[] = "GAME_KEY"; // 0x211ec4  registry value-name literal
 DATA(0x00246378)
@@ -174,8 +177,6 @@ i32 g_hostServicesMode; // owner def (zero-init .bss)
 
 DATA(0x00248cf4)
 CNetMgr* g_groupEnumMgr; // owner def (zero-init .bss)
-DATA(0x00248cf0)
-i32 g_isHost_648cf0;
 
 enum {
     STAT_VERIFY_REQUEST = 0x41c,  // guest -> host: request the level-verify vote
@@ -185,15 +186,10 @@ enum {
 
 // The four modal DlgProcs the OnMulti* handlers below hand to RunErrorDialog are
 // NetLobby::HostWait/JoinWait/SessionWait/NetGameDlgProc (<Net/LobbyDialogs.h>).
-// Retail's /INCREMENTAL link routes each address-take through an ILT jmp-thunk;
-// these name the THUNK rvas (they are retail's, not ours - the four
-// `extern "C" void Multi*Callback()` declarations that used to stand in for the
-// real procs are gone). Verified target: 0x113b -> 0xbd850, 0x27fc -> 0xbda70,
-// 0x301c -> 0xbddd0, 0x3387 -> 0xbe0a0.
-DATA_SYMBOL(0x0000113b, 0x0, _MultiPauseCallback)
-DATA_SYMBOL(0x000027fc, 0x0, _MultiOptionzCallback)
-DATA_SYMBOL(0x0000301c, 0x0, _MultiOutOfSyncCallback)
-DATA_SYMBOL(0x00003387, 0x0, _MultiDropPlayerCallback)
+// Retail's /INCREMENTAL link routes each address-take through an ILT jmp-thunk
+// (0x113b -> 0xbd850, 0x27fc -> 0xbda70, 0x301c -> 0xbddd0, 0x3387 -> 0xbe0a0), which
+// is a CODE address - it needs no DATA_SYMBOL here, and the four that used to name
+// them (_MultiPauseCallback & co.) are gone.
 
 // ===========================================================================
 // CMulti::~CMulti  @ 0x08d270  - the most-derived /GX dtor. Runs the slot-2
@@ -1101,7 +1097,7 @@ i32 CMulti::Open() {
     if (!Peer()->InitFromProvider(descriptor, g_dplayAppGuid)) {
         return 0;
     }
-    if (g_isHost_648cf0) {
+    if (g_hostServicesMode) {
         m_isHost = 1;
         if (!DetectConnectionConfig()) { // 0xb82e0
             return 0;
@@ -1133,7 +1129,7 @@ InterfaceObject* CMulti::SetupServices() {
     if (g_hostServicesMode != 0) {
         if (RunErrorDialog("MULTI_HOSTSERVICES", NetSetupDlgProc, 0) != 0) {
             Utils::RegistryHelper* store = NetGameMgr()->m_settings;
-            if (store != 0 && g_serviceId != 0x3e7) {
+            if (store != 0 && g_serviceId != NETSERVICE_NONE) {
                 store->SetValueDword("Service", g_serviceId);
                 {
                     store->SetValueString(
@@ -1153,7 +1149,7 @@ InterfaceObject* CMulti::SetupServices() {
         if (RunErrorDialog("MULTI_JOINSERVICES", NetSetupDlgProc, 0) != 0) {
             Utils::RegistryHelper* store = NetGameMgr()->m_settings;
             if (store != 0) {
-                if (g_serviceId != 0x3e7) {
+                if (g_serviceId != NETSERVICE_NONE) {
                     store->SetValueDword("Service", g_serviceId);
                 }
                 store->SetValueString(
@@ -1212,7 +1208,7 @@ INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             HWND combo = ::GetDlgItem(hDlg, 0x3fc);
             g_groupEnumMgr->m_groupSel = 0;
             g_groupEnumMgr->PopulateGroupList(combo, 0);
-            if (g_serviceId == 0x3e7) {
+            if (g_serviceId == NETSERVICE_NONE) {
                 ::SendMessageA(combo, 0x186, 0, 0);
             } else if (static_cast<i32>(::SendMessageA(combo, 0x186, g_serviceId, 0)) == -1) {
                 ::SendMessageA(combo, 0x186, 0, 0);
@@ -1354,7 +1350,7 @@ i32 CMulti::JoinSession() {
 // recurs in the WM_TIMER and WM_COMMAND-OK-fail paths.
 // EXACT 2026-07-28: the "block-duplication wall" was where the shared-exit gates put
 // their BODY. cl places a shared label right after the LAST `goto` that targets it, so
-// `if (wParam != 1) goto ret_false;` and `if (g_netCreateCtx == 0) goto close;` each
+// `if (wParam != 1) goto ret_false;` and `if (g_groupEnumMgr == 0) goto close;` each
 // inlined their target block; spelling both as `if (<ok>) { body... }` with the body
 // inside and the bare goto/fall-out after reproduces retail's `je <far shared tail>`.
 // The OnJoinConfirm test is failure-first for the same reason (and retail then reuses
@@ -1374,8 +1370,8 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             // Body inside the `if`, with the bare `goto close;` after it: retail's
             // `je <far close>` falls through into the INITDIALOG tail, where a
             // trailing `goto close;` gate inlines the close block right here.
-            if (g_netCreateCtx != 0) {
-                g_netCreateCtx->m_74 = 0;
+            if (g_groupEnumMgr != 0) {
+                g_groupEnumMgr->m_playerSel = 0;
                 SetTimer(hDlg, 1, 0x9c4, 0);
                 ::SendMessageA(hDlg, 0x113, 0, 0);
                 return 1;
@@ -1397,7 +1393,7 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 if ((static_cast<CMulti*>(g_connectRptMgr))->OnJoinConfirm(hDlg) == 0) {
                     ::MessageBeep(0);
                     i32 t = 0x7d0;
-                    InterfaceObject* io = g_netCreateCtx->m_serviceProvider;
+                    InterfaceObject* io = g_groupEnumMgr->m_groupSel;
                     if (io && io->IsInterface2()) {
                         t = 0x1388;
                     }
@@ -1434,7 +1430,7 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 }
                 RefreshPlayerRow(hDlg, g_netPlayerListHwnd);
                 i32 t = 0x7d0;
-                InterfaceObject* io = g_netCreateCtx->m_serviceProvider;
+                InterfaceObject* io = g_groupEnumMgr->m_groupSel;
                 if (io && io->IsInterface2()) {
                     t = 0x1388;
                 }
@@ -3416,7 +3412,7 @@ i32 CMulti::Poll(i32 token) {
 // (200 iters) found nothing. Final sweep.
 RVA(0x000bbc90, 0x1b8)
 i32 CMulti::CreateSession() {
-    void* rec = g_netCreateCtx->m_74;
+    CNetPlayerListNode* rec = g_groupEnumMgr->m_playerSel;
     if (rec == 0) {
         return 0;
     }
@@ -3634,11 +3630,7 @@ i32 CMulti::RunErrorDialog(char* tmpl, DLGPROC handler, i32 lparam) {
         return 2;
     }
     Mgr()->m_cueSink->PauseAllVoices();
-    // The one surviving fn-ptr -> void* conversion in this TU: CGruntzMgr::RunModalDialog
-    // still takes `void* dlgProc` because ~12 of its other call sites still pass
-    // unresolved ILT placeholder procs (SaveGame/LoadGameMenu/RezMgr/GruntzMgr).
-    // Retyping it DLGPROC is the follow-up that removes this last cast.
-    i32 r = Mgr()->RunModalDialog(tmpl, static_cast<void*>(handler), lparam);
+    i32 r = Mgr()->RunModalDialog(tmpl, handler, lparam);
     SetActiveAndFocus(Mgr()->m_gameWnd->m_hwnd);
     AckJoinFailure();
     return r;

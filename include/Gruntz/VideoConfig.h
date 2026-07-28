@@ -31,6 +31,10 @@ void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32 code, i32 pos); // 0x
 void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos);               // 0x037260
 void DialogInit(HWND hDlg);                                                // 0x037870
 void SaveVideoCheckboxes(HWND hDlg);                                       // 0x0378c0
+
+// The master game-options dialog proc (CGruntzMgr::HandleCommand's CONFIG_SETTINGS
+// modal pushes its ILT thunk 0x3ae4, which jmps here).
+BOOL CALLBACK GameOptionsDlgProc(HWND, UINT, WPARAM, LPARAM); // 0x036410
 namespace ApiCallerStubs {
     void winapi_0371e0_GetDlgItem_SetScrollInfo(HWND hDlg, i32 id, i32 pos, i32 max); // 0x0371e0
     i32 winapi_036ec0_GetDlgItem_GetScrollInfo(HWND hDlg, i32 id);                    // 0x036ec0

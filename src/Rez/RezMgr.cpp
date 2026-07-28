@@ -95,13 +95,12 @@ i32 CGruntzMgr::PerFrameTick() {
 // address-taken through its ILT thunk (0x2d0b, byte-verified `jmp 0x8e4e0`);
 // bound to the thunk rva (the pushed DIR32 is reloc-masked) - the same idiom as
 // GruntzMgr.cpp's other dialog-proc thunk externs.
-DATA_SYMBOL(0x00002d0b, 0x0, _WarpDialogProcThunk)
 
 RVA(0x0008e470, 0x50)
 i32 CGruntzMgr::HandleDebugPosition() {
     i32 r = 0;
     if (m_curState->Update() == GAMESTATE_PLAY) {
-        r = RunModalDialog("DEBUG_POSITION", static_cast<void*>(&WarpDialogProcThunk), 1);
+        r = RunModalDialog("DEBUG_POSITION", WarpDialogProc, 1);
         if (r == 1) {
             HWND hwnd = m_gameWnd->m_hwnd;
             PostMessageA(hwnd, 0x111, 0x805c, 0);
