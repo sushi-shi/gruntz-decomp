@@ -50,12 +50,10 @@ i32 CAniRecordBase2::GetClassId() {
 RVA_COMPGEN(0x00165db0, 0x1e, ??_GCAniRecordBase2@@UAEPAXI@Z)
 RVA(0x00165dd0, 0x5b)
 CAniRecordBase2::~CAniRecordBase2() {
-    // Own-slot FreeBuf: in the dtor cl devirtualizes to the direct 0x168fb0 call.
-    FreeBuf();
-    m_04 = -1;
-    m_08 = 0;
-    m_0c = 0;
-    // implicit grand-base re-stamp (masks 0x5e8cb4) folds in here as the last store.
+    // Own slot-7 Unload (the ex FreeBuf): in the dtor cl devirtualizes to the direct
+    // 0x168fb0 call. The m_id/m_flags/m_ownerCtx resets at 0x165e04-0x165e12 and the
+    // grand-base re-stamp then come from the ~CLoadable chain.
+    Unload();
 }
 
 RVA(0x00168c60, 0xa0)
@@ -169,7 +167,7 @@ i32 CAniRecordBase2::AllocBufMakeB2(char* path, i32 flag) {
         return 0;
     }
     if (flag & 0x1) {
-        m_08 |= 0x1;
+        m_flags |= 0x1;
         buf->CaptureSystemPalette();
     }
     return 1;
@@ -183,7 +181,7 @@ i32 CAniRecordBase2::AllocBufMakeB(void* data, i32 flag) {
         return 0;
     }
     if (flag & 0x1) {
-        m_08 |= 0x1;
+        m_flags |= 0x1;
         buf->CaptureSystemPalette();
     }
     return 1;
@@ -197,7 +195,7 @@ i32 CAniRecordBase2::AllocBufCreate(i32 handle, i32 flag) {
         return 0;
     }
     if (flag & 0x1) {
-        m_08 |= 0x1;
+        m_flags |= 0x1;
         buf->CaptureSystemPalette();
     }
     return 1;
@@ -211,14 +209,14 @@ i32 CAniRecordBase2::AllocBufMakeB3(void* data, i32 size, i32 flag) {
         return 0;
     }
     if (flag & 0x1) {
-        m_08 |= 0x1;
+        m_flags |= 0x1;
         buf->CaptureSystemPalette();
     }
     return 1;
 }
 
 RVA(0x00168fb0, 0x1f)
-void CAniRecordBase2::FreeBuf() {
+void CAniRecordBase2::Unload() {
     CDDPalette* buf = m_buf;
     if (buf != 0) {
         OwnerMgr()->m_ptrColl->RemoveItemB(buf);

@@ -2,7 +2,7 @@
 #define GRUNTZ_DDRAWMGR_ANIRECORDBASE2_H
 
 #include <Ints.h>
-#include <Wap32/WapObj.h> // CWapObj : CObject - slots 5/6 (IsLoaded/IsReady default)
+#include <Gruntz/Loadable.h> // CLoadable : CWapObj : CObject - the real 9-slot base
 #include <rva.h>
 
 class CDDrawSurfaceMgr; // the m_0c owner (the pool + draw-target root)
@@ -12,17 +12,16 @@ class CDDrawSurfaceMgr; // the m_0c owner (the pool + draw-target root)
 // against the PAU definitions - 6 FAKE relocs (assert_relocs), a link break.
 struct CDDPalette; // the +0x10 owned work palette
 
-struct CAniRecordBase2 : public CWapObj {
-    i32 m_04, m_08;         // +0x04/+0x08 CObject-header fields (base-2 dtor resets them)
-    CDDrawSurfaceMgr* m_0c; // +0x0c  the owning manager (same slot, and now the same
-                            //        type, as CLoadable::m_ownerCtx)
-    CDDPalette* m_buf;      // +0x10  the owned work palette (FreeBuf returns it to the pool)
-
-    // The owner at its real type: the surface mgr whose m_ptrColl pool the
-    // Alloc*/FreeBuf slots drive and whose m_drawTarget PushPalette walks.
-    CDDrawSurfaceMgr* OwnerMgr() {
-        return m_0c;
-    }
+// BASE CORRECTED 2026-07-28: `: CWapObj` -> `: CLoadable`, the same dtor proof that
+// re-based AnimWorkerObj. ~CAniRecordBase2 @0x165dd0 ends `mov [esi+4],-1 /
+// mov [esi+8],0 / mov [esi+0xc],0 / mov [esi],0x5e8cb4` (0x165e04-0x165e19) - that is
+// ~CLoadable's body, in its declaration order, then the grand-base restamp. The slot
+// scheme matches too: [5] IsLoaded, [6] inherited IsReady, [7] the family's Unload
+// hook, [8] GetClassId, and only [9]..[13] new. m_04/m_08/m_0c ARE m_id/m_flags/
+// m_ownerCtx (the factories seed m_id from parent->+0x1c and m_ownerCtx from the
+// parent's own owner word).
+struct CAniRecordBase2 : public CLoadable {
+    CDDPalette* m_buf; // +0x10  the owned work palette (FreeBuf returns it to the pool)
 
     CAniRecordBase2() {}
 
@@ -31,10 +30,10 @@ struct CAniRecordBase2 : public CWapObj {
     // parent->m_0c, m_08/m_10 = 0). Modeled as a real ctor (not spelled-out stores / a
     // helper call) so cl schedules the vptr store 4th - after m_04/m_08/m_0c, before m_10 -
     // matching retail; see docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md.
-    CAniRecordBase2(i32 field04, class CDDrawSurfaceMgr* field0c) {
-        m_04 = field04;
-        m_08 = 0;
-        m_0c = field0c;
+    CAniRecordBase2(i32 field04, class CDDrawSurfaceMgr* owner) {
+        m_id = field04;
+        m_flags = 0;
+        m_ownerCtx = owner;
         m_buf = 0;
     }
 
@@ -42,11 +41,13 @@ struct CAniRecordBase2 : public CWapObj {
     // "CAniRecordView-bound" homes were a mis-home; sema xref proves the bodies are
     // referenced ONLY as THIS vtable's slots).
     virtual ~CAniRecordBase2() OVERRIDE; // [1] 0x165dd0; ??_G 0x165db0
-    virtual i32 IsLoaded() OVERRIDE;     // [5] 0x165d90 (m_buf != 0; overrides CWapObj)
+    virtual i32 IsLoaded() OVERRIDE;     // [5] 0x165d90 (m_buf != 0; overrides CLoadable)
     // slot 6 IsReady INHERITED from CWapObj (its `return 1` default @0xd5da0, reached
     // via the 0x001c08 thunk); not redeclared (that was a phantom own "IsValidImage").
-    virtual void FreeBuf();   // [7] 0x168fb0  release m_buf into the owner pool
-    virtual i32 GetClassId(); // [8] 0x165da0  CLASSID 0x15
+    // [7] IS the family's Unload slot: release m_buf back into the owner pool. Named
+    // FreeBuf before the rebase; the dtor calls it directly (cl devirtualizes).
+    virtual void Unload() OVERRIDE;    // [7] 0x168fb0
+    virtual i32 GetClassId() OVERRIDE; // [8] 0x165da0  CLASSID 0x15
     // Slots 9-12: the buffer (de)allocation virtuals - each wraps one
     // CDDrawPtrCollections pool entrypoint (Create/MakeB/MakeB2/MakeB3) with the
     // 0x44 palette kind + the optional system-palette capture.
