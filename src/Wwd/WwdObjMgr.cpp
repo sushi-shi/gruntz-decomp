@@ -1384,9 +1384,14 @@ i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, i32 flag) {
 // 0x15b1d0: for each m_map48 object, look its key up in m_map2c; if absent, remove it
 // from m_map48 and destroy it. Returns the number removed.
 // @early-stop
-// 94.2% - logic/CFG/offsets exact; residual is the Lookup `found`-slot handling:
-// retail reads `found` into a register only on Lookup-success, our cl re-zeroes
-// the slot and compares memory. A found-slot regalloc coin-flip.
+// 93.75% - logic/CFG/offsets exact. Residual (re-derived 2026-07-28 with
+// `sema disasm 0x0015b1d0 --branches --diff`): retail CHAINS the `||`'s two false arms -
+// its `test eax,eax / je` on Lookup-failure lands on the `cmp found,0` (0x15b22d ->
+// 0x15b235) and lets the already-zero slot fail that test too, where cl merges both false
+// arms onto the remove block. Identical mechanism to CInGameIcon::Reposition @0x98a90,
+// where all three chaining spellings were measured and every one cost more than the byte
+// it bought. Retail also loads `found` into a register for the compare where cl compares
+// memory, and schedules the `found = 0` store after the arg pushes rather than before.
 RVA(0x0015b1d0, 0x9b)
 i32 CDDrawChildGroup::PruneOrphans() {
     i32 n = 0;
