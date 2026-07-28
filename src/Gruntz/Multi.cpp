@@ -3783,27 +3783,38 @@ i32 CMulti::WaitForConnect() {
 // m_cmdDelay, and picks a resend window (10 for <=5, else 30 or 20 for >8) before
 // persisting the pair (ApplyCmdDelayDefaults via the 0-arg overload).
 // @early-stop
-// this/quotient register-coloring wall (~80%): logic + math now byte-faithful after
-// four fixes - the divide is /30 (0x88888889;shr4, was wrongly /9), the resend is
-// (base>8 ? 30 : 20) (was inverted), the fn returns int (early `return 1` / tail
-// `return SaveConfig(0)`, which shrink-wraps the edi push), and ProbeLatency is
-// called on the m_4 game mgr (Mgr(), `mov ecx,[this+4]`), not on `this`. Residual:
-// retail pins this=esi / quotient=edi; our MSVC5 /O2 pins this=edi / quotient=esi,
-// a swap that cascades. Not source-steerable. Final sweep.
+// 85.81% (was 79.58). The "this/quotient register-coloring wall" is DEAD - it was the
+// clamp's shape (jcc_sieve OTHER `jge -> jb`, 2026-07-28): retail holds 3 in a SECOND
+// variable and takes the max against the UNSIGNED quotient (`mov edi,3 / cmp edx,3 / jb
+// <skip> / mov edi,edx`), where `i32 base = ...; if (base < 3) base = 3;` clamps in place
+// with a signed `cmp esi,3 / jge`. Writing `i32 base = 3; if (tuned >= 3) base = tuned;`
+// (tuned u32) restored retail's this=esi / quotient=edi colouring AND the later signed
+// `cmp edi,5 / jg`. Earlier fixes still stand: the divide is /30 (0x88888889;shr4, was
+// wrongly /9), the resend is (base>8 ? 30 : 20), the fn returns int, and ProbeLatency is
+// called on the m_4 game mgr. Residual: cl CSEs the literal 3 into edi (`cmp edx,edi` vs
+// retail `cmp edx,3`), folds `bump+1` into `lea eax,[edi+ecx+1]` where retail keeps
+// `inc ecx / add edi,ecx`, and pushes edi in the prologue instead of after the gate.
 RVA(0x000bcc10, 0x8e)
 i32 CMulti::AutoTuneCmdDelay() {
     if (m_530 != 0) {
         return 1;
     }
 
+    // An UNSIGNED max held in a SECOND variable: retail is `mov edi,3 / cmp edx,3 / jb
+    // <skip> / mov edi,edx`, i.e. 3 is the initial value and the quotient is the unsigned
+    // operand. `i32 base = ...; if (base < 3) base = 3;` clamps in place and lowers to a
+    // signed `cmp esi,3 / jge`.
     u32 ping = static_cast<u32>(GetMaxAckLatency());
-    i32 base = static_cast<i32>((ping / 30)) + 2;
-    if (base < 3) {
-        base = 3;
+    u32 tuned = ping / 30 + 2;
+    i32 base = 3;
+    if (tuned >= 3) { // UNSIGNED here (the quotient is u32) - retail `cmp edx,3 / jb`
+        base = static_cast<i32>(tuned);
     }
 
     i32 probe = Mgr()->CountReadyOptionsSlots(0); // retail calls the probe on m_4 (the game mgr)
-    base += (probe > 2 ? 1 : 0) + 1;
+    i32 bump = (probe > 2 ? 1 : 0);
+    bump += 1; // retail `setg cl / inc ecx / add edi,ecx`, not one folded lea
+    base += bump;
     m_5a4 = base;
     if (base <= 5) {
         m_drainReload = 0xa;

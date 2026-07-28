@@ -806,6 +806,11 @@ step:
 // same push order, different temp registers - plus the three unnamed engine-call
 // relocs (AddTail/DeliverHit/SelfImpact at instantiation-specific RVAs not yet in
 // symbol_names.csv). ~94%, not steerable from C source.
+// One more, from jcc_sieve 2026-07-28 (rets 1 -> 2): retail gives the row loop's FALL-OUT
+// its own epilogue (`cmp eax,0x10c / jl <top>` then pop/ret) where cl merges it with the
+// three inner `return`s into one shared exit and inverts the back-edge (`jge <shared> /
+// jmp <top>`). This is the tail-merge direction positive-gate-enables-shrink-wrap.md
+// does NOT cover (b_ret < t_ret); no spelling for it yet.
 // ---------------------------------------------------------------------------
 RVA(0x000e0b10, 0x1bd)
 void CProjectile::ScanTargets(i32 impact) {
@@ -1214,14 +1219,15 @@ static inline void TBombGridClear(CGameObject* obj) {
 // to the registry's tile-manager (NotifyMoveAt). Returns 0 on every path.
 //
 // @early-stop
-// regalloc/scheduling wall (~90.5%, docs/patterns/zero-register-pinning.md +
-// reread-member-view-pointer.md): the body is byte-faithful - the grid lookup,
-// the `(cell&0x939)||(cell&2)` split test, the 64-bit clock-elapsed compare, the
-// FAST re-arm bute read, and both detonate blocks all match. The residue is the
-// coin-flip that pins the bound object (m_object) in eax vs ecx, which cascades into
-// the screen-coord load order at the three inlined grid sites; plus the i64
-// jl/jg branch-emission order and the NotifyMoveAt arg-push schedule. Not
-// source-steerable (cy-first reordering regressed it). Parked for the final sweep.
+// 91.12% (was 89.67). The "i64 jl/jg branch-emission order" was NOT unsteerable
+// (jcc_sieve OTHER, 2026-07-28): cl emits the i64 hi-word pair branch-if-FALSE first, so
+// retail's `jl <trailing return 0> / jg <body>` is the POSITIVE form
+// `if (elapsed >= m_duration) { body }` with one shared trailing `return 0` - the
+// early-return spelling emits `jg <body> / jl <return>`. Every path returns 0 anyway.
+// Residue: the coin-flip that pins the bound object (m_object) in eax vs ecx, which
+// cascades into the screen-coord load order at the three inlined grid sites, plus the
+// NotifyMoveAt arg-push schedule (docs/patterns/zero-register-pinning.md +
+// reread-member-view-pointer.md; cy-first reordering regressed it).
 RVA(0x000e1e60, 0x1ac)
 i32 CTimeBomb::LoadAttributes() {
     i32 cell = TBombGridCell(m_object);
@@ -1231,23 +1237,30 @@ i32 CTimeBomb::LoadAttributes() {
         return 0;
     }
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    if (static_cast<i64>(g_frameTime) - m_startTime < m_duration) {
-        return 0;
+    // The POSITIVE form with one trailing `return 0`, not an early return: cl emits the
+    // i64 hi-word pair branch-if-FALSE first, so retail's `jl <trailing return 0> / jg
+    // <body>` is `if (elapsed >= m_duration) { body }` - the early-return spelling emits
+    // `jg <body> / jl <return>` instead. Every path returns 0 anyway.
+    if (static_cast<i64>(g_frameTime) - m_startTime >= m_duration) {
+        if (m_fastPhase == 0) {
+            m_value = m_38->m_1a0.m_14;
+            m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
+            m_duration = static_cast<u32>(
+                static_cast<i32>(g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8))
+            );
+            m_startTime = static_cast<u32>(static_cast<i32>(g_frameTime));
+            m_fastPhase = 1;
+        } else {
+            m_38->m_flags |= 0x10000;
+            TBombGridClear(m_object);
+            g_gameReg->m_cmdGrid->LoadExplosionSprites(
+                m_object->m_screenX,
+                m_object->m_screenY,
+                m_object->m_124,
+                1
+            );
+        }
     }
-    if (m_fastPhase == 0) {
-        m_value = m_38->m_1a0.m_14;
-        m_38->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
-        m_duration = static_cast<u32>(
-            static_cast<i32>(g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8))
-        );
-        m_startTime = static_cast<u32>(static_cast<i32>(g_frameTime));
-        m_fastPhase = 1;
-        return 0;
-    }
-    m_38->m_flags |= 0x10000;
-    TBombGridClear(m_object);
-    g_gameReg->m_cmdGrid
-        ->LoadExplosionSprites(m_object->m_screenX, m_object->m_screenY, m_object->m_124, 1);
     return 0;
 }
 
