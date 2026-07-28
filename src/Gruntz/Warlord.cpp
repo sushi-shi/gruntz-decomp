@@ -15,7 +15,8 @@
 #include <Gruntz/Play.h>  // CPlay - m_curState real class (m_frameMarker timer)
 #include <Gruntz/Timer.h> // CTimer - the frame-marker (m_currentMs)
 
-#include <Bute/ButeTree.h> // the real CButeTree (g_buteTree @0x6bf620)
+#include <Bute/ButeTree.h>     // the real CButeTree (g_buteTree @0x6bf620)
+#include <Gruntz/FontConfig.h> // CFontConfig - g_gameReg->m_chatLog (AddItem @0x21c60)
 
 #include <rva.h>
 #include <new>      // placement new (the inlined ConstructElements grow loop)
@@ -598,8 +599,73 @@ i32 CWarlord::ResolveMovingAnimation() {
     return 1;
 }
 
+// ===========================================================================
+// CWarlord::NotifyFortUnderAttack  (0x045270)  - the fort-under-attack alert
+// ===========================================================================
+// Skipped while the warlord is dead (m_a8) or already running act "D". Otherwise:
+// in the pre-game/attract mode (g_gameReg->m_134 == 1) just fire cue 0x436 and set a
+// flat 30 s cooldown; in play, once the alert rate-limiter (m_timer2*, seeded from
+// "Warlordz"/"NotifyTimer", default 6000 ms) has expired AND this warlord is the local
+// player's pending-fx warlord, fire cue 0x440, push the "Warlordz"/"NotifyString" text
+// into the chat log (type 0, data 0x11) and re-arm the limiter. Either way the moving
+// cooldown is re-rolled to (rand()%0x5dc1 + 0x1770)*10 ms, the "_PANIC" animation is
+// applied, and act "D" is latched. /GX EH frame from the two CString temporaries the
+// `"GRUNTZ_" + m_54 + "_PANIC"` concatenation builds.
+// @early-stop
+// 95.7% (from 0.55%): COMPLETE. The residual is ONE constant-materialisation choice -
+// cl5 ALSO enregisters the literal 1 (`mov ebx,0x1`, then `cmp [edx+0x134],ebx` /
+// `test bl,al` / `or al,bl` for the magic-static guard), which costs the extra
+// `push ebp` retail does not need because retail spells all four 1s as immediates and
+// pins only the 0. Nothing in C picks which literal MSVC5 enregisters
+// (docs/patterns/const-materialize-into-reg-vs-immediate.md); the guard's two uses are
+// compiler-generated, so the count cannot be reduced from source either.
 RVA(0x00045270, 0x2a8)
-void CWarlord::NotifyFortUnderAttack() {}
+i32 CWarlord::NotifyFortUnderAttack() {
+    // Both guards are written POSITIVELY around the whole body, not as early returns:
+    // retail has ONE shared `xor eax,eax` bail block and it sits PAST the success
+    // epilogue (0x45504), which is what the single trailing `return 0` produces. The
+    // early-return spelling duplicated the /GX teardown at each guard and cost a
+    // callee-saved push (docs/patterns/positive-gate-enables-shrink-wrap.md).
+    if (m_a8 == 0) {
+        bool alreadyPanicking = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeD) == 0);
+        if (!alreadyPanicking) {
+            if (g_gameReg->m_134 == 1) {
+                g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_188, 0x436, -1, -1, -1);
+                m_cooldownWindow64 = 0x7530;
+                m_cooldownStamp64 = static_cast<u32>(g_frameTime);
+            } else {
+                if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_timer2Stamp64
+                        >= m_timer2Window64
+                    && g_gameReg->m_cmdGrid->m_pendingFx == this) {
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_188, 0x440, -1, -1, -1);
+                    static CString s_alert("ALERT - Your Fort is under attack!");
+                    g_gameReg->m_chatLog->AddItem(
+                        static_cast<LPCTSTR>(
+                            *g_buteMgr.GetStringDef("Warlordz", "NotifyString", &s_alert)
+                        ),
+                        0,
+                        0x11
+                    );
+                    m_timer2Window64 =
+                        static_cast<u32>(g_buteMgr.GetIntDef("Warlordz", "NotifyTimer", 0x1770));
+                    m_timer2Stamp64 = static_cast<u32>(g_frameTime);
+                }
+                m_cooldownWindow64 = static_cast<u32>((GruntRand() % 0x5dc1 + 0x1770) * 10);
+                m_cooldownStamp64 = static_cast<u32>(g_frameTime);
+            }
+
+            m_value = m_38->m_1a0.m_14;
+            m_38->m_1a0.Setup(m_animPanic);
+
+            m_38->ApplyName(s_GRUNTZ_ + m_54 + s__PANIC);
+
+            m_prevAnimSetNode = m_objAux->m_1c;
+            m_objAux->m_1c = ActFindId(s_codeD);
+            return 1;
+        }
+    }
+    return 0;
+}
 
 RVA(0x000455f0, 0x15b)
 i32 CWarlord::ResolveDeathAnimation() {

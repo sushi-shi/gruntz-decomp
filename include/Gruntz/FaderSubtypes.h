@@ -69,18 +69,26 @@ public:
     // ApplyInit latches the source boxes + geometry, range-checks the 0..100 intensity,
     // computes the scaled magnitude (m_54) via the FP pipeline, then fills four parallel
     // 2000-int arrays (three zeroed, one seeded with rand()%count) and scatters the last.
-    CDDSurface* m_srcBox;     // +0x38  active source surface (else CFader::m_timerA)
-    CDDSurface* m_dstBox;     // +0x3c  active alt/dst surface (else CFader::m_timerB)
-    i32 m_boxParam;           // +0x40  count/param (=1 when m_dstBox is null)
-    char _pad44[0x4c - 0x44]; // +0x44..+0x4b
-    i32 m_frameCount;         // +0x4c  frame count (source +0x18)
-    i32 m_elemCount;          // +0x50  element count (source +0x1c)
-    i32 m_scaledMag;          // +0x54  scaled magnitude (intensity * scale * frames)
-    i32 m_intensity;          // +0x58  intensity (0..100)
-    i32 m_arr0[2000];         // +0x5c
-    i32 m_arr1[2000];         // +0x1f9c  seeded with rand()%count
-    i32 m_arr2[2000];         // +0x3edc
-    i32 m_arr3[2000];         // +0x5e1c  scattered, handed to ScatterSamples
+    CDDSurface* m_srcBox; // +0x38  active source surface (else CFader::m_timerA)
+    CDDSurface* m_dstBox; // +0x3c  active alt/dst surface (else CFader::m_timerB)
+    i32 m_boxParam;       // +0x40  count/param (=1 when m_dstBox is null)
+    // +0x44/+0x48: the two Lock()ed pixel bases RenderFrame (0x17ff30) holds for the
+    // whole frame - it stores each surface's `Lock(0)` result here and reads them back
+    // as the row bases for every fill/copy (`mov [esi+0x44],eax` / `mov [esi+0x48],eax`
+    // at 0x17ff53 / 0x17ff64). Was an unnamed `char _pad44[8]`.
+    u8* m_srcBits;    // +0x44  m_srcBox's locked pixels
+    u8* m_dstBits;    // +0x48  m_dstBox's locked pixels
+    i32 m_frameCount; // +0x4c  frame count (source +0x18)
+    i32 m_elemCount;  // +0x50  element count (source +0x1c)
+    i32 m_scaledMag;  // +0x54  scaled magnitude (intensity * scale * frames)
+    i32 m_intensity;  // +0x58  intensity (0..100)
+    i32 m_arr0[2000]; // +0x5c    per-row pixels already spent (integer running total)
+    i32 m_arr1[2000]; // +0x1f9c  per-row cursor into m_arr3, seeded with FxRand()%count
+    // +0x3edc: the per-row FRACTIONAL carry, and it is FLOAT, not int - RenderFrame
+    // reads/writes it exclusively with `fld`/`fadd`/`fsubr`/`fstp dword ptr` and compares
+    // it against 1.0f to decide when a whole pixel has accumulated.
+    float m_arr2[2000];
+    i32 m_arr3[2000]; // +0x5e1c  the shuffled pixel order (ScatterSamples)
 };
 SIZE(0x7d5c);
 

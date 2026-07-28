@@ -45,44 +45,12 @@ inline void* operator new(u32, void* p) {
 // dissolved onto the real ??1CLoadable/??_GCLoadable identities.
 RVA_COMPGEN(0x000d5d70, 0x16, ??1CLoadable@@UAE@XZ)
 
-// +0x1c is m_nCount INSIDE the +0x10 MFC map (vptr,hash,size,count) - GetCount().
-static inline i32 ReadRegistryField1c(const CDDrawWorkerRegistry* p) {
-    return p->m_10map.GetCount();
-}
-
-static inline CDDrawWorker* MakeWorker(const CDDrawWorkerRegistry* parent) {
-    // `new CDDrawWorker`: base ctor stamps 0x5efc30, the m_items CObArray member is
-    // default-constructed, the derived ctor stamps 0x5efbe8 (cl-implicit vptr stores).
-    CDDrawWorker* w = new CDDrawWorker;
-    if (w != 0) {
-        i32 field1c = ReadRegistryField1c(parent);
-        CDDrawSurfaceMgr* surfaceMgr = parent->m_ownerCtx;
-        w->m_id = field1c;
-        w->m_flags = 0;
-        w->m_ownerCtx = surfaceMgr;
-        w->m_minIndex = 99999;
-        w->m_maxIndex = 0;
-    }
-    return w;
-}
-
-static inline CDDrawWorker* FindOrCreateWorker(CDDrawWorkerRegistry* parent, const char* key) {
-    CObject* found = 0;
-    parent->m_10map.Lookup(key, found);
-    if (found == 0) {
-        CDDrawWorker* worker = MakeWorker(parent);
-        if (worker->SetKey(key) == 0) {
-            if (worker != 0) {
-                delete worker;
-            }
-            return 0;
-        }
-        parent->m_10map[key] = static_cast<CObject*>(worker);
-        found = static_cast<CObject*>(worker);
-    }
-    return static_cast<CDDrawWorker*>(found);
-}
-
+// The keyed find-or-create is spelled OUT in each of the four DispatchKeyed* slots, not
+// behind a helper: retail expands the whole thing - including the `new CDDrawWorker` and
+// its inline ctor chain - into every slot body, which is why all four carry a /GX EH
+// frame (the partially-constructed worker must be operator-delete'd on a throw). It
+// CANNOT be factored into a `static inline` helper: cl5 refuses to inline a function that
+// owns an EH region, so the helper form emitted a plain `call` and no frame at all.
 RVA(0x00154aa0, 0x20)
 i32 CDDrawWorkerRegistry::IsReady() {
     memset(&g_bltFx, 0, sizeof(g_bltFx));
@@ -99,18 +67,35 @@ void CDDrawWorkerRegistry::Unload() {
 
 RVA(0x00154ae0, 0xfc)
 CImage* CDDrawWorkerRegistry::DispatchKeyed38(void* rec, const char* key, i32 a3, i32 a4) {
-    CDDrawWorker* worker = FindOrCreateWorker(this, key);
+    CDDrawWorker* worker = 0;
+    m_10map.Lookup(key, reinterpret_cast<CObject*&>(worker));
     if (worker == 0) {
-        return 0;
+        // +0x1c is m_nCount INSIDE the +0x10 MFC map (vptr,hash,size,count) - GetCount().
+        worker = new CDDrawWorker(m_ownerCtx, m_10map.GetCount());
+        if (worker->SetKey(key) == 0) {
+            if (worker != 0) {
+                delete worker;
+            }
+            return 0;
+        }
+        m_10map.SetAt(key, worker);
     }
     return worker->InsertFrame(rec, a3, a4);
 }
 
 RVA(0x00154be0, 0xfc)
 CImage* CDDrawWorkerRegistry::DispatchKeyed34(char* path, const char* key, i32 index, i32 keyed) {
-    CDDrawWorker* worker = FindOrCreateWorker(this, key);
+    CDDrawWorker* worker = 0;
+    m_10map.Lookup(key, reinterpret_cast<CObject*&>(worker));
     if (worker == 0) {
-        return 0;
+        worker = new CDDrawWorker(m_ownerCtx, m_10map.GetCount());
+        if (worker->SetKey(key) == 0) {
+            if (worker != 0) {
+                delete worker;
+            }
+            return 0;
+        }
+        m_10map.SetAt(key, worker);
     }
     return worker->CreateFrame30(path, index, keyed);
 }
@@ -123,9 +108,17 @@ CImage* CDDrawWorkerRegistry::DispatchKeyed30(
     i32 index,
     u32 size
 ) {
-    CDDrawWorker* worker = FindOrCreateWorker(this, key);
+    CDDrawWorker* worker = 0;
+    m_10map.Lookup(key, reinterpret_cast<CObject*&>(worker));
     if (worker == 0) {
-        return 0;
+        worker = new CDDrawWorker(m_ownerCtx, m_10map.GetCount());
+        if (worker->SetKey(key) == 0) {
+            if (worker != 0) {
+                delete worker;
+            }
+            return 0;
+        }
+        m_10map.SetAt(key, worker);
     }
     return worker->CreateFrame28(desc, mode, index, size);
 }
@@ -138,9 +131,17 @@ CImage* CDDrawWorkerRegistry::DispatchKeyed2C(
     i32 index,
     i32 keyed
 ) {
-    CDDrawWorker* worker = FindOrCreateWorker(this, key);
+    CDDrawWorker* worker = 0;
+    m_10map.Lookup(key, reinterpret_cast<CObject*&>(worker));
     if (worker == 0) {
-        return 0;
+        worker = new CDDrawWorker(m_ownerCtx, m_10map.GetCount());
+        if (worker->SetKey(key) == 0) {
+            if (worker != 0) {
+                delete worker;
+            }
+            return 0;
+        }
+        m_10map.SetAt(key, worker);
     }
     return worker->CreateFrame24(width, height, index, keyed);
 }
@@ -178,12 +179,6 @@ CDDrawWorkerRegistry::Forward2C(i32 width, i32 height, CDDrawWorker* worker, i32
 // buffer and accumulate this->+0x48(entry, buf, prefix). Then, when sub is set,
 // find-or-create the keyed worker, dispatch its +0x28(dir), and either run
 // this->+0x54(sub) (worker inactive) or bump the count. /GX EH frame.
-// @early-stop
-// worker-ctor + regalloc wall: the directory walk / sprintf-vs-strcpy / +0x48
-// dispatch / find-or-create / +0x28 / status branch are reproduced; retail's
-// inline worker construction seeds fields before the CByteArray ctor + stamps the
-// derived vtable last, and the buffer/entry register schedule differs.
-// Reloc-masked EH-state + map/thunk names. Logic/CFG/offsets complete.
 RVA(0x00154f80, 0x1d5)
 i32 CDDrawWorkerRegistry::InstallTree(void* tree, const char* sub, const char* prefix) {
     CSymTab* dir = static_cast<CSymTab*>(tree);
@@ -204,9 +199,17 @@ i32 CDDrawWorkerRegistry::InstallTree(void* tree, const char* sub, const char* p
         e = static_cast<CSymTab*>(dir->NextSub(e));
     }
     if (sub != 0 && *sub != 0) {
-        CDDrawWorker* w = FindOrCreateWorker(this, sub);
+        CDDrawWorker* w = 0;
+        m_10map.Lookup(sub, reinterpret_cast<CObject*&>(w));
         if (w == 0) {
-            return 0;
+            w = new CDDrawWorker(m_ownerCtx, m_10map.GetCount());
+            if (w->SetKey(sub) == 0) {
+                if (w != 0) {
+                    delete w;
+                }
+                return 0; // retail leaks `buf` on this arm - it jumps past the delete
+            }
+            m_10map.SetAt(sub, w);
         }
         w->BuildFramesFromSymTab(dir);
         if (w->m_items.GetSize() == 0) {

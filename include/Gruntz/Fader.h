@@ -18,9 +18,9 @@ public:
     virtual void BeginFade();            // slot 3 (0x17e790, sibling TU; base = empty default)
     virtual void EndFade();              // slot 4 (0x17e7a0, sibling TU; base = empty default)
 
-    void Wait(i32 delay);         // 0x17e510 - busy-wait until GetTickCount >= now+delay
+    void Wait(i32 delay); // 0x17e510 - busy-wait until GetTickCount >= now+delay
     void SetTimers(CDDSurface* src, CDDSurface* dst); // 0x17e760
-    void Set2c(class CDDrawPtrCollections* pool); // 0x17e780
+    void Set2c(class CDDrawPtrCollections* pool);     // 0x17e780
     // 0x17e540 - the stepped counterpart of RunFade: prime frame 0, busy-wait the
     // lead-in, then render every `step`-th frame from 1..GetFrameCount() back-to-back (no timing;
     // optional per-frame vsync gate + RenderFrame(frame) each step), then finalize
@@ -65,6 +65,9 @@ extern const double g_faderScale;       // 10000.0
 extern const double g_faderBiasR;       // -1.0  (r - K == r + 1.0)
 extern const float g_faderBiasFade;     // -1.0  (fade - K == fade + 1.0)
 extern const float g_faderOne;          // 1.0  (per-cell render threshold: fade - frame > 1.0)
+extern const float g_faderHalfPi;       // 1.570795 == 3.14159/2 (CFaderFlat's sine sweep)
+extern const float g_sineHalfPi;        // 1.570795 (CFaderSine's own copy @0x5f0860)
+extern const float g_sineOne;           // 1.0 (CFaderSine's whole-pixel carry gate)
 extern "C" int _access(const char* path, int mode); // 0x193900 CRT
 
 extern float g_fxBias;
@@ -72,7 +75,7 @@ extern float g_fxEps;
 
 // File-scope prototypes moved from the .cpp (external linkage
 // belongs in the owner header).
-void __cdecl operator delete(void* p); // ??3@YAXPAX@Z (0x1b9b82)
+void __cdecl operator delete(void* p);        // ??3@YAXPAX@Z (0x1b9b82)
 void ScatterSamples(i32* arr, i32, i32, i32); // 0x182940 ?ScatterSamples@@YAXPAHHHH@Z
 
 #endif // GRUNTZ_GRUNTZ_CFADER_H
