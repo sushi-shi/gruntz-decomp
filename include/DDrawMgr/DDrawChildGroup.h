@@ -23,6 +23,8 @@ struct CGameObject;
 struct CGameObject;    // <Gruntz/UserLogic.h> (game-side reading of the same object)
 class CWwdGameObjectA; // the created-sprite kind (CreateSprite's product type)
 class CWwdGameObject;  // <Gruntz/WwdGameObject.h> (WWD collection reading)
+class CWwdGameObjectC; // the dot/marker kind (CreateObject_159250's product type)
+class CWwdGameObjectF; // the deferred-setup kind (CreateObject_159440's product type)
 // (B)-form re-base 2026-07-22: CDDrawSurfaceMgr::Init constructs this with the
 // CLoadable 3-arg base ctor 0x156cb0 (retail decode), and vtbl 0x5efdc0 slots
 // 5-8 are the CLoadable scheme (IsLoaded/IsReady/Unload/GetClassId 0x10).
@@ -74,9 +76,12 @@ public:
     // only writer and stamps ??_7AnimWorkerObj@@6B@ on a 0x17c-byte allocation). It is
     // forwarded untouched to the object's slot-10 Setup, which copies its m_notify +
     // m_08 into the new object's own worker.
-    CWwdGameObject*
+    // The return type is the CONCRETE kind each factory news - retyped from the
+    // blanket CWwdGameObject* (the B kind, an unrelated branch of the family) that
+    // used to force a cross-cast on every `return`.
+    CWwdGameObjectC*
     CreateObject_159250(int a1, int a2, int a3, int a4, AnimWorkerObj* tmpl, int a6, int a7);
-    CWwdGameObject* CreateObject_159440(int a1, int a2, AnimWorkerObj* tmpl, int a4);
+    CWwdGameObjectF* CreateObject_159440(int a1, int a2, AnimWorkerObj* tmpl, int a4);
     CWwdGameObjectA*
     CreateObject_159600(int a1, int a2, int a3, int a4, AnimWorkerObj* tmpl, int flags);
     CWwdGameObject*
@@ -84,9 +89,9 @@ public:
     // Name-resolving factory front-ends: resolve `name` through the owner's
     // worker-cache name map (OwnerMgr()->m_workerCache->m_10, the Ob-band Lookup
     // 0x1b8008) to an id, then forward it as the matching CreateObject argument.
-    CWwdGameObject*
+    CWwdGameObjectC*
     CreateNamed_1593e0(int a1, int a2, int a3, int a4, const char* name, int a6, int a7);
-    CWwdGameObject* CreateNamed_1595b0(int a1, int a2, const char* name, int a4); // 0x1595b0
+    CWwdGameObjectF* CreateNamed_1595b0(int a1, int a2, const char* name, int a4); // 0x1595b0
     CWwdGameObject*
     CreateNamed_159a10(int a1, int a2, int a3, int a4, const char* name, int a6); // 0x159a10
 

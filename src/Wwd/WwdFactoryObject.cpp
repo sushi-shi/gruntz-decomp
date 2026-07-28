@@ -1,6 +1,6 @@
 // WwdFactoryObject.cpp - the 0x15b2c0-0x15ccc8 original TU (wave4-L dossier #15,
 // block I): the wwd object-lifecycle obj - the base-object ctors (CResolveNode
-// 3-arg / AnimWorkerObj 3-arg / CWwdGameObjBaseCtor / CAniAdvanceCursor), the five
+// 3-arg / AnimWorkerObj 3-arg / CGameObject / CAniAdvanceCursor), the five
 // ??1CWwdGameObject[A-F] /GX destructors, the CWwdFactoryObject Release/Reset
 // pass + Notify, CDDrawBlitParam (init/setup/serialize), the animation Advance
 // cursor + its Clamp pair, and the Init/SetupDeferred/SetupFlagged out-of-lines.
@@ -25,7 +25,6 @@
 #include <Gruntz/AniElement.h>       // CAniElement (the descriptor playlist full def)
 #include <Gruntz/SerialArchive.h>    // the shared CFileMemBase stream (Read/Write)
 #include <Wwd/WwdFactoryObject.h>    // CWwdFactoryObject/CDDrawRect
-#include <Wwd/WwdGameObjCtor.h>      // WwdCtorBase/CWwdGameObjBaseCtor/WwdAnimWorker
 #include <Gruntz/LeafCue.h>          // LeafCue (PlayIfElapsed - Advance's sound cue)
 
 #include <DDrawMgr/DDrawSubMgr.h> // g_sndPanScale (ex .cpp extern)
@@ -56,15 +55,10 @@ CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
 }
 
 // ---------------------------------------------------------------------------
-// 0x15b300 - AnimWorkerObj's out-of-line 3-arg seed constructor (the body the
-// 0x150eb0 factory / CreateWorker24 inlines). The arg-store order (b,c,a into
-// m_04/m_08/m_0c) is load-bearing. (Was the WorkerFull view - folded onto the
-// canonical AnimWorkerObj, whose ??_7 @0x1efb80 this ctor stamps.)
-// The base trio is CLoadable's ctor, NOT three body assignments: cl5 stamps the vptr
-// between the base/mem-init half and the ctor body, which is retail's vptr-after-
-// m_id/m_flags/m_ownerCtx order. (The old note here called that a "vptr-first wall";
-// it was a mis-model - the trio was spelled in the body, which makes them derived
-// member inits and pushes the stamp to the front.)
+// 0x15b300 - AnimWorkerObj's out-of-line 3-arg seed constructor. The arg-store order
+// (b,c,a into m_04/m_08/m_0c) is load-bearing. The base trio is CLoadable's ctor,
+// NOT three body assignments: cl5 stamps the vptr between the base/mem-init half and
+// the ctor body, which is retail's vptr-after-m_id/m_flags/m_ownerCtx order.
 RVA(0x0015b300, 0x40)
 AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
     : CLoadable(id, stateFlags, owner) {
@@ -92,13 +86,6 @@ i32 AnimWorkerObj::Consume(i32 amount) {
 }
 
 // ---------------------------------------------------------------------------
-// CWwdGameObjBaseCtor::Construct (0x15b390) - the shared CWwdGameObject base-object
-// ctor the wide-object factories call (CreateObject_1598d0/166640; also
-// WwdFile::ReadPlaneObjects 0x162af0). A REAL /GX ctor: the CResolveNode base
-// subobject stamps ??_7CResolveNode (0x5efbc0) + its +0x04..+0xd8 fields, then the
-// CString label member (+0xdc) constructs, then the derived body final-stamps the
-// wide-object vtable, `new`-allocates the +0x7c anim worker (AnimWorkerObj), and
-// publishes g_wwdObjIdCounter.
 RVA(0x0015b370, 0x1d)
 i32 CGameObject::IsLoaded() {
     if (m_7c == 0) {
@@ -110,20 +97,11 @@ i32 CGameObject::IsLoaded() {
     return 0;
 }
 
-RVA(0x0015b390, 0x128)
-CWwdGameObjBaseCtor::CWwdGameObjBaseCtor(CDDrawSurfaceMgr* owner, int id, int stateFlags)
-    : WwdCtorBase(owner, id, stateFlags) {
-    // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-    m_screenX = static_cast<int>(0x80000000);
-    m_78 = 0;
-    m_7c = new AnimWorkerObj(owner, id);
-    m_98 = 0;
-    m_80 = 0;
-    m_88 = 0;
-    m_90 = 0;
-    m_188 = g_wwdObjIdCounter;
-    g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
-}
+// (0x15b390 is CGameObject::CGameObject(CDDrawSurfaceMgr*,i32,i32) - the shared
+// wide-object ctor, now IN-CLASS in <Wwd/WwdGameObjectFamily.h>. It used to be
+// spelled here as ??0CWwdGameObjBaseCtor over a `char _vft0[4]`/`_pXX` fake view;
+// the vtable stamps its comments called "dropped" are the two the real class emits
+// on its own - ??_7CResolveNode from the base ctor, then ??_7CGameObject.)
 
 // ---------------------------------------------------------------------------
 // 0x154a50 - ~CResolveNode: disarm the live dirty-rect sentinels; ~CLoadable
@@ -208,8 +186,7 @@ CAniAdvanceCursor::~CAniAdvanceCursor() {
 // ctor from the OUT-OF-LINE ??0CLoadable @0x156cb0 (that one schedules m_id / vptr /
 // m_flags / m_ownerCtx and is called, not inlined, by its own callers) - so
 // delegating injects no call and puts the vptr stamp where retail has it, below the
-// m_08 store. (The old note here read the out-of-line body as proof that delegating
-// was impossible; the two are separate overloads.)
+// m_08 store.
 RVA(0x0015b730, 0x2b)
 CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
     : CLoadable(field04, field08, owner) {

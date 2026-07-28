@@ -1334,7 +1334,7 @@ flags = "eh"
 [[unit]]
 unit = "wwdobjmgr"
 source = "src/Wwd/WwdObjMgr.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 # wave4-K: now the 0x148840-0x148cd8 surface-extras pocket obj only (dossier #14);

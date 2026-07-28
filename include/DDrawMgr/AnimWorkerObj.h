@@ -59,7 +59,7 @@ struct AnimWorkerObj : public CLoadable {
     // WwdAnimWorkerInit view): same stores with m_08 = 0.
     // The base trio goes through CLoadable's ctor, not through body assignments:
     // retail's inlined copies (EnsureWorker80/88/90 @0x150eb0/f90/0x151070, and
-    // CWwdGameObjBaseCtor @0x15b390) all store m_id/m_flags/m_ownerCtx BEFORE the
+    // CGameObject::CGameObject @0x15b390) all store m_id/m_flags/m_ownerCtx BEFORE the
     // ??_7AnimWorkerObj@@6B@ stamp, and the vptr stamp always splits the base/
     // mem-init half from the ctor body (docs/patterns/vptr-stamp-splits-meminit-
     // from-body.md). Spelling the trio in the body puts the stamp first instead.

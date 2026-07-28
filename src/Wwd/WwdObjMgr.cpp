@@ -23,12 +23,11 @@
 #include <Mfc.h> // CPtrList, CMapPtrToPtr (real afxcoll, for the m_10/m_map2c/m_map48 layout)
 #include <Gruntz/Sprite.h> // CDDrawWorker (frame-data template value)
 #include <DDrawMgr/AnimWorkerObj.h> // the canonical +0x7c worker/logic record (ex CWwdWorker/CLogicRecord views)
-#include <Gruntz/ResolveNode.h>      // canonical CResolveNode (the factory base sub-object)
-#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (the +0x1a0 sub-object; ctor 0x15b730)
-#include <Wwd/WwdFactoryObject.h>    // CWwdFactoryObject/CWwdNotifier/CDDrawRect/RectsOverlap
-#include <Wwd/WwdGameObjCtor.h>      // WwdCtorBase/CWwdGameObjBaseCtor/WwdAnimWorker (ctor cluster)
-#include <Gruntz/WwdGameObject.h>    // canonical flat CWwdGameObject (the managed objects)
-#include <Wwd/WwdGameObjectFamily.h> // the concrete kinds A/B/C/F + the embedded records
+#include <Gruntz/ResolveNode.h>        // canonical CResolveNode (the factory base sub-object)
+#include <Gruntz/AniAdvanceCursor.h>   // CAniAdvanceCursor (the +0x1a0 sub-object; ctor 0x15b730)
+#include <Wwd/WwdFactoryObject.h>      // CWwdFactoryObject/CWwdNotifier/CDDrawRect/RectsOverlap
+#include <Gruntz/WwdGameObject.h>      // canonical flat CWwdGameObject (the managed objects)
+#include <Wwd/WwdGameObjectFamily.h>   // the concrete kinds A/B/C/F + the embedded records
 #include <DDrawMgr/DDrawChildGroup.h>  // CDDrawChildGroup (the walk dispatchers; IDENTITY == this)
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical m_0c owner (InvokeCallback + m_workerCache)
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
@@ -86,13 +85,14 @@ void CDDrawChildGroup::DestroyChildren() {
 }
 
 // ===========================================================================
-// 0x159250 - factory for the 0x190-byte kind. __thiscall, 7 stack args (ret 0x1c).
-// @early-stop
-// rezalloc-placement-new wall: construction body byte-exact, /GX EH frame absent
-// (sibling of 0x159600 @ 66.6%). docs/patterns/rezalloc-placement-new-no-eh-frame.md
+// 0x159250 - CDDrawChildGroup::CreateObject for the C kind (0x190 bytes).
+// `new CWwdGameObjectC(...)`: cl emits operator new(0x190) + the null-guarded
+// inline ctor inside a /GX ctor-in-flight frame whose trylevel walks
+// 0 (raw memory) -> 1 (CResolveNode) -> 2 (m_region) -> 3 (m_shadow) -> 4 (m_dc)
+// -> 5 (the worker's own raw block) -> -1. __thiscall, 7 stack args (ret 0x1c).
 // ===========================================================================
 RVA(0x00159250, 0x185)
-CWwdGameObject* CDDrawChildGroup::CreateObject_159250(
+CWwdGameObjectC* CDDrawChildGroup::CreateObject_159250(
     int a1,
     int a2,
     int a3,
@@ -101,47 +101,19 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_159250(
     int a6,
     int a7
 ) {
-    CWwdGameObjectC* obj = static_cast<CWwdGameObjectC*>(RezAlloc(0x190));
-    CWwdGameObjectC* result; // the 0x190 kind (vtable 0x5effd0)
-    if (obj != 0) {
-        CDDrawSurfaceMgr* root = m_ownerCtx;
-        new (static_cast<void*>(obj)) CResolveNode(root, a1, a7);
-        CWwdSlot9c* s9c = static_cast<CWwdSlot9c*>(static_cast<void*>(&obj->m_region));
-        new (s9c) CWwdSlot9c();
-        s9c->m_18 = 0;
-        new (&obj->m_b8) CWwdShadowRec();
-        new (&obj->m_dc) CString();
-        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        obj->m_screenX = static_cast<int>(0x80000000);
-        obj->m_posCache = 0;
-        // alloc + construct the real worker via the throwing operator new (test-else-0
-        // shape == retail)
-        AnimWorkerObj* worker = new AnimWorkerObj(OwnerMgr(), a1, 0);
-        obj->m_7c = worker;
-        obj->m_carrier = 0;
-        obj->m_80 = 0;
-        obj->m_88 = 0;
-        obj->m_collideWorker = 0;
-        obj->m_188 = g_wwdObjIdCounter;
-        g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
-        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        obj->m_dotColor = 0;
-        result = obj;
-    } else {
-        result = 0;
-    }
+    CWwdGameObjectC* result = new CWwdGameObjectC(OwnerMgr(), a1, a7);
     if (result->SetupFlagged(a2, a3, a4, tmpl, a6) == 0) {
         if (result != 0) {
             delete result; // virtual scalar-deleting dtor (slot 1)
         }
         return 0;
     }
-    InsertSorted(result, 1); // the launder dies - base-typed param
+    InsertSorted(result, 1);
     if (a7 & 0x200000) {
         // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
         result->m_7c->m_notify(result);
     }
-    return static_cast<CWwdGameObject*>(static_cast<void*>(result));
+    return result;
 }
 
 // CreateNamed_1593e0 (__thiscall, ret 0x1c => 7 args). Resolve `name` through the
@@ -152,7 +124,7 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_159250(
 // emits it AFTER both pushes. A non-steerable /O2 statement-scheduling coin-flip
 // (permuter + map-hoist both tried). Shared with CreateNamed_1595b0/159a10/166780.
 RVA(0x001593e0, 0x53)
-CWwdGameObject* CDDrawChildGroup::CreateNamed_1593e0(
+CWwdGameObjectC* CDDrawChildGroup::CreateNamed_1593e0(
     int a1,
     int a2,
     int a3,
@@ -171,52 +143,24 @@ CWwdGameObject* CDDrawChildGroup::CreateNamed_1593e0(
 }
 
 // ===========================================================================
-// 0x159440 - factory for the 0x18c-byte kind. __thiscall, 4 stack args (ret 0x10).
-// @early-stop
-// rezalloc-placement-new wall (sibling of 0x159600). frame absent, body exact.
+// 0x159440 - CDDrawChildGroup::CreateObject for the F kind (0x18c bytes).
+// __thiscall, 4 stack args (ret 0x10).
 // ===========================================================================
 RVA(0x00159440, 0x170)
-CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, AnimWorkerObj* tmpl, int a4) {
-    CWwdGameObjectF* obj = static_cast<CWwdGameObjectF*>(RezAlloc(0x18c));
-    CWwdGameObjectF* result; // the 0x18c kind (vtable 0x5f0060)
-    if (obj != 0) {
-        CDDrawSurfaceMgr* root = m_ownerCtx;
-        new (static_cast<void*>(obj)) CResolveNode(root, a1, a4);
-        CWwdSlot9c* s9c = static_cast<CWwdSlot9c*>(static_cast<void*>(&obj->m_region));
-        new (s9c) CWwdSlot9c();
-        s9c->m_18 = 0;
-        new (&obj->m_b8) CWwdShadowRec();
-        new (&obj->m_dc) CString();
-        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        obj->m_screenX = static_cast<int>(0x80000000);
-        obj->m_posCache = 0;
-        // alloc + construct the real worker via the throwing operator new (test-else-0
-        // shape == retail)
-        AnimWorkerObj* worker = new AnimWorkerObj(OwnerMgr(), a1, 0);
-        obj->m_7c = worker;
-        obj->m_carrier = 0;
-        obj->m_80 = 0;
-        obj->m_88 = 0;
-        obj->m_collideWorker = 0;
-        obj->m_188 = g_wwdObjIdCounter;
-        g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
-        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        result = obj;
-    } else {
-        result = 0;
-    }
+CWwdGameObjectF*
+CDDrawChildGroup::CreateObject_159440(int a1, int a2, AnimWorkerObj* tmpl, int a4) {
+    CWwdGameObjectF* result = new CWwdGameObjectF(OwnerMgr(), a1, a4);
     if (result->SetupDeferred(a2, tmpl) == 0) {
         if (result != 0) {
             delete result; // virtual scalar-deleting dtor (slot 1)
         }
         return 0;
     }
-    InsertSorted(result, 1); // the launder dies - base-typed param
+    InsertSorted(result, 1);
     if (a4 & 0x200000) {
-        // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
         result->m_7c->m_notify(result);
     }
-    return static_cast<CWwdGameObject*>(static_cast<void*>(result));
+    return result;
 }
 
 // CreateNamed_1595b0 (__thiscall, ret 0x10 => 4 args). Resolve `name` -> value and
@@ -224,25 +168,22 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, AnimWorker
 // @early-stop
 // 92% - logic byte-exact; same val=0 arg-push scheduling residual as CreateNamed_1593e0.
 RVA(0x001595b0, 0x44)
-CWwdGameObject* CDDrawChildGroup::CreateNamed_1595b0(int a1, int a2, const char* name, int a4) {
+CWwdGameObjectF* CDDrawChildGroup::CreateNamed_1595b0(int a1, int a2, const char* name, int a4) {
     CObject* val = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
     return CreateObject_159440(a1, a2, static_cast<AnimWorkerObj*>(val), a4);
 }
 
 // ===========================================================================
-// 0x159600 - CDDrawChildGroup::CreateObject (a.k.a. CDDrawChildGroup::CreateSpriteImpl):
-// allocate + construct a 0x1dc-byte CWwdGameObject, register it in the manager
-// (InsertSorted), and (when `flags & 0x200000`) kick its worker's
-// slot +0x10. __thiscall, 6 stack args, ret 0x18.
+// 0x159600 - CDDrawChildGroup::CreateObject for the A kind (0x1dc bytes): allocate
+// + construct, register it (InsertSorted), and - when `flags & 0x200000` - kick the
+// worker's m_notify. __thiscall, 6 stack args (ret 0x18).
 // @early-stop
-// RezAlloc + placement-construct EH-frame wall (docs/patterns/rezalloc-placement-
-// new-no-eh-frame.md): the body is byte-exact, but MSVC5 predates placement
-// operator delete so the in-place sub-object construction emits NO ctor-in-flight
-// /GX EH state - retail's full `push -1 / fs:0` frame + shared jmp epilogue is
-// absent, shifting every byte offset. Deferred to the final sweep when the
-// wide-object ctor + a class-`operator new` real-allocator path can emit the
-// retail frame. Logic/fields/offsets complete.
+// ONE instruction: retail CALLS WwdRegion's ctor COMDAT (0x15b2b0) for the +0x9c
+// member here, while our cl expands it (`mov [ebp+0x18],edi` in place of the call).
+// The same in-class placement is what takes CreateObject_159250/159440 to EXACT
+// (there retail expands it too), so the two demands are in direct conflict and
+// MSVC5 has no per-callsite noinline. docs/patterns/ob1-inline-budget-divergence.md
 // ===========================================================================
 RVA(0x00159600, 0x1ab)
 CWwdGameObjectA* CDDrawChildGroup::CreateObject_159600(
@@ -253,51 +194,18 @@ CWwdGameObjectA* CDDrawChildGroup::CreateObject_159600(
     AnimWorkerObj* tmpl,
     i32 flags
 ) {
-    CWwdGameObjectA* obj = static_cast<CWwdGameObjectA*>(RezAlloc(0x1dc));
-    CWwdGameObjectA* result; // the 0x1dc kind (vtable 0x5f00a8)
-    if (obj != 0) {
-        CDDrawSurfaceMgr* root = m_ownerCtx;
-        new (static_cast<void*>(obj)) CResolveNode(root, a1, flags);
-        new (&obj->m_region) CWwdSlot9cA();
-        new (&obj->m_b8) CWwdShadowRec();
-        new (&obj->m_dc) CString();
-        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        CWwdGameObjectA* o = obj;
-        o->m_screenX = static_cast<i32>(0x80000000);
-        o->m_posCache = 0;
-        // alloc + construct the real worker via the throwing operator new (test-else-0
-        // shape == retail)
-        AnimWorkerObj* worker = new AnimWorkerObj(OwnerMgr(), a1, flags);
-        o->m_7c = worker;
-        o->m_carrier = 0;
-        o->m_80 = 0;
-        o->m_88 = 0;
-        o->m_collideWorker = 0;
-        o->m_188 = g_wwdObjIdCounter;
-        g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
-        new (&obj->m_1a0) CAniAdvanceCursor(root, a1, flags);
-        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        o->m_18c = -1;
-        o->m_190 = -1;
-        o->m_layer = 0;
-        o->m_194 = 0;
-        o->m_19c = 0;
-        result = o;
-    } else {
-        result = 0;
-    }
+    CWwdGameObjectA* result = new CWwdGameObjectA(OwnerMgr(), a1, flags);
     if (result->Setup(a2, a3, a4, tmpl) == 0) {
         if (result != 0) {
             delete result; // virtual scalar-deleting dtor (slot 1)
         }
         return 0;
     }
-    InsertSorted(result, 1); // the launder dies - base-typed param
+    InsertSorted(result, 1);
     if (flags & 0x200000) {
-        // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
         result->m_7c->m_notify(result);
     }
-    return static_cast<CWwdGameObject*>(static_cast<void*>(result));
+    return result;
 }
 
 RVA(0x001597b0, 0x57)
@@ -371,49 +279,33 @@ i32 CDDrawChildGroup::AttachSprite(
 }
 
 // ===========================================================================
-// 0x1598d0 - factory for the 0x1fc-byte kind. __thiscall, 6 stack args (ret 0x18).
+// 0x1598d0 - CDDrawChildGroup::CreateObject for the B kind (0x1fc bytes).
+// The one factory where RETAIL called the shared CGameObject ctor COMDAT (0x15b390)
+// instead of inlining it - the B ctor is the biggest of the four, so retail's inline
+// budget ran out one level up. __thiscall, 6 stack args (ret 0x18).
 // @early-stop
-// rezalloc-placement-new wall (sibling of 0x159600). frame absent, body exact.
+// cl-5.0 inline-budget divergence (docs/patterns/ob1-inline-budget-divergence.md):
+// the body/types/EH states are right, but our cl EXPANDS CGameObject's in-class ctor
+// here where retail's CALLED its COMDAT (0x15b390). MSVC5 /O2 is /Ob1, so the ctor
+// must stay an inline candidate for CreateObject_159250/159440/159600 (all EXACT via
+// that expansion) - and there is no MSVC5 noinline to force the call back. Not
+// steerable from source; retail's 0x15b390 COMDAT is consequently unemitted here.
 // ===========================================================================
 RVA(0x001598d0, 0x13d)
 CWwdGameObject*
 CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, AnimWorkerObj* tmpl, int a6) {
-    CWwdGameObject* obj = static_cast<CWwdGameObject*>(RezAlloc(0x1fc));
-    CWwdGameObject* result; // the 0x1fc kind (vtable 0x5f00e8)
-    if (obj != 0) {
-        CDDrawSurfaceMgr* root = m_ownerCtx;
-        new (static_cast<void*>(obj)) CWwdGameObjBaseCtor(OwnerMgr(), a1, a6);
-        // the embedded anim cursor's CLoadable base (ctor 0x156cb0)
-        new (&obj->m_1a0) CLoadable(root, a1, a6);
-        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        obj->m_1a0.m_10 = 0;
-        obj->m_1a0.m_14 = 0;
-        obj->m_1a0.m_element = 0;
-        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        obj->m_18c = -1;
-        obj->m_190 = -1;
-        obj->m_layer = 0;
-        obj->m_194 = 0;
-        obj->m_19c = 0;
-        new (&obj->m_1dc) CObList(0xa);
-        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        obj->m_1f8 = 0;
-        result = obj;
-    } else {
-        result = 0;
-    }
+    CWwdGameObject* result = new CWwdGameObject(OwnerMgr(), a1, a6);
     if (result->Setup(a2, a3, a4, tmpl) == 0) {
         if (result != 0) {
             delete result; // virtual scalar-deleting dtor (slot 1)
         }
         return 0;
     }
-    InsertSorted(result, 1); // the launder dies - base-typed param
+    InsertSorted(result, 1);
     if (a6 & 0x200000) {
-        // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
         result->m_7c->m_notify(result);
     }
-    return static_cast<CWwdGameObject*>(static_cast<void*>(result));
+    return result;
 }
 
 // CreateNamed_159a10 (__thiscall, ret 0x18 => 6 args). Resolve `name` -> value; if
@@ -563,7 +455,7 @@ void CDDrawChildGroup::ResetChildD8() {
     if (n != 0) {
         do {
             CGameObject* cur_obj = NextChild(n);
-            cur_obj->m_d8 = -1;
+            cur_obj->m_shadow.m_armed = -1;
         } while (n != 0);
     }
 }
@@ -1230,7 +1122,9 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
         savedCounter = g_wwdObjIdCounter;
         g_wwdObjIdCounter = desc.m_04;
 
-        CWwdGameObjectA* createdObj = 0;
+        // the common base of every kind the switch can build (A / F / B / the
+        // host-registered one) - the only member read below is CGameObject::m_7c
+        CGameObject* createdObj = 0;
         switch (desc.m_08) {
             case 5: {
                 CObject* val;
@@ -1420,21 +1314,18 @@ i32 CDDrawChildGroup::PruneOrphans() {
     return n;
 }
 
+// The three embedded sub-object ctors at the block tail. Out-of-line (== not an
+// inline candidate under /Ob1) is load-bearing: every construction of them is a
+// CALL, which is what the four factories above emit.
+
 RVA(0x0015b270, 0x11)
-CWwdShadowRec::CWwdShadowRec() {
-    m_8 = static_cast<i32>(0x80000000);
-    m_20 = -1;
+WwdDirtyRect::WwdDirtyRect() {
+    m_rect.left = static_cast<i32>(0x80000000);
+    m_armed = -1;
 }
 
 RVA(0x0015b2a0, 0xb)
-CWwdSlot9c::CWwdSlot9c() {
-    m_0c = 0;
+WwdGridNode::WwdGridNode() {
+    m_bucket = 0;
     m_08 = 0;
-}
-
-RVA(0x0015b2b0, 0xe)
-CWwdSlot9cA::CWwdSlot9cA() {
-    m_c = 0;
-    m_8 = 0;
-    m_18 = 0;
 }

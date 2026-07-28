@@ -13,6 +13,11 @@ class CFileMemBase;
 class CAniAdvanceCursor : public CLoadable {
 public:
     CAniAdvanceCursor() {} // default (view-embed)
+    // cl auto-stamps the ??_7CAniAdvanceCursor vptr @+0, seeds the three CLoadable
+    // header fields (m_0c=owner, m_04=field04, m_08=field08) then zeroes
+    // m_10/m_14/m_18; delegating to CLoadable's INLINE 3-arg overload (a different
+    // ctor from the out-of-line ??0CLoadable @0x156cb0) puts the stamp where retail
+    // has it, below the m_08 store.
     CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08);
     virtual ~CAniAdvanceCursor() OVERRIDE; // slot 1 (scalar-deleting dtor 0x15b6b0)
     virtual i32 IsLoaded() OVERRIDE;       // slot 5  0x15b6a0
