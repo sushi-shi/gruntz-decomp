@@ -33,7 +33,7 @@ inline CTypeCollRuntime::CTypeCollRuntime()
     // language-forced: the ctor's 4th parameter is a void* - retail's own mangled name
     // ??0_zdvec@@QAE@HHHPAX@Z pins it as PAX - and the value passed is the literal 1, a
     // sentinel the container only ever tests. C++ has no implicit int -> void*.
-    : _zdvec(sizeof(CString), 0x7d0, 0x7da, reinterpret_cast<void*>(1)) {
+    : _zdvec(sizeof(CString), 0x7d0, 0x7da, ZVecNoScratch()) {
     CString* item = Slots(); // the construction cursor, typed at the container's seam
     i32 count = m_grown;
     if (item != 0 && count != 0) {
