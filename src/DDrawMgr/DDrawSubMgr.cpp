@@ -1521,10 +1521,7 @@ i32 CDDrawSubMgrPages::TransExit() {
 }
 
 RVA(0x00158f30, 0x27)
-CDrawSubWorker::CDrawSubWorker(CDDrawSurfaceMgr* owner, i32 a2, i32 a3) {
-    m_id = a2;
-    m_flags = a3;
-    m_ownerCtx = owner;
+CDrawSubWorker::CDrawSubWorker(CDDrawSurfaceMgr* owner, i32 a2, i32 a3) : CLoadable(a2, a3, owner) {
     m_width = 0;
 }
 RVA(0x00158f60, 0x1d)

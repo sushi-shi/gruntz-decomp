@@ -27,13 +27,10 @@ struct CAniRecordBase2 : public CLoadable {
 
     // The map-worker ctor (inline): the 5 CDDrawWorkerMapSmall factory sites all build a
     // CAniRecordBase2 with the SAME 4-field seed (field04 = parent->+0x1c, field0c =
-    // parent->m_0c, m_08/m_10 = 0). Modeled as a real ctor (not spelled-out stores / a
-    // helper call) so cl schedules the vptr store 4th - after m_04/m_08/m_0c, before m_10 -
-    // matching retail; see docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md.
-    CAniRecordBase2(i32 field04, class CDDrawSurfaceMgr* owner) {
-        m_id = field04;
-        m_flags = 0;
-        m_ownerCtx = owner;
+    // parent->m_0c, m_08/m_10 = 0). The three header words are seeded by the BASE ctor and
+    // m_buf by this body - that split is what puts the vptr stamp 4th, where retail has it
+    // (docs/patterns/vptr-stamp-splits-meminit-from-body.md).
+    CAniRecordBase2(i32 field04, class CDDrawSurfaceMgr* owner) : CLoadable(field04, owner) {
         m_buf = 0;
     }
 

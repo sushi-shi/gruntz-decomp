@@ -718,11 +718,9 @@ _zvec::~_zvec() {
 // implicit ??_7 vptr stamp to FIRST; the hand-rolled last-store cannot be sunk in
 // MSVC5 (same mechanism as CZArray2D). Converted per the ALL-VTABLES mandate.
 RVA(0x0016df70, 0x22)
-CButeNodeEntry::CButeNodeEntry(i32 n, void(__cdecl* teardown)(void*)) {
-    m_teardown = teardown;
-    m_kind = static_cast<i16>(n);
-    m_nodeCount = 0;
-}
+CButeNodeEntry::CButeNodeEntry(i32 n, void(__cdecl* teardown)(void*))
+    // all three are member-INITS: retail's vptr stamp is LAST, i.e. the body is empty
+    : m_teardown(teardown), m_kind(static_cast<i16>(n)), m_nodeCount(0) {}
 
 RVA_COMPGEN(0x0016dfa0, 0x1e, ??_GCButeNodeEntry@@UAEPAXI@Z)
 RVA(0x0016dfc0, 0x7)
@@ -745,10 +743,11 @@ CVariantSlot g_symTabErrorSlot("zSymTab: ");
 // last-stores. Logic byte-faithful; converted per the ALL-VTABLES mandate.
 RVA(0x0016dff0, 0x73)
 zPTree::zPTree(void(__cdecl* teardown)(void*), i32 n)
-    : zErrHandling(&g_symTabErrorSlot), CButeNodeEntry(n, teardown) {
-    m_root = 0;
-    m_lookupPending = 0;
-}
+    // m_root / m_lookupPending are member-INITS: retail stamps ??_7zPTree AFTER them
+    : zErrHandling(&g_symTabErrorSlot),
+      CButeNodeEntry(n, teardown),
+      m_root(0),
+      m_lookupPending(0) {}
 
 RVA(0x0016e070, 0x7b)
 void zPTree::ClearRecursive(CButeTreeNode* node) {

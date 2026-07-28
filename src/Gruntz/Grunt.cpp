@@ -1916,7 +1916,14 @@ i32 CGrunt::CreateToySprite() {
     );
     m_toySprite->m_7c->m_notify(m_toySprite);
 
-    CGruntToySprite* reg = static_cast<CGruntToySprite*>(m_toySprite->m_7c->m_logic);
+    // the middle link is a named local, as in all four sibling Create*Sprite bodies:
+    // that is what makes cl chase the chain in ONE register (`mov eax,[eax+0x7c]`), which
+    // is what retail does here. objdiff scores this version LOWER (91.2 vs 92.1) because
+    // the remaining difference - retail loads m_tileOwnerHi late, into the register the
+    // chain just freed - is now an instruction DISPLACEMENT rather than a register rename;
+    // two more instructions are byte-identical than before. Kept on the byte evidence.
+    AnimWorkerObj* inner = m_toySprite->m_7c;
+    CGruntToySprite* reg = static_cast<CGruntToySprite*>(inner->m_logic);
     if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo)) {
         reg->m_38->m_flags |= 0x10000;
         m_toySprite = 0;

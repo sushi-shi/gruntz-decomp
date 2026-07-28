@@ -137,12 +137,12 @@ static char* g_errMsg_BadArg;
 
 RVA(0x0016d9c0, 0x75)
 RVA_COMPGEN(0x0016da40, 0x1e, ??_GzErrHandling@@UAEPAXI@Z)
-zErrHandling::zErrHandling(CVariantSlot* errSink) {
-    // +0x04 stored first, the vptr after it (cl's implicit stamp). The arg is the sink to
-    // register with, not a string: ~zErrHandling loads +0x04 into ecx as a __thiscall
-    // `this` (see <Wap32/zBitVec.h>). A null argument selects the constructed global sink.
-    m_errSink = errSink ? errSink : &g_globalErrorSlot;
-
+zErrHandling::zErrHandling(CVariantSlot* errSink)
+    // +0x04 is a member-INIT, which is why retail's implicit vptr stamp lands after it
+    // (the stamp is the init-list/body divider). The arg is the sink to register with, not
+    // a string: ~zErrHandling loads +0x04 into ecx as a __thiscall `this` (see
+    // <Wap32/zBitVec.h>). A null argument selects the constructed global sink.
+    : m_errSink(errSink ? errSink : &g_globalErrorSlot) {
     if (g_errMsg_OutOfMem == 0) {
         g_errMsg_OutOfMem = "Out of memory";
         g_errMsg_BadData = "Data structure is invalid";

@@ -1411,15 +1411,12 @@ i32 CDDrawWorker::ReloadFrame(CParseSource* rec, i32 n, i32 flag) {
 // decoded byte size: width*height, doubled for a 16bpp held surface or tripled for
 // 24bpp, overridden by the owned object's exact count when one is present, plus a
 // fixed 0x34-byte per-frame overhead when `raw` is 0.
-// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
-// current claim. Retired by the stale-marker sweep.)
-// 99.96% - every instruction byte-identical except the commutative `width*height` imul:
-// retail keeps m_height in esi and reads m_width as the imul memory operand; cl canonicalizes
-// to the reverse (keeps m_width, reads m_height) for EVERY spelling (a*b, b*a, temp + *=,
-// and a hoisted `i32 h = frame->m_height` local, tested 2026-07-28). A 2-byte (displacement)
-// instruction-selection canonicalization, not source-steerable. Same family as
-// CDDrawWorkerHost::Save/Load (LevelPlane.cpp) - which flip the SAME way in opposite
-// directions from identical source, i.e. the pick is context-driven inside cl.
+// (The "commutative imul operand canonicalization" here was REAL but context-driven, and
+// the context was the CImage ctor: giving CImage its partial member-init list (so the vptr
+// stamp lands 4th, as retail has it) flipped this function's imul operand pick to retail's
+// with no edit of its own. Same for CDDrawWorkerHost::Save. So a commutative-operand
+// mismatch can be a downstream READOUT of a wrong ctor shape - re-check the constructors
+// in the TU before filing one as a wall.)
 RVA(0x001523f0, 0x82)
 i32 CDDrawWorker::GetMemoryUsage(i32 raw) {
     i32 sum = 0;
