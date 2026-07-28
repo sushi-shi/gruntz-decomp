@@ -301,11 +301,11 @@ i32 CPlay::Render() {
         m_frameMarker->Draw(
             static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair),
             1
-        );                                                         // 0x27a2  CTimer::Draw
-        m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);    // 0x13e850  CDDSurface::Flip
-        UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);         // 0x2356
-        winapi_0d0b30_CopyRect(m_world->m_drawTarget->m_backPair); // 0x1519
-        return 1;                                                  // -> draw tail
+        );                                                      // 0x27a2  CTimer::Draw
+        m_world->m_drawTarget->m_frontPair->m_surface->Flip(0); // 0x13e850  CDDSurface::Flip
+        UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);      // 0x2356
+        DrawCursorSaveUnder(m_world->m_drawTarget->m_backPair); // 0x1519
+        return 1;                                               // -> draw tail
     }
 
     // m_inGame == 0
@@ -522,7 +522,7 @@ i32 CPlay::Render() {
         }
 
         m_beginMarker->FilterList2(g_frameDelta);
-        winapi_0d0b30_CopyRect(0);
+        DrawCursorSaveUnder(0);
         if (m_worldReady != 0) { // optional HUD overlay draw
             Eng_HudDraw(
                 m_world->m_drawTarget->m_frontPair->m_surface,
@@ -640,7 +640,7 @@ alt2:
             }
         }
         m_beginMarker->FilterList2(g_frameDelta);
-        winapi_0d0b30_CopyRect(0);
+        DrawCursorSaveUnder(0);
         m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
     }
     return 1; // draw tail
@@ -766,7 +766,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     // ---- 2) mode/level-number resolve ----
     i32 modeFlag = (static_cast<i32>(Update()) == 0x11) ? 1 : 0;
-    CMulti* savedThis = modeFlag ? static_cast<CMulti*>(self) : 0; // [esp+0x10] = (-modeFlag) & self
+    CMulti* savedThis =
+        modeFlag ? static_cast<CMulti*>(self) : 0; // [esp+0x10] = (-modeFlag) & self
     self->m_1c4 = 1;
     self->m_levelIndex = level;
     {
@@ -947,8 +948,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     BuildHelpReveal(0);
     FreeListTeardown(); // vtable +0x84 (CPlay slot 33)
     if (savedThis != 0) {
-        (savedThis)
-            ->AckJoinFailure(); // AckJoinFailure placeholder (0x35e4 on saved obj)
+        (savedThis)->AckJoinFailure(); // AckJoinFailure placeholder (0x35e4 on saved obj)
     }
     RegisterInputBindings();
 
@@ -1189,8 +1189,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             }
         } else {
             // load the level map + the four map sub-steps
-            if (LoadWarlordSprites(savedThis, initScratch) /* 0x2b80 */
-                && ScanBuildTiles() /* 0x3553 */ && ValidateLevelTiles()          /* 0x345e */
+            if (LoadWarlordSprites(savedThis, initScratch)               /* 0x2b80 */
+                && ScanBuildTiles() /* 0x3553 */ && ValidateLevelTiles() /* 0x345e */
                 && AddLevelGruntz() /* 0x17ee */) {
                 self->m_world->m_childGroup->TickKillCues(0);
                 self->m_guts->winapi_107d00_SetRect();
@@ -2291,18 +2291,16 @@ i32 CPlay::StepInputA() {
     }
 
     CDDSurface* half;
-    // the +0x188 / +0x198 feed blocks are streamed as 0x10-byte records; Edge names
-    // the first two dwords of whichever half is live - the pun is that overlay
-    Edge* edge;
-    void* halfPtr;
+    RECT* dst;
+    RECT* src;
     if (m_inputHalfSel == 0) {
         half = m_scratchSurface0;
-        edge = &m_188;
-        halfPtr = &m_168;
+        dst = &m_cursorSaveDst0;
+        src = &m_cursorSaveSrc0;
     } else {
         half = m_scratchSurface1;
-        edge = &m_198;
-        halfPtr = &m_178;
+        dst = &m_cursorSaveDst1;
+        src = &m_cursorSaveSrc1;
     }
 
     // null-check the draw surface m_c->m_4->m_14->m_2c (walks through the this reg).
@@ -2311,7 +2309,7 @@ i32 CPlay::StepInputA() {
         return 0;
     }
 
-    i32 r = probeTarget->BltFast(edge->m_0, edge->m_4, half, halfPtr, 0x10);
+    i32 r = probeTarget->BltFast(dst->left, dst->top, half, src, 0x10);
     if (r != 0) {
         CDDrawPtrCollections::GetErrorString(0, 0, r); // 0x141400
     }
@@ -3904,14 +3902,138 @@ i32 CPlay::BuildHelpReveal(i32 final) {
     return 1;
 }
 
+// The CState base ctor, `inline` HERE so cl folds it into CPlay::CPlay below exactly
+// as retail does (the `mov [esi],??_7CState@@6B@` + its whole field seed are emitted
+// straight into 0x8c9d0, not called). State.cpp keeps the RVA-bound standalone copy
+// at 0x8c750; this is the same two-definition arrangement GruntzMgr.cpp uses for
+// ~CPlay and MoviePlayer.cpp uses for ~CFecFile.
+inline CState::CState() {
+    m_mgr = 0;
+    m_symParser = 0;
+    m_world = 0;
+    m_levelBank = 0;
+    m_2c = 0;
+    m_blitSurface0 = 0;
+    m_blitSurface1 = 0;
+    m_38 = 0;
+    m_ready = 0;
+    m_versionString[0] = 0; // the +0x4c byte store (the buffer's lead NUL)
+    m_24 = 0;
+    m_scratchSurface0 = 0;
+    m_scratchSurface1 = 0;
+    m_cursorSaveSrc0.left = 0;
+    m_cursorSaveSrc0.right = 0x40;
+    m_cursorSaveSrc0.top = 0;
+    m_cursorSaveSrc0.bottom = 0x40;
+    m_cursorSaveSrc1.left = 0;
+    m_cursorSaveSrc1.right = 0x40;
+    m_cursorSaveSrc1.top = 0;
+    m_cursorSaveSrc1.bottom = 0x40;
+    m_cursorSaveDst0.left = 0;
+    m_cursorSaveDst0.right = 0;
+    m_cursorSaveDst0.top = 0;
+    m_cursorSaveDst0.bottom = 0;
+    m_cursorSaveDst1.left = 0;
+    m_cursorSaveDst1.right = 0;
+    m_cursorSaveDst1.top = 0;
+    m_cursorSaveDst1.bottom = 0;
+    m_cursorX = 0;
+    m_cursorY = 0;
+}
+
 // -------------------------------------------------------------------------
-// Engine-label backlog stubs.
-// -------------------------------------------------------------------------
-// @confidence: med
-// @source: rtti-vptr
-// @stub
+// CPlay::CPlay (0x8c9d0) - the out-of-line COMDAT copy of the ctor (retail also
+// FOLDS it into CGruntzMgr::TransitionState, where our `inline CPlay::CPlay` in
+// GruntzMgr.cpp reproduces the fold). IDENTITY RESOLVED 2026-07-28: this was the
+// `PlayBacklog` @stub - a placeholder name. The bytes are unmistakably a
+// constructor: the inlined CState base ctor (`mov [esi],??_7CState@@6B@` + its whole
+// field seed incl. m_170/m_174/m_180/m_184 = 0x40), the five destructible members in
+// declaration order (CString m_1b4, CPtrArray m_370, the 4x0x14 CPtrArray vector at
+// m_3a4 via ??_L, CString m_410, CPtrArray m_488) each bumping the /GX state 0..4,
+// then the `mov [esi],??_7CPlay@@6B@` derived stamp and the field-init body - and it
+// returns `this` in eax with a bare `ret`.
+// @confidence: high
+// @source: full-disasm-decode (both ??_7 stamps + the five member ctors + `mov eax,esi`)
+// @early-stop
+// 94.1% (from a 0% stub). Every store, both vptr stamps, the five member ctors, the
+// /GX state ladder 0..4 and the mem-init/body split are byte-faithful. The residue is
+// a pure store-PAIRING order inside each 64-bit timer quad: retail emits
+// lo(+0)/interval(+8)/hi(+4)/intervalHi(+0xc), cl emits strict declaration order
+// +0/+4/+8/+0xc. Not source-steerable - MSVC5 runs mem-initializers in DECLARATION
+// order no matter how the list is written (verified: reordering the initializer list
+// to retail's emission order changed nothing), so the pairing is the scheduler's.
 RVA(0x0008c9d0, 0x2bd)
-void CPlay::PlayBacklog() {}
+// The nine 64-bit timer quads are MEMBER INITIALIZERS, not body statements: retail
+// emits their stores INTERLEAVED with the five member ctors, each group landing
+// exactly where its fields sit in declaration order (m_1b4 CString / booty+ambient+
+// sync quads / m_370 CPtrArray / the m_3a4 array / cue quad / m_410 CString / the four
+// region quads / m_488 CPtrArray / the snapshot quad), and the derived ??_7CPlay stamp
+// only afterwards. That is the mem-init walk, and nothing in the body can reproduce it.
+CPlay::CPlay()
+    : m_bootyTimerLo(0),
+      m_bootyInterval(0),
+      m_bootyTimerHi(0),
+      m_bootyIntervalHi(0),
+      m_ambientTimerLo(0),
+      m_ambientInterval(0),
+      m_ambientTimerHi(0),
+      m_ambientIntervalHi(0),
+      m_syncTimerLo(0),
+      m_syncInterval(0),
+      m_syncTimerHi(0),
+      m_syncIntervalHi(0),
+      m_cueTimerLo(0),
+      m_cueInterval(0),
+      m_cueTimerHi(0),
+      m_cueIntervalHi(0),
+      m_region0TimerLo(0),
+      m_region0Interval(0),
+      m_region0TimerHi(0),
+      m_region0IntervalHi(0),
+      m_region1TimerLo(0),
+      m_region1Interval(0),
+      m_region1TimerHi(0),
+      m_region1IntervalHi(0),
+      m_region2TimerLo(0),
+      m_region2Interval(0),
+      m_region2TimerHi(0),
+      m_region2IntervalHi(0),
+      m_region3TimerLo(0),
+      m_region3Interval(0),
+      m_region3TimerHi(0),
+      m_region3IntervalHi(0),
+      m_snapBaseLo(0),
+      m_snapDur(0),
+      m_snapBaseHi(0),
+      m_snapDurHi(0) {
+    m_1bc = 0;
+    m_1c0 = 0;
+    m_1c8 = 0;
+    m_hitTest = 0;     // +0x2e0
+    m_frameMarker = 0; // +0x3f4
+    m_guts = 0;        // +0x2dc
+    m_beginMarker = 0; // +0x2e4
+    m_grid = 0;        // +0x4cc
+    m_scrollSink = 0;  // +0x4e4
+    m_2f0 = 0;
+    m_packetsRcvd = 0;     // +0x2d0
+    m_packetsSent = 0;     // +0x2d4
+    m_cursorFrame = 0;     // +0x2f4
+    m_levelId = -1;        // +0x2f8
+    m_lightFx = 0;         // +0x320
+    m_gridHasSprite = 0;   // +0x4d4
+    m_snapshotActive = 0;  // +0x4b0
+    m_ambientInitDone = 1; // +0x348
+    m_stepCountdown = 0;   // +0x510
+    m_savedZonedSound = 0; // +0x518
+    m_worldReady = 0;      // +0x30c
+    m_dragSnapActive = 0;  // +0x2e8
+    m_4f0 = 0;
+    m_dragInhibit1 = 0;   // +0x368
+    m_dragInhibit2 = 0;   // +0x36c
+    m_dragInProgress = 0; // +0x2ec
+    m_dragEndNotify = 0;  // +0x504
+}
 
 RVA(0x0008c930, 0x3)
 i32 CPlay::Vslot1a() {
@@ -4368,12 +4490,104 @@ i32 CPlay::Vslot11(i32 a, i32 x, i32 y) {
     return 1;
 }
 
-// @confidence: low
-// @source: winapi:CopyRect
-// @stub
+// ===========================================================================
+// CPlay::DrawCursorSaveUnder (0x0d0b30) - draw the cursor/marker frame with a
+// save-under, alternating between the two 64x64 scratch surfaces.
+//   1. Place the frame: (m_cursorX + m_2fc, m_cursorY + m_300) minus the image's
+//      anchor, sized by its width/height, clamped to the live video mode.
+//   2. Save the screen block that is about to be covered: BltFast the caller's
+//      surface INTO the inactive half's scratch surface through that rect, and
+//      narrow that half's src rect to the clipped size (next frame's StepInputA
+//      blits it back).
+//   3. If something was drawn this frame, run the level's clip rect through the
+//      CopyRect import and hand it to CDDSurface::DecodeThunk with the +0x418
+//      serialized scalar block.
+//   4. Render the frame itself, then flip the half selector - but ONLY when the
+//      target is not a DDSCAPS_FLIP surface (a flipping chain rotates by itself).
+// IDENTITY: the `winapi_0d0b30_CopyRect` name was a placeholder taken from the one
+// IAT call it makes (g_pCopyRect @0x6c44bc); this is a CPlay method that merely uses
+// CopyRect, not a Win32 wrapper. Renamed.
+// @confidence: high
+// @source: full-disasm-decode (BltFast/GetErrorString/DecodeThunk/RenderFrame all
+//   resolved; the COM slot +0x38 is IDirectDrawSurface::GetCaps and 0x800 is
+//   DDSCAPS_FLIP)
+// @early-stop
+// 90.0% (from a 0% stub). Logic, offsets, both clamp pairs, the save-under BltFast,
+// the CopyRect + DecodeThunk hand-off (whose by-value RECT + i16 arg-6 shape this
+// call site PROVED, taking DecodeThunk itself 61.6 -> 65.1) and the GetCaps/
+// DDSCAPS_FLIP toggle are byte-faithful. Residue is regalloc: retail pins x->ebx /
+// y->ebp and keeps the src-rect pointer in the caller-saved ecx; cl swaps x/y, spends
+// ebx on the `pair` argument and therefore spills y to a 5th local dword (frame 0x28
+// vs retail's 0x24), which shifts every [esp+N] displacement after it. Same family as
+// the neighbouring CPlay @early-stops (docs/patterns/zero-register-pinning.md).
+// ===========================================================================
 RVA(0x000d0b30, 0x200)
-i32 CPlay::winapi_0d0b30_CopyRect(CDDrawSurfacePair*) {
-    return 0;
+i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
+    i32 x = m_cursorX + m_2fc;
+    i32 y = m_cursorY + m_300;
+
+    CDDSurface* half;
+    RECT* dst;
+    RECT* src;
+    if (m_inputHalfSel == 0) {
+        half = m_scratchSurface0;
+        dst = &m_cursorSaveDst0;
+        src = &m_cursorSaveSrc0;
+    } else {
+        half = m_scratchSurface1;
+        dst = &m_cursorSaveDst1;
+        src = &m_cursorSaveSrc1;
+    }
+
+    dst->left = x - m_gridCurFrame->m_anchorX;
+    dst->right = m_gridCurFrame->m_width + dst->left;
+    dst->top = y - m_gridCurFrame->m_anchorY;
+    dst->bottom = m_gridCurFrame->m_height + dst->top;
+    if (dst->left < 0) {
+        dst->left = 0;
+    }
+    if (dst->right > m_mgr->m_modeW) {
+        dst->right = m_mgr->m_modeW;
+    }
+    if (dst->top < 0) {
+        dst->top = 0;
+    }
+    if (dst->bottom > m_mgr->m_modeH) {
+        dst->bottom = m_mgr->m_modeH;
+    }
+    src->right = dst->right - dst->left;
+    src->bottom = dst->bottom - dst->top;
+
+    CDDSurface* target = pair->m_surface;
+    if (target == 0) {
+        return 0;
+    }
+
+    i32 r = half->BltFast(0, 0, target, dst, 0x10);
+    if (r != 0) {
+        CDDrawPtrCollections::GetErrorString(0, 0, r); // 0x141400
+    }
+
+    if (m_drewThisFrame != 0) {
+        RECT vp = m_world->m_level->m_planeCtx;
+        RECT clip;
+        CopyRect((&clip), (&vp));
+        target->DecodeThunk(m_418, m_41c, m_420, m_424, 3, m_428, clip);
+    }
+
+    m_gridCurFrame->RenderFrame(pair, x, y, 0);
+
+    DDSCAPS caps;
+    i32 flipping;
+    if (target->m_ddSurface->GetCaps(&caps) == 0) {
+        flipping = caps.dwCaps & DDSCAPS_FLIP;
+    } else {
+        flipping = 0;
+    }
+    if (flipping == 0) {
+        m_inputHalfSel = m_inputHalfSel == 0;
+    }
+    return 1;
 }
 
 RVA(0x000cedf0, 0xf)

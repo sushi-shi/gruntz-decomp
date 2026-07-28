@@ -23,7 +23,7 @@ class CFileMemBase; // the abstract serialize stream (Read @+0x2c / Write @+0x30
 // before its own 0x5f0270 stamp - the base IS CLoadable (deriving CWapObj
 // directly made our compile emit a spurious ??_7CWapObj retail lacks).
 struct PlaneObjectRecord; // the serialized plane-object record (defined in LevelPlane.cpp)
-struct CPlaneFrame;       // <Wwd/WwdFile.h> - the m_frameSets element type
+struct WwdPlaneHeader;    // <Wwd/WwdFile.h> - the on-disk 0xa0 plane record Read parses
 
 class CDDrawWorkerHost : public CLoadable {
 public:
@@ -62,9 +62,11 @@ public:
         char* name
     );
     // slot 10 (+0x28) 0x161640 - the 3-arg plane-block reader
-    // CGameLevel::ReadPlane dispatches (parses one WwdPlaneHeader, fans out to
-    // the tile/imageset/object sub-readers). Stub body in LevelPlane.cpp (ex Gap_161640).
-    virtual i32 Read(void* planeData, void* blockBase, void* bounds);
+    // CGameLevel::ReadPlane dispatches: parse one on-disk WwdPlaneHeader against the
+    // mapped main block and populate the whole plane (image-set name list, geometry,
+    // tile grid, scroll origin, object block).
+    virtual i32
+    Read(const WwdPlaneHeader* planeData, const char* blockBase, LevelCoordRect* bounds);
     // slot 11 (+0x2c) 0x163ac0: `ret 4` - a ONE-dword-arg void no-op (the old no-arg
     // decl mis-spelled the frame). Role unrecovered.
     virtual void VtSlot11_163ac0(i32);
@@ -72,15 +74,27 @@ public:
     // --- non-virtual methods (union of the facets' method sets; one decl per RVA -
     // the duplicate facet names Sync/Refresh/QueryA/QueryB/Notify are dissolved onto
     // the defined bodies below). --------------------------------------------------
-    void RegisterNamed(char index, const char* key); // 0x161c50 (owner-map lookup cache)
+    // 0x161c50 (owner-map lookup cache). Retail INLINES this whole body into
+    // CDDrawWorkerHost::Read's name-list loop while also emitting this out-of-line
+    // copy, i.e. it was an inline member of the class - but its body needs the
+    // complete CDDrawSurfaceMgr + CDDrawWorkerRegistry, which cannot be pulled in
+    // here, so the definition stays in LevelPlane.cpp and Read transcribes it.
+    void RegisterNamed(char index, const char* key);
     // 0x077dc0 (body in BrickzCellFlags_077790.cpp; ex BrickzGridDesc::SetCell - that
     // view IS this plane, proven by the parallel Brickz fold):
     // m_tileGrid[m_colOffsets[y] + x] = id.
     void SetCell(i32 x, i32 y, i32 id);
-    void RecomputePlaneCoords();                     // 0x161c90 wrap/clamp scaled coords
-    void Build(LevelCoordRect* coords);              // 0x161e80 re-place + recompute one plane
-    void SetTileSize(i32 tileW, i32 tileH);          // 0x161f00 derive wrap dims/fill/shifts
-    void SetTileSizeFromImageSet(CDDrawWorker* set); // 0x161fa0 seed tile size from a frame
+    void RecomputePlaneCoords();            // 0x161c90 wrap/clamp scaled coords
+    void Build(LevelCoordRect* coords);     // 0x161e80 re-place + recompute one plane
+    void SetTileSize(i32 tileW, i32 tileH); // 0x161f00 derive wrap dims/fill/shifts
+    // 0x161fa0 seed tile size from the first live frame of an image set. Retail also
+    // INLINES this body into Read's `flags & 0x10` arm - but see the note over
+    // RegisterNamed: moving the definition into the class makes cl inline it here AND
+    // drop the out-of-line copy (MSVC5 emits no COMDAT when every call site inlines),
+    // which loses the 0x161fa0 label. Retail's out-of-line copy exists because OTHER
+    // TUs referenced it, which one obj cannot reproduce - so the definition stays in
+    // LevelPlane.cpp and Read transcribes the inlined body.
+    void SetTileSizeFromImageSet(CDDrawWorker* set); // 0x161fa0
     void Draw(CPlaneDrawCtx* ctx);                   // 0x162010 the tile-grid render (ex "Sync")
     i32 Prune();                                     // 0x1628d0 forward the grid's Prune
     i32 CenterScrollA();                             // 0x163300 (ex "QueryA")
@@ -100,20 +114,25 @@ public:
     // advances it by the byte count ReadPlaneObjects returns.
     i32 RebuildPlanes(const char* base, i32 count);
     i32 ReadPlaneObjects(const PlaneObjectRecord* src);
-    void WrapCoord(i32* px, i32* py);              // 0x00a000 wrap+transform a world coord
+    void WrapCoord(i32* px, i32* py); // 0x00a000 wrap+transform a world coord
     // `out` is the {x,y} pair the body fills (out[0]/out[1]); its one caller hands it a
     // Coord, so the pair type goes on the declaration instead of at the call.
     void SnapToTileCenter(struct Coord* out, i32 x, i32 y); // 0x0311e0 snap (x,y) to tile centre
-    i32 GetTileHandle(i32 row, i32 col);           // 0x0d53a0 m_tileGrid[m_colOffsets[col]+row]
+    i32 GetTileHandle(i32 row, i32 col); // 0x0d53a0 m_tileGrid[m_colOffsets[col]+row]
 
-    // The +0x9c CObArray band holds CPlaneFrame*, and CPlaneFrame is a plain WWD record
-    // (<Wwd/WwdFile.h>), not a CObject - so naming the element type is the container's
-    // own pun, language-forced by MFC's CObject** element type. It lives at THIS one
-    // seam instead of at every `(CPlaneFrame**)m_frameSets.GetData()` in LevelPlane.cpp.
-    // Codegen-identical: CObArray::GetData() is inline `(CObject**)m_pData`.
-    CPlaneFrame* FrameSetAt(u32 index) {
-        // language-forced (MFC's CObject** element type), at this ONE seam
-        return reinterpret_cast<CPlaneFrame**>(m_frameSets.GetData())[index];
+    // The +0x9c CObArray band holds CDDrawWorker* - the image sets Read resolves by
+    // name out of OwnerMgr()->m_imageRegistry->m_10map, whose values ARE CDDrawWorker
+    // ("the name -> worker/sprite hash table"). The ex CPlaneFrame/CPlaneTile views are
+    // DISSOLVED into CDDrawWorker/CImage: they matched offset for offset (m_frames@+0x14
+    // == m_items.m_pData, m_lo/m_hi@+0x64/+0x68 == m_minIndex/m_maxIndex, and the tile's
+    // m_trans/m_src@+0x28/+0x2c == CImage::m_loadResult/m_surface), and Read's own
+    // `flags & 0x10` arm open-codes CDDrawWorker::GetAt's bounds check and then reads the
+    // element's +0x10/+0x14 as CImage::m_width/m_height to feed SetTileSize.
+    CDDrawWorker* FrameSetAt(u32 index) {
+        // language-forced, at this ONE seam: the pun is MFC's untyped CObject* element
+        // type (a static_cast downcast would need the complete CDDrawWorker here, which
+        // would drag <DDrawMgr/DDrawWorker.h> into every consumer of this header).
+        return reinterpret_cast<CDDrawWorker**>(m_frameSets.GetData())[index];
     }
 
     // --- layout (the union of every facet's proven members; offsets load-bearing).
@@ -136,7 +155,7 @@ public:
     i32 m_wrapH;       // +0x34  tile count down
     i32 m_tilePxW;     // +0x38  tile pixel width (log2 -> m_shiftX)
     i32 m_tilePxH;     // +0x3c  tile pixel height
-    RECT m_viewRect; // +0x40  visible world rectangle: near origin and far extent
+    RECT m_viewRect;   // +0x40  visible world rectangle: near origin and far extent
     // +0x50  the plane's level-coord bounds (Build/InitGeometry copy). RECONCILED:
     // the ex-m_viewX/m_viewY "scroll pixel offset" reading was .left/.top - WrapCoord
     // translates world coords by the bounds ORIGIN; the ctor's -1 is the pre-Build
@@ -155,12 +174,9 @@ public:
     i32 m_shiftY;             // +0x90  tile->pixel shift Y
     i32 m_94;                 // +0x94  int scaled into m_scaleX (m_scaleX = m_94 * DAT_5f02a0)
     i32 m_98;                 // +0x98  int scaled into m_scaleY
-    CObArray m_frameSets;     // +0x9c  frame-set array (elements: CPlaneFrame*; the
-                              //        draw loop indexes m_pData by handle>>16;
+    CObArray m_frameSets;     // +0x9c  image-set array (elements: CDDrawWorker*; the
+                              //        draw loop indexes it by handle>>16 - FrameSetAt;
                               //        ctor 0x1b55e9 / ~ 0x1b561c; ex "m_obArray")
-    // API-forced, at one seam: CObArray is MFC's untyped CObject* array, so the
-    // element type is named here once and the draw loop indexes the typed result.
-    CPlaneFrame** frameSetData() { return reinterpret_cast<CPlaneFrame**>(m_frameSets.GetData()); }
     CWwdSpatialMgr* m_scroll; // +0xb0  camera/scroll + spatial-grid worker
     char m_name[0xf4 - 0xb4]; // +0xb4  plane name (serialized as a fixed 0x80 field)
     // +0xf4  the plane's DDBLTFX (0x64 = 25 dwords; the ctor memsets it and seeds

@@ -28,6 +28,11 @@ typedef enum {
 static const i32 TILE_UNINIT = static_cast<i32>(0xeeeeeeee);
 static const i32 TILE_CLEAR = -1;
 
+// The "no level-coord rect yet" sentinel parked in LevelCoordRect::left (CGameLevel
+// seeds m_planeCtx with it; CDDrawWorkerHost::Read / InitGeometry / Build all gate the
+// CopyRect + view re-derive on it).
+static const i32 LEVEL_COORD_UNSET = static_cast<i32>(0x80000000);
+
 #define PROBE_TILE(LVL, X, Y, RESULT)                                                              \
     do {                                                                                           \
         i32 px_ = (X);                                                                             \
@@ -267,7 +272,8 @@ public:
 private:
     // The per-plane reader (@0x15d8d0, GameLevel.cpp; LoadWwd drives it per WWD
     // plane record). (Ex ?ReadPlane@CGameLevelPlanes@@ - view dissolved.)
-    CDDrawWorkerHost* ReadPlane(void* planeData, void* blockBase, void* unused);
+    CDDrawWorkerHost*
+    ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, void* unused);
 
     // The image-set factory (CGameLevel::ReadImageSet) - external.
     CTileImageSet* ReadImageSet(void* record);

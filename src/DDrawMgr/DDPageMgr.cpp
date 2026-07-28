@@ -172,33 +172,7 @@ i32 CMoviePlayer::InitMode(
     HWND wnd,
     IDirectDraw2* dd2,
     IDirectDrawSurface* primary,
-    i32 p4,
-    i32 p5,
-    i32 height,
-    i32 width,
-    i32 p8,
-    i32 p9,
-    i32 p10,
-    i32 p11,
-    i32 p12,
-    i32 p13,
-    i32 p14,
-    i32 p15,
-    i32 p16,
-    i32 p17,
-    i32 p18,
-    i32 p19,
-    i32 p20,
-    i32 p21,
-    i32 p22,
-    i32 p23,
-    i32 p24,
-    i32 bpp,
-    i32 p26,
-    i32 p27,
-    i32 p28,
-    i32 p29,
-    i32 p30,
+    DDSURFACEDESC desc,
     IDirectSound* dsound
 ) {
     if (!wnd || !dd2 || !primary) {
@@ -208,6 +182,7 @@ i32 CMoviePlayer::InitMode(
     m_0c = 1;
     m_primary = primary;
     Snapshot(wnd);
+    i32 bpp = static_cast<i32>(desc.ddpfPixelFormat.dwRGBBitCount);
     if (bpp == 8) {
         if (m_dd2->CreatePalette(DDPCAPS_8BIT, m_palEntries, &m_palette, 0)) {
             HandleError();
@@ -226,8 +201,8 @@ i32 CMoviePlayer::InitMode(
             return 0;
         }
     }
-    m_screenWidth = width;
-    m_screenHeight = height;
+    m_screenWidth = desc.dwWidth;
+    m_screenHeight = desc.dwHeight;
     m_bpp = bpp;
     m_window = wnd;
     m_streamOpen = 0;

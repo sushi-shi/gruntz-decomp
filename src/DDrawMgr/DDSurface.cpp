@@ -1974,14 +1974,13 @@ i32 CDDSurface::RotateScaleBlit(
 // (the worker gets `this` both in ecx and pushed) which has no clean /O2 source
 // spelling. Deferred to the final sweep.
 RVA(0x00141280, 0x4a)
-void CDDSurface::
-    DecodeThunk(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 r0, i32 r1, i32 r2, i32 r3) {
-    ClipRect16 clip;
-    clip.a = r0;
-    clip.b = r1;
-    clip.c = r2;
-    clip.d = r3;
-    ProjectWallQuad(this, a1, a2, a3, a4, a5, a6, clip.a, clip.b, clip.c, clip.d);
+void CDDSurface::DecodeThunk(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i16 a6, RECT clip) {
+    ClipRect16 rec;
+    rec.a = clip.left;
+    rec.b = clip.top;
+    rec.c = clip.right;
+    rec.d = clip.bottom;
+    ProjectWallQuad(this, a1, a2, a3, a4, a5, a6, rec.a, rec.b, rec.c, rec.d);
 }
 
 RVA(0x001412d0, 0x24)

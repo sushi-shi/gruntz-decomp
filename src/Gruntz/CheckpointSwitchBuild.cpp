@@ -25,7 +25,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     i32 a3,
     i32 a4,
     i32 a5,
-    const i32* rect,
+    const RECT* rect,
     i32 a7,
     i32 a8,
     i32 a9
@@ -37,7 +37,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     if (m_initGate != 0) {
         goto fail;
     }
-    if (a2 == 4 && rect[0] == 0) {
+    if (a2 == 4 && rect[0].left == 0) {
         goto fail;
     }
     memcpy(m_block, rect, sizeof(m_block)); // rep movsd, ecx=0x18 -> this+0x2c

@@ -35,10 +35,6 @@ struct CHitMarker {
 };
 SIZE(0x8);
 
-
-
-
-
 class CFileMemBase;
 
 class CImage;
@@ -153,11 +149,21 @@ public:
         // marker walkers (the same shape CBattlezMapConfig::CoordAt() uses).
         return reinterpret_cast<CHitMarker**>(m_startMarkers.GetData());
     }
-    i32 markerCount() { return m_startMarkers.GetSize(); }
-    void** arrData(i32 k) { return m_3a4[k].GetData(); }
-    i32 arrCount(i32 k) { return m_3a4[k].GetSize(); }
-    void** arr488Data() { return m_488.GetData(); }
-    i32 arr488Count() { return m_488.GetSize(); }
+    i32 markerCount() {
+        return m_startMarkers.GetSize();
+    }
+    void** arrData(i32 k) {
+        return m_3a4[k].GetData();
+    }
+    i32 arrCount(i32 k) {
+        return m_3a4[k].GetSize();
+    }
+    void** arr488Data() {
+        return m_488.GetData();
+    }
+    i32 arr488Count() {
+        return m_488.GetSize();
+    }
 
     // CPlay's own per-frame helper methods (the thunks Render dispatches to
     // with `mov ecx,esi`). External no-body -> reloc-masked.
@@ -171,7 +177,7 @@ public:
     // "Non-virtual __thiscall" note here was WRONG - ??_7CPlay/CDemo/CMulti all
     // hold 0x0cbcc0 at slot 12 (+0x30). Body still in GameKeyHandler.cpp.)
     // (ViewPreStep/ViewPostStep are GONE - fabricated; retail's per-frame view
-    // pre/post calls are StepGridWalk (0x2e2d) + winapi_0d0b30_CopyRect (0x1519).)
+    // pre/post calls are StepGridWalk (0x2e2d) + DrawCursorSaveUnder (0x1519).)
     // PlayCueAt: (cueId,a2,a3,a4,a5,a6,a7,rectSrc)
     void PlayCueAt(
         i32 cueId,
@@ -564,14 +570,15 @@ public:
     CGruntzSoundInnerZ*
         m_savedZonedSound; // +0x518  saved currently-playing zoned sound (region pause/resume)
 
-    // Engine-label backlog stubs.
-    void PlayBacklog();
     // (winapi_0cdb10_PostMessageA 0x0cdb10 folded onto the slot-14 virtual Vslot0e.)
     // (HandleTileClick 0xceae0 folded onto the slot-17 virtual Vslot11: the menu/
     // pause-state pointer-click handler - the mouse-input twin of OnKeyCommand.
     // Gated resume/report/unpause chain, then an overlay probe + a HUD hit-test +
     // a grid-snapped world marker place/cancel.)
-    i32 winapi_0d0b30_CopyRect(CDDrawSurfacePair * );
+    // 0x0d0b30 - draw the cursor frame with a save-under into the alternating
+    // 64x64 scratch half (ex `winapi_0d0b30_CopyRect`: a placeholder named after the
+    // single g_pCopyRect IAT call it makes; it is a CPlay method, not a Win32 wrapper).
+    i32 DrawCursorSaveUnder(CDDrawSurfacePair* pair);
     i32 LoadCursorSprites(i32 frame, i32 flag);
     i32 LoadScrollSpeedOptions();
     i32 BuildGruntTypeNameTable(i32, i32, i32, CMulti*);
@@ -595,7 +602,7 @@ extern "C" {
     extern i32 g_lastNow;        // 0x245580 (-> mirror g_killCueClock; also in <Rez/FrameClock.h>)
     extern "C" i32 g_frameDelta; // 0x245584 (frame delta cap; canonical decl-shape)
     extern "C" u32 g_frameTime;  // 0x245588 (the running game clock)
-    extern "C" i32 g_curPlayer;        // a default cue/message wParam
+    extern "C" i32 g_curPlayer;  // a default cue/message wParam
     extern "C" u32 g_killCueClock;     // draw-clock mirror
     extern "C" u32 g_engineFrameDelta; // draw-delta mirror
 }
@@ -669,7 +676,6 @@ void Cmd_ApplyScrollParams(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
 CString GetColorName(i32 colorIdx, i32 upper);
 CString GetDifficultyName(i32 diffIdx, i32 upper);
 
-
 // File-scope prototypes moved from the .cpp (external linkage
 // belongs in the owner header).
 i32 LayerBlitFrame(CDDrawSurfaceMgr* mgr, CImage* img, i32 x, i32 w, i32 one, i32 zero); // 0x115300
@@ -695,7 +701,7 @@ void ShowHudMessageAlt(
     i32 d,
     i32 e,
     i32 f
-); // 0x115520
+);                       // 0x115520
 void Cmd_ResetScroll();  // 0x2bd0  YAXXZ
 i32 QueryToken(i32 a);   // 0x39a4  QueryToken(int)
 void ActiveWait(u32 ms); // 0x13dfe0 busy-wait

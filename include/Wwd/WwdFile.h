@@ -7,7 +7,6 @@
 
 class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
-
 typedef u8 Bytef;
 typedef u32 uLong;
 typedef u32 uLongf;
@@ -29,6 +28,40 @@ struct WwdHeader {
     u8 pad_2f0[0x5f4 - 0x2f0];
 };
 SIZE(0x5f4); // on-disk WWD header (RE'd 0x5F4 bytes)
+
+// The on-disk WWD PLANE record: a fixed 0xa0 header, `numPlanes` of them packed at
+// WwdHeader::planesOffset (CGameLevel::LoadWwd walks them with a 0xa0 stride). Every
+// field below is proven by CDDrawWorkerHost::Read (0x161640), which is the reader:
+// it guards on headerSize == 0xa0 and then copies each field into the plane object.
+// The three trailing dwords no reader touches stay padding.
+struct WwdPlaneHeader {
+    u32 headerSize;         // +0x00  == 0xa0 (the Read guard + the LoadWwd stride)
+    u32 field_04;           // +0x04
+    u32 flags;              // +0x08  -> CDDrawWorkerHost::m_flags (bit0 origin-fixed,
+                            //         bit1 hidden, bit2/3 wrap X/Y, bit4 tile size from
+                            //         the first image set)
+    u32 field_0c;           // +0x0c
+    char name[0x50 - 0x10]; // +0x10  plane name (strcpy'd into CDDrawWorkerHost::m_name)
+    i32 pixelWidth;         // +0x50
+    i32 pixelHeight;        // +0x54
+    i32 tilePixelWidth;     // +0x58  -> m_tilePxW (SetTileSize arg)
+    i32 tilePixelHeight;    // +0x5c  -> m_tilePxH
+    i32 tilesWide;          // +0x60  -> m_gridW
+    i32 tilesHigh;          // +0x64  -> m_gridH
+    i32 scrollX;            // +0x68  initial scroll origin -> m_scaledX
+    i32 scrollY;            // +0x6c  -> m_scaledY
+    i32 movementXPercent;   // +0x70  -> m_94 (m_scaleX = movementXPercent * 0.01f)
+    i32 movementYPercent;   // +0x74  -> m_98
+    u32 fillColor;          // +0x78  -> the plane DDBLTFX dwFillColor
+    u32 imageSetsCount;     // +0x7c  tokens in the imageSetsOffset name list
+    i32 objectsCount;       // +0x80  records at objectsOffset
+    u32 tilesOffset;        // +0x84  dword tile-handle grid (tilesWide*tilesHigh)
+    u32 imageSetsOffset;    // +0x88  the NUL/punctuation-separated image-set name list
+    u32 objectsOffset;      // +0x8c  the serialized PlaneObjectRecord stream (0 = none)
+    i32 zCoord;             // +0x90  -> m_zBound
+    u8 pad_94[0xa0 - 0x94]; // +0x94  three dwords no reader touches
+};
+SIZE(0xa0); // the LoadWwd plane-loop stride + the Read guard constant
 
 class WwdInputStream {
 public:
@@ -55,25 +88,18 @@ private:
 };
 SIZE(0x10); // 16-byte file-stream object (full layout to +0xc)
 
-
 class CDDSurface;
-struct CPlaneTile;
 
-struct CPlaneFrame {
-    u8 pad_0[0x14];
-    CPlaneTile** m_frames; // +0x14  frame table (indexed by the low 16 bits of handle)
-    u8 pad_18[0x64 - 0x18];
-    i32 m_lo; // +0x64  valid handle range [m_lo, m_hi]
-    i32 m_hi; // +0x68
-};
-SIZE_UNKNOWN();
-
-struct CPlaneTile {
-    u8 pad_0[0x28];
-    u32 m_trans;       // +0x28  BltFast transparency/colour-key flag
-    CDDSurface* m_src; // +0x2c  source surface
-};
-SIZE_UNKNOWN();
+// (CPlaneFrame + CPlaneTile DISSOLVED 2026-07-28: they were pad-and-offset views of
+// CDDrawWorker (<DDrawMgr/DDrawWorker.h>) and CImage (<Image/CImage.h>). CPlaneFrame's
+// m_frames@+0x14 IS CDDrawWorker::m_items.m_pData and m_lo/m_hi@+0x64/+0x68 ARE
+// m_minIndex/m_maxIndex; CPlaneTile's m_trans/m_src@+0x28/+0x2c ARE CImage's
+// m_loadResult/m_surface. Proof: the plane's +0x9c array is filled by
+// CDDrawWorkerHost::Read out of the image-set registry map (CDDrawWorkerRegistry::
+// m_10map, "the name -> worker/sprite hash table"), and Read's `flags & 0x10` arm
+// open-codes CDDrawWorker::GetAt's [m_minIndex, m_maxIndex] bounds check on that very
+// element, then feeds the result's +0x10/+0x14 to SetTileSize as width/height -
+// i.e. CImage::m_width/m_height, exactly like CDDrawWorkerHost::SetTileSizeFromImageSet.)
 
 struct CPlaneDrawCtx {
     u8 pad_0[0x2c];

@@ -115,10 +115,10 @@ public:
     // `AddSwitchLogic_115f60` + LevelTileValidation's `TriggerRegistrar::
     // RegisterSwitchLogic` view - CPlay::ValidateLevelTiles calls it on
     // m_beginMarker, `mov ecx,[this+0x2e4]`, with the per-tag id {1..8} + the six
-    // by-value RECTs + isMatch). News the 0x8c CTileTriggerSwitchLogic at 0x115f96,
-    // fills it, appends to m_base. __thiscall ret 0x7c (31 dword-args incl. the six
-    // 4-dword RECTs). Body still a stub (backlog).
-    i32 AddSwitchLogic(
+    // by-value RECTs + isMatch). News the tag's CTileTriggerSwitchLogic subclass at
+    // 0x115f96, BuildSmall's it, appends to m_base. __thiscall ret 0x7c (31
+    // dword-args incl. the six 4-dword RECTs); returns the object (0 on failure).
+    CTileTriggerSwitchLogic* AddSwitchLogic(
         i32 tag,
         i32 col,
         i32 row,

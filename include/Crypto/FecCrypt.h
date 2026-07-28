@@ -23,6 +23,12 @@ public:
     // build/unpack halves of the archive (CFile-local file + CDWordArray offset index).
     // The dtor (Close + the member teardown) is DEFINED in the movie TU
     // (src/Io/MoviePlayer.cpp) at 0x0390a0; ~CMoviePlayer (same retail TU) inlines it.
+    // 0x08fea0 - the out-of-line default ctor (COMDAT, body in
+    // src/Gruntz/UnknownFileIOCtor.cpp; ex the `FileIOOwner` @identity-TODO view).
+    // Declared-only here on purpose: retail's only construction site
+    // (CGruntzMgr::ChangeState's stack-local CMoviePlayer) CALLS it rather than
+    // inlining it, which only happens while the body is out of the caller's sight.
+    CFecFile();
     ~CFecFile();         // 0x0390a0  { Close(); } + ~CDWordArray(+0x138) + ~CFile(+0x124)
     i32 Init();          // 0x17b510  reset + arm (open-gate -> 1)
     void Close();        // 0x17b570  teardown (OnFail + reset + gate -> 0)
@@ -48,7 +54,6 @@ public:
     char m_copyBuf[0x8000]; // +0x14c  32 KB streaming copy buffer
 };
 SIZE(0x814c);
-
 
 // File-scope prototypes moved from the .cpp: an unqualified
 // declaration at file scope has EXTERNAL linkage, so it belongs in

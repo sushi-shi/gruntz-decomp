@@ -1,6 +1,7 @@
 #ifndef GRUNTZ_GRUNTZ_CSTATE_H
 #define GRUNTZ_GRUNTZ_CSTATE_H
 
+#include <Mfc.h> // afx-first umbrella: RECT (the +0x168..+0x1a4 save-under rects)
 #include <Ints.h>
 #include <rva.h>                // SIZE/VTBL vtable-catalog annotations
 #include <Gruntz/GameStateId.h> // Update()'s per-state id return type
@@ -16,13 +17,6 @@ class CGruntzMgr;   // +0x04 owner back-ptr: the game-manager singleton (*g_game
 class CFaderMgr;    // +0x10 fader manager (the CSoundFxEmitter facet's fader mgr;
 class CString;      // MFC - BuildAssetNamespacePrefixes' key arg (reference-only here)
 class CMulti;       // BuildAssetNamespacePrefixes' finishGate: the multiplayer state to ack
-
-// The {x,y} edge-feed pair CState hands to the per-half input step (+0x188/+0x198).
-struct Edge {
-    i32 m_0;
-    i32 m_4;
-};
-SIZE(0x8);
 
 class CState {
 public:
@@ -176,7 +170,7 @@ public:
     // unit owns the 0xfa1f0.. RVAs) as CState:: methods; the callers stay cast-free
     // (CAttract is a sibling of CState, not a base). Reloc-masked.
     i32 FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa1f0
-    i32 RunTitle(const char * a, i32 b, i32 c, i32 d, i32 e);                      // 0x0fa300
+    i32 RunTitle(const char* a, i32 b, i32 c, i32 d, i32 e);              // 0x0fa300
     i32 RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d);        // 0x0fa350
     // RetireScene (0xfa8f0): the two-channel screen-transition emitter every screen state
     // runs on its own `this` (xref: CBootyState/CMultiBootyState/CCreditsState/CAttract/
@@ -296,21 +290,18 @@ public:
     // - the 64x64 rect dims).
     CDDSurface* m_scratchSurface0; // +0x160 first-half scratch surface
     CDDSurface* m_scratchSurface1; // +0x164 second-half scratch surface
-    i32 m_168;                     // +0x168 first-half block (addr taken)
-    i32 m_16c;
-    i32 m_170; // +0x170 (= 0x40)
-    i32 m_174; // +0x174 (= 0x40)
-    i32 m_178; // +0x178 second-half block (addr taken)
-    i32 m_17c;
-    i32 m_180; // +0x180 (= 0x40)
-    i32 m_184; // +0x184 (= 0x40)
-    Edge m_188; // +0x188 first-half {x,y} edge feed (the pair StepInput hands out)
-    i32 m_190;
-    i32 m_194;
-    Edge m_198; // +0x198 second-half {x,y} edge feed
-
-    i32 m_1a0;
-    i32 m_1a4;
+    // +0x168..+0x1a4: the CURSOR SAVE-UNDER pair, two RECTs per half. `Src` is the
+    // region inside the 64x64 scratch surface (the ctor seeds {0,0,0x40,0x40} and
+    // CPlay::DrawCursorSaveUnder narrows right/bottom to the clipped cursor size);
+    // `Dst` is the screen rectangle that was saved - DrawCursorSaveUnder BltFast's the
+    // back buffer INTO the scratch through it, and the next frame's StepInputA blits
+    // the scratch back to Dst's top-left. (Ex four loose int blocks + a 2-dword `Edge`
+    // view of the Dst rects' first half - dissolved 2026-07-28: retail's 0xd0b30 writes
+    // all four dwords of each as left/right/top/bottom.)
+    RECT m_cursorSaveSrc0; // +0x168 (ctor {0,0,0x40,0x40})
+    RECT m_cursorSaveSrc1; // +0x178 (ctor {0,0,0x40,0x40})
+    RECT m_cursorSaveDst0; // +0x188
+    RECT m_cursorSaveDst1; // +0x198
     // +0x1a8..+0x1b0: the StepInputA input latches. The slot-8 base body
     // (InputVirtual @0xface0) seeds them (0/1/0) and HeaderWrite/HeaderRead
     // serialize them, so they are CState fields, not CPlay's (which proved their

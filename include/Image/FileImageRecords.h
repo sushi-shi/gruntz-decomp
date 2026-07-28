@@ -16,22 +16,27 @@ struct Bmp256Info {
 SIZE(0x428);
 
 #pragma pack(push, 1)
-// DecodeSrc was a pad-view of the standard BMP file image (BITMAPFILEHEADER +
-// BITMAPINFO); its m_0a/m_12/m_16/m_1c were bfOffBits/biWidth/biHeight/biBitCount.
-// DecodeRun now reads the real Win32 types - do not reintroduce it.
+// A whole 8bpp BMP file image as it sits in the read buffer: the file header, then
+// the info header and its full 256-entry colour table, then the bits at bfOffBits.
+// (DecodeSrc was a pad-view of exactly this - its m_0a/m_12/m_16/m_1c were
+// bfOffBits/biWidth/biHeight/biBitCount. Do not reintroduce it.)
+struct BmpFileImage {
+    BITMAPFILEHEADER fh; // +0x000  packed to 14 B
+    Bmp256Info info;     // +0x00e  BITMAPINFOHEADER + bmiColors[256]
+};
 #pragma pack(pop)
 
 #pragma pack(push, 1)
 // The ZSoft PCX file header (0x80 B) - the on-disk layout the PCX decoders read.
 struct PcxHeader {
-    u8 m_magic;         // +0x00  0x0a
-    u8 m_version;       // +0x01
-    u8 m_encoding;      // +0x02  1 = RLE
-    u8 m_bitsPerPixel;  // +0x03  bits per pixel per plane (the decoders require 8)
-    i16 m_xMin;         // +0x04  window left
-    i16 m_yMin;         // +0x06  window top
-    i16 m_xMax;         // +0x08  window right  (width  = m_xMax - m_xMin + 1)
-    i16 m_yMax;         // +0x0a  window bottom (height = m_yMax - m_yMin + 1)
+    u8 m_magic;        // +0x00  0x0a
+    u8 m_version;      // +0x01
+    u8 m_encoding;     // +0x02  1 = RLE
+    u8 m_bitsPerPixel; // +0x03  bits per pixel per plane (the decoders require 8)
+    i16 m_xMin;        // +0x04  window left
+    i16 m_yMin;        // +0x06  window top
+    i16 m_xMax;        // +0x08  window right  (width  = m_xMax - m_xMin + 1)
+    i16 m_yMax;        // +0x0a  window bottom (height = m_yMax - m_yMin + 1)
     char m_pad0c[0x41 - 0x0c];
     u8 m_planes; // +0x41  colour planes (1 -> 8bpp, 3 -> 24bpp)
     char m_pad42[0x80 - 0x42];

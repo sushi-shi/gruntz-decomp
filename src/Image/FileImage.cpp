@@ -47,9 +47,8 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     // ex-DecodeSrc pad-view spelled exactly these fields as m_0a/m_12/m_16/m_1c -
     // bfOffBits/biWidth/biHeight/biBitCount - and LoadBmp below already reads the same
     // buffer through the real Win32 types.
-    BITMAPFILEHEADER* bfh = static_cast<BITMAPFILEHEADER*>(srcv);
-    BITMAPINFO* bmi = reinterpret_cast<BITMAPINFO*>(bfh + 1);
-    i32 srcFmt = bmi->bmiHeader.biBitCount;
+    BmpFileImage* img = static_cast<BmpFileImage*>(srcv);
+    i32 srcFmt = img->info.bmiHeader.biBitCount;
     if (srcFmt != 8 && srcFmt != 0x18) {
         return 0;
     }
@@ -67,7 +66,7 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     if (convert) {
         if (srcFmt == 8) {
             u8* w = g_paletteRampBuf;
-            RGBQUAD* p = bmi->bmiColors; // the 256-entry palette at +0x36
+            RGBQUAD* p = img->info.bmiColors; // the 256-entry palette at +0x36
             i32 i = 0;
             do {
                 // BGR -> RGB: the ramp is the reversed palette
@@ -90,13 +89,13 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
         }
     }
 
-    if (CDDSurface::BlitSurf(info, bmi->bmiHeader.biWidth, bmi->bmiHeader.biHeight, 0, b)
+    if (CDDSurface::BlitSurf(info, img->info.bmiHeader.biWidth, img->info.bmiHeader.biHeight, 0, b)
         == 0) { // direct (qualified) slot-3 call
         return 0;
     }
 
     // bfOffBits is the format's own byte offset from the start of the file image
-    void* run = reinterpret_cast<u8*>(bfh) + bfh->bfOffBits;
+    void* run = reinterpret_cast<u8*>(img) + img->fh.bfOffBits;
     if (convert) {
         if (Blit(run, srcFmt, pal, 2) == 0) {
             return 0;

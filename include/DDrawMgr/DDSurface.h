@@ -224,21 +224,16 @@ public:
         i32 colorkey
     ); // 0x141240
 
-    void DecodeThunk(
-        i32 a1,
-        i32 a2,
-        i32 a3,
-        i32 a4,
-        i32 a5,
-        i32 a6,
-        i32 r0,
-        i32 r1,
-        i32 r2,
-        i32 r3
-    );                                                                     // 0x141280
-    i32 LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode); // 0x143e60
-    i32 LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode);  // 0x144d80
-    i32 Load(CDDrawPtrCollections* a, char* name, i32 c);                  // 0x144270
+    // 0x141280. The trailing 4 dwords are ONE by-value clip RECT, not four loose ints:
+    // the sole retail call site (CPlay::DrawCursorSaveUnder @0xd0b30) sets it up with
+    // `sub esp,0x10` + four member stores out of the level's coord rect, which is the
+    // by-value struct-argument shape, and this body rebuilds it verbatim for the worker.
+    // a6 is an i16: the call site loads it with `mov dx, word ptr [..]` and pushes the
+    // whole (garbage-high) dword, which is MSVC's short-argument pass.
+    void DecodeThunk(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i16 a6, RECT clip); // 0x141280
+    i32 LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode);       // 0x143e60
+    i32 LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode);        // 0x144d80
+    i32 Load(CDDrawPtrCollections* a, char* name, i32 c);                        // 0x144270
 
     // The surface blitters + raw run-decoders the decoders delegate to (external no-body,
     // reloc-masked). Blit does a palette-remap copy (ret 0x10 = 4 args), BlitDirect a

@@ -33,15 +33,30 @@
 #include <Gruntz/TypeKeyColl.h> // s_codeA/s_actKeyB registration keys
 #include <Io/FileMem.h>         // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Wap32/ZVec.h>
-#include <Gruntz/ActReg.h>                // CActReg archetype
-#include <Gruntz/TileTrigger.h>           // CTileTrigger + the 3 leaves (new-sites)
-#include <Gruntz/TileTriggerSwitch.h>     // CTileTriggerSwitch (new-site)
-#include <Gruntz/WarpStonePad.h>          // CWarpStonePad (new-site)
-#include <Gruntz/CheckpointTrigger.h>     // CCheckpointTrigger
-#include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State + default step
-#include <Gruntz/CBrickz.h>               // CBrickz (ctor + leaf pool; LogicDispatchB new-site)
-#include <Gruntz/AniElement.h>            // CAniElement (ApplyAnimation +0x1b4 anim descriptor)
-#include <Gruntz/AniAdvanceCursor.h>      // CAniAdvanceCursor (TransitionAct anim sub-object)
+#include <Gruntz/ActReg.h>            // CActReg archetype
+#include <Gruntz/TileTrigger.h>       // CTileTrigger + the 3 leaves (new-sites)
+#include <Gruntz/TileTriggerSwitch.h> // CTileTriggerSwitch (new-site)
+#include <Gruntz/WarpStonePad.h>      // CWarpStonePad (new-site)
+#include <Gruntz/CheckpointTrigger.h> // CCheckpointTrigger
+#include <Gruntz/Play.h> // CPlay (m_curState's real state; m_beginMarker/m_frameMarker)
+#include <Gruntz/TileTriggerContainer.h>   // CTileTriggerContainer::FindChild
+#include <Gruntz/TileTriggerSwitchLogic.h> // CTileTriggerSwitchLogic (m_linkGate/m_08/m_key0c)
+#include <Gruntz/TriggerMgr.h>             // CTriggerMgr::m_grid (the placed-object cells)
+#include <Gruntz/MapMgr.h>                 // CMapMgr row table (the packed owner word)
+#include <Gruntz/Grunt.h>                  // CGrunt (the grid cell)
+#include <Gruntz/Timer.h>                  // CTimer::AddTime
+#include <Gruntz/LeafCue.h>                // LeafCue::PlayIfElapsed
+#include <Gruntz/GruntSpawnConfig.h>       // CGruntSpawnConfig::SpawnVoiceDriver
+#include <Gruntz/GameLevel.h>              // CGameLevel::m_mainPlane
+#include <DDrawMgr/DDrawWorkerHost.h>      // CDDrawWorkerHost::m_viewRect
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>  // CDDrawSubMgrLeafScan::Lookup
+#include <Gruntz/Random.h>                 // g_randSeed / g_randSeeded (the seeded LCG)
+#include <Gruntz/SoundState.h>             // g_sndCueTag
+#include <Gruntz/Brickz.h>                 // BrickzCell complete (the 0x1c grid cell)
+#include <Gruntz/TileTriggerTransition.h>  // CTileTransitionController/State + default step
+#include <Gruntz/CBrickz.h>                // CBrickz (ctor + leaf pool; LogicDispatchB new-site)
+#include <Gruntz/AniElement.h>             // CAniElement (ApplyAnimation +0x1b4 anim descriptor)
+#include <Gruntz/AniAdvanceCursor.h>       // CAniAdvanceCursor (TransitionAct anim sub-object)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (Read @+0x2c / Write @+0x30)
 #include <Gruntz/GameRegistry.h>  // g_gameReg->m_134 (play sub-mode gate in the warp ctor)
@@ -77,9 +92,9 @@ CActReg CActRegPool<CTileTriggerTransition>::s_table(2000, 2010);
 
 #define TILE_LOGIC_WORKER_PUMP(LEAF)                                                               \
     AnimWorkerObj* ctl = obj->m_7c;                                                                \
-    switch (static_cast<u32>(ctl->ActKey())) {                                                    \
+    switch (static_cast<u32>(ctl->ActKey())) {                                                     \
         case 0: {                                                                                  \
-            ctl->SetActKey(0x3e8);                                            \
+            ctl->SetActKey(0x3e8);                                                                 \
             LEAF* t = new LEAF(obj);                                                               \
             t->Activate();                                                                         \
             ctl->m_logic = t;                                                                      \
@@ -113,12 +128,7 @@ CActReg CActRegPool<CTileTriggerTransition>::s_table(2000, 2010);
 
 RVA(0x00010f20, 0x47)
 i32 CWarpStonePad::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
-    if (!CUserLogic::SerializeMove(
-            ar,
-            mode,
-            a3,
-            a4
-        )) {
+    if (!CUserLogic::SerializeMove(ar, mode, a3, a4)) {
         return 0;
     }
     return Chain(ar, mode, a3, a4) != 0;
@@ -140,12 +150,7 @@ LogicTypeId CTileTriggerSwitch::GetTypeTag() {
 
 RVA(0x00011050, 0x47)
 i32 CTileTriggerSwitch::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
-    if (!CUserLogic::SerializeMove(
-            ar,
-            mode,
-            a3,
-            a4
-        )) {
+    if (!CUserLogic::SerializeMove(ar, mode, a3, a4)) {
         return 0;
     }
     return Chain(ar, mode, a3, a4) != 0;
@@ -169,12 +174,7 @@ LogicTypeId CTileTrigger::GetTypeTag() {
 
 RVA(0x000111f0, 0x47)
 i32 CTileTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
-    if (!CUserLogic::SerializeMove(
-            ar,
-            mode,
-            a3,
-            a4
-        )) {
+    if (!CUserLogic::SerializeMove(ar, mode, a3, a4)) {
         return 0;
     }
     return Chain(ar, mode, a3, a4) != 0;
@@ -267,12 +267,7 @@ LogicTypeId CTileTriggerTransition::GetTypeTag() {
 
 RVA(0x00011750, 0x47)
 i32 CTileTriggerTransition::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
-    if (!CUserLogic::SerializeMove(
-            ar,
-            mode,
-            a3,
-            a4
-        )) {
+    if (!CUserLogic::SerializeMove(ar, mode, a3, a4)) {
         return 0;
     }
     return Chain(ar, mode, a3, a4) != 0;
@@ -399,7 +394,8 @@ void CWarpStonePad::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CWarpStonePad>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CWarpStonePad::AdvanceAnim);
+    (*((CActRegPool<CWarpStonePad>::s_table.ResolveEntry(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CWarpStonePad::AdvanceAnim);
 }
 
 RVA(0x0010dc20, 0x3)
@@ -448,7 +444,8 @@ void CTileTriggerSwitch::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CTileTriggerSwitch>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CTileTriggerSwitch::AdvanceAnim);
+    (*((CActRegPool<CTileTriggerSwitch>::s_table.ResolveEntry(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CTileTriggerSwitch::AdvanceAnim);
 }
 
 RVA(0x0010e200, 0x3)
@@ -501,7 +498,8 @@ void CTileTrigger::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CTileTrigger>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CTileTrigger::AdvanceAnim);
+    (*((CActRegPool<CTileTrigger>::s_table.ResolveEntry(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CTileTrigger::AdvanceAnim);
 }
 
 // CBrickz::CBrickz @0x10e800 (the cbrickz stray, folded waveM-strays) - the 1-arg leaf ctor:
@@ -541,11 +539,9 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x0010ea80, 0x102)
 void CBrickz::FireActivation(i32 coord) {
-    CActHandler* e =
-        (CActRegPool<CBrickz>::s_table.ResolveEntry(coord));
+    CActHandler* e = (CActRegPool<CBrickz>::s_table.ResolveEntry(coord));
     if ((*e) != 0) {
-        CActHandler* e2 =
-            (CActRegPool<CBrickz>::s_table.ResolveEntry(coord));
+        CActHandler* e2 = (CActRegPool<CBrickz>::s_table.ResolveEntry(coord));
         (this->*((*e2)))();
     }
 }
@@ -673,7 +669,8 @@ void CCheckpointTrigger::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CCheckpointTrigger>::s_table.ResolveEntryCallReport(id)))) = static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act);
+    (*((CActRegPool<CCheckpointTrigger>::s_table.ResolveEntryCallReport(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -691,20 +688,137 @@ void CCheckpointTrigger::RegisterActs() {
         *slot = "B";
         g_typeCounter++;
     }
-    (*((CActRegPool<CCheckpointTrigger>::s_table.ResolveEntryCallReport(id2)))) = static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act_10f970);
+    (*((CActRegPool<CCheckpointTrigger>::s_table.ResolveEntryCallReport(id2)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act_10f970);
 }
 
+// 0x10f6a0 (565 B) = CCheckpointTrigger's "A" activation handler: the CHECKPOINT
+// REACHED sequence. Gate on every recorded switch in m_state being present and
+// linked, re-latch the flag's anim-set + geometry to the raised-flag set, credit the
+// level timer with the object's bonus time, play the GAME_FLAGRISE cue, tell the
+// manager a checkpoint was reached, then pick one of the recorded switches AT RANDOM
+// and - if the grunt standing on it is on-screen - fire its 0x334 voice line.
 // @confidence: high
-// @source: vtable-slot+pmf (RegisterActs binds this RVA as the "A" handler)
-// @stub
-// 0x10f6a0 (565 B) = CCheckpointTrigger's per-frame "A" activation handler (ex the
-// free Gap_10f6a0, homed from src/Stub/GapFunctions.cpp by matcher-5). Operates on
-// the 0x94 checkpoint layout; ~10 callees (FindChild, CButeTree::Find,
-// ApplyLookupGeometry, LeafCue::PlayIfElapsed, OnCheckpointReached, SpawnVoiceDriver
-// + inline rand + a level sprite-ref hit-test). Pending leaf-first reconstruction
-// (>512 B); the empty body keeps the PMF wired to the real method symbol.
+// @source: vtable-slot+pmf (RegisterActs binds this RVA as the "A" handler) +
+//   full-disasm-decode (every callee named)
+// @early-stop
+// 97.3% (from a 1.1% stub). Control flow, all ten callees, the tile-grid *7-int walk,
+// the m_grid row*15+col index, the inlined seeded-LCG coin flip and the four
+// view-rect gates are byte-faithful. Two residues: (a) the "B" act key - retail
+// references the .data array at 0x60d1bc (?s_actKeyB@@3PADA), which has no definition
+// anywhere in the tree, so this uses the literal and one reloc TARGET NAME differs;
+// (b) a two-instruction scheduling slip where cl sinks the `mov ecx,g_gameReg` for the
+// Rand() call past the m_firstEmpty load.
 RVA(0x0010f6a0, 0x235)
 i32 CCheckpointTrigger::Act() {
+    CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
+
+    for (i32 i = 0; i < m_firstEmpty; i++) {
+        i32 key = m_state[i];
+        if (key == 0) {
+            return 0;
+        }
+        CTileTriggerSwitchLogic* child = play->m_beginMarker->FindChild(key, 8);
+        if (child == 0) {
+            g_gameReg->ReportError(0x80dd, 0x44c);
+            return 0;
+        }
+        if (child->m_linkGate == 0) {
+            return 0;
+        }
+    }
+
+    m_prevAnimSetNode = m_objAux->m_1c;
+    // retail references the .data act-key array at 0x60d1bc (?s_actKeyB@@3PADA),
+    // which has no definition in the tree yet - the literal is byte-equivalent apart
+    // from that one reloc target name.
+    m_objAux->m_1c = ActFindId("B");
+    m_value = m_38->m_1a0.m_14;
+    m_38->ApplyLookupGeometry("GAME_CHECKPOINTFLAGSET", 0);
+
+    if (play->m_frameMarker != 0) {
+        i32 a = m_object->m_114;
+        i32 b = m_object->m_118;
+        if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
+            b += b;
+            a += a;
+            if (b > 0x3b) {
+                a++;
+                b -= 0x3c;
+            }
+        }
+        play->m_frameMarker->AddTime(a, b);
+    }
+
+    CObject* cue = m_38->OwnerMgr()->m_soundRegistry->Lookup("GAME_FLAGRISE");
+    if (cue != 0) {
+        static_cast<LeafCue*>(cue)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+    }
+    g_gameReg->OnCheckpointReached();
+
+    // Pick one recorded switch uniformly. Retail hand-inlines the seeded LCG for the
+    // empty-span arm (the CRandomAmbientSound::Init2 idiom): coin-flip the endpoints.
+    i32 hi = m_firstEmpty - 1;
+    i32 span = hi + 1;
+    i32 pick;
+    if (span == 0) {
+        i32 seed;
+        if (!(g_randSeeded & 1)) {
+            g_randSeeded |= 1;
+            seed = timeGetTime();
+        } else {
+            seed = g_randSeed;
+        }
+        g_randSeed = seed * 214013 + 2531011;
+        if (g_randSeed & 0x10000) {
+            pick = 0;
+        } else {
+            pick = hi;
+        }
+    } else {
+        pick = g_gameReg->Rand() % span;
+    }
+
+    CTileTriggerSwitchLogic* pad = play->m_beginMarker->FindChild(m_state[pick], 8);
+    if (pad == 0) {
+        g_gameReg->ReportError(0x80dd, 0x44c);
+        return 0;
+    }
+
+    i32 gy = pad->m_key0c;
+    i32 gx = pad->m_08;
+    CMapMgr* grid = g_gameReg->m_tileGrid;
+    i32 owner;
+    if (static_cast<u32>(gx) < grid->m_width && static_cast<u32>(gy) < grid->m_height) {
+        owner = grid->m_rows[gy][gx].m_4;
+    } else {
+        owner = -1;
+    }
+    if (owner == -1) {
+        return 0;
+    }
+
+    CGrunt* g = g_gameReg->m_cmdGrid->m_grid[(owner & 0xff) + ((owner >> 8) & 0xff) * TM_GRID_COLS];
+    if (g == 0) {
+        return 0;
+    }
+
+    i32 sy = g->m_object->m_screenY;
+    i32 sx = g->m_object->m_screenX;
+    RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+    if (sx >= view->right) {
+        return 0;
+    }
+    if (sx < view->left) {
+        return 0;
+    }
+    if (sy >= view->bottom) {
+        return 0;
+    }
+    if (sy < view->top) {
+        return 0;
+    }
+    g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x334, -1, 0, -1, -1);
     return 0;
 }
 
@@ -718,14 +832,14 @@ RVA(0x0010f9a0, 0x8f)
 i32 CCheckpointTrigger::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject* a4) {
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
     switch (mode) {
-    case 7:
-        sa->Read(m_state, 0x3c);
-        sa->Read(&m_firstEmpty, 4);
-        break;
-    case 4:
-        sa->Write(m_state, 0x3c);
-        sa->Write(&m_firstEmpty, 4);
-        break;
+        case 7:
+            sa->Read(m_state, 0x3c);
+            sa->Read(&m_firstEmpty, 4);
+            break;
+        case 4:
+            sa->Write(m_state, 0x3c);
+            sa->Write(&m_firstEmpty, 4);
+            break;
     }
     if (!CUserLogic::SerializeMove(arc, mode, a3, a4)) {
         return 0;
@@ -790,7 +904,8 @@ void CTileTriggerTransition::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CTileTriggerTransition>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CTileTriggerTransition::TransitionAct);
+    (*((CActRegPool<CTileTriggerTransition>::s_table.ResolveEntry(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CTileTriggerTransition::TransitionAct);
 }
 
 RVA(0x00110070, 0x71)

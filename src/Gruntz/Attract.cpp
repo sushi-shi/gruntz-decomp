@@ -28,7 +28,7 @@
 
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree/RemoveKeysEqual)
 #include <Gruntz/LevelPreview.h>          // ex Globals.h
-#include <Image/ImageFormatTag.h> // IMGTAG_XCP - ResolveQualified's screen-page format word
+#include <Image/ImageFormatTag.h>         // IMGTAG_XCP - ResolveQualified's screen-page format word
 
 DATA(0x0024e360)
 i32 g_suppress_64e360 = 0; // 0x24e360
@@ -210,7 +210,7 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
 // switches to ecx one deref early (8b 48 10). The SAME inline chain matches in
 // Vslot07 (different surrounding pressure) - a pure allocator choice, no source lever.
 RVA(0x000fa300, 0x3a)
-i32 CState::RunTitle(const char * a, i32 b, i32 c, i32 d, i32 e) {
+i32 CState::RunTitle(const char* a, i32 b, i32 c, i32 d, i32 e) {
     if (!m_world) {
         return 0;
     }
@@ -534,17 +534,7 @@ i32 CState::InputVirtual() {
         sp.rect.right = m_mgr->m_modeH;
         sp.rect.bottom = 0;
         sp.m_14 = 0;
-        EngStr_DrawText(
-            m_world,
-            &sp.text,
-            &sp.rect,
-            0x78,
-            1,
-            0xff,
-            0,
-            0xff,
-            1
-        );
+        EngStr_DrawText(m_world, &sp.text, &sp.rect, 0x78, 1, 0xff, 0, 0xff, 1);
     }
     while (ShowCursor(0) >= 0)
         ;
@@ -633,10 +623,10 @@ i32 CState::HeaderWrite(CFileMemBase* ar) {
     ar->Write(&m_cursorY, 4);
     ar->Write(&m_snapOriginX, 4);
     ar->Write(&m_snapOriginY, 4);
-    ar->Write(&m_168, 0x10);
-    ar->Write(&m_178, 0x10);
-    ar->Write(&m_188, 0x10);
-    ar->Write(&m_198, 0x10);
+    ar->Write(&m_cursorSaveSrc0, 0x10);
+    ar->Write(&m_cursorSaveSrc1, 0x10);
+    ar->Write(&m_cursorSaveDst0, 0x10);
+    ar->Write(&m_cursorSaveDst1, 0x10);
     ar->Write(&m_inputWarmup1, 4);
     ar->Write(&m_inputWarmup2, 4);
     ar->Write(&m_inputHalfSel, 4);
@@ -667,10 +657,10 @@ i32 CState::HeaderRead(CFileMemBase* ar) {
     ar->Read(&m_cursorY, 4);
     ar->Read(&m_snapOriginX, 4);
     ar->Read(&m_snapOriginY, 4);
-    ar->Read(&m_168, 0x10);
-    ar->Read(&m_178, 0x10);
-    ar->Read(&m_188, 0x10);
-    ar->Read(&m_198, 0x10);
+    ar->Read(&m_cursorSaveSrc0, 0x10);
+    ar->Read(&m_cursorSaveSrc1, 0x10);
+    ar->Read(&m_cursorSaveDst0, 0x10);
+    ar->Read(&m_cursorSaveDst1, 0x10);
     ar->Read(&m_inputWarmup1, 4);
     ar->Read(&m_inputWarmup2, 4);
     ar->Read(&m_inputHalfSel, 4);
