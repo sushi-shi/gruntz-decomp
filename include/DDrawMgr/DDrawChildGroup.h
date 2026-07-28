@@ -109,8 +109,13 @@ public:
     i32 LoadObjects(class CFileMemBase* reader, u32 count, i32 unused);
 
     // List / map ops.
-    void RemoveAll(i32 pos, CWwdGameObject* obj);
-    void RemoveByPosition(i32 pos, CWwdGameObject* obj);
+    // Both take a real list POSITION (they hand it straight to CObList::RemoveAt) and
+    // a CGameObject (WwdKey's parameter type). They were `(i32, CWwdGameObject*)`,
+    // which forced a reinterpret_cast back to POSITION inside each body and a downcast
+    // at the one caller - CWwdSpatialMgr::Relocate, which passes the region node's own
+    // CGameObject back-pointer.
+    void RemoveAll(POSITION pos, CGameObject* obj);
+    void RemoveByPosition(POSITION pos, CGameObject* obj);
     void AddToMap48(CWwdGameObject* obj);
     void PruneList();
     i32 CountActive();

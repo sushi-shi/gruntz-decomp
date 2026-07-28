@@ -115,15 +115,161 @@ i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
 // replicated dispatch; deferred to the final sweep (leaf-first redo) per the
 // >512 B "don't half-do it" rule.
 // ===========================================================================
+// The three grids differ only in their scroll-origin pair and in which grid the
+// re-bucketed node lands in, so the dispatch is written out three times exactly as
+// retail emits it - flags bit 0x800000 picks grid1, 0x1000000 picks grid2, neither
+// picks grid0.
 // @early-stop
-// BODY NOT RECONSTRUCTED - 943 B (>512 B "don't half-do it" rule). Logic is
-// mapped (head computes x-orgX/y-orgY/x+orgX/y+orgY per grid into 12 stack
-// temporaries, then walks m_mgr's object list re-bucketing by flags
-// 0x800000 -> grid2 / 0x1000000 -> grid1 / else grid0, calling grid Add/Remove
-// + InsertSorted/RemoveAll); deferred to the final sweep as a leaf-first redo.
+// 86.9% (from 0.65%). Four cached locals carried it there: the per-object flags word
+// (retail loads it ONCE for each of the two gate groups, not per test), the +0x7c
+// worker, the &obj->m_region pointer (retail reaches m_x/m_y/m_object through it with
+// disp8) and the pair of screen coordinates loaded together. The residual is one extra
+// SPILL retail makes and cl5 does not - it parks the region pointer in [esp+0x18] as
+// well as ebp (ebp is clobbered by the third arm's saved act key), which shifts every
+// box temporary one slot down.
 RVA(0x00168500, 0x3af)
 i32 CWwdSpatialMgr::Relocate(i32 newX, i32 newY) {
-    return 0;
+    i32 count = 0;
+    i32 lo0x = newX - m_org0x;
+    i32 hi0x = m_org0x + newX;
+    i32 lo0y = newY - m_org0y;
+    i32 hi0y = m_org0y + newY;
+    i32 lo1x = newX - m_org1x;
+    i32 lo1y = newY - m_org1y;
+    i32 hi1x = newX + m_org1x;
+    i32 hi1y = newY + m_org1y;
+    i32 lo2x = newX - m_org2x;
+    i32 lo2y = newY - m_org2y;
+    i32 hi2x = newX + m_org2x;
+    i32 hi2y = newY + m_org2y;
+
+    POSITION pos = m_mgr->m_list.GetHeadPosition();
+    while (pos != 0) {
+        POSITION cur = pos;
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_mgr->m_list.GetNext(pos));
+        if (obj->m_flags & 0x40) {
+            // A far-culled object is destroyed outright rather than re-bucketed. The
+            // margin is the visible page plus one screen (0x140 x 0xdc).
+            if (newX < m_bounds.left - 0x140 || newX > m_bounds.right + 0x140
+                || newY < m_bounds.top - 0xdc || newY > m_bounds.bottom + 0xdc) {
+                if (obj->m_flags & 0x80000) {
+                    AnimWorkerObj* w = obj->m_7c;
+                    w->SetActKey(0x1d);
+                    w->m_notify(obj);
+                }
+                m_mgr->RemoveAll(cur, obj);
+                if (obj != 0) {
+                    delete obj;
+                }
+                obj = 0;
+            }
+        }
+        if (obj != 0 && !(obj->m_flags & 0x2) && (obj->m_flags & 0x40000)) {
+            i32 x = obj->m_screenX;
+            i32 y = obj->m_screenY;
+            WwdRegion* r = &obj->m_region;
+            if (x < m_bounds.left) {
+                x = m_bounds.left;
+            }
+            if (y < m_bounds.top) {
+                y = m_bounds.top;
+            }
+            if (x >= m_bounds.right) {
+                x = m_bounds.right;
+            }
+            if (y >= m_bounds.bottom) {
+                y = m_bounds.bottom;
+            }
+            r->m_x = x;
+            r->m_y = y;
+            i32 flags = obj->m_flags;
+            i32 result;
+            if (flags & 0x800000) {
+                CWwdGrid* grid = m_grid1;
+                if (x >= lo1x && y >= lo1y && x <= hi1x && y <= hi1y) {
+                    result = 0;
+                } else if (flags & 0x20) {
+                    if (flags & 0x80000) {
+                        AnimWorkerObj* w = obj->m_7c;
+                        w->SetActKey(0x1d);
+                        w->m_notify(obj);
+                    }
+                    m_mgr->RemoveAll(cur, obj);
+                    delete obj;
+                    result = 1;
+                } else {
+                    if (flags & 0x100000) {
+                        AnimWorkerObj* w = obj->m_7c;
+                        i32 saved = w->ActKey();
+                        w->SetActKey(0x1e);
+                        w->m_notify(obj);
+                        if (w->ActKey() == 0x1e) {
+                            w->m_1c = saved;
+                        }
+                    }
+                    m_mgr->RemoveByPosition(cur, r->m_object);
+                    grid->Add(r);
+                    result = 1;
+                }
+            } else if (flags & 0x1000000) {
+                CWwdGrid* grid = m_grid2;
+                if (x >= lo2x && y >= lo2y && x <= hi2x && y <= hi2y) {
+                    result = 0;
+                } else if (flags & 0x20) {
+                    if (flags & 0x80000) {
+                        AnimWorkerObj* w = obj->m_7c;
+                        w->SetActKey(0x1d);
+                        w->m_notify(obj);
+                    }
+                    m_mgr->RemoveAll(cur, obj);
+                    delete obj;
+                    result = 1;
+                } else {
+                    if (flags & 0x100000) {
+                        AnimWorkerObj* w = obj->m_7c;
+                        i32 saved = w->ActKey();
+                        w->SetActKey(0x1e);
+                        w->m_notify(obj);
+                        if (w->ActKey() == 0x1e) {
+                            w->m_1c = saved;
+                        }
+                    }
+                    m_mgr->RemoveByPosition(cur, r->m_object);
+                    grid->Add(r);
+                    result = 1;
+                }
+            } else {
+                CWwdGrid* grid = m_grid0;
+                if (x >= lo0x && y >= lo0y && x <= hi0x && y <= hi0y) {
+                    result = 0;
+                } else if (flags & 0x20) {
+                    if (flags & 0x80000) {
+                        AnimWorkerObj* w = obj->m_7c;
+                        w->SetActKey(0x1d);
+                        w->m_notify(obj);
+                    }
+                    m_mgr->RemoveAll(cur, obj);
+                    delete obj;
+                    result = 1;
+                } else {
+                    if (flags & 0x100000) {
+                        AnimWorkerObj* w = obj->m_7c;
+                        i32 saved = w->ActKey();
+                        w->SetActKey(0x1e);
+                        w->m_notify(obj);
+                        if (w->ActKey() == 0x1e) {
+                            w->m_1c = saved;
+                        }
+                    }
+                    m_mgr->RemoveByPosition(cur, r->m_object);
+                    grid->Add(r);
+                    result = 1;
+                }
+            }
+            count += result;
+        }
+    }
+    return count;
 }
 
 RVA(0x001688b0, 0x40)

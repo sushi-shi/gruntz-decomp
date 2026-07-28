@@ -1034,15 +1034,15 @@ i32 CDDrawChildGroup::SumWeighted() {
 }
 
 RVA(0x0015ab30, 0x38)
-void CDDrawChildGroup::RemoveAll(i32 pos, CWwdGameObject* obj) {
-    m_list.RemoveAt(reinterpret_cast<POSITION>(pos));
+void CDDrawChildGroup::RemoveAll(POSITION pos, CGameObject* obj) {
+    m_list.RemoveAt(pos);
     m_map2c.RemoveKey(WwdKey(obj));
     m_map48.RemoveKey(WwdKey(obj));
 }
 
 RVA(0x0015ab70, 0x27)
-void CDDrawChildGroup::RemoveByPosition(i32 pos, CWwdGameObject* obj) {
-    m_list.RemoveAt(reinterpret_cast<POSITION>(pos));
+void CDDrawChildGroup::RemoveByPosition(POSITION pos, CGameObject* obj) {
+    m_list.RemoveAt(pos);
     m_map2c.RemoveKey(WwdKey(obj));
 }
 
