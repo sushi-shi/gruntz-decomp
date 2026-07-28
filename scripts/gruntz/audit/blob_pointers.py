@@ -91,7 +91,13 @@ def scan():
                         tells.append("named:" + hit.group(0))
                     if SIZED.search(comment) or SIZED.search(ctx):
                         tells.append("sized")
-                    if re.search(r"\b%s\s*\[\s*\w+\s*\*" % re.escape(name), text):
+                    # A LITERAL small multiplier is the signal - `p[i*7]`, `p[i*4+2]` -
+                    # because those constants are a struct stride and field offsets.
+                    # Matching ANY `name[expr * ...]` also catches `data[i * total]`
+                    # with a runtime stride over single BYTES, which is a legitimate
+                    # LUT and not a lost type (ShadeTableCache's six shade ramps).
+                    if re.search(r"\b%s\s*\[[^\]]*\*\s*(?:[2-9]|[1-9][0-9])\b"
+                                 % re.escape(name), text):
                         tells.append("strided")
                     rows[str(path.relative_to(REPO))].append(
                         (i + 1, ty, name, tells, code.strip()[:70]))
