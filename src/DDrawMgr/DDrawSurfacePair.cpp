@@ -859,7 +859,7 @@ i32 CAniElement::Build(void* ctx, CAniSource* src, i32 flags) {
     const char* cursor = src->m_data;
     if (src->m_namelen != 0) {
         m_name = static_cast<char*>(operator new(src->m_namelen + 2));
-        i32 n;
+        u32 n;
         for (n = 0; n < src->m_namelen; n++) {
             m_name[n] = *cursor++;
         }
