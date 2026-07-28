@@ -420,7 +420,9 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, i32 flag) {
     bih.biSize = 0;
     bih.biWidth = 0;
     bih.biHeight = 0;
-    // two adjacent SDK u16 fields (biPlanes|biBitCount) moved as ONE dword - byte-forced
+    // Retail clears the header at 0x14468e (`mov ecx,0xb; rep stosd`); the field-wise
+    // spelling reproduces it, and an explicit memset measured 14 points WORSE
+    // (52.57 -> 38.40) - do not retry. This biPlanes|biBitCount dword is byte-forced.
     *reinterpret_cast<i32*>(&bih.biPlanes) = 0;
     bih.biSizeImage = 0;
     bih.biXPelsPerMeter = 0;
@@ -428,7 +430,9 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, i32 flag) {
     bih.biClrUsed = 0;
     bih.biClrImportant = 0;
 
-    // the BM magic written into the header's leading bytes - byte-forced
+    // Retail INLINES strcpy here: `mov edi,0x61aabc; repnz scas al` then `rep movs`
+    // into the 14-byte bfh at [esp+0x18]. A bfType word store emits neither, so the
+    // copy through a char* view of the header is byte-forced.
     strcpy(reinterpret_cast<char*>(&bfh), "BM");
     bfh.bfReserved1 = 0;
     bfh.bfReserved2 = 0;
