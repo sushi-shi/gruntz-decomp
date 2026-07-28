@@ -330,7 +330,8 @@ i32 CWwdGameObjectA::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
 // ReadState (0x150b00): pull four fields back through the archive at the
 // requested object (ebx), copy its name string, then re-emit them.
 // ---------------------------------------------------------------------------
-// @early-stop
+// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
+// current claim. Retired by the stale-marker sweep.)
 // frame-slot-coloring wall (99.39%): buffer corrected to char[0x100] (frame now the
 // retail sub esp,0x108, cf. read-twin SerializeSpriteName), body byte-identical, but MSVC5 colors
 // the two 4-byte scalars (flag / CStringVal str) into the swapped esp slots vs retail
@@ -1060,7 +1061,8 @@ i32 CGameObject::NotifyHooked(i32 arg) {
 // is folded onto the one 0x17c worker class). Stamp the derived vptr, free the
 // owned heap block (m_14), `delete` the bound logic leaf (its CUserBase slot-0
 // scalar dtor), zero the live fields, then restamp the base vptr.
-// @early-stop
+// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
+// current claim. Retired by the stale-marker sweep.)
 // eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md):
 // the body (derived vptr stamp, m_14 free, m_logic->vtbl[0](1), field zeroing, base
 // vptr restamp) is byte-exact, but the retail /GX frame (push -1 / fs:0 / trylevel)
@@ -1152,12 +1154,10 @@ void CDDrawWorker::Unload() {
 // CDDrawWorker::InsertFrame @0x151f00 - build and install a frame worker (a CImage,
 // vftable @0x5eaa2c) at frame number `n` in the sprite's +0x10 frame CObArray.
 // __thiscall, ret 0xc.
-// @early-stop
-// vptr-scheduler wall (99.5%): the real `new CImage(n, m_c)` ctor
-// (docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md) fixed the regalloc that
-// used to cap this at ~84% (the this/n/worker coloring resolved once the construction
-// became a clean ctor). The only residual is the vptr store position (cl 1st vs retail
-// 4th) - same wall as CreateFrame30.
+// EXACT. The construction is a real `new CImage(n, Owner())` ctor
+// (docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md) - that fixed the this/n/
+// worker coloring - and the CWapObj header-triple fold put the vptr stamp 4th; see the
+// note on CreateFrame30 below.
 RVA(0x00151f00, 0xa4)
 CImage* CDDrawWorker::InsertFrame(void* src, i32 n, i32 mode) {
     if (n < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(n)) != 0) {
@@ -1194,15 +1194,14 @@ CImage* CDDrawWorker::InsertFrame(void* src, i32 n, i32 mode) {
 // arg1 is a FILE PATH: retail 0x152006 pushes [esp+0x14] (= arg1) last into
 // `call [edx+0x30]` = CImage::Create @0x152e90, which hands it to Createa58_3 ->
 // CFileImageSurface::LoadByExt @0x148940 -> strrchr(path,'.') (SETTLED 2026-07-27).
-// @early-stop
-// vptr-scheduler wall (99.5%): the real `new CImage(index, Owner())` ctor
-// (docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md) fixed the whole regalloc
-// (was ~66% with a spelled-out new+store or a helper call). The ONLY residual is the
-// vptr store position: cl stamps `mov [nf],??_7CImage` at ctor entry (1st store) while
-// retail schedules it 4th - after m_status/m_08/m_parent, before m_width. The scheduler
-// won't sink the vptr past scalar member stores from any source form tried (body-order,
-// member-init-list); a source-level fix would need the 3 leading fields to come from a
-// base-class ctor. (The other diff, `[eax+edi*4]` vs `[eax+4*edi]`, is a byte-neutral
+// The ex "vptr-scheduler wall" (99.4%) is RESOLVED, and its own note named the cure:
+// "a source-level fix would need the 3 leading fields to come from a base-class ctor".
+// They do now - CImage's +0x04/+0x08/+0x0c were folded onto CWapObj (they were declared
+// identically on BOTH of its direct children, and retail stamps the leaf vptr 4th, which
+// only a base ctor can produce) and CImage's ctor delegates. cl then emits the stamp
+// between the base ctor and the derived member inits = retail's order. All four
+// factories here plus CDDrawSubMgrLeafScan::CreateEntry/2 went EXACT on that one change.
+// (The other ex-diff, `[eax+edi*4]` vs `[eax+4*edi]`, was always a byte-neutral
 // disasm-spelling artifact.)
 RVA(0x00151fb0, 0xa4)
 CImage* CDDrawWorker::CreateFrame30(char* path, i32 index, i32 keyed) {
@@ -1233,8 +1232,7 @@ CImage* CDDrawWorker::CreateFrame30(char* path, i32 index, i32 keyed) {
 // virtual is at slot +0x28 and takes (desc, mode, size, 1). SETTLED 2026-07-27:
 // arg4 is the blob's byte LENGTH - it reaches CDDrawShadeBlit::Build @0x1490d0,
 // which mallocs `size-0x20` and `rep movs` exactly that many bytes.
-// @early-stop
-// Same vptr-scheduler wall as CreateFrame30 (see there). 99.5%.
+// EXACT - same shape as CreateFrame30 (see the resolution note there).
 RVA(0x00152060, 0xab)
 CImage* CDDrawWorker::CreateFrame28(PidHeader* desc, i32 mode, i32 index, u32 size) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
@@ -1265,8 +1263,7 @@ CImage* CDDrawWorker::CreateFrame28(PidHeader* desc, i32 mode, i32 index, u32 si
 // virtual is at slot +0x24 and takes (width, height, keyed). SETTLED 2026-07-27:
 // args 1/2 are a GEOMETRY pair, not a descriptor+mode - they end up in
 // CDDSurface::BlitSurf's +0x1c/+0x18 (see the CImage::Create24 proof block).
-// @early-stop
-// Same vptr-scheduler wall as CreateFrame30 (see there). 99.5%.
+// EXACT - same shape as CreateFrame30 (see the resolution note there).
 RVA(0x00152110, 0xa9)
 CImage* CDDrawWorker::CreateFrame24(i32 width, i32 height, i32 index, i32 keyed) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
@@ -1414,7 +1411,8 @@ i32 CDDrawWorker::ReloadFrame(CParseSource* rec, i32 n, i32 flag) {
 // decoded byte size: width*height, doubled for a 16bpp held surface or tripled for
 // 24bpp, overridden by the owned object's exact count when one is present, plus a
 // fixed 0x34-byte per-frame overhead when `raw` is 0.
-// @early-stop
+// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
+// current claim. Retired by the stale-marker sweep.)
 // 99.96% - every instruction byte-identical except the commutative `width*height` imul:
 // retail keeps m_height in esi and reads m_width as the imul memory operand; cl canonicalizes
 // to the reverse (keeps m_width, reads m_height) for EVERY spelling (a*b, b*a, temp + *=,

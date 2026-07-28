@@ -347,18 +347,15 @@ CRezImage* CImagePool::AddSurfaceConvert(CRezImage* src, void* pal) {
 // pushes + the AddTail `lea 0x2c(this)`). The sibling AddImageFile reaches 100%
 // only because its early m_resourceModuleHandle read pins `this`=edi; with `this` first used at the
 // tail there is no source lever. Logic byte-identical.
+// Also tried (2026-07-28) and byte-NEUTRAL: modelling the node seed as a real
+// `new CImagePaletteNode()` ctor instead of the spelled-out `::operator new(0x414)` +
+// three stores + hand-written null guard, which is what
+// docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md prescribes for exactly this
+// wrong-`this`-role symptom. It does not move the pin - but the ctor form is the correct
+// model, so it is KEPT (the spelled-out construction is gone from all four factories).
 RVA(0x001754f0, 0x7b)
 CImagePaletteNode* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flags) {
-    CImagePaletteNode* node;
-    CImagePaletteNode* raw = static_cast<CImagePaletteNode*>(::operator new(0x414));
-    if (raw) {
-        raw->m_palette = 0;
-        raw->m_systemTuned = 0;
-        raw->m_listPosition = 0;
-        node = raw;
-    } else {
-        node = 0;
-    }
+    CImagePaletteNode* node = new CImagePaletteNode();
     if (node->Build(entries, flags) == 0) {
         if (node) {
             node->Run();
@@ -375,16 +372,7 @@ CImagePaletteNode* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flag
 // retail edi). Logic byte-identical.
 RVA(0x00175570, 0x7b)
 CImagePaletteNode* CImagePool::AddPaletteRGB(void* rgb, i32 flags) {
-    CImagePaletteNode* node;
-    CImagePaletteNode* raw = static_cast<CImagePaletteNode*>(::operator new(0x414));
-    if (raw) {
-        raw->m_palette = 0;
-        raw->m_systemTuned = 0;
-        raw->m_listPosition = 0;
-        node = raw;
-    } else {
-        node = 0;
-    }
+    CImagePaletteNode* node = new CImagePaletteNode();
     if (node->ProcessPal(rgb, flags) == 0) {
         if (node) {
             node->Run();
@@ -399,16 +387,7 @@ CImagePaletteNode* CImagePool::AddPaletteRGB(void* rgb, i32 flags) {
 RVA(0x001755f0, 0x82)
 CImagePaletteNode* CImagePool::AddImageFile(char* path, i32 arg) {
     g_hResModule = m_resourceModuleHandle;
-    CImagePaletteNode* node;
-    CImagePaletteNode* raw = static_cast<CImagePaletteNode*>(::operator new(0x414));
-    if (raw) {
-        raw->m_palette = 0;
-        raw->m_systemTuned = 0;
-        raw->m_listPosition = 0;
-        node = raw;
-    } else {
-        node = 0;
-    }
+    CImagePaletteNode* node = new CImagePaletteNode();
     if (node->LoadByExtension(path, arg) == 0) {
         if (node) {
             node->Run();
@@ -425,16 +404,7 @@ CImagePaletteNode* CImagePool::AddImageFile(char* path, i32 arg) {
 // retail edi). Logic byte-identical.
 RVA(0x00175680, 0x85)
 CImagePaletteNode* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl) {
-    CImagePaletteNode* node;
-    CImagePaletteNode* raw = static_cast<CImagePaletteNode*>(::operator new(0x414));
-    if (raw) {
-        raw->m_palette = 0;
-        raw->m_systemTuned = 0;
-        raw->m_listPosition = 0;
-        node = raw;
-    } else {
-        node = 0;
-    }
+    CImagePaletteNode* node = new CImagePaletteNode();
     if (node->ParseDispatch(buf, size, type, ctrl) == 0) {
         if (node) {
             node->Run();

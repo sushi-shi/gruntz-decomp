@@ -16,6 +16,16 @@ namespace ApiCallerStubs {
         i32 m_flags;                            // +0x408  Build's stored flags (Run zeroes it)
         i32 m_systemTuned;                      // +0x40c  1 when reserved system range snapshotted
         POSITION m_listPosition;                // +0x410  cached AddTail POSITION
+        // The seed every CImagePool::Add* factory builds a node with. Modelled as a
+        // REAL ctor (`new CImagePaletteNode()`), not a spelled-out
+        // `::operator new(0x414)` + three stores + hand-written null guard: the
+        // spelled-out form gives the factories the wrong `this` register role
+        // (docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md).
+        CImagePaletteNode() {
+            m_palette = 0;
+            m_systemTuned = 0;
+            m_listPosition = 0;
+        }
         i32 Build(PALETTEENTRY* entries, i32 flags);                // 0x176df0 (imagepool)
         void Tune();                                                // 0x1770e0 (imagepool)
         i32 ProcessPal(void* rgb, i32 flags);                       // 0x176e70 (imagepool)

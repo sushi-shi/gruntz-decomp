@@ -2349,18 +2349,18 @@ void CGruntzMgr::RecomputeViewScale() {
     float fw = static_cast<float>((view->m_planeCtx.right - view->m_planeCtx.left + 1));
     float fh = static_cast<float>((view->m_planeCtx.bottom - view->m_planeCtx.top + 1));
 
-    view->m_rectAWidth = static_cast<i32>((fw * 1.4f));
-    view->m_rectAHeight = static_cast<i32>((fh * 1.4f));
+    view->m_rectA.w = static_cast<i32>((fw * 1.4f));
+    view->m_rectA.h = static_cast<i32>((fh * 1.4f));
     view->MainPlaneNotify();
 
     view = m_world->m_level;
-    view->m_rectBWidth = static_cast<i32>((fw * 5.3f));
-    view->m_rectBHeight = static_cast<i32>((fh * 5.3f));
+    view->m_rectB.w = static_cast<i32>((fw * 5.3f));
+    view->m_rectB.h = static_cast<i32>((fh * 5.3f));
     view->MainPlaneNotify();
 
     view = m_world->m_level;
-    view->m_rectCWidth = static_cast<i32>((fw * 1.12f));
-    view->m_rectCHeight = static_cast<i32>((fh * 1.12f));
+    view->m_rectC.w = static_cast<i32>((fw * 1.12f));
+    view->m_rectC.h = static_cast<i32>((fh * 1.12f));
     view->MainPlaneNotify();
 
     CGameLevel* v = m_world->m_level;

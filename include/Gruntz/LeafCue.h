@@ -42,10 +42,7 @@ struct LeafCue : public CLoadable {
     i32 m_18;              // +0x18  cooldown interval (seeded from the cache's m_34)
 };
 SIZE(0x1c);
-inline LeafCue::LeafCue(i32 count, CDDrawSurfaceMgr* handle) {
-    m_id = count;
-    m_flags = 0;
-    m_ownerCtx = handle;
+inline LeafCue::LeafCue(i32 count, CDDrawSurfaceMgr* handle) : CLoadable(count, handle) {
     m_10 = 0;
     m_18 = 0;
     m_14 = 0;

@@ -49,6 +49,11 @@ RVA_COMPGEN(0x00058cd0, 0x195, ??0CUserLogic@@QAE@PAUCGameObject@@@Z)
 i32 LogicHitFactory(
     CGameObject* obj
 ); // GameObjNotifyFn ABI (CreateWorker registrant)    // 0x56e4c0
+// TU-LOCAL INLINING DEVICE - keep textually identical to the ONE real definition,
+// CUserLogic::BuildLogicTypeTable @0x8a40 in src/Gruntz/UserLogic.cpp (which is where
+// the symbol comes from; this copy must NOT emit a COMDAT of its own, hence the
+// inline_depth(0) on the 1-arg forcer below - without it the forcer's 3 non-inlined
+// ctor copies call the helper and drag out a duplicate definition).
 inline void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     {
         CObject* found = 0;
@@ -78,10 +83,11 @@ static CUserLogic* volatile g_forceEmitSink;
 void ForceEmitCUserLogicNoArg() {
     g_forceEmitSink = new CUserLogic();
 }
-#pragma inline_depth()
+// inline_depth(0): emit the standalone ctor COMDAT WITHOUT inlining it here. Inlined
+// copies stop folding BuildLogicTypeTable at that depth and reference it instead, which
+// used to emit a second definition of it in this obj (see the note on the body above).
+#pragma inline_depth(0)
 void ForceEmitCUserLogic1Arg(CGameObject* o) {
     g_forceEmitSink = new CUserLogic(o);
-    g_forceEmitSink = new CUserLogic(o);
-    g_forceEmitSink = new CUserLogic(o);
-    g_forceEmitSink = new CUserLogic(o);
 }
+#pragma inline_depth()

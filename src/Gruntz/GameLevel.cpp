@@ -24,12 +24,12 @@ static inline void StampParamBlock(CGameLevel* o) {
     o->m_pairB[1] = 1000;
     o->m_pairC[0] = 250;
     o->m_pairC[1] = 125;
-    o->m_rectAWidth = 1600;
-    o->m_rectAHeight = 1200;
-    o->m_rectBWidth = 2560;
-    o->m_rectBHeight = 1920;
-    o->m_rectCWidth = 768;
-    o->m_rectCHeight = 576;
+    o->m_rectA.w = 1600;
+    o->m_rectA.h = 1200;
+    o->m_rectB.w = 2560;
+    o->m_rectB.h = 1920;
+    o->m_rectC.w = 768;
+    o->m_rectC.h = 576;
 }
 
 // ===========================================================================
@@ -75,12 +75,12 @@ CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 a2, i32 a3) {
     m_checksum = 0;
     m_pairA[0] = 500;
     m_pairC[1] = 125;
-    m_rectAWidth = 1600;
-    m_rectAHeight = 1200;
-    m_rectBWidth = 2560;
-    m_rectBHeight = 1920;
-    m_rectCWidth = 768;
-    m_rectCHeight = 576;
+    m_rectA.w = 1600;
+    m_rectA.h = 1200;
+    m_rectB.w = 2560;
+    m_rectB.h = 1920;
+    m_rectC.w = 768;
+    m_rectC.h = 576;
 }
 
 // The tile-descriptions table inside the WWD image: a packed on-disk record whose

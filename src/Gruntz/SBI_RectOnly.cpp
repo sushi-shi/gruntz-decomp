@@ -962,11 +962,11 @@ i32 CStatusBarMgr::HlClickGroup2(i32 row) {
 // new reading into its m_44). The toward-target step is spelled as `<`/`<=goto`/`>`
 // (no outer `!=`) so the equal case folds into the jge/jle pair like retail and the
 // two inc/dec branches share one store, not an extra top `je`.
-// @early-stop
-// ~99.5%: byte-exact except the eax<->edx scratch coin-flip in the m_gaugeSink->m_44
-// store block (retail: value eax / vptr edx; ours swapped). The sink is loaded ONCE
-// after the notify call via the post-call `sink` local (95.7 -> 99.5); the remaining
-// swap is not steerable from C; deferred.
+// EXACT. The ex "eax<->edx scratch coin-flip" was steerable after all, by DECLARATION
+// ORDER inside the notify block: read m_gauge into its own local BEFORE taking
+// m_gaugeSink into one. That order gives retail's roles (value in eax, the sink's vptr
+// in edx); with the two locals the other way round - or with no `fill` local at all -
+// cl loads the value into edx/esi and puts the vptr in eax.
 RVA(0x00105480, 0x7d)
 void CStatusBarMgr::TickGauge() {
     i32 changed = 0;
@@ -991,9 +991,10 @@ noChange:;
     if (changed) {
         if (m_gaugeSink && m_gaugeNotify) {
             m_gaugeNotify->SetSubtype(); // slot 10
+            i32 fill = m_gauge;
             CSBI_WellGoo* sink = m_gaugeSink;
-            sink->m_fillScale = m_gauge; // +0x44
-            sink->SetSubtype();          // slot 10
+            sink->m_fillScale = fill; // +0x44
+            sink->SetSubtype();       // slot 10
         }
     }
 }
@@ -3019,8 +3020,15 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
 // CStatzTabBuilder carved out to their own TUs, CStatusBarMgr::Sync RE-MERGED in (the binary
 // wants it here - see its note). No source change to this function in any of it. So this
 // function is effectively a sensor for "is this TU's content right?", and it reads
-// correct only when the TU holds exactly the objs retail compiled together. Nothing to
-// fix here; if it drops again, the TU's membership changed, not this code.
+// correct only when the TU holds exactly the objs retail compiled together. If it drops
+// again, the TU's membership changed, not this code.
+// @early-stop
+// 99.71%: 8 instructions, two residues. (1) cl sinks the `below.left` store past the
+// other three where retail emits it first - measured over ALL 24 assignment orders, none
+// reaches 0 and the natural l/t/r/b ties the best, so it is not an ordering artifact.
+// (2) an ecx<->edx role swap on the `m_c->m_imageRegistry->m_10map` receiver chain
+// (retail: chain in edx, the Lookup out-arg address in ecx; ours swapped) - the
+// pointer-chain-hoist lever does not reach it because the chain is already one hop.
 RVA(0x000fe6b0, 0x145)
 i32 CStatusBarMgr::LoadMainStatusBarSprite() {
     if (m_position != kSubtypeTag) {
@@ -3029,14 +3037,19 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
             i32 v = m_barFrameGate;
             if (v > 0x1e0) {
                 CDDSurface* tgt = (g_gameReg->m_world->m_drawTarget)->m_backPair->m_surface;
-                struct {
-                    i32 a, b, c, d;
-                } rc;
-                rc.a = m_rect10.left;
-                rc.d = v;
-                rc.b = m_rect10.bottom;
-                rc.c = m_rect10.right;
-                tgt->Restore(&rc, 0);
+                // The area UNDER the bar: the bar rect's span horizontally, from its
+                // bottom down to the gate row. A real RECT, not the ex `struct {i32
+                // a,b,c,d;}` .cpp-local view - the four contiguous frame slots at
+                // [esp+0x10..0x20) in left/top/right/bottom order are exactly the
+                // local-aggregate signature (local-rect-aggregate-from-contiguous-
+                // frame-slots.md), and all 24 assignment orders were measured: natural
+                // l/t/r/b ties the best (the residue below is not an ordering artifact).
+                RECT below;
+                below.left = m_rect10.left;
+                below.top = m_rect10.bottom;
+                below.right = m_rect10.right;
+                below.bottom = v;
+                tgt->Restore(&below, 0);
             }
             CMapStringToOb* map = &m_c->m_imageRegistry->m_10map;
             CObject* found = 0;
