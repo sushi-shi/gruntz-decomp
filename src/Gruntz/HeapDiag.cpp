@@ -192,7 +192,7 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
     }
 
     HANDLE hSnap = pCreate(TH32CS_SNAPPROCESS, 0);
-    if (hSnap == reinterpret_cast<HANDLE>(-1)) {
+    if (hSnap == INVALID_HANDLE_VALUE) {
         return 0;
     }
 

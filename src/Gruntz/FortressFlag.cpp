@@ -450,9 +450,10 @@ void CExplosion::FireActivation(i32 id) {
 RVA(0x000474b0, 0x18d)
 void RegisterXLogic_6447f8() {
     i32 id = RegisterActionName();
-    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CExplosion>::s_table.ResolveEntry(id)) =
-        static_cast<void*>(&FortressFlagAct);
+    // ILT 0x4041ec -> 0x0476b0 == CExplosion::Update (this store is what NAMED that
+    // body - see RockBreakEffectUpdate.cpp); the slot IS a CActHandler.
+    *CActRegPool<CExplosion>::s_table.ResolveEntry(id) =
+        static_cast<CActHandler>(&CExplosion::Update);
 }
 
 // (the act-slot registries live beside their

@@ -1,18 +1,23 @@
-// RockBreakEffectUpdate.cpp - 0x476b0, a Ghidra-missed per-frame effect Update
-// (__thiscall, void; a leaf between LogicActReg's registrar 0x474b0 and CGrunt 0x47a10).
-// @identity-TODO: the owning class is unrecovered (no xref/RTTI). It drives an effect
-// sprite (this->m_38, a game object with a CAniAdvanceCursor embedded at +0x1a0) over a
-// target game object (this->m_10). When the anim advance completes AND the target's
+// RockBreakEffectUpdate.cpp - CExplosion::Update @0x476b0, a Ghidra-missed
+// per-frame effect driver (__thiscall; a leaf between LogicActReg's registrar
+// 0x474b0 and CGrunt 0x47a10).
+//
+// IDENTITY SETTLED 2026-07-29 (was @identity-TODO "RbEffect"): FortressFlag's
+// RegisterXLogic_6447f8 @0x474b0 stores ILT 0x4041ec -> 0x476b0 into
+// CActRegPool<CExplosion>::s_table. An act table only ever holds its OWN class's
+// CUserLogic member fn, so this body is CExplosion::Update - and the ex-placeholder's
+// two modelled fields land exactly on CUserLogic::m_object (+0x10) and m_38 (+0x38),
+// both CWwdGameObjectA*. 0x476b0 also sits inside the fortressflag obj's own band
+// (registrar 0x474b0 + 0x18d = 0x4763d), which is where the partition note below
+// already suspected it belonged.
+//
+// It drives an effect sprite (m_38, with a CAniAdvanceCursor embedded at +0x1a0) over
+// a target game object (m_object). When the anim advance completes AND the target's
 // +0x114 state == 1, spawn rock-break particles at the target's world position; then
-// mark the effect's goal flag when it is armed (+0x1c8 set) and not yet consumed (+0x1c0
-// clear). Field names are placeholders; only offsets + code bytes are load-bearing.
-// wave3-I partition note: Update@RbEffect @0x476b0 sits at the exact boundary
-// between the fortressflag obj (ff+particlez+explosion, ends ~0x4763d) and the
-// grunt-main obj (frags @0x47740+, ctor @0x47a10). No private .data cells or
-// frags pin it to either side; the TU_MIGRATION MOVE row's "-> grunt" was the
-// dominant-unit heuristic only. Left in its own unit pending stronger evidence
-// (@identity-TODO).
-#include <Ints.h>
+// mark the effect's goal flag when it is armed (+0x1c8 set) and not yet consumed
+// (+0x1c0 clear).
+// FOLLOW-UP: the body should be re-homed into FortressFlag.cpp (its RVA is contiguous
+// with that obj's block); left in its own unit here so the fold stays byte-local.
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -21,12 +26,11 @@
 #include <Gruntz/UserLogic.h>    // CGameObject (the target + effect sprite are both one)
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_cmdGrid)
 #include <Gruntz/TriggerMgr.h> // BuildRockBreakParticles (ex CRockBreakMgr - dissolved onto CTriggerMgr)
-#include <Gruntz/RbEffect.h> // canonical RbEffect (the rock-break effect leaf; identity @identity-TODO)
+#include <Gruntz/Explosion.h> // CExplosion - the owning leaf (ex-`RbEffect`; see Explosion.h)
 
-// The effect leaf: its bound target (m_10, +0x114 state gates the spawn) and its
-// effect sprite (m_38, CAniAdvanceCursor @+0x1a0, +0x1c0/+0x1c8 gates) are BOTH real
-// CGameObjects (world pos @+0x5c/+0x60, flags @+0x08). See <Gruntz/RbEffect.h> for the
-// full shape + the @identity-TODO on the owning leaf's own class name.
+// Its bound target (m_object, +0x114 state gates the spawn) and its effect sprite
+// (m_38, CAniAdvanceCursor @+0x1a0, +0x1c0/+0x1c8 gates) are BOTH real CGameObjects
+// (world pos @+0x5c/+0x60, flags @+0x08).
 
 // @early-stop
 // Regalloc wall on the tail (~90%): `this` is dead after the spawn, so retail reuses
@@ -35,9 +39,9 @@
 // eax/ecx. Same instructions, only the ModRM register field differs; not source-
 // steerable (a cached-pointer local didn't flip it). Logic + all relocs exact.
 RVA(0x000476b0, 0x69)
-i32 RbEffect::Update() {
+i32 CExplosion::Update() {
     if (m_38->m_1a0.Advance(g_engineFrameDelta) == 1) {
-        CWwdGameObjectA* t = m_10;
+        CWwdGameObjectA* t = m_object;
         if (t->m_114 == 1) {
             g_gameReg->m_cmdGrid->BuildRockBreakParticles(t->m_screenX, t->m_screenY, 1, t->m_124);
         }

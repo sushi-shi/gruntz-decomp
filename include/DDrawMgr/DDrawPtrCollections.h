@@ -109,7 +109,7 @@ public:
     i32 Init(void* factory, void* a1, i32 width, i32 height, i32 bpp, u32 coop); // 0x141ff0
 
     // m_device->GetAvailableVidMem(&caps, total, free) == 0. (caps by value.)
-    i32 GetAvailableVidMem(u32 caps, u32* total, u32* free); // 0x143810
+    i32 GetAvailableVidMem(u32 caps, DWORD* total, DWORD* free); // 0x143810
 
     CDDrawPtrCollections();
     ~CDDrawPtrCollections();

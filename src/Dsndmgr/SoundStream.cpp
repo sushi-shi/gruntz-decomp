@@ -573,7 +573,7 @@ i32 StreamFeeder::Tick(i32 timestamp) {
         return 1;
     }
     m_lastTickMs = t;
-    u32 hi, lo;
+    DWORD hi, lo;
     if (!m_buffer->GetCurrentPosition(&hi, &lo)) {
         return 0;
     }
@@ -633,9 +633,9 @@ i32 StreamFeeder::Pause() {
 RVA(0x00137f30, 0x197)
 i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     void* p1;
-    u32 n1;
+    DWORD n1;
     void* p2;
-    u32 n2;
+    DWORD n2;
     if (m_buffer->Lock(writePos, bytes, &p1, &n1, &p2, &n2, 0) == 0) {
         return 0;
     }

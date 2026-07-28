@@ -74,7 +74,12 @@ public:
     }
     // ForwardTick (0xb5070): a thin non-virtual forwarder to virtual slot 16 (Tick).
     // Tail-jumps `this->vtbl[16]()` through the raw vtable view (kept indirect).
-    void ForwardTick(); // 0x0b5070 (out-of-line: tail-jump to Tick(), virtual slot 16)
+    // These two are the act-"A"/"B" slots RegisterActs_646250 (0xb3cc0) binds (ILT
+    // 0x4021d5 -> 0xb5070, ILT 0x402252 -> 0xb5080). Both are 5-byte devirt tail
+    // jumps (`mov eax,[ecx]; jmp [eax+0x40]` / `[eax+0x44]`), so they RETURN the
+    // slot's i32 - ForwardTick was mis-declared `void`.
+    i32 ForwardTick();        // 0x0b5070 (tail-jump to Tick(), virtual slot 16)
+    i32 ForwardSiblingTick(); // 0x0b5080 (tail-jump to SiblingTick(), virtual slot 17)
     // NO user-declared dtor: retail 0x13280 is the COMPILER-GENERATED one (implicit
     // elides the leaf-vptr restamp a user `{}` would emit now that the CWapX base EH
     // state blocks the old dead-store elision). Still implicitly-inline, so the derived

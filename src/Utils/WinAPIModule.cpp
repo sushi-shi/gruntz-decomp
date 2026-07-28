@@ -59,7 +59,7 @@ namespace Utils {
             }
 
             HANDLE snap = pCreateSnapshot(TH32CS_SNAPMODULE, th32ProcessID);
-            if (snap == reinterpret_cast<HANDLE>(-1)) {
+            if (snap == INVALID_HANDLE_VALUE) {
                 return 0;
             }
 

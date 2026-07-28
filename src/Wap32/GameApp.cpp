@@ -225,7 +225,7 @@ void CGameApp::InitializeDefaultWindowClass() {
 
     HCURSOR hCursor = LoadCursorA(m_hInstance, m_gameInfo.szGameIdentifier);
     if (m_gameInfo.windowClassFlags & 1) {
-        hCursor = LoadCursorA(0, reinterpret_cast<LPCSTR>(0x7f00) /*IDC_ARROW*/);
+        hCursor = LoadCursorA(0, IDC_ARROW);
     }
 
     m_wc.style = 8; // CS_DBLCLKS

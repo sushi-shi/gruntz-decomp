@@ -137,14 +137,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         reg->m_open = 0;
     }
     m_settings = reg;
-    if (!m_settings->Open(
-            "Monolith Productions",
-            "Gruntz",
-            "1.0",
-            0,
-            reinterpret_cast<HKEY>(0x80000002),
-            0
-        )) {
+    if (!m_settings->Open("Monolith Productions", "Gruntz", "1.0", 0, HKEY_LOCAL_MACHINE, 0)) {
         ReportError(0x800a, 0x406);
         return 0;
     }
@@ -367,11 +360,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     // --- Phase 9: audio host (m_sound) ---------------------------------
     m_sound = new CGruntzSoundZ;
     g_ailMidiDriver = 0;
-    if (!m_sound->Init(
-            m_owner->m_hInstance,
-            m_gameWnd->m_hwnd,
-            0
-        )) {
+    if (!m_sound->Init(m_owner->m_hInstance, m_gameWnd->m_hwnd, 0)) {
         ReportError(0x800a, 0x40c);
         return 0;
     }
@@ -521,8 +510,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     // --- Phase 15: GAME_ATTRIBUTEZ blowfish-decoded bute parse -------
     {
         CSymParser* mgr = m_symParser;
-        CParseSource* stream =
-            mgr->ResolveQualified("GAME_ATTRIBUTEZ", 'TXT');
+        CParseSource* stream = mgr->ResolveQualified("GAME_ATTRIBUTEZ", 'TXT');
         g_buteMgr.SetErrCallback(&ButeParseErrorSink);
         i32 ok = 0;
         if (stream) {
@@ -635,10 +623,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         CString title;
         g_attractStateCount = 0;
         title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
-        while (attract->ResolveQualified(
-            static_cast<const char*>(title),
-            'PCX'
-        )) {
+        while (attract->ResolveQualified(static_cast<const char*>(title), 'PCX')) {
             g_attractStateCount++;
             title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
         }

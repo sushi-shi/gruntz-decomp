@@ -40,10 +40,13 @@ public:
     i32 SetFrequency(u32 freq); // 0x135880  SetFrequency (caps DSBCAPS_CTRLFREQUENCY)
     i32 SetField2(i32 pct);     // 0x135920  freq-percent + duration recompute
     void ComputeDuration();     // 0x1359a0  m_durationMs = m_sampleCount*1000/m_sampleRate
-    i32 Unlock(void* p1, u32 n1, void* p2, u32 n2);         // 0x1359c0
-    i32 GetCurrentPosition(u32* play, u32* write);          // 0x135a20
-    i32 SetCurrentPosition(u32 pos);                        // 0x135a70
-    i32 GetFormat(void* fmt, u32 size, u32* written);       // 0x135ac0
+    i32 Unlock(void* p1, u32 n1, void* p2, u32 n2); // 0x1359c0
+    // The DirectSound out-params are DWORD (`unsigned long`), not `unsigned int`:
+    // spelt out so &n binds to LPDWORD directly, and so this header stays Win32-free
+    // (same device as m_pan/m_volume below).
+    i32 GetCurrentPosition(unsigned long* play, unsigned long* write); // 0x135a20
+    i32 SetCurrentPosition(u32 pos);                                   // 0x135a70
+    i32 GetFormat(void* fmt, u32 size, unsigned long* written);        // 0x135ac0
     i32 LoadFromFile(FILE* fp, u32 bytes, i32 offset);      // 0x135e10  fseek+Lock+fread+Unlock
     i32 LockConvert(void* src, u32 lockBytes, u32 convert); // 0x135f40
     i32 Play();                                             // 0x136270  Play + reacquire-retry
@@ -52,9 +55,9 @@ public:
         u32 off,
         u32 bytes,
         void** p1,
-        u32* n1,
+        unsigned long* n1,
         void** p2,
-        u32* n2,
+        unsigned long* n2,
         u32 flags
     ); // 0x136370  Lock + reacquire-on-DSERR_BUFFERLOST retry
 
@@ -70,7 +73,7 @@ public:
     IDirectSoundBuffer* m_buffer; // +0x0c  the held sound buffer
     SoundDevice* m_owner;         // +0x10  owning device back-pointer
     u32 m_playFlags;              // +0x14  Play/looping flags (bit 0 = loop)
-    u32 m_freq;                   // +0x18  cached frequency (GetFrequency)
+    unsigned long m_freq;         // +0x18  cached frequency (DWORD - GetFrequency writes it)
     long m_pan;                   // +0x1c  cached pan (LONG, the type GetPan writes;
                                   //        spelt `long` so this header stays Win32-free)
     long m_volume;                // +0x20  cached volume (LONG, GetVolume writes it)

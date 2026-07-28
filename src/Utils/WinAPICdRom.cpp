@@ -4,7 +4,6 @@
 #include <rva.h>
 #include <stdio.h>
 
-
 RVA(0x0001fd50, 0xf)
 i32 IsGruntzCDInAnyDrive() {
     char letter = GetGruntzDriveLetter();
@@ -34,14 +33,7 @@ char CheckCdRomRegistry() {
     char letter;
     i32 i;
 
-    if (reg.Open(
-            "Monolith Productions",
-            "Gruntz",
-            "1.0",
-            0,
-            reinterpret_cast<HKEY>(0x80000002) /*HKEY_LOCAL_MACHINE*/,
-            0
-        )) {
+    if (reg.Open("Monolith Productions", "Gruntz", "1.0", 0, HKEY_LOCAL_MACHINE, 0)) {
         valueSize = 0x1e;
         value[0] = 0;
         if (reg.GetValueString("CdRom Drive", value, &valueSize, 0)
@@ -99,14 +91,7 @@ char GetGruntzDriveLetter() {
         char drivePathScan[256];
         char letter;
 
-        if (reg.Open(
-                "Monolith Productions",
-                "Gruntz",
-                "1.0",
-                0,
-                reinterpret_cast<HKEY>(0x80000002) /*HKEY_LOCAL_MACHINE*/,
-                0
-            )) {
+        if (reg.Open("Monolith Productions", "Gruntz", "1.0", 0, HKEY_LOCAL_MACHINE, 0)) {
             valueSize = 0x1e;
             value[0] = 0;
             if (reg.GetValueString("CdRom Drive", value, &valueSize, 0)

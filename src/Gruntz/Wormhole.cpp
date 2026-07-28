@@ -220,12 +220,8 @@ i32 CWormhole::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
 
 RVA(0x00040050, 0x102)
 void CWormhole::FireActivation(i32 idx) {
-    // language-forced: the ActReg slot holds a pointer-to-MEMBER (CActHandler); the
-    // presence probe reads the same 4 bytes as the raw slot the registrar wrote.
-    if (*reinterpret_cast<void**>(CActRegPool<CWormhole>::s_table.ResolveEntry(idx)) != 0) {
-        // language-forced, same slot as the probe above
-        CActHandler fn =
-            *reinterpret_cast<CActHandler*>(CActRegPool<CWormhole>::s_table.ResolveEntry(idx));
+    if (*CActRegPool<CWormhole>::s_table.ResolveEntry(idx) != 0) {
+        CActHandler fn = *CActRegPool<CWormhole>::s_table.ResolveEntry(idx);
         (this->*fn)();
     }
 }
@@ -367,9 +363,9 @@ void RegisterLogic() {
         *slot = "A";
         g_typeCounter++;
     }
-    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntryCallReport(id)) =
-        static_cast<void*>(&PuddleActA);
+    // ILT 0x4021f8 -> 0x040c10 == CGruntPuddle::Idle; the slot IS a CActHandler.
+    *CActRegPool<CGruntPuddle>::s_table.ResolveEntryCallReport(id) =
+        static_cast<CActHandler>(&CGruntPuddle::Idle);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -380,9 +376,9 @@ void RegisterLogic() {
         *slot = "B";
         g_typeCounter++;
     }
-    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CGruntPuddle>::s_table.ResolveEntryCallReport(id2)) =
-        static_cast<void*>(&PuddleActB);
+    // ILT 0x403418 -> 0x040d20 == CGruntPuddle::Remove.
+    *CActRegPool<CGruntPuddle>::s_table.ResolveEntryCallReport(id2) =
+        static_cast<CActHandler>(&CGruntPuddle::Remove);
 }
 
 // ===========================================================================
@@ -404,6 +400,13 @@ void RegisterLogic() {
 // edi (extra push edi/pop edi; `m_pending = edi`; `push edi` flag). All offsets,
 // immediates, call args and branch targets match; only the a1 caching differs.
 // No init-list/assignment/reorder lever flips the allocator. Deferred.
+// CGruntPuddle::Idle @0x040c10 - the act-"A" slot: retail is the bare
+// `xor eax,eax; ret` (3 bytes). Registered by RegisterLogic below.
+RVA(0x00040c10, 0x3)
+i32 CGruntPuddle::Idle() {
+    return 0;
+}
+
 RVA(0x00040c30, 0xb3)
 i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
     CWwdGameObjectA* o = m_object;
@@ -669,9 +672,9 @@ void CTeleporter_RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntryCallReport(id)) =
-        static_cast<void*>(&TeleporterActA);
+    // ILT 0x40187a -> 0x0419e0 == CTeleporter::Begin.
+    *CActRegPool<CTeleporter>::s_table.ResolveEntryCallReport(id) =
+        static_cast<CActHandler>(&CTeleporter::Begin);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -682,9 +685,9 @@ void CTeleporter_RegisterActs() {
         *slot = "B";
         g_typeCounter++;
     }
-    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CTeleporter>::s_table.ResolveEntryCallReport(id2)) =
-        static_cast<void*>(&TeleporterActB);
+    // ILT 0x403846 -> 0x041aa0 == CTeleporter::Update.
+    *CActRegPool<CTeleporter>::s_table.ResolveEntryCallReport(id2) =
+        static_cast<CActHandler>(&CTeleporter::Update);
 }
 
 // CTeleporter::Begin @0x0419e0 - advance the +0x1a0 anim sub-mgr to the current

@@ -5,8 +5,8 @@
 
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CFortressFlag : CUserLogic)
-#include <Gruntz/ActReg.h> // CActReg (extern below)
-#include <Gruntz/ActReg.h> // CActReg (extern below)
+#include <Gruntz/ActReg.h>      // CActReg (extern below)
+#include <Gruntz/ActReg.h>      // CActReg (extern below)
 
 class CFortressFlag : public CUserLogic, public CWapX {
 public:
@@ -33,12 +33,8 @@ public:
 };
 SIZE(0x54);
 
-
-
-
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
-extern "C" void FortressFlagAct(); // thunk 0x4041ec -> 0x466b0
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

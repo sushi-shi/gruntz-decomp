@@ -384,8 +384,13 @@ i32 CPathHazard::BeginLeg() {
 }
 
 RVA(0x000b5070, 0x5)
-void CPathHazard::ForwardTick() {
-    Tick(); // virtual slot 16 (+0x40); tail-jump `mov eax,[ecx]; jmp [eax+0x40]`
+i32 CPathHazard::ForwardTick() {
+    return Tick(); // virtual slot 16 (+0x40); tail-jump `mov eax,[ecx]; jmp [eax+0x40]`
+}
+
+RVA(0x000b5080, 0x5)
+i32 CPathHazard::ForwardSiblingTick() {
+    return SiblingTick(); // virtual slot 17 (+0x44); `mov eax,[ecx]; jmp [eax+0x44]`
 }
 
 VTBL(CPathHazard, 0x001e7394); // vtable_names -> code (RTTI game class)

@@ -8,7 +8,5 @@
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
-extern "C" void PathHazardActB(); // 0x402252
-extern "C" void PathHazardActA(); // 0x4021d5
 
 #endif // GRUNTZ_GRUNTZ_PATHHAZARDACTREG_H

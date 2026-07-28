@@ -1096,9 +1096,9 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                         m_object->m_screenX,
                         m_object->m_screenY
                     )) {
-                    // API-forced: SpawnVoiceDriver's first parameter is a polymorphic payload - the
-                    // CWarlord caller hands it m_object->m_188, a plain object id - so widening a
-                    // `this` into it is the boundary, not a mis-typed parameter
+                    // byte-forced: retail 0x63073 `push esi` widens this raw CGrunt* into
+                    // SpawnVoiceDriver's i32 sourceId (-> CGruntVoice::m_source, the m_map48
+                    // object-id key). Retail's own pointer-as-id, not a modelling gap.
                     g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 4, -1, -1, -1);
                 }
             } else if (focused || m_entranceReason != 0) {
@@ -1108,9 +1108,9 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                             m_object->m_screenX,
                             m_object->m_screenY
                         )) {
-                        // API-forced: SpawnVoiceDriver's first parameter is a polymorphic payload - the
-                        // CWarlord caller hands it m_object->m_188, a plain object id - so widening a
-                        // `this` into it is the boundary, not a mis-typed parameter
+                        // byte-forced: retail 0x63073 `push esi` widens this raw CGrunt* into
+                        // SpawnVoiceDriver's i32 sourceId (-> CGruntVoice::m_source, the m_map48
+                        // object-id key). Retail's own pointer-as-id, not a modelling gap.
                         g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 5, -1, -1, -1);
                     }
                 } else if (idx == 2) {
@@ -1119,9 +1119,9 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                             m_object->m_screenX,
                             m_object->m_screenY
                         )) {
-                        // API-forced: SpawnVoiceDriver's first parameter is a polymorphic payload - the
-                        // CWarlord caller hands it m_object->m_188, a plain object id - so widening a
-                        // `this` into it is the boundary, not a mis-typed parameter
+                        // byte-forced: retail 0x63073 `push esi` widens this raw CGrunt* into
+                        // SpawnVoiceDriver's i32 sourceId (-> CGruntVoice::m_source, the m_map48
+                        // object-id key). Retail's own pointer-as-id, not a modelling gap.
                         g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 6, -1, -1, -1);
                     }
                 }

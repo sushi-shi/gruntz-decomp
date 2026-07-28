@@ -136,7 +136,7 @@ DirectSoundMgr::DirectSoundMgr(IDirectSoundBuffer* buf, SoundDevice* owner) {
     }
 
     if ((m_caps & DSBCAPS_CTRLFREQUENCY) == DSBCAPS_CTRLFREQUENCY) {
-        i32 hr = buf->GetFrequency(reinterpret_cast<LPDWORD>(&m_freq)) != 0;
+        i32 hr = buf->GetFrequency(&m_freq) != 0;
         if (hr) {
             GetErrorString(DSNDMGR_FILE, 0x58, hr);
         }
@@ -221,8 +221,8 @@ i32 DirectSoundMgr::IsPlaying() {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    u32 status;
-    i32 hr = m_buffer->GetStatus(reinterpret_cast<LPDWORD>(&status)) != 0;
+    DWORD status;
+    i32 hr = m_buffer->GetStatus(&status) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0xac, hr);
         return 0;
@@ -240,8 +240,8 @@ i32 DirectSoundMgr::IsLooping() {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    u32 status;
-    i32 hr = m_buffer->GetStatus(reinterpret_cast<LPDWORD>(&status)) != 0;
+    DWORD status;
+    i32 hr = m_buffer->GetStatus(&status) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0xbb, hr);
         return 0;
@@ -463,15 +463,11 @@ i32 DirectSoundMgr::Unlock(void* p1, u32 n1, void* p2, u32 n2) {
 }
 
 RVA(0x00135a20, 0x4a)
-i32 DirectSoundMgr::GetCurrentPosition(u32* play, u32* write) {
+i32 DirectSoundMgr::GetCurrentPosition(DWORD* play, DWORD* write) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->GetCurrentPosition(
-                 reinterpret_cast<LPDWORD>(play),
-                 reinterpret_cast<LPDWORD>(write)
-             )
-             != 0;
+    i32 hr = m_buffer->GetCurrentPosition(play, write) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x1c8, hr);
         return 0;
@@ -493,16 +489,11 @@ i32 DirectSoundMgr::SetCurrentPosition(u32 pos) {
 }
 
 RVA(0x00135ac0, 0x4f)
-i32 DirectSoundMgr::GetFormat(void* fmt, u32 size, u32* written) {
+i32 DirectSoundMgr::GetFormat(void* fmt, u32 size, DWORD* written) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->GetFormat(
-                 static_cast<LPWAVEFORMATEX>(fmt),
-                 size,
-                 reinterpret_cast<LPDWORD>(written)
-             )
-             != 0;
+    i32 hr = m_buffer->GetFormat(static_cast<LPWAVEFORMATEX>(fmt), size, written) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x1e2, hr);
         return 0;
@@ -642,18 +633,10 @@ i32 DirectSoundMgr::LoadFromFile(FILE* fp, u32 bytes, i32 offset) {
     }
 
     void* p1;
-    u32 n1;
+    DWORD n1;
     void* p2;
-    u32 n2;
-    i32 hr = m_buffer->Lock(
-        0,
-        bytes,
-        &p1,
-        reinterpret_cast<LPDWORD>(&n1),
-        &p2,
-        reinterpret_cast<LPDWORD>(&n2),
-        DSBLOCK_FROMWRITECURSOR
-    );
+    DWORD n2;
+    i32 hr = m_buffer->Lock(0, bytes, &p1, &n1, &p2, &n2, DSBLOCK_FROMWRITECURSOR);
     if (hr != 0) {
         GetErrorString(DSNDMGR_FILE, 0x27c, hr);
         return 0;
@@ -686,18 +669,9 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
 
     void* p1;
     void* p2;
-    u32 n1;
-    u32 n2;
-    i32 hr = m_buffer->Lock(
-                 0,
-                 lockBytes,
-                 &p1,
-                 reinterpret_cast<LPDWORD>(&n1),
-                 &p2,
-                 reinterpret_cast<LPDWORD>(&n2),
-                 DSBLOCK_ENTIREBUFFER
-             )
-             != 0;
+    DWORD n1;
+    DWORD n2;
+    i32 hr = m_buffer->Lock(0, lockBytes, &p1, &n1, &p2, &n2, DSBLOCK_ENTIREBUFFER) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x2bd, hr);
         return 0;
@@ -870,20 +844,19 @@ i32 DirectSoundMgr::ApplyAndPlay(i32 vol, i32 pan, i32 freq, i32 d) {
 // two GetErrorString(0x37c/0x386) report+ret-0 blocks tail-merge into one where retail
 // duplicates them inline. Optimizer layout choice, not source-steerable.
 RVA(0x00136370, 0xcc)
-i32 DirectSoundMgr::Lock(u32 off, u32 bytes, void** p1, u32* n1, void** p2, u32* n2, u32 flags) {
+i32 DirectSoundMgr::Lock(
+    u32 off,
+    u32 bytes,
+    void** p1,
+    DWORD* n1,
+    void** p2,
+    DWORD* n2,
+    u32 flags
+) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->Lock(
-                 off,
-                 bytes,
-                 p1,
-                 reinterpret_cast<LPDWORD>(n1),
-                 p2,
-                 reinterpret_cast<LPDWORD>(n2),
-                 flags
-             )
-             != 0;
+    i32 hr = m_buffer->Lock(off, bytes, p1, n1, p2, n2, flags) != 0;
     if (!hr) {
         return 1;
     }
@@ -891,16 +864,7 @@ i32 DirectSoundMgr::Lock(u32 off, u32 bytes, void** p1, u32* n1, void** p2, u32*
         if (m_reacquireOwner->ReacquireBuffer() == 0) {
             return 0;
         }
-        hr = m_buffer->Lock(
-                 off,
-                 bytes,
-                 p1,
-                 reinterpret_cast<LPDWORD>(n1),
-                 p2,
-                 reinterpret_cast<LPDWORD>(n2),
-                 flags
-             )
-             != 0;
+        hr = m_buffer->Lock(off, bytes, p1, n1, p2, n2, flags) != 0;
         if (!hr) {
             return 1;
         }

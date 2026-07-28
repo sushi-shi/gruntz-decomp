@@ -8,7 +8,5 @@
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
-extern "C" void SpotLightActB(); // 0x402414
-extern "C" void SpotLightActA(); // 0x4025db
 
 #endif // GRUNTZ_GRUNTZ_SPOTLIGHTACTREG_H
