@@ -21,9 +21,16 @@ lists them together, grouped, with the tells that say a real type is hiding:
   strided  a use site indexes it `p[i*4 + K]` - those K are FIELD OFFSETS
   recast   the same pointer is re-spelled somewhere as a third type
 
-A row with no tells is not innocent, only unproven; drive the count down by RETYPING,
-and retype a whole cluster at once (see the memory note - a sibling mis-model never
-gets a vote).
+**This is a SUSPICION QUEUE, not a ratchet to zero.** Unlike a reinterpret_cast, an
+integer pointer is not wrong by construction - some of these really are byte buffers:
+a 16bpp write cursor over a byte-pitched surface (WarpTextureBlit's g_rasterDestPtr
+alongside g_rasterDestRow), a shade LUT walked `data[i * total]` over single bytes
+(ShadeTableCache), a C string. The user's word was "suspicious", and that is the right
+strength: every row is a lead to CHECK, and a good fraction will survive the check.
+
+So: work the tells first, retype a whole cluster at once rather than one site against
+its neighbours (a sibling mis-model never gets a vote), and expect a real floor above
+zero. A row with no tell is not innocent, only unexamined.
 
     python -m gruntz.audit.blob_pointers            # the worklist, grouped by file
     python -m gruntz.audit.blob_pointers --summary  # counts only
