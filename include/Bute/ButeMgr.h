@@ -154,16 +154,19 @@ public:
         return &m_tree48;
     }
 
-    i32 m_streamBase;             // +0x00  stream base offset (NextChar's `- m_00`)
-    i32 m_pos;                    // +0x04  running parse cursor position
-    i32 m_lineNo;                 // +0x08
-    char m_countLine;             // +0x0c  bump m_lineNo on the next char (set after \n)
-    char m_0d;                    // +0x0d  (role unproven - cleared by Init only)
-    char m_pad0e[0x10 - 0xe];     // +0x0e
-    CString m_errStr;             // +0x10  scratch the error reporter formats into
-    ErrCallback m_errCallback;    // +0x14  optional error-callback fn-ptr
-    CBSecStream m_tree;           // +0x18  the keyed store root (0x2c bytes; the ctor's
-                                  //         0x1f0510 stamps prove the concrete type)
+    i32 m_streamBase;          // +0x00  stream base offset (NextChar's `- m_00`)
+    i32 m_pos;                 // +0x04  running parse cursor position
+    i32 m_lineNo;              // +0x08
+    bool m_countLine;          // +0x0c  bump m_lineNo on the next char (set after \n).
+                               //         bool, not char: `m_countLine = (delta == 0xa)`
+                               //         stores the setcc byte directly (retail has no
+                               //         `xor ecx,ecx` int-widening before the `sete cl`).
+    char m_0d;                 // +0x0d  (role unproven - cleared by Init only)
+    char m_pad0e[0x10 - 0xe];  // +0x0e
+    CString m_errStr;          // +0x10  scratch the error reporter formats into
+    ErrCallback m_errCallback; // +0x14  optional error-callback fn-ptr
+    CBSecStream m_tree;        // +0x18  the keyed store root (0x2c bytes; the ctor's
+                               //         0x1f0510 stamps prove the concrete type)
     // +0x44 the active store node. Declared at the zPTree base: ParseTagLine stores a
     // `new CButeNode` here and the getters use it as a keyed store, which only works
     // because the store operations are the BASE's (they were on CButeTree, forcing a

@@ -695,17 +695,18 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 // The shared "Gruntz" app-name caption (0x60aac8) passed as the MessageBoxA title;
 // DEFINED in src/Gruntz/WinMain.cpp (the app TU whose .data run holds it, next to
 // the "1.0" version literal).
-// @early-stop
-// regalloc free-list-pick wall (98.89%): every instruction matches one-for-one; the
-// only difference is a global eax<->edx<->ecx rotation in the dispatch load
-// (`mov edx,[ecx+0x1c]` vs retail's `mov eax,...`) and the MessageBoxA arg setup.
-// Same opcodes, swapped registers - not source-steerable. See
-// docs/patterns/select-zero-mask-dest-register.md.
+// The ex "regalloc free-list-pick wall" was the m_ptrColl chain: routing the
+// collection through its own local (as Enter/ExitModalUI already did) gives cl a
+// precise live range, so the chain is chased in ONE register and the whole
+// downstream (incl. the MessageBoxA arg setup) lands in retail's colours.
 RVA(0x0008ee70, 0x7c)
 i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     if (m_world) {
         m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair); // pause the back pair
-        m_world->m_ptrColl->m_device->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
+        // Local for the collection - same lever as Enter/ExitModalUI: it gives cl a
+        // precise live range so the chain is chased in ONE register.
+        CDDrawPtrCollections* pc = m_world->m_ptrColl;
+        pc->m_device->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
     i32 wasShown = ShowCursor(1);
     while (ShowCursor(1) < 0) {
@@ -1387,30 +1388,38 @@ i32 CGruntzMgr::CheatRevealTreasures() {
 // the throttled "GAME_MINORCHEAT" cue. Every missing precondition falls straight
 // through to the shared exit (retail sets no return value there -> void).
 // @early-stop
-// codegen-tie wall (~98%): flow (nested guards, void fall-through exit, per-branch
-// SetAllTypes + shared AppendChatMessage cross-jump, cooldown + cue) is byte-exact. The
-// lone residual is the `fmt->m_14 == 2` test - retail loads it (`mov eax,[eax+0x14];
-// cmp eax,2`) where MSVC5 folds to `cmp [mem],2` (2 B shorter). Retail itself picks the
-// OTHER form for the identical test in 0x091390, so it is a pure instruction-selection
-// tie with no source spelling that flips it.
+// ONE opcode left (99.25%). The frame is now retail's (the lookup out-param shares
+// the single [esp+8] dword - see CheatEclipseToggle) and the `switch` recovers
+// retail's register-form control load (`mov eax,[eax+0x14]`), which the plain
+// `if (st != 2)` folded into `cmp [mem],2`. Residual: cl lowers the one-case switch
+// with `sub eax,2` where retail has `cmp eax,2`. The twin at 0x091390 uses the
+// memory-form compare, so the two forms genuinely coexist in retail.
 RVA(0x00091250, 0x100)
 void CGruntzMgr::CheatSkeletonToggle() {
     if (m_curState && m_curState->Update() == GAMESTATE_PLAY && m_world) {
-        CObject* found = 0;
-        m_world->m_imageRegistry->m_10map.Lookup("Gruntz", found);
-        CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
+        // `found` lives in its own block: its slot is dead before the cue lookup
+        // below opens, so cl packs BOTH out-params into the single [esp+8] dword
+        // retail uses (a function-scope `found` reserves a second dword: sub esp,8).
+        CDDrawWorker* set;
+        {
+            CObject* found = 0;
+            m_world->m_imageRegistry->m_10map.Lookup("Gruntz", found);
+            set = static_cast<CDDrawWorker*>(found);
+        }
         if (set) {
             CImage* fr = static_cast<CImage*>(set->m_items.GetAt(set->m_minIndex));
             if (fr) {
                 CDDrawShadeBlit* fmt = fr->m_owned;
                 if (fmt) {
-                    i32 st = fmt->m_drawType;
-                    if (st != 2) {
-                        set->SetAllTypes(2);
-                        AppendChatMessage(const_cast<char*>("You're scaring me..."));
-                    } else {
-                        set->SetAllTypes(1);
-                        AppendChatMessage(const_cast<char*>("Back from the dead?"));
+                    switch (fmt->m_drawType) {
+                        case 2:
+                            set->SetAllTypes(1);
+                            AppendChatMessage(const_cast<char*>("Back from the dead?"));
+                            break;
+                        default:
+                            set->SetAllTypes(2);
+                            AppendChatMessage(const_cast<char*>("You're scaring me..."));
+                            break;
                     }
                     CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
@@ -1446,19 +1455,22 @@ void CGruntzMgr::CheatSkeletonToggle() {
 // image type (SetAllTypes(1), "Where did the sun go?") or applies a random shade
 // (SetAllTypes(3) + SetAllField18(rand() % 256), "Me and my...") before logging the
 // taunt and playing the same "GAME_MINORCHEAT" cue.
-// @early-stop
-// regalloc-swap wall (~94%): the flow (nested guards, rand()%256 signed-mod idiom, the
-// per-branch SetAllTypes/SetAllField18 + shared AppendChatMessage, cooldown + cue) is
-// byte-exact. The residual is a two-callee-saved-register tiebreak: retail assigns
-// this->edi / set->esi where MSVC5 here picks this->esi / set->edi (the extra
-// SetAllField18+rand live range shifts the pick), recolouring every this/set modrm
-// downstream. No source spelling forces MSVC's esi/edi assignment (regalloc family).
+// The ex "regalloc-swap wall" was a stack-slot count: the image lookup's out-param
+// was function-scoped, reserving a SECOND dword (`sub esp,8`) where retail packs it
+// and the cue lookup's out-param into the one `push ecx` slot. Scoping it closed
+// the frame AND the esi/edi assignment that hung off it.
 RVA(0x00091390, 0x11d)
 void CGruntzMgr::CheatEclipseToggle() {
     if (m_curState && m_curState->Update() == GAMESTATE_PLAY && m_world) {
-        CObject* found = 0;
-        m_world->m_imageRegistry->m_10map.Lookup("Gruntz", found);
-        CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
+        // `found` lives in its own block: its slot is dead before the cue lookup
+        // below opens, so cl packs BOTH out-params into the single [esp+8] dword
+        // retail uses (a function-scope `found` reserves a second dword: sub esp,8).
+        CDDrawWorker* set;
+        {
+            CObject* found = 0;
+            m_world->m_imageRegistry->m_10map.Lookup("Gruntz", found);
+            set = static_cast<CDDrawWorker*>(found);
+        }
         if (set) {
             CImage* fr = static_cast<CImage*>(set->m_items.GetAt(set->m_minIndex));
             if (fr) {
@@ -2065,12 +2077,8 @@ i32 CGruntzMgr::RunLoadGameDialog() {
 // (m_curState + 0x1d0), it stops the timer, fills the save info, then commits the
 // save via the registry notifier; success logs "Game Quicksaved successfully." into
 // the chat log, failure shows the error modal.
-// @early-stop
-// 93.4% - logic + the whole control flow (the modal/LoadString branch, the inlined
-// save-source guard, the FillSaveInfo/Notify commit, the chat insert) are byte for
-// byte. The residual is the reloc-masked g_gameReg/$SG string DIR32 scoring + the
-// /GX trylevel state numbering across the destructible CString temp (documented
-// eh-state-numbering + reloc-typing walls, see docs/seh-eh.md). Final sweep.
+// The ex "reloc/EH-state residual" was the commit gate's polarity: retail falls
+// through into the FAILURE arm and puts the success chat insert in the far block.
 RVA(0x00092530, 0x17c)
 i32 CGruntzMgr::Quicksave() {
     if (m_saveSink == 0) {
@@ -2097,11 +2105,13 @@ i32 CGruntzMgr::Quicksave() {
         m_cueSink->PauseAllVoices(); // 0x11c7b0 (the cue-timer flush; ex the "Stop" alias)
     }
     FillSaveInfo(m_saveInfoRec, 0);
-    if (g_gameReg->m_saveSink->Save(m_saveInfoRec->m_serial, 0x81a7)) {
-        m_chatLog->AddItem("Game Quicksaved successfully.", 0, 0x11);
+    // The FAILURE arm is the fall-through and the success chat-log insert is the far
+    // block (retail `test eax,eax; jne <success>`), so the gate is spelled == 0.
+    if (g_gameReg->m_saveSink->Save(m_saveInfoRec->m_serial, 0x81a7) == 0) {
+        EnterModalUI("ERROR - Cannot Save Game.");
         return 1;
     }
-    EnterModalUI("ERROR - Cannot Save Game.");
+    m_chatLog->AddItem("Game Quicksaved successfully.", 0, 0x11);
     return 1;
 }
 
@@ -3265,13 +3275,9 @@ i32 CGruntzMgr::LaunchPortal(i32 quitAfter) {
 // the cursor visible, runs DialogBoxParamA(hInstance, tmpl, hwnd, dlgProc, 0) under the
 // busy gate, then optionally polls the live state, restores the cursor, runs the per-
 // frame tick, and finalizes the picked play/paused state. Returns the dialog result.
-// @early-stop
-// regalloc free-list-pick wall (docs/patterns/select-zero-mask-dest-register.md):
-// body byte-exact up to the world-dispatch `*m_world->m_1c; ->vtbl->Slot0a(d)`,
-// where retail seeds the container in ecx + vtbl in edx and our cl picks edx +
-// ecx; the swap is a global 3-cycle {eax->edx->ecx} that re-colours the whole
-// downstream (incl. the DialogBoxParamA arg setup) - same instructions, rotated
-// registers. Not source-steerable (~99.4%).
+// The ex "regalloc free-list-pick wall" was the m_ptrColl chain: hoisting the
+// collection into its own local (the Enter/ExitModalUI lever) closes the whole
+// {eax->edx->ecx} rotation, DialogBoxParamA arg setup included.
 RVA(0x00090260, 0x13e)
 i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
     if (tmpl == 0) {
@@ -3292,7 +3298,9 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
         } else {
             flag = 0;
         }
-        m_world->m_ptrColl->m_device->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
+        // Local for the collection - same lever as Enter/ExitModalUI.
+        CDDrawPtrCollections* pc = m_world->m_ptrColl;
+        pc->m_device->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
 
     int(WINAPI * show)(BOOL) = ::ShowCursor;

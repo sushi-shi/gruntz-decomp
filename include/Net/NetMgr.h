@@ -28,11 +28,6 @@ class CMulti;           // <Gruntz/Multi.h> - the multiplayer game-state (owns C
 struct GruntRec;        // the lobby-sync grunt-state record (defined below CNetCmdSlot)
 class CDDrawSurfaceMgr; // <Gruntz/GameRegistry.h> - the +0xc world holder (CState::m_c mirror)
 
-extern "C" void MultiOptionzCallback();
-extern "C" void MultiPauseCallback();
-extern "C" void MultiOutOfSyncCallback();
-extern "C" void MultiDropPlayerCallback(); // OnDropPlayer (MULTI_DROPPLAYER)
-
 extern i32 g_dropPlayerId; // 0x611d88  saved dropped-player id
 
 extern "C" i32 g_localVersion;  // 0x60fa70  (sibling; not TU-private)
