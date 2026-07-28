@@ -178,9 +178,11 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 OnToggleEasyModeOption(hDlg);
                 return FALSE;
             }
+            // the LAST checkbox does not return: it falls through into the same
+            // `return FALSE` the unrouted-notification path uses (retail's 0x36520
+            // is reached by this block's two guards AND by its fallthrough)
             if (g_optHwndResSlider != 0 && reinterpret_cast<HWND>(lParam) == g_optHwndResSlider) {
                 OnToggleCk5Option(hDlg);
-                return FALSE;
             }
             // the unrouted-notification exit IS the switch default (retail 0x36564),
             // so the ladder's last compare inverts and WM_HSCROLL falls through

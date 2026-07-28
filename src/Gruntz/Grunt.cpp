@@ -678,7 +678,13 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(m_1f4_moveIcon, kind);
     CWwdGameObjectA* h = m_object;
     i32 keep50 = h->m_drawFillCmd;
-    h->m_drawActive = 1;
+    // The save/restore of m_drawFillCmd around the draw-state flip is a no-op, and cl
+    // DELETES it when both accesses go through the same expression - retail's bytes keep
+    // it (`mov ecx,[esi+0x50]` ... `mov [esi+0x50],ecx`), so in retail's source the
+    // intervening store reached the object by a different path. Routing this one through
+    // the member is what stops the dead-store elimination; the two loads CSE to the same
+    // register either way, so nothing else moves.
+    m_object->m_drawActive = 1;
     h->m_drawFillCmd = keep50;
     h->m_drawFillArg = sel;
 }

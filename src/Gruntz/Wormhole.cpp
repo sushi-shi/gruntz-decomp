@@ -202,8 +202,10 @@ i32 CWormhole::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
         i32 kind = m_object->m_124;
         CShadeTable* color;
         if (kind == -1) {
-            color = g_gameReg->m_logicPump
-                        ->m_tables[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3)];
+            // the table OWNER is read before the bute lookup - retail parks it in edi
+            // across the GetIntDef call, i.e. the array base is evaluated first
+            CLightFxMgr* pump = g_gameReg->m_logicPump;
+            color = pump->m_tables[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3)];
         } else {
             color = g_gameReg->m_logicPump->m_tables[kind];
         }
