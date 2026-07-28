@@ -2,7 +2,8 @@
 #define GRUNTZ_DDRAWMGR_SHADETABLECACHE_H
 
 #include <rva.h>          // Ints + the OVERRIDE/SIZE/VTBL label macros
-#include <Wap32/Object.h> // CObject - the MFC-free WAP grand-base (no windows.h dep)
+#include <Wap32/Object.h> // CObject - the MFC-free WAP grand-base
+#include <Win32.h>        // PALETTEENTRY - the palette-table builders' entry type
 
 class CFile;
 class CString;
@@ -50,11 +51,6 @@ struct CShadeTableArray : CObject {
 SIZE(0x14); // MFC CObArray-shaped subobject (cache 0x18 - 0x04)
 SIZE(0x14); // vptr + 4 array fields over the CObject base
 
-struct PalEntry {
-    u8 r, g, b, pad;
-};
-SIZE(0x4); // 4-byte palette record (256-entry array stride)
-
 class CShadeTableCache {
 public:
     CShadeTableCache();  // 0x14de30
@@ -63,21 +59,21 @@ public:
     void FreeNodes();    // 0x14ded0
     // 0x14df40 - a two-phase per-palette brightness-pulse ramp (fade-in over nA
     // steps, +16 highlight, fade-out over nB steps), mapped to nearest palette.
-    CShadeTable* FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 startPct, i32 endPct);
+    CShadeTable* FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i32 endPct);
     CShadeTable*
-    HsvShiftTable(PalEntry* pal, i32 steps, i32 pct, i32 gamma, i32 baseArg); // 0x14e540
-    CShadeTable* HueRampTable(PalEntry* pal, i32 steps, i32 packedColor);     // 0x14e830
-    CShadeTable* GammaTable(PalEntry* pal, i32 wRow, i32 wCol);               // 0x14e9f0
-    CShadeTable* LumaSortTable(PalEntry* pal);                                // 0x14ec00
-    CShadeTable* HueSortTable(PalEntry* pal);                                 // 0x14ede0
-    CShadeTable* AddFromArray(const char* name);                              // 0x14f6c0
-    CShadeTable* AddFromFile(const char* name, i32 size);                     // 0x14f8b0
-    CShadeTable* GreyTable();                                                 // 0x14eef0
-    CShadeTable* AddTable(float scale);                                       // 0x14f080
-    CShadeTable* SubTable(i32 color);                                         // 0x14f310
-    CShadeTable* AlphaTable(PALETTEENTRY* pal);                               // 0x14f5b0
-    CShadeTable* FindByKey(i32 key);                                          // 0x14fb40
-    void FindRemove(CShadeTable* t);                                          // 0x14fb80
+    HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma, i32 baseArg); // 0x14e540
+    CShadeTable* HueRampTable(PALETTEENTRY* pal, i32 steps, i32 packedColor);     // 0x14e830
+    CShadeTable* GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol);               // 0x14e9f0
+    CShadeTable* LumaSortTable(PALETTEENTRY* pal);                                // 0x14ec00
+    CShadeTable* HueSortTable(PALETTEENTRY* pal);                                 // 0x14ede0
+    CShadeTable* AddFromArray(const char* name);                                  // 0x14f6c0
+    CShadeTable* AddFromFile(const char* name, i32 size);                         // 0x14f8b0
+    CShadeTable* GreyTable();                                                     // 0x14eef0
+    CShadeTable* AddTable(float scale);                                           // 0x14f080
+    CShadeTable* SubTable(i32 color);                                             // 0x14f310
+    CShadeTable* AlphaTable(PALETTEENTRY* pal);                                   // 0x14f5b0
+    CShadeTable* FindByKey(i32 key);                                              // 0x14fb40
+    void FindRemove(CShadeTable* t);                                              // 0x14fb80
 
     // 0x14ed10 - __cdecl qsort comparator: sort palette indices by luma.
     static i32 __cdecl CompareLuma(const void* a, const void* b);
@@ -88,7 +84,7 @@ public:
     // 0x14fbf0 - __cdecl nearest-color search: scan all 256 entries of `pal` for
     // the one minimizing the squared (r,g,b) distance to the target, return its
     // index. The shade-table builders use it to remap a source color into `pal`.
-    static i32 __cdecl FindNearestColor(PalEntry* pal, i32 r, i32 g, i32 b);
+    static i32 __cdecl FindNearestColor(PALETTEENTRY* pal, i32 r, i32 g, i32 b);
 
     i32 m_initialized;      // +0x00 gate
     CShadeTableArray m_arr; // +0x04 element array subobject
@@ -97,7 +93,7 @@ SIZE(0x18); // RE'd heap-alloc size (CGruntzMgr +0x50)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-extern "C" u8 NearestPaletteIndex(i32 r, PalEntry* pal, i32 g, i32 b); // 0x14fbf0
+extern "C" u8 NearestPaletteIndex(i32 r, PALETTEENTRY* pal, i32 g, i32 b); // 0x14fbf0
 
 extern float g_one;
 extern float g_255;

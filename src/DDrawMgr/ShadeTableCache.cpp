@@ -8,7 +8,7 @@
 #include <string.h> // inlined memcpy (rep movsl) in FindRemove
 
 DATA(0x002bf224)
-PalEntry* g_pal = 0; // 0x6bf224  (owner-TU definition)
+PALETTEENTRY* g_pal = 0; // 0x6bf224  (owner-TU definition)
 
 void* ::operator new(u32); // matches ??2@YAPAXI@Z
 
@@ -115,7 +115,8 @@ float g_negone = -1.0f;
 // remap are recovered byte-for-structure; the phase-2 fade-out's exact channel
 // expression is the wall's residual (re-derive in the final sweep). Logic complete.
 RVA(0x0014df40, 0x5f4)
-CShadeTable* CShadeTableCache::FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 startPct, i32 endPct) {
+CShadeTable*
+CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i32 endPct) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
@@ -171,45 +172,45 @@ CShadeTable* CShadeTableCache::FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 sta
 
     u8* data = t->m_data;
     for (i32 i = 0; i < 0x100; i++) {
-        PalEntry* p = &pal[i];
+        PALETTEENTRY* p = &pal[i];
         u8* ramp = &data[i * total];
         // Phase 1: fade in from startPct% brightness to full over nA steps.
         for (i32 j = 0; j < nA; j++) {
             float tt = static_cast<float>(j) / static_cast<float>(nA);
             float inv = g_one - tt;
-            float fr = static_cast<float>((startPct * static_cast<i32>(p->r) / 100)) * inv
-                       + static_cast<float>(static_cast<i32>(p->r)) * tt;
+            float fr = static_cast<float>((startPct * static_cast<i32>(p->peRed) / 100)) * inv
+                       + static_cast<float>(static_cast<i32>(p->peRed)) * tt;
             i32 rn = static_cast<i32>((fr < g_255 ? fr : g_255));
-            float fg = static_cast<float>((startPct * static_cast<i32>(p->g) / 100)) * inv
-                       + static_cast<float>(static_cast<i32>(p->g)) * tt;
+            float fg = static_cast<float>((startPct * static_cast<i32>(p->peGreen) / 100)) * inv
+                       + static_cast<float>(static_cast<i32>(p->peGreen)) * tt;
             i32 gn = static_cast<i32>((fg < g_255 ? fg : g_255));
-            float fb = static_cast<float>((startPct * static_cast<i32>(p->b) / 100)) * inv
-                       + static_cast<float>(static_cast<i32>(p->b)) * tt;
+            float fb = static_cast<float>((startPct * static_cast<i32>(p->peBlue) / 100)) * inv
+                       + static_cast<float>(static_cast<i32>(p->peBlue)) * tt;
             i32 bn = static_cast<i32>((fb < g_255 ? fb : g_255));
             ramp[j] = NearestPaletteIndex(rn, pal, gn, bn);
         }
         // Brighten the palette entry +16 (clamped) in place for the fade-out.
-        i32 br = static_cast<i32>(p->r) + 0x10;
-        p->r = static_cast<u8>((br < 0xff ? br : 0xff));
-        i32 bg = static_cast<i32>(p->g) + 0x10;
-        p->g = static_cast<u8>((bg < 0xff ? bg : 0xff));
-        i32 bb = static_cast<i32>(p->b) + 0x10;
-        p->b = static_cast<u8>((bb < 0xff ? bb : 0xff));
+        i32 br = static_cast<i32>(p->peRed) + 0x10;
+        p->peRed = static_cast<u8>((br < 0xff ? br : 0xff));
+        i32 bg = static_cast<i32>(p->peGreen) + 0x10;
+        p->peGreen = static_cast<u8>((bg < 0xff ? bg : 0xff));
+        i32 bb = static_cast<i32>(p->peBlue) + 0x10;
+        p->peBlue = static_cast<u8>((bb < 0xff ? bb : 0xff));
         // Phase 2: fade the brightened channel out toward endPct% over nB steps.
         for (i32 k = 0; k < nB; k++) {
             float uu = static_cast<float>(k) / static_cast<float>(nB);
             float inv = g_one - uu;
-            float fr = static_cast<float>(static_cast<i32>(p->r)) * inv
-                       + static_cast<float>(static_cast<i32>(p->r)) * static_cast<float>(endPct)
+            float fr = static_cast<float>(static_cast<i32>(p->peRed)) * inv
+                       + static_cast<float>(static_cast<i32>(p->peRed)) * static_cast<float>(endPct)
                              * g_p01 * uu;
             i32 rn = static_cast<i32>((fr < g_255 ? fr : g_255));
-            float fg = static_cast<float>(static_cast<i32>(p->g)) * inv
-                       + static_cast<float>(static_cast<i32>(p->g)) * static_cast<float>(endPct)
-                             * g_p01 * uu;
+            float fg = static_cast<float>(static_cast<i32>(p->peGreen)) * inv
+                       + static_cast<float>(static_cast<i32>(p->peGreen))
+                             * static_cast<float>(endPct) * g_p01 * uu;
             i32 gn = static_cast<i32>((fg < g_255 ? fg : g_255));
-            float fb = static_cast<float>(static_cast<i32>(p->b)) * inv
-                       + static_cast<float>(static_cast<i32>(p->b)) * static_cast<float>(endPct)
-                             * g_p01 * uu;
+            float fb = static_cast<float>(static_cast<i32>(p->peBlue)) * inv
+                       + static_cast<float>(static_cast<i32>(p->peBlue))
+                             * static_cast<float>(endPct) * g_p01 * uu;
             i32 bn = static_cast<i32>((fb < g_255 ? fb : g_255));
             ramp[nA + k] = NearestPaletteIndex(rn, pal, gn, bn);
         }
@@ -239,7 +240,7 @@ CShadeTable* CShadeTableCache::FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 sta
 // source-steerable. Final-sweep candidate.
 RVA(0x0014e540, 0x2ea)
 CShadeTable*
-CShadeTableCache::HsvShiftTable(PalEntry* pal, i32 steps, i32 pct, i32 gamma, i32 baseArg) {
+CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma, i32 baseArg) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
@@ -256,11 +257,11 @@ CShadeTableCache::HsvShiftTable(PalEntry* pal, i32 steps, i32 pct, i32 gamma, i3
     float fPct = static_cast<float>((pct - 100));
     float fSteps = static_cast<float>(steps);
     for (i32 i = 0; i < 0x100; i++) {
-        PalEntry* p = &pal[i];
+        PALETTEENTRY* p = &pal[i];
         for (i32 j = 0; j < steps; j++) {
-            i32 r = p->r;
-            i32 g = p->g;
-            i32 b = p->b;
+            i32 r = p->peRed;
+            i32 g = p->peGreen;
+            i32 b = p->peBlue;
             float luma = static_cast<float>(r) * g_lumaR + static_cast<float>(g) * g_lumaG
                          + static_cast<float>(b) * g_lumaB;
             i32 lumaByte = static_cast<i32>(luma) & 0xff;
@@ -291,7 +292,7 @@ CShadeTableCache::HsvShiftTable(PalEntry* pal, i32 steps, i32 pct, i32 gamma, i3
 // arg2 by t=j/steps), but the /GX frame is absent and retail's fld/fxch/fmul
 // ordering of the three interleaved channel lerps diverges from the recompile.
 RVA(0x0014e830, 0x1b9)
-CShadeTable* CShadeTableCache::HueRampTable(PalEntry* pal, i32 steps, i32 packedColor) {
+CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 packedColor) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
@@ -307,18 +308,18 @@ CShadeTable* CShadeTableCache::HueRampTable(PalEntry* pal, i32 steps, i32 packed
     i32 cg = (packedColor >> 8) & 0xff;
     i32 cb = (packedColor >> 0x10) & 0xff;
     for (i32 i = 0; i < 0x100; i++) {
-        PalEntry* p = &pal[i];
+        PALETTEENTRY* p = &pal[i];
         for (i32 j = 0; j < steps; j++) {
             float t1 = static_cast<float>(j) / static_cast<float>(steps);
             float t0 = 1.0f - t1;
             i32 bn = static_cast<i32>(
-                (t0 * static_cast<float>(static_cast<i32>(p->b)) + t1 * static_cast<float>(cb))
+                (t0 * static_cast<float>(static_cast<i32>(p->peBlue)) + t1 * static_cast<float>(cb))
             );
-            i32 gn = static_cast<i32>(
-                (t0 * static_cast<float>(static_cast<i32>(p->g)) + t1 * static_cast<float>(cg))
-            );
+            i32 gn = static_cast<i32>((
+                t0 * static_cast<float>(static_cast<i32>(p->peGreen)) + t1 * static_cast<float>(cg)
+            ));
             i32 rn = static_cast<i32>(
-                (t0 * static_cast<float>(static_cast<i32>(p->r)) + t1 * static_cast<float>(cr))
+                (t0 * static_cast<float>(static_cast<i32>(p->peRed)) + t1 * static_cast<float>(cr))
             );
             data[i * steps + j] = NearestPaletteIndex(rn, pal, gn, bn);
         }
@@ -339,7 +340,7 @@ CShadeTable* CShadeTableCache::HueRampTable(PalEntry* pal, i32 steps, i32 packed
 // blends summed then /div per channel), but the /GX frame is absent and MSVC
 // orders the strength-reduced accumulators differently than retail.
 RVA(0x0014e9f0, 0x208)
-CShadeTable* CShadeTableCache::GammaTable(PalEntry* pal, i32 wRow, i32 wCol) {
+CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
@@ -353,12 +354,12 @@ CShadeTable* CShadeTableCache::GammaTable(PalEntry* pal, i32 wRow, i32 wCol) {
     u8* data = t->m_data;
     i32 div = (wRow + wCol) / 100;
     for (i32 i = 0; i < 0x100; i++) {
-        PalEntry* pr = &pal[i];
+        PALETTEENTRY* pr = &pal[i];
         for (i32 j = 0; j < 0x100; j++) {
-            PalEntry* pc = &pal[j];
-            i32 r = (pc->r * wCol / 100 + pr->r * wRow / 100) / div;
-            i32 g = (pc->g * wCol / 100 + pr->g * wRow / 100) / div;
-            i32 b = (pc->b * wCol / 100 + pr->b * wRow / 100) / div;
+            PALETTEENTRY* pc = &pal[j];
+            i32 r = (pc->peRed * wCol / 100 + pr->peRed * wRow / 100) / div;
+            i32 g = (pc->peGreen * wCol / 100 + pr->peGreen * wRow / 100) / div;
+            i32 b = (pc->peBlue * wCol / 100 + pr->peBlue * wRow / 100) / div;
             data[i * 0x100 + j] = NearestPaletteIndex(r, pal, g, b);
         }
     }
@@ -376,7 +377,7 @@ CShadeTable* CShadeTableCache::GammaTable(PalEntry* pal, i32 wRow, i32 wCol) {
 // /GX frame is absent on MSVC5 (element ctor 0x150180 external); body + the two
 // remap loops byte-exact otherwise.
 RVA(0x0014ec00, 0x10f)
-CShadeTable* CShadeTableCache::LumaSortTable(PalEntry* pal) {
+CShadeTable* CShadeTableCache::LumaSortTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
@@ -420,15 +421,15 @@ RVA(0x0014ed10, 0xcc)
 i32 __cdecl CShadeTableCache::CompareLuma(const void* a, const void* b) {
     u8 ia = *static_cast<const u8*>(a);
     u8 ib = *static_cast<const u8*>(b);
-    PalEntry* pa = &g_pal[ia];
+    PALETTEENTRY* pa = &g_pal[ia];
     u8 la = static_cast<u8>(static_cast<i32>(
-        (static_cast<float>(pa->b) * g_lumaB + static_cast<float>(pa->g) * g_lumaG
-         + static_cast<float>(pa->r) * g_lumaR)
+        (static_cast<float>(pa->peBlue) * g_lumaB + static_cast<float>(pa->peGreen) * g_lumaG
+         + static_cast<float>(pa->peRed) * g_lumaR)
     ));
-    PalEntry* pb = &g_pal[ib];
+    PALETTEENTRY* pb = &g_pal[ib];
     u8 lb = static_cast<u8>(static_cast<i32>(
-        (static_cast<float>(pb->b) * g_lumaB + static_cast<float>(pb->g) * g_lumaG
-         + static_cast<float>(pb->r) * g_lumaR)
+        (static_cast<float>(pb->peBlue) * g_lumaB + static_cast<float>(pb->peGreen) * g_lumaG
+         + static_cast<float>(pb->peRed) * g_lumaR)
     ));
     if (lb > la) {
         return -1;
@@ -446,7 +447,7 @@ i32 __cdecl CShadeTableCache::CompareLuma(const void* a, const void* b) {
 // @early-stop
 // EH-frame wall (rezalloc-placement-new-no-eh-frame.md): see LumaSortTable.
 RVA(0x0014ede0, 0x10f)
-CShadeTable* CShadeTableCache::HueSortTable(PalEntry* pal) {
+CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
@@ -626,11 +627,13 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
 
 // ===========================================================================
 // 0x14f5b0 - AlphaTable: allocate a 0x200-byte (256-entry u16) table and fill it
-// with the RGB565 conversion of a 256-color RGBA palette (arg). EH frame.
+// with the RGB565 conversion of a 256-entry PALETTEENTRY palette (arg). EH frame.
 // ===========================================================================
 // @early-stop
-// EH-frame wall (rezalloc-placement-new-no-eh-frame.md): body byte-exact, the
-// /GX ctor-in-flight frame is absent on MSVC5; ~66%.
+// mirror-register wall (92.6%): the /GX frame, the array grow, the RGB565 loop and
+// the epilogues are byte-faithful. Retail keeps `this` in esi and the grow index in
+// edi; cl mirrors the pair (edi/esi) and sinks `mov edi,0x100` two slots. Pure
+// regalloc coloring - docs/patterns/zero-register-pinning.md.
 RVA(0x0014f5b0, 0x10a)
 CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
@@ -804,10 +807,10 @@ i32 __cdecl CShadeTableCache::CompareHue(const void* a, const void* b) {
     u8 ia = *static_cast<const u8*>(a);
     u8 ib = *static_cast<const u8*>(b);
     ColorHSV ha, hb, tmp;
-    PalEntry* pa = &g_pal[ia];
-    ha = *RgbToHsv(&tmp, (pa->b << 0x10) | (pa->g << 8) | pa->r);
-    PalEntry* pb = &g_pal[ib];
-    hb = *RgbToHsv(&tmp, (pb->b << 0x10) | (pb->g << 8) | pb->r);
+    PALETTEENTRY* pa = &g_pal[ia];
+    ha = *RgbToHsv(&tmp, (pa->peBlue << 0x10) | (pa->peGreen << 8) | pa->peRed);
+    PALETTEENTRY* pb = &g_pal[ib];
+    hb = *RgbToHsv(&tmp, (pb->peBlue << 0x10) | (pb->peGreen << 8) | pb->peRed);
     if (ha.h < hb.h) {
         return -1;
     }
@@ -883,19 +886,19 @@ void CShadeTableCache::FindRemove(CShadeTable* key) {
 // slot). Pure register-allocation/stack-layout divergence; instruction selection
 // matches. Cascades register names through the whole body. Final-sweep candidate.
 RVA(0x0014fbf0, 0xcb)
-i32 __cdecl CShadeTableCache::FindNearestColor(PalEntry* pal, i32 r, i32 g, i32 b) {
+i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, i32 r, i32 g, i32 b) {
     r &= 0xff;
     g &= 0xff;
     b &= 0xff;
-    i32 dg = g - pal->g;
-    i32 db = b - pal->b;
-    i32 dr = r - pal->r;
+    i32 dg = g - pal->peGreen;
+    i32 db = b - pal->peBlue;
+    i32 dr = r - pal->peRed;
     i32 bestDist = dg * dg + db * db + dr * dr;
     i32 best = 0;
     for (i32 i = 1; i < 256; i++) {
-        i32 dr2 = r - pal[i].r;
-        i32 dg2 = g - pal[i].g;
-        i32 db2 = b - pal[i].b;
+        i32 dr2 = r - pal[i].peRed;
+        i32 dg2 = g - pal[i].peGreen;
+        i32 db2 = b - pal[i].peBlue;
         i32 d = dr2 * dr2 + dg2 * dg2 + db2 * db2;
         if (d < bestDist) {
             bestDist = d;

@@ -15,7 +15,6 @@
 #include <string.h>                       // rep-movs / memset element copies
 #include <rva.h>
 
-
 VTBL(CFader, 0x001f07a8);
 VTBL(CFaderMesh, 0x001f07c0);
 VTBL(CRezBufferObject, 0x001f07d8); // ??_7CRezBufferObject@@6B@ (5-slot CObject-derived)
@@ -444,12 +443,7 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
     }
     if (m_spanCount > 0) {
         if (d->m_20 == 0) {
-            m_table = m_cache.HueRampTable(
-                // the 0x400 palette blob walked entry-wise at one seam (PalEntries)
-                reinterpret_cast<PalEntry*>(m_palette->m_cacheA),
-                m_spanCount,
-                0
-            );
+            m_table = m_cache.HueRampTable(m_palette->m_cacheA, m_spanCount, 0);
             m_flag = 1;
             return 1;
         }
@@ -682,10 +676,8 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     CFxModeT6* cfg = static_cast<CFxModeT6*>(descOpaque);
     CRezBufferObject* mesh = &m_meshBuf;
 
-    m_dstSurface = cfg->m_04 ? cfg->m_04
-                             : m_timerA;
-    m_bltSrc = cfg->m_08 ? cfg->m_08
-                         : m_timerB;
+    m_dstSurface = cfg->m_04 ? cfg->m_04 : m_timerA;
+    m_bltSrc = cfg->m_08 ? cfg->m_08 : m_timerB;
     if (cfg->m_10 == 0) {
         return 0;
     }
@@ -957,8 +949,7 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
         // CFader base's embedded CShadeTableCache at this+0x04)
         // forced by the mode-tagged desc slot: the fader type picks the arm (FxModeDesc.h)
         CDDPalette* pal = reinterpret_cast<CDDPalette*>(cfg->m_10);
-        // the 0x400 palette blob walked entry-wise at one seam (PalEntries)
-        m_table = m_cache.HueRampTable(reinterpret_cast<PalEntry*>(pal->m_cacheA), 0x10, 0);
+        m_table = m_cache.HueRampTable(pal->m_cacheA, 0x10, 0);
         m_flag = 1; // we own it: ~CFader will FindRemove it
     } else {
         m_table = cfg->m_14;
@@ -1033,10 +1024,10 @@ void CFaderRadial::RenderFrame(i32 frame) {
     CDDSurface* dst = m_dstSurface;         // +0x3c
     void* scratch = RezAlloc(dst->m_width); // per-width scratch (alloc'd, unused)
     dst->Clear(0);
-    m_srcSurface->Lock(0);      // lock source (base unused here)
-    u8* base = static_cast<u8*>(dst->Lock(0));    // locked dest pixel base
-    if (m_table->m_data == 0) { // gate: is the shade table's buffer present?
-        return;                 // retail bails w/o unlock/free (matched)
+    m_srcSurface->Lock(0);                     // lock source (base unused here)
+    u8* base = static_cast<u8*>(dst->Lock(0)); // locked dest pixel base
+    if (m_table->m_data == 0) {                // gate: is the shade table's buffer present?
+        return;                                // retail bails w/o unlock/free (matched)
     }
 
     i32 total = m_srcSurface->m_width * m_srcSurface->m_height;
@@ -1101,10 +1092,8 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         goto fail;
     }
 
-    m_surfA = pInit->m_04 ? pInit->m_04
-                          : m_timerA;
-    m_surfB = pInit->m_08 ? pInit->m_08
-                          : m_timerB;
+    m_surfA = pInit->m_04 ? pInit->m_04 : m_timerA;
+    m_surfB = pInit->m_08 ? pInit->m_08 : m_timerB;
     if (m_surfA == 0) {
         goto fail;
     }
@@ -1188,10 +1177,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         } else {
             // forced by the mode-tagged desc slot: the fader type picks the arm (FxModeDesc.h)
             CDDPalette* pal = reinterpret_cast<CDDPalette*>(pInit->m_28);
-            m_table =
-                m_cache
-                    // the 0x400 palette blob walked entry-wise at one seam (PalEntries)
-                    .FlashTable(reinterpret_cast<PalEntry*>(pal->m_cacheA), 0x20, 0x20, 0x32, 0xc8);
+            m_table = m_cache.FlashTable(pal->m_cacheA, 0x20, 0x20, 0x32, 0xc8);
         }
 
         i32 m = m_halfWidth << 1;
