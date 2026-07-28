@@ -77,11 +77,23 @@ every in-range branch, and compare:
 - **same mnemonics, displacements shifted by a constant** -> noise, a size
   difference upstream. Ignore.
 
-**The sieve is a TOOL now — do not re-write it ad hoc:**
+**This is a first-class disasm mode now — do not re-derive it by hand:**
 
-    python -m gruntz.audit.jcc_sieve              # the worklist, SIGNEDNESS first
+    gruntz sema disasm <rva> --branches --diff    # ONE function: what actually differs
+    gruntz sema disasm <rva> --branches           # one side, the raw sequence
+    python -m gruntz.audit.jcc_sieve              # the whole tree, SIGNEDNESS first
     python -m gruntz.audit.jcc_sieve --summary    # counts only
     python -m gruntz.audit.jcc_sieve --class SIGNEDNESS --unit gamelevel
+
+`--branches` names every target by **branch index**, so a uniform displacement shift
+compares equal and a genuine retarget does not; it prints both sides' `ret` counts (the
+[positive-gate](positive-gate-enables-shrink-wrap.md) lever) and, when llvm-objdump's
+linear decode hits jump-table data in `.text`, it says
+`[stream truncated at +0xNNN ... branch list is partial]` instead of silently returning a
+short list. Both it and the sweep share `gruntz.core.branches`, so there is no logic to
+drift. **`--diff` and `--blocks --diff` now print a one-line pointer to `--branches`**
+when they have nothing to show and the function is not 100% — that is the loop this
+pattern kept costing people.
 
 It reads `report.json` for the scores and disassembles the `build/objdiff/{base,target}`
 object pairs directly (nothing masked), classifies each hit SIGNEDNESS / POLARITY / OTHER /

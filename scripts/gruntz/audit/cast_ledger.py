@@ -34,7 +34,11 @@ below, or when its nearby lines mention one of the closed reason keywords.
 THE WINDOW IS THREE LINES (lines[i-3:i+2]) AND IT BITES. A reason must sit within
 three lines ABOVE its cast. Writing a fuller, five-line justification pushes the
 vocabulary word out of range and the cast silently goes OPEN again - that has now
-happened twice while ADDING evidence. Put the citation first and the vocabulary term
+happened THREE times, and the third was not even an edit: **clang-format** exploded two
+AFX_MSGMAP_ENTRY initializers one-element-per-line, which pushed a heading comment six
+lines above its cast and un-explained it (FATAL ratchet, Dialogs.cpp, 2026-07-28). The
+only placement the formatter cannot move is the cast's OWN line - put the vocabulary word
+in a trailing comment there. Put the citation first and the vocabulary term
 on the line nearest the cast, or keep the block to three lines. Equally, a cast can be
 counted as explained by a NEIGHBOUR's comment: deleting unrelated lines nearby can
 un-explain it (see TypeKeyColl's sentinel cast, which rode on the words "one seam" in

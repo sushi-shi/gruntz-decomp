@@ -1235,7 +1235,8 @@ def _add_sema(sub) -> None:
     sd = ss.add_parser("disasm",
                        help="disasm: TARGET (retail, default) / --base (compiled) / "
                             "--rich (base + /Z7 source lines) / --diff (base vs "
-                            "target) / --lite (asm only)")
+                            "target) / --lite (asm only) / --branches (the branch "
+                            "sequence --diff's masking hides)")
     sd.add_argument("rva", help="RVA (0x..) or symbol name")
     sdside = sd.add_mutually_exclusive_group()
     sdside.add_argument("--target", action="store_true",
@@ -1258,6 +1259,14 @@ def _add_sema(sub) -> None:
     sd.add_argument("--dot", action="store_true",
                     help="with --blocks: emit the CFG as graphviz DOT (with --diff: "
                          "target graph, differing blocks filled red)")
+    sd.add_argument("--branches", action="store_true",
+                    help="the ordered CONDITIONAL-BRANCH sequence, with each target named "
+                         "by branch index (so a uniform displacement shift compares equal) "
+                         "+ the ret counts. This is what --diff structurally cannot show: "
+                         "it masks address operands, which also hides intra-function "
+                         "branch displacements. With --diff, only the differing rows, "
+                         "classified SIGNEDNESS / POLARITY / OTHER / TOPOLOGY; rc=1 if "
+                         "they differ. Whole tree: python -m gruntz.audit.jcc_sieve")
     sd.set_defaults(func=cmd_sema_disasm)
 
     st = ss.add_parser("strings", help="per-fn string set / --find reverse lookup")
