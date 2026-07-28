@@ -29,6 +29,25 @@ SIZE_UNKNOWN();
 
 class CRezImage {
 public:
+    // The seed every CImagePool::AddSurface* factory builds a node with. A REAL ctor
+    // (`new CRezImage()`), not a spelled-out `::operator new(0x45c)` + 11 stores +
+    // hand-written null guard - the spelled-out form gives the factories the wrong
+    // node/zero register roles (docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md,
+    // the same fix the CImagePaletteNode siblings already carry).
+    CRezImage() {
+        m_dibSection = 0;
+        m_pixels = 0;
+        m_rowOffsets = 0;
+        m_434 = 0;
+        m_width = 0;
+        m_height = 0;
+        m_stride = 0;
+        m_rowPad = 0;
+        m_listPosition = 0;
+        m_paletteScalar = 0;
+        m_paletteNode = 0;
+    }
+
     i32 LoadFromRez(char* name, void* a2, i32 a3);
 
     // The five per-extension loaders (bodies in Image.cpp). All __thiscall,

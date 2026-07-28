@@ -110,7 +110,11 @@ void CImagePool::ClearPalettes() {
 // which also flips the epilogue `mov eax,node` placement. Verified byte-identical
 // after canonicalizing edi<->ebx (llvm-objdump base vs target). Same register-
 // assignment wall class as the palette siblings below; not source-steerable
-// (tried node=0 pre-init -> 94%).
+// (tried node=0 pre-init -> 94%; and 2026-07-28, byte-NEUTRAL: modelling the seed as
+// a real `new CRezImage()` ctor instead of the spelled-out `::operator new(0x45c)` +
+// 11 stores + hand-written null guard, which is what
+// docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md prescribes - the ctor form
+// is the correct model so it is KEPT, but it does not move the edi/ebx tie-break).
 // ===========================================================================
 // @early-stop
 // regalloc tie-break: node should be edi / zero should be ebx (retail); recompile
@@ -118,24 +122,7 @@ void CImagePool::ClearPalettes() {
 RVA(0x00174fe0, 0xfe)
 CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 flag) {
     HDC hdc = GetDC(m_sourceHwnd);
-    CRezImage* node;
-    CRezImage* raw = static_cast<CRezImage*>(::operator new(0x45c));
-    if (raw) {
-        raw->m_dibSection = 0;
-        raw->m_pixels = 0;
-        raw->m_rowOffsets = 0;
-        raw->m_434 = 0;
-        raw->m_width = 0;
-        raw->m_height = 0;
-        raw->m_stride = 0;
-        raw->m_rowPad = 0;
-        raw->m_listPosition = 0;
-        raw->m_paletteScalar = 0;
-        raw->m_paletteNode = 0;
-        node = raw;
-    } else {
-        node = 0;
-    }
+    CRezImage* node = new CRezImage();
     if (node->DecodeBmpHeader(static_cast<void*>(hdc), width, height, bitCount, flag) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
@@ -162,24 +149,7 @@ CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 fl
 RVA(0x001750e0, 0x103)
 CRezImage* CImagePool::AddSurfaceBlit(void* src, i32 width, i32 height, i32 bitCount, i32 flag) {
     HDC hdc = GetDC(m_sourceHwnd);
-    CRezImage* node;
-    CRezImage* raw = static_cast<CRezImage*>(::operator new(0x45c));
-    if (raw) {
-        raw->m_dibSection = 0;
-        raw->m_pixels = 0;
-        raw->m_rowOffsets = 0;
-        raw->m_434 = 0;
-        raw->m_width = 0;
-        raw->m_height = 0;
-        raw->m_stride = 0;
-        raw->m_rowPad = 0;
-        raw->m_listPosition = 0;
-        raw->m_paletteScalar = 0;
-        raw->m_paletteNode = 0;
-        node = raw;
-    } else {
-        node = 0;
-    }
+    CRezImage* node = new CRezImage();
     if (node->DecodeBlit(src, static_cast<void*>(hdc), width, height, bitCount, flag) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
@@ -206,24 +176,7 @@ CRezImage* CImagePool::AddSurfaceBlit(void* src, i32 width, i32 height, i32 bitC
 RVA(0x001751f0, 0xf9)
 CRezImage* CImagePool::AddSurfaceOp(void* buf, i32 kind, i32 ctrl) {
     HDC hdc = GetDC(m_sourceHwnd);
-    CRezImage* node;
-    CRezImage* raw = static_cast<CRezImage*>(::operator new(0x45c));
-    if (raw) {
-        raw->m_dibSection = 0;
-        raw->m_pixels = 0;
-        raw->m_rowOffsets = 0;
-        raw->m_434 = 0;
-        raw->m_width = 0;
-        raw->m_height = 0;
-        raw->m_stride = 0;
-        raw->m_rowPad = 0;
-        raw->m_listPosition = 0;
-        raw->m_paletteScalar = 0;
-        raw->m_paletteNode = 0;
-        node = raw;
-    } else {
-        node = 0;
-    }
+    CRezImage* node = new CRezImage();
     if (node->DispatchDecode(buf, kind, static_cast<void*>(hdc), ctrl) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
@@ -251,24 +204,7 @@ RVA(0x001752f0, 0xfc)
 CRezImage* CImagePool::AddSurfaceRez(char* name, i32 ctrl) {
     HDC hdc = GetDC(m_sourceHwnd);
     g_hResModule = m_resourceModuleHandle;
-    CRezImage* node;
-    CRezImage* raw = static_cast<CRezImage*>(::operator new(0x45c));
-    if (raw) {
-        raw->m_dibSection = 0;
-        raw->m_pixels = 0;
-        raw->m_rowOffsets = 0;
-        raw->m_434 = 0;
-        raw->m_width = 0;
-        raw->m_height = 0;
-        raw->m_stride = 0;
-        raw->m_rowPad = 0;
-        raw->m_listPosition = 0;
-        raw->m_paletteScalar = 0;
-        raw->m_paletteNode = 0;
-        node = raw;
-    } else {
-        node = 0;
-    }
+    CRezImage* node = new CRezImage();
     if (node->LoadFromRez(name, static_cast<void*>(hdc), ctrl) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
@@ -295,24 +231,7 @@ CRezImage* CImagePool::AddSurfaceRez(char* name, i32 ctrl) {
 RVA(0x001753f0, 0xf4)
 CRezImage* CImagePool::AddSurfaceConvert(CRezImage* src, void* pal) {
     HDC hdc = GetDC(m_sourceHwnd);
-    CRezImage* node;
-    CRezImage* raw = static_cast<CRezImage*>(::operator new(0x45c));
-    if (raw) {
-        raw->m_dibSection = 0;
-        raw->m_pixels = 0;
-        raw->m_rowOffsets = 0;
-        raw->m_434 = 0;
-        raw->m_width = 0;
-        raw->m_height = 0;
-        raw->m_stride = 0;
-        raw->m_rowPad = 0;
-        raw->m_listPosition = 0;
-        raw->m_paletteScalar = 0;
-        raw->m_paletteNode = 0;
-        node = raw;
-    } else {
-        node = 0;
-    }
+    CRezImage* node = new CRezImage();
     if (node->Convert8To16(static_cast<void*>(hdc), src, pal) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
@@ -465,9 +384,14 @@ i32 CRezImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, i3
     m_bih.biSizeImage = 0;
     m_bih.biClrUsed = 0;
     m_bih.biClrImportant = 0;
+    // `pal` is a real dev local: retail computes `lea ecx,[esi+0x28]` BEFORE the
+    // bitcount branch (a sunk `&m_pal[0]` would land inside it), and walks it with a
+    // post-increment (`mov [ecx],ax; add ecx,2; inc eax`) instead of the indexed
+    // strength-reduction `m_pal[i]` produces.
+    u16* pal = m_pal;
     if (m_bitCount == 8) {
         for (i32 i = 0; i < 256; i++) {
-            m_pal[i] = static_cast<u16>(i);
+            *pal++ = static_cast<u16>(i);
         }
         m_dibSection = CreateDIBSection(
             static_cast<HDC>(a2),
@@ -638,28 +562,52 @@ i32 CRezImage::EnsureSize(void* dc, i32 w, i32 h, i32 bitCount, i32 flag) {
 // ---------------------------------------------------------------------------
 // Fill every pixel with the low byte of `value`. Contiguous buffers
 // (m_rowPad == 0) get one flat fill; padded buffers fill row by row.
+// The `value &= 0xff` is REAL dev source, not a redundancy: retail loads the full
+// dword and masks (`mov eax,[esp+0x14]; and eax,0xff`) where a bare memset arg would
+// just byte-load (`mov al,[esp+0x14]`), and the padded path writes the masked value
+// BACK to the parameter's home slot before the loop - the signature of an assignment
+// to the parameter that MSVC sinks into each use block.
 // @early-stop
-// memset-inline LICM wall: the contiguous fast path is byte-exact, but retail hoists
-// the per-scanline fill's value-mask out of the loop (`value &= 0xff` once + reload)
-// while our recompile re-reads the byte each iteration; an explicit `value &= 0xff`
-// is folded away as redundant before memset. ~91.4%.
+// 94.1%, two residues, both compiler-canonicalisation: (1) the size multiply -
+// cl loads the LOWER-offset operand (`mov ecx,[m_height]; imul ecx,[m_stride]`)
+// whichever way the source spells it (both operand orders tried, identical output),
+// retail loads m_stride; (2) the loop preheader's mask - cl picks the memory RMW
+// `and [esp+0x14],0xff` where retail computes it in eax and `jmp`s past the body's
+// reload; a `masked` temp for the value is folded back into the RMW.
 RVA(0x00175d50, 0xad)
 void CRezImage::Fill(i32 value) {
     if (m_rowPad == 0) {
+        value &= 0xff;
         memset(m_pixels, value, m_stride * m_height);
     } else {
-        for (i32 y = 0; y < m_height; y++) {
-            memset(m_pixels + m_rowOffsets[y], value, m_width);
+        // The mask sits in the loop PREHEADER (retail: after the zero-trip guard, once,
+        // written back to the parameter's home slot at [esp+0x14]), which is what the
+        // guard + do/while spelling produces; a plain `for` with the mask above it
+        // folds the mask into the guard block instead.
+        i32 y = 0;
+        if (y < m_height) {
+            value &= 0xff;
+            do {
+                memset(m_pixels + m_rowOffsets[y], value, m_width);
+                y++;
+            } while (y < m_height);
         }
     }
 }
 
+// @early-stop
+// 96.7%: instruction-for-instruction identical (the header field READ order was the
+// real bug and is fixed - retail loads biHeight before biWidth). Residual is the
+// two-register role swap `buf`/`bitcount`: cl puts buf in eax and the movzx zero in
+// edx, retail the reverse, which also flips the `lea esi,[buf+biSize+0x400]` SIB
+// base/index. Tried: reading bitcount first through an inline cast, declaring it
+// last, reordering width/height - the role assignment does not move.
 RVA(0x00175e00, 0x3d)
 i32 CRezImage::DecodeResData(void* buf, void* a2, i32 a3) {
     BITMAPINFOHEADER* ih = static_cast<BITMAPINFOHEADER*>(buf);
-    i32 bitcount = ih->biBitCount;
-    i32 height = ih->biHeight;
     i32 width = ih->biWidth;
+    i32 height = ih->biHeight;
+    i32 bitcount = ih->biBitCount;
     void* src = static_cast<u8*>(buf) + sizeof(BITMAPINFOHEADER) + 4; // header + 1 quad
     if (bitcount == 8) {
         src = static_cast<u8*>(buf) + ih->biSize + 0x400;
@@ -794,7 +742,9 @@ i32 CRezImage::DecodeRidData(void* buf, void* a2, i32 a3) {
     PidHeader* hdr = static_cast<PidHeader*>(buf);
     i32 width = hdr->width;
     i32 height = hdr->height;
-    i32 ok = DecodeBlit(hdr + 1, a2, width, height, 8, a3);
+    // hdr->pixels, NOT `hdr + 1`: the trailing `u8 pixels[1]` pads sizeof(PidHeader)
+    // to 0x24, so `hdr + 1` skipped 4 bytes too many (retail's cursor lands on +0x20).
+    i32 ok = DecodeBlit(hdr->pixels, a2, width, height, 8, a3);
     if (!(a3 & 1)) {
         m_transparent = 0;
     }
@@ -847,9 +797,10 @@ i32 CRezImage::LoadRid(char* name, void* a2, i32 a3) {
 RVA(0x00176440, 0x25d)
 i32 CRezImage::DecodePidData(void* buf, void* a2, i32 a3) {
     PidHeader* hdr = static_cast<PidHeader*>(buf);
-    // the pixel stream begins one header past the buffer; reading it as bytes is
-    // byte-forced by the format (8bpp RLE), and `hdr + 1` is typed arithmetic
-    u8* src = reinterpret_cast<u8*>((hdr + 1));
+    // the pixel stream is the header's trailing member (+0x20). NOT `hdr + 1`: the
+    // `u8 pixels[1]` tail pads sizeof(PidHeader) to 0x24, so that spelling skipped
+    // 4 bytes of stream.
+    u8* src = hdr->pixels;
     i32 width = hdr->width;
     i32 height = hdr->height;
     i32 flags = hdr->flags;
@@ -1037,9 +988,8 @@ i32 CRezImage::Save(const char* filename, void* paletteObj) {
             return SaveBmp(filename, paletteObj);
         case 0x10:
             return 0;
-        default:
-            return 0;
     }
+    return 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -1140,20 +1090,6 @@ void CRezImage::FillRect(CRezFillRect* r, i32 color) {
 // CRezImage::FillRectAt (0x176da0) - build a translated fill rect at origin
 // (dx,dy) sized from `src` (right = dx + src.width, bottom = dy + src.height)
 // and scanline-fill it.
-// @early-stop
-// ~66% regalloc-pressure wall (extra ebx spill vs retail's tighter esi/edi pick).
-// This function's 100% is TU-shape-dependent: ANY change to the imagepool TU's type
-// graph reschedules the whole /O2 regalloc and flips it 100<->66. It last re-surfaced
-// when CImageExtLoader was folded into ApiCallerStubs::CImagePaletteNode, and again
-// when CFileImageSurface (Image.h) was reparented onto its real CDDSurface base (R53
-// reloc-fidelity fix), and again (100->66.44) when m_surfaces/m_palettes were retyped
-// from CObList to their real class CPtrList (LIST-AUDIT: every CImagePool list call
-// targets the band whose vtable 0x1eb054 slot-0 CRuntimeClass names "CPtrList"), and
-// again (2026-07-14) when SaveBmp dropped the BmpFile view for a real CFile + modeled
-// fileHdr/info as BITMAPFILEHEADER/BITMAPINFOHEADER (same TU-type-graph reschedule).
-// Proven causal + isolated: reverting ONLY this TU's two files restores it to 0-diff.
-// Body byte-faithful; kept per the clean-room mandate (a correct de-view /
-// reloc-fidelity fix outranks a collateral regalloc %).
 RVA(0x00176da0, 0x4b)
 void CRezImage::FillRectAt(i32 dx, i32 dy, CRezFillRect* src, i32 color) {
     CRezFillRect r;
