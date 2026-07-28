@@ -77,10 +77,25 @@ every in-range branch, and compare:
 - **same mnemonics, displacements shifted by a constant** -> noise, a size
   difference upstream. Ignore.
 
-Run 2026-07-28 over all 1309 sub-100% functions: 105 same-count 1-4-flip hits,
-of which 6 SIGNEDNESS and 53 pure je/jne polarity. Four signedness fixes and one
-polarity fix landed straight away (`CRezDirNode::Load` 98.97 -> 100 EXACT,
-`DirectSoundMgr::Play` 95.52 -> 100 EXACT).
+**The sieve is a TOOL now — do not re-write it ad hoc:**
+
+    python -m gruntz.audit.jcc_sieve              # the worklist, SIGNEDNESS first
+    python -m gruntz.audit.jcc_sieve --summary    # counts only
+    python -m gruntz.audit.jcc_sieve --class SIGNEDNESS --unit gamelevel
+
+It reads `report.json` for the scores and disassembles the `build/objdiff/{base,target}`
+object pairs directly (nothing masked), classifies each hit SIGNEDNESS / POLARITY / OTHER /
+TOPOLOGY, and prints **each side's `ret` count** on the row so the
+[positive-gate](positive-gate-enables-shrink-wrap.md) lever can be picked without a second
+pass. Guards and known false positives are in its docstring.
+
+First run (2026-07-28) over 1309 sub-100% functions: 105 same-count 1-4-flip hits, of which
+6 SIGNEDNESS and 53 pure je/jne polarity. Four signedness fixes and one polarity fix landed
+straight away (`CRezDirNode::Load` 98.97 -> 100 EXACT, `DirectSoundMgr::Play` 95.52 -> 100
+EXACT). The tool's own first run found the remaining 2 SIGNEDNESS (both real: `g_frameDelta`
+is u32; `CDDSurface::Blit168`'s LUT loop is a signed counted loop) and the POLARITY half
+resolved into two new families — [if-body-owns-the-fallthrough](if-body-owns-the-fallthrough.md)
+and [literal-comparison-form-survives-o2](literal-comparison-form-survives-o2.md).
 
 ## Related
 

@@ -208,11 +208,9 @@ i32 CPathHazard::Tick() {
     }
 
     // Not arrived: integrate the sub-pixel movement vector toward the waypoint.
-    double step =
-        static_cast<double>(static_cast<i64>(static_cast<u64>(static_cast<u32>(g_frameDelta))))
-        * m_speed;
+    double step = static_cast<double>(static_cast<i64>(static_cast<u64>(g_frameDelta))) * m_speed;
     m_posX = m_posX + step * m_unitX;
-    m_posY = m_posY + static_cast<double>(static_cast<u32>(g_frameDelta)) * m_unitY * m_speed;
+    m_posY = m_posY + static_cast<double>(g_frameDelta) * m_unitY * m_speed;
     i32 newX = static_cast<i32>((m_roundBiasX + m_posX));
     i32 newY = static_cast<i32>((m_roundBiasY + m_posY));
 

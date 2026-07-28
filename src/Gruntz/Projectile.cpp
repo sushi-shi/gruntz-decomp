@@ -529,8 +529,8 @@ void CProjectile::MovingSlot16() {
         if (m_kind == 0x16) {
             ScanTargets(0);
         }
-        m_posX = m_posX + static_cast<double>(static_cast<u32>(g_frameDelta)) * m_velX * m_velScale;
-        m_posY = m_posY + static_cast<double>(static_cast<u32>(g_frameDelta)) * m_velY * m_velScale;
+        m_posX = m_posX + static_cast<double>(g_frameDelta) * m_velX * m_velScale;
+        m_posY = m_posY + static_cast<double>(g_frameDelta) * m_velY * m_velScale;
         i32 xRes = static_cast<i32>((m_roundX + m_posX));
         i32 yRes = static_cast<i32>((m_roundY + m_posY));
         i32 localX = xRes;

@@ -734,18 +734,19 @@ i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
 // je/jne polarity flip) where retail kept `cmp eax,4; jne; dec eax`; the literal
 // `if(idx==4)idx--` form scores worse (88%, view in edx). Documented constant-CSE
 // wall, see docs/patterns/constant-cse-immediate-vs-hoist.md (regalloc family).
+// Retested 2026-07-28 (jcc-sieve POLARITY #3): the statement form DOES reproduce
+// retail's `mov eax,edx / cmp eax,4 / jne / dec eax / dec eax` and its polarity, but
+// re-colours view/count into edx/ecx AND still folds the true arm to `mov eax,3`
+// - net 96.67 -> 84.49. The fold and the colouring are a coupled pair, not one lever.
 RVA(0x0008efe0, 0x54)
 i32 CGruntzMgr::ToggleObjectLayer() {
     if (IsActive() && m_world) {
         CGameLevel* view = m_world->m_level;
         if (view) {
             i32 count = view->m_planes.GetSize();
-            // (count==4 ? count-1 : count) - 1: best-scoring spelling (96.7%); it
-            // recovers retail's ecx/edx view/count regs + the `cmp;jne;dec` shape.
-            // The lone residual is MSVC folding the true-arm `count-1` to `mov 3`
-            // (+ the je/jne polarity) where retail kept `dec eax`; the literal
-            // `if(idx==4)idx--;idx--;` form regresses to 88% (view in edx). The
-            // fold is the constant-CSE tiebreak, not source-steerable.
+            // (count==4 ? count-1 : count) - 1: the spelling that recovers retail's
+            // ecx/edx view/count colouring. See the @early-stop note above for why the
+            // statement form (which DOES give retail's two `dec`s) is a net loss.
             i32 idx = (count == 4 ? count - 1 : count) - 1;
             CDDrawWorkerHost* layer =
                 (idx < 0 || idx >= count) ? 0 : static_cast<CDDrawWorkerHost*>(view->m_planes[idx]);

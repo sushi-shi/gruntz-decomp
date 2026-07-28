@@ -1,7 +1,7 @@
 #include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
-#include <Gruntz/ObjectDropper.h> // CObjectDropper : CUserLogic (ctor 0xc59f0)
-#include <Rez/FrameClock.h>       // frame-clock band (g_frameDelta/g_engineFrameDelta)
-#include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Gruntz/ObjectDropper.h>     // CObjectDropper : CUserLogic (ctor 0xc59f0)
+#include <Rez/FrameClock.h>           // frame-clock band (g_frameDelta/g_engineFrameDelta)
+#include <Gruntz/GameRegMfcPtr.h>     // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Wap32/zBitVec.h>        // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
@@ -24,7 +24,7 @@
 #include <Gruntz/Brickz.h>            // canonical BrickzCell (the 0x1c-byte tile-grid cell)
 #include <Gruntz/State.h> // canonical CState (g_gameReg->m_curState; m_levelType @+0x20)
 
-#include <string.h> // inline strcmp for the direction-name match
+#include <string.h>         // inline strcmp for the direction-name match
 #include <Gruntz/ActName.h> // CActName (shared)
 #include <Gruntz/XferArchive.h>
 #include <rva.h>
@@ -46,7 +46,6 @@ template<> DATA(0x0024bf00)
 CActReg CActRegPool<CDroppedObjectShadow>::s_table(2000, 2010);
 
 struct CString; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
-
 
 static inline CString* ActNameSlots() {
     return g_typeColl.Slots();
@@ -86,7 +85,6 @@ static inline CString* ActNameLookupCallReport(i32 id) {
     g_typeColl.Report(g_projActCache, 0xc);
     return g_typeColl.Scratch();
 }
-
 
 typedef enum DropperDir {
     DROPDIR_NORTH = 1, // "LEVEL_OBJECTDROPPER_NORTH", (dx,dy) = ( 0,-1)
@@ -321,10 +319,8 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x000c5f80, 0x102)
 void CObjectDropper::FireActivation(i32 actId) {
-    if ((*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId))))
-        != 0) {
-        (this
-             ->*((*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId))))))();
+    if ((*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId)))) != 0) {
+        (this->*((*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId))))))();
     }
 }
 
@@ -354,7 +350,8 @@ void CObjectDropper::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CObjectDropper::Update);
+    (*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CObjectDropper::Update);
 }
 
 RVA(0x000c62e0, 0x2dd)
@@ -409,7 +406,7 @@ i32 CObjectDropper::Update() {
 
     m_38->m_1a0.Advance(static_cast<i32>(g_engineFrameDelta));
 
-    double drift = static_cast<double>(static_cast<u32>(g_frameDelta)) * m_speed;
+    double drift = static_cast<double>(g_frameDelta) * m_speed;
     if (m_travelDx > 0) {
         m_posX += drift;
         if (m_posX >= static_cast<double>(g_gameReg->m_world->m_level->m_mainPlane->m_wrapW)) {
@@ -633,7 +630,7 @@ void CDroppedObject::RegisterActs() {
 RVA(0x000c7090, 0x21b)
 i32 CDroppedObject::ActA() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    m_fallY = static_cast<double>(static_cast<u32>(g_frameDelta)) * m_timePerTile + m_fallY;
+    m_fallY = static_cast<double>(g_frameDelta) * m_timePerTile + m_fallY;
     i32 landed = static_cast<i32>((m_fallY - g_dropFallBias));
     if (landed > m_landY) {
         i32 x = m_object->m_screenX;
@@ -662,7 +659,8 @@ i32 CDroppedObject::ActA() {
                             // fall through
                         case 7:
                         default:
-                            if (x < g_gameReg->m_viewBounds.right && x >= g_gameReg->m_viewBounds.left
+                            if (x < g_gameReg->m_viewBounds.right
+                                && x >= g_gameReg->m_viewBounds.left
                                 && m_landY < g_gameReg->m_viewBounds.bottom
                                 && m_landY >= g_gameReg->m_viewBounds.top) {
                                 CWwdGameObjectA* s = g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -686,7 +684,8 @@ i32 CDroppedObject::ActA() {
             }
         } else {
             if (x < g_gameReg->m_viewBounds.right && x >= g_gameReg->m_viewBounds.left
-                && m_landY < g_gameReg->m_viewBounds.bottom && m_landY >= g_gameReg->m_viewBounds.top) {
+                && m_landY < g_gameReg->m_viewBounds.bottom
+                && m_landY >= g_gameReg->m_viewBounds.top) {
                 CWwdGameObjectA* s =
                     g_gameReg->m_world->m_childGroup
                         ->CreateSprite(0, x, m_landY, 0xcf84f, "Particlez", 0x40003);
@@ -774,10 +773,8 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), 
 
 RVA(0x000c7750, 0x102)
 void CDroppedObjectShadow::FireActivation(i32 coord) {
-    if ((*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord))))
-        != 0) {
-        (this
-             ->*((*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord))))))();
+    if ((*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord)))) != 0) {
+        (this->*((*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord))))))();
     }
 }
 
@@ -807,7 +804,8 @@ void CDroppedObjectShadow::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CDroppedObjectShadow::Advance);
+    (*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CDroppedObjectShadow::Advance);
 }
 
 // CDroppedObjectShadow::Advance (0xc7ab0): the per-frame act handler - advance
@@ -838,12 +836,7 @@ i32 CDroppedObjectShadow::Advance() {
 
 RVA(0x000c7b40, 0x76)
 i32 CDroppedObjectShadow::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, CGameObject* d) {
-    if (!CUserLogic::SerializeMove(
-            ar,
-            mode,
-            c,
-            d
-        )) {
+    if (!CUserLogic::SerializeMove(ar, mode, c, d)) {
         return 0;
     }
     if (!Chain(ar, mode, c, d)) {
@@ -858,7 +851,6 @@ i32 CDroppedObjectShadow::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, CGame
     }
     return 1;
 }
-
 
 RVA(0x000c7be0, 0x5)
 i32 CDroppedObject::ActB() {

@@ -229,7 +229,10 @@ append:
                 }
             }
             i32 newMax = m_arr.m_nMaxSize + grow;
-            if (newSize > newMax) {
+            // `>=`, not `>`: retail's guard is `cmp <newSize>,<newMax> / jl <keep>`,
+            // so the clamp fires on equal too (MFC's own `if (nNewSize < m_nMaxSize +
+            // nGrowBy) nNewMax = m_nMaxSize + nGrowBy; else nNewMax = nNewSize;`).
+            if (newSize >= newMax) {
                 newMax = newSize;
             }
             CFader** nd = static_cast<CFader**>(operator new(newMax * 4));

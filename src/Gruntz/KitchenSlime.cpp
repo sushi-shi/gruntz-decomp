@@ -27,7 +27,6 @@
 
 VTBL(CKitchenSlime, 0x001e750c);
 
-
 DATA(0x001ea3e0)
 const double g_slimeSpeedNum = 32.0;
 
@@ -226,9 +225,7 @@ i32 CKitchenSlime::Tick() {
         return 0;
     }
 
-    double step =
-        static_cast<double>(static_cast<i64>(static_cast<u64>(static_cast<u32>(g_frameDelta))))
-        * m_speed;
+    double step = static_cast<double>(static_cast<i64>(static_cast<u64>(g_frameDelta))) * m_speed;
     double* m88d = &m_stepMag;
 
     i32 newX;

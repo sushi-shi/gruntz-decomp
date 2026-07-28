@@ -794,7 +794,10 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
                     }
                 }
                 i32 newMax = mesh->m_nMaxSize + grow;
-                if (newSize > newMax) {
+                // `>=`, not `>`: retail's guard is `cmp <newSize>,<newMax> / jl <keep>`,
+                // so the clamp fires on equal too (MFC's own `if (nNewSize < m_nMaxSize +
+                // nGrowBy) nNewMax = m_nMaxSize + nGrowBy; else nNewMax = nNewSize;`).
+                if (newSize >= newMax) {
                     newMax = newSize;
                 }
                 RezElem40* nd = static_cast<RezElem40*>(RezAlloc(newMax * sizeof(RezElem40)));

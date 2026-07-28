@@ -598,14 +598,9 @@ public:
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();
 
-extern "C" {
-    extern i32 g_lastNow;        // 0x245580 (-> mirror g_killCueClock; also in <Rez/FrameClock.h>)
-    extern "C" i32 g_frameDelta; // 0x245584 (frame delta cap; canonical decl-shape)
-    extern "C" u32 g_frameTime;  // 0x245588 (the running game clock)
-    extern "C" i32 g_curPlayer;  // a default cue/message wParam
-    extern "C" u32 g_killCueClock;     // draw-clock mirror
-    extern "C" u32 g_engineFrameDelta; // draw-delta mirror
-}
+#include <Rez/FrameClock.h> // the frame-clock band (g_frameDelta u32 / g_lastNow /
+                            // g_frameTime / g_killCueClock / g_engineFrameDelta)
+extern "C" i32 g_curPlayer; // a default cue/message wParam
 
 // The channel-slot pool helpers (defs in Play.cpp, C++ linkage - the old
 // consumer-side `extern "C"` decls were wrong about the defs' linkage).

@@ -1429,11 +1429,12 @@ i32 CDDrawChildGroup::PruneOrphans() {
         CWwdGameObject* val = 0;
         MapGetNext(m_map48, pos, key, val);
         if (val != 0) {
+            // ONE `||` condition, not a re-zero of `found` in the miss arm: retail's
+            // `test eax,eax / je <the remove block>` is the short-circuit's first arm,
+            // then `mov eax,[found] / cmp eax,esi / jne <keep>`. Our re-zero made cl
+            // compare the slot against itself (`mov [esp+14],esi / cmp [esp+14],esi`).
             void* found = 0;
-            if (!m_map2c.Lookup(WwdKey(val), found)) {
-                found = 0;
-            }
-            if (found == 0) {
+            if (m_map2c.Lookup(WwdKey(val), found) == 0 || found == 0) {
                 m_map48.RemoveKey(WwdKey(val));
                 if (val != 0) {
                     delete val;

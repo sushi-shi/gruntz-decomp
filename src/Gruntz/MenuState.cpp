@@ -285,7 +285,7 @@ tail:
     // PROVEN by xref: retail's Render (0xa0750) calls CChatBox::Step(u32) at
     // 0x182c70, not the i32 overload at 0x182ed0 - g_frameDelta is declared i32,
     // so the call has to say which overload it means (assert_relocs WRONG-ref).
-    m_1b4->Step(static_cast<u32>(g_frameDelta));
+    m_1b4->Step(g_frameDelta);
     m_1b4->Pre();
     BuildVersionString(g_versionRect); // 0xa0d80 (the fake DrawVersion alias folded away)
     m_1b4->Post();

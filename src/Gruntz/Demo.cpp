@@ -108,7 +108,7 @@ i32 CDemo::Render() {
             break;
         }
     }
-    if (static_cast<u32>(g_frameDelta) >= static_cast<u32>(m_520)) {
+    if (g_frameDelta >= static_cast<u32>(m_520)) {
         m_520 = 0;
     } else {
         m_520 -= g_frameDelta;

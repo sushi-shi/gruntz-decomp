@@ -20,7 +20,7 @@ int CSpotLight::Update() {
         double c = cos(m_90);
         double s = sin(m_90);
         // hoist the m_90 advance so cl schedules the g_frameDelta term early (as retail)
-        double newAngle = static_cast<double>(static_cast<u32>(g_frameDelta)) * m_58 + m_90;
+        double newAngle = static_cast<double>(g_frameDelta) * m_58 + m_90;
         m_60 = -(m_88 * s + m_80 * c);
         m_68 = m_80 * s - m_88 * c;
         if (m_focus) {

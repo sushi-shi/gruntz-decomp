@@ -922,7 +922,7 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
     }
 
     // retail: cmp frameDelta, countdownMs; jb subtract (frameDelta as the left operand).
-    if (static_cast<u32>(g_frameDelta) >= static_cast<u32>(m_countdownMs)) {
+    if (g_frameDelta >= static_cast<u32>(m_countdownMs)) {
         m_countdownMs = 0;
     } else {
         m_countdownMs = m_countdownMs - g_frameDelta;
