@@ -101,6 +101,77 @@ class CDDSurface;
 // element, then feeds the result's +0x10/+0x14 to SetTileSize as width/height -
 // i.e. CImage::m_width/m_height, exactly like CDDrawWorkerHost::SetTileSizeFromImageSet.)
 
+// @early-stop
+// RE-TESTED 2026-07-13: the recorded "non-ctor factory-stamp wall" is STALE. It
+// described a manual `*(void**)obj = &g_wwdObjVtbl` re-stamp pair - and there is no
+// such stamp in this body any more (they were dropped in the all-vtables-real batch;
+// only the three "vptr install dropped" comments remain). Nothing here is parked on a
+// vtable model at all. What IS left is ordinary residue of a 2054-byte factory whose
+// two object ctors (0x15b390 / 0x156cb0) are unmatched engine code: the /GX frame over
+// four destructible CString temps + the reloc-masked ctor/Load/Apply* call chain.
+// Logic byte-faithful; deferred to the final sweep on size, not on a model wall.
+// 2026-07-27: "logic byte-faithful" was NOT true at the slot-10 build call - it passed
+// (logicLen, id, strCursor, (CObject*)id) where retail passes (m_x, m_y, m_z, the
+// worker-cache Lookup result), and it let an EMPTY image-set name fall through into
+// Setup instead of bailing. Both corrected below with the retail frame-slot proof;
+// measured 67.53% -> 73.38% on that fix alone. The rest of the residue stands.
+// The serialized plane-object record: a fixed 0x11c header of dwords followed by the
+// four length-prefixed strings INLINE. ReadPlaneObjects is the reader and the stream
+// cursor advances by the byte count it returns, which is the layout.
+struct PlaneObjectRecord {
+    i32 m_id;          // +0x00
+    u32 m_nameLen;     // +0x04
+    u32 m_logicLen;    // +0x08
+    u32 m_imageSetLen; // +0x0c
+    u32 m_soundLen;    // +0x10
+    i32 m_x;           // +0x14
+    i32 m_y;           // +0x18
+    i32 m_z;           // +0x1c
+    i32 m_gridIndex;   // +0x20
+    i32 m_addFlags;    // +0x24
+    // +0x28..+0x118 - RECOVERED 2026-07-27 from 0x162af0, and deliberately still an
+    // ARRAY. It is a strictly SEQUENTIAL dword stream: retail walks it with one cursor
+    // (`mov reg,[ebp]; add ebp,4; mov [dst],reg`), which is what the `const i32* p =
+    // src->m_tail; *p++` reader below reproduces. Naming the 58 slots individually would
+    // turn those into indexed member reads and change that codegen - the same reason the
+    // CTileImageSet::Parse cursors keep `*p++`.
+    //
+    // The slot->destination map, in cursor order, with `obj` = the CWwdGameObjectA and
+    // `worker` = its m_7c AnimWorkerObj (every `worker` offset here is independently
+    // marked "(serialized)" in AnimWorkerObj.h, and the three obj RECTs arrive as whole
+    // L/T/R/B runs, which is the corroboration that this ordering is right):
+    //   +0x28 spawn arg (kept in a local)      +0x2c obj+0x40        +0x30 worker+0x28
+    //   +0x34..+0x48 -> obj m_114/m_118/m_11c/m_120/m_124/m_placeMode
+    //   +0x4c..+0x58 -> obj->m_extent L/T/R/B  +0x5c..+0x68 -> obj->m_area L/T/R/B
+    //   +0x6c..+0x78 -> obj->m_switchRect L/T/R/B
+    //   +0x7c..+0x88 -> obj +0x64/+0x68/+0x6c/+0x70
+    //   +0x8c..+0x98 -> worker->m_switchRectA  +0x9c..+0xa8 -> worker->m_switchRectB
+    //   +0xac..+0xc8 -> worker m_64/m_68/m_6c/m_70/m_74/m_78/m_7c/m_80
+    //   +0xcc worker+0x2c, then +0xd0 -> worker+0x34 and +0xd4 -> worker+0x30 (retail
+    //         stores 0x34 BEFORE 0x30 - the record order is still sequential)
+    //   +0xd8 worker+0x38   +0xdc/+0xe0 -> obj->m_164/m_168
+    //   +0xe4/+0xe8 -> worker->m_44/m_48   +0xec..+0xf8 -> worker m_b8/+0xbc/m_c8/m_cc
+    //   +0xfc/+0x100 -> obj->m_12c/m_130   +0x104/+0x108 -> obj +0xe8/+0xec
+    //   +0x10c -> obj+0xfc, stored ONLY when > 0 (the cursor stops here)
+    //   +0x110..+0x118 - three dwords this reader never touches.
+    i32 m_tail[(0x11c - 0x28) / 4]; // +0x28  the serialized per-object field stream
+    char m_strings[1];              // +0x11c  the four length-prefixed strings, inline
+};
+SIZE_UNKNOWN(); // variable length: the four inline length-prefixed strings trail it
+
+// The tile-descriptions table inside the WWD image: a packed on-disk record whose
+// count sits at +0x08 and whose variable-stride descriptors begin at +0x20 (each
+// advanced by CTileImageSet::GetStride). Typing it turns the old *(u32*)(rec + 8)
+// offset-cast into a plain member read; only the file-base cast remains, and that
+// one is byte-forced by the format (the table is located by a runtime offset).
+struct WwdTileDescTable {
+    char m_00[0x8];
+    u32 m_count; // +0x08  descriptor count (re-read from the record each iteration)
+    char m_0c[0x20 - 0xc];
+    char m_descriptors[1]; // +0x20  first descriptor
+};
+SIZE_UNKNOWN();
+
 struct CPlaneDrawCtx {
     u8 pad_0[0x2c];
     CDDSurface* m_surface; // +0x2c  the blit target surface

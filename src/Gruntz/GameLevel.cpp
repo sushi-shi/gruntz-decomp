@@ -83,19 +83,6 @@ CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 a2, i32 a3) {
     m_rectC.h = 576;
 }
 
-// The tile-descriptions table inside the WWD image: a packed on-disk record whose
-// count sits at +0x08 and whose variable-stride descriptors begin at +0x20 (each
-// advanced by CTileImageSet::GetStride). Typing it turns the old *(u32*)(rec + 8)
-// offset-cast into a plain member read; only the file-base cast remains, and that
-// one is byte-forced by the format (the table is located by a runtime offset).
-struct WwdTileDescTable {
-    char m_00[0x8];
-    u32 m_count; // +0x08  descriptor count (re-read from the record each iteration)
-    char m_0c[0x20 - 0xc];
-    char m_descriptors[1]; // +0x20  first descriptor
-};
-SIZE_UNKNOWN();
-
 RVA(0x0015d280, 0x279)
 i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     ReleaseChildren(); // vtable +0x44 (slot 17), the pre-load reset

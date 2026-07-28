@@ -30,19 +30,19 @@ const AFX_MSGMAP_ENTRY CBattlezDlg::_messageEntries[] = {
     // those SDK macros take the handler's address UNQUALIFIED (`&OnMeasureItem`), which
     // only cl accepts - clang (the label pass) requires `&Class::Member`. MFC erases
     // every handler to AFX_PMSG, so the pointer-to-member cast is the SDK's, not ours.
-    // API-forced (== ON_WM_MEASUREITEM())
     {WM_MEASUREITEM,
      0,
      0,
      0,
      AfxSig_vOWNER,
+     // API-forced (== ON_WM_MEASUREITEM()): AFX_MSGMAP_ENTRY::pfn is AFX_PMSG
      reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnMeasureItem)}, // 0x16570
-    // API-forced (== ON_WM_DRAWITEM())
     {WM_DRAWITEM,
      0,
      0,
      0,
      AfxSig_vOWNER,
+     // API-forced (== ON_WM_DRAWITEM()): AFX_MSGMAP_ENTRY::pfn is AFX_PMSG
      reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnDrawItem)},   // 0x165a0
     ON_BN_CLICKED(0x501, CBattlezDlg::ApplyColorSlot0)        // 0x16cd0
     ON_BN_CLICKED(0x503, CBattlezDlg::ApplyColorSlot1)        // 0x16dc0
