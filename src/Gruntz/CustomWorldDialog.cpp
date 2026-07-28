@@ -4,10 +4,11 @@
 #include <afxwin.h>            // real MFC CCmdTarget::Begin/EndWaitCursor (via m_pCurrentWinApp)
 #include <Gruntz/GameRegMfcPtr.h>
 
-#include <Gruntz/CustomWorldInfoDlg.h> // WwdWorldHolder/WwdLevelInfoSrc (IsValidWwd receiver)
+#include <Gruntz/CustomWorldInfoDlg.h> // the TU's dialog-proc / helper extern surface
 #include <Gruntz/GameRegistry.h> // the canonical manager singleton view (m_gameWnd/m_world/m_owner)
 #include <Gruntz/GruntzMgr.h>    // the MFC view of the same singleton (IsBattlezMapFile)
-#include <Wwd/WwdFile.h>         // WwdHeader + WwdFile statics + WwdFile_CheckHeader
+#include <Gruntz/GameLevel.h> // CGameLevel::ReadWwdHeaderName / IsValidWwd (the m_level receiver)
+#include <Wwd/WwdFile.h>      // WwdHeader + the WwdFile statics
 #include <Ints.h>
 #include <rva.h>
 
@@ -17,7 +18,7 @@
 #include <stdlib.h>                   // atoi
 #include <string.h>                   // strstr / inline strcpy-strlen
 #include <Gruntz/CustomWorldDialog.h> // own exported globals (ex Globals.h)
-#include <Net/NetLobby.h> // NetLobby::g_curDlg
+#include <Net/NetLobby.h>             // NetLobby::g_curDlg
 
 // LoadCustomWorldInfo's DialogBoxParamA takes CustomWorldInfoDlgProc's ADDRESS, and the
 // retail /INCREMENTAL link routes it through the proc's ILT jmp-thunk 0x305d (jmp 0x3b600),
@@ -42,9 +43,7 @@ HINSTANCE g_customWorldInst = 0; // 0x62c270  launcher instance exchange
 DATA(0x0022c274)
 HWND g_customLevelList = 0; // 0x62c274  the picker's level listbox (id 0x3fc)
 
-namespace m4 {
-}
-
+namespace m4 {}
 
 // The three file-scope CStrings each emit wrapper/constructor/registrar/
 // destructor helpers. The _$E<n> suffixes are unique placeholders; the
@@ -278,18 +277,19 @@ i32 WwdFile::ValidateMainBlock(CString name) {
     if (name.GetLength() == 0) {
         return -1;
     }
-    // The world slot's +0x24 IS WwdWorldHolder::m_24 (the level-info source, WwdLevelInfoSrc*
-    // - the same +0x24 FillLevelInfoDialog drives IsValidWwd on); ValidateMainBlock passes
-    // that object pointer to CheckHeader's `const char* name` slot (retail's own pun).
-    if (g_gameReg->m_world->m_level == 0) {
+    // The world slot's +0x24 is the level (CDDrawSurfaceMgr::m_level) - the SAME
+    // receiver FillLevelInfoDialog drives IsValidWwd on. It is not just a null guard:
+    // retail leaves it in ECX as the __thiscall receiver of the sibling reader below
+    // (0x3b4de `mov ecx,[edx+0x24]`, then 0x3b515 pushes only the two stack args), so
+    // the header temp gets edx. Modelling 0x160660 as a free __stdcall taking the level
+    // POINTER as its `const char* name` (excused as "retail's own pun") was the bug -
+    // that callee CFile::Open()s the arg, so it can only ever be the file name.
+    CGameLevel* lvl = g_gameReg->m_world->m_level;
+    if (lvl == 0) {
         return -1;
     }
 
-    // ValidateMainBlock passes the LEVEL OBJECT pointer into CheckHeader's
-    // `const char* name` slot: the pun is retail's own, kept spelled on the typed
-    // member rather than hidden behind a second overload.
-    if (WwdFile_CheckHeader(reinterpret_cast<const char*>(g_gameReg->m_world->m_level), header)
-        == 0) {
+    if (!lvl->ReadWwdHeaderName(name, header)) {
         return -1;
     }
 

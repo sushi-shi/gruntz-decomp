@@ -1754,13 +1754,13 @@ i32 CGameLevel::IsValidWwd(const char* name, void* headerBuf) {
 }
 
 RVA(0x00160660, 0x12b)
-i32 __stdcall WwdFile_CheckHeader(const char* name, void* headerOut) {
+i32 CGameLevel::ReadWwdHeaderName(const char* name, void* nameOut) {
     WwdHeader header;
 
     if (name == 0) {
         return 0;
     }
-    if (headerOut == 0) {
+    if (nameOut == 0) {
         return 0;
     }
 
@@ -1778,7 +1778,7 @@ i32 __stdcall WwdFile_CheckHeader(const char* name, void* headerOut) {
         return 0;
     }
 
-    strcpy(static_cast<char*>(headerOut), header.levelName); // inline strlen + rep movs
+    strcpy(static_cast<char*>(nameOut), header.levelName); // inline strlen + rep movs
     return 1;
 }
 

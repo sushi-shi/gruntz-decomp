@@ -8,7 +8,6 @@
 #include <ddraw.h>                        // IDirectDrawSurface (UpdateOverlay passthrough)
 #include <string.h>                       // memset (inlined to rep stos at /O2 /Oi)
 
-
 RVA(0x00148840, 0x47)
 i32 CFileImageSurface::LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5, i32 key) {
     // Direct (non-virtual) dispatch to the slot-3 body: qualified call suppresses the
@@ -30,8 +29,13 @@ i32 CFileImageSurface::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 
     i32 c = ctrl | 0x40;
     switch (type) {
         case FMT_PID:
-            if (!DecodePcxData(static_cast<CDDrawPtrCollections*>(surf), static_cast<PidHeader*>(buf),
-                               size, c, trans)) {
+            if (!DecodePcxData(
+                    static_cast<CDDrawPtrCollections*>(surf),
+                    static_cast<PidHeader*>(buf),
+                    size,
+                    c,
+                    trans
+                )) {
                 return 0;
             }
             break;
@@ -97,8 +101,7 @@ i32 CFileImageSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 fla
             return 0;
         }
     } else if (ext != 0 && _strcmpi(ext, ".PID") == 0) {
-        if (DecodePcxEx(info, path, flags, key)
-            == 0) {
+        if (DecodePcxEx(info, path, flags, key) == 0) {
             return 0;
         }
         doFill = 0;
@@ -182,10 +185,15 @@ i32 CPoolItemAB8::Init1(CDDrawPtrCollections* h, const DDSURFACEDESC* desc) {
 // rather than a GetSurfaceDesc. The "up" shift is the channel's lowest set-bit
 // index; the "down" loss is 8 - popcount. Then re-applies (Boundary_13f740).
 // ---------------------------------------------------------------------------
-// @early-stop
-// entropy tail (~99.7%, permuter-maximized): structurally identical to the EXACT
-// ComputeColorMasks; residual is one 8-count register/materialization slot in the
-// last channel's store that cl schedules a hair differently. Not source-steerable.
+// All three channel blocks use the SAME two spellings, and both are load-bearing
+// (the old 99.70% "entropy tail" was the R block using the other one of each):
+//   - the per-channel reseed is `count = 0; m = <mask>; shift = -1;` in THAT order,
+//     which is what interleaves retail's `xor edi,edi` / mask load / `or edx,-1`
+//     across the previous channel's Down store;
+//   - the result pair is written DOWN-then-UP in the source, which is what makes cl
+//     materialize `mov eax,8` ahead of the Up store and keep the 8-count in eax
+//     (writing Up first recycles the shift register for it instead).
+// Now EXACT.
 RVA(0x00148b80, 0xb5)
 i32 CPoolItemAB8::InstallColorFormat() {
     u32 m = m_rMask;
@@ -201,12 +209,12 @@ i32 CPoolItemAB8::InstallColorFormat() {
         }
         m >>= 1;
     }
-    g_rUp = shift;
     g_rDown = 8 - count;
+    g_rUp = shift;
 
-    shift = -1;
-    m = m_gMask;
     count = 0;
+    m = m_gMask;
+    shift = -1;
     for (i32 b2 = 0; b2 < 0x20; b2++) {
         if ((1 & m) == 1) {
             if (shift == -1) {

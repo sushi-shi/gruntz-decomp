@@ -349,6 +349,13 @@ i32 LogicDispatchB(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CBrickz)}
 RVA(0x0010d510, 0xf1)
 i32 CreateWarpStonePad(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CWarpStonePad)}
 
+// @early-stop
+// eh-ctor-vptr-restamp-position wall, all-inline-base variant (99.65%) - the shared cause of the
+// whole CUserLogic+CWapX leaf-ctor family; mechanism + the full list of spellings that do NOT move
+// it is on CWayPoint::CWayPoint (src/Gruntz/WayPoint.cpp) and in
+// docs/patterns/eh-ctor-vptr-restamp-position.md. One adjacent transposition: cl hoists the body's
+// `mov eax,[esi+0x38]` one slot over the leaf vptr stamp; everything else (incl. the folded
+// `|= 3`, the g_gameReg->m_134 arm and the "A" re-latch) is byte-identical.
 RVA(0x0010d650, 0x16c)
 CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;

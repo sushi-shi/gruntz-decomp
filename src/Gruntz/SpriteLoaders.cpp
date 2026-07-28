@@ -269,6 +269,11 @@ void CTimer::SetTime(i32 a, i32 b) {
     m_currentMs = static_cast<i32>(((av * 60 + bv) * 1000));
 }
 
+// The seconds-already-on-the-clock quotient is a NAMED local declared AHEAD of
+// `carry`: that declaration order is what picks retail's `lea eax,[edx+esi]` SIB
+// roles and its `sub esi,edx; sub esi,ebp` chain order (as an unnamed CSE temp, or
+// declared after `carry`, cl emits both the other way round - no expression-order
+// spelling moves it). Now EXACT.
 RVA(0x0009c0e0, 0xa3)
 void CTimer::AddTime(i32 seconds, i32 minutes) {
     if (!m_running) {
@@ -283,14 +288,16 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
         secs = 0x63;
     }
     u32 cur = static_cast<u32>(m_currentMs);
+    u32 onClock;
     // carry = 1 when (the minute already on the clock + new minutes) overflows 0x3b.
     u32 carry = 0;
     if (cur % 60000 / 1000 + mins > 0x3b) {
         carry = 1;
     }
     // clamp seconds against the second already on the clock (cur / 60000).
-    if (cur / 60000 + secs > 0x63) {
-        secs = 0x63 - cur / 60000 - carry;
+    onClock = cur / 60000;
+    if (onClock + secs > 0x63) {
+        secs = 0x63 - onClock - carry;
     }
     u32 total = (mins + secs * 60) * 1000;
     *reinterpret_cast<u64*>(&m_accumLo) += total;
