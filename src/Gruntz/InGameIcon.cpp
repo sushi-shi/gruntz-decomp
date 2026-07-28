@@ -912,6 +912,13 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
 // (measured: read block 97.4->96.3 alone, clear block -1.2, the m_188 publish block -7.0,
 // all three -8.2), which is exactly why CMapMgr carries the m_rows/m_rowInts union:
 // retail walks this band both ways and this function is on the int-walk side.
+// Second real difference, found by jcc_sieve TOPOLOGY 2026-07-28 and worth ONE byte: our
+// `&&` merges both false arms onto the end block, where retail CHAINS them - its first
+// `je` lands on the second `test eax,eax` and lets the already-zero call result serve as
+// the null. All three spellings that reproduce that chain cost more than the byte they buy:
+// `CGameObject* hit = 0; if (Lookup(..)) hit = ..;` promotes hit to ebp (92.83), and both
+// the explicit if/else and the ternary make cl emit a branchless `neg eax`/sbb select
+// (93.26 / 93.97). Measured 2026-07-28; the `&&` stays.
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
