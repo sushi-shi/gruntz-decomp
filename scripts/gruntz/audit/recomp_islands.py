@@ -35,12 +35,15 @@ immediately. So the ranking here is by HARNESS COST, not by code size:
 
   cheap   only scalars, or pointers to small PODs (RECT, POINT, PALETTEENTRY, buffers)
   costly  one or more pointers to engine classes (PAV.../PAU... of a C-prefixed type)
-  + `this` counts as an argument for a __thiscall member. KNOWN UNDER-COUNT: RunDecode1
-    is a member whose body never dereferences `this`, which is exactly why it was
-    harnessable - and this tool would still charge it 1 and hide it. Detecting that needs
-    a disasm pass (does the body read off the this-register before overwriting it?).
-    `CFaderShape::RenderTile(int,int)` at 59% is the obvious suspect. So the cost-0 set
-    below is a LOWER BOUND on what is reachable, not the whole of it.
+  + `this` is MEASURED, not assumed. A __thiscall member whose body never dereferences
+    the incoming ecx needs no object fabricated - that is exactly why RunDecode1 was
+    harnessable - so a disasm pass decides it per function and the listing says
+    "no `this`" or "needs `this`". 311 of the 693 self-contained members turn out never
+    to touch it. Two cases the pass has to get right, and did not at first: an /Od-ish
+    prologue spilling `this` into a frame slot it never reads back (RunDecode1), and an
+    intra-function `jmp`, which forwards nothing. `CFaderShape::RenderTile` was the
+    standing suspect and is NOT one of them - it moves ecx to edx and then reads
+    0x58(%edx), so it wants a real CFaderShape.
 
 Sizing the two axes separately is the point. Ranking by code size alone produced a
 61-row "worklist" of which most were unreachable: `CMapMgr::UpdateDiagonals` has zero
@@ -91,22 +94,147 @@ PARAM_CLASS = re.compile(r"PA[VU](\w+)@@")
 # and is a fabricable stub. Ranking by parameter type was as wrong as ranking by code size.
 # %esp/%ebp displacements are stack frame, not object fields, so they are excluded.
 FIELD = re.compile(r"(?:0x([0-9a-f]+))?\((%e(?!sp|bp)[a-z][a-z])\)")
-# ?Name@Cls@@ + access/convention. S* = static (no `this`), everything else with A/E is
-# a member and `this` is an implicit argument.
-STATIC_MEMBER = re.compile(r"@@S[A-Z]")
+# ?Name@Cls@@ + access/convention. In the MSVC scheme the char after `@@` is the
+# function class (Q public, I protected, A private, S static, ...), then a CV
+# modifier, then the CALLING CONVENTION - `E` is __thiscall. Free functions are
+# `@@Y<conv>`, so excluding a leading Y is what separates a member from them.
+THISCALL_MEMBER = re.compile(r"@@[^Y][A-Z]E")
+
+# ---------------------------------------------------------------------------
+# Does the body actually USE `this`?
+#
+# A __thiscall member whose body never dereferences the incoming ecx is exactly
+# as harnessable as a free function - that is why CDDSurface::RunDecode1 could
+# be executed at all. Charging every member for a fabricated object was the
+# audit's own known under-count; this is the pass that removes it.
+#
+# llvm-objdump prints AT&T, so the DESTINATION is the last operand. The rule:
+#
+#   * `this` starts in ecx, and a plain reg->reg move propagates the taint
+#     (retail almost always parks it in esi/edi immediately);
+#   * any memory operand through a tainted register, or a `push` of one, is a
+#     USE - stop, the function needs a real object;
+#   * a tainted register written by a pure-write instruction (mov/lea/pop/...)
+#     is KILLED - `this` never mattered;
+#   * a read-modify-write (add/sub/and/...) of a tainted register is a USE;
+#   * a CALL, or a tail `jmp` OUT of the function, while any taint is live is
+#     conservatively a USE, since ecx may be forwarded. An intra-function branch
+#     is not - llvm-objdump annotates the target `<sym+0x..>`, which is how the
+#     two are told apart. Getting that wrong hid RunDecode1 behind its own
+#     `jmp` to the epilogue.
+#
+# One refinement is not optional, because it is the motivating case. An /Od-ish
+# prologue spills `this` to the frame (`movl %ecx, -0x24(%ebp)`) whether or not
+# it is ever read back - CDDSurface::RunDecode1 does exactly that and then never
+# touches the slot again, which is why it was harnessable. A naive reader counts
+# that store as a use and hides the one function we already proved reachable. So
+# a spill to an EBP-relative slot taints the SLOT instead, and only a later read
+# of it counts. ESP-relative spills are still treated as uses: the displacement
+# moves with every push, so tracking them here would not be sound.
+#
+# Deliberately conservative otherwise: it can say "uses this" when the value is
+# dead, and it will not say "unused" when it is live. `push %ecx` is counted as
+# a use even though MSVC also emits it purely to reserve four bytes of stack,
+# because the two are not distinguishable from one instruction.
+PURE_WRITE = ("mov", "movl", "movb", "movw", "movzbl", "movzwl", "movsbl", "movswl",
+              "lea", "leal", "pop", "popl", "xchg")
+REG_IN_MEM = re.compile(r"\(%(e[a-z][a-z])[,)]")
+REG_BARE = re.compile(r"^%(e[a-z][a-z])$")
+REGMOVE = re.compile(r"^mov[lbw]?\s+%(e[a-z][a-z]),\s*%(e[a-z][a-z])$")
+EBP_SLOT = re.compile(r"^-?0x[0-9a-f]+\(%ebp\)$")
+SELFZERO = re.compile(r"^(?:xor|sub)[lbw]?\s+%(e[a-z][a-z]),\s*%\1$")
+MNEMONIC = re.compile(r"^\s*[0-9a-f]+:\s+(\S+)\s*(.*)$")
 
 
-def harness_cost(name, fields):
+class ThisTracker(object):
+    """Per-function `this` liveness. Feed it instruction lines in address order."""
+
+    def __init__(self, sym=""):
+        self.sym = sym
+        self.taint = set(["ecx"])
+        self.slots = set()  # ebp-relative frame slots holding a dead copy of `this`
+        self.uses = False
+        self.done = False
+
+    def feed(self, line):
+        if self.done:
+            return
+        m = MNEMONIC.match(line.rstrip())
+        if not m:
+            return
+        mnem, ops = m.group(1), m.group(2).strip()
+        internal = ("<%s+" % self.sym) in ops or ("<%s>" % self.sym) in ops
+        # drop the `<sym+0x..>` branch annotation llvm-objdump appends
+        ops = ops.split("<")[0].strip()
+
+        if mnem.startswith("j") and internal:
+            return  # intra-function control flow forwards nothing
+        if mnem.startswith(("call", "jmp")) and (self.taint or self.slots):
+            self.uses = self.done = True
+            return
+
+        parts = [p.strip() for p in ops.split(",")] if ops else []
+        # A spill of `this` into a stable frame slot is not yet a use - only a
+        # later read of that slot is. See the note above.
+        if len(parts) == 2 and mnem in ("mov", "movl"):
+            src, dst = parts
+            sm = REG_BARE.match(src)
+            if sm and sm.group(1) in self.taint and EBP_SLOT.match(dst):
+                self.slots.add(dst)
+                return
+        for p in parts[:-1] if len(parts) > 1 else parts:
+            if p in self.slots:
+                self.uses = self.done = True
+                return
+
+        for r in REG_IN_MEM.findall(ops):
+            if r in self.taint:
+                self.uses = self.done = True
+                return
+        if mnem.startswith("push"):
+            if ops.strip("%") in self.taint:
+                self.uses = self.done = True
+            return
+
+        mm = REGMOVE.match(mnem + " " + ops)
+        if mm and mm.group(1) in self.taint:
+            self.taint.add(mm.group(2))
+            return
+        if SELFZERO.match(mnem + " " + ops):
+            self.taint.discard(SELFZERO.match(mnem + " " + ops).group(1))
+        else:
+            for i, p in enumerate(parts):
+                bare = REG_BARE.match(p)
+                if not bare or bare.group(1) not in self.taint:
+                    continue
+                last = (i == len(parts) - 1)
+                if last and mnem in PURE_WRITE:
+                    self.taint.discard(bare.group(1))
+                else:
+                    self.uses = self.done = True
+                    return
+        if not self.taint and not self.slots:
+            self.done = True  # `this` died untouched
+
+    def verdict(self):
+        return self.uses
+
+
+def harness_cost(name, fields, needs_this=False):
     """-> (cost, why). `fields` is the measured count of distinct struct offsets the body
     dereferences - the number of members a harness must fabricate. That is the honest
     cost; the declared parameter types are not."""
     classes = sorted({c for c in PARAM_CLASS.findall(name) if c not in POD})
+    member = bool(THISCALL_MEMBER.search(name))
+    tag = ""
+    if member:
+        tag = ", needs `this`" if needs_this else ", no `this`"
     if not fields:
-        return 0, "touches no object fields"
+        return 0, "touches no object fields" + tag
     why = "%d field(s)" % fields
     if classes:
         why += " off " + ", ".join(c + "*" for c in classes[:2])
-    return fields, why
+    return fields, why + tag
 CALL = re.compile(r"^\s+[0-9a-f]+:\s+calll?\s")
 INSN = re.compile(r"^\s+([0-9a-f]+):\s+\S")
 
@@ -133,12 +261,16 @@ def classify_obj(obj):
     rows, cur, calls, selfcalls, first, last = [], None, 0, 0, None, None
     dat = imp = other = 0
     fields = set()
+    tracker = None
 
     def flush():
         if cur is None:
             return
         size = (last - first) if (first is not None and last is not None) else 0
         nfields = len(fields)
+        # A member that never touches the incoming ecx needs no object at all.
+        needs_this = bool(THISCALL_MEMBER.search(cur)) and (
+            tracker is None or tracker.verdict())
         if imp:
             kind = "IMPORTS"
         elif other:
@@ -153,7 +285,7 @@ def classify_obj(obj):
             kind = "CALLS"
         else:
             kind = "ISLAND"
-        rows.append((cur, size, kind, nfields))
+        rows.append((cur, size, kind, nfields, needs_this))
 
     for line in out.split("\n"):
         m = SYM.match(line)
@@ -162,6 +294,7 @@ def classify_obj(obj):
             cur, calls, selfcalls, first, last = m.group(1), 0, 0, None, None
             dat = imp = other = 0
             fields = set()
+            tracker = ThisTracker(cur) if THISCALL_MEMBER.search(cur) else None
             continue
         if cur is None:
             continue
@@ -175,6 +308,8 @@ def classify_obj(obj):
             else:
                 other += 1
             continue
+        if tracker is not None:
+            tracker.feed(line)
         for mf in FIELD.finditer(line):
             fields.add(int(mf.group(1), 16) if mf.group(1) else 0)
         mi = INSN.match(line)
@@ -204,11 +339,16 @@ def main() -> int:
 
     pct = scores()
     tally, islands = {}, []
+    members = freed = 0
     for obj in sorted(TARGET.glob("*.obj")):
-        for name, size, kind, nf in classify_obj(obj):
+        for name, size, kind, nf, needs_this in classify_obj(obj):
             tally[kind] = tally.get(kind, 0) + 1
             if kind in ("ISLAND", "SELF-CALL", "DATA-ONLY"):
-                cost, why = harness_cost(name, nf)
+                if THISCALL_MEMBER.search(name):
+                    members += 1
+                    if not needs_this:
+                        freed += 1
+                cost, why = harness_cost(name, nf, needs_this)
                 islands.append((cost, -size, size, name, kind, pct.get(name), why))
 
     total = sum(tally.values())
@@ -221,6 +361,8 @@ def main() -> int:
           % (len(islands), len(reach), a.min_size))
     print("  ...of those, %d touch <= %d object field(s), and %d of those are NOT yet "
           "exact - that is the worklist" % (len(cheap), a.max_fields, len(todo)))
+    print("  __thiscall members among the self-contained: %d, of which %d NEVER touch "
+          "`this` and so need no object fabricated at all" % (members, freed))
 
     if not a.summary:
         print("\nOracle candidates - `N field(s)` is how many members a harness must "

@@ -1,0 +1,3 @@
+# Harnesses are built by recomp/harness/build.sh, not committed.
+harness/*.exe
+harness/*.obj
