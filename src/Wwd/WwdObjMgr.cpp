@@ -977,10 +977,15 @@ CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, void* key) {
 // whose +0x04 id == `id`, and whose +0x7c sub-object's +0x10 equals the looked-up
 // object's +0x10.
 // @early-stop
-// 79% - logic/CFG/offsets/vtable-dispatch byte-faithful. Residual is a regalloc/
-// branch-layout wall: retail pins `found` in ebp and the node in eax (twin-copy),
-// allocates the out slot 4 B higher, and lays out the match path as fall-through -
-// same values, same stores (docs/patterns/zero-register-pinning.md).
+// 91.9% - logic/CFG/offsets/vtable-dispatch byte-faithful. The branch-layout half is
+// FIXED (2026-07-28): the scan is a plain `while (pos != 0)` with the miss `return 0`
+// after it - NOT the hoisted-guard `if (pos == 0) return 0; do {...} while (pos);`
+// echo, which makes cl share one miss epilogue and take an unconditional back-edge
+// where retail duplicates the miss and falls into it (82.9 -> 91.9). Residual: the
+// shared out-param zero-init scheduling wall
+// (docs/patterns/outparam-zeroinit-scheduling.md) plus the ebx/ebp coloring of
+// `id` vs `fp` - measured against three decl/assign orders and an inline-the-cast
+// spelling, all identical (docs/patterns/zero-register-pinning.md).
 // The `CChildFinder_15a8c0` placeholder class is GONE: it WAS this manager. Its two fields
 // were CDDrawChildGroup's own - m_parent @+0x0c is m_0c (the CDDrawSurfaceMgr owner, whose
 // +0x14 worker cache holds the name map this looks the key up in, exactly as
@@ -991,18 +996,15 @@ RVA(0x0015a8c0, 0x7d)
 void* CDDrawChildGroup::Find(i32 id, const char* key) {
     CObject* found = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(key, found);
-    POSITION pos = m_list.GetHeadPosition();
-    if (pos == 0) {
-        return 0;
-    }
     AnimWorkerObj* fp = static_cast<AnimWorkerObj*>(found);
-    do {
+    POSITION pos = m_list.GetHeadPosition();
+    while (pos != 0) {
         CGameObject* obj = static_cast<CGameObject*>(m_list.GetNext(pos));
         i32 tag = obj->GetClassId(); // vtable slot 8 (the type tag)
         if (tag == 5 && obj->m_id == id && obj->m_7c->m_notify == fp->m_notify) {
             return obj;
         }
-    } while (pos != 0);
+    }
     return 0;
 }
 

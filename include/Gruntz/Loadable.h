@@ -110,6 +110,18 @@ public:
         m_flags = 0;
         m_ownerCtx = owner;
     }
+    // The (owner, id) INLINE sibling of the above - same three stores, owner first in
+    // the parameter list. The order is observable: cl5 materializes the actual
+    // arguments RIGHT-TO-LEFT even when the callee is inlined, so the rightmost
+    // argument's load is emitted first. AnimWorkerObj's inline (owner, id) ctor -
+    // inlined into EnsureWorker80/88/90 @0x150eb0/0x150f90/0x151070 - loads
+    // `this->m_id` BEFORE `this->m_ownerCtx`, which only happens when `id` is the
+    // rightmost base-ctor argument.
+    CLoadable(class CDDrawSurfaceMgr* owner, i32 id) {
+        m_id = id;
+        m_flags = 0;
+        m_ownerCtx = owner;
+    }
     // The 3-arg INLINE sibling (all three header words). Distinct from the OUT-OF-LINE
     // ??0 at 0x156cb0 both in body (that one schedules m_id / vptr / m_flags / m_ownerCtx)
     // and in argument order, so the two are separate overloads.

@@ -72,10 +72,12 @@ static __inline i32 GridByteSize(i32 height, i32 width) {
 // record class (<Gruntz/ImageSets.h>) cannot even hold a +0xb0 member.]
 
 RVA(0x001615a0, 0x9a)
-CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags) {
-    m_id = field04;
-    m_flags = flags;
-    m_ownerCtx = mapData; // the fused CLoadable ctor stores
+CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags)
+    : CLoadable(field04, flags, mapData) {
+    // The base trio is CLoadable's ctor, NOT three body assignments: retail stores
+    // m_id/m_flags/m_ownerCtx BEFORE the m_frameSets CObArray member ctor, and only a
+    // base/mem-init store can land there (a body store is emitted after every member
+    // ctor). The param loads sit at the very top of the prologue for the same reason.
     // m_frameSets (::CObArray) default-constructed here (0x1b55e9).
     m_tileGrid = 0;
     m_colOffsets = 0;
@@ -387,7 +389,8 @@ RVA(0x00161c90, 0x1e4)
 void CDDrawWorkerHost::RecomputePlaneCoords() {
     CDDrawWorkerHost* p = this;
     u32 flags = p->m_flags;
-    i32 wrapX = flags & 4;
+    i32 wrapX, wrapY;
+    wrapX = flags & 4;
 
     // --- X axis: wrap/clamp scaledX into the tile grid -----------------------
     if (wrapX) {
@@ -412,7 +415,7 @@ void CDDrawWorkerHost::RecomputePlaneCoords() {
     }
 
     // --- Y axis: identical wrap/clamp on scaledY/tilesHigh -------------------
-    i32 wrapY = flags & 8;
+    wrapY = flags & 8;
     if (wrapY) {
         if (p->m_scaledY < 0.0f) {
             do {
@@ -1056,13 +1059,16 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
 //
 // @early-stop
 // 87.9%, logic byte-exact (the int return + `return 0` guard restored retail's
-// inline epilogues, 83.5%->87.9%). Two residuals, both uncontrollable MSVC5
-// scheduling/regalloc: (1) retail SHRINK-WRAPS the callee-save pushes - only
-// ebp/esi before the null guard, edi/ebx after it passes - while this build pushes
-// all four upfront; (2) the mid-point `add` loads m_40-first (A) / m_48-first (B)
-// in retail but this build loads the higher-offset field first regardless of
-// source operand order. Documented prologue/member-load scheduling wall. See
-// docs/patterns/shrink-wrapped-callee-save-push.md.
+// inline epilogues, 83.5%->87.9%). Two residuals: (1) retail SHRINK-WRAPS the
+// callee-save pushes - only ebp/esi before the null guard, edi/ebx after it passes -
+// while this build pushes all four upfront (the positive-gate lever was measured on
+// THESE two and cost 15 points, docs/patterns/positive-gate-enables-shrink-wrap.md);
+// (2) the mid-point `add` loads m_40-first (A) / m_48-first (B) in retail. Measured
+// 2026-07-28: swapping the two `+` operands is canonicalized away (byte-identical
+// both ways, in both functions), and routing the pair through an inlined 2-arg
+// helper - whose args ARE materialized right-to-left - gives 0x48/0x4c-first in
+// BOTH, i.e. it fixes B and cannot fix A. No spelling reaches A's low-offset-first
+// order. See docs/patterns/shrink-wrapped-callee-save-push.md.
 RVA(0x00163300, 0x70)
 i32 CDDrawWorkerHost::CenterScrollA() {
     CWwdSpatialMgr* scroll = m_scroll;
@@ -1191,11 +1197,17 @@ void CDDrawWorkerHost::InitScrollRects() {
 // format the diagnostic ("Plane %s: Bad map image set value" / "...tile value")
 // into it. Returns 1.
 //
+// The diagnostics APPEND (strcat), they do not overwrite: retail's inlined copy scans
+// the DESTINATION with a second `or ecx,-1 / repnz scasb / dec edi` before the
+// `rep movs`, which is cl5's inline strcat end-of-dest search - a plain strcpy emits
+// only the source scan. (That 11-byte hole was filed as "inlined-sprintf/strcpy
+// register scheduling"; fixing it took 92.5 -> 97.0.)
 // @early-stop
-// 92.5%, logic byte-exact (the double loop, both sentinels, the frame/tile range
-// checks, both sprintf+strcpy error paths, and the result/dead-flag stack pair all
-// match retail). Residual is the MSVC5 inlined-sprintf/strcpy register scheduling
-// across the two error sites - a documented entropy/scheduling tail.
+// 97.0%: one register-coloring residue left. Retail parks the tile handle in ecx (the
+// dead m_colOffsets base) and handle>>16 in eax, paying TWO `mov eax,ecx` copies; cl
+// parks the handle in eax (the dead m_tileGrid base, which dies one instruction later)
+// and needs only one copy - a strictly cheaper colouring, so no source spelling asks
+// for retail's. Hoisting handle>>16 into its own local changes nothing.
 RVA(0x00163510, 0x156)
 i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
     if (IsLoaded() == 0) { // the class's own vtable slot 5 (+0x14, 0x163a90)
@@ -1210,7 +1222,8 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
             if (handle == -1 || static_cast<u32>(handle) == 0xeeeeeeee) {
                 continue;
             }
-            CDDrawWorker* frame = FrameSetAt(static_cast<u32>(handle) >> 16);
+            u32 setIdx = static_cast<u32>(handle) >> 16;
+            CDDrawWorker* frame = FrameSetAt(setIdx);
             if (frame == 0) {
                 result = 0;
                 if (errOut != 0) {
@@ -1218,11 +1231,11 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
                         msg,
                         "Plane %s: Bad map image set value (%i) at %i,%i\n",
                         m_name,
-                        static_cast<u32>(handle) >> 16,
+                        setIdx,
                         col,
                         row
                     );
-                    strcpy(errOut, msg);
+                    strcat(errOut, msg);
                 }
                 continue;
             }
@@ -1239,7 +1252,7 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
                         col,
                         row
                     );
-                    strcpy(errOut, msg);
+                    strcat(errOut, msg);
                 }
             }
         }
@@ -1300,34 +1313,53 @@ void CDDrawWorkerHost::ResolveColorKey() {
     );
 }
 
+// The inactive arms are spelled `return 1`, not `break`: cl5 de-duplicates identical
+// EMPTY (`break`) arms BEFORE it decides the switch lowering, so 6 case labels with 4
+// empty ones collapse to a 3-target subtract ladder. Spelling every arm with its own
+// `return 1` keeps six distinct arms alive through the decision, cl emits retail's
+// dense `add eax,-3 / cmp eax,5 / ja / jmp [eax*4+table]` (the table's 6 entries do
+// share 3 targets - the merge happens after), and the `s` null test moves off eax so
+// the `xor eax,eax` return-0 appears. The two ACTIVE arms must still `break` (an
+// explicit `return 1` there makes cl fold the guard into `return Save(s) != 0`, i.e.
+// `neg/sbb/neg`, instead of retail's `test eax,eax / jne <shared return 1>`).
+// See docs/patterns/switch-empty-arms-dedup-before-jumptable.md.
 // @early-stop
-// jump-table-shape wall (~84%): retail lowers the kind switch (cases 3..8, only 4 and 7
-// active) to a dense `jmp [eax*4+table]`; MSVC here folds the 4 default-equal cases and
-// emits a compare ladder. Forcing 6 explicit cases still merges them (78%); the 2-case
-// ladder is closest. Logic complete.
+// BYTE-EXACT, scored 68% by a tooling artifact - verified with `llvm-objdump -dr` on
+// build/objdiff/base/levelplane.obj against retail 0x163710..0x163752: all 66 bytes
+// agree (only the jump-table DIR32 and the two rel32 call targets are reloc-masked).
+// The score is the delinker/objdiff jump-table symbol split: cl emits the arms under
+// their own `$L<n>` label symbols (the jump table needs DIR32 relocs to them), so
+// objdiff pairs only the first 0x1e bytes of our symbol against retail's whole 0x42.
+// Same artifact as CGameObject::Play @0x151150 (scored 0.00%). MAX 79.27 was the
+// WRONG (compare-ladder) shape; do not revert to it.
 RVA(0x00163710, 0x42)
 i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* s, i32 kind, i32, i32) {
     if (!s) {
         return 0;
     }
     switch (kind) {
+        case 3:
+            return 1;
         case 4:
             if (!Save(s)) {
                 return 0;
             }
             break;
+        case 5:
+            return 1;
+        case 6:
+            return 1;
         case 7:
             if (!Load(s)) {
                 return 0;
             }
             break;
+        case 8:
+            return 1;
     }
     return 1;
 }
 
-// (The imul-operand mismatch closed itself when the CImage ctor got its partial
-// member-init list - the "context-driven" reading in the old note was right, and the
-// context was a constructor shape two headers away. See CDDrawWorker::GetMemoryUsage.)
 RVA(0x00163780, 0x134)
 i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     if (s == 0) {
@@ -1360,9 +1392,11 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
 // CDDrawWorkerHost::Load (__thiscall, ret 0x4). Inverse of Save: read back the same
 // field sequence; the size-prefix must equal gridW*gridH*4 or the load aborts.
 // @early-stop
-// 4 bytes, the mirror image of Save's residue above: retail loads m_gridH
-// (`mov ecx,[ebx+0x2c]; imul ecx,[ebx+0x28]`), cl loads m_gridW. Source order is
-// NOT the lever - see the operand-pick note on Save. Shape byte-correct.
+// 4 bytes: retail loads m_gridH (`mov ecx,[ebx+0x2c]; imul ecx,[ebx+0x28]`), cl loads
+// m_gridW. cl5 CANONICALIZES a commutative `imul` of two members of the same object to
+// lower-offset-into-the-register - re-measured 2026-07-28 against three spellings
+// (`h*w`, `w*h`, and a split `t = m_gridH; t *= m_gridW;` two-statement form), all
+// byte-identical. Shape byte-correct; not source-steerable.
 RVA(0x001638c0, 0x140)
 i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
     if (s == 0) {
