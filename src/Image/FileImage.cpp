@@ -293,12 +293,13 @@ i32 CDDSurface::SaveDispatch(char* a1, void* pal, i32 flag) {
 // CFile). ret 0xc.
 //
 // @early-stop
-// /GX export wall residue (~67%): CFG skeleton now matches retail block-for-block
-// (double spal guard + 0xe memset recovered); left: the quad-loop induction master
-// (retail rebases the 3 dest streams onto the src walker, ours keeps dest as master
-// - both spellings tried, coin lands wrong), retail's UNFOLDED bi.biSize*m_width
-// imul (ours constant-folds 0x28*w to lea*40; no source spelling found that blocks
-// cl5's constprop), and the fh-pointer spill + EH-state numbering that follow.
+// /GX export wall residue (78.4%): CFG skeleton matches retail block-for-block (double
+// spal guard + 0xe memset recovered). Left: a whole-body regalloc mirror (retail keeps
+// the zero in ebx and materializes `mov esi,0x8` for the bit-depth compare; cl pins the
+// zero in esi and compares against the immediate), the quad-loop induction master
+// (retail rebases the 3 dest streams onto the src walker - index, cursor and dual-cursor
+// spellings all tried, 78.4/77.5/78.4), retail's UNFOLDED biSize*m_width imul (ours
+// constant-folds 0x28*w to lea*40), and the fh-pointer spill + EH-state numbering.
 RVA(0x001443b0, 0x284)
 i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
@@ -321,33 +322,36 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
         return 0;
     }
 
-    BITMAPINFOHEADER bi;
-    memset(&bi, 0, sizeof(bi));
+    // ONE record, not a header plus an adjacent stack array: the single
+    // `Write(&info, 0x428)` below only works because the 0x400-byte colour table
+    // directly follows the 0x28-byte header - that is Bmp256Info, which
+    // <Image/FileImageRecords.h> already names for exactly this writer.
+    Bmp256Info info;
+    memset(&info.bmiHeader, 0, sizeof(info.bmiHeader));
     i32 height = m_height;
-    bi.biSize = 0x28;
-    bi.biWidth = m_width;
-    bi.biHeight = m_height;
-    bi.biPlanes = 1;
-    bi.biBitCount = 8;
-    bi.biCompression = 0;
-    bi.biSizeImage = 0;
+    info.bmiHeader.biSize = 0x28;
+    info.bmiHeader.biWidth = m_width;
+    info.bmiHeader.biHeight = m_height;
+    info.bmiHeader.biPlanes = 1;
+    info.bmiHeader.biBitCount = 8;
+    info.bmiHeader.biCompression = 0;
+    info.bmiHeader.biSizeImage = 0;
 
-    u8* spal = src->m_srcPalette;
+    PALETTEENTRY* spal = src->m_srcPalette;
     if (spal == 0) {
         return 0;
     }
 
-    // 256 RGBQUADs: copy the source palette's bytes 0/1/2 into the quad's B/G/R lanes.
-    u8 quads[0x400];
+    // PALETTEENTRY -> RGBQUAD: the R/B swap (retail stores +2 then +1 then +0).
     {
         i32 i = 0;
         i32 n = 0x100;
         do {
-            quads[i + 2] = spal[0];
-            quads[i + 1] = spal[1];
-            quads[i] = spal[2];
-            spal += 4;
-            i += 4;
+            info.bmiColors[i].rgbRed = spal->peRed;
+            info.bmiColors[i].rgbGreen = spal->peGreen;
+            info.bmiColors[i].rgbBlue = spal->peBlue;
+            spal++;
+            i++;
             --n;
         } while (n != 0);
     }
@@ -356,7 +360,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     memset(&fh, 0, sizeof(fh));
     // the BM magic written into the header's leading bytes - byte-forced
     strcpy(reinterpret_cast<char*>(&fh), g_bmpHeaderTemplate);
-    fh.bfSize = bi.biSize * m_width + 0x436;
+    fh.bfSize = info.bmiHeader.biSize * m_width + 0x436;
     fh.bfOffBits = 0x436;
 
     u8* buf = static_cast<u8*>(Lock(0));
@@ -379,7 +383,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     }
 
     file.Write(&fh, 0xe);
-    file.Write(&bi, 0x428);
+    file.Write(&info, 0x428);
 
     i32 row = height - 1;
     while (row >= 0) {

@@ -69,11 +69,11 @@ public:
     // node Cleanup) releases the DIB object + the operator-new'd row table; SetPalette
     // (0x176ad0) latches the associated palette node; SaveBmp writes the 8bpp plane out.
     i32 DispatchDecode(void* buf, i32 kind, void* dc, i32 ctrl);    // 0x175a00
-    i32 Convert8To16(void* dc, CRezImage* src, void* pal);            // 0x175b80
+    i32 Convert8To16(void* dc, CRezImage* src, void* pal);          // 0x175b80
     i32 EnsureSize(void* dc, i32 w, i32 h, i32 bitCount, i32 flag); // 0x175ce0
-    void Fill(i32 value);                                             // 0x175d50
-    void Free();                                                      // 0x175c90 (pool: Cleanup)
-    void SetPalette(void* paletteNode, i32 scalar);                   // 0x176ad0
+    void Fill(i32 value);                                           // 0x175d50
+    void Free();                                                    // 0x175c90 (pool: Cleanup)
+    void SetPalette(void* paletteNode, i32 scalar);                 // 0x176ad0
     i32 Save(const char* filename, void* paletteObj);    // 0x176b00 (8bpp-only dispatch to SaveBmp)
     i32 SaveBmp(const char* filename, void* paletteObj); // 0x176b30
     void FillRect(CRezFillRect* r, i32 color);           // 0x176d20 (8bpp scanline rect fill)
@@ -152,7 +152,8 @@ SIZE(0xc0);
 class CFileImagePal {
 public:
     char _00[0x0c];
-    u8* m_srcPalette; // +0x0c  source palette (4 bytes/entry)
+    PALETTEENTRY* m_srcPalette; // +0x0c  source palette (SaveBmp walks it at stride 4,
+                                //        reading r/g/b at bytes 0/1/2)
 };
 SIZE_UNKNOWN();
 
