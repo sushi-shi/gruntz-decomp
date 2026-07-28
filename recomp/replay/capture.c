@@ -81,7 +81,7 @@
 
 #include "snapshot.h"
 
-#define MAX_SITES 64
+#define MAX_SITES 512
 #define MAX_REGIONS 8192
 
 void hook_entry(void);
@@ -214,10 +214,16 @@ static DWORD parse_u32(const char *s)
     return v;
 }
 
+/* Both buffers here are sized for the WHOLE runnable worklist, and both say so
+ * when they fill. They were 8 KB and 512 B, which the 129-candidate probe list
+ * fits into by 1 KB and 110 characters - and neither would have said a word on
+ * the day it stopped fitting. A truncated `probe=` line drops call sites, which
+ * shows up as "this candidate is never called", i.e. as a fact about the game
+ * rather than as a bug. Silence is the failure mode that costs the most here. */
 static void read_config(void)
 {
     HANDLE h;
-    char buf[8192];
+    static char buf[262144];
     DWORD n = 0, i = 0;
 
     h = CreateFileA("capture.cfg", GENERIC_READ, FILE_SHARE_READ, NULL,
@@ -227,13 +233,23 @@ static void read_config(void)
     ReadFile(h, buf, sizeof(buf) - 1, &n, NULL);
     CloseHandle(h);
     buf[n] = 0;
+    if (n >= sizeof(buf) - 1)
+        caplog("CONFIG TRUNCATED: capture.cfg is at least %lu bytes and the reader "
+               "takes %lu - candidates were DROPPED",
+               n, (DWORD)sizeof(buf) - 1);
 
     while (i < n) {
-        char line[512];
+        static char line[8192];
         DWORD j = 0;
         while (i < n && buf[i] != '\n' && buf[i] != '\r' && j < sizeof(line) - 1)
             line[j++] = buf[i++];
         line[j] = 0;
+        if (j == sizeof(line) - 1 && i < n && buf[i] != '\n' && buf[i] != '\r') {
+            caplog("CONFIG LINE TRUNCATED at %lu chars - call sites were DROPPED",
+                   j);
+            while (i < n && buf[i] != '\n' && buf[i] != '\r')
+                i++;
+        }
         while (i < n && (buf[i] == '\n' || buf[i] == '\r'))
             i++;
         if (line[0] == 0 || line[0] == '#')
@@ -248,16 +264,25 @@ static void read_config(void)
             if (!lstrcmpA(line, "mode")) {
                 g_mode_census = !lstrcmpA(v, "census");
                 g_mode_probe = !lstrcmpA(v, "probe");
-            } else if (!lstrcmpA(line, "probe") && g_nprobes < MAX_PROBES) {
+            } else if (!lstrcmpA(line, "probe")) {
                 /* probe=<targetRva>,<siteRva>,<siteRva>,... */
-                DWORD idx = g_nprobes++;
+                DWORD idx = g_nprobes;
+                if (g_nprobes >= MAX_PROBES) {
+                    caplog("TOO MANY CANDIDATES: MAX_PROBES=%d, dropping the rest",
+                           (int)MAX_PROBES);
+                    continue;
+                }
+                g_nprobes++;
                 g_prva[idx] = parse_u32(v);
                 while ((v = strchr(v, ',')) != NULL) {
                     v++;
-                    if (g_npsites < MAX_PSITES) {
-                        g_psite_owner[g_npsites] = idx;
-                        g_psite[g_npsites++] = parse_u32(v);
+                    if (g_npsites >= MAX_PSITES) {
+                        caplog("TOO MANY SITES: MAX_PSITES=%d, dropping the rest",
+                               (int)MAX_PSITES);
+                        break;
                     }
+                    g_psite_owner[g_npsites] = idx;
+                    g_psite[g_npsites++] = parse_u32(v);
                 }
             } else if (!lstrcmpA(line, "out"))
                 lstrcpynA(g_out, v, sizeof(g_out));
@@ -271,8 +296,13 @@ static void read_config(void)
                 g_full = parse_u32(v);
             else if (!lstrcmpA(line, "cap"))
                 g_cap = parse_u32(v);
-            else if (!lstrcmpA(line, "site") && g_nsites < MAX_SITES)
-                g_sites[g_nsites++] = parse_u32(v);
+            else if (!lstrcmpA(line, "site")) {
+                if (g_nsites >= MAX_SITES)
+                    caplog("TOO MANY SITES: MAX_SITES=%d, dropping the rest",
+                           (int)MAX_SITES);
+                else
+                    g_sites[g_nsites++] = parse_u32(v);
+            }
         }
     }
 }
@@ -561,6 +591,22 @@ static DWORD snap(int bufidx, int phase, SnapRegs *regs)
 
     tab = (SnapRegion *)(buf + sizeof(SnapHeader));
     off = sizeof(SnapHeader) + n * sizeof(SnapRegion);
+
+    /* Size the whole thing BEFORE copying any of it, and say what it needs.
+     * "raise cap=" without a number is a guess-and-relaunch loop at 100 seconds
+     * a go: an in-game snapshot is several times the menu one, and the answer
+     * is right here. */
+    {
+        DWORD need = off;
+        for (i = 0; i < n; i++)
+            if (g_tab[i].rflags & SNAPRF_HAS_BYTES)
+                need += g_tab[i].size;
+        if (need > g_cap) {
+            caplog("snapshot NEEDS %lu bytes, cap=%lu - relaunch with cap=0x%lx",
+                   need, g_cap, (need + (need >> 3) + 0xfffff) & ~0xfffffu);
+            return 0;
+        }
+    }
 
     for (i = 0; i < n; i++) {
         tab[i] = g_tab[i];

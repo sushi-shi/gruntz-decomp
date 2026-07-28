@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 r"""fuzz.py - drive replay.exe over many mutated entry states, one child each.
 
-    python recomp/replay/fuzz.py build/replay \
+    python recomp/replay/fuzz.py build/replay/snap/<tag> \
+        --obj build/replay/<unit>.objmod --fn '?Foo@CBar@@QAEHH@Z' \
         --field 0x0f71003c --pool-scan 0x0f710030:0x60 \
         --oob 0xdeadbeef --oob 0
+
+    python recomp/replay/fuzz.py <snapdir> --obj M --fn N --arg 0 --arg 1 \
+        --oob 0 --oob 1 --oob -1
+      `--arg K` names the K-th incoming STACK argument by its offset from the
+      recorded entry esp, so a pure query function whose only observable is its
+      return value can be swept over its own argument space with no game launch.
 
 Why a driver at all, and why one process per case
 -------------------------------------------------
@@ -52,8 +59,9 @@ VERDICT = {0: "AGREE", 1: "DISAGREE", 2: "harness error", 3: "TIMEOUT (killed)",
            4: "CRASH (faulted)"}
 
 
-def run_case(exe, snapdir, sets, timeout_ms, wine_timeout):
-    cmd = ["wine", str(exe), snapdir, "--spawn", "--timeout", str(timeout_ms)]
+def run_case(exe, snapdir, obj, fn, sets, timeout_ms, wine_timeout):
+    cmd = ["wine", str(exe), snapdir, "--obj", obj, "--fn", fn, "--spawn",
+           "--timeout", str(timeout_ms)]
     for addr, val in sets:
         cmd += ["--set", "0x%08x=0x%08x" % (addr, val)]
     env = dict(os.environ)
@@ -98,6 +106,11 @@ def branches_for(rva):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("snapdir")
+    ap.add_argument("--obj", required=True, help="the .objmod from objbind.py")
+    ap.add_argument("--fn", required=True, help="the mangled symbol to run as OURS")
+    ap.add_argument("--arg", type=int, action="append", default=[],
+                    help="mutate the K-th incoming stack argument (entry esp + 4 "
+                         "+ 4K). Repeatable; combines with --oob.")
     ap.add_argument("--exe", default=str(HERE / "replay.exe"))
     ap.add_argument("--field", type=lambda s: int(s, 0), action="append", default=[],
                     help="dword address to mutate (repeatable)")
@@ -115,6 +128,10 @@ def main():
     snap = Snapshot(snapdir / "entry.snap")
     win_snapdir = subprocess.check_output(["winepath", "-w", str(snapdir)],
                                           text=True).strip()
+    win_obj = subprocess.check_output(["winepath", "-w", str(Path(a.obj).resolve())],
+                                      text=True).strip()
+    for k in a.arg:
+        a.field.append(snap.h["entry_esp"] + 4 + 4 * k)
 
     print("fuzz: %s  rva=%08x" % (snap.name, snap.h["target_rva"]))
     print("\nstatic branch inventory (what a corpus COULD reach):")
@@ -140,7 +157,8 @@ def main():
     print("-" * 92)
     tally = {}
     for label, kind, sets in cases:
-        rc, out = run_case(a.exe, win_snapdir, sets, a.timeout_ms, a.wine_timeout)
+        rc, out = run_case(a.exe, win_snapdir, win_obj, a.fn, sets, a.timeout_ms,
+                           a.wine_timeout)
         n, r = effect_of(out)
         eff = "-" if n is None else "%d byte(s) / %d region(s)" % (n, r)
         print("%-28s %-20s %-16s %s" % (label, kind, VERDICT.get(rc, "rc=%d" % rc), eff))
