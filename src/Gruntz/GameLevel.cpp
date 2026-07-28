@@ -59,11 +59,10 @@ static inline void StampParamBlock(CGameLevel* o) {
 // independent immediate-to-memory store has no dep to pin its slot). Logic + offsets +
 // CFG + EH frame exact.
 RVA(0x0015ccd0, 0x118)
-CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) {
+CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 a2, i32 a3) {
     m_id = a2;
     m_flags = a3;
-    m_ownerCtx =
-        a1; // (fused CLoadable ctor stores; the owner handle - reads go through OwnerMgr())
+    m_ownerCtx = owner; // (the fused CLoadable ctor stores)
     m_maxStepX = 0x40;
     m_maxStepY = 0x40;
     m_pairA[1] = 250;

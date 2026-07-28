@@ -744,10 +744,7 @@ i32 CResolveNode::Init(
     i32 field40,
     i32 field08
 ) {
-    // PROVEN-heterogeneous slot: CLoadable::m_ownerCtx is a generic i32 context word
-    // because each derived family parks a DIFFERENT owner class in it (see Loadable.h);
-    // the typed read lives in one accessor per class, not in the shared base.
-    m_ownerCtx = reinterpret_cast<i32>(owner);
+    m_ownerCtx = owner;
     m_id = field04;
     m_flags = field08;
     m_drawFillArg = 0;

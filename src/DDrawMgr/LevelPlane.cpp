@@ -35,7 +35,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry->m_10map
 #include <DDrawMgr/DDrawWorkerCache.h>    // m_workerCache->m_10
 #include <DDrawMgr/DDrawWorkerMapSmall.h> // m_workerMap->m_cachedWorker (a CAniRecordBase2)
-#include <DDrawMgr/DirectDrawMgr.h>      // CDDPalette - the cached worker's m_buf palette
+#include <DDrawMgr/DirectDrawMgr.h>       // CDDPalette - the cached worker's m_buf palette
 #include <DDrawMgr/DDrawSubMgrPages.h>    // m_drawTarget->m_frontPair
 #include <DDrawMgr/DDrawSurfacePair.h>    // ->m_bpp (the ex CPlaneSurfDesc::m_format)
 #include <DDrawMgr/DDrawChildGroup.h>     // m_childGroup (the worker source)
@@ -75,8 +75,7 @@ RVA(0x001615a0, 0x9a)
 CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags) {
     m_id = field04;
     m_flags = flags;
-    // PROVEN-heterogeneous slot (Loadable.h): the fused CLoadable ctor stores.
-    m_ownerCtx = reinterpret_cast<i32>(mapData);
+    m_ownerCtx = mapData; // the fused CLoadable ctor stores
     // m_frameSets (::CObArray) default-constructed here (0x1b55e9).
     m_tileGrid = 0;
     m_colOffsets = 0;
@@ -429,7 +428,7 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
             dr.bottom = (yp) + ((srcp)->bottom - (srcp)->top);                                     \
             surf->BltEx(&dr, 0, 0, 0x1000400, &m_bltFx);                                           \
         } else if (h_ != 0xffffffff) {                                                             \
-            CPlaneFrame* fr_ = FrameSetAt(h_ >> 16);                                           \
+            CPlaneFrame* fr_ = FrameSetAt(h_ >> 16);                                               \
             i32 idx_ = static_cast<i32>(h_ & 0xffff);                                              \
             CPlaneTile* e_;                                                                        \
             if (idx_ >= fr_->m_lo && idx_ <= fr_->m_hi) {                                          \
@@ -685,16 +684,16 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
 // four length-prefixed strings INLINE. ReadPlaneObjects is the reader and the stream
 // cursor advances by the byte count it returns, which is the layout.
 struct PlaneObjectRecord {
-    i32 m_id;                       // +0x00
-    u32 m_nameLen;                  // +0x04
-    u32 m_logicLen;                 // +0x08
-    u32 m_imageSetLen;              // +0x0c
-    u32 m_soundLen;                 // +0x10
-    i32 m_x;                        // +0x14
-    i32 m_y;                        // +0x18
-    i32 m_z;                        // +0x1c
-    i32 m_gridIndex;                // +0x20
-    i32 m_addFlags;                 // +0x24
+    i32 m_id;          // +0x00
+    u32 m_nameLen;     // +0x04
+    u32 m_logicLen;    // +0x08
+    u32 m_imageSetLen; // +0x0c
+    u32 m_soundLen;    // +0x10
+    i32 m_x;           // +0x14
+    i32 m_y;           // +0x18
+    i32 m_z;           // +0x1c
+    i32 m_gridIndex;   // +0x20
+    i32 m_addFlags;    // +0x24
     // +0x28..+0x118 - RECOVERED 2026-07-27 from 0x162af0, and deliberately still an
     // ARRAY. It is a strictly SEQUENTIAL dword stream: retail walks it with one cursor
     // (`mov reg,[ebp]; add ebp,4; mov [dst],reg`), which is what the `const i32* p =
@@ -747,7 +746,6 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         return 0;
     }
 
-    // PROVEN-heterogeneous slot (Loadable.h): the base ctor's owner-context word.
     new (obj) CWwdGameObjBaseCtor(OwnerMgr(), id, 0);
 
     // Construct the embedded sub-object at +0x1A0, then re-stamp both vtables (the

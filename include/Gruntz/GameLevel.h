@@ -66,7 +66,6 @@ static const i32 TILE_CLEAR = -1;
 
 struct CParseSource;
 
-
 struct CGameObject;
 class CDDrawChildGroup; // the world object chain (<DDrawMgr/DDrawChildGroup.h>)
 class CDDrawSurfaceMgr; // the m_0c owner/world root (<DDrawMgr/DDrawSurfaceMgr.h>)
@@ -119,7 +118,7 @@ public:
     // Constructor: three args stored at +0x4/+0x8/+0xc; inits the array members,
     // the +0x10 sentinel and the +0xb0.. default-parameter block. (LevelCoordRect/
     // body in GameLevel.cpp.)
-    CGameLevel(i32 a1, i32 a2, i32 a3);
+    CGameLevel(class CDDrawSurfaceMgr* owner, i32 a2, i32 a3);
 
     // --- merged from the trace-discovered CGameLevel cluster -------------------
     // Tests a tile coord (x, y) against the bounds record. Free (cdecl) helper; the
@@ -262,7 +261,8 @@ public:
     // virtual; appends/records identically. Public: CGruntzMgr::LoadMonologoSprite
     // builds the "MONOLITH" plane through it. (Ex ?ReadObjectPlane@CGameLevelPlanes@@
     // - that WwdFile.h view of THIS class is dissolved.)
-    CDDrawWorkerHost* ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, const char* name);
+    CDDrawWorkerHost*
+    ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, const char* name);
 
 private:
     // The per-plane reader (@0x15d8d0, GameLevel.cpp; LoadWwd drives it per WWD
@@ -369,7 +369,6 @@ i32 __stdcall ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c);
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern "C" i32 __stdcall MoveSubDispatch12(CGameObject* obj, i32 a, i32 b, i32 c); // @0x1671c0
-
 
 // File-scope prototypes moved from the .cpp: an unqualified
 // declaration at file scope has EXTERNAL linkage, so it belongs in

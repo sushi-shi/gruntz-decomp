@@ -22,8 +22,8 @@ public:
     // 0x164790 (T obj); shared by the whole wide-object family (never overridden).
     virtual i32 SetPosition(i32 x, i32 y); // [9] 0x164790
 
-    CResolveNode();                                    // 0x1549d0 (D pocket)
-    CResolveNode(i32 owner, i32 field04, i32 field08); // 0x15b2c0 (I obj)
+    CResolveNode();                                                  // 0x1549d0 (D pocket)
+    CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08); // 0x15b2c0 (I obj)
     // No-seed tag-ctor for the worker leaves (CDDrawWorkerBase family): constructs
     // the base WITHOUT the 0x1549d0 sentinel seeding - the leaf ctor spells its own
     // fused seed set, matching the factories' single-stamp inline shape (retail

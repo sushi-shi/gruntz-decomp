@@ -104,7 +104,7 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_159250(
     CWwdGameObjectC* obj = static_cast<CWwdGameObjectC*>(RezAlloc(0x190));
     CWwdGameObjectC* result; // the 0x190 kind (vtable 0x5effd0)
     if (obj != 0) {
-        int root = m_ownerCtx;
+        CDDrawSurfaceMgr* root = m_ownerCtx;
         new (static_cast<void*>(obj)) CResolveNode(root, a1, a7);
         CWwdSlot9c* s9c = static_cast<CWwdSlot9c*>(static_cast<void*>(&obj->m_region));
         new (s9c) CWwdSlot9c();
@@ -180,7 +180,7 @@ CWwdGameObject* CDDrawChildGroup::CreateObject_159440(int a1, int a2, AnimWorker
     CWwdGameObjectF* obj = static_cast<CWwdGameObjectF*>(RezAlloc(0x18c));
     CWwdGameObjectF* result; // the 0x18c kind (vtable 0x5f0060)
     if (obj != 0) {
-        int root = m_ownerCtx;
+        CDDrawSurfaceMgr* root = m_ownerCtx;
         new (static_cast<void*>(obj)) CResolveNode(root, a1, a4);
         CWwdSlot9c* s9c = static_cast<CWwdSlot9c*>(static_cast<void*>(&obj->m_region));
         new (s9c) CWwdSlot9c();
@@ -256,7 +256,7 @@ CWwdGameObjectA* CDDrawChildGroup::CreateObject_159600(
     CWwdGameObjectA* obj = static_cast<CWwdGameObjectA*>(RezAlloc(0x1dc));
     CWwdGameObjectA* result; // the 0x1dc kind (vtable 0x5f00a8)
     if (obj != 0) {
-        i32 root = m_ownerCtx;
+        CDDrawSurfaceMgr* root = m_ownerCtx;
         new (static_cast<void*>(obj)) CResolveNode(root, a1, flags);
         new (&obj->m_region) CWwdSlot9cA();
         new (&obj->m_b8) CWwdShadowRec();
@@ -385,7 +385,7 @@ CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, AnimWorker
     CWwdGameObject* obj = static_cast<CWwdGameObject*>(RezAlloc(0x1fc));
     CWwdGameObject* result; // the 0x1fc kind (vtable 0x5f00e8)
     if (obj != 0) {
-        int root = m_ownerCtx;
+        CDDrawSurfaceMgr* root = m_ownerCtx;
         new (static_cast<void*>(obj)) CWwdGameObjBaseCtor(OwnerMgr(), a1, a6);
         // the embedded anim cursor's CLoadable base (ctor 0x156cb0)
         new (&obj->m_1a0) CLoadable(root, a1, a6);

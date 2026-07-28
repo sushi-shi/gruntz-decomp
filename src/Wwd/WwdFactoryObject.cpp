@@ -50,7 +50,7 @@ VTBL(CAniAdvanceCursor, 0x001f0128); // ??_7CAniAdvanceCursor@@6B@ (9-slot CLoad
 // m_38 (-1) store to different positions than retail; 3 field-order spellings all
 // ~60%. Source steers which arg lands in edx, not the store schedule. Logic complete.
 RVA(0x0015b2c0, 0x3d)
-CResolveNode::CResolveNode(i32 owner, i32 field04, i32 field08) {
+CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
     m_id = field04;
     m_flags = field08;
     m_ownerCtx = owner;
@@ -230,7 +230,7 @@ CAniAdvanceCursor::~CAniAdvanceCursor() {
 // ctor body stamps before it. The 100% spelling needs the base ctor inline
 // (`: CLoadable(...)`), which contradicts its proven out-of-line 0x156cb0 body.
 RVA(0x0015b730, 0x2b)
-CAniAdvanceCursor::CAniAdvanceCursor(i32 owner, i32 field04, i32 field08) {
+CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
     m_id = field04;
     m_flags = field08;
     m_ownerCtx = owner;

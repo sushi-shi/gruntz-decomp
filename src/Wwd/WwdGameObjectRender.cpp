@@ -272,8 +272,7 @@ CWwdGameObject::CreateObject(int a1, int a2, int a3, int a4, AnimWorkerObj* tmpl
     char* obj = static_cast<char*>(RezAlloc(0x1dc));
     CWwdGameObjectA* result;
     if (obj != 0) {
-        int root =
-            m_ownerCtx; // the CLoadable owner int handle (== this->m_ownerCtx, the CDDrawSurfaceMgr)
+        CDDrawSurfaceMgr* root = m_ownerCtx;
         new (obj) CWwdGameObjBaseCtor(OwnerMgr(), a1, a6);
         // CWwdGameObjBaseCtor is a CONSTRUCTION-SHAPE view of this same 0x1dc object
         // (it spells the ctor's store order over WwdCtorBase); until it and
