@@ -12,6 +12,15 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h> // the canonical image/worker registry (CDDrawWorkerRegistry)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (the per-spawn registry holder)
 
+// g_pAreaMgr opens this object's retail .data run: the ordinary word at 0x21139c sits
+// between CInGameText's 'GAME_HELPBOOK' literal (0x21138c, previous object) and this
+// object's own 'IMAGEZ_%s'/'OBJECTZ_'/'SOUNDZ_%s'/'ANIZ_%s' literals (0x2113a0..0x2113cf)
+// - the same ordinary-then-COMDAT shape CMulti's run has at 0x211d88. Its initializer is
+// &g_areaMgr, defined right below. (It was declared in Play.cpp, whose only use is a
+// read in CPlay::LoadByMode.)
+DATA(0x0021139c)
+CAreaMgr* g_pAreaMgr = &g_areaMgr;
+
 DATA(0x002459b0)
 CAreaMgr g_areaMgr;
 

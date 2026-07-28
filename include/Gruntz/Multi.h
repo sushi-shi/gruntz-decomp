@@ -375,7 +375,8 @@ extern "C" i32 g_optionsCursor;
 
 extern CNetMgr* g_groupEnumMgr; // 0x00248cf4
 
-extern i32 g_hostServicesMode; // 0x00248cf0
+extern i32 g_hostServicesMode; // 0x00248cf0  1 = host services, 0 = join services
+                               // (the ex g_isHost_648cf0 named this SAME rva)
 
 extern HWND g_netPlayerListHwnd; // 0x00248d00
 
@@ -383,9 +384,10 @@ void MultiJoinHandler(); // thunk 0x222f -> body 0xb8020 (Gap_0b8020)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-struct CNetCreateCtx;
 class CFile;
-extern "C" CNetCreateCtx* g_netCreateCtx;
+// (CNetCreateCtx is dissolved: g_netCreateCtx named the SAME rva 0x248cf4 as
+//  g_groupEnumMgr, so the "create context" was a second view of CNetMgr -
+//  its +0x70 m_serviceProvider IS m_groupSel and its +0x74 m_74 IS m_playerSel.)
 extern "C" i32 g_serviceId;                                                 // 0x611d8c
 extern "C" i32 Cfg_SetSection(char* buf, const char* fmt, const char* arg); // 0xf9280
 // (the "%s" arg is a STRING - it was declared i32, which forced every caller to
@@ -405,7 +407,8 @@ extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x1f94
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---
 extern "C" HWND g_sharedFlag; // the cached dialog control window
 
-extern GUID g_dplayAppGuid; // the DirectPlay app GUID (4 dwords, as GUID lays out)
+// (g_dplayAppGuid moved to <Net/NetMgr.h> with its two run-mates - its definition is
+// GruntzMgr.cpp's, not this TU's; see the note beside g_dropPlayerId in Multi.cpp.)
 extern char s_GameKey[];
 extern u32 g_ackThrottleDeadline;
 

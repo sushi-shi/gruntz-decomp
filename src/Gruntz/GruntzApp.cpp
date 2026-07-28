@@ -13,7 +13,6 @@ typedef enum GruntzAppResId {
     IDS_DEFAULT_ERROR = 0x8009, // default string-resource id when the requested id is 0/missing
 } GruntzAppResId;
 
-
 // The error-text buffer @0x244ea0 is a GruntzApp file-static in retail. Bind it by RVA
 // via a STABLE symbol name: as a C++ `static` it mangles to `_g_errorText$S<idx>`, whose
 // per-TU index cl5 RENUMBERS on any string-pool change (measured 18949->18953->18964...),
@@ -26,7 +25,6 @@ typedef enum GruntzAppResId {
 VTBL(CGruntzApp, 0x001e9ab4); // vtable_names -> code (RTTI game class)
 DATA(0x00244ea0)
 char g_errorText[0x100] = {0};
-
 
 RVA(0x00080850, 0x12)
 CGruntzApp::CGruntzApp() {}
@@ -89,7 +87,6 @@ void CGruntzApp::CloseResources() {
 // its thunk. Modeled as an extern-C thunk symbol bound to 0x33c8 (the same idiom as
 // GameObjectFactory's _CreateXxx thunks); ShowMessage takes the SAME proc's address
 // (both dialogs share ErrorDialogProc), so it pushes the same thunk.
-DATA_SYMBOL(0x000033c8, 0x0, _ErrorDialogProcThunk@16)
 RVA(0x00080ac0, 0xf3)
 void CGruntzApp::ShowError() {
     // The two error fields are read up front (the optimiser hoists the m_errorDetail
@@ -116,7 +113,7 @@ void CGruntzApp::ShowError() {
     while (ShowCursor(1) < 0)
         ;
 
-    DialogBoxParamA(m_hInstance, "ERROR", 0, &ErrorDialogProcThunk, 0);
+    DialogBoxParamA(m_hInstance, "ERROR", 0, CGruntzApp::ErrorDialogProc, 0);
 }
 
 RVA(0x00080a20, 0x5a)
@@ -148,7 +145,7 @@ CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 RVA(0x00080c00, 0x48)
 void CGruntzApp::ShowMessage(const char* msg, HWND hParent) {
     strcpy(g_errorText, msg);
-    DialogBoxParamA(m_hInstance, "MESSAGE", hParent, &ErrorDialogProcThunk, 0);
+    DialogBoxParamA(m_hInstance, "MESSAGE", hParent, CGruntzApp::ErrorDialogProc, 0);
 }
 
 RVA(0x000809a0, 0x57)

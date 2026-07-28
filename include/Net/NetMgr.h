@@ -30,8 +30,12 @@ class CDDrawSurfaceMgr; // <Gruntz/GameRegistry.h> - the +0xc world holder (CSta
 
 extern i32 g_dropPlayerId; // 0x611d88  saved dropped-player id
 
-extern "C" i32 g_localVersion;  // 0x60fa70  (sibling; not TU-private)
-extern i32 g_remoteVersion;     // 0x60fa74  DEFINED in src/Gruntz/Multi.cpp (owner TU)
+// The session-identity trio. All three are DEFINED in src/Gruntz/GruntzMgr.cpp: they
+// are one contiguous retail .data run [0x20fa70,0x20fae0) together with g_pendingFrame
+// (0x20fac8), 8 KB below CMulti's own run [0x211d88,0x2121e0). CMulti only reads them.
+extern "C" i32 g_localVersion;  // 0x60fa70  rez-sync version; CGruntzMgr::Run reloads it
+extern i32 g_remoteVersion;     // 0x60fa74  the build's protocol word (never written)
+extern GUID g_dplayAppGuid;     // 0x60fab8  the DirectPlay app GUID CMulti binds with
 extern "C" i32 g_cfgWord;       // 0x645550
 extern "C" i32 g_buteMgrField4; // *(g_buteMgr + 4) - the CButeMgr config word
 
@@ -650,13 +654,10 @@ extern "C" i32 g_playerLeftFlag;    // 0x648ce4
 extern "C" i32 g_activePlayerCount; // 0x648cec  active-player refcount
 
 struct InterfaceObject; // the DirectPlay service-provider node (IsInterface2 probe)
-struct CNetCreateCtx {
-    char m_pad0[0x70];
-    InterfaceObject*
-        m_serviceProvider; // +0x70  selected service-provider (IsInterface2 -> slow-link timeout)
-    u8* m_74;              // +0x74  the group-enumeration record blob
-};
-SIZE_UNKNOWN(); // create-context view (only +0x74 pinned); retail size TBD
+// (The CNetCreateCtx view is gone. Its g_netCreateCtx was DATA()-bound to 0x248cf4 -
+//  the very rva g_groupEnumMgr (CNetMgr*) is bound to - so the "create context" was a
+//  second view of CNetMgr: +0x70 m_serviceProvider IS m_groupSel, +0x74 m_74 IS
+//  m_playerSel. Both offsets and both types already agreed.)
 
 class CNetMgr : public CObject {
 public:
@@ -948,7 +949,9 @@ public:
     // The three list-box selection latches + their walk-cursor ids. Each ReadXxxSel
     // reader writes the selected item's data here in range; the clear-loops zero them.
     InterfaceObject*
-        m_groupSel; // +0x070  group-list selected item data (ReadGroupSel / InitFromProvider)
+        m_groupSel; // +0x070  group-list selected item data (ReadGroupSel / InitFromProvider);
+                    //        this IS the SELECTED SERVICE PROVIDER - the join dialog's
+                    //        slow-link timeout reads IsInterface2() off it
     CNetPlayerListNode*
         m_playerSel; // +0x074  player-list selected item data (ReadPlayerSel / StartTitle)
     CNetSessionNode* m_sessionSel; // +0x078  session-list selected item data

@@ -171,6 +171,7 @@ extern "C" void RezFormat(CString* dst, const char* fmt, ...);
 
 extern "C" i32 RezFileExists(const char* szPath);
 
-extern "C" void WarpDialogProcThunk(); // thunk 0x2d0b -> body 0x8e4e0
+// (WarpDialogProcThunk is gone: thunk 0x2d0b resolves to WarpDialogProc @0x8e4e0,
+// declared in <Gruntz/GruntzMgr.h> where its body lives.)
 
 #endif // SRC_REZ_REZMGR_H

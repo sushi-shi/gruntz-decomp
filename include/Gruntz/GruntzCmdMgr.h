@@ -76,4 +76,8 @@ SIZE_UNKNOWN();
 // the owner header.
 i32 __stdcall IsActive2(void* enable);
 
+// The DEBUG_GRUNTTYPE modal proc CGruntzMgr::HandleCommand runs (retail pushes its
+// ILT thunk 0x21e9, which jmps here).
+i32 CALLBACK winapi_092ab0_EndDialog(HWND, UINT, WPARAM, LPARAM); // 0x092ab0
+
 #endif // GRUNTZ_GRUNTZCMDMGR_H

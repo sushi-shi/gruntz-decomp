@@ -266,7 +266,7 @@ rezsync	3
 rockbreakeffectupdate	1
 rollingball	8
 savefrontbuffershot	2
-savegame	33
+savegame	34
 savescreenshot	1
 sbi_image	8
 sbi_imageset	8
@@ -301,7 +301,7 @@ spotlight	1
 spotlightactreg	1
 spotlightctor	7
 spriteloaders	10
-spriteref	3
+spriteref	2
 spritereftable	10
 startupprompt	1
 state	21

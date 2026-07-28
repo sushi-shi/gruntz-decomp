@@ -80,21 +80,15 @@
 #include <Gruntz/Dialogs.h>
 #include <Net/NetLobby.h> // NetLobby::g_curDlg
 #include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/LoadGameMenu.h> // GruntzLoadGameDlgProc - the GAME_LOAD modal proc
 
 DATA(0x00248ce8)
 i32 g_scoreTimeBase;
 
-// The Win32 dialog procedures handed to RunModalDialog. Each pushed code address is
-// the proc's ILT jmp-thunk (retail /INCREMENTAL routes an address-taken function
-// through its <0x7c20 thunk), so the DIR32 references bind to the THUNK rva - not the
-// proc body. The bodies live in their own TUs (LoadGameMenu / AppDialogs). Modeled as
-// extern-C thunk symbols bound to the thunk rvas (the GameObjectFactory _CreateXxx idiom).
-DATA_SYMBOL(0x00002167, 0x0, _GruntzLoadGameDlgProc)
-DATA_SYMBOL(0x000021e9, 0x0, _GruntzDebugGruntTypeProc)
-DATA_SYMBOL(0x00001041, 0x0, _GruntzSaveGameDlgProc)
-DATA_SYMBOL(0x000011d1, 0x0, _GruntzSaveMsgDlgProc)
-DATA_SYMBOL(0x00002ab8, 0x0, _LevelNumberDialogProcThunk)
-INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
+// (RunModalDialog now takes a real DLGPROC. The five extern-C ILT-thunk DATA_SYMBOLs
+// that used to stand in for its procs are gone - every thunk resolves to a proc this
+// tree already reconstructs; see the note beside the decls in <Gruntz/GruntzMgr.h>.
+// The address-take is reloc-masked either way, so naming the proc is byte-neutral.)
 
 DATA(0x002455e8)
 i32 g_monologoShown;
@@ -141,6 +135,28 @@ StateMgrBZ* g_spawnConfig = 0; // _g_spawnConfig; C linkage inherited from State
 // (The base CGameMgr vtable 0x1e9b8c binding lives on the class itself now -
 // VTBL(CGameMgr) in <Wap32/Wap32.h>; the class is global-namespace per RTTI.)
 
+// The session-identity run [0x20fa70,0x20fae0) - one contiguous retail .data
+// contribution, proven by the layout: it is bracketed by CGruntzMapMgr::LoadAttributes'
+// literals below (0x20fa4c 'Black'..'Brown') and the CGameLevel area titles +
+// CGameMgr/CGruntzMgr/CMapMgr/CGruntzMapMgr RTTI + every CGruntzMgr::Run / Close /
+// HandleCommand literal above (0x20fae0..). CMulti merely READS the first three
+// (HandleVersionCheck/AnnounceVersion/StartTitle/Open); its own single run is
+// [0x211d88,0x2121e0). CGruntzMgr::Run (0x83450) is the only WRITER of g_localVersion:
+// it reloads it from GRUNTZ.CFG [General] "RezSync" over this initializer.
+// (0x20fa78..0x20fab7 - 16 dwords 1,2,-1,3,-1,4,-1,5,-1,6,-1,7,-1,8,9,10 - and
+// 0x20facc..0x20fadf are part of the same run but carry NO relocation from anywhere
+// in the image, so they stay unmodelled rather than fabricated.)
+DATA(0x0020fa70)
+i32 g_localVersion = 1; // extern "C" linkage inherited from <Net/NetMgr.h>
+DATA(0x0020fa74)
+i32 g_remoteVersion = 1; // the build's own protocol word; never written at runtime
+DATA(0x0020fab8)
+GUID g_dplayAppGuid = {
+    0xf41cf640,
+    0x91b2,
+    0x11d1,
+    {0x8d, 0xfc, 0x00, 0x60, 0x97, 0x9f, 0xa8, 0x1e}
+}; // the DirectPlay app GUID CMulti::Open/StartTitle bind the session with
 DATA(0x0020fac8)
 i32 g_pendingFrame = 1;
 DATA(0x00212610)
@@ -1691,7 +1707,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         return 0;
     }
 
-    m_world->SetHwnd(static_cast<void*>(ModeResetCallback));
+    m_world->SetHwnd(static_cast<void*>(PumpIdleFrame));
     CGameLevel* view = m_world->m_level;
     view->m_maxStepX = 0xe;
     view->m_maxStepY = 0xe;
@@ -1891,7 +1907,7 @@ i32 CGruntzMgr::IsLobbyHostReady() {
 RVA(0x0008e880, 0x27)
 i32 CGruntzMgr::RegisterSetSkillDebugCmd() {
     if (m_curState->Update() == GAMESTATE_PLAY) {
-        RunModalDialog("DEBUG_SETSKILL", static_cast<void*>(&LevelNumberDialogProc8e8c0), 1);
+        RunModalDialog("DEBUG_SETSKILL", LevelNumberDialogProc8e8c0, 1);
     }
     return 0;
 }
@@ -2064,7 +2080,7 @@ void CGruntzMgr::SetSoundLevelState(i32 loaded) {
 
 RVA(0x00092500, 0x17)
 i32 CGruntzMgr::RunLoadGameDialog() {
-    RunModalDialog("GAME_LOAD", static_cast<void*>(GruntzLoadGameDlgProc), 0);
+    RunModalDialog("GAME_LOAD", GruntzLoadGameDlgProc, 0);
     return 1;
 }
 
@@ -2141,15 +2157,14 @@ RVA(0x000929e0, 0x32)
 i32 CGruntzMgr::RunDebugGruntTypeDialog() {
     i32 ran = 0;
     if (m_curState->Update() == GAMESTATE_PLAY) {
-        ran = RunModalDialog("DEBUG_GRUNTTYPE", static_cast<void*>(GruntzDebugGruntTypeProc), 1);
+        ran = RunModalDialog("DEBUG_GRUNTTYPE", winapi_092ab0_EndDialog, 1);
     }
     return ran != 0;
 }
 
 RVA(0x0008e780, 0x2a)
 i32 CGruntzMgr::DebugJumpLevel() {
-    i32 level =
-        RunModalDialog("DEBUG_JUMPLEVEL", static_cast<void*>(LevelNumberDialogProcThunk), 1);
+    i32 level = RunModalDialog("DEBUG_JUMPLEVEL", LevelNumberDialogProc8e7c0, 1);
     if (level > 0) {
         return PassClickToPlayState(level, 0, 1);
     }
@@ -3279,7 +3294,7 @@ i32 CGruntzMgr::LaunchPortal(i32 quitAfter) {
 // collection into its own local (the Enter/ExitModalUI lever) closes the whole
 // {eax->edx->ecx} rotation, DialogBoxParamA arg setup included.
 RVA(0x00090260, 0x13e)
-i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
+i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, i32 flag) {
     if (tmpl == 0) {
         return 0;
     }
@@ -3343,8 +3358,8 @@ i32 CGruntzMgr::LoadSaveMessageSprite() {
         CString name;
         name.LoadStringA(0x81aa);
         EnterModalUI(name);
-    } else if (RunModalDialog("GAME_SAVE", static_cast<void*>(GruntzSaveGameDlgProc), 0) == 1) {
-        RunModalDialog("GAME_SAVEMSG", static_cast<void*>(GruntzSaveMsgDlgProc), 0);
+    } else if (RunModalDialog("GAME_SAVE", winapi_0e35f0_EndDialog, 0) == 1) {
+        RunModalDialog("GAME_SAVEMSG", OkCancelDialogProc, 0);
     }
     return 1;
 }

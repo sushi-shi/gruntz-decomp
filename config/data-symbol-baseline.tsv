@@ -2,9 +2,6 @@
 # storage-less DATA_SYMBOL (should be real DATA defs). Frozen, down-only;
 # drive to 0. Regenerate: python -m gruntz.audit.data_symbol --write-baseline
 # rva	mangled	file
-0x00001041	_GruntzSaveGameDlgProc	GruntzMgr.cpp
-0x0000113b	_MultiPauseCallback	Multi.cpp
-0x000011d1	_GruntzSaveMsgDlgProc	GruntzMgr.cpp
 0x00001217	_CreateAmbientPosSound	GameObjectFactory.cpp
 0x0000158c	_CreateBoomerang	GameObjectFactory.cpp
 0x000016c7	_CreateTimeBomb	GameObjectFactory.cpp
@@ -13,25 +10,15 @@
 0x00001bd1	?Reset@CSBI_RectOnly@@UAEXXZ	SBI_RectOnlyDtorEh.cpp
 0x00001d43	_CreateTileTriggerTransition	GameObjectFactory.cpp
 0x00002158	_CreateAmbientSound	GameObjectFactory.cpp
-0x00002167	_GruntzLoadGameDlgProc	GruntzMgr.cpp
-0x000021e9	_GruntzDebugGruntTypeProc	GruntzMgr.cpp
-0x000027fc	_MultiOptionzCallback	Multi.cpp
 0x00002851	_CreateSpotAmbientSound	GameObjectFactory.cpp
-0x00002ab8	_LevelNumberDialogProcThunk	GruntzMgr.cpp
 0x00002bbc	_CreateCursorSnapSprite	GameObjectFactory.cpp
-0x00002d0b	_WarpDialogProcThunk	RezMgr.cpp
 0x00002d15	_CreateGlobalAmbientSound	GameObjectFactory.cpp
 0x00002d2e	_CreateGrunt	GameObjectFactory.cpp
 0x00002e1e	_CreateParticlez	GameObjectFactory.cpp
 0x00002eb9	_CreateDemoMover	GameObjectFactory.cpp
-0x0000301c	_MultiOutOfSyncCallback	Multi.cpp
-0x0000305d	_CustomWorldInfoDlgProcThunk@16	CustomWorldDialog.cpp
 0x000030f8	_CreateProjectile	GameObjectFactory.cpp
-0x00003387	_MultiDropPlayerCallback	Multi.cpp
-0x000033c8	_ErrorDialogProcThunk@16	GruntzApp.cpp
 0x00003ca6	_CreateStaticHazard	GameObjectFactory.cpp
 0x0000448a	_CreateDemoSign	GameObjectFactory.cpp
-0x001e8fe8	_g_bootyLetterCoords	BootyStateActivate.cpp
 0x001e9608	?g_cmdBitTable@@3PBGB	GruntzCmdMgr.cpp
 0x001ef458	_IID_IDirectInputDevice2A	InputDevice.cpp
 0x001ef848	_IID_IDirectDraw2	DirectDrawMgr.cpp
@@ -41,11 +28,5 @@
 0x00224d88	?g_guid4@@3PBEB	NetMgr.cpp
 0x00224d98	?g_guid5@@3PBEB	NetMgr.cpp
 0x0024556c	_g_gameReg	GruntzMgr.cpp
-0x002856f8	_g_rasterEdgeR	DDrawPolyFill.cpp
-0x002856f8	_g_rasterEdgeR	WarpTextureBlit.cpp
-0x002a1708	_g_rasterVtxA	ImagePolyClip.cpp
-0x002a21f8	_g_rasterVtxB	ImagePolyClip.cpp
-0x002a2cf0	_g_rasterEdgeL	DDrawPolyFill.cpp
-0x002a2cf0	_g_rasterEdgeL	WarpTextureBlit.cpp
 0x002bf3bc	_g_engineFrameDelta	InGameTextUpdate.cpp
 0x002bf3c0	_g_killCueClock	InGameTextUpdate.cpp
