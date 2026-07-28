@@ -38,10 +38,19 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 ROOTS = ("src", "include")
 
-# A member or parameter declared as a raw byte/dword pointer. `char*` is excluded: it
-# is the legitimate spelling for a C string, and mixing those in would bury the signal.
+# ANY integer-typed pointer, not just u8*/i32* (user, 2026-07-28: "Any int*, not just
+# u8 and i32"). A short*/long*/u16* cursor over a structured buffer has lost exactly the
+# same type information; narrowing the scan to two spellings just hides the rest.
+#
+# Plain `char*` is tracked SEPARATELY below rather than mixed in: it is also the correct
+# spelling for a C string, so folding it into this count would bury the signal under
+# legitimate rows. It is still reported - a `char*` walking a record is the same defect.
+INT_TYPES = (r"u8|i8|u16|i16|u32|i32|u64|i64|BYTE|WORD|DWORD|UINT|INT|"
+             r"short|int|long|unsigned(?:\s+(?:char|short|int|long))?|signed\s+char")
 DECL = re.compile(
-    r"\b(?:const\s+)?(u8|i8|BYTE|i32|u32|DWORD)\s*\*\s*(?:const\s+)?(m_\w+|\w+)\s*[;,)=]")
+    r"\b(?:const\s+)?(" + INT_TYPES + r")\s*\*\s*(?:const\s+)?(m_\w+|\w+)\s*[;,)=]")
+CHAR_DECL = re.compile(
+    r"\b(?:const\s+)?(char)\s*\*\s*(?:const\s+)?(m_\w+|\w+)\s*[;,)=]")
 
 # A comment that names a concrete type for the thing just declared.
 # Deliberately NOT `C[A-Z]\w+`: that matches the ENCLOSING class in almost every
@@ -59,6 +68,7 @@ STRIDED = re.compile(r"\[\s*\w+\s*\*\s*([2-9]|1[0-9])\s*(?:\+\s*\d+\s*)?\]")
 
 def scan():
     rows = collections.defaultdict(list)
+    nchar = 0
     for root in ROOTS:
         for path in sorted((REPO / root).rglob("*")):
             if path.suffix not in (".cpp", ".h"):
@@ -81,7 +91,8 @@ def scan():
                         tells.append("strided")
                     rows[str(path.relative_to(REPO))].append(
                         (i + 1, ty, name, tells, code.strip()[:70]))
-    return rows
+                nchar += len(CHAR_DECL.findall(code))
+    return rows, nchar
 
 
 def main() -> int:
@@ -90,11 +101,12 @@ def main() -> int:
     ap.add_argument("--max", type=int, default=None, help="exit 1 if the count exceeds N")
     a = ap.parse_args()
 
-    rows = scan()
+    rows, nchar = scan()
     total = sum(len(v) for v in rows.values())
     with_tells = sum(1 for v in rows.values() for r in v if r[3])
-    print("blob pointers: %d raw u8*/i32* declarations  |  %d carry a tell that names "
-          "the real type" % (total, with_tells))
+    print("blob pointers: %d integer-pointer declarations  |  %d carry a tell that names "
+          "the real type  |  %d char* (tracked apart: also the C-string spelling)"
+          % (total, with_tells, nchar))
 
     if not a.summary:
         print("\nBy file - retype whole clusters, not single sites:")
