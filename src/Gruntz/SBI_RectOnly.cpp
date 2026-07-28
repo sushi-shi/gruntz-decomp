@@ -581,15 +581,20 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
     return 1;
 }
 
-// 96.64 -> 97.76: the frame is a single `push ecx`/`pop ecx` slot because ONE scratch
-// dword serves the streamed seq id, the 3x4 highlight-group loop counter and the
-// pooled-ptr count in turn - three separate locals cost 0xc and shift every slot.
+// 97.76 -> 99.99 (2026-07-28), two real source-shape bugs:
+//  (1) the 3x4 highlight loop is INDEXED (`nb[m]`), not a bumped cursor. Written as
+//      `nb->m_state / nb->m_value / nb += 1` cl strength-reduces `&nb->m_value` into a
+//      SECOND running pointer and spills the counter; the indexed form leaves one
+//      cursor and re-`lea`s `nb+4` inline, which is retail's shape (counter in ebp).
+//  (2) retail's frame is `push ecx` + the dead `s` parameter home = TWO scratch dwords,
+//      not one: the streamed seq id has its own slot and the pooled-ptr count shares
+//      the OTHER slot with the 3-group counter.
 // @early-stop
-// residual is the trailing 3x4 loop's induction-variable form: retail keeps ONE running
-// row pointer and re-leas `nb+4` each pass (counter in ebp), where cl builds a second
-// running pointer and spills the counter. Not steerable (a countdown do-while is
-// byte-identical to the `for`). Retail also parks the pooled-ptr count in the dead `s`
-// parameter home slot, which C cannot ask for. Final sweep.
+// residual is ONE displacement byte: retail's 3-group counter lives in the `push ecx`
+// slot (with the seq id) and the pooled count in the `s` parameter home; ours groups
+// counter+count instead. Measured over the three variable groupings x four declaration
+// positions - cl decides which local gets the dead parameter home and no spelling in
+// that space flips it (docs/patterns/macro-local-decl-order-picks-param-home.md).
 RVA(0x001090a0, 0x38f)
 i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     if (s == 0) {
@@ -665,18 +670,21 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
         s->Write(&m_groupSlots[k].m_value, 4);
     }
     CSbiHlRow* nb = m_hlGrid;
-    tmp = 3;
+    // the SECOND scratch dword: retail's frame is the `push ecx` slot + the dead `s`
+    // parameter home, and the highlight-group counter shares its slot with the
+    // pooled-ptr count below, NOT with the streamed seq id above.
+    i32 cnt = 3;
     do {
         for (i32 m = 0; m < 4; m++) {
-            s->Write(&nb->m_state, 4);
-            s->Write(&nb->m_value, 4);
-            nb += 1;
+            s->Write(&nb[m].m_state, 4);
+            s->Write(&nb[m].m_value, 4);
         }
-    } while (--tmp);
+        nb += 4;
+    } while (--cnt);
 
-    tmp = m_ptrPool.GetSize();
-    s->Write(&tmp, 4);
-    for (u32 n = 0; n < static_cast<u32>(tmp); n++) {
+    cnt = m_ptrPool.GetSize();
+    s->Write(&cnt, 4);
+    for (u32 n = 0; n < static_cast<u32>(cnt); n++) {
         s->Write(m_ptrPool.GetData()[n], 8);
     }
     return 1;
@@ -690,14 +698,16 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
 // free-list, sizes the +0x530 collection, then reloads the pointer table from the
 // free-list. Field buffers are offset-addressed (naming-independent), mirroring
 // Serialize.
-// The frame is 8 bytes because ONE scratch dword serves the streamed seq id, the
-// 3x4 highlight-group loop counter and the pooled-ptr count in turn (three separate
-// locals cost 0x10); the lookup out-param lives above it.
+// The frame holds TWO scratch dwords (the streamed seq id / 3x4 group counter, and the
+// pooled-ptr count), plus the lookup out-param - same shape as Serialize.
 // @early-stop
-// twin of Serialize: the whole ~70-field Read body + the seq resolution + the
-// free-list return/reload are byte-faithful, but the trailing 3x4 nested-loop
-// induction variable and the ebx<->ebp zero-pin colouring
-// (docs/patterns/zero-register-pinning.md) cap it below 100%. Final sweep.
+// twin of Serialize; 94.73 -> 96.11 on the same two fixes (the indexed 3x4 loop and the
+// separate pooled-count local). Residual is the ebx<->ebp zero-pin colouring
+// (docs/patterns/zero-register-pinning.md): retail pins 0 in ebp and carries the
+// resolved sprite in eax, so its `obj == 0` arm needs a real `xor eax,eax; jmp` block;
+// ours pins 0 in ebx and IS the result register, so that block folds away (-5 bytes,
+// and the je/jne polarity jcc_sieve reports). Everything downstream of the pin choice
+// cascades from it. Final sweep.
 RVA(0x00109520, 0x44c)
 i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     if (s == 0) {
@@ -787,10 +797,10 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     seq = 3;
     do {
         for (i32 m = 0; m < 4; m++) {
-            s->Read(&nb->m_state, 4);
-            s->Read(&nb->m_value, 4);
-            nb += 1;
+            s->Read(&nb[m].m_state, 4);
+            s->Read(&nb[m].m_value, 4);
         }
+        nb += 4;
     } while (--seq);
 
     for (i32 t = 0; t < m_ptrPool.GetSize(); t++) {
@@ -806,10 +816,12 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     // `seq` reused as the pooled-ptr count: retail's 8-byte frame holds only two
     // dwords (the streamed id/count scratch and the loop counter) - the `obj`
     // out-param lives in the dead `s` parameter home slot.
-    seq = 0;
-    s->Read(&seq, 4);
-    m_ptrPool.SetSize(seq, -1);
-    for (u32 n = 0; n < static_cast<u32>(seq); n++) {
+    // a SECOND scratch dword: retail does NOT share `seq` with the pooled-ptr count
+    // (its frame is the `push ecx` slot + the dead `s` parameter home).
+    i32 cnt = 0;
+    s->Read(&cnt, 4);
+    m_ptrPool.SetSize(cnt, -1);
+    for (u32 n = 0; n < static_cast<u32>(cnt); n++) {
         CoordPoolNode* head = g_coordPool.m_freeHead;
         void* node = 0;
         if (head->m_next != 0) {
@@ -3426,20 +3438,26 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
 // fire the notify value `arg` down the three per-tab notify lists (+0x30, active tab,
 // +0xd8) plus the +0x54c notifier. Returns 1.
 // @early-stop
-// ~97.2%: the code bytes are byte-exact vs retail (verified llvm-objdump -dr). The only
-// scored diffs are the two DIR32 g_gameReg operands (retail _g_mgrSettings) and the
-// GAME_DESTRUCT $SG string; every other reloc (Lookup/Build/Configure/Release/RefreshHost/
-// Notify0/TabCommit) is a reloc-masked REL32. TU-wide rename, matcher.md reloc artifact.
+// 97.25 -> 99.82 (2026-07-28): binding the map to a named local
+// (`CMapStringToPtr* map = &host->m_10;`) before the Lookup is what makes cl chase the
+// g_gameReg->m_world->m_soundRegistry chain in its own register and emit retail's
+// `mov ecx,[chain+0x28]; add ecx,0x10` instead of collapsing into `lea ecx,[eax+0x10]`
+// (docs/patterns/named-local-keeps-deref-base-in-own-register.md).
+// Residual is ONE register-role pair: retail loads m_world into edx and the `&found`
+// address into ecx, cl reuses eax for the chain and takes edx for the lea - the
+// ecx/edx scratch PHASE of docs/patterns/global-store-temp-alternates-ecx-edx.md, whose
+// lever is a missing pool temp upstream, not a local spelling (four upstream spellings
+// measured byte-identical). The same phase break caps LoadMainStatusBarSprite's Lookup.
 RVA(0x000ffb20, 0x13a)
 i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
     if (g_gameReg->m_soundEnabled != 0) {
         if (m_destructWarnActive != 0 && m_modeArmed == 0) {
             if (m_destructButton == 0) {
-                CDDrawSubMgrLeafScan* host =
-                    g_gameReg->m_world
-                        ->m_soundRegistry; // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+                // the REAL +0x28 sound registry (ex CSbiGameMgr/CSbiMusicHost facet)
+                CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
+                CMapStringToPtr* map = &host->m_10; // CMapStringToPtr (mfc_class band)
                 void* found = 0;
-                host->m_10.Lookup("GAME_DESTRUCT", found); // CMapStringToPtr (mfc_class band)
+                map->Lookup("GAME_DESTRUCT", found);
                 if (found) {
                     DSoundCloneInst* f = (static_cast<LeafCue*>(found))->m_10;
                     if (f) {

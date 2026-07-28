@@ -83,6 +83,38 @@ The reason `pal[i]` alone looked like it failed is that lever 2 was missing: wit
 hoisted `s`, indexing fixes the anchor but leaves the `inc eax` / `lea edx`
 transposition, which objdiff scores *worse* than the systematic bias it replaced.
 
+## Third case: TWO fields per record - the walking pointer buys a SECOND induction variable
+
+The same lever runs on a plain serializer walk, and the tell there is a spare register
+plus a spilled counter:
+
+```asm
+; retail - ONE cursor, the second field re-lea'd inline, counter in a register
+  lea ebx,[edi+0x378]        mov ebp,0x4
+  push 4 ; push ebx ; call Write
+  lea eax,[ebx+0x4] ; push 4 ; push eax ; call Write
+  add ebx,0x18 ; dec ebp ; jne
+
+; base - `nb->m_value` became a SECOND running pointer, so the counter spills
+  lea ebx,[edi+0x378]        lea ebp,[ebx+0x4]        mov [esp+0x14],0x4
+  ...  add ebx,0x18 ; add ebp,0x18 ; mov eax,[esp+0x14] ; dec eax ; mov [esp+0x14],eax ; jne
+```
+
+```cpp
+// before - two induction variables
+for (i32 m = 0; m < 4; m++) { s->Write(&nb->m_state, 4); s->Write(&nb->m_value, 4); nb += 1; }
+
+// after - one cursor + an inline lea, and the counter stays in a register
+for (i32 m = 0; m < 4; m++) { s->Write(&nb[m].m_state, 4); s->Write(&nb[m].m_value, 4); }
+nb += 4;
+```
+
+`CStatusBarMgr::Serialize` 0x1090a0 97.76 -> 98.69 and `Deserialize` 0x109520
+94.73 -> 95.02 on this edit alone (2026-07-28); both had been filed
+"trailing 3x4 loop induction-variable form, not steerable (a countdown do-while is
+byte-identical to the `for`)" - and that is true, because the countdown is not the lever:
+**indexing the record is.**
+
 ## Related
 
 - [sib-base-index-follows-local-decl-order](sib-base-index-follows-local-decl-order.md)
