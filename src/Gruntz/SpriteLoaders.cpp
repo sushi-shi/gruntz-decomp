@@ -2,6 +2,7 @@
 #include <Gruntz/GameRegMfcPtr.h>      // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
+#include <Utils/MapTyped.h> // MapLookupById - the id->void* key pun, at one seam
 #include <rva.h>
 #include <Rez/FrameClock.h> // g_timer500 (draw-throttle counter)
 #include <Io/FileMem.h>     // the serialize stream (CFileMemBase == the real CFileMemBase)
@@ -167,13 +168,8 @@ i32 CTimer::Tick(i32 dt) {
             i32 found = 0;
             // the +0x48 serialize map, probed directly (ex the CKeyTable::FindByKey shim -
             // FindByKey WAS CMapPtrToPtr::Lookup @0x1b8760 on the embedded m_map48)
-            void* fv = 0;
-            // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
-            found = g_gameReg->m_world->m_childGroup->m_map48.Lookup(
-                reinterpret_cast<void*>(key),
-                fv
-            );
-            CGameObject* obj = static_cast<CGameObject*>(fv);
+            CGameObject* obj = 0;
+            found = MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, key, obj);
             // faithful: on a miss retail uses the id itself as the object address
             CGameObject* hit = found ? obj : reinterpret_cast<CGameObject*>(key);
             if (hit != 0 && hit->m_7c->m_logic != 0) {
@@ -189,13 +185,8 @@ i32 CTimer::Tick(i32 dt) {
             i32 found = 0;
             // the +0x48 serialize map, probed directly (ex the CKeyTable::FindByKey shim -
             // FindByKey WAS CMapPtrToPtr::Lookup @0x1b8760 on the embedded m_map48)
-            void* fv = 0;
-            // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
-            found = g_gameReg->m_world->m_childGroup->m_map48.Lookup(
-                reinterpret_cast<void*>(key),
-                fv
-            );
-            CGameObject* obj = static_cast<CGameObject*>(fv);
+            CGameObject* obj = 0;
+            found = MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, key, obj);
             // faithful: on a miss retail uses the id itself as the object address
             CGameObject* hit = found ? obj : reinterpret_cast<CGameObject*>(key);
             if (hit != 0 && hit->m_7c->m_logic != 0) {
@@ -248,39 +239,19 @@ i32 CTimer::Draw(CDDrawSurfacePair* target, i32 force) {
         return 1;
     }
     if (m_frameMinTens) {
-        m_frameMinTens->RenderFrame(
-            target,
-            m_baseX - 0x22,
-            m_baseY,
-            0
-        );
+        m_frameMinTens->RenderFrame(target, m_baseX - 0x22, m_baseY, 0);
     }
     if (m_frameMinOnes) {
-        m_frameMinOnes->RenderFrame(
-            target,
-            m_baseX - 0x10,
-            m_baseY,
-            0
-        );
+        m_frameMinOnes->RenderFrame(target, m_baseX - 0x10, m_baseY, 0);
     }
     if (m_frameColon) {
         m_frameColon->RenderFrame(target, m_baseX, m_baseY, 0);
     }
     if (m_frameSecTens) {
-        m_frameSecTens->RenderFrame(
-            target,
-            m_baseX + 0x10,
-            m_baseY,
-            0
-        );
+        m_frameSecTens->RenderFrame(target, m_baseX + 0x10, m_baseY, 0);
     }
     if (m_frameSecOnes) {
-        m_frameSecOnes->RenderFrame(
-            target,
-            m_baseX + 0x22,
-            m_baseY,
-            0
-        );
+        m_frameSecOnes->RenderFrame(target, m_baseX + 0x22, m_baseY, 0);
     }
     return 1;
 }

@@ -18,7 +18,7 @@
 #include <Gruntz/Play.h>     // the real CPlay (EnterOverlayDrag / ClearPlacedObjects)
 #include <Gruntz/SoundCue.h> // CDDrawSubMgrLeafScan - the world holder's +0x28 named-cue registry
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup + GruntObjEntry - the +0x08 id->object map
-#include <Utils/MapTyped.h> // typed MFC map lookups
+#include <Utils/MapTyped.h>           // typed MFC map lookups
 
 // ---------------------------------------------------------------------------
 // 0x6eb80 (__thiscall, ret 4) - the per-frame goo-well / win-condition update.
@@ -139,10 +139,9 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                         if (slot && slot->m_joined && !slot->m_doneFlag && !slot->m_clearedRound) {
                             slot->m_clearedRound = 1;
                             CGameObject* out = 0;
-                            if (MapLookup(
+                            if (MapLookupById(
                                     g_gameReg->m_world->m_childGroup->m_map48,
-                                    // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
-                                    reinterpret_cast<void*>(slot->m_00c),
+                                    slot->m_00c,
                                     out
                                 )
                                 && out) {
@@ -160,10 +159,9 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                         if (lastSlot && lastSlot->m_joined && !lastSlot->m_doneFlag
                             && !lastSlot->m_clearedRound) {
                             CGameObject* out = 0;
-                            if (MapLookup(
+                            if (MapLookupById(
                                     g_gameReg->m_world->m_childGroup->m_map48,
-                                    // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
-                                    reinterpret_cast<void*>(lastSlot->m_00c),
+                                    lastSlot->m_00c,
                                     out
                                 )
                                 && out) {
