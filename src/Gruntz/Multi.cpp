@@ -1175,18 +1175,18 @@ CString CMulti::GetString59c() {
 // validates the service name (0x51b, beep on empty), records it (host mode also
 // records the game name), latches the selected service id, reads the group
 // selection, and closes the dialog (EndDialog(1)).
-// @early-stop
-// 99.93% (was 87.16). 2026-07-28: not a callee-save-count wall - four source fixes.
-// (a) The three g_p* import function-pointer globals were replaced by the real
-// ::EndDialog/::GetDlgItemTextA/::MessageBeep imports, which is what lets cl CSE the
-// load into a register (`mov edi,[__imp_..]; call edi` twice). (b) ONE set of buffers
-// at FUNCTION scope - retail's two GetDlgItemTextA calls share gameBuf's slot, which
-// per-case arrays cannot do (cl packs the stack by scope, not live range). (c)
-// GetDlgItem is its own statement, so its call precedes SendMessage's constant pushes.
-// (d) the wParam==1 body lives inside the `if` and falls out into a single shared
-// `ret_false:` (base had 7 rets, retail 6). Residual: 4 bytes - retail's locals area is
-// 0x50 where nameBuf+gameBuf need 0x4c, i.e. one dword we have not identified, and the
-// by-value CString temp's esp-bookkeeping lands in a different parameter slot.
+// EXACT 2026-07-28 (was 87.16, filed a "regalloc callee-save-count wall"). Five
+// source fixes, no register problem: (a) the three g_p* import function-pointer
+// globals replaced by the real ::EndDialog/::GetDlgItemTextA/::MessageBeep imports,
+// which is what lets cl CSE the load into a register (`mov edi,[__imp_..]; call edi`
+// twice); (b) ONE set of buffers at FUNCTION scope - retail's two GetDlgItemTextA
+// calls share gameBuf's slot, and cl packs the stack by SCOPE, not live range;
+// (c) GetDlgItem is its own statement, so its call precedes SendMessage's constant
+// pushes; (d) the wParam==1 body lives inside the `if` and falls out into one shared
+// `ret_false:` (base had 7 rets, retail 6); (e) gameBuf is 0x44, not 0x40 - retail's
+// locals span exactly 0x50 with gameBuf at +0xc - and `cap` is scoped to the
+// WM_INITDIALOG case, which lets cl overlay it and the WM_COMMAND CString temp's
+// esp-bookkeeping on the SAME dead hDlg parameter slot.
 RVA(0x000b7b10, 0x27c)
 i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
     // FUNCTION scope, not case scope: retail's frame is exactly 0xc + 0x40 (+ the
@@ -1196,8 +1196,7 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
     // WM_COMMAND ones (cl packs the stack by scope, not by live range) and grow the
     // frame to 0x90.
     char nameBuf[0xa];
-    char gameBuf[0x40];
-    u32 cap; // GetValueString takes u32* - declare it that way
+    char gameBuf[0x44];
     g_setupDlgHwnd = hDlg;
     if (BaseDlgProc(hDlg, msg, wParam, lParam) != 0) {
         return 1;
@@ -1214,7 +1213,7 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
                 ::SendMessageA(combo, 0x186, 0, 0);
             }
 
-            cap = 0xa;
+            u32 cap = 0xa; // GetValueString takes u32* - declare it that way
             g_gameReg->m_settings->GetValueString(
                 const_cast<char*>(static_cast<const char*>(("Player_Name"))),
                 nameBuf,
