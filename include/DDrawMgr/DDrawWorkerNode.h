@@ -53,8 +53,8 @@ public:
         m_id = 0;
         m_ownerCtx = ctx;
         m_flags = 0;
-        m_dirtyRect.left = static_cast<i32>(0x80000000);
-        m_dirtyArmed = -1;
+        m_dirty.m_rect.left = static_cast<i32>(0x80000000);
+        m_dirty.m_armed = -1;
         m_screenX = static_cast<i32>(0x80000000);
         m_clip.left = static_cast<i32>(0x80000000);
         m_level = 0;

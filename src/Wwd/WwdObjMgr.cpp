@@ -12,6 +12,20 @@
 // original TU: filename unknown (@identity-TODO - no __FILE__ anchor).
 //
 // Field names are placeholders; only OFFSETS + emitted bytes are load-bearing.
+
+// This TU owns the out-of-line COMDAT copies of the two sub-object ctors its
+// factories CALL (retail 0x159250/0x159440/0x159600 all emit `call 0x15b270` /
+// `call 0x15b2a0`), so it must see a DECLARATION only - the guards below suppress
+// the header's inline definitions here and nowhere else. WwdRegion's ctor is
+// deliberately NOT guarded: retail folds it into 0x159250/0x159440 (which then
+// call the WwdGridNode base copy) and only 0x159600 calls it whole, and MSVC5 has
+// no per-call-site control, so the two-of-three reading wins.
+#define WWDDIRTYRECT_OOL_CTOR
+#define WWDGRIDNODE_OOL_CTOR
+// The other two the factories call, whose COMDAT copies live in WwdFactoryObject.cpp.
+#define CRESOLVENODE_OOL_CTOR
+#define ANIMWORKEROBJ_OOL_CTOR
+
 #include <rva.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
@@ -181,8 +195,9 @@ CWwdGameObjectF* CDDrawChildGroup::CreateNamed_1595b0(int a1, int a2, const char
 // @early-stop
 // ONE instruction: retail CALLS WwdRegion's ctor COMDAT (0x15b2b0) for the +0x9c
 // member here, while our cl expands it (`mov [ebp+0x18],edi` in place of the call).
-// The same in-class placement is what takes CreateObject_159250/159440 to EXACT
-// (there retail expands it too), so the two demands are in direct conflict and
+// The same INLINE visibility is what takes CreateObject_159250/159440 to EXACT
+// (there retail expands it too). The WWDREGION_OOL_CTOR guard is per-TU and these
+// three factories share this TU, so the two demands are in direct conflict and
 // MSVC5 has no per-callsite noinline. docs/patterns/ob1-inline-budget-divergence.md
 // ===========================================================================
 RVA(0x00159600, 0x1ab)
@@ -285,11 +300,12 @@ i32 CDDrawChildGroup::AttachSprite(
 // budget ran out one level up. __thiscall, 6 stack args (ret 0x18).
 // @early-stop
 // cl-5.0 inline-budget divergence (docs/patterns/ob1-inline-budget-divergence.md):
-// the body/types/EH states are right, but our cl EXPANDS CGameObject's in-class ctor
-// here where retail's CALLED its COMDAT (0x15b390). MSVC5 /O2 is /Ob1, so the ctor
-// must stay an inline candidate for CreateObject_159250/159440/159600 (all EXACT via
-// that expansion) - and there is no MSVC5 noinline to force the call back. Not
-// steerable from source; retail's 0x15b390 COMDAT is consequently unemitted here.
+// the body/types/EH states are right, but our cl EXPANDS CGameObject's ctor here
+// where retail's CALLED its COMDAT (0x15b390). The CGAMEOBJECT_OOL_CTOR guard that
+// fixes the OTHER two calling sites (wwdgameobjectrender 0x166640, levelplane
+// 0x162af0) is per-TU, and CreateObject_159250/159440/159600 in THIS file need the
+// opposite (they are EXACT / 95.7 % via the expansion). MSVC5 has no per-callsite
+// noinline, so this one site cannot be spelled both ways.
 // ===========================================================================
 RVA(0x001598d0, 0x13d)
 CWwdGameObject*
@@ -577,7 +593,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                         }
                         if (overlap) {
                             if (mask2) {
-                                AnimWorkerObj* nf = oj->m_88;
+                                AnimWorkerObj* nf = oj->m_attackWorker;
                                 if (nf != 0) {
                                     oj->m_8c = oi;
                                     // (the E*->CGameObject* respell dies at the flat-merge typedef)
@@ -594,7 +610,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                                         oi->m_7c->SetActKey(0x1c);
                                     }
                                 } else {
-                                    AnimWorkerObj* nf = oi->m_80;
+                                    AnimWorkerObj* nf = oi->m_hitWorker;
                                     if (nf != 0) {
                                         oi->m_84 = oj;
                                         nf->m_notify(oi);
@@ -615,7 +631,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                 i32 mask2b = static_cast<i32>(oj->m_collCategory) & oi->m_f0;
                 if ((mask1b || mask2b) && BoxesOverlap(oj, oi)) {
                     if (mask2b) {
-                        AnimWorkerObj* nf = oi->m_88;
+                        AnimWorkerObj* nf = oi->m_attackWorker;
                         if (nf != 0) {
                             oi->m_8c = oj;
                             nf->m_notify(oi);

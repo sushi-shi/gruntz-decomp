@@ -9,6 +9,30 @@
 // ctor 0x15b390).
 //
 // original TU: filename unknown (@identity-TODO - no __FILE__ anchor).
+
+// This TU is retail's COMDAT home for the whole base-object ctor cluster
+// (0x15b2b0 / 0x15b2c0 / 0x15b300 / 0x15b390 all land inside its 0x15b2b0-0x15ccc8
+// run). Which of them may be INLINE here is the per-TU OOL_CTOR switch described in
+// <Gruntz/WwdGridIter.h> + docs/patterns/ob1-inline-budget-divergence.md:
+//   declaration-only : CGameObject -> this TU supplies the 0x15b390 body below
+//                      WwdRegion   -> this TU supplies the 0x15b2b0 body below
+//   inline + FORCED  : CResolveNode 0x15b2c0, AnimWorkerObj 0x15b300 - 0x15b390 has
+//                      to FOLD both, so their standalone copies are dragged out by
+//                      the #pragma inline_depth(0) forcers at the end of the file
+//                      and pinned with RVA_COMPGEN (the UserLogicCtorEmit.cpp device)
+//   inline, no copy  : WwdGridNode + WwdDirtyRect (their 0x15b2a0/0x15b270 copies
+//                      belong to WwdObjMgr.cpp, whose factories CALL them)
+//
+// WwdRegion is declaration-only DELIBERATELY, and it is the one place we spend a
+// byte to buy correctness: retail FOLDS it into 0x15b390, but cl 5.0's /Ob1
+// expansion budget is one short in that ctor and, left inline, it prunes the
+// DEEPEST expansion instead - `??0CWapObj` - which then emits a `??_7CWapObj@@6B@`
+// COMDAT retail does not have (a FATAL vtbl-absent violation). Guarding WwdRegion
+// frees two expansions (itself + its WwdGridNode base), CWapObj folds again, and
+// the only residue is one `call ??0WwdRegion` inside 0x15b390.
+#define WWDREGION_OOL_CTOR
+#define CGAMEOBJECT_OOL_CTOR
+
 #include <Mfc.h>
 #include <Image/CImage.h> // complete CImage: the CObArray-element downcasts are static (CImage : CWapObj : CObject)
 #include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
@@ -42,34 +66,31 @@ VTBL(CWwdGameObjectA, 0x001f00a8);   // ??_7 (16 slots)
 VTBL(CWwdGameObject, 0x001f00e8);    // ??_7 (16 slots; B : A)
 VTBL(CAniAdvanceCursor, 0x001f0128); // ??_7CAniAdvanceCursor@@6B@ (9-slot CLoadable-derived)
 // ---------------------------------------------------------------------------
-// 0x15b2c0 - the parameterized CResolveNode ctor (the factory base sub-object).
-RVA(0x0015b2c0, 0x3d)
-CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
-    : CLoadable(field04, field08, owner) {
-    m_dirtyRect.left = static_cast<i32>(0x80000000);
-    m_dirtyArmed = -1;
-    m_screenX = static_cast<i32>(0x80000000);
-    m_clip.left = static_cast<i32>(0x80000000);
-    m_level = 0;
-    m_stateFlags = 0;
+// 0x15b2b0 - the standalone COMDAT copy of WwdRegion's default ctor (the +0x9c
+// embedded spatial-grid node). CDDrawChildGroup::CreateObject_159600 calls it;
+// CreateObject_159250/159440 (and retail's 0x15b390) fold it, which is why the body
+// stays INLINE in <Gruntz/WwdGridIter.h> for every other TU. The WwdGridNode base
+// ctor folds INTO this copy - retail is `xor ecx,ecx` + three stores, 14 B, no call
+// - so WwdGridNode must NOT be guarded here.
+RVA(0x0015b2b0, 0xe)
+WwdRegion::WwdRegion() {
+    m_object = 0;
 }
+
+// ---------------------------------------------------------------------------
+// 0x15b2c0 - the parameterized CResolveNode ctor (the factory base sub-object).
+// The body is INLINE in <Gruntz/ResolveNode.h> (0x15b390 below folds it whole);
+// this standalone copy is forced out by ForceEmitCResolveNode at the bottom of the
+// file, so it carries no definition here and is pinned by mangled name.
+RVA_COMPGEN(0x0015b2c0, 0x3d, ??0CResolveNode@@QAE@PAVCDDrawSurfaceMgr@@HH@Z)
 
 // ---------------------------------------------------------------------------
 // 0x15b300 - AnimWorkerObj's out-of-line 3-arg seed constructor. The arg-store order
 // (b,c,a into m_04/m_08/m_0c) is load-bearing. The base trio is CLoadable's ctor,
 // NOT three body assignments: cl5 stamps the vptr between the base/mem-init half and
 // the ctor body, which is retail's vptr-after-m_id/m_flags/m_ownerCtx order.
-RVA(0x0015b300, 0x40)
-AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-    : CLoadable(id, stateFlags, owner) {
-    m_notify = 0;
-    m_payload = 0;
-    m_logic = 0;
-    m_target = 0;
-    m_1c = 0;
-    m_targetId = 0;
-    m_payloadSize = 0;
-}
+// Body inline in <DDrawMgr/AnimWorkerObj.h>; standalone copy forced out below.
+RVA_COMPGEN(0x0015b300, 0x40, ??0AnimWorkerObj@@QAE@PAVCDDrawSurfaceMgr@@HH@Z)
 
 RVA(0x0015b340, 0x2b)
 i32 AnimWorkerObj::Consume(i32 amount) {
@@ -97,11 +118,49 @@ i32 CGameObject::IsLoaded() {
     return 0;
 }
 
-// (0x15b390 is CGameObject::CGameObject(CDDrawSurfaceMgr*,i32,i32) - the shared
-// wide-object ctor, now IN-CLASS in <Wwd/WwdGameObjectFamily.h>. It used to be
-// spelled here as ??0CWwdGameObjBaseCtor over a `char _vft0[4]`/`_pXX` fake view;
-// the vtable stamps its comments called "dropped" are the two the real class emits
-// on its own - ??_7CResolveNode from the base ctor, then ??_7CGameObject.)
+// ---------------------------------------------------------------------------
+// 0x15b390 - CGameObject::CGameObject(CDDrawSurfaceMgr*, i32, i32): the shared
+// wide-object base ctor. It is INLINE in <Wwd/WwdGameObjectFamily.h> (the three
+// CDDrawChildGroup factories fold it whole); THIS TU takes the out-of-line copy -
+// the guard at the top of the file turns the header definition into a declaration
+// so the body below is the one and only standalone COMDAT.
+//
+// Everything still inline here folds in exactly as retail does: the CResolveNode
+// base (vptr 0x5efbc0 + the +0x20/+0x38/+0x5c/+0x64 sentinels, the +0x20/+0x38 pair
+// coming from the m_dirty MEMBER ctor, which is why it precedes the stamp), the
+// +0xb8 WwdDirtyRect shadow, and the `new AnimWorkerObj(...)` worker - leaving the
+// +0xdc CString ctor and operator new(0x17c), which is retail's /GX state walk
+// 0 -> 2 -> 3. The +0x9c WwdRegion is the deliberate exception (see above).
+//
+// (It used to be spelled here as ??0CWwdGameObjBaseCtor over a `char _vft0[4]`/
+// `_pXX` fake view; the vtable stamps its comments called "dropped" are the two the
+// real class emits on its own - ??_7CResolveNode from the base ctor, then
+// ??_7CGameObject.)
+// @early-stop
+// cl-5.0 /Ob1 EXPANSION-COUNT exhaustion (docs/patterns/ob1-inline-budget-
+// divergence.md). Everything matches except the +0x9c member: retail folds
+// WwdRegion's three stores, we emit `lea ecx,[esi+0x9c]; call ??0WwdRegion` (and
+// the two -1 immediates that no longer share the clobbered `or eax,-1`). That call
+// is DELIBERATE - see the guard rationale at the top of the file: this body needs
+// ~12 nested ctor expansions and cl 5.0 is one short, so left to itself it prunes
+// the deepest one instead (`??0CWapObj`, whose out-of-line COMDAT then emits the
+// proven-absent ??_7CWapObj@@6B@ and fails the vtbl-absent gate). PROVEN a count,
+// not a depth: deleting the `new AnimWorkerObj(...)` statement (probe) frees the
+// same budget, while #pragma inline_depth(16)/(255) change nothing and MSVC5 has
+// no __forceinline (C2501). 88.7 % with the CWapObj prune, 91.1 % this way.
+RVA(0x0015b390, 0x128)
+CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
+    : CResolveNode(owner, id, stateFlags) {
+    m_screenX = static_cast<i32>(0x80000000);
+    m_posCache = 0;
+    m_7c = new AnimWorkerObj(owner, id, 0);
+    m_carrier = 0;
+    m_hitWorker = 0;
+    m_attackWorker = 0;
+    m_collideWorker = 0;
+    m_188 = g_wwdObjIdCounter;
+    g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
+}
 
 // ---------------------------------------------------------------------------
 // 0x154a50 - ~CResolveNode: disarm the live dirty-rect sentinels; ~CLoadable
@@ -114,8 +173,8 @@ i32 CGameObject::IsLoaded() {
 RVA(0x00154a50, 0x23)
 CResolveNode::~CResolveNode() {
     m_screenX = static_cast<i32>(0x80000000);
-    m_dirtyRect.left = static_cast<i32>(0x80000000);
-    m_dirtyArmed = -1;
+    m_dirty.m_rect.left = static_cast<i32>(0x80000000);
+    m_dirty.m_armed = -1;
 }
 
 // ---------------------------------------------------------------------------
@@ -129,8 +188,8 @@ CResolveNode::~CResolveNode() {
 RVA(0x00154a80, 0x13)
 void CResolveNode::Unload() {
     m_screenX = static_cast<i32>(0x80000000);
-    m_dirtyRect.left = static_cast<i32>(0x80000000);
-    m_dirtyArmed = -1;
+    m_dirty.m_rect.left = static_cast<i32>(0x80000000);
+    m_dirty.m_armed = -1;
 }
 
 RVA_COMPGEN(0x0015b4c0, 0x1e, ??_GCGameObject@@UAEPAXI@Z)
@@ -158,7 +217,7 @@ void CGameObject::Notify(void* p) {
             m_7c->SetActKey(0x1c); // the m_1c int-role arm
         }
     } else {
-        AnimWorkerObj* h = m_80;
+        AnimWorkerObj* h = m_hitWorker;
         if (h != 0) {
             m_84 = static_cast<CGameObject*>(p);
             h->m_notify(this);
@@ -611,7 +670,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         CWwdGameObjectA* c = m_10;
         i32 fire = 1;
         if (!(c->m_flags & 0x2000000) && !(m_element->m_flags & 0x8)) {
-            if (c->m_dirtyArmed == -1) {
+            if (c->m_dirty.m_armed == -1) {
                 fire = 0;
             }
         }
@@ -1002,3 +1061,23 @@ void CWwdGameObjectA::ClampLast() {
         m_layer = 0;
     }
 }
+
+// ---------------------------------------------------------------------------
+// COMDAT forcers. CResolveNode's and AnimWorkerObj's ctors have to stay INLINE in
+// this TU so 0x15b390 above folds them the way retail does - but retail ALSO
+// shipped their standalone copies (0x15b2c0 / 0x15b300, both called by the
+// CDDrawChildGroup factories), and an inline function nothing calls out-of-line is
+// never emitted. inline_depth(0) makes these two references NON-inlinable, which is
+// exactly what drags the standalone bodies out; each is pinned by mangled name with
+// the RVA_COMPGEN next to its comment near the top of the file. (Same device as
+// src/Gruntz/UserLogicCtorEmit.cpp.)
+static void* volatile g_forceEmitSink;
+#pragma inline_depth(0)
+void ForceEmitCResolveNodeCtor(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags) {
+    g_forceEmitSink = new CResolveNode(owner, id, stateFlags);
+}
+#pragma inline_depth(0)
+void ForceEmitAnimWorkerObjCtor(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags) {
+    g_forceEmitSink = new AnimWorkerObj(owner, id, stateFlags);
+}
+#pragma inline_depth()

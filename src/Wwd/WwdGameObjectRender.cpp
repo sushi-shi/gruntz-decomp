@@ -7,6 +7,13 @@
 // 0x1660f0-0x1670d0+ zone (these wwd render fns + the imageset1/2/3 Parse/Query
 // families) is BEYOND the wave4-L brief cap and was NOT boundary-mapped; this file
 // holds exactly the wwd fns as a correct partial until that zone's own dossier.
+
+// CWwdGameObject::CreateObject @0x166640 CALLS the shared CGameObject ctor COMDAT
+// (0x15b390) instead of folding it, so this TU takes the declaration-only form of
+// it - the per-TU guard described in <Gruntz/WwdGridIter.h>. The body lives in
+// src/Wwd/WwdFactoryObject.cpp.
+#define CGAMEOBJECT_OOL_CTOR
+
 #include <Mfc.h>
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <rva.h>
@@ -89,20 +96,20 @@ void CWwdGameObjectC::Render(CDDrawSurfacePair* a) {
             surf->m_ddSurface->Unlock(0);
         }
     }
-    m_lastX = m_screenX;
-    m_lastY = m_screenY;
-    m_dirtyW = 1;
-    m_dirtyH = 1;
-    m_dirtyArmed = 0;
+    m_dirty.m_lastX = m_screenX;
+    m_dirty.m_lastY = m_screenY;
+    m_dirty.m_w = 1;
+    m_dirty.m_h = 1;
+    m_dirty.m_armed = 0;
     return;
 reject:
-    m_dirtyArmed = -1;
+    m_dirty.m_armed = -1;
 }
 
 // ---------------------------------------------------------------------------
 // 0x1661d0 (vtable slot 12): snapshot the live 9-dword state block (@0x18) into the
 // shadow block (@0xb8), then - if the shadow's just-copied armed flag
-// is still set - restore the background pixel at the shadow position (m_shadow.m_x/m_y):
+// is still set - restore the background pixel at the shadow position (m_shadow.m_lastX/m_y):
 // read it from the back pair `b`'s surface and write it onto the front pair `a`'s,
 // then disarm the live flag (m_38 = -1). __thiscall, 2 ptr args (ret 0x8).
 // @early-stop
@@ -118,10 +125,10 @@ RVA(0x001661d0, 0xc2)
 void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     // the live +0x18 record snapshotted onto the shadow +0xb8 one - the SAME
     // 0x24-byte WwdDirtyRect shape at both offsets, which is why one 36-byte move does it
-    memcpy(&m_shadow, &m_lastX, sizeof(m_shadow));
+    m_shadow = m_dirty;
     if (m_shadow.m_armed != -1) {
-        i32 x = m_shadow.m_x;
-        i32 y = m_shadow.m_y;
+        i32 x = m_shadow.m_lastX;
+        i32 y = m_shadow.m_lastY;
         char pixel;
         CDDSurface* sb = b->m_surface;
         char* base = static_cast<char*>(sb->Lock(0));
@@ -137,14 +144,14 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
             base2[sa->m_bytesPerPixel * x + sa->m_pitch * y] = pixel;
             sa->m_ddSurface->Unlock(0);
         }
-        m_dirtyArmed = -1; // m_38
+        m_dirty.m_armed = -1; // m_38
     }
 }
 
 // ---------------------------------------------------------------------------
 // 0x1662a0 (vtable slot 13): blit the object's dirty region(s) from the back pair
 // `b`'s surface onto the front pair `a`'s (CDDSurface::BltEx, same rect for src+dst).
-// When both the live (m_dirtyArmed) and shadow (m_shadow.m_armed) records are armed, cover them with ONE
+// When both the live (m_dirty.m_armed) and shadow (m_shadow.m_armed) records are armed, cover them with ONE
 // BltEx over the union rect if their corners are within 32 px in both axes, else two
 // BltEx (one per record). Only one armed -> just that record's rect. Each rect is
 // {x, y, x+w, y+h}. Arg `c` unused. __thiscall, 3 args (ret 0xc).
@@ -161,41 +168,41 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 // no-op). docs/patterns/zero-register-pinning.md / tail-merge layout.
 RVA(0x001662a0, 0x1fa)
 void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
-    i32 rc[4];                                          // one reused src+dst rect buffer
-    if (m_dirtyArmed != -1 && m_shadow.m_armed != -1) { // both armed
-        i32 dx = abs(m_lastX - m_shadow.m_x) + 1;
-        i32 dy = abs(m_lastY - m_shadow.m_y) + 1;
+    i32 rc[4];                                             // one reused src+dst rect buffer
+    if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) { // both armed
+        i32 dx = abs(m_dirty.m_lastX - m_shadow.m_lastX) + 1;
+        i32 dy = abs(m_dirty.m_lastY - m_shadow.m_lastY) + 1;
         if (dx > 0x20 || dy > 0x20) {
-            rc[0] = m_lastX;
-            rc[1] = m_lastY;
-            rc[2] = m_lastX + m_dirtyW;
-            rc[3] = m_lastY + m_dirtyH;
+            rc[0] = m_dirty.m_lastX;
+            rc[1] = m_dirty.m_lastY;
+            rc[2] = m_dirty.m_lastX + m_dirty.m_w;
+            rc[3] = m_dirty.m_lastY + m_dirty.m_h;
             a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
-            rc[0] = m_shadow.m_x;
-            rc[1] = m_shadow.m_y;
-            rc[2] = m_shadow.m_x + m_shadow.m_w;
-            rc[3] = m_shadow.m_y + m_shadow.m_h;
+            rc[0] = m_shadow.m_lastX;
+            rc[1] = m_shadow.m_lastY;
+            rc[2] = m_shadow.m_lastX + m_shadow.m_w;
+            rc[3] = m_shadow.m_lastY + m_shadow.m_h;
             a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
         } else {
-            i32 left = m_lastX < m_shadow.m_x ? m_lastX : m_shadow.m_x;
-            i32 top = m_lastY < m_shadow.m_y ? m_lastY : m_shadow.m_y;
+            i32 left = m_dirty.m_lastX < m_shadow.m_lastX ? m_dirty.m_lastX : m_shadow.m_lastX;
+            i32 top = m_dirty.m_lastY < m_shadow.m_lastY ? m_dirty.m_lastY : m_shadow.m_lastY;
             rc[0] = left;
             rc[1] = top;
             rc[2] = left + dx;
             rc[3] = top + dy;
             a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
         }
-    } else if (m_dirtyArmed != -1) {
-        rc[0] = m_lastX;
-        rc[1] = m_lastY;
-        rc[2] = m_lastX + m_dirtyW;
-        rc[3] = m_lastY + m_dirtyH;
+    } else if (m_dirty.m_armed != -1) {
+        rc[0] = m_dirty.m_lastX;
+        rc[1] = m_dirty.m_lastY;
+        rc[2] = m_dirty.m_lastX + m_dirty.m_w;
+        rc[3] = m_dirty.m_lastY + m_dirty.m_h;
         a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
     } else if (m_shadow.m_armed != -1) {
-        rc[0] = m_shadow.m_x;
-        rc[1] = m_shadow.m_y;
-        rc[2] = m_shadow.m_x + m_shadow.m_w;
-        rc[3] = m_shadow.m_y + m_shadow.m_h;
+        rc[0] = m_shadow.m_lastX;
+        rc[1] = m_shadow.m_lastY;
+        rc[2] = m_shadow.m_lastX + m_shadow.m_w;
+        rc[3] = m_shadow.m_lastY + m_shadow.m_h;
         a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
     }
 }
@@ -213,15 +220,17 @@ void CWwdGameObjectC::BltDirtyRegions(
     CDDrawSurfacePair* b,
     CDDrawSurfacePair* c
 ) {
-    if (m_dirtyArmed != -1 && m_shadow.m_armed != -1) { // both armed -> combined region
-        i32 dx = abs(m_lastX - m_shadow.m_x) + 1;
-        i32 dy = abs(m_lastY - m_shadow.m_y) + 1;
+    if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) { // both armed -> combined region
+        i32 dx = abs(m_dirty.m_lastX - m_shadow.m_lastX) + 1;
+        i32 dy = abs(m_dirty.m_lastY - m_shadow.m_lastY) + 1;
         if (dx > 0x20 || dy > 0x20) {
-            a->BlitDirtyRect(b, &m_lastX, &m_dirtyW);          // live record
-            a->BlitDirtyRect(b, &m_shadow.m_x, &m_shadow.m_w); // shadow record
+            a->BlitDirtyRect(b, &m_dirty.m_lastX, &m_dirty.m_w);   // live record
+            a->BlitDirtyRect(b, &m_shadow.m_lastX, &m_shadow.m_w); // shadow record
         } else {
-            i32 left = m_lastX < m_shadow.m_x ? m_lastX : m_shadow.m_x; // min x
-            i32 top = m_lastY < m_shadow.m_y ? m_lastY : m_shadow.m_y;  // min y
+            i32 left =
+                m_dirty.m_lastX < m_shadow.m_lastX ? m_dirty.m_lastX : m_shadow.m_lastX; // min x
+            i32 top =
+                m_dirty.m_lastY < m_shadow.m_lastY ? m_dirty.m_lastY : m_shadow.m_lastY; // min y
             i32 pos[2];
             i32 size[2];
             size[1] = dy;
@@ -230,10 +239,10 @@ void CWwdGameObjectC::BltDirtyRegions(
             pos[0] = left;
             a->BlitDirtyRect(b, pos, size);
         }
-    } else if (m_dirtyArmed != -1) {
-        a->BlitDirtyRect(b, &m_lastX, &m_dirtyW); // live record only
+    } else if (m_dirty.m_armed != -1) {
+        a->BlitDirtyRect(b, &m_dirty.m_lastX, &m_dirty.m_w); // live record only
     } else if (m_shadow.m_armed != -1) {
-        a->BlitDirtyRect(b, &m_shadow.m_x, &m_shadow.m_w); // shadow record only
+        a->BlitDirtyRect(b, &m_shadow.m_lastX, &m_shadow.m_w); // shadow record only
     }
 }
 
@@ -254,14 +263,11 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, AnimWorkerObj* tmpl) {
 // 0x166640 - CWwdGameObject::CreateObject: build a child A-kind object and publish
 // it into this manager's own CObList at +0x1dc (AddTail). __thiscall, 6 stack args
 // (ret 0x18). Retail CALLS the shared CGameObject ctor COMDAT (0x15b390) and
-// INLINES the +0x1a0 cursor - the two halves of `new CWwdGameObjectA(...)`.
+// INLINES the +0x1a0 cursor - the two halves of `new CWwdGameObjectA(...)`, which
+// is now exactly what this TU emits (the CGAMEOBJECT_OOL_CTOR guard at the top of
+// the file; 42.4 -> 71.7 %).
 // @early-stop
-// cl-5.0 inline-budget divergence (docs/patterns/ob1-inline-budget-divergence.md):
-// the body/types/EH states are right, but our cl EXPANDS CGameObject's in-class ctor
-// here where retail's CALLED its COMDAT (0x15b390). MSVC5 /O2 is /Ob1, so the ctor
-// must stay an inline candidate for CreateObject_159250/159440/159600 (all EXACT via
-// that expansion) - and there is no MSVC5 noinline to force the call back. Not
-// steerable from source; retail's 0x15b390 COMDAT is consequently unemitted here.
+// residual regalloc/scheduling only - the ctor CALL half is reproduced.
 // ===========================================================================
 RVA(0x00166640, 0x13b)
 CWwdGameObject*

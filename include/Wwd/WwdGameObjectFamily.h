@@ -30,27 +30,18 @@ class CAniElement; // ApplyGeometryDirect's geometry source (<Gruntz/AniElement.
 
 struct CGameObject : public CResolveNode {
 public:
-    // The shared wide-object constructor (COMDAT copy @0x15b390, kept from the
-    // WwdFactoryObject.cpp obj - the only TU where CResolveNode's and
-    // AnimWorkerObj's ctor bodies are both visible, which is why retail's 0x15b390
-    // INLINES those two while it CALLS the CString ctor). It lives here, in the
-    // header, because CDDrawChildGroup::CreateObject_159250/159440/159600 inline it
-    // whole while CreateObject_1598d0 calls it - only an inline definition can do
-    // both. (This dissolved the CWwdGameObjBaseCtor/WwdCtorBase view, which faked
-    // the same object with a `char _vft0[4]` vptr and _pXX padding.)
-    RVA(0x0015b390, 0x128)
-    CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-        : CResolveNode(owner, id, stateFlags) {
-        m_screenX = static_cast<i32>(0x80000000);
-        m_posCache = 0;
-        m_7c = new AnimWorkerObj(owner, id, 0);
-        m_carrier = 0;
-        m_80 = 0;
-        m_88 = 0;
-        m_collideWorker = 0;
-        m_188 = g_wwdObjIdCounter;
-        g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
-    }
+    // The shared wide-object constructor. INLINE by default because
+    // CDDrawChildGroup::CreateObject_159250/159440/159600 fold it whole; the
+    // standalone COMDAT copy retail's other three construction sites CALL
+    // (CreateObject_1598d0 @0x1598d0, CWwdGameObject::CreateObject @0x166640,
+    // CDDrawWorkerHost::ReadPlaneObjects @0x162af0) is supplied out-of-line at
+    // 0x15b390 by src/Wwd/WwdFactoryObject.cpp under CGAMEOBJECT_OOL_CTOR - the
+    // per-TU guard described in <Gruntz/WwdGridIter.h>. A TU whose call sites
+    // retail CALLED defines the guard too; wwdobjmgr cannot (three of its four
+    // factories fold it), which is the one remaining site we cannot spell both ways.
+    // (This dissolved the CWwdGameObjBaseCtor/WwdCtorBase view, which faked the same
+    // object with a `char _vft0[4]` vptr and _pXX padding.)
+    CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags);
     virtual ~CGameObject() OVERRIDE; // 0x15b4f0 (out-of-line, WwdFactoryObject.cpp;
                                      // body = { Unload(); } + member/base folds)
     virtual i32 IsLoaded() OVERRIDE; // slot 5  @0x15b370 (m_7c && m_0c && m_04 != -1)
@@ -61,14 +52,14 @@ public:
     RVA(0x0015b5d0, 0x7c)
     virtual void Unload() OVERRIDE {
         WORKER_FREE(m_7c);
-        WORKER_FREE(m_80);
-        WORKER_FREE(m_88);
+        WORKER_FREE(m_hitWorker);
+        WORKER_FREE(m_attackWorker);
         WORKER_FREE(m_collideWorker);
         m_shadow.m_rect.left = static_cast<i32>(0x80000000);
         m_shadow.m_armed = -1;
         m_screenX = static_cast<i32>(0x80000000);
-        m_dirtyRect.left = static_cast<i32>(0x80000000);
-        m_dirtyArmed = -1;
+        m_dirty.m_rect.left = static_cast<i32>(0x80000000);
+        m_dirty.m_armed = -1;
         // (void per the CLoadable slot; retail's eax residue is the INT_MIN the
         // stores materialize)
     }
@@ -132,9 +123,9 @@ public:
     // after it - the OTHER object of the pending event, stored just before the
     // worker's m_notify fires. (+0x94 is the flat model's m_hitOther.)
     AnimWorkerObj* m_7c;            // +0x7c  the owned worker/logic record
-    AnimWorkerObj* m_80;            // +0x80  lazily-built Hit handler worker
+    AnimWorkerObj* m_hitWorker;     // +0x80  lazily-built Hit handler worker
     CGameObject* m_84;              // +0x84  Hit partner (RECT-phase mask1 hit)
-    AnimWorkerObj* m_88;            // +0x88  lazily-built Attack handler worker
+    AnimWorkerObj* m_attackWorker;  // +0x88  lazily-built Attack handler worker
     CGameObject* m_8c;              // +0x8c  Attack partner (RECT mask2 / BOX mask2b hit)
     AnimWorkerObj* m_collideWorker; // +0x90  lazily-built Bump/collide handler worker
     CGameObject* m_hitOther;        // +0x94  collide partner (stored just before
@@ -214,6 +205,24 @@ public:
                        //         g_wwdObjIdCounter stamp; warlord battle-event id)
 };
 SIZE_UNKNOWN(); // base subobject; the concrete kinds carry the sizes
+
+// The inline body (see the declaration above). CGAMEOBJECT_OOL_CTOR is defined by
+// src/Wwd/WwdFactoryObject.cpp, which supplies the 0x15b390 COMDAT, and by the TUs
+// whose retail call sites emit `call 0x15b390` instead of folding it.
+#ifndef CGAMEOBJECT_OOL_CTOR
+inline CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
+    : CResolveNode(owner, id, stateFlags) {
+    m_screenX = static_cast<i32>(0x80000000);
+    m_posCache = 0;
+    m_7c = new AnimWorkerObj(owner, id, 0);
+    m_carrier = 0;
+    m_hitWorker = 0;
+    m_attackWorker = 0;
+    m_collideWorker = 0;
+    m_188 = g_wwdObjIdCounter;
+    g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
+}
+#endif
 
 class CWwdGameObjectA : public CGameObject {
 public:

@@ -25,7 +25,7 @@ SIZE_UNKNOWN();
 // inlines it). CDDrawChildGroup::CreateObject_159250/159440 call the base copy and
 // spell the `m_object = 0` store inline; CreateObject_159600 calls the derived copy.
 struct WwdGridNode : DSoundLink { // {m_next,m_prev} @ +0x00/+0x04 from DSoundLink
-    WwdGridNode();                // 0x15b2a0 (out-of-line, WwdObjMgr.cpp)
+    WwdGridNode();                // 0x15b2a0 (COMDAT copy in WwdObjMgr.cpp)
     i32 m_08;                     // +0x08
     BucketHead* m_bucket;         // +0x0c  cached owning bucket
     i32 m_x;                      // +0x10
@@ -34,10 +34,7 @@ struct WwdGridNode : DSoundLink { // {m_next,m_prev} @ +0x00/+0x04 from DSoundLi
 SIZE(0x18);
 
 struct WwdRegion : WwdGridNode {
-    RVA(0x0015b2b0, 0xe)
-    WwdRegion() {
-        m_object = 0;
-    }
+    WwdRegion(); // 0x15b2b0 (COMDAT copy in WwdFactoryObject.cpp)
     // Empty but user-declared - it earns the embedded +0x9c member its own /GX
     // unwind-map index, which is what makes retail's ctor-in-flight state walk in
     // CDDrawChildGroup::CreateObject_159250/159440/159600 run 0..5 instead of 0..3.
@@ -45,6 +42,34 @@ struct WwdRegion : WwdGridNode {
     struct CGameObject* m_object; // +0x18  owning wide-object back-pointer
 };
 SIZE(0x1c); // == the +0x9c..+0xb7 embedded m_region span
+
+// Both node ctors are INLINE (retail's are header-defined: every one of them is a
+// /Gy COMDAT that some call sites fold and others call). The OOL_CTOR guards are
+// the per-TU switch that reproduces retail's per-site decision, because MSVC5's
+// /O2 is /Ob1 and inlining is a per-TU property of the definition, not per site:
+// a TU that #defines the guard sees a DECLARATION only, so every construction
+// there is a CALL - and that TU supplies the out-of-line body (the COMDAT).
+// This whole cluster (also CRESOLVENODE_/ANIMWORKEROBJ_/WWDDIRTYRECT_/CGAMEOBJECT_
+// OOL_CTOR) is written up in docs/patterns/ob1-inline-budget-divergence.md, together
+// with the #pragma inline_depth(0) forcer that recovers a COMDAT for a ctor a TU has
+// to keep inline.
+//   WWDGRIDNODE_OOL_CTOR -> WwdObjMgr.cpp (0x15b2a0; its factories CALL it)
+//   WWDREGION_OOL_CTOR   -> WwdFactoryObject.cpp (0x15b2b0). Retail folds WwdRegion
+//     into CGameObject::CGameObject @0x15b390, which lives in that same TU - but
+//     guarding it there is deliberate: it frees the two /Ob1 expansions that let
+//     `??0CWapObj` fold instead of being pruned into a proven-absent ??_7CWapObj.
+#ifndef WWDGRIDNODE_OOL_CTOR
+inline WwdGridNode::WwdGridNode() {
+    m_bucket = 0;
+    m_08 = 0;
+}
+#endif
+
+#ifndef WWDREGION_OOL_CTOR
+inline WwdRegion::WwdRegion() {
+    m_object = 0;
+}
+#endif
 
 class CWwdGridIter : public CObject {
 public:

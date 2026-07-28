@@ -1,5 +1,5 @@
 #include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
-#include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Gruntz/ActNameRegistry.h>   // the shared activation-name registry archetype
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -204,7 +204,8 @@ void CFortressFlag::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CFortressFlag>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CFortressFlag::AdvanceAnim);
+    (*((CActRegPool<CFortressFlag>::s_table.ResolveEntry(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CFortressFlag::AdvanceAnim);
 }
 
 RVA(0x000463e0, 0x17)
@@ -353,7 +354,7 @@ CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_object->m_sortKey = 0xcf84f;
         m_object->m_flags |= 0x20000;
     }
-    m_object->m_dirtyArmed = 0;
+    m_object->m_dirty.m_armed = 0;
 }
 
 RVA(0x00046d30, 0x102)
@@ -393,8 +394,7 @@ void CParticlez::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((PartLookup(id)))) =
-        static_cast<i32 (CUserLogic::*)()>(&CParticlez::Update);
+    (*((PartLookup(id)))) = static_cast<i32 (CUserLogic::*)()>(&CParticlez::Update);
 }
 
 RVA(0x00047090, 0x39)
@@ -427,13 +427,12 @@ CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         o->m_sortKey = 0xf4240;
         o->m_flags |= 0x20000;
     }
-    m_object->m_dirtyArmed = 0;
+    m_object->m_dirty.m_armed = 0;
 }
 
 RVA(0x00047350, 0x102)
 void CExplosion::FireActivation(i32 id) {
-    CActHandler* e =
-        (CActRegPool<CExplosion>::s_table.ResolveEntry(id));
+    CActHandler* e = (CActRegPool<CExplosion>::s_table.ResolveEntry(id));
     if ((*e) != 0) {
         CActHandler* e2 = (CActRegPool<CExplosion>::s_table.ResolveEntry(id));
         (this->*((*e2)))();
@@ -452,9 +451,9 @@ RVA(0x000474b0, 0x18d)
 void RegisterXLogic_6447f8() {
     i32 id = RegisterActionName();
     // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CExplosion>::s_table.ResolveEntry(id)) = static_cast<void*>(&FortressFlagAct);
+    *reinterpret_cast<void**>(CActRegPool<CExplosion>::s_table.ResolveEntry(id)) =
+        static_cast<void*>(&FortressFlagAct);
 }
-
 
 // (the act-slot registries live beside their
 //  CActReg.) The ex-WwdRefSlot "+0x158 ref-index array" view is DISSOLVED: it was

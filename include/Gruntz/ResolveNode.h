@@ -16,24 +16,47 @@ class CDDrawSurfaceMgr; // fwd (was the dissolved CImageParent pad-view)
 // COMDAT: CDDrawChildGroup::CreateObject_159250/159440/159600 CALL it on
 // `this+0xb8` between the +0x9c region ctor and the +0xdc CString ctor, and the
 // /GX ctor-in-flight state walks 1 -> 2 -> 3 across those three calls.
-// (CResolveNode's live copy below is the same shape - the fold of its six loose
-// fields onto this type is follow-up work, ~156 call sites tree-wide.)
+// CResolveNode's live copy at +0x18 is this SAME type (folded 2026-07-28 from six
+// loose fields), which is what lets the C/A blit slots write the snapshot as a
+// plain `m_shadow = m_dirty` struct assignment.
 struct WwdDirtyRect {
-    WwdDirtyRect(); // 0x15b270 (out-of-line, WwdObjMgr.cpp)
+    WwdDirtyRect(); // 0x15b270 (COMDAT copy in WwdObjMgr.cpp)
     // Empty, but USER-DECLARED, and that is byte-evidence: a member with a
     // destructor gets its own /GX unwind-map entry, and retail's ctor-in-flight
     // state walk in CreateObject_159250/159440/159600 spends one index on this
     // record (0 raw / 1 CResolveNode / 2 region / 3 THIS / 4 CString / 5 worker).
     // Without it cl numbers the states 0/1/2/3 and every byte after shifts.
     ~WwdDirtyRect() {}
-    i32 m_x;     // +0x00  last drawn column
-    i32 m_y;     // +0x04  last drawn row
+    // No-seed tag ctor, the mirror of CResolveNode::ENoSeed below and needed for the
+    // same reason: the CDDrawWorkerBase family spells its OWN fused seed set in its
+    // ctor body, and retail proves the record's ctor did not also run there -
+    // CDDrawWorkerList::CreateWorkerA/B28/B2C (@0x157150 ff) emit the +0x20/+0x38
+    // pair ONCE, after the m_id/m_ownerCtx/m_flags trio (body position), not twice
+    // and not in mem-init position.
+    enum ENoSeed {
+        NO_SEED
+    };
+    WwdDirtyRect(ENoSeed) {}
+    i32 m_lastX; // +0x00  last drawn column (was CResolveNode's m_lastX)
+    i32 m_lastY; // +0x04  last drawn row    (was CResolveNode's m_lastY)
     RECT m_rect; // +0x08  the blit out-rect (.left INT_MIN == disarmed corner)
     i32 m_w;     // +0x18  extent x
     i32 m_h;     // +0x1c  extent y
-    i32 m_armed; // +0x20  armed flag (-1 == disarmed)
+    i32 m_armed; // +0x20  armed flag (-1 == disarmed; also the blit path's result
+                 //        out: 0 ok / -1 culled - the same latch)
 };
 SIZE(0x24);
+
+// INLINE by default (retail's copy is a /Gy COMDAT that CGameObject::CGameObject
+// @0x15b390 folds while the three CDDrawChildGroup factories call it); the guard
+// is the per-TU switch - see the block in <Gruntz/WwdGridIter.h>.
+//   WWDDIRTYRECT_OOL_CTOR -> WwdObjMgr.cpp (0x15b270)
+#ifndef WWDDIRTYRECT_OOL_CTOR
+inline WwdDirtyRect::WwdDirtyRect() {
+    m_rect.left = static_cast<i32>(0x80000000);
+    m_armed = -1;
+}
+#endif
 
 class CResolveNode : public CLoadable {
 public:
@@ -51,10 +74,10 @@ public:
     virtual i32 SetPosition(i32 x, i32 y); // [9] 0x164790
 
     CResolveNode(); // 0x1549d0 (D pocket)
-    // OUT-OF-LINE (WwdFactoryObject.cpp @0x15b2c0) on purpose: cl 5.0's /O2 is /Ob1,
-    // so an out-of-line definition is not an inline candidate and every construction
-    // of the base sub-object is a CALL - which is what retail's
-    // CreateObject_159250/159440/159600 emit.
+    // INLINE by default, guarded per-TU (see the block below + <Gruntz/WwdGridIter.h>):
+    // CreateObject_159250/159440/159600 emit `call 0x15b2c0`, so wwdobjmgr defines
+    // CRESOLVENODE_OOL_CTOR; CGameObject::CGameObject @0x15b390 FOLDS the body, so
+    // wwdfactoryobject keeps it inline and forces the standalone COMDAT out instead.
     CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08);
     // No-seed tag-ctor for the worker leaves (CDDrawWorkerBase family): constructs
     // the base WITHOUT the 0x1549d0 sentinel seeding - the leaf ctor spells its own
@@ -64,7 +87,7 @@ public:
     enum ENoSeed {
         NO_SEED
     };
-    CResolveNode(ENoSeed) {}
+    CResolveNode(ENoSeed) : m_dirty(WwdDirtyRect::NO_SEED) {}
     i32 Init(
         CDDrawSurfaceMgr* owner,
         i32 field04,
@@ -89,19 +112,16 @@ public:
     // WwdEdgeA/WwdEdgeB RAII scaffolding and the flat views' +0x10..+0x64 block.)
     i32 m_plotDX; // +0x10  (SetPosition zeroes; plot state)
     i32 m_plotDY; // +0x14  (SetPosition zeroes)
-    // +0x18/+0x1c: the live dirty-rect / last-drawn position (RenderDot caches the
-    // drawn column/row here; the 9-dword +0x18..+0x3c block is snapshotted to +0xb8).
-    i32 m_lastX; // +0x18
-    i32 m_lastY; // +0x1c
-    // +0x20..+0x2f  the live dirty-rect / blit out-rect (.left INT_MIN = disarmed
-    // corner; the blit path whole-struct-assigns it and reads it back per edge).
-    RECT m_dirtyRect;
-    // +0x30/+0x34: live dirty-rect size (a RenderDot dot plot sets 1x1; the
-    // A/C blit slots read them as the rect extent).
-    i32 m_dirtyW;     // +0x30
-    i32 m_dirtyH;     // +0x34
-    i32 m_dirtyArmed; // +0x38  live dirty-rect armed flag (-1 == disarmed; the blit
-                      //        path's result out: 0 ok / -1 culled - same latch)
+    // +0x18..+0x3b  the LIVE dirty-rect record - the same WwdDirtyRect type the wide
+    // objects carry a second (shadow/previous-frame) copy of at CGameObject +0xb8,
+    // which is why the C/A blit slots snapshot one onto the other with a single
+    // 36-byte move. Folded 2026-07-28 from six loose fields (m_lastX/m_lastY/
+    // m_dirtyRect/m_dirtyW/m_dirtyH/m_dirtyArmed - names migrated onto the type):
+    // BYTE-PROVEN by the ctors, where the seed pair (+0x20 .left = INT_MIN, +0x38
+    // armed = -1) is emitted as ONE unit BEFORE the ??_7CResolveNode stamp
+    // (0x15b2c0 / the inlined copy in 0x15b390), i.e. as a MEMBER ctor in the
+    // mem-init half, not as two body stores after the vptr.
+    WwdDirtyRect m_dirty;
     // +0x3c  the owning level (SetPosition seeds OwnerMgr()->m_level; the blit path
     // hops m_level->m_mainPlane->WrapCoord). Was the i32 "m_3c" + the ex-CBlitXform
     // view's +0x5c plane hop - CBlitXform WAS CGameLevel.
@@ -127,5 +147,23 @@ public:
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();
 VTBL(CResolveNode, 0x001efbc0); // ??_7CResolveNode@@6B@ (10 slots; ex WwdBResolve dup)
+
+// INLINE by default - the same /Gy COMDAT arrangement as the two node ctors in
+// <Gruntz/WwdGridIter.h>: CGameObject::CGameObject @0x15b390 FOLDS this body (its
+// +0x20/+0x38/+0x5c/+0x64 sentinel stores and the 0x5efbc0 stamp are spelled inline
+// there, no call), while the three CDDrawChildGroup factories call the 0x15b2c0 copy.
+//   CRESOLVENODE_OOL_CTOR -> WwdObjMgr.cpp (its factories CALL it). The standalone
+//   0x15b2c0 copy is forced out of WwdFactoryObject.cpp, which needs it inline.
+#ifndef CRESOLVENODE_OOL_CTOR
+inline CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
+    : CLoadable(field04, field08, owner) {
+    // (the +0x20 .left / +0x38 armed seed pair is m_dirty's OWN default ctor now -
+    // that is why retail emits it before the vptr stamp, not after)
+    m_screenX = static_cast<i32>(0x80000000);
+    m_clip.left = static_cast<i32>(0x80000000);
+    m_level = 0;
+    m_stateFlags = 0;
+}
+#endif
 
 #endif // GRUNTZ_GRUNTZ_RESOLVENODE_H
