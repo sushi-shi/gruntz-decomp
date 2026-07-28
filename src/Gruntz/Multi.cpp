@@ -3498,14 +3498,14 @@ CNetCmdSlot::CNetCmdSlot() {
 // block, then zero all 0x80 resync entries.
 // ---------------------------------------------------------------------------
 // @early-stop
-// loop induction-variable / regalloc wall (71.5%): every operation is byte-faithful
-// (header zero, the inlined per-slot wipe + ClearCmds + both ResetTriple calls, the
-// rep stos over m_1b0, the 0x80-entry zero loop). Retail strength-reduces the slot
-// loop into TWO induction vars (edi=slot passed as `this`, esi=slot+8 for the field
-// stores) and SPILLS the down-counter to a stack slot (the leading `push ecx`),
-// also basing the entry loop at entry+8; cl uses one IV (esi=slot) and keeps the
-// counter in edi. A pure induction-var-selection coin-flip (same family as
-// CNetSyncCheck::AllSlotsReady ~79%); not source-steerable. Final sweep.
+// 75.20% (was 71.47). 2026-07-28: zeroing the ack array through a POINTER
+// (`i32* ack = slot->m_ackFlags; ack[0..3] = 0;`) instead of four constant-index
+// stores gives retail's `lea ecx,<array>` + `[ecx]/[ecx+4]/...` block, and with it
+// the spilled down-counter and the two-induction-variable slot loop. Residual: the
+// BIAS cl picks for the second induction variable - retail anchors it at slot+8 and
+// derives `this` as `[esi-8]`, cl anchors at slot+0x44 and advances both; the same
+// biased-cursor selection blocks Parse/BroadcastChannelTable (rows+1 vs rows+2) and
+// the 0x80-entry loop here (entry+8 vs entry+0). Not yet steerable. Final sweep.
 RVA(0x000bbf80, 0xb7)
 void CNetSession::ResetAll() {
     m_mgr = 0;
@@ -3529,10 +3529,14 @@ void CNetSession::ResetAll() {
         slot->m_maxSeq = 0;
         slot->m_owner = 0;
         slot->ClearCmds();
-        slot->m_ackFlags[0] = 0;
-        slot->m_ackFlags[1] = 0;
-        slot->m_ackFlags[2] = 0;
-        slot->m_ackFlags[3] = 0;
+        // Zeroed through a POINTER to the array (retail materializes
+        // `lea ecx,[slot+0x3c]` and stores `[ecx]`/`[ecx+4]`/... from a fresh
+        // `xor eax,eax`), not four constant-index stores off the slot pointer.
+        i32* ack = slot->m_ackFlags;
+        ack[0] = 0;
+        ack[1] = 0;
+        ack[2] = 0;
+        ack[3] = 0;
         slot->ResetTriple(slot->m_rangeA);
         slot->ResetTriple(slot->m_rangeB);
         slot++;
