@@ -1794,23 +1794,18 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
 // "unable to verify"; verified-but-mismatch (m_levelVerifyResult still 0) -> "not all players
 // have the same level"; agreement -> 1. The by-value CString rez-path arg + the
 // name temp run under the /GX frame.
-// @early-stop
-// /GX CString-by-value EH-frame-layout wall - but the exit layout was ALSO wrong and
-// dominated (measured 2026-07-27, 6.20 -> 23.46). base 6 rets / retail 1: every refusal
-// path had its own SEH-unwinding epilogue where retail 0xb90b6 has ONE `xor eax,eax` +
-// unwind that all five gates jump into (the m_530==0 arm's PollSession block sits
-// immediately above it as the fall-through). `goto notVerified;` + one bottom
-// `notVerified: return 0;` reproduces that block order.
-// Residual is the frame itself: the instruction SEQUENCE is
-// faithful (the arg1/arg2/m_530 guards, the GetConfigNameA/B selection, the
-// BuildRezPath by-value CString copy-ctor, the multi-temp destruct bitmask, the
-// g_connectRptMgr Poll dispatch and both ShowModal reports), but retail reserves two
-// dedicated EH-state dwords (`sub esp,8`) and overlaps the CString temps onto the
-// now-dead arg slots, while cl folds the EH state into the arg-overlap area and
-// omits the sub - an 8-byte frame-size delta that cascades through every
-// stack-relative offset. Same CString-EH residue family as the dialog sibling
-// CMultiStartDlg::OnOK (0xc4c00, parked ~55%); not source-steerable.
-// See docs/patterns/gx-scoped-local-eh-frame-size.md. Final sweep.
+// EXACT 2026-07-28 (6.20 -> 23.46 -> 100). The "/GX CString-by-value EH-frame-layout
+// wall" was three source defects and no frame problem at all:
+//   1. the config name is a CONDITIONAL CLASS TEMPORARY passed by value in ONE call
+//      (`BuildLevelRezPath(..., m_5b0 ? GetConfigNameB() : GetConfigNameA())`). THAT
+//      is retail's destructor-FLAG word (ebx bit0/bit1) with both `test bl,N`-gated
+//      dtors after the call - two per-branch scoped CStrings destroy inside their own
+//      arm, need no flag, and cost the 8-byte frame delta blamed on EH bookkeeping.
+//   2. `m_5b0` is BuildLevelRezPath's `lo` argument, not `hi` - the two zeros around
+//      it hid a genuinely wrong parameter position (retail `push ebp/edi/ebp/ebp`).
+//   3. the m_530 gate holds the BODY (`if (m_530 != 0) { ... }` with PollSession
+//      after it) and the verify test is success-first; the `goto notVerified;`
+//      spelling inlines each shared block at its gate.
 RVA(0x000b8fc0, 0x151)
 i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
     if (h == 0) {
@@ -1819,20 +1814,23 @@ i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
     if (playerTok == 0) {
         goto notVerified;
     }
-    if (m_530 == 0) {
-        PollSession();
-        goto notVerified;
-    }
-
-    {
-        i32 token;
-        if (m_5b0 != 0) {
-            CString b = GetConfigNameB();
-            token = (g_gameReg)->BuildLevelRezPath(0, m_5b0, 0, 0, b);
-        } else {
-            CString a = GetConfigNameA();
-            token = (g_gameReg)->BuildLevelRezPath(0, m_5b0, 0, 0, a);
-        }
+    // The BODY is inside the `if`, with the PollSession refusal after it: retail's
+    // `je` puts that block LAST (falling into the shared return-0), where
+    // `if (m_530 == 0) { PollSession(); goto notVerified; }` inlines it at the gate.
+    if (m_530 != 0) {
+        i32 cfgId = m_5b0; // held in edi across the name build and the arg push
+        // ONE call with a CONDITIONAL class temporary as the by-value argument. That
+        // is what produces retail's destructor-FLAG word (ebx: bit0 = the B temp at
+        // [esp+0x2c], bit1 = the A temp at [esp+0x28]) with both `test bl,N`-gated
+        // dtors AFTER the call, at the end of the full-expression - two per-branch
+        // scoped locals destroy inside their own arm and need no flag.
+        i32 token = (g_gameReg)->BuildLevelRezPath(
+            0,
+            0,
+            cfgId,
+            0,
+            cfgId != 0 ? GetConfigNameB() : GetConfigNameA()
+        );
 
         g_connectRptMgr->m_levelVerifyResult = 0;
         if (g_connectRptMgr->Poll(token) == 0) {
@@ -1841,14 +1839,17 @@ i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
                 ->EnterModalUI("Unable to verify custom level with other players");
             goto notVerified;
         }
-        if (g_connectRptMgr->m_levelVerifyResult == 0) {
-            (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
-                ->EnterModalUI("Not all players have the (same) custom level.");
-            m_530 = 0;
-            goto notVerified;
+        // Success-first: retail's `je` sends the mismatch report away and falls
+        // through to `mov eax,1`.
+        if (g_connectRptMgr->m_levelVerifyResult != 0) {
+            return 1;
         }
-        return 1;
+        (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
+            ->EnterModalUI("Not all players have the (same) custom level.");
+        m_530 = 0;
+        goto notVerified;
     }
+    PollSession();
 notVerified:
     return 0;
 }
@@ -2941,15 +2942,17 @@ i32 CMulti::SendChannelStat423() {
 // log (m_4->m_5c->AddItem). Finally the line is stamped into the static chat
 // packet and shipped through SetGroupDataFrom.
 // @early-stop
-// scheduling wall (~75%): the full logic is reproduced - the null/empty guard,
-// the 0x80 cap, the 2-iteration trailing-control-char trim, the toChat "name: msg"
-// sprintf (frameless GetName temp), the showWnd ShowChatLine/AddItem branch, and
-// the static-packet (per-field globals) build + SetGroupDataFrom send - and the
-// /GX frame is correctly elided (line modeled as a stack char buffer, not a
-// CString). The residual is instruction-selection that desyncs the tail: retail
-// hoists the 0x20 trim constant + `cmpb %al,mem` (vs my `movb mem,%dl;cmpb`), and
-// folds the send-size strlen differently (`dec;add 0xd` vs `add 0xc`), reordering
-// the static stores. Big function, scheduling-class; deferred to the final sweep.
+// 90.03% (was 74.53). 2026-07-28: three source defects, not scheduling - the
+// "name: msg" sprintf is ONE nested expression (retail pushes GetName's hidden
+// return-slot pointer before evaluating the FindOptionsSlot receiver, which a
+// `player` local inverts), the showWnd/hWnd gates are SIBLING ifs (retail re-tests
+// showWnd in the else arm), a null options slot is a `return 0` and not a skipped
+// AddItem, and the send size is its own strlen local (`dec ecx` + `add edx,0xd`,
+// where the inline `strlen(line)+0xd` fuses into `add ecx,0xc`). Residual: retail
+// compares the trim byte straight against a hoisted al (`cmp mem,al` vs our
+// `mov dl,mem; cmp dl,al`) and sets ecx=this before the __stdcall AppendEditLine
+// (dead there - the callee is proven free-standing by its CChatBoxOwner /
+// CMultiStartDlg / NetLobby callers). Final sweep.
 RVA(0x000bb190, 0x1c5)
 i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
     if (text == 0) {
@@ -2974,30 +2977,43 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
 
     char line[0x12c];
     if (toChat != 0) {
-        GruntzPlayer* player =
-            static_cast<GruntzPlayer*>(Mgr()->FindOptionsSlot(LocalPlayer()->m_id));
-        sprintf(line, "%s: %s", static_cast<const char*>(player->GetName()), text);
+        // ONE nested expression: retail pushes GetName's hidden return-slot pointer
+        // FIRST (`lea eax,[esp+0x10]; push eax`) and only then evaluates the
+        // FindOptionsSlot receiver - a `player` local evaluates the slot lookup first.
+        sprintf(
+            line,
+            "%s: %s",
+            static_cast<const char*>(
+                static_cast<GruntzPlayer*>(Mgr()->FindOptionsSlot(LocalPlayer()->m_id))->GetName()
+            ),
+            text
+        );
     } else {
         strcpy(line, text);
     }
 
-    if (showWnd != 0) {
-        if (hWnd != 0) {
-            NetLobby::AppendEditLine(static_cast<HWND>(hWnd), line);
-        } else {
-            GruntzPlayer* player = static_cast<GruntzPlayer*>(Mgr()->FindOptionsSlot(m_hostIndex));
-            if (player != 0) {
-                (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))
-                    ->AddItem(line, 0x30, player->m_008);
-            }
+    // SIBLING gates, not nested: retail re-tests showWnd in the else arm
+    // (`cmp ecx,ebx; je <after>` a second time).
+    if (showWnd != 0 && hWnd != 0) {
+        NetLobby::AppendEditLine(static_cast<HWND>(hWnd), line);
+    } else if (showWnd != 0) {
+        // A null slot is a FAILURE return here, not a skipped AddItem: retail
+        // `cmp eax,ebx; jne <add>; xor eax,eax; <epilogue>; ret 0x10`.
+        GruntzPlayer* player = static_cast<GruntzPlayer*>(Mgr()->FindOptionsSlot(m_hostIndex));
+        if (player == 0) {
+            return 0;
         }
+        (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))->AddItem(line, 0x30, player->m_008);
     }
 
     g_chatPacket_id = STAT_CHAT;
+    // The length is its own value (retail `not ecx; dec ecx` then `add edx,0xd`);
+    // spelling `strlen(line) + 0xd` inline lets cl fuse it into `not ecx; add ecx,0xc`.
+    i32 n = strlen(line);
     g_chatPacket_val = 0;
     strcpy(&g_chatPacket_buf, line);
     g_chatPacket_flag |= 0x80;
-    Peer()->SetGroupDataFrom(LocalPlayer(), 1, &g_chatPacket_flag, strlen(line) + 0xd);
+    Peer()->SetGroupDataFrom(LocalPlayer(), 1, &g_chatPacket_flag, n + 0xd);
     return 1;
 }
 
