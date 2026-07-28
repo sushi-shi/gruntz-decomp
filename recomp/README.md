@@ -14,6 +14,19 @@ fifth, `CGrunt::RectSegProbe`, **did not** - it carried two logic bugs that byte
 at 78.77% never showed, and returned the wrong answer on 6.5% of random inputs. Both are
 fixed. See `docs/harnesses.md`.
 
+## Two ways in
+
+`harness/` FABRICATES the input state, so it reaches a function only if we can build
+that state by hand - which is why `recomp_islands` ranks candidates by how few struct
+fields a body dereferences.
+
+**`replay/` records the state from the running game instead**, restores it at its
+original addresses, and full-diffs writable memory against the recorded exit. Nothing
+has to be fabricated, so a `CGruntzMgr*` parameter costs nothing, and the comparison
+catches effects nobody thought to check. See `replay/README.md`; the reachability
+question it answers is a different one (`python -m gruntz.audit.iat_tiers`: does the
+call closure ever leave the process?) and the answer is much larger.
+
 ## Layout
 
     harness/recomp.h   the shared core: PE map + .reloc, __thiscall bridges,
@@ -21,6 +34,8 @@ fixed. See `docs/harnesses.md`.
     harness/build.sh   build.sh <name> [unit ...] - builds any harness and links
                        our compiled objects in
     harness/*.c(pp)    one harness per reachable function or family
+    replay/            record-and-replay: capture.c (injected DLL), replay.cpp,
+                       snapshot.h/.py, fuzz.py - see replay/README.md
     docs/              what each harness assumes, and why a target is reachable
 
 One harness per reachable function or family. Keep them small and independent — a harness
@@ -28,9 +43,10 @@ that needs the CRT stood up has stopped being a harness.
 
 ## What is reachable, and how to find out
 
-    python -m gruntz.audit.recomp_islands
+    python -m gruntz.audit.recomp_islands   # for harness/  - can we FABRICATE the state?
+    python -m gruntz.audit.iat_tiers       # for replay/   - does execution leave the process?
 
-Two conditions must BOTH hold, and they are separate questions:
+For `harness/`, two conditions must BOTH hold, and they are separate questions:
 
 1. **Self-contained code** — `ISLAND` (no relocs, no calls), `SELF-CALL`, or `DATA-ONLY`
    (relocs only to constant tables / static scratch, which you map beside the code).
