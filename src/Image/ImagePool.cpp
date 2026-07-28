@@ -105,20 +105,16 @@ void CImagePool::ClearPalettes() {
 // node+0x44c; either way it restores the selected palette (+0x0c) and ReleaseDC's,
 // returning the node (or, on decode failure, Free()'ing + RezFree'ing it -> 0).
 //
-// All five sit at ~96% on one regalloc tie-break: retail enregisters the node in
-// edi and the zero constant in ebx, the recompile swaps them (node=ebx/zero=edi),
-// which also flips the epilogue `mov eax,node` placement. Verified byte-identical
-// after canonicalizing edi<->ebx (llvm-objdump base vs target). Same register-
-// assignment wall class as the palette siblings below; not source-steerable
-// (tried node=0 pre-init -> 94%; and 2026-07-28, byte-NEUTRAL: modelling the seed as
-// a real `new CRezImage()` ctor instead of the spelled-out `::operator new(0x45c)` +
-// 11 stores + hand-written null guard, which is what
-// docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md prescribes - the ctor form
-// is the correct model so it is KEPT, but it does not move the edi/ebx tie-break).
+// SOLVED 2026-07-28 (all five EXACT, and the four palette factories below with them):
+// the long-standing "node<->edi / zero<->ebx regalloc tie-break wall" was the AddTail
+// SPELLING. `node->m_listPosition = m_surfaces.AddTail(node);` makes cl treat the
+// POSITION as a dead-on-arrival temp of the store and picks a different callee-saved
+// SET; binding it to a named local first
+//     POSITION pos = m_surfaces.AddTail(node);
+//     node->m_listPosition = pos;
+// gives the local its own live range and cl lands on retail's set exactly. See
+// docs/patterns/call-result-local-flips-callee-saved-set.md.
 // ===========================================================================
-// @early-stop
-// regalloc tie-break: node should be edi / zero should be ebx (retail); recompile
-// swaps the two callee-saved regs. Code byte-identical otherwise.
 RVA(0x00174fe0, 0xfe)
 CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 flag) {
     HDC hdc = GetDC(m_sourceHwnd);
@@ -135,7 +131,8 @@ CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 fl
         }
         return 0;
     }
-    node->m_listPosition = m_surfaces.AddTail(node);
+    POSITION pos = m_surfaces.AddTail(node);
+    node->m_listPosition = pos;
     if (m_selectedPalette) {
         SelectPalette(hdc, m_selectedPalette, FALSE);
         m_selectedPalette = 0;
@@ -144,8 +141,6 @@ CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 fl
     return node;
 }
 
-// @early-stop
-// regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001750e0, 0x103)
 CRezImage* CImagePool::AddSurfaceBlit(void* src, i32 width, i32 height, i32 bitCount, i32 flag) {
     HDC hdc = GetDC(m_sourceHwnd);
@@ -162,7 +157,8 @@ CRezImage* CImagePool::AddSurfaceBlit(void* src, i32 width, i32 height, i32 bitC
         }
         return 0;
     }
-    node->m_listPosition = m_surfaces.AddTail(node);
+    POSITION pos = m_surfaces.AddTail(node);
+    node->m_listPosition = pos;
     if (m_selectedPalette) {
         SelectPalette(hdc, m_selectedPalette, FALSE);
         m_selectedPalette = 0;
@@ -171,8 +167,6 @@ CRezImage* CImagePool::AddSurfaceBlit(void* src, i32 width, i32 height, i32 bitC
     return node;
 }
 
-// @early-stop
-// regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001751f0, 0xf9)
 CRezImage* CImagePool::AddSurfaceOp(void* buf, i32 kind, i32 ctrl) {
     HDC hdc = GetDC(m_sourceHwnd);
@@ -189,7 +183,8 @@ CRezImage* CImagePool::AddSurfaceOp(void* buf, i32 kind, i32 ctrl) {
         }
         return 0;
     }
-    node->m_listPosition = m_surfaces.AddTail(node);
+    POSITION pos = m_surfaces.AddTail(node);
+    node->m_listPosition = pos;
     if (m_selectedPalette) {
         SelectPalette(hdc, m_selectedPalette, FALSE);
         m_selectedPalette = 0;
@@ -198,8 +193,6 @@ CRezImage* CImagePool::AddSurfaceOp(void* buf, i32 kind, i32 ctrl) {
     return node;
 }
 
-// @early-stop
-// regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001752f0, 0xfc)
 CRezImage* CImagePool::AddSurfaceRez(char* name, i32 ctrl) {
     HDC hdc = GetDC(m_sourceHwnd);
@@ -217,7 +210,8 @@ CRezImage* CImagePool::AddSurfaceRez(char* name, i32 ctrl) {
         }
         return 0;
     }
-    node->m_listPosition = m_surfaces.AddTail(node);
+    POSITION pos = m_surfaces.AddTail(node);
+    node->m_listPosition = pos;
     if (m_selectedPalette) {
         SelectPalette(hdc, m_selectedPalette, FALSE);
         m_selectedPalette = 0;
@@ -226,8 +220,6 @@ CRezImage* CImagePool::AddSurfaceRez(char* name, i32 ctrl) {
     return node;
 }
 
-// @early-stop
-// regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001753f0, 0xf4)
 CRezImage* CImagePool::AddSurfaceConvert(CRezImage* src, void* pal) {
     HDC hdc = GetDC(m_sourceHwnd);
@@ -244,7 +236,8 @@ CRezImage* CImagePool::AddSurfaceConvert(CRezImage* src, void* pal) {
         }
         return 0;
     }
-    node->m_listPosition = m_surfaces.AddTail(node);
+    POSITION pos = m_surfaces.AddTail(node);
+    node->m_listPosition = pos;
     if (m_selectedPalette) {
         SelectPalette(hdc, m_selectedPalette, FALSE);
         m_selectedPalette = 0;
@@ -259,26 +252,12 @@ CRezImage* CImagePool::AddSurfaceConvert(CRezImage* src, void* pal) {
 // matching parse front-end, and on success AddTail's it onto the +0x2c list
 // (caching the POSITION at node+0x410); on parse failure it deletes + frees the
 // node and returns 0.
+//
+// The "this in ebx vs retail edi" wall these three carried is SOLVED (2026-07-28) by
+// the same one-line AddTail spelling as the surface factories above: the POSITION goes
+// into a named local before the member store. AddImageFile always matched because its
+// early m_resourceModuleHandle read already pinned `this`=edi.
 // ===========================================================================
-// @early-stop
-// this-register regalloc wall (~99%): every instruction matches except retail
-// pins `this` in edi while the recompile picks ebx (perturbing the prologue
-// pushes + the AddTail `lea 0x2c(this)`). The sibling AddImageFile reaches 100%
-// only because its early m_resourceModuleHandle read pins `this`=edi; with `this` first used at the
-// tail there is no source lever. Logic byte-identical.
-// MECHANISM (2026-07-28): cl5's callee-saved pool here is [esi, edi, ebx] and a
-// COMPUTED temp takes edi while the saved `this` PARAMETER is pushed down to ebx -
-// `CPtrList* lst = &m_palettes;` does land in edi (prologue + all pops then match
-// retail exactly), but it also moves the `lea` from the tail to the head, which is a
-// net LOSS (99.02 -> 93.66, reverted). `CImagePool* self = this;` is folded straight
-// back to the parameter. So the lever exists but no expression yields `this` ITSELF
-// as a computed temp; that is the wall.
-// Also tried (2026-07-28) and byte-NEUTRAL: modelling the node seed as a real
-// `new CImagePaletteNode()` ctor instead of the spelled-out `::operator new(0x414)` +
-// three stores + hand-written null guard, which is what
-// docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md prescribes for exactly this
-// wrong-`this`-role symptom. It does not move the pin - but the ctor form is the correct
-// model, so it is KEPT (the spelled-out construction is gone from all four factories).
 RVA(0x001754f0, 0x7b)
 CImagePaletteNode* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flags) {
     CImagePaletteNode* node = new CImagePaletteNode();
@@ -289,13 +268,11 @@ CImagePaletteNode* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flag
         }
         return 0;
     }
-    node->m_listPosition = m_palettes.AddTail(node);
+    POSITION pos = m_palettes.AddTail(node);
+    node->m_listPosition = pos;
     return node;
 }
 
-// @early-stop
-// this-register regalloc wall (~99%): same as AddPaletteEntries (this in ebx vs
-// retail edi). Logic byte-identical.
 RVA(0x00175570, 0x7b)
 CImagePaletteNode* CImagePool::AddPaletteRGB(void* rgb, i32 flags) {
     CImagePaletteNode* node = new CImagePaletteNode();
@@ -306,7 +283,8 @@ CImagePaletteNode* CImagePool::AddPaletteRGB(void* rgb, i32 flags) {
         }
         return 0;
     }
-    node->m_listPosition = m_palettes.AddTail(node);
+    POSITION pos = m_palettes.AddTail(node);
+    node->m_listPosition = pos;
     return node;
 }
 
@@ -321,13 +299,11 @@ CImagePaletteNode* CImagePool::AddImageFile(char* path, i32 arg) {
         }
         return 0;
     }
-    node->m_listPosition = m_palettes.AddTail(node);
+    POSITION pos = m_palettes.AddTail(node);
+    node->m_listPosition = pos;
     return node;
 }
 
-// @early-stop
-// this-register regalloc wall (~99%): same as AddPaletteEntries (this in ebx vs
-// retail edi). Logic byte-identical.
 RVA(0x00175680, 0x85)
 CImagePaletteNode* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl) {
     CImagePaletteNode* node = new CImagePaletteNode();
@@ -338,7 +314,8 @@ CImagePaletteNode* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i
         }
         return 0;
     }
-    node->m_listPosition = m_palettes.AddTail(node);
+    POSITION pos = m_palettes.AddTail(node);
+    node->m_listPosition = pos;
     return node;
 }
 
@@ -603,12 +580,16 @@ void CRezImage::Fill(i32 value) {
 }
 
 // @early-stop
-// 96.7%: instruction-for-instruction identical (the header field READ order was the
-// real bug and is fixed - retail loads biHeight before biWidth). Residual is the
-// two-register role swap `buf`/`bitcount`: cl puts buf in eax and the movzx zero in
-// edx, retail the reverse, which also flips the `lea esi,[buf+biSize+0x400]` SIB
-// base/index. Tried: reading bitcount first through an inline cast, declaring it
-// last, reordering width/height - the role assignment does not move.
+// 99.62%: the whole `buf`/`bitcount` two-register role swap that used to cap this at
+// 96.7 was the TAIL CALL spelling - `return DecodeBlit(...)` vs binding the result to
+// a named local first (docs/patterns/call-result-local-flips-callee-saved-set.md).
+// The single residue left is the `lea esi,[buf+biSize+0x400]` SIB byte: retail has
+// base=buf/index=biSize, cl emits base=biSize/index=buf. Measured 2026-07-28 over 14
+// spellings (constant-first, parenthesised, `&p[i]` index form, the legal `i[p]`
+// form, an integer-cast round trip, a `u8*` base local, a hoisted size local at three
+// declaration positions, a `u8*`-typed `src`): all byte-identical. That is exactly the
+// bound recorded in docs/patterns/sib-base-index-follows-local-decl-order.md - with
+// only ONE named local in play (`src`) there is no declaration-order lever.
 RVA(0x00175e00, 0x3d)
 i32 CRezImage::DecodeResData(void* buf, void* a2, i32 a3) {
     BITMAPINFOHEADER* ih = static_cast<BITMAPINFOHEADER*>(buf);
@@ -619,7 +600,8 @@ i32 CRezImage::DecodeResData(void* buf, void* a2, i32 a3) {
     if (bitcount == 8) {
         src = static_cast<u8*>(buf) + ih->biSize + 0x400;
     }
-    return DecodeBlit(src, a2, width, height, bitcount, a3);
+    i32 r = DecodeBlit(src, a2, width, height, bitcount, a3);
+    return r;
 }
 
 // ---------------------------------------------------------------------------

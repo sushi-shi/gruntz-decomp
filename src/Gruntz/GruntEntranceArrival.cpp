@@ -162,8 +162,8 @@ void CGrunt::FinalizeStep(char* name) {
             ClearSubB();
         } else {
             CGruntzMgr* g = g_gameReg;
-            i32 x = m_object->m_screenX;
             i32 y = m_object->m_screenY;
+            i32 x = m_object->m_screenX;
             if (!(x < g->m_viewBounds.right && x >= g->m_viewBounds.left
                   && y < g->m_viewBounds.bottom && y >= g->m_viewBounds.top)) {
                 ClearSubB();
@@ -289,11 +289,16 @@ i32 CGrunt::ResetGeometry() {
 // grid-cell neighbour (same 15-wide m_tileMgr grid as FindGridNeighbor); when low
 // (0x33..0x63, latched once via m_lowStaminaCued) and on-screen, it fires a spawn cue.
 // __thiscall, ret 0, frameless.
+// The on-screen gate reads the screen coords Y BEFORE X - the paired-member-load order
+// (docs/patterns/positive-gate-enables-shrink-wrap.md, second effect); the natural
+// x-then-y declaration emits them the other way round. 94.50 -> 94.63.
 // @early-stop
 // lazy callee-saved-reg save: instruction MULTISET byte-identical vs retail
 // (verified), logic/CFG/offsets exact; residue = retail defers `push edi` until
 // AFTER the m_poweredUp==0 early-bail (the cold path uses only esi) where cl saves edi
-// in the prolog. Pure regalloc placement, not steerable from source. ~94.5%.
+// in the prolog. The positive-gate lever that normally buys this was already measured
+// on THIS function and craters it (94.5 -> 77.1, see the pattern doc's bound table);
+// it is one of the cases where the layout and the shrink-wrap halves are separable.
 RVA(0x000617c0, 0x127)
 i32 CGrunt::UpdateGruntStatus() {
     if (m_poweredUp == 0) {
@@ -331,8 +336,8 @@ i32 CGrunt::UpdateGruntStatus() {
     }
 
     CGruntzMgr* g = g_gameReg;
-    i32 x = m_object->m_screenX;
     i32 y = m_object->m_screenY;
+    i32 x = m_object->m_screenX;
     const RECT& vr = g->m_world->m_level->m_mainPlane->m_viewRect;
     if (x < vr.right && x >= vr.left && y < vr.bottom && y >= vr.top) {
         g->m_cueSink->LoadGruntSpawnConfig(this, 2, -1, -1, -1);
@@ -940,8 +945,8 @@ i32 CGrunt::StepEntranceRelatchA() {
         m_entranceStamped = 1;
         CWwdGameObjectA* h = m_object;
         CGruntzMgr* g = g_gameReg;
-        i32 x = h->m_screenX;
         i32 y = h->m_screenY;
+        i32 x = h->m_screenX;
         const RECT& r = g->m_world->m_level->m_mainPlane->m_viewRect;
         if (x < r.right && x >= r.left && y < r.bottom && y >= r.top) {
             g->m_cueSink->LoadGruntSpawnConfig(this, 0xc, -1, -1, -1);
@@ -1529,8 +1534,8 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
 
             CWwdGameObjectA* h = m_object;
             CGruntzMgr* g = g_gameReg;
-            i32 x = h->m_screenX;
             i32 y = h->m_screenY;
+            i32 x = h->m_screenX;
             const RECT& rect = g->m_world->m_level->m_mainPlane->m_viewRect;
             if (x < rect.right && x >= rect.left && y < rect.bottom && y >= rect.top) {
                 g->m_cueSink->LoadGruntSpawnConfig(this, 0xc, -1, -1, -1);
@@ -1546,8 +1551,8 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
     if (elapsed2 >= m_idleDelay) {
         CWwdGameObjectA* h = m_object;
         CGruntzMgr* g = g_gameReg;
-        i32 x = h->m_screenX;
         i32 y = h->m_screenY;
+        i32 x = h->m_screenX;
         const RECT& rect = g->m_world->m_level->m_mainPlane->m_viewRect;
         if (x < rect.right && x >= rect.left && y < rect.bottom && y >= rect.top) {
             g->m_cueSink->LoadGruntSpawnConfig(this, 0xd, -1, -1, -1);
@@ -1556,8 +1561,8 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
 
     CWwdGameObjectA* h2 = m_object;
     CGruntzMgr* g2 = g_gameReg;
-    i32 hx = h2->m_screenX;
     i32 hy = h2->m_screenY;
+    i32 hx = h2->m_screenX;
     if (hx < g2->m_viewBounds.right && hx >= g2->m_viewBounds.left && hy < g2->m_viewBounds.bottom
         && hy >= g2->m_viewBounds.top) {
         if (m_entranceReason == 0x1a) {
@@ -1676,8 +1681,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     // +0x150; until that MI conversion lands the sub-object is reached by cast -
     // @identity-TODO(deferred, MI1 flagged item 1; same seam as GruntSteps.cpp).
     (reinterpret_cast<CWapX*>((&m_34)))->Apply(found, 0);
-    CAniDesc* elem = static_cast<CAniDesc*>(m_38->m_1a0.m_14->AtChecked(0));
-    i32 frame = elem->m_param;
+    i32 frame = static_cast<CAniDesc*>(m_38->m_1a0.m_14->AtChecked(0))->m_param;
     m_38->ApplyLookupSprite(s_GRUNTZ_EXITZ, frame);
     return 0;
 }
