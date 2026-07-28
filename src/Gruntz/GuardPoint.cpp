@@ -27,9 +27,11 @@ VTBL(CGuardPoint, 0x001e7154);
 // CGuardPoint::CGuardPoint (0xae5f0) - fold the shared CUserLogic(obj) init (with
 // the built-in logic types inlined-registered), then flag the sub-object.
 // @early-stop
-// eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
-// body byte-identical (incl. the unrolled logic-type registration); residual is the
-// /GX leaf-vptr re-stamp position + EH-state ids.
+// eh-ctor-vptr-restamp-position wall, all-inline-base variant (99.68%) - the whole family's
+// shared cause; the mechanism + everything that was tried is written up on CWayPoint::CWayPoint
+// (src/Gruntz/WayPoint.cpp) and in docs/patterns/eh-ctor-vptr-restamp-position.md. One adjacent
+// transposition at 0xae757: cl hoists the body's `mov eax,[esi+0x38]` one slot over the leaf
+// vptr stamp. This ctor is the one the 384-candidate `permute variants` sweep was run on.
 RVA(0x000ae5f0, 0x18f)
 CGuardPoint::CGuardPoint(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_stateFlags |= 1;

@@ -124,7 +124,8 @@ extern "C" i32 uncompress(Bytef* dest, uLongf* destLen, const Bytef* source, uLo
 
 extern "C" Bytef* __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen);
 
-i32 __stdcall WwdFile_CheckHeader(const char* name, void* headerOut);
+// (WwdFile_CheckHeader is GONE: 0x160660 is CGameLevel::ReadWwdHeaderName, the
+// __thiscall sibling of IsValidWwd - see <Gruntz/GameLevel.h>.)
 
 class WwdFile {
 public:

@@ -35,6 +35,12 @@ i32 CSingleAnimation::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObjec
 RVA_COMPGEN(0x00010510, 0x1e, ??_GCSingleAnimation@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010540, 0x44, ??1CSingleAnimation@@UAE@XZ)
 
+// @early-stop
+// eh-ctor-vptr-restamp-position wall, all-inline-base variant (99.58%) - the shared cause of the
+// whole CUserLogic+CWapX leaf-ctor family; mechanism + the full list of spellings that do NOT move
+// it is on CWayPoint::CWayPoint (src/Gruntz/WayPoint.cpp) and in
+// docs/patterns/eh-ctor-vptr-restamp-position.md. One adjacent transposition: cl hoists the body's
+// `mov eax,[esi+0x38]` one slot over the leaf vptr stamp.
 RVA(0x000ae7f0, 0x13d)
 CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
@@ -46,8 +52,7 @@ RVA(0x000aea20, 0x102)
 void CSingleAnimation::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id));
     if ((*e) != 0) {
-        (this
-             ->*(*((CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id)))))();
+        (this->*(*((CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -78,7 +83,8 @@ void CSingleAnimation::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CSingleAnimation::AdvanceAnim);
+    (*((CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CSingleAnimation::AdvanceAnim);
 }
 
 RVA(0x000aed80, 0x39)
@@ -89,4 +95,3 @@ i32 CSingleAnimation::AdvanceAnim() {
     }
     return 0;
 }
-

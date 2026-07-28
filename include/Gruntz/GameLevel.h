@@ -90,9 +90,20 @@ class CDDrawSurfaceMgr; // the m_0c owner/world root (<DDrawMgr/DDrawSurfaceMgr.
 class CGameLevel : public CLoadable {
 public:
     // 0x160530: probe a .wwd file header on disk (open/read/validate; touches no
-    // members - the custom-world dialog calls it on m_world->m_level; ex the
-    // WwdLevelInfoSrc view).
+    // members - the custom-world dialog calls it on m_world->m_level. The
+    // WwdLevelInfoSrc/WwdWorldHolder placeholder views that used to stand in for that
+    // receiver chain are DELETED: m_world is a CDDrawSurfaceMgr* and its m_level is
+    // this class, so both were views of already-modelled types.
     i32 IsValidWwd(const char* name, void* headerBuf);
+    // 0x160660: the SIBLING of IsValidWwd (adjacent body, identical `ret 8` /
+    // this-unused shape, same (name, out) arity) - it validates the same header into
+    // a LOCAL WwdHeader and strcpy's the level-name block out instead of handing back
+    // the raw header. Also a CGameLevel method, not the free `WwdFile_CheckHeader`
+    // __stdcall it was modelled as: its one caller (WwdFile::ValidateMainBlock
+    // @0x3b470) null-guards m_world->m_level into ECX and then pushes only the two
+    // stack args (0x3b515 `lea edx,[esp+4]; push edx; push eax; call`) - the receiver
+    // is already in place, which is exactly why the header temp lands in edx.
+    i32 ReadWwdHeaderName(const char* name, void* nameOut);
     // The 18-slot derived vtable @0x5f0150. REAL-POLYMORPHIC: each matched slot is
     // the real method (RVA-bound in GameLevel.cpp), so cl emits ??_7CGameLevel@@6B@
     // with those slots pointing at the matched functions; the engine-thunk base
