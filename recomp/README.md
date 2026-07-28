@@ -14,6 +14,11 @@ fifth, `CGrunt::RectSegProbe`, **did not** - it carried two logic bugs that byte
 at 78.77% never showed, and returned the wrong answer on 6.5% of random inputs. Both are
 fixed. See `docs/harnesses.md`.
 
+`replay/` has since produced verdicts on functions no fabricated harness could reach:
+seven AGREE (including one scoring 0.00% and four `@early-stop`-parked bodies), and the
+whole `CLightFxRender::Shape1..8` family DISAGREES - at 67-77% it drops RGB565 colour
+channels, 257 of the 524 bytes one call writes. See `docs/verdicts.md`.
+
 ## Two ways in
 
 `harness/` FABRICATES the input state, so it reaches a function only if we can build
@@ -35,8 +40,10 @@ call closure ever leave the process?) and the answer is much larger.
                        our compiled objects in
     harness/*.c(pp)    one harness per reachable function or family
     replay/            record-and-replay: capture.c (injected DLL), replay.cpp,
-                       snapshot.h/.py, fuzz.py - see replay/README.md
-    docs/              what each harness assumes, and why a target is reachable
+                       objbind.py (bind our object to the restored image),
+                       reach.py, verdict.py, fuzz.py - see replay/README.md
+    docs/harnesses.md  what each harness assumes, and why a target is reachable
+    docs/verdicts.md   the verdict ledger: which functions agree with retail
 
 One harness per reachable function or family. Keep them small and independent — a harness
 that needs the CRT stood up has stopped being a harness.

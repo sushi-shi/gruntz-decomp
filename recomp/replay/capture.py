@@ -45,6 +45,19 @@ def write_cfg(lines):
 def run_game(seconds):
     sys.path.insert(0, str(HERE))
     import provision
+    # Kill any wineserver still holding the play prefix FIRST. A session killed
+    # with SIGKILL (a watchdog, an interrupted batch) leaves one behind, and the
+    # next `wine GRUNTZ.EXE` then exits IMMEDIATELY - no window, no DllMain, no
+    # log line, and a `grab` that reports "the session never called it". Six
+    # consecutive targets were written off as unreachable that way before the
+    # cause was found; `wineserver --wait` does not clear it because it waits
+    # for an exit that is not coming.
+    prefix = REPO / "build" / "wineprefix-game"
+    if prefix.exists():
+        subprocess.run(["wineserver", "-k"],
+                       env={**dict(__import__("os").environ),
+                            "WINEPREFIX": str(prefix)},
+                       check=False, capture_output=True)
     pt, env, game_dir, game_exe = provision.provision(DLL if DLL.exists() else None)
     pt.play(env, game_dir, game_exe, timeout=seconds)
 
@@ -67,10 +80,24 @@ def cmd_probe(a):
     lines = [ln.replace("out=OUTDIR", "out=" + win_path(OUT, prefix))
              for ln in tmpl.read_text().splitlines()]
     write_cfg(lines)
-    run_game(a.seconds)
+    # DELETE the previous answer first. `grab` already does this for its
+    # snapshots; `probe` did not, and a session where the game exited before
+    # DllMain ran therefore re-printed a THREE-HOUR-OLD hits.txt as if it were
+    # this run's measurement - a confident, plausible, wrong number, which is
+    # the exact failure this whole harness exists to rule out.
     hits = OUT / "hits.txt"
+    hits.unlink(missing_ok=True)
+    (OUT / "capture.log").unlink(missing_ok=True)
+    run_game(a.seconds)
     if not hits.exists():
-        raise SystemExit("capture: no hits.txt - the DLL did not arm (see capture.log)")
+        log = OUT / "capture.log"
+        raise SystemExit(
+            "capture: THIS RUN PRODUCED NO hits.txt. The DLL never armed, so the "
+            "game did not get as far as SFManager_SelectBestDevice - it usually "
+            "means wine exited immediately (a stale wineserver for "
+            "build/wineprefix-game will do it: `WINEPREFIX=... wineserver -k`).%s"
+            % ("\ncapture.log:\n" + log.read_text() if log.exists()
+               else " capture.log is absent too."))
     rows = [ln.split() for ln in hits.read_text().splitlines() if not ln.startswith("#")]
     rows = [(int(r[0], 16), int(r[1])) for r in rows if len(r) == 2]
     live = sorted([r for r in rows if r[1]], key=lambda r: -r[1])

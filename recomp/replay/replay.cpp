@@ -48,6 +48,26 @@
  * The stack exclusion rule is stated in snapshot.h and implemented in
  * excluded() - below entry_esp, plus the four bytes at entry_esp that hold the
  * return address the replay redirects. Nothing else is excluded, ever.
+ *
+ * ---------------------------------------------------------------------------
+ * Where OUR code comes from
+ * ---------------------------------------------------------------------------
+ * Not from a link. The first version linked build/objdiff/base/<unit>.obj into
+ * replay.exe, which resolved every global our function touches to replay.exe's
+ * own copy instead of the game's, and every intra-image call to a
+ * /FORCE:UNRESOLVED null - so only bodies with ZERO relocations could be run,
+ * 44 of the 173 CLEAN not-yet-exact functions of 0x40 bytes or more.
+ *
+ * Now `objbind.py` lays the object out and binds each relocation to
+ * `game_base + rva`, and replay.exe just VirtualAllocs the pre-relocated blob at
+ * its fixed base and memcpy's it. Our function then reads the game's real
+ * globals and calls the game's real code, on the restored state. That is 129 of
+ * the same 173, and the 41 that remain are blocked by the OTHER constraint - no
+ * direct call site to hook - not by this one.
+ *
+ * A consequence worth stating: a call from our function to another of OUR
+ * functions binds to RETAIL's copy of the callee. The verdict is therefore about
+ * one body at a time, and a second unmatched function cannot contaminate it.
  */
 
 #include <windows.h>
@@ -56,22 +76,41 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "objmod.h"
 #include "snapshot.h"
-#include "targets.h"
 
-#define ARENA_BASE 0x60000000
-#define ARENA_SIZE 0x14000000 /* 320 MB: two snapshots + two post-states + saves */
+/* The arena holds the three loaded snapshots (entry, exit, the noise probe) and
+ * the two collected post-states, so it is sized FROM THE INPUT FILES rather
+ * than from a constant. It was a fixed 320 MB, which was ample for the 32 MB
+ * menu snapshot the harness was built on and silently too small for the first
+ * IN-GAME one - and an arena that exhausts mid-restore does so with the game's
+ * bytes over our heap, which is not a place to discover a sizing bug.
+ *
+ * 0x52000000 rather than 0x60000000: the recorded regions stop at the injected
+ * recorder's 0x50000000+0xa0000, the object module sits just above that at
+ * 0x51000000, and wine's DLLs start at 0x79ea0000. That whole window is the
+ * arena's, and it needs to be: entry + exit + noise + one post-state on a
+ * 114 MB in-game snapshot is ~470 MB. */
+#define ARENA_BASE 0x52000000
+#define ARENA_LIMIT 0x27000000 /* 624 MB: 0x52000000 .. 0x79000000 */
 #define SCRATCH_SIZE 0x100000
 #define STACK_HEADROOM 0x20000 /* extra committed pages under the restored stack */
 #define MAX_SAVE 16384
 #define MAX_SET 64
-#define MAX_SHOW 32
+/* How many differing bytes a Verdict REMEMBERS. It was 32, which is fine for
+ * "do they agree" and useless the moment they do not: the first real DISAGREE
+ * (CLightFxRender::Shape3, 257 differing bytes) needed the whole list to see
+ * that the wrong pixels came in 8-pixel groups. Recording is free - the diff
+ * runs with the game's memory over our heap, so it cannot write a file - and
+ * `--show N` decides how many of them are printed afterwards. */
+#define MAX_SHOW 4096
 #define MAX_TRACE 4096
 #define STEP_LIMIT 20000
 
 /* ------------------------------------------------------------------- arena */
 
 static BYTE *g_arena;
+static DWORD g_arena_size;
 static DWORD g_arena_used;
 static BYTE *g_scratch;
 static DWORD g_scratch_esp;
@@ -81,9 +120,9 @@ static void *arena(DWORD n)
 {
     void *p;
     n = (n + 15) & ~15u;
-    if (g_arena_used + n > ARENA_SIZE) {
-        fprintf(stderr, "replay: arena exhausted (%lu + %lu > %d)\n", g_arena_used, n,
-                (int)ARENA_SIZE);
+    if (g_arena_used + n > g_arena_size) {
+        fprintf(stderr, "replay: arena exhausted (%lu + %lu > %lu)\n", g_arena_used, n,
+                g_arena_size);
         exit(2);
     }
     p = g_arena + g_arena_used;
@@ -206,6 +245,97 @@ static const BYTE *snap_bytes(Snap *s, DWORD base, DWORD size)
     return 0;
 }
 
+/* ------------------------------------------------------------ OUR CODE ----
+ *
+ * The pre-relocated object module written by objbind.py. Loading it is a
+ * memcpy: every relocation was already bound, against the SAME image base the
+ * snapshot restores at, so nothing has to be patched here. The one thing this
+ * does check is that those two bases agree - a module bound against a different
+ * base would run happily and read the wrong globals, and that is exactly the
+ * class of silent-wrong-answer the harness exists to rule out.
+ */
+
+static BYTE *g_mod_raw;
+static ObjModHeader *g_mod;
+static ObjModSym *g_mod_syms;
+static const char *g_mod_str;
+
+static const char *mod_name(ObjModSym *s)
+{
+    return g_mod_str + s->name_off;
+}
+
+/* `place` is 0 in the parent of a --spawn run: it needs the header (to reserve
+ * the range in the child) but must not fight the child for the address. */
+static int load_objmod(const char *path, int place)
+{
+    HANDLE f;
+    DWORD n = 0, sz;
+    void *p;
+
+    f = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+                    FILE_ATTRIBUTE_NORMAL, NULL);
+    if (f == INVALID_HANDLE_VALUE) {
+        fprintf(stderr, "replay: cannot open %s\n", path);
+        return 0;
+    }
+    sz = GetFileSize(f, NULL);
+    g_mod_raw = (BYTE *)arena(sz);
+    if (!ReadFile(f, g_mod_raw, sz, &n, NULL) || n != sz) {
+        fprintf(stderr, "replay: short read on %s\n", path);
+        CloseHandle(f);
+        return 0;
+    }
+    CloseHandle(f);
+
+    g_mod = (ObjModHeader *)g_mod_raw;
+    if (memcmp(g_mod->magic, OBJMOD_MAGIC, 8) != 0
+        || g_mod->version != OBJMOD_VERSION || g_mod->hdr_size != sizeof(ObjModHeader)
+        || g_mod->sym_size != sizeof(ObjModSym)) {
+        fprintf(stderr,
+                "replay: %s is not an objmod this build understands "
+                "(version %lu, header %lu/%lu vs %d/%d)\n",
+                path, g_mod->version, g_mod->hdr_size, g_mod->sym_size,
+                (int)sizeof(ObjModHeader), (int)sizeof(ObjModSym));
+        return 0;
+    }
+    if (g_mod->total_size != sz)
+        fprintf(stderr, "replay: %s says %lu bytes, file is %lu\n", path,
+                g_mod->total_size, sz);
+    g_mod_syms = (ObjModSym *)(g_mod_raw + g_mod->sym_off);
+    g_mod_str = (const char *)(g_mod_raw + g_mod->str_off);
+    if (!place)
+        return 1;
+
+    /* Claim it. MEM_COMMIT alone succeeds when the parent already reserved the
+     * range in this child; the reserve-and-commit is the standalone path. */
+    p = VirtualAlloc((LPVOID)g_mod->load_base, g_mod->blob_size, MEM_COMMIT,
+                     PAGE_EXECUTE_READWRITE);
+    if (!p)
+        p = VirtualAlloc((LPVOID)g_mod->load_base, g_mod->blob_size,
+                         MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    if (!p) {
+        fprintf(stderr,
+                "replay: cannot place the object module at %08lx (%lu) - something "
+                "already owns that range; re-bake with --load-base\n",
+                g_mod->load_base, GetLastError());
+        return 0;
+    }
+    memcpy(p, g_mod_raw + g_mod->blob_off, g_mod->blob_size);
+    return 1;
+}
+
+static ObjModSym *objmod_find(const char *name)
+{
+    DWORD i;
+    if (!g_mod)
+        return 0;
+    for (i = 0; i < g_mod->n_syms; i++)
+        if (!strcmp(mod_name(&g_mod_syms[i]), name))
+            return &g_mod_syms[i];
+    return 0;
+}
+
 /* ------------------------------------------------------- THE SECOND RULE
  *
  * A recorded region is RESTORED and COMPARED only if it is the program's own
@@ -261,10 +391,12 @@ static const char *fatal_overlap(DWORD base, DWORD size)
 
     if (overlaps(base, size, (DWORD)self, nt->OptionalHeader.SizeOfImage))
         return "replay.exe's own image";
-    if (overlaps(base, size, (DWORD)g_arena, ARENA_SIZE))
+    if (overlaps(base, size, (DWORD)g_arena, g_arena_size))
         return "the arena";
     if (overlaps(base, size, (DWORD)g_scratch, SCRATCH_SIZE))
         return "the scratch stack";
+    if (g_mod && overlaps(base, size, g_mod->load_base, g_mod->blob_size))
+        return "the loaded object module (re-bake with --load-base)";
     return 0;
 }
 
@@ -640,13 +772,29 @@ static LONG WINAPI step_handler(EXCEPTION_POINTERS *ep)
 
 /* --------------------------------------------------------- run and collect */
 
+/* One side's result. `bytes` is the collected post-state, concatenated in the
+ * ENTRY snapshot's region order - or 0, meaning "still live at its original
+ * addresses, read it there".
+ *
+ * The LIVE form exists to save a whole copy of the address space. A menu
+ * snapshot is 32 MB and an in-game one is 114 MB, and holding entry + exit +
+ * noise + TWO post-states wanted a 710 MB arena, which does not fit between the
+ * recorded regions and wine's DLLs. Only the FIRST side run has to be copied
+ * out; the second side's result is simply the memory as it stands when it
+ * returns, so both remaining comparisons ([2] against the recorded exit, [3]
+ * against the first side) can read it in place. */
 typedef struct Post {
-    BYTE *bytes; /* concatenated, in the ENTRY snapshot's region order */
+    BYTE *bytes;
     DWORD len;
     SnapRegs regs;
     DWORD ntrace;
     DWORD trace[MAX_TRACE];
 } Post;
+
+static const BYTE *post_ptr(Post *p, SnapRegion *r, DWORD off)
+{
+    return p->bytes ? p->bytes + off : (const BYTE *)r->base;
+}
 
 static DWORD post_len(Snap *s)
 {
@@ -693,12 +841,14 @@ static void run_side(Snap *entry, void *fn, Post *out, int trace)
     call_restored();
     stage("  returned");
 
-    for (i = 0; i < entry->h->n_regions; i++) {
-        SnapRegion *r = &entry->r[i];
-        if (!restorable(r))
-            continue;
-        memcpy(out->bytes + off, (const void *)r->base, r->size);
-        off += r->size;
+    if (out->bytes) {
+        for (i = 0; i < entry->h->n_regions; i++) {
+            SnapRegion *r = &entry->r[i];
+            if (!restorable(r))
+                continue;
+            memcpy(out->bytes + off, (const void *)r->base, r->size);
+            off += r->size;
+        }
     }
     out->len = off;
     out->regs.eax = g_o_eax;
@@ -751,14 +901,39 @@ static int noisy(Snap *entry, SnapRegion *r, const BYTE *probe, DWORD off)
     return entry->raw[r->blob_off + off] != probe[off];
 }
 
-/* THE stack exclusion rule. Nothing else is ever excluded. */
+/* THE stack exclusion rule, and its one extension.
+ *
+ * Below entry_esp: the callee's own frame, dead scratch on both sides.
+ * At entry_esp:    the return slot the replay redirects. Four bytes.
+ * And ABOVE it, for exactly `g_argbytes` bytes: THE INCOMING ARGUMENT AREA.
+ *
+ * That last one was added because it produced a false DISAGREE the first time a
+ * function with stack arguments was replayed. Retail's ComputeCellFlags leaves
+ * its 8-neighbour loop counters in its own incoming `x` and `y` slots; our build
+ * leaves different ones there. Neither is observable: under the MSVC x86 ABI the
+ * argument area is dead the instant the callee returns - a __thiscall/__stdcall
+ * callee POPS it, so the caller cannot even address it any more, and a __cdecl
+ * caller's `add esp,N` abandons it. Parameter-slot reuse as scratch is ordinary
+ * MSVC codegen, and comparing it compares register allocation, not behaviour.
+ *
+ * The width is MEASURED, not assumed: it is the callee's OWN `ret N`, read as
+ * (exit esp - entry esp - 4) out of the recorded exit snapshot. A __cdecl callee
+ * pops nothing, so this comes out 0 and the argument slots ARE compared - the
+ * conservative direction, and it is printed either way so the boundary is never
+ * silently wider than the function's own stack discipline says.
+ *
+ * An out-parameter is unaffected: the SLOT holds a pointer, and the memory it
+ * points at is somewhere else and still compared in full.
+ */
+static DWORD g_argbytes;
+
 static int excluded(SnapHeader *h, DWORD addr)
 {
     if (h->stack_base == 0)
         return 0;
     if (addr < h->stack_base || addr >= h->stack_end)
         return 0;
-    return addr < h->entry_esp + 4;
+    return addr < h->entry_esp + 4 + g_argbytes;
 }
 
 static void record(Verdict *v, SnapRegion *r, DWORD addr, BYTE a, BYTE b)
@@ -784,7 +959,7 @@ static void diff_post_snap(Snap *entry, Post *p, Snap *ref, Verdict *v)
     memset(v, 0, sizeof(*v));
     for (i = 0; i < entry->h->n_regions; i++) {
         SnapRegion *r = &entry->r[i];
-        const BYTE *b, *probe;
+        const BYTE *b, *probe, *pa;
         DWORD j, bad = 0;
         if (!restorable(r))
             continue;
@@ -794,9 +969,10 @@ static void diff_post_snap(Snap *entry, Post *p, Snap *ref, Verdict *v)
             off += r->size;
             continue;
         }
+        pa = post_ptr(p, r, off);
         probe = g_have_noise ? snap_bytes(&g_noise, r->base, r->size) : 0;
         for (j = 0; j < r->size; j++) {
-            if (p->bytes[off + j] == b[j])
+            if (pa[j] == b[j])
                 continue;
             if (excluded(entry->h, r->base + j))
                 continue;
@@ -804,7 +980,7 @@ static void diff_post_snap(Snap *entry, Post *p, Snap *ref, Verdict *v)
                 g_masked++;
                 continue;
             }
-            record(v, r, r->base + j, p->bytes[off + j], b[j]);
+            record(v, r, r->base + j, pa[j], b[j]);
             bad = 1;
         }
         v->nregions += bad;
@@ -854,13 +1030,15 @@ static void diff_post_post(Snap *entry, Post *a, Post *b, Verdict *v)
     memset(v, 0, sizeof(*v));
     for (i = 0; i < entry->h->n_regions; i++) {
         SnapRegion *r = &entry->r[i];
-        const BYTE *probe;
+        const BYTE *probe, *pa, *pb;
         DWORD j, bad = 0;
         if (!restorable(r))
             continue;
+        pa = post_ptr(a, r, off);
+        pb = post_ptr(b, r, off);
         probe = g_have_noise ? snap_bytes(&g_noise, r->base, r->size) : 0;
         for (j = 0; j < r->size; j++) {
-            if (a->bytes[off + j] == b->bytes[off + j])
+            if (pa[j] == pb[j])
                 continue;
             if (excluded(entry->h, r->base + j))
                 continue;
@@ -868,7 +1046,7 @@ static void diff_post_post(Snap *entry, Post *a, Post *b, Verdict *v)
                 g_masked++;
                 continue;
             }
-            record(v, r, r->base + j, a->bytes[off + j], b->bytes[off + j]);
+            record(v, r, r->base + j, pa[j], pb[j]);
             bad = 1;
         }
         v->nregions += bad;
@@ -924,7 +1102,9 @@ static void sequence(void)
         return;
     }
     stage("prepare ok");
-    /* RETAIL first: it is the self-test, and its result frames everything. */
+    /* RETAIL first: it is the self-test, and its result frames everything. It
+     * is also the side that gets the copy-out buffer, because OURS runs second
+     * and its result can be compared in place. */
     run_side(&g_entry, (void *)(g_entry.h->image_base + g_entry.h->target_rva),
              &g_p_retail, g_trace_on);
     stage("retail done");
@@ -932,6 +1112,13 @@ static void sequence(void)
     run_side(&g_entry, g_ours_fn, &g_p_ours, 0);
     g_side_ours = 0;
     stage("ours done");
+    /* Both OURS comparisons run HERE, before undo_prepare puts our own bytes
+     * back - g_p_ours.bytes is 0, so they read the restored addresses directly.
+     * These loops touch no heap and no FILE*, which is the same constraint
+     * everything else between prepare() and undo_prepare() obeys. */
+    diff_post_snap(&g_entry, &g_p_ours, &g_exit, &g_v_ours);
+    diff_post_post(&g_entry, &g_p_ours, &g_p_retail, &g_v_cross);
+    stage("ours diffed");
     undo_prepare();
     teb_set_stack(g_teb_base, g_teb_limit);
     stage("undo done");
@@ -977,6 +1164,8 @@ static const char *klass_name(DWORD k)
     return "?";
 }
 
+static DWORD g_show = 32;
+
 static void show(const char *title, Verdict *v, const char *aname, const char *bname)
 {
     DWORD i;
@@ -989,14 +1178,60 @@ static void show(const char *title, Verdict *v, const char *aname, const char *b
         return;
     }
     printf("      %lu byte(s) differ across %lu region(s)\n", v->nbytes, v->nregions);
-    for (i = 0; i < v->nhit; i++) {
+    for (i = 0; i < v->nhit && i < g_show; i++) {
         Hit *h = &v->hit[i];
         printf("      %08lx  %s=%02x  %s=%02x   [%s%s%s]\n", h->addr, aname, h->a, bname,
                h->b, klass_name(h->klass), h->module[0] ? " " : "", h->module);
     }
-    if (v->nbytes > v->nhit)
-        printf("      ... and %lu more\n", v->nbytes - v->nhit);
+    if (v->nbytes > v->nhit || v->nhit > g_show)
+        printf("      ... and %lu more (--show N to print them)\n",
+               v->nbytes - (v->nhit < g_show ? v->nhit : g_show));
 }
+
+/* ------------------------------------------------------------------ --cross
+ *
+ * Run a DIFFERENT function on a captured state.
+ *
+ * `CLightFxRender::Shape1..Shape8` are eight `QAEHXZ` methods that `BuildShape`
+ * dispatches between by index. A play session picks one shape and calls only
+ * that one, so seven of the eight are uncapturable however long the session
+ * runs - not because the harness cannot reach them, but because the level did
+ * not ask for them. Yet Shape1's entry state IS the state Shape7 would have
+ * seen: same object, same surface, same call site, no arguments, and the shape
+ * index is not an input to ShapeN at all - it selected which ShapeN was called.
+ *
+ * So `--cross` lifts the "this symbol must be the one the snapshot captured"
+ * check, under the same terms as `--set`: the recorded exit is the answer to a
+ * DIFFERENT question, so [1] and [2] are suppressed and only [3], OURS against
+ * a RETAIL run on identical state, is a verdict. It costs the harness self-test
+ * [1] provides, which is why the ORIGINAL function should be run on the same
+ * snapshot first - that run validates the state and the machinery, and this one
+ * then rides on it.
+ *
+ * The one thing it does NOT lift is ABI compatibility. Both names must agree on
+ * everything after the function's own identifier - class, access, calling
+ * convention, return type, argument list - because the recorded registers and
+ * the recorded stack ARE the arguments. Running a two-argument function on a
+ * no-argument function's frame would read the caller's locals as arguments and
+ * report the resulting nonsense as a disagreement.
+ */
+static int g_cross;
+
+/* Everything after the leading `?identifier`. For two MSVC mangled names that
+ * is class + access + convention + return type + argument list: exactly the
+ * ABI contract, and nothing else. */
+static const char *sig_of(const char *m)
+{
+    const char *at = m && m[0] == '?' ? strchr(m + 1, '@') : 0;
+    return at ? at : "";
+}
+
+/* Set when the mangled name proves a void return: eax is then whatever the last
+ * instruction left there and comparing it compares codegen, not behaviour. The
+ * decision is made from the NAME, in objbind.void_return(), and it under-claims
+ * - a constructor mangles with no return type at all and really does hand `this`
+ * back in eax, so it is not treated as void. */
+static int g_void_ret;
 
 static int show_regs(const char *title, SnapRegs *got, SnapRegs *want, const char *aname,
                      const char *bname)
@@ -1012,7 +1247,7 @@ static int show_regs(const char *title, SnapRegs *got, SnapRegs *want, const cha
                { "esi", got->esi, want->esi }, { "edi", got->edi, want->edi },
                { "ebp", got->ebp, want->ebp }, { "esp", got->esp, want->esp } };
     int i;
-    for (i = 0; i < 6; i++) {
+    for (i = g_void_ret ? 1 : 0; i < 6; i++) {
         if (r[i].a == r[i].b)
             continue;
         if (!bad)
@@ -1028,18 +1263,26 @@ static int show_regs(const char *title, SnapRegs *got, SnapRegs *want, const cha
 static void usage(void)
 {
     fprintf(stderr,
-            "usage: replay.exe <snapdir> [--spawn] [--target N] [--trace]\n"
-            "                  [--timeout MS] [--set A=V ...]\n"
+            "usage: replay.exe <snapdir> --obj M.objmod --fn <mangled> [--spawn]\n"
+            "                  [--trace] [--timeout MS] [--set A=V ...]\n"
+            "   <snapdir>   directory holding entry.snap and exit.snap\n"
+            "   --obj M     the pre-relocated object module (objbind.py). OUR code\n"
+            "               comes from here, never from a link - see the header.\n"
+            "   --fn NAME   the mangled symbol in M to run as OURS. Its recorded\n"
+            "               retail address must equal the snapshot's target.\n"
+            "   --cross     ... unless this says otherwise: run a DIFFERENT\n"
+            "               function on this state (Shape7 on Shape1's snapshot).\n"
+            "               Requires an identical signature; suppresses [1],[2].\n"
             "   --spawn     re-run in a child whose address space was reserved before\n"
             "               its loader ran, with a watchdog. Use this: a plain run\n"
             "               fails whenever wine has already mapped a section inside\n"
             "               the recorded ranges.\n"
-            "   <snapdir>   directory holding entry.snap and exit.snap\n"
-            "   --target N  index into targets.h (default: match the snapshot rva)\n"
+            "   --show N    print N differing bytes per verdict (default 32). A\n"
+            "               DISAGREE is only diagnosable with the whole list.\n"
             "   --trace     single-step retail and print the instructions covered\n"
-            "   --set-ours A=V  the same, but on OURS only: the negative control.\n"
-            "               A run with it MUST report DISAGREE; if it does not, the\n"
-            "               comparison is not comparing anything.\n"
+            "   --set-ours A=V  the negative control: perturb OURS only. A run with\n"
+            "               it MUST report DISAGREE; if it does not, the comparison\n"
+            "               is not comparing anything.\n"
             "   --set A=V   write dword V at address A after restoring - a MUTATION,\n"
             "               applied identically to both sides. With any --set the\n"
             "               recorded exit no longer applies and only [3] is a\n"
@@ -1158,6 +1401,12 @@ static int spawn_child(const char *self, const char *cmdline, Snap *s, DWORD tim
             i = j;
         }
     }
+    /* The object module's home, claimed in the child for the same reason: its
+     * loader has not run yet, and after it has, 0x58000000 may not be free. */
+    if (g_mod)
+        VirtualAllocEx(pi.hProcess, (LPVOID)g_mod->load_base,
+                       (g_mod->blob_size + 0xffff) & ~0xffffu, MEM_RESERVE,
+                       PAGE_READWRITE);
     printf("replay: spawned child %lu, reserved %lu of %lu merged ranges "
            "(%lu already taken by the kernel: stack, PEB, TEB)\n",
            pi.dwProcessId, reserved, reserved + failed, failed);
@@ -1259,8 +1508,9 @@ static int vehtest(void)
 int main(int argc, char **argv)
 {
     char path[MAX_PATH];
-    const char *dir = 0;
-    int target = -1, i, bad = 0, spawn = 0, child = 0;
+    const char *dir = 0, *objpath = 0, *fnname = 0;
+    ObjModSym *sym;
+    int i, bad = 0, spawn = 0, child = 0;
     DWORD n, timeout_ms = 30000;
 
     if (argc == 2 && !strcmp(argv[1], "--map")) {
@@ -1271,12 +1521,18 @@ int main(int argc, char **argv)
         return vehtest();
 
     for (i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "--target") && i + 1 < argc)
-            target = atoi(argv[++i]);
+        if (!strcmp(argv[i], "--obj") && i + 1 < argc)
+            objpath = argv[++i];
+        else if (!strcmp(argv[i], "--fn") && i + 1 < argc)
+            fnname = argv[++i];
         else if (!strcmp(argv[i], "--trace"))
             g_trace_on = 1;
         else if (!strcmp(argv[i], "--spawn"))
             spawn = 1;
+        else if (!strcmp(argv[i], "--cross"))
+            g_cross = 1;
+        else if (!strcmp(argv[i], "--show") && i + 1 < argc)
+            g_show = strtoul(argv[++i], 0, 0);
         else if (!strcmp(argv[i], "--child"))
             child = 1;
         else if (!strcmp(argv[i], "--verbose-restore"))
@@ -1314,20 +1570,55 @@ int main(int argc, char **argv)
             return 2;
         }
     }
-    if (!dir) {
+    if (!dir || !objpath || !fnname) {
         usage();
         return 2;
     }
 
-    g_arena = (BYTE *)VirtualAlloc((LPVOID)ARENA_BASE, ARENA_SIZE,
+    /* Size the arena from the inputs: entry + exit + noise, plus ONE post-state
+     * buffer no larger than entry (the other side is compared live), plus the
+     * bytes of whatever of ours the restore clobbers - which is small in a
+     * --spawn child, because the recorded ranges were reserved before its
+     * loader ran and so held nothing of ours to save. */
+    {
+        DWORD need = 0, k;
+        const char *f[3] = { "entry.snap", "exit.snap", "entry2.snap" };
+        for (k = 0; k < 3; k++) {
+            HANDLE h;
+            sprintf(path, "%s\\%s", dir, f[k]);
+            h = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+                            FILE_ATTRIBUTE_NORMAL, NULL);
+            if (h == INVALID_HANDLE_VALUE)
+                continue;
+            need += GetFileSize(h, NULL);
+            if (k == 0)
+                need += GetFileSize(h, NULL); /* the retail post-state */
+            CloseHandle(h);
+        }
+        if (!need) {
+            fprintf(stderr, "replay: no readable snapshot in %s\n", dir);
+            return 2;
+        }
+        g_arena_size = (need + 0x1000000 + 0xfffff) & ~0xfffffu;   /* +16 MB */
+        if (g_arena_size > ARENA_LIMIT) {
+            fprintf(stderr,
+                    "replay: this snapshot needs a %lu MB arena and the free "
+                    "window between the recorded regions and wine's DLLs is "
+                    "%d MB\n",
+                    g_arena_size >> 20, (int)(ARENA_LIMIT >> 20));
+            return 2;
+        }
+    }
+    g_arena = (BYTE *)VirtualAlloc((LPVOID)ARENA_BASE, g_arena_size,
                                    MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
     if (!g_arena)
-        g_arena = (BYTE *)VirtualAlloc(NULL, ARENA_SIZE, MEM_RESERVE | MEM_COMMIT,
+        g_arena = (BYTE *)VirtualAlloc(NULL, g_arena_size, MEM_RESERVE | MEM_COMMIT,
                                        PAGE_READWRITE);
     g_scratch = (BYTE *)VirtualAlloc(NULL, SCRATCH_SIZE, MEM_RESERVE | MEM_COMMIT,
                                      PAGE_READWRITE);
     if (!g_arena || !g_scratch) {
-        fprintf(stderr, "replay: arena/scratch allocation failed\n");
+        fprintf(stderr, "replay: arena (%lu MB) / scratch allocation failed\n",
+                g_arena_size >> 20);
         return 2;
     }
     g_scratch_esp = (DWORD)(g_scratch + SCRATCH_SIZE - 0x400);
@@ -1348,6 +1639,11 @@ int main(int argc, char **argv)
             g_have_noise = load_snap(path, &g_noise);
         }
     }
+
+    /* The parent of a --spawn run needs the header (to reserve the module's
+     * range in the child) but must not place the blob itself. */
+    if (!load_objmod(objpath, spawn ? 0 : 1))
+        return 2;
 
     sprintf(g_report_path, "%s\\replay.out", dir);
     if (child) {
@@ -1375,24 +1671,88 @@ int main(int argc, char **argv)
                 continue;
             }
             strcat(cmd, " ");
-            strcat(cmd, argv[k]);
+            /* A mangled name has no spaces, but a snapdir path does. Quoting
+             * only what needs it keeps the forwarded line readable in a log. */
+            if (strchr(argv[k], ' ')) {
+                strcat(cmd, "\"");
+                strcat(cmd, argv[k]);
+                strcat(cmd, "\"");
+            } else {
+                strcat(cmd, argv[k]);
+            }
         }
         strcat(cmd, " --child");
         return spawn_child(argv[0], cmd, &g_entry, timeout_ms);
     }
 
-    if (target < 0)
-        for (i = 0; i < (int)REPLAY_NTARGETS; i++)
-            if (g_targets[i].rva == g_entry.h->target_rva)
-                target = i;
-    if (target < 0 || target >= (int)REPLAY_NTARGETS) {
-        fprintf(stderr, "replay: snapshot rva %08lx (%s) is not in targets.h\n",
-                g_entry.h->target_rva, g_entry.h->target_name);
+    /* Resolve OURS out of the loaded module, and then check the module agrees
+     * with the snapshot about what it is. Three checks, and each one has a
+     * failure mode that would otherwise be silent:
+     *   - the module was bound against a different image base, so every global
+     *     it reads is off by a constant;
+     *   - the symbol's recorded retail address is not the function the capture
+     *     hooked, i.e. this is the wrong --fn for this snapshot;
+     *   - the symbol's section carries an unresolved relocation, so running it
+     *     would jump or load through an address objbind could not determine.
+     * A harness that runs anyway and reports a difference is worse than one
+     * that refuses, because the difference looks like a finding. */
+    sym = objmod_find(fnname);
+    if (!sym) {
+        fprintf(stderr, "replay: '%s' is not in %s\n", fnname, objpath);
         return 2;
     }
-    g_ours_fn = g_targets[target].ours;
+    if (g_mod->image_base != g_entry.h->image_base) {
+        fprintf(stderr,
+                "replay: the module was bound against image base %08lx but the "
+                "snapshot restores at %08lx - re-bake with --image-base %08lx\n",
+                g_mod->image_base, g_entry.h->image_base, g_entry.h->image_base);
+        return 2;
+    }
+    if (!(sym->flags & OBJSYM_OURS)) {
+        fprintf(stderr, "replay: '%s' is referenced by the module but not defined "
+                        "in it - bake the unit that defines it\n",
+                fnname);
+        return 2;
+    }
+    if (sym->retail != g_entry.h->image_base + g_entry.h->target_rva) {
+        if (!g_cross) {
+            fprintf(stderr,
+                    "replay: '%s' is retail %08lx, but this snapshot captured "
+                    "%08lx (%s) - wrong --fn for this snapshot. If that is "
+                    "deliberate, --cross says so and suppresses [1] and [2].\n",
+                    fnname, sym->retail,
+                    g_entry.h->image_base + g_entry.h->target_rva,
+                    g_entry.h->target_name);
+            return 2;
+        }
+        if (strcmp(sig_of(fnname), sig_of(g_entry.h->target_name)) != 0
+            || !sig_of(fnname)[0]) {
+            fprintf(stderr,
+                    "replay: --cross refused. '%s' and the captured '%s' do not "
+                    "share a signature, so the recorded registers and stack are "
+                    "not this function's arguments.\n",
+                    fnname, g_entry.h->target_name);
+            return 2;
+        }
+    } else if (g_cross) {
+        g_cross = 0; /* same function after all - the real verdicts still apply */
+    }
+    if (sym->flags & OBJSYM_REFUSE) {
+        fprintf(stderr,
+                "replay: REFUSED - %lu of the %lu relocation(s) in '%s' could not "
+                "be bound to a retail address (objbind.py --list names them). "
+                "Running it would call or load through an address nobody chose.\n",
+                sym->n_unresolved, sym->n_reloc, fnname);
+        return 2;
+    }
+    g_ours_fn = (void *)sym->ours;
+    g_void_ret = (sym->flags & OBJSYM_VOIDRET) != 0;
 
-    printf("replay: %s\n", g_targets[target].name);
+    printf("replay: %s%s\n", fnname,
+           g_void_ret ? "   [void return: eax is not compared]" : "");
+    if (g_cross)
+        printf("  CROSS-RUN  on the state captured for %s\n",
+               g_entry.h->target_name);
     fflush(stdout);
     printf("  snapshot   rva=%08lx image=%08lx hit=%lu regions=%lu %lu bytes%s\n",
            g_entry.h->target_rva, g_entry.h->image_base, g_entry.h->hit_index,
@@ -1401,10 +1761,41 @@ int main(int argc, char **argv)
                                           : "  [writable + game image]");
     printf("  entry      esp=%08lx ret=%08lx ecx=%08lx\n", g_entry.h->entry_esp,
            g_entry.h->ret_addr, g_entry.h->regs.ecx);
-    printf("  stack      %08lx..%08lx  EXCLUDED below %08lx (+4: the return slot)\n",
-           g_entry.h->stack_base, g_entry.h->stack_end, g_entry.h->entry_esp);
+    /* The argument-area width, from the callee's own `ret N`. Bounded and
+     * sanity-checked: anything outside a plausible argument list means the
+     * exit snapshot's esp is not what this assumes, and the harness would
+     * rather compare too much than quietly exclude a caller's live frame. */
+    {
+        DWORD pop = g_exit.h->regs.esp - g_entry.h->entry_esp;
+        if (pop >= 4 && pop <= 4 + 256 && ((pop - 4) & 3) == 0)
+            g_argbytes = pop - 4;
+        else if (pop != 4)
+            printf("  NOTE       exit esp is %08lx against an entry esp of %08lx; "
+                   "that is not a plain `ret N`, so no argument bytes are "
+                   "excluded\n",
+                   g_exit.h->regs.esp, g_entry.h->entry_esp);
+    }
+    printf("  stack      %08lx..%08lx  EXCLUDED below %08lx (+4: the return slot"
+           "%s)\n",
+           g_entry.h->stack_base, g_entry.h->stack_end,
+           g_entry.h->entry_esp + 4 + g_argbytes,
+           g_argbytes ? ", then the incoming argument area the callee pops"
+                      : ", callee pops nothing: argument slots ARE compared");
+    if (g_argbytes)
+        printf("  arguments  %lu byte(s) at %08lx, callee-popped hence dead on "
+               "return - MSVC reuses them as scratch\n",
+               g_argbytes, g_entry.h->entry_esp + 4);
     printf("  code       retail=%08lx  ours=%08lx\n",
            g_entry.h->image_base + g_entry.h->target_rva, (DWORD)g_ours_fn);
+    printf("  bound      %lu reloc(s): %lu to the restored image, %lu intra-function"
+           ", %lu to our own copy\n",
+           sym->n_reloc, sym->n_bound_retail, sym->n_local_intra,
+           sym->n_local_foreign);
+    if (sym->n_local_foreign)
+        printf("      CAVEAT: %lu reference(s) resolve to OUR copy of a symbol with "
+               "no retail address (a $SG literal, or an unhomed global). Their "
+               "CONTENTS match; their ADDRESSES do not.\n",
+               sym->n_local_foreign);
     for (i = 0; i < (int)g_nset; i++)
         printf("  MUTATION   [%08lx] = %08lx  (both sides)\n", g_set[i].addr,
                g_set[i].value);
@@ -1414,7 +1805,7 @@ int main(int argc, char **argv)
                g_set_ours[i].addr, g_set_ours[i].value);
 
     n = post_len(&g_entry);
-    g_p_ours.bytes = (BYTE *)arena(n);
+    g_p_ours.bytes = 0; /* LIVE: compared in place, see Post */
     g_p_retail.bytes = (BYTE *)arena(n);
 
     if (g_trace_on) {
@@ -1465,26 +1856,34 @@ int main(int argc, char **argv)
          * the effect is measured against the RETAIL RE-RUN instead. The bytes
          * written by --set itself show up in that count, deliberately: they are
          * part of what changed. */
-        if (g_nset)
+        if (g_nset || g_cross)
             diff_post_snap(&g_entry, &g_p_retail, &g_entry, &e);
         else
             effect(&g_entry, &g_exit, &e);
         g_masked = saved;
         printf("  effect     %s changed %lu byte(s) in %lu region(s)"
                " - that is what the verdicts below have to agree about\n",
-               g_nset ? "the MUTATED call" : "the recorded call", e.nbytes,
-               e.nregions);
-        if (!e.nbytes)
-            printf("      WARNING: zero measured effect. Any \"IDENTICAL\" below is "
-                   "vacuous - pick a call of this function that does something.\n");
+               g_cross ? "the CROSS-RUN call"
+                       : (g_nset ? "the MUTATED call" : "the recorded call"),
+               e.nbytes, e.nregions);
+        if (!e.nbytes && g_void_ret)
+            printf("      WARNING: zero measured effect and a void return, so "
+                   "there is NOTHING to agree about. Any \"IDENTICAL\" below is "
+                   "vacuous - pick another call with --hit, or mutate the input "
+                   "with --set.\n");
+        else if (!e.nbytes)
+            printf("      the call wrote nothing, so the observable is the RETURN "
+                   "VALUE (compared, below) plus the negative claim that neither "
+                   "side wrote anything else in %lu bytes of restored state.\n",
+                   g_entry.h->total_size);
         else {
             /* The two producers order (a,b) oppositely: effect() records
              * (entry, exit); the mutated path records (post, entry). Print
              * before/after, not whichever slot happened to be first. */
             DWORD k;
             for (k = 0; k < e.nhit && k < 8; k++) {
-                BYTE before = g_nset ? e.hit[k].b : e.hit[k].a;
-                BYTE after = g_nset ? e.hit[k].a : e.hit[k].b;
+                BYTE before = (g_nset || g_cross) ? e.hit[k].b : e.hit[k].a;
+                BYTE after = (g_nset || g_cross) ? e.hit[k].a : e.hit[k].b;
                 printf("      %08lx  before=%02x  after=%02x   [%s]\n", e.hit[k].addr,
                        before, after, klass_name(e.hit[k].klass));
             }
@@ -1492,11 +1891,12 @@ int main(int argc, char **argv)
                 printf("      ... and %lu more\n", e.nbytes - 8);
         }
     }
+    /* [2] and [3] were computed inside sequence(), while OURS's result was
+     * still live at its own addresses; only [1] can be done from here, because
+     * the retail post-state is the one that was copied out. */
     diff_post_snap(&g_entry, &g_p_retail, &g_exit, &g_v_retail);
-    diff_post_snap(&g_entry, &g_p_ours, &g_exit, &g_v_ours);
-    diff_post_post(&g_entry, &g_p_ours, &g_p_retail, &g_v_cross);
 
-    if (g_nset == 0) {
+    if (g_nset == 0 && !g_cross) {
         show("[1] RETAIL re-run vs the RECORDED exit   (harness self-test)", &g_v_retail,
              "rerun", "recorded");
         bad |= show_regs("registers:", &g_p_retail.regs, &g_exit.h->regs, "rerun",
@@ -1507,6 +1907,13 @@ int main(int argc, char **argv)
         bad |= show_regs("registers:", &g_p_ours.regs, &g_exit.h->regs, "ours",
                          "recorded")
                || g_v_ours.nbytes != 0;
+    } else if (g_cross) {
+        printf("\n  CROSS-RUN: this is not the function the snapshot captured "
+               "(%s).\n  The recorded exit answers a different question, so [1] "
+               "and [2] are\n  suppressed and only [3] is a verdict. Run the "
+               "CAPTURED function on this\n  same snapshot for the [1] "
+               "self-test that this run does not have.\n",
+               g_entry.h->target_name);
     } else {
         printf("\n  the entry state was MUTATED: the recorded exit does not apply,\n"
                "  so [1] and [2] are suppressed and only [3] is a verdict.\n");
