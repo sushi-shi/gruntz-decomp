@@ -25,15 +25,21 @@ CGruntzSoundZ::~CGruntzSoundZ() {
     Shutdown();
 }
 
+// The third arg SUPPRESSES midi - it does not merely skip the bring-up. Retail's
+// `test/jne` on it lands on the SHARED `m_enabled = 0` store (0x1384ba -> 0x1384de),
+// the same block the two failure paths tail-merge into, not on the `return 1`.
+// (`--diff` masks branch displacements, so this read as "identical asm".)
 RVA(0x00138490, 0x5e)
-i32 CGruntzSoundZ::Init(HINSTANCE hInst, HWND hwnd, i32 skipInit) {
+i32 CGruntzSoundZ::Init(HINSTANCE hInst, HWND hwnd, i32 noMidi) {
     m_hInstance = hInst;
     m_ownerWnd = hwnd;
     m_pCurrent = 0;
     m_enabled = 1;
     // Miles takes the app instance through its driver-handle slot - API-forced
     g_ailDriver64 = reinterpret_cast<HMDIDRIVER>(hInst);
-    if (skipInit == 0) {
+    if (noMidi != 0) {
+        m_enabled = 0;
+    } else {
         AIL_startup();
         if (AIL_midiOutOpen(&g_ailMidiDriver, 0, -1) != 0 || g_ailMidiDriver == 0) {
             m_enabled = 0;
