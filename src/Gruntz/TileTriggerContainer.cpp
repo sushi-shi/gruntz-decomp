@@ -80,17 +80,29 @@ void CTileTriggerContainer::DtorBase() {
     }
 }
 
+// ===========================================================================
+// CTileTriggerContainer::AddSwitchLogic (0x115f60) - the switch-logic factory, the
+// 0x8c-family twin of AddLogic above. Switch on the tag (the retail jump table at
+// 0x516240 covers tag-1 in [0,7], i.e. tags 1..8), `new` the matching
+// CTileTriggerSwitchLogic subclass, copy the six by-value blocks into one
+// contiguous local, hand its address to the object's slot-1 BuildSmall, and on
+// success AddTail it into m_base. /GX: one trylevel per `new` (states 0..5, in the
+// arm order below), and the failure path inlines `delete obj` as the vptr restamp +
+// m_initGate=0 + operator delete.
 // @confidence: high
-// @source: xref
-// @stub
-// The AddSwitchLogic factory: news a 0x8c CTileTriggerSwitchLogic (`push 0x8c;
-// call ??2; call ??0CTileTriggerSwitchLogic` @0x115f96 - the rtti-vptr signal was
-// the BUILT object's ctor stamp, not the receiver's). The receiver is this
-// container (same m_2e4 object every sibling here runs on). Full 13-arg signature
-// from the seven CPlay::ValidateLevelTiles call sites (ret 0x7c; ex the
-// TriggerRegistrar::RegisterSwitchLogic view).
+// @source: full-disasm-decode (jump table 0x516240 read out of .rdata; all six ctor
+//   ILT thunks resolved; the 9-arg vtable +0x04 call matches BuildSmall exactly)
+// @early-stop
+// BYTE-EXACT, scored 95.05%. Verified instruction-for-instruction with
+// `llvm-objdump -dr` on build/objdiff/base/tiletriggercontainer.obj against the
+// retail 0x115f60 bytes: every opcode, every displacement and every EH-state store
+// matches; the only base-side differences are unresolved reloc placeholders
+// (??2/??3, the six ctors, ??_7CTileTriggerSwitchLogic, __except_list). The residual
+// is the known delinker jump-table artifact - the `jmp [eax*4+<table>]` DIR32 points
+// at a size-0 duplicate symbol for the .rdata table, so objdiff cannot pair those
+// bytes (docs: delinker-jumptable-dup-symbol-undercount). Nothing to fix in source.
 RVA(0x00115f60, 0x2de)
-i32 CTileTriggerContainer::AddSwitchLogic(
+CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
     i32 tag,
     i32 col,
     i32 row,
@@ -105,7 +117,48 @@ i32 CTileTriggerContainer::AddSwitchLogic(
     i32 m120,
     i32 zero
 ) {
-    return 0;
+    CTileTriggerSwitchLogic* obj = 0;
+    switch (tag) {
+        case TRIGID_SWITCH_1:
+        case TRIGID_SWITCH_2:
+        case TRIGID_SWITCH_5:
+            obj = new CTileTriggerSwitchLogic;
+            break;
+        case TRIGID_MULTI_SWITCH_3:
+            obj = new CTileMultiTriggerSwitchLogic;
+            break;
+        case TRIGID_EXCLUSIVE_SWITCH_4:
+            obj = new CTileExclusiveTriggerSwitchLogic;
+            break;
+        case TRIGID_SECRET_SWITCH_6:
+            obj = new CTileSecretTriggerSwitchLogic;
+            break;
+        case TRIGID_TIME_SWITCH_7:
+            obj = new CTileTimeTriggerSwitchLogic;
+            break;
+        case TRIGID_CHECKPOINT_SWITCH_8:
+            obj = new CCheckpointTriggerSwitchLogic;
+            break;
+    }
+    if (obj == 0) {
+        return 0;
+    }
+
+    RECT local[6];
+    local[0] = r134;
+    local[1] = r144;
+    local[2] = r154;
+    local[3] = r64;
+    local[4] = rF0;
+    local[5] = r100;
+
+    if (obj->BuildSmall(this, tag, col, row, key, local, isMatch, m120, zero) == 0) {
+        // inline ~CTileTriggerSwitchLogic (vptr restamp + m_initGate = 0) + ??3
+        delete obj;
+        return 0;
+    }
+    m_base.AddTail(obj);
+    return obj;
 }
 
 RVA(0x00116320, 0x66)

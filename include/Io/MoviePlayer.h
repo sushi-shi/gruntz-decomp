@@ -15,7 +15,6 @@ struct SmackTag;   // the RAD Smacker stream handle (<smack.h>'s `Smack` typedef
 class CWnd;        // real MFC CWnd (<afxwin.h> in the dispatching TU)
 struct DDModeInfo; // Init's {w,h,bpp} mode arg (<DDrawMgr/DirectDrawMgr.h>; pointer-only)
 
-
 struct PLAYLISTINFOSTRUCT {
     char* m_src;     // +0x00  the owned .SMK path (SmackOpen'd; operator delete'd)
     i32 m_openArg;   // +0x04  0 => OpenLo, else Open's second arg
@@ -32,6 +31,35 @@ typedef CArray<PLAYLISTINFOSTRUCT*, PLAYLISTINFOSTRUCT*> CMoviePlaylist;
 
 class CMoviePlayer {
 public:
+    // INLINE ctor - retail expands exactly this into CGruntzMgr::ChangeState's
+    // stack-local player (the two member ctors first, in declaration order, then this
+    // scalar seed run). The members it leaves alone (m_streamOpen, both DDSURFACEDESCs,
+    // the palette table, the screen dims and m_bpp, m_loopCount) are the ones InitMode
+    // overwrites before any read.
+    CMoviePlayer() {
+        m_window = 0;
+        m_initialized = 0;
+        m_smackHandle = 0;
+        m_dd2 = 0;
+        m_dd = 0;
+        m_primary = 0;
+        m_primaryRaw = 0;
+        m_srcSurf = 0;
+        m_srcSurfRaw = 0;
+        m_0c = 0;
+        m_palette = 0;
+        m_50c = 0;
+        m_514 = 0;
+        m_tilesAcross = 0;
+        m_tilesDown = 0;
+        m_destRect = 0;
+        m_originX = 0;
+        m_originY = 0;
+        m_forceSingleRow = 0;
+        m_smackBufMode = 0;
+        m_videoWnd = 0;
+        m_directSound = 0;
+    }
     // ----- ex CMoviePlayer (the display bring-up / page cache) -------------------
     i32 Init(HWND window, DDModeInfo* mode, u32 coopFlags); // 0x17c040
     i32 CheckMode16();                                      // 0x17d2b0
@@ -45,49 +73,29 @@ public:
     i32 Configure(i32 mode, i32 flags, POINT* origin, RECT* rect); // 0x17cfc0
     i32 CheckGrid();                                               // 0x17cbe0
     void UploadPalette();                                          // 0x17ca10
+    // 0x17c3f0. The 4th parameter is a DDSURFACEDESC BY VALUE (0x6c bytes): the sole
+    // retail caller (CGruntzMgr::ChangeState 0x8fab0) sets it up with
+    // `sub esp,0x6c; mov ecx,0x1b; rep movsd` out of the front page's CDDSurface::
+    // m_apiDesc, and the body's three reads land at desc+0x08/+0x0c/+0x54 == dwHeight /
+    // dwWidth / ddpfPixelFormat.dwRGBBitCount. (It used to be declared as 27 loose ints
+    // p4..p30, which is the same stack image but makes the call site unwritable.)
     i32 InitMode(
         HWND wnd,
         IDirectDraw2* dd2,
         IDirectDrawSurface* primary,
-        i32 p4,
-        i32 p5,
-        i32 height,
-        i32 width,
-        i32 p8,
-        i32 p9,
-        i32 p10,
-        i32 p11,
-        i32 p12,
-        i32 p13,
-        i32 p14,
-        i32 p15,
-        i32 p16,
-        i32 p17,
-        i32 p18,
-        i32 p19,
-        i32 p20,
-        i32 p21,
-        i32 p22,
-        i32 p23,
-        i32 p24,
-        i32 bpp,
-        i32 p26,
-        i32 p27,
-        i32 p28,
-        i32 p29,
-        i32 p30,
+        DDSURFACEDESC desc,
         struct IDirectSound* dsound
     ); // 0x17c3f0
     // ----- ex CMoviePlayer (the Smacker playback half) -------------------------
     i32 Open(const char* path, i32 a2, i32 a3, i32 a4, POINT* origin, RECT* rect); // 0x17c6f0
-    ~CMoviePlayer();                                                     // 0x038fc0
+    ~CMoviePlayer();                                                               // 0x038fc0
     // 0x17c2a0. Both args are forwarded verbatim into Init(HWND, DDModeInfo*, u32) at
     // the tail, so they carry Init's types; no caller in .text constrains them otherwise.
     int CreateVideoWindow(DDModeInfo* mode, u32 coopFlags);
-    void Teardown();                                                     // 0x17c510
-    i32 OpenLo(const char* src, i32 a2, i32 useDS, POINT* origin, RECT* rect);   // 0x17c570
+    void Teardown();                                                           // 0x17c510
+    i32 OpenLo(const char* src, i32 a2, i32 useDS, POINT* origin, RECT* rect); // 0x17c570
     i32 OpenHi(i32 srcHandle, i32 a2, i32 useDS, POINT* origin, RECT* rect);   // 0x17c630
-    i32 Pump(i32 flags, i32 count);                                      // 0x17c790
+    i32 Pump(i32 flags, i32 count);                                            // 0x17c790
     // 0x17c8e0: render one frame onto `target`, then restore the previous target.
     // arg1 is a SURFACE, not a command - it is null-checked, stored into m_primary
     // (+0x1c) across the Frame() call and restored after (mov ebp,[esi+0x1c] /

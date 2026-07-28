@@ -42,6 +42,8 @@
 #include <DDrawMgr/DDrawSubMgrPages.h> // m_world->m_drawTarget (ex CWorldSub4; BlitPage pause)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // m_world->m_soundRegistry (CDDrawSubMgrLeafScan == the leaf-scan registry)
 #include <DDrawMgr/DDrawPtrCollections.h> // m_world->m_ptrColl (GetCapsChecked / the held IDirectDraw2)
+#include <Dsndmgr/SoundStream.h> // m_world->m_soundStream (its SoundDevice::m_device IS the IDirectSound)
+#include <Io/MoviePlayer.h> // CMoviePlayer - ChangeState's stack-local movie player
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GruntzApp.h>
 #include <Wwd/WwdFile.h>          // CDDrawWorkerHost - the canonical plane
@@ -210,7 +212,10 @@ void ForceEmitCStateDtor() {
 }
 #pragma inline_depth()
 
-CPlay::CPlay() {
+// The out-of-line copy of this ctor is the retail COMDAT at 0x8c9d0, defined (and
+// RVA-bound) in Play.cpp; `inline` here so TransitionState folds the construction
+// in place exactly as retail does, the same arrangement as ~CPlay just above.
+inline CPlay::CPlay() {
     // cl runs the CState base ctor + the five member ctors, then auto-stamps
     // ??_7CPlay, then this field-init body (matching the retail inlined construction).
     m_bootyTimerLo = 0;      // +0x328
@@ -2225,14 +2230,74 @@ GruntzPlayer* CGruntzMgr::FindOptionsSlot(i32 x) {
 }
 
 // -------------------------------------------------------------------------
-// CGruntzMgr::ChangeState (0x08fab0) - deferred big method; the thin
-// RunFromState wrapper calls it (reloc-masked). Migrated from Discovered.cpp.
+// CGruntzMgr::ChangeState (0x08fab0, ret 4) - NOT a state machine: it PLAYS THE
+// MOVIE at m_strMoviePath through a stack-local CMoviePlayer, driven off the live
+// display stack (the front page's CDDSurface supplies both the primary surface and
+// the DDSURFACEDESC that InitMode's mode setup reads; the surface pool supplies the
+// IDirectDraw2; the Dsndmgr stream supplies the IDirectSound). `arg` is the
+// playback mode 1..3 that Open takes; RunFromState passes 1 and the two cheat
+// commands + BootyMessages pass 2/3. /GX: the local player's two embedded members
+// (the +0x540 CFecFile decode store and the +0x868c playlist CArray) are
+// destructible, and the 0x86ac frame goes through __alloca_probe.
 // @confidence: high
-// @source: call-xref
-// @stub
+// @source: full-disasm-decode (every callee named: FileExists 0x4282,
+//   CDDrawSubMgrLeafScan::HasKeyEqual/ScanTree, CSymParser::ResolvePath,
+//   CMoviePlayer::InitMode/Open/Pump/Teardown)
+// @early-stop
+// 70.5% (from a 1.1% stub). Control flow, every callee, every member offset and the
+// 0x86ac/__alloca_probe frame are byte-faithful. Two INLINING-BOUNDARY residues, both
+// on the local CMoviePlayer's compiler-run ctor/dtor, and both are the same wall:
+//   (1) ~CMoviePlayer. Retail FOLDS it into every exit (Teardown, the playlist CArray
+//       dtor, then the CFecFile store's Close + ~CDWordArray + ~CFile, EH states
+//       7/8/9/0xa); we emit `call ??1CMoviePlayer`. It was an inline member in retail
+//       whose one surviving COMDAT copy is the 0x38fc0 body. Making it inline in
+//       <Io/MoviePlayer.h> is NOT available: cl then emits no out-of-line copy at all
+//       and the 0x38fc0 label is lost (measured on the sibling
+//       CDDrawWorkerHost::SetTileSizeFromImageSet - the labels gate caught the dropped
+//       symbol), and it would take MoviePlayer.cpp's inline ~CFecFile @0x390a0 with it.
+//   (2) The playlist CArray's ctor. Retail CALLS ??0?$CArray@PAUPLAYLISTINFOSTRUCT...
+//       (the COMDAT copy that landed in the arrayserialize band); cl expands MFC's
+//       template ctor inline (5 stores). That costs one rung of the /GX state ladder,
+//       so every state number below is one lower than retail's. The CFecFile store's
+//       ctor DID come back as a call once its body moved out of sight (the
+//       FileIOOwner->CFecFile fold below), which is what took this 64.3 -> 70.5.
 RVA(0x0008fab0, 0x318)
-i32 CGruntzMgr::ChangeState(i32 /*arg*/) {
-    return 0;
+i32 CGruntzMgr::ChangeState(i32 arg) {
+    if (arg < 1 || arg > 3) {
+        return 0;
+    }
+    if (!FileExists(const_cast<char*>(static_cast<const char*>(m_strMoviePath)))) {
+        return 0;
+    }
+
+    CMoviePlayer player;
+
+    CDDSurface* front = m_world->m_drawTarget->m_frontPair->m_surface;
+    IDirectDraw2* dd2 = m_world->m_ptrColl->m_device;
+
+    if (m_world->m_soundRegistry->HasKeyEqual("GAME") == 0) {
+        void* snd = m_symParser->ResolvePath("GAME_SOUNDZ");
+        if (snd == 0) {
+            player.Teardown();
+            return 0;
+        }
+        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(snd), "GAME", "_");
+    }
+    if (front == 0 || dd2 == 0) {
+        player.Teardown();
+        return 0;
+    }
+
+    IDirectSound* dsound = m_world->m_soundStream ? m_world->m_soundStream->m_device : 0;
+    if (player.InitMode(m_gameWnd->m_hwnd, dd2, front->m_ddSurface, front->m_apiDesc, dsound)) {
+        if (player.Open(m_strMoviePath, arg, 0, m_isInterlaced != 0, 0, 0)) {
+            m_modalBusy = 1;
+            player.Pump(1, 1);
+            m_modalBusy = 0;
+        }
+    }
+    player.Teardown();
+    return 1;
 }
 
 RVA(0x00083360, 0xb2)

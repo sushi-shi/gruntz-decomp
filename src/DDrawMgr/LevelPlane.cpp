@@ -35,7 +35,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry->m_10map
 #include <DDrawMgr/DDrawWorkerCache.h>    // m_workerCache->m_10
 #include <DDrawMgr/DDrawWorkerMapSmall.h> // m_workerMap->m_cachedWorker (a CAniRecordBase2)
-#include <DDrawMgr/DirectDrawMgr.h>      // CDDPalette - the cached worker's m_buf palette
+#include <DDrawMgr/DirectDrawMgr.h>       // CDDPalette - the cached worker's m_buf palette
 #include <DDrawMgr/DDrawSubMgrPages.h>    // m_drawTarget->m_frontPair
 #include <DDrawMgr/DDrawSurfacePair.h>    // ->m_bpp (the ex CPlaneSurfDesc::m_format)
 #include <DDrawMgr/DDrawChildGroup.h>     // m_childGroup (the worker source)
@@ -109,20 +109,156 @@ CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 f
 //      tail-call to RecomputePlaneCoords 0x161c90).
 //   5. Finally drives RebuildPlanes (0x1628f0) for the object block.
 //
-// WHAT BLOCKS IT (not a model wall - a cost/plateau judgment): its steps 6-9 ARE
-// InitGeometry, and that sibling is itself parked at 78.33% on the documented
-// zero-register-pinning wall (docs/patterns/zero-register-pinning.md - retail's
-// arg->register rotation over the ~20 field seeds is not source-steerable). A faithful
-// 930-B reconstruction here would inherit that same plateau over its largest span, and
-// a PARTIAL body is worse than a stub (it under-counts AND diverges the TU's regalloc).
-// The honest sequencing is leaf-first: crack InitGeometry's register pinning,
-// then this body follows mechanically from the structure above.
+// Retail INLINES two of this class's own leaf methods here (both also exist
+// out-of-line, at 0x161c50 and 0x161fa0): the per-token registry lookup +
+// SetAtGrow IS RegisterNamed, and the `flags & 0x10` arm IS
+// SetTileSizeFromImageSet. They are transcribed inline below, which is what the
+// bytes say. (Modelling them as real in-class inlines was TRIED and does not work:
+// cl then emits NO out-of-line copy at all, so the 0x161c50/0x161fa0 labels vanish -
+// retail's copies exist because other TUs referenced them.)
 // @confidence: high
 // @source: vtable_hierarchy-slot-map+ReadPlane-dispatch+full-disasm-decode
-// @stub
+// @early-stop
+// 96.7%: complete + byte-faithful reconstruction; three small scheduling islands
+// remain. (1) the Lookup out-param zero-init - retail emits `mov [esp+N],0` AFTER
+// both arg pushes AND the this-setup, cl emits it between the pushes (the identical
+// residue RegisterNamed itself is parked on). (2) the `shl eax,2 / push eax`
+// operator-new size: retail interleaves it after the FIRST fmul, cl sinks it past the
+// second. (3) the scroll-origin fild pair: retail loads both ints to registers and
+// spills them to fresh stack temps ([esp+0x14]/[esp+0x10]) before each fild, cl filds
+// straight out of [esi+0x6c]/[esi+0x68] - int locals do not stop cl forward-
+// substituting the load into the fild operand. Everything else (the tokenizer's two
+// char loops incl. the SIB base/index order, the inlined RegisterNamed, the inlined
+// SetTileSizeFromImageSet with its doubled GetAt bounds check, the whole geometry
+// seed block, the CopyRect + view re-derive, both operator-new allocations, the tile
+// copy loop, the column-offset fill and the RebuildPlanes tail) is byte-exact.
 RVA(0x00161640, 0x3a2)
-i32 CDDrawWorkerHost::Read(void* planeData, void* blockBase, void* bounds) {
-    return 0;
+i32 CDDrawWorkerHost::Read(
+    const WwdPlaneHeader* pd,
+    const char* blockBase,
+    LevelCoordRect* bounds
+) {
+    if (pd->headerSize != 0xa0) {
+        return 0;
+    }
+
+    // --- 1. the image-set NAME LIST: `imageSetsCount` tokens, separated by any byte
+    // outside ['0', 0x80). Each token names an entry of the owner's image-set registry;
+    // the resolved worker (or NULL on a miss) is cached at m_frameSets[n], the slot the
+    // draw loop indexes by handle>>16.
+    char nameBuf[0x80];
+    i32 pos = 0;
+    const char* names = blockBase + pd->imageSetsOffset;
+    for (u32 n = 0; n < pd->imageSetsCount; n++) {
+        i32 len = 0;
+        while ((names[pos] < '0' || names[pos] > 0x80) && names[pos] != 0) {
+            pos++;
+        }
+        while (names[pos] >= '0' && names[pos] < 0x80 && names[pos] != 0) {
+            nameBuf[len] = names[pos];
+            len++;
+            pos++;
+        }
+        nameBuf[len] = 0;
+        if (len > 0) {
+            // RegisterNamed (0x161c50), inlined by retail
+            CObject* val;
+            val = 0;
+            OwnerMgr()->m_imageRegistry->m_10map.Lookup(nameBuf, val);
+            m_frameSets.SetAtGrow(static_cast<char>(n), val);
+        }
+    }
+
+    // --- 2. the record geometry ------------------------------------------------
+    m_flags = pd->flags;
+    m_94 = pd->movementXPercent;
+    m_98 = pd->movementYPercent;
+    m_scaledX = 0;
+    m_scaledY = 0;
+    m_zBound = -999999;
+    m_gridW = pd->tilesWide;
+    m_gridH = pd->tilesHigh;
+    m_tilePxW = pd->tilePixelWidth;
+    m_tilePxH = pd->tilePixelHeight;
+    m_zBound = pd->zCoord;
+    m_bounds50.left = bounds->left;
+    m_bounds50.top = bounds->top;
+    m_bounds50.right = bounds->right;
+    m_bounds50.bottom = bounds->bottom;
+    m_fillRect.left = 0;
+    m_fillRect.top = 0;
+    m_fillRect.right = m_tilePxW;
+    m_fillRect.bottom = m_tilePxH;
+    m_wrapW = m_tilePxW * m_gridW;
+    m_wrapH = m_tilePxH * m_gridH;
+
+    if (m_flags & 0x10) {
+        // SetTileSizeFromImageSet (0x161fa0) on the FIRST image set, inlined by retail
+        CDDrawWorker* set = (m_frameSets.GetSize() > 0) ? FrameSetAt(0) : 0;
+        for (i32 f = 0; f < set->m_items.GetSize(); f++) {
+            if (set->GetAt(f) != 0) {
+                CImage* first = set->GetAt(f);
+                SetTileSize(first->m_width, first->m_height);
+                break;
+            }
+        }
+    } else {
+        SetTileSize(pd->tilePixelWidth, pd->tilePixelHeight);
+    }
+
+    strcpy(m_name, pd->name);
+    m_bltFx.dwFillColor = pd->fillColor;
+    m_flags = pd->flags;
+
+    if (bounds->left != LEVEL_COORD_UNSET) {
+        LevelCoordRect local;
+        CopyRect((&local), (bounds));
+        m_bounds50 = local;
+        m_viewW = m_bounds50.right - m_bounds50.left + 1;
+        m_viewH = m_bounds50.bottom - m_bounds50.top + 1;
+        m_anchorX = m_viewW / 2;
+        m_anchorY = m_viewH / 2;
+        RecomputePlaneCoords();
+    }
+
+    m_scaleX = static_cast<float>(m_94) * 0.01f;
+    m_scaleY = static_cast<float>(m_98) * 0.01f;
+
+    // --- 3. the tile-handle grid: a flat dword run at tilesOffset ---------------
+    m_tileGrid = static_cast<i32*>(operator new(GridByteSize(m_gridH, m_gridW)));
+    // byte-forced by the on-disk format: the grid is a raw dword run located by a
+    // RUNTIME offset into the mapped main block, so no declared member can name it
+    const i32* cell = reinterpret_cast<const i32*>(blockBase + pd->tilesOffset);
+    for (u32 t = 0; t < static_cast<u32>(m_gridH * m_gridW); t++) {
+        m_tileGrid[t] = *cell;
+        cell++;
+    }
+
+    m_colOffsets = static_cast<i32*>(operator new(m_gridH * 4));
+    for (i32 c = 0; c < m_gridH; c++) {
+        m_colOffsets[c] = c * m_gridW;
+    }
+
+    // --- 4. the scroll origin: parallax-scaled unless the plane is origin-fixed --
+    i32 originY = pd->scrollY;
+    i32 originX = pd->scrollX;
+    float sy = static_cast<float>(originY);
+    float sx = static_cast<float>(originX);
+    if ((m_flags & 1) == 0) {
+        sx *= m_scaleX;
+        sy *= m_scaleY;
+    }
+    m_scaledX = sx;
+    m_scaledY = sy;
+    RecomputePlaneCoords();
+
+    // --- 5. the serialized object block ----------------------------------------
+    if (pd->objectsOffset != 0) {
+        if (RebuildPlanes(blockBase + pd->objectsOffset, pd->objectsCount) == 0) {
+            return 0;
+        }
+    }
+    return 1;
 }
 
 // CDDrawWorkerHost::InitGeometry (0x1619f0, CDDrawWorkerHost vtable slot +0x24):
@@ -130,14 +266,12 @@ i32 CDDrawWorkerHost::Read(void* planeData, void* blockBase, void* bounds) {
 // the name, alloc the tile grid + column-offset table, tail-call RecomputePlaneCoords.
 // __thiscall, 8 args (ret 0x20), returns 1.
 // @early-stop
-// 78.3% codegen wall (twin of CDDrawWorkerHost::Build): logic/fields/offsets/CFG/args
-// byte-faithful (the two log2 shift loops, the strcpy inline rep-movs, the
-// CopyRect IAT call + m_bounds50 re-derive, the fild/fmul/__ftol float scale, the
-// two operator-new allocations and the column-offset fill all match).  Residual is
-// a zero-register-pinning wall: retail assigns the 8 args to edx/eax/ecx/esi/ebp in
-// a different rotation than our cl and schedules the ~20 field seeds interleaved
-// with the m_30/m_34 products differently.  Same values, same stores; no source
-// lever picks the arg->register map (docs/patterns/zero-register-pinning.md).
+// 94.0% (was 78.3%: the recorded "zero-register-pinning wall" was largely a
+// mislabeled source bug - the `i32 pw = ...; m_viewW = pw;` temporaries in BOTH
+// view-derive blocks. Assigning m_viewW/m_viewH directly and reading them back for
+// the halves took it 78.3 -> 94.0 and made the twin Build EXACT.) Logic/fields/
+// offsets/CFG/args byte-faithful; the residue is the remaining arg->register
+// rotation over the ~20 field seeds (docs/patterns/zero-register-pinning.md).
 RVA(0x001619f0, 0x1f7)
 i32 CDDrawWorkerHost::InitGeometry(
     i32 w,
@@ -165,12 +299,10 @@ i32 CDDrawWorkerHost::InitGeometry(
     m_wrapW = tileW * w;
     m_wrapH = tileH * h;
     m_fillRect.right = tileW;
-    i32 pw = m_bounds50.right - m_bounds50.left + 1;
-    i32 ph = m_bounds50.bottom - m_bounds50.top + 1;
-    m_viewW = pw;
-    m_viewH = ph;
-    m_anchorX = pw / 2;
-    m_anchorY = ph / 2;
+    m_viewW = m_bounds50.right - m_bounds50.left + 1;
+    m_viewH = m_bounds50.bottom - m_bounds50.top + 1;
+    m_anchorX = m_viewW / 2;
+    m_anchorY = m_viewH / 2;
     m_shiftX = 0;
     if (tileW > 1) {
         i32 v = tileW;
@@ -194,12 +326,10 @@ i32 CDDrawWorkerHost::InitGeometry(
         LevelCoordRect local;
         CopyRect((&local), (bounds));
         m_bounds50 = local;
-        i32 pw2 = m_bounds50.right - m_bounds50.left + 1;
-        i32 ph2 = m_bounds50.bottom - m_bounds50.top + 1;
-        m_viewW = pw2;
-        m_viewH = ph2;
-        m_anchorX = pw2 / 2;
-        m_anchorY = ph2 / 2;
+        m_viewW = m_bounds50.right - m_bounds50.left + 1;
+        m_viewH = m_bounds50.bottom - m_bounds50.top + 1;
+        m_anchorX = m_viewW / 2;
+        m_anchorY = m_viewH / 2;
         RecomputePlaneCoords();
     }
     m_scaleX = static_cast<float>(m_94) * 0.01f;
@@ -248,7 +378,8 @@ void CDDrawWorkerHost::Unload() {
 // source-steerable (same as Helper's documented note).
 RVA(0x00161c50, 0x3f)
 void CDDrawWorkerHost::RegisterNamed(char index, const char* key) {
-    CObject* val = 0;
+    CObject* val;
+    val = 0;
     OwnerMgr()->m_imageRegistry->m_10map.Lookup(key, val);
     m_frameSets.SetAtGrow(index, val);
 }
@@ -353,11 +484,13 @@ void CDDrawWorkerHost::RecomputePlaneCoords() {
 // +0x50 bounds, derive the view size (w/h = max-min+1) and the half-size anchor,
 // then RecomputePlaneCoords. CGameLevel::SetExtentsAndBuildAll / BuildAllPlanes
 // drive it per plane (m_planes[i]).
-// @early-stop
-// codegen wall (~90.4%): the sentinel gate, the CopyRect(&local, coords) IAT call,
-// the 4-dword copy to m_bounds50, the max-min+1 size + cdq/sar half-size and the
-// RecomputePlaneCoords tail are all byte-faithful; the residual is a local /O2
-// scheduling of the width/height derivation. Complete + correct logic.
+// EXACT since 2026-07-28. The recorded "~90.4% codegen wall in the width/height
+// derivation" was a mislabeled source bug: the `i32 width = ...; m_viewW = width;`
+// temporaries forced cl to compute both differences up front into two extra
+// callee-saved registers and finish with `inc`, where retail interleaves the stores
+// and uses `lea r,[x+1]`. Assigning the members DIRECTLY (and reading m_viewW/m_viewH
+// back for the halves) reproduces retail exactly - the same fix took InitGeometry
+// 78.3 -> 94.0 and CDDrawWorkerHost::Read past the same block.
 // ===========================================================================
 RVA(0x00161e80, 0x79)
 void CDDrawWorkerHost::Build(LevelCoordRect* coords) {
@@ -365,12 +498,10 @@ void CDDrawWorkerHost::Build(LevelCoordRect* coords) {
         LevelCoordRect local;
         CopyRect((&local), (coords));
         m_bounds50 = local;
-        i32 width = m_bounds50.right - m_bounds50.left + 1;
-        i32 height = m_bounds50.bottom - m_bounds50.top + 1;
-        m_viewW = width;
-        m_viewH = height;
-        m_anchorX = width / 2;
-        m_anchorY = height / 2;
+        m_viewW = m_bounds50.right - m_bounds50.left + 1;
+        m_viewH = m_bounds50.bottom - m_bounds50.top + 1;
+        m_anchorX = m_viewW / 2;
+        m_anchorY = m_viewH / 2;
         RecomputePlaneCoords();
     }
 }
@@ -429,15 +560,10 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
             dr.bottom = (yp) + ((srcp)->bottom - (srcp)->top);                                     \
             surf->BltEx(&dr, 0, 0, 0x1000400, &m_bltFx);                                           \
         } else if (h_ != 0xffffffff) {                                                             \
-            CPlaneFrame* fr_ = FrameSetAt(h_ >> 16);                                           \
+            CDDrawWorker* fr_ = FrameSetAt(h_ >> 16);                                              \
             i32 idx_ = static_cast<i32>(h_ & 0xffff);                                              \
-            CPlaneTile* e_;                                                                        \
-            if (idx_ >= fr_->m_lo && idx_ <= fr_->m_hi) {                                          \
-                e_ = fr_->m_frames[idx_];                                                          \
-            } else {                                                                               \
-                e_ = 0;                                                                            \
-            }                                                                                      \
-            surf->BltFast((xp), (yp), e_->m_src, (srcp), e_->m_trans);                             \
+            CImage* e_ = fr_->GetAt(idx_);                                                         \
+            surf->BltFast((xp), (yp), e_->m_surface, (srcp), e_->m_loadResult);                    \
         }                                                                                          \
     } while (0)
 
@@ -685,16 +811,16 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
 // four length-prefixed strings INLINE. ReadPlaneObjects is the reader and the stream
 // cursor advances by the byte count it returns, which is the layout.
 struct PlaneObjectRecord {
-    i32 m_id;                       // +0x00
-    u32 m_nameLen;                  // +0x04
-    u32 m_logicLen;                 // +0x08
-    u32 m_imageSetLen;              // +0x0c
-    u32 m_soundLen;                 // +0x10
-    i32 m_x;                        // +0x14
-    i32 m_y;                        // +0x18
-    i32 m_z;                        // +0x1c
-    i32 m_gridIndex;                // +0x20
-    i32 m_addFlags;                 // +0x24
+    i32 m_id;          // +0x00
+    u32 m_nameLen;     // +0x04
+    u32 m_logicLen;    // +0x08
+    u32 m_imageSetLen; // +0x0c
+    u32 m_soundLen;    // +0x10
+    i32 m_x;           // +0x14
+    i32 m_y;           // +0x18
+    i32 m_z;           // +0x1c
+    i32 m_gridIndex;   // +0x20
+    i32 m_addFlags;    // +0x24
     // +0x28..+0x118 - RECOVERED 2026-07-27 from 0x162af0, and deliberately still an
     // ARRAY. It is a strictly SEQUENTIAL dword stream: retail walks it with one cursor
     // (`mov reg,[ebp]; add ebp,4; mov [dst],reg`), which is what the `const i32* p =
@@ -1130,7 +1256,7 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
             if (handle == -1 || static_cast<u32>(handle) == 0xeeeeeeee) {
                 continue;
             }
-            CPlaneFrame* frame = FrameSetAt(static_cast<u32>(handle) >> 16);
+            CDDrawWorker* frame = FrameSetAt(static_cast<u32>(handle) >> 16);
             if (frame == 0) {
                 result = 0;
                 if (errOut != 0) {
@@ -1147,12 +1273,7 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
                 continue;
             }
             i32 tile = handle & 0xffff;
-            void* resolved;
-            if (tile >= frame->m_lo && tile <= frame->m_hi) {
-                resolved = frame->m_frames[tile];
-            } else {
-                resolved = 0;
-            }
+            CImage* resolved = frame->GetAt(tile);
             if (resolved == 0) {
                 result = 0;
                 if (errOut != 0) {

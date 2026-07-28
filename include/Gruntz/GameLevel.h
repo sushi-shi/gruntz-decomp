@@ -28,6 +28,11 @@ typedef enum {
 static const i32 TILE_UNINIT = static_cast<i32>(0xeeeeeeee);
 static const i32 TILE_CLEAR = -1;
 
+// The "no level-coord rect yet" sentinel parked in LevelCoordRect::left (CGameLevel
+// seeds m_planeCtx with it; CDDrawWorkerHost::Read / InitGeometry / Build all gate the
+// CopyRect + view re-derive on it).
+static const i32 LEVEL_COORD_UNSET = static_cast<i32>(0x80000000);
+
 #define PROBE_TILE(LVL, X, Y, RESULT)                                                              \
     do {                                                                                           \
         i32 px_ = (X);                                                                             \
@@ -65,7 +70,6 @@ static const i32 TILE_CLEAR = -1;
 #include <Gruntz/ImageSets.h> // CTileImageSet + the CImageSet1/2/3 family (moved)
 
 struct CParseSource;
-
 
 struct CGameObject;
 class CDDrawChildGroup; // the world object chain (<DDrawMgr/DDrawChildGroup.h>)
@@ -262,12 +266,14 @@ public:
     // virtual; appends/records identically. Public: CGruntzMgr::LoadMonologoSprite
     // builds the "MONOLITH" plane through it. (Ex ?ReadObjectPlane@CGameLevelPlanes@@
     // - that WwdFile.h view of THIS class is dissolved.)
-    CDDrawWorkerHost* ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, const char* name);
+    CDDrawWorkerHost*
+    ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, const char* name);
 
 private:
     // The per-plane reader (@0x15d8d0, GameLevel.cpp; LoadWwd drives it per WWD
     // plane record). (Ex ?ReadPlane@CGameLevelPlanes@@ - view dissolved.)
-    CDDrawWorkerHost* ReadPlane(void* planeData, void* blockBase, void* unused);
+    CDDrawWorkerHost*
+    ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, void* unused);
 
     // The image-set factory (CGameLevel::ReadImageSet) - external.
     CTileImageSet* ReadImageSet(void* record);
@@ -369,7 +375,6 @@ i32 __stdcall ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c);
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern "C" i32 __stdcall MoveSubDispatch12(CGameObject* obj, i32 a, i32 b, i32 c); // @0x1671c0
-
 
 // File-scope prototypes moved from the .cpp: an unqualified
 // declaration at file scope has EXTERNAL linkage, so it belongs in

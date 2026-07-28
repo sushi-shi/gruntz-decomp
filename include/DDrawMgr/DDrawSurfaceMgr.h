@@ -37,7 +37,7 @@ class CDDrawWorkerMapSmall; // +0x18 the polymorphic sprite/palette registry (: 
 class CDDrawSubMgrLeafScan; // (class, not struct - the PAU/PAV fwd-mangling trap)
 class CDDrawSubMgrLeaf;     // +0x2c the label sub-manager (KeyOfValue / m_10 map)
 class CDDrawPtrCollections; // the +0x1c surface pool (heap object)
-struct SoundStream;         // the +0x20 foreign Dsndmgr sound stream
+class SoundStream;          // +0x20 the Dsndmgr stream (<Dsndmgr/SoundStream.h>)
 
 typedef i32(__cdecl* HP_Callback)(void*, void*, i32, i32, i32);
 
@@ -76,8 +76,8 @@ public:
 
     // The recursive child serializer / deserializer (owner-TU DDrawSurfaceMgrSerialize
     // holds the bodies; GameSave drives SnapshotChildren). Non-virtual __thiscall /GX.
-    i32 SnapshotChildren(HP_Callback cb, char * arg1, char* name, i32 arg3); // 0x156020
-    i32 RestoreChildren(HP_Callback cb, char* name, i32 arg3);            // 0x156530
+    i32 SnapshotChildren(HP_Callback cb, char* arg1, char* name, i32 arg3); // 0x156020
+    i32 RestoreChildren(HP_Callback cb, char* name, i32 arg3);              // 0x156530
 
     // +0x04  the page/child factory (front/back/overlay surfaces) - the game-side
     // draw target (the ex CDDrawSubMgrPages/StateMgrBZ views; every CState::m_c consumer

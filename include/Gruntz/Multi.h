@@ -4,7 +4,7 @@
 #include <rva.h>
 #include <Gruntz/Play.h>
 #include <Mfc.h>
-#include <Gruntz/MapMgr.h>   // CMapMgr IS CMapMgr (a typedef now - a fwd decl
+#include <Gruntz/MapMgr.h> // CMapMgr IS CMapMgr (a typedef now - a fwd decl
 
 class CGameApp;              // WAP32 app (<Wap32/Wap32.h>); CGruntzMgr::m_owner (+0x08)
 class CTileTriggerContainer; // CMulti::m_2e4
@@ -129,7 +129,9 @@ public:
     }
     // The local player descriptor at +0x5bc. Every writer stores a CNetSessionNode*
     // and the only "token" reader just null-tests it, so the member IS the pointer.
-    CNetSessionNode* LocalPlayer() { return m_5bc; }
+    CNetSessionNode* LocalPlayer() {
+        return m_5bc;
+    }
     // The game manager again: the net methods historically reached it through a
     // CNetGameMgr facet view - the facet is FOLDED onto CGruntzMgr; same object.
     CGruntzMgr* NetGameMgr() {
@@ -199,7 +201,7 @@ public:
     i32 ResolveLocalPlayer();       // 0x0ba7d0
     void ReportAckLatency();        // 0x0bd000
     i32 VerifyCustomLevel(void* h, CNetSessionNode* token); // 0x0b8fc0
-    i32 PollSession();                         // 0x0b95f0 (drain the receive queue; ret i32)
+    i32 PollSession();      // 0x0b95f0 (drain the receive queue; ret i32)
     i32 AutoTuneCmdDelay(); // 0x0bcc10 (returns int; early 1 / tail WriteCmdDelay)
     // (CPlay::ReleaseResources @0xc8700, the CPlay slot-2 body ex "CPlayDtorBody",
     // is inherited - CMulti::ReleaseResources chains it with the qualified CPlay::
@@ -227,7 +229,7 @@ public:
     // since CMulti overrides the slot. The ex "LoadTitleScreen" @0xfa350 alias is
     // GONE - that body is the inherited CState::RunTitleSeq. The ten CPlay per-frame
     // helper re-decls (StepInputA/StepC/LoadScrollSpeedOptions/StepScroll/
-    // NotifyVisibleEntities/StepGridWalk/winapi_0d0b30_CopyRect/DrawDebugStats/
+    // NotifyVisibleEntities/StepGridWalk/DrawCursorSaveUnder/DrawDebugStats/
     // OnRegion1/OnRegion2) are GONE too - CMulti : public CPlay inherits the real
     // methods from <Gruntz/Play.h>, so the calls bind the canonical CPlay symbols.)
 
@@ -268,7 +270,7 @@ public:
     // Drop/wait helpers (moved off the conflated CNetMgr in the netmgr-vs-cmulti
     // split): both run on `this`==CMulti (they read the +0x520 session, the +0x604
     // drop-id CDWordArray, m_534, m_hostIndex).
-    void RecordDropPlayer2(CNetSessionNode * a, i32 id);                                       // 0x0bb5e0
+    void RecordDropPlayer2(CNetSessionNode* a, i32 id);                          // 0x0bb5e0
     i32 WaitForOtherPlayers();                                                   // 0x0bb700
     i32 LoadMenuSelectSprite(void* evp);                                         // 0x0ba620
     i32 ParseChannelTable(void* packet);                                         // 0x0ba980
@@ -336,7 +338,7 @@ public:
     i32 m_5b0;               // +0x5b0
     CString m_5b4;           // +0x5b4  config name CString A
     CString m_5b8;           // +0x5b8  config name CString B
-    CNetSessionNode* m_5bc;               // +0x5bc  local player descriptor (typed via LocalPlayer())
+    CNetSessionNode* m_5bc;  // +0x5bc  local player descriptor (typed via LocalPlayer())
     i32 m_hostIndex;         // +0x5c0  (== Frankenstein m_localPlayerId)
     i32 m_lastSenderId;      // +0x5c4
     char _p5c4[0x5cc - 0x5c8];
@@ -385,7 +387,7 @@ extern "C" void ServicesDispatchCb();            // 0x401a19
 struct CNetCreateCtx;
 class CFile;
 extern "C" CNetCreateCtx* g_netCreateCtx;
-extern "C" i32 g_serviceId;                                             // 0x611d8c
+extern "C" i32 g_serviceId;                                                 // 0x611d8c
 extern "C" i32 Cfg_SetSection(char* buf, const char* fmt, const char* arg); // 0xf9280
 // (the "%s" arg is a STRING - it was declared i32, which forced every caller to
 //  reinterpret its CString through an i32&. extern "C", so the symbol is unchanged.)

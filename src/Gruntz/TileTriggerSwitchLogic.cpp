@@ -57,7 +57,7 @@ i32 CTileTriggerSwitchLogic::BuildSmall(
     i32 a3,
     i32 a4,
     i32 a5,
-    const i32* rect,
+    const RECT* rect,
     i32 a7,
     i32 a8,
     i32 a9
@@ -65,7 +65,7 @@ i32 CTileTriggerSwitchLogic::BuildSmall(
     if (m_initGate != 0) {
         return 0;
     }
-    if (a2 == 4 && rect[0] == 0) {
+    if (a2 == 4 && rect[0].left == 0) {
         return 0;
     }
     memcpy(m_block, rect, sizeof(m_block));

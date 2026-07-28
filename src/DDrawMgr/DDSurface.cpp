@@ -14,7 +14,6 @@
 #include <DDrawMgr/WallProject.h>
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
 
-
 VTBL(CDDSurface, 0x001ef7f0); // ??_7CDDSurface@@6B@ (9-slot base surface vtable)
 DATA(0x00253c88)
 CPtrArray g_imageCache;
@@ -325,8 +324,7 @@ i32 CDDSurface::SetPalette(CDDPalette* pal, i32 unused) {
 
 RVA(0x0013e6d0, 0x88)
 void* CDDSurface::Lock(void* rect) {
-    i32 hr = m_ddSurface
-                 ->Lock(static_cast<LPRECT>(rect), &m_apiDesc, 1, 0);
+    i32 hr = m_ddSurface->Lock(static_cast<LPRECT>(rect), &m_apiDesc, 1, 0);
     if (hr == 0) {
         return m_lockBits;
     }
@@ -939,10 +937,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                     u32 green = hi & 0x1f;
                     u32 red = hi & 0xffffffe0;
                     *srcPix++ = static_cast<u16>(
-                        (Clut16(0x10002 + off + (blue << 6)
-                         )
-                         | Clut16(0x2 + off + (green << 6)
-                         )
+                        (Clut16(0x10002 + off + (blue << 6)) | Clut16(0x2 + off + (green << 6))
                          | Clut16(0x20002 + off + red * 2))
                     );
                 }
@@ -959,10 +954,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                     u32 green = hi & 0x1f;
                     u32 red = hi & 0xffffffe0;
                     *srcPix++ = static_cast<u16>(
-                        (Clut16(0x10002 + off + (blue << 6)
-                         )
-                         | Clut16(0x2 + off + (green << 6)
-                         )
+                        (Clut16(0x10002 + off + (blue << 6)) | Clut16(0x2 + off + (green << 6))
                          | Clut16(0x20002 + off + red * 2))
                     );
                 }
@@ -1925,17 +1917,7 @@ i32 CDDSurface::RotateBlit(
     i32 colorkey
 ) {
     // Rotation fixed at 0.0f (no rotate); the 5th param carries the scale.
-    ImageRotateBlit(
-        a1,
-        a2,
-        pivot,
-        this,
-        src,
-        0.0f,
-        scale,
-        mode,
-        colorkey
-    );
+    ImageRotateBlit(a1, a2, pivot, this, src, 0.0f, scale, mode, colorkey);
     return 1;
 }
 
@@ -1960,17 +1942,7 @@ i32 CDDSurface::ScaleBlit(
     i32 colorkey
 ) {
     // Scale fixed at 1.0f (no scale); the 5th param carries the rotation.
-    ImageRotateBlit(
-        a1,
-        a2,
-        pivot,
-        this,
-        src,
-        angle,
-        1.0f,
-        mode,
-        colorkey
-    );
+    ImageRotateBlit(a1, a2, pivot, this, src, angle, 1.0f, mode, colorkey);
     return 1;
 }
 
@@ -1985,17 +1957,7 @@ i32 CDDSurface::RotateScaleBlit(
     i32 mode,
     i32 colorkey
 ) {
-    ImageRotateBlit(
-        a1,
-        a2,
-        pivot,
-        this,
-        src,
-        angle,
-        scale,
-        mode,
-        colorkey
-    );
+    ImageRotateBlit(a1, a2, pivot, this, src, angle, scale, mode, colorkey);
     return 1;
 }
 
@@ -2012,14 +1974,13 @@ i32 CDDSurface::RotateScaleBlit(
 // (the worker gets `this` both in ecx and pushed) which has no clean /O2 source
 // spelling. Deferred to the final sweep.
 RVA(0x00141280, 0x4a)
-void CDDSurface::
-    DecodeThunk(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 r0, i32 r1, i32 r2, i32 r3) {
-    ClipRect16 clip;
-    clip.a = r0;
-    clip.b = r1;
-    clip.c = r2;
-    clip.d = r3;
-    ProjectWallQuad(this, a1, a2, a3, a4, a5, a6, clip.a, clip.b, clip.c, clip.d);
+void CDDSurface::DecodeThunk(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i16 a6, RECT clip) {
+    ClipRect16 rec;
+    rec.a = clip.left;
+    rec.b = clip.top;
+    rec.c = clip.right;
+    rec.d = clip.bottom;
+    ProjectWallQuad(this, a1, a2, a3, a4, a5, a6, rec.a, rec.b, rec.c, rec.d);
 }
 
 RVA(0x001412d0, 0x24)

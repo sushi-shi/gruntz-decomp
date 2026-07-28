@@ -893,7 +893,7 @@ void CMulti::PumpB() {
             return;
         }
         StepGridWalk(g_frameDelta);
-        winapi_0d0b30_CopyRect(h);
+        DrawCursorSaveUnder(h);
         mgr->m_drawTarget->m_frontPair->m_surface->Flip(0);
         return;
     }
@@ -953,7 +953,7 @@ void CMulti::PumpB() {
     DrawDebugStats();
     Mgr()->m_cmdGrid->OverlayRelease();
     StepGridWalk(g_frameDelta);
-    winapi_0d0b30_CopyRect(h);
+    DrawCursorSaveUnder(h);
     if (m_worldReady != 0) {
         h->DrawBox(&m_hudRect, 0xff);
     }
@@ -1034,7 +1034,7 @@ i32 CMulti::StartTitle() {
     if (m_netGate->Init(Mgr()->m_lobby, g_dplayAppGuid) == 0) {
         return 0;
     }
-    m_netGate->ClearPlayerList();                                     // 0x178750
+    m_netGate->ClearPlayerList();                                               // 0x178750
     CNetPlayerListNode* player = m_netGate->AddPlayerNode(desc->m_sessionDesc); // 0x1786d0
     if (player == 0) {
         return 0;
@@ -3679,7 +3679,16 @@ i32 CMulti::CreateLocalPlayer() {
 }
 
 RVA(0x000bc910, 0xf6)
-i32 CMulti::OpenHostChannel(void* a0, const char* name, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
+i32 CMulti::OpenHostChannel(
+    void* a0,
+    const char* name,
+    i32 a2,
+    i32 a3,
+    i32 a4,
+    i32 a5,
+    i32 a6,
+    i32 a7
+) {
     if (a0 == 0) {
         return 0;
     }

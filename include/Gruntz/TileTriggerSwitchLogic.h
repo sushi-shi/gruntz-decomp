@@ -32,7 +32,7 @@ public:
         i32 a3,
         i32 a4,
         i32 a5,
-        const i32* rect,
+        const RECT* rect,
         i32 a7,
         i32 a8,
         i32 a9
@@ -161,7 +161,7 @@ public:
         i32 a3,
         i32 a4,
         i32 a5,
-        const i32* rect,
+        const RECT* rect,
         i32 a7,
         i32 a8,
         i32 a9

@@ -15,8 +15,6 @@
 
 #include <string.h> // strcpy, memset
 
-static const i32 LEVEL_COORD_UNSET = static_cast<i32>(0x80000000);
-
 static const i32 AXIS_UNSET = static_cast<i32>(0x80000000);
 
 static inline void StampParamBlock(CGameLevel* o) {
@@ -153,7 +151,10 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     u32 i = 0;
     if (hdr->numPlanes != 0) {
         do {
-            if (ReadPlane(cursor, block, &m_planeCtx) == 0) {
+            // byte-forced by the on-disk format: the plane records are packed 0xa0
+            // apart inside the mapped main block, located by a RUNTIME dword offset
+            if (ReadPlane(reinterpret_cast<const WwdPlaneHeader*>(cursor), block, &m_planeCtx)
+                == 0) {
                 goto fail;
             }
             ++i;
@@ -463,7 +464,8 @@ CTileImageSet* CGameLevel::ReadImageSet(void* record) {
 }
 
 RVA(0x0015d8d0, 0xc3)
-CDDrawWorkerHost* CGameLevel::ReadPlane(void* planeData, void* blockBase, void* /*unused*/) {
+CDDrawWorkerHost*
+CGameLevel::ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, void* /*unused*/) {
     CDDrawWorkerHost* plane = new CDDrawWorkerHost(OwnerMgr(), m_planes.GetSize(), 0);
 
     if (plane->Read(planeData, blockBase, &m_planeCtx) == 0) {
