@@ -144,9 +144,8 @@ i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode
 RVA(0x00143fc0, 0x142)
 i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
     // BMP: the info header sits inline in the read buffer - byte-forced
-    BITMAPINFOHEADER* ih = reinterpret_cast<BITMAPINFOHEADER*>(
-        static_cast<char*>(buf) + sizeof(BITMAPFILEHEADER)
-    );
+    BITMAPINFOHEADER* ih =
+        reinterpret_cast<BITMAPINFOHEADER*>(static_cast<char*>(buf) + sizeof(BITMAPFILEHEADER));
     i32 width = ih->biWidth;
     i32 bitcount = ih->biBitCount;
     i32 height = ih->biHeight;
@@ -224,7 +223,7 @@ i32 CDDSurface::LoadBmp(CDDrawPtrCollections* pal, char* path) {
 }
 
 RVA(0x00144270, 0xd2)
-i32 CDDSurface::Load(CDDrawPtrCollections * a, char* name, i32 c) {
+i32 CDDSurface::Load(CDDrawPtrCollections* a, char* name, i32 c) {
     HRSRC hr = FindResourceA(g_resModule, name, reinterpret_cast<LPCSTR>(2));
     if (!hr) {
         return 0;
@@ -1036,12 +1035,17 @@ i32 CDDSurface::RunDecode3(void* dstBuf, void* src, i32 width, i32 height) {
 #pragma optimize("", on)
 
 RVA(0x001457a0, 0x22c)
-i32 CDDSurface::DecodePcxData(CDDrawPtrCollections* dst, PidHeader* hdr, i32 size, i32 caps, u32 key) {
+i32 CDDSurface::DecodePcxData(
+    CDDrawPtrCollections* dst,
+    PidHeader* hdr,
+    i32 size,
+    i32 caps,
+    u32 key
+) {
     i32 flags = static_cast<i32>(hdr->flags);
     i32 w = hdr->width;
     i32 h = hdr->height;
-    // PID: the pixel stream follows the fixed header inline - byte-forced
-    u8* data = reinterpret_cast<u8*>(hdr + 1); // the pixel stream at +0x20
+    u8* data = hdr->pixels; // the pixel stream at +0x20
 
     if (w & 3) {
         return 0;
@@ -1142,8 +1146,7 @@ i32 CDDSurface::DecodePcxEx(CDDrawPtrCollections* pal, char* path, i32 caps, u32
         return 0;
     }
 
-    i32 result =
-        DecodePcxData(pal, static_cast<PidHeader*>(buf), len, caps, key);
+    i32 result = DecodePcxData(pal, static_cast<PidHeader*>(buf), len, caps, key);
     operator delete(buf);
     return result;
 }
@@ -1153,8 +1156,7 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u
     i32 flags = static_cast<i32>(hdr->flags);
     i32 width = hdr->width;
     i32 height = hdr->height;
-    // PID: the pixel stream follows the fixed header inline - byte-forced
-    u8* p = reinterpret_cast<u8*>(hdr + 1); // the pixel stream at +0x20
+    u8* p = hdr->pixels; // the pixel stream at +0x20
 
     if (!(width & 3) && m_width == width && m_height == height) {
         void* palette = 0;
@@ -1225,7 +1227,8 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u
     return 0;
 }
 
-RVA(0x00145cd0, 0x130)i32 CDDSurface::LoadPid(CDDrawPtrCollections* pal, char* path, u32 colorKey) {
+RVA(0x00145cd0, 0x130)
+i32 CDDSurface::LoadPid(CDDrawPtrCollections* pal, char* path, u32 colorKey) {
     CFile file;
 
     if (!file.Open(path, 0, 0)) {

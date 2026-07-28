@@ -8,7 +8,7 @@
 
 struct CDDPalette;          // fwd (SetPalette takes a wrapper ptr; PAUCDDPalette => struct)
 class CDDrawPtrCollections; // fwd (the display/pool manager passed as the palette/init context)
-struct PcxHeader;           // fwd (Decode's PCX source header; full def in <Image/FileImageRecords.h>)
+struct PcxHeader; // fwd (Decode's PCX source header; full def in <Image/FileImageRecords.h>)
 
 struct ClipRect16 {
     i32 a, b, c, d;
@@ -33,9 +33,12 @@ struct PidHeader {
     i32 offsetY;  // +0x14  draw anchor Y
     u32 fill;     // +0x18  fill colour (masked to low word when flags & 0x100)
     u32 unk1;     // +0x1c
-    // +0x20: the RLE/uncompressed 8bpp pixel stream begins here.
+    // +0x20: the RLE/uncompressed 8bpp pixel stream. Declared as the trailing member
+    // (same shape PcxHeader uses for its own stream) so readers say hdr->pixels
+    // instead of reinterpreting hdr + 1.
+    u8 pixels[1];
 };
-SIZE(0x20);
+SIZE(0x20); // header proper; pixels is the trailing stream
 
 enum FileImageFormat {
     FMT_BMP = 1,
@@ -129,8 +132,8 @@ public:
     // SaveFile validates the surface + args, SaveDispatch picks the per-bit-depth writer
     // by m_bitDepth (8/16/24). Clear blanks the surface.
     i32 SaveFile(char* buf, i32 type, void* pal, i32 flag); // 0x13f910 (ret 0x10)
-    i32 SaveDispatch(char* a1, void* pal, i32 flag);       // 0x144350 (ret 0xc)
-    void Clear(i32 white);                                 // 0x13edb0 (ret 4)
+    i32 SaveDispatch(char* a1, void* pal, i32 flag);        // 0x144350 (ret 0xc)
+    void Clear(i32 white);                                  // 0x13edb0 (ret 4)
 
     // The per-bit-depth file writers SaveDispatch delegates to (ret 0xc = 3 args). SaveBmp
     // (0x1443b0) writes the 8bpp palettized BMP, SaveTga (0x144900) the 24bpp TGA,
@@ -146,8 +149,13 @@ public:
     // slots 9/10/11, CPoolItemA88 slot 10 - never by a direct call on this base.)
     // arg5 is the u32 transparency KEY, not a surface: it reaches FillPalette(u32)
     // unchanged through DecodePid.
-    i32 Resolve(class CDDrawPtrCollections* pal, void* buf, i32 type, u32 size,
-                u32 colorKey); // 0x13e550 (ret 0x14)
+    i32 Resolve(
+        class CDDrawPtrCollections* pal,
+        void* buf,
+        i32 type,
+        u32 size,
+        u32 colorKey
+    ); // 0x13e550 (ret 0x14)
 
     // Per-format decoders (Image.cpp). __thiscall on CDDSurface. arg1 is the source-palette
     // surface (downcast to CDDSurface* in each body); the class passes surfaces as void*.
@@ -171,9 +179,8 @@ public:
     // the former DecodeBmpData @0x143cf0; Decode == DecodePcxData2 @0x144b30. Reconstructed
     // in FileImage.cpp; `info` is the CDDrawPtrCollections display manager (palette context
     // - source bpp / palette / have-palette), NOT a 2nd surface.
-    i32 DecodeRun(CDDrawPtrCollections* info, void* src, i32 a, i32 b); // 0x143cf0 (BMP run)
-    i32
-    Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 mode); // 0x144b30 (PCX run)
+    i32 DecodeRun(CDDrawPtrCollections* info, void* src, i32 a, i32 b);        // 0x143cf0 (BMP run)
+    i32 Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 mode); // 0x144b30 (PCX run)
 
     // The file-load + export path (FileImage.cpp == the DIRSURF.CPP surface). LoadFile2/
     // LoadFile slurp a .BMP/.PCX file into a heap buffer then run DecodeRun/Decode;
@@ -231,7 +238,7 @@ public:
     );                                                                     // 0x141280
     i32 LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode); // 0x143e60
     i32 LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode);  // 0x144d80
-    i32 Load(CDDrawPtrCollections * a, char* name, i32 c);                                    // 0x144270
+    i32 Load(CDDrawPtrCollections* a, char* name, i32 c);                  // 0x144270
 
     // The surface blitters + raw run-decoders the decoders delegate to (external no-body,
     // reloc-masked). Blit does a palette-remap copy (ret 0x10 = 4 args), BlitDirect a
@@ -267,29 +274,29 @@ public:
     // because retail performs signed comparisons/divisions on width, height and
     // pitch. A plain DDSURFACEDESC member changed those operations to unsigned.
     union {
-        DDSURFACEDESC m_apiDesc; // +0x10  official COM-boundary representation
+        DDSURFACEDESC m_apiDesc;   // +0x10  official COM-boundary representation
         i32 m_descWords[0x6c / 4]; // +0x10  signed word view used by retail clear loops
         struct {
-            i32 m_descSize;             // +0x10  dwSize
-            i32 m_descFlags;            // +0x14  dwFlags
-            i32 m_height;               // +0x18  dwHeight
-            i32 m_width;                // +0x1c  dwWidth
-            i32 m_pitch;                // +0x20  lPitch
-            i32 m_backBufferCount;      // +0x24  dwBackBufferCount
-            i32 m_mipMapCount;          // +0x28  dwMipMapCount / dwZBufferBitDepth
-            i32 m_alphaBitDepth;        // +0x2c  dwAlphaBitDepth
-            i32 m_descReserved;         // +0x30  dwReserved
-            void* m_lockBits;           // +0x34  lpSurface (DDSURFACEDESC's own type)
-            char m_colorKeys[0x20];      // +0x38  four DDCOLORKEY records
-            i32 m_pixelFormatSize;       // +0x58  ddpfPixelFormat.dwSize
-            i32 m_pixelFormatFlags;      // +0x5c  ddpfPixelFormat.dwFlags
-            i32 m_pixelFormatFourCC;     // +0x60  ddpfPixelFormat.dwFourCC
-            i32 m_srcBitDepth;           // +0x64  ddpfPixelFormat.dwRGBBitCount
-            i32 m_rMask;                 // +0x68  ddpfPixelFormat.dwRBitMask
-            i32 m_gMask;                 // +0x6c  ddpfPixelFormat.dwGBitMask
-            i32 m_bMask;                 // +0x70  ddpfPixelFormat.dwBBitMask
-            i32 m_alphaMask;             // +0x74  ddpfPixelFormat.dwRGBAlphaBitMask
-            i32 m_surfaceCaps;           // +0x78  ddsCaps.dwCaps
+            i32 m_descSize;          // +0x10  dwSize
+            i32 m_descFlags;         // +0x14  dwFlags
+            i32 m_height;            // +0x18  dwHeight
+            i32 m_width;             // +0x1c  dwWidth
+            i32 m_pitch;             // +0x20  lPitch
+            i32 m_backBufferCount;   // +0x24  dwBackBufferCount
+            i32 m_mipMapCount;       // +0x28  dwMipMapCount / dwZBufferBitDepth
+            i32 m_alphaBitDepth;     // +0x2c  dwAlphaBitDepth
+            i32 m_descReserved;      // +0x30  dwReserved
+            void* m_lockBits;        // +0x34  lpSurface (DDSURFACEDESC's own type)
+            char m_colorKeys[0x20];  // +0x38  four DDCOLORKEY records
+            i32 m_pixelFormatSize;   // +0x58  ddpfPixelFormat.dwSize
+            i32 m_pixelFormatFlags;  // +0x5c  ddpfPixelFormat.dwFlags
+            i32 m_pixelFormatFourCC; // +0x60  ddpfPixelFormat.dwFourCC
+            i32 m_srcBitDepth;       // +0x64  ddpfPixelFormat.dwRGBBitCount
+            i32 m_rMask;             // +0x68  ddpfPixelFormat.dwRBitMask
+            i32 m_gMask;             // +0x6c  ddpfPixelFormat.dwGBitMask
+            i32 m_bMask;             // +0x70  ddpfPixelFormat.dwBBitMask
+            i32 m_alphaMask;         // +0x74  ddpfPixelFormat.dwRGBAlphaBitMask
+            i32 m_surfaceCaps;       // +0x78  ddsCaps.dwCaps
         };
     };
     i32 m_dontOwn; // +0x7c  don't-own flag (bit0 => surfaces not released)
