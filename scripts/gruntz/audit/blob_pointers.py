@@ -82,7 +82,11 @@ def scan():
                     ty, name = m.group(1), m.group(2)
                     ctx = " ".join(lines[max(0, i - 2):i + 2])
                     tells = []
-                    hit = TYPE_IN_COMMENT.search(comment) or TYPE_IN_COMMENT.search(ctx)
+                    # ONLY this declaration's own trailing comment. Searching the
+                    # 2-line context bleeds: `i32* outCol, i32* outRow` got tagged
+                    # named:RECT because the word RECT appeared in an adjacent line
+                    # about something else. A tell has to be about THIS declaration.
+                    hit = TYPE_IN_COMMENT.search(comment)
                     if hit:
                         tells.append("named:" + hit.group(0))
                     if SIZED.search(comment) or SIZED.search(ctx):
