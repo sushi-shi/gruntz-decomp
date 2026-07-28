@@ -48,17 +48,21 @@ public:
     }
 
     i32 LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags); // 0x147410
-    i32 Create(IDirectDraw2* dd, void* entries, u32 flags);        // 0x147390
-    i32 LoadBmp(IDirectDraw2* dd, char* filename, u32 flags);      // 0x147590
-    i32 LoadPcx(IDirectDraw2* dd, char* filename, u32 flags);      // 0x147710
-    i32 CreateRGB(IDirectDraw2* dd, void* rgb, u32 flags);         // 0x1474d0
+    // `entries` is the 256-entry block handed straight to IDirectDraw2::
+    // CreatePalette (retail 0x1473e2 pushes it as the LPPALETTEENTRY arg).
+    i32 Create(IDirectDraw2* dd, PALETTEENTRY* entries, u32 flags); // 0x147390
+    i32 LoadBmp(IDirectDraw2* dd, char* filename, u32 flags);       // 0x147590
+    i32 LoadPcx(IDirectDraw2* dd, char* filename, u32 flags);       // 0x147710
+    i32 CreateRGB(IDirectDraw2* dd, void* rgb, u32 flags);          // 0x1474d0
     i32 CreateFromTrailing(IDirectDraw2* dd, void* data, u32 size,
                            u32 flags);                            // 0x147840
     i32 LoadPal(IDirectDraw2* dd, char* filename, u32 flags);     // 0x1478c0
     i32 LoadDefault(IDirectDraw2* dd, char* filename, u32 flags); // 0x1479e0
     void Destroy();                                               // 0x147530
-    i32 GetEntries();                                             // 0x147c30
-    i32 SetAndNotify(i32 start, i32 count, u8* data, i32 a4);     // 0x147aa0
+    void GetEntries();                                            // 0x147c30
+    // start/count are UNSIGNED here (unlike SetRange's): the cache loop's guard at
+    // 0x147ab5 is `cmp ebp,edi / jae`. They are the DWORDs SetEntries takes.
+    i32 SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 a4); // 0x147aa0
     // Expand a dynamically-allocated block of source entries into PALETTEENTRYs
     // then SetAndNotify. Quad: 4-byte RGBQUAD source (R/B swapped). RGB: packed
     // 3-byte RGB source (straight). Both return the SetAndNotify HRESULT.
@@ -74,15 +78,15 @@ public:
     // snaps to the final target and retires the fade.
     void StartFadeToColor(i32 start, i32 count, char r, char g, char b,
                           i32 durationMs); // 0x147f30
-    void StartFadeToPalette(i32 start, i32 count, u8* target,
+    void StartFadeToPalette(i32 start, i32 count, PALETTEENTRY* target,
                             i32 durationMs); // 0x147ff0
     i32 Tick();                              // 0x1480a0
     void Flush();                            // 0x148250
     // Blend the range pct% (0..100) toward the solid color (r,g,b) once and
     // push it to the DirectDraw palette (no cache/notify).
-    void BlendRange(i32 pct, i32 start, i32 count, i32 r, i32 g,
-                    i32 b); // 0x1482c0
-    void Apply(i32 a1);     // 0x147c80 (a1 unused)
+    void BlendRange(i32 pct, i32 start, i32 count, u8 r, u8 g,
+                    u8 b); // 0x1482c0
+    void Apply(i32 a1);    // 0x147c80 (a1 unused)
     i32 SetRange(i32 start, i32 count, u8 r, u8 g, u8 b,
                  u32 flags);    // 0x147cd0
     i32 CaptureSystemPalette(); // 0x1485b0 (system-reserved entries -> m_cacheA)
@@ -93,20 +97,24 @@ public:
                                    //        cleared by Destroy
     IDirectDrawPalette* m_palette; // +0x04  the held palette interface
     i32 m_8;                       // +0x08  cleared by Destroy
-    u8* m_cacheA;                  // +0x0c  PALETTEENTRY cache A (0x400 bytes; the live palette)
-    u8* m_cacheB;                  // +0x10  PALETTEENTRY cache B (0x400 bytes; GetEntries readback)
-    u8* m_targetPalette;           // +0x14  fade target entries (0 => fade to the fixed color)
-    u8* m_sourcePalette; // +0x18  captured fade source (lazy 0x400 RezAlloc; Destroy frees)
-    u8 m_fixedR;         // +0x1c  fixed fade target R
-    u8 m_fixedG;         // +0x1d  fixed fade target G
-    u8 m_fixedB;         // +0x1e  fixed fade target B
-    char m_pad1f[1];
-    i32 m_durationMs;      // +0x20  fade duration (ms)
-    i32 m_startTimeMs;     // +0x24  fade start timestamp (timeGetTime)
-    i32 m_lastElapsedMs;   // +0x28  last applied elapsed (-1 = none yet)
-    i32 m_firstColorIndex; // +0x2c  fade first color index
-    i32 m_colorCount;      // +0x30  fade color count
-    i32 m_active;          // +0x34  fade active/pending flag (cleared by Destroy/Flush)
+    // The four caches are all one shape: 256 PALETTEENTRYs (0x400 B). Proof at
+    // 0x147cd0 SetRange - `mov [ebp+eax*4+0],bl / +1 / +2` writes r/g/b at the
+    // 0/1/2 bytes of a stride-4 record and `lea ecx,[ecx+edi*4]` forms &cache[start]
+    // for the IDirectDrawPalette::SetEntries LPPALETTEENTRY arg (0x147c30 GetEntries
+    // and 0x147d50 FadeRange hand m_cacheA/m_cacheB to the same SDK slot).
+    PALETTEENTRY* m_cacheA;        // +0x0c  cache A (the live palette)
+    PALETTEENTRY* m_cacheB;        // +0x10  cache B (GetEntries readback)
+    PALETTEENTRY* m_targetPalette; // +0x14  fade target entries (0 => fade to m_fixedColor)
+    PALETTEENTRY* m_sourcePalette; // +0x18  captured fade source (lazy 0x400 alloc; Destroy frees)
+    // +0x1c is ONE entry, not three loose bytes: Flush @0x148289 loads it with a
+    // single `mov eax,[esi+0x1c]` and re-reads r/g/b out of the copy.
+    PALETTEENTRY m_fixedColor; // +0x1c  fixed fade target colour
+    i32 m_durationMs;          // +0x20  fade duration (ms)
+    i32 m_startTimeMs;         // +0x24  fade start timestamp (timeGetTime)
+    i32 m_lastElapsedMs;       // +0x28  last applied elapsed (-1 = none yet)
+    i32 m_firstColorIndex;     // +0x2c  fade first color index
+    i32 m_colorCount;          // +0x30  fade color count
+    i32 m_active;              // +0x34  fade active/pending flag (cleared by Destroy/Flush)
 };
 SIZE(0x38); // measured: the pool factories RezAlloc 0x38-byte items
 

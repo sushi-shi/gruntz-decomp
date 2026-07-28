@@ -1341,16 +1341,16 @@ void CDDrawWorkerHost::ResolveColorKey() {
     if (owner == 0) {
         return;
     }
-    u8* rgb = owner->m_buf->m_cacheA;
-    if (rgb == 0) {
+    PALETTEENTRY* pal = owner->m_buf->m_cacheA;
+    if (pal == 0) {
         return;
     }
 
     m_bltFx.dwFillColor = static_cast<u16>(
-        ((static_cast<u8>((static_cast<u8>(rgb[idx * 4 + 0]) >> static_cast<u8>(g_rDown))) << g_rUp)
-         | (static_cast<u8>((static_cast<u8>(rgb[idx * 4 + 1]) >> static_cast<u8>(g_gDown)))
+        ((static_cast<u8>((static_cast<u8>(pal[idx].peRed) >> static_cast<u8>(g_rDown))) << g_rUp)
+         | (static_cast<u8>((static_cast<u8>(pal[idx].peGreen) >> static_cast<u8>(g_gDown)))
             << g_gUp)
-         | static_cast<u8>((static_cast<u8>(rgb[idx * 4 + 2]) >> static_cast<u8>(g_bDown))))
+         | static_cast<u8>((static_cast<u8>(pal[idx].peBlue) >> static_cast<u8>(g_bDown))))
     );
 }
 

@@ -12,7 +12,6 @@ class CDDSurface; // the held DirectDraw surface (Blit's src arg); <DDrawMgr/DDS
 typedef struct tagRECT ShadeRect; // (incomplete-ok: unifies with windows.h's tagRECT)
 SIZE_UNKNOWN();
 
-
 // Build decodes the PID/RID resource blob, so its source is the ONE canonical
 // `struct PidHeader` in <DDrawMgr/DDSurface.h> (SIZE 0x20 + the PidFlags enum).
 // This header used to carry a second padded view of it named CImageBuildDesc
@@ -53,7 +52,7 @@ public:
     // Lock a source DirectDraw surface, RLE-encode its locked bits (via BuildRle) with
     // the surface's own width/height/pitch, then unlock it. Returns BuildRle's result.
     i32 BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palette); // 0x148f50
-    i32 Build(PidHeader* src, i32 size, i32 fmt);                // 0x1490d0
+    i32 Build(PidHeader* src, i32 size, i32 fmt);                      // 0x1490d0
     // 0x1495d0 (body: src/Image/ImageRle16Encode.cpp; ex the fake CImageRle16 view).
     // Two-pass RLE re-encode: expands the 8bpp token stream through a palette->16bpp
     // table into a fresh 16bpp RLE buffer. Build uses it as the srcBpp==2 remap.
@@ -109,7 +108,10 @@ public:
     i32 m_drawType; // +0x14 draw type / row-convert selector (switch tag; ctor default 1)
     i32 m_light; // +0x18 light level (ctor default 0x80): >>3 selects the LUT bank (Blit); low index into m_palDescr->m_data (cases 3/4); alpha (case 6); fill byte (case 5)
     CShadeTable* m_palDescr; // +0x1c palette / source-descriptor pointer (ctor default 0)
-    u8* m_palette; // +0x20 256-entry (0x400 B) palette byte buffer (Build/BuildRle; new 0x400 / RezFree)
+    // +0x20 the 256-entry (0x400 B) source palette (Build/BuildRle; new 0x400 /
+    // RezFree). PALETTEENTRY, not bytes: EncodeRle16 reads r/g/b at +0/+1/+2 of a
+    // stride-4 record and DecodeFrame writes exactly those three bytes per entry.
+    PALETTEENTRY* m_palette;
     i32 m_colorKey; // +0x24 color key (ctor default -1)
     u8 m_srcBpp; // +0x28 source pixel size in bytes (1 or 2); RLE run stride, ==1 gate; ctor default 1
     u8 m_dstBpp; // +0x29 dest pixel size in bytes (= blend mode, used as row stride); ctor default 1

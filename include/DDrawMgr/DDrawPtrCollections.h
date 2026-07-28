@@ -32,7 +32,7 @@ SIZE(0xc0);
 
 class CPoolItemAB8 : public CDDSurface {
 public:
-    virtual ~CPoolItemAB8() OVERRIDE;                        // slot 0  ~ 0x142a40
+    virtual ~CPoolItemAB8() OVERRIDE;                                        // slot 0  ~ 0x142a40
     virtual i32 Init1(CDDrawPtrCollections*, const DDSURFACEDESC*) OVERRIDE; // slot 2  0x148b50
     virtual i32 GetPoolKind() OVERRIDE;                      // slot 6  0x143cd0 (POOLKIND_MODE)
     virtual i32 Setup(CDDrawPtrCollections*, i32, i32, i32); // slot 9  0x148af0 (4 args)
@@ -42,9 +42,9 @@ SIZE(0xc0);
 
 class CPoolItemAE8 : public CDDSurface {
 public:
-    virtual ~CPoolItemAE8() OVERRIDE;                       // slot 0  ~ 0x142d40
+    virtual ~CPoolItemAE8() OVERRIDE;                                        // slot 0  ~ 0x142d40
     virtual i32 Init1(CDDrawPtrCollections*, const DDSURFACEDESC*) OVERRIDE; // slot 2 0x148cc0
-    virtual i32 GetPoolKind() OVERRIDE;                     // slot 6  0x143ce0 (POOLKIND_BLIT47)
+    virtual i32 GetPoolKind() OVERRIDE; // slot 6  0x143ce0 (POOLKIND_BLIT47)
     virtual i32 Blit47(CDDrawPtrCollections*, i32, i32, i32, i32, i32, i32); // slot 9  0x148c40
 };
 SIZE(0xc0);
@@ -89,7 +89,7 @@ public:
 
     // Internal setup helpers reached from CreateDevice (defined in other DDrawMgr
     // TUs; modeled as no-body externs so their rel32 calls are reloc-masked).
-    void SetupCaps();                             // 0x143240
+    void SetupCaps();                           // 0x143240
     void* CreatePoolItem(void* arg0, i32 kind); // 0x143630  (kind: 2 or 4; unused by the body)
     // Pool/mode comparator - the selection-sort predicate (free __stdcall, no this).
     static i32 __stdcall Compare(void* a, void* b); // 0x1433d0
@@ -97,8 +97,8 @@ public:
     // Display-mode pool searches over m_poolItems (m_pData[i] == a CDdMode*). FindIndex
     // = exact 3-key match; FindLast = >= range match; FindFwd/FindBack = nearest same-m_54
     // neighbour toward the pool end/start, writing {m_c,m_8} (or {-1,-1}) to out.
-    i32 FindIndex(i32 k0, i32 k1, i32 k2);                   // 0x1434c0
-    i32 FindLast(u32 k0, u32 k1, i32 k2);                    // 0x143470
+    i32 FindIndex(i32 k0, i32 k1, i32 k2);        // 0x1434c0
+    i32 FindLast(u32 k0, u32 k1, i32 k2);         // 0x143470
     CDdModePair FindFwd(i32 k0, i32 k1, i32 k2);  // 0x143510
     CDdModePair FindBack(i32 k0, i32 k1, i32 k2); // 0x143590
     // FindMatch = the last >= match's {m_c,m_8} dims (or {-1,-1}); via FindLast.
@@ -114,13 +114,13 @@ public:
     CDDrawPtrCollections();
     ~CDDrawPtrCollections();
 
-    void Clear(i32 mode);                                   // 0x142060
-    void EmptyPoolA();                                      // 0x142120  (drain +0x47c list)
-    void EmptyPoolB();                                      // 0x142ed0  (drain +0x498 list)
-    void AddItemA(CDDSurface* item);                        // 0x142100
-    void AddItemB(CDDPalette* item);                        // 0x142eb0
-    void RemoveItemA(CDDSurface* item);                     // 0x142160
-    void RemoveItemB(CDDPalette* item);                     // 0x142f10
+    void Clear(i32 mode);                               // 0x142060
+    void EmptyPoolA();                                  // 0x142120  (drain +0x47c list)
+    void EmptyPoolB();                                  // 0x142ed0  (drain +0x498 list)
+    void AddItemA(CDDSurface* item);                    // 0x142100
+    void AddItemB(CDDPalette* item);                    // 0x142eb0
+    void RemoveItemA(CDDSurface* item);                 // 0x142160
+    void RemoveItemB(CDDPalette* item);                 // 0x142f10
     CDDSurface* Create7f0_1(const DDSURFACEDESC* desc); // 0x1421a0 (vtbl 7f0, slot 2)
     // SETTLED 2026-07-27 (the "polymorphic first arg" reading was WRONG - it conflated
     // CreateA with its neighbour CreateB). Each of the two is MONOMORPHIC:
@@ -136,7 +136,7 @@ public:
     //     the "surface-pair passes a WIDTH" path; it is a different slot, not a
     //     different type in one slot.
     CDDSurface* CreateA(PidHeader* hdr, i32 type, u32 size, i32 ctrl, i32 trans); // 0x142260
-    CDDSurface* CreateB(i32 width, i32 height, i32 c, i32 d, i32 e);                    // 0x1423c0
+    CDDSurface* CreateB(i32 width, i32 height, i32 c, i32 d, i32 e);              // 0x1423c0
     CDDSurface* Createa58_1(const DDSURFACEDESC* desc); // 0x1424a0 (vtbl a58, slot 2)
     // Createa58_3's a1 is a FILE PATH, proven from both ends: the callee
     // CFileImageSurface::LoadByExt (@0x148940) opens with `strrchr(a1,'.')` +
@@ -157,15 +157,15 @@ public:
         char* suffix,
         i32 a6,
         i32 a7
-    );                                            // 0x142630
-    CDDSurface* Createa88_3(i32 a, i32 b, i32 c); // 0x142730 (vtbl a88, slot 9)
+    );                                                  // 0x142630
+    CDDSurface* Createa88_3(i32 a, i32 b, i32 c);       // 0x142730 (vtbl a88, slot 9)
     CDDSurface* Createa88_1(const DDSURFACEDESC* desc); // 0x142880 (vtbl a88, slot 2)
-    CDDSurface* Createab8_3(i32 a, i32 b, i32 c); // 0x142940 (vtbl ab8, slot 9, +538)
+    CDDSurface* Createab8_3(i32 a, i32 b, i32 c);       // 0x142940 (vtbl ab8, slot 9, +538)
     CDDSurface* Createab8_1(const DDSURFACEDESC* desc); // 0x142aa0 (vtbl ab8, slot 2, +538)
-    CDDSurface* Createab8_24_3(i32 a);            // 0x142b70 (vtbl ab8, slot 9 3-arg, +538)
+    CDDSurface* Createab8_24_3(i32 a);                  // 0x142b70 (vtbl ab8, slot 9 3-arg, +538)
     CDDSurface*
     Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);      // 0x142c40 (vtbl ae8, slot 9 6-arg)
-    CDDSurface* Createae8_1(const DDSURFACEDESC* desc); // 0x142da0 (vtbl ae8, slot 2)
+    CDDSurface* Createae8_1(const DDSURFACEDESC* desc);         // 0x142da0 (vtbl ae8, slot 2)
     CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
     CDDPalette* MakeB(void* rgb, i32 flags);                    // 0x142fc0
     CDDPalette* Create(i32 a, i32 b);                           // 0x143040 (init via 0x147390)
@@ -187,12 +187,14 @@ public:
     // Install the trailing packed-RGB palette from an in-memory file image: bail on a
     // null buffer or a size < 0x3e8, else forward (buf + size - 0x300, tag) to Make950.
     CDDPalette* Make950Trailing(u8* buf, i32 size, i32 tag); // 0x1439f0
-    // Install a 256-entry RGBQ display palette into m_palette (+0x53c) then mark
-    // it present (m_hasPalette=1) and latch the tag (m_940). *From copies the cache
-    // held by a CDDPalette wrapper (its +0x0c PALETTEENTRY cache); *Direct copies a
-    // caller-supplied RGBQ array.
-    void SetDisplayPaletteFrom(CDDPalette* pal, i32 tag); // 0x143900
-    void SetDisplayPaletteDirect(i32* rgbq, i32 tag);     // 0x1439b0
+    // Install a 256-entry display palette into m_palette (+0x53c) then mark it
+    // present (m_hasPalette=1) and latch the tag (m_940). *From copies the cache held
+    // by a CDDPalette wrapper (its +0x0c PALETTEENTRY cache); *Direct copies a
+    // caller-supplied entry array. Both return 1 on the success path (retail
+    // materializes `mov eax,1` @0x143943 and stores it) and set no value on the
+    // null bails - the Make950 sibling's return-1 shape.
+    i32 SetDisplayPaletteFrom(CDDPalette* pal, i32 tag);         // 0x143900
+    i32 SetDisplayPaletteDirect(PALETTEENTRY* entries, i32 tag); // 0x1439b0
     // Derive the R/G/B low-bit shift + 8-minus-count tables from the cached surface's
     // pixel format, then apply (Func13f740). __thiscall, no stack args (0x143b20).
     i32 ComputeColorMasks(); // 0x143b20
@@ -230,15 +232,18 @@ public:
     // the have-palette flag. The former conflated CFileImage palette fields (m_palBitCount/
     // m_palette/m_hasPalette) were a mis-modelling of THESE fields - the decoders never
     // touch a palette on their 0xc0 surface `this`, only on this manager passed in.
-    i32 m_palBpp;         // +0x538  display bit depth (== source bpp for the decoders)
-    i32 m_palette[0x100]; // +0x53c  256-entry display palette (RGBQ)
-    i32 m_hasPalette;     // +0x93c  have-palette flag
-    i32 m_940;            // +0x940  - zeroed in ctor (palette tag)
-    i32 m_lastError;      // +0x944  last-error stash; zeroed in ctor
+    i32 m_palBpp; // +0x538  display bit depth (== source bpp for the decoders)
+    // 256 PALETTEENTRYs, not 256 loose dwords: Make950 @0x14396c biases the cursor
+    // `lea edx,[edi+0x53d]` and writes r/g/b/flags at [edx-1]/[edx-4]/[edx-3]/[edx-2],
+    // i.e. bytes 0/1/2/3 of a stride-4 record, and SetDisplayPaletteFrom fills it by
+    // straight entry copy out of CDDPalette::m_cacheA.
+    PALETTEENTRY m_palette[0x100]; // +0x53c  256-entry display palette
+    i32 m_hasPalette;              // +0x93c  have-palette flag
+    i32 m_940;                     // +0x940  - zeroed in ctor (palette tag)
+    i32 m_lastError;               // +0x944  last-error stash; zeroed in ctor
 }; // 0x948
 SIZE_UNKNOWN();
 SIZE(0x948);
-
 
 // File-scope prototypes moved from the .cpp: an unqualified
 // declaration at file scope has EXTERNAL linkage, so it belongs in

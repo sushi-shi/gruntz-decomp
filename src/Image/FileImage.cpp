@@ -18,14 +18,18 @@ enum {
 DATA(0x00283ee0)
 HINSTANCE g_resModule;
 
+// All four scratch palettes are PALETTEENTRY[256], not 0x400 loose bytes: every
+// writer below lays down r/g/b at +0/+1/+2 of a 4-byte record and zeroes +3, and
+// each is then handed to Blit/BlitDirect as the `palette` argument alongside
+// CDDrawPtrCollections::m_palette (same shape).
 DATA(0x00283ef0)
-u8 g_paletteRampBuf[0x400]; // 0x683ef0
-static u8 s_palBmp[0x400];  // 0x6842f0
-static u8 s_palPcx[0x400];  // 0x6846f0
+PALETTEENTRY g_paletteRampBuf[0x100]; // 0x683ef0
+static PALETTEENTRY s_palBmp[0x100];  // 0x6842f0
+static PALETTEENTRY s_palPcx[0x100];  // 0x6846f0
 DATA(0x00284af0)
-u8 g_grayRamp[0x401];          // 0x684af0  (indices [1..0x400] written)
-static u8 s_palPidData[0x400]; // 0x684ef0 (CDDSurface::DecodePid)
-static u8 s_palPcxData[0x400]; // 0x6852f0 (CDDSurface::DecodePcxData)
+u8 g_grayRamp[0x401];                    // 0x684af0  (indices [1..0x400] written)
+static u8 s_palPidData[0x400];           // 0x684ef0 (CDDSurface::DecodePid)
+static PALETTEENTRY s_palPcxData[0x100]; // 0x6852f0 (CDDSurface::DecodePcxData)
 
 // ---------------------------------------------------------------------------
 // DecodeRun - decode a whole BMP file image (`srcv`) into
@@ -39,7 +43,13 @@ static u8 s_palPcxData[0x400]; // 0x6852f0 (CDDSurface::DecodePcxData)
 // branch-scheduling wall (sibling of Decode @0x144b30, same archetype): the format/
 // convert dispatch, the ramp build and the BlitSurf/Blit/BlitDirect merge are logic/
 // offset/CFG-faithful, but MSVC's spilled-reg + ramp-cursor scheduling diverges from the
-// one allocation retail emitted. Deferred to the final sweep.
+// one allocation retail emitted. Note for the sweep: retail strength-reduces the four
+// channel stores of the scratch palette into FOUR induction pointers (three separate
+// relocs at base, base+1, base+2 - clearest in DecodeBmp @0x144024). This is NOT the
+// member-vs-byte-subscript spelling: A/B'd both, the member form gives cl ONE base plus
+// displacements and the byte-subscript form gives TWO (one reloc + one src-rebased) -
+// neither reproduces four. The ARRAY TYPE is settled (PALETTEENTRY[256] - it feeds the
+// same Blit `palette` slot as CDDrawPtrCollections::m_palette); the IV split is open.
 RVA(0x00143cf0, 0x16b)
 i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     // `srcv` is a whole BMP file image: BITMAPFILEHEADER, then BITMAPINFO (header +
@@ -65,18 +75,17 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     void* pal = 0;
     if (convert) {
         if (srcFmt == 8) {
-            u8* w = g_paletteRampBuf;
             RGBQUAD* p = img->info.bmiColors; // the 256-entry palette at +0x36
             i32 i = 0;
             do {
                 // BGR -> RGB: the ramp is the reversed palette
-                g_paletteRampBuf[i] = p->rgbRed;
-                g_paletteRampBuf[i + 1] = p->rgbGreen;
-                g_paletteRampBuf[i + 2] = p->rgbBlue;
-                g_paletteRampBuf[i + 3] = 0;
+                g_paletteRampBuf[i].peRed = p->rgbRed;
+                g_paletteRampBuf[i].peGreen = p->rgbGreen;
+                g_paletteRampBuf[i].peBlue = p->rgbBlue;
+                g_paletteRampBuf[i].peFlags = 0;
                 p++;
-                i += 4;
-            } while (i < 0x400);
+                i++;
+            } while (i < 0x100);
             pal = g_paletteRampBuf;
         } else if (curFmt == 8) {
             if (info->m_hasPalette != 0) {
@@ -161,13 +170,13 @@ i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
                           + sizeof(BITMAPINFOHEADER); // the BMP palette
                 i32 i = 0;
                 do {
-                    s_palBmp[i] = src[2];
-                    s_palBmp[i + 1] = src[1];
-                    s_palBmp[i + 2] = src[0];
-                    s_palBmp[i + 3] = 0;
+                    s_palBmp[i].peRed = src[2];
+                    s_palBmp[i].peGreen = src[1];
+                    s_palBmp[i].peBlue = src[0];
+                    s_palBmp[i].peFlags = 0;
                     src += 4;
-                    i += 4;
-                } while (i < 0x400);
+                    i++;
+                } while (i < 0x100);
                 palette = s_palBmp;
             } else if (remap && palBpp == 8) {
                 if (pal->m_hasPalette != 0) {
@@ -284,12 +293,13 @@ i32 CDDSurface::SaveDispatch(char* a1, void* pal, i32 flag) {
 // CFile). ret 0xc.
 //
 // @early-stop
-// /GX export wall residue (~67%): CFG skeleton now matches retail block-for-block
-// (double spal guard + 0xe memset recovered); left: the quad-loop induction master
-// (retail rebases the 3 dest streams onto the src walker, ours keeps dest as master
-// - both spellings tried, coin lands wrong), retail's UNFOLDED bi.biSize*m_width
-// imul (ours constant-folds 0x28*w to lea*40; no source spelling found that blocks
-// cl5's constprop), and the fh-pointer spill + EH-state numbering that follow.
+// /GX export wall residue (78.4%): CFG skeleton matches retail block-for-block (double
+// spal guard + 0xe memset recovered). Left: a whole-body regalloc mirror (retail keeps
+// the zero in ebx and materializes `mov esi,0x8` for the bit-depth compare; cl pins the
+// zero in esi and compares against the immediate), the quad-loop induction master
+// (retail rebases the 3 dest streams onto the src walker - index, cursor and dual-cursor
+// spellings all tried, 78.4/77.5/78.4), retail's UNFOLDED biSize*m_width imul (ours
+// constant-folds 0x28*w to lea*40), and the fh-pointer spill + EH-state numbering.
 RVA(0x001443b0, 0x284)
 i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
@@ -312,33 +322,36 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
         return 0;
     }
 
-    BITMAPINFOHEADER bi;
-    memset(&bi, 0, sizeof(bi));
+    // ONE record, not a header plus an adjacent stack array: the single
+    // `Write(&info, 0x428)` below only works because the 0x400-byte colour table
+    // directly follows the 0x28-byte header - that is Bmp256Info, which
+    // <Image/FileImageRecords.h> already names for exactly this writer.
+    Bmp256Info info;
+    memset(&info.bmiHeader, 0, sizeof(info.bmiHeader));
     i32 height = m_height;
-    bi.biSize = 0x28;
-    bi.biWidth = m_width;
-    bi.biHeight = m_height;
-    bi.biPlanes = 1;
-    bi.biBitCount = 8;
-    bi.biCompression = 0;
-    bi.biSizeImage = 0;
+    info.bmiHeader.biSize = 0x28;
+    info.bmiHeader.biWidth = m_width;
+    info.bmiHeader.biHeight = m_height;
+    info.bmiHeader.biPlanes = 1;
+    info.bmiHeader.biBitCount = 8;
+    info.bmiHeader.biCompression = 0;
+    info.bmiHeader.biSizeImage = 0;
 
-    u8* spal = src->m_srcPalette;
+    PALETTEENTRY* spal = src->m_srcPalette;
     if (spal == 0) {
         return 0;
     }
 
-    // 256 RGBQUADs: copy the source palette's bytes 0/1/2 into the quad's B/G/R lanes.
-    u8 quads[0x400];
+    // PALETTEENTRY -> RGBQUAD: the R/B swap (retail stores +2 then +1 then +0).
     {
         i32 i = 0;
         i32 n = 0x100;
         do {
-            quads[i + 2] = spal[0];
-            quads[i + 1] = spal[1];
-            quads[i] = spal[2];
-            spal += 4;
-            i += 4;
+            info.bmiColors[i].rgbRed = spal->peRed;
+            info.bmiColors[i].rgbGreen = spal->peGreen;
+            info.bmiColors[i].rgbBlue = spal->peBlue;
+            spal++;
+            i++;
             --n;
         } while (n != 0);
     }
@@ -347,7 +360,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     memset(&fh, 0, sizeof(fh));
     // the BM magic written into the header's leading bytes - byte-forced
     strcpy(reinterpret_cast<char*>(&fh), g_bmpHeaderTemplate);
-    fh.bfSize = bi.biSize * m_width + 0x436;
+    fh.bfSize = info.bmiHeader.biSize * m_width + 0x436;
     fh.bfOffBits = 0x436;
 
     u8* buf = static_cast<u8*>(Lock(0));
@@ -370,7 +383,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     }
 
     file.Write(&fh, 0xe);
-    file.Write(&bi, 0x428);
+    file.Write(&info, 0x428);
 
     i32 row = height - 1;
     while (row >= 0) {
@@ -747,14 +760,14 @@ i32 CDDSurface::DecodePcx(CDDrawPtrCollections* pal, PcxHeader* hdr, u32 size) {
                 void* palette = 0;
                 if (remap && bitcount == 8) {
                     u8* src = hdr->m_pixels + size - 0x380; // the file's trailing palette
-                    i32 i = 1;
+                    i32 i = 0;
                     do {
-                        s_palPcx[i - 1] = *src++;
-                        s_palPcx[i] = *src++;
-                        s_palPcx[i + 1] = *src++;
-                        s_palPcx[i + 2] = 0;
-                        i += 4;
-                    } while (i < 0x401);
+                        s_palPcx[i].peRed = *src++;
+                        s_palPcx[i].peGreen = *src++;
+                        s_palPcx[i].peBlue = *src++;
+                        s_palPcx[i].peFlags = 0;
+                        i++;
+                    } while (i < 0x100);
                     palette = s_palPcx;
                 } else if (remap && palBpp == 8) {
                     if (pal->m_hasPalette != 0) {
@@ -1077,12 +1090,12 @@ i32 CDDSurface::DecodePcxData(
         u8* src = reinterpret_cast<u8*>(hdr) + size - 0x300;
         i32 i = 0;
         do {
-            s_palPcxData[i] = *src++;
-            s_palPcxData[i + 1] = *src++;
-            s_palPcxData[i + 2] = *src++;
-            s_palPcxData[i + 3] = 0;
-            i += 4;
-        } while (i < 0x400);
+            s_palPcxData[i].peRed = *src++;
+            s_palPcxData[i].peGreen = *src++;
+            s_palPcxData[i].peBlue = *src++;
+            s_palPcxData[i].peFlags = 0;
+            i++;
+        } while (i < 0x100);
         palette = s_palPcxData;
     } else {
         if (remap) {

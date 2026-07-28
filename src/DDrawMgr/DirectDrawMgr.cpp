@@ -802,9 +802,9 @@ CDDPalette* CDDrawPtrCollections::MakeB(void* rgb, i32 flags) {
 RVA(0x00143040, 0x7c)
 CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
     CDDPalette* item = new CDDPalette;
-    // AllocBufCreate hands this an i32 handle; CDDPalette::Create's second param is
-    // void* entries (it takes either a palette-entry block or a handle) - API-forced
-    if (!item->Create(m_device, reinterpret_cast<void*>(a), b)) {
+    // AllocBufCreate hands this the entry block as a bare i32 (retail 0x14306b pushes
+    // the arg dword straight through to 0x147390) - byte-forced int-to-pointer.
+    if (!item->Create(m_device, reinterpret_cast<PALETTEENTRY*>(a), b)) {
         if (item) {
             item->Destroy();
             ::operator delete(item);
@@ -1174,32 +1174,29 @@ IDirectDrawSurface* CDDrawPtrCollections::GetGDISurface() {
 
 // ---------------------------------------------------------------------------
 // 0x143900 - install the display palette from a CDDPalette wrapper's PALETTEENTRY
-// cache (+0x0c): straight 256-dword copy into m_palette, then flag present + tag.
-// __thiscall, 2 args (ret 0x8). No return value used.
-// @early-stop
-// ~65% - logic/offsets/CFG byte-faithful; the residual is the mirror-register wall
-// (same as the sibling Make950 @0x143950): retail keeps the source cursor in eax and
-// the dst in edx and pushes esi/edi in the prologue (bail paths pop), where MSVC on
-// this identical source mirrors the src/dst registers and defers the pushes past both
-// null checks. Not source-steerable (permuter 150-iter marginal). Regalloc-coloring
-// residue; see the 0x143950 note. docs/patterns/zero-register-pinning.md family.
+// cache (+0x0c): straight 256-entry copy into m_palette, then flag present + tag.
+// __thiscall, 2 args (ret 0x8). Returns 1 on the success path only: retail's
+// `mov eax,0x1 / mov [edi+0x93c],eax` @0x143943 materializes the constant BECAUSE
+// it is also the return value, and neither null bail touches eax (0x143900 has no
+// caller in .text, so the fall-off is unobservable).
 RVA(0x00143900, 0x4d)
-void CDDrawPtrCollections::SetDisplayPaletteFrom(CDDPalette* pal, i32 tag) {
+i32 CDDrawPtrCollections::SetDisplayPaletteFrom(CDDPalette* pal, i32 tag) {
+    // Both `return 0`s are FREE: the null test leaves the (null) pointer itself in
+    // eax, so retail's bare `pop edi / pop esi / ret 8` bails already carry 0.
     if (pal == 0) {
-        return;
+        return 0;
     }
-    // the palette cache is a 0x400-byte blob copied dword-wise - byte-forced, same
-    // seam as DirPal's PalDword pair
-    i32* src = reinterpret_cast<i32*>(pal->m_cacheA);
+    PALETTEENTRY* src = pal->m_cacheA;
     if (src == 0) {
-        return;
+        return 0;
     }
-    i32* dst = m_palette;
+    PALETTEENTRY* dst = m_palette;
     for (i32 i = 0; i < 256; i++) {
         *dst++ = *src++;
     }
-    m_940 = tag;
     m_hasPalette = 1;
+    m_940 = tag;
+    return 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -1220,16 +1217,11 @@ CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
         return 0;
     }
     const u8* src = static_cast<const u8*>(buf);
-    // byte-forced: m_palette is stored/copied as i32[0x100] entries, but this path
-    // COMPOSES each entry from an unaligned packed 3-byte RGB stream, so the
-    // destination has to be walked a byte at a time.
-    u8* dst = reinterpret_cast<u8*>(m_palette);
     for (i32 i = 0; i < 256; i++) {
-        dst[0] = *src++; // post-inc read (mov bl,[eax]; inc eax), not fixed src[0..2]+src+=3
-        dst[1] = *src++;
-        dst[2] = *src++;
-        dst[3] = 0;
-        dst += 4;
+        m_palette[i].peRed = *src++; // post-inc read (mov bl,[eax]; inc eax)
+        m_palette[i].peGreen = *src++;
+        m_palette[i].peBlue = *src++;
+        m_palette[i].peFlags = 0;
     }
     m_hasPalette = 1;
     m_940 = z;
@@ -1239,25 +1231,27 @@ CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x1439b0 - install the display palette directly from a caller RGBQ array:
-// straight 256-dword copy into m_palette, then flag present + latch tag.
-// __thiscall, 2 args (ret 0x8). No return value used.
+// 0x1439b0 - install the display palette directly from a caller entry array:
+// straight 256-entry copy into m_palette, then flag present + latch tag.
+// __thiscall, 2 args (ret 0x8). Returns 1 on the success path only (same
+// `mov eax,0x1` + store shape as the 0x143900 sibling; no caller in .text).
 // @early-stop
-// ~83% - logic/offsets/CFG byte-faithful; residual is the same mirror-register wall
-// as 0x143900/0x143950: retail keeps src in eax + dst in edx, materializes the m_hasPalette
-// 1 into a reused reg; MSVC on this source mirrors src/dst and stores the immediate.
-// Not source-steerable (permuter 150-iter marginal). docs/patterns/zero-register-pinning.md.
+// mirror-register wall (93.3%): CFG/loop/tail byte-faithful. Retail keeps the source
+// cursor in eax (where the null test left it) and the dst in edx; cl swaps the pair,
+// which also costs the one `xor eax,eax` the free-zero bail does not need. Routing
+// the param through a `src` local scored strictly lower (77.9%).
 RVA(0x001439b0, 0x3f)
-void CDDrawPtrCollections::SetDisplayPaletteDirect(i32* rgbq, i32 tag) {
-    if (rgbq == 0) {
-        return;
+i32 CDDrawPtrCollections::SetDisplayPaletteDirect(PALETTEENTRY* entries, i32 tag) {
+    if (entries == 0) {
+        return 0; // free: eax already holds the null `entries`
     }
-    i32* dst = m_palette;
+    PALETTEENTRY* dst = m_palette;
     for (i32 i = 0; i < 256; i++) {
-        *dst++ = *rgbq++;
+        *dst++ = *entries++;
     }
-    m_940 = tag;
     m_hasPalette = 1;
+    m_940 = tag;
+    return 1;
 }
 
 RVA(0x001439f0, 0x35)

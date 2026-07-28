@@ -6,13 +6,13 @@
 #include <rva.h>
 
 #include <DDrawMgr/DDSurface.h> // CDDSurface - the real source/dest surface (was the FaderSrc phantom)
-#include <Gruntz/Fader.h>        // the polymorphic base (SetTimers/Set2c/virtual dtor)
+#include <Gruntz/Fader.h>       // the polymorphic base (SetTimers/Set2c/virtual dtor)
 #include <Rez/RezBufferObject.h> // CRezBufferObject - CFaderMesh's +0x58 mesh buffer
 
 #include <Gruntz/FxModeDesc.h>
 
 class CDDSurface;  // the real DDraw surface every subtype's source/dest slots point at
-struct CDDPalette; // the real DDraw palette (its +0x0c m_cacheA is the 256-entry PalEntry
+struct CDDPalette; // the real DDraw palette (its +0x0c m_cacheA is the 256-entry PALETTEENTRY
 
 struct CFaderRadialCell {
     float m_vx;   // +0x00  x displacement
@@ -100,12 +100,12 @@ public:
     // else the base's m_timerB default), the two scalars, the duration percent, and the
     // per-frame work array it RezAllocs. (Was the Fader.cpp-local `CFaderElem` view - the
     // RVA is CFaderFlat::ApplyInit, and its m_src/m_percent are these fields.)
-    CDDSurface* m_desc04;    // +0x38  desc +0x04 (else the base's m_timerA default)
-    CDDSurface* m_src; // +0x3c  animation source (frame count at +0x18)
-    i32 m_desc0c;    // +0x40  desc +0x0c
-    i32 m_percent;   // +0x44  duration-scale percent (desc +0x10; GetFrameCount)
-    i32 m_desc14;    // +0x48  desc +0x14
-    i32* m_frames;   // +0x4c  per-frame work array (m_src->m_frameCount ints)
+    CDDSurface* m_desc04; // +0x38  desc +0x04 (else the base's m_timerA default)
+    CDDSurface* m_src;    // +0x3c  animation source (frame count at +0x18)
+    i32 m_desc0c;         // +0x40  desc +0x0c
+    i32 m_percent;        // +0x44  duration-scale percent (desc +0x10; GetFrameCount)
+    i32 m_desc14;         // +0x48  desc +0x14
+    i32* m_frames;        // +0x4c  per-frame work array (m_src->m_frameCount ints)
 };
 SIZE(0x50);
 

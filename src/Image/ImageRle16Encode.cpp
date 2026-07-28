@@ -6,22 +6,25 @@
 #include <DDrawMgr/DDrawShadeBlit.h> // the real owner (ex the fake CImageRle16 view)
 
 // @early-stop
-// FPU-free but heavy: the palette->16bpp table build, the two-pass row walk (size
-// then emit), the literal-run table expansion and the byte-granular token copies are
-// byte-faithful. Residual is the MSVC5 8-bit shift narrowing (movb vs movzx) on the
-// palette pack + the scratch-index scheduling across the two passes - the optimizer
-// register-allocation coin-flip, not source-steerable.
+// FPU-free but heavy (65.4%): the palette->16bpp table build, the two-pass row walk
+// (size then emit), the literal-run table expansion and the byte-granular token copies
+// are byte-faithful. Residual is the MSVC5 8-bit narrowing on the palette pack -
+// retail keeps each channel in a byte register (`shr dl,cl / movzx dx,dl / shl edx,cl`)
+// while cl spills one to `[esp+0x17]` (frame 0x214 vs 0x20c) - plus `this` in ebp vs
+// edi and the scratch-index scheduling across the two passes. Completing each OR term
+// before the next (the BlendRange lever) was tried and scored LOWER, 62.5%.
 RVA(0x001495d0, 0x1a6)
 void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
     u16 table[256];
     {
-        const u8* pal = m_palette;
+        const PALETTEENTRY* pal = m_palette;
         u16* t = table;
         for (i32 i = 0x100; i != 0; i--) {
-            u8 g = static_cast<u8>((static_cast<u8>(pal[1]) >> g_gDown));
-            u8 r = static_cast<u8>((static_cast<u8>(pal[0]) >> g_rDown));
-            pal += 4;
-            u8 b = static_cast<u8>((static_cast<u8>(pal[-2]) >> g_bDown));
+            u8 g = static_cast<u8>((static_cast<u8>(pal->peGreen) >> g_gDown));
+            u8 r = static_cast<u8>((static_cast<u8>(pal->peRed) >> g_rDown));
+            pal++;
+            // the blue read lands AFTER the cursor bump in retail - keep it there
+            u8 b = static_cast<u8>((static_cast<u8>(pal[-1].peBlue) >> g_bDown));
             *t++ = static_cast<u16>(
                 ((static_cast<u32>(g) << g_gUp) | (static_cast<u32>(r) << g_rUp)
                  | static_cast<u32>(b))
