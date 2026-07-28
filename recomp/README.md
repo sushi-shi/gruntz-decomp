@@ -3,17 +3,25 @@
 Byte-matching asks "do our bytes equal retail's?". This asks a different and stronger
 question: **"does retail's own machine code, executed, agree with our reimplementation?"**
 
-`harness/pidrun.c` maps `GRUNTZ.EXE`, applies its `.reloc`, and CALLs
-`CDDSurface::RunDecode1` @`0x145270` through inline asm (`__thiscall`, callee cleans
-`0x10`). Retail decides; nothing here is our reading of the disassembly. That validated
-**9,821 sprites at 100% identical pixels**, and it settled a question byte-matching could
-not: our `DecodePidData` implements the correct scanline-spill semantics, so its 72.78%
-is codegen residue and **not** a logic bug.
+`harness/recomp.h` maps `GRUNTZ.EXE`, applies its `.reloc`, and hands out callable
+addresses; each harness CALLs one retail function through it. The second half matters as
+much: `build.sh` links OUR compiled object out of `build/objdiff/base/`, so the
+comparison is retail's bytes against the bytes we actually ship, not against a
+transcription of our source into the harness.
+
+Five functions are covered so far. Four agree with retail on every input tried. The
+fifth, `CGrunt::RectSegProbe`, **did not** - it carried two logic bugs that byte-matching
+at 78.77% never showed, and returned the wrong answer on 6.5% of random inputs. Both are
+fixed. See `docs/harnesses.md`.
 
 ## Layout
 
-    harness/     the C harnesses + build.sh (period toolchain under wine)
-    docs/        what each harness assumes, and why a function is reachable
+    harness/recomp.h   the shared core: PE map + .reloc, __thiscall bridges,
+                       a deterministic RNG, and the pass/disagree tally
+    harness/build.sh   build.sh <name> [unit ...] - builds any harness and links
+                       our compiled objects in
+    harness/*.c(pp)    one harness per reachable function or family
+    docs/              what each harness assumes, and why a target is reachable
 
 One harness per reachable function or family. Keep them small and independent — a harness
 that needs the CRT stood up has stopped being a harness.

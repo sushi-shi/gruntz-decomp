@@ -999,9 +999,21 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
     i32 e2x = e2->x;
     i32 px = p->left;
     if ((e1x > px) != (e2x > px)) {
-        float t = static_cast<float>((e2x - px)) / static_cast<float>((e2x - e1x));
+        // 0x62c98 `sub eax,edi` - the numerator is (edge - e1x), interpolating
+        // FORWARD from e1 exactly as the top/bottom arms do. This used to read
+        // (e2x - px), which is the same magnitude with the wrong sign and the
+        // wrong endpoint; it agreed with retail only when the segment happened
+        // to be symmetric about the edge. recomp/harness/rectrun.cpp caught it.
+        float t = static_cast<float>((px - e1x)) / static_cast<float>((e2x - e1x));
         float iy = static_cast<float>(e1y) + t * static_cast<float>((e2y - e1y));
-        if (static_cast<float>(p->top) <= iy && iy <= static_cast<float>(p->bottom)) {
+        // STRICT at both ends, unlike the top/bottom arms above. 0x62cd0
+        // `test ah,1 / je` continues only when iy < bottom, and 0x62cdf
+        // `test ah,0x41 / jne` only when iy > top, where the x-range test at
+        // 0x62bdf/0x62bed has the opposite jump polarity and so admits
+        // equality. The asymmetry is retail's, and it is load-bearing: a
+        // segment ending exactly on a vertical edge does NOT count as a
+        // crossing while one ending on a horizontal edge does.
+        if (static_cast<float>(p->top) < iy && iy < static_cast<float>(p->bottom)) {
             return 1;
         }
     }
@@ -1009,9 +1021,17 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
     // Right edge (x = p->right).
     i32 pxr = p->right;
     if ((e1x > pxr) != (e2x > pxr)) {
-        float t = static_cast<float>((e2x - pxr)) / static_cast<float>((e2x - e1x));
+        // 0x62d0e `sub eax,edi` - same fix as the left edge above.
+        float t = static_cast<float>((pxr - e1x)) / static_cast<float>((e2x - e1x));
         float iy = static_cast<float>(e1y) + t * static_cast<float>((e2y - e1y));
-        if (static_cast<float>(p->top) <= iy && iy <= static_cast<float>(p->bottom)) {
+        // STRICT at both ends, unlike the top/bottom arms above. 0x62cd0
+        // `test ah,1 / je` continues only when iy < bottom, and 0x62cdf
+        // `test ah,0x41 / jne` only when iy > top, where the x-range test at
+        // 0x62bdf/0x62bed has the opposite jump polarity and so admits
+        // equality. The asymmetry is retail's, and it is load-bearing: a
+        // segment ending exactly on a vertical edge does NOT count as a
+        // crossing while one ending on a horizontal edge does.
+        if (static_cast<float>(p->top) < iy && iy < static_cast<float>(p->bottom)) {
             return 1;
         }
     }
