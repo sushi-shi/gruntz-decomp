@@ -39,6 +39,15 @@ const GUID IID_IDirectDrawSurface3 = {
     {0xA1, 0xD5, 0x00, 0xAA, 0x00, 0xB8, 0xDF, 0xBB},
 }; // 0x5ef888
 
+// @early-stop
+// zero-materialisation wall (98.24%, docs/patterns/const-materialize-into-reg-vs-immediate.md):
+// two real bugs are fixed below (the mode triple is ONE struct assignment, and the tail
+// store is m_streamOpen/+0x08 not m_0c/+0x0c - the sibling InitMode says the same); the
+// residual is 3 instructions of where cl parks the shared literal 0. Retail zeroes edi
+// BEFORE the last QueryInterface test (`xor edi,edi; cmp eax,edi`) and then stores the
+// palette branch's `m_smackBufMode = 0` as an IMMEDIATE, falling through into a second
+// `xor edi,edi`; cl defers the zero into the palette branch, stores it from edi and
+// jumps over the join's `xor`. Same family as CFxModeT2/CDDPageMgr::RemoveAt.
 RVA(0x0017c040, 0x25d)
 i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     if (m_initialized != 0) {
@@ -48,15 +57,16 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
         return 0;
     }
 
-    i32 w, h, bpp;
+    // ONE 12-byte local, not three ints: retail interleaves the three loads and
+    // stores (`mov ecx,[eax]; mov [esp+0x10],ecx; ...`) - a struct assignment - and
+    // the else arm seeds the same three contiguous slots with immediates.
+    DDModeInfo info;
     if (mode != 0) {
-        w = mode->width;
-        h = mode->height;
-        bpp = mode->bpp;
+        info = *mode;
     } else {
-        w = 0x280;
-        h = 0x1e0;
-        bpp = 8;
+        info.width = 0x280;
+        info.height = 0x1e0;
+        info.bpp = 8;
     }
 
     m_0c = 0;
@@ -71,7 +81,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
         HandleError();
         return 0;
     }
-    if (m_dd2->SetDisplayMode(w, h, bpp, 0, 0) != 0) {
+    if (m_dd2->SetDisplayMode(info.width, info.height, info.bpp, 0, 0) != 0) {
         HandleError();
         return 0;
     }
@@ -117,13 +127,13 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
         }
     }
 
-    m_screenWidth = w;
+    m_screenWidth = info.width;
     m_srcSurf = 0;
     m_srcSurfRaw = 0;
-    m_screenHeight = h;
-    m_bpp = bpp;
+    m_screenHeight = info.height;
+    m_bpp = info.bpp;
     m_window = window;
-    m_0c = 0;
+    m_streamOpen = 0; // +0x08, NOT m_0c: retail's tail store is `mov [esi+0x8],edi`
     ShowCursor(0);
     m_initialized = 1;
     FreeAll();

@@ -272,7 +272,11 @@ i32 CDDrawSurfacePair::RestoreIfLost() {
     if (s != 0 && s->IsLost() == 0) {
         return 1;
     }
-    IDirectDrawSurface* r = m_surface->m_ddSurface;
+    // The held surface re-read is a NAMED local so it dies at its last use and cl
+    // chases the whole chain in one register (`mov eax,[esi+0x2c]; mov eax,[eax+8]`),
+    // which is retail's shape; an inline member read is parked as a CSE candidate.
+    CDDSurface* held = m_surface;
+    IDirectDrawSurface* r = held->m_ddSurface;
     // Named local before `== 0` so MSVC emits the setcc form (xor/test/sete/mov),
     // not the neg/sbb/inc normalize. docs/patterns/return-bool-via-local-setcc.md.
     i32 hr = r->Restore();

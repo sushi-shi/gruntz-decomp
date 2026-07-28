@@ -25,6 +25,7 @@ struct CSymTabNode : public CHashElement {
 };
 SIZE(0x18); // no new fields over CHashElement
 
+// PackTag (0x13b910) is a CSymParser __thiscall method - see <Bute/SymParser.h>.
 void __stdcall UnpackTag(u32 tag, char* dst); // 0x13b970
 
 class CSymParser;

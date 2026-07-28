@@ -3631,6 +3631,9 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
             }
         }
     }
+    // The ex `extern "C" __stdcall SvmApply` phantom: retail's rel32 here is 0x155f60 ==
+    // CDDrawSurfaceMgr::SetDimensions, called __thiscall on m_world (`mov ecx,[esi+0x30]`
+    // right before the three arg pushes). The fake free-function decl dropped the receiver.
     if (!m_world->SetDimensions(w, h, m_colorDepth)) {
         return 0;
     }
@@ -3660,7 +3663,8 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     RefreshGameClock();   // 0x8f620 (thunk 0x3d23)
     if (g_resolutionChanged != 0) {
         g_resolutionChanged = 0;
-        char buf[0x80];
+        char buf[0x80]; // 0x80, not 0x70: retail's frame is `sub esp,0x80` with the
+                        // same four callee-saved pushes
         sprintf(buf, "Resolution is now %ix%ix%i", m_modeW, m_modeH, m_colorDepth);
         AppendChatMessage(buf); // 0x8f9c0 (thunk 0x1b54)
     }

@@ -1546,18 +1546,21 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
 }
 
 RVA(0x0007b330, 0xc6)
-i32 CTriggerMgr::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i32 dummy) {
+// The animation suffix comes from `kind` (0 -> the rand()-discarding default 1);
+// `id` is stored verbatim at +0x124 - retail RELOADS it from its parameter home
+// after the Format, which is what proves the two are distinct values.
+i32 CTriggerMgr::LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind) {
     CDDrawChildGroup* fac = m_world->m_childGroup;
-    CWwdGameObjectA* spr = fac->CreateSprite(0, geoB, geoA, 0, "Explosion", 0x40003);
+    CWwdGameObjectA* spr = fac->CreateSprite(0, x, y, 0, "Explosion", 0x40003);
     if (spr) {
-        i32 v = variant;
+        i32 v = kind;
         if (v == 0) {
             v = (rand(), 1);
         }
         CString key;
         key.Format("GAME_EXPLOSION%d", v);
         spr->ApplyLookupGeometry(key, 0);
-        spr->m_124 = v;
+        spr->m_124 = id;
         spr->m_114 = 1;
     }
     return spr != 0;
