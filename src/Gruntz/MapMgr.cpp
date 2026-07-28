@@ -529,9 +529,6 @@ i32 CMapMgr::Insert(BrickzNode* node) {
 // successor (clearing the successor's back-link) and clear the popped links.
 // Returns the popped head (eax, consumed by Search). The return type does not
 // affect the callee's own bytes - head is already materialized in eax.
-// @early-stop
-// regalloc wall: only residual is a head<->next register swap (retail pins head
-// in eax, recompile lands it in edx); logic byte-correct, 97% (no source steer).
 RVA(0x0009f430, 0x2a)
 BrickzNode* CMapMgr::PopFront() {
     BrickzNode* head = m_openList;
@@ -764,16 +761,6 @@ i32 CMapMgr::Visit(CFileMemBase* ar, i32 mode, i32 a2, i32 a3) {
 
 // CMapMgr::Save (slot 2, 0x09f840): stream the scalar bookkeeping members out, then
 // the whole cell grid (m_cellPool[j*m_width + i], 0x1c bytes each) row-major over m_width x m_height.
-// @early-stop
-// commutative-imul operand-materialization coin-flip (99.92%, docs/patterns/
-// commutative-imul-operand-in-eax.md): the whole body is byte-faithful (null gate,
-// the 12 field Write()s, ebp=&m_width base-pointer, the doubly-nested grid loop). The
-// sole residue is the inner index `j*m_width`: retail loads j (`mov eax,edi`) then
-// `imul eax,[ebp](m_width)`; cl loads m_width (`mov eax,[ebp]`) then `imul eax,edi` - both
-// re-read m_width from memory, same 6 bytes, only which operand lands in eax differs.
-// MSVC5 canonicalizes the commutative multiply regardless of source form (tried
-// `j*m_width`, `m_width*j`, `i+m_width*j`, compound `idx=j;idx*=m_width` + permute - all identical).
-// Not source-steerable; parked for the final sweep.
 RVA(0x0009f840, 0x110)
 i32 CMapMgr::Save(CFileMemBase* ar) {
     if (ar == 0) {
@@ -801,11 +788,6 @@ i32 CMapMgr::Save(CFileMemBase* ar) {
 
 // CMapMgr::Load (slot 3, 0x09f9a0): the read counterpart of Save; after reading each
 // cell, zero its +0x18 runtime field (not a persisted value).
-// @early-stop
-// same commutative-imul operand pick as Save (99.85%, docs/patterns/
-// commutative-imul-operand-in-eax.md) - two occurrences here (the read index and the
-// zero-cell index), each a `mov eax,edi;imul eax,[ebp]` vs `mov eax,[ebp];imul eax,edi`
-// byte-swap. Logic byte-faithful; not source-steerable. Parked for the final sweep.
 RVA(0x0009f9a0, 0x12e)
 i32 CMapMgr::Load(CFileMemBase* ar) {
     if (ar == 0) {

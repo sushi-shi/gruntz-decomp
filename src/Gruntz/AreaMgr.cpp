@@ -176,11 +176,6 @@ void CAreaMgr::Reset() {
 // CSpawnList::FindEntry (0x09a0d0) - find an entry by name, either via the
 // SpawnNameCmp hash helper (useHash) or an inline strcmp.  The search key is a
 // by-value CString (destroyed on exit); each node yields a CString name temp.
-// @early-stop
-// /GX CString-temp EH wall: the list walk, the per-node GetName temp + its
-// teardown, the hash / inline-strcmp branches and the by-value-param destruction
-// are logically faithful, but the EH-state frame + CString temp spill layout do
-// not reproduce byte-for-byte (the documented CString-temp-in-loop residual).
 // ---------------------------------------------------------------------------
 RVA(0x0009a0d0, 0x133)
 CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {

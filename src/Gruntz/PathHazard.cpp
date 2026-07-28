@@ -49,13 +49,6 @@ RVA_COMPGEN(0x00013280, 0x44, ??1CPathHazard@@UAE@XZ)
 // (PathHazardTimePerTile when unset), start the first leg, and on success bind the
 // "A" bute node + cycle geometry (else hide the object).
 //
-// @early-stop
-// register-pinning/eh-ctor-vptr-restamp wall (docs/patterns/zero-register-pinning.md,
-// eh-ctor-vptr-restamp-position.md): body byte-faithful (the i64 zeroing, the 24
-// scaled waypoint copies with 0x10 pinned in ebx, the sentinel search loop, the
-// bute/geometry tail all match retail). Residual is the /GX leaf-vptr re-stamp
-// position + retail's walking-pointer reuse of the copy's ecx in the search loop
-// (a regalloc artifact, not source-steerable).
 RVA(0x000132f0, 0x6)
 LogicTypeId CRainCloud::GetTypeTag() {
     return LOGIC_RAINCLOUD;
@@ -239,23 +232,6 @@ i32 CPathHazard::Tick() {
     return 0;
 }
 
-// @early-stop
-// 98.94%: every opcode/offset/branch is byte-identical. The lone residual is a
-// load-order coin-flip in the sprite-write tail - retail reads g_gameReg->m_78
-// (edx) before m_object (reusing eax for the sprite ptr); cl loads m_object first
-// (into ecx) and pins the sprite there. A pure allocator choice on the
-// [this+0x10] load; no source reorder flips it.
-// HOMED here (matcher-6, tu-partition): the earlier "BOUNDARY COMDAT - not homeable"
-// verdict read the 8-byte CUFO::Tick @0xb4330 as the lower neighbour, but that body is
-// itself an outlier of Ufo.cpp. The real bracket is THIS TU on BOTH sides -
-// CPathHazard::Tick @0xb4020 below and CPathHazard::SiblingTick @0xb43f0 above - and
-// 0xb4350 lies inside this obj's own contiguous 0xb35a0..0xb5075 run, which a
-// compiland's .text contribution must be. vtable_hierarchy independently tags this
-// slot-16 override's ORIGIN as CPathHazard, and this TU already owns CRainCloud's dtor
-// (0x13340) and includes <Gruntz/RainCloud.h>. (Ufo.cpp 0xb4330..0xb4fb7 and
-// RainCloud.cpp 0xb49b0 are also entirely inside this run - i.e. this one retail obj
-// holds CPathHazard plus its CUFO/CRainCloud leaves - so they want folding here too;
-// left for a follow-up, they are not orphan TUs.)
 RVA(0x000b4350, 0x7e)
 i32 CRainCloud::Tick() {
     if (m_strikeArmed != 0) {
@@ -368,10 +344,6 @@ i32 CPathHazard::Arrive() {
 // per-frame speed (m_58 = 1 / (m_7c->m_bc / 32)), the doubled current position
 // (m_60/m_68), the unit-vector components (m_70/m_78) and their half-step sign
 // biases (m_80/m_88 = sign * 0.5). Returns 1.
-// @early-stop
-// x87 FP normalize wall (docs/patterns/x87-fp-stack-schedule.md): the unit-vector
-// sqrt-divide chain + the sign tests are the documented stack-scheduling residual;
-// every offset / immediate / branch matches retail. Logic byte-for-byte correct.
 RVA(0x000b47e0, 0x170)
 i32 CPathHazard::BeginLeg() {
     CWwdGameObjectA* obj = m_object;

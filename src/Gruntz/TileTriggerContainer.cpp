@@ -506,10 +506,6 @@ CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32 a3, i32* block9, i32 a5, i
 // element inline (vtable 0x5eaea4 + [elem+0x1c]=0 + RezFree) and unlinks the
 // node via list1.RemoveAt.  Returns 1 on a hit, 0 otherwise.
 // ---------------------------------------------------------------------------
-// @early-stop
-// list-walk regalloc wall (~69%): logic + body identical; retail rotates the node
-// through eax with twin ecx/esi copies and hoists arg to edx, vs our single
-// callee-saved esi direct-deref.  See docs/patterns/linked-list-walk-node-eax-rotation.md
 RVA(0x00116e60, 0x59)
 i32 CTileTriggerContainer::DelFromList1(void* data) {
     POSITION pos = m_list1.GetHeadPosition();
@@ -606,10 +602,6 @@ void CTileTriggerContainer::RemoveAll() {
 //           result -1 -> move element from list2 to list1 (RemoveAt + AddTail).
 // Returns 1.
 // ---------------------------------------------------------------------------
-// @early-stop
-// list-walk regalloc wall (~84%): logic + Classify/RemoveAt/AddTail branches
-// identical; same node-eax-rotation vs callee-saved-esi shape as the siblings.
-// See docs/patterns/linked-list-walk-node-eax-rotation.md
 RVA(0x001170b0, 0x72)
 i32 CTileTriggerContainer::FilterList2(i32 arg) {
     POSITION pos = m_list2.GetHeadPosition();
@@ -633,10 +625,6 @@ i32 CTileTriggerContainer::FilterList2(i32 arg) {
 // Scans list1 (head @ +0x20) for the node whose data == arg; removes it from
 // list1 and appends the element to list2, then clears element+0x38.  Returns 1.
 // ---------------------------------------------------------------------------
-// @early-stop
-// list-walk regalloc wall (~51%): logic + RemoveAt/AddTail/clear identical; same
-// node-eax-rotation vs callee-saved-esi shape as the siblings.
-// See docs/patterns/linked-list-walk-node-eax-rotation.md
 RVA(0x00117150, 0x53)
 i32 CTileTriggerContainer::MoveList1ToList2(void* data) {
     POSITION pos = m_list1.GetHeadPosition();
@@ -671,10 +659,6 @@ CTileActionEvent* CTileTriggerContainer::FindByField0C(i32 key) {
 // element inline ([elem+0x10]=0 + RezFree) and unlinks the node via
 // list3.RemoveAt.  Returns 1 on a hit, 0 otherwise.
 // ---------------------------------------------------------------------------
-// @early-stop
-// list-walk regalloc wall (~82%): logic + delete/RemoveAt identical; same
-// node-eax-rotation vs callee-saved-esi shape as the siblings.
-// See docs/patterns/linked-list-walk-node-eax-rotation.md
 RVA(0x00117200, 0x53)
 i32 CTileTriggerContainer::DelFromList3(void* data) {
     POSITION pos = m_list3.GetHeadPosition();

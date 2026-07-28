@@ -206,12 +206,6 @@ void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDD
 // corners are within 32 px in both axes (the union {min pos, |delta|+1 size}), else
 // emit both records separately. Only one armed -> just that record. Arg `c` unused.
 // __thiscall, 3 args (ret 0xc).
-// @early-stop
-// 99.70% - logic/CFG/block-layout/the abs+min bbox/all four dispatch sites byte-exact.
-// The lone residual is a callee-saved coin-flip: the two hoisted record base addresses
-// (&m_18, &m_b8) land in retail's edi/ebx but our cl's ebx/edi (swapped), which cascades
-// only the two push operands in the large-delta path. Same addresses. The permuter found
-// no source spelling that flips the pair. docs/patterns/zero-register-pinning.md.
 RVA(0x001664a0, 0x133)
 void CWwdGameObjectC::BltDirtyRegions(
     CDDrawSurfacePair* a,

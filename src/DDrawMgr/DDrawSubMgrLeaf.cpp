@@ -111,11 +111,6 @@ void CDDrawSubMgrLeaf::FreeAll() {
 // (CString-built) compare string, destroying each removed value via its scalar
 // dtor; returns the count. The compare string is a CString built from `base`
 // then assigned `str`.
-// @early-stop
-// regalloc wall (~91%) - complete & correct: logic/CFG/all calls/args/offsets
-// reproduced. Residue is the val/loop-flag stack-slot swap + reloc-masked EH-state
-// push, identical to the sibling CDDrawWorkerRegistry::RemoveKeysEqual.
-// docs/patterns/zero-register-pinning.md.
 RVA(0x001527d0, 0xf8)
 i32 CDDrawSubMgrLeaf::RemoveKeysEqual(const char* base, const char* str) {
     CString match(base);
@@ -145,13 +140,6 @@ i32 CDDrawSubMgrLeaf::RemoveKeysEqual(const char* base, const char* str) {
 // manager's +0x28 sub-manager. On Configure failure destroy via the scalar dtor
 // and return 0; on success link into the map under `key`. /GX EH frame.
 // 2 stack args (ret 8). Returns the element (or 0).
-// @early-stop
-// ~99.99% - modeling the +0x08 subobject as a real CObject member (CAniElemSub, ctor
-// 0x1b55e9) + the canonical CAniElement : ::CObject reproduces the ctor-in-flight
-// frame exactly. The whole body (new-merge null shape + failure-path scalar-deleting
-// dtor dispatch) is byte-identical to retail; the sole residue is the appended
-// exception-cleanup unwind funclet (retail section-splits it out of the delinked
-// range). docs/patterns/new-throwing-ctor-unwind-funclet-appended.md.
 RVA(0x001528d0, 0xdd)
 CAniElement* CDDrawSubMgrLeaf::CreateAniEntry(const char* key, void* entry) {
     CAniElement* el = new CAniElement;
@@ -170,10 +158,6 @@ CAniElement* CDDrawSubMgrLeaf::CreateAniEntry(const char* key, void* entry) {
 // ---------------------------------------------------------------------------
 // 0x1529b0: the element factory variant - byte-for-byte twin of CreateAniEntry
 // except the element configure goes through the second Configure (0x165620).
-// @early-stop
-// ~99.99% - twin of CreateAniEntry's wall; the only residue is the appended
-// exception-cleanup unwind funclet (retail section-splits it out of the delinked
-// range). docs/patterns/new-throwing-ctor-unwind-funclet-appended.md.
 RVA(0x001529b0, 0xdd)
 CAniElement* CDDrawSubMgrLeaf::CreateAniEntry2(const char* key, void* entry) {
     CAniElement* el = new CAniElement;

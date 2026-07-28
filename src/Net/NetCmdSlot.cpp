@@ -105,13 +105,6 @@ void CNetSession::ResetSync() {
 
 // ClearRange (0xbf120, absorbed from NetMgrMisc.cpp): zero the slot's +0x3c..+0x48
 // dword range. (== CLobbyChannel::InitSub3c, declared-only above.)
-// @early-stop
-// regalloc coin-flip (84%): the inline 16-byte memset (base pointer + 4 dword
-// stores of a zero register) is byte-faithful in operation, but retail materializes
-// the base in eax via `lea eax,[ecx+0x3c]` and reuses the dead `this` (ecx) as the
-// zero, while cl advances ecx in place (`add ecx,0x3c`) and zeroes via eax - a pure
-// pointer/zero register swap (zero-register-pinning.md family); not source-steerable
-// (a plain 4-member `=0` instead folds to direct `[ecx+N]` stores, 71%). Deferred.
 RVA(0x000bf120, 0x11)
 void CNetCmdSlot::ClearAckFlags() {
     for (i32 i = 0; i < 4; i++) {
@@ -557,12 +550,6 @@ i32 CNetSession::Advance() {
     return 1;
 }
 
-// @early-stop
-// slot-pointer anchor + member re-read wall (~89.5%) PLUS the delinker unpair: logic
-// byte-faithful (the per-slot state==3 / resetGuard gate, the baseSeq window test, the
-// Ready()+latchedSeq branch). Retail anchors the slot cursor at +0x24 (m_isRemote)
-// and re-reads it with `cmp $0,(esi)` each test; cl CSEs the read and anchors at +0x34
-// (m_baseSeq) - a non-steerable addressing-mode tie-break. (wave2-F /GX flip: 100->89.5.)
 RVA(0x000c0290, 0x63)
 i32 CNetSession::Verify(i32 n) {
     for (i32 i = 0; i < 4; i++) {

@@ -146,12 +146,6 @@ static inline CString* TypeLookup(i32 key) {
 // first use), record the name into the shared type-name table, then store the
 // slime's activation handler (0x40180c) into the per-class activation table at
 // that id. A static initializer (no `this`); same archetype as CProjectile's.
-// @early-stop
-// ~91%: every operation/offset/string/call is byte-correct; the residual is pure
-// regalloc + induction-variable coloring - retail pins the type-id in esi (mine
-// edi), reads the node count into ebp via the `ecx=cnt; eax=cnt-1; lea ebp,[eax+1]`
-// count-down idiom (mine a plain --cnt), and orders the `id=key` store before the
-// scratch=0. Not source-steerable (regalloc/strength-reduction wall); deferred.
 
 RVA(0x000b2aa0, 0x18d)
 void CKitchenSlime::RegisterType() {

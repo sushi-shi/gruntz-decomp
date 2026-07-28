@@ -20,12 +20,6 @@ i32 g_rasterVtxCount = 0; // decl in Image/RasterVtx.h
 // every non-degenerate triple is clockwise (dir==2). The loop deliberately runs
 // i=0..count inclusive (the closing triple re-checks vertex 0's fan).
 // ===========================================================================
-// @early-stop
-// x87 FP-stack schedule wall (~83%, same family as ImagePolyClipRect/PolyClipRaster
-// in this TU): logic/CFG/the modulo-index fan/the 3-way float-vs-0.0 sign compare are
-// byte-faithful, but MSVC5's exact fld/fsub/fchs/fmulp/faddp ordering for the 2D cross
-// product (v0.x kept on the FP stack, v0.y spilled to a temp) is not source-steerable.
-// docs/patterns/x87-fp-stack-schedule.md.
 RVA(0x00145e00, 0x26)
 i32 WarpIsPow2(i32 x) {
     i32 c = 0;

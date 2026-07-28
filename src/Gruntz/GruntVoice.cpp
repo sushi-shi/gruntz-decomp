@@ -60,16 +60,6 @@ static inline CString* ActNameLookup(i32 id) {
     return g_typeColl.Scratch();
 }
 
-// @early-stop
-// MSVC5 /O2 dead-vptr-store elimination wall (byte-proven). 0x13400 IS CUFO::
-// ~CUFO, but retail's /O2 collapsed the CUFO:CPathHazard:CUserLogic dtor chain to a
-// ~CUFO @0x13400 (ex the L_13400 flat-leaf shell): retail's dtor stamps ONLY the
-// CUserBase vtable - the intermediate CUFO/CPathHazard stamps are dead-store-
-// eliminated. An EXPLICIT chained dtor emits them (byte-proven 4.7% crater); the
-// IMPLICIT compiler-generated dtor gets the elision (the CDoNothingNormal
-// precedent). Nothing else constructs a CUFO in reconstructed code, so this
-// unpaired Realize emitter forces the ??_G/??1 COMDATs (the RealizeCDoNothingNormal
-// pattern); the ??1 is pinned by name below.
 RVA_COMPGEN(0x00013400, 0x44, ??1CUFO@@UAE@XZ)
 void RealizeUfoDtor(CUFO* p);
 void RealizeUfoDtor(CUFO* p) {

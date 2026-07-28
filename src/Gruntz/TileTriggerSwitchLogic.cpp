@@ -1282,10 +1282,6 @@ i32 CTileTriggerSwitchLogic::LoadState(CFileMemBase* s) {
 // `this` (0x291e -> Serialize @0x113ae0, 0x3102 -> Deserialize @0x113c10). Same bytes; the
 // free-function spelling only matched because `this` happened to still be live in ecx.
 // ---------------------------------------------------------------------------
-// @early-stop
-// regalloc wall (~93%): switch-case ordering + the two calls match; retail keeps arg1 in eax
-// (returns it as the null-zero, push eax for the callees) vs our ecx + explicit xor in the
-// null block. Entry-block register only.
 RVA(0x00113a90, 0x3b)
 i32 CTileTriggerLogic::ValidateByType(void* archive, i32 type, i32 a3, i32 a4) {
     if (archive == 0) {

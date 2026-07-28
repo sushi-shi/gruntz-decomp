@@ -22,25 +22,33 @@ DATA(0x001e88b8)
 const AFX_MSGMAP_ENTRY CBattlezDlg::_messageEntries[] = {
     // The four per-option dropdowns are combo boxes (the accessors drive them with
     // CB_GETCURSEL 0x147 / CB_SETCURSEL 0x14e), so notify code 1 is CBN_SELCHANGE.
-    ON_CBN_SELCHANGE(0x500, CBattlezDlg::ApplyOption0)  // 0x15de0
-    ON_CBN_SELCHANGE(0x50e, CBattlezDlg::ApplyOption1)  // 0x15e60
-    ON_CBN_SELCHANGE(0x50f, CBattlezDlg::ApplyOption2)  // 0x15ee0
-    ON_CBN_SELCHANGE(0x510, CBattlezDlg::ApplyOption3)  // 0x15f60
+    ON_CBN_SELCHANGE(0x500, CBattlezDlg::ApplyOption0) // 0x15de0
+    ON_CBN_SELCHANGE(0x50e, CBattlezDlg::ApplyOption1) // 0x15e60
+    ON_CBN_SELCHANGE(0x50f, CBattlezDlg::ApplyOption2) // 0x15ee0
+    ON_CBN_SELCHANGE(0x510, CBattlezDlg::ApplyOption3) // 0x15f60
     // The next three entries ARE ON_WM_MEASUREITEM/DRAWITEM/PAINT, written out because
     // those SDK macros take the handler's address UNQUALIFIED (`&OnMeasureItem`), which
     // only cl accepts - clang (the label pass) requires `&Class::Member`. MFC erases
     // every handler to AFX_PMSG, so the pointer-to-member cast is the SDK's, not ours.
     // API-forced (== ON_WM_MEASUREITEM())
-    {WM_MEASUREITEM, 0, 0, 0, AfxSig_vOWNER,
+    {WM_MEASUREITEM,
+     0,
+     0,
+     0,
+     AfxSig_vOWNER,
      reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnMeasureItem)}, // 0x16570
     // API-forced (== ON_WM_DRAWITEM())
-    {WM_DRAWITEM, 0, 0, 0, AfxSig_vOWNER,
-     reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnDrawItem)}, // 0x165a0
-    ON_BN_CLICKED(0x501, CBattlezDlg::ApplyColorSlot0)  // 0x16cd0
-    ON_BN_CLICKED(0x503, CBattlezDlg::ApplyColorSlot1)  // 0x16dc0
-    ON_BN_CLICKED(0x505, CBattlezDlg::ApplyColorSlot2)  // 0x16e90
-    ON_BN_CLICKED(0x507, CBattlezDlg::ApplyColorSlot3)  // 0x16f60
-    ON_BN_CLICKED(0x42b, CBattlezDlg::ShowCustomDlg)    // 0x17030
+    {WM_DRAWITEM,
+     0,
+     0,
+     0,
+     AfxSig_vOWNER,
+     reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnDrawItem)},   // 0x165a0
+    ON_BN_CLICKED(0x501, CBattlezDlg::ApplyColorSlot0)        // 0x16cd0
+    ON_BN_CLICKED(0x503, CBattlezDlg::ApplyColorSlot1)        // 0x16dc0
+    ON_BN_CLICKED(0x505, CBattlezDlg::ApplyColorSlot2)        // 0x16e90
+    ON_BN_CLICKED(0x507, CBattlezDlg::ApplyColorSlot3)        // 0x16f60
+    ON_BN_CLICKED(0x42b, CBattlezDlg::ShowCustomDlg)          // 0x17030
     ON_CBN_SELCHANGE(0x4ff, CBattlezDlg::CopyComboSelToChild) // 0x171b0
     // Notify codes 0x200/0x300 are the owner-draw slot control's own two
     // notifications; MFC has no name for them, so they stay raw ON_CONTROL.
@@ -53,12 +61,11 @@ const AFX_MSGMAP_ENTRY CBattlezDlg::_messageEntries[] = {
     ON_CONTROL(0x300, 0x50c, CBattlezDlg::OnStubBtn2)   // 0x17500
     ON_CONTROL(0x300, 0x50d, CBattlezDlg::OnStubBtn3)   // 0x17520
     // API-forced: the ON_WM_PAINT() entry, qualified (see the note above).
-    {WM_PAINT, 0, 0, 0, AfxSig_vv,
-     reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnPaint)}, // 0x14b10
-    ON_CBN_SELCHANGE(0x51e, CBattlezDlg::SaveOptionCombo0) // 0x17560
-    ON_CBN_SELCHANGE(0x520, CBattlezDlg::SaveOptionCombo1) // 0x175a0
-    ON_CBN_SELCHANGE(0x521, CBattlezDlg::SaveOptionCombo2) // 0x175e0
-    ON_CBN_SELCHANGE(0x522, CBattlezDlg::SaveOptionCombo3) // 0x17620
+    {WM_PAINT, 0, 0, 0, AfxSig_vv, reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnPaint)}, // 0x14b10
+    ON_CBN_SELCHANGE(0x51e, CBattlezDlg::SaveOptionCombo0)                             // 0x17560
+    ON_CBN_SELCHANGE(0x520, CBattlezDlg::SaveOptionCombo1)                             // 0x175a0
+    ON_CBN_SELCHANGE(0x521, CBattlezDlg::SaveOptionCombo2)                             // 0x175e0
+    ON_CBN_SELCHANGE(0x522, CBattlezDlg::SaveOptionCombo3)                             // 0x17620
     {0, 0, 0, 0, AfxSig_end, 0},
 };
 
@@ -160,7 +167,7 @@ RVA(0x00015a10, 0x70)
 i32 CALLBACK WndProc_15a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {
         // API-forced: Win32 hands the item text through LPARAM
-    if (strcmp(g_emptyString, reinterpret_cast<const char*>(lParam)) == 0) {
+        if (strcmp(g_emptyString, reinterpret_cast<const char*>(lParam)) == 0) {
             return 0;
         }
     }
@@ -224,11 +231,6 @@ CBattlezDlgColors::CBattlezDlgColors(CGruntzMgr* a0, i32 a1, i32 a2, CWnd* pPare
 // stride 0x238) already uses it; add the free ones as "Color" items (item-data =
 // colour index), then select the first. GetDlgItem(0x515) runs in both branches
 // (the compiler hoists the shared push of the control id).
-// @early-stop
-// 99.5%: logic byte-exact. Residual is a 2-register coin-flip in the LOAD branch -
-// retail assigns pSend->edi / lb->ebx, cl assigns pSend->ebx / lb->edi (esi is the
-// loop counter in both). A pure callee-saved allocation choice; permuter + source
-// reorder tried, not steerable.
 RVA(0x000179b0, 0xcb)
 void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
     LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM);
@@ -258,7 +260,7 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
             if (avail) {
                 long idx =
                     // API-forced: LB_ADDSTRING carries the item text in the LPARAM word.
-        pSend(lb->m_hWnd, 0x180, 0, reinterpret_cast<long>("Color")); // LB_ADDSTRING
+                    pSend(lb->m_hWnd, 0x180, 0, reinterpret_cast<long>("Color")); // LB_ADDSTRING
                 pSend(lb->m_hWnd, 0x19a, idx, i);                                 // LB_SETITEMDATA
             }
         }
@@ -686,20 +688,6 @@ void CBattlezDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
 // child paints light gray. Always chains the base CWnd owner-draw default. /GX EH
 // frame unwinds the CDC/CBrush locals.
 //
-// @early-stop
-// jump-table-data split artifact (~71.5%; docs/patterns/jumptable-data-overlap.md) -
-// the same wall that caps the sibling GetCtrlA/GetCtrlD in this TU at ~70%. COMPLETE +
-// correct: prologue, /GX EH frame (0x18), outer nIDCtl dispatch (GetCtrlD(i)->
-// IsWindowEnabled), the four inlined palette switches (index-declaration order - PROVEN
-// right: the byte-identical CMultiStartDlg twin momentarily scored 98.7% off this exact
-// shape when the delinker carved its full 0x5c0), and the whole CDC/CBrush/FillRect/
-// Detach + base-OnDrawItem tail are all byte-exact. The residual is purely a delinker/
-// scoring boundary: MSVC5 emits the 5 switch jump tables INLINE in .text (function =
-// 0x5c0), but Ghidra carves the OnDrawItem boundary at 0x491 (code only) and splits the
-// tables into separate switchdataD_00416a34.. data symbols, so objdiff compares our
-// 0x5c0 base against a 0x491 target and scores the ~0x12f trailing jump-table bytes
-// unmatched. Not source-steerable (a delinker fix that absorbs trailing in-range jump
-// tables would lift this + GetCtrlA/D to ~98%).
 RVA(0x000165a0, 0x5c0)
 void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     COLORREF color;

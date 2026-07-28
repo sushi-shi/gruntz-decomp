@@ -102,12 +102,6 @@ i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
 // the same gate on a short write. Returns 0 on a zero count or a gate that gives
 // up; the write count otherwise. Unlike Read, the cursor is left invalid.
 // ---------------------------------------------------------------------------
-// @early-stop
-// 99.69% (reloc-masked plateau) - every code byte matches retail. The count guard
-// now spells `if(count <= 0)` (unsigned), lowering to retail's `test;jbe` (the
-// `== 0` form gave `je`; see Read's note + docs/patterns/
-// unsigned-zero-guard-le-not-eq.md). The buffered-IO calls are the real CRT
-// fseek/fwrite (retail 0x18c3a0/0x18cb40), now bound by name (reloc-faithful).
 RVA(0x0013c6c0, 0x97)
 i32 CRezItm::Write(i32 base, i32 off, u32 count, void* buf) {
     m_pos = -1;

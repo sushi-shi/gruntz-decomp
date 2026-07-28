@@ -265,10 +265,6 @@ void RegisterWormholeLogic() {
 // config (ReapplyConfig) when it has a live CTeleporter logic object.
 // __thiscall, no args, returns int (0).
 // @source: ILT 0x4039b3 -> CreateTeleporter + trace aux->m_logic/ecx (high)
-// @early-stop
-// shrink-wrapped-callee-save-push wall (inverse): body byte-identical, but retail
-// eager-pushes ebp in the prologue while cl shrink-wraps it to the loop preheader;
-// frame-layout decision, not source-steerable. ~93%. See docs/patterns/.
 RVA(0x000403b0, 0xa5)
 i32 CWormhole::SpawnPartners() {
     // The geo-call dereferences m_38 once (its own ecx); the gate block then

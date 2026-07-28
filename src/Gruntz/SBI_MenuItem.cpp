@@ -154,12 +154,6 @@ i32 CSBI_MenuItem::Render() {
 // host (m_2c); on the activate path resolve + commit the new tab, on the
 // highlight path play the GAME_TABHIGHLIGHT2 cue, then re-resolve the frame and
 // fire the slot-0x28 refresh notifier. 2-arg __thiscall (ret 8).
-// @early-stop
-// ~93% regalloc/CSE wall (HlClickGroup0 cue-play family): logic byte-correct. The
-// cue-play block + self-virtual slot-0x28 dispatch match; the residual is a
-// register-naming coin-flip (retail pins the `state` arg in edi and re-reads
-// m_2c each use; the recompile uses ebx + CSEs m_2c into edi) plus the
-// reloc-symbol-naming tail on the cue string/globals. Not steerable from C.
 RVA(0x000e8310, 0x112)
 i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     if (m_state == state || m_record == 0) {

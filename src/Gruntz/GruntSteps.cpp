@@ -1203,17 +1203,6 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     return 1;
 }
 
-// @early-stop
-// frame-slot wall, FIVE instructions: 1595 vs 1595, every opcode/operand equal,
-// tmp@0x10 + mgr@0x14 + both loop induction values packed exactly as retail. The
-// only residue is the GetCount temp - retail parks it in the third slot 0x18, cl
-// merges it into tmp@0x10 (both dead-range merges are legal). Six declaration
-// shapes measured: this one 99.98; `n` at function scope 99.94 (or frame 0x90 if
-// it cannot merge); `n` first in the tail block 99.94; buf-first and
-// row/col-in-a-block are neutral. No spelling reaches slot 0x18.
-// (The previous note here - "byte-exact, residual is ~35 unnamed call operands" -
-// was WRONG: the body was missing 58 instructions, the whole +0x468 cell walk and
-// both CPtrList GetCount writes. Re-derived from the target stream 2026-07-28.)
 // ---------------------------------------------------------------------------
 // CGrunt::Save(ar) @0x53f90 - serializes the whole grunt state into a custom
 // archive (each member -> ar->Write(&field, size) via vtable slot 0x30). Bails

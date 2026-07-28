@@ -107,13 +107,6 @@ i32 AnimWorkerObj::Consume(i32 amount) {
 // CString label member (+0xdc) constructs, then the derived body final-stamps the
 // wide-object vtable, `new`-allocates the +0x7c anim worker (AnimWorkerObj), and
 // publishes g_wwdObjIdCounter.
-// @early-stop
-// eh-member-state wall (59.7%): the real /GX ctor is byte-faithful store-for-store,
-// but MSVC5 declines to emit the retail member-construction EH-state machine
-// (state cookies around the CString ctor + the worker op-new). Not source-steerable:
-// `::operator new`+placement REGRESSED (57.2%), a declared worker dtor is neutral,
-// out-of-lining the worker ctor would mismatch retail's inline stores.
-// docs/patterns/eh-state-numbering-base.md + throwing-operator-new-eh-state-transition.md.
 RVA(0x0015b370, 0x1d)
 i32 CGameObject::IsLoaded() {
     if (m_7c == 0) {
@@ -242,10 +235,6 @@ CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 f
 // ---------------------------------------------------------------------------
 // 0x15b790 - the complete destructor: a thin derived class (vtable 0x5f00a8) on top
 // of Mid, adding the m_18c block + the embedded WwdSubA command object at +0x1a0.
-// @early-stop
-// zero-register-pinning regalloc wall: three-level fold (A -> WwdSubA member ->
-// Mid -> wap-object base) + trylevel chain reproduced; residual is the callee-saved
-// const register coloring across the two worker passes.
 RVA(0x0015b760, 0x6)
 i32 CWwdGameObjectA::GetClassId() {
     return CLASSID_WWDOBJA;
@@ -328,12 +317,6 @@ i32 CWwdGameObject::IsLoaded() {
 // 0x15bd10 - the CResolveNode-derived variant (extra +0x1dc CObList, leading init
 // call 0x166810, trailing base CResolveNode dtor 0x429b): the 4-level polymorphic
 // chain CWwdGameObject : WwdBLevel2 : WwdBMid : WwdBResolve (family header).
-// @early-stop
-// eh-dtor multi-level trylevel wall: the real 4-level polymorphic chain reproduces
-// the four cl-emitted vptr restamps + the per-phase field re-clears + the CString/
-// WwdSub/CObList member folds; residual is the /GX trylevel numbering across the four
-// destruct phases (the same zero-register-pinning const coloring as the A/C/F
-// variants) - not source-steerable.
 RVA(0x0015bce0, 0x6)
 i32 CWwdGameObject::GetClassId() {
     return CLASSID_WWDOBJB;
@@ -365,9 +348,6 @@ i32 __stdcall RectsOverlap(CDDrawRect* a, CDDrawRect* b) {
 // 0x15c070 - the 0x159250-final variant: thin derived class (vtable 0x5effd0) on top
 // of Mid; clears the byte flag m_18c, re-runs the worker pass + groupX, then folds
 // Mid + wap-object base.
-// @early-stop
-// zero-register-pinning regalloc wall: two-level fold + byte-flag clear + double
-// worker pass + trylevel chain reproduced; residual is callee-saved const coloring.
 RVA(0x0015c000, 0x1d)
 i32 CWwdGameObjectC::IsLoaded() {
     if (m_7c == 0) {
@@ -921,10 +901,6 @@ i32 CAniAdvanceCursor::Find(CFileMemBase* ar, i32 type, i32 a3, void* self) {
 // and if m_srcRef is set, fetches the worker label (a returns-by-value CString
 // from the +0x2c sub-object's 0x152d30) and strcpy's it into the buffer; then
 // writes the whole 0x80-byte buffer. Returns 1.
-// @early-stop
-// 99.4% - the eight Writes + the buffer zero + the GetLabel call + the inline
-// strcpy all byte-exact; the only residual is the NRVO-temp addressing of the
-// returned CString. Entropy tail; no source lever.
 RVA(0x0015c970, 0xfe)
 i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
     if (ar == 0) {

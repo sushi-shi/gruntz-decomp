@@ -53,20 +53,6 @@ CMovingLogic::~CMovingLogic() {}
 
 // @confidence: high
 // @source: rtti-vptr
-// @early-stop
-// EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): body, all
-// field offsets, the double init and the CPtrList construction are byte-identical;
-// the only residue is this ctor's OWN __ehfuncinfo (the EH prologue pushes
-// funcinfo+0x0 vs retail funcinfo+0xe, and the CPtrList state id is `mov
-// [esp+0x18],1` vs retail 2). NOT resolvable by completing the projectile TU:
-// the funcinfo is per-function, and the out-of-line CMovingLogic ctor (0x13940)
-// cannot be emitted from this TU (the no-arg ctor must keep CMovingLogic() inline
-// to fold it; forcing the standalone drops this ctor 99%->19.7%; nothing here
-// calls CMovingLogic out-of-line). See the CAVEAT in the pattern doc. ~99% wall.
-// @interleaver CProjectile - own-class out-of-line COMDAT pooled in the 0x12xxx leaf-
-// ctor band (physical neighbours are other classes' COMDATs: CTimeBomb dtor @0x12a70,
-// CMotionState ctor @0x136d0, CMovingLogic ctor @0x13940). RVA-placement artifact of
-// the /INCREMENTAL COMDAT pool, not a conflation - kept in its own class file.
 RVA(0x000126e0, 0x1fc)
 CProjectile::CProjectile() {}
 

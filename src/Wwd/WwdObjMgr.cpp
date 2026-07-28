@@ -336,10 +336,6 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
 // ===========================================================================
 // CDDrawChildGroup::AttachSprite @0x159830 - initialise an already-allocated sprite
 // (arg0) against a named template. Returns 1 on success. __thiscall, ret 0x18.
-// @early-stop
-// 99.5% ebx<->edi coloring wall: byte-identical except retail colors this->edi /
-// flags->ebx while MSVC5 picks this->ebx / flags->edi (6 reg-only instr diffs); the
-// instruction selection (PMF init call, m_7c dispatch) is exact, not source-steerable.
 RVA(0x00159830, 0x92)
 i32 CDDrawChildGroup::AttachSprite(
     CWwdGameObject* obj,
@@ -443,14 +439,6 @@ CDDrawChildGroup::CreateNamed_159a10(int a1, int a2, int a3, int a4, const char*
 // 0x20000 are queued into two function-local static arrays; a post-pass then
 // (0x10000) unlinks+destroys them (unless flag 0x800 => destroy only) and
 // (0x20000) clears the flag and re-sorts them back into the list.
-// @early-stop
-// 93%. Residual is (1) unmatchable reloc NAMES: the function-local static CObArrays
-// + their guard are compiler-mangled locals that the delinker only knows as
-// DAT_006bf3a8/DAT_006bf390/DAT_006bf388, and the NAFXCW helpers (CObArray ctor/
-// SetSize/SetAtGrow/atexit) are unannotated - all reloc-masked (bytes match);
-// (2) a regalloc/encoding coin-flip in the two array-append count loads: retail
-// pins the count in EAX (compact `a1` moffs32 form), our cl uses ecx/edx (`8b 0d`),
-// a 1-byte-per-load size slip that cascades the tail offsets.
 RVA(0x00159a70, 0x200)
 void CDDrawChildGroup::TickKillCues(i32 advance) {
     static CObArray killQueue; // 0x6bf3a8  the 0x10000 (destroy) queue
@@ -604,10 +592,6 @@ void CDDrawChildGroup::ReinsertUnflagged(CWwdGameObject* obj) {
 // and bail; otherwise (when addToMaps) record it in both maps, then insert it
 // into the sorted list before the first node whose object has a larger sort key
 // and lacks flag 0x20000. The returned POSITION is cached in obj->+0x78.
-// @early-stop
-// 97.75% - code bytes match retail; residual is the reloc-typing scoring
-// artifact on the two CMapPtrToPtr::operator[] calls (REL32 vs cl's DIR32 vs a
-// differently-named symbol). docs/patterns + objdiff-reloc-scoring.
 RVA(0x00159e40, 0xaa)
 void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
     if (obj->m_flags & 0x800) {
@@ -968,10 +952,6 @@ CWwdGameObject* CDDrawChildGroup::FindByTypeProbe(i32 type) {
 // 0x15a860: scan the sorted list for the first object whose status probe (slot
 // +0x20) is 5, whose +0x04 key matches `type`, and whose worker's +0x10 geometry
 // matches the requested key's +0x10. Returns 0 if none.
-// @early-stop
-// 86% - logic/offsets/CFG byte-exact; the residual is the loop-tail epilogue:
-// retail bottom-tests `jne looptop` and falls through to a SEPARATE `xor eax,eax`
-// return-0, our cl shares one return-0. The documented loop-epilogue-merge wall.
 RVA(0x0015a860, 0x57)
 CWwdGameObject* CDDrawChildGroup::FindByWorker(i32 type, void* key) {
     POSITION pos = m_list.GetHeadPosition();
@@ -1028,8 +1008,6 @@ void* CDDrawChildGroup::Find(i32 id, const char* key) {
 
 // ---------------------------------------------------------------------------
 // 0x15a940: the +0xe8-field twin of FindByWorker.
-// @early-stop
-// 85% - same loop-epilogue-merge wall as FindByWorker.
 RVA(0x0015a940, 0x52)
 CWwdGameObject* CDDrawChildGroup::FindByField(i32 type, void* key) {
     POSITION pos = m_list.GetHeadPosition();
@@ -1105,10 +1083,6 @@ i32 CDDrawChildGroup::CountByKind(i32 kind) {
 // ---------------------------------------------------------------------------
 // 0x15aa90: walk the list; for every object lacking flag 0x200, drop it from
 // the list + both maps and destroy it.
-// @early-stop
-// 95.6% - list-walk twin-copy regalloc wall: retail materializes the cur node
-// in two registers (eax+ecx); our cl keeps cur in one reg. Logic/CFG/offsets
-// exact. docs/patterns/linked-list-walk-node-eax-rotation.md.
 RVA(0x0015aa90, 0x5d)
 void CDDrawChildGroup::PruneList() {
     POSITION pos = m_list.GetHeadPosition();
@@ -1143,8 +1117,6 @@ i32 CDDrawChildGroup::SumWeighted() {
     while (node != 0) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
-        // @early-stop residue: retail sums (0x5c,0x74,0x60,0x4); every source order
-        // (incl. stepwise +=) canonicalizes to (0x4,0x60,0x74,0x5c) - DAG-invariant.
         sum += i * (obj->m_screenX + obj->m_sortKey + obj->m_screenY + obj->m_id);
         ++i;
     }
@@ -1349,11 +1321,6 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
 // ---------------------------------------------------------------------------
 // 0x15b020: for each active m_map48 object, write its key to the archive then run
 // its +0x3c virtual; bail to 0 on a 0 result, else 1. Returns 0 if ar==0.
-// @early-stop
-// 90.1% - the per-element block is byte-exact; the residual is the loop-tail
-// structure: retail emits a bottom-tested loop with two distinct `return 1`
-// epilogues, our cl hoists the body and merges the epilogue. An optimizer
-// CFG-shape choice; logic exact.
 RVA(0x0015b020, 0xc0)
 i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, i32 a2) {
     if (ar == 0) {

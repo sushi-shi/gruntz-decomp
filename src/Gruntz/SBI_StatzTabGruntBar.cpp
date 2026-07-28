@@ -1,4 +1,4 @@
-#define SBI_DTOR_CHAIN              // enable the inline base-dtor body (see StatusBarItem.h)
+#define SBI_DTOR_CHAIN // enable the inline base-dtor body (see StatusBarItem.h)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <rva.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
@@ -42,23 +42,6 @@ i32 CSBI_StatzTabGruntBar::Refresh(i32 arg) {
 // glyph, and a self-bumping anim timer - and for each, when it differs from the
 // tracked copy, resolves a glyph through the gated glyph map and flags dirty. Returns
 // the dirty flag (1 if any value changed, else 0).
-// @early-stop
-// ~91.7% (regalloc/stack-slot wall, docs/patterns/zero-register-pinning.md +
-// topic:regalloc): the whole control flow, the five derive blocks, the health bands,
-// the 64-bit timer-window compare and the five compare-and-latch glyph blocks are all
-// byte-correct, BUT retail spills the unit-table base to a stack home ([esp+0x20],
-// `subl $0x14`) and pins m_unitCol/the -1/0 inits across ebp/ebx/edx in the opposite
-// rotation; my recompile keeps the base in ebp (`subl $0x10`) and swaps the
-// override/select stack slots ([0x18]<->[0x1c]). No init order / local-decl order
-// flips the slot numbering or the base spill (the table is used twice so the compiler
-// is free either way). Plus the reloc-masked SelectionListFind rel32 + g_gameReg/
-// g_frameTime DIR32. Logic complete; deferred to the final sweep (whole-hierarchy model).
-// 0xea4e0: draw the tab (slot +0x14). Blit each column's background glyph (status/
-// ability/override/select at x-offsets 0/0x14/0x28/0x3c) and, overlaid on it, the
-// resolved value glyph - all onto the world's active back pair
-// context) at the item's screen anchor + each glyph's own draw anchor. The four
-// background glyphs + select-value are gated by m_28 (a countdown); the timer glyph
-// always draws. Returns 1.
 RVA(0x000ea4e0, 0x172)
 i32 CSBI_StatzTabGruntBar::Render() {
     CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;

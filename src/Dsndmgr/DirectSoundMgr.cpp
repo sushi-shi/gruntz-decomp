@@ -940,10 +940,6 @@ RVA_COMPGEN(0x001364c0, 0x1e, ??_GSoundDevice@@UAEPAXI@Z)
 
 // ---------------------------------------------------------------------------
 // ~SoundDevice (/GX EH frame): cl resets vptr, then if init runs the teardown.
-// @early-stop
-// eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md):
-// body byte-exact, but retail's /GX frame comes from the fully-constructed base
-// subobject; MSVC5's dtor is frameless. Same wall as ~DirectSoundMgr.
 RVA(0x00136500, 0x43)
 SoundDevice::~SoundDevice() {
     // cl auto-resets the vptr to ??_7SoundDevice@@6B@ (0x5ef6c4).
@@ -1346,12 +1342,6 @@ void SoundDevice::StopAll() {
 // PurgeVoiceList @0x136e20 - per-tick voice purge. Gated on init + m_createFlag time
 // window; walk m_voiceList (DSoundVoice nodes) and for each whose Tick (slot 0) reports
 // done (0), unlink + `delete (PureSoundElem*)e` (pure-base teardown). time==-1 -> clock.
-// @early-stop
-// select-zero-mask-dest-register wall (docs/patterns/select-zero-mask-dest-register.md,
-// SAME as DSoundList::RemoveMatching @0x136f60): byte-exact except the `e ? &link : 0`
-// mask (neg/sbb/and) lands in a different register than retail.
-// ::timeGetTime = genuine game global fn-ptr (retail _g_pTimeGetTime @ 0x6c4650), NOT
-// the WINMM import; call ds:[0x6c4650] indirection - do NOT swap for timeGetTime.
 RVA(0x00136e20, 0xa8)
 i32 SoundDevice::PurgeVoiceList(i32 time) {
     if (m_initialized == 0) {

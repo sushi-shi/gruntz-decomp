@@ -662,8 +662,6 @@ CPoolItemAB8::~CPoolItemAB8() {}
 // with 1 arg; AddItemA + cache item->m_bitDepth into host->fieldUnknown538 on success.
 // /GX. ret 0x4.
 // ---------------------------------------------------------------------------
-// @early-stop
-// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x00142aa0, 0xca)
 CDDSurface* CDDrawPtrCollections::Createab8_1(const DDSURFACEDESC* desc) {
     CPoolItemAB8* item = new CPoolItemAB8;
@@ -835,12 +833,6 @@ CDDPalette* CDDrawPtrCollections::MakeB3(void* a, u32 b, i32 c) {
 // built from it (MakeB(buf, 0)).  Any failure unwinds the CFile + returns 0.  The
 // second arg slot is reused as the (always-0) MakeB tag.  /GX EH frame.  ret 0x8.
 // ---------------------------------------------------------------------------
-// @early-stop
-// ~98%: logic + offsets + CFG + the CFile open/seek/read shapes are byte-faithful.
-// Residue is (a) the /GX funcinfo state index push (retail `push 0xb` vs the per-TU
-// compiler-generated funcinfo @+0 - the global __ehfuncinfo numbering, not reproducible
-// from one TU; docs/patterns/eh-state-numbering-base.md) and (b) MSVC folds the
-// reloaded-from-param-slot MakeB tag to an immediate 0 where retail reloads it. Deferred.
 RVA(0x00143150, 0xe9)
 CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
     CFile file;
@@ -896,12 +888,6 @@ void CDDrawPtrCollections::SetupCaps() {
 
 // 0x143390 - copy a 0x6c-byte enumerated display-mode record and append it to the
 // global mode array. __stdcall (arg1 unused). Returns 1.
-// @early-stop
-// regalloc/scheduling wall (permuter-confirmed no-improvement, operand-order search
-// exhausted): logic byte-faithful (operator new(0x6c) + the 0x1b-dword rep-movs copy +
-// g_modeArray.SetAtGrow(m_nSize, rec)). Residual is (a) MSVC scheduling the operator-new
-// `add esp,4` cleanup after `mov esi,[mode]` vs retail after `mov edi,eax`, and (b) the
-// m_nSize arg materialized in eax vs retail's ecx - both pure regalloc, not source-steerable.
 RVA(0x00143390, 0x35)
 i32 __stdcall AddDisplayMode(void* mode, i32 a1) {
     void* rec = operator new(0x6c);
@@ -1205,12 +1191,6 @@ i32 CDDrawPtrCollections::SetDisplayPaletteFrom(CDDPalette* pal, i32 tag) {
 // RGB into the 4-byte display palette entry (4th byte zeroed), then flag present +
 // latch the tag (z). Returns success (1). __thiscall, 2 args (ret 0x8). The palette-
 // install sibling of SetDisplayPaletteFrom/Direct; LoadPaletteMake950 tail-returns it.
-// @early-stop
-// ~92% (was 78%: the RGB reads are `*src++` (mov bl,[eax]; inc eax), not fixed
-// src[0..2]+src+=3 - now byte-exact). Residual: retail biases the dst cursor +1
-// (lea edx,[edi+0x53d], stores at edx-1/-4/-3/-2) and schedules the b2 store before
-// the alpha store; cl starts edx at +0 and reorders the last two stores. Pure MSVC
-// addressing/scheduling coin-flip. docs/patterns/zero-register-pinning.md.
 RVA(0x00143950, 0x56)
 CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
     if (buf == 0) {

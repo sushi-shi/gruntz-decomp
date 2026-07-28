@@ -103,9 +103,6 @@ i32 CBoomerang::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i3
 // trajectory fields (launch pos, dir, origin, phase, launched flag) through the
 // archive stream (mode 4 = Write @+0x30, mode 7 = Read @+0x2c), then chain the base
 // CProjectile serialize and booleanize its result.
-// @early-stop
-// ~97%: logic byte-correct; residue is a minor callee-saved register-coloring
-// difference in the field round-trip (same regalloc family as CTimeBomb::SerializeMove).
 RVA(0x000e15d0, 0x155)
 i32 CBoomerang::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     if (g_gameReg->m_world == 0) {

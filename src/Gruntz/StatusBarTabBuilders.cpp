@@ -582,12 +582,6 @@ i32 CSBI_SideTab::BuildHandle() {
 
 // vslot 5: if the draw gate is set, blit the two side frames through the game
 // manager's active drawable surface. Returns 1.
-// @early-stop
-// ~98.1% reloc-residual plateau: CODE BYTES byte-identical to retail (verified
-// llvm-objdump base vs target). Raised from 87.8% by unifying the CSideTabFrame
-// view to CImage (the two RenderFrame rel32s now co-name) and fixing the 4th
-// RenderFrame arg to the literal 0 (was `z` - passing the arg forced an extra
-// `push ebx` to stage it). Residual is only the g_gameReg DIR32 name artifact.
 RVA(0x000e99c0, 0x4c)
 i32 CSBI_SideTab::Render() {
     if (m_drawGate) {

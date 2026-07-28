@@ -203,13 +203,6 @@ namespace m4 {
 // every item "Bad Level File". A free __cdecl(HWND) helper the picker DlgProc's
 // LBN_SELCHANGE notification calls.
 // ===========================================================================
-// @early-stop
-// regalloc/scheduling wall (~94%): the IsValidWwd this-chain + method call and every
-// cached-ptr USER32 call now match retail's instruction selection (llvm-objdump -dr).
-// Residual is a symmetric esi<->edi coloring swap (retail edi=hDlg / esi=SetDlgItemTextA
-// ptr; cl picks esi=hDlg / edi=ptr) plus the ptr load being hoisted to the `setText`
-// local vs retail's lazy per-branch CSE. Binary-correct shape kept over the coincidentally
-// higher-% free-call+import form the stub carried (correctness-not-artifacts).
 RVA(0x0003b1a0, 0x118)
 i32 FillLevelInfoDialog(HWND hDlg) {
     if (!::GetDlgItem(hDlg, 0x3fc)) {

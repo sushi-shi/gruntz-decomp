@@ -253,11 +253,6 @@ i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
 // (1). Otherwise, when the held IDirectDrawSurface is present and not lost
 // (IsLost, slot 24 @+0x60, returns DD_OK), report OK; else Restore it (slot 27
 // @+0x6c) and report whether the restore succeeded. __thiscall, no args.
-// @early-stop
-// regalloc coin-flip (98.67%): every code byte matches retail (incl. the setcc
-// boolean) EXCEPT the register the m_surface->m_8 re-read lands in (retail eax / ours
-// edx) + the carried scratch reg in the setcc tail (ecx vs edx). Same values, same
-// stores; not source-steerable. docs/patterns/zero-register-pinning.md.
 RVA(0x00163ee0, 0x19)
 i32 CDDrawSurfacePair::ResolveImage_163ee0(CParseSource* src) {
     // @identity-TODO MakeImageKey does strrchr(name, '.') on this, so it wants a real
@@ -928,13 +923,6 @@ i32 CAniElement::Configure(void* ctx, void* entry, i32 flags) {
 // on failure return 0.  Otherwise read the whole file into a RezAlloc'd buffer,
 // hand it to Build(ctx, buf, 0), free the buffer, and return the build
 // result (the reader local is destroyed on every exit).  __thiscall, ret 0xc.
-// @early-stop
-// 97.29% — the whole body is byte-faithful (Open/GetLength/RezAlloc/Read/Build/
-// RezFree + the three reader-dtor cleanup tails + the /GX frame).  Residual is the
-// EH scope-table cookie (retail push 0x8 / Unwind@005e2410 vs our push 0x0 / $L
-// funclet) + the reloc-masked names (retail's reader is CFile with a virtual
-// dtor; modeling that is matching-neutral, tested).  docs/patterns/gx-scoped-local-
-// eh-frame-size.md.
 RVA(0x00165620, 0x101)
 i32 CAniElement::LoadFile(void* ctx, void* filename, i32 a3) {
     CFile fr;
@@ -1087,9 +1075,6 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CParseSource* a1, i32 a2, i32 a3) {
 }
 
 // 0x165b90: map teardown twin of DestroyAll (0x165810). /GX EH frame.
-// @early-stop
-// EH-frame register-schedule wall (~82%): logic byte-faithful; the residual is the
-// TU-context EH-state/val-slot schedule + the reloc-masked EH-state push.
 RVA(0x00165b90, 0xa9)
 void CDDrawWorkerMapSmall::ResetSlots() {
     CObject* val = 0;

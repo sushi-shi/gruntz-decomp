@@ -774,10 +774,6 @@ i32 CMoviePlayer::CheckMode16() {
 
 // CMoviePlayer::RemoveAt (0x17d600) - drop the 1-based idx-th CPageRec: free its three
 // owned buffers, shift the tail down one slot, decrement the count, free the record.
-// @early-stop
-// constant-materialization wall (~86%): logic + layout byte-correct, but retail hoists
-// the null `0` into edi (callee-saved) and reuses it for all 7 pointer checks/stores,
-// forcing idx into esi; MSVC5 here emits `test`/immediate-0 and keeps idx in edi.
 RVA(0x0017d600, 0xad)
 i32 CMoviePlayer::RemoveAt(i32 idx) {
     if (!m_initialized) {

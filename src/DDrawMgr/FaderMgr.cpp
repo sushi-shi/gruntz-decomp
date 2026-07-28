@@ -22,12 +22,6 @@ CFaderMgr::CFaderMgr() {
 // 0x17d910 - ~CFaderMgr: empty the array (FreeAll), then the member array
 // subobject teardown runs implicitly. /GX EH frame (from the member dtor).
 // ===========================================================================
-// @early-stop
-// EH inline-member-stamp wall (docs/patterns/eh-dtor-inline-member-vtable-stamp-
-// thisadjust.md): body byte-identical; residue is the inlined ~CFaderArray's
-// this-adjust register-base + the /GX state value ($0x8 vs $0x0, state 1 vs -1).
-// A clean exit needs an external ~CFaderArray (no separate RVA exists for it), not
-// a manual vtable stamp. ~83%.
 RVA(0x0017d910, 0x65)
 CFaderMgr::~CFaderMgr() {
     FreeAll();

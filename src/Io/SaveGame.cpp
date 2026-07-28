@@ -132,11 +132,7 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             if (g_previewMgr->SetHandles(g_gameReg->m_owner->m_hInstance, hDlg, 0) == 0) {
                 break;
             }
-            BuildLevelTitleString(
-                hDlg,
-                g_gameReg->m_saveSink,
-                g_slotState
-            );
+            BuildLevelTitleString(hDlg, g_gameReg->m_saveSink, g_slotState);
             return 1;
         }
         case WM_COMMAND: {
@@ -167,11 +163,7 @@ i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
                 EndDialog(hDlg, reinterpret_cast<INT_PTR>(g_slotState));
                 return 1;
             }
-            winapi_0e4850_SetDlgItemTextA(
-                hDlg,
-                g_gameReg->m_saveSink,
-                g_slotState
-            );
+            winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, g_slotState);
             return 1;
         case 0x111:
             if (wParam == 2) {
@@ -199,11 +191,7 @@ i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 EndDialog(hDlg, reinterpret_cast<INT_PTR>(g_slotState));
                 return 1;
             }
-            winapi_0e4850_SetDlgItemTextA(
-                hDlg,
-                g_gameReg->m_saveSink,
-                g_slotState
-            );
+            winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, g_slotState);
             return 1;
         case 0x111:
             if (wParam == 2) {
@@ -749,9 +737,6 @@ i32 CSaveGame::FillSlot2(SaveSlot* dst, i32 name, void* src) {
 // changed" notice) if it no longer matches the slot's stored checksum (+0x10),
 // else succeed. Same name-fallback (g_emptyString) and BuildLevelRezPath shape
 // as Register.
-// @early-stop
-// EXACT: the by-value CString arg is constructed IN the call (temp into the
-// pushed slot, callee-destroyed) - no caller EH frame, matching retail.
 RVA(0x000e52c0, 0x99)
 i32 CSaveGame::VerifySlot(SaveSlot* slot) {
     if (slot == 0) {
@@ -782,8 +767,6 @@ i32 CSaveGame::VerifySlot(SaveSlot* slot) {
 // CSaveGame::Register  (0x000e5390)
 // Build a CString from the slot's name (or the empty string) and hand the slot's
 // level id / flags to g_gameReg->BuildLevelRezPath().
-// @early-stop
-// EXACT: same by-value-temp form as VerifySlot above.
 RVA(0x000e5390, 0x59)
 i32 CSaveGame::Register(SaveSlot* slot) {
     if (slot == 0) {

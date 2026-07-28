@@ -364,11 +364,6 @@ i32 CTimer::HandleEvent(CFileMemBase* ar, i32 kind, i32 a3, i32 a4) {
 // CActionOptionsMenuBar::Serialize idiom (vtable Transfer + inlined memset/strcpy
 // + per-frame name reverse-lookup).
 // ---------------------------------------------------------------------------
-// @early-stop
-// stack-packing wall (~96%, same family as CActionOptionsMenuBar::Serialize):
-// retail reuses the dead mgr spill slot for the per-block `zero` int; our cl
-// gives `zero` its own slot, shifting every frame-size immediate by 4. Body
-// (vtable Transfer dispatch + inlined memset/strcpy + name lookup) exact.
 RVA(0x0009c2e0, 0x2b6)
 i32 CTimer::Serialize(CFileMemBase* ar) {
     if (ar == 0) {

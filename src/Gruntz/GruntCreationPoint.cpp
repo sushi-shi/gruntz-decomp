@@ -15,7 +15,6 @@
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 #include <Gruntz/Play.h>          // ChannelSlots_FindFree (ex .cpp extern)
 
-
 VTBL(CGruntCreationPoint, 0x001e81d4);
 
 // CGruntCreationPoint::~CGruntCreationPoint @0x010730 - the leaf adds no
@@ -30,7 +29,6 @@ VTBL(CGruntCreationPoint, 0x001e81d4);
 // in the vtable-emitting TU forces the implicit ??1 COMDAT; pinned by name.
 RVA_COMPGEN(0x00010700, 0x1e, ??_GCGruntCreationPoint@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010730, 0x44, ??1CGruntCreationPoint@@UAE@XZ)
-
 
 // CGruntCreationPoint::CGruntCreationPoint @0x3e520 - fold the shared
 // CUserLogic(obj) init, flag the sub-object (+0x08 bit 1 via m_74==5 init), bind
@@ -81,7 +79,6 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
     m_objAux->m_1c = ActFindId("A");
 }
 
-
 // CActRegPool<CGruntCreationPoint>::s_table (0x00244700): CActReg - no provable static init (the type has no
 // default ctor / is runtime-Init'd), so the datum is named by symbol.
 template<> DATA(0x00244700)
@@ -92,14 +89,6 @@ CActReg CActRegPool<CGruntCreationPoint>::s_table(2000, 2010);
 // re-resolve the selected sprite from g_gameReg's ref-index array (the SAME selector
 // as the ctor: direct when m_134==1, else the +0x158 row (stride 71), else a free
 // channel slot) and re-seed the bound object's draw trio.
-// @early-stop
-// GetSel inline-vs-call + regalloc wall (~72%): the body is byte-faithful (the
-// SerializeMove + the +0x34 Chain + the m_134-first / ref-array (stride 71) / free-
-// channel selector + the sel==0 fallback + the draw-trio store all match retail).
-// Residual: retail CALLS the out-of-line CSpriteRefTable::GetSel (0xe23c0) here while
-// MSVC inlines the header-inline copy into this small fn (an inlining-heuristic
-// difference, not source-steerable), and it pins `this` in edi vs retail's esi. The
-// ctor @0x3e520 shares the same wall (~80%).
 RVA(0x0003e7a0, 0xd7)
 i32 CGruntCreationPoint::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -167,7 +156,8 @@ void CGruntCreationPoint::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    *(CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(id)) = static_cast<i32 (CUserLogic::*)()>(&CGruntCreationPoint::AdvanceAnim);
+    *(CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(id)) =
+        static_cast<i32 (CUserLogic::*)()>(&CGruntCreationPoint::AdvanceAnim);
 }
 
 RVA(0x0003ecc0, 0x17)

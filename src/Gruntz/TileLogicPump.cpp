@@ -584,10 +584,6 @@ void CBrickz::RegisterActs() {
 // CCheckpointTrigger::CCheckpointTrigger(CGameObject*) @0x10ee20 - the 1-arg leaf ctor:
 // the standard CUserLogic(obj) init plus the checkpoint tail (leaf vftable stamp, "A"
 // cache, two logic bits, z-key recompute, then capture the 15-dword checkpoint state).
-// @early-stop
-// EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): the body is
-// byte-faithful; the residue is this ctor's own __ehfuncinfo state numbering + the
-// zero-register-pinning callee-saved choice (the shared CUserLogic-init wall). Deferred.
 RVA(0x0010ede0, 0x3)
 i32 CBrickz::Trigger() {
     return 0;

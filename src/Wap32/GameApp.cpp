@@ -463,11 +463,6 @@ void CGameMgr::InitializeTimeGlobal() {
 // busy-wait PerFrameTick calls: sample timeGetTime through the game-owned fn-ptr
 // and spin until `now` passes `start + ms` (unsigned, overflow-guarded). `this`
 // is unused (ecx ignored); the fn-ptr is cached in a callee-save.
-// @early-stop
-// ~83.9% regalloc wall: body byte-exact, but retail pins the cached fn-ptr in edi
-// and the deadline in esi (pushing both callee-saves upfront), while MSVC5 swaps
-// them (fn-ptr in esi, deadline in edi, edi shrink-wrapped). No source spelling
-// flips the esi/edi pair; logic complete.
 RVA(0x0013dec0, 0x20)
 void CGameMgr::SpinWaitUntil(i32 ms) {
     DWORD(WINAPI * fn)(void) = ::timeGetTime;
@@ -505,11 +500,6 @@ i32 CGameMgr::TrySetFrameRate(i32 fps) {
 // stack args. Reads the OS key state through the engine's cached GetAsyncKeyState
 // fn-ptr (::GetAsyncKeyState @0x6c4500).
 // ORPHAN: no .text caller (a free __cdecl busy-wait); no owning class.
-// @early-stop
-// regalloc-swap wall (~97%): byte-identical except retail pins `vk` in esi and the
-// cached GetAsyncKeyState ptr in edi, while our /O2 picks the reverse (ptr->esi,
-// vk->edi). Only the modrm reg fields differ; tried direct global calls (77%, no
-// caching) and an `int k = vk` copy (no change). Pure register assignment.
 RVA(0x0013df30, 0xaf)
 void WaitKeyEdge(int vk, int timeoutMs) {
     if (timeoutMs == 0) {

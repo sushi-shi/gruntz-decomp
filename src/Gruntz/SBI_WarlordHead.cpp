@@ -18,16 +18,6 @@ VTBL(CSBI_WarlordHead, 0x001ead24); // vtable_names -> code (RTTI game class)
 // (the four rect ints fold into one by-value aggregate so MSVC stages the 0x10 temp
 // on the caller stack exactly as retail does); on success latch the initial state
 // (SetState(0)) and return 1, else return the base's result (0).
-// @early-stop
-// ~46% (thin-forwarding-wrapper regalloc wall, docs/patterns/serialize-wrapper-reg-
-// forward.md): the call sequence, the 0x10 temp build, the SetState(0) tail and the
-// `test eax;jne;ret 0x2c` control flow are all byte-correct, BUT retail forwards the
-// 11 args using only `push esi` (caller-saved eax/ecx/edx scratch to copy a9..a11
-// stack->stack), while MSVC5 here spills two extra callee-saved regs (`push ebx`/
-// `push edi`) to stage the trailing args across the by-value-aggregate stores. No
-// struct-construction spelling (named local, inline ctor temp, field order) flips
-// the reg choice. Plus the reloc-masked BaseSetupImage/SetState rel32. Deferred to
-// the final sweep (whole-hierarchy model).
 RVA(0x000eb6b0, 0x67)
 i32 CSBI_WarlordHead::SetupImage(
     CStatusBarMgr* owner,
@@ -129,12 +119,7 @@ i32 CSBI_WarlordHead::Render() {
                     : static_cast<CImage*>(cfg->m_items.GetAt(4));
         }
         if (f) {
-            f->RenderFrame(
-                target,
-                m_rect14.left + f->m_anchorX,
-                m_rect14.top + f->m_anchorY,
-                0
-            );
+            f->RenderFrame(target, m_rect14.left + f->m_anchorX, m_rect14.top + f->m_anchorY, 0);
         }
 
         cfg = m_34;
@@ -144,12 +129,7 @@ i32 CSBI_WarlordHead::Render() {
                         : static_cast<CImage*>(cfg->m_items.GetAt(idx));
         m_frame = g;
         if (g) {
-            g->RenderFrame(
-                target,
-                m_rect14.left + g->m_anchorX,
-                m_rect14.top + g->m_anchorY,
-                0
-            );
+            g->RenderFrame(target, m_rect14.left + g->m_anchorX, m_rect14.top + g->m_anchorY, 0);
         }
     }
     return 1;
@@ -161,10 +141,6 @@ i32 CSBI_WarlordHead::Render() {
 // other mode just chains. Bails early when the stream is null or the active game
 // manager (g_gameReg->m_world) is gone. Re-homed from src/Stub/BoundaryLowerMethods.cpp
 // (was the Ceb970 placeholder view); vtable slot 1 (thunk 0x3cd8) proves the owner.
-// @early-stop
-// block-layout wall: the mode==4 Write branch lands inline (jne-skip) but retail
-// floats it to the tail (forward je). The m_3c transfer, the base-chain call and the
-// neg/sbb/neg bool are byte-faithful.
 RVA(0x000eb970, 0x72)
 i32 CSBI_WarlordHead::SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
@@ -174,12 +150,12 @@ i32 CSBI_WarlordHead::SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4)
         return 0;
     }
     switch (mode) {
-    case 7:
-        s->Read(&m_direction, 4);
-        break;
-    case 4:
-        s->Write(&m_direction, 4);
-        break;
+        case 7:
+            s->Read(&m_direction, 4);
+            break;
+        case 4:
+            s->Write(&m_direction, 4);
+            break;
     }
     return CSBI_ImageSet::SerializeFields(s, mode, a3, a4) != 0; // qualified = direct base call
 }

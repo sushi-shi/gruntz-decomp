@@ -788,12 +788,6 @@ CDDrawWorkerHost* CGameLevel::FindPlaneByName(const char* name) {
 // (around the main index) and dispatch ctx's Hook. `visitor` (1st param) is the
 // render visitor every Sync/Draw/Hook receives; `ctx` (2nd param) is the chain.
 //
-// @early-stop
-// register-scheduling wall (~92%): the inner draw-gate branch polarity now matches
-// retail (`if (depth < cap) Draw; else block` -> jge block, Draw fall-through). Residue
-// is the chain cursor's saved-reg shuffle - retail keeps a 2nd copy of `cur` in edx and
-// reloads `cap` from spill each iteration; cl keeps cap live in edx and restores via the
-// surviving eax. Logic + offsets + CFG exact; allocator coin-flip. Deferred to the final sweep.
 RVA(0x0015dc90, 0x141)
 void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
     // The engine lea's the +0x10 list record's ADDRESS and null-checks it (always
@@ -1713,11 +1707,6 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
 // (== kTileSoft). The inlined PROBE_TILE shape; the result==1 test is shared by
 // both the tile-hit and empty-tile paths (retail merges the sete). ret 8.
 //
-// @early-stop
-// ~94.9%: logic + offsets + CFG + the inlined PROBE_TILE clamp/shift/dispatch are
-// byte-faithful; residue is the clamp branch's free-register assignment - the same
-// PROBE_TILE-shape regalloc entropy documented on ProbeColumn/AxisProbe. Not
-// source-steerable; deferred to the final sweep.
 RVA(0x00160450, 0xd6)
 i32 CGameLevel::ProbeHeadSoft(CGameObject* t, i32 dy) {
     i32 px = t->m_screenX;
@@ -1855,11 +1844,6 @@ i32 __stdcall WwdFile_CompressMainBlock(
 // (m_screenX + dx, m_extent.bottom + m_screenY) and return the image set's GetCollisionAt
 // kind raw (0 for an empty/clear tile). The inlined PROBE_TILE shape. ret 8.
 //
-// @early-stop
-// 92.56% - identical shape+% to its twin ProbeColumn (0x160980, extentT vs extentB):
-// logic/offsets/CFG/PROBE_TILE clamp-shift-dispatch byte-faithful, residue is the
-// clamp branch's free-register coloring (this/o kept in esi vs retail reusing the
-// arg1 scratch edx). Same wall as ProbeColumn; deferred to the final sweep.
 RVA(0x001608c0, 0xc0)
 i32 CGameLevel::ProbeFeetKind(CGameObject* t, i32 dx) {
     i32 px = t->m_screenX + dx;
@@ -1875,10 +1859,6 @@ i32 CGameLevel::ProbeFeetKind(CGameObject* t, i32 dx) {
 // returning the image set's GetCollisionAt (+0x20) dispatch (0 for an
 // empty/clear tile). The inlined AxisProbe shape (PROBE_TILE). ret 8.
 //
-// @early-stop
-// regalloc wall (~93%): logic + offsets + CFG + the inlined PROBE_TILE clamp/shift/
-// dispatch are byte-faithful; residue is the clamp branch's spill/register assignment
-// (the same PROBE_TILE-shape entropy as SpanCheck/AxisProbe). Deferred to the final sweep.
 RVA(0x00160980, 0xc0)
 i32 CGameLevel::ProbeColumn(CGameObject* t, i32 dx) {
     i32 px = t->m_screenX + dx;

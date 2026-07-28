@@ -279,10 +279,6 @@ void CTriggerMgr::ResetAll() {
 
 // 0x784d0: RecordListHas(x, y) - scan the record list (+0x244) for a node whose
 // payload (x,y) matches; ret 1 on hit, 0 otherwise.
-// @early-stop
-// loop-epilogue wall: retail loops with `jne top` and reuses the null next as the
-// eax=0 return (fall-through); our cl emits `je end; jmp top` + a separate
-// `xor eax,eax`. docs/patterns/identical-return-epilogue-tailmerge.md
 RVA(0x000784d0, 0x3a)
 i32 CTriggerMgr::RecordListHas(i32 x, i32 y) {
     POSITION pos = m_recList.GetHeadPosition();
@@ -2827,10 +2823,6 @@ i32 CTriggerMgr::EnqueueGroupCells() {
 // auto-emits the reverse-order member teardown - the 10 selection lists (+0x2d0, EH state 2),
 // the +0x260 byte array (state 1), the +0x240 record list (state 0) and the embedded base
 // list (state -1) - from the real MFC CPtrList / CByteArray members. destructors. (__thiscall.)
-// @early-stop
-// /GX member-array dtor wall: the compiler-emitted member destructors + vector-dtor helper
-// number their __ehfuncinfo states differently than retail; the teardown sequence is faithful.
-// topic:wall topic:eh.
 RVA(0x00085c50, 0x83)
 CTriggerMgr::~CTriggerMgr() {
     Cleanup();

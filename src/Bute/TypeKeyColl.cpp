@@ -363,20 +363,6 @@ CUserBaseLink::CUserBaseLink() {}
 // set bit `idx`; on a sizing failure record the caller return address and fire
 // the error sink. The destructible polymorphic base forces the /GX frame.
 // ===========================================================================
-// @early-stop
-// /GX EH-epilogue + RMW-fusion wall (topic:eh topic:regalloc; see docs/patterns/
-// identical-return-epilogue-tailmerge.md). Logic, recovered types (zErrHandling/
-// zBitVec/CVariantSlot), the const-char* base ctor, the unsigned size compares,
-// the SBO bit-buffer select and the inverted branch layout (failure inline /
-// success out-of-line) are all byte-faithful, but two MSVC5 /O2 choices diverge
-// with no source lever:
-//   (a) retail SHARES one /GX teardown epilogue (the failure path `jmp`s to it,
-//       success falls through); our cl pops edi early in the success bitset (idx
-//       dies after the address calc) so the two exit epilogues are NOT identical
-//       and cl duplicates them instead of merging.
-//   (b) the bit set is `or [eax],edx` (RMW) in retail; cl emits load/or/store,
-//       +3 bytes that shift the success tail.
-// ~77.8%, logic complete; deferred to the final sweep.
 RVA(0x0016d790, 0xb1)
 zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
     u32 n = static_cast<u32>(sizehint);

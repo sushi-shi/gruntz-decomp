@@ -225,15 +225,6 @@ i32 CMultiStartDlg::FlashCtrlD() {
 // array's per-slot color index (+0x158, stride 0x238). Disabled child -> light gray;
 // then chains the base CWnd owner-draw default. /GX EH frame unwinds the CDC/CBrush.
 //
-// @early-stop
-// jump-table-data split artifact (~71.5%; docs/patterns/jumptable-data-overlap.md) -
-// the exact same wall as the CBattlezDlg twin (0x165a0): prologue, /GX EH frame (0x18),
-// dispatch, the four inlined palette switches, and the whole CDC/CBrush/FillRect/Detach
-// + base tail are byte-exact. The residual is the delinker splitting the 5 INLINE .text
-// jump tables (MSVC5 emits them at 0x491..0x5c0) into separate switchdataD_* data
-// symbols (Ghidra boundary 0x491), so objdiff scores our 0x5c0 base against a 0x491
-// target. Not source-steerable (this shape momentarily scored 98.7% when the delinker
-// carved the full 0x5c0).
 RVA(0x000c3100, 0x5c0)
 void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     COLORREF color;

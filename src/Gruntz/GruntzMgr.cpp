@@ -1807,10 +1807,6 @@ void CGruntzMgr::StopBank0IfActive() {
 // -------------------------------------------------------------------------
 // CGruntzMgr::SetAssetRoot (0x092060; ret 4). Copy `path` into the global asset-root
 // CString and post WM_COMMAND 0x80ab to the game window; ret 1 (0 when path is null).
-// @early-stop
-// reloc-masked PostMessageA IAT-absolute operand only (the 0x6c44c8 slot bakes no
-// symbol, same scoring artifact as the sibling PostSlot* posters); code bytes are
-// byte-exact (CString::operator= + the WM_COMMAND push chain).
 RVA(0x00092060, 0x3c)
 i32 CGruntzMgr::SetAssetRoot(char* path) {
     if (path == 0) {
@@ -2454,12 +2450,6 @@ i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, i32 cmd, i32 a2, i32 a3) {
 // otherwise, on the first frame (m_cheatMgr->m_124 == 0) it seeds the HUD from the
 // registry's cumulative score and fires the score-bump / tick / notify chain,
 // then refreshes the HUD with the live score and clears the dirty flag.
-// @early-stop
-// inline-budget ripple (was 100%): folding the m_scoreHud ScoreHud view onto the
-// real CBattlezData member (correct model - methods + fields match) removed the
-// per-call (CBattlezData*) casts, lightening this fn's IR enough that MSVC now
-// inlines the (unchanged) CSaveGame::SetCurLevel/SetMaxLevel calls retail keeps
-// out-of-line. Diffuse codegen artifact, not a wrong shape; deferred to the sweep.
 RVA(0x000860b0, 0xe8)
 void CGruntzMgr::UpdateScoreHud() {
     if (g_gameReg->m_134 != 1) {
@@ -2588,11 +2578,6 @@ i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
 // (m_134==3 -> m_fc, m_130 -> m_f8), hands the record + the source state's data
 // block (+0x1d0) to the +0x58 sink, remembers the record at m_saveInfoRec, and - when a
 // snapshot block is supplied - copies its 0x20 bytes into the record (+0x14).
-// @early-stop
-// ~99.2% regalloc tail tiebreak: logic + the EH-frame elision (the name temp is
-// scoped so no throwing call is live during it) + the out-of-line EngineCopy all
-// match; the residual is the m_134 compare landing in esi here vs retail's edi
-// (freed by the inline-strcpy rep-movs) - a pure esi<->edi naming swap.
 RVA(0x000927b0, 0xc4)
 i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, void* snapshot) {
     if (dst == 0) {
@@ -3254,16 +3239,6 @@ void CGruntzMgr::DelayedQuit() {
 // companion's exe path into a local buffer; if it resolves and the buffer is
 // non-empty, spawn the process in place; on a successful spawn, optionally
 // schedule the delayed shutdown (`quitAfter`). Returns 1 on launch, 0 otherwise.
-// @early-stop
-// byte-proven (llvm-objdump -dr base vs target): the ONLY difference is a single
-// dead `mov ecx,esi` retail emits BEFORE the LaunchProcessInDir call site. The
-// retail source invoked LaunchProcessInDir through a `this`-qualified / member
-// expression (a __thiscall member that ignores `this`, which Ghidra mislabels
-// __stdcall since it never reads ecx), so the caller materializes this=esi->ecx;
-// our free-function call omits it. All three reloc operands (LaunchPortalExe /
-// LaunchProcessInDir / DelayedQuit) already match; that one 2-byte instruction
-// shifts the tail and caps this at 97.37%. Keeping the free-fn model (exact callee
-// symbol resolution) over a fake member-view that would only reloc-mask.
 RVA(0x000907c0, 0x77)
 i32 CGruntzMgr::LaunchPortal(i32 quitAfter) {
     char path[256];

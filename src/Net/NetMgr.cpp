@@ -21,14 +21,6 @@ i32 g_spEnumValidated = 0; // 0x6bf840 (owner def; C linkage from NetMgr.h)
 // the four caller setup dwords into the m_4 sub-object (+0x4..+0x10), latches the
 // provider descriptor into m_groupSel, and zeroes the two other selection latches,
 // then returns 1.
-// @early-stop
-// base-ptr materialization / regalloc plateau (~96.4%): the whole control flow, the
-// DirectPlayCreate + QI(slot 0, riid 0x5f0588) sequence, both failure paths (incl.
-// the Destroy tear-down) and the selection-latch zeroing are byte-exact; the only
-// residual is the +0x4..+0x10 setup-dword block - retail materializes the base
-// sub-object pointer (`lea eax,[esi+4]`) and assigns c/d->ecx/edx, where cl folds the
-// base into esi-relative stores and assigns c/d->eax/ecx. Not source-steerable (a
-// scheduling/addressing choice); §2a scoring-tail. Final sweep.
 RVA(0x001780b0, 0xbb)
 i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
     GUID* guid = a->m_guid;
@@ -297,13 +289,6 @@ i32 CNetMgr::ReadGroupSel(void* hList) {
 // per-player callback (NetEnumPlayerCb), the two caller args, and `this` as the
 // enum context. On a nonzero HRESULT it routes the error through the static
 // diagnostic reporter (NetMgr.cpp:0x1c9) and returns it; otherwise returns 0.
-// @early-stop
-// stack-anchor/scheduling wall (~67.7%): logic, memset, dwSize, the GUID copy,
-// the 6-arg COM call and ReportError are all reproduced - but MSVC anchors the
-// 0x50 stack desc at esp+0xc (retail esp+0x8) and interleaves the GUID stores
-// with the arg pushes differently. struct-vs-raw-buffer and base-ptr GUID-copy
-// levers did not move it; see docs/patterns/stack-buffer-size-drives-frame.md +
-// statement-schedule-faithful.md. Deferred to the final sweep.
 RVA(0x00178610, 0x8c)
 i32 CNetMgr::EnumPlayersInto(void* a, void* b) {
     ClearPlayerList();
@@ -461,14 +446,6 @@ i32 CNetMgr::ReadPlayerSel(void* hList) {
 // probe (in=0), an operator-new of that size, then the real read into the buffer -
 // reporting a nonzero HRESULT (line 0x2b1) - and hands the blob to AddPlayerNode,
 // freeing the blob (RezFree) on every exit.
-// @early-stop
-// stack-anchor / arg-slot-reuse plateau (~91%): the 0x50 desc build, the conditional
-// name store, the EnumGroups(+0x60) call, the two-phase GetPlayerData2(+0x58) size
-// probe + operator-new + read, both ReportError paths and the AddPlayerNode/RezFree
-// tail are all reproduced, but retail anchors the 0x50 desc at a different esp offset
-// and reuses the (dead) arg0 stack slot as the size in/out where cl spends a fresh
-// local. Same family as EnumPlayersInto/EnumGroupsRange; stack-buffer-size-drives-
-// frame.md. Final sweep.
 RVA(0x001788a0, 0x13c)
 CNetPlayerListNode*
 CNetMgr::EnumGroupsInto(i32 maxPlayers, char* sessionName, i32 user1, const char* password) {
@@ -547,12 +524,6 @@ i32 CNetMgr::EnumGroupsAll() {
 // As EnumGroupsAll but seeds the enum descriptor from a caller record's +0xc
 // quad (copied onto the stack) before the EnumGroups call (slot 0xc, NetEnumCb
 // callback, `this` context); reports a nonzero HRESULT (NetMgr.cpp line 0x327).
-// @early-stop
-// stack-anchor/scheduling wall (~84%): the ClearSessionList, the 4-dword record
-// copy onto the stack desc, the 5-arg EnumGroups(slot 0xc) call and the ReportError
-// are all reproduced, but cl anchors the stack desc at a different esp offset and
-// interleaves the four record-field loads with the arg pushes differently than
-// retail. Same class as EnumPlayersInto. Final sweep.
 RVA(0x00178a80, 0x73)
 i32 CNetMgr::EnumGroupsRange(void* rec, i32 flags) {
     ClearSessionList();

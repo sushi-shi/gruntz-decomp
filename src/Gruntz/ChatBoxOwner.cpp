@@ -173,27 +173,6 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
 // set, blit the frame for the current mode, then stamp the caption text via the
 // DC source. int(BOOL) return; the m_10==0 / hdc==0 guards return 1, the
 // m_2c==0 / spr==0 / frame==0 guards return 0.
-// @early-stop
-// scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md): logic + arg
-// order + the int(BOOL) per-site epilogues all match; residual is two store
-// hoist/sink permutations - retail SINKS the Lookup out-param `mov [&spr],0` past
-// the arg pushes (cl hoists) and SINKS the rect[1] struct store past `push &rect`
-// at a shifted esp offset (same instruction multiset, /O2-invariant), plus the
-// frame guard `mov ecx,[..]; test` vs cl's `cmp [..],0` materialization. No local
-// source diff closes these (hoisting rect[0] regressed 83->82%). ~83%.
-// CFontConfig::GetInputText (0x00020ef0) - return the accumulated chat-input line
-// (CFontConfig::m_inputText, +0x1c) by value.
-//
-// IDENTITY (RELOC-Multi): this is NOT a CChatBoxOwner method (it was homed here as a
-// fabricated `GetField1c` + an invented +0x1c CString member, purely because the body
-// sits inside this obj's rva band). Every caller runs it on a CFontConfig: this TU's
-// ProcessCheatInput calls it on m_14 - the same object it drives with
-// CFontConfig::TypeChar (ILT 0x3508 -> 0x21e20) - and CMulti::Vslot0b calls it on
-// CGruntzMgr::m_chatLog (a CFontConfig*), reading the CString the very next TypeChar
-// appends to. It returns *(CString*)(this+0x1c), which is CFontConfig::m_inputText.
-// It is an INLINE (COMDAT) accessor - MSVC 5.0 does not inline a by-value CString
-// return - so the linker kept the copy this obj emitted, which is why the body lands in
-// this TU's band. Defined here (its true rva-order home); declared on CFontConfig.
 RVA(0x00020ef0, 0x20)
 CString CFontConfig::GetInputText() {
     return m_inputText;

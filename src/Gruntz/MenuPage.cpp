@@ -113,12 +113,6 @@ i32 CMenuPage::ReleaseAll() {
 
 // restore focus: if a name (m_focusName) was saved, focus the item matching
 // it; otherwise (or if not found) focus the first focusable item.
-// @early-stop
-// regalloc + frameless-CString-temp wall (~61%): the saved-name scan (GetName +
-// inline strcmp via a `bool match` local) and the first-focusable fallback are
-// byte-aligned, but `this` lives to the tail (SetFocus) forcing a 3rd callee-saved
-// reg, and the per-iteration CString temp's teardown threads differently than
-// retail. Logic complete; deferred (same family as FocusNext/FindByName).
 RVA(0x001839d0, 0xff)
 i32 CMenuPage::RestoreFocus() {
     if (!m_focusName.IsEmpty()) {
@@ -578,12 +572,6 @@ CMenuItem* CMenuPage::HitTest(i32 x, i32 y) {
 }
 
 // find the child item whose name matches `s` (linear scan + strcmp).
-// @early-stop
-// /GX EH-state wall (~77%): the cur-first walk, the GetName()-by-value temp, the
-// inline strcmp via a `bool match` local (setcc form) and the per-iteration
-// CString teardown all align; the residual is the __try state index MSVC stamps
-// (entry push $8 vs $0) + the funclet cleanup scheduling. See docs/seh-eh.md and
-// docs/patterns/eh-dtor-vptr-stamp-vs-trylevel-order.md. Logic complete; deferred.
 RVA(0x00184150, 0xe0)
 CMenuItem* CMenuPage::FindByName(const char* s) {
     if (!s) {
@@ -605,11 +593,6 @@ CMenuItem* CMenuPage::FindByName(const char* s) {
 
 // focus the item named by the focused item's forward key (GetKey1),
 // else step focus backward by m_rowsPerCol nodes.
-// @early-stop
-// /GX EH-state wall (~61%, same family as SelectForward): m_focus->GetKey1() ->
-// FindByName -> SetFocus / FocusBackwardN is byte-aligned; the residual is the
-// __try state index (push $8 vs $0) + the per-return CString-temp teardown
-// threading. See docs/seh-eh.md + eh-dtor-vptr-stamp-vs-trylevel-order.md.
 RVA(0x00184230, 0xd2)
 i32 CMenuPage::SelectFwd2() {
     if (!m_focus) {
@@ -630,8 +613,6 @@ i32 CMenuPage::SelectFwd2() {
 }
 
 // mirror: focused item's backward key (GetKey2), else FocusForwardN.
-// @early-stop
-// same /GX EH-state wall as SelectFwd2 (~61%). Logic complete; deferred.
 RVA(0x00184310, 0xd2)
 i32 CMenuPage::SelectBack2() {
     if (!m_focus) {
@@ -652,12 +633,6 @@ i32 CMenuPage::SelectBack2() {
 }
 
 // focus the item named by the forward key (m_focus->GetField54), else FocusNext.
-// @early-stop
-// Shape fixed 2026-07-21 (58->62%): the fwd key is m_focus->GetField54() (NRV thiscall
-// on m_focus, 0x184610) - the ex `MenuPage_KeyFwd(this,&key)` cdecl free-function alias
-// was the wrong call shape. Residual (~38%, same as the SelectFwd2/Back2 siblings) is
-// the genuine /GX EH-state wall: the __try state index (push $8 vs $0) + the per-return
-// CString-temp teardown threading. Deferred.
 RVA(0x001843f0, 0xd2)
 i32 CMenuPage::SelectForward() {
     if (!m_focus) {
@@ -678,10 +653,6 @@ i32 CMenuPage::SelectForward() {
 }
 
 // focus the item named by the backward key (m_focus->GetField58), else FocusPrev.
-// @early-stop
-// Shape fixed 2026-07-21 (58->62%): the back key is m_focus->GetField58() (NRV thiscall
-// on m_focus, 0x184630); the ex `MenuPage_KeyBack(this,&key)` cdecl alias was wrong.
-// Residual is the same /GX EH-state wall as SelectForward/the SelectBack2 sibling. Deferred.
 RVA(0x001844d0, 0xd2)
 i32 CMenuPage::SelectBackward() {
     if (!m_focus) {

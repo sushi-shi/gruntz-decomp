@@ -84,12 +84,6 @@ void CSBI_Image::Reset() {
 // CSBI_Image::TickRenderCurrent (0xe6dd0, vtable slot 5): one play step that renders
 // the CURRENT resolved frame (no table re-lookup): while cycles remain, consume one
 // and blit m_30 at the rect base + frame anchor. Returns 1. Ex CAniPlayer view.
-// @early-stop
-// 74% - all operations byte-exact (verified via --diff); residual is pure register
-// scheduling: retail keeps `this` in eax to load both rect halves up front and defers
-// the g_gameReg->m_world->m_drawTarget surface-context chain to last, where cl loads the
-// global mid-sequence. Neither local nor inlined surfaceCtx flips it (RenderFrame
-// arg-eval-order/regalloc wall shared by the whole slot-5 render family). Final sweep.
 RVA(0x000e6db0, 0x8)
 i32 CSBI_Image::Refresh(i32) {
     return 1;

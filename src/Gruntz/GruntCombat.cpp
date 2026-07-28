@@ -299,14 +299,6 @@ CActReg CActRegPool<CGrunt>::s_table(2000, 2010);
         g_coordPool.m_freeHead = node;                                                             \
     }
 
-// @early-stop
-// FP instruction-scheduling wall: logic + offsets exact, but MSVC's x87 stack
-// scheduling for the magnitude/normalize rarely matches from C source (an x87
-// fxch/fsubp ordering the compiler picks); see docs/patterns (FP scheduling).
-// CGrunt::ComputeFacing(double dt) @0x57060 - sets the grunt's facing/velocity:
-//   m_400 = (sqrt(dx*dx + dy*dy) / m_41c) * dt   (dx=m_lastTilePxX-m_5c, dy=m_lastTilePxY-m_60)
-//   m_408 = (double)m_object->m_5c;  m_410 = (double)m_object->m_60
-// dt is the per-tile time step; m_41c is the configured TimePerTile.
 RVA(0x00057060, 0x72)
 void CGrunt::ComputeFacing(double dt) {
     CWwdGameObjectA* h = m_object;
@@ -693,14 +685,6 @@ void CGrunt::ClearSubA() {
 // plays it on the sound channel (g_gameReg->m_soundVolume). __thiscall, ret 4. Same
 // sound-lookup shape as CProjectile::LaunchSound (0xe2190).
 //
-// @early-stop
-// reloc-naming scoring artifact (docs/patterns, objdiff-reloc-scoring memory):
-// instruction stream byte-identical vs retail (verified llvm-objdump), 100% fuzzy.
-// g_gameReg IS named (the two ds: relocs pair); the three engine callees - the
-// sound-map Lookup (0x1b8438), the sample factory GetItem (0x135d70) and the
-// sample Play (0x136300) - are not yet RVA-annotated, so their REL32 operands pair
-// to the target's FUN_ names and stay fuzzy. Flips to exact once those engine
-// functions get stubs (the SAME referent set LaunchSound waits on). Logic complete.
 RVA(0x00057c40, 0x71)
 void CGrunt::EnsureStruckVoice(const char* key) {
     DirectSoundMgr*& sample = m_struckVoiceSound;
@@ -738,15 +722,6 @@ void CGrunt::ClearSubB() {
 // samples via DirectSoundMgr::ApplyAndPlay. __thiscall, no args. Same sample-play
 // shape as EnsureStruckSlot/EnsureStruckVoice.
 //
-// @early-stop  (~99.9%, logic/control-flow/reloc-set byte-exact)
-// FLAGGED for the cleanup loop, NOT a codegen wall: the two m_424/m_428 member
-// reads compile to [esi+0x544]/[esi+0x548] instead of retail's +0x424/+0x428 - the
-// SHARED pre-existing CGrunt layout drift. CMovingLogic (the base) already declares
-// the 0x30..0x14c field band, and CGrunt REDECLARES the same band from +0x30, so
-// CGrunt's own fields start at the base sizeof (0x150) instead of 0x30 - every
-// CGrunt own-member >= 0x30 lands +0x120 high (sizeof CGrunt = 2552). Identical
-// state to EnsureStruckSlot/EnsureStruckVoice/ClearSubA/ClearSubB; all flip to 100%
-// together once the CMovingLogic/CGrunt field duplication is reconciled.
 RVA(0x00057d10, 0x4e)
 void CGrunt::ReapplyVoiceParams() {
     if (g_gameReg->m_soundEnabled == 0) {

@@ -677,11 +677,6 @@ BOOL CALLBACK VideoOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
 // 0x37870 (re-homed from src/Stub/BoundaryMisc.cpp): DialogInit - seed the two
 // video option checkboxes (IDC 0x46f / 0x4d5) from the settings singleton's
 // m_isHighDetail / m_isEffectsEnabled flags, via the cached CheckDlgButton import.
-// @early-stop
-// 93.33% - regalloc wall: cl pins hDlg in edi and the cached import ptr in esi;
-// retail swaps them (ptr in edi, hDlg in esi). The cached-pointer shape, both
-// CheckDlgButton calls, the arg tuples and the null guard are byte-exact; the
-// edi/esi assignment is not source-steerable.
 RVA(0x00037870, 0x3c)
 void DialogInit(HWND hDlg) {
     if (g_gameReg == 0) {

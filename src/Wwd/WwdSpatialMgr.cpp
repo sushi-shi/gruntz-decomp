@@ -93,12 +93,6 @@ i32 CWwdSpatialMgr::GetSize() {
 // master manager and remove it from the grid; count how many were re-inserted.
 // /GX frame from the on-stack iterator object.
 // ===========================================================================
-// @early-stop
-// /GX EH-state wall - the body is byte-identical (every mov/call/jcc matches),
-// but the scoped destructible CWwdGridIter local's frame numbers differently:
-// retail `sub esp,0x44` + scope cookie `push 0x8`, recompile `sub esp,0x40` +
-// `push 0x0`, shifting [esp+N] by 4. See docs/patterns/gx-scoped-local-eh-frame-size.md.
-// ~86%.
 RVA(0x00168460, 0x95)
 i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
     i32 count = 0;
@@ -178,11 +172,6 @@ i32 CWwdSpatialMgr::FlushAll() {
 // every object into the master manager and unlink it from the grid; return the
 // count drained. /GX frame from the on-stack iterator.
 // ===========================================================================
-// @early-stop
-// /GX scoped-local EH-frame wall - body byte-identical (every mov/call/jcc
-// matches), but the destructible CWwdGridIter local frames differently: retail
-// `sub esp,0x44` + scope cookie, recompile `sub esp,0x40`, shifting [esp+N] by 4.
-// Same wall as CountInRect; docs/patterns/gx-scoped-local-eh-frame-size.md.
 RVA(0x00168990, 0x85)
 i32 CWwdSpatialMgr::FlushGrid(CWwdGrid* grid) {
     i32 count = 0;
@@ -212,10 +201,6 @@ i32 CWwdSpatialMgr::ForEach(void(__cdecl* cb)(CGameObject*)) {
 // the __cdecl callback on each object; return how many fired. /GX frame from the
 // on-stack iterator.
 // ===========================================================================
-// @early-stop
-// /GX scoped-local EH-frame wall (same as FlushGrid/CountInRect): body
-// byte-identical, the iterator local's frame numbers off by 4. See
-// docs/patterns/gx-scoped-local-eh-frame-size.md.
 RVA(0x00168a70, 0x73)
 i32 CWwdSpatialMgr::ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CGameObject*)) {
     i32 count = 0;

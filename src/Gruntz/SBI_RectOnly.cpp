@@ -836,10 +836,6 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
 // (docs/patterns/nested-if-success-deepest-error-tail.md); the global pair must be
 // read TOGETHER inside the `if (found)` so MSVC lands g_sndEnabled in ecx / g_sndCueTag in
 // edx like retail.
-// @early-stop
-// ~94.2%: code bytes are byte-exact vs retail; the residual is purely the
-// reloc-symbol-naming scoring tail (DIR32 to differently-named globals/the cue
-// string vs retail's REL32). Not a wall - matcher.md reloc-typing artifact.
 RVA(0x0010b5d0, 0xdd)
 i32 CStatusBarMgr::HlClickGroup0(i32 row) {
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 == 0 && m_hlGrid[row].m_state == 1) {
@@ -878,8 +874,6 @@ i32 CStatusBarMgr::HlClickGroup0(i32 row) {
 
 // Highlight-click handler for group 1 (rows m_hlGrid[4..7]); identical to group 0
 // with the +4-row base folded into the index.
-// @early-stop
-// ~94.2%: code byte-exact; reloc-symbol-naming tail only (see HlClickGroup0).
 RVA(0x0010b6f0, 0xdd)
 i32 CStatusBarMgr::HlClickGroup1(i32 row) {
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 == 0
@@ -918,8 +912,6 @@ i32 CStatusBarMgr::HlClickGroup1(i32 row) {
 }
 
 // Highlight-click handler for group 2 (rows m_hlGrid[8..11]); +8-row base.
-// @early-stop
-// ~94.2%: code byte-exact; reloc-symbol-naming tail only (see HlClickGroup0).
 RVA(0x0010b810, 0xdd)
 i32 CStatusBarMgr::HlClickGroup2(i32 row) {
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_4f0 == 0
@@ -1162,12 +1154,6 @@ i32 CStatusBarMgr::SetTab(i32 tab, i32 flag) {
 // Tear down the rect-only item: log its position tag, fire the pre-teardown
 // notify, return every pooled m_ptrPool.GetData() element to the engine free-list, then
 // RemoveAll the +0x530 collection.
-// @early-stop
-// ~84.7%: the log/notify head + the free-list return + the +0x530 RemoveAll are
-// byte-correct; the residual is the free-loop's induction-variable choice (retail
-// indexes m_ptrPool.GetData()[ecx] reloading the base each iter and keeps the running
-// free-list head in edx; the recompile strength-reduces to a walking pointer +
-// pins the head in a callee-saved edi). Regalloc/induction wall; deferred.
 RVA(0x000fe350, 0x6d)
 void CStatusBarMgr::Teardown() {
     (static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings))
@@ -2768,15 +2754,6 @@ static __inline i32 WapRand(i32 range) {
 // brickz split, then a per-category item roll), map the roll to the item-type id,
 // place the falling-item HUD rect (SetRect + the notify-object rect block), and
 // tick the pending fall count. Returns 1.
-// @early-stop
-// 88.4%: inlined-LCG-rand + weighted-tree archetype (the twin left as a pure 0%
-// stub at CGruntSpawnConfig::PickWeighted 0x11bee0). Logic + the whole three-tier
-// tree + the LCG lea-chain are byte-faithful (verified llvm-objdump -dr). Residual
-// is a callee-saved-reg CSE pick: retail caches g_randSeeded in bl (a 4th push ebx)
-// and the ::timeGetTime ptr in edi (mov edi,[ptr]; call edi), while cl emits a
-// 3-register solution (flag in cl, call [ptr] indirect) and a `mov ecx,[m_134];cmp`
-// vs retail's `cmp [m_134],1` direct memory compare. Plus the ?g_gameReg vs
-// _g_mgrSettings shared-global DIR32 naming tail. Not source-steerable under /O2.
 RVA(0x00100510, 0x6)
 i32 CStatusBarItem::Render() {
     return 1;

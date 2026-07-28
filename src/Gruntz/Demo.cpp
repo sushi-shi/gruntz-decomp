@@ -91,12 +91,6 @@ i32 CDemo::BuildWorldLevelPath(i32 unused) { // slot-42 override (ex BuildWorldL
 // (posting WM_COMMAND 0x8023 to the top-level HWND on the first match), counts the
 // idle timer m_520 down by the frame delta, and posts WM_COMMAND 0x8027 when it
 // expires. Returns 1.
-// @early-stop
-// asm now byte-IDENTICAL (55 insns): the prior residual included a real signedness
-// bug - the m_520 timer compare emitted signed jl where retail uses unsigned jb;
-// fixed by casting the g_frameDelta>=m_520 test to u32. The only remaining residual
-// is the PostMessageA IAT-absolute scoring artifact (target bakes the bare 0x6c44c8,
-// no symbol) - reloc-masked truth, not a code diff. docs/matching-patterns.md.
 RVA(0x0003c220, 0xa4)
 i32 CDemo::Render() {
     CPlay::Render();

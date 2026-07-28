@@ -40,10 +40,8 @@ CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj), CW
 
 RVA(0x00080020, 0x102)
 void CGruntPowerupSprite::FireActivation(i32 id) {
-    if ((*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id))))
-        != 0) {
-        (this
-             ->*(*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)))))();
+    if ((*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)))) != 0) {
+        (this->*(*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -74,7 +72,8 @@ void CGruntPowerupSprite::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CGruntPowerupSprite::Update);
+    (*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CGruntPowerupSprite::Update);
 }
 
 RVA(0x00080380, 0x6c)
@@ -97,12 +96,6 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
 // (m_cellX,m_cellY) is present copy its screen position into the bound renderable so
 // the powerup icon tracks the grunt. Returns 0.
 //
-// @early-stop
-// regalloc/scheduling wall (zero-register-pinning class): the logic is byte-exact
-// but cl loads g_gameReg into a different register (edx vs retail's eax) AFTER the
-// index add where retail schedules it between the lea-chain and the add, cascading
-// a register-name swap through the indexed entry load - not source-steerable.
-// Every instruction matches modulo register names. Deferred to the final sweep.
 RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
     m_38->m_1a0.Advance(g_engineFrameDelta);

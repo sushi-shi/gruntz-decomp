@@ -122,10 +122,6 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
 // buffer and hand it to DecodeRun. Each failure unwinds the CFile + returns 0; the
 // buffer is freed after DecodeRun (and on a short read). /GX EH frame. ret 0xc.
 //
-// @early-stop
-// ~98%: open/length/read/decode/free shapes + offsets are byte-faithful; residue is the
-// /GX funcinfo state index push (eh-state-numbering-base.md) plus the DecodeRun callee's
-// own divergence (it is the branch-scheduling wall above). Deferred to the final sweep.
 RVA(0x00143e60, 0x15b)
 i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode) {
     CFile file;

@@ -75,18 +75,6 @@ i32 CFileImageSurface::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 
 // .PID path) it fills the palette from a4 when a4 != -1.
 // @source: string-xref (.BMP/.PCX/.PID extension table)
 //
-// @early-stop
-// scheduling wall (~99.9%): MSVC swaps the ORDER of the two independent tail loads at
-// 0xdd - retail emits `mov esi,[esp+0x20]` (a4) then `mov eax,[esp+0x1c]` (doFill);
-// the recompile emits them reversed. Same regs, same short-circuit, only the load
-// schedule differs; all other code bytes are byte-identical (llvm-objdump -dr base vs
-// target). A pure scheduler tie-break that flips on ANY change to the widely-included
-// surface symbol table: it had incidentally drifted to 100% at one baseline, was
-// re-triggered by the CScanlineSurface/CImageSurfaceNode fold, and flipped back to
-// ~99.9% by the CFileImage->CDDSurface 3-name unification (this method now lives on
-// the unified CDDSurface, callees renamed + the header pulls <Mfc.h>). Not source-
-// steerable (reordering the `&&` -> 96%); the correct unified-class shape is kept
-// over the coin-flip byte-match (per the no-multiple-views mandate).
 RVA(0x00148940, 0x102)
 i32 CFileImageSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 flags, i32 key) {
     flags |= 0x40;

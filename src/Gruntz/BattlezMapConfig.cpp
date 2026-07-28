@@ -2684,16 +2684,6 @@ void* CBattlezMapConfig::PickRandomIdleUnit(i32) {
 // an 11x11 box around tgt (IntersectRect copy-back) and re-path tgt to a random
 // nearby cell (RouteUnitTo, flags 0x20000d87). Returns 1 (0 on the eligibility rejects).
 // ===========================================================================
-// @early-stop
-// string-dispatch + box-clamp plateau: the five inline-strcmp J/C/R/G/L rejects (the
-// bool-local setcc form, docs/patterns/strcmp-eq-bool-local-setcc.md), the rand()%4
-// gate, all three reloc-masked helper calls (RectContainsGated / ApplyTriggerB /
-// CommitNeighbor), the prim==0x11 gate, and the box build + IntersectRect clamp +
-// RouteUnitTo re-path are reconstructed in shape + order. Residual is the box-tail
-// stack-slot schedule (the rand-offset dest coords + the dead maybe-null box branch
-// retail emits, shared with winapi_02c140/02dfa0) and the foreign unit/level chains
-// modeled by raw offset. Deferred to the final sweep.
-// Clear (0x2ade0) - clear the active flag.
 RVA(0x0002ade0, 0x7)
 void CBattlezMapConfig::Clear() {
     m_active = 0;
@@ -3254,9 +3244,9 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(CGrunt* unit) {
 
 #define ARR_RECYCLE(g)                                                                             \
     if ((g)->CoordCount() != 0) {                                                                  \
-        CoordNode* nd = (g)->CoordHead();                                                     \
+        CoordNode* nd = (g)->CoordHead();                                                          \
         while (nd != 0) {                                                                          \
-            CoordNode* cur = nd;                                                              \
+            CoordNode* cur = nd;                                                                   \
             nd = nd->m_next;                                                                       \
             if (cur->m_coord != 0) {                                                               \
                 g_coordPool.Push(cur->m_coord);                                                    \
@@ -4216,15 +4206,6 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(CGrunt* unit) {
 // CMapMgr::FindPath for a route, and swap that unit's path onto this one (recycle old
 // coords onto g_coordPool, AddTail the new, set state 5). Returns 1 on a reroute.
 // ===========================================================================
-// @early-stop
-// resolver + EH + regalloc plateau: the coord-scan head, the IsCoordOccupied collision
-// + PathCrossesMarkedTile block checks, the seven-way I/G/L/P/J/C/R GetRecord setcc dispatch
-// (docs/patterns/strcmp-eq-bool-local-setcc.md), the distance<=0x190 best scan, the
-// 0x16/0x12 flag build, CPtrList(10)/GetCoord/FindPath, and the g_coordPool/g_coordPool.m_freeHead
-// path-swap are reconstructed in shape + order. Residual is the 15-slot scan regalloc
-// (retail pins the slot index in [esp+0x4c] and the candidate in ebp) plus the /GX
-// cleanup epilogue funnel; foreign chains modeled by raw offset. Final sweep.
-// PathToNearbyUnit (0x2ed90) - always returns 0.
 RVA(0x0002ed90, 0x5)
 i32 CBattlezMapConfig::PathToNearbyUnit(CGrunt*) {
     return 0;
@@ -5420,9 +5401,9 @@ void* CBattlezMapConfig::PickSpawnCoord(void* out, CGrunt* unit, i32 kind) {
 
 #define MOVE_RECYCLE(g)                                                                            \
     {                                                                                              \
-        CoordNode* nd = (g)->CoordHead();                                                     \
+        CoordNode* nd = (g)->CoordHead();                                                          \
         while (nd != 0) {                                                                          \
-            CoordNode* cur = nd;                                                              \
+            CoordNode* cur = nd;                                                                   \
             nd = nd->m_next;                                                                       \
             if (cur->m_coord != 0) {                                                               \
                 g_coordPool.Push(static_cast<void*>(cur->m_coord));                                \
@@ -6053,13 +6034,6 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(CGrunt* unit) {
 // cached in a register across the loop, written each iteration), then tail into the
 // +0x31c CPtrList's RemoveAll. Skips everything when the list's count is zero.
 // ===========================================================================
-// @early-stop
-// 99.78% - the SAME freelist-store register-scheduling coin-flip as Deserialize's
-// recycle loops: retail's `g_coordPool.m_freeHead = head` store reads esi (head's callee-saved home,
-// which also holds slot after `head=slot`); our cl folds it to `mov g_coordPool.m_freeHead,eax`
-// (slot's register). 1-byte residual (89 35 vs a3), pure operand selection - proven a
-// coin-flip by CTriggerMgr's twin alloc loops (0x7ad40 direct vs 0x7ad9b copy). All
-// logic byte-exact. Deferred to the final sweep.
 RVA(0x000343f0, 0x47)
 void CGrunt::RecycleCoords() {
     if (CoordCount() == 0) {

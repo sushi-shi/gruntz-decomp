@@ -90,10 +90,6 @@ void CSBI_ImageSet::Reset() {
 // re-resolves the frame from the record table and renders it: while cycles remain,
 // consume one, look up the frame (0 when out of range), record it, and - when
 // present - blit it. Returns 1. Ex CAniPlayer view (dossier #16).
-// @early-stop
-// 86.7% - logic + externs byte-exact; residual is the same RenderFrame surface-context
-// chain regalloc as CSBI_Image::Render plus the record-table range-test register
-// pairing. Final sweep.
 RVA(0x000e7420, 0x8)
 i32 CSBI_ImageSet::Refresh(i32) {
     return 1;
@@ -127,14 +123,6 @@ i32 CSBI_ImageSet::Render() {
 // vtable slot 1 (0xe74f0): serialize the config id + name. mode 7 = load (read id,
 // read name, resolve record), mode 4 = save (write id, write name from the record);
 // either way chain to the base serialize and return its normalized truth.
-// @early-stop
-// 99.2% (entropy tail): logic + control flow + inline strcpy/strlen + the typed
-// vtable (Read/WriteBytes) + the switch dispatch are all byte-exact. The only
-// residual is ONE extra `mov [esp+0x18],eax` (retail keeps the dead strlen result
-// live before Lookup) + the consequent 1-byte branch-displacement shifts, plus the
-// reloc-masked Lookup/Read/WriteBytes/BaseSerialize/g_* operands. Naming the strlen
-// result to recover the dead store regresses it (98.4%) - a non-steerable /O2
-// dead-store artifact (docs/patterns/reloc-typing-vptr-global.md). Effectively done.
 RVA(0x000e74c0, 0x16)
 void CSBI_ImageSet::Notify(i32 id) {
     if (id != -1) {

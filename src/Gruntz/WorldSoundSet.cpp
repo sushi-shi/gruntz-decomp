@@ -761,13 +761,6 @@ void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
 // are live - emits the sound-sprite into the active layer through the world sound-set
 // factory (full vs simple by the +0x138 extent), copies the placed rect back, then
 // latches the request "spawned" (5). Returns 1.
-// @early-stop
-// arg-load scheduling wall (~94%): body byte-exact through the flag math and both
-// exits; the residual is MSVC's just-in-time vs pre-load interleaving of the factory
-// member-arg loads (same push order, same args) + the g_gameReg->m_inputState test
-// landing in eax vs retail's ecx. Same instructions, different temp-register rotation.
-// The create-helper return is a CAmbientSound-family channel; its m_box2 is the
-// placement rectangle copied below.
 RVA(0x0000c840, 0x13d)
 i32 CommitSpriteAction(PosSoundObj* obj) {
     PosSoundAux* aux = obj->m_aux;

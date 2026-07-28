@@ -5,7 +5,7 @@
 #include <Image/CImage.h>
 #include <DDrawMgr/DDrawWorker.h> // CDDrawWorker - the resolved m_sprite (frame strip Place indexes)
 
-#include <DDrawMgr/DDrawSurfaceMgr.h>   // CDDrawSurfaceMgr - m_owner (the catalog root)
+#include <DDrawMgr/DDrawSurfaceMgr.h>     // CDDrawSurfaceMgr - m_owner (the catalog root)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // its +0x10 registry: the m_10map name->item catalog
 #include <Gruntz/MenuItem.h>
 #include <Gruntz/MenuPage.h> // CMenuPage - Init's a0 / m_template (ex CMenuItemTemplate view)
@@ -169,12 +169,6 @@ i32 CMenuItem::NotifyCmd() {
 }
 // place the item: pick the row out of the sub-page (m_28), have it lay
 // itself out at the cached or argument coordinates, then cache the placed rect.
-// @early-stop
-// regalloc tie (~99.1%): the whole body is byte-aligned; the residual is which of
-// the two callee-saved regs (ebx vs ebp) holds the m_44/m_48 coordinate pair --
-// retail pins the cmp operand m_44 in ebp, the recompile in ebx. The two are
-// interchangeable and the choice is not source-steerable (operand/decl reorderings
-// all canonicalize to the same pick). Logic complete; deferred to the final sweep.
 RVA(0x001855d0, 0x6)
 i32 CMenuItem::Detach() {
     return 1;
@@ -262,7 +256,14 @@ i32 CMenuItem::Hit(i32 x, i32 y) {
 // after both Lookup arg-pushes, the recompile hoists it adjacent to the &out lea. Not
 // source-steerable (no statement order forces a plain store past the call arg setup).
 RVA(0x00185750, 0x123)
-i32 CMenuItem2::Init(CMenuPage* a0, const char* a1, const char* a2, i32 a3, const char* a4, i32 a5) {
+i32 CMenuItem2::Init(
+    CMenuPage* a0,
+    const char* a1,
+    const char* a2,
+    i32 a3,
+    const char* a4,
+    i32 a5
+) {
     if (!a0) {
         return 0;
     }

@@ -148,11 +148,6 @@ i32 CPreviewState::OnKey(i32 key, i32 param) {
     return 1;
 }
 
-// @early-stop
-// 94.7% - entropy tail: the only residual is the cue object `p` getting spilled to
-// the stack and reloaded for the final ConfigureItem(this) where retail keeps it in
-// eax (the cue temp uses ecx/edi/ebp), plus function-tail nop padding. Logic +
-// externs match retail. Final sweep.
 RVA(0x000de420, 0x115)
 void CPreviewState::LoadLevelPreviewScreen() {
     char buf[64];

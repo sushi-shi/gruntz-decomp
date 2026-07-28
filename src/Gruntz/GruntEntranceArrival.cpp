@@ -963,15 +963,6 @@ i32 CGrunt::StepEntranceRelatchA() {
 // edge line, interpolate the crossing coordinate in float and test it falls within
 // the opposite span. Returns 1 on the first crossing, else 0. Pure stack args.
 //
-// @early-stop
-// x87 FP instruction-scheduling wall (same family as ComputeFacing 0x57060 /
-// docs/patterns): CFG, the 4 edge tests, every straddle setl/setg sign test, the
-// int subtractions feeding fild/fidiv/fimul/fiadd, and the fcompp comparison
-// structure are byte-faithful in shape/order. Residue = the x87 register-stack
-// scheduling + which spill slot holds each interpolation operand (source-invariant
-// on this leaf). Deferred to the final sweep.
-// (0x62b70 below IS CGrunt::RectSegProbe - a thiscall leaf that never touches
-// `this`; retail loads ecx=this at every call site, byte-proven.)
 RVA(0x00062b40, 0x11)
 i32 CGrunt::UserLogicVfunc6() {
     m_438 = g_frameTicks;

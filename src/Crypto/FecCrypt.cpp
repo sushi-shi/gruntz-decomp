@@ -7,7 +7,6 @@
 
 #include <Crypto/FecCrypt.h> // the unified CFecFile (embedded MFC CFile stream) shape
 
-
 RVA(0x0017b510, 0x55)
 i32 CFecFile::Init() {
     if (m_openGate) {
@@ -353,12 +352,6 @@ void __stdcall FecEncode(const char* src, char* dst) {
 // Decode(src, dst, len): dst[i] = src[i] - (i odd ? 0x53 : 0x4f) for
 // `len` bytes, then NUL-terminate dst[len]. `len` is a WORD. __stdcall.
 // ===========================================================================
-// @early-stop
-// entropy tail (~99.75%): every instruction is byte-identical except the final
-// `dst[len]=0` store, where retail bases the SIB on len (ebp) and indexes by dst,
-// while cl bases on dst and indexes by len (same address, 1-byte-different
-// encoding). MSVC canonicalizes `len[dst]` back to `dst+len`, so the base/index
-// pick is not source-steerable.
 RVA(0x0017bfe0, 0x5d)
 void __stdcall FecDecode(const char* src, char* dst, unsigned short len) {
     for (unsigned short i = 0; i < len; i++) {

@@ -675,12 +675,6 @@ i32 CRezImage::DecodeResData(void* buf, void* a2, i32 a3) {
 // bfOffBits and Read exactly (bitcount/8)*stride*height pixel bytes into the
 // plane. Returns 1 on a full read, 0 on any I/O / decode failure. The CFile
 // stack object's dtor runs on every exit -> the C++ EH frame.
-// @early-stop
-// TU-merge regalloc ripple (~98%; was 100% in the pre-merge rezimage TU with the
-// IDENTICAL source): the `size = (bitcount/8)*m_stride*height` block reschedules
-// (retail keeps bitcount/8 as the esi accumulator + `imul esi,[m_stride]` memory
-// operand; the merged-TU compile hoists m_stride into esi first). Not source-
-// steerable (bpp-local spelling is byte-identical); everything else exact.
 RVA(0x00175e40, 0x1b3)
 i32 CRezImage::LoadBmp(char* name, void* a2, i32 a3) {
     CFile file;

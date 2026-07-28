@@ -30,13 +30,6 @@ RVA_COMPGEN(0x00013340, 0x44, ??1CRainCloud@@UAE@XZ)
 // "LEVEL_CLOUDHAZARDKILL" positional sound on the bound object when it is on-screen
 // and the per-emitter cooldown has elapsed.  Integer-only; returns 1.  __thiscall,
 // 2 args.
-// @early-stop
-// ~95%: code bytes byte-exact; residual is the same TU-wide reloc-naming artifact
-// SiblingTick carries (the obj names g_gameReg as _g_mgrSettings and
-// g_strikeClock as _g_645588). Logic byte-for-byte correct.
-// @interleaver CRainCloud::HitTest emitted-in <boundary: PathHazardActReg.cpp
-// RegisterActs_646250 @0xb3cc0 (before) + CRainCloud::SerializeMove @0xb4cb0
-// (after)>. A /Gy first-use COMDAT the linker scattered between OTHER units.
 RVA(0x000b4640, 0x104)
 i32 CRainCloud::HitTest(i32 a, i32 b) {
     m_strikeArmed = 1;

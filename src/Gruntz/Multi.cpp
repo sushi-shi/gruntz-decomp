@@ -521,13 +521,6 @@ void CMulti::OnExit() {
 // CMulti::Vslot09 (0x0b6330): chain the base ResetForMode gate; on success run the
 // manager per-frame tick, restore the saved game clock, and re-seed the net drain /
 // frame timer block (two timeGetTime samples), then push a net stat when connected.
-// @early-stop
-// ~98.6%: logic + every instruction byte-faithful. Residual is a single callee-saved
-// register-NAMING swap: retail pins the cached ::timeGetTime fn-ptr in ebx and the
-// zero in edi; cl picks edi for the fn-ptr and ebx for the zero. Invariant to
-// materialization order (tried the tg decl before/after the first zero store) and
-// to the permuter - a non-steerable regalloc coin-flip between the two pushed
-// callee-saved regs.
 RVA(0x000b6330, 0x89)
 i32 CMulti::Vslot09(i32 arg) {
     if (CPlay::Vslot09(arg) == 0) { // qualified: the BASE leg, not this override
@@ -1108,10 +1101,6 @@ i32 CMulti::Open() {
 // the m_4->+0x38 config store exists, persists the config: the selected service id
 // (unless "none" == 0x3e7), the local player name, and - host only - the game name.
 // Returns the peer's selected provider (m_groupSel).
-// @early-stop
-// entropy-tail plateau (~98.2%): logic + both branches + the two scoped CString
-// temps under the /GX frame are byte-faithful; the ~2% residual is a scheduling
-// nuance in the config-store write block. §2a scoring-tail. Final sweep.
 RVA(0x000b78b0, 0x17f)
 InterfaceObject* CMulti::SetupServices() {
     if (Peer()->EnumServiceProviders(0) != 0) {
@@ -2786,13 +2775,6 @@ void CMulti::OnOutOfSync() {
 // the same record byte layout as a single BroadcastChannelTable slot plus the
 // channel name strcpy'd in) and ships it to the local player's group via
 // SendStatFrom.
-// @early-stop
-// load-width wall (~87%): the whole shape matches retail - the 0x2c packet build,
-// the frameless CString name temp (scoped to elide the /GX frame), the inline
-// strcpy and the SendStatFrom send are byte-aligned - but retail dword-loads each
-// i32 channel field before the byte store (movl;movb) where our cl byte-loads it
-// (movb;movb), shuffling the field-store order. Same wall as
-// BroadcastChannelTable; not steerable from source. Deferred to the final sweep.
 RVA(0x000baf00, 0xb2)
 i32 CMulti::BroadcastOneChannel(GruntzPlayer* ch) {
     CNetOneChannelPacket packet;
@@ -3533,14 +3515,6 @@ i32 CMulti::RunErrorDialog(char* tmpl, void* handler, i32 lparam) {
 // look up the long-timeout slot, copy its host name into the session-name global
 // (g_sessionName), and push the drop stat + OnDropPlayer.
 // ===========================================================================
-// @early-stop
-// /GX EH + regalloc wall: the body is the complete, correct reconstruction (the
-// throttle gate off g_ackThrottleDeadline/timeGetTime, the two FindSlot lookups, the slot host
-// name copied into g_sessionName via the CString temp, then SendNetStat + OnDropPlayer).
-// Retail keeps the 2nd FindSlot result live in eax across the CString-temp
-// construction while our /O2 spills it to edi, and the EH-state funclet store order
-// differs - structure + the call/branch chain match, register/EH scheduling does
-// not. Deferred to the final sweep.
 RVA(0x000bc2d0, 0xd2)
 void CMulti::DropTimeout() {
     if (m_session->FindSlot(0x1388) == 0) {
@@ -3841,14 +3815,6 @@ i32 CMulti::AutoTuneCmdDelay() {
 // wsprintfA, and the four timing dwords (m_cmdDelay/m_resend/m_600/m_2d8). When a
 // recipient is given it goes point-to-point (SendStatPairRaw), else it broadcasts
 // (SendStatFrom). The two config-name CString temps run under the /GX frame.
-// @early-stop
-// reloc-masked plateau (96.4%): the instruction stream is byte-faithful (the
-// memset, the |0x80 flag, every blob field store, both GetConfigName + cached
-// wsprintfA-through-IAT formats, the four timing dwords, the recipient-vs-broadcast
-// send). The residual is non-steerable: the /GX unwind cookie immediate (push 0xb
-// vs 0x0), the wsprintfA IAT pointer symbol (__imp vs raw 0x6c44c0; reloc-masked),
-// the CString-buffer read kept in the return reg vs re-read from the temp slot, and
-// a tail `mov eax,1` materialization. Final sweep.
 RVA(0x000bccd0, 0x141)
 i32 CMulti::SaveConfig(CNetSessionNode* recipient) {
     CNetConfigBlob blob;

@@ -16,19 +16,6 @@ const double g_motionTimeScale = 0.001; // 0x5f04f0
 
 // The standalone ctor. Its CMotionState member constructor is inlined, producing
 // the scheduled zeroing and default [MIN,MAX] bounds at +0x38.
-// @early-stop
-// 98.4% (vptr-stamp scheduling artifact, 6 residual bytes = ONE instruction):
-// prologue, the /GX EH frame, the byte-exact field-zero "column" schedule, the
-// min/max fan-out and the epilogue all match. Retail keeps the intermediate
-// CUserLogic vptr stamp in the post-link slot and stamps the most-derived
-// CMovingLogic vptr LATE (after the field init); cl here instead MOVES the
-// CMovingLogic stamp into that early slot (DSE'ing the CUserLogic stamp) and emits
-// no late stamp - because the min/max double loads clobber ecx, so cl cannot hoist
-// the SEH-restore load into the post-link slot the way the byte-exact CPathHazard
-// no-arg ctor (0x13170, no double init -> ecx free) does. A non-steerable cl
-// scheduling/DSE micro-decision; logic complete. Deferred to the final sweep.
-// @interleaver CMovingLogic - own-class out-of-line COMDAT (0x13xxx leaf-ctor pool, run
-// methods sit in the engine band 0x16cdd0+); RVA-placement artifact per the header note.
 RVA(0x00013940, 0x1e1)
 CMovingLogic::CMovingLogic() {}
 
@@ -135,43 +122,43 @@ i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject* 
         return 0;
     }
     switch (mode) {
-    case 7: {
-        // READ: pull the length-prefixed text, parse the name back, read the ints.
-        i32 len;
-        arc->Read(&len, 4);
-        void* buf = RezAlloc(len);
-        arc->Read(buf, len);
-        istrstream accum(static_cast<char*>(buf), len); // ??0istrstream + vbase flag
-        accum >> m_link.m_str;
-        RezFree(buf);
-        arc->Read(&m_28, 4);
-        arc->Read(&m_2c, 4);
-        arc->Read(&g_logicTypesRegistered, 4);
-        arc->Read(&m_prevAnimSetNode, 4);
-        m_0c = a4;
-        m_object = static_cast<CWwdGameObjectA*>(a4);
-        m_objAux = (a4)->m_7c;
-        m_deferredCallback = 0;
-        m_gatedCallback = 0;
-        m_28 = 0x3e9;
-        // scope-end: cl emits ~istrstream (0x1697c0) then the ~ios vbase (0x169d70)
-        break;
-    }
-    case 4: {
-        // WRITE: render the name to bute text, length-prefix it, append ints.
-        char buf[0x100];
-        ostrstream accum(buf, 0x100); // ??0ostrstream(buf, 0x100, ios::out=2) + vbase flag
-        accum << m_link.m_str;
-        i32 len = accum.pcount(); // the inlined vbase rdbuf()->out_waiting() probe
-        arc->Write(&len, 4);
-        arc->Write(accum.str(), len); // inline forward -> ?str@strstreambuf (0x1692b0)
-        arc->Write(&m_28, 4);
-        arc->Write(&m_2c, 4);
-        arc->Write(&g_logicTypesRegistered, 4);
-        arc->Write(&m_prevAnimSetNode, 4);
-        // scope-end: cl emits ~ostrstream (0x1699c0) then the ~ios vbase (0x169d70)
-        break;
-    }
+        case 7: {
+            // READ: pull the length-prefixed text, parse the name back, read the ints.
+            i32 len;
+            arc->Read(&len, 4);
+            void* buf = RezAlloc(len);
+            arc->Read(buf, len);
+            istrstream accum(static_cast<char*>(buf), len); // ??0istrstream + vbase flag
+            accum >> m_link.m_str;
+            RezFree(buf);
+            arc->Read(&m_28, 4);
+            arc->Read(&m_2c, 4);
+            arc->Read(&g_logicTypesRegistered, 4);
+            arc->Read(&m_prevAnimSetNode, 4);
+            m_0c = a4;
+            m_object = static_cast<CWwdGameObjectA*>(a4);
+            m_objAux = (a4)->m_7c;
+            m_deferredCallback = 0;
+            m_gatedCallback = 0;
+            m_28 = 0x3e9;
+            // scope-end: cl emits ~istrstream (0x1697c0) then the ~ios vbase (0x169d70)
+            break;
+        }
+        case 4: {
+            // WRITE: render the name to bute text, length-prefix it, append ints.
+            char buf[0x100];
+            ostrstream accum(buf, 0x100); // ??0ostrstream(buf, 0x100, ios::out=2) + vbase flag
+            accum << m_link.m_str;
+            i32 len = accum.pcount(); // the inlined vbase rdbuf()->out_waiting() probe
+            arc->Write(&len, 4);
+            arc->Write(accum.str(), len); // inline forward -> ?str@strstreambuf (0x1692b0)
+            arc->Write(&m_28, 4);
+            arc->Write(&m_2c, 4);
+            arc->Write(&g_logicTypesRegistered, 4);
+            arc->Write(&m_prevAnimSetNode, 4);
+            // scope-end: cl emits ~ostrstream (0x1699c0) then the ~ios vbase (0x169d70)
+            break;
+        }
     }
     return 1;
 }
@@ -289,37 +276,37 @@ i32 CMovingLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject
         return 0;
     }
     switch (mode) {
-    case 7: {
-        // READ: pull the length-prefixed text, parse it back, read the ints.
-        i32 len;
-        arc->Read(&len, 4);
-        void* buf = RezAlloc(len);
-        arc->Read(buf, len);
-        istrstream accum(static_cast<char*>(buf), len); // ??0istrstream + vbase flag
-        ReadCurve(accum, *Motion());
-        RezFree(buf);
-        arc->Read(&m_140, 4);
-        arc->Read(&m_144, 4);
-        arc->Read(&m_148, 4);
-        arc->Read(&m_14c, 4);
-        // scope-end: cl emits ~istrstream (0x1697c0) then the ~ios vbase (0x169d70)
-        break;
-    }
-    case 4: {
-        // WRITE: render the curve to bute text, length-prefix it, append ints.
-        char buf[0x100];
-        ostrstream accum(buf, 0x100); // ??0ostrstream(buf, 0x100, ios::out=2) + vbase flag
-        WriteCurve(accum, *Motion());
-        i32 len = accum.pcount(); // the inlined vbase rdbuf()->out_waiting() probe
-        arc->Write(&len, 4);
-        arc->Write(accum.str(), len); // inline forward -> ?str@strstreambuf (0x1692b0)
-        arc->Write(&m_140, 4);
-        arc->Write(&m_144, 4);
-        arc->Write(&m_148, 4);
-        arc->Write(&m_14c, 4);
-        // scope-end: cl emits ~ostrstream (0x1699c0) then the ~ios vbase (0x169d70)
-        break;
-    }
+        case 7: {
+            // READ: pull the length-prefixed text, parse it back, read the ints.
+            i32 len;
+            arc->Read(&len, 4);
+            void* buf = RezAlloc(len);
+            arc->Read(buf, len);
+            istrstream accum(static_cast<char*>(buf), len); // ??0istrstream + vbase flag
+            ReadCurve(accum, *Motion());
+            RezFree(buf);
+            arc->Read(&m_140, 4);
+            arc->Read(&m_144, 4);
+            arc->Read(&m_148, 4);
+            arc->Read(&m_14c, 4);
+            // scope-end: cl emits ~istrstream (0x1697c0) then the ~ios vbase (0x169d70)
+            break;
+        }
+        case 4: {
+            // WRITE: render the curve to bute text, length-prefix it, append ints.
+            char buf[0x100];
+            ostrstream accum(buf, 0x100); // ??0ostrstream(buf, 0x100, ios::out=2) + vbase flag
+            WriteCurve(accum, *Motion());
+            i32 len = accum.pcount(); // the inlined vbase rdbuf()->out_waiting() probe
+            arc->Write(&len, 4);
+            arc->Write(accum.str(), len); // inline forward -> ?str@strstreambuf (0x1692b0)
+            arc->Write(&m_140, 4);
+            arc->Write(&m_144, 4);
+            arc->Write(&m_148, 4);
+            arc->Write(&m_14c, 4);
+            // scope-end: cl emits ~ostrstream (0x1699c0) then the ~ios vbase (0x169d70)
+            break;
+        }
     }
     return CUserLogic::SerializeMove(arc, mode, a3, a4) != 0;
 }

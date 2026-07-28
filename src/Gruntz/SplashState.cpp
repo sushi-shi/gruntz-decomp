@@ -24,13 +24,6 @@
 
 // @confidence: high
 // @source: decomp-xref
-// @early-stop
-// Code bytes 100% byte-identical to retail; some reloc operands can never pair by
-// name (g_assetRoot @0x64e25c delinks as ?g_netE25c@@..., the "_" arg as
-// ?g_dat60b588@@...), so the function stays at the documented reloc-masked
-// plateau, NOT exact. (The CState::LoadGameAssetNamespaces base-chain reloc DOES
-// bind now - the slot-1 family unification named it.) See
-// docs/patterns/external-nobody-callee.md + reloc-typing-vptr-global.md.
 #include <Wap32/GameApp.h> // ex Globals.h
 RVA(0x000f9780, 0x8c)
 i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 c) {
