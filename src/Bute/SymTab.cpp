@@ -250,10 +250,13 @@ i32 CParseSource::SetPos(i32 pos) {
 // regalloc/scheduling wall (docs/patterns/pin-local-for-callee-saved-reg.md +
 // reread-member-view-pointer.md): logic + control-flow byte-exact (same 3-way
 // dispatch, shared return-0 epilogue, both inline rep movsd/movsb memcpys, the
-// vtable call). Residue is allocator/selection only: retail holds the mapped-
-// source ptr in edx and folds `sub esi,[edx+0xc]` (1 instr) where cl loads
-// sd->m_baseOffset to a reg first, plus a je-vs-jbe 1-byte branch encoding on the empty
-// check. Not source-steerable. ~89%; SetPos is 100%.
+// vtable call). The "je-vs-jbe 1-byte branch encoding on the empty check" WAS steerable
+// (jcc_sieve 2026-07-28, 91.20 -> 92.72): `test ebp,ebp / jbe` is the negation of an
+// UNSIGNED `want > 0`, not `want != 0` - CF is always clear after `test`, so the two
+// branches are the same and only the source operator picks the encoding. Residue is
+// allocator/selection only: retail holds the mapped-source ptr in edx and folds
+// `sub esi,[edx+0xc]` (1 instr) where cl loads sd->m_baseOffset to a reg first.
+// SetPos is 100%.
 RVA(0x00139af0, 0xcc)
 i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
     if (seekPos != -1) {
@@ -265,7 +268,9 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
     if (pos + want > m_length) {
         want = m_length - pos;
     }
-    if (want != 0) {
+    // `> 0`, not `!= 0`: `test ebp,ebp / jbe` is the negation of an UNSIGNED `> 0` (CF is
+    // always clear after `test`, so jbe == je - only the encoding differs).
+    if (want > 0) {
         CSymTab* sd = m_owner;
         if (sd->m_mappedBuf) {
             const char* base = sd->m_mappedBuf + (m_base - sd->m_baseOffset + pos);

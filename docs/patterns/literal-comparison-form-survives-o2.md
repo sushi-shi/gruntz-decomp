@@ -85,6 +85,34 @@ first. `CRezImage::FlipVertical` @0x176840, 41.61 -> **47.36** with `i32 wid = m
 above the three byte loops. (The converse - retail comparing where we down-count - means
 the index is still live, e.g. because the row addresses are computed from it.)
 
+## And: `test x,x / jbe` is an UNSIGNED `> 0`, not `!= 0`
+
+`CF` is always clear after `test`, so `jbe` and `je` are behaviourally the same branch here
+- but cl only emits the `jbe` encoding when the *source operator* is `>`/`<=` on an
+**unsigned** value. `if (want != 0)` gives `je`; `if (want > 0)` gives `jbe`.
+
+`CParseSource::Read` @0x139af0 91.20 -> **92.72** (`if (want > 0)`, want u32), and
+`CFaderShape::ApplyInit` @0x1817e0's mode guard 72.56 -> 72.68
+(`if ((u32)pInit->m_14 <= 0) goto fail;` - the negated form, since that guard bails).
+Both had the 1-byte difference filed as an unsteerable encoding choice.
+
+## And: two range guards to ONE far exit need ONE `||`
+
+`if (p < 0) goto fail; if (p > 100) goto fail;` lets cl place the FIRST guard's target
+inline between the guards and the body, which forces the second guard to invert and jump
+*forward to the body* (`jle <body>`). Retail sends both to the same far block
+(`jl <fail> / jg <fail>`), which is one `||`:
+
+```cpp
+if (p < 0 || p > 100) {
+    goto fail;
+}
+```
+
+`CFaderSine::ApplyInit` @0x17fe00 71.58 -> **87.07** on that one edit - it had been filed
+as "a callee-saved coloring swap that touches every ModRM byte", and the colouring came
+right on its own.
+
 ## Not this pattern
 
 `jl`↔`jb` (and `jg`↔`ja`, `jle`↔`jbe`, `jge`↔`jae`) is a *signedness* difference, i.e. a real type
