@@ -14,7 +14,6 @@
 #include <DDrawMgr/WallProject.h>
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
 
-
 VTBL(CDDSurface, 0x001ef7f0); // ??_7CDDSurface@@6B@ (9-slot base surface vtable)
 DATA(0x00253c88)
 CPtrArray g_imageCache;
@@ -325,8 +324,7 @@ i32 CDDSurface::SetPalette(CDDPalette* pal, i32 unused) {
 
 RVA(0x0013e6d0, 0x88)
 void* CDDSurface::Lock(void* rect) {
-    i32 hr = m_ddSurface
-                 ->Lock(static_cast<LPRECT>(rect), &m_apiDesc, 1, 0);
+    i32 hr = m_ddSurface->Lock(static_cast<LPRECT>(rect), &m_apiDesc, 1, 0);
     if (hr == 0) {
         return m_lockBits;
     }
@@ -939,10 +937,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                     u32 green = hi & 0x1f;
                     u32 red = hi & 0xffffffe0;
                     *srcPix++ = static_cast<u16>(
-                        (Clut16(0x10002 + off + (blue << 6)
-                         )
-                         | Clut16(0x2 + off + (green << 6)
-                         )
+                        (Clut16(0x10002 + off + (blue << 6)) | Clut16(0x2 + off + (green << 6))
                          | Clut16(0x20002 + off + red * 2))
                     );
                 }
@@ -959,10 +954,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                     u32 green = hi & 0x1f;
                     u32 red = hi & 0xffffffe0;
                     *srcPix++ = static_cast<u16>(
-                        (Clut16(0x10002 + off + (blue << 6)
-                         )
-                         | Clut16(0x2 + off + (green << 6)
-                         )
+                        (Clut16(0x10002 + off + (blue << 6)) | Clut16(0x2 + off + (green << 6))
                          | Clut16(0x20002 + off + red * 2))
                     );
                 }
@@ -1282,7 +1274,7 @@ i32 CDDSurface::Blit1624(void* srcv, i32 mode) {
 // 91%). Regalloc-ordering wall (docs/patterns/zero-register-pinning.md).
 RVA(0x0013fe60, 0x11e)
 i32 CDDSurface::Blit248(void* srcv, void* palv, i32 mode) {
-    u8* pal = static_cast<u8*>(palv);
+    PALETTEENTRY* pal = static_cast<PALETTEENTRY*>(palv);
     if (pal == 0) {
         return 0;
     }
@@ -1296,9 +1288,9 @@ i32 CDDSurface::Blit248(void* srcv, void* palv, i32 mode) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
                 u8 idx = *src++;
-                *dst++ = pal[idx * 4 + 2];
-                *dst++ = pal[idx * 4 + 1];
-                *dst++ = pal[idx * 4];
+                *dst++ = pal[idx].peBlue;
+                *dst++ = pal[idx].peGreen;
+                *dst++ = pal[idx].peRed;
             }
         }
     } else {
@@ -1306,9 +1298,9 @@ i32 CDDSurface::Blit248(void* srcv, void* palv, i32 mode) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
                 u8 idx = *src++;
-                *dst++ = pal[idx * 4 + 2];
-                *dst++ = pal[idx * 4 + 1];
-                *dst++ = pal[idx * 4];
+                *dst++ = pal[idx].peBlue;
+                *dst++ = pal[idx].peGreen;
+                *dst++ = pal[idx].peRed;
             }
         }
     }
@@ -1371,7 +1363,7 @@ i32 CDDSurface::Blit2416(void* srcv, i32 mode) {
 // break) is faithful; only the regalloc/scheduling of the spills diverges.
 RVA(0x00140110, 0x30b)
 i32 CDDSurface::Blit824(void* srcv, void* palv, i32 mode) {
-    u8* pal = static_cast<u8*>(palv);
+    PALETTEENTRY* pal = static_cast<PALETTEENTRY*>(palv);
     if (pal == 0) {
         return 0;
     }
@@ -1389,14 +1381,14 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, i32 mode) {
                 i32 s2 = src[2];
                 src += 3;
                 i32 best = 0;
-                i32 d0 = s2 - pal[0];
-                i32 d1 = s1 - pal[1];
-                i32 d2 = s0 - pal[2];
+                i32 d0 = s2 - pal[0].peRed;
+                i32 d1 = s1 - pal[0].peGreen;
+                i32 d2 = s0 - pal[0].peBlue;
                 i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
                 for (i32 k = 1; k < 256; k++) {
-                    i32 e0 = s2 - pal[k * 4];
-                    i32 e1 = s1 - pal[k * 4 + 1];
-                    i32 e2 = s0 - pal[k * 4 + 2];
+                    i32 e0 = s2 - pal[k].peRed;
+                    i32 e1 = s1 - pal[k].peGreen;
+                    i32 e2 = s0 - pal[k].peBlue;
                     i32 d = e0 * e0 + e1 * e1 + e2 * e2;
                     if (d < bestd) {
                         best = k;
@@ -1419,14 +1411,14 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, i32 mode) {
                 i32 s2 = src[2];
                 src += 3;
                 i32 best = 0;
-                i32 d0 = s2 - pal[0];
-                i32 d1 = s1 - pal[1];
-                i32 d2 = s0 - pal[2];
+                i32 d0 = s2 - pal[0].peRed;
+                i32 d1 = s1 - pal[0].peGreen;
+                i32 d2 = s0 - pal[0].peBlue;
                 i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
                 for (i32 k = 1; k < 256; k++) {
-                    i32 e0 = s2 - pal[k * 4];
-                    i32 e1 = s1 - pal[k * 4 + 1];
-                    i32 e2 = s0 - pal[k * 4 + 2];
+                    i32 e0 = s2 - pal[k].peRed;
+                    i32 e1 = s1 - pal[k].peGreen;
+                    i32 e2 = s0 - pal[k].peBlue;
                     i32 d = e0 * e0 + e1 * e1 + e2 * e2;
                     if (d < bestd) {
                         best = k;
@@ -1458,7 +1450,7 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, i32 mode) {
 // blue<->pal[2] min-SSD, exact-match break) is faithful.
 RVA(0x00140420, 0x34f)
 i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
-    u8* pal = static_cast<u8*>(palv);
+    PALETTEENTRY* pal = static_cast<PALETTEENTRY*>(palv);
     if (pal == 0) {
         return 0;
     }
@@ -1478,14 +1470,14 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
                     static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_gUp))) << g_gDown));
                 i32 blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
                 i32 best = 0;
-                i32 d1 = green - pal[1];
-                i32 d2 = blue - pal[2];
-                i32 d0 = red - pal[0];
+                i32 d1 = green - pal[0].peGreen;
+                i32 d2 = blue - pal[0].peBlue;
+                i32 d0 = red - pal[0].peRed;
                 i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
                 for (i32 k = 1; k < 256; k++) {
-                    i32 e0 = red - pal[k * 4];
-                    i32 e1 = green - pal[k * 4 + 1];
-                    i32 e2 = blue - pal[k * 4 + 2];
+                    i32 e0 = red - pal[k].peRed;
+                    i32 e1 = green - pal[k].peGreen;
+                    i32 e2 = blue - pal[k].peBlue;
                     i32 d = e0 * e0 + e1 * e1 + e2 * e2;
                     if (d < bestd) {
                         best = k;
@@ -1510,14 +1502,14 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
                     static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_gUp))) << g_gDown));
                 i32 blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
                 i32 best = 0;
-                i32 d1 = green - pal[1];
-                i32 d2 = blue - pal[2];
-                i32 d0 = red - pal[0];
+                i32 d1 = green - pal[0].peGreen;
+                i32 d2 = blue - pal[0].peBlue;
+                i32 d0 = red - pal[0].peRed;
                 i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
                 for (i32 k = 1; k < 256; k++) {
-                    i32 e0 = red - pal[k * 4];
-                    i32 e1 = green - pal[k * 4 + 1];
-                    i32 e2 = blue - pal[k * 4 + 2];
+                    i32 e0 = red - pal[k].peRed;
+                    i32 e1 = green - pal[k].peGreen;
+                    i32 e2 = blue - pal[k].peBlue;
                     i32 d = e0 * e0 + e1 * e1 + e2 * e2;
                     if (d < bestd) {
                         best = k;
@@ -1925,17 +1917,7 @@ i32 CDDSurface::RotateBlit(
     i32 colorkey
 ) {
     // Rotation fixed at 0.0f (no rotate); the 5th param carries the scale.
-    ImageRotateBlit(
-        a1,
-        a2,
-        pivot,
-        this,
-        src,
-        0.0f,
-        scale,
-        mode,
-        colorkey
-    );
+    ImageRotateBlit(a1, a2, pivot, this, src, 0.0f, scale, mode, colorkey);
     return 1;
 }
 
@@ -1960,17 +1942,7 @@ i32 CDDSurface::ScaleBlit(
     i32 colorkey
 ) {
     // Scale fixed at 1.0f (no scale); the 5th param carries the rotation.
-    ImageRotateBlit(
-        a1,
-        a2,
-        pivot,
-        this,
-        src,
-        angle,
-        1.0f,
-        mode,
-        colorkey
-    );
+    ImageRotateBlit(a1, a2, pivot, this, src, angle, 1.0f, mode, colorkey);
     return 1;
 }
 
@@ -1985,17 +1957,7 @@ i32 CDDSurface::RotateScaleBlit(
     i32 mode,
     i32 colorkey
 ) {
-    ImageRotateBlit(
-        a1,
-        a2,
-        pivot,
-        this,
-        src,
-        angle,
-        scale,
-        mode,
-        colorkey
-    );
+    ImageRotateBlit(a1, a2, pivot, this, src, angle, scale, mode, colorkey);
     return 1;
 }
 
