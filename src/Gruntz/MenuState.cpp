@@ -155,9 +155,9 @@ void CMenuState::ReleaseResources() {
     if (m_world) {
         // The test value of m_c is reused for the leaf-registry access; the
         // worker-list dispose re-reads m_c fresh (retail does not cache it).
-        SoundStream* r = m_world->m_soundRegistry->m_2c;
-        if (r) {
-            (static_cast<SoundStream*>(r))->Stop();
+        CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+        if (reg->m_soundStream) {
+            reg->m_soundStream->Stop();
         }
         m_world->m_workerList->ClearWorkers();
     }
@@ -212,9 +212,9 @@ void CMenuState::StopMusicChain() {
         return;
     }
     do {
-        SoundStream* r = m_world->m_soundRegistry->m_2c;
-        if (r) {
-            (static_cast<SoundDevice*>(r))->PurgeVoiceList(-1);
+        CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+        if (reg->m_soundStream) {
+            reg->m_soundStream->PurgeVoiceList(-1);
         }
     } while (m_1bc->m_10->IsPlaying());
 }

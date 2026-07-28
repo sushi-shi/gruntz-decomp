@@ -704,7 +704,7 @@ i32 CDDrawSubMgrLeafScan::BindSoundStream(i32 force) {
     } else {
         m_emitGate = 0;
     }
-    m_2c = stream;
+    m_soundStream = stream;
     g_sndCueTag = SND_CUE_NEUTRAL;
     return 1;
 }
@@ -712,7 +712,7 @@ i32 CDDrawSubMgrLeafScan::BindSoundStream(i32 force) {
 RVA(0x00157ae0, 0x11)
 void CDDrawSubMgrLeafScan::Unload() { // slot 7 (CLoadable::Unload override; clears the map)
     ClearMap();
-    m_2c = 0; // clear the held stream (+0x2c; retail movl [esi+0x2c],0)
+    m_soundStream = 0; // clear the held stream (+0x2c; retail movl [esi+0x2c],0)
 }
 
 // ===========================================================================
@@ -1024,7 +1024,7 @@ i32 CDDrawSubMgrLeafScan::HasKeyEqual(const char* str) {
 
 RVA(0x001584a0, 0x43)
 i32 CDDrawSubMgrLeafScan::ProbeFirst(i32 arg) {
-    if (m_2c == 0) {
+    if (m_soundStream == 0) {
         return 0;
     }
     LeafCue* val = GetFirstValue();
@@ -1044,7 +1044,7 @@ i32 CDDrawSubMgrLeafScan::MatchSub(LeafCue* arg1, i32 arg2) {
     if (arg1 == 0) {
         return 0;
     }
-    if (m_2c == 0) {
+    if (m_soundStream == 0) {
         return 0;
     }
     // ONE WAVEFORMATEX (0x12 = 18 bytes): read the cue's format, then hand that same
@@ -1053,11 +1053,11 @@ i32 CDDrawSubMgrLeafScan::MatchSub(LeafCue* arg1, i32 arg2) {
     if (arg1->m_10->GetFormat(fmt, 0x12, 0) == 0) {
         return 0;
     }
-    if (m_2c->SetPrimaryFormat(fmt) == 0) {
+    if (m_soundStream->SetPrimaryFormat(fmt) == 0) {
         return 0;
     }
     if (arg2 != 0) {
-        if (m_2c->StartPrimary() == 0) {
+        if (m_soundStream->StartPrimary() == 0) {
             return 0;
         }
     }

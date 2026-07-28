@@ -17,14 +17,14 @@
 #include <Gruntz/GameRegistry.h>    // CDDrawSurfaceMgr (the typed CState::m_c holder)
 #include <Dsndmgr/DirectSoundMgr.h> // the ONE DSoundCloneInst shape (ConfigureItem @0x1360d0)
 #include <Dsndmgr/SoundStream.h>    // SoundStream::Stop (ResetPreview's owned stream)
-#include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (ReportError/DelayedQuit + CGameWnd chain)
-#include <Gruntz/PreviewState.h> // canonical CPreviewState (the level-preview screen state)
-#include <Rez/FrameClock.h>      // frame-clock band (g_killCueClock)
-#include <Rez/RezSync.h>         // ex Globals.h
-#include <Wap32/GameApp.h>       // ex Globals.h
-#include <Gruntz/SoundState.h>   // ex Globals.h transitive
-#include <Gruntz/LevelPreview.h>    // ex Globals.h
-#include <Image/ImageFormatTag.h>   // IMGTAG_XCP - the screen-page format word
+#include <Gruntz/GruntzMgr.h>     // canonical CGruntzMgr (ReportError/DelayedQuit + CGameWnd chain)
+#include <Gruntz/PreviewState.h>  // canonical CPreviewState (the level-preview screen state)
+#include <Rez/FrameClock.h>       // frame-clock band (g_killCueClock)
+#include <Rez/RezSync.h>          // ex Globals.h
+#include <Wap32/GameApp.h>        // ex Globals.h
+#include <Gruntz/SoundState.h>    // ex Globals.h transitive
+#include <Gruntz/LevelPreview.h>  // ex Globals.h
+#include <Image/ImageFormatTag.h> // IMGTAG_XCP - the screen-page format word
 
 RVA(0x000de030, 0xc2)
 i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 a1, i32 a2) {
@@ -62,13 +62,14 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 a1, i32 a2) {
 // 2026-07-16), i.e. it is linked-in dead code, so it is a plain non-virtual here -
 // NOT asserted as this class's slot-2 override (CPreviewState's vtable is unlocated).
 // m_c->m_soundRegistry is re-read each statement (retail does not cache it).
-// @early-stop
-// ~98.8% - m_28-intermediate regalloc wall (retail reuses eax->eax->ecx; cl picks
-// fresh ecx/edx) - a 2-3 byte modrm micro-diff, not source-steerable.
+// EXACT. The old "m_28-intermediate regalloc wall" was the spelling - read ->m_2c off a
+// NAMED registry local, twice.
+// docs/patterns/named-local-keeps-deref-base-in-own-register.md
 RVA(0x000de140, 0x33)
 void CPreviewState::ResetPreview() {
-    if (m_world->m_soundRegistry->m_2c != 0) {
-        m_world->m_soundRegistry->m_2c->Stop();
+    CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+    if (reg->m_soundStream != 0) {
+        reg->m_soundStream->Stop();
     }
     m_world->m_soundRegistry->RemoveKeysEqual("PREVIEW", "_");
     CState::ReleaseResources();
@@ -88,11 +89,9 @@ i32 CPreviewState::NextScreenCmd(i32 param) {
 // and bail (returns 0); otherwise tick the audio cue and count the +0x1b8 timer
 // down by the frame delta (clamped at 0), returning 1 to keep the screen alive.
 //
-// @early-stop
-// 99.78% - pointer-chain scratch-register wall (docs/patterns/reread-member-view-
-// pointer.md): the m_0c->m_28->m_2c audio-cue deref - retail reuses eax for the
-// m_28 intermediate (`mov eax,[eax+0x28]`), cl picks ecx; 2 register-field bytes.
-// Logic + control flow + all externs byte-exact. Final sweep.
+// EXACT. The old "pointer-chain scratch-register wall" was the spelling: latching
+// ->m_2c into a local let cl collapse the deref; read it off a NAMED registry local.
+// docs/patterns/named-local-keeps-deref-base-in-own-register.md
 RVA(0x000de200, 0x85)
 i32 CPreviewState::Tick() {
     IDirectDrawSurface* surf = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
@@ -102,9 +101,9 @@ i32 CPreviewState::Tick() {
             return 0;
         }
     }
-    SoundStream* snd = m_world->m_soundRegistry->m_2c;
-    if (snd != 0) {
-        snd->PurgeVoiceList(-1);
+    CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+    if (reg->m_soundStream != 0) {
+        reg->m_soundStream->PurgeVoiceList(-1);
     }
     if (static_cast<u32>(g_wap32FrameDelta) >= m_1b8) {
         m_1b8 = 0;

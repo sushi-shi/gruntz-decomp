@@ -1973,7 +1973,7 @@ void CGruntzMgr::SetRunState(i32 v) {
     if (m_world == 0) {
         return;
     }
-    SoundStream* sub = m_world->m_soundRegistry->m_2c;
+    SoundStream* sub = m_world->m_soundRegistry->m_soundStream;
     if (sub) {
         sub->Stop();
     }
@@ -2629,13 +2629,14 @@ i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, void* snapshot) {
 // slot 24 (+0x60); then (always) when a level is loaded it stops the bank if the
 // game is still in play, flushes the +0x54/+0x68 controllers, notifies slot 25
 // (+0x64), ticks the input singleton and runs the post-switch hook. Returns 1.
-// @early-stop
-// two-instruction regalloc residual (99.90%): the whole body - including the
-// m_session->m_slots walk - is byte-faithful. Retail parks m_sound in eax for the
-// `m_pCurrent ? IsBusy() : 0` chain (`mov eax,[esi+0x48] / mov ecx,[eax+0x1c]`)
-// where cl reuses ecx for both (`mov ecx,[esi+0x48] / mov ecx,[ecx+0x1c]`).
-// Hoisting m_sound into a named local makes it WORSE (96.06%, tested); no lever.
-// (The old "~84% / edi stack-offset shift" note was stale - see git history.)
+// EXACT. The last residue was the `m_pCurrent ? IsBusy() : 0` chain: retail parks
+// m_sound in eax (`mov eax,[esi+0x48] / mov ecx,[eax+0x1c]`) where reading the member
+// twice let cl collapse the two-step deref into one register (`mov ecx,[esi+0x48] /
+// mov ecx,[ecx+0x1c]`). Reading the condition through a named local (`snd`) - while the
+// body still reloads m_sound for StopAll, as retail does - forces the base into its own
+// register and flips the pair. Hoisting m_sound for the WHOLE block is what regressed it
+// to 96.06% before; the local must die with the condition.
+// docs/patterns/named-local-keeps-deref-base-in-own-register.md
 RVA(0x0008e980, 0x11e)
 i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
     if (m_curState && m_curState->Update() == GAMESTATE_NONE) {
@@ -2666,11 +2667,12 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
         }
         if (m_world) {
             CDDrawSubMgrLeafScan* sub = m_world->m_soundRegistry;
-            if (sub && sub->m_2c) {
-                sub->m_2c->Stop();
+            if (sub && sub->m_soundStream) {
+                sub->m_soundStream->Stop();
             }
         }
-        if ((m_sound->m_pCurrent ? m_sound->m_pCurrent->IsBusy() : 0) && stopBank) {
+        CGruntzSoundZ* snd = m_sound;
+        if ((snd->m_pCurrent ? snd->m_pCurrent->IsBusy() : 0) && stopBank) {
             m_sound->StopAll();
         }
         m_curState->PauseGame();
@@ -2856,7 +2858,7 @@ void CGruntzMgr::UnloadSoundChain() {
     if (m_world) {
         CDDrawSubMgrLeafScan* sub = m_world->m_soundRegistry;
         if (sub) {
-            SoundStream* obj = sub->m_2c;
+            SoundStream* obj = sub->m_soundStream;
             if (obj) {
                 obj->Stop(); // direct call 0x137a80 (SoundStream::Stop)
             }

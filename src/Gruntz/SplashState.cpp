@@ -9,7 +9,7 @@
 
 #include <Gruntz/BankMgr.h>           // CBankMgr::Lookup / CSymTab::LoadGroup (m_8/m_2c)
 #include <DinMgr2/DirectInputMgr2.h>  // CInputDevBase (Poll/m_currentKeys press-edge flags)
-#include <Gruntz/GameMode.h>          // g_actorList (poll list) + GM_SimpleAnim (Render spine)
+#include <Gruntz/GameMode.h>          // g_actorList (the Render spine's poll list)
 #include <Gruntz/State.h>             // CState base (m_4/m_8/m_c/m_2c owner/view/bank facets)
 #include <Gruntz/View.h>              // CState::m_c render sub-object facets
 #include <Gruntz/GameRegistry.h>      // CDDrawSurfaceMgr (the m_c holder)
@@ -64,13 +64,15 @@ i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 c) {
 // ~CSplashState @0x8d02b (the in-dtor statically-bound own-override call). Homed
 // here from GameMode.cpp (this TU owns the 0xf97xx-0xf9bxx CSplashState band).
 // m_c->m_soundRegistry is re-read each statement (retail does not cache it).
-// @early-stop
-// ~98.7% - m_28-intermediate regalloc wall (retail reuses eax->eax->ecx; cl picks
-// fresh ecx/edx) - a 2-3 byte modrm micro-diff, not source-steerable.
+// EXACT. The old "m_28-intermediate regalloc wall" was the spelling: read ->m_2c off a
+// NAMED registry local (twice) instead of chaining m_world->m_soundRegistry->m_2c, and
+// cl stops collapsing the two-step deref into one register.
+// docs/patterns/named-local-keeps-deref-base-in-own-register.md
 RVA(0x000f9840, 0x29)
 void CSplashState::ReleaseResources() {
-    if (m_world->m_soundRegistry->m_2c != 0) {
-        m_world->m_soundRegistry->m_2c->Stop();
+    CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+    if (reg->m_soundStream != 0) {
+        reg->m_soundStream->Stop();
     }
     m_world->m_soundRegistry->ClearMap();
     CState::ReleaseResources();
@@ -83,15 +85,12 @@ void CSplashState::ReleaseResources() {
 // frame delta (clamped at 0); when an entity latches flag&1 OR the timer has expired
 // (m_1b8==0), post WM_COMMAND 0x8023 to the game window and clear the app run gate.
 //
-// @early-stop
-// Byte-exact except the cursor-anim gate `if(m_c->m_soundRegistry->m_2c)`:
-// retail materializes the chain reusing eax (`mov eax,[eax+0x28]; mov ecx,[eax+0x2c];
-// cmp ecx,esi`), cl keeps m_c in eax and folds the m_2c load into the cmp
-// (`mov ecx,[eax+0x28]; cmp [ecx+0x2c],esi`) - the reread-member-view-pointer
-// register wall (docs/patterns/reread-member-view-pointer.md). The direct analog
-// CCreditsState::Render (identical source line) hits the same wall at 97% and
-// LevelPreview::Tick @early-stops on it too. Logic + control flow + all externs
-// byte-exact; final sweep.
+// EXACT. The old "cursor-anim gate" wall was TWO bugs. (1) `GM_SimpleAnim(-1)` was a
+// FAKE per-TU `extern "C" __stdcall` decl bound to 0x136e20 - that address is
+// SoundStream::PurgeVoiceList, a __thiscall on the registry's m_2c (retail materializes
+// it into ecx precisely because it is the receiver). (2) the chain must be read off a
+// NAMED registry local so cl does not fold the m_2c load into the cmp.
+// docs/patterns/named-local-keeps-deref-base-in-own-register.md
 RVA(0x000f9920, 0x108)
 i32 CSplashState::Render() {
     IDirectDrawSurface* in = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
@@ -102,8 +101,9 @@ i32 CSplashState::Render() {
         }
     }
 
-    if (m_world->m_soundRegistry->m_2c) {
-        GM_SimpleAnim(-1);
+    CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+    if (reg->m_soundStream) {
+        reg->m_soundStream->PurgeVoiceList(-1);
     }
 
     if (static_cast<u32>(g_wap32FrameDelta) >= m_1b8) {

@@ -31,7 +31,6 @@ static inline CGruntzMgr* Owner(CState* s) {
     return s->m_mgr;
 }
 
-
 DATA(0x0022bf74)
 i32 g_clipRegionEnabled; // owner def (zero-init .bss)
 
@@ -71,8 +70,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
         if (e) {
             char* val = e->BeginParse();
             if (val) {
-                m_mgr->m_sound
-                    ->CreateBank(val, e->m_length, "CREDITZ"); // 0x138670
+                m_mgr->m_sound->CreateBank(val, e->m_length, "CREDITZ"); // 0x138670
             }
         }
     }
@@ -84,11 +82,8 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
         if (e2) {
             char* val = e2->BeginParse();
             if (val) {
-                m_mgr->m_sound->CreateBank(
-                    val,
-                    e2->m_length,
-                    "MONOLITH"
-                ); // 0x138670
+                m_mgr->m_sound->CreateBank(val, e2->m_length,
+                                           "MONOLITH"); // 0x138670
             }
         }
     }
@@ -109,9 +104,9 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
 RVA(0x00038f00, 0x87)
 void CCreditsState::ReleaseResources() {
     if (m_world) {
-        SoundStream* r = m_world->m_soundRegistry->m_2c;
-        if (r) {
-            (static_cast<SoundStream*>(r))->Stop();
+        CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+        if (reg->m_soundStream) {
+            reg->m_soundStream->Stop();
         }
         m_world->m_soundRegistry->RemoveKeysEqual("CREDITZ", "_");
         m_world->m_imageRegistry->RemoveKeysEqual("CREDITZ", "_");
@@ -149,8 +144,9 @@ i32 CCreditsState::Render() {
         }
     }
 
-    if (m_world->m_soundRegistry->m_2c) {
-        GM_SimpleAnim(-1);
+    CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+    if (reg->m_soundStream) {
+        reg->m_soundStream->PurgeVoiceList(-1);
     }
 
     // per-entity Update pass
@@ -406,10 +402,15 @@ i32 CCreditsState::DrawScrollingCredits() {
 // the offscreen DDraw surface's HDC to set the scroll rect, then seed the scroll
 // accumulator. (Was hosted on the fake CCreditzOwner this-view.)
 // @early-stop
-// scheduling tail (~99.7%): for the final (double)(unsigned)m_1f4 conversion the int64
-// temp's two halves are emitted in the opposite order relative to the fld/fmul. All other
-// bytes identical (llvm-objdump -dr). GetDC/ReleaseDC region is byte-exact via the real
-// IDirectDrawSurface COM slots.
+// unsigned->double lowering order (99.90%): the ONLY residue is which half of the int64
+// conversion temp is delayed past the numerator's fld/fmul - retail emits hi(ebx=0) then
+// lo(eax), cl emits lo then hi and the scheduler always delays the SECOND-emitted store:
+//   base   mov [ebp+1f4],eax / mov [esp+18],eax / fld / fmul / mov [esp+1c],ebx
+//   retail mov [ebp+1f4],eax / mov [esp+1c],ebx / fld / fmul / mov [esp+18],eax
+// lo-then-hi is baked into cl5's (double)(unsigned) lowering - five source spellings
+// (i32 local, unsigned local, double denom local, hoisted numerator, member-store-last)
+// all reproduce it; only a union/type-pun would emit hi first, which no dev wrote.
+// Everything else, incl. the GetDC/ReleaseDC COM slots, is byte-exact.
 RVA(0x00039a60, 0x179)
 i32 CCreditsState::SetupTitle() {
     // CSymTab::Insert resolves the "CREDITZ" section of FOURCC type 'TXT'

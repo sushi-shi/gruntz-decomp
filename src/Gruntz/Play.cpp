@@ -710,8 +710,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     // tear down the old grid (self->m_c->m_soundRegistry->m_2c) / map / sound sub-objects
-    SoundStream* grid =
-        self->m_world->m_soundRegistry->m_2c; // the CDDrawSubMgrLeafScan-held DSound stream
+    SoundStream* grid = self->m_world->m_soundRegistry
+                            ->m_soundStream; // the CDDrawSubMgrLeafScan-held DSound stream
     if (grid != 0) {
         grid->Stop();
     }
@@ -1333,8 +1333,8 @@ void CPlay::OnExit() {
 RVA(0x000cb740, 0x8f)
 void CPlay::ModeCleanup() {
     if (m_world) {
-        if (m_world->m_soundRegistry->m_2c) {
-            m_world->m_soundRegistry->m_2c->Stop();
+        if (m_world->m_soundRegistry->m_soundStream) {
+            m_world->m_soundRegistry->m_soundStream->Stop();
         }
         m_world->m_soundRegistry->ClearMap();
     }
@@ -4803,7 +4803,7 @@ i32 CPlay::Vslot15() {
     if (m_levelIndex == 0x20) {
         m_1c0 = 1;
         m_notifyLatch = 1;
-        SoundStream* stream = m_world->m_soundRegistry->m_2c;
+        SoundStream* stream = m_world->m_soundRegistry->m_soundStream;
         if (stream) {
             stream->Stop();
         }
@@ -6117,8 +6117,8 @@ void CPlay::FreeListTeardown() {
         m_mgr->m_cmdGrid->ClearGridRange(5);
     }
     ForwardReady();
-    if (m_world->m_soundRegistry->m_2c != 0) {
-        m_world->m_soundRegistry->m_2c->Stop();
+    if (m_world->m_soundRegistry->m_soundStream != 0) {
+        m_world->m_soundRegistry->m_soundStream->Stop();
     }
     m_mgr->m_sound->StopAndFlush();
     m_mgr->m_inputState->Teardown();

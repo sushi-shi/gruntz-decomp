@@ -86,24 +86,21 @@ i32 CHelpState::Vslot09(i32 arg) {
     return 1;
 }
 
-// CHelpState::Render (0x951f0, slot 5) - the help/attract per-frame poll/draw: when the
-// menu page's busy surface reports idle AND the InputVirtual slot reports idle, report the
-// exit error (0x8006/0x445) and bail; else stop the registrar's pooled resource, run every
-// attract actor's Update(), and if any actor raised its flags post the exit WM_COMMAND
-// (0x8036) and clear the app run gate. Byte-identical to retail except reloc-masked
-// operands (ReportError bare label, PostMessageA IAT-absolute, PurgeVoiceList cross-unit);
-// same scoring-artifact plateau as the sibling CAttract::Render (docs/matching-patterns.md).
-// @early-stop
-// 99.89%: complete + correct. Residual is a regalloc coin-flip on the res-chain
-// intermediate register (retail `mov eax,[eax+0x28]; mov ecx,[eax+0x2c]`, our cl
-// `mov ecx,[eax+0x28]; mov ecx,[ecx+0x2c]` - same value, m_28 pinned in eax vs ecx;
-// permuter no-change) plus the reloc-masked IAT/cross-unit operands the sibling
-// CAttract::Render documents (ReportError/PostMessageA/PurgeVoiceList). topic:regalloc.
 RVA(0x000951d0, 0x8)
 i32 CHelpState::FrameSlot28(i32) {
     return 1;
 }
 
+// CHelpState::Render (0x951f0, slot 5) - the help/attract per-frame poll/draw: when the
+// menu page's busy surface reports idle AND the InputVirtual slot reports idle, report the
+// exit error (0x8006/0x445) and bail; else stop the registrar's pooled resource, run every
+// attract actor's Update(), and if any actor raised its flags post the exit WM_COMMAND
+// (0x8036) and clear the app run gate.
+// EXACT. The old "res-chain regalloc coin-flip" (retail `mov eax,[eax+0x28] / mov
+// ecx,[eax+0x2c]` vs our collapsed `mov ecx,[eax+0x28] / mov ecx,[ecx+0x2c]`) was the
+// spelling: latching ->m_2c into a local lets cl reuse one register for the whole chain.
+// Name the REGISTRY and read ->m_2c off it twice (null test + call), as the sibling
+// CAttract::Render does. docs/patterns/named-local-keeps-deref-base-in-own-register.md
 RVA(0x000951f0, 0xeb)
 i32 CHelpState::Render() {
     IDirectDrawSurface* busy = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
@@ -114,9 +111,9 @@ i32 CHelpState::Render() {
         }
     }
 
-    SoundStream* res = m_world->m_soundRegistry->m_2c;
-    if (res) {
-        res->PurgeVoiceList(-1);
+    CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+    if (reg->m_soundStream) {
+        reg->m_soundStream->PurgeVoiceList(-1);
     }
 
     CFixedPtrArray32* list = g_actorList;
@@ -143,13 +140,8 @@ i32 CHelpState::InputVirtual() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    i32 r = RunTitleSeq(
-        g_titleBuf,
-        0,
-        0,
-        1,
-        0
-    ); // 0xfa350 (CState base method)
+    i32 r = RunTitleSeq(g_titleBuf, 0, 0, 1,
+                        0); // 0xfa350 (CState base method)
     while (ShowCursor(FALSE) >= 0) {
     }
     return r;
@@ -162,13 +154,8 @@ i32 CHelpState::Vslot06() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return RunTitleSeq(
-        g_titleBuf,
-        0,
-        0,
-        1,
-        0
-    ); // 0xfa350 (CState base method)
+    return RunTitleSeq(g_titleBuf, 0, 0, 1,
+                       0); // 0xfa350 (CState base method)
 }
 
 RVA(0x000953f0, 0x37)

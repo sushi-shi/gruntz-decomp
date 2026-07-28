@@ -33,10 +33,16 @@ static const i32 TILE_CLEAR = -1;
 // CopyRect + view re-derive on it).
 static const i32 LEVEL_COORD_UNSET = static_cast<i32>(0x80000000);
 
+// Y IS DECLARED FIRST - binary-proven, not cosmetic. cl5 hands out the spill/home
+// slots (and schedules the two argument loads) in local DECLARATION order, so with
+// `px_` first the second inlined copy in a two-probe body reuses the WRONG dead
+// parameter home ([esp+x] instead of [esp+y]). Flipping the two decls took
+// ProbeStepEdge/ProbeColumn/ProbeFeetKind/ProbeHeadSoft/VisitVisible to EXACT and
+// ProbeFootBlocked 82.6 -> 99.1. See docs/patterns/macro-local-decl-order-picks-param-home.md.
 #define PROBE_TILE(LVL, X, Y, RESULT)                                                              \
     do {                                                                                           \
-        i32 px_ = (X);                                                                             \
         i32 py_ = (Y);                                                                             \
+        i32 px_ = (X);                                                                             \
         if (px_ < 0) {                                                                             \
             px_ = 0;                                                                               \
         } else {                                                                                   \

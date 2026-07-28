@@ -268,7 +268,7 @@ void CDDrawSurfaceMgr::FreeContext() {
         // here is retired): CDDrawSubMgrLeafScan::BindSoundStream @0x157a80 assigns
         // it straight from this manager's m_soundStream, and this site's
         // non-virtual call 0x137a80 is SoundStream::Stop.
-        SoundStream* inner = m_soundRegistry->m_2c;
+        SoundStream* inner = m_soundRegistry->m_soundStream;
         if (inner != 0) {
             inner->Stop(); // 0x137a80 (leaf-scan +0x2c held stream: pause/reset)
         }

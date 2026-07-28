@@ -22,7 +22,7 @@ public:
     // CLoadable base, the +0x10 map member ctor, ??_7 stamp 0x5efca0, +0x2c/+0x34
     // zeroed - the +0x30 emit gate is deliberately left alone, as retail does).
     CDDrawSubMgrLeafScan(CDDrawSurfaceMgr* owner) : CLoadable(owner) {
-        m_2c = 0;
+        m_soundStream = 0;
         m_34 = 0;
     }
     // 9-slot vtable (??_7CDDrawSubMgrLeafScan @0x5efca0): the CObject slots + slots 5/7
@@ -32,7 +32,7 @@ public:
     virtual i32 IsLoaded() OVERRIDE { // [5] overrides CLoadable::IsLoaded (the worker-gate)
         // retail: both-zero falls through to `return 0`, either gate `jne` to a shared
         // out-of-line `return 1` at the tail (the &&-guard shape, not a setne fold).
-        if (m_2c == 0 && m_emitGate == 0) {
+        if (m_soundStream == 0 && m_emitGate == 0) {
             return 0;
         }
         return 1;
@@ -94,8 +94,8 @@ public:
     // identical CLoadable header let the wrong owner compile.
     i32 BindSoundStream(i32 force);
 
-    CMapStringToPtr m_10; // +0x10  keyed asset cache (ends +0x2c)
-    SoundStream* m_2c;    // +0x2c  held DSound stream (game TUs Stop() it on teardown)
+    CMapStringToPtr m_10;       // +0x10  keyed asset cache (ends +0x2c)
+    SoundStream* m_soundStream; // +0x2c  held DSound stream (game TUs Stop() it on teardown)
     // +0x30: one field, two established readings (same semantics - nonzero = busy /
     // not ready): the DDrawSubMgr family's "busy/loading guard" (m_30) and the game
     // TUs' "live-surface/emit gate" (m_emitGate; must be 0 to emit). Anonymous union
