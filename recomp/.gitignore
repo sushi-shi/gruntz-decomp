@@ -1,3 +1,10 @@
 # Harnesses are built by recomp/harness/build.sh, not committed.
 harness/*.exe
 harness/*.obj
+replay/*.exe
+replay/*.dll
+replay/*.DLL
+replay/*.obj
+replay/*.exp
+replay/*.lib
+replay/__pycache__/
