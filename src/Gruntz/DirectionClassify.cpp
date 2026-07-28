@@ -21,9 +21,6 @@ const double g_slopePosTwo = 2.0;
 DATA(0x001e9768)
 const double g_slopeNegTwo = -2.0;
 
-DATA(0x00244938)
-GruntDirectionCell g_gruntMoveDirCenter = GruntDirectionCell(1, 1, 0);
-
 // MotionEntity (the position-bearing entity Classify runs on) is defined in
 // <Gruntz/DirectionClassify.h>; identity @identity-TODO.
 

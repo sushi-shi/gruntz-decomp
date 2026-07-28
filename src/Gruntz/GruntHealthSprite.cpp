@@ -43,10 +43,8 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj), CWap
 
 RVA(0x0007ed70, 0x102)
 void CGruntHealthSprite::FireActivation(i32 id) {
-    if ((*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id))))
-        != 0) {
-        (this
-             ->*(*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))))();
+    if ((*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))) != 0) {
+        (this->*(*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -81,7 +79,8 @@ void CGruntHealthSprite::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CGruntHealthSprite::HealthUpdate);
+    (*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CGruntHealthSprite::HealthUpdate);
 }
 
 RVA(0x0007f0d0, 0x6e)
@@ -112,18 +111,6 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
 // republish the glyph/slot through the bound renderable's [m_64..m_68]-gated +0x194 table
 // (the SAME resolve as SetHealthGlyph), then stash the health. Finally sync the bound
 // renderable's screen position from the grunt (y biased by this->m_60). Returns 0.
-//
-// @early-stop
-// regalloc/scheduling wall (zero-register-pinning class, 96.67%): logic byte-faithful
-// end-to-end (the grunt-table resolve, the Vslot16 stat dispatch, the *0.2+0.5 __ftol
-// glyph round + the [m_64..m_68]-gated republish, the health stash, the screen-pos sync
-// with the m_60 y-bias). The SOLE residual is the entry-lookup's whole-function register
-// allocation: retail pins g_gameReg in edx and schedules reg->m_68 AFTER the index
-// lea-chain (add ecx,eax; [eax+ecx*4+0x1c]); cl pins it in ecx and materializes reg->m_68
-// BEFORE the chain (add eax,edx; [ecx+4*eax+0x1c]) - the same pin the sibling
-// CGruntSelectedSprite::Update / CGruntPowerupSprite::Update carry. Not source-steerable
-// (the `reg` local + idx-split + cellY-first add spellings + the permuter all leave it);
-// see docs/patterns/zero-register-pinning.md. Deferred to the final sweep.
 RVA(0x0007f160, 0xd)
 i32 CGruntHealthSprite::Vslot16(CGrunt* g) {
     return g->m_health;
@@ -131,8 +118,9 @@ i32 CGruntHealthSprite::Vslot16(CGrunt* g) {
 
 RVA(0x0007f180, 0xb4)
 i32 CGruntHealthSprite::HealthUpdate() {
-    CGruntzMgr* reg = g_gameReg;
-    CGrunt* e = reg->m_cmdGrid->m_grid[m_cellX * 15 + m_cellY];
+    // No local for the registry: the un-named temp is what puts g_gameReg in edx
+    // (a named `reg` moves it to ecx and renames the whole index chain).
+    CGrunt* e = g_gameReg->m_cmdGrid->m_grid[m_cellX * 15 + m_cellY];
     if (e == 0) {
         return 0;
     }

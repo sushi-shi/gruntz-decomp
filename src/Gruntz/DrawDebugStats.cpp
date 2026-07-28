@@ -16,14 +16,17 @@
 
 #include <rva.h>
 
-
 RVA(0x000cf770, 0x35e)
 void CPlay::DrawDebugStats() {
     if (g_debugDisplayFlags & 0x20) {
         return;
     }
 
-    char buf[0x1f0];
+    // 0x200 + 0x40: the frame is sub esp,0x268 == 4 (hdc) + 4 (the CString) +
+    // 0x10 (dr) + 0x10 (lr) + 0x40 (scratch) + 0x200 (buf), with NO separate slot
+    // for the GetRect out-rect - retail hands GetRect the scratch buffer itself
+    // (see the reinterpret_cast below).
+    char buf[0x200];
     char scratch[0x40];
     buf[0] = 0;
 
@@ -37,7 +40,9 @@ void CPlay::DrawDebugStats() {
     }
     if (g_debugDisplayFlags & 0x4) {
         CDDrawWorkerHost* p = m_world->m_level->m_mainPlane;
-        sprintf(scratch, " Pos = %i,%i", p->m_viewRect.left, p->m_viewRect.top);
+        // The debug "Pos" is the plane's SNAPPED SCROLL ORIGIN (+0x84/+0x88), not
+        // m_viewRect (+0x40/+0x44) - retail reads [eax+0x84]/[eax+0x88].
+        sprintf(scratch, " Pos = %i,%i", p->m_snappedX, p->m_snappedY);
         strcat(buf, scratch);
     }
     if (g_debugDisplayFlags & 0x40) {
@@ -73,9 +78,12 @@ void CPlay::DrawDebugStats() {
     PostSetup(hdc);
 
     if (buf[0] != 0) {
-        RECT rb;
         RECT lr;
-        CopyRect(&lr, g_gameReg->GetRect(&rb));
+        // The query rect IS the sprintf scratch buffer, and the frame PROVES it:
+        // retail passes esp+0x38 - the very slot the format buffer occupies - and
+        // sub esp,0x268 leaves no room for a third RECT. Dead storage by then (the
+        // last strcat is long past); byte-forced overlay at this one seam.
+        CopyRect(&lr, g_gameReg->GetRect(reinterpret_cast<RECT*>(scratch)));
         RECT dr;
         dr.left = lr.left;
         dr.top = lr.bottom - 0x1c;

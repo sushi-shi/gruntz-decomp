@@ -1945,8 +1945,10 @@ i32 CGrunt::StepArrivalCommitA() {
         return 0;
     }
     m_entranceActive = 0;
-    CGruntzMgr* g = g_gameReg;
-    CMapMgr* grid = g->m_tileGrid;
+    // No local for the registry here (unlike StepArrivalCommitB, whose preceding
+    // calls already reset the register state): the un-named temp is what makes cl
+    // emit tx before ty and put g_gameReg in ecx.
+    CMapMgr* grid = g_gameReg->m_tileGrid;
     i32 tx = m_lastTilePxX >> 5;
     i32 ty = m_lastTilePxY >> 5;
     i32 flags;

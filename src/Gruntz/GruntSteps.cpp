@@ -56,6 +56,8 @@ DATA(0x002448c8)
 GruntDirectionCell g_gruntMoveDirEast = GruntDirectionCell(1, 2, 3);
 DATA(0x00244928)
 GruntDirectionCell g_gruntMoveDirSouthEast = GruntDirectionCell(2, 2, 4);
+DATA(0x00244938)
+GruntDirectionCell g_gruntMoveDirCenter = GruntDirectionCell(1, 1, 0);
 DATA(0x002448e8)
 GruntDirectionCell g_gruntMoveDirSouth = GruntDirectionCell(2, 1, 5);
 DATA(0x00244948)
