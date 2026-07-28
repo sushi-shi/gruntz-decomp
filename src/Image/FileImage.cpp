@@ -859,19 +859,23 @@ i32 CDDSurface::LoadPcx(CDDrawPtrCollections* pal, char* path) {
 // ---------------------------------------------------------------------------
 // CDDSurface::RunDecode1 (ret 0x10) - the plain-buffer 8bpp variant of
 // DecodeRun8: RLE-decode `src` into `dst` (no surface Lock; dimensions explicit).
-// Each row starts at dst + width*row; same token grammar as DecodeRun8.
-// @early-stop
-// /Od local-slot-ordering wall (docs/patterns/od-local-slot-ordering.md): byte-
-// identical instruction stream, only the [ebp-N] local displacements differ.
+// Each row starts at dstp + width*y; same token grammar as DecodeRun8.
+//
+// /Od SLOT LAYOUT: at /Od cl assigns [ebp-N] slots in the order its local symbol
+// HASH TABLE iterates, i.e. by variable NAME - declaration order only breaks ties
+// inside one hash bucket, and there the LATER-declared local takes the EARLIER
+// slot. Retail's layout is sp -4, hold -8, tok -c, y -10, len -14, dstp -18,
+// k -1c, cols -20; this name set + declaration order reproduces it exactly.
+// See docs/patterns/od-local-slot-ordering.md.
 RVA(0x00145270, 0x17a)
 i32 CDDSurface::RunDecode1(void* dstBuf, void* src, i32 width, i32 height) {
     u8* sp;
-    i32 carry;
-    u8 pixel;
-    i32 row;
-    i32 run;
-    u8* dst;
+    i32 y;
+    u8 tok;
+    i32 hold;
     i32 k;
+    u8* dstp;
+    i32 len;
     i32 cols;
     if (dstBuf == 0) {
         return 0;
@@ -879,39 +883,39 @@ i32 CDDSurface::RunDecode1(void* dstBuf, void* src, i32 width, i32 height) {
     if (src == 0) {
         return 0;
     }
-    carry = 0;
+    hold = 0;
     sp = static_cast<u8*>(src);
-    dst = 0;
-    for (row = 0; row < height; row++) {
-        dst = static_cast<u8*>(dstBuf) + width * row;
+    dstp = 0;
+    for (y = 0; y < height; y++) {
+        dstp = static_cast<u8*>(dstBuf) + width * y;
         cols = width;
-        if (carry > 0) {
-            for (k = 0; k < carry; k++) {
-                *dst = pixel;
-                dst++;
+        if (hold > 0) {
+            for (k = 0; k < hold; k++) {
+                *dstp = tok;
+                dstp++;
             }
-            cols -= carry;
-            carry = 0;
+            cols -= hold;
+            hold = 0;
         }
         while (cols > 0) {
-            pixel = *sp;
+            tok = *sp;
             sp++;
-            if ((pixel & 0xc0) == 0xc0) {
-                run = pixel & 0x3f;
-                pixel = *sp;
+            if ((tok & 0xc0) == 0xc0) {
+                len = tok & 0x3f;
+                tok = *sp;
                 sp++;
-                if (run > cols) {
-                    carry = run - cols;
-                    run = cols;
+                if (len > cols) {
+                    hold = len - cols;
+                    len = cols;
                 }
-                for (k = 0; k < run; k++) {
-                    *dst = pixel;
-                    dst++;
+                for (k = 0; k < len; k++) {
+                    *dstp = tok;
+                    dstp++;
                 }
-                cols -= run;
+                cols -= len;
             } else {
-                *dst = pixel;
-                dst++;
+                *dstp = tok;
+                dstp++;
                 cols--;
             }
         }
@@ -921,20 +925,21 @@ i32 CDDSurface::RunDecode1(void* dstBuf, void* src, i32 width, i32 height) {
 
 // ---------------------------------------------------------------------------
 // CDDSurface::RunDecode3 (ret 0x10) - the plain-buffer 24bpp variant of
-// DecodeRun24: three stride-3 channel passes per row into `dst` (channels at +0,
-// +1, +2), row base = dst + row*width*3 (cached once per row). No surface Lock.
-// @early-stop
-// /Od local-slot-ordering wall (docs/patterns/od-local-slot-ordering.md): byte-
-// identical instruction stream, only the [ebp-N] local displacements differ.
+// DecodeRun24: three stride-3 channel passes per row into `dstp` (channels at +0,
+// +1, +2), row base = dstp + y*width*3 (cached once per row). No surface Lock.
+//
+// Same /Od slot layout as RunDecode1 (the name set + declaration order below
+// reproduce retail's sp -4, hold -8, tok -c, y -10, len -14, dstp -18, k -1c,
+// cols -20, base -24); see docs/patterns/od-local-slot-ordering.md.
 RVA(0x001453f0, 0x3ac)
 i32 CDDSurface::RunDecode3(void* dstBuf, void* src, i32 width, i32 height) {
     u8* sp;
-    i32 carry;
-    u8 pixel;
-    i32 row;
-    i32 run;
-    u8* dst;
+    i32 y;
+    u8 tok;
+    i32 hold;
     i32 k;
+    u8* dstp;
+    i32 len;
     i32 cols;
     i32 base;
     if (dstBuf == 0) {
@@ -943,104 +948,104 @@ i32 CDDSurface::RunDecode3(void* dstBuf, void* src, i32 width, i32 height) {
     if (src == 0) {
         return 0;
     }
-    carry = 0;
+    hold = 0;
     sp = static_cast<u8*>(src);
-    dst = 0;
-    for (row = 0; row < height; row++) {
-        base = row * width * 3;
-        dst = static_cast<u8*>(dstBuf) + base;
+    dstp = 0;
+    for (y = 0; y < height; y++) {
+        base = y * width * 3;
+        dstp = static_cast<u8*>(dstBuf) + base;
         cols = width;
-        if (carry > 0) {
-            for (k = 0; k < carry; k++) {
-                *dst = pixel;
-                dst += 3;
+        if (hold > 0) {
+            for (k = 0; k < hold; k++) {
+                *dstp = tok;
+                dstp += 3;
             }
-            cols -= carry;
-            carry = 0;
+            cols -= hold;
+            hold = 0;
         }
         while (cols > 0) {
-            pixel = *sp;
+            tok = *sp;
             sp++;
-            if ((pixel & 0xc0) == 0xc0) {
-                run = pixel & 0x3f;
-                pixel = *sp;
+            if ((tok & 0xc0) == 0xc0) {
+                len = tok & 0x3f;
+                tok = *sp;
                 sp++;
-                if (run > cols) {
-                    carry = run - cols;
-                    run = cols;
+                if (len > cols) {
+                    hold = len - cols;
+                    len = cols;
                 }
-                for (k = 0; k < run; k++) {
-                    *dst = pixel;
-                    dst += 3;
+                for (k = 0; k < len; k++) {
+                    *dstp = tok;
+                    dstp += 3;
                 }
-                cols -= run;
+                cols -= len;
             } else {
-                *dst = pixel;
-                dst += 3;
+                *dstp = tok;
+                dstp += 3;
                 cols--;
             }
         }
-        dst = static_cast<u8*>(dstBuf) + base + 1;
+        dstp = static_cast<u8*>(dstBuf) + base + 1;
         cols = width;
-        if (carry > 0) {
-            for (k = 0; k < carry; k++) {
-                *dst = pixel;
-                dst += 3;
+        if (hold > 0) {
+            for (k = 0; k < hold; k++) {
+                *dstp = tok;
+                dstp += 3;
             }
-            cols -= carry;
-            carry = 0;
+            cols -= hold;
+            hold = 0;
         }
         while (cols > 0) {
-            pixel = *sp;
+            tok = *sp;
             sp++;
-            if ((pixel & 0xc0) == 0xc0) {
-                run = pixel & 0x3f;
-                pixel = *sp;
+            if ((tok & 0xc0) == 0xc0) {
+                len = tok & 0x3f;
+                tok = *sp;
                 sp++;
-                if (run > cols) {
-                    carry = run - cols;
-                    run = cols;
+                if (len > cols) {
+                    hold = len - cols;
+                    len = cols;
                 }
-                for (k = 0; k < run; k++) {
-                    *dst = pixel;
-                    dst += 3;
+                for (k = 0; k < len; k++) {
+                    *dstp = tok;
+                    dstp += 3;
                 }
-                cols -= run;
+                cols -= len;
             } else {
-                *dst = pixel;
-                dst += 3;
+                *dstp = tok;
+                dstp += 3;
                 cols--;
             }
         }
-        dst = static_cast<u8*>(dstBuf) + base + 2;
+        dstp = static_cast<u8*>(dstBuf) + base + 2;
         cols = width;
-        if (carry > 0) {
-            for (k = 0; k < carry; k++) {
-                *dst = pixel;
-                dst += 3;
+        if (hold > 0) {
+            for (k = 0; k < hold; k++) {
+                *dstp = tok;
+                dstp += 3;
             }
-            cols -= carry;
-            carry = 0;
+            cols -= hold;
+            hold = 0;
         }
         while (cols > 0) {
-            pixel = *sp;
+            tok = *sp;
             sp++;
-            if ((pixel & 0xc0) == 0xc0) {
-                run = pixel & 0x3f;
-                pixel = *sp;
+            if ((tok & 0xc0) == 0xc0) {
+                len = tok & 0x3f;
+                tok = *sp;
                 sp++;
-                if (run > cols) {
-                    carry = run - cols;
-                    run = cols;
+                if (len > cols) {
+                    hold = len - cols;
+                    len = cols;
                 }
-                for (k = 0; k < run; k++) {
-                    *dst = pixel;
-                    dst += 3;
+                for (k = 0; k < len; k++) {
+                    *dstp = tok;
+                    dstp += 3;
                 }
-                cols -= run;
+                cols -= len;
             } else {
-                *dst = pixel;
-                dst += 3;
+                *dstp = tok;
+                dstp += 3;
                 cols--;
             }
         }

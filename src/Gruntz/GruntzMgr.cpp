@@ -1905,10 +1905,12 @@ void CGruntzMgr::MuteMusicIfActive(i32 ms) {
     if (ok == 0) {
         return;
     }
-    if (m_sound->m_pCurrent == 0) {
-        return;
+    // The re-read goes through its own local: that frees eax after the
+    // ->m_pCurrent load, so cl loads `ms` into eax (not edx) for the push.
+    CGruntzSoundZ* snd = m_sound;
+    if (snd->m_pCurrent) {
+        snd->m_pCurrent->SetVolume(0, ms);
     }
-    m_sound->m_pCurrent->SetVolume(0, ms);
 }
 
 RVA(0x00091620, 0x3f)
@@ -1928,10 +1930,11 @@ void CGruntzMgr::RestoreMusicVolumeIfActive(i32 ms) {
     if (ok == 0) {
         return;
     }
-    if (m_sound->m_pCurrent == 0) {
-        return;
+    // Same local-for-the-re-read shape as MuteMusicIfActive (eax for the push).
+    CGruntzSoundZ* snd = m_sound;
+    if (snd->m_pCurrent) {
+        snd->m_pCurrent->SetVolume(kSoundVolumeMax, ms);
     }
-    m_sound->m_pCurrent->SetVolume(kSoundVolumeMax, ms);
 }
 
 RVA(0x00091a10, 0x17)
@@ -1959,12 +1962,6 @@ i32 CGruntzMgr::TickStateMgrs() {
 // then flush the +0x54 input object - Arm (thunk 0x18e8) when entering the run
 // state (m_10 != 0), Disarm (thunk 0x29b9) when leaving it. A no-op when the value is unchanged, and
 // the whole side-effect chain is skipped when no world is loaded.
-// @early-stop
-// 99.62% global-store regalloc tiebreak: logic byte-exact. The lone residual is
-// the g_sndEnabled store - retail re-reads m_10 into eax and uses the `a3` accumulator
-// store (mov ds:g_sndEnabled,eax), MSVC here loads it into ecx (mov [g_sndEnabled],ecx,
-// 89 0d). A 1-instruction eax<->ecx pick on the global store; no source spelling
-// flips it (see docs/patterns/select-zero-mask-dest-register.md, regalloc family).
 RVA(0x00092340, 0x49)
 void CGruntzMgr::SetRunState(i32 v) {
     if (v == m_soundEnabled) {
@@ -1978,7 +1975,11 @@ void CGruntzMgr::SetRunState(i32 v) {
     if (sub) {
         sub->Stop();
     }
-    g_sndEnabled = m_soundEnabled;
+    // The gate mirror goes through a temp and the branch re-reads the member:
+    // that is what puts the value in eax (the `a3` accumulator store) and makes
+    // cl reload [esi+0x10] for the test - see the two loads in retail.
+    i32 run = m_soundEnabled;
+    g_sndEnabled = run;
     if (m_soundEnabled) {
         m_inputState->Resume();
     } else {
@@ -2709,11 +2710,6 @@ DATA_SYMBOL(0x0024556c, 0x4, _g_gameReg)
 // (CGruntzApp::ShowMessage(msg, hwnd)) with the cursor-busy gate raised, clears the gate,
 // and - if the cursor was already shown on entry - hides it again
 // (while (ShowCursor(FALSE) >= 0)). No-op when there is no app bound.
-// @early-stop
-// regalloc tiebreak (~93%): logic + the cached ShowCursor fn-ptr are exact; MSVC
-// here keeps `this` in edi and the fn-ptr in esi, retail does the reverse (esi
-// for `this`, edi for the ptr) - a pure esi<->edi naming swap (call ff d6 vs
-// ff d7). Not steerable from source; see docs/patterns/zero-register-pinning.md.
 RVA(0x0008ef10, 0x9e)
 void CGruntzMgr::EnterModalUI(const char* msg) {
     CGameApp* app = m_owner;
@@ -2725,7 +2721,10 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
     }
     if (m_world) {
         m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
-        m_world->m_ptrColl->m_device->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
+        // Local for the collection - same lever as ExitModalUI: it frees the chain
+        // register so the whole tail lands in retail's registers.
+        CDDrawPtrCollections* pc = m_world->m_ptrColl;
+        pc->m_device->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
 
     int(WINAPI * show)(BOOL) = ::ShowCursor;
@@ -2757,7 +2756,11 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
         } else {
             notify = 0;
         }
-        m_world->m_ptrColl->m_device->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
+        // The collection goes through its own local: that gives cl a precise live
+        // range for it, so the chain is chased in ONE register (mov eax,[ecx+0x1c];
+        // mov eax,[eax]) and every later vptr temp lands in retail's register.
+        CDDrawPtrCollections* pc = m_world->m_ptrColl;
+        pc->m_device->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
 
     int(WINAPI * show)(BOOL) = ::ShowCursor;

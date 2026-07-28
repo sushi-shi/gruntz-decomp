@@ -1329,10 +1329,19 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
 // free the heap root CSymTab + the cached source buffer, then null m_parseArmed. The fourcc is unused;
 // the return is the active node's slot[5] (Detach) result, left in eax.
 // @early-stop
-// regalloc wall: retail pins `this`->edi + the walked node->esi; recompile swaps
-// them (this->esi, node->edi) - same instruction stream, opposite callee-saved
-// assignment. Body byte-exact modulo the register-naming; logic complete. ~91%,
-// parked for the final sweep.
+// 6-byte scheduler canonicalization at +0x38 (99.55%; everything else is byte-exact,
+// registers included - the old "edi/esi pin" note was stale). In the block the
+// delete's null test falls into, retail emits STORE then LOAD
+//     89 6f 20   mov [edi+0x20],ebp    ; m_activeNode = 0
+//     8b 77 14   mov esi,[edi+0x14]    ; p = m_list.m_head
+// while cl emits the pair the other way round (load before store). cl CANONICALIZES
+// the block to loads-before-stores: writing the source in the load-first order
+// produces the same load-first code, so the order is not expressible from source.
+// Nine spellings tried, all byte-identical to each other: for / while / do-while /
+// `while (m_list.m_head != 0)` with the fetch inside the body / p declared before
+// the delete / p fetched before the null-store / `this->m_activeNode = 0` / a
+// CParserObjList* local for the whole list / one for the head reads only.
+// See docs/patterns/load-before-store-block-canonicalization.md.
 RVA(0x0013b850, 0xa8)
 i32 CSymParser::Clear(i32 final) {
     static_cast<void>(final);

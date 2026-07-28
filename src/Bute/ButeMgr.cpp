@@ -1146,14 +1146,18 @@ CString* CButeMgr::GetStringDef(const char* tag, const char* key, CString* def) 
 // specific failure and returns a shared empty CString. The empty string is a
 // function-local static CString (MFC magic-static: one-shot guarded ctor +
 // atexit-registered dtor) returned by address on every error path.
-// @early-stop
-// regalloc coin-flip (99.63%): body byte-exact; retail holds tag/key in ebx/edi,
-// cl swaps to edi/ebx (+ the /GX scopetable push immediate, reloc-masked). Final sweep.
+//
+// The three failure paths are an if/else CASCADE with ONE shared tail return, not
+// three early returns: that is what puts tag in ebx and key in edi (three separate
+// `return &s_empty;` statements weight the two params the other way and swap the
+// pair). The ReportError argument order is (fmt, tag, key), like every sibling
+// getter - a previous reconstruction had (fmt, key, tag), whose swapped pushes
+// cancelled against the swapped registers and so read as "body byte-exact".
 RVA(0x001731d0, 0xb6)
-// The error paths return the ADDRESS of the static empty CString, not its buffer:
-// retail ends them `mov eax,0x6bf698` == OFFSET s_empty, with no load. Writing
-// `(const char*)s_empty` would emit the m_pchData LOAD instead, so the three casts
-// below are byte-forced.
+// The error path returns the ADDRESS of the static empty CString, not its buffer:
+// retail ends it `mov eax,0x6bf698` == OFFSET s_empty, with no load. Writing
+// `(const char*)s_empty` would emit the m_pchData LOAD instead, so the cast
+// below is byte-forced.
 //
 // VERIFIED 2026-07-28 that s_empty really is a static CString and not a plain char[]
 // (which would need no cast at all): 0x1731d0's prologue carries the magic-static
@@ -1171,16 +1175,14 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
             if (rec->type == kButeString) {
                 return static_cast<char*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, key, tag);
-            // byte-forced: retail ends here mov eax,0x6bf698 == OFFSET s_empty, no load
-            return reinterpret_cast<char*>(&s_empty);
+            ReportError(s_fmtTypeMismatch, tag, key);
+        } else {
+            ReportError(s_fmtNotFound, tag, key);
         }
-        ReportError(s_fmtNotFound, key, tag);
-        // byte-forced: retail ends here mov eax,0x6bf698 == OFFSET s_empty, no load
-        return reinterpret_cast<char*>(&s_empty);
+    } else {
+        ReportError(s_fmtInvalidTag, tag);
     }
-    ReportError(s_fmtInvalidTag, tag);
-    // byte-forced: retail ends here mov eax,0x6bf698 == OFFSET s_empty, no load
+    // byte-forced: retail ends here `mov eax,0x6bf698` == OFFSET s_empty, no load
     return reinterpret_cast<char*>(&s_empty);
 }
 
