@@ -1202,37 +1202,44 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
 }
 
 // @early-stop
-// reloc-masked-extern tail (94%+): the 4560-byte instruction stream is
-// byte-exact vs retail (no EH frame, same sprite/string/name-id/field/tail
-// blocks, verified llvm-objdump) - the residual is the ~35 unnamed call operands
-// in the 18 name-id + 3 string blocks (catalog LookupName + ~CString) pairing to
-// differently named retail symbols. Naming the whole referent set -> exact is a
-// final-sweep task.
+// frame-slot wall: 1595 vs 1595 instructions, same opcodes/operands throughout -
+// the only residue is which of the three dword local slots each value gets.
+// Retail hands 0x18 to the GetCount temp and packs BOTH loop induction values
+// into tmp@0x10 / mgr@0x14; cl gives our named `row` a slot of its own, so the
+// trio comes out permuted (mgr@0x18, tmp@0x14, row@0x10). Making `row` a
+// compiler temp is not expressible; adding a named `n` for the counts instead
+// grows the frame to 0x90 (measured, worse).
+// (The previous note here - "byte-exact, residual is ~35 unnamed call operands" -
+// was WRONG: the body was missing 58 instructions, the whole +0x468 cell walk and
+// both CPtrList GetCount writes. Re-derived from the target stream 2026-07-28.)
 // ---------------------------------------------------------------------------
 // CGrunt::Save(ar) @0x53f90 - serializes the whole grunt state into a custom
 // archive (each member -> ar->Write(&field, size) via vtable slot 0x30). Bails
-// (return 0) if the archive is null or the type catalog (m_158->m_c) is unset.
+// (return 0) if the archive is null or the world root (m_158->m_0c, the owning
+// CDDrawSurfaceMgr) is unset.
 // The 4560-byte body is, in order: 7 sprite-id blocks (each bumps the global
 // serialize counter and writes the sprite's m_188, or 0 if the slot is empty);
 // 3 name strings (a 0x80-byte buffer copy); 18 anim-name-id blocks (look the id
-// up in the catalog's name map and copy the resolved name into the buffer); then
-// ~100 plain field writes; finally a linked-list tail (m_33c) writing each
-// node's +0x8 (size 0x2c). The serialize counter is the global DAT_00629ad0.
+// up in mgr->m_animRegistry's name map and copy the resolved name in); then
+// ~100 plain field writes; then the 3x3 walk of the +0x468 CGruntCellRec table;
+// finally the two CPtrList tails (m_31c count + 8-byte nodes, m_338 count +
+// 0x2c-byte nodes). The serialize counter is the global g_serialCounter.
 RVA(0x00053f90, 0x11d0)
 i32 CGrunt::Save(CFileMemBase* ar) {
     if (!ar) {
         return 0;
     }
-    // retail 0x53fa8: `mov eax,[ebp+0x158]; mov eax,[eax+0xc]` - ONE load off the
-    // bound worker, i.e. AnimWorkerObj::m_0c, and the value goes straight into
-    // CDDrawSubMgrLeaf::KeyOfValue (0x152d30) below.
-    // (This replaces the `CGruntTypeCatalog` pad-view, which was AnimWorkerObj with
-    // m_c == m_0c.) <DDrawMgr/AnimWorkerObj.h> types m_0c as CDDrawSurfaceMgr*
-    // (: CObject) while this path uses it as CDDrawSubMgrLeaf* (: CLoadable) - two
-    // unrelated hierarchies at one slot, so ONE of the two models is wrong:
-    // @identity-TODO, reinterpret at this single seam until +0x0c is settled.
-    CDDrawSubMgrLeaf* catalog = reinterpret_cast<CDDrawSubMgrLeaf*>(m_3c->m_0c);
-    if (!catalog) {
+    // retail 0x53fb8: `mov eax,[ebp+0x158]; mov eax,[eax+0xc]` = m_3c->m_0c, spilled
+    // to [esp+0x14]; the 18 name-id blocks then each reload it and take a SECOND hop
+    // `mov ecx,[edx+0x2c]` @0x5425b before `call 0x152d30` (KeyOfValue). +0x2c IS
+    // CDDrawSurfaceMgr::m_animRegistry, so m_0c is the MANAGER, not the leaf - the
+    // old one-load reading (and its reinterpret to CDDrawSubMgrLeaf*) was wrong.
+    // slot order is load-bearing: retail's frame is buf@[esp+0x1c] over exactly
+    // three dwords, handed out high-to-low in declaration order (0x18/0x14/0x10);
+    // the row-pointer temp then packs into mgr's slot once mgr dies.
+    i32 row, col;
+    CDDrawSurfaceMgr* mgr = m_3c->m_0c;
+    if (!mgr) {
         return 0;
     }
     i32 tmp;
@@ -1317,7 +1324,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         CAniElement* id = m_poseWalk;
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(static_cast<CObject*>(id)));
+            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
     ar->Write(buf, 0x80);
@@ -1326,7 +1333,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         CAniElement* id = m_poseAttack1;
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(static_cast<CObject*>(id)));
+            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
     ar->Write(buf, 0x80);
@@ -1335,7 +1342,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         CAniElement* id = m_poseAttack2;
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(static_cast<CObject*>(id)));
+            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
     ar->Write(buf, 0x80);
@@ -1344,7 +1351,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         CAniElement* id = m_poseAttackIdle;
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(static_cast<CObject*>(id)));
+            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
     ar->Write(buf, 0x80);
@@ -1353,7 +1360,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         CAniElement* id = m_poseStruck1;
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(static_cast<CObject*>(id)));
+            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
     ar->Write(buf, 0x80);
@@ -1362,7 +1369,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         CAniElement* id = m_poseStruck2;
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(static_cast<CObject*>(id)));
+            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
     ar->Write(buf, 0x80);
@@ -1371,7 +1378,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         CAniElement* id = m_poseIdle[0];
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(static_cast<CObject*>(id)));
+            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
     ar->Write(buf, 0x80);
@@ -1380,7 +1387,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         CAniElement* id = m_poseIdle[1];
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(static_cast<CObject*>(id)));
+            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
     ar->Write(buf, 0x80);
@@ -1389,7 +1396,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         CAniElement* id = m_poseIdle[2];
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(static_cast<CObject*>(id)));
+            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
     ar->Write(buf, 0x80);
@@ -1398,7 +1405,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         CAniElement* id = m_poseIdle4;
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(static_cast<CObject*>(id)));
+            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
     ar->Write(buf, 0x80);
@@ -1407,7 +1414,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         CAniElement* id = m_poseIdle5;
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(static_cast<CObject*>(id)));
+            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
     ar->Write(buf, 0x80);
@@ -1416,7 +1423,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         CAniElement* id = m_poseDeath;
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(static_cast<CObject*>(id)));
+            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
     ar->Write(buf, 0x80);
@@ -1425,7 +1432,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         CAniElement* id = m_poseToy1;
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(static_cast<CObject*>(id)));
+            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
     ar->Write(buf, 0x80);
@@ -1434,7 +1441,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         CAniElement* id = m_poseToy2;
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(static_cast<CObject*>(id)));
+            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
     ar->Write(buf, 0x80);
@@ -1443,7 +1450,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         CAniElement* id = m_poseToyBreak;
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(static_cast<CObject*>(id)));
+            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
     ar->Write(buf, 0x80);
@@ -1452,7 +1459,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         CAniElement* id = m_poseItem;
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(static_cast<CObject*>(id)));
+            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
     ar->Write(buf, 0x80);
@@ -1461,7 +1468,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         CAniElement* id = m_poseItem2;
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(static_cast<CObject*>(id)));
+            strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
     }
     ar->Write(buf, 0x80);
@@ -1470,7 +1477,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     {
         CAniElement* id = m_pickupGeoSrc;
         if (id) {
-            strcpy(buf, catalog->KeyOfValue(id));
+            strcpy(buf, mgr->m_animRegistry->KeyOfValue(id));
         }
     }
     ar->Write(buf, 0x80);
@@ -1575,6 +1582,28 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_2e8, 4);
     ar->Write(&m_288, 8);
 
+    // retail 0x55083-0x550ce: a 3x3 walk of the +0x468 cell table (outer stride
+    // 0x138 = 3 * sizeof(CGruntCellRec), inner 0x68), each cell's string block
+    // through the 0x3bf7 thunk -> CGruntCellRec::SerializeStrings @0x56da0; a
+    // zero return aborts the whole save.
+    for (row = 0; row < 3; row++) {
+        for (col = 0; col < 3; col++) {
+            if (m_cells[3 * row + col].SerializeStrings(ar) == 0) {
+                return 0;
+            }
+        }
+    }
+    // the two CPtrList tails: each writes GetCount() from a stack temp
+    // (0x550d0 [ebp+0x328], 0x55107 [ebp+0x344] = the lists' m_nCount) and then
+    // every node's +8 data slot.
+    tmp = m_31c.GetCount();
+    ar->Write(&tmp, 4);
+    POSITION cpos = m_31c.GetHeadPosition();
+    while (cpos != 0) {
+        ar->Write(m_31c.GetNext(cpos), 8);
+    }
+    tmp = m_338.GetCount();
+    ar->Write(&tmp, 4);
     POSITION pos = m_338.GetHeadPosition();
     while (pos != 0) {
         ar->Write(m_338.GetNext(pos), 0x2c);
