@@ -25,10 +25,10 @@ CGruntzSoundZ::~CGruntzSoundZ() {
     Shutdown();
 }
 
-// The third arg SUPPRESSES midi - it does not merely skip the bring-up. Retail's
-// `test/jne` on it lands on the SHARED `m_enabled = 0` store (0x1384ba -> 0x1384de),
-// the same block the two failure paths tail-merge into, not on the `return 1`.
-// (`--diff` masks branch displacements, so this read as "identical asm".)
+// The third arg is a NO-MIDI request, not a "skip the init": retail's `test eax,eax;
+// jne` on it lands on the SAME `m_enabled = 0` store the two AIL failure paths reach
+// (0x1384de), i.e. a non-zero flag disables the host outright. The old model let it
+// fall through with m_enabled still 1 (byte-visible: `jne +0x55` vs retail `jne +0x4e`).
 RVA(0x00138490, 0x5e)
 i32 CGruntzSoundZ::Init(HINSTANCE hInst, HWND hwnd, i32 noMidi) {
     m_hInstance = hInst;

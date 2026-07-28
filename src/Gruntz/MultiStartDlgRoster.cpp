@@ -498,12 +498,10 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
 // Per-slot colour handlers (0xc3830/0xc3950/0xc3a70/0xc3b90). Slot N owns swatch
 // control 0x501+2*N. The pick is allowed when the host set the slot's colour gate
 // (m_164==0) or when it is unlocked (m_16c==0) and owned by us (m_168==m_hostIndex).
-// All four are byte-exact code (~99.84%); residual is two reloc/regalloc artifacts:
-// the /GX scope-table push addend (delinker names it Unwind@005dda10+8 vs our own
-// $L scope table at +0) and a single eax-vs-ecx coin-flip on the InvalidateRect hwnd
-// load (`mov ecx,[eax+0x1c]` retail vs `mov eax,...`). Neither is source-steerable.
-// @early-stop
-// reloc scope-table addend + InvalidateRect-hwnd eax/ecx regalloc coin-flip (~99.84%).
+// The swatch refresh is the MFC inline CWnd::InvalidateRect member, not the global
+// ::InvalidateRect import on a hoisted HWND: the CWnd* stays live in eax as the
+// inline's `this`, so the handle load lands in ecx (`mov ecx,[eax+0x1c]; push 1;
+// push 0; push ecx`). Same fix as CBattlezDlg::ApplyColorSlotN (Dialogs.cpp).
 RVA(0x000c3830, 0xd1)
 void CMultiStartDlg::OnColorSlot0() {
     CMulti* mp = g_multiState;
@@ -516,8 +514,7 @@ void CMultiStartDlg::OnColorSlot0() {
     if (dlg.DoModal() == 1) {
         if (SelectColor(0, dlg.m_pickedColor)) {
             Drive();
-            HWND h = GetDlgItem(0x501)->m_hWnd;
-            ::InvalidateRect(h, 0, 1);
+            GetDlgItem(0x501)->InvalidateRect(0, 1);
         }
     }
 }
@@ -534,8 +531,7 @@ void CMultiStartDlg::OnColorSlot1() {
     if (dlg.DoModal() == 1) {
         if (SelectColor(1, dlg.m_pickedColor)) {
             Drive();
-            HWND h = GetDlgItem(0x503)->m_hWnd;
-            ::InvalidateRect(h, 0, 1);
+            GetDlgItem(0x503)->InvalidateRect(0, 1);
         }
     }
 }
@@ -552,8 +548,7 @@ void CMultiStartDlg::OnColorSlot2() {
     if (dlg.DoModal() == 1) {
         if (SelectColor(2, dlg.m_pickedColor)) {
             Drive();
-            HWND h = GetDlgItem(0x505)->m_hWnd;
-            ::InvalidateRect(h, 0, 1);
+            GetDlgItem(0x505)->InvalidateRect(0, 1);
         }
     }
 }
@@ -570,8 +565,7 @@ void CMultiStartDlg::OnColorSlot3() {
     if (dlg.DoModal() == 1) {
         if (SelectColor(3, dlg.m_pickedColor)) {
             Drive();
-            HWND h = GetDlgItem(0x507)->m_hWnd;
-            ::InvalidateRect(h, 0, 1);
+            GetDlgItem(0x507)->InvalidateRect(0, 1);
         }
     }
 }

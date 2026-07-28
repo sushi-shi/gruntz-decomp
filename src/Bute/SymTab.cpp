@@ -205,7 +205,7 @@ char* CParseSource::BeginParse() {
         return 0;
     }
     if (m_reader->Read(m_base, 0, m_length, m_buffer) != static_cast<i32>(m_length)) {
-        ::operator delete(m_buffer);
+        delete m_buffer;
         m_buffer = 0;
     }
     return m_buffer;
