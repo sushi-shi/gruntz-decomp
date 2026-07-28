@@ -4,7 +4,7 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Bute/Hash.h> // CHashElement (the embeddable hash-node prefix records carry)
+#include <Bute/Hash.h>    // CHashElement (the embeddable hash-node prefix records carry)
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
 void* operator new(u32 size);
@@ -25,7 +25,7 @@ struct CSymTabNode : public CHashElement {
 };
 SIZE(0x18); // no new fields over CHashElement
 
-u32 __stdcall PackTag(const char* s);         // 0x13b910
+// PackTag (0x13b910) is a CSymParser __thiscall method - see <Bute/SymParser.h>.
 void __stdcall UnpackTag(u32 tag, char* dst); // 0x13b970
 
 class CSymParser;
@@ -121,7 +121,7 @@ public:
     // ApplyRecursive (0x13a580): clear each child's m_04, run the range operation
     // (0x13a640) over this scope, then recurse into children whose m_04 was set.
     // Returns 1 unless a recursion failed. (a2 == 0 is a no-op returning 1.)
-    i32 ApplyRecursive(CRezItmBase * a0, i32 a1, i32 a2, i32 a3);
+    i32 ApplyRecursive(CRezItmBase* a0, i32 a1, i32 a2, i32 a3);
 
     // The big range operation 0x13a640 invoked by ApplyRecursive: reads a block of
     // (a0-stream) records into a temp buffer and folds each into this scope's tables

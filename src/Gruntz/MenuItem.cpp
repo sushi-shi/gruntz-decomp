@@ -185,13 +185,13 @@ i32 CMenuItem::Place(CDDrawSurfacePair* target, i32 x, i32 y) {
     if (!page) {
         return 0;
     }
-    i32 py, px;
+    // The placed coordinates overwrite the PARAMETERS - no new locals. The else arm
+    // is then a compiler-generated materialisation of the two argument homes, which is
+    // why retail loads them y-before-x there while the if arm is x-before-y; two fresh
+    // locals force both arms into source order and swap the ebx/ebp colouring.
     if (m_fixedX != static_cast<i32>(0xeeeeeeee)) {
-        py = m_fixedX;
-        px = m_fixedY;
-    } else {
-        py = x;
-        px = y;
+        x = m_fixedX;
+        y = m_fixedY;
     }
     i32 idx = m_state;
     CImage* row;
@@ -203,11 +203,11 @@ i32 CMenuItem::Place(CDDrawSurfacePair* target, i32 x, i32 y) {
     if (!row) {
         return 0;
     }
-    row->RenderFrame(target, py, px, 0);
-    m_hitLeft = py - row->m_anchorX;
-    m_hitRight = py + row->m_anchorX;
-    m_hitTop = px - row->m_anchorY;
-    m_hitBottom = px + row->m_anchorY;
+    row->RenderFrame(target, x, y, 0);
+    m_hitLeft = x - row->m_anchorX;
+    m_hitRight = x + row->m_anchorX;
+    m_hitTop = y - row->m_anchorY;
+    m_hitBottom = y + row->m_anchorY;
     return 1;
 }
 RVA(0x00185690, 0x25)
@@ -330,23 +330,20 @@ i32 CMenuItem2::Notify(u32 a) {
 // recompile in ebx. Identical not-source-steerable tie as CMenuItem::Place (0x1855f0).
 RVA(0x001858d0, 0x72)
 i32 CMenuItem2::Place(CDDrawSurfacePair* target, i32 x, i32 y) {
-    i32 py, px;
+    // Same shape as CMenuItem::Place: the placed coordinates overwrite the parameters.
     if (m_fixedX != static_cast<i32>(0xeeeeeeee)) {
-        py = m_fixedX;
-        px = m_fixedY;
-    } else {
-        py = x;
-        px = y;
+        x = m_fixedX;
+        y = m_fixedY;
     }
     CImage* f = GetCurrentFrame();
     if (!f) {
         return 0;
     }
-    f->RenderFrame(target, py, px, 0);
-    m_hitLeft = py - f->m_anchorX;
-    m_hitRight = py + f->m_anchorX;
-    m_hitTop = px - f->m_anchorY;
-    m_hitBottom = px + f->m_anchorY;
+    f->RenderFrame(target, x, y, 0);
+    m_hitLeft = x - f->m_anchorX;
+    m_hitRight = x + f->m_anchorX;
+    m_hitTop = y - f->m_anchorY;
+    m_hitBottom = y + f->m_anchorY;
     return 1;
 }
 RVA(0x00185950, 0x1b)

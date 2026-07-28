@@ -3585,16 +3585,9 @@ INT_PTR CALLBACK LevelNumberDialogProc8e8c0(HWND hDlg, UINT msg, WPARAM wParam, 
 // SetVideoMode reads its +0x30/+0x34 field width/height limits.
 // The engine display-mode apply (0x155f60, __stdcall(w,h,depth) -> nonzero ok).
 
-// @early-stop
-// regalloc wall (~92%): the control flow, every branch/call, the two play-state
-// Update() pairs, the guts (m_2dc) poke order, the ShowCursor hide loop and the
-// "Resolution is now" log are byte-for-byte the same SHAPE. The residual is a
-// pure register-allocation tiebreak: retail dedicates ebp (the 4th callee-saved
-// reg) to `w` and keeps m_curState in edi separately, while MSVC5 here coalesces
-// `w` into edi (reusing it for m_curState once w is dead) -> 3 saved regs not 4,
-// so `sub esp,0x70` vs retail's 0x80 and every later [esp+N] sits -4. Logic is
-// complete + correct; defining this symbol also pairs the SetVideoMode call in
-// CheckSavedMode (-> 100%) + CheckDisplayBoundsA/B. See pin-local-for-callee-saved-reg.md.
+// (The ex "regalloc wall / 3 saved regs not 4" reading was wrong twice over: the
+// receiver-less `SvmApply` phantom below was dropping retail's `mov ecx,[esi+0x30]`,
+// and the 0x70-vs-0x80 frame was simply the log scratch buffer's real size.)
 RVA(0x0008df00, 0x238)
 i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     if (w == m_modeW && h == m_modeH) {
@@ -3636,7 +3629,10 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
             }
         }
     }
-    if (!SvmApply(w, h, m_colorDepth)) {
+    // The ex `extern "C" __stdcall SvmApply` phantom: retail's rel32 here is 0x155f60 ==
+    // CDDrawSurfaceMgr::SetDimensions, called __thiscall on m_world (`mov ecx,[esi+0x30]`
+    // right before the three arg pushes). The fake free-function decl dropped the receiver.
+    if (!m_world->SetDimensions(w, h, m_colorDepth)) {
         return 0;
     }
     while (::ShowCursor(0) >= 0) {
@@ -3665,7 +3661,8 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     RefreshGameClock();   // 0x8f620 (thunk 0x3d23)
     if (g_resolutionChanged != 0) {
         g_resolutionChanged = 0;
-        char buf[0x70];
+        char buf[0x80]; // 0x80, not 0x70: retail's frame is `sub esp,0x80` with the
+                        // same four callee-saved pushes
         sprintf(buf, "Resolution is now %ix%ix%i", m_modeW, m_modeH, m_colorDepth);
         AppendChatMessage(buf); // 0x8f9c0 (thunk 0x1b54)
     }

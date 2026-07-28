@@ -448,7 +448,7 @@ void* CSymTab::Find(const char* path) {
     if (strlen(ext) != 0) {
         strcpy(tmp, ext + 1);
         _strupr(tmp);
-        fourcc = static_cast<u32>(PackTag(tmp));
+        fourcc = static_cast<u32>(m_owner->PackTag(tmp));
     } else {
         fourcc = 0;
     }
@@ -1370,7 +1370,7 @@ i32 CSymParser::Clear(i32 final) {
 }
 
 RVA(0x0013b910, 0x58)
-u32 __stdcall PackTag(const char* s) {
+u32 CSymParser::PackTag(const char* s) {
     if (!s) {
         return 0;
     }

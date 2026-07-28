@@ -131,8 +131,12 @@ public:
     // (non-zero = text/structured, 0 = binary). Reloc-masked extern.
     i32 Classify(char* buf); // 0x13c080
 
-    // (0x13b910 "ResolveName" was a mislabel: it is the free __stdcall ::PackTag - the
-    // ext->key mapper declared at file scope above. ParseRecords calls PackTag directly.)
+    // PackTag: the extension -> fourcc mapper (0x13b910), __thiscall on the parser
+    // (ecx = this; the body ignores it) - the same shape as MakeSeed below. Proven by
+    // CSymTab::Find @0x13a040, which emits `mov ecx,[this+0x18]` (its m_owner) into the
+    // dead slot right before the call; a free __stdcall spelling emits no receiver.
+    // Defined in SymTab.cpp.
+    u32 PackTag(const char* s); // 0x13b910 (defined in SymTab.cpp)
 
     // ReParse (0x13c050): if armed (m_parseArmed), Clear(0) then re-parse the cached
     // +0x64 buffer. Returns 0 if not armed, else ParseBuffer's result.

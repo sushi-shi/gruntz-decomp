@@ -253,13 +253,15 @@ i32 CDDrawWorkerRegistry::LoadNamespace(void* tree, const char* sub, const char*
         CObject* out = 0;
         m_10map.Lookup(sub, out);
         if (out != 0) {
-            // Typed map-value retrieval: the stored values are CDDrawWorker.
-            CDDrawWorker* w = static_cast<CDDrawWorker*>(out);
-            if (w->ValidateFramesFromSymTab(dir) == -1) {
+            // Typed map-value retrieval: the stored values are CDDrawWorker. NO local
+            // mirror - retail re-reads `out` from its (address-taken) stack home after
+            // the dispatch (`mov eax,[esp+0x1c]; mov ecx,[eax+0x18]`); a named local
+            // makes cl park it in esi across the call instead.
+            if (static_cast<CDDrawWorker*>(out)->ValidateFramesFromSymTab(dir) == -1) {
                 operator delete(buf);
                 return -1;
             }
-            if (w->m_items.GetSize() > 0) {
+            if (static_cast<CDDrawWorker*>(out)->m_items.GetSize() > 0) {
                 ++count;
             }
         }

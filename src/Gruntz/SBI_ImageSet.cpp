@@ -148,7 +148,7 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4) {
             s->Read(buf, 0x80);
             if (strlen(buf)) {
                 CDDrawWorker* out;
-                CObject* outOb;
+                CObject* outOb = 0; // retail zeroes the out-slot before the map probe
                 reg->m_imageRegistry->m_10map.Lookup(buf, outOb);
                 out = static_cast<CDDrawWorker*>(outOb);
                 m_34 = out;
