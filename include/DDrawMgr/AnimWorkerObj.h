@@ -186,6 +186,25 @@ struct AnimWorkerObj : public CLoadable {
     u32 m_payloadSize;     // +0x178  payload byte count for the m_payload block
 }; // size = 0x17c
 SIZE(0x17c);
+
+// INLINE by default - the same /Gy COMDAT arrangement as the wwd node ctors (see
+// the block in <Gruntz/WwdGridIter.h>): CGameObject::CGameObject @0x15b390 FOLDS
+// this body (the `push 0x17c / call operator new` then the +0x04..+0x1c and
+// +0x170..+0x178 stores are spelled inline there), while the three
+// CDDrawChildGroup factories call the 0x15b300 copy.
+//   ANIMWORKEROBJ_OOL_CTOR -> WwdFactoryObject.cpp (0x15b300), WwdObjMgr.cpp (calls it)
+#ifndef ANIMWORKEROBJ_OOL_CTOR
+inline AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
+    : CLoadable(id, stateFlags, owner) {
+    m_notify = 0;
+    m_payload = 0;
+    m_logic = 0;
+    m_target = 0;
+    m_1c = 0;
+    m_targetId = 0;
+    m_payloadSize = 0;
+}
+#endif
 VTBL(AnimWorkerObj, 0x001efb80); // ??_7AnimWorkerObj@@6B@ (10-slot vtable; the +0x7c worker/record)
 
 #endif // GRUNTZ_DDRAWMGR_ANIMWORKEROBJ_H

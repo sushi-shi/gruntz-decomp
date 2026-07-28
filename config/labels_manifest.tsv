@@ -197,7 +197,7 @@ keyedlist	3
 kitchenslime	9
 latencylist	2
 leafcueplay	1
-levelplane	24
+levelplane	23
 levelpreview	10
 levelrezpath	1
 leveltilevalidation	3
@@ -356,10 +356,10 @@ worldlevelpath	2
 worldsoundset	36
 wormhole	28
 wormholeacts	2
-wwdfactoryobject	55
+wwdfactoryobject	57
 wwdfile	3
 wwdgameobject	45
-wwdgameobjectrender	17
+wwdgameobjectrender	16
 wwdgrid	15
 wwdobjmgr	54
 wwdspatialmgr	15

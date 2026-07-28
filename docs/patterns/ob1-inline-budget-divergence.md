@@ -40,34 +40,81 @@ per-function accumulated budget, so the *first* expansion at a site consumes it 
 nested ones stay as calls, while in the small standalone COMDAT the budget is fresh.
 
 **Our cl has a more generous budget than retail's build had.** With every ctor in-class
-it expands the whole chain and the factories land at 62/59/61/42 %. The pragmatic
-optimum is to place each definition where it buys the most sites:
+it expands the whole chain and the factories land at 62/59/61/42 %.
 
-| function | placement | why |
-|---|---|---|
-| `CResolveNode::CResolveNode(mgr,i32,i32)` @0x15b2c0 | **out-of-line** | 3 factories `call` it |
-| `AnimWorkerObj::AnimWorkerObj(mgr,i32,i32)` @0x15b300 | out-of-line | 3 factories `call` it |
-| `CAniAdvanceCursor::CAniAdvanceCursor(mgr,i32,i32)` @0x15b730 | out-of-line | `_159600` calls it |
-| `WwdDirtyRect::WwdDirtyRect()` @0x15b270 | out-of-line | 3 factories `call` it |
-| `WwdGridNode::WwdGridNode()` @0x15b2a0 | out-of-line | `_159250`/`_159440` `call` it |
-| `WwdRegion::WwdRegion()` @0x15b2b0 | **in-class** | `_159250`/`_159440` expand it |
-| `CGameObject::CGameObject(...)` @0x15b390 | **in-class** | 3 factories expand it |
+## THE FIX — the placement switch is PER-TU, not per-header (2026-07-28)
 
-That took `_159250` and `_159440` to **100 % EXACT** and `_159600` to 95.7 %.
+The table above is not a set of global choices. Inlining is a property of *what the TU
+sees*, so a **guard macro** makes it per-TU, and a **`#pragma inline_depth(0)` forcer**
+recovers the out-of-line COMDAT of a definition you kept inline. Together they let one
+function be inline in the TUs that expand it AND still exist as a labelled COMDAT:
 
-## The cost, and why it is not fixable
+```cpp
+// header - inline by DEFAULT (so every TU folds it)
+struct WwdRegion : WwdGridNode { WwdRegion(); ~WwdRegion() {} ... };
+#ifndef WWDREGION_OOL_CTOR
+inline WwdRegion::WwdRegion() { m_object = 0; }
+#endif
+```
 
-Two demands genuinely conflict — `_159250`/`_159440` expand `WwdRegion::WwdRegion()`
-while `_159600` calls it; three factories expand `CGameObject::CGameObject` while three
-other sites call it. **MSVC 5.0 has no `noinline`** (`__declspec(noinline)` is VC7+), and
-`#pragma inline_depth(n)` is depth- not size-based, so it flips the wrong set (it would
-also block the `+0x1a0` cursor expansion that `0x1598d0` *does* have).
+```cpp
+// the TU whose retail call sites emit a CALL: declaration only -> it emits calls
+#define WWDREGION_OOL_CTOR      // ... and it supplies `RVA(...) WwdRegion::WwdRegion() {...}`
+```
 
-A second, quieter consequence: **when nothing calls an in-class function out-of-line,
-cl emits no COMDAT for it, so its RVA cannot be labelled at all.** `0x15b390` (296 B)
-and `0x15b2b0` (14 B) are unclaimed for exactly that reason — the retail bytes exist,
-but no base obj has the symbol to pair them with. Budget the trade before you make a
-definition in-class.
+```cpp
+// the TU that must FOLD it but also OWNS its standalone COMDAT: keep it inline and
+// force the copy out. inline_depth(0) makes this one reference non-inlinable; the
+// emitted COMDAT still folds ITS own callees normally.
+static void* volatile g_forceEmitSink;
+#pragma inline_depth(0)
+void ForceEmitWwdRegionCtor() { g_forceEmitSink = new WwdRegion; }
+#pragma inline_depth()
+```
+and pin the forced body by mangled name, since it has no definition to hang `RVA()` on:
+`RVA_COMPGEN(0x0015b2b0, 0xe, ??0WwdRegion@@QAE@XZ)`.
+(The forcer device is `src/Gruntz/UserLogicCtorEmit.cpp`'s; the guard is
+`USERLOGIC_OOL_CTOR` in `<Gruntz/UserLogic.h>`.)
+
+Applied to this cluster: `wwdobjmgr` guards `WwdDirtyRect`/`WwdGridNode`/`CResolveNode`/
+`AnimWorkerObj` (its factories call all four), `wwdgameobjectrender` + `levelplane` guard
+`CGameObject` (their retail sites `call 0x15b390`), and `wwdfactoryobject` guards
+`CGameObject` + `WwdRegion` — it supplies those two bodies (0x15b390 / 0x15b2b0) while
+forcing out `0x15b2c0` / `0x15b300`. Result: **`0x15b2b0` and `0x15b390` recovered as
+labelled functions** (`0x15b2b0` EXACT, `0x15b390` 91.1 %), `??0CResolveNode` @0x15b2c0
+60.1 → **EXACT**, `0x166640` 42.4 → 71.7, `0x162af0` 69.9 → 75.0, `_159250`/`_159440`
+still EXACT.
+
+## What is still not fixable
+
+Two demands genuinely conflict **inside one TU**, and only there:
+`_159250`/`_159440` expand `WwdRegion::WwdRegion()` while `_159600` calls it, and three
+of `wwdobjmgr`'s four factories expand `CGameObject::CGameObject` while `_1598d0` calls
+it. A guard is per-TU, **MSVC 5.0 has no `noinline`** (`__declspec(noinline)` is VC7+),
+and `#pragma inline_depth(n)` is depth- not size-based, so neither can split call sites
+*within* a TU. `_159600` stays at 95.7 % and `_1598d0` at 57.0 % for that reason.
+
+## The budget is an EXPANSION COUNT — and when it runs out, cl prunes the DEEPEST
+
+`0x15b390`'s own body needs ~12 nested expansions (`CResolveNode` → `CLoadable` →
+`CWapObj` → `CObject`, the `WwdDirtyRect` live + shadow records, `WwdRegion` →
+`WwdGridNode`, and `new AnimWorkerObj(...)` with its own 4-deep `CLoadable` chain).
+cl 5.0 runs out one short. **Proven, not guessed**: deleting the
+`new AnimWorkerObj(...)` statement (probe only) makes the pruning disappear;
+`#pragma inline_depth(16)` and `(255)` do **not** move it — the limiter is the
+expansion count, not the depth — and MSVC 5.0 rejects `__forceinline` (C2501).
+
+**What it prunes matters more than that it prunes.** Left alone, cl drops the deepest
+expansion, `??0CWapObj@@QAE@XZ`, and emits it out-of-line — which drags a
+`??_7CWapObj@@6B@` COMDAT into the obj. That vtable is `VTBL_ABSENT` in retail, so it
+is a **FATAL `vtbl-absent` violation**, not just a % dip: the failure mode of an
+exhausted budget can be a build-integrity break, not a diff row.
+
+The steer is to hand cl the pruning decision by guarding a *shallow* expansion
+instead. `#define WWDREGION_OOL_CTOR` in that TU frees two slots (`WwdRegion` + its
+`WwdGridNode` base), `??0CWapObj` folds again, and the residue is one
+`lea ecx,[esi+0x9c]; call ??0WwdRegion` where retail has three stores: **88.7 % with
+the CWapObj prune and a failing gate → 91.1 % with a passing one.**
 
 ## Related
 

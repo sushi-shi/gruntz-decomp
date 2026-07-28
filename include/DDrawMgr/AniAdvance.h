@@ -16,7 +16,7 @@ class DSoundCloneInst; // the pooled cue player (ex DSoundCloneInst; Dsndmgr/Dir
 // Construct` - it passes its own `this`. Every field matched an existing member:
 //   +0x08 m_flags      -> CLoadable::m_flags
 //   +0x10/+0x14        -> CResolveNode::m_10 / m_14 (the per-frame plot deltas)
-//   +0x38 m_anchor     -> CResolveNode::m_dirtyArmed (the -1 "disarmed" sentinel it tests)
+//   +0x38 m_anchor     -> CResolveNode::m_dirty.m_armed (the -1 "disarmed" sentinel it tests)
 //   +0x40 m_byteFlags  -> CResolveNode::m_stateFlags
 //   +0x5c/+0x60        -> CResolveNode::m_screenX / m_screenY (same names already)
 //   +0x190/+0x194/+0x198 -> CWwdGameObjectA::m_190 / m_sprite / m_layer

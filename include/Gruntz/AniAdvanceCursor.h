@@ -51,7 +51,7 @@ public:
     // +0x10  the owning wide game object (a back-pointer to the object this cursor is
     // embedded in at its +0x1a0). The ex-CAniRenderCtx view was that class read through
     // pads: its m_flags/+0x08, m_posModeX-Y/+0x10-14, m_anchor/+0x38, m_byteFlags/+0x40,
-    // m_screenX-Y/+0x5c-60 are CLoadable::m_flags + CResolveNode::m_10/m_14/m_dirtyArmed/
+    // m_screenX-Y/+0x5c-60 are CLoadable::m_flags + CResolveNode::m_10/m_14/m_dirty.m_armed/
     // m_stateFlags/m_screenX/m_screenY, and its m_frameCursor/m_frameSeq/m_curFrame
     // (+0x190/+0x194/+0x198) are CWwdGameObjectA::m_190/m_sprite/m_layer.
     CWwdGameObjectA* m_10;

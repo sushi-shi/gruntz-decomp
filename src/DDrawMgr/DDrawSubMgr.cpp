@@ -290,8 +290,8 @@ i32 CDDrawWorkerBase::SetPosition(i32 x, i32 y) {
 RVA_COMPGEN(0x001570b0, 0x1e, ??_GCDDrawWorkerA@@UAEPAXI@Z)
 RVA(0x001570d0, 0x39)
 CDDrawWorkerA::~CDDrawWorkerA() {
-    volatile LONG* pHi = &m_dirtyRect.left;
-    volatile i32* pLo = &m_dirtyArmed;
+    volatile LONG* pHi = &m_dirty.m_rect.left;
+    volatile i32* pLo = &m_dirty.m_armed;
     m_78b = 0;
     *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
@@ -348,8 +348,8 @@ i32 CDDrawWorkerBase::GetClassId() {
 RVA_COMPGEN(0x00157220, 0x1e, ??_GCDDrawWorkerB@@UAEPAXI@Z)
 RVA(0x00157240, 0x3c)
 CDDrawWorkerB::~CDDrawWorkerB() {
-    volatile LONG* pHi = &m_dirtyRect.left;
-    volatile i32* pLo = &m_dirtyArmed;
+    volatile LONG* pHi = &m_dirty.m_rect.left;
+    volatile i32* pLo = &m_dirty.m_armed;
     m_78 = 0;
     *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
@@ -399,8 +399,8 @@ void CDDrawWorkerBase::Unload() {
     i32 v = static_cast<i32>(0x80000000);
     m_78 = 0;
     m_screenX = v;
-    m_dirtyRect.left = v;
-    m_dirtyArmed = -1;
+    m_dirty.m_rect.left = v;
+    m_dirty.m_armed = -1;
 }
 
 RVA(0x00157330, 0xa5)

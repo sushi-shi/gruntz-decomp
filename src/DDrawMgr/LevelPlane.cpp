@@ -21,6 +21,12 @@
 // <DDrawMgr/DDrawWorkerHost.h> (CDDrawWorkerHost), <Gruntz/UserLogic.h>
 // (CGameObject). Bodies are strictly RVA-ascending; only offsets + emitted
 // bytes are load-bearing (campaign doctrine).
+// CDDrawWorkerHost::ReadPlaneObjects @0x162af0 CALLS the shared CGameObject ctor
+// COMDAT (0x15b390) instead of folding it, so this TU takes the declaration-only
+// form of it - the per-TU guard described in <Gruntz/WwdGridIter.h>. The body lives
+// in src/Wwd/WwdFactoryObject.cpp.
+#define CGAMEOBJECT_OOL_CTOR
+
 #include <Gruntz/GruntzMgr.h> // C linkage for the definitions below (inherited, not restated)
 #include <Mfc.h>
 #include <Gruntz/WwdGameObject.h> // complete CWwdGameObject: the CGameObject downcast is static
@@ -795,12 +801,9 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
 }
 
 // @early-stop
-// cl-5.0 inline-budget divergence (docs/patterns/ob1-inline-budget-divergence.md):
-// the body/types/EH states are right, but our cl EXPANDS CGameObject's in-class ctor
-// here where retail's CALLED its COMDAT (0x15b390). MSVC5 /O2 is /Ob1, so the ctor
-// must stay an inline candidate for CreateObject_159250/159440/159600 (all EXACT via
-// that expansion) - and there is no MSVC5 noinline to force the call back. Not
-// steerable from source; retail's 0x15b390 COMDAT is consequently unemitted here.
+// The `call 0x15b390` half is now reproduced (the CGAMEOBJECT_OOL_CTOR guard at the
+// top of this file; 69.9 -> 75.0 %). Residual is this 2054-byte function's own
+// regalloc/scheduling, not the ctor shape.
 RVA(0x00162af0, 0x806)
 
 i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {

@@ -487,7 +487,7 @@ RVA(0x00153470, 0x31a)
 void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 mode = info->m_stateFlags;
     if (mode & 1) {
-        info->m_dirtyArmed = -1;
+        info->m_dirty.m_armed = -1;
         return;
     }
     if (mode & 8) {
@@ -500,7 +500,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
         }
         mode = info->m_stateFlags;
         if (!(mode & 0x10000000)) {
-            info->m_dirtyArmed = -1;
+            info->m_dirty.m_armed = -1;
             return;
         }
     }
@@ -593,7 +593,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 w = dright - dleft + 1;
     i32 h = dbottom - dtop + 1;
     if (w <= 0 || h <= 0) {
-        info->m_dirtyArmed = -1;
+        info->m_dirty.m_armed = -1;
         return;
     }
     RECT s;
@@ -602,15 +602,15 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     s.right = s.left + w;
     s.bottom = s.top + h;
     dst->m_surface->BltFast(dleft, dtop, m_surface, &s, m_loadResult);
-    info->m_lastX = dleft;
-    info->m_dirtyRect.left = dleft;
-    info->m_lastY = dtop;
-    info->m_dirtyW = w;
-    info->m_dirtyRect.top = dtop;
-    info->m_dirtyH = h;
-    info->m_dirtyArmed = 0;
-    info->m_dirtyRect.right = dright;
-    info->m_dirtyRect.bottom = dbottom;
+    info->m_dirty.m_lastX = dleft;
+    info->m_dirty.m_rect.left = dleft;
+    info->m_dirty.m_lastY = dtop;
+    info->m_dirty.m_w = w;
+    info->m_dirty.m_rect.top = dtop;
+    info->m_dirty.m_h = h;
+    info->m_dirty.m_armed = 0;
+    info->m_dirty.m_rect.right = dright;
+    info->m_dirty.m_rect.bottom = dbottom;
 }
 
 RVA(0x00153790, 0x6a)
@@ -740,7 +740,7 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 w = d.right - d.left + 1;
     i32 h = d.bottom - d.top + 1;
     if (w <= 0 || h <= 0) {
-        info->m_dirtyArmed = -1;
+        info->m_dirty.m_armed = -1;
         return;
     }
     RECT s;
@@ -754,12 +754,12 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
-    info->m_lastX = d.left;
-    info->m_lastY = d.top;
-    info->m_dirtyRect = *(&d);
-    info->m_dirtyW = w;
-    info->m_dirtyH = h;
-    info->m_dirtyArmed = 0;
+    info->m_dirty.m_lastX = d.left;
+    info->m_dirty.m_lastY = d.top;
+    info->m_dirty.m_rect = *(&d);
+    info->m_dirty.m_w = w;
+    info->m_dirty.m_h = h;
+    info->m_dirty.m_armed = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -834,7 +834,7 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 w = d.right - d.left + 1;
     i32 h = d.bottom - d.top + 1;
     if (w <= 0 || h <= 0) {
-        info->m_dirtyArmed = -1;
+        info->m_dirty.m_armed = -1;
         return;
     }
     RECT s;
@@ -848,12 +848,12 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
-    info->m_lastX = d.left;
-    info->m_lastY = d.top;
-    info->m_dirtyRect = *(&d);
-    info->m_dirtyW = w;
-    info->m_dirtyH = h;
-    info->m_dirtyArmed = 0;
+    info->m_dirty.m_lastX = d.left;
+    info->m_dirty.m_lastY = d.top;
+    info->m_dirty.m_rect = *(&d);
+    info->m_dirty.m_w = w;
+    info->m_dirty.m_h = h;
+    info->m_dirty.m_armed = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -924,7 +924,7 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 w = d.right - d.left + 1;
     i32 h = d.bottom - d.top + 1;
     if (w <= 0 || h <= 0) {
-        info->m_dirtyArmed = -1;
+        info->m_dirty.m_armed = -1;
         return;
     }
     RECT s;
@@ -938,12 +938,12 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
-    info->m_lastX = d.left;
-    info->m_lastY = d.top;
-    info->m_dirtyRect = *(&d);
-    info->m_dirtyW = w;
-    info->m_dirtyH = h;
-    info->m_dirtyArmed = 0;
+    info->m_dirty.m_lastX = d.left;
+    info->m_dirty.m_lastY = d.top;
+    info->m_dirty.m_rect = *(&d);
+    info->m_dirty.m_w = w;
+    info->m_dirty.m_h = h;
+    info->m_dirty.m_armed = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -1018,7 +1018,7 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 w = d.right - d.left + 1;
     i32 h = d.bottom - d.top + 1;
     if (w <= 0 || h <= 0) {
-        info->m_dirtyArmed = -1;
+        info->m_dirty.m_armed = -1;
         return;
     }
     ShadeRect s;
@@ -1030,12 +1030,12 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 0);
-    info->m_lastX = d.left;
-    info->m_lastY = d.top;
-    info->m_dirtyRect = *(&d);
-    info->m_dirtyW = w;
-    info->m_dirtyH = h;
-    info->m_dirtyArmed = 0;
+    info->m_dirty.m_lastX = d.left;
+    info->m_dirty.m_lastY = d.top;
+    info->m_dirty.m_rect = *(&d);
+    info->m_dirty.m_w = w;
+    info->m_dirty.m_h = h;
+    info->m_dirty.m_armed = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -1117,7 +1117,7 @@ void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 w = d.right - d.left + 1;
     i32 h = d.bottom - d.top + 1;
     if (w <= 0 || h <= 0) {
-        info->m_dirtyArmed = -1;
+        info->m_dirty.m_armed = -1;
         return;
     }
     ShadeRect s;
@@ -1129,12 +1129,12 @@ void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 1);
-    info->m_lastX = d.left;
-    info->m_lastY = d.top;
-    info->m_dirtyRect = *(&d);
-    info->m_dirtyW = w;
-    info->m_dirtyH = h;
-    info->m_dirtyArmed = 0;
+    info->m_dirty.m_lastX = d.left;
+    info->m_dirty.m_lastY = d.top;
+    info->m_dirty.m_rect = *(&d);
+    info->m_dirty.m_w = w;
+    info->m_dirty.m_h = h;
+    info->m_dirty.m_armed = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -1207,7 +1207,7 @@ void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 w = d.right - d.left + 1;
     i32 h = d.bottom - d.top + 1;
     if (w <= 0 || h <= 0) {
-        info->m_dirtyArmed = -1;
+        info->m_dirty.m_armed = -1;
         return;
     }
     ShadeRect s;
@@ -1219,12 +1219,12 @@ void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 0);
-    info->m_lastX = d.left;
-    info->m_lastY = d.top;
-    info->m_dirtyRect = *(&d);
-    info->m_dirtyW = w;
-    info->m_dirtyH = h;
-    info->m_dirtyArmed = 0;
+    info->m_dirty.m_lastX = d.left;
+    info->m_dirty.m_lastY = d.top;
+    info->m_dirty.m_rect = *(&d);
+    info->m_dirty.m_w = w;
+    info->m_dirty.m_h = h;
+    info->m_dirty.m_armed = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -1296,7 +1296,7 @@ void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 w = d.right - d.left + 1;
     i32 h = d.bottom - d.top + 1;
     if (w <= 0 || h <= 0) {
-        info->m_dirtyArmed = -1;
+        info->m_dirty.m_armed = -1;
         return;
     }
     ShadeRect s;
@@ -1308,12 +1308,12 @@ void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 1);
-    info->m_lastX = d.left;
-    info->m_lastY = d.top;
-    info->m_dirtyRect = *(&d);
-    info->m_dirtyW = w;
-    info->m_dirtyH = h;
-    info->m_dirtyArmed = 0;
+    info->m_dirty.m_lastX = d.left;
+    info->m_dirty.m_lastY = d.top;
+    info->m_dirty.m_rect = *(&d);
+    info->m_dirty.m_w = w;
+    info->m_dirty.m_h = h;
+    info->m_dirty.m_armed = 0;
 }
 
 VTBL(CImage, 0x001eaa2c); // vtable_names -> code (RTTI game class)
