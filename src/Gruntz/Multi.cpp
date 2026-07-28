@@ -1573,7 +1573,9 @@ RVA_COMPGEN(0x000b8960, 0x59, ??1CMultiStartDlg@@UAE@XZ)
 // PlayerRecord views it used to carry ARE this CNetMgr + its player-list node/payload.
 // ---------------------------------------------------------------------------
 // @early-stop
-// regalloc/aliasing wall (~91.5%): logic byte-exact except the advance block -
+// regalloc/aliasing wall (~91.5%; see also the LB_ADDSTRING note in the body - the
+// duplicated-call shape reaches 95.41 but costs a second API cast): logic byte-exact
+// except the advance block -
 // retail reloads m_playerSelId into a 2nd register (ecx) for the ->next read while
 // keeping the old position in eax for ->m_data (`mov ecx,[m_80]; mov eax,[eax+8];
 // mov edx,[ecx]`); the recompile keeps the position in one reg and derefs both
@@ -1595,6 +1597,14 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
             ? static_cast<CNetPlayerListNode*>(sess->m_players.GetNext(sess->m_playerSelId))
             : 0;
     while (player) {
+        // NOTE (jcc_sieve POLARITY, 2026-07-28): retail pushes the string in EACH arm and
+        // cl tail-merges everything after it (`push ecx / jmp` vs `push edx`, then the
+        // shared `push 0 / push 0x180 / push edi / call`, 0xb8a74) - i.e. the LB_ADDSTRING
+        // call is duplicated into both arms, not fed a selected pointer. That spelling was
+        // measured at 95.41 (vs 92.72 here) but needs a SECOND reinterpret_cast<LPARAM>,
+        // which trips the reinterpret_casts ratchet (440 -> 441, FATAL). Reverted; apply
+        // the shape where the duplicated argument needs no cast. See
+        // docs/patterns/positive-gate-enables-shrink-wrap.md sec.5.
         const char* str;
         if (NetFormatKeyed(buf + 4, player->m_desc.m_lpszName, "NAME")) {
             str = buf;

@@ -265,6 +265,47 @@ if (d) slot = &p->m_child[0];
 `CWarpStoneFly::Tick` @0x10a0f0 is the same shape with a `goto` (both y arms share one clamp
 store), 79.37 → **80.52**.
 
+### 5. Two-arm CALL — retail duplicates the whole call, cl selects the argument
+
+The mirror of (4). When both arms make the *same* call with a different argument, cl will
+happily compute the argument into one register and emit the call once; retail emits the
+call in **both** arms and lets cl tail-merge everything after the differing `push`:
+
+```asm
+; retail                              ; recompile
+  test eax,eax                          test eax,eax
+  je   ELSE                             lea  eax,[esp+0x10]
+  lea  ecx,[esp+0x10]                   jne  JOIN
+  push ecx                              mov  eax,[esi+0x34]
+  jmp  JOIN                           JOIN:
+ELSE:                                   push eax
+  mov  edx,[esi+0x34]                   push 0 ; push 0x180 ; push edi ; call ebx
+  push edx
+JOIN:
+  push 0 ; push 0x180 ; push edi ; call ebx
+```
+
+The tell is retail's **`push X` / `jmp` in one arm and `push Y` in the other**, with the rest
+of the argument list and the `call` shared — that is cl's own tail-merge of two complete
+calls, not a select. So write two calls, not `const char* s = c ? a : b;`:
+
+```cpp
+if (NetFormatKeyed(buf + 4, p->m_desc.m_lpszName, "NAME")) {
+    idx = SendMessageA(h, LB_ADDSTRING, 0, (LPARAM)buf);
+} else {
+    idx = SendMessageA(h, LB_ADDSTRING, 0, (LPARAM)p->m_desc.m_lpszName);
+}
+```
+
+`FillPlayerList` @0xb89e0 92.72 -> **95.41** (2026-07-28); the selected-pointer spelling also
+inverted the guard, which is how `jcc_sieve` surfaced it.
+
+**Cost check first.** Duplicating the call duplicates every cast in the argument list. In
+`FillPlayerList` that is a second `reinterpret_cast<LPARAM>`, which trips the
+`reinterpret_casts` ratchet (440 -> 441, FATAL) - so that one was reverted and the shape is
+recorded in its `@early-stop` instead. Apply this where the duplicated argument needs no
+cast; there the shape is free.
+
 ### Also: a mid-function guard that duplicates a LATER shared exit
 
 `if (!CanWrap()) return 0;` sitting above a `if (!found) return 0;` is a duplicate of it —
