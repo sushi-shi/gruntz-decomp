@@ -13,10 +13,18 @@ things it is still good for:
   correctness was previously unknown; `CMapMgr::ComputeCellFlags` sits at 0.00% and its
   parked note *claimed* the zero was a delinker artefact — that is now confirmed on 19
   inputs rather than asserted. Do not spend a lane re-litigating these.
-- **The DISAGREE row is a live lead, and it is chaseable statically.** See the
-  `CLightFxRender::Shape3` section below: the channel signature points at `g_clut`
-  sub-table addressing, and the sibling `CDDrawShadeBlit` already names the three planes
-  (`+0x20002` R, `+0x2` G, `+0x10002` B). No session is needed to test it.
+- **The DISAGREE row is a live lead, and it is chaseable statically** — see the decoded
+  `buf[]` table at the end of this file. It is a *specification*: retail's exact colour for
+  each index range, checkable against our store program and against the disasm with nothing
+  running.
+
+  A first reading of that row blamed `g_clut` per-channel sub-table addressing (the sibling
+  `CDDrawShadeBlit` uses three planes at `+0x20002`/`+0x2`/`+0x10002`). **That was wrong.**
+  Decoding the failure to `buf[]` indices exonerates the packer: `Pack` is a variable-shift
+  packer reading `g_rUp`/`g_rDown`/`g_gUp`/`g_gDown`/`g_bDown`, both sides read identical
+  shifts, and `buf[1..8]` (`c00 = Pack(0x4e,0x78,0x1c) = 4bc3`) agrees — which exercises it
+  end to end. The defect is in WHICH CONSTANT is painted over WHICH RANGE, i.e. the
+  run-length / case-selection structure of the store program.
 
 One caveat that limits the Shape rows specifically: they were measured against
 `lightfxrender.obj` at commit `2bebf202f`, which **predates** the palette rebuild merged at
@@ -24,7 +32,7 @@ One caveat that limits the Shape rows specifically: they were measured against
 
 ---
 
-One row per function that was run through the removed `verdict.py`. The column that
+One row per function that was run through the removed replay harness. The column that
 matters is **VERDICT**, not the match %: a function at 54% that is behaviourally identical
 to retail and one that computes the wrong answer look the same on the scoreboard, and this
 was the only thing that told them apart.
@@ -33,7 +41,7 @@ Read a row as: *our compiled bytes, run on the state the real game produced, wro
 same bytes and returned the same value as retail's own machine code did, over the whole
 restored address space.* The rules the comparison declines to apply — the callee's frame,
 the incoming argument area, other modules' data, the observer's own footprint, and `eax`
-for a void return — are stated and bounded in `../replay/README.md`.
+for a void return — were stated and bounded in the removed `replay/README.md`.
 
 Every AGREE row was taken with `--control`, which re-runs the same snapshot with a
 one-sided perturbation and **fails the row** if the comparison does not go red.
@@ -85,12 +93,22 @@ or more RGB565 **channels comes out zero**:
 | `21a1` | `2000` | 4 = 4 | 13 → **0** | 1 → **0** |
 
 The surviving channels are **exactly right**, which rules out an arithmetic error in the
-blend and points at the channel LOOKUP: a per-channel sub-table whose base or stride is
-wrong reads zeros instead of its table. The sibling `CDDrawShadeBlit` code uses precisely
-that idiom — three sub-tables of `?g_clut@@3PAEA` at 64 KB strides, visible in the object
-as `DIR32 ?g_clut@@3PAEA` relocations with inline addends `0x00000002`, `0x00010002` and
-`0x00020002`. A missing or wrong `+0x10000` / `+0x20000` on one of the channel reads
-produces exactly this.
+blend.
+
+**The first inference drawn from that was WRONG and is left here as a worked example of a
+plausible-but-false reading.** It said: a per-channel sub-table whose base or stride is
+wrong reads zeros instead of its table, and the sibling `CDDrawShadeBlit` uses precisely
+that idiom — three sub-tables of `?g_clut@@3PAEA` at 64 KB strides (`DIR32` relocations with
+inline addends `0x2`, `0x10002`, `0x20002`) — so a missing `+0x10000`/`+0x20000` would
+produce exactly this.
+
+It is wrong because it never checked the packer. Decoding the failure to `buf[]` indices
+(section at the end of this file) shows every retail value is one of `Shape3`'s own `cNN`
+constants, and `buf[1..8]` (`c00 = Pack(0x4e,0x78,0x1c) = 4bc3`) **agrees on both sides**,
+exercising the variable-shift packer end to end. So the colour computation is fine and the
+defect is in WHICH CONSTANT reaches WHICH RANGE. The lesson: "one channel is zero" is a
+signature of the *value selected*, not necessarily of how it was computed — and a sibling
+TU using an idiom is not evidence that this TU uses it.
 
 A second, smaller effect is a **span boundary**: at `0x03ab9186` we write eight more
 pixels of the previous span's colour (`4bc3`) where retail has already switched to
@@ -98,10 +116,8 @@ pixels of the previous span's colour (`4bc3`) where retail has already switched 
 writes two different ones (`6060`, `114e`). That is a run-length or a case-selection
 difference, not a colour one.
 
-**The other seven shapes disagree too.** `--cross` runs each of them against retail's own
-`ShapeN` on the same restored state (`verdict.py '?ShapeN@CLightFxRender@@QAEHXZ' --cross
-'?Shape3@CLightFxRender@@QAEHXZ'`), which is a valid OURS-vs-RETAIL comparison even though
-the state was captured for Shape3:
+**The other seven shapes disagree too.** Each was run against retail's own `ShapeN` on the same restored state, which is a valid
+OURS-vs-RETAIL comparison even though the state was captured for Shape3:
 
     Shape1  453 of 524 B differ      Shape5  483 of 524 B differ
     Shape2  444                      Shape6  483
@@ -165,3 +181,44 @@ note in `../replay/README.md`.
 * `replay.exe --show N` prints N differing bytes per verdict (default 32). A DISAGREE is
   not diagnosable without the whole list — the 8-pixel grouping above is invisible in the
   first 32.
+
+---
+
+## `Shape3` decoded to `buf[]` indices — the usable residue
+
+`buf[0] = 0x03ab9174`, so every differing address maps to an index. **Every retail value
+below is exactly one of the `cNN` constants declared at the top of `Shape3`.** 175 wrong
+pixels across 31 ranges.
+
+    buf[] range     retail          buf[] range      retail
+    buf[9..16]      2104 (c01)      buf[221..224]    fe88 (c10)
+    buf[40..73]     21a1 (c02)      buf[225..228]    43ff (c12)
+    buf[77..84]     58a1 (c08)      buf[229..232]    47e8 (c13)
+    buf[117..118]   b1e1 (c05)      buf[233..236]    f924 (c14)
+    buf[120..123]   6060 (c06)      buf[237..238]    a15f (c11)
+    buf[125..126]   b1e1 (c05)      buf[239..240]    fc85 (c15)
+    buf[144..155]   230e (c04)      buf[243..246]    31a6 (c17)
+    buf[157..158]   114e (c03)      buf[247..248]    fc85 (c15)
+    buf[160..163]   230e (c04)      buf[249..250]    d6ba (c16)
+    buf[165..166]   114e (c03)      buf[251..252]    47e8 (c13)
+    buf[168..179]   230e (c04)      buf[253..254]    f924 (c14)
+    buf[213..214]   3186 (c19)      buf[255..256]    a15f (c11)
+    buf[215..216]   a504 (c20)      buf[260], [266]  b1e1 (c05)
+    buf[217..218]   d6ba (c16)      buf[270..281]    21a1 (c02)
+                                    buf[286..294]    58a1 (c08)
+                                    buf[302..323]    b307 (c18)
+
+The SHAPE of it is the lead: short 2- and 4-pixel runs alternating between a few constants
+(`c03`/`c04` interleaving at `buf[157..179]`, `c13`/`c14`/`c11`/`c15` cycling at
+`buf[229..256]`). That is a run-length / case-selection structure, so the defect is in the
+run boundaries or the case ordering — not the colour values.
+
+**The `ours` column is deliberately omitted.** The module measured was baked from the object
+at `2bebf202f`, which predates the palette rebuild; every `retail` value matches a constant
+in the current source, but no old `ours` value does, so the table had already changed
+underneath the measurement. Retail's column is still ground truth. The old column is not,
+and printing it would invite someone to "fix" a difference that no longer exists.
+
+**There is no way to re-measure.** The replay harness is gone. Any instruction in an older
+revision of this file to run `recomp/replay/verdict.py` is dead — that path does not exist,
+and `GRUNTZ.EXE` must not be launched. Use the table as a static specification.
