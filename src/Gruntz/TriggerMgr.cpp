@@ -972,26 +972,32 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     tg->m_rows[rowIdx][cellCol].m_4 = -1;
     m_grid[idx] = 0;
     m_rowCount[col] -= 1;
+    // ONE shared `m_36c = 1` tail: retail's z!=0 arm, when the kind is NOT 0x14, jumps
+    // past the z==0 body straight to the final flag store (0x7a0ae -> 0x7a109), skipping
+    // only the m_rowStateC bump. Giving that arm its own `m_36c = 1; return;` emits a
+    // second flag-store + epilogue where retail has one.
+    i32 k;
     if (z != 0) {
         m_cellFlag[idx] = 1;
         m_rowStateB[col] += 1;
-        i32 k = cell->m_entranceReason;
+        k = cell->m_entranceReason;
         if (k > 0x16) {
             k = cell->m_19c;
         }
-        if (k == 0x14) {
-            if (g_gameReg->m_134 == 1) {
-                CWarlord* fx = m_pendingFx;
-                if (fx != 0) {
-                    fx->ResolveDeathAnimation();
-                }
-            }
-            this->LoadFinishLevelSprite(1);
+        if (k != 0x14) {
+            goto mark;
         }
+        if (g_gameReg->m_134 == 1) {
+            CWarlord* fx = m_pendingFx;
+            if (fx != 0) {
+                fx->ResolveDeathAnimation();
+            }
+        }
+        this->LoadFinishLevelSprite(1);
         cell->m_36c = 1;
         return;
     }
-    i32 k = cell->m_entranceReason;
+    k = cell->m_entranceReason;
     if (k > 0x16) {
         k = cell->m_19c;
     }
@@ -999,6 +1005,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         this->ResetSpawnState();
     }
     m_rowStateC[col] += 1;
+mark:
     cell->m_36c = 1;
 }
 
@@ -1486,11 +1493,17 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
 // The stop-fx hook the TriggerCell driver uses (reloc-masked).
 // 0x7b1b0: TriggerCell(x, y) - clear the pending-fx slot; only when the overlay sub-object
 // (+0x25c) is live with its +0x2c set, look up the magic record cell, classify (x,y) and by
-// the resulting kind spawn the matching fx sprite (kind 2 -> remapped 0x13, kind 3 -> alt
-// 0x1e, else generic +0xc8 into +0x2a8), then Refresh + Record. ret 1. (ret 0x8.)
+// the resulting kind spawn the matching fx sprite: kind 2 -> the cell's remapped 0x13,
+// kind 3 -> the cell's m_198, which is either the alt 0x1e or (non-zero) the generic
+// m_198+0xc8 published into +0x2a8. Every other kind does nothing. Then Refresh + Record.
+// ret 1. (ret 0x8.)
 // @early-stop
-// regalloc + switch-on-kind wall: the classify result drives a cmp/je ladder that pins ebx
-// (world) and esi (cell) differently than retail, and the fx arg pushes spill. topic:wall.
+// 91.19% (was 89.09). CORRECTNESS FIX 2026-07-28 (jcc_sieve TOPOLOGY): the generic +0xc8
+// arm was a sibling `else if (kind != 0)` keyed off the CLASSIFY RESULT; retail nests it
+// under kind==3 and keys it off `cell->m_198` - the very value it compares against 0x1e.
+// We were firing the cursor-sprite path for every non-zero kind other than 2/3 and
+// publishing `kind + 0xc8` as the sprite id. Residual: regalloc - the cmp/je ladder pins
+// ebx (world) and esi (cell) differently than retail, and the fx arg pushes spill.
 RVA(0x0007b1b0, 0x12b)
 i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     CActionOptionsMenuBar* ov = m_overlay;
@@ -1517,14 +1530,19 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
                 ->ResetGroup(cell->m_lastTilePxX, cell->m_lastTilePxY, 0, 0, 0, 2, 1);
         }
     } else if (kind == 3) {
-        if (cell->m_198 == 0x1e) {
+        // The generic +0xc8 arm is NESTED under kind==3 and keys off cell->m_198, NOT
+        // `kind`: retail's `cmp eax,3 / jne <tail>` (0x7b262) sends every other kind
+        // straight to OverlayTick, and the `test eax,eax` at 0x7b293 tests the m_198 it
+        // loaded at 0x7b264 - the same value it then biases by 0xc8.
+        i32 alt = cell->m_198;
+        if (alt == 0x1e) {
             CGameObject* o = cell->m_object;
             g_gameReg->m_cmdGrid->ResetGroup(o->m_screenX, o->m_screenY, 0, 0, 0, 3, 1);
+        } else if (alt != 0) {
+            i32 v = alt + kPendingFxIdBase;
+            m_pendingFxKind = v;
+            world->LoadCursorSprites(v, 0);
         }
-    } else if (kind != 0) {
-        i32 v = kind + kPendingFxIdBase;
-        m_pendingFxKind = v;
-        world->LoadCursorSprites(v, 0);
     }
     this->OverlayTick();
     this->PlaceObjectFull(x, y);

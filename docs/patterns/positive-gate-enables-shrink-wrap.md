@@ -265,6 +265,47 @@ if (d) slot = &p->m_child[0];
 `CWarpStoneFly::Tick` @0x10a0f0 is the same shape with a `goto` (both y arms share one clamp
 store), 79.37 → **80.52**.
 
+### 5. Two-arm CALL — retail duplicates the whole call, cl selects the argument
+
+The mirror of (4). When both arms make the *same* call with a different argument, cl will
+happily compute the argument into one register and emit the call once; retail emits the
+call in **both** arms and lets cl tail-merge everything after the differing `push`:
+
+```asm
+; retail                              ; recompile
+  test eax,eax                          test eax,eax
+  je   ELSE                             lea  eax,[esp+0x10]
+  lea  ecx,[esp+0x10]                   jne  JOIN
+  push ecx                              mov  eax,[esi+0x34]
+  jmp  JOIN                           JOIN:
+ELSE:                                   push eax
+  mov  edx,[esi+0x34]                   push 0 ; push 0x180 ; push edi ; call ebx
+  push edx
+JOIN:
+  push 0 ; push 0x180 ; push edi ; call ebx
+```
+
+The tell is retail's **`push X` / `jmp` in one arm and `push Y` in the other**, with the rest
+of the argument list and the `call` shared — that is cl's own tail-merge of two complete
+calls, not a select. So write two calls, not `const char* s = c ? a : b;`:
+
+```cpp
+if (NetFormatKeyed(buf + 4, p->m_desc.m_lpszName, "NAME")) {
+    idx = SendMessageA(h, LB_ADDSTRING, 0, (LPARAM)buf);
+} else {
+    idx = SendMessageA(h, LB_ADDSTRING, 0, (LPARAM)p->m_desc.m_lpszName);
+}
+```
+
+`FillPlayerList` @0xb89e0 92.72 -> **95.41** (2026-07-28); the selected-pointer spelling also
+inverted the guard, which is how `jcc_sieve` surfaced it.
+
+**Cost check first.** Duplicating the call duplicates every cast in the argument list. In
+`FillPlayerList` that is a second `reinterpret_cast<LPARAM>`, which trips the
+`reinterpret_casts` ratchet (440 -> 441, FATAL) - so that one was reverted and the shape is
+recorded in its `@early-stop` instead. Apply this where the duplicated argument needs no
+cast; there the shape is free.
+
 ### Also: a mid-function guard that duplicates a LATER shared exit
 
 `if (!CanWrap()) return 0;` sitting above a `if (!found) return 0;` is a duplicate of it —
@@ -280,6 +321,34 @@ Same family: `CMulti::WaitForOtherPlayers` @0xbb700 4→3, 75.04 → **80.47**;
 `CGameLevel::MoveHandlerA` @0x15e130 4→3, 64.96 → **70.04** (that one was a genuine
 control-flow bug the count exposed: retail runs the held-flag tail on the probe MISS of both
 arms, so it is not an `else`).
+
+### The INVERSE direction (`b_ret < t_ret`) is a WALL — do not spend a session on it
+
+Everything above is for `b_ret > t_ret` (we duplicate an exit retail merges). The mirror —
+**retail has MORE epilogues than we do** — is not source-steerable, because cl5 tail-merges
+identical epilogues regardless of where the source puts the block.
+
+`CProjectile::ScanTargets` @0xe0b10 (1 -> 2 rets) is the worked case. Retail lays out
+`[loop][epilogue A][self-cell handler][epilogue B]` — the row loop's fall-out gets its own
+epilogue A (so the back-edge is a plain `cmp/jl <top>`), the cold self-cell handler is sunk
+*past* it, and the hit-list `return` shares B with the handler. We get
+`[loop][handler][one shared epilogue]`, which forces the loop exit to jump over the handler
+(`jge <shared> / jmp <top>`) — one block and one `ret` too few, and it is 1 byte SMALLER, so
+cl has no reason to prefer retail's form. Three spellings measured 2026-07-28, all
+**byte-identical** at 93.99:
+
+1. the handler written inline in the loop with `return;`
+2. the handler sunk to a `return; selfcell:` tail below the function's own `return`
+   (hoisting `g` to function scope so the tail can still read it)
+3. (2) plus the hit-list `return` routed to a `done:` label placed *after* the handler —
+   i.e. retail's exact edge structure spelled out
+
+Same wall as `EngStr_DrawText` @0x115440 / `ShowHudMessage(Alt)` @0x1154b0/0x115520 (1 -> 2
+rets), where a previous lane enumerated `if(!cfg)return` / `==0` / `else` and none split the
+bare `void` ret — see [identical-return-epilogue-tailmerge](identical-return-epilogue-tailmerge.md).
+
+So: when `jcc_sieve` shows `rets N -> N+1`, read it as *diagnosed, not actionable*, and spend
+the budget on the function's other residue.
 
 ### Bound, re-confirmed
 

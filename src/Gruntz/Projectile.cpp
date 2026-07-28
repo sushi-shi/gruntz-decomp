@@ -809,8 +809,16 @@ step:
 // One more, from jcc_sieve 2026-07-28 (rets 1 -> 2): retail gives the row loop's FALL-OUT
 // its own epilogue (`cmp eax,0x10c / jl <top>` then pop/ret) where cl merges it with the
 // three inner `return`s into one shared exit and inverts the back-edge (`jge <shared> /
-// jmp <top>`). This is the tail-merge direction positive-gate-enables-shrink-wrap.md
-// does NOT cover (b_ret < t_ret); no spelling for it yet.
+// jmp <top>`). Retail's layout is [loop][epilogue A][self-cell handler][epilogue B], with
+// the hit-list `return` and the handler both landing on B; ours is [loop][handler]
+// [one shared epilogue]. This is the tail-merge direction positive-gate-enables-shrink-
+// wrap.md does NOT cover (b_ret < t_ret) and it is a WALL: three spellings tried
+// 2026-07-28, all byte-identical at 93.99 - (1) the handler inline in the loop, (2) the
+// handler sunk to a `return; selfcell:` tail below the function's own return, (3) that
+// plus the hit-list return routed to a `done:` label after the handler (retail's exact
+// edge structure). cl5 tail-merges identical epilogues regardless of source position; the
+// duplicate is retail's cl choosing NOT to, and nothing in C selects it. Same wall as
+// EngStr_DrawText/ShowHudMessage (identical-return-epilogue-tailmerge.md).
 // ---------------------------------------------------------------------------
 RVA(0x000e0b10, 0x1bd)
 void CProjectile::ScanTargets(i32 impact) {

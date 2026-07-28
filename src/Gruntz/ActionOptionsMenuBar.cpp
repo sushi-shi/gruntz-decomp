@@ -311,9 +311,12 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
 // CActionOptionsMenuBar::HitHover - hover hit-test (returns a button id or 0).
 // ---------------------------------------------------------------------------
 // @early-stop
-// Regalloc wall (~89%): retail keeps y0 in eax to derive both bounds, THEN reuses
-// eax for `my`; our cl reads `my` early into ebp and puts the bounds in ebx/edi.
-// Same shape, register/scheduling residual. Logic exact.
+// 90.39% (was 89.16). CORRECTNESS FIX 2026-07-28 (jcc_sieve POLARITY): button 1's state
+// guard is `!= 3`, like button 0's - retail's last compare is `cmp edx,eax(3) / jne <keep
+// eax=3>` (0x9cdd). We had `== 3`, i.e. the right-hand hover only registered while that
+// button was disabled and never otherwise. Residual: regalloc - retail keeps y0 in eax to
+// derive both bounds, THEN reuses eax for `my`; our cl reads `my` early into ebp and puts
+// the bounds in ebx/edi. Same shape.
 RVA(0x00009760, 0x6c)
 i32 CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
     if (!m_active) {
@@ -326,7 +329,10 @@ i32 CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
     if (mx < x0 && mx >= x0 - 0x18 && my < yhi && my >= ylo && m_button0State != 3) {
         return 2;
     }
-    if (mx < x0 + 0x18 && mx >= x0 && my < yhi && my >= ylo && m_button1State == 3) {
+    // `!= 3`, like button 0: retail's last compare is `cmp edx,eax(3) / jne <keep eax=3>`
+    // (0x9cdd), so the hit is reported when the button is NOT in state 3 - we had `== 3`,
+    // which reports button 1 only while it is disabled and never otherwise.
+    if (mx < x0 + 0x18 && mx >= x0 && my < yhi && my >= ylo && m_button1State != 3) {
         return 3;
     }
     return 0;

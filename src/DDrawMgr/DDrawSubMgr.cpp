@@ -1451,10 +1451,13 @@ i32 CDDrawSubMgrPages::PresentBackPage() {
 // ~88% - flattened the nested `if(overlay && IsLoaded){...} return 0` into a flat
 // guard chain (each `if(!x) return 0`), matching retail's per-guard inline return-0
 // (was 50%: the nesting made cl share ONE return-0 via `je`). Residual is a single
-// tail-merge coin-flip: retail shares the FIRST guard's return-0 (m_overlayPair,
-// `je shared`) while inlining the rest; cl inlines the first + shares the second.
-// Hoisting `a=m_overlayPair` before the guards regressed to 57% (regalloc). Not
-// steerable further. docs/patterns/zero-register-pinning.md.
+// tail-merge coin-flip: retail shares the FIRST guard's return-0 with the IsLoaded test
+// (both `je 0x158e53` / fall into one `xor eax,eax / pop / ret`) while inlining the rest;
+// cl inlines the first and lets the second reuse the call's zero eax (a bare `pop / ret`).
+// Hoisting `a=m_overlayPair` before the guards regressed to 57% (regalloc), and folding the
+// two into one `||` - which is exactly retail's edge structure - regressed to 50.13
+// (retested 2026-07-28, jcc_sieve DUP-EXIT): the `||` makes cl re-share ALL the exits, the
+// state this function started from. Not steerable. docs/patterns/zero-register-pinning.md.
 RVA(0x00158e40, 0x4c)
 i32 CDDrawSubMgrPages::TransEnter() {
     if (!m_overlayPair) {
