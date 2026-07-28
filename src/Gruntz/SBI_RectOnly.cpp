@@ -1276,12 +1276,15 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
 // pushes the new frame into the widget when it changes (the +0x30 virtual).
 // @early-stop
 // ~79.9%: logic + every store/offset/advance-tail is byte-faithful. Residual is the
-// 64-bit signed-clamp `elapsed = (d>=0)?(i32)d:0` codegen: retail emits the un-folded
-// `cmp hi,ebx(0); jg; jl; cmp lo,ebx; jae` compare then a branch-select `xor esi,esi;
-// jmp / mov esi,eax(lo)` keeping the raw lo in a temp, whereas this toolchain FOLDS it
-// to the sbb sign-flag (`js`) and fuses lo directly into the elapsed reg (esi) - i.e.
-// cl here is MORE optimized than retail's exact MSVC5 build. A toolchain-microversion
-// codegen wall, not source-steerable; deferred to the final sweep.
+// 64-bit signed-clamp `elapsed = (d>=0)?(i32)d:0` codegen, and the MECHANISM is now
+// pinned (jcc_sieve OTHER `js->jg`, `jg->jl`): retail keeps the constant 0 PINNED IN EBX
+// (docs/patterns/zero-register-pinning.md - it is used all over this function), so the
+// clamp becomes a register compare `cmp hi,ebx / jg / jl / cmp lo,ebx / jae` plus a
+// branch-select. Comparing against the LITERAL 0, as C `d >= 0` does, lets cl take the
+// sbb sign-flag shortcut (`js`) and fuse lo straight into esi. The shortcut is correct
+// and unconditionally cheaper, so no spelling of `d >= 0` can ask for the long form -
+// only pinning 0 in a register would, and that is the allocator's call, not the source's.
+// Wall; deferred to the final sweep.
 RVA(0x00105310, 0x11a)
 void CStatusBarMgr::UpdateGruntOvenStatusBar() {
     // The 5 grunt-oven cooking tabs ARE this class's own +0x220 slot records

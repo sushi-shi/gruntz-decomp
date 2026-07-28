@@ -72,6 +72,7 @@ gruntz sema disasm 0x0008c750 --rich # BASE asm interleaved with /Z7 source line
 gruntz sema disasm 0x0008c750 --rich --lite  # same, but bare asm (drops the addr/byte columns)
 gruntz sema disasm 0x0008c750 --diff # base-vs-target asm diff (addresses masked; rc=1 if differs)
 gruntz sema disasm 0x0008c750 --lite # asm only - no addresses/bytes/reloc blocks
+gruntz sema disasm 0x0008c750 --branches --diff  # the branch sequence --diff's masking HIDES
 gruntz sema xref 0x00080850          # who calls this fn (retail call/jmp graph)  [--callees --raw]
 gruntz sema refs|hover F L [C]       # all-refs (USR-exact) / type at point (clangd)
 gruntz sema rename F L [C] NEW [--dry-run]   # tree-wide, USR-keyed rename (clangd; matching-neutral)
@@ -81,6 +82,20 @@ gruntz sema match cplay | 0x..       # per-function/unit match % (from report.js
 gruntz sema disasm 0x00080850        # retail disasm + relocs (dump_target)
 gruntz sema strings 0x00080850       # string set of a fn;  --find TEXT for the reverse lookup
 ```
+
+**`disasm --branches`** prints the ordered conditional-branch sequence with every
+target named by **branch index**, plus each side's `ret` count; with `--diff` it prints
+only the differing rows, classified SIGNEDNESS / POLARITY / OTHER / TOPOLOGY (rc=1 if
+they differ). This is the view `--diff` *structurally cannot* give you: `--diff` masks
+address operands so reloc-bound targets do not show as spurious diffs, and that masking
+also hides intra-function branch **displacements** — a `je` to a different basic block
+prints `je <tgt>` on both sides and compares equal. Naming targets by branch index makes
+a uniform displacement shift compare equal while a genuine retarget does not, so the
+masking stays (unmasking it would put a `+`/`-` on every branch of every function whose
+sizes differ upstream). The comparison lives in `gruntz.core.branches`;
+`python -m gruntz.audit.jcc_sieve` is the same comparison swept over the whole tree.
+When `--diff` or `--blocks --diff` has nothing to show but the function is not 100%,
+they now print a one-line pointer to it.
 
 **`disasm --rich`** interleaves the BASE disassembly with the C++ source lines it
 came from, so you can see which statements survive `/O2` and which instruction(s)

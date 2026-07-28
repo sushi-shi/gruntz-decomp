@@ -511,7 +511,157 @@ def rich(rva: str, want_lite: bool) -> str:
     return "\n".join(out) + "\n"
 
 
+def hint_branches(rva: str) -> None:
+    """Print the `--branches` pointer when a diff view has nothing to show but the
+    function is NOT matched.
+
+    This is the loop that kept costing lanes whole sessions: the first-look command in
+    every brief is `--diff` / `--blocks --diff --lite`, and for a control-flow divergence
+    both of them print "identical" - because `--diff` masks address operands, and that
+    masking also hides intra-function branch displacements. Ten of the twelve functions
+    fixed in the 2026-07-28 sieve campaign were invisible to that first look. So when the
+    view is clean and the score is not 100, SAY where the signal actually is.
+
+    Only fires on the already-rare clean path, and reads report.json lazily, so it costs
+    nothing on the normal diffs-are-shown path."""
+    try:
+        n = int(rva, 16)
+        claim = csv_find(GEN_NAMES, n)
+        if not claim:
+            return
+        from gruntz.core.report import Report
+        pct = Report().fn_pct(claim["name"], claim["unit"])
+    except Exception:
+        return
+    if pct is None or pct >= 100.0:
+        return
+    print(f"[but this function is {pct:.2f}%, not 100 - and this view MASKS address "
+          "operands, which also hides intra-function branch displacements. Try "
+          f"`gruntz sema disasm {rva} --branches --diff`, which names each branch "
+          "target by branch index (docs/patterns/masked-diff-hides-branch-target.md).]")
+
+
+def branch_view(rva: str, want_diff: bool, want_target: bool = False) -> int:
+    """`--branches`: the ordered branch sequence, on one side or diffed.
+
+    This is the view `--diff` structurally cannot give you. `--diff` masks address
+    operands so reloc-bound targets do not show up as spurious diffs, and that masking
+    also hides intra-function branch DISPLACEMENTS - a `je` to a different basic block
+    prints `je <tgt>` on both sides and compares equal. Do NOT fix that by unmasking:
+    every function whose sizes differ upstream would then grow a +/- on every branch.
+    The fix is to name targets by BRANCH INDEX, which is what this does.
+
+    Mechanism, buckets and the ways a row is NOT a real signal: gruntz.core.branches.
+    Whole-tree sweep of the same comparison: `python -m gruntz.audit.jcc_sieve`."""
+    from gruntz.core import branches as B
+    try:
+        n = int(rva, 16)
+    except ValueError:
+        die(f"'{rva}' is not a hex RVA (--branches needs an RVA)")
+    claim = csv_find(GEN_NAMES, n)
+    if not claim:
+        die("no src claim at this RVA - --branches compares the objdiff object pair, "
+            "so it needs a reconstructed fn (check `gruntz sema rva`)")
+    unit, name = claim["unit"], claim["name"]
+    bobj, tobj = B.obj_paths(unit)
+    for o in (bobj, tobj):
+        if not o.is_file():
+            die(f"{o.relative_to(REPO)} missing - run `gruntz build` first")
+    bi = B.decode(bobj, name).get(name)
+    ti = B.decode(tobj, name).get(name)
+    if not bi:
+        die(f"{name} not in {bobj.name}")
+    if not ti and want_diff:
+        die(f"{name} not in {tobj.name} (nothing to diff against)")
+
+    def trunc_note(side, insns):
+        # SAY the list is partial. A silently short branch list on exactly the functions
+        # people most need one for is half the reason the block view is not trusted.
+        at = B.first_bad(insns)
+        if at is not None:
+            print(f"[{side} stream truncated at +0x{at:x} - jump-table data in .text; "
+                  "branch list is partial]")
+        return at
+
+    if not want_diff:
+        lbl = "TARGET (retail)" if want_target else "BASE (compiled)"
+        insns = ti if want_target else bi
+        if not insns:
+            die(f"{name} not in {(tobj if want_target else bobj).name}")
+        print(f"[branch sequence: {lbl} @ {rva} - {name} [{unit}]]")
+        stop = trunc_note(lbl.split()[0].lower(), insns)
+        brs = B.branches(insns, stop)
+        for i, (off, mn, tgt) in enumerate(brs):
+            if tgt is None:
+                print(f"  #{i:<3} +{off:03x}  {mn:<4} -> ?")
+                continue
+            blk = B.sym_target(brs, tgt)
+            past = "  (past the last branch)" if blk == len(brs) else ""
+            print(f"  #{i:<3} +{off:03x}  {mn:<4} -> blk{blk} (+{tgt:03x}){past}")
+        print(f"  {len(brs)} branch(es), {B.rets(insns, stop)} ret(s)")
+        return 0
+
+    print(f"[branch diff: BASE (compiled) vs TARGET (retail) @ {rva} - {name} [{unit}]]")
+    print("[targets are named by BRANCH INDEX, so a uniform displacement shift compares "
+          "EQUAL and a genuine retarget does not - see gruntz.core.branches]")
+    bstop, tstop = trunc_note("base", bi), trunc_note("target", ti)
+    res = B.compare(bi, ti)
+    br, tr = res["rets"]
+    dup = ("  DUP-EXIT (we duplicate an exit retail merges - see "
+           "docs/patterns/positive-gate-enables-shrink-wrap.md)" if br > tr else
+           "  (retail has MORE exits than we do: the tail-merge direction that module "
+           "documents as a WALL)" if br < tr else "")
+    print(f"  base {res['nbr']} branch(es), {br} ret(s)   |   "
+          f"target {res['nbr_t']} branch(es), {tr} ret(s){dup}")
+    st = res["status"]
+    if st == "struct":
+        print("  BRANCH COUNTS DIFFER - a structural difference (a block we did not "
+              "reconstruct, an `if` the optimizer folded, an inlining decision), NOT the "
+              "one-line-condition signal. Reconstruct rather than re-spell.")
+        return 1
+    if st == "many-flips":
+        print("  more than 4 rows differ - the two functions are differently shaped and "
+              "the positional pairing is meaningless. Not this signal.")
+        return 1
+    if st == "no-branches":
+        print("  no conditional branches on either side.")
+        return 0
+    if st == "clean":
+        print("  branch sequences AGREE (mnemonics and symbolic targets). Whatever is "
+              "left is instruction selection / regalloc, not control flow.")
+        return 0
+    print(f"  {res['kind']}:")
+    bb = B.branches(bi, bstop)
+    tb = B.branches(ti, tstop)
+    for row in res["rows"]:
+        i = row[0]
+        if res["kind"] == "TOPOLOGY":
+            _, x, y = row
+            print(f"    #{i:<3} +{bb[i][0]:03x} {bb[i][1]:<4}  target lands on blk{y}, "
+                  f"we land on blk{x}")
+        else:
+            _, a, b = row
+            print(f"    #{i:<3} +{bb[i][0]:03x}  base {a:<4} -> target {b}")
+    hint = {
+        "SIGNEDNESS": "a signed/unsigned twin is nearly always a REAL source bug - a "
+                      "member or global that wants to be unsigned "
+                      "(docs/patterns/literal-comparison-form-survives-o2.md)",
+        "POLARITY": "read where each side's branch GOES, not just its mnemonic: same "
+                    "mnemonic pair with differently-VALUED exits is a behaviour "
+                    "difference (docs/patterns/if-body-owns-the-fallthrough.md)",
+        "TOPOLOGY": "the shape --diff hides hardest - both sides read identically "
+                    "instruction for instruction "
+                    "(docs/patterns/masked-diff-hides-branch-target.md)",
+        "OTHER": "neither a signed twin nor an inversion - read it by hand",
+    }[res["kind"]]
+    print(f"  [{hint}]")
+    return 1
+
+
 def run(args) -> None:
+    if getattr(args, "branches", False):
+        sys.exit(branch_view(args.rva, bool(args.diff),
+                             bool(getattr(args, "target", False))))
     if getattr(args, "blocks", False):
         if getattr(args, "dot", False):
             if args.diff:
@@ -574,11 +724,16 @@ def run(args) -> None:
                     print(f"  B{i:<3} {bl:34} {mark} {tl}")
                 if first_bad is not None:
                     print(f"[first true skeleton divergence: B{first_bad}]")
+                if worst == "==":
+                    hint_branches(args.rva)
                 sys.exit(0 if worst == "==" else 1)
             print(f"[block diff: BASE (compiled) vs TARGET (retail) @ {args.rva}]")
             out = blocks_diff(base_text(args.rva), target_text(args.rva))
             print(out, end="")
-            sys.exit(0 if "flow SAME]" in out and "0 block" in out else 1)
+            same = "flow SAME]" in out and "0 block" in out
+            if same:
+                hint_branches(args.rva)
+            sys.exit(0 if same else 1)
         side = "BASE (compiled)" if args.base else "TARGET (retail)"
         text = base_text(args.rva) if args.base else target_text(args.rva)
         print(f"[basic blocks: {side} @ {args.rva}]")
@@ -616,6 +771,7 @@ def run(args) -> None:
         tgt = norm(target_text(args.rva))
         if base == tgt:
             print(f"identical asm ({len(tgt)} instruction(s); addresses/relocs masked)")
+            hint_branches(args.rva)
             sys.exit(0)
         print(f"[diff: BASE (compiled) vs TARGET (retail) @ {args.rva}; "
               "addresses masked as <addr>]")
