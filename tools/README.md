@@ -11,7 +11,7 @@ retail's own machine code, mapped out of the EXE and executed.
 
     decomp   src/Image, src/DDrawMgr        the byte-matching C++ reconstruction
     reimpl   tools/gruntz-codec             clean-room, from the disassembly
-    recomp   tools/recomp/pidrun.exe        retail's actual bytes, re-linked
+    recomp   ../recomp/harness/pidrun.exe   retail's actual bytes, mapped and executed
 
 ## Layout
 
@@ -50,7 +50,7 @@ REZ=/path/to/GRUNTDEM.REZ
 ./target/release/gruntz-oracle --rez "$REZ" rle16
 
 # the third implementation (needs wine + $GRUNTZ_EXE)
-../tools/recomp/build.sh
+../recomp/harness/build.sh
 ./target/release/gruntz-oracle --rez "$REZ" recomp
 ```
 

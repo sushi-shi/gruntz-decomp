@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build tools/recomp/pidrun.exe with the period toolchain under wine.
+# Build recomp/harness/pidrun.exe with the period toolchain under wine.
 #
 # Run inside `nix develop` (MSVC_DIR / WINEPREFIX come from the shell).
 #

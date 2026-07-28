@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """recomp_islands.py - which retail functions can be EXECUTED as an oracle?
 
-`tools/recomp/pidrun.c` proved something stronger than byte-matching: it maps GRUNTZ.EXE,
+`recomp/harness/pidrun.c` proved something stronger than byte-matching: it maps GRUNTZ.EXE,
 applies `.reloc`, and CALLS retail's own `CDDSurface::RunDecode1` through inline asm, so
 retail itself decides whether our reimplementation is right. That validated 9,821 sprites
 at 100% identical pixels.
