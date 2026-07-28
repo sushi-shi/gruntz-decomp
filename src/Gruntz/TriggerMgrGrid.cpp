@@ -541,14 +541,16 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
 }
 
 // retail 0x6da60/0x6daa0 end at the void EnqueueSingle call with NO eax write, so void
-// (a `return 0` adds a spurious xor eax,eax). Orphan copies - no caller in the tree.
+// (a `return 0` adds a spurious xor eax,eax). The bodies never read `this`; the
+// __thiscall linkage is proven by the receiver load at both call sites (see the
+// declaration note in TriggerMgr.h).
 RVA(0x0006da60, 0x27)
-void __stdcall GridAction6(i32 a, i32 b) {
+void CTriggerMgr::GridAction6(i32 a, i32 b) {
     g_gameReg->m_cmdSubMgr->EnqueueSingle(1, a, b, 6, 0, 0, 0, 0);
 }
 
 RVA(0x0006daa0, 0x27)
-void __stdcall GridAction7(i32 a, i32 b) {
+void CTriggerMgr::GridAction7(i32 a, i32 b) {
     g_gameReg->m_cmdSubMgr->EnqueueSingle(1, a, b, 7, 0, 0, 0, 0);
 }
 

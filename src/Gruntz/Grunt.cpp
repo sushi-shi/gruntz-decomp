@@ -533,7 +533,7 @@ void CGrunt::UserLogicVfunc9() {
 
     while (1) {
         i32 n = PayloadCount();
-        void* head = n ? m_338.GetHead() : 0;
+        void* head = (n == 0) ? 0 : m_338.GetHead();
         if (head == 0) {
             return;
         }
@@ -910,11 +910,14 @@ store:
 }
 
 // @early-stop
-// identical-return-epilogue-tailmerge wall (docs/patterns/): the m_arrived early
-// `return 1;` and the trailing `return 1;` are identical epilogues - retail inlines
-// both (je body; mov eax,1;ret), our cl tail-merges to one shared tail. Logic + CFG
-// + member stores byte-exact; the six per-arrival calls are the real HUD creators and
-// SetEntrancePos. Residual = the tail-merge + the one unnamed tile-mgr notify call.
+// ONE instruction out of position (99.3%): cl hoists the `m_arrivalFlags` load to the
+// head of the zero-store run where retail leaves it in source position (after the four
+// reroll stores). Every store-order / local / chained-assignment / inline-helper
+// spelling emits the same hoist. The two real bugs here ARE fixed: the tile notify is
+// a __thiscall CTriggerMgr method reached through m_tileMgr (the receiver load was
+// missing - docs/patterns/dead-receiver-load-proves-a-method.md), and the claim test is
+// an `&&` chain whose else-arm legitimately re-tests m_tileClaimed (a nested `if`
+// lets cl prove the re-test redundant and delete it).
 // CGrunt::CommitArrival() @0x4b130 - finalizes the grunt's arrival on its tile.
 // If already arrived (m_arrived) returns 1 immediately. Otherwise, if not yet
 // claimed (m_tileClaimed==0): in alt-mode (registry m_134==2) it just notifies the tile
@@ -926,20 +929,20 @@ i32 CGrunt::CommitArrival() {
     if (m_arrived != 0) {
         return 1;
     }
-    if (m_tileClaimed != 0) {
-        if (g_gameReg->m_134 == 2) {
-            GridAction7(m_tileOwnerHi, m_tileOwnerLo); // 0x2c48 -> 0x6daa0
-        } else if (m_tileClaimed != 0) {
-            m_arrivalRerollLo = 0;
-            m_arrivalRerollWindowLo = 0;
-            m_arrivalRerollHi = 0;
-            m_arrivalRerollWindowHi = 0;
-            i32 flags = m_arrivalFlags & 0xe7fbfbfd;
-            m_tileClaimed = 0;
-            m_arrivalState = 0;
-            m_arrivalFlags = flags;
-            SetEntrancePos(1, 1);
-        }
+    // the `&&` chain, NOT a nested if: retail re-tests m_tileClaimed on the else arm
+    // (`cmp eax,ecx; je`) because that arm is also reached from the m_134 != 2 path.
+    if (m_tileClaimed != 0 && g_gameReg->m_134 == 2) {
+        m_tileMgr->GridAction7(m_tileOwnerHi, m_tileOwnerLo); // 0x2c48 -> 0x6daa0
+    } else if (m_tileClaimed != 0) {
+        m_arrivalRerollLo = 0;
+        m_arrivalRerollWindowLo = 0;
+        m_arrivalRerollHi = 0;
+        m_arrivalRerollWindowHi = 0;
+        i32 flags = m_arrivalFlags & 0xe7fbfbfd;
+        m_tileClaimed = 0;
+        m_arrivalState = 0;
+        m_arrivalFlags = flags;
+        SetEntrancePos(1, 1);
     }
     CreateSelectedSprite();
     CreateHealthSprite();
@@ -1854,9 +1857,9 @@ label_ret1:
 // into the global free pool and resets the collection at +0x31c.
 RVA(0x0004d060, 0x98)
 void CGrunt::SetEntrancePos(i32 a, i32 b) {
+    m_210 = 0;
     m_entrancePxX = m_lastTilePxX;
     m_entrancePxY = m_lastTilePxY;
-    m_210 = 0;
     if (a) {
         m_arrivalPhase = 0;
         m_arrivalActive = 0;
@@ -2088,7 +2091,8 @@ i32 CGrunt::CreateSelectedSprite() {
     );
     m_selectedSprite->m_7c->m_notify(m_selectedSprite);
 
-    CGruntSelectedSprite* reg = static_cast<CGruntSelectedSprite*>(m_selectedSprite->m_7c->m_logic);
+    AnimWorkerObj* inner = m_selectedSprite->m_7c;
+    CGruntSelectedSprite* reg = static_cast<CGruntSelectedSprite*>(inner->m_logic);
     if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo)) {
         reg->m_38->m_flags |= 0x10000;
         m_selectedSprite = 0;

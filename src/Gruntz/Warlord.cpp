@@ -46,7 +46,6 @@ static const char s_keyE[] = "E";
 static const char s_keyA[] = "A";
 static const char s_keyF[] = "F";
 
-
 template<> DATA(0x00244610)
 CActReg CActRegPool<CWarlord>::s_table(2000, 2010);
 
@@ -111,8 +110,8 @@ CActReg CActRegPool<CWarlord>::s_table(2000, 2010);
 #define REGISTER_ACTION(key, handler)                                                              \
     do {                                                                                           \
         REGISTER_NAME(key)                                                                         \
-        /* language-forced: the slot holds a pointer-to-MEMBER; the plain byte    */    \
-        /* accessor above is the one seam where CActHandler goes back on.        */    \
+        /* language-forced: the slot holds a pointer-to-MEMBER; the plain byte    */               \
+        /* accessor above is the one seam where CActHandler goes back on.        */                \
         *reinterpret_cast<CActHandler*>(CActRegPool<CWarlord>::s_table._zvec::IndexToPtr(id_)) =   \
             static_cast<CActHandler>(handler);                                                     \
     } while (0)
@@ -125,7 +124,7 @@ CActReg CActRegPool<CWarlord>::s_table(2000, 2010);
 #define REGISTER_ACTION_TYPED(key, handler)                                                        \
     do {                                                                                           \
         REGISTER_NAME(key)                                                                         \
-        *CActRegPool<CWarlord>::s_table.Resolve(id_) = static_cast<CActHandler>(handler);           \
+        *CActRegPool<CWarlord>::s_table.Resolve(id_) = static_cast<CActHandler>(handler);          \
     } while (0)
 // ===========================================================================
 // CWarlord::~CWarlord  (0x0107f0)  - COMPILER-GENERATED, no source body
@@ -196,7 +195,7 @@ typedef enum WarlordBattleTag {
         void* h = 0;                                                                               \
         m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(s_GRUNTZ_ + m_54 + (suffix), h);             \
         /* CMapStringToPtr::Lookup's out-param is void*& - the element type is */                  \
-        /* API-forced back on at the call, and void*->T* is a static_cast       */                  \
+        /* API-forced back on at the call, and void*->T* is a static_cast       */                 \
         dst = static_cast<CAniElement*>(h);                                                        \
     }
 
@@ -401,17 +400,14 @@ i32 CWarlord::LoadAttributes() {
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_134 != 1) {
         CWwdGameObjectA* o = m_object;
-        i32 dist = (static_cast<CTriggerMgr*>(reg->m_cmdGrid))
-                       ->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
+        i32 dist = reg->m_cmdGrid->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
         if (dist < g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             NotifyFortUnderAttack();
             return 0;
         }
     }
 
-    if (static_cast<i64>(static_cast<u32>(g_frameTime))
-            - m_cooldownStamp64
-        >= m_cooldownWindow64) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_cooldownStamp64 >= m_cooldownWindow64) {
         if (rand() % 10 < 5) {
             ResolveIdleAnimation();
             return 0;
@@ -446,8 +442,7 @@ i32 CWarlord::LoadAttributes2() {
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_134 != 1) {
         CWwdGameObjectA* o = m_object;
-        i32 dist = (static_cast<CTriggerMgr*>(reg->m_cmdGrid))
-                       ->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
+        i32 dist = reg->m_cmdGrid->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
         if (dist >= g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             RaiseBattleAlert();
             return 0;
@@ -458,14 +453,11 @@ i32 CWarlord::LoadAttributes2() {
             ResolveMovingAnimation();
             return 0;
         }
-        if (static_cast<i64>(static_cast<u32>(g_frameTime))
-                - m_cooldownStamp64
+        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_cooldownStamp64
             >= m_cooldownWindow64) {
             reg->m_cueSink->SpawnVoiceDriver(m_object->m_188, 0x436, -1, -1, -1);
-            m_cooldownWindowLo = 0x7530;
-            m_cooldownWindowHi = 0;
-            m_cooldownStampLo = g_frameTime;
-            m_cooldownStampHi = 0;
+            m_cooldownWindow64 = 0x7530;
+            m_cooldownStamp64 = static_cast<u32>(g_frameTime);
         }
     }
     return 0;
@@ -487,15 +479,10 @@ i32 CWarlord::LoadAttributes2() {
 // past the gate exactly as retail does (the early-return spelling saved edi in the
 // prologue and cost ~5.5%). Same lever as the sibling BuildFortSplashParticles.
 //
-// @early-stop
-// addressing-mode wall, ONE residual (topic:regalloc topic:scoring-artifact): retail
-// rebases `add eax,0x290` and reaches the three remaining cue stores with disp8
-// ([eax+0xc]/[eax]/[eax+0x4]) where cl keeps the disp32 absolutes
-// ([eax+0x29c]/[eax+0x290]/[eax+0x294]). Retail's form is one instruction MORE but 5
-// bytes SMALLER, i.e. the size-favouring choice, and nothing in the source selects it -
-// the stream feeding the pass is instruction-for-instruction identical. Structure,
-// offsets, values, store order and control flow are byte-faithful. Same residual on
-// BuildFortSplashParticles @0x44f80.
+// The cue timer is reached through a POINTER to the CueTimer sub-object at +0x290, not
+// through four absolute member offsets: that is what makes cl materialize the base once
+// (`add eax,0x290`) and reach the remaining three stores with disp8, which is retail's
+// (5-byte-smaller) encoding. Same lever on BuildFortSplashParticles @0x44f80.
 RVA(0x00044e70, 0x87)
 i32 CWarlord::AdvanceMovingAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -504,9 +491,9 @@ i32 CWarlord::AdvanceMovingAnim() {
         CTriggerMgr* h = g_gameReg->m_cmdGrid;
         if (h->m_phase != 0 && m_object->m_124 == g_curPlayer) {
             h->m_pendingFx = 0;
-            CTriggerMgr* h2 = g_gameReg->m_cmdGrid;
-            h2->m_timerWindow = 0x3e8;
-            h2->m_timerBase = static_cast<u32>(g_frameTime);
+            CueTimer* tm = &g_gameReg->m_cmdGrid->m_cueTimer;
+            tm->m_window = 0x3e8;
+            tm->m_base = static_cast<u32>(g_frameTime);
         }
         ResolveMovingAnimation();
     }
@@ -545,11 +532,8 @@ i32 CWarlord::RearmMoving2() {
 // `pop esi`, proving the push is conditional). Positive form + declaring y before x
 // took this 93.1% -> 98.1%.
 //
-// @early-stop
-// addressing-mode wall, ONE residual: retail rebases `add eax,0x290` and reaches the
-// three remaining cue stores with disp8 where cl keeps disp32 absolutes. Identical to
-// the sibling AdvanceMovingAnim @0x44e70; see its note for why no source lever selects
-// it.
+// The cue timer goes through the CueTimer sub-object pointer - see AdvanceMovingAnim
+// @0x44e70 for the addressing-mode lever.
 RVA(0x00044f80, 0x127)
 i32 CWarlord::BuildFortSplashParticles() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
@@ -572,9 +556,9 @@ i32 CWarlord::BuildFortSplashParticles() {
         CTriggerMgr* h = g_gameReg->m_cmdGrid;
         if (h->m_phase != 0 && m_object->m_124 == g_curPlayer) {
             h->m_pendingFx = 0;
-            CTriggerMgr* h2 = g_gameReg->m_cmdGrid;
-            h2->m_timerWindow = 0x3e8;
-            h2->m_timerBase = static_cast<u32>(g_frameTime);
+            CueTimer* tm = &g_gameReg->m_cmdGrid->m_cueTimer;
+            tm->m_window = 0x3e8;
+            tm->m_base = static_cast<u32>(g_frameTime);
         }
 
         GruntzPlayer* slot = &g_gameReg->m_options[m_object->m_124];
@@ -586,6 +570,13 @@ i32 CWarlord::BuildFortSplashParticles() {
     return 0;
 }
 
+// @early-stop
+// 97.2%: the two cooldown halves are single i64 stores (the zero-extension IS retail's
+// `mov [hi],ebx`; two i32 stores let cl hoist the hi store above the divide). Residue is
+// the SetHealthGlyph-family ecx/edx temp phase in the `m_value = m_1a0.m_14; Setup(anim)`
+// pair - the identical block in RaiseBattleAlert @0x457b0 already matches, so the phase
+// differs by one pool temp somewhere upstream. See docs/patterns/
+// global-store-temp-alternates-ecx-edx.md.
 RVA(0x00045100, 0x112)
 i32 CWarlord::ResolveMovingAnimation() {
     if (m_a8 != 0) {
@@ -600,10 +591,10 @@ i32 CWarlord::ResolveMovingAnimation() {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId(s_keyB);
 
-    m_cooldownWindowLo = (GruntRand() % 0x5dc1 + 0x1770) * 10;
-    m_cooldownWindowHi = 0;
-    m_cooldownStampLo = g_movingSeed;
-    m_cooldownStampHi = 0;
+    // one i64 store per timer half: the zero-extension IS retail's `mov [hi],ebx`, and
+    // spelling it as two i32 stores lets cl hoist the hi store above the divide.
+    m_cooldownWindow64 = static_cast<u32>((GruntRand() % 0x5dc1 + 0x1770) * 10);
+    m_cooldownStamp64 = static_cast<u32>(g_movingSeed);
     return 1;
 }
 
@@ -705,6 +696,10 @@ i32 CWarlord::ResolveIdleAnimation() {
     return 1;
 }
 
+// @early-stop
+// 90.3% -> better: the voice-cue id is a LOCAL computed before the viewport test (retail
+// hoists `lea ebx,[idx+0x42e]` above the four compares, which costs it a `push ebx`).
+// Residue is the same Setup-pair temp phase as ResolveMovingAnimation @0x45100.
 RVA(0x00045b60, 0x161)
 i32 CWarlord::ResolveBattlecryAnimation() {
     if (m_a8 != 0) {
@@ -716,11 +711,12 @@ i32 CWarlord::ResolveBattlecryAnimation() {
     CGruntzMgr* g = g_gameReg;
     if (g->m_134 == 1) {
         CWwdGameObjectA* h = m_object;
+        i32 cue = idx + 0x42e;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (x < g->m_viewBounds.right && x >= g->m_viewBounds.left && y < g->m_viewBounds.bottom
             && y >= g->m_viewBounds.top) {
-            g->m_cueSink->SpawnVoiceDriver(h->m_188, idx + 0x42e, -1, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(h->m_188, cue, -1, -1, -1);
         }
     } else {
         g->m_cueSink->SpawnVoiceDriver(m_object->m_188, idx + 0x438, -1, -1, -1);
