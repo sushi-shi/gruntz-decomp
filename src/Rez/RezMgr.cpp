@@ -10,7 +10,7 @@ typedef CGameMgr CGameMgrBase;
 DATA(0x00245580)
 i32 g_lastNow = 0; // last timeGetTime() sample
 DATA(0x00245584)
-i32 g_frameDelta = 0; // frame delta, clamped to <= 0x64
+u32 g_frameDelta = 0; // frame delta, clamped to <= 0x64 (unsigned: see FrameClock.h)
 // 0x245588 - the running accumulated frame time. This TU is the SOLE writer
 // (g_frameTime += dt, below) and owns this contiguous 0x245580-0x2455a0 .bss band,
 // so the definition lives here (was misfiled in Projectile.cpp).

@@ -145,7 +145,8 @@ i32 CBootyState::LoadGruntEffectSprites() {
     if (wh == 0) {
         return 0;
     }
-    CShadeTable* tint = g_gameReg->m_logicPump->m_tables[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)];
+    CShadeTable* tint =
+        g_gameReg->m_logicPump->m_tables[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)];
     m_icons[7]->ApplyName("GAME_WORMHOLE");
     m_icons[7]->ApplyLookupGeometry("GAME_TELEPORTER", 0);
     CWwdGameObjectA* p318 = m_icons[7];
@@ -309,7 +310,10 @@ i32 g_levelMsgIconPos[16] = {
 // /GX branchy megafunction wall (~complete reconstruction): the whole body - the reveal
 // pass (m_hudPhase == 0) slot slide + rectsA/rectsB ShowHudMessage pops + explosion cue,
 // and the drive pass (m_hudPhase != 0) redraw loop + explosion-active finalize - matches
-// retail's logic (all externs/strings/tables named). Residual is the documented /GX
+// retail's logic (all externs/strings/tables named). Three comparisons were also written
+// with their operands the other way round from retail (`mid <= gx` vs retail's `gx >= mid`
+// - identical in C, different `cmp` operand order AND jcc; jcc_sieve 2026-07-28, 84.80 ->
+// 85.23). Residual is the documented /GX
 // EH-state numbering + the parallel-induction-pointer loop shape (retail hoists the
 // rectsA/rectsB/iconPos/strings/icon walks into 6 induction pointers with a data-address
 // bound `cmp ebp,0x60b8fc` = &g_levelMsgRectsB[0].top) that MSVC5 will not reproduce
@@ -384,8 +388,10 @@ i32 CBootyState::LevelMsgHudDriver() {
         i32 gx = m_gokart[m_slot]->m_screenX + 10;
         m_gokart[m_slot]->m_screenX = gx;
         i32 s = m_slot;
+        // `gx >= mid`, not `mid <= gx`: retail's left `cmp` operand is gx and the skip is
+        // `jl` (0x1aa80). The two spellings are identical in C and differ in both.
         if (m_templateFlags[s] == 0
-            && (g_levelMsgRectsA[s].right + g_levelMsgRectsA[s].left) / 2 <= gx) {
+            && gx >= (g_levelMsgRectsA[s].right + g_levelMsgRectsA[s].left) / 2) {
             RECT box;
             m_templateFlags[s] = 1;
             CopyRect(&box, &g_levelMsgRectsA[m_slot]);
@@ -394,7 +400,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
         }
         s = m_slot;
-        if (m_readyFlags[s] == 0 && g_levelMsgIconPos[s * 2] <= gx) {
+        if (m_readyFlags[s] == 0 && gx >= g_levelMsgIconPos[s * 2]) {
             m_readyFlags[s] = 1;
             m_icons[m_slot]->m_stateFlags &= ~1;
             m_icons[m_slot]->m_screenX = g_levelMsgIconPos[m_slot * 2];
@@ -410,7 +416,7 @@ i32 CBootyState::LevelMsgHudDriver() {
     }
     // finalize the slots from m_slot onward once the bomb/gokart pair has crossed.
     for (i32 i = m_slot; i < 8; i++) {
-        if (m_bomb[i]->m_screenX <= m_gokart[i]->m_screenX) {
+        if (m_gokart[i]->m_screenX >= m_bomb[i]->m_screenX) {
             RECT box;
             CString text;
             CopyRect(&box, &g_levelMsgRectsB[i]);

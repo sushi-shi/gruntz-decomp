@@ -185,14 +185,11 @@ i32 CMenuPage::NotifyAll(u32 dt) {
 }
 
 // move focus to the next focusable item, wrapping if allowed.
-// @early-stop
-// 77.13 -> 97.18 (measured 2026-07-27) - the "regalloc wall" note was a misdiagnosis;
-// it was exit-block layout, and the third callee-saved register fell out with it.
-// base 8 rets / retail 7: the no-wrap gate was written `if (!CanWrap()) return 0;`,
-// its own epilogue, where retail 0x183dbc branches it into the SHARED post-wrap
-// `found == 0` return. Writing the wrap positively (`if (CanWrap()) { ... }` with the
-// single `if (!found) return 0;` after it) reproduces retail's block order.
-// Residual is the last few percent of scheduling only.
+// EXACT. Two shape fixes, both once filed as a "regalloc wall": (1) the no-wrap gate is
+// not its own exit - written positively (`if (CanWrap()) { ... }` with one trailing
+// `if (!found) return 0;`) it branches into the SHARED post-wrap return as retail's
+// 0x183dbc does (77.13 -> 97.18, 2026-07-27); (2) the scan loop ends by NULLING the
+// cursor, not `break` (97.18 -> 100.00, 2026-07-28, found by jcc_sieve).
 RVA(0x00183c50, 0xbc)
 i32 CMenuPage::FocusNext() {
     if (!m_focus) {
@@ -211,7 +208,11 @@ i32 CMenuPage::FocusNext() {
         if (found) {
             i32 k = found->m_state;
             if (k == 1 || k == 2) {
-                break;
+                // NOT `break`: retail ends the scan by NULLING the cursor
+                // (`xor eax,eax / jmp <bottom test>`, 0x183972) and lets the while
+                // condition fall out - a `break` jumps straight past the bottom test.
+                node = 0;
+                continue;
             }
         }
         found = 0;
@@ -252,10 +253,8 @@ i32 CMenuPage::FocusNext() {
 }
 
 // move focus to the previous focusable item, wrapping if allowed.
-// @early-stop
-// same as FocusNext and fixed the same way (2026-07-27, 77.13 -> 97.18): the no-wrap
-// gate is not its own exit, it branches into the shared post-wrap `found == 0` return
-// (retail 0x183e7c). Mirror walk (pNext then pPrev); residual is scheduling only.
+// EXACT. Mirror of FocusNext (pNext then pPrev) and fixed by the same two shape changes;
+// see its note.
 RVA(0x00183d10, 0xbc)
 i32 CMenuPage::FocusPrev() {
     if (!m_focus) {
@@ -270,12 +269,15 @@ i32 CMenuPage::FocusPrev() {
 
     NextItem(node);
     while (node) {
-
         found = NextItem(node);
         if (found) {
             i32 k = found->m_state;
             if (k == 1 || k == 2) {
-                break;
+                // NOT `break`: retail ends the scan by NULLING the cursor
+                // (`xor eax,eax / jmp <bottom test>`, 0x183972) and lets the while
+                // condition fall out - a `break` jumps straight past the bottom test.
+                node = 0;
+                continue;
             }
         }
         found = 0;

@@ -404,11 +404,12 @@ i32 SoundStream::TickSubManagers(i32 time) {
 // fmt/data chunks, copying the 18-byte PCM header into fmtBuf and reporting the
 // data chunk's offset+length. Returns 1 only when both fmt and data were seen.
 // @early-stop
-// local-coalescing wall: retail reuses the incoming arg stack slots as scratch
-// (sub esp,0xc) for the RIFF/chunk header reads; MSVC here allocates one extra
-// local dword (sub esp,0x10), shifting every [esp+N] local offset by 4. Body +
-// control flow byte-exact; only the frame size / slot assignment differs - the
-// entropy tail. Logic complete, deferred to the final sweep.
+// 99.82% (was 98.26; the fmt-chunk cap is an UNSIGNED min - see below). Residual is the
+// local-coalescing wall, now measured exactly: retail's three 4-byte header buffers sit
+// at entry-0x04, entry-0x0c and **entry+0x04 - the incoming `src` argument slot** (it is
+// dead once esi holds it), so retail needs only `sub esp,0xc`. cl gives each of ours its
+// own local (sub esp,0x10) and never writes over an arg slot, which shifts every [esp+N]
+// by 4. Body + control flow byte-exact.
 RVA(0x00137b70, 0x159)
 i32 SoundStream::ParseWave(
     CParseSource* src,
@@ -444,11 +445,15 @@ i32 SoundStream::ParseWave(
         src->Read(&chunkSize, 4, -1);
         if (chunkId == 0x20746d66) {
             i32 next = src->m_cursor + chunkSize;
-            i32 n = chunkSize;
-            if (n >= 0x12) {
-                n = 0x12;
+            // An UNSIGNED min with 0x12 held first: retail is `mov eax,0x12 / cmp ecx,eax /
+            // jae`, i.e. the cap is the initial value and the chunk size is the unsigned
+            // operand. `i32 n = chunkSize; if (n >= 0x12) n = 0x12;` lowers to a signed
+            // `cmp eax,0x12 / jl` against an immediate instead.
+            u32 n = 0x12;
+            if (chunkSize < n) {
+                n = chunkSize;
             }
-            src->Read(fmtBuf, n, -1);
+            src->Read(fmtBuf, static_cast<i32>(n), -1);
             src->SetPos(next);
             gotFmt = 1;
         } else if (chunkId == 0x61746164) {

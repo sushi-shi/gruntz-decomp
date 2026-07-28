@@ -1150,27 +1150,37 @@ i32 CDDSurface::Blit(void* src, i32 bitcount, void* palette, i32 mode) {
 // each {R,G,B} entry into a screen-native 16bpp word), then walk the surface row
 // by row writing LUT[index] per source pixel.
 // @early-stop
-// Regalloc wall (~66%): the LUT-build loop's two loop-carried pointers (palette,
-// LUT) take both callee-saved slots, pushing `this` out of esi into edi - which
-// cascades into the blit loop (retail keeps this=esi/src=edi with no spill; ours
-// shifts this=edi/src=edx and spills the source index to the stack). Logic exact;
-// the inner LUT-lookup idiom is correct, only the register file is permuted.
+// Regalloc wall (66.50%, was 66.01). SIGNEDNESS FIX 2026-07-28: the LUT-build guard is
+// retail `cmp edi,g_lut16+0x200 / jl` - SIGNED - which a `u16*` pointer walk can never
+// emit (it lowers to jb). It is a signed counted loop strength-reduced onto the store
+// cursor: `for (i32 i = 0; i < 0x100; i++) g_lut16[i] = ...`, and `i` must be the only
+// induction variable (a parallel `lut++` makes cl spill the count and end on `jne`).
+// Residual: the LUT loop's two loop-carried pointers take both callee-saved slots,
+// pushing `this` out of esi into edi - which cascades into the blit loop (retail keeps
+// this=esi/src=edi with no spill; ours shifts this=edi/src=edx and spills the source
+// index). Retail also biases the palette cursor +2 pre-loop (displacements -2/-5/-4 vs
+// our 0/+1/-2) and hoists g_rDown into dl. Logic exact; the register file is permuted.
 RVA(0x0013fbb0, 0x126)
 i32 CDDSurface::Blit168(void* srcv, void* palv, i32 mode) {
     u8* pal = static_cast<u8*>(palv);
     if (pal == 0) {
         return 0;
     }
-    u16* lut = g_lut16;
-    do {
+    // A SIGNED counted loop over the LUT ARRAY, not a pointer walk: retail's guard is
+    // `cmp edi,g_lut16+0x200` followed by **jl**, and a pointer relational always lowers
+    // to jb (our own pointer-walk spelling proved that). cl strength-reduced `i < 0x100`
+    // onto the store cursor and carried the ORIGINAL comparison's signedness. `i` must be
+    // the ONLY induction variable - keeping a separate `lut` cursor alongside it makes cl
+    // spill the count to `[esp+0x18]` and end the loop on `jne` instead.
+    for (i32 i = 0; i < 0x100; i++) {
         u8 r = static_cast<u8>((static_cast<u8>(pal[0]) >> g_rDown));
         pal += 4;
         u8 g = static_cast<u8>((static_cast<u8>(pal[-3]) >> g_gDown));
         u8 b = static_cast<u8>((static_cast<u8>(pal[-2]) >> g_bDown));
-        *lut++ = static_cast<u16>(
+        g_lut16[i] = static_cast<u16>(
             ((static_cast<u32>(r) << g_rUp) | (static_cast<u32>(g) << g_gUp) | static_cast<u32>(b))
         );
-    } while (lut < g_lut16 + 256);
+    }
     u8* locked = static_cast<u8*>(Lock(0));
     if (locked == 0) {
         return 0;

@@ -888,22 +888,33 @@ void SpawnPosSound(PosSoundObj* obj) {
 // active phase's [lo,hi], halve+clamp it to <=1000, and (re)play via Update.
 // ---------------------------------------------------------------------------
 // @early-stop
-// ~95% idiv-scheduling/reroll-regalloc wall (was 89.7%: qualifying the 3 Update calls
-// to direct/non-virtual dispatch, the unsigned (u32) countdown shift, and reordering the
-// countdown compare to `frameDelta >= countdownMs` all landed). Residual: (a) the box2
-// last-term (y >= m_box2.bottom) inBox=1 block layout (jl vs jge) and (b) the two reroll
-// arms computing span=hi-lo+1 via `lea ebx,[eax+1]; test` (retail, span kept in a fresh
-// reg for the lo:hi coin-flip) vs cl's `inc edi` - pure register-pressure/scheduling.
+// 95.04% and the control flow is now byte-exact. CORRECTNESS FIX 2026-07-28 (jcc_sieve):
+// what the earlier note filed as "the box2 last-term block layout (jl vs jge)" was both
+// box tests being LOGICALLY INVERTED - see the fix below. That inversion SCORED HIGHER
+// (96.56) than the truth does, which is exactly why current % is not evidence.
+// Residual is one consistent register permutation (retail edi=inBox/edx=y and
+// ebx=span/edi=lo; ours swaps each pair), which also moves `push edi` earlier and makes
+// the two reroll arms emit `mov edi,ebp; sub edi,ebx; inc edi` where retail computes in a
+// scratch and moves with `lea ebx,[eax+1]; test ebx,ebx`. Same operations, same count.
 RVA(0x0000cb30, 0x168)
 void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
+    // CORRECTNESS FIX 2026-07-28 (jcc_sieve): both box tests were INVERTED. The `inBox`
+    // flag is set when the point is INSIDE a box - retail's box1 chain ends `cmp edx,
+    // [bottom] / jl <inBox=1>` (0xfc5 -> 0xfe4) and every box2 guard jumps to the SKIP
+    // block past it (0xfe9), i.e. `&&`-chains of inside-tests. We had `||`-chains of
+    // outside-tests, so the ambient sound was silenced inside its zone and played
+    // outside it. The unbounded sentinel (left == INT_MIN) means "no bound" for box1 and
+    // "no second box" for box2, which is why one is `==` and the other `!=`.
+    i32 b1 = m_box1.left; // retail loads the bound BEFORE zeroing the flag
     i32 inBox = 0;
-    i32 b1 = m_box1.left;
     if (b1 == static_cast<i32>(0x80000000)) {
         inBox = 1;
-    } else if (x <= b1 || x >= m_box1.right || y <= m_box1.top || y >= m_box1.bottom) {
+    } else if (x > b1 && x < m_box1.right && y > m_box1.top && y < m_box1.bottom) {
+        inBox = 1;
+    } else {
         i32 b2 = m_box2.left;
-        if (b2 == static_cast<i32>(0x80000000) || x <= b2 || x >= m_box2.right || y <= m_box2.top
-            || y >= m_box2.bottom) {
+        if (b2 != static_cast<i32>(0x80000000) && x > b2 && x < m_box2.right && y > m_box2.top
+            && y < m_box2.bottom) {
             inBox = 1;
         }
     }
@@ -922,7 +933,7 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
     }
 
     // retail: cmp frameDelta, countdownMs; jb subtract (frameDelta as the left operand).
-    if (static_cast<u32>(g_frameDelta) >= static_cast<u32>(m_countdownMs)) {
+    if (g_frameDelta >= static_cast<u32>(m_countdownMs)) {
         m_countdownMs = 0;
     } else {
         m_countdownMs = m_countdownMs - g_frameDelta;

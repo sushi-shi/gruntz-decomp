@@ -602,12 +602,17 @@ i32 CTileSecretTriggerLogic::Tick() {
 // 0 (just turned on, one-shot of type 0x18) or -1 (just turned off, not 0x17).
 // ---------------------------------------------------------------------------
 // @early-stop
-// entropy-tail (~96%): logic verified against the full retail decode 2026-07-26
-// (the overflow dutyOn!=1 guard returns 1 - NOT unconditional -1 - and the on-arm
-// type guard is the != inversion; both fixed). Residual: retail tail-duplicates
-// the late ret1 block (inlining `return 1` there restructures and craters to 74)
-// + the period add emits lea-with-both-live vs our 2-op add (operand order
-// canonicalizes; not source-steerable).
+// 98.85% (was 96.03). CORRECTNESS FIX 2026-07-28: the overflow arm returns -1 EITHER
+// WAY - retail's `cmp [esi+0x38],1 / jne` goes to the shared `or eax,-1` block
+// (0x1128ba -> 0x11300f), so the guard gates only the Tick(). We were returning +1
+// there, i.e. reporting "still active" on a duty cycle that had already run out. The
+// earlier note asserted the opposite and cited "the full retail decode"; the branch
+// TARGET disproves it (docs/patterns/masked-diff-hides-branch-target.md - --diff masks
+// exactly this). That bug is also what forced the two exit blocks out of retail's
+// order; spelling the final guard as `!= 0x17 -> return -1` restored it.
+// Residual: the period add emits `lea edi,[edx+ecx]` with both operands live where we
+// emit a 2-op `add ecx,edi` (and the div/cmp registers follow). cl canonicalizes the
+// commutative operand order - re-tested both spellings 2026-07-28, byte-identical.
 // @interleaver CTileTriggerLogic::Classify emitted-in <boundary:
 // CTileSecretTriggerLogic::Tick @0x1128b0 (before, now THIS TU) +
 // CheckpointSwitchBuild.cpp BuildSmall @0x112a50 (after)>. A /Gy first-use
@@ -627,10 +632,14 @@ i32 CTileTriggerLogic::Classify(i32 arg) {
                 return 0;
             }
             if (m_typeTag != TRIGID_TIME_TRIGGER_23) {
-                if (m_dutyOn != 1) {
-                    goto ret1;
+                // The overflow arm returns -1 EITHER WAY - the guard only gates the
+                // Tick(). Retail: `cmp [esi+0x38],1 / jne <the shared or eax,-1 block>`
+                // (0x1128ba -> 0x11300f), then Tick() and a TAIL-DUPLICATED `or eax,-1`.
+                // A `goto ret1` here would have to be `jne <mov eax,1>`, which retail is
+                // not; and it is what forced the two exit blocks out of retail's order.
+                if (m_dutyOn == 1) {
+                    Tick();
                 }
-                Tick();
                 return -1;
             }
         }
@@ -651,10 +660,12 @@ i32 CTileTriggerLogic::Classify(i32 arg) {
         }
         Tick();
         m_dutyOn = 0;
-        if (m_typeTag == TRIGID_TIME_TRIGGER_23) {
-            goto ret1;
+        // Inverted on purpose: cl gives the last conditional's FALL-THROUGH to the
+        // if-BODY, so spelling the -1 exit as the body is what emits retail's
+        // `cmp eax,0x17 / je <ret1, last block>` with `or eax,-1` falling through.
+        if (m_typeTag != TRIGID_TIME_TRIGGER_23) {
+            return -1;
         }
-        return -1;
     }
 ret1:
     return 1;

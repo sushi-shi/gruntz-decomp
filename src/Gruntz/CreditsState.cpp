@@ -324,11 +324,11 @@ i32 CCreditsState::InitAttractTitle() {
 // gates are live) the static credit. GDI via the IAT; GetDC/ReleaseDC are the DDraw COM
 // slots (+0x44/+0x68). CString temp -> /GX frame.
 // @early-stop
-// ~75%: complete + correct (matched jb-branch polarity, fadd accumulator with the extern
-// reseed constants blocking the /O2 constant-fold, the DDraw GetDC/ReleaseDC COM slots,
-// the CGdiObject::operator-HRGN null-check clip, both DrawTextA paths + the static credit
-// CString). Residual walls: (1) the /GX EH-frame representation (docs/seh-eh.md); (2)
-// float-consistency (/Op) st0 reuse vs store/reload; (3) FP/prov-chain scheduling. All
+// 87.83% (was 85.33). SIGNEDNESS FIX 2026-07-28: all three timer drains are retail `jb`,
+// not `jl` - g_frameDelta is u32 (see <Rez/FrameClock.h>), which also makes the (double)
+// cast lower as the zero-extended `fild qword` retail emits and brings the frame to
+// 0x24. Residual: register naming through the GDI/DrawTextA tail (eax/ecx/edx permuted
+// at identical instruction count) plus the FP/int interleave around the RECT copy. All
 // logic + externs/strings named; the 3 FP-constant relocs stay differently-named.
 RVA(0x000396f0, 0x2b8)
 i32 CCreditsState::DrawScrollingCredits() {
@@ -358,9 +358,11 @@ i32 CCreditsState::DrawScrollingCredits() {
         }
     }
 
+    // The accumulate comes BEFORE the RECT copy: retail's g_frameDelta -> qword temp
+    // stores and `fild` are emitted ahead of the copy's `lea edi/ebp`, and /O2 then fills
+    // the FP latency with the four-dword copy.
+    m_scrollAccum = m_scrollAccum + static_cast<double>(g_frameDelta) * m_scrollStep * 0.001;
     m_drawRect = m_scrollRect;
-    double contrib = static_cast<double>(g_frameDelta) * m_scrollStep * 0.001;
-    m_scrollAccum = m_scrollAccum + contrib;
     i32 scrolled = static_cast<i32>(m_scrollAccum);
     m_drawRect.top -= scrolled;
     m_drawRect.bottom -= scrolled;

@@ -28,9 +28,7 @@ struct CHazardTimer {
 };
 SIZE_UNKNOWN();
 
-extern "C" u32 g_engineFrameDelta;
-
-extern "C" i32 g_frameDelta; // VA 0x645584
+#include <Rez/FrameClock.h> // g_frameDelta (u32) / g_engineFrameDelta, at the owner decl
 
 extern "C" i32 __ftol(double v); // 0x11f570 (CRT double->long; one canonical signature)
 

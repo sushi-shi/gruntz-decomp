@@ -26,7 +26,8 @@
 // CGruntzSoundInnerZ bank FindBank returns (Query -> IsStarted @0x138a10).)
 
 extern "C" tagRECT g_versionRect; // (the 4-int source @c8/cc/d0/d4)
-extern "C" i32 g_frameDelta;      // (last-frame delta, fed to Step)
+
+#include <Rez/FrameClock.h> // g_frameDelta (u32), at the owner decl
 
 struct BzGeomPair {
     i32 m_y; // +0x00  onscreen y

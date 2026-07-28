@@ -2237,25 +2237,28 @@ i32 CGameLevel::ProbeStepEdge(i32 x, i32 y) {
 // re-probes the same tile per compare - two inlined copies.)
 //
 // @early-stop
-// ~98.6%: the `goto yes` shared-exit reproduced retail's single `return 1` block
-// reached by `je` from each probe (was 90.9% with per-probe inline `return 1`).
-// Residual is the PROBE_TILE Y-clamp mainPlane-temp register (eax vs ecx) entropy
-// tail. Not source-steerable. Deferred to the final sweep.
+// 99.99% - ONE instruction pair: retail loads m_screenY (+0x60) into eax and
+// m_extent.bottom (+0x140) into esi, we do the reverse. cl canonicalizes the
+// commutative add to the HIGHER offset in eax; `bottom + screenY`, `screenY +
+// (bottom+1)` and two pre-declared locals in retail's order all emit the same pair.
+// docs/patterns/commutative-imul-operand-in-eax.md. Everything else is byte-exact
+// (the nested `!=` guards fixed the block order: 98.72 -> 99.99).
 RVA(0x00160080, 0x187)
 i32 CGameLevel::ProbeFootSoft(CGameObject* t, i32 dx) {
     i32 row = t->m_screenY + t->m_extent.bottom + 1;
+    // NESTED not-equal guards, not `if (==) goto yes`: cl gives the last conditional's
+    // FALL-THROUGH to whichever arm is the if-BODY. Retail's every probe guard is
+    // `je <the single return-1 block, last>` with the next probe (and finally `return 0`)
+    // as the fall-through - which is exactly `if (probe != want) { ...next... }`.
     i32 r1;
     PROBE_TILE(this, dx + t->m_screenX, row, r1);
-    if (r1 == kTileSoft) {
-        goto yes;
+    if (r1 != kTileSoft) {
+        i32 r2;
+        PROBE_TILE(this, dx + t->m_screenX, row, r2);
+        if (r2 != kTileSoft2) {
+            return 0;
+        }
     }
-    i32 r2;
-    PROBE_TILE(this, dx + t->m_screenX, row, r2);
-    if (r2 == kTileSoft2) {
-        goto yes;
-    }
-    return 0;
-yes:
     return 1;
 }
 
@@ -2264,30 +2267,27 @@ yes:
 // is any blocking kind (soft 1, soft2 2, or hard 3), else 0. Three inlined probes.
 //
 // @early-stop
-// ~99.1% (was 82.6%): the `goto yes` shared-exit fixed the block order (retail's
-// single `return 1` reached by `je` from all three probes), and PROBE_TILE declaring
-// py_ before px_ fixed the per-copy dead-param-home reuse. Residual is the last
-// probe's mainPlane-temp register (eax vs ecx) entropy tail.
+// 99.99% (was 99.07): the nested `!=` guards fixed the last probe's branch polarity
+// and both exit blocks' order. Residual is the same single commutative-add operand
+// pair as ProbeFootSoft - see its note.
 RVA(0x00160210, 0x234)
 i32 CGameLevel::ProbeFootBlocked(CGameObject* t, i32 dx) {
     i32 row = t->m_screenY + t->m_extent.bottom + 1;
+    // Nested not-equal guards - see ProbeFootSoft: the if-BODY owns the fall-through, so
+    // each probe guard lowers to `je <the single return-1 block>` as retail has it.
     i32 r1;
     PROBE_TILE(this, dx + t->m_screenX, row, r1);
-    if (r1 == kTileSoft) {
-        goto yes;
+    if (r1 != kTileSoft) {
+        i32 r2;
+        PROBE_TILE(this, dx + t->m_screenX, row, r2);
+        if (r2 != kTileSoft2) {
+            i32 r3;
+            PROBE_TILE(this, dx + t->m_screenX, row, r3);
+            if (r3 != kTileHard) {
+                return 0;
+            }
+        }
     }
-    i32 r2;
-    PROBE_TILE(this, dx + t->m_screenX, row, r2);
-    if (r2 == kTileSoft2) {
-        goto yes;
-    }
-    i32 r3;
-    PROBE_TILE(this, dx + t->m_screenX, row, r3);
-    if (r3 == kTileHard) {
-        goto yes;
-    }
-    return 0;
-yes:
     return 1;
 }
 

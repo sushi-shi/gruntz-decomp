@@ -9,7 +9,7 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 
-extern "C" i32 g_frameDelta;
+#include <Rez/FrameClock.h> // g_frameDelta (u32), at the owner decl
 
 extern "C" i32 __ftol(double v);
 

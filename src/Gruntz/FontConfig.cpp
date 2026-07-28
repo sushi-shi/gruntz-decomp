@@ -353,7 +353,7 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
             }
         }
         i32 t;
-        if (static_cast<u32>(g_frameDelta) < static_cast<u32>(g_caretBlinkMs)) {
+        if (g_frameDelta < static_cast<u32>(g_caretBlinkMs)) {
             t = g_caretBlinkMs - g_frameDelta;
         } else {
             t = 0;

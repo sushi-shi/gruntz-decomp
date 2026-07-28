@@ -284,12 +284,12 @@ DATA(0x001f085c)
 const float g_faderScale_5f085c = 0.01f;
 
 // @early-stop
-// regalloc coin-flip wall (73.5% fuzzy). Full body is byte-shape-identical to retail;
-// the residual is a callee-saved coloring swap that touches every ModRM byte: retail
-// colors this->ebx and the reused const-0/count->edi, while cl picks this->edi /
-// const-0->ebx (a symmetric loop-weight tie broken the other way). Verified via
-// llvm-objdump -dr base vs target - the only mnemonic-level diffs are the ebx/edi
-// register columns.
+// 87.07% (was 71.58). The "callee-saved coloring swap that touches every ModRM byte" was
+// the range guard's shape (jcc_sieve 2026-07-28): two separate `if (...) goto fail;`
+// statements let cl place the FIRST guard's target inline between the guards and the body,
+// which inverts the second into `jle <body>`; retail sends both to the same far block
+// (`jl <fail> / jg <fail>`) - i.e. ONE `||`. The ebx/edi colouring came right on its own.
+// Residual is the FxRand-loop scheduling tail.
 RVA(0x0017fe00, 0x12d)
 i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
     i32 w;
@@ -317,10 +317,10 @@ i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
     w = m_srcBox->m_height;
     m_frameCount = w;
     p = desc->m_10;
-    if (p < 0) {
-        goto fail;
-    }
-    if (p > 100) {
+    // ONE `||`, not two `if`s: retail sends BOTH range guards to the same far fail block
+    // (`jl <fail> / jg <fail>`), where separate statements let cl place the first guard's
+    // target inline and invert the second into a jump to the body (`jle <body>`).
+    if (p < 0 || p > 100) {
         goto fail;
     }
     m_intensity = p;
@@ -794,7 +794,10 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
                     }
                 }
                 i32 newMax = mesh->m_nMaxSize + grow;
-                if (newSize > newMax) {
+                // `>=`, not `>`: retail's guard is `cmp <newSize>,<newMax> / jl <keep>`,
+                // so the clamp fires on equal too (MFC's own `if (nNewSize < m_nMaxSize +
+                // nGrowBy) nNewMax = m_nMaxSize + nGrowBy; else nNewMax = nNewSize;`).
+                if (newSize >= newMax) {
                     newMax = newSize;
                 }
                 RezElem40* nd = static_cast<RezElem40*>(RezAlloc(newMax * sizeof(RezElem40)));
@@ -1133,7 +1136,9 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         goto fail;
     }
 
-    if (pInit->m_14 == 0) {
+    // `<= 0` on the UNSIGNED mode, not `== 0`: retail's `test eax,eax / jbe` is the
+    // negation of an unsigned `> 0` guard (jbe == je after `test`, different encoding).
+    if (static_cast<u32>(pInit->m_14) <= 0) {
         goto fail;
     }
     if (static_cast<u32>(pInit->m_14) >= 4) {

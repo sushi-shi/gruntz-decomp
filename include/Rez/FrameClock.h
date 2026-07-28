@@ -3,8 +3,12 @@
 #include <Ints.h>
 
 extern "C" {
-    extern i32 g_lastNow;        // 0x245580  last timeGetTime() sample
-    extern "C" i32 g_frameDelta; // 0x245584  frame delta (clamped <= 0x64); owner Rez/RezMgr.cpp
+    extern i32 g_lastNow; // 0x245580  last timeGetTime() sample
+    // UNSIGNED, proven by retail: every comparison is jb/jbe/jae (CPlay::Render
+    // `cmp eax,0x12/jbe`, CMulti::PumpA `jb`, UpdateMgrScroll `jb`), the /9 divide in
+    // CPlay::DrawWorldFrames is `mul`+`shr` not `imul`+`sar`, and every (double) cast
+    // lowers as a zero-extended `fild qword`. 0x245584; owner Rez/RezMgr.cpp.
+    extern "C" u32 g_frameDelta; // 0x245584  frame delta (clamped <= 0x64)
     extern "C" u32
         g_frameTime; // 0x245588  running accumulated game clock (unsigned); owner Rez/RezMgr.cpp
     extern i32 g_frameTicks;           // 0x24558c  per-frame counter (++ each tick)

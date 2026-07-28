@@ -17,12 +17,15 @@ float g_c24 = -3.1415927f; // 0x5efb24  -pi (owner-TU def; len = sqrt(dx*dx+dy*d
 #pragma intrinsic(atan2, sin, cos, sqrt, fabs)
 
 // @early-stop
-// x87-spill wall (37.5): the transcendentals NOW inline (the #pragma intrinsic
-// above - fpatan/fsin/fcos/fsqrt match retail). Remaining: our 7 double locals
-// spill to an 8-aligned ebp frame (`and esp,-8`) while retail keeps the whole
-// transform on the x87 stack, frameless. Needs the FP-temp restructure (fewer
-// live doubles across statements); the deltas/rotation/workspace/build-draw
-// calls are the correct shape.
+// x87-spill wall (37.46). CORRECTNESS FIX 2026-07-28 (jcc_sieve OTHER): both vertex
+// passes rewrite each record IN PLACE and the translate pass STARTS OVER at record 0 -
+// we were storing to `v[-8]/v[-7]`, i.e. 32 bytes BEFORE the (x,y) just read (out of
+// bounds on the first iteration), and letting the translate pass run over records 3..6.
+// Both loop guards now match retail's strength-reduced signed `cmp eax,g_rasterVtxB+0x74
+// / jl`. The transcendentals inline (the #pragma intrinsic above - fpatan/fsin/fcos/fsqrt
+// match retail). Remaining: our 7 double locals spill to an 8-aligned ebp frame
+// (`and esp,-8`) while retail keeps the whole transform on the x87 stack, frameless.
+// Needs the FP-temp restructure (fewer live doubles across statements).
 RVA(0x001471d0, 0x1b4)
 i32 ProjectWallQuad(
     CDDSurface* surface,
@@ -55,19 +58,26 @@ i32 ProjectWallQuad(
     w[5] = static_cast<float>(c);
     w[6] = static_cast<float>((c + len));
 
-    // rotate the four base corners through (c, -s) into the workspace records.
-    float* v = &w[1];
+    // Both passes rewrite each record IN PLACE, and the second STARTS OVER at record 0.
+    // Retail's stores land at [eax-0x20]/[eax-0x1c] AFTER `add eax,0x1c`, i.e. at the very
+    // (x,y) the iteration just read at [eax-4]/[eax]; and the translate pass re-loads the
+    // cursor (`mov eax,g_rasterVtxB+4`) instead of continuing from the rotate pass's end.
+    // Writing `v[-8]/v[-7]` stored 32 bytes BEFORE the read - out of bounds on the first
+    // iteration - and let the translate pass run over records 3..6 instead of 0..3.
+    // The index must also be the ONLY induction variable: retail's guard is the SIGNED
+    // `cmp eax,g_rasterVtxB+0x74 / jl` a strength-reduced `i < 4` leaves behind, where a
+    // hand-advanced cursor alongside `i` makes cl emit `dec ecx / jne`.
     for (i32 i = 0; i < 4; i++) {
+        float* v = &w[i * 7 + 1];
         double bx = static_cast<double>(v[-1]);
         double by = -static_cast<double>(v[0]);
-        v[-8] = static_cast<float>((bx * c * hw - by * s * hw));
-        v[-7] = static_cast<float>((bx * s * hw + by * c * hw));
-        v += 7;
+        v[-1] = static_cast<float>((bx * c * hw - by * s * hw));
+        v[0] = static_cast<float>((bx * s * hw + by * c * hw));
     }
     for (i32 j = 0; j < 4; j++) {
-        v[-8] = static_cast<float>((static_cast<double>(p1) + static_cast<double>(v[-1])));
-        v[-7] = static_cast<float>((static_cast<double>(p2) + static_cast<double>(v[0])));
-        v += 7;
+        float* v = &w[j * 7 + 1];
+        v[-1] = static_cast<float>((static_cast<double>(p1) + static_cast<double>(v[-1])));
+        v[0] = static_cast<float>((static_cast<double>(p2) + static_cast<double>(v[0])));
     }
 
     if (ImagePolyClipRect(g_rasterVtxB, 4, p8, p8, p9, p10) != 0) {

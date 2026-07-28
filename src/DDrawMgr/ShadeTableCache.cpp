@@ -157,7 +157,10 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
             }
         }
         i32 newMax = m_arr.m_nMaxSize + grow;
-        if (newSize > newMax) {
+        // `>=`, not `>`: retail's guard is `cmp <newSize>,<newMax> / jl <keep>`,
+        // so the clamp fires on equal too (MFC's own `if (nNewSize < m_nMaxSize +
+        // nGrowBy) nNewMax = m_nMaxSize + nGrowBy; else nNewMax = nNewSize;`).
+        if (newSize >= newMax) {
             newMax = newSize;
         }
         CShadeTable** data = static_cast<CShadeTable**>(::operator new(newMax * 4));
@@ -601,7 +604,9 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
     i32 cr = color & 0xff;
     i32 cg = (color >> 8) & 0xff;
     i32 cb = (color >> 0x10) & 0xff;
-    for (i32 level = 0xf; level >= 0; level--) {
+    // `> -1`, not `>= 0`: retail's tail is `dec eax / cmp eax,0xffffffff / jg`,
+    // where `>= 0` lowers to `test eax,eax / jge`.
+    for (i32 level = 0xf; level > -1; level--) {
         i32 subr = cr * level / 0xf;
         i32 subg = cg * level / 0xf;
         i32 subb = cb * level / 0xf;
@@ -707,7 +712,10 @@ CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
             }
         }
         i32 newMax = m_arr.m_nMaxSize + grow;
-        if (newSize > newMax) {
+        // `>=`, not `>`: retail's guard is `cmp <newSize>,<newMax> / jl <keep>`,
+        // so the clamp fires on equal too (MFC's own `if (nNewSize < m_nMaxSize +
+        // nGrowBy) nNewMax = m_nMaxSize + nGrowBy; else nNewMax = nNewSize;`).
+        if (newSize >= newMax) {
             newMax = newSize;
         }
         CShadeTable** data = static_cast<CShadeTable**>(::operator new(newMax * 4));
@@ -773,7 +781,10 @@ CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
             }
         }
         i32 newMax = m_arr.m_nMaxSize + grow;
-        if (newSize > newMax) {
+        // `>=`, not `>`: retail's guard is `cmp <newSize>,<newMax> / jl <keep>`,
+        // so the clamp fires on equal too (MFC's own `if (nNewSize < m_nMaxSize +
+        // nGrowBy) nNewMax = m_nMaxSize + nGrowBy; else nNewMax = nNewSize;`).
+        if (newSize >= newMax) {
             newMax = newSize;
         }
         CShadeTable** data = static_cast<CShadeTable**>(::operator new(newMax * 4));
