@@ -28,6 +28,13 @@ class CWwdGameObject;  // <Gruntz/WwdGameObject.h> (WWD collection reading)
 // 5-8 are the CLoadable scheme (IsLoaded/IsReady/Unload/GetClassId 0x10).
 class CDDrawChildGroup : public CLoadable {
 public:
+    // INLINE ctor - expanded in place by CDDrawSurfaceMgr::Init @0x155987 (base call
+    // 0x156cb0, the three default-block-size member ctors at +0x10/+0x2c/+0x48, the
+    // ??_7 stamp 0x5efdc0, both walk cursors zeroed).
+    CDDrawChildGroup(CDDrawSurfaceMgr* owner) : CLoadable(CLoadable::OwnerHandle(owner), 0, 0) {
+        m_walkCursor = 0;
+        m_scanCursor = 0;
+    }
     // slot 1: ??1 @0x157630 (defined in DDrawSubMgr.cpp, the family dtor pocket -
     // the ex CDDrawChildGroupDtorHost view; ??_G @0x157610 is cl-generated there).
     virtual ~CDDrawChildGroup() OVERRIDE;

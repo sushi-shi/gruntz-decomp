@@ -19,11 +19,9 @@ class CDDrawSurfacePair; // slots 11-14 params (<DDrawMgr/DDrawSurfacePair.h>)
 class CUserLogic;        // fwd (AnimWorkerObj::m_logic is the object's bound logic leaf)
 struct Coord;
 
-
 class CDDrawWorker; // the +0x194 cached sprite IS CDDrawWorker
 
 class CImage;
-
 
 extern CButeMgr g_buteMgr;
 
@@ -47,7 +45,7 @@ public:
     CUserLogic(CGameObject* obj);
     virtual ~CUserLogic() OVERRIDE {} // inline: folds into leaf dtors (link teardown + vptr stores)
     virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                        // slot 2
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                                 // slot 2
     // slot 3 (+0x0c): the serialize name-in hook - ProjTypeXfer (0x16e4f0) resolves
     // the type name and dispatches it here virtually (`push name; call [vptr+0xc]`,
     // llvm-objdump-proven). Default 0x00106e: a ret-4 one-arg no-op.
@@ -134,14 +132,16 @@ public:
     // (LoadGruntTypeTable @0x4dd50 is really CGrunt's - SYMBOL-exported in UserLogic.cpp
     //  under ?LoadGruntTypeTable@CGrunt@@; declared on CGrunt in <Gruntz/Grunt.h>, not here.)
     void LoadGruntTuningConstants(i32);
-    // Leaf placement/arm entrypoints reached through the bound-logic base pointer
-    // (CTriggerMgr::SpawnGrunt / ResetGroup on the created sprite's AnimWorkerObj::m_logic):
-    // Place @0x4c1c4 (the grunt/puddle placement driver), Arm @0x4e517 (the target-cursor
-    // lighting/config arm). Reloc-masked leaf bodies.
+    // (Place @0x4d800 is GONE from here - it is CGrunt::Place, declared in <Gruntz/Grunt.h>.
+    // Its `this` writes +0x194..+0x460 (CUserLogic ends at 0x34) and EVERY method it calls
+    // on that `this` - LoadVehicleGruntSprites 0x50ce0, LoadGruntTypeTable 0x4dd50,
+    // BuildEntranceAnimation 0x67bd0, ReadConfigFromButeMgr 0x48400, LoadCellAnimNames
+    // 0x48470, LoadAnimNameTable 0x49c60, ResetEntranceAnimation 0x62e10, StepArrivalDrop
+    // 0x4b370 - is a `CGrunt::` method.)
+    // Arm @0x4e517 (the target-cursor lighting/config arm) is a reloc-masked leaf body.
     // (FinalizeStep - 0x8b90, body in UserLogic.cpp - is now the slot-5
     // virtual above; retail's slot holds its ILT thunk 0x3913, which
     // reloc_fidelity thunk-resolves onto the body.)
-    i32 Place(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32); // 0x4d800
     // The two act callbacks. They ARE pointers-to-member: the only writers store 0 and
     // the only readers do `(this->*cb)()` (0x8b90/0x13c70), and the act tables that feed
     // them (CActRegPool<T>::s_table, <Gruntz/ActReg.h>) hold `i32 (CUserLogic::*)()`.
@@ -149,7 +149,7 @@ public:
     typedef i32 (CUserLogic::*ActCallback)();
     ActCallback m_deferredCallback; // +0x04
     ActCallback m_gatedCallback;    // +0x08
-    CGameObject* m_0c;                                                     // +0x0c
+    CGameObject* m_0c;              // +0x0c
     // +0x10  bound game object (== m_38): the created A-kind sprite (every binding
     // site hands a CreateSprite/ReadPlaneObjects product; leaves read its m_1a0
     // cache). The ex-"m_10" arm was the same type/role - one name now.
@@ -245,7 +245,7 @@ SIZE(0x20);
 class CTileTrigger : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                        // slot 2
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                                 // slot 2
 public:
     CTileTrigger();                 // 0x011160 (no-arg)
     CTileTrigger(CGameObject* obj); // 0x10e220 (1-arg)

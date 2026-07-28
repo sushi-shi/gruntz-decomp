@@ -240,9 +240,12 @@ public:
     // string-compare its config name, then re-init. (__stdcall: ret 0x14.)
     i32 ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20);
 
-    // 0x6ea00: HitTestApply(x, y, kind) - hit-test then, when the magic kind, compare the
+    // 0x6ea00: HitTestApply(x, y, span) - hit-test then, when the magic kind, compare the
     // config string and adjust the world score + status item. (__stdcall: ret 0xc.)
-    void HitTestApply(i32 x, i32 y, i32 kind);
+    // arg3 is the tile-span RECT the caller (CExitTrigger::AdvanceAnim @0x3f64e, the only
+    // one) hands in; the body ALSO reuses that same stack slot as FindGruntAt's outCol,
+    // which is why the pun lives inside the body and not at the call.
+    void HitTestApply(i32 x, i32 y, RECT* span);
 
     // 0x75af0: HitTestCell(x, y, outRow, outCol, exact) - sample the tile-attr index, map
     // it to (row,col), bounds-test the cell object, write (row,col). (ret 0x14.)

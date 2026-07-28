@@ -15,6 +15,13 @@ class CDDrawSurfaceChildA; // +0x10 front page (defined below - the sibling clas
 // (IsLoaded/IsReady/Unload/GetClassId 0xf).
 class CDDrawSubMgrPages : public CLoadable {
 public:
+    // INLINE ctor - byte-proven by CDDrawSurfaceMgr::Init @0x15594e, which expands it
+    // in place (base call 0x156cb0, ??_7 stamp 0x5efe08, the three page slots zeroed).
+    CDDrawSubMgrPages(CDDrawSurfaceMgr* owner) : CLoadable(CLoadable::OwnerHandle(owner), 0, 0) {
+        m_frontPair = 0;
+        m_backPair = 0;
+        m_overlayPair = 0;
+    }
     virtual ~CDDrawSubMgrPages() OVERRIDE; // slot 1 (real dtor 0x1574d0)
     // The `??_G` scalar-deleting destructor (slot 1 @0x1574b0): run the real
     // ~CDDrawSubMgrPages (direct call), conditionally RezFree, return this. Hand-written

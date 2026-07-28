@@ -10,12 +10,16 @@
 class CDDrawWorker; // 0x6c-byte keyed worker (canonical def <DDrawMgr/DDrawWorker.h>);
 class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
-class CImage;  // the frame element (AnyValueMatches probes each set for it)
+class CImage;     // the frame element (AnyValueMatches probes each set for it)
 struct PidHeader; // the descriptor the create/dispatch slots take
-class CSymTab; // Bute/SymTab.h (the dir-tree cursor InstallTree/LoadNamespace walk)
+class CSymTab;    // Bute/SymTab.h (the dir-tree cursor InstallTree/LoadNamespace walk)
 
 class CDDrawWorkerRegistry : public CLoadable {
 public:
+    // INLINE ctor - expanded in place by CDDrawSurfaceMgr::Init @0x155a37: the 1-arg
+    // CLoadable base (vptr + the three header stores spelled inline), the +0x10 map
+    // member ctor, then the ??_7 stamp 0x5efd28.
+    CDDrawWorkerRegistry(CDDrawSurfaceMgr* owner) : CLoadable(owner) {}
     // [1] ??1 @0x156e10 (DDrawSubMgr.cpp - the family dtor pocket; cl emits the
     // ??_G scalar-deleting dtor @0x156df0 + this vtable there).
     virtual ~CDDrawWorkerRegistry() OVERRIDE;
@@ -34,8 +38,7 @@ public:
     virtual CImage*
     Forward2C(i32 width, i32 height, CDDrawWorker* worker, i32 index, i32 keyed); // [10] 0x154f60
     // [11] 0x154f40
-    virtual CImage*
-    Forward30(PidHeader* desc, i32 mode, CDDrawWorker* worker, i32 index, u32 size);
+    virtual CImage* Forward30(PidHeader* desc, i32 mode, CDDrawWorker* worker, i32 index, u32 size);
     // [12] 0x154ce0
     virtual CImage*
     DispatchKeyed30(PidHeader* desc, i32 mode, const char* key, i32 index, u32 size);

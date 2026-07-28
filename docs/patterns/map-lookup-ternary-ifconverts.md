@@ -1,0 +1,68 @@
+# `Lookup(k, out) ? out : 0` if-converts — write the STATEMENT form
+tags: cpp:ternary cpp:branch mfc:map | asm:neg asm:sbb asm:and | topic:codegen-idiom
+symptoms: base emits `neg eax / sbb eax,eax / and eax,<out>` right after an MFC
+  `CMap*::Lookup` call where retail emits `test eax,eax / je L / mov eax,[out] / L:`;
+  ~3% of the function, and the extra live value shifts a register elsewhere
+confidence: 9/10
+
+## Shape
+
+The MFC map API hands the value back through a `void*&` out-param and returns a `BOOL`,
+so every "look it up or null" site is naturally spelled as a ternary:
+
+```cpp
+CGameObject* found = 0;
+CGameObject* obj = MapLookupById(grp->m_map48, id, found) ? found : 0;   // <- if-converts
+```
+
+At `/O2` MSVC 5.0 **if-converts** `cond ? x : 0` into the branchless mask idiom:
+
+```asm
+    call    <CMapPtrToPtr::Lookup>
+    mov     ecx,DWORD PTR [esp+0x18]     ; found
+    neg     eax
+    sbb     eax,eax                      ; eax = (ret != 0) ? -1 : 0
+    and     eax,ecx
+```
+
+Retail never does. It keeps the branch and reuses the **FALSE return value already in
+`eax`** as the null:
+
+```asm
+    call    <CMapPtrToPtr::Lookup>
+    test    eax,eax
+    je      L                            ; on this edge eax is provably 0
+    mov     eax,DWORD PTR [esp+0x18]     ; found
+L:  mov     edx,DWORD PTR [eax+0x7c]
+```
+
+## The fix
+
+Spell it as a **statement**, not an expression. cl5 does not if-convert an `if` whose
+body is a plain assignment:
+
+```cpp
+CGameObject* found = 0;
+CGameObject* obj = 0;
+if (MapLookupById(grp->m_map48, id, found)) {
+    obj = found;
+}
+```
+
+## Measured
+
+| function | before -> after |
+|---|---|
+| `CExitTrigger::SerializeMove` @0x3f040 (read-side warlord id resolve) | 93.68 -> **96.65** |
+| `CExitTrigger::AdvanceAnim` @0x3f5f0 (the claimed-slot warlord resolve) | 76.85 -> **78.22** |
+
+Both had been filed as "branch-vs-branchless coin-flip, not source-steerable". It is
+steerable; it is the ternary.
+
+## Residue this does NOT close
+
+cl still materialises `obj = 0` in its own register before the call (`xor esi,esi`)
+where retail simply falls out of the `je` with `eax == 0`. That half is a register
+colouring choice and stays.
+
+related: identical-return-epilogue-tailmerge.md, positive-gate-enables-shrink-wrap.md

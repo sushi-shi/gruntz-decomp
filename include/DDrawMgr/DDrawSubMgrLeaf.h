@@ -18,6 +18,9 @@ class CAniElement; // <Gruntz/AniElement.h>
 
 class CDDrawSubMgrLeaf : public CLoadable {
 public:
+    // INLINE ctor - expanded in place by CDDrawSurfaceMgr::Init @0x155bb7 (1-arg
+    // CLoadable base, the +0x10 map member ctor, ??_7 stamp 0x5efc78).
+    CDDrawSubMgrLeaf(CDDrawSurfaceMgr* owner) : CLoadable(owner) {}
     // 9-slot vtable (??_7CDDrawSubMgrLeaf @0x5efc78): the CObject slots + slots 5/6/7
     // overriding CLoadable's, then slot 8 GetClassId INHERITED from CLoadable.
     virtual i32 IsLoaded() OVERRIDE; // [5] 0x1577a0 (overrides CLoadable::IsLoaded)

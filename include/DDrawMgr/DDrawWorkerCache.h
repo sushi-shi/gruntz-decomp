@@ -14,6 +14,9 @@ class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 // CDDrawWorkerCacheBase" flat words).
 class CDDrawWorkerCache : public CLoadable {
 public:
+    // INLINE ctor - expanded in place by CDDrawSurfaceMgr::Init @0x155a82 (1-arg
+    // CLoadable base, the +0x10 map member ctor, ??_7 stamp 0x5efd00).
+    CDDrawWorkerCache(CDDrawSurfaceMgr* owner) : CLoadable(owner) {}
     virtual ~CDDrawWorkerCache() OVERRIDE; // [1] dtor 0x157720 (??_G 0x157700 pinned at def)
     // [5] 0x1576d0 IsLoaded (the CLoadable-scheme slot-5 predicate): loaded iff +0x0c
     // is bound and the +0x04 status latch isn't -1. (Renamed from "IsReady" - slot 6

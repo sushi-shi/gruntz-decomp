@@ -8,6 +8,7 @@
 #include <Gruntz/Loadable.h>          // CLoadable - the shared child base (slot-1 scalar-delete)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // real +0x10 child type (m_imageRegistry; virtual-dtor delete)
 #include <DDrawMgr/DDrawWorkerCache.h> // real +0x14 child type (m_workerCache; virtual-dtor delete)
+#include <DDrawMgr/DDrawWorkerList.h>  // real +0x0c child type (m_workerList; Init's `new`)
 #include <DDrawMgr/DDrawWorkerMapSmall.h> // real +0x18 child type (m_workerMap; slot-1 scalar-delete)
 #include <DDrawMgr/DDrawSubMgrPages.h> // real +0x04 child type (m_drawTarget: IsLoaded, m_frontPair)
 #include <DDrawMgr/DDrawChildGroup.h>  // real +0x08 child type (m_childGroup)
@@ -49,44 +50,113 @@ CDDrawSurfaceMgr::~CDDrawSurfaceMgr() {
     Cleanup();
 }
 
-// 0x155900 IS the real 5-arg virtual Init(hWnd,w,h,bpp,flags) —
-// the SurfaceMgr Init that heap-allocates all 11 owned sub-managers, validates
-// each, and configures the display.  Deferred to the final sweep: it is a 1305-B
-// /GX method whose FULL nested construction-EH funclet can only be reproduced once
-// every child is modeled as a real MFC-derived class (each child's ctor inlines
-// CMap*/CList member ctors, and the parent funclet unwinds the in-flight child +
-// its half-built map members).  The constituent leaf ctors themselves are still
-// @early-stop walls (CDDrawWorkerMapSmall/CDDrawSubMgrLeaf/CDDrawSubMgrLeafScan at
-// 94–96%), so this parent cannot exceed them until they land — a leaf-first job.
+// 0x155900 IS the real 5-arg virtual Init(hWnd,w,h,bpp,flags) - the SurfaceMgr
+// display bring-up: heap-allocate all eleven owned sub-managers, validate each
+// (m_lastError 0x3e9..0x3f2) and configure the display + sound stream.
 //
-// DECODED STRUCTURE (for the final sweep — retail-verified from 0x155900):
-//   m_hWnd = hWnd (arg1);  m_flags = flags (arg5).
-//   Then a run of `child = new T(...)` blocks (EH state in [esp+0x1c]/[esp+0x20]),
-//   each: op-new(size) -> if non-null: base-ctor 0x156cb0(0,0,this) [surface-desc
-//   children instead stamp base vtbl 0x5efc30 + [+4]=[+8]=0 + [+c]=this], inline
-//   CMap member ctors(0xa), then stamp the derived vtbl; store into this->m_XX:
-//     m_drawTarget = new(0x1c)  vtbl 0x5efe08                                   (CDDrawSubMgrPages)
-//     m_childGroup = new(0x6c)  ctor156cb0 + maps@0x10/0x2c/0x48 vtbl 0x5efdc0  (CDDrawChildGroup / CDDrawChildGroup view)
-//     m_workerList = new(0x2c)  ctor156cb0 + map@0x10          vtbl 0x5efd88    (CDDrawWorkerList)
-//     m_imageRegistry = new(0x2c)  CObject-base + map@0x10(0x1b7e17) vtbl 0x5efd28 (CDDrawSurfaceDesc submgr)
-//     m_workerCache = new(0x2c)  CObject-base + map@0x10(0x1b7e17) vtbl 0x5efd00 (CDDrawWorkerCache)
-//     m_workerMap = new(0x68)  ctor156cb0 + maps@0x10/2c/48(0x1b7e17) vtbl 0x5efcc8 (CDDrawWorkerMapSmall)
-//     m_level = new(0x6d4) ctor 0x15ccd0                                   (CDDrawResolveSubMgr)
-//     m_soundRegistry = new(0x38)  CObject-base + map@0x10(0x1b8247) vtbl 0x5efca0 (= CDDrawSubMgrLeafScan)
-//     m_animRegistry = new(0x2c)  CObject-base + map@0x10(0x1b8247) vtbl 0x5efc78 (= CDDrawSubMgrLeaf)
-//     m_ptrColl = new(0x948) ctor 0x141cc0                                   (CDDrawPtrCollections)
-//     m_soundStream = new(0x9c)  ctor 0x1376d0                                   (SoundStream)
-//   Validate phase: for m_childGroup,m_workerList,m_imageRegistry,m_workerCache,m_workerMap,m_animRegistry call child->vslot0x18(); on
-//   0 (and m_initError==0) set m_initError = 0x3e9..0x3ee and return 0; m_level->vslot0x34(w,h) ->
-//   0x3ef; m_drawTarget->vslot0x24(w,h,flags,arg5) -> 0x3f0.  Then flags&0x20 => m_level[+8]|=4;
-//   SoundStream setup via 0x137720 with mode (bl&0x80?2:1), teardown-on-fail via
-//   vslot0/[+0] scalar-delete + 0x3f1; finally m_soundRegistry->0x157a80(1) validate.  ret 0x14.
-// @confidence: high
-// @source: tomalla
-// @stub
+// The eleven `new T(this)` blocks are what proves the child classes' constructors:
+// eight of them are expanded INLINE here (base ctor, the default-block-size CMap/
+// CObList member ctors, the derived ??_7 stamp, the trailing field zeroes), so those
+// eight ctors are header-inline - they are now declared as such on each class. Three
+// are out-of-line calls (CGameLevel 0x15ccd0, CDDrawPtrCollections 0x141cc0,
+// SoundStream 0x1376d0). Under /GX each `new` runs under its own __ehfuncinfo state
+// ([esp+0x1c]) with the in-flight pointer homed at [esp+0x10], so the whole
+// allocate-then-construct ladder is one EH state machine; that falls out of the
+// `new` expressions, it is not hand-written.
 RVA(0x00155900, 0x519)
-i32 CDDrawSurfaceMgr::Init(void* /*hWnd*/, i32 /*w*/, i32 /*h*/, i32 /*bpp*/, i32 /*flags*/) {
-    return 0;
+i32 CDDrawSurfaceMgr::Init(void* hWnd, i32 w, i32 h, i32 bpp, i32 flags) {
+    m_hWnd = static_cast<HWND>(hWnd);
+    m_flags = flags;
+
+    m_drawTarget = new CDDrawSubMgrPages(this);
+    m_childGroup = new CDDrawChildGroup(this);
+    m_workerList = new CDDrawWorkerList(this);
+    m_imageRegistry = new CDDrawWorkerRegistry(this);
+    m_workerCache = new CDDrawWorkerCache(this);
+    m_workerMap = new CDDrawWorkerMapSmall(this);
+    m_level = new CGameLevel(CLoadable::OwnerHandle(this), 0, 0);
+    m_soundRegistry = new CDDrawSubMgrLeafScan(this);
+    m_animRegistry = new CDDrawSubMgrLeaf(this);
+    m_ptrColl = new CDDrawPtrCollections();
+    m_soundStream = new SoundStream();
+
+    if (!m_childGroup->IsReady()) {
+        if (m_lastError == 0) {
+            m_lastError = 0x3e9;
+        }
+        return 0;
+    }
+    if (!m_workerList->IsReady()) {
+        if (m_lastError == 0) {
+            m_lastError = 0x3ea;
+        }
+        return 0;
+    }
+    if (!m_imageRegistry->IsReady()) {
+        if (m_lastError == 0) {
+            m_lastError = 0x3eb;
+        }
+        return 0;
+    }
+    if (!m_workerCache->IsReady()) {
+        if (m_lastError == 0) {
+            m_lastError = 0x3ec;
+        }
+        return 0;
+    }
+    if (!m_workerMap->IsReady()) {
+        if (m_lastError == 0) {
+            m_lastError = 0x3ed;
+        }
+        return 0;
+    }
+    if (!m_animRegistry->IsReady()) {
+        if (m_lastError == 0) {
+            m_lastError = 0x3ee;
+        }
+        return 0;
+    }
+    if (!m_level->SetCoordExtents(w, h)) {
+        if (m_lastError == 0) {
+            m_lastError = 0x3ef;
+        }
+        return 0;
+    }
+    if (flags & 0x20) {
+        m_level->m_flags |= 4;
+    }
+    if (!m_drawTarget->CreateChildren(w, h, bpp, flags)) {
+        if (m_lastError == 0) {
+            m_lastError = 0x3f0;
+        }
+        return 0;
+    }
+
+    i32 mode = 1;
+    if (flags & 0x80) {
+        mode = 2;
+    }
+    if (!m_soundStream->PlaySoundDefaulted(hWnd, mode)) {
+        delete m_soundStream;
+        m_soundStream = 0;
+        if (flags & 8) {
+            if (m_lastError == 0) {
+                m_lastError = 0x3f1;
+            }
+            return 0;
+        }
+    }
+    if (m_soundStream != 0 && (flags & 4)) {
+        delete m_soundStream;
+        m_soundStream = 0;
+    }
+    if (!m_soundRegistry->BindSoundStream(1)) {
+        if (m_lastError == 0) {
+            m_lastError = 0x3f2;
+        }
+        return 0;
+    }
+    return 1;
 }
 
 RVA(0x00155e20, 0xd1)
@@ -329,9 +399,12 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     CSnapshotHeader header;
     S.Read(&header, sizeof(header));
 
-    // API-forced: m_callback is a client-registered hook whose last parameter is an
-    // opaque payload word, so an out-pointer has to be widened into it
-    if (m_callback == 0 || m_callback(this, &S, 2, arg3, reinterpret_cast<i32>(&header)) == 0) {
+    // API-forced, at one seam: m_callback is a client-registered hook whose last
+    // parameter is an opaque payload word, so the out-pointer has to be widened into
+    // it - widened once here instead of at each of the four dispatches.
+    i32 headerArg = reinterpret_cast<i32>(&header);
+
+    if (m_callback == 0 || m_callback(this, &S, 2, arg3, headerArg) == 0) {
         return 0;
     }
     g_wwdObjIdCounter = header.m_objIdCounter;
@@ -339,9 +412,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_childGroup->LoadObjects(&S, header.m_childCount, arg3) == 0) {
         return 0;
     }
-    // API-forced: m_callback is a client-registered hook whose last parameter is an
-    // opaque payload word, so an out-pointer has to be widened into it
-    if (m_callback == 0 || m_callback(this, &S, 6, arg3, reinterpret_cast<i32>(&header)) == 0) {
+    if (m_callback == 0 || m_callback(this, &S, 6, arg3, headerArg) == 0) {
         return 0;
     }
     if (m_childGroup->ForEachDispatch(&S, 6, arg3) == 0) {
@@ -350,9 +421,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_level->EditDispatch(static_cast<void*>(&S), 6, 0, 0) == 0) {
         return 0;
     }
-    // API-forced: m_callback is a client-registered hook whose last parameter is an
-    // opaque payload word, so an out-pointer has to be widened into it
-    if (m_callback == 0 || m_callback(this, &S, 7, arg3, reinterpret_cast<i32>(&header)) == 0) {
+    if (m_callback == 0 || m_callback(this, &S, 7, arg3, headerArg) == 0) {
         return 0;
     }
     if (m_childGroup->Deserialize(&S, header.m_childCount, arg3) == 0) {
@@ -361,9 +430,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_level->EditDispatch(static_cast<void*>(&S), 7, 0, 0) == 0) {
         return 0;
     }
-    // API-forced: m_callback is a client-registered hook whose last parameter is an
-    // opaque payload word, so an out-pointer has to be widened into it
-    if (m_callback == 0 || m_callback(this, &S, 8, arg3, reinterpret_cast<i32>(&header)) == 0) {
+    if (m_callback == 0 || m_callback(this, &S, 8, arg3, headerArg) == 0) {
         return 0;
     }
     if (m_childGroup->ForEachDispatch(&S, 8, arg3) == 0) {

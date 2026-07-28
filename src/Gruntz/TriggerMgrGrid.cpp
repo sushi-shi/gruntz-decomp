@@ -771,12 +771,13 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
 // so the `setne`+null-test colors as `cmpb bl,al` vs retail `testb cl,cl`. Not source-steerable
 // (the `bool` local is required for the setne form but shifts the result register). topic:wall.
 RVA(0x0006ea00, 0x125)
-void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
-    // retail 0x6ea00 pushes arg3 BOTH by value (as the span RECT*) and by address (as
+void CTriggerMgr::HitTestApply(i32 x, i32 y, RECT* span) {
+    // retail 0x6ea00 reads arg3 BOTH by value (as the span RECT*) and by address (as
     // outCol): `mov edx,[esp+0xc]` and `lea ecx,[esp+0x20]` resolve to the same E+0xc
-    // slot, so the parameter is a RECT* in and an i32 out. byte-forced slot reuse.
-    CGrunt* cell = FindGruntAt(x, y, reinterpret_cast<RECT*>(kind), &kind, &y, 0);
-    if (cell == 0 || kind != g_curPlayer) {
+    // slot, so the parameter is a RECT* in and an i32 out. byte-forced slot reuse - the
+    // pun is language-forced here and nowhere else.
+    CGrunt* cell = FindGruntAt(x, y, span, reinterpret_cast<i32*>(&span), &y, 0);
+    if (cell == 0 || reinterpret_cast<i32>(span) != g_curPlayer) {
         return;
     }
     const char* name = *g_typeColl.ScratchResolve(cell->m_objAux->m_1c);
