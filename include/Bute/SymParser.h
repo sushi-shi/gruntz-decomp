@@ -131,8 +131,14 @@ public:
     // (non-zero = text/structured, 0 = binary). Reloc-masked extern.
     i32 Classify(char* buf); // 0x13c080
 
-    // (0x13b910 "ResolveName" was a mislabel: it is the free __stdcall ::PackTag - the
-    // ext->key mapper declared at file scope above. ParseRecords calls PackTag directly.)
+    // PackTag (0x13b910): the extension -> 4CC key mapper. It is a METHOD, not the free
+    // __stdcall it used to be modelled as - BOTH call sites load a receiver into ecx
+    // before calling it (CSymTab::Find @0x13a0b2 `mov ecx,[ebx+0x18]` = its m_owner, this
+    // parser; ParseRecords @0x13b71a `mov ecx,[esp+0x14]` = its own spilled `this`). The
+    // body ignores `this`, so a one-argument __thiscall and a one-argument __stdcall emit
+    // identical bytes - which is why the free spelling scored 100% while silently dropping
+    // the receiver setup at every call site.
+    u32 PackTag(const char* s); // 0x13b910
 
     // ReParse (0x13c050): if armed (m_parseArmed), Clear(0) then re-parse the cached
     // +0x64 buffer. Returns 0 if not armed, else ParseBuffer's result.
