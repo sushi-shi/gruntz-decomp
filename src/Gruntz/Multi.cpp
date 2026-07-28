@@ -1966,13 +1966,16 @@ i32 CMulti::SendStatValue(i32 id, i32 statId, i32 value, i32 flag) {
 // Stops early if the abort latch (m_pollAbort) is set. Returns the dispatched
 // count.
 // @early-stop
-// zero-register coloring wall (~63%): logic, the null guard, the inlined
-// GetMessageCount (slot 0x44) probe with the branchless neg/sbb/not/and HRESULT mask
-// (now matched via `count = hr ? 0 : count`), the receive loop (Receive slot 0x64),
-// the ReportError on failure, and the per-message DispatchRecvMsg are all reproduced.
-// Residual: retail pins 0=edi so ebx is free for count (kept in-register); our MSVC5
-// /O2 pins 0=ebx which spills count to [esp+0x10] and grows the frame 0xc->0x10, a
-// swap that cascades every pointer regname. Not source-steerable. Final sweep.
+// 87.34% (was 63.30). The "zero-register coloring wall" was three source bugs
+// (2026-07-28): (a) Receive's lpidFrom is `&sender`, not a second `&size` - THAT is
+// what puts sender in a stack slot and frees ebx for count; (b) GetMessageCount's
+// out-param is its own uninitialized local, not `count` itself (writing the masked
+// result back into the address-taken slot pinned count to memory); (c) the
+// ReportError guard and the `if (hr) break` are SIBLING ifs, not nested - see
+// redundant-sibling-guard-retest.md. Residual: cl folds two tests retail keeps -
+// the second `LocalPlayer() == 0` (which is what makes retail's `count` a phi and
+// forces the explicit `cmp ebx,edi`) and the loop-top `test ebx,ebx; jle`, so the
+// loop rotates its exit test to the bottom. Final sweep.
 RVA(0x000b95f0, 0x10f)
 i32 CMulti::PollSession() {
     if (LocalPlayer() == 0) {
@@ -1984,17 +1987,30 @@ i32 CMulti::PollSession() {
         count = 0;
     } else {
         IDirectPlay4Z* dp = Peer()->m_directPlay;
-        count = 0;
-        i32 hr = dp->GetMessageCount(LocalPlayer()->m_id, &count);
-        count = hr ? 0 : count; // branchless mask (neg/sbb/not/and)
+        // The out-param is its OWN (uninitialized) local, not `count`: retail passes
+        // `lea ebx,[esp+0x10]` with no preceding zero store and lands the masked
+        // result in a register (`mov ebx,eax`), where writing back into the
+        // address-taken slot pins `count` to memory for the whole function.
+        i32 n;
+        i32 hr = dp->GetMessageCount(LocalPlayer()->m_id, &n);
+        count = hr ? 0 : n; // branchless mask (neg/sbb/not/and)
     }
     if (count <= 0) {
         return 0;
     }
 
-    i32 dispatched = 0;
-    i32 sender = 0;
-    while (count > 0) {
+    // sender is seeded FIRST (retail stores [esp+0x14] then [esp+0x10]).
+    i32 dispatched;
+    i32 sender;
+    sender = 0;
+    dispatched = 0;
+    // The count test stays at the TOP of the loop body (retail's back edge is the
+    // `hr == 0` test, `test edi,edi; je <top>`); a `while (count > 0)` rotates it to
+    // the bottom and needs an extra `jmp`.
+    for (;;) {
+        if (count <= 0) {
+            break;
+        }
         if (m_pollAbort) {
             break;
         }
@@ -2002,12 +2018,18 @@ i32 CMulti::PollSession() {
         i32 size = 0x800;
         i32 idTo = LocalPlayer()->m_id;
         IDirectPlay4Z* dp = Peer()->m_directPlay;
-        i32 hr = dp->Receive(&size, &idTo, 1, static_cast<void*>(g_recvBuffer), &size);
+        // lpidFrom is `&sender` - THAT is why retail keeps sender in a stack slot
+        // ([esp+0x14], the `lea edx,[esp+0x24]` pushed 5th). Passing `&size` twice
+        // dropped the out-param entirely.
+        i32 hr = dp->Receive(&sender, &idTo, 1, static_cast<void*>(g_recvBuffer), &size);
+        // SIBLING guards, not nested: retail re-tests hr AFTER the report
+        // (`test edi,edi; jne <end>`); nesting the break folds the report block
+        // out of line into the exit.
         if (hr) {
             CNetMgr::ReportError("c:\\proj\\incs\\netmgr.h", 0x141, hr, 0);
-            if (hr) {
-                break;
-            }
+        }
+        if (hr) {
+            break;
         }
         count--;
         if (sender != LocalPlayer()->m_id) {
