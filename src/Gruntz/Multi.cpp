@@ -3437,11 +3437,13 @@ void CNetSession::ResetAll() {
 // ms it busy-waits the remainder (ActiveWait) and re-stamps; otherwise, if the
 // frame ran long (> 0x28 ms) and the sync gate m_syncGate is set, it flips the
 // global low-bit sync toggle and returns it.
+// The early exit is `return ret;`, not `return 0;` - retail emits `mov eax,ebx` there,
+// i.e. it reads the same variable the tail returns.
 // @early-stop
-// regalloc + schedule wall (~71%): logic byte-faithful (timeGetTime, the delta/stamp
-// stores, the <=0x1e ActiveWait re-stamp, the >0x28 sync-toggle). Retail pins this->esi
-// and now->edi and orders `m_lastFrameDelta` store before `m_lastFrameTime`; cl swaps
-// the callee-saved pins (this->edi) and reorders the two stores. Not steerable. Final sweep.
+// zero-register-pinning wall (~71%, docs/patterns/zero-register-pinning.md): retail
+// pins `ret`'s 0 in the callee-saved ebx and compares/returns through it; cl keeps it
+// in eax and re-materializes `xor eax,eax`. Spelling the early exit `return ret;`
+// (which IS what retail does) does not move the allocator. Final sweep.
 RVA(0x000bc070, 0x73)
 u32 CMulti::FrameSyncWait() {
     u32 now = timeGetTime();
@@ -3453,7 +3455,7 @@ u32 CMulti::FrameSyncWait() {
     if (delta <= 0x1e) {
         ActiveWait(0x1f - delta);
         m_5e4 = (now - m_accumTime) + 0x1f;
-        return 0;
+        return ret;
     }
     if (delta > 0x28 && m_syncGate) {
         ret = g_syncToggle ^ 1;
@@ -3889,10 +3891,10 @@ i32 CMulti::ResetPlayerCommands(i32 id) {
     i32 seq = (slot->m_baseSeq + 1) * static_cast<i32>(m_5a4);
     i32 end = seq + static_cast<i32>(m_5a4) * 3;
     for (; seq < end; seq++) {
-        NetGameMgr()->m_cmdSubMgr->RemoveMatchingTarget(
-            static_cast<char>(slot->m_desc->m_playerIndex),
-            static_cast<char>(seq)
-        );
+        // The params are i32, NOT char: retail pushes both operands whole
+        // (`mov eax,[edx]; push eax`), which a char param would have narrowed to
+        // `mov al,[edx]`.
+        NetGameMgr()->m_cmdSubMgr->RemoveMatchingTarget(slot->m_desc->m_playerIndex, seq);
         slot->RemoveCmd(seq / static_cast<i32>(m_5a4));
     }
     slot->ResetTriple(slot->m_rangeA);
@@ -3968,11 +3970,15 @@ void CMulti::HandleVersionCheck(CNetVersionMsg* msg) {
 // Builds a 0x20-byte version-announce packet on the stack (flag byte, the
 // CButeMgr config word, g_cfgWord, stat id 0x417, and the local/remote version
 // pair) and ships it through the engine stat dispatcher as stat 0x417.
+// m_statId is at packet+0x04 (the header said +0x10 - a real layout bug, fixed): the
+// `mov DWORD PTR [esp+0x18],0x417` sits at a 3-push esp, i.e. packet+4. cl emits the
+// two middle field stores in REVERSE source order, so bute-then-cfg here reproduces
+// retail's `[+0x0c] then [+0x08]`.
 // @early-stop
-// store-schedule wall (90%): logic byte-faithful (the 0x20 memset, the |0x80 flag,
-// g_cfgWord/g_remoteVersion/param fields, the 0x417 send). Retail interleaves the
-// packet field stores and the stack-arg-block setup at a different anchor than cl;
-// an instruction-schedule permutation of the same store multiset. Final sweep.
+// register-role wall (90.2%): every store target and the whole shape now match; the
+// residual is a systematic eax<->ecx swap (retail keeps the flag byte in al and the
+// globals in eax; cl uses cl/ecx) plus cl batching two global loads before their
+// stores where retail alternates load/store. Coin flip; final sweep.
 RVA(0x000bd180, 0x66)
 void CMulti::AnnounceVersion(CNetSessionNode* param) {
     CNetVersionPacket packet;
@@ -3980,8 +3986,8 @@ void CMulti::AnnounceVersion(CNetSessionNode* param) {
 
     packet.m_0 |= 0x80;
     packet.m_remoteVersion = g_remoteVersion;
-    packet.m_cfgWord = g_cfgWord;
     packet.m_buteConfig = g_buteMgrField4;
+    packet.m_cfgWord = g_cfgWord;
     packet.m_localVersion = g_localVersion;
     packet.m_statId = STAT_VERSIONPACKET;
 

@@ -10,7 +10,6 @@ typedef enum ParseEntryTag {
     PARSETAG_INA = 0x414e49, // "INA" -> .ANI  animation entry (the sibling Leaf/SurfacePair gate)
 } ParseEntryTag;
 
-
 class CSymTab; // <Bute/SymTab.h>
 
 class CRezItmBase;
@@ -44,6 +43,10 @@ struct CParseSource {
     // 0x139950: the current scope's (m_owner CSymTab) name - `mov eax,[ecx+0x10];
     // mov eax,[eax]` proves the thiscall receiver + the +0x10 owner deref.
     char* CurrentScopeName();
+    // 0x139810: the `\`-joined QUALIFIED path of the current scope, built into
+    // `dst` (returned). Same +0x10 owner deref as CurrentScopeName above, so the
+    // receiver is this class, not a separate scope-chain holder.
+    char* CurrentScopePath(char* dst, i32 size);
     // Parse-slot init (0x1396f0): stamp the embedded hash-node (m_node1c), null the
     // bookkeeping fields, self-link m_selfLink. Returns this. (CSymParser::PopParseSlot.)
     CParseSource* Init();
@@ -67,16 +70,16 @@ struct CParseSource {
     i32 ReadAt(void* dst, i32 pos, u32 len);
     i32 Read(void* dst, u32 len, i32 seekPos);
 
-    char* m_name;     // +0x00 source name
-    void* m_entry;    // +0x04 keyed-store entry (first dword = tag)
-    i32 m_typeTag;    // +0x08  type tag (1/2/4; the Build f2 slot)
+    char* m_name;  // +0x00 source name
+    void* m_entry; // +0x04 keyed-store entry (first dword = tag)
+    i32 m_typeTag; // +0x08  type tag (1/2/4; the Build f2 slot)
     // +0x0c is PROVEN heterogeneous: for most entry kinds it is the byte length, but for
     // the XCP kind it holds the entry's key STRING. CDDrawWorkerMapSmall::Factory_165a90
     // reads it at 0x165ad4, tests it against 0 at 0x165b3c and, when non-null, runs
     // `repnz scas` (strlen) + a block copy straight off it at 0x165b4c - i.e. it is
     // dereferenced as a char*. Two arms of the same 4 bytes, so a union, not a cast.
     union {
-        u32 m_length;        // +0x0c total byte length / limit
+        u32 m_length;            // +0x0c total byte length / limit
         const char* m_keyHandle; // +0x0c (XCP entries) the entry's key string
     };
     CSymTab* m_owner; // +0x10  owning scope (Build stores it; the stream side

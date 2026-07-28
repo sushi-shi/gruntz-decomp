@@ -160,26 +160,43 @@ i32 CParseSource::GetEntryTag() {
 }
 
 // ===========================================================================
-// Homed from src/Stub/GapFunctions.cpp (matcher-5): both physically sit inside
-// CParseSource's .text block (RVA-first home) but belong to a DISTINCT, unresolved
-// scope-chain class (holds a CSymTab* at +0x10; NOT CParseSource, whose +0x10 is
-// the mapped source). The gap tool had over-spanned 0x139810 by 6 bytes into the
-// 0x139950 getter (its true size is 0x140, not 0x146) - now split.
+// 0x139810 - CParseSource::CurrentScopePath(dst, size): the `\`-joined qualified
+// path of the CURRENT scope, built into `dst` (which is returned). It walks the
+// CSymTab scope chain up through m_parent (+0x1c), prepending each node's m_name
+// (+0x00) via a heap scratch copy; a lone root (m_owner with no parent) is just
+// the separator. g_sepSlash @0x60cff0, g_emptyString @0x6293f4.
+//
+// The receiver IS CParseSource - the ex "@identity-TODO zero-ref orphan holding a
+// CSymTab* at +0x10" is exactly the +0x10 m_owner deref that its immediate neighbour
+// CurrentScopeName (0x139950, `mov eax,[ecx+0x10]; mov eax,[eax]`) already proved.
+// Two adjacent thiscall functions in the same .text block reading a CSymTab through
+// the same +0x10 slot are the same class; the "+0x10 roles disproven" note was
+// written before 0x139950 was resolved. Dead code in retail (no caller survives the
+// link), which is why the xref scan came up empty - absence of callers is not
+// absence of identity.
 // ===========================================================================
-// @identity-TODO (matcher-5): 0x139810 (__thiscall(dst, size)) builds the `\`-joined
-// qualified path of the scope at this->+0x10 into dst by walking the CSymTab scope chain up
-// via parent(+0x1c): scratch=RezAlloc(size); dst=""; for(node=this->m_10; node; node=node->
-// +0x1c){ strcpy(scratch,dst); dst = node->+0x1c ? g_sepSlash : ""; strcat(dst,node->m_name);
-// strcat(dst,scratch);} ::operator delete(scratch); a lone root returns strcpy(dst, g_sepSlash "\").
-// The WALKED NODE is the real CSymTab (its ctor @0x139de0 proves m_name@+0, parent@+0x1c);
-// g_sepSlash @0x60cff0, g_emptyString @0x6293f4. But `this`'s OWN class - the holder of a
-// current-scope CSymTab* at +0x10 - is a ZERO-REF ORPHAN (no rel32/vtable/data-ref caller
-// anywhere in the image; verified by a full-binary VA byte-scan), so its identity is
-// unrecoverable and NOT CParseSource/CSymTab (their +0x10 roles are disproven). Homed as a
-// stub rather than fabricate a per-TU view of an un-xref-able receiver (no-fake-view rule).
 RVA(0x00139810, 0x140)
-i32 BuildQualifiedScopePath(void) {
-    return 0;
+char* CParseSource::CurrentScopePath(char* dst, i32 size) {
+    if (m_owner->m_parent == 0) {
+        strcpy(dst, g_sepSlash);
+    } else {
+        char* scratch = static_cast<char*>(::operator new(size));
+        strcpy(dst, g_emptyString);
+        CSymTab* node = m_owner;
+        while (node != 0) {
+            strcpy(scratch, dst);
+            if (node->m_parent != 0) {
+                strcpy(dst, g_sepSlash);
+            } else {
+                dst[0] = 0;
+            }
+            strcat(dst, node->m_name);
+            strcat(dst, scratch);
+            node = node->m_parent;
+        }
+        ::operator delete(scratch);
+    }
+    return dst;
 }
 
 // 0x139950: the receiver IS CParseSource (its +0x10 == m_owner, the CSymTab whose
@@ -300,16 +317,18 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
 // destructible members force the /GX EH frame), then wire key/back-ptr/scope.
 // Xref: both ctors are called only by CSymTab::FindOrAddSym (0x13a940) and the
 // dtor only by ~CSymTab (0x139ee0) - the same original TU.
+// The statement order is record/scope/key: measured over ALL SIX permutations, only
+// that one reproduces retail's store order (m_key, m_symNode.m_record, m_scope) -
+// cl reorders, so the source order is not the emitted order and the 3-fourcc
+// overload's spelling (which is 100%) does NOT transfer.
 // @early-stop
-// ~99.1% register-assignment tail (this 4-fourcc ctor): body byte-faithful (the
-// IDENTICAL body gives the 3-fourcc overload 100%). The extra `d` param's stack
-// shift only flips cl's key<->owner GPR choice on the two trailing fourcc reloads
-// + one store slot. Pure allocator coin-flip; source-order tuned to the best of 3.
+// ~99.35%: the four remaining rows are a key<->owner GPR naming swap on the two
+// trailing arg reloads (retail edx/eax, cl eax/edx). Allocator coin-flip.
 RVA(0x00139bf0, 0x71)
 CSymRec::CSymRec(i32 key, CSymTab* owner, i32 c, i32 d) : m_keyTable(c), m_valTable(d) {
+    m_symNode.m_record = this;
     m_scope = owner;
     m_key = key;
-    m_symNode.m_record = this;
 }
 
 RVA(0x00139c80, 0x6c)
@@ -1121,7 +1140,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     m_longestScopeNameLen = hdr.m_longestScopeNameLen;
     m_longestLeafNameLen = hdr.m_longestLeafNameLen;
     m_60 = hdr.m_60;
-    m_08 = hdr.m_08 & 0xff;
+    m_08 = hdr.m_08;
     if (hdr.m_magic0 != 0x0d || hdr.m_magic3f != 0x0a || hdr.m_magic7e != 0x1a || b != 1) {
         return 0;
     }
@@ -1464,22 +1483,19 @@ void CSymParser::SetDelims(char* s) {
     strcpy(m_delims, s);
 }
 
-// @early-stop
-// ~95% (was 33% until IsTokenChar was marked __inline - /Ob1 wouldn't inline the plain
-// static, so retail's 3x-inlined tokenizer showed as out-of-line calls). Sole residual:
-// the token-copy loop's induction-variable representation - retail strength-reduces
-// buf[n] to a running [edi+esi] base-offset pointer (edi = &buf - p) where cl keeps the
-// indexed buf[n], plus the this->ebp/ebx regalloc coin-flip. Logic byte-faithful.
+// The scratch buffer is char[0x40] (retail `sub esp,0x40`), and the leading-delimiter
+// skip advances the PARAMETER (`++path`) with the token cursor `p` taken afterwards -
+// that one-variable prologue is what lets cl spill `path` to its own home slot and
+// strength-reduce buf[n] to the [&buf-p + p] running base retail uses.
 RVA(0x0013bae0, 0x1b9)
 void* CSymTab::ResolvePath(const char* path) {
-    char buf[0x30];
-    const char* p = path;
+    char buf[0x40];
     if (static_cast<i32>(strlen(path)) > 1) {
-        if (!IsTokenChar(m_owner->m_delims, *p)) {
-            ++p;
-            path = p;
+        if (!IsTokenChar(m_owner->m_delims, *path)) {
+            ++path;
         }
     }
+    const char* p = path;
     i32 n = 0;
     while (IsTokenChar(m_owner->m_delims, *p)) {
         buf[n] = *p;
@@ -1505,26 +1521,24 @@ void* CSymTab::ResolvePath(const char* path) {
     return (static_cast<CSymTab*>(sub))->ResolvePath(path + n);
 }
 
-// @early-stop
-// ~95% (was 51%): the two fixes were IsTokenChar __inline (2x) and the `qual` copy as
-// the strcpy intrinsic strcpy(qual,tail) - retail inlines it (repnz-scas strlen +
-// rep-movsd/movsb of strlen+1) where strncpy(...,strlen+1) stayed an out-of-line call.
-// The `key` copy is a genuine strncpy(0x120340) call (kept). Residual is the tokenizer
-// induction-variable + this-register regalloc coin-flip. Read peer of ResolveQualified.
+// Scan BACKWARDS over the trailing token characters to split `name` into a scope
+// path prefix + a leaf symbol name; the loop runs WHILE the char is a token char
+// (it is stepping over the leaf) and stops on the first delimiter. The two stack
+// buffers are path[0x100] (the prefix, resolved to a scope) then leaf[0x20] - the
+// frame is 4 (the `this` home slot) + 0x120, i.e. the retail `sub esp,0x124`.
 RVA(0x0013bca0, 0x19c)
 void* CSymTab::FindQualified(const char* name) {
-    char qual[0x100];
-    char key[0x24];
-    const char* p = name;
+    char path[0x100];
+    char leaf[0x20];
     i32 len = static_cast<i32>(strlen(name));
     if (len > 1) {
-        if (!IsTokenChar(m_owner->m_delims, *p)) {
-            ++p;
+        if (!IsTokenChar(m_owner->m_delims, *name)) {
+            ++name;
             --len;
         }
     }
     i32 i = len - 1;
-    while (!IsTokenChar(m_owner->m_delims, p[i])) {
+    while (IsTokenChar(m_owner->m_delims, name[i])) {
         --i;
         if (i < 0) {
             break;
@@ -1533,39 +1547,34 @@ void* CSymTab::FindQualified(const char* name) {
     if (i == len) {
         return 0;
     }
-    const char* tail = p + i + 1;
-    strcpy(qual, tail);
+    const char* tail = name + i + 1;
+    strcpy(leaf, tail);
     if (i <= 1) {
-        return Find(qual);
+        return Find(leaf);
     }
-    strncpy(key, p, static_cast<u32>(i));
-    key[i] = 0;
-    CSymTab* scope = static_cast<CSymTab*>(ResolvePath(key));
+    strncpy(path, name, static_cast<u32>(i));
+    path[i] = 0;
+    CSymTab* scope = static_cast<CSymTab*>(ResolvePath(path));
     if (!scope) {
         return 0;
     }
-    return scope->Find(qual);
+    return scope->Find(leaf);
 }
 
-// @early-stop
-// ~92% (was 52%): same two fixes as FindQualified - IsTokenChar __inline + the `qual`
-// copy as strcpy(qual,tail) (intrinsic). Residual is the this-register regalloc coin-flip
-// (retail keeps `this` in esi; cl uses edx + extra stack reloads) + the tokenizer
-// induction variable. The write peer (Insert tail) of FindQualified. Logic byte-faithful.
+// The write peer (Insert tail) of FindQualified - identical split, same buffers.
 RVA(0x0013be40, 0x1ac)
 CParseSource* CSymTab::ResolveQualified(const char* name, i32 fourcc) {
-    char qual[0x100];
-    char key[0x24];
-    const char* p = name;
+    char path[0x100];
+    char leaf[0x20];
     i32 len = static_cast<i32>(strlen(name));
     if (len > 1) {
-        if (!IsTokenChar(m_owner->m_delims, *p)) {
-            ++p;
+        if (!IsTokenChar(m_owner->m_delims, *name)) {
+            ++name;
             --len;
         }
     }
     i32 i = len - 1;
-    while (!IsTokenChar(m_owner->m_delims, p[i])) {
+    while (IsTokenChar(m_owner->m_delims, name[i])) {
         --i;
         if (i < 0) {
             break;
@@ -1574,18 +1583,18 @@ CParseSource* CSymTab::ResolveQualified(const char* name, i32 fourcc) {
     if (i == len) {
         return 0;
     }
-    const char* tail = p + i + 1;
-    strcpy(qual, tail);
-    if (i <= 0) {
-        return Insert(qual, fourcc);
+    const char* tail = name + i + 1;
+    strcpy(leaf, tail);
+    if (i <= 1) {
+        return Insert(leaf, fourcc);
     }
-    strncpy(key, p, static_cast<u32>(i));
-    key[i] = 0;
-    CSymTab* scope = static_cast<CSymTab*>(ResolvePath(key));
+    strncpy(path, name, static_cast<u32>(i));
+    path[i] = 0;
+    CSymTab* scope = static_cast<CSymTab*>(ResolvePath(path));
     if (!scope) {
         return 0;
     }
-    return scope->Insert(qual, fourcc);
+    return scope->Insert(leaf, fourcc);
 }
 
 RVA(0x0013b900, 0x4)

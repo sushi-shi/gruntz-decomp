@@ -62,9 +62,11 @@ struct SymTabFileHeader {
     u32 m_longestScopeNameLen; // +0x09b
     u32 m_longestLeafNameLen;  // +0x09f
     u32 m_60;                  // +0x0a3
-    i32 m_08;                  // +0x0a7  (low byte used)
+    u8 m_08;                   // +0x0a7  (low byte used)
 };
-SIZE(0xab); // 0xa8 read + the trailing dword the last field overlaps
+SIZE(0xa8); // the record IS 0xa8 - the size Read() asks for AND the size retail's
+            // CSymParser::LoadEntry frame reserves for the local (0xac = 4-byte /GX
+            // new-temp slot + 0xa8, ending exactly at the pushed EH block)
 #pragma pack(pop)
 
 class CSymParser {

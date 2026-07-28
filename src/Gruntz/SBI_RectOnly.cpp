@@ -188,9 +188,15 @@ void CStatusBarMgr::ToggleStat(i32 idx) {
 
 // Find the index of the first enabled hit-test rect containing (x,y); -1 none.
 // @early-stop
-// bool-materialization wall: retail keeps the redundant inner `p->m_enabled` test and
-// materializes the point-in-rect predicate via `mov ecx,1 / xor ecx,ecx / test`;
-// MSVC5 folds our `&&` chain into direct control flow (~80%). Logic byte-correct.
+// bool-materialization wall (80.6%): retail keeps the redundant inner `p->m_enabled`
+// test (same ebx, so the LOAD was CSE'd but the branch was not) and materializes the
+// predicate as `mov ecx,1 / jmp / xor ecx,ecx / test ecx,ecx / jne` instead of
+// branching straight out of the `&&` chain. Measured and REFUTED as levers: a
+// `static __inline` predicate helper, a class-scope chain, an explicit
+// `if (...) hit = 1; else hit = 0;` materialization - cl folds all three identically.
+// The sibling HitTestRects spells the same chain inline and retail does NOT
+// materialize there, so retail's HitTest went through a construct MSVC5 inlined
+// LATER than its branch-folding pass; not reachable from C at /O2 /Ob1.
 RVA(0x00105280, 0x61)
 i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
     if (m_hitTestDisabled == 0) {
@@ -219,32 +225,33 @@ void CStatusBarMgr::ResetGroupA() {
     }
 }
 
-// Latch HUD-rect group A from three args + a global dword.
+// Latch HUD-rect group A from three args + a global dword. The clock and the wait
+// interval are assigned as whole i64s (not as the flat lo/hi halves): that is what
+// makes cl share ONE `xor eax,eax` zero across both hi stores AND emit the lo store
+// before the hi one, exactly as retail. The flat-halves spelling reorders both pairs.
 // @early-stop
-// scheduling wall: logic byte-correct, but MSVC defers the m_machineA.m_state store and
-// reorders the m_machineA.m_lastHi/m_machineA.m_lastLo zero+global pair vs retail; ~72%, not steerable from
-// C (see docs/patterns/u64-store-clock-hi-zero.md, statement-schedule-faithful).
+// one instruction: cl still defers the m_state store two slots (past the intervalLo
+// store + the `xor eax,eax`) where retail emits it in source order, between the `z`
+// load and its use. 13 statement orderings and both the flat/i64 spellings were
+// measured; CSIL (counter/state/interval/last) is the unique minimum. A Pentium
+// pair-scheduling choice, not a source lever.
 RVA(0x001066f0, 0x3b)
 void CStatusBarMgr::SetHudRectA(i32 y0, i32 x0, i32 z) {
     m_machineA.m_counter = y0;
     m_machineA.m_state = x0;
-    m_machineA.m_intervalLo = z;
-    m_machineA.m_intervalHi = 0;
-    m_machineA.m_lastLo = g_frameTime;
-    m_machineA.m_lastHi = 0;
+    m_machineA.m_interval = static_cast<u32>(z);
+    m_machineA.m_last = g_frameTime;
 }
 
 // Latch HUD-rect group B from three args + a global dword.
 // @early-stop
-// scheduling wall: same store-reorder as SetHudRectA; ~72%.
+// same one-instruction m_state store deferral as SetHudRectA above.
 RVA(0x00106740, 0x3b)
 void CStatusBarMgr::SetHudRectB(i32 y0, i32 x0, i32 z) {
     m_machineB.m_counter = y0;
     m_machineB.m_state = x0;
-    m_machineB.m_intervalLo = z;
-    m_machineB.m_intervalHi = 0;
-    m_machineB.m_lastLo = g_frameTime;
-    m_machineB.m_lastHi = 0;
+    m_machineB.m_interval = static_cast<u32>(z);
+    m_machineB.m_last = g_frameTime;
 }
 
 RVA(0x00106790, 0x62)
@@ -574,6 +581,15 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5) {
     return 1;
 }
 
+// 96.64 -> 97.76: the frame is a single `push ecx`/`pop ecx` slot because ONE scratch
+// dword serves the streamed seq id, the 3x4 highlight-group loop counter and the
+// pooled-ptr count in turn - three separate locals cost 0xc and shift every slot.
+// @early-stop
+// residual is the trailing 3x4 loop's induction-variable form: retail keeps ONE running
+// row pointer and re-leas `nb+4` each pass (counter in ebp), where cl builds a second
+// running pointer and spills the counter. Not steerable (a countdown do-while is
+// byte-identical to the `for`). Retail also parks the pooled-ptr count in the dead `s`
+// parameter home slot, which C cannot ask for. Final sweep.
 RVA(0x001090a0, 0x38f)
 i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     if (s == 0) {
@@ -587,12 +603,15 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_4, 4);
 
     g_serialCounter++;
-    i32 seq = 0;
+    // ONE reused scratch dword: retail's whole frame is a single `push ecx`/`pop ecx`
+    // slot, which holds the streamed seq id, then the highlight-group loop counter,
+    // then the pooled-ptr count in turn.
+    i32 tmp = 0;
     // The +0x08 slot IS the render sprite (CGameObject); +0x188 is its archive-cue id.
     if (m_barSprite) {
-        seq = m_barSprite->m_188;
+        tmp = m_barSprite->m_188;
     }
-    s->Write(&seq, 4);
+    s->Write(&tmp, 4);
 
     s->Write(&m_rect10.left, 0x10);
     s->Write(&m_20, 4);
@@ -646,18 +665,18 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
         s->Write(&m_groupSlots[k].m_value, 4);
     }
     CSbiHlRow* nb = m_hlGrid;
-    i32 outer = 3;
+    tmp = 3;
     do {
         for (i32 m = 0; m < 4; m++) {
             s->Write(&nb->m_state, 4);
             s->Write(&nb->m_value, 4);
             nb += 1;
         }
-    } while (--outer);
+    } while (--tmp);
 
-    i32 count = m_ptrPool.GetSize();
-    s->Write(&count, 4);
-    for (u32 n = 0; n < static_cast<u32>(count); n++) {
+    tmp = m_ptrPool.GetSize();
+    s->Write(&tmp, 4);
+    for (u32 n = 0; n < static_cast<u32>(tmp); n++) {
         s->Write(m_ptrPool.GetData()[n], 8);
     }
     return 1;
@@ -671,12 +690,14 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
 // free-list, sizes the +0x530 collection, then reloads the pointer table from the
 // free-list. Field buffers are offset-addressed (naming-independent), mirroring
 // Serialize.
+// The frame is 8 bytes because ONE scratch dword serves the streamed seq id, the
+// 3x4 highlight-group loop counter and the pooled-ptr count in turn (three separate
+// locals cost 0x10); the lookup out-param lives above it.
 // @early-stop
-// twin of Serialize (95.6%, regalloc/frame wall in the trailing nested loop): the
-// whole ~70-field Read body + the seq resolution + the free-list return/reload are
-// reconstructed byte-faithfully, but the same trailing 3x4 nested-loop induction /
-// frame-size regalloc choice (plus the free-list induction wall shared with
-// Teardown/InsertPtr) caps it below 100%. Not steerable from C; deferred.
+// twin of Serialize: the whole ~70-field Read body + the seq resolution + the
+// free-list return/reload are byte-faithful, but the trailing 3x4 nested-loop
+// induction variable and the ebx<->ebp zero-pin colouring
+// (docs/patterns/zero-register-pinning.md) cap it below 100%. Final sweep.
 RVA(0x00109520, 0x44c)
 i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     if (s == 0) {
@@ -763,14 +784,14 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
         s->Read(&m_groupSlots[k].m_value, 4);
     }
     CSbiHlRow* nb = m_hlGrid;
-    i32 outer = 3;
+    seq = 3;
     do {
         for (i32 m = 0; m < 4; m++) {
             s->Read(&nb->m_state, 4);
             s->Read(&nb->m_value, 4);
             nb += 1;
         }
-    } while (--outer);
+    } while (--seq);
 
     for (i32 t = 0; t < m_ptrPool.GetSize(); t++) {
         void* pp = m_ptrPool.GetData()[t];
@@ -782,10 +803,13 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     }
     m_ptrPool.SetSize(0, -1);
 
-    i32 count = 0;
-    s->Read(&count, 4);
-    m_ptrPool.SetSize(count, -1);
-    for (u32 n = 0; n < static_cast<u32>(count); n++) {
+    // `seq` reused as the pooled-ptr count: retail's 8-byte frame holds only two
+    // dwords (the streamed id/count scratch and the loop counter) - the `obj`
+    // out-param lives in the dead `s` parameter home slot.
+    seq = 0;
+    s->Read(&seq, 4);
+    m_ptrPool.SetSize(seq, -1);
+    for (u32 n = 0; n < static_cast<u32>(seq); n++) {
         CoordPoolNode* head = g_coordPool.m_freeHead;
         void* node = 0;
         if (head->m_next != 0) {
@@ -1085,9 +1109,10 @@ i32 CStatusBarMgr::ClearTabSprites(i32 idx) {
 RVA(0x00100cb0, 0x8b)
 i32 CStatusBarMgr::Deactivate() {
     if (m_position == kSubtypeTag) {
-        CGruntzMgr* g = g_gameReg;
-        i32 x = g->m_modeW - 0x45;
-        i32 y = g->m_modeH - 0x30;
+        i32 w = g_gameReg->m_modeW;
+        i32 h = g_gameReg->m_modeH;
+        i32 x = w - 0x45;
+        i32 y = h - 0x30;
         m_28 = y;
         m_24 = x;
         SetSpritePos(x, y);
@@ -1205,8 +1230,9 @@ i32 CStatusBarMgr::Activate() {
     if (m_barSprite != 0) {
         return 0;
     }
-    i32 a = g_gameReg->m_modeW - 0x22;
+    i32 w = g_gameReg->m_modeW;
     i32 d = g_gameReg->m_modeH;
+    i32 a = w - 0x22;
     if (m_24 > a) {
         m_24 = a;
     }
@@ -2183,12 +2209,10 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
 // the rect under (x,y) and require it be a falling-item widget (cmd 0xce/0xd0);
 // clamp x into the rect's inset span, convert to item-local coords, drive the
 // falling-item bar, then arm highlight row arg2.
-// @early-stop
-// ~70%: the gate chain, the hit-test, the cmd filter, the x-clamp, the coord
-// conversion and both calls are byte-correct, but retail reserves a 0x10 RECT
-// frame and spills the rect's yLo/yHi into it (dead stores left by an inlined
-// RECT-staging the optimizer half-removed). MSVC DCEs any unread local I add, so
-// the spills are not reproducible from C - a dead-store/scheduling wall; deferred.
+// The 0x10 frame + the "dead" rc.top/rc.bottom spills are a real `RECT rc =
+// r->m_rect14;` STRUCT COPY (cl does not DSE struct-copy stores), and `cx` is
+// latched from `x` BEFORE the copy - that ordering is what buys retail's 4th
+// callee-saved register (the rect base pinned in ebx). 69.76 -> 100.
 RVA(0x00107920, 0xb7)
 i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
     if (m_pendingHlRow == -1) {
@@ -2201,9 +2225,15 @@ i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
     if (r->m_cmd != 0xce && r->m_cmd != 0xd0) {
         return 0;
     }
+    // The whole rect is COPIED into a local: retail reserves the 0x10 frame and
+    // still writes rc.top/rc.bottom into it (`mov [esp+0x10],edx` / `mov
+    // [esp+0x18],ebx`) even though only left/right are read - MSVC does not DSE
+    // the struct-copy stores. Reading the two fields off `r` directly loses both
+    // the frame and the stores.
     i32 cx = x;
-    i32 lo = r->m_rect14.left + 0x1b;
-    i32 xHi = r->m_rect14.right;
+    RECT rc = r->m_rect14;
+    i32 lo = rc.left + 0x1b;
+    i32 xHi = rc.right;
     if (x < lo) {
         cx = lo;
     } else if (x > xHi - 0x1a) {
@@ -2415,14 +2445,13 @@ i32 CStatusBarMgr::RefreshState() {
 // while the recompile parks y in esi loaded early. Not source-steerable; deferred.
 RVA(0x000fe860, 0x2d)
 i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
-    CWwdGameObjectA* r = m_barSprite;
-    if (r == 0) {
+    if (m_barSprite == 0) {
         return 0;
     }
-    r->m_screenX = x;
+    m_barSprite->m_screenX = x;
     m_barSprite->m_screenY = y;
-    m_28 = y;
     m_24 = x;
+    m_28 = y;
     return 1;
 }
 
@@ -2443,12 +2472,18 @@ i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
 // 0x108410 - InsertPtr(a, b): pull a node off the engine free-list, fill it with
 // (a, b), then insert it into the m_ptrPool pooled-ptr collection - at the first slot
 // whose key (m_4) exceeds b, or appended at the end. Returns 1.
+// 75.85 -> 83.21. Three shape fixes, all byte-visible: the scan is a `while`, not a
+// do-while (retail closes it `jl loop` and FALLS THROUGH into the append block); its
+// guard is spelled `if (i < n)`, the SAME comparison, so cl folds it into the loop's
+// own guard instead of emitting a second `test/jle`; and the append is `Add(node)`,
+// whose inlined `nIndex = m_nSize` RELOADS +0x538 where an explicit
+// `SetAtGrow(GetSize(), ...)` reuses the loop bound. The hit path exits via `goto
+// insert;` so its block lands at the BOTTOM, past the append, as in retail.
 // @early-stop
-// ~75.9%: every operation/offset is byte-correct; the residual is regalloc + block
-// layout - retail pins the free-list head in edx and reads arg `a` at the top
-// (before the pushes), and falls through from the scan loop into the append block
-// (jl loop), while the recompile colors the head into eax, loads `a` late, and
-// reaches append via an extra jmp. Not source-steerable; deferred to the final sweep.
+// residual is the prologue regalloc: retail colors the free-list head into edx and
+// its ->m_next into the callee-saved esi, and reads arg `a` before the first push;
+// cl colors the head into eax and sinks the `a` load into the if-body. An early
+// `i32 ax = a;` local does not move it. Coin-flip; final sweep.
 RVA(0x00108410, 0x8e)
 i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
     CoordPoolNode* head = g_coordPool.m_freeHead;
@@ -2461,20 +2496,22 @@ i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
     }
     i32 n = m_ptrPool.GetSize();
     i32 i = 0;
-    if (n > 0) {
+    if (i < n) {
         // CPtrArray hands out void** - the element type is API-forced at this one seam
         Coord** t = reinterpret_cast<Coord**>(m_ptrPool.GetData());
-        do {
+        while (i < n) {
             Coord* e = *t;
             if (e != 0 && b < e->m_y) {
-                m_ptrPool.InsertAt(i, node, 1);
-                return 1;
+                goto insert;
             }
             i++;
             t++;
-        } while (i < n);
+        }
     }
-    m_ptrPool.SetAtGrow(m_ptrPool.GetSize(), node);
+    m_ptrPool.Add(node);
+    return 1;
+insert:
+    m_ptrPool.InsertAt(i, node, 1);
     return 1;
 }
 
@@ -4099,13 +4136,15 @@ void CStatusBarMgr::LoadChipMachineConfig() {
 // from g_frameTime, build the relative +/-0xc rect (m_fallRectL block), and - if the notify
 // object exists - write the absolute rect (offset by the item base coords m_10/m_14)
 // into its +0x14 slot. Finish with the fall-rect refresh helper.
+// 78.45 -> 86.02: the absolute rect is STAGED IN A LOCAL `RECT` and assigned to
+// n->m_rect14 in one go. That is retail's `sub esp,0x10` frame (exactly one RECT) and
+// its left/top/right/bottom store order; writing the four fields straight through the
+// pointer loses both. Staging the RELATIVE rect in the same local instead regresses
+// it to 78.45 - retail's one RECT is the destination one.
 // @early-stop
-// ~77%: logic + every field store/arithmetic is byte-correct. Residual is a regalloc/
-// store-schedule wall in the notify-object rect block: retail pins the notify ptr in
-// ebp (callee-saved) + spills rect0 to reserve eax for m_10, then stores the 4 rect
-// ints in index order 0/1/2/3; MSVC5 here keeps the ptr in eax with ebp free (no
-// spill) and stores 0/2/1/3. A register-assignment coin-flip (compute-all-then-store
-// spelling regressed it to 69%); not steerable from C. Deferred to the final sweep.
+// register-assignment residual: retail pins the notify ptr in ebp (callee-saved) and
+// spills the computed `left` to the RECT slot to free a register for m_rect10.top; cl
+// keeps the ptr in ecx and has a register to spare, so it drops the spill. Coin flip.
 RVA(0x00107590, 0xc4)
 i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
     m_extraNotifyArg1 = a1;
@@ -4122,12 +4161,17 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
     m_fallRectR = rr;
     m_fallRectB = b;
     if (n) {
+        // Staged in a local RECT and copied in one go: that is retail's `sub esp,0x10`
+        // frame (one RECT), the left/top/right/bottom STORE order, and the single
+        // `rc.left` spill+reload cl needs once the four values outlive its registers.
+        RECT rc;
         i32 x = m_rect10.left;
-        n->m_rect14.left = l + x;
-        n->m_rect14.right = x + rr;
+        rc.left = l + x;
+        rc.right = x + rr;
         i32 y = m_rect10.top;
-        n->m_rect14.top = t + y;
-        n->m_rect14.bottom = y + b;
+        rc.top = t + y;
+        rc.bottom = y + b;
+        n->m_rect14 = rc;
     }
     NotifyAllSlots();
     return 1;
@@ -4137,11 +4181,10 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
 // yet set) bail unless the extra-notify arg is armed, else pull the LeftMachineWaking
 // delay, feed the stat bar (slot 9,2), latch the state and return 1. On later passes
 // just bump the wake tick counter and return 1.
-// @early-stop
-// ~96%: byte-exact except the `m_rezActive = 1; return 1;` tail - retail stores the
-// immediate directly (mov [esi+0x528],1) then loads eax=1 separately, while MSVC5
-// here reuses eax (mov eax,1; mov [esi+0x528],eax). A store-imm-vs-register-reuse
-// regalloc coin-flip on the shared return constant; no C-level lever. Deferred.
+// The `return 1` is SHARED by both arms (if/else, not two inline returns): that puts
+// the `m_rezActive = 1` store and the return constant in different basic blocks, so cl
+// emits the store-immediate and materializes eax=1 separately in the duplicated tail -
+// exactly retail. Two inline `return 1;`s make cl CSE them into one register.
 RVA(0x00107a10, 0x62)
 i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
     if (m_rezActive == 0) {
@@ -4150,9 +4193,9 @@ i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
         }
         SetHudRectA(9, 2, g_buteMgr.GetIntDef("StatusBar", "LeftMachineWakingDelay", 100));
         m_rezActive = 1;
-        return 1;
+    } else {
+        m_rezTick++;
     }
-    m_rezTick++;
     return 1;
 }
 

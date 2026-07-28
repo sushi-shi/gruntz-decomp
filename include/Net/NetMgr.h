@@ -49,11 +49,14 @@ SIZE_UNKNOWN(); // host-version msg view (only +0x18/+0x1c pinned); size TBD
 
 struct CNetVersionPacket {
     u8 m_0; // +0x00  flag byte (bit7 set)
-    char m_pad1[7];
+    char m_pad1[3];
+    // +0x04, NOT +0x10: CMulti::AnnounceVersion (0xbd180) writes the 0x417 stat id
+    // with `mov DWORD PTR [esp+0x18],0x417` at a 3-push esp, i.e. packet+4. The ex
+    // +0x10 placement put the id four dwords too high and left +0x04 as padding.
+    i32 m_statId;     // +0x04  stat id (0x417)
     i32 m_buteConfig; // +0x08  CButeMgr config word
     i32 m_cfgWord;    // +0x0c  g_cfgWord
-    i32 m_statId;     // +0x10  stat id (0x417)
-    char m_pad14[4];
+    char m_pad10[8];
     i32 m_remoteVersion; // +0x18  g_remoteVersion
     i32 m_localVersion;  // +0x1c  g_localVersion
 };
@@ -166,19 +169,19 @@ SIZE(0x88);
 // GetName @0x1f450 (`add ecx,4` + CString copy-ctor) returns.
 
 struct CNetCmdSlot {
-    i32 m_state;    // +0x0   "armed"/slot-state flag (AckDropPlayer sets it to 1; ==3 => active)
-    i32 m_isRemote; // +0x4  0 = local channel (the ex-"m_resetGuard" ==0 tests
-                    // were the same local-channel gate - ONE role)
-    i32 m_latchedSeq;    // +0x8  latched sequence (Touch copies m_baseSeq here)
+    i32 m_state;      // +0x0   "armed"/slot-state flag (AckDropPlayer sets it to 1; ==3 => active)
+    i32 m_isRemote;   // +0x4  0 = local channel (the ex-"m_resetGuard" ==0 tests
+                      // were the same local-channel gate - ONE role)
+    i32 m_latchedSeq; // +0x8  latched sequence (Touch copies m_baseSeq here)
     GruntzPlayer* m_desc; // +0xc  the roster record this channel drives: a pointer
                           //       straight into CGruntzMgr::m_options[index]
-    i32 m_latency;    // +0x10  the channel activity clock (+= elapsed; CheckLatency
-                      // compares vs the cap - the ex-"m_timer" was the same counter)
-    i32 m_baseSeq;    // +0x14  base command sequence number (both views)
-    i32 m_maxSeq;     // +0x18  high-water sequence (RaiseMax keeps the max; the
-                      // ex-"m_sentSeq" reads were the same counter)
-    CMulti* m_owner;  // +0x1c  owning CMulti back-pointer (reaches m_session/m_4/DispatchRecvMsg;
-                      //         sync cleared the same slot as m_1c). One canonical name.
+    i32 m_latency;        // +0x10  the channel activity clock (+= elapsed; CheckLatency
+                          // compares vs the cap - the ex-"m_timer" was the same counter)
+    i32 m_baseSeq;        // +0x14  base command sequence number (both views)
+    i32 m_maxSeq;         // +0x18  high-water sequence (RaiseMax keeps the max; the
+                          // ex-"m_sentSeq" reads were the same counter)
+    CMulti* m_owner; // +0x1c  owning CMulti back-pointer (reaches m_session/m_4/DispatchRecvMsg;
+                     //         sync cleared the same slot as m_1c). One canonical name.
     // CPtrList, not CObList: AddCmd/RemoveCmd/ClearCmds/ResetSync all call the
     // band-A list bodies (ctor 0x1b4867 / AddTail 0x1b4991 / RemoveHead 0x1b4a03),
     // whose vtable 0x1eb054 slot-0 GetRuntimeClass names "CPtrList". (CNetMgr's own
@@ -304,8 +307,8 @@ struct CNetSession {
     i32 Poll(i32 delta); // bf5a0  advance active channels; drain the endpoint
     i32 Dispatch(i32 a, CNetCtrlMsg* b, i32 c); // bf700
     i32 DispatchMsg(CNetCtrlMsg* m, i32 arg2);  // bf7c0
-    i32 Tick();                              // bf9e0  snapshot -> broadcast -> flush
-    i32 SendAll();   // bfb40
+    i32 Tick();                                 // bf9e0  snapshot -> broadcast -> flush
+    i32 SendAll();                              // bfb40
     // Ship one grunt-state record to `dpTo` (0xbfc70). Retail's receiver is the
     // SESSION, not a slot: it reads [this+0x08] as the CNetMgr peer and [this+0x0c]+4
     // as `idFrom` - exactly SendOne's `m_netMgr->SetData(m_localDesc->m_id, ...)`
@@ -315,10 +318,10 @@ struct CNetSession {
     i32 SendGruntRecord(i32 seq, GruntRec* rec, u8 flag, i32 slot, i32 dpTo); // bfc70
     i32 SendBatch();                                                          // bfd40
     i32 SendOne(CNetCmdSlot* s, i32 v);                                       // bfeb0
-    void Reconcile();                        // c00f0
-    i32 Advance();                           // c01d0
-    CGruntzCommand* GetSlotPtr(i32 v);       // c0430  id-map fetch (ex "GlyphTable::Get")
-    void ArmSlot(void* node, i32 parity);    // c03f0  id-map store (ex "GlyphTable::Set")
+    void Reconcile();                                                         // c00f0
+    i32 Advance();                                                            // c01d0
+    CGruntzCommand* GetSlotPtr(i32 v);    // c0430  id-map fetch (ex "GlyphTable::Get")
+    void ArmSlot(void* node, i32 parity); // c03f0  id-map store (ex "GlyphTable::Set")
     // Checksum @0xc0590: the game-state signature accumulator over the 4x15
     // placed-grunt roster (defined in src/Gruntz/GameChecksum.cpp; ex the
     // "CGameSyncSig" view). Step2437 is a per-frame poke with no bound RVA,
