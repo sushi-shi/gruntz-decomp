@@ -1249,25 +1249,13 @@ CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key, CButeRef6* def) {
 // (type, src), returns this. Attributed via the 8-byte {type, pValue} receiver shape;
 // the only caller is the bute value-store builder 0x173dd0 (still a GapFunctions.cpp
 // gap, so the exact ButeType tag `type` carries stays TBD). Re-homed from GapFunctions.cpp.
-// @early-stop
-// 93%: the whole body (tag, op-new, the two-dword copy of src, and the branched
-// this->pValue store + duplicated return-this epilogue) is byte-faithful. The one
-// residual instruction is the alloc-fail arm's zero-store: retail materializes 0 via
-// `xor eax,eax; mov [esi+4],eax` (5 B) where MSVC5 on this source emits the equivalent
-// `mov dword ptr [esi+4],0` (7 B) - a zero-materialization coin-flip (the unconditional
-// `this->pValue = n` form that would reuse the failed-new eax merges the two epilogues
-// and drops to 78%). Not source-steerable. Deferred to the final sweep.
+// `new CButeValue(*src)` - the implicit memberwise copy ctor inlines to the two
+// interleaved load/store pairs, and the new-expression's NULL-on-failure value is
+// what produces the `xor eax,eax` join. Same idiom as the Set* family.
 RVA(0x001741b0, 0x39)
 CButeValue::CButeValue(i32 type, CButeValue* src) {
     this->type = type;
-    CButeValue* n = static_cast<CButeValue*>(operator new(8));
-    if (n) {
-        n->type = src->type;
-        n->pValue = src->pValue;
-        this->pValue = n;
-    } else {
-        this->pValue = 0;
-    }
+    this->pValue = new CButeValue(*src);
 }
 
 RVA(0x001741f0, 0x4e)
@@ -1832,81 +1820,47 @@ void EmitIostreamVbaseDtor(streambuf* b) { // non-static: cl elides unreferenced
 // ===========================================================================
 // CButeValue::SetDword
 // ===========================================================================
-// Allocates 4-byte storage, stores the value, sets the type field.
-// Returns `this` (or NULL on alloc failure, though the target code always
-// returns `this` with pValue reset to NULL).
-// @early-stop
-// const-materialize wall (92%): logic byte-exact; the sole residual is the alloc-
-// fail store `pValue=0` - retail `xor eax,eax; mov [esi+4],eax` (register 0) vs cl's
-// immediate `mov dword [esi+4],0`. Whole Set* family; see const-materialize-into-
-// reg-vs-immediate.md. Not source-steerable. Final sweep.
+// `new u32(val)` - scalar new WITH an initializer. The initializer only runs when
+// the allocation succeeded, and the new-expression's value is NULL on failure, so
+// cl materializes that NULL into the join register (`xor eax,eax`) instead of
+// storing an immediate. See docs/patterns/scalar-new-with-initializer.md.
 RVA(0x00172000, 0x31)
 CButeValue* CButeValue::SetDword(i32 type, u32 val) {
     this->type = type;
-    u32* p = new u32;
-    if (p) {
-        *p = val;
-        this->pValue = p;
-    } else {
-        this->pValue = 0;
-    }
+    this->pValue = new u32(val);
     return this;
 }
 
 // ===========================================================================
 // CButeValue::SetFloat
 // ===========================================================================
-// Allocates 4-byte float storage, stores the value.
-// @early-stop
-// const-materialize wall (92%): alloc-fail `pValue=0` reg-vs-immediate; see SetDword.
+// Allocates 4-byte float storage, stores the value. `new float(val)`; see SetDword.
 RVA(0x00172680, 0x31)
 CButeValue* CButeValue::SetFloat(i32 type, float val) {
     this->type = type;
-    float* p = new float;
-    if (p) {
-        *p = val;
-        this->pValue = p;
-    } else {
-        this->pValue = 0;
-    }
+    this->pValue = new float(val);
     return this;
 }
 
 // ===========================================================================
 // CButeValue::SetInt
 // ===========================================================================
-// Allocates 4-byte int storage, stores the value.
-// @early-stop
-// const-materialize wall (92%): alloc-fail `pValue=0` reg-vs-immediate; see SetDword.
+// Allocates 4-byte int storage, stores the value. `new i32(val)`; see SetDword.
 RVA(0x00172b90, 0x31)
 CButeValue* CButeValue::SetInt(i32 type, i32 val) {
     this->type = type;
-    i32* p = new i32;
-    if (p) {
-        *p = val;
-        this->pValue = p;
-    } else {
-        this->pValue = 0;
-    }
+    this->pValue = new i32(val);
     return this;
 }
 
 // ===========================================================================
 // CButeValue::SetDouble
 // ===========================================================================
-// Allocates 8-byte double storage, stores the value.  Returns `this`.
-// @early-stop
-// const-materialize wall (92.7%): alloc-fail `pValue=0` reg-vs-immediate; see SetDword.
+// Allocates 8-byte double storage, stores the value. `new double(val)`; see SetDword.
 RVA(0x00173140, 0x38)
 CButeValue* CButeValue::SetDouble(i32 type, double val) {
     this->type = type;
-    double* p = new double;
-    if (p) {
-        *p = val;
-        this->pValue = p;
-    } else {
-        this->pValue = 0;
-    }
+    this->pValue = new double(val);
     return this;
 }
 

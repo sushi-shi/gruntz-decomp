@@ -2,6 +2,7 @@
 #include <DDrawMgr/DDrawPtrCollections.h> // m_ptrColl full type (m_device -> FlipToGDISurface)
 #include <ddraw.h>                // IDirectDraw2::FlipToGDISurface (the ex manual +0x28 dispatch)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
+#include <Net/LobbyDialogs.h>     // the four modal DlgProcs RunErrorDialog runs
 #include <rva.h>
 #include <Gruntz/CurPlayer.h> // g_curPlayer
 #include <Rez/FrameClock.h>   // the frame-clock/timer band the session loop reads/pumps
@@ -182,9 +183,13 @@ enum {
     STAT_VERIFY_DISAGREE = 0x41e, // host: the players disagree on the level
 };
 
-// The four On*-handler callbacks (declared in <Net/NetMgr.h>, address-taken in the
-// OnMulti* handlers below) likewise push their ILT jmp-thunks; bind each thunk rva to
-// the referenced symbol (DATA_SYMBOL is text-scanned from this .cpp, so it lives here).
+// The four modal DlgProcs the OnMulti* handlers below hand to RunErrorDialog are
+// NetLobby::HostWait/JoinWait/SessionWait/NetGameDlgProc (<Net/LobbyDialogs.h>).
+// Retail's /INCREMENTAL link routes each address-take through an ILT jmp-thunk;
+// these name the THUNK rvas (they are retail's, not ours - the four
+// `extern "C" void Multi*Callback()` declarations that used to stand in for the
+// real procs are gone). Verified target: 0x113b -> 0xbd850, 0x27fc -> 0xbda70,
+// 0x301c -> 0xbddd0, 0x3387 -> 0xbe0a0.
 DATA_SYMBOL(0x0000113b, 0x0, _MultiPauseCallback)
 DATA_SYMBOL(0x000027fc, 0x0, _MultiOptionzCallback)
 DATA_SYMBOL(0x0000301c, 0x0, _MultiOutOfSyncCallback)
@@ -1126,7 +1131,7 @@ InterfaceObject* CMulti::SetupServices() {
     }
 
     if (g_hostServicesMode != 0) {
-        if (RunErrorDialog("MULTI_HOSTSERVICES", static_cast<void*>(&ServicesDispatchCb), 0) != 0) {
+        if (RunErrorDialog("MULTI_HOSTSERVICES", NetSetupDlgProc, 0) != 0) {
             Utils::RegistryHelper* store = NetGameMgr()->m_settings;
             if (store != 0 && g_serviceId != 0x3e7) {
                 store->SetValueDword("Service", g_serviceId);
@@ -1145,7 +1150,7 @@ InterfaceObject* CMulti::SetupServices() {
             }
         }
     } else {
-        if (RunErrorDialog("MULTI_JOINSERVICES", static_cast<void*>(&ServicesDispatchCb), 0) != 0) {
+        if (RunErrorDialog("MULTI_JOINSERVICES", NetSetupDlgProc, 0) != 0) {
             Utils::RegistryHelper* store = NetGameMgr()->m_settings;
             if (store != 0) {
                 if (g_serviceId != 0x3e7) {
@@ -1188,7 +1193,7 @@ CString CMulti::GetString59c() {
 // WM_INITDIALOG case, which lets cl overlay it and the WM_COMMAND CString temp's
 // esp-bookkeeping on the SAME dead hDlg parameter slot.
 RVA(0x000b7b10, 0x27c)
-i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
+INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     // FUNCTION scope, not case scope: retail's frame is exactly 0xc + 0x40 (+ the
     // GetValueString cap, which cl parks in the dead hDlg parameter slot), and the
     // WM_COMMAND path re-reads BOTH edits into gameBuf's slot - i.e. one set of
@@ -1320,7 +1325,7 @@ void CMulti::ReportNetError(i32 level) {
 
 RVA(0x000b7fe0, 0x2f)
 i32 CMulti::JoinSession() {
-    if (RunErrorDialog("MULTI_JOIN", static_cast<void*>(&MultiJoinDlgProc), 0) == 0) {
+    if (RunErrorDialog("MULTI_JOIN", MultiJoinDlgProc, 0) == 0) {
         return 0;
     }
     SendStatFlag(0x3f7, 1);
@@ -2801,7 +2806,7 @@ void CMulti::OnMultiPause() {
 
     m_584 = 0;
     g_pauseGuard = 1;
-    i32 r = RunErrorDialog("MULTI_PAUSE", static_cast<void*>(&MultiPauseCallback), 0);
+    i32 r = RunErrorDialog("MULTI_PAUSE", NetLobby::HostWaitDlgProc, 0);
     g_pauseGuard = 0;
     g_sharedFlag = 0;
 
@@ -2819,7 +2824,7 @@ void CMulti::OnMultiOptions() {
 
     m_584 = 0;
     g_optionzGuard = 1;
-    RunErrorDialog("MULTI_OPTIONZ", static_cast<void*>(&MultiOptionzCallback), 0);
+    RunErrorDialog("MULTI_OPTIONZ", NetLobby::JoinWaitDlgProc, 0);
     g_optionzGuard = 0;
     g_sharedFlag = 0;
 }
@@ -2832,7 +2837,7 @@ void CMulti::OnOutOfSync() {
 
     m_574 = 1;
     m_584 = 0;
-    i32 r = RunErrorDialog("MULTI_OUTOFSYNC", static_cast<void*>(&MultiOutOfSyncCallback), 0);
+    i32 r = RunErrorDialog("MULTI_OUTOFSYNC", NetLobby::SessionWaitDlgProc, 0);
     g_sharedFlag = 0;
 
     switch (r) {
@@ -3596,7 +3601,7 @@ void CMulti::OnDropPlayer() {
 
     m_584 = 0;
     g_dropGuard = 1;
-    i32 r = RunErrorDialog("MULTI_DROPPLAYER", static_cast<void*>(&MultiDropPlayerCallback), 0);
+    i32 r = RunErrorDialog("MULTI_DROPPLAYER", NetLobby::NetGameDlgProc, 0);
     g_dropGuard = 0;
     g_sharedFlag = 0;
 
@@ -3624,12 +3629,16 @@ void CMulti::OnDropPlayer() {
 }
 
 RVA(0x000bc250, 0x55)
-i32 CMulti::RunErrorDialog(char* tmpl, void* handler, i32 lparam) {
+i32 CMulti::RunErrorDialog(char* tmpl, DLGPROC handler, i32 lparam) {
     if (!Mgr()) {
         return 2;
     }
     Mgr()->m_cueSink->PauseAllVoices();
-    i32 r = Mgr()->RunModalDialog(tmpl, handler, lparam);
+    // The one surviving fn-ptr -> void* conversion in this TU: CGruntzMgr::RunModalDialog
+    // still takes `void* dlgProc` because ~12 of its other call sites still pass
+    // unresolved ILT placeholder procs (SaveGame/LoadGameMenu/RezMgr/GruntzMgr).
+    // Retyping it DLGPROC is the follow-up that removes this last cast.
+    i32 r = Mgr()->RunModalDialog(tmpl, static_cast<void*>(handler), lparam);
     SetActiveAndFocus(Mgr()->m_gameWnd->m_hwnd);
     AckJoinFailure();
     return r;

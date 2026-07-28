@@ -54,6 +54,10 @@ SIZE_UNKNOWN();
 void SetActiveAndFocus(void* hwnd);                                                   // 0x00518930
 void FillPlayerList(HWND hList, CNetMgr* session);                                    // 0x0b89e0
 INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam); // 0x0b8020
+// The MULTI_HOSTSERVICES / MULTI_JOINSERVICES service-picker proc. Defined further
+// down Multi.cpp than SetupServices, so it needs a declaration here; retail routes
+// SetupServices' address-take through its ILT thunk 0x1a19 (ex ServicesDispatchCb).
+INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam); // 0x0b7b10
 
 // CMultiPlayer DISSOLVED: it was a fake view of CNetPlayerListNode (<Net/NetMgr.h>) -
 // OpenPlayer @0x5786d0 RezAlloc's a 0x58-byte node with vptr 0x5f0760 (the real
@@ -168,11 +172,11 @@ public:
     // Status-bar diagnostic by string-resource id: LoadStringA through
     // m_logic->m_owner->m_hInstance then ReportVersionMsg. Defined in
     // Net/LobbyDialogs.cpp (its RVA-order home).
-    void ReportStatusId(u32 strId, i32 level);                 // 0x0b7ec0
-    void ReportNetError(i32 level);                            // 0x0b7f60
-    i32 JoinSession();                                         // 0x0b7fe0
-    i32 RunErrorDialog(char* tmpl, void* handler, i32 lparam); // 0x0bc250 (_MultiDispatch)
-    void AckJoinFailure();                                     // 0x0bc420
+    void ReportStatusId(u32 strId, i32 level);                   // 0x0b7ec0
+    void ReportNetError(i32 level);                              // 0x0b7f60
+    i32 JoinSession();                                           // 0x0b7fe0
+    i32 RunErrorDialog(char* tmpl, DLGPROC handler, i32 lparam); // 0x0bc250 (_MultiDispatch)
+    void AckJoinFailure();                                       // 0x0bc420
     // (0x0bccd0 replay-name/config commit is the canonical CMulti::SaveConfig below,
     //  reached with a null recipient.)
 
@@ -376,10 +380,6 @@ extern i32 g_hostServicesMode; // 0x00248cf0
 extern HWND g_netPlayerListHwnd; // 0x00248d00
 
 void MultiJoinHandler(); // thunk 0x222f -> body 0xb8020 (Gap_0b8020)
-
-// TU-local thunk/table names this TU registers (moved from the .cpp; the
-// addresses are ILT thunk VAs, reloc-masked at every use).
-extern "C" void ServicesDispatchCb(); // 0x401a19
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

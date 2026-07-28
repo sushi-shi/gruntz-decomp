@@ -713,10 +713,8 @@ _zvec::~_zvec() {
 // CButeNodeEntry ctor (0x16df70, ex ButeNode.cpp): __thiscall(this, n, desc).
 // cl auto-stamps the ??_7CButeNodeEntry vptr@+0, then stores desc@+4, (WORD)n@+8,
 // 0@+0xc. Clean leaf ctor, called out-of-line by the zPTree ctor's member-init.
-// @early-stop
-// vptr-position wall (~82.9%, was 100% hand-rolled): real polymorphism sinks the
-// implicit ??_7 vptr stamp to FIRST; the hand-rolled last-store cannot be sunk in
-// MSVC5 (same mechanism as CZArray2D). Converted per the ALL-VTABLES mandate.
+// (The ex "vptr-position wall": spelling all three stores as member-INITS leaves the
+// body empty, and cl then emits the implicit ??_7 stamp where retail has it. 100%.)
 RVA(0x0016df70, 0x22)
 CButeNodeEntry::CButeNodeEntry(i32 n, void(__cdecl* teardown)(void*))
     // all three are member-INITS: retail's vptr stamp is LAST, i.e. the body is empty
@@ -737,10 +735,8 @@ CVariantSlot g_symTabErrorSlot("zSymTab: ");
 // most-derived vptrs (??_7zPTree @+0 = 0x5e94ac, and the second-base-in-derived
 // vtable @+8 = 0x5e949c) and zeroes the two child links. /GX unwind frame from
 // the two destructible base sub-objects.
-// @early-stop
-// vptr-position wall (~96.1%, was 100% hand-rolled): real MI polymorphism
-// auto-stamps both vptrs FIRST, shifting the stamp schedule vs the hand-rolled
-// last-stores. Logic byte-faithful; converted per the ALL-VTABLES mandate.
+// (The ex "vptr-position wall": with m_root/m_lookupPending as member-INITS the MI
+// double stamp lands exactly where retail has it. 100%.)
 RVA(0x0016dff0, 0x73)
 zPTree::zPTree(void(__cdecl* teardown)(void*), i32 n)
     // m_root / m_lookupPending are member-INITS: retail stamps ??_7zPTree AFTER them
@@ -785,17 +781,15 @@ __declspec(naked) void* GetCallerRetAddr() {
 // count up to whole 32-bit words, allocate + zero-fill the word band, and report
 // the realized bit capacity (nwords*32). A request of <=32 bits leaves no band
 // and reports 32.
-// @early-stop
-// one-instruction sar/shr wall (signed-shift-cast-reschedules.md): retail's
-// `nbits >> 5` lowers to `shr` (the bit count is unsigned); our `int nbits`
-// gives the byte-identical body EXCEPT that one shift as `sar`. Casting the
-// operand to unsigned flips it to `shr` but reschedules the whole round-up
-// block (this->esi vs arg->eax flow, lea vs shl for *4): 1 diff -> 11. So the
-// signed `int` form (the closest, single-opcode miss) is kept.
+// The bit count is UNSIGNED end to end: retail's `cmp eax,0x20 / jbe` and its
+// `shr eax,5` both say so. Hoisting the u32 view into a local (rather than casting
+// at each use) also recovers retail's arg->eax flow and the `lea edx,[eax*4]` -
+// the reschedule a previous pass read as a regression is retail's own shape.
 RVA(0x0016e100, 0x7f)
 i32 zBitVec::SetSize(i32 nbits) {
-    if (static_cast<u32>(nbits) > 0x20) {
-        i32 nwords = (nbits >> 5) + ((nbits & 0x1f) != 0 ? 1 : 0);
+    u32 n = static_cast<u32>(nbits);
+    if (n > 0x20) {
+        i32 nwords = static_cast<i32>((n >> 5) + ((n & 0x1f) != 0 ? 1u : 0u));
         m_capacity = nwords;
         u32* band = static_cast<u32*>(malloc(nwords * 4));
         m_words = band;
