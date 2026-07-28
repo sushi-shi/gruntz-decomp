@@ -127,14 +127,6 @@ i32 CSBI_ImageSet::Render() {
 // vtable slot 1 (0xe74f0): serialize the config id + name. mode 7 = load (read id,
 // read name, resolve record), mode 4 = save (write id, write name from the record);
 // either way chain to the base serialize and return its normalized truth.
-// @early-stop
-// 99.2% (entropy tail): logic + control flow + inline strcpy/strlen + the typed
-// vtable (Read/WriteBytes) + the switch dispatch are all byte-exact. The only
-// residual is ONE extra `mov [esp+0x18],eax` (retail keeps the dead strlen result
-// live before Lookup) + the consequent 1-byte branch-displacement shifts, plus the
-// reloc-masked Lookup/Read/WriteBytes/BaseSerialize/g_* operands. Naming the strlen
-// result to recover the dead store regresses it (98.4%) - a non-steerable /O2
-// dead-store artifact (docs/patterns/reloc-typing-vptr-global.md). Effectively done.
 RVA(0x000e74c0, 0x16)
 void CSBI_ImageSet::Notify(i32 id) {
     if (id != -1) {
@@ -160,7 +152,10 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4) {
             s->Read(buf, 0x80);
             if (strlen(buf)) {
                 CDDrawWorker* out;
-                CObject* outOb;
+                // Zero-initialised: retail seeds the out-param slot with the (already
+                // zero) eax left by the strlen scan - `mov [esp+0x18],eax` before the
+                // Lookup call. An uninitialised declaration drops that store.
+                CObject* outOb = 0;
                 reg->m_imageRegistry->m_10map.Lookup(buf, outOb);
                 out = static_cast<CDDrawWorker*>(outOb);
                 m_34 = out;

@@ -43,10 +43,6 @@ i32 CCreditsState::FrameSlot28(i32 unused) {
 }
 
 // CAttract::LoadTitleConfig - configure the attract/title sequence.
-// @early-stop
-// identical-return-epilogue tail-merge wall (docs/patterns/identical-return-epilogue-tailmerge.md):
-// body byte-exact; retail emits a separate inline `xor eax,eax` for the FadeInTitle
-// fail return-0, the recompile reuses the already-zero eax. Not steerable by source.
 RVA(0x000a03f0, 0x14b)
 i32 CMenuState::Vslot09(i32 mode) {
     char stateName[0x20];
@@ -64,11 +60,16 @@ i32 CMenuState::Vslot09(i32 mode) {
             return 0;
         }
 
+        // The m_2c restore sits INSIDE the failure arm and is repeated after it: cl
+        // hoists the common store above the branch (which is what retail shows) and
+        // the failure path then has to materialize the 0 (`xor eax,eax`). Written as
+        // one store before the `if`, cl proves eax is already 0 and drops the xor.
         i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
-        m_2c = (saved);
         if (faded == 0) {
+            m_2c = (saved);
             return 0;
         }
+        m_2c = (saved);
 
         CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->m_surface;
         (static_cast<CDDSurface*>(tgt))
@@ -105,11 +106,6 @@ i32 CMenuState::Vslot09(i32 mode) {
 // brightness target, picks a random TITLE state off the registry, resolves it,
 // runs the title fade, sets menu brightness, transitions the page, rebuilds the
 // menu page, forces the cursor visible, and returns 1.
-// @early-stop
-// identical-return-epilogue tail-merge wall (docs/patterns/identical-return-epilogue-tailmerge.md):
-// body byte-exact; on the FadeInTitle fail path retail emits a fresh inline
-// `xor eax,eax` (return 0) while the recompile reuses the already-zero FadeInTitle
-// result in eax. Same non-steerable wall as the sibling LoadTitleConfig.
 RVA(0x000a0a30, 0x110)
 i32 CMenuState::Vslot06() {
     char stateName[0x20];
@@ -133,11 +129,14 @@ i32 CMenuState::Vslot06() {
         return 0;
     }
 
+    // Same shape as Vslot09: the restore lives in the failure arm and is repeated
+    // after it, so cl hoists the store above the branch and materializes the 0.
     i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
-    m_2c = (saved);
     if (faded == 0) {
+        m_2c = (saved);
         return 0;
     }
+    m_2c = (saved);
 
     CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->m_surface;
     tgt->ShadeRect(

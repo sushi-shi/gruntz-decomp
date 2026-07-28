@@ -837,8 +837,10 @@ CVariantSlot::CVariantSlot(char* label) {
 
 RVA(0x0016e1d0, 0x4b)
 i32 CVariantSlot::Find(i32 key) {
-    i32 hi = g_recCount23 - 1;
+    // lo BEFORE hi: the SIB base/index roles in `lea eax,[esi+edi]` follow the local
+    // DECLARATION order, not the `hi + lo` operand order (which cl canonicalizes away).
     i32 lo = 0;
+    i32 hi = g_recCount23 - 1;
     if (hi >= 0) {
         do {
             i32 mid = (hi + lo) / 2;

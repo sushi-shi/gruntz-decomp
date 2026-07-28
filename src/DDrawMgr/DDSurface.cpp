@@ -1714,66 +1714,68 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
 // == 0xc0) means a run of (token & 0x3f) copies of the following byte; otherwise
 // the token itself is one literal pixel. A run that overflows the current scanline
 // carries the remainder to the next row.
-// @early-stop
-// /Od local-slot-ordering wall (docs/patterns/od-local-slot-ordering.md): the
-// instruction stream is byte-identical to retail; only the [ebp-N] local-slot
-// displacements differ (retail lays locals out sequentially in declaration order,
-// our same-order recompile permutes them) - ~99.5% fuzzy / ~85% byte.
+//
+// /Od SLOT LAYOUT: cl orders the [ebp-N] slots by the local's NAME (symbol-table
+// hash), declaration order only breaking ties inside one bucket. Retail's layout is
+// sp -4, hold -8, tok -c, w -10, pbits -14, y -18, runx -1c, dstp -20, kj -24,
+// height -28, nleft -2c; this name set + declaration order reproduce it exactly.
+// The hash order depends on how MANY locals there are, so RunDecode1's names do not
+// carry over - each function is ranked separately (docs/patterns/od-local-slot-ordering.md).
 RVA(0x00140aa0, 0x1a3)
 i32 CDDSurface::DecodeRun8(void* src) {
     u8* sp;
-    i32 carry;
-    u8 pixel;
-    i32 width;
-    u8* locked;
-    i32 row;
-    i32 run;
-    u8* dst;
-    i32 k;
+    i32 hold;
+    u8* pbits;
+    i32 w;
+    u8 tok;
+    i32 y;
+    i32 runx;
+    u8* dstp;
     i32 height;
-    i32 cols;
+    i32 kj;
+    i32 nleft;
     if (src == 0) {
         return 0;
     }
-    width = this->GetWidth();
+    w = this->GetWidth();
     height = this->GetHeight();
-    carry = 0;
+    hold = 0;
     sp = static_cast<u8*>(src);
-    locked = static_cast<u8*>(this->Lock(0));
-    if (locked == 0) {
+    pbits = static_cast<u8*>(this->Lock(0));
+    if (pbits == 0) {
         return 0;
     }
-    for (row = 0; row < height; row++) {
-        dst = (locked + this->Scale(row));
-        cols = width;
-        if (carry > 0) {
-            for (k = 0; k < carry; k++) {
-                *dst = pixel;
-                dst++;
+    for (y = 0; y < height; y++) {
+        dstp = (pbits + this->Scale(y));
+        nleft = w;
+        if (hold > 0) {
+            for (kj = 0; kj < hold; kj++) {
+                *dstp = tok;
+                dstp++;
             }
-            cols -= carry;
-            carry = 0;
+            nleft -= hold;
+            hold = 0;
         }
-        while (cols > 0) {
-            pixel = *sp;
+        while (nleft > 0) {
+            tok = *sp;
             sp++;
-            if ((pixel & 0xc0) == 0xc0) {
-                run = pixel & 0x3f;
-                pixel = *sp;
+            if ((tok & 0xc0) == 0xc0) {
+                runx = tok & 0x3f;
+                tok = *sp;
                 sp++;
-                if (run > cols) {
-                    carry = run - cols;
-                    run = cols;
+                if (runx > nleft) {
+                    hold = runx - nleft;
+                    runx = nleft;
                 }
-                for (k = 0; k < run; k++) {
-                    *dst = pixel;
-                    dst++;
+                for (kj = 0; kj < runx; kj++) {
+                    *dstp = tok;
+                    dstp++;
                 }
-                cols -= run;
+                nleft -= runx;
             } else {
-                *dst = pixel;
-                dst++;
-                cols--;
+                *dstp = tok;
+                dstp++;
+                nleft--;
             }
         }
     }
@@ -1788,123 +1790,128 @@ i32 CDDSurface::DecodeRun8(void* src) {
 // carry and source cursor continuous across channel and row boundaries. The row
 // base is the pitch-scale helper (Scale(row)); width/height come from the geometry
 // getters (re-read per use, not cached - retail's /Od shape).
-// @early-stop
-// /Od local-slot-ordering wall (docs/patterns/od-local-slot-ordering.md): byte-
-// identical instruction stream, only the [ebp-N] local displacements differ.
+//
+// /Od SLOT LAYOUT (docs/patterns/od-local-slot-ordering.md): cl orders the [ebp-N]
+// slots by the local's NAME. Retail's layout is inp -4, rest -8, pm -c, ln -10,
+// nrow -14, cnt -18, dst -1c, k -20, cols -24, and this name set + declaration
+// order reproduce it. `pm` is the RLE token byte and `ln` the locked surface base;
+// no more descriptive name for either lands in the right hash bucket (11 x 11 pair
+// sweep), and the hash order depends on the local COUNT so DecodeRun8's set does
+// not carry over.
 RVA(0x00140c50, 0x3e2)
 i32 CDDSurface::DecodeRun24(void* src) {
-    u8* sp;
-    i32 carry;
-    u8 pixel;
-    u8* locked;
-    i32 row;
-    i32 run;
+    u8* inp;
+    i32 rest;
     u8* dst;
+    i32 cnt;
+    i32 nrow;
+    u8* ln;
+    u8 pm;
     i32 k;
     i32 cols;
     if (src == 0) {
         return 0;
     }
-    locked = static_cast<u8*>(this->Lock(0));
-    if (locked == 0) {
+    ln = static_cast<u8*>(this->Lock(0));
+    if (ln == 0) {
         return 0;
     }
-    carry = 0;
-    sp = static_cast<u8*>(src);
+    rest = 0;
+    inp = static_cast<u8*>(src);
     dst = 0;
-    for (row = 0; row < this->GetHeight(); row++) {
-        dst = (locked + this->Scale(row) + 2);
+    for (nrow = 0; nrow < this->GetHeight(); nrow++) {
+        dst = (ln + this->Scale(nrow) + 2);
         cols = this->GetWidth();
-        if (carry > 0) {
-            for (k = 0; k < carry; k++) {
-                *dst = pixel;
+        if (rest > 0) {
+            for (k = 0; k < rest; k++) {
+                *dst = pm;
                 dst += 3;
             }
-            cols -= carry;
-            carry = 0;
+            cols -= rest;
+            rest = 0;
         }
         while (cols > 0) {
-            pixel = *sp;
-            sp++;
-            if ((pixel & 0xc0) == 0xc0) {
-                run = pixel & 0x3f;
-                pixel = *sp;
-                sp++;
-                if (run > cols) {
-                    carry = run - cols;
-                    run = cols;
+            pm = *inp;
+            inp++;
+            if ((pm & 0xc0) == 0xc0) {
+                cnt = pm & 0x3f;
+                pm = *inp;
+                inp++;
+                if (cnt > cols) {
+                    rest = cnt - cols;
+                    cnt = cols;
                 }
-                for (k = 0; k < run; k++) {
-                    *dst = pixel;
+                for (k = 0; k < cnt; k++) {
+                    *dst = pm;
                     dst += 3;
                 }
-                cols -= run;
+                cols -= cnt;
             } else {
-                *dst = pixel;
+                *dst = pm;
                 dst += 3;
                 cols--;
             }
         }
-        dst = (locked + this->Scale(row) + 1);
+        dst = (ln + this->Scale(nrow) + 1);
         cols = this->GetWidth();
-        if (carry > 0) {
-            for (k = 0; k < carry; k++) {
-                *dst = pixel;
+        if (rest > 0) {
+            for (k = 0; k < rest; k++) {
+                *dst = pm;
                 dst += 3;
             }
-            cols -= carry;
-            carry = 0;
+            cols -= rest;
+            rest = 0;
         }
         while (cols > 0) {
-            pixel = *sp;
-            sp++;
-            if ((pixel & 0xc0) == 0xc0) {
-                run = pixel & 0x3f;
-                pixel = *sp;
-                sp++;
-                if (run > cols) {
-                    carry = run - cols;
-                    run = cols;
+            pm = *inp;
+            inp++;
+            if ((pm & 0xc0) == 0xc0) {
+                cnt = pm & 0x3f;
+                pm = *inp;
+                inp++;
+                if (cnt > cols) {
+                    rest = cnt - cols;
+                    cnt = cols;
                 }
-                for (k = 0; k < run; k++) {
-                    *dst = pixel;
+                for (k = 0; k < cnt; k++) {
+                    *dst = pm;
                     dst += 3;
                 }
-                cols -= run;
+                cols -= cnt;
             } else {
-                *dst = pixel;
+                *dst = pm;
                 dst += 3;
                 cols--;
             }
         }
-        dst = (locked + this->Scale(row));
+        dst = (ln + this->Scale(nrow));
         cols = this->GetWidth();
-        if (carry > 0) {
-            for (k = 0; k < carry; k++) {
-                *dst = pixel;
+        if (rest > 0) {
+            for (k = 0; k < rest; k++) {
+                *dst = pm;
                 dst += 3;
             }
-            cols -= carry;
-            carry = 0;
+            cols -= rest;
+            rest = 0;
         }
         while (cols > 0) {
-            pixel = *sp;
-            sp++;
-            if ((pixel & 0xc0) == 0xc0) {
-                run = pixel & 0x3f;
-                pixel = *sp;
-                sp++;
-                if (run > cols) {
-                    carry = run - cols;
-                    run = cols;
+            pm = *inp;
+            inp++;
+            if ((pm & 0xc0) == 0xc0) {
+                cnt = pm & 0x3f;
+                pm = *inp;
+                inp++;
+                if (cnt > cols) {
+                    rest = cnt - cols;
+                    cnt = cols;
                 }
-                for (k = 0; k < run; k++) {
-                    *dst = pixel;
+                for (k = 0; k < cnt; k++) {
+                    *dst = pm;
                     dst += 3;
                 }
-                cols -= run;
+                cols -= cnt;
             } else {
-                *dst = pixel;
+                *dst = pm;
                 dst += 3;
                 cols--;
             }
