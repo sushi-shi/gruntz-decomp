@@ -701,13 +701,19 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
 // The frame holds TWO scratch dwords (the streamed seq id / 3x4 group counter, and the
 // pooled-ptr count), plus the lookup out-param - same shape as Serialize.
 // @early-stop
-// twin of Serialize; 94.73 -> 96.11 on the same two fixes (the indexed 3x4 loop and the
-// separate pooled-count local). Residual is the ebx<->ebp zero-pin colouring
-// (docs/patterns/zero-register-pinning.md): retail pins 0 in ebp and carries the
-// resolved sprite in eax, so its `obj == 0` arm needs a real `xor eax,eax; jmp` block;
-// ours pins 0 in ebx and IS the result register, so that block folds away (-5 bytes,
-// and the je/jne polarity jcc_sieve reports). Everything downstream of the pin choice
-// cascades from it. Final sweep.
+// 94.73 -> 96.11 -> ~99.9. 2026-07-29: the "zero-pin colouring wall" was THREE real
+// source bugs. (1)+(2) the two stream scratch dwords are NOT zero-initialised - retail
+// declares `i32 seq;` / `i32 cnt;` and lets Read fill them; the spurious `= 0` emitted
+// two stores retail does not have AND swapped the two frame slots (seq@0x14/obj@0x1c).
+// (3) the resolved sprite is a NULL-JOIN, not an early-out: retail's `obj == 0` arm
+// materialises `xor eax,eax; jmp` into the join register and falls into the SHARED
+// `m_barSprite = m8; if (m8 == 0 && seq) return 0;` pair, so both the store and the gate
+// live inside the lookup-success branch. Pre-seeding `m8 = 0` above the `if` let cl skip
+// the store entirely (that is the je/jne polarity jcc_sieve reported).
+// Residual is ONE instruction: retail sinks the `obj = 0` out-param store past the two
+// argument pushes (`push ecx / mov ecx,[ebx] / push edx / add ecx,0x48 / mov [esp],ebp`),
+// which is the known-immovable out-param zero-init position - measured over five
+// spellings (statement split, hoisted map ref, decl at the top of the body).
 RVA(0x00109520, 0x44c)
 i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     if (s == 0) {
@@ -724,22 +730,29 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     s->Read(&m_4, 4);
 
     g_serialCounter++;
-    i32 seq = 0;
+    // NOT zero-initialised - Read fills it. A `= 0` emits a store retail does not have.
+    i32 seq;
     s->Read(&seq, 4);
 
     // Resolve the serialized object id through the child group's serialize map
     // (m_map48: id -> CGameObject*, the same map GruntVoice/Play deserializers
     // consult); keep it only when GetClassId proves the CreateSprite kind.
+    // The null arm is a VALUE (`m8 = 0`) that joins, not an early-out: retail emits
+    // `xor eax,eax; jmp` into the join register and both the store and the gate below
+    // it live inside this branch. Pre-seeding `m8 = 0` above the `if` lets cl skip the
+    // store on the null path, which is a different function.
     CGameObject* obj = 0;
-    CWwdGameObjectA* m8 = 0;
     if (MapLookupById(gm->m_childGroup->m_map48, seq, obj)) {
-        if (obj != 0) {
+        CWwdGameObjectA* m8;
+        if (obj == 0) {
+            m8 = 0;
+        } else {
             m8 = (obj->GetClassId() == CLASSID_SERIALREF) ? static_cast<CWwdGameObjectA*>(obj) : 0;
         }
-    }
-    m_barSprite = m8;
-    if (m_barSprite == 0 && seq != 0) {
-        return 0;
+        m_barSprite = m8;
+        if (m8 == 0 && seq != 0) {
+            return 0;
+        }
     }
 
     s->Read(&m_rect10.left, 0x10);
@@ -813,12 +826,10 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     }
     m_ptrPool.SetSize(0, -1);
 
-    // `seq` reused as the pooled-ptr count: retail's 8-byte frame holds only two
-    // dwords (the streamed id/count scratch and the loop counter) - the `obj`
-    // out-param lives in the dead `s` parameter home slot.
     // a SECOND scratch dword: retail does NOT share `seq` with the pooled-ptr count
-    // (its frame is the `push ecx` slot + the dead `s` parameter home).
-    i32 cnt = 0;
+    // (its frame is the `push ecx` slot + the dead `s` parameter home). Like `seq` it
+    // is NOT zero-initialised - Read fills it.
+    i32 cnt;
     s->Read(&cnt, 4);
     m_ptrPool.SetSize(cnt, -1);
     for (u32 n = 0; n < static_cast<u32>(cnt); n++) {
@@ -1121,13 +1132,16 @@ i32 CStatusBarMgr::ClearTabSprites(i32 idx) {
 RVA(0x00100cb0, 0x8b)
 i32 CStatusBarMgr::Deactivate() {
     if (m_position == kSubtypeTag) {
+        // No `x`/`y` locals: naming the two differences kills `w`/`h` at the subtract, so
+        // cl computes IN PLACE (`sub ecx,0x30 / sub eax,0x45`). Written at each use site
+        // they stay expression temps and cl CSEs each into a fresh register with
+        // `lea eax,[ecx-0x45] / lea ecx,[edx-0x30]` - retail's shape (same fix as
+        // Activate @0x104dd0).
         i32 w = g_gameReg->m_modeW;
         i32 h = g_gameReg->m_modeH;
-        i32 x = w - 0x45;
-        i32 y = h - 0x30;
-        m_28 = y;
-        m_24 = x;
-        SetSpritePos(x, y);
+        m_24 = w - 0x45;
+        m_28 = h - 0x30;
+        SetSpritePos(w - 0x45, h - 0x30);
     }
 
     POSITION n = m_tabLists[0].GetHeadPosition();
@@ -1234,9 +1248,13 @@ i32 CStatusBarMgr::TryActivate() {
 // former StatusBarSpriteHolder @orphan view. Its m_8/m_c/m_24/m_28 are the base
 // CStatusBarItem fields reused here as sprite/factory-holder/x/y (a proven-
 // heterogeneous slot set: Setup args on other paths, sprite state on this one).
-// @early-stop
-// scheduling wall: retail computes m_8c-0x22 via lea eax,[ecx-0x22] and loads m_x
-// late; cl uses sub + an earlier m_x load. Clamp logic, factory call and literal faithful.
+// 2026-07-29 EXACT (was 93.58, filed a "scheduling wall"): the clamp bound has NO local
+// of its own. `i32 a = w - 0x22;` names the difference, so cl kills `w` at the subtract
+// and computes IN PLACE (`sub eax,0x22`), which also drags the `m_24` load up in front of
+// the two mode reads. Spelling `w - 0x22` at both use sites leaves it an expression temp:
+// cl CSEs it into a FRESH register with `lea eax,[ecx-0x22]`, keeping `w`/`h` in ecx/edx,
+// which is retail's whole prologue. (Deactivate @0x100cb0 has the same pair of reads and
+// wanted the same shape.)
 RVA(0x00104dd0, 0x6b)
 i32 CStatusBarMgr::Activate() {
     if (m_barSprite != 0) {
@@ -1244,9 +1262,8 @@ i32 CStatusBarMgr::Activate() {
     }
     i32 w = g_gameReg->m_modeW;
     i32 d = g_gameReg->m_modeH;
-    i32 a = w - 0x22;
-    if (m_24 > a) {
-        m_24 = a;
+    if (m_24 > w - 0x22) {
+        m_24 = w - 0x22;
     }
     if (m_28 > d - 9) {
         m_28 = d - 0x22;
@@ -2137,12 +2154,14 @@ void CStatusBarMgr::EnterHlRow(i32 shift, i32 key) {
 // cursor for the offset command. The fallback (any gate fails) drives the tab
 // highlight directly. Single-exit, success-deepest (shared fallback tail).
 // @early-stop
-// ~89%: the whole hit-test / dispatch / gate chain / cue play / cursor activation
-// is byte-correct; the residual is two documented walls - the bare `return 1`
-// null-path tail-merges with the other identical `return 1` epilogues where retail
-// duplicates them inline (identical-return-epilogue-tailmerge), and retail tests
-// the tab via `dec; jne` where the recompile uses `cmp 1; jne`. Logic correct,
-// deferred to the final sweep.
+// 89.07 -> ~99 (2026-07-29). The "identical-return-epilogue tail-merge wall" was a real
+// source bug: the fallback tail RETURNS the highlight call's result (retail's shared
+// epilogue carries no `mov eax,1`). Writing `Update...(); return 1;` both added that
+// store and gave cl a third identical `return 1` to merge the `r == 0` early exit into,
+// where retail duplicates it inline. Residual is ONE instruction: retail tests the tab
+// with `mov esi,[esi+0x10]; dec esi` (self-clobbering the dead `r`), the recompile with
+// `mov eax,[esi+0x10]; cmp eax,1` - `r->m_tab - 1 == 0` gets the `dec` but into edx,
+// so the register, not the idiom, is what is left.
 RVA(0x000ff850, 0x121)
 i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
     CStatusBarItem* r = HitTestRects(x, y);
@@ -2176,8 +2195,11 @@ i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
         PlaceCursorTarget(cmd - 0x13b, 1);
         return 1;
     }
-    UpdateStatusBarTabHighlight(a, x, y);
-    return 1;
+    // The tail RETURNS the highlight call's result: retail's shared epilogue has no
+    // `mov eax,1`, so eax comes straight out of the call. Spelling it `Update...();
+    // return 1;` adds that store AND lets cl merge the `r == 0` early return into the
+    // same epilogue, where retail duplicates it (`jne; mov eax,1; pop..; ret 0xc`).
+    return UpdateStatusBarTabHighlight(a, x, y);
 }
 
 RVA(0x00104f90, 0xa8)

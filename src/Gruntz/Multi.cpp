@@ -1633,7 +1633,9 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
         // the shape where the duplicated argument needs no cast. See
         // docs/patterns/positive-gate-enables-shrink-wrap.md sec.5.
         const char* str;
-        if (NetFormatKeyed(buf + 4, player->m_desc.m_lpszName, "NAME")) {
+        // `buf`, NOT `buf + 4`: retail's `lea eax,[esp+0x14]` (one push deep in a
+        // 0x110-byte frame) resolves to buf[0]; the `+ 4` put our lea one dword high.
+        if (NetFormatKeyed(buf, player->m_desc.m_lpszName, "NAME")) {
             str = buf;
         } else {
             str = player->m_desc.m_lpszName;
@@ -2589,14 +2591,10 @@ i32 CMulti::ResolveLocalPlayer() {
 // (each carries the channel's gate/id bytes plus its name copied in via the
 // engine GetName CString + inline strcpy) - then ships it: to one recipient via
 // SendStatPairRaw when given, else to the local player's group via SendStatFrom.
-// @early-stop
-// 98.69% (was 86.74). 2026-07-28: the send RESULT is the return value - each arm
-// `if (Send... == 0) return 0;` with one shared bottom `return 1`, which is what
-// produces retail's `test eax,eax / jne <shared mov eax,1>` per arm and its
-// eax-is-already-0 fall-through epilogues. Indexing the row also moved the anchor
-// from rows+0 to rows+2. Residual: retail anchors at rows+1 (`lea ebx,[esp+0x21]`),
-// eight disp bytes; permute fn (200 iters) found nothing. Same wall as
-// ParseChannelTable. Final sweep.
+// 2026-07-28: the send RESULT is the return value - each arm `if (Send... == 0) return
+// 0;` with one shared bottom `return 1`, which is what produces retail's `test eax,eax /
+// jne <shared mov eax,1>` per arm and its eax-is-already-0 fall-through epilogues.
+// 2026-07-29 EXACT: the row is addressed WITHOUT a `rec` local - see below.
 RVA(0x000ba810, 0x11c)
 i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
     CNetChannelTablePacket packet;
@@ -2604,27 +2602,29 @@ i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
     packet.m_flags |= 0x80;
     packet.m_statId = STAT_CHANNEL_TABLE;
 
-    // Indexed, not a walking `rec += 1`: the array form anchors cl's row cursor 2
-    // bytes into the record (retail anchors 1 - `lea ebx,[esp+0x21]`), which is 8
-    // displacement bytes closer than the walking form's 0.
+    // NO `CNetChannelRow* rec` local: the row is subscripted at every field. cl
+    // strength-reduces the subscripts into ONE walking cursor either way, but the BIAS
+    // it picks differs - a named row pointer anchors it at rows+2 (`lea ebx,[esp+0x22]`)
+    // and a walking `rec += 1` at rows+0, where the subscripted form gives retail's
+    // rows+1 (`lea ebx,[esp+0x21]`). Eight displacement bytes + the strcpy `lea`.
+    // Same fix as ParseChannelTable below.
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* ch = &NetGameMgr()->m_options[i];
-        CNetChannelRow* rec = &packet.m_rows[i];
         if (ch != 0) {
             i32 v = ch->m_liveGate;
-            rec->m_liveGate = static_cast<u8>(v);
+            packet.m_rows[i].m_liveGate = static_cast<u8>(v);
             v = ch->m_008;
-            rec->m_008 = static_cast<u8>(v);
+            packet.m_rows[i].m_008 = static_cast<u8>(v);
             v = ch->m_014;
-            rec->m_014 = static_cast<u8>(v);
+            packet.m_rows[i].m_014 = static_cast<u8>(v);
             v = ch->m_configId;
-            rec->m_configId = static_cast<u8>(v);
+            packet.m_rows[i].m_configId = static_cast<u8>(v);
             v = ch->m_readyFlag;
-            rec->m_readyFlag = static_cast<u8>(v);
+            packet.m_rows[i].m_readyFlag = static_cast<u8>(v);
             v = ch->m_comboSel;
-            rec->m_comboSel = static_cast<u8>(v);
-            rec->m_slotKey = ch->m_slotKey;
-            strcpy(rec->m_name, static_cast<const char*>(ch->GetName()));
+            packet.m_rows[i].m_comboSel = static_cast<u8>(v);
+            packet.m_rows[i].m_slotKey = ch->m_slotKey;
+            strcpy(packet.m_rows[i].m_name, static_cast<const char*>(ch->GetName()));
         }
     }
 
@@ -2650,13 +2650,11 @@ i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
 // net-slot table when not channel-latency mode, then for each channel copies the
 // record bytes back, restores its name CString, and - in non-channel mode for a
 // newly active channel - frees its net slot (ChannelSlots_Set(id, 0)).
-// @early-stop
-// 98.19% (was 95.34). 2026-07-28: indexing the row (`&p->m_rows[i]`) instead of walking
-// a `rec += 1` cursor moves cl's biased row anchor from rows+0 to rows+2 - retail is
-// rows+1 (`lea ebx,[esp+0x21]`), so eight disp bytes still differ, plus the
-// slot-address SIB base/index swap (`lea 0x150(%eax,%ebp)` vs `(%ebp,%eax)`).
-// Tried: walking cursor, for-clause increment, `rows + i`, hoisted base - all give
-// 0 or 2, never 1. Final sweep.
+// 2026-07-29 EXACT: the row is subscripted at every field, with NO `CNetChannelRow* rec`
+// local. cl strength-reduces the subscripts into one walking cursor; the local anchors
+// that cursor at rows+2 (`lea edi,[esi+0xa]`) and a walking `rec += 1` at rows+0, while
+// the subscripted form gives retail's rows+1 (`lea edi,[esi+0x9]`). Also note the
+// readyFlag normalisation must stay an if/else - a `?:` if-converts to `setne`.
 RVA(0x000ba980, 0xca)
 i32 CMulti::ParseChannelTable(void* packet) {
     if (packet == 0) {
@@ -2668,21 +2666,20 @@ i32 CMulti::ParseChannelTable(void* packet) {
 
     CNetChannelTablePacket* p = static_cast<CNetChannelTablePacket*>(packet);
     for (i32 i = 0; i < 4; i++) {
-        CNetChannelRow* rec = &p->m_rows[i];
         GruntzPlayer* ch = &NetGameMgr()->m_options[i];
         if (ch != 0) {
-            ch->m_liveGate = rec->m_liveGate;
-            ch->m_008 = rec->m_008;
-            ch->m_014 = rec->m_014;
-            ch->m_configId = rec->m_configId;
-            if (rec->m_readyFlag != 0) {
+            ch->m_liveGate = p->m_rows[i].m_liveGate;
+            ch->m_008 = p->m_rows[i].m_008;
+            ch->m_014 = p->m_rows[i].m_014;
+            ch->m_configId = p->m_rows[i].m_configId;
+            if (p->m_rows[i].m_readyFlag != 0) {
                 ch->m_readyFlag = 1;
             } else {
                 ch->m_readyFlag = 0;
             }
-            ch->m_comboSel = rec->m_comboSel;
-            ch->m_name = rec->m_name;
-            ch->m_slotKey = rec->m_slotKey;
+            ch->m_comboSel = p->m_rows[i].m_comboSel;
+            ch->m_name = p->m_rows[i].m_name;
+            ch->m_slotKey = p->m_rows[i].m_slotKey;
             if (m_isHost == 0 && ch->m_liveGate != 0) {
                 ChannelSlots_Set(ch->m_008, 0);
             }
@@ -3299,16 +3296,15 @@ ready:
 //     token (m_recordToken[i]) matches ours, push the result stat (0x41d agree / 0x41e
 //     disagree), record it (m_levelVerifyResult) and latch m_verifyDone. Exits 1 on resolve, 0 on timeout.
 //
-// @early-stop
-// Real codegen diff (~95.5%, NOT a reloc artifact): the body is byte-exact - both
-// timer paths, the array-zero loop, the 4-record scan (0x238 stride, [eax-8]/[eax]/
-// [eax-0xc] gates, the m_recordAcked/m_recordToken latch + token vote). objdiff MASKS REL32 call/branch
-// reloc target-names (measured: renaming the ILT-thunk callees SendNetStat/PollSession/
-// AckJoinFailure/SendStatFlag to the real ?...@CNetMgr@@ symbols moved the score 0.0%),
-// so the thunk-routed callees are NOT the cap. The residual is an epilogue
-// tail-duplication difference: our base shares one return epilogue (jne/jmp) where
-// retail tail-duplicates it (je; mov eax,1; ...; ret 4) - a regalloc/block-layout
-// wall, not steerable here. See docs/wall-instructions.md.
+// 2026-07-29 EXACT (was 94.22, filed a block-layout wall). Two source bugs:
+//  (1) the guest spin is a `while`, not a `do..while`. The seed `m_verifyDone = 0;`
+//      makes them equivalent, but the do-while form leaves cl a bottom test that it
+//      merges into the function's other `return 1` (jne <shared>; jmp <top>) where the
+//      while form gives retail's `je <top>` + its own inlined `mov eax,1 / pop.. / ret`.
+//  (2) the record scan has NO `CGruntzMgr* mgr = g_gameReg;` local: naming the base
+//      makes cl bump the CSE'd pointer IN PLACE (`add eax,0x170`), where the
+//      subscript expression stays a temp and gives retail's `lea eax,[edx+0x170]`.
+//      (Same expression-temp-vs-named-local lever as CStatusBarMgr::Activate.)
 RVA(0x000bba10, 0x1fb)
 i32 CMulti::Poll(i32 token) {
     if (m_isHost == 0) {
@@ -3316,7 +3312,9 @@ i32 CMulti::Poll(i32 token) {
         i32 resend = 0x1388;
         i32 abort = 0x3a98;
         m_verifyDone = 0;
-        do {
+        // A `while`, not a `do..while` - the seed above makes them equivalent, but see
+        // the block-layout note on the RVA.
+        while (m_verifyDone == 0) {
             u32 start = timeGetTime();
             Sleep(0x32);
             PollSession();
@@ -3339,7 +3337,7 @@ i32 CMulti::Poll(i32 token) {
                 AckJoinFailure();
                 SendNetStat(STAT_VERIFY_REQUEST, token, 1);
             }
-        } while (m_verifyDone == 0);
+        }
         return 1;
     }
 
@@ -3367,10 +3365,10 @@ i32 CMulti::Poll(i32 token) {
         i32 allAgree = 1;
         // g_gameReg is the game-manager singleton; its +0x150 channel table is
         // the same m_options[4] channel records the net mgr drives (retail walks it
-        // from +0x170 == channel.m_20, reading back to m_18/m_14).
-        CGruntzMgr* mgr = g_gameReg;
+        // from +0x170 == channel.m_20, reading back to m_18/m_14). NO `mgr` local -
+        // naming the base turns retail's `lea eax,[edx+0x170]` into an in-place `add`.
         for (i32 i = 0; i < 4; i++) {
-            GruntzPlayer* ch = &mgr->m_options[i];
+            GruntzPlayer* ch = &g_gameReg->m_options[i];
             if (ch->m_slotKey != m_hostIndex && ch->m_liveGate != 0 && ch->m_014 != 0) {
                 if (m_recordAcked[i] == 0) {
                     allAcked = 0;
@@ -3843,14 +3841,15 @@ i32 CMulti::OpenHostChannel(
 // 60s or on Esc (-> status 0x8022, fail), pumps the receive queue, and reports +
 // fails on any of the session-state flags (terminated / removed / closed / full
 // / version-mismatch). Returns 1 once m_admitted latches (admitted), 0 on any failure.
-// @early-stop
-// 99.82% (was 74.08). 2026-07-28: the "tail-merge wall" was the loop SHAPE - retail is
+// 2026-07-28/29 EXACT (was 74.08). The "tail-merge wall" was the loop SHAPE - retail is
 // a plain `while (m_58c == 0) {...} return 1;` with ONE `mov eax,1` block that the entry
 // test jne's into, where `if (latched) return 1; do {...} while (!latched); return 1;`
 // duplicates it - plus a real DEADLINE variable (`timeGetTime() + 60000` folded once in
-// the preheader) instead of comparing against a start stamp. Residual: 4 bytes, the
-// ebx<->ebp colouring of the two cached import pointers (retail timeGetTime=ebp).
-// 256 TU-state variants (match_variants --state-trials 48) moved it 0.0%. Final sweep.
+// the preheader) instead of comparing against a start stamp. The last 4 bytes were a
+// single-use local: a named `u32 now = timeGetTime();` gives the sample a live range, so
+// cl colours the two cached import thunks ebx/ebp (retail: timeGetTime=ebp,
+// GetAsyncKeyState=ebx). Calling it inside the condition drops the live range and the
+// colouring falls back to retail's.
 RVA(0x000bca50, 0x155)
 i32 CMulti::WaitForConnect() {
     if (Peer() == 0) {
@@ -3870,8 +3869,9 @@ i32 CMulti::WaitForConnect() {
     // ONE `mov eax,1` return that the entry test `jne`s into and the bottom test falls
     // into; the do-while spelling duplicates it.
     while (m_58c == 0) {
-        u32 now = timeGetTime();
-        if (now > deadline || (static_cast<i32>(GetAsyncKeyState(VK_ESCAPE)) & 0x80000000)) {
+        // NO `u32 now` local - see the register note above.
+        if (timeGetTime() > deadline
+            || (static_cast<i32>(GetAsyncKeyState(VK_ESCAPE)) & 0x80000000)) {
             ReportStatusId(0x8022, 0);
             return 0;
         }
@@ -3912,33 +3912,29 @@ i32 CMulti::WaitForConnect() {
 // further 1 when a secondary probe (CountReadyOptionsSlots(0)) exceeds 2, stores it as
 // m_cmdDelay, and picks a resend window (10 for <=5, else 30 or 20 for >8) before
 // persisting the pair (ApplyCmdDelayDefaults via the 0-arg overload).
-// @early-stop
-// 97.87% (was 85.81, 79.58). 2026-07-28: three more real source bugs closed - the
-// `+1` belongs to the BUMP (`(probe>2) ? 2 : 1`, giving retail's `setg cl / inc ecx /
-// add edi,ecx`, not a fused `lea eax,[edi+ecx+1]`); the resend arms are spelled
-// `<=8 ? 20 : 30` (cl negates, yielding retail's `setg al / and al,0xf6 / add 0x1e`);
-// and BOTH arms assign one `resend` variable stored once at the bottom, which is what
-// tail-duplicates the `m_5a8 = resend; SaveConfig(0)` pair and gives retail's
-// `mov eax,0xa`. That also restored the shrink-wrapped `push edi` after the m_530 gate.
-// Residual (~2%): a pure esi<->edi swap (retail this=esi / base=edi, cl the reverse)
-// plus cl CSEing the literal 3 into that register (`cmp edx,edi` vs `cmp edx,3`).
-// permute fn (200 iters) found nothing. Final sweep.
+// 2026-07-28: EXACT. Four real source bugs, closed in order - the `+1` belongs to the
+// BUMP (`(probe>2) ? 2 : 1`, giving retail's `setg cl / inc ecx / add edi,ecx`, not a
+// fused `lea eax,[edi+ecx+1]`); the resend arms are spelled `<=8 ? 20 : 30` (cl negates,
+// yielding retail's `setg al / and al,0xf6 / add 0x1e`); BOTH arms assign one `resend`
+// variable stored once at the bottom, which tail-duplicates the `m_5a8 = resend;
+// SaveConfig(0)` pair and gives retail's `mov eax,0xa`; and the unsigned clamp is a
+// TERNARY, not an init-then-if (see below) - that last one also flipped the esi/edi
+// callee-saved roles back to retail's.
 RVA(0x000bcc10, 0x8e)
 i32 CMulti::AutoTuneCmdDelay() {
     if (m_530 != 0) {
         return 1;
     }
 
-    // An UNSIGNED max held in a SECOND variable: retail is `mov edi,3 / cmp edx,3 / jb
-    // <skip> / mov edi,edx`, i.e. 3 is the initial value and the quotient is the unsigned
-    // operand. `i32 base = ...; if (base < 3) base = 3;` clamps in place and lowers to a
-    // signed `cmp esi,3 / jge`.
+    // An UNSIGNED max, spelled as a TERNARY whose 3 is the *taken* arm. Written as
+    // `i32 base = 3; if (tuned >= 3) base = tuned;` cl CSEs the initialiser's 3 into the
+    // holding register and compares register-to-register (`mov esi,3 / cmp edx,esi`);
+    // with both arms in one expression the literal survives into the compare, giving
+    // retail's `mov edi,3 / cmp edx,3 / jb / mov edi,edx` - and that also flips the
+    // callee-saved assignment back to retail's this=esi / base=edi.
     u32 ping = static_cast<u32>(GetMaxAckLatency());
     u32 tuned = ping / 30 + 2;
-    i32 base = 3;
-    if (tuned >= 3) { // UNSIGNED here (the quotient is u32) - retail `cmp edx,3 / jb`
-        base = static_cast<i32>(tuned);
-    }
+    i32 base = (tuned < 3) ? 3 : static_cast<i32>(tuned);
 
     i32 probe = Mgr()->CountReadyOptionsSlots(0); // retail calls the probe on m_4 (the game mgr)
     // The +1 belongs to the BUMP, not to the sum: retail is `setg cl / inc ecx /
