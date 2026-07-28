@@ -85,26 +85,28 @@ POD = {"tagRECT", "tagPOINT", "tagPALETTEENTRY", "tagRGBQUAD", "tagSIZE",
        "WwdPlaneHeader", "BmpFileImage", "Bmp256Info", "SbiRect", "WwdRect",
        "DDSURFACEDESC", "WAVEFORMATEX", "LevelDims"}
 PARAM_CLASS = re.compile(r"PA[VU](\w+)@@")
+# The REAL measure of how much state a function needs is not its parameter TYPES - it is
+# how many distinct struct offsets it actually dereferences. A CGruntzMgr* parameter looks
+# like "the whole engine", but CMapMgr::UpdateDiagonals touches exactly 11 fields off it
+# and is a fabricable stub. Ranking by parameter type was as wrong as ranking by code size.
+# %esp/%ebp displacements are stack frame, not object fields, so they are excluded.
+FIELD = re.compile(r"(?:0x([0-9a-f]+))?\((%e(?!sp|bp)[a-z][a-z])\)")
 # ?Name@Cls@@ + access/convention. S* = static (no `this`), everything else with A/E is
 # a member and `this` is an implicit argument.
 STATIC_MEMBER = re.compile(r"@@S[A-Z]")
 
 
-def harness_cost(name):
-    """-> (cost, why). cost 0 = callable now, higher = more state to synthesize."""
-    if not name.startswith("?"):
-        return 0, "free function, C linkage"
-    body = name.split("@@", 1)[1] if "@@" in name else name
-    classes = [c for c in PARAM_CLASS.findall(name) if c not in POD]
-    cost = len(classes)
-    why = []
+def harness_cost(name, fields):
+    """-> (cost, why). `fields` is the measured count of distinct struct offsets the body
+    dereferences - the number of members a harness must fabricate. That is the honest
+    cost; the declared parameter types are not."""
+    classes = sorted({c for c in PARAM_CLASS.findall(name) if c not in POD})
+    if not fields:
+        return 0, "touches no object fields"
+    why = "%d field(s)" % fields
     if classes:
-        why.append("takes " + ", ".join(c + "*" for c in sorted(set(classes))))
-    is_member = "@" in name.split("@@")[0] and not STATIC_MEMBER.search(name)
-    if is_member:
-        cost += 1
-        why.append("`this`")
-    return cost, "; ".join(why) or "scalars/PODs only"
+        why += " off " + ", ".join(c + "*" for c in classes[:2])
+    return fields, why
 CALL = re.compile(r"^\s+[0-9a-f]+:\s+calll?\s")
 INSN = re.compile(r"^\s+([0-9a-f]+):\s+\S")
 
@@ -130,11 +132,13 @@ def classify_obj(obj):
 
     rows, cur, calls, selfcalls, first, last = [], None, 0, 0, None, None
     dat = imp = other = 0
+    fields = set()
 
     def flush():
         if cur is None:
             return
         size = (last - first) if (first is not None and last is not None) else 0
+        nfields = len(fields)
         if imp:
             kind = "IMPORTS"
         elif other:
@@ -149,7 +153,7 @@ def classify_obj(obj):
             kind = "CALLS"
         else:
             kind = "ISLAND"
-        rows.append((cur, size, kind))
+        rows.append((cur, size, kind, nfields))
 
     for line in out.split("\n"):
         m = SYM.match(line)
@@ -157,6 +161,7 @@ def classify_obj(obj):
             flush()
             cur, calls, selfcalls, first, last = m.group(1), 0, 0, None, None
             dat = imp = other = 0
+            fields = set()
             continue
         if cur is None:
             continue
@@ -170,6 +175,8 @@ def classify_obj(obj):
             else:
                 other += 1
             continue
+        for mf in FIELD.finditer(line):
+            fields.add(int(mf.group(1), 16) if mf.group(1) else 0)
         mi = INSN.match(line)
         if mi:
             off = int(mi.group(1), 16)
@@ -191,30 +198,33 @@ def main() -> int:
     ap.add_argument("--summary", action="store_true", help="counts only")
     ap.add_argument("--min-size", type=lambda s: int(s, 0), default=0x30,
                     help="ignore islands smaller than this (default 0x30)")
+    ap.add_argument("--max-fields", type=int, default=12,
+                    help="how many object fields a harness may fabricate (default 12)")
     a = ap.parse_args()
 
     pct = scores()
     tally, islands = {}, []
     for obj in sorted(TARGET.glob("*.obj")):
-        for name, size, kind in classify_obj(obj):
+        for name, size, kind, nf in classify_obj(obj):
             tally[kind] = tally.get(kind, 0) + 1
             if kind in ("ISLAND", "SELF-CALL", "DATA-ONLY"):
-                cost, why = harness_cost(name)
+                cost, why = harness_cost(name, nf)
                 islands.append((cost, -size, size, name, kind, pct.get(name), why))
 
     total = sum(tally.values())
     print("recomp islands: %d functions in the delinked target  |  %s"
           % (total, "  ".join("%s %d" % (k, tally[k]) for k in sorted(tally))))
     reach = [r for r in islands if r[2] >= a.min_size]
-    cheap = [r for r in reach if r[0] == 0]
+    cheap = [r for r in reach if r[0] <= a.max_fields]
     todo = [r for r in cheap if r[5] is not None and r[5] < 100.0]
     print("  self-contained CODE (ISLAND/SELF-CALL/DATA-ONLY): %d, %d of them >= 0x%x"
           % (len(islands), len(reach), a.min_size))
-    print("  ...of those, %d need NO synthesized state (cost 0), and %d of those are "
-          "NOT yet exact - that is the worklist" % (len(cheap), len(todo)))
+    print("  ...of those, %d touch <= %d object field(s), and %d of those are NOT yet "
+          "exact - that is the worklist" % (len(cheap), a.max_fields, len(todo)))
 
     if not a.summary:
-        print("\nOracle candidates - cost 0 means callable with scalars/PODs alone:")
+        print("\nOracle candidates - `N field(s)` is how many members a harness must "
+              "fabricate:")
         for cost, _neg, size, name, kind, p, why in sorted(todo)[:30]:
             score = "%6.2f%%" % p if p is not None else "   n/a "
             print("   0x%04x  %-9s %s  %-52s  %s"
