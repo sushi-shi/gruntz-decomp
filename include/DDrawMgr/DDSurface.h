@@ -16,23 +16,70 @@ struct ClipRect16 {
 SIZE(0x10); // 16-byte by-value rect/clip record
 SIZE(0x10); // 16-byte by-value rect/clip record
 
+// The PidHeader +0x04 flag word. Every enumerator below is bound to the retail
+// instruction that READS it - none is inferred from a name.
+//
+// Census over the 29,798 PID resources in GRUNTDEM.REZ + retail Gruntz.REZ
+// (tools/gruntz-oracle census). These six words are the only ones that occur,
+// demo / retail counts:
+//
+//   0x0080   762 /  2580  EMBEDDED_PALETTE                            0xC0-run stream
+//   0x0081  2143 /  4336  + TRANSPARENCY                              0xC0-run stream
+//   0x0165   109 /   160  TRANSPARENCY|SYSTEM_MEMORY|GRAMMAR_SKIPRUN
+//                         |SRC_8BPP_SHADE|FILL_IS_WORD                skip/fill stream
+//   0x01a5     0 /     5  0x0165 - SRC_8BPP_SHADE + EMBEDDED_PALETTE  skip/fill stream
+//   0x03a4     5 /     5  0x03a5 - TRANSPARENCY                       skip/fill stream
+//   0x03a5  6826 / 12867  TRANSPARENCY|SYSTEM_MEMORY|GRAMMAR_SKIPRUN
+//                         |EMBEDDED_PALETTE|FILL_IS_WORD|SRC_8BPP     skip/fill stream
 enum PidFlags {
-    PID_TRANSPARENCY = 0x01,     // bit0  install the transparent colour key
-    PID_VIDEO_MEMORY = 0x02,     // bit1  "VID"
-    PID_SYSTEM_MEMORY = 0x04,    // bit2  "SYS"
-    PID_COMPRESSION = 0x20,      // bit5  "RLE" - skip/fill RLE pixel stream
-    PID_EMBEDDED_PALETTE = 0x80, // bit7  trailing 768-byte VGA palette at EOF
+    // 0x145c97 CDDSurface::DecodePid `test BYTE PTR [esp+0x18],1` -> FillPalette(colorKey).
+    PID_TRANSPARENCY = 0x01,
+    // 0x1457ed CDDSurface::DecodePcxData `test dl,2` -> `and ah,0xf7`: clear
+    // DDSCAPS_SYSTEMMEMORY (0x800) from the surface caps, i.e. prefer VRAM. The
+    // name is PROVEN by that caps edit - but the path is DEAD in shipped data:
+    // no PID in either archive sets this bit.
+    PID_VIDEO_MEMORY = 0x02,
+    // 0x1457dc CDDSurface::DecodePcxData `test dl,4` -> `and ah,0xbf` + `or ah,8`:
+    // clear DDSCAPS_VIDEOMEMORY (0x4000), set DDSCAPS_SYSTEMMEMORY (0x800).
+    PID_SYSTEM_MEMORY = 0x04,
+    // Selects WHICH pixel grammar the stream uses. NOT an on/off switch - both
+    // settings are run-length coded, which is why the old name "COMPRESSION"
+    // was wrong. 0x1764ce CRezImage::DecodePidData `test cl,0x20 / je`:
+    //   clear -> PCX-style `0xC0|count, value` runs interleaved with bare literals
+    //   set   -> `0x80|n` fill runs interleaved with `n` inline literal bytes
+    PID_GRAMMAR_SKIPRUN = 0x20,
+    // 0x1490df CDDrawShadeBlit::Build `test al,0x40` -> m_srcBpp = 1 (the RLE
+    // payload is 8bpp indices, not 16bpp pixels); ALSO 0x153006
+    // CImage::LoadDispatch -> m_owned->Select(2, 0) (shade draw-type 2).
+    // Census: rides exactly the skip/fill sprites WITHOUT an embedded palette.
+    PID_SRC_8BPP_SHADE = 0x40,
+    // 0x145b85 CDDSurface::DecodePid `test BYTE PTR [esp+0x18],0x80` -> the last
+    // 768 bytes of the resource are a 256 x RGB VGA palette, addressed from the
+    // END (`hdr + size - 0x300`), not from the stream head.
+    PID_EMBEDDED_PALETTE = 0x80,
+    // 0x1764b2 CRezImage::DecodePidData `test ch,1` -> `fill &= 0xffff`. Only the
+    // low BYTE ever reaches the 8bpp surface (the stamp is a byte-wide `rep stos`
+    // at 0x176546); when CLEAR retail stamps a hard zero instead of `fill`.
+    PID_FILL_IS_WORD = 0x100,
+    // 0x1490e3 CDDrawShadeBlit::Build `test bl,ah` with bl==2, i.e. bit 9 ->
+    // m_srcBpp = 1, the same branch PID_SRC_8BPP_SHADE takes. Unlike that bit it
+    // is not read by CImage::LoadDispatch, so it does not select a shade type.
+    // Census: rides exactly the skip/fill sprites WITH an embedded palette.
+    PID_SRC_8BPP = 0x200,
 };
 
 struct PidHeader {
-    u32 fileDesc; // +0x00  id / file descriptor
-    u32 flags;    // +0x04  PidFlags
-    i32 width;    // +0x08
-    i32 height;   // +0x0c
-    i32 offsetX;  // +0x10  draw anchor X
-    i32 offsetY;  // +0x14  draw anchor Y
-    u32 fill;     // +0x18  fill colour (masked to low word when flags & 0x100)
-    u32 unk1;     // +0x1c
+    // +0x00  Read by nothing we have reconstructed; it is 10 in all 29,798
+    // shipped PID resources, so it behaves as a constant format/version tag
+    // rather than a per-resource id.
+    u32 formatTag;
+    u32 flags;   // +0x04  PidFlags
+    i32 width;   // +0x08
+    i32 height;  // +0x0c
+    i32 offsetX; // +0x10  draw anchor X
+    i32 offsetY; // +0x14  draw anchor Y
+    u32 fill;    // +0x18  fill/transparent colour; low word only when PID_FILL_IS_WORD
+    u32 unk1;    // +0x1c  read by nothing; 0 in all 29,798 shipped PID resources
     // +0x20: the RLE/uncompressed 8bpp pixel stream. Declared as the trailing member
     // (same shape PcxHeader uses for its own stream) so readers say hdr->pixels
     // instead of reinterpreting hdr + 1.

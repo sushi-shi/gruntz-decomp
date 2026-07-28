@@ -84,6 +84,20 @@ enum Cmd {
         #[arg(long, default_value_t = 5)]
         examples: usize,
     },
+    /// Settle the RLE16 row-end question (`x >= width - 1` in
+    /// `CDDrawShadeBlit::EncodeRle16` @0x149694 vs `x >= width` in
+    /// `CRezImage::DecodePidData` @0x176597) on the only streams that can
+    /// reach `EncodeRle16`.
+    ///
+    /// `CDDrawShadeBlit::Build` @0x1490d0 copies the PID skip/fill stream into
+    /// `m_rleData` verbatim, then calls `EncodeRle16` only when `m_srcBpp == 2`,
+    /// which requires NEITHER `PID_SRC_8BPP_SHADE` (0x40) NOR `PID_SRC_8BPP`
+    /// (0x200). The corpus for that function is therefore exactly the skip/fill
+    /// sprites carrying neither bit, and it is tiny.
+    Rle16 {
+        #[arg(long, default_value_t = 10)]
+        examples: usize,
+    },
     /// Print retail's token stream for one sprite beside our re-encoding, so a
     /// round-trip difference can be read as tokens instead of as a byte count.
     Tokens {
@@ -201,6 +215,7 @@ fn main() -> ExitCode {
             run(&archives, |rez| roundtrip(rez, *examples, rule, any))
         }
         Cmd::Decoders { examples } => run(&archives, |rez| decoders(rez, *examples)),
+        Cmd::Rle16 { examples } => run(&archives, |rez| rle16(rez, *examples)),
         Cmd::Recomp {
             harness,
             exe,
@@ -447,13 +462,13 @@ fn describe_flags(f: u32) -> String {
     let mut s = Vec::new();
     let known = [
         (pid::flags::TRANSPARENCY, "TRANSPARENCY"),
-        (pid::flags::VIDEO_MEMORY, "VIDEO_MEMORY?"),
-        (pid::flags::SYSTEM_MEMORY, "SYSTEM_MEMORY?"),
-        (pid::flags::COMPRESSION, "COMPRESSION"),
+        (pid::flags::VIDEO_MEMORY, "VIDEO_MEMORY"),
+        (pid::flags::SYSTEM_MEMORY, "SYSTEM_MEMORY"),
+        (pid::flags::COMPRESSION, "GRAMMAR_SKIPRUN"),
+        (pid::flags::SRC_8BPP_SHADE, "SRC_8BPP_SHADE"),
         (pid::flags::EMBEDDED_PALETTE, "EMBEDDED_PALETTE"),
         (pid::flags::FILL_IS_WORD, "FILL_IS_WORD"),
-        (0x40, "unexplained(0x40)"),
-        (0x200, "unexplained(0x200)"),
+        (pid::flags::SRC_8BPP, "SRC_8BPP"),
     ];
     let mut mask = 0u32;
     for (bit, name) in known {
@@ -689,7 +704,105 @@ fn decoders(rez: &Rez, keep: usize) {
 }
 
 // ---------------------------------------------------------------------------
-// check 4: retail's own machine code (the "recomp" implementation)
+// check 4: the RLE16 row-end question
+// ---------------------------------------------------------------------------
+
+/// Walk a skip/fill stream under one row-end rule; return
+/// `(rows completed, bytes consumed, ran out of stream)`.
+fn walk_rows(stream: &[u8], width: usize, height: usize, minus_one: bool) -> (usize, usize, bool) {
+    let limit = if minus_one { width - 1 } else { width };
+    let (mut p, mut x, mut y) = (0usize, 0usize, 0usize);
+    while y < height {
+        let Some(&t) = stream.get(p) else {
+            return (y, p, true);
+        };
+        let n = if t & 0x80 != 0 {
+            p += 1;
+            usize::from(t - 0x80)
+        } else {
+            let n = usize::from(t);
+            if p + 1 + n > stream.len() {
+                return (y, p, true);
+            }
+            p += 1 + n;
+            n
+        };
+        x += n;
+        if x >= limit {
+            y += 1;
+            x = 0;
+        }
+    }
+    (y, p, false)
+}
+
+fn rle16(rez: &Rez, keep: usize) {
+    let mut skiprun = 0usize;
+    let mut reachable = 0usize;
+    let mut agree = 0usize;
+    let mut t = Tally::default();
+
+    for r in of_kind(rez, "PID") {
+        let path = r.path().to_string();
+        let Ok(p) = pid::split(r.data(rez.bytes())) else {
+            continue;
+        };
+        if p.header.grammar() != pid::Grammar::SkipRun {
+            continue;
+        }
+        skiprun += 1;
+        // CDDrawShadeBlit::Build 0x1490df/0x1490e3: either bit forces
+        // m_srcBpp = 1, and EncodeRle16 runs only when m_srcBpp == 2.
+        if p.header.flags & (pid::flags::SRC_8BPP_SHADE | pid::flags::SRC_8BPP) != 0 {
+            continue;
+        }
+        reachable += 1;
+        let Ok(dims) = p.header.dims() else { continue };
+        let (w, h) = (dims.width(), dims.height());
+        let a = walk_rows(p.stream, w, h, false); // DecodePidData: x >= width
+        let b = walk_rows(p.stream, w, h, true); // EncodeRle16:    x >= width - 1
+        if a == b {
+            agree += 1;
+        } else {
+            t.add(
+                format!(
+                    "x>=width consumed {}/{} in {} rows{}; x>=width-1 consumed {}/{} in {} rows{}",
+                    a.1,
+                    p.stream.len(),
+                    a.0,
+                    if a.2 { " (RAN OUT)" } else { "" },
+                    b.1,
+                    p.stream.len(),
+                    b.0,
+                    if b.2 { " (RAN OUT)" } else { "" },
+                ),
+                &format!("{path}  {w}x{h} flags={:#06x}", p.header.flags),
+                keep,
+            );
+        }
+    }
+
+    println!("skip/fill sprites            : {skiprun}");
+    println!("reachable by EncodeRle16     : {reachable}  (neither 0x40 nor 0x200 set)");
+    if reachable == 0 {
+        println!(
+            "\nNothing in this archive can reach EncodeRle16: every skip/fill sprite\n\
+             carries 0x40 or 0x200, which forces m_srcBpp = 1 and skips the call.\n\
+             The `width - 1` row terminator is therefore DEAD CODE on this data."
+        );
+        return;
+    }
+    println!(
+        "both row-end rules agree     : {agree}  ({:.2}%)",
+        pct(agree, reachable)
+    );
+    if !t.counts.is_empty() {
+        t.report("row-end rule disagreements", reachable);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// check 5: retail's own machine code (the "recomp" implementation)
 // ---------------------------------------------------------------------------
 
 const JOB_MAGIC: u32 = 0x424f_4a50; // 'PJOB'

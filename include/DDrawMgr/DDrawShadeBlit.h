@@ -20,8 +20,9 @@ SIZE_UNKNOWN();
 // <Image/CImage.h>'s CImageFrameDesc: CImage::LoadDispatch hands the SAME pointer to
 // Build on one arm and to CDDSurface::DecodePcxData (declared PidHeader*) on the
 // other, and all three shapes agree field for field. The flags Build tests are the
-// enum's: 0x80 = PID_EMBEDDED_PALETTE (the trailing 768-byte VGA palette), 0x20 =
-// PID_COMPRESSION (the RLE stream). The pixel payload begins one header past `src`.
+// enum's: 0x80 = PID_EMBEDDED_PALETTE (the trailing 768-byte VGA palette), 0x40/0x200
+// = PID_SRC_8BPP_SHADE / PID_SRC_8BPP (the payload is 8bpp indices), 0x100 =
+// PID_FILL_IS_WORD. The pixel payload begins one header past `src`.
 struct PidHeader;
 
 struct CImageFrameRebuildDesc {

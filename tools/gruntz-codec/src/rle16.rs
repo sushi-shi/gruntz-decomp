@@ -14,17 +14,32 @@
 //! else      -> literal run of t pixels.        1 + t bytes in, 1 + 2*t bytes out
 //! ```
 //!
-//! # The `width - 1` row terminator — an open discrepancy
+//! # The `width - 1` row terminator — RESOLVED: unobservable
 //!
 //! `EncodeRle16` closes a scanline at `x >= width - 1` (0x149694 and 0x14973d:
 //! `mov edx,[ebp+4] / dec edx / cmp ...,edx / jl`), whereas the PID skip-run
 //! decoder `CRezImage::DecodePidData` closes at `x >= width` (0x176597,
-//! `cmp edx,[eax+0x438]`). Both are retail. Either the two layers genuinely
-//! carry different row terminators, or one is an off-by-one the shipped data
-//! never exercises. Not resolvable from the disassembly alone — it needs a
-//! corpus of RLE16 streams, and none is archived in the `.REZ` (the 16bpp form
-//! is built at runtime from 8bpp PIDs). Recorded rather than quietly picked:
-//! [`RowEnd`] makes the caller choose.
+//! `cmp edx,[eax+0x438]`). Both are retail, and the disassembly cannot say
+//! which is intended.
+//!
+//! The archives can, once you work out which streams reach the function.
+//! `CDDrawShadeBlit::Build` @0x1490d0 `memcpy`s the PID skip/fill stream into
+//! `m_rleData` **verbatim** (with `m_width`/`m_height` from the same header),
+//! then calls `EncodeRle16` only when `m_srcBpp == 2` — which needs NEITHER
+//! `PID_SRC_8BPP_SHADE` (0x40) NOR `PID_SRC_8BPP` (0x200). So the input corpus
+//! is exactly the skip/fill sprites carrying neither bit, and
+//! `gruntz-oracle rle16` counts them:
+//!
+//! * `GRUNTDEM.REZ`: **0 of 6 940**. The `width - 1` terminator is dead code.
+//! * retail `Gruntz.REZ`: **5 of 13 037** — `AREA8\IMAGEZ\UFO\FRAME001..005`,
+//!   64x64, flag word `0x01a5` — and on all five the two rules walk the stream
+//!   **identically**: same rows, same byte count, neither runs short.
+//!
+//! They can only diverge when a token boundary lands exactly on `x ==
+//! width - 1`, i.e. when a row ends with a one-pixel token. No shipped stream
+//! does. So neither rule is "the bug"; they simply never disagree on data that
+//! exists, and [`RowEnd`] keeps both spellings addressable rather than picking
+//! one and calling it truth.
 
 use core::fmt;
 
