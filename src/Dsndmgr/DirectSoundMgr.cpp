@@ -213,9 +213,9 @@ i32 DirectSoundMgr::StopAndRewind() {
 
 // ---------------------------------------------------------------------------
 // IsPlaying: GetStatus, report on failure, return the "playing" bit.
-// @early-stop
-// byte-AND-width wall (99%): `and eax,1` (ours) vs retail `and al,1` on a dword status
-// load; a (u8) cast wrongly narrows the load too. /O2 partial-reg pick, not steerable.
+// The bit test is an `if`-statement, not a `return <expr>` - only the statement
+// form makes cl narrow the mask to `and al,1` over the dword load
+// (docs/patterns/dword-load-byte-and-mix.md).
 RVA(0x001353f0, 0x4b)
 i32 DirectSoundMgr::IsPlaying() {
     if (m_owner->m_initialized == 0) {
@@ -227,13 +227,14 @@ i32 DirectSoundMgr::IsPlaying() {
         GetErrorString(DSNDMGR_FILE, 0xac, hr);
         return 0;
     }
-    return (status & DSBSTATUS_PLAYING) == DSBSTATUS_PLAYING;
+    if ((status & DSBSTATUS_PLAYING) == DSBSTATUS_PLAYING) {
+        return 1;
+    }
+    return 0;
 }
 
 // ---------------------------------------------------------------------------
 // IsLooping: GetStatus, report on failure, return the "looping" bit.
-// @early-stop
-// byte-AND-width wall (99%): same as IsPlaying (`and eax,2` vs retail `and al,2`).
 RVA(0x00135440, 0x4d)
 i32 DirectSoundMgr::IsLooping() {
     if (m_owner->m_initialized == 0) {
@@ -245,16 +246,15 @@ i32 DirectSoundMgr::IsLooping() {
         GetErrorString(DSNDMGR_FILE, 0xbb, hr);
         return 0;
     }
-    return (status & DSB_RETAIL_LOOPBIT) == DSB_RETAIL_LOOPBIT;
+    if ((status & DSB_RETAIL_LOOPBIT) == DSB_RETAIL_LOOPBIT) {
+        return 1;
+    }
+    return 0;
 }
 
 // ---------------------------------------------------------------------------
 // IsInHardware: gated on init; GetCaps into a zeroed DSBCAPS, report on failure,
 // return the DSBCAPS_LOCHARDWARE bit. Same normalize/forward shape as IsPlaying.
-// @early-stop
-// byte-AND-width wall (99.88%): retail `and al,4` (24 04) vs cl `and eax,4` (83 e0 04)
-// on the returned (dwFlags & 4)==4 - identical wall to IsLooping/IsPlaying; permuter
-// no-change. Body is byte-exact otherwise (memset-{0} keeps the redundant dwSize zero).
 RVA(0x00135490, 0x73)
 i32 DirectSoundMgr::IsInHardware() {
     if (m_owner->m_initialized == 0) {
@@ -268,7 +268,10 @@ i32 DirectSoundMgr::IsInHardware() {
         GetErrorString(DSNDMGR_FILE, 0xcc, hr);
         return 0;
     }
-    return (caps.dwFlags & DSBCAPS_LOCHARDWARE) == DSBCAPS_LOCHARDWARE;
+    if ((caps.dwFlags & DSBCAPS_LOCHARDWARE) == DSBCAPS_LOCHARDWARE) {
+        return 1;
+    }
+    return 0;
 }
 
 RVA(0x00135510, 0x25)

@@ -5,7 +5,7 @@
 #include <Rez/RezMgr.h>             // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
 #include <rva.h>
 #include <string.h>
-#include <DDrawMgr/DDSurface.h>      // PidHeader - .PID and .RID share the header
+#include <DDrawMgr/DDSurface.h>     // PidHeader - .PID and .RID share the header
 #include <Image/FileImageRecords.h> // the real on-disk PcxHeader
 
 DATA(0x002bf6e0)
@@ -136,14 +136,7 @@ CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 fl
     } else {
         node = 0;
     }
-    if (node->DecodeBmpHeader(
-            static_cast<void*>(hdc),
-            width,
-            height,
-            bitCount,
-            flag
-        )
-        == 0) {
+    if (node->DecodeBmpHeader(static_cast<void*>(hdc), width, height, bitCount, flag) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -187,15 +180,7 @@ CRezImage* CImagePool::AddSurfaceBlit(void* src, i32 width, i32 height, i32 bitC
     } else {
         node = 0;
     }
-    if (node->DecodeBlit(
-            src,
-            static_cast<void*>(hdc),
-            width,
-            height,
-            bitCount,
-            flag
-        )
-        == 0) {
+    if (node->DecodeBlit(src, static_cast<void*>(hdc), width, height, bitCount, flag) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -239,8 +224,7 @@ CRezImage* CImagePool::AddSurfaceOp(void* buf, i32 kind, i32 ctrl) {
     } else {
         node = 0;
     }
-    if (node->DispatchDecode(buf, kind, static_cast<void*>(hdc), ctrl)
-        == 0) {
+    if (node->DispatchDecode(buf, kind, static_cast<void*>(hdc), ctrl) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -285,12 +269,7 @@ CRezImage* CImagePool::AddSurfaceRez(char* name, i32 ctrl) {
     } else {
         node = 0;
     }
-    if (node->LoadFromRez(
-            name,
-            static_cast<void*>(hdc),
-            ctrl
-        )
-        == 0) {
+    if (node->LoadFromRez(name, static_cast<void*>(hdc), ctrl) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -334,12 +313,7 @@ CRezImage* CImagePool::AddSurfaceConvert(CRezImage* src, void* pal) {
     } else {
         node = 0;
     }
-    if (node->Convert8To16(
-            static_cast<void*>(hdc),
-            src,
-            pal
-        )
-        == 0) {
+    if (node->Convert8To16(static_cast<void*>(hdc), src, pal) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -781,7 +755,8 @@ i32 CRezImage::DecodePcxData(void* buf, void* a2, i32 a3) {
     }
 
     u8* src = hdr->m_pixels; // the RLE stream at +0x80
-    i32 scanBytes = (width * static_cast<i8>(hdr->m_planes) * static_cast<i8>(hdr->m_bitsPerPixel) + 7) / 8;
+    i32 scanBytes =
+        (width * static_cast<i8>(hdr->m_planes) * static_cast<i8>(hdr->m_bitsPerPixel) + 7) / 8;
     u8* scan = static_cast<u8*>(::operator new(scanBytes));
 
     for (i32 y = 0; y < height; y++) {
@@ -1223,12 +1198,13 @@ RVA(0x00176e70, 0x4e)
 i32 ApiCallerStubs::CImagePaletteNode::ProcessPal(void* rgb, i32 flags) {
     PALETTEENTRY pal[256];
     u8* s = static_cast<u8*>(rgb);
-    PALETTEENTRY* d = pal;
+    // indexed (pal[i].field), NOT a walking `d` pointer: cl anchors the strength-
+    // reduced dst cursor on peGreen (`lea edx,[esp+1]`) for the indexed spelling and
+    // on peBlue (`lea edx,[esp+2]`) for the pointer-bump one.
     for (i32 i = 0; i < 256; i++) {
-        d->peRed = *s++;
-        d->peGreen = *s++;
-        d->peBlue = *s++;
-        d++;
+        pal[i].peRed = *s++;
+        pal[i].peGreen = *s++;
+        pal[i].peBlue = *s++;
     }
     return Build(pal, flags);
 }
@@ -1237,27 +1213,18 @@ i32 ApiCallerStubs::CImagePaletteNode::ProcessPal(void* rgb, i32 flags) {
 // CImagePaletteNode::ProcessPalQuad (0x176ec0, ret 8) - same R/B swap as
 // ProcessPalBGR but the source is a 4-byte-per-entry RGBQUAD array (DIB palette
 // order: blue, green, red, reserved); stride 4, peFlags untouched, then realize.
-// @early-stop
-// stride-4 strength-reduction wall (~62.7%). Body/logic identical to ProcessPalBGR
-// (95.6%) apart from `s += 4` vs `s += 3`. That stride-4 makes this wine MSVC5 split
-// the source into TWO induction registers (a kept `s` in esi plus a walking edx, one
-// byte fetched via a merged `[esi+eax]` dst-relative address) instead of the clean
-// single-induction `[eax+1]/[eax-4]/[eax-5]` retail (and ProcessPalBGR) emit. Not
-// source-steerable (load-into-locals, `pal[i]` indexing, reordered stores all keep the
-// two-IV split) and the permuter finds no operand-order win. Prologue/counter/Build
-// tail + the palette bytes produced are exact.
+// Same indexed-dst / in-loop source cursor as ProcessPalBGR; at stride 4 that is
+// what makes cl base-difference two of the three dst writes off the source cursor
+// (esi/edi = pal - bgr), which is exactly retail's three-address-mode loop.
 // ===========================================================================
 RVA(0x00176ec0, 0x64)
 i32 ApiCallerStubs::CImagePaletteNode::ProcessPalQuad(void* bgr, i32 flags) {
     PALETTEENTRY pal[256];
-    u8* s = static_cast<u8*>(bgr);
-    PALETTEENTRY* d = pal;
     for (i32 i = 0; i < 256; i++) {
-        d->peRed = s[2];
-        d->peGreen = s[1];
-        d->peBlue = s[0];
-        s += 4;
-        d++;
+        u8* s = static_cast<u8*>(bgr) + i * 4;
+        pal[i].peRed = s[2];
+        pal[i].peGreen = s[1];
+        pal[i].peBlue = s[0];
     }
     return Build(pal, flags);
 }
@@ -1266,25 +1233,20 @@ i32 ApiCallerStubs::CImagePaletteNode::ProcessPalQuad(void* bgr, i32 flags) {
 // CImagePaletteNode::ProcessPalBGR (0x176f30, ret 8) - same as ProcessPal but the
 // source triples are BGR-ordered (peBlue = s[0] ... peRed = s[2]); expand into a
 // PALETTEENTRY[256] (peFlags untouched) then realize.
-// @early-stop
-// dst-pointer-anchor tie (~95.6%): source side byte-identical (eax bias +1, the
-// [eax+1]/[eax-3]/[eax-4] BGR reads, the add eax,3 mid-body); the sole residue is the
-// dst induction anchor - retail centres edx on peGreen (lea edx,[esp+1], writes
-// [edx-1]/[edx]/[edx+1]), the recompile centres on peBlue (lea edx,[esp+2]). A pure
-// MSVC5 strength-reduction bias choice; the permuter + read-interleave reshuffles
-// don't flip it. Logic complete.
+// Indexed dst (pal[i]) centres the cursor on peGreen (lea edx,[esp+1], writes
+// [edx-1]/[edx]/[edx+1]) as retail does; a walking `d` pointer centres on peBlue.
+// The source cursor is derived INSIDE the loop (base + i*3, strength-reduced back to
+// a walking pointer) - a hoisted `u8* s` schedules its `inc eax` bias ahead of the
+// dst `lea`, which is the only thing retail orders the other way round.
 // ===========================================================================
 RVA(0x00176f30, 0x51)
 i32 ApiCallerStubs::CImagePaletteNode::ProcessPalBGR(void* bgr, i32 flags) {
     PALETTEENTRY pal[256];
-    u8* s = static_cast<u8*>(bgr);
-    PALETTEENTRY* d = pal;
     for (i32 i = 0; i < 256; i++) {
-        d->peRed = s[2];
-        d->peGreen = s[1];
-        d->peBlue = s[0];
-        s += 3;
-        d++;
+        u8* s = static_cast<u8*>(bgr) + i * 3;
+        pal[i].peRed = s[2];
+        pal[i].peGreen = s[1];
+        pal[i].peBlue = s[0];
     }
     return Build(pal, flags);
 }

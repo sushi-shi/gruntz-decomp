@@ -246,16 +246,19 @@ void CDDrawSurfaceMgr::SetHwnd(void* hWnd) {
 RVA(0x00155f60, 0x56)
 i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, i32 flags) {
     CDDrawSurfaceChildA* child = m_drawTarget->m_frontPair;
+    // The level rebuild is INSIDE the resize guard: retail's `je` on the
+    // already-correct size jumps straight to `return 1` (0x155f7b -> 0x155fab),
+    // it does not fall into the m_level branch.
     if (child->m_width != x || child->m_height != y) {
         if (m_drawTarget->ResizePages(x, y, flags) == 0) {
             return 0;
         }
-    }
-    if (m_level != 0) {
-        // Retail rel32 is 0x15d700 = CGameLevel::SetExtentsAndBuildAll(x, y) - the
-        // ex cross-cast "recursive SetDimensions" placeholder mis-read the target.
-        if (m_level->SetExtentsAndBuildAll(x, y) == 0) {
-            return 0;
+        if (m_level != 0) {
+            // Retail rel32 is 0x15d700 = CGameLevel::SetExtentsAndBuildAll(x, y) - the
+            // ex cross-cast "recursive SetDimensions" placeholder mis-read the target.
+            if (m_level->SetExtentsAndBuildAll(x, y) == 0) {
+                return 0;
+            }
         }
     }
     return 1;

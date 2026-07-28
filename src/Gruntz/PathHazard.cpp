@@ -6,7 +6,7 @@
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/Grunt.h> // CGrunt - FindGruntAt's real return (ex CPathEntity pad view)
+#include <Gruntz/Grunt.h>      // CGrunt - FindGruntAt's real return (ex CPathEntity pad view)
 #include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SoundCue.h> // the shared positional-sound cue subsystem
@@ -19,13 +19,10 @@
 #include <Gruntz/PathHazardActReg.h> // CActRegPool<CPathHazard>::s_table (ex .cpp extern)
 #include <rva.h>
 #include <rva.h>
+// The body is empty: the leg/strike windows are zeroed by CHazardTimer's own ctor
+// (that is what emits retail's per-window store batch, see PathHazard.h).
 RVA(0x00013170, 0x7b)
-CPathHazard::CPathHazard() {
-    m_legDeadline = 0;
-    m_legWindow = 0;
-    m_strikeDeadline = 0;
-    m_strikeWindow = 0;
-}
+CPathHazard::CPathHazard() {}
 
 // CPathHazard::~CPathHazard @0x013280 - the leaf adds no destructible members beyond
 // CUserLogic, so its dtor folds the bare CUserLogic teardown: store the CUserLogic vptr
@@ -66,11 +63,7 @@ LogicTypeId CRainCloud::GetTypeTag() {
 
 RVA(0x000b35a0, 0x401)
 CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_legDeadline = 0;
-    m_legWindow = 0;
-    m_strikeDeadline = 0;
-    m_strikeWindow = 0;
-
+    // (m_leg/m_strike zeroed by CHazardTimer's ctor, before this body.)
     m_38->m_flags |= 0x2000002;
 
     CWwdGameObjectA* o = m_object;
@@ -143,11 +136,9 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x000b3b60, 0x102)
 void CPathHazard::FireActivation(i32 id) {
-    CActHandler* e =
-        (CActRegPool<CPathHazard>::s_table.ResolveEntry(id));
+    CActHandler* e = (CActRegPool<CPathHazard>::s_table.ResolveEntry(id));
     if ((*e) != 0) {
-        (this
-             ->*(*((CActRegPool<CPathHazard>::s_table.ResolveEntry(id)))))();
+        (this->*(*((CActRegPool<CPathHazard>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -181,14 +172,9 @@ i32 CPathHazard::Tick() {
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
         i32 outA, outB;
-        CGrunt* ent = reg->m_cmdGrid->FindGruntAt(
-            obj->m_screenX,
-            obj->m_screenY,
-            &obj->m_area,
-            &outA,
-            &outB,
-            &rect
-        );
+        CGrunt* ent =
+            reg->m_cmdGrid
+                ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &outA, &outB, &rect);
         if (ent != 0 && ent->m_gruntKind != 0x38) {
             if (g_gameReg->m_134 != 1 || outA != 0) {
                 if (this->HitTest(outA, outB) == 0) { // virtual slot 20 (+0x50)
@@ -209,8 +195,8 @@ i32 CPathHazard::Tick() {
             this->Arrive(); // virtual slot 18 (+0x48)
             i32 segs = m_object->m_120;
             if (segs > 0) {
-                m_legWindow = segs;
-                m_legDeadline =
+                m_leg.m_window = segs;
+                m_leg.m_deadline =
                     static_cast<u32>(g_frameTime); // the running game clock seeds the leg deadline
                 m_prevAnimSetNode = m_objAux->m_1c;
                 m_objAux->m_1c = ActFindId("B");
@@ -276,7 +262,8 @@ RVA(0x000b4350, 0x7e)
 i32 CRainCloud::Tick() {
     if (m_strikeArmed != 0) {
         i32 idx = 5;
-        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_strikeDeadline < m_strikeWindow) {
+        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_strike.m_deadline
+            < m_strike.m_window) {
             if (static_cast<u32>(g_timer200) >= 0x64) {
                 idx = 0;
             }
@@ -313,8 +300,8 @@ RVA(0x000b43f0, 0x1c7)
 i32 CPathHazard::SiblingTick() {
     if (m_strikeArmed != 0) {
         i32 sel = 5;
-        i64 elapsed = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_strikeDeadline;
-        if (elapsed >= m_strikeWindow) {
+        i64 elapsed = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_strike.m_deadline;
+        if (elapsed >= m_strike.m_window) {
             m_strikeArmed = 0;
         } else if (g_timer200 < 0x64) {
             sel = 0;
@@ -339,14 +326,9 @@ i32 CPathHazard::SiblingTick() {
         // window mode, skip the query
     } else {
         i32 outA, outB;
-        CGrunt* ent = reg->m_cmdGrid->FindGruntAt(
-            obj->m_screenX,
-            obj->m_screenY,
-            &obj->m_area,
-            &outA,
-            &outB,
-            &rect
-        );
+        CGrunt* ent =
+            reg->m_cmdGrid
+                ->FindGruntAt(obj->m_screenX, obj->m_screenY, &obj->m_area, &outA, &outB, &rect);
         if (ent != 0 && ent->m_gruntKind != 0x38) {
             if (g_gameReg->m_134 != 1 || outA != 0) {
                 if (this->HitTest(outA, outB) == 0) {
@@ -356,8 +338,8 @@ i32 CPathHazard::SiblingTick() {
         }
     }
 
-    i64 legElapsed = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_legDeadline;
-    if (legElapsed >= m_legWindow) {
+    i64 legElapsed = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_leg.m_deadline;
+    if (legElapsed >= m_leg.m_window) {
         CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 7;

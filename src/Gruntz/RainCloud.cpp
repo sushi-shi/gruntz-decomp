@@ -40,10 +40,10 @@ RVA_COMPGEN(0x00013340, 0x44, ??1CRainCloud@@UAE@XZ)
 RVA(0x000b4640, 0x104)
 i32 CRainCloud::HitTest(i32 a, i32 b) {
     m_strikeArmed = 1;
-    m_strikeWindow = static_cast<i64>(
+    m_strike.m_window = static_cast<i64>(
         static_cast<u32>(g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0))
     );
-    m_strikeDeadline = static_cast<i64>(static_cast<u32>(g_frameTime));
+    m_strike.m_deadline = static_cast<i64>(static_cast<u32>(g_frameTime));
     g_gameReg->m_cmdGrid->CellDispatch(a, b, 9, -1);
 
     CWwdGameObjectA* obj = m_object;

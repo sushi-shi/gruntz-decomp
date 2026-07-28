@@ -78,16 +78,16 @@ i32 CUFO::SerializeMove(CFileMemBase* ar, i32 mode, i32 c, CGameObject* d) {
 
 // (0xb4cb0 - CRainCloud::SerializeMove - moved to its owner RainCloud.cpp.)
 
-// the +0x108/+0x120 deadline pairs stream as two adjacent 8-byte quads
-static inline void SerQuadPair(CFileMemBase* s, i32 tag, i64* p) {
+// a hazard timing window (+0x108 leg, +0x120 strike) streams as its two 8-byte quads
+static inline void SerQuadPair(CFileMemBase* s, i32 tag, CHazardTimer* p) {
     if (tag != 4) {
         if (tag == 7) {
-            s->Read(p, 8);
-            s->Read(p + 1, 8);
+            s->Read(&p->m_deadline, 8);
+            s->Read(&p->m_window, 8);
         }
     } else {
-        s->Write(p, 8);
-        s->Write(p + 1, 8);
+        s->Write(&p->m_deadline, 8);
+        s->Write(&p->m_window, 8);
     }
 }
 
@@ -100,8 +100,8 @@ i32 CPathHazard::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObject
     if (Chain(static_cast<CFileMemBase*>(stream), tag, c, d) == 0) {
         return 0;
     }
-    SerQuadPair(s, tag, &m_legDeadline);
-    SerQuadPair(s, tag, &m_strikeDeadline);
+    SerQuadPair(s, tag, &m_leg);
+    SerQuadPair(s, tag, &m_strike);
     if (tag != 4) {
         if (tag == 7) {
             s->Read(&m_speed, 8);
