@@ -27,7 +27,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // canonical CDDrawSurfaceMgr (OwnerMgr() / m_0c parent)
 #include <DDrawMgr/DDrawPtrCollections.h> // canonical CDDrawPtrCollections (the +0x1c surface pool)
 #include <DDrawMgr/AniRecord.h>           // ex Globals.h
-#include <Image/ImageFormatTag.h>        // IMGTAG_XCP - the PCX entry-tag gate
+#include <Image/ImageFormatTag.h>         // IMGTAG_XCP - the PCX entry-tag gate
 
 // The locked-surface pixel geometry is read straight off the held CDDSurface:
 // its byte-pitch (m_pitch @+0x20), its bytes-per-pixel divisor (m_b0 @+0xb0), and
@@ -238,13 +238,7 @@ i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
     if (buf == 0) {
         return 0;
     }
-    i32 r = m_surface->Resolve(
-        OwnerMgr()->m_ptrColl,
-        buf,
-        type,
-        src->m_length,
-        0
-    );
+    i32 r = m_surface->Resolve(OwnerMgr()->m_ptrColl, buf, type, src->m_length, 0);
     src->EndParse();
     return r;
 }
@@ -743,7 +737,7 @@ i32 CResolveNode::SetPosition(i32 x, i32 y) {
 
 RVA(0x001647e0, 0x48)
 i32 CResolveNode::Init(
-    CImageParent * owner,
+    CDDrawSurfaceMgr* owner,
     i32 field04,
     i32 resolveX,
     i32 resolveY,

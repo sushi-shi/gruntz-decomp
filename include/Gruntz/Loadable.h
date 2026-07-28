@@ -72,9 +72,17 @@ public:
     // IsLoaded gates on `m_id != -1`.
     i32 m_id;
     i32 m_flags; // +0x08  (reset to 0; the wide-object collision/state flag word)
-    // +0x0c  the owner-context handle (the CDDrawSurfaceMgr across the draw family
-    // - read via OwnerMgr(); plane/leaf embedders park other context words here,
-    // which is why the slot stays a generic i32). Reset to 0 on teardown.
+    // +0x0c  the owner-context handle: the CDDrawSurfaceMgr, read via OwnerMgr().
+    // The "plane/leaf embedders park OTHER context words here" claim that used to
+    // justify the generic i32 is DISPROVED (2026-07-28). Its one cited counterexample
+    // was CResolveNode::Init taking a `CImageParent*`, and CImageParent was a pad-view
+    // OF CDDrawSurfaceMgr (offsets +0x04/+0x1c/+0x24 all line up - see the dissolution
+    // note in <Image/CImage.h>). Every other consumer agrees: CDDrawWorker::Owner(),
+    // CDDrawSubMgrLeaf's OwnerMgr()->m_soundRegistry, and CDDrawChildGroup::
+    // CreateObject_159440, which hands the SAME word to CResolveNode as an i32 and to
+    // AnimWorkerObj as OwnerMgr() two lines later. Retyping the member (and the ctor
+    // /CResolveNode/LeafCue/CDrawSubWorker owner params that carry it) is the open
+    // follow-up; the slot stays i32 only until that cascade lands.
     i32 m_ownerCtx;
 
     CLoadable() {}
@@ -88,11 +96,11 @@ public:
     // stores in their own ctor body (over the default base ctor), reproducing the
     // fused shape without a second definition.
     CLoadable(i32 owner, i32 field04, i32 field08);
-    // The +0x0c owner context IS the CDDrawSurfaceMgr across the whole draw family
-    // (surface pairs/children, workers, resolve nodes, cue leaves - every read site
-    // agrees); plane/leaf embedders park OTHER context words in the same slot and
-    // never call this - a PROVEN heterogeneous slot, so it stays a generic handle
-    // and this accessor is the one seam where the draw family's type goes back on.
+    // The +0x0c owner context IS the CDDrawSurfaceMgr across the whole draw family -
+    // surface pairs/children, workers, resolve nodes, cue leaves; every read site
+    // agrees and the one alleged exception folded (see the member note above).
+    // one seam: the last place the slot's real type is re-applied, and it exists only
+    // while the member itself is still declared i32 - retype it and this cast goes.
     class CDDrawSurfaceMgr* OwnerMgr() const {
         return reinterpret_cast<class CDDrawSurfaceMgr*>(m_ownerCtx);
     }
