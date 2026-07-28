@@ -16,9 +16,10 @@
 #include <Gruntz/State.h>        // CState (reg->m_curState: the level-type descriptor)
 #include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/ActReg.h>
-#include <Bute/ButeMgr.h> // CButeTree (the type-registry funnel)
-#include <math.h>         // sin / cos (StepMotion's parabola)
-#include <string.h>       // memset (1-arg spawn ctor's +0x1e0 zero-fill)
+#include <Bute/ButeMgr.h>  // CButeTree (the type-registry funnel)
+#include <math.h>          // sin / cos (StepMotion's parabola)
+#include <string.h>        // memset (1-arg spawn ctor's +0x1e0 zero-fill)
+#include <Gruntz/Brickz.h> // BrickzCell - the 0x1c tile-grid cell m_rows walks
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/StatusBarUpdatersViews.h>
@@ -1175,8 +1176,8 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     i32 cy = m_object->m_screenY >> 5;
     CMapMgr* g = g_gameReg->m_tileGrid;
     if (cx < g->m_width && cy < g->m_height) {
-        i32* row = g->m_rowInts[cy];
-        row[cx * 7] |= 0x1000000;
+        BrickzCell* row = g->m_rows[cy];
+        row[cx].m_0 |= 0x1000000;
     }
     m_object->m_124 = -1;
 }
@@ -1187,8 +1188,8 @@ static inline i32 TBombGridCell(CGameObject* obj) {
     i32 cy = obj->m_screenY >> 5;
     if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
         && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
-        i32* row = g->m_rowInts[cy];
-        return row[cx * 7];
+        BrickzCell* row = g->m_rows[cy];
+        return row[cx].m_0;
     }
     return 1;
 }
@@ -1198,8 +1199,8 @@ static inline void TBombGridClear(CGameObject* obj) {
     i32 cy = obj->m_screenY >> 5;
     if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
         && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
-        i32* row = g->m_rowInts[cy];
-        row[cx * 7] &= ~0x1000000;
+        BrickzCell* row = g->m_rows[cy];
+        row[cx].m_0 &= ~0x1000000;
     }
 }
 

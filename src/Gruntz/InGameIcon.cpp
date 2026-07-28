@@ -25,10 +25,10 @@
 
 #include <Gruntz/Grunt.h>      // canonical CGrunt (LoadPickupSprites/LoadGruntTypeTable)
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr - m_cmdGrid (its m_grid CGrunt cells; ex CIconRecord)
-#include <Gruntz/Brickz.h>   // canonical BrickzCell - the 0x1c-byte tile cell at m_rows[y][x]
+#include <Gruntz/Brickz.h>     // canonical BrickzCell - the 0x1c-byte tile cell at m_rows[y][x]
 #include <Gruntz/SoundState.h> // ex Globals.h transitive
 #include <Gruntz/Random.h>     // ex Globals.h transitive
-#include <Utils/MapTyped.h> // MapLookupById - the forced id->void* key pun
+#include <Utils/MapTyped.h>    // MapLookupById - the forced id->void* key pun
 
 VTBL(CInGameText, 0x001e7cac);
 VTBL(CInGameIcon, 0x001e7d04);
@@ -558,10 +558,8 @@ i32 CInGameIcon::HandleInput() {
 
 RVA(0x00097880, 0x102)
 void CInGameIcon::FireActivation(i32 id) {
-    if (*CActRegPool<CInGameIcon>::s_table.ResolveEntry(id)
-        != 0) {
-        (this
-             ->*(*CActRegPool<CInGameIcon>::s_table.ResolveEntry(id)))();
+    if (*CActRegPool<CInGameIcon>::s_table.ResolveEntry(id) != 0) {
+        (this->*(*CActRegPool<CInGameIcon>::s_table.ResolveEntry(id)))();
     }
 }
 
@@ -588,8 +586,7 @@ void RegisterIconActions() {
         g_typeCounter++;
     }
     CActHandler* dslotA = CActRegPool<CInGameIcon>::s_table.ResolveEntryCallReport(idxA);
-    *dslotA =
-        static_cast<CActHandler>(&CInGameIcon::PeekCycle);
+    *dslotA = static_cast<CActHandler>(&CInGameIcon::PeekCycle);
 
     i32 idxB = ActFindId("B");
     if (idxB == 0) {
@@ -600,16 +597,13 @@ void RegisterIconActions() {
         g_typeCounter++;
     }
     CActHandler* dslotB = CActRegPool<CInGameIcon>::s_table.ResolveEntryCallReport(idxB);
-    *dslotB =
-        static_cast<CActHandler>(&CInGameIcon::Reposition);
+    *dslotB = static_cast<CActHandler>(&CInGameIcon::Reposition);
 }
 
 RVA(0x00097de0, 0x102)
 void CToyPeek::FireActivation(i32 id) {
-    if (*CActRegPool<CToyPeek>::s_table.ResolveEntry(id)
-        != 0) {
-        (this
-             ->*(*CActRegPool<CToyPeek>::s_table.ResolveEntry(id)))();
+    if (*CActRegPool<CToyPeek>::s_table.ResolveEntry(id) != 0) {
+        (this->*(*CActRegPool<CToyPeek>::s_table.ResolveEntry(id)))();
     }
 }
 
@@ -636,8 +630,7 @@ void RegisterIconState() {
         g_typeCounter++;
     }
     CActHandler* dslot = CActRegPool<CToyPeek>::s_table.ResolveEntry(idx);
-    *dslot =
-        static_cast<CActHandler>(&CInGameIcon::RefreshCell);
+    *dslot = static_cast<CActHandler>(&CInGameIcon::RefreshCell);
 }
 
 RVA(0x00098340, 0x71)
@@ -652,8 +645,8 @@ i32 CInGameIcon::RefreshCell() {
         i32 cell;
         if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_width)
             && static_cast<u32>(tileX) < static_cast<u32>(grid->m_height)) {
-            i32* row = grid->m_rowInts[tileX];
-            cell = row[tileY * 8 - tileY + 2];
+            BrickzCell* row = grid->m_rows[tileX];
+            cell = row[tileY].m_8;
         } else {
             cell = 0;
         }
@@ -824,7 +817,8 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         if (m_cue != 0) {
             CWwdGameObjectA* o = m_object;
             if (o->m_screenX < reg->m_viewBounds.right && o->m_screenX >= reg->m_viewBounds.left
-                && o->m_screenY < reg->m_viewBounds.bottom && o->m_screenY >= reg->m_viewBounds.top) {
+                && o->m_screenY < reg->m_viewBounds.bottom
+                && o->m_screenY >= reg->m_viewBounds.top) {
                 // The receiver IS m_cue. The ex-"stale ecx / no receiver load" reading
                 // was wrong: retail 0x986b0 loads `mov ecx,[esi+0x54]` for the null test
                 // above and NOTHING between there and the call touches ecx, so the
@@ -943,8 +937,7 @@ i32 CInGameIcon::Reposition() {
         }
         if (cellVal != 0) {
             void* found = 0;
-            if (MapLookupById(reg->m_world->m_childGroup->m_map48, cellVal, found)
-                && found != 0) {
+            if (MapLookupById(reg->m_world->m_childGroup->m_map48, cellVal, found) && found != 0) {
                 (static_cast<CGameObject*>(found))->m_flags |= 0x10000;
             }
         }
@@ -996,7 +989,6 @@ RVA(0x00098c90, 0x31f)
 i32 CInGameIcon::SerializeMove(CFileMemBase*, i32, i32, CGameObject*) {
     return 0;
 }
-
 
 // CInGameText::CInGameText @0x099110 - fold the shared CUserLogic(obj) init, then
 // (unless the registry is in the no-place mode m_134==2) bind the "A" bute node,
