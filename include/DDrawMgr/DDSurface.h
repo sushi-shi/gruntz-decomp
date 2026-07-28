@@ -145,8 +145,14 @@ public:
     i32 SetPalette(CDDPalette* pal, i32 unused); // 0x13e690
     i32 Restore(void* arg1, i32 arg2);           // 0x13e7d0 (BoundaryUpper2.cpp)
     i32 Flip(CDDSurface* target);                // 0x13e850
-    void* GetElementAt(i32 i);                   // 0x13ea70  m_elements[i] (bounds-checked)
-    i32 SetColorKey(u32 flags, void* key);       // 0x13eaa0
+    // 0x13e8f0 - rebuild the global attached-surface cache off THIS surface: scalar-
+    // delete the cached wrappers, empty both arrays, re-enumerate through
+    // IDirectDrawSurface::EnumAttachedSurfaces + EnumSurfacesCallback, then copy the
+    // fresh cache into m_elements. A CDDSurface method (ecx = this, and the loop bound
+    // is this->m_elements.m_nSize at +0x9c); returns void.
+    void ReloadImageCache();               // 0x13e8f0
+    void* GetElementAt(i32 i);             // 0x13ea70  m_elements[i] (bounds-checked)
+    i32 SetColorKey(u32 flags, void* key); // 0x13eaa0
     // Convenience SetColorKey overloads that build a DDCOLORKEY on the stack + forward.
     i32 SetColorKeyVal(u32 flags, u32 key);          // 0x13eae0  key={v,v}
     i32 SetColorKeyRange(u32 flags, u32 lo, u32 hi); // 0x13eb10  key={lo,hi}
@@ -382,5 +388,15 @@ extern u16 g_lut16[256];
 // File-scope prototypes moved from the .cpp (external linkage
 // belongs in the owner header).
 void* operator new(u32); // engine allocator (reloc-masked rel32)
+
+// The global attached-surface cache the enumeration callback fills and
+// CDDSurface::ReloadImageCache drains (defined in DDSurface.cpp).
+extern CPtrArray g_imageCache;
+// 0x13e9a0 - the DDENUMSURFACESCALLBACK ReloadImageCache hands
+// IDirectDrawSurface::EnumAttachedSurfaces (declared here because the caller is
+// defined ABOVE it in the .cpp).
+// (HRESULT, not i32: that IS the SDK's DDENUMSURFACESCALLBACK return type, and
+//  declaring it so lets ReloadImageCache pass the address with no cast.)
+HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* desc, void* ctx);
 
 #endif // DDRAWMGR_CDDSURFACE_H
