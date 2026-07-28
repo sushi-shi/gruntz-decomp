@@ -62,8 +62,8 @@ public:
     // Expand a dynamically-allocated block of source entries into PALETTEENTRYs
     // then SetAndNotify. Quad: 4-byte RGBQUAD source (R/B swapped). RGB: packed
     // 3-byte RGB source (straight). Both return the SetAndNotify HRESULT.
-    i32 SetEntriesQuad(i32 start, i32 count, u8* quads, i32 a4); // 0x147b10
-    i32 SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 a4);    // 0x147ba0
+    i32 SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 a4); // 0x147b10
+    i32 SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 a4);         // 0x147ba0
     // Linear time-based BLOCKING fade of the [start,start+count) range toward
     // the solid color (r,g,b) over durationMs ms; finalizes with SetRange.
     void FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b,
