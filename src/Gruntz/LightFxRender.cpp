@@ -83,8 +83,14 @@ void CLightFxRender::FreeSurface() {
 // CLightFxRender::AllocSurface  (0x0a33e0)
 // ===========================================================================
 // @early-stop
-// 99.68% - regalloc tail: the two adjacent loads info->m_0c / info->m_10 land in
-// swapped registers vs retail (edx<->eax); values + push order identical.
+// argument-load ORDER phase (99.68%): the transposed width/height was the real bug (see
+// below) and is fixed; what is left is that cl emits the two dimension loads in argument
+// evaluation order (arg2 `[info+0x10]`, then arg1 `[info+0xc]`, so arg1 lands in eax
+// because eax is the `info` base being overwritten) while retail emits them ascending by
+// offset (`[info+0xc]` -> edx, `[info+0x10]` -> eax). Two modrm bytes + the two `push`
+// opcodes; the pushed VALUES and their order are identical. Explicit `i32 w`/`i32 h`
+// locals do not move it - cl copy-propagates them back into the call - and match_variants
+// --state-trials 48 --max-depth 3 exhausted 384 variants without a win.
 RVA(0x000a33e0, 0x55)
 i32 CLightFxRender::AllocSurface() {
     if (m_tileGrid == 0) {
@@ -96,7 +102,10 @@ i32 CLightFxRender::AllocSurface() {
     FreeSurface();
     CGruntzMapMgr* info = m_tileGrid;
     CDDrawSurfaceMgr* mgr = m_world;
-    m_surface = mgr->m_ptrColl->MakeAndAddB(info->m_height, info->m_width, 0, 0, -1);
+    // WIDTH first, then height: retail pushes [info+0xc] as arg1 and [info+0x10] as
+    // arg2 (the ex "edx<->eax regalloc tail" was these two arguments TRANSPOSED - the
+    // work surface was being allocated with the grid's rows/columns swapped).
+    m_surface = mgr->m_ptrColl->MakeAndAddB(info->m_width, info->m_height, 0, 0, -1);
     if (m_surface == 0) {
         return 0;
     }

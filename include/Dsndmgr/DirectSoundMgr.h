@@ -9,6 +9,7 @@ struct IDirectSound;       // forward-decl: real dsound.h interface (dispatched 
 struct IDirectSoundBuffer; // forward-decl: CreateSoundBuffer's out-param type
 class SoundDevice;         // owning device (m_owner); full def in SoundDevice.h
 class DirectSoundMgr;      // a clone (CloneNode::m_inst back-points at it)
+struct WaveFormatX;        // <Dsndmgr/WaveFormatX.h> - the PCM header ParseWaveChunks finds
 
 struct CloneNode : public DSoundLink {
     DirectSoundMgr* m_inst; // +0x08  back-pointer to the owning buffer
@@ -124,8 +125,10 @@ SIZE(0x60); // buffer leaf: CreateBuffer RezAlloc(0x60)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-struct ParseFmt; // the RIFF fmt-chunk view (def in DirectSoundMgr.cpp)
-extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut);
+// The parser's three OUT-params are three separate variables: retail's Acquire /
+// ReloadRiff each pass three distinct addresses (two of them dead argument homes),
+// and 0x137110 writes only *fmtOut - the ex "ParseFmt" 3-dword struct was a view.
+extern "C" i32 ParseWaveChunks(void* riff, WaveFormatX** fmtOut, void** dataOut, u32* sizeOut);
 extern const char s_rb[];
 
 extern "C" i32 ConvertVolumeToPercent(i32 v); // 0x135110 (C linkage carrier)

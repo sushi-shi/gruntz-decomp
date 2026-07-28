@@ -1547,14 +1547,11 @@ i32 g_lastLevelNum = -1;
 // config name), the "+0x188 default-int" object was the CursorSnapSprite game object
 // (CGameObject::m_188, the archive-cue id) and the element arrays are the
 // m_startMarkers / m_3a4[4] / m_488 MFC arrays read raw. Body folded below.)
-// @early-stop
-// scratch-slot scheduling tail (~99.8%): every serialize field/size, the two unsigned
-// count loops, the nested sub-array loop, the inline strlen/strcpy default copies,
-// the g_serialCounter bumps, the conditional reverse-lookup call and the final
-// signed element loop are byte-faithful. The sole residual is the MSVC5 scheduler
-// parking one extra scratch slot (frame 0x294 vs retail 0x28c) + a few zero-init
-// store positions - the entropy tail the CTriggerLoadRec/CTimer::Deserialize siblings
-// share; not source-steerable.
+// (The ex-"extra scratch slot" tail was real information, not entropy: retail's frame
+// holds exactly THREE dwords below the two message buffers, so the three "write a count,
+// then loop over it" sites are ONE reused count variable - and the grid-frame block reads
+// the frame pointer BEFORE zeroing the index, which is why retail stores that 0 as an
+// immediate instead of reusing the memset's zero register.)
 RVA(0x000d79d0, 0x537)
 i32 CPlay::SyncWrite19fb(CFileMemBase* s) {
     if (s == 0) {
@@ -1564,6 +1561,10 @@ i32 CPlay::SyncWrite19fb(CFileMemBase* s) {
     if (mc == 0) {
         return 0;
     }
+    // ONE reused count temp: retail's frame (0x28c) holds exactly three dwords below
+    // the two message buffers - the count, the k1/lookup int, and mc - so the three
+    // "write a count then loop over it" sites are the same variable, not three.
+    i32 count;
 
     s->Write(&m_1bc, 4);
     s->Write(&m_1c0, 4);
@@ -1578,9 +1579,9 @@ i32 CPlay::SyncWrite19fb(CFileMemBase* s) {
     s->Write(&m_dragInhibit1, 4);
     s->Write(&m_dragInhibit2, 4);
 
-    i32 c0 = markerCount();
-    s->Write(&c0, 4);
-    for (u32 i0 = 0; i0 < static_cast<u32>(c0); i0++) {
+    count = markerCount();
+    s->Write(&count, 4);
+    for (u32 i0 = 0; i0 < static_cast<u32>(count); i0++) {
         s->Write(markerData()[i0], 8);
     }
 
@@ -1591,9 +1592,9 @@ i32 CPlay::SyncWrite19fb(CFileMemBase* s) {
     }
 
     for (i32 k1 = 0; k1 < 4; k1++) {
-        i32 cnt = arrCount(k1);
-        s->Write(&cnt, 4);
-        for (u32 i1 = 0; i1 < static_cast<u32>(cnt); i1++) {
+        count = arrCount(k1);
+        s->Write(&count, 4);
+        for (u32 i1 = 0; i1 < static_cast<u32>(count); i1++) {
             s->Write(arrData(k1)[i1], 8);
         }
     }
@@ -1615,9 +1616,13 @@ i32 CPlay::SyncWrite19fb(CFileMemBase* s) {
     {
         char buf[0x80];
         memset(buf, 0, sizeof(buf));
+        // the frame is READ before the index is zeroed (retail loads +0x4d0 first and
+        // so has to store the 0 as an immediate; the other blocks zero first and reuse
+        // a live zero register)
+        CImage* frame = m_gridCurFrame;
         i32 v = 0;
-        if (m_gridCurFrame != 0) {
-            mc->m_imageRegistry->AnyValueMatches(m_gridCurFrame, buf, &v);
+        if (frame != 0) {
+            mc->m_imageRegistry->AnyValueMatches(frame, buf, &v);
         }
         s->Write(buf, 0x80);
         s->Write(&v, 4);
@@ -1672,8 +1677,8 @@ i32 CPlay::SyncWrite19fb(CFileMemBase* s) {
     s->Write(&m_49c, 4);
     s->Write(&m_514, 4);
 
-    i32 c1 = arr488Count();
-    s->Write(&c1, 4);
+    count = arr488Count();
+    s->Write(&count, 4);
     for (i32 fi = 0; fi < arr488Count(); fi++) {
         void* el = arr488Data()[fi];
         if (el != 0) {
@@ -3144,12 +3149,10 @@ GruntzPlayer::~GruntzPlayer() {
     Clear();
 }
 
-// @early-stop
-// ~53%: the ctor-vs-method misbinding is FIXED (retail returns 1, so this is a
-// plain method - no member CString ctor is emitted now), but the /GX frame shape
-// + the g_emptyString/GetDefaultName CString traffic still diverge (static-MFC
-// packaged-inline artifacts; see cstring-empty-init-version-divergence.md).
-// Deferred to the final sweep.
+// (History: this was long stuck as a "/GX frame + CString-version divergence" wall. It
+// was two ordinary things - the ctor-vs-method misbinding, then the scalar seed block
+// being written in a different order from Clear()'s. cl emits those stores in SOURCE
+// order, so the order IS the evidence.)
 RVA(0x000da870, 0xb8)
 i32 GruntzPlayer::SeedForSlot(i32 index) {
     m_playerIndex = index;
@@ -3158,12 +3161,14 @@ i32 GruntzPlayer::SeedForSlot(i32 index) {
     m_joined = 0;
     m_014 = 1;
     m_name = g_emptyString;
-    m_focusY = 0;
+    // same field order as Clear() (its twin): cl emits these stores in SOURCE order,
+    // and retail's is 0x8, 0x10, 0x220, 0x224, 0x228, 0x2c, 0x30.
+    m_008 = index;
     m_configId = 0;
     m_focusX = 0;
-    m_doneFlag = 0;
+    m_focusY = 0;
     m_comboSel = 0xf;
-    m_008 = index;
+    m_doneFlag = 0;
     m_030 = 0;
     m_name = GetDefaultName(0);
     m_latency.m_avg = 0;

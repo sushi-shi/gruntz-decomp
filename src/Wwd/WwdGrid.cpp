@@ -76,12 +76,20 @@ void CWwdGrid::Remove(WwdRegion* r) {
 // for each region truly inside the rect, fire the virtual callback (and, when
 // doRemove, unlink it first). Returns how many fired.
 // ===========================================================================
+// The cell-space corners are ONE WwdRect, not four scalars: retail's frame reserves a
+// 16-byte block whose +0x04 and +0x0c stay EMPTY (only the two X/row members are ever
+// spilled - the Y/col pair lives in eax/edx), and only an aggregate makes cl reserve
+// slots it never touches. The clamped world rect maps member-for-member onto it:
+// minX/maxX -> the row corners ((x-minX)>>shiftY), minY/maxY -> the col corners.
+// (Wrapping the loop in `if(colA<=colB)` instead of an early `return fired` was the
+// earlier fix: 95%->99.7%, killing the duplicate early-return epilogue.)
 // @early-stop
-// 99.7% - entropy tail: body byte-identical bar a `lea ebp,[ecx*8+0]` vs
-// `[8*ecx]` addressing-mode encoding + one [esp] reload-pair load-order swap
-// (scheduling). No source diff closes it. (Wrapping the loop in `if(colA<=colB)`
-// instead of an early `return fired` was the real fix: 95%->99.7%, killing the
-// duplicate early-return epilogue - retail jg's to the shared exit.)
+// 99.92% - ONE scheduling pair left: in the inner loop's tail block cl emits the two
+// independent reloads as `base` then `rowN`, retail as `rowN` then `base` (the `base`
+// reload only feeds the post-loop `base += m_cols`, so both orders are legal and the two
+// instructions are otherwise byte-identical). The frame is now exact - the 16-byte
+// cell-rect aggregate above closed the 0x18-vs-0x20 frame + every slot number.
+// match_variants --state-trials 48 --max-depth 3 exhausted 384 variants without a win.
 RVA(0x001918c0, 0x1a2)
 i32 CWwdGrid::Query(i32 a0, i32 a1, i32 a2, i32 a3, i32 doRemove) {
     i32 fired = 0;
@@ -109,16 +117,17 @@ i32 CWwdGrid::Query(i32 a0, i32 a1, i32 a2, i32 a3, i32 doRemove) {
     if (a3 > m_bounds.m_maxY) {
         a3 = m_bounds.m_maxY;
     }
-    i32 colA = (a1 - m_bounds.m_minY) >> m_shiftX;
-    i32 rowA = (a0 - m_bounds.m_minX) >> m_shiftY;
-    i32 colB = (a3 - m_bounds.m_minY) >> m_shiftX;
-    i32 rowB = (a2 - m_bounds.m_minX) >> m_shiftY;
-    i32 base = colA * m_cols + rowA;
-    if (colA <= colB) {
-        i32 colN = colB - colA + 1;
+    WwdRect cell; // the query rect in CELL space (one aggregate - see above)
+    cell.m_minY = (a1 - m_bounds.m_minY) >> m_shiftX;
+    cell.m_minX = (a0 - m_bounds.m_minX) >> m_shiftY;
+    cell.m_maxY = (a3 - m_bounds.m_minY) >> m_shiftX;
+    cell.m_maxX = (a2 - m_bounds.m_minX) >> m_shiftY;
+    i32 base = cell.m_minY * m_cols + cell.m_minX;
+    if (cell.m_minY <= cell.m_maxY) {
+        i32 colN = cell.m_maxY - cell.m_minY + 1;
         do {
-            if (rowA <= rowB) {
-                i32 rowN = rowB - rowA + 1;
+            if (cell.m_minX <= cell.m_maxX) {
+                i32 rowN = cell.m_maxX - cell.m_minX + 1;
                 i32 idx = base;
                 do {
                     WwdRegion* r =
@@ -261,8 +270,8 @@ WwdRegion* CWwdGridIter::GetNext() {
         }
         while (m_cur != 0) {
             m_next = static_cast<WwdRegion*>(m_cur->m_next);
-            if (m_cur->m_x < m_rect.m_minX || m_cur->m_y < m_rect.m_minY || m_cur->m_x > m_rect.m_maxX
-                || m_cur->m_y > m_rect.m_maxY) {
+            if (m_cur->m_x < m_rect.m_minX || m_cur->m_y < m_rect.m_minY
+                || m_cur->m_x > m_rect.m_maxX || m_cur->m_y > m_rect.m_maxY) {
                 m_cur = m_next;
                 continue;
             }
