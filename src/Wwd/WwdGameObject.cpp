@@ -50,10 +50,6 @@
 // Fields are typed named members at their retail offsets (matching-neutral); only
 // the OFFSETS + emitted code bytes are load-bearing (campaign doctrine).
 
-static inline void StampWorkerVtbl(AnimWorkerObj* w) {
-    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
-}
-
 RVA(0x00058b60, 0x2d)
 void CWwdGameObjectA::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault) {
     m_1a0.Setup(srcSprite);
@@ -84,11 +80,16 @@ void CWwdGameObjectA::ApplyLookupSprite(const char* name, i32 frame) {
     m_sprite = spr; // +0x194 union: cached sprite
     if (spr) {
         if (frame >= spr->m_minIndex && frame <= spr->m_maxIndex) {
+            // The frame pointer is resolved into a local FIRST: retail emits both
+            // GetAt loads, then `m_190 = frame`, then `m_198 = f`. Writing m_190
+            // before the subscript puts its store ahead of the two loads.
+            CImage* f = static_cast<CImage*>(spr->m_items.GetAt(frame));
             m_190 = frame;
-            m_layer = static_cast<CImage*>(spr->m_items.GetAt(frame)); // +0x198 union: frame ptr
+            m_layer = f; // +0x198 union: frame ptr
         } else {
+            CImage* f = 0;
             m_190 = frame;
-            m_layer = 0;
+            m_layer = f;
         }
     }
 }
@@ -133,18 +134,20 @@ i32 CWwdGameObjectA::ApplyLookupGeometry(const char* name, i32 applyDefault) {
 // this->m_c->m_soundRegistry->map; on a hit cache it at +0x19c and return 1. __thiscall, ret 4.
 // ===========================================================================
 // @early-stop
-// out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
-// identical instruction multiset to the sibling Apply* lookups; the `mov [&spr],0`
-// sinks past the arg pushes. ~73%; logic complete, deferred to the final sweep.
+// out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md)
+// and NOTHING else since 2026-07-28: the miss must be the EARLY RETURN (`if (spr == 0)
+// return 0;`), not the positive `if (spr) { ...; return 1; }` - retail lays the miss
+// inline as the `jne` fall-through and reuses the already-zero eax, where the positive
+// form makes cl lay the FOUND block inline and emit a separate `xor eax,eax` tail.
 RVA(0x00150610, 0x41)
 i32 CWwdGameObjectA::LookupAnimSprite(const char* name) {
     CDDrawWorker* spr = 0;
     MapLookup(OwnerMgr()->m_soundRegistry->m_10, name, spr);
-    if (spr != 0) {
-        m_19cSprite = spr; // +0x19c union: the cached anim sprite (vs a WwdFile stamp)
-        return 1;
+    if (spr == 0) {
+        return 0;
     }
-    return 0;
+    m_19cSprite = spr; // +0x19c union: the cached anim sprite (vs a WwdFile stamp)
+    return 1;
 }
 
 RVA(0x00150660, 0x49)
@@ -513,9 +516,6 @@ i32 CGameObject::Setup(i32 a1, i32 a2, i32 a3, AnimWorkerObj* tmpl) {
 // CGameObject::EnsureWorker80 (0x150eb0): the +0x80 worker variant of
 // EnsureWorker88/90 - same lazy build/reuse/feed, but it RETURNS the slot-9 result
 // (or 0 on the null guards). Called by AddLogicHit (0x150f50).
-// @early-stop
-// Expected to share the zero-register-pinning wall of EnsureWorker88/90 (this/0 in
-// esi<->edi). Logic byte-exact; a pure allocator coin-flip, not source-steerable.
 RVA(0x00150eb0, 0x98)
 i32 CGameObject::EnsureWorker80(AnimWorkerObj* src) {
     if (src == 0) {
@@ -524,23 +524,7 @@ i32 CGameObject::EnsureWorker80(AnimWorkerObj* src) {
     if (m_80 != 0) {
         m_80->Unload();
     } else {
-        AnimWorkerObj* w = static_cast<AnimWorkerObj*>(::operator new(0x17c));
-        if (w != 0) {
-            w->m_id = m_id;
-            w->m_flags = 0;
-            w->m_ownerCtx = OwnerMgr();
-            StampWorkerVtbl(w);
-            w->m_notify = 0;
-            w->m_payload = 0;
-            w->m_logic = 0;
-            w->m_target = 0;
-            w->m_1c = 0;
-            w->m_targetId = 0;
-            w->m_payloadSize = 0;
-        } else {
-            w = 0;
-        }
-        m_80 = w;
+        m_80 = new AnimWorkerObj(m_ownerCtx, m_id);
     }
     if (m_80 == 0) {
         return 0;
@@ -555,29 +539,27 @@ i32 CGameObject::EnsureWorker80(AnimWorkerObj* src) {
 // up in the world's CMapStringToOb (m_0c -> +0x14 -> +0x10), then feed the found
 // handler through the matching lazy worker slot (Hit -> 80, Attack -> 88, Bump -> 90).
 // @early-stop
-// scheduling coin-flip: body byte-exact EXCEPT the `handler = 0` slot-init lands one
-// push early (push &out; STORE; push key) where retail schedules it after both pushes
-// (push &out; push key; STORE). Same slot, independent store; MSVC5's scheduler places
-// it between the arg pushes. No source ordering of the init reproduces the late slot.
+// out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
+// body byte-exact EXCEPT the `handlerOb = 0` slot-init lands one push early (push &out;
+// STORE; push key) where retail schedules it after both pushes (push &out; push key;
+// STORE). Measured 2026-07-28: the store DOES sink when a code-generating statement
+// precedes it (binding `OwnerMgr()->m_workerCache` or `&...->m_10` to a local puts the
+// store exactly where retail has it) - but binding the receiver also changes the
+// receiver's own codegen (`lea ecx,[eax+0x10]` / an interleaved push instead of
+// retail's `mov ecx,[edx+0x14]; add ecx,0x10` after the store), so no spelling gets
+// both halves. The un-hoisted expression is retail's receiver code; the store is the
+// coin-flip.
 RVA(0x00150f50, 0x35)
 void CGameObject::AddLogicHit(char* key) {
-    AnimWorkerObj* handler = 0;
     CObject* handlerOb = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(key, handlerOb);
-    handler = static_cast<AnimWorkerObj*>(handlerOb);
-    EnsureWorker80(handler);
+    EnsureWorker80(static_cast<AnimWorkerObj*>(handlerOb));
 }
 
 // CGameObject::EnsureWorker88 (0x150f90): lazily build the +0x88 worker - if one
 // already exists, just re-run its slot-7 reuse hook; otherwise operator new a
 // fresh 0x17c-byte worker (seeded m_id=this->m_id, m_flags=0, m_ownerCtx=OwnerMgr(), all other
 // fields 0), stow it at +0x88, then feed src->m_10 through slot 9.
-// @early-stop
-// zero-register-pinning wall (docs/patterns/zero-register-pinning.md): the whole
-// build sequence + both dispatches are byte-identical, but retail pins this->edi
-// and 0->esi while cl pins this->esi and 0->edi, and lowers the `arg==0` guard as
-// an early `xor eax,eax;ret` block where cl shares the epilogue - the swap cascades
-// every esi/edi. Logic exact; a pure allocator coin-flip, not source-steerable.
 RVA(0x00150f90, 0x98)
 i32 CGameObject::EnsureWorker88(AnimWorkerObj* src) {
     if (src == 0) {
@@ -586,23 +568,7 @@ i32 CGameObject::EnsureWorker88(AnimWorkerObj* src) {
     if (m_88 != 0) {
         m_88->Unload();
     } else {
-        AnimWorkerObj* w = static_cast<AnimWorkerObj*>(::operator new(0x17c));
-        if (w != 0) {
-            w->m_id = m_id;
-            w->m_flags = 0;
-            w->m_ownerCtx = OwnerMgr();
-            StampWorkerVtbl(w);
-            w->m_notify = 0;
-            w->m_payload = 0;
-            w->m_logic = 0;
-            w->m_target = 0;
-            w->m_1c = 0;
-            w->m_targetId = 0;
-            w->m_payloadSize = 0;
-        } else {
-            w = 0;
-        }
-        m_88 = w;
+        m_88 = new AnimWorkerObj(m_ownerCtx, m_id);
     }
     if (m_88 == 0) {
         return 0;
@@ -617,17 +583,13 @@ i32 CGameObject::EnsureWorker88(AnimWorkerObj* src) {
 // same `handler = 0` scheduling coin-flip as AddLogicHit.
 RVA(0x00151030, 0x35)
 void CGameObject::AddLogicAttack(char* key) {
-    AnimWorkerObj* handler = 0;
     CObject* handlerOb = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(key, handlerOb);
-    handler = static_cast<AnimWorkerObj*>(handlerOb);
-    EnsureWorker88(handler);
+    EnsureWorker88(static_cast<AnimWorkerObj*>(handlerOb));
 }
 
 // CGameObject::EnsureWorker90 (0x151070): identical to EnsureWorker88 but for the
 // +0x90 worker slot.
-// @early-stop
-// same zero-register-pinning wall as EnsureWorker88 (this/0 in esi<->edi).
 RVA(0x00151070, 0x98)
 i32 CGameObject::EnsureWorker90(AnimWorkerObj* src) {
     if (src == 0) {
@@ -636,23 +598,7 @@ i32 CGameObject::EnsureWorker90(AnimWorkerObj* src) {
     if (m_collideWorker != 0) {
         m_collideWorker->Unload();
     } else {
-        AnimWorkerObj* w = static_cast<AnimWorkerObj*>(::operator new(0x17c));
-        if (w != 0) {
-            w->m_id = m_id;
-            w->m_flags = 0;
-            w->m_ownerCtx = OwnerMgr();
-            StampWorkerVtbl(w);
-            w->m_notify = 0;
-            w->m_payload = 0;
-            w->m_logic = 0;
-            w->m_target = 0;
-            w->m_1c = 0;
-            w->m_targetId = 0;
-            w->m_payloadSize = 0;
-        } else {
-            w = 0;
-        }
-        m_collideWorker = w;
+        m_collideWorker = new AnimWorkerObj(m_ownerCtx, m_id);
     }
     if (m_collideWorker == 0) {
         return 0;
@@ -667,11 +613,9 @@ i32 CGameObject::EnsureWorker90(AnimWorkerObj* src) {
 // same `handler = 0` scheduling coin-flip as AddLogicHit.
 RVA(0x00151110, 0x35)
 void CGameObject::AddLogicBump(char* key) {
-    AnimWorkerObj* handler = 0;
     CObject* handlerOb = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(key, handlerOb);
-    handler = static_cast<AnimWorkerObj*>(handlerOb);
-    EnsureWorker90(handler);
+    EnsureWorker90(static_cast<AnimWorkerObj*>(handlerOb));
 }
 
 // ---------------------------------------------------------------------------
@@ -984,12 +928,11 @@ i32 CGameObject::ResolveLinkedObject(i32 gate) {
 // WriteSnapshot (0x151c00): assemble a 0xa0-byte record from this + the worker
 // and emit it through the archive at +0x30.
 // ---------------------------------------------------------------------------
-// @early-stop
-// ~96% reloc/scheduling plateau: the two externals (Build/Dtor) reloc-mask
-// against differently-named symbols (entropy tail) and a couple of record-field
-// stores schedule one slot off retail. Logic complete; not steerable.
 // Two __thiscall params (ret 8): dst = the archive (used), the 2nd is unused (retail
 // never reads [esp+0xb4]); modeling both fixes the epilogue ret operand.
+// (EXACT since 2026-07-28: the last residue was `w->m_logic` respelled twice in the
+// condition+call - hoisting it to a local moved the vtable temp off eax and the whole
+// GetClassId arg schedule fell in. The old note called it a reloc/entropy plateau.)
 RVA(0x00151c00, 0x118)
 i32 CGameObject::WriteSnapshot(CFileMemBase* dst, i32 unused) {
     CFileMemBase* ar = dst;
@@ -1019,9 +962,10 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, i32 unused) {
     }
 
     w = m_7c;
-    i32 edi = 0;
-    if (w->m_logic != 0) {
-        edi = w->m_logic->GetTypeTag();
+    CUserLogic* logic = w->m_logic;
+    i32 typeTag = 0;
+    if (logic != 0) {
+        typeTag = logic->GetTypeTag();
     }
 
     WwdSnapshot rec;
@@ -1032,7 +976,7 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, i32 unused) {
     rec.m_98 = m_screenY;
     rec.m_9c = m_sortKey;
     rec.m_serialTypeId = serialTypeId;
-    rec.m_10 = edi;
+    rec.m_10 = typeTag;
 
     {
         strcpy(rec.m_name, OwnerMgr()->m_workerCache->FindKeyOfValue(m_7c));

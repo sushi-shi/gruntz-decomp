@@ -44,16 +44,9 @@ VTBL(CWwdGameObject, 0x001f00e8);    // ??_7 (16 slots; B : A)
 VTBL(CAniAdvanceCursor, 0x001f0128); // ??_7CAniAdvanceCursor@@6B@ (9-slot CLoadable-derived)
 // ---------------------------------------------------------------------------
 // 0x15b2c0 - the parameterized CResolveNode ctor (the factory base sub-object).
-// @early-stop
-// sentinel-seed ctor store-scheduling wall (docs/patterns/sentinel-seed-ctor-store-schedule.md):
-// identical instruction multiset, but cl floats the m_08 (edx=arg3) store and the
-// m_38 (-1) store to different positions than retail; 3 field-order spellings all
-// ~60%. Source steers which arg lands in edx, not the store schedule. Logic complete.
 RVA(0x0015b2c0, 0x3d)
-CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
-    m_id = field04;
-    m_flags = field08;
-    m_ownerCtx = owner;
+CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
+    : CLoadable(field04, field08, owner) {
     m_dirtyRect.left = static_cast<i32>(0x80000000);
     m_dirtyArmed = -1;
     m_screenX = static_cast<i32>(0x80000000);
@@ -67,15 +60,14 @@ CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
 // 0x150eb0 factory / CreateWorker24 inlines). The arg-store order (b,c,a into
 // m_04/m_08/m_0c) is load-bearing. (Was the WorkerFull view - folded onto the
 // canonical AnimWorkerObj, whose ??_7 @0x1efb80 this ctor stamps.)
-// @early-stop
-// vptr-last wall: retail stamps the vptr AFTER m_id/m_flags/m_ownerCtx, but a
-// real-virtual class forces cl's implicit vptr-first store at ctor entry. Field-store
-// order preserved; only the vptr position diverges (mandate: convert anyway).
+// The base trio is CLoadable's ctor, NOT three body assignments: cl5 stamps the vptr
+// between the base/mem-init half and the ctor body, which is retail's vptr-after-
+// m_id/m_flags/m_ownerCtx order. (The old note here called that a "vptr-first wall";
+// it was a mis-model - the trio was spelled in the body, which makes them derived
+// member inits and pushes the stamp to the front.)
 RVA(0x0015b300, 0x40)
-AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags) {
-    m_id = id;
-    m_flags = stateFlags;
-    m_ownerCtx = owner;
+AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
+    : CLoadable(id, stateFlags, owner) {
     m_notify = 0;
     m_payload = 0;
     m_logic = 0;
@@ -212,21 +204,15 @@ CAniAdvanceCursor::~CAniAdvanceCursor() {
 
 // cl auto-stamps the ??_7CAniAdvanceCursor vptr @+0, seeds the three CLoadable
 // header fields (m_0c=owner, m_04=field04, m_08=field08) then zeroes m_10/m_14/m_18.
-// Retail FUSES the base seed into this ctor (no `call 0x156cb0`), so the three
-// stores are spelled here over the default base ctor - the 3-arg CLoadable ctor
-// is out-of-line at 0x156cb0 (its big-caller sites call it; retail's inline copy
-// here came from the same source cl chose to inline) and chaining it would
-// inject a call retail does not have.
-// @early-stop
-// vptr-stamp position (97.6%): one 2-instruction swap - retail sinks the ??_7
-// stamp BELOW the m_08 store (the chained-inline-base-ctor schedule); a plain
-// ctor body stamps before it. The 100% spelling needs the base ctor inline
-// (`: CLoadable(...)`), which contradicts its proven out-of-line 0x156cb0 body.
+// The trio goes through CLoadable's INLINE 3-arg overload, which is a different
+// ctor from the OUT-OF-LINE ??0CLoadable @0x156cb0 (that one schedules m_id / vptr /
+// m_flags / m_ownerCtx and is called, not inlined, by its own callers) - so
+// delegating injects no call and puts the vptr stamp where retail has it, below the
+// m_08 store. (The old note here read the out-of-line body as proof that delegating
+// was impossible; the two are separate overloads.)
 RVA(0x0015b730, 0x2b)
-CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
-    m_id = field04;
-    m_flags = field08;
-    m_ownerCtx = owner;
+CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
+    : CLoadable(field04, field08, owner) {
     m_10 = 0;
     m_14 = 0;
     m_element = 0;
