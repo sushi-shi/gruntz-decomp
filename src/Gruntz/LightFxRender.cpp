@@ -128,11 +128,18 @@ i32 CLightFxRender::AllocSurface() {
 // arms are the `else` sides, not early-out `continue`s - retail parks them at the tail
 // (`cmp eax,-1 / je <far>`, `cmp g_timer100,0x32 / jae <far>`) and falls through into
 // them; (3) g_timer100 is compared UNSIGNED (`jae`), and the alt->color pick is a
-// `switch` (`sub ecx,0` + dec/je chain), not an if-else chain. What is left is the
-// pinning: retail pins `this` in ebp with a 2-slot frame and stores immediates
-// (`mov [ebp+0x438],0`), while our cl pins the constant 0 in esi (reused for every
-// `= 0` store and null test) with `this` in ebx and a 3-slot frame - a 1-instr phase
-// shift that renames every register through the 755B body.
+// `switch`, not an if-else chain - and (4) that switch's case list STARTS AT 0:
+// retail dispatches `mov ecx,edi / sub ecx,0x0 / je c0 / dec / je c1 / dec / jne c0`,
+// and `sub ecx,0` is cl subtracting the LOWEST case value, so `case 0:` is spelled
+// out even though its body equals `default:` (they tail-merge onto the +0x8 arm).
+// Omitting it makes cl start the range at 1 and emit `dec / je / dec / je`
+// (56.8 -> 59.6). Both instruction streams are now 239 long. What is left is the
+// allocation: retail pins `this` in ebp with a 2-slot frame and stores immediates
+// (`mov [ebp+0x438],0`), while our cl materialises the constant 0 in esi for the
+// prologue tests, caches m_tileGrid->m_width in ebp (retail re-reads it at each of
+// its 3 uses) and therefore has to spill `alt` to a 3rd frame slot where retail
+// keeps it in edi - a 1-instr phase shift that renames every register through the
+// 755B body, plus a cold-block placement difference at the tail.
 RVA(0x000a3460, 0x2f3)
 i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
     if (rebuild == 0) {
@@ -199,9 +206,16 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                         *dst = 0;
                         continue;
                     }
-                    // retail: `sub ecx,0` / `dec`+`je` chain = a switch, and the
-                    // default shares the case-0 arm (tail-merged).
+                    // The case list STARTS at 0: retail dispatches `mov ecx,edi /
+                    // sub ecx,0x0 / je c0 / dec / je c1 / dec / jne c0` - `sub ecx,0`
+                    // is cl subtracting the LOWEST case value, so `case 0:` is
+                    // written out even though its body equals `default:` (they
+                    // tail-merge onto the +0x8 arm). Dropping it makes cl start the
+                    // range at 1 and emit `dec / je / dec / je` instead.
                     switch (alt) {
+                        case 0:
+                            *dst = node->m_teamColor1;
+                            break;
                         case 1:
                             *dst = node->m_teamColor2;
                             break;
@@ -268,9 +282,15 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
 // (docs/patterns/member-aggregate-copied-not-field-by-field.md). (3) The border rect
 // is built IN PLACE in the local RECT - retail stores each `>> 5` straight into the
 // box slot (dead stores the scaling then overwrites), which loose i32 temporaries
-// never produce. Residual is a spill-choice wall: retail keeps `surf` in ecx across
-// the whole body and spills `qx` to a frame slot; our cl spills `surf` and keeps qx,
-// so every `[ecx+0x1c]` becomes a reload through `[esp+0x10]`.
+// never produce. (4) The scale min/clamp are SEEDED IFs, not ternaries: retail seeds
+// the destination with the THEN value and branches over the copy-back
+// (`cmp edx,eax / jge / mov eax,edx`), where cl lowers `a>=b ? b : a` the other way
+// round and rewrites `s = s>3 ? 3 : s` as an in-place `if`. Residual is a
+// spill-choice wall: retail keeps `surf` in ecx across the whole body and spills
+// `qx` to a frame slot; our cl spills `surf` and keeps qx, so every `[ecx+0x1c]`
+// becomes a reload through `[esp+0x10]`. Also cl fuses `right*s + s - 1` into
+// `(right+1)*s - 1` (`inc/imul/dec`) where retail keeps `imul` + `lea [r+s-1]`; no
+// statement spelling tried blocks that reassociation.
 RVA(0x000a3820, 0x18e)
 i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
     CDDSurface* surf = m_surface;
@@ -288,17 +308,26 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
     i32 cy = src->top + h / 2;
     i32 qx = w / surf->m_width;
     i32 qy = h / surf->m_height;
-    // retail seeds the result with qy and copies qx in on the `jge` fallthrough, so
-    // the THEN arm is qy: the min is spelled `(qx >= qy) ? qy : qx`.
-    i32 scale = (qx >= qy) ? qy : qx;
-    // retail materializes 3 into the destination first and jumps over the copy-back
-    // (`mov ebp,3; jg; mov ebp,eax`) - that is the ternary, not `if (s > 3) s = 3;`.
-    scale = (scale > 3) ? 3 : scale;
-    m_scale = scale;
-    m_dstRect.left = cx - surf->m_width * scale / 2;
-    m_dstRect.top = cy - surf->m_height * scale / 2;
-    m_dstRect.right = surf->m_width * scale + m_dstRect.left;
-    m_dstRect.bottom = surf->m_height * scale + m_dstRect.top;
+    // retail SEEDS the result with qy and copies qx in on the `jge` fallthrough
+    // (`cmp edx,eax / jge / mov eax,edx`) - a seeded `if`, not a ternary: cl lowers
+    // `(qx >= qy) ? qy : qx` the other way round (seeds the destination with qx and
+    // branches on `jl`).
+    i32 scale = qy;
+    if (qx < qy) {
+        scale = qx;
+    }
+    // Same shape for the clamp - retail materializes 3 into a FRESH register and
+    // jumps over the copy-back (`cmp eax,3 / mov ebp,3 / jg / mov ebp,eax`); a
+    // ternary whose destination is `scale` itself becomes an in-place `if`.
+    i32 s = 3;
+    if (scale <= 3) {
+        s = scale;
+    }
+    m_scale = s;
+    m_dstRect.left = cx - surf->m_width * s / 2;
+    m_dstRect.top = cy - surf->m_height * s / 2;
+    m_dstRect.right = surf->m_width * s + m_dstRect.left;
+    m_dstRect.bottom = surf->m_height * s + m_dstRect.top;
     if (ctx->m_surface->BltEx(&m_dstRect.left, surf, 0, 0x1000000, 0) != 0) {
         return 0;
     }
@@ -341,13 +370,16 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
 // lock/unlock (the caller owns them). Returns void.
 // ===========================================================================
 // @early-stop
-// The vertical-edge loop body now matches retail exactly (two stores + two adds of a
-// hoisted step): the row step MUST be a local, because `lp += m_surface->m_pitch` in
-// the loop re-loads this->m_surface every iteration - the u16 stores defeat cl's CSE
-// across them. Residual is the register-coloring wall its twin DrawBorder shares:
-// retail spills `this` (`push ecx` + `mov [esp+0x10],ecx`) and so has ebx free for the
-// u16-memset dword and ebp for `color`, while our cl keeps `this` in ebx and has to
-// re-load `color` from its argument slot at each edge.
+// The vertical-edge loop body now matches retail instruction-for-instruction (two
+// bare stores + two adds of a hoisted step + dec/jne): the row step MUST be a local
+// (`lp += m_surface->m_pitch` in the loop re-loads this->m_surface every iteration -
+// the u16 stores defeat cl's CSE across them) AND the two cursors must be real
+// POINTERS, so cl folds `base` in once in the preheader instead of emitting
+// base-indexed `[eax+ebp]` stores. Residual is the register-colouring split: retail
+// spills `this` (`push ecx` + `mov [esp+0x10],ecx`) and so has ebp free for `color`
+// and ebx as scratch, while our cl keeps `this` in ebx, pins `base` in ebp and
+// re-loads `color` from its argument slot at each edge. That one allocation choice
+// also makes retail RE-READ m_pitch/m_bytesPerPixel at each use where we CSE them.
 RVA(0x000a3a20, 0xe2)
 void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
     i32 w = r->right - r->left + 1;
@@ -381,11 +413,18 @@ void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
     i32 lo = r->top * m_surface->m_pitch + r->left * m_surface->m_bytesPerPixel;
     i32 ro = r->top * m_surface->m_pitch + r->right * m_surface->m_bytesPerPixel;
     i32 step = m_surface->m_pitch;
+    // The two column cursors are real POINTERS: retail folds `base` in once in the
+    // loop preheader (`mov edx,[esp+0x1c] / add edi,edx / add edx,esi`) and the body
+    // is a bare store/store/add/add/dec/jne. Keeping `lo`/`ro` as indices instead
+    // makes cl emit base-indexed `[eax+ebp]` stores and pin `base` all loop.
+    // (Its twin DrawBorder is the OTHER way round - there retail really does index.)
+    char* lp = static_cast<char*>(base) + lo;
+    char* rp = static_cast<char*>(base) + ro;
     for (i32 v = 0; v < h; v++) {
-        *Pix16(static_cast<char*>(base) + lo) = static_cast<u16>(color);
-        *Pix16(static_cast<char*>(base) + ro) = static_cast<u16>(color);
-        lo += step;
-        ro += step;
+        *Pix16(lp) = static_cast<u16>(color);
+        *Pix16(rp) = static_cast<u16>(color);
+        lp += step;
+        rp += step;
     }
 }
 
@@ -509,21 +548,27 @@ i32 CLightFxRender::BuildShape(i32 shape) {
 // All eight generators share one icon layout and differ only in the palette.
 // ===========================================================================
 // @early-stop
-// The palettes were WRONG, in all eight generators, for one shared reason: cl CSEs a
-// repeated per-channel `(v>>down)<<up` term into a stack slot, and a previous read of
-// the disassembly took each of those slots for a SEPARATE single-channel color. So
-// every colour whose R, G or B arrived from a CSE slot was transcribed with that
-// channel ZEROED, and the CSE itself was written out as an extra colour - Shape1 had
-// 24 `Pack()`s where retail has 21, and buf[9..16], buf[120..123], buf[160..163] were
-// painted with the wrong ones. The 21 colours and the whole store/FillSpan program
-// below are now decoded symbolically from the retail body (channel = which shift
-// global the `sar`/`shl` count came from), which is what took the eight from 67-77%
-// to 83-85%. Residual is one allocator split: retail enregisters `g_rDown` in ebx for
-// the colour phase and spills colour #0 (21-dword frame), our cl gives ebx to colour
-// #0 and re-loads g_rDown from memory at each red term (20-dword frame); downstream
-// of that, retail merges the adjacent buf[] word stores into dword stores and we do
-// not. Declaration order, comma-vs-separate decls, split decl/assignment, reversed
-// declaration order and dropping the `buf` alias were all tried: byte-identical.
+// Two shared defects are fixed here; both were in all eight generators.
+// (1) The PALETTES: cl CSEs a repeated per-channel `(v>>down)<<up` term into a stack
+//     slot, and a previous read of the disassembly took each of those slots for a
+//     SEPARATE single-channel colour - see
+//     docs/patterns/cse-partial-term-is-not-a-separate-constant.md. The 21 colours
+//     are now decoded symbolically from the retail body and verified against it.
+// (2) The STORE PROGRAM: every run of adjacent same-colour pixels is a LOOP, not a
+//     list of assignments. cl5 gives a loop its FILL expansion - the value is
+//     duplicated into a dword (`mov cx,ax / shl ecx,0x10 / mov cx,ax`) and the range
+//     is written with DWORD stores (`rep stos` when long, unrolled `mov DWORD PTR
+//     [esi+N],eax` when short, `+ stos WORD` when the count is odd) - while separate
+//     assignments emit one 16-bit store each. Converting the 67 short runs took the
+//     eight from 82.7-85.4% to 98.5-99.5% and, as a side effect, moved the frame
+//     from 20 to 21 dwords, which dissolved the "retail enregisters g_rDown in ebx /
+//     our cl gives ebx to colour #0" split previously filed as this family's wall.
+//     docs/patterns/adjacent-same-value-stores-are-a-loop.md
+// Residual (all eight): the scheduler places the buf[257] store one slot later than
+// retail inside the second FillSpan's push sequence (retail pairs push/store, we
+// emit push,push,store,store); Shape2/5/6/7 additionally flip the R-vs-G term order
+// in one or two colours and Shape5 permutes two stack slots. Statement reordering
+// and both Pack() operand orders were tried and are byte-identical.
 RVA(0x000a3dc0, 0x85f)
 i32 CLightFxRender::Shape1() {
     u16* buf = m_buf;
@@ -549,33 +594,25 @@ i32 CLightFxRender::Shape1() {
     u16 c18 = Pack(0xb4, 0x61, 0x39);
     u16 c19 = Pack(0x37, 0x30, 0x30);
     u16 c20 = Pack(0xa0, 0xa0, 0x27);
-    buf[1] = c00;
-    buf[2] = c00;
-    buf[3] = c00;
-    buf[4] = c00;
-    buf[5] = c00;
-    buf[6] = c00;
-    buf[7] = c00;
-    buf[8] = c00;
+    for (i = 1; i < 9; i++) {
+        buf[i] = c00;
+    }
     for (i = 17; i < 37; i++) {
         buf[i] = c00;
     }
     buf[90] = c00;
-    buf[195] = c00;
-    buf[196] = c00;
+    for (i = 195; i < 197; i++) {
+        buf[i] = c00;
+    }
     buf[199] = c00;
     buf[301] = c00;
-    buf[9] = c01;
-    buf[10] = c01;
-    buf[11] = c01;
-    buf[12] = c01;
-    buf[13] = c01;
-    buf[14] = c01;
-    buf[15] = c01;
-    buf[16] = c01;
+    for (i = 9; i < 17; i++) {
+        buf[i] = c01;
+    }
     buf[91] = c01;
-    buf[197] = c01;
-    buf[198] = c01;
+    for (i = 197; i < 199; i++) {
+        buf[i] = c01;
+    }
     for (i = 40; i < 74; i++) {
         buf[i] = c02;
     }
@@ -585,31 +622,32 @@ i32 CLightFxRender::Shape1() {
     for (i = 104; i < 116; i++) {
         buf[i] = c06;
     }
-    buf[120] = c06;
-    buf[121] = c06;
-    buf[122] = c06;
-    buf[123] = c06;
+    for (i = 120; i < 124; i++) {
+        buf[i] = c06;
+    }
     for (i = 128; i < 140; i++) {
         buf[i] = c06;
     }
     for (i = 144; i < 156; i++) {
         buf[i] = c04;
     }
-    buf[160] = c04;
-    buf[161] = c04;
-    buf[162] = c04;
-    buf[163] = c04;
+    for (i = 160; i < 164; i++) {
+        buf[i] = c04;
+    }
     for (i = 168; i < 180; i++) {
         buf[i] = c04;
     }
-    buf[157] = c03;
-    buf[158] = c03;
-    buf[165] = c03;
-    buf[166] = c03;
+    for (i = 157; i < 159; i++) {
+        buf[i] = c03;
+    }
+    for (i = 165; i < 167; i++) {
+        buf[i] = c03;
+    }
     buf[258] = c03;
     buf[264] = c03;
-    buf[117] = c05;
-    buf[118] = c05;
+    for (i = 117; i < 119; i++) {
+        buf[i] = c05;
+    }
     FillSpan(0x7d, 0x7e, c05);
     buf[260] = c05;
     buf[266] = c05;
@@ -662,9 +700,10 @@ void CLightFxRender::FillSpan(u32 x1, u32 x2, u16 color) {
 // membership - they are the case 2/5/7/8 generators).
 // ===========================================================================
 // @early-stop
-// Palette + store program re-decoded from the retail body (see Shape1 for the CSE
-// mis-read that had zeroed a channel in most colours); residual is Shape1's ebx
-// allocator split.
+// Palette + store program re-decoded from the retail body and verified against it
+// (see Shape1 for both defects: the CSE mis-read that had zeroed a channel in most
+// colours, and the run-of-stores-is-a-loop fill expansion). Residual is Shape1's
+// scheduler placement of the buf[257] store.
 RVA(0x000a4890, 0x852)
 i32 CLightFxRender::Shape2() {
     u16* buf = m_buf;
@@ -689,33 +728,25 @@ i32 CLightFxRender::Shape2() {
     u16 c17 = Pack(0xb4, 0x61, 0x39);
     u16 c18 = Pack(0x37, 0x30, 0x30);
     u16 c19 = Pack(0xa0, 0xa0, 0x27);
-    buf[1] = c00;
-    buf[2] = c00;
-    buf[3] = c00;
-    buf[4] = c00;
-    buf[5] = c00;
-    buf[6] = c00;
-    buf[7] = c00;
-    buf[8] = c00;
+    for (i = 1; i < 9; i++) {
+        buf[i] = c00;
+    }
     for (i = 17; i < 37; i++) {
         buf[i] = c00;
     }
     buf[90] = c00;
-    buf[195] = c00;
-    buf[196] = c00;
+    for (i = 195; i < 197; i++) {
+        buf[i] = c00;
+    }
     buf[199] = c00;
     buf[301] = c00;
-    buf[9] = c01;
-    buf[10] = c01;
-    buf[11] = c01;
-    buf[12] = c01;
-    buf[13] = c01;
-    buf[14] = c01;
-    buf[15] = c01;
-    buf[16] = c01;
+    for (i = 9; i < 17; i++) {
+        buf[i] = c01;
+    }
     buf[91] = c01;
-    buf[197] = c01;
-    buf[198] = c01;
+    for (i = 197; i < 199; i++) {
+        buf[i] = c01;
+    }
     for (i = 40; i < 74; i++) {
         buf[i] = c02;
     }
@@ -725,31 +756,32 @@ i32 CLightFxRender::Shape2() {
     for (i = 104; i < 116; i++) {
         buf[i] = c06;
     }
-    buf[120] = c06;
-    buf[121] = c06;
-    buf[122] = c06;
-    buf[123] = c06;
+    for (i = 120; i < 124; i++) {
+        buf[i] = c06;
+    }
     for (i = 128; i < 140; i++) {
         buf[i] = c06;
     }
     for (i = 144; i < 156; i++) {
         buf[i] = c04;
     }
-    buf[160] = c04;
-    buf[161] = c04;
-    buf[162] = c04;
-    buf[163] = c04;
+    for (i = 160; i < 164; i++) {
+        buf[i] = c04;
+    }
     for (i = 168; i < 180; i++) {
         buf[i] = c04;
     }
-    buf[157] = c03;
-    buf[158] = c03;
-    buf[165] = c03;
-    buf[166] = c03;
+    for (i = 157; i < 159; i++) {
+        buf[i] = c03;
+    }
+    for (i = 165; i < 167; i++) {
+        buf[i] = c03;
+    }
     buf[258] = c03;
     buf[264] = c03;
-    buf[117] = c05;
-    buf[118] = c05;
+    for (i = 117; i < 119; i++) {
+        buf[i] = c05;
+    }
     FillSpan(0x7d, 0x7e, c05);
     buf[260] = c05;
     buf[266] = c05;
@@ -782,9 +814,10 @@ i32 CLightFxRender::Shape2() {
     return 1;
 }
 // @early-stop
-// Palette + store program re-decoded from the retail body (see Shape1 for the CSE
-// mis-read that had zeroed a channel in most colours); residual is Shape1's ebx
-// allocator split.
+// Palette + store program re-decoded from the retail body and verified against it
+// (see Shape1 for both defects: the CSE mis-read that had zeroed a channel in most
+// colours, and the run-of-stores-is-a-loop fill expansion). Residual is Shape1's
+// scheduler placement of the buf[257] store.
 RVA(0x000a5310, 0x855)
 i32 CLightFxRender::Shape3() {
     u16* buf = m_buf;
@@ -810,33 +843,25 @@ i32 CLightFxRender::Shape3() {
     u16 c18 = Pack(0xb4, 0x61, 0x39);
     u16 c19 = Pack(0x37, 0x30, 0x30);
     u16 c20 = Pack(0xa0, 0xa0, 0x27);
-    buf[1] = c00;
-    buf[2] = c00;
-    buf[3] = c00;
-    buf[4] = c00;
-    buf[5] = c00;
-    buf[6] = c00;
-    buf[7] = c00;
-    buf[8] = c00;
+    for (i = 1; i < 9; i++) {
+        buf[i] = c00;
+    }
     for (i = 17; i < 37; i++) {
         buf[i] = c00;
     }
     buf[90] = c00;
-    buf[195] = c00;
-    buf[196] = c00;
+    for (i = 195; i < 197; i++) {
+        buf[i] = c00;
+    }
     buf[199] = c00;
     buf[301] = c00;
-    buf[9] = c01;
-    buf[10] = c01;
-    buf[11] = c01;
-    buf[12] = c01;
-    buf[13] = c01;
-    buf[14] = c01;
-    buf[15] = c01;
-    buf[16] = c01;
+    for (i = 9; i < 17; i++) {
+        buf[i] = c01;
+    }
     buf[91] = c01;
-    buf[197] = c01;
-    buf[198] = c01;
+    for (i = 197; i < 199; i++) {
+        buf[i] = c01;
+    }
     for (i = 40; i < 74; i++) {
         buf[i] = c02;
     }
@@ -846,31 +871,32 @@ i32 CLightFxRender::Shape3() {
     for (i = 104; i < 116; i++) {
         buf[i] = c06;
     }
-    buf[120] = c06;
-    buf[121] = c06;
-    buf[122] = c06;
-    buf[123] = c06;
+    for (i = 120; i < 124; i++) {
+        buf[i] = c06;
+    }
     for (i = 128; i < 140; i++) {
         buf[i] = c06;
     }
     for (i = 144; i < 156; i++) {
         buf[i] = c04;
     }
-    buf[160] = c04;
-    buf[161] = c04;
-    buf[162] = c04;
-    buf[163] = c04;
+    for (i = 160; i < 164; i++) {
+        buf[i] = c04;
+    }
     for (i = 168; i < 180; i++) {
         buf[i] = c04;
     }
-    buf[157] = c03;
-    buf[158] = c03;
-    buf[165] = c03;
-    buf[166] = c03;
+    for (i = 157; i < 159; i++) {
+        buf[i] = c03;
+    }
+    for (i = 165; i < 167; i++) {
+        buf[i] = c03;
+    }
     buf[258] = c03;
     buf[264] = c03;
-    buf[117] = c05;
-    buf[118] = c05;
+    for (i = 117; i < 119; i++) {
+        buf[i] = c05;
+    }
     FillSpan(0x7d, 0x7e, c05);
     buf[260] = c05;
     buf[266] = c05;
@@ -903,9 +929,10 @@ i32 CLightFxRender::Shape3() {
     return 1;
 }
 // @early-stop
-// Palette + store program re-decoded from the retail body (see Shape1 for the CSE
-// mis-read that had zeroed a channel in most colours); residual is Shape1's ebx
-// allocator split.
+// Palette + store program re-decoded from the retail body and verified against it
+// (see Shape1 for both defects: the CSE mis-read that had zeroed a channel in most
+// colours, and the run-of-stores-is-a-loop fill expansion). Residual is Shape1's
+// scheduler placement of the buf[257] store.
 RVA(0x000a5d90, 0x825)
 i32 CLightFxRender::Shape4() {
     u16* buf = m_buf;
@@ -930,33 +957,25 @@ i32 CLightFxRender::Shape4() {
     u16 c17 = Pack(0xb4, 0x61, 0x39);
     u16 c18 = Pack(0x37, 0x30, 0x30);
     u16 c19 = Pack(0xa0, 0xa0, 0x27);
-    buf[1] = c00;
-    buf[2] = c00;
-    buf[3] = c00;
-    buf[4] = c00;
-    buf[5] = c00;
-    buf[6] = c00;
-    buf[7] = c00;
-    buf[8] = c00;
+    for (i = 1; i < 9; i++) {
+        buf[i] = c00;
+    }
     for (i = 17; i < 37; i++) {
         buf[i] = c00;
     }
     buf[90] = c00;
-    buf[195] = c00;
-    buf[196] = c00;
+    for (i = 195; i < 197; i++) {
+        buf[i] = c00;
+    }
     buf[199] = c00;
     buf[301] = c00;
-    buf[9] = c01;
-    buf[10] = c01;
-    buf[11] = c01;
-    buf[12] = c01;
-    buf[13] = c01;
-    buf[14] = c01;
-    buf[15] = c01;
-    buf[16] = c01;
+    for (i = 9; i < 17; i++) {
+        buf[i] = c01;
+    }
     buf[91] = c01;
-    buf[197] = c01;
-    buf[198] = c01;
+    for (i = 197; i < 199; i++) {
+        buf[i] = c01;
+    }
     for (i = 40; i < 74; i++) {
         buf[i] = c02;
     }
@@ -966,31 +985,32 @@ i32 CLightFxRender::Shape4() {
     for (i = 104; i < 116; i++) {
         buf[i] = c05;
     }
-    buf[120] = c05;
-    buf[121] = c05;
-    buf[122] = c05;
-    buf[123] = c05;
+    for (i = 120; i < 124; i++) {
+        buf[i] = c05;
+    }
     for (i = 128; i < 140; i++) {
         buf[i] = c05;
     }
     for (i = 144; i < 156; i++) {
         buf[i] = c04;
     }
-    buf[160] = c04;
-    buf[161] = c04;
-    buf[162] = c04;
-    buf[163] = c04;
+    for (i = 160; i < 164; i++) {
+        buf[i] = c04;
+    }
     for (i = 168; i < 180; i++) {
         buf[i] = c04;
     }
-    buf[157] = c03;
-    buf[158] = c03;
-    buf[165] = c03;
-    buf[166] = c03;
+    for (i = 157; i < 159; i++) {
+        buf[i] = c03;
+    }
+    for (i = 165; i < 167; i++) {
+        buf[i] = c03;
+    }
     buf[258] = c03;
     buf[264] = c03;
-    buf[117] = c05;
-    buf[118] = c05;
+    for (i = 117; i < 119; i++) {
+        buf[i] = c05;
+    }
     FillSpan(0x7d, 0x7e, c05);
     buf[260] = c05;
     buf[266] = c05;
@@ -1023,9 +1043,10 @@ i32 CLightFxRender::Shape4() {
     return 1;
 }
 // @early-stop
-// Palette + store program re-decoded from the retail body (see Shape1 for the CSE
-// mis-read that had zeroed a channel in most colours); residual is Shape1's ebx
-// allocator split.
+// Palette + store program re-decoded from the retail body and verified against it
+// (see Shape1 for both defects: the CSE mis-read that had zeroed a channel in most
+// colours, and the run-of-stores-is-a-loop fill expansion). Residual is Shape1's
+// scheduler placement of the buf[257] store.
 RVA(0x000a67d0, 0x864)
 i32 CLightFxRender::Shape5() {
     u16* buf = m_buf;
@@ -1050,33 +1071,25 @@ i32 CLightFxRender::Shape5() {
     u16 c17 = Pack(0xb4, 0x61, 0x39);
     u16 c18 = Pack(0x37, 0x30, 0x30);
     u16 c19 = Pack(0xa0, 0xa0, 0x27);
-    buf[1] = c00;
-    buf[2] = c00;
-    buf[3] = c00;
-    buf[4] = c00;
-    buf[5] = c00;
-    buf[6] = c00;
-    buf[7] = c00;
-    buf[8] = c00;
+    for (i = 1; i < 9; i++) {
+        buf[i] = c00;
+    }
     for (i = 17; i < 37; i++) {
         buf[i] = c00;
     }
     buf[90] = c00;
-    buf[195] = c00;
-    buf[196] = c00;
+    for (i = 195; i < 197; i++) {
+        buf[i] = c00;
+    }
     buf[199] = c00;
     buf[301] = c00;
-    buf[9] = c01;
-    buf[10] = c01;
-    buf[11] = c01;
-    buf[12] = c01;
-    buf[13] = c01;
-    buf[14] = c01;
-    buf[15] = c01;
-    buf[16] = c01;
+    for (i = 9; i < 17; i++) {
+        buf[i] = c01;
+    }
     buf[91] = c01;
-    buf[197] = c01;
-    buf[198] = c01;
+    for (i = 197; i < 199; i++) {
+        buf[i] = c01;
+    }
     for (i = 39; i < 75; i++) {
         buf[i] = c02;
     }
@@ -1086,34 +1099,32 @@ i32 CLightFxRender::Shape5() {
     for (i = 102; i < 114; i++) {
         buf[i] = c05;
     }
-    buf[116] = c05;
-    buf[117] = c05;
-    buf[118] = c05;
-    buf[119] = c05;
-    buf[120] = c05;
-    buf[121] = c05;
-    for (i = 124; i < 138; i++) {
+    for (i = 116; i < 122; i++) {
+        buf[i] = c05;
+    }
+    for (i = 124; i < 139; i++) {
         buf[i] = c05;
     }
     for (i = 144; i < 156; i++) {
         buf[i] = c04;
     }
-    buf[159] = c04;
-    buf[160] = c04;
-    buf[161] = c04;
-    buf[162] = c04;
-    buf[163] = c04;
+    for (i = 159; i < 164; i++) {
+        buf[i] = c04;
+    }
     for (i = 168; i < 180; i++) {
         buf[i] = c04;
     }
-    buf[157] = c03;
-    buf[158] = c03;
-    buf[165] = c03;
-    buf[166] = c03;
+    for (i = 157; i < 159; i++) {
+        buf[i] = c03;
+    }
+    for (i = 165; i < 167; i++) {
+        buf[i] = c03;
+    }
     buf[258] = c03;
     buf[264] = c03;
-    buf[114] = c05;
-    buf[115] = c05;
+    for (i = 114; i < 116; i++) {
+        buf[i] = c05;
+    }
     FillSpan(0x7a, 0x7b, c05);
     buf[260] = c05;
     buf[266] = c05;
@@ -1146,9 +1157,10 @@ i32 CLightFxRender::Shape5() {
     return 1;
 }
 // @early-stop
-// Palette + store program re-decoded from the retail body (see Shape1 for the CSE
-// mis-read that had zeroed a channel in most colours); residual is Shape1's ebx
-// allocator split.
+// Palette + store program re-decoded from the retail body and verified against it
+// (see Shape1 for both defects: the CSE mis-read that had zeroed a channel in most
+// colours, and the run-of-stores-is-a-loop fill expansion). Residual is Shape1's
+// scheduler placement of the buf[257] store.
 RVA(0x000a7260, 0x8c0)
 i32 CLightFxRender::Shape6() {
     u16* buf = m_buf;
@@ -1174,33 +1186,25 @@ i32 CLightFxRender::Shape6() {
     u16 c18 = Pack(0xb4, 0x61, 0x39);
     u16 c19 = Pack(0x37, 0x30, 0x30);
     u16 c20 = Pack(0xa0, 0xa0, 0x27);
-    buf[1] = c00;
-    buf[2] = c00;
-    buf[3] = c00;
-    buf[4] = c00;
-    buf[5] = c00;
-    buf[6] = c00;
-    buf[7] = c00;
-    buf[8] = c00;
+    for (i = 1; i < 9; i++) {
+        buf[i] = c00;
+    }
     for (i = 17; i < 37; i++) {
         buf[i] = c00;
     }
     buf[90] = c00;
-    buf[195] = c00;
-    buf[196] = c00;
+    for (i = 195; i < 197; i++) {
+        buf[i] = c00;
+    }
     buf[199] = c00;
     buf[301] = c00;
-    buf[9] = c01;
-    buf[10] = c01;
-    buf[11] = c01;
-    buf[12] = c01;
-    buf[13] = c01;
-    buf[14] = c01;
-    buf[15] = c01;
-    buf[16] = c01;
+    for (i = 9; i < 17; i++) {
+        buf[i] = c01;
+    }
     buf[91] = c01;
-    buf[197] = c01;
-    buf[198] = c01;
+    for (i = 197; i < 199; i++) {
+        buf[i] = c01;
+    }
     for (i = 39; i < 75; i++) {
         buf[i] = c02;
     }
@@ -1210,36 +1214,35 @@ i32 CLightFxRender::Shape6() {
     for (i = 102; i < 114; i++) {
         buf[i] = c06;
     }
-    buf[116] = c06;
-    buf[117] = c06;
-    buf[118] = c06;
-    buf[119] = c06;
-    buf[120] = c06;
-    buf[121] = c06;
-    for (i = 124; i < 138; i++) {
+    for (i = 116; i < 122; i++) {
+        buf[i] = c06;
+    }
+    for (i = 124; i < 139; i++) {
         buf[i] = c06;
     }
     for (i = 144; i < 156; i++) {
         buf[i] = c04;
     }
-    buf[159] = c04;
-    buf[160] = c04;
-    buf[161] = c04;
-    buf[162] = c04;
-    buf[163] = c04;
+    for (i = 159; i < 164; i++) {
+        buf[i] = c04;
+    }
     for (i = 168; i < 180; i++) {
         buf[i] = c04;
     }
-    buf[157] = c03;
-    buf[158] = c03;
-    buf[165] = c03;
-    buf[166] = c03;
+    for (i = 157; i < 159; i++) {
+        buf[i] = c03;
+    }
+    for (i = 165; i < 167; i++) {
+        buf[i] = c03;
+    }
     buf[258] = c03;
     buf[264] = c03;
-    buf[114] = c05;
-    buf[115] = c05;
-    buf[122] = c05;
-    buf[123] = c05;
+    for (i = 114; i < 116; i++) {
+        buf[i] = c05;
+    }
+    for (i = 122; i < 124; i++) {
+        buf[i] = c05;
+    }
     buf[260] = c05;
     buf[266] = c05;
     FillSpan(0x11a, 0x11d, c07);
@@ -1273,9 +1276,10 @@ i32 CLightFxRender::Shape6() {
     return 1;
 }
 // @early-stop
-// Palette + store program re-decoded from the retail body (see Shape1 for the CSE
-// mis-read that had zeroed a channel in most colours); residual is Shape1's ebx
-// allocator split.
+// Palette + store program re-decoded from the retail body and verified against it
+// (see Shape1 for both defects: the CSE mis-read that had zeroed a channel in most
+// colours, and the run-of-stores-is-a-loop fill expansion). Residual is Shape1's
+// scheduler placement of the buf[257] store.
 RVA(0x000a7d50, 0x94f)
 i32 CLightFxRender::Shape7() {
     u16* buf = m_buf;
@@ -1304,33 +1308,25 @@ i32 CLightFxRender::Shape7() {
     u16 c21 = Pack(0xe2, 0x70, 0x00);
     u16 c22 = Pack(0xa1, 0xf5, 0xff);
     u16 c23 = Pack(0xfd, 0xe5, 0x00);
-    buf[1] = c00;
-    buf[2] = c00;
-    buf[3] = c00;
-    buf[4] = c00;
-    buf[5] = c00;
-    buf[6] = c00;
-    buf[7] = c00;
-    buf[8] = c00;
+    for (i = 1; i < 9; i++) {
+        buf[i] = c00;
+    }
     for (i = 17; i < 37; i++) {
         buf[i] = c00;
     }
     buf[90] = c00;
-    buf[195] = c00;
-    buf[196] = c00;
+    for (i = 195; i < 197; i++) {
+        buf[i] = c00;
+    }
     buf[199] = c00;
     buf[301] = c00;
-    buf[9] = c01;
-    buf[10] = c01;
-    buf[11] = c01;
-    buf[12] = c01;
-    buf[13] = c01;
-    buf[14] = c01;
-    buf[15] = c01;
-    buf[16] = c01;
+    for (i = 9; i < 17; i++) {
+        buf[i] = c01;
+    }
     buf[91] = c01;
-    buf[197] = c01;
-    buf[198] = c01;
+    for (i = 197; i < 199; i++) {
+        buf[i] = c01;
+    }
     for (i = 39; i < 75; i++) {
         buf[i] = c02;
     }
@@ -1340,36 +1336,35 @@ i32 CLightFxRender::Shape7() {
     for (i = 102; i < 114; i++) {
         buf[i] = c06;
     }
-    buf[116] = c06;
-    buf[117] = c06;
-    buf[118] = c06;
-    buf[119] = c06;
-    buf[120] = c06;
-    buf[121] = c06;
-    for (i = 124; i < 138; i++) {
+    for (i = 116; i < 122; i++) {
+        buf[i] = c06;
+    }
+    for (i = 124; i < 139; i++) {
         buf[i] = c06;
     }
     for (i = 144; i < 156; i++) {
         buf[i] = c04;
     }
-    buf[159] = c04;
-    buf[160] = c04;
-    buf[161] = c04;
-    buf[162] = c04;
-    buf[163] = c04;
+    for (i = 159; i < 164; i++) {
+        buf[i] = c04;
+    }
     for (i = 168; i < 180; i++) {
         buf[i] = c04;
     }
-    buf[157] = c03;
-    buf[158] = c03;
-    buf[165] = c03;
-    buf[166] = c03;
+    for (i = 157; i < 159; i++) {
+        buf[i] = c03;
+    }
+    for (i = 165; i < 167; i++) {
+        buf[i] = c03;
+    }
     buf[258] = c03;
     buf[264] = c03;
-    buf[114] = c05;
-    buf[115] = c05;
-    buf[122] = c05;
-    buf[123] = c05;
+    for (i = 114; i < 116; i++) {
+        buf[i] = c05;
+    }
+    for (i = 122; i < 124; i++) {
+        buf[i] = c05;
+    }
     buf[260] = c05;
     buf[266] = c05;
     FillSpan(0x11a, 0x11d, c07);
@@ -1406,9 +1401,10 @@ i32 CLightFxRender::Shape7() {
     return 1;
 }
 // @early-stop
-// Palette + store program re-decoded from the retail body (see Shape1 for the CSE
-// mis-read that had zeroed a channel in most colours); residual is Shape1's ebx
-// allocator split.
+// Palette + store program re-decoded from the retail body and verified against it
+// (see Shape1 for both defects: the CSE mis-read that had zeroed a channel in most
+// colours, and the run-of-stores-is-a-loop fill expansion). Residual is Shape1's
+// scheduler placement of the buf[257] store.
 RVA(0x000a8900, 0x926)
 i32 CLightFxRender::Shape8() {
     u16* buf = m_buf;
@@ -1436,33 +1432,25 @@ i32 CLightFxRender::Shape8() {
     u16 c20 = Pack(0x12, 0xd2, 0x18);
     u16 c21 = Pack(0x00, 0x72, 0xe4);
     u16 c22 = Pack(0xe4, 0x00, 0x26);
-    buf[1] = c00;
-    buf[2] = c00;
-    buf[3] = c00;
-    buf[4] = c00;
-    buf[5] = c00;
-    buf[6] = c00;
-    buf[7] = c00;
-    buf[8] = c00;
+    for (i = 1; i < 9; i++) {
+        buf[i] = c00;
+    }
     for (i = 17; i < 37; i++) {
         buf[i] = c00;
     }
     buf[90] = c00;
-    buf[195] = c00;
-    buf[196] = c00;
+    for (i = 195; i < 197; i++) {
+        buf[i] = c00;
+    }
     buf[199] = c00;
     buf[301] = c00;
-    buf[9] = c01;
-    buf[10] = c01;
-    buf[11] = c01;
-    buf[12] = c01;
-    buf[13] = c01;
-    buf[14] = c01;
-    buf[15] = c01;
-    buf[16] = c01;
+    for (i = 9; i < 17; i++) {
+        buf[i] = c01;
+    }
     buf[91] = c01;
-    buf[197] = c01;
-    buf[198] = c01;
+    for (i = 197; i < 199; i++) {
+        buf[i] = c01;
+    }
     for (i = 39; i < 75; i++) {
         buf[i] = c02;
     }
@@ -1472,36 +1460,35 @@ i32 CLightFxRender::Shape8() {
     for (i = 102; i < 114; i++) {
         buf[i] = c05;
     }
-    buf[116] = c05;
-    buf[117] = c05;
-    buf[118] = c05;
-    buf[119] = c05;
-    buf[120] = c05;
-    buf[121] = c05;
-    for (i = 124; i < 138; i++) {
+    for (i = 116; i < 122; i++) {
+        buf[i] = c05;
+    }
+    for (i = 124; i < 139; i++) {
         buf[i] = c05;
     }
     for (i = 144; i < 156; i++) {
         buf[i] = c04;
     }
-    buf[159] = c04;
-    buf[160] = c04;
-    buf[161] = c04;
-    buf[162] = c04;
-    buf[163] = c04;
+    for (i = 159; i < 164; i++) {
+        buf[i] = c04;
+    }
     for (i = 168; i < 180; i++) {
         buf[i] = c04;
     }
-    buf[157] = c03;
-    buf[158] = c03;
-    buf[165] = c03;
-    buf[166] = c03;
+    for (i = 157; i < 159; i++) {
+        buf[i] = c03;
+    }
+    for (i = 165; i < 167; i++) {
+        buf[i] = c03;
+    }
     buf[258] = c03;
     buf[264] = c03;
-    buf[114] = c05;
-    buf[115] = c05;
-    buf[122] = c05;
-    buf[123] = c05;
+    for (i = 114; i < 116; i++) {
+        buf[i] = c05;
+    }
+    for (i = 122; i < 124; i++) {
+        buf[i] = c05;
+    }
     buf[260] = c05;
     buf[266] = c05;
     FillSpan(0x11a, 0x11d, c06);
@@ -1593,10 +1580,6 @@ i32 CLightFxRender::ApplyB(i32, i32 x, i32 y) {
 // snap toward the screen-rect edges within 'margin', re-validate against the
 // screen rect, and emit the (x,y) -> tile-cell pair into out[0]/out[1].
 // ===========================================================================
-// @early-stop
-// 88% - regalloc wall (docs/patterns/zero-register-pinning.md family): the body
-// is structurally byte-identical, but MSVC pins x in eax / y in esi where retail
-// pins x in edx / y in eax - a pervasive register rename through every instr.
 RVA(0x000a9660, 0xca)
 i32 CLightFxRender::ClampRect(i32 x, i32 y, i32* out, i32 margin) {
     if (x < m_srcRect.left || x > m_srcRect.right || y < m_srcRect.top || y > m_srcRect.bottom) {
@@ -1619,7 +1602,14 @@ i32 CLightFxRender::ClampRect(i32 x, i32 y, i32* out, i32 margin) {
     if (x < m_dstRect.left || x > m_dstRect.right || y < m_dstRect.top || y > m_dstRect.bottom) {
         return 0;
     }
-    out[0] = (x - m_dstRect.left) / m_scale;
-    out[1] = (y - m_dstRect.top) / m_scale;
+    // Retail STORES each difference into out[] and READS IT BACK for the divide
+    // (`mov [esi],edx / ... / mov eax,[esi] / cdq / idiv / mov [esi],eax`), so the
+    // subtract and the divide are two statements - fusing them into one expression
+    // keeps the value in a register and drops both reloads.
+    // docs/patterns/member-store-direct-not-via-temporary.md
+    out[0] = x - m_dstRect.left;
+    out[1] = y - m_dstRect.top;
+    out[0] /= m_scale;
+    out[1] /= m_scale;
     return 1;
 }
