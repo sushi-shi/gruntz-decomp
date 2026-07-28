@@ -43,7 +43,6 @@ CPtrArray g_modeArray;
 DATA(0x00283ee4)
 void* g_ddCreateCtx = 0; // 0x683ee4
 
-
 inline CDDSurface::~CDDSurface() {
     FreeSurfaces();
 }
@@ -343,7 +342,7 @@ i32 CDDrawPtrCollections::CreateDevice(
             return 0;
         }
         // QueryInterface's out-param is void** by the COM ABI - API-forced
-    chr = m_dd1->QueryInterface(IID_IDirectDraw2, reinterpret_cast<void**>(&m_device));
+        chr = m_dd1->QueryInterface(IID_IDirectDraw2, reinterpret_cast<void**>(&m_device));
         if (chr != 0) {
             CDDrawPtrCollections::GetErrorString(0, 0, chr);
             if (m_lastError == 0) {
@@ -394,12 +393,7 @@ i32 CDDrawPtrCollections::CreateDevice(
 
     if (bpp == 0) {
         DDSURFACEDESC desc;
-        i32 j;
-        // retail zero-fills the opaque SDK desc with an explicit dword loop - byte-forced
-    i32* d = reinterpret_cast<i32*>(&desc);
-        for (j = 0x1b; j != 0; j--) {
-            *d++ = 0;
-        }
+        memset(&desc, 0, sizeof(desc)); // 0x1b dwords == 0x6c == sizeof(DDSURFACEDESC)
         desc.dwSize = 0x6c;
         hr = m_device->GetDisplayMode(&desc);
         if (hr == 0) {
@@ -410,7 +404,6 @@ i32 CDDrawPtrCollections::CreateDevice(
     g_DirectDrawMgr = this;
     return 1;
 }
-
 
 RVA(0x00141ff0, 0x6c)
 i32 CDDrawPtrCollections::Init(void* factory, void* a1, i32 width, i32 height, i32 bpp, u32 coop) {
@@ -492,8 +485,7 @@ CDDSurface* CDDrawPtrCollections::Create7f0_1(const DDSURFACEDESC* desc) {
 // dispatch vtbl[0x24]; on success register via AddItemA, else virtual-delete. /GX.
 // Failure path is the fall-through (retail's `jne success` polarity).
 RVA(0x00142260, 0xd2)
-CDDSurface*
-CDDrawPtrCollections::CreateA(PidHeader* hdr, i32 type, u32 size, i32 ctrl, i32 trans) {
+CDDSurface* CDDrawPtrCollections::CreateA(PidHeader* hdr, i32 type, u32 size, i32 ctrl, i32 trans) {
     CFileImageSurface* item = new CFileImageSurface;
     if (!item->ResolveEx(this, hdr, type, size, ctrl, trans)) {
         delete item;
@@ -1093,12 +1085,7 @@ void* CDDrawPtrCollections::CreatePoolItem(void* arg0v, i32 kind) {
 RVA(0x00143740, 0x93)
 i32 CDDrawPtrCollections::GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp) {
     DDSURFACEDESC desc;
-    i32 j;
-    // retail zero-fills the opaque SDK desc with an explicit dword loop - byte-forced
-    i32* d = reinterpret_cast<i32*>(&desc);
-    for (j = 0x1b; j != 0; j--) {
-        *d++ = 0;
-    }
+    memset(&desc, 0, sizeof(desc)); // 0x1b dwords == 0x6c == sizeof(DDSURFACEDESC)
     desc.dwSize = 0x6c;
     i32 hr = m_device->GetDisplayMode(&desc);
     if (hr != 0) {
