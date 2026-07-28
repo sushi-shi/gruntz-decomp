@@ -10,7 +10,7 @@
 #include <Gruntz/SpawnList.h>         // canonical CSpawnList / CSpawnEntry (voice lists)
 #include <DDrawMgr/DDrawChildGroup.h> // the shared CDDrawChildGroup (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>         // CGameObject (the created sprite) + AnimWorkerObj
-#include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
+#include <Rez/RezAlloc.h>             // RezAlloc/RezFree (the global allocator pair)
 
 class CGruntVoice;  // folded CGruntVoice
 struct StreamVoice; // m_10/m_14 owned voice streams (the real <Dsndmgr/StreamVoice.h>)
@@ -55,10 +55,10 @@ class CGrunt; // the voice-cue subject (GetButeSlot / LoadGruntSpawnConfig arg 1
 
 class CGruntSpawnConfig {
 public:
-    BOOL Init(CGruntzMgr* owner); // 0x11adc0
-    void Clear();                  // 0x11ae30
-    BOOL LoadGruntVoices();        // 0x11af00
-    void ClearSprites();           // 0x11af90 (out-of-line: m_08 = 0; m_0c = 0)
+    BOOL Init(CGruntzMgr* owner);          // 0x11adc0
+    void Clear();                          // 0x11ae30
+    BOOL LoadGruntVoices();                // 0x11af00
+    void ClearSprites();                   // 0x11af90 (out-of-line: m_08 = 0; m_0c = 0)
     i32 GetButeSlot(CGrunt* who, i32 cue); // 0x11bba0
     // The weighted voice-line picker (0x11bee0): resolve m_voiceLists[voiceId] to a
     // .WAV parse record, re-rolling up to 5 times to avoid repeating the list's last
@@ -75,16 +75,27 @@ public:
     // Two overloaded weighted grunt-voice spawn drivers (0x11b3b0 / 0x11b7c0).
     // Both consume this in ecx and return with callee-cleaned stack arguments; the
     // five-argument overload was formerly mis-modeled as a free __stdcall sibling.
-    i32 SpawnVoiceDriver(void* spawner, i32, i32, i32, i32, i32); // 0x11b3b0
-    // NB the first arg DISAGREES across callers: CWarlord passes m_object->m_188
-    // (an object id), the entrance path passes `this`. i32 is the honest declaration
-    // until the 0x11b7c0 body is reconstructed and says which the slot really wants.
-    i32 SpawnVoiceDriver(i32, i32, i32, i32, i32); // 0x11b7c0
-    CSpawnList* BuildVoiceSoundList(i32 i);             // 0x11c210 (defined in VoiceSoundList.cpp)
+    // The subject is a CGrunt, PROVEN by the body: it reads `who->m_object->m_188`
+    // (+0x10 then +0x188) to derive the ducking object id, and all 75 call sites pass
+    // a CGrunt `this` or 0. (Was `void* spawner` - the mangled PAX is retail's, but
+    // the RVA() binding is by address, so the real type costs nothing.)
+    i32 SpawnVoiceDriver(
+        CGrunt* who,
+        i32 voiceId,
+        i32 which,
+        i32 objId,
+        i32 priority,
+        i32 percent
+    ); // 0x11b3b0
+    // The five-argument twin takes the ducking object id DIRECTLY (settled by the
+    // 0x11b7c0 body: `cmp ecx,[esp+0x24]` against each voice's m_source), which is
+    // what CWarlord passes as m_object->m_188.
+    i32 SpawnVoiceDriver(i32 objId, i32 voiceId, i32 which, i32 priority, i32 percent); // 0x11b7c0
+    CSpawnList* BuildVoiceSoundList(i32 i); // 0x11c210 (defined in VoiceSoundList.cpp)
     i32 AnyVoicePlaying();   // 0x11c6c0 (either slot m_08/m_0c has a non-zero m_playFlags)
     i32 VoicePlaying(i32 i); // 0x11c700 (slot i's m_playFlags is non-zero)
     void StopVoice(i32 id);  // 0x11c730 (selective per-id voice teardown)
-    void PauseAllVoices();         // 0x11c7b0 (the 2-iter pair teardown; == m_timer->Flush)
+    void PauseAllVoices();   // 0x11c7b0 (the 2-iter pair teardown; == m_timer->Flush)
     void Stop();             // reloc-masked (per-frame poll stop, via CGruntzMgr::m_timer)
     void ResetPicks();       // 0x11c7f0 (PauseAllVoices + reset entry m_20s)
     BOOL IsReady();          // 0x11c830 (out-of-line: m_owner->m_isVoiceEnabled != 0)
