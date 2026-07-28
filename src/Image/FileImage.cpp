@@ -44,11 +44,12 @@ static PALETTEENTRY s_palPcxData[0x100]; // 0x6852f0 (CDDSurface::DecodePcxData)
 // convert dispatch, the ramp build and the BlitSurf/Blit/BlitDirect merge are logic/
 // offset/CFG-faithful, but MSVC's spilled-reg + ramp-cursor scheduling diverges from the
 // one allocation retail emitted. Note for the sweep: retail strength-reduces the four
-// channel stores into FOUR induction pointers (three separate relocs at base, base+1,
-// base+2 - see DecodeBmp @0x144024); the `.peRed/.peGreen/...` member spelling gives cl
-// ONE base plus displacements. The ARRAY TYPE is settled (PALETTEENTRY[256] - it feeds
-// the same Blit `palette` slot as CDDrawPtrCollections::m_palette); only that
-// induction-variable split is open. Deferred to the final sweep.
+// channel stores of the scratch palette into FOUR induction pointers (three separate
+// relocs at base, base+1, base+2 - clearest in DecodeBmp @0x144024). This is NOT the
+// member-vs-byte-subscript spelling: A/B'd both, the member form gives cl ONE base plus
+// displacements and the byte-subscript form gives TWO (one reloc + one src-rebased) -
+// neither reproduces four. The ARRAY TYPE is settled (PALETTEENTRY[256] - it feeds the
+// same Blit `palette` slot as CDDrawPtrCollections::m_palette); the IV split is open.
 RVA(0x00143cf0, 0x16b)
 i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     // `srcv` is a whole BMP file image: BITMAPFILEHEADER, then BITMAPINFO (header +
