@@ -455,14 +455,304 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
 RVA(0x00180630, 0x1)
 void CFaderLight::SubFree() {}
 
+// Retail clamps a span edge into [0, width] with a DOUBLE-EVALUATED select - the
+// `(v < 0 ? 0 : v)` half is emitted twice, once for the width compare and once for each
+// arm - which is what `min(max(v,0), w)` looks like when min/max are the usual two-
+// argument macros. A helper function would evaluate it once and lose the shape.
+#define FADER_CLAMPW(v, w) (((v) < 0 ? 0 : (v)) >= (w) ? (w) : ((v) < 0 ? 0 : (v)))
+
+// CFaderLight::RenderFrame (0x180640, vtable slot 1, 2412 B) - the expanding light
+// circle. Both surfaces (and, in the lit mode, the pooled overlay) stay Lock()ed for the
+// frame. m_spanStarts[]/m_spanEnds[] remember the horizontal span each scanline had last
+// frame, so every row only has to touch what CHANGED.
+//   * lit mode (m_lightGate): the circle of radius `m_frameCount - frame` is the lit
+//     area. Rows the circle has left get blacked out wholesale; rows it still covers get
+//     their newly-exposed left/right margins zeroed, and the m_spanCount-wide rim is
+//     shaded through the CShadeTable LUT, reading the overlay copy and writing the live
+//     surface. The rim walk is the same four-variant, four-quadrant rasterizer as the
+//     out-of-line Render @0x180fb0 (mirrored horizontally about m_centerX always, and
+//     vertically about m_centerY when the mirror row is on-screen).
+//   * unlit mode: the circle of radius `frame` is the RESTORED area - the newly-covered
+//     margins are copied back from m_dstSurface instead of cleared - and the rim is
+//     shaded by calling Render out of line with radius `frame + m_spanCount - 1`.
+// m_20 latches the frame reached, then the three surfaces are unlocked.
 // @early-stop
-// CFaderLight::RenderFrame (0x180640, vtable slot 1, 2412 B): the light fader's per-frame
-// light/circle-shade blit. Identity recovered by data-ref: 0x180640 is ??_7CFaderLight
-// @@6B@+0x4 (vtable slot 1), the RenderFrame(i32 frame) the class already declares. Defined here
-// as the real virtual (was the mis-homed Gap_180640 free-fn stub) so ??_7CFaderLight
-// slot 1 binds to its own body; body parked (>512 B leaf-first reconstruction).
+// ~62% (from 0.12%): COMPLETE - both modes, all four rim-walk variants, the span
+// bookkeeping, the wholesale row clear and the out-of-line Render tail reconstruct, and
+// three shape levers are already banked (the NEGATED half-chord that feeds both edge
+// clamps, the right-edge double-evaluated clamp vs the single-evaluated left one, and
+// reading m_centerX from the MEMBER inside the rim loop while the pointer setup uses the
+// cached copy: 55.3 -> 57.6 -> 59.9 -> 62.0). The residue is register pressure: this body
+// keeps ~20 values live across a four-way branch, and retail parks m_spanCount in ebx and
+// m_centerX in ebp for the whole rim walk where cl5 spills both, which re-assigns every
+// stack slot downstream (frame 0x54 vs 0x50) - the same class of wall the out-of-line
+// twin CFaderLight::Render @0x180fb0 sits on at ~54%.
 RVA(0x00180640, 0x96c)
-void CFaderLight::RenderFrame(i32 frame) {}
+void CFaderLight::RenderFrame(i32 frame) {
+    i32 delta = frame - m_20;
+    if (m_surface != 0) {
+        m_srcBits = static_cast<u8*>(m_surface->Lock(0));
+    }
+    if (m_dstSurface != 0) {
+        m_dstBits = static_cast<u8*>(m_dstSurface->Lock(0));
+    }
+    i32 bpp = m_surface->m_bytesPerPixel;
+    u8* lut = 0;
+    if (m_table != 0) {
+        lut = m_table->m_data;
+    }
+    if (m_lightGate != 0) {
+        u8* ovlBits = 0;
+        if (m_overlay != 0) {
+            ovlBits = static_cast<u8*>(m_overlay->Lock(0));
+        }
+        i32 r = m_frameCount - frame;
+        i32 rr = r * r;
+        i32 v = m_centerY - r - delta;
+        i32 row = (v < 0) ? 0 : v;
+        for (;;) {
+            i32 stop = delta + r + m_centerY;
+            if (stop >= m_surfHeight) {
+                stop = m_surfHeight;
+            }
+            if (row >= stop) {
+                break;
+            }
+            if (row >= m_centerY - r + 1 && row <= r + m_centerY - 1) {
+                i32 dyv = row - m_centerY;
+                // NEGATED half-chord: retail `neg eax`s the sqrt and then reaches both
+                // edges from it - `sub cx,(-h)` for the right (which is what leaves the
+                // sign flag the first clamp reads directly) and `lea (-h)+cx+1` for the
+                // left. The RIGHT edge is the double-evaluated clamp; the LEFT edge is
+                // not - its `(v < 0 ? 0 : v)` select is computed once and then plainly
+                // capped at the width.
+                i32 hv = -static_cast<i32>(sqrt(static_cast<double>((rr - dyv * dyv))));
+                i32 right = FADER_CLAMPW(m_centerX - hv, m_surfWidth);
+                i32 lv = hv + m_centerX + 1;
+                i32 left = (lv < 0) ? 0 : lv;
+                if (left >= m_surfWidth) {
+                    left = m_surfWidth;
+                }
+                i32 oldStart = m_spanStarts[row];
+                i32 n1 = (left - oldStart) * bpp;
+                if (n1 > 0) {
+                    memset(m_srcBits + m_surface->m_pitch * row + oldStart * bpp, 0, n1);
+                }
+                i32 oldEnd = m_spanEnds[row];
+                i32 n2 = (oldEnd - right) * bpp;
+                if (n2 > 0) {
+                    memset(m_srcBits + m_surface->m_pitch * row + right * bpp, 0, n2);
+                }
+                i32 R = m_spanCount;
+                u8* bits = m_srcBits;
+                if (R > 0) {
+                    i32 cy = m_centerY;
+                    i32 dy = row - cy;
+                    i32 dy2 = dy * dy;
+                    i32 cx = m_centerX;
+                    i32 xcur = cx - static_cast<i32>(sqrt(static_cast<double>((rr - dy2)))) + 1;
+                    i32 dist = static_cast<i32>(
+                        sqrt(static_cast<double>(((xcur - cx) * (xcur - cx) + dy2)))
+                    );
+                    i32 srcpitch = m_surface->m_pitch;
+                    i32 srcCol = row * srcpitch;
+                    u8* rowLsrc = bits + xcur + srcCol;
+                    i32 dstpitch = m_dstSurface->m_pitch;
+                    i32 dstCol = row * dstpitch;
+                    u8* rowLdst = ovlBits + xcur + dstCol;
+                    u8* rowRsrc = (bits - xcur) + srcCol + 2 * cx;
+                    u8* rowRdst = (ovlBits - xcur) + dstCol + 2 * cx;
+                    i32 mid = m_surfHeight / 2;
+                    i32 mirSrc;
+                    i32 mirDst;
+                    if (cy >= mid && row <= cy) {
+                        i32 mirRow = 2 * (cy - row);
+                        if (mirRow + row < m_surfHeight) {
+                            // ---- both halves, mirror row BELOW (LOOP A) ----
+                            mirSrc = mirRow * srcpitch;
+                            mirDst = mirRow * dstpitch;
+                            if (dist >= r - R) {
+                                do {
+                                    if (xcur > cx) {
+                                        break;
+                                    }
+                                    i32 cl = dist - r + R;
+                                    if (xcur >= 0) {
+                                        i32 p = *rowLdst;
+                                        *rowLsrc = *(lut + p * R + cl);
+                                        i32 q = *(rowLdst + mirDst);
+                                        *(rowLsrc + mirSrc) = *(lut + q * m_spanCount + cl);
+                                    }
+                                    rowLsrc++;
+                                    rowLdst++;
+                                    if (2 * m_centerX - xcur < m_surfWidth) {
+                                        i32 p = *rowRdst;
+                                        *rowRsrc = *(lut + p * m_spanCount + cl);
+                                        i32 q = *(rowRdst + mirDst);
+                                        *(rowRsrc + mirSrc) = *(lut + q * m_spanCount + cl);
+                                    }
+                                    rowRsrc--;
+                                    rowRdst--;
+                                    xcur++;
+                                    dist = static_cast<i32>(
+                                        sqrt(static_cast<double>(((xcur - cx) * (xcur - cx) + dy2)))
+                                    );
+                                } while (dist >= r - m_spanCount);
+                            }
+                        } else if (dist >= r - R) {
+                            // ---- left/right only, mirror row off-screen (LOOP B) ----
+                            do {
+                                if (xcur > cx) {
+                                    break;
+                                }
+                                i32 cl = dist - r + R;
+                                if (xcur >= 0) {
+                                    i32 p = *rowLdst;
+                                    *rowLsrc = *(lut + p * R + cl);
+                                }
+                                rowLsrc++;
+                                rowLdst++;
+                                if (2 * m_centerX - xcur < m_surfWidth) {
+                                    i32 p = *rowRdst;
+                                    *rowRsrc = *(lut + p * m_spanCount + cl);
+                                }
+                                rowRsrc--;
+                                rowRdst--;
+                                xcur++;
+                                dist = static_cast<i32>(
+                                    sqrt(static_cast<double>(((xcur - cx) * (xcur - cx) + dy2)))
+                                );
+                            } while (dist >= r - m_spanCount);
+                        }
+                    } else if (cy < mid && row >= cy) {
+                        i32 mirRow = 2 * dy;
+                        if (row - mirRow < 0) {
+                            // ---- left/right only, mirror row above the top (LOOP D) ----
+                            if (dist >= r - R) {
+                                do {
+                                    if (xcur > cx) {
+                                        break;
+                                    }
+                                    i32 cl = dist - r + R;
+                                    if (xcur >= 0) {
+                                        i32 p = *rowLdst;
+                                        *rowLsrc = *(lut + p * R + cl);
+                                    }
+                                    rowLsrc++;
+                                    rowLdst++;
+                                    if (2 * m_centerX - xcur < m_surfWidth) {
+                                        i32 p = *rowRdst;
+                                        *rowRsrc = *(lut + p * m_spanCount + cl);
+                                    }
+                                    rowRsrc--;
+                                    rowRdst--;
+                                    xcur++;
+                                    dist = static_cast<i32>(
+                                        sqrt(static_cast<double>(((xcur - cx) * (xcur - cx) + dy2)))
+                                    );
+                                } while (dist >= r - m_spanCount);
+                            }
+                        } else {
+                            // ---- both halves, mirror row ABOVE (LOOP C) ----
+                            mirSrc = mirRow * srcpitch;
+                            mirDst = mirRow * dstpitch;
+                            if (dist >= r - R) {
+                                do {
+                                    if (xcur > cx) {
+                                        break;
+                                    }
+                                    i32 cl = dist - r + R;
+                                    if (xcur >= 0) {
+                                        i32 p = *rowLdst;
+                                        *rowLsrc = *(lut + p * R + cl);
+                                        i32 q = *(rowLdst - mirDst);
+                                        *(rowLsrc - mirSrc) = *(lut + q * m_spanCount + cl);
+                                    }
+                                    rowLsrc++;
+                                    rowLdst++;
+                                    if (2 * m_centerX - xcur < m_surfWidth) {
+                                        i32 p = *rowRdst;
+                                        *rowRsrc = *(lut + p * m_spanCount + cl);
+                                        i32 q = *(rowRdst - mirDst);
+                                        *(rowRsrc - mirSrc) = *(lut + q * m_spanCount + cl);
+                                    }
+                                    rowRsrc--;
+                                    rowRdst--;
+                                    xcur++;
+                                    dist = static_cast<i32>(
+                                        sqrt(static_cast<double>(((xcur - cx) * (xcur - cx) + dy2)))
+                                    );
+                                } while (dist >= r - m_spanCount);
+                            }
+                        }
+                    }
+                }
+                m_spanStarts[row] = left;
+                m_spanEnds[row] = right;
+            } else {
+                i32 w = m_surfWidth;
+                if (w > 0) {
+                    memset(m_srcBits + m_surface->m_pitch * row, 0, w);
+                }
+            }
+            row++;
+        }
+        if (m_overlay != 0) {
+            m_overlay->m_ddSurface->Unlock(0);
+        }
+    } else {
+        i32 fr2 = frame * frame;
+        i32 v = m_centerY - frame - delta - m_spanCount;
+        i32 row = (v < 0) ? 0 : v;
+        for (;;) {
+            i32 stop = delta + frame + m_spanCount + m_centerY;
+            if (stop >= m_surfHeight) {
+                stop = m_surfHeight;
+            }
+            if (row >= stop) {
+                break;
+            }
+            if (row > m_centerY - frame && row < frame + m_centerY) {
+                i32 dyv = row - m_centerY;
+                i32 hv = -static_cast<i32>(sqrt(static_cast<double>((fr2 - dyv * dyv))));
+                i32 right = FADER_CLAMPW(m_centerX - hv, m_surfWidth);
+                i32 lv = hv + m_centerX - 1;
+                i32 left = (lv < 0) ? 0 : lv;
+                if (left >= m_surfWidth) {
+                    left = m_surfWidth;
+                }
+                i32 j;
+                i32 n1 = (m_spanStarts[row] - left) * bpp;
+                u8* src = m_dstBits + m_dstSurface->m_pitch * row + left * bpp;
+                u8* dst = m_srcBits + m_surface->m_pitch * row + left * bpp;
+                for (j = 0; j < n1; j++) {
+                    dst[j] = src[j];
+                }
+                i32 oldEnd = m_spanEnds[row];
+                i32 n2 = (right - oldEnd) * bpp;
+                src = m_dstBits + m_dstSurface->m_pitch * row + oldEnd * bpp;
+                dst = m_srcBits + m_surface->m_pitch * row + oldEnd * bpp;
+                for (j = 0; j < n2; j++) {
+                    dst[j] = src[j];
+                }
+                m_spanStarts[row] = left;
+                m_spanEnds[row] = right;
+            }
+            if (row > m_centerY - frame - m_spanCount && row < frame + m_spanCount + m_centerY) {
+                i32 rad = frame + m_spanCount - 1;
+                Render(row, rad * rad, rad, lut, m_srcBits, m_dstBits);
+            }
+            row++;
+        }
+    }
+    m_20 = frame;
+    if (m_surface != 0) {
+        m_surface->m_ddSurface->Unlock(0);
+    }
+    if (m_dstSurface != 0) {
+        m_dstSurface->m_ddSurface->Unlock(0);
+    }
+}
 
 // CFaderLight::GetFrameCount (0x1814f0, vtable slot 2) - the fade frame count = the maximum
 // distance from the light centre to any active-surface corner (each squaring is

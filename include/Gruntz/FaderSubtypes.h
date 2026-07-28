@@ -154,7 +154,12 @@ public:
     i32 m_lightGate;          // +0x48  full-width-span gate (desc +0x10)
     i32 m_centerX;            // +0x4c  light centre x (desc +0x18; T2 default 0x140)
     i32 m_centerY;            // +0x50  light centre y (desc +0x1c; T2 default 0xf0)
-    char _pad54[0x5c - 0x54];
+    // +0x54/+0x58: the two Lock()ed pixel bases RenderFrame (0x180640) holds for the
+    // whole frame - it stores each surface's `Lock(0)` result here and reads them back
+    // as the row bases for every clear/copy/shade, and hands both to Render @0x180fb0
+    // as its trailing two arguments. Was an unnamed `char _pad54[8]`.
+    u8* m_srcBits;          // +0x54  m_surface's locked pixels (the shaded target)
+    u8* m_dstBits;          // +0x58  m_dstSurface's locked pixels (the untouched original)
     i32 m_frameCount;       // +0x5c  fade frame count (GetFrameCount: max centre->corner distance)
     i32 m_spanStarts[1024]; // +0x60    per-scanline span start
     i32 m_spanEnds[1024];   // +0x1060  per-scanline span end
