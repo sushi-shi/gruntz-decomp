@@ -266,6 +266,13 @@ CRezImage* CImagePool::AddSurfaceConvert(CRezImage* src, void* pal) {
 // pushes + the AddTail `lea 0x2c(this)`). The sibling AddImageFile reaches 100%
 // only because its early m_resourceModuleHandle read pins `this`=edi; with `this` first used at the
 // tail there is no source lever. Logic byte-identical.
+// MECHANISM (2026-07-28): cl5's callee-saved pool here is [esi, edi, ebx] and a
+// COMPUTED temp takes edi while the saved `this` PARAMETER is pushed down to ebx -
+// `CPtrList* lst = &m_palettes;` does land in edi (prologue + all pops then match
+// retail exactly), but it also moves the `lea` from the tail to the head, which is a
+// net LOSS (99.02 -> 93.66, reverted). `CImagePool* self = this;` is folded straight
+// back to the parameter. So the lever exists but no expression yields `this` ITSELF
+// as a computed temp; that is the wall.
 // Also tried (2026-07-28) and byte-NEUTRAL: modelling the node seed as a real
 // `new CImagePaletteNode()` ctor instead of the spelled-out `::operator new(0x414)` +
 // three stores + hand-written null guard, which is what

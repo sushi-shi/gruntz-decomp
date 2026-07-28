@@ -1993,23 +1993,13 @@ void CPlay::StepC() {
 // on the draw-surface (SetClipRect), re-prepare the held surface, and run the guts +
 // world apply-steps. Returns 1 if clamped, 0 otherwise. __thiscall, ret 4.
 // ===========================================================================
-// @early-stop
-// ~94% regalloc wall - the whole clamp body + the apply-tail call chain are byte-
-// faithful and all relocs pair; retail pins `clamped` in edx and the rect-base copy
-// in ebx where MSVC5 here colors them edi/ebx-swapped (a cascade off the entry
-// `xor edx,edx` vs `xor edi,edi`). Not source-steerable (tried explicit rect-base
-// pointer + reordered the clamped init). docs/patterns/zero-register-pinning.md.
 RVA(0x000d8dc0, 0xce)
 i32 CPlay::ClampViewport(i32 inset) {
     CDDrawSurfaceMgr* v = m_world;
-    LevelCoordRect* vp = &v->m_level->m_planeCtx;
-    RECT r;
-    r.left = vp->left;
-    r.top = vp->top;
-    r.right = vp->right;
-    r.bottom = vp->bottom;
-
     i32 clamped = 0;
+    LevelCoordRect* vp = &v->m_level->m_planeCtx;
+    RECT r = *vp;
+
     if (r.right - r.left > 0xc0) {
         r.left += inset;
         r.right -= inset;
@@ -2040,15 +2030,12 @@ i32 CPlay::ClampViewport(i32 inset) {
 // otherwise install the clamped rect + run the apply-tail. __thiscall, ret 4.
 // ===========================================================================
 // @early-stop
-// ~86% regalloc wall - the asymmetric clamp logic, the guts-gated horizontal bound
-// (m_8c / m_8c-0xa0, inlined ternary so it stays in edi not a spill), both axis
-// [0, limit-1] clamps, and the 4-call apply-tail are byte-faithful with all relocs
-// pairing. The residual: retail carries the `clamped` accumulator through `ecx`
-// across the two blocks (allocating an extra spill slot -> `sub esp,0x1c`) where
-// MSVC5 here writes it straight to [esp+0x10] (`sub esp,0x18`), shifting the rect
-// slots by 4 and renaming the block-2 temps. Not source-steerable (the two-block
-// boolean-OR register-merge is the compiler's spill choice).
-// docs/patterns/zero-register-pinning.md.
+// 91.3% (was 86%): the frame, the `clamped`-in-ecx merge and the rect-pointer
+// materialization all fell out once the rect became a real COPY (`RECT r = *rp`) and
+// the two mode extents became one SIZE aggregate. Sole residual is a five-register
+// permutation (ecx/eax/edi/edx/ebp) rooted in ONE scheduling choice: retail loads
+// m_guts third, right after m_world and m_mgr, where cl sinks that load to its single
+// use in the ternary. Neither the named-local nor the deleted-local spelling moves it.
 RVA(0x000d8ed0, 0x128)
 i32 CPlay::ClampViewport2(i32 stride) {
     i32 clamped = 0;
@@ -2056,35 +2043,36 @@ i32 CPlay::ClampViewport2(i32 stride) {
     CGruntzMgr* w = m_mgr;
     CStatusBarMgr* guts = m_guts;
 
-    const LevelCoordRect& rp = v->m_level->m_planeCtx; // LevelCoordRect IS tagRECT
-    RECT r;
-    r.left = rp.left;
-    r.top = rp.top;
-    r.right = rp.right;
-    r.bottom = rp.bottom;
+    LevelCoordRect* rp = &v->m_level->m_planeCtx; // LevelCoordRect IS tagRECT
+    RECT r = *rp;
 
-    i32 hlimit = w->m_modeW;
-    i32 vlimit = w->m_modeH;
+    // frame-slot-holes-prove-a-local-aggregate.md: retail's frame is one dword bigger
+    // than the six slots it writes, and the hole sits directly below the spilled
+    // height - the two mode extents are ONE aggregate whose width cl enregisters.
+    SIZE
+    limit;
+    limit.cx = w->m_modeW;
+    limit.cy = w->m_modeH;
 
-    if (r.right - r.left < (guts->m_position == 2 ? hlimit : hlimit - 0xa0)) {
+    if (r.right - r.left < (guts->m_position == 2 ? limit.cx : limit.cx - 0xa0)) {
         r.left -= stride;
         r.right += stride;
         if (r.left < 0) {
             r.left = 0;
         }
-        if (r.right >= hlimit) {
-            r.right = hlimit - 1;
+        if (r.right >= limit.cx) {
+            r.right = limit.cx - 1;
         }
         clamped = 1;
     }
-    if (r.bottom - r.top < vlimit) {
+    if (r.bottom - r.top < limit.cy) {
         r.top -= stride;
         r.bottom += stride;
         if (r.top < 0) {
             r.top = 0;
         }
-        if (r.bottom >= vlimit) {
-            r.bottom = vlimit - 1;
+        if (r.bottom >= limit.cy) {
+            r.bottom = limit.cy - 1;
         }
         clamped = 1;
     }
@@ -2208,15 +2196,13 @@ i32 CPlay::OnRegion4(i32 z) // (region-3 / gate m_region3Gate, timer +0x460)
 // match retail 1:1 but the 12 DIR32 operands are differently-named (thunk vs direct)
 // reloc-masked symbols.
 // ===========================================================================
-// @early-stop
-// Two real bugs fixed (76.4%->85.5%): (1) the type-discriminator chain had only 11
-// distinct compares - VisFn_40fe90 appeared TWICE (positions 1 and 7), so cl CSE'd
-// them to 11 cmps where retail has 12 distinct (the 7th is the fn at 0x47e160 via
-// thunk 0x402d24); (2) the entity-list walk processed-then-advanced, where retail's
-// inlined GetNext advances the node FIRST (cur=node; node=node->m_next; use cur).
-// Residual: the head/RECT pointer-setup regalloc (retail derives vp/held via add
-// reg,0x10; cl colours the three base pointers differently) + the 12 DIR32 reloc-name
-// masks (retail compares ILT thunk addresses, delinker has no thunk symbols).
+// Four real bugs, no wall: (1) the type-discriminator chain had only 11 distinct
+// compares - VisFn_40fe90 appeared TWICE (positions 1 and 7), so cl CSE'd them to 11
+// cmps where retail has 12 distinct (the 7th is the fn at 0x47e160 via thunk
+// 0x402d24); (2) the entity-list walk processed-then-advanced, where retail's inlined
+// GetNext advances the node FIRST (cur=node; node=node->m_next; use cur); (3) the
+// viewport rect is COPIED then bumped, not built field-by-field; (4) the list head is
+// read AFTER the Restore call, from a cached `&m_list` (`add esi,0x10`).
 // ===========================================================================
 
 RVA(0x000d9050, 0xc7)
@@ -2225,14 +2211,18 @@ i32 CPlay::NotifyVisibleEntities() {
     const LevelCoordRect& vp = v->m_level->m_planeCtx; // LevelCoordRect IS tagRECT
     CDDrawSurfacePair* held = v->m_drawTarget->m_backPair;
     CObList& chain = v->m_childGroup->m_list;
-    POSITION pos = chain.GetHeadPosition();
 
-    RECT r;
-    r.left = vp.left;
-    r.top = vp.top;
-    r.right = vp.right + 1;
-    r.bottom = vp.bottom + 1;
+    // struct-copy-dead-member-store-frame.md: retail COPIES the rect then bumps two
+    // members - `mov [esp+0x14],eax; inc eax; ...; mov [esp+0x14],eax` is the copy's
+    // own (dead) `right` store still standing in front of `right + 1`.
+    RECT r = vp;
+    r.right = r.right + 1;
+    r.bottom = r.bottom + 1;
     held->m_surface->Restore(&r, 0);
+
+    // AFTER the Restore: retail caches `&m_list` (`add esi,0x10`) across the call and
+    // reads the head from it afterwards (`mov esi,[esi+4]`).
+    POSITION pos = chain.GetHeadPosition();
 
     while (pos != 0) {
         CGameObject* o = static_cast<CGameObject*>(chain.GetNext(pos));
@@ -2257,20 +2247,16 @@ i32 CPlay::NotifyVisibleEntities() {
 // (m_cursorX/m_cursorY), aligns each axis DOWN to a 0x20 boundary (+0x10 bias) and
 // stores the result into the scroll-offset sink m_scrollSink (+0x5c X, +0x60 Y).
 // ===========================================================================
-// @early-stop
-// register-coloring wall (~81.6%). Logic + all member offsets are byte-faithful;
-// retail pins the draw-surface ptr in edx and geom in esi, our cl swaps them to
-// esi/edx, which renames the temp regs and floats two scheduled adds by one slot.
-// Not source-steerable (no local-pin/re-read variant flips the edx<->esi choice);
-// confirmed coexists with ApplyGameOptions at top/absent/adjacent placement.
-// See docs/patterns/zero-register-pinning.md.
 RVA(0x000d1ac0, 0x4f)
 void CPlay::StepScroll() {
     CGameLevel* v = m_world->m_level;
-    CDDrawWorkerHost* geom = v->m_mainPlane;
+    // The view rect is reached through a POINTER local: retail materializes
+    // `add edx,0x40` once and reads `[edx]`/`[edx+4]`, where `geom->m_viewRect.top`
+    // written inline folds the +0x40 into the two disp8 loads.
+    RECT* vr = &v->m_mainPlane->m_viewRect;
 
-    i32 y = m_cursorY + (geom->m_viewRect.top - v->m_planeCtx.top);   // [edx+4]-m_14; +=m_cursorY
-    i32 x = geom->m_viewRect.left + (m_cursorX - v->m_planeCtx.left); // [edx]; +=m_cursorX-m_10
+    i32 y = m_cursorY + (vr->top - v->m_planeCtx.top);   // [edx+4]-m_14; +=m_cursorY
+    i32 x = vr->left + (m_cursorX - v->m_planeCtx.left); // [edx]; +=m_cursorX-m_10
 
     y = (y & ~0x1f) + 0x10; // align down 0x20 (and al,0xe0); + 0x10
     x = (x & ~0x1f) + 0x10; // align down 0x20 (and edi,~0x1f); + 0x10
@@ -2328,24 +2314,20 @@ i32 CPlay::StepInputA() {
 // the viewport rect inset by the "Font" Text{Left,Top,Right,Bottom}Edge margins,
 // then arm a 2-frame step countdown. /GX EH frame (the CString local).
 // ===========================================================================
-// @early-stop
-// ~97.8%: every instruction matches except retail reserves a 0x24 local frame vs
-// our 0x18, which shifts the [esp+N] displacements by 0xc throughout. The ctor/
-// assign/GetInt x4/SetRect/EngStr_DrawText sequence + the single `top` spill are
-// byte-identical; the residual is MSVC's total-frame/EH-scratch sizing (tried rect-
-// before-CString reorder, no change). Logic byte-faithful.
 RVA(0x000d1710, 0x122)
 void CPlay::LoadSBITextEdges(char* name) {
     CString s;
     s = name;
 
     RECT rect;
-    LevelCoordRect& vp = m_world->m_level->m_planeCtx;
-    i32 l = vp.left, t = vp.top, r = vp.right, b = vp.bottom;
-    i32 bottom = b - g_buteMgr.GetInt("Font", "TextBottomEdge");
-    i32 right = r - g_buteMgr.GetInt("Font", "TextRightEdge");
-    i32 top = t + g_buteMgr.GetInt("Font", "TextTopEdge");
-    i32 left = l + g_buteMgr.GetInt("Font", "TextLeftEdge");
+    // frame-slot-holes-prove-a-local-aggregate.md: retail's frame is 0xc BIGGER than
+    // the slots it writes and only `top` is spilled - a 4-member aggregate with THREE
+    // members enregistered, i.e. a RECT copy of the viewport, not four scalars.
+    RECT vp = m_world->m_level->m_planeCtx;
+    i32 bottom = vp.bottom - g_buteMgr.GetInt("Font", "TextBottomEdge");
+    i32 right = vp.right - g_buteMgr.GetInt("Font", "TextRightEdge");
+    i32 top = vp.top + g_buteMgr.GetInt("Font", "TextTopEdge");
+    i32 left = vp.left + g_buteMgr.GetInt("Font", "TextLeftEdge");
     SetRect(&rect, left, top, right, bottom);
 
     EngStr_DrawText(m_world, &s, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -2374,14 +2356,14 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
         i32 left = rectSrc->left + g_buteMgr.GetInt("Font", "TextLeftEdge");
         SetRect(&rect, left, top, right, bottom);
     } else {
-        // the viewport rect (m_c->m_level->m_viewport) ptr (edx) does not survive
-        // the GetInt calls, so all 4 corners are read up front.
-        LevelCoordRect& vp = m_world->m_level->m_planeCtx;
-        i32 l = vp.left, t = vp.top, r = vp.right, b = vp.bottom;
-        i32 bottom = b - g_buteMgr.GetInt("Font", "TextBottomEdge");
-        i32 right = r - g_buteMgr.GetInt("Font", "TextRightEdge");
-        i32 top = t + g_buteMgr.GetInt("Font", "TextTopEdge");
-        i32 left = l + g_buteMgr.GetInt("Font", "TextLeftEdge");
+        // frame-slot-holes-prove-a-local-aggregate.md: a RECT COPY of the viewport (the
+        // frame reserves its four dwords even though cl enregisters them all), not four
+        // scalars - the same shape LoadSBITextEdges uses.
+        RECT vp = m_world->m_level->m_planeCtx;
+        i32 bottom = vp.bottom - g_buteMgr.GetInt("Font", "TextBottomEdge");
+        i32 right = vp.right - g_buteMgr.GetInt("Font", "TextRightEdge");
+        i32 top = vp.top + g_buteMgr.GetInt("Font", "TextTopEdge");
+        i32 left = vp.left + g_buteMgr.GetInt("Font", "TextLeftEdge");
         SetRect(&rect, left, top, right, bottom);
     }
 
@@ -5078,11 +5060,27 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
 // clamped to 100 px, committing the new offset when anything moved. speed =
 // (int)((double)m_4->m_124 * 0.01 * range + min). The bute getter, timeGetTime
 // ptr and the ApplyScroll tail are reloc-masked; only offsets + code bytes bind.
+// Four real bugs, found 2026-07-28 (90.0% -> 93.9%): (1) the per-edge nudge divides
+// by 1000, not 100 - retail's magic is 0x10624dd3 + `shr edx,6`, ours was 0x51eb851f +
+// `shr edx,5`, and `--diff` MASKS the magic so only the shift showed; (2) the scroll
+// origin is the plane's SNAPPED position (+0x84/+0x88), not m_viewRect.left/top
+// (+0x40/+0x44); (3) MaxScrollSpeed is called FIRST and subtracted into its own
+// register (`sub edi,eax`), which needs the local; (4) the TOP edge - alone of the
+// four - also sets `changed` when the edge merely becomes active (its two arms share
+// the timeGetTime tail, which cross-jumping can only do when both set it).
 // @early-stop
-// scheduling wall (85.9%, from 0% stub): logic + all four edge blocks byte-faithful.
-// Residual is MSVC's interleave of the geom pointer-chase (sx/sy loads) into the
-// float speed-computation FPU latency gaps (fild/fmul/fimul/fiadd/ftol) + the
-// trailing nop padding - not source-steerable (zero-register-pinning family).
+// residual (93.9%): cl canonicalizes the two speed multiplies (it emits the int
+// `fimul` before the double `fmul` whichever order the source spells them, proven both
+// ways), so the FPU/integer interleave differs by two instruction slots.
+
+DATA(0x0024c01c)
+u8 g_scrollLoadFlags; // 0x64c01c  owner def (zero-init .bss)
+
+DATA(0x0024c270)
+i32 g_scrollSpeedRange; // 0x64c270  owner def (zero-init .bss)
+
+DATA(0x0024c274)
+i32 g_scrollMinSpeed; // 0x64c274  owner def (zero-init .bss)
 
 RVA(0x000d12b0, 0x2d5)
 i32 CPlay::LoadScrollSpeedOptions() {
@@ -5092,27 +5090,38 @@ i32 CPlay::LoadScrollSpeedOptions() {
     }
     if (!(g_scrollLoadFlags & 2)) {
         g_scrollLoadFlags |= 2;
-        g_scrollSpeedRange = g_buteMgr.GetInt("Optionz", "MaxScrollSpeed")
-                             - g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
+        // Max is bound to a local: retail calls Max FIRST and subtracts into ITS
+        // register (`mov edi,eax; call Min; sub edi,eax`); written as one expression
+        // cl evaluates Min first and ends up with `sub eax,edi`.
+        i32 maxSpeed = g_buteMgr.GetInt("Optionz", "MaxScrollSpeed");
+        g_scrollSpeedRange = maxSpeed - g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
     }
 
     CPlay* self = this;
     CGruntzMgr* w = m_mgr;
     i32 changed = 0;
+    CDDrawWorkerHost* g = w->m_world->m_level->m_mainPlane;
+    // +0x84/+0x88 (the SNAPPED scroll position), not m_viewRect.left/top at +0x40/+0x44:
+    // retail reads `[eax+0x84]`/`[eax+0x88]`, and ResetGoals below re-snaps from these.
+    i32 sx = g->m_snappedX;
+    i32 sy = g->m_snappedY;
     i32 speed = static_cast<i32>(
         (static_cast<double>(w->m_scrollSpeed) * g_scrollSpeedScale * g_scrollSpeedRange
          + g_scrollMinSpeed)
     );
-    CDDrawWorkerHost* g = w->m_world->m_level->m_mainPlane;
-    i32 sx = g->m_viewRect.left;
-    i32 sy = g->m_viewRect.top;
-    i32 extentX = w->m_modeW;
-    i32 extentY = w->m_modeH;
+    // frame-slot-holes-prove-a-local-aggregate.md: retail reserves FIVE dwords
+    // (sub esp,0x14) but only writes four - the hole at [esp+0x20] sits right above the
+    // spilled width at [esp+0x1c], i.e. the two mode extents are ONE aggregate whose
+    // height cl enregisters (edi).
+    SIZE
+    extent;
+    extent.cx = w->m_modeW;
+    extent.cy = w->m_modeH;
 
     // LEFT edge
     if (self->m_cursorX < 0xc || (self->m_scrollEdgeLock & 1)) {
         if (self->m_scrollEdgeActive & 1) {
-            i32 d = (::timeGetTime() - self->m_lastScrollTimeX) * speed / 100;
+            i32 d = (::timeGetTime() - self->m_lastScrollTimeX) * speed / 1000;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
@@ -5130,9 +5139,9 @@ i32 CPlay::LoadScrollSpeedOptions() {
     }
 
     // RIGHT edge
-    if (self->m_cursorX > extentX - 0xc || (self->m_scrollEdgeLock & 4)) {
+    if (self->m_cursorX > extent.cx - 0xc || (self->m_scrollEdgeLock & 4)) {
         if (self->m_scrollEdgeActive & 4) {
-            i32 d = (::timeGetTime() - self->m_lastScrollTimeX) * speed / 100;
+            i32 d = (::timeGetTime() - self->m_lastScrollTimeX) * speed / 1000;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
@@ -5152,7 +5161,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
     // TOP edge
     if (self->m_cursorY < 0xf || (self->m_scrollEdgeLock & 2)) {
         if (self->m_scrollEdgeActive & 2) {
-            i32 d = (::timeGetTime() - self->m_lastScrollTimeY) * speed / 100;
+            i32 d = (::timeGetTime() - self->m_lastScrollTimeY) * speed / 1000;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
@@ -5164,15 +5173,21 @@ i32 CPlay::LoadScrollSpeedOptions() {
         } else {
             self->m_scrollEdgeActive |= 2;
             self->m_lastScrollTimeY = ::timeGetTime();
+            // FAITHFUL asymmetry: the TOP edge - and ONLY the top edge - also marks the
+            // view changed when the edge merely BECOMES active. Retail proves it: this is
+            // the one block whose two arms share `call timeGetTime; mov m_lastScrollTimeY;
+            // mov ebp,1` (0xd14dc), which cross-jumping can only do when the `changed = 1`
+            // is in BOTH. The other three blocks keep it in the moved-arm only.
+            changed = 1;
         }
     } else {
         self->m_scrollEdgeActive &= ~2;
     }
 
     // BOTTOM edge
-    if (self->m_cursorY > extentY - 0xf || (self->m_scrollEdgeLock & 8)) {
+    if (self->m_cursorY > extent.cy - 0xf || (self->m_scrollEdgeLock & 8)) {
         if (self->m_scrollEdgeActive & 8) {
-            i32 d = (::timeGetTime() - self->m_lastScrollTimeY) * speed / 100;
+            i32 d = (::timeGetTime() - self->m_lastScrollTimeY) * speed / 1000;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
