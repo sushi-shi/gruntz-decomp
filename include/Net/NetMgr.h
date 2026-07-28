@@ -320,8 +320,11 @@ struct CNetSession {
     i32 SendOne(CNetCmdSlot* s, i32 v);                                       // bfeb0
     void Reconcile();                                                         // c00f0
     i32 Advance();                                                            // c01d0
-    CGruntzCommand* GetSlotPtr(i32 v);    // c0430  id-map fetch (ex "GlyphTable::Get")
-    void ArmSlot(void* node, i32 parity); // c03f0  id-map store (ex "GlyphTable::Set")
+    CGruntzCommand* GetSlotPtr(i32 v); // c0430  id-map fetch (ex "GlyphTable::Get")
+    // `parity` is a BYTE parameter: the caller ships only dl (`mov dl,..; shl dl,1;
+    // push edx`, CMulti::Render) and the callee zero-extends it (`mov edx,[esp+8];
+    // and edx,0xff`) - an i32 parameter forces a caller-side `and edx,0xff`.
+    void ArmSlot(void* node, u8 parity); // c03f0  id-map store (ex "GlyphTable::Set")
     // Checksum @0xc0590: the game-state signature accumulator over the 4x15
     // placed-grunt roster (defined in src/Gruntz/GameChecksum.cpp; ex the
     // "CGameSyncSig" view). Step2437 is a per-frame poke with no bound RVA,
