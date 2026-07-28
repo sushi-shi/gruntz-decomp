@@ -114,6 +114,14 @@ public:
         m_flags = 0;
         m_ownerCtx = owner;
     }
+    // The 3-arg INLINE sibling (all three header words). Distinct from the OUT-OF-LINE
+    // ??0 at 0x156cb0 both in body (that one schedules m_id / vptr / m_flags / m_ownerCtx)
+    // and in argument order, so the two are separate overloads.
+    CLoadable(i32 id, i32 flags, class CDDrawSurfaceMgr* owner) {
+        m_id = id;
+        m_flags = flags;
+        m_ownerCtx = owner;
+    }
     // The +0x0c owner context IS the CDDrawSurfaceMgr across the whole draw family -
     // surface pairs/children, workers, resolve nodes, cue leaves. Now that the member
     // carries that type, this is a plain read.
