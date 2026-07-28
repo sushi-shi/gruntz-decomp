@@ -62,6 +62,29 @@ That one is worth reading as evidence rather than as points: it costs a `cmp` (7
 the parked score) but it is what retail's bytes say, and the loop tail now matches instruction for
 instruction.
 
+## Same family: `a <= b` vs `b >= a` — the OPERAND ORDER survives too
+
+The two spellings are identical in C and differ in *both* the `cmp` operand order and the
+jcc, so a lone flip whose two sides also have their `cmp` operands swapped is this:
+
+```asm
+; retail  cmp edi,eax / jl   <- source `gx >= mid`
+; base    cmp eax,edi / jg   <- source `mid <= gx`
+```
+
+`CBootyState::LevelMsgHudDriver` @0x1a700 had three of them (`(right+left)/2 <= gx`,
+`g_levelMsgIconPos[s*2] <= gx`, `m_bomb[i]->m_screenX <= m_gokart[i]->m_screenX`);
+rewriting each with retail's left operand first, 84.80 -> **85.23**, and the unit's sieve
+went clean. Cheap and unambiguous - the left `cmp` operand names the left source operand.
+
+## And: the loop bound must be in a REGISTER for cl to down-count
+
+`for (x = 0; x < m_width; x++)` re-reads the member every iteration, which pins the guard
+as `cmp edx,ecx / jl`; retail's `dec edi / jne` needs the trip count hoisted into a local
+first. `CRezImage::FlipVertical` @0x176840, 41.61 -> **47.36** with `i32 wid = m_width;`
+above the three byte loops. (The converse - retail comparing where we down-count - means
+the index is still live, e.g. because the row addresses are computed from it.)
+
 ## Not this pattern
 
 `jl`↔`jb` (and `jg`↔`ja`, `jle`↔`jbe`, `jge`↔`jae`) is a *signedness* difference, i.e. a real type

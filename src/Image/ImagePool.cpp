@@ -981,15 +981,16 @@ i32 CRezImage::LoadDefault(char* name, void* a2, i32 a3) {
 // (m_pixels, rows of m_width bytes, m_height rows) top-to-bottom by swapping
 // row i with row (m_height-1-i) through a m_width-byte scratch row.
 // @early-stop
-// strength-reduction / merged-induction wall (~43.6%). Logic verified exact: guard
-// (m_height<=1), ::operator new(m_width) scratch, the height/2 row-pair swap (scratch=bot;
-// bot=top; top=scratch), RezFree. Retail's /O2 fuses the three per-pair byte copies
-// into merged inductions where one register is BOTH the scratch index and the source
-// offset (`[eax+ecx-1]`, `[edx+ebp-1]`) and accumulates the row offsets in stack spill
-// slots; the wine MSVC5 keeps separate `x` index + `top`/`bot` pointer accumulators.
-// Tried per-iteration multiply vs pointer-accumulator forms (40.3 -> 43.6); the merged
-// 3-loop induction shape is not source-expressible. Bytes for the prologue/guard/alloc/
-// free + the swap ordering match; the residue is the inner-loop addressing selection.
+// 47.36% (was 41.61). Fix 2026-07-28 (jcc_sieve OTHER `jl -> jne`): the row width is
+// HOISTED into a local. `x < m_width` re-reads [esi+0x438] every iteration, which pins the
+// guard as `cmp edx,ecx / jl`; with the width in a register cl strength-reduces the first
+// two byte loops to retail's `dec edi / jne` trip count. Logic verified exact: guard
+// (m_height<=1), ::operator new(m_width) scratch, the height/2 row-pair swap, RezFree.
+// Residue (2 branches): retail keeps the THIRD byte loop and the outer pair loop as
+// UP-counted index compares (`cmp edi,esi / jl`, `cmp eax,ecx / jl`) while cl down-counts
+// both, and fuses the copies into merged inductions where one register is BOTH the scratch
+// index and the source offset (`[eax+ecx-1]`, `[edx+ebp-1]`) with the row offsets in spill
+// slots. Tried per-iteration multiply vs pointer-accumulator forms (40.3 -> 43.6).
 RVA(0x00176840, 0x11f)
 void CRezImage::FlipVertical() {
     if (m_height <= 1) {
@@ -999,22 +1000,26 @@ void CRezImage::FlipVertical() {
     if (scratch == 0) {
         return;
     }
+    // The row width is HOISTED: retail's three byte loops end `dec edi / jne` off a
+    // register trip count, where `x < m_width` re-reads [esi+0x438] every iteration and
+    // forces `cmp edx,ecx / jl` instead.
+    i32 wid = m_width;
     i32 pairs = m_height / 2;
     u8* top = m_pixels;
-    u8* bot = m_pixels + (m_height - 1) * m_width;
+    u8* bot = m_pixels + (m_height - 1) * wid;
     i32 x;
     for (i32 i = 0; i < pairs; i++) {
-        for (x = 0; x < m_width; x++) {
+        for (x = 0; x < wid; x++) {
             scratch[x] = bot[x];
         }
-        for (x = 0; x < m_width; x++) {
+        for (x = 0; x < wid; x++) {
             bot[x] = top[x];
         }
-        for (x = 0; x < m_width; x++) {
+        for (x = 0; x < wid; x++) {
             top[x] = scratch[x];
         }
-        top += m_width;
-        bot -= m_width;
+        top += wid;
+        bot -= wid;
     }
     ::operator delete(scratch);
 }
