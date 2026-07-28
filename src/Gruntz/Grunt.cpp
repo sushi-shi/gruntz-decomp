@@ -3467,20 +3467,31 @@ fail:
 // base-side table against nothing (73.18 -> 79.72 on extending the extent).
 //
 // @early-stop
-// ~80%: complete and shape-correct - every block, both board dirty-rect clips, the
+// ~80%: COMPLETE and shape-correct. Every block, both board dirty-rect clips, the
 // 16-way arrival-state switch, the 8-way tile-kind switch, the three countdown ramps
-// and the powerup-kind tail all reconstruct. Two residual mechanisms, neither
-// source-steerable:
-//   (1) BLOCK PLACEMENT - retail parks the `m_arrivalState != 0x11` arm PAST the
-//       epilogue (0x5e55b, jumping back to 0x5e1db). Spelled here as exactly that
-//       (`else { goto combatTimeout; }` with the block last in the function), cl5
-//       still straightens the back-edge and lays the block immediately before its
-//       join, so ~60 instructions sit in the wrong place and double-count.
-//   (2) 64-BIT CSE - retail recomputes `duration - now + clock` in full at each of
-//       the six timer sites; cl reassociates to `(duration + clock) - now`, CSEs the
-//       sum and carries it in callee-saved registers across the __ftol call.
-// Plus the usual constant-pinning coin-flips (retail pins 1 in ebp and 0x10000 in
-// edi where the recompile uses immediates).
+// and the powerup-kind tail reconstruct; the call multiset is identical (72 = 72) and
+// the per-member access counts now match everywhere except the six duplicated 64-bit
+// timer reads below. The residual is ONE whole-function register-allocation
+// divergence with three visible faces, and the wall-breaker has exhausted on it
+// (gruntz.permute.permute 40 iters: no change; match_variants 256 candidates from 445
+// atomic mutations + 48 TU-state trials: best +0.003%):
+//   (1) CONSTANT PINNING - retail dedicates TWO callee-saved registers to constants
+//       for the whole body: ebp = 0 and edi = 0x10000 (`mov edi,0x10000` @0x5de2f,
+//       and both are RE-materialised at 0x5e1d4 after the 0x11 arm's CString fixup
+//       loop clobbers them). cl5 keeps both as immediates here. A named
+//       `i32 retireBit = 0x10000;` local does not steer it - constant propagation
+//       folds it straight back (docs/patterns/const-materialize-into-reg-vs-immediate).
+//   (2) 64-BIT CSE, a consequence of (1) - with ebp/edi free, cl reassociates
+//       `duration - now + clock` to `(duration + clock) - now`, CSEs the sum and
+//       carries it across the __ftol call; retail, out of registers, recomputes each
+//       of the six timer expressions in full. This is the ONLY remaining member-read
+//       count difference (each of 0x810/0x818/0x860/0x890/0x898/0x8a0/0x8a8 is read
+//       once here and twice in retail).
+//   (3) BLOCK PLACEMENT - retail parks the `m_arrivalState != 0x11` arm PAST the
+//       epilogue (0x5e55b, jumping back into the kind dispatch at 0x5e1db). Both the
+//       plain `else` and an explicit `goto` to a block written last in the function
+//       compile to BYTE-IDENTICAL output: cl5 straightens the back-edge and lays that
+//       ~60-instruction arm immediately before its join either way.
 // ---------------------------------------------------------------------------
 RVA(0x0005d210, 0x1554)
 void CGrunt::XferName(char* /*name*/) {
@@ -3660,14 +3671,18 @@ void CGrunt::XferName(char* /*name*/) {
             // Inlined LookupTileType(level, tx, ty) on the TILE grid: clamp to the main
             // plane's cell extent, resolve the tile cell, ask its image set the
             // collision kind at the cell origin.
+            // The tile coords are RE-READ here (retail 0x5d734/0x5d73a): the
+            // ClaimCellFromRow call above killed the member CSE.
+            i32 ptx = m_lastTilePxX >> 5;
+            i32 pty = m_lastTilePxY >> 5;
             CGameLevel* level = g_gameReg->m_world->m_level;
-            i32 cx = tx;
+            i32 cx = ptx;
             if (cx < 0) {
                 cx = 0;
             } else if (cx >= level->m_mainPlane->m_gridW) {
                 cx = level->m_mainPlane->m_gridW - 1;
             }
-            i32 cy = ty;
+            i32 cy = pty;
             if (cy < 0) {
                 cy = 0;
             } else if (cy >= level->m_mainPlane->m_gridH) {
@@ -3701,11 +3716,11 @@ void CGrunt::XferName(char* /*name*/) {
                 default: {
                     CMapMgr* bd = g_gameReg->m_tileGrid;
                     i32 cellId;
-                    if (static_cast<u32>(tx) >= static_cast<u32>(bd->m_width)
-                        || static_cast<u32>(ty) >= static_cast<u32>(bd->m_height)) {
+                    if (static_cast<u32>(ptx) >= static_cast<u32>(bd->m_width)
+                        || static_cast<u32>(pty) >= static_cast<u32>(bd->m_height)) {
                         cellId = 0;
                     } else {
-                        cellId = ((bd->m_rowInts[ty]))[tx * 7 + 3];
+                        cellId = ((bd->m_rowInts[pty]))[ptx * 7 + 3];
                     }
                     if (cellId == -1) {
                         hazard = g_areaPageSize;
@@ -4049,7 +4064,32 @@ afterArrival:
             }
         }
     } else {
-        goto combatTimeout;
+        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_combatClock64
+            >= m_combatTimeout64) {
+            if (m_poweredUp != 0 && m_neighborValid == 0) {
+                m_entranceActive = 0;
+                m_combatActive = 0;
+                m_neighborValid = 0;
+                m_poweredUp = 0;
+                ResetEntranceAnimation(1, 0, 0);
+            }
+            if (m_arrived == 0
+                && static_cast<i64>(static_cast<u32>(g_frameTime)) - m_hudRetireClock64
+                       >= m_hudRetireWindow64) {
+                if (m_healthSprite != 0) {
+                    m_healthSprite->m_flags |= 0x10000;
+                    m_healthSprite = 0;
+                }
+                if (m_toySprite != 0) {
+                    m_toySprite->m_flags |= 0x10000;
+                    m_toySprite = 0;
+                }
+                if (m_staminaSprite != 0) {
+                    m_staminaSprite->m_flags |= 0x10000;
+                    m_staminaSprite = 0;
+                }
+            }
+        }
     }
 
 kindDispatch:
@@ -4180,35 +4220,6 @@ kindDispatch:
         m_tileMgr->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, m_458, m_45c);
         m_454 = 0;
     }
-    return;
-
-combatTimeout:
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_combatClock64 >= m_combatTimeout64) {
-        if (m_poweredUp != 0 && m_neighborValid == 0) {
-            m_entranceActive = 0;
-            m_combatActive = 0;
-            m_neighborValid = 0;
-            m_poweredUp = 0;
-            ResetEntranceAnimation(1, 0, 0);
-        }
-        if (m_arrived == 0
-            && static_cast<i64>(static_cast<u32>(g_frameTime)) - m_hudRetireClock64
-                   >= m_hudRetireWindow64) {
-            if (m_healthSprite != 0) {
-                m_healthSprite->m_flags |= 0x10000;
-                m_healthSprite = 0;
-            }
-            if (m_toySprite != 0) {
-                m_toySprite->m_flags |= 0x10000;
-                m_toySprite = 0;
-            }
-            if (m_staminaSprite != 0) {
-                m_staminaSprite->m_flags |= 0x10000;
-                m_staminaSprite = 0;
-            }
-        }
-    }
-    goto kindDispatch;
 }
 
 // ---------------------------------------------------------------------------
