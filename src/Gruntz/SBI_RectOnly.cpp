@@ -4266,20 +4266,22 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     memset(m_statFlags, 0, sizeof(m_statFlags));
     Reset();
 
+    // SUBSCRIPTED, not a walking `CSbiSlot* s = m_slots; ... s++;` cursor. cl
+    // strength-reduces the subscript into the same cursor, but a named one is
+    // initialised ABOVE the count guard (`lea esi,[ebx+0x220]` before the GetIntDef
+    // call) and bumped mid-arg-block, where the subscript form puts the `lea` in the
+    // loop preheader and the `add esi,0x18` at the bottom - retail's shape, in both
+    // copies (90.45 -> ~99).
     i32 mode = g_gameReg->m_134;
     if (mode == 2) {
-        CSbiSlot* s = m_slots;
         for (i32 i = 0; i < g_buteMgr.GetIntDef("Multiplayer", "StartingGruntz", 0); i++) {
-            s->m_value = kSlotCommitLevel;
-            s->m_state = kSlotReady;
-            s++;
+            m_slots[i].m_value = kSlotCommitLevel;
+            m_slots[i].m_state = kSlotReady;
         }
     } else if (mode == 3) {
-        CSbiSlot* s = m_slots;
         for (i32 i = 0; i < g_buteMgr.GetIntDef("Battlez", "StartingGruntz", 0); i++) {
-            s->m_value = kSlotCommitLevel;
-            s->m_state = kSlotReady;
-            s++;
+            m_slots[i].m_value = kSlotCommitLevel;
+            m_slots[i].m_state = kSlotReady;
         }
     }
 
