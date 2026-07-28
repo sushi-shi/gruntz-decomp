@@ -16,10 +16,26 @@
 #include <Gruntz/SoundState.h>    // ex Globals.h transitive
 #include <Gruntz/Random.h>        // ex Globals.h transitive
 #include <Gruntz/BootyWalkAnim.h> // ex Globals.h
-#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
+#include <Utils/MapTyped.h>       // typed MFC map lookups (the forced void*& pun at one boundary)
 
 DATA(0x001e9068)
 i32 g_idleSpriteIds[4] = {420, 475, 530, 585};
+
+// The multi-booty scoreboard geometry: 8 rows x 4 player columns of on-screen
+// {x, y} anchors, walked row-by-row by the slot-1 loader below (retail indexes it
+// `[edi*8 + <row>]` with edi the player index, and strength-reduces two of the rows
+// to their own cursors - one table, six + two rows).
+DATA(0x001e9078)
+Coord g_multiBootyGeom[8][4] = {
+    {{190, 437}, {306, 437}, {422, 437}, {538, 437}}, // [0] misc-pickup icon
+    {{190, 394}, {306, 394}, {422, 394}, {538, 394}}, // [1] powerup icon
+    {{190, 351}, {306, 351}, {422, 351}, {538, 351}}, // [2] toy icon
+    {{190, 308}, {306, 308}, {422, 308}, {538, 308}}, // [3] weapon icon
+    {{190, 265}, {306, 265}, {422, 265}, {538, 265}}, // [4] the grunt
+    {{190, 222}, {306, 222}, {422, 222}, {538, 222}}, // [5] the puddle
+    {{218, 180}, {334, 180}, {450, 180}, {566, 180}}, // [6] the fortress flags
+    {{218, 138}, {334, 138}, {450, 138}, {566, 138}}, // [7] the player tabz
+};
 
 DATA(0x001e93a8)
 char g_secretChars[] = "WARP"; // "WARP"

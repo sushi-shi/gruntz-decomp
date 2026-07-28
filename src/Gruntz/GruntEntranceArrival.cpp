@@ -635,8 +635,8 @@ i32 CGrunt::StepAttackFire() {
         }
         m_attackDowntimeLo = dt;
         m_attackDowntimeHi = 0;
-        m_860 = static_cast<i32>(g_frameTime);
-        m_864 = 0;
+        m_attackClockLo = static_cast<i32>(g_frameTime);
+        m_attackClockHi = 0;
         m_lowStaminaCued = 0;
         m_stamina = 0; // stamina drains fully at each attack
         if (m_healthSprite != 0) {
@@ -2149,8 +2149,8 @@ i32 CGrunt::LoadWandGruntItemConfig() {
             }
             m_attackDowntimeLo = downtime;
             m_attackDowntimeHi = 0;
-            m_860 = g_frameTime;
-            m_864 = 0;
+            m_attackClockLo = g_frameTime;
+            m_attackClockHi = 0;
             m_lowStaminaCued = 0;
             m_stamina = 0;
             if (m_healthSprite != 0) {

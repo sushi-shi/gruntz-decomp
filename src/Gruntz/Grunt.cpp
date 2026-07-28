@@ -16,6 +16,14 @@
 #include <Gruntz/GruntPowerupSprite.h>  // CGruntPowerupSprite::SetCell
 #include <Gruntz/GruntSelectedSprite.h> // CGruntSelectedSprite::SetCell
 #include <Gruntz/ActReg.h> // CActReg::ResolveEntry (CActRegPool<CGrunt>::s_table dispatch, RunAct)
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup::m_map48 (the cell-object map)
+#include <Utils/MapTyped.h>           // typed MFC map lookups (one forced void*& pun)
+#include <Gruntz/InGameIcon.h>        // CInGameIcon::PlaceAt (the tile-cell occupant)
+#include <Gruntz/BattlezMapConfig.h>  // CBattlezMapConfig::ClaimCellFromRow (per-player cell claim)
+#include <Gruntz/ImageSets.h>         // CTileImageSet::GetCollisionAt (tile collision kind)
+#include <Wwd/WwdFile.h>              // CDDrawWorkerHost - the main plane (grid extent + view rect)
+#include <Gruntz/GruntEntranceMove.h> // g_wingzScale / g_wingzBias (the HUD ramp constants)
+#include <Wap32/Rect.h>               // canonical CRect (the 0x29ac0 direct-store ctor)
 #include <Gruntz/AniElement.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/SerialRecords.h>
@@ -80,6 +88,20 @@ static char s_FreezeDelay[] = "FreezeDelay";                             // 0x60
 
 static char s_BOMBGRUNT[] = "BOMBGRUNT";                   // 0x60dbd0
 static char s_RunningTimePerTile[] = "RunningTimePerTile"; // 0x60e264
+
+// XferName's bute keys (the per-frame step's tuning lookups).
+static char s_FadeTransparency[] = "FadeTransparency";                 // 0x60dfd0
+static char s_SafeFlashTime[] = "SafeFlashTime";                       // 0x60dfc0
+static char s_AccelerateFlash[] = "AccelerateFlash";                   // 0x60dfac
+static char s_Powerupz[] = "Powerupz";                                 // 0x60d9b4
+static char s_ConversionTime[] = "ConversionTime";                     // 0x60d974
+static char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 0x60d900
+
+// The single-letter anim/act type codes the registry hands back. Retail keeps them as
+// named non-const char[] globals (?s_codeA@@3PADA etc.), not as inline literals.
+static char s_codeA[] = "A"; // 0x60a454
+static char s_codeE[] = "E"; // 0x60d2ec
+static char s_codeI[] = "I"; // 0x60cca0
 
 VTBL(CMovingLogic, 0x001e87ac);
 DATA(0x002455b0)
@@ -299,34 +321,34 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_entranceSafeTimeLo = 0;
     m_entranceClockHi = 0;
     m_entranceSafeTimeHi = 0;
-    m_850 = 0;
-    m_858 = 0;
-    m_854 = 0;
-    m_85c = 0;
-    m_860 = 0;
+    m_flashClockLo = 0;
+    m_flashWindowLo = 0;
+    m_flashClockHi = 0;
+    m_flashWindowHi = 0;
+    m_attackClockLo = 0;
     m_attackDowntimeLo = 0;
-    m_864 = 0;
+    m_attackClockHi = 0;
     m_attackDowntimeHi = 0;
     m_combatClockLo = 0;
     m_combatTimeoutLo = 0;
     m_combatClockHi = 0;
     m_combatTimeoutHi = 0;
-    m_880 = 0;
-    m_888 = 0;
-    m_884 = 0;
-    m_88c = 0;
+    m_hudRetireClockLo = 0;
+    m_hudRetireWindowLo = 0;
+    m_hudRetireClockHi = 0;
+    m_hudRetireWindowHi = 0;
     m_wingzClockLo = 0;
     m_wingzDurationLo = 0;
     m_wingzClockHi = 0;
     m_wingzDurationHi = 0;
-    m_8a0 = 0;
-    m_8a8 = 0;
-    m_8a4 = 0;
-    m_8ac = 0;
-    m_8b0 = 0;
-    m_8b8 = 0;
-    m_8b4 = 0;
-    m_8bc = 0;
+    m_convertClockLo = 0;
+    m_convertTimeLo = 0;
+    m_convertClockHi = 0;
+    m_convertTimeHi = 0;
+    m_shimmerClockLo = 0;
+    m_shimmerWindowLo = 0;
+    m_shimmerClockHi = 0;
+    m_shimmerWindowHi = 0;
     m_8c0 = 0;
     m_8c8 = 0;
     m_8c4 = 0;
@@ -426,34 +448,34 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_entranceSafeTimeLo = 0;
     m_entranceClockHi = 0;
     m_entranceSafeTimeHi = 0;
-    m_850 = 0;
-    m_858 = 0;
-    m_854 = 0;
-    m_85c = 0;
-    m_860 = 0;
+    m_flashClockLo = 0;
+    m_flashWindowLo = 0;
+    m_flashClockHi = 0;
+    m_flashWindowHi = 0;
+    m_attackClockLo = 0;
     m_attackDowntimeLo = 0;
-    m_864 = 0;
+    m_attackClockHi = 0;
     m_attackDowntimeHi = 0;
     m_combatClockLo = 0;
     m_combatTimeoutLo = 0;
     m_combatClockHi = 0;
     m_combatTimeoutHi = 0;
-    m_880 = 0;
-    m_888 = 0;
-    m_884 = 0;
-    m_88c = 0;
+    m_hudRetireClockLo = 0;
+    m_hudRetireWindowLo = 0;
+    m_hudRetireClockHi = 0;
+    m_hudRetireWindowHi = 0;
     m_wingzClockLo = 0;
     m_wingzDurationLo = 0;
     m_wingzClockHi = 0;
     m_wingzDurationHi = 0;
-    m_8a0 = 0;
-    m_8a8 = 0;
-    m_8a4 = 0;
-    m_8ac = 0;
-    m_8b0 = 0;
-    m_8b8 = 0;
-    m_8b4 = 0;
-    m_8bc = 0;
+    m_convertClockLo = 0;
+    m_convertTimeLo = 0;
+    m_convertClockHi = 0;
+    m_convertTimeHi = 0;
+    m_shimmerClockLo = 0;
+    m_shimmerWindowLo = 0;
+    m_shimmerClockHi = 0;
+    m_shimmerWindowHi = 0;
     m_8c0 = 0;
     m_8c8 = 0;
     m_8c4 = 0;
@@ -3082,10 +3104,10 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             }
             m_24c = 0;
             m_gruntKind = 0x39;
-            m_8a8 = g_buteMgr.GetDwordDef("Powerupz", "ConversionTime", 0x1f4);
-            m_8ac = 0;
-            m_8a0 = g_frameTime;
-            m_8a4 = 0;
+            m_convertTimeLo = g_buteMgr.GetDwordDef("Powerupz", "ConversionTime", 0x1f4);
+            m_convertTimeHi = 0;
+            m_convertClockLo = g_frameTime;
+            m_convertClockHi = 0;
             ClearSubB();
             EnsureStruckVoice("GAME_CONVERSIONLOOP");
             break;
@@ -3117,12 +3139,12 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             if (m_378 == 0) {
                 m_378 = g_buteMgr.GetDwordDef("Powerupz", "DeathTouchTime", 0x4e20);
             }
-            m_8a8 = m_378;
-            m_8ac = 0;
-            m_8a0 = g_frameTime;
-            m_8a4 = 0;
-            m_8b8 = 0;
-            m_8bc = 0;
+            m_convertTimeLo = m_378;
+            m_convertTimeHi = 0;
+            m_convertClockLo = g_frameTime;
+            m_convertClockHi = 0;
+            m_shimmerWindowLo = 0;
+            m_shimmerWindowHi = 0;
             ClearSubB();
             EnsureStruckVoice("GAME_DEATHTOUCHLOOP");
             break;
@@ -3136,12 +3158,12 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             if (m_378 == 0) {
                 m_378 = g_buteMgr.GetDwordDef("Powerupz", "GhostTime", 0x4e20);
             }
-            m_8a8 = m_378;
-            m_8ac = 0;
-            m_8a0 = g_frameTime;
-            m_8a4 = 0;
-            m_8b8 = 0;
-            m_8bc = 0;
+            m_convertTimeLo = m_378;
+            m_convertTimeHi = 0;
+            m_convertClockLo = g_frameTime;
+            m_convertClockHi = 0;
+            m_shimmerWindowLo = 0;
+            m_shimmerWindowHi = 0;
             ClearSubB();
             EnsureStruckVoice("GAME_GHOSTLOOP");
             return 1;
@@ -3151,12 +3173,12 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             if (m_378 == 0) {
                 m_378 = g_buteMgr.GetDwordDef("Powerupz", "InvulnerabilityTime", 0x4e20);
             }
-            m_8a8 = m_378;
-            m_8ac = 0;
-            m_8a0 = g_frameTime;
-            m_8a4 = 0;
-            m_8b8 = 0;
-            m_8bc = 0;
+            m_convertTimeLo = m_378;
+            m_convertTimeHi = 0;
+            m_convertClockLo = g_frameTime;
+            m_convertClockHi = 0;
+            m_shimmerWindowLo = 0;
+            m_shimmerWindowHi = 0;
             ClearSubB();
             EnsureStruckVoice("GAME_INVULNERABILITYLOOP");
             return 1;
@@ -3167,12 +3189,12 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             if (m_378 == 0) {
                 m_378 = g_buteMgr.GetDwordDef("Powerupz", "ReactiveArmorTime", 0x4e20);
             }
-            m_8a8 = m_378;
-            m_8ac = 0;
-            m_8a0 = g_frameTime;
-            m_8a4 = 0;
-            m_8b8 = 0;
-            m_8bc = 0;
+            m_convertTimeLo = m_378;
+            m_convertTimeHi = 0;
+            m_convertClockLo = g_frameTime;
+            m_convertClockHi = 0;
+            m_shimmerWindowLo = 0;
+            m_shimmerWindowHi = 0;
             ClearSubB();
             EnsureStruckVoice("GAME_REACTIVEARMORLOOP");
             return 1;
@@ -3183,12 +3205,12 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             if (m_378 == 0) {
                 m_378 = g_buteMgr.GetDwordDef("Powerupz", "RoidzTime", 0x4e20);
             }
-            m_8a8 = m_378;
-            m_8ac = 0;
-            m_8a0 = g_frameTime;
-            m_8a4 = 0;
-            m_8b8 = 0;
-            m_8bc = 0;
+            m_convertTimeLo = m_378;
+            m_convertTimeHi = 0;
+            m_convertClockLo = g_frameTime;
+            m_convertClockHi = 0;
+            m_shimmerWindowLo = 0;
+            m_shimmerWindowHi = 0;
             ClearSubB();
             EnsureStruckVoice("GAME_ROIDZLOOP");
             return 1;
@@ -3199,12 +3221,12 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             if (m_378 == 0) {
                 m_378 = g_buteMgr.GetDwordDef("Powerupz", "SuperSpeedTime", 0x4e20);
             }
-            m_8a8 = m_378;
-            m_8ac = 0;
-            m_8a0 = g_frameTime;
-            m_8a4 = 0;
-            m_8b8 = 0;
-            m_8bc = 0;
+            m_convertTimeLo = m_378;
+            m_convertTimeHi = 0;
+            m_convertClockLo = g_frameTime;
+            m_convertClockHi = 0;
+            m_shimmerWindowLo = 0;
+            m_shimmerWindowHi = 0;
             ReadConfigFromButeMgr();
             LoadCellAnimNames(0, 0);
             LoadAnimNameTable(0, 0);
@@ -3417,11 +3439,777 @@ fail:
     return 0;
 }
 
-// @confidence: med
-// @source: string-xref;vtable-slot
-// @stub
-RVA(0x0005d210, 0x1443)
-void CGrunt::XferName(char* name) {}
+// ---------------------------------------------------------------------------
+// CGrunt::XferName (0x5d210) - vtable slot 3, the grunt's WHOLE PER-FRAME STEP.
+//
+// The slot name is the base hook's ("receive the serialized type name"), but the
+// slot is really the per-tick pump: ProjTypeXfer @0x16e4f0 drives slots 3/4/5 in
+// order every frame and feeds slot 3 the resolved CString's GetBuffer(0). CGrunt's
+// override never reads the arg (nothing loads [esp+0x48]); it runs, in order:
+//   * the struck-reaction cooldown + the dwell accumulator;
+//   * the entrance-drop SAFE FLASH (fade-transparency pulse whose period is either
+//     "SafeFlashTime" or the (elapsed/EntranceSafeTime - 1)^2 * 750 ramp when
+//     "AccelerateFlash" is on), and its expiry;
+//   * the "grunt has settled on a new tile" block: hand the tile's occupant icon its
+//     PlaceAt / release the cell, claim the cell for the owning battlez player,
+//     the wingz/move re-config hooks, and the tile-collision-kind dispatch;
+//   * the hurt-tile bite (health -5 easy / -10 normal + the death dispatch) and the
+//     lose-item hook;
+//   * the arrival-state machine (16-way switch over m_arrivalState, bracketed by the
+//     board dirty-rect clip on both sides) and the low-health random wander;
+//   * the toy / stamina / wingz countdown ramps and their HUD-sprite retirement;
+//   * the powerup-kind tail (0x36 ghost fade, 0x38 palette shimmer, 0x39 conversion
+//     bite, 0x3a..0x3c sprite teardown) and the trigger flush.
+//
+// The RVA size arg is 0x1554, NOT Ghidra's 0x1443: cl emits this body's FIVE switch
+// tables (0x5e654..0x5e763) inside the function's own .text COMDAT, and retail's
+// linker kept them there too - carving the target at 0x1443 measured 221 bytes of
+// base-side table against nothing (73.18 -> 79.72 on extending the extent).
+//
+// @early-stop
+// ~80%: complete and shape-correct - every block, both board dirty-rect clips, the
+// 16-way arrival-state switch, the 8-way tile-kind switch, the three countdown ramps
+// and the powerup-kind tail all reconstruct. Two residual mechanisms, neither
+// source-steerable:
+//   (1) BLOCK PLACEMENT - retail parks the `m_arrivalState != 0x11` arm PAST the
+//       epilogue (0x5e55b, jumping back to 0x5e1db). Spelled here as exactly that
+//       (`else { goto combatTimeout; }` with the block last in the function), cl5
+//       still straightens the back-edge and lays the block immediately before its
+//       join, so ~60 instructions sit in the wrong place and double-count.
+//   (2) 64-BIT CSE - retail recomputes `duration - now + clock` in full at each of
+//       the six timer sites; cl reassociates to `(duration + clock) - now`, CSEs the
+//       sum and carries it in callee-saved registers across the __ftol call.
+// Plus the usual constant-pinning coin-flips (retail pins 1 in ebp and 0x10000 in
+// edi where the recompile uses immediates).
+// ---------------------------------------------------------------------------
+RVA(0x0005d210, 0x1554)
+void CGrunt::XferName(char* /*name*/) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_struckClock64 >= m_struckTimer64) {
+        m_struckCount = 0;
+    }
+    m_dwell += g_frameDelta;
+
+    if (m_entranceDropActive != 0) {
+        bool differs = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeA) != 0);
+        if (differs) {
+            differs = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeK) != 0);
+            if (differs) {
+                goto dropExpire;
+            }
+        }
+        // retail 0x5d329: the >= test FALLS INTO the expire block, and the two name
+        // mismatches JUMP into it - so the expire arm is the then-branch, not an `||`.
+        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_entranceClock64
+            >= m_entranceSafeTime64) {
+        dropExpire: {
+            CWwdGameObjectA* obj = m_object;
+            m_entranceDropActive = 0;
+            obj->m_drawActive = 1;
+            obj->m_drawFillCmd = 0xa;
+        }
+            m_entranceSafeTimeLo = 0;
+            m_entranceSafeTimeHi = 0;
+        } else if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_flashClock64
+                   >= m_flashWindow64) {
+            CWwdGameObjectA* obj = m_object;
+            if (obj->m_drawFillCmd == 0xb) {
+                obj->m_drawActive = 1;
+                obj->m_drawFillCmd = 0xa;
+            } else {
+                i32 fade = g_buteMgr.GetIntDef(s_Grunt, s_FadeTransparency, 0xc0);
+                CWwdGameObjectA* o2 = m_object;
+                o2->m_drawActive = 1;
+                o2->m_drawFillCmd = 0xb;
+                o2->m_fillFraction = fade;
+            }
+            i32 flash = g_buteMgr.GetIntDef(s_Grunt, s_SafeFlashTime, 0x32);
+            if (g_buteMgr.GetIntDef(s_Grunt, s_AccelerateFlash, 0) == 1) {
+                i64 el = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_entranceClock64;
+                u32 elapsed = (el < 0 ? 0 : static_cast<u32>(el));
+                // the divisor is its OWN statement: retail fild's the bute result
+                // first and the numerator second (fdivrp, no cross-call FP spill).
+                double span = static_cast<double>(
+                    static_cast<u32>(g_buteMgr.GetDwordDef(s_Grunt, s_EntranceSafeTime, 0x1388))
+                );
+                double frac = static_cast<double>(elapsed) / span - 1.0;
+                flash = static_cast<i32>(frac * frac * 750.0);
+            }
+            if (flash < 0x1e) {
+                flash = 0x1e;
+            }
+            m_flashWindowLo = flash;
+            m_flashWindowHi = 0;
+            m_flashClockLo = static_cast<i32>(g_frameTime);
+            m_flashClockHi = 0;
+        }
+    }
+
+    if (m_deathAnimStarted != 0) {
+        return;
+    }
+
+    {
+        CWwdGameObjectA* obj = m_object;
+        if (obj->m_screenX != m_lastTilePxX || obj->m_screenY != m_lastTilePxY) {
+            goto afterTile;
+        }
+    }
+    {
+        CGruntzMgr* reg = g_gameReg;
+        CMapMgr* grid = reg->m_tileGrid;
+        i32 tx = m_lastTilePxX >> 5;
+        i32 ty = m_lastTilePxY >> 5;
+        i32 cellObj;
+        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
+            || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
+            cellObj = 0;
+        } else {
+            // the board row IS an i32[] (7 ints per cell); slot +2 is BrickzCell::m_8,
+            // the id of the object occupying the cell (the id->key pun lives once, in
+            // MapLookupById).
+            cellObj = ((grid->m_rowInts[ty]))[tx * 7 + 2];
+        }
+        if (cellObj != 0) {
+            CGameObject* found = 0;
+            CGameObject* result = 0;
+            if (MapLookupById(reg->m_world->m_childGroup->m_map48, cellObj, found)) {
+                result = found;
+            }
+            if (result == 0) {
+                grid = g_gameReg->m_tileGrid;
+                if (static_cast<u32>(tx) < static_cast<u32>(grid->m_width)
+                    && static_cast<u32>(ty) < static_cast<u32>(grid->m_height)) {
+                    ((grid->m_rowInts[ty]))[tx * 7 + 2] = 0;
+                    ((grid->m_rowInts[ty]))[tx * 7] &= ~0x40000;
+                }
+            } else {
+                // the +2 grid slot only ever holds icon sprites - the one base->leaf
+                // downcast the language forces (same seam as StepEntranceRelatchB).
+                CInGameIcon* icon = static_cast<CInGameIcon*>(result->m_7c->m_logic);
+                icon->PlaceAt(m_tileOwnerHi, m_tileOwnerLo);
+            }
+        }
+
+        i32 onMoveTile = 0;
+        i32 onWingzTile = 0;
+        {
+            i32 reason = m_entranceReason;
+            if (reason == 0x12) {
+                onMoveTile = 1;
+            } else if (reason == 0x16) {
+                onWingzTile = 1;
+            }
+        }
+
+        CGruntzMgr* reg2 = g_gameReg;
+        i32 flags;
+        {
+            CMapMgr* bd = reg2->m_tileGrid;
+            if (static_cast<u32>(tx) >= static_cast<u32>(bd->m_width)
+                || static_cast<u32>(ty) >= static_cast<u32>(bd->m_height)) {
+                flags = 1;
+            } else {
+                flags = ((bd->m_rowInts[ty]))[tx * 7];
+            }
+        }
+        if (flags & 0x100000) {
+            reg2->m_options[0].m_038.ClaimCellFromRow(m_tileOwnerHi, m_tileOwnerLo, tx, ty);
+        } else if (flags & 0x200000) {
+            reg2->m_options[1].m_038.ClaimCellFromRow(m_tileOwnerHi, m_tileOwnerLo, tx, ty);
+        } else if (flags & 0x400000) {
+            reg2->m_options[2].m_038.ClaimCellFromRow(m_tileOwnerHi, m_tileOwnerLo, tx, ty);
+        } else if (flags & 0x800000) {
+            reg2->m_options[3].m_038.ClaimCellFromRow(m_tileOwnerHi, m_tileOwnerLo, tx, ty);
+        }
+
+        if (onWingzTile != 0) {
+            if (flags & 0xd02) {
+                if (m_wingzEnabled == 0) {
+                    LoadWingzGruntSprites(1);
+                    return;
+                }
+            } else if (m_wingzEnabled != 0) {
+                LoadWingzGruntSprites(0);
+                return;
+            }
+        } else if (onMoveTile != 0) {
+            if (flags & 0x100) {
+                if (m_coordToggle == 0) {
+                    RunMoveConfig(m_lastTilePxX >> 5, m_lastTilePxY >> 5);
+                    return;
+                }
+            } else if (m_coordToggle != 0) {
+                RunMoveConfig(m_lastTilePxX >> 5, m_lastTilePxY >> 5);
+                return;
+            }
+        }
+
+        if ((flags & 2) == 0 || m_wingzEnabled != 0) {
+            i32 mask = m_arrivalFlags & flags;
+            if (!(mask & 0x20000000)) {
+                if (mask == 0) {
+                    goto tileKindDone;
+                }
+                if (flags & m_24c) {
+                    goto tileKindDone;
+                }
+            }
+        }
+
+        {
+            // Inlined LookupTileType(level, tx, ty) on the TILE grid: clamp to the main
+            // plane's cell extent, resolve the tile cell, ask its image set the
+            // collision kind at the cell origin.
+            CGameLevel* level = g_gameReg->m_world->m_level;
+            i32 cx = tx;
+            if (cx < 0) {
+                cx = 0;
+            } else if (cx >= level->m_mainPlane->m_gridW) {
+                cx = level->m_mainPlane->m_gridW - 1;
+            }
+            i32 cy = ty;
+            if (cy < 0) {
+                cy = 0;
+            } else if (cy >= level->m_mainPlane->m_gridH) {
+                cy = level->m_mainPlane->m_gridH - 1;
+            }
+            i32 raw = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_colOffsets[cy] + cx];
+            i32 kind;
+            if (raw == static_cast<i32>(0xeeeeeeee) || raw == -1) {
+                kind = 0;
+            } else {
+                CTileImageSet* ts =
+                    static_cast<CTileImageSet*>(level->m_imageSets.GetAt(raw & 0xffff));
+                kind = ts->GetCollisionAt(0, 0);
+            }
+
+            i32 gate = 1;
+            i32 hazard;
+            switch (kind) {
+                case 0x23:
+                    hazard = 3;
+                    break;
+                case 0xa:
+                case 0x6c:
+                case 0x72:
+                    hazard = 4;
+                    break;
+                case 0x20:
+                    hazard = cx;
+                    gate = 0;
+                    break;
+                default: {
+                    CMapMgr* bd = g_gameReg->m_tileGrid;
+                    i32 cellId;
+                    if (static_cast<u32>(tx) >= static_cast<u32>(bd->m_width)
+                        || static_cast<u32>(ty) >= static_cast<u32>(bd->m_height)) {
+                        cellId = 0;
+                    } else {
+                        cellId = ((bd->m_rowInts[ty]))[tx * 7 + 3];
+                    }
+                    if (cellId == -1) {
+                        hazard = g_areaPageSize;
+                    } else {
+                        hazard = 0xb;
+                        if ((flags & 0x80) != 0 || (flags & 0x939) == 0) {
+                            gate = 0;
+                        }
+                    }
+                    break;
+                }
+                case 4:
+                case 0x6e:
+                case 0x74:
+                    hazard = g_areaPageSize;
+                    break;
+            }
+            if (gate != 0) {
+                m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, hazard, -1);
+                return;
+            }
+        }
+
+    tileKindDone:
+        if (flags & 0x400) {
+            i32 reason = m_entranceReason;
+            i32 pose = reason;
+            if (reason > 0x16) {
+                pose = m_19c;
+            }
+            if (pose == 8) {
+                goto afterTile;
+            }
+            if (reason == 0xe || reason == 0x12) {
+                BuildGruntLoseItemAnimation();
+            }
+            if (m_wingzEnabled != 0) {
+                goto afterTile;
+            }
+            if (m_gruntKind == 0x38) {
+                goto afterTile;
+            }
+            if (m_entranceReason == 1) {
+                bool nameDiffers =
+                    (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeM) != 0);
+                if (!nameDiffers) {
+                    goto afterTile;
+                }
+            }
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_entranceClock64
+                < m_entranceSafeTime64) {
+                goto afterTile;
+            }
+            {
+                CGruntzMgr* reg3 = g_gameReg;
+                i32 hp;
+                // the ternary is load-bearing: retail's clamp is the branchless
+                // `mov r,0 / sets rl / dec r / and eax,r` mask, not a jns.
+                if (reg3->m_isEasyMode != 0 && reg3->m_134 == 1) {
+                    i32 bite = m_health - 5;
+                    hp = (bite < 0) ? 0 : bite;
+                } else {
+                    i32 bite = m_health - 0xa;
+                    hp = (bite < 0) ? 0 : bite;
+                }
+                m_health = hp;
+                if (hp <= 0) {
+                    ConsiderArrival(1);
+                    m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+                    return;
+                }
+            }
+            {
+                CWwdGameObjectA* obj = m_object;
+                CGruntzMgr* reg3 = g_gameReg;
+                i32 sy = obj->m_screenY; // y BEFORE x - retail loads +0x60 then +0x5c
+                i32 sx = obj->m_screenX;
+                const RECT* vr = &reg3->m_world->m_level->m_mainPlane->m_viewRect;
+                if (sx < vr->right && sx >= vr->left && sy < vr->bottom && sy >= vr->top) {
+                    reg3->m_cueSink->SpawnVoiceDriver(this, 0x348, -1, 0, -1, -1);
+                }
+            }
+            m_entranceSafeTimeLo = 0x3e8;
+            m_entranceSafeTimeHi = 0;
+            m_entranceClockLo = static_cast<i32>(g_frameTime);
+            m_entranceClockHi = 0;
+        } else if (flags & 0x2000000) {
+            if (m_entranceReason == 0x12) {
+                CString* node = g_typeColl.ScratchResolve(m_objAux->m_1c);
+                CString* slot = g_typeColl.Slots();
+                i32 n = g_typeColl.m_grown;
+                while (n-- != 0) {
+                    if (slot != 0) {
+                        slot->CString::CString();
+                    }
+                    slot++;
+                }
+                bool nameDiffers = (strcmp(*node, s_codeN) != 0);
+                if (nameDiffers) {
+                    BuildGruntLoseItemAnimation();
+                }
+            }
+        }
+    }
+
+afterTile:
+    if (m_entranceActive == 0 && m_entranceCommitted != 0) {
+        CWwdGameObjectA* obj = m_object;
+        i32 sx = obj->m_screenX;
+        if (sx != m_lastTilePxX) {
+            goto afterArrival;
+        }
+        i32 sy = obj->m_screenY;
+        if (sy != m_lastTilePxY) {
+            goto afterArrival;
+        }
+        {
+            i32 hp = m_health;
+            if (hp <= 5 && hp > 0 && (m_arrivalState == 2 || m_arrivalState == 3)) {
+                if (static_cast<u32>(m_dwell) > 0x3e8) {
+                    // both rand()s land in registers BEFORE any push - retail
+                    // evaluates them into locals, it does not inline them as args,
+                    // and it shifts both coords before the first call.
+                    i32 baseRow = sy >> 5;
+                    i32 baseCol = sx >> 5;
+                    i32 wanderRow = rand() % 6 + baseRow - 3;
+                    i32 wanderCol = rand() % 6 + baseCol - 3;
+                    TileSwitch(wanderCol, wanderRow, 0, m_arrivalFlags, 0, 0);
+                    m_dwell = 0;
+                }
+                goto afterArrival;
+            }
+        }
+        {
+            // Re-clip the board dirty rect to the defender's reach box.
+            i32 col5 = m_defenderX >> 5;
+            i32 row5 = m_defenderY >> 5;
+            i32 reach = m_defenderRadius + m_reachRadius;
+            CMapMgr* grid = g_gameReg->m_tileGrid;
+            // declaration order is load-bearing: retail's frame runs box(+0x14) <
+            // rs(+0x24) < gb(+0x34), i.e. cl assigns slots in declaration order.
+            RECT gb;
+            RECT rs;
+            RECT box;
+            rs.left = col5 - reach;
+            rs.top = row5 - reach;
+            rs.right = reach + col5 + 1;
+            rs.bottom = reach + row5 + 1;
+            gb.left = 0;
+            gb.top = 0;
+            gb.right = grid->m_width;
+            gb.bottom = grid->m_height;
+            const RECT* pr = &rs;
+            if (pr != 0) {
+                box = *pr;
+                box.right++;
+                box.bottom++;
+            } else {
+                box = CRect(0, 0, grid->m_width, grid->m_height);
+            }
+            // retail keeps &m_bounds in a register and reads the extents back
+            // through it (`mov edx,[ebx+8]`), not off the grid base.
+            RECT* bounds = &grid->m_bounds;
+            if (!IntersectRect(bounds, &box, &gb)) {
+                *bounds = box;
+            }
+            grid->m_gridW = bounds->right - bounds->left;
+            grid->m_gridH = bounds->bottom - bounds->top;
+        }
+        if (m_arrivalState != 0) {
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_holdAnchor64
+                >= m_holdWindow64) {
+                switch (m_arrivalState) {
+                    case 1:
+                        ChargeStep();
+                        break;
+                    case 2:
+                        ScanNearestTarget();
+                        break;
+                    case 3:
+                        WanderStep();
+                        break;
+                    case 4:
+                        ArrivalReticleScan();
+                        break;
+                    case 5:
+                        ResolveArrivalNeighbor();
+                        break;
+                    case 6:
+                        StepArrivalDefenseAlt();
+                        break;
+                    case 7:
+                        ResolveArrivalReposition();
+                        break;
+                    case 8:
+                        ArrivalScanA();
+                        break;
+                    case 10:
+                        ArrivalScanB();
+                        break;
+                    case 11:
+                        ArrivalScanC();
+                        break;
+                    case 9:
+                        UpdateArrival();
+                        break;
+                    case 12:
+                        PhaseStep();
+                        break;
+                    case 13:
+                        SeekTarget();
+                        break;
+                    case 14:
+                        StepPeerTracking();
+                        break;
+                    case 15:
+                        StepArrivalDefenseLean();
+                        break;
+                    case 16:
+                        StepArrivalDefense();
+                        break;
+                }
+            }
+        } else if (m_poweredUp != 0 && m_neighborValid == 0 && m_combatActive == 0
+                   && m_stamina >= 0x64 && m_358 != 0) {
+            FindGridNeighbor(0);
+        }
+        {
+            // ...and back out to the whole board.
+            CMapMgr* grid = g_gameReg->m_tileGrid;
+            RECT ra;
+            RECT rb;
+            rb.left = 0;
+            rb.top = 0;
+            rb.right = grid->m_width;
+            rb.bottom = grid->m_height;
+            ra = CRect(0, 0, grid->m_width, grid->m_height);
+            RECT* bounds = &grid->m_bounds;
+            if (!IntersectRect(bounds, &ra, &rb)) {
+                *bounds = ra;
+            }
+            grid->m_gridW = bounds->right - bounds->left;
+            grid->m_gridH = bounds->bottom - bounds->top;
+        }
+    }
+
+afterArrival:
+    if (m_toyTime > 0) {
+        i64 left = m_toyDuration - static_cast<i64>(static_cast<u32>(g_frameTime)) + m_toyClock;
+        m_toyTime = static_cast<i32>(
+            static_cast<double>(static_cast<u32>((left < 0 ? 0 : static_cast<u32>(left))))
+                / static_cast<double>(static_cast<u32>(m_toyDurationLo)) * g_wingzScale
+            - g_wingzBias
+        );
+        i64 left2 = m_toyDuration - static_cast<i64>(static_cast<u32>(g_frameTime)) + m_toyClock;
+        if (static_cast<u32>((left2 < 0 ? 0 : static_cast<u32>(left2))) == 0) {
+            m_toyTime = 0;
+            if (m_toyTimeSprite != 0) {
+                m_toyTimeSprite->m_flags |= 0x10000;
+                m_toyTimeSprite = 0;
+            }
+        }
+    }
+
+    if (m_stamina < 0x64) {
+        i64 left =
+            m_attackDowntime64 + m_attackClock64 - static_cast<i64>(static_cast<u32>(g_frameTime));
+        if (static_cast<u32>((left < 0 ? 0 : static_cast<u32>(left))) == 0) {
+            m_stamina = 0x64;
+        } else {
+            i64 spent = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_attackClock64;
+            m_stamina = static_cast<i32>(
+                static_cast<double>(static_cast<u32>((spent < 0 ? 0 : static_cast<u32>(spent))))
+                    / static_cast<double>(static_cast<u32>(m_attackDowntimeLo)) * g_wingzScale
+                - g_wingzBias
+            );
+        }
+        if (m_stamina == 0x64) {
+            if (m_staminaSprite != 0) {
+                m_staminaSprite->m_flags |= 0x10000;
+                m_staminaSprite = 0;
+            }
+        }
+    }
+
+    if (m_wingzEnabled != 0) {
+        i64 left =
+            m_wingzDuration64 - static_cast<i64>(static_cast<u32>(g_frameTime)) + m_wingzClock64;
+        m_wingzTime = static_cast<i32>(
+            static_cast<double>(static_cast<u32>((left < 0 ? 0 : static_cast<u32>(left)))) * 0.01
+            - g_wingzBias
+        );
+        i64 left2 =
+            m_wingzDuration64 - static_cast<i64>(static_cast<u32>(g_frameTime)) + m_wingzClock64;
+        if (static_cast<u32>((left2 < 0 ? 0 : static_cast<u32>(left2))) == 0) {
+            ConsiderArrival(1);
+            m_wingzTime = 0;
+            LoadWingzGruntSprites(0);
+            BuildGruntLoseItemAnimation();
+        }
+    }
+
+    // retail 0x5e08b: the `!= 0x11` arm is parked at the very END of the function
+    // (after the epilogue) and jumps back into the kind dispatch, so it is spelled
+    // here as the out-of-line block it is, not as an in-place `else`.
+    if (m_arrivalState == 0x11) {
+        if (m_poweredUp != 0 && m_stamina >= 0x64) {
+            bool eq;
+            {
+                CString* node = g_typeColl.ScratchResolve(m_objAux->m_1c);
+                CString* slot = g_typeColl.Slots();
+                i32 n = g_typeColl.m_grown;
+                while (n-- != 0) {
+                    if (slot != 0) {
+                        slot->CString::CString();
+                    }
+                    slot++;
+                }
+                eq = (strcmp(*node, s_codeE) == 0);
+            }
+            if (!eq) {
+                CString* node = g_typeColl.ScratchResolve(m_objAux->m_1c);
+                CString* slot = g_typeColl.Slots();
+                i32 n = g_typeColl.m_grown;
+                while (n-- != 0) {
+                    if (slot != 0) {
+                        slot->CString::CString();
+                    }
+                    slot++;
+                }
+                eq = (strcmp(*node, s_codeA) == 0);
+            }
+            if (eq) {
+                if (m_poweredUp != 0 && m_neighborValid == 0) {
+                    m_entranceActive = 0;
+                    m_combatActive = 0;
+                    m_neighborValid = 0;
+                    m_poweredUp = 0;
+                    ResetEntranceAnimation(1, 0, 0);
+                }
+            }
+        }
+    } else {
+        goto combatTimeout;
+    }
+
+kindDispatch:
+    if (m_gruntKind != 0) {
+        if (m_gruntKind == 0x39) {
+            // powerup kind 0x39: the CONVERSION bite - one -5 health tick per window.
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_convertClock64
+                < m_convertTime64) {
+                return;
+            }
+            i32 bite = m_health - 5;
+            i32 hp = (bite < 0) ? 0 : bite;
+            m_health = hp;
+            if (hp <= 0) {
+                ConsiderArrival(1);
+                m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+                return;
+            }
+            m_convertTimeLo =
+                static_cast<i32>(g_buteMgr.GetDwordDef(s_Powerupz, s_ConversionTime, 0x1f4));
+            m_convertTimeHi = 0;
+            m_convertClockLo = static_cast<i32>(g_frameTime);
+            m_convertClockHi = 0;
+            return;
+        }
+        if (m_gruntKind == 0x38) {
+            // powerup kind 0x38: re-roll the sprite-ref palette every shimmer window.
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_shimmerClock64
+                >= m_shimmerWindow64) {
+                i32 pick = rand() % 16;
+                if (pick == m_1f4_moveIcon) {
+                    pick = 0x10;
+                }
+                CShadeTable* sel =
+                    g_gameReg->m_spriteFactory->GetSel(pick, m_entranceReason >= 0x17);
+                CWwdGameObjectA* obj = m_object;
+                i32 cmd = obj->m_drawFillCmd;
+                obj->m_drawActive = 1;
+                obj->m_drawFillCmd = cmd;
+                obj->m_drawFillArg = sel;
+            }
+        }
+        i64 left =
+            m_convertTime64 + m_convertClock64 - static_cast<i64>(static_cast<u32>(g_frameTime));
+        i32 leftMs = (left < 0 ? 0 : static_cast<i32>(left));
+        if (leftMs <= 0xbb8) {
+            if (m_gruntKind == 0x36) {
+                // powerup kind 0x36: the ghost fade ramps the fill fraction down over
+                // the last 3 s of the powerup.
+                i64 rem = m_convertTime64 + m_convertClock64
+                          - static_cast<i64>(static_cast<u32>(g_frameTime));
+                u32 remMs = (rem < 0 ? 0 : static_cast<u32>(rem));
+                double topaque = static_cast<double>(
+                    g_buteMgr.GetIntDef(s_Powerupz, s_GruntGhostTransparencyOn, 0x100)
+                );
+                i32 frac =
+                    static_cast<i32>(topaque * static_cast<double>(remMs) * 0.0003333333333333333);
+                CWwdGameObjectA* obj = m_object;
+                obj->m_drawActive = 1;
+                obj->m_drawFillCmd = 0xb;
+                obj->m_fillFraction = frac;
+            } else {
+                CWwdGameObjectA* obj = m_object;
+                if ((obj->m_stateFlags & 8) == 0) {
+                    obj->m_48 = 0x7d;
+                    obj->m_44 = 0;
+                    m_object->m_stateFlags |= 8;
+                }
+            }
+            if (leftMs == 0) {
+                switch (m_gruntKind) {
+                    case 0x36: {
+                        CWwdGameObjectA* obj = m_object;
+                        m_gruntKind = 0;
+                        obj->m_drawActive = 1;
+                        obj->m_drawFillCmd = 0xa;
+                        break;
+                    }
+                    case 0x38:
+                        m_gruntKind = 0;
+                        break;
+                    case 0x37:
+                    case 0x3b:
+                    case 0x3c: {
+                        CWwdGameObjectA* ps = m_powerupSprite;
+                        m_gruntKind = 0;
+                        if (ps != 0) {
+                            ps->m_flags |= 0x10000;
+                            m_powerupSprite = 0;
+                        }
+                        break;
+                    }
+                    case 0x3a: {
+                        CWwdGameObjectA* ps = m_powerupSprite;
+                        m_gruntKind = 0;
+                        if (ps != 0) {
+                            ps->m_flags |= 0x10000;
+                            m_powerupSprite = 0;
+                        }
+                        i32 typeId = m_19c;
+                        m_entranceReason = -1;
+                        LoadGruntTypeTable(typeId, 1, 0, 0);
+                        break;
+                    }
+                }
+                m_object->m_stateFlags &= ~8;
+                ReadConfigFromButeMgr();
+                i32 reason = m_entranceReason;
+                i32 vehicle = (reason >= 0x17) ? 1 : 0;
+                i32 variant = 0;
+                if (vehicle != 0) {
+                    switch (reason) {
+                        case 0x17:
+                        case 0x19:
+                        case 0x1a:
+                        case 0x1d:
+                            variant = 1;
+                            break;
+                    }
+                }
+                LoadCellAnimNames(vehicle, variant);
+                LoadAnimNameTable(vehicle, variant);
+            }
+        }
+    }
+
+    if (m_454 != 0 && m_stamina >= 0x64) {
+        m_tileMgr->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, m_458, m_45c);
+        m_454 = 0;
+    }
+    return;
+
+combatTimeout:
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_combatClock64 >= m_combatTimeout64) {
+        if (m_poweredUp != 0 && m_neighborValid == 0) {
+            m_entranceActive = 0;
+            m_combatActive = 0;
+            m_neighborValid = 0;
+            m_poweredUp = 0;
+            ResetEntranceAnimation(1, 0, 0);
+        }
+        if (m_arrived == 0
+            && static_cast<i64>(static_cast<u32>(g_frameTime)) - m_hudRetireClock64
+                   >= m_hudRetireWindow64) {
+            if (m_healthSprite != 0) {
+                m_healthSprite->m_flags |= 0x10000;
+                m_healthSprite = 0;
+            }
+            if (m_toySprite != 0) {
+                m_toySprite->m_flags |= 0x10000;
+                m_toySprite = 0;
+            }
+            if (m_staminaSprite != 0) {
+                m_staminaSprite->m_flags |= 0x10000;
+                m_staminaSprite = 0;
+            }
+        }
+    }
+    goto kindDispatch;
+}
 
 // ---------------------------------------------------------------------------
 // CGrunt::MovingSlot16()   @0x5f310   (ret 0)

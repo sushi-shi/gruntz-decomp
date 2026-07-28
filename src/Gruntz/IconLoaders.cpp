@@ -41,7 +41,7 @@ i32 CBootyState::BuildBootyPerfectAnimation() {
 // (verified by raw byte-compare; only the index-table/jump-table base reloc
 // operands + $L labels differ). See docs/patterns/jumptable-data-overlap.md.
 RVA(0x0001e720, 0x2fe)
-void __stdcall BuildPowerupIconKeys(CString* reg, i32 key) {
+void CMultiBootyState::BuildPowerupIconKeys(CString* reg, i32 key) {
     *reg = "GAME_INGAMEICONZ";
     switch (key) {
         case PICKUP_BOMB:

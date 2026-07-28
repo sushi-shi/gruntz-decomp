@@ -1,5 +1,5 @@
 #include <Gruntz/BootyStateActivate.h> // this TU's external declarations
-#include <Gruntz/BootyMessages.h> // DrawStatText / g_bootyLetterCoords (ex .cpp externs)
+#include <Gruntz/BootyMessages.h>      // DrawStatText / g_bootyLetterCoords (ex .cpp externs)
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h>
@@ -26,16 +26,22 @@
 #include <Gruntz/WwdGameReg.h>  // WwdGameReg (g_gameReg; CheckPerfectBonus/Vslot09/QueryGruntSlots)
 #include <Gruntz/GameRegistry.h> // CDDrawSurfaceMgr / CDDrawSubMgrLeafScan (CState::m_c draw+cue context)
 #include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig::PauseAllVoices (the m_4->m_60 cue-sink flush)
-#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
-
+#include <Utils/MapTyped.h>        // typed MFC map lookups (the forced void*& pun at one boundary)
+#include <Gruntz/CoordNode.h>      // Coord {x,y} - the scoreboard geometry table
+#include <Gruntz/BootyWalkAnim.h>  // g_multiBootyGeom (this TU is the only reader)
+#include <Gruntz/GruntPuddle.h>    // g_puddleSpriteKey (the per-player puddle geometry key)
+#include <Gruntz/SpriteRefTable.h> // CSpriteRefTable::GetSel (the per-player tint)
+#include <Gruntz/Sprite.h>         // CDDrawWorker (the tab sprite frame select)
+#include <Image/CImage.h>          // CImage (the frame-select result)
+#include <stdio.h>                 // sprintf ("AREA%i")
 
 DATA(0x001e8fe8)
 // .rdata; C linkage inherited from <Gruntz/BootyMessages.h>.
 const i32 g_bootyLetterCoords[32] = {
-    472, 101, 525, 98,  474, 146, 525, 144,       // four (x,y) anchors
-    127, 170, 215, 262, 301, 345, 386, 427,       // row 1 column x-positions
-    127, 170, 215, 262, 301, 345, 386, 427,       // row 2 (identical)
-    127, 170, 215, 262, 301, 345, 386, 427,       // row 3 (identical)
+    472, 101, 525, 98,  474, 146, 525, 144, // four (x,y) anchors
+    127, 170, 215, 262, 301, 345, 386, 427, // row 1 column x-positions
+    127, 170, 215, 262, 301, 345, 386, 427, // row 2 (identical)
+    127, 170, 215, 262, 301, 345, 386, 427, // row 3 (identical)
 };
 
 static const float kGlitterPhaseBias = -225.0f;  // was g_5e93b4 (fsub'd, hence negative)
@@ -168,7 +174,7 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     return 1;
 }
 
-// CMultiBootyState::StepGlitterAnim() (0x196c0): the glitter/spawn positioner. With
+// CBootyState::StepGlitterAnim() (0x196c0): the glitter/spawn positioner. With
 // m_1b4 set it snaps the eight letter sprites to the static spawn table; otherwise it
 // walks a sine spiral (radius m_radius, angle (m_angleStep+225)*pi/180), advances the
 // step by 5, shrinks the radius along the 350.0-step*0.002*350.0 curve, then latches the
@@ -178,11 +184,11 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
 // the residual is the two integer letter-loops + the final latch block, a pure
 // register-allocation coin-flip (docs/patterns/zero-register-pinning.md).
 RVA(0x000196c0, 0x1d3)
-void CMultiBootyState::StepGlitterAnim() {
-    if (m_1b4) {
+void CBootyState::StepGlitterAnim() {
+    if (m_initGate) {
         if (m_letterIdx >= 0) {
-            const i32* tbl = g_bootyLetterCoords + 1;    // walks: tbl[-1]=x, tbl[0]=y; advances by 2
-            CWwdGameObjectA** ap = m_trailSprites; // walks the array by 1
+            const i32* tbl = g_bootyLetterCoords + 1; // walks: tbl[-1]=x, tbl[0]=y; advances by 2
+            CWwdGameObjectA** ap = m_trailSprites;    // walks the array by 1
             for (i32 i = 0; i <= m_letterIdx; i++) {
                 CWwdGameObjectA* e = *ap;
                 e->m_screenX = tbl[-1];
@@ -222,7 +228,7 @@ void CMultiBootyState::StepGlitterAnim() {
     CWwdGameObjectA** arr1ec = m_trailSprites;
     if (idx > 0) {
         const i32* tbl = g_bootyLetterCoords + 1; // ecx: tbl[-1]=x, tbl[0]=y
-        CWwdGameObjectA** ap = arr1ec;      // eax
+        CWwdGameObjectA** ap = arr1ec;            // eax
         do {
             CWwdGameObjectA* e = *ap;
             i++;
@@ -250,7 +256,7 @@ void CMultiBootyState::StepGlitterAnim() {
     }
 }
 
-// CMultiBootyState::MoveLettersByDir() (0x19b90): if the anim-mode latch (m_1b4) is set,
+// CBootyState::MoveLettersByDir() (0x19b90): if the anim-mode latch (m_initGate) is set,
 // OR the spawn bit into all eight letters' flags; otherwise step each of the eight
 // letters one cell (+/-4 px) along its compass direction (an 8-way jump table), flagging
 // any that leave the [0,0x280]x[0,0x1e0] play field.
@@ -259,8 +265,8 @@ void CMultiBootyState::StepGlitterAnim() {
 // pure register allocation (docs/patterns/zero-register-pinning.md). The 8-way switch
 // body itself is byte-aligned.
 RVA(0x00019b90, 0xd7)
-void CMultiBootyState::MoveLettersByDir() {
-    if (m_1b4) {
+void CBootyState::MoveLettersByDir() {
+    if (m_initGate) {
         CWwdGameObjectA** p = m_sprintSprites;
         i32 n = 8;
         do {
@@ -472,16 +478,411 @@ i32 CBootyState::Vslot0c(i32, i32) {
 }
 
 // CMultiBootyState::LoadGameAssetNamespaces (0x1d440): the multi-booty slot-1
-// asset/state loader - engine-label backlog stub. Owner re-attributed (ex
-// "CBootyState::StateOnEnter"): retail's ONLY reference to 0x1d440 is
-// ??_7CMultiBootyState slot 1 (ILT 0x2900 -> 0x1d440; RTTI slot map), it appears
-// in no other vtable and has no direct caller.
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// asset/state loader. Owner re-attributed (ex "CBootyState::StateOnEnter"): retail's
+// ONLY reference to 0x1d440 is ??_7CMultiBootyState slot 1 (ILT 0x2900 -> 0x1d440;
+// RTTI slot map), it appears in no other vtable and has no direct caller.
+//
+// Chains the CState default, resolves the STATEZ_BOOTY / GAME / GRUNTZ / AREA%i
+// symbol banks, installs the BOOTY sound set, drains the cursor and pumps the
+// message queue, then builds the whole battle-results board:
+//   * per joined player: the puddle, the winner's EXITZ (or a random idle) grunt,
+//     and four "best pickup" icons chosen by scanning that player's weapon (22),
+//     toy (10), powerup (7) and misc (4) tallies in CBattlezData for their max;
+//   * per player: the MULTIPLAYERT tab + the warlord's FORTRESSFLAGZ badge;
+//   * the LEVEL_FORT backdrop and the winning warlord's JOY/BOOTY animation;
+//   * finally the captured-fortress flag row, spread by the per-count offset table.
+//
+// @early-stop
+// ~80%: complete and shape-correct - the /GX prologue, the five bank lookups, the
+// AREA%i (count-1)%36/4+1 index, the sound install, the ShowCursor drain, all three
+// loops, every CString EH state (0..7) and the single shared epilogue byte-match.
+// Residual is ONE register-allocation cascade: retail pins the constant 1 in ebx for
+// the whole body (every `m_drawActive = 1`, every `|= 1`, the EH-state-1 store via
+// `bl`, and the `mov eax,ebx` return) and keeps `this` in ebp / `i` in edi, which
+// leaves only eax/ecx/edx for each best-pickup scan - so retail SPILLS that loop's
+// cursor and bestIdx to [esp+0x18]/[esp+0x20]. cl gives this body one more free
+// callee-saved register, keeps the cursor in edx and rematerialises the 1, and the
+// whole allocation diverges from there. Not source-steerable.
+// MEASURED COST OF THE CORRECT SHAPE (kept per clean-room): spelling
+// BuildPowerupIconKeys/GetWarlordName as the __thiscall MEMBERS they are (the seven
+// `mov ecx,<this>` receiver loads retail emits) scores 80.30 where the wrong free
+// __stdcall spelling scores 85.57 - the lie scored better; the bytes say member.
 RVA(0x0001d440, 0xd7d)
-i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr*, i32, i32) {
-    return 0;
+i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
+    if (!CState::LoadGameAssetNamespaces(a1, a2, a3)) {
+        return 0;
+    }
+    m_mgr->RestoreVideoMode(0);
+    m_2c = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_BOOTY"));
+    if (!m_2c) {
+        return 0;
+    }
+    m_gameBank = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME"));
+    if (!m_gameBank) {
+        return 0;
+    }
+    m_gruntzBank = static_cast<CSymTab*>(m_symParser->ResolvePath("GRUNTZ"));
+    if (!m_gruntzBank) {
+        return 0;
+    }
+    {
+        char area[128];
+        sprintf(area, "AREA%i", (g_gameReg->m_scoreHud->m_count - 1) % 0x24 / 4 + 1);
+        m_levelBank = static_cast<CSymTab*>(m_symParser->ResolvePath(area));
+    }
+    if (!m_levelBank) {
+        return 0;
+    }
+    m_world->m_childGroup->DestroyChildren_159ef0();
+    {
+        void* soundz = m_2c->FindSub("SOUNDZ");
+        if (!soundz) {
+            return 0;
+        }
+        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(soundz), "BOOTY", "_");
+    }
+    {
+        int(WINAPI * sc)(BOOL) = ::ShowCursor;
+        while (sc(0) >= 0) {
+        }
+    }
+    m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
+
+    m_1b4 = 0;
+    for (i32 i = 0; i < 4; i++) {
+        if (g_gameReg->m_options[i].m_joined == 0) {
+            continue;
+        }
+        CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[i].m_008, 0);
+        if (tint == 0) {
+            return 0;
+        }
+        CString key;
+
+        m_puddleSprites[i] =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+        if (m_puddleSprites[i] == 0) {
+            return 0;
+        }
+        m_puddleSprites[i]->ApplyName("GRUNTZ_GRUNTPUDDLE");
+        m_puddleSprites[i]->ApplyLookupGeometry(g_puddleSpriteKey, 0);
+        {
+            CWwdGameObjectA* o = m_puddleSprites[i];
+            o->m_drawActive = 1;
+            o->m_drawFillCmd = 0xa;
+            o->m_drawFillArg = tint;
+        }
+        m_puddleSprites[i]->m_stateFlags |= 1;
+
+        if (i == QueryGruntSlots()) {
+            m_gruntSprites[i] =
+                g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+            if (m_gruntSprites[i] == 0) {
+                return 0;
+            }
+            m_gruntSprites[i]->ApplyName("GRUNTZ_EXITZ");
+            m_gruntSprites[i]->ApplyLookupGeometry("GAME_GRUNTFLEX", 0);
+            CWwdGameObjectA* o = m_gruntSprites[i];
+            o->m_drawActive = 1;
+            o->m_drawFillCmd = 0xa;
+            o->m_drawFillArg = tint;
+        } else {
+            key.Format("GRUNTZ_NORMALGRUNT_IDLE%d", (g_gameReg->Rand() % 2 != 0) ? 1 : 4);
+            m_gruntSprites[i] =
+                g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+            if (m_gruntSprites[i] == 0) {
+                return 0;
+            }
+            m_gruntSprites[i]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
+            m_gruntSprites[i]->ApplyLookupGeometry(key, 0);
+            CWwdGameObjectA* o = m_gruntSprites[i];
+            o->m_drawActive = 1;
+            o->m_drawFillCmd = 0xa;
+            o->m_drawFillArg = tint;
+        }
+        m_gruntSprites[i]->m_stateFlags |= 1;
+
+        // --- the four "best pickup" icons: scan this player's tally band for its max
+        {
+            i32 best = -1;
+            i32 bestIdx = 0;
+            const i32* tally = &g_gameReg->m_scoreHud->m_weaponPickupz[i * 22];
+            for (i32 j = 0; j < 22; j++) {
+                if (tally[j] > best) {
+                    best = tally[j];
+                    bestIdx = j;
+                }
+            }
+            BuildPowerupIconKeys(&key, bestIdx + 1);
+        }
+        m_weaponIcons[i] =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+        if (m_weaponIcons[i] == 0) {
+            return 0;
+        }
+        m_weaponIcons[i]->ApplyName(key);
+        m_weaponIcons[i]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+        {
+            CWwdGameObjectA* o = m_weaponIcons[i];
+            o->m_drawActive = 1;
+            o->m_drawFillCmd = 0xa;
+            o->m_drawFillArg = tint;
+        }
+        m_weaponIcons[i]->m_stateFlags |= 1;
+
+        {
+            CShadeTable* iconTint = g_gameReg->m_spriteFactory->GetSel(0x10, 0);
+            if (iconTint == 0) {
+                return 0;
+            }
+            {
+                i32 best = -1;
+                i32 bestIdx = 0;
+                const i32* tally = &g_gameReg->m_scoreHud->m_toyPickupz[i * 10];
+                for (i32 j = 0; j < 10; j++) {
+                    if (tally[j] > best) {
+                        best = tally[j];
+                        bestIdx = j;
+                    }
+                }
+                BuildPowerupIconKeys(&key, bestIdx + 0x17);
+            }
+            m_toyIcons[i] =
+                g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+            if (m_toyIcons[i] == 0) {
+                return 0;
+            }
+            m_toyIcons[i]->ApplyName(key);
+            m_toyIcons[i]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+            {
+                CWwdGameObjectA* o = m_toyIcons[i];
+                o->m_drawActive = 1;
+                o->m_drawFillCmd = 0xa;
+                o->m_drawFillArg = iconTint;
+            }
+            m_toyIcons[i]->m_stateFlags |= 1;
+
+            {
+                i32 best = -1;
+                i32 bestIdx = 0;
+                const i32* tally = &g_gameReg->m_scoreHud->m_powerupPickupz[i * 7];
+                for (i32 j = 0; j < 7; j++) {
+                    if (tally[j] > best) {
+                        best = tally[j];
+                        bestIdx = j;
+                    }
+                }
+                BuildPowerupIconKeys(&key, bestIdx + 0x36);
+            }
+            m_powerupIcons[i] =
+                g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+            if (m_powerupIcons[i] == 0) {
+                return 0;
+            }
+            m_powerupIcons[i]->ApplyName(key);
+            m_powerupIcons[i]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+            {
+                CWwdGameObjectA* o = m_powerupIcons[i];
+                o->m_drawActive = 1;
+                o->m_drawFillCmd = 0xa;
+                o->m_drawFillArg = iconTint;
+            }
+            m_powerupIcons[i]->m_stateFlags |= 1;
+
+            {
+                i32 best = -1;
+                i32 bestIdx = 0;
+                const i32* tally = &g_gameReg->m_scoreHud->m_miscPickupz[i * 4];
+                for (i32 j = 0; j < 4; j++) {
+                    if (tally[j] > best) {
+                        best = tally[j];
+                        bestIdx = j;
+                    }
+                }
+                BuildPowerupIconKeys(&key, bestIdx + 0x3d);
+            }
+            m_miscIcons[i] =
+                g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+            if (m_miscIcons[i] == 0) {
+                return 0;
+            }
+            m_miscIcons[i]->ApplyName(key);
+            m_miscIcons[i]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+            {
+                CWwdGameObjectA* o = m_miscIcons[i];
+                o->m_drawActive = 1;
+                o->m_drawFillCmd = 0xa;
+                o->m_drawFillArg = iconTint;
+            }
+            m_miscIcons[i]->m_stateFlags |= 1;
+        }
+
+        m_puddleSprites[i]->m_screenX = g_multiBootyGeom[5][i].m_x;
+        m_puddleSprites[i]->m_screenY = g_multiBootyGeom[5][i].m_y;
+        m_puddleSprites[i]->m_stateFlags &= ~1;
+        m_gruntSprites[i]->m_screenX = g_multiBootyGeom[4][i].m_x;
+        m_gruntSprites[i]->m_screenY = g_multiBootyGeom[4][i].m_y;
+        m_gruntSprites[i]->m_stateFlags &= ~1;
+        m_weaponIcons[i]->m_screenX = g_multiBootyGeom[3][i].m_x;
+        m_weaponIcons[i]->m_screenY = g_multiBootyGeom[3][i].m_y;
+        m_weaponIcons[i]->m_stateFlags &= ~1;
+        m_toyIcons[i]->m_screenX = g_multiBootyGeom[2][i].m_x;
+        m_toyIcons[i]->m_screenY = g_multiBootyGeom[2][i].m_y;
+        m_toyIcons[i]->m_stateFlags &= ~1;
+        m_powerupIcons[i]->m_screenX = g_multiBootyGeom[1][i].m_x;
+        m_powerupIcons[i]->m_screenY = g_multiBootyGeom[1][i].m_y;
+        m_powerupIcons[i]->m_stateFlags &= ~1;
+        m_miscIcons[i]->m_screenX = g_multiBootyGeom[0][i].m_x;
+        m_miscIcons[i]->m_screenY = g_multiBootyGeom[0][i].m_y;
+        m_miscIcons[i]->m_stateFlags &= ~1;
+    }
+
+    // --- per player: the scoreboard tab + the warlord's fortress-flag badge
+    for (i32 t = 0; t < 4; t++) {
+        CString tabKey;
+        CString flagKey;
+        GruntzPlayer* pl = &g_gameReg->m_options[t];
+        CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(pl->m_008, 0);
+        if (tint == 0) {
+            return 0;
+        }
+        tabKey.Format("GAME_STATUSBAR_TABZ_MULTIPLAYERT%d", t + 1);
+        flagKey.Format("GAME_FORTRESSFLAGZ_%s", static_cast<const char*>(GetWarlordName(t)));
+
+        m_tabSprites[t] =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "DoNothing", 3);
+        if (m_tabSprites[t] == 0) {
+            return 0;
+        }
+        m_tabSprites[t]->ApplyName(tabKey);
+        m_tabSprites[t]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+        {
+            CWwdGameObjectA* o = m_tabSprites[t];
+            o->m_drawActive = 1;
+            o->m_drawFillCmd = 0xa;
+            o->m_drawFillArg = tint;
+        }
+        m_tabSprites[t]->m_stateFlags |= 1;
+
+        m_flagSprites[t] =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "DoNothing", 3);
+        if (m_flagSprites[t] == 0) {
+            return 0;
+        }
+        m_flagSprites[t]->ApplyName(flagKey);
+        m_flagSprites[t]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+        {
+            CWwdGameObjectA* o = m_flagSprites[t];
+            o->m_drawActive = 1;
+            o->m_drawFillCmd = 0xa;
+            o->m_drawFillArg = tint;
+        }
+        m_flagSprites[t]->m_stateFlags |= 1;
+
+        m_tabSprites[t]->m_screenX = g_multiBootyGeom[7][t].m_x;
+        m_tabSprites[t]->m_screenY = g_multiBootyGeom[7][t].m_y;
+        {
+            // the tab's own frame: 1 when the slot is joined, 2 when it is empty
+            i32 frame = (pl->m_joined != 0) ? 1 : 2;
+            CWwdGameObjectA* o = m_tabSprites[t];
+            CDDrawWorker* set = o->m_sprite;
+            if (set != 0) {
+                CImage* mapped;
+                if (frame >= set->m_minIndex && frame <= set->m_maxIndex) {
+                    mapped = static_cast<CImage*>(set->m_items.GetAt(frame));
+                } else {
+                    mapped = 0;
+                }
+                o->m_layer = mapped;
+                o->m_190 = frame;
+            }
+        }
+        m_tabSprites[t]->m_stateFlags &= ~1;
+    }
+
+    // --- the fortress backdrop and the winning warlord's booty animation
+    {
+        CShadeTable* tint =
+            g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[QueryGruntSlots()].m_008, 0);
+        if (tint == 0) {
+            return 0;
+        }
+        m_fortSprite =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+        if (m_fortSprite == 0) {
+            return 0;
+        }
+        m_fortSprite->ApplyName("LEVEL_FORT");
+        m_fortSprite->ApplyLookupGeometry("GAME_CYCLE100", 0);
+        {
+            CWwdGameObjectA* o = m_fortSprite;
+            o->m_drawActive = 1;
+            o->m_drawFillCmd = 0xa;
+            o->m_drawFillArg = tint;
+        }
+        m_fortSprite->m_stateFlags |= 1;
+        m_fortSprite->m_screenX = 0x64;
+        m_fortSprite->m_screenY = 0x64;
+        m_fortSprite->m_stateFlags &= ~1;
+
+        CString joyKey;
+        CString bootyKey;
+        joyKey.Format(
+            "GRUNTZ_WARLORDZ_%s_JOY",
+            static_cast<const char*>(GetWarlordName(QueryGruntSlots()))
+        );
+        bootyKey.Format(
+            "GRUNTZ_WARLORDZ_%s_BOOTY",
+            static_cast<const char*>(GetWarlordName(QueryGruntSlots()))
+        );
+        m_warlordBooty =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+        if (m_warlordBooty == 0) {
+            return 0;
+        }
+        m_warlordBooty->ApplyName(joyKey);
+        m_warlordBooty->ApplyLookupGeometry(bootyKey, 0);
+        {
+            CWwdGameObjectA* o = m_warlordBooty;
+            o->m_drawActive = 1;
+            o->m_drawFillCmd = 0xa;
+            o->m_drawFillArg = tint;
+        }
+        m_warlordBooty->m_stateFlags |= 1;
+        m_warlordBooty->m_screenX = 0x64;
+        m_warlordBooty->m_screenY = 0x64;
+        if (m_warlordBooty->m_sortKey != 2) {
+            m_warlordBooty->m_sortKey = 2;
+            m_warlordBooty->m_flags |= 0x20000;
+        }
+        m_warlordBooty->m_stateFlags &= ~1;
+
+        // --- the captured-fortress flag row, spread by how many that warlord holds
+        for (i32 w = 0; w < 4; w++) {
+            i32 held = g_gameReg->m_scoreHud->SumFlags(w);
+            i32 placed = 0;
+            for (i32 c = 0; c < 4; c++) {
+                if (g_gameReg->m_scoreHud->GetFlag(w, c) != 0) {
+                    i32 spread[3][3];
+                    spread[0][0] = 0;
+                    spread[0][1] = 0;
+                    spread[0][2] = 0;
+                    spread[1][0] = -1;
+                    spread[1][1] = 1;
+                    spread[1][2] = 0;
+                    spread[2][0] = -2;
+                    spread[2][1] = 0;
+                    spread[2][2] = 2;
+                    m_flagSprites[c]->m_screenX =
+                        (spread[held - 1][placed] << 4) + g_multiBootyGeom[6][w].m_x;
+                    m_flagSprites[c]->m_screenY = g_multiBootyGeom[6][w].m_y;
+                    m_flagSprites[c]->m_stateFlags &= ~1;
+                    placed++;
+                }
+            }
+        }
+    }
+    return 1;
 }
 
 // CMultiBootyState::ReleaseResources() (slot 2 / +0x8, 0x1e520): free the leaf-registry
@@ -505,7 +906,7 @@ void CMultiBootyState::ReleaseResources() {
     // every other m_cueSink site uses (GruntzMgr.cpp 2094/2111/2656). The old
     // `(CMoviePlayer*)...->~CMoviePlayer()` bound the call to the wrong function.
     m_mgr->m_cueSink->PauseAllVoices(); // 0x11c7b0 (the cue-timer flush)
-    CState::ReleaseResources(); // 0xfa150 (chain the base slot-2 teardown; direct)
+    CState::ReleaseResources();         // 0xfa150 (chain the base slot-2 teardown; direct)
 }
 
 RVA(0x0001e570, 0xb4)
