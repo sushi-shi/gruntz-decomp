@@ -612,14 +612,13 @@ void CNetSession::RaiseAllSlotsMax(i32 v) {
 // feeding both branchless-abs pairs around the `% 128` (see
 // docs/patterns/signed-modulo-pow2-abs-restore.md). Ex fake view "GlyphTable"
 // (was 100% in its own base-flags TU).
-// @early-stop
-// regalloc wall (topic:wall topic:regalloc): eax/edx role swap on the two loads
-// ([esp+8]/[ecx+0x10]) under this TU's /GX flags; add is commutative so retail's
-// operand roles aren't source-steerable (tried both add orders + a temp), ~98.85%.
+// EXACT 2026-07-28: the "eax/edx role swap" was the parameter TYPE - `parity` is a
+// u8, not an i32 (the callee's `mov edx,[esp+8]; and edx,0xff` IS the byte-param
+// zero-extend, and CMulti::Render ships only dl: `mov dl,..; shl dl,1; push edx`).
 // ---------------------------------------------------------------------------
 RVA(0x000c03f0, 0x29)
-void CNetSession::ArmSlot(void* node, i32 parity) {
-    m_idMap[(m_tick + (parity & 0xff)) % 128] = static_cast<CGruntzCommand*>(node);
+void CNetSession::ArmSlot(void* node, u8 parity) {
+    m_idMap[(m_tick + parity) % 128] = static_cast<CGruntzCommand*>(node);
 }
 
 RVA(0x000c0430, 0x1f)

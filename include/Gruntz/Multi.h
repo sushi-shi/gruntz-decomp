@@ -379,8 +379,7 @@ void MultiJoinHandler(); // thunk 0x222f -> body 0xb8020 (Gap_0b8020)
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
-extern "C" i32(WINAPI* g_pEndDialog)(HWND, i32); // 0x6c44ac
-extern "C" void ServicesDispatchCb();            // 0x401a19
+extern "C" void ServicesDispatchCb(); // 0x401a19
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
@@ -396,8 +395,6 @@ extern "C" CMulti* g_connectRptMgr;                                     // 0x648
 extern "C" i32 Cfg_GetKey(char* out, const char* src, const char* key); // 0xf9160
 extern "C" HWND g_setupDlgHwnd;                                         // 0x64557c
 extern "C" i32 BaseDlgProc(HWND, u32 msg, u32 wParam, i32 lParam);      // 0x1192d0
-extern "C" u32(WINAPI* g_pGetDlgItemTextA)(HWND, i32, char*, i32);      // 0x6c448c
-extern "C" i32(WINAPI* g_pMessageBeep)(u32);                            // 0x6c4534
 extern "C" void RefreshPlayerRow(HWND hDlg, HWND hList);                // 0xb8af0
 extern "C" i32 NetFormatKeyed(char* out, void* src, const char* key);
 extern CFile g_obj646778; // (spelled via the underlying MFC CFile; CFile is its typedef)

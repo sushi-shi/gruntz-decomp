@@ -684,14 +684,15 @@ i32 CMulti::Connect(i32 mode) {
 // either keep ticking, flag out-of-sync, or finish + present.
 // ===========================================================================
 // @early-stop
-// regalloc / scheduling wall: the body is the complete, correct reconstruction
-// (the redraw vfn call, the timeGetTime delta math into m_frameDelta/m_accumTime, the slot
-// arm via m_session->ArmSlot, the Step/Drain clamp, then the busy/stall branch and
-// the present tail). MSVC pins ebp=this and threads the timeGetTime import ptr
-// through a callee-saved reg across the whole body; our /O2 lowering picks a
-// different this/scratch allocation and reorders the m_5dx stores, so the
-// instruction stream diverges despite identical logic. >512 B; deferred to the
-// final sweep (no NEW idea closes it here).
+// 99.26% (was 89.04). 2026-07-28: four real source bugs, none of them regalloc -
+// (a) the slot-arm byte is a signed `% 128` (retail's cdq/xor/sub/and 0x7f/xor/sub),
+// not a hand-rolled abs-mask-resign; (b) ArmSlot's `parity` is a u8 parameter, which
+// removes the caller-side `and edx,0xff`; (c) the m_drainTimer decay spells the
+// zero-arm first (`>= ? 0 : diff`); (d) the finish gate is `if (fin != 0)` - the
+// `== 0` spelling inverted the whole Verify/PumpB tail (jcc_sieve POLARITY #9).
+// Also `m_accumTime += m_frameDelta` (the stored delta), not a second `t - oldT`.
+// Residual: the ebx<->ebp colouring of the pinned 0 vs the timeGetTime import ptr;
+// permute fn (200 iters) found nothing. Final sweep.
 RVA(0x000b6890, 0x21b)
 i32 CMulti::Render() {
     m_drewThisFrame = 0;
@@ -699,8 +700,10 @@ i32 CMulti::Render() {
     i32 oldT = m_lastTime;
     i32 t = timeGetTime();
     m_lastTime = t;
+    // The accumulator adds the STORED delta (retail `sub eax,edi; mov [esi+0x5d8],eax;
+    // add edx,eax`), not a second `t - oldT` (which cl computes twice).
     m_frameDelta = t - oldT;
-    m_accumTime += (t - oldT);
+    m_accumTime += m_frameDelta;
     i32 newId = m_session->m_tick;
     if (m_curSlotId != newId) {
         m_curSlotId = newId;
@@ -713,12 +716,12 @@ i32 CMulti::Render() {
         }
         if (node) {
             node->m_submitted = 1;
+            // A signed MODULO, not a hand-rolled abs/mask/re-sign: retail is MSVC's
+            // `cdq / xor / sub / and 0x7f / xor / sub` power-of-two `%` sequence.
             i32 v = m_curSlotId + static_cast<i32>(m_5a4) * 2;
-            i32 s = v < 0 ? -v : v;
-            s &= 0x7f;
-            node->m_targetType = static_cast<u8>((v < 0 ? -s : s));
+            node->m_targetType = static_cast<u8>(v % 128);
         }
-        m_session->ArmSlot(node, static_cast<i32>(static_cast<u8>((static_cast<u8>(m_5a4) << 1))));
+        m_session->ArmSlot(node, static_cast<u8>(static_cast<u8>(m_5a4) << 1));
     }
     i32 dt = m_frameDelta;
     if (static_cast<u32>(dt) >= g_frameDelta) {
@@ -726,10 +729,11 @@ i32 CMulti::Render() {
     }
     m_packetsRcvd = m_session->Poll(dt); // 0xbf5a0
     m_packetsSent = 0;
-    if (static_cast<u32>(m_frameDelta) < static_cast<u32>(m_drainTimer)) {
-        m_drainTimer = m_drainTimer - m_frameDelta;
-    } else {
+    // Zero-arm first (retail `jb` into the subtract, fall-through stores 0).
+    if (static_cast<u32>(m_frameDelta) >= static_cast<u32>(m_drainTimer)) {
         m_drainTimer = 0;
+    } else {
+        m_drainTimer = m_drainTimer - m_frameDelta;
     }
     if (m_drainTimer == 0) {
         m_packetsSent = m_session->Tick(); // 0xbf9e0
@@ -744,7 +748,10 @@ i32 CMulti::Render() {
     if (mainPlane) {
         mainPlane->CenterScrollA(); // 0x163300
     }
-    if (fin == 0) {
+    // `!= 0`, not `== 0`: retail's `cmp edi,ebx / je` puts the Verify/out-of-sync path
+    // in the fall-through, i.e. it runs when the Advance()+no-abort latch IS set; the
+    // `== 0` spelling inverts the whole tail (jcc_sieve POLARITY #9 jne->je).
+    if (fin != 0) {
         if (m_session->Verify() == 0 && m_574 == 0) { // 0xc04f0
             if (m_isHost != 0) {
                 SendStatFlag(0x404, 1);
@@ -772,11 +779,15 @@ i32 CMulti::Render() {
 }
 
 // @early-stop
-// large-body regalloc/scheduling wall (~88%). Prologue, the m_594/m_logic->m_c/ready
-// early-out, the shared-clock advance and frame size (sub esp,0x44) are byte-exact
-// (llvm-objdump -dr); the residual is MSVC5's register/branch choices across the
-// five stat-timer decay blocks + the m_view->m_8 vfn-host dispatch on this 670-byte
-// body (0-in-ebp reuse, g_frameDelta single-load hoisting), not steerable from source.
+// 95.9% (was 91.4; MAX 97.98). 2026-07-28: the five stat-timer decay blocks are NOT a
+// branch-choice wall - each spells the zero arm first (`if (delta >= t) g = 0; else
+// g = t - delta;`), which flipped all five `jae`->`jb` pairs. Two more byte-proven
+// fixes: g_frameDelta is stored BEFORE the two accumulators (reloc order at 0xb6b94),
+// the ambient bank manager is held in a local across FindBank + the latch and only
+// re-read for the current-bank test, and TickKillCues takes 0 (retail pushes the
+// pinned ebp), not g_frameDelta. That last one shortens g_frameDelta's live range and
+// costs the eax<->ecx colouring inside the five timer blocks (97.98 -> 95.9) - kept,
+// because `push ebp` is unambiguous. Final sweep.
 RVA(0x000b6b40, 0x29e)
 i32 CMulti::PumpA() {
     i32 ready = FrameSyncWait();
@@ -784,9 +795,11 @@ i32 CMulti::PumpA() {
         PumpB();
         return 1;
     }
+    // g_frameDelta is stored FIRST (retail `mov ds:0x645584,edx` precedes the two
+    // accumulator stores).
+    g_frameDelta = 0x21;
     g_lastNow += 0x21;
     g_frameTime += 0x21;
-    g_frameDelta = 0x21;
     g_killCueClock = g_lastNow;
     g_engineFrameDelta = 0x21;
     if (m_ambientInitDone == 0) {
@@ -798,9 +811,13 @@ i32 CMulti::PumpA() {
             if (g_gameReg->m_musicEnabled != 0) {
                 Mgr()->m_sound->PlayByName(name, 1);
             } else {
-                CGruntzSoundInnerZ* p = Mgr()->m_sound->FindBank(name);
+                // The bank manager is held in a local across the probe + latch
+                // (retail `mov edi,[edx+0x48]` ... `mov [edi+0x1c],eax`) and only
+                // RE-READ for the current-bank test.
+                CGruntzSoundZ* snd = Mgr()->m_sound;
+                CGruntzSoundInnerZ* p = snd->FindBank(name);
                 if (p) {
-                    Mgr()->m_sound->m_pCurrent = p;
+                    snd->m_pCurrent = p;
                 }
                 if (Mgr()->m_sound->m_pCurrent) {
                     Mgr()->m_sound->m_pCurrent->SetLoop(1);
@@ -813,36 +830,36 @@ i32 CMulti::PumpA() {
     m_session->Checksum();
     g_frameTicks++;
     u32 t1 = g_timer32 ? g_timer32 : 0x32;
-    if (g_frameDelta < t1) {
-        g_timer32 = t1 - g_frameDelta;
-    } else {
+    if (g_frameDelta >= t1) {
         g_timer32 = 0;
+    } else {
+        g_timer32 = t1 - g_frameDelta;
     }
     u32 t2 = g_timer100 ? g_timer100 : 0x64;
-    if (g_frameDelta < t2) {
-        g_timer100 = t2 - g_frameDelta;
-    } else {
+    if (g_frameDelta >= t2) {
         g_timer100 = 0;
+    } else {
+        g_timer100 = t2 - g_frameDelta;
     }
     u32 t3 = g_timer200 ? g_timer200 : 0xc8;
-    if (g_frameDelta < t3) {
-        g_timer200 = t3 - g_frameDelta;
-    } else {
+    if (g_frameDelta >= t3) {
         g_timer200 = 0;
+    } else {
+        g_timer200 = t3 - g_frameDelta;
     }
     u32 t4 = g_timer400 ? g_timer400 : 0x190;
-    if (g_frameDelta < t4) {
-        g_timer400 = t4 - g_frameDelta;
-    } else {
+    if (g_frameDelta >= t4) {
         g_timer400 = 0;
+    } else {
+        g_timer400 = t4 - g_frameDelta;
     }
     u32 t5 = g_timer500 ? g_timer500 : 0x1f4;
-    if (g_frameDelta < t5) {
-        g_timer500 = t5 - g_frameDelta;
-    } else {
+    if (g_frameDelta >= t5) {
         g_timer500 = 0;
+    } else {
+        g_timer500 = t5 - g_frameDelta;
     }
-    m_world->m_childGroup->TickKillCues(g_frameDelta);
+    m_world->m_childGroup->TickKillCues(0); // retail pushes ebp (the pinned 0), NOT g_frameDelta
     m_world->m_childGroup->CollideBroadcast();
     Mgr()->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
     m_guts->LoadDestructButtonSprite(g_frameDelta);
@@ -1158,17 +1175,28 @@ CString CMulti::GetString59c() {
 // validates the service name (0x51b, beep on empty), records it (host mode also
 // records the game name), latches the selected service id, reads the group
 // selection, and closes the dialog (EndDialog(1)).
-// @early-stop
-// regalloc callee-save-count wall (~77%): the base-proc dispatch, the switch(msg)
-// (sub 0x110/je/dec/jne, matching retail), the GetString(key,buf,&maxlen,default)
-// config reads (int* maxlen reusing one slot, cfg re-derived per call), both
-// Cancel/OK paths and the by-value CString(name) arg-slot construction are all
-// reproduced. Residual: retail keeps GetDlgItem's fn-ptr in a 4th callee-saved reg
-// (ebp) across INITDIALOG, so retail saves ebx/ebp/esi/edi (sub esp,0x50) while
-// our /O2 uses only ebx/esi/edi (sub esp,0x58); the extra reg + 4-byte frame delta
-// cascades every stack offset and re-orders the return-0 tail blocks. Final sweep.
+// EXACT 2026-07-28 (was 87.16, filed a "regalloc callee-save-count wall"). Five
+// source fixes, no register problem: (a) the three g_p* import function-pointer
+// globals replaced by the real ::EndDialog/::GetDlgItemTextA/::MessageBeep imports,
+// which is what lets cl CSE the load into a register (`mov edi,[__imp_..]; call edi`
+// twice); (b) ONE set of buffers at FUNCTION scope - retail's two GetDlgItemTextA
+// calls share gameBuf's slot, and cl packs the stack by SCOPE, not live range;
+// (c) GetDlgItem is its own statement, so its call precedes SendMessage's constant
+// pushes; (d) the wParam==1 body lives inside the `if` and falls out into one shared
+// `ret_false:` (base had 7 rets, retail 6); (e) gameBuf is 0x44, not 0x40 - retail's
+// locals span exactly 0x50 with gameBuf at +0xc - and `cap` is scoped to the
+// WM_INITDIALOG case, which lets cl overlay it and the WM_COMMAND CString temp's
+// esp-bookkeeping on the SAME dead hDlg parameter slot.
 RVA(0x000b7b10, 0x27c)
 i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
+    // FUNCTION scope, not case scope: retail's frame is exactly 0xc + 0x40 (+ the
+    // GetValueString cap, which cl parks in the dead hDlg parameter slot), and the
+    // WM_COMMAND path re-reads BOTH edits into gameBuf's slot - i.e. one set of
+    // buffers shared across the switch. Per-case arrays cannot overlap the
+    // WM_COMMAND ones (cl packs the stack by scope, not by live range) and grow the
+    // frame to 0x90.
+    char nameBuf[0xa];
+    char gameBuf[0x44];
     g_setupDlgHwnd = hDlg;
     if (BaseDlgProc(hDlg, msg, wParam, lParam) != 0) {
         return 1;
@@ -1185,8 +1213,6 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
                 ::SendMessageA(combo, 0x186, 0, 0);
             }
 
-            char nameBuf[0xa];
-            char gameBuf[0x40];
             u32 cap = 0xa; // GetValueString takes u32* - declare it that way
             g_gameReg->m_settings->GetValueString(
                 const_cast<char*>(static_cast<const char*>(("Player_Name"))),
@@ -1201,52 +1227,62 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
                 &cap,
                 "Multiplayer_Gruntz"
             );
-            ::SendMessageA(::GetDlgItem(hDlg, 0x51b), 0xc5, 9, 0);
+            // The GetDlgItem result is its OWN statement: retail calls it BEFORE
+            // pushing SendMessage's constants (`push 0x51b/esi; call ebp` then
+            // `push 0/9/0xc5; push eax; call edi`); nesting it pushes the constants
+            // first.
+            HWND edName = ::GetDlgItem(hDlg, 0x51b);
+            ::SendMessageA(edName, 0xc5, 9, 0);
             ::SetDlgItemTextA(hDlg, 0x51b, nameBuf);
-            ::SendMessageA(::GetDlgItem(hDlg, 0x51c), 0xc5, 0x3f, 0);
+            HWND edGame = ::GetDlgItem(hDlg, 0x51c);
+            ::SendMessageA(edGame, 0xc5, 0x3f, 0);
             ::SetDlgItemTextA(hDlg, 0x51c, gameBuf);
             return 1;
         }
         case 0x111:
             break;
         default:
-            return 0;
+            goto ret_false;
     }
 
     if (wParam == 2) {
-        g_pEndDialog(hDlg, 0);
+        ::EndDialog(hDlg, 0);
         return 1;
     }
-    if (wParam != 1) {
-        return 0;
-    }
-
-    char name[0xa];
-    g_pGetDlgItemTextA(hDlg, 0x51b, name, 0xa);
-    if (name[0] == 0) {
-        g_pMessageBeep(0);
-        return wParam;
-    }
-    g_connectRptMgr->SetServiceName(CString(name));
-
-    if (g_hostServicesMode != 0) {
-        char gname[0x40];
-        g_pGetDlgItemTextA(hDlg, 0x51c, gname, 0x40);
-        if (gname[0] == 0) {
-            g_pMessageBeep(0);
-            return 1;
+    // The wParam==1 body is INSIDE the `if` and falls out into the shared ret_false:
+    // a `goto ret_false;` here inlines a second copy of the return-0 (base 7 rets,
+    // retail 6).
+    if (wParam == 1) {
+        // Both edits are read into gameBuf: retail's two GetDlgItemTextA calls share one
+        // address (`lea ecx,[esp+0x1c]` == gameBuf's slot), so the WM_COMMAND path reuses
+        // the WM_INITDIALOG game-name scratch rather than owning buffers of its own.
+        ::GetDlgItemTextA(hDlg, 0x51b, gameBuf, 0xa);
+        if (gameBuf[0] == 0) {
+            ::MessageBeep(0);
+            return wParam;
         }
-        g_connectRptMgr->ApplyDynSetting(CString(gname));
-    }
+        g_connectRptMgr->SetServiceName(CString(gameBuf));
 
-    HWND combo = ::GetDlgItem(hDlg, 0x3fc);
-    i32 svc = static_cast<i32>(::SendMessageA(combo, 0x188, 0, 0));
-    if (svc != -1) {
-        g_serviceId = svc;
+        if (g_hostServicesMode != 0) {
+            ::GetDlgItemTextA(hDlg, 0x51c, gameBuf, 0x40);
+            if (gameBuf[0] == 0) {
+                ::MessageBeep(0);
+                return 1;
+            }
+            g_connectRptMgr->ApplyDynSetting(CString(gameBuf));
+        }
+
+        HWND combo = ::GetDlgItem(hDlg, 0x3fc);
+        i32 svc = static_cast<i32>(::SendMessageA(combo, 0x188, 0, 0));
+        if (svc != -1) {
+            g_serviceId = svc;
+        }
+        g_groupEnumMgr->ReadGroupSel(::GetDlgItem(hDlg, 0x3fc));
+        ::EndDialog(hDlg, 1);
+        return 1;
     }
-    g_groupEnumMgr->ReadGroupSel(::GetDlgItem(hDlg, 0x3fc));
-    g_pEndDialog(hDlg, 1);
-    return 1;
+ret_false:
+    return 0;
 }
 
 RVA(0x000b7e30, 0x63)
@@ -1311,18 +1347,13 @@ i32 CMulti::JoinSession() {
 // globals (::SendMessageA / ::GetDlgItem); EndDialog/MessageBeep via g_p*; KillTimer/
 // SetTimer are direct USER32 imports. The re-arm-timeout probe (+0x70 IsInterface2)
 // recurs in the WM_TIMER and WM_COMMAND-OK-fail paths.
-// @early-stop
-// regalloc block-duplication wall (~76%; same family as the sibling NetSetupDlgProc
-// 0xb7b10 ~77%): logic byte-exact - the base-proc dispatch, the switch(msg) compare
-// chain (sub 0x110/je/dec/je/sub 2/jne, matching retail with the WM_TIMER body as the
-// fallthrough), the shared EndDialog(0)+return-1 tail (close:), the EnumPlayersInto/
-// FillPlayerList/SetCurSel refresh, the OnJoinConfirm join and both IsInterface2
-// slow-link timeout probes are all reproduced. Residual: retail SHARES one return-0
-// block (0xb81e3, two predecessors: switch-miss + wParam!=1) so both reach it via
-// `jne` (OK body fallthrough), while our MSVC5 /O2 DUPLICATES the 6-byte return-0
-// (inlining one copy at wParam!=1, `je OK`) and reuses known-value registers
-// (`push ebx`/`push eax` where we materialize immediates) - non-source-steerable
-// block-layout + register-reuse heuristics. Final sweep.
+// EXACT 2026-07-28: the "block-duplication wall" was where the shared-exit gates put
+// their BODY. cl places a shared label right after the LAST `goto` that targets it, so
+// `if (wParam != 1) goto ret_false;` and `if (g_netCreateCtx == 0) goto close;` each
+// inlined their target block; spelling both as `if (<ok>) { body... }` with the body
+// inside and the bare goto/fall-out after reproduces retail's `je <far shared tail>`.
+// The OnJoinConfirm test is failure-first for the same reason (and retail then reuses
+// the known-zero eax as MessageBeep's argument).
 RVA(0x000b8020, 0x22f)
 INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     g_setupDlgHwnd = hDlg;
@@ -1335,37 +1366,43 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             if (g_netPlayerListHwnd == 0) {
                 goto close;
             }
-            if (g_netCreateCtx == 0) {
-                goto close;
+            // Body inside the `if`, with the bare `goto close;` after it: retail's
+            // `je <far close>` falls through into the INITDIALOG tail, where a
+            // trailing `goto close;` gate inlines the close block right here.
+            if (g_netCreateCtx != 0) {
+                g_netCreateCtx->m_74 = 0;
+                SetTimer(hDlg, 1, 0x9c4, 0);
+                ::SendMessageA(hDlg, 0x113, 0, 0);
+                return 1;
             }
-            g_netCreateCtx->m_74 = 0;
-            SetTimer(hDlg, 1, 0x9c4, 0);
-            ::SendMessageA(hDlg, 0x113, 0, 0);
-            return 1;
+            goto close;
         case 0x111: // WM_COMMAND
             if (wParam == 2) {
                 KillTimer(hDlg, 1);
-                g_pEndDialog(hDlg, 0);
+                ::EndDialog(hDlg, 0);
                 return 1;
             }
-            if (wParam != 1) {
-                goto ret_false;
-            }
-            KillTimer(hDlg, 1);
-            if ((static_cast<CMulti*>(g_connectRptMgr))->OnJoinConfirm(hDlg) != 0) {
-                g_pEndDialog(hDlg, 1);
-                return 1;
-            }
-            g_pMessageBeep(0);
-            {
-                i32 t = 0x7d0;
-                InterfaceObject* io = g_netCreateCtx->m_serviceProvider;
-                if (io && io->IsInterface2()) {
-                    t = 0x1388;
+            // `== 1` with the body inside, falling out of the switch into ret_false:
+            // a trailing `goto ret_false;` makes cl inline that 6-byte return-0 here
+            // instead of reaching retail's shared block by `jne`.
+            if (wParam == 1) {
+                KillTimer(hDlg, 1);
+                // Failure-first: retail's `jne` puts the beep/re-arm path in the
+                // fall-through (and reuses the known-zero eax for MessageBeep's arg).
+                if ((static_cast<CMulti*>(g_connectRptMgr))->OnJoinConfirm(hDlg) == 0) {
+                    ::MessageBeep(0);
+                    i32 t = 0x7d0;
+                    InterfaceObject* io = g_netCreateCtx->m_serviceProvider;
+                    if (io && io->IsInterface2()) {
+                        t = 0x1388;
+                    }
+                    SetTimer(hDlg, 1, t, 0);
+                    return 0;
                 }
-                SetTimer(hDlg, 1, t, 0);
+                ::EndDialog(hDlg, 1);
+                return 1;
             }
-            return 0;
+            break;
         case 0x113: // WM_TIMER
             KillTimer(hDlg, 1);
             {
@@ -1381,7 +1418,7 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                         goto close;
                     }
                     (static_cast<CMulti*>(g_connectRptMgr))->ReportNetError(0);
-                    g_pEndDialog(hDlg, 0);
+                    ::EndDialog(hDlg, 0);
                     return 1;
                 }
                 FillPlayerList(g_netPlayerListHwnd, g_groupEnumMgr);
@@ -1403,7 +1440,7 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
 ret_false:
     return 0;
 close:
-    g_pEndDialog(hDlg, 0);
+    ::EndDialog(hDlg, 0);
 ret_true:
     return 1;
 }
@@ -1417,12 +1454,10 @@ ret_true:
 // (if present), latches the local player name into the channel table, and joins the
 // session (JoinAndRegisterChannel); on success it records the result into the peer's
 // player-selection latch and returns 1, else 0.
-// @early-stop
-// /GX CString-temp cluster wall: the type detection, the three operator+ config-key
-// builds + two GetInt reads, the channel-name latch and the JoinAndRegisterChannel
-// tail are all reproduced, but retail's EH-state cookie sequence around the four
-// scoped CString temps + their stack-slot packing is not expressible from clean
-// C++ scopes. Same family as SetupTcpIpConfig / JoinAndRegisterChannel. Final sweep.
+// EXACT 2026-07-28: the "/GX CString-temp cluster wall" was two source bugs - the
+// name latch was a named CString local where retail assigns the by-value RETURN
+// (`call GetString5a0; push eax`), and the JoinAndRegisterChannel test was spelled
+// success-first, which swapped the two dtor-chain tails.
 RVA(0x000b82e0, 0x230)
 i32 CMulti::DetectConnectionConfig() {
     m_5ac = 0;
@@ -1465,18 +1500,20 @@ i32 CMulti::DetectConnectionConfig() {
     }
 
     GruntzPlayer* ch0 = NetGameMgr()->m_options;
-    {
-        CString name = GetString5a0();
-        ch0->m_name = name;
-    }
+    // The by-value return IS the temporary operator= receives: retail feeds it the
+    // call's own eax (`call GetString5a0; push eax`), where a named local re-leas
+    // the slot (`lea edx,[esp+0x18]; push edx`).
+    ch0->m_name = GetString5a0();
     ch0->m_008 = 0;
 
+    // Failure first: retail's `jne` puts the return-0 dtor chain in the fall-through
+    // and the m_playerSel latch in the branch target.
     CNetPlayerListNode* r = JoinAndRegisterChannel();
-    if (r != 0) {
-        Peer()->m_playerSel = r;
-        return 1;
+    if (r == 0) {
+        return 0;
     }
-    return 0;
+    Peer()->m_playerSel = r;
+    return 1;
 }
 
 RVA(0x000b85a0, 0xd2)
@@ -1623,11 +1660,13 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
 // the channel-table name at m_4+0x150). Returns the enum result iff the channel
 // registered, else 0; a failed enum / player-create reports the connect error.
 // @early-stop
-// branchless-mask + CString-temp wall (~?%): the config-string build, the
-// EnumGroupsInto + CreatePlayer + RegisterChannelFrom sequence and the local-player
-// latch are reproduced, but retail folds the final "channel-registered ? enumResult
-// : 0" into a split neg/sbb/and mask carried across the name CString's /GX dtor,
-// which a clean ternary won't reproduce exactly. Final sweep.
+// 93.20% (was 88.03). 2026-07-28: the split mask IS spellable - the FAILURE flag is
+// materialized at the call site (`i32 failed = (RegisterChannelFrom(...) == 0);`,
+// retail `neg/sbb/inc` before the name CString's dtor, because eax cannot survive it)
+// and the enum-result mask is derived from that flag afterwards (`neg bl/sbb/not/and`).
+// The name is a temporary, not a named local. Residual: retail spends a 4th
+// callee-saved (ebp for enumResult, ebx for the flag) where cl recycles the dead
+// `this` in esi, which also costs the byte-width `neg bl`. Final sweep.
 RVA(0x000b8b10, 0x175)
 CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     char buf[0x100];
@@ -1659,9 +1698,13 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     m_hostIndex = node->m_id;
     GruntzPlayer* ch0 = NetGameMgr()->m_options;
     i32 chField = ch0->m_008;
-    CString name = ch0->GetName();
-    i32 ok = RegisterChannelFrom(name, chField, -1, m_hostIndex);
-    return ok != 0 ? enumResult : 0;
+    // The FAILURE flag is materialized at the call (retail `neg ebx; sbb ebx,ebx;
+    // inc ebx` BEFORE the name CString's dtor - eax cannot survive it), and the
+    // enum-result mask is then derived FROM that flag after the dtor
+    // (`neg bl; sbb; not; and ebx,ebp`). Keeping the raw result in a callee-saved
+    // register and masking at the end is one register and two instructions off.
+    i32 failed = (RegisterChannelFrom(ch0->GetName(), chField, -1, m_hostIndex) == 0);
+    return failed ? 0 : enumResult;
 }
 
 // ---------------------------------------------------------------------------
@@ -1673,10 +1716,12 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
 // and ships the 0x28-byte "player joined" packet (stat 0x3f9) carrying the local
 // player id + name. Returns 1 on success, 0 on any bail.
 // @early-stop
-// /GX CString-temp + packet-build wall: the ReadPlayerSel/EnumPlayersCb resolve, the
-// four config-key parses, the field latches and the stat-0x3f9 packet build + inline
-// strcpy + SendStatFrom are reproduced, but retail's EH-state cookies over the scoped
-// CString temps and its packet stack-slot packing aren't source-steerable. Final sweep.
+// 93.6% (was 85.77). 2026-07-28: three byte-proven fixes, none of them EH-cookie -
+// the config scratch is char[0x100] (retail's frame is exactly 0xd8 = 0x100-0x28
+// larger), the config string is re-read per Cfg_GetKey call rather than cached in a
+// local that survives in a register, and the packet latches m_hostIndex THIRD with
+// the last two bytes written 0x0e-then-0x0d. Residual: the arg-eval register rotation
+// around the fourth parse and the CString-temp slot pick. Final sweep.
 RVA(0x000b8cf0, 0x23b)
 i32 CMulti::OnJoinConfirm(void* hDlg) {
     if (hDlg == 0) {
@@ -1689,32 +1734,32 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
         return 0;
     }
 
-    CNetSessionNode* node;
-    {
-        node =
-            Peer()->EnumPlayersCb(sel, static_cast<const char*>(GetString5a0()), g_emptyString, 0);
-    }
-    m_5bc = node;
-    if (node == 0) {
+    // No `node` local: retail stores straight into m_5bc, compares the MEMBER
+    // (`cmp dword ptr [ebp+0x5bc],ebx`) and re-reads it for the id latch.
+    m_5bc = Peer()->EnumPlayersCb(sel, static_cast<const char*>(GetString5a0()), g_emptyString, 0);
+    if (LocalPlayer() == 0) {
         ReportNetError(0);
         return 0;
     }
 
-    const char* cfgStr = sel->m_desc.m_lpszName;
-    char buf[0x28];
-    if (Cfg_GetKey(buf, cfgStr, "CMDDELAY")) {
+    // 0x100, not 0x28: retail's frame is 0xd8 bytes larger than ours, exactly
+    // 0x100-0x28 - the same 0x100 config scratch JoinAndRegisterChannel builds.
+    char buf[0x100];
+    // The config string is re-read per call (`mov eax,[esi+0x34]` before each): a
+    // local would survive Cfg_GetKey in a register, which retail does not do.
+    if (Cfg_GetKey(buf, sel->m_desc.m_lpszName, "CMDDELAY")) {
         m_5a4 = atoi(buf);
     }
-    if (Cfg_GetKey(buf, cfgStr, "RESEND")) {
+    if (Cfg_GetKey(buf, sel->m_desc.m_lpszName, "RESEND")) {
         m_drainReload = atoi(buf);
     }
-    if (Cfg_GetKey(buf, cfgStr, "DynCmdDelay")) {
+    if (Cfg_GetKey(buf, sel->m_desc.m_lpszName, "DynCmdDelay")) {
         ApplyDynSetting(CString(buf));
     }
     m_syncGate = 0;
     ResyncLParam() = 1;
-    m_hostIndex = node->m_id;
-    if (Cfg_GetKey(buf, cfgStr, "LEVEL")) {
+    m_hostIndex = LocalPlayer()->m_id;
+    if (Cfg_GetKey(buf, sel->m_desc.m_lpszName, "LEVEL")) {
         ResyncLParam() = atoi(buf);
     }
 
@@ -1722,14 +1767,17 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
     memset(&packet, 0, sizeof(packet));
     packet.m_flags |= 0x80;
     packet.m_statId = 0x3f9;
+    // The host id is latched THIRD here (retail stores [esp+0x28] before the byte
+    // run), and the last two bytes go 0x0e-then-0x0d - unlike CreateLocalPlayer,
+    // whose retail order defers the id to the end.
+    packet.m_hostIndex = m_hostIndex;
     packet.m_present = 1;
     packet.m_kind = 0;
     packet.m_slot = 1;
     packet.m_flagsB = 0;
     packet.m_configId = 0x63;
-    packet.m_0d = 0xf;
     packet.m_0e = 0;
-    packet.m_hostIndex = m_hostIndex;
+    packet.m_0d = 0xf;
     strcpy(packet.m_name, GetString5a0());
     SendStatFrom(&packet, sizeof(packet), 1);
     return 1;
@@ -1745,23 +1793,18 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
 // "unable to verify"; verified-but-mismatch (m_levelVerifyResult still 0) -> "not all players
 // have the same level"; agreement -> 1. The by-value CString rez-path arg + the
 // name temp run under the /GX frame.
-// @early-stop
-// /GX CString-by-value EH-frame-layout wall - but the exit layout was ALSO wrong and
-// dominated (measured 2026-07-27, 6.20 -> 23.46). base 6 rets / retail 1: every refusal
-// path had its own SEH-unwinding epilogue where retail 0xb90b6 has ONE `xor eax,eax` +
-// unwind that all five gates jump into (the m_530==0 arm's PollSession block sits
-// immediately above it as the fall-through). `goto notVerified;` + one bottom
-// `notVerified: return 0;` reproduces that block order.
-// Residual is the frame itself: the instruction SEQUENCE is
-// faithful (the arg1/arg2/m_530 guards, the GetConfigNameA/B selection, the
-// BuildRezPath by-value CString copy-ctor, the multi-temp destruct bitmask, the
-// g_connectRptMgr Poll dispatch and both ShowModal reports), but retail reserves two
-// dedicated EH-state dwords (`sub esp,8`) and overlaps the CString temps onto the
-// now-dead arg slots, while cl folds the EH state into the arg-overlap area and
-// omits the sub - an 8-byte frame-size delta that cascades through every
-// stack-relative offset. Same CString-EH residue family as the dialog sibling
-// CMultiStartDlg::OnOK (0xc4c00, parked ~55%); not source-steerable.
-// See docs/patterns/gx-scoped-local-eh-frame-size.md. Final sweep.
+// EXACT 2026-07-28 (6.20 -> 23.46 -> 100). The "/GX CString-by-value EH-frame-layout
+// wall" was three source defects and no frame problem at all:
+//   1. the config name is a CONDITIONAL CLASS TEMPORARY passed by value in ONE call
+//      (`BuildLevelRezPath(..., m_5b0 ? GetConfigNameB() : GetConfigNameA())`). THAT
+//      is retail's destructor-FLAG word (ebx bit0/bit1) with both `test bl,N`-gated
+//      dtors after the call - two per-branch scoped CStrings destroy inside their own
+//      arm, need no flag, and cost the 8-byte frame delta blamed on EH bookkeeping.
+//   2. `m_5b0` is BuildLevelRezPath's `lo` argument, not `hi` - the two zeros around
+//      it hid a genuinely wrong parameter position (retail `push ebp/edi/ebp/ebp`).
+//   3. the m_530 gate holds the BODY (`if (m_530 != 0) { ... }` with PollSession
+//      after it) and the verify test is success-first; the `goto notVerified;`
+//      spelling inlines each shared block at its gate.
 RVA(0x000b8fc0, 0x151)
 i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
     if (h == 0) {
@@ -1770,20 +1813,23 @@ i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
     if (playerTok == 0) {
         goto notVerified;
     }
-    if (m_530 == 0) {
-        PollSession();
-        goto notVerified;
-    }
-
-    {
-        i32 token;
-        if (m_5b0 != 0) {
-            CString b = GetConfigNameB();
-            token = (g_gameReg)->BuildLevelRezPath(0, m_5b0, 0, 0, b);
-        } else {
-            CString a = GetConfigNameA();
-            token = (g_gameReg)->BuildLevelRezPath(0, m_5b0, 0, 0, a);
-        }
+    // The BODY is inside the `if`, with the PollSession refusal after it: retail's
+    // `je` puts that block LAST (falling into the shared return-0), where
+    // `if (m_530 == 0) { PollSession(); goto notVerified; }` inlines it at the gate.
+    if (m_530 != 0) {
+        i32 cfgId = m_5b0; // held in edi across the name build and the arg push
+        // ONE call with a CONDITIONAL class temporary as the by-value argument. That
+        // is what produces retail's destructor-FLAG word (ebx: bit0 = the B temp at
+        // [esp+0x2c], bit1 = the A temp at [esp+0x28]) with both `test bl,N`-gated
+        // dtors AFTER the call, at the end of the full-expression - two per-branch
+        // scoped locals destroy inside their own arm and need no flag.
+        i32 token = (g_gameReg)->BuildLevelRezPath(
+            0,
+            0,
+            cfgId,
+            0,
+            cfgId != 0 ? GetConfigNameB() : GetConfigNameA()
+        );
 
         g_connectRptMgr->m_levelVerifyResult = 0;
         if (g_connectRptMgr->Poll(token) == 0) {
@@ -1792,14 +1838,17 @@ i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
                 ->EnterModalUI("Unable to verify custom level with other players");
             goto notVerified;
         }
-        if (g_connectRptMgr->m_levelVerifyResult == 0) {
-            (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
-                ->EnterModalUI("Not all players have the (same) custom level.");
-            m_530 = 0;
-            goto notVerified;
+        // Success-first: retail's `je` sends the mismatch report away and falls
+        // through to `mov eax,1`.
+        if (g_connectRptMgr->m_levelVerifyResult != 0) {
+            return 1;
         }
-        return 1;
+        (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
+            ->EnterModalUI("Not all players have the (same) custom level.");
+        m_530 = 0;
+        goto notVerified;
     }
+    PollSession();
 notVerified:
     return 0;
 }
@@ -1930,13 +1979,16 @@ i32 CMulti::SendStatValue(i32 id, i32 statId, i32 value, i32 flag) {
 // Stops early if the abort latch (m_pollAbort) is set. Returns the dispatched
 // count.
 // @early-stop
-// zero-register coloring wall (~63%): logic, the null guard, the inlined
-// GetMessageCount (slot 0x44) probe with the branchless neg/sbb/not/and HRESULT mask
-// (now matched via `count = hr ? 0 : count`), the receive loop (Receive slot 0x64),
-// the ReportError on failure, and the per-message DispatchRecvMsg are all reproduced.
-// Residual: retail pins 0=edi so ebx is free for count (kept in-register); our MSVC5
-// /O2 pins 0=ebx which spills count to [esp+0x10] and grows the frame 0xc->0x10, a
-// swap that cascades every pointer regname. Not source-steerable. Final sweep.
+// 87.34% (was 63.30). The "zero-register coloring wall" was three source bugs
+// (2026-07-28): (a) Receive's lpidFrom is `&sender`, not a second `&size` - THAT is
+// what puts sender in a stack slot and frees ebx for count; (b) GetMessageCount's
+// out-param is its own uninitialized local, not `count` itself (writing the masked
+// result back into the address-taken slot pinned count to memory); (c) the
+// ReportError guard and the `if (hr) break` are SIBLING ifs, not nested - see
+// redundant-sibling-guard-retest.md. Residual: cl folds two tests retail keeps -
+// the second `LocalPlayer() == 0` (which is what makes retail's `count` a phi and
+// forces the explicit `cmp ebx,edi`) and the loop-top `test ebx,ebx; jle`, so the
+// loop rotates its exit test to the bottom. Final sweep.
 RVA(0x000b95f0, 0x10f)
 i32 CMulti::PollSession() {
     if (LocalPlayer() == 0) {
@@ -1948,17 +2000,30 @@ i32 CMulti::PollSession() {
         count = 0;
     } else {
         IDirectPlay4Z* dp = Peer()->m_directPlay;
-        count = 0;
-        i32 hr = dp->GetMessageCount(LocalPlayer()->m_id, &count);
-        count = hr ? 0 : count; // branchless mask (neg/sbb/not/and)
+        // The out-param is its OWN (uninitialized) local, not `count`: retail passes
+        // `lea ebx,[esp+0x10]` with no preceding zero store and lands the masked
+        // result in a register (`mov ebx,eax`), where writing back into the
+        // address-taken slot pins `count` to memory for the whole function.
+        i32 n;
+        i32 hr = dp->GetMessageCount(LocalPlayer()->m_id, &n);
+        count = hr ? 0 : n; // branchless mask (neg/sbb/not/and)
     }
     if (count <= 0) {
         return 0;
     }
 
-    i32 dispatched = 0;
-    i32 sender = 0;
-    while (count > 0) {
+    // sender is seeded FIRST (retail stores [esp+0x14] then [esp+0x10]).
+    i32 dispatched;
+    i32 sender;
+    sender = 0;
+    dispatched = 0;
+    // The count test stays at the TOP of the loop body (retail's back edge is the
+    // `hr == 0` test, `test edi,edi; je <top>`); a `while (count > 0)` rotates it to
+    // the bottom and needs an extra `jmp`.
+    for (;;) {
+        if (count <= 0) {
+            break;
+        }
         if (m_pollAbort) {
             break;
         }
@@ -1966,12 +2031,18 @@ i32 CMulti::PollSession() {
         i32 size = 0x800;
         i32 idTo = LocalPlayer()->m_id;
         IDirectPlay4Z* dp = Peer()->m_directPlay;
-        i32 hr = dp->Receive(&size, &idTo, 1, static_cast<void*>(g_recvBuffer), &size);
+        // lpidFrom is `&sender` - THAT is why retail keeps sender in a stack slot
+        // ([esp+0x14], the `lea edx,[esp+0x24]` pushed 5th). Passing `&size` twice
+        // dropped the out-param entirely.
+        i32 hr = dp->Receive(&sender, &idTo, 1, static_cast<void*>(g_recvBuffer), &size);
+        // SIBLING guards, not nested: retail re-tests hr AFTER the report
+        // (`test edi,edi; jne <end>`); nesting the break folds the report block
+        // out of line into the exit.
         if (hr) {
             CNetMgr::ReportError("c:\\proj\\incs\\netmgr.h", 0x141, hr, 0);
-            if (hr) {
-                break;
-            }
+        }
+        if (hr) {
+            break;
         }
         count--;
         if (sender != LocalPlayer()->m_id) {
@@ -2518,13 +2589,13 @@ i32 CMulti::ResolveLocalPlayer() {
 // engine GetName CString + inline strcpy) - then ships it: to one recipient via
 // SendStatPairRaw when given, else to the local player's group via SendStatFrom.
 // @early-stop
-// regalloc + load-width wall (~86%): the logic, the 0x88 packet memset, the
-// per-channel record fill, the GetName CString + inline strcpy and the
-// recipient/group send branch are all reproduced - but retail anchors the record
-// ptr (ebx) one byte lower, dword-loads each channel field before the byte store
-// (movl;movb vs my movb;movb), and orders the slot-address lea operands
-// (eax,ebp vs ebp,eax) differently; none move under source restructuring (the
-// inverse parse ParseChannelTable is 99.9%). Deferred to the final sweep.
+// 98.69% (was 86.74). 2026-07-28: the send RESULT is the return value - each arm
+// `if (Send... == 0) return 0;` with one shared bottom `return 1`, which is what
+// produces retail's `test eax,eax / jne <shared mov eax,1>` per arm and its
+// eax-is-already-0 fall-through epilogues. Indexing the row also moved the anchor
+// from rows+0 to rows+2. Residual: retail anchors at rows+1 (`lea ebx,[esp+0x21]`),
+// eight disp bytes; permute fn (200 iters) found nothing. Same wall as
+// ParseChannelTable. Final sweep.
 RVA(0x000ba810, 0x11c)
 i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
     CNetChannelTablePacket packet;
@@ -2532,9 +2603,12 @@ i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
     packet.m_flags |= 0x80;
     packet.m_statId = STAT_CHANNEL_TABLE;
 
-    CNetChannelRow* rec = packet.m_rows;
+    // Indexed, not a walking `rec += 1`: the array form anchors cl's row cursor 2
+    // bytes into the record (retail anchors 1 - `lea ebx,[esp+0x21]`), which is 8
+    // displacement bytes closer than the walking form's 0.
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* ch = &NetGameMgr()->m_options[i];
+        CNetChannelRow* rec = &packet.m_rows[i];
         if (ch != 0) {
             i32 v = ch->m_liveGate;
             rec->m_liveGate = static_cast<u8>(v);
@@ -2551,13 +2625,19 @@ i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
             rec->m_slotKey = ch->m_slotKey;
             strcpy(rec->m_name, static_cast<const char*>(ch->GetName()));
         }
-        rec += 1;
     }
 
+    // The send RESULT is the return value: retail's per-branch fall-through epilogue
+    // returns eax untouched (== 0 from the `test eax,eax`) and both branches `jne`
+    // into one shared `mov eax,1`, i.e. `return <call> != 0;`, not a bare `return 1`.
     if (recipient != 0) {
-        SendStatPairRaw(recipient, &packet, sizeof(packet), 1);
+        if (SendStatPairRaw(recipient, &packet, sizeof(packet), 1) == 0) {
+            return 0;
+        }
     } else {
-        SendStatFrom(&packet, sizeof(packet), 1);
+        if (SendStatFrom(&packet, sizeof(packet), 1) == 0) {
+            return 0;
+        }
     }
     return 1;
 }
@@ -2570,10 +2650,12 @@ i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
 // record bytes back, restores its name CString, and - in non-channel mode for a
 // newly active channel - frees its net slot (ChannelSlots_Set(id, 0)).
 // @early-stop
-// regalloc SIB-base wall (~99.9%): the whole body is byte-exact, the single
-// residual is the slot-address `lea 0x150(%eax,%ebp)` vs my `lea 0x150(%ebp,%eax)`
-// (SIB base/index swap of m_4 vs the loop counter); not steerable from source
-// (m_4 is reloaded each iteration so a running pointer diverges). Final sweep.
+// 98.19% (was 95.34). 2026-07-28: indexing the row (`&p->m_rows[i]`) instead of walking
+// a `rec += 1` cursor moves cl's biased row anchor from rows+0 to rows+2 - retail is
+// rows+1 (`lea ebx,[esp+0x21]`), so eight disp bytes still differ, plus the
+// slot-address SIB base/index swap (`lea 0x150(%eax,%ebp)` vs `(%ebp,%eax)`).
+// Tried: walking cursor, for-clause increment, `rows + i`, hoisted base - all give
+// 0 or 2, never 1. Final sweep.
 RVA(0x000ba980, 0xca)
 i32 CMulti::ParseChannelTable(void* packet) {
     if (packet == 0) {
@@ -2583,8 +2665,9 @@ i32 CMulti::ParseChannelTable(void* packet) {
         ChannelSlots_InitAll();
     }
 
-    CNetChannelRow* rec = static_cast<CNetChannelTablePacket*>(packet)->m_rows;
+    CNetChannelTablePacket* p = static_cast<CNetChannelTablePacket*>(packet);
     for (i32 i = 0; i < 4; i++) {
+        CNetChannelRow* rec = &p->m_rows[i];
         GruntzPlayer* ch = &NetGameMgr()->m_options[i];
         if (ch != 0) {
             ch->m_liveGate = rec->m_liveGate;
@@ -2603,7 +2686,6 @@ i32 CMulti::ParseChannelTable(void* packet) {
                 ChannelSlots_Set(ch->m_008, 0);
             }
         }
-        rec += 1;
     }
     return 1;
 }
@@ -2620,13 +2702,8 @@ i32 CMulti::RegisterChannelFrom(const char* name, i32 b, i32 e, i32 f) {
 // its slot is free, else linear-scans for the first inactive slot; bails if none.
 // Stores the supplied fields into the slot (name CString into +0x4, id/flags) and
 // marks it active. The CString temp's dtor runs under the /GX frame.
-// @early-stop
-// /GX EH-state cookie wall (~93%): the whole body is byte-exact (the full-table
-// guard, the requested/scan slot selection, the SetNetSlot + scoped CString temp,
-// every field store), but retail's __except prologue pushes the scope cookie 0x8
-// where our cl pushes 0x0 and references its own funclet, the residual being the
-// TU-wide EH-state numbering. See docs/patterns/gx-scoped-local-eh-frame-size.md +
-// eh-state-numbering-base.md. Deferred to the final sweep.
+// EXACT 2026-07-28: not an EH-cookie wall at all - the scan loop's counter/pointer
+// init+bump order and the CString TEMPORARY (vs a named scoped local) closed it.
 RVA(0x000baac0, 0x12e)
 i32 CMulti::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32 e) {
     if (Mgr()->CountReadyOptionsSlots(1) >= 4) {
@@ -2641,14 +2718,19 @@ i32 CMulti::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32
         }
     }
     if (ch == 0) {
-        GruntzPlayer* p = NetGameMgr()->m_options;
-        for (i32 i = 0; i < 4; i++) {
+        // The counter is seeded FIRST and bumped FIRST: retail is
+        // `xor ecx,ecx` before the `add eax,0x150` slot-base, and `inc ecx`
+        // before the `add eax,0x238` advance - i.e. both live in the for
+        // clauses, counter first (a body-tail `p++` emits the pointer bump
+        // first and does not match).
+        i32 i;
+        GruntzPlayer* p;
+        for (i = 0, p = NetGameMgr()->m_options; i < 4; i++, p++) {
             ch = p;
             if (p != 0 && p->m_liveGate == 0) {
                 break;
             }
             ch = 0;
-            p++;
         }
         if (ch == 0) {
             return 0;
@@ -2656,10 +2738,10 @@ i32 CMulti::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32
     }
 
     ChannelSlots_Set(id, 0);
-    {
-        CString temp(name);
-        ch->m_name = temp;
-    }
+    // A TEMPORARY, not a named scoped local: retail feeds operator= the
+    // CString ctor's return value (`call ??0CString; push eax`), where a named
+    // local re-takes its address (`lea ecx,[esp+0x2c]; push ecx`).
+    ch->m_name = CString(name);
     ch->m_008 = id;
     ch->m_014 = c;
     ch->m_configId = d;
@@ -2859,15 +2941,17 @@ i32 CMulti::SendChannelStat423() {
 // log (m_4->m_5c->AddItem). Finally the line is stamped into the static chat
 // packet and shipped through SetGroupDataFrom.
 // @early-stop
-// scheduling wall (~75%): the full logic is reproduced - the null/empty guard,
-// the 0x80 cap, the 2-iteration trailing-control-char trim, the toChat "name: msg"
-// sprintf (frameless GetName temp), the showWnd ShowChatLine/AddItem branch, and
-// the static-packet (per-field globals) build + SetGroupDataFrom send - and the
-// /GX frame is correctly elided (line modeled as a stack char buffer, not a
-// CString). The residual is instruction-selection that desyncs the tail: retail
-// hoists the 0x20 trim constant + `cmpb %al,mem` (vs my `movb mem,%dl;cmpb`), and
-// folds the send-size strlen differently (`dec;add 0xd` vs `add 0xc`), reordering
-// the static stores. Big function, scheduling-class; deferred to the final sweep.
+// 90.03% (was 74.53). 2026-07-28: three source defects, not scheduling - the
+// "name: msg" sprintf is ONE nested expression (retail pushes GetName's hidden
+// return-slot pointer before evaluating the FindOptionsSlot receiver, which a
+// `player` local inverts), the showWnd/hWnd gates are SIBLING ifs (retail re-tests
+// showWnd in the else arm), a null options slot is a `return 0` and not a skipped
+// AddItem, and the send size is its own strlen local (`dec ecx` + `add edx,0xd`,
+// where the inline `strlen(line)+0xd` fuses into `add ecx,0xc`). Residual: retail
+// compares the trim byte straight against a hoisted al (`cmp mem,al` vs our
+// `mov dl,mem; cmp dl,al`) and sets ecx=this before the __stdcall AppendEditLine
+// (dead there - the callee is proven free-standing by its CChatBoxOwner /
+// CMultiStartDlg / NetLobby callers). Final sweep.
 RVA(0x000bb190, 0x1c5)
 i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
     if (text == 0) {
@@ -2892,30 +2976,43 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
 
     char line[0x12c];
     if (toChat != 0) {
-        GruntzPlayer* player =
-            static_cast<GruntzPlayer*>(Mgr()->FindOptionsSlot(LocalPlayer()->m_id));
-        sprintf(line, "%s: %s", static_cast<const char*>(player->GetName()), text);
+        // ONE nested expression: retail pushes GetName's hidden return-slot pointer
+        // FIRST (`lea eax,[esp+0x10]; push eax`) and only then evaluates the
+        // FindOptionsSlot receiver - a `player` local evaluates the slot lookup first.
+        sprintf(
+            line,
+            "%s: %s",
+            static_cast<const char*>(
+                static_cast<GruntzPlayer*>(Mgr()->FindOptionsSlot(LocalPlayer()->m_id))->GetName()
+            ),
+            text
+        );
     } else {
         strcpy(line, text);
     }
 
-    if (showWnd != 0) {
-        if (hWnd != 0) {
-            NetLobby::AppendEditLine(static_cast<HWND>(hWnd), line);
-        } else {
-            GruntzPlayer* player = static_cast<GruntzPlayer*>(Mgr()->FindOptionsSlot(m_hostIndex));
-            if (player != 0) {
-                (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))
-                    ->AddItem(line, 0x30, player->m_008);
-            }
+    // SIBLING gates, not nested: retail re-tests showWnd in the else arm
+    // (`cmp ecx,ebx; je <after>` a second time).
+    if (showWnd != 0 && hWnd != 0) {
+        NetLobby::AppendEditLine(static_cast<HWND>(hWnd), line);
+    } else if (showWnd != 0) {
+        // A null slot is a FAILURE return here, not a skipped AddItem: retail
+        // `cmp eax,ebx; jne <add>; xor eax,eax; <epilogue>; ret 0x10`.
+        GruntzPlayer* player = static_cast<GruntzPlayer*>(Mgr()->FindOptionsSlot(m_hostIndex));
+        if (player == 0) {
+            return 0;
         }
+        (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))->AddItem(line, 0x30, player->m_008);
     }
 
     g_chatPacket_id = STAT_CHAT;
+    // The length is its own value (retail `not ecx; dec ecx` then `add edx,0xd`);
+    // spelling `strlen(line) + 0xd` inline lets cl fuse it into `not ecx; add ecx,0xc`.
+    i32 n = strlen(line);
     g_chatPacket_val = 0;
     strcpy(&g_chatPacket_buf, line);
     g_chatPacket_flag |= 0x80;
-    Peer()->SetGroupDataFrom(LocalPlayer(), 1, &g_chatPacket_flag, strlen(line) + 0xd);
+    Peer()->SetGroupDataFrom(LocalPlayer(), 1, &g_chatPacket_flag, n + 0xd);
     return 1;
 }
 
@@ -2955,11 +3052,13 @@ namespace NetLobby {
 // (BroadcastChannelTable(0)) and latches the player-left flag. Returns 1 when a
 // channel was dropped, else 0.
 // @early-stop
-// regalloc wall (~98%): the whole body is byte-aligned (index guard, m_528 gate,
-// channel-record lea, GetPlayerData probe, m_14-gated SendStatTo, RemoveChannel +
-// BroadcastChannelTable + g_playerLeftFlag tail) but retail pins the "active" flag
-// (ch->m_014) in edi (callee-saved across the calls) where cl keeps it in ecx, and
-// shares the failure epilogue one instruction tighter. Final sweep.
+// regalloc wall (97.88%): the whole body is byte-aligned (index guard, m_528 gate,
+// channel-record lea, GetPlayerData probe, m_014-gated SendStatTo, RemoveChannel +
+// BroadcastChannelTable + g_playerLeftFlag tail). Residual is 2 instructions: retail
+// loads ch->m_014 into the scratch ecx and keeps `ch` alive in edi, where cl reuses
+// the now-dead edi, and retail re-materializes `xor eax,eax` on the failure exit that
+// cl proves is already 0. Spelling `ch->m_014` per arm instead of caching it emits
+// the load TWICE (93.6); permute fn (200 iters) found nothing. Final sweep.
 RVA(0x000bb510, 0x9d)
 i32 CMulti::DropChannelPlayer(i32 idx) {
     if (idx < 0 || idx >= 4) {
@@ -2975,6 +3074,9 @@ i32 CMulti::DropChannelPlayer(i32 idx) {
     }
 
     void* data = Peer()->GetPlayerData(ch->m_slotKey);
+    // Cached, not re-read per arm: retail's single `mov ecx,[edi+0x14]` before the
+    // `test eax,eax` is the CSE'd local; spelling `ch->m_014` in both arms makes cl
+    // emit the load twice.
     i32 active = ch->m_014;
     if (data == 0) {
         if (active != 0) {
@@ -3000,11 +3102,9 @@ i32 CMulti::DropChannelPlayer(i32 idx) {
 // full. Then, once the number of recorded drops reaches the number of
 // command slots in state 3 (the m_520 sub-object, stride 0x64), it announces the
 // drop twice (stat 0x3e8) and latches m_534.
-// @early-stop
-// regalloc wall (~93%): every instruction matches in the multiset (the m_534/m_localPlayerId
-// guards, the three m_dropIds scans, the state-3 slot count, the double SendStatFlag and
-// the m_534 latch) but retail pins this->esi / id->edi where cl assigns this->edi /
-// id->esi; the register choice is not steerable from source. Final sweep.
+// EXACT 2026-07-28: the "this/id register pinning" was a CSE artifact - the third
+// (occupancy) scan re-reads GetSize(), because the `m_604[slot] = id` store above it
+// aliases the array header; reusing the cached `count` kept it in the wrong register.
 RVA(0x000bb5e0, 0xd9)
 void CMulti::RecordDropPlayer2(CNetSessionNode* a, i32 id) {
     if (m_534 != 0) {
@@ -3043,8 +3143,12 @@ void CMulti::RecordDropPlayer2(CNetSessionNode* a, i32 id) {
         p++;
     }
 
+    // GetSize() is re-read here: the `m_604[slot] = id` store above aliases the
+    // array header, so retail reloads m_nSize (`mov ecx,[esi+0x60c]`) before the
+    // occupancy scan instead of reusing the cached `count`.
+    i32 total = m_604.GetSize();
     i32 recorded = 0;
-    for (i = 0; i < count; i++) {
+    for (i = 0; i < total; i++) {
         if (m_604[i] != 0) {
             recorded++;
         }
@@ -3075,14 +3179,17 @@ void CMulti::RecordDropPlayer2(CNetSessionNode* a, i32 id) {
 //       / retail 3: hoisting the two no-wait gates into `goto ready;` with ONE bottom
 //       `ready: m_534 = 1; return 1;` gives retail's single shared latch block
 //       (0xbbc44) that both sites `je` into.
-//   (2) status-text SetRect/EngStr_DrawText arg block: the GruntInfoText register-
-//       rotation wall (docs/patterns/select-zero-mask-dest-register.md family) -
-//       retail threads modeW/modeH/rect through a register rotation cl won't
-//       reproduce and spills a second modeW/modeH pair, shifting the /GX frame by 4
-//       bytes (sub 0x5c vs 0x58) so every esp-relative slot below diverges.
-//   (3) the resend/abort timers + the reused 0-constant are register-pinned across
-//       the wait loop (edi/ebx/ebp) differently than cl colours them - the same
-//       zero-register/regalloc wall as Poll. Logic + control flow are byte-faithful.
+//   (2) FIXED 2026-07-28 (80.47 -> 94.42), and "(1) already fixed" was only half of it:
+//       the SECOND no-wait gate must be spelled `if (count != 0) { <announce+wait> }`
+//       falling through to the shared `ready:` latch, not `if (count == 0) goto ready;`
+//       - the goto form makes cl inline the latch block right there (base `jne` vs
+//       retail `je`, jcc_sieve POLARITY #5). The music gate also RE-READS g_gameReg
+//       instead of the `g` local, and the mode pair goes through its own SIZE local
+//       before the rect (cl folds it away, but the load/arg schedule then matches).
+//   (3) residual (~5.5%): retail's /GX frame is 8 bytes larger (sub 0x5c vs 0x54)
+//       because it spills a second modeW/modeH pair for the EngStr_DrawText arg
+//       block, so every esp-relative slot below diverges; plus the m_slots SIB
+//       base/index swap and an eax/ecx pick on the Esc test. Logic byte-faithful.
 RVA(0x000bb700, 0x265)
 i32 CMulti::WaitForOtherPlayers() {
     CDWordArray* votes = &m_604;
@@ -3102,64 +3209,74 @@ i32 CMulti::WaitForOtherPlayers() {
             }
             slot++;
         }
-        if (count == 0) {
-            goto ready;
-        }
+        if (count != 0) {
+            SendStatFlag(0x3ed, 1);
+            CString waitStr("Waiting for other playerz...");
+            CGruntzMgr* g = g_gameReg;
+            // The mode pair goes through its own local before the rect. Retail's /GX
+            // frame is 8 bytes larger than a bare RECT needs (0x5c vs 0x54) and it
+            // emits a dead modeW/modeH store pair just below the rect; cl folds this
+            // copy away entirely (no slots) but the extra step reproduces retail's
+            // load order and arg schedule (80.5 -> 94.4). The 8-byte frame delta is
+            // NOT closed by it - that remains an open spill/regalloc residual.
+            SIZE
+            mode;
+            mode.cx = g->m_modeW;
+            mode.cy = g->m_modeH;
+            RECT rc;
+            rc.left = 0;
+            rc.top = 0;
+            rc.right = mode.cx;
+            rc.bottom = mode.cy;
+            EngStr_DrawText(g->m_world, &waitStr, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 
-        SendStatFlag(0x3ed, 1);
-        CString waitStr("Waiting for other playerz...");
-        CGruntzMgr* g = g_gameReg;
-        RECT rc;
-        rc.left = 0;
-        rc.top = 0;
-        rc.right = g->m_modeW;
-        rc.bottom = g->m_modeH;
-        EngStr_DrawText(g->m_world, &waitStr, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
-
-        i32 resend = 0x1388;
-        i32 abort = 0x1d4c0;
-        while (m_534 == 0) {
-            u32 start = timeGetTime();
-            Sleep(0x32);
-            PollSession();
-            if (GetAsyncKeyState(0x1b) & 0x80000000) {
-                return 0;
-            }
-            u32 elapsed = timeGetTime() - start;
-            if (elapsed >= static_cast<u32>(resend)) {
-                resend = 0;
-            } else {
-                resend -= elapsed;
-            }
-            if (elapsed >= static_cast<u32>(abort)) {
-                abort = 0;
-            } else {
-                abort -= elapsed;
-            }
-            for (i32 i = 0; i < 4; i++) {
-                CNetCmdSlot* s = &m_session->m_slots[i];
-                if (s->m_state == 3) {
-                    s->m_latency += elapsed;
+            i32 resend = 0x1388;
+            i32 abort = 0x1d4c0;
+            while (m_534 == 0) {
+                u32 start = timeGetTime();
+                Sleep(0x32);
+                PollSession();
+                if (GetAsyncKeyState(0x1b) & 0x80000000) {
+                    return 0;
+                }
+                u32 elapsed = timeGetTime() - start;
+                if (elapsed >= static_cast<u32>(resend)) {
+                    resend = 0;
+                } else {
+                    resend -= elapsed;
+                }
+                if (elapsed >= static_cast<u32>(abort)) {
+                    abort = 0;
+                } else {
+                    abort -= elapsed;
+                }
+                for (i32 i = 0; i < 4; i++) {
+                    CNetCmdSlot* s = &m_session->m_slots[i];
+                    if (s->m_state == 3) {
+                        s->m_latency += elapsed;
+                    }
+                }
+                if (abort == 0) {
+                    DropTimeout();
+                    abort = 0x1d4c0;
+                }
+                if (resend == 0) {
+                    resend = 0x1388;
+                    AckJoinFailure();
+                    SendStatFlag(0x3ed, 1);
                 }
             }
-            if (abort == 0) {
-                DropTimeout();
-                abort = 0x1d4c0;
-            }
-            if (resend == 0) {
-                resend = 0x1388;
-                AckJoinFailure();
-                SendStatFlag(0x3ed, 1);
-            }
-        }
 
-        g_scoreTimeBase = timeGetTime();
-        if (g->m_musicEnabled != 0) { // the CGameMgr base's music-on flag gates the ambient cue
-            char buf[0x40];
-            wsprintfA(buf, "AMBIENT%d", GetAmbientId());
-            NetGameMgr()->m_sound->PlayByName(buf, 1);
+            g_scoreTimeBase = timeGetTime();
+            // The global is RE-READ here (retail `mov edx,ds:g_gameReg`), not the `g`
+            // local the text block loaded - which cl would have to spill across the loop.
+            if (g_gameReg->m_musicEnabled != 0) { // the CGameMgr base's music-on gate
+                char buf[0x40];
+                wsprintfA(buf, "AMBIENT%d", GetAmbientId());
+                NetGameMgr()->m_sound->PlayByName(buf, 1);
+            }
+            return 1;
         }
-        return 1;
     }
     // retail 0xbbc44: ONE shared latch-and-return block both no-wait gates `je` into
 ready:
@@ -3287,13 +3404,11 @@ i32 CMulti::Poll(i32 token) {
 // owner code (1 inactive, 2 local, 3 remote). The new'd session is the /GX-tracked
 // object. Returns 1 once every slot is created, 0 on any failure.
 // @early-stop
-// reloc-masked + EH-cookie plateau (95.4%): the instruction stream is byte-identical
-// to retail (RezAlloc alloc, the 4-slot vector-ctor + ResetAll, Init, the tick-byte
-// derivation, the per-channel CreateSlot loop). The residual is non-steerable: the
-// /GX unwind-table cookie immediate (push 0x16 vs 0x0; gx-scoped-local-eh-frame-
-// size.md), the MSVC-internal vector-ctor/ctor/dtor helper symbols (delinker named
-// them Boundary_/CGruntWingzTimeSprite - unalignable reloc names), and a 4-insn
-// register shuffle around the m_session->m_c store. Final sweep.
+// 97.62% (was 95.36). 2026-07-28: the per-channel owner code is default-then-override
+// (`code = 2; if (slotKey != hostIndex) code = 3;`), which is retail's branch pair -
+// the ternary folded to a branchless `setne cl / add ecx,2`. Residual: an eax/ecx/edx
+// rotation around the m_520 stores and the m_170/m_150 load order; permute fn
+// (200 iters) found nothing. Final sweep.
 RVA(0x000bbc90, 0x1b8)
 i32 CMulti::CreateSession() {
     void* rec = g_netCreateCtx->m_74;
@@ -3328,7 +3443,12 @@ i32 CMulti::CreateSession() {
         GruntzPlayer* ch = &NetGameMgr()->m_options[i];
         i32 code = 1;
         if (ch->m_liveGate != 0 && ch->m_014 != 0) {
-            code = (ch->m_slotKey == m_hostIndex) ? 2 : 3;
+            // default-then-override, NOT a ternary: retail branches
+            // (`mov ecx,2; je; mov ecx,3`); the ternary folds to `setne cl; add ecx,2`.
+            code = 2;
+            if (ch->m_slotKey != m_hostIndex) {
+                code = 3;
+            }
         }
         if (Session()->CreateSlot(i, code) == 0) {
             return 0;
@@ -3378,14 +3498,14 @@ CNetCmdSlot::CNetCmdSlot() {
 // block, then zero all 0x80 resync entries.
 // ---------------------------------------------------------------------------
 // @early-stop
-// loop induction-variable / regalloc wall (71.5%): every operation is byte-faithful
-// (header zero, the inlined per-slot wipe + ClearCmds + both ResetTriple calls, the
-// rep stos over m_1b0, the 0x80-entry zero loop). Retail strength-reduces the slot
-// loop into TWO induction vars (edi=slot passed as `this`, esi=slot+8 for the field
-// stores) and SPILLS the down-counter to a stack slot (the leading `push ecx`),
-// also basing the entry loop at entry+8; cl uses one IV (esi=slot) and keeps the
-// counter in edi. A pure induction-var-selection coin-flip (same family as
-// CNetSyncCheck::AllSlotsReady ~79%); not source-steerable. Final sweep.
+// 75.20% (was 71.47). 2026-07-28: zeroing the ack array through a POINTER
+// (`i32* ack = slot->m_ackFlags; ack[0..3] = 0;`) instead of four constant-index
+// stores gives retail's `lea ecx,<array>` + `[ecx]/[ecx+4]/...` block, and with it
+// the spilled down-counter and the two-induction-variable slot loop. Residual: the
+// BIAS cl picks for the second induction variable - retail anchors it at slot+8 and
+// derives `this` as `[esi-8]`, cl anchors at slot+0x44 and advances both; the same
+// biased-cursor selection blocks Parse/BroadcastChannelTable (rows+1 vs rows+2) and
+// the 0x80-entry loop here (entry+8 vs entry+0). Not yet steerable. Final sweep.
 RVA(0x000bbf80, 0xb7)
 void CNetSession::ResetAll() {
     m_mgr = 0;
@@ -3409,10 +3529,14 @@ void CNetSession::ResetAll() {
         slot->m_maxSeq = 0;
         slot->m_owner = 0;
         slot->ClearCmds();
-        slot->m_ackFlags[0] = 0;
-        slot->m_ackFlags[1] = 0;
-        slot->m_ackFlags[2] = 0;
-        slot->m_ackFlags[3] = 0;
+        // Zeroed through a POINTER to the array (retail materializes
+        // `lea ecx,[slot+0x3c]` and stores `[ecx]`/`[ecx+4]`/... from a fresh
+        // `xor eax,eax`), not four constant-index stores off the slot pointer.
+        i32* ack = slot->m_ackFlags;
+        ack[0] = 0;
+        ack[1] = 0;
+        ack[2] = 0;
+        ack[3] = 0;
         slot->ResetTriple(slot->m_rangeA);
         slot->ResetTriple(slot->m_rangeB);
         slot++;
@@ -3560,11 +3684,16 @@ void CMulti::AckJoinFailure() {
 // channel table, then creates the local player (m_peer->CreatePlayer) and registers
 // the local channel (RegisterChannelFrom). Returns whether the channel registered.
 // @early-stop
-// /GX CString-temp cluster wall: the config-key builds + GetInt reads, the
-// channel-name latch, the CreatePlayer + RegisterChannelFrom tail and the local
-// player latch are reproduced, but retail's EH-state cookie sequence over the
-// scoped CString temps + their stack packing is not source-steerable. Same family
-// as DetectConnectionConfig. Final sweep.
+// 87.26% (was 72.29). 2026-07-28: three source fixes, none of them EH-cookie - the
+// channel name is the by-value RETURN (`ch0->m_name = GetString5a0();`, retail
+// `push eax`), there is no `lp`/`node` local (retail stores into m_5bc and re-reads
+// it for the null test), the registered-channel name is a TEMPORARY (retail reuses
+// the GetString5a0 temp's slot for it; a named local costs a frame dword), and the
+// result is TWO literal returns, not `return ok != 0;` - retail materializes `!ok`
+// (neg/sbb/inc) before the first CString dtor and branches. Residual: cl pins the
+// constant 0 in ebx across the whole body (7 zero uses incl. the EH-state stores)
+// where retail spells immediates, costing an extra callee-saved push + 4 frame bytes.
+// docs/patterns/zero-register-pinning.md. Final sweep.
 RVA(0x000bc460, 0x24e)
 i32 CMulti::SetupTcpIpConfig() {
     m_598 = "TcpIp";
@@ -3584,32 +3713,36 @@ i32 CMulti::SetupTcpIpConfig() {
     }
 
     GruntzPlayer* ch0 = NetGameMgr()->m_options;
-    {
-        CString name = GetString5a0();
-        ch0->m_name = name;
-    }
+    // The by-value RETURN is the temporary operator= receives (retail `push eax`).
+    ch0->m_name = GetString5a0();
     ch0->m_008 = 0;
 
-    void* lp;
-    {
-        lp = Peer()->CreatePlayer(
-            const_cast<char*>(static_cast<const char*>(ch0->GetName())),
-            g_emptyString,
-            0
-        );
-    }
-    CNetSessionNode* node = static_cast<CNetSessionNode*>(lp);
-    m_5bc = node;
-    if (lp == 0) {
+    // No `lp`/`node` local: retail stores straight into m_5bc and RE-READS it for
+    // the null test (`mov [esi+0x5bc],eax` ... `mov eax,[esi+0x5bc]; test eax,eax`).
+    m_5bc = static_cast<CNetSessionNode*>(Peer()->CreatePlayer(
+        const_cast<char*>(static_cast<const char*>(ch0->GetName())),
+        g_emptyString,
+        0
+    ));
+    if (LocalPlayer() == 0) {
         ReportNetError(0);
         return 0;
     }
 
-    m_hostIndex = node->m_id;
+    m_hostIndex = LocalPlayer()->m_id;
     i32 chField = ch0->m_008;
-    CString cn2 = ch0->GetName();
-    i32 ok = RegisterChannelFrom(cn2, chField, -1, m_hostIndex);
-    return ok != 0;
+    // The name is a TEMPORARY (destroyed right after the call): retail reuses the
+    // GetString5a0 temp's slot [esp+0x18] for it, which a named local cannot do -
+    // cl gives named CStrings their own slot and the frame grows by one dword.
+    // TWO returns, not `return ok != 0;`: retail materializes `!ok` (neg/sbb/inc) into
+    // ebx before the first CString dtor and branches into two literal epilogues; the
+    // boolean-return form computes setne AFTER every dtor and pins 0 in ebx all
+    // function long.
+    i32 ok = RegisterChannelFrom(ch0->GetName(), chField, -1, m_hostIndex);
+    if (ok == 0) {
+        return 0;
+    }
+    return 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -3647,15 +3780,20 @@ i32 CMulti::CreateLocalPlayer() {
 
     CNetChannelPacket pkt;
     memset(&pkt, 0, 0x28);
-    pkt.m_flags = 0x80;
+    // Read-modify-write, not a plain store: retail re-reads the just-memset byte
+    // (`mov dl,[esp+0x14]; or dl,0x80; mov [esp+0x18],dl`).
+    pkt.m_flags |= 0x80;
     pkt.m_statId = STAT_PLAYER_JOINED;
     pkt.m_present = 1;
     pkt.m_kind = 0;
     pkt.m_slot = 1;
     pkt.m_flagsB = 0;
-    pkt.m_configId = 0x63;
-    pkt.m_0d = 0xf;
+    // Descending, as retail emits them (`[esp+0x26],bl` then `[esp+0x25],0xf` then
+    // `[esp+0x24],0x63`): cl keeps a run of byte stores in source order, so the
+    // ascending spelling produces the reversed stream.
     pkt.m_0e = 0;
+    pkt.m_0d = 0xf;
+    pkt.m_configId = 0x63;
     pkt.m_hostIndex = m_hostIndex;
     {
         strcpy(pkt.m_name, static_cast<const char*>(GetString5a0()));
@@ -3705,10 +3843,13 @@ i32 CMulti::OpenHostChannel(
 // fails on any of the session-state flags (terminated / removed / closed / full
 // / version-mismatch). Returns 1 once m_admitted latches (admitted), 0 on any failure.
 // @early-stop
-// tail-merge + regalloc wall (~74%): logic byte-faithful. Retail inlines the shared
-// `xor eax,eax; pop..; ret` early-out epilogue at each guard site + holds the timeGetTime
-// import ptr in ebp; cl tail-merges the identical zero-return epilogues and uses ebx.
-// See identical-return-epilogue-tailmerge.md (topic:wall). Final sweep.
+// 99.82% (was 74.08). 2026-07-28: the "tail-merge wall" was the loop SHAPE - retail is
+// a plain `while (m_58c == 0) {...} return 1;` with ONE `mov eax,1` block that the entry
+// test jne's into, where `if (latched) return 1; do {...} while (!latched); return 1;`
+// duplicates it - plus a real DEADLINE variable (`timeGetTime() + 60000` folded once in
+// the preheader) instead of comparing against a start stamp. Residual: 4 bytes, the
+// ebx<->ebp colouring of the two cached import pointers (retail timeGetTime=ebp).
+// 256 TU-state variants (match_variants --state-trials 48) moved it 0.0%. Final sweep.
 RVA(0x000bca50, 0x155)
 i32 CMulti::WaitForConnect() {
     if (Peer() == 0) {
@@ -3720,14 +3861,16 @@ i32 CMulti::WaitForConnect() {
 
     SendStatFlag(STAT_CONNECTING, 1);
     m_58c = 0;
-    u32 start = timeGetTime();
-    if (m_58c != 0) {
-        return 1;
-    }
+    // A DEADLINE, not a start stamp: retail folds the +60s once in the preheader
+    // (`mov edi,eax; add edi,0xea60`) and compares the raw sample against it.
+    u32 deadline = timeGetTime() + 60000;
 
-    do {
+    // A `while`, not `if (latched) return 1; do {...} while (!latched);` - retail has
+    // ONE `mov eax,1` return that the entry test `jne`s into and the bottom test falls
+    // into; the do-while spelling duplicates it.
+    while (m_58c == 0) {
         u32 now = timeGetTime();
-        if (now > start + 60000 || (static_cast<i32>(GetAsyncKeyState(VK_ESCAPE)) & 0x80000000)) {
+        if (now > deadline || (static_cast<i32>(GetAsyncKeyState(VK_ESCAPE)) & 0x80000000)) {
             ReportStatusId(0x8022, 0);
             return 0;
         }
@@ -3755,7 +3898,7 @@ i32 CMulti::WaitForConnect() {
             );
             return 0;
         }
-    } while (m_58c == 0);
+    }
     return 1;
 }
 
@@ -3769,17 +3912,16 @@ i32 CMulti::WaitForConnect() {
 // m_cmdDelay, and picks a resend window (10 for <=5, else 30 or 20 for >8) before
 // persisting the pair (ApplyCmdDelayDefaults via the 0-arg overload).
 // @early-stop
-// 85.81% (was 79.58). The "this/quotient register-coloring wall" is DEAD - it was the
-// clamp's shape (jcc_sieve OTHER `jge -> jb`, 2026-07-28): retail holds 3 in a SECOND
-// variable and takes the max against the UNSIGNED quotient (`mov edi,3 / cmp edx,3 / jb
-// <skip> / mov edi,edx`), where `i32 base = ...; if (base < 3) base = 3;` clamps in place
-// with a signed `cmp esi,3 / jge`. Writing `i32 base = 3; if (tuned >= 3) base = tuned;`
-// (tuned u32) restored retail's this=esi / quotient=edi colouring AND the later signed
-// `cmp edi,5 / jg`. Earlier fixes still stand: the divide is /30 (0x88888889;shr4, was
-// wrongly /9), the resend is (base>8 ? 30 : 20), the fn returns int, and ProbeLatency is
-// called on the m_4 game mgr. Residual: cl CSEs the literal 3 into edi (`cmp edx,edi` vs
-// retail `cmp edx,3`), folds `bump+1` into `lea eax,[edi+ecx+1]` where retail keeps
-// `inc ecx / add edi,ecx`, and pushes edi in the prologue instead of after the gate.
+// 97.87% (was 85.81, 79.58). 2026-07-28: three more real source bugs closed - the
+// `+1` belongs to the BUMP (`(probe>2) ? 2 : 1`, giving retail's `setg cl / inc ecx /
+// add edi,ecx`, not a fused `lea eax,[edi+ecx+1]`); the resend arms are spelled
+// `<=8 ? 20 : 30` (cl negates, yielding retail's `setg al / and al,0xf6 / add 0x1e`);
+// and BOTH arms assign one `resend` variable stored once at the bottom, which is what
+// tail-duplicates the `m_5a8 = resend; SaveConfig(0)` pair and gives retail's
+// `mov eax,0xa`. That also restored the shrink-wrapped `push edi` after the m_530 gate.
+// Residual (~2%): a pure esi<->edi swap (retail this=esi / base=edi, cl the reverse)
+// plus cl CSEing the literal 3 into that register (`cmp edx,edi` vs `cmp edx,3`).
+// permute fn (200 iters) found nothing. Final sweep.
 RVA(0x000bcc10, 0x8e)
 i32 CMulti::AutoTuneCmdDelay() {
     if (m_530 != 0) {
@@ -3798,15 +3940,27 @@ i32 CMulti::AutoTuneCmdDelay() {
     }
 
     i32 probe = Mgr()->CountReadyOptionsSlots(0); // retail calls the probe on m_4 (the game mgr)
-    i32 bump = (probe > 2 ? 1 : 0);
-    bump += 1; // retail `setg cl / inc ecx / add edi,ecx`, not one folded lea
+    // The +1 belongs to the BUMP, not to the sum: retail is `setg cl / inc ecx /
+    // add edi,ecx` (base updated in place). Two statements `bump += 1; base += bump;`
+    // still let cl fuse both adds into one `lea eax,[edi+ecx+1]` and land the result
+    // in a fresh register.
+    i32 bump = (probe > 2) ? 2 : 1;
     base += bump;
     m_5a4 = base;
+    // ONE resend variable stored once at the bottom: retail materializes the value
+    // into eax in each arm (`mov eax,0xa` / the mask arithmetic) and tail-duplicates
+    // the shared `m_5a8 = resend; SaveConfig(0);` into both, which a per-arm
+    // `m_drainReload = <literal>` cannot produce (cl stores the immediate direct).
+    i32 resend;
     if (base <= 5) {
-        m_drainReload = 0xa;
-        return SaveConfig(0);
+        resend = 0xa;
+    } else {
+        // Spelled <=8 first: cl NEGATES the ternary's condition for the setCC form,
+        // so `<=8 ? 20 : 30` yields retail's `setg al / dec / and al,0xf6 / add 0x1e`
+        // where `>8 ? 30 : 20` yields `setle dl / dec / and edx,0xa / add 0x14`.
+        resend = (base <= 8 ? 0x14 : 0x1e);
     }
-    m_drainReload = (base > 8 ? 0x1e : 0x14);
+    m_drainReload = resend;
     return SaveConfig(0);
 }
 
