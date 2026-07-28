@@ -204,11 +204,12 @@ void CNetMgr::ClearGroupList() {
 // object pointer as the item data. The +0x7c cursor (m_groupSelId) latches the walk
 // position (same slot Find reuses); the GetName CString temp gives the /GX EH frame.
 // @early-stop
-// regalloc/stack-slot coin-flip wall (docs/patterns/zero-register-pinning.md): every
-// instruction, offset, callee, EH state and the inlined-advance-at-two-sites structure
-// is faithful, but retail assigns this->edi/obj->esi and lays the CString/flags&1 temps
-// one slot apart from cl's colouring (the correlated swaps have no source lever; an
-// explicit flags&1 local made it WORSE). ~78.6%.
+// callee-saved pair swap (97.30%): every instruction, offset, callee, EH state, stack
+// slot and both inlined advances are byte-faithful after the GetName temporary +
+// latch-then-assign fixes (78.6 -> 97.3). Residual: retail colours this->edi and the
+// LB_ADDSTRING index->ebp, cl the other way round, so `mov edi,ecx` also lands one
+// instruction earlier in the prologue. Measured non-levers: hoisting the index local
+// out of the loop, and (earlier) an explicit `flag & 1` local, which was WORSE.
 RVA(0x00178470, 0x11e)
 void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
     if (hList == 0) {
@@ -222,29 +223,31 @@ void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
 
     while (obj != 0) {
         if (((flag & 1) && obj->IsInterface2()) || ((flag & 2) && obj->IsInterface1())) {
+            // latch-then-assign: keeps GetNext's POSITION& load out of the guard's CSE
             if (m_groupSelId != 0) {
-                obj = static_cast<InterfaceObject*>(m_groups.GetAt(m_groupSelId));
+                InterfaceObject* next = static_cast<InterfaceObject*>(m_groups.GetAt(m_groupSelId));
                 m_groups.GetNext(m_groupSelId);
+                obj = next;
             } else {
                 obj = 0;
             }
         } else {
-            i32 idx;
-            {
-                CString name = obj->GetName();
-                idx = static_cast<i32>(SendMessageA(
-                    hList,
-                    LB_ADDSTRING,
-                    0,
-                    reinterpret_cast<LPARAM>(static_cast<LPCTSTR>(name))
-                ));
-            }
+            // an unnamed TEMPORARY of the full-expression, not a scoped local: retail
+            // reads the text out of GetName's returned pointer (`mov eax,[eax]`), not
+            // back out of the temp's frame slot
+            i32 idx = static_cast<i32>(SendMessageA(
+                hList,
+                LB_ADDSTRING,
+                0,
+                reinterpret_cast<LPARAM>(static_cast<LPCTSTR>(obj->GetName()))
+            ));
             if (idx != -1) {
                 SendMessageA(hList, LB_SETITEMDATA, idx, reinterpret_cast<LPARAM>(obj));
             }
             if (m_groupSelId != 0) {
-                obj = static_cast<InterfaceObject*>(m_groups.GetAt(m_groupSelId));
+                InterfaceObject* next = static_cast<InterfaceObject*>(m_groups.GetAt(m_groupSelId));
                 m_groups.GetNext(m_groupSelId);
+                obj = next;
             } else {
                 obj = 0;
             }
@@ -365,11 +368,6 @@ void CNetMgr::ClearPlayerList() {
 // cursor cached in m_80): for each node's payload (+0x8) it adds the player name
 // (payload+0x34) as a string (LB_ADDSTRING) and, if added, stashes the payload
 // pointer as the item's data (LB_SETITEMDATA).
-// @early-stop
-// regalloc + node-walk schedule wall (~93%): the reset, the m_80-cursor walk, the
-// LB_ADDSTRING/LB_SETITEMDATA pair and the per-node advance are all reproduced, but
-// retail keeps this->ebp where cl uses ebx, and orders the loop-bottom field reads
-// (payload then next) one step differently. Not steerable. Final sweep.
 RVA(0x00178790, 0x89)
 void CNetMgr::PopulatePlayerList(void* hList) {
     if (hList == 0) {
@@ -397,9 +395,14 @@ void CNetMgr::PopulatePlayerList(void* hList) {
                 reinterpret_cast<LPARAM>(payload)
             );
         }
+        // GetAt's node is latched BEFORE the advance and assigned after: that is what
+        // stops cl from CSEing the cursor load GetNext makes through its POSITION&
+        // with the guard's own load, so the member is read twice like retail.
         if (m_playerSelId != 0) {
-            payload = static_cast<CNetPlayerListNode*>(m_players.GetAt(m_playerSelId));
+            CNetPlayerListNode* next =
+                static_cast<CNetPlayerListNode*>(m_players.GetAt(m_playerSelId));
             m_players.GetNext(m_playerSelId);
+            payload = next;
         } else {
             payload = 0;
         }
@@ -555,41 +558,49 @@ BOOL __stdcall NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlag
 // Adds one enumerated session to the +0x54 list. RezAlloc's a 0x24-byte node
 // (base-dtor vptr 0x5e8cb4 while its two CString members are constructed, final
 // vptr 0x5f0778), inits its body (InitSession: id + two CStrings, zeroing
-// +0x14/+0x18/+0x1c). Reads the session's data blob (GetData5 slot 0x74, args
-// +0x4, &out, 4, 1) - reporting a nonzero HRESULT (NetMgr.cpp line 0x36c) - then
-// AddTail's the node onto the +0x54 list, self-destructing it if AddTail fails
-// and clearing its +0x20. The two CString temps' dtors run under the /GX frame.
+// +0x14/+0x18/+0x1c), then publishes the node POINTER ITSELF as the player's
+// DirectPlay data - slot 29 (+0x74) is SetPlayerData(id, lpData, size, flags)
+// (see the slot table in <Net/NetMgr.h>; the "GetData5" label is a functional
+// placeholder), and `&node` / 4 is the 4-byte back-pointer. Taking node's address
+// is what puts it in a stack slot in retail (retail's second `sub esp,8` dword;
+// the first is the operator-new temp the /GX unwind funclet frees).
+// EVERY failure arm - InitSession == 0, a nonzero HRESULT (reported at
+// NetMgr.cpp line 0x36c), and a failed AddTail - deletes the node and returns 0;
+// only the AddTail success arm latches +0x20 and returns it.
 // @early-stop
-// /GX EH-cookie + frame-size wall (~69%): AddSessionNode is now the real 4-arg
-// method - it forwards all four params (id, nameA, nameB, d) straight to
-// InitSession (was a bogus (a,b,b,b)), and GetData5 reads the NEW node's own
-// m_id into a local scalar (was ((CNetSessionNode*)a)->m_id + node).
-// The node ctor, InitSession, GetData5 probe + ReportError and AddTail/delete tail
-// all match. Residual: the /GX unwind funclet cookie immediate (push 0xb vs push 0,
-// module-global index) and retail's 2-dword EH-state reserve (sub esp,8) vs our
-// 1-dword (push ecx), a 4-byte frame delta that cascades the stack offsets. Final sweep.
+// cross-jump wall (88.17%): prologue/frame/ctor/InitSession/SetPlayerData probe/
+// ReportError/AddTail and the block ORDER are byte-exact. Retail emits the
+// `delete node; return 0;` tail TWICE - the AddTail-failure copy uses edx and falls
+// into the shared `xor eax,eax` latch, the InitSession/HRESULT copy uses eax and
+// duplicates the epilogue - while our cl cross-jumps the second into the first
+// (`cmp ecx,edi / je latch / jmp copy1`). Source-level attempts to keep them apart
+// (arm order both ways, a distinct local for the deleted pointer) all re-merge.
 RVA(0x00178b30, 0x140)
 CNetSessionNode* CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d) {
     CNetSessionNode* node = new CNetSessionNode();
 
     if (node->InitSession(id, nameA, nameB, d) != 0) {
-        IDirectPlay4Z* iface = m_directPlay;
-        i32 blob;
-        i32 hr = iface->GetData5(node->m_id, &blob, 4, 1);
+        i32 hr = m_directPlay->GetData5(node->m_id, &node, 4, 1);
         if (hr != 0) {
+            // the reporting arm FALLS THROUGH into the shared delete tail; the
+            // success arm always returns, so cl needs no join jump and lays it
+            // out last - which is retail's block order
             ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x36c, hr, 0);
-        }
-    }
-
-    if (node != 0) {
-        __POSITION* pos = static_cast<__POSITION*>(m_sessions.AddTail(static_cast<CObject*>(node)));
-        if (pos == 0) {
-            delete node;
         } else {
+            __POSITION* pos =
+                static_cast<__POSITION*>(m_sessions.AddTail(static_cast<CObject*>(node)));
+            // the FAILURE arm falls through (retail's `jne` skips it) and the latch
+            // is the out-of-line continuation
+            if (pos == 0) {
+                delete node;
+                return 0;
+            }
             node->m_listPosition = pos;
+            return node;
         }
     }
-    return node;
+    delete node;
+    return 0;
 }
 
 RVA(0x00178c70, 0x3d)
@@ -606,35 +617,31 @@ void CNetMgr::ClearSessionList() {
 
 // ---------------------------------------------------------------------------
 // CNetMgr::CreatePlayer  (__thiscall; ret 0xc, 3 args).
-// Reads a session's player-data blob via the DirectPlay interface (slot 6) into a
-// 0x10-byte descriptor (size 0x10, the two trailing args at +0x8/+0xc) plus a
-// scalar output, passing the third arg through. On a nonzero HRESULT reports it
-// (NetMgr.cpp line 0x3bb) and returns 0; on success hands the output plus the two
-// trailing args to AddSessionNode.
-// @early-stop
-// stack-buffer-size-drives-frame wall (~83%): the 0x10 descriptor is now filled in
-// retail order - desc = {0x10, 0, a, b} (was {0x10,0,b,c}), GetSessionDesc(slot 6)
-// takes `c` as its scalar arg (was `a`), and the 4-arg AddSessionNode tail passes
-// (out, a, b, 0). The full control flow, the GetSessionDesc probe, the ReportError
-// failure path and the AddSessionNode call all match. Residual: retail overlaps the
-// out-var onto a dead arg slot (frame 0x10 vs our 0x14) and materializes the zero
-// once in eax to seed every zeroed local where our /O2 stores immediates. Final sweep.
+// Mints a DirectPlay player through slot 6 == IDirectPlay4::CreatePlayer(&id,
+// &DPNAME, hEvent, 0, 0, 0): a 0x10-byte DPNAME zeroed whole, then dwSize=0x10 and
+// the two name pointers (dwFlags stays the memset zero - retail re-stores dwSize
+// and the names OVER the zeroed slots, which is why all four dwords take an
+// `eax`-sourced zero first). `hEvent` is the caller's third arg. On a nonzero
+// HRESULT it reports (NetMgr.cpp line 0x3bb) and returns 0; on success the new id
+// plus the two names go to AddSessionNode. The uninitialised `id` gets no frame
+// space of its own: cl overlays it on the dead `a` parameter home (retail's frame
+// is `sub esp,0x10`, exactly the DPNAME).
 RVA(0x00178cb0, 0x8b)
 CNetSessionNode* CNetMgr::CreatePlayer(char* a, const char* b, i32 c) {
-    i32 out = 0;
+    i32 id;
     NetDPName desc;
-    desc.dwSize = sizeof(NetDPName);
-    desc.dwFlags = 0;
+    memset(&desc, 0, sizeof(desc));
+    desc.dwSize = sizeof(desc);
     desc.lpszShortNameA = a;
     desc.lpszLongNameA = const_cast<char*>(b);
 
     IDirectPlay4Z* iface = m_directPlay;
-    i32 hr = iface->GetSessionDesc(&desc, &out, c, 0, 0);
+    i32 hr = iface->CreatePlayer(&id, &desc, c, 0, 0, 0);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x3bb, hr, 0);
         return 0;
     }
-    return AddSessionNode(out, a, b, 0);
+    return AddSessionNode(id, a, b, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -645,12 +652,12 @@ CNetSessionNode* CNetMgr::CreatePlayer(char* a, const char* b, i32 c) {
 // session name by value (GetName -> a scoped CString temp, whose dtor runs under
 // the /GX frame), adds it (LB_ADDSTRING) and, if added, stashes the payload as
 // the item's data (LB_SETITEMDATA).
-// @early-stop
-// /GX EH-temp + regalloc wall (~77%): the reset, the m_84-cursor walk, the
-// per-node GetName CString temp (with its /GX-framed dtor), the LB_ADDSTRING/
-// LB_SETITEMDATA pair and the advance are all reproduced, but the EH-state cookie
-// numbering and the this-register / loop-bottom schedule differ from retail. Final
-// sweep.
+// The GetName() CString is an unnamed TEMPORARY of the LB_ADDSTRING full-expression,
+// not a loop-scoped local: retail destroys it (EH state -1, `lea ecx,[esp+0x24] /
+// call ~CString`) the instant SendMessageA returns, BEFORE the `!= -1` test. That
+// forces the add-string result into a callee-saved register (edi) to survive the
+// dtor, which in turn spills `this` to the frame slot retail reloads at the loop
+// bottom - the whole register assignment falls out of the temporary's lifetime.
 RVA(0x00178d40, 0xdf)
 void CNetMgr::PopulateSessionList(void* hList) {
     if (hList == 0) {
@@ -664,12 +671,11 @@ void CNetMgr::PopulateSessionList(void* hList) {
         m_sessionSelId != 0 ? static_cast<CNetSessionNode*>(m_sessions.GetNext(m_sessionSelId)) : 0;
 
     while (payload != 0) {
-        CString name = payload->GetName();
         i32 r = static_cast<i32>(SendMessageA(
             static_cast<HWND>(hList),
             LB_ADDSTRING,
             0,
-            reinterpret_cast<LPARAM>(static_cast<const char*>(name))
+            reinterpret_cast<LPARAM>(static_cast<const char*>(payload->GetName()))
         ));
         if (r != -1) {
             SendMessageA(
@@ -679,9 +685,13 @@ void CNetMgr::PopulateSessionList(void* hList) {
                 reinterpret_cast<LPARAM>(payload)
             );
         }
+        // GetAt's node is latched BEFORE the advance and assigned after: that is what
+        // stops cl from CSEing the cursor load GetNext makes through its POSITION&
+        // with the guard's own load, so the member is read twice like retail.
         if (m_sessionSelId != 0) {
-            payload = static_cast<CNetSessionNode*>(m_sessions.GetAt(m_sessionSelId));
+            CNetSessionNode* next = static_cast<CNetSessionNode*>(m_sessions.GetAt(m_sessionSelId));
             m_sessions.GetNext(m_sessionSelId);
+            payload = next;
         } else {
             payload = 0;
         }
@@ -869,13 +879,9 @@ i32 CNetMgr::EnumSessions2(void* ctx) {
     return ok ? caps.m_dwLatency : 0;
 }
 
-// @early-stop
-// linked-list advance regalloc wall (~94.9%): the head-load + the kind switch +
-// the three predicate calls are byte-exact; only the GetNext advance differs -
-// retail conservatively reloads the +0x7c cursor into a 2nd register (edx) for
-// the ->next read while routing ->data through eax, the recompile derefs both
-// from one register. Aliasing-conservatism choice, not source-steerable. See
-// docs/patterns/linked-list-walk-node-eax-rotation.md. Logic complete.
+// The advance is latch-then-assign so GetNext's POSITION& load is not CSEd with the
+// guard's - retail's second `mov edx,[this+0x7c]`. See
+// docs/patterns/cursor-member-walk-latch-then-assign.md.
 RVA(0x00179270, 0x89)
 InterfaceObject* CNetMgr::Find(i32 kind) {
     m_groupSelId = m_groups.GetHeadPosition();
@@ -899,9 +905,11 @@ InterfaceObject* CNetMgr::Find(i32 kind) {
                 }
                 break;
         }
+        // latch-then-assign: keeps GetNext's POSITION& load out of the guard's CSE
         if (m_groupSelId != 0) {
-            item = static_cast<InterfaceObject*>(m_groups.GetAt(m_groupSelId));
+            InterfaceObject* next = static_cast<InterfaceObject*>(m_groups.GetAt(m_groupSelId));
             m_groups.GetNext(m_groupSelId);
+            item = next;
         } else {
             item = 0;
         }

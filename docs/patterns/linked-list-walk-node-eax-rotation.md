@@ -34,3 +34,13 @@ WALL: logic + body identical, only the loop's register rotation differs.  Eviden
 CTileTriggerContainer DelFromList1 69%, DelFromList3 82%, MoveList1ToList2 51%,
 FilterList2 84% — all the same head→esi-direct vs head→eax-twin-copy shape; the
 sibling FindInLists12 (no in-loop call, node need not survive) reaches 100%.
+
+## SUPERSEDED for the member-cursor case (2026-07-28)
+
+Where the POSITION cursor lives in a **member** rather than a local, this "regalloc
+wall" is source-steerable after all: latch `GetAt`'s node into a temp and assign the
+walk variable *after* `GetNext`, so cl stops commoning `GetNext`'s POSITION& reload with
+the guard's load. See
+[`cursor-member-walk-latch-then-assign.md`](cursor-member-walk-latch-then-assign.md)
+(four `CNetMgr` fillers, three of them to 100 EXACT). The local-cursor delete-loop form
+described above is untouched by that lever.

@@ -848,12 +848,16 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
 }
 
 // @early-stop
-// ~87% - selection-sort induction/spill wall (was 81%: accessing m_poolItems directly
-// instead of a hoisted `arr` alias fixed the this-relative-vs-arr-relative addressing
-// across the free loop + SetSize/SetAtGrow calls). Residual: retail spills n, n-1 and
-// the outer index to a 0x10-byte frame and colours the sort's outer index as a byte
-// offset alongside a separate counter; cl keeps them in registers (0x8 frame). Pure
-// register-pressure induction shape, not source-steerable. No EH frame.
+// 90.81% (was 81 -> 87 -> 90.81). The frame is now retail's 0x10 and the selection
+// sort is instruction-for-instruction identical: binding BOTH compared elements to
+// locals and reusing them for the swap is what costs the registers that push the two
+// loop indices into frame slots. The append loop reaching the array through a
+// pointer fixed its `[ebx+0x8]` size read. Two residuals left, both cl-internal:
+// (1) a consistent 3-way register rotation - retail colours this->esi /
+// &m_poolItems->ebx / the walk index->edi, cl ebx/edi/esi, decided by which value
+// the FIRST `mov <reg>,ecx` in the prologue takes; (2) retail emits the inner loop's
+// hoisted entry guard `cmp n,1 / jle done` in ADDITION to the outer `n-1 <= 0` one
+// (loop-rotation guard duplication), where cl emits only the outer.
 RVA(0x00143240, 0x143)
 void CDDrawPtrCollections::SetupCaps() {
     for (i32 i = 0; i < m_poolItems.GetSize(); i++) {
@@ -870,17 +874,26 @@ void CDDrawPtrCollections::SetupCaps() {
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x507, hr);
     }
+    // the append loop reaches the array through a POINTER (retail's `mov ecx,[ebx+0x8]`
+    // for the size, ebx == &m_poolItems, vs a this-relative `[esi+0x4bc]`); the free
+    // loop above wants the direct member access instead
+    CPtrArray* items = &m_poolItems;
     for (i32 j = 0; j < g_modeArray.GetSize(); j++) {
-        m_poolItems.SetAtGrow(m_poolItems.GetSize(), g_modeArray.GetData()[j]);
+        items->SetAtGrow(items->GetSize(), g_modeArray.GetData()[j]);
     }
     g_modeArray.SetSize(0, -1);
     i32 n = m_poolItems.GetSize();
     for (i32 a = 0; a < n - 1; a++) {
         for (i32 b = a + 1; b < n; b++) {
-            if (Compare(m_poolItems.GetData()[a], m_poolItems.GetData()[b])) {
-                void* tmp = m_poolItems.GetData()[a];
-                m_poolItems.GetData()[a] = m_poolItems.GetData()[b];
-                m_poolItems.GetData()[b] = tmp;
+            // both elements are BOUND before the compare and reused for the swap
+            // (retail's ebx/edi); reloading them for the swap frees the registers
+            // that retail spends here, and it is that pressure which spills the two
+            // loop indices to the frame (`sub esp,0x10`, not 0x8)
+            void* pa = m_poolItems.GetData()[a];
+            void* pb = m_poolItems.GetData()[b];
+            if (Compare(pa, pb)) {
+                m_poolItems.GetData()[a] = pb;
+                m_poolItems.GetData()[b] = pa;
             }
         }
     }
@@ -920,22 +933,24 @@ i32 __stdcall CDDrawPtrCollections::Compare(void* pa, void* pb) {
 // return-slot pointer: the pair returns BY VALUE; retail loads the slot ptr
 // into eax at each exit and stores through it - the ex "out-ptr loaded last"
 // regalloc wall was this mis-modeled signature).
-// @early-stop
-// ~80% (siblings FindFwd/FindBack flipped 100 on the by-value recovery): the
-// residual is the {-1,-1} arm's register materialization (retail or-reuses the
-// leftover arg regs); the arm-order swap regresses - shape as-is is right.
+// The pair local is declared PER ARM with an early return, not once at function
+// scope with an if/else: a function-scope `r` makes cl fetch the hidden return-slot
+// pointer BEFORE the field values (so it lands in edx and costs a trailing
+// `mov eax,edx`), while a per-arm local lets both fields settle in ecx/edx and the
+// slot pointer load straight into eax. Byte-identical to retail; proven by cl A/B.
 RVA(0x00143420, 0x4b)
 CDdModePair CDDrawPtrCollections::FindMatch(u32 k0, u32 k1, i32 k2) {
-    CDdModePair r;
     i32 idx = FindLast(k0, k1, k2);
     if (idx == -1) {
-        r.a = -1;
-        r.b = -1;
-    } else {
-        CDdMode* e = static_cast<CDdMode*>(m_poolItems.GetData()[idx]);
-        r.a = e->m_c;
-        r.b = e->m_8;
+        CDdModePair none;
+        none.a = -1;
+        none.b = -1;
+        return none;
     }
+    CDdMode* e = static_cast<CDdMode*>(m_poolItems.GetData()[idx]);
+    CDdModePair r;
+    r.a = e->m_c;
+    r.b = e->m_8;
     return r;
 }
 
@@ -1102,25 +1117,22 @@ i32 RestoreLostSurfaces() {
 }
 
 // CDDrawPtrCollections::GetAvailableVidMem (0x143810) - forward to the held device's
-// IDirectDraw2::GetAvailableVidMem (slot 0x5c); `caps` arrives by value and is
-// passed by address as LPDDSCAPS. Returns HRESULT == 0. __thiscall, ret 0xc.
-//
-// @early-stop
-// struct-by-value-param wall (~50%): logic/slot/offsets/CFG exact. Retail's `caps`
-// param is a DDSCAPS *struct* passed by value whose address escapes into the COM
-// call, so MSVC5 re-stores it into its own arg slot (mov [esp+8],eax; lea &caps)
-// with no frame setup, and that register pressure forces the xor/test/sete bool
-// form instead of neg/sbb/inc. Reproducing it needs `DDSCAPS caps` by value, but
-// this header is deliberately ddraw.h-free (widely included) - exposing DDSCAPS
-// by value would pollute every includer for a 43-byte forwarder. Deferred.
+// IDirectDraw2::GetAvailableVidMem (slot 0x5c). The scalar `caps` is packed into a
+// LOCAL DDSCAPS whose address escapes into the COM call; MSVC5 overlays that local
+// onto the (now dead) parameter home, which is retail's `mov eax,[esp+4] /
+// mov [esp+8],eax` self-store with no `sub esp`. Binding the HRESULT to `hr` is what
+// picks the xor/test/sete bool form over neg/sbb/inc. Both proven by a controlled
+// cl /O2 A/B; the pair is byte-identical to retail. __thiscall, ret 0xc.
 RVA(0x00143810, 0x2b)
 i32 CDDrawPtrCollections::GetAvailableVidMem(u32 caps, u32* total, u32* free) {
-    return m_device->GetAvailableVidMem(
-               reinterpret_cast<LPDDSCAPS>(&caps),
-               reinterpret_cast<LPDWORD>(total),
-               reinterpret_cast<LPDWORD>(free)
-           )
-           == 0;
+    DDSCAPS ddsCaps;
+    ddsCaps.dwCaps = caps;
+    HRESULT hr = m_device->GetAvailableVidMem(
+        &ddsCaps,
+        reinterpret_cast<LPDWORD>(total),
+        reinterpret_cast<LPDWORD>(free)
+    );
+    return hr == 0;
 }
 
 RVA(0x00143840, 0x32)
@@ -1215,19 +1227,19 @@ CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
 // straight 256-entry copy into m_palette, then flag present + latch tag.
 // __thiscall, 2 args (ret 0x8). Returns 1 on the success path only (same
 // `mov eax,0x1` + store shape as the 0x143900 sibling; no caller in .text).
-// @early-stop
-// mirror-register wall (93.3%): CFG/loop/tail byte-faithful. Retail keeps the source
-// cursor in eax (where the null test left it) and the dst in edx; cl swaps the pair,
-// which also costs the one `xor eax,eax` the free-zero bail does not need. Routing
-// the param through a `src` local scored strictly lower (77.9%).
+// The destination is INDEXED and only the source walks (docs/patterns/
+// strength-reduced-dst-cursor-indexed-vs-pointer.md, lever 1): that is what leaves
+// the null-tested `entries` in eax - so the bail needs no `xor eax,eax` - and puts
+// the dst `lea` in edx. Walking BOTH swaps the pair; a `src` local with a walking
+// dst makes cl fuse them into one SIB cursor. Byte-identical to retail.
 RVA(0x001439b0, 0x3f)
 i32 CDDrawPtrCollections::SetDisplayPaletteDirect(PALETTEENTRY* entries, i32 tag) {
     if (entries == 0) {
         return 0; // free: eax already holds the null `entries`
     }
-    PALETTEENTRY* dst = m_palette;
+    PALETTEENTRY* src = entries;
     for (i32 i = 0; i < 256; i++) {
-        *dst++ = *entries++;
+        m_palette[i] = *src++;
     }
     m_hasPalette = 1;
     m_940 = tag;
