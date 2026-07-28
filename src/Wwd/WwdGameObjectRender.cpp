@@ -23,7 +23,6 @@
 #include <DDrawMgr/DDrawChildGroup.h>  // CDDrawChildGroup (the broadcast child list)
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // the CWwdGameObject owner (m_0c) real class
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
-#include <Wwd/WwdGameObjCtor.h>        // CWwdGameObjBaseCtor - the shared 0x15b390 base-object ctor
 
 inline void* operator new(u32, void* p) {
     return p;
@@ -102,8 +101,8 @@ reject:
 
 // ---------------------------------------------------------------------------
 // 0x1661d0 (vtable slot 12): snapshot the live 9-dword state block (@0x18) into the
-// shadow block (@0xb8), then - if the shadow's just-copied flag (m_d8, == old m_38)
-// is still armed - restore the background pixel at the shadow position (m_b8,m_bc):
+// shadow block (@0xb8), then - if the shadow's just-copied armed flag
+// is still set - restore the background pixel at the shadow position (m_shadow.m_x/m_y):
 // read it from the back pair `b`'s surface and write it onto the front pair `a`'s,
 // then disarm the live flag (m_38 = -1). __thiscall, 2 ptr args (ret 0x8).
 // @early-stop
@@ -111,16 +110,18 @@ reject:
 // snapshot/both lock-read-unlock + lock-write-unlock pixel ops/m_38 disarm all
 // reproduced. Residual: retail dedicates the callee-saved ebp to `this` for the whole
 // body (surviving the rep-movs + both Lock calls) and spills the restored pixel to a
-// stack local (ebx is reused for m_b8); our cl keeps `this` in caller-saved eax and
+// stack local (ebx is reused for the shadow x); our cl keeps `this` in caller-saved eax and
 // spills IT instead, keeping the pixel in bl - so the register operands differ
 // throughout. Same values/stores. The permuter found no source spelling that flips
 // the this/pixel spill choice. docs/patterns/zero-register-pinning.md.
 RVA(0x001661d0, 0xc2)
 void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
-    memcpy(&m_b8, &m_lastX, 36);
-    if (m_d8 != -1) {
-        i32 x = m_b8;
-        i32 y = m_bc;
+    // the live +0x18 record snapshotted onto the shadow +0xb8 one - the SAME
+    // 0x24-byte WwdDirtyRect shape at both offsets, which is why one 36-byte move does it
+    memcpy(&m_shadow, &m_lastX, sizeof(m_shadow));
+    if (m_shadow.m_armed != -1) {
+        i32 x = m_shadow.m_x;
+        i32 y = m_shadow.m_y;
         char pixel;
         CDDSurface* sb = b->m_surface;
         char* base = static_cast<char*>(sb->Lock(0));
@@ -143,7 +144,7 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 // ---------------------------------------------------------------------------
 // 0x1662a0 (vtable slot 13): blit the object's dirty region(s) from the back pair
 // `b`'s surface onto the front pair `a`'s (CDDSurface::BltEx, same rect for src+dst).
-// When both the live (m_38) and shadow (m_d8) records are armed, cover them with ONE
+// When both the live (m_dirtyArmed) and shadow (m_shadow.m_armed) records are armed, cover them with ONE
 // BltEx over the union rect if their corners are within 32 px in both axes, else two
 // BltEx (one per record). Only one armed -> just that record's rect. Each rect is
 // {x, y, x+w, y+h}. Arg `c` unused. __thiscall, 3 args (ret 0xc).
@@ -153,31 +154,31 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 // AND the single reused rect buffer gives retail's `sub esp,0x14` frame. Residual:
 // because every region calls the IDENTICAL `BltEx(rc, b->m_surface, rc, ...)` on the
 // one shared `rc` buffer, our cl CROSS-JUMPS (tail-merges) block-C's BltEx to a shared
-// copy (a `jmp`) where retail keeps each inline; plus a callee-saved m_b8/m_1c coloring
+// copy (a `jmp`) where retail keeps each inline; plus a callee-saved shadow-x/m_1c coloring
 // swap cascading from the extra BltEx register pressure. Slot38's twin avoids this
 // because its four dispatch calls take DIFFERENT pointer args (no merge). Not source-
 // steerable (separate rc buffers fix the merge but re-inflate the frame; permuter
 // no-op). docs/patterns/zero-register-pinning.md / tail-merge layout.
 RVA(0x001662a0, 0x1fa)
 void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
-    i32 rc[4];                              // one reused src+dst rect buffer
-    if (m_dirtyArmed != -1 && m_d8 != -1) { // both armed
-        i32 dx = abs(m_lastX - m_b8) + 1;
-        i32 dy = abs(m_lastY - m_bc) + 1;
+    i32 rc[4];                                          // one reused src+dst rect buffer
+    if (m_dirtyArmed != -1 && m_shadow.m_armed != -1) { // both armed
+        i32 dx = abs(m_lastX - m_shadow.m_x) + 1;
+        i32 dy = abs(m_lastY - m_shadow.m_y) + 1;
         if (dx > 0x20 || dy > 0x20) {
             rc[0] = m_lastX;
             rc[1] = m_lastY;
             rc[2] = m_lastX + m_dirtyW;
             rc[3] = m_lastY + m_dirtyH;
             a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
-            rc[0] = m_b8;
-            rc[1] = m_bc;
-            rc[2] = m_b8 + m_d0;
-            rc[3] = m_bc + m_d4;
+            rc[0] = m_shadow.m_x;
+            rc[1] = m_shadow.m_y;
+            rc[2] = m_shadow.m_x + m_shadow.m_w;
+            rc[3] = m_shadow.m_y + m_shadow.m_h;
             a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
         } else {
-            i32 left = m_lastX < m_b8 ? m_lastX : m_b8;
-            i32 top = m_lastY < m_bc ? m_lastY : m_bc;
+            i32 left = m_lastX < m_shadow.m_x ? m_lastX : m_shadow.m_x;
+            i32 top = m_lastY < m_shadow.m_y ? m_lastY : m_shadow.m_y;
             rc[0] = left;
             rc[1] = top;
             rc[2] = left + dx;
@@ -190,11 +191,11 @@ void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDD
         rc[2] = m_lastX + m_dirtyW;
         rc[3] = m_lastY + m_dirtyH;
         a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
-    } else if (m_d8 != -1) {
-        rc[0] = m_b8;
-        rc[1] = m_bc;
-        rc[2] = m_b8 + m_d0;
-        rc[3] = m_bc + m_d4;
+    } else if (m_shadow.m_armed != -1) {
+        rc[0] = m_shadow.m_x;
+        rc[1] = m_shadow.m_y;
+        rc[2] = m_shadow.m_x + m_shadow.m_w;
+        rc[3] = m_shadow.m_y + m_shadow.m_h;
         a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
     }
 }
@@ -202,7 +203,7 @@ void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDD
 // ---------------------------------------------------------------------------
 // 0x1664a0 (vtable slot 14): dispatch the front pair `a`'s empty dirty-rect blit
 // hook (0x164650) over the object's dirty region(s). When both the live (m_38) and
-// shadow (m_d8) records are armed, cover them with ONE combined region if their
+// shadow (m_shadow.m_armed) records are armed, cover them with ONE combined region if their
 // corners are within 32 px in both axes (the union {min pos, |delta|+1 size}), else
 // emit both records separately. Only one armed -> just that record. Arg `c` unused.
 // __thiscall, 3 args (ret 0xc).
@@ -212,15 +213,15 @@ void CWwdGameObjectC::BltDirtyRegions(
     CDDrawSurfacePair* b,
     CDDrawSurfacePair* c
 ) {
-    if (m_dirtyArmed != -1 && m_d8 != -1) { // both armed -> combined region
-        i32 dx = abs(m_lastX - m_b8) + 1;
-        i32 dy = abs(m_lastY - m_bc) + 1;
+    if (m_dirtyArmed != -1 && m_shadow.m_armed != -1) { // both armed -> combined region
+        i32 dx = abs(m_lastX - m_shadow.m_x) + 1;
+        i32 dy = abs(m_lastY - m_shadow.m_y) + 1;
         if (dx > 0x20 || dy > 0x20) {
-            a->BlitDirtyRect(b, &m_lastX, &m_dirtyW); // live record
-            a->BlitDirtyRect(b, &m_b8, &m_d0);        // shadow record
+            a->BlitDirtyRect(b, &m_lastX, &m_dirtyW);          // live record
+            a->BlitDirtyRect(b, &m_shadow.m_x, &m_shadow.m_w); // shadow record
         } else {
-            i32 left = m_lastX < m_b8 ? m_lastX : m_b8; // min x
-            i32 top = m_lastY < m_bc ? m_lastY : m_bc;  // min y
+            i32 left = m_lastX < m_shadow.m_x ? m_lastX : m_shadow.m_x; // min x
+            i32 top = m_lastY < m_shadow.m_y ? m_lastY : m_shadow.m_y;  // min y
             i32 pos[2];
             i32 size[2];
             size[1] = dy;
@@ -231,8 +232,8 @@ void CWwdGameObjectC::BltDirtyRegions(
         }
     } else if (m_dirtyArmed != -1) {
         a->BlitDirtyRect(b, &m_lastX, &m_dirtyW); // live record only
-    } else if (m_d8 != -1) {
-        a->BlitDirtyRect(b, &m_b8, &m_d0); // shadow record only
+    } else if (m_shadow.m_armed != -1) {
+        a->BlitDirtyRect(b, &m_shadow.m_x, &m_shadow.m_w); // shadow record only
     }
 }
 
@@ -250,47 +251,22 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, AnimWorkerObj* tmpl) {
 }
 
 // ===========================================================================
-// 0x166640 - factory for the 0x1dc-byte kind, published into the manager's own
-// CPtrList (AddTail) at +0x1dc. __thiscall, 6 stack args (ret 0x18). Build slot
-// +0x28 (4 args), dtor +0x04.
+// 0x166640 - CWwdGameObject::CreateObject: build a child A-kind object and publish
+// it into this manager's own CObList at +0x1dc (AddTail). __thiscall, 6 stack args
+// (ret 0x18). Retail CALLS the shared CGameObject ctor COMDAT (0x15b390) and
+// INLINES the +0x1a0 cursor - the two halves of `new CWwdGameObjectA(...)`.
 // @early-stop
-// rezalloc-placement-new wall (same family as 0x1598d0): the object construction
-// + field stores + vtable stamps are byte-exact, but retail allocates the object
-// through the throwing class operator new and carries the /GX ctor-in-flight EH
-// frame (push -1/fs:0 + trylevel-0 cleanup), while the RezAlloc + placement body
-// emits no frame.  docs/patterns/rezalloc-placement-new-no-eh-frame.md.
+// cl-5.0 inline-budget divergence (docs/patterns/ob1-inline-budget-divergence.md):
+// the body/types/EH states are right, but our cl EXPANDS CGameObject's in-class ctor
+// here where retail's CALLED its COMDAT (0x15b390). MSVC5 /O2 is /Ob1, so the ctor
+// must stay an inline candidate for CreateObject_159250/159440/159600 (all EXACT via
+// that expansion) - and there is no MSVC5 noinline to force the call back. Not
+// steerable from source; retail's 0x15b390 COMDAT is consequently unemitted here.
 // ===========================================================================
 RVA(0x00166640, 0x13b)
 CWwdGameObject*
 CWwdGameObject::CreateObject(int a1, int a2, int a3, int a4, AnimWorkerObj* tmpl, int a6) {
-    char* obj = static_cast<char*>(RezAlloc(0x1dc));
-    CWwdGameObjectA* result;
-    if (obj != 0) {
-        CDDrawSurfaceMgr* root = m_ownerCtx;
-        new (obj) CWwdGameObjBaseCtor(OwnerMgr(), a1, a6);
-        // CWwdGameObjBaseCtor is a CONSTRUCTION-SHAPE view of this same 0x1dc object
-        // (it spells the ctor's store order over WwdCtorBase); until it and
-        // CWwdGameObjectA are one class the RezAlloc block is re-typed here.
-        // @identity-TODO
-        result = reinterpret_cast<CWwdGameObjectA*>(obj);
-        // the embedded +0x1a0 CAniAdvanceCursor(owner=root, field04=a1, field08=a6): retail
-        // INLINES the ctor here (no call), spelled out so the store shape matches; its 0x5f0128
-        // vptr stamp is compiler-emitted-vtable-dropped (% ok per drive-to-0).
-        result->m_1a0.m_id = a1;
-        result->m_1a0.m_flags = a6;
-        result->m_1a0.m_ownerCtx = root;
-        result->m_1a0.m_10 = 0;
-        result->m_1a0.m_14 = 0;
-        result->m_1a0.m_element = 0;
-        // the CWwdGameObjectA vptr (0x5f00a8) stamp is compiler-emitted-vtable-dropped.
-        result->m_18c = -1;
-        result->m_190 = -1;
-        result->m_layer = 0;
-        result->m_194 = 0;
-        result->m_19c = 0;
-    } else {
-        result = 0;
-    }
+    CWwdGameObjectA* result = new CWwdGameObjectA(OwnerMgr(), a1, a6);
     if (result == 0) {
         return 0;
     }

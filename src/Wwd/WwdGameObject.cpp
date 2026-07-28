@@ -152,7 +152,9 @@ i32 CWwdGameObjectA::LookupAnimSprite(const char* name) {
 
 RVA(0x00150660, 0x49)
 void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
-    memcpy(&m_b8, &m_lastX, 36);
+    // the live +0x18 record snapshotted onto the shadow +0xb8 one - the SAME
+    // 0x24-byte WwdDirtyRect shape at both offsets, which is why one 36-byte move does it
+    memcpy(&m_shadow, &m_lastX, sizeof(m_shadow));
     if (m_dirtyArmed != -1) {
         RECT* r = &m_dirtyRect;
         a->m_surface->BltFast(r->left, r->top, b->m_surface, r, 0x10);
@@ -162,7 +164,7 @@ void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 
 // ---------------------------------------------------------------------------
 // 0x1506b0 (vtable slot 13): CWwdGameObjectA's dirty-rect BltEx dispatch. Same
-// two-record (live m_38 / shadow m_d8) structure as CWwdGameObjectC::Slot34, but
+// two-record (live m_dirtyArmed / shadow m_shadow.m_armed) structure as CWwdGameObjectC::Slot34, but
 // the "both armed" combine uses the Win32 rect API: IntersectRect tests overlap
 // and, if they overlap, UnionRect gives the covering rect {left,top,right+1,
 // bottom+1}; if disjoint, blit each record separately. Only one armed -> that
@@ -176,10 +178,10 @@ void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 RVA(0x001506b0, 0x1ec)
 void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
     i32 rc[4]; // reused src+dst blit rect buffer
-    if (m_dirtyArmed != -1 && m_d8 != -1) {
+    if (m_dirtyArmed != -1 && m_shadow.m_armed != -1) {
         RECT ir;
-        if (IntersectRect(&ir, &m_dirtyRect, &m_shadowRect)) {
-            UnionRect(&ir, &m_dirtyRect, &m_shadowRect);
+        if (IntersectRect(&ir, &m_dirtyRect, &m_shadow.m_rect)) {
+            UnionRect(&ir, &m_dirtyRect, &m_shadow.m_rect);
             i32 w = ir.right - ir.left + 1;
             i32 h = ir.bottom - ir.top + 1;
             rc[0] = ir.left;
@@ -193,10 +195,10 @@ void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDD
             rc[2] = m_lastX + m_dirtyW;
             rc[3] = m_lastY + m_dirtyH;
             a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
-            rc[0] = m_b8;
-            rc[1] = m_bc;
-            rc[2] = m_b8 + m_d0;
-            rc[3] = m_bc + m_d4;
+            rc[0] = m_shadow.m_x;
+            rc[1] = m_shadow.m_y;
+            rc[2] = m_shadow.m_x + m_shadow.m_w;
+            rc[3] = m_shadow.m_y + m_shadow.m_h;
             a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
         }
     } else if (m_dirtyArmed != -1) {
@@ -205,11 +207,11 @@ void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDD
         rc[2] = m_lastX + m_dirtyW;
         rc[3] = m_lastY + m_dirtyH;
         a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
-    } else if (m_d8 != -1) {
-        rc[0] = m_b8;
-        rc[1] = m_bc;
-        rc[2] = m_b8 + m_d0;
-        rc[3] = m_bc + m_d4;
+    } else if (m_shadow.m_armed != -1) {
+        rc[0] = m_shadow.m_x;
+        rc[1] = m_shadow.m_y;
+        rc[2] = m_shadow.m_x + m_shadow.m_w;
+        rc[3] = m_shadow.m_y + m_shadow.m_h;
         a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
     }
 }
@@ -223,7 +225,7 @@ void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDD
 // @early-stop
 // ~91% zero-register-pinning wall (twin of CWwdGameObjectC::Slot38 @99.7%): logic/CFG/
 // the union pos/size build + all four BlitDirtyRect sites byte-exact. Residual is the
-// callee-saved coloring of the two hoisted record bases (&m_18,&m_b8) -> retail edi/ebx
+// callee-saved coloring of the two hoisted record bases (&m_lastX,&m_shadow) -> retail edi/ebx
 // vs cl ebx/edi, cascading a few push operands; the extra IntersectRect/UnionRect path
 // (absent in the twin) adds the register pressure that keeps this below the twin's 99.7%.
 // Permuter found no operand-order gain. docs/patterns/zero-register-pinning.md.
@@ -233,10 +235,10 @@ void CWwdGameObjectA::BltDirtyRegions(
     CDDrawSurfacePair* b,
     CDDrawSurfacePair* c
 ) {
-    if (m_dirtyArmed != -1 && m_d8 != -1) {
+    if (m_dirtyArmed != -1 && m_shadow.m_armed != -1) {
         RECT ir;
-        if (IntersectRect(&ir, &m_dirtyRect, &m_shadowRect)) {
-            UnionRect(&ir, &m_dirtyRect, &m_shadowRect);
+        if (IntersectRect(&ir, &m_dirtyRect, &m_shadow.m_rect)) {
+            UnionRect(&ir, &m_dirtyRect, &m_shadow.m_rect);
             i32 pos[2];
             i32 size[2];
             pos[0] = ir.left;
@@ -245,13 +247,13 @@ void CWwdGameObjectA::BltDirtyRegions(
             pos[1] = ir.top;
             a->BlitDirtyRect(b, pos, size);
         } else {
-            a->BlitDirtyRect(b, &m_lastX, &m_dirtyW); // live record
-            a->BlitDirtyRect(b, &m_b8, &m_d0);        // shadow record
+            a->BlitDirtyRect(b, &m_lastX, &m_dirtyW);          // live record
+            a->BlitDirtyRect(b, &m_shadow.m_x, &m_shadow.m_w); // shadow record
         }
     } else if (m_dirtyArmed != -1) {
         a->BlitDirtyRect(b, &m_lastX, &m_dirtyW); // live record only
-    } else if (m_d8 != -1) {
-        a->BlitDirtyRect(b, &m_b8, &m_d0); // shadow record only
+    } else if (m_shadow.m_armed != -1) {
+        a->BlitDirtyRect(b, &m_shadow.m_x, &m_shadow.m_w); // shadow record only
     }
 }
 
@@ -728,7 +730,7 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
         return 0;
     }
 
-    ar->Write(&m_b8, 0x24); // the +0xb8..+0xdb shadow block, first field's address
+    ar->Write(&m_shadow, sizeof(m_shadow)); // the +0xb8..+0xdb shadow dirty-rect record
 
     char tmp[0x80];
     memset(tmp, 0, sizeof(tmp));
@@ -807,7 +809,7 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
         return 0;
     }
 
-    ar->Read(&m_b8, 0x24);
+    ar->Read(&m_shadow, sizeof(m_shadow));
 
     char name[0x80];
     ar->Read(name, 0x80);

@@ -30,6 +30,27 @@ class CAniElement; // ApplyGeometryDirect's geometry source (<Gruntz/AniElement.
 
 struct CGameObject : public CResolveNode {
 public:
+    // The shared wide-object constructor (COMDAT copy @0x15b390, kept from the
+    // WwdFactoryObject.cpp obj - the only TU where CResolveNode's and
+    // AnimWorkerObj's ctor bodies are both visible, which is why retail's 0x15b390
+    // INLINES those two while it CALLS the CString ctor). It lives here, in the
+    // header, because CDDrawChildGroup::CreateObject_159250/159440/159600 inline it
+    // whole while CreateObject_1598d0 calls it - only an inline definition can do
+    // both. (This dissolved the CWwdGameObjBaseCtor/WwdCtorBase view, which faked
+    // the same object with a `char _vft0[4]` vptr and _pXX padding.)
+    RVA(0x0015b390, 0x128)
+    CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
+        : CResolveNode(owner, id, stateFlags) {
+        m_screenX = static_cast<i32>(0x80000000);
+        m_posCache = 0;
+        m_7c = new AnimWorkerObj(owner, id, 0);
+        m_carrier = 0;
+        m_80 = 0;
+        m_88 = 0;
+        m_collideWorker = 0;
+        m_188 = g_wwdObjIdCounter;
+        g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
+    }
     virtual ~CGameObject() OVERRIDE; // 0x15b4f0 (out-of-line, WwdFactoryObject.cpp;
                                      // body = { Unload(); } + member/base folds)
     virtual i32 IsLoaded() OVERRIDE; // slot 5  @0x15b370 (m_7c && m_0c && m_04 != -1)
@@ -43,8 +64,8 @@ public:
         WORKER_FREE(m_80);
         WORKER_FREE(m_88);
         WORKER_FREE(m_collideWorker);
-        m_shadowRect.left = static_cast<i32>(0x80000000);
-        m_d8 = -1;
+        m_shadow.m_rect.left = static_cast<i32>(0x80000000);
+        m_shadow.m_armed = -1;
         m_screenX = static_cast<i32>(0x80000000);
         m_dirtyRect.left = static_cast<i32>(0x80000000);
         m_dirtyArmed = -1;
@@ -127,14 +148,12 @@ public:
     WwdRegion m_region;             // +0x9c..+0xb7  the embedded spatial-grid region
                                     //        node: m_x/m_y (+0xac/+0xb0) are the position
                                     //        copies Setup refreshes, m_object (+0xb4) the
-                                    //        self back-pointer (the CWwdSlot9c* records
-                                    //        below are its placement-ctor views)
-    i32 m_b8;                       // +0xb8  shadow dirty-rect x (prev-frame copy of +0x18)
-    i32 m_bc;                       // +0xbc  shadow dirty-rect y
-    RECT m_shadowRect;              // +0xc0  shadow blit rectangle (.left is the INT_MIN sentinel)
-    i32 m_d0;                       // +0xd0  shadow dirty-rect size x
-    i32 m_d4;                       // +0xd4  shadow dirty-rect size y
-    i32 m_d8;                       // +0xd8  shadow dirty-rect armed flag (-1 == disarmed)
+                                    //        self back-pointer. Its ctor pair is
+                                    //        0x15b2a0 (WwdGridNode) + 0x15b2b0 (WwdRegion).
+    WwdDirtyRect m_shadow;          // +0xb8  the SHADOW (previous-frame) dirty-rect
+                                    //        record - the same 0x24-byte type as the
+                                    //        live one at CResolveNode +0x18 (ctor
+                                    //        0x15b270; ex the CWwdShadowRec view)
     CString m_dc;                   // +0xdc  the object's name (dtor 0x1b9cde folds in ~E)
     // +0xe0..+0x18b  the serialized state block (field knowledge merged from the
     // flat CGameObject model - same offsets, one object).
@@ -198,6 +217,17 @@ SIZE_UNKNOWN(); // base subobject; the concrete kinds carry the sizes
 
 class CWwdGameObjectA : public CGameObject {
 public:
+    // Inline-only: retail kept no out-of-line COMDAT for it (every `new
+    // CWwdGameObjectA` site inlined it whole - CreateObject_159600 @0x159600,
+    // CWwdGameObject::CreateObject @0x166640, ReadPlaneObjects @0x162af0).
+    CWwdGameObjectA(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
+        : CGameObject(owner, id, stateFlags), m_1a0(owner, id, stateFlags) {
+        m_18c = -1;
+        m_190 = -1;
+        m_layer = 0;
+        m_194 = 0;
+        m_19c = 0;
+    }
     virtual ~CWwdGameObjectA() OVERRIDE; // slot 1  0x15b790 (out-of-line, I obj)
     // slot 7 override: null the geometry cache then the base release pass.
     // INLINE so ~A folds it (retail ~A = { Unload(); } + folds); the out-of-line
@@ -267,6 +297,13 @@ SIZE(0x1dc);
 
 class CWwdGameObject : public CWwdGameObjectA {
 public:
+    // Inline-only (see CWwdGameObjectA): CreateObject_1598d0 @0x1598d0 inlines it,
+    // and there it CALLS the CGameObject base ctor COMDAT (0x15b390) while inlining
+    // the +0x1a0 cursor - the exact split a header-inline definition produces.
+    CWwdGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
+        : CWwdGameObjectA(owner, id, stateFlags), m_1dc(0xa) {
+        m_1f8 = 0;
+    }
     virtual ~CWwdGameObject() OVERRIDE; // 0x15bd10 (out-of-line, I obj)
     virtual i32 IsLoaded() OVERRIDE;    // slot 5  0x15bcd0 (`return m_7c != 0`)
     // slot 7 override: destroy the child list, then the A/E release pass.
@@ -311,6 +348,10 @@ SIZE(0x1fc);
 
 class CWwdGameObjectF : public CGameObject {
 public:
+    // Inline-only: CreateObject_159440 @0x159440 inlines it (base ctor inlined too,
+    // no body of its own - just the 0x5f0060 vptr stamp).
+    CWwdGameObjectF(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
+        : CGameObject(owner, id, stateFlags) {}
     virtual ~CWwdGameObjectF() OVERRIDE; // slot 1  0x15bad0 (out-of-line, I obj)
     virtual i32 IsLoaded() OVERRIDE;     // slot 5  @0x15ba40 (own copy of E's)
     // slot 7 override: the E release pass (a full inline copy in retail).
@@ -334,6 +375,12 @@ SIZE(0x18c);
 
 class CWwdGameObjectC : public CGameObject {
 public:
+    // Inline-only: CreateObject_159250 @0x159250 inlines it (0x5effd0 stamp + the
+    // single BYTE store `m_dotColor = 0`).
+    CWwdGameObjectC(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
+        : CGameObject(owner, id, stateFlags) {
+        m_dotColor = 0;
+    }
     virtual ~CWwdGameObjectC() OVERRIDE; // slot 1  0x15c070 (out-of-line, I obj)
     virtual i32 IsLoaded() OVERRIDE;     // slot 5  @0x15c000 (own copy of E's)
     // slot 7 override: clear the dot-color byte then the E release pass.
@@ -363,35 +410,9 @@ public:
 };
 SIZE(0x190);
 
-class CWwdSlot9c {
-public:
-    char m_pad00[0x08]; // +0x00..0x07
-    i32 m_08;           // +0x08
-    i32 m_0c;           // +0x0c
-    char m_pad10[0x18 - 0x10];
-    i32 m_18;     // +0x18  -> obj+0xb4
-    CWwdSlot9c(); // 0x15b2a0
-};
-SIZE_UNKNOWN();
-class CWwdShadowRec { // the E-level shadow dirty-rect block (+0xb8)
-public:
-    CWwdShadowRec(); // 0x15b270
-    char m_pad0[0x8];
-    i32 m_8; // abs +0xc0 == CGameObject::m_shadowRect.left (INT_MIN sentinel)
-    char m_pad0c[0x20 - 0xc];
-    i32 m_20; // abs +0xd8 == CGameObject::m_d8 (-1 == disarmed)
-};
-SIZE_UNKNOWN();
-class CWwdSlot9cA { // the A kind's +0x9c sibling record
-public:
-    CWwdSlot9cA(); // 0x15b2b0
-    char m_pad0[0x8];
-    i32 m_8;
-    i32 m_c;
-    char m_pad10[0x18 - 0x10];
-    i32 m_18;
-};
-SIZE_UNKNOWN();
+// (The CWwdSlot9c / CWwdSlot9cA / CWwdShadowRec placeholder views are gone: they
+// were pad-shaped stand-ins for the real member sub-objects the ctors construct -
+// WwdGridNode/WwdRegion @+0x9c and WwdDirtyRect @+0xb8.)
 
 // The typed m_list iteration declared in <DDrawMgr/DDrawChildGroup.h>: MFC's
 // GetNext yields the base CObject*, so the ONE downcast to the stored child kind

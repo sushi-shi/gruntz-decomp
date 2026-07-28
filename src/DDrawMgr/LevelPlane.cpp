@@ -40,8 +40,7 @@
 #include <DDrawMgr/DDrawSurfacePair.h>    // ->m_bpp (the ex CPlaneSurfDesc::m_format)
 #include <DDrawMgr/DDrawChildGroup.h>     // m_childGroup (the worker source)
 #include <Io/FileMem.h> // the REAL serialize-stream base CFileMemBase (Save/Load's Read@+0x2c/Write@+0x30)
-#include <Wwd/WwdSpatialMgr.h>  // the canonical spatial/scroll worker (m_scroll)
-#include <Wwd/WwdGameObjCtor.h> // the real 0x15b390 base-object constructor
+#include <Wwd/WwdSpatialMgr.h> // the canonical spatial/scroll worker (m_scroll)
 #include <rva.h>
 
 #include <stdio.h>  // sprintf (ValidateTiles diagnostics)
@@ -795,6 +794,13 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
     return 1;
 }
 
+// @early-stop
+// cl-5.0 inline-budget divergence (docs/patterns/ob1-inline-budget-divergence.md):
+// the body/types/EH states are right, but our cl EXPANDS CGameObject's in-class ctor
+// here where retail's CALLED its COMDAT (0x15b390). MSVC5 /O2 is /Ob1, so the ctor
+// must stay an inline candidate for CreateObject_159250/159440/159600 (all EXACT via
+// that expansion) - and there is no MSVC5 noinline to force the call back. Not
+// steerable from source; retail's 0x15b390 COMDAT is consequently unemitted here.
 RVA(0x00162af0, 0x806)
 
 i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
@@ -812,29 +818,14 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     i32 z = src->m_z;
     i32 gridIndex = src->m_gridIndex;
 
-    CWwdGameObjectA* obj = static_cast<CWwdGameObjectA*>(operator new(0x1dc));
+    // `new CWwdGameObjectA(...)`: cl CALLS the shared CGameObject ctor COMDAT
+    // (0x15b390) and inlines the A part - the +0x1a0 cursor (whose own CLoadable
+    // base ctor it calls out-of-line at 0x156cb0), the 0x5f00a8 stamp and the
+    // +0x18c..+0x19c tail.
+    CWwdGameObjectA* obj = new CWwdGameObjectA(OwnerMgr(), id, 0);
     if (obj == 0) {
         return 0;
     }
-
-    new (obj) CWwdGameObjBaseCtor(OwnerMgr(), id, 0);
-
-    // Construct the embedded sub-object at +0x1A0, then re-stamp both vtables (the
-    // base ctors leave a base vtable; ReadPlaneObjects promotes both to their
-    // derived types) and zero the trailing fields the derived layout adds.
-    new (static_cast<void*>(&obj->m_1a0))
-        CLoadable(m_ownerCtx, id, 0); // the embedded loadable (ctor 0x156cb0)
-    // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-    obj->m_1a0.m_10 = 0;
-    obj->m_1a0.m_14 = 0;
-    obj->m_1a0.m_element = 0;
-
-    // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-    obj->m_18c = -1;
-    obj->m_190 = -1;
-    obj->m_layer = 0;
-    obj->m_194 = 0;
-    obj->m_19c = 0;
 
     // Copy the four trailing length-prefixed strings into stack CStrings. They
     // begin right after the fixed 0x11C record.

@@ -18,11 +18,30 @@ struct WwdRect {
 };
 SIZE_UNKNOWN();
 
-struct WwdRegion : DSoundLink { // {m_next,m_prev} @ +0x00/+0x04 from DSoundLink
-    char m_pad08[0x0c - 0x08];
+// The grid node splits in two, and the split is BYTE-PROVEN, not a guess: retail
+// emits TWO distinct default ctors for the SAME +0x9c sub-object - 0x15b2a0 zeroes
+// {+0x0c,+0x08} and 0x15b2b0 zeroes {+0x0c,+0x08,+0x18}. A class has exactly one
+// default ctor, so the smaller one is a BASE and the larger is the derived (which
+// inlines it). CDDrawChildGroup::CreateObject_159250/159440 call the base copy and
+// spell the `m_object = 0` store inline; CreateObject_159600 calls the derived copy.
+struct WwdGridNode : DSoundLink { // {m_next,m_prev} @ +0x00/+0x04 from DSoundLink
+    WwdGridNode();                // 0x15b2a0 (out-of-line, WwdObjMgr.cpp)
+    i32 m_08;                     // +0x08
     BucketHead* m_bucket;         // +0x0c  cached owning bucket
     i32 m_x;                      // +0x10
     i32 m_y;                      // +0x14
+};
+SIZE(0x18);
+
+struct WwdRegion : WwdGridNode {
+    RVA(0x0015b2b0, 0xe)
+    WwdRegion() {
+        m_object = 0;
+    }
+    // Empty but user-declared - it earns the embedded +0x9c member its own /GX
+    // unwind-map index, which is what makes retail's ctor-in-flight state walk in
+    // CDDrawChildGroup::CreateObject_159250/159440/159600 run 0..5 instead of 0..3.
+    ~WwdRegion() {}
     struct CGameObject* m_object; // +0x18  owning wide-object back-pointer
 };
 SIZE(0x1c); // == the +0x9c..+0xb7 embedded m_region span

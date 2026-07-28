@@ -7,6 +7,34 @@
 #include <rva.h>
 
 class CDDrawSurfaceMgr; // fwd (was the dissolved CImageParent pad-view)
+
+// The 0x24-byte dirty-rect record. Every wide object carries TWO of them: the LIVE
+// one at CResolveNode +0x18 and the SHADOW (previous-frame) one at CGameObject
+// +0xb8 - which is why CGameObject's blit slots copy one onto the other with a
+// single 36-byte move and serialize it as one 0x24 blob.
+// Ctor 0x15b270 (`{ m_rect.left = INT_MIN; m_armed = -1; }`) is a real out-of-line
+// COMDAT: CDDrawChildGroup::CreateObject_159250/159440/159600 CALL it on
+// `this+0xb8` between the +0x9c region ctor and the +0xdc CString ctor, and the
+// /GX ctor-in-flight state walks 1 -> 2 -> 3 across those three calls.
+// (CResolveNode's live copy below is the same shape - the fold of its six loose
+// fields onto this type is follow-up work, ~156 call sites tree-wide.)
+struct WwdDirtyRect {
+    WwdDirtyRect(); // 0x15b270 (out-of-line, WwdObjMgr.cpp)
+    // Empty, but USER-DECLARED, and that is byte-evidence: a member with a
+    // destructor gets its own /GX unwind-map entry, and retail's ctor-in-flight
+    // state walk in CreateObject_159250/159440/159600 spends one index on this
+    // record (0 raw / 1 CResolveNode / 2 region / 3 THIS / 4 CString / 5 worker).
+    // Without it cl numbers the states 0/1/2/3 and every byte after shifts.
+    ~WwdDirtyRect() {}
+    i32 m_x;     // +0x00  last drawn column
+    i32 m_y;     // +0x04  last drawn row
+    RECT m_rect; // +0x08  the blit out-rect (.left INT_MIN == disarmed corner)
+    i32 m_w;     // +0x18  extent x
+    i32 m_h;     // +0x1c  extent y
+    i32 m_armed; // +0x20  armed flag (-1 == disarmed)
+};
+SIZE(0x24);
+
 class CResolveNode : public CLoadable {
 public:
     // Re-based onto the canonical 9-slot CLoadable: the m_04/m_08/m_0c header +
@@ -22,8 +50,12 @@ public:
     // 0x164790 (T obj); shared by the whole wide-object family (never overridden).
     virtual i32 SetPosition(i32 x, i32 y); // [9] 0x164790
 
-    CResolveNode();                                                  // 0x1549d0 (D pocket)
-    CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08); // 0x15b2c0 (I obj)
+    CResolveNode(); // 0x1549d0 (D pocket)
+    // OUT-OF-LINE (WwdFactoryObject.cpp @0x15b2c0) on purpose: cl 5.0's /O2 is /Ob1,
+    // so an out-of-line definition is not an inline candidate and every construction
+    // of the base sub-object is a CALL - which is what retail's
+    // CreateObject_159250/159440/159600 emit.
+    CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08);
     // No-seed tag-ctor for the worker leaves (CDDrawWorkerBase family): constructs
     // the base WITHOUT the 0x1549d0 sentinel seeding - the leaf ctor spells its own
     // fused seed set, matching the factories' single-stamp inline shape (retail
