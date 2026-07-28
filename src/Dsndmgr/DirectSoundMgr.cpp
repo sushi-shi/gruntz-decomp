@@ -1093,7 +1093,7 @@ fail:
 }
 
 RVA(0x00136860, 0xa9)
-DSoundCloneInst* SoundDevice::AcquireFile(char* path, u32 flags, u32 reserved) {
+DSoundCloneInst* SoundDevice::AcquireFile(char* path, u32 flags, u32 loadOpts) {
     if (m_initialized == 0) {
         return 0;
     }
@@ -1109,20 +1109,21 @@ DSoundCloneInst* SoundDevice::AcquireFile(char* path, u32 flags, u32 reserved) {
         return 0;
     }
     fclose(fp);
-    DSoundCloneInst* wrapper = Acquire(buf, flags, reserved);
+    DSoundCloneInst* wrapper = Acquire(buf, flags, loadOpts);
     operator delete(buf);
     return wrapper;
 }
 
 // ---------------------------------------------------------------------------
-// Acquire: parse RIFF/WAVE fmt+data, optionally 16->8 downconvert (m_force8Bit or parse
-// flag), CreateBuffer, LockConvert the PCM in; RemoveBuffer on load failure.
-// @early-stop
-// frame-homing-area-reuse wall (docs/patterns/stack-buffer-size-drives-frame.md, 99.8%):
-// every code byte IDENTICAL; retail overlays the ParseFmt out-struct onto dead arg-home
-// slots (sub esp,8) while MSVC5 gives fresh stack (sub esp,0x18). Not source-steerable.
+// Acquire: parse RIFF/WAVE fmt+data, optionally 16->8 downconvert (m_force8Bit or the
+// caller's loadOpts bit 0), CreateBuffer, LockConvert the PCM in; RemoveBuffer on load
+// failure. The parser's three out-params are three separate locals (the ex ParseFmt
+// 3-dword "struct" was a view): retail passes &fmt / &data / &size, two of which MSVC5
+// overlays on the dead `riff`/arg homes, and the flag word CreateBuffer gets is
+// Acquire's OWN `flags` parameter ([esp+0x1c]), while the downconvert request is
+// `loadOpts & 1` ([esp+0x20]) - neither ever came out of the parser.
 RVA(0x00136910, 0x119)
-DSoundCloneInst* SoundDevice::Acquire(void* riff, u32, u32) {
+DSoundCloneInst* SoundDevice::Acquire(void* riff, u32 flags, u32 loadOpts) {
     if (m_initialized == 0) {
         return 0;
     }
@@ -1130,31 +1131,33 @@ DSoundCloneInst* SoundDevice::Acquire(void* riff, u32, u32) {
         return 0;
     }
 
-    ParseFmt po;
+    // decl order sets the frame (fresh slots top-down, then the dead `riff` home);
+    // the zero stores follow the ASSIGNMENT order, which retail emits fmt/data/size.
     void* data;
     u32 size;
+    WaveFormatX* fmt;
+    fmt = 0;
+    data = 0;
     size = 0;
-    po.m_flags = 0;
-    po.m_reservedA = 0;
-    if (ParseWaveChunks(riff, &po, &data, &size) == 0) {
+    if (ParseWaveChunks(riff, &fmt, &data, &size) == 0) {
         return 0;
     }
 
     i32 cvt = 0;
-    if (m_force8Bit != 0 || (po.m_flags & 1) == 1) {
+    if (m_force8Bit != 0 || (loadOpts & 1) == 1) {
         cvt = 1;
     }
-    if (po.m_fmt->wBitsPerSample != 0x10 || po.m_fmt->wFormatTag != 1) {
+    if (fmt->wBitsPerSample != 0x10 || fmt->wFormatTag != 1) {
         cvt = 0;
     }
     if (cvt) {
         size >>= 1;
-        po.m_fmt->wBitsPerSample = 8;
-        po.m_fmt->nAvgBytesPerSec >>= 1;
-        po.m_fmt->nBlockAlign >>= 1;
+        fmt->wBitsPerSample = 8;
+        fmt->nAvgBytesPerSec >>= 1;
+        fmt->nBlockAlign >>= 1;
     }
 
-    DSoundCloneInst* wrapper = CreateBuffer(po.m_fmt, size, po.m_flags);
+    DSoundCloneInst* wrapper = CreateBuffer(fmt, size, flags);
     if (wrapper == 0) {
         return 0;
     }
@@ -1166,7 +1169,7 @@ DSoundCloneInst* SoundDevice::Acquire(void* riff, u32, u32) {
 }
 
 RVA(0x00136a30, 0x76)
-DSoundCloneInst* SoundDevice::AcquireResource(const char* name, u32 flags, u32 reserved) {
+DSoundCloneInst* SoundDevice::AcquireResource(const char* name, u32 flags, u32 loadOpts) {
     if (m_initialized == 0) {
         return 0;
     }
@@ -1188,7 +1191,7 @@ DSoundCloneInst* SoundDevice::AcquireResource(const char* name, u32 flags, u32 r
     if (!data) {
         return 0;
     }
-    return Acquire(data, flags, reserved);
+    return Acquire(data, flags, loadOpts);
 }
 
 RVA(0x00136ab0, 0x41)
@@ -1209,7 +1212,7 @@ i32 SoundDevice::ValidateRestore(DirectSoundMgr* buf, WaveFormatX* fmt, u32 size
 }
 
 RVA(0x00136b00, 0xc2)
-i32 SoundDevice::ReloadFile(DirectSoundMgr* buf, char* path, u32 reserved) {
+i32 SoundDevice::ReloadFile(DirectSoundMgr* buf, char* path, u32 loadOpts) {
     if (m_initialized == 0) {
         return 0;
     }
@@ -1228,7 +1231,7 @@ i32 SoundDevice::ReloadFile(DirectSoundMgr* buf, char* path, u32 reserved) {
         return 0;
     }
     fclose(fp);
-    i32 r = ReloadRiff(buf, data, reserved);
+    i32 r = ReloadRiff(buf, data, loadOpts);
     operator delete(data);
     return r;
 }
@@ -1236,11 +1239,12 @@ i32 SoundDevice::ReloadFile(DirectSoundMgr* buf, char* path, u32 reserved) {
 // ---------------------------------------------------------------------------
 // ReloadRiff: re-load a RIFF into an EXISTING buffer (Acquire sibling). Gate on init +
 // non-null RIFF + buffer looping; parse, optional 16->8 downconvert, Restore, LockConvert.
-// @early-stop
-// frame-homing-area-reuse wall (docs/patterns/stack-buffer-size-drives-frame.md): same
-// family as Acquire (fresh stack vs retail's arg-home overlay). Not source-steerable.
+// Same three-out-param parse as Acquire, and the downconvert request is this function's
+// OWN 3rd parameter (`loadOpts & 1`, read from [esp+0x1c]) - never a parser output.
+// MSVC5 overlays `fmt` and `size` on the dead `riff`/`buf` argument homes here, so only
+// `data` needs fresh stack (retail's one-dword `push ecx` frame).
 RVA(0x00136bd0, 0x110)
-i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, void* riff, u32 /*reserved*/) {
+i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, void* riff, u32 loadOpts) {
     if (m_initialized == 0) {
         return 0;
     }
@@ -1251,38 +1255,38 @@ i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, void* riff, u32 /*reserved*/) {
         return 1;
     }
 
-    ParseFmt po;
     void* data;
     u32 size;
+    WaveFormatX* fmt;
+    fmt = 0;
+    data = 0;
     size = 0;
-    po.m_flags = 0;
-    po.m_reservedA = 0;
-    if (ParseWaveChunks(riff, &po, &data, &size) == 0) {
+    if (ParseWaveChunks(riff, &fmt, &data, &size) == 0) {
         return 0;
     }
 
     i32 cvt = 0;
-    if (m_force8Bit != 0 || (po.m_flags & 1) == 1) {
+    if (m_force8Bit != 0 || (loadOpts & 1) == 1) {
         cvt = 1;
     }
-    if (po.m_fmt->wBitsPerSample != 0x10 || po.m_fmt->wFormatTag != 1) {
+    if (fmt->wBitsPerSample != 0x10 || fmt->wFormatTag != 1) {
         cvt = 0;
     }
     if (cvt) {
         size >>= 1;
-        po.m_fmt->wBitsPerSample = 8;
-        po.m_fmt->nAvgBytesPerSec >>= 1;
-        po.m_fmt->nBlockAlign >>= 1;
+        fmt->wBitsPerSample = 8;
+        fmt->nAvgBytesPerSec >>= 1;
+        fmt->nBlockAlign >>= 1;
     }
 
-    if (ValidateRestore(buf, po.m_fmt, size) == 0) {
+    if (ValidateRestore(buf, fmt, size) == 0) {
         return 0;
     }
     return buf->LockConvert(data, size, cvt) != 0;
 }
 
 RVA(0x00136ce0, 0x92)
-i32 SoundDevice::ReloadResource(DirectSoundMgr* probe, const char* name, u32 reserved) {
+i32 SoundDevice::ReloadResource(DirectSoundMgr* probe, const char* name, u32 loadOpts) {
     if (m_initialized == 0) {
         return 0;
     }
@@ -1307,7 +1311,7 @@ i32 SoundDevice::ReloadResource(DirectSoundMgr* probe, const char* name, u32 res
     if (!data) {
         return 0;
     }
-    return ReloadRiff(probe, data, reserved);
+    return ReloadRiff(probe, data, loadOpts);
 }
 
 RVA(0x00136d80, 0x56)
@@ -1514,13 +1518,12 @@ i32 DSoundVoice::Stop() {
 
 // ---------------------------------------------------------------------------
 // ParseWaveChunks (__cdecl): verify 'RIFF'/'WAVE', walk even-aligned chunks, record the
-// 'fmt ' payload into out->m_fmt and 'data' ptr/len into *dataOut/*sizeOut; nonzero when
+// 'fmt ' payload into *fmtOut and 'data' ptr/len into *dataOut/*sizeOut; nonzero when
 // 'fmt ' seen before 'data'.
-// @early-stop
-// 100%: the per-chunk cursor advance is TWO `*p++` reads (use between the
-// increments blocks the +8 fold) - the ex "add-fold wall" was the p+=2 spelling.
+// (100%: the per-chunk cursor advance is TWO `*p++` reads - a use between the increments
+// blocks the +8 fold - and the ex "add-fold wall" was the p+=2 spelling.)
 RVA(0x00137110, 0x8d)
-i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut) {
+i32 ParseWaveChunks(void* riff, WaveFormatX** fmtOut, void** dataOut, u32* sizeOut) {
     // wire walk over the untyped RIFF buffer - byte-forced
     u32* p = reinterpret_cast<u32*>((static_cast<char*>(riff) + 4));
     u32 riffSize = *p;
@@ -1536,7 +1539,7 @@ i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut) {
     if (waveTag != mmioFOURCC('W', 'A', 'V', 'E')) {
         return 0;
     }
-    out->m_fmt = 0;
+    *fmtOut = 0;
     *dataOut = 0;
     // the chunk cursor is a BYTE position in the untyped RIFF buffer - byte-forced
     while (reinterpret_cast<char*>(p) < end) {
@@ -1544,11 +1547,11 @@ i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut) {
         u32 size = *p++;
         if (id == mmioFOURCC('f', 'm', 't', ' ')) {
             // the chunk body typed at the format boundary - byte-forced
-            out->m_fmt = reinterpret_cast<WaveFormatX*>(p);
+            *fmtOut = reinterpret_cast<WaveFormatX*>(p);
         } else if (id == mmioFOURCC('d', 'a', 't', 'a')) {
             *dataOut = p;
             *sizeOut = size;
-            return out->m_fmt != 0;
+            return *fmtOut != 0;
         }
         // the RIFF chunk walk: advance by the chunk's own size, word-aligned up. Chunks
         // are variable-length by definition, so this cursor is byte-forced by the format

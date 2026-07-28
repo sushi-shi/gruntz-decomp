@@ -132,7 +132,7 @@ i32 CMapMgr::SearchEdge(
 // docs/patterns/positive-gate-enables-shrink-wrap.md. Residual is the 4 stack-slot
 // diagonal-neighbour layout.
 RVA(0x00082030, 0x1a1)
-i32 CMapMgr::UpdateDiagonals(CGruntzMgr * unused) {
+i32 CMapMgr::UpdateDiagonals(CGruntzMgr* unused) {
     BrickzCell* cell = m_cellPool;
     if (m_dirty != 0) {
         for (u32 r = 0; r < m_height; r++) {
@@ -176,8 +176,14 @@ i32 CMapMgr::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
     if (x0 == x1 && y0 == y1) {
         return 1;
     }
-    i32 dx = x1 - x0;
-    i32 dy = y1 - y0;
+    // Two independent knobs here, and retail needs them set opposite ways:
+    // DECLARATION order picks which subtraction cl emits first (`sub ebx,ecx` = dy
+    // precedes `sub edi,esi` = dx, and with it which abs is the one spilled to ebp),
+    // while ASSIGNMENT order picks the registers - the last-assigned delta takes ebx
+    // (retail's dy) and the other takes edi (dx).
+    i32 dy, dx;
+    dx = x1 - x0;
+    dy = y1 - y0;
     if (abs(dx) > abs(dy)) {
         i32 slope = (dy << 16) / dx;
         i32 yacc = y0 << 16;

@@ -1948,6 +1948,15 @@ i32 CGrunt::CreateStaminaSprite() {
     return 1;
 }
 
+// @early-stop
+// caller-saved temp-register PHASE (99.72%): every byte matches except which of ecx/edx
+// carries the SetHealthGlyph arg2/arg3 temps - retail loads m_toyTime into edx and
+// m_tileOwnerLo into ecx, cl takes them in its ecx-then-edx preference order (arg1 is in
+// eax on both sides, and the load + push ORDER is identical). Four bytes: two modrm
+// fields and the two `push` opcodes. CreateHealthSprite / CreateStaminaSprite /
+// CreateWingzTimeSprite carry the SAME four bytes from the same call shape. Not source-
+// steerable: explicit `i32` locals for the two values are copy-propagated away by cl and
+// the pick does not move. Same family as global-store-temp-alternates-ecx-edx.md.
 RVA(0x0004d3e0, 0xf5)
 i32 CGrunt::CreateToyTimeSprite() {
     if (m_toyTimeSprite || m_toyTime == 0) {

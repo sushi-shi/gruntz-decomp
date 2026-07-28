@@ -11,13 +11,6 @@ class SoundDevice;
 
 class DSoundCloneInst; // the concrete per-buffer leaf the factories mint
 
-struct ParseFmt {
-    WaveFormatX* m_fmt; // +0x00  fmt-chunk WAVEFORMATEX pointer (into the RIFF blob)
-    u32 m_reservedA;    // +0x04  (zeroed by Acquire; parser output slot, unused for WAVE)
-    u32 m_flags;        // +0x08  parse flags (bit 0 -> force an 8-bit downconvert)
-};
-SIZE(0xc); // 3-DWORD parser scratch (retail overlays it on the dead arg homes: frame 0x8)
-
 struct StreamVoice; // TickSubManagers instance-list node: the canonical per-stream voice
 
 class SoundDevice {
@@ -42,17 +35,21 @@ public:
         u32 flags
     ); // 0x1366f0  CreateSoundBuffer + wrap (mints the concrete DSoundCloneInst leaf)
     DSoundCloneInst*
-    AcquireFile(char* path, u32 flags, u32 reserved); // 0x136860  fopen whole file -> Acquire
-    DSoundCloneInst* Acquire(void* riff, u32, u32);   // 0x136910  parse RIFF + CreateBuffer + load
+    AcquireFile(char* path, u32 flags, u32 loadOpts); // 0x136860  fopen whole file -> Acquire
+    DSoundCloneInst* Acquire(
+        void* riff,
+        u32 flags,
+        u32 loadOpts
+    ); // 0x136910  parse RIFF + CreateBuffer + load
     DSoundCloneInst* AcquireResource(
         const char* name,
         u32 flags,
-        u32 reserved
+        u32 loadOpts
     ); // 0x136a30  find/load/lock the named "WAVE" Win32 resource -> Acquire
     i32 ReloadResource(
         DirectSoundMgr* probe,
         const char* name,
-        u32 reserved
+        u32 loadOpts
     ); // 0x136ce0  looping-gated "WAVE" resource -> ReloadRiff
     i32 ValidateRestore(
         DirectSoundMgr* buf,
@@ -62,12 +59,12 @@ public:
     i32 ReloadRiff(
         DirectSoundMgr* buf,
         void* riff,
-        u32 reserved
+        u32 loadOpts
     ); // 0x136bd0  re-parse RIFF, optionally downconvert, into an existing buffer
     i32 ReloadFile(
         DirectSoundMgr* buf,
         char* path,
-        u32 reserved
+        u32 loadOpts
     ); // 0x136b00  fopen whole file -> ReloadRiff (only when the buffer is looping)
 
     // Device bring-up (DSNDMGR.CPP; defined in DirectSoundMgr.cpp - they fall in that

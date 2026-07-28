@@ -273,14 +273,6 @@ void CWorldSoundSet::Resume() {
 // Retune: record the new listener position, push it to every live channel
 // (vtbl slot 3 = Update(x,y,force), force 0), then rewind the world handle.
 // ---------------------------------------------------------------------------
-// @early-stop
-// regalloc/schedule-coinflip wall (~86.3%) - logic complete, all relocs paired.
-// Structurally identical to Resume (matched body) but the two up-front member
-// stores (m_listenerX=x, m_listenerY=y) let cl hoist the loop-head load + null-test above
-// the stores and pin `mov ebp,ecx` early, whereas retail keeps `this` in ecx
-// until the stores and reads the head after - a pure register/schedule permutation
-// (same bytes, reordered) plus the same dead-this tail load as Resume. The
-// for-loop / store-order levers did not flip it. See zero-register-pinning.md.
 RVA(0x0000bd60, 0x4b)
 void CWorldSoundSet::Retune(i32 x, i32 y) {
     m_listenerX = x;
@@ -292,8 +284,11 @@ void CWorldSoundSet::Retune(i32 x, i32 y) {
             ch->Update(x, y, 0);
         }
     }
-    if (m_world->m_soundDev != 0) {
-        m_world->m_soundDev->PurgeVoiceList(-1);
+    // the world holder is its own value (retail loads it into eax and reads the device
+    // out of it), not a re-read of the m_world->m_soundDev chain
+    CRandomAmbientWorld* world = m_world;
+    if (world->m_soundDev != 0) {
+        world->m_soundDev->PurgeVoiceList(-1);
     }
 }
 

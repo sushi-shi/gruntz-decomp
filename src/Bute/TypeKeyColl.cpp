@@ -162,9 +162,12 @@ zBitVec::~zBitVec() {
 // release this band (RezFree) and reallocate to the source's word count (or OOM), then
 // memcpy m_capacity/8 bytes from the source (heap band or inline SBO word).
 // @early-stop
-// regalloc wall: 1 instruction of 172 differs - `m_capacity = that.m_capacity` on the
-// capacities-differ path picks ecx in cl vs eax in retail (retail reuses the freed
-// malloc-result register). 99.84%, no source lever for the scratch register.
+// 99.84% - ONE instruction of 172, and only its modrm byte: the `m_capacity =
+// that.m_capacity` store at the capacities-differ JOIN (reached both from the
+// that.m_capacity<=0x20 shortcut and from malloc-succeeded) uses eax in retail and ecx in
+// cl. Retail re-LOADS [that+8] there even on the path where eax already holds it, exactly
+// as we do, so the shape is identical; cl simply will not spend eax at a join whose other
+// predecessor left the malloc result there. No source lever reaches a single scratch pick.
 RVA_COMPGEN(0x0016d2d0, 0x1e, ??_GzBitVec@@UAEPAXI@Z)
 RVA(0x0016d2f0, 0xac)
 zBitVec& zBitVec::operator=(const zBitVec& that) {
@@ -400,11 +403,9 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
 // resolved table entry's fn / word slot, or (unresolved) format the slot's label
 // + invoke the slot's own +0x00 callback / store the word.  The index probe is
 // CVariantSlot::Find (0x16e1d0, defined below); the table + gate are globals.
-// @early-stop
-// 99.85% - reloc-typing / entropy-tail artifact only: the full switch dispatch,
-// indexed-table paths, inline strcpy + Format_18d0f0 and the +0x00 callback are
-// all byte-exact; the residual is the DIR32-vs-REL32 scoring on the named
-// g_varTable / g_varProbeEnabled / Find externs (docs/matching-patterns.md fuzzy%).
+// (The ex-"reloc-typing entropy tail" was two real things: the message buffer is 0xa0
+// bytes, not 0x94 - retail's whole local area IS the buffer - and 0x18d0f0 is the CRT
+// strncat, so calling it by its real name pairs the reloc.)
 // ===========================================================================
 // CVariantSlot (the +0x00 callback / probe-index / word / type-tag / label slot)
 // is the canonical one in <Bute/ButeTree.h>; Set (0x16d850) is defined here.
@@ -430,11 +431,15 @@ void CVariantSlot::Set(void* key, void* arg2, i32 arg3) {
     }
     if (idx == -1) {
         if (m_typeTag == 2) {
-            char buf[0x94];
+            // 0xa0 of locals (retail `sub esp,0xa0`, buf at the frame bottom): the
+            // label copy plus the 0x4f-capped append, one 160-byte message buffer.
+            char buf[0xa0];
             strcpy(buf, m_label);
-            // API-forced: the reporter's raw word IS the formatter's value argument
-            // (the reported record's address is printed into the message text).
-            Format_18d0f0(buf, reinterpret_cast<i32>(arg2), 0x4f);
+            // 0x18d0f0 IS the CRT strncat (LIBCMT/HIGH-confidence FID anchor): the
+            // reported record's NAME is appended to the label, capped at 79 chars.
+            // The void*->char* cast is language-forced: retail's own mangled name
+            // ?Set@CVariantSlot@@QAEXPAX0H@Z pins the 2nd parameter as PAX.
+            strncat(buf, static_cast<const char*>(arg2), 0x4f);
             m_callback(buf, arg3);
         } else if (m_typeTag == 1) {
             m_valueWord = static_cast<u16>(arg3);
