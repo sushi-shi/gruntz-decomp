@@ -345,23 +345,22 @@ i32 CAmbientSound::Init5(DirectSoundMgr* mgr, i32 a2, i32 a3, RECT* box, i32 a5)
 // each step), clamp to 0..100 and push it to the voice via SetVolByIdx. This is
 // the SetLevel scale math with the master (m_scaleA) as the LIVE operand.
 //
-// @early-stop
-// regalloc-coinflip wall (~97.9%) - logic complete, all relocs paired. retail pins
-// the `master` arg in eax (dead m_scaleA -> edx); our cl does the reverse (arg in edx),
-// which permutes the first ~5 instrs (cmp modrm, the m_scaleA store reg, add eax,-0xf vs
-// sub edx,0xf). The compare-operand-order lever did not flip the pin. See
-// docs/patterns/zero-register-pinning.md.
+// TWO levers together, and only together (either alone leaves ~97.9%):
+//   * the curve is applied to its OWN local, never to the parameter - mutating the
+//     parameter makes cl spend the eax pin on m_level and mirror every register;
+//   * the guard compares the MEMBER first, which fixes the `cmp edx,eax` operand order.
 RVA(0x0000bf10, 0x72)
 void CAmbientSound::Recompute(i32 master) {
-    if (master == m_scaleA) {
+    if (m_scaleA == master) {
         return;
     }
     i32 mult = m_level;
     m_scaleA = master;
-    if (master > 5) {
-        master -= 0xf;
+    i32 lvl = master;
+    if (lvl > 5) {
+        lvl -= 0xf;
     }
-    i32 v = (master * mult) / 100;
+    i32 v = (lvl * mult) / 100;
     if (m_scaleB > 0) {
         v = (v * m_scaleB) / 100;
     }
@@ -618,15 +617,10 @@ void CAmbientSound::Fade(i32 playFlag, i32 level, i32 mode) {
 // ---------------------------------------------------------------------------
 // CAmbientPosSound::Init6 (0x00c4b0, __thiscall, 6 args): resolve the mgr record
 // for `key` out of world->m_map; when found, seed this object via
-// Init5(record->m_mgr, a3, a4, pos, a5). The miss path returns Lookup's 0
-// (CreatePos6 tests the return - byte-proven).
-// ---------------------------------------------------------------------------
-// @early-stop
-// CODE BYTE-EXACT - residual is the reloc-naming scoring artifact: retail's two
-// calls go through ILT thunks (Lookup / thunk_FUN_0040c530) while our base names
-// the callee directly, so objdiff scores the REL32 operands against
-// differently-named symbols (~88.75%). Every instruction byte matches the
-// delinked target (verified by base-vs-target objdump). Effectively matched.
+// Init5(record->m_mgr, a3, a4, pos, a5). Lookup's BOOL return is DISCARDED - the
+// miss path returns the null `found` itself (retail's `test eax,eax / jne body /
+// pop esi / pop ecx / ret 0x18` reuses the proven-zero eax as the 0). Same shape as
+// the CAmbientSound::Init6 twin at 0xbdd0.
 RVA(0x0000c4b0, 0x53)
 i32 CAmbientPosSound::Init6(
     CRandomAmbientWorld* world,
@@ -636,12 +630,13 @@ i32 CAmbientPosSound::Init6(
     AmbientPoint* pos,
     i32 a5
 ) {
-    void* found = 0;
-    i32 r = world->m_map.Lookup(key, found);
-    if (found != 0) {
-        return Init5((static_cast<AmbSoundRecord*>(found))->m_mgr, a3, a4, pos, a5);
+    void* out_ob = 0; // CMapStringToPtr's value slot (Lookup 0x1b8438 takes void*&)
+    world->m_map.Lookup(key, out_ob);
+    AmbSoundRecord* out = static_cast<AmbSoundRecord*>(out_ob);
+    if (out == 0) {
+        return 0;
     }
-    return r;
+    return Init5(out->m_mgr, a3, a4, pos, a5);
 }
 
 RVA(0x0000c530, 0x51)
@@ -821,53 +816,59 @@ void StopPosSound(PosSoundObj* obj) {
 // (aux->m_requestState == 0) stamp the object flags and, if its layer + the active world
 // are live, new a voice through the factory; on a "stop" request (0x1e) tear the
 // live voice down (StopAndRewind, unlink from the spatial mgr, scalar-dtor it).
-// ---------------------------------------------------------------------------
-// @early-stop
-// out-param stack struct + virtual scalar-dtor dispatch + factory calling-conv:
-// logic complete, but the spawn path passes obj->m_x/m_y through a 2-int stack
-// out-param (the `sub esp,8` slots, address-escaped to the factory) whose exact
-// [esp+N] schedule and the factory's callee-clean shape are not source-steerable.
-// The teardown arm (StopAndRewind / RemoveAt / `call [vptr]`) is byte-exact.
+// Returns 1 (every path: retail's two `mov eax,0x1` epilogues), like its
+// CommitSpriteAction sibling - both are PosSoundAux action handlers.
 RVA(0x0000ca00, 0xf0)
-void SpawnPosSound(PosSoundObj* obj) {
+i32 SpawnPosSound(PosSoundObj* obj) {
     PosSoundAux* aux = obj->m_aux;
     i32 state = aux->m_requestState;
     if (state != 0) {
         if (state != 0x1e) {
-            return;
+            return 1;
         }
         CAmbientPosSound* sound = aux->m_voice;
         if (sound == 0) {
-            return;
+            return 1;
         }
-        CPtrList* arr = &g_gameReg->m_inputState->m_list;
+        // the SET is the bound value (retail keeps it in ebx and forms the list
+        // address at the call with `lea ecx,[ebx+8]`), not a hoisted &...->m_list
+        CWorldSoundSet* set = g_gameReg->m_inputState;
         if (sound->m_voice != 0) {
             sound->m_voice->StopAndRewind();
             sound->m_isPlaying = 0;
         }
         if (sound->m_listNode != 0) {
-            arr->RemoveAt(sound->m_listNode);
+            set->m_list.RemoveAt(sound->m_listNode);
             delete sound;
         }
         aux->m_voice = 0;
         aux->m_requestState = 0;
-        return;
+        return 1;
     }
 
-    obj->m_flags08 = (obj->m_flags08 & ~2) | 0x100001;
     obj->m_flags40 |= 1;
+    obj->m_flags08 = (obj->m_flags08 & ~2) | 0x100001;
     aux->m_voice = 0;
     LeafCue* layer = obj->m_layer;
-    if (layer != 0 && g_gameReg != 0 && g_gameReg->m_inputState != 0) {
-        i32 pt[2];
-        pt[0] = obj->m_x;
-        pt[1] = obj->m_y;
-        void* v = PosSoundSpawn(layer->m_10, 0x64, &pt, obj->m_120, 0);
-        if (v != 0) {
-            aux->m_voice = static_cast<CAmbientPosSound*>(v);
+    if (layer != 0 && g_gameReg != 0) {
+        // bound ONCE: retail loads the set into ecx (`mov ecx,[ecx+0x54]`), tests it
+        // there, and it is still the `this` at the call - no reload
+        CWorldSoundSet* set = g_gameReg->m_inputState;
+        if (set != 0) {
+            AmbientPoint pt;
+            pt.x = obj->m_x;
+            pt.y = obj->m_y;
+            // a __thiscall on the world sound set, NOT the phantom
+            // `extern "C" __stdcall PosSoundSpawn` this used to name
+            // (0x20e5 is the ILT thunk to CreatePos5 @0xb960).
+            CAmbientPosSound* v = set->CreatePos5(layer->m_10, 0x64, &pt, obj->m_120, 0);
+            if (v != 0) {
+                aux->m_voice = v;
+            }
         }
     }
     aux->m_requestState = 5;
+    return 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -986,7 +987,19 @@ i32 CGruntzMgr::Rand() {
 
 // Init2(lo, hi, lo2, hi2): seed the interval roller (phase-A bounds into
 // m_40/m_44, phase-B into +0x48/+0x4c) and roll the first countdown in [lo,hi]
-// (lazily-seeded LCG; coin-flip endpoints when the span is empty).
+// (lazily-seeded LCG; coin-flip endpoints when the span is empty). The rolled
+// value is BOUND to a local and the store to g_randSeed is a use of it, not a
+// re-read: retail's tail reads the LCG result out of eax
+// (`mov [g_randSeed],eax / sar eax,0x10`), never reloading the global.
+// @early-stop
+// parameter-pin wall (~72.6%): logic, both LCG arms, the coin-flip endpoints and
+// the modulo tail are byte-faithful. Retail pins lo->ebx / hi->ebp and loads the
+// args in declaration order, so its span is `mov edx,ebp / sub edx,ebx /
+// lea edi,[edx+1]` + an explicit `test edi,edi`; our cl loads a3 first, pins the
+// pair the other way round and folds the span into `mov/sub/inc` (whose flags then
+// feed the `jne` directly). Measured non-levers: statement order (span before vs
+// after the four stores), a separate `diff` local for `hi - lo`, and inverting the
+// span gate so the roll arm leads - all emit the identical prologue.
 RVA(0x0000cd70, 0xe5)
 void CRandomAmbientSound::Init2(i32 lo, i32 hi, i32 a3, i32 a4) {
     i32 span = hi - lo + 1;
@@ -1002,8 +1015,9 @@ void CRandomAmbientSound::Init2(i32 lo, i32 hi, i32 a3, i32 a4) {
         } else {
             seed = g_randSeed;
         }
-        g_randSeed = seed * 214013 + 2531011;
-        if (g_randSeed & 0x10000) {
+        i32 roll = seed * 214013 + 2531011;
+        g_randSeed = roll;
+        if (roll & 0x10000) {
             m_phase = 1;
             m_countdownMs = lo;
         } else {
@@ -1018,9 +1032,10 @@ void CRandomAmbientSound::Init2(i32 lo, i32 hi, i32 a3, i32 a4) {
     } else {
         seed = g_randSeed;
     }
-    g_randSeed = seed * 214013 + 2531011;
+    i32 roll = seed * 214013 + 2531011;
+    g_randSeed = roll;
     m_phase = 1;
-    m_countdownMs = lo + ((g_randSeed >> 0x10) & 0x7fff) % span;
+    m_countdownMs = lo + ((roll >> 0x10) & 0x7fff) % span;
 }
 
 RVA(0x00085ed0, 0x4a)

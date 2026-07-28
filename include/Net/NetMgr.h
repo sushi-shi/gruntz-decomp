@@ -368,6 +368,7 @@ struct IDirectPlay4Z {
     //     12 EnumGroupsCb(4)  = EnumPlayers(4)      13 EnumPlayers(5)  = EnumSessions(5)
     //     14 Enum2(2)         = GetCaps(2)          17 GetMessageCount = GetMessageCount
     //     19 GetGroupData(3)  = GetPlayerCaps(3)    20 GetData2(4)     = GetPlayerData(4)
+    //      6 CreatePlayer(6) = CreatePlayer(6)     (byte-proven, see the slot below)
     //     22 GetPlayerData2(2)= GetSessionDesc(2)   24 EnumGroups(2)   = Open(2)
     //     25 Receive          = Receive             26 SetData5(5)     = Send(5)
     //     29 GetData5(4)      = SetPlayerData(4)
@@ -383,18 +384,29 @@ struct IDirectPlay4Z {
     // arity => same `call [eax+N]`) but wide, so it is its own change.
     // Slots 0/1/2 are IUnknown's by the COM ABI (QueryInterface/AddRef/Release), which
     // is what CNetMgr::Destroy's teardown of m_directPlay dispatches (slot 4 then slot 2).
-    STDMETHOD(QueryInterface)(void* riid, void* out) PURE;                 // slot 0
-    STDMETHOD(AddRef)() PURE;                                              // slot 1
-    STDMETHOD(Release)() PURE;                                             // slot 2  (+0x08)
-    STDMETHOD(Open)(void* a, void* b, i32 c) PURE;                         // slot 3  (+0x0c)
-    STDMETHOD(v04)() PURE;                                                 // slot 4  (+0x10)
-    STDMETHOD(v05)() PURE;                                                 // slot 5
-    STDMETHOD(GetSessionDesc)(void* a, void* b, i32 c, i32 d, i32 e) PURE; // slot 6 (+0x18)
-    STDMETHOD(v07)() PURE;                                                 // slot 7
-    STDMETHOD(v08)() PURE;                                                 // slot 8
-    STDMETHOD(v09)() PURE;                                                 // slot 9
-    STDMETHOD(v0a)() PURE;                                                 // slot 10
-    STDMETHOD(v0b)() PURE;                                                 // slot 11
+    STDMETHOD(QueryInterface)(void* riid, void* out) PURE; // slot 0
+    STDMETHOD(AddRef)() PURE;                              // slot 1
+    STDMETHOD(Release)() PURE;                             // slot 2  (+0x08)
+    STDMETHOD(Open)(void* a, void* b, i32 c) PURE;         // slot 3  (+0x0c)
+    STDMETHOD(v04)() PURE;                                 // slot 4  (+0x10)
+    STDMETHOD(v05)() PURE;                                 // slot 5
+    // slot 6 (+0x18) - IDENTIFIED (2026-07-28) as dplay.h's IDirectPlay4::CreatePlayer:
+    // its one caller CNetMgr::CreatePlayer pushes SIX args (&idPlayer, &name, hEvent,
+    // 0, 0, 0) and the 0x10-byte struct it fills is exactly DPNAME
+    // {dwSize, dwFlags, lpszShortName, lpszLongName}. Was declared 5-arg (a dropped
+    // trailing dwFlags) with the out-id and the name pointer in the wrong slots.
+    STDMETHOD(CreatePlayer)
+    (i32* lpidPlayer,
+     NetDPName* lpPlayerName,
+     i32 hEvent,
+     void* lpData,
+     u32 dwDataSize,
+     u32 dwFlags) PURE;
+    STDMETHOD(v07)() PURE; // slot 7
+    STDMETHOD(v08)() PURE; // slot 8
+    STDMETHOD(v09)() PURE; // slot 9
+    STDMETHOD(v0a)() PURE; // slot 10
+    STDMETHOD(v0b)() PURE; // slot 11
     STDMETHOD(EnumGroupsCb)(
         void* desc,
         void* callback,
