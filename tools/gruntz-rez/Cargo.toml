@@ -1,0 +1,20 @@
+[package]
+name = "gruntz-rez"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# The LIBRARY is `#![no_std]` with no `alloc` - it borrows the archive image and
+# walks it with an inline stack. `rezls` is a separate crate root and is free to
+# use std/clap.
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "rezls"
+path = "src/bin/rezls.rs"
+
+[dependencies]
+gruntz-cast = { workspace = true }
+clap = { workspace = true }

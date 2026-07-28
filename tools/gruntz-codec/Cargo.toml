@@ -1,0 +1,13 @@
+[package]
+name = "gruntz-codec"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# `no_std + alloc`, no dependencies. See tools/Cargo.toml for why.
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+gruntz-cast = { workspace = true }
