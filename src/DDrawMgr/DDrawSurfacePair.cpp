@@ -108,11 +108,16 @@ void CDDrawWorkerList::ClearWorkers() {
 // two m_04 paths are TWO sequential ifs (if m_04==1 {...} if m_04!=1 {...}), which
 // is why the success merge re-tests m_04. __thiscall, 4 stack args (ret 0x10).
 // @early-stop
-// 96.02% - logic/CFG/offsets/calls/error-codes all reproduced. The lone residual is
-// a 1-instruction regalloc coin-flip in the w<=0 error path: retail loads m_04 into
-// eax (mov eax,[esi+4]; cmp $1,eax) so it can reuse esi for the manager, we emit the
-// shorter direct compare (cmp $1,[esi+4]). Same values, same branch. Not source-
-// steerable; docs/patterns/zero-register-pinning.md family.
+// 96.02% - logic/CFG/offsets/calls/error-codes all reproduced. Two residuals, both
+// selection-only: (1) a 1-instruction regalloc coin-flip in the w<=0 error path - retail
+// loads m_04 into eax (mov eax,[esi+4]; cmp $1,eax) so it can reuse esi for the manager,
+// we emit the shorter direct compare (cmp $1,[esi+4]); (2) TAIL-MERGE TARGET (jcc_sieve
+// TOPOLOGY 2026-07-28): all four `if (m_lastError == 0)` guards jump to a shared
+// `return 0`, but retail picks the FIRST-emitted one (after the 0xfa4 store, 0x163d5c)
+// and cl picks the LAST (after 0xfa2) - which also changes its encoding, since the first
+// exit block sets eax before the pops and later ones between them. Expressible only by
+// putting a `fail:` label inside the 0xfa4 arm and `goto`ing it from the other three;
+// not worth the contortion for a merge-target byte at 96%.
 RVA(0x00163c90, 0x116)
 i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
     m_flags = a3;

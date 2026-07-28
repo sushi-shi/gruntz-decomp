@@ -955,11 +955,16 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
 // label is non-empty - looks it up in the worker sub-object's +0x10 map to recover
 // the worker into m_srcRef. Then the Setup-style tail. __thiscall, ret 0x4.
 // @early-stop
-// 89.9% - every instruction/CFG/offset present and the logic is byte-faithful;
-// residual is a register-allocation cascade seeded at the first field read:
-// retail keeps &m_30 in callee-saved ebp across the function, our cl spills it
-// (frame 0x94) and rotates eax/ebp through the eight reads + the index tail.
-// docs/patterns/pin-local-for-callee-saved-reg.md / zero-register-pinning.md.
+// 89.9% - every instruction/CFG/offset present and the logic is byte-faithful.
+// Residuals: (1) a register-allocation cascade seeded at the first field read - retail
+// keeps &m_30 in callee-saved ebp across the function, our cl spills it (frame 0x94) and
+// rotates eax/ebp through the eight reads + the index tail; (2) jcc_sieve TOPOLOGY
+// 2026-07-28: retail RE-READS m_element for the third guard (`mov ebx,[ebx+0x18] / test
+// ebx,ebx`, 0x15cb8f) on both incoming paths, where our cl value-propagates through the
+// preceding `m_element = e` store and threads the `e != 0` branch straight into the body.
+// A compiler-analysis difference, not a source shape - the C is already `m_element = e;
+// ... if (m_element != 0)`. docs/patterns/pin-local-for-callee-saved-reg.md /
+// zero-register-pinning.md / reread-member-view-pointer.md.
 RVA(0x0015ca70, 0x15b)
 i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     if (ar == 0) {

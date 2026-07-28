@@ -716,15 +716,19 @@ i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans)
 // shade-level colour LUTs (bank = ((shade&0xff)>>3)<<0xb), selected by the live
 // pixel-format globals (565 vs 555). Unlock both + free the temp; 0 on any reject.
 // @early-stop
-// regalloc-cascade wall (~65%): complete + correct - both the 565 and 555 three-LUT
-// blend loops, the 10-check validation, the Lock/Unlock (slot 0x80) and RezAlloc temp
-// are all reconstructed with the right operations. The residual is an MSVC5
-// register-allocation coin-flip seeded in the setup (validation keeps dstW/srcW in regs
-// + recomputes dstRowAdv from the rect fields where cl reuses the validation locals),
-// which cascades a register-name shift through the whole body. The permuter finds no
-// operand-order fix, and caching ::CopyRect in a local (to match retail's `mov edi;
-// call edi`) REGRESSED it 65->62 - proving the cascade is not source-steerable. Banked
-// for the final sweep.
+// regalloc-cascade wall (65.35%, was 64.56). Fix 2026-07-28 (jcc_sieve TOPOLOGY): the
+// rDown gate is OUTER. Retail's first `cmp ecx,3 / jne` goes straight to the reject block
+// (0x13f172 -> 0x13f406) while the four remaining 565 terms fall through to the 555 arm -
+// one flat 5-term `&&` sends the first term's failure to the 555 arm instead. Complete +
+// correct otherwise: both three-LUT blend loops, the 10-check validation, the Lock/Unlock
+// (slot 0x80) and the RezAlloc temp. Residual: (a) retail keeps a provably-redundant
+// `cmp ecx,3` at the head of the 555 arm (reachable only with rDown==3 known) which our cl
+// value-propagates away - 28 branches vs 29; (b) retail folds nothing in the bank
+// computation (`and 0xff / shr 3 / shl 0xb`) where cl folds to `and 0xf8 / shl 8`
+// regardless of signedness - the value is provably non-negative, so `shr`/`sar` is not
+// selectable from C (retested unsigned, one-liner and two-step, 2026-07-28); (c) the
+// register-allocation coin-flip seeded in the setup, which cascades a register-name shift
+// through the whole body. Caching ::CopyRect in a local REGRESSED it 65->62.
 RVA(0x0013f020, 0x43f)
 i32 CDDSurface::ShadeBlt(
     struct tagRECT* dstRect,
@@ -785,7 +789,15 @@ i32 CDDSurface::ShadeBlt(
     u16* temp = static_cast<u16*>(RezAlloc(dstW * 4));
     i32 bank = ((shade & 0xff) >> 3) << 0xb;
 
-    if (g_rDown == 3 && g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
+    // The rDown gate is OUTER and the 555 arm re-tests it: retail's first `cmp ecx,3 /
+    // jne` goes straight to the reject block (0x13f172 -> 0x13f406) while the four
+    // remaining 565 terms fall to the 555 arm, whose own five terms START with a redundant
+    // `cmp ecx,3` (0x13f29c). One flat 5-term `&&` sends the first term's failure to the
+    // 555 arm instead.
+    if (g_rDown != 3) {
+        goto reject;
+    }
+    if (g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
         // 565
         i32 rows = dstH;
         if (rows > 0) {
@@ -862,15 +874,17 @@ i32 CDDSurface::ShadeBlt(
             } while (--rows != 0);
         }
     } else {
-        RezFree(temp);
-        m_ddSurface->Unlock(0);
-        src->m_ddSurface->Unlock(0);
-        return 0;
+        goto reject;
     }
     m_ddSurface->Unlock(0);
     src->m_ddSurface->Unlock(0);
     RezFree(temp);
     return 1;
+reject:
+    RezFree(temp);
+    m_ddSurface->Unlock(0);
+    src->m_ddSurface->Unlock(0);
+    return 0;
 }
 
 // ---------------------------------------------------------------------------

@@ -281,6 +281,34 @@ Same family: `CMulti::WaitForOtherPlayers` @0xbb700 4→3, 75.04 → **80.47**;
 control-flow bug the count exposed: retail runs the held-flag tail on the probe MISS of both
 arms, so it is not an `else`).
 
+### The INVERSE direction (`b_ret < t_ret`) is a WALL — do not spend a session on it
+
+Everything above is for `b_ret > t_ret` (we duplicate an exit retail merges). The mirror —
+**retail has MORE epilogues than we do** — is not source-steerable, because cl5 tail-merges
+identical epilogues regardless of where the source puts the block.
+
+`CProjectile::ScanTargets` @0xe0b10 (1 -> 2 rets) is the worked case. Retail lays out
+`[loop][epilogue A][self-cell handler][epilogue B]` — the row loop's fall-out gets its own
+epilogue A (so the back-edge is a plain `cmp/jl <top>`), the cold self-cell handler is sunk
+*past* it, and the hit-list `return` shares B with the handler. We get
+`[loop][handler][one shared epilogue]`, which forces the loop exit to jump over the handler
+(`jge <shared> / jmp <top>`) — one block and one `ret` too few, and it is 1 byte SMALLER, so
+cl has no reason to prefer retail's form. Three spellings measured 2026-07-28, all
+**byte-identical** at 93.99:
+
+1. the handler written inline in the loop with `return;`
+2. the handler sunk to a `return; selfcell:` tail below the function's own `return`
+   (hoisting `g` to function scope so the tail can still read it)
+3. (2) plus the hit-list `return` routed to a `done:` label placed *after* the handler —
+   i.e. retail's exact edge structure spelled out
+
+Same wall as `EngStr_DrawText` @0x115440 / `ShowHudMessage(Alt)` @0x1154b0/0x115520 (1 -> 2
+rets), where a previous lane enumerated `if(!cfg)return` / `==0` / `else` and none split the
+bare `void` ret — see [identical-return-epilogue-tailmerge](identical-return-epilogue-tailmerge.md).
+
+So: when `jcc_sieve` shows `rets N -> N+1`, read it as *diagnosed, not actionable*, and spend
+the budget on the function's other residue.
+
 ### Bound, re-confirmed
 
 `b_ret > t_ret` can also mean **the base is missing a whole inlined construction**, not a
