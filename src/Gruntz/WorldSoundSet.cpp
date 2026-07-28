@@ -417,15 +417,13 @@ void CAmbientSound::Restart() {
 // fade out when it leaves. When silent and in range, (re)start: with `force` set,
 // fully arm the channel and push it to full level; otherwise fade it in.
 //
-// @early-stop
-// Tail-merge wall (~77%): retail folds the two identical (re)start tails - the
-// unbounded path's and the bounded `force` path's - into ONE block reached by an
-// unconditional `jmp`, and the merge drags a dead `g_gameReg->m_inputState->m_active` probe
-// into the unbounded path. Our cl emits the tail TWICE (and DCEs the unused m_24
-// load), so the back half re-permutes. The bounded hit-test + the shared back
-// half are byte-exact; only the duplicate-vs-shared tail + a couple of regalloc
-// picks (edx/eax for the m_54 walk) differ. See identical-return-epilogue-
-// tailmerge.md. Logic exact.
+// The unbounded arm restarts UNCONDITIONALLY (it never consults `force`), so its
+// (re)start block is a duplicate of the bounded force!=0 one - and cl cross-jumps
+// the pair at the trailing `je`, letting the unbounded path's own
+// `test m_active,m_active` stand in for the bounded path's `test m_voice,m_voice`
+// (retail's `jmp 0xc14e`, a jump ONTO a lone `je`). Both arms must therefore spell
+// the m_active check; omitting it on the unbounded arm is what left the load dead.
+// The silent arm owns the fall-through, so the still-playing fade-out is the `else`.
 RVA(0x0000c090, 0x118)
 void CAmbientSound::Update(i32 x, i32 y, i32 force) {
     i32 inRange;
@@ -445,12 +443,10 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
         if (g_gameReg->m_soundEnabled == 0) {
             return;
         }
-        // Retail also probes g_gameReg->m_inputState->m_active here, then (re)starts
-        // regardless; our cl DCEs that unused load (tail-merge wall, see below).
-        if (m_voice == 0) {
+        if (g_gameReg->m_inputState->m_active == 0) {
             return;
         }
-        m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
+        voice->ApplyAndPlay(1, m_panIndex, 0, 1);
         SetLevel(0x64, 0, 0);
         m_level = 0x64;
         m_isPlaying = 1;
@@ -466,32 +462,34 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
         inRange = 0;
     }
 
-    if (m_isPlaying != 0) {
+    if (m_isPlaying == 0) {
+        // Silent: only start when in range and the audio path is live.
+        if (inRange == 0) {
+            return;
+        }
+        if (g_gameReg->m_soundEnabled == 0) {
+            return;
+        }
+        if (g_gameReg->m_inputState->m_active == 0) {
+            return;
+        }
+        if (force != 0) {
+            if (m_voice == 0) {
+                return;
+            }
+            m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
+            SetLevel(0x64, 0, 0);
+            m_level = 0x64;
+            m_isPlaying = 1;
+        } else {
+            Fade(1, 0x64, 0x3e8);
+        }
+    } else {
         // Currently playing: keep running while in range, fade out otherwise.
         if (inRange != 0) {
             return;
         }
         Fade(0, 0, 0x3e8);
-        return;
-    }
-
-    // Silent: only start when in range and the audio path is live.
-    if (inRange == 0) {
-        return;
-    }
-    if (g_gameReg->m_soundEnabled == 0 || g_gameReg->m_inputState->m_active == 0) {
-        return;
-    }
-    if (force != 0) {
-        if (m_voice == 0) {
-            return;
-        }
-        m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
-        SetLevel(0x64, 0, 0);
-        m_level = 0x64;
-        m_isPlaying = 1;
-    } else {
-        Fade(1, 0x64, 0x3e8);
     }
 }
 
@@ -527,14 +525,15 @@ i32 CAmbientSound::SetLevel(i32 value, i32 mode, i32 extra) {
 // on stop it StopAndRewind's (mode==0) or CloneAndPlay-stops (mode!=0).
 // ---------------------------------------------------------------------------
 // @early-stop
-// ~89% register-materialization wall (was 35% - the play/stop branch polarity and both
+// ~89% constant-materialization wall (was 35% - the play/stop branch polarity and both
 // mode branches are now retail-correct: playFlag!=0 play path is the fall-through, mode==0
-// is the fall-through in BOTH the play and stop arms). Residual: retail pushes the shared
-// ApplyAndPlay args (push 1 / push 1 immediates) once before the kind branch and stores
-// m_isPlaying=1 as an immediate; cl instead pins the constant 1 in ebp (mov ebp,1; push
-// ebp; ...; mov [esi+0x14],ebp), which blocks the arg-push hoist. Pure regalloc coin-flip
-// (the /100 magic-division family); no source spelling flips the ebp pin. See
-// zero-register-pinning.md.
+// is the fall-through in BOTH the play and stop arms). Residual, all one cause: the
+// function names the constant 1 seven times (two ApplyAndPlay args x2 arms, three
+// `m_isPlaying = 1`), and cl pins it in ebp (`mov ebp,1; push ebp; ...
+// mov [esi+0x14],ebp`) where retail keeps ebp on `mode` and spells every 1 as an
+// immediate. Retail's immediates make the two arms' four ApplyAndPlay pushes a common
+// prefix, so cl5 cross-jumps them ABOVE the mode branch and leaves only the two `call`s
+// - the whole diff is downstream of the pin. See zero-register-pinning.md.
 RVA(0x0000c2a0, 0x19e)
 void CAmbientSound::Fade(i32 playFlag, i32 level, i32 mode) {
     if (m_voice == 0) {

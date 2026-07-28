@@ -848,12 +848,16 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
 }
 
 // @early-stop
-// ~87% - selection-sort induction/spill wall (was 81%: accessing m_poolItems directly
-// instead of a hoisted `arr` alias fixed the this-relative-vs-arr-relative addressing
-// across the free loop + SetSize/SetAtGrow calls). Residual: retail spills n, n-1 and
-// the outer index to a 0x10-byte frame and colours the sort's outer index as a byte
-// offset alongside a separate counter; cl keeps them in registers (0x8 frame). Pure
-// register-pressure induction shape, not source-steerable. No EH frame.
+// 90.81% (was 81 -> 87 -> 90.81). The frame is now retail's 0x10 and the selection
+// sort is instruction-for-instruction identical: binding BOTH compared elements to
+// locals and reusing them for the swap is what costs the registers that push the two
+// loop indices into frame slots. The append loop reaching the array through a
+// pointer fixed its `[ebx+0x8]` size read. Two residuals left, both cl-internal:
+// (1) a consistent 3-way register rotation - retail colours this->esi /
+// &m_poolItems->ebx / the walk index->edi, cl ebx/edi/esi, decided by which value
+// the FIRST `mov <reg>,ecx` in the prologue takes; (2) retail emits the inner loop's
+// hoisted entry guard `cmp n,1 / jle done` in ADDITION to the outer `n-1 <= 0` one
+// (loop-rotation guard duplication), where cl emits only the outer.
 RVA(0x00143240, 0x143)
 void CDDrawPtrCollections::SetupCaps() {
     for (i32 i = 0; i < m_poolItems.GetSize(); i++) {
@@ -870,17 +874,26 @@ void CDDrawPtrCollections::SetupCaps() {
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x507, hr);
     }
+    // the append loop reaches the array through a POINTER (retail's `mov ecx,[ebx+0x8]`
+    // for the size, ebx == &m_poolItems, vs a this-relative `[esi+0x4bc]`); the free
+    // loop above wants the direct member access instead
+    CPtrArray* items = &m_poolItems;
     for (i32 j = 0; j < g_modeArray.GetSize(); j++) {
-        m_poolItems.SetAtGrow(m_poolItems.GetSize(), g_modeArray.GetData()[j]);
+        items->SetAtGrow(items->GetSize(), g_modeArray.GetData()[j]);
     }
     g_modeArray.SetSize(0, -1);
     i32 n = m_poolItems.GetSize();
     for (i32 a = 0; a < n - 1; a++) {
         for (i32 b = a + 1; b < n; b++) {
-            if (Compare(m_poolItems.GetData()[a], m_poolItems.GetData()[b])) {
-                void* tmp = m_poolItems.GetData()[a];
-                m_poolItems.GetData()[a] = m_poolItems.GetData()[b];
-                m_poolItems.GetData()[b] = tmp;
+            // both elements are BOUND before the compare and reused for the swap
+            // (retail's ebx/edi); reloading them for the swap frees the registers
+            // that retail spends here, and it is that pressure which spills the two
+            // loop indices to the frame (`sub esp,0x10`, not 0x8)
+            void* pa = m_poolItems.GetData()[a];
+            void* pb = m_poolItems.GetData()[b];
+            if (Compare(pa, pb)) {
+                m_poolItems.GetData()[a] = pb;
+                m_poolItems.GetData()[b] = pa;
             }
         }
     }
