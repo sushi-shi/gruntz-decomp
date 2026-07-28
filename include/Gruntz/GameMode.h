@@ -25,8 +25,6 @@
 // CGMSound IS CGruntzSoundZ (Play/Find -> PlayByName/FindBank); CGMSoundEntry IS the
 // CGruntzSoundInnerZ bank FindBank returns (Query -> IsStarted @0x138a10).)
 
-extern "C" void __stdcall GM_SimpleAnim(i32 z); // (stdcall, 1 arg)
-
 extern "C" tagRECT g_versionRect; // (the 4-int source @c8/cc/d0/d4)
 extern "C" i32 g_frameDelta;      // (last-frame delta, fed to Step)
 

@@ -2217,10 +2217,8 @@ i32 CGameLevel::StepGroundUp(CGameObject* t, i32 x, i32 y, i32* out, i32 flags) 
 // ---------------------------------------------------------------------------
 // ProbeStepEdge (@0x15fc30): returns 1 iff the tile at (x, y) is hard AND the tile
 // one row above (x, y-1) is NOT hard - a wall with clear space above it (a step edge).
-//
-// @early-stop
-// register-scheduling wall: two inlined PROBE_TILE copies pin the spilled this/x/y
-// slots; logic + offsets + CFG exact. Deferred to the final sweep.
+// (EXACT: the former "spilled x/y slot" wall was PROBE_TILE declaring px_ before py_ -
+// the second inlined copy then reused x's dead param home instead of y's.)
 RVA(0x0015fc30, 0x17f)
 i32 CGameLevel::ProbeStepEdge(i32 x, i32 y) {
     i32 r1;
@@ -2266,13 +2264,10 @@ yes:
 // is any blocking kind (soft 1, soft2 2, or hard 3), else 0. Three inlined probes.
 //
 // @early-stop
-// ~82.6% (was 73.9%): the `goto yes` shared-exit fixed the block order (retail's
-// single `return 1` reached by `je` from all three probes; the per-probe inline
-// `return 1` inverted every branch). Residual is a genuine regalloc THRESHOLD: with
-// three probes MSVC pins `this` in the callee-saved ebx (mov ebx,ecx) where retail
-// keeps `row` in ebx and spills `this` to [esp+0x10] (reloaded per probe) - the same
-// source at two probes (ProbeFootSoft) matches at 98.6%, so it is the 3-probe
-// register pressure, not the shape. Not source-steerable. Deferred to the final sweep.
+// ~99.1% (was 82.6%): the `goto yes` shared-exit fixed the block order (retail's
+// single `return 1` reached by `je` from all three probes), and PROBE_TILE declaring
+// py_ before px_ fixed the per-copy dead-param-home reuse. Residual is the last
+// probe's mainPlane-temp register (eax vs ecx) entropy tail.
 RVA(0x00160210, 0x234)
 i32 CGameLevel::ProbeFootBlocked(CGameObject* t, i32 dx) {
     i32 row = t->m_screenY + t->m_extent.bottom + 1;

@@ -586,8 +586,8 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     spr->ApplyLookupGeometry(s_GRUNTZ_ + m_animSetName + s__LOSEITEM, 0);
 
     CGruntzMgr* g = g_gameReg;
-    i32 x = m_object->m_screenX;
     i32 y = m_object->m_screenY;
+    i32 x = m_object->m_screenX;
     CCueRect* rc = &g->m_world->m_level->m_mainPlane->m_viewRect;
     if (x < rc->right && x >= rc->left && y < rc->bottom && y >= rc->top) {
         g->m_cueSink->LoadGruntSpawnConfig(this, 0xe, -1, -1, -1);

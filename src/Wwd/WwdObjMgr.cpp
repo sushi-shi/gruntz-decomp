@@ -1127,9 +1127,14 @@ void CDDrawChildGroup::PruneList() {
 // ---------------------------------------------------------------------------
 // 0x15aaf0: accumulate SUM over the list of index*(obj->m_screenX + m_74 + m_60 + m_04).
 // @early-stop
-// 99.15% - logic/CFG/offsets byte-exact. Residual: cl reassociates the 4-term
-// commutative sum to load m_74 into the accumulator first, where retail loads m_5c
-// first. Documented add-reassociation wall (permuter no-op).
+// logic/CFG/offsets byte-exact; the residual is cl's COMMUTATIVE-SUM CANONICALIZATION.
+// Our source order already IS retail's emission order (m_screenX 0x5c, m_sortKey 0x74,
+// m_screenY 0x60, m_id 0x4) - retail emits it verbatim, but cl sorts the four same-base
+// loads by ASCENDING OFFSET (0x4, 0x5c, 0x60, 0x74) and seeds the accumulator with the
+// lowest. Proven unbreakable from the source: stepwise `t += ...` statements, explicit
+// ((a+b)+(c+d)) parens, and splitting the base across the CGameObject*/CWwdGameObject*
+// aliases (cl CSEs the base and sorts anyway) all produce the identical sorted chain.
+// (The previous note's "cl loads m_74 first" was stale - it loads m_4 first.)
 RVA(0x0015aaf0, 0x35)
 i32 CDDrawChildGroup::SumWeighted() {
     i32 i = 0;

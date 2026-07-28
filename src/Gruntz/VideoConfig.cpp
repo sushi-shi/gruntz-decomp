@@ -285,12 +285,22 @@ void LoadGameOptionsToDialog(HWND hDlg) {
 // commit idiom as CPlay::ApplyGameOptions, with dialog reads as the value source.
 //
 // @early-stop
-// entropy tail (~99.9%): every instruction byte matches retail except (a) the
-// IsDlgButtonChecked IAT reference - retail names the cached IAT pointer by its
-// fixed VA 0x6c44b0, our <Win32.h> import emits the identical `mov edi,ds:[__imp]`
-// against __imp__IsDlgButtonChecked@8 (win32-import scoring artifact, same bytes),
-// and (b) a single ecx-vs-edx coloring of the m_100 manager reload (regalloc
-// coin-flip). No real code divergence; no source lever flips either.
+// 99.90%: every instruction byte matches retail except (a) the IsDlgButtonChecked IAT
+// reference - retail names the cached IAT pointer by its fixed VA 0x6c44b0, our
+// <Win32.h> import emits the identical `mov edi,ds:[__imp]` against
+// __imp__IsDlgButtonChecked@8 (win32-import scoring artifact, same bytes), and (b) the
+// m_isVoiceEnabled reload is `mov edx,[g_gameReg]` where retail has ecx.
+// (b) is NOT a coin flip - it is a PHASE. Isolated in a 40-line micro-replica (cl 5.0
+// /O2 /MT /GX reproduces our exact register sequence): successive `gGlobalPtr->member =
+// <value>` stores take their address temp from a 2-register pool that ALTERNATES
+// ecx, edx, ecx, edx... Deleting the earlier `m_isEasyMode` store flips this one to ecx;
+// inserting a third such store before it flips it back. Retail's phase is ecx,ecx,...,
+// so retail's source has ONE MORE (or one fewer) pool temp than ours somewhere before
+// this store, in a form that is otherwise byte-identical. Tried and rejected: a temp for
+// the IsDlgButtonChecked result, a local CGruntzMgr* (worse - it re-colors 3 sites and
+// adds a push ebx), flattening the gA/gB nest, a temp for the SetRunState argument,
+// dropping the trailing 0x478 block, dropping the null guard.
+// docs/patterns/global-store-temp-alternates-ecx-edx.md
 RVA(0x00036a30, 0x14e)
 void ReadMenuOptionsDialog(HWND hDlg) {
     if (g_gameReg == 0) {

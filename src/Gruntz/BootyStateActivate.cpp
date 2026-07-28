@@ -53,8 +53,9 @@ static const double kGlitterStartRadius = 350.0; // was g_5e93c8
 
 RVA(0x00018c90, 0x72)
 void CBootyState::ReleaseResources() {
-    SoundStream* r = m_world->m_soundRegistry
-                         ->m_2c; // CDDrawSubMgrLeafScan::m_2c is already the real SoundStream*
+    SoundStream* r =
+        m_world->m_soundRegistry
+            ->m_soundStream; // CDDrawSubMgrLeafScan::m_2c is already the real SoundStream*
     if (r) {
         r->Stop();
     }
@@ -122,8 +123,8 @@ i32 CBootyState::FrameSlot28(i32) {
     if (found && (static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
         (static_cast<DirectSoundMgr*>(found->m_10))->CloneAndPlay(0, 0x1f4, 1);
         while ((static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
-            if (m_world->m_soundRegistry->m_2c != 0) {
-                m_world->m_soundRegistry->m_2c->PurgeVoiceList(-1);
+            if (m_world->m_soundRegistry->m_soundStream != 0) {
+                m_world->m_soundRegistry->m_soundStream->PurgeVoiceList(-1);
             }
         }
     }
@@ -610,8 +611,8 @@ i32 CBootyState::Render() {
     dt->m_frontPair->m_surface->Flip(0);
     dt->m_backPair->m_surface
         ->BltFast(0, 0, dt->m_overlayPair->m_surface, &dt->m_overlayPair->m_srcRect, 0x10);
-    if (m_world->m_soundRegistry->m_2c != 0) {
-        m_world->m_soundRegistry->m_2c->PurgeVoiceList(-1);
+    if (m_world->m_soundRegistry->m_soundStream != 0) {
+        m_world->m_soundRegistry->m_soundStream->PurgeVoiceList(-1);
     }
     return 1;
 }
@@ -1056,15 +1057,18 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
 // pooled resource (if set), release the "BOOTY" set on the leaf registry, run a teardown
 // on the owner's m_4->m_60 cue sink (CGruntSpawnConfig::PauseAllVoices), then chain
 // CState::ReleaseResources.
-// @early-stop
-// near-exact (~98.5%): structure/offsets/calls all match; the sole non-reloc residual is
-// the m_4 deref landing in eax vs retail's edx (single-register coin-flip).
+// EXACT. The old "m_4 deref in eax vs edx coin-flip" was a CASCADE off the first
+// statement: latching ->m_2c into a local collapsed the deref chain and re-coloured
+// every later scratch. Read ->m_2c off a named registry local instead.
+// docs/patterns/named-local-keeps-deref-base-in-own-register.md
 RVA(0x0001e520, 0x3e)
 void CMultiBootyState::ReleaseResources() {
-    SoundStream* r = m_world->m_soundRegistry
-                         ->m_2c; // CDDrawSubMgrLeafScan::m_2c is already the real SoundStream*
-    if (r) {
-        r->Stop();
+    // Read ->m_2c off a NAMED registry local (twice), never latched into a local: the
+    // latch lets cl collapse the two-step deref into one register.
+    // docs/patterns/named-local-keeps-deref-base-in-own-register.md
+    CDDrawSubMgrLeafScan* reg = m_world->m_soundRegistry;
+    if (reg->m_soundStream) {
+        reg->m_soundStream->Stop();
     }
     m_world->m_soundRegistry->RemoveKeysEqual("BOOTY", "_");
     // m_4 (CState::m_4) IS the CGruntzMgr singleton; the +0x60 slot it flushes here is
@@ -1118,8 +1122,8 @@ i32 CMultiBootyState::FrameSlot28(i32) {
     if (found && (static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
         (static_cast<DirectSoundMgr*>(found->m_10))->CloneAndPlay(0, 0x1f4, 1);
         while ((static_cast<DirectSoundMgr*>(found->m_10))->IsPlaying()) {
-            if (m_world->m_soundRegistry->m_2c != 0) {
-                m_world->m_soundRegistry->m_2c->PurgeVoiceList(-1);
+            if (m_world->m_soundRegistry->m_soundStream != 0) {
+                m_world->m_soundRegistry->m_soundStream->PurgeVoiceList(-1);
             }
         }
     }
@@ -1390,8 +1394,10 @@ i32 CMultiBootyState::Render() {
     dt->m_frontPair->m_surface->Flip(0);
     dt->m_backPair->m_surface
         ->BltFast(0, 0, dt->m_overlayPair->m_surface, &dt->m_overlayPair->m_srcRect, 0x10);
-    if (m_world->m_soundRegistry->m_2c != 0) {
-        m_world->m_soundRegistry->m_2c->PurgeVoiceList(-1); // SoundDevice base method (inherited)
+    if (m_world->m_soundRegistry->m_soundStream != 0) {
+        m_world->m_soundRegistry->m_soundStream->PurgeVoiceList(
+            -1
+        ); // SoundDevice base method (inherited)
     }
     return 1;
 }

@@ -12,7 +12,7 @@
 #include <rva.h>
 #include <Gruntz/BootyWalkAnim.h> // ex Globals.h
 #include <Gruntz/SoundState.h>    // ex Globals.h transitive
-#include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
+#include <Utils/MapTyped.h>       // typed MFC map lookups (the forced void*& pun at one boundary)
 
 DATA(0x001e8fe4)
 BzGeomPair g_idleGeom[4] = {
@@ -53,7 +53,6 @@ DATA(0x00229f30)
 SecretMsgRow g_secretMsgRows[24]; // 0x629f30  (0xa0 stride)
 char g_secretMsgA[0x20];          // 0x62ae30  encoded line A
 char g_secretMsgB[0x80];          // 0x62ae50  encoded line B (strB extent 0x80, not 0x20)
-
 
 // ===========================================================================
 // ShowLevelCompleteMessage @0x1c9d0 - draws the per-slot ready/template overlays,
@@ -340,7 +339,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
 
     CBattlezData* rec2 = g_gameReg->m_scoreHud;
     if (rec2->m_count == 0x20) {
-        SoundStream* sub = m_world->m_soundRegistry->m_2c;
+        SoundStream* sub = m_world->m_soundRegistry->m_soundStream;
         if (sub != 0) {
             sub->Stop();
         }

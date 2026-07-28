@@ -187,7 +187,12 @@ i32 CSBI_GruntMachine::Render() {
         }
         f = m_frameB;
         if (f) {
-            f->RenderFrame(ctx, m_rect14.left + f->m_anchorX + 0x2c, m_rect14.top + f->m_anchorY, 0);
+            f->RenderFrame(
+                ctx,
+                m_rect14.left + f->m_anchorX + 0x2c,
+                m_rect14.top + f->m_anchorY,
+                0
+            );
         }
         f = m_frameA;
         if (f) {
@@ -223,14 +228,19 @@ void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
 // CStatusBarItem::SerializeFields (retail `call 0x1848`) and 0/1-normalise.
 // ===========================================================================
 // @early-stop
-// stack-slot recoloring wall (the GruntStateRec/CTimer scratch-slot family), 99.89%:
-// every instruction byte-identical except the frame size (mine 0x8c vs retail 0x88)
-// and the dependent esp-relative offsets. Retail's compiler reuses the dead `reg`
-// spill slot ([esp+0x14]) for `idx` once reg is cached in esi after the first
-// (index-less) name block; cl gives idx its own slot. The sibling CSBI_SideTab leg
-// (whose FIRST block already uses idx, keeping the slot hot) hit 100.00 EXACT with
-// the same spelling; block-scoping v/out/idx recovered out/v sharing but the
-// reg/idx recoloring is not source-steerable (permuter: no change).
+// stack-slot recoloring wall, 99.89%: EVERY instruction is byte-identical except the
+// frame size (mine 0x8c vs retail 0x88) and the -4 shift it puts on every esp-relative
+// offset. Retail packs 2 local dwords + buf: out@0x10, buf@0x18, and ONE slot @0x14
+// time-shared by the `reg` spill (written once at the top, reloaded to esi twice in the
+// first, index-less name block) and then by v/idx. cl gives `reg` its own home @0x18.
+// The sibling CSBI_SideTab::SerializeFields, character-for-character the same spelling
+// but whose FIRST mode-7 block already reads an idx, is 100.00 EXACT - so the shape is
+// right and the packer's choice turns on when idx first appears.
+// Tried, none moved the frame: swapping the out/idx decl order; declaring idx after the
+// first block; wrapping reg+switch in a bare block; declaring buf before reg; dropping
+// the `i32 i = idx;` copy. Declaring `reg` per-case (case 4 / case 7) DOES produce the
+// 0x88 frame - which proves the extra dword is reg's function-scope home - but it costs
+// the top-of-function spill and reschedules the first block, so it is a net loss.
 RVA(0x000e8e00, 0x41a)
 i32 CSBI_GruntMachine::SerializeFields(CFileMemBase* s, i32 mode, i32 a2, i32 a3) {
     if (s == 0) {

@@ -26,8 +26,6 @@
 #include <Dsndmgr/GruntzSoundZ.h>    // CGruntzSoundZ (m_sound)
 #include <Gruntz/WorldSoundSet.h>    // CWorldSoundSet (m_inputState @+0x54; Stop/Resume)
 
-
-
 #define PLAYCUE(TAG)                                                                               \
     if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \
         LeafCue* _c = static_cast<LeafCue*>(m_world->m_soundRegistry->Lookup(TAG));                \
@@ -66,15 +64,15 @@
     {                                                                                              \
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
-        CGrunt* _cell = m_cmdGrid->m_recList.GetCount() == 1                                        \
-                            ? m_cmdGrid->m_grid[m_cmdGrid->HeadRec()->m_y                          \
-                                                + m_cmdGrid->HeadRec()->m_x * 15]                  \
-                            : 0;                                                                   \
+        CGrunt* _cell =                                                                            \
+            m_cmdGrid->m_recList.GetCount() == 1                                                   \
+                ? m_cmdGrid->m_grid[m_cmdGrid->HeadRec()->m_y + m_cmdGrid->HeadRec()->m_x * 15]    \
+                : 0;                                                                               \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_tileOwnerHi != g_curPlayer)                                                   \
             return 0;                                                                              \
-        CGrunt* _c2 = m_cmdGrid->m_grid[_cell->m_tileOwnerLo + _cell->m_tileOwnerHi * 15];          \
+        CGrunt* _c2 = m_cmdGrid->m_grid[_cell->m_tileOwnerLo + _cell->m_tileOwnerHi * 15];         \
         i32 _r = (_c2 && _c2->m_entranceCommitted) ? _c2->LoadPickupSprites(ID, 0, 0, 0, 1) : 0;   \
         if (!_r)                                                                                   \
             return 0;                                                                              \
@@ -86,10 +84,10 @@
     {                                                                                              \
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
-        CGrunt* _cell = m_cmdGrid->m_recList.GetCount() == 1                                        \
-                            ? m_cmdGrid->m_grid[m_cmdGrid->HeadRec()->m_y                          \
-                                                + m_cmdGrid->HeadRec()->m_x * 15]                  \
-                            : 0;                                                                   \
+        CGrunt* _cell =                                                                            \
+            m_cmdGrid->m_recList.GetCount() == 1                                                   \
+                ? m_cmdGrid->m_grid[m_cmdGrid->HeadRec()->m_y + m_cmdGrid->HeadRec()->m_x * 15]    \
+                : 0;                                                                               \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_tileOwnerHi != g_curPlayer)                                                   \
@@ -1052,7 +1050,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
         }
         case kCmdToggleSound: { // 0x89f08  world-position display toggle
             if (m_world) {
-                SoundStream* p = m_world->m_soundRegistry->m_2c;
+                SoundStream* p = m_world->m_soundRegistry->m_soundStream;
                 if (p) {
                     p->Stop();
                 }

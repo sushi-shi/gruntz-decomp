@@ -72,8 +72,8 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 mode) {
 RVA(0x000140d0, 0x33)
 void CAttract::ReleaseResources() {
     CDDrawSubMgrLeafScan* reg = menuRoot()->m_soundRegistry;
-    if (reg->m_2c) {
-        reg->m_2c->Stop();
+    if (reg->m_soundStream) {
+        reg->m_soundStream->Stop();
     }
     menuRoot()->m_soundRegistry->RemoveKeysEqual("ATTRACT", "_");
     // Chain the base slot-2 teardown (0xfa150 IS CState::ReleaseResources - the
@@ -153,11 +153,11 @@ i32 CAttract::Vslot09(i32 arg) {
 // If the host's voice (m_host->m_10) is playing, (re)start it (Restart(0,0x1f4,1)),
 // then if it is still playing stop the registrar's pooled resource (Stop(-1)) and
 // loop while the voice keeps reporting playing. Returns 1.
-// @early-stop
-// regalloc back-edge coin-flip (docs/patterns/zero-register-pinning.md): body
-// byte-identical except the final loop-back IsPlaying load - retail re-reads
-// m_host through eax (8b 86 .. 8b 48 10), the recompile through ecx (8b 8e .. 8b 49
-// 10). A pure allocator choice on the do-while back-edge; no source lever flips it.
+// EXACT. The "back-edge coin-flip" (retail `mov eax,[esi+0x1b8] / mov ecx,[eax+0x10]`
+// vs our collapsed `mov ecx,[esi+0x1b8] / mov ecx,[ecx+0x10]`) was the loop BODY's
+// spelling, not the back edge: reading the registry through a named local used TWICE
+// (the null test + the call) instead of latching ->m_2c into a local splits the chain.
+// docs/patterns/named-local-keeps-deref-base-in-own-register.md
 RVA(0x00014340, 0x71)
 i32 CAttract::FrameSlot28(i32 arg) {
     if (m_host == 0) {
@@ -171,9 +171,9 @@ i32 CAttract::FrameSlot28(i32 arg) {
         return 1;
     }
     do {
-        SoundStream* r = menuRoot()->m_soundRegistry->m_2c;
-        if (r) {
-            r->PurgeVoiceList(-1);
+        CDDrawSubMgrLeafScan* reg = menuRoot()->m_soundRegistry;
+        if (reg->m_soundStream) {
+            reg->m_soundStream->PurgeVoiceList(-1);
         }
     } while (m_host->m_10->IsPlaying());
     return 1;
@@ -184,14 +184,13 @@ i32 CAttract::FrameSlot28(i32 arg) {
 // idle, report the exit error (0x8006/0x3e8) and bail. Otherwise stop the registrar's
 // pooled resource, tick the m_idleTimer timeout down by the frame delta, run every
 // actor's Update(), and if any actor raised its 0x100 flag post the exit WM_COMMAND.
-// @early-stop
-// The m_idleTimer countdown was a real branch-polarity bug - written `if (delta <
-// timer) sub; else zero`, cl emitted `jae`->zero where retail emits `jb`->sub;
-// rewriting to the `if (delta >= timer) zero; else sub` form (matching CDemo::Render)
-// flipped it byte-exact. Remaining residual: (1) a regalloc coin-flip on the
-// m_soundRegistry->m_2c chain (retail reuses eax for the intermediate ptr, cl uses
-// ecx) and (2) reloc-masked IAT/cross-unit operands (ReportError, 0x136e20, the
-// PostMessageA IAT absolute). Not source-steerable; topic:scoring-artifact.
+// EXACT. Two real bugs, both fixed: (1) the m_idleTimer countdown was a branch-polarity
+// bug - written `if (delta < timer) sub; else zero`, cl emitted `jae`->zero where retail
+// emits `jb`->sub; the `if (delta >= timer) zero; else sub` form (matching CDemo::Render)
+// flipped it. (2) the m_soundRegistry->m_2c chain collapsed into one register because
+// ->m_2c was latched into a local; naming the REGISTRY and reading ->m_2c twice off it
+// (null test + call) keeps the base in eax exactly as retail does.
+// docs/patterns/named-local-keeps-deref-base-in-own-register.md
 RVA(0x000143e0, 0xfb)
 i32 CAttract::Render() {
     IDirectDrawSurface* busy = menuRoot()->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
@@ -202,9 +201,9 @@ i32 CAttract::Render() {
         }
     }
 
-    SoundStream* res = menuRoot()->m_soundRegistry->m_2c;
-    if (res) {
-        res->PurgeVoiceList(-1);
+    CDDrawSubMgrLeafScan* reg = menuRoot()->m_soundRegistry;
+    if (reg->m_soundStream) {
+        reg->m_soundStream->PurgeVoiceList(-1);
     }
 
     if (g_frameDelta >= m_idleTimer) {
