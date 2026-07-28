@@ -25,15 +25,21 @@ CGruntzSoundZ::~CGruntzSoundZ() {
     Shutdown();
 }
 
+// The third arg is a NO-MIDI request, not a "skip the init": retail's `test eax,eax;
+// jne` on it lands on the SAME `m_enabled = 0` store the two AIL failure paths reach
+// (0x1384de), i.e. a non-zero flag disables the host outright. The old model let it
+// fall through with m_enabled still 1 (byte-visible: `jne +0x55` vs retail `jne +0x4e`).
 RVA(0x00138490, 0x5e)
-i32 CGruntzSoundZ::Init(HINSTANCE hInst, HWND hwnd, i32 skipInit) {
+i32 CGruntzSoundZ::Init(HINSTANCE hInst, HWND hwnd, i32 noMidi) {
     m_hInstance = hInst;
     m_ownerWnd = hwnd;
     m_pCurrent = 0;
     m_enabled = 1;
     // Miles takes the app instance through its driver-handle slot - API-forced
     g_ailDriver64 = reinterpret_cast<HMDIDRIVER>(hInst);
-    if (skipInit == 0) {
+    if (noMidi != 0) {
+        m_enabled = 0;
+    } else {
         AIL_startup();
         if (AIL_midiOutOpen(&g_ailMidiDriver, 0, -1) != 0 || g_ailMidiDriver == 0) {
             m_enabled = 0;

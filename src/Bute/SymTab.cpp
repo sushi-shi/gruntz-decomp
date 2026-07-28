@@ -9,8 +9,8 @@
 // (Load@CRezDirNode 0x13a0f0; @identity-TODO). 0x13c080 is Classify@CSymParser
 // (its callers ParseBuffer/LoadEntry pass ecx=this; ex the FindEntry@CRezDir guess).
 #include <Rez/DebugPrintf.h> // RezAssertFail (owning decl; varargs C linkage)
-#include <Bute/SymTab.h> // own extern surface
-#include <Mfc.h>         // afx-first (RezMgr.h below pulls MFC/Win32 for the two Rez strays)
+#include <Bute/SymTab.h>     // own extern surface
+#include <Mfc.h>             // afx-first (RezMgr.h below pulls MFC/Win32 for the two Rez strays)
 #include <rva.h>
 #include <io.h>     // _finddata_t / _findfirst / _findnext / _findclose (ParseRecords)
 #include <stdlib.h> // _splitpath (0x18c530) / atoi (0x11ff10)
@@ -204,9 +204,8 @@ char* CParseSource::BeginParse() {
     if (m_buffer == 0) {
         return 0;
     }
-    if (m_reader->Read(m_base, 0, m_length, m_buffer)
-        != static_cast<i32>(m_length)) {
-        ::operator delete(m_buffer);
+    if (m_reader->Read(m_base, 0, m_length, m_buffer) != static_cast<i32>(m_length)) {
+        delete m_buffer;
         m_buffer = 0;
     }
     return m_buffer;
@@ -648,8 +647,7 @@ CParseSource* CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
 }
 
 RVA(0x0013a4b0, 0x75)
-CParseSource*
-CSymTab::AddNodeEntry(u32 key, const char* name, CSymRec* rec, CRezItmBase* stream) {
+CParseSource* CSymTab::AddNodeEntry(u32 key, const char* name, CSymRec* rec, CRezItmBase* stream) {
     CParseSource* slot = m_owner->PopParseSlot();
     if (slot == 0) {
         return slot;
@@ -697,7 +695,7 @@ i32 CSymTab::AddNodeSubEntry(void* rec, void* found) {
 // constant in ebp; the recompile swaps them (a2->ebp, 0->ebx), which cascades through
 // every null check + the recursion fourcc setup. Banked for the final sweep.
 RVA(0x0013a580, 0xb2)
-i32 CSymTab::ApplyRecursive(CRezItmBase * a0, i32 a1, i32 a2, i32 a3) {
+i32 CSymTab::ApplyRecursive(CRezItmBase* a0, i32 a1, i32 a2, i32 a3) {
     i32 ok = 1;
     if (a2 != 0) {
         CHashElement* e = m_subTabs.First();
@@ -974,8 +972,7 @@ CSymParser::~CSymParser() {
         Clear(0);
     }
     CRezItmBase* p;
-    for (p = m_list.m_head; p != 0;
-         p = m_list.m_head) {
+    for (p = m_list.m_head; p != 0; p = m_list.m_head) {
         m_list.Remove(p);
         m_list.m_count--;
         delete p; // the slot-1 scalar-deleting dtor (delete emits the same null test)
@@ -1340,8 +1337,7 @@ i32 CSymParser::Clear(i32 final) {
     delete m_activeNode; // slot-1 scalar dtor (delete emits the same null test)
     m_activeNode = 0;
     CRezItmBase* p;
-    for (p = m_list.m_head; p != 0;
-         p = m_list.m_head) {
+    for (p = m_list.m_head; p != 0; p = m_list.m_head) {
         p->Close();
         m_list.Remove(p);
         m_list.m_count--;

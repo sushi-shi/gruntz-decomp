@@ -419,21 +419,14 @@ void CTriggerMgr::ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag) {
 // 0x78880: ClearRecords - drain the record list (+0x244) back to the free list,
 // then RemoveAll the +0x240 MFC pointer list. The free-list head is cached in a
 // register across the loop (g_coordPool.m_freeHead read once, written each iteration).
-// @early-stop
-// prologue scheduling wall: the drain loop body is byte-exact, but retail batches
-// `push edi; push esi` then loads esi=head/edi=bias; our cl interleaves the loads
-// with the pushes. docs/patterns/zero-store-before-loop-inline-bound.md
 RVA(0x00078880, 0x3c)
 void CTriggerMgr::ClearRecords() {
     POSITION pos = m_recList.GetHeadPosition();
     if (pos != 0) {
-        i32 bias = g_coordPool.m_linkOffset;
-        void* head = g_coordPool.m_freeHead;
         do {
             CoordPoolNode* slot = g_coordPool.NodeOf(m_recList.GetNext(pos));
-            slot->m_next = static_cast<CoordPoolNode*>(head);
-            head = slot;
-            g_coordPool.m_freeHead = static_cast<CoordPoolNode*>(head);
+            slot->m_next = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = slot;
         } while (pos != 0);
     }
     m_recList.RemoveAll();
@@ -2357,12 +2350,6 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
 // the node back to the free list and RemoveAt it from the slot list. On the centering pass
 // scroll the world to the bbox centre and clear m_3e8; else latch m_3e8=slot. ret 1 (0 when
 // the slot list is empty).
-// @early-stop
-// regalloc wall (~87%): logic + offsets + all reloc-masked externs (ResetAll/OverlayTick/
-// ResetCell/RemoveAt/Center/g_coordPool.m_freeHead*/g_gameReg) byte-exact, but retail pins this=ebp,
-// node=esi, y=edi (a perfect 5-reg fit); our cl swaps this/node into esi/ebp and spills
-// `this` to the stack, reusing esi for y. Same systematic esi<->ebp swap the rest of this
-// TU exhibits; not source-steerable. topic:wall.
 RVA(0x0007cd40, 0x18f)
 i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     ResetAll();
@@ -2375,11 +2362,16 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
         m_selSentinel = -1;
         return 0;
     }
-    i32 maxX = 0;
-    i32 maxY = 0;
+    // The bbox is a RECT local, not four scalars: retail's four slots are the
+    // CONTIGUOUS ascending esp+0x18/0x1c/0x20/0x24 = left/top/right/bottom, and they
+    // sit ABOVE the two compiler temps (the saved POSITION and the &m_selLists[slot]
+    // lea) exactly the way cl homes a named aggregate.
+    RECT bbox;
+    bbox.right = 0;
+    bbox.bottom = 0;
     CDDrawWorkerHost* grid = g_gameReg->m_world->m_level->m_mainPlane;
-    i32 minX = grid->m_wrapW - 1;
-    i32 minY = grid->m_wrapH - 1;
+    bbox.left = grid->m_wrapW - 1;
+    bbox.top = grid->m_wrapH - 1;
     do {
         POSITION cur = pos;
         i32* payload = static_cast<i32*>(m_selLists[slot].GetNext(pos));
@@ -2391,17 +2383,17 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
                 CGameObject* disp = cell->m_object;
                 i32 x = disp->m_screenX;
                 i32 y = disp->m_screenY;
-                if (x < minX) {
-                    minX = x;
+                if (x < bbox.left) {
+                    bbox.left = x;
                 }
-                if (x > maxX) {
-                    maxX = x;
+                if (x > bbox.right) {
+                    bbox.right = x;
                 }
-                if (y < minY) {
-                    minY = y;
+                if (y < bbox.top) {
+                    bbox.top = y;
                 }
-                if (y > maxY) {
-                    maxY = y;
+                if (y > bbox.bottom) {
+                    bbox.bottom = y;
                 }
             }
         } else {
@@ -2414,8 +2406,8 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     if (m_selSentinel == slot) {
         (static_cast<CPlay*>(g_gameReg->m_curState))
             ->ResetGoals(
-                minX + (maxX - minX) / 2,
-                minY + (maxY - minY) / 2
+                bbox.left + (bbox.right - bbox.left) / 2,
+                bbox.top + (bbox.bottom - bbox.top) / 2
             ); // 0xd5f00
         m_selSentinel = -1;
         return 1;
@@ -2424,22 +2416,31 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     return 1;
 }
 
+// Same RECT bbox as CenterSelectionGroup (contiguous ascending left/top/right/bottom;
+// only `right` stays in memory, the other three colour into edi/ebp/eax). The old model
+// also had a real BUG: it gated the single-selection latch on the ResetGoals RETURN,
+// but retail discards that return and re-reads the `doSelect` ARGUMENT ([esp+0x28])
+// - `mov eax,[esp+0x28]` right after the call.
 // @early-stop
-// 83% - regalloc wall: the list walk, grid-hash (x*15 + y), bounding-box min/max
-// fold, midpoint centre call and single-selection latch are byte-faithful; the
-// residual is min/max register colouring + the doubled grid-lookup spill.  No EH.
+// 98.8% - two residues left: (1) the commutative `add` destination on the tail
+// grid-hash - retail `add ecx,edx` keeps the x*15 product as the SIB index, cl picks
+// `add edx,ecx` (the head[1] operand); tried both operand orders and hoisting the
+// product into its own local, none flip it. docs/patterns/commutative-imul-operand-in-eax.md
+// (2) the `mov ecx,ebx` receiver reload schedules one store later in retail, which
+// falls out of (1).
 RVA(0x0007cf40, 0x12e)
 i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     POSITION pos = m_recList.GetHeadPosition();
     if (pos == 0) {
         return 0;
     }
-    CDDrawWorkerHost* dims = g_gameReg->m_world->m_level->m_mainPlane;
-    i32 minX = dims->m_wrapW - 1;
-    i32 minY = dims->m_wrapH - 1;
-    i32 maxX = 0;
-    i32 maxY = 0;
+    RECT bbox;
     i32 count = 0;
+    CDDrawWorkerHost* dims = g_gameReg->m_world->m_level->m_mainPlane;
+    bbox.left = dims->m_wrapW - 1;
+    bbox.top = dims->m_wrapH - 1;
+    bbox.right = 0;
+    bbox.bottom = 0;
     do {
         i32* k = static_cast<i32*>(m_recList.GetNext(pos)); // the (x,y) record pair
         CGrunt* cell = m_grid[k[0] * TM_GRID_COLS + k[1]];
@@ -2448,32 +2449,37 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
             CGameObject* g = cell->m_object;
             i32 gx = g->m_screenX;
             i32 gy = g->m_screenY;
-            if (gx < minX) {
-                minX = gx;
+            if (gx < bbox.left) {
+                bbox.left = gx;
             }
-            if (gx > maxX) {
-                maxX = gx;
+            if (gx > bbox.right) {
+                bbox.right = gx;
             }
-            if (gy < minY) {
-                minY = gy;
+            if (gy < bbox.top) {
+                bbox.top = gy;
             }
-            if (gy > maxY) {
-                maxY = gy;
+            if (gy > bbox.bottom) {
+                bbox.bottom = gy;
             }
         }
     } while (pos != 0);
-    i32 cy = minY + (maxY - minY) / 2;
-    i32 cx = minX + (maxX - minX) / 2;
-    i32 r = (static_cast<CPlay*>(g_gameReg->m_curState))->ResetGoals(cx, cy);
-    if (r != 0 && count == 1 && m_recList.GetCount() == 1) {
-        i32* head = static_cast<i32*>(m_recList.GetHead());
-        CGrunt* cell2 = m_grid[head[0] * TM_GRID_COLS + head[1]];
+    i32 cy = bbox.top + (bbox.bottom - bbox.top) / 2;
+    i32 cx = bbox.left + (bbox.right - bbox.left) / 2;
+    (static_cast<CPlay*>(g_gameReg->m_curState))->ResetGoals(cx, cy);
+    if (doSelect != 0 && count == 1) {
+        CGrunt* cell2;
+        if (m_recList.GetCount() != 1) {
+            cell2 = 0;
+        } else {
+            i32* head = static_cast<i32*>(m_recList.GetHead());
+            cell2 = m_grid[head[0] * TM_GRID_COLS + head[1]];
+        }
         if (cell2 != 0) {
-            i32 v1f0 = cell2->m_tileOwnerLo;
-            i32 v1ec = cell2->m_tileOwnerHi;
-            if (RecordListHas(v1ec, v1f0)) {
-                m_recX = v1ec;
-                m_recY = v1f0;
+            i32 recX = cell2->m_tileOwnerHi;
+            i32 recY = cell2->m_tileOwnerLo;
+            if (RecordListHas(recX, recY)) {
+                m_recX = recX;
+                m_recY = recY;
                 m_armed = 1;
                 LoadCameraSprite();
             }
@@ -2489,14 +2495,12 @@ void CTriggerMgr::ClearSelections() {
     do {
         POSITION pos = list->GetHeadPosition();
         if (pos != 0) {
-            void* head = g_coordPool.m_freeHead;
             do {
                 i32* payload = static_cast<i32*>(list->GetNext(pos));
                 if (payload != 0) {
                     CoordPoolNode* slot = g_coordPool.NodeOf(payload);
-                    slot->m_next = static_cast<CoordPoolNode*>(head);
-                    head = slot;
-                    g_coordPool.m_freeHead = static_cast<CoordPoolNode*>(head);
+                    slot->m_next = g_coordPool.m_freeHead;
+                    g_coordPool.m_freeHead = slot;
                 }
             } while (pos != 0);
         }

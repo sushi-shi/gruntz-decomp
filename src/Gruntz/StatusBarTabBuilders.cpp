@@ -241,6 +241,23 @@ void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
 // the `i32 i = idx;` copy. Declaring `reg` per-case (case 4 / case 7) DOES produce the
 // 0x88 frame - which proves the extra dword is reg's function-scope home - but it costs
 // the top-of-function spill and reschedules the first block, so it is a net loss.
+//
+// 2026-07-28 re-audit - the arithmetic says the shape CANNOT be spelled any other way.
+// cl5 sizes the frame as (function-scope locals) + (max over sibling nested blocks), and
+// packs only across DISJOINT lexical scopes: that is why `v` (case 4) and `out` (case 7)
+// already share esp+0x10 here. The three address-taken locals therefore need
+//   buf 0x80 + reg 4  (function scope)  +  max({v}, {out,idx}) = 8  =  0x8c,
+// and 0x88 is reachable only if reg has NO function-scope home, i.e. only if the world
+// pointer is reg∪idx-packed by LIVE RANGE - which retail's cl did (reg dies into esi in
+// the index-less first block, idx is born in the second) and ours will not. Re-measured
+// both escapes:
+//   * `if (g_gameReg->m_world == 0) return 0;` + per-case `reg`  -> frame 0x88, but cl
+//     keeps g_gameReg (not m_world) in eax and REMATERIALISES `[eax+0x30]` per case, so
+//     the top loses `mov [esp+0x14],eax` AND the `test`ed value can no longer double as
+//     the `return 0` (retail has no `xor eax,eax` on that exit). Scores 92.79 vs 99.89.
+//   * the same with the null test hoisted into its own bare block: identical output -
+//     the block-scope pointer is DCE'd and cl rematerialises exactly as above.
+// The current spelling is the maximum; the residue is pure stack-slot packing.
 RVA(0x000e8e00, 0x41a)
 i32 CSBI_GruntMachine::SerializeFields(CFileMemBase* s, i32 mode, i32 a2, i32 a3) {
     if (s == 0) {
