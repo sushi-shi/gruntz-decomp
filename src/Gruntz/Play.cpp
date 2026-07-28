@@ -1391,10 +1391,12 @@ i32 CPlay::Vslot0b(i32 key, i32 flag) {
         return 1;
     }
     if (m_inGame != 0) {
-        if (ResetPlayState()) {
-            return 1;
+        // ONE `return 1` for the block: `if (Reset...) return 1; Report(); return 1;`
+        // gives cl two, and it inlines the first instead of merging it into the
+        // function's last `mov eax,1` block the way retail does.
+        if (ResetPlayState() == 0) {
+            m_mgr->ReportError(0x800a, 0x456);
         }
-        m_mgr->ReportError(0x800a, 0x456);
         return 1;
     }
     if (m_paused != 0) {
@@ -1402,29 +1404,41 @@ i32 CPlay::Vslot0b(i32 key, i32 flag) {
         PostMessageA(m_mgr->m_gameWnd->m_hwnd, 0x111, 0x816e, 0);
         return 1;
     }
-    if (m_mgr->m_frameGate != 0) {
-        return 0;
-    }
-    if (m_hitTest->m_10 != 0) {
-        m_mgr->m_chatLog->TypeChar(key, flag); // 0x3508 -> CFontConfig::TypeChar @0x21e20
-        return 1;
-    }
-    if (key == ']') {
-        m_guts->winapi_0fe520_SetRect();
-        return 1;
-    }
-    if (key == '[') {
-        m_guts->RefreshA();
-        return 1;
-    }
-    if (key == '-') {
-        m_guts->HideRect();
-        return 1;
-    }
-    if (key == '=' || key == '+') {
-        m_guts->RefreshState();
-        m_hitTest->Configure(m_guts->m_position == 1 ? 2 : 1);
-        return 1;
+    // The frame gate NESTS the key chain instead of returning 0 early: retail has ONE
+    // shared `xor eax,eax / pop esi / ret 8` at the bottom that both this gate and the
+    // chain's fall-through jne into, where `if (frameGate != 0) return 0;` emits an
+    // INLINE return-0 here and a second one after the chain (and that layout also made
+    // cl merge the first `return 1` instead of inlining it).
+    if (m_mgr->m_frameGate == 0) {
+        if (m_hitTest->m_10 != 0) {
+            m_mgr->m_chatLog->TypeChar(key, flag); // 0x3508 -> CFontConfig::TypeChar @0x21e20
+            return 1;
+        }
+        if (key == ']') {
+            m_guts->winapi_0fe520_SetRect();
+            return 1;
+        }
+        if (key == '[') {
+            m_guts->RefreshA();
+            return 1;
+        }
+        if (key == '-') {
+            m_guts->HideRect();
+            return 1;
+        }
+        if (key == '=' || key == '+') {
+            m_guts->RefreshState();
+            // The argument is selected by a BRANCH with the call duplicated per arm
+            // (retail `cmp [eax],1 / jne / push 2 / jmp / push 1`, the receiver+call
+            // tail-merged); both the `?:` and a statement-form `i32 mode` if-converted
+            // to `dec / neg / sbb / add 2`.
+            if (m_guts->m_position == 1) {
+                m_hitTest->Configure(2);
+            } else {
+                m_hitTest->Configure(1);
+            }
+            return 1;
+        }
     }
     return 0;
 }
@@ -3484,9 +3498,14 @@ i32 CPlay::StepGridWalk(i32 dt) {
 // succeed, outside -> forward to the click-at-point handler.
 // ===========================================================================
 // @early-stop
-// zero-register-pinning wall — structure + offsets byte-identical; retail pins ebx=0
-// (xor ebx,ebx + cmp ebx,[member] null tests) and colors y into ebp (5 callee-saves),
-// MSVC here uses test/4 saves. No source lever forces it. docs/patterns/zero-register-pinning.md.
+// 73.33 -> ~93 (2026-07-29): the viewport rect is copied BY VALUE, not bound by
+// reference - that alone restores retail's ebx zero-pin, the ebp colouring of `y` and
+// the 5-callee-save frame (the "no source lever forces it" verdict was reading the
+// consequence, not the cause). 75 of retail's 80 instructions now pair; the residual is
+// the missing 5-instruction `return <ClickAt result>` epilogue: retail keeps that tail
+// separate AND merges the three `return 1` gates into one block after it, where
+// spelling the tail `return m_guts->ClickAt_ff9d0(...)` makes cl inline all three gate
+// epilogues instead (92 instructions, measured both polarities).
 RVA(0x000ce530, 0xe3)
 i32 CPlay::Vslot0f(i32 a, i32 x, i32 y) {
     if (m_hudSuppressed != 0) {
@@ -3504,7 +3523,12 @@ i32 CPlay::Vslot0f(i32 a, i32 x, i32 y) {
     if (m_guts->m_position == 2) {
         return 1;
     }
-    LevelCoordRect& vp = m_world->m_level->m_planeCtx;
+    // BY VALUE, not a reference: retail reads all four edges up front into registers
+    // (`mov ebx,&rect; mov eax,[ebx]; mov esi,[ebx+4]; mov edx,[ebx+8]; mov ebx,[ebx+0xc]`)
+    // and compares register-to-register, which is the struct-copy signature
+    // (docs/patterns/member-aggregate-copied-not-field-by-field.md); a reference re-reads each
+    // edge from memory at its compare. 73.33 -> ~93.
+    LevelCoordRect vp = m_world->m_level->m_planeCtx;
     if (x >= vp.left && x <= vp.right && y >= vp.top && y <= vp.bottom) {
         return 1;
     }
@@ -3618,13 +3642,17 @@ i32 CPlay::Vslot10(i32 msg, i32 x, i32 y) {
 // `index` (clamped to [m_64,m_68]) and, if non-empty, latch the e8/delay state.
 // ===========================================================================
 // @early-stop
-// arg-push-scheduling wall — control flow + the config-array index + map Lookup +
-// grid-setup byte-identical; the LoadSprite retry pushes (prev,1) in the opposite
-// order and the g_gameReg reload sits one slot off. docs/patterns/statement-schedule-faithful.md.
+// 81.19 -> ~98 (2026-07-29): the three early exits return 0, NOT 1. Retail's gate
+// epilogues are `jne <on>; pop edi; pop esi; pop ecx; ret 0x14` with NO `mov eax,..` -
+// eax already holds the null that failed the test - and only the full-success tail
+// carries `mov eax,0x1`. Spelled `return 1` they all needed the constant, which is
+// what tail-merged the three epilogues into one shared block. 84/84 instructions now
+// pair; the sole residual is the out-param zero-init store position (`mov [esp+8],0`
+// before the two arg pushes instead of after `add ecx,0x10`) - the known-immovable one.
 RVA(0x000d0920, 0xfe)
 i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasGrid) {
     if (m_world == 0) {
-        return 1;
+        return 0;
     }
     CDDrawWorker* grid = 0;
     CObject* gridOb = 0;
@@ -3633,7 +3661,7 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
     grid = static_cast<CDDrawWorker*>(gridOb);
     m_grid = grid;
     if (grid == 0) {
-        return 1;
+        return 0;
     }
     m_gridHasSprite = hasGrid;
     if (hasGrid != 0) {
@@ -3654,12 +3682,13 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
         frame = 0;
     }
     m_gridCurFrame = frame;
-    if (frame != 0) {
-        m_gridRow = index;
-        m_gridWalkActive = e8;
-        m_gridDelayBase = delay;
-        m_gridDelayCount = delay;
+    if (frame == 0) {
+        return 0;
     }
+    m_gridRow = index;
+    m_gridWalkActive = e8;
+    m_gridDelayBase = delay;
+    m_gridDelayCount = delay;
     return 1;
 }
 
@@ -5966,12 +5995,16 @@ i32 CPlay::Vslot09(i32 mode) {
 // docs/patterns/zero-register-pinning.md.
 RVA(0x000d5f90, 0xd7)
 i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
+    // NO `CGruntzMgr* reg = g_gameReg;` local: naming the singleton makes cl treat the
+    // slot address as the live value and hoist the id*0x238 scale ABOVE the global load
+    // (`lea edx,[eax+eax*8]` before `mov ecx,[g_gameReg]`); reading the global at both
+    // sites leaves it a CSE'd temp, which is retail's `mov edx,[g_gameReg]` first and
+    // the scale computed into ecx after (93.49 -> 100 EXACT, 76/76 instructions).
     i32 id = g_curPlayer;
-    CGruntzMgr* reg = g_gameReg;
-    GruntzPlayer* slot = &reg->m_options[id];
+    GruntzPlayer* slot = &g_gameReg->m_options[id];
     // ONE miss exit (retail 0xd6017): both gates AND the loop's bottom test branch
     // into it, so the loop's back-edge is an unconditional jmp
-    if (slot != 0 && reg->m_cmdGrid->m_rowCount[id] < slot->m_comboSel) {
+    if (slot != 0 && g_gameReg->m_cmdGrid->m_rowCount[id] < slot->m_comboSel) {
         i32 i = 0;
         if (i < markerCount()) {
             do {
