@@ -11,9 +11,11 @@ SIZE_UNKNOWN();
 
 struct CAniSource {
     char m_pad00[0x8];
-    i32 m_flags;   // +0x08 flags (or'd into the element's m_flags)
-    i32 m_count;   // +0x0c record count
-    i32 m_namelen; // +0x10 name length in bytes
+    i32 m_flags; // +0x08 flags (or'd into the element's m_flags)
+    i32 m_count; // +0x0c record count
+    // UNSIGNED: CAniElement::Build's name-copy loop guards are jbe/jb, not jle/jl
+    // (0x16549b / 0x1654b7) - the length is an unsigned byte count.
+    u32 m_namelen; // +0x10 name length in bytes
     char m_pad14[0xc];
     char m_data[1]; // +0x20 name bytes followed by the record stream
 };

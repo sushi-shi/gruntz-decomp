@@ -109,7 +109,6 @@ extern "C" u32 RezFRead(void* buf, u32 size, u32 n, void* fp);  // 0x18c220
 extern "C" i32 RezFSeek(void* fp, i32 off, i32 origin);         // 0x18c3a0
 extern "C" u32 RezFWrite(void* buf, u32 size, u32 n, void* fp); // 0x18cb40
 
-
 class CRezDir : public CRezItmBase {
 public:
     CRezDir(void* parent, i32 maxOpen);
@@ -144,7 +143,9 @@ struct RezSrc {
     char m_pad0[0x08];
     i32 m_8; // +0x08  (must be nonzero)
     char m_padc[0x1c - 0x0c];
-    i32 m_1c;              // +0x1c  (must be <= 1)
+    // UNSIGNED: CRezDirNode::Load's guard is `cmp [eax+0x1c],1 / ja` (0x13a10a),
+    // not `jg` - the "not sorted" reject treats this as an unsigned magnitude.
+    u32 m_1c;              // +0x1c  (must be <= 1)
     CRezItmBase* m_stream; // +0x20  the polymorphic read stream (family item)
 };
 SIZE_UNKNOWN(); // partial view of the foreign archive-source object
@@ -165,7 +166,6 @@ public:
     u8* m_buf;        // +0x48  payload buffer / loaded gate
 };
 SIZE_UNKNOWN(); // partial view of the loader's recursive dir node
-
 
 extern "C" void RezFormat(CString* dst, const char* fmt, ...);
 

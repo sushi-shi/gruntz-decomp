@@ -1044,11 +1044,18 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
 // Complete + correct, ~99.86%. The 0x14dd90 pre-notify is bound to its real callee
 // CDDrawShadeBlit::Select - a plain `m_owned->Select(...)` now that the fake ShadeSelector
 // class it used to be bound to is dissolved, so the ((ShadeSelector*)m_owned) reinterpret
-// is GONE (the cast was the symptom; the wrong owning class was the cause). It still
-// ripples the /O2 origin-load regalloc-tiebreak (ebp/ebx swap in the rect setup).
-// Residual = those
-// tiebreak insns + the WrapCoord ILT-thunk / CopyRect IAT-import reloc-name artifacts;
-// all other code bytes byte-exact. %-hit accepted per structure-recovery doctrine.
+// is GONE (the cast was the symptom; the wrong owning class was the cause).
+// The whole residue is now TWO instructions in the rect setup: which of ebp/ebx holds
+// info->m_plotDX vs m_anchorX (retail ebx=plotDX/ebp=anchorX, ours the reverse), which
+// also swaps the 4th/5th load ([edi+0x18] vs [edi+0x24]). The `sub eax,ecx / sub eax,ebp
+// / sub eax,ebx` chain itself is byte-identical, so the operands are only relabelled.
+// NOT source-steerable: nine spellings of the X/Y formulas - operand permutations
+// (swap34/anchor-first/plot-first), parenthesised (o+a) grouping, step-wise `x -= ...`,
+// X/Y interleaved, and hoisting either the this-members or the info-members into locals
+// - all emit the byte-identical prologue. cl reassociates the sub chain to one canonical
+// order before regalloc; this is the commutative-operand register pick
+// (docs/patterns/commutative-imul-operand-in-eax.md). Sibling BlitShadeFlipV has the
+// same wall. Plus the WrapCoord ILT-thunk / CopyRect IAT-import reloc-name artifacts.
 RVA(0x00154270, 0x257)
 void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 x = info->m_screenX - m_originX - m_anchorX - info->m_plotDX;

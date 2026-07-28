@@ -15,10 +15,22 @@ struct CPathWaypoint {
 };
 SIZE_UNKNOWN();
 
+// A hazard timing window: the start-clock stamp plus the duration, both signed
+// 64-bit game-clock ticks. It is a real sub-object, not two loose members - the
+// serializer moves it as a unit (CPathHazard::SerializeMove writes the pair with
+// one helper) and BOTH CPathHazard ctors emit its zero-init as its own scheduling
+// group: retail's `[+0]lo,[+8]lo,[+0]hi,[+8]hi` batch per window, where four loose
+// i64 members would batch all four lo halves then all four hi halves.
+struct CHazardTimer {
+    i64 m_deadline; // +0x00  start-clock stamp
+    i64 m_window;   // +0x08  window duration
+    CHazardTimer() : m_deadline(0), m_window(0) {}
+};
+SIZE_UNKNOWN();
+
 extern "C" u32 g_engineFrameDelta;
 
 extern "C" i32 g_frameDelta; // VA 0x645584
-
 
 extern "C" i32 __ftol(double v); // 0x11f570 (CRT double->long; one canonical signature)
 
@@ -86,14 +98,11 @@ public:
     // The leg/strike timers are REAL i64s (the strike gate compares them with signed
     // 64-bit arithmetic - see SiblingTick). The old split-i32 lo/hi spelling was the
     // artifact of the CLightningHazard dual-view, now folded in.
-    i64 m_legDeadline; // +0x108 leg start-clock deadline
-    i64 m_legWindow;   // +0x110 leg window duration
-    i32 m_strikeArmed; // +0x118 strike-armed gate
+    CHazardTimer m_leg; // +0x108 leg deadline/window pair
+    i32 m_strikeArmed;  // +0x118 strike-armed gate
     char m_pad11c[0x120 - 0x11c];
-    i64 m_strikeDeadline; // +0x120 strike start-clock deadline
-    i64 m_strikeWindow;   // +0x128 strike window duration
+    CHazardTimer m_strike; // +0x120 strike deadline/window pair
 };
 SIZE(0x130);
-
 
 #endif // GRUNTZ_CPATHHAZARD_H

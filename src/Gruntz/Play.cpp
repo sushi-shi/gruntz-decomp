@@ -2505,8 +2505,12 @@ i32 CPlay::ProfileDeltaFrame() {
     );
     DrawDebugStats();
     m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
-    if (m_world->m_level->m_mainPlane != 0) {
-        m_world->m_level->m_mainPlane->CenterScrollB();
+    // the level is hoisted into a local: retail chains `mov eax,[eax+0x24]` and only
+    // the plane lands in ecx; the fully-inline `m_world->m_level->m_mainPlane` chain
+    // makes cl park m_level in ecx instead.
+    CGameLevel* lvl = m_world->m_level;
+    if (lvl->m_mainPlane != 0) {
+        lvl->m_mainPlane->CenterScrollB();
     }
     return 1;
 }
@@ -6289,10 +6293,6 @@ void CPlay::ReleaseResources() {
 // (Present IS its real slot-13 virtual), EmWorld==CWorld (m_10/m_54), EmGuts==
 // CStatusBarMgr, "g_645588_clk"==g_frameTime (a duplicate extern of the game clock),
 // "EmRegWorldStep"==UpdateMgrScroll @0xebd70.)
-// @early-stop
-// large state-machine wall: the mode dispatch + renderer reinstall + guts re-arm
-// are faithful, but the whole ILT-thunk referent set (~15 unnamed CPlay/registry
-// leaves) keeps it reloc-fuzzy; codegen plateau, not source-steerable.
 RVA(0x000d6fa0, 0x1fa)
 i32 CPlay::EnterMode(i32 mode) {
     (g_gameReg)->CheckSavedMode();
@@ -6353,8 +6353,11 @@ finish:
         0,
         1
     ); // 0xfa8f0 CState::RetireScene (inherited by CPlay `this`, cast-free)
-    if (m_world->m_level->m_mainPlane != 0) {
-        m_world->m_level->m_mainPlane->CenterScrollB();
+    // level hoisted into a local - see ProfileDeltaFrame: the inline chain parks
+    // m_level in the call-target register instead of chaining through eax.
+    CGameLevel* lvl = m_world->m_level;
+    if (lvl->m_mainPlane != 0) {
+        lvl->m_mainPlane->CenterScrollB();
     }
     m_mgr->RefreshGameClock(); // 0x8f620 direct (thunk 0x3d23)
     m_inputWarmup1 = 0;

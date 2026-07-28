@@ -169,7 +169,9 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
     memset(m_cellPool, 0, count * 0x1c);
     i32 stride = width;
     i32 off = 0;
-    for (i32 i = 0; i < height; i++) {
+    // UNSIGNED row counter: retail guards the loop with `test ebx,ebx / jbe` and
+    // closes it with `jb` (0x09eabe / 0x09eada), not jle/jl.
+    for (u32 i = 0; i < static_cast<u32>(height); i++) {
         m_rows[i] = m_cellPool + off;
         off += stride;
     }

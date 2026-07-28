@@ -53,12 +53,18 @@ void CDDrawSubMgrLeaf::Unload() { // slot 7 (CLoadable::Unload override; void pe
 // `target`, RemoveKey it, destroy `target` through its scalar-deleting dtor
 // (vtbl +0x4 arg 1), and stop. /GX EH frame for the local CString key. 1 arg.
 // @early-stop
-// ~99.85% - map-scan idiom (top-tested while + real GetStartPosition kills the
-// peel, pos declared before key computes it before the ctor like retail; docs/
-// patterns/mfc-map-walk-while-not-guard-dowhile.md). Every instruction byte
-// matches; the sole residue is a key<->pos stack-slot swap (retail key=[esp+0x20]/
-// pos=[esp+0x8], ours the reverse) - the stack-slot-coalesce coin-flip, only the
-// [esp+N] displacement bytes differ. docs/patterns/stack-slot-coalesce-frame-4b.md.
+// ~99.85%, size-exact (0xb2) - map-scan idiom (top-tested while + real
+// GetStartPosition kills the peel, pos declared before key computes it before the
+// ctor like retail; docs/patterns/mfc-map-walk-while-not-guard-dowhile.md). The sole
+// residue is which local lands in the reclaimed PARAMETER slot: retail puts the
+// CString there (key=[esp+0x20], pos=[esp+0x8], val=[esp+0xc]) - the same
+// pos<val<key order the 100%-matched sibling FreeAll gets from its 3-slot local
+// area - while our cl gives the param slot to `pos`. Swept: all 6 declaration
+// permutations, split decl/init, function- vs block-scope locals, if+do-while.
+// Every key-first spelling DOES move the CString into the param slot but then emits
+// the ctor before the GetStartPosition neg/sbb (a strictly larger diff, 26 vs 33
+// matching insns). Pure stack-slot-coalesce coin-flip, only the [esp+N] displacement
+// bytes differ. docs/patterns/stack-slot-coalesce-frame-4b.md.
 RVA(0x00152660, 0xb2)
 void CDDrawSubMgrLeaf::RemoveValue(CAniElement* target) {
     if (target == 0) {

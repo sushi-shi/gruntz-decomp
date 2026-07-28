@@ -1,0 +1,70 @@
+# i64 zero-stores batch lo-halves-then-hi-halves per SUB-OBJECT — the batch boundaries name the real structs
+
+**Tags:** cpp:ctor cpp:member cpp:int | asm:mov | topic:codegen-idiom topic:identity
+
+## Symptom
+
+A ctor zeroing four `__int64` members emits eight stores, and the retail order
+is *not* the order any flat spelling produces:
+
+```
+retail:  [+0x108] [+0x110] [+0x10c] [+0x114]   [+0x120] [+0x128] [+0x124] [+0x12c]
+base:    [+0x108] [+0x110] [+0x120] [+0x128]   [+0x10c] [+0x114] [+0x124] [+0x12c]
+```
+
+Both sides batch all the low halves before all the high halves — but retail
+batches them **twice, in groups of two i64s**, where the flat spelling batches
+all four at once.
+
+## Read it as structure, not as scheduling
+
+The batch is per *initialisation region*. Four loose members assigned in a ctor
+body are one region; two sub-objects with their own default constructors are
+two. So the boundary in the bytes tells you the retail class had a nested
+struct:
+
+```cpp
+// four loose members -> ONE batch of four (does not match)
+i64 m_legDeadline, m_legWindow;  /* +0x118 gate, pad */  i64 m_strikeDeadline, m_strikeWindow;
+CPathHazard::CPathHazard() { m_legDeadline = 0; m_legWindow = 0; m_strikeDeadline = 0; m_strikeWindow = 0; }
+
+// two sub-objects -> TWO batches of two (matches retail exactly)
+struct CHazardTimer {
+    i64 m_deadline, m_window;
+    CHazardTimer() : m_deadline(0), m_window(0) {}
+};
+CHazardTimer m_leg;      // +0x108
+i32 m_strikeArmed;       // +0x118
+char m_pad11c[4];
+CHazardTimer m_strike;   // +0x120
+CPathHazard::CPathHazard() {}      // body now empty
+```
+
+Things that do **not** split the batch (all measured): chained assignment
+(`a = b = 0`), interleaved order (`a; c; b; d`), a member-initializer list,
+block scopes, calling two inline member helpers (`ResetLeg(); ResetStrike();`),
+an `i64 z = 0;` shared temp. Only a real sub-object constructor does.
+
+## Corroboration before you commit to the shape
+
+Look for the same pair being moved as a unit elsewhere. Here the serializer
+already streamed them pairwise through one helper
+(`SerQuadPair(s, tag, &m_legDeadline)` / `(&m_strikeDeadline)`, reading `p[0]`
+and `p[1]`) — an independent witness that `{deadline, window}` is one object.
+The helper then takes `CHazardTimer*` and the `p + 1` pointer arithmetic goes away.
+
+## Evidence
+
+`CPathHazard` (2026-07-28). Both constructors carried the eight stores:
+
+- `??0CPathHazard@@QAE@XZ` 0x13170 — 99.87% -> **100% EXACT**.
+- `??0CPathHazard@@QAE@PAUCGameObject@@@Z` 0xb35a0 — the same batch order lands,
+  and the derived-vptr stamp moves after the stores as retail has it.
+- `?SerializeMove@CPathHazard@@` 0xb4d30 — 100%, unchanged by the retype.
+
+## Related
+
+- [ctor-scalar-seeds-interleaved-are-a-mem-init-list](ctor-scalar-seeds-interleaved-are-a-mem-init-list.md)
+  — the same read applied to scalar seeds woven between member ctors.
+- [ehvec-member-array-not-adjacent-fields](ehvec-member-array-not-adjacent-fields.md)
+  — another "the codegen shape names the sub-object" identity lever.

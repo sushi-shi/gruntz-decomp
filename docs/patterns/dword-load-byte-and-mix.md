@@ -1,10 +1,10 @@
-# `(dwordVar & bit) == bit` — retail keeps the dword load but a byte AND; no source spelling reproduces the mix
+# `(dwordVar & bit) == bit` — the dword-load + byte-AND mix comes from the `if` STATEMENT form, not the `return` expression
 
-**Tags:** cpp:bitand cpp:int | asm:and asm:mov | topic:wall topic:regalloc
+**Tags:** cpp:bitand cpp:int cpp:if | asm:and asm:mov | topic:codegen-idiom
 
 ## Symptom
 
-A single-bit test returning bool, e.g.
+A single-bit test returning bool, written as a returned expression:
 
 ```cpp
 u32 status;
@@ -21,36 +21,62 @@ base:    8b 44 24 00   mov eax,[esp]      ; dword load (matches)
          83 e0 02      and eax,0x2        ; DWORD and (1 byte too long)
 ```
 
-Everything after (`cmp al,imm; sete`) matches. ~99% fuzzy, 1-instruction residual.
+Everything after (`cmp al,imm; sete` for a multi-bit mask, `dec al / neg al /
+sbb eax,eax / inc eax` for bit 0) already matches. ~99.9% fuzzy, 1-instruction
+residual.
+
+## Fix
+
+**Write the test as an `if` statement with two `return`s, not as a returned
+expression.** That is the whole difference:
+
+```cpp
+// emits `and eax,2` — does NOT match
+return (status & DSBSTATUS_LOOPING) == DSBSTATUS_LOOPING;
+
+// emits `mov eax,[esp]` + `and al,2` — MATCHES retail
+if ((status & DSBSTATUS_LOOPING) == DSBSTATUS_LOOPING) {
+    return 1;
+}
+return 0;
+```
+
+`if (...) { return 1; } else { return 0; }` works identically. The generated
+code is otherwise the same — cl still folds the branch into the flag-materialising
+sequence — it just narrows the mask to the low byte.
 
 ## Why
 
-Under `/O2` (favor speed) MSVC5 keeps `status` a dword stack slot (it is the
-`GetStatus` out-param, so it is loaded with a full `mov r32,[mem]`), and its own
-peephole for `x & imm8` picks `and r32,imm8` (avoids the partial-register write).
-Retail's build narrowed the *same* AND to `and al,imm8` (the shorter encoding)
-while **keeping** the dword load — a mixed form.
+The two forms reach cl's back end differently. As a *returned expression* the
+`==` result is materialised as an `int` value, and the mask feeding it keeps
+dword width. As a *branch condition* the `==` is a jump-on-condition whose
+operand cl knows only needs the low byte; it narrows the AND to `and r8,imm8`
+(2 bytes for `al`) and only afterwards re-materialises the boolean into eax with
+the same `sete` / `dec-neg-sbb-inc` tail.
 
-Neither pure source spelling reproduces retail's mix:
-
-- `(status & bit) == bit` → dword load **+ dword AND** (`and eax`), matches the load,
-  misses the AND. ~99%.
-- `((u8)status & bit) == bit` → **byte load** (`mov al,[esp]`, opcode `8a`) + byte AND
-  (`and al`), matches the AND but now the load opcode differs. ~99.85% (closer, but
-  still 1 byte, and the load is now wrong / uglier source).
-
-The dword-load-plus-byte-AND combination is an internal `/O2` register-width /
-partial-register tiebreak, not selectable from C. Leave the clean
-`(status & bit) == bit` spelling and `@early-stop`.
+Do **not** reach for `(u8)status` — that narrows the *load* too (`mov al,[esp]`,
+opcode `8a`), which retail does not do.
 
 ## Evidence
 
-- `DirectSoundMgr::IsLooping` (0x135440) and `IsPlaying` (0x1353f0): identical
-  residual (`and eax,2`/`and eax,1` vs retail `and al,2`/`and al,1`), 99.85%.
+Probe (`cl 5.0 /O2 /MT /GX`), one TU, `u32 s` filled by an out-param call:
+
+| source | emitted |
+|---|---|
+| `return (s & 2) == 2;` | `mov ecx,[esp+4]` · **`and ecx,2`** · `xor eax,eax` · `cmp cl,2` · `sete al` |
+| `if ((s & 2) == 2) { return 1; } return 0;` | `mov ecx,[esp+4]` · **`and cl,2`** · `xor eax,eax` · `cmp cl,2` · `sete al` |
+| `return (s & 1) == 1;` | `mov eax,[esp+4]` · **`and eax,1`** · `dec al` · `neg al` · `sbb eax,eax` · `inc eax` |
+| `if ((s & 1) == 1) { return 1; } return 0;` | `mov eax,[esp+4]` · **`and al,1`** · `dec al` · `neg al` · `sbb eax,eax` · `inc eax` |
+| `return (u8)s & 2) == 2;` | **`mov cl,[esp+4]`** (byte load — wrong) · `and cl,2` |
+
+Flipped `DirectSoundMgr::IsPlaying` (0x1353f0), `IsLooping` (0x135440) and
+`IsInHardware` (0x135490) from 99.85–99.88% to **100% EXACT** in one edit each
+(2026-07-28). All three had been parked as an "unsteerable partial-register
+tiebreak" wall.
 
 ## Related
 
 - [char-and1-movb-vs-movsx](char-and1-movb-vs-movsx.md) — the *load* narrows for a
   signed-char `& 1` (movb vs movsx); a different mismatch on the same family.
 - [align-down-byte-and-encoding](align-down-byte-and-encoding.md) — `& ~0x1f`
-  emits byte `and al,0xe0`; steerable there via the mask spelling, not here.
+  emits byte `and al,0xe0`; steerable there via the mask spelling.

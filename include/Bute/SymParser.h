@@ -13,7 +13,6 @@
 
 class CRezItmBase;
 
-
 struct CParserObjList : public CObjList {
     virtual void V0() OVERRIDE; // [0] 0x13c4c0 (empty body; declared-only, reloc-masked)
     ~CParserObjList() {}
@@ -48,9 +47,9 @@ SIZE(0x8); // derives CHashBase (no new fields)
 // dword starts at 0x7f), which is why every reader used to pun it byte-wise.
 #pragma pack(push, 1)
 struct SymTabFileHeader {
-    u8 m_magic0;               // +0x000  0x0d
+    u8 m_magic0; // +0x000  0x0d
     char m_pad001[0x3f - 0x01];
-    u8 m_magic3f;              // +0x03f  0x0a
+    u8 m_magic3f; // +0x03f  0x0a
     char m_pad040[0x7e - 0x40];
     u8 m_magic7e;              // +0x07e  0x1a
     i32 m_flag;                // +0x07f  (-> m_50)
@@ -59,10 +58,10 @@ struct SymTabFileHeader {
     i32 m_38;                  // +0x08b
     i32 m_3c;                  // +0x08f
     i32 m_48;                  // +0x093
-    i32 m_54;                  // +0x097
-    i32 m_longestScopeNameLen; // +0x09b
-    i32 m_longestLeafNameLen;  // +0x09f
-    i32 m_60;                  // +0x0a3
+    u32 m_54;                  // +0x097
+    u32 m_longestScopeNameLen; // +0x09b
+    u32 m_longestLeafNameLen;  // +0x09f
+    u32 m_60;                  // +0x0a3
     i32 m_08;                  // +0x0a7  (low byte used)
 };
 SIZE(0xab); // 0xa8 read + the trailing dword the last field overlaps
@@ -161,8 +160,8 @@ public:
     // The three path-resolution thunks: forward into GetRoot()'s CSymTab.
     struct CParseSource*
     ResolveQualified(const char* name, u32 arg); // 0x13bff0 -> root->ResolveQualified
-    void* ResolvePath(const char* path);           // 0x13c030 -> root->ResolvePath
-    void AddNode(void* rec);                       // 0x13c210 -> m_hash insert
+    void* ResolvePath(const char* path);         // 0x13c030 -> root->ResolvePath
+    void AddNode(void* rec);                     // 0x13c210 -> m_hash insert
 
     // vptr implicit @ +0x00 (??_7CSymParser@@6B@)
     // +0x04  owned delimiter-set buffer: the tokenizer split set the CSymTab path
@@ -184,10 +183,12 @@ public:
     i32 m_48;                   // +0x48
     i32 m_4c;                   // +0x4c
     i32 m_50;                   // +0x50  (=1)
-    i32 m_54;                   // +0x54
-    i32 m_longestScopeNameLen;  // +0x58  longest scope-name length seen (SymTab.cpp)
-    i32 m_longestLeafNameLen;   // +0x5c  longest leaf-name length seen (SymTab.cpp AddNodeEntry)
-    i32 m_60;                   // +0x60
+    // The four high-water counters are UNSIGNED: every retail compare on them is
+    // ja/jbe (CSymTab::CreateSub 0x13a3ae, CSymParser::Load 0x13b6xx), never jg/jle.
+    u32 m_54;                   // +0x54
+    u32 m_longestScopeNameLen;  // +0x58  longest scope-name length seen (SymTab.cpp)
+    u32 m_longestLeafNameLen;   // +0x5c  longest leaf-name length seen (SymTab.cpp AddNodeEntry)
+    u32 m_60;                   // +0x60
     char* m_cachedSourceBuffer; // +0x64  strdup'd source buffer (RezFree'd)
     i32 m_68;                   // +0x68  flag forwarded to the +0x38 walk (m_68 == 0)
     i32 m_6c;                   // +0x6c  selects the leaf-record ctor variant (Init4 vs Init3)
