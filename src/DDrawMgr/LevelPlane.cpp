@@ -752,9 +752,9 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
     i32 p0[2] = {hdr->m_pairA[0], hdr->m_pairA[1]};
     i32 p1[2] = {hdr->m_pairB[0], hdr->m_pairB[1]};
     i32 p2[2] = {hdr->m_pairC[0], hdr->m_pairC[1]};
-    i32 p3[2] = {hdr->m_rectAWidth, hdr->m_rectAHeight};
-    i32 p4[2] = {hdr->m_rectBWidth, hdr->m_rectBHeight};
-    i32 p5[2] = {hdr->m_rectCWidth, hdr->m_rectCHeight};
+    i32 p3[2] = {hdr->m_rectA.w, hdr->m_rectA.h};
+    i32 p4[2] = {hdr->m_rectB.w, hdr->m_rectB.h};
+    i32 p5[2] = {hdr->m_rectC.w, hdr->m_rectC.h};
 
     CWwdSpatialMgr* nw = static_cast<CWwdSpatialMgr*>(::operator new(0xb8));
     if (nw) {
@@ -1181,16 +1181,14 @@ i32 CDDrawWorkerHost::GetSize() {
     return m_scroll->GetSize();
 }
 
-// @early-stop
-// 6 bytes: the LOCAL AREA IS TWO DWORDS SHORT. Retail's `sub esp,0x10` reserves four
-// dword homes and spends only two of them - d4 at [esp+0x14] and dc at [esp+0x1c],
-// i.e. positions 3 and 1 counting down from the top of the local area, with holes
-// where d0 and d8 would sit. cl reserves a home ONLY for the two dims it actually
-// spills, so they pack adjacently into a 0x8 frame at [esp+0x10]/[esp+0x14]. Every
-// instruction (register assignment, load order, schedule) is otherwise identical -
-// only the two displacements and the two `esp` adjustments differ. Tried: dropping
-// the c8/cc locals to plain member reads (whole prologue diverges) and splitting the
-// declarations from the initialisations (no change).
+// EXACT. The ex "LOCAL AREA IS TWO DWORDS SHORT" wall was a MIS-MODEL, and the frame
+// itself was the evidence: retail's `sub esp,0x10` reserves FOUR dword homes and writes
+// only two of them (b.h at [esp+0x14], c.h at [esp+0x1c]), leaving holes exactly where
+// b.w and c.w would sit - the contiguous-ascending-frame-slots signature of a local
+// AGGREGATE (docs/patterns/local-rect-aggregate-from-contiguous-frame-slots.md). Six
+// loose scalar locals give cl a home only for the two dims it spills, so the frame came
+// out 8 bytes short. Copying the B and C pairs as LevelDims aggregates reserves all
+// four homes and every displacement lands.
 RVA(0x00163420, 0xf0)
 void CDDrawWorkerHost::InitScrollRects() {
     if (m_scroll == 0) {
@@ -1201,12 +1199,18 @@ void CDDrawWorkerHost::InitScrollRects() {
         return;
     }
 
-    i32 c8 = g->m_rectAWidth;
-    i32 cc = g->m_rectAHeight;
-    i32 d0 = g->m_rectBWidth;
-    i32 d4 = g->m_rectBHeight;
-    i32 d8 = g->m_rectCWidth;
-    i32 dc = g->m_rectCHeight;
+    i32 c8 = g->m_rectA.w;
+    i32 cc = g->m_rectA.h;
+    // The B and C pairs are copied as AGGREGATES: that 4-dword contiguous local block
+    // is what reserves retail's `sub esp,0x10` (it writes only the two dims it spills
+    // and leaves the b.w/c.w homes as holes). Six loose scalar locals give cl a home
+    // for the two spills only, and the frame comes out 8 bytes short.
+    LevelDims b;
+    b.w = g->m_rectB.w;
+    b.h = g->m_rectB.h;
+    LevelDims c;
+    c.w = g->m_rectC.w;
+    c.h = g->m_rectC.h;
 
     CWwdSpatialMgr* s = m_scroll;
     s->m_rect0.left = 0;
@@ -1219,18 +1223,18 @@ void CDDrawWorkerHost::InitScrollRects() {
     s = m_scroll;
     s->m_rect1.left = 0;
     s->m_rect1.top = 0;
-    s->m_rect1.right = d0 - 1;
-    s->m_rect1.bottom = d4 - 1;
-    s->m_org1x = d0 / 2;
-    s->m_org1y = d4 / 2;
+    s->m_rect1.right = b.w - 1;
+    s->m_rect1.bottom = b.h - 1;
+    s->m_org1x = b.w / 2;
+    s->m_org1y = b.h / 2;
 
     s = m_scroll;
     s->m_rect2.left = 0;
     s->m_rect2.top = 0;
-    s->m_rect2.right = d8 - 1;
-    s->m_rect2.bottom = dc - 1;
-    s->m_org2x = d8 / 2;
-    s->m_org2y = dc / 2;
+    s->m_rect2.right = c.w - 1;
+    s->m_rect2.bottom = c.h - 1;
+    s->m_org2x = c.w / 2;
+    s->m_org2y = c.h / 2;
 
     s = m_scroll;
     s->m_scrollX = -22222;

@@ -67,21 +67,13 @@ public:
                               // (C2561) on a return-less non-void function)
     virtual i32 GetClassId(); // [8] @+0x20  0x154a00 -> CLASSID_NONE
 
-    // +0x04  per-child id/index (Init hands 0; the page pairs 1/2; the planes their
-    // index) doubling as the liveness latch: teardown resets -1, every family
-    // IsLoaded gates on `m_id != -1`.
-    i32 m_id;
-    i32 m_flags; // +0x08  (reset to 0; the wide-object collision/state flag word)
-    // +0x0c  the owning CDDrawSurfaceMgr. The "plane/leaf embedders park OTHER
-    // context words here, so the slot must stay a generic i32" claim is DISPROVED
-    // (2026-07-28): its one cited counterexample was CResolveNode::Init taking a
-    // `CImageParent*`, and CImageParent was a pad-view OF CDDrawSurfaceMgr (offsets
-    // +0x04/+0x1c/+0x24 all line up - see the dissolution note in <Image/CImage.h>).
-    // Every other writer already had the manager in hand and cast it down to i32
-    // here (CDDrawWorkerHost's ctor, CDDrawWorkerBase's ctor, CResolveNode::Init);
-    // every reader casts it back. Typed, all of those casts go away.
-    class CDDrawSurfaceMgr* m_ownerCtx;
-
+    // (+0x04 m_id / +0x08 m_flags / +0x0c m_ownerCtx now come from CWapObj - see the
+    // proof block there. They were declared HERE and in CImage, at the same offsets
+    // with the same roles: one inherited header modelled twice. The reading that used
+    // to live here is preserved: m_id doubles as the liveness latch (teardown resets
+    // -1, every family IsLoaded gates on `m_id != -1`), m_flags is the wide-object
+    // collision/state word, and m_ownerCtx is the owning CDDrawSurfaceMgr - typed, so
+    // the i32-and-cast-back round trip every writer used to do is gone.)
     CLoadable() {}
     // Arg-taking base ctor - OUT-OF-LINE at 0x156cb0 (DDrawSubMgr.cpp; the ex
     // "??0CDDrawSubMgr"). `owner` is the owning/parent context stored at m_0c
@@ -106,11 +98,17 @@ public:
         m_flags = 0;
         m_ownerCtx = owner;
     }
-    // The +0x0c owner context IS the CDDrawSurfaceMgr across the whole draw family -
-    // surface pairs/children, workers, resolve nodes, cue leaves. Now that the member
-    // carries that type, this is a plain read.
-    class CDDrawSurfaceMgr* OwnerMgr() const {
-        return m_ownerCtx;
+    // The (id, owner) INLINE sibling: seeds m_id from the caller's index/count and
+    // leaves m_flags 0. Leaves that need it MUST DELEGATE (`Leaf(...) : CLoadable(id,
+    // owner) { ... }`) rather than spell the three stores in their own body - MSVC5
+    // emits the derived vptr stamp AFTER the base ctor and BEFORE the derived member
+    // inits, which is retail's order (stamp 4th, after +0x04/+0x08/+0x0c and before
+    // +0x10). Spelled in the leaf body they become derived member inits and the stamp
+    // moves to 1st. (LeafCue @0x157d70/0x157e00 - CDDrawSubMgrLeafScan::CreateEntry/2.)
+    CLoadable(i32 id, class CDDrawSurfaceMgr* owner) {
+        m_id = id;
+        m_flags = 0;
+        m_ownerCtx = owner;
     }
     // Field-reset base-subobject dtor: resets the three header fields; the grand-
     // base 0x5e8cb4 re-stamp folds in automatically via ~CWapObj -> ~CObject

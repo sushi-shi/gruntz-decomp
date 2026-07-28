@@ -7,8 +7,8 @@
 
 #include <Gruntz/ResolveNode.h> // canonical CResolveNode (Init @0x1647e0, ctor @0x1549d0)
 #include <Image/CImage.h>
-#include <DDrawMgr/DDrawSurfaceMgr.h>  // m_parent's real class (ex the CImageParent pad-view)
-#include <DDrawMgr/DDrawSubMgrPages.h> // m_parent->m_drawTarget->m_frontPair->m_bpp
+#include <DDrawMgr/DDrawSurfaceMgr.h>  // m_ownerCtx's real class (ex the CImageParent pad-view)
+#include <DDrawMgr/DDrawSubMgrPages.h> // m_ownerCtx->m_drawTarget->m_frontPair->m_bpp
 #include <Gruntz/GameLevel.h>          // CGameLevel (the node m_level hop) + CTileImageSet
 #include <Wwd/WwdFile.h> // CDDrawWorkerHost::WrapCoord (m_level->m_mainPlane origin remap)
 
@@ -101,9 +101,9 @@ RVA_COMPGEN(0x000d5e50, 0x1e, ??_GCImage@@UAEPAXI@Z)
 RVA(0x000d5e80, 0x5b)
 CImage::~CImage() {
     FreeAll();
-    m_status = -1; // base-field resets (precede the folded ~CObject grand stamp)
-    m_08 = 0;
-    m_parent = 0;
+    m_id = -1; // base-field resets (precede the folded ~CObject grand stamp)
+    m_flags = 0;
+    m_ownerCtx = 0;
     // ~CObject() folds here: emits only the grand-base vptr re-stamp.
 }
 
@@ -135,7 +135,7 @@ i32 CImage::Create(char* path, i32 keyed) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CDDSurface* item = m_parent->m_ptrColl->Createa58_3(path, capArg, flagsArg);
+    CDDSurface* item = m_ownerCtx->m_ptrColl->Createa58_3(path, capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -203,7 +203,8 @@ i32 CImage::Resolve(CParseSource* src, i32 arg) {
 //
 // The 1..4 range-check lowers to a chain of `cmp;je` (no jump table) -> a sequence
 // of explicit case tests, key unsigned (matches the cmp;ja in the caller).
-// @early-stop
+// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
+// current claim. Retired by the stale-marker sweep.)
 // 99.86% - all 108 instructions byte-identical to retail (verified llvm-objdump
 // base vs target). The lone residual is the objdiff reloc-typing scoring artifact
 // on the two g_resourceInstallActive/B DIR32 refs (REL32-vs-DIR32 against differently-
@@ -250,7 +251,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, u32 mode, u32 size, i32 keyed) {
     // palette at the blob tail. SETTLED 2026-07-27: the ex-`void* a` parameter IS that
     // count (this argument used to be a `void*` carrying an open identity TODO).
     CDDSurface* item =
-        m_parent->m_ptrColl->CreateA(desc, static_cast<i32>(mode), size, capArg, flagsArg);
+        m_ownerCtx->m_ptrColl->CreateA(desc, static_cast<i32>(mode), size, capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -285,7 +286,7 @@ i32 CImage::Create24(i32 width, i32 height, i32 keyed) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CDDSurface* item = m_parent->m_ptrColl->CreateB(width, height, 0, capArg, flagsArg);
+    CDDSurface* item = m_ownerCtx->m_ptrColl->CreateB(width, height, 0, capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -336,7 +337,7 @@ i32 CImage::BuildSlot13(PidHeader* desc, u32 size) {
     // The cross-class reinterpret that used to sit on `desc` here is GONE: Build's
     // source and this slot's descriptor are the same `struct PidHeader` (the
     // CImageFrameDesc/CImageBuildDesc pair was two padded views of it).
-    if (!owned->Build(desc, static_cast<i32>(size), m_parent->m_drawTarget->m_frontPair->m_bpp)) {
+    if (!owned->Build(desc, static_cast<i32>(size), m_ownerCtx->m_drawTarget->m_frontPair->m_bpp)) {
         return 0;
     }
     i32 w = m_owned->m_width;
@@ -356,7 +357,7 @@ void CImage::FreeAll() {
     m_width = 0;
     m_height = 0;
     if (m_surface != 0) {
-        m_parent->m_ptrColl->RemoveItemA(m_surface);
+        m_ownerCtx->m_ptrColl->RemoveItemA(m_surface);
         m_surface = 0;
     }
     CDDrawShadeBlit* owned = m_owned;
@@ -457,7 +458,7 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
     // CDDSurface::Resolve(surf, buf, type, size, surf2): resolved is the decoded buffer,
     // src->m_length its byte size, g_surfaceColorKey lands in the (PID-only) surf2 slot.
     return m_surface->Resolve(
-        m_parent->m_ptrColl,
+        m_ownerCtx->m_ptrColl,
         resolved,
         index,
         static_cast<u32>(src->m_length),
@@ -547,7 +548,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 dright = right;
     i32 dbottom = bottom;
     if (info->m_flags & 0x40000) {
-        BlitRect srcClip = m_parent->m_level->m_planeCtx;
+        BlitRect srcClip = m_ownerCtx->m_level->m_planeCtx;
         RECT destClip;
         CopyRect(&destClip, static_cast<const RECT*>(&srcClip));
         if (x < destClip.left) {
@@ -615,7 +616,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
 RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
     static CResolveNode clip; // magic-static guard @0x6bf314, ctor 0x1549d0 + atexit
-    if (clip.Init(m_parent, 0, x, y, flags, 0)) {
+    if (clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {
         this->RenderImage(&clip, target);
     }
 }
@@ -659,7 +660,7 @@ void CImage::RenderFrameClipped(
     i32 flags
 ) {
     static CResolveNode clip; // magic-static guard @0x6bf29c, ctor 0x1549d0 + atexit
-    if (clip.Init(m_parent, 0, x, y, flags, 0)) {
+    if (clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {
         if (clipRect != 0) {
             g_imageClipRect[0] = clipRect->left;
             g_imageClipRect[1] = clipRect->top;
@@ -694,7 +695,7 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     d.right = right;
     d.bottom = bottom;
     if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_parent->m_level->m_planeCtx;
+        BlitRect clipA = m_ownerCtx->m_level->m_planeCtx;
         RECT clip;
         CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
@@ -788,7 +789,7 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     d.right = right;
     d.bottom = bottom;
     if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_parent->m_level->m_planeCtx;
+        BlitRect clipA = m_ownerCtx->m_level->m_planeCtx;
         RECT clip;
         CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
@@ -878,7 +879,7 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     d.right = right;
     d.bottom = bottom;
     if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_parent->m_level->m_planeCtx;
+        BlitRect clipA = m_ownerCtx->m_level->m_planeCtx;
         RECT clip;
         CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
@@ -972,7 +973,7 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
     d.right = right;
     d.bottom = bottom;
     if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_parent->m_level->m_planeCtx;
+        BlitRect clipA = m_ownerCtx->m_level->m_planeCtx;
         RECT clip;
         CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
@@ -1071,7 +1072,7 @@ void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     d.right = right;
     d.bottom = bottom;
     if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_parent->m_level->m_planeCtx;
+        BlitRect clipA = m_ownerCtx->m_level->m_planeCtx;
         RECT clip;
         CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
@@ -1161,7 +1162,7 @@ void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     d.right = right;
     d.bottom = bottom;
     if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_parent->m_level->m_planeCtx;
+        BlitRect clipA = m_ownerCtx->m_level->m_planeCtx;
         RECT clip;
         CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {
@@ -1250,7 +1251,7 @@ void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     d.right = right;
     d.bottom = bottom;
     if (info->m_flags & 0x40000) {
-        BlitRect clipA = m_parent->m_level->m_planeCtx;
+        BlitRect clipA = m_ownerCtx->m_level->m_planeCtx;
         RECT clip;
         CopyRect(&clip, static_cast<const RECT*>(&clipA));
         if (x < clip.left) {

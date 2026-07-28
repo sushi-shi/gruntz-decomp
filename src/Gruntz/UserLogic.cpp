@@ -81,8 +81,28 @@ void CUserLogic::UserLogicVfuncC() {}
 RVA(0x000089f0, 0x1)
 void CUserLogic::UserLogicVfuncD() {}
 
+// CUserLogic::BuildLogicTypeTable @0x8a40 - THE definition (the only one that emits a
+// symbol). It is a __thiscall METHOD that ignores `this`, not the free `__stdcall
+// BuildLogicTypeTable` it was modelled as: its retail call sites set up the receiver,
+// e.g. CWarpStonePad's ctor @0x10d6e2 does `mov edx,[esi+0xc]; mov ecx,esi; push edx;
+// call <ILT 0x39c2>`. Under the free-function name nothing bound 0x8a40 to the
+// `?BuildLogicTypeTable@CUserLogic@@...` the leaf ctors call, which is the FAKE-ref
+// link defect assert_relocs reported on ??0CWarpStonePad / ??0CSingleAnimation.
+//
+// The body is written with CDDrawWorkerCache::Find HAND-EXPANDED (the `found` local +
+// m_10.Lookup + reload) because retail's standalone copy has Find inlined - writing
+// `Find(...)` here emits `call 0x9cab0` instead and does NOT match (measured). The
+// Find-CALLING spelling is the one the leaf ctors inline, and it lives in
+// <Gruntz/LogicTypeTableInline.h>; UserLogicCtorEmit.cpp keeps a third, textually
+// identical copy of THIS spelling so retail's standalone 0x58cd0 ctor folds it. Those
+// two are inlining devices only - neither emits a COMDAT any more, so this is the
+// single definition in the link.
+// @early-stop
+// 84.58%: retail schedules `lea eax,[esp+4]` BEFORE the `[esp+4] = 0` seed and reloads
+// obj->m_0c after the arg pushes; cl emits the seed first (x3 blocks). Plus the three
+// factory DIR32s (0x56e4c0/d0/e0) are delinked under a Ghidra mislabel.
 RVA(0x00008a40, 0xc8)
-void __stdcall BuildLogicTypeTable(CGameObject* obj) {
+void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     {
         CObject* found = 0;
         obj->OwnerMgr()->m_workerCache->m_10.Lookup("LogicHit", found);

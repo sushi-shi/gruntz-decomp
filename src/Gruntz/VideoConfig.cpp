@@ -695,8 +695,11 @@ void DialogInit(HWND hDlg) {
 // (IDC 0x46f smooth-scroll, 0x4d5 show-fps) into the settings singleton. No-op
 // when the singleton is not yet live.
 // @early-stop
-// 99.5%: the same deferred-callee-save (push) scheduling coin-flip as this TU's
-// resolution-config pair; logic + offsets byte-exact.
+// 99.5%, and the residue is NOT the "deferred-callee-save (push) coin-flip" this note
+// used to claim: it is 2 instructions of the SAME ecx/edx global-store-temp alternation
+// as ReadMenuOptionsDialog above (`mov ecx,[g_gameReg]; mov [ecx+0x110],eax` where retail
+// takes edx) - docs/patterns/global-store-temp-alternates-ecx-edx.md. Logic + offsets
+// byte-exact; park on sight.
 RVA(0x000378c0, 0x40)
 void SaveVideoCheckboxes(HWND hDlg) {
     if (g_gameReg == 0) {

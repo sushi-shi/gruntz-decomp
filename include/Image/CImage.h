@@ -58,28 +58,22 @@ public:
     // re-stamp (masks 0x5e8cb4) folds into ~CImage as its last store. CImage keeps
     // CWapObj's slot 5 (IsLoaded @0x0013b6) and slot 6 (IsReady @0x001c08) defaults
     // unchanged - it is the only member of the family that overrides neither.
-    // NAME CONFLICT (+0x04): this header calls it m_status ("-1 inactive"), while BOTH of
-    // the hand-rolled stand-ins that WERE this class (WwdGameObject.cpp's CFrameWorker and
-    // <Image/ImageFrame.h>'s CImageFrame) called it the frame index/number - and
-    // CDDrawWorker::InsertFrame stores `n` (the frame index) straight into it. Kept as m_status
-    // to avoid churning CImage.cpp; the index reading is better-evidenced and is a rename
-    // for a follow-up. (The rest of the 0x34 layout was ALREADY complete below - the views
-    // added no field knowledge this class did not have, only worse names.)
-    i32 m_status;               // +0x04  status word (-1 inactive) / frame index
-    i32 m_08;                   // +0x08
-    CDDrawSurfaceMgr* m_parent; // +0x0c  the owning world manager (see the note above)
+    // (+0x04/+0x08/+0x0c are CWapObj's m_id / m_flags / m_ownerCtx - see the proof
+    // block there. They were declared HERE as m_status/m_08/m_parent AND on the sibling
+    // CLoadable as m_id/m_flags/m_ownerCtx, at the same offsets with the same roles;
+    // the CLoadable names won the fold. m_id IS the frame index - CDDrawWorker::
+    // InsertFrame stores `n` straight into it, and both hand-rolled stand-ins that WERE
+    // this class (WwdGameObject.cpp's CFrameWorker, <Image/ImageFrame.h>'s CImageFrame)
+    // called it the frame number; the "-1 inactive" status reading is the same latch.)
 
     // The frame ctor (inline; the 4 construction sites - CDDrawWorker::CreateFrame24/28/30
     // @0x151fb0/152060/152110 and CDDrawWorker::InsertFrame @0x151f00 - all build a CImage
-    // with the SAME 7-field seed). Modeled as a real ctor (not spelled-out stores) so
-    // cl schedules the vptr store AMONG the member inits (retail emits it 4th: after
-    // m_status/m_08/m_parent, before m_width) - see
-    // docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md. Member-init ORDER here
-    // reproduces retail's store order.
-    CImage(i32 index, CDDrawSurfaceMgr* parent) {
-        m_status = index;
-        m_08 = 0;
-        m_parent = parent;
+    // with the SAME 7-field seed). It DELEGATES the CWapObj header rather than spelling
+    // the three stores here: MSVC5 emits the derived vptr stamp between the base ctor and
+    // the derived member inits, which is retail's order (stamp 4th, after +0x04/+0x08/
+    // +0x0c, before m_width). Spelled in this body they are derived member inits and the
+    // stamp moves to 1st - that was the "vptr-scheduler wall" on all four factories.
+    CImage(i32 index, CDDrawSurfaceMgr* parent) : CWapObj(index, parent) {
         m_width = 0;
         m_height = 0;
         m_surface = 0;

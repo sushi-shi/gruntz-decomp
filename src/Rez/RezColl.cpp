@@ -48,7 +48,7 @@ CHashElement* CHashElement::Next() {
             do {
                 void* link = b[i].m_chain.m_head;
                 // byte-forced: the same (link - 4) element recovery as Next() above
-        n = link ? reinterpret_cast<CHashElement*>((static_cast<char*>(link) - 4)) : 0;
+                n = link ? reinterpret_cast<CHashElement*>((static_cast<char*>(link) - 4)) : 0;
                 if (n) {
                     break;
                 }
@@ -204,7 +204,8 @@ CHashElement* CHashBase::Last() {
 }
 
 // Lookup (0x184b40): chain head for bucket `idx`, biased back to the element, or 0.
-// @early-stop
+// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
+// current claim. Retired by the stale-marker sweep.)
 // SIB base/index coin-flip (99%; was 100% in the pre-merge Hash.cpp TU with identical
 // source): the pocket-TU merge flipped `mov eax,[eax+ecx+0x8]` to the ecx-base form +
 // the FromLink -4 add to the imm8 encoding. Same non-steerable family as Insert/Last

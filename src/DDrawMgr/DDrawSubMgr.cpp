@@ -145,7 +145,8 @@ i32 CDDrawWorkerMapSmall::GetClassId() {
 // ??_7CDDrawWorkerMapSmall (masks 0x5efcc8) at entry, runs the map teardown
 // (DestroyAll, T obj), then destructs the three CMapStringToPtr members (reverse
 // decl order, descending trylevels) and the grand-base.
-// @early-stop
+// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
+// current claim. Retired by the stale-marker sweep.)
 // vptr-position wall (~94%, twin of CDDrawWorker::~CDDrawWorker): every
 // instruction matches retail EXCEPT the grand-base vptr re-stamp POSITION (cl
 // stamps at base-dtor entry, retail sinks it after the field resets) + the
@@ -276,7 +277,8 @@ i32 CDDrawWorkerBase::SetPosition(i32 x, i32 y) {
 // fields to their sentinels (the m_20/m_38 pair reset THREE times, via volatile
 // lvalues so cl keeps all three), null the header; retail then INLINES the whole
 // ~CResolveNode/~CLoadable chain down to the single CObject grand-base stamp.
-// @early-stop
+// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
+// current claim. Retired by the stale-marker sweep.)
 // (A)-form base-dtor wall (~59%, twin of ~CDDrawWorkerB): every poison/reset
 // store matches; the residual is (1) a tail `jmp ??1CResolveNode` where retail
 // inlined the base teardown (our ~CResolveNode is deliberately OUT-OF-LINE at
@@ -339,7 +341,8 @@ i32 CDDrawWorkerBase::GetClassId() {
 
 // ~CDDrawWorkerB (0x157240; ??_G wrapper 0x157220). Mirror of ~CDDrawWorkerA -
 // the int-frame worker's m_78 is a DWORD here (byte in A).
-// @early-stop
+// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
+// current claim. Retired by the stale-marker sweep.)
 // (A)-form base-dtor wall (~59%): same residual as ~CDDrawWorkerA (tail
 // `jmp ??1CResolveNode` vs retail's inlined base teardown + the kept entry stamp).
 RVA_COMPGEN(0x00157220, 0x1e, ??_GCDDrawWorkerB@@UAEPAXI@Z)
@@ -468,7 +471,8 @@ RVA_COMPGEN(0x00157550, 0x1e, ??_GCDDrawSubMgrLeafScan@@UAEPAXI@Z)
 // cleanup (clears the map + zeroes +0x2c), the +0x10 map's own destructor, then the
 // LeafScanBase grand-base teardown (field resets + implicit ??_7-base re-stamp masking
 // 0x5e8cb4). No manual `m_vptr = &g_*Vtbl`. /GX EH frame (VM18 / map dtor may throw).
-// @early-stop
+// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
+// current claim. Retired by the stale-marker sweep.)
 // vptr-position wall (~95%, twin of CDDrawWorker/CDDrawSubMgrLeaf): every code
 // byte matches retail EXCEPT the grand-base re-stamp position (cl emits it before the
 // m_04/m_08/m_0c resets; the implicit base transition forces stamp-first, retail sinks
@@ -532,7 +536,8 @@ RVA_COMPGEN(0x00157700, 0x1e, ??_GCDDrawWorkerCache@@UAEPAXI@Z)
 // DestroyAll (@0x165210, devirtualized in the dtor to `call 0x165210` - the
 // binary-proven single call site), then destructs the CMapStringToPtr member and
 // the grand-base. /GX member-teardown frame from the destructible map.
-// @early-stop
+// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
+// current claim. Retired by the stale-marker sweep.)
 // vptr-position wall (~95%, twin of CDDrawSubMgrLeaf/CDDrawWorker): every
 // instruction matches retail EXCEPT the grand-base vptr re-stamp POSITION + the
 // reloc-masked EH-state/teardown/vtable symbol names. Logic complete.
@@ -564,7 +569,8 @@ RVA_COMPGEN(0x001577c0, 0x1e, ??_GCDDrawSubMgrLeaf@@UAEPAXI@Z)
 // real polymorphic teardown. cl stamps ??_7CDDrawSubMgrLeaf (masks 0x5efc78) at
 // entry, runs the cleanup virtual, then the embedded map dtor and the
 // CDDrawSubMgrGrandBase grand-base dtor. /GX EH frame.
-// @early-stop
+// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
+// current claim. Retired by the stale-marker sweep.)
 // vptr-position wall + reloc-masked EH-state push (~95%): byte-identical to retail
 // EXCEPT the grand-base re-stamp position + the entry `push <ehfuncinfo>` reloc
 // operand. docs/patterns/eh-state-numbering-base.md.
@@ -608,7 +614,8 @@ CString CFileMemBase::GetName() {
 // CFileMem::~CFileMem (0x157980): cl stamps the derived vtable at entry, run
 // Reset() (derived), destruct the inner CFile, call the base Reset(), then cl
 // folds the base vtable restamp + the CString member dtor on unwind.
-// @early-stop
+// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
+// current claim. Retired by the stale-marker sweep.)
 // EH-dtor scheduling wall (~59%): the teardown logic is byte-faithful, but the
 // virtual-dtor auto vtable restamps + the /GX trylevel store sequencing + the
 // member-dtor dispatch differ from retail's manual sequence.
@@ -796,12 +803,11 @@ i32 CDDrawSubMgrLeafScan::RemoveKeysEqual(const char* base, const char* str) {
 // by `arg2`. On Configure failure, destroy the element via its scalar dtor and
 // return 0; on success link it into the map under `key` and stamp the redraw arg
 // (this+0x34). 2 stack args (ret 8). Returns the element (or 0).
-// @early-stop
-// ~99.3% - register-naming coin-flip (was 99.81 pre-CLoadable): code bytes match EXCEPT the
-// ecx<->edx assignment for the two seed reads (count<-this+0x1c, handle<-this+0x0c).
-// Retail pins count in ecx, handle in edx; MSVC5 here swaps them. Same values,
-// same stores, same order; not source-steerable (tried count-first / handle-first /
-// helper-extracted reads). docs/patterns/zero-register-pinning.md.
+// EXACT. The parked "register-naming coin-flip" note was MIS-DIAGNOSED: the ecx/edx seed
+// reads had already come right, and the real residual was the LeafCue vptr stamp landing
+// 1st where retail has it 4th. LeafCue's ctor now DELEGATES the CLoadable header triple
+// (m_id/m_flags/m_ownerCtx) instead of spelling those three stores in its own body, so cl
+// emits the stamp between the base ctor and the derived member inits - retail's order.
 RVA(0x00157d70, 0x90)
 LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, void* arg2) {
     if (m_emitGate != 0) {
@@ -827,10 +833,7 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, void* arg2) {
 // seed the element from the map count (this+0x1c) and handle (this+0x0c), run
 // Configure2 keyed by `arg2`; on failure scalar-delete + return 0, on success
 // link into the map under `key` + stamp the redraw arg (this+0x34). 2 args (ret 8).
-// @early-stop
-// register-naming coin-flip (twin of CreateEntry's 99.81%): every code byte
-// matches retail EXCEPT the ecx<->edx assignment for the two seed reads. Same
-// values/stores/order; not source-steerable. docs/patterns/zero-register-pinning.md.
+// EXACT - same LeafCue base-ctor delegation as CreateEntry (see the note there).
 RVA(0x00157e00, 0x90)
 LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, void* arg2) {
     if (m_emitGate != 0) {
@@ -1550,16 +1553,17 @@ RVA_COMPGEN(0x00158fb0, 0x19, ??1CDrawSubWorker@@UAE@XZ)
 // it (both vtables' slot 9 hold this RVA - no ICF in MSVC5, so a shared slot
 // target can only be an inherited method; the old "shared body (ICF)" note was
 // the mis-model the 2026-07-22 rebase dissolved).
-// @early-stop
-// 83.86% - regalloc coin-flip: retail materializes bpp up-front into edi; the
-// /O2 scheduler on identical source keeps bpp in eax and loads it lazily.
+// EXACT. m_width is assigned BEFORE m_bpp: cl emits the two stores in source order
+// (`[ecx+0x10]` then `[ecx+0x18]`), and bpp-first put them the other way round. The
+// rest of the schedule (bpp materialized up-front into edi, h reused for +0x14/+0x28)
+// falls out on its own - it was never a "regalloc coin-flip".
 RVA(0x00158fd0, 0x41)
 i32 CDrawSubWorker::SetGeometry(i32 w, i32 h, i32 bpp) {
     if (w <= 0 || h <= 0) {
         return 0;
     }
-    m_bpp = bpp; // FIRST: retail materializes bpp into edi up-front
     m_width = w;
+    m_bpp = bpp;
     m_height = h;
     m_srcRect[3] = h;
     m_srcRect[0] = 0;

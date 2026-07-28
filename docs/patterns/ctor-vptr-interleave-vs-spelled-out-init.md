@@ -54,10 +54,18 @@ derived-ctor body*. So look at which fields retail sets BEFORE the single vptr s
   derived field — retail's exact order. **This reaches 100 EXACT** (CDDrawWorkerList
   CreateWorkerA/B28/B2C/B30 0x156fd0/1573e0/157330/157150, 55–61→**100**: the 9 pre-vptr fields
   are all CDDrawWorkerBase's, only m_78 is derived).
-- **pre-vptr fields are the DERIVED class's own** → a single derived ctor sets them AFTER the
-  derived vptr (cl won't sink the vptr past them), so vptr lands 1st not Nth → ~99, not 100
-  (CImage: m_status/m_08/m_parent are CImage's own). Moving them to a base is a layout change
-  (Fable) — take the 99%.
+- **pre-vptr fields look like the DERIVED class's own** → do NOT settle for ~99: that reading is
+  usually a MIS-MODEL, and the retail stamp position is the evidence that disproves it. Only a
+  base ctor can emit a store *before* the derived stamp, so retail stamping Nth PROVES those N-1
+  fields belong to a base. Go find which one. (2026-07-28: CImage's m_status/m_08/m_parent were
+  filed here as "CImage's own, take the 99%". They were not — the sibling class CLoadable, the
+  ONLY other direct child of CWapObj, declared the identical triple at the identical offsets with
+  the identical roles. One inherited header modelled twice. Folding it onto CWapObj + delegating
+  took CDDrawWorker::CreateFrame24/28/30 + InsertFrame 99.4 → **100 EXACT**, and the same fix on
+  the CLoadable side — LeafCue delegating instead of spelling the triple in its own body — took
+  CDDrawSubMgrLeafScan::CreateEntry/CreateEntry2 99.3 → **100 EXACT**. +11 exact overall.)
+  Two tells that the fields are really a base's: a SIBLING class declares the same prefix at the
+  same offsets, and the leaf's SIZE minus the base's leaves no room for them to be new.
 
 Base-ctor delegation via `: Base(args)` is REQUIRED syntax (not the member-init-list to avoid).
 Safe to add a ctor only when you own every `new Class` site (grep first) and keep any existing

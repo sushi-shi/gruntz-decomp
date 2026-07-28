@@ -87,6 +87,14 @@ class CDDrawSurfaceMgr; // the m_0c owner/world root (<DDrawMgr/DDrawSurfaceMgr.
 // ??_7CWapObj retail lacks). The +0x04..+0x0c header trio is the INHERITED
 // CLoadable one (owner reads via OwnerMgr(): BroadPhase/StepAxisAlt walk its
 // m_childGroup, MovingLogic hops m_level).
+// A (width, height) extent pair - the shape of CGameLevel's three scroll-extent
+// members and of the local blocks its readers copy them into.
+struct LevelDims {
+    i32 w;
+    i32 h;
+};
+SIZE(0x8);
+
 class CGameLevel : public CLoadable {
 public:
     // 0x160530: probe a .wwd file header on disk (open/read/validate; touches no
@@ -373,13 +381,19 @@ public:
     // CDDrawWorkerHost::InitScrollRects builds its three scroll rects out of the
     // rect pairs. The ctor seeds (500,250)/(1000,1000)/(250,125) and 1600x1200 /
     // 2560x1920, which is what fixes the two readings as rates + extents.
-    i32 m_pairA[2];                  // +0xB0  (500, 250)
-    i32 m_pairB[2];                  // +0xB8  (1000, 1000)
-    i32 m_pairC[2];                  // +0xC0  (250, 125)
-    i32 m_rectAWidth, m_rectAHeight; // +0xC8  (1600, 1200)
-    i32 m_rectBWidth, m_rectBHeight; // +0xD0  (2560, 1920)
-    i32 m_rectCWidth, m_rectCHeight; // +0xD8
-    WwdHeader m_header;              // +0xE0  (1524 B copy)
+    i32 m_pairA[2]; // +0xB0  (500, 250)
+    i32 m_pairB[2]; // +0xB8  (1000, 1000)
+    i32 m_pairC[2]; // +0xC0  (250, 125)
+    // The three scroll-extent dim PAIRS. They are aggregates, not six loose ints:
+    // CDDrawWorkerHost::InitScrollRects @0x163420 copies the B and C pairs into a
+    // 4-DWORD contiguous local block (retail's `sub esp,0x10` reserves all four homes
+    // and writes only the two it spills, leaving holes where B.w and C.w would sit) -
+    // the local-aggregate frame signature. Read as six scalars, cl homes only the two
+    // spills and the frame comes out 8 bytes short.
+    LevelDims m_rectA;  // +0xC8  (1600, 1200)
+    LevelDims m_rectB;  // +0xD0  (2560, 1920)
+    LevelDims m_rectC;  // +0xD8
+    WwdHeader m_header; // +0xE0  (1524 B copy)
 };
 SIZE(0x6d4);
 
