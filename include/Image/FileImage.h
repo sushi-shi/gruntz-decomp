@@ -3,7 +3,8 @@
 #define GRUNTZ_IMAGE_FILEIMAGE_H
 
 #include <rva.h>
+#include <Win32.h> // PALETTEENTRY (the scratch palette ramp's element type)
 
-extern u8 g_paletteRampBuf[];
+extern PALETTEENTRY g_paletteRampBuf[];
 extern u8 g_grayRamp[];
 #endif // GRUNTZ_IMAGE_FILEIMAGE_H
