@@ -19,8 +19,11 @@ void __stdcall BitStreamBlowfishDecode(istream* in, ostream* out) {
             sample = *reinterpret_cast<signed char*>(&blk[0]);
         }
         if (!first) {
-            // API-forced: ostream::write takes const char*; blk is the dword cipher block
-            out->write(reinterpret_cast<const char*>(&blk[3]), sample);
+            // The written run is the PREVIOUS pass's plaintext pair, blk[2..3]:
+            // retail's `lea eax,[esp+0x18]` resolves to &blk[2] (&blk[3] would run
+            // one dword past the array).
+            // API-forced: ostream::write takes const char*, blk is a dword array
+            out->write(reinterpret_cast<const char*>(&blk[2]), sample);
         } else {
             first = false;
         }

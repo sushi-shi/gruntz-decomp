@@ -1234,78 +1234,83 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     // `mov ecx,[edx+0x2c]` @0x5425b before `call 0x152d30` (KeyOfValue). +0x2c IS
     // CDDrawSurfaceMgr::m_animRegistry, so m_0c is the MANAGER, not the leaf - the
     // old one-load reading (and its reinterpret to CDDrawSubMgrLeaf*) was wrong.
-    // slot order is load-bearing: retail's frame is buf@[esp+0x1c] over exactly
-    // three dwords, handed out high-to-low in declaration order (0x18/0x14/0x10);
-    // the row-pointer temp then packs into mgr's slot once mgr dies.
+    // Slot order is load-bearing, and it pins the SCOPES. cl5 hands the local area
+    // out to FUNCTION-scope locals in reverse declaration order descending from the
+    // top of the frame, then merges all mutually-disjoint BLOCK-scope locals into
+    // the leftover slot(s). Retail's 0x8c frame is buf@[esp+0x1c] over exactly three
+    // dwords: n@0x18 (own slot), mgr@0x14 (shared with the 3x3 row pointer),
+    // tmp@0x10 - and 0x10 is ALSO the 3x3 `row` counter, so the sprite-id temp is a
+    // BLOCK-scope local (one per sprite block, all merged), while the list-tail
+    // count `n` is function-scope, declared between mgr and buf.
     CDDrawSurfaceMgr* mgr = m_3c->m_ownerCtx;
     if (!mgr) {
         return 0;
     }
-    i32 tmp;
+    i32 n;
     char buf[0x80];
     g_serialCounter++;
-    tmp = 0;
     {
+        i32 tmp = 0;
         CWwdGameObjectA* sp = m_selectedSprite;
         if (sp) {
             tmp = sp->m_188;
         }
+        ar->Write(&tmp, 4);
     }
-    ar->Write(&tmp, 4);
     g_serialCounter++;
-    tmp = 0;
     {
+        i32 tmp = 0;
         CWwdGameObjectA* sp = m_toySprite;
         if (sp) {
             tmp = sp->m_188;
         }
+        ar->Write(&tmp, 4);
     }
-    ar->Write(&tmp, 4);
     g_serialCounter++;
-    tmp = 0;
     {
+        i32 tmp = 0;
         CWwdGameObjectA* sp = m_healthSprite;
         if (sp) {
             tmp = sp->m_188;
         }
+        ar->Write(&tmp, 4);
     }
-    ar->Write(&tmp, 4);
     g_serialCounter++;
-    tmp = 0;
     {
+        i32 tmp = 0;
         CWwdGameObjectA* sp = m_staminaSprite;
         if (sp) {
             tmp = sp->m_188;
         }
+        ar->Write(&tmp, 4);
     }
-    ar->Write(&tmp, 4);
     g_serialCounter++;
-    tmp = 0;
     {
+        i32 tmp = 0;
         CWwdGameObjectA* sp = m_toyTimeSprite;
         if (sp) {
             tmp = sp->m_188;
         }
+        ar->Write(&tmp, 4);
     }
-    ar->Write(&tmp, 4);
     g_serialCounter++;
-    tmp = 0;
     {
+        i32 tmp = 0;
         CWwdGameObjectA* sp = m_wingzTimeSprite;
         if (sp) {
             tmp = sp->m_188;
         }
+        ar->Write(&tmp, 4);
     }
-    ar->Write(&tmp, 4);
     g_serialCounter++;
-    tmp = 0;
     {
+        i32 tmp = 0;
         CWwdGameObjectA* sp = m_powerupSprite;
         if (sp) {
             tmp = sp->m_188;
         }
+        ar->Write(&tmp, 4);
     }
-    ar->Write(&tmp, 4);
     g_serialCounter++;
     memset(buf, 0, 0x80);
     strcpy(buf, static_cast<const char*>(m_animSetName));
@@ -1599,7 +1604,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     // (0x550d0 [ebp+0x328], 0x55107 [ebp+0x344] = the lists' m_nCount) and then
     // every node's +8 data slot.
     {
-        i32 n = m_31c.GetCount();
+        n = m_31c.GetCount();
         ar->Write(&n, 4);
         POSITION cpos = m_31c.GetHeadPosition();
         while (cpos != 0) {
@@ -1607,7 +1612,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
         }
     }
     {
-        i32 n = m_338.GetCount();
+        n = m_338.GetCount();
         ar->Write(&n, 4);
         POSITION pos = m_338.GetHeadPosition();
         while (pos != 0) {

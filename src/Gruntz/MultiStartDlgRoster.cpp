@@ -846,7 +846,7 @@ void CMultiStartDlg::Watchdog() {
             }
             if (slot->m_liveGate != 0 && slot->m_014 != 0) {
                 char buf[0x20];
-                wsprintfA(buf, "%d", slot->m_latency);
+                wsprintfA(buf, "%d", slot->m_latency.m_avg);
                 item1->SetWindowTextA(buf);
                 item2->SetWindowTextA("R");
             } else {

@@ -782,14 +782,23 @@ i32 CInputDevice::Poll() {
     } else {
         m_latchedKeys &= ~0x00000040;
     }
-    if (m_edgeKeys & 0x00000080) {
-        if (m_latchedKeys & 0x00000080) {
-            m_currentKeys &= ~0x00000080;
+    {
+        // The 0x80 latch block alone runs off a mask VARIABLE, not the literal:
+        // retail keeps 0x80 in ebx (`or eax,ebx` - the immediate form would need
+        // the 5-byte `or eax,imm32`, unlike every other mask here) and then reuses
+        // the register for the tests too, `test bl,al`. With the literal spelled
+        // inline cl emits `test al,0x80` (same length, so the peephole ties and
+        // picks the immediate); the variable makes the register the operand.
+        u32 bit = 0x00000080;
+        if (m_edgeKeys & bit) {
+            if (m_latchedKeys & bit) {
+                m_currentKeys &= ~bit;
+            } else {
+                m_latchedKeys |= bit;
+            }
         } else {
-            m_latchedKeys |= 0x00000080;
+            m_latchedKeys &= ~bit;
         }
-    } else {
-        m_latchedKeys &= ~0x00000080;
     }
     if (m_edgeKeys & 0x10000000) {
         if (m_latchedKeys & 0x10000000) {

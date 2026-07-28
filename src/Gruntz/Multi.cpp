@@ -321,8 +321,8 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
     i32* clat = m_channelLatency;
     for (i32 i = 0; i < 4; i++) {
         *clat++ = 0;
-        g_gameReg->m_options[i].m_latency = 0;
-        g_gameReg->m_options[i].m_230 = 0;
+        g_gameReg->m_options[i].m_latency.m_avg = 0;
+        g_gameReg->m_options[i].m_latency.m_count = 0;
     }
 
     NetGameMgr()->m_114 = 0;
@@ -2222,10 +2222,10 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (player == 0) {
                 return 1;
             }
-            i32 num = player->m_latency * player->m_230 + delta;
-            i32 np1 = player->m_230 + 1;
-            player->m_230 = np1;
-            player->m_latency = num / np1;
+            i32 num = player->m_latency.m_avg * player->m_latency.m_count + delta;
+            i32 np1 = player->m_latency.m_count + 1;
+            player->m_latency.m_count = np1;
+            player->m_latency.m_avg = num / np1;
             break;
         }
 
@@ -2667,8 +2667,8 @@ i32 CMulti::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32
     ch->m_readyFlag = 0;
     ch->m_slotKey = e;
     ch->m_liveGate = 1;
-    ch->m_latency = 0;
-    ch->m_230 = 0;
+    ch->m_latency.m_avg = 0;
+    ch->m_latency.m_count = 0;
     return 1;
 }
 
@@ -3935,8 +3935,8 @@ u32 CMulti::GetMaxAckLatency() {
         CGruntzMgr* mgr = NetGameMgr();
         for (i32 i = 0; i < 4; i++) {
             if (mgr->m_options[i].m_014 && mgr->m_options[i].m_liveGate) {
-                if (mgr->m_options[i].m_latency > max) {
-                    max = mgr->m_options[i].m_latency;
+                if (mgr->m_options[i].m_latency.m_avg > max) {
+                    max = mgr->m_options[i].m_latency.m_avg;
                 }
             }
         }

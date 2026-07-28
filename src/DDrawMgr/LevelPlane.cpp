@@ -1181,6 +1181,16 @@ i32 CDDrawWorkerHost::GetSize() {
     return m_scroll->GetSize();
 }
 
+// @early-stop
+// 6 bytes: the LOCAL AREA IS TWO DWORDS SHORT. Retail's `sub esp,0x10` reserves four
+// dword homes and spends only two of them - d4 at [esp+0x14] and dc at [esp+0x1c],
+// i.e. positions 3 and 1 counting down from the top of the local area, with holes
+// where d0 and d8 would sit. cl reserves a home ONLY for the two dims it actually
+// spills, so they pack adjacently into a 0x8 frame at [esp+0x10]/[esp+0x14]. Every
+// instruction (register assignment, load order, schedule) is otherwise identical -
+// only the two displacements and the two `esp` adjustments differ. Tried: dropping
+// the c8/cc locals to plain member reads (whole prologue diverges) and splitting the
+// declarations from the initialisations (no change).
 RVA(0x00163420, 0xf0)
 void CDDrawWorkerHost::InitScrollRects() {
     if (m_scroll == 0) {
@@ -1369,6 +1379,14 @@ i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* s, i32 kind, i32, i32) {
     return 1;
 }
 
+// @early-stop
+// 4 bytes: the grid-size product picks the other imul operand. Retail loads
+// m_gridW (`mov ecx,[esi+0x28]; imul ecx,[esi+0x2c]`), cl loads m_gridH here -
+// and INVERTED in Load right below (retail loads m_gridH there, cl m_gridW), from
+// the SAME source spelling. So cl's commutative-imul operand pick is context-
+// driven, not source-order driven: `w*h*4`, `h*w*4`, `x=w; x*=h; x*=4`,
+// GridByteSize(h,w), GridByteSize(w,h) and a pure-return helper body all emit the
+// identical stream. Everything else in the body is byte-exact.
 RVA(0x00163780, 0x134)
 i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     if (s == 0) {
@@ -1386,7 +1404,7 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     s->Write(&m_94, 4);
     s->Write(&m_98, 4);
 
-    i32 gridSize = static_cast<u32>(m_gridW) * m_gridH * 4;
+    i32 gridSize = GridByteSize(m_gridH, m_gridW);
     s->Write(&gridSize, 4);
     s->Write(m_tileGrid, gridSize);
 
@@ -1401,10 +1419,9 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
 // CDDrawWorkerHost::Load (__thiscall, ret 0x4). Inverse of Save: read back the same
 // field sequence; the size-prefix must equal gridW*gridH*4 or the load aborts.
 // @early-stop
-// 99.98% fwd-decl-census butterfly (docs/patterns/header-fwd-decl-count-regalloc-
-// butterfly.md): the 2026-07-19 CButeSection==CButeMgr fold's ButeMgr.h class-def
-// addition flipped ONE load pair here (closure census unchanged - the content/
-// position variant, same firing as SBI_MenuItem::DecCounter). Shape byte-correct.
+// 4 bytes, the mirror image of Save's residue above: retail loads m_gridH
+// (`mov ecx,[ebx+0x2c]; imul ecx,[ebx+0x28]`), cl loads m_gridW. Source order is
+// NOT the lever - see the operand-pick note on Save. Shape byte-correct.
 RVA(0x001638c0, 0x140)
 i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
     if (s == 0) {
