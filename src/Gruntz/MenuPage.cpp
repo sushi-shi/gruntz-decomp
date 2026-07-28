@@ -404,10 +404,13 @@ i32 CMenuPage::CanWrap() {
 // it (vtable +0x24), render the selected one (host Draw) and advance x/y, wrapping
 // to a new column every m_rowsPerCol rows.
 // @early-stop
-// scheduling tail (~99.98%, 1 B): the whole body incl. the now byte-exact `sub
-// esp,0xc` prologue matches; the residual is the same edx/edi commutative
-// operand-order pick as the sibling Layout (0x183b60) at the y-init - not source-
-// steerable (canonicalizes to the same register pick). Logic complete.
+// 8 bytes: the y-init's two loads land in the opposite registers. Retail
+// `mov edi,[ebp+0x38](m_rect.top); cdq; mov esi,[ebp+0x5c](m_offsetY)`, cl emits
+// them swapped, so cl's `add edi,esi` starts from m_offsetY. cl canonicalizes the
+// commutative `+` and IGNORES source order: `top+offsetY`, `offsetY+top`, the
+// two-statement `y=top; y+=offsetY`, a hoisted `y0` local, and splitting the two
+// halves around the x computation ALL emit the identical stream (tested
+// 2026-07-28). Same pick as the sibling Layout (0x183b60). Logic complete.
 RVA(0x00183e50, 0x11c)
 i32 CMenuPage::LayoutOne(CDDrawSurfacePair* target) {
     i32 x0 = m_rect.left;

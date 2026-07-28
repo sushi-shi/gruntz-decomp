@@ -531,9 +531,6 @@ RVA_COMPGEN(0x00135b80, 0x1e, ??_GDSoundCloneInst@@UAEPAXI@Z)
 // ---------------------------------------------------------------------------
 // ~DSoundCloneInst: drain the clone list via RemoveClone (re-reads head each pass);
 // cl stamps the clone vptr + chains ~DSoundBaseSub; /GX EH frame.
-// @early-stop
-// EH-dtor / vptr-reset schedule: clone-loop byte-exact; real derived dtor so cl emits
-// the clone/base/buffer vptr resets + base dtor chain.
 RVA(0x00135bb0, 0x63)
 DSoundCloneInst::~DSoundCloneInst() {
     while (m_cloneList.m_head != 0) {
@@ -1540,7 +1537,7 @@ i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut) {
         u32 size = *p++;
         if (id == mmioFOURCC('f', 'm', 't', ' ')) {
             // the chunk body typed at the format boundary - byte-forced
-        out->m_fmt = reinterpret_cast<WaveFormatX*>(p);
+            out->m_fmt = reinterpret_cast<WaveFormatX*>(p);
         } else if (id == mmioFOURCC('d', 'a', 't', 'a')) {
             *dataOut = p;
             *sizeOut = size;

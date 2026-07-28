@@ -2,6 +2,12 @@
 tags: cpp:ctor cpp:eh | asm:mov | topic:wall topic:eh
 symptoms: body+offsets+EH-frame byte-identical, residue only in __ehfuncinfo state ids / the `[ebp-N]=state` writes, ~89-95%
 confidence: 7/10
+variants: eh-entry-state-counts-destructible-members.md
+
+CHECK THAT VARIANT FIRST: an entry-state immediate that is low by exactly ONE is usually not
+this wall at all but a MISSING destructible member in the class model (a member whose dtor
+emits no code still consumes a state). Only a numbering base that is shifted for the whole
+table, with the member count already proven correct, is the TU-completeness wall below.
 
 A ctor (or dtor) with several DESTRUCTIBLE sub-objects emits a `/GX` EH frame whose state-table
 entries are NUMBERED relative to the translation unit's funcinfo. When our `.cpp` holds a

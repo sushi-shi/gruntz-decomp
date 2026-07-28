@@ -46,6 +46,14 @@ struct DSoundList {
     DSoundLink* m_head; // +0x00
     DSoundLink* m_tail; // +0x04
 
+    // Retail declares a do-nothing destructor. Proof is the /GX unwind state every
+    // owner reserves for the member yet never spends: ~DSoundCloneInst (0x135bb0)
+    // enters at state 1 and drops straight to -1 for the base dtor - with no dtor
+    // on the list the base subobject would be state 0 and entry would be 0; and
+    // ~CSymParser (0x13abc0) enters at 2 (m_list 0, m_hash 1, m_nodes 2), not 1.
+    // No teardown code is emitted for it anywhere, so the body is empty.
+    ~DSoundList() {}
+
     void InsertHead(DSoundLink* node);                       // 0x1390e0
     void InsertTail(DSoundLink* node);                       // 0x139110
     void InsertAfter(DSoundLink* after, DSoundLink* node);   // 0x139140

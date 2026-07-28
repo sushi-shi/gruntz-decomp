@@ -3095,19 +3095,20 @@ i32 CPlay::PostHudRect() {
 // ===========================================================================
 // GruntzPlayer::GruntzPlayer()  (0x0da790) - THE default constructor
 // ===========================================================================
-// Construct the CString m_name + the CBattlezMapConfig m_038, then run the shared
-// frameless field seed (the Clear body at 0x0da960, /O2-inlined here exactly as retail
-// inlines it: the -1 / -2 / 1 / 0xf sentinels + the empty-string assign into m_name).
-// The two destructible members drive the /GX frame.
+// Construct the CString m_name, the CBattlezMapConfig m_038 and the PlayerLatency
+// m_latency (the last one is what the two zero-stores right after ??0CBattlezMapConfig
+// are - they used to be modelled as a hand-duplicated leading `m_latency = 0; m_230 = 0;`
+// statement pair), then run the shared frameless field seed (the Clear body at 0x0da960,
+// /O2-inlined here exactly as retail inlines it: the -1 / -2 / 1 / 0xf sentinels + the
+// empty-string assign into m_name). Three destructible members drive the /GX frame
+// (which is why the EH state tops out at 2, not 1 - see PlayerLatency's note).
 // @early-stop
-// /GX EH-state wall (docs/seh-eh.md): the member ctor calls (CString, CBattlezMapConfig),
-// the empty-string assign and the field seeds are all recovered; the residual is a
-// 2-destructible-member ctor's EH state numbering + cl's interleave of the field stores
-// (same family as the CWarlord dtor wall).
+// The EH-state wall is GONE (2026-07-28). Sole residual, 7 B, shared verbatim with
+// Clear (0x0da960) and Reset (0x0da9e0): the `m_comboSel = 0xf` IMMEDIATE store, which
+// cl sinks to the tail of the zero-store cluster while retail keeps it in source
+// position between the m_224 and m_02c stores.
 RVA(0x000da790, 0xb0)
 GruntzPlayer::GruntzPlayer() {
-    m_latency = 0;
-    m_230 = 0;
     m_playerIndex = -1;
     m_slotKey = -2;
     m_liveGate = 0;
@@ -3121,8 +3122,8 @@ GruntzPlayer::GruntzPlayer() {
     m_comboSel = 0xf;
     m_doneFlag = 0;
     m_030 = 0;
-    m_latency = 0;
-    m_230 = 0;
+    m_latency.m_avg = 0;
+    m_latency.m_count = 0;
 }
 
 // ===========================================================================
@@ -3131,12 +3132,9 @@ GruntzPlayer::GruntzPlayer() {
 // Reverse the ctor: run the shared field seed (Clear, 0x0da960 - retail's FIRST call in
 // this body; it is referenceable now that 0x0da960 is bound as a METHOD instead of a
 // phantom second constructor, which is what previously blocked this dtor), then cl
-// destructs the +0x38 CBattlezMapConfig and the CString m_name. The /GX frame numbers
-// the teardowns 2 / 0 / -1.
-// @early-stop
-// /GX teardown-state wall: the Clear() call + both member destructions are present and
-// bind to their real bodies; the residual is cl's EH state numbering for the 2-member
-// teardown (same family as the ctor above).
+// destructs the PlayerLatency m_latency (no code), the +0x38 CBattlezMapConfig and the
+// CString m_name. The /GX frame numbers the teardowns 2 / 0 / -1 - the entry state 2 is
+// what proved m_latency is a destructible sub-object rather than two loose i32s.
 RVA(0x00083260, 0x57)
 GruntzPlayer::~GruntzPlayer() {
     Clear();
@@ -3164,8 +3162,8 @@ i32 GruntzPlayer::SeedForSlot(i32 index) {
     m_008 = index;
     m_030 = 0;
     m_name = GetDefaultName(0);
-    m_latency = 0;
-    m_230 = 0;
+    m_latency.m_avg = 0;
+    m_latency.m_count = 0;
     return 1;
 }
 
@@ -3209,8 +3207,8 @@ void GruntzPlayer::Clear() {
     m_comboSel = 0xf;
     m_doneFlag = 0;
     m_030 = 0;
-    m_latency = 0;
-    m_230 = 0;
+    m_latency.m_avg = 0;
+    m_latency.m_count = 0;
 }
 
 // ===========================================================================
@@ -3239,8 +3237,8 @@ i32 GruntzPlayer::Reset() {
     m_comboSel = 0xf;
     m_doneFlag = 0;
     m_030 = 0;
-    m_latency = 0;
-    m_230 = 0;
+    m_latency.m_avg = 0;
+    m_latency.m_count = 0;
     return 1;
 }
 
@@ -3250,8 +3248,8 @@ i32 GruntzPlayer::ClearRoundState() {
     m_readyFlag = 0;
     m_doneFlag = 0;
     m_030 = 0;
-    m_latency = 0;
-    m_230 = 0;
+    m_latency.m_avg = 0;
+    m_latency.m_count = 0;
     return 1;
 }
 

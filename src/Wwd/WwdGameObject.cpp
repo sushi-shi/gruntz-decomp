@@ -1417,8 +1417,11 @@ i32 CDDrawWorker::ReloadFrame(CParseSource* rec, i32 n, i32 flag) {
 // @early-stop
 // 99.96% - every instruction byte-identical except the commutative `width*height` imul:
 // retail keeps m_height in esi and reads m_width as the imul memory operand; cl canonicalizes
-// to the reverse (keeps m_width, reads m_height) for EVERY spelling (a*b, b*a, temp + *=). A
-// 2-byte (displacement) instruction-selection canonicalization, not source-steerable.
+// to the reverse (keeps m_width, reads m_height) for EVERY spelling (a*b, b*a, temp + *=,
+// and a hoisted `i32 h = frame->m_height` local, tested 2026-07-28). A 2-byte (displacement)
+// instruction-selection canonicalization, not source-steerable. Same family as
+// CDDrawWorkerHost::Save/Load (LevelPlane.cpp) - which flip the SAME way in opposite
+// directions from identical source, i.e. the pick is context-driven inside cl.
 RVA(0x001523f0, 0x82)
 i32 CDDrawWorker::GetMemoryUsage(i32 raw) {
     i32 sum = 0;

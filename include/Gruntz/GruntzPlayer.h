@@ -38,6 +38,28 @@
 #include <Gruntz/SerialArchive.h>    // CFileMemBase - the Serialize stream
 #include <Mfc.h>                     // CString (real MFC, 4-byte m_pchData)
 
+// The per-slot round-trip-time accumulator: a cumulative moving average, folded
+// by CMulti's 0x420 handler as `avg = (avg * count + sample) / (count + 1)`.
+// It is a real SUB-OBJECT, not two loose i32s, and the /GX bookkeeping proves it:
+//  - ~GruntzPlayer (0x083260) enters at unwind state 2 with only m_name and m_038
+//    to tear down, i.e. the class owns a THIRD destructible subobject declared
+//    after m_038 whose destruction emits no code;
+//  - the default ctor (0x0da790) zeroes BOTH dwords immediately after
+//    ??0CBattlezMapConfig and before the state advance - the member-init slot -
+//    and then Clear's inlined seed zeroes them AGAIN at the tail (which is why the
+//    old two-loose-fields model had to duplicate the statements by hand).
+struct PlayerLatency {
+    PlayerLatency() {
+        m_avg = 0;
+        m_count = 0;
+    }
+    ~PlayerLatency() {}
+
+    i32 m_avg;   // +0x00 (0x22c) running mean round-trip time (the roster displays it)
+    i32 m_count; // +0x04 (0x230) samples already folded into the mean
+};
+SIZE(0x8);
+
 class GruntzPlayer {
 public:
     GruntzPlayer();  // 0x0da790 (default; constructs m_name + m_038, then Clear)
@@ -65,25 +87,25 @@ public:
     // per-command player id (CNetCmdSlot::ProcessCmd's `m_desc->m_playerIndex & 0xff`
     // ack-flag index; CMulti's `(char)slot->m_desc->m_playerIndex` wire field).
     i32 m_playerIndex;
-    CString m_name;     // +0x004  name ("Player")
-    i32 m_008;          // +0x008  per-player selected sprite descriptor/index (CPlay's
-                        //         grid walk feeds m_options[g_curPlayer].m_008 to the
-                        //         sprite table's GetSel/LoadSprite; Multi uses it as the
-                        //         player/slot id for chat AddItem + the net-slot table)
-    i32 m_00c;          // +0x00c  (serialized) per-mode id / sound id / key word
-    i32 m_configId;     // +0x010  = 0; per-slot config id (LoadConfig arg; roster combo base)
-    i32 m_014;          // +0x014  = 1; armed / arrival gate (roster: human-vs-computer)
+    CString m_name; // +0x004  name ("Player")
+    i32 m_008;      // +0x008  per-player selected sprite descriptor/index (CPlay's
+                    //         grid walk feeds m_options[g_curPlayer].m_008 to the
+                    //         sprite table's GetSel/LoadSprite; Multi uses it as the
+                    //         player/slot id for chat AddItem + the net-slot table)
+    i32 m_00c;      // +0x00c  (serialized) per-mode id / sound id / key word
+    i32 m_configId; // +0x010  = 0; per-slot config id (LoadConfig arg; roster combo base)
+    i32 m_014;      // +0x014  = 1; armed / arrival gate (roster: human-vs-computer)
     // +0x018  = -2; the DirectPlay player id owning this roster slot (CGruntzMgr::
     // FindOptionsSlot's match key; compared against CMulti::m_hostIndex; the net layer
     // uses it as SetData's `idTo` and as CNetSession::FindCmdSlot's lookup key).
     i32 m_slotKey;
-    i32 m_readyFlag;    // +0x01c  (serialized) roster: ready flag
-    i32 m_liveGate;     // +0x020  = 0; loaded / live gate
-    i32 m_clearedRound; // +0x024  (serialized) "already cleared this round"
-    i32 m_joined;       // +0x028  joined
-    i32 m_doneFlag;     // +0x02c  = 0; done (CNetSession::Reconcile + CMulti set it on the
-                        //          player whose channel just got reset/dropped)
-    i32 m_030;          // +0x030  = 0
+    i32 m_readyFlag;            // +0x01c  (serialized) roster: ready flag
+    i32 m_liveGate;             // +0x020  = 0; loaded / live gate
+    i32 m_clearedRound;         // +0x024  (serialized) "already cleared this round"
+    i32 m_joined;               // +0x028  joined
+    i32 m_doneFlag;             // +0x02c  = 0; done (CNetSession::Reconcile + CMulti set it on the
+                                //          player whose channel just got reset/dropped)
+    i32 m_030;                  // +0x030  = 0
     char m_pad034[0x38 - 0x34]; // +0x034
     // The REAL embedded spawn/board bundle. Proven by the array element ctor/dtor
     // (0x0da790 / 0x083260), whose +0x38 member calls are ??0/??1CBattlezMapConfig
@@ -94,9 +116,7 @@ public:
     i32 m_focusY;                 // +0x224  = 0 (snapped focus y)
     i32 m_comboSel;               // +0x228  = 0xf in the ctor/Clear seed; the battlez
                                   //          dialog's per-slot dropdown selection (+1)
-    i32 m_latency;                // +0x22c  = 0  net-slot latency (the roster watchdog
-                                  //          displays it; ex the CNetPlayerSlot +0x37c view)
-    i32 m_230;                    // +0x230  = 0
+    PlayerLatency m_latency;      // +0x22c  the round-trip-time accumulator
     char m_pad234[0x238 - 0x234]; // +0x234
 }; // 0x238
 SIZE_UNKNOWN();
