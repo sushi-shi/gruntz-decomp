@@ -1,0 +1,25 @@
+[workspace]
+resolver = "2"
+members = ["gruntz-cast", "gruntz-rez", "gruntz-codec", "gruntz-oracle"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[workspace.dependencies]
+gruntz-cast = { path = "gruntz-cast" }
+gruntz-rez = { path = "gruntz-rez" }
+gruntz-codec = { path = "gruntz-codec" }
+clap = { version = "4", features = ["derive"] }
+
+# The three LIBRARIES are `#![no_std]` with no `alloc` and no third-party
+# dependency. That is not decoration: the APIs are zero-copy (headers borrow the
+# input, decoders fill a caller-supplied `&mut [u8]`, walks are iterators over
+# borrowed slices), so there is nothing for an allocator to do. A codec oracle
+# that pulled in someone else's decoder would also stop being clean-room.
+# std, file IO and clap live in the binaries.
+
+[profile.release]
+debug = true
+overflow-checks = true # a codec that wraps is a codec that lies; keep the panic

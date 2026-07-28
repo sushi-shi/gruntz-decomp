@@ -1,0 +1,11 @@
+[package]
+name = "gruntz-cast"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# `#![no_std]`, no dependencies. Exists solely so that no other crate in this
+# workspace has to write `as`.
+
+[lib]
+path = "src/lib.rs"

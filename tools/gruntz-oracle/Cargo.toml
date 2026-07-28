@@ -1,0 +1,15 @@
+[package]
+name = "gruntz-oracle"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "gruntz-oracle"
+path = "src/main.rs"
+
+[dependencies]
+gruntz-rez = { workspace = true }
+gruntz-codec = { workspace = true }
+gruntz-cast = { workspace = true }
+clap = { workspace = true }
