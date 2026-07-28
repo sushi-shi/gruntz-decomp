@@ -1152,12 +1152,9 @@ void CDDrawWorker::Unload() {
 // CDDrawWorker::InsertFrame @0x151f00 - build and install a frame worker (a CImage,
 // vftable @0x5eaa2c) at frame number `n` in the sprite's +0x10 frame CObArray.
 // __thiscall, ret 0xc.
-// @early-stop
-// vptr-scheduler wall (99.5%): the real `new CImage(n, m_c)` ctor
-// (docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md) fixed the regalloc that
-// used to cap this at ~84% (the this/n/worker coloring resolved once the construction
-// became a clean ctor). The only residual is the vptr store position (cl 1st vs retail
-// 4th) - same wall as CreateFrame30.
+// (The ex "vptr-scheduler wall" is closed: the three fields retail stores BEFORE the
+// stamp are exactly CImage's member-INITIALIZER list, the four after it are the ctor
+// BODY - see docs/patterns/vptr-stamp-splits-meminit-from-body.md.)
 RVA(0x00151f00, 0xa4)
 CImage* CDDrawWorker::InsertFrame(void* src, i32 n, i32 mode) {
     if (n < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(n)) != 0) {
@@ -1194,16 +1191,11 @@ CImage* CDDrawWorker::InsertFrame(void* src, i32 n, i32 mode) {
 // arg1 is a FILE PATH: retail 0x152006 pushes [esp+0x14] (= arg1) last into
 // `call [edx+0x30]` = CImage::Create @0x152e90, which hands it to Createa58_3 ->
 // CFileImageSurface::LoadByExt @0x148940 -> strrchr(path,'.') (SETTLED 2026-07-27).
-// @early-stop
-// vptr-scheduler wall (99.5%): the real `new CImage(index, Owner())` ctor
-// (docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md) fixed the whole regalloc
-// (was ~66% with a spelled-out new+store or a helper call). The ONLY residual is the
-// vptr store position: cl stamps `mov [nf],??_7CImage` at ctor entry (1st store) while
-// retail schedules it 4th - after m_status/m_08/m_parent, before m_width. The scheduler
-// won't sink the vptr past scalar member stores from any source form tried (body-order,
-// member-init-list); a source-level fix would need the 3 leading fields to come from a
-// base-class ctor. (The other diff, `[eax+edi*4]` vs `[eax+4*edi]`, is a byte-neutral
-// disasm-spelling artifact.)
+// (The ex "vptr-scheduler wall" is closed - and the fix was NOT a base ctor: a member-
+// initializer list for JUST the three pre-stamp fields, body assignments for the rest.
+// A FULL init list would have moved all seven above the stamp, which is why the earlier
+// "member-init-list tried" note read as a dead end. See
+// docs/patterns/vptr-stamp-splits-meminit-from-body.md.)
 RVA(0x00151fb0, 0xa4)
 CImage* CDDrawWorker::CreateFrame30(char* path, i32 index, i32 keyed) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
@@ -1233,8 +1225,7 @@ CImage* CDDrawWorker::CreateFrame30(char* path, i32 index, i32 keyed) {
 // virtual is at slot +0x28 and takes (desc, mode, size, 1). SETTLED 2026-07-27:
 // arg4 is the blob's byte LENGTH - it reaches CDDrawShadeBlit::Build @0x1490d0,
 // which mallocs `size-0x20` and `rep movs` exactly that many bytes.
-// @early-stop
-// Same vptr-scheduler wall as CreateFrame30 (see there). 99.5%.
+// (Closed with CreateFrame30 by the CImage partial member-init list - see there.)
 RVA(0x00152060, 0xab)
 CImage* CDDrawWorker::CreateFrame28(PidHeader* desc, i32 mode, i32 index, u32 size) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
@@ -1265,8 +1256,7 @@ CImage* CDDrawWorker::CreateFrame28(PidHeader* desc, i32 mode, i32 index, u32 si
 // virtual is at slot +0x24 and takes (width, height, keyed). SETTLED 2026-07-27:
 // args 1/2 are a GEOMETRY pair, not a descriptor+mode - they end up in
 // CDDSurface::BlitSurf's +0x1c/+0x18 (see the CImage::Create24 proof block).
-// @early-stop
-// Same vptr-scheduler wall as CreateFrame30 (see there). 99.5%.
+// (Closed with CreateFrame30 by the CImage partial member-init list - see there.)
 RVA(0x00152110, 0xa9)
 CImage* CDDrawWorker::CreateFrame24(i32 width, i32 height, i32 index, i32 keyed) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != 0) {
@@ -1414,14 +1404,12 @@ i32 CDDrawWorker::ReloadFrame(CParseSource* rec, i32 n, i32 flag) {
 // decoded byte size: width*height, doubled for a 16bpp held surface or tripled for
 // 24bpp, overridden by the owned object's exact count when one is present, plus a
 // fixed 0x34-byte per-frame overhead when `raw` is 0.
-// @early-stop
-// 99.96% - every instruction byte-identical except the commutative `width*height` imul:
-// retail keeps m_height in esi and reads m_width as the imul memory operand; cl canonicalizes
-// to the reverse (keeps m_width, reads m_height) for EVERY spelling (a*b, b*a, temp + *=,
-// and a hoisted `i32 h = frame->m_height` local, tested 2026-07-28). A 2-byte (displacement)
-// instruction-selection canonicalization, not source-steerable. Same family as
-// CDDrawWorkerHost::Save/Load (LevelPlane.cpp) - which flip the SAME way in opposite
-// directions from identical source, i.e. the pick is context-driven inside cl.
+// (The "commutative imul operand canonicalization" here was REAL but context-driven, and
+// the context was the CImage ctor: giving CImage its partial member-init list (so the vptr
+// stamp lands 4th, as retail has it) flipped this function's imul operand pick to retail's
+// with no edit of its own. Same for CDDrawWorkerHost::Save. So a commutative-operand
+// mismatch can be a downstream READOUT of a wrong ctor shape - re-check the constructors
+// in the TU before filing one as a wall.)
 RVA(0x001523f0, 0x82)
 i32 CDDrawWorker::GetMemoryUsage(i32 raw) {
     i32 sum = 0;

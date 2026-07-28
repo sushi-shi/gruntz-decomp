@@ -76,10 +76,7 @@ public:
     // m_status/m_08/m_parent, before m_width) - see
     // docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md. Member-init ORDER here
     // reproduces retail's store order.
-    CImage(i32 index, CDDrawSurfaceMgr* parent) {
-        m_status = index;
-        m_08 = 0;
-        m_parent = parent;
+    CImage(i32 index, CDDrawSurfaceMgr* parent) : m_status(index), m_08(0), m_parent(parent) {
         m_width = 0;
         m_height = 0;
         m_surface = 0;

@@ -796,12 +796,10 @@ i32 CDDrawSubMgrLeafScan::RemoveKeysEqual(const char* base, const char* str) {
 // by `arg2`. On Configure failure, destroy the element via its scalar dtor and
 // return 0; on success link it into the map under `key` and stamp the redraw arg
 // (this+0x34). 2 stack args (ret 8). Returns the element (or 0).
-// @early-stop
-// ~99.3% - register-naming coin-flip (was 99.81 pre-CLoadable): code bytes match EXCEPT the
-// ecx<->edx assignment for the two seed reads (count<-this+0x1c, handle<-this+0x0c).
-// Retail pins count in ecx, handle in edx; MSVC5 here swaps them. Same values,
-// same stores, same order; not source-steerable (tried count-first / handle-first /
-// helper-extracted reads). docs/patterns/zero-register-pinning.md.
+// (The ex "ecx<->edx register-naming coin-flip" was the LeafCue ctor shape: retail seeds
+// the three CLoadable header words BEFORE stamping the LeafCue vptr, i.e. through a base
+// ctor - see the 2-arg CLoadable(id, owner) in <Gruntz/Loadable.h>. Delegating to it fixed
+// the seed-read registers as well as the stamp position.)
 RVA(0x00157d70, 0x90)
 LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, void* arg2) {
     if (m_emitGate != 0) {
@@ -827,10 +825,7 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, void* arg2) {
 // seed the element from the map count (this+0x1c) and handle (this+0x0c), run
 // Configure2 keyed by `arg2`; on failure scalar-delete + return 0, on success
 // link into the map under `key` + stamp the redraw arg (this+0x34). 2 args (ret 8).
-// @early-stop
-// register-naming coin-flip (twin of CreateEntry's 99.81%): every code byte
-// matches retail EXCEPT the ecx<->edx assignment for the two seed reads. Same
-// values/stores/order; not source-steerable. docs/patterns/zero-register-pinning.md.
+// (Fixed with its twin by the CLoadable(id, owner) base-ctor delegation - see CreateEntry.)
 RVA(0x00157e00, 0x90)
 LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, void* arg2) {
     if (m_emitGate != 0) {
@@ -1547,16 +1542,16 @@ RVA_COMPGEN(0x00158fb0, 0x19, ??1CDrawSubWorker@@UAE@XZ)
 // it (both vtables' slot 9 hold this RVA - no ICF in MSVC5, so a shared slot
 // target can only be an inherited method; the old "shared body (ICF)" note was
 // the mis-model the 2026-07-22 rebase dissolved).
-// @early-stop
-// 83.86% - regalloc coin-flip: retail materializes bpp up-front into edi; the
-// /O2 scheduler on identical source keeps bpp in eax and loads it lazily.
+// (The ex "regalloc coin-flip / bpp materialized into edi" was just the STORE ORDER:
+// cl floats the two stores of the same register (m_height + m_srcRect[3], both `h`) to
+// the front and emits the rest in source order, so m_width has to precede m_bpp.)
 RVA(0x00158fd0, 0x41)
 i32 CDrawSubWorker::SetGeometry(i32 w, i32 h, i32 bpp) {
     if (w <= 0 || h <= 0) {
         return 0;
     }
-    m_bpp = bpp; // FIRST: retail materializes bpp into edi up-front
     m_width = w;
+    m_bpp = bpp; // retail materializes bpp into edi up-front but stores it AFTER m_width
     m_height = h;
     m_srcRect[3] = h;
     m_srcRect[0] = 0;

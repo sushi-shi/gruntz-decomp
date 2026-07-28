@@ -1379,14 +1379,9 @@ i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* s, i32 kind, i32, i32) {
     return 1;
 }
 
-// @early-stop
-// 4 bytes: the grid-size product picks the other imul operand. Retail loads
-// m_gridW (`mov ecx,[esi+0x28]; imul ecx,[esi+0x2c]`), cl loads m_gridH here -
-// and INVERTED in Load right below (retail loads m_gridH there, cl m_gridW), from
-// the SAME source spelling. So cl's commutative-imul operand pick is context-
-// driven, not source-order driven: `w*h*4`, `h*w*4`, `x=w; x*=h; x*=4`,
-// GridByteSize(h,w), GridByteSize(w,h) and a pure-return helper body all emit the
-// identical stream. Everything else in the body is byte-exact.
+// (The imul-operand mismatch closed itself when the CImage ctor got its partial
+// member-init list - the "context-driven" reading in the old note was right, and the
+// context was a constructor shape two headers away. See CDDrawWorker::GetMemoryUsage.)
 RVA(0x00163780, 0x134)
 i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     if (s == 0) {

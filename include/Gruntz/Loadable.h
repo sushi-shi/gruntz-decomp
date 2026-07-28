@@ -106,6 +106,14 @@ public:
         m_flags = 0;
         m_ownerCtx = owner;
     }
+    // The 2-arg INLINE sibling (id + owner, m_flags 0): LeafCue's factory ctor seeds
+    // the header this way - retail stores +0x04/+0x08/+0x0c and only THEN stamps the
+    // LeafCue vptr, which is the base-ctor-before-derived-vptr order.
+    CLoadable(i32 id, class CDDrawSurfaceMgr* owner) {
+        m_id = id;
+        m_flags = 0;
+        m_ownerCtx = owner;
+    }
     // The +0x0c owner context IS the CDDrawSurfaceMgr across the whole draw family -
     // surface pairs/children, workers, resolve nodes, cue leaves. Now that the member
     // carries that type, this is a plain read.
