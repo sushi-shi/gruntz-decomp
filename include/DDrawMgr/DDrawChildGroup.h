@@ -168,7 +168,12 @@ public:
     POSITION m_scanCursor;
 
     // Engine-label backlog stub.
-    void DrawObjectCounts(); // 0x15a650  per-object debug-count overlay
+    // 0x15a210 - the per-object debug-GEOMETRY overlay (twin of DrawObjectCounts).
+    // A CDDrawChildGroup method, proven by the body: it gates on this->m_flags,
+    // walks this->m_list and reaches the plane/back-pair through OwnerMgr(). Returns
+    // void (retail sets no eax on any path and ends `ret`).
+    void DrawObjectDebugGeometry(); // 0x15a210
+    void DrawObjectCounts();        // 0x15a650  per-object debug-count overlay
 
     // 0x159ef0 - non-virtual entry that virtual-dispatches slot 15 (DestroyChildren):
     // `mov eax,[ecx]; jmp [eax+0x3c]`. Receiver byte-proven = holder+0x08 (this class):
