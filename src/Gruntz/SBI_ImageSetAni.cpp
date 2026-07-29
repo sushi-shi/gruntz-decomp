@@ -176,7 +176,7 @@ void CSBI_ImageSetAni::SetRange(i32 start, i32 end, i32 step, i32 loop, i32 inte
 }
 
 RVA(0x000e7cd0, 0xf8)
-i32 CSBI_ImageSetAni::SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4) {
+i32 CSBI_ImageSetAni::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
     if (s == 0) {
         return 0;
     }
@@ -201,7 +201,8 @@ i32 CSBI_ImageSetAni::SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4)
             s->Write(&m_frameEnd, 4);
             break;
     }
-    return CSBI_ImageSet::SerializeFields(s, mode, a3, a4) != 0; // qualified = direct base call
+    return CSBI_ImageSet::SerializeFields(s, mode, typeId, pObj)
+           != 0; // qualified = direct base call
 }
 
 RVA_COMPGEN(0x001047c0, 0x1e, ??_GCSBI_ImageSetAni@@UAEPAXI@Z)

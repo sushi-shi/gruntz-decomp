@@ -71,7 +71,7 @@ struct CDDrawWorkerA : public CDDrawWorkerBase {
     CDDrawWorkerA(CDDrawSurfaceMgr* ctx) : CDDrawWorkerBase(ctx) {
         m_78b = 0; // the BYTE frame seed (retail `mov byte [eax+0x78],bl`)
     }
-    virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3); // [11] 0x157110
+    virtual i32 Vfunc2C(i32 x, i32 y, i32 frame); // [11] 0x157110
     // +0x78 byte frame = the base union's m_78b.
 };
 SIZE(0x7c);
@@ -85,11 +85,11 @@ struct CDDrawWorkerB : public CDDrawWorkerBase {
     CDDrawWorkerB(CDDrawSurfaceMgr* ctx) : CDDrawWorkerBase(ctx) {
         m_78 = 0;
     }
-    virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3);                       // [11] 0x1572f0
-    virtual i32 PlaceFrame(i32 a1, i32 a2, CDDrawWorker* src, i32 a4); // [12] 0x1572b0
-    // a3 is the registry KEY STRING: it goes straight to Helper, which hands it to
+    virtual i32 Vfunc2C(i32 x, i32 y, i32 frame);                            // [11] 0x1572f0
+    virtual i32 PlaceFrame(i32 x, i32 y, CDDrawWorker* src, i32 frameIndex); // [12] 0x1572b0
+    // `key` is the registry KEY STRING: it goes straight to Helper, which hands it to
     // ::CMapStringToOb::Lookup (0x1b8008), whose first parameter is an LPCTSTR it hashes.
-    virtual i32 PlaceBound(i32 a1, i32 a2, const char* key, i32 a4); // [13] 0x157280
+    virtual i32 PlaceBound(i32 x, i32 y, const char* key, i32 frameIndex); // [13] 0x157280
 
     // Non-virtual: look up a named object in the owner map, fetch element[idx] when
     // in range, cache at m_78, return whether it is non-null.

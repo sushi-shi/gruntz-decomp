@@ -115,18 +115,18 @@ void ShowHudMessage(
     CDDrawSurfaceMgr* sink,
     CString* text,
     RECT* box,
-    i32 a4,
-    i32 a5,
-    i32 a6,
-    i32 a7,
-    i32 a8,
-    i32 a9
+    i32 fontSel,
+    i32 shadow,
+    i32 r,
+    i32 g,
+    i32 b,
+    i32 flag
 ) {
     CDDrawSurfacePair* page = sink->m_drawTarget->m_overlayPair;
     if (page == 0) {
         return;
     }
-    HudMsgPush(sink, text, box, page->m_surface, a4, a5, a6, a7, a8, a9);
+    HudMsgPush(sink, text, box, page->m_surface, fontSel, shadow, r, g, b, flag);
 }
 // @early-stop
 // same tail-merge wall as ShowHudMessage (twin; draw page m_14 vs present page m_18).
@@ -135,16 +135,16 @@ void ShowHudMessageAlt(
     CDDrawSurfaceMgr* sink,
     CString* text,
     RECT* box,
-    i32 a4,
-    i32 a5,
-    i32 a6,
-    i32 a7,
-    i32 a8,
-    i32 a9
+    i32 fontSel,
+    i32 shadow,
+    i32 r,
+    i32 g,
+    i32 b,
+    i32 flag
 ) {
     CDDrawSurfacePair* page = sink->m_drawTarget->m_backPair;
     if (page == 0) {
         return;
     }
-    HudMsgPush(sink, text, box, page->m_surface, a4, a5, a6, a7, a8, a9);
+    HudMsgPush(sink, text, box, page->m_surface, fontSel, shadow, r, g, b, flag);
 }

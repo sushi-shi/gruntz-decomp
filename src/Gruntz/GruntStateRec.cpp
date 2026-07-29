@@ -32,7 +32,7 @@
 // byte-faithful; residual is the MSVC5 scratch-buffer slot assignment + the
 // outparam zero-init store positions. Not source-steerable.
 RVA(0x000ea990, 0xa72)
-i32 CSBI_StatzTabGruntBar::SerializeFields(CFileMemBase* s, i32 mode, i32 a2, i32 a3) {
+i32 CSBI_StatzTabGruntBar::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
     if (s == 0) {
         return 0;
     }
@@ -150,5 +150,5 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(CFileMemBase* s, i32 mode, i32 a2, i3
 
     // QUALIFIED = the direct base leg (retail `call 0x1848`); this was the view's
     // fabricated `ChainLoad`. Unqualified would now be recursion on this override.
-    return CStatusBarItem::SerializeFields(s, mode, a2, a3) != 0 ? 1 : 0;
+    return CStatusBarItem::SerializeFields(s, mode, typeId, pObj) != 0 ? 1 : 0;
 }

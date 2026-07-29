@@ -53,48 +53,48 @@ CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
 RVA(0x00110460, 0x64)
 i32 CTileTriggerSwitchLogic::BuildSmall(
     CTileTriggerContainer* owner,
-    i32 a2,
-    i32 a3,
-    i32 a4,
-    i32 a5,
+    i32 typeId,
+    i32 tileX,
+    i32 tileY,
+    i32 cellKey,
     const RECT* rect,
-    i32 a7,
+    i32 linkGate,
     i32 a8,
     i32 a9
 ) {
     if (m_initGate != 0) {
         return 0;
     }
-    if (a2 == 4 && rect[0].left == 0) {
+    if (typeId == TRIGID_EXCLUSIVE_SWITCH_4 && rect[0].left == 0) {
         return 0;
     }
     memcpy(m_block, rect, sizeof(m_block));
-    return Setup(owner, a2, a3, a4, a5, a7, a8, a9);
+    return Setup(owner, typeId, tileX, tileY, cellKey, linkGate, a8, a9);
 }
 
 RVA(0x001104f0, 0x56)
 i32 CTileTriggerSwitchLogic::Setup(
     CTileTriggerContainer* owner,
-    i32 a1,
-    i32 a2,
-    i32 a3,
-    i32 a4,
-    i32 a5,
-    i32 a6,
-    i32 a7
+    i32 typeId,
+    i32 tileX,
+    i32 tileY,
+    i32 cellKey,
+    i32 linkGate,
+    i32 a8,
+    i32 a9
 ) {
     if (m_initGate) {
         return 0;
     }
-    m_typeId = a1;
-    m_08 = a2;
-    m_key0c = a3;
-    m_key1 = a4;
+    m_typeId = typeId;
+    m_08 = tileX;
+    m_key0c = tileY;
+    m_key1 = cellKey;
     m_owner = owner;
-    m_18 = a6;
-    m_28 = a7;
+    m_18 = a8;
+    m_28 = a9;
     m_1c = 0;
-    m_linkGate = a5;
+    m_linkGate = linkGate;
     m_initGate = 1;
     return 1;
 }
@@ -1209,17 +1209,17 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
 }
 
 RVA(0x00113860, 0x3b)
-i32 CTileTriggerSwitchLogic::ValidateByType(CFileMemBase* s, i32 mode, i32 a3, i32 a4) {
+i32 CTileTriggerSwitchLogic::ValidateByType(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
     if (s == 0) {
         return 0;
     }
     switch (mode) {
-        case 4:
+        case SERIAL_SAVE:
             if (!SaveState(s)) {
                 return 0;
             }
             break;
-        case 7:
+        case SERIAL_LOAD:
             if (!LoadState(s)) {
                 return 0;
             }
@@ -1290,17 +1290,17 @@ i32 CTileTriggerSwitchLogic::LoadState(CFileMemBase* s) {
 // free-function spelling only matched because `this` happened to still be live in ecx.
 // ---------------------------------------------------------------------------
 RVA(0x00113a90, 0x3b)
-i32 CTileTriggerLogic::ValidateByType(void* archive, i32 type, i32 a3, i32 a4) {
+i32 CTileTriggerLogic::ValidateByType(void* archive, i32 mode, i32 typeId, i32 pObj) {
     if (archive == 0) {
         return 0;
     }
-    switch (type) {
-        case 4:
+    switch (mode) {
+        case SERIAL_SAVE:
             if (Serialize(static_cast<CFileMemBase*>(archive)) == 0) {
                 return 0;
             }
             break;
-        case 7:
+        case SERIAL_LOAD:
             if (Deserialize(static_cast<CFileMemBase*>(archive)) == 0) {
                 return 0;
             }
@@ -1377,20 +1377,20 @@ i32 CTileTriggerLogic::Deserialize(CFileMemBase* s) {
 }
 
 RVA(0x00113d40, 0x6f)
-i32 CGiantRockLogic::ApplyByType(void* archive, i32 type, i32 a3, i32 a4) {
+i32 CGiantRockLogic::ApplyByType(void* archive, i32 mode, i32 typeId, i32 pObj) {
     if (archive == 0) {
         return 0;
     }
-    if (ValidateByType(archive, type, a3, a4) == 0) {
+    if (ValidateByType(archive, mode, typeId, pObj) == 0) {
         return 0;
     }
-    switch (type) {
-        case 4:
+    switch (mode) {
+        case SERIAL_SAVE:
             if (SerializeMatrix(static_cast<CFileMemBase*>(archive)) == 0) {
                 return 0;
             }
             break;
-        case 7:
+        case SERIAL_LOAD:
             if (DeserializeMatrix(static_cast<CFileMemBase*>(archive)) == 0) {
                 return 0;
             }
@@ -1462,17 +1462,17 @@ i32 CGiantRockLogic::DeserializeMatrix(CFileMemBase* s) {
 }
 
 RVA(0x00113f10, 0x3b)
-i32 CTileActionEvent::Serialize(void* ar, i32 mode, i32 a3, i32 a4) {
+i32 CTileActionEvent::Serialize(void* ar, i32 mode, i32 typeId, i32 pObj) {
     if (ar == 0) {
         return 0;
     }
     switch (mode) {
-        case 4:
+        case SERIAL_SAVE:
             if (SerializeFields(ar) == 0) {
                 return 0;
             }
             break;
-        case 7:
+        case SERIAL_LOAD:
             if (DeserializeFields(ar) == 0) {
                 return 0;
             }

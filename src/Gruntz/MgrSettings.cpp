@@ -15,7 +15,7 @@
 #include <string.h>        // strlen / memset (inlined to repne scasb / rep stos)
 
 RVA(0x00109e00, 0x245)
-i32 CWarpStoneFly::Sync(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
+i32 CWarpStoneFly::Sync(CFileMemBase* arc, i32 mode, i32 typeId, i32 pObj) {
     if (arc == 0) {
         return 0;
     }

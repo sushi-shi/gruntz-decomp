@@ -131,8 +131,8 @@ public:
         void* surf,
         i32 width,
         i32 height,
-        i32 a4,
-        i32 a5
+        i32 bitDepth,
+        i32 caps
     ); // slot 3  0x13e0d0 (DecodePcxData dest setup / "BeginDecode")
     virtual void
     FreeSurfaces();        // slot 4  0x13e4d0  (releases m_8/m_c, empties + destroys m_elements)
@@ -151,7 +151,7 @@ public:
     // now calls Clear(0) directly; the fabricated symbol is gone.)
     void* Lock(void* rect);                      // 0x13e6d0  the locked bits (m_lockBits)
     i32 SetPalette(CDDPalette* pal, i32 unused); // 0x13e690
-    i32 Restore(void* arg1, i32 arg2);           // 0x13e7d0 (BoundaryUpper2.cpp)
+    i32 Restore(void* info, i32 mode);           // 0x13e7d0 (BoundaryUpper2.cpp)
     i32 Flip(CDDSurface* target);                // 0x13e850
     // 0x13e8f0 - rebuild the global attached-surface cache off THIS surface: scalar-
     // delete the cached wrappers, empty both arrays, re-enumerate through
@@ -193,14 +193,14 @@ public:
     // SaveFile validates the surface + args, SaveDispatch picks the per-bit-depth writer
     // by m_bitDepth (8/16/24). Clear blanks the surface.
     i32 SaveFile(char* buf, i32 type, void* pal, i32 flag); // 0x13f910 (ret 0x10)
-    i32 SaveDispatch(char* a1, void* pal, i32 flag);        // 0x144350 (ret 0xc)
+    i32 SaveDispatch(char* path, void* pal, i32 flag);      // 0x144350 (ret 0xc)
     void Clear(i32 white);                                  // 0x13edb0 (ret 4)
 
     // The per-bit-depth file writers SaveDispatch delegates to (ret 0xc = 3 args). SaveBmp
     // (0x1443b0) writes the 8bpp palettized BMP, SaveTga (0x144900) the 24bpp TGA,
     // SaveRle16 (0x144640) the 16bpp->24bpp BMP. SaveBmp/SaveTga are in FileImage.cpp.
     i32 SaveBmp(const char* path, void* pal, i32 mode); // 0x1443b0 (8bpp)
-    i32 SaveRle16(void* a1, void* a2, i32 flag);        // 0x144640 (16bpp)
+    i32 SaveRle16(void* file, void* pal, i32 flag);     // 0x144640 (16bpp)
     i32 SaveTga(const char* path, void* pal, i32 mode); // 0x144900 (24bpp)
 
     // --- format dispatchers (Image.cpp). __thiscall on CDDSurface --------------
@@ -259,8 +259,8 @@ public:
     i32 RotateBlit(
         CDDSurface* src,
         i32* pivot,
-        i32 a1,
-        i32 a2,
+        i32 destX,
+        i32 destY,
         float scale,
         i32 mode,
         i32 colorkey
@@ -268,8 +268,8 @@ public:
     i32 ScaleBlit(
         CDDSurface* src,
         i32* pivot,
-        i32 a1,
-        i32 a2,
+        i32 destX,
+        i32 destY,
         float angle,
         i32 mode,
         i32 colorkey
@@ -277,8 +277,8 @@ public:
     i32 RotateScaleBlit(
         CDDSurface* src,
         i32* pivot,
-        i32 a1,
-        i32 a2,
+        i32 destX,
+        i32 destY,
         float angle,
         float scale,
         i32 mode,
@@ -291,10 +291,18 @@ public:
     // by-value struct-argument shape, and this body rebuilds it verbatim for the worker.
     // a6 is an i16: the call site loads it with `mov dx, word ptr [..]` and pushes the
     // whole (garbage-high) dword, which is MSVC's short-argument pass.
-    void DecodeThunk(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i16 a6, RECT clip); // 0x141280
-    i32 LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode);       // 0x143e60
-    i32 LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode);        // 0x144d80
-    i32 Load(CDDrawPtrCollections* a, char* name, i32 c);                        // 0x144270
+    void DecodeThunk(
+        i32 x0,
+        i32 y0,
+        i32 x1,
+        i32 y1,
+        i32 halfWidth,
+        i16 color,
+        RECT clip
+    );                                                                     // 0x141280
+    i32 LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode); // 0x143e60
+    i32 LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode);  // 0x144d80
+    i32 Load(CDDrawPtrCollections* a, char* name, i32 c);                  // 0x144270
 
     // The surface blitters + raw run-decoders the decoders delegate to (external no-body,
     // reloc-masked). Blit does a palette-remap copy (ret 0x10 = 4 args), BlitDirect a

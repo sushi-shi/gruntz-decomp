@@ -132,7 +132,7 @@ void CSBI_ImageSet::Notify(i32 id) {
 }
 
 RVA(0x000e74f0, 0x152)
-i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4) {
+i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
     if (s == 0) {
         return 0;
     }
@@ -170,7 +170,7 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4) {
             break;
     }
     // QUALIFIED = the direct CSBI_Image base leg (0xe6e40); unqualified is recursion.
-    return CSBI_Image::SerializeFields(s, mode, a3, a4) != 0;
+    return CSBI_Image::SerializeFields(s, mode, typeId, pObj) != 0;
 }
 
 RVA_COMPGEN(0x00101fd0, 0x1e, ??_GCSBI_ImageSet@@UAEPAXI@Z)

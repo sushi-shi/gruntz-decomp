@@ -44,9 +44,9 @@ DATA(0x001e9708)
 static const double kStepScale = 1000.0; // 0x5e9708  scroll-step scale (m_scrollStep reseed)
 
 RVA(0x00038d20, 0x176)
-i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
+i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
-    if (!CState::LoadGameAssetNamespaces(a1, a2, a3)) {
+    if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
         return 0;
     }
     while (ShowCursor(0) >= 0)

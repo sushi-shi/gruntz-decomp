@@ -72,7 +72,7 @@ public:
     // CreateWorker @0x1652c0 mints `operator new(0x17c)` + stamps
     // ??_7AnimWorkerObj@@6B@. Setup copies its m_notify + m_08 into this object's
     // own worker.
-    virtual i32 Setup(i32 a1, i32 a2, i32 a3, AnimWorkerObj* tmpl); // slot 10 @0x150d60
+    virtual i32 Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl); // slot 10 @0x150d60
     // slots 11-14 - per-object render + dirty-rect blit hooks: PURE in this base
     // (retail table holds __purecall @0x11fec0); every concrete kind overrides.
     virtual void Render(CDDrawSurfacePair* ctx) = 0;                       // slot 11
@@ -86,7 +86,7 @@ public:
     ) = 0; // slot 14
     // slot 15 - the 4-arg play/serialize dispatch (the flat model's Play
     // @0x151150 is the body).
-    virtual i32 Play(CFileMemBase* ar, i32 mode, i32 a3, void* self); // slot 15 @0x151150
+    virtual i32 Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self); // slot 15 @0x151150
 
     // 0x15b650: per-tick notify - under flag bit 0x8 decrement the +0x128 budget
     // (latch the worker's error state on underflow); else fire the +0x80
@@ -97,7 +97,7 @@ public:
     // CGameObject/CWwdGameObject models' methods, homed at their field level.
     i32 Serialize(CFileMemBase* ar);                  // 0x151320
     i32 WriteSnapshot(CFileMemBase* dst, i32 unused); // 0x151c00 (ret 8; 2nd arg unused)
-    i32 SerializeObjectState(CFileMemBase* a1);       // 0x151780  resolve deserialized worker names
+    i32 SerializeObjectState(CFileMemBase* ar);       // 0x151780  resolve deserialized worker names
     i32 ResolveLinkedObject(i32 gate);                // 0x151b90  cache the linked object
                                                       //   (m_carrier) from the key m_184
     // `src` is a REGISTERED TYPE TEMPLATE, same as Setup's - an AnimWorkerObj out of
@@ -250,7 +250,7 @@ public:
         CGameObject::Unload(); // the E pass (0x15b5d0 content)
     }
     virtual i32 GetClassId() OVERRIDE; // slot 8  @0x15b760 (5 = CLASSID_SERIALREF)
-    virtual i32 Setup(i32 a1, i32 a2, i32 a3, AnimWorkerObj* tmpl)
+    virtual i32 Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl)
         OVERRIDE;                                         // slot 10 @0x15b940 (Init)
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE; // slot 11 @0x15ba20 (ret 4)
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 @0x150660
@@ -258,7 +258,7 @@ public:
         OVERRIDE; // slot 13 @0x1506b0
     virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
         OVERRIDE; // slot 14 @0x1508a0
-    virtual i32 Play(CFileMemBase* ar, i32 mode, i32 a3, void* self)
+    virtual i32 Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self)
         OVERRIDE; // slot 15 @0x150a70 (Dispatch: route by mode - 4 -> ReadState,
                   // 7 -> SerializeSpriteName - then the base Play body)
 
@@ -276,7 +276,7 @@ public:
     void ClampFirst(); // 0x15cc50
     void ClampLast();  // 0x15cc90
     i32 SerializeSpriteName(
-        CFileMemBase* a1
+        CFileMemBase* ar
     );                                // 0x150c30  (A-tail frame-cache reader; Play mode-7 route)
     i32 ReadState(CFileMemBase* src); // 0x150b00
 
@@ -329,7 +329,7 @@ public:
     }
     virtual i32 GetClassId() OVERRIDE; // slot 8  0x15bce0 (0x1b)
     // slot 10/11-14 overrides (bodies in WwdGameObjectRender.cpp).
-    virtual i32 Setup(i32 a1, i32 a2, i32 a3, AnimWorkerObj* tmpl) OVERRIDE; // slot 10 0x1665e0
+    virtual i32 Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) OVERRIDE; // slot 10 0x1665e0
     virtual void Render(CDDrawSurfacePair* ctx) OVERRIDE; // slot 11 0x1668b0 (broadcast)
     virtual void BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 0x1668e0
     virtual void BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
@@ -344,10 +344,16 @@ public:
     i32 WalkChildWorkers();              // 0x166880 (per-child worker cb + count)
     // The child-object factory pair (bodies in WwdGameObjectRender.cpp; the ex-CWwdObjMgrL
     // view is dissolved): build a child CWwdGameObjectA and publish it into m_1dc.
+    CWwdGameObject* CreateObject(
+        int id,
+        int x,
+        int y,
+        int sortKey,
+        AnimWorkerObj* tmpl,
+        int stateFlags
+    ); // 0x166640
     CWwdGameObject*
-    CreateObject(int a1, int a2, int a3, int a4, AnimWorkerObj* tmpl, int a6); // 0x166640
-    CWwdGameObject*
-    CreateNamed(int a1, int a2, int a3, int a4, const char* name, int a6); // 0x166780
+    CreateNamed(int id, int x, int y, int sortKey, const char* name, int stateFlags); // 0x166780
 
     CObList m_1dc; // +0x1dc  real MFC CObList (0x1c bytes; head @ +0x1e0 = m_pNodeHead;
                    // AddTail/RemoveAt = 0x1b5af6/0x1b5c2c; member dtor = ~CObList 0x1b5a2b)
@@ -377,8 +383,8 @@ public:
     virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c)
         OVERRIDE; // slot 14 @0x15baa0
     // slot 16 (new) - the F kind's 2-arg build (the 0x159440 factory's `call
-    // [eax+0x40]` pushes two args; body 0x15bc30 == the flat SetupDeferred(a3, a4)).
-    virtual i32 SetupDeferred(i32 a3, AnimWorkerObj* tmpl); // slot 16 @0x15bc30 (new)
+    // [eax+0x40]` pushes two args; body 0x15bc30 == the flat SetupDeferred(sortKey, tmpl)).
+    virtual i32 SetupDeferred(i32 sortKey, AnimWorkerObj* tmpl); // slot 16 @0x15bc30 (new)
 };
 SIZE(0x18c);
 
@@ -408,9 +414,9 @@ public:
         OVERRIDE; // slot 14 @0x1664a0
     // Slots 16-18 unique to the C variant (0x5effd0 is a 19-slot table).
     // slot 16 - the C kind's 5-arg build (the 0x159250 factory's `call [eax+0x40]`
-    // pushes five args; body 0x15c1d0 == the flat SetupFlagged(a1..a4, flag)).
+    // pushes five args; body 0x15c1d0 == the flat SetupFlagged(x, y, sortKey, tmpl, flag)).
     virtual i32
-    SetupFlagged(i32 a1, i32 a2, i32 a3, AnimWorkerObj* tmpl, i32 flag); // slot 16 @0x15c1d0
+    SetupFlagged(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl, i32 flag); // slot 16 @0x15c1d0
     virtual u8 GetDotColor();        // slot 17 @0x15c030 (`mov al,[this+0x18c]`)
     virtual void SetDotColor(u8 c8); // slot 18 @0x15c040 (byte store to +0x18c)
 

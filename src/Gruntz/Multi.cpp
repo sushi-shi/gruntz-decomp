@@ -257,7 +257,7 @@ CFile g_obj646778;
 //     71.2 -> 66.6 from these shape deltas; the structure (real classes, real sizes,
 //     real teardown order) is now correct per drive-to-0.
 RVA(0x000b5460, 0x914)
-i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
+i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     // Connect-state fields reached cast-free through the real classes: `this` is a
     // CMulti (its CPlay/CState base carries the 0x2c..0x4b8 connect-state members and
     // CMulti owns 0x520..0x600), and NetGameMgr() is the CState::m_4 game-mgr's network
@@ -271,11 +271,11 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
     // our MSVC5 /O2 pins this=ebp / 0=ebx, which flips the base+value regs on the ~40
     // member-init stores. Not source-steerable; ~81%. Final sweep / permuter.
     g_gameReg->m_134 = 2;
-    if (a1 == 0) {
+    if (mgr == 0) {
         return 0;
     }
     // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
-    if (CState::LoadGameAssetNamespaces(a1, a2, a3) == 0) {
+    if (CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId) == 0) {
         return 0;
     }
     g_connectRptMgr = this;
@@ -479,9 +479,9 @@ void CMulti::ReleaseResources() {
     }
     // The +0x520 session object is destroyed as ~CNetSession (0xb6220, non-virtual) - its
     // real dtor (ResetSync + vector-destroy the 4 CNetCmdSlot slots) - then the engine free.
-    CNetSession* p520 = m_session;
-    if (p520) {
-        delete p520;
+    CNetSession* session = m_session;
+    if (session) {
+        delete session;
         m_session = 0;
     }
     if (m_netGate) {
@@ -492,10 +492,10 @@ void CMulti::ReleaseResources() {
     // engine reuses the field-zeroing "ctor" as the pre-free cleanup - then the engine
     // free. (Was the CLobbyObjA decl-only view; m_lightFx is the i32 gate reused
     // as the CLightFxRender* here.)
-    CLightFxRender* p320 = m_lightFx;
-    if (p320) {
-        p320->Ctor();
-        ::operator delete(p320);
+    CLightFxRender* lightFx = m_lightFx;
+    if (lightFx) {
+        lightFx->Ctor();
+        ::operator delete(lightFx);
         m_lightFx = 0;
     }
     Mgr()->m_isEffectsEnabled = m_590;

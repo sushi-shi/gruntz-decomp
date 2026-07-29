@@ -9,10 +9,17 @@
 #include <string.h>                       // memset (inlined to rep stos at /O2 /Oi)
 
 RVA(0x00148840, 0x47)
-i32 CFileImageSurface::LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5, i32 key) {
+i32 CFileImageSurface::LoadKeyed(
+    void* surf,
+    i32 width,
+    i32 height,
+    i32 bitDepth,
+    i32 caps,
+    i32 key
+) {
     // Direct (non-virtual) dispatch to the slot-3 body: qualified call suppresses the
     // vtable indirection (retail direct-calls 0x13e0d0 here).
-    if (CDDSurface::BlitSurf(surf, width, height, a4, a5 | 0x40) == 0) {
+    if (CDDSurface::BlitSurf(surf, width, height, bitDepth, caps | 0x40) == 0) {
         return 0;
     }
     if (key != -1) {

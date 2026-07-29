@@ -110,7 +110,7 @@ enum GruntDeathType {
 // Source-invariant (the documented switch-tail-merge + register-pin wall); deferred to
 // the final sweep.
 RVA(0x00060150, 0xd90)
-i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
+i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
     if (m_deathAnimStarted != 0) {
         return 0;
     }
@@ -171,9 +171,9 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
         m_object->m_flags |= 0x20000;
     }
 
-    if (a2 != -1) {
-        m_370 = a2;
-        g_gameReg->m_scoreHud->BumpWin(a2, m_tileOwnerHi); // 0xfcc50 (+0x7c m_scoreHud)
+    if (killerSlot != -1) {
+        m_370 = killerSlot;
+        g_gameReg->m_scoreHud->BumpWin(killerSlot, m_tileOwnerHi); // 0xfcc50 (+0x7c m_scoreHud)
     }
 
     switch (deathType) {

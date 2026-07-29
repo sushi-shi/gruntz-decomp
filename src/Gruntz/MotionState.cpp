@@ -43,29 +43,29 @@ CMotionState::CMotionState() {
 
 RVA(0x00058bc0, 0xa1)
 i32 CMotionState::SetParams(
-    double a0,
-    double a1,
-    double a2,
-    double a3,
-    double a4,
-    double a5,
-    double a6,
-    double a7,
-    double a8,
-    double a9,
-    double a10
+    double posX,
+    double posY,
+    double posZ,
+    double velX,
+    double velY,
+    double velZ,
+    double accelX,
+    double accelY,
+    double accelZ,
+    double clock,
+    double dt
 ) {
-    m_40 = a0;
-    m_48 = a1;
-    m_50 = a2;
-    m_28 = a3;
-    m_30 = a4;
-    m_38 = a5;
-    m_10 = a6;
-    m_18 = a7;
-    m_20 = a8;
-    m_00 = a9;
-    m_08 = a10;
+    m_40 = posX;
+    m_48 = posY;
+    m_50 = posZ;
+    m_28 = velX;
+    m_30 = velY;
+    m_38 = velZ;
+    m_10 = accelX;
+    m_18 = accelY;
+    m_20 = accelZ;
+    m_00 = clock;
+    m_08 = dt;
     return 1;
 }
 

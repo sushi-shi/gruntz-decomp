@@ -58,12 +58,12 @@ CMenuState::~CMenuState() {
 // the new-obj-vs-EH-state interleave - all allocator choices, not source-steerable.
 // See docs/patterns/zero-register-pinning.md + identical-return-epilogue-tailmerge.md.
 RVA(0x0009fe50, 0x343)
-i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
-    if (a3 == 0) {
+i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
+    if (prevStateId == 0) {
         return 0;
     }
     // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
-    if (!CState::LoadGameAssetNamespaces(a1, a2, a3)) {
+    if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
         return 0;
     }
     m_mgr->RestoreVideoMode(0);
@@ -300,7 +300,7 @@ tail:
 }
 
 RVA(0x000a0b90, 0xc7)
-i32 CMenuState::Vslot0c(i32 key, i32 arg2) {
+i32 CMenuState::Vslot0c(i32 key, i32 unused) {
     if (key == 0x28) {
         m_1b4->HitTest2();
     } else if (key == 0x26) {
@@ -321,16 +321,16 @@ i32 CMenuState::Vslot0c(i32 key, i32 arg2) {
 }
 
 RVA(0x000a0ca0, 0x21)
-i32 CMenuState::Vslot0e(i32 arg1, i32 arg2, i32 arg3) {
+i32 CMenuState::Vslot0e(i32 unused, i32 x, i32 y) {
     if (m_1b4) {
-        m_1b4->HitTest0(arg2, arg3);
+        m_1b4->HitTest0(x, y);
     }
     return 1;
 }
 RVA(0x000a0ce0, 0x21)
-i32 CMenuState::Vslot10(i32 arg1, i32 arg2, i32 arg3) {
+i32 CMenuState::Vslot10(i32 unused, i32 x, i32 y) {
     if (m_1b4) {
-        m_1b4->HitTest0(arg2, arg3);
+        m_1b4->HitTest0(x, y);
     }
     return 1;
 }

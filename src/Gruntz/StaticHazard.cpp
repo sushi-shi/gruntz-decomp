@@ -392,7 +392,7 @@ dispatch:
 }
 
 RVA(0x000fc5b0, 0xf5)
-i32 CStaticHazard::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
+i32 CStaticHazard::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
     CFileMemBase* arc = ar;
     switch (mode) {
         case 4:
@@ -412,8 +412,8 @@ i32 CStaticHazard::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject
             arc->Read(&m_tileRow, 4);
             break;
     }
-    if (!CUserLogic::SerializeMove(ar, mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
         return 0;
     }
-    return Chain(arc, mode, a3, a4) != 0;
+    return Chain(arc, mode, typeId, pObj) != 0;
 }

@@ -43,10 +43,10 @@ public:
         i32 b2,
         i32 b3,
         i32 b4
-    );                                                          // 0xe5ad0
-    i32 TickToggle(i32 param);                                  // 0xe5b90
-    i32 RenderCel();                                            // 0xe5c10
-    i32 Serialize(CFileMemBase* arc, i32 mode, i32 a3, i32 a4); // 0xe5c90
+    );                                                                // 0xe5ad0
+    i32 TickToggle(i32 param);                                        // 0xe5b90
+    i32 RenderCel();                                                  // 0xe5c10
+    i32 Serialize(CFileMemBase* arc, i32 mode, i32 typeId, i32 pObj); // 0xe5c90
 
     i32 m_54; // +0x54  (role unproven; the serializer skips it - retail's
               //        window pair sits at +0x58/+0x60, one dword past the base)

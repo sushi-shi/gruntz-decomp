@@ -24,10 +24,10 @@ i32 SaveScreenshot(
     CDDSurface* src,
     Utils::RegistryHelper* bute,
     CGruntzMgr* owner,
-    i32 arg4,
-    i32 arg5,
+    i32 width,
+    i32 height,
     char* name,
-    i32 arg7
+    i32 saveFlag
 ) {
     char nameBuf[0x80];
     i32 descB[6];
@@ -56,7 +56,7 @@ i32 SaveScreenshot(
     if (surf == 0) {
         return 0;
     }
-    CDDSurface* img = surf->MakeAndAddB(arg4, arg5, 0x10, 0, -1);
+    CDDSurface* img = surf->MakeAndAddB(width, height, 0x10, 0, -1);
     if (img == 0) {
         return 0;
     }
@@ -74,13 +74,13 @@ i32 SaveScreenshot(
     descB[5] = mgr->m_modeH;
     descA[3] = mgr->m_modeH;
     descB[4] = mgr->m_modeW;
-    descB[2] = arg4;
-    descB[3] = arg5;
+    descB[2] = width;
+    descB[3] = height;
     if (img->BltEx(descB, src, descA, 0x1000000, 0)) {
         surf->RemoveItemA(img);
         return 0;
     }
-    i32 r = img->SaveFile(name, 1, 0, arg7);
+    i32 r = img->SaveFile(name, 1, 0, saveFlag);
     surf->RemoveItemA(img);
     return r;
 }

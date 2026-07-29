@@ -16,10 +16,27 @@ public:
     virtual ~SoundStream()
         OVERRIDE; // 0x137710  reset vptr (0x5ef6ec) then ~SoundDevice; cl auto-emits
                   // the ??_G scalar-deleting dtor at 0x1376f0
-    StreamVoice* CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c);
+    StreamVoice* CreateStreamBuffer(
+        WaveFormatX* fmt,
+        u32 bytes,
+        i32 dsFlags,
+        i32 stopWhenIdle,
+        i32 retireWhenIdle
+    );
     // 0x137780
-    StreamVoice* OpenStream(CParseSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5);
-    StreamVoice* PlayStream(CParseSource* src, i32 a2, i32 a3, i32 a4); // 0x137a30 open + resume
+    // (bytes, format) are FeederStart's len/format slots; (dsFlags, stopWhenIdle,
+    // retireWhenIdle) are CreateStreamBuffer's DSBUFFERDESC flags + the StreamVoice
+    // ctor's two idle-policy latches (m_stopWhenIdle / m_retireWhenIdle).
+    StreamVoice* OpenStream(
+        CParseSource* src,
+        i32 bytes,
+        i32 format,
+        i32 dsFlags,
+        i32 stopWhenIdle,
+        i32 retireWhenIdle
+    );
+    StreamVoice*
+    PlayStream(CParseSource* src, i32 bytes, i32 format, i32 dsFlags); // 0x137a30 open + resume
     // 0x137900
     void DestroyVoice(StreamVoice* voice); // 0x1379d0 (retire one instance-list voice;
                                            // TickSubManagers calls it directly on `this`)

@@ -108,11 +108,11 @@ i32 CGruntPowerupSprite::Update() {
 }
 
 RVA(0x00080490, 0xbe)
-i32 CGruntPowerupSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
-    if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
+i32 CGruntPowerupSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
+    if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
         return 0;
     }
-    if (Chain(ar, mode, a3, a4) == 0) {
+    if (Chain(ar, mode, typeId, pObj) == 0) {
         return 0;
     }
     switch (mode) {

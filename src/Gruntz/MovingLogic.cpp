@@ -117,7 +117,7 @@ istream& ReadCurve(istream& accum, CMotionState& c) {
 // one unit, so cl wraps the temps in an EH frame retail lacks. Fix = split the
 // movinglogic TU at the band boundary (docs/exe-map partition work), not source.
 RVA(0x0016e7f0, 0x1cf)
-i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject* a4) {
+i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObject* pObj) {
     if (arc == 0) {
         return 0;
     }
@@ -135,9 +135,9 @@ i32 CUserLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject* 
             arc->Read(&m_2c, 4);
             arc->Read(&g_logicTypesRegistered, 4);
             arc->Read(&m_prevAnimSetNode, 4);
-            m_0c = a4;
-            m_object = static_cast<CWwdGameObjectA*>(a4);
-            m_objAux = (a4)->m_7c;
+            m_0c = pObj;
+            m_object = static_cast<CWwdGameObjectA*>(pObj);
+            m_objAux = (pObj)->m_7c;
             m_deferredCallback = 0;
             m_gatedCallback = 0;
             m_28 = 0x3e9;
@@ -271,7 +271,7 @@ void CMovingLogic::MovingSlot16() {
 // byte-match retail under /GX-; this unit builds /GX for its 0x139xx ctor/dtor
 // band, so cl adds an EH frame retail lacks here. Split the TU to fix.
 RVA(0x0016f4a0, 0x1da)
-i32 CMovingLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject* a4) {
+i32 CMovingLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObject* pObj) {
     if (arc == 0) {
         return 0;
     }
@@ -308,5 +308,5 @@ i32 CMovingLogic::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject
             break;
         }
     }
-    return CUserLogic::SerializeMove(arc, mode, a3, a4) != 0;
+    return CUserLogic::SerializeMove(arc, mode, typeId, pObj) != 0;
 }

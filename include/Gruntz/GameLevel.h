@@ -148,7 +148,7 @@ public:
     // Constructor: three args stored at +0x4/+0x8/+0xc; inits the array members,
     // the +0x10 sentinel and the +0xb0.. default-parameter block. (LevelCoordRect/
     // body in GameLevel.cpp.)
-    CGameLevel(class CDDrawSurfaceMgr* owner, i32 a2, i32 a3);
+    CGameLevel(class CDDrawSurfaceMgr* owner, i32 id, i32 flags);
 
     // --- merged from the trace-discovered CGameLevel cluster -------------------
     // Tests a tile coord (x, y) against the bounds record. Free (cdecl) helper; the
@@ -183,30 +183,30 @@ public:
     // The movement-mode switch driver: when this level's m_08 & 4 it tails into
     // ApplyMove on `target`; otherwise runs `target`'s m_moveMode switch (kinds
     // 1..8). Returns the accumulated state-flag word.
-    i32 DispatchMove(CGameObject* target, i32 a1, i32 a2, i32 a3);
+    i32 DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
 
     // The four per-mode move handlers DispatchMove dispatches into (each
     // __thiscall, this=this level, the moving object passed explicitly). They step
-    // the object's m_screenX/m_screenY toward (a1, a2), probe the m_extent.top/B
+    // the object's m_screenX/m_screenY toward (destX, destY), probe the m_extent.top/B
     // limits and (when blocked) re-clamp, returning the accumulated state-flag word.
     //   MoveHandlerA (modes 1/2/5) - axis-1 step + axis-2 advance, low/high re-clamp.
     //   MoveHandlerB (mode 3)      - axis-1 step + axis-2 advance, low re-clamp.
     //   MoveHandlerC (mode 4)      - axis-1 step, the carrier-latch alt step, a
     //                  re-clamp + a blocked-move retry on the 0x20000 state bit.
     //   MoveHandlerD (mode 6)      - a two-probe axis-2 advance + a span validate.
-    i32 MoveHandlerA(CGameObject* target, i32 a1, i32 a2, i32 a3);
-    i32 MoveHandlerB(CGameObject* target, i32 a1, i32 a2, i32 a3);
-    i32 MoveHandlerC(CGameObject* target, i32 a1, i32 a2, i32 a3);
-    i32 MoveHandlerD(CGameObject* target, i32 a1, i32 a2, i32 a3);
+    i32 MoveHandlerA(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
+    i32 MoveHandlerB(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
+    i32 MoveHandlerC(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
+    i32 MoveHandlerD(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
 
     // Finds the plane whose name (plane+0xb4) case-insensitively matches `name`.
     CDDrawWorkerHost* FindPlaneByName(const char* name);
 
-    // MoveToward: if the requested move (arg1,arg2) is within this level's per-axis
+    // MoveToward: if the requested move (destX,destY) is within this level's per-axis
     // step limits (m_maxStepX/m_maxStepY) drive DispatchMove once; otherwise step
     // toward it in limited increments, re-running DispatchMove until it reaches or
     // is blocked. The per-frame move driver (CMovingLogic::Update calls it).
-    i32 MoveToward(CGameObject* target, i32 arg1, i32 arg2, i32 arg3);
+    i32 MoveToward(CGameObject* target, i32 destX, i32 destY, i32 moveFlags);
 
     // ProbeColumn (@0x160980): probe the tile at (obj->m_screenX + dx, obj->m_extent.top
     // + obj->m_screenY), clamped into the main plane grid, and return the image set's
@@ -244,11 +244,11 @@ public:
     // every dispatch receives; `ctx` is the world object chain.
     void VisitVisible(void* visitor, CDDrawChildGroup* ctx);
 
-    // String/state edit dispatch: arg1 selects a level-name get/set on `sink` (a
-    // serializer, the GameLevel.cpp-local EditSink view), then forwards (arg2,
-    // arg2, arg3) to a level-resolve helper. `sink` is a generic void* here (see
+    // String/state edit dispatch: `mode` selects a level-name get/set on `sink` (a
+    // serializer, the GameLevel.cpp-local EditSink view) - SERIAL_SAVE writes the name,
+    // SERIAL_LOAD reads it - then forwards (mode, typeId, pObj) to a level-resolve helper. `sink` is a generic void* here (see
     // the fwd-decl note above) and cast to EditSink in the definition.
-    i32 EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3);
+    i32 EditDispatch(void* sink, i32 mode, i32 typeId, i32 pObj);
 
     // SaveName/LoadName (0x1610a0 / 0x161110, __thiscall ret 0x4): serialize just
     // this level's name (m_levelName@+0x6c) as a fixed 0x80-byte blob through the
@@ -292,7 +292,7 @@ public:
     // builds the "MONOLITH" plane through it. (Ex ?ReadObjectPlane@CGameLevelPlanes@@
     // - that WwdFile.h view of THIS class is dissolved.)
     CDDrawWorkerHost*
-    ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, const char* name);
+    ReadObjectPlane(i32 w, i32 h, i32 tileW, i32 tileH, i32 depthX, i32 depthY, const char* name);
 
 private:
     // The per-plane reader (@0x15d8d0, GameLevel.cpp; LoadWwd drives it per WWD
@@ -305,19 +305,32 @@ private:
 
     // The sibling move leaves dispatched by MoveHandlerA..D (this=this level, the
     // moving CGameObject passed explicitly). All matched in GameLevel.cpp.
-    i32 StepAxisLo(CGameObject* t, i32 a1, i32 a2, i32* outX, i32 a3);          // @0x15e720
-    i32 StepAxisHi(CGameObject* t, i32 a1, i32 a2, i32* outX, i32 a3);          // @0x15e870
-    i32 AdvanceA(CGameObject* t, i32 a1, i32 a2, i32 a3);                       // @0x15f1c0
-    i32 ClampSpan(i32 lo, i32 hi, i32* outLo, i32* outHi);                      // @0x15ffe0
-    i32 HoldMove(CGameObject* t, CGameObject* carrier, i32 a1, i32 a2, i32 a3); // @0x15ff20
-    i32 FreeMove(CGameObject* t, i32 a1, i32 a2, i32 a3);                       // @0x15eb00
-    i32 StepAxisAlt(CGameObject* t, i32 a1, i32 a2, i32* outY, i32 a3);         // @0x15fdb0
-    i32 AdvanceB(CGameObject* t, i32 a1, i32 a2, i32 a3);                       // @0x15ede0
-    i32 SpanCheck(i32 a, i32 b, i32 c, i32* out);                               // @0x15f8d0
-    i32 AxisProbe(i32 coord, i32 limit);                                        // @0x00161270
+    i32 StepAxisLo(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 moveFlags); // @0x15e720
+    i32 StepAxisHi(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 moveFlags); // @0x15e870
+    i32 AdvanceA(CGameObject* t, i32 destX, i32 destY, i32 moveFlags);              // @0x15f1c0
+    i32 ClampSpan(i32 lo, i32 hi, i32* outLo, i32* outHi);                          // @0x15ffe0
+    i32 HoldMove(
+        CGameObject* t,
+        CGameObject* carrier,
+        i32 destX,
+        i32 destY,
+        i32 moveFlags
+    );                                                                               // @0x15ff20
+    i32 FreeMove(CGameObject* t, i32 destX, i32 destY, i32 moveFlags);               // @0x15eb00
+    i32 StepAxisAlt(CGameObject* t, i32 destX, i32 destY, i32* outY, i32 moveFlags); // @0x15fdb0
+    i32 AdvanceB(CGameObject* t, i32 destX, i32 destY, i32 moveFlags);               // @0x15ede0
+    i32 SpanCheck(i32 a, i32 b, i32 c, i32* out);                                    // @0x15f8d0
+    i32 AxisProbe(i32 coord, i32 limit);                                             // @0x00161270
     // The two-object stand-fit validator StepAxisAlt runs per candidate carrier
     // (@0x15fe40). Matched in GameLevel.cpp.
-    i32 AltStepValidate(CGameObject* t, CGameObject* payload, i32 a1, i32 a2, i32* outY, i32 a3);
+    i32 AltStepValidate(
+        CGameObject* t,
+        CGameObject* payload,
+        i32 destX,
+        i32 destY,
+        i32* outY,
+        i32 moveFlags
+    );
 
     // --- the level-management + tile-scan cluster (all reconstructed from the
     // CGameLevel .text block; indirect-dispatch helpers, no rel32 callers). ------

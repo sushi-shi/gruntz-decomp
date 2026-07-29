@@ -599,7 +599,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28) {
 // big branchy trigger-applier (0x552 B): mirrors ApplyTriggerA's wall - kind-dispatch ladder
 // + snapped-box arithmetic diverge in regalloc across the branches. topic:wall.
 RVA(0x0006e120, 0x552)
-i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
+i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
     CGrunt* cell = m_grid[col * TM_GRID_COLS + row];
     if (cell == 0 || cell->m_entranceCommitted == 0 || cell->m_entranceActive != 0) {
         return 0;
@@ -614,8 +614,8 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
         && cell->m_198 != 0x1e && g_traitorMode == 0) {
         return 0;
     }
-    i32 by = (a2c & ~0x1f) + 0x10;
-    i32 bx = (a28 & ~0x1f) + 0x10;
+    i32 by = (worldY & ~0x1f) + 0x10;
+    i32 bx = (worldX & ~0x1f) + 0x10;
     if (cell->RectContainsGated(bx, by) == 0) {
         return -1;
     }
@@ -623,11 +623,11 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
     cell->m_arrivalPhase = 0;
     i32 hitRow;
     i32 hitCol;
-    CGrunt* hit = CellHitTest(a28, a2c, &hitRow, &hitCol, 5);
+    CGrunt* hit = CellHitTest(worldX, worldY, &hitRow, &hitCol, 5);
     if (hit == 0) {
         CGruntzMapMgr* map = g_gameReg->m_tileGrid;
-        i32 tx = a28 >> 5;
-        i32 ty = a2c >> 5;
+        i32 tx = worldX >> 5;
+        i32 ty = worldY >> 5;
         i32 flags = 1;
         if (static_cast<u32>(tx) < map->m_width && static_cast<u32>(ty) < map->m_height) {
             flags = map->m_rows[ty][tx].m_0;
@@ -720,17 +720,17 @@ CGrunt* CTriggerMgr::FindAtPixel(i32 x, i32 y) {
     return 0;
 }
 
-// 0x6e800: ClearCell(col, row, a18, a1c, a20) - if grid[col*15+row] is live, reset its
+// 0x6e800: ClearCell(col, row, arrivalPhase, worldX, worldY) - if grid[col*15+row] is live, reset its
 // trigger/anim sub-state (unless already cleared via +0x420), bail if it has a pending
 // flag (+0x1e4), look up its config name; when it equals "I" run the manager's fx with the
-// cell's pose; then StepArrivalDrop on the snapped (a18..a20) bounds and return its
+// cell's pose; then StepArrivalDrop on the snapped (worldX, worldY) bounds and return its
 // boolean result.
 // (__stdcall: ret 0x14.)
 // @early-stop
 // regalloc + inline-strcmp wall: the "I" compare inlines as a byte loop pinning ah/bl
 // differently than retail and the box arithmetic spills. Logic + offsets byte-exact.
 RVA(0x0006e800, 0x189)
-i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
+i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 arrivalPhase, i32 worldX, i32 worldY) {
     i32 idx = col * TM_GRID_COLS + row;
     CGrunt* cell = m_grid[idx];
     if (cell == 0 || cell->m_entranceCommitted == 0) {
@@ -755,10 +755,10 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
         i32 py = cell->m_moveTileY;
         this->LoadTileArrivalFx(px, py, py, cell->m_entranceReason, -1, py);
     }
-    i32 by = (a20 & ~0x1f) + 0x10;
-    i32 bx = (a1c & ~0x1f) + 0x10;
+    i32 by = (worldY & ~0x1f) + 0x10;
+    i32 bx = (worldX & ~0x1f) + 0x10;
     cell->m_coordRetryCount = 0;
-    i32 r = cell->StepArrivalDrop(bx, by, a18, -1, 1, 0);
+    i32 r = cell->StepArrivalDrop(bx, by, arrivalPhase, -1, 1, 0);
     return r != 0 ? 1 : 0;
 }
 

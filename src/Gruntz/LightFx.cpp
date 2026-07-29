@@ -142,11 +142,11 @@ i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 an
 }
 
 RVA(0x0009d660, 0xc8)
-i32 CLightFx::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
-    if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
+i32 CLightFx::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
+    if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
         return 0;
     }
-    if (Chain(ar, mode, a3, a4) == 0) {
+    if (Chain(ar, mode, typeId, pObj) == 0) {
         return 0;
     }
     switch (mode) {

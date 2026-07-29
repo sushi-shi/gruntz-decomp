@@ -16,10 +16,20 @@ class CTileTriggerSwitchLogic; // the 0x8c m_base element family (def in TileTri
 
 extern "C" u32 g_frameTime;
 
+// `typeId`/`pObj` are the serialize family's forwarded factory context: they enter at
+// SerializeObjectFactory (0xd2a0, args 4+5 - the class tag and the `void** out` slot the
+// mode-9 object factory writes through), ride CGruntzMgr::BroadcastCmd -> CPlay::SyncState
+// down to every Serialize/ValidateByType leaf, and no leaf below the factory reads them
+// (0x113860 returns before touching [esp+0xc]/[esp+0x10]).
+i32 __stdcall SerializeApplyA(
+    CFileMemBase* s,
+    i32 mode,
+    i32 typeId,
+    i32 pObj,
+    CTileTriggerSwitchLogic* o
+); // 0x117630
 i32 __stdcall
-SerializeApplyA(CFileMemBase* s, i32 a2, i32 a3, i32 a4, CTileTriggerSwitchLogic* o); // 0x117630
-i32 __stdcall
-SerializeApplyB(CFileMemBase* s, i32 a2, i32 a3, i32 a4, CTileTriggerLogic* o); // 0x117710
+SerializeApplyB(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerLogic* o); // 0x117710
 
 class CTileTriggerContainer {
 public:
@@ -50,51 +60,78 @@ public:
     // and latches it into m_70 for id-0x15 board tiles 0x67/0x68.  Returns the leaf,
     // 0 on alloc/double-init.  /GX (per-`new` trylevel EH frame).
     CTileTriggerLogic* AddLogic(
-        i32 a1,
+        i32 tileType,
         i32 logicType,
-        i32 a3,
-        i32 a4,
-        i32 a5,
+        i32 tileX,
+        i32 tileY,
+        i32 cellKey,
         CTrigParam p1,
         CTrigParam p2,
         CTrigParam p3,
         CTrigParam p4,
         CTrigParam p5,
         CTrigParam p6,
-        i32 a6,
-        i32 a7,
-        i32 a8,
-        i32 a9
+        i32 tileToken,
+        i32 dutyOnSpan,
+        i32 leadInSpan,
+        i32 dutyOffSpan
     );
     // 0x1163b0: forward to AddLogic with six default (zeroed) parameter blocks.
-    void AddLogicDefaults(i32 type, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9);
+    void AddLogicDefaults(
+        i32 tileType,
+        i32 logicType,
+        i32 tileX,
+        i32 tileY,
+        i32 cellKey,
+        i32 tileToken,
+        i32 dutyOnSpan,
+        i32 leadInSpan,
+        i32 dutyOffSpan
+    );
     // 0x1164a0: forward with the five ids + six CTrigParam blocks from a source record.
-    void AddLogicFromRecord(i32 type, i32 a2, CTrigSourceRecord* rec);
+    void AddLogicFromRecord(i32 tileType, i32 logicType, CTrigSourceRecord* rec);
 
     // Allocates a 0x28-byte CTileActionEvent, initialises it from the call args,
     // notifies it, and appends it to m_list3 (the +0x54 list).  /GX (the mark is a
     // stack-tracked partial during ctor).
-    CTileActionEvent*
-    AddToList3(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8); // 0x116a40
+    // player0..player3 land in m_playerFlags[0..3] (the per-player seen/active slots
+    // SetCell and CTileActionEvent::Process index with g_curPlayer).
+    CTileActionEvent* AddToList3(
+        i32 actionCode,
+        i32 tileX,
+        i32 tileY,
+        i32 cellKey,
+        i32 player0,
+        i32 player1,
+        i32 player2,
+        i32 player3
+    ); // 0x116a40
 
     // Allocates a 0xc8-byte CGiantRockLogic (type tag 0x16 == factory id 22), fills
     // it (incl. the 9-dword rep-movs m_matrix block) and appends it to m_list1 (the
     // +0x1c list).  /GX.
     CGiantRockLogic* AddToList1(
-        i32 a1,
-        i32 a2,
-        i32 a3,
+        i32 tileX,
+        i32 tileY,
+        i32 cellKey,
         i32* block9,
-        i32 a5,
-        i32 a6,
-        i32 a7
+        i32 powerupType,
+        i32 textId,
+        i32 dutyOffSpan
     ); // 0x116cf0 (matrix = ARG 4, retail-proven)
 
     // Twin of AddToList3 (0x116a40): allocates+constructs a 0x28-byte event, and
-    // (when its init flag is clear) fills it from the args plus four state flags
-    // chosen by a switch on `type` (0..5), notifies it, and appends it to m_list3.
+    // (when its init flag is clear) fills it from the args plus the four m_playerFlags
+    // words chosen by a switch on `playerSlot` (0..3 = that player, PLAYERSLOT_ALL =
+    // all four), notifies it, and appends it to m_list3.
     // Returns the event, or 0 on alloc/double-init failure.  /GX.
-    CTileActionEvent* AddToList3Switch(i32 a1, i32 a2, i32 a3, i32 a4, i32 type); // 0x116b80
+    CTileActionEvent* AddToList3Switch(
+        i32 actionCode,
+        i32 tileX,
+        i32 tileY,
+        i32 cellKey,
+        i32 playerSlot
+    ); // 0x116b80
 
     // --- the walkers the thiscall-only tracer misfiled under CTileTriggerSwitchLogic ---
     // (their receiver is THIS container: ModeObjInit 0xc7ec0 builds it - four in-place
@@ -139,11 +176,11 @@ public:
     // via SerializeApplyA/B and the per-element helpers.  op 7 = load: RemoveAll,
     // then for each list reads a count and LoadElement's that many elements, AddTail'd
     // into the matching list (m_list3 marks are alloc'd inline).  Returns 1/0.  /GX.
-    i32 Serialize(CFileMemBase* s, i32 op, i32 a3, i32 a4); // 0x117280
+    i32 Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pObj); // 0x117280
 
     // Per-element LOAD helper of Serialize op 7: allocates+deserializes one element
     // and returns it (reloc-masked rel32 callee, 0x117800).  __thiscall on this.
-    void* LoadElement(CFileMemBase* s, i32 op, i32 a3, i32 a4); // 0x117800
+    void* LoadElement(CFileMemBase* s, i32 op, i32 typeId, i32 pObj); // 0x117800
 
     // The serialize-walk pre/post hooks: stream the m_74 latch. LoadFlag74 closes
     // the load (op 7, read slot +0x2c); TransferFlag74 the save (op 4, write +0x30).
@@ -154,10 +191,11 @@ public:
     // element, then clears m_70.  Invoked by DtorBase when m_74 is set.
     void RemoveAll(); // 0x116fa0
 
-    // Looks up the CTileActionEvent for cell (a,b) via FindByField0C; if present
-    // flags one (or all) of its m_playerFlags and re-commits it; else probes for a
-    // covered-powerup command (FindInLists12 tag 0x1a) or scans the neighborhood.
-    i32 SetCell(i32 a, i32 b, i32 verb); // 0x117f60
+    // Looks up the CTileActionEvent for cell (tileX,tileY) via FindByField0C; if present
+    // flags one (or, on PLAYERSLOT_ALL, all) of its m_playerFlags and re-commits it; else
+    // probes for a covered-powerup command (FindInLists12 tag 0x1a) or scans the
+    // neighborhood.
+    i32 SetCell(i32 tileX, i32 tileY, i32 playerSlot); // 0x117f60
 
     // The base sub-object's own destructor; runs RemoveAll then clears +0x74.
     void DtorBase(); // 0x115f30

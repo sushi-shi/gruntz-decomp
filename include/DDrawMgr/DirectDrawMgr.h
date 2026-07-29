@@ -62,12 +62,12 @@ public:
     void GetEntries();                                            // 0x147c30
     // start/count are UNSIGNED here (unlike SetRange's): the cache loop's guard at
     // 0x147ab5 is `cmp ebp,edi / jae`. They are the DWORDs SetEntries takes.
-    i32 SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 a4); // 0x147aa0
+    i32 SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 unused); // 0x147aa0
     // Expand a dynamically-allocated block of source entries into PALETTEENTRYs
     // then SetAndNotify. Quad: 4-byte RGBQUAD source (R/B swapped). RGB: packed
     // 3-byte RGB source (straight). Both return the SetAndNotify HRESULT.
-    i32 SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 a4); // 0x147b10
-    i32 SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 a4);         // 0x147ba0
+    i32 SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 unused); // 0x147b10
+    i32 SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 unused);         // 0x147ba0
     // Linear time-based BLOCKING fade of the [start,start+count) range toward
     // the solid color (r,g,b) over durationMs ms; finalizes with SetRange.
     void FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b,
@@ -85,8 +85,8 @@ public:
     // Blend the range pct% (0..100) toward the solid color (r,g,b) once and
     // push it to the DirectDraw palette (no cache/notify).
     void BlendRange(i32 pct, i32 start, i32 count, u8 r, u8 g,
-                    u8 b); // 0x1482c0
-    void Apply(i32 a1);    // 0x147c80 (a1 unused)
+                    u8 b);  // 0x1482c0
+    void Apply(i32 unused); // 0x147c80
     i32 SetRange(i32 start, i32 count, u8 r, u8 g, u8 b,
                  u32 flags);    // 0x147cd0
     i32 CaptureSystemPalette(); // 0x1485b0 (system-reserved entries -> m_cacheA)
@@ -155,8 +155,12 @@ extern "C" CDDrawPtrCollections* g_DirectDrawMgr;
 // declaration at file scope has EXTERNAL linkage, so it belongs in
 // the owner header.
 void BuildColorChannelTables();
-i32 __stdcall
-CreateDirectDrawVia(void* ctx, i32 a1, i32 a2, IDirectDraw2*(__cdecl* factory)(void*, i32, i32));
+i32 __stdcall CreateDirectDrawVia(
+    void* ctx,
+    i32 driverDesc,
+    i32 driverName,
+    IDirectDraw2*(__cdecl* factory)(void*, i32, i32)
+);
 
 // The two DirectDraw enumeration callbacks. Their reconstructions declare the
 // argument lists the retail BODIES actually use, which is not the SDK's prototype -

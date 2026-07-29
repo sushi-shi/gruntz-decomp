@@ -31,21 +31,21 @@ DATA(0x0024b6b0)
 char g_idListBuf[0x40]; // 0x24b6b0
 
 RVA(0x000bef80, 0x51)
-i32 CNetSession::Init(CGruntzMgr* a1, CMulti* a2, CNetMgr* a3) {
-    if (a1 == 0) {
+i32 CNetSession::Init(CGruntzMgr* mgr, CMulti* owner, CNetMgr* netMgr) {
+    if (mgr == 0) {
         return 0;
     }
-    if (a2 == 0) {
+    if (owner == 0) {
         return 0;
     }
-    if (a3 == 0) {
+    if (netMgr == 0) {
         return 0;
     }
-    m_mgr = a1;
-    m_session = a2; // the owning CMulti (kept as the +0x4 handle CreateSlot re-passes)
-    m_netMgr = a3;
+    m_mgr = mgr;
+    m_session = owner; // the owning CMulti (kept as the +0x4 handle CreateSlot re-passes)
+    m_netMgr = netMgr;
     Reset();
-    m_period = a2->m_5a4;
+    m_period = owner->m_5a4;
     return 1;
 }
 
@@ -238,7 +238,7 @@ i32 CNetSession::Dispatch(i32 a, CNetCtrlMsg* b, i32 c) {
 // Same device as CTileActionEvent::MorphByTool @0x113420 (RVA size 0x350). The next
 // annotated function is 0xbf9e0, so the grown span does not overlap it.
 RVA(0x000bf7c0, 0x1b0)
-i32 CNetSession::DispatchMsg(CNetCtrlMsg* m, i32 arg2) {
+i32 CNetSession::DispatchMsg(CNetCtrlMsg* m, i32 ctrlArg) {
     if (!m) {
         return 0;
     }
@@ -255,9 +255,9 @@ i32 CNetSession::DispatchMsg(CNetCtrlMsg* m, i32 arg2) {
             }
             return 1;
         case 49:
-            return m_session->HandleControlMsg(m, arg2);
+            return m_session->HandleControlMsg(m, ctrlArg);
         case 257:
-            return m_session->HandleControlMsg(m, arg2);
+            return m_session->HandleControlMsg(m, ctrlArg);
         default:
             return 1;
     }
@@ -693,18 +693,18 @@ i32 CNetSession::Verify() {
 // args in edx/ecx/edi, whereas cl pins 0 in edi (callee-saved, no re-zero) and
 // the args in ecx/eax. A zero-register + arg-register coin-flip; not source-steerable.
 RVA(0x000c0b10, 0x72)
-i32 CNetCmdSlot::Init(CMulti* a1, GruntzPlayer* a2, i32 a3) {
-    if (a2 == 0) {
+i32 CNetCmdSlot::Init(CMulti* owner, GruntzPlayer* desc, i32 state) {
+    if (desc == 0) {
         return 0;
     }
-    if (a1 == 0) {
+    if (owner == 0) {
         return 0;
     }
-    m_owner = a1; // the session passes its owning CMulti in as an i32 handle
-    m_state = a3;
+    m_owner = owner; // the session passes its owning CMulti in as an i32 handle
+    m_state = state;
     m_isRemote = 0;
     m_latchedSeq = 0;
-    m_desc = a2;
+    m_desc = desc;
     m_latency = 0;
     m_baseSeq = 0;
     m_maxSeq = 0;

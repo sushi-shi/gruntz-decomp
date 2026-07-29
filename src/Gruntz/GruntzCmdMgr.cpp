@@ -187,34 +187,34 @@ void CGruntzCmdMgr::Clear() {
 
 RVA(0x00023c30, 0x47)
 void CGruntzCmdMgr::EnqueueSingle(
-    i32 p1,
-    char p2,
-    char p3,
-    char p4,
-    i16 p5,
-    i16 p6,
-    char p7,
-    char p8
+    i32 enqueueFlag,
+    char targetIndex,
+    char gruntIndex,
+    char cmdKind,
+    i16 posX,
+    i16 posY,
+    char extraByte,
+    char targetType
 ) {
     CGruntzSingleCommand* cmd = CGruntzSingleCommand::Allocate();
-    cmd->SetParamsEx(p2, p4, p8, p5, p6, p3, p7);
-    EnqueueCommand(p1, cmd);
+    cmd->SetParamsEx(targetIndex, cmdKind, targetType, posX, posY, gruntIndex, extraByte);
+    EnqueueCommand(enqueueFlag, cmd);
 }
 
 RVA(0x00023ca0, 0x47)
 void CGruntzCmdMgr::EnqueueMulti(
-    i32 p1,
-    char p2,
-    i32 p3,
-    u8* p4,
-    char p5,
-    i16 p6,
-    i16 p7,
-    char p8
+    i32 enqueueFlag,
+    char targetIndex,
+    i32 count,
+    u8* gruntList,
+    char cmdKind,
+    i16 posX,
+    i16 posY,
+    char targetType
 ) {
     CGruntzMultiCommand* cmd = CGruntzMultiCommand::Allocate();
-    cmd->SetMaskFromList(p2, p5, p8, p6, p7, p3, p4);
-    EnqueueCommand(p1, cmd);
+    cmd->SetMaskFromList(targetIndex, cmdKind, targetType, posX, posY, count, gruntList);
+    EnqueueCommand(enqueueFlag, cmd);
 }
 
 RVA(0x00023d10, 0x5a)
@@ -239,60 +239,76 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
 // vs our full `and eax,~0x1f`; our /O2 evaluates sy fully then sx and pushes args
 // eagerly. Pure x86 instruction scheduling/regalloc.
 RVA(0x00023d90, 0x64)
-void CGruntzCmdMgr::BlitTileMarker(i32 a1, i32 a2, i32 x, i32 y, i32 a5) {
+void CGruntzCmdMgr::BlitTileMarker(i32 enqueueFlag, i32 targetIndex, i32 x, i32 y, i32 targetType) {
     CGameLevel* p = m_38->m_world->m_level;
     CDDrawWorkerHost* r = p->m_mainPlane;
     i32 sx = ((r->m_viewRect.left - p->m_planeCtx.left + (x & 0xffff)) & ~0x1f) + 0x10;
     i32 sy = ((r->m_viewRect.top - p->m_planeCtx.top + (y & 0xffff)) & ~0x1f) + 0x10;
     EnqueueSingle(
-        a1,
-        static_cast<char>(a2),
+        enqueueFlag,
+        static_cast<char>(targetIndex),
         0,
         0,
         static_cast<i16>(sx),
         static_cast<i16>(sy),
         0,
-        static_cast<char>(a5)
+        static_cast<char>(targetType)
     );
 }
 
 RVA(0x00023e20, 0x2f)
-i32 CGruntzCommand::SetParams(char a0, char a1, char a2, i16 a3, i16 a4) {
-    m_targetIndex = a0;
-    m_5 = a1;
-    m_targetType = a2;
-    m_8 = a3;
-    m_a = a4;
+i32 CGruntzCommand::SetParams(char targetIndex, char cmdKind, char targetType, i16 posX, i16 posY) {
+    m_targetIndex = targetIndex;
+    m_5 = cmdKind;
+    m_targetType = targetType;
+    m_8 = posX;
+    m_a = posY;
     return 1;
 }
 
 RVA(0x00023e60, 0x42)
-i32 CGruntzCommand::SetParamsEx(char a0, char a1, char a2, i16 a3, i16 a4, char a5, char a6) {
-    if (!CGruntzCommand::SetParams(a0, a1, a2, a3, a4)) {
+i32 CGruntzCommand::SetParamsEx(
+    char targetIndex,
+    char cmdKind,
+    char targetType,
+    i16 posX,
+    i16 posY,
+    char gruntIndex,
+    char extraByte
+) {
+    if (!CGruntzCommand::SetParams(targetIndex, cmdKind, targetType, posX, posY)) {
         return 0;
     }
-    m_10 = a5;
-    m_11 = a6;
+    m_10 = gruntIndex;
+    m_11 = extraByte;
     return 1;
 }
 
 RVA(0x00023ed0, 0x83)
-i32 CGruntzCommand::SetMaskFromList(char a0, char a1, char a2, i16 a3, i16 a4, i32 count, u8* buf) {
-    if (!buf) {
+i32 CGruntzCommand::SetMaskFromList(
+    char targetIndex,
+    char cmdKind,
+    char targetType,
+    i16 posX,
+    i16 posY,
+    i32 count,
+    u8* gruntList
+) {
+    if (!gruntList) {
         return 0;
     }
     if (static_cast<u8>(count) > 0x10) {
         return 0;
     }
-    if (!CGruntzCommand::SetParams(a0, a1, a2, a3, a4)) {
+    if (!CGruntzCommand::SetParams(targetIndex, cmdKind, targetType, posX, posY)) {
         return 0;
     }
     // +0x10 is dual-width: a 2-byte flag word here, a single byte at the
-    // m_10 = a5 / m_10 = *buf++ stores - retail writes both widths, so the
+    // m_10 = gruntIndex / m_10 = *list++ stores - retail writes both widths, so the
     // char member plus this word pun is the faithful pair.
     m_flagWord = 0;
     for (i32 i = 0; i < (count & 0xff); i++) {
-        m_flagWord |= g_cmdBitTable[buf[i]];
+        m_flagWord |= g_cmdBitTable[gruntList[i]];
     }
     return 1;
 }
@@ -519,12 +535,12 @@ i32 CGruntzSingleCommand::Serialize(CFileMemBase* s, i32 mode, i32, i32) {
         return 0;
     }
     switch (mode) {
-        case 4:
+        case SERIAL_SAVE:
             if (!Save(s)) {
                 return 0;
             }
             break;
-        case 7:
+        case SERIAL_LOAD:
             if (!Load(s)) {
                 return 0;
             }
@@ -577,12 +593,12 @@ i32 CGruntzMultiCommand::Serialize(CFileMemBase* s, i32 mode, i32, i32) {
         return 0;
     }
     switch (mode) {
-        case 4:
+        case SERIAL_SAVE:
             if (!Save(s)) {
                 return 0;
             }
             break;
-        case 7:
+        case SERIAL_LOAD:
             if (!Load(s)) {
                 return 0;
             }
@@ -646,12 +662,12 @@ i32 CGruntzMultiCommand::Load(CFileMemBase* s) {
 // AddTail; the recompile keeps both in callee-saved regs (no spill), swapping esi/edi/ebx.
 // Not source-steerable; final sweep.
 RVA(0x00024890, 0x18d)
-i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, i32 mode, i32 a3, i32 a4) {
+i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, i32 mode, i32 typeId, i32 pObj) {
     if (!stream) {
         return 0;
     }
-    if (mode != 4) {
-        if (mode != 7) {
+    if (mode != SERIAL_SAVE) {
+        if (mode != SERIAL_LOAD) {
             return 1;
         }
         // read
@@ -673,7 +689,7 @@ i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, i32 mode, i32 a3, i32 a4) {
             } else {
                 return 0;
             }
-            if (!cmd->Serialize(stream, 7, a3, a4)) {
+            if (!cmd->Serialize(stream, SERIAL_LOAD, typeId, pObj)) {
                 return 0;
             }
             m_base.AddTail(cmd);
@@ -695,7 +711,7 @@ i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, i32 mode, i32 a3, i32 a4) {
         CGruntzCommand* cmd = static_cast<CGruntzCommand*>(m_base.GetNext(pos));
         i32 tag = cmd->GetTag() & 0xff;
         stream->Write(&tag, 4);
-        if (!cmd->Serialize(stream, 4, a3, a4)) {
+        if (!cmd->Serialize(stream, SERIAL_SAVE, typeId, pObj)) {
             return 0;
         }
     }

@@ -322,7 +322,7 @@ CDDrawPtrCollections::~CDDrawPtrCollections() {
 
 RVA(0x00141dc0, 0x224)
 i32 CDDrawPtrCollections::CreateDevice(
-    void* a1,
+    void* unused,
     void* hwnd,
     i32 width,
     i32 height,
@@ -409,7 +409,14 @@ i32 CDDrawPtrCollections::CreateDevice(
 }
 
 RVA(0x00141ff0, 0x6c)
-i32 CDDrawPtrCollections::Init(void* factory, void* a1, i32 width, i32 height, i32 bpp, u32 coop) {
+i32 CDDrawPtrCollections::Init(
+    void* factory,
+    void* unused,
+    i32 width,
+    i32 height,
+    i32 bpp,
+    u32 coop
+) {
     if (factory == 0) {
         return 0;
     }
@@ -421,7 +428,7 @@ i32 CDDrawPtrCollections::Init(void* factory, void* a1, i32 width, i32 height, i
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0xf4, hr);
         return 0;
     }
-    return CreateDevice(a1, g_ddCreateCtx, width, height, bpp, coop);
+    return CreateDevice(unused, g_ddCreateCtx, width, height, bpp, coop);
 }
 
 RVA(0x00142060, 0x9d)
@@ -513,9 +520,9 @@ CFileImageSurface::~CFileImageSurface() {}
 // which stores them into the surface's +0x1c / +0x18 - the very fields CImage::Create
 // then reads back as m_width / m_height.
 RVA(0x001423c0, 0xd2)
-CDDSurface* CDDrawPtrCollections::CreateB(i32 width, i32 height, i32 c, i32 d, i32 e) {
+CDDSurface* CDDrawPtrCollections::CreateB(i32 width, i32 height, i32 bitDepth, i32 caps, i32 key) {
     CFileImageSurface* item = new CFileImageSurface;
-    if (!item->LoadKeyed(this, width, height, c, d, e)) {
+    if (!item->LoadKeyed(this, width, height, bitDepth, caps, key)) {
         delete item;
         return 0;
     }
@@ -581,8 +588,8 @@ i32 CDDrawPtrCollections::CreateRange(
     i32 count,
     char* baseName,
     char* suffix,
-    i32 a6,
-    i32 a7
+    i32 caps,
+    i32 colorKey
 ) {
     i32 n = 0;
     i32 end = start + count;
@@ -599,7 +606,7 @@ i32 CDDrawPtrCollections::CreateRange(
             }
             strcat(buf, suffix);
         }
-        CDDSurface* item = Createa58_3(buf, a6, a7);
+        CDDSurface* item = Createa58_3(buf, caps, colorKey);
         if (item == 0) {
             break;
         }
@@ -729,8 +736,9 @@ CDDSurface* CDDrawPtrCollections::Createae8_1(const DDSURFACEDESC* desc) {
 }
 
 RVA(0x00142e60, 0x27)
-CDDSurface* CDDrawPtrCollections::MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e) {
-    return CreateB(a, b, c, d | 0x840, e);
+CDDSurface*
+CDDrawPtrCollections::MakeAndAddB(i32 width, i32 height, i32 bitDepth, i32 caps, i32 key) {
+    return CreateB(width, height, bitDepth, caps | 0x840, key);
 }
 
 RVA(0x00142eb0, 0x17)
@@ -905,7 +913,7 @@ void CDDrawPtrCollections::SetupCaps() {
 // 0x143390 - copy a 0x6c-byte enumerated display-mode record and append it to the
 // global mode array. __stdcall (arg1 unused). Returns 1.
 RVA(0x00143390, 0x35)
-i32 __stdcall AddDisplayMode(void* mode, i32 a1) {
+i32 __stdcall AddDisplayMode(void* mode, i32 unused) {
     void* rec = operator new(0x6c);
     memcpy(rec, mode, 0x6c);
     g_modeArray.SetAtGrow(g_modeArray.GetSize(), rec);
@@ -1062,10 +1070,10 @@ CDdModePair CDDrawPtrCollections::FindBack(i32 k0, i32 k1, i32 k2) {
 // (the Create7f0_1/CreateA factory-EH family wall; code bytes match, EH-frame state differs).
 RVA(0x00143630, 0x10d)
 void* CDDrawPtrCollections::CreatePoolItem(void* arg0v, i32 kind) {
-    CDdCreateArg* arg0 = static_cast<CDdCreateArg*>(arg0v);
+    CDdCreateArg* arg = static_cast<CDdCreateArg*>(arg0v);
     void* outA = 0;
     void* outB;
-    i32 hr = arg0->m_8->Make(&outB, &outA);
+    i32 hr = arg->m_8->Make(&outB, &outA);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x6ae, hr);
         return 0;
@@ -1146,9 +1154,16 @@ i32 CDDrawPtrCollections::GetFreeVidMem() {
 
 RVA(0x00143880, 0x3b)
 i32 __stdcall
-CreateDirectDrawVia(void* ctx, i32 a1, i32 a2, IDirectDraw2*(__cdecl* factory)(void*, i32, i32)) {
+// The DirectDrawEnumerateA callback shape: (lpGUID, lpDriverDescription, lpDriverName,
+// lpContext) - the last slot carries the factory this forwards the first three to.
+CreateDirectDrawVia(
+    void* ctx,
+    i32 driverDesc,
+    i32 driverName,
+    IDirectDraw2*(__cdecl* factory)(void*, i32, i32)
+) {
     if (factory != 0) {
-        IDirectDraw2* dd = factory(ctx, a1, a2);
+        IDirectDraw2* dd = factory(ctx, driverDesc, driverName);
         if (dd != 0) {
             g_DirectDraw = dd;
             g_ddCreateCtx = ctx;
@@ -1337,8 +1352,14 @@ i32 CDDrawPtrCollections::ComputeColorMasks() {
 }
 
 RVA(0x00143c20, 0x84)
-i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
-    i32 hr = m_device->SetDisplayMode(a0, a1, a2, a3, a4);
+i32 CDDrawPtrCollections::ConfigureSurface(
+    i32 width,
+    i32 height,
+    i32 bpp,
+    i32 refreshRate,
+    i32 flags
+) {
+    i32 hr = m_device->SetDisplayMode(width, height, bpp, refreshRate, flags);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x8a2, hr);
         if (m_lastError == 0) {

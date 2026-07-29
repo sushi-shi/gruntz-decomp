@@ -9,16 +9,16 @@ DATA(0x001ea3d8)
 i32 g_menuSparkleHi = 5000; // 0x5ea3d8
 
 RVA(0x000ae1c0, 0xae)
-i32 CMenuSparkle::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject* a4) {
+i32 CMenuSparkle::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObject* pObj) {
     if (arc == 0) {
         return 0;
     }
     // The slot-1 base serialize is the shared CMovingLogicBase::Serialize @0x16e7f0
     // (the real callee - CUserLogic::SerializeMove was a fake, unbound name for it).
-    if (!CUserLogic::SerializeMove(static_cast<CFileMemBase*>(arc), mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(static_cast<CFileMemBase*>(arc), mode, typeId, pObj)) {
         return 0;
     }
-    if (!Chain(static_cast<CFileMemBase*>(arc), mode, a3, a4)) {
+    if (!Chain(static_cast<CFileMemBase*>(arc), mode, typeId, pObj)) {
         return 0;
     }
     if (mode != 4) {
@@ -33,4 +33,3 @@ i32 CMenuSparkle::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject
     arc->Write(&g_menuSparkleHi, 4);
     return 1;
 }
-

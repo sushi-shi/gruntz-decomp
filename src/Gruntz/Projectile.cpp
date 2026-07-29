@@ -899,7 +899,7 @@ void CProjectile::ScanTargets(i32 impact) {
 // byte-faithful; residual is the MSVC5 scratch-buffer slot assignment +
 // outparam zero-init store positions. Not source-steerable.
 RVA(0x000e0d40, 0x6c2)
-i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, CGameObject* a4) {
+i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObject* pObj) {
     CDDrawSurfaceMgr* reg = g_gameReg->m_world;
     if (reg == 0) {
         return 0;
@@ -1024,7 +1024,7 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, CGameObject* a
         }
     }
 
-    if (CMovingLogic::SerializeMove(s, mode, a2, a4) == 0) {
+    if (CMovingLogic::SerializeMove(s, mode, typeId, pObj) == 0) {
         return 0;
     }
     if (s == 0) {
@@ -1035,7 +1035,7 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, CGameObject* a
         case 7: {
             s->Read(buf, 0x80);
             s->Read(m_blob, 0x10);
-            CGameObject* obj = a4;
+            CGameObject* obj = pObj;
             m_34 = obj;
             m_38 = static_cast<CWwdGameObjectA*>(obj); // the bound obj IS the created A-kind sprite
             m_3c = obj->m_7c;
@@ -1268,7 +1268,7 @@ i32 CTimeBomb::LoadAttributes() {
 // consecutive 8-byte fields), where cl keeps `this` in edi and recomputes each
 // field address - a callee-saved-register coloring choice not steerable from C.
 RVA(0x000e2080, 0xc1)
-i32 CTimeBomb::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject* a4) {
+i32 CTimeBomb::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObject* pObj) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }
@@ -1291,10 +1291,10 @@ i32 CTimeBomb::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject* a
             sa->Write(&m_fastPhase, 4);
             break;
     }
-    if (!CUserLogic::SerializeMove(arc, mode, a3, a4)) {
+    if (!CUserLogic::SerializeMove(arc, mode, typeId, pObj)) {
         return 0;
     }
-    return Chain(sa, mode, a3, a4) ? 1 : 0;
+    return Chain(sa, mode, typeId, pObj) ? 1 : 0;
 }
 
 // ---------------------------------------------------------------------------

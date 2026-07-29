@@ -75,12 +75,12 @@ public:
     i32 Init6(
         CRandomAmbientWorld* world,
         const char* key,
-        i32 a3,
-        i32 a4,
+        i32 level,
+        i32 master,
         RECT* box,
-        i32 a6
-    );                                                                 // 0xbdd0
-    i32 Init5(DirectSoundMgr* mgr, i32 a2, i32 a3, RECT* box, i32 a5); // 0xbe50
+        i32 scaleB
+    );                                                                            // 0xbdd0
+    i32 Init5(DirectSoundMgr* mgr, i32 level, i32 master, RECT* box, i32 scaleB); // 0xbe50
 
     // +0x00  vptr provided by CUserBase base
     DirectSoundMgr* m_voice; // +0x04  the sound-mgr voice handle it drives
@@ -118,12 +118,12 @@ public:
     i32 Init6(
         CRandomAmbientWorld* world,
         const char* key,
-        i32 a3,
-        i32 a4,
+        i32 level,
+        i32 master,
         AmbientPoint* pos,
-        i32 a5
-    );                                                                         // 0xc4b0
-    i32 Init5(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientPoint* pos, i32 a5); // 0xc530
+        i32 scaleB
+    );                                                                                    // 0xc4b0
+    i32 Init5(DirectSoundMgr* mgr, i32 level, i32 master, AmbientPoint* pos, i32 scaleB); // 0xc530
 
     i32 m_40; // +0x40  anchor position x (seeded by Init5)
     i32 m_44; // +0x44  anchor position y

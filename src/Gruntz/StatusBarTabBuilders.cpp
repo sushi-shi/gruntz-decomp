@@ -67,8 +67,8 @@ RVA(0x000e8a70, 0x18c)
 i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
-    i32 p3,
-    i32 p4,
+    i32 cmd,
+    i32 tab,
     RECT g,
     const char* key,
     i32 idxA,
@@ -79,7 +79,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     }
     CDDrawSurfaceMgr* h = host;
     m_2c = owner;
-    m_tab = p4;
+    m_tab = tab;
     m_24 = h;
     m_28 = 0;
     m_enabled = 1;
@@ -89,7 +89,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     m_rect14.bottom = g.bottom;
     CDDrawWorker* rec = 0;
     CObject* recOb = 0;
-    m_cmd = p3;
+    m_cmd = cmd;
     h->m_imageRegistry->m_10map.Lookup("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND", recOb);
     rec = static_cast<CDDrawWorker*>(recOb);
     CImage* spr;
@@ -216,7 +216,7 @@ void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
 // ===========================================================================
 // CSBI_GruntMachine::SerializeFields (0x0e8e00) - ??_7CSBI_GruntMachine (0x1eadbc)
 // slot 1 (thunk 0x381e); the grunt-machine dual-mode serialize leg. __thiscall
-// (stream, mode, a2, a3), ret 0x10; bails 0 when the stream or g_gameReg->m_world
+// (stream, mode, typeId, pObj), ret 0x10; bails 0 when the stream or g_gameReg->m_world
 // is absent.
 //
 // Mode 7 (read): the config record m_30 by NAME (registry Lookup, ungated), the
@@ -259,7 +259,7 @@ void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
 //     the block-scope pointer is DCE'd and cl rematerialises exactly as above.
 // The current spelling is the maximum; the residue is pure stack-slot packing.
 RVA(0x000e8e00, 0x41a)
-i32 CSBI_GruntMachine::SerializeFields(CFileMemBase* s, i32 mode, i32 a2, i32 a3) {
+i32 CSBI_GruntMachine::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
     if (s == 0) {
         return 0;
     }
@@ -392,7 +392,7 @@ i32 CSBI_GruntMachine::SerializeFields(CFileMemBase* s, i32 mode, i32 a2, i32 a3
 
     // QUALIFIED = the direct base leg (retail `call 0x1848`); unqualified would be
     // recursion on this override.
-    return CStatusBarItem::SerializeFields(s, mode, a2, a3) != 0 ? 1 : 0;
+    return CStatusBarItem::SerializeFields(s, mode, typeId, pObj) != 0 ? 1 : 0;
 }
 
 namespace StatusBarTabBuilders {} // namespace StatusBarTabBuilders
@@ -407,45 +407,45 @@ namespace StatusBarTabBuilders {} // namespace StatusBarTabBuilders
 // purely to compile, forcing a cross-cast of a CStatzTabBuilder. The view's CSbImageSet is
 // the canonical CSbiConfigRecord.
 // @early-stop
-// identical-return-epilogue tail-merge wall (topic:wall) + the p5/p7 callee-saved
-// register reuse (they stay in ebx/ebp for the (p7-p5)/2 arithmetic, so the geometry
+// identical-return-epilogue tail-merge wall (topic:wall) + the left/right callee-saved
+// register reuse (they stay in ebx/ebp for the (right-left)/2 arithmetic, so the geometry
 // block can't use the struct-copy idiom). Body logic byte-faithful; ~65%. Deferred.
 RVA(0x000e9600, 0x18c)
 i32 CSBI_SideTab::BuildStatzTabStatusBar(
     CStatusBarMgr* parent,
     CDDrawSurfaceMgr* host,
-    i32 p3,
-    i32 p4,
-    i32 p5,
-    i32 p6,
-    i32 p7,
-    i32 p8,
-    const char* p9,
-    i32 p10,
-    i32 p11,
-    i32 p12,
+    i32 cmd,
+    i32 tab,
+    i32 left,
+    i32 top,
+    i32 right,
+    i32 bottom,
+    const char* unused,
+    i32 rowIndex,
+    i32 colIndex,
+    i32 enabled,
     i32 onLeft
 ) {
-    static_cast<void>(p9);
+    static_cast<void>(unused);
     if (host == 0 || parent == 0) {
         return 0;
     }
     m_24 = host;
-    m_tab = p4;
+    m_tab = tab;
     m_2c = parent;
-    m_rect14.left = p5;
+    m_rect14.left = left;
     m_28 = 0;
-    m_rect14.top = p6;
-    m_rect14.right = p7;
-    m_rect14.bottom = p8;
-    m_cmd = p3;
-    if (p12 == 0) {
+    m_rect14.top = top;
+    m_rect14.right = right;
+    m_rect14.bottom = bottom;
+    m_cmd = cmd;
+    if (enabled == 0) {
         m_enabled = 0;
     } else {
         m_enabled = 1;
     }
-    m_rowIndex = p10;
-    m_colIndex = p11;
+    m_rowIndex = rowIndex;
+    m_colIndex = colIndex;
     m_onLeft = onLeft;
     if (onLeft == 0) {
         CDDrawWorker* n = 0;
@@ -463,7 +463,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         }
         m_topFrame = v;
         m_bottomFrameDy = -1;
-        m_drawX = (p7 - p5) / 2 + parent->m_rect10.right;
+        m_drawX = (right - left) / 2 + parent->m_rect10.right;
     } else {
         CDDrawWorker* n = 0;
         CObject* nOb = 0;
@@ -480,13 +480,13 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         }
         m_topFrame = v;
         m_bottomFrameDy = 1;
-        m_drawX = parent->m_rect10.left - (p7 - p5) / 2;
+        m_drawX = parent->m_rect10.left - (right - left) / 2;
     }
-    m_drawY = p11 * 0x12 + 0xd1;
+    m_drawY = colIndex * 0x12 + 0xd1;
     if (m_topFrame == 0) {
         return 0;
     }
-    m_sampleMode = p12;
+    m_sampleMode = enabled;
     m_sampledValue = -1;
     m_drawGate = BuildHandle();
     return 1;
@@ -593,7 +593,7 @@ i32 CSBI_SideTab::Render() {
 }
 
 RVA(0x000e9a30, 0x31e)
-i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, i32 mode, i32 a2, i32 a3) {
+i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
     if (s == 0) {
         return 0;
     }
@@ -695,19 +695,22 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, i32 mode, i32 a2, i32 a3) {
 
     // QUALIFIED = the direct base leg (retail `call 0x1848`); unqualified would be
     // recursion on this override.
-    return CStatusBarItem::SerializeFields(s, mode, a2, a3) != 0 ? 1 : 0;
+    return CStatusBarItem::SerializeFields(s, mode, typeId, pObj) != 0 ? 1 : 0;
 }
 
+// `animate` is read off the SetRange tuples, not guessed: 0 selects a HELD frame
+// (start 4 or 1, step 0) and 1 an ANIMATION (start -1, step +1 or -1); `position`
+// picks which of the pair (both callers pass CStatusBarMgr::m_position).
 RVA(0x000ea0f0, 0x5c)
-void CSBI_StatzTabArrow::SetDirection(i32 a, i32 b) {
-    if (a == 0) {
-        if (b == 0) {
+void CSBI_StatzTabArrow::SetDirection(i32 position, i32 animate) {
+    if (position == 0) {
+        if (animate == 0) {
             SetRange(4, -1, 0, 0, -1);
         } else {
             SetRange(-1, -1, 1, 0, -1);
         }
     } else {
-        if (b == 0) {
+        if (animate == 0) {
             SetRange(1, -1, 0, 0, -1);
         } else {
             SetRange(-1, -1, -1, 0, -1);
@@ -715,16 +718,17 @@ void CSBI_StatzTabArrow::SetDirection(i32 a, i32 b) {
     }
 }
 
+// The mirror of SetDirection: the same four SetRange tuples with `position` inverted.
 RVA(0x000ea170, 0x5c)
-void CSBI_StatzTabArrow::SetDirectionAlt(i32 a1, i32 a2) {
-    if (a1 == 0) {
-        if (a2 == 0) {
+void CSBI_StatzTabArrow::SetDirectionAlt(i32 position, i32 animate) {
+    if (position == 0) {
+        if (animate == 0) {
             SetRange(1, -1, 0, 0, -1);
         } else {
             SetRange(-1, -1, -1, 0, -1);
         }
     } else {
-        if (a2 == 0) {
+        if (animate == 0) {
             SetRange(4, -1, 0, 0, -1);
         } else {
             SetRange(-1, -1, 1, 0, -1);
@@ -745,12 +749,12 @@ RVA(0x000ea1f0, 0x1fa)
 i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
-    i32 p3,
-    i32 p4,
+    i32 cmd,
+    i32 tab,
     RECT g,
     const char* key,
-    i32 p10,
-    i32 p11,
+    i32 unitRow,
+    i32 unitCol,
     i32 selMode
 ) {
     if (host == 0) {
@@ -761,7 +765,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     }
     CDDrawSurfaceMgr* h = host;
     m_2c = owner;
-    m_tab = p4;
+    m_tab = tab;
     m_24 = h;
     m_28 = 0;
     m_enabled = 1;
@@ -771,7 +775,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     m_rect14.bottom = g.bottom;
     CDDrawWorker* head = 0;
     CObject* headOb = 0;
-    m_cmd = p3;
+    m_cmd = cmd;
     h->m_imageRegistry->m_10map.Lookup(key, headOb);
     head = static_cast<CDDrawWorker*>(headOb);
     m_glyphMap = head;
@@ -845,8 +849,8 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     if (val == 0) {
         return 0;
     }
-    m_unitRow = p10;
-    m_unitCol = p11;
+    m_unitRow = unitRow;
+    m_unitCol = unitCol;
     m_timerValue = -1;
     m_overrideValue = -1;
     m_abilityValue = -1;

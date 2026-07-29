@@ -94,7 +94,7 @@ public:
     // "SetupMultiplayerSession") - runs the whole "start a networked game" sequence:
     // peer CNetMgr + session + interface + command manager new'd and wired, then the
     // connect wait + first poll. Returns 1 on a fully-established session.
-    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) OVERRIDE;
+    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) OVERRIDE;
     // slot 2 (CState): the lobby-drain teardown @0x0b6110 (Multi.cpp; retail slot 2 =
     // ILT 0x2ef5 -> 0xb6110, ex "Teardown") - final stat pushes, free the session/
     // report-gate/overlay sub-objects, then chain CPlay::ReleaseResources.
@@ -265,7 +265,7 @@ public:
     i32 SendStatPairRaw(CNetSessionNode* recipient, void* pkt, i32 size, i32 c); // 0x0b9500
     i32 SendStatValue(i32 id, i32 statId, i32 value, i32 flag);                  // 0x0b9570
     i32 DispatchRecvMsg(i32 sender, char* buf, i32 size);                        // 0x0b9750
-    i32 HandleControlMsg(CNetCtrlMsg* msg, i32 arg2);                            // 0x0ba1a0
+    i32 HandleControlMsg(CNetCtrlMsg* msg, i32 unused);                          // 0x0ba1a0
     i32 OnPlayerLeft(i32 playerId);                                              // 0x0ba3b0
     void AckDropPlayer(i32 id);                                                  // 0x0ba590
     RVA(0x000bd4a0, 0x3)

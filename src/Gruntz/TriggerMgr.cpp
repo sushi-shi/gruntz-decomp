@@ -605,31 +605,39 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     return 1;
 }
 
-// 0x79520: ResetGroup(a14, a18, ...) - when the level flag (+0x400) is set, hit-test the
-// magic group, classify the (a14,a18) target into one of three branches and place/report the
+// 0x79520: ResetGroup(x, y, ...) - when the level flag (+0x400) is set, hit-test the
+// magic group, classify the (x,y) target into one of three branches and place/report the
 // matching cursor / lightfx / warpstone sprite; on factory success Init it and report it.
 // ret 1 (0 on flag-clear / placement failure). (__stdcall: ret 0x1c.)
 // @early-stop
-// Reconstructed from-scratch 46.7->75.6% (was structurally wrong: a boolean-a28
-// sel=0/1/2 dispatch). a28 is a SELECTOR: when nonzero sel=a28; else classify by
+// Reconstructed from-scratch 46.7->75.6% (was structurally wrong: a boolean-selector
+// sel=0/1/2 dispatch). arg6 IS the selector: when nonzero sel=selector; else classify by
 // hit/cell into sel 1/2/3, dispatched by a dec-ladder switch to three stanzas that
 // report (ReportRecordsA / ReportRecordsB(flag) / EnqueueSingle) then per-stanza
 // CreateSprite("LightFx")+notify with kindArg 2/1/3, sharing the Arm tail; stanzaB/C
 // hit-owner gates funnel to a shared SpawnVoiceDriver reportError. Two block-layout
 // inversions were needed (cell-decode je-layout, classify cell!=0-inline). Residual is
 // the this/hit callee-saved coloring (retail this=edi/hit=esi, cl this=esi/hit=edi) and
-// the a14/a18 register-vs-stack-spill in the PlaceA/CreateSprite calls - an intra-fn
+// the x/y register-vs-stack-spill in the PlaceA/CreateSprite calls - an intra-fn
 // coloring wall that cascades through every operand; not source-steerable. topic:wall
 // topic:regalloc.
 RVA(0x00079520, 0x2e3)
-i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28, i32 a2c) {
+i32 CTriggerMgr::ResetGroup(
+    i32 x,
+    i32 y,
+    i32 a1c,
+    i32 a20,
+    i32 a24,
+    i32 selector,
+    i32 spawnCursor
+) {
     static_cast<void>(a1c);
     static_cast<void>(a20);
     static_cast<void>(a24);
     if (m_groupFlag == 0) {
         return 0;
     }
-    CGrunt* hit = CellHitTest(a14, a18, 0, 0, 5);
+    CGrunt* hit = CellHitTest(x, y, 0, 0, 5);
     CGrunt* cell;
     if (m_recList.GetCount() != 1) {
         cell = 0;
@@ -638,22 +646,22 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         cell = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
     }
 
-    // Classify into a selector: a28 (when nonzero) IS the selector; else derive from
+    // Classify into a selector: selector (when nonzero) IS the selector; else derive from
     // hit/cell. sel 1/2/3 dispatch to the three report+spawn stanzas; else -> return 1.
     i32 sel;
     if (cell != 0) {
         if (cell->m_tileOwnerHi != g_curPlayer) {
             return 1;
         }
-        if (a28 != 0) {
-            sel = a28;
+        if (selector != 0) {
+            sel = selector;
         } else if (hit == 0) {
             sel = 1;
         } else if (hit == cell) {
             m_pendingFxKind = 0;
             (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(0, 0);
             CGameObject* o = hit->m_object;
-            this->DestroyGroup(o->m_screenX, o->m_screenY, a18, a14);
+            this->DestroyGroup(o->m_screenX, o->m_screenY, y, x);
             return 1;
         } else {
             sel = 2;
@@ -666,17 +674,17 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
     i32 kindArg;
     switch (sel) {
         case 1:
-            this->ReportRecordsA(1, a14, a18);
-            if (a2c == 0) {
+            this->ReportRecordsA(1, x, y);
+            if (spawnCursor == 0) {
                 return 1;
             }
-            sprite = m_world->m_childGroup->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
+            sprite = m_world->m_childGroup->CreateSprite(0, x, y, 0xf4240, "LightFx", 0x40003);
             sprite->m_7c->m_notify(sprite);
             kindArg = 2;
             goto arm;
         case 2:
             if (hit == 0) {
-                this->ReportRecordsB(1, a14, a18, 0);
+                this->ReportRecordsB(1, x, y, 0);
             } else {
                 i32 owner = hit->m_tileOwnerHi;
                 if (owner == g_curPlayer && g_traitorMode == 0) {
@@ -694,10 +702,10 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
                 }
                 this->ReportRecordsB(1, owner, hit->m_tileOwnerLo, 1);
             }
-            if (a2c == 0) {
+            if (spawnCursor == 0) {
                 return 1;
             }
-            sprite = m_world->m_childGroup->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
+            sprite = m_world->m_childGroup->CreateSprite(0, x, y, 0xf4240, "LightFx", 0x40003);
             sprite->m_7c->m_notify(sprite);
             kindArg = 1;
             goto arm;
@@ -723,16 +731,16 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
                     static_cast<char>(cell->m_tileOwnerHi),
                     static_cast<char>(cell->m_tileOwnerLo),
                     4,
-                    static_cast<i16>(a14),
-                    static_cast<i16>(a18),
+                    static_cast<i16>(x),
+                    static_cast<i16>(y),
                     0,
                     0
                 );
             }
-            if (a2c == 0) {
+            if (spawnCursor == 0) {
                 return 1;
             }
-            sprite = m_world->m_childGroup->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
+            sprite = m_world->m_childGroup->CreateSprite(0, x, y, 0xf4240, "LightFx", 0x40003);
             sprite->m_7c->m_notify(sprite);
             kindArg = 3;
             goto arm;
@@ -759,8 +767,8 @@ reportError:
 // frame whose state numbering + partial-object cleanup diverge from retail; the alloc/ctor/
 // teardown shape is faithful. topic:wall topic:eh.
 RVA(0x000798d0, 0x1b6)
-i32 CTriggerMgr::DestroyGroup(i32 a1, i32 a2, i32 a3, i32 a4) {
-    static_cast<void>(a1);
+i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldY, i32 worldX) {
+    static_cast<void>(screenX); // accepted but never read
     CActionOptionsMenuBar* ov = m_overlay;
     if (ov == 0) {
         m_overlay = new CActionOptionsMenuBar;
@@ -783,13 +791,13 @@ i32 CTriggerMgr::DestroyGroup(i32 a1, i32 a2, i32 a3, i32 a4) {
     if (cellp == 0 || cellp->m_tileOwnerHi != g_curPlayer) {
         return 0;
     }
-    if (ov->Init(0, 0, a2, a4, cellp->m_tileOwnerHi, cellp->m_tileOwnerLo) == 0) {
+    if (ov->Init(0, 0, screenY, worldX, cellp->m_tileOwnerHi, cellp->m_tileOwnerLo) == 0) {
         return 0;
     }
     CGameLevel* view = m_world->m_level;
     CDDrawWorkerHost* pl = view->m_mainPlane;
-    i32 ox = pl->m_viewRect.left - view->m_planeCtx.top + a4;
-    i32 oy = pl->m_viewRect.top - view->m_planeCtx.left + a3;
+    i32 ox = pl->m_viewRect.left - view->m_planeCtx.top + worldX;
+    i32 oy = pl->m_viewRect.top - view->m_planeCtx.left + worldY;
     this->PlaceObjectFull(oy, ox);
     return 1;
 }
@@ -904,17 +912,17 @@ void CTriggerMgr::ResetSpawnState() {
     this->LoadFinishLevelSprite(6);
 }
 
-// 0x79ea0: SpawnTileFx(x, y, a3) - only when the active state is live
+// 0x79ea0: SpawnTileFx(x, y, anchorIndex) - only when the active state is live
 // (gameReg->m_134==1): read the tile at (x>>5, y>>5); if it carries neither the
 // 0x40939 mask nor bit 0x2, spawn a type-0x14 fx centered on the tile. Otherwise
-// (the bit path) map (a3-1) into the world's 4 fx anchors and spawn there. ret 1.
+// (the bit path) map (anchorIndex-1) into the world's 4 fx anchors and spawn there. ret 1.
 // __stdcall free function (cleans its own 3 args; retail ends in `ret 0xc`).
 // @early-stop
 // regalloc wall (~81%): body + offsets + the tile double-index byte-exact; retail homes
 // gameReg in edi, the grid in esi and the width in ebx (3 callee-saved regs), our cl uses
 // gameReg=esi/width=edi (2 regs). Not source-steerable. topic:wall topic:regalloc.
 RVA(0x00079ea0, 0xc2)
-i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
+i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
     if (g_gameReg->m_134 != 1) {
         return 0;
     }
@@ -930,14 +938,14 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
     }
     if ((tile & 0x40939) == 0 && (tile & 2) == 0) {
         g_gameReg->m_cmdGrid
-            ->LoadPowerupIconSprites(0x14, (tx << 5) + 0x10, (ty << 5) + 0x10, 0, a3, 0);
+            ->LoadPowerupIconSprites(0x14, (tx << 5) + 0x10, (ty << 5) + 0x10, 0, anchorIndex, 0);
         return 1;
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
-    i32 idx = a3 - 1;
+    i32 idx = anchorIndex - 1;
     CPlay::Anchor* rec = (static_cast<u32>(idx) < 4) ? &world->m_anchors[idx] : 0;
     if (rec != 0) {
-        g_gameReg->m_cmdGrid->LoadPowerupIconSprites(0x14, rec->m_x, rec->m_y, 0, a3, 0);
+        g_gameReg->m_cmdGrid->LoadPowerupIconSprites(0x14, rec->m_x, rec->m_y, 0, anchorIndex, 0);
     }
     return 1;
 }
@@ -1091,7 +1099,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
 }
 
 RVA(0x0007a3f0, 0xd7)
-i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
+i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, i32 kind, i32 moveKind) {
     CDDrawChildGroup* fac = m_world->m_childGroup;
     i32 tx = x >> 5;
     i32 ty = y >> 5;
@@ -1116,9 +1124,9 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
         return 0;
     }
     spr->ApplyName("GAME_TOYBOX");
-    spr->m_118 = a4;
-    spr->m_114 = a3;
-    spr->m_130 = a5;
+    spr->m_118 = kind;
+    spr->m_114 = col;
+    spr->m_130 = moveKind;
     spr->m_stateFlags |= 1;
     return 1;
 }
@@ -1592,8 +1600,8 @@ i32 CTriggerMgr::LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind) {
 // docs/patterns/loop-invariant-multiply-strength-reduce-vs-memreread.md +
 // zero-register-pinning.md). Logic complete.
 RVA(0x0007b440, 0x3f0)
-i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
-    CombatCue(cx, cy, r, 6, a4);
+i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
+    CombatCue(cx, cy, r, 6, flag);
 
     // The live PLAY state. +0x2e4 IS CPlay::m_beginMarker (the CTileTriggerContainer),
     // so the ex-CLevelSpawnInfo pad-view was a view of CPlay - m_curState is simply

@@ -106,7 +106,7 @@ public:
 
     // Enumerate DirectDraw drivers (DirectDrawEnumerateA callback CreateDirectDrawVia
     // caches g_ddCreateCtx), then bring up the device via CreateDevice.
-    i32 Init(void* factory, void* a1, i32 width, i32 height, i32 bpp, u32 coop); // 0x141ff0
+    i32 Init(void* factory, void* unused, i32 width, i32 height, i32 bpp, u32 coop); // 0x141ff0
 
     // m_device->GetAvailableVidMem(&caps, total, free) == 0. (caps by value.)
     i32 GetAvailableVidMem(u32 caps, DWORD* total, DWORD* free); // 0x143810
@@ -136,7 +136,7 @@ public:
     //     the "surface-pair passes a WIDTH" path; it is a different slot, not a
     //     different type in one slot.
     CDDSurface* CreateA(PidHeader* hdr, i32 type, u32 size, i32 ctrl, i32 trans); // 0x142260
-    CDDSurface* CreateB(i32 width, i32 height, i32 c, i32 d, i32 e);              // 0x1423c0
+    CDDSurface* CreateB(i32 width, i32 height, i32 bitDepth, i32 caps, i32 key);  // 0x1423c0
     CDDSurface* Createa58_1(const DDSURFACEDESC* desc); // 0x1424a0 (vtbl a58, slot 2)
     // Createa58_3's a1 is a FILE PATH, proven from both ends: the callee
     // CFileImageSurface::LoadByExt (@0x148940) opens with `strrchr(a1,'.')` +
@@ -164,11 +164,11 @@ public:
     CDDSurface* Createab8_1(const DDSURFACEDESC* desc); // 0x142aa0 (vtbl ab8, slot 2, +538)
     CDDSurface* Createab8_24_3(i32 a);                  // 0x142b70 (vtbl ab8, slot 9 3-arg, +538)
     CDDSurface*
-    Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);      // 0x142c40 (vtbl ae8, slot 9 6-arg)
-    CDDSurface* Createae8_1(const DDSURFACEDESC* desc);         // 0x142da0 (vtbl ae8, slot 2)
-    CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
-    CDDPalette* MakeB(void* rgb, i32 flags);                    // 0x142fc0
-    CDDPalette* Create(i32 a, i32 b);                           // 0x143040 (init via 0x147390)
+    Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x142c40 (vtbl ae8, slot 9 6-arg)
+    CDDSurface* Createae8_1(const DDSURFACEDESC* desc);    // 0x142da0 (vtbl ae8, slot 2)
+    CDDSurface* MakeAndAddB(i32 width, i32 height, i32 bitDepth, i32 caps, i32 key); // 0x142e60
+    CDDPalette* MakeB(void* rgb, i32 flags);                                         // 0x142fc0
+    CDDPalette* Create(i32 a, i32 b); // 0x143040 (init via 0x147390)
     // MakeB2's a1 is a FILE PATH: it forwards verbatim to CDDPalette::LoadFromFile
     // (@0x147410), whose first act is `strrchr(a1,'.')` followed by an _stricmp
     // dispatch over ".BMP"/".PCX"/".PAL". (Contrast the sibling MakeB, whose `rgb`
@@ -200,7 +200,8 @@ public:
     i32 ComputeColorMasks(); // 0x143b20
     // Reconfigure the cached surface (vtbl +0x54) and, on success, recompute the color
     // masks; report + latch the failure code on either error. 0x143c20.
-    i32 ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4); // 0x143c20
+    // IDirectDraw2::SetDisplayMode's own (dwWidth, dwHeight, dwBPP, dwRefreshRate, dwFlags).
+    i32 ConfigureSurface(i32 width, i32 height, i32 bpp, i32 refreshRate, i32 flags); // 0x143c20
     // 0x08dd80 (body in DDrawBltErrThunk.cpp; ex "DDrawBltHost::BltChecked" - the
     // held object IS this class): m_device->GetCaps(driver, hel) with the DDraw
     // error log on failure. CGruntzMgr::RegisterLevelAssetKeys calls it twice.

@@ -79,8 +79,8 @@ public:
     virtual i32 Setup(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
-        i32 a3,
-        i32 a4,
+        i32 cmd,
+        i32 tab,
         RECT rc,
         const char* key,
         i32 a10

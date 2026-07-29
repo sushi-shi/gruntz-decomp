@@ -84,13 +84,13 @@ CSbiHlRow::CSbiHlRow() {
 // it contributes no state at all on our side. Logic, member identities, call targets and
 // every fail-path shape are complete and binary-proven against the full 0x5f5 disasm.
 RVA(0x000c7ec0, 0x5f5)
-i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
+i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     using namespace modeinit;
     {
-        if (a1 == 0) {
+        if (mgr == 0) {
             return 0;
         }
-        GruntzPlayer* sub = a1->m_options; // &a1->m_150 (never null; the null-check is emitted)
+        GruntzPlayer* sub = mgr->m_options; // &mgr->m_150 (never null; the null-check is emitted)
         if (sub == 0) {
             return 0;
         }
@@ -108,7 +108,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
         m_scrollEdgeLock = 0;
         m_frameMarker = 0;
         // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
-        if (!CState::LoadGameAssetNamespaces(a1, a2, a3)) {
+        if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
             return 0;
         }
 
@@ -195,7 +195,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
         m_notifyLatch = 0; // the retail DWORD store
         m_1c0 = 0;
         memset(&m_saveSlot, 0, sizeof(m_saveSlot)); // +0x1d0..+0x2d0
-        a1->ResetClockGlobals();     // retail ecx = the A1 arg slot (a1 IS the mgr)
+        mgr->ResetClockGlobals();                   // retail ecx = the A1 arg slot (mgr IS the mgr)
         m_savedClock = 0;
         m_rngSeed = timeGetTime();
         m_lightFx = 0;
@@ -205,8 +205,8 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
         if (!LoadImageBanks()) { // slot 29 (+0x74) virtual dispatch
             return 0;
         }
-        Vslot24();                // slot 36 (+0x90) virtual dispatch (retail body: bare ret)
-        if (!LoadByMode(a2, 1)) { // slot 30 (+0x78) virtual dispatch
+        Vslot24();                     // slot 36 (+0x90) virtual dispatch (retail body: bare ret)
+        if (!LoadByMode(areaArg, 1)) { // slot 30 (+0x78) virtual dispatch
             return 0;
         }
         if (!LoadCursorSprites(0, 0)) {

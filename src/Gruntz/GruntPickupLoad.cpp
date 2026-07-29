@@ -34,12 +34,12 @@
 // tail. Logic complete (guard, stats counters, "J" relatch, 90-way pickup switch + MEGAPHONE
 // inner unit-type switch, cue-rect gate, sprite retire, geometry apply). ~47%; final sweep.
 RVA(0x00065e80, 0x12b8)
-i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
-    CAniElement* geo; // the resolved pickup anim (retail reuses the dead a4 slot)
+i32 CGrunt::LoadPickupSprites(i32 type, i32 forced, i32 a3, i32 unused, i32 countStats) {
+    CAniElement* geo; // the resolved pickup anim (retail reuses the dead unused slot)
     if (m_gruntKind == 0x39 || m_gruntKind == 0x3a) {
         return 0;
     }
-    if (a2 == 0) {
+    if (forced == 0) {
         if (m_entranceActive != 0) {
             return 0;
         }
@@ -85,7 +85,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
             return 0;
         }
     }
-    if (a5 != 0) {
+    if (countStats != 0) {
         if (type >= PICKUP_BOMB && type <= PICKUP_WINGZ && type != PICKUP_WARPSTONE) {
             g_gameReg->m_scoreHud->m_weaponCount++;
             g_gameReg->m_scoreHud->m_weaponPickupz[type - PICKUP_BOMB + 22 * m_tileOwnerHi]++;
@@ -104,7 +104,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     m_objAux->m_1c = ActFindId("J");
 
     i32 id = 0;
-    a2 = 0; // force-cue local (reuses the consumed arg2 slot)
+    forced = 0; // force-cue local (reuses the consumed arg2 slot)
     switch (type) {
         case PICKUP_NONE:
             return 1;
@@ -222,7 +222,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
             MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, "GRUNTZ_PICKUPS_MEGAPHONE", geo);
             m_pickupGeoSrc = geo;
             i32 n = play->m_guts->GetActiveValue();
-            if (a5 != 0) {
+            if (countStats != 0) {
                 if (n >= PICKUP_BOMB && n <= PICKUP_WINGZ && n != PICKUP_WARPSTONE) {
                     g_gameReg->m_scoreHud->m_weaponCount++;
                     g_gameReg->m_scoreHud->m_weaponPickupz[n - PICKUP_BOMB + 22 * m_tileOwnerHi]++;
@@ -378,19 +378,19 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
             break;
         case PICKUP_RANDOMCOLORZ:
             PICKUP("GRUNTZ_PICKUPS_RANDOMCOLORZ", 0x3f1);
-            a2 = 1;
+            forced = 1;
             break;
         case PICKUP_SCREENSHAKE:
             PICKUP("GRUNTZ_PICKUPS_SCREENSHAKE", 0x3f0);
-            a2 = 1;
+            forced = 1;
             break;
         case PICKUP_BLACKSCREEN:
             PICKUP("GRUNTZ_PICKUPS_BLACKSCREEN", 0x3ef);
-            a2 = 1;
+            forced = 1;
             break;
         case PICKUP_MINICAM:
             PICKUP("GRUNTZ_PICKUPS_MINICAM", 0x3ee);
-            a2 = 1;
+            forced = 1;
             break;
         case PICKUP_STOPWATCH:
             PICKUP("GRUNTZ_PICKUPS_STOPWATCH", 0x3bf);
@@ -426,7 +426,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         CGruntzMgr* g = g_gameReg;
         if ((hud->m_screenX < g->m_viewBounds.right && hud->m_screenX >= g->m_viewBounds.left
              && hud->m_screenY < g->m_viewBounds.bottom && hud->m_screenY >= g->m_viewBounds.top)
-            || a2 != 0) {
+            || forced != 0) {
             g->m_cueSink->SpawnVoiceDriver(this, id, -1, 0, -1, -1);
         }
     }

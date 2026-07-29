@@ -113,12 +113,12 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // `obj` register (retail reuses the FALSE return value in eax at the merge).
 // topic:wall topic:regalloc. Deferred to the final sweep.
 RVA(0x0003f040, 0x147)
-i32 CExitTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
-    if (!CUserLogic::SerializeMove(ar, mode, a3, a4)) {
+i32 CExitTrigger::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
+    if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
         return 0;
     }
     CFileMemBase* arc = ar;
-    if (!Chain(arc, mode, a3, a4)) {
+    if (!Chain(arc, mode, typeId, pObj)) {
         return 0;
     }
 

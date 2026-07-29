@@ -297,8 +297,8 @@ CMulti::CMulti() {
 // factory of this size is not source-steerable. Logic complete. topic:wall topic:eh.
 // ===========================================================================
 RVA(0x0008b960, 0x7c4)
-i32 CGruntzMgr::TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4) {
-    static_cast<void>(a4);
+i32 CGruntzMgr::TransitionState(i32 stateId, i32 areaArg, i32 keepCurrent, i32 unused) {
+    static_cast<void>(unused);
     CState* cur = m_curState;
     i32 local10 = 0;
     if (cur != 0) {
@@ -307,7 +307,7 @@ i32 CGruntzMgr::TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4) {
         cur->FrameSlot28(stateId);
         if (keepCurrent != 0) {
             PushState(m_curState);
-            a2 = savedSub; // retail reuses the arg2 stack slot as scratch for cur->m_1c
+            areaArg = savedSub; // retail reuses the arg2 stack slot as scratch for cur->m_1c
             m_curState = 0;
         } else {
             if (m_curState != 0) {
@@ -378,7 +378,7 @@ install:
     {
         CState* st = m_curState;
         // slot 1 (+0x4) virtual dispatch - the state's asset/state loader.
-        i32 ok = st->LoadGameAssetNamespaces(this, a2, local10);
+        i32 ok = st->LoadGameAssetNamespaces(this, areaArg, local10);
         st = m_curState;
         if (ok == 0) {
             if (st != 0) {
@@ -2167,12 +2167,12 @@ i32 CGruntzMgr::DebugJumpLevel() {
 RVA(0x00092d50, 0x3c)
 i32 CGruntzMgr::LoadOptionsSlotName(
     i32 slot,
-    i32 /*a2*/,
-    i32 /*a3*/,
-    i32 /*a4*/,
-    i32 /*a5*/,
+    i32 /*unusedB*/,
+    i32 /*unusedC*/,
+    i32 /*unusedD*/,
+    i32 /*unusedE*/,
     const char* val,
-    i32 /*a7*/
+    i32 /*unusedG*/
 ) {
     if (CheckPlayState()) {
         if (m_options[slot].m_liveGate == 0) {
@@ -2408,7 +2408,7 @@ void CGruntzMgr::RecomputeViewScale() {
 // NOTE: the trace size was 0x124 but the real function runs to 0x15c (the cmd==4
 // tail + the bool-normalizing HUD epilogue past the under-counted Ghidra bound).
 RVA(0x00093460, 0x15c)
-i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, i32 cmd, i32 a2, i32 a3) {
+i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, i32 cmd, i32 typeId, i32 pObj) {
     if (ar == 0) {
         return 0;
     }
@@ -2429,34 +2429,34 @@ i32 CGruntzMgr::BroadcastCmd(CFileMemBase* ar, i32 cmd, i32 a2, i32 a3) {
 
     GruntzPlayer* slot = m_options;
     for (i32 i = 0; i < 4; i++) {
-        if (slot == 0 || slot->Serialize(ar, cmd, a2, a3) == 0) {
+        if (slot == 0 || slot->Serialize(ar, cmd, typeId, pObj) == 0) {
             return 0;
         }
         slot++;
     }
 
-    if (m_cmdGrid->Serialize(ar, cmd, a2, a3) == 0) {
+    if (m_cmdGrid->Serialize(ar, cmd, typeId, pObj) == 0) {
         return 0;
     }
-    if (PickPlayOrPausedState()->SyncState(ar, cmd, a2, a3) == 0) {
+    if (PickPlayOrPausedState()->SyncState(ar, cmd, typeId, pObj) == 0) {
         return 0;
     }
-    if (m_cmdSubMgr->Serialize(ar, cmd, a2, a3) == 0) {
+    if (m_cmdSubMgr->Serialize(ar, cmd, typeId, pObj) == 0) {
         return 0;
     }
     // slot 1 (0x82430 = the derived "SerializeNodes"): the base's Visit slot, whose base
     // body (CMapMgr::Visit @0x9f7f0) proves the first arg is the CFileMemBase* it hands
     // to its own Save/Load slots.
-    if (m_tileGrid->Visit(ar, cmd, a2, a3) == 0) {
+    if (m_tileGrid->Visit(ar, cmd, typeId, pObj) == 0) {
         return 0;
     }
     // 0x93570: `push ebx/ebp/esi/edi; call 0x17da; add esp,0x10` - the __cdecl
     // scroll-state serializer 0x0ec230 (MapLogic.cpp). This 4-push/`add esp,0x10` site
     // is what PROVES its arity is 4; the callee reads only the first two.
-    if (MapSerializeCurve(ar, cmd, a2, a3) == 0) {
+    if (MapSerializeCurve(ar, cmd, typeId, pObj) == 0) {
         return 0;
     }
-    return m_scoreHud->Serialize(ar, cmd, a2, a3) != 0;
+    return m_scoreHud->Serialize(ar, cmd, typeId, pObj) != 0;
 }
 
 // -------------------------------------------------------------------------
@@ -2831,9 +2831,9 @@ i32 CGruntzMgr::SwitchToNextState() {
 // CGruntzMgr::PassClickToPlayState (0x08d780; ret 0xc). When the live state is
 // the PLAY (3) or paused (0x11) state and the gate arg a1 is clear, it forwards
 // the click into the state: notify slot 10 (FrameSlot28) with the state id, then
-// route the (a0, a2) hit through slot 30 (LoadByMode); on a hit it also notifies
+// route the (areaArg, unused) hit through slot 30 (LoadByMode); on a hit it also notifies
 // slot 9 (Vslot09) and returns 1, otherwise returns 0. When not in PLAY/paused
-// it pushes a fresh PLAY transition via TransitionState(3, a0, 0, 0).
+// it pushes a fresh PLAY transition via TransitionState(3, areaArg, 0, 0).
 // @early-stop
 // regalloc wall: in the hit block retail caches m_curState's vtbl in callee-saved ebx
 // across the two virtual calls (push ebx at entry, stack args shift +4); MSVC
@@ -2841,7 +2841,7 @@ i32 CGruntzMgr::SwitchToNextState() {
 // the residual is the vtbl-CSE register choice (see docs/patterns/
 // pin-local-for-callee-saved-reg.md - no clean source spelling for vtbl pinning).
 RVA(0x0008d780, 0x95)
-i32 CGruntzMgr::PassClickToPlayState(i32 a0, i32 a1, i32 a2) {
+i32 CGruntzMgr::PassClickToPlayState(i32 areaArg, i32 forceTransition, i32 unused) {
     i32 inPlay = 0;
     if (m_curState->Update() == GAMESTATE_PLAY) {
         inPlay = 1;
@@ -2849,15 +2849,15 @@ i32 CGruntzMgr::PassClickToPlayState(i32 a0, i32 a1, i32 a2) {
     if (m_curState->Update() == GAMESTATE_NONE) {
         inPlay = 1;
     }
-    if (inPlay && a1 == 0) {
+    if (inPlay && forceTransition == 0) {
         m_curState->FrameSlot28(m_curState->Update());
-        if (static_cast<CPlay*>(m_curState)->LoadByMode(a0, a2) == 0) {
+        if (static_cast<CPlay*>(m_curState)->LoadByMode(areaArg, unused) == 0) {
             return 0;
         }
         m_curState->Vslot09(m_curState->Update());
         return 1;
     }
-    return TransitionState(3, a0, 0, 0);
+    return TransitionState(3, areaArg, 0, 0);
 }
 
 RVA(0x0008f740, 0x46)

@@ -41,10 +41,8 @@ CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
 
 RVA(0x0007f5c0, 0x102)
 void CGruntToySprite::FireActivation(i32 id) {
-    if ((*((CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id))))
-        != 0) {
-        (this
-             ->*(*((CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))))();
+    if ((*((CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))) != 0) {
+        (this->*(*((CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -75,7 +73,8 @@ void CGruntToySprite::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CGruntToySprite::Update);
+    (*((CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CGruntToySprite::Update);
 }
 
 RVA(0x0007f920, 0x21)
@@ -114,7 +113,7 @@ i32 CGruntToySprite::Update() {
 }
 
 RVA(0x0007fa20, 0x89)
-i32 CGruntToySprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
+i32 CGruntToySprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
     switch (mode) {
         case 4:
             ar->Write(&m_cellX, 8);
@@ -125,8 +124,8 @@ i32 CGruntToySprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObje
             ar->Read(&m_lastLayer, 4);
             break;
     }
-    if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
+    if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
         return 0;
     }
-    return Chain(ar, mode, a3, a4) != 0;
+    return Chain(ar, mode, typeId, pObj) != 0;
 }

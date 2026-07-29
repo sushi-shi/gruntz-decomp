@@ -241,23 +241,9 @@ extern GruntDirectionCell g_gruntMoveDirWest;      // 0x6448f8
 extern GruntDirectionCell g_gruntMoveDirNorthWest; // 0x644918
 extern GruntDirectionCell g_gruntMoveDirCenter;    // 0x644938
 
-struct CGruntMotionBand {
-    i32 SetParams(
-        double a0,
-        double a1,
-        double a2,
-        double a3,
-        double a4,
-        double a5,
-        double a6,
-        double a7,
-        double a8,
-        double a9,
-        double a10
-    );                   // 0x58bc0 (thunk 0x2ccf)
-    void SetZ(double z); // 0x58ca0 (thunk 0x3ea9)
-};
-SIZE_UNKNOWN();
+// (CGruntMotionBand deleted 2026-07-29: a dead duplicate VIEW of CMotionState - it
+// declared SetParams @0x58bc0 + SetZ @0x58ca0, the very RVAs <Gruntz/MotionState.h>
+// already owns, and nothing in the tree ever named the type.)
 extern const double g_movingLogicMin; // 0x5f04b0 (-2147483647.0)
 extern const double g_movingLogicMax; // 0x5f04b8 (2147483646.0)
 extern u32 g_defaultZ;                // 0x5f04e8 (default-Z int)
@@ -280,7 +266,7 @@ class CGrunt : public CMovingLogic, public CWapX {
 public:
     // vtable overrides in slot order (see the base chain above):
     virtual ~CGrunt() OVERRIDE; // slot 0  @0xf2f0
-    virtual i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4)
+    virtual i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj)
         OVERRIDE; // slot 1  @0x53b80
     RVA(0x0000f2a0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
@@ -393,12 +379,12 @@ public:
     // @0x60150 (ret 8) - the grunt death dispatch: tear down the running anim state,
     // retire the HUD sprites, latch the "C" death anim-set, then switch on the death
     // type to resolve + apply the matching GRUNTZ_DEATHZ_* sprite + cue.
-    i32 LoadGruntDeathAnimations(i32 deathType, i32 a2);
+    i32 LoadGruntDeathAnimations(i32 deathType, i32 killerSlot);
     // @0x65e80 (ret 0x14, /base) - the pickup/powerup entrance-sprite loader: gate on
     // grunt-kind/entrance state, bump the per-owner pickup stats, latch the "J" anim-set,
     // then a ~90-way switch on the pickup type resolves the matching GRUNTZ_PICKUPS_*
     // sprite (megaphone runs a 2nd unit-type switch) + fires the on-screen entrance cue.
-    i32 LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5);
+    i32 LoadPickupSprites(i32 type, i32 forced, i32 a3, i32 unused, i32 countStats);
     // @0x57890 (__thiscall ret 0, /GX) - when the entrance reason is a lose-item
     // pose (0x12/0x16/0xe), spawn the one-shot "SingleAnimation" GRUNTZ_<set>_LOSEITEM
     // sprite, fire the on-screen spawn cue, then re-run the type-table step.
@@ -1029,11 +1015,29 @@ public:
     // hit / death-touch damage, the hit/block launch-cue resolve, the knockback
     // direction-octant resolver + occupied-coord recycle. (Every offset it touches is
     // this layout - m_31c, m_400..m_410.)
-    i32 LoadGruntCombatAnimations(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
+    i32 LoadGruntCombatAnimations(
+        i32 attackKind,
+        i32 struckPose,
+        i32 srcRow,
+        i32 srcCol,
+        i32 srcPxX,
+        i32 srcPxY,
+        i32 fromProjectile,
+        i32 attackerGruntKind
+    );
     // (Activate is the vtable slot-6 override, declared at the top of CGrunt.)
-    i32 UpdateArrival(i32 a1, i32 a2); // @0x62110 (ret 0x8)
+    i32 UpdateArrival(i32 walking, i32 commit); // @0x62110 (ret 0x8)
 
-    i32 StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // @0x4b370 (ret 0x18, /GX)
+    // maskA / clearFlag / maskCIn go straight into CMapMgr::SearchEdge's same-named
+    // slots (maskCIn is OR'd with m_24c first); arrivalPhase lands in m_arrivalPhase.
+    i32 StepArrivalDrop(
+        i32 pxX,
+        i32 pxY,
+        i32 arrivalPhase,
+        i32 maskA,
+        i32 clearFlag,
+        i32 maskCIn
+    );                       // @0x4b370 (ret 0x18, /GX)
     i32 StepGruntMovement(); // @0x4c170 (ret 0)         - the per-tick move step
     i32 StepAnimDispatchA(i32 a, i32 b, i32 c, i32 d); // @0x52fb0 (ret 0x10)
     // (MovingSlot16 is the vtable slot-16 override, declared at the top of CGrunt.)
@@ -1182,7 +1186,16 @@ public:
     // g_typeColl grunt anim codes (A/D/I/G/L/P/O/Q/J/N), m_10 HUD dirty bit
     // and "Grunt"/"CombatTimeout" bute section all prove `this` is a CGrunt (CUserLogic
     // is only 0x40 bytes; +0x1fc is impossible). Re-homed here.
-    i32 StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
+    i32 StepCombatReaction(
+        i32 attackKind,
+        i32 struckPose,
+        i32 srcRow,
+        i32 srcCol,
+        i32 srcPxX,
+        i32 srcPxY,
+        i32 fromProjectile,
+        i32 attackerGruntKind
+    );
 
     // The tile-switch trigger @0x4b320 (thunk 0x1640): scale the (col,row) grid pair
     // to tile-pixel centres (*0x20+0x10) and forward all six args to the engine
@@ -1190,7 +1203,14 @@ public:
     // never reads `this`, but EVERY retail call site (58 through the thunk) loads a
     // grunt into ecx first (`mov ecx,esi/ebx/ebp` / `mov ecx,[esp+..]`), which only a
     // thiscall member reproduces. Body in Grunt.cpp (callee-cleans 0x18 either way).
-    i32 TileSwitch(i32 col, i32 row, i32 flags, i32 a4, i32 a5, i32 a6); // 0x4b320 (thunk 0x1640)
+    i32 TileSwitch(
+        i32 col,
+        i32 row,
+        i32 arrivalPhase,
+        i32 maskA,
+        i32 clearFlag,
+        i32 maskCIn
+    ); // 0x4b320
 
     // The toy/vehicle grunt sprite loader - latch the kind (m_198),
     // reset m_moveMode, seed the m_2b0/m_2c0 region blocks per toy kind, build the
@@ -1269,8 +1289,9 @@ SIZE(0x4);
 // reads is reason-vs-direction; the old CGrunt* declaration had no caller behind it.
 bool SameCellTag(const GruntEntranceCell* a, const GruntDirectionCell* b);
 
-void GruntRecycleCoords(CGrunt* g);                                           // 0x343f0
-void __stdcall TileSwitch(CGrunt* g, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x29af0
+void GruntRecycleCoords(CGrunt* g); // 0x343f0
+void __stdcall
+TileSwitch(CGrunt* g, i32 col, i32 row, i32 burnRandA, i32 burnRandB, i32 unused); // 0x29af0
 
 extern char s_codeD[]; // "D" (0x0060cca4)
 extern char s_codeF[]; // "F" (0x0060d2e8)

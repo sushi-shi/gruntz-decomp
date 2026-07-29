@@ -272,10 +272,10 @@ CWwdGameObjectA::~CWwdGameObjectA() {
 }
 
 RVA(0x0015b940, 0x38)
-i32 CWwdGameObjectA::Setup(i32 a1, i32 a2, i32 a3, AnimWorkerObj* tmpl) {
+i32 CWwdGameObjectA::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
     m_19c = 0;
     m_1a0.Construct(this);
-    return CGameObject::Setup(a1, a2, a3, tmpl);
+    return CGameObject::Setup(x, y, sortKey, tmpl);
 }
 
 RVA(0x0015ba20, 0x1c)
@@ -327,8 +327,8 @@ CWwdGameObjectF::~CWwdGameObjectF() {
 }
 
 RVA(0x0015bc30, 0x16)
-i32 CWwdGameObjectF::SetupDeferred(i32 a3, AnimWorkerObj* tmpl) {
-    return CGameObject::Setup(0, 0, a3, tmpl);
+i32 CWwdGameObjectF::SetupDeferred(i32 sortKey, AnimWorkerObj* tmpl) {
+    return CGameObject::Setup(0, 0, sortKey, tmpl);
 }
 
 RVA(0x0015bcd0, 0xb)
@@ -404,9 +404,9 @@ CWwdGameObjectC::~CWwdGameObjectC() {
 }
 
 RVA(0x0015c1d0, 0x26)
-i32 CWwdGameObjectC::SetupFlagged(i32 a1, i32 a2, i32 a3, AnimWorkerObj* tmpl, i32 flag) {
+i32 CWwdGameObjectC::SetupFlagged(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl, i32 flag) {
     m_dotColor = static_cast<u8>(flag); // the C kind's own +0x18c byte - the reinterpret dies
-    return CGameObject::Setup(a1, a2, a3, tmpl);
+    return CGameObject::Setup(x, y, sortKey, tmpl);
 }
 
 // 0x15c290: bind the cursor to the wide game object that embeds it (+0x1a0) and seed

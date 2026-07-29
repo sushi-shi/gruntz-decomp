@@ -104,7 +104,7 @@ i32 CBoomerang::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i3
 // archive stream (mode 4 = Write @+0x30, mode 7 = Read @+0x2c), then chain the base
 // CProjectile serialize and booleanize its result.
 RVA(0x000e15d0, 0x155)
-i32 CBoomerang::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
+i32 CBoomerang::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }
@@ -130,5 +130,5 @@ i32 CBoomerang::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a
             ar->Write(&m_launched, 4);
             break;
     }
-    return CProjectile::SerializeMove(ar, mode, a3, a4) ? 1 : 0;
+    return CProjectile::SerializeMove(ar, mode, typeId, pObj) ? 1 : 0;
 }

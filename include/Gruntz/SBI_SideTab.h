@@ -38,17 +38,17 @@ public:
     i32 BuildStatzTabStatusBar(
         CStatusBarMgr* parent,
         CDDrawSurfaceMgr* host,
-        i32 p3,
-        i32 p4,
-        i32 p5,
-        i32 p6,
-        i32 p7,
-        i32 p8,
-        const char* p9, // the asset key - ACCEPTED BUT UNUSED (the two lookups below are
-                        // keyed on hardcoded TABONLEFT/TABONRIGHT literals)
-        i32 p10,
-        i32 p11,
-        i32 p12,
+        i32 cmd,
+        i32 tab,
+        i32 left,
+        i32 top,
+        i32 right,
+        i32 bottom,
+        const char* unused, // the asset key - ACCEPTED BUT UNUSED (the two lookups below
+                            // are keyed on hardcoded TABONLEFT/TABONRIGHT literals)
+        i32 rowIndex,
+        i32 colIndex,
+        i32 enabled,
         i32 onLeft
     ); // 0xe9600
 

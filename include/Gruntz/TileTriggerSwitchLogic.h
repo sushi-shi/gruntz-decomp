@@ -19,8 +19,20 @@ public:
     // build signature is corroborated by CheckpointSwitchBuild.cpp's BaseBuild view.
     // arg0 is the owning CONTAINER (Setup stamps it into m_owner - the same object
     // LoadElement stamps there).
-    virtual i32
-    Setup(CTileTriggerContainer* owner, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
+    // Setup / BuildSmall slot map (proven by Setup's own stores + the one caller,
+    // CTileTriggerContainer::AddSwitchLogic): typeId->m_typeId, tileX->m_08,
+    // tileY->m_key0c, cellKey->m_key1 (the (x<<8)|y FindChild key), linkGate->m_linkGate.
+    // a8/a9 land in m_18/m_28, which nothing in the tree READS - left unnamed.
+    virtual i32 Setup(
+        CTileTriggerContainer* owner,
+        i32 typeId,
+        i32 tileX,
+        i32 tileY,
+        i32 cellKey,
+        i32 linkGate,
+        i32 a8,
+        i32 a9
+    );
     // slot 1 -> 0x0022e8 (body in an unmatched engine TU). Its real signature is recovered
     // from the ONE reconstructed override, CCheckpointTriggerSwitchLogic::BuildSmall
     // (0x112a50, `sema class` says slot 1, origin CTileTriggerSwitchLogic): 9 args, returns
@@ -28,12 +40,12 @@ public:
     // derived vtable instead of the override. arg0 chains straight into Setup's owner slot.
     virtual i32 BuildSmall(
         CTileTriggerContainer* owner,
-        i32 a2,
-        i32 a3,
-        i32 a4,
-        i32 a5,
+        i32 typeId,
+        i32 tileX,
+        i32 tileY,
+        i32 cellKey,
         const RECT* rect,
-        i32 a7,
+        i32 linkGate,
         i32 a8,
         i32 a9
     );
@@ -71,7 +83,7 @@ public:
     // ret 0x10; this flows through in ecx untouched to the two state helpers -
     // which is why the old `__stdcall Gate113860(obj,...)` free-fn model scored
     // only ~93% (its callers dropped retail's `mov ecx,<element>`).
-    i32 ValidateByType(CFileMemBase* s, i32 mode, i32 a3, i32 a4); // 0x113860
+    i32 ValidateByType(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj); // 0x113860
     i32 SaveState(CFileMemBase* s); // 0x1138b0 (write via slot +0x30; was the
                                     // "CTileTriggerData::LoadV4" view - same fields)
     i32 LoadState(CFileMemBase* s); // 0x1139a0 (read via slot +0x2c)
@@ -157,12 +169,12 @@ public:
     // the caller's 24-dword block into the BASE's m_block (+0x2c) - `rep movsd` ecx=0x18.
     virtual i32 BuildSmall(
         CTileTriggerContainer* owner,
-        i32 a2,
-        i32 a3,
-        i32 a4,
-        i32 a5,
+        i32 typeId,
+        i32 tileX,
+        i32 tileY,
+        i32 cellKey,
         const RECT* rect,
-        i32 a7,
+        i32 linkGate,
         i32 a8,
         i32 a9
     ) OVERRIDE;

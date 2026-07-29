@@ -243,11 +243,11 @@ public:
     // exit). Look up the cell, walk its trigger/switch sub-objects, dispatch each logic
     // and update the cell state. (__stdcall: ret 0x1c / 0x1c.) Reconstructed to plateau.
     i32 ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28);
-    i32 ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c);
+    i32 ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY);
 
     // 0x6e800: ClearCell(col, row, ...) - reset a cell's animation/trigger sub-state and
     // string-compare its config name, then re-init. (__stdcall: ret 0x14.)
-    i32 ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20);
+    i32 ClearCell(i32 col, i32 row, i32 arrivalPhase, i32 worldX, i32 worldY);
 
     // 0x6ea00: HitTestApply(x, y, span) - hit-test then, when the magic kind, compare the
     // config string and adjust the world score + status item. (__stdcall: ret 0xc.)
@@ -297,11 +297,13 @@ public:
 
     // 0x79520: ResetGroup - drain the magic-group cells, clearing each cell's sub-state and
     // recycling its record node, then refresh. Reconstructed to plateau. (__thiscall.)
-    i32 ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28, i32 a2c);
+    // args 3-5 are accepted but never read by the body; `selector` (nonzero) picks the
+    // report+spawn stanza directly, `spawnCursor` gates the LightFx target-cursor spawn.
+    i32 ResetGroup(i32 x, i32 y, i32 a1c, i32 a20, i32 a24, i32 selector, i32 spawnCursor);
 
     // 0x798d0: DestroyGroup - /GX destruct of a cell group (member CString temporaries on
     // teardown). Reconstructed to plateau (eh sibling TU).
-    i32 DestroyGroup(i32 a1, i32 a2, i32 a3, i32 a4);
+    i32 DestroyGroup(i32 screenX, i32 screenY, i32 worldY, i32 worldX);
 
     // 0x79b80: ReinitGroup - /GX re-init driver with a CString config-name temporary (eh
     // sibling TU). Reconstructed to plateau.
@@ -430,7 +432,7 @@ public:
     // a placeholder view of THIS one: its only member m_22c (the world holder) IS
     // m_level, its Prepare thunk 0x400c IS CombatCue @0x7b930, it was "reached
     // through the registry's +0x68 slot" (m_cmdGrid == this class) and the body
-    i32 BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4); // 0x7b440
+    i32 BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag); // 0x7b440
     // 0x6e7e0: the HUD/pixel grunt probe (5-byte always-0 stub); body in
     // TriggerMgrGrid.cpp (ex ?FindAtPixel@CGruntTileMgr@@).
     CGrunt* FindAtPixel(i32 x, i32 y); // 0x6e7e0
@@ -473,7 +475,7 @@ public:
 
     // 0x7a3f0: the lazy "GAME_TOYBOX" in-game-icon loader (bails when an icon already
     // sits on the tile). Body in TriggerMgr.cpp (ex ?LoadToyBoxIcon@EngineLabelBacklog).
-    i32 LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5);
+    i32 LoadToyBoxIcon(i32 x, i32 y, i32 col, i32 kind, i32 moveKind);
 
     // --- data layout (recovered from the raw this+offset field reads across both TUs) ---
     // The three embedded MFC containers (base CPtrList @0, record CPtrList @0x240, byte-table
@@ -564,7 +566,7 @@ public:
 };
 SIZE_UNKNOWN();
 
-i32 __stdcall SpawnTileFx(i32 px, i32 py, i32 kind);
+i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 anchorIndex);
 
 extern "C" void IconClassInitB(); // 0x402bad
 extern "C" void IconClassInitA(); // 0x40288d

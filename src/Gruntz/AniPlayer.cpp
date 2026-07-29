@@ -107,7 +107,7 @@ i32 CAniPlayer::RenderCel() {
 // the serialize cluster.
 // ===========================================================================
 RVA(0x000e5c90, 0x87)
-i32 CAniPlayer::Serialize(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
+i32 CAniPlayer::Serialize(CFileMemBase* arc, i32 mode, i32 typeId, i32 pObj) {
     if (arc == 0) {
         return 0;
     }
@@ -117,18 +117,19 @@ i32 CAniPlayer::Serialize(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) {
     // no RTTI row, so whether 0xe5c90 is CAniPlayer's own slot 1 is unproven. Naming it
     // SerializeFields would give it the base virtual's exact name+signature and silently
     // make it an override (C++ implicit virtual), claiming a slot on no evidence.
-    if (CSBI_ImageSetAni::SerializeFields(static_cast<CFileMemBase*>(arc), mode, a3, a4) == 0) {
+    if (CSBI_ImageSetAni::SerializeFields(static_cast<CFileMemBase*>(arc), mode, typeId, pObj)
+        == 0) {
         return 0;
     }
     switch (mode) {
-    case 7:
-        arc->Read(&m_start64, 8);
-        arc->Read(&m_window64, 8);
-        break;
-    case 4:
-        arc->Write(&m_start64, 8);
-        arc->Write(&m_window64, 8);
-        break;
+        case 7:
+            arc->Read(&m_start64, 8);
+            arc->Read(&m_window64, 8);
+            break;
+        case 4:
+            arc->Write(&m_start64, 8);
+            arc->Write(&m_window64, 8);
+            break;
     }
     return 1;
 }

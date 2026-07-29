@@ -25,13 +25,13 @@ enum {
 
 class CWorldSoundSet {
 public:
-    i32 Init(void* world, i32 a2); // 0x00b5e0
-    void Teardown();               // 0x00b660
-    void Restart(i32 a1);          // 0x00bc30
-    void Stop();                   // 0x00bc80
-    void Resume();                 // 0x00bcf0
-    void Retune(i32 x, i32 y);     // 0x00bd60  push the listener position to every channel
-    void Deactivate();             // 0x00b620
+    i32 Init(void* world, i32 volume); // 0x00b5e0
+    void Teardown();                   // 0x00b660
+    void Restart(i32 volume);          // 0x00bc30
+    void Stop();                       // 0x00bc80
+    void Resume();                     // 0x00bcf0
+    void Retune(i32 x, i32 y);         // 0x00bd60  push the listener position to every channel
+    void Deactivate();                 // 0x00b620
     CWorldSoundSet();  // inline: m_list(0xa), m_world=0, m_04=0x64 (::operator new = RezAlloc)
     ~CWorldSoundSet(); // 0x085ed0
 
@@ -39,32 +39,39 @@ public:
     // run its one-time Init, and (on success) append it to m_list. The `this` is
     // this CWorldSoundSet owner (the rtti-vptr heuristic once mislabeled them onto
     // the channel classes whose vtables their inlined ctors stamp).
-    CAmbientSound* CreateAmbient6(const char* key, i32 a1, RECT* box, i32 a3, i32 a4);
-    CAmbientSound* CreateAmbient5(DirectSoundMgr* mgr, i32 a1, RECT* box, i32 a3, i32 a4);
-    CAmbientPosSound* CreatePos6(const char* key, i32 a1, AmbientPoint* pos, i32 a3, i32 a4);
-    CAmbientPosSound* CreatePos5(DirectSoundMgr* mgr, i32 a1, AmbientPoint* pos, i32 a3, i32 a4);
+    // `level`/`scaleB` land in the channel's m_level / m_scaleB (m_scaleA gets this
+    // set's own m_volume, i.e. the master); the trailing arg is read by no body.
+    CAmbientSound* CreateAmbient6(const char* key, i32 level, RECT* box, i32 scaleB, i32 unused);
+    CAmbientSound*
+    CreateAmbient5(DirectSoundMgr* mgr, i32 level, RECT* box, i32 scaleB, i32 unused);
+    CAmbientPosSound*
+    CreatePos6(const char* key, i32 level, AmbientPoint* pos, i32 scaleB, i32 unused);
+    CAmbientPosSound*
+    CreatePos5(DirectSoundMgr* mgr, i32 level, AmbientPoint* pos, i32 scaleB, i32 unused);
+    // The four interval args feed CRandomAmbientSound::Init2(lo, hi, lo2, hi2).
     CRandomAmbientSound* CreateRandom(
         DirectSoundMgr* mgr,
-        i32 a1,
+        i32 level,
         RECT* box,
-        i32 a3,
-        i32 a4,
-        i32 a5,
-        i32 a6,
-        i32 a7,
-        i32 a8
+        i32 scaleB,
+        i32 intervalLoA,
+        i32 intervalHiA,
+        i32 intervalLoB,
+        i32 intervalHiB,
+        i32 unused
     );
-    // 0xba00: CRandomAmbientSound with a validated (x,y) bounding box; ::operator new.
+    // 0xba00: the key-resolving CreateRandom twin; rejects either INVERTED interval
+    // range (hi < lo, unsigned) before allocating. ::operator new.
     CRandomAmbientSound* CreateRandomBox(
         const char* key,
-        i32 a1,
+        i32 level,
         RECT* box,
-        i32 a3,
-        i32 a4,
-        i32 a5,
-        i32 a6,
-        i32 a7,
-        i32 a8
+        i32 scaleB,
+        i32 intervalLoA,
+        i32 intervalHiA,
+        i32 intervalLoB,
+        i32 intervalHiB,
+        i32 unused
     );
 
     CRandomAmbientWorld* m_world; // +0x00
