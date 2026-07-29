@@ -16,11 +16,13 @@
 
 #include <rva.h>
 
-#include <string.h>                       // inline strcmp: the ctor's icon-name dispatch chain
-#include <Bute/ButeMgr.h>                 // CButeTree (the bute store Setup queries)
-#include <Wap32/ZVec.h>                   // _zdvec (the command-dispatch tables)
-#include <Gruntz/LogicFnTable.h>          // the shared CActReg dispatch-table shape
-#include <DDrawMgr/DDrawChildGroup.h>     // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <string.h>                   // inline strcmp: the ctor's icon-name dispatch chain
+#include <Bute/ButeMgr.h>             // CButeTree (the bute store Setup queries)
+#include <Wap32/ZVec.h>               // _zdvec (the command-dispatch tables)
+#include <Gruntz/LogicFnTable.h>      // the shared CActReg dispatch-table shape
+#include <DDrawMgr/DDrawChildGroup.h> // the ONE CDDrawChildGroup (CreateSprite @0x1597b0)
+#include <Gruntz/AniElement.h>        // CAniElement complete (KeyOfValue takes the CObject upcast)
+#include <DDrawMgr/DDrawSubMgrLeaf.h> // the anim registry (m_10 map + KeyOfValue)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // world sound registry and its keyed asset map
 
 #include <Gruntz/Grunt.h>      // canonical CGrunt (LoadPickupSprites/LoadGruntTypeTable)
@@ -983,18 +985,161 @@ i32 CInGameIcon::Reposition() {
 // (repne scas / rep movs), a g_serialCounter bump, and two registry CMap lookups
 // (0x1b8438 / 0x1b8760) re-binding the +0x40/+0x54 ids.
 //
+// The span is 0x382 (898 B), NOT Ghidra's 0x31f (799): the body's branches reach 0x99000
+// and it runs on to a final `ret 0x10` at 0x9900f with nop padding to 0x99020. With the
+// short span the delinked target was truncated mid-instruction, which is what the old
+// stub called blocker (1).
+//
+// The opening block is CWapX::Chain (0x8c00) EXPANDED IN PLACE - same key buffer, same
+// m_blob, same m_34/m_38/m_3c seeds, same `m_3c->m_ownerCtx->m_animRegistry->m_10`
+// lookup - not a call to it. Retail duplicated it here rather than chaining, so it is
+// spelled out below; making Chain inline instead would reshape its real callers
+// (CAniCycle::SerializeMove @0xf470 and friends), which `call 0x8c00` it.
 // @early-stop
-// NOT reconstructed - a ~900 B dense CArchive/CString/CMap marshaler whose stack-CString
-// temps force a /GX EH-state schedule (the eh-state-numbering + outparam-zeroinit walls).
-// Blocker (1) of the old note - "the recorded boundary is wrong ... a faithful
-// reconstruction needs the corrected boundary first" - IS NOW FIXED. Ghidra's 0x31f (799)
-// really was short: the body's own branches reach 0x99000, and disassembling past the old
-// span showed it running on to a final `ret 0x10` at 0x9900f with nop padding to 0x99020.
-// True span 0x382 (898 B), set below, so the delinked target is no longer truncated and
-// the disassembly now terminates cleanly. Only the reconstruction itself is left.
+// 89.97%. Everything up to and including the two timer pairs is byte-exact. The residue
+// is one stack-allocator choice plus its fallout: retail puts the CHAIN-half key buffer
+// at the HIGH slot (esp+0x9c) and the tail's at the LOW one (esp+0x1c); cl gives us the
+// mirror, so roughly ten `lea`/`push` sites differ only in their displacement
+// (disp8 vs disp32) and the CString temp lands 4 bytes off. Not source-steerable:
+// measured both declaration orders and a point-of-use declaration for the second buffer
+// - all three produce the identical layout, because the two arrays are the SAME SIZE and
+// cl orders equal-size arrays by which has its address taken first, which the algorithm
+// fixes. (Declaration order DOES control it when the sizes differ - see
+// CPlay::DrawDebugStatsFull @0xcf0a0, where buf/0x200 and two 0x40 scratches land in
+// declaration order.) The last small item is `mov edi,[eax]` vs `mov edi,[esp+0x10]`
+// after each Key/FindKeyOfValue: retail reads the returned CString's m_pchData straight
+// off the return-buffer pointer. Consuming the temp in place does emit that, but gives
+// the two call sites separate 4-byte slots where retail shares one, costing more frame
+// than it saves (measured: 87.47% vs 87.13% at the time).
 RVA(0x00098c90, 0x382)
-i32 CInGameIcon::SerializeMove(CFileMemBase*, i32, i32, CGameObject*) {
-    return 0;
+i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj) {
+    // TWO 0x80 key buffers, not one - retail's frame is 0x10c and holds both (the
+    // inlined-Chain half formats through the upper one at esp+0x9c, the icon tail
+    // through the lower at esp+0x1c). Sharing one costs 0x80 of frame and shifts every
+    // local. Every mode test below is a SWITCH, not an if/else-if ladder: retail emits
+    // `cmp esi,4; je <store>; cmp esi,7; jne <skip>` - the 4-arm compared first, the
+    // 7-arm laid out first - which is what cl gives a switch whose cases read 7 then 4.
+    char chainName[0x80];
+
+    if (ar == 0) {
+        return 0;
+    }
+    if (CUserLogic::SerializeMove(ar, mode, a3, obj) == 0) {
+        return 0;
+    }
+
+    // --- the inlined CWapX::Chain half ---
+    switch (mode) {
+        case 7: {
+            ar->Read(chainName, 0x80);
+            ar->Read(m_blob, 0x10);
+            m_34 = obj;
+            m_38 = static_cast<CWwdGameObjectA*>(obj);
+            m_3c = obj->m_7c;
+            if (strlen(chainName) == 0) {
+                m_value = 0;
+            } else {
+                void* val = 0;
+                m_3c->m_ownerCtx->m_animRegistry->m_10.Lookup(chainName, val);
+                m_value = static_cast<CAniElement*>(val);
+            }
+            break;
+        }
+        case 4: {
+            memset(chainName, 0, sizeof(chainName));
+            if (m_value != 0) {
+                CString nm = m_3c->m_ownerCtx->m_animRegistry->KeyOfValue(m_value);
+                strcpy(chainName, static_cast<const char*>(nm));
+            }
+            ar->Write(chainName, 0x80);
+            ar->Write(m_blob, 0x10);
+            break;
+        }
+    }
+
+    // --- the two 64-bit timer pairs, each walked by ONE advancing cursor ---
+    // Retail hoists a single `lea edi,[this+N]` ABOVE the mode compare and steps it with
+    // `add edi,8`; two separate `&member` expressions emit two leas instead.
+    i32* drift = &m_driftPos;
+    switch (mode) {
+        case 7:
+            ar->Read(drift, 8);
+            drift += 2;
+            ar->Read(drift, 8);
+            break;
+        case 4:
+            ar->Write(drift, 8);
+            drift += 2;
+            ar->Write(drift, 8);
+            break;
+    }
+    i32* idle = &m_68;
+    switch (mode) {
+        case 7:
+            ar->Read(idle, 8);
+            idle += 2;
+            ar->Read(idle, 8);
+            break;
+        case 4:
+            ar->Write(idle, 8);
+            idle += 2;
+            ar->Write(idle, 8);
+            break;
+    }
+
+    // --- the icon's own tail: the sound cue by name + the glitter sprite by id ---
+    char tailName[0x80];
+    switch (mode) {
+        case 4: {
+            memset(tailName, 0, sizeof(tailName));
+            if (m_cue != 0) {
+                CString nm = m_3c->m_ownerCtx->m_soundRegistry->FindKeyOfValue(m_cue);
+                strcpy(tailName, static_cast<const char*>(nm));
+            }
+            ar->Write(tailName, 0x80);
+            g_serialCounter++;
+            i32 id = 0;
+            if (m_glitterSprite != 0) {
+                id = m_glitterSprite->m_188;
+            }
+            ar->Write(&id, 4);
+            break;
+        }
+        case 7: {
+            ar->Read(tailName, 0x80);
+            if (strlen(tailName) == 0) {
+                m_cue = 0;
+            } else {
+                void* val = 0;
+                m_3c->m_ownerCtx->m_soundRegistry->m_10.Lookup(tailName, val);
+                m_cue = static_cast<LeafCue*>(val);
+            }
+            g_serialCounter++;
+            i32 id = 0;
+            ar->Read(&id, 4);
+            void* found = 0;
+            CWwdGameObjectA* sprite = 0;
+            if (MapLookupById(m_3c->m_ownerCtx->m_childGroup->m_map48, id, found) != 0 && found != 0
+                && static_cast<CGameObject*>(found)->GetClassId() == CLASSID_SERIALREF) {
+                sprite = static_cast<CWwdGameObjectA*>(found);
+            }
+            m_glitterSprite = sprite;
+            if (sprite != 0) {
+                break;
+            }
+            // A missing sprite is only tolerated when no id was stored at all.
+            if (id != 0) {
+                return 0;
+            }
+            break;
+        }
+        case 8:
+            if (HandleInput() == 0) {
+                return 0;
+            }
+            break;
+    }
+    return 1;
 }
 
 // CInGameText::CInGameText @0x099110 - fold the shared CUserLogic(obj) init, then
