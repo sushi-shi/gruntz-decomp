@@ -2436,7 +2436,11 @@ CString CNetSessionNode::GetName() {
 // table). objdiff mis-scores the inline .rdata table region against the
 // differently-named switchdataD_004ba2xx symbols. See
 // docs/patterns/jumptable-data-overlap.md (topic:scoring-artifact). Logic correct.
-RVA(0x000ba1a0, 0x83)
+// The span is the BASE COMDAT size (0x1a0), not the 0x83 code length - see the same
+// device on CNetSession::DispatchMsg @0xbf7c0 and MorphByTool @0x113420. With a
+// code-only span objdiff and the delinked carve disagree on the length and the
+// function is not scored at all. The next annotated function is 0xba3b0.
+RVA(0x000ba1a0, 0x1a0)
 i32 CMulti::HandleControlMsg(CNetCtrlMsg* msg, i32 arg2) {
     if (msg == 0) {
         return 0;
