@@ -2,8 +2,8 @@
 #define GRUNTZ_CWORMHOLE_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h> // CUserLogic base (CWormhole : CUserLogic)
-#include <Gruntz/ActReg.h> // CActReg (extern below)
+#include <Gruntz/UserLogic.h>    // CUserLogic base (CWormhole : CUserLogic)
+#include <Gruntz/ActReg.h>       // CActReg (extern below)
 #include <Gruntz/LogicFnTable.h> // CActReg (for the extern below)
 
 class CWormhole : public CUserLogic, public CWapX {
@@ -22,22 +22,17 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE; // slot 4: 0x040050 (logic-command
                                                   // dispatch via g_wormholeDispatch)
     CWormhole(CGameObject* obj);                  // 0x03fc70 (1-arg leaf ctor, /GX frame)
-    i32 SpawnPartners();                         // 0x0403b0
+    i32 SpawnPartners();                          // 0x0403b0
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 };
 SIZE_UNKNOWN();
-
 
 // The act-table slot type (the registry stores CUserLogic member pointers).
 typedef i32 (CUserLogic::*CActHandler)(); // == CActHandler (the slot type)
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
-extern "C" void TeleporterActB(); // 0x403846 (teleporter "B")
-extern "C" void TeleporterActA(); // 0x40187a (teleporter "A")
-extern "C" void PuddleActB();     // 0x403418 (puddle "B")
-extern "C" void PuddleActA();     // 0x4021f8 (puddle "A")
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

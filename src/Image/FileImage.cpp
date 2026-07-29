@@ -103,8 +103,9 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
         return 0;
     }
 
-    // bfOffBits is the format's own byte offset from the start of the file image
-    void* run = reinterpret_cast<u8*>(img) + img->fh.bfOffBits;
+    // bfOffBits is a RUNTIME offset the file itself carries (from the start of the
+    // image), so the bits sit at no fixed member - the byte cursor is byte-forced.
+    void* run = reinterpret_cast<u8*>(img) + img->fh.bfOffBits; // byte-forced
     if (convert) {
         if (Blit(run, srcFmt, pal, 2) == 0) {
             return 0;
@@ -147,9 +148,10 @@ i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode
 
 RVA(0x00143fc0, 0x142)
 i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
-    // BMP: the info header sits inline in the read buffer - byte-forced
-    BITMAPINFOHEADER* ih =
-        reinterpret_cast<BITMAPINFOHEADER*>(static_cast<char*>(buf) + sizeof(BITMAPFILEHEADER));
+    // The read buffer IS a BmpFileImage, so the info header is a named member -
+    // no byte arithmetic needed to skip the 14-byte file header.
+    BmpFileImage* bmp = static_cast<BmpFileImage*>(buf);
+    BITMAPINFOHEADER* ih = &bmp->info.bmiHeader;
     i32 width = ih->biWidth;
     i32 bitcount = ih->biBitCount;
     i32 height = ih->biHeight;
@@ -228,7 +230,7 @@ i32 CDDSurface::LoadBmp(CDDrawPtrCollections* pal, char* path) {
 
 RVA(0x00144270, 0xd2)
 i32 CDDSurface::Load(CDDrawPtrCollections* a, char* name, i32 c) {
-    HRSRC hr = FindResourceA(g_resModule, name, reinterpret_cast<LPCSTR>(2));
+    HRSRC hr = FindResourceA(g_resModule, name, RT_BITMAP);
     if (!hr) {
         return 0;
     }

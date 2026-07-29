@@ -44,10 +44,12 @@ namespace Utils {
             u32* pValueBufferSize,
             char* szDefault
         );
+        // The in/out byte count IS the registry API's LPDWORD - typed so `&size`
+        // binds straight through with no pun.
         void* GetValueBinary(
             char* szValueName,
             void* pBuffer,
-            u32* pBufferSize,
+            DWORD* pBufferSize,
             void* pDefault,
             u32 defaultSize
         );

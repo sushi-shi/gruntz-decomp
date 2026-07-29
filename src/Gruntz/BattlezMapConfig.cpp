@@ -775,7 +775,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             if (st == 3 && unit->m_2d8 == 0) {
                                 unit->m_2d8 = 0xa;
                                 if (unit->CoordCount() != 0) {
-                                    void* pos = unit->m_31c.GetHeadPosition();
+                                    POSITION pos = unit->m_31c.GetHeadPosition();
                                     if (pos != 0) {
                                         do {
                                             void* d = unit->CoordListOps()->NextData(pos);
@@ -879,7 +879,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 unit->m_2d8 = 4;
                                 unit->m_arrivalRow = -1;
                                 if (unit->CoordCount() != 0) {
-                                    void* pos = unit->m_31c.GetHeadPosition();
+                                    POSITION pos = unit->m_31c.GetHeadPosition();
                                     if (pos != 0) {
                                         do {
                                             void* d = unit->CoordListOps()->NextData(pos);
@@ -904,7 +904,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 unit->m_2d8 = 4;
                                 unit->m_arrivalRow = -1;
                                 if (unit->CoordCount() != 0) {
-                                    void* pos = unit->m_31c.GetHeadPosition();
+                                    POSITION pos = unit->m_31c.GetHeadPosition();
                                     if (pos != 0) {
                                         do {
                                             void* d = unit->CoordListOps()->NextData(pos);
@@ -928,7 +928,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 i32 d8 = unit->m_2d8;
                                 if (d8 != 6 && d8 != 3) {
                                     if (unit->CoordCount() != 0) {
-                                        void* pos = unit->m_31c.GetHeadPosition();
+                                        POSITION pos = unit->m_31c.GetHeadPosition();
                                         if (pos != 0) {
                                             do {
                                                 void* d = unit->CoordListOps()->NextData(pos);
@@ -955,7 +955,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 unit->m_2d8 = 4;
                                 unit->m_arrivalRow = -1;
                                 if (unit->CoordCount() != 0) {
-                                    void* pos = unit->m_31c.GetHeadPosition();
+                                    POSITION pos = unit->m_31c.GetHeadPosition();
                                     if (pos != 0) {
                                         do {
                                             void* d = unit->CoordListOps()->NextData(pos);
@@ -1752,7 +1752,7 @@ resetEntrance: {
 
 arriveHead:
     if (unit->CoordCount() != 0) {
-        void* pos = unit->m_31c.GetHeadPosition();
+        POSITION pos = unit->m_31c.GetHeadPosition();
         if (pos != 0) {
             do {
                 void* d = unit->CoordListOps()->NextData(pos);
@@ -2002,10 +2002,11 @@ colHitB: {
 }
 
 RVA(0x00029a30, 0x10)
-void*& CGruntCoordList::NextData(void*& pos) {
-    char* cur = static_cast<char*>(pos);
-    pos = *reinterpret_cast<void**>(cur);
-    return *reinterpret_cast<void**>(cur + 8);
+void*& CGruntCoordList::NextData(POSITION& pos) {
+    // Literally CPtrList::GetNext, kept OUT-OF-LINE: `cur = pos; pos = cur->pNext;
+    // return cur->data`. Inlining MFC's accessor into this one body reproduces the
+    // 0x10-byte retail function exactly and retires the two raw-node puns.
+    return CPtrList::GetNext(pos);
 }
 
 RVA(0x00029a50, 0x15)
@@ -2513,12 +2514,11 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                     unit->m_31c.RemoveAll();
                 }
                 // AddTail every route node's coord onto the unit's coord list.
-                CoordNode* q = CoordHeadOf(list);
-                while (q != 0) {
-                    CoordNode* c3 = q;
-                    q = q->m_next;
-                    if (c3->m_coord != 0) {
-                        unit->m_31c.AddTail(c3->m_coord);
+                POSITION qp = list.GetHeadPosition();
+                while (qp != 0) {
+                    Coord* c3 = static_cast<Coord*>(list.GetNext(qp));
+                    if (c3 != 0) {
+                        unit->m_31c.AddTail(c3);
                     }
                 }
                 // Re-clamp the board dirty-rect to the board bounds.
@@ -4384,11 +4384,9 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                                     }
                                     unit->m_31c.RemoveAll();
                                 }
-                                CoordNode* p = CoordHeadOf(list);
-                                while (p != 0) {
-                                    CoordNode* cur = p;
-                                    p = p->m_next;
-                                    unit->m_31c.AddTail(cur->m_coord);
+                                POSITION pp = list.GetHeadPosition();
+                                while (pp != 0) {
+                                    unit->m_31c.AddTail(list.GetNext(pp));
                                 }
                                 cand->m_defenderState = 0;
                                 unit->m_defenderState = 5;
@@ -4814,12 +4812,11 @@ i32 CBattlezMapConfig::RouteUnitTo(CGrunt* unit, i32 gx, i32 gy, i32 a4, i32 a5,
         unit->m_31c.RemoveAll();
     }
     // AddTail every new path node's coord onto the unit's path list.
-    CoordNode* p = CoordHeadOf(list);
-    while (p != 0) {
-        CoordNode* cur = p;
-        p = p->m_next;
-        if (cur->m_coord != 0) {
-            unit->m_31c.AddTail(cur->m_coord);
+    POSITION pp = list.GetHeadPosition();
+    while (pp != 0) {
+        Coord* cur = static_cast<Coord*>(list.GetNext(pp));
+        if (cur != 0) {
+            unit->m_31c.AddTail(cur);
         }
     }
     list.RemoveAll();
@@ -4908,12 +4905,11 @@ i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, i32 gx, i32 gy, i32 a4, i32
         unit->m_31c.RemoveAll();
     }
     // AddTail every new route node's coord onto the unit's path list.
-    CoordNode* q = CoordHeadOf(list);
-    while (q != 0) {
-        CoordNode* cur5 = q;
-        q = q->m_next;
-        if (cur5->m_coord != 0) {
-            unit->m_31c.AddTail(cur5->m_coord);
+    POSITION qp = list.GetHeadPosition();
+    while (qp != 0) {
+        Coord* cur5 = static_cast<Coord*>(list.GetNext(qp));
+        if (cur5 != 0) {
+            unit->m_31c.AddTail(cur5);
         }
     }
     list.RemoveAll();
@@ -5312,11 +5308,9 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
         unit->m_31c.RemoveAll();
     }
     // AddTail every new path node's coord onto the unit's path list.
-    CoordNode* p = CoordHeadOf(list);
-    while (p != 0) {
-        CoordNode* cur = p;
-        p = p->m_next;
-        unit->m_31c.AddTail(cur->m_coord);
+    POSITION pp = list.GetHeadPosition();
+    while (pp != 0) {
+        unit->m_31c.AddTail(list.GetNext(pp));
     }
     Coord* tail = (unit->CoordTail())->m_coord;
     unit->m_entrancePxX = (tail->m_x << 5) + 0x10;
@@ -5471,7 +5465,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
             g->GetScreenPos((&here));
             ::TileSwitch(g, here.m_x >> 5, here.m_y >> 5, m_ac, m_b0, -1);
             if (g->CoordCount() > m_98 + m_94 && g->CoordCount() != 0) {
-                void* pos = g->m_31c.GetHeadPosition();
+                POSITION pos = g->m_31c.GetHeadPosition();
                 if (pos != 0) {
                     do {
                         void* d = g->CoordListOps()->NextData(pos);
@@ -5643,7 +5637,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(CGrunt* unit) {
             CGameObject* lvl = target->m_object;
             if ((static_cast<CGrunt*>(unit))->RectContains(lvl->m_screenX, lvl->m_screenY) != 0) {
                 if (unit->CoordCount() != 0) {
-                    void* pos = unit->CoordHead();
+                    POSITION pos = unit->m_31c.GetHeadPosition();
                     while (pos != 0) {
                         void* coord = unit->CoordListOps()->NextData(pos);
                         if (coord != 0) {
@@ -5717,7 +5711,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(CGrunt* unit) {
     unit->m_2d8 = 4;
     unit->m_defenderY = -1;
     if (unit->CoordCount() != 0) {
-        void* pos = unit->CoordHead();
+        POSITION pos = unit->m_31c.GetHeadPosition();
         while (pos != 0) {
             void* coord = unit->CoordListOps()->NextData(pos);
             if (coord != 0) {
@@ -5781,7 +5775,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(CGrunt* unit) {
         if (m_ctx->m_options[band].m_clearedRound != 0 || m_ctx->m_options[band].m_liveGate == 0) {
             // Invalid record: recycle the unit's coords onto g_coordPool, reset state.
             if (unit->CoordCount() != 0) {
-                void* pos = unit->CoordHead();
+                POSITION pos = unit->m_31c.GetHeadPosition();
                 if (pos != 0) {
                     do {
                         void* coord = unit->CoordListOps()->NextData(pos);

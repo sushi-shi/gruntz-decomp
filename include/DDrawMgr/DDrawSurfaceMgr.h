@@ -39,7 +39,12 @@ class CDDrawSubMgrLeaf;     // +0x2c the label sub-manager (KeyOfValue / m_10 ma
 class CDDrawPtrCollections; // the +0x1c surface pool (heap object)
 class SoundStream;          // +0x20 the Dsndmgr stream (<Dsndmgr/SoundStream.h>)
 
-typedef i32(__cdecl* HP_Callback)(void*, void*, i32, i32, i32);
+// The last word is a POINTER, not an opaque i32: SnapshotChildren/RestoreChildren
+// pass `&header` (modes 2/6/7/8) and the two InvokeCallback sites pass `&someObjPtr`
+// (modes 9/0xa, an out-param) - different pointee, always a pointer. `void*` is the
+// honest common type, and it retires the reinterpret at every registration, every
+// invoke and the header-arg local.
+typedef i32(__cdecl* HP_Callback)(void*, void*, i32, i32, void*);
 
 class CDDrawSurfaceMgr : public CObject {
 public:
@@ -68,11 +73,11 @@ public:
                             //         LoadWorldMode's pre-Init "Notify" dispatch)
 
     // Non-virtual methods (census-proven OFF the retail vtable - plain, not slots):
-    void FreeContext();                                           // 0x155fc0
-    i32 PlayDefaultSound();                                       // 0x155ff0
-    i32 SetDimensions(i32 x, i32 y, i32 flags);                   // 0x155f60
-    void SetHwnd(void* hWnd);                                     // 0x155f50
-    i32 InvokeCallback(void* arg1, i32 arg2, i32 arg3, i32 arg4); // 0x156a90
+    void FreeContext();                                                // 0x155fc0
+    i32 PlayDefaultSound();                                            // 0x155ff0
+    i32 SetDimensions(i32 x, i32 y, i32 flags);                        // 0x155f60
+    void SetHwnd(void* hWnd);                                          // 0x155f50
+    i32 InvokeCallback(void* arg1, i32 arg2, i32 arg3, void* payload); // 0x156a90
 
     // The recursive child serializer / deserializer (owner-TU DDrawSurfaceMgrSerialize
     // holds the bodies; GameSave drives SnapshotChildren). Non-virtual __thiscall /GX.

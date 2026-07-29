@@ -40,8 +40,9 @@ void RegisterActs_646188() {
         *slot = "A";
         g_typeCounter++;
     }
-    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CSpotLight>::s_table.ResolveEntryCallReport(id)) = static_cast<void*>(&SpotLightActA);
+    // ILT 0x4025db -> 0x0b1af0 == CSpotLight::Tick.
+    *CActRegPool<CSpotLight>::s_table.ResolveEntryCallReport(id) =
+        static_cast<CActHandler>(&CSpotLight::Tick);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -52,6 +53,7 @@ void RegisterActs_646188() {
         *slot = "B";
         g_typeCounter++;
     }
-    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CSpotLight>::s_table.ResolveEntryCallReport(id2)) = static_cast<void*>(&SpotLightActB);
+    // ILT 0x402414 -> 0x0b1ee0 == CSpotLight::Update.
+    *CActRegPool<CSpotLight>::s_table.ResolveEntryCallReport(id2) =
+        static_cast<CActHandler>(&CSpotLight::Update);
 }

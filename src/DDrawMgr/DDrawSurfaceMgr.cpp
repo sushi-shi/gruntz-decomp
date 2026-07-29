@@ -405,7 +405,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     // API-forced, at one seam: m_callback is a client-registered hook whose last
     // parameter is an opaque payload word, so the out-pointer has to be widened into
     // it - widened once here instead of at each of the four dispatches.
-    i32 headerArg = reinterpret_cast<i32>(&header);
+    void* headerArg = &header; // HP_Callback's last word is a pointer, not an i32
 
     if (m_callback == 0 || m_callback(this, &S, 2, arg3, headerArg) == 0) {
         return 0;
@@ -449,14 +449,14 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
 }
 
 RVA(0x00156a90, 0x3a)
-i32 CDDrawSurfaceMgr::InvokeCallback(void* arg1, i32 arg2, i32 arg3, i32 arg4) {
+i32 CDDrawSurfaceMgr::InvokeCallback(void* arg1, i32 arg2, i32 arg3, void* payload) {
     if (!arg1) {
         return 0;
     }
     if (!m_callback) {
         return 0;
     }
-    return m_callback(this, arg1, arg2, arg3, arg4) != 0;
+    return m_callback(this, arg1, arg2, arg3, payload) != 0;
 }
 
 // @identity-TODO (matcher-5): 0x156ad0 (466 B, free __stdcall 5 args, /GX) == a CFileMem

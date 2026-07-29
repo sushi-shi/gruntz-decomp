@@ -1124,14 +1124,10 @@ i32 RestoreLostSurfaces() {
 // picks the xor/test/sete bool form over neg/sbb/inc. Both proven by a controlled
 // cl /O2 A/B; the pair is byte-identical to retail. __thiscall, ret 0xc.
 RVA(0x00143810, 0x2b)
-i32 CDDrawPtrCollections::GetAvailableVidMem(u32 caps, u32* total, u32* free) {
+i32 CDDrawPtrCollections::GetAvailableVidMem(u32 caps, DWORD* total, DWORD* free) {
     DDSCAPS ddsCaps;
     ddsCaps.dwCaps = caps;
-    HRESULT hr = m_device->GetAvailableVidMem(
-        &ddsCaps,
-        reinterpret_cast<LPDWORD>(total),
-        reinterpret_cast<LPDWORD>(free)
-    );
+    HRESULT hr = m_device->GetAvailableVidMem(&ddsCaps, total, free);
     return hr == 0;
 }
 

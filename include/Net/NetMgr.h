@@ -706,8 +706,20 @@ public:
     void* GetPlayerData(i32 id);  // 0x178eb0
     i32
     SetGroupData2(CNetSessionNode* a, CNetSessionNode* b, i32 c, void* data, i32 size); // 0x178ef0
-    i32 SendEx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h, i32 i);          // 0x178f50
-    i32 SetData(i32 a, i32 b, i32 c, void* data, i32 size);                             // 0x178fc0
+    // Straight pass-through to IDirectPlay4::SendEx above - so it carries that
+    // interface's own parameter types, and the ex-i32 lpData/ctx/lpMsgId puns go.
+    i32 SendEx(
+        i32 idFrom,
+        i32 idTo,
+        i32 flags,
+        LPVOID lpData,
+        i32 size,
+        i32 pri,
+        i32 timeout,
+        LPVOID ctx,
+        LPDWORD lpMsgId
+    );                                                      // 0x178f50
+    i32 SetData(i32 a, i32 b, i32 c, void* data, i32 size); // 0x178fc0
     i32 Receive(
         CNetSessionNode* from,
         CNetSessionNode* to,

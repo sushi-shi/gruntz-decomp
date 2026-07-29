@@ -51,7 +51,8 @@
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost (the m_ctx geometry chain)
 #include <Gruntz/GameLevel.h>         // CGameLevel::m_mainPlane (the m_ctx geometry chain)
-#include <DDrawMgr/AniAdvance.h>      // CAniBlitTrigger (the per-frame sound trigger)
+#include <DDrawMgr/AniAdvance.h>      // CAniDesc / the anim cursor satellites
+#include <Gruntz/LeafCue.h>           // LeafCue::TriggerBlit (ex CAniBlitTrigger)
 #include <Wap32/WapObj.h>             // CWapObj : CObject
 #include <Gruntz/SoundState.h>        // ex Globals.h transitive
 
@@ -961,7 +962,7 @@ i32 CDDrawSubMgrLeafScan::Fire(const char* key, i32 pos, i32 range1, i32 range2)
         void* val = 0;
         m_10.Lookup(key, val);
         if (val != 0) {
-            return (static_cast<CAniBlitTrigger*>(val))->TriggerBlit(pos, -1, range1, range2);
+            return (static_cast<LeafCue*>(val))->TriggerBlit(pos, -1, range1, range2);
         }
     }
     return 0;
@@ -1182,18 +1183,18 @@ void LeafCue::Unload() {
 // the ModRM byte of nearly every access. No source lever picks ebp for `this`
 // (docs/patterns/zero-register-pinning.md).
 RVA(0x001587f0, 0xf1)
-i32 CAniBlitTrigger::TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2) {
+i32 LeafCue::TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2) {
     if (g_sndEnabled == 0) {
         return 0;
     }
     if (center <= 0) {
-        center = m_ctx->m_level->m_mainPlane->m_snappedX;
+        center = OwnerMgr()->m_level->m_mainPlane->m_snappedX;
     }
     if (range1 <= 0) {
-        range1 = m_ctx->m_drawTarget->m_frontPair->m_width << 2;
+        range1 = OwnerMgr()->m_drawTarget->m_frontPair->m_width << 2;
     }
     if (range2 <= 0) {
-        range2 = m_ctx->m_drawTarget->m_frontPair->m_width / 3;
+        range2 = OwnerMgr()->m_drawTarget->m_frontPair->m_width / 3;
     }
     i32 d = pos - center;
     i32 pan;
@@ -1221,7 +1222,7 @@ i32 CAniBlitTrigger::TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2) {
     } else {
         vscale = static_cast<i32>((amp * (cue * g_sndPanScale)));
     }
-    return m_soundPlayer->ConfigureItem(vscale, vol, 0, 0);
+    return m_10->ConfigureItem(vscale, vol, 0, 0);
 }
 
 // slot 9 (CreateChildren, 0x1588f0): build the three owned children then run

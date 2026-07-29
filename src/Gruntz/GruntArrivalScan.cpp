@@ -1,6 +1,6 @@
 #include <Mfc.h> // afx-first (Reticle's /GX EH frame builds a local CByteArray; RECT/IntersectRect)
 #include <Gruntz/GruntSpawnConfig.h> // the +0x60 cue-sink/spawn-config object (complete type for the cue calls)
-#include <Gruntz/Brickz.h> // BrickzCell (canonical 0x1c-byte tile cell)
+#include <Gruntz/Brickz.h>        // BrickzCell (canonical 0x1c-byte tile cell)
 #include <Gruntz/GruntzMapMgr.h>  // the real +0x70 board class (ex GruntBoard view)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
@@ -39,15 +39,15 @@
         if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
             (grid)->m_bounds = ra;                                                                 \
         }                                                                                          \
-        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                           \
-        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                           \
+        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
+        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
     }
 
 #define RECYCLE_COORDS(head)                                                                       \
     {                                                                                              \
-        CoordNode* n = (head);                                                                \
+        CoordNode* n = (head);                                                                     \
         while (n != 0) {                                                                           \
-            CoordNode* next = n->m_next;                                                      \
+            CoordNode* next = n->m_next;                                                           \
             void* pay = n->m_coord;                                                                \
             if (pay != 0) {                                                                        \
                 CoordPoolNode* slot = g_coordPool.NodeOf(pay);                                     \
@@ -71,8 +71,8 @@
         if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
             (grid)->m_bounds = ra;                                                                 \
         }                                                                                          \
-        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                           \
-        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                           \
+        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
+        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
     }
 
 #define GRID_RECT_INLINE(grid)                                                                     \
@@ -90,18 +90,17 @@
         if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
             (grid)->m_bounds = ra;                                                                 \
         }                                                                                          \
-        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                           \
-        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                           \
+        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
+        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
     }
 
 #define DRAIN_COORDS()                                                                             \
     if (CoordCount() != 0) {                                                                       \
-        CoordNode* n = CoordHeadOf(m_31c);            \
-        while (n != 0) {                                                                           \
-            CoordNode* cur = n;                                                               \
-            n = cur->m_next;                                                                       \
-            if (cur->m_coord != 0) {                                                               \
-                g_coordPool.Push(cur->m_coord);                                                    \
+        POSITION dpos = m_31c.GetHeadPosition();                                                   \
+        while (dpos != 0) {                                                                        \
+            Coord* cur = static_cast<Coord*>(m_31c.GetNext(dpos));                                 \
+            if (cur != 0) {                                                                        \
+                g_coordPool.Push(cur);                                                             \
             }                                                                                      \
         }                                                                                          \
         m_31c.RemoveAll();                                                                         \
@@ -145,18 +144,10 @@ i32 CGrunt::ResolveArrivalReposition() {
                         CWwdGameObjectA* h = m_object;
                         i32 vx = h->m_screenX;
                         i32 vy = h->m_screenY;
-                        const RECT* rect =
-                            &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                        const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
                         if (vx < rect->right && vx >= rect->left && vy < rect->bottom
                             && vy >= rect->top) {
-                            g_gameReg->m_cueSink->SpawnVoiceDriver(
-                                this,
-                                0x366,
-                                -1,
-                                0,
-                                -1,
-                                -1
-                            );
+                            g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                         }
                         m_390 = 0;
                         m_dwell = 0;
@@ -172,8 +163,7 @@ i32 CGrunt::ResolveArrivalReposition() {
     {
         u32 dwell = static_cast<u32>(m_dwell);
         if (dwell > 0x3e8 && m_resetApplied == 0 && m_318 != 0 && dwell > 0xbb8) {
-            if (static_cast<i64>(static_cast<u32>(g_frameTime))
-                    - m_arrivalReroll64
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_arrivalReroll64
                 >= m_arrivalRerollWindow64) {
                 goto L8b5;
             }
@@ -343,13 +333,11 @@ L_ed006:
         goto L_ed153;
     }
     if (m_390 != 0) {
-        CCueRect* board =
-            &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+        CCueRect* board = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
         i32 x = m_object->m_screenX;
         i32 y = m_object->m_screenY;
         if (x < board->right && board->left <= x && y < board->bottom && board->top <= y) {
-            g_gameReg->m_cueSink
-                ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+            g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
         }
         m_390 = 0;
     }
@@ -357,7 +345,7 @@ L_ed006:
 
 L_ed153:
     if (CoordCount() != 0) {
-        Coord* coord = (CoordHeadOf(m_31c))->m_coord;
+        Coord* coord = static_cast<Coord*>(m_31c.GetHead()); // guarded by CoordCount() above
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         BrickzCell* cell = &grid->m_rows[row][col];
@@ -541,7 +529,8 @@ i32 CGrunt::WanderStep() {
                     if (GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
                         Coord c[2];
                         g->GetScreenPos(c);
-                        if (TileSwitch(c[0].m_x >> 5, c[0].m_y >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
+                        if (TileSwitch(c[0].m_x >> 5, c[0].m_y >> 5, 0, m_arrivalFlags, 1, 0)
+                            != 0) {
                             SetEntrancePos(1, 1);
                             m_arrivalCol = g->m_tileOwnerHi;
                             m_arrivalRow = g->m_tileOwnerLo;
@@ -552,14 +541,7 @@ i32 CGrunt::WanderStep() {
                                     m_object->m_screenY
                                 )
                                 != 0) {
-                                g_gameReg->m_cueSink->SpawnVoiceDriver(
-                                    this,
-                                    0x366,
-                                    -1,
-                                    0,
-                                    -1,
-                                    -1
-                                );
+                                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                             }
                         }
                     }
@@ -980,7 +962,14 @@ i32 CGrunt::UpdateArrival() {
                     if (g->GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
                         Coord c[2];
                         GetScreenPos(c);
-                        if (TileSwitch(c[0].m_y >> 5, c[0].m_x >> 5, 0, this->m_arrivalFlags, 0, 0x20)
+                        if (TileSwitch(
+                                c[0].m_y >> 5,
+                                c[0].m_x >> 5,
+                                0,
+                                this->m_arrivalFlags,
+                                0,
+                                0x20
+                            )
                             != 0) {
                             SetEntrancePos(1, 1);
                             this->m_arrivalCol = g->m_tileOwnerHi;
@@ -992,14 +981,7 @@ i32 CGrunt::UpdateArrival() {
                                 this->m_object->m_screenY
                             );
                             if (r != 0) {
-                                g_gameReg->m_cueSink->SpawnVoiceDriver(
-                                    this,
-                                    0x366,
-                                    -1,
-                                    0,
-                                    -1,
-                                    -1
-                                );
+                                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                             }
                         }
                     }
@@ -1262,8 +1244,7 @@ L_ed006b:
                         y
                     )
                     != 0) {
-                    g_gameReg->m_cueSink
-                        ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                 }
                 m_390 = 0;
             }
@@ -1273,7 +1254,7 @@ L_ed006b:
 
 L_scanb:
     if (CoordCount() != 0) {
-        Coord* coord = (CoordHeadOf(m_31c))->m_coord;
+        Coord* coord = static_cast<Coord*>(m_31c.GetHead()); // guarded by CoordCount() above
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         if (CellTargetable(col, row) != 0) {
@@ -1324,11 +1305,11 @@ L_scanb:
     i32 best = 0x7fffffff;
     i32 bestX = 0;
     i32 bestY = 0;
-    CGruntLiveNode* node =
-        LiveHeadOf(m_tileMgr->m_baseList);
-    while (node != 0) {
-        CGruntPuddle* gg = node->m_entry;
-        node = node->m_next;
+    // CPtrList::GetNext IS this walk inlined (`node = pos; pos = node->pNext;
+    // return node->data`) - the ex-CGruntLiveNode raw-node view spelled out.
+    POSITION pos = m_tileMgr->m_baseList.GetHeadPosition();
+    while (pos != 0) {
+        CGruntPuddle* gg = static_cast<CGruntPuddle*>(m_tileMgr->m_baseList.GetNext(pos));
         if (gg->m_pending == 0) {
             i32 gx = gg->m_tileX;
             i32 gy = gg->m_tileY;
@@ -1606,8 +1587,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 i32 y = h->m_screenY;
                 const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
                 if (x < rect->right && x >= rect->left && y < rect->bottom && y >= rect->top) {
-                    g_gameReg->m_cueSink
-                        ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                 }
             }
             goto tail;
@@ -1776,10 +1756,8 @@ i32 CGrunt::StepArrivalDefense() {
                 i32 vx = h->m_screenX;
                 i32 vy = h->m_screenY;
                 const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-                if (vx < rect->right && vx >= rect->left && vy < rect->bottom
-                    && vy >= rect->top) {
-                    g_gameReg->m_cueSink
-                        ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                if (vx < rect->right && vx >= rect->left && vy < rect->bottom && vy >= rect->top) {
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                 }
             }
             return 1;
@@ -1894,14 +1872,10 @@ i32 CGrunt::StepArrivalDefense() {
                 m_defenderState = 1;
                 CWwdGameObjectA* h = m_object;
                 const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-                if (CGameLevel::PointInBounds(
-                        rect, h->m_screenX, h->m_screenY
-                    )
-                    == 0) {
+                if (CGameLevel::PointInBounds(rect, h->m_screenX, h->m_screenY) == 0) {
                     goto L_f318a;
                 }
-                g_gameReg->m_cueSink
-                    ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
             }
         L_f318a:
             m_dwell = 0;
@@ -1916,8 +1890,7 @@ i32 CGrunt::StepArrivalDefense() {
             if (static_cast<u32>(m_dwell) <= 0xbb8) {
                 return 1;
             }
-            if (static_cast<i64>(static_cast<u32>(g_frameTime))
-                    - m_arrivalReroll64
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_arrivalReroll64
                 >= m_arrivalRerollWindow64) {
                 ResetEntranceAnimation(1, 1, 0);
                 m_arrivalRerollLo = 0;
@@ -2074,13 +2047,11 @@ i32 CGrunt::ArrivalScanC() {
         )
         != 0) {
         if (m_390 != 0) {
-            CCueRect* board =
-                &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+            CCueRect* board = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
             i32 x = m_object->m_screenX;
             i32 y = m_object->m_screenY;
             if (x < board->right && board->left <= x && y < board->bottom && board->top <= y) {
-                g_gameReg->m_cueSink
-                    ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
             }
             m_390 = 0;
         }
@@ -2089,7 +2060,7 @@ i32 CGrunt::ArrivalScanC() {
 
 L_tailc:
     if (CoordCount() != 0) {
-        Coord* coord = (CoordHeadOf(m_31c))->m_coord;
+        Coord* coord = static_cast<Coord*>(m_31c.GetHead()); // guarded by CoordCount() above
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         BrickzCell* cell = &grid->m_rows[row][col];
@@ -2574,8 +2545,7 @@ i32 CGrunt::SeekTarget() {
                     CCueRect* board = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
                     if (bx < board->right && board->left <= bx && by < board->bottom
                         && board->top <= by) {
-                        g_gameReg->m_cueSink
-                            ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                        g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                     }
                 }
             }
@@ -2596,11 +2566,14 @@ i32 CGrunt::SeekTarget() {
         bool atTarget = false;
         if (g != 0) {
             i32 x = g->m_object->m_screenX;
-            if (x == g->m_lastTilePxX && g->m_object->m_screenY == g->m_lastTilePxY
-                // RectContains(x, y) takes COORDINATES: 8 call sites pass ints and only these
-                // two cast a pointer, so the param is right and THIS site is the open question.
-                // @identity-TODO (the documented 'unanimous among cast sites' trap).
-                && g->RectContains(x, reinterpret_cast<i32>(g->m_object)) != 0) {
+            if (x == g->m_lastTilePxX
+                && g->m_object->m_screenY == g->m_lastTilePxY
+                // SETTLED 2026-07-29 (was @identity-TODO): retail 0xf7443 / 0xf683f read
+                // `mov ecx,[eax+0x5c]` (m_screenX) and `mov eax,[eax+0x60]` (m_screenY)
+                // for the two compares and then `push eax; push ecx` STRAIGHT into the
+                // call - so the second argument is m_screenY, not the m_object pointer,
+                // and the receiver is `mov ecx,edi/esi` == `this`, not g.
+                && RectContains(x, g->m_object->m_screenY) != 0) {
                 atTarget = true;
             }
         }
@@ -2653,11 +2626,14 @@ i32 CGrunt::SeekTarget() {
         }
         if (this->m_poweredUp == 0 && this->m_stamina > 99) {
             i32 x = g->m_object->m_screenX;
-            if (x == g->m_lastTilePxX && g->m_object->m_screenY == g->m_lastTilePxY
-                // RectContains(x, y) takes COORDINATES: 8 call sites pass ints and only these
-                // two cast a pointer, so the param is right and THIS site is the open question.
-                // @identity-TODO (the documented 'unanimous among cast sites' trap).
-                && g->RectContains(x, reinterpret_cast<i32>(g->m_object)) != 0) {
+            if (x == g->m_lastTilePxX
+                && g->m_object->m_screenY == g->m_lastTilePxY
+                // SETTLED 2026-07-29 (was @identity-TODO): retail 0xf7443 / 0xf683f read
+                // `mov ecx,[eax+0x5c]` (m_screenX) and `mov eax,[eax+0x60]` (m_screenY)
+                // for the two compares and then `push eax; push ecx` STRAIGHT into the
+                // call - so the second argument is m_screenY, not the m_object pointer,
+                // and the receiver is `mov ecx,edi/esi` == `this`, not g.
+                && RectContains(x, g->m_object->m_screenY) != 0) {
                 CommitNeighbor(
                     g->m_tileOwnerHi,
                     g->m_tileOwnerLo,
@@ -2687,8 +2663,7 @@ i32 CGrunt::SeekTarget() {
                 this->m_object->m_screenY
             );
             if (r != 0) {
-                g_gameReg->m_cueSink
-                    ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
             }
             this->m_390 = 0;
             this->m_dwell = 0;
@@ -2769,8 +2744,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             i32 vy = h->m_screenY;
             const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
             if (vx < rect->right && vx >= rect->left && vy < rect->bottom && vy >= rect->top) {
-                g_gameReg->m_cueSink
-                    ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
             }
         }
             m_defenderState = 1;
@@ -2788,10 +2762,8 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 i32 vx = h->m_screenX;
                 i32 vy = h->m_screenY;
                 const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-                if (vx < rect->right && vx >= rect->left && vy < rect->bottom
-                    && vy >= rect->top) {
-                    g_gameReg->m_cueSink
-                        ->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                if (vx < rect->right && vx >= rect->left && vy < rect->bottom && vy >= rect->top) {
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                 }
             }
             return 1;
@@ -2863,8 +2835,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if (static_cast<u32>(m_dwell) <= 0xbb8) {
                 return 1;
             }
-            if (static_cast<i64>(static_cast<u32>(g_frameTime))
-                    - m_arrivalReroll64
+            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_arrivalReroll64
                 >= m_arrivalRerollWindow64) {
                 ResetEntranceAnimation(1, 1, 0);
                 m_arrivalRerollWindowLo = GruntRand() % 0x7530 + 0x7530;

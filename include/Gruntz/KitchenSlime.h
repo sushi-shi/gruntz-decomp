@@ -5,7 +5,7 @@
 
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (+ CGameObject / CFileMemBase)
-#include <Gruntz/ActReg.h> // CActReg (for the extern below)
+#include <Gruntz/ActReg.h>      // CActReg (for the extern below)
 
 class CKitchenSlime : public CUserLogic, public CWapX {
 public:
@@ -36,13 +36,13 @@ public:
         return m_38;
     }
     char m_pad54[0x58 - 0x54];
-    double m_speed;  // +0x58  per-frame speed (g_slimeSpeedNum / timePerTile)
-    double m_posX;   // +0x60  sub-pixel X position accumulator
-    double m_posY;   // +0x68  sub-pixel Y position accumulator
-    double m_dirX;   // +0x70  unit X travel direction (-1.0 / 0.0 / +1.0)
-    double m_dirY;   // +0x78  unit Y travel direction (-1.0 / 0.0 / +1.0)
-    i32 m_tileX;     // +0x80  current target tile X (pixels)
-    i32 m_tileY;     // +0x84  current target tile Y (pixels)
+    double m_speed;   // +0x58  per-frame speed (g_slimeSpeedNum / timePerTile)
+    double m_posX;    // +0x60  sub-pixel X position accumulator
+    double m_posY;    // +0x68  sub-pixel Y position accumulator
+    double m_dirX;    // +0x70  unit X travel direction (-1.0 / 0.0 / +1.0)
+    double m_dirY;    // +0x78  unit Y travel direction (-1.0 / 0.0 / +1.0)
+    i32 m_tileX;      // +0x80  current target tile X (pixels)
+    i32 m_tileY;      // +0x84  current target tile Y (pixels)
     double m_stepMag; // +0x88  per-step magnitude
 };
 SIZE(0x90);
@@ -57,7 +57,6 @@ SIZE(0x90);
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
-extern "C" void KSlimeActivationHandler(); // 0x40180c
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

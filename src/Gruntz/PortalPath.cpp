@@ -15,14 +15,7 @@ i32 __stdcall LaunchPortalExe(char* outPath) {
     char regBuf[0x100];
     Utils::RegistryHelper reg;
 
-    if (!reg.Open(
-            "Monolith Productions",
-            "Portal",
-            "1.0",
-            0,
-            reinterpret_cast<HKEY>(0x80000002) /*HKEY_LOCAL_MACHINE*/,
-            0
-        )) {
+    if (!reg.Open("Monolith Productions", "Portal", "1.0", 0, HKEY_LOCAL_MACHINE, 0)) {
         return 0;
     }
     regBuf[0] = 0;

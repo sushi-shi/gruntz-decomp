@@ -12,12 +12,8 @@ SIZE_UNKNOWN();
 
 class CGruntzMgr; // consumers that deref m_38 include <Gruntz/GruntzMgr.h>
 
-struct GzCmdNode {
-    GzCmdNode* m_0; // +0x00  next node
-    char m_pad4[4];
-    CGruntzCommand* m_8; // +0x08  payload command
-};
-SIZE_UNKNOWN();
+// (GzCmdNode DISSOLVED 2026-07-29: it was a raw ::CPtrList::CNode view of the
+//  m_base queue; the one walk it fed now uses MFC's own GetHeadPosition/GetNext.)
 
 class CGruntzCmdMgr {
 public:

@@ -755,18 +755,18 @@ i32 CNetMgr::SetGroupData2(CNetSessionNode* a, CNetSessionNode* b, i32 c, void* 
 }
 
 RVA(0x00178f50, 0x63)
-i32 CNetMgr::SendEx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h, i32 i) {
-    i32 hr = m_directPlay->SendEx(
-        a,
-        b,
-        c,
-        reinterpret_cast<LPVOID>(d),
-        e,
-        f,
-        g,
-        reinterpret_cast<LPVOID>(h),
-        reinterpret_cast<LPDWORD>(i)
-    );
+i32 CNetMgr::SendEx(
+    i32 idFrom,
+    i32 idTo,
+    i32 flags,
+    LPVOID lpData,
+    i32 size,
+    i32 pri,
+    i32 timeout,
+    LPVOID ctx,
+    LPDWORD lpMsgId
+) {
+    i32 hr = m_directPlay->SendEx(idFrom, idTo, flags, lpData, size, pri, timeout, ctx, lpMsgId);
     if (hr && hr != static_cast<i32>(0x8000000a)) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x481, hr, 0);
     }

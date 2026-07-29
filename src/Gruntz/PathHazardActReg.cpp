@@ -40,8 +40,9 @@ void RegisterActs_646250() {
         *slot = "A";
         g_typeCounter++;
     }
-    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CPathHazard>::s_table.ResolveEntryCallReport(id)) = static_cast<void*>(&PathHazardActA);
+    // ILT 0x4021d5 -> 0x0b5070 == CPathHazard::ForwardTick.
+    *CActRegPool<CPathHazard>::s_table.ResolveEntryCallReport(id) =
+        static_cast<CActHandler>(&CPathHazard::ForwardTick);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -52,6 +53,7 @@ void RegisterActs_646250() {
         *slot = "B";
         g_typeCounter++;
     }
-    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CPathHazard>::s_table.ResolveEntryCallReport(id2)) = static_cast<void*>(&PathHazardActB);
+    // ILT 0x402252 -> 0x0b5080 == CPathHazard::ForwardSiblingTick.
+    *CActRegPool<CPathHazard>::s_table.ResolveEntryCallReport(id2) =
+        static_cast<CActHandler>(&CPathHazard::ForwardSiblingTick);
 }

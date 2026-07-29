@@ -4,13 +4,14 @@
 #include <Ints.h>
 
 #include <rva.h>
-#include <Gruntz/LeafCue.h>      // canonical LeafCue (PlayIfElapsed)
-#include <Gruntz/Grunt.h>        // canonical CGrunt (SetEntrancePos/SetArrivalTarget)
-#include <Gruntz/TriggerMgr.h>   // canonical CTriggerMgr (the mgr's m_cmdGrid grid)
-#include <Gruntz/Play.h>         // canonical CPlay (the ex-CCmdHandler identity)
-#include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (CPlay::m_4)
-#include <Gruntz/StatusBarMgr.h> // CStatusBarMgr::EnterHlRow (m_guts, +0x2dc)
-#include <Gruntz/SoundState.h>   // ex Globals.h transitive
+#include <Gruntz/LeafCue.h>               // canonical LeafCue (PlayIfElapsed)
+#include <Gruntz/Grunt.h>                 // canonical CGrunt (SetEntrancePos/SetArrivalTarget)
+#include <Gruntz/TriggerMgr.h>            // canonical CTriggerMgr (the mgr's m_cmdGrid grid)
+#include <Gruntz/Play.h>                  // canonical CPlay (the ex-CCmdHandler identity)
+#include <Gruntz/GruntzMgr.h>             // canonical CGruntzMgr (CPlay::m_4)
+#include <Gruntz/StatusBarMgr.h>          // CStatusBarMgr::EnterHlRow (m_guts, +0x2dc)
+#include <Gruntz/SoundState.h>            // ex Globals.h transitive
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::Lookup (m_world->m_soundRegistry)
 
 static const char s_gameBadSelect[] = "GAME_BADSELECT";              // 0x612c28
 static const char s_grunt[] = "Grunt";                               // 0x60a9ec
@@ -33,10 +34,18 @@ static const char s_playerDefenderRadius[] = "PlayerDefenderRadius"; // 0x60e1ac
 // identical suffixes). The 11-case logic + grunt-state resets + cell lookups are
 // byte-faithful. Final-sweep permuter candidate (pure /O2 regalloc residue).
 RVA(0x000d1b60, 0xc2f)
-// The &a4/&a8 reads below are byte-forced by the ABI: a `char` parameter still owns a
-// whole 4-byte stack slot, and retail threads PathProbe's i32 outputs back through
-// those slots rather than spending fresh locals (the ret 0x1c frame proves the
-// arity). Reading the slot as i32 is what the target's bytes do.
+// The *(i32*)&aN reads below are byte-forced, and VERIFIED 2026-07-29: retail's
+// case-3 probe call at 0xd1f6b pushes `lea edx,[esp+0x28]` (0xd1f44) and
+// `lea edx,[esp+0x24]` (0xd1f4b) - after the two intervening pushes those are the
+// a7 and a4 PARAMETER HOMES - so the probe writes its i32 outputs straight into
+// them and the code reads them back as i32. A `char` parameter still owns a whole
+// 4-byte slot (ret 0x1c proves the 7-dword arity), so this is retail's own
+// pointer-to-a-char-home pun, not a modelling gap.
+// The still-open modelling debt is the SLOT ASSIGNMENT, not the pun: at 0xd1fa0
+// retail's post-probe grid call takes FOUR args (a2&0xff, a3&0xff, and the two
+// spilled masked halves) where the body below passes five, and it reads a7's home
+// where the body reads a8's. That is a body-reconstruction job (this fn is ~24%),
+// not a cast job.
 i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char a8) {
     CGruntzMgr* mgr = m_mgr;
     if (mgr->m_frameGate != 0) {
@@ -77,14 +86,15 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                 return 1;
             }
             if (m_world->m_soundRegistry->m_emitGate == 0) { // the sound host's busy/emit gate
-                // language-forced: retail 0xd1b60 is `call BadSelect; cmp eax,0; je;
-                // mov ecx,[0x61ab24]; push 0,0,0; push ecx; mov ecx,eax; call
-                // PlayIfElapsed` - the RECEIVER is BadSelect's return value and the
-                // FIRST ARG is g_sndCueTag (the ex-"stale ecx on the tag global" model
-                // had both wrong). BadSelect therefore returns a LeafCue*; its
-                // `extern "C" i32` prototype in Gruntz/Grunt.h is the mis-declaration
-                // (that header is another lane's - the cast stands in until it lands).
-                LeafCue* cue = reinterpret_cast<LeafCue*>(BadSelect(s_gameBadSelect));
+                // The ex-`extern "C" i32 BadSelect(const char*)` was an ILT
+                // placeholder: 0x402cca jmps to 0x05b7e0 ==
+                // CDDrawSubMgrLeafScan::Lookup, and retail's `call 0x2cca` at
+                // 0xd1bf5 runs on the ecx the gate above already loaded
+                // ([ebx+0xc]->+0x28 == m_world->m_soundRegistry). Lookup returns
+                // CObject*, so the cue is a plain single-inheritance downcast
+                // (LeafCue : CLoadable : CWapObj : CObject).
+                LeafCue* cue =
+                    static_cast<LeafCue*>(m_world->m_soundRegistry->Lookup(s_gameBadSelect));
                 if (cue != 0) {
                     cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 }
@@ -150,9 +160,8 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
             u32 py = static_cast<u16>(a6);
             i32 col = a4;
             i32 row = a8;
-            CGrunt* node = static_cast<CGrunt*>(
-                m_mgr->m_cmdGrid->CellHitTest(px, py, &col, &row, 5)
-            );
+            CGrunt* node =
+                static_cast<CGrunt*>(m_mgr->m_cmdGrid->CellHitTest(px, py, &col, &row, 5));
             if (node == 0 || g->m_entranceActive != 0) {
                 g->m_arrivalActive = 0;
             } else {
@@ -164,12 +173,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                 );
             }
             res = (isB == 0) ? m_mgr->m_cmdGrid->ApplyTriggerA(player, col, row, 0)
-                             : m_mgr->m_cmdGrid->ApplyTriggerB(
-                                   player,
-                                   col,
-                                   row,
-                                   0
-                               );
+                             : m_mgr->m_cmdGrid->ApplyTriggerB(player, col, row, 0);
             if (res != 0) {
                 if (res != -1) {
                     if (player != static_cast<u32>(g_curPlayer)) {

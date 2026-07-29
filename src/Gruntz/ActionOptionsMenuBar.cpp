@@ -20,7 +20,7 @@
 
 // @early-stop
 // MSVC5 emits a two-zero-register (ecx+edx) esi-base paired-store form for the
-// adjacent (m_button0Frame,m_button1Frame)/(m_button0Icon,m_button1Icon)/(m_button0State,m_button1State) zero-inits; our cl emits single
+// adjacent (m_buttonFrame[0],m_buttonFrame[1])/(m_buttonIcon[0],m_buttonIcon[1])/(m_buttonState[0],m_buttonState[1]) zero-inits; our cl emits single
 // `mov [this+off],0` stores. Same member-init set/order, regalloc/addressing-mode
 // wall - no source spelling reproduces the base-register pairing. Logic exact.
 RVA(0x00009090, 0x32)
@@ -29,12 +29,12 @@ CActionOptionsMenuBar::CActionOptionsMenuBar() {
     m_normChipSprite = 0;
     m_highChipSprite = 0;
     m_greyChipSprite = 0;
-    m_button0Frame = 0;
-    m_button1Frame = 0;
-    m_button0Icon = 0;
-    m_button1Icon = 0;
-    m_button0State = 0;
-    m_button1State = 0;
+    m_buttonFrame[0] = 0;
+    m_buttonFrame[1] = 0;
+    m_buttonIcon[0] = 0;
+    m_buttonIcon[1] = 0;
+    m_buttonState[0] = 0;
+    m_buttonState[1] = 0;
     m_loaded = 0;
 }
 
@@ -114,9 +114,9 @@ i32 CActionOptionsMenuBar::Init(i32 gx, i32 a, i32 x, i32 y, i32 b, i32 gy) {
     m_screenX = x;
     m_gridX = b;
     m_screenY = yy;
-    m_button1State = a;
+    m_buttonState[1] = a;
     m_gridY = gy;
-    m_button0State = gx;
+    m_buttonState[0] = gx;
     if (Refresh() == 0) {
         return 0;
     }
@@ -147,83 +147,57 @@ i32 CActionOptionsMenuBar::Refresh() {
     i32 cell = m_gridY + m_gridX * TM_GRID_COLS;
     CGrunt* grunt = g_gameReg->m_cmdGrid->m_grid[cell];
     if (grunt != 0) {
-        m_button1Icon = grunt->m_198;
+        m_buttonIcon[1] = grunt->m_198;
         if (grunt->m_entranceReason >= 0x17) {
-            m_button1State = 3;
-        } else if (m_button1State == 3) {
-            m_button1State = 1;
+            m_buttonState[1] = 3;
+        } else if (m_buttonState[1] == 3) {
+            m_buttonState[1] = 1;
         }
         i32 prim = (grunt->m_entranceReason > 0x16) ? grunt->m_19c : grunt->m_entranceReason;
-        m_button0Icon = prim;
+        m_buttonIcon[0] = prim;
         if (prim == 0) {
-            m_button0Icon = 0x21;
+            m_buttonIcon[0] = 0x21;
         } else if (prim == 3) {
-            m_button0Icon = grunt->m_194;
+            m_buttonIcon[0] = grunt->m_194;
         }
         if (!grunt->CanShowStamina()) {
-            m_button0State = 3;
-        } else if (m_button0State == 3) {
-            m_button0State = 1;
+            m_buttonState[0] = 3;
+        } else if (m_buttonState[0] == 3) {
+            m_buttonState[0] = 1;
         }
     } else {
-        m_button1Icon = 0;
-        m_button0Icon = 0;
+        m_buttonIcon[1] = 0;
+        m_buttonIcon[0] = 0;
     }
-    // Refresh both buttons: icon in m_button0Icon/m_button1Icon, state in
-    // m_button0State/m_button1State, resolved frame into m_button0Frame/m_button1Frame.
-    i32* p = &m_button0Icon;
-    i32 n = 2;
-    do {
-        if (*p == 0) {
-            p[-4] = 0;
-        } else if (p[-4] == 0) {
-            p[-4] = 1;
+    // Refresh both buttons: icon in m_buttonIcon[0]/m_buttonIcon[1], state in
+    // m_buttonState[0]/m_buttonState[1], resolved frame into m_buttonFrame[0]/m_buttonFrame[1].
+    // The ex-`i32* p = &m_buttonIcon[0]` cursor (p[-4]=state, p[-2]=frame, *p=icon)
+    // was an i32 view over the three parallel pairs; with them typed as arrays the
+    // frame stays a CImage* and the three pointer-to-i32 puns go. The bounds test is
+    // CDDrawWorker::GetAt's own (it returns 0 outside [m_minIndex, m_maxIndex]).
+    for (i32 i = 0; i < 2; i++) {
+        if (m_buttonIcon[i] == 0) {
+            m_buttonState[i] = 0;
+        } else if (m_buttonState[i] == 0) {
+            m_buttonState[i] = 1;
         }
-        // byte-forced: retail walks the two buttons' parallel state/frame/icon members
-        // through ONE i32 cursor (p[-4]=state, p[-2]=frame, *p=icon), so the CImage*
-        // frame is stored as the cursor's element word.
-        i32 frame;
-        switch (p[-4]) {
-            case 1: {
-                CDDrawWorker* s = m_normChipSprite;
-                // the two buttons' frame/icon/state fields are walked as ONE i32 band
-                // (`p[-2]`/`p[-4]` off &m_button0Icon), so the resolved CImage* is
-                // stored through that i32 slot - byte-forced by retail's own walk.
-                frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
-                            ? 0
-                            // byte-forced: the p[-2] element word (see the cursor note)
-                            : reinterpret_cast<i32>(static_cast<CImage*>(s->m_items.GetAt(*p)));
+        CImage* frame;
+        switch (m_buttonState[i]) {
+            case 1:
+                frame = m_normChipSprite->GetAt(m_buttonIcon[i]);
                 break;
-            }
-            case 2: {
-                CDDrawWorker* s = m_highChipSprite;
-                // the two buttons' frame/icon/state fields are walked as ONE i32 band
-                // (`p[-2]`/`p[-4]` off &m_button0Icon), so the resolved CImage* is
-                // stored through that i32 slot - byte-forced by retail's own walk.
-                frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
-                            ? 0
-                            // byte-forced: the p[-2] element word (see the cursor note)
-                            : reinterpret_cast<i32>(static_cast<CImage*>(s->m_items.GetAt(*p)));
+            case 2:
+                frame = m_highChipSprite->GetAt(m_buttonIcon[i]);
                 break;
-            }
-            case 3: {
-                CDDrawWorker* s = m_greyChipSprite;
-                // the two buttons' frame/icon/state fields are walked as ONE i32 band
-                // (`p[-2]`/`p[-4]` off &m_button0Icon), so the resolved CImage* is
-                // stored through that i32 slot - byte-forced by retail's own walk.
-                frame = (*p < s->m_minIndex || *p > s->m_maxIndex)
-                            ? 0
-                            // byte-forced: the p[-2] element word (see the cursor note)
-                            : reinterpret_cast<i32>(static_cast<CImage*>(s->m_items.GetAt(*p)));
+            case 3:
+                frame = m_greyChipSprite->GetAt(m_buttonIcon[i]);
                 break;
-            }
             default:
                 frame = 0;
                 break;
         }
-        p[-2] = frame;
-        p += 1;
-    } while (--n != 0);
+        m_buttonFrame[i] = frame;
+    }
     return 1;
 }
 
@@ -248,11 +222,11 @@ i32 CActionOptionsMenuBar::Render() {
     CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
     m_frame->RenderFrameClipped(ctx, sy, sx, &r, 0);
 
-    if (m_button0Frame) {
+    if (m_buttonFrame[0]) {
         r = g_gameReg->m_world->m_level->m_planeCtx;
         m_frame->RenderFrameClipped(ctx, sy - 0xc, sx + 2, &r, 0);
     }
-    if (m_button1Frame) {
+    if (m_buttonFrame[1]) {
         r = g_gameReg->m_world->m_level->m_planeCtx;
         m_frame->RenderFrameClipped(ctx, sy + 0x10, sx + 2, &r, 0);
     }
@@ -263,7 +237,7 @@ i32 CActionOptionsMenuBar::Render() {
 // CActionOptionsMenuBar::HitClick - hit-test a click against the two buttons.
 // ---------------------------------------------------------------------------
 // @early-stop
-// Regalloc wall: structure (spilled &m_button0State, shared y/x bounds) matches retail, but
+// Regalloc wall: structure (spilled &m_buttonState[0], shared y/x bounds) matches retail, but
 // our cl assigns `my`->ebx and the bounds to edi/esi where retail uses ebp and
 // ebx/edi; the naming cascade is the residual. Logic exact.
 RVA(0x00009650, 0xcf)
@@ -277,7 +251,7 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
         return 1;
     }
     // Demote any held (==2) button back to armed (==1).
-    i32* btn = &m_button0State;
+    i32* btn = m_buttonState;
     i32* p = btn;
     i32 k = 2;
     do {
@@ -300,8 +274,8 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     }
     // Button[1] box.
     if (mx < x0 + 0x1c && mx >= x0 + 0x4 && my < yhi && my >= ylo) {
-        if (m_button1State == 1) {
-            m_button1State = 2;
+        if (m_buttonState[1] == 1) {
+            m_buttonState[1] = 2;
         }
     }
     return 1;
@@ -326,13 +300,13 @@ i32 CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
     i32 x0 = m_screenX;
     i32 ylo = y0 - 0xc;
     i32 yhi = y0 + 0xc;
-    if (mx < x0 && mx >= x0 - 0x18 && my < yhi && my >= ylo && m_button0State != 3) {
+    if (mx < x0 && mx >= x0 - 0x18 && my < yhi && my >= ylo && m_buttonState[0] != 3) {
         return 2;
     }
     // `!= 3`, like button 0: retail's last compare is `cmp edx,eax(3) / jne <keep eax=3>`
     // (0x9cdd), so the hit is reported when the button is NOT in state 3 - we had `== 3`,
     // which reports button 1 only while it is disabled and never otherwise.
-    if (mx < x0 + 0x18 && mx >= x0 && my < yhi && my >= ylo && m_button1State != 3) {
+    if (mx < x0 + 0x18 && mx >= x0 && my < yhi && my >= ylo && m_buttonState[1] != 3) {
         return 3;
     }
     return 0;
@@ -370,8 +344,8 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
     ar->Write(&m_screenY, 4);
     ar->Write(&m_loaded, 4);
     ar->Write(&m_active, 4);
-    ar->Write(&m_button0State, 8);
-    ar->Write(&m_button0Icon, 8);
+    ar->Write(m_buttonState, 8);
+    ar->Write(m_buttonIcon, 8);
 
     char tmp[0x80];
 
@@ -411,8 +385,8 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
     memset(tmp, 0, sizeof(tmp));
     {
         i32 zero = 0;
-        if (m_button0Frame) {
-            mgr->m_imageRegistry->AnyValueMatches(m_button0Frame, tmp, &zero);
+        if (m_buttonFrame[0]) {
+            mgr->m_imageRegistry->AnyValueMatches(m_buttonFrame[0], tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -421,7 +395,7 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
     g_serialCounter++;
     {
         i32 zero = 0;
-        CImage* v20 = m_button1Frame;
+        CImage* v20 = m_buttonFrame[1];
         memset(tmp, 0, sizeof(tmp));
         if (v20) {
             mgr->m_imageRegistry->AnyValueMatches(v20, tmp, &zero);
@@ -473,8 +447,8 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(&m_screenY, 4);
     s->Read(&m_loaded, 4);
     s->Read(&m_active, 4);
-    s->Read(&m_button0State, 8);
-    s->Read(&m_button0Icon, 8);
+    s->Read(&m_buttonState[0], 8);
+    s->Read(&m_buttonIcon[0], 8);
 
     g_serialCounter++;
     s->Read(buf, 0x80);
@@ -539,9 +513,9 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
         } else {
             r = 0;
         }
-        m_button0Frame = r;
+        m_buttonFrame[0] = r;
     } else {
-        m_button0Frame = 0;
+        m_buttonFrame[0] = 0;
     }
 
     g_serialCounter++;
@@ -558,9 +532,9 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
         } else {
             r = 0;
         }
-        m_button1Frame = r;
+        m_buttonFrame[1] = r;
     } else {
-        m_button1Frame = 0;
+        m_buttonFrame[1] = 0;
     }
 
     return 1;

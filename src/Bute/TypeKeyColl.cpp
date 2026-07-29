@@ -996,18 +996,10 @@ i32 FirstDiffBit(const char* a, const char* b) {
 static inline CString* TypeResolve(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        // the untyped byte pool named at the container's one seam
-        // the untyped byte pool named at the container's one seam
-        return reinterpret_cast<CString*>(
-            g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride
-        );
+        return g_typeColl.Elem(key); // the container's own typed view of the band
     }
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
-        // the untyped byte pool named at the container's one seam
-        // the untyped byte pool named at the container's one seam
-        return reinterpret_cast<CString*>(
-            g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride
-        );
+        return g_typeColl.Elem(key); // the container's own typed view of the band
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();

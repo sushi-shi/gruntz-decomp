@@ -165,10 +165,8 @@ void CKitchenSlime::RegisterType() {
         (*slot) = "A";
         g_typeCounter++;
     }
-    // language-forced: the slot type is a pointer-to-MEMBER (CActHandler =
-    // i32 (CUserLogic::*)()) and the registrar has a plain function address;
-    // C++ defines no conversion between them, so the store goes through the slot.
-    *reinterpret_cast<void**>(KSlimeLookup(id)) = static_cast<void*>(&KSlimeActivationHandler);
+    // ILT 0x40180c -> 0x0b2ca0 == CKitchenSlime::Tick; the slot IS a CActHandler.
+    *KSlimeLookup(id) = static_cast<CActHandler>(&CKitchenSlime::Tick);
 }
 
 RVA(0x000b2940, 0x102)

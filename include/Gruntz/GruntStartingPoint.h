@@ -22,14 +22,13 @@ public:
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
     virtual void FireActivation(i32 id)
         OVERRIDE; // 0x3e1a0 (vtable slot 4: per-coord PMF dispatch, R4 registry)
+    // The act-"A" (idle) slot ActReg4RegisterType (0x3e300) binds via ILT 0x4040a2:
+    // retail 0x3e500 is the bare `xor eax,eax; ret` - "nothing to do".
+    i32 Idle(); // 0x3e500
 };
 SIZE(0x54);
 
 SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
-
-// TU-local thunk/table names this TU registers (moved from the .cpp; the
-// addresses are ILT thunk VAs, reloc-masked at every use).
-extern "C" void ActReg4Handler(); // 0x4040a2
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

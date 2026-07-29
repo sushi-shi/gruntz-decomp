@@ -4,9 +4,9 @@
 
 #include <Bute/ButeMgr.h> // CButeTree
 #include <Bute/ButeTree.h>
-#include <Mfc.h> // real MFC CString
-#include <Gruntz/TypeColl.h>      // the shared type-name registry collection
-#include <Gruntz/TypeColl2.h>     // its Insert facet
+#include <Mfc.h>              // real MFC CString
+#include <Gruntz/TypeColl.h>  // the shared type-name registry collection
+#include <Gruntz/TypeColl2.h> // its Insert facet
 #include <Wap32/ZVec.h>
 #include <rva.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype (CActRegPool<CGruntStartingPoint>::s_table)
@@ -53,7 +53,6 @@ CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj) : CUserLogic(obj), CW
 VTBL(CGruntStartingPoint, 0x001e8284);
 template<> DATA(0x002446d8)
 CActReg CActRegPool<CGruntStartingPoint>::s_table(2000, 2010);
-
 
 DATA(0x002bf464)
 void* g_projActCache;
@@ -113,8 +112,13 @@ void ActReg4RegisterType() {
         (*slot) = "A";
         g_typeCounter++;
     }
-    // language-forced: a plain fn ptr into the pointer-to-MEMBER slot (CActHandler =
-    // i32 (CUserLogic::*)()); C++ defines no fn-ptr->PMF conversion, so the write
-    // goes through the raw slot.
-    *reinterpret_cast<void**>(R4Lookup(id)) = static_cast<void*>(&ActReg4Handler);
+    // ILT 0x4040a2 -> 0x03e500 == CGruntStartingPoint::Idle; the slot IS a CActHandler.
+    *R4Lookup(id) = static_cast<CActHandler>(&CGruntStartingPoint::Idle);
+}
+
+// CGruntStartingPoint::Idle @0x03e500 - the act-"A" body: retail is the bare
+// `xor eax,eax; ret` (3 bytes).
+RVA(0x0003e500, 0x3)
+i32 CGruntStartingPoint::Idle() {
+    return 0;
 }

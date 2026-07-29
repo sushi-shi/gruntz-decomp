@@ -461,10 +461,8 @@ void CProjectile::RegisterType() {
         (*slot) = "A";
         g_typeCounter++;
     }
-    // language-forced: the slot type is a pointer-to-MEMBER (CActHandler =
-    // i32 (CUserLogic::*)()) and the registrar has a plain function address;
-    // C++ defines no conversion between them, so the store goes through the slot.
-    *reinterpret_cast<void**>(ProjActLookup(id)) = static_cast<void*>(&ProjActivationHandler);
+    // ILT 0x403896 -> 0x0e05e0 == CProjectile::DetachRenderObj; the slot IS a CActHandler.
+    *ProjActLookup(id) = static_cast<CActHandler>(&CProjectile::DetachRenderObj);
 }
 
 // ===========================================================================

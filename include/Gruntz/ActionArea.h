@@ -7,7 +7,7 @@
 #include <Gruntz/UserLogic.h>
 
 #include <Gruntz/SerialArchive.h> // CFileMemBase (== CFileMemBase) - SerializeMove
-#include <Gruntz/HaznColl.h> // CActReg (for the extern below)
+#include <Gruntz/HaznColl.h>      // CActReg (for the extern below)
 
 class CActionArea : public CUserLogic, public CWapX {
 public:
@@ -48,11 +48,10 @@ public:
 SIZE_UNKNOWN();
 
 typedef i32 (CUserLogic::*CActHandler)(); // == CActHandler (the slot type)
-SIZE_UNKNOWN(); // only the first dword (the handler) is modeled
+SIZE_UNKNOWN();                           // only the first dword (the handler) is modeled
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
-extern "C" void ProjActHandlerThunk(); // 0x403517 (ILT thunk)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

@@ -1285,7 +1285,10 @@ RVA(0x001772e0, 0x117)
 i32 ApiCallerStubs::CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
     CFile file;
     u8 rgb[0x300];
-    u8 rgbq[0x400];
+    // The 0x400 blob IS 256 PALETTEENTRYs (its four bytes per entry are exactly
+    // peRed/peGreen/peBlue/peFlags), so it is declared as what Build takes and the
+    // ex-(PALETTEENTRY*) pun goes; the cursor walk is unchanged.
+    PALETTEENTRY rgbq[0x100];
 
     if (!file.Open(path, 0, 0)) {
         return 0;
@@ -1296,16 +1299,15 @@ i32 ApiCallerStubs::CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
     }
 
     u8* src = rgb;
-    u8* dst = rgbq;
+    PALETTEENTRY* dst = rgbq;
     for (i32 i = 0x100; i != 0; i--) {
-        dst[0] = *src++;
-        dst[1] = *src++;
-        dst[2] = *src++;
-        dst[3] = 0;
-        dst += 4;
+        dst->peRed = *src++;
+        dst->peGreen = *src++;
+        dst->peBlue = *src++;
+        dst->peFlags = 0;
+        dst++;
     }
-    // API-forced: the 0x400 palette blob is handed to the SDK-typed entry API
-    return Build(reinterpret_cast<PALETTEENTRY*>(rgbq), arg);
+    return Build(rgbq, arg);
 }
 
 // ===========================================================================

@@ -29,11 +29,5 @@ i32 SaveGame(CGameSaveHost* host, char* name) {
     if (mgr == 0) {
         return 0;
     }
-    return mgr->SnapshotChildren(
-               reinterpret_cast<HP_Callback>(&SerialObjectFactory),
-               name,
-               "Gruntz Save Game",
-               0
-           )
-           != 0;
+    return mgr->SnapshotChildren(&SerialObjectFactory, name, "Gruntz Save Game", 0) != 0;
 }

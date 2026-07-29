@@ -110,7 +110,7 @@ namespace Utils {
     void* RegistryHelper::GetValueBinary(
         char* szValueName,
         void* pBuffer,
-        u32* pBufferSize,
+        DWORD* pBufferSize,
         void* pDefault,
         u32 defaultSize
     ) {
@@ -123,7 +123,7 @@ namespace Utils {
                     0,
                     &dwType,
                     static_cast<LPBYTE>(pBuffer),
-                    reinterpret_cast<LPDWORD>(pBufferSize)
+                    pBufferSize
                 ) == 0
                 && dwType == 3 /*REG_BINARY*/) {
                 return pBuffer;
@@ -202,7 +202,7 @@ namespace Utils {
                    szValueName,
                    0,
                    1 /*REG_SZ*/,
-                   reinterpret_cast<LPBYTE>(const_cast<char*>(szValue)),
+                   reinterpret_cast<const BYTE*>(szValue), // API-forced: REG_SZ data is BYTEs
                    strlen(szValue) + 1
                )
                == 0;

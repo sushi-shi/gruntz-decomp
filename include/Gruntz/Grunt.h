@@ -89,14 +89,10 @@ extern FreeNodePool g_coordPool; // DAT_00645540
 // header. The two records defined here were byte-identical duplicates of that
 // pair - one {x,y} and one {next, pad, Coord*} node - and are folded onto it.)
 
-// MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
-// hand-rolled node walk has to pun it - language-forced. One seam per type.
-inline CoordNode* CoordHeadOf(const CObList& l) {
-    return reinterpret_cast<CoordNode*>(l.GetHeadPosition());
-}
-inline CoordNode* CoordHeadOf(const CPtrList& l) {
-    return reinterpret_cast<CoordNode*>(l.GetHeadPosition());
-}
+// (CoordHeadOf DISSOLVED 2026-07-29: every walk it fed now uses MFC's own
+//  GetHeadPosition/GetNext - CPtrList::GetNext inlines to the very same
+//  `node->pNext` + `node->data` pair, measured byte-neutral on
+//  CMenuPage::FocusForwardN/FocusBackwardN, which both stayed at 100%.)
 
 // The devs' coord-list extension (its one method is 0x29a30, ex
 // ?ListNodeAdvance@@YGPAXPAPAX@Z). IDENTITY, by the full xref chase: every retail
@@ -112,7 +108,10 @@ inline CoordNode* CoordHeadOf(const CPtrList& l) {
 // instantiate it (constructing one would stamp a phantom ??_7 - retail has none).
 class CGruntCoordList : public CPtrList {
 public:
-    void*& NextData(void*& pos); // 0x29a30 (advance pos; return the node's data slot)
+    // The devs' own OUT-OF-LINE copy of CPtrList::GetNext (retail really calls
+    // 0x29a30; MFC's inline can never emit out-of-line - see the flag-matrix note
+    // above). So it takes a POSITION& like GetNext does, and its body IS GetNext.
+    void*& NextData(POSITION& pos); // 0x29a30 (advance pos; return the node's data slot)
 };
 SIZE_UNKNOWN(); // adds no storage over CPtrList; never instantiated (see above)
 
@@ -124,42 +123,20 @@ struct CAnimSetNode {
 SIZE_UNKNOWN();
 
 class CGruntPuddle;
-struct CGruntLiveNode {
-    CGruntLiveNode* m_next; // +0x00
-    char m_pad4[0x8 - 0x4];
-    CGruntPuddle* m_entry; // +0x08  placed puddle (tile x/y + pending gate)
-};
-SIZE_UNKNOWN();
-
-// MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
-// hand-rolled node walk has to pun it - language-forced. One seam per type.
-inline CGruntLiveNode* LiveHeadOf(const CObList& l) {
-    return reinterpret_cast<CGruntLiveNode*>(l.GetHeadPosition());
-}
-inline CGruntLiveNode* LiveHeadOf(const CPtrList& l) {
-    return reinterpret_cast<CGruntLiveNode*>(l.GetHeadPosition());
-}
+// (CGruntLiveNode DISSOLVED 2026-07-29: it was a raw view of ::CPtrList::CNode
+//  ({pNext, pPrev, data}) over CTriggerMgr::m_baseList. Its one walk now uses
+//  MFC's own GetHeadPosition/GetNext, which inline to the very same two loads -
+//  measured byte-neutral on CMenuPage::FocusForwardN/FocusBackwardN, both of
+//  which stayed at 100% across the identical conversion.)
 
 // (CGruntTypeCatalog DISSOLVED 2026-07-28: it was a 2-field pad-view of
 // AnimWorkerObj - its m_c @+0x0c IS AnimWorkerObj::m_0c. CGrunt::Save now reads
 // `m_3c->m_0c` directly; see the @identity-TODO at GruntSteps.cpp for the
 // CDDrawSurfaceMgr-vs-CDDrawSubMgrLeaf conflict that slot still carries.)
 
-struct CGruntListNode {
-    CGruntListNode* m_next; // +0x00
-    char m_pad4[0x8 - 0x4];
-    u8* m_data; // +0x08  serialized payload blob (0x2c bytes)
-};
-SIZE_UNKNOWN();
-
-// MFC's POSITION for a CObList/CPtrList IS the internal node pointer, so a
-// hand-rolled node walk has to pun it - language-forced. One seam per type.
-inline CGruntListNode* GruntListHeadOf(const CObList& l) {
-    return reinterpret_cast<CGruntListNode*>(l.GetHeadPosition());
-}
-inline CGruntListNode* GruntListHeadOf(const CPtrList& l) {
-    return reinterpret_cast<CGruntListNode*>(l.GetHeadPosition());
-}
+// (CGruntListNode DISSOLVED 2026-07-29: same ::CPtrList::CNode view as
+//  CGruntLiveNode above, and it had NO users left at all - only the two
+//  POSITION-punning helpers that produced it.)
 
 class CArchive; // (unused MFC fwd; Save uses CFileMemBase)
 
@@ -702,9 +679,6 @@ public:
     }
     i32 CoordCount() const {
         return m_31c.GetCount();
-    }
-    CGruntListNode* PayloadHead() const {
-        return reinterpret_cast<CGruntListNode*>(m_338.GetHeadPosition());
     }
     i32 PayloadCount() const {
         return m_338.GetCount();
@@ -1281,7 +1255,6 @@ extern "C" i32 GameRand();                       // 0x51fee0 (__cdecl)
 
 // Command-step cue thunks (ILT VAs; reloc-masked at use).
 extern "C" void __stdcall GruntCue(CGrunt* g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x4039f4
-extern "C" i32 BadSelect(const char* msg);                     // 0x402cca (__cdecl)
 extern "C" i32 PickupCheck(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x403c6a (__cdecl)
 
 // File-scope prototypes moved from the .cpp: an unqualified

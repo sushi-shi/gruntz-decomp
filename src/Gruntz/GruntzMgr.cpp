@@ -812,12 +812,7 @@ RVA(0x0008f120, 0x170)
 i32 __stdcall LaunchWebBrowser(char* url) {
     LONG len = 0x104;
     char cmd[0x104];
-    if (RegQueryValueA(
-            reinterpret_cast<HKEY>(0x80000000),
-            "http\\shell\\open\\command",
-            cmd,
-            &len
-        )) {
+    if (RegQueryValueA(HKEY_CLASSES_ROOT, "http\\shell\\open\\command", cmd, &len)) {
         return 0;
     }
     if (strlen(cmd) < 3) {

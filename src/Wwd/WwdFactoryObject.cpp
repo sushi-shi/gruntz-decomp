@@ -45,7 +45,8 @@
 #include <Gruntz/ResolveNode.h>      // canonical CResolveNode (3-arg ctor @0x15b2c0)
 #include <DDrawMgr/AnimWorkerObj.h>  // AnimWorkerObj (the 0x17c worker; 3-arg ctor @0x15b300)
 #include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (ctor/dtor/Advance)
-#include <DDrawMgr/AniAdvance.h>     // CAniDesc/CAniBlitTrigger satellites
+#include <DDrawMgr/AniAdvance.h>     // CAniDesc + the anim cursor satellites
+#include <Gruntz/LeafCue.h>          // LeafCue::TriggerBlit (ex CAniBlitTrigger)
 #include <Gruntz/AniElement.h>       // CAniElement (the descriptor playlist full def)
 #include <Gruntz/SerialArchive.h>    // the shared CFileMemBase stream (Read/Write)
 #include <Wwd/WwdFactoryObject.h>    // CWwdFactoryObject/CDDrawRect
@@ -687,10 +688,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     entry = tbl[Rng::Next2() % dd->m_randMod];
                 }
                 if (entry != 0) {
-                    // @identity-TODO: CAniBlitTrigger IS LeafCue (proof + the blocked
-                    // fold in <DDrawMgr/AniAdvance.h>); this stays a cast only until
-                    // TriggerBlit moves onto LeafCue in DDrawSubMgr.cpp.
-                    reinterpret_cast<CAniBlitTrigger*>(entry)->TriggerBlit(cue, 0, 0, 0);
+                    entry->TriggerBlit(cue, 0, 0, 0);
                 }
             } else {
                 LeafCue** tbl;

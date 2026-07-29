@@ -1034,15 +1034,15 @@ i32 CDDrawChildGroup::SumWeighted() {
 }
 
 RVA(0x0015ab30, 0x38)
-void CDDrawChildGroup::RemoveAll(i32 pos, CWwdGameObject* obj) {
-    m_list.RemoveAt(reinterpret_cast<POSITION>(pos));
+void CDDrawChildGroup::RemoveAll(POSITION pos, CWwdGameObject* obj) {
+    m_list.RemoveAt(pos);
     m_map2c.RemoveKey(WwdKey(obj));
     m_map48.RemoveKey(WwdKey(obj));
 }
 
 RVA(0x0015ab70, 0x27)
-void CDDrawChildGroup::RemoveByPosition(i32 pos, CWwdGameObject* obj) {
-    m_list.RemoveAt(reinterpret_cast<POSITION>(pos));
+void CDDrawChildGroup::RemoveByPosition(POSITION pos, CWwdGameObject* obj) {
+    m_list.RemoveAt(pos);
     m_map2c.RemoveKey(WwdKey(obj));
 }
 
@@ -1180,15 +1180,13 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
                 break;
             }
             case 0x1c: {
-                // the callback's out-param IS the created object - every use below is
-                // CWwdGameObject* (the +4 store is its inherited CLoadable::m_id). The
-                // i32 on &rec is the callback ABI: m_callback's payload word is opaque
-                // by construction, so that one is API-forced, not a mis-model.
-                CWwdGameObject* rec = 0;
-                if (OwnerMgr()->InvokeCallback(reader, 0xa, desc.m_0c, reinterpret_cast<i32>(&rec))
-                    == 0) {
+                // The callback's last word is its void** out-param (see HP_Callback),
+                // so the created object comes back through a void* slot and downcasts.
+                void* out = 0;
+                if (OwnerMgr()->InvokeCallback(reader, 0xa, desc.m_0c, &out) == 0) {
                     return 0;
                 }
+                CWwdGameObject* rec = static_cast<CWwdGameObject*>(out);
                 if (rec == 0) {
                     return 0;
                 }
@@ -1213,13 +1211,11 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
         }
         if (desc.m_10 != 0) {
             // same callback ABI; the out-param is the bound logic object
-            CUserLogic* child = 0;
-            // API-forced: InvokeCallback forwards its last word untouched to the
-            // client-registered hook - the payload slot is opaque by construction.
-            if (OwnerMgr()->InvokeCallback(reader, 9, desc.m_10, reinterpret_cast<i32>(&child))
-                == 0) {
+            void* childOut = 0;
+            if (OwnerMgr()->InvokeCallback(reader, 9, desc.m_10, &childOut) == 0) {
                 return 0;
             }
+            CUserLogic* child = static_cast<CUserLogic*>(childOut);
             if (child == 0) {
                 return 0;
             }

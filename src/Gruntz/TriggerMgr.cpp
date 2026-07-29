@@ -1061,7 +1061,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
                 return 0;
             }
             o->m_38->m_flags |= 0x10000;
-            m_baseList.RemoveAt(reinterpret_cast<POSITION>(cur));
+            m_baseList.RemoveAt(cur); // `cur` is already the POSITION saved above
             unlinked = 1;
         }
     }

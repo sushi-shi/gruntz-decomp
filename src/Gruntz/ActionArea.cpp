@@ -1,7 +1,7 @@
 #include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
-#include <Mfc.h>           // real MFC CString (the type-name record's +0x00 member)
-#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
-#include <Io/FileMem.h>    // the serialize stream (CFileMemBase == the real CFileMemBase)
+#include <Mfc.h>                      // real MFC CString (the type-name record's +0x00 member)
+#include <Wap32/zBitVec.h>            // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/ActionArea.h>
 #include <Image/ImageSet.h> // CDDrawWorker::SetAllTypes (0x152480) / SetAllField18 (0x1524d0)
 #include <Bute/ButeTree.h>
@@ -26,7 +26,6 @@ static inline CActHandler* R3Lookup(i32 coord) {
     return (CActRegPool<CActionArea>::s_table.ResolveEntry(coord));
 }
 
-
 static inline CString* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
@@ -37,8 +36,7 @@ static inline CString* TypeLookup(i32 key) {
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    (static_cast<CVariantSlot*>(g_typeColl.m_errSink))
-        ->Set(&g_typeColl, item, 0xc);
+    (static_cast<CVariantSlot*>(g_typeColl.m_errSink))->Set(&g_typeColl, item, 0xc);
     return g_typeColl.Scratch(); // the slow-path element slot
 }
 
@@ -143,10 +141,8 @@ void CProjActObj::RegisterType() {
         (*slot) = "A";
         g_typeCounter++;
     }
-    // language-forced: the slot type is a pointer-to-MEMBER (CActHandler =
-    // i32 (CUserLogic::*)()) and the registrar has a plain function address;
-    // C++ defines no conversion between them, so the store goes through the slot.
-    *reinterpret_cast<void**>(R3Lookup(id)) = static_cast<void*>(&ProjActHandlerThunk);
+    // ILT 0x403517 -> 0x008440 == CActionArea::Tick; the slot IS a CActHandler.
+    *R3Lookup(id) = static_cast<CActHandler>(&CActionArea::Tick);
 }
 
 RVA(0x00008440, 0xfe)
@@ -161,9 +157,7 @@ i32 CActionArea::Tick() {
     if (*phase != 0) {
         i64 d2 = static_cast<i64>(static_cast<u32>(g_frameTime)) - *ts;
         double t = static_cast<double>(static_cast<u32>((d2 < 0 ? 0 : static_cast<u32>(d2))));
-        m_38->m_imageSet->SetAllField18(
-            static_cast<i32>(((1.0 - t * 0.002) * 50.0 - (-155.0)))
-        );
+        m_38->m_imageSet->SetAllField18(static_cast<i32>(((1.0 - t * 0.002) * 50.0 - (-155.0))));
     } else {
         i64 d2 = static_cast<i64>(static_cast<u32>(g_frameTime)) - *ts;
         double t = static_cast<double>(static_cast<u32>((d2 < 0 ? 0 : static_cast<u32>(d2))));

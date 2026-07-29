@@ -21,17 +21,17 @@ public:
 
     int Deserialize(CFileMemBase* s); // 0x00009bb0
 
-    i32 m_gridX;                    // +0x00  grid X
-    i32 m_gridY;                    // +0x04  grid Y
-    i32 m_screenX;                  // +0x08  screen X (clamped)
-    i32 m_screenY;                  // +0x0c  screen Y (adjusted)
-    CImage* m_frame;                // +0x10  menu-bar frame 1 (the drawable)
-    i32 m_button0State;             // +0x14  button[0] state
-    i32 m_button1State;             // +0x18  button[1] state
-    CImage* m_button0Frame;         // +0x1c  button[0] resolved frame
-    CImage* m_button1Frame;         // +0x20  button[1] resolved frame
-    i32 m_button0Icon;              // +0x24  button[0] icon
-    i32 m_button1Icon;              // +0x28  button[1] icon
+    i32 m_gridX;     // +0x00  grid X
+    i32 m_gridY;     // +0x04  grid Y
+    i32 m_screenX;   // +0x08  screen X (clamped)
+    i32 m_screenY;   // +0x0c  screen Y (adjusted)
+    CImage* m_frame; // +0x10  menu-bar frame 1 (the drawable)
+    // Three 2-element ARRAYS, not six scalars: Serialize writes them as
+    // `ar->Write(m_buttonState, 8)` / `ar->Write(m_buttonIcon, 8)`, and Refresh /
+    // HitClick walk each pair with one cursor. Layout is unchanged.
+    i32 m_buttonState[2];           // +0x14  per-button state
+    CImage* m_buttonFrame[2];       // +0x1c  per-button resolved frame
+    i32 m_buttonIcon[2];            // +0x24  per-button icon
     i32 m_active;                   // +0x2c  active flag
     CDDrawWorker* m_normChipSprite; // +0x30  norm-chip sprite
     CDDrawWorker* m_highChipSprite; // +0x34  high-chip sprite

@@ -460,9 +460,10 @@ i32 CMenuPage::FocusForwardN() {
     if (!(m_flags & 4)) {
         return 0;
     }
-    // language-forced: MFC keeps CPtrList::CNode private and POSITION opaque, so
-    // the n-step walk this page does by hand has to name the node itself.
-    CMenuListNode* pos = reinterpret_cast<CMenuListNode*>(cur->m_listPos);
+    // MFC's CPtrList::GetNext IS this walk inlined (`node = pos; pos = node->pNext;
+    // return node->data`), so the ex-CMenuListNode raw-node view is just the
+    // accessor spelled out - same two loads, no pun.
+    POSITION pos = cur->m_listPos;
     if (!pos) {
         return 0;
     }
@@ -471,10 +472,8 @@ i32 CMenuPage::FocusForwardN() {
     if (n >= 0) {
         n++;
         do {
-            if (pos) {
-                CMenuListNode* node = pos;
-                pos = node->pNext;
-                found = node->data;
+            if (pos != 0) {
+                found = static_cast<CMenuItem*>(m_items.GetNext(pos));
             } else {
                 found = 0;
             }
@@ -502,9 +501,10 @@ i32 CMenuPage::FocusBackwardN() {
     if (!(m_flags & 4)) {
         return 0;
     }
-    // language-forced: MFC keeps CPtrList::CNode private and POSITION opaque, so
-    // the n-step walk this page does by hand has to name the node itself.
-    CMenuListNode* pos = reinterpret_cast<CMenuListNode*>(cur->m_listPos);
+    // MFC's CPtrList::GetPrev IS this walk inlined (`node = pos; pos = node->pPrev;
+    // return node->data`), so the ex-CMenuListNode raw-node view is just the
+    // accessor spelled out - same two loads, no pun.
+    POSITION pos = cur->m_listPos;
     if (!pos) {
         return 0;
     }
@@ -513,10 +513,8 @@ i32 CMenuPage::FocusBackwardN() {
     if (n >= 0) {
         n++;
         do {
-            if (pos) {
-                CMenuListNode* node = pos;
-                pos = node->pPrev;
-                found = node->data;
+            if (pos != 0) {
+                found = static_cast<CMenuItem*>(m_items.GetPrev(pos));
             } else {
                 found = 0;
             }

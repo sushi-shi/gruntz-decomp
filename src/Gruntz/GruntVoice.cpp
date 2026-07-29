@@ -377,6 +377,15 @@ void CGruntVoice::Reset() {
     m_source = 0;
 }
 
+// The act-"A" slot: mark the voice sprite hidden and report "not running". Retail
+// 0x11a8c0 is `mov eax,[ecx+0x10]; mov ecx,[eax+0x40]; or ecx,1; mov [eax+0x40],ecx;
+// xor eax,eax; ret` - the same stateFlags|=1 the Update stop path takes.
+RVA(0x0011a8c0, 0xf)
+i32 CGruntVoice::IdleHidden() {
+    m_object->m_stateFlags |= 1;
+    return 0;
+}
+
 // @early-stop
 // 73.24 -> 85.84 (measured 2026-07-27, exit-block layout): base 6 rets / retail 4. The
 // three "lost the source object" refusals (both arms' resolve miss + the logic-null

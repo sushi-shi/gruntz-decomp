@@ -29,6 +29,9 @@ public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
+    // The act-"A" (idle) slot the registrar binds (ILT 0x4021f8 -> 0x040c10):
+    // retail is the bare `xor eax,eax; ret`, i.e. "nothing to do, not finished".
+    i32 Idle();                                // 0x040c10
     i32 Place(i32 a0, i32 a1, i32 a2, i32 a3); // 0x040c30
     i32 Remove();                              // 0x040d20
     void SetBute(char* key);                   // 0x07d810

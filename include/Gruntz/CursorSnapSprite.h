@@ -24,6 +24,9 @@ public:
     // a registered handler, re-resolve and dispatch it __thiscall on `this`. Same
     // archetype as CTeleporter::FireActivation (double ResolveEntry + PMF dispatch).
     virtual void FireActivation(i32 id) OVERRIDE;
+    // The act-"A" slot RegisterXLogic_62bfa0 (0x3a710) binds via ILT 0x401717:
+    // advance the bound sprite's anim cursor by the frame delta, report "not done".
+    i32 AdvanceAnim(); // 0x3a910
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 };

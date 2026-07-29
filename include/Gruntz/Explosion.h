@@ -23,6 +23,12 @@ public:
     // handler, re-resolve and dispatch it __thiscall on `this`. Same archetype as
     // CTeleporter::FireActivation.
     virtual void FireActivation(i32 id) OVERRIDE;
+    // The act-"A" slot RegisterXLogic_6447f8 (0x474b0) binds into
+    // CActRegPool<CExplosion>::s_table via ILT 0x4041ec -> 0x476b0. That store is
+    // what NAMES this body: an act table only ever holds its own class's
+    // CUserLogic member fn, so the ex-`RbEffect` placeholder (whose +0x10/+0x38
+    // are exactly CUserLogic::m_object / m_38) was CExplosion all along.
+    i32 Update(); // 0x476b0 (defined in RockBreakEffectUpdate.cpp)
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 };

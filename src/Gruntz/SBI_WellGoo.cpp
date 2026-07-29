@@ -45,9 +45,9 @@ i32 CSBI_WellGoo::Setup(CStatusBarMgr*, CDDrawSurfaceMgr*, i32, i32, RECT, i32, 
 // set; otherwise draw the base anim frame, compute the goo fill height as a
 // fraction of the (m_rect14.bottom - m_rect14.top) progress (FLOORED to 1.0, then ftol'd
 // into m_fgTop), shade-blit + BltEx the goo source for that height, and finally draw
-// the foreground anim frame whose top sits at m_fgTop - 2. The m_drawGuard/m_blitGuard
-// inc-around-dec is a draw-depth re-entrancy guard spanning the BltEx (the guard
-// pairs are NOT symmetric: ++ draw-then-blit, -- also draw-then-blit).
+// the foreground anim frame whose top sits at m_dstRect.top - 2. The right/bottom
+// ++ ... -- around the BltEx is the inclusive->exclusive rect adjust (see the header:
+// the ex-"m_drawGuard/m_blitGuard" were m_srcRect's right and bottom).
 RVA(0x000e6360, 0x8)
 i32 CSBI_WellGoo::Refresh(i32) {
     return 1;
@@ -64,12 +64,7 @@ i32 CSBI_WellGoo::Render() {
     }
 
     CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
-    m_baseFrame->RenderFrame(
-        ctx,
-        m_drawX,
-        m_rect14.bottom + 3,
-        0
-    );
+    m_baseFrame->RenderFrame(ctx, m_drawX, m_rect14.bottom + 3, 0);
 
     // Goo fill height: a fraction of the (m_rect14.bottom - m_rect14.top) progress,
     // ceiling-clamped to 1.0, subtracted off the current water line and rounded to an
@@ -79,30 +74,17 @@ i32 CSBI_WellGoo::Render() {
     if (fill <= 1.0) {
         fill = 1.0;
     }
-    m_fgTop = static_cast<i32>((static_cast<double>(m_rect14.bottom) - fill));
+    m_dstRect.top = static_cast<i32>((static_cast<double>(m_rect14.bottom) - fill));
 
-    m_blitter->Blit(
-        // @identity-TODO the +0x4c rect overlaps the guard members - see the header
-        reinterpret_cast<ShadeRect*>(&m_srcRect),
-        m_gooSrc,
-        // @identity-TODO the +0x4c rect overlaps the guard members - see the header
-        reinterpret_cast<ShadeRect*>(&m_srcRect),
-        0,
-        0
-    );
+    m_blitter->Blit(&m_srcRect, m_gooSrc, &m_srcRect, 0, 0);
 
-    m_drawGuard++;
-    m_blitGuard++;
+    m_srcRect.right++; // inclusive -> exclusive for the DirectDraw blit
+    m_srcRect.bottom++;
     ctx->m_surface->BltEx(&m_dstRect, m_gooSrc, &m_srcRect, 0x1000000, 0);
-    m_drawGuard--;
-    m_blitGuard--;
+    m_srcRect.right--;
+    m_srcRect.bottom--;
 
-    m_fgFrame->RenderFrame(
-        ctx,
-        m_drawX,
-        m_fgTop - 2,
-        0
-    );
+    m_fgFrame->RenderFrame(ctx, m_drawX, m_dstRect.top - 2, 0);
     return 1;
 }
 

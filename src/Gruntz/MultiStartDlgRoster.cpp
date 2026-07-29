@@ -197,12 +197,15 @@ i32 CMultiStartDlg::FlashCtrlD() {
         if (it == 0) {
             continue;
         }
-        RECT rc;
+        // The child rect is mapped corner-by-corner: MFC's CRect::TopLeft() /
+        // BottomRight() ARE the two CPoints the RECT is made of, so the
+        // ex-`(LPPOINT)&rc` / `+1` pun is just the named accessor pair.
+        CRect rc;
         ::GetClientRect(it->m_hWnd, &rc);
-        cts(it->m_hWnd, reinterpret_cast<LPPOINT>(&rc));
-        cts(it->m_hWnd, reinterpret_cast<LPPOINT>(&rc) + 1);
-        stc(m_hWnd, reinterpret_cast<LPPOINT>(&rc));
-        stc(m_hWnd, reinterpret_cast<LPPOINT>(&rc) + 1);
+        cts(it->m_hWnd, &rc.TopLeft());
+        cts(it->m_hWnd, &rc.BottomRight());
+        stc(m_hWnd, &rc.TopLeft());
+        stc(m_hWnd, &rc.BottomRight());
         CBrush scratch;
         i32 color;
         if (it->IsWindowEnabled()) {

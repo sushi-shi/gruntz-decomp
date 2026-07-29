@@ -17,8 +17,9 @@ static inline void FreeNameSlotNodes() {
 }
 
 // ===========================================================================
-// RegisterActs_6514d8 @0x0119fa0 - bind handler "A" (0x4037bf) and handler "B"
-// (0x402dd8) into the per-class registry @0x6514d8. (The registry's Construct
+// RegisterActs_6514d8 @0x0119fa0 - bind CGruntVoice::IdleHidden (ILT 0x4037bf ->
+// 0x11a8c0) as "A" and CGruntVoice::Update (ILT 0x402dd8 -> 0x11a8e0) as "B"
+// into the per-class registry @0x6514d8. (The registry's Construct
 // already lives in GruntVoice.cpp, over [2000, 2010].)
 // ===========================================================================
 // Two-key registrar: cl5 spends its inline budget from the outside in, so only the
@@ -36,9 +37,9 @@ void RegisterActs_6514d8() {
         *slot = "A";
         g_typeCounter++;
     }
-    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CGruntVoice>::s_table.ResolveEntryCallReport(id)) =
-        static_cast<void*>(&GruntVoiceActA);
+    // ILT 0x4037bf -> 0x11a8c0 == CGruntVoice::IdleHidden; the slot IS a CActHandler.
+    *CActRegPool<CGruntVoice>::s_table.ResolveEntryCallReport(id) =
+        static_cast<CActHandler>(&CGruntVoice::IdleHidden);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -49,7 +50,7 @@ void RegisterActs_6514d8() {
         *slot = "B";
         g_typeCounter++;
     }
-    // @identity-TODO a free `void()` registrant into a member-fn-ptr slot
-    *reinterpret_cast<void**>(CActRegPool<CGruntVoice>::s_table.ResolveEntryCallReport(id2)) =
-        static_cast<void*>(&GruntVoiceActB);
+    // ILT 0x402dd8 -> 0x11a8e0 == CGruntVoice::Update.
+    *CActRegPool<CGruntVoice>::s_table.ResolveEntryCallReport(id2) =
+        static_cast<CActHandler>(&CGruntVoice::Update);
 }
