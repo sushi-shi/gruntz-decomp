@@ -20,6 +20,19 @@
 #include <rva.h>
 #include <Rez/FrameClock.h> // g_timer100 (detail threshold)
 
+// The grid's two dimensions read as ONE pair.  CLightFxRender::AllocSurface copies the
+// 8-byte {m_width,m_height} block out ASCENDING (`mov edx,[info+0xc]; mov eax,[info+0x10]`,
+// arg1 in edx) - a struct-valued read; two independent member loads give the opposite
+// register pair because cl then evaluates the call's arguments right-to-left.
+static inline SIZE
+GridSize(const CGruntzMapMgr* grid) {
+    SIZE
+    s;
+    s.cx = grid->m_width;
+    s.cy = grid->m_height;
+    return s;
+}
+
 static inline u16 Pack(i32 r, i32 g, i32 b) {
     return static_cast<u16>(
         (((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp) | (b >> g_bDown))
@@ -82,15 +95,6 @@ void CLightFxRender::FreeSurface() {
 // ===========================================================================
 // CLightFxRender::AllocSurface  (0x0a33e0)
 // ===========================================================================
-// @early-stop
-// argument-load ORDER phase (99.68%): the transposed width/height was the real bug (see
-// below) and is fixed; what is left is that cl emits the two dimension loads in argument
-// evaluation order (arg2 `[info+0x10]`, then arg1 `[info+0xc]`, so arg1 lands in eax
-// because eax is the `info` base being overwritten) while retail emits them ascending by
-// offset (`[info+0xc]` -> edx, `[info+0x10]` -> eax). Two modrm bytes + the two `push`
-// opcodes; the pushed VALUES and their order are identical. Explicit `i32 w`/`i32 h`
-// locals do not move it - cl copy-propagates them back into the call - and match_variants
-// --state-trials 48 --max-depth 3 exhausted 384 variants without a win.
 RVA(0x000a33e0, 0x55)
 i32 CLightFxRender::AllocSurface() {
     if (m_tileGrid == 0) {
@@ -105,7 +109,12 @@ i32 CLightFxRender::AllocSurface() {
     // WIDTH first, then height: retail pushes [info+0xc] as arg1 and [info+0x10] as
     // arg2 (the ex "edx<->eax regalloc tail" was these two arguments TRANSPOSED - the
     // work surface was being allocated with the grid's rows/columns swapped).
-    m_surface = mgr->m_ptrColl->MakeAndAddB(info->m_width, info->m_height, 0, 0, -1);
+    // The pair is read as ONE 8-byte value (GridSize) - that is what makes cl load the
+    // two dimensions ASCENDING; passing the two members straight into the call makes it
+    // evaluate them right-to-left and swaps the edx/eax assignment.
+    SIZE
+    dims = GridSize(info);
+    m_surface = mgr->m_ptrColl->MakeAndAddB(dims.cx, dims.cy, 0, 0, -1);
     if (m_surface == 0) {
         return 0;
     }
