@@ -53,7 +53,7 @@ public:
     void Init();                       // 0x000e4d50: zero all 10 slots, set header field = 0x25
     i32 Load();                        // 0x000e4d90
     i32 Save(char* path, i32 b);       // 0x000e4ea0  (the slot's m_savePath / m_serial)
-    void ComputeAll();                 // 0x000e50a0
+    i32 ComputeAll();                  // 0x000e50a0 (returns 1; the caller ignores it)
     i32 Verify();                      // 0x000e50f0
     i32 FillSlot(SaveSlot* dst, const char* name, void* src);  // 0x000e5130
     i32 CopySlot(SaveSlot* dst, const SaveSlot* src);          // 0x000e51d0
@@ -65,10 +65,14 @@ public:
     SaveSlot* GetSlot(i32 i);                                  // 0x000e54b0
     i32 FillSlotByIndex(i32 idx, const char* name, void* src); // 0x000e54e0
     i32 StoreSlot(i32 idx, const SaveSlot* src);               // 0x000e5520
-    void SetMaxLevel(i32 v); // 0x0e5620 (out-of-line: clamped max-level update)
-    void SetCurLevel(i32 v); // 0x0e5660 (out-of-line: clamped cur-level update)
-    i32 CheckMagic();        // 0x000e5690
-    void SetMagic();         // 0x000e56b0 (m_magic = 0x42a)
+    // 0x000e5550: a __thiscall METHOD that never touches `this` (the sole caller,
+    // winapi_0e3a40_EndDialog, sets ecx = g_gameReg->m_saveSink before the call) - as a
+    // free __stdcall it emitted the identical bytes and silently dropped the receiver.
+    i32 CloseTempFile(SaveSlot* r); // 0x000e5550
+    void SetMaxLevel(i32 v);        // 0x0e5620 (out-of-line: clamped max-level update)
+    void SetCurLevel(i32 v);        // 0x0e5660 (out-of-line: clamped cur-level update)
+    i32 CheckMagic();               // 0x000e5690
+    void SetMagic();                // 0x000e56b0 (m_magic = 0x42a)
 
     CString m_str0; // +0x00  the directory CString
     CString m_name; // +0x04  the file-name CString passed to CFile::Open
@@ -114,7 +118,6 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 command, CSaveGame* saveGame); // 0x0e3f40
 // belongs in the owner header).
 int TempFileExists(SaveSlot* p); // 0x0e5700 (defined below)
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6); // 0x0e3e80
-i32 __stdcall CloseTempFile(SaveSlot* r); // defined below (0x0e5550)
 void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, SaveSlot* item);
 // The record the GAME_INFO dialog is describing IS the save slot g_slotState points
 // at: retail hands BuildLevelTitleString the very global winapi_0e4850_SetDlgItemTextA

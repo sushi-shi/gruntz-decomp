@@ -1371,6 +1371,12 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     s->Write(&m_94, 4);
     s->Write(&m_98, 4);
 
+    // @early-stop
+    // 2 instructions (99.98%): retail Save does `mov ecx,[esi+0x28]; imul ecx,[esi+0x2c]`,
+    // Load does the mirror - but inside THIS TU cl always loads m_gridH into the register
+    // whatever the spelling (5 tested: h*w*4, w*h*4, (w*h)<<2, split `x=w; x*=h`, a local
+    // pair). The same spellings in a scratch TU DO flip (second operand -> register), so the
+    // pick is TU-global CSE/interning state, and Save/Load cannot both be right at once.
     i32 gridSize = GridByteSize(m_gridH, m_gridW);
     s->Write(&gridSize, 4);
     s->Write(m_tileGrid, gridSize);

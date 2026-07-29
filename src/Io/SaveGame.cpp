@@ -202,7 +202,7 @@ i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
                 return 1;
             }
             if (wParam == 1) {
-                CloseTempFile(g_slotState);
+                (static_cast<CSaveGame*>(g_gameReg->m_saveSink))->CloseTempFile(g_slotState);
                 (static_cast<CSaveGame*>(g_gameReg->m_saveSink))->Save(0, 0x81a6);
                 EndDialog(hDlg, 1);
                 return 1;
@@ -674,11 +674,10 @@ i32 CSaveGame::Save(char* path, i32 b) {
 // ---------------------------------------------------------------------------
 // CSaveGame::ComputeAll  (0x000e50a0)
 // Sum Encode() over all ten slots; store header fields (@+0x08..+0x14).
-// @early-stop
-// regalloc wall (~91%): retail materializes the `1` store via `mov eax,1; mov
-// [edi+0xc],eax`; recompile uses the `mov $1,mem` immediate form. Logic exact.
+// Returns 1 - the `mov eax,1` retail emits before the store block IS the return
+// value, CSE'd into `m_header[1] = 1` (the sole caller, Save, ignores it).
 RVA(0x000e50a0, 0x3e)
-void CSaveGame::ComputeAll() {
+i32 CSaveGame::ComputeAll() {
     i32 sum = 0;
     for (i32 i = 0; i < 10; i++) {
         // byte-forced: Encode is a byte checksum - retail walks `mov dl,[ecx+esi*1]`
@@ -689,6 +688,7 @@ void CSaveGame::ComputeAll() {
     m_header[1] = 1;
     m_header[2] = sum;
     m_header[3] = 0;
+    return 1;
 }
 
 RVA(0x000e50f0, 0x2f)
@@ -810,12 +810,16 @@ i32 CSaveGame::Register(SaveSlot* slot) {
 // ---------------------------------------------------------------------------
 // CSaveGame::Encode  (0x000e5410)
 // Running XOR-fold checksum over a 0x100-byte slot (forward key). Checksums the
-// PLAINTEXT byte (pre-XOR) then writes the XOR'd byte back.
+// PLAINTEXT byte (pre-XOR) FIRST, then writes the XOR'd byte back - that statement
+// order is byte-PROVEN (this body compiled standalone with cl /O2 is byte-identical
+// to retail 0xe5410, incl. `mov edi,[esp+0xc]` landing BEFORE the store-back).
 // @early-stop
-// regalloc wall (~89%): retail gratuitously saves edi (push edi) and holds the
-// reloaded plaintext byte there (spill slot [esp+0xc]); recompile keeps it in the
-// volatile edx (spill slot [esp+0x8], no edi save). Logic + spill-reload idiom
-// exact, only the temp's register/slot differs.
+// TU-state regalloc: inside savegame.obj cl additionally copies the counter into ebx
+// (`mov ebx,ecx` + a third push) and makes ebx the imul destination, where retail
+// multiplies the reloaded byte by ecx in place. Insensitive to source spelling - 11
+// spellings tested (operand order both ways, *= with an explicit destination local,
+// no-&0xff, u8-cast key, acc = acc + ...) all emit the identical ebx form, while the
+// SAME body in a scratch TU emits retail's bytes exactly. Needs --state-trials.
 RVA(0x000e5410, 0x3d)
 i32 CSaveGame::Encode(u8* buf) {
     if (buf == 0) {
@@ -824,8 +828,8 @@ i32 CSaveGame::Encode(u8* buf) {
     i32 acc = 0;
     for (u32 i = 0; i < 0x100; i++) {
         u8 t = buf[i];
-        buf[i] = static_cast<u8>((t ^ i));
         acc += static_cast<i32>((t & 0xff)) * static_cast<i32>(i);
+        buf[i] = static_cast<u8>((t ^ i));
     }
     return acc;
 }
@@ -873,7 +877,7 @@ i32 CSaveGame::StoreSlot(i32 idx, const SaveSlot* src) {
 }
 
 RVA(0x000e5550, 0x9a)
-int __stdcall CloseTempFile(SaveSlot* p) {
+i32 CSaveGame::CloseTempFile(SaveSlot* p) {
     if (p == 0) {
         return 0;
     }
@@ -888,30 +892,14 @@ int __stdcall CloseTempFile(SaveSlot* p) {
 
 // SetMaxLevel (0x0e5620): clamped update of the highest-reached level. Out-of-line
 // (retail emits it standalone; the inline member folded away and never emitted).
-// @early-stop
-// regalloc coin-flip: retail pins the arg `v` in edx and m_maxLevel in eax; cl
-// picks the opposite (v in eax, m_maxLevel in edx). The branch structure and every
-// compare/store are byte-identical - only the eax<->edx pairing differs, and it is
-// not source-steerable here (SetCurLevel, the near-identical sibling, is 100%).
+// ONE store reached from the whole predicate - duplicating `m_maxLevel = v; return;`
+// per arm tail-merges to the same blocks but flips the eax<->edx pairing.
 RVA(0x000e5620, 0x27)
 void CSaveGame::SetMaxLevel(i32 v) {
-    if (v < 0x21) {
-        if (static_cast<u32>(v) > m_maxLevel) {
-            m_maxLevel = v;
-            return;
-        }
-        if (m_maxLevel > 0x24) {
-            m_maxLevel = v;
-            return;
-        }
+    if ((v < 0x21 && (static_cast<u32>(v) > m_maxLevel || m_maxLevel > 0x24))
+        || (m_maxLevel > 0x24 && static_cast<u32>(v) > m_maxLevel)) {
+        m_maxLevel = v;
     }
-    if (m_maxLevel <= 0x24) {
-        return;
-    }
-    if (static_cast<u32>(v) <= m_maxLevel) {
-        return;
-    }
-    m_maxLevel = v;
 }
 
 RVA(0x000e5660, 0x1e)

@@ -108,33 +108,35 @@ void CDDrawWorkerList::ClearWorkers() {
 // two m_04 paths are TWO sequential ifs (if m_04==1 {...} if m_04!=1 {...}), which
 // is why the success merge re-tests m_04. __thiscall, 4 stack args (ret 0x10).
 // @early-stop
-// 96.02% - logic/CFG/offsets/calls/error-codes all reproduced. Two residuals, both
-// selection-only: (1) a 1-instruction regalloc coin-flip in the w<=0 error path - retail
-// loads m_04 into eax (mov eax,[esi+4]; cmp $1,eax) so it can reuse esi for the manager,
-// we emit the shorter direct compare (cmp $1,[esi+4]); (2) TAIL-MERGE TARGET (jcc_sieve
-// TOPOLOGY 2026-07-28): all four `if (m_lastError == 0)` guards jump to a shared
-// `return 0`, but retail picks the FIRST-emitted one (after the 0xfa4 store, 0x163d5c)
-// and cl picks the LAST (after 0xfa2) - which also changes its encoding, since the first
-// exit block sets eax before the pops and later ones between them. Expressible only by
-// putting a `fail:` label inside the 0xfa4 arm and `goto`ing it from the other three;
-// not worth the contortion for a merge-target byte at 96%.
+// 97.2% - logic/CFG/offsets/calls/error-codes all reproduced. The old residual (1) (the
+// w<=0 error path's `cmp $1,[esi+4]` memory compare) is FIXED: dropping the two named
+// locals there gives retail's `mov eax,[esi+4]; mov esi,[esi+0xc]; cmp eax,1` (the
+// manager takes over the dead `this` register), and hoisting the success path's m_id
+// read into `kind` gives the register compare above the store block. What is left is
+// ONE 2-instruction slip - cl schedules that `cmp eax,1` three stores later than retail
+// (position swept: kind read at each of the 5 leading statements, plus a `BOOL` form and
+// an inverted arm; all >= the current spelling, and `gruntz permute variants` found no
+// AST win in 250 candidates).
 RVA(0x00163c90, 0x116)
 i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
     m_flags = a3;
     if (w <= 0 || h <= 0) {
-        i32 k = m_id;
-        CDDrawSurfaceMgr* mgr = OwnerMgr();
-        if (k == 1) {
-            if (mgr->m_lastError == 0) {
-                mgr->m_lastError = 0xfa1;
+        // NO locals here: retail re-reads m_id for the branch and lets the CSE'd
+        // OwnerMgr() land in esi (`this` is dead) - hoisting either into a named local
+        // pins the manager in a volatile reg and re-orders the two loads.
+        if (m_id == 1) {
+            if (OwnerMgr()->m_lastError == 0) {
+                OwnerMgr()->m_lastError = 0xfa1;
             }
         } else {
-            if (mgr->m_lastError == 0) {
-                mgr->m_lastError = 0xfa2;
+            if (OwnerMgr()->m_lastError == 0) {
+                OwnerMgr()->m_lastError = 0xfa2;
             }
         }
         return 0;
     }
+    i32 kind = m_id; // read + compared BEFORE the store block (retail's `mov eax,[esi+4];
+                     // cmp eax,1` sits above the stores and the flags survive them)
     m_width = w;
     m_height = h;
     m_bpp = bpp;
@@ -143,7 +145,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
     rect[1] = 0;
     rect[2] = w;
     rect[3] = h;
-    if (m_id == 1) {
+    if (kind == 1) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         m_surface = static_cast<CDDSurface*>(mgr->m_ptrColl->CreatePoolItem(
             static_cast<void*>(mgr->m_drawTarget->m_frontPair->m_surface),
@@ -193,8 +195,8 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
         if (w > 0 && h > 0) {
             m_width = w;
             m_srcRect[2] = w;
+            m_height = h; // retail stores m_height BEFORE m_bpp (0x14 then 0x18)
             m_bpp = bpp;
-            m_height = h;
             m_srcRect[0] = 0;
             m_srcRect[1] = 0;
             m_srcRect[3] = h;
@@ -720,9 +722,13 @@ i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, i32 bpp) {
 // Setup @0x150d60 AND by every worker Vfunc* (qualified base call) - the proof
 // that unmasked the ex "CDDrawWorkerBase::Helper_164790" label.
 // @early-stop
-// regalloc/scheduling wall (topic:regalloc): logic + every member store are
-// byte-exact, but retail parks the ctx handle in eax while cl parks it in
-// edx and reuses one `mov eax,1` for both m_50 and the return. ~90%.
+// regalloc/scheduling wall (topic:regalloc): logic + every member store are byte-exact,
+// but retail parks the ctx handle in eax while cl parks it in edx and reuses one
+// `mov eax,1` for both m_50 and the return. ~90%. Naming the level (or the manager) in
+// a local was swept over all 11 statement positions: two positions recover retail's
+// early `mov eax,[ecx+0xc]` + the IMMEDIATE `mov [ecx+0x50],1`, but every one of them
+// scores LOWER on objdiff than the plain spelling - the deref/store pair then lands on
+// the wrong side of the `mov eax,1`. Reverted to the plain form.
 RVA(0x00164790, 0x41)
 i32 CResolveNode::SetPosition(i32 x, i32 y) {
     m_screenX = x;
@@ -780,31 +786,13 @@ void CDDrawWorkerCache::Unload() {
     m_10.RemoveAll();
 }
 
-// +0x1c is m_nCount INSIDE the +0x10 MFC map (vptr,hash,size,count) - GetCount().
-static inline i32 ReadWorkerCacheField1c(const CDDrawWorkerCache* p) {
-    return p->m_10.GetCount();
-}
-static inline AnimWorkerObj* MakeAnimWorker(const CDDrawWorkerCache* parent) {
-    AnimWorkerObj* w = new AnimWorkerObj;
-    if (w != 0) {
-        i32 field1c = ReadWorkerCacheField1c(parent);
-        CDDrawSurfaceMgr* surfaceMgr = parent->OwnerMgr();
-        w->m_id = field1c;
-        w->m_flags = 0;
-        w->m_ownerCtx = surfaceMgr;
-        w->m_notify = 0;
-        w->m_payload = 0;
-        w->m_logic = 0;
-        w->m_target = 0;
-        w->m_1c = 0;
-        w->m_targetId = 0;
-        w->m_payloadSize = 0;
-    }
-    return w;
-}
 RVA(0x001652c0, 0x92)
 void* CDDrawWorkerCache::CreateWorker(GameObjNotifyFn factory, const char* key, i32 a3) {
-    AnimWorkerObj* w = MakeAnimWorker(this);
+    // the REAL 2-arg AnimWorkerObj ctor, inlined by the `new` (the invented
+    // MakeAnimWorker/ReadWorkerCacheField1c .cpp helpers cl refused to inline are gone):
+    // retail's `push 0x17c; call operator new; cmp eax,0; je; <mem-init + vptr>;
+    // mov edi,eax; jmp; xor edi,edi` IS scalar-new-with-initializer-null-join.
+    AnimWorkerObj* w = new AnimWorkerObj(OwnerMgr(), m_10.GetCount());
 
     if (w->Init(factory, a3) == 0) {
         if (w != 0) {
@@ -979,11 +967,9 @@ void CDDrawWorkerMapSmall::Unload() {
 // 0x1658c0: lock the surface arg; on 0 bail. Build a worker, dispatch its +0x28
 // virtual with (data, a3); unlock. On failure destroy the worker and return 0; on
 // success store it in m_map1 under `key` (or the surface name) and return it.
-// @early-stop
-// vptr-scheduler wall (~96%): the real CAniRecordBase2(field04, field0c) ctor
-// (docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md) fixed the construction
-// regalloc; the residual is the vptr store position (cl 1st vs retail 4th) + the /GX
-// EH-state schedule around the destructible worker/CString locals.
+// The key buffer is 0x50 bytes (retail `sub esp,0x50`), and the fallback is an if/else
+// on `key` - not a ternary into a named pointer, which makes cl stage the arg through
+// eax (`mov eax,[esp+0x68]; test; mov edi,eax`) instead of loading it straight to edi.
 RVA(0x001658c0, 0xcc)
 void* CDDrawWorkerMapSmall::Factory_1658c0(CParseSource* a1, const char* key, i32 a3) {
     char* data = a1->BeginParse();
@@ -999,9 +985,12 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(CParseSource* a1, const char* key, i3
         return 0;
     }
     a1->EndParse();
-    const char* k = key != 0 ? key : a1->m_name;
-    char buf[0x40];
-    strcpy(buf, k);
+    char buf[0x50];
+    if (key != 0) {
+        strcpy(buf, key);
+    } else {
+        strcpy(buf, a1->m_name);
+    }
     m_map1[buf] = static_cast<CObject*>(w);
     return w;
 }
@@ -1071,9 +1060,14 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CParseSource* a1, i32 a2, i32 a3) {
         }
         return 0;
     }
-    const char* k = keyHandle != 0 ? keyHandle : a1->m_name;
-    char buf[0x40];
-    strcpy(buf, k);
+    // 0x50-byte key buffer (retail `sub esp,0x54`), if/else fallback - same shape as
+    // the Factory_1658c0 twin.
+    char buf[0x50];
+    if (keyHandle != 0) {
+        strcpy(buf, keyHandle);
+    } else {
+        strcpy(buf, a1->m_name);
+    }
     m_map1[buf] = static_cast<CObject*>(w);
     return w;
 }
@@ -1127,10 +1121,13 @@ RVA(0x00165d30, 0x5f)
 i32 CDDrawWorkerMapSmall::RemoveByKey(const char* key) {
     CObject* val = 0;
     m_map1.Lookup(key, val);
+    // the worker pointer is bound BEFORE the null gate: retail's `delete` carries no
+    // null test, which cl only omits once it can see the tested value and the deleted
+    // one are the same SSA value
+    CAniRecordBase2* w = static_cast<CAniRecordBase2*>(val);
     if (val == 0) {
         return 0;
     }
-    CAniRecordBase2* w = static_cast<CAniRecordBase2*>(val);
     if (m_cachedWorker == w) {
         m_cachedWorker = 0;
     }
@@ -1155,8 +1152,11 @@ i32 CFileMem::Open() {
 
     // Through a CFile* so MSVC5 keeps the retail virtual dispatch (an object
     // receiver would devirtualize; the ex-CFileIODispatch view faked these slots).
-    CFile* io = &m_file;
+    // The pointer is formed INSIDE each arm - retail recomputes `&m_file` (and reloads
+    // its vptr) per branch, in a different register each time; one shared local above
+    // the WantRead() gate hoists the lea + the vptr load above the call.
     if (WantRead()) {
+        CFile* io = &m_file;
         if (!io->Open(m_name, 0, 0)) {
             return 0;
         }
@@ -1165,7 +1165,8 @@ i32 CFileMem::Open() {
         return 1;
     }
 
-    if (!io->Open(m_name, 0x1001, 0)) {
+    CFile* out = &m_file;
+    if (!out->Open(m_name, 0x1001, 0)) {
         return 0;
     }
     m_length = 0;
@@ -1216,16 +1217,15 @@ i32 CFileMem::Write(const void* buf, i32 n) {
 // ===========================================================================
 // 0x165fa0 (vtable slot 10): plot the worker's marker pixel (m_78) at pixel
 // (m_5c, m_60) onto BOTH passed surface pairs - the back one (b) first.
-// @early-stop
-// ~89% spill-slot regalloc wall: the second block is byte-exact; the first
-// differs only in WHICH coordinate is spilled across the Lock call.
 RVA(0x00165fa0, 0x93)
 void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     {
-        i32 x = m_screenX;
+        // same declaration order as the second block (all 24 permutations were
+        // compiled; only c,y,x,s reproduces retail's load order + the x-spill)
         char c = m_78b;
-        CDDSurface* s = b->m_surface;
         i32 y = m_screenY;
+        i32 x = m_screenX;
+        CDDSurface* s = b->m_surface;
         char* base = static_cast<char*>(s->Lock(0));
         if (base != 0) {
             base[s->m_bytesPerPixel * x + s->m_pitch * y] = c;
