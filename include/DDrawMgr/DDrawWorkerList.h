@@ -36,20 +36,20 @@ public:
     virtual i32 GetClassId() OVERRIDE; // [8] 0x156f20 -> CLASSID_WORKERLIST (0x11)
     // slots 9-12 - the worker factories (G obj bodies; NO direct retail callers:
     // reached only through these slots).
-    virtual void* CreateWorkerA(i32 a1, i32 a2, i32 a3);                // slot 9  0x156fd0
-    virtual void* CreateWorkerB28(i32 a1, i32 a2, i32 a3, i32 addHead); // slot 10 0x1573e0
+    virtual void* CreateWorkerA(i32 x, i32 y, i32 frame);                // slot 9  0x156fd0
+    virtual void* CreateWorkerB28(i32 x, i32 y, i32 frame, i32 addHead); // slot 10 0x1573e0
     virtual void* CreateWorkerB2C(
-        i32 a1,
-        i32 a2,
-        CDDrawWorker* a3,
-        i32 a4,
+        i32 x,
+        i32 y,
+        CDDrawWorker* src,
+        i32 frameIndex,
         i32 addHead
     ); // slot 11 0x157330
     virtual void* CreateWorkerB30(
-        i32 a1,
-        i32 a2,
+        i32 x,
+        i32 y,
         const char* key,
-        i32 a4,
+        i32 frameIndex,
         i32 addHead
     ); // slot 12 0x157150
     // slot 13 - the per-frame worker pump the play states "present" through

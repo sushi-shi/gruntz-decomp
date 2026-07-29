@@ -42,12 +42,12 @@ i32 g_bootyCheatBuilt = 0; // 0x22af10
 // is the allocator's block-layout decision, not source-steerable. See
 // docs/patterns/identical-return-epilogue-tailmerge.md (reverse direction).
 RVA(0x00018830, 0x380)
-i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
+i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     // ONE epilogue (retail 0x18b9b): every gate carries the result into eax and jumps
     // into it, and the success tail FALLS INTO it - not a fail block + a success block
     i32 ok = 0;
     // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
-    if (!CState::LoadGameAssetNamespaces(a1, a2, a3)) {
+    if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
         goto done;
     }
 

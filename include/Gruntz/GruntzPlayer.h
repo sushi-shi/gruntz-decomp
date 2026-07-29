@@ -87,7 +87,7 @@ public:
     CString GetName() {
         return m_name;
     }
-    i32 Serialize(CFileMemBase* ar, i32 kind, i32 a3, i32 a4); // 0x0dace0
+    i32 Serialize(CFileMemBase* ar, i32 kind, i32 typeId, i32 pObj); // 0x0dace0
     i32 Deactivate(); // 0x0db2f0 (ex "Cdb2f0::Finalize"; clears the board bundle + m_020)
     CString GetDefaultName(i32); // 0x0dafb0 (/GX, returns "Player"; ret 0x8 = thiscall + 1 arg)
 

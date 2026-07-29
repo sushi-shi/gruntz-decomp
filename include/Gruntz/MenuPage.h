@@ -80,8 +80,8 @@ public:
     i32 FocusNext();                           // 0x183c50
     i32 FocusPrev();                           // 0x183d10
     i32 Activate();                            // 0x183dd0  focus->vtable[+0x30]
-    i32 FocusAndSelect(i32 a0, i32 a1);        // 0x184070
-    i32 Click(i32 a0, i32 a1);                 // 0x1840a0
+    i32 FocusAndSelect(i32 x, i32 y);          // 0x184070
+    i32 Click(i32 x, i32 y);                   // 0x1840a0
     CMenuItem* HitTest(i32 x, i32 y);          // 0x184100
     CMenuItem* FindByName(const char* s);      // 0x184150  /GX; walk + strcmp
     i32 SelectForward();                       // 0x1843f0  /GX
@@ -89,16 +89,26 @@ public:
     i32 LayoutOne(CDDrawSurfacePair* target);  // 0x183e50  single-column measure/place
 
     // 0x74-item factories (derived item @0x5f08f8) - mirror AddItem/AddSubItem:
+    // ret 0x18 = 6 args; CMenuItem::Init(this, name, spriteKey, cmdId, key, flags) + SetFrame.
     CMenuItem2* AddItem2(
-        const char*,
-        const char*,
-        i32,
-        const char*,
-        i32,
-        i32
-    ); // 0x1836f0 (ret 0x18 = 6 args; Init(this, a0..a4) + SetFrame(a5))
-    CMenuItem2*
-    AddSubItem2(const char*, const char*, i32, i32, i32, const char*, i32, i32); // 0x183850
+        const char* name,
+        const char* spriteKey,
+        i32 cmdId,
+        const char* key,
+        i32 flags,
+        i32 frame
+    ); // 0x1836f0
+    // The AddItem2 twin that also links the sub-item's command param + parent context.
+    CMenuItem2* AddSubItem2(
+        const char* name,
+        const char* spriteKey,
+        i32 cmdId,
+        i32 cmdParam,
+        i32 parentCtx,
+        const char* key,
+        i32 flags,
+        i32 frame
+    );                       // 0x183850
     i32 Switch(i32 refocus); // 0x183df0  host SwitchToPage + refocus
     i32 CanWrap();           // 0x183e30  focus-wrap gate
     i32 FocusForwardN();     // 0x183f70  step focus +m_rowsPerCol nodes

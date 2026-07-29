@@ -676,8 +676,8 @@ i32 CBootyState::Vslot0c(i32, i32) {
 // `mov ecx,<this>` receiver loads retail emits) scores 80.30 where the wrong free
 // __stdcall spelling scores 85.57 - the lie scored better; the bytes say member.
 RVA(0x0001d440, 0xd7d)
-i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
-    if (!CState::LoadGameAssetNamespaces(a1, a2, a3)) {
+i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
+    if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
         return 0;
     }
     m_mgr->RestoreVideoMode(0);

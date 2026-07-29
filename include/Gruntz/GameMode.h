@@ -56,7 +56,7 @@ public:
     // MENU IMAGEZ/SOUNDZ namespaces through the m_c (CDDrawSurfaceMgr) resource
     // facet, primes the state core, then builds the menu HUD object + wires its
     // keys/sound cues.
-    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) OVERRIDE;
+    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) OVERRIDE;
     virtual i32 Vslot07()
         OVERRIDE; // slot 7  (+0x1c) 0x0a0d40 (ex ReadyGate: the &&-chained ready/transition probe - IsActive() && CommitState() ? Vslot06())
     virtual i32 InputVirtual()
@@ -138,7 +138,7 @@ public:
     }
     // slot 1  0x038d20 (CreditsState.cpp; retail ??_7CCreditsState slot 1 = ILT
     // 0x3954 -> 0x38d20, ex "LoadCreditzStateAssets") - the credits asset loader.
-    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) OVERRIDE;
+    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) OVERRIDE;
     // Own vtable slots (RTTI vtbl@0x5e9c64, 26 slots; slot order anchored by
     // CState). Out-of-line dtor (0x8d5e0, GameMode.cpp): runs ReleaseResources then
     // cl auto-destroys the m_caption CString + the m_1e8 image list before chaining
@@ -251,7 +251,7 @@ public:
     // slot 1  0x018830 (BootyCheatState.cpp; retail ??_7CBootyState slot 1 = ILT
     // 0x3111 -> 0x18830, ex "Vfunc1"/"CBootyCheatState::LoadAssets") - the booty
     // asset/cheat-table loader. Chains the base via CState::LoadGameAssetNamespaces().
-    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) OVERRIDE;
+    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) OVERRIDE;
     // Own vtable slots (RTTI vtbl@0x5e9cec, 26 slots; slot order anchored by CState).
     // CBootyState shares many slot bodies with its siblings (0x1ce30/0x1d420 own
     // CMultiBootyState methods, 0x18d30/0x1c8a0 live in the booty-activate/
@@ -446,7 +446,7 @@ public:
     // = ILT 0x2900 -> 0x1d440, ex "CBootyState::StateOnEnter" - a mis-attribution:
     // 0x1d440 appears in NO other vtable and has no direct caller, so it is this
     // class's own slot-1 loader). Body is a @stub (0xd7d B, unreconstructed).
-    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) OVERRIDE;
+    virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) OVERRIDE;
     // Own vtable slots (RTTI vtbl@0x5e9bdc, 26 slots; slot order anchored by CState).
     // The EH-framed `??1` (slot 0, @0x8d510) re-stamps the CMultiBootyState vtable,
     // runs the slot-2 release (statically bound), re-stamps CState, chains

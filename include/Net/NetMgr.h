@@ -214,9 +214,9 @@ struct CNetCmdSlot {
     CString
     BuildHostName(); // bc3f0  the slot's host name (by-value NRVO, fwds m_desc->GetName) [multi]
     i32 Init(
-        CMulti* a1,
-        GruntzPlayer* a2,
-        i32 a3
+        CMulti* owner,
+        GruntzPlayer* desc,
+        i32 state
     ); // c0b10  seed a fresh slot, then ClearCmds + reset both ranges
     i32 ProcessCmd(i32 playerId, void* rec, i32 size); // c0c70  parse/dispatch a command record
     // Slot-readiness check 0xc1320 (CNetSession::Verify dispatches it on each slot cursor).
@@ -298,16 +298,16 @@ struct CNetSession {
     CNetCmdSlot* FindSlot(u32 key); // c0460
     // Wiring init (caches the owner pointers then Reset()s). CMulti::CreateSession
     // @0xbbc90 pushes ([CMulti+0x04] = CGruntzMgr*, this, [CMulti+0x524] = CNetMgr*).
-    i32 Init(CGruntzMgr* a1, class CMulti* a2, CNetMgr* a3); // bef80 (reads a2->m_5a4)
+    i32 Init(CGruntzMgr* mgr, class CMulti* owner, CNetMgr* netMgr); // bef80 (reads owner->m_5a4)
 
     // --- lobby-sync methods (ex-CLobbySync, folded onto the same object) ---
     ~CNetSession();      // b6220  ResetSync + vector-destroy the 4 slots [multi]
     void ResetSync();    // bf000  clear header, recycle each slot, drain pool
     i32 Poll(i32 delta); // bf5a0  advance active channels; drain the endpoint
-    i32 Dispatch(i32 a, CNetCtrlMsg* b, i32 c); // bf700
-    i32 DispatchMsg(CNetCtrlMsg* m, i32 arg2);  // bf7c0
-    i32 Tick();                                 // bf9e0  snapshot -> broadcast -> flush
-    i32 SendAll();                              // bfb40
+    i32 Dispatch(i32 a, CNetCtrlMsg* b, i32 c);   // bf700
+    i32 DispatchMsg(CNetCtrlMsg* m, i32 ctrlArg); // bf7c0 (forwarded to HandleControlMsg)
+    i32 Tick();                                   // bf9e0  snapshot -> broadcast -> flush
+    i32 SendAll();                                // bfb40
     // Ship one grunt-state record to `dpTo` (0xbfc70). Retail's receiver is the
     // SESSION, not a slot: it reads [this+0x08] as the CNetMgr peer and [this+0x0c]+4
     // as `idFrom` - exactly SendOne's `m_netMgr->SetData(m_localDesc->m_id, ...)`
@@ -821,7 +821,7 @@ public:
     // VerifyCustomLevel (0xb8fc0, /GX EH): build the level-name rez path from the
     // config name CStrings, run it past the active session (Poll), and pop the
     // appropriate g_gameReg error modal on failure / level mismatch.
-    i32 VerifyCustomLevel(void* a1, CNetSessionNode* a2); // 0xb8fc0
+    i32 VerifyCustomLevel(void* h, CNetSessionNode* playerTok); // 0xb8fc0
 
     // Poll the active session for the verify response (0xbba10, reloc-masked).
     i32 Poll(i32 token); // 0xbba10
@@ -876,7 +876,7 @@ public:
     // GetName @0xba170 moved to CNetSessionNode - every retail receiver is the
     // m_sessions per-player record, and the body reads its +0x8 m_name.)
     // The control-message dispatch + the player-left handler.
-    i32 HandleControlMsg(CNetCtrlMsg* msg, i32 arg2); // 0xba1a0  switch on msg->m_0 (arg2 unused)
+    i32 HandleControlMsg(CNetCtrlMsg* msg, i32 unused); // 0xba1a0  switch on msg->m_0
     i32 OnPlayerLeft(i32 playerId); // 0xba3b0  (/GX) report + tear down a leaving player
     // The sprite/menu-message handler (case 3 of HandleControlMsg); its body lives
     // in a sibling stub TU (ApiCallers.cpp), declared here no-body so the call

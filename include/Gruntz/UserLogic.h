@@ -33,7 +33,7 @@ class CUserBase {
 public:
     CUserBase() {}
     virtual ~CUserBase() {} // inline: folds into leaf dtors (final base vptr store)
-    virtual i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4); // slot 1
+    virtual i32 SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj); // slot 1
     virtual LogicTypeId
     GetTypeTag(); // slot 2 (per-class logic-type id)                                           // slot 2
 };

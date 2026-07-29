@@ -15,34 +15,43 @@ class CDDrawSurfacePair;
 // its +0x00/+0x04 are CMenuPage::m_owner/m_host - and that owner is the
 // CDDrawSurfaceMgr whose +0x10 CDDrawWorkerRegistry carries the CMapStringToOb
 // m_10map the catalog Lookups run on. Three names, one real chain.)
-class CDDrawSurfaceMgr;    // <DDrawMgr/DDrawSurfaceMgr.h> - the +0x04 owner (m_imageRegistry)
+class CDDrawSurfaceMgr; // <DDrawMgr/DDrawSurfaceMgr.h> - the +0x04 owner (m_imageRegistry)
 
 class CMenuItem {
 public:
     CMenuItem();          // inlined leaf ctor (CStrings + implicit vptr + sentinels)
     virtual ~CMenuItem(); // 0x184690  slot 0 (scalar-deleting-dtor thunk @0x184670)
-    virtual i32 Init(CMenuPage* , const char* , const char* , i32 , const char* , i32 ); // 0x185460  slot 1
+    // (page, name, spriteKey, cmdId, key, flags) - the slot map is Init's own store list:
+    // name->m_name, spriteKey->the m_10map Lookup, cmdId->m_cmdId, key->m_key, flags->m_flags.
+    virtual i32 Init(
+        CMenuPage* page,
+        const char* name,
+        const char* spriteKey,
+        i32 cmdId,
+        const char* key,
+        i32 flags
+    ); // 0x185460  slot 1
     // OUT-OF-LINE (MenuItem.cpp): the retail body is a 5-byte `jmp Reset` thunk
     // and the dtor CALLS it direct rel32 - an inline body here made cl inline it
     // into the dtor and dispatch Reset through the absolute vtable slot instead.
-    virtual void Dispatch0c(); // 0x185510
-    virtual void Reset();                     // 0x184730  slot 3
-    virtual i32 GetWidth();                   // 0x185550  slot 4  (frame[2] m_height)
-    virtual i32 GetFrameWidth();              // 0x185520  slot 5  (frame[2] m_width)
-    virtual void Disable(i32 mode);           // 0x184650  slot 6  (disable/state hook: the
-                                              // main-menu builder Disables gated items w/ 3;
-                                              // Configure chains it w/ 2)
-    virtual i32 Detach();                     // 0x1855d0  slot 7  (return-1 default)
+    virtual void Dispatch0c();      // 0x185510
+    virtual void Reset();           // 0x184730  slot 3
+    virtual i32 GetWidth();         // 0x185550  slot 4  (frame[2] m_height)
+    virtual i32 GetFrameWidth();    // 0x185520  slot 5  (frame[2] m_width)
+    virtual void Disable(i32 mode); // 0x184650  slot 6  (disable/state hook: the
+                                    // main-menu builder Disables gated items w/ 3;
+                                    // Configure chains it w/ 2)
+    virtual i32 Detach();           // 0x1855d0  slot 7  (return-1 default)
     // slot 8 takes the frame DELTA, not a pointer: CMenuItem2::Notify (0x1858a0)
     // compares it against m_6c and subtracts it - it is a u32 countdown tick.
-    virtual i32 Notify(u32 dt);               // 0x1855e0  slot 8
+    virtual i32 Notify(u32 dt);                                 // 0x1855e0  slot 8
     virtual i32 Place(CDDrawSurfacePair* target, i32 x, i32 y); // 0x1855f0  slot 9
     // slot 10 takes a boolean flag (the body only tests it); CMenuPage::SetFocus
     // passes its own i32 `notify` argument straight through.
-    virtual i32 Configure(i32 notify);        // 0x185690  slot 10
-    virtual i32 Release();                    // 0x1856c0  slot 11 (Disable(1) + return 1)
-    virtual i32 Trigger();                    // 0x1856d0  slot 12
-    virtual i32 OnInit();                     // 0x184660  slot 13 (return-0 default)
+    virtual i32 Configure(i32 notify); // 0x185690  slot 10
+    virtual i32 Release();             // 0x1856c0  slot 11 (Disable(1) + return 1)
+    virtual i32 Trigger();             // 0x1856d0  slot 12
+    virtual i32 OnInit();              // 0x184660  slot 13 (return-0 default)
 
     // Non-virtual __thiscall helpers/accessors (bodies in MenuItem.cpp):
     RVA(0x001845b0, 0x20)
@@ -65,30 +74,30 @@ public:
     // implicit vptr                  // +0x00
     CDDrawSurfaceMgr* m_owner; // +0x04  owner (== the page's m_owner; catalog via
                                //        m_imageRegistry->m_10map)
-    class CChatBox* m_host; // +0x08  the on-screen chatbox (command window + Scroll/ReplaceNode)
-    CMenuPage* m_template;         // +0x0c  the source page (Init arg a0)
-    CString m_name;                // +0x10  item name (GetName)
-    CString m_key;                 // +0x14  key string (Trigger ReplaceNode payload)
-    i32 m_cmdId;                   // +0x18  primary WM_COMMAND id (NotifyCmd wParam)
-    i32 m_1c;                      // +0x1c  secondary cmd / sub-index (role dual; unproven)
-    i32 m_flags;                   // +0x20  flags: bit0 -> disabled state, 0x10000 -> loop
-    i32 m_state;                   // +0x24  visual state: 1 normal, 2 selected, 3 disabled
-    CObject* m_sprite;             // +0x28  resolved sprite/placer: the CMapStringToOb
-                                   //        catalog Lookup value (a CObject*; consumers
-                                   //        downcast to CDDrawWorker / the placer page)
-    POSITION m_listPos;            // +0x2c  cached POSITION in the page's item list
-                                   //        (= CMenuPage::m_items.AddTail return)
-    i32 m_cmdParam;                // +0x30  WM_COMMAND lParam (NotifyCmd)
-    i32 m_hitLeft;                 // +0x34  placed hit rect left (sentinel 0xeeeeeeee = unplaced)
-    i32 m_hitTop;                  // +0x38  placed hit rect top
-    i32 m_hitRight;                // +0x3c  placed hit rect right
-    i32 m_hitBottom;               // +0x40  placed hit rect bottom
-    i32 m_fixedX;                  // +0x44  placement x override (sentinel 0xeeeeeeee = use arg)
-    i32 m_fixedY;                  // +0x48  placement y override
-    CString m_navFwdName;          // +0x4c  forward-nav target item name (SelectFwd2)
-    CString m_navBackName;         // +0x50  backward-nav target item name (SelectBack2)
-    CString m_54;                  // +0x54  (GetField54 only; role unproven)
-    CString m_58;                  // +0x58  (GetField58 only; role unproven)
+    class CChatBox* m_host;    // +0x08  the on-screen chatbox (command window + Scroll/ReplaceNode)
+    CMenuPage* m_template;     // +0x0c  the source page (Init arg a0)
+    CString m_name;            // +0x10  item name (GetName)
+    CString m_key;             // +0x14  key string (Trigger ReplaceNode payload)
+    i32 m_cmdId;               // +0x18  primary WM_COMMAND id (NotifyCmd wParam)
+    i32 m_1c;                  // +0x1c  secondary cmd / sub-index (role dual; unproven)
+    i32 m_flags;               // +0x20  flags: bit0 -> disabled state, 0x10000 -> loop
+    i32 m_state;               // +0x24  visual state: 1 normal, 2 selected, 3 disabled
+    CObject* m_sprite;         // +0x28  resolved sprite/placer: the CMapStringToOb
+                               //        catalog Lookup value (a CObject*; consumers
+                               //        downcast to CDDrawWorker / the placer page)
+    POSITION m_listPos;        // +0x2c  cached POSITION in the page's item list
+                               //        (= CMenuPage::m_items.AddTail return)
+    i32 m_cmdParam;            // +0x30  WM_COMMAND lParam (NotifyCmd)
+    i32 m_hitLeft;             // +0x34  placed hit rect left (sentinel 0xeeeeeeee = unplaced)
+    i32 m_hitTop;              // +0x38  placed hit rect top
+    i32 m_hitRight;            // +0x3c  placed hit rect right
+    i32 m_hitBottom;           // +0x40  placed hit rect bottom
+    i32 m_fixedX;              // +0x44  placement x override (sentinel 0xeeeeeeee = use arg)
+    i32 m_fixedY;              // +0x48  placement y override
+    CString m_navFwdName;      // +0x4c  forward-nav target item name (SelectFwd2)
+    CString m_navBackName;     // +0x50  backward-nav target item name (SelectBack2)
+    CString m_54;              // +0x54  (GetField54 only; role unproven)
+    CString m_58;              // +0x58  (GetField58 only; role unproven)
 };
 SIZE(0x5c);
 

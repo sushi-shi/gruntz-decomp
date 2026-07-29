@@ -35,28 +35,29 @@ public:
     virtual i32 GetClassId() OVERRIDE {
         return CLASSID_SUBMGRPAGES; // 0xf
     }
-    virtual i32 CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4); // slot 9 (@0x24) 0x1588f0
+    virtual i32 CreateChildren(i32 w, i32 h, i32 bpp, i32 flags); // slot 9 (@0x24) 0x1588f0
 
     // --- the 0x158xxx surface-op cluster (was CDDrawWorkerMgr::Method_*) ---------
+    // pageIndex 2 selects the OVERLAY pair; anything else the BACK pair.
     i32 ResolvePageImage(
         struct CParseSource* src,
-        i32 arg2
+        i32 pageIndex
     ); // 0x158b10 (ResolveImage the page from the parse record)
     i32 LoadPageImage(
         struct CParseSource* src,
-        i32 arg2
-    );                                       // 0x158b40 (LoadImage the page from the parse record)
-    void FlipAndNotify();                    // 0x158b90
-    i32 PagesReady();                        // 0x158bc0
-    i32 ResizePages(i32 a1, i32 a2, i32 a3); // 0x158bf0
-    i32 CreateOverlay(i32 a1, i32 a2);       // 0x158cb0
-    void ClearAllPages(i32 a1);              // 0x158d50
-    i32 BlitPage(CDDrawSurfacePair* dst);    // 0x158c70
-    i32 HasOverlay();                        // 0x158d20
-    i32 PresentBackPage();                   // 0x158dc0
-    i32 TransEnter();                        // 0x158e40
-    i32 TransTitle();                        // 0x158e90
-    i32 TransExit();                         // 0x158ee0
+        i32 pageIndex
+    );                                      // 0x158b40 (LoadImage the page from the parse record)
+    void FlipAndNotify();                   // 0x158b90
+    i32 PagesReady();                       // 0x158bc0
+    i32 ResizePages(i32 w, i32 h, i32 bpp); // 0x158bf0
+    i32 CreateOverlay(i32 copyFromBack, i32 createFlag); // 0x158cb0
+    void ClearAllPages(u32 color);                       // 0x158d50
+    i32 BlitPage(CDDrawSurfacePair* dst);                // 0x158c70
+    i32 HasOverlay();                                    // 0x158d20
+    i32 PresentBackPage();                               // 0x158dc0
+    i32 TransEnter();                                    // 0x158e40
+    i32 TransTitle();                                    // 0x158e90
+    i32 TransExit();                                     // 0x158ee0
 
     // (+0x04..+0x0c = the INHERITED CLoadable header trio; owner via OwnerMgr().)
     // +0x10  front (the Flip target) - a CDDrawSurfaceChildA, NOT a CDDrawSurfacePair.
@@ -88,7 +89,7 @@ SIZE(0x1c);
 class CDrawSubWorker : public CLoadable {
 public:
     // Out-of-line @0x158f30; ChildA calls this retained copy.
-    CDrawSubWorker(CDDrawSurfaceMgr* owner, i32 a2, i32 a3);
+    CDrawSubWorker(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
 
 protected:
     // CDDrawSurfacePair's construction path has the same base initialization
@@ -97,8 +98,8 @@ protected:
     enum InlineCtorTag {
         INLINE_CTOR
     };
-    CDrawSubWorker(InlineCtorTag, CDDrawSurfaceMgr* owner, i32 a2, i32 a3)
-        : CLoadable(owner, a2, a3) {
+    CDrawSubWorker(InlineCtorTag, CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+        : CLoadable(owner, id, flags) {
         m_width = 0;
     }
 
@@ -138,7 +139,8 @@ class CDDrawSurfaceChildA : public CDrawSubWorker {
 public:
     // Inline ctor - retail CreateChildren shows exactly this expansion:
     // `call 0x158f30` (the out-of-line base ctor) + own ??_7 stamp + m_surface=0.
-    CDDrawSurfaceChildA(CDDrawSurfaceMgr* owner, i32 a2, i32 a3) : CDrawSubWorker(owner, a2, a3) {
+    CDDrawSurfaceChildA(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+        : CDrawSubWorker(owner, id, flags) {
         m_surface = 0;
     }
     // slot-1 ??1 @0x1591b0 / ??_G @0x159190 (DDrawSubMgr.cpp). The out-of-line
@@ -150,7 +152,7 @@ public:
     virtual i32 GetClassId() OVERRIDE; // [8] 0x159180 (declared-only)
     // [9] 0x1644a0 (T obj def): create the display-mode surface + set geometry
     // (the ex "CreateModeSurface_1644a0"; it IS the SetGeometry override).
-    virtual i32 SetGeometry(i32 a1, i32 a2, i32 a3) OVERRIDE;
+    virtual i32 SetGeometry(i32 w, i32 h, i32 bpp) OVERRIDE;
     virtual i32 SetGeom(i32 w, i32 h, i32 bpp) OVERRIDE; // [10] 0x1646b0 (T obj def)
 }; // 0x30 (no own fields)
 SIZE(0x30);

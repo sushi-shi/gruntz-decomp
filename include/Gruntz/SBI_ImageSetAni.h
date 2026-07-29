@@ -24,9 +24,10 @@ public:
     // (m_interval..m_frameEnd) through the stream, then chain CSBI_ImageSet::SerializeFields.
     // CFileMemBase is a typedef of CFileMemBase == the real CFileMemBase, so this is
     // the same parameter type as the rest of the chain (mangles PAVCFileMemBase@@).
-    virtual i32 SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xe7cd0
-    virtual i32 Refresh(i32 a) OVERRIDE;                                             // slot 4
-    virtual i32 Render() OVERRIDE; // slot 5 - 0xe7b00 (ex Tick)
+    virtual i32 SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj)
+        OVERRIDE;                        // 0xe7cd0
+    virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
+    virtual i32 Render() OVERRIDE;       // slot 5 - 0xe7b00 (ex Tick)
     // Slots 13/14 ARE Init and SetRange - the ILT thunks prove it (0x3b48 -> jmp 0xe7980
     // = Init; 0x3bde -> jmp 0xe7c30 = SetRange). They used to be declared here TWICE: as
     // two body-less placeholder virtuals `AniInit`/`AniSetRange` (invented only to pad the
@@ -92,8 +93,10 @@ public:
     // `new CSBI_StatzTabArrow` (Statz per-grunt row); slot 14 exists from CSBI_ImageSetAni
     // down, so the arrow is the deepest class both callers agree on. Bodies live in
     // StatusBarTabBuilders.cpp. (They were methods of the fabricated CSbConfigItem.)
-    void SetDirection(i32 a, i32 b);      // 0x0ea0f0
-    void SetDirectionAlt(i32 a1, i32 a2); // 0x0ea170
+    // `animate` 0 = hold a fixed frame (SetRange step 0), 1 = run the animation
+    // (SetRange step +-1); `position` picks which of the pair. Alt is the mirror.
+    void SetDirection(i32 position, i32 animate);    // 0x0ea0f0
+    void SetDirectionAlt(i32 position, i32 animate); // 0x0ea170
     // The m_114-gated 2-arg arrow mode sink (reloc `M`).
 };
 SIZE(0x54);

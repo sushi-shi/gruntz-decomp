@@ -197,8 +197,8 @@ CDDrawWorkerRegistry::~CDDrawWorkerRegistry() {
 }
 
 RVA(0x00156e80, 0x38)
-i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymParser* arg1, const char* key) {
-    void* result = arg1->GetRoot()->FindSub(key);
+i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymParser* parser, const char* key) {
+    void* result = parser->GetRoot()->FindSub(key);
     // retail: the InstallTree path is the fall-through, return 0 out-of-line at the tail.
     if (result != 0) {
         return InstallTree(result, g_emptyString, "_"); // slot-18 self-dispatch
@@ -256,9 +256,9 @@ i32 CDDrawWorkerList::IsReady() {
 }
 
 RVA(0x00156fd0, 0x8b)
-void* CDDrawWorkerList::CreateWorkerA(i32 a1, i32 a2, i32 a3) {
+void* CDDrawWorkerList::CreateWorkerA(i32 x, i32 y, i32 frame) {
     CDDrawWorkerA* w = new CDDrawWorkerA(OwnerMgr());
-    if (w->Vfunc2C(a1, a2, a3) == 0) {
+    if (w->Vfunc2C(x, y, frame) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -307,16 +307,22 @@ CDDrawWorkerA::~CDDrawWorkerA() {
 }
 
 RVA(0x00157110, 0x20)
-i32 CDDrawWorkerA::Vfunc2C(i32 a1, i32 a2, i32 a3) {
-    m_78b = static_cast<char>(a3);
+i32 CDDrawWorkerA::Vfunc2C(i32 x, i32 y, i32 frame) {
+    m_78b = static_cast<char>(frame);
     m_refCount = 2;
-    return CResolveNode::SetPosition(a1, a2); // direct base call (retail rel32 0x164790)
+    return CResolveNode::SetPosition(x, y); // direct base call (retail rel32 0x164790)
 }
 
 RVA(0x00157150, 0xa5)
-void* CDDrawWorkerList::CreateWorkerB30(i32 a1, i32 a2, const char* key, i32 a4, i32 addHead) {
+void* CDDrawWorkerList::CreateWorkerB30(
+    i32 x,
+    i32 y,
+    const char* key,
+    i32 frameIndex,
+    i32 addHead
+) {
     CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
-    if (w->PlaceBound(a1, a2, key, a4) == 0) {
+    if (w->PlaceBound(x, y, key, frameIndex) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -365,32 +371,32 @@ CDDrawWorkerB::~CDDrawWorkerB() {
 }
 
 RVA(0x00157280, 0x30)
-i32 CDDrawWorkerB::PlaceBound(i32 a1, i32 a2, const char* key, i32 a4) {
-    Helper(key, a4);
+i32 CDDrawWorkerB::PlaceBound(i32 x, i32 y, const char* key, i32 frameIndex) {
+    Helper(key, frameIndex);
     m_refCount = 2;
-    return CResolveNode::SetPosition(a1, a2); // direct base call (retail rel32 0x164790)
+    return CResolveNode::SetPosition(x, y); // direct base call (retail rel32 0x164790)
 }
 
 RVA(0x001572b0, 0x38)
-i32 CDDrawWorkerB::PlaceFrame(i32 a1, i32 a2, CDDrawWorker* src, i32 a4) {
+i32 CDDrawWorkerB::PlaceFrame(i32 x, i32 y, CDDrawWorker* src, i32 frameIndex) {
     CImage* frame;
-    if (a4 >= src->m_minIndex && a4 <= src->m_maxIndex) {
-        // CObArray operator[] inline = m_pData[a4]; CImage : CWapObj : CObject, so the
-        // band element downcasts (no reinterpret).
-        frame = static_cast<CImage*>(src->m_items[a4]);
+    if (frameIndex >= src->m_minIndex && frameIndex <= src->m_maxIndex) {
+        // CObArray operator[] inline = m_pData[frameIndex]; CImage : CWapObj : CObject,
+        // so the band element downcasts (no reinterpret).
+        frame = static_cast<CImage*>(src->m_items[frameIndex]);
     } else {
         frame = 0;
     }
     m_frame = frame;
     m_refCount = 2;
-    return CResolveNode::SetPosition(a1, a2); // direct base call (retail rel32 0x164790)
+    return CResolveNode::SetPosition(x, y); // direct base call (retail rel32 0x164790)
 }
 
 RVA(0x001572f0, 0x20)
-i32 CDDrawWorkerB::Vfunc2C(i32 a1, i32 a2, i32 a3) {
-    m_78 = a3;
+i32 CDDrawWorkerB::Vfunc2C(i32 x, i32 y, i32 frame) {
+    m_78 = frame;
     m_refCount = 2;
-    return CResolveNode::SetPosition(a1, a2); // direct base call (retail rel32 0x164790)
+    return CResolveNode::SetPosition(x, y); // direct base call (retail rel32 0x164790)
 }
 
 RVA(0x00157310, 0x1a)
@@ -405,9 +411,15 @@ void CDDrawWorkerBase::Unload() {
 }
 
 RVA(0x00157330, 0xa5)
-void* CDDrawWorkerList::CreateWorkerB2C(i32 a1, i32 a2, CDDrawWorker* a3, i32 a4, i32 addHead) {
+void* CDDrawWorkerList::CreateWorkerB2C(
+    i32 x,
+    i32 y,
+    CDDrawWorker* src,
+    i32 frameIndex,
+    i32 addHead
+) {
     CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
-    if (w->PlaceFrame(a1, a2, a3, a4) == 0) {
+    if (w->PlaceFrame(x, y, src, frameIndex) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -422,9 +434,9 @@ void* CDDrawWorkerList::CreateWorkerB2C(i32 a1, i32 a2, CDDrawWorker* a3, i32 a4
 }
 
 RVA(0x001573e0, 0xa0)
-void* CDDrawWorkerList::CreateWorkerB28(i32 a1, i32 a2, i32 a3, i32 addHead) {
+void* CDDrawWorkerList::CreateWorkerB28(i32 x, i32 y, i32 frame, i32 addHead) {
     CDDrawWorkerB* w = new CDDrawWorkerB(OwnerMgr());
-    if (w->Vfunc2C(a1, a2, a3) == 0) {
+    if (w->Vfunc2C(x, y, frame) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -810,7 +822,7 @@ i32 CDDrawSubMgrLeafScan::RemoveKeysEqual(const char* base, const char* str) {
 // (m_id/m_flags/m_ownerCtx) instead of spelling those three stores in its own body, so cl
 // emits the stamp between the base ctor and the derived member inits - retail's order.
 RVA(0x00157d70, 0x90)
-LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, void* arg2) {
+LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, void* src) {
     if (m_emitGate != 0) {
         return 0;
     }
@@ -818,7 +830,7 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, void* arg2) {
     if (e == 0) {
         return 0;
     }
-    if (e->Configure(static_cast<CParseSource*>(arg2)) == 0) {
+    if (e->Configure(static_cast<CParseSource*>(src)) == 0) {
         delete e; // virtual scalar-deleting dtor (vtbl[1](1))
         return 0;
     }
@@ -832,11 +844,11 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, void* arg2) {
 // CreateEntry except the element configure goes through the file-path
 // LoadSoundB (0x158720) instead of the parsed Configure (0x158760): allocate +
 // seed the element from the map count (this+0x1c) and handle (this+0x0c), run
-// Configure2 keyed by `arg2`; on failure scalar-delete + return 0, on success
+// Configure2 keyed by `src`; on failure scalar-delete + return 0, on success
 // link into the map under `key` + stamp the redraw arg (this+0x34). 2 args (ret 8).
 // EXACT - same LeafCue base-ctor delegation as CreateEntry (see the note there).
 RVA(0x00157e00, 0x90)
-LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, void* arg2) {
+LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, void* src) {
     if (m_emitGate != 0) {
         return 0;
     }
@@ -844,7 +856,7 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, void* arg2) {
     if (e == 0) {
         return 0;
     }
-    if (e->LoadSoundB(arg2) == 0) {
+    if (e->LoadSoundB(src) == 0) {
         delete e; // virtual scalar-deleting dtor (vtbl[1](1))
         return 0;
     }
@@ -1044,8 +1056,8 @@ i32 CDDrawSubMgrLeafScan::ProbeFirst(i32 arg) {
 }
 
 RVA(0x001584f0, 0x80)
-i32 CDDrawSubMgrLeafScan::MatchSub(LeafCue* arg1, i32 arg2) {
-    if (arg1 == 0) {
+i32 CDDrawSubMgrLeafScan::MatchSub(LeafCue* cue, i32 startPrimary) {
+    if (cue == 0) {
         return 0;
     }
     if (m_soundStream == 0) {
@@ -1054,13 +1066,13 @@ i32 CDDrawSubMgrLeafScan::MatchSub(LeafCue* arg1, i32 arg2) {
     // ONE WAVEFORMATEX (0x12 = 18 bytes): read the cue's format, then hand that same
     // buffer to the primary buffer. Retail passes esp+0x4 to both calls.
     char fmt[0x12];
-    if (arg1->m_10->GetFormat(fmt, 0x12, 0) == 0) {
+    if (cue->m_10->GetFormat(fmt, 0x12, 0) == 0) {
         return 0;
     }
     if (m_soundStream->SetPrimaryFormat(fmt) == 0) {
         return 0;
     }
-    if (arg2 != 0) {
+    if (startPrimary != 0) {
         if (m_soundStream->StartPrimary() == 0) {
             return 0;
         }
@@ -1233,27 +1245,27 @@ i32 LeafCue::TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2) {
 // vtable AFTER the base ctor + field seeds (vptr-last); the placement `new`
 // model stamps vptr-first. Logic/CFG/offsets/error-codes reproduced.
 RVA(0x001588f0, 0x1c5)
-i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
+i32 CDDrawSubMgrPages::CreateChildren(i32 w, i32 h, i32 bpp, i32 flags) {
     // The real inline derived ctor: retail emits `call 0x158f30` (the out-of-line
     // CDrawSubWorker base ctor) + the own ??_7 stamp + m_surface = 0.
     m_frontPair = new CDDrawSurfaceChildA(m_ownerCtx, 0, 0);
     m_backPair = new CDDrawSurfacePair(m_ownerCtx, 1, 0);
     m_overlayPair = new CDDrawSurfacePair(m_ownerCtx, 2, 0);
 
-    if (m_frontPair->SetGeometry(a1, a2, a3) == 0) { // slot-9 dispatch [vtbl+0x24]
+    if (m_frontPair->SetGeometry(w, h, bpp) == 0) { // slot-9 dispatch [vtbl+0x24]
         if (OwnerMgr()->m_lastError == 0) {
             OwnerMgr()->m_lastError = 0x7d1;
         }
         return 0;
     }
-    if (m_backPair->Create(a1, a2, a3, 0) == 0) {
+    if (m_backPair->Create(w, h, bpp, 0) == 0) {
         if (OwnerMgr()->m_lastError == 0) {
             OwnerMgr()->m_lastError = 0x7d2;
         }
         return 0;
     }
-    if (!(a4 & 1)) {
-        if (m_overlayPair->Create(a1, a2, a3, 0) == 0) {
+    if (!(flags & 1)) {
+        if (m_overlayPair->Create(w, h, bpp, 0) == 0) {
             if (OwnerMgr()->m_lastError == 0) {
                 OwnerMgr()->m_lastError = 0x7d3;
             }
@@ -1280,9 +1292,9 @@ void CDDrawSubMgrPages::Unload() {
 }
 
 RVA(0x00158b10, 0x2c)
-i32 CDDrawSubMgrPages::ResolvePageImage(CParseSource* src, i32 arg2) {
+i32 CDDrawSubMgrPages::ResolvePageImage(CParseSource* src, i32 pageIndex) {
     CDDrawSurfacePair* p;
-    if (arg2 == 2) {
+    if (pageIndex == 2) {
         p = m_overlayPair;
         if (!p) {
             return 0;
@@ -1297,9 +1309,9 @@ i32 CDDrawSubMgrPages::ResolvePageImage(CParseSource* src, i32 arg2) {
 }
 
 RVA(0x00158b40, 0x2c)
-i32 CDDrawSubMgrPages::LoadPageImage(CParseSource* src, i32 arg2) {
+i32 CDDrawSubMgrPages::LoadPageImage(CParseSource* src, i32 pageIndex) {
     CDDrawSurfacePair* p;
-    if (arg2 == 2) {
+    if (pageIndex == 2) {
         p = m_overlayPair;
         if (!p) {
             return 0;
@@ -1334,17 +1346,17 @@ i32 CDDrawSubMgrPages::PagesReady() {
 }
 
 RVA(0x00158bf0, 0x7f)
-i32 CDDrawSubMgrPages::ResizePages(i32 a1, i32 a2, i32 a3) {
+i32 CDDrawSubMgrPages::ResizePages(i32 w, i32 h, i32 bpp) {
     CDDrawSurfaceChildA* p = m_frontPair;
-    if (p->m_width != a1 || p->m_height != a2 || p->m_bpp != a3) {
-        if (!m_frontPair->SetGeom(a1, a2, a3)) {
+    if (p->m_width != w || p->m_height != h || p->m_bpp != bpp) {
+        if (!m_frontPair->SetGeom(w, h, bpp)) {
             return 0;
         }
-        if (!m_backPair->SetGeom(a1, a2, a3)) {
+        if (!m_backPair->SetGeom(w, h, bpp)) {
             return 0;
         }
         if (m_overlayPair && m_overlayPair->IsLoaded()) {
-            if (!m_overlayPair->SetGeom(a1, a2, a3)) {
+            if (!m_overlayPair->SetGeom(w, h, bpp)) {
                 return 0;
             }
         }
@@ -1370,15 +1382,15 @@ i32 CDDrawSubMgrPages::BlitPage(CDDrawSurfacePair* dst) {
 }
 
 RVA(0x00158cb0, 0x6a)
-i32 CDDrawSubMgrPages::CreateOverlay(i32 a1, i32 a2) {
+i32 CDDrawSubMgrPages::CreateOverlay(i32 copyFromBack, i32 createFlag) {
     if (m_overlayPair->IsLoaded()) {
         return 0;
     }
     CDDrawSurfacePair* s14 = m_backPair;
-    if (!m_overlayPair->Create(s14->m_width, s14->m_height, s14->m_bpp, a2)) {
+    if (!m_overlayPair->Create(s14->m_width, s14->m_height, s14->m_bpp, createFlag)) {
         return 0;
     }
-    if (a1) {
+    if (copyFromBack) {
         m_overlayPair->m_surface->BltFast(0, 0, m_backPair->m_surface, m_backPair->m_srcRect, 0x10);
     }
     return 1;
@@ -1393,13 +1405,13 @@ i32 CDDrawSubMgrPages::HasOverlay() {
 }
 
 RVA(0x00158d50, 0x61)
-void CDDrawSubMgrPages::ClearAllPages(i32 a1) {
-    m_backPair->m_surface->Fill(a1);
+void CDDrawSubMgrPages::ClearAllPages(u32 color) {
+    m_backPair->m_surface->Fill(color);
     m_frontPair->m_surface->Flip(0);
-    m_backPair->m_surface->Fill(a1);
+    m_backPair->m_surface->Fill(color);
     m_frontPair->m_surface->Flip(0);
     if (OwnerMgr()->m_flags & 2) {
-        m_backPair->m_surface->Fill(a1);
+        m_backPair->m_surface->Fill(color);
         m_frontPair->m_surface->Flip(0);
     }
 }
@@ -1407,19 +1419,19 @@ void CDDrawSubMgrPages::ClearAllPages(i32 a1) {
 // 0x158dc0: blt m_backPair's surface <- m_frontPair's surface; if the m_worker flag
 // bit1 is set, flip m_frontPair and re-blt.
 // @early-stop
-// ~84% - init `ok=0` up front + only deref m_backPair->m_surface INSIDE the p10
+// ~84% - init `ok=0` up front + only deref m_backPair->m_surface INSIDE the front
 // guard (was 71%: caching a `p14=m_backPair` local + an else{ok=0} made cl pin
-// m_backPair in edi across the p10 checks and hoist/share the ok=0). Residual:
+// m_backPair in edi across the front checks and hoist/share the ok=0). Residual:
 // retail keeps the m_backPair pointer in ecx (loaded early) + inlines the ok=0
 // block after the checks, where cl loads m_backPair late + hoists ok=0 to the
 // prologue - a regalloc/branch-layout coin-flip (flat &&-else regressed to 68%).
 // docs/patterns/zero-register-pinning.md.
 RVA(0x00158dc0, 0x7d)
 i32 CDDrawSubMgrPages::PresentBackPage() {
-    CDDrawSurfaceChildA* p10 = m_frontPair;
+    CDDrawSurfaceChildA* front = m_frontPair;
     i32 ok = 0;
-    if (p10 && p10->m_surface) {
-        CDDSurface* s10 = p10->m_surface;
+    if (front && front->m_surface) {
+        CDDSurface* s10 = front->m_surface;
         CDDSurface* s14 = m_backPair->m_surface;
         if (s14) {
             i32 hr = s14->Blt(s10);
@@ -1522,7 +1534,8 @@ i32 CDDrawSubMgrPages::TransExit() {
 }
 
 RVA(0x00158f30, 0x27)
-CDrawSubWorker::CDrawSubWorker(CDDrawSurfaceMgr* owner, i32 a2, i32 a3) : CLoadable(a2, a3, owner) {
+CDrawSubWorker::CDrawSubWorker(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+    : CLoadable(id, flags, owner) {
     m_width = 0;
 }
 RVA(0x00158f60, 0x1d)

@@ -62,7 +62,7 @@ static inline void StampParamBlock(CGameLevel* o) {
 // independent immediate-to-memory store has no dep to pin its slot). Logic + offsets +
 // CFG + EH frame exact.
 RVA(0x0015ccd0, 0x118)
-CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 a2, i32 a3) : CLoadable(a2, a3, owner) {
+CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags) : CLoadable(id, flags, owner) {
     // the three header words are stamped in the BASE-ctor phase (retail writes them
     // between the CLoadable vptr stamp and the m_planes/m_imageSets member ctors,
     // which the leaf body cannot reach) - delegate, do not respell them here.
@@ -481,11 +481,20 @@ CGameLevel::ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, vo
 }
 
 RVA(0x0015d9a0, 0xdc)
-CDDrawWorkerHost*
-CGameLevel::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, const char* name) {
+CDDrawWorkerHost* CGameLevel::ReadObjectPlane(
+    i32 w,
+    i32 h,
+    i32 tileW,
+    i32 tileH,
+    i32 depthX,
+    i32 depthY,
+    const char* name
+) {
     CDDrawWorkerHost* plane = new CDDrawWorkerHost(OwnerMgr(), m_planes.GetSize(), 0);
 
-    if (plane->InitGeometry(a1, a2, a3, a4, a5, a6, &m_planeCtx, const_cast<char*>(name)) == 0) {
+    if (plane
+            ->InitGeometry(w, h, tileW, tileH, depthX, depthY, &m_planeCtx, const_cast<char*>(name))
+        == 0) {
         if (plane) {
             delete plane; // the virtual scalar-deleting dtor (vtable +0x4, flag 1)
         }
@@ -676,7 +685,7 @@ void CGameLevel::SyncAfterMainIndex(void* visitor) {
 // ---------------------------------------------------------------------------
 // FindPlaneByName: case-insensitive search for the plane named `name`; null if none.
 // ---------------------------------------------------------------------------
-// MoveToward: drive DispatchMove toward (arg1, arg2) on `target`, never moving more
+// MoveToward: drive DispatchMove toward (destX, destY) on `target`, never moving more
 // than this level's per-axis step limits (m_maxStepX/m_maxStepY) at once. A direct call when
 // the move is within limits or forced by the target flags / kind 7; otherwise an
 // incremental stepping loop that re-runs DispatchMove until it reaches the goal or is
@@ -690,46 +699,46 @@ void CGameLevel::SyncAfterMainIndex(void* visitor) {
 // which alone cost 5 extra blocks), and the four loop-exit conditions were an inverted
 // nested test that CONTINUED when the move mode changed and when DispatchMove reported
 // "the scroll did not move" (0x400000) - i.e. it could spin. Residue is the callee-saved
-// ASSIGNMENT: retail spills `this` to a stack home and keeps sx/arg2/arg1 in ebx/edi/ecx
+// ASSIGNMENT: retail spills `this` to a stack home and keeps sx/destY/destX in ebx/edi/ecx
 // (2 local dwords + three parameter homes reused for ok/stepX/goalX), cl keeps `this` in
 // ebx and spills less. Deferred to the final sweep.
 RVA(0x0015de40, 0x164)
-i32 CGameLevel::MoveToward(CGameObject* target, i32 arg1, i32 arg2, i32 arg3) {
+i32 CGameLevel::MoveToward(CGameObject* target, i32 destX, i32 destY, i32 moveFlags) {
     CGameObject* t = target;
     i32 limX = m_maxStepX;
     // t->m_screenX is read ONCE and kept (retail holds it in ebx from the prologue right
-    // through the `sx > arg1` step-sign test); m_maxStepY is read at the stepY point, not
+    // through the `sx > destX` step-sign test); m_maxStepY is read at the stepY point, not
     // hoisted next to limX (retail's `mov ebp,[this+0x68]` sits inside the loop preamble).
     i32 sx = t->m_screenX;
 
     // abs(), not `if (d < 0) d = -d;`: retail's `cdq / xor eax,edx / sub eax,edx` IS the
     // /Oi abs intrinsic; the hand-rolled negate emits a `jns`/`neg` branch pair and splits
     // the block skeleton.
-    i32 dx = abs(sx - arg1);
+    i32 dx = abs(sx - destX);
     if (dx <= limX) {
-        i32 dy = abs(t->m_screenY - arg2);
+        i32 dy = abs(t->m_screenY - destY);
         if (dy <= m_maxStepY) {
-            return DispatchMove(target, arg1, arg2, arg3);
+            return DispatchMove(target, destX, destY, moveFlags);
         }
     }
 
     if (t->m_flags & 0x10) {
-        return DispatchMove(target, arg1, arg2, arg3);
+        return DispatchMove(target, destX, destY, moveFlags);
     }
 
     i32 kind = t->m_moveMode;
     if (kind == 7) {
-        return DispatchMove(target, arg1, arg2, arg3);
+        return DispatchMove(target, destX, destY, moveFlags);
     }
 
-    // --- incremental stepping toward (arg1, arg2) ---------------------------
+    // --- incremental stepping toward (destX, destY) ---------------------------
     i32 stepX = limX;
-    i32 goalX = arg1;
-    if (sx > arg1) {
+    i32 goalX = destX;
+    if (sx > destX) {
         stepX = -stepX;
     }
     i32 stepY = m_maxStepY;
-    if (t->m_screenY > arg2) {
+    if (t->m_screenY > destY) {
         stepY = -stepY;
     }
 
@@ -747,16 +756,16 @@ i32 CGameLevel::MoveToward(CGameObject* target, i32 arg1, i32 arg2, i32 arg3) {
         }
         i32 ny = stepY + t->m_screenY;
         if (stepY > 0) {
-            if (ny > arg2) {
-                ny = arg2;
+            if (ny > destY) {
+                ny = destY;
             }
         } else {
-            if (ny < arg2) {
-                ny = arg2;
+            if (ny < destY) {
+                ny = destY;
             }
         }
 
-        i32 flags = DispatchMove(target, nx, ny, arg3);
+        i32 flags = DispatchMove(target, nx, ny, moveFlags);
 
         // Four INDEPENDENT stop conditions, each `ok = 0` (retail: `jne <ok=0>` twice, then
         // the goal pair, then `test eax,0x400000 / je <skip the store>`). `ok` is seeded to
@@ -767,7 +776,7 @@ i32 CGameLevel::MoveToward(CGameObject* target, i32 arg1, i32 arg2, i32 arg3) {
             ok = 0;
         } else if ((flags & 0x10000) != 0) {
             ok = 0;
-        } else if (t->m_screenX == goalX && t->m_screenY == arg2) {
+        } else if (t->m_screenX == goalX && t->m_screenY == destY) {
             ok = 0;
         } else if ((flags & 0x400000) != 0) {
             ok = 0;
@@ -882,9 +891,9 @@ void CGameLevel::NotifyAllPlanes() {
 // delinker's jump-table SYMBOL naming - base carries the table under its own `$L…`/`$tail$`
 // symbols where the delinked target packs it inside the function symbol
 // (jumptable-data-overlap). The tail ResolveLevelName arg list was a real bug - it passed
-// arg2 twice, dropping arg1; retail pushes arg1/arg2/arg3 (fixed earlier).
+// typeId twice, dropping mode; retail pushes mode/typeId/pObj (fixed earlier).
 RVA(0x00160f70, 0xfa)
-i32 CGameLevel::EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3) {
+i32 CGameLevel::EditDispatch(void* sink, i32 mode, i32 typeId, i32 pObj) {
     EditSink* s = static_cast<EditSink*>(sink);
     if (s == 0) {
         return 0;
@@ -898,10 +907,10 @@ i32 CGameLevel::EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3) {
     // single shared tail, giving retail's `add eax,-3 / cmp eax,5 / ja tail /
     // jmp [eax*4+tbl]` with the 3/5/6/8 entries pointing at that tail. Spelling the tail
     // out under `default` instead also builds the table but leaves a 50-byte duplicate.
-    switch (arg1) {
+    switch (mode) {
         case 3:
             break;
-        case 4:
+        case SERIAL_SAVE:
             memset(buf, 0, sizeof(buf));
             strcpy(buf, m_levelName);
             s->Write(buf, 0x80);
@@ -910,7 +919,7 @@ i32 CGameLevel::EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3) {
             break;
         case 6:
             break;
-        case 7:
+        case SERIAL_LOAD:
             s->Read(buf, 0x80);
             strcpy(m_levelName, buf);
             break;
@@ -924,7 +933,7 @@ tail:
     if (m_mainPlane == 0) {
         return 0;
     }
-    return m_mainPlane->SerializeDispatch(s, arg1, arg2, arg3) != 0 ? 1 : 0;
+    return m_mainPlane->SerializeDispatch(s, mode, typeId, pObj) != 0 ? 1 : 0;
 }
 
 RVA(0x001610a0, 0x70)
@@ -967,9 +976,9 @@ i32 CGameLevel::LoadName(void* sink) {
 // and MSVC pre-loads (3 regs). docs/patterns/pin-local-for-callee-saved-reg.md.
 // Logic/offsets/CFG exact; deferred to the final sweep.
 RVA(0x0015dfb0, 0x15b)
-i32 CGameLevel::DispatchMove(CGameObject* target, i32 a1, i32 a2, i32 a3) {
+i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 moveFlags) {
     if (m_flags & 4) {
-        return ApplyMove(target, a1, a2, a3);
+        return ApplyMove(target, destX, destY, moveFlags);
     }
 
     CGameObject* s = target;
@@ -982,40 +991,40 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 a1, i32 a2, i32 a3) {
         case 1:
         case 2:
         case 5:
-            eax = MoveHandlerA(s, a1, a2, a3);
+            eax = MoveHandlerA(s, destX, destY, moveFlags);
             break;
         case 3:
-            eax = MoveHandlerB(s, a1, a2, a3);
+            eax = MoveHandlerB(s, destX, destY, moveFlags);
             if (s->m_moveMode == 4) {
                 eax |= 0x800000;
             }
             break;
         case 4:
-            eax = MoveHandlerC(s, a1, a2, a3);
+            eax = MoveHandlerC(s, destX, destY, moveFlags);
             if (s->m_moveMode == 1) {
                 eax |= 0x1000000;
             }
             break;
         case 8:
-            if (a2 < prevY) {
-                eax = MoveHandlerB(s, a1, a2, a3);
+            if (destY < prevY) {
+                eax = MoveHandlerB(s, destX, destY, moveFlags);
                 if (s->m_moveMode == 4) {
                     eax |= 0x800000;
                     s->m_moveMode = 8;
                 }
             } else {
-                eax = MoveHandlerC(s, a1, a2, a3);
+                eax = MoveHandlerC(s, destX, destY, moveFlags);
                 if (s->m_moveMode == 1) {
                     eax |= 0x1000000;
                 }
             }
             break;
         case 6:
-            eax = MoveHandlerD(s, a1, a2, a3);
+            eax = MoveHandlerD(s, destX, destY, moveFlags);
             break;
         case 7:
-            s->m_screenX = a1;
-            s->m_screenY = a2;
+            s->m_screenX = destX;
+            s->m_screenY = destY;
             break;
     }
 
@@ -1036,10 +1045,10 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 a1, i32 a2, i32 a3) {
 }
 
 // ---------------------------------------------------------------------------
-// MoveHandlerA (kinds 1/2/5): axis-1 step toward a1, axis-2 advance (AdvanceA),
-// then - per the arg3 low(bit0)/high(bit1) selector - an AxisProbe against the
+// MoveHandlerA (kinds 1/2/5): axis-1 step toward destX, axis-2 advance (AdvanceA),
+// then - per the moveFlags low(bit0)/high(bit1) selector - an AxisProbe against the
 // matching +0x138/+0x140 limit and, when that blocks (==3), a ClampSpan re-bracket
-// whose [lo,hi] midpoint replaces the new coord (gated by the arg3 0x10 bit). The
+// whose [lo,hi] midpoint replaces the new coord (gated by the moveFlags 0x10 bit). The
 // no-block tail drives Hold/FreeMove off the target's +0x10 held flag.
 //
 // @early-stop
@@ -1050,57 +1059,57 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 a1, i32 a2, i32 a3) {
 // probe-MISS of both bit0 and bit1 arms straight into it (0x15e5a7), so it runs
 // whenever no hard tile blocked - only a hard tile (m_moveMode = 6) skips it.
 // Both arms then converge on ONE bracket-commit block (0x15e58f) that re-tests
-// the cached arg3 0x10 bit, which is why `mid` is a separate local (the sibling
+// the cached moveFlags 0x10 bit, which is why `mid` is a separate local (the sibling
 // MoveHandlerB already spelled it that way).
 // Residual (base still 3 rets): cl tail-DUPLICATES the small commit block into all
 // three predecessors instead of keeping the one `goto commit` target, because the two
-// arms' `if (a3&0x10) coord = mid; m_moveMode = 6;` tails come out with a different
+// arms' `if (moveFlags&0x10) coord = mid; m_moveMode = 6;` tails come out with a different
 // instruction ORDER (the coord reload lands before vs after the store) and so fail its
 // identical-suffix merge. Not steerable from here. topic:tail-merge.
 RVA(0x0015e130, 0x1bb)
-i32 CGameLevel::MoveHandlerA(CGameObject* t, i32 a1, i32 a2, i32 a3) {
+i32 CGameLevel::MoveHandlerA(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 result = 0;
 
-    if (a1 > t->m_screenX) {
-        result = StepAxisLo(t, a1, a2, &a1, a3);
-    } else if (a1 < t->m_screenX) {
-        result = StepAxisHi(t, a1, a2, &a1, a3);
+    if (destX > t->m_screenX) {
+        result = StepAxisLo(t, destX, destY, &destX, moveFlags);
+    } else if (destX < t->m_screenX) {
+        result = StepAxisHi(t, destX, destY, &destX, moveFlags);
     }
 
-    if (a2 < t->m_screenY) {
-        a2 = AdvanceA(t, a1, a2, a3);
+    if (destY < t->m_screenY) {
+        destY = AdvanceA(t, destX, destY, moveFlags);
     }
 
-    if (a3 & 1) {
-        i32 limit = t->m_extent.top + a2 - 1;
-        if (AxisProbe(a1, limit) == kTileHard) {
-            i32 mid = a1;
-            if (a3 & 0x10) {
-                i32 lo = a1;
-                i32 hi = a1;
-                if (ClampSpan(a1, limit, &lo, &hi) != 0) {
+    if (moveFlags & 1) {
+        i32 limit = t->m_extent.top + destY - 1;
+        if (AxisProbe(destX, limit) == kTileHard) {
+            i32 mid = destX;
+            if (moveFlags & 0x10) {
+                i32 lo = destX;
+                i32 hi = destX;
+                if (ClampSpan(destX, limit, &lo, &hi) != 0) {
                     mid = (hi + lo) / 2;
                 }
             }
-            if (a3 & 0x10) {
-                a1 = mid;
+            if (moveFlags & 0x10) {
+                destX = mid;
             }
             t->m_moveMode = 6;
             goto commit;
         }
-    } else if (a3 & 2) {
-        i32 limit = t->m_extent.bottom + a2 + 2;
-        if (AxisProbe(a1, limit) == kTileHard) {
-            i32 mid = a1;
-            if (a3 & 0x10) {
-                i32 lo = a1;
-                i32 hi = a1;
-                if (ClampSpan(a1, limit, &lo, &hi) != 0) {
+    } else if (moveFlags & 2) {
+        i32 limit = t->m_extent.bottom + destY + 2;
+        if (AxisProbe(destX, limit) == kTileHard) {
+            i32 mid = destX;
+            if (moveFlags & 0x10) {
+                i32 lo = destX;
+                i32 hi = destX;
+                if (ClampSpan(destX, limit, &lo, &hi) != 0) {
                     mid = (hi + lo) / 2;
                 }
             }
-            if (a3 & 0x10) {
-                a1 = mid;
+            if (moveFlags & 0x10) {
+                destX = mid;
             }
             t->m_moveMode = 6;
             goto commit;
@@ -1108,22 +1117,22 @@ i32 CGameLevel::MoveHandlerA(CGameObject* t, i32 a1, i32 a2, i32 a3) {
     }
 
     if (t->m_flags & 0x10) {
-        if (HoldMove(t, t->m_carrier, a1, a2, a3) == 0) {
+        if (HoldMove(t, t->m_carrier, destX, destY, moveFlags) == 0) {
             t->m_moveMode = 4;
         }
     } else {
-        a2 = FreeMove(t, a1, a2, a3);
+        destY = FreeMove(t, destX, destY, moveFlags);
     }
 
 commit:
-    t->m_screenX = a1;
-    t->m_screenY = a2;
+    t->m_screenX = destX;
+    t->m_screenY = destY;
     return result;
 }
 
 // ---------------------------------------------------------------------------
 // MoveHandlerC (kind 4): axis-1 step, an alternate axis-2 step (StepAxisAlt gated by
-// arg3 bit3), an AdvanceB advance (unless the kind already turned 1), the same low
+// moveFlags bit3), an AdvanceB advance (unless the kind already turned 1), the same low
 // AxisProbe + ClampSpan re-bracket as MoveHandlerA, then - if the kind ended at 1 and
 // the coord moved with the 0x20000 state bit set - one blocked-move retry (clear the
 // 0xe0000 bits, re-step the axis).
@@ -1133,36 +1142,36 @@ commit:
 // scheduling as MoveHandlerA, plus the retry tail; logic + offsets + CFG + sibling
 // conventions exact. Deferred to the final sweep.
 RVA(0x0015e2f0, 0x1b7)
-i32 CGameLevel::MoveHandlerC(CGameObject* t, i32 a1, i32 a2, i32 a3) {
-    i32 savedA1 = a1;
+i32 CGameLevel::MoveHandlerC(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
+    i32 savedDestX = destX;
     i32 result = 0;
 
-    if (a1 > t->m_screenX) {
-        result = StepAxisLo(t, a1, a2, &a1, a3);
-    } else if (a1 < t->m_screenX) {
-        result = StepAxisHi(t, a1, a2, &a1, a3);
+    if (destX > t->m_screenX) {
+        result = StepAxisLo(t, destX, destY, &destX, moveFlags);
+    } else if (destX < t->m_screenX) {
+        result = StepAxisHi(t, destX, destY, &destX, moveFlags);
     }
 
-    if (a3 & 8) {
-        i32 outY = a2;
-        if (StepAxisAlt(t, a1, a2, &outY, a3) != 0) {
-            a2 = outY;
+    if (moveFlags & 8) {
+        i32 outY = destY;
+        if (StepAxisAlt(t, destX, destY, &outY, moveFlags) != 0) {
+            destY = outY;
         }
     }
 
     if (t->m_moveMode != 1) {
-        a2 = AdvanceB(t, a1, a2, a3);
+        destY = AdvanceB(t, destX, destY, moveFlags);
     }
 
-    if (a3 & 1) {
-        i32 limit = t->m_extent.top + a2 - 1;
-        i32 saved = a1;
-        if (AxisProbe(a1, limit) == kTileHard) {
-            if (a3 & 0x10) {
+    if (moveFlags & 1) {
+        i32 limit = t->m_extent.top + destY - 1;
+        i32 saved = destX;
+        if (AxisProbe(destX, limit) == kTileHard) {
+            if (moveFlags & 0x10) {
                 i32 lo = saved;
                 i32 hi = saved;
                 if (ClampSpan(saved, limit, &lo, &hi) != 0) {
-                    a1 = (hi + lo) / 2;
+                    destX = (hi + lo) / 2;
                 }
                 t->m_moveMode = 6;
             } else {
@@ -1171,19 +1180,19 @@ i32 CGameLevel::MoveHandlerC(CGameObject* t, i32 a1, i32 a2, i32 a3) {
         }
     }
 
-    if (t->m_moveMode == 1 && a1 != savedA1) {
+    if (t->m_moveMode == 1 && destX != savedDestX) {
         if (result & 0x20000) {
             result &= 0xfff1ffff;
-            if (a1 > t->m_screenX) {
-                result |= StepAxisLo(t, a1, a2, &a1, a3);
-            } else if (a1 < t->m_screenX) {
-                result |= StepAxisHi(t, a1, a2, &a1, a3);
+            if (destX > t->m_screenX) {
+                result |= StepAxisLo(t, destX, destY, &destX, moveFlags);
+            } else if (destX < t->m_screenX) {
+                result |= StepAxisHi(t, destX, destY, &destX, moveFlags);
             }
         }
     }
 
-    t->m_screenX = a1;
-    t->m_screenY = a2;
+    t->m_screenX = destX;
+    t->m_screenY = destY;
     return result;
 }
 
@@ -1192,46 +1201,46 @@ i32 CGameLevel::MoveHandlerC(CGameObject* t, i32 a1, i32 a2, i32 a3) {
 // (AdvanceA, unconditional), the low AxisProbe + ClampSpan re-bracket, then commit.
 //
 // @early-stop
-// The stepped coord and the advanced cursor are written back through the a1/a2
-// PARAMETER slots (retail's `lea ecx,[esp+0x20]` IS &a1, with no init copy - the
-// local-variable spelling emitted a redundant `mov [a1-home],reg`). That fixed the
+// The stepped coord and the advanced cursor are written back through the destX/destY
+// PARAMETER slots (retail's `lea ecx,[esp+0x20]` IS &destX, with no init copy - the
+// local-variable spelling emitted a redundant `mov [destX-home],reg`). That fixed the
 // whole prologue + the StepAxis dispatch. Residue is the tail: cl duplicates the
-// commit epilogue for the `a3 & 0x10 == 0` arm where retail shares one, and keeps a2
+// commit epilogue for the `moveFlags & 0x10 == 0` arm where retail shares one, and keeps destY
 // in ebp across instead of reloading it. Deferred to the final sweep.
 RVA(0x0015e4b0, 0xf7)
-i32 CGameLevel::MoveHandlerB(CGameObject* t, i32 a1, i32 a2, i32 a3) {
+i32 CGameLevel::MoveHandlerB(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 result = 0;
 
-    // the stepped coord and the advanced cursor are written back through the a1/a2
-    // parameter slots (retail's `lea ecx,[esp+0x20]` IS &a1; there is no copy).
-    if (a1 > t->m_screenX) {
-        result = StepAxisLo(t, a1, a2, &a1, a3);
-    } else if (a1 < t->m_screenX) {
-        result = StepAxisHi(t, a1, a2, &a1, a3);
+    // the stepped coord and the advanced cursor are written back through the destX/destY
+    // parameter slots (retail's `lea ecx,[esp+0x20]` IS &destX; there is no copy).
+    if (destX > t->m_screenX) {
+        result = StepAxisLo(t, destX, destY, &destX, moveFlags);
+    } else if (destX < t->m_screenX) {
+        result = StepAxisHi(t, destX, destY, &destX, moveFlags);
     }
 
-    a2 = AdvanceA(t, a1, a2, a3);
+    destY = AdvanceA(t, destX, destY, moveFlags);
 
-    if (a3 & 1) {
-        i32 limit = t->m_extent.top + a2 - 1;
-        if (AxisProbe(a1, limit) == kTileHard) {
-            i32 mid = a1;
-            if (a3 & 0x10) {
-                i32 lo = a1;
-                i32 hi = a1;
-                if (ClampSpan(a1, limit, &lo, &hi) != 0) {
+    if (moveFlags & 1) {
+        i32 limit = t->m_extent.top + destY - 1;
+        if (AxisProbe(destX, limit) == kTileHard) {
+            i32 mid = destX;
+            if (moveFlags & 0x10) {
+                i32 lo = destX;
+                i32 hi = destX;
+                if (ClampSpan(destX, limit, &lo, &hi) != 0) {
                     mid = (hi + lo) / 2;
                 }
             }
-            if (a3 & 0x10) {
-                a1 = mid;
+            if (moveFlags & 0x10) {
+                destX = mid;
             }
             t->m_moveMode = 6;
         }
     }
 
-    t->m_screenX = a1;
-    t->m_screenY = a2;
+    t->m_screenX = destX;
+    t->m_screenY = destY;
     return result;
 }
 
@@ -1241,57 +1250,57 @@ i32 CGameLevel::MoveHandlerB(CGameObject* t, i32 a1, i32 a2, i32 a3) {
 // ==3), and on the up-move path a SpanCheck validate that may clamp the cursor below
 // the +0x140 high limit; then a final axis-1 step and commit.
 //
-// The argument list was ROTATED (83.0% -> 96.3%): a1 is the X target and a2 the Y
+// The argument list was ROTATED (83.0% -> 96.3%): destX is the X target and destY the Y
 // target, exactly like the MoveHandlerA/B/C siblings - the branch tests screenY against
-// a2, both advances take the handler's own (t, a1, a2, a3), AxisProbe/SpanCheck/StepAxis
-// all take a1, and SpanCheck's arg list is (col, want, top, &out) not (want, top, col,
+// destY, both advances take the handler's own (t, destX, destY, moveFlags), AxisProbe/SpanCheck/StepAxis
+// all take destX, and SpanCheck's arg list is (col, want, top, &out) not (want, top, col,
 // &out). The span floor is also DERIVED from the recomputed head row.
 //
 // @early-stop
-// residue is one redundant `coord = a1` copy (cl re-emits it where retail coalesces the
-// local onto a1's dead home) and the ebx/edi colour of this-vs-cursor that follows it.
-// Writing through &a1 kills the copy but splits retail's shared argument push block
+// residue is one redundant `coord = destX` copy (cl re-emits it where retail coalesces the
+// local onto destX's dead home) and the ebx/edi colour of this-vs-cursor that follows it.
+// Writing through &destX kills the copy but splits retail's shared argument push block
 // (107 differing rows vs 47). Deferred to the final sweep.
 RVA(0x0015e5b0, 0x162)
-i32 CGameLevel::MoveHandlerD(CGameObject* t, i32 a1, i32 a2, i32 a3) {
+i32 CGameLevel::MoveHandlerD(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 result = 0;
     i32 cursor;
-    i32 coord = a1;
+    i32 coord = destX;
 
-    // a1 is the X (column) target and a2 the Y (row) target - the same convention as the
-    // MoveHandlerA/B/C siblings; both advances take the handler's own (t, a1, a2, a3).
-    if (t->m_screenY < a2) {
-        cursor = AdvanceB(t, a1, a2, a3);
+    // destX is the X (column) target and destY the Y (row) target - the same convention as the
+    // MoveHandlerA/B/C siblings; both advances take the handler's own (t, destX, destY, moveFlags).
+    if (t->m_screenY < destY) {
+        cursor = AdvanceB(t, destX, destY, moveFlags);
         if (t->m_moveMode != 1) {
             i32 hi = t->m_extent.bottom + cursor + 1;
             i32 lo = t->m_extent.top + cursor - 1;
-            if (AxisProbe(a1, lo) != kTileHard && AxisProbe(a1, hi) != kTileHard) {
+            if (AxisProbe(destX, lo) != kTileHard && AxisProbe(destX, hi) != kTileHard) {
                 t->m_moveMode = 4;
             }
         }
     } else {
-        cursor = AdvanceA(t, a1, a2, a3);
+        cursor = AdvanceA(t, destX, destY, moveFlags);
         i32 hi = t->m_extent.bottom + cursor + 1;
         i32 lo = t->m_extent.top + cursor - 1;
-        if (AxisProbe(a1, lo) != kTileHard && AxisProbe(a1, hi) != kTileHard) {
+        if (AxisProbe(destX, lo) != kTileHard && AxisProbe(destX, hi) != kTileHard) {
             // the AxisProbe calls invalidate the cached extent, so the span top is
             // recomputed - and the span BOTTOM is derived from it (retail's
             // `lea top; sub cursor; add screenY`), not folded to bottom+1+screenY.
             i32 probe;
             i32 top = t->m_extent.bottom + cursor + 1;
-            if (SpanCheck(a1, top - cursor + t->m_screenY, top, &probe) != 0 && probe > cursor) {
+            if (SpanCheck(destX, top - cursor + t->m_screenY, top, &probe) != 0 && probe > cursor) {
                 t->m_moveMode = 1;
                 cursor = probe - t->m_extent.bottom - 1;
             }
         }
     }
 
-    // the axis-1 step writes back through the a1 parameter slot itself (retail never
+    // the axis-1 step writes back through the destX parameter slot itself (retail never
     // copies it into a second local - the compare and the commit both read the slot).
     if (coord > t->m_screenX) {
-        result = StepAxisLo(t, coord, cursor, &coord, a3);
+        result = StepAxisLo(t, coord, cursor, &coord, moveFlags);
     } else if (coord < t->m_screenX) {
-        result = StepAxisHi(t, coord, cursor, &coord, a3);
+        result = StepAxisHi(t, coord, cursor, &coord, moveFlags);
     }
 
     t->m_screenX = coord;
@@ -1302,15 +1311,15 @@ i32 CGameLevel::MoveHandlerD(CGameObject* t, i32 a1, i32 a2, i32 a3) {
 // ---------------------------------------------------------------------------
 // StepAxisLo (@0x15e720): step the target one axis from its low bracket toward the
 // requested mid coord, probing the main plane's tiles along the way. The probe walks
-// `cur` from (axisLoB + a2) up to (axisHi + a2) in +0xfc strides; the first cur whose
+// `cur` from (axisLoB + destY) up to (axisHi + destY) in +0xfc strides; the first cur whose
 // tile probe returns 1 commits the target's current scroll into *outX and returns
-// 0x60000, else *outX = a1 and 0. The tile probe is AxisProbe inlined (PROBE_TILE).
+// 0x60000, else *outX = destX and 0. The tile probe is AxisProbe inlined (PROBE_TILE).
 //
 RVA(0x0015e720, 0x14c)
-i32 CGameLevel::StepAxisLo(CGameObject* t, i32 a1, i32 a2, i32* outX, i32 a3) {
-    i32 mid = t->m_extent.right + a1;
-    i32 lo = t->m_extent.top + a2;
-    i32 hi = t->m_extent.bottom + a2;
+i32 CGameLevel::StepAxisLo(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 moveFlags) {
+    i32 mid = t->m_extent.right + destX;
+    i32 lo = t->m_extent.top + destY;
+    i32 hi = t->m_extent.bottom + destY;
     i32 cur = lo;
 
     while (cur <= hi) {
@@ -1330,7 +1339,7 @@ i32 CGameLevel::StepAxisLo(CGameObject* t, i32 a1, i32 a2, i32* outX, i32 a3) {
         }
     }
 
-    *outX = a1;
+    *outX = destX;
     return 0;
 }
 
@@ -1339,10 +1348,10 @@ i32 CGameLevel::StepAxisLo(CGameObject* t, i32 a1, i32 a2, i32* outX, i32 a3) {
 // (axisLoA) as the loop floor and returning 0xa0000 on a successful step.
 //
 RVA(0x0015e870, 0x14c)
-i32 CGameLevel::StepAxisHi(CGameObject* t, i32 a1, i32 a2, i32* outX, i32 a3) {
-    i32 mid = t->m_extent.left + a1;
-    i32 lo = t->m_extent.top + a2;
-    i32 hi = t->m_extent.bottom + a2;
+i32 CGameLevel::StepAxisHi(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 moveFlags) {
+    i32 mid = t->m_extent.left + destX;
+    i32 lo = t->m_extent.top + destY;
+    i32 hi = t->m_extent.bottom + destY;
     i32 cur = lo;
 
     while (cur <= hi) {
@@ -1362,13 +1371,13 @@ i32 CGameLevel::StepAxisHi(CGameObject* t, i32 a1, i32 a2, i32* outX, i32 a3) {
         }
     }
 
-    *outX = a1;
+    *outX = destX;
     return 0;
 }
 
 // ---------------------------------------------------------------------------
-// FreeMove (@0x15eb00): drive a free (unheld) axis-2 advance from (axisLoB + a1) up to
-// (axisHi + a2 + 1) in +0xf8 strides. Per cursor it probes the main plane (PROBE_TILE);
+// FreeMove (@0x15eb00): drive a free (unheld) axis-2 advance from (axisLoB + destX) up to
+// (axisHi + destY + 1) in +0xf8 strides. Per cursor it probes the main plane (PROBE_TILE);
 // a kind 1/2 tile re-probes a one-step-back pair, a kind-3 tile re-probes its low pair
 // (AxisProbe), and anything that stays blocked tags the target brush kind 4. Returns
 // the last accepted cursor.
@@ -1379,10 +1388,10 @@ i32 CGameLevel::StepAxisHi(CGameObject* t, i32 a1, i32 a2, i32* outX, i32 a3) {
 // reproduces only for one spill order; logic + offsets + CFG + the probe/dispatch
 // conventions are exact. Deferred to the final sweep.
 RVA(0x0015eb00, 0x2d2)
-i32 CGameLevel::FreeMove(CGameObject* t, i32 a1, i32 a2, i32 a3) {
-    i32 mid = t->m_extent.right + a1;
-    i32 cur = t->m_extent.left + a1;
-    i32 hiY = t->m_extent.bottom + a2 + 1;
+i32 CGameLevel::FreeMove(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
+    i32 mid = t->m_extent.right + destX;
+    i32 cur = t->m_extent.left + destX;
+    i32 hiY = t->m_extent.bottom + destY + 1;
 
     if (cur <= mid) {
         do {
@@ -1397,13 +1406,13 @@ i32 CGameLevel::FreeMove(CGameObject* t, i32 a1, i32 a2, i32 a3) {
                     i32 r3;
                     PROBE_TILE(this, cur, hiY - 1, r3);
                     if (r3 != kTileSoft2) {
-                        return a2;
+                        return destY;
                     }
                 }
             } else if (t->m_moveMode != 6 && result == kTileHard) {
                 if (AxisProbe(cur, hiY) == kTileHard) {
                     if (AxisProbe(cur, hiY - 1) != kTileHard) {
-                        return a2;
+                        return destY;
                     }
                 }
             }
@@ -1416,7 +1425,7 @@ i32 CGameLevel::FreeMove(CGameObject* t, i32 a1, i32 a2, i32 a3) {
     }
 
     t->m_moveMode = 4;
-    return a2;
+    return destY;
 }
 
 // ---------------------------------------------------------------------------
@@ -1430,17 +1439,17 @@ i32 CGameLevel::FreeMove(CGameObject* t, i32 a1, i32 a2, i32 a3) {
 // AxisProbe gate loops + the strided walk pin the saved regs in an order MSVC
 // reproduces only for one spill order; logic + offsets + CFG exact. Deferred.
 RVA(0x0015ede0, 0x2a7)
-i32 CGameLevel::AdvanceB(CGameObject* t, i32 a1, i32 a2, i32 a3) {
-    i32 lo = t->m_extent.left + a1;
-    i32 mid = t->m_extent.right + a1;
-    i32 hiY = a2 + t->m_extent.bottom + 1;
+i32 CGameLevel::AdvanceB(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
+    i32 lo = t->m_extent.left + destX;
+    i32 mid = t->m_extent.right + destX;
+    i32 hiY = destY + t->m_extent.bottom + 1;
 
     i32 first;
-    PROBE_TILE(this, a1, hiY, first);
+    PROBE_TILE(this, destX, hiY, first);
     if (first == kTileSpecial) {
         t->m_flags |= 0x400000;
     }
-    i32 base = a2 - t->m_screenY;
+    i32 base = destY - t->m_screenY;
 
     i32 cur = lo;
     if (cur <= mid) {
@@ -1483,7 +1492,7 @@ i32 CGameLevel::AdvanceB(CGameObject* t, i32 a1, i32 a2, i32 a3) {
         } while (cur <= mid);
     }
 
-    return a3;
+    return moveFlags;
 }
 
 // ---------------------------------------------------------------------------
@@ -1496,10 +1505,10 @@ i32 CGameLevel::AdvanceB(CGameObject* t, i32 a1, i32 a2, i32 a3) {
 // saved regs in an order MSVC reproduces only for one spill order; logic + offsets +
 // CFG exact. Deferred to the final sweep.
 RVA(0x0015f1c0, 0x171)
-i32 CGameLevel::AdvanceA(CGameObject* t, i32 a1, i32 a2, i32 a3) {
-    i32 startCol = t->m_extent.left + a1;
-    i32 mid = t->m_extent.right + a1;
-    i32 ceil = a2 + t->m_extent.top - 1;
+i32 CGameLevel::AdvanceA(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
+    i32 startCol = t->m_extent.left + destX;
+    i32 mid = t->m_extent.right + destX;
+    i32 ceil = destY + t->m_extent.top - 1;
     i32 cur = startCol;
 
     if (cur <= mid) {
@@ -1513,7 +1522,7 @@ i32 CGameLevel::AdvanceA(CGameObject* t, i32 a1, i32 a2, i32 a3) {
                     do {
                         // retail probes the SPAN'S START column here, not the walking
                         // cursor: the pushed value comes from the never-updated frame
-                        // slot the prologue seeds (the loop cursor lives in a1's home).
+                        // slot the prologue seeds (the loop cursor lives in destX's home).
                         if (AxisProbe(startCol, y) != kTileSoft) {
                             t->m_moveMode = 4;
                             return y - t->m_extent.top;
@@ -1530,7 +1539,7 @@ i32 CGameLevel::AdvanceA(CGameObject* t, i32 a1, i32 a2, i32 a3) {
         } while (cur <= mid);
     }
 
-    return a3;
+    return moveFlags;
 }
 
 // ---------------------------------------------------------------------------
@@ -1558,8 +1567,8 @@ i32 CGameLevel::SpanCheck(i32 a, i32 b, i32 c, i32* out) {
 }
 
 RVA(0x0015fdb0, 0x8a)
-i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 a1, i32 a2, i32* outY, i32 a3) {
-    if ((a3 & 8) == 0) {
+i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 destX, i32 destY, i32* outY, i32 moveFlags) {
+    if ((moveFlags & 8) == 0) {
         return 0;
     }
 
@@ -1568,7 +1577,7 @@ i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 a1, i32 a2, i32* outY, i32 a3) {
     while (pos != 0) {
         CGameObject* pl = static_cast<CGameObject*>(chain.GetNext(pos));
         if (pl->m_collCategory == 0x80) {
-            if (AltStepValidate(t, pl, a1, a2, outY, a3) != 0) {
+            if (AltStepValidate(t, pl, destX, destY, outY, moveFlags) != 0) {
                 t->m_moveMode = 1;
                 t->m_carrier = pl;
                 t->m_flags |= 0x10;
@@ -1583,8 +1592,8 @@ i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 a1, i32 a2, i32* outY, i32 a3) {
 // AltStepValidate (@0x15fe40): the geometric fit test StepAxisAlt runs per candidate
 // object. Both the candidate payload (+0x144/+0x148/+0x14c/+0x178 extents, +0x5c/+0x60
 // origin) and the target (+0x134/+0x13c/+0x140 brackets, +0x5c/+0x60 scroll) must have
-// valid (!= -1) low brackets, the target's scroll must sit below a2, and the candidate's
-// world-space box (offset by a1/a2) must fall inside the target's bracket box; on a fit
+// valid (!= -1) low brackets, the target's scroll must sit below destY, and the candidate's
+// world-space box (offset by destX/destY) must fall inside the target's bracket box; on a fit
 // it writes the resolved cursor (payload->+0x60 + payload->+0x148 - target->+0x140 - 1)
 // into *outY and returns 1, else 0.
 //
@@ -1592,18 +1601,25 @@ i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 a1, i32 a2, i32* outY, i32 a3) {
 // `return 0` into the single retail epilogue (the per-`return 0` inline form scored
 // 0% on a fully-divergent layout; the merged form is 71.9%).
 //
-// cmpHi is DERIVED from tHi (`tHi - a2 + sy`, retail's `mov ecx,ebx; sub ecx,ebp; add
+// cmpHi is DERIVED from tHi (`tHi - destY + sy`, retail's `mov ecx,ebx; sub ecx,ebp; add
 // ecx,ebp`), not recomputed as `bottom + sy` - that one line took the whole body to
 // instruction-for-instruction identity.
 //
 // @early-stop
 // 89.5%: residue is which dead PARAMETER HOME each spilled local lands in - retail packs
-// sy/bottom/tLoA/boxL onto t/p/a1/a2's homes, ours rotates them by one - plus the
+// sy/bottom/tLoA/boxL onto t/p/destX/destY's homes, ours rotates them by one - plus the
 // else-arm block PLACEMENT (retail keeps it inline with a `jmp` over the commit block;
 // cl sinks it past the commit and inverts its branch). Every declaration permutation
 // tried is worse. Deferred to the final sweep.
 RVA(0x0015fe40, 0xd4)
-i32 CGameLevel::AltStepValidate(CGameObject* t, CGameObject* p, i32 a1, i32 a2, i32* outY, i32 a3) {
+i32 CGameLevel::AltStepValidate(
+    CGameObject* t,
+    CGameObject* p,
+    i32 destX,
+    i32 destY,
+    i32* outY,
+    i32 moveFlags
+) {
 
     if (p->m_area.left == -1) {
         goto fail;
@@ -1613,18 +1629,18 @@ i32 CGameLevel::AltStepValidate(CGameObject* t, CGameObject* p, i32 a1, i32 a2, 
     }
     {
         i32 sy = t->m_screenY;
-        if (sy > a2) {
+        if (sy > destY) {
             goto fail;
         }
 
         i32 boxL = p->m_area.left + p->m_screenX;
         i32 boxR = p->m_area.right + p->m_screenX;
         i32 boxT = p->m_screenY + p->m_area.top;
-        i32 tLoA = t->m_extent.left + a1;
-        i32 tMid = t->m_extent.right + a1;
+        i32 tLoA = t->m_extent.left + destX;
+        i32 tMid = t->m_extent.right + destX;
         i32 bottom = t->m_extent.bottom;
-        i32 tHi = bottom + a2;
-        i32 cmpHi = tHi - a2 + sy;
+        i32 tHi = bottom + destY;
+        i32 cmpHi = tHi - destY + sy;
 
         i32 over = p->m_deltaY;
         if (over > 0) {
@@ -1663,21 +1679,21 @@ fail:
 
 // ---------------------------------------------------------------------------
 // HoldMove (@0x15ff20): the ride-check MoveHandlerA/C run while the object is
-// latched to a carrier (p = et->m_carrier). Gated like AltStepValidate (a3 bit3
+// latched to a carrier (p = et->m_carrier). Gated like AltStepValidate (moveFlags bit3
 // set, carrier category 0x80, both extents valid), it checks the rider's extent
-// box (offset by a1) still overlaps the carrier's stand area and returns whether
-// the rider's feet (m_extent.bottom + a2) still sit exactly on the stand surface
+// box (offset by destX) still overlaps the carrier's stand area and returns whether
+// the rider's feet (m_extent.bottom + destY) still sit exactly on the stand surface
 // (m_area.top-derived row - 1). All field reads; no calls. ret 0x14.
 // @early-stop
 // 99.98%: ONE pair - retail loads p->m_area.top (+0x148) before p->m_screenY (+0x60), we
 // do the reverse; the `add edx,ebx` that consumes them is byte-identical either way.
 // docs/patterns/two-member-add-load-order-is-canonicalized.md.
 RVA(0x0015ff20, 0xc0)
-i32 CGameLevel::HoldMove(CGameObject* et, CGameObject* p, i32 a1, i32 a2, i32 a3) {
+i32 CGameLevel::HoldMove(CGameObject* et, CGameObject* p, i32 destX, i32 destY, i32 moveFlags) {
     if (p == 0) {
         return 0;
     }
-    if ((a3 & 8) == 0) {
+    if ((moveFlags & 8) == 0) {
         return 0;
     }
     if (p->m_collCategory != 0x80) {
@@ -1694,11 +1710,11 @@ i32 CGameLevel::HoldMove(CGameObject* et, CGameObject* p, i32 a1, i32 a2, i32 a3
     i32 boxL = ox + p->m_area.left;
     i32 boxR = ox + p->m_area.right;
     i32 boxT = p->m_screenY + p->m_area.top;
-    i32 tMid = et->m_extent.right + a1;
-    i32 tLoA = et->m_extent.left + a1;
+    i32 tMid = et->m_extent.right + destX;
+    i32 tLoA = et->m_extent.left + destX;
     // the foot row is computed LAST, right before its compare: that is what keeps the
-    // carrier-area temp (m_area.top) in ebx and lets a2 stay a memory operand.
-    i32 hi = et->m_extent.bottom + a2;
+    // carrier-area temp (m_area.top) in ebx and lets destY stay a memory operand.
+    i32 hi = et->m_extent.bottom + destY;
     if (tMid < boxL) {
         return 0;
     }

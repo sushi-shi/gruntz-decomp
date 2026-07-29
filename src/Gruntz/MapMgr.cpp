@@ -740,7 +740,7 @@ void CMapMgr::CellPop(BrickzNode* node, i32 flag) {
 }
 
 RVA(0x0009f7f0, 0x3b)
-i32 CMapMgr::Visit(CFileMemBase* ar, i32 mode, i32 a2, i32 a3) {
+i32 CMapMgr::Visit(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj) {
     if (ar == 0) {
         return 0;
     }

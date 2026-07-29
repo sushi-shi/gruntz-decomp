@@ -66,20 +66,20 @@ i32 CDDSurface::Init1(CDDrawPtrCollections* h, const DDSURFACEDESC* desc) {
 }
 
 RVA(0x0013e0d0, 0x66)
-i32 CDDSurface::BlitSurf(void* surf, i32 width, i32 height, i32 a4, i32 a5) {
+i32 CDDSurface::BlitSurf(void* surf, i32 width, i32 height, i32 bitDepth, i32 caps) {
     i32* desc = this->m_descWords;
     for (i32 i = 0x1b; i != 0; i--) {
         *desc++ = 0;
     }
-    this->m_surfaceCaps = a5;
+    this->m_surfaceCaps = caps;
     this->m_width = width;
     this->m_height = height;
     this->m_descSize = sizeof(DDSURFACEDESC);
     this->m_descFlags = 7;
-    if (a4 != 0 && a4 != (static_cast<CDDrawPtrCollections*>(surf))->m_palBpp) {
+    if (bitDepth != 0 && bitDepth != (static_cast<CDDrawPtrCollections*>(surf))->m_palBpp) {
         this->m_descFlags = 0x1007;
         this->m_pixelFormatSize = sizeof(DDPIXELFORMAT);
-        this->m_srcBitDepth = a4;
+        this->m_srcBitDepth = bitDepth;
     }
     return this->BlitIntoDesc(surf); // slot-8 virtual dispatch (+0x20)
 }
@@ -1941,14 +1941,14 @@ RVA(0x00141040, 0x36)
 i32 CDDSurface::RotateBlit(
     CDDSurface* src,
     i32* pivot,
-    i32 a1,
-    i32 a2,
+    i32 destX,
+    i32 destY,
     float scale,
     i32 mode,
     i32 colorkey
 ) {
     // Rotation fixed at 0.0f (no rotate); the 5th param carries the scale.
-    ImageRotateBlit(a1, a2, pivot, this, src, 0.0f, scale, mode, colorkey);
+    ImageRotateBlit(destX, destY, pivot, this, src, 0.0f, scale, mode, colorkey);
     return 1;
 }
 
@@ -1966,14 +1966,14 @@ RVA(0x00141200, 0x39)
 i32 CDDSurface::ScaleBlit(
     CDDSurface* src,
     i32* pivot,
-    i32 a1,
-    i32 a2,
+    i32 destX,
+    i32 destY,
     float angle,
     i32 mode,
     i32 colorkey
 ) {
     // Scale fixed at 1.0f (no scale); the 5th param carries the rotation.
-    ImageRotateBlit(a1, a2, pivot, this, src, angle, 1.0f, mode, colorkey);
+    ImageRotateBlit(destX, destY, pivot, this, src, angle, 1.0f, mode, colorkey);
     return 1;
 }
 
@@ -1981,14 +1981,14 @@ RVA(0x00141240, 0x39)
 i32 CDDSurface::RotateScaleBlit(
     CDDSurface* src,
     i32* pivot,
-    i32 a1,
-    i32 a2,
+    i32 destX,
+    i32 destY,
     float angle,
     float scale,
     i32 mode,
     i32 colorkey
 ) {
-    ImageRotateBlit(a1, a2, pivot, this, src, angle, scale, mode, colorkey);
+    ImageRotateBlit(destX, destY, pivot, this, src, angle, scale, mode, colorkey);
     return 1;
 }
 
@@ -2005,13 +2005,13 @@ i32 CDDSurface::RotateScaleBlit(
 // (the worker gets `this` both in ecx and pushed) which has no clean /O2 source
 // spelling. Deferred to the final sweep.
 RVA(0x00141280, 0x4a)
-void CDDSurface::DecodeThunk(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i16 a6, RECT clip) {
+void CDDSurface::DecodeThunk(i32 x0, i32 y0, i32 x1, i32 y1, i32 halfWidth, i16 color, RECT clip) {
     ClipRect16 rec;
     rec.a = clip.left;
     rec.b = clip.top;
     rec.c = clip.right;
     rec.d = clip.bottom;
-    ProjectWallQuad(this, a1, a2, a3, a4, a5, a6, rec.a, rec.b, rec.c, rec.d);
+    ProjectWallQuad(this, x0, y0, x1, y1, halfWidth, color, rec.a, rec.b, rec.c, rec.d);
 }
 
 RVA(0x001412d0, 0x24)

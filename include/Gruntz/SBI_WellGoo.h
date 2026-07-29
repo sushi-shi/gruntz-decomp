@@ -31,9 +31,10 @@ public:
     // slot 1 (vtbl 0x1eadfc thunk 0x3e90 -> 0xe64c0): the goo serialize. Round-trips the
     // fill/rect fields + two frame handles by name+index, (mode 8) re-resolves the goo
     // surface + rebinds the frames' shade nodes, then chains CSBI_Image::SerializeFields.
-    virtual i32 SerializeFields(CFileMemBase* arc, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xe64c0
+    virtual i32 SerializeFields(CFileMemBase* arc, i32 mode, i32 typeId, i32 pObj)
+        OVERRIDE; // 0xe64c0
     virtual i32
-    Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 a3, i32 a4, RECT rc, i32 a9, i32 a10)
+    Setup(CStatusBarMgr* owner, CDDrawSurfaceMgr* host, i32 cmd, i32 tab, RECT rc, i32 a9, i32 a10)
         OVERRIDE; // slot 2 (0xe6020; args 5..8 are ONE by-value RECT - see StatusBarItem.h)
     virtual void Reset() OVERRIDE;       // slot 3 (ex Free)
     virtual i32 Refresh(i32 a) OVERRIDE; // slot 4

@@ -8,6 +8,14 @@
 class CTileTriggerContainer; // owner container (back-stamped into m_14)
 class CGrunt;                // Process()'s brick argument
 
+// The per-player slot selector m_playerFlags is indexed with. 0..3 are the four player
+// slots (CTileActionEvent::Process indexes with g_curPlayer / brick->m_tileOwnerHi); the
+// out-of-range value 5 means "all four" - CTileTriggerContainer::SetCell (0x117f60) and
+// MorphByTool (0x113420) both branch on it and set all four flags instead of one.
+typedef enum PlayerSlot {
+    PLAYERSLOT_ALL = 5,
+} PlayerSlot;
+
 class CTileActionEvent {
 public:
     // The constructor (0x112d80): zero the m_10 live flag. Was misread as a
@@ -41,7 +49,7 @@ public:
     // The serialize entry: __thiscall, 4 stack args (ar, mode, ...). Dispatches to
     // SerializeFields on mode 4 (write) / DeserializeFields on mode 7 (read).
     // 0x113f10.
-    i32 Serialize(void* ar, i32 mode, i32 a3, i32 a4);
+    i32 Serialize(void* ar, i32 mode, i32 typeId, i32 pObj);
 
     // The mode-7 read-side counterpart of SerializeFields. External (its body is a
     // sibling function at 0x114040) -> modeled no-body so the call reloc-masks.

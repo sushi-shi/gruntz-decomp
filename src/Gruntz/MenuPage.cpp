@@ -215,11 +215,11 @@ i32 CMenuPage::FocusNext() {
         // the no-wrap gate is NOT its own exit: retail 0x183dbc/0x183e7c branches it
         // into the shared post-wrap `found == 0` return
         if (CanWrap()) {
-            POSITION p2 = m_focus->m_listPos;
-            if (!p2) {
+            POSITION cur = m_focus->m_listPos;
+            if (!cur) {
                 return 0;
             }
-            POSITION n2 = p2;
+            POSITION n2 = cur;
 
             NextItem(n2);
             while (n2) {
@@ -280,11 +280,11 @@ i32 CMenuPage::FocusPrev() {
         // the no-wrap gate is NOT its own exit: retail 0x183dbc/0x183e7c branches it
         // into the shared post-wrap `found == 0` return
         if (CanWrap()) {
-            POSITION p2 = m_focus->m_listPos;
-            if (!p2) {
+            POSITION cur = m_focus->m_listPos;
+            if (!cur) {
                 return 0;
             }
-            POSITION n2 = p2;
+            POSITION n2 = cur;
 
             PrevItem(n2);
             while (n2) {
@@ -534,8 +534,8 @@ i32 CMenuPage::FocusBackwardN() {
 }
 
 RVA(0x00184070, 0x30)
-i32 CMenuPage::FocusAndSelect(i32 a0, i32 a1) {
-    CMenuItem* hit = HitTest(a0, a1);
+i32 CMenuPage::FocusAndSelect(i32 x, i32 y) {
+    CMenuItem* hit = HitTest(x, y);
     if (!hit) {
         return 0;
     }
@@ -543,8 +543,8 @@ i32 CMenuPage::FocusAndSelect(i32 a0, i32 a1) {
 }
 
 RVA(0x001840a0, 0x57)
-i32 CMenuPage::Click(i32 a0, i32 a1) {
-    CMenuItem* hit = HitTest(a0, a1);
+i32 CMenuPage::Click(i32 x, i32 y) {
+    CMenuItem* hit = HitTest(x, y);
     if (!hit) {
         return 0;
     }
@@ -554,7 +554,7 @@ i32 CMenuPage::Click(i32 a0, i32 a1) {
     if (!Activate()) {
         return 0;
     }
-    FocusAndSelect(a0, a1);
+    FocusAndSelect(x, y);
     return 1;
 }
 
@@ -722,16 +722,22 @@ CMenuItem* CMenuPage::AddSubItem(
 // ex "EH trylevel wall" was the 5-arg mis-signature (retail ret 0x18 = 6 args;
 // the Init arg list was reversed and SetFrame took a0 instead of a5).
 RVA(0x001836f0, 0x160)
-CMenuItem2*
-CMenuPage::AddItem2(const char* a0, const char* a1, i32 a2, const char* a3, i32 a4, i32 a5) {
+CMenuItem2* CMenuPage::AddItem2(
+    const char* name,
+    const char* spriteKey,
+    i32 cmdId,
+    const char* key,
+    i32 flags,
+    i32 frame
+) {
     CMenuItem2* item = new CMenuItem2();
-    if (item->Init(this, a0, a1, a2, a3, a4) == 0) {
+    if (item->Init(this, name, spriteKey, cmdId, key, flags) == 0) {
         if (item) {
             delete item;
         }
         return 0;
     }
-    item->SetFrame(a5);
+    item->SetFrame(frame);
     return Append(item) ? item : 0;
 }
 
@@ -742,24 +748,24 @@ CMenuPage::AddItem2(const char* a0, const char* a1, i32 a2, const char* a3, i32 
 // by the extra parent-link stores (docs/patterns/rezalloc-placement-new-no-eh-frame.md).
 RVA(0x00183850, 0x13b)
 CMenuItem2* CMenuPage::AddSubItem2(
-    const char* a0,
-    const char* a1,
-    i32 a2,
-    i32 a3,
-    i32 a4,
-    const char* a5,
-    i32 a6,
-    i32 a7
+    const char* name,
+    const char* spriteKey,
+    i32 cmdId,
+    i32 cmdParam,
+    i32 parentCtx,
+    const char* key,
+    i32 flags,
+    i32 frame
 ) {
     CMenuItem2* item = new CMenuItem2();
-    if (item->Init(this, a0, a1, a2, a5, a6) == 0) {
+    if (item->Init(this, name, spriteKey, cmdId, key, flags) == 0) {
         if (item) {
             delete item;
         }
         return 0;
     }
-    item->SetFrame(a7);
-    item->m_cmdParam = a3;
-    item->m_1c = a4;
+    item->SetFrame(frame);
+    item->m_cmdParam = cmdParam;
+    item->m_1c = parentCtx;
     return Append(item) ? item : 0;
 }

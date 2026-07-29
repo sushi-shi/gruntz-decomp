@@ -1152,12 +1152,12 @@ modeDispatch: {
 }
 
 RVA(0x00053b80, 0x340)
-i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
+i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
     if (ar == 0) {
         return 0;
     }
     // chain the base-class serialize on `this` (0x16e7f0 = CMovingLogicBase::Serialize)
-    if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
+    if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
         return 0;
     }
     // then the +0x150 CWapX base subobject's Chain (0x8c00 via the 0x1aff thunk).
@@ -1165,7 +1165,7 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     // +0x150 (past the 0x150 CMovingLogic spine). The Grunt.h ODR world is not
     // converted yet, so the subobject is reached by cast until that MI conversion
     // lands - @identity-TODO(deferred, MI1 flagged item 1).
-    if ((reinterpret_cast<CWapX*>(&m_34))->Chain(ar, mode, a3, a4) == 0) {
+    if ((reinterpret_cast<CWapX*>(&m_34))->Chain(ar, mode, typeId, pObj) == 0) {
         return 0;
     }
     switch (mode) {
@@ -1185,7 +1185,7 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
             m_tileMgr = g_gameReg->m_cmdGrid;
             break;
     }
-    SerTriRecord(&m_entranceCell, ar, mode, a3, a4);
+    SerTriRecord(&m_entranceCell, ar, mode, typeId, pObj);
     SerRecord(ar, mode, &m_toyClock);
     SerRecord(ar, mode, &m_idleAnchor);
     SerRecord(ar, mode, &m_idleTimer);
@@ -1194,12 +1194,12 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     SerRecord(ar, mode, &m_attackClockLo);
     SerRecord(ar, mode, &m_combatClockLo);
     SerRecord(ar, mode, &m_hudRetireClockLo);
-    SerPairRecord(&m_wingzClockLo, ar, mode, a3, a4);
-    SerPairRecord(&m_convertClockLo, ar, mode, a3, a4);
-    SerPairRecord(&m_shimmerClockLo, ar, mode, a3, a4);
-    SerPairRecord(&m_8c0, ar, mode, a3, a4);
-    SerPairRecord(&m_arrivalRerollLo, ar, mode, a3, a4);
-    SerPairRecord(&m_278, ar, mode, a3, a4);
+    SerPairRecord(&m_wingzClockLo, ar, mode, typeId, pObj);
+    SerPairRecord(&m_convertClockLo, ar, mode, typeId, pObj);
+    SerPairRecord(&m_shimmerClockLo, ar, mode, typeId, pObj);
+    SerPairRecord(&m_8c0, ar, mode, typeId, pObj);
+    SerPairRecord(&m_arrivalRerollLo, ar, mode, typeId, pObj);
+    SerPairRecord(&m_278, ar, mode, typeId, pObj);
     return 1;
 }
 

@@ -673,14 +673,14 @@ i32 CGrunt::StepAttackFire() {
 static char s_ToyTime[] = "ToyTime";
 
 // ---------------------------------------------------------------------------
-// CGrunt::UpdateArrival(a1, a2)   @0x62110   (__thiscall, ret 0x8)
+// CGrunt::UpdateArrival(walking, commit)   @0x62110   (__thiscall, ret 0x8)
 // The per-frame arrival/entrance update step (sibling of UpdateEntranceAnim 0x690a0 and
-// RunEntranceMove 0x67850). a2!=0 -> the commit pass (clear the coord sub, commit the
+// RunEntranceMove 0x67850). commit!=0 -> the commit pass (clear the coord sub, commit the
 // in-flight occupied tile slot, reset the entrance latches, recycle the occupied-coord
 // list onto the free pool + RemoveAll, OR 0x10000 into the toy/health sprite flag words,
 // then either re-latch a "P" anim set + roll a rand toy pose + fire the cue, or load the
-// ToyTime config + snapshot the clock). a1!=0 -> the "L" re-latch + walk geometry + cell
-// SetAnimName + halved-ToyTime timer. a1==0 -> the "G" re-latch + HUD z-clamp + toy-timer
+// ToyTime config + snapshot the clock). walking!=0 -> the "L" re-latch + walk geometry + cell
+// SetAnimName + halved-ToyTime timer. walking==0 -> the "G" re-latch + HUD z-clamp + toy-timer
 // pose select + the visible-bounds CueSpawn.
 //
 // @early-stop
@@ -691,8 +691,8 @@ static char s_ToyTime[] = "ToyTime";
 // callees reached via incremental-link thunks reloc-mask to differently-named retail thunks,
 // plus the cross-arm regalloc / zero-register pinning. Deferred to the final sweep.
 RVA(0x00062110, 0x5bc)
-i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
-    if (a2 != 0) {
+i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
+    if (commit != 0) {
         ClearSubA();
         if (m_arrivalPhase == 3 && m_arrivalActive != 0) {
             CGrunt* occ = m_tileMgr->m_grid[m_arrivalCol * TM_GRID_COLS + m_arrivalRow];
@@ -794,8 +794,8 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         }
     }
 
-    if (a1 != 0) {
-        // a1 != 0: the "L" re-latch + walk geometry + cell SetAnimName + halved-ToyTime timer.
+    if (walking != 0) {
+        // walking != 0: the "L" re-latch + walk geometry + cell SetAnimName + halved-ToyTime timer.
         m_toyTileIndex = 0;
         if (m_poweredUp != 0 && m_neighborValid == 0) {
             m_entranceActive = 0;
@@ -820,7 +820,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         return 0;
     }
 
-    // a1 == 0: the "G" re-latch + HUD z-clamp + toy-timer pose select + visible-bounds cue.
+    // walking == 0: the "G" re-latch + HUD z-clamp + toy-timer pose select + visible-bounds cue.
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("G");
 
@@ -1740,7 +1740,16 @@ i32 CGrunt::StepWarpExit() {
 // strcmp-eq setcc/zero-register pinning (no source spelling), the scratch loop-
 // strength-reduction, and the deep cross-arm regalloc. Final sweep.
 RVA(0x000646b0, 0x9c8)
-i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
+i32 CGrunt::StepCombatReaction(
+    i32 attackKind,
+    i32 struckPose,
+    i32 srcRow,
+    i32 srcCol,
+    i32 srcPxX,
+    i32 srcPxY,
+    i32 fromProjectile,
+    i32 attackerGruntKind
+) {
     if (m_entranceCommitted == 0 || m_entranceDropActive != 0) {
         return 0;
     }
@@ -1788,7 +1797,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
         goto tail;
     }
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeQ) == 0) {
-        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 6, a2);
+        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 6, srcRow);
         return 0;
     }
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "J") == 0) {
@@ -1878,7 +1887,17 @@ tail:
     if (m_object->m_screenX != m_lastTilePxX || m_object->m_screenY != m_lastTilePxY) {
         ConsiderArrival(1);
     }
-    if (LoadGruntCombatAnimations(a0, a1, a2, a3, a4, a5, a6, a7) == 0) {
+    if (LoadGruntCombatAnimations(
+            attackKind,
+            struckPose,
+            srcRow,
+            srcCol,
+            srcPxX,
+            srcPxY,
+            fromProjectile,
+            attackerGruntKind
+        )
+        == 0) {
         return 0;
     }
 
@@ -1898,7 +1917,7 @@ tail:
         if (strcmp(*rec, s_codeO) != 0) {
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = ActFindId(s_codeH);
-            void* cellObj = m_tileMgr->m_grid[a2 * TM_GRID_COLS + a3];
+            void* cellObj = m_tileMgr->m_grid[srcRow * TM_GRID_COLS + srcCol];
             if (cellObj != 0) {
                 CGameObject* oh = (static_cast<CGrunt*>(cellObj))->m_object;
                 i32 cx = oh->m_screenX;
@@ -1906,7 +1925,7 @@ tail:
                 if (m_358 != 0 && m_entranceCommitted != 0 && RectContains(cx, cy)) {
                     if (!(s_TileFlags(g_gameReg->m_tileGrid, m_lastTilePxX >> 5, m_lastTilePxY >> 5)
                           & 0x80)) {
-                        CommitNeighbor(a2, a3, cx, cy);
+                        CommitNeighbor(srcRow, srcCol, cx, cy);
                     }
                 }
             }
@@ -1914,7 +1933,7 @@ tail:
     }
 
     m_combatActive = 0;
-    CAniElement* pose = (&m_poseStruck1)[a1];
+    CAniElement* pose = (&m_poseStruck1)[struckPose];
     m_value = m_38->m_1a0.m_14;
     m_38->m_1a0.Setup(pose);
     i32 frame;

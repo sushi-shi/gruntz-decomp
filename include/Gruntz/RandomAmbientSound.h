@@ -41,7 +41,7 @@ public:
     virtual ~CRandomAmbientSound() OVERRIDE {}
     // Init2(lo, hi, lo2, hi2): the interval-roller seed run by the Create* factories
     // right after Init6/Init5 (0xcd70, ex the Rng::RangeBox::Roll view).
-    void Init2(i32 lo, i32 hi, i32 a3, i32 a4); // 0x0000cd70
+    void Init2(i32 lo, i32 hi, i32 lo2, i32 hi2); // 0x0000cd70
 
     // --- layout (sizeof 0x58) -------------------------------------------------
     // +0x00..+0x3f come from the CAmbientSound base (vptr, m_voice, m_level,

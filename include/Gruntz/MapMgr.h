@@ -58,10 +58,10 @@ public:
     // slot 5 there is the SAME 0x853f0 body - so CMapMgr / CMapMgr / CMapVisitTarget
     // are ONE class under three names. Slots 1 and 4 are folded here; IsCellClear stays
     // declared-only until CMapMgr's whole method set folds (@identity-TODO).
-    virtual void Reset();                                          // slot 0  0x09ec30
-    virtual i32 Visit(CFileMemBase* ar, i32 mode, i32 a2, i32 a3); // [1] 0x09f7f0
-    virtual i32 Save(CFileMemBase*);                               // slot 2  0x09f840
-    virtual i32 Load(CFileMemBase*);                               // slot 3  0x09f9a0
+    virtual void Reset();                                                // slot 0  0x09ec30
+    virtual i32 Visit(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj); // [1] 0x09f7f0
+    virtual i32 Save(CFileMemBase*);                                     // slot 2  0x09f840
+    virtual i32 Load(CFileMemBase*);                                     // slot 3  0x09f9a0
     // Slots 4/5 are declared-only HERE: their bodies (0x09eca0 / 0x0853f0) are written
     // against CMapMgr's member set (m_rows / Insert / PopFront / Expand / CellPush),
     // so they keep that name until the whole CMapMgr method set folds onto this class.
@@ -88,7 +88,7 @@ public:
         i32 maskA,
         i32 maskC
     );                                               // 0x081e10
-    i32 UpdateDiagonals(CGruntzMgr * unused);                 // 0x082030 diagonal-passability walk
+    i32 UpdateDiagonals(CGruntzMgr* unused);         // 0x082030 diagonal-passability walk
     i32 LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1); // 0x082250 straight-line probe
     // (`Serialize` @0x09356c is GONE - it was never this class's, and never a function:
     //  0x9356c is the TAIL of CGruntzMgr::BroadcastCmd @0x093460, which already claims

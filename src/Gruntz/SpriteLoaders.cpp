@@ -316,7 +316,7 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
 // per-block `cmp kind` + `lea edi,[this+N]`. Logic (call mapping, slot mapping,
 // pointer-advance, ret 0x10) exact; see docs/patterns/zero-register-pinning.md.
 RVA(0x0009c1c0, 0xdb)
-i32 CTimer::HandleEvent(CFileMemBase* ar, i32 kind, i32 a3, i32 a4) {
+i32 CTimer::HandleEvent(CFileMemBase* ar, i32 kind, i32 typeId, i32 pObj) {
     if (ar == 0) {
         return 0;
     }

@@ -648,7 +648,7 @@ CSymTab* CSymTab::CreateSub(const char* name) {
 // operand-order fix (not source-steerable); same wall its sibling ApplyRecursive
 // @early-stop on. Banked for the final sweep.
 RVA(0x0013a400, 0xa9)
-CParseSource* CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
+CParseSource* CSymTab::AddNamedValue(void* unused, void* name, i32 key) {
     CSymRec* rec = FindOrAddSym(key);
     if (rec->m_valTable.Walk(static_cast<const char*>(name), m_owner->m_68 == 0) != 0) {
         return 0;
@@ -728,26 +728,32 @@ i32 CSymTab::AddNodeSubEntry(void* rec, void* found) {
 // and the guard jumps straight to the 4-pop epilogue with eax already holding 1, which
 // only a single-exit `return ok` produces. That took it 70.47 -> 91.22.
 // @early-stop
-// callee-saved ROLE swap (91.2%): every instruction now matches; retail pins a2 in ebx
-// and the shared 0 constant in ebp (then re-uses them for a1/a3 in the recursion push
+// callee-saved ROLE swap (91.2%): every instruction now matches; retail pins arg3 in ebx
+// and the shared 0 constant in ebp (then re-uses them for arg2/arg4 in the recursion push
 // block), the recompile pins them the other way round, which renames ebx<->ebp through
 // the whole body. Same pool-preference class as global-store-temp-alternates-ecx-edx.md;
 // no declaration/statement order tried moves the pick.
 RVA(0x0013a580, 0xb2)
-i32 CSymTab::ApplyRecursive(CRezItmBase* a0, i32 a1, i32 a2, i32 a3) {
+i32 CSymTab::ApplyRecursive(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 mergeDuplicates) {
     i32 ok = 1;
-    if (static_cast<u32>(a2) > 0) {
+    if (static_cast<u32>(dataSize) > 0) {
         CHashElement* e = m_subTabs.First();
         while (e) {
             (static_cast<CSymTab*>(e->m_record))->m_dataOff = 0;
             e = e->Next();
         }
-        if (ApplyRange(a0, a1, a2, a3) != 0) {
+        if (ApplyRange(stream, dataOff, dataSize, mergeDuplicates) != 0) {
             e = m_subTabs.First();
             while (e) {
                 CSymTab* sub = static_cast<CSymTab*>(e->m_record);
                 if (sub->m_dataOff != 0) {
-                    if (sub->ApplyRecursive(a0, sub->m_dataOff, sub->m_dataSize, a3) == 0) {
+                    if (sub->ApplyRecursive(
+                            stream,
+                            sub->m_dataOff,
+                            sub->m_dataSize,
+                            mergeDuplicates
+                        )
+                        == 0) {
                         ok = 0;
                     }
                 }
@@ -769,21 +775,20 @@ i32 CSymTab::ApplyRecursive(CRezItmBase* a0, i32 a1, i32 a2, i32 a3) {
 // The 0x139710 builder's callee-cleanup (ret 0x2c) is inferred from the absence of an
 // `add esp,0x2c` after the call; the fourcc order is the reversed push sequence at 0x13a893.
 RVA(0x0013a640, 0x2f7)
-i32 CSymTab::ApplyRange(CRezItmBase* a0, i32 a1, i32 a2, i32 a3) {
+i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 mergeDuplicates) {
     m_10 = 0;
     m_baseOffset = -1;
     i32 maxVal = 0;
-    char* buf = static_cast<char*>(::operator new(static_cast<u32>(a2)));
+    char* buf = static_cast<char*>(::operator new(static_cast<u32>(dataSize)));
     if (!buf) {
         return 0;
     }
-    CRezItmBase* stream = a0;
-    if (stream->Read(a1, 0, a2, buf) != a2) {
+    if (stream->Read(dataOff, 0, dataSize, buf) != dataSize) {
         ::operator delete(buf);
         return 0;
     }
     char* p = buf;
-    char* end = buf + a2;
+    char* end = buf + dataSize;
     while (p < end) {
         if (PeekI32(p) == 1) {
             // sub-scope record: { tag, fA, fB, fC, name\0 }
@@ -831,7 +836,7 @@ i32 CSymTab::ApplyRange(CRezItmBase* a0, i32 a1, i32 a2, i32 a3) {
             i32 skip = 0;
             void* found = rec->m_valTable.Walk(name1, 1);
             if (found) {
-                if (a3 != 0) {
+                if (mergeDuplicates != 0) {
                     AddNodeSubEntry(rec, found);
                 } else {
                     skip = 1;
@@ -868,7 +873,7 @@ i32 CSymTab::ApplyRange(CRezItmBase* a0, i32 a1, i32 a2, i32 a3) {
                     f2,
                     f6,
                     arr,
-                    a0
+                    stream
                 );
                 rec->m_valTable.Insert(&slot->m_node1c);
                 m_10 = m_10 + slot->m_length;

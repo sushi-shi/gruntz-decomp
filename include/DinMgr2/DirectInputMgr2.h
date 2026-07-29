@@ -62,15 +62,15 @@ public:
     // Registers a controller: new's a node, Create()s it, appends to the m_deviceList
     // on success (0x1331e0); 0x133260 is a thiscall trampoline copying its 7 stack
     // dwords into a local before forwarding.
-    void* AddController(CInputDevBase** devices, i32 n, i32 a3); // 0x1331e0
+    void* AddController(CInputDevBase** devices, i32 n, i32 unused); // 0x1331e0
     void* AddControllerArr(
-        CInputDevBase* a1,
-        CInputDevBase* a2,
-        CInputDevBase* a3,
-        CInputDevBase* a4,
-        CInputDevBase* a5,
-        CInputDevBase* a6,
-        i32 a7
+        CInputDevBase* dev0,
+        CInputDevBase* dev1,
+        CInputDevBase* dev2,
+        CInputDevBase* dev3,
+        CInputDevBase* dev4,
+        CInputDevBase* dev5,
+        i32 unused
     ); // 0x133260 (ret node)
 
     // Diagnostic error reporter. Given the calling site's __FILE__/__LINE__ and

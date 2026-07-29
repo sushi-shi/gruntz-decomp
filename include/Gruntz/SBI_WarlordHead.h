@@ -31,7 +31,8 @@ public:
     virtual ~CSBI_WarlordHead() OVERRIDE; // slot 0
     // slot 1 (vtbl 0x1ead24 thunk 0x3cd8 -> 0xeb970): serialize the head's direction
     // (m_direction), then chain CSBI_ImageSet::SerializeFields (0xe74f0).
-    virtual i32 SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xeb970
+    virtual i32 SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj)
+        OVERRIDE;                  // 0xeb970
     virtual i32 Render() OVERRIDE; // slot 5 - 0xeb?? (the Render below moved up)
     // slot 11 (0xeb6b0), the CSBI_Image::SetupImage override. This USED to be split in
     // two: a body-less `virtual` declared purely to pin the slot, plus the real body as a

@@ -142,7 +142,7 @@ i32 CSBI_WarlordHead::Render() {
 // manager (g_gameReg->m_world) is gone. Re-homed from src/Stub/BoundaryLowerMethods.cpp
 // (was the Ceb970 placeholder view); vtable slot 1 (thunk 0x3cd8) proves the owner.
 RVA(0x000eb970, 0x72)
-i32 CSBI_WarlordHead::SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4) {
+i32 CSBI_WarlordHead::SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
     if (s == 0) {
         return 0;
     }
@@ -157,7 +157,8 @@ i32 CSBI_WarlordHead::SerializeFields(CFileMemBase* s, i32 mode, i32 a3, i32 a4)
             s->Write(&m_direction, 4);
             break;
     }
-    return CSBI_ImageSet::SerializeFields(s, mode, a3, a4) != 0; // qualified = direct base call
+    return CSBI_ImageSet::SerializeFields(s, mode, typeId, pObj)
+           != 0; // qualified = direct base call
 }
 
 RVA_COMPGEN(0x001049d0, 0x1e, ??_GCSBI_WarlordHead@@UAEPAXI@Z)

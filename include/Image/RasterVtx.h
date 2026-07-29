@@ -22,9 +22,9 @@ extern "C" ClipVtx g_rasterVtxA[100];   // 0x6a1708
 extern "C" ClipVtx g_rasterVtxB[100];   // 0x6a21f8
 extern "C" ClipVtx g_rasterEdgeR[4096]; // 0x6856f8  ascending-edge table (fill reads +0x10)
 extern "C" ClipVtx g_rasterEdgeL[4096]; // 0x6a2cf0  descending-edge table
-extern "C" i32 g_rasterVtxCount;   // 0x6becf8 (published by ImagePolyClipRect)
-extern "C" u8* g_rasterDestRow;    // 0x6a2ce8  current scanline base (engine scratch)
-extern "C" i16* g_rasterDestPtr;    // 0x6becf4  current span start (engine scratch)
+extern "C" i32 g_rasterVtxCount;        // 0x6becf8 (published by ImagePolyClipRect)
+extern "C" u8* g_rasterDestRow;         // 0x6a2ce8  current scanline base (engine scratch)
+extern "C" i16* g_rasterDestPtr;        // 0x6becf4  current span start (engine scratch)
 
 // (The ex RotateSrcImage pad-view is dissolved (2026-07-27): it IS CDDSurface. The
 // comment it carried - "w/h @0x18/0x1c do NOT match CDDSurface's w/h @0x08/0x0c" -
@@ -54,7 +54,14 @@ i32 WarpTextureBlit(
     i32 colorkey
 ); // 0x146a20
 
-i32 ImagePolyClipRect(ClipVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5); // 0x1461b0
+i32 ImagePolyClipRect(
+    ClipVtx* poly,
+    i32 n,
+    i32 clipLeft,
+    i32 clipTop,
+    i32 clipRight,
+    i32 clipBottom
+); // 0x1461b0
 
 i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color); // 0x146fe0
 

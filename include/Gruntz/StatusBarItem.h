@@ -1,7 +1,7 @@
 #ifndef STATUSBARITEM_H
 #define STATUSBARITEM_H
 
-#include <Gruntz/SbGeom.h> // RECT + SbGeom() - the geometry rect (was SbiRect/SbRect)
+#include <Gruntz/SbGeom.h>        // RECT + SbGeom() - the geometry rect (was SbiRect/SbRect)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (== the real CFileMemBase) - the slot-1 arg
 #include <Ints.h>
 #include <rva.h>
@@ -71,8 +71,8 @@ public:
     virtual i32 Setup(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
-        i32 a3,
-        i32 a4,
+        i32 cmd,
+        i32 tab,
         RECT rc,
         i32 a9,
         i32 a10
@@ -97,7 +97,7 @@ public:
     i32 m_tab;     // +0x10  Setup arg4: owning tab index
     // +0x14..0x20: a 4-int sub-block (a RECT-like record) that Setup fills through
     // a single base pointer (lea &m_14; [+0]/[+4]/[+8]/[+c]).
-    RECT m_rect14;             // +0x14  Setup args 5..8
+    RECT m_rect14;                // +0x14  Setup args 5..8
     class CDDrawSurfaceMgr* m_24; // +0x24  Setup arg2: the config host (surface mgr)
     i32 m_28;                     // +0x28
     class CStatusBarMgr* m_2c;    // +0x2c  Setup arg1: the owning status-bar mgr

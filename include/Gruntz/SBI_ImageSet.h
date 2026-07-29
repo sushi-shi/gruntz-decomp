@@ -8,7 +8,6 @@
 
 class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
-
 class CSBI_ImageSet : public CSBI_Image {
 public:
     // tag 4 + the resolved-record slot cleared (the `new CSBI_ImageSet` ctor leg the tab
@@ -20,12 +19,12 @@ public:
     }
     virtual ~CSBI_ImageSet() OVERRIDE; // slot 0
     // slot 1 (vtbl 0x1eac4c thunk 0x3ca1 -> 0xe74f0): chains CSBI_Image::SerializeFields.
-    virtual i32 SerializeFields(CFileMemBase* ar, i32 mode, i32 a3, i32 a4) OVERRIDE; // 0xe74f0
+    virtual i32 SerializeFields(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj)
+        OVERRIDE;                        // 0xe74f0
     virtual void Reset() OVERRIDE;       // slot 3 - 0xe7400 (ex ResetCounters)
     virtual i32 Refresh(i32 a) OVERRIDE; // slot 4
     virtual i32 Render() OVERRIDE;       // slot 5 - 0xe7440 (ex TickRenderFrame)
-    virtual i32
-    SetupImage(CStatusBarMgr*, CDDrawSurfaceMgr*, i32, i32, RECT, const char*, i32, i32)
+    virtual i32 SetupImage(CStatusBarMgr*, CDDrawSurfaceMgr*, i32, i32, RECT, const char*, i32, i32)
         OVERRIDE; // slot 11
     // slot 12 (new), body 0x0e74c0 (a Ghidra recovery gap - not yet reconstructed). It takes
     // ONE arg: the game-menu builder calls it as `Activate(7)` on the DESTRUCT item.

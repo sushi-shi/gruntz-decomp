@@ -13,9 +13,6 @@
 
 extern "C" i32 g_disableFades;
 
-
-
-
 void ActiveWait(u32 milliseconds); // 0x13dfe0 busy-wait
 
 // (the ex FxResource pad-struct is DISSOLVED: it was CDDrawSurfaceMgr viewed
@@ -23,13 +20,17 @@ void ActiveWait(u32 milliseconds); // 0x13dfe0 busy-wait
 
 class CSoundFxEmitter {
 public:
-    i32 FadeSceneClear1(i32 a1, i32 a2, i32 a3, i32 a4); // 0xfa410
-    i32 FadeScene1(i32 a1, i32 a2, i32 a3, i32 a4);      // 0xfa550
-    i32 FadeScene2(i32 a1, i32 a2, i32 a3);              // 0xfa790
+    // The CFxModeT2 slots the two centre args feed are CFaderLight::ApplyInit's
+    // m_centerX/m_centerY (0x1804a0); `dur`/`lead` go straight into
+    // CFader::RunFade(dur, lead, vsync).
+    i32 FadeSceneClear1(i32 centerX, i32 centerY, i32 dur, i32 lead); // 0xfa410
+    i32 FadeScene1(i32 centerX, i32 centerY, i32 dur, i32 lead);      // 0xfa550
+    // `pct` is the CFxModeT3 m_10 CFaderSine::ApplyInit range-checks to 0..100.
+    i32 FadeScene2(i32 pct, i32 dur, i32 lead); // 0xfa790
     // (0xfa8f0 was Method_fa8f0 - HOISTED to CState::RetireScene: it is called on every
     //  screen state's own `this`, so it is a CState-level helper, not this facet's. The
     //  other four here have no such cross-state caller set and stay on this emitter view.)
-    i32 FadeSceneClear2(i32 a1, i32 a2, i32 a3); // 0xfaa60
+    i32 FadeSceneClear2(i32 pct, i32 dur, i32 lead); // 0xfaa60
 
     char _00[0x04];
     class CGruntzMgr* m_gameMgr; // +0x04 the game-manager singleton (real class; the

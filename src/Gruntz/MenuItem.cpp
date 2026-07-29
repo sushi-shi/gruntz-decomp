@@ -90,17 +90,24 @@ void CMenuItem2::Reset() {
     m_6c = 0;
 }
 RVA(0x00185460, 0xa9)
-i32 CMenuItem::Init(CMenuPage* a0, const char* a1, const char* a2, i32 a3, const char* a4, i32 a5) {
-    if (!a0) {
+i32 CMenuItem::Init(
+    CMenuPage* page,
+    const char* name,
+    const char* spriteKey,
+    i32 cmdId,
+    const char* key,
+    i32 flags
+) {
+    if (!page) {
         return 0;
     }
-    m_flags = a5;
-    m_owner = a0->m_owner;
-    m_host = a0->m_host;
-    m_template = a0;
-    m_name = a1;
-    m_key = a4;
-    m_cmdId = a3;
+    m_flags = flags;
+    m_owner = page->m_owner;
+    m_host = page->m_host;
+    m_template = page;
+    m_name = name;
+    m_key = key;
+    m_cmdId = cmdId;
     m_1c = 0;
     m_cmdParam = 0;
     if (m_flags & 1) {
@@ -115,7 +122,7 @@ i32 CMenuItem::Init(CMenuPage* a0, const char* a1, const char* a2, i32 a3, const
         // Lookup is its own body at 0x1b8438 in a different .obj band.  The two classes
         // are code-identical, which is why every FID row there is AMBIG; the binary
         // names them itself (mfc_class 0x1b8008).
-        m_owner->m_imageRegistry->m_10map.Lookup(a2, slot);
+        m_owner->m_imageRegistry->m_10map.Lookup(spriteKey, slot);
         m_sprite = slot;
         if (!slot) {
             return 0;
@@ -257,39 +264,39 @@ i32 CMenuItem::Hit(i32 x, i32 y) {
 // source-steerable (no statement order forces a plain store past the call arg setup).
 RVA(0x00185750, 0x123)
 i32 CMenuItem2::Init(
-    CMenuPage* a0,
-    const char* a1,
-    const char* a2,
-    i32 a3,
-    const char* a4,
-    i32 a5
+    CMenuPage* page,
+    const char* name,
+    const char* spriteKey,
+    i32 cmdId,
+    const char* key,
+    i32 flags
 ) {
-    if (!a0) {
+    if (!page) {
         return 0;
     }
-    if (!CMenuItem::Init(a0, a1, a2, a3, a4, a5)) {
+    if (!CMenuItem::Init(page, name, spriteKey, cmdId, key, flags)) {
         return 0;
     }
     m_frameIdx = 0;
     m_6c = 0;
     m_70 = 0x64;
 
-    char name[0x80];
+    char buf[0x80];
     CObject* sprite; // CMapStringToOb's value slot (Lookup @0x1b8008 takes CObject*&)
 
-    sprintf(name, "%s_NORMAL", a2);
+    sprintf(buf, "%s_NORMAL", spriteKey);
     sprite = 0;
-    m_owner->m_imageRegistry->m_10map.Lookup(name, sprite);
+    m_owner->m_imageRegistry->m_10map.Lookup(buf, sprite);
     m_spriteNormal = static_cast<CDDrawWorker*>(sprite);
 
-    sprintf(name, "%s_SELECTED", a2);
+    sprintf(buf, "%s_SELECTED", spriteKey);
     sprite = 0;
-    m_owner->m_imageRegistry->m_10map.Lookup(name, sprite);
+    m_owner->m_imageRegistry->m_10map.Lookup(buf, sprite);
     m_spriteSelected = static_cast<CDDrawWorker*>(sprite);
 
-    sprintf(name, "%s_DISABLED", a2);
+    sprintf(buf, "%s_DISABLED", spriteKey);
     sprite = 0;
-    m_owner->m_imageRegistry->m_10map.Lookup(name, sprite);
+    m_owner->m_imageRegistry->m_10map.Lookup(buf, sprite);
     m_spriteDisabled = static_cast<CDDrawWorker*>(sprite);
 
     return 1;

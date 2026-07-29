@@ -211,13 +211,13 @@ i32 CDDPalette::LoadDefault(IDirectDraw2* dd, char* filename, u32 flags) {
     return Create(dd, pal, flags);
 }
 
-// CDDPalette::SetAndNotify (__thiscall, ret 0x10 => 4 args; a4 unused). Cache the
+// CDDPalette::SetAndNotify (__thiscall, ret 0x10 => 4 args; arg4 unused). Cache the
 // `count` supplied PALETTEENTRYs into m_cacheA starting at `start`, wait for the next
 // vertical blank through the global DirectDrawMgr's device (slot 22, @+0x58), then
 // push the range straight into the DirectDraw palette via SetEntries(0, start,
 // count, data). The notify only fires when the singleton is up.
 RVA(0x00147aa0, 0x6a)
-i32 CDDPalette::SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 a4) {
+i32 CDDPalette::SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 unused) {
     // The loop walks the DESTINATION index and derives the source from it - retail
     // @0x147ac7 `mov eax,ecx / sub eax,edx` is exactly (i - start)*4 against the
     // fixed `data` base in ebx - and its guard @0x147ab5 is `cmp ebp,edi / jae`,
@@ -233,7 +233,7 @@ i32 CDDPalette::SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 a4) {
 }
 
 RVA(0x00147b10, 0x8b)
-i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 a4) {
+i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 unused) {
     PALETTEENTRY* buf = static_cast<PALETTEENTRY*>(::operator new(count * 4));
     if (buf == 0) {
         return 0x80070057;
@@ -245,7 +245,7 @@ i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 a4) {
         buf[i].peBlue = quads[i].rgbBlue;
         buf[i].peFlags = 0;
     }
-    i32 hr = SetAndNotify(start, count, buf, a4);
+    i32 hr = SetAndNotify(start, count, buf, unused);
     ::operator delete(buf);
     return hr;
 }
@@ -253,7 +253,7 @@ i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 a4) {
 // CDDPalette::SetEntriesRGB (0x147ba0, __thiscall, ret 0x10 => 4 args). As above
 // but from a packed 3-byte RGB source (straight copy, as in CreateRGB).
 RVA(0x00147ba0, 0x82)
-i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 a4) {
+i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 unused) {
     PALETTEENTRY* buf = static_cast<PALETTEENTRY*>(::operator new(count * 4));
     if (buf == 0) {
         return 0x80070057;
@@ -266,7 +266,7 @@ i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 a4) {
         buf[i].peBlue = *rgb++;
         buf[i].peFlags = 0;
     }
-    i32 hr = SetAndNotify(start, count, buf, a4);
+    i32 hr = SetAndNotify(start, count, buf, unused);
     ::operator delete(buf);
     return hr;
 }
@@ -296,7 +296,7 @@ void CDDPalette::GetEntries() {
 // @+0x58), then push all 256 entries into the DirectDraw palette via SetEntries(0,
 // 0, 0x100, m_cacheB).
 RVA(0x00147c80, 0x4d)
-void CDDPalette::Apply(i32 a1) {
+void CDDPalette::Apply(i32 unused) {
     PALETTEENTRY* readback = m_cacheB;
     if (readback == 0) {
         return;

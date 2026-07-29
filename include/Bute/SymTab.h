@@ -116,17 +116,20 @@ public:
     // build a leaf record for it and splice it into the record's +0x24 sub-table,
     // bumping the parser's longest-leaf-name counter. Returns the slot (0 if the name
     // already existed or the slot pop failed). Higher-level twin of AddNodeEntry.
-    struct CParseSource* AddNamedValue(void* a1, void* name, i32 key); // 0x13a400
+    struct CParseSource* AddNamedValue(void* unused, void* name, i32 key); // 0x13a400
 
     // ApplyRecursive (0x13a580): clear each child's m_04, run the range operation
     // (0x13a640) over this scope, then recurse into children whose m_04 was set.
     // Returns 1 unless a recursion failed. (a2 == 0 is a no-op returning 1.)
-    i32 ApplyRecursive(CRezItmBase* a0, i32 a1, i32 a2, i32 a3);
+    // (stream, dataOff, dataSize, mergeDuplicates): the offset/size pair is what Read takes
+    // and what the recursion re-derives from each sub-scope's m_dataOff/m_dataSize;
+    // mergeDuplicates != 0 folds an already-present name in as a sub-entry, 0 skips it.
+    i32 ApplyRecursive(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 mergeDuplicates);
 
     // The big range operation 0x13a640 invoked by ApplyRecursive: reads a block of
     // (a0-stream) records into a temp buffer and folds each into this scope's tables
     // (sub-scope records -> m_subTabs; leaf records -> the leaf builder + m_symbols).
-    i32 ApplyRange(CRezItmBase* a0, i32 a1, i32 a2, i32 a3); // 0x13a640
+    i32 ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 mergeDuplicates); // 0x13a640
 
     // AddNodeEntry (0x13a4b0): pop a fresh parse-slot, build a leaf record into it from
     // (name=a1, rec=a2, f4=a0, stream=a3), splice it into rec's +0x24 sub-table, and

@@ -147,7 +147,7 @@ i32 CGruntHealthSprite::HealthUpdate() {
 }
 
 RVA(0x0007f270, 0xa3)
-i32 CGruntHealthSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
+i32 CGruntHealthSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
     switch (mode) {
         case 4:
             ar->Write(&m_cellX, 8);
@@ -160,8 +160,8 @@ i32 CGruntHealthSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameO
             ar->Read(&m_60, 4);
             break;
     }
-    if (CUserLogic::SerializeMove(ar, mode, a3, a4) == 0) {
+    if (CUserLogic::SerializeMove(ar, mode, typeId, pObj) == 0) {
         return 0;
     }
-    return Chain(ar, mode, a3, a4) != 0;
+    return Chain(ar, mode, typeId, pObj) != 0;
 }

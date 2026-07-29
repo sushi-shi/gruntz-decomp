@@ -29,26 +29,26 @@ float g_c24 = -3.1415927f; // 0x5efb24  -pi (owner-TU def; len = sqrt(dx*dx+dy*d
 RVA(0x001471d0, 0x1b4)
 i32 ProjectWallQuad(
     CDDSurface* surface,
-    i32 p1,
-    i32 p2,
-    i32 p3,
-    i32 p4,
-    i32 p5,
-    i32 p6,
-    i32 p7,
-    i32 p8,
-    i32 p9,
-    i32 p10
+    i32 x0,
+    i32 y0,
+    i32 x1,
+    i32 y1,
+    i32 halfWidth,
+    i32 color,
+    i32 clipLeft,
+    i32 clipTop,
+    i32 clipRight,
+    i32 clipBottom
 ) {
-    i32 dx = p3 - p1;
-    i32 dy = p4 - p2;
+    i32 dx = x1 - x0;
+    i32 dy = y1 - y0;
     double ang = atan2(static_cast<double>(dy), static_cast<double>(dx));
     double adx = fabs(static_cast<double>(dx));
     double ady = fabs(static_cast<double>(dy));
     double len = sqrt(adx * adx + ady * ady - g_c24);
     double s = sin(ang);
     double c = cos(ang);
-    double hw = static_cast<double>(p5);
+    double hw = static_cast<double>(halfWidth);
 
     // The workspace is written as a flat float grid (7 floats == one ClipVtx record),
     // walked from the first record's leading float member - no cast.
@@ -76,12 +76,16 @@ i32 ProjectWallQuad(
     }
     for (i32 j = 0; j < 4; j++) {
         float* v = &w[j * 7 + 1];
-        v[-1] = static_cast<float>((static_cast<double>(p1) + static_cast<double>(v[-1])));
-        v[0] = static_cast<float>((static_cast<double>(p2) + static_cast<double>(v[0])));
+        v[-1] = static_cast<float>((static_cast<double>(x0) + static_cast<double>(v[-1])));
+        v[0] = static_cast<float>((static_cast<double>(y0) + static_cast<double>(v[0])));
     }
 
-    if (ImagePolyClipRect(g_rasterVtxB, 4, p8, p8, p9, p10) != 0) {
-        FillPolygon(g_rasterVtxB, g_rasterVtxCount, surface, static_cast<i16>(p6));
+    // ARG FIX 2026-07-29: this dropped arg7 and passed arg8 TWICE. Retail 0x147335..
+    // 0x147348 pushes [esp+0x2c]/[esp+0x28]/[esp+0x24]/[esp+0x20] - four DISTINCT slots,
+    // i.e. (clipLeft, clipTop, clipRight, clipBottom), which is also what
+    // CDDSurface::DecodeThunk builds from its RECT.
+    if (ImagePolyClipRect(g_rasterVtxB, 4, clipLeft, clipTop, clipRight, clipBottom) != 0) {
+        FillPolygon(g_rasterVtxB, g_rasterVtxCount, surface, static_cast<i16>(color));
     }
     return 1;
 }

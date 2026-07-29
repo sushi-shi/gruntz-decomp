@@ -13,10 +13,10 @@ i32 SaveScreenshot(
     CDDSurface* src,
     Utils::RegistryHelper* bute,
     CGruntzMgr* owner,
-    i32 arg4,
-    i32 arg5,
+    i32 width,
+    i32 height,
     char* name,
-    i32 arg7
+    i32 saveFlag
 ); // 0x114ff0
 
 #endif // GRUNTZ_SAVESCREENSHOT_H

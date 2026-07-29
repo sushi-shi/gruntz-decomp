@@ -301,12 +301,12 @@ void DirectInputMgr2::FreeDeviceList() {
 }
 
 RVA(0x001331e0, 0x7c)
-void* DirectInputMgr2::AddController(CInputDevBase** devices, i32 n, i32 a3) {
+void* DirectInputMgr2::AddController(CInputDevBase** devices, i32 n, i32 unused) {
     if (devices == 0) {
         return 0;
     }
     CDeviceListNode* node = new CDeviceListNode; // operator new(0x88) + ctor zeroes the links
-    if (node->FillFrom(devices, n, a3) == 0) {
+    if (node->FillFrom(devices, n, unused) == 0) {
         if (node != 0) {
             node->Clear();
             operator delete(node);
@@ -319,22 +319,22 @@ void* DirectInputMgr2::AddController(CInputDevBase** devices, i32 n, i32 a3) {
 
 RVA(0x00133260, 0x4a)
 void* DirectInputMgr2::AddControllerArr(
-    CInputDevBase* a1,
-    CInputDevBase* a2,
-    CInputDevBase* a3,
-    CInputDevBase* a4,
-    CInputDevBase* a5,
-    CInputDevBase* a6,
-    i32 a7
+    CInputDevBase* dev0,
+    CInputDevBase* dev1,
+    CInputDevBase* dev2,
+    CInputDevBase* dev3,
+    CInputDevBase* dev4,
+    CInputDevBase* dev5,
+    i32 unused
 ) {
     CInputDevBase* buf[6];
-    buf[0] = a1;
-    buf[1] = a2;
-    buf[2] = a3;
-    buf[3] = a4;
-    buf[4] = a5;
-    buf[5] = a6;
-    return AddController(buf, 6, a7);
+    buf[0] = dev0;
+    buf[1] = dev1;
+    buf[2] = dev2;
+    buf[3] = dev3;
+    buf[4] = dev4;
+    buf[5] = dev5;
+    return AddController(buf, 6, unused);
 }
 
 RVA(0x001332c0, 0x1e)

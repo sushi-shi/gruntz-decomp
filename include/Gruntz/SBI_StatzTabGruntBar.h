@@ -5,7 +5,7 @@
 #include <rva.h>
 #include <Gruntz/StatusBarItem.h> // canonical frameless CStatusBarItem base (real RTTI base)
 #include <Gruntz/SbGeom.h> // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
-#include <Image/CImage.h>         // the glyph handles ARE CImage (RenderFrame @0x153790)
+#include <Image/CImage.h>  // the glyph handles ARE CImage (RenderFrame @0x153790)
 
 class CStatusBarMgr;
 class CDDrawSurfaceMgr;
@@ -56,7 +56,8 @@ public:
     //  4. the view's own shape: `char m_pad00[0x30]` (exactly the CStatusBarItem base
     //     subobject) then 19 fields whose ptr/int pattern matches this class's
     //     m_statusGlyph..m_glyphMap at every single offset.
-    virtual i32 SerializeFields(CFileMemBase* s, i32 mode, i32 a2, i32 a3) OVERRIDE; // 0xea990
+    virtual i32 SerializeFields(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj)
+        OVERRIDE; // 0xea990
     virtual void Reset()
         OVERRIDE; // slot 3 - 0xea470 (drop the five tracked values; also the dtor teardown)
     virtual i32 Refresh(i32 a)
@@ -72,12 +73,12 @@ public:
     i32 BuildMultiplayerTabStatusBar(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
-        i32 p3,
-        i32 p4,
+        i32 cmd,
+        i32 tab,
         RECT g,
         const char* key,
-        i32 p10,
-        i32 p11,
+        i32 unitRow,
+        i32 unitCol,
         i32 selMode
     ); // 0xea1f0
 

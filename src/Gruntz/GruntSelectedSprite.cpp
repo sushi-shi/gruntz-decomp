@@ -45,10 +45,8 @@ CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj), 
 
 RVA(0x0007e660, 0x102)
 void CGruntSelectedSprite::FireActivation(i32 id) {
-    if ((*((CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id))))
-        != 0) {
-        (this
-             ->*(*((CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)))))();
+    if ((*((CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)))) != 0) {
+        (this->*(*((CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -79,7 +77,8 @@ void CGruntSelectedSprite::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CGruntSelectedSprite::Update);
+    (*((CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CGruntSelectedSprite::Update);
 }
 
 RVA(0x0007e9c0, 0x16)
@@ -117,7 +116,12 @@ i32 CGruntSelectedSprite::Update() {
 }
 
 RVA(0x0007ea70, 0x6f)
-i32 CGruntSelectedSprite::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGameObject* a4) {
+i32 CGruntSelectedSprite::SerializeMove(
+    CFileMemBase* arc,
+    i32 mode,
+    i32 typeId,
+    CGameObject* pObj
+) {
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
     // Retail lays the mode==4 Write block out-of-line (cmp 4; je) with the mode==7
     // Read inline; this (mode != 4 ? maybe-Read : Write) form reproduces that layout.
@@ -128,13 +132,8 @@ i32 CGruntSelectedSprite::SerializeMove(CFileMemBase* arc, i32 mode, i32 a3, CGa
     } else {
         sa->Write(&m_cellX, 8);
     }
-    if (!CUserLogic::SerializeMove(
-            arc,
-            mode,
-            a3,
-            a4
-        )) {
+    if (!CUserLogic::SerializeMove(arc, mode, typeId, pObj)) {
         return 0;
     }
-    return Chain(sa, mode, a3, a4) ? 1 : 0;
+    return Chain(sa, mode, typeId, pObj) ? 1 : 0;
 }

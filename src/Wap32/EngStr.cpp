@@ -17,19 +17,19 @@
 RVA(0x00115440, 0x45)
 void EngStr_DrawText(
     CDDrawSurfaceMgr* obj,
-    CString* a1,
-    RECT* a2,
-    i32 a3,
-    i32 a4,
-    i32 a5,
-    i32 a6,
-    i32 a7,
-    i32 a8
+    CString* text,
+    RECT* dst,
+    i32 fontSel,
+    i32 shadow,
+    i32 r,
+    i32 g,
+    i32 b,
+    i32 flag
 ) {
     CDDrawSurfaceChildA* pair =
         obj->m_drawTarget->m_frontPair; // the real chain (ex the Sub/Cfg facets)
     if (pair == 0) {
         return;
     }
-    EngStr_RenderText(obj, a1, a2, pair->m_surface, a3, a4, a5, a6, a7, a8);
+    EngStr_RenderText(obj, text, dst, pair->m_surface, fontSel, shadow, r, g, b, flag);
 }

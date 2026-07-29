@@ -1285,27 +1285,27 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
 
 RVA(0x000597a0, 0x1345)
 i32 CGrunt::LoadGruntCombatAnimations(
-    i32 a0,
-    i32 a1,
-    i32 a2,
-    i32 a3,
-    i32 a4,
-    i32 a5,
-    i32 a6,
-    i32 a7
+    i32 attackKind,
+    i32 struckPose,
+    i32 srcRow,
+    i32 srcCol,
+    i32 srcPxX,
+    i32 srcPxY,
+    i32 fromProjectile,
+    i32 attackerGruntKind
 ) {
     if (this->m_gruntKind == 0x38 && this->m_entranceReason != 1) {
         return 1;
     }
 
-    // a7 == 0x39: conversion hit - heal the struck enemy, fire GAME_CONVERSIONHIT.
-    if (a7 == 0x39) {
-        CGrunt* enemy = m_tileMgr->m_grid[a2 * TM_GRID_COLS + a3];
+    // attackerGruntKind == 0x39: conversion hit - heal the struck enemy, fire GAME_CONVERSIONHIT.
+    if (attackerGruntKind == 0x39) {
+        CGrunt* enemy = m_tileMgr->m_grid[srcRow * TM_GRID_COLS + srcCol];
         if (enemy != 0
             && m_tileMgr->SpawnGrunt(
                    this->m_tileOwnerHi,
                    this->m_tileOwnerLo,
-                   a2,
+                   srcRow,
                    enemy->m_1f4_moveIcon
                ) != 0) {
             i32 h = enemy->m_health + 0x19;
@@ -1328,7 +1328,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     // Hit-type byte-table lookup + optional handicap halving.
-    i32 hit = g_hitTable[this->m_entranceReason * 23 + a0];
+    i32 hit = g_hitTable[this->m_entranceReason * 23 + attackKind];
     CGruntzMgr* reg = g_gameReg; // cached once (retail keeps the singleton in a reg)
     if (reg->m_isEasyMode != 0 && reg->m_134 == 1 && this->m_tileOwnerHi == g_curPlayer) {
         i32 t = hit / 2;
@@ -1336,12 +1336,12 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     // Reactive-armor kind (0x3c == GRUNT_REACTIVEARMOR): scale the hit by g_dtScale, then damage the enemy.
-    if (a7 == 0x3a) {
+    if (attackerGruntKind == 0x3a) {
         hit = 0x64;
     } else if (this->m_gruntKind == 0x3c) {
         hit = static_cast<i32>((static_cast<float>(hit) * g_dtScale));
-        if (a6 == 0) {
-            CGrunt* enemy = m_tileMgr->m_grid[a2 * TM_GRID_COLS + a3];
+        if (fromProjectile == 0) {
+            CGrunt* enemy = m_tileMgr->m_grid[srcRow * TM_GRID_COLS + srcCol];
             if (enemy != 0 && enemy->m_entranceCommitted != 0) {
                 i32 nh = enemy->m_health - hit * 3;
                 if (nh < 0) {
@@ -1349,7 +1349,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                 }
                 enemy->m_health = nh;
                 if (nh <= 0) {
-                    m_tileMgr->CellDispatch(a2, a3, 1, -1);
+                    m_tileMgr->CellDispatch(srcRow, srcCol, 1, -1);
                 }
             }
         }
@@ -1362,12 +1362,12 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
     this->m_health = nh;
     if (this->m_entranceReason == 1) {
-        m_tileMgr->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, 1, a2);
+        m_tileMgr->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, 1, srcRow);
         return 0;
     }
     if (nh <= 0) {
         this->m_entranceCommitted = 0;
-        this->m_370 = a2;
+        this->m_370 = srcRow;
     }
 
     // On-screen visibility gate, then the hit/block sound-cue resolve.
@@ -1376,11 +1376,11 @@ i32 CGrunt::LoadGruntCombatAnimations(
     i32 vy = this->m_object->m_screenY;
     if (vx < reg->m_viewBounds.right && vx >= reg->m_viewBounds.left
         && vy < reg->m_viewBounds.bottom && vy >= reg->m_viewBounds.top) {
-        if (a7 == 0x3a) {
+        if (attackerGruntKind == 0x3a) {
             LK(s_DEATHTOUCHHIT);
             goto L_cue;
         }
-        if (a0 == 6 || a0 == 0xa || a0 == 0x16) {
+        if (attackKind == 6 || attackKind == 0xa || attackKind == 0x16) {
             if (this->m_entranceReason == 8) {
                 LK(s_BLOCKBODY2);
             } else {
@@ -1389,7 +1389,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             goto L_cue;
         }
         if (this->m_entranceReason == 9) {
-            if (a0 == 5 || a0 == 0xd || a0 == 0xe || a0 == 4) {
+            if (attackKind == 5 || attackKind == 0xd || attackKind == 0xe || attackKind == 4) {
                 LK(s_IMPACTMM4);
             } else {
                 LK(s_IMPACTMM3);
@@ -1401,7 +1401,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             goto L_cue;
         }
         if (this->m_entranceReason == 0xe) {
-            if (a1 == 1) {
+            if (struckPose == 1) {
                 LK(s_SPRING2);
             } else {
                 LK(s_SPRING1);
@@ -1412,9 +1412,9 @@ i32 CGrunt::LoadGruntCombatAnimations(
             LK(s_TOOBZ);
             goto L_cue;
         }
-        switch (a0) {
+        switch (attackKind) {
             case 0:
-                if (a1 == 0) {
+                if (struckPose == 0) {
                     LK(s_BLOCKBODY2);
                 } else {
                     LK(s_IMPACTMM1);
@@ -1424,35 +1424,35 @@ i32 CGrunt::LoadGruntCombatAnimations(
                 LK(s_IMPACTMM1);
                 break;
             case 3:
-                if (a1 == 0) {
+                if (struckPose == 0) {
                     LK(s_BLOCKBODY2);
                 } else {
                     LK(s_IMPACTMM4);
                 }
                 break;
             case 4:
-                if (a1 == 0) {
+                if (struckPose == 0) {
                     LK(s_BLOCKBODY2);
                 } else {
                     LK(s_IMPACTMM4);
                 }
                 break;
             case 5:
-                if (a1 == 0) {
+                if (struckPose == 0) {
                     LK(s_BLOCKBODY2);
                 } else {
                     LK(s_IMPACTMM3);
                 }
                 break;
             case 7:
-                if (a1 == 0) {
+                if (struckPose == 0) {
                     LK(s_BLOCKBODY2);
                 } else {
                     LK(s_IMPACTWM1);
                 }
                 break;
             case 8:
-                if (a1 == 0) {
+                if (struckPose == 0) {
                     LK(s_BLOCKBODY1);
                 } else {
                     LK(s_IMPACTMM1);
@@ -1465,49 +1465,49 @@ i32 CGrunt::LoadGruntCombatAnimations(
                 LK(s_IMPACTMM2);
                 break;
             case 0xc:
-                if (a1 == 0) {
+                if (struckPose == 0) {
                     LK(s_BLOCKBODY1);
                 } else {
                     LK(s_IMPACTMM4);
                 }
                 break;
             case 0xd:
-                if (a1 == 0) {
+                if (struckPose == 0) {
                     LK(s_BLOCKMETAL1);
                 } else {
                     LK(s_IMPACTMM4);
                 }
                 break;
             case 0xe:
-                if (a1 == 0) {
+                if (struckPose == 0) {
                     LK(s_BLOCKBODY2);
                 } else {
                     LK(s_IMPACTWM3);
                 }
                 break;
             case 0xf:
-                if (a1 == 0) {
+                if (struckPose == 0) {
                     LK(s_BLOCKBODY2);
                 } else {
                     LK(s_IMPACTMM1);
                 }
                 break;
             case 0x10:
-                if (a1 == 0) {
+                if (struckPose == 0) {
                     LK(s_BLOCKBODY2);
                 } else {
                     LK(s_IMPACTMM3);
                 }
                 break;
             case 0x12:
-                if (a1 == 0) {
+                if (struckPose == 0) {
                     LK(s_BLOCKBODY2);
                 } else {
                     LK(s_IMPACTMM1);
                 }
                 break;
             case 0x13:
-                if (a1 == 0) {
+                if (struckPose == 0) {
                     LK(s_BLOCKBODY2);
                 } else {
                     LK(s_IMPACTMM1);
@@ -1535,15 +1535,15 @@ i32 CGrunt::LoadGruntCombatAnimations(
         }
     }
 
-    // Block path (a0 in {6,0xa,0x16}); otherwise reason 0x15 kills, else return.
-    if (!(a0 == 6 || a0 == 0xa || a0 == 0x16)) {
-        if (a0 != 0x15) {
+    // Block path (attackKind in {6,0xa,0x16}); otherwise reason 0x15 kills, else return.
+    if (!(attackKind == 6 || attackKind == 0xa || attackKind == 0x16)) {
+        if (attackKind != 0x15) {
             return 1;
         }
         if (this->m_health > 0) {
             return 1;
         }
-        m_tileMgr->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, 7, a2);
+        m_tileMgr->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, 7, srcRow);
         return 0;
     }
 
@@ -1569,11 +1569,11 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
     // x87 angle-octant direction resolver: copy the matching g_dirVec triple into
     // CGrunt+0x43c and set the target tile pixel (newX/newY).
-    i32 dy = a5 - this->m_object->m_screenY;
-    i32 dx = a4 - this->m_object->m_screenX;
+    i32 dy = srcPxY - this->m_object->m_screenY;
+    i32 dx = srcPxX - this->m_object->m_screenX;
     i32 newX;
     i32 newY;
-    if (a0 == 0x16) {
+    if (attackKind == 0x16) {
         switch (rand() % 8 - 1) {
             case 0:
                 SETDIR(8, this->m_lastTilePxX + 0x20, this->m_lastTilePxY - 0x20);
@@ -1601,9 +1601,9 @@ i32 CGrunt::LoadGruntCombatAnimations(
                 break;
         }
     } else if (dx == 0) {
-        if (a5 > this->m_object->m_screenY) {
+        if (srcPxY > this->m_object->m_screenY) {
             SETDIR(2, this->m_lastTilePxX, this->m_lastTilePxY - 0x20);
-        } else if (a5 < this->m_object->m_screenY) {
+        } else if (srcPxY < this->m_object->m_screenY) {
             SETDIR(1, this->m_lastTilePxX, this->m_lastTilePxY + 0x20);
         } else {
             goto L_moveDone;
@@ -1611,20 +1611,20 @@ i32 CGrunt::LoadGruntCombatAnimations(
     } else {
         float slope = static_cast<float>(dy) / dx;
         if (slope > g_tanC0 || slope < g_tanC1) {
-            if (a5 > this->m_object->m_screenY) {
+            if (srcPxY > this->m_object->m_screenY) {
                 SETDIR(2, this->m_lastTilePxX, this->m_lastTilePxY - 0x20);
             } else {
                 SETDIR(1, this->m_lastTilePxX, this->m_lastTilePxY + 0x20);
             }
         } else if (slope > g_tanC2 || slope < g_tanC3) {
             if (slope > g_tanC2) {
-                if (a4 > this->m_object->m_screenX) {
+                if (srcPxX > this->m_object->m_screenX) {
                     SETDIR(6, this->m_lastTilePxX - 0x20, this->m_lastTilePxY - 0x20);
                 } else {
                     SETDIR(5, this->m_lastTilePxX + 0x20, this->m_lastTilePxY + 0x20);
                 }
             } else if (slope < g_tanC3) {
-                if (a4 > this->m_object->m_screenX) {
+                if (srcPxX > this->m_object->m_screenX) {
                     SETDIR(4, this->m_lastTilePxX - 0x20, this->m_lastTilePxY + 0x20);
                 } else {
                     SETDIR(8, this->m_lastTilePxX + 0x20, this->m_lastTilePxY - 0x20);
@@ -1633,7 +1633,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                 goto L_moveDone;
             }
         } else {
-            if (a4 > this->m_object->m_screenX) {
+            if (srcPxX > this->m_object->m_screenX) {
                 SETDIR(0, this->m_lastTilePxX - 0x20, this->m_lastTilePxY);
             } else {
                 SETDIR(3, this->m_lastTilePxX + 0x20, this->m_lastTilePxY);

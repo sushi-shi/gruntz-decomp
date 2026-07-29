@@ -218,14 +218,14 @@ public:
     }
     i32 AdvanceOptionsCycle(); // @0x0933e0 (round-robin tick of the options slots)
     i32 SyncOptionsState();    // @0x093170 (reload each options slot's config; dual-slot)
-    void SetCellHeight(i32 r, i32 c, i32 v);          // @0x111ec0 (write the world height grid)
-    i32 PassClickToPlayState(i32 a0, i32 a1, i32 a2); // @0x08d780
-    i32 SwitchToNextState();                          // @0x08d6a0
+    void SetCellHeight(i32 r, i32 c, i32 v); // @0x111ec0 (write the world height grid)
+    i32 PassClickToPlayState(i32 areaArg, i32 forceTransition, i32 unused); // @0x08d780
+    i32 SwitchToNextState();                                                // @0x08d6a0
     // @0x08b960: the /GX state-machine factory - tear down the current state
     // (push it or scalar-delete + drain the stack), then build the new game-state
     // object for `stateId` (switch/new + ctor + vtable), install it, run its
     // slot-1 activate; ret 1 (0 on new/activate failure). Lives in an eh sibling TU.
-    i32 TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4);
+    i32 TransitionState(i32 stateId, i32 areaArg, i32 keepCurrent, i32 unused);
     // @0x08ef10 - suspend the world and pop the modal message screen carrying `msg`
     // (CGruntzApp::ShowMessage(msg, hwnd), which strcpy's it into the g_644ea0 message buffer).
     void EnterModalUI(const char* msg);
@@ -249,9 +249,14 @@ public:
     // 4-arg CGameRegistry decl dropped it, which is why CSaveGame::Register's local
     // CString looked like an unexplained un-destroyed temp (its ~45% "EH-frame wall").
     i32 BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString name);
-    void UpdateScoreHud();                                       // @0x0860b0
-    i32 BroadcastCmd(CFileMemBase* ar, i32 cmd, i32 a2, i32 a3); // @0x093460
-    void RecomputeViewScale();                                   // @0x08f7f0
+    void UpdateScoreHud(); // @0x0860b0
+    // `typeId`/`pObj` are the serialize-family's forwarded factory context and come
+    // STRAIGHT from SerialObjectFactory (0xd2a0) args 4 and 5 - the class tag and the
+    // `void** out` slot its mode-9 object factory writes through (retail 0x6b31e pushes
+    // [esp+0x2c] then [esp+0x28], i.e. arg5 then arg4, ahead of `cmd` and `ar`). Nothing
+    // below this call READS either; every leaf just forwards them.
+    i32 BroadcastCmd(CFileMemBase* ar, i32 cmd, i32 typeId, i32 pObj); // @0x093460
+    void RecomputeViewScale();                                         // @0x08f7f0
     // A sibling state-transition pusher reached by PassClickToPlayState's reloc-
     // masked 4-arg call (deferred body / matched elsewhere).
     // SwitchToNextState's helpers fold onto the real bound methods: MakeNextState ==
@@ -311,7 +316,16 @@ public:
     i32 RunDebugGruntTypeDialog(); // @0x0929e0 (DEBUG_GRUNTTYPE dialog when PLAY)
     // @0x092d50 - if in play state and the options slot is not yet loaded, assign
     // its name CString. 7 raw args (only the slot index + the value string used).
-    i32 LoadOptionsSlotName(i32 slot, i32 a2, i32 a3, i32 a4, i32 a5, const char* val, i32 a7);
+    // 100% EXACT with args 2-5 and 7 unread: the body only uses `slot` and `val`.
+    i32 LoadOptionsSlotName(
+        i32 slot,
+        i32 unusedB,
+        i32 unusedC,
+        i32 unusedD,
+        i32 unusedE,
+        const char* val,
+        i32 unusedG
+    );
     i32 CountReadyOptionsSlots(i32 anyState); // @0x092e30 (count loaded/armed slots)
     // AutoTuneCmdDelay's secondary latency probe (thunked; reloc-masked). Retail calls
     // it on the game mgr (CMulti's m_4), NOT on the CMulti itself.

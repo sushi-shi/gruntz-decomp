@@ -77,7 +77,7 @@ enum GruntDeathType {
                 m_object->m_screenX,                                                               \
                 m_object->m_screenY                                                                \
             )) {                                                                                   \
-            _g->m_cueSink->SpawnVoiceDriver(this, (tag), -1, 0, -1, -1);    \
+            _g->m_cueSink->SpawnVoiceDriver(this, (tag), -1, 0, -1, -1);                           \
         }                                                                                          \
     } while (0)
 
@@ -96,7 +96,7 @@ enum GruntDeathType {
 // Source-invariant (the documented switch-tail-merge + register-pin wall); deferred to
 // the final sweep.
 RVA(0x00060150, 0xd90)
-i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
+i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
     if (m_deathAnimStarted != 0) {
         return 0;
     }
@@ -157,9 +157,9 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
         m_object->m_flags |= 0x20000;
     }
 
-    if (a2 != -1) {
-        m_370 = a2;
-        g_gameReg->m_scoreHud->BumpWin(a2, m_tileOwnerHi); // 0xfcc50 (+0x7c m_scoreHud)
+    if (killerSlot != -1) {
+        m_370 = killerSlot;
+        g_gameReg->m_scoreHud->BumpWin(killerSlot, m_tileOwnerHi); // 0xfcc50 (+0x7c m_scoreHud)
     }
 
     switch (deathType) {
@@ -373,8 +373,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_38->ApplyName(static_cast<const char*>(m_44c));
             {
                 CGruntzMgr* g = g_gameReg;
-                CCueRect* r =
-                    &g->m_world->m_level->m_mainPlane->m_viewRect;
+                CCueRect* r = &g->m_world->m_level->m_mainPlane->m_viewRect;
                 i32 x = m_object->m_screenX;
                 i32 y = m_object->m_screenY;
                 if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {

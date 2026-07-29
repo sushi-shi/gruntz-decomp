@@ -1,6 +1,6 @@
 #include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
-#include <Gruntz/ActNameRegistry.h>       // the shared activation-name registry archetype
-#include <Gruntz/ActReg.h>                // the shared CActReg coordinate-registry archetype
+#include <Gruntz/ActNameRegistry.h>   // the shared activation-name registry archetype
+#include <Gruntz/ActReg.h>            // the shared CActReg coordinate-registry archetype
 #include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
@@ -123,7 +123,8 @@ void CStatusBarSprite::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CStatusBarSprite::AdvanceAnim);
+    (*((CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CStatusBarSprite::AdvanceAnim);
 }
 
 RVA(0x0010c810, 0x17)
@@ -138,14 +139,9 @@ LogicTypeId CStatusBarSprite::GetTypeTag() {
 }
 
 RVA(0x00011ae0, 0x47)
-i32 CStatusBarSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
-    if (!CUserLogic::SerializeMove(
-            ar,
-            mode,
-            a3,
-            a4
-        )) {
+i32 CStatusBarSprite::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
+    if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
         return 0;
     }
-    return Chain(ar, mode, a3, a4) != 0;
+    return Chain(ar, mode, typeId, pObj) != 0;
 }

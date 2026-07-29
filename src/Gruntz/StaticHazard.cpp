@@ -33,7 +33,6 @@ RVA_COMPGEN(0x00012b30, 0x44, ??1CStaticHazard@@UAE@XZ)
 
 struct CString; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
-
 static inline CString* ActNameSlots() {
     return g_typeColl.Slots();
 }
@@ -190,7 +189,8 @@ void CStaticHazard::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id)) = static_cast<CActHandler>(&CStaticHazard::LoadAttributes2);
+    (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id)) =
+        static_cast<CActHandler>(&CStaticHazard::LoadAttributes2);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -208,7 +208,8 @@ void CStaticHazard::RegisterActs() {
         *slot = "B";
         g_typeCounter++;
     }
-    (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id2)) = static_cast<CActHandler>(&CStaticHazard::LoadAttributes);
+    (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id2)) =
+        static_cast<CActHandler>(&CStaticHazard::LoadAttributes);
 }
 
 // ---------------------------------------------------------------------------
@@ -390,9 +391,8 @@ dispatch:
     return 0;
 }
 
-
 RVA(0x000fc5b0, 0xf5)
-i32 CStaticHazard::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
+i32 CStaticHazard::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* pObj) {
     CFileMemBase* arc = ar;
     switch (mode) {
         case 4:
@@ -412,13 +412,8 @@ i32 CStaticHazard::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject
             arc->Read(&m_tileRow, 4);
             break;
     }
-    if (!CUserLogic::SerializeMove(
-            ar,
-            mode,
-            a3,
-            a4
-        )) {
+    if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
         return 0;
     }
-    return Chain(arc, mode, a3, a4) != 0;
+    return Chain(arc, mode, typeId, pObj) != 0;
 }

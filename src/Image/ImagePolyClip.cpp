@@ -76,11 +76,18 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
 // Clip topology, edge selection, the ping-pong buffers and the /28 vertex-count
 // magic divide are all correct; the FP scheduling parks it. Final-sweep candidate.
 RVA(0x001461b0, 0x399)
-i32 ImagePolyClipRect(ClipVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
-    float left = static_cast<float>(a2);
-    float right = static_cast<float>(a4);
-    float top = static_cast<float>(a3);
-    float bottom = static_cast<float>(a5);
+i32 ImagePolyClipRect(
+    ClipVtx* poly,
+    i32 n,
+    i32 clipLeft,
+    i32 clipTop,
+    i32 clipRight,
+    i32 clipBottom
+) {
+    float left = static_cast<float>(clipLeft);
+    float right = static_cast<float>(clipRight);
+    float top = static_cast<float>(clipTop);
+    float bottom = static_cast<float>(clipBottom);
     i32 i;
 
     // Pass 1: keep x >= left. poly -> bufA.

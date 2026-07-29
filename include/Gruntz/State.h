@@ -178,14 +178,14 @@ public:
     // (fxRes()/m_faderMgr) only, so it IS a CState-level helper. Definition lives in
     // Attract.cpp (the
     // attract unit owns 0xfa8f0.. RVAs) as a CState:: method; reloc-masked.
-    i32 RetireScene(i32 a1, i32 a2, i32 a3, i32 a4); // 0x0fa8f0
+    i32 RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay); // 0x0fa8f0
     // Present (0xfaec0): per-frame present/refresh of the bound view - shade the back
     // surface, flip the front. Same CState-level non-virtual shape as RetireScene, and the
     // xrefs prove the receiver: CGruntzMgr::RunModalDialog calls it as `mov ecx,[esi+0x2c];
     // call 0x1ec9` (CGruntzMgr+0x2c IS m_curState, a CState*), and CPlay::Vslot23 calls it on
     // its own `this`. Direct rel32 => non-virtual. Definition in Attract.cpp (the unit that
     // owns the 0xfa.. band).
-    void Present(i32 arg0); // 0x0faec0
+    void Present(i32 pct); // 0x0faec0
     // (the ex FxResource* fxRes() reinterpret view is DISSOLVED: its +0x04 m_worker
     // and +0x1c m_gate are m_world's own m_drawTarget/m_ptrColl.)
     // (LoadGameAssetNamespaces is the slot-1 VIRTUAL above; the leaf loaders chain
@@ -250,7 +250,11 @@ public:
     i32 m_levelType;  // +0x20  level terrain-class id; CProjectile::LoadProjectileEffects
                       //         switches on it (4/5/8 land-death, 6 no-death) to pick the
                       //         level death effect
-    i32 m_24;         // +0x24
+    // +0x24  the OUTGOING state's id: LoadGameAssetNamespaces stores its 3rd arg here,
+    // and CGruntzMgr::TransitionState passes `cur->Update()` for it; CCreditsState's
+    // `m_24 == 5` test therefore reads "we came from the MENU state" (case 5 of the
+    // TransitionState factory switch). (Renaming the member is the m_<hex> campaign's.)
+    i32 m_24;
     // +0x28  level asset bank; a Bute CSymTab (LookupSet == CSymTab::ResolvePath
     // 0x13bae0), so every user reaches it as CSymTab* -> typed here (kills the casts).
     // LoadGameAssetNamespaces stores the resolved "AREA%i" node here.

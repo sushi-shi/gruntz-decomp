@@ -309,26 +309,26 @@ i32 CWwdGameObjectA::Test() {
 }
 
 RVA(0x00150a70, 0x89)
-i32 CWwdGameObjectA::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
-    if (a1 == 0) {
+i32 CWwdGameObjectA::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
+    if (ar == 0) {
         return 0;
     }
-    if (m_1a0.Find(a1, type, a3, self) == 0) {
+    if (m_1a0.Find(ar, mode, typeId, self) == 0) {
         return 0;
     }
-    switch (type) {
-        case 4:
-            if (ReadState(a1) == 0) {
+    switch (mode) {
+        case SERIAL_SAVE:
+            if (ReadState(ar) == 0) {
                 return 0;
             }
             break;
-        case 7:
-            if (SerializeSpriteName(a1) == 0) {
+        case SERIAL_LOAD:
+            if (SerializeSpriteName(ar) == 0) {
                 return 0;
             }
             break;
     }
-    return CGameObject::Play(a1, type, a3, self) != 0; // the base body (retail rel32 -> 0x151150)
+    return CGameObject::Play(ar, mode, typeId, self) != 0; // the base body (rel32 -> 0x151150)
 }
 
 // ---------------------------------------------------------------------------
@@ -458,15 +458,15 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
 // later is what the source already does), so this is TU-cumulative scheduler state,
 // not a source lever - `match_variants --state-trials` is the only remaining shot.
 RVA(0x00150d60, 0x14d)
-i32 CGameObject::Setup(i32 a1, i32 a2, i32 a3, AnimWorkerObj* tmpl) {
-    CResolveNode::SetPosition(a1, a2); // qualified = retail direct rel32 -> 0x164790
-    m_screenX = a1;
-    m_screenY = a2;
-    m_sortKey = a3;
-    m_104 = a1;
+i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
+    CResolveNode::SetPosition(x, y); // qualified = retail direct rel32 -> 0x164790
+    m_screenX = x;
+    m_screenY = y;
+    m_sortKey = sortKey;
+    m_104 = x;
     AnimWorkerObj* w = m_7c;
-    m_108 = a2;
-    m_10c = a3;
+    m_108 = y;
+    m_10c = sortKey;
     m_strideX = 10;
     m_strideY = 10;
     m_118 = 0;
@@ -632,14 +632,14 @@ void CGameObject::AddLogicBump(char* key) {
 // tail. Logic complete; the per-case regalloc/tail-merge layout is a
 // compiler-internal choice not steerable from C.
 RVA(0x00151150, 0x175)
-i32 CGameObject::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
-    if (a1 == 0) {
+i32 CGameObject::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
+    if (ar == 0) {
         return 0;
     }
     AnimWorkerObj* w;
     i32 saved;
     i32 node;
-    switch (type) {
+    switch (mode) {
         case 3: {
             m_184 = 0;
             if (m_carrier != 0) {
@@ -659,7 +659,7 @@ i32 CGameObject::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
             break;
         }
         case 4: {
-            if (Serialize(a1) == 0) {
+            if (Serialize(ar) == 0) {
                 return 0;
             }
             w = m_7c;
@@ -676,7 +676,7 @@ i32 CGameObject::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
             break;
         }
         case 7: {
-            if (SerializeObjectState(a1) == 0) {
+            if (SerializeObjectState(ar) == 0) {
                 return 0;
             }
             w = m_7c;
@@ -720,7 +720,7 @@ i32 CGameObject::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
             break;
         }
     }
-    return m_7c->Dispatch(a1, type, a3, self) != 0;
+    return m_7c->Dispatch(ar, mode, typeId, self) != 0;
 }
 
 RVA(0x00151320, 0x454)

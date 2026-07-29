@@ -26,6 +26,21 @@ typedef enum TrigLogicId {
     TRIGID_COVERED_POWERUP_26 = 0x1a, // CCoveredPowerupLogic (SetCell's fallback probe tag)
 } TrigLogicId;
 
+// Tile collision kinds - the CTileImageSet/CImageSet1::GetCollisionAt (slot 8) result for
+// the tile under an object. The space is dense (~0xb..0x74) and mostly unrecovered; ONLY
+// the arms proven from the binary are enumerated here, never a filled-in range.
+typedef enum TileCollisionKind {
+    // The two PYRAMID-band kinds (the whole 0x5d..0x6a band plays GAME_PYRAMIDMOVE in
+    // CTileTriggerLogic::LoadBridgeMove @0x110860) that make an id-21 trigger the level's
+    // single latched leaf: AddLogic (0x116610) and LoadElement (0x117800) both stamp
+    // CTileTriggerContainer::m_latchedLeaf on exactly {0x67, 0x68}, and
+    // CBattlezMapConfig::PathToNearestGoal (0x30b20) reads that latch in place of a
+    // per-cell FindInLists12 when a board cell's marker is 0x67. Which pyramid state each
+    // of the pair denotes is NOT recovered, so they are not named up/down.
+    TILEKIND_PYRAMID_LATCH_A = 0x67,
+    TILEKIND_PYRAMID_LATCH_B = 0x68,
+} TileCollisionKind;
+
 typedef enum TrigErrClass {
     TRIGERR_LOOKUP_MISS = 0x80dd, // a FindChild/registry lookup returned nothing
     TRIGERR_LINK_BROKEN = 0x80de, // a link validation failed (no child claims the switch)
@@ -87,9 +102,9 @@ public:
     // forwards `this` to. RE-HOMED from CTileTriggerSwitchLogic: CTileTriggerFactory::Build
     // calls ValidateByType (ILT 0x1abe) at 0x117aa7 on a freshly-`new`ed 0x9c
     // CTileTriggerLogic (`push 0x9c; call ??2; mov ecx,eax; call ??0CTileTriggerLogic`).
-    i32 ValidateByType(void* archive, i32 type, i32 a3, i32 a4); // 0x113a90
-    i32 Serialize(CFileMemBase* s);                              // 0x113ae0
-    i32 Deserialize(CFileMemBase* s);                            // 0x113c10
+    i32 ValidateByType(void* archive, i32 mode, i32 typeId, i32 pObj); // 0x113a90
+    i32 Serialize(CFileMemBase* s);                                    // 0x113ae0
+    i32 Deserialize(CFileMemBase* s);                                  // 0x113c10
 
     // Field names below take the RICHER of the two spellings this class was reconstructed
     // under (the CTileGridCommand view named the tag/coords/duty spans; this one did not).
@@ -127,9 +142,9 @@ public:
     // Ghidra rtti-vptr guess an 0x8c object cannot satisfy.
     void BuildRockBreakInGameText(); // 0x1122a0
 
-    i32 ApplyByType(void* archive, i32 type, i32 a3, i32 a4); // 0x113d40 (ILT 0x1d39)
-    i32 SerializeMatrix(CFileMemBase* s);                     // 0x113dd0 (type-4 save)
-    i32 DeserializeMatrix(CFileMemBase* s);                   // 0x113e70 (type-7 load)
+    i32 ApplyByType(void* archive, i32 mode, i32 typeId, i32 pObj); // 0x113d40 (ILT 0x1d39)
+    i32 SerializeMatrix(CFileMemBase* s);                           // 0x113dd0 (type-4 save)
+    i32 DeserializeMatrix(CFileMemBase* s);                         // 0x113e70 (type-7 load)
 
     i32 m_matrix[9];   // +0x9c..0xbf  3x3, streamed as a nested 3x3 loop
     i32 m_powerupType; // +0xc0        streamed FIRST (before the matrix)

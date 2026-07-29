@@ -36,8 +36,8 @@ RVA(0x000e6c80, 0xc3)
 i32 CSBI_Image::SetupImage(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
-    i32 a3,
-    i32 a4,
+    i32 cmd,
+    i32 tab,
     RECT rc,
     const char* key,
     i32 a10,
@@ -50,7 +50,7 @@ i32 CSBI_Image::SetupImage(
         return 0;
     }
     m_2c = owner;
-    m_tab = a4;
+    m_tab = tab;
     m_24 = host;
     m_28 = 0;
     m_enabled = 0;
@@ -58,7 +58,7 @@ i32 CSBI_Image::SetupImage(
     m_rect14.top = rc.top;
     m_rect14.right = rc.right;
     m_rect14.bottom = rc.bottom;
-    m_cmd = a3;
+    m_cmd = cmd;
     if (key == 0) {
         m_frame = 0;
         return 0 != 0;

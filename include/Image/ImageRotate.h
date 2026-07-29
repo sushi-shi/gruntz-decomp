@@ -7,8 +7,8 @@
 class CDDSurface; // <DDrawMgr/DDSurface.h> - both the dest and the source surface
 
 void ImageRotateBlit(
-    i32 a1,
-    i32 a2,
+    i32 destX,
+    i32 destY,
     i32* pivot,
     CDDSurface* dst,
     CDDSurface* src,

@@ -61,7 +61,7 @@ public:
         };
         u16 m_flagWord; // +0x10  the g_cmdBitTable accumulator
     };
-    i16 m_12;         // +0x12 (pad -> 0x14)
+    i16 m_12; // +0x12 (pad -> 0x14)
 
     virtual ~CGruntzCommand() {} // slot 0 (the non-deleting dtor; trivial -> vptr stamp only)
     // The `??_G` scalar-deleting destructor (vtable slot 0 @0x24330): run the trivial
@@ -70,7 +70,7 @@ public:
     // slot 1 - the (de)serialize dispatcher: on mode 4 call Save (slot 2), on
     // mode 7 call Load (slot 3), both through the vtable. The leaves override it
     // (Single 0x0244d0 / Multi 0x0246c0); the base anchor returns 1.
-    virtual i32 Serialize(CFileMemBase* s, i32 mode, i32 a3, i32 a4);
+    virtual i32 Serialize(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj);
     // slot 2/3 - the network (de)serializers (via stream Write +0x30 / Read +0x2c):
     // pure in the binary (__purecall), each leaf provides its body. Single writes the
     // +0x10 field as the m_10/m_11 byte pair (0x024520/0x0245f0); Multi as one 16-bit
@@ -79,7 +79,7 @@ public:
     virtual i32 Load(CFileMemBase* s); // slot 3
     // slot 4 (+0x10) - the base "set params" implementation (0x023e20): store
     // the five scalar params; returns 1. Inherited unchanged by both leaves.
-    virtual i32 SetParams(char a0, char a1, char a2, i16 a3, i16 a4);
+    virtual i32 SetParams(char targetIndex, char cmdKind, char targetType, i16 posX, i16 posY);
     virtual i32 Vslot05(); // slot 5 (+0x14) - base returns 1 (role unrecovered: P2), 0x24310
     // slot 6 - the command's type/tag word (the tag byte, int-typed: the queue
     // serializer's retail bytes are `call [vptr+0x18]; and eax,0xff` with NO
@@ -107,9 +107,24 @@ public:
     virtual void Deselect() = 0; // slot 10 (+0x28)  __purecall in the base
 
     // Non-virtual members of the base (called directly, not via the vtable):
-    i32 SetParamsEx(char a0, char a1, char a2, i16 a3, i16 a4, char a5, char a6); // 0x023e60
-    i32 SetMaskFromList(char a0, char a1, char a2, i16 a3, i16 a4, i32 count,
-                        u8* buf); // 0x023ed0
+    i32 SetParamsEx(
+        char targetIndex,
+        char cmdKind,
+        char targetType,
+        i16 posX,
+        i16 posY,
+        char gruntIndex,
+        char extraByte
+    ); // 0x023e60
+    i32 SetMaskFromList(
+        char targetIndex,
+        char cmdKind,
+        char targetType,
+        i16 posX,
+        i16 posY,
+        i32 count,
+        u8* gruntList
+    ); // 0x023ed0
 };
 SIZE(0x14);
 
@@ -123,7 +138,7 @@ public:
     // slots 1/2/3 (0x0244d0 / 0x024520 / 0x0245f0) - the serialize dispatcher and
     // the single-target network Save/Load (the base declares them pure; the leaves
     // provide the bodies).
-    virtual i32 Serialize(CFileMemBase* s, i32 mode, i32 a3, i32 a4) OVERRIDE;
+    virtual i32 Serialize(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) OVERRIDE;
     virtual i32 Save(CFileMemBase* s) OVERRIDE;
     virtual i32 Load(CFileMemBase* s) OVERRIDE;
     virtual i32 Vslot05() OVERRIDE; // 0x24260
@@ -150,7 +165,7 @@ public:
     // slots 1/2/3 (0x0246c0 / 0x024710 / 0x0247d0) - the multi-target overrides of
     // the serialize dispatcher and the network Save/Load (the +0x10 flag word as a
     // single 16-bit unit vs the base's m_10/m_11 byte pair).
-    virtual i32 Serialize(CFileMemBase* s, i32 mode, i32 a3, i32 a4) OVERRIDE;
+    virtual i32 Serialize(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) OVERRIDE;
     virtual i32 Save(CFileMemBase* s) OVERRIDE;
     virtual i32 Load(CFileMemBase* s) OVERRIDE;
     virtual i32 Vslot05() OVERRIDE; // 0x243a0

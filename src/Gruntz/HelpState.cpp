@@ -50,9 +50,9 @@ GameStateId CDemo::Update() {
 }
 
 RVA(0x00095090, 0x6e)
-i32 CHelpState::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
+i32 CHelpState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     // Chain the base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9).
-    if (!CState::LoadGameAssetNamespaces(a1, a2, a3)) {
+    if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
         return 0;
     }
     while (ShowCursor(0) >= 0)

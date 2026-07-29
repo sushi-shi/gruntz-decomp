@@ -1,7 +1,7 @@
 #include <Ints.h>
-#include <math.h>            // sin/cos -> fsin/fcos intrinsics at /O2 /Oi
+#include <math.h>               // sin/cos -> fsin/fcos intrinsics at /O2 /Oi
 #include <DDrawMgr/DDSurface.h> // CDDSurface - the dst/src surfaces (ex RotateSrcImage view)
-#include <Image/RasterVtx.h> // ClipVtx + RotateRasterize decl
+#include <Image/RasterVtx.h>    // ClipVtx + RotateRasterize decl
 #include <rva.h>
 
 // @early-stop
@@ -20,8 +20,8 @@
 // cannot grow the frame or recolour, so it does not apply.
 RVA(0x00145f60, 0x242)
 void ImageRotateBlit(
-    i32 a1,
-    i32 a2,
+    i32 destX,
+    i32 destY,
     i32* pivot,
     CDDSurface* dst,
     CDDSurface* src,
@@ -62,8 +62,8 @@ void ImageRotateBlit(
     i32 ex[2] = {-hx, w - hx};
     i32 ey[2] = {-hy, h - hy};
 
-    float tx = static_cast<float>(a1);
-    float ty = static_cast<float>(a2);
+    float tx = static_cast<float>(destX);
+    float ty = static_cast<float>(destY);
 
     // Pass 1: the scaled centered corner products.
     ClipVtx prod[4];
@@ -90,16 +90,5 @@ void ImageRotateBlit(
         }
     }
 
-    RotateRasterize(
-        mtx,
-        4,
-        dst,
-        src,
-        mode,
-        colorkey,
-        -1,
-        -1,
-        -1,
-        -1
-    );
+    RotateRasterize(mtx, 4, dst, src, mode, colorkey, -1, -1, -1, -1);
 }

@@ -42,7 +42,7 @@ VTBL(CGruntzMapMgr, 0x001e9bb4); // vtable_names -> code (RTTI game class)
 // text.) Structure is correct (real inheritance, real qualified base call, no
 // casts), so the residue is the permuter's job, not a source-shape bug.
 RVA(0x00082430, 0x161)
-i32 CGruntzMapMgr::Visit(CFileMemBase* ar, i32 mode, i32 a2, i32 a3) {
+i32 CGruntzMapMgr::Visit(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj) {
     if (ar == 0) {
         return 0;
     }
@@ -92,7 +92,7 @@ i32 CGruntzMapMgr::Visit(CFileMemBase* ar, i32 mode, i32 a2, i32 a3) {
     }
     // Retail tail: `mov ecx,this; call 0x26b2` (the ?Visit@CMapMgr@@ ILT thunk ->
     // 0x9f7f0) - this override chaining its own base, non-virtually.
-    return CMapMgr::Visit(ar, mode, a2, a3) != 0;
+    return CMapMgr::Visit(ar, mode, typeId, pObj) != 0;
 }
 
 // ===========================================================================

@@ -34,12 +34,33 @@ public:
     // 0x023c00 - full reset: drain base + RemoveAll the +0x1c list + free both
     //            command recycle lists.
     void Clear();
-    // 0x023c30 - build a single-target command + enqueue it. p1 is the enqueue
-    // flag; p2..p8 are the command's scalar params (forwarded permuted).
+    // 0x023c30 - build a single-target command + enqueue it. The scalar params are
+    // forwarded PERMUTED into CGruntzCommand::SetParamsEx (see its slot mapping):
+    // targetIndex->m_targetIndex, cmdKind->m_5, targetType->m_targetType,
+    // posX/posY->m_8/m_a, gruntIndex->m_10, extraByte->m_11 (only cmdKind >= 8 packs it).
     void Report1(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g); // 0x90db8 reloc-masked (fold)
-    void EnqueueSingle(i32 p1, char p2, char p3, char p4, i16 p5, i16 p6, char p7, char p8);
-    // 0x023ca0 - build a multi-target (mask) command + enqueue it.
-    void EnqueueMulti(i32 p1, char p2, i32 p3, u8* p4, char p5, i16 p6, i16 p7, char p8);
+    void EnqueueSingle(
+        i32 enqueueFlag,
+        char targetIndex,
+        char gruntIndex,
+        char cmdKind,
+        i16 posX,
+        i16 posY,
+        char extraByte,
+        char targetType
+    );
+    // 0x023ca0 - build a multi-target (mask) command + enqueue it: `gruntList[0..count)`
+    // becomes the m_flagWord bit mask via g_cmdBitTable.
+    void EnqueueMulti(
+        i32 enqueueFlag,
+        char targetIndex,
+        i32 count,
+        u8* gruntList,
+        char cmdKind,
+        i16 posX,
+        i16 posY,
+        char targetType
+    );
     // 0x023d10 - enqueue a built command onto the two queues, tagging its
     //            phase from the manager state. flag != 0 -> also AddTail onto
     //            the nested +0x1c list (with the phase tag).
@@ -49,7 +70,7 @@ public:
     // External/no-body here (reloc-masked thiscall).
     // 0x024890 - the command-queue (de)serializer. mode 4 = write the queue to
     // the stream; mode 7 = read it back, rebuilding the queue.
-    i32 Serialize(CFileMemBase* stream, i32 mode, i32 a3, i32 a4);
+    i32 Serialize(CFileMemBase* stream, i32 mode, i32 typeId, i32 pObj);
     // 0x024a90 - predicate: is the registry's multiplayer slot active?
     i32 IsActive(CFileMemBase* enable);
     // 0x023d90 - snap the cursor rect to the 0x20 tile grid and dispatch the
@@ -57,7 +78,7 @@ public:
     // (ex `CObj23d90::Blit`, a placeholder view of THIS class: its receiver is
     // [CGruntzMgr+0x6c] == m_cmdSubMgr, and its m_38 chain IS this class's m_38
     // manager back-ptr - m_38->m_world->m_level->m_planeCtx/m_mainPlane).
-    void BlitTileMarker(i32 a1, i32 a2, i32 x, i32 y, i32 a5); // 0x023d90
+    void BlitTileMarker(i32 enqueueFlag, i32 targetIndex, i32 x, i32 y, i32 targetType); // 0x023d90
     // 0x085bd0 - the /GX destructor.
     ~CGruntzCmdMgr();
 

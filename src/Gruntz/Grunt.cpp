@@ -1003,23 +1003,32 @@ void CGrunt::ClearAllSprites() {
 // passthrough args (c..f) through one saved esi (push esi; mov esi,[..]; push
 // esi x4) while MSVC here pre-loads them into eax/ecx/edx. Pure arg-marshalling
 // schedule coin-flip; no source lever flips it (entropy-class).
-// CGrunt::TileSwitch(a, b, c, d, e, f) @0x4b320 - scale the two grid coords to
+// CGrunt::TileSwitch(col, row, arrivalPhase, maskA, clearFlag, maskCIn) @0x4b320 -
+// scale the two grid coords to
 // tile-pixel centers (*0x20 + 0x10) and forward all six args to the engine
 // tile-switch helper. __thiscall: the body never reads `this` (byte-identical
 // either way, ret 0x18), but every retail caller loads a grunt into ecx - which
 // only the member spelling reproduces at the ~25 reconstructed sites.
 RVA(0x0004b320, 0x34)
-i32 CGrunt::TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
-    return StepArrivalDrop(a * 0x20 + 0x10, b * 0x20 + 0x10, c, d, e, f);
+i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearFlag, i32 maskCIn) {
+    return StepArrivalDrop(
+        col * 0x20 + 0x10,
+        row * 0x20 + 0x10,
+        arrivalPhase,
+        maskA,
+        clearFlag,
+        maskCIn
+    );
 }
 
 // ---------------------------------------------------------------------------
-// CGrunt::StepArrivalDrop(a,b,c,d,e,f)   @0x4b370   (ret 0x18, /GX EH frame)
-// Re-path the grunt from its last committed tile to the (a,b) pixel target and
+// CGrunt::StepArrivalDrop(pxX,pxY,arrivalPhase,maskA,clearFlag,maskCIn) @0x4b370
+// (ret 0x18, /GX EH frame)
+// Re-path the grunt from its last committed tile to the (pxX,pxY) pixel target and
 // commit the arrival. Structure:
 //   * recycle the current occupied-coord path onto g_coordPool, then SearchEdge
 //     (0x81e10) a fresh route through m_31c;
-//   * if that route's head cell passes the d/maskC flag gate, optionally re-probe
+//   * if that route's head cell passes the maskA/maskC flag gate, optionally re-probe
 //     into a scratch CPtrList (hence the /GX frame) and adopt the shorter path;
 //   * if the FIRST SearchEdge fails, nudge the target one tile toward whichever
 //     4-neighbour is free (the bits-5..14 jump table at 0x44be70), blank the 3x3
@@ -1029,7 +1038,14 @@ i32 CGrunt::TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
 // The cell flag word is rowInts[y][x*7], bounds-checked to 1 - CellFlagsAt
 // (0x75a40) open-coded, as retail inlines it at every site here.
 RVA(0x0004b370, 0xafd)
-i32 CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
+i32 CGrunt::StepArrivalDrop(
+    i32 pxX,
+    i32 pxY,
+    i32 arrivalPhase,
+    i32 maskA,
+    i32 clearFlag,
+    i32 maskCIn
+) {
     CGruntzMapMgr* grid;
     CoordNode* n;
     CoordNode* cur;
@@ -1039,7 +1055,7 @@ i32 CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
     i32 lastX, lastY, tileX, tileY;
     i32 maskC, cnt, headFlags, lastFlags, hit;
     i32 reinit; // entrance-reinit gate: cleared on the m_arrivalState==0x11 bail
-    i32 nudged; // the nudge/line-walk found a fresh target
+    i32 nudged; // the nudge/line-walk found pxX fresh target
     i32 free4, step, acc, err, walkX, walkY, blocked;
     i32 saved[3][3];
     i32 sx, sy;
@@ -1047,7 +1063,7 @@ i32 CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
 
     m_454 = 0;
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeD) == 0);
-    if (!eq && a == m_entrancePxX && b == m_entrancePxY) {
+    if (!eq && pxX == m_entrancePxX && pxY == m_entrancePxY) {
         goto commitPhase;
     }
     // Recycle the occupied-coord payloads onto the CoordPool, then empty the list.
@@ -1064,16 +1080,16 @@ i32 CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
     }
     lastX = m_lastTilePxX >> 5;
     lastY = m_lastTilePxY >> 5;
-    tileX = a >> 5;
-    tileY = b >> 5;
-    if (d == -1) {
-        d = m_arrivalFlags;
+    tileX = pxX >> 5;
+    tileY = pxY >> 5;
+    if (maskA == -1) {
+        maskA = m_arrivalFlags;
     }
-    m_288 = a;
-    m_28c = b;
-    maskC = f | m_24c;
+    m_288 = pxX;
+    m_28c = pxY;
+    maskC = maskCIn | m_24c;
     grid = g_gameReg->m_tileGrid;
-    if (grid->SearchEdge(lastX, lastY, tileX, tileY, &m_31c, e, d, maskC) == 0) {
+    if (grid->SearchEdge(lastX, lastY, tileX, tileY, &m_31c, clearFlag, maskA, maskC) == 0) {
         goto nudgeTarget;
     }
 dropHead:
@@ -1102,7 +1118,7 @@ pathGate:
         goto commitEntrance;
     }
     if ((headFlags & 0x20000000) == 0) {
-        hit = headFlags & d;
+        hit = headFlags & maskA;
         if ((hit & 0x20000000) == 0) {
             if (hit == 0) {
                 goto commitEntrance;
@@ -1128,7 +1144,16 @@ pathGate:
         // Scratch route: if the same trip is no more than 3 hops longer with the
         // 0x20000000 terrain bit forced on, adopt it instead.
         CPtrList probe(10);
-        if (grid->SearchEdge(lastX, lastY, tileX, tileY, &probe, e, d | 0x20000000, maskC) != 0
+        if (grid->SearchEdge(
+                lastX,
+                lastY,
+                tileX,
+                tileY,
+                &probe,
+                clearFlag,
+                maskA | 0x20000000,
+                maskC
+            ) != 0
             && probe.GetCount() != 0) {
             if (probe.GetCount() > cnt + 3) {
                 pos = probe.GetHeadPosition();
@@ -1163,13 +1188,13 @@ pathGate:
         }
     }
 commitEntrance:
-    m_entrancePxX = a;
-    m_entrancePxY = b;
+    m_entrancePxX = pxX;
+    m_entrancePxY = pxY;
     if (reinit != 0) {
         StepEntranceReinit();
     }
 commitPhase:
-    m_arrivalPhase = c;
+    m_arrivalPhase = arrivalPhase;
     return 1;
 
 nudgeTarget:
@@ -1229,7 +1254,7 @@ nudgeTarget:
             grid->m_rowInts[sy][sx * 7 + 7] = 0;
         }
     }
-    if (grid->SearchEdge(lastX, lastY, tileX, tileY, &m_31c, e, d, maskC) != 0
+    if (grid->SearchEdge(lastX, lastY, tileX, tileY, &m_31c, clearFlag, maskA, maskC) != 0
         && CoordCount() != 0) {
         pooled = g_coordPool.NodeOf(m_31c.RemoveHead());
         pooled->m_next = g_coordPool.m_freeHead;
@@ -1241,8 +1266,8 @@ nudgeTarget:
             if (CoordCount() != 0) {
                 nudged = 1;
                 tail = CoordTail()->m_coord;
-                a = tail->m_x * 32 + 0x10;
-                b = tail->m_y * 32 + 0x10;
+                pxX = tail->m_x * 32 + 0x10;
+                pxY = tail->m_y * 32 + 0x10;
             }
         }
     }
@@ -1252,13 +1277,13 @@ nudgeTarget:
         }
     }
     if (nudged != 0) {
-        if (CoordCount() == 1 && c == 2 && m_entranceReason == 5) {
-            m_tileMgr->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, a, b);
+        if (CoordCount() == 1 && arrivalPhase == 2 && m_entranceReason == 5) {
+            m_tileMgr->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, pxX, pxY);
             SetEntrancePos(1, 1);
             return 1;
         }
-        m_288 = a;
-        m_28c = b;
+        m_288 = pxX;
+        m_28c = pxY;
     }
 nudgeDone:
     if (nudged != 0) {
@@ -1285,7 +1310,7 @@ nudgeDone:
             err = (static_cast<u32>(sx) >= grid->m_width || static_cast<u32>(sy) >= grid->m_height)
                       ? 1
                       : grid->m_rowInts[sy][sx * 7];
-            if ((d & err) != 0 && (m_24c & err) == 0) {
+            if ((maskA & err) != 0 && (m_24c & err) == 0) {
                 blocked = 1;
             } else {
                 walkX = sx;
@@ -1303,7 +1328,7 @@ nudgeDone:
             err = (static_cast<u32>(sx) >= grid->m_width || static_cast<u32>(sy) >= grid->m_height)
                       ? 1
                       : grid->m_rowInts[sy][sx * 7];
-            if ((d & err) != 0 && (m_24c & err) == 0) {
+            if ((maskA & err) != 0 && (m_24c & err) == 0) {
                 blocked = 1;
             } else {
                 walkX = sx;
@@ -1321,13 +1346,13 @@ reCommit:
     if (m_arrivalPending == 0) {
         return 0;
     }
-    m_arrivalPhase = c;
+    m_arrivalPhase = arrivalPhase;
     return 1;
 
 reProbe:
-    a = walkX * 32 + 0x10;
-    b = walkY * 32 + 0x10;
-    if (grid->SearchEdge(walkX, walkY, lastX, lastY, &m_31c, 1, d, maskC) != 0) {
+    pxX = walkX * 32 + 0x10;
+    pxY = walkY * 32 + 0x10;
+    if (grid->SearchEdge(walkX, walkY, lastX, lastY, &m_31c, 1, maskA, maskC) != 0) {
         goto dropHead;
     }
     SetEntrancePos(1, 1);
@@ -1337,7 +1362,7 @@ reProbe:
     if (m_arrivalPending == 0) {
         return 0;
     }
-    m_arrivalPhase = c;
+    m_arrivalPhase = arrivalPhase;
     return 1;
 }
 

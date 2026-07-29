@@ -4,13 +4,12 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/StatusBarItem.h> // CStatusBarItem base
-#include <Gruntz/SbGeom.h> // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
+#include <Gruntz/SbGeom.h>  // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
 #include <Image/CImage.h>   // the canonical frame-record class (CImage::RenderFrame @0x153790)
 #include <Image/ImageSet.h> // the config record IS the canonical CDDrawWorker (SbiConfig.h fold)
 
 class CStatusBarMgr;
 class CDDrawSurfaceMgr;
-
 
 class CSBI_GruntMachine : public CStatusBarItem {
 public:
@@ -44,8 +43,8 @@ public:
     i32 BuildResourceTabStatusBar(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
-        i32 p3,
-        i32 p4,
+        i32 cmd,
+        i32 tab,
         RECT g,
         const char* key,
         i32 idxA,

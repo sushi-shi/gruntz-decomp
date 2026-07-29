@@ -18,8 +18,8 @@ public:
     i32 Draw(CDDrawSurfacePair* target, i32 force);
     void SetTime(i32 a, i32 b);
     void AddTime(i32 seconds, i32 minutes);
-    i32 HandleEvent(CFileMemBase* ar, i32 kind, i32 a3, i32 a4); // 0x9c1c0
-    i32 Serialize(CFileMemBase* ar);                             // 0x9c2e0 (SpriteLoaders cluster)
+    i32 HandleEvent(CFileMemBase* ar, i32 kind, i32 typeId, i32 pObj); // 0x9c1c0
+    i32 Serialize(CFileMemBase* ar);   // 0x9c2e0 (SpriteLoaders cluster)
     i32 Deserialize(CFileMemBase* ar); // 0x9c650 (external, declared-not-defined)
 
     i32 m_baseX;            // +0x00 base x (screen origin)

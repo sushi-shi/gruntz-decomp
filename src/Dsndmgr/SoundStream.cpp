@@ -226,14 +226,20 @@ void SoundStream::Free() {
 // allocator now emits the retail /GX frame (byte-identical prologue).
 // @early-stop
 // 40.7 -> 54.7 via the shared-exit spelling; residual is the callee-saved count
-// (retail pins arg `a` in ebp, 4 saves vs our 3).
+// (retail pins arg `dsFlags` in ebp, 4 saves vs our 3).
 // Every early-out `return 0` is a `goto fail` onto ONE shared bottom exit, which
 // is what retail emits: a single fs:0-restoring epilogue that all six gates
 // `jmp` into (the per-return spelling inlined the whole 8-instruction unwind at
 // each of them - 7 rets vs retail's 1).
 // docs/patterns/positive-gate-enables-shrink-wrap.md (shared-exit half).
 RVA(0x00137780, 0x171)
-StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c) {
+StreamVoice* SoundStream::CreateStreamBuffer(
+    WaveFormatX* fmt,
+    u32 bytes,
+    i32 dsFlags,
+    i32 stopWhenIdle,
+    i32 retireWhenIdle
+) {
     WaveFormatX wf;
     IDirectSoundBuffer* out;
     DSBUFFERDESC desc;
@@ -263,7 +269,7 @@ StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a,
 
     out = 0;
     desc.dwSize = 0x14;
-    desc.dwFlags = a;
+    desc.dwFlags = dsFlags;
     desc.dwBufferBytes = bytes;
     desc.dwReserved = 0;
     desc.lpwfxFormat = reinterpret_cast<LPWAVEFORMATEX>(&wf);
@@ -280,7 +286,7 @@ StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a,
     // Plain `new StreamVoice` - ::operator new IS RezAlloc (0x1b9b46; reloc-masked
     // same callee), cl emits the null-guard + the /GX delete-on-throw EH state for
     // the now-really-throwing ctor (the real DSoundCloneInst base).
-    voice = new StreamVoice(out, this, b, c);
+    voice = new StreamVoice(out, this, stopWhenIdle, retireWhenIdle);
     m_voices.InsertHead(voice ? &voice->m_link : 0);
     voice->m_rateBase = fmt->nAvgBytesPerSec;
     voice->m_sampleRate = fmt->nAvgBytesPerSec;
@@ -302,7 +308,14 @@ fail:
 // docs/patterns/zero-register-pinning.md / pin-local-for-callee-saved-reg.md.
 // Logic complete, deferred to the final sweep.
 RVA(0x00137900, 0xc6)
-StreamVoice* SoundStream::OpenStream(CParseSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5) {
+StreamVoice* SoundStream::OpenStream(
+    CParseSource* src,
+    i32 bytes,
+    i32 format,
+    i32 dsFlags,
+    i32 stopWhenIdle,
+    i32 retireWhenIdle
+) {
     if (src == 0) {
         return 0;
     }
@@ -312,7 +325,7 @@ StreamVoice* SoundStream::OpenStream(CParseSource* src, i32 p1, i32 p2, i32 p3, 
     if (ParseWave(src, &wf, &dataOff, &dataLen) == 0) {
         return 0;
     }
-    StreamVoice* voice = CreateStreamBuffer(&wf, p1, p3, p4, p5);
+    StreamVoice* voice = CreateStreamBuffer(&wf, bytes, dsFlags, stopWhenIdle, retireWhenIdle);
     if (voice == 0) {
         return 0;
     }
@@ -324,7 +337,7 @@ StreamVoice* SoundStream::OpenStream(CParseSource* src, i32 p1, i32 p2, i32 p3, 
     feeder->m_sourceOffset = 0;
     // voice IS-A DirectSoundMgr buffer wrapper (StreamVoice : DSoundCloneInst);
     // the upcast is implicit.
-    if (feeder->FeederStart(this, &wf, p1, p2, voice, -1) == 0) {
+    if (feeder->FeederStart(this, &wf, bytes, format, voice, -1) == 0) {
         DestroyVoice(voice);
         return 0;
     }
@@ -348,8 +361,8 @@ void SoundStream::DestroyVoice(StreamVoice* voice) {
 }
 
 RVA(0x00137a30, 0x4b)
-StreamVoice* SoundStream::PlayStream(CParseSource* src, i32 a2, i32 a3, i32 a4) {
-    StreamVoice* voice = OpenStream(src, a2, a3, a4, 0, 1);
+StreamVoice* SoundStream::PlayStream(CParseSource* src, i32 bytes, i32 format, i32 dsFlags) {
+    StreamVoice* voice = OpenStream(src, bytes, format, dsFlags, 0, 1);
     if (voice == 0) {
         return 0;
     }
@@ -632,18 +645,18 @@ i32 StreamFeeder::Pause() {
 // Logic complete, deferred to the final sweep.
 RVA(0x00137f30, 0x197)
 i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
-    void* p1;
+    void* lock1;
     DWORD n1;
-    void* p2;
+    void* lock2;
     DWORD n2;
-    if (m_buffer->Lock(writePos, bytes, &p1, &n1, &p2, &n2, 0) == 0) {
+    if (m_buffer->Lock(writePos, bytes, &lock1, &n1, &lock2, &n2, 0) == 0) {
         return 0;
     }
     u32 got1 = 0;
     u32 got2 = 0;
     if (m_pendingBytes == 0) {
-        if (Feed(p1, n1, &got1, p2, n2, &got2) == 0) { // slot 0 (virtual)
-            m_buffer->Unlock(p1, n1, p2, n2);
+        if (Feed(lock1, n1, &got1, lock2, n2, &got2) == 0) { // slot 0 (virtual)
+            m_buffer->Unlock(lock1, n1, lock2, n2);
             return 0;
         }
     } else {
@@ -652,13 +665,13 @@ i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     }
     if (got1 < n1) {
         m_pendingBytes += n1 - got1;
-        // language-forced: p1 is a void* DirectSound-locked region; the +got1
+        // language-forced: lock1 is a void* DirectSound-locked region; the +got1
         // pointer arithmetic requires a byte-pointer view. Inlines to rep stos.
-        memset(static_cast<char*>(p1) + got1, m_silenceByte, n1 - got1);
+        memset(static_cast<char*>(lock1) + got1, m_silenceByte, n1 - got1);
     }
     if (got2 < n2) {
         m_pendingBytes += n2 - got2;
-        memset(static_cast<char*>(p2) + got2, m_silenceByte, n2 - got2);
+        memset(static_cast<char*>(lock2) + got2, m_silenceByte, n2 - got2);
     }
     if (m_pendingBytes >= m_bufferLength) {
         Pause();
@@ -671,7 +684,7 @@ i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     if (m_bufferCursor >= m_bufferLength) {
         m_bufferCursor = 0;
     }
-    m_buffer->Unlock(p1, n1, p2, n2);
+    m_buffer->Unlock(lock1, n1, lock2, n2);
     return 1;
 }
 

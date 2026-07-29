@@ -47,7 +47,7 @@ public:
     i32 SumGroupField08();                 // 0xfd2e0
     i32 GetRecordValue(i32 b);             // 0xfced0
     void FillRecord(i32 index, i32 phase); // 0xfd330
-    i32 Serialize(CFileMemBase* s, i32 op, i32 a2, i32 a3); // 0xfd3f0
+    i32 Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pObj); // 0xfd3f0
 
     BattlezRecord* m_records; // +0x00
     i32 m_count;              // +0x04
@@ -61,7 +61,7 @@ public:
     i32 m_1c, m_20;
     i32 m_powerupCount; // +0x24  powerupz picked up
     i32 m_28, m_2c, m_30, m_34, m_38, m_3c, m_40, m_scoreValue;
-    i32 m_counts[4]; // +0x48  per-row placed-object counters
+    i32 m_counts[4];   // +0x48  per-row placed-object counters
     i32 m_wins[4][4];  // +0x58  win grid [y][x] (retail's row stride is 0x10)
     i32 m_flags[4][4]; // +0x98  flag grid; GetFlag's x*0x10+y*4 IS [x][y]
     // Per-owner x per-pickup-type counters (LoadPickupSprites bumps
