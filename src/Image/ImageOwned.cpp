@@ -289,7 +289,9 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
 // Neither the register pinning nor the half-DCE is source-steerable under /O2.
 // ---------------------------------------------------------------------------
 RVA(0x001493b0, 0xfd)
-i32 CDDrawShadeBlit::Rebuild(CString name, i32 a1, i32 a2) {
+// f4/f5 are PidHeader::offsetX/offsetY (the descriptor is that struct - see the note
+// on CImageFrameRebuildDesc in <DDrawMgr/DDrawShadeBlit.h>).
+i32 CDDrawShadeBlit::Rebuild(CString name, i32 offsetX, i32 offsetY) {
     if (m_srcBpp != 1) {
         return 0;
     }
@@ -300,9 +302,9 @@ i32 CDDrawShadeBlit::Rebuild(CString name, i32 a1, i32 a2) {
     }
     desc.f0 = 0;
     desc.f2 = m_width;
-    desc.f4 = a1;
+    desc.f4 = offsetX;
     desc.f3 = m_height;
-    desc.f5 = a2;
+    desc.f5 = offsetY;
     desc.f6 = 0;
     desc.f7 = 0;
     if (m_colorKey != -1) {

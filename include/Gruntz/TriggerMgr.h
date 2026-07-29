@@ -204,6 +204,16 @@ public:
     // sub-ctor (CreateSprite + Init for Wormhole/Entrance variants, a jump table by
     // kind), stash the new cell into the grid (+0x1c) and bump the per-row/level
     // counters. (__stdcall: ret 0x34.)
+    // The parameter names below are NOT resolved and are deliberately left positional
+    // (re-checked 2026-07-29). Retail is ?PlaceObject@CTriggerMgr@@QAEHHHHHHHHHHHHHH@Z -
+    // __thiscall, THIRTEEN int args, frame entry-0x1c so arg1..arg13 sit at
+    // [esp+0x20 .. 0x50]. Two slots are byte-proven and they CONTRADICT the names here:
+    //   * args 2 and 3 are the world pixel pair - @0x6b711 retail does
+    //     `mov ecx,[esp+0x28]; sar ecx,5` and `mov eax,[esp+0x24]; sar eax,5`, then bounds-
+    //     checks the two against the plane's width/height. (`ax`/`ay` happen to be right.)
+    //   * arg7 is the KIND - @0x6b6ee `mov eax,[esp+0x38]; cmp eax,0x12`. But `kind` is
+    //     declared on arg6, so every name from `col` rightwards is shifted by one.
+    // The body is at ~28%, so it cannot arbitrate. Naming this now would cement the shift.
     i32 PlaceObject(
         i32 a8,
         i32 ax,
@@ -242,7 +252,10 @@ public:
     // 0x6dae0 / 0x6e120: the two big tile-trigger appliers (apply-on-enter / apply-on-
     // exit). Look up the cell, walk its trigger/switch sub-objects, dispatch each logic
     // and update the cell state. (__stdcall: ret 0x1c / 0x1c.) Reconstructed to plateau.
-    i32 ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28);
+    // (both are __thiscall with FOUR int args and `ret 0x10`, not the "__stdcall ret 0x1c"
+    // the comment above claimed; ApplyTriggerA's last two are the same worldX/worldY pair
+    // as ApplyTriggerB's - retail sar-5's each into a tile coordinate.)
+    i32 ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY);
     i32 ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY);
 
     // 0x6e800: ClearCell(col, row, ...) - reset a cell's animation/trigger sub-state and
@@ -297,13 +310,19 @@ public:
 
     // 0x79520: ResetGroup - drain the magic-group cells, clearing each cell's sub-state and
     // recycling its record node, then refresh. Reconstructed to plateau. (__thiscall.)
-    // args 3-5 are accepted but never read by the body; `selector` (nonzero) picks the
-    // report+spawn stanza directly, `spawnCursor` gates the LightFx target-cursor spawn.
-    i32 ResetGroup(i32 x, i32 y, i32 a1c, i32 a20, i32 a24, i32 selector, i32 spawnCursor);
+    // `selector` (nonzero) picks the report+spawn stanza directly, `spawnCursor` gates the
+    // LightFx target-cursor spawn. CORRECTED 2026-07-29: the old note said "args 3-5 are
+    // accepted but never read" - only arg5 is. Retail reads base+0x1c and base+0x20
+    // (args 3/4) @0x795bc and forwards them as DestroyGroup's worldX/worldY; CPlay's call
+    // site @0x0d0a.. passes (snapX, snapY, rawX, rawY, 1, 0, 1), so args 1/2 are the
+    // SNAPPED pair and 3/4 the raw one.
+    i32
+    ResetGroup(i32 x, i32 y, i32 worldX, i32 worldY, i32 unused5, i32 selector, i32 spawnCursor);
 
     // 0x798d0: DestroyGroup - /GX destruct of a cell group (member CString temporaries on
-    // teardown). Reconstructed to plateau (eh sibling TU).
-    i32 DestroyGroup(i32 screenX, i32 screenY, i32 worldY, i32 worldX);
+    // teardown). Reconstructed to plateau (eh sibling TU). Args 3/4 were declared
+    // (worldY, worldX) and are the other way round - see the body's note in TriggerMgr.cpp.
+    i32 DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY);
 
     // 0x79b80: ReinitGroup - /GX re-init driver with a CString config-name temporary (eh
     // sibling TU). Reconstructed to plateau.
@@ -325,9 +344,14 @@ public:
     // spawn the matching fx sprite (+0x2a8), then refresh + record. (ret 0x8.)
     i32 TriggerCell(i32 x, i32 y);
 
-    // 0x7c110: SpawnGrunt(col, row, a18) - create a "Grunt" sprite at the cell's snapped
-    // world pos, Init it, place it via its userlogic; on success stash the cell. ret 1.
-    // (__stdcall: ret 0x10.)
+    // 0x7c110: SpawnGrunt - create a "Grunt" sprite at the cell's snapped world pos, Init
+    // it, place it via its userlogic; on success stash the cell. ret 1. (ret 0x10.)
+    // args 3/4 DELIBERATELY LEFT POSITIONAL (re-checked 2026-07-29): the body indexes the
+    // SOURCE cell as m_grid[col*15 + a1c] - i.e. it uses arg4 where arg2 (`row`) is the
+    // stride index for the DESTINATION row - while the only caller, CGrunt's conversion-hit
+    // arm @GruntCombat.cpp, passes (m_tileOwnerHi, m_tileOwnerLo, srcRow, enemy->m_1f4).
+    // Those two readings cannot both be right, and the body is far from matched, so naming
+    // either slot now would bake in whichever is wrong. Matcher lead, not a naming gap.
     i32 SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c);
 
     // 0x79d90: ResetSpawnState - when the active game state is live (gameReg->m_134==1)

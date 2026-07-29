@@ -36,14 +36,15 @@ public:
     // the parameter stayed void* and m_10 wore the CAniRenderCtx view.)
     void Construct(CWwdGameObjectA* src); // 0x15c290
     void Setup(CAniElement* src);         // 0x15c2d0  bind a resolved geo source
-    void Recompute(i32 a1);               // 0x15c320  re-derive from the bound m_14
+    void Recompute(i32 resetGate);        // 0x15c320  re-derive from the bound m_14 (nonzero
+                                          // also clears the +0x20 re-trigger gate)
     i32 Serialize(CFileMemBase* ar);      // 0x15c970
     i32 Deserialize(CFileMemBase* ar);    // 0x15ca70
     // 0x15c900. The sole caller is CWwdGameObjectA::Play @0x150a70, which forwards its
     // own slot-15 argument list verbatim; `a3`/`self` are the slot signature's trailing
     // words and this body never reads them (retail only touches [esp+4] and [esp+8]),
     // so `self` keeps the slot's `void*` type instead of forcing a ptr->int cast.
-    i32 Find(CFileMemBase* ar, i32 type, i32 a3, void* self);
+    i32 Find(CFileMemBase* ar, i32 type, i32 typeId, void* self);
     i32 Advance(u32 elapsed); // 0x15c360 (advance / set-geo-source)
 
     // (+0x0c is the inherited CLoadable owner slot m_0c: the game object /

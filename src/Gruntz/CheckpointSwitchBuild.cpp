@@ -19,16 +19,21 @@
 // (The pre-existing @early-stop blamed the same wall but was measuring WRONG code: the old
 // .cpp-local view shadowed the base's fields, so every access here was 0xc8 too high.)
 RVA(0x00112a50, 0xdd)
+// Slot names come from the base declaration in <Gruntz/TileTriggerSwitchLogic.h>
+// (typeId/tileX/tileY/cellKey/linkGate, proven there by CTileTriggerSwitchLogic::Setup's
+// own stores); `iconFrame` is this override's own: it gates the sprite build and is then
+// ApplyLookupSprite's FRAME index into the SMALLICONZ set (CGameObject::ApplyLookupSprite
+// @0x1504d0 bounds-checks it against the sprite's m_minIndex/m_maxIndex).
 i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     CTileTriggerContainer* owner,
-    i32 a2,
-    i32 a3,
-    i32 a4,
-    i32 a5,
+    i32 typeId,
+    i32 tileX,
+    i32 tileY,
+    i32 cellKey,
     const RECT* rect,
-    i32 a7,
+    i32 linkGate,
     i32 a8,
-    i32 a9
+    i32 iconFrame
 ) {
     i32 px;
     i32 py;
@@ -37,16 +42,16 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     if (m_initGate != 0) {
         goto fail;
     }
-    if (a2 == 4 && rect[0].left == 0) {
+    if (typeId == 4 && rect[0].left == 0) {
         goto fail;
     }
     memcpy(m_block, rect, sizeof(m_block)); // rep movsd, ecx=0x18 -> this+0x2c
-    if (!Setup(owner, a2, a3, a4, a5, a7, a8, a9)) {
+    if (!Setup(owner, typeId, tileX, tileY, cellKey, linkGate, a8, iconFrame)) {
         goto fail;
     }
-    px = (a3 << 5) + 0x10;
-    py = (a4 << 5) + 0x10;
-    if (a9 == 0) {
+    px = (tileX << 5) + 0x10;
+    py = (tileY << 5) + 0x10;
+    if (iconFrame == 0) {
         return 1;
     }
     spr = g_gameReg->m_world->m_childGroup->CreateSprite(0, px, py, 0, "BehindCandy", 0x40001);
@@ -54,7 +59,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
         goto fail;
     }
     spr->m_7c->m_notify(spr);
-    spr->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", a9);
+    spr->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", iconFrame);
     if (spr->m_layer == 0) {
         goto fail;
     }

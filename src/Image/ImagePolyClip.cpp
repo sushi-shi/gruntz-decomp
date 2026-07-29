@@ -404,8 +404,8 @@ i32 RotateRasterize(
     i32 n,
     CDDSurface* dst,
     CDDSurface* src,
-    i32 a5,
-    i32 a6,
+    i32 mode,
+    i32 colorkey,
     i32 clipFlag,
     i32 clipB,
     i32 clipC,
@@ -535,7 +535,7 @@ i32 RotateRasterize(
     }
 
     // retail 0x1469ee pushes a3 THEN a4 (dst, src) - we pushed a4 twice.
-    WarpTextureBlit(g_rasterVtxB, n, dst, src, a5, a6);
+    WarpTextureBlit(g_rasterVtxB, n, dst, src, mode, colorkey);
     return 1;
 }
 

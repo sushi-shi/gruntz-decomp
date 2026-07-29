@@ -91,37 +91,40 @@ void CWwdGrid::Remove(WwdRegion* r) {
 // cell-rect aggregate above closed the 0x18-vs-0x20 frame + every slot number.
 // match_variants --state-trials 48 --max-depth 3 exhausted 384 variants without a win.
 RVA(0x001918c0, 0x1a2)
-i32 CWwdGrid::Query(i32 a0, i32 a1, i32 a2, i32 a3, i32 doRemove) {
+// The four bounds are one rect: CWwdSpatialMgr's three walkers all call this as
+// Query(r.m_minX, r.m_minY, r.m_maxX, r.m_maxY, 1), and the clamps below pin each to
+// its own axis (minX/maxX against m_bounds.m_minX/m_maxX, minY/maxY against the Y pair).
+i32 CWwdGrid::Query(i32 minX, i32 minY, i32 maxX, i32 maxY, i32 doRemove) {
     i32 fired = 0;
-    if (a0 > m_bounds.m_maxX) {
+    if (minX > m_bounds.m_maxX) {
         return 0;
     }
-    if (a2 < m_bounds.m_minX) {
+    if (maxX < m_bounds.m_minX) {
         return 0;
     }
-    if (a1 > m_bounds.m_maxY) {
+    if (minY > m_bounds.m_maxY) {
         return 0;
     }
-    if (a3 < m_bounds.m_minY) {
+    if (maxY < m_bounds.m_minY) {
         return 0;
     }
-    if (a0 < m_bounds.m_minX) {
-        a0 = m_bounds.m_minX;
+    if (minX < m_bounds.m_minX) {
+        minX = m_bounds.m_minX;
     }
-    if (a2 > m_bounds.m_maxX) {
-        a2 = m_bounds.m_maxX;
+    if (maxX > m_bounds.m_maxX) {
+        maxX = m_bounds.m_maxX;
     }
-    if (a1 < m_bounds.m_minY) {
-        a1 = m_bounds.m_minY;
+    if (minY < m_bounds.m_minY) {
+        minY = m_bounds.m_minY;
     }
-    if (a3 > m_bounds.m_maxY) {
-        a3 = m_bounds.m_maxY;
+    if (maxY > m_bounds.m_maxY) {
+        maxY = m_bounds.m_maxY;
     }
     WwdRect cell; // the query rect in CELL space (one aggregate - see above)
-    cell.m_minY = (a1 - m_bounds.m_minY) >> m_shiftX;
-    cell.m_minX = (a0 - m_bounds.m_minX) >> m_shiftY;
-    cell.m_maxY = (a3 - m_bounds.m_minY) >> m_shiftX;
-    cell.m_maxX = (a2 - m_bounds.m_minX) >> m_shiftY;
+    cell.m_minY = (minY - m_bounds.m_minY) >> m_shiftX;
+    cell.m_minX = (minX - m_bounds.m_minX) >> m_shiftY;
+    cell.m_maxY = (maxY - m_bounds.m_minY) >> m_shiftX;
+    cell.m_maxX = (maxX - m_bounds.m_minX) >> m_shiftY;
     i32 base = cell.m_minY * m_cols + cell.m_minX;
     if (cell.m_minY <= cell.m_maxY) {
         i32 colN = cell.m_maxY - cell.m_minY + 1;
@@ -135,7 +138,7 @@ i32 CWwdGrid::Query(i32 a0, i32 a1, i32 a2, i32 a3, i32 doRemove) {
                     while (r) {
                         i32 x = r->m_x;
                         WwdRegion* next = static_cast<WwdRegion*>(r->m_next);
-                        if (x >= a0 && r->m_y >= a1 && x <= a2 && r->m_y <= a3) {
+                        if (x >= minX && r->m_y >= minY && x <= maxX && r->m_y <= maxY) {
                             if (doRemove) {
                                 m_buckets[idx].Unlink(r);
                                 r->m_bucket = 0;

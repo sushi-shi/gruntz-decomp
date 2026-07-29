@@ -1505,12 +1505,15 @@ fail:
 // instruction. Inner addressing, the *bpp scaling and the LUT keying are correct;
 // the spill/reload schedule parks it. Final-sweep candidate.
 RVA(0x00182610, 0x2eb)
-void CFaderShape::RenderTile(i32 arg0, i32 arg1) {
-    if (arg1 <= 0) {
+// (col, stripWidth): CFaderShape::RenderFrame calls this as RenderTile(<column in the
+// span>, frame - m_20), and the body treats the second as the strip this frame adds -
+// `rowBytes = 2*m_halfWidth + stripWidth`, and it is the x0 the copy/zero strip starts at.
+void CFaderShape::RenderTile(i32 col, i32 stripWidth) {
+    if (stripWidth <= 0) {
         return;
     }
     i32 stride = m_halfWidth * 2; // inner pixel count
-    i32 rowBytes = stride + arg1;
+    i32 rowBytes = stride + stripWidth;
     i32 bpp = m_surfA->m_bytesPerPixel;
 
     i32 x0;
@@ -1518,18 +1521,18 @@ void CFaderShape::RenderTile(i32 arg0, i32 arg1) {
     u8* destBase;
     if (m_mode == 1) {
         src2base = m_lineBuf;
-        x0 = arg1;
-        destBase = m_straightBase + (arg0 - arg1) * bpp;
+        x0 = stripWidth;
+        destBase = m_straightBase + (col - stripWidth) * bpp;
     } else if (m_mode == 2) {
         src2base = m_lineBuf + bpp * stride;
         x0 = 0;
-        destBase = m_straightBase + (arg0 + stride) * bpp;
+        destBase = m_straightBase + (col + stride) * bpp;
     } else {
         return;
     }
 
-    u8* srcA = m_dstBase + (arg0 - x0) * bpp;
-    u8* srcB = m_gatherBase + (arg0 - x0) * bpp;
+    u8* srcA = m_dstBase + (col - x0) * bpp;
+    u8* srcB = m_gatherBase + (col - x0) * bpp;
     if (m_rowCount <= 0) {
         return;
     }
@@ -1568,11 +1571,11 @@ void CFaderShape::RenderTile(i32 arg0, i32 arg1) {
         if (m_stripCopy) {
             u8* s = destBase + m_rowOfsB[j];
             u8* d = src2base;
-            for (i32 n = bpp * arg1; n > 0; n--) {
+            for (i32 n = bpp * stripWidth; n > 0; n--) {
                 *d++ = *s++;
             }
         } else {
-            memset(src2base, 0, bpp * arg1);
+            memset(src2base, 0, bpp * stripWidth);
         }
 
         u8* s = m_lineBuf;
@@ -1598,9 +1601,10 @@ void CFaderShape::RenderTile(i32 arg0, i32 arg1) {
 // the scratch write-back) is reconstructed faithfully; FP scheduling + spill order
 // park it. Final-sweep candidate.
 RVA(0x00181e50, 0x7b9)
-void CFaderShape::RenderWarpTile(i32 arg0, i32 arg1) {
+// (col, stripWidth) - the warped twin of RenderTile; same two caller expressions.
+void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
     i32 stride = m_halfWidth * 2;
-    if (arg1 <= 0) {
+    if (stripWidth <= 0) {
         return;
     }
     i32 arc = static_cast<i32>((static_cast<double>(m_halfWidth) * 3.14159));
@@ -1610,19 +1614,19 @@ void CFaderShape::RenderWarpTile(i32 arg0, i32 arg1) {
     if ((m_mode == 1 && m_stripCopy != 0) || (m_mode == 2 && m_stripCopy == 0)) {
         colBase = stride
                   - static_cast<i32>(
-                      (static_cast<double>(stride) / (arc - m_halfWidth) * (m_span - arg0 - stride))
+                      (static_cast<double>(stride) / (arc - m_halfWidth) * (m_span - col - stride))
                   );
     } else {
-        colBase = arg0;
+        colBase = col;
     }
     if ((m_mode == 1 && m_stripCopy == 0) || (m_mode == 2 && m_stripCopy != 0)) {
-        colBase = static_cast<i32>((static_cast<double>(stride) / (arc - m_halfWidth) * arg0));
+        colBase = static_cast<i32>((static_cast<double>(stride) / (arc - m_halfWidth) * col));
     }
 
     if ((m_mode == 1 && m_stripCopy != 0) || (m_mode == 2 && m_stripCopy == 0)) {
         i32 col = 0;
         if (m_rowCount > 0) {
-            i32 base = bpp * arg0;
+            i32 base = bpp * col;
             do {
                 u8* dstLine = m_rowOfsA[col] + base + m_dstBase;
                 u8* gsrc = m_rowOfsC[col] + base + m_gatherBase;
@@ -1710,13 +1714,13 @@ void CFaderShape::RenderWarpTile(i32 arg0, i32 arg1) {
                     } while (n != 0);
                 }
                 if (m_stripCopy == 0) {
-                    if (bpp * arg1 > 0) {
-                        memset(dstLine + cnt, 0, bpp * arg1);
+                    if (bpp * stripWidth > 0) {
+                        memset(dstLine + cnt, 0, bpp * stripWidth);
                     }
                 } else {
-                    i32 c2 = bpp * arg1;
+                    i32 c2 = bpp * stripWidth;
                     dstLine -= c2;
-                    u8* s2 = (arg0 - arg1) * bpp + m_rowOfsB[col] + m_straightBase;
+                    u8* s2 = (col - stripWidth) * bpp + m_rowOfsB[col] + m_straightBase;
                     if (c2 > 0) {
                         do {
                             *dstLine = *s2;
@@ -1732,7 +1736,7 @@ void CFaderShape::RenderWarpTile(i32 arg0, i32 arg1) {
     } else if (((m_mode == 1 && m_stripCopy == 0) || (m_mode == 2 && m_stripCopy != 0))
                && m_rowCount > 0) {
         i32 col = 0;
-        i32 base = bpp * arg0;
+        i32 base = bpp * col;
         do {
             u8* dstLine = m_rowOfsA[col] + base + m_dstBase;
             u8* gsrc = m_rowOfsC[col] + base + m_gatherBase;
@@ -1825,12 +1829,12 @@ void CFaderShape::RenderWarpTile(i32 arg0, i32 arg1) {
                 } while (n != 0);
             }
             if (m_stripCopy == 0) {
-                if (bpp * arg1 > 0) {
-                    memset(dstLine - bpp * arg1, 0, bpp * arg1);
+                if (bpp * stripWidth > 0) {
+                    memset(dstLine - bpp * stripWidth, 0, bpp * stripWidth);
                 }
             } else {
-                i32 c2 = bpp * arg1;
-                u8* s2 = (arg0 + stride) * bpp + m_rowOfsB[col] + m_straightBase;
+                i32 c2 = bpp * stripWidth;
+                u8* s2 = (col + stride) * bpp + m_rowOfsB[col] + m_straightBase;
                 dstLine += cnt;
                 if (c2 > 0) {
                     do {

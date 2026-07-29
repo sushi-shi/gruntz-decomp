@@ -47,7 +47,7 @@ static inline u16* Pix16(void* p) {
 }
 
 RVA(0x000a32c0, 0x72)
-i32 CLightFxRender::Init(CGruntzMgr* mgr, i32 arg2) {
+i32 CLightFxRender::Init(CGruntzMgr* mgr, i32 refreshInterval) {
     if (mgr == 0) {
         return 0;
     }
@@ -55,7 +55,7 @@ i32 CLightFxRender::Init(CGruntzMgr* mgr, i32 arg2) {
     m_cmdGrid = mgr->m_cmdGrid;
     m_tileGrid = mgr->m_tileGrid;
     m_world = mgr->m_world;
-    m_refreshInterval = arg2;
+    m_refreshInterval = refreshInterval;
     m_scale = 1;
     m_refreshRemaining = 0;
     if (!AllocSurface()) {

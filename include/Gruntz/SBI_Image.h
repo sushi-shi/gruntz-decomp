@@ -32,8 +32,8 @@ public:
     virtual i32 Setup(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
-        i32 a3,
-        i32 a4,
+        i32 cmd,
+        i32 tab,
         RECT rc,
         const char* key,
         i32 a10
@@ -89,8 +89,8 @@ public:
         i32 tab,
         RECT rc,
         const char* key,
-        i32 a10,
-        i32 a11
+        i32 frame,
+        i32 extra
     );
 
     // slot-3 body AND the dtor's member teardown (ONE retail body, 0xe6d90 - the

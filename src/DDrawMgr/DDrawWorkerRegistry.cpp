@@ -74,7 +74,7 @@ void CDDrawWorkerRegistry::Unload() {
 }
 
 RVA(0x00154ae0, 0xfc)
-CImage* CDDrawWorkerRegistry::DispatchKeyed38(void* rec, const char* key, i32 a3, i32 a4) {
+CImage* CDDrawWorkerRegistry::DispatchKeyed38(void* rec, const char* key, i32 index, i32 mode) {
     CObject* worker = 0;
     m_10map.Lookup(key, worker);
     if (worker == 0) {
@@ -88,7 +88,7 @@ CImage* CDDrawWorkerRegistry::DispatchKeyed38(void* rec, const char* key, i32 a3
         }
         m_10map.SetAt(key, worker);
     }
-    return static_cast<CDDrawWorker*>(worker)->InsertFrame(rec, a3, a4);
+    return static_cast<CDDrawWorker*>(worker)->InsertFrame(rec, index, mode);
 }
 
 RVA(0x00154be0, 0xfc)
@@ -160,8 +160,8 @@ CImage* CDDrawWorkerRegistry::Forward34(char* path, CDDrawWorker* worker, i32 in
 }
 
 RVA(0x00154f20, 0x1b)
-CImage* CDDrawWorkerRegistry::Forward38(void* rec, CDDrawWorker* worker, i32 a3, i32 a4) {
-    return worker->InsertFrame(rec, a3, a4);
+CImage* CDDrawWorkerRegistry::Forward38(void* rec, CDDrawWorker* worker, i32 index, i32 mode) {
+    return worker->InsertFrame(rec, index, mode);
 }
 
 RVA(0x00154f40, 0x20)
@@ -333,10 +333,10 @@ i32 CDDrawWorkerRegistry::RemoveKeysEqual(const char* base, const char* str) {
 // @early-stop
 // zero-register-pin wall (~69%): the GetNextAssoc scan, match-all guard,
 // strlen+strncmp compare, and per-value thiscall accumulation all reproduced.
-// Residue: retail pins 0 in edi and holds a2 in ebx across the body where our
-// cl uses test/immediate + a per-call a2 reload - regalloc coin-flip.
+// Residue: retail pins 0 in edi and holds `raw` in ebx across the body where our
+// cl uses test/immediate + a per-call reload - regalloc coin-flip.
 RVA(0x00155460, 0xe2)
-i32 CDDrawWorkerRegistry::SumSizesEqual(const char* str, i32 a2) {
+i32 CDDrawWorkerRegistry::SumSizesEqual(const char* str, i32 raw) {
     CString key;
     CObject* val = 0;
     POSITION pos = m_10map.GetStartPosition();
@@ -345,7 +345,7 @@ i32 CDDrawWorkerRegistry::SumSizesEqual(const char* str, i32 a2) {
         m_10map.GetNextAssoc(pos, key, val);
         if (val != 0) {
             if (str == 0 || *str == 0 || strncmp(key, str, strlen(str)) == 0) {
-                total += (static_cast<CDDrawWorker*>(val))->GetMemoryUsage(a2);
+                total += (static_cast<CDDrawWorker*>(val))->GetMemoryUsage(raw);
             }
         }
     }

@@ -57,7 +57,7 @@ public:
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
         i32 cmd,
-        i32 a4,
+        i32 tab,
         RECT rc,
         const char* key,
         i32 frame,
@@ -70,9 +70,9 @@ public:
     // (InitItem was the real 0xe80e0 body under a second name - it IS the slot-11
     // SetupImage override declared above.)
     i32 ResolveFrame(const char* key, i32 a); // 0xe81e0
-    i32 SetState(i32 state, i32 a);   // 0xe8310
-    i32 ProbeState(i32 state);        // 0xe8480
-    i32 Blit();                       // 0xe84f0  conditional blit
+    i32 SetState(i32 state, i32 a);           // 0xe8310
+    i32 ProbeState(i32 state);                // 0xe8480
+    i32 Blit();                               // 0xe84f0  conditional blit
     // (0xe8520 was declared here as a non-virtual `Serialize` - it IS the slot-1
     // SerializeFields override declared above.)
     // (0x10bfc0 SerializeFields is the real CStatusBarItem slot-1 base leg -

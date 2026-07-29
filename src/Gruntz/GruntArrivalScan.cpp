@@ -2380,10 +2380,10 @@ common: {
     if (CoordCount() == 0) {
         return 1;
     }
-    Coord* p1 = CoordHead()->m_coord;
+    Coord* head = CoordHead()->m_coord;
     CMapMgr* pl2 = g_gameReg->m_tileGrid;
-    i32 gx = p1->m_x;
-    i32 gy = p1->m_y;
+    i32 gx = head->m_x;
+    i32 gy = head->m_y;
     i32 flag2;
     if (static_cast<u32>(gx) < static_cast<u32>(pl2->m_width)
         && static_cast<u32>(gy) < static_cast<u32>(pl2->m_height)) {

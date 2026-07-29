@@ -37,8 +37,9 @@ i32 RotateRasterize(
     i32 n,
     CDDSurface* dst,
     CDDSurface* src,
-    i32 a5,
-    i32 a6,
+    // forwarded verbatim to WarpTextureBlit's own (mode, colorkey) slots
+    i32 mode,
+    i32 colorkey,
     i32 clipFlag,
     i32 clipB,
     i32 clipC,

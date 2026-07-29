@@ -1163,13 +1163,13 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         RECT r1;
                         static_cast<RECT*>(new (&r1) CRect(0, 0, bd->m_width, bd->m_height));
                         RECT r2;
-                        RECT* p2 =
+                        RECT* boardRect =
                             static_cast<RECT*>(new (&r2) CRect(0, 0, bd->m_width, bd->m_height));
                         RECT rc;
-                        rc.left = p2->left;
-                        rc.top = p2->top;
-                        rc.right = p2->right;
-                        rc.bottom = p2->bottom;
+                        rc.left = boardRect->left;
+                        rc.top = boardRect->top;
+                        rc.right = boardRect->right;
+                        rc.bottom = boardRect->bottom;
                         if (!IntersectRect(&bd->m_bounds, &rc, &r1)) {
                             bd->m_bounds = rc;
                         }
@@ -2163,11 +2163,11 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
         // --- prim==0x11 arm: with two occupied coords, if the second's tile is a
         //     0x20 cell and the first's is not a 0x2 cell, fire the coord trigger. ---
-        i32 p11 = unit->m_entranceReason;
-        if (p11 > 0x16) {
-            p11 = unit->m_19c;
+        i32 entranceMode = unit->m_entranceReason;
+        if (entranceMode > 0x16) {
+            entranceMode = unit->m_19c;
         }
-        if (p11 == 0x11 && unit->CoordCount() >= 2) {
+        if (entranceMode == 0x11 && unit->CoordCount() >= 2) {
             CoordNode* node = unit->CoordHead();
             Coord* ca = node->m_coord;
             CoordNode* nn = node->m_next;
@@ -2272,11 +2272,11 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 if (p == 0x16) {
                     return 1;
                 }
-                i32 p2 = unit->m_entranceReason;
-                if (p2 > 0x16) {
-                    p2 = unit->m_19c;
+                i32 entranceMode2 = unit->m_entranceReason;
+                if (entranceMode2 > 0x16) {
+                    entranceMode2 = unit->m_19c;
                 }
-                if (p2 == 0x12) {
+                if (entranceMode2 == 0x12) {
                     return 1;
                 }
             }
@@ -2532,13 +2532,13 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 RECT b1;
                 static_cast<RECT*>(new (&b1) CRect(0, 0, board->m_width, board->m_height));
                 RECT b2;
-                RECT* p2 =
+                RECT* boardRect =
                     static_cast<RECT*>(new (&b2) CRect(0, 0, board->m_width, board->m_height));
                 RECT rc;
-                rc.left = p2->left;
-                rc.top = p2->top;
-                rc.right = p2->right;
-                rc.bottom = p2->bottom;
+                rc.left = boardRect->left;
+                rc.top = boardRect->top;
+                rc.right = boardRect->right;
+                rc.bottom = boardRect->bottom;
                 if (!IntersectRect(&board->m_bounds, &rc, &b1)) {
                     board->m_bounds = rc;
                 }
@@ -3201,11 +3201,11 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(CGrunt* unit) {
                         return 1;
                     }
                 } else {
-                    i32 p2 = unit->m_entranceReason;
-                    if (p2 > 0x16) {
-                        p2 = unit->m_19c;
+                    i32 entranceMode = unit->m_entranceReason;
+                    if (entranceMode > 0x16) {
+                        entranceMode = unit->m_19c;
                     }
-                    if (p2 == 0) {
+                    if (entranceMode == 0) {
                         if (RouteUnitTo(unit, gx, gy, 0x2000098b, 0, 0) != 0) {
                             CMapMgr* bd = m_board;
                             RECT r1;
@@ -3625,7 +3625,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 // @early-stop
 // register-coloring wall (logic byte-shaped & complete). All arms reconstructed:
 // 0x8000/0x4000 tile-bit tests (test bh), the arg-`unit`->m_object corner reads, the
-// a5-gated occupancy branch, the special anim-id set, the arm1/2/3 commits (g_stepRun/
+// requireUnoccupied-gated occupancy branch, the special anim-id set, the arm1/2/3
+// commits (g_stepRun/
 // Col/Row + g_coordPool recycle), the 0x20000 RMW visited-mark, the 8-neighbour
 // self-recursion, and single ~CPtrList-per-list scope teardown. Residual: retail
 // colours word->ebx, col->ebp, row->edi and spills tileOff@[esp+0x10]; MSVC here
@@ -3633,7 +3634,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 // offsets shift +0x20 (frame 0x40 vs 0x60) and every reg operand diverges. Not
 // source-steerable; a permuter target for the final sweep.
 RVA(0x0002d800, 0x605)
-i32 CBattlezMapConfig::ClaimTilesAround(CGrunt* a4, i32 col, i32 row, i32 a5) {
+i32 CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
     if (g_stepRun == 0) {
         return 0;
     }
@@ -3642,7 +3643,7 @@ i32 CBattlezMapConfig::ClaimTilesAround(CGrunt* a4, i32 col, i32 row, i32 a5) {
         i32 word = tile->m_0;
         if (word & 0x8000) {
             CPtrList list(10);
-            CGameObject* lvl = a4->m_object;
+            CGameObject* lvl = unit->m_object;
             if ((m_board)->SearchEdge(
                     lvl->m_screenX >> 5,
                     lvl->m_screenY >> 5,
@@ -3673,7 +3674,7 @@ i32 CBattlezMapConfig::ClaimTilesAround(CGrunt* a4, i32 col, i32 row, i32 a5) {
         }
         if (word & 0x4000) {
             CTileActionEvent* cell = m_cellQuery->FindByField0C((col << 8) + row);
-            if (a5 != 0) {
+            if (requireUnoccupied != 0) {
                 if (cell == 0) {
                     break;
                 }
@@ -3681,7 +3682,7 @@ i32 CBattlezMapConfig::ClaimTilesAround(CGrunt* a4, i32 col, i32 row, i32 a5) {
                     break;
                 }
                 CPtrList list2(10);
-                CGameObject* lvl = a4->m_object;
+                CGameObject* lvl = unit->m_object;
                 if ((m_board)->SearchEdge(
                         lvl->m_screenX >> 5,
                         lvl->m_screenY >> 5,
@@ -3727,7 +3728,7 @@ i32 CBattlezMapConfig::ClaimTilesAround(CGrunt* a4, i32 col, i32 row, i32 a5) {
                 break;
             }
             CPtrList list3(10);
-            CGameObject* lvl = a4->m_object;
+            CGameObject* lvl = unit->m_object;
             if ((m_board)->SearchEdge(
                     lvl->m_screenX >> 5,
                     lvl->m_screenY >> 5,
@@ -3772,7 +3773,7 @@ i32 CBattlezMapConfig::ClaimTilesAround(CGrunt* a4, i32 col, i32 row, i32 a5) {
             nt = &b->m_rows[row][cm];
             nw = nt->m_0;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt->m_10 == 0x9a)) {
-                ClaimTilesAround(a4, cm, row, a5);
+                ClaimTilesAround(unit, cm, row, requireUnoccupied);
             }
         }
         b = m_board;
@@ -3780,7 +3781,7 @@ i32 CBattlezMapConfig::ClaimTilesAround(CGrunt* a4, i32 col, i32 row, i32 a5) {
             nt = &b->m_rows[row][cp];
             nw = nt->m_0;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt->m_10 == 0x9a)) {
-                ClaimTilesAround(a4, cp, row, a5);
+                ClaimTilesAround(unit, cp, row, requireUnoccupied);
             }
         }
         b = m_board;
@@ -3788,7 +3789,7 @@ i32 CBattlezMapConfig::ClaimTilesAround(CGrunt* a4, i32 col, i32 row, i32 a5) {
             nt = &b->m_rows[rm][col];
             nw = nt->m_0;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt->m_10 == 0x9a)) {
-                ClaimTilesAround(a4, col, rm, a5);
+                ClaimTilesAround(unit, col, rm, requireUnoccupied);
             }
         }
         b = m_board;
@@ -3796,7 +3797,7 @@ i32 CBattlezMapConfig::ClaimTilesAround(CGrunt* a4, i32 col, i32 row, i32 a5) {
             nt = &b->m_rows[rp][col];
             nw = nt->m_0;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt->m_10 == 0x9a)) {
-                ClaimTilesAround(a4, col, rp, a5);
+                ClaimTilesAround(unit, col, rp, requireUnoccupied);
             }
         }
         b = m_board;
@@ -3805,7 +3806,7 @@ i32 CBattlezMapConfig::ClaimTilesAround(CGrunt* a4, i32 col, i32 row, i32 a5) {
             nt = &b->m_rows[rm][cp];
             nw = nt->m_0;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt->m_10 == 0x9a)) {
-                ClaimTilesAround(a4, cp, rm, a5);
+                ClaimTilesAround(unit, cp, rm, requireUnoccupied);
             }
         }
         b = m_board;
@@ -3814,7 +3815,7 @@ i32 CBattlezMapConfig::ClaimTilesAround(CGrunt* a4, i32 col, i32 row, i32 a5) {
             nt = &b->m_rows[rp][cp];
             nw = nt->m_0;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt->m_10 == 0x9a)) {
-                ClaimTilesAround(a4, cp, rp, a5);
+                ClaimTilesAround(unit, cp, rp, requireUnoccupied);
             }
         }
         b = m_board;
@@ -3823,7 +3824,7 @@ i32 CBattlezMapConfig::ClaimTilesAround(CGrunt* a4, i32 col, i32 row, i32 a5) {
             nt = &b->m_rows[rp][cm];
             nw = nt->m_0;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt->m_10 == 0x9a)) {
-                ClaimTilesAround(a4, cm, rp, a5);
+                ClaimTilesAround(unit, cm, rp, requireUnoccupied);
             }
         }
         b = m_board;
@@ -3832,7 +3833,7 @@ i32 CBattlezMapConfig::ClaimTilesAround(CGrunt* a4, i32 col, i32 row, i32 a5) {
             nt = &b->m_rows[rm][cm];
             nw = nt->m_0;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt->m_10 == 0x9a)) {
-                ClaimTilesAround(a4, cm, rm, a5);
+                ClaimTilesAround(unit, cm, rm, requireUnoccupied);
             }
         }
         if (g_stepRun == 0) {
@@ -3863,7 +3864,12 @@ i32 CBattlezMapConfig::ClaimTilesAround(CGrunt* a4, i32 col, i32 row, i32 a5) {
 // maybe-null box branch retail emits; foreign unit/board chains modeled by raw
 // offset. Deferred to the final sweep.
 RVA(0x0002dfa0, 0x325)
-i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(CGrunt* unit, i32 a1, i32 a2, i32 a3) {
+i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(
+    CGrunt* unit,
+    i32 col,
+    i32 row,
+    i32 requireUnoccupied
+) {
     g_stepRun = 1;
     // Build a 17x17 box (corner reads via three GetCoords).
     CGameObject* lvl = unit->m_object;
@@ -3890,7 +3896,7 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(CGrunt* unit, i32 a1, i32 a2,
     }
     board->m_gridW = board->m_bounds.right - board->m_bounds.left;
     board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
-    ClaimTilesAround(unit, a1, a2, a3);
+    ClaimTilesAround(unit, col, row, requireUnoccupied);
     if (g_stepRun == 0) {
         i32 savedX = unit->m_entrancePxX;
         i32 savedY = unit->m_entrancePxY;
@@ -4062,16 +4068,16 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(CGrunt* unit) {
             if (!PtInRect(&box, wpt)) {
                 continue;
             }
-            Coord a1;
-            (static_cast<CUserLogic*>(unit))->GetScreenPos((&a1));
+            Coord unitPos1;
+            (static_cast<CUserLogic*>(unit))->GetScreenPos((&unitPos1));
             Coord b1;
             (static_cast<CUserLogic*>(u))->GetScreenPos((&b1));
-            i32 dx = abs((a1.m_x >> 5) - (b1.m_x >> 5));
-            Coord a2;
-            (static_cast<CUserLogic*>(unit))->GetScreenPos((&a2));
+            i32 dx = abs((unitPos1.m_x >> 5) - (b1.m_x >> 5));
+            Coord unitPos2;
+            (static_cast<CUserLogic*>(unit))->GetScreenPos((&unitPos2));
             Coord b2;
             (static_cast<CUserLogic*>(u))->GetScreenPos((&b2));
-            i32 dy = abs((a2.m_y >> 5) - (b2.m_y >> 5));
+            i32 dy = abs((unitPos2.m_y >> 5) - (b2.m_y >> 5));
             i32 dist = dx * dx + dy * dy;
             if (dist >= bestDist) {
                 continue;
@@ -4099,11 +4105,12 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(CGrunt* unit) {
         rc.bottom = box.bottom + 1;
     } else {
         RECT r0;
-        RECT* p0 = static_cast<RECT*>(new (&r0) CRect(0, 0, board->m_width, board->m_height));
-        rc.left = p0->left;
-        rc.top = p0->top;
-        rc.right = p0->right;
-        rc.bottom = p0->bottom;
+        RECT* boardRect =
+            static_cast<RECT*>(new (&r0) CRect(0, 0, board->m_width, board->m_height));
+        rc.left = boardRect->left;
+        rc.top = boardRect->top;
+        rc.right = boardRect->right;
+        rc.bottom = boardRect->bottom;
     }
     if (!IntersectRect(&board->m_bounds, &rc, &bounds)) {
         board->m_bounds = rc;
@@ -4782,13 +4789,29 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
 // the ~CPtrList/xor/jmp at each early return. No steerable source spelling closes
 // either. Deferred to the final sweep.
 RVA(0x000300c0, 0x190)
-i32 CBattlezMapConfig::RouteUnitTo(CGrunt* unit, i32 gx, i32 gy, i32 a4, i32 a5, i32 a6) {
+i32 CBattlezMapConfig::RouteUnitTo(
+    CGrunt* unit,
+    i32 gx,
+    i32 gy,
+    i32 maskA,
+    i32 maskC,
+    i32 clearFlag
+) {
     CPtrList list(10);
     CGameObject* lvl = unit->m_object;
     if ((lvl->m_screenX >> 5) == gx && (lvl->m_screenY >> 5) == gy) {
         return 0;
     }
-    if ((m_board)->SearchEdge(lvl->m_screenX >> 5, lvl->m_screenY >> 5, gx, gy, &list, a6, a4, a5)
+    if ((m_board)->SearchEdge(
+            lvl->m_screenX >> 5,
+            lvl->m_screenY >> 5,
+            gx,
+            gy,
+            &list,
+            clearFlag,
+            maskA,
+            maskC
+        )
         == 0) {
         return 0;
     }
@@ -4850,7 +4873,7 @@ i32 CBattlezMapConfig::RouteUnitTo(CGrunt* unit, i32 gx, i32 gy, i32 a4, i32 a5,
 // loop-invariant `do/while` in retail (the path-segment recycle) that no source
 // spelling reproduces. Foreign unit chains modeled by raw offset. Final sweep.
 RVA(0x000302c0, 0x1ec)
-i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, i32 gx, i32 gy, i32 a4, i32 a5) {
+i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, i32 gx, i32 gy, i32 maskA, i32 maskC) {
     CPtrList list(10);
     Coord cur;
     (static_cast<CUserLogic*>(unit))->GetScreenPos((&cur));
@@ -4874,7 +4897,12 @@ i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, i32 gx, i32 gy, i32 a4, i32
         }
     }
     CGameObject* lvl = unit->m_object;
-    if ((m_board)->SearchEdge(lvl->m_screenX >> 5, lvl->m_screenY >> 5, gx, gy, &list, 0, a5, a5)
+    // BUG FIX 2026-07-29 (found by naming): this passed `a5, a5` and dropped a4.
+    // Retail @0x30351 pushes [esp+0x54] then, one push later, [esp+0x54] again - i.e.
+    // arg5 (maskC) then arg4 (maskA), the same (maskA, maskC) pair RouteUnitTo passes.
+    // The old spelling sent maskC into both slots and never read maskA at all.
+    if ((m_board)
+            ->SearchEdge(lvl->m_screenX >> 5, lvl->m_screenY >> 5, gx, gy, &list, 0, maskA, maskC)
         == 0) {
         return 0;
     }
@@ -5663,12 +5691,13 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(CGrunt* unit) {
             RECT r1;
             static_cast<RECT*>(new (&r1) CRect(0, 0, board->m_width, board->m_height));
             RECT r2;
-            RECT* p2 = static_cast<RECT*>(new (&r2) CRect(0, 0, board->m_width, board->m_height));
+            RECT* boardRect =
+                static_cast<RECT*>(new (&r2) CRect(0, 0, board->m_width, board->m_height));
             RECT rc;
-            rc.left = p2->left;
-            rc.top = p2->top;
-            rc.right = p2->right;
-            rc.bottom = p2->bottom;
+            rc.left = boardRect->left;
+            rc.top = boardRect->top;
+            rc.right = boardRect->right;
+            rc.bottom = boardRect->bottom;
             if (!IntersectRect(&board->m_bounds, &rc, &r1)) {
                 board->m_bounds = rc;
             }

@@ -42,14 +42,18 @@ public:
     // [12] 0x154ce0
     virtual CImage*
     DispatchKeyed30(PidHeader* desc, i32 mode, const char* key, i32 index, u32 size);
-    virtual CImage* Forward38(void* rec, CDDrawWorker* worker, i32 a3, i32 a4);  // [13] 0x154f20
-    virtual CImage* DispatchKeyed38(void* rec, const char* key, i32 a3, i32 a4); // [14] 0x154ae0
+    // (index, mode) are CDDrawWorker::InsertFrame's own trailing slots: its body
+    // @0x151f00 subscripts m_items with the index and hands the mode to CImage::Resolve.
+    virtual CImage* Forward38(void* rec, CDDrawWorker* worker, i32 index, i32 mode);
+    // [13] 0x154f20
+    virtual CImage* DispatchKeyed38(void* rec, const char* key, i32 index, i32 mode);
+    // [14] 0x154ae0
     virtual CImage*
     Forward34(char* path, CDDrawWorker* worker, i32 index, i32 keyed); // [15] 0x154f00
     virtual CImage*
     DispatchKeyed34(char* path, const char* key, i32 index, i32 keyed); // [16] 0x154be0
     // [17] 0x156e80 (DDrawSubMgr.cpp) - probe a resolved sub-key, install its tree.
-    virtual i32 ProbeWorkerKey(class CSymParser* arg1, const char* key);
+    virtual i32 ProbeWorkerKey(class CSymParser* parser, const char* key);
     // [18] 0x154f80 - install a resolved symbol TREE under a (name, separator) prefix;
     // recurses over child scopes through THIS slot (virtual self-dispatch). The
     // ex-CDDrawWorkerRegistry/ObjImageRegistry "Install"/"LoadTree"/"InsertWorkerKey" names
@@ -69,7 +73,9 @@ public:
     // (DestroyAll @0x165210 moved to CDDrawWorkerCache - its true owner: the only
     //  call site is that class's dtor and the only data ref its vtable slot 7.)
     i32 RemoveKeysEqual(const char* base, const char* str);
-    i32 SumSizesEqual(const char* str, i32 a2);
+    // `raw` is CDDrawWorker::GetMemoryUsage's own parameter - nonzero drops the
+    // per-frame sizeof(CImage) overhead from each frame's decoded byte size.
+    i32 SumSizesEqual(const char* str, i32 raw);
     i32 HasKeyEqual(const char* str);
     // Reverse frame lookup: scan every map value (a CDDrawWorker) for `frame`; on a hit
     // copy the set name into outName + the frame index into outIndex (FindFrame).

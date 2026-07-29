@@ -18,9 +18,9 @@ struct CWwdSpatialMgr {
     // +0x10..+0x3c: each grid's world rect (seeded to (0,0,w-1,h-1) from the plane
     // geometry's three dimension pairs). grid1's rect is at +0x30 and grid2's at
     // +0x20 - the write order of the matched InitScrollRects.
-    RECT m_rect0; // +0x10  grid0 world rectangle
-    RECT m_rect2; // +0x20  grid2 world rectangle
-    RECT m_rect1; // +0x30  grid1 world rectangle
+    RECT m_rect0;         // +0x10  grid0 world rectangle
+    RECT m_rect2;         // +0x20  grid2 world rectangle
+    RECT m_rect1;         // +0x30  grid1 world rectangle
     i32 m_org0x, m_org0y; // +0x40 / +0x44  grid0 scroll origin (seeded to its centre)
     i32 m_org1x, m_org1y; // +0x48 / +0x4c  grid1 scroll origin
     i32 m_org2x, m_org2y; // +0x50 / +0x54  grid2 scroll origin
@@ -43,8 +43,21 @@ struct CWwdSpatialMgr {
     // park the cached scroll at -22222. `src`->m_mgr, `rc` is the shared grid rect (used in
     // all three Setups + the bbox), p3/p4/p5 are the three Setup size pairs, p6/p7/p8 the
     // three rect/origin dim pairs. Called by CDDrawWorkerHost::RebuildPlanes.
-    i32 Init(void* src, RECT* rc, i32* p3, i32* p4, i32* p5, i32* p6, i32* p7, i32* p8); // 0x168080
-    void FreeGrids();                                                                    // 0x1682f0
+    // 0x168080. cellA/B/C are the three {cellW, cellH} pairs each grid's Setup takes;
+    // sizeA/B/C the three {w, h} plane extents (rect 0..n-1 + origin n/2). Named from
+    // the one caller, CDDrawWorkerHost::RebuildPlanes @0x1628f0, which passes
+    // CGameLevel's m_pairA/B/C and m_rectA/B/C{w,h} in that order.
+    i32 Init(
+        void* owner,
+        RECT* rc,
+        i32* cellA,
+        i32* cellB,
+        i32* cellC,
+        i32* sizeA,
+        i32* sizeB,
+        i32* sizeC
+    );
+    void FreeGrids(); // 0x1682f0
     i32 ScrollTo(i32 dx, i32 dy);
     i32 GetSize(); // 0x168430
     i32 CountInRect(CWwdGrid* grid);

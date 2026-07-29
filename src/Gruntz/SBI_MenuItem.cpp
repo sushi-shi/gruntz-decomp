@@ -36,7 +36,7 @@ i32 CSBI_MenuItem::SetupImage(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
     i32 cmd,
-    i32 a4,
+    i32 tab,
     RECT rc,
     const char* key,
     i32 frame,
@@ -51,7 +51,7 @@ i32 CSBI_MenuItem::SetupImage(
     }
     m_2c = owner; // owning tab host (CMiTabHost view at the deref sites)
     m_24 = host;  // config host (CDDrawSurfaceMgr, cast at the deref sites)
-    m_tab = a4;
+    m_tab = tab;
     m_kind = 2;
     m_frame = 0;
     m_rect14.left = rc.left;

@@ -388,17 +388,17 @@ void RegisterLogic() {
 // its world coords (>>5), stash the four call args, resolve an icon record from
 // the per-player factory and stamp the place-command back into the owner
 // (+0x58/+0x50/+0x4c), clear the owner's "occupied" low bit (+0x40 &= ~1), swap
-// the +0x14 sub-object's bute node (g_buteTree.Find("B")). On the a1==0 path it
+// the +0x14 sub-object's bute node (g_buteTree.Find("B")). On the placeIndex==0 path it
 // finalizes the placement: flag +0x60, clear +0x54, snapshot the geometry id and
 // apply the puddle sprite geometry. Returns 1.
 //
 // @early-stop
 // inverse register-pinning wall (docs/patterns/zero-register-pinning.md): the body
-// is structurally byte-exact, but retail does NOT enregister the `a1` parameter -
+// is structurally byte-exact, but retail does NOT enregister the `placeIndex` parameter -
 // it re-reads `[esp+0x10]` each use (so `m_pending = 0` is an immediate store and the
-// ApplyLookupGeometry flag is `push $0`). Our MSVC 5.0 caches `a1` in callee-saved
+// ApplyLookupGeometry flag is `push $0`). Our MSVC 5.0 caches `placeIndex` in callee-saved
 // edi (extra push edi/pop edi; `m_pending = edi`; `push edi` flag). All offsets,
-// immediates, call args and branch targets match; only the a1 caching differs.
+// immediates, call args and branch targets match; only the placeIndex caching differs.
 // No init-list/assignment/reorder lever flips the allocator. Deferred.
 // CGruntPuddle::Idle @0x040c10 - the act-"A" slot: retail is the bare
 // `xor eax,eax; ret` (3 bytes). Registered by RegisterLogic below.
@@ -408,14 +408,21 @@ i32 CGruntPuddle::Idle() {
 }
 
 RVA(0x00040c30, 0xb3)
-i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
+// The caller is CTriggerMgr::PlacePuddle @0x7a240:
+//   tgt->Place(sprite->m_124, sprite->m_114, color, d)
+// so the first two are the sprite-selector row key and the placement index (the body snapshots
+// them into m_gruntType/m_placeIndex and draws the icon with GetSel(placeIndex, 0)), and
+// the third is PlacePuddle's own `color` - accepted here and never read. The fourth
+// (m_placeArg3) comes from sprite->m_118 defaulted to 0x19 and its ROLE is still
+// unproven, so it stays positional.
+i32 CGruntPuddle::Place(i32 gruntType, i32 placeIndex, i32 color, i32 a3) {
     CWwdGameObjectA* o = m_object;
     m_tileX = o->m_screenX >> 5;
     m_tileY = o->m_screenY >> 5;
     m_placeArg3 = a3;
-    m_gruntType = a0;
-    m_placeIndex = a1;
-    CShadeTable* rec = g_gameReg->m_spriteFactory->GetSel(a1, 0);
+    m_gruntType = gruntType;
+    m_placeIndex = placeIndex;
+    CShadeTable* rec = g_gameReg->m_spriteFactory->GetSel(placeIndex, 0);
     CWwdGameObjectA* obj = m_object;
     obj->m_drawActive = 1;
     obj->m_drawFillCmd = 0xa;
@@ -423,7 +430,7 @@ i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
     m_38->m_stateFlags &= ~1;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("B");
-    if (a1 == 0) {
+    if (placeIndex == 0) {
         m_placed = 1;
         m_pending = 0;
         m_value = m_38->m_1a0.m_14;

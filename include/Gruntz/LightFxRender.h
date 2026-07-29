@@ -18,7 +18,7 @@ class CDDrawSurfacePair; // the border-draw ctx (its +0x2c CDDSurface is drawn o
 class CLightFxRender {
 public:
     // 0x0a32c0  Init - cache the manager family, validate, zero the rect/state block.
-    i32 Init(CGruntzMgr* mgr, i32 arg2);
+    i32 Init(CGruntzMgr* mgr, i32 refreshInterval); // -> m_refreshInterval
     // 0x0a3360  ctor - zero the core pointers + sizes.
     void Ctor();
     // 0x0a33a0  FreeSurface - release the alloc'd surface (+0x10) via the world pool.

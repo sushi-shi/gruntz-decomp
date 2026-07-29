@@ -187,11 +187,26 @@ public:
     i32 StartTitle();      // 0x0b72c0  /GX: build "TITLE%d" + bind the net host
     void DropTimeout();    // 0x0bc2d0  /GX: drop a timed-out player
     // 0x0bc910  /GX: latch session params, create the host player, register the channel.
-    // 0xbc910. a1 is the CHANNEL NAME: the body forwards it straight into
+    // `name` is the CHANNEL NAME: the body forwards it straight into
     // RegisterChannelFrom(const char*, ...) @0xbaa90, the same slot the two sibling
     // openers (0xb8b10 / 0xbc750) fill with a real string. No caller in .text (address-
-    // taken/dead), so the type comes from the callee, not from a call site.
-    i32 OpenHostChannel(void* a0, const char* name, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
+    // taken/dead), so every name here comes from the callee, not from a call site:
+    //   channelId -> RegisterChannelFrom's `b` == CMulti::RegisterChannel's `id`;
+    //   cmdDelay / resend -> m_5a4 / m_drainReload, which CMulti::JoinAndRegisterChannel
+    //     @0xb8b10 writes into the session string as "CMDDELAY" and "RESEND";
+    //   unused6/7/8 -> retail reads [esp+0x10..0x24] only, never the last three slots.
+    // a0 stays a placeholder: it is null-checked at entry and never dereferenced, and
+    // with no call site there is nothing to recover its meaning from (@identity-TODO).
+    i32 OpenHostChannel(
+        void* a0,
+        const char* name,
+        i32 channelId,
+        i32 cmdDelay,
+        i32 resend,
+        i32 unused6,
+        i32 unused7,
+        i32 unused8
+    );
 
     // External CMulti methods this TU calls but does not define (reloc-masked).
     void SendStatFlag(i32 code, i32 flag); // 0x0b9240 (__thiscall, reads m_5bc)
@@ -253,8 +268,10 @@ public:
     // (host) or fires the GAME_KEY cue + a 250-tick active wait (guest). Was the fake
     // CNetMgrLite view's method.
     i32 ShowMultiStartDlg();
-    CNetPlayerListNode* JoinAndRegisterChannel();   // 0x0b8b10 (returns the joined player node)
-    i32 OnJoinConfirm(void* hDlg);                  // 0x0b8cf0
+    CNetPlayerListNode* JoinAndRegisterChannel(); // 0x0b8b10 (returns the joined player node)
+    i32 OnJoinConfirm(void* hDlg);                // 0x0b8cf0
+    // a1/a2 are pure non-zero gates and 0xb9180 has no caller in .text - nothing to
+    // recover a meaning from, so they stay positional on purpose.
     i32 PollSessionGated(i32 a1, i32 a2);           // 0x0b9180
     i32 SendStatBuf(CNetStatPacket* pkt, i32 flag); // 0x0b91f0
     i32 SendStatFrom(void* pkt, i32 b, i32 c);      // 0x0b92e0 (a built wire blob + size)

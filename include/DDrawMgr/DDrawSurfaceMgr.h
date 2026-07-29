@@ -73,16 +73,21 @@ public:
                             //         LoadWorldMode's pre-Init "Notify" dispatch)
 
     // Non-virtual methods (census-proven OFF the retail vtable - plain, not slots):
-    void FreeContext();                                                // 0x155fc0
-    i32 PlayDefaultSound();                                            // 0x155ff0
-    i32 SetDimensions(i32 x, i32 y, i32 flags);                        // 0x155f60
-    void SetHwnd(void* hWnd);                                          // 0x155f50
-    i32 InvokeCallback(void* arg1, i32 arg2, i32 arg3, void* payload); // 0x156a90
+    void FreeContext();                         // 0x155fc0
+    i32 PlayDefaultSound();                     // 0x155ff0
+    i32 SetDimensions(i32 x, i32 y, i32 flags); // 0x155f60
+    void SetHwnd(void* hWnd);                   // 0x155f50
+    // (ar, mode, typeId, ppObj) - the installed HP_Callback's own slots, forwarded
+    // untouched; SerialObjectFactory @0x0d2a0 is the callback.
+    i32 InvokeCallback(void* ar, i32 mode, i32 typeId, void* payload); // 0x156a90
 
     // The recursive child serializer / deserializer (owner-TU DDrawSurfaceMgrSerialize
     // holds the bodies; GameSave drives SnapshotChildren). Non-virtual __thiscall /GX.
-    i32 SnapshotChildren(HP_Callback cb, char* arg1, char* name, i32 arg3); // 0x156020
-    i32 RestoreChildren(HP_Callback cb, char* name, i32 arg3);              // 0x156530
+    // `path` is the snapshot FILE (S.SetName) and the entry null-check; `name` is the
+    // string strcpy'd into the 0x120-byte header. Both were wrong before 2026-07-29 -
+    // see the body's note in DDrawSurfaceMgr.cpp.
+    i32 SnapshotChildren(HP_Callback cb, char* path, char* name, i32 typeId); // 0x156020
+    i32 RestoreChildren(HP_Callback cb, char* name, i32 typeId);              // 0x156530
 
     // +0x04  the page/child factory (front/back/overlay surfaces) - the game-side
     // draw target (the ex CDDrawSubMgrPages/StateMgrBZ views; every CState::m_c consumer

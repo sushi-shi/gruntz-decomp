@@ -465,7 +465,10 @@ void CAniAdvanceCursor::Setup(CAniElement* src) {
 }
 
 RVA(0x0015c320, 0x40)
-void CAniAdvanceCursor::Recompute(i32 a1) {
+// `resetGate` is the only thing the argument does: nonzero clears the +0x20 re-trigger
+// gate at the end. CMenuSparkle @MenuSparkle.cpp is the caller that passes 1, and it
+// tests that same m_20 for zero before calling.
+void CAniAdvanceCursor::Recompute(i32 resetGate) {
     CAniElement* src = m_14;
     if (src == 0) {
         return;
@@ -483,7 +486,7 @@ void CAniAdvanceCursor::Recompute(i32 a1) {
     m_scale = 1.0f;
     m_pendingDraw = v;
     m_curDraw = v;
-    if (a1 != 0) {
+    if (resetGate != 0) {
         m_20 = 0;
     }
 }
@@ -886,7 +889,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 // jump table, but MSVC5 folds our empty cases into a cmp/je-subtract chain.
 // Not source-steerable. docs/patterns/switch-cmpje-tree-vs-jumptable.md.
 RVA(0x0015c900, 0x42)
-i32 CAniAdvanceCursor::Find(CFileMemBase* ar, i32 type, i32 a3, void* self) {
+i32 CAniAdvanceCursor::Find(CFileMemBase* ar, i32 type, i32 typeId, void* self) {
     if (ar == 0) {
         return 0;
     }

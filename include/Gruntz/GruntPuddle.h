@@ -31,10 +31,10 @@ public:
 
     // The act-"A" (idle) slot the registrar binds (ILT 0x4021f8 -> 0x040c10):
     // retail is the bare `xor eax,eax; ret`, i.e. "nothing to do, not finished".
-    i32 Idle();                                // 0x040c10
-    i32 Place(i32 a0, i32 a1, i32 a2, i32 a3); // 0x040c30
-    i32 Remove();                              // 0x040d20
-    void SetBute(char* key);                   // 0x07d810
+    i32 Idle();                                                  // 0x040c10
+    i32 Place(i32 gruntType, i32 placeIndex, i32 color, i32 a3); // 0x040c30 (a3: see the body)
+    i32 Remove();                                                // 0x040d20
+    void SetBute(char* key);                                     // 0x07d810
     // FireActivation (0x40750): slot-4 (UserLogicVfunc2) override - resolve `id` in
     // the class dispatch table g_logicDispatch_6445e8; if the resolved entry holds a
     // handler, re-resolve and dispatch it __thiscall on `this`. Same archetype as

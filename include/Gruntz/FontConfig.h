@@ -13,7 +13,9 @@ public:
     void Reset();
     i32 AddItem(const char* str, i32 type, i32 data);
     void Scroll(i32 delta);
-    i32 TypeChar(i32 ch, i32 a2);
+    // `flag` is the slot-11 key handler's second word: CMulti::Vslot0b @0xbd210 passes
+    // its own (key, flag) straight in. The body @0x21e20 never reads it.
+    i32 TypeChar(i32 ch, i32 flag);
     // Returns m_inputText (+0x1c) by value. An INLINE accessor: MSVC 5.0 emits a by-value
     // CString return out-of-line, so it is a COMDAT and the surviving copy is the one the
     // ChatBoxOwner obj emitted (rva 0x00020ef0, inside THAT unit's band) - which is where

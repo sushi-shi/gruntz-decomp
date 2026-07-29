@@ -1858,6 +1858,9 @@ notVerified:
     return 0;
 }
 
+// Both arguments are pure non-zero gates - retail reads [esp+0x4] and [esp+0xc], tests
+// each for zero and never touches them again - and 0xb9180 has NO caller in .text, so
+// there is no site to read their meaning off. Left as a1/a2 deliberately (2026-07-29).
 RVA(0x000b9180, 0x4a)
 i32 CMulti::PollSessionGated(i32 a1, i32 a2) {
     if (a1 == 0) {
@@ -2441,7 +2444,7 @@ CString CNetSessionNode::GetName() {
 // code-only span objdiff and the delinked carve disagree on the length and the
 // function is not scored at all. The next annotated function is 0xba3b0.
 RVA(0x000ba1a0, 0x1a0)
-i32 CMulti::HandleControlMsg(CNetCtrlMsg* msg, i32 arg2) {
+i32 CMulti::HandleControlMsg(CNetCtrlMsg* msg, i32 unused) {
     if (msg == 0) {
         return 0;
     }
@@ -3807,20 +3810,20 @@ i32 CMulti::CreateLocalPlayer() {
 
 RVA(0x000bc910, 0xf6)
 i32 CMulti::OpenHostChannel(
-    void* a0,
+    void* a0, // @identity-TODO: null-checked and never dereferenced; no caller in .text
     const char* name,
-    i32 a2,
-    i32 a3,
-    i32 a4,
-    i32 a5,
-    i32 a6,
-    i32 a7
+    i32 channelId,
+    i32 cmdDelay,
+    i32 resend,
+    i32 unused6,
+    i32 unused7,
+    i32 unused8
 ) {
     if (a0 == 0) {
         return 0;
     }
-    m_5a4 = a3;
-    m_drainReload = a4;
+    m_5a4 = cmdDelay;
+    m_drainReload = resend;
     m_levelIndex = 1;
     m_rngSeed = timeGetTime();
     m_5bc = Peer()->CreatePlayer(
@@ -3833,7 +3836,7 @@ i32 CMulti::OpenHostChannel(
         return 0;
     }
     m_hostIndex = m_5bc->m_id; // +0x04 on the session node
-    return RegisterChannelFrom(name, a2, -1, m_hostIndex) != 0;
+    return RegisterChannelFrom(name, channelId, -1, m_hostIndex) != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -4150,10 +4153,10 @@ void CMulti::AnnounceVersion(CNetSessionNode* param) {
 }
 
 RVA(0x000bd210, 0x14d)
-i32 CMulti::Vslot0b(i32 arg0, i32 arg1) {
+i32 CMulti::Vslot0b(i32 key, i32 flag) {
     if (m_hitTest && m_hitTest->m_10) {
         if (m_connected) {
-            if (Mgr()->m_chatLog->TypeChar(arg0, arg1)) {
+            if (Mgr()->m_chatLog->TypeChar(key, flag)) {
                 CString line = Mgr()->m_chatLog->GetInputText();
                 i32 n = line.GetLength();
                 if (n > 9) {
@@ -4167,7 +4170,7 @@ i32 CMulti::Vslot0b(i32 arg0, i32 arg1) {
         }
         return 1;
     }
-    return CPlay::Vslot0b(arg0, arg1); // qualified: the BASE leg, not this override
+    return CPlay::Vslot0b(key, flag); // qualified: the BASE leg, not this override
 }
 RVA(0x000bd3c0, 0x9)
 void CMulti::TickStateMgrs() {

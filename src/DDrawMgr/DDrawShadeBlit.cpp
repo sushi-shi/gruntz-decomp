@@ -57,7 +57,7 @@ static inline u16* Scratch16() {
 }
 
 RVA(0x00149780, 0x69)
-i32 CDDrawShadeBlit::BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 p4) {
+i32 CDDrawShadeBlit::BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 vflip) {
     ShadeRect clip;
     ShadeRect dst;
     clip.left = 0;
@@ -68,11 +68,11 @@ i32 CDDrawShadeBlit::BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 p4) 
     dst.top = y;
     dst.right = x + m_width - 1;
     dst.bottom = y + m_height - 1;
-    return Blit(&dst, dstSurf, &clip, sel, p4);
+    return Blit(&dst, dstSurf, &clip, sel, vflip);
 }
 
 RVA(0x001497f0, 0x154)
-i32 CDDrawShadeBlit::Blit(ShadeRect* p0, CDDSurface* src, ShadeRect* clip, i32 sel, i32 p4) {
+i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 sel, i32 vflip) {
     if (clip->left < 0 || clip->right > m_width - 1 || clip->top < 0
         || clip->bottom > m_height - 1) {
         return 0;
@@ -91,9 +91,9 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* p0, CDDSurface* src, ShadeRect* clip, i32 s
     i32 drawType = m_drawType;
     if (drawType == 1) {
         if (sel) {
-            BlitMode_149d00(p0, src, clip, p4);
+            BlitMode_149d00(dst, src, clip, vflip);
         } else {
-            BlitMode_149950(p0, src, clip, p4);
+            BlitMode_149950(dst, src, clip, vflip);
         }
         return 1;
     }
@@ -116,9 +116,9 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* p0, CDDSurface* src, ShadeRect* clip, i32 s
     }
 
     if (sel) {
-        BlitMode_14b770(p0, src, clip, p4);
+        BlitMode_14b770(dst, src, clip, vflip);
     } else {
-        BlitLoop(p0, src, clip, p4);
+        BlitLoop(dst, src, clip, vflip);
     }
     return 1;
 }

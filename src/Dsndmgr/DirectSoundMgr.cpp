@@ -450,11 +450,11 @@ void DirectSoundMgr::ComputeDuration() {
 }
 
 RVA(0x001359c0, 0x54)
-i32 DirectSoundMgr::Unlock(void* p1, u32 n1, void* p2, u32 n2) {
+i32 DirectSoundMgr::Unlock(void* audioPtr1, u32 audioBytes1, void* audioPtr2, u32 audioBytes2) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->Unlock(p1, n1, p2, n2) != 0;
+    i32 hr = m_buffer->Unlock(audioPtr1, audioBytes1, audioPtr2, audioBytes2) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x1bb, hr);
         return 0;
@@ -632,28 +632,36 @@ i32 DirectSoundMgr::LoadFromFile(FILE* fp, u32 bytes, i32 offset) {
         }
     }
 
-    void* p1;
-    DWORD n1;
-    void* p2;
-    DWORD n2;
-    i32 hr = m_buffer->Lock(0, bytes, &p1, &n1, &p2, &n2, DSBLOCK_FROMWRITECURSOR);
+    void* audioPtr1;
+    DWORD audioBytes1;
+    void* audioPtr2;
+    DWORD audioBytes2;
+    i32 hr = m_buffer->Lock(
+        0,
+        bytes,
+        &audioPtr1,
+        &audioBytes1,
+        &audioPtr2,
+        &audioBytes2,
+        DSBLOCK_FROMWRITECURSOR
+    );
     if (hr != 0) {
         GetErrorString(DSNDMGR_FILE, 0x27c, hr);
         return 0;
     }
 
-    if (n1 > 0) {
-        if (fread(p1, n1, 1, fp) != 1) {
+    if (audioBytes1 > 0) {
+        if (fread(audioPtr1, audioBytes1, 1, fp) != 1) {
             return 0;
         }
     }
-    if (n2 > 0) {
-        if (fread(p2, n2, 1, fp) != 1) {
+    if (audioBytes2 > 0) {
+        if (fread(audioPtr2, audioBytes2, 1, fp) != 1) {
             return 0;
         }
     }
 
-    hr = m_buffer->Unlock(p1, n1, p2, n2);
+    hr = m_buffer->Unlock(audioPtr1, audioBytes1, audioPtr2, audioBytes2);
     if (hr != 0) {
         GetErrorString(DSNDMGR_FILE, 0x295, hr);
         return 0;
@@ -667,11 +675,20 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
         return 0;
     }
 
-    void* p1;
-    void* p2;
-    DWORD n1;
-    DWORD n2;
-    i32 hr = m_buffer->Lock(0, lockBytes, &p1, &n1, &p2, &n2, DSBLOCK_ENTIREBUFFER) != 0;
+    void* audioPtr1;
+    void* audioPtr2;
+    DWORD audioBytes1;
+    DWORD audioBytes2;
+    i32 hr = m_buffer->Lock(
+                 0,
+                 lockBytes,
+                 &audioPtr1,
+                 &audioBytes1,
+                 &audioPtr2,
+                 &audioBytes2,
+                 DSBLOCK_ENTIREBUFFER
+             )
+             != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x2bd, hr);
         return 0;
@@ -679,33 +696,33 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
 
     if (convert == 0) {
         // Plain byte copy of each region.
-        if (n1 > 0) {
-            memcpy(p1, src, n1);
+        if (audioBytes1 > 0) {
+            memcpy(audioPtr1, src, audioBytes1);
         }
-        if (n2 > 0) {
-            memcpy(p2, static_cast<char*>(src) + n1, n2);
+        if (audioBytes2 > 0) {
+            memcpy(audioPtr2, static_cast<char*>(src) + audioBytes1, audioBytes2);
         }
     } else {
         // 16-bit signed -> 8-bit unsigned downconversion, per region.
-        if (n1 > 0) {
-            char* d = static_cast<char*>(p1);
+        if (audioBytes1 > 0) {
+            char* d = static_cast<char*>(audioPtr1);
             i16* s = static_cast<i16*>(src);
-            char* end = static_cast<char*>(p1) + n1;
+            char* end = static_cast<char*>(audioPtr1) + audioBytes1;
             while (d < end) {
                 *d = static_cast<char>((static_cast<u32>((*s + 0x8000)) >> 8));
                 ++s;
                 ++d;
             }
         }
-        if (n2 > 0) {
-            char* d = static_cast<char*>(p2);
-            // second half of a wrapped ring copy: n1 is a RUNTIME byte length from the
+        if (audioBytes2 > 0) {
+            char* d = static_cast<char*>(audioPtr2);
+            // second half of a wrapped ring copy: audioBytes1 is a RUNTIME byte length from the
             // DirectSound lock, so the 16-bit source is stepped by a BYTE count - both
             // readings of the cursor are named (<Pix16.h>)
             Pix16Ptr half2;
-            half2.m_chars = (static_cast<char*>(src) + n1);
+            half2.m_chars = (static_cast<char*>(src) + audioBytes1);
             i16* s = half2.m_swords;
-            char* end = static_cast<char*>(p2) + n2;
+            char* end = static_cast<char*>(audioPtr2) + audioBytes2;
             while (d < end) {
                 *d = static_cast<char>((static_cast<u32>((*s + 0x8000)) >> 8));
                 ++s;
@@ -714,7 +731,7 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
         }
     }
 
-    hr = m_buffer->Unlock(p1, n1, p2, n2) != 0;
+    hr = m_buffer->Unlock(audioPtr1, audioBytes1, audioPtr2, audioBytes2) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x2e1, hr);
         return 0;
@@ -850,16 +867,16 @@ RVA(0x00136370, 0xcc)
 i32 DirectSoundMgr::Lock(
     u32 off,
     u32 bytes,
-    void** p1,
-    DWORD* n1,
-    void** p2,
-    DWORD* n2,
+    void** audioPtr1,
+    DWORD* audioBytes1,
+    void** audioPtr2,
+    DWORD* audioBytes2,
     u32 flags
 ) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->Lock(off, bytes, p1, n1, p2, n2, flags) != 0;
+    i32 hr = m_buffer->Lock(off, bytes, audioPtr1, audioBytes1, audioPtr2, audioBytes2, flags) != 0;
     if (!hr) {
         return 1;
     }
@@ -867,7 +884,7 @@ i32 DirectSoundMgr::Lock(
         if (m_reacquireOwner->ReacquireBuffer() == 0) {
             return 0;
         }
-        hr = m_buffer->Lock(off, bytes, p1, n1, p2, n2, flags) != 0;
+        hr = m_buffer->Lock(off, bytes, audioPtr1, audioBytes1, audioPtr2, audioBytes2, flags) != 0;
         if (!hr) {
             return 1;
         }

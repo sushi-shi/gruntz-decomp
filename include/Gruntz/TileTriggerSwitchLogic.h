@@ -167,6 +167,9 @@ public:
     CCheckpointTriggerSwitchLogic(); // 0x1127f0
     // slot 1 (0x112a50): the checkpoint build. Uses the BASE's m_initGate (+0x20) and copies
     // the caller's 24-dword block into the BASE's m_block (+0x2c) - `rep movsd` ecx=0x18.
+    // the last slot is this override's SMALLICONZ frame index - see the body
+    // (0x112a50) in CheckpointSwitchBuild.cpp; the base leaves it unnamed because the
+    // other five subclasses only forward it into Setup's m_28.
     virtual i32 BuildSmall(
         CTileTriggerContainer* owner,
         i32 typeId,
@@ -176,7 +179,7 @@ public:
         const RECT* rect,
         i32 linkGate,
         i32 a8,
-        i32 a9
+        i32 iconFrame
     ) OVERRIDE;
 };
 SIZE(0x8c);

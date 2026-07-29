@@ -49,9 +49,9 @@ DATA(0x0022c458)
 char g_buteEditBuf[0x10000];
 
 RVA(0x0003bfa0, 0x42)
-i32 CDemo::LoadGameAssetNamespaces(CGruntzMgr* ctx, i32 a1, i32 a2) {
+i32 CDemo::LoadGameAssetNamespaces(CGruntzMgr* ctx, i32 areaArg, i32 a2) {
     ctx->m_strWorldFile.Empty();
-    if (CPlay::LoadGameAssetNamespaces(ctx, a1, a2) == 0) {
+    if (CPlay::LoadGameAssetNamespaces(ctx, areaArg, a2) == 0) {
         return 0;
     }
     m_520 = 0x124f80;

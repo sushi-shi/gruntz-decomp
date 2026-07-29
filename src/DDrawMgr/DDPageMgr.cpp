@@ -246,12 +246,12 @@ void CMoviePlayer::Teardown() {
 }
 
 RVA(0x0017c570, 0xc0)
-i32 CMoviePlayer::OpenLo(const char* src, i32 a2, i32 useDS, POINT* origin, RECT* rect) {
+i32 CMoviePlayer::OpenLo(const char* src, i32 mode, i32 useDS, POINT* origin, RECT* rect) {
     if (!m_initialized) {
         return 0;
     }
     SmackSoundUseDirectSound(m_directSound);
-    m_514 = a2;
+    m_514 = mode;
     u32 flags;
     if (useDS == 1) {
         m_useDS = useDS;
@@ -266,7 +266,7 @@ i32 CMoviePlayer::OpenLo(const char* src, i32 a2, i32 useDS, POINT* origin, RECT
         return 0;
     }
     m_streamOpen = 1;
-    i32 r = Configure(a2, useDS, origin, rect);
+    i32 r = Configure(mode, useDS, origin, rect);
     if (r) {
         return r;
     }
@@ -283,12 +283,12 @@ i32 CMoviePlayer::OpenLo(const char* src, i32 a2, i32 useDS, POINT* origin, RECT
 }
 
 RVA(0x0017c630, 0xc0)
-i32 CMoviePlayer::OpenHi(i32 srcHandle, i32 a2, i32 useDS, POINT* origin, RECT* rect) {
+i32 CMoviePlayer::OpenHi(i32 srcHandle, i32 mode, i32 useDS, POINT* origin, RECT* rect) {
     if (!m_initialized) {
         return 0;
     }
     SmackSoundUseDirectSound(m_directSound);
-    m_514 = a2;
+    m_514 = mode;
     u32 flags;
     if (useDS == 1) {
         flags = 0x100000;
@@ -307,7 +307,7 @@ i32 CMoviePlayer::OpenHi(i32 srcHandle, i32 a2, i32 useDS, POINT* origin, RECT* 
         return 0;
     }
     m_streamOpen = 1;
-    i32 r = Configure(a2, useDS, origin, rect);
+    i32 r = Configure(mode, useDS, origin, rect);
     if (r) {
         return r;
     }
@@ -324,7 +324,14 @@ i32 CMoviePlayer::OpenHi(i32 srcHandle, i32 a2, i32 useDS, POINT* origin, RECT* 
 }
 
 RVA(0x0017c6f0, 0x9c)
-i32 CMoviePlayer::Open(const char* path, i32 a2, i32 a3, i32 a4, POINT* origin, RECT* rect) {
+i32 CMoviePlayer::Open(
+    const char* path,
+    i32 entryId,
+    i32 mode,
+    i32 useDS,
+    POINT* origin,
+    RECT* rect
+) {
     if (m_initialized == 0) {
         return 0;
     }
@@ -335,12 +342,12 @@ i32 CMoviePlayer::Open(const char* path, i32 a2, i32 a3, i32 a4, POINT* origin, 
         m_decodeStore.Close();
         return 0;
     }
-    i32 hi = m_decodeStore.Lookup(static_cast<unsigned int>(a2));
+    i32 hi = m_decodeStore.Lookup(static_cast<unsigned int>(entryId));
     if (!hi) {
         m_decodeStore.Close();
         return 0;
     }
-    if (!OpenHi(hi, a3, a4, origin, rect)) {
+    if (!OpenHi(hi, mode, useDS, origin, rect)) {
         m_decodeStore.Close();
         return 0;
     }

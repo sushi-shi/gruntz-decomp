@@ -24,8 +24,8 @@ RVA(0x000e5ad0, 0x84)
 i32 CAniPlayer::Start(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
-    i32 a2,
-    i32 a3,
+    i32 cmd,
+    i32 tab,
     RECT rc,
     const char* key,
     i32 b0,
@@ -34,7 +34,7 @@ i32 CAniPlayer::Start(
     i32 b3,
     i32 b4
 ) {
-    if (Init(owner, host, a2, a3, rc, key, b0, b1, b2, b3, b4) == 0) {
+    if (Init(owner, host, cmd, tab, rc, key, b0, b1, b2, b3, b4) == 0) {
         return 0;
     }
     m_60 = m_interval;

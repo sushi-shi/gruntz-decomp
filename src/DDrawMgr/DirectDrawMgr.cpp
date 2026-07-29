@@ -13,7 +13,7 @@
 #include <string.h>    // inline strcpy / memcpy / memset (rep stos)
 
 #include <Dsndmgr/SoundBankLoad.h> // g_dot (ex mislabeled .cpp extern)
-#include <DDrawMgr/DdCreateArg.h>
+#include <DDrawMgr/DDSurface.h>    // CDDSurface - CreatePoolItem's arg0 AND its product
 #define DDRAWMGR_FILE "C:\\Proj\\DDrawMgr\\DDRAWMGR.CPP"
 #define DDRAWMGR_H_FILE "C:\\Proj\\DDrawMgr\\ddrawmgr.h"
 
@@ -322,8 +322,8 @@ CDDrawPtrCollections::~CDDrawPtrCollections() {
 
 RVA(0x00141dc0, 0x224)
 i32 CDDrawPtrCollections::CreateDevice(
-    void* unused,
     void* hwnd,
+    void* driverGuid,
     i32 width,
     i32 height,
     i32 bpp,
@@ -335,7 +335,7 @@ i32 CDDrawPtrCollections::CreateDevice(
     if (dd != 0) {
         m_device = dd;
     } else {
-        i32 chr = DirectDrawCreate(static_cast<GUID*>(hwnd), &m_dd1, 0);
+        i32 chr = DirectDrawCreate(static_cast<GUID*>(driverGuid), &m_dd1, 0);
         if (chr != 0) {
             CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x88, chr);
             if (m_lastError == 0) {
@@ -355,6 +355,13 @@ i32 CDDrawPtrCollections::CreateDevice(
         }
     }
 
+    // BUG FIX 2026-07-29 (found by naming): this passed arg2 (the DirectDrawCreate
+    // driver GUID). Retail's SetCooperativeLevel block @0x141e14 is
+    // `mov ecx,[esp+0x90]; push ecx; mov ecx,[esp+0x80]; push ecx` - the second read is
+    // one push later, so it resolves to arg1, not arg2. arg1 is the HWND (and was named
+    // `unused`); arg2 is the GUID DirectDrawCreate @0x141f52 takes. CDDrawPtrCollections::Init
+    // @0x141ff0 corroborates: it calls CreateDevice(itsArg2, g_ddCreateCtx, ...) - the
+    // enumerated driver GUID goes in the SECOND slot.
     i32 hr = m_device->SetCooperativeLevel(static_cast<HWND>(hwnd), coopFlags);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_H_FILE, 0x120, hr);
@@ -411,7 +418,7 @@ i32 CDDrawPtrCollections::CreateDevice(
 RVA(0x00141ff0, 0x6c)
 i32 CDDrawPtrCollections::Init(
     void* factory,
-    void* unused,
+    void* hwnd,
     i32 width,
     i32 height,
     i32 bpp,
@@ -428,7 +435,7 @@ i32 CDDrawPtrCollections::Init(
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0xf4, hr);
         return 0;
     }
-    return CreateDevice(unused, g_ddCreateCtx, width, height, bpp, coop);
+    return CreateDevice(hwnd, g_ddCreateCtx, width, height, bpp, coop);
 }
 
 RVA(0x00142060, 0x9d)
@@ -1047,19 +1054,25 @@ CDdModePair CDDrawPtrCollections::FindBack(i32 k0, i32 k1, i32 k2) {
 // new's /GX cleanup frame (push -1/fs:0 + trylevel) the manual operator-new body
 // omits.  docs/patterns/rezalloc-placement-new-no-eh-frame.md family.
 // ---------------------------------------------------------------------------
-// @identity-TODO (full xref chase run, all techniques dead-end at a void*/RTTI-less
-// nested descriptor):
-//   1. sema xref 0x143630 -> callers CDDrawSurfacePair::Create @0x163c90 / SetGeom @0x164250.
-//   2. mangled sig of CreatePoolItem is ?...@@QAEPAXPAX0@Z -> arg0 is `void*` in retail (no
-//      class name recoverable from the signature).
-//   3. disasm 0x163c90 at the call: arg0 = the DEEPLY-NESTED descriptor
-//      [[[CDDrawSurfacePair+0xc]+0x4]+0x10]+0x2c (5 indirections); the factory invokes only
-//      its +0x08 COM interface's slot 12 (+0x30) Make(outB,outA)
-//      (`mov eax,[arg0+8]; mov edx,[eax]; call [edx+0x30]`).
-//   4. no RTTI COL on the descriptor or its interface (no vptr-by-address stamp).
-// Kept as honest by-offset + abstract-COM-interface models (no fabricated identity) until
-// the CDDrawSurfacePair->+0xc surface-descriptor subsystem is RTTI-pinned. The factory-arg
-// views CDdDescSrc / CDdCreateArg live in <DDrawMgr/DdCreateArg.h>.
+// IDENTITY SETTLED 2026-07-29 (the @identity-TODO here, and the CDdCreateArg /
+// CDdDescSrc views in the deleted <DDrawMgr/DdCreateArg.h>, are gone):
+//   * arg0 is a CDDSurface. Both call sites (CDDrawSurfacePair::Create @0x163c90 and
+//     ::SetGeom @0x164250) pass `OwnerMgr()->m_drawTarget->m_frontPair->m_surface`,
+//     which is declared CDDSurface*. The "deeply-nested descriptor" the old note
+//     described IS that member chain.
+//   * its +0x08 is CDDSurface::m_ddSurface, a real IDirectDrawSurface - not a
+//     RTTI-less mystery interface, which is why no COL was ever found for it.
+//   * the "Make(outB, outA)" slot 12 (+0x30) is IDirectDrawSurface::GetAttachedSurface
+//     (LPDDSCAPS, LPDIRECTDRAWSURFACE FAR*): counting ddraw.h's IDirectDrawSurface
+//     vtable - QueryInterface/AddRef/Release/AddAttachedSurface/AddOverlayDirtyRect/
+//     Blt/BltBatch/BltFast/DeleteAttachedSurface/EnumAttachedSurfaces/
+//     EnumOverlayZOrders/Flip - puts it at exactly index 12.
+//   * `caps` (the ex "kind: 2 or 4; unused by the body") is therefore the DDSCAPS the
+//     query asks for, and DDSCAPS is a single DWORD - which is why retail spends no
+//     frame on it and passes the address of the argument's own home. Both call sites
+//     pass 4 == DDSCAPS_BACKBUFFER: this factory wraps the front surface's attached
+//     BACK BUFFER as a new pool item. The old model left that DWORD UNINITIALISED
+//     (it passed an uninitialised `void* outB`), so the query asked for random caps.
 
 // The pool item is a real CDDSurface (vtable 0x5ef7f0): `new CDDSurface` + slot-1
 // Refresh / `delete` (see CreatePoolItem below).
@@ -1069,11 +1082,12 @@ CDdModePair CDDrawPtrCollections::FindBack(i32 k0, i32 k1, i32 k2) {
 // Residual is the /GX ctor-in-flight EH-state index of the throwing CPtrArray member ctor
 // (the Create7f0_1/CreateA factory-EH family wall; code bytes match, EH-frame state differs).
 RVA(0x00143630, 0x10d)
-void* CDDrawPtrCollections::CreatePoolItem(void* arg0v, i32 kind) {
-    CDdCreateArg* arg = static_cast<CDdCreateArg*>(arg0v);
-    void* outA = 0;
-    void* outB;
-    i32 hr = arg->m_8->Make(&outB, &outA);
+void* CDDrawPtrCollections::CreatePoolItem(void* srcSurfacev, i32 caps) {
+    CDDSurface* srcSurface = static_cast<CDDSurface*>(srcSurfacev); // the sig is PAX in retail
+    IDirectDrawSurface* attached = 0;
+    DDSCAPS want;
+    want.dwCaps = caps;
+    i32 hr = srcSurface->m_ddSurface->GetAttachedSurface(&want, &attached);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x6ae, hr);
         return 0;
@@ -1086,7 +1100,7 @@ void* CDDrawPtrCollections::CreatePoolItem(void* arg0v, i32 kind) {
     // "init"; a failed init `delete`s the item (slot-0 scalar-deleting dtor under the
     // compiler's null-guard).
     CDDSurface* item = new CDDSurface;
-    if (item->Refresh(static_cast<IDirectDrawSurface*>(outA)) == 0) {
+    if (item->Refresh(attached) == 0) {
         delete item;
         return 0;
     }

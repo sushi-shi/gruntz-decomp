@@ -35,7 +35,7 @@ struct LeafCue : public CLoadable {
 
     // The gated play entry (LeafCuePlay.cpp): when the throttle interval elapsed,
     // restamp the clock and forward the 4 args to the player's ConfigureItem.
-    i32 PlayIfElapsed(i32 a0, i32 a1, i32 a2, i32 a3); // 0x1f940 (ret 0x10)
+    i32 PlayIfElapsed(i32 vol, i32 pan, i32 freqPct, i32 loop); // 0x1f940 (ret 0x10)
     // The positional (panned) play entry, ex-`CAniBlitTrigger::TriggerBlit`: derive
     // pan/volume from the cue's screen position against the view centre, then hand
     // them to the same m_10 player. Same class - see the fold note in

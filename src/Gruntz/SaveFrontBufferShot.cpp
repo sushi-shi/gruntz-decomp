@@ -9,7 +9,6 @@
 
 #include <rva.h>
 
-
 RVA(0x00114ec0, 0x27)
 void SaveFrontBufferShot(
     Utils::RegistryHelper* bute,
@@ -17,9 +16,9 @@ void SaveFrontBufferShot(
     i32 w,
     i32 h,
     char* name,
-    i32 arg7
+    i32 saveFlag
 ) {
-    SaveFrontBufferShotImpl(bute, mgr, w, h, name, arg7);
+    SaveFrontBufferShotImpl(bute, mgr, w, h, name, saveFlag);
 }
 
 // @early-stop
@@ -33,7 +32,7 @@ void SaveFrontBufferShotImpl(
     i32 w,
     i32 h,
     char* name,
-    i32 arg7
+    i32 saveFlag
 ) {
     CDDrawSurfaceChildA* pair = mgr->m_world->m_drawTarget->m_frontPair;
     if (pair == 0) {
@@ -44,5 +43,5 @@ void SaveFrontBufferShotImpl(
     }
     // (the CGameRegistry cast is the documented CGruntzMgr/CGameRegistry dual-view of
     // the one 0x24556c singleton - SaveScreenshot's own signature names that view.)
-    SaveScreenshot(pair->m_surface, bute, mgr, w, h, name, arg7);
+    SaveScreenshot(pair->m_surface, bute, mgr, w, h, name, saveFlag);
 }

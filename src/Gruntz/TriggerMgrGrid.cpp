@@ -554,16 +554,21 @@ void CTriggerMgr::GridAction7(i32 a, i32 b) {
     g_gameReg->m_cmdSubMgr->EnqueueSingle(1, a, b, 7, 0, 0, 0, 0);
 }
 
-// 0x6dae0: ApplyTriggerA(a18, col, row, a24, a28, a2c) - look up grid[a18*15+col]; if live,
+// 0x6dae0: ApplyTriggerA(col, row, worldX, worldY) - look up grid[col*15+row]; if live,
 // un-pending and matching the snapped source pos, dispatch the cell's trigger logic by its
 // kind (the 0x13/0xf branch families); update its state and return the applier result. Else
-// -1 / 0. (__stdcall: ret 0x10.) Reconstructed to plateau.
+// -1 / 0. (__thiscall, 4 int args: ?ApplyTriggerA@CTriggerMgr@@QAEHHHHH@Z, ret 0x10 - the
+// old "__stdcall: ret 0x1c / 6 args" note was wrong on both counts.)
+// worldX/worldY named 2026-07-29 from retail: with the frame at entry-0x24, @0x6db0e reads
+// [esp+0x30] and [esp+0x34] (args 3 and 4) and immediately `sar`s each by 5 - the /32 tile
+// snap - exactly as the twin ApplyTriggerB @0x6e120 does with its already-named
+// worldX/worldY. arg1*15+arg2 is the m_grid index, so arg1/arg2 are col/row.
 // @early-stop
 // big branchy trigger-applier (0x4b7 B): the kind-dispatch ladder + the snapped-pos compares
 // pin esi(cell)/edi/ebp differently than retail; the body is structurally faithful but its
 // regalloc diverges across the many branches. topic:wall.
 RVA(0x0006dae0, 0x4b7)
-i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28) {
+i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
     CGrunt* cell = m_grid[col * TM_GRID_COLS + row];
     if (cell == 0 || cell->m_entranceCommitted == 0) {
         return 0;
@@ -581,7 +586,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28) {
     if (k == 0x13) {
         CGrunt* tc = cell;
         if (tc->CanShowStamina() != 0) {
-            tc->RunMoveConfig(row, a28 + 1);
+            tc->RunMoveConfig(row, worldY + 1);
             return 1;
         }
     }

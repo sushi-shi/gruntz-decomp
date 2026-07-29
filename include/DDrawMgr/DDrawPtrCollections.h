@@ -45,6 +45,9 @@ public:
     virtual ~CPoolItemAE8() OVERRIDE;                                        // slot 0  ~ 0x142d40
     virtual i32 Init1(CDDrawPtrCollections*, const DDSURFACEDESC*) OVERRIDE; // slot 2 0x148cc0
     virtual i32 GetPoolKind() OVERRIDE; // slot 6  0x143ce0 (POOLKIND_BLIT47)
+    // (info, width, height, caps, capsExtra, unused6, zBufferBitDepth) - the last four
+    // land in the stack DDSURFACEDESC: caps|capsExtra|DDSCAPS_ZBUFFER into ddsCaps,
+    // zBufferBitDepth into dwZBufferBitDepth; slot 6 is never read.
     virtual i32 Blit47(CDDrawPtrCollections*, i32, i32, i32, i32, i32, i32); // slot 9  0x148c40
 };
 SIZE(0xc0);
@@ -54,13 +57,17 @@ struct CDdModePair; // <DDrawMgr/DirectDrawMgr.h> (the mode-pair the finders fil
 class CDDrawPtrCollections {
 public:
     // --- the DDRAWMGR.CPP method set (ex 'CDDrawPtrCollections' - same object) ---
-    // Device bring-up (__thiscall, 6 args; arg1 unused). If the global DirectDraw
-    // object already exists it reuses it, else DirectDrawCreate + QueryInterface
-    // for IID_IDirectDraw2; then SetCooperativeLevel, GetCaps, an internal setup
-    // pass, optional SetDisplayMode and GetDisplayMode; caches the singleton.
+    // Device bring-up (__thiscall, 6 args). If the global DirectDraw object already
+    // exists it reuses it, else DirectDrawCreate + QueryInterface for IID_IDirectDraw2;
+    // then SetCooperativeLevel, GetCaps, an internal setup pass, optional SetDisplayMode
+    // and GetDisplayMode; caches the singleton.
+    // The first two slots were `a1` (documented "unused") and `hwnd` - BOTH wrong, and
+    // corrected 2026-07-29: retail's SetCooperativeLevel takes arg1 and DirectDrawCreate
+    // takes arg2, so arg1 is the HWND and arg2 the driver GUID. Init @0x141ff0 agrees -
+    // it passes the ENUMERATED driver GUID (g_ddCreateCtx) into the second slot.
     i32 CreateDevice(
-        void* a1,
         void* hwnd,
+        void* driverGuid,
         i32 width,
         i32 height,
         i32 bpp,
@@ -89,8 +96,12 @@ public:
 
     // Internal setup helpers reached from CreateDevice (defined in other DDrawMgr
     // TUs; modeled as no-body externs so their rel32 calls are reloc-masked).
-    void SetupCaps();                           // 0x143240
-    void* CreatePoolItem(void* arg0, i32 kind); // 0x143630  (kind: 2 or 4; unused by the body)
+    void SetupCaps(); // 0x143240
+    // 0x143630 - wrap the surface ATTACHED to `srcSurface` (an IDirectDrawSurface::
+    // GetAttachedSurface query for `caps`) as a new pool item. Both call sites pass
+    // the front pair's CDDSurface and caps == 4 (DDSCAPS_BACKBUFFER). The parameter
+    // stays void* because retail's mangled name is ?...@@QAEPAXPAXH@Z.
+    void* CreatePoolItem(void* srcSurface, i32 caps);
     // Pool/mode comparator - the selection-sort predicate (free __stdcall, no this).
     static i32 __stdcall Compare(void* a, void* b); // 0x1433d0
 
@@ -106,7 +117,7 @@ public:
 
     // Enumerate DirectDraw drivers (DirectDrawEnumerateA callback CreateDirectDrawVia
     // caches g_ddCreateCtx), then bring up the device via CreateDevice.
-    i32 Init(void* factory, void* unused, i32 width, i32 height, i32 bpp, u32 coop); // 0x141ff0
+    i32 Init(void* factory, void* hwnd, i32 width, i32 height, i32 bpp, u32 coop); // 0x141ff0
 
     // m_device->GetAvailableVidMem(&caps, total, free) == 0. (caps by value.)
     i32 GetAvailableVidMem(u32 caps, DWORD* total, DWORD* free); // 0x143810
@@ -155,9 +166,9 @@ public:
         i32 count,
         char* baseName,
         char* suffix,
-        i32 a6,
-        i32 a7
-    );                                                  // 0x142630
+        i32 caps,
+        i32 colorKey
+    );                                                  // 0x142630 (caps/colorKey -> Createa58_3)
     CDDSurface* Createa88_3(i32 a, i32 b, i32 c);       // 0x142730 (vtbl a88, slot 9)
     CDDSurface* Createa88_1(const DDSURFACEDESC* desc); // 0x142880 (vtbl a88, slot 2)
     CDDSurface* Createab8_3(i32 a, i32 b, i32 c);       // 0x142940 (vtbl ab8, slot 9, +538)

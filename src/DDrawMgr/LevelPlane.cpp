@@ -758,12 +758,12 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
 
     // The six geometry pairs Init reads: the three Setup cell-size pairs (m_pairA/B/C
     // @0xb0/0xb8/0xc0) then the three grid rect/origin dim pairs (m_rectA/B/C @0xc8/0xd0/0xd8).
-    i32 p0[2] = {hdr->m_pairA[0], hdr->m_pairA[1]};
-    i32 p1[2] = {hdr->m_pairB[0], hdr->m_pairB[1]};
-    i32 p2[2] = {hdr->m_pairC[0], hdr->m_pairC[1]};
-    i32 p3[2] = {hdr->m_rectA.w, hdr->m_rectA.h};
-    i32 p4[2] = {hdr->m_rectB.w, hdr->m_rectB.h};
-    i32 p5[2] = {hdr->m_rectC.w, hdr->m_rectC.h};
+    i32 cellA[2] = {hdr->m_pairA[0], hdr->m_pairA[1]};
+    i32 cellB[2] = {hdr->m_pairB[0], hdr->m_pairB[1]};
+    i32 cellC[2] = {hdr->m_pairC[0], hdr->m_pairC[1]};
+    i32 sizeA[2] = {hdr->m_rectA.w, hdr->m_rectA.h};
+    i32 sizeB[2] = {hdr->m_rectB.w, hdr->m_rectB.h};
+    i32 sizeC[2] = {hdr->m_rectC.w, hdr->m_rectC.h};
 
     CWwdSpatialMgr* nw = static_cast<CWwdSpatialMgr*>(::operator new(0xb8));
     if (nw) {
@@ -778,7 +778,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
         nw->m_curGrid = 0;
     }
     worker = nw;
-    if (nw->Init(src, &rc, p0, p1, p2, p3, p4, p5) == 0) {
+    if (nw->Init(src, &rc, cellA, cellB, cellC, sizeA, sizeB, sizeC) == 0) {
         CWwdSpatialMgr* w = m_scroll;
         if (w) {
             w->FreeGrids();

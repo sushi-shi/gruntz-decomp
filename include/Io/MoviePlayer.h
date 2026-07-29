@@ -95,15 +95,24 @@ public:
         struct IDirectSound* dsound
     ); // 0x17c3f0
     // ----- ex CMoviePlayer (the Smacker playback half) -------------------------
-    i32 Open(const char* path, i32 a2, i32 a3, i32 a4, POINT* origin, RECT* rect); // 0x17c6f0
-    ~CMoviePlayer();                                                               // 0x038fc0
+    // (path, entryId, mode, useDS, origin, rect): entryId keys the FEC archive lookup,
+    // and mode/useDS are handed on to OpenHi -> Configure(mode, flags, origin, rect).
+    i32 Open(
+        const char* path,
+        i32 entryId,
+        i32 mode,
+        i32 useDS,
+        POINT* origin,
+        RECT* rect
+    );               // 0x17c6f0
+    ~CMoviePlayer(); // 0x038fc0
     // 0x17c2a0. Both args are forwarded verbatim into Init(HWND, DDModeInfo*, u32) at
     // the tail, so they carry Init's types; no caller in .text constrains them otherwise.
     int CreateVideoWindow(DDModeInfo* mode, u32 coopFlags);
-    void Teardown();                                                           // 0x17c510
-    i32 OpenLo(const char* src, i32 a2, i32 useDS, POINT* origin, RECT* rect); // 0x17c570
-    i32 OpenHi(i32 srcHandle, i32 a2, i32 useDS, POINT* origin, RECT* rect);   // 0x17c630
-    i32 Pump(i32 flags, i32 count);                                            // 0x17c790
+    void Teardown();                                                             // 0x17c510
+    i32 OpenLo(const char* src, i32 mode, i32 useDS, POINT* origin, RECT* rect); // 0x17c570
+    i32 OpenHi(i32 srcHandle, i32 mode, i32 useDS, POINT* origin, RECT* rect);   // 0x17c630
+    i32 Pump(i32 flags, i32 count);                                              // 0x17c790
     // 0x17c8e0: render one frame onto `target`, then restore the previous target.
     // arg1 is a SURFACE, not a command - it is null-checked, stored into m_primary
     // (+0x1c) across the Frame() call and restored after (mov ebp,[esi+0x1c] /

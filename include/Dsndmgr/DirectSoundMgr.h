@@ -40,7 +40,7 @@ public:
     i32 SetFrequency(u32 freq); // 0x135880  SetFrequency (caps DSBCAPS_CTRLFREQUENCY)
     i32 SetField2(i32 pct);     // 0x135920  freq-percent + duration recompute
     void ComputeDuration();     // 0x1359a0  m_durationMs = m_sampleCount*1000/m_sampleRate
-    i32 Unlock(void* p1, u32 n1, void* p2, u32 n2); // 0x1359c0
+    i32 Unlock(void* audioPtr1, u32 audioBytes1, void* audioPtr2, u32 audioBytes2); // 0x1359c0
     // The DirectSound out-params are DWORD (`unsigned long`), not `unsigned int`:
     // spelt out so &n binds to LPDWORD directly, and so this header stays Win32-free
     // (same device as m_pan/m_volume below).
@@ -54,10 +54,10 @@ public:
     i32 Lock(
         u32 off,
         u32 bytes,
-        void** p1,
-        unsigned long* n1,
-        void** p2,
-        unsigned long* n2,
+        void** audioPtr1,
+        unsigned long* audioBytes1,
+        void** audioPtr2,
+        unsigned long* audioBytes2,
         u32 flags
     ); // 0x136370  Lock + reacquire-on-DSERR_BUFFERLOST retry
 

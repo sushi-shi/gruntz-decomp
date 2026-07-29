@@ -17,7 +17,7 @@ void SaveFrontBufferShotImpl(
     i32 w,
     i32 h,
     char* name,
-    i32 arg7
-);
+    i32 saveFlag
+); // saveFlag -> SaveScreenshot's own last slot
 
 #endif // GRUNTZ_SAVEFRONTBUFFERSHOT_H

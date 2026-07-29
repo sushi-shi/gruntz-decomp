@@ -30,8 +30,8 @@ DATA(0x0024bdc0)
 i32 g_savedMultiWndProc = 0; // 0x24bdc0
 
 RVA(0x000c1750, 0x88)
-CMultiStartDlg::CMultiStartDlg(CGruntzMgr* a0, CWnd* pParent) : CDialog(0xc5, pParent), m_74(0xa) {
-    m_host = a0;
+CMultiStartDlg::CMultiStartDlg(CGruntzMgr* mgr, CWnd* pParent) : CDialog(0xc5, pParent), m_74(0xa) {
+    m_host = mgr;
     m_6c = 0;
     m_slotList = 0;
     g_multiState = static_cast<CMulti*>(g_gameReg->m_curState);
