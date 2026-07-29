@@ -96,12 +96,11 @@
 
 #define DRAIN_COORDS()                                                                             \
     if (CoordCount() != 0) {                                                                       \
-        CoordNode* n = CoordHeadOf(m_31c);                                                         \
-        while (n != 0) {                                                                           \
-            CoordNode* cur = n;                                                                    \
-            n = cur->m_next;                                                                       \
-            if (cur->m_coord != 0) {                                                               \
-                g_coordPool.Push(cur->m_coord);                                                    \
+        POSITION dpos = m_31c.GetHeadPosition();                                                   \
+        while (dpos != 0) {                                                                        \
+            Coord* cur = static_cast<Coord*>(m_31c.GetNext(dpos));                                 \
+            if (cur != 0) {                                                                        \
+                g_coordPool.Push(cur);                                                             \
             }                                                                                      \
         }                                                                                          \
         m_31c.RemoveAll();                                                                         \
@@ -346,7 +345,7 @@ L_ed006:
 
 L_ed153:
     if (CoordCount() != 0) {
-        Coord* coord = (CoordHeadOf(m_31c))->m_coord;
+        Coord* coord = static_cast<Coord*>(m_31c.GetHead()); // guarded by CoordCount() above
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         BrickzCell* cell = &grid->m_rows[row][col];
@@ -1255,7 +1254,7 @@ L_ed006b:
 
 L_scanb:
     if (CoordCount() != 0) {
-        Coord* coord = (CoordHeadOf(m_31c))->m_coord;
+        Coord* coord = static_cast<Coord*>(m_31c.GetHead()); // guarded by CoordCount() above
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         if (CellTargetable(col, row) != 0) {
@@ -1306,10 +1305,11 @@ L_scanb:
     i32 best = 0x7fffffff;
     i32 bestX = 0;
     i32 bestY = 0;
-    CGruntLiveNode* node = LiveHeadOf(m_tileMgr->m_baseList);
-    while (node != 0) {
-        CGruntPuddle* gg = node->m_entry;
-        node = node->m_next;
+    // CPtrList::GetNext IS this walk inlined (`node = pos; pos = node->pNext;
+    // return node->data`) - the ex-CGruntLiveNode raw-node view spelled out.
+    POSITION pos = m_tileMgr->m_baseList.GetHeadPosition();
+    while (pos != 0) {
+        CGruntPuddle* gg = static_cast<CGruntPuddle*>(m_tileMgr->m_baseList.GetNext(pos));
         if (gg->m_pending == 0) {
             i32 gx = gg->m_tileX;
             i32 gy = gg->m_tileY;
@@ -2060,7 +2060,7 @@ i32 CGrunt::ArrivalScanC() {
 
 L_tailc:
     if (CoordCount() != 0) {
-        Coord* coord = (CoordHeadOf(m_31c))->m_coord;
+        Coord* coord = static_cast<Coord*>(m_31c.GetHead()); // guarded by CoordCount() above
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         BrickzCell* cell = &grid->m_rows[row][col];

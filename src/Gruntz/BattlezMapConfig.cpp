@@ -2513,12 +2513,11 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                     unit->m_31c.RemoveAll();
                 }
                 // AddTail every route node's coord onto the unit's coord list.
-                CoordNode* q = CoordHeadOf(list);
-                while (q != 0) {
-                    CoordNode* c3 = q;
-                    q = q->m_next;
-                    if (c3->m_coord != 0) {
-                        unit->m_31c.AddTail(c3->m_coord);
+                POSITION qp = list.GetHeadPosition();
+                while (qp != 0) {
+                    Coord* c3 = static_cast<Coord*>(list.GetNext(qp));
+                    if (c3 != 0) {
+                        unit->m_31c.AddTail(c3);
                     }
                 }
                 // Re-clamp the board dirty-rect to the board bounds.
@@ -4384,11 +4383,9 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                                     }
                                     unit->m_31c.RemoveAll();
                                 }
-                                CoordNode* p = CoordHeadOf(list);
-                                while (p != 0) {
-                                    CoordNode* cur = p;
-                                    p = p->m_next;
-                                    unit->m_31c.AddTail(cur->m_coord);
+                                POSITION pp = list.GetHeadPosition();
+                                while (pp != 0) {
+                                    unit->m_31c.AddTail(list.GetNext(pp));
                                 }
                                 cand->m_defenderState = 0;
                                 unit->m_defenderState = 5;
@@ -4814,12 +4811,11 @@ i32 CBattlezMapConfig::RouteUnitTo(CGrunt* unit, i32 gx, i32 gy, i32 a4, i32 a5,
         unit->m_31c.RemoveAll();
     }
     // AddTail every new path node's coord onto the unit's path list.
-    CoordNode* p = CoordHeadOf(list);
-    while (p != 0) {
-        CoordNode* cur = p;
-        p = p->m_next;
-        if (cur->m_coord != 0) {
-            unit->m_31c.AddTail(cur->m_coord);
+    POSITION pp = list.GetHeadPosition();
+    while (pp != 0) {
+        Coord* cur = static_cast<Coord*>(list.GetNext(pp));
+        if (cur != 0) {
+            unit->m_31c.AddTail(cur);
         }
     }
     list.RemoveAll();
@@ -4908,12 +4904,11 @@ i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, i32 gx, i32 gy, i32 a4, i32
         unit->m_31c.RemoveAll();
     }
     // AddTail every new route node's coord onto the unit's path list.
-    CoordNode* q = CoordHeadOf(list);
-    while (q != 0) {
-        CoordNode* cur5 = q;
-        q = q->m_next;
-        if (cur5->m_coord != 0) {
-            unit->m_31c.AddTail(cur5->m_coord);
+    POSITION qp = list.GetHeadPosition();
+    while (qp != 0) {
+        Coord* cur5 = static_cast<Coord*>(list.GetNext(qp));
+        if (cur5 != 0) {
+            unit->m_31c.AddTail(cur5);
         }
     }
     list.RemoveAll();
@@ -5312,11 +5307,9 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
         unit->m_31c.RemoveAll();
     }
     // AddTail every new path node's coord onto the unit's path list.
-    CoordNode* p = CoordHeadOf(list);
-    while (p != 0) {
-        CoordNode* cur = p;
-        p = p->m_next;
-        unit->m_31c.AddTail(cur->m_coord);
+    POSITION pp = list.GetHeadPosition();
+    while (pp != 0) {
+        unit->m_31c.AddTail(list.GetNext(pp));
     }
     Coord* tail = (unit->CoordTail())->m_coord;
     unit->m_entrancePxX = (tail->m_x << 5) + 0x10;

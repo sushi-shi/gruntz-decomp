@@ -786,7 +786,9 @@ i32 CGrunt::PathScan() {
     if (CoordCount() == 0) {
         return 1;
     }
-    CoordNode* node = CoordHeadOf(*coordz);
+    // the same MFC walk this function already uses below (0x58015's direct
+    // [pos]/[pos+8] loads) - CPtrList::GetNext inlines to node->pNext + node->data
+    POSITION node = coordz->GetHeadPosition();
 
     i32 col5 = m_object->m_screenX >> 5;
     i32 row5 = m_object->m_screenY >> 5;
@@ -833,9 +835,7 @@ i32 CGrunt::PathScan() {
     i32 hits = 0;
 
     while (node != 0) {
-        CoordNode* cur = node;
-        node = node->m_next;
-        Coord* co = cur->m_coord;
+        Coord* co = static_cast<Coord*>(coordz->GetNext(node));
         if (co != 0) {
             // retail 0x57f21: a cell already carrying the 0x20 mark is skipped
             // UNLESS it is the route's own tail - no `fire` temp, the || just
@@ -866,9 +866,7 @@ i32 CGrunt::PathScan() {
                         // the fresh one - each entry a coord popped off g_coordPool's
                         // free list and filled from the old node.
                         while (node != 0) {
-                            CoordNode* rest = node;
-                            node = node->m_next;
-                            Coord* src = rest->m_coord;
+                            Coord* src = static_cast<Coord*>(coordz->GetNext(node));
                             Coord* fresh = 0;
                             CoordPoolNode* free = g_coordPool.m_freeHead;
                             if (free->m_next != 0) {
