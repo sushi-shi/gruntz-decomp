@@ -74,6 +74,35 @@ an annotated span whose last bytes are not a `ret`/`jmp` terminator — is also 
 3700 swept, almost all benign trailing padding), so a non-terminator tail is a hint to
 measure, not evidence of a bug.
 
+## The cheap pre-check: does OUR table start at retail's table offset?
+
+The two candidates above are worth compiling only when the *code* half is already the
+right length, and that is decidable from the objects in one look — no build needed:
+
+* retail's table start = the `switchdataD_...` **relocation target** in
+  `gruntz sema disasm <rva>` (it is listed in the relocation header);
+* our table start = the offset of the first `$Lnnnnn` label in the function's COMDAT,
+  `llvm-objdump -d build/objdiff/base/<unit>.obj`.
+
+If those two offsets are EQUAL, the code is byte-length-correct and growing the span
+lands the tables on top of each other — expect a jump straight to (or near) 100. If they
+differ, fix the body first; the span change alone will not converge. Measured
+2026-07-29 in one unit: `CDDSurface::Refresh` and `CDDSurface::BlitIntoDesc` both had
+matching offsets (0x1bc, 0x188) and both went to **100.00 EXACT**;
+`CGruntzMgr::BuildMoviePath`'s base table sat at 0x1c8 against retail's 0x1cc, which was
+a real body defect (four missing jump-table entries — its `switch` case values were
+wrong), and only after fixing that did the wider span pay.
+
+Corollary: a function with `switchdata` relocs is worth auditing even at a HIGH score.
+`CGruntzMgr::ReportWorldStatus` sat at 96.81 with a code-only span and went to 99.98 on
+the span alone. Sweep a unit for the family with:
+
+```sh
+for r in $(awk -F, '$3=="<unit>" && $5=="func" {print $1}' build/gen/symbol_names.csv); do
+  gruntz sema disasm $r 2>/dev/null | grep -q switchdata && echo $r
+done
+```
+
 ## What this does NOT fix (measured, so you can stop early)
 
 A body that is genuinely **shorter than retail** scores 0 for a different reason, and
@@ -99,5 +128,22 @@ The first two had `@early-stop` notes asserting the code bytes were already
 byte-identical (proven with `llvm-objdump -dr`). They were right — the bytes were never
 the problem, the span was. Precedent: `CTileActionEvent::MorphByTool` @0x113420 already
 carried `RVA(..., 0x350)` for the same reason.
+
+2026-07-29, second sweep (`ddsurface` / `gruntzmgr`) — note these were NOT 0-scorers, so
+the "list the functions with no `fuzzy_match_percent` key" recipe above misses them
+entirely; the `switchdata`-reloc sweep is what finds them:
+
+| function | rva | span | before | after |
+|---|---|---|---|---|
+| `CDDSurface::Refresh` | 0x13e140 | 0x133 → 0x1a0 | 5.40 | **100.00 EXACT** |
+| `CDDSurface::BlitIntoDesc` | 0x13e2e0 | 0x188 → 0x1f0 | 50.00 | **100.00 EXACT** |
+| `CGruntzMgr::ReportWorldStatus` | 0x90ac0 | 0x1bb → 0x1cc | 96.81 | 99.98 |
+| `CGruntzMgr::BuildMoviePath` | 0x8ff30 | 0x1ca → 0x20c | 88.06 | 96.74 |
+
+`Refresh` is the sharpest case: its `@early-stop` note said writing the switch "with a
+`case 8` makes MSVC emit the same jump-table structure, but ... objdiff scores that 0%",
+and the body had been rewritten as an if/else chain SPECIFICALLY to score. It measured
+5.40 with the jump table and a code-only span, and 100.00 EXACT with the jump table and
+the true extent. Writing the wrong shape to protect a number cost 34 points.
 
 Related: [[jumptable-data-overlap]], [[switch-jumptable-separate-comdat]].

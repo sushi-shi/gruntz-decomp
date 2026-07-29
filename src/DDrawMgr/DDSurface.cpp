@@ -88,7 +88,12 @@ i32 CDDSurface::BlitSurf(void* surf, i32 width, i32 height, i32 bitDepth, i32 ca
     return this->BlitIntoDesc(surf); // slot-8 virtual dispatch (+0x20)
 }
 
-RVA(0x0013e140, 0x133)
+// The span is 0x1a0, not the 0x133 code length: the two inline jump tables + byte index
+// LUTs run to 0x13e2d1 and BlitIntoDesc starts at 0x13e2e0. With the code-only span this
+// function scored 5.4% and its @early-stop note concluded the jump-table lowering "scores
+// 0%", which is why the switches had been rewritten as if/else chains to game the number.
+// docs/patterns/rva-span-must-cover-inline-jump-tables.md.
+RVA(0x0013e140, 0x1a0)
 i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     m_ddSurface = surf;
     i32 i;
@@ -105,14 +110,16 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     i32 bits = m_srcBitDepth;
     m_hasColorKey = 0;
     m_bitDepth = bits;
-    // NOTE: retail emits two MSVC jump tables here (selector = bits-8, range 25),
-    // with the tables placed INLINE in .text after the body. Writing the switch
-    // with a `case 8` makes MSVC emit the same jump-table structure, but the
-    // delinker carves only the 0x133 function body (the inline tables land in a
-    // separate base-obj symbol), so objdiff scores that 0%. The branch-chain form
-    // below is what objdiff can align (code matches through the switch heads);
-    // it is the jump-table plateau, same family as GetErrorString's 96.24%.
+    // The `case 8` arms are load-bearing: retail lowers BOTH switches as MSVC jump
+    // tables (selector = bits-8, `cmp eax,0x18` + the byte index table), byte-for-byte
+    // the same pair BlitIntoDesc emits below. The old branch-chain spelling here (no
+    // `case 8`, and the second switch through a `divisor` local) produced an if-chain
+    // and a `div edi` where retail has `div DWORD PTR [esi+0xb0]` - i.e. it assigned
+    // the member directly.
     switch (bits) {
+        case 8:
+            m_bytesPerRow = m_width;
+            break;
         case 16:
             m_bytesPerRow = m_width * 2;
             break;
@@ -127,42 +134,45 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
             break;
     }
 
-    i32 divisor = 1;
     switch (bits) {
+        case 8:
+            m_bytesPerPixel = 1;
+            break;
         case 16:
-            divisor = 2;
+            m_bytesPerPixel = 2;
             break;
         case 24:
-            divisor = 3;
+            m_bytesPerPixel = 3;
             break;
         case 32:
-            divisor = 4;
+            m_bytesPerPixel = 4;
             break;
         default:
-            divisor = 1;
+            m_bytesPerPixel = 1;
             break;
     }
-    m_bytesPerPixel = divisor;
 
-    m_fullRect.right = m_width; // dwWidth cached after switch
-    m_pixelsPerRow =
-        static_cast<u32>(m_pitch) / static_cast<u32>(m_bytesPerPixel); // lPitch / divisor
+    // statement order is retail's (and BlitIntoDesc's): the divide comes FIRST, so the
+    // `mov ecx,[esi+0x1c]` the switch left behind still holds m_width for `m_fullRect
+    // .right` (`mov [esi+0x88],ecx`) and the imageBytes multiply reuses it as
+    // `imul ecx,eax`. With `right` written before the divide, cl re-colours the whole
+    // tail into eax (`mov [esi+0x88],eax` / `imul eax,[esi+0xac]`).
+    m_pixelsPerRow = static_cast<u32>(m_pitch) / static_cast<u32>(m_bytesPerPixel);
     m_fullRect.left = 0;
     m_fullRect.top = 0;
-    i32 height = m_height;
-    m_fullRect.bottom = height;
-    m_imageBytes = m_bytesPerRow * height;
+    m_fullRect.right = m_width;
+    m_fullRect.bottom = m_height;
+    m_imageBytes = m_height * m_bytesPerRow;
     m_dontOwn = m_dontOwn | 1;
     return 1;
 }
 
-// @early-stop
-// The 0x188-byte function body is instruction-identical to retail. Objdiff stops the
-// normalized base function at the first compiler-emitted switch-table local label
-// ($L26360), so the two inline jump tables and all case bodies score outside the
-// function. The raw COFF body through `ret 4` matches; this is the same
-// jump-table-data carve artifact documented on Refresh above.
-RVA(0x0013e2e0, 0x188)
+// (ex-wall, RETIRED 2026-07-29 - EXACT. The note was right that the body was already
+// instruction-identical and wrong about the remedy: it is not an unfixable carve
+// artifact, it is the RVA() SPAN. 0x188 is the code length; the two inline jump tables
+// + their byte index LUTs run on to 0x13e4d0 where FreeSurfaces starts, so the honest
+// span is 0x1f0. See docs/patterns/rva-span-must-cover-inline-jump-tables.md.)
+RVA(0x0013e2e0, 0x1f0)
 i32 CDDSurface::BlitIntoDesc(void* a) {
     CDDrawPtrCollections* mgr = static_cast<CDDrawPtrCollections*>(a);
     if (mgr->m_device == 0) {
@@ -412,11 +422,6 @@ i32 CDDSurface::Flip(CDDSurface* target) {
 // fresh cache into m_elements and drop the cache again. Both walks compare UNSIGNED.
 // NOTE the first loop's asymmetry, which is retail's own: it bounds the walk with
 // THIS surface's element count but indexes the GLOBAL cache.
-// @early-stop
-// 95.0% (from 2.97%). The only residue is one addressing choice in the refill loop:
-// retail reads m_elements' size through the `lea edi,[ebx+0x94]` array pointer it
-// already materialised for SetSize (`mov eax,[edi+8]`) where cl5 goes back to the
-// this-relative `[ebx+0x9c]`, which also swaps the order of the two argument loads.
 RVA(0x0013e8f0, 0xb0)
 void CDDSurface::ReloadImageCache() {
     u32 i = 0;
@@ -438,7 +443,12 @@ void CDDSurface::ReloadImageCache() {
     u32 j = 0;
     if (static_cast<u32>(g_imageCache.GetSize()) > 0) {
         do {
-            m_elements.SetAtGrow(m_elements.GetSize(), g_imageCache[j]);
+            // MFC's CPtrArray::Add - NOT the hand-spelled SetAtGrow(GetSize(), x) it
+            // used to be. Add is inline `SetAtGrow(m_nSize, x)` on the ARRAY's own
+            // `this`, so retail reuses the `lea edi,[this+0x94]` from the SetSize above
+            // (`mov ecx,edi` + `mov eax,[edi+8]`); spelling it out re-derives the size
+            // this-relative (`[this+0x9c]`) and swaps the two argument loads.
+            m_elements.Add(g_imageCache[j]);
             j++;
         } while (j < static_cast<u32>(g_imageCache.GetSize()));
     }
@@ -1684,32 +1694,34 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
     }
     u32 zbuf = caps & DDSCAPS_ZBUFFER;
     if (zbuf != 0) {
-        char* name;
+        // the strcpy is INSIDE each arm, not a shared one over a `name` pointer: retail
+        // re-materialises `&buf` (`lea edx,[esp+0x10]`) in every arm and only tail-merges
+        // the inline strcpy body itself. Hoisting it to one `strcpy(buf, name)` after the
+        // switch computes &buf once (-6 leas).
+        char buf[32];
         switch (desc->dwZBufferBitDepth) {
             case DDBD_32:
-                name = "DDBD_32";
+                strcpy(buf, "DDBD_32");
                 break;
             case DDBD_16:
-                name = "DDBD_16";
+                strcpy(buf, "DDBD_16");
                 break;
             case DDBD_8:
-                name = "DDBD_8";
+                strcpy(buf, "DDBD_8");
                 break;
             case DDBD_4:
-                name = "DDBD_4";
+                strcpy(buf, "DDBD_4");
                 break;
             case DDBD_2:
-                name = "DDBD_2";
+                strcpy(buf, "DDBD_2");
                 break;
             case DDBD_1:
-                name = "DDBD_1";
+                strcpy(buf, "DDBD_1");
                 break;
             default:
-                name = "Unknown";
+                strcpy(buf, "Unknown");
                 break;
         }
-        char buf[32];
-        strcpy(buf, name);
         DDrawLogLine("Z Buffer bit depth = %s\n", buf);
     }
     if (caps & DDSCAPS_ALPHA) {

@@ -530,8 +530,13 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     // CDDrawWorkerRegistry and CDDrawWorkerRegistry
     // are the same object under two unreconciled names (ResMgr.h already casts this way for
     // its Has/Register/Release siblings), so the call binds to the symbol retail enters.
+    // the sound registry is read into a local BEFORE the first image-registry call:
+    // retail parks it in the callee-saved edi (`push edi; mov edi,[esi+0x28]`) across
+    // that call and enters the first SumField with `mov ecx,edi`. Reading the member
+    // inline instead re-loads `[esi+0x28]` after the call and never touches edi (-4).
+    CDDrawSubMgrLeafScan* snd = w->m_soundRegistry;
     w->m_imageRegistry->SumSizesEqual(0, 1);
-    w->m_soundRegistry->SumField(0);
+    snd->SumField(0);
     w->m_ptrColl->GetCapsChecked();
     w->m_ptrColl->GetCapsChecked();
     w->m_imageRegistry->SumSizesEqual(0, 1);
@@ -924,10 +929,22 @@ void CGruntzMgr::AdvanceFrame(i32 doDraw, i32 /*unused*/) {
     m_sound->StopAll();
 }
 
-RVA(0x0008ff30, 0x1ca)
+// @early-stop
+// 96.7%. Two defects fixed (88.1 -> 96.7): the switch case values (see below) and the
+// RVA() span, which was the code length 0x1ca and now covers the 16-entry inline jump
+// table at 0x900fc (docs/patterns/rva-span-must-cover-inline-jump-tables.md). Residual
+// is in the working-directory probe tail: retail materialises `&path` in ecx BEFORE the
+// FileExists test and tail-merges the two `push &path` paths (`jne` straight to a
+// shared `push ecx`), where cl re-forms the address per path.
+RVA(0x0008ff30, 0x20c)
 CString CGruntzMgr::BuildMoviePath(i32 movie) {
     CString name;
 
+    // The case values are LEVEL numbers, not a dense 0..8 movie index. Decoded from
+    // retail's 16-entry jump table at 0x900fc (selector = movie+1, `cmp eax,0xf`): the
+    // six odd levels 1/3/5/7/9/11 fall through to the default, so the ten arms are
+    // -1, 0, 2, 4, 6, 8, 10, 12, 13, 14. (The old dense 0..8 spelling produced a
+    // 10-entry table and `cmp eax,0x9` - it also silently played the wrong cutscene.)
     switch (movie) {
         case -1:
             name = "Logo.vob";
@@ -935,28 +952,28 @@ CString CGruntzMgr::BuildMoviePath(i32 movie) {
         case 0:
             name = "Gruntz0.vob";
             break;
-        case 1:
+        case 2:
             name = "Gruntz1.vob";
             break;
-        case 2:
+        case 4:
             name = "Gruntz2.vob";
             break;
-        case 3:
+        case 6:
             name = "Gruntz3.vob";
             break;
-        case 4:
+        case 8:
             name = "Gruntz4.vob";
             break;
-        case 5:
+        case 10:
             name = "Gruntz5.vob";
             break;
-        case 6:
+        case 12:
             name = "Gruntz6.vob";
             break;
-        case 7:
+        case 13:
             name = "Gruntz7.vob";
             break;
-        case 8:
+        case 14:
             name = "Gruntz8.vob";
             break;
     }
@@ -1186,7 +1203,7 @@ void CGruntzMgr::Post(i32 code) {
 // ReportError push match retail to the byte. The residual ~3% is the jump-table
 // DATA scored mismatched against the reloc-masked `jmp [eax*4+tbl]` base - the
 // documented jumptable-data-overlap scoring artifact, NOT a code difference.
-RVA(0x00090ac0, 0x1bb)
+RVA(0x00090ac0, 0x1cc)
 void CGruntzMgr::ReportWorldStatus(i32 a) {
     if (m_world == 0) {
         ReportError(0x800a, a);
@@ -1253,9 +1270,17 @@ i32 CGruntzMgr::LoadMonologoSprite() {
         return 0;
     }
     // m_10map IS a CMapStringToOb (Lookup 0x1b8008, mfc_class-proven) -> CObject& out-param.
-    CObject* out = 0;
-    m_world->m_imageRegistry->m_10map.Lookup("GAME_MONOLITH", out);
-    CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
+    // `rec` is declared BEFORE the out-param and the out-param lives in its own block:
+    // retail loads the looked-up pointer straight into ebp (`mov ebp,[esp+0x10]`) and
+    // returns an explicit `xor eax,eax` on the miss. Declaring `out` first instead makes
+    // cl keep it in eax and copy (`mov ebp,eax`), which then recolours the whole
+    // rec->m_minIndex / m_items chain into ecx. Same block device as CheatSkeletonToggle.
+    CDDrawWorker* rec;
+    {
+        CObject* out = 0;
+        m_world->m_imageRegistry->m_10map.Lookup("GAME_MONOLITH", out);
+        rec = static_cast<CDDrawWorker*>(out);
+    }
     if (rec == 0) {
         return 0;
     }
@@ -2038,14 +2063,9 @@ CState* CGruntzMgr::PickPausedThenPlayState() {
 // flag (CGameMgr::m_14) and, when it CHANGES and a sound bank is bound, drives the
 // bank: clearing it stops everything (StopAll); setting it re-launches or stops the
 // current bank depending on its per-bank restart flag (m_pCurrent->m_48).
-// @early-stop
-// ~80% redundant-null-test elision wall: logic byte-exact, the StopAll-at-tail block
-// layout + the m_48 Restart/StopBank split all match. The lone residual is the
-// second `if(cur)` guard before StopBank: retail kept the (provably-true) `test
-// eax,eax; je` re-test of m_pCurrent that our MSVC5 eliminated (it proved cur!=0
-// after the earlier null guard) + a `push 1` schedule shift. Same compiler, no
-// source spelling reinstates the dead test; regalloc/elimination family (see
-// docs/patterns/reread-member-view-pointer.md).
+// (ex-wall, RETIRED 2026-07-29 - now EXACT. The old note called the surviving
+// `if(cur)` re-test a "redundant-null-test elision wall" with "no source spelling
+// reinstates the dead test"; re-reading the MEMBER in the else-if does exactly that.)
 RVA(0x000923b0, 0x47)
 void CGruntzMgr::SetSoundLevelState(i32 loaded) {
     if (loaded == m_musicEnabled) {
@@ -2063,7 +2083,11 @@ void CGruntzMgr::SetSoundLevelState(i32 loaded) {
         }
         if (cur->m_playMode != 0) {
             snd->Restart(1);
-        } else if (cur != 0) {
+        } else if (snd->m_pCurrent != 0) {
+            // the MEMBER re-read, not the cached `cur`: /O2 CSEs the load back into the
+            // same eax but no longer proves the guard true, so retail's second
+            // `test eax,eax / je` survives (the `cur != 0` spelling folds it away and
+            // drops the whole 3-instruction block).
             snd->StopBank(1);
         }
         return;
@@ -2224,24 +2248,21 @@ i32 CGruntzMgr::CountReadyOptionsSlots(i32 anyState) {
 // -------------------------------------------------------------------------
 // CGruntzMgr::FindOptionsSlot (0x092e80; ret 4). Returns the first options slot
 // whose key field (m_18) equals `x`, or 0 when none match.
-// @early-stop
-// ~83% regalloc reg-swap wall: logic + the dual-induction loop (slot ptr in eax,
-// index, +0x238 stride, the per-iteration null guard + m_18 compare) are byte-
-// exact. The residual is the scratch-register coloring - retail keeps the key `x`
-// in ecx and the loop index in edx; our MSVC5 swaps them (x in edx, i in ecx) +
-// the inc/add tail order. No source spelling flips MSVC's register pick here;
-// zero-register-pinning family (docs/patterns/zero-register-pinning.md).
+// (ex-wall, RETIRED 2026-07-29 - now EXACT. The old note filed the x/i register
+// swap under zero-register-pinning "no source spelling flips MSVC's register pick";
+// it was the local DECLARATION ORDER, see the body comment.)
 RVA(0x00092e80, 0x25)
 GruntzPlayer* CGruntzMgr::FindOptionsSlot(i32 x) {
-    GruntzPlayer* slot = m_options;
-    i32 i = 0;
-    do {
+    // Same `&m_options[i]` shape as ClearOptionsSlots: with the slot pointer declared
+    // AFTER the index, retail's colouring falls out (slot=eax, x=ecx, i=edx, and the
+    // `lea` before the arg load). The `slot`-first walking cursor colours x=edx / i=ecx
+    // and loads the arg first.
+    for (i32 i = 0; i < 4; i++) {
+        GruntzPlayer* slot = &m_options[i];
         if (slot && slot->m_slotKey == x) {
             return slot;
         }
-        i++;
-        slot++;
-    } while (i < 4);
+    }
     return 0;
 }
 
@@ -2891,13 +2912,17 @@ void CGruntzMgr::SetSoundVolume(i32 v) {
 
 RVA(0x00092ec0, 0x24)
 void CGruntzMgr::ClearOptionsSlots() {
-    GruntzPlayer* p = m_options;
-    for (i32 i = 4; i != 0; i--) {
-        if (p) {
+    // `&m_options[i]` per iteration, NOT a walking `p++` cursor: retail materialises the
+    // slot address in its own register (`lea esi,[eax-0x24]` / `test esi,esi` / the esi
+    // save-restore pair) while the cursor stays the +0x174 induction variable. A walking
+    // pointer lets /O2 prove `p == m_options + k` and fold the guard into `cmp eax,0x24`,
+    // dropping the lea and the push/pop esi (-4 bytes).
+    for (i32 i = 0; i < 4; i++) {
+        GruntzPlayer* p = &m_options[i];
+        if (p != 0) {
             p->m_liveGate = 0;
             p->m_clearedRound = 0;
         }
-        p++;
     }
 }
 
