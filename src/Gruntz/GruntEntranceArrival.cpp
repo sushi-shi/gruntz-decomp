@@ -286,7 +286,20 @@ void CGrunt::FinalizeStep(char* name) {
 // dead `reason` (+0x444) load/spill (was 81%: source read only col/row, so cl
 // DCE'd reason; retail keeps the whole-struct copy with reason dead-spilled to
 // [esp+0x14]). Residual is the m_value(+0x15c) store schedule + edx/ecx colouring
-// on the first two statements - a scheduling coin-flip.
+// on the first two statements.
+// 2026-07-29: PROVEN not source-reachable. A standalone replica with the real member
+// offsets and this function's prologue shape reproduces our bytes EXACTLY, and 15
+// further spellings through it all emit the same pick - a pose local, a `p = m_38`
+// local, an `old` value local, an `AniCursor&` / `AniCursor*` receiver local (the
+// pointer form is strictly worse: it adds `add ecx,0x1a0`), `this->`-qualified reads,
+// a comma-expression argument, an `m_value` pointer alias, and both statement orders.
+// The one variant that DOES give retail's `mov ecx,[pose]` puts the m_value store
+// AFTER the call, which is semantically wrong. cl allocates the ecx/edx pool in SOURCE
+// STATEMENT order, so the value (statement 1) takes ecx and then the store must precede
+// `lea ecx,<receiver>`; retail's pool starts one phase over. Same TU-cumulative-state
+// class as CDDrawWorkerHost::Save's imul pick. The identical hunk is the ONLY residue in
+// StepEntranceRelatchA (98.80) and LoadVehicleGruntAnimations (98.62) - one lever, four
+// functions, so it is worth re-attacking from the TU-state side, not the spelling side.
 RVA(0x000616e0, 0xa8)
 i32 CGrunt::ResetGeometry() {
     m_value = m_38->m_1a0.m_14;
@@ -459,7 +472,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
 
     CWwdGameObjectA* p = m_38;
     m_value = p->m_1a0.m_14;
-    p->m_1a0.Setup((&m_poseAttack1)[idx]);
+    p->m_1a0.Setup(m_poseAttack[idx]);
 
     CAniElement* desc = m_38->m_1a0.m_14;
     CAniDesc* el =
@@ -478,12 +491,12 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
 
 // ---------------------------------------------------------------------------
 // CGrunt::RearmAttackAnim2()  @0x61bc0  (__thiscall, ret 0)
-// The simple ATTACK2 re-arm: re-latch the "F" anim set, drive the m_poseAttack2
+// The simple ATTACK2 re-arm: re-latch the "F" anim set, drive the m_poseAttack[GRUNT_ATTACK2]
 // geometry, re-stamp the entrance-cell frame, set the +0x214 latch. Returns 0.
 //
 // @early-stop
 // cell-frame scratch-spill plateau: CFG, every member offset, the g_buteTree.Find
-// re-latch, the m_poseAttack2 geometry drive, the first-elem frame read, the
+// re-latch, the m_poseAttack[GRUNT_ATTACK2] geometry drive, the first-elem frame read, the
 // (3*col+row)*0x68 cell-frame index, and the SetAnimFrame call are byte-faithful.
 // Residue = retail loads the cell as a 3-int read and spills the dead cell[2] to a
 // 0xc scratch frame (sub esp,0xc) where cl strips the unused read (no frame), plus
@@ -495,7 +508,7 @@ i32 CGrunt::RearmAttackAnim2() {
 
     CWwdGameObjectA* p = m_38;
     m_value = p->m_1a0.m_14;
-    p->m_1a0.Setup(m_poseAttack2);
+    p->m_1a0.Setup(m_poseAttack[GRUNT_ATTACK2]);
 
     CAniElement* desc = m_38->m_1a0.m_14;
     CAniDesc* el =
@@ -781,7 +794,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             m_objAux->m_1c = ActFindId("P");
             i32 toyIdx = rand() % 2;
             m_value = m_38->m_1a0.m_14;
-            m_38->ApplyGeometryDirect((&m_poseToy1)[toyIdx], 0);
+            m_38->ApplyGeometryDirect(m_poseToy[toyIdx], 0);
 
             CAniElement* desc = m_38->m_1a0.m_14;
             CAniDesc* el = desc->m_records.GetSize() > 0
@@ -862,8 +875,8 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
     // Pick the active toy pose by comparing the two toy-pose timers (m_3c4/m_3c8 ->+0x24)
     // against the elapsed toy timer (m_toyClockLo/m_toyClockHi - clock), then re-stamp on change.
-    i32 t0 = m_poseToy1->m_total; // the +0x24 frame total
-    i32 t1 = m_poseToy2->m_total;
+    i32 t0 = m_poseToy[GRUNT_TOY1]->m_total; // the +0x24 frame total
+    i32 t1 = m_poseToy[GRUNT_TOY2]->m_total;
     i64 elapsed = m_toyClock - static_cast<i64>(static_cast<u32>(g_frameTime));
     i32 cap = static_cast<i32>(elapsed);
     if (elapsed < 0) {
@@ -882,7 +895,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     }
 
     CAniElement* cur = m_38->m_1a0.m_14;
-    CAniElement* want = (&m_poseToy1)[sel];
+    CAniElement* want = m_poseToy[sel];
     if (cur != want) {
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(want);
@@ -920,6 +933,10 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     return 0;
 }
 
+// @early-stop
+// 98.80%. The ONLY residue is the shared `m_value = m_38->m_1a0.m_14; <cursor>.Setup(pose)`
+// ecx/edx pool phase - the same four instructions as ResetGeometry @0x616e0, where the
+// 17-spelling replica proof lives. Not source-reachable; TU-state.
 RVA(0x00062840, 0x25d)
 i32 CGrunt::StepEntranceRelatchA() {
     i32 ready = m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
@@ -966,7 +983,7 @@ i32 CGrunt::StepEntranceRelatchA() {
             m_toyTimeSprite = 0;
         }
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup(m_poseToyBreak);
+        m_38->m_1a0.Setup(m_poseToy[GRUNT_TOY_BREAK]);
         CAniElement* desc = m_38->m_1a0.m_14;
         CAniDesc* elem =
             desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
@@ -1085,24 +1102,24 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
     if (notIdle && cycle == 0) {
         // Re-anchor the idle timer to a randomized IdleDelay window.
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup(m_poseIdle[0]);
+        m_38->m_1a0.Setup(m_poseIdle[GRUNT_IDLE1]);
         m_idleWindow = static_cast<u32>(0x3a98);
         m_idleTimer = static_cast<u32>(static_cast<i32>(g_frameTime));
         i32 n = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530)) + 1;
         m_idleDelay = static_cast<u32>(GruntRand() % n + 0x7530);
         m_idleAnchor = static_cast<u32>(static_cast<i32>(g_frameTime));
         applied = 1;
-    } else if (m_poseIdle[1] == 0) {
+    } else if (m_poseIdle[GRUNT_IDLE2] == 0) {
         // Single geometry source: re-arm it (no flag set).
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup(m_poseIdle[0]);
+        m_38->m_1a0.Setup(m_poseIdle[GRUNT_IDLE1]);
     } else if (cycle == 0) {
         // Already on this source? nothing to do.
-        if (m_38->m_1a0.m_14 == m_poseIdle[0]) {
+        if (m_38->m_1a0.m_14 == m_poseIdle[GRUNT_IDLE1]) {
             goto latch;
         }
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup(m_poseIdle[0]);
+        m_38->m_1a0.Setup(m_poseIdle[GRUNT_IDLE1]);
         {
             i32 d = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530));
             applied = 1;
@@ -1111,7 +1128,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         }
     } else {
         // Cycle among the available sources, with the focused-grunt cue.
-        i32 count = (m_poseIdle[2] == 0) ? 1 : 2;
+        i32 count = (m_poseIdle[GRUNT_IDLE3] == 0) ? 1 : 2;
         i32 idx = GruntRand() % count + 1;
         if (cue != 0) {
             CGruntzMgr* g = g_gameReg;
@@ -1176,7 +1193,7 @@ latch:
     i32 col = m_entranceCell.col;
     i32 row = m_entranceCell.row;
     i32 reason = m_entranceCell.reason;
-    if (m_38->m_1a0.m_14 != m_poseIdle[0]) {
+    if (m_38->m_1a0.m_14 != m_poseIdle[GRUNT_IDLE1]) {
         switch (reason) {
             case 2:
             case 3:
@@ -1277,7 +1294,7 @@ i32 CGrunt::ResolveEntranceArrival() {
     }
 
 tail:
-    if (m_38->m_1a0.m_14 != m_poseIdle[0]) {
+    if (m_38->m_1a0.m_14 != m_poseIdle[GRUNT_IDLE1]) {
         if (m_38->m_1a0.m_28 == 0 && m_38->m_1a0.m_20 != 0) {
             ResetEntranceAnimation(0, 0, 0);
         }
@@ -1489,8 +1506,9 @@ i32 CGrunt::StepArrivalReroll() {
 // ~95.4%: CFG, every member offset, the 64-bit elapsed-time compares, all three
 // visibility gates + cue ids, and the kind dispatch are byte-faithful. GruntStrGetBuffer
 // is now the real __thiscall CString::GetBuffer(this=&m_448) (`lea ecx; push 0; call`).
-// Residue = the toy-break-setup edx/eax push-order + elapsed `xor` register coin-flips
-// (the documented regalloc tail).
+// Residue (98.62%) = the shared `m_value = m_38->m_1a0.m_14; ApplyGeometryDirect(pose,0)`
+// ecx/edx pool phase, the same four instructions as ResetGeometry @0x616e0 (17-spelling
+// replica proof there). Not source-reachable; TU-state.
 RVA(0x00063db0, 0x32f)
 i32 CGrunt::LoadVehicleGruntAnimations() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
@@ -1535,7 +1553,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
             SetEntrancePos(1, 1);
             m_entranceStamped = 1;
             m_value = m_38->m_1a0.m_14;
-            m_38->ApplyGeometryDirect(m_poseToyBreak, 0);
+            m_38->ApplyGeometryDirect(m_poseToy[GRUNT_TOY_BREAK], 0);
 
             CAniElement* desc = m_38->m_1a0.m_14;
             CAniDesc* elem = desc->m_records.GetSize() > 0
@@ -1943,7 +1961,7 @@ tail:
     }
 
     m_combatActive = 0;
-    CAniElement* pose = (&m_poseStruck1)[struckPose];
+    CAniElement* pose = m_poseStruck[struckPose];
     m_value = m_38->m_1a0.m_14;
     m_38->m_1a0.Setup(pose);
     i32 frame;
@@ -2165,7 +2183,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     }
 
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup((&m_poseItem)[poseIdx]);
+    m_38->m_1a0.Setup(m_poseItem[poseIdx]);
 
     GruntEntranceCell cell = m_entranceCell;
     i32 col = cell.row + cell.col * 2;

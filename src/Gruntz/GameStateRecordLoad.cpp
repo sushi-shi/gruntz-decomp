@@ -26,8 +26,7 @@ static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 
         obj = 0;                                                                                   \
         void* r;                                                                                   \
         if (MapLookupById(dir->m_childGroup->m_map48, id, obj) != 0 && obj != 0) {                 \
-            r = ((static_cast<CGameObject*>(obj))->GetClassId() == CLASSID_SERIALREF) ? obj      \
-                                                                                           : 0;    \
+            r = ((static_cast<CGameObject*>(obj))->GetClassId() == CLASSID_SERIALREF) ? obj : 0;   \
         } else {                                                                                   \
             r = 0;                                                                                 \
         }                                                                                          \
@@ -112,22 +111,22 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
 
     // 18 name-ref fields (0x394..0x3d8 step 4, unrolled).
     NAMEREF(m_poseWalk);
-    NAMEREF(m_poseAttack1);
-    NAMEREF(m_poseAttack2);
+    NAMEREF(m_poseAttack[GRUNT_ATTACK1]);
+    NAMEREF(m_poseAttack[GRUNT_ATTACK2]);
     NAMEREF(m_poseAttackIdle);
-    NAMEREF(m_poseStruck1);
-    NAMEREF(m_poseStruck2);
-    NAMEREF(m_poseIdle[0]);
-    NAMEREF(m_poseIdle[1]);
-    NAMEREF(m_poseIdle[2]);
-    NAMEREF(m_poseIdle4);
-    NAMEREF(m_poseIdle5);
+    NAMEREF(m_poseStruck[GRUNT_STRUCK1]);
+    NAMEREF(m_poseStruck[GRUNT_STRUCK2]);
+    NAMEREF(m_poseIdle[GRUNT_IDLE1]);
+    NAMEREF(m_poseIdle[GRUNT_IDLE2]);
+    NAMEREF(m_poseIdle[GRUNT_IDLE3]);
+    NAMEREF(m_poseIdle[GRUNT_IDLE4]);
+    NAMEREF(m_poseIdle[GRUNT_IDLE5]);
     NAMEREF(m_poseDeath);
-    NAMEREF(m_poseToy1);
-    NAMEREF(m_poseToy2);
-    NAMEREF(m_poseToyBreak);
-    NAMEREF(m_poseItem);
-    NAMEREF(m_poseItem2);
+    NAMEREF(m_poseToy[GRUNT_TOY1]);
+    NAMEREF(m_poseToy[GRUNT_TOY2]);
+    NAMEREF(m_poseToy[GRUNT_TOY_BREAK]);
+    NAMEREF(m_poseItem[GRUNT_ITEM1]);
+    NAMEREF(m_poseItem[GRUNT_ITEM2]);
     NAMEREF(m_pickupGeoSrc);
 
     // ~100 plain scalar/struct reads (in retail order).

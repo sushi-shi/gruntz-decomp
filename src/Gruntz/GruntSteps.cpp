@@ -1334,7 +1334,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseAttack1;
+        CAniElement* id = m_poseAttack[GRUNT_ATTACK1];
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1343,7 +1343,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseAttack2;
+        CAniElement* id = m_poseAttack[GRUNT_ATTACK2];
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1361,7 +1361,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseStruck1;
+        CAniElement* id = m_poseStruck[GRUNT_STRUCK1];
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1370,7 +1370,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseStruck2;
+        CAniElement* id = m_poseStruck[GRUNT_STRUCK2];
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1379,7 +1379,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseIdle[0];
+        CAniElement* id = m_poseIdle[GRUNT_IDLE1];
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1388,7 +1388,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseIdle[1];
+        CAniElement* id = m_poseIdle[GRUNT_IDLE2];
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1397,7 +1397,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseIdle[2];
+        CAniElement* id = m_poseIdle[GRUNT_IDLE3];
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1406,7 +1406,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseIdle4;
+        CAniElement* id = m_poseIdle[GRUNT_IDLE4];
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1415,7 +1415,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseIdle5;
+        CAniElement* id = m_poseIdle[GRUNT_IDLE5];
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1433,7 +1433,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseToy1;
+        CAniElement* id = m_poseToy[GRUNT_TOY1];
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1442,7 +1442,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseToy2;
+        CAniElement* id = m_poseToy[GRUNT_TOY2];
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1451,7 +1451,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseToyBreak;
+        CAniElement* id = m_poseToy[GRUNT_TOY_BREAK];
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1460,7 +1460,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseItem;
+        CAniElement* id = m_poseItem[GRUNT_ITEM1];
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }
@@ -1469,7 +1469,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     g_serialCounter++;
     memset(buf, 0, 0x80);
     {
-        CAniElement* id = m_poseItem2;
+        CAniElement* id = m_poseItem[GRUNT_ITEM2];
         if (id) {
             strcpy(buf, mgr->m_animRegistry->KeyOfValue(static_cast<CObject*>(id)));
         }

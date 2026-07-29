@@ -262,6 +262,39 @@ union CoordPos {
     CoordNode* m_node; // the same node, with its +8 data slot typed Coord*
 };
 
+// Slot names for CGrunt's pose ARRAYS (m_poseAttack/m_poseStruck/m_poseIdle/
+// m_poseToy/m_poseItem below). The arrays are binary-proven by the ctor's fill
+// expansion; these keep the retail bute-key suffix ("_ATTACK1", "_TOY-BREAK", ...)
+// readable at every subscript instead of a bare 0/1/2.
+typedef enum GruntAttackPose {
+    GRUNT_ATTACK1 = 0,
+    GRUNT_ATTACK2 = 1,
+} GruntAttackPose;
+
+typedef enum GruntStruckPose {
+    GRUNT_STRUCK1 = 0,
+    GRUNT_STRUCK2 = 1,
+} GruntStruckPose;
+
+typedef enum GruntIdlePose {
+    GRUNT_IDLE1 = 0,
+    GRUNT_IDLE2 = 1,
+    GRUNT_IDLE3 = 2,
+    GRUNT_IDLE4 = 3,
+    GRUNT_IDLE5 = 4,
+} GruntIdlePose;
+
+typedef enum GruntToyPose {
+    GRUNT_TOY1 = 0,
+    GRUNT_TOY2 = 1,
+    GRUNT_TOY_BREAK = 2,
+} GruntToyPose;
+
+typedef enum GruntItemPose {
+    GRUNT_ITEM1 = 0,
+    GRUNT_ITEM2 = 1,
+} GruntItemPose;
+
 class CGrunt : public CMovingLogic, public CWapX {
 public:
     // vtable overrides in slot order (see the base chain above):
@@ -687,21 +720,21 @@ public:
     // The per-pose animation-name index table (LoadAnimNameTable @0x49c60 fills
     // it from "GRUNTZ_"+m_animSetName+"_<POSE>" lookups). The entrance code reads
     // the IDLE1/2/3 slots (m_poseIdle/m_3b0/m_3b4) as its geometry-source triple.
+    // The five multi-slot poses are ARRAYS, not numbered scalars - binary-proven by
+    // the ctor's zero-init (0x47a10): retail zeroes 0x394/0x3a0/0x3c0 as individual
+    // stores off the pooled edi zero, but emits a strength-reduced ROW POINTER plus a
+    // fresh `xor eax,eax` for exactly five runs - [0x398..0x39c] (2), [0x3a4..0x3a8]
+    // (2), [0x3ac..0x3bc] (5), [0x3d0..0x3d4] (2) and [0x3c4..0x3cc] (3). That
+    // `lea edx,<base> / mov [edx+k*4],eax` shape is cl's fill expansion for a loop
+    // over an array; individual member assignments never produce it.
     CAniElement* m_poseWalk;       // +0x394 (_WALK)
-    CAniElement* m_poseAttack1;    // +0x398 (_ATTACK1)
-    CAniElement* m_poseAttack2;    // +0x39c (_ATTACK2)
+    CAniElement* m_poseAttack[2];  // +0x398 (_ATTACK1/_ATTACK2)
     CAniElement* m_poseAttackIdle; // +0x3a0 (_ATTACK-IDLE)
-    CAniElement* m_poseStruck1;    // +0x3a4 (_STRUCK1)
-    CAniElement* m_poseStruck2;    // +0x3a8 (_STRUCK2)
-    CAniElement* m_poseIdle[3];    // +0x3ac (_IDLE1/2/3) (entrance geometry-source triple [0..2])
-    CAniElement* m_poseIdle4;      // +0x3b8 (_IDLE4)
-    CAniElement* m_poseIdle5;      // +0x3bc (_IDLE5)
-    CAniElement* m_poseDeath;      // +0x3c0 (_DEATH)
-    CAniElement* m_poseToy1;       // +0x3c4 (_TOY1)
-    CAniElement* m_poseToy2;       // +0x3c8 (_TOY2)
-    CAniElement* m_poseToyBreak;   // +0x3cc (_TOY-BREAK)
-    CAniElement* m_poseItem;       // +0x3d0 (_ITEM)
-    CAniElement* m_poseItem2;      // +0x3d4 (_ITEM2)
+    CAniElement* m_poseStruck[2];  // +0x3a4 (_STRUCK1/_STRUCK2)
+    CAniElement* m_poseIdle[5]; // +0x3ac (_IDLE1..5; [0..2] is the entrance geometry-source triple)
+    CAniElement* m_poseDeath;   // +0x3c0 (_DEATH)
+    CAniElement* m_poseToy[3];  // +0x3c4 (_TOY1/_TOY2/_TOY-BREAK)
+    CAniElement* m_poseItem[2]; // +0x3d0 (_ITEM/_ITEM2)
     // +0x3d8  the resolved pickup animation (LoadPickupSprites looks it up in the
     // anim registry, Setup() consumes it, Serialize writes its registry name).
     CAniElement* m_pickupGeoSrc;
