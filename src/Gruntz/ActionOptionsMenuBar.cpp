@@ -221,8 +221,8 @@ i32 CActionOptionsMenuBar::Render() {
     if (!m_active) {
         return 1;
     }
-    i32 sx = m_screenX;
-    i32 sy = m_screenY;
+    LONG sx = m_screenX;
+    LONG sy = m_screenY;
     (g_gameReg->m_world->m_level->m_mainPlane)->WrapCoord(&sx, &sy);
 
     RECT r = g_gameReg->m_world->m_level->m_planeCtx;

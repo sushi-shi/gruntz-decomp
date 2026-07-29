@@ -18,27 +18,29 @@
 // A whole-function regalloc/scheduling choice (which physical reg holds py); not
 // source-steerable. Documented scheduling wall (matching-patterns.md §entropy).
 RVA(0x0000a000, 0xac)
-void CDDrawWorkerHost::WrapCoord(i32* px, i32* py) {
+void CDDrawWorkerHost::WrapCoord(LONG* px, LONG* py) {
     if (m_flags & 0x4) { // wrap X
-        i32 x = *px;
+        LONG x = *px;
         if (x < 0) {
             *px = m_wrapW + x;
         } else if (x >= m_wrapW) {
             *px = x - m_wrapW;
         }
-        if (m_viewRect.right >= m_wrapW && *px < m_viewRect.left && *px <= m_viewRect.right - m_wrapW) {
+        if (m_viewRect.right >= m_wrapW && *px < m_viewRect.left
+            && *px <= m_viewRect.right - m_wrapW) {
             *px = m_wrapW + *px;
         }
     }
 
     if (m_flags & 0x8) { // wrap Y
-        i32 y = *py;
+        LONG y = *py;
         if (y < 0) {
             *py = m_wrapH + y;
         } else if (y >= m_wrapH) {
             *py = y - m_wrapH;
         }
-        if (m_viewRect.bottom >= m_wrapH && *py < m_viewRect.top && *py <= m_viewRect.bottom - m_wrapH) {
+        if (m_viewRect.bottom >= m_wrapH && *py < m_viewRect.top
+            && *py <= m_viewRect.bottom - m_wrapH) {
             *py = m_wrapH + *py;
         }
     }

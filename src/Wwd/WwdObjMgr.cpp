@@ -708,7 +708,7 @@ i32 __stdcall BoxesOverlap(CGameObject* a1, CGameObject* a2) {
 static char s_dbgRle[] = "RLE";
 static char s_dbgVid[] = "VID";
 static char s_dbgSys[] = "SYS";
-static char s_dbgUnknown[] = "???";
+static char s_dbgNoCaps[] = "???"; // neither VIDEOMEMORY nor SYSTEMMEMORY in the caps
 
 // ---------------------------------------------------------------------------
 // 0x15a210 - the per-object debug-GEOMETRY overlay (twin of DrawObjectCounts below).
@@ -745,15 +745,8 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                     rc.top = obj->m_area.top + oy;
                     rc.right = obj->m_area.right + ox;
                     rc.bottom = obj->m_area.bottom + oy;
-                    // language-forced (LONG* -> int*): see the same seam in DrawObjectCounts below
-                    view->WrapCoord(
-                        reinterpret_cast<i32*>(&rc.left),
-                        reinterpret_cast<i32*>(&rc.top)
-                    );
-                    view->WrapCoord(
-                        reinterpret_cast<i32*>(&rc.right),
-                        reinterpret_cast<i32*>(&rc.bottom)
-                    );
+                    view->WrapCoord(&rc.left, &rc.top);
+                    view->WrapCoord(&rc.right, &rc.bottom);
                     drawHost->DrawBox(&rc, 0xff);
                 }
             } while (pos != 0);
@@ -774,15 +767,8 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                     rc.top = obj->m_switchRect.top + oy;
                     rc.right = obj->m_switchRect.right + ox;
                     rc.bottom = obj->m_switchRect.bottom + oy;
-                    // language-forced (LONG* -> int*): see the same seam in DrawObjectCounts below
-                    view->WrapCoord(
-                        reinterpret_cast<i32*>(&rc.left),
-                        reinterpret_cast<i32*>(&rc.top)
-                    );
-                    view->WrapCoord(
-                        reinterpret_cast<i32*>(&rc.right),
-                        reinterpret_cast<i32*>(&rc.bottom)
-                    );
+                    view->WrapCoord(&rc.left, &rc.top);
+                    view->WrapCoord(&rc.right, &rc.bottom);
                     drawHost->DrawBox(&rc, 0xff);
                 }
             } while (pos != 0);
@@ -803,15 +789,8 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                     rc.top = obj->m_extent.top + oy;
                     rc.right = obj->m_extent.right + ox;
                     rc.bottom = obj->m_extent.bottom + oy;
-                    // language-forced (LONG* -> int*): see the same seam in DrawObjectCounts below
-                    view->WrapCoord(
-                        reinterpret_cast<i32*>(&rc.left),
-                        reinterpret_cast<i32*>(&rc.top)
-                    );
-                    view->WrapCoord(
-                        reinterpret_cast<i32*>(&rc.right),
-                        reinterpret_cast<i32*>(&rc.bottom)
-                    );
+                    view->WrapCoord(&rc.left, &rc.top);
+                    view->WrapCoord(&rc.right, &rc.bottom);
                     drawHost->DrawBox(&rc, 0xff);
                 }
             } while (pos != 0);
@@ -888,11 +867,8 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                 rc.top = box.top;
                 rc.right = box.right;
                 rc.bottom = box.bottom;
-                view->WrapCoord(reinterpret_cast<i32*>(&rc.left), reinterpret_cast<i32*>(&rc.top));
-                view->WrapCoord(
-                    reinterpret_cast<i32*>(&rc.right),
-                    reinterpret_cast<i32*>(&rc.bottom)
-                );
+                view->WrapCoord(&rc.left, &rc.top);
+                view->WrapCoord(&rc.right, &rc.bottom);
                 if (fr->m_owned != 0) {
                     drawHost->DrawLabel(&rc, s_dbgRle);
                 } else {
@@ -916,7 +892,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                         if (sys != 0) {
                             drawHost->DrawLabel(&rc, s_dbgSys);
                         } else {
-                            drawHost->DrawLabel(&rc, s_dbgUnknown);
+                            drawHost->DrawLabel(&rc, s_dbgNoCaps);
                         }
                     }
                 }
@@ -987,17 +963,10 @@ void CDDrawChildGroup::DrawObjectCounts() {
         rc.top = wt - view->m_viewRect.top + view->m_bounds50.top;
         // Retail (0x15a712) hands WrapCoord `lea ecx,[esp+0x20]` / `lea eax,[esp+0x24]`
         // - i.e. &rc.right and &rc.bottom of the SAME rect it then passes to
-        // DrawCount(RECT*, n) - so the two out-params are genuinely this RECT's
-        // right/bottom fields. Nothing in the image names WrapCoord's parameter TYPE
-        // (no PDB; its mangled name here is our own label), and int*/long* are
-        // codegen-identical, so the choice is a source-side one: its other EIGHT call
-        // sites (CImage.cpp) pass plain `i32 x, y` locals with no cast, so the
-        // declaration is i32* and the LONG*->int* conversion - language-forced,
-        // C++ keeps int and long distinct at identical width - lands at THIS one site.
-        view->WrapCoord(
-            reinterpret_cast<i32*>(&rc.right), // language-forced (LONG* -> int*)
-            reinterpret_cast<i32*>(&rc.bottom) // language-forced (LONG* -> int*)
-        );
+        // DrawCount(RECT*, n), which passes it on to DrawTextA. So the two out-params
+        // are this Win32 RECT's own LONG fields, which is what fixes WrapCoord's
+        // declaration at LONG* (see <DDrawMgr/DDrawWorkerHost.h>) - no cast anywhere.
+        view->WrapCoord(&rc.right, &rc.bottom);
         drawHost->DrawCount(&rc, obj->m_sortKey);
     } while (pos != 0);
 }

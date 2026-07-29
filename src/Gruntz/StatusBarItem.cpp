@@ -58,7 +58,7 @@ i32 CStatusBarItem::Setup(
     i32 a3,
     i32 a4,
     RECT rc,
-    i32 a9,
+    const char* key,
     i32 a10
 ) {
     if (host == 0 || owner == 0) {

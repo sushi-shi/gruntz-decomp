@@ -114,7 +114,15 @@ public:
     // advances it by the byte count ReadPlaneObjects returns.
     i32 RebuildPlanes(const char* base, i32 count);
     i32 ReadPlaneObjects(const PlaneObjectRecord* src);
-    void WrapCoord(i32* px, i32* py); // 0x00a000 wrap+transform a world coord
+    // 0x00a000 wrap+transform a world coord. The out-params are LONG*, not i32*:
+    // DrawObjectCounts (0x15a712) hands this `lea ecx,[esp+0x20]` / `lea eax,[esp+0x24]`
+    // - the .right/.bottom of the very rect it then passes to DrawCount (0x164380),
+    // which passes it on to DrawTextA. That makes the rect a genuine Win32 RECT, so
+    // its fields are LONG; C++ keeps long* and int* distinct at identical width, so an
+    // i32* declaration would force a reinterpret at all six WwdObjMgr corner sites.
+    // The remaining callers take the address of a plain coordinate local, whose type
+    // the image cannot name - so they follow the declaration, and nothing casts.
+    void WrapCoord(LONG* px, LONG* py);
     // `out` is the {x,y} pair the body fills (out[0]/out[1]); its one caller hands it a
     // Coord, so the pair type goes on the declaration instead of at the call.
     void SnapToTileCenter(struct Coord* out, i32 x, i32 y); // 0x0311e0 snap (x,y) to tile centre

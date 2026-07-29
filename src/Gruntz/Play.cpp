@@ -7013,16 +7013,20 @@ i32 CPlay::SetEffectSpriteDurations() {
 // @dead-code
 // zero-ref (gruntz sema xref --tree): the dev overlay, kept without /OPT:REF.
 // @early-stop
-// 99.10%. Everything is byte-identical except FOUR bytes in the rect block: retail
-// keeps exactly ONE of the `lr` copy's stores (lr.top, at scratch+4) and forwards the
-// other three straight into dr; our cl keeps TWO (lr.left and lr.top). The remaining
-// byte-compare rows past that point are the 4-byte shift it causes plus the
-// reloc-masked `mov ecx,ds:<CString>` operands, which objdiff scores as equal.
-// Writing only the store that survives would match, but that is transcribing cl's
-// dead-store elimination back into the source rather than the copy the dev wrote - so
-// the honest four-field copy stays. (Measured alternatives: CopyRect(&lr,..) emits a
-// real `call ds:[CopyRect]` retail does not have, 98.71%; a genuine `RECT lr` local
-// does not colour onto the dead scratch and costs 0x10 of frame, 94.72%.)
+// 94.72%. STACK-COLOURING wall, and the residual is the allocator's, not the source's.
+// Retail's `lr` lives ON the sprintf scratch buffer: the same slot is a sprintf
+// destination earlier in the body (`lea edx,[esp+0x30]; push 0x612718; call sprintf`),
+// and because that region is address-exposed one of lr's stores survives (lr.top, at
+// scratch+4) while the other three forward straight into dr. Our cl gives `lr` a fresh
+// 0x10 of frame and dead-store-eliminates it entirely, which shifts every later
+// [esp+N] displacement. Nothing in the source expresses that overlay - it is MSVC5's
+// stack allocator reusing a dead array - so there is no spelling to reach for.
+// This previously scored 99.10% by aliasing the scratch buffer as the rect
+// (`RECT* lr = reinterpret_cast<RECT*>(scratch)`), which forced the colouring. That was
+// a mis-model, not a discovery: `scratch` is a char[0x40] sprintf buffer and no dev
+// declared a RECT over it. The honest local stays and the 4.4 points go.
+// (Other measured alternative: CopyRect(&lr,..) emits a real `call ds:[CopyRect]`
+// retail does not have, 98.71%.)
 RVA(0x000cf0a0, 0x567)
 void CPlay::DrawDebugStatsFull() {
     if (g_debugDisplayFlags & 0x20) {
@@ -7104,21 +7108,19 @@ void CPlay::DrawDebugStatsFull() {
     // The query rect is the level's plane context, read in place (a real RECT -
     // <DDrawMgr/DDrawWorkerHost.h> typedefs LevelCoordRect to tagRECT).
     // Field-by-field, NOT CopyRect: retail inlines the four loads (a CopyRect call
-    // emits `push;push;call ds:[CopyRect]` instead). And `lr` must be a real local whose
-    // address is never taken - cl then colours it onto the by-now dead sprintf scratch,
-    // which is what keeps the frame at 0x298 and leaves the one surviving
-    // `mov [esp+0x30],top` store at scratch+4 (the other three forward into dr).
+    // emits `push;push;call ds:[CopyRect]` instead). Retail's own `lr` gets coloured
+    // onto the by-now dead sprintf scratch - see the stack-colouring note on the RVA.
     RECT* src = &m_world->m_level->m_planeCtx;
-    RECT* lr = reinterpret_cast<RECT*>(scratch);
-    lr->left = src->left;
-    lr->top = src->top;
-    lr->right = src->right;
-    lr->bottom = src->bottom;
+    RECT lr;
+    lr.left = src->left;
+    lr.top = src->top;
+    lr.right = src->right;
+    lr.bottom = src->bottom;
     RECT dr;
-    dr.left = lr->left;
-    dr.top = lr->bottom - 0x1c;
-    dr.right = lr->right;
-    dr.bottom = lr->bottom;
+    dr.left = lr.left;
+    dr.top = lr.bottom - 0x1c;
+    dr.right = lr.right;
+    dr.bottom = lr.bottom;
     DrawTextA(hdc, buf, -1, &dr, 0x20);
 
     if (g_debugDisplayFlags & 0x8) {

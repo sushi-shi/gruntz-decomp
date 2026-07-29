@@ -45,7 +45,7 @@ i32 CSBI_WellGoo::Setup(
     i32 cmd,
     i32 tab,
     RECT rc,
-    i32 key,
+    const char* key,
     i32 fillScale
 ) {
     // Every bail is a `goto fail` onto ONE shared epilogue - retail has a single
@@ -88,11 +88,8 @@ i32 CSBI_WellGoo::Setup(
         node = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
 
-    // The registry key arrives as an i32 - retail's own mangling for this slot ends
-    // `UtagRECT@@HH@Z`, i.e. the two trailing parameters really are declared `int` - so
-    // the string type has to be re-applied at the one place it is used as one.
     found = 0;
-    m_24->m_imageRegistry->m_10map.Lookup(reinterpret_cast<LPCTSTR>(key), found);
+    m_24->m_imageRegistry->m_10map.Lookup(key, found);
     set = static_cast<CDDrawWorker*>(found);
     m_frame = (set != 0) ? set->GetAt(4) : 0;
     if (m_frame == 0) {
@@ -110,7 +107,7 @@ i32 CSBI_WellGoo::Setup(
     }
 
     found = 0;
-    m_24->m_imageRegistry->m_10map.Lookup(reinterpret_cast<LPCTSTR>(key), found);
+    m_24->m_imageRegistry->m_10map.Lookup(key, found);
     set = static_cast<CDDrawWorker*>(found);
     m_baseFrame = (set != 0) ? set->GetAt(2) : 0;
     if (m_baseFrame == 0) {
@@ -124,7 +121,7 @@ i32 CSBI_WellGoo::Setup(
     }
 
     found = 0;
-    m_24->m_imageRegistry->m_10map.Lookup(reinterpret_cast<LPCTSTR>(key), found);
+    m_24->m_imageRegistry->m_10map.Lookup(key, found);
     set = static_cast<CDDrawWorker*>(found);
     m_fgFrame = (set != 0) ? set->GetAt(3) : 0;
     if (m_fgFrame == 0) {

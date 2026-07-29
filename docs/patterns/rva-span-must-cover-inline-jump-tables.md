@@ -54,6 +54,26 @@ Verify two things before you commit it:
    and the best-scoring one, but the base-COMDAT value is a real alternative when our
    tables and retail's differ in size.
 
+## The span is MEASURED, not assumed — growing it can make things WORSE
+
+"Extend to the next function's start" is not the rule; it is one of two candidates.
+It is right only when the gap between the code and the next function holds **nothing but
+this function's own tables** (`DispatchMsg`, `ComputeCellFlags`). When the gap holds more,
+carrying it in makes the two sides carve *different* content and the score collapses.
+
+Measured 2026-07-29, all three in `tileswitchlogic`, all three reverted:
+
+| function | base COMDAT | extent-to-next | verdict |
+|---|---|---|---|
+| `CTileActionEvent::SetActionCode` | 0xf0 → **66.6** | 0x140 → 47.2 | COMDAT wins |
+| `CTileActionEvent::Process` | 0x35e → **58.9** | 0x540 → 47.4 | COMDAT wins |
+| `CTileActionEvent::MorphByTool` | 0x350 → **92.1** | 0x440 → 53.9 | COMDAT wins |
+
+So: compile both candidates and take the number. The defect these three were found by —
+an annotated span whose last bytes are not a `ret`/`jmp` terminator — is also RARE (21 of
+3700 swept, almost all benign trailing padding), so a non-terminator tail is a hint to
+measure, not evidence of a bug.
+
 ## What this does NOT fix (measured, so you can stop early)
 
 A body that is genuinely **shorter than retail** scores 0 for a different reason, and

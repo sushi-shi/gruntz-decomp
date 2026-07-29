@@ -1,7 +1,7 @@
 #ifndef STATUSBARITEM_H
 #define STATUSBARITEM_H
 
-#include <Gruntz/SbGeom.h> // RECT + SbGeom() - the geometry rect (was SbiRect/SbRect)
+#include <Gruntz/SbGeom.h>        // RECT + SbGeom() - the geometry rect (was SbiRect/SbRect)
 #include <Gruntz/SerialArchive.h> // CFileMemBase (== the real CFileMemBase) - the slot-1 arg
 #include <Ints.h>
 #include <rva.h>
@@ -68,13 +68,21 @@ public:
     // sites pass an INLINE TEMPORARY, `RECT(cx - 0x5e, cy - 0x3c, ...)`. That temporary
     // is the whole trick: a named local makes cl materialize the struct and copy it; an
     // inline temporary makes it build the struct in place, which is what retail does.
+    // Arg 9 is the sprite-registry KEY (a string), not an int. Two independent proofs:
+    // (a) the sibling slot-11 CSBI_Image::SetupImage takes the same 9th dword and retail
+    // hands it a DATA-relocated string literal there (BuildStatusBarTabs 0x10001a
+    // `push 0x614168` = "GAME_STATUSBAR_TABZ_STATZTAB"), and it feeds that dword straight
+    // to CMapStringToOb::Lookup(LPCTSTR, CObject*&); (b) the one slot-2 override that
+    // READS the argument, CSBI_WellGoo::Setup @0xe6020, does the same Lookup with it.
+    // The three retail slot-2 call sites (0xffe78/0xfff34/0xfffc2) push a literal 0 -
+    // a null key, which is why the rect-only bodies ignore it.
     virtual i32 Setup(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
         i32 a3,
         i32 a4,
         RECT rc,
-        i32 a9,
+        const char* key,
         i32 a10
     );                          // slot 2
     virtual void Reset();       // slot 3 - teardown/reset hook (base body 0x10bfa0, ex DtorStatus)
@@ -97,7 +105,7 @@ public:
     i32 m_tab;     // +0x10  Setup arg4: owning tab index
     // +0x14..0x20: a 4-int sub-block (a RECT-like record) that Setup fills through
     // a single base pointer (lea &m_14; [+0]/[+4]/[+8]/[+c]).
-    RECT m_rect14;             // +0x14  Setup args 5..8
+    RECT m_rect14;                // +0x14  Setup args 5..8
     class CDDrawSurfaceMgr* m_24; // +0x24  Setup arg2: the config host (surface mgr)
     i32 m_28;                     // +0x28
     class CStatusBarMgr* m_2c;    // +0x2c  Setup arg1: the owning status-bar mgr
