@@ -20,7 +20,7 @@
 
 #define STEP_DRAIN(g)                                                                              \
     {                                                                                              \
-        void* pos = (g)->m_31c.GetHeadPosition();                                                  \
+        POSITION pos = (g)->m_31c.GetHeadPosition();                                               \
         if (pos != 0) {                                                                            \
             do {                                                                                   \
                 void* d = (g)->CoordListOps()->NextData(pos);                                      \

@@ -642,12 +642,12 @@ i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, i32 mode, i32 a3, i32 a4) {
     }
     i32 count = m_base.GetCount();
     stream->Write(&count, 4);
-    GzCmdNode* node = reinterpret_cast<GzCmdNode*>(
-        m_base.GetHeadPosition()
-    ); // MFC-protected m_pNodeHead via the inline accessor
-    while (node) {
-        CGruntzCommand* cmd = node->m_8;
-        node = node->m_0;
+    // CPtrList::GetNext inlines to exactly this node walk (`n = pos;
+    // pos = n->pNext; return n->data`) - proved byte-neutral on
+    // CMenuPage::FocusForwardN/Backward, so the ex-GzCmdNode view is unnecessary.
+    POSITION pos = m_base.GetHeadPosition();
+    while (pos != 0) {
+        CGruntzCommand* cmd = static_cast<CGruntzCommand*>(m_base.GetNext(pos));
         i32 tag = cmd->GetTag() & 0xff;
         stream->Write(&tag, 4);
         if (!cmd->Serialize(stream, 4, a3, a4)) {

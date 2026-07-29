@@ -1013,7 +1013,7 @@ i32 CGrunt::PathScan() {
                     // 0x584d9: recycle the grunt's own coordz (the function's ONLY
                     // call 0x29a30, at 0x584fa) ...
                     if (CoordCount() != 0) {
-                        void* pos = m_31c.GetHeadPosition();
+                        POSITION pos = m_31c.GetHeadPosition();
                         if (pos != 0) {
                             do {
                                 void* d = static_cast<CGruntCoordList*>(coordz)->NextData(pos);

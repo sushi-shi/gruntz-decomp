@@ -108,7 +108,10 @@ extern FreeNodePool g_coordPool; // DAT_00645540
 // instantiate it (constructing one would stamp a phantom ??_7 - retail has none).
 class CGruntCoordList : public CPtrList {
 public:
-    void*& NextData(void*& pos); // 0x29a30 (advance pos; return the node's data slot)
+    // The devs' own OUT-OF-LINE copy of CPtrList::GetNext (retail really calls
+    // 0x29a30; MFC's inline can never emit out-of-line - see the flag-matrix note
+    // above). So it takes a POSITION& like GetNext does, and its body IS GetNext.
+    void*& NextData(POSITION& pos); // 0x29a30 (advance pos; return the node's data slot)
 };
 SIZE_UNKNOWN(); // adds no storage over CPtrList; never instantiated (see above)
 

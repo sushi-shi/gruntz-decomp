@@ -232,7 +232,8 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         }
     }
     if (streams[chosen] == 0) {
-        streams[chosen] = m_configTree->m_soundStream->OpenStream(src, 0x5000, 0x1400, 0x100e0, 0, 0);
+        streams[chosen] =
+            m_configTree->m_soundStream->OpenStream(src, 0x5000, 0x1400, 0x100e0, 0, 0);
         if (streams[chosen] == 0) {
             return 0;
         }
@@ -491,11 +492,9 @@ CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId, i32 which) {
     } else {
         // Retail walks through the OUT-OF-LINE node helper (`mov ecx,list; call
         // 0x29a30`), not MFC's inline CPtrList::GetNext - unlike the sibling walk in
-        // CAreaMgr::LoadObjectImageResources (0x9a510), which really is inline. The
-        // POSITION <-> void* pun is the language-forced seam Grunt.h documents for
-        // this helper; it stays local to the one call site that needs it.
+        // CAreaMgr::LoadObjectImageResources (0x9a510), which really is inline.
         CGruntCoordList* nodes = static_cast<CGruntCoordList*>(&list->m_list);
-        void*& cursor = reinterpret_cast<void*&>(list->m_cursor);
+        POSITION& cursor = list->m_cursor;
         cursor = list->m_list.GetHeadPosition();
         if (cursor == 0) {
             entry = 0;
@@ -513,7 +512,10 @@ CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId, i32 which) {
     if (entry == 0) {
         return 0;
     }
-    return m_owner->m_symParser->ResolveQualified(static_cast<LPCTSTR>(entry->GetName()), REZ_TAG_WAV);
+    return m_owner->m_symParser->ResolveQualified(
+        static_cast<LPCTSTR>(entry->GetName()),
+        REZ_TAG_WAV
+    );
 }
 
 RVA(0x0011c1a0, 0x46)
