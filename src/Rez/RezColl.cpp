@@ -207,12 +207,10 @@ CHashElement* CHashBase::First() {
 
 // Last (0x184b10): reverse iteration - scan the bucket array from the highest index
 // down, return the tail element of the first non-empty bucket (or 0 when empty).
-// @early-stop
-// SAME SIB base/index coin-flip wall as CHashBase::Insert (above): retail folds the
-// bucket address into `mov ecx,[ecx+4]; lea ecx,[ecx+eax+0xc]` (m_buckets reuses the
-// `this` register), while cl loads m_buckets into eax -> `push esi; add eax,esi; lea
-// ecx,[eax+0xc]`. The loop body is byte-identical; the base-register pick is not
-// source-steerable (operand-typing/reorder do not flip it, per the Insert note).
+// (ex-wall note, RETIRED 2026-07-29: this is now 100% EXACT. It used to carry the same
+// SIB base/index @early-stop as Insert - `mov ecx,[ecx+4]; lea ecx,[ecx+eax+0xc]` vs a
+// `push esi; add eax,esi; lea ecx,[eax+0xc]` recompile. The tail-anchored-cursor spelling
+// below closed it; the text is history, not a current claim.)
 RVA(0x00184b10, 0x29)
 CHashElement* CHashBase::Last() {
     u32 i = m_count - 1;
