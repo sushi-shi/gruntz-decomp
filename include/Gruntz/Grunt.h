@@ -1281,7 +1281,6 @@ extern "C" i32 GameRand();                       // 0x51fee0 (__cdecl)
 
 // Command-step cue thunks (ILT VAs; reloc-masked at use).
 extern "C" void __stdcall GruntCue(CGrunt* g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x4039f4
-extern "C" i32 BadSelect(const char* msg);                     // 0x402cca (__cdecl)
 extern "C" i32 PickupCheck(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x403c6a (__cdecl)
 
 // File-scope prototypes moved from the .cpp: an unqualified

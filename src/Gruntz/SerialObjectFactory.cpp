@@ -1,6 +1,6 @@
 #include <Gruntz/SerialObjectFactory.h> // this TU's external declarations
-#include <Gruntz/SerialCounter.h> // own extern surface
-#include <Gruntz/GruntzMgr.h>     // the mgr's real type
+#include <Gruntz/SerialCounter.h>       // own extern surface
+#include <Gruntz/GruntzMgr.h>           // the mgr's real type
 #include <Ints.h>
 #include <string.h>
 
@@ -29,8 +29,7 @@ i32 ParseSerial(CGruntzMgr* mgr, char* s) {
     if (mgr->m_world == 0) {
         return 0;
     }
-    return mgr->m_world->RestoreChildren(reinterpret_cast<HP_Callback>(&SerialObjectFactory), s, 0)
-           != 0;
+    return mgr->m_world->RestoreChildren(&SerialObjectFactory, s, 0) != 0;
 }
 
 // SerialObjectFactory (0xd2a0, __cdecl, ends 0xec24): the game's (de)serialize object
@@ -58,6 +57,6 @@ i32 ParseSerial(CGruntzMgr* mgr, char* s) {
 // factory table) is the final-sweep starting point; the return-0 normalization artifact
 // is kept per the >512B rule.
 RVA(0x0000d2a0, 0x1984)
-i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void** ppObj) {
+i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void* payload) {
     return 0;
 }
