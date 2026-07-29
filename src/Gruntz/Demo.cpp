@@ -377,11 +377,65 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
     return result;
 }
 
-// @early-stop
-// 0x3cdd0 ("dwrects.txt" editor) - twin of 0x3c990 (0x4000-byte edit buffer variant);
-// same CString/ResButeMgr + /GX-trylevel blocker.
+// The dwrects.txt editor dialog's text buffer + length word (the length sits
+// immediately past the buffer's 0x4000 bytes, so a full-buffer read's NUL
+// terminator lands ON the length - retail's, not ours).
+DATA(0x0023f790)
+char g_dwRectsEditBuf[0x4000];
+DATA(0x00243790)
+i32 g_dwRectsEditLen;
+
+// 0x3cdd0: the "dwrects.txt" editor dialog proc - the exact twin of
+// ButeAttributezDlgProc @0x3c990 above, which is 100% EXACT, so the same two-part
+// spelling applies: BOTH dispatches are SWITCHes (retail's `sub eax,0x110 / je /
+// dec eax / jne` and `dec eax / je / dec eax / je` ladders, not chained `if (msg ==
+// ..)` compares), and the not-handled exit at 0x3ce06 is shared by the msg default
+// and the command default while both handled commands fall into the ONE `return 1`.
+// The old @early-stop here claimed a "same CString/ResButeMgr + /GX-trylevel
+// blocker"; there is no CString and no ResButeMgr in this function at all.
+//
+// Differences from the twin, all read off the retail bytes:
+//   * one string literal, "dwrects.txt" @0x60d138, used by BOTH streams (the twin
+//     has two, "attributez.txt" and "Attributez.txt");
+//   * the buffer is 0x4000, not 0xffff;
+//   * IDOK does NOT re-parse g_buteMgr - it just writes and closes.
+// The stream modes are retail's immediates: 0xa0 = nocreate|binary for the ifstream,
+// 0x80 = binary for the ofstream; the trailing `push 1` on each ctor is MSVC's
+// hidden most-derived flag (both classes have ios as a virtual base).
 RVA(0x0003cdd0, 0x19f)
-i32 EditDwRectsTxt(void) {
+INT_PTR CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    static_cast<void>(lParam);
+    switch (msg) {
+        case 0x110: { // WM_INITDIALOG
+            ifstream in("dwrects.txt", ios::nocreate | ios::binary);
+            if (in.fail()) {
+                EndDialog(hDlg, 1);
+            } else {
+                in.read(g_dwRectsEditBuf, 0x4000);
+                g_dwRectsEditLen = in.gcount();
+                g_dwRectsEditBuf[g_dwRectsEditLen] = 0;
+                SetDlgItemTextA(hDlg, 0x435, g_dwRectsEditBuf);
+                in.close();
+            }
+            return 1;
+        }
+        case 0x111: // WM_COMMAND
+            switch (wParam) {
+                case 1: { // IDOK
+                    GetDlgItemTextA(hDlg, 0x435, g_dwRectsEditBuf, 0x4000);
+                    ofstream out("dwrects.txt", ios::binary);
+                    g_dwRectsEditLen = strlen(g_dwRectsEditBuf);
+                    out.write(g_dwRectsEditBuf, g_dwRectsEditLen);
+                    out.close();
+                    EndDialog(hDlg, 1);
+                    return 1;
+                }
+                case 2: // IDCANCEL
+                    EndDialog(hDlg, 0);
+                    return 1;
+            }
+            break;
+    }
     return 0;
 }
 
