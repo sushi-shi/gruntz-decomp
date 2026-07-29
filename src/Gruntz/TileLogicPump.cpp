@@ -414,7 +414,10 @@ RVA(0x0010dc40, 0x154)
 CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
-    m_38->m_flags |= 3;
+    // TWO separate read-modify-writes, not a folded `|= 3`: retail re-reads m_38 and
+    // emits `or <r>,ebp(=2)` then `or <r>,ebx(=1)` - the 2 is CSE'd with m_2c = 2.
+    m_38->m_flags |= 2;
+    m_38->m_flags |= 1;
     m_38->m_stateFlags |= 1;
 }
 
@@ -467,9 +470,13 @@ CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
     m_38->m_flags |= 1;
     m_38->m_stateFlags |= 1;
-    m_object->m_164 = m_object->m_screenX >> 5;
-    m_object->m_168 = m_object->m_screenY >> 5;
-    m_object->m_id = (m_object->m_164 << 8) + m_object->m_168;
+    // the shifted coords go through LOCALS - retail reuses them for m_id (`shl eax,8;
+    // add eax,edx`); re-reading m_164/m_168 back out of the object costs two loads.
+    i32 tileX = m_object->m_screenX >> 5;
+    i32 tileY = m_object->m_screenY >> 5;
+    m_object->m_164 = tileX;
+    m_object->m_168 = tileY;
+    m_object->m_id = (tileX << 8) + tileY;
 }
 
 RVA(0x0010e4a0, 0x102)
@@ -524,9 +531,13 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
     m_38->m_flags |= 1;
     m_38->m_stateFlags |= 1;
-    m_object->m_164 = m_object->m_screenX >> 5;
-    m_object->m_168 = m_object->m_screenY >> 5;
-    m_object->m_id = (m_object->m_164 << 8) + m_object->m_168;
+    // the shifted coords go through LOCALS - retail reuses them for m_id (`shl eax,8;
+    // add eax,edx`); re-reading m_164/m_168 back out of the object costs two loads.
+    i32 tileX = m_object->m_screenX >> 5;
+    i32 tileY = m_object->m_screenY >> 5;
+    m_object->m_164 = tileX;
+    m_object->m_168 = tileY;
+    m_object->m_id = (tileX << 8) + tileY;
 }
 
 // RE-ATTRIBUTED (the ex @identity-TODO shift-by-one, executed): this cluster
@@ -762,6 +773,9 @@ i32 CCheckpointTrigger::Act() {
     // Pick one recorded switch uniformly. Retail hand-inlines the seeded LCG for the
     // empty-span arm (the CRandomAmbientSound::Init2 idiom): coin-flip the endpoints.
     i32 hi = m_firstEmpty - 1;
+    // the manager goes through a local: retail's `mov ecx,g_gameReg` for Rand() sits
+    // ABOVE the span test (reading the global inside the else arm sinks it past it)
+    CGruntzMgr* reg = g_gameReg;
     i32 span = hi + 1;
     i32 pick;
     if (span == 0) {
@@ -779,7 +793,7 @@ i32 CCheckpointTrigger::Act() {
             pick = hi;
         }
     } else {
-        pick = g_gameReg->Rand() % span;
+        pick = reg->Rand() % span;
     }
 
     CTileTriggerSwitchLogic* pad = play->m_beginMarker->FindChild(m_state[pick], 8);
@@ -801,7 +815,11 @@ i32 CCheckpointTrigger::Act() {
         return 0;
     }
 
-    CGrunt* g = g_gameReg->m_cmdGrid->m_grid[(owner & 0xff) + ((owner >> 8) & 0xff) * TM_GRID_COLS];
+    // the row is masked IN PLACE (retail `mov cl,ah` then `and eax,0xff`); masking into a
+    // second local makes cl copy `owner` aside first and copy the column back afterwards
+    i32 ownerCol = (owner >> 8) & 0xff;
+    owner &= 0xff;
+    CGrunt* g = g_gameReg->m_cmdGrid->m_grid[ownerCol * TM_GRID_COLS + owner];
     if (g == 0) {
         return 0;
     }
@@ -860,16 +878,15 @@ CCoveredPowerup::CCoveredPowerup(CGameObject* obj) : CTileTrigger(obj) {}
 // CTileTriggerTransition::CTileTriggerTransition (0x10faf0) - the 1-arg leaf ctor: fold the
 // shared CUserLogic(obj) init then stamp the leaf vptr (0x5e7db4) + the +0x1000000 object
 // flag / +0x74 type write the original tail does.
-// @early-stop
-// EH-ctor vptr-restamp wall (94.9%): the leaf vptr re-stamp lands in EH state 0 + the EH
-// scope-cookie initializes to 8 not 0 - see docs/patterns/eh-ctor-vptr-restamp-position.md
-// (non-steerable EH-state machine ordering). Body byte-identical otherwise.
 RVA(0x0010faf0, 0x128)
 CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 0x1000000;
-    if (m_object->m_sortKey != 0) {
-        m_object->m_sortKey = 0;
-        m_object->m_flags |= 0x20000;
+    // ONE m_object load into a local: that is what lets cl hoist the m_flags read above
+    // the m_sortKey store (`mov ecx,[eax+8]` / `or ecx,imm` / `mov [eax+8],ecx`).
+    CGameObject* o = m_object;
+    if (o->m_sortKey != 0) {
+        o->m_sortKey = 0;
+        o->m_flags |= 0x20000;
     }
 }
 

@@ -1529,8 +1529,12 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
             CAniDesc* elem = desc->m_records.GetSize() > 0
                                  ? static_cast<CAniDesc*>(desc->m_records.GetAt(0))
                                  : 0;
+            // the frame is read BEFORE GetBuffer runs (retail `mov edi,[eax+0x14]` sits
+            // above the `lea ecx,[esi+0x448]; call`) - reading it in the arg list instead
+            // sinks it below the call
+            i32 frame = elem->m_param;
             char* buf = (&m_448)->GetBuffer(0);
-            m_38->ApplyLookupSprite(buf, elem->m_param);
+            m_38->ApplyLookupSprite(buf, frame);
 
             CWwdGameObjectA* h = m_object;
             CGruntzMgr* g = g_gameReg;
@@ -2311,17 +2315,13 @@ i32 CGrunt::StepEntranceRelatchB() {
 // Cache the owner's active descriptor into m_value, run the bound sprite's embedded
 // anim sub-object (+0x1a0) advance, and (when the flag arg is set) re-target its
 // draw-delta.
-// @early-stop
-// 76%: every instruction (lea anim, descriptor read, m_prevDesc store, arg push, both
-// calls) is byte-faithful; the residual is pure register coloring + a 2-instr
-// scheduling flip in this 0x39-byte leaf - retail keeps m_1b4 in edx and hoists the
-// `a` load into eax before the m_value store; cl colors the descriptor in eax and
-// stores m_value first. Not source-steerable (every operand/declaration reorder
-// reproduced the same coloring).
+// The descriptor read comes BEFORE the cursor address is taken: while m_38 is still
+// live cl must colour m_1b4 into edx (not reuse m_38's eax), which is what lets the
+// m_value store sink below the `a` load. Taking the address first was the old 76% form.
 RVA(0x0006b2e0, 0x39)
 void CWapX::Apply(CAniElement* a, i32 b) {
-    CAniAdvanceCursor* anim = &m_38->m_1a0;
     m_value = m_38->m_1a0.m_14;
+    CAniAdvanceCursor* anim = &m_38->m_1a0;
     anim->Setup(a);
     if (b != 0) {
         anim->Advance(static_cast<i32>(g_engineFrameDelta));
