@@ -984,15 +984,15 @@ i32 CInGameIcon::Reposition() {
 // (0x1b8438 / 0x1b8760) re-binding the +0x40/+0x54 ids.
 //
 // @early-stop
-// DEFERRED to the final sweep (NOT reconstructed). Two blockers: (1) the recorded
-// boundary is wrong - dump_target/Ghidra report 0x31f (799 B) but the body's own
-// branches target 0x99000, ~0x370 B past the entry, so the delinked target object
-// is truncated and cannot match until the function length is re-derived; (2) the
-// body is a ~880 B dense CArchive/CString/CMap marshaler whose stack-CString temps
-// force a /GX EH-state schedule (the eh-state-numbering + outparam-zeroinit walls).
-// A faithful reconstruction needs the corrected boundary first; pinned no-body so
-// its RVA registers and the unit builds. See report.
-RVA(0x00098c90, 0x31f)
+// NOT reconstructed - a ~900 B dense CArchive/CString/CMap marshaler whose stack-CString
+// temps force a /GX EH-state schedule (the eh-state-numbering + outparam-zeroinit walls).
+// Blocker (1) of the old note - "the recorded boundary is wrong ... a faithful
+// reconstruction needs the corrected boundary first" - IS NOW FIXED. Ghidra's 0x31f (799)
+// really was short: the body's own branches reach 0x99000, and disassembling past the old
+// span showed it running on to a final `ret 0x10` at 0x9900f with nop padding to 0x99020.
+// True span 0x382 (898 B), set below, so the delinked target is no longer truncated and
+// the disassembly now terminates cleanly. Only the reconstruction itself is left.
+RVA(0x00098c90, 0x382)
 i32 CInGameIcon::SerializeMove(CFileMemBase*, i32, i32, CGameObject*) {
     return 0;
 }

@@ -1033,6 +1033,13 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
     return newCode == 0x12d;
 }
 
+// Span = the base COMDAT (0x350), NOT the extent to the next function (0x440): both were
+// measured 2026-07-29 and the COMDAT wins by a mile (92.1% vs 53.9%). Same for the two
+// siblings above - SetActionCode 0xf0 beats 0x140 (66.6 vs 47.2) and Process 0x35e beats
+// 0x540 (58.9 vs 47.4). The opposite choice is right when the tables sit BETWEEN the code
+// and the next function with nothing else in the gap (see DispatchMsg @0xbf7c0 and
+// ComputeCellFlags @0x77790); here the gap holds more than this function's own tables, so
+// carrying it in makes both sides carve different content. MEASURE, do not assume.
 RVA(0x00113420, 0x350) // span includes the 5 inline jump tables (base COMDAT 0x350)
 i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
     if (toolId == 0x22) {
