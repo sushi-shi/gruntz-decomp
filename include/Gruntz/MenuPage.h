@@ -14,13 +14,6 @@ class CDDrawSurfacePair;
 class CDDrawWorker; // <DDrawMgr/DDrawWorker.h> - the m_subPage sprite strip
 class CChatBox;     // the render host (Draw/ReplaceNode/ScrollRow1; +0x20 wrap flag)
 
-struct CMenuListNode {
-    CMenuListNode* pNext;
-    CMenuListNode* pPrev;
-    CMenuItem* data;
-};
-SIZE_UNKNOWN();
-
 class CMenuPage {
 public:
     // Inline (in-class) ctor - retail INLINES it at BuildMainMenuTree's 14 `new
@@ -58,7 +51,7 @@ public:
     void InitDefaults();                 // 0x1833a0  Clear + zero scalars
     void Clear();                        // 0x1833c0  free child items + RemoveAll
     i32 ResolveSubPage(const char* key); // 0x1833f0  catalog Lookup -> cache m_subPage
-    i32 Append(CMenuItem* item);       // 0x183430  AddTail(item) -> item->m_2c
+    i32 Append(CMenuItem* item);         // 0x183430  AddTail(item) -> item->m_2c
     // 0x183460 (ret 0x14 = 5 args, __thiscall): alloc + construct a CMenuItem,
     // Init(this, a0..a4), append. Semantic sig (binary-proven: BuildMainMenuTree's
     // pushes are $SG string relocs; Init routes label -> m_name, spriteKey -> the
@@ -83,7 +76,7 @@ public:
     i32 RestoreFocus();                        // 0x1839d0  focus saved name / first focusable
     i32 SetFocus(CMenuItem* item, i32 notify); // 0x183ad0
     i32 NotifyAll(u32 dt);                     // 0x183b30
-    i32 Layout(CDDrawSurfacePair* target);      // 0x183b60  measure/place children
+    i32 Layout(CDDrawSurfacePair* target);     // 0x183b60  measure/place children
     i32 FocusNext();                           // 0x183c50
     i32 FocusPrev();                           // 0x183d10
     i32 Activate();                            // 0x183dd0  focus->vtable[+0x30]
@@ -93,11 +86,19 @@ public:
     CMenuItem* FindByName(const char* s);      // 0x184150  /GX; walk + strcmp
     i32 SelectForward();                       // 0x1843f0  /GX
     i32 SelectBackward();                      // 0x1844d0  /GX
-    i32 LayoutOne(CDDrawSurfacePair* target);   // 0x183e50  single-column measure/place
+    i32 LayoutOne(CDDrawSurfacePair* target);  // 0x183e50  single-column measure/place
 
     // 0x74-item factories (derived item @0x5f08f8) - mirror AddItem/AddSubItem:
-    CMenuItem2* AddItem2(const char*, const char*, i32, const char*, i32, i32);              // 0x1836f0 (ret 0x18 = 6 args; Init(this, a0..a4) + SetFrame(a5))
-    CMenuItem2* AddSubItem2(const char*, const char*, i32, i32, i32, const char*, i32, i32); // 0x183850
+    CMenuItem2* AddItem2(
+        const char*,
+        const char*,
+        i32,
+        const char*,
+        i32,
+        i32
+    ); // 0x1836f0 (ret 0x18 = 6 args; Init(this, a0..a4) + SetFrame(a5))
+    CMenuItem2*
+    AddSubItem2(const char*, const char*, i32, i32, i32, const char*, i32, i32); // 0x183850
     i32 Switch(i32 refocus); // 0x183df0  host SwitchToPage + refocus
     i32 CanWrap();           // 0x183e30  focus-wrap gate
     i32 FocusForwardN();     // 0x183f70  step focus +m_rowsPerCol nodes
@@ -119,20 +120,20 @@ public:
     CMenuItem* PrevItem(POSITION& pos) {
         return static_cast<CMenuItem*>(m_items.GetPrev(pos));
     }
-    i32 m_flags;               // +0x30 flag bits: 0x1 wrap-on, 0x2 wrap-off, 0x4 grid, 0x8 no-draw
-    RECT m_rect;               // +0x34  page rect (block-copied from CChatBox::m_rect8;
-                               //        initial y = m_offsetY + m_rect.top; x center =
-                               //        (right-left+1)/2 + m_offsetX + left)
-    i32 m_headGap;             // +0x44  gap after sub-page head item (template +0x18)
-    i32 m_rowSpacing;          // +0x48  per-item vertical advance (template +0x1c)
-    i32 m_colWidth;            // +0x4c  column width (grid wrap step)
-    i32 m_rowsPerCol;          // +0x50  rows per column / focus stride
-    i32 m_colOffset;           // +0x54  column x-offset
-    i32 m_offsetX;             // +0x58  layout x-offset (added to centered column x)
-    i32 m_offsetY;             // +0x5c  layout y-offset (added to initial row y)
-    CDDrawWorker* m_subPage;   // +0x60 resolved image-registry sprite strip (catalog Lookup
-                               //        result; its CImage rows head the layout passes)
-    CMenuItem* m_focus;        // +0x64 current focused child item
+    i32 m_flags;             // +0x30 flag bits: 0x1 wrap-on, 0x2 wrap-off, 0x4 grid, 0x8 no-draw
+    RECT m_rect;             // +0x34  page rect (block-copied from CChatBox::m_rect8;
+                             //        initial y = m_offsetY + m_rect.top; x center =
+                             //        (right-left+1)/2 + m_offsetX + left)
+    i32 m_headGap;           // +0x44  gap after sub-page head item (template +0x18)
+    i32 m_rowSpacing;        // +0x48  per-item vertical advance (template +0x1c)
+    i32 m_colWidth;          // +0x4c  column width (grid wrap step)
+    i32 m_rowsPerCol;        // +0x50  rows per column / focus stride
+    i32 m_colOffset;         // +0x54  column x-offset
+    i32 m_offsetX;           // +0x58  layout x-offset (added to centered column x)
+    i32 m_offsetY;           // +0x5c  layout y-offset (added to initial row y)
+    CDDrawWorker* m_subPage; // +0x60 resolved image-registry sprite strip (catalog Lookup
+                             //        result; its CImage rows head the layout passes)
+    CMenuItem* m_focus;      // +0x64 current focused child item
 };
 SIZE(0x68); // op-new ground truth: `push 0x68` at the builder's 14 new-sites
 
