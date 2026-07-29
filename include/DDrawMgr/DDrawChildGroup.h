@@ -109,8 +109,10 @@ public:
     i32 LoadObjects(class CFileMemBase* reader, u32 count, i32 unused);
 
     // List / map ops.
-    void RemoveAll(i32 pos, CWwdGameObject* obj);
-    void RemoveByPosition(i32 pos, CWwdGameObject* obj);
+    // `pos` IS an MFC POSITION (it is handed straight to CPtrList::RemoveAt) -
+    // typed as one, so the ex-(POSITION) pun at both bodies goes.
+    void RemoveAll(POSITION pos, CWwdGameObject* obj);
+    void RemoveByPosition(POSITION pos, CWwdGameObject* obj);
     void AddToMap48(CWwdGameObject* obj);
     void PruneList();
     i32 CountActive();
