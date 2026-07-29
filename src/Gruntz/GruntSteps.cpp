@@ -1162,10 +1162,8 @@ i32 CGrunt::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     }
     // then the +0x150 CWapX base subobject's Chain (0x8c00 via the 0x1aff thunk).
     // CGrunt's RTTI CHD @VA 0x5f2c40 proves CWapX is a DIRECT second base at mdisp
-    // +0x150 (past the 0x150 CMovingLogic spine). The Grunt.h ODR world is not
-    // converted yet, so the subobject is reached by cast until that MI conversion
-    // lands - @identity-TODO(deferred, MI1 flagged item 1).
-    if ((reinterpret_cast<CWapX*>(&m_34))->Chain(ar, mode, a3, a4) == 0) {
+    // +0x150 (past the 0x150 CMovingLogic spine) - MI1 landed, so it is a base call.
+    if (CWapX::Chain(ar, mode, a3, a4) == 0) {
         return 0;
     }
     switch (mode) {

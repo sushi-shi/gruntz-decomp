@@ -318,7 +318,7 @@ public:
     // reproduces - and MSVC5 reads a narrow stack param as its full dword slot +
     // AND mask ((u8)aN => `mov reg,[esp+N]; and reg,0xff`), which is exactly the
     // retail body's read pattern, so ONE honest signature serves both sides.
-    i32 ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char a8);
+    i32 ExecCommand(i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8);
     i32 Flip(); // 0x0da200
     // Level-lifecycle steps (the +0x3a4/+0x2dc/+0x4fc/+0x1cc offsets pin them to CPlay):
     i32 ReleaseLevelOverlay(i32 unused); // 0x0d6560  drop the overlay + restore the clock

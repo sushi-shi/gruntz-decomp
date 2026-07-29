@@ -1677,10 +1677,8 @@ i32 CGrunt::BuildGruntExitAnimation() {
         }
     }
 
-    // CGrunt's RTTI CHD @VA 0x5f2c40 proves CWapX is a DIRECT second base at mdisp
-    // +0x150; until that MI conversion lands the sub-object is reached by cast -
-    // @identity-TODO(deferred, MI1 flagged item 1; same seam as GruntSteps.cpp).
-    (reinterpret_cast<CWapX*>((&m_34)))->Apply(found, 0);
+    // the +0x150 CWapX base subobject (a DIRECT second base since MI1 landed)
+    CWapX::Apply(found, 0);
     i32 frame = static_cast<CAniDesc*>(m_38->m_1a0.m_14->AtChecked(0))->m_param;
     m_38->ApplyLookupSprite(s_GRUNTZ_EXITZ, frame);
     return 0;

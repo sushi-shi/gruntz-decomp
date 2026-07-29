@@ -911,14 +911,14 @@ void* CDDrawChildGroup::Find(i32 id, const char* key) {
 // ---------------------------------------------------------------------------
 // 0x15a940: the +0xe8-field twin of FindByWorker.
 RVA(0x0015a940, 0x52)
-CWwdGameObject* CDDrawChildGroup::FindByField(i32 type, void* key) {
+CWwdGameObject* CDDrawChildGroup::FindByField(i32 type, i32 key) {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != 0) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
-        // same void*-key convention as WwdKey/FindByWorker (the class keys on
-        // CMapPtrToPtr's void*), applied here to the +0xe8 field - API-forced
+        // the probed field IS the i32 +0xe8 category word - the key is that word,
+        // not one of the class's CMapPtrToPtr void* keys (retail compares dwords)
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == type
-            && reinterpret_cast<void*>(obj->m_collCategory) == key) {
+            && obj->m_collCategory == key) {
             return obj;
         }
     }

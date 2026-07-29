@@ -29,7 +29,7 @@ static inline u16 Pack(i32 r, i32 g, i32 b) {
 // A locked surface row is BYTES with a byte pitch while the pixels are 16bpp - that
 // conversion is forced by the surface API, so it is named here.
 static inline u16* Pix16(void* p) {
-    return reinterpret_cast<u16*>(p);
+    return static_cast<u16*>(p);
 }
 
 RVA(0x000a32c0, 0x72)

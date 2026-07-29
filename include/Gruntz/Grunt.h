@@ -1,6 +1,7 @@
 #include <Mfc.h> // the REAL MFC CPtrList (m_31c/m_338 are value members) + POSITION
 #include <Ints.h>
-#include <Clock64.h> // the {lo,hi} 64-bit clock pairs
+#include <Clock64.h>       // the {lo,hi} 64-bit clock pairs
+#include <Gruntz/ActReg.h> // CActHandler - the act table's 4-byte PMF slot type
 #include <Gruntz/LogicTypeId.h>
 // THE Coord {x,y} pair + CoordNode list node (this header used to redefine both
 // field-for-field under the names GruntCoord / GruntCoordNode).
@@ -265,7 +266,7 @@ extern "C" u32 g_frameTime;           // 0x645588 (the running game clock; Frame
 
 class CProjectile; // canonical full model in <Gruntz/Projectile.h> (MFC-full); pointer-only here
 
-class CGrunt : public CMovingLogic {
+class CGrunt : public CMovingLogic, public CWapX {
 public:
     // vtable overrides in slot order (see the base chain above):
     virtual ~CGrunt() OVERRIDE; // slot 0  @0xf2f0
@@ -452,46 +453,32 @@ public:
     //     ("m_158 = obj->m_7c", "m_15c = m_154->m_1a0.m_14 cache", a 0x10-byte pad),
     //     and CGrunt's real own data resumes at +0x170 = 0x150 + sizeof(CWapX).
     //
-    // NOT YET CONVERTED. The remaining spine conversion is blocked on one named
-    // thing - read this before retrying; it is cheap to re-derive wrongly:
+    // CONVERTED 2026-07-29 (MI1 done): the class really is
+    // `: public CMovingLogic, public CWapX`. The primary base's own size (0x150)
+    // places the second base at exactly +0x150.
     //
-    //   `: public the lean CMovingLogic, public CWapX` needs the PRIMARY base
-    //       to be the 0x150 spine (a second base lands right after the primary's size,
-    //       so with a lean base CWapX would sit at +0x34, not +0x150). The
-    //       +0x34..+0x14f motion band is now correctly modeled on CMovingLogic,
-    //       so its size already places CWapX at +0x150. ATTEMPTED 2026-07-17: it
-    //       compiles down to exactly ONE class of error, and it is the OLD, KNOWN
-    //       CGrunt-ODR blocker #4 (the i32/void slot-signature split; see the NOTE in
-    //       <Gruntz/UserLogic.h>) surfacing at the PMF table: making CGrunt MI widens
-    //       `i32 (CGrunt::*)()` to 8 bytes where retail stores 4, so GruntActHandler
-    //       must be declared on the SI base (retail's own RTTI names the table
-    //       `zDArray<int (CUserLogic::*)(void)>`. The three handlers formerly
-    //       attributed to a placeholder CGruntBehaviorLeaf are now proved to be
-    //       CGrunt methods, so that apparent class mix is WITHDRAWN as support for
-    //       the PMF-base claim. But g_reg_644af0's handlers are a MIX of void- and i32-returning
-    //       methods, and MSVC5 rejects `static_cast<i32 (CUserLogic::*)()>(&CGrunt::)<void method>`.
-    //       So the PMF retype cannot land until the void/i32 return split is
-    //       reconciled from the BODIES (which arm actually materializes eax) - the same
-    //       reconciliation blocker #4 already describes. Do that FIRST; the spine move
-    //       itself is ready and is not the hard part.
+    // The one thing that blocked it, and how it is resolved: making CGrunt MI widens
+    // `i32 (CGrunt::*)()` to the 8-byte {code, this-adjust} form, while retail's act
+    // table is `zDArray<int (CUserLogic::*)(void)>` - the 4-byte single-inheritance
+    // form - and NO cast between the two representations is legal. Two escapes were
+    // tested here:
+    //   * `class __single_inheritance CGrunt;` - REJECTED by MSVC5 at the definition:
+    //     C2292 "best case inheritance representation: 'single_inheritance' declared
+    //     but 'multiple_inheritance' required". Do not retry it.
+    //   * naming both readings of the member pointer - GruntActPmf, below the class -
+    //     WORKS, and is what the registrar now uses. Every registered handler is a
+    //     primary-base method, so its this-adjust is 0 and the 4-byte arm IS the value
+    //     retail stores. Measured cost of the whole conversion: 2 functions, and no
+    //     change in overall fuzzy.
+    // (The old note claimed the blocker was the void/i32 handler-return split; that
+    // was a second-order consequence of trying to route the PMF through a
+    // static_cast, which the representation change makes moot.)
     //
     // The equivalent conversion on CProjectile (same base, same +0x150) is DONE and
-    // byte-verified - see <Gruntz/Projectile.h> for the worked shape. CProjectile did
-    // not hit this because its handler table's return types are uniform.
+    // byte-verified - see <Gruntz/Projectile.h> for the worked shape.
     // ---------------------------------------------------------------------
-    CGameObject* m_34;     // +0x150  (CWapX::m_34; == the bound object, m_38's twin slot)
-    CWwdGameObjectA* m_38; // +0x154  the created entrance-anim sprite object (the ex
-                           //         CEntranceAnimPlayer view - the player IS the
-                           //         created CGameObject; see UserLogic.h's tail note)
-    // +0x158: the sprite's worker record. IDENTITY PROVEN by the ctor tail
-    // (Grunt.cpp): `m_158 = obj->m_7c` - the bound object's AnimWorkerObj. Its
-    // hop chain
-    // m_0c->m_28->m_30: worker->m_0c is the owner/world context (the
-    // CDDrawSurfaceMgr facet) whose +0x28 is the CDDrawSubMgrLeafScan cue registry
-    // (emit gate +0x30, CMapStringToPtr map +0x10).
-    AnimWorkerObj* m_3c;  // +0x158 (the bound object's worker record)
-    CAniElement* m_value; // +0x15c (= m_154->m_1a0.m_14 cache)
-    char m_pad160[0x170 - 0x160];
+    // (+0x150..+0x16f is the CWapX base subobject - m_34/m_38/m_3c/m_value/m_blob
+    //  now arrive by inheritance, see the CONVERTED note above.)
     // +0x170 (entrance-reason / movement state). The attack-fire step (UserLogicVfunc7)
     // reads this slot as the grunt's current TOOL/attack kind (switched over the
     // GRUNTZ tool ids 2=Boomerang/9=Gunhat/10=Nerfgun/11=Rock/17=TimeBomb/
@@ -1234,6 +1221,22 @@ public:
     //   StepArrivalCommit()           thunk 0x28d8 (0-arg freeze)
 };
 SIZE(0x8d8);
+
+// CGrunt is MULTIPLE-inheritance (CMovingLogic + CWapX), so MSVC gives
+// `i32 (CGrunt::*)()` the 8-byte {code, this-adjust} form - while retail's act table
+// is `zDArray<int (CUserLogic::*)(void)>`, i.e. the 4-byte single-inheritance form.
+// Every registered handler is on the PRIMARY base path, so its adjustment is 0 and
+// the 4-byte arm IS the value retail stores. `__single_inheritance CGrunt` is not an
+// option (MSVC5 rejects it: C2292 "single_inheritance declared but
+// multiple_inheritance required"), and no cast between the two representations is
+// legal, so the two readings of the same member-pointer are named here.
+union GruntActPmf {
+    i32 (CGrunt::*m_pmf)(); // what `&CGrunt::Handler` yields (8 B under MI)
+    struct {
+        CActHandler m_h; // the 4-byte code arm the table stores
+        i32 m_adjust;    // this-adjustment (always 0 here: primary-base methods)
+    };
+};
 
 typedef i32 (CGrunt::*GruntActHandler)();
 SIZE(0x4);

@@ -62,6 +62,7 @@
 #include <Io/FileStream.h> // CFile (the engine file reader IsBattlezMapFile opens)
 #include <dplobby.h>       // real DirectPlay lobby SDK: IDirectPlayLobby + DirectPlayLobbyCreate.
 #include <rva.h>
+#include <Utils/MapTyped.h>       // typed MFC map lookups (the one forced void*& seam)
 #include <stdio.h>                // engine sprintf (reloc-masked) for the toggle-message formatter
 #include <string.h>               // engine strstr (reloc-masked) for the Battlez header probe
 #include <Utils/RegistryHelper.h> // Utils::RegistryHelper (the settings/registry writer)
@@ -3232,12 +3233,10 @@ void CGruntzMgr::DelayedQuit() {
     }
     m_a4 = 1;
     LeafCue* out = 0;
-    (static_cast<CMapStringToPtr*>(&m_world->m_soundRegistry->m_10))
-        ->Lookup("MENU_ACTIVATE", reinterpret_cast<void*&>(out));
+    MapLookup(m_world->m_soundRegistry->m_10, "MENU_ACTIVATE", out);
     i32 base;
     if (out != 0) {
-        (static_cast<CMapStringToPtr*>(&m_world->m_soundRegistry->m_10))
-            ->Lookup("MENU_ACTIVATE", reinterpret_cast<void*&>(out));
+        MapLookup(m_world->m_soundRegistry->m_10, "MENU_ACTIVATE", out);
         base = out->m_10->m_durationMs + 0x1f4; // cue duration + 500ms: wait out the cue
     } else {
         base = 0;

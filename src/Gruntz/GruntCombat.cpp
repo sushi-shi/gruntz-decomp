@@ -315,12 +315,15 @@ static inline CString* ActNameSlots() {
 }
 
 // The shared tail of every 0x5be30 block: bind `handler` into the pool at `id`.
-// (A derived-to-base member-pointer conversion is a reinterpret - a bit copy - never a
-// static_cast: cl emits a this-adjustment thunk for the latter.)
-// language-forced, at one seam: C++ has no derived->base PMF conversion that keeps the
-// retail bit copy, so the PMF pun is written once, here.
+// CGrunt is MI, so `&CGrunt::Handler` is the 8-byte {code, adjust} member pointer
+// while the table slot is the 4-byte single-inheritance form retail stores; the two
+// readings are named on GruntActPmf (<Gruntz/Grunt.h>), so no pun is needed here.
 #define BIND_ACT_644AF0(id, handler)                                                               \
-    *CActRegPool<CGrunt>::s_table.Resolve(id) = reinterpret_cast<CActHandler>(handler)
+    {                                                                                              \
+        GruntActPmf _p;                                                                            \
+        _p.m_pmf = (handler);                                                                      \
+        *CActRegPool<CGrunt>::s_table.Resolve(id) = _p.m_h;                                        \
+    }
 
 #define REGISTER_KEY_644AF0(key, handler)                                                          \
     {                                                                                              \

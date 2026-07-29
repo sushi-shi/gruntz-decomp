@@ -131,9 +131,10 @@ static const char s_pose_TOYBREAK[] = "_TOY-BREAK";
 #define LOAD_POSE(dst, sfx)                                                                        \
     do {                                                                                           \
         CAniElement* _out = 0;                                                                     \
-        m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(                                             \
+        MapLookup(                                                                                 \
+            m_38->OwnerMgr()->m_animRegistry->m_10,                                                \
             "GRUNTZ_" + m_animSetName + (sfx),                                                     \
-            reinterpret_cast<void*&>(_out)                                                         \
+            _out                                                                                   \
         );                                                                                         \
         (dst) = _out;                                                                              \
     } while (0)

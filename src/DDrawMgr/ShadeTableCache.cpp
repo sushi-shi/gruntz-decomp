@@ -37,11 +37,11 @@ VTBL(CShadeTableArray, 0x001efb28); // cl-emitted ??_7CShadeTableArray@@6B@
 // A locked surface / packed image row is BYTES with a byte pitch, while the pixels
 // are 16bpp - the conversion is forced by the surface API, so it is named here.
 static inline u16* Pix16(void* p) {
-    return reinterpret_cast<u16*>(p);
+    return static_cast<u16*>(p);
 }
 // const twin of the same API-forced byte-pitch -> 16bpp-pixel conversion
 static inline const u16* Pix16(const void* p) {
-    return reinterpret_cast<const u16*>(p);
+    return static_cast<const u16*>(p);
 }
 
 RVA(0x0014de30, 0x1a)

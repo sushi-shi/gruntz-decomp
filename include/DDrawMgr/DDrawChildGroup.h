@@ -128,7 +128,7 @@ public:
     CWwdGameObject* FindByType04(i32 type);
     CWwdGameObject* FindByTypeProbe(i32 type);
     CWwdGameObject* FindByWorker(i32 type, void* key);
-    CWwdGameObject* FindByField(i32 type, void* key);
+    CWwdGameObject* FindByField(i32 type, i32 key);
     // 0x15a8c0 - first child whose type tag (vtable slot 8) == 5, whose +0x04 id ==
     // `id`, and whose +0x7c sub-object's +0x10 matches the object the worker-cache
     // name map yields for `key`.
