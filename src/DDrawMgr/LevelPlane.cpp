@@ -53,10 +53,11 @@
 #include <string.h> // strcpy/memcpy/memset (inline rep movs / rep stos)
 #include <Gruntz/Loadable.h>
 
-static __inline i32 GridByteSize(i32 height, i32 width) {
-    height *= width;
-    return height * 4;
-}
+// The tile grid is a flat dword run of m_gridW*m_gridH cells.  The byte size is
+// written out at each of the three sites that need it rather than through a shared
+// helper, because the multiply's operand ORDER is byte-visible (cl leaves the first
+// operand in the register for the `imul`) and retail's three sites do not agree on
+// it: Read/Load use `m_gridH * m_gridW`, Save uses `m_gridW * m_gridH`.
 
 // ---------------------------------------------------------------------------
 // The WWD "imageSet3" grid-owner pocket. src/Image/ImageSet3.cpp hosts the same
@@ -231,7 +232,7 @@ i32 CDDrawWorkerHost::Read(
     m_scaleY = static_cast<float>(m_98) * 0.01f;
 
     // --- 3. the tile-handle grid: a flat dword run at tilesOffset ---------------
-    m_tileGrid = static_cast<i32*>(operator new(GridByteSize(m_gridH, m_gridW)));
+    m_tileGrid = static_cast<i32*>(operator new(m_gridH * m_gridW * 4));
     // byte-forced by the on-disk format: the grid is a raw dword run located by a
     // RUNTIME offset into the mapped main block, so no declared member can name it
     const i32* cell = reinterpret_cast<const i32*>(blockBase + pd->tilesOffset);
@@ -1371,13 +1372,9 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     s->Write(&m_94, 4);
     s->Write(&m_98, 4);
 
-    // @early-stop
-    // 2 instructions (99.98%): retail Save does `mov ecx,[esi+0x28]; imul ecx,[esi+0x2c]`,
-    // Load does the mirror - but inside THIS TU cl always loads m_gridH into the register
-    // whatever the spelling (5 tested: h*w*4, w*h*4, (w*h)<<2, split `x=w; x*=h`, a local
-    // pair). The same spellings in a scratch TU DO flip (second operand -> register), so the
-    // pick is TU-global CSE/interning state, and Save/Load cannot both be right at once.
-    i32 gridSize = GridByteSize(m_gridH, m_gridW);
+    // width FIRST here (Read/Load spell it the other way round): the multiply's operand
+    // order is byte-visible - cl leaves the first operand in the register for the `imul`.
+    i32 gridSize = m_gridW * m_gridH * 4;
     s->Write(&gridSize, 4);
     s->Write(m_tileGrid, gridSize);
 
@@ -1391,12 +1388,6 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
 // ---------------------------------------------------------------------------
 // CDDrawWorkerHost::Load (__thiscall, ret 0x4). Inverse of Save: read back the same
 // field sequence; the size-prefix must equal gridW*gridH*4 or the load aborts.
-// @early-stop
-// 4 bytes: retail loads m_gridH (`mov ecx,[ebx+0x2c]; imul ecx,[ebx+0x28]`), cl loads
-// m_gridW. cl5 CANONICALIZES a commutative `imul` of two members of the same object to
-// lower-offset-into-the-register - re-measured 2026-07-28 against three spellings
-// (`h*w`, `w*h`, and a split `t = m_gridH; t *= m_gridW;` two-statement form), all
-// byte-identical. Shape byte-correct; not source-steerable.
 RVA(0x001638c0, 0x140)
 i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
     if (s == 0) {
@@ -1416,7 +1407,7 @@ i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
 
     i32 gridSize = 0;
     s->Read(&gridSize, 4);
-    if (gridSize != GridByteSize(m_gridH, m_gridW)) {
+    if (gridSize != m_gridH * m_gridW * 4) {
         return 0;
     }
     s->Read(m_tileGrid, gridSize);

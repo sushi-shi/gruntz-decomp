@@ -184,12 +184,6 @@ CImage::~CImage() {
 // CFileImageSurface::LoadByExt @0x148940), whose first act is
 // `push 0x2e / push arg2 / call strrchr` followed by _stricmp against
 // ".BMP" / ".PCX" / ".PID". A path, end to end.
-// @early-stop
-// 99.09% - structurally identical to the 100% sibling Create24, plus the two
-// g_resourceInstallActive/B DIR32 reloc artifacts. The lone code residual is the geometry
-// temp register: retail caches w(item->m_1c) in edx and h in ecx; cl (with one fewer
-// call arg than Create24) swaps them to ecx/edx. The 3-vs-5-arg call shifts the post-
-// call allocator state - not steerable from Create's own source.
 // ---------------------------------------------------------------------------
 RVA(0x00152e90, 0x8b)
 i32 CImage::Create(char* path, i32 keyed) {
@@ -203,12 +197,13 @@ i32 CImage::Create(char* path, i32 keyed) {
     if (item == 0) {
         return 0;
     }
-    i32 w = item->m_width;
-    m_width = w;
-    i32 h = item->m_height;
-    m_height = h;
-    m_anchorX = w >> 1;
-    m_anchorY = h >> 1;
+    // No w/h locals HERE (the two sibling loaders below keep theirs): the halves are
+    // re-read from the members just written, which is what makes cl put the width temp
+    // in edx and the height temp in ecx.  Naming the pair swaps that assignment.
+    m_width = item->m_width;
+    m_height = item->m_height;
+    m_anchorX = m_width >> 1;
+    m_anchorY = m_height >> 1;
     if (item->m_hasColorKey != 0) {
         m_loadResult = 0x11;
     } else {
@@ -481,17 +476,22 @@ void CImage::FlipVertical(void*) {
 
 RVA(0x00153380, 0xeb)
 i32 CImage::Reload(CParseSource* src, i32 arg) {
-    if (m_surface == 0) {
+    // m_surface is RE-READ into the local before the Restore: retail chains the two
+    // loads through one register (`mov eax,[esi+0x2c]; mov eax,[eax+8]`), which is what
+    // a reassigned named local lowers to; reading `m_surface->m_ddSurface` as one
+    // expression gives the value its own register instead (edx + eax).
+    CDDSurface* surf = m_surface;
+    if (surf == 0) {
         return 1;
     }
-    IDirectDrawSurface* s = m_surface->m_ddSurface;
+    IDirectDrawSurface* s = surf->m_ddSurface;
     if (s != 0) {
         if (s->IsLost() == 0) {
             return 1;
         }
     }
-    s = m_surface->m_ddSurface;
-    if (s->Restore() != 0) {
+    surf = m_surface;
+    if (surf->m_ddSurface->Restore() != 0) {
         this->FreeAll();
         return this->Resolve(src, arg);
     }

@@ -113,12 +113,6 @@ void CNetCmdSlot::ClearAckFlags() {
     }
 }
 
-// @early-stop
-// rep-stos setup scheduling wall (was 94.1%) PLUS the delinker unpair: logic + every
-// other byte exact. The residual is a 3-instruction permutation of the
-// memset(m_1b0,0,0x200) prologue - retail emits `lea edi,[ebp+0x1b0]` before
-// `mov ecx,0x80 / xor eax,eax`, cl emits it after (identical multiset, one schedule
-// swap, source-invariant under /O2). Plus Reset now unpairs (delinker section-packing).
 RVA(0x000bf150, 0x58)
 void CNetSession::Reset() {
     m_tick = 0;
@@ -128,7 +122,12 @@ void CNetSession::Reset() {
     for (i = 0; i < 4; i++) {
         m_slots[i].FullReset();
     }
-    memset(m_idMap, 0, 0x200);
+    // a per-entry zero LOOP, not memset: cl expands it to the same `rep stosd`, but
+    // computes the destination `lea` FIRST (retail's order); the memset intrinsic puts
+    // the count/value first and the lea last.
+    for (i = 0; i < 0x80; i++) {
+        m_idMap[i] = 0;
+    }
     for (i = 0; i < 0x80; i++) {
         m_records[i].m_seq = 0;
         m_records[i].m_count = 0;
@@ -200,9 +199,6 @@ i32 CNetSession::Poll(i32 delta) {
     return received;
 }
 
-// @early-stop
-// regalloc tie (~93%): logic byte-exact, retail keeps obj in eax / reads the flag
-// byte into cl; cl's MSVC spills obj to ecx then reads flag into al.
 RVA(0x000bf700, 0x82)
 i32 CNetSession::Dispatch(i32 a, CNetCtrlMsg* b, i32 c) {
     if (!b) {
@@ -216,14 +212,17 @@ i32 CNetSession::Dispatch(i32 a, CNetCtrlMsg* b, i32 c) {
         return 0;
     }
     obj->m_latency = 0;
-    CNetCmdSlot* target = obj;
+    // ONE variable, re-pointed in place - not a second `target` seeded from it.  That is
+    // what keeps the slot in eax across the merge (retail's `mov ecx,eax` at the call and
+    // the null exit falling straight through with eax already 0); a separate local makes
+    // cl park it in ecx and pay an extra `xor eax,eax` on the failure path.
     if (!(b->m_route.m_routeFlags & 0x80) && (b->m_route.m_routeFlags & 1)) {
-        target = &m_slots[b->m_route.m_routeSlot];
-        if (!target) {
+        obj = &m_slots[b->m_route.m_routeSlot];
+        if (!obj) {
             return 0;
         }
     }
-    return target->ProcessCmd(a, b, c);
+    return obj->ProcessCmd(a, b, c);
 }
 
 // (ex-wall note, RETIRED 2026-07-29: this is 100% EXACT now. It used to carry an
@@ -640,15 +639,13 @@ CGruntzCommand* CNetSession::GetSlotPtr(i32 v) {
 
 // Scan the four inline command slots for the first active (m_state==3), un-reset
 // (m_isRemote==0) slot whose latency exceeds key (unsigned).
-// @early-stop
-// regalloc wall (topic:wall topic:regalloc): structure byte-identical to retail
-// (lea/loop/guards/ja/ret all match); residual is the key<->counter register swap
-// (retail key=ecx/counter=edx, cl here key=edx/counter=ecx) driven by the key-load
-// vs lea schedule order, not source-steerable, ~88.75%.
 RVA(0x000c0460, 0x2e)
 CNetCmdSlot* CNetSession::FindSlot(u32 key) {
-    CNetCmdSlot* p = &m_slots[0];
-    for (i32 i = 0; i < 4; i++, p++) {
+    // the slot pointer is re-formed from the index INSIDE the loop (not carried as a
+    // second induction variable): that is what makes cl emit the `lea` for m_slots
+    // before the key load and keep the counter in edx.
+    for (i32 i = 0; i < 4; i++) {
+        CNetCmdSlot* p = &m_slots[i];
         if (p && p->m_state == 3 && p->m_isRemote == 0 && static_cast<u32>(p->m_latency) > key) {
             return p;
         }
@@ -712,10 +709,12 @@ i32 CNetCmdSlot::Init(CMulti* a1, GruntzPlayer* a2, i32 a3) {
     m_baseSeq = 0;
     m_maxSeq = 0;
     ClearCmds();
-    m_ackFlags[0] = 0;
-    m_ackFlags[1] = 0;
-    m_ackFlags[2] = 0;
-    m_ackFlags[3] = 0;
+    // a LOOP (cl unrolls it): the four ack slots get their OWN zero constant, which is
+    // why retail re-materialises `xor eax,eax` after ClearCmds instead of parking the
+    // field block's zero in a callee-saved register across the call.
+    for (i32 i = 0; i < 4; i++) {
+        m_ackFlags[i] = 0;
+    }
     ResetTriple(m_rangeA);
     ResetTriple(m_rangeB);
     return 1;
@@ -724,11 +723,6 @@ i32 CNetCmdSlot::Init(CMulti* a1, GruntzPlayer* a2, i32 a3) {
 // ---------------------------------------------------------------------------
 // CNetCmdSlot::ResetAll (0x0c0bb0, __thiscall) - full wipe.
 // ---------------------------------------------------------------------------
-// @early-stop
-// zero-register-pinning wall (73.7%): logic byte-exact. Retail re-materializes
-// the splat constant (`xor eax,eax` twice, around ClearCmds) and saves only esi;
-// cl instead pins 0 in callee-saved edi across the call. A regalloc coin-flip
-// identical to ResetTriple/AllSlotsReady in this TU; not source-steerable.
 RVA(0x000c0bb0, 0x47)
 void CNetCmdSlot::ResetAll() {
     m_state = 0;
@@ -740,10 +734,12 @@ void CNetCmdSlot::ResetAll() {
     m_maxSeq = 0;
     m_owner = 0;
     ClearCmds();
-    m_ackFlags[0] = 0;
-    m_ackFlags[1] = 0;
-    m_ackFlags[2] = 0;
-    m_ackFlags[3] = 0;
+    // a LOOP (cl unrolls it): the four ack slots get their OWN zero constant, which is
+    // why retail re-materialises `xor eax,eax` after ClearCmds instead of parking the
+    // field block's zero in a callee-saved register across the call.
+    for (i32 i = 0; i < 4; i++) {
+        m_ackFlags[i] = 0;
+    }
     ResetTriple(m_rangeA);
     ResetTriple(m_rangeB);
 }
@@ -753,10 +749,6 @@ void CNetCmdSlot::ResetAll() {
 // m_desc / m_owner, zero the sequence-tracking fields, drain the queue and splat
 // both command ranges. Called by CNetSession::Reset, CMulti::AckDropPlayer and
 // CNetSession::Reconcile (was the CCluster0c::Init view).
-// @early-stop
-// regalloc tie-break wall (~71%): logic byte-identical, but retail rematerializes
-// the zero constant in eax while cl hoists 0 into a callee-saved edi across the
-// ClearCmds call; a cl-build heuristic delta, not a source shape.
 RVA(0x000c0c20, 0x3f)
 void CNetCmdSlot::FullReset() {
     m_isRemote = 0;
@@ -765,10 +757,12 @@ void CNetCmdSlot::FullReset() {
     m_baseSeq = 0;
     m_maxSeq = 0;
     ClearCmds();
-    m_ackFlags[0] = 0;
-    m_ackFlags[1] = 0;
-    m_ackFlags[2] = 0;
-    m_ackFlags[3] = 0;
+    // a LOOP (cl unrolls it): the four ack slots get their OWN zero constant, which is
+    // why retail re-materialises `xor eax,eax` after ClearCmds instead of parking the
+    // field block's zero in a callee-saved register across the call.
+    for (i32 i = 0; i < 4; i++) {
+        m_ackFlags[i] = 0;
+    }
     ResetTriple(m_rangeA);
     ResetTriple(m_rangeB);
 }
@@ -952,15 +946,13 @@ void CNetCmdSlot::NetCmdIdClear(i32* arr, i32 v) {
 // ---------------------------------------------------------------------------
 // CNetCmdSlot::ResetTriple (0x0c10a0, __thiscall) - splat -1 over three dwords.
 // ---------------------------------------------------------------------------
-// @early-stop
-// regalloc swap (93.33%): logic byte-exact, but retail loads p into ecx (reusing
-// the dead `this`) and materializes -1 into eax, while cl picks eax for p and ecx
-// for -1. A pure eax/ecx coin-flip on a thiscall member that ignores `this`.
 RVA(0x000c10a0, 0x12)
 void CNetCmdSlot::ResetTriple(i32* p) {
-    p[0] = -1;
-    p[1] = -1;
-    p[2] = -1;
+    // a LOOP, fully unrolled by cl - three separate stores put the -1 in ecx and the
+    // pointer in eax; the loop form is what puts the pointer in ecx (retail's bytes).
+    for (i32 i = 0; i < 3; i++) {
+        p[i] = -1;
+    }
 }
 
 // ---------------------------------------------------------------------------

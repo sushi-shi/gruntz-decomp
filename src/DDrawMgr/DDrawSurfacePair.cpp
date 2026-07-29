@@ -665,16 +665,27 @@ void CDDrawSurfacePair::BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* s
 // "needs work" (1).  Otherwise, if the held IDirectDrawSurface is present and not
 // lost (IsLost @+0x60 == DD_OK), report 1; else attempt Restore (@+0x6c) twice,
 // reporting 1 on the first failure, and 0 only when both restores succeed.
-// __thiscall, no args.  The chained `||` gives retail's shared return-1 tail.
-// @early-stop
-// 99.09% — every code byte matches; residual is the register the m_surface->m_8
-// re-read lands in (retail reuses esi for the last block, our cl picks edx) — the
-// same non-steerable regalloc coin-flip as the sibling RestoreIfLost (0x163f00,
-// 98.67%).  docs/patterns/reread-member-view-pointer.md / zero-register-pinning.md.
+// __thiscall, no args.  The single trailing `return 1` gives retail's shared tail.
+// Each Restore re-reads m_surface into the SAME named local: that is what lowers to
+// retail's one-register load chain (`mov eax,[esi+0x2c]; mov eax,[eax+8]`, and `esi`
+// for the last block, where `this` dies).  Reading `m_surface->m_ddSurface` as a
+// single expression instead gives the intermediate its own register (edx).
 RVA(0x00164660, 0x46)
 i32 CDrawSubWorker::Probe() {
-    return m_surface == 0 || (m_surface->m_ddSurface != 0 && m_surface->m_ddSurface->IsLost() == 0)
-           || m_surface->m_ddSurface->Restore() == 0 || m_surface->m_ddSurface->Restore() == 0;
+    CDDSurface* s = m_surface;
+    if (s != 0) {
+        IDirectDrawSurface* dd = s->m_ddSurface;
+        if (dd == 0 || dd->IsLost() != 0) {
+            s = m_surface;
+            if (s->m_ddSurface->Restore() != 0) {
+                s = m_surface;
+                if (s->m_ddSurface->Restore() != 0) {
+                    return 0;
+                }
+            }
+        }
+    }
+    return 1;
 }
 
 RVA(0x001646b0, 0xde)
@@ -1220,6 +1231,15 @@ i32 CFileMem::Write(const void* buf, i32 n) {
 // ===========================================================================
 // 0x165fa0 (vtable slot 10): plot the worker's marker pixel (m_78) at pixel
 // (m_5c, m_60) onto BOTH passed surface pairs - the back one (b) first.
+// @early-stop
+// 99.78%, 4 bytes, in the SECOND block only: retail evaluates `m_bytesPerPixel * x`
+// first (it lands in ecx and is the `add eax,ecx` term) while this cl evaluates
+// `m_pitch * y` first, so the two products trade the add-term and the index-term of
+// `mov [edx+eax],bl`. cl canonicalises the commutative `+` (both operand orders and
+// the statement-split form compile identically), and the two blocks are now
+// source-identical while only the second one differs - so the pick is whole-TU
+// allocator state, not this body's spelling. It moved here as /O2 ripple from the
+// CDrawSubWorker::Probe fold in this TU (its previous MAX was 88.96%).
 RVA(0x00165fa0, 0x93)
 void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     {
