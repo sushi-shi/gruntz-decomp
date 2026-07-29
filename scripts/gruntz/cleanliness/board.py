@@ -417,6 +417,13 @@ _RATCHET = _VIEW_METRICS | set(_CALLER_CALLEE_LABELS) | {
     # is far cheaper to name then than to re-derive later. Ratcheted at the standing count, so
     # existing debt is drained rather than forbidden.
     "positional arg placeholders",
+    # Same argument for the field side. `m_<hex>` naming is deliberately LAST in the campaign
+    # order (CLAUDE.md), which is why this sat un-ratcheted - but "last" meant it could rise
+    # silently and the baseline would bless it: one merge of 14 new bodies took it 7483 -> 7581
+    # with no gate saying anything. Ratcheted at the standing count for the same reason as the
+    # arg metric: existing debt is drained on its own schedule, but NEW placeholder fields do
+    # not get to arrive unnoticed.
+    "m_<hex> fields",
 }
 
 
