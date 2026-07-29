@@ -301,6 +301,23 @@ METRICS = (
     ("virtual slot placeholders",
      re.compile(r"\b(?:Slot[0-9]{1,2}_[0-9a-f]{4,}|Vfunc[0-9a-f]+|Vtbl_[0-9a-f]{4,})\b"
                 r"|\bvirtual\b[^;{\n]*?\bv[0-9]+\s*\("), False),
+    # Positional PARAMETER placeholders: `i32 a3`, `i32* p4`, `void* arg2`. The digit IS the
+    # argument index - the decompiler's default - so the name carries no information at all
+    # and the reader has to re-derive the meaning from the body every time. This is the
+    # parameter-side twin of `m_<hex> fields`, and the same rule applies: recover the meaning
+    # from the call sites and the body, then name it.
+    #
+    # Deliberately EXCLUDED, because it is not dead weight:
+    #   * bare `unused` (`i32 WriteSnapshot(CFileMemBase*, i32 unused)`) - that name is a real
+    #     claim about the ABI, namely that retail ignores the slot. Naming it `unused` is the
+    #     recovered meaning, not a placeholder for one.
+    #   * `v[0-9]+` - already covered by "virtual slot placeholders", and bare v0/v1/v2 are
+    #     legitimate vertex locals in the raster/poly code.
+    # Matched only when preceded by a TYPE token, so an ordinary `a1`/`p2` expression variable
+    # elsewhere cannot inflate the count.
+    ("positional arg placeholders",
+     re.compile(r"\b(?:i8|u8|i16|u16|i32|u32|i64|u64|float|double|bool|char|short|int|long|void"
+                r"|[A-Z]\w*)\s*(?:\*\s*|&\s*)*\b(?:a|p|arg)[0-9]+\b"), False),
     ("placeholder classes", _count_placeholders, False),
     (".cpp-local views", _count_cpp_local_defs, True),
     # --- manual-vtable residue (the de-hack / vtable-review targets) ---
@@ -395,6 +412,11 @@ _RATCHET = _VIEW_METRICS | set(_CALLER_CALLEE_LABELS) | {
     "unexplained casts",
     "cpp extern decls",
     "cpp external prototypes",
+    # A newly reconstructed body must NOT arrive with `i32 a3`-style parameters. The meaning
+    # is available at the moment of reconstruction - from the call sites and the body - and it
+    # is far cheaper to name then than to re-derive later. Ratcheted at the standing count, so
+    # existing debt is drained rather than forbidden.
+    "positional arg placeholders",
 }
 
 
