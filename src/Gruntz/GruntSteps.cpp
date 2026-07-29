@@ -39,6 +39,7 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/GruntSpawnConfig.h> // StopVoice on m_cueSink
 #include <rva.h>
+#include <Pix16.h> // the byte-stride / dword-field tile record views
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -83,9 +84,11 @@ static const char s_POGOSTICKGRUNT[] = "POGOSTICKGRUNT";   // s_..._0060d9fc
 // The tile records are 0x1c bytes walked with BYTE strides (the grid is exposed as
 // char** for exactly that), while each record's flag word is a dword at +0.
 static inline i32 TileFlags(const char* rec) {
-    // byte-forced (one seam): the mixed byte-stride / dword-field view is the tile
-    // table's own design - the pun lives here, once
-    return *reinterpret_cast<const i32*>(rec);
+    // the mixed byte-stride / dword-field view IS the tile table's own design, so
+    // both readings of the record base are named (<Pix16.h>)
+    Pix16CPtr r;
+    r.m_chars = rec;
+    return *r.m_dwords;
 }
 
 static __inline i32 s_TileFlags(CGruntzMapMgr* b, i32 tx, i32 ty) {
@@ -128,9 +131,12 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
         return 1;
     }
     char* cur = board->m_rowBytes[ty] + tx * 7 * 4;
-    // byte-forced: TileFlags(const char*) walks the board by BYTE stride - the
-    // sibling reads here are at odd byte offsets (cur[0x1d], cur[stride + 1]).
-    char* tg = reinterpret_cast<char*>(tgt);
+    // TileFlags(const char*) walks the board by BYTE stride - the sibling reads here
+    // are at odd byte offsets (cur[0x1d], cur[stride + 1]), so the row cursor's byte
+    // and dword readings are both named (<Pix16.h>).
+    Pix16Ptr row;
+    row.m_dwords = tgt;
+    char* tg = row.m_chars;
     i32 stride = board->m_width * 7 * 4; // bytes per board row
     if (dx > 0) {
         if (dy > 0) {

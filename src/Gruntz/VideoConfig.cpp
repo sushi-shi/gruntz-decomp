@@ -31,6 +31,7 @@
 #include <Gruntz/SoundState.h> // ex Globals.h transitive
 #include <afxcmn.h>
 #include <Net/NetLobby.h> // NetLobby::g_curDlg
+#include <MsgParam.h>     // the window-message parameter's pointer/word pair
 
 typedef enum VideoConfigDlgId {
     IDC_RESCAPTION = 0x52d, // the "current resolution" static text ctrl
@@ -121,9 +122,12 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
         case WM_HSCROLL: { // 0x114
             i32 code = static_cast<i32>((wParam & 0xffff));
             i32 pos = static_cast<i32>((wParam >> 0x10));
-            // WM_HSCROLL's lParam IS the scrollbar's window handle (Win32 ABI); it is
-            // named once here instead of at each of the three uses.
-            HWND bar = reinterpret_cast<HWND>(lParam);
+            // WM_HSCROLL's lParam IS the scrollbar's window handle (<MsgParam.h>);
+            // it is named ONCE here instead of at each of the three uses - retail
+            // caches it in a register, which the per-use spelling cannot express.
+            MsgParam from;
+            from.m_lparam = lParam;
+            HWND bar = from.m_hwnd;
             if (bar == g_optHwndResSlider) {
                 SaveVideoResolutionConfig(hDlg, bar, code, pos);
             } else {
@@ -170,7 +174,9 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             // control notifications: route each checkbox to its handler. WM_COMMAND's
             // lParam IS the sending control's window handle (Win32 ABI), named once.
             {
-                HWND ctrl = reinterpret_cast<HWND>(lParam);
+                MsgParam from;
+                from.m_lparam = lParam;
+                HWND ctrl = from.m_hwnd;
                 if (g_optHwndMusic != 0 && ctrl == g_optHwndMusic) {
                     OnToggleMusicOption(hDlg);
                     return FALSE;

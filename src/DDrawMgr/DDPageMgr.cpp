@@ -6,7 +6,8 @@
 #include <afxwin.h> // the REAL MFC CWnd (m_videoWnd) + AfxRegisterWndClass
 #include <Ints.h>
 #include <rva.h>
-#include <smack.h> // the genuine RAD Smacker SDK (SMACKW32.DLL) - Smack handle + Smack* API
+#include <ComOutRef.h> // the COM out-parameter's void**/typed destination pair
+#include <smack.h>     // the genuine RAD Smacker SDK (SMACKW32.DLL) - Smack handle + Smack* API
 #undef u8
 #undef u16
 #undef u32
@@ -73,8 +74,9 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     if (DirectDrawCreate(0, &m_dd, 0) != 0) {
         return 0;
     }
-    // API-forced: COM QueryInterface's out-param is void**
-    if (m_dd->QueryInterface(IID_IDirectDraw2, reinterpret_cast<void**>(&m_dd2)) != 0) {
+    ComOutRef<IDirectDraw2> ddOut;
+    ddOut.m_asTyped = &m_dd2;
+    if (m_dd->QueryInterface(IID_IDirectDraw2, ddOut.m_asVoid) != 0) {
         return 0;
     }
     if (m_dd2->SetCooperativeLevel(static_cast<HWND>(window), coopFlags) != 0) {
@@ -95,9 +97,9 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
         return 0;
     }
 
-    // API-forced: COM QueryInterface's out-param is void**
-    if (m_primaryRaw->QueryInterface(IID_IDirectDrawSurface3, reinterpret_cast<void**>(&m_primary))
-        != 0) {
+    ComOutRef<IDirectDrawSurface> primOut;
+    primOut.m_asTyped = &m_primary;
+    if (m_primaryRaw->QueryInterface(IID_IDirectDrawSurface3, primOut.m_asVoid) != 0) {
         return 0;
     }
 

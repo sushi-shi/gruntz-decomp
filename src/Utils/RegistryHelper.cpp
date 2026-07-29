@@ -2,6 +2,7 @@
 #include <EmptyString.h> // g_emptyString
 #include <rva.h>
 #include <string.h>
+#include <MsgParam.h> // RegBuf / the message-parameter word pairs
 
 namespace Utils {
 
@@ -75,6 +76,7 @@ namespace Utils {
         char* szDefault
     ) {
         DWORD dwType;
+        RegBuf data; // the registry API's BYTE* view of this char buffer
 
         if (m_open && szValueName && szValueBuffer && *pValueBufferSize > 0) {
             if (RegQueryValueExA(
@@ -82,7 +84,7 @@ namespace Utils {
                     szValueName,
                     0,
                     &dwType,
-                    reinterpret_cast<LPBYTE>(szValueBuffer), // win32-abi: REG_SZ data is BYTEs
+                    (data.m_chars = szValueBuffer, data.m_bytes),
                     pValueBufferSize
                 ) == 0
                 && dwType == 1 /*REG_SZ*/) {
@@ -148,6 +150,7 @@ namespace Utils {
         DWORD dwType;
         DWORD dwData;
         DWORD cbData;
+        RegBuf data; // the registry API's BYTE* view of this DWORD
 
         if (m_open && szValueName) {
             cbData = 4;
@@ -156,7 +159,7 @@ namespace Utils {
                     szValueName,
                     0,
                     &dwType,
-                    reinterpret_cast<LPBYTE>(&dwData),
+                    (data.m_dword = &dwData, data.m_bytes),
                     &cbData
                 ) == 0
                 && dwType == 4 /*REG_DWORD*/) {
@@ -197,12 +200,13 @@ namespace Utils {
         if (!szValue) {
             return 0;
         }
+        RegBufC data; // the registry API's BYTE* view of this char buffer
         return RegSetValueExA(
                    m_valueKey,
                    szValueName,
                    0,
                    1 /*REG_SZ*/,
-                   reinterpret_cast<const BYTE*>(szValue), // API-forced: REG_SZ data is BYTEs
+                   (data.m_chars = szValue, data.m_bytes),
                    strlen(szValue) + 1
                )
                == 0;
@@ -244,12 +248,13 @@ namespace Utils {
         if (!szValueName) {
             return 0;
         }
+        RegBuf data; // the registry API's BYTE* view of this DWORD
         return RegSetValueExA(
                    m_valueKey,
                    szValueName,
                    0,
                    4 /*REG_DWORD*/,
-                   reinterpret_cast<LPBYTE>(&value),
+                   (data.m_dword = &value, data.m_bytes),
                    4
                )
                == 0;

@@ -8,6 +8,7 @@
 #include <Image/Image.h>                  // CFileImageSurface / the image-source classes
 #include <ddraw.h> // real DirectDraw SDK (IDirectDrawSurface, DDBLTFX, DDCOLORKEY, DDERR_*/DDBD_*/DDSCAPS_*)
 #include <rva.h>
+#include <ComOutRef.h> // the COM out-parameter's void**/typed destination pair
 #include <stdio.h>
 #include <string.h> // inline strcpy / memcpy / memset
 
@@ -174,12 +175,9 @@ i32 CDDSurface::BlitIntoDesc(void* a) {
         return 0;
     }
 
-    // API-forced: COM QueryInterface's out-param is void**
-    hr = m_ddSurfaceBack->QueryInterface(
-        IID_IDirectDrawSurface3,
-        // API-forced: COM's QueryInterface out-param is `void**`.
-        reinterpret_cast<void**>(&m_ddSurface)
-    );
+    ComOutRef<IDirectDrawSurface> surfOut;
+    surfOut.m_asTyped = &m_ddSurface;
+    hr = m_ddSurfaceBack->QueryInterface(IID_IDirectDrawSurface3, surfOut.m_asVoid);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(0, 0, hr);
         return 0;

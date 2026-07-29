@@ -13,6 +13,7 @@
 #include <string.h>               // inline strcmp (empty-text WM_SETTEXT gate / name resync)
 #include <stdio.h>                // sprintf/fopen/fclose (DoDataExchange custom-level probe)
 #include <rva.h>
+#include <MsgParam.h>             // the window-message parameter's pointer/word pair
 #include <Gruntz/MultiStartDlg.h> // own exported globals (ex Globals.h)
 #include <Gruntz/MpSymItem.h>
 
@@ -51,11 +52,12 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     while (item != 0) {
         CString name(item->m_name);
         name.MakeUpper();
+        MsgParam text;
         ::SendMessageA(
             combo->m_hWnd,
             CB_ADDSTRING,
             0,
-            reinterpret_cast<LPARAM>(static_cast<LPCTSTR>(name))
+            (text.m_str = static_cast<LPCTSTR>(name), text.m_lparam)
         );
         item = static_cast<MpSymItem*>(st->NextSym3(item));
     }
@@ -68,8 +70,10 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     ::SendMessageA(combo->m_hWnd, CB_SETCURSEL, 0, 0);
     HWND__* h = child->m_hWnd;
     g_savedMultiWndProc = GetWindowLongA(h, GWL_WNDPROC);
-    // API-forced: SetWindowLong's GWL_WNDPROC value is a LONG-wide procedure word.
-    SetWindowLongA(h, GWL_WNDPROC, reinterpret_cast<i32>(WndProc_c1a10));
+    // GWL_WNDPROC's value IS a window procedure, carried in the API's LONG slot
+    MsgParam proc;
+    proc.m_intProc = WndProc_c1a10;
+    SetWindowLongA(h, GWL_WNDPROC, proc.m_long);
     CommitWorldHost();
     return 1;
 }
@@ -78,12 +82,16 @@ RVA(0x000c1a10, 0x70)
 i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {
         // API-forced: Win32 hands the item text through LPARAM
-        if (strcmp(g_emptyString, reinterpret_cast<const char*>(lParam)) == 0) {
+        MsgParam text;
+        text.m_lparam = lParam;
+        if (strcmp(g_emptyString, text.m_str) == 0) {
             return 0;
         }
     }
+    // the saved procedure rides GetWindowLong's LONG slot (<MsgParam.h>)
+    MsgParam prev;
     return CallWindowProcA(
-        reinterpret_cast<WNDPROC>(g_savedMultiWndProc),
+        (prev.m_long = g_savedMultiWndProc, prev.m_wndproc),
         hWnd,
         msg,
         wParam,
@@ -273,18 +281,26 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         }
         WapSendMessageA pSend = ::SendMessageA;
         i32 i;
+        // CB_ADDSTRING carries the string ADDRESS in the integer lParam slot - the
+        // Win32 message ABI's own two readings of one word (<MsgParam.h>).
+        MsgParam item;
         for (i = 0; i < NUM_PLAYER_SLOTS; i++) {
             HWND kc;
             kc = GetCtrlE(i)->m_hWnd;
-            pSend(kc, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("None"));
+            item.m_str = "None";
+            pSend(kc, CB_ADDSTRING, 0, item.m_lparam);
             kc = GetCtrlE(i)->m_hWnd;
-            pSend(kc, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Computer (easy)"));
+            item.m_str = "Computer (easy)";
+            pSend(kc, CB_ADDSTRING, 0, item.m_lparam);
             kc = GetCtrlE(i)->m_hWnd;
-            pSend(kc, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Computer (normal)"));
+            item.m_str = "Computer (normal)";
+            pSend(kc, CB_ADDSTRING, 0, item.m_lparam);
             kc = GetCtrlE(i)->m_hWnd;
-            pSend(kc, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Computer (difficult)"));
+            item.m_str = "Computer (difficult)";
+            pSend(kc, CB_ADDSTRING, 0, item.m_lparam);
             kc = GetCtrlE(i)->m_hWnd;
-            pSend(kc, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Human"));
+            item.m_str = "Human";
+            pSend(kc, CB_ADDSTRING, 0, item.m_lparam);
         }
         for (i = 0; i < NUM_PLAYER_SLOTS; i++) {
             CWnd* e = GetCtrlB(i);

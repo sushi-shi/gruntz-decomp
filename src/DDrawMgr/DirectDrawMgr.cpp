@@ -7,9 +7,10 @@
 #include <Image/Image.h>                  // CFileImageSurface (the a58 pool item's dtor pair)
 #include <ddraw.h> // real DirectDraw SDK (IDirectDraw/2, DirectDrawCreate, DirectDrawEnumerateA, DDCAPS, IID_IDirectDraw2)
 #include <rva.h>
-#include <AddrWord.h> // the immediate-in-a-pointer-slot success code
-#include <stdio.h>    // engine sprintf (reloc-masked)
-#include <string.h>   // inline strcpy / memcpy / memset (rep stos)
+#include <ComOutRef.h> // the COM out-parameter's void**/typed destination pair
+#include <AddrWord.h>  // the immediate-in-a-pointer-slot success code
+#include <stdio.h>     // engine sprintf (reloc-masked)
+#include <string.h>    // inline strcpy / memcpy / memset (rep stos)
 
 #include <Dsndmgr/SoundBankLoad.h> // g_dot (ex mislabeled .cpp extern)
 #include <DDrawMgr/DdCreateArg.h>
@@ -342,8 +343,9 @@ i32 CDDrawPtrCollections::CreateDevice(
             }
             return 0;
         }
-        // QueryInterface's out-param is void** by the COM ABI - API-forced
-        chr = m_dd1->QueryInterface(IID_IDirectDraw2, reinterpret_cast<void**>(&m_device));
+        ComOutRef<IDirectDraw2> devOut;
+        devOut.m_asTyped = &m_device;
+        chr = m_dd1->QueryInterface(IID_IDirectDraw2, devOut.m_asVoid);
         if (chr != 0) {
             CDDrawPtrCollections::GetErrorString(0, 0, chr);
             if (m_lastError == 0) {
@@ -802,8 +804,10 @@ RVA(0x00143040, 0x7c)
 CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
     CDDPalette* item = new CDDPalette;
     // AllocBufCreate hands this the entry block as a bare i32 (retail 0x14306b pushes
-    // the arg dword straight through to 0x147390) - byte-forced int-to-pointer.
-    if (!item->Create(m_device, reinterpret_cast<PALETTEENTRY*>(a), b)) {
+    // the arg dword straight through to 0x147390) - the same word read both ways.
+    AddrWord entries;
+    entries.m_word = a;
+    if (!item->Create(m_device, static_cast<PALETTEENTRY*>(entries.m_addr), b)) {
         if (item) {
             item->Destroy();
             ::operator delete(item);

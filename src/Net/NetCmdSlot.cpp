@@ -8,6 +8,7 @@
 #include <Rez/RezMgr.h>
 #include <dplay.h> // real DirectPlay: CNetMgr::m_endpoint (+0x18) is IDirectPlay4
 #include <rva.h>
+#include <Pix16.h>          // the byte-cursor unions
 #include <string.h>         // memcpy / memset / strcat (see #pragma intrinsic below)
 #include <Net/NetCmdSlot.h> // own exported globals (ex Globals.h)
 
@@ -278,14 +279,17 @@ i32 CNetSession::Tick() {
             if (obj) {
                 NoopSync(obj);
                 rec->m_count++;
-                // remaining room in the 0x410-byte record: language-forced, a pointer
-                // difference needs both sides at the same type
-                payload += obj->Pack(payload, reinterpret_cast<char*>(rec) - payload + 0x410);
+                // remaining room in the 0x410-byte record - the byte view of the
+                // record base makes the pointer difference type-correct (<Pix16.h>)
+                RecordBytes rb;
+                rb.m_rec = rec;
+                payload += obj->Pack(payload, rb.m_chars - payload + 0x410);
             }
         }
         m_session->WriteTag("[end]\n");
-        // language-forced: a pointer difference needs both sides at the same type
-        rec->m_payloadLen = static_cast<i32>((payload - reinterpret_cast<char*>(rec) - 0x10));
+        RecordBytes rb2;
+        rb2.m_rec = rec;
+        rec->m_payloadLen = static_cast<i32>((payload - rb2.m_chars - 0x10));
         m_snapshotDone = 1;
     }
     return SendBatch() + SendAll();

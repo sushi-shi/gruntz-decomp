@@ -46,6 +46,7 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/GameRegistry.h> // canonical CGameRegistry (the reconciled singleton view)
 #include <rva.h>
+#include <Pix16.h>    // the byte-cursor unions (RecordBytes / Pix16Ptr)
 #include <AddrWord.h> // retail's pointer-as-id widening at the voice-driver slot
 #include <math.h>
 #include <stdlib.h>
@@ -873,9 +874,11 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
     i32 yy = hud->m_screenY;
     i32 xx = hud->m_screenX;
     // faithful: retail reads THROUGH the level's +0x5c slot WITHOUT the plane deref
-    // (a shipped quirk - the ints land inside m_levelName's tail), so this has to stay
-    // the raw member-address spelling rather than a typed plane access.
-    i32* rectBase = reinterpret_cast<i32*>(&g->m_world->m_level->m_mainPlane);
+    // (a shipped quirk - the ints land inside m_levelName's tail), so this stays the
+    // raw member-address spelling; RecordBytes names its dword-run reading.
+    RecordBytes band;
+    band.m_rec = &g->m_world->m_level->m_mainPlane;
+    i32* rectBase = band.m_dwords;
     i32 lim = rectBase[0x48 / 4];
     i32* rect = rectBase + 0x40 / 4;
     if (sel != 0) {

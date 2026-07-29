@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Pix16.h>        // the byte-cursor unions
 #include <AddrWord.h>     // the parse-source-pointer-in-a-size-slot pair
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -874,11 +875,13 @@ i32 CAniElement::Build(void* ctx, CAniSource* src, i32 flags) {
     i32 i;
     for (i = 0; i < src->m_count; i++) {
         rec = new CAniRecordView;
-        // byte-forced: `cursor` walks the blob in BYTES (it is advanced by the runtime
-        // `g_aniParsedNameLen + 0x14` below and the name copy reads it a char at a time),
-        // while the record prefix Parse consumes is ten consecutive i16 fields. The width
-        // changes at this one seam because the stride either side of it differs.
-        if (rec->Parse(ctx, reinterpret_cast<const i16*>(cursor)) == 0) {
+        // `cursor` walks the blob in BYTES (it is advanced by the runtime
+        // `g_aniParsedNameLen + 0x14` below and the name copy reads it a char at a
+        // time) while the record prefix Parse consumes is ten consecutive i16 fields -
+        // both readings of the cursor are named (<Pix16.h>).
+        Pix16CPtr head;
+        head.m_chars = cursor;
+        if (rec->Parse(ctx, head.m_swords) == 0) {
             goto fail;
         }
         m_records.SetAtGrow(m_records.GetSize(), static_cast<CObject*>(rec));

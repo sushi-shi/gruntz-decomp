@@ -4,6 +4,7 @@
 #include <Net/InterfaceObject.h> // Find() returns the InterfaceObject group-node
 #include <Font/Font.h> // CWapNodeB decl (a NetMgr node type, still homed here - 0x1794b0-0x179680
 #include <rva.h>
+#include <MsgParam.h> // the window-message parameter's pointer/word pair
 #include <AddrWord.h> // the list-box item cookie's word/pointer pair
 #include <string.h>   // memset (the inlined rep stos node/packet zeroing) + memcmp (IsInterfaceX)
 
@@ -232,14 +233,17 @@ void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
             // an unnamed TEMPORARY of the full-expression, not a scoped local: retail
             // reads the text out of GetName's returned pointer (`mov eax,[eax]`), not
             // back out of the temp's frame slot
+            MsgParam name;
             i32 idx = static_cast<i32>(SendMessageA(
                 hList,
                 LB_ADDSTRING,
                 0,
-                reinterpret_cast<LPARAM>(static_cast<LPCTSTR>(obj->GetName()))
+                (name.m_str = static_cast<LPCTSTR>(obj->GetName()), name.m_lparam)
             ));
             if (idx != -1) {
-                SendMessageA(hList, LB_SETITEMDATA, idx, reinterpret_cast<LPARAM>(obj));
+                MsgParam cookie;
+                cookie.m_ptr = obj;
+                SendMessageA(hList, LB_SETITEMDATA, idx, cookie.m_lparam);
             }
             if (m_groupSelId != 0) {
                 InterfaceObject* next = static_cast<InterfaceObject*>(m_groups.GetAt(m_groupSelId));
@@ -380,19 +384,17 @@ void CNetMgr::PopulatePlayerList(void* hList) {
         m_playerSelId != 0 ? static_cast<CNetPlayerListNode*>(m_players.GetNext(m_playerSelId)) : 0;
 
     while (payload != 0) {
+        MsgParam name;
         i32 r = static_cast<i32>(SendMessageA(
             static_cast<HWND>(hList),
             LB_ADDSTRING,
             0,
-            reinterpret_cast<LPARAM>(payload->m_desc.m_lpszName)
+            (name.m_str = payload->m_desc.m_lpszName, name.m_lparam)
         ));
         if (r != -1) {
-            SendMessageA(
-                static_cast<HWND>(hList),
-                LB_SETITEMDATA,
-                r,
-                reinterpret_cast<LPARAM>(payload)
-            );
+            MsgParam cookie;
+            cookie.m_ptr = payload;
+            SendMessageA(static_cast<HWND>(hList), LB_SETITEMDATA, r, cookie.m_lparam);
         }
         // GetAt's node is latched BEFORE the advance and assigned after: that is what
         // stops cl from CSEing the cursor load GetNext makes through its POSITION&
@@ -670,19 +672,17 @@ void CNetMgr::PopulateSessionList(void* hList) {
         m_sessionSelId != 0 ? static_cast<CNetSessionNode*>(m_sessions.GetNext(m_sessionSelId)) : 0;
 
     while (payload != 0) {
+        MsgParam name;
         i32 r = static_cast<i32>(SendMessageA(
             static_cast<HWND>(hList),
             LB_ADDSTRING,
             0,
-            reinterpret_cast<LPARAM>(static_cast<const char*>(payload->GetName()))
+            (name.m_str = static_cast<const char*>(payload->GetName()), name.m_lparam)
         ));
         if (r != -1) {
-            SendMessageA(
-                static_cast<HWND>(hList),
-                LB_SETITEMDATA,
-                r,
-                reinterpret_cast<LPARAM>(payload)
-            );
+            MsgParam cookie;
+            cookie.m_ptr = payload;
+            SendMessageA(static_cast<HWND>(hList), LB_SETITEMDATA, r, cookie.m_lparam);
         }
         // GetAt's node is latched BEFORE the advance and assigned after: that is what
         // stops cl from CSEing the cursor load GetNext makes through its POSITION&

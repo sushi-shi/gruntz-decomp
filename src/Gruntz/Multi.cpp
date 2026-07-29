@@ -4,6 +4,7 @@
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Net/LobbyDialogs.h>     // the four modal DlgProcs RunErrorDialog runs
 #include <rva.h>
+#include <MsgParam.h>         // the window-message parameter's pointer/word pair
 #include <Gruntz/CurPlayer.h> // g_curPlayer
 #include <Rez/FrameClock.h>   // the frame-clock/timer band the session loop reads/pumps
 #include <Gruntz/BattlezMapConfig.h>
@@ -1637,10 +1638,14 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
         } else {
             str = player->m_desc.m_lpszName;
         }
-        i32 idx =
-            static_cast<i32>(::SendMessageA(hList, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(str)));
+        MsgParam name;
+        i32 idx = static_cast<i32>(
+            ::SendMessageA(hList, LB_ADDSTRING, 0, (name.m_str = str, name.m_lparam))
+        );
         if (idx != -1) {
-            ::SendMessageA(hList, LB_SETITEMDATA, idx, reinterpret_cast<LPARAM>(player));
+            MsgParam cookie;
+            cookie.m_ptr = player;
+            ::SendMessageA(hList, LB_SETITEMDATA, idx, cookie.m_lparam);
         }
         if (sess->m_playerSelId != 0) {
             player = static_cast<CNetPlayerListNode*>(sess->m_players.GetAt(sess->m_playerSelId));
@@ -3027,7 +3032,9 @@ namespace NetLobby {
             strcat(buf, "\r\n");
         }
         strcat(buf, str);
-        SendMessageA(edit, 0xc2, 0, reinterpret_cast<LPARAM>(buf));
+        MsgParam text;
+        text.m_str = buf;
+        SendMessageA(edit, 0xc2, 0, text.m_lparam);
         SendMessageA(edit, 0xb6, 0, 0x270f);
     }
 } // namespace NetLobby

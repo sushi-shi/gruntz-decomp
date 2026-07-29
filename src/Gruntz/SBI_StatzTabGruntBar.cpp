@@ -1,6 +1,7 @@
 #define SBI_DTOR_CHAIN // enable the inline base-dtor body (see StatusBarItem.h)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <rva.h>
+#include <AddrWord.h> // the register-carried zero the glyph slot stores
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Gruntz/Grunt.h>
@@ -223,11 +224,14 @@ i32 CSBI_StatzTabGruntBar::Update() {
     // value 3: selection (glyph/value, main glyph map; +0x28 row offset on lookup)
     if (m_selectValue != selectVal) {
         if (selectVal == 0) {
-            // byte-forced: retail 0xea894 is `mov DWORD PTR [esi+0x58],edi` - it stores
-            // the REGISTER holding selectVal (already proven 0 by the `test edi,edi` two
+            // retail 0xea894 is `mov DWORD PTR [esi+0x58],edi` - it stores the
+            // REGISTER holding selectVal (already proven 0 by the `test edi,edi` two
             // instructions earlier), not an immediate. `m_selectGlyph = 0` would emit
-            // `mov dword ptr [..],0`; the cast is what keeps the value in the register.
-            m_selectGlyph = reinterpret_cast<CImage*>(selectVal);
+            // `mov dword ptr [..],0`; routing the word through AddrWord keeps the
+            // value in the register.
+            AddrWord zero;
+            zero.m_word = selectVal;
+            m_selectGlyph = static_cast<CImage*>(zero.m_addr);
         } else {
             CDDrawWorker* gm = m_glyphMap;
             i32 key = selectVal + 0x28;

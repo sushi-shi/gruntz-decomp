@@ -32,6 +32,10 @@ public:
     // minus m_linkOffset is its CoordPoolNode. byte-forced - m_linkOffset is a RUNTIME
     // field (the pool's design), so this is one seam, not open-coded per site.
     CoordPoolNode* NodeOf(void* payload) {
+        // Same container-of as elemOf in <Dsndmgr/SoundVoiceList.h>, and the same
+        // MEASURED verdict: a union spelling makes cl materialise a stack temporary
+        // where the cast form stays a register expression. Address arithmetic, not
+        // two readings of stored data - language-forced, at one seam, here.
         return reinterpret_cast<CoordPoolNode*>(static_cast<char*>(payload) - m_linkOffset);
     }
 

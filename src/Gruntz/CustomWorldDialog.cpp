@@ -11,6 +11,7 @@
 #include <Wwd/WwdFile.h>      // WwdHeader + the WwdFile statics
 #include <Ints.h>
 #include <rva.h>
+#include <MsgParam.h> // the window-message parameter's pointer/word pair
 
 #include <direct.h>                   // _getcwd (BuildCustomWwdPath)
 #include <io.h>                       // _finddata_t / _findfirst / _findnext (FillCustomLevelList)
@@ -107,7 +108,9 @@ INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
                 EndDialog(hDlg, 1);
                 return 1;
             }
-            if (g_customLevelList != 0 && lParam == reinterpret_cast<LPARAM>(g_customLevelList)) {
+            MsgParam listWnd;
+            listWnd.m_hwnd = g_customLevelList;
+            if (g_customLevelList != 0 && lParam == listWnd.m_lparam) {
                 if (HIWORD(wParam) == 1) {
                     FillLevelInfoDialog(hDlg);
                     return 1;
@@ -183,7 +186,9 @@ namespace m4 {
                     if (len > 4) {
                         disp[len - 4] = 0;
                     }
-                    ::SendMessageA(lb, 0x180, 0, reinterpret_cast<LPARAM>(disp)); // LB_ADDSTRING
+                    MsgParam name;
+                    name.m_str = disp;
+                    ::SendMessageA(lb, 0x180, 0, name.m_lparam); // LB_ADDSTRING
                 }
             } while (_findnext(h, &fd) != -1);
         }
@@ -244,7 +249,9 @@ i32 LoadCustomWorldSelection(HWND hWnd) {
     if (sel == -1) {
         return 0;
     }
-    if (SendMessageA(lb, 0x189, sel, reinterpret_cast<LPARAM>(itemText)) == -1) {
+    MsgParam out;
+    out.m_str = itemText;
+    if (SendMessageA(lb, 0x189, sel, out.m_lparam) == -1) {
         return 0;
     }
     if (!_getcwd(dirBuf, 0xfe)) {
@@ -345,10 +352,9 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
     if (sel == -1) {
         return 0;
     }
-    if (static_cast<i32>(
-            SendMessageA(hList, 0x189 /*LB_GETTEXT*/, sel, reinterpret_cast<LPARAM>(szLevel))
-        )
-        == -1) {
+    MsgParam out;
+    out.m_str = szLevel;
+    if (static_cast<i32>(SendMessageA(hList, 0x189 /*LB_GETTEXT*/, sel, out.m_lparam)) == -1) {
         return 0;
     }
     g_levelStr = szLevel;

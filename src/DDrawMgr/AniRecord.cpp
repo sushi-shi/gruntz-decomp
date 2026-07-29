@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <AddrWord.h>                     // the index-in-a-void*-slot pair
 #include <Pix16.h>                        // the byte-cursor unions (RecordBytes / Pix16CPtr)
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // the record owner (m_ptrColl/m_drawTarget)
 #include <DDrawMgr/DDrawSubMgrPages.h>    // m_drawTarget full type (m_frontPair)
@@ -135,9 +136,11 @@ void CAniRecordView::ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str
             CString t = tokens.GetAt(i);
             void* v = 0;
             owner->m_10.Lookup(t, v);
-            // MFC's void* map slot carries a small integer index - language-forced,
-            // the same convention ActFindId documents. One seam at the Lookup.
-            m_indices[i] = reinterpret_cast<i32>(v);
+            // MFC's void* map slot carries a small integer index - the same
+            // convention ActFindId documents (<AddrWord.h>)
+            AddrWord idx;
+            idx.m_addr = v;
+            m_indices[i] = idx.m_word;
         }
     }
 }

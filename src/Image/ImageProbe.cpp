@@ -12,7 +12,8 @@
 #include <Io/MoviePlayer.h> // THE class (CMoviePlayer is a typedef alias of it)
 #include <Ints.h>
 #include <rva.h>
-#include <string.h> // inline memset (rep stos) for the descriptor zero
+#include <ComOutRef.h> // the COM out-parameter's void**/typed destination pair
+#include <string.h>    // inline memset (rep stos) for the descriptor zero
 
 RVA(0x0017cbe0, 0x97)
 i32 CMoviePlayer::CheckGrid() {
@@ -25,9 +26,9 @@ i32 CMoviePlayer::CheckGrid() {
     if (m_dd2->CreateSurface(&m_srcDesc, &m_srcSurfRaw, 0) != 0) {
         return 0;
     }
-    // API-forced: COM QueryInterface's out-param is void**
-    if (m_srcSurfRaw->QueryInterface(IID_IDirectDrawSurface3, reinterpret_cast<void**>(&m_srcSurf))
-        != 0) {
+    ComOutRef<IDirectDrawSurface> srcOut;
+    srcOut.m_asTyped = &m_srcSurf;
+    if (m_srcSurfRaw->QueryInterface(IID_IDirectDrawSurface3, srcOut.m_asVoid) != 0) {
         return 0;
     }
     if (m_bpp == 8) {

@@ -145,10 +145,15 @@ public:
     // The +4/+8 these walkers read are CPtrArray's own m_pData/m_nSize (the CObject
     // vptr sits at +0), i.e. MFC's inline GetData()/GetSize() - not an offset pun.
     CHitMarker** markerData() {
-        // API-forced: ::CPtrArray::GetData() is declared `void**` by MFC, so the element
-        // type goes back on here - at one seam, this accessor, rather than at each of the
-        // marker walkers (the same shape CBattlezMapConfig::CoordAt() uses).
-        return reinterpret_cast<CHitMarker**>(m_startMarkers.GetData());
+        // ::CPtrArray::GetData() is declared `void**` by MFC while the elements ARE
+        // CHitMarker* - the one array base read both ways, at this single accessor
+        // rather than at each marker walker (the shape CoordAt() uses too).
+        union {
+            void** m_untyped;
+            CHitMarker** m_typed;
+        } band;
+        band.m_untyped = m_startMarkers.GetData();
+        return band.m_typed;
     }
     i32 markerCount() {
         return m_startMarkers.GetSize();

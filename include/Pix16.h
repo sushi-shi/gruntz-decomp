@@ -20,6 +20,7 @@ union Pix16Ptr {
     char* m_chars; // the same cursor where the source hands back char* (Lock, CFile)
     u16* m_words;
     i16* m_swords; // the signed spelling the raster globals use
+    i32* m_dwords; // record tables walked by BYTE stride whose fields are dwords
 };
 
 // A file/wire RECORD pointer and the byte cursor over the same buffer. Formats whose
@@ -30,6 +31,7 @@ union RecordBytes {
     void* m_rec;
     u8* m_bytes;
     char* m_chars;
+    i32* m_dwords; // bands the engine reads as a raw dword run
 };
 
 // The read-only twin (Load16-style probes off a const byte cursor).
@@ -38,6 +40,7 @@ union Pix16CPtr {
     const char* m_chars;
     const u16* m_words;
     const i16* m_swords;
+    const i32* m_dwords; // record tables walked by BYTE stride whose fields are dwords
 };
 
 #endif // GRUNTZ_PIX16_H

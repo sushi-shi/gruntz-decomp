@@ -10,7 +10,8 @@
 #include <Net/LatencyList.h>     // CLatencyList : CKeyedList (m_slotList; its dtor is 0xc5280)
 #include <Net/NetMgr.h>          // CNetMgr::BroadcastChatLine (0xbb190), the chat-broadcast facet
 #include <rva.h>
-#include <string.h> // strcat (inline CRT, reloc-masked)
+#include <MsgParam.h> // the window-message parameter's pointer/word pair
+#include <string.h>   // strcat (inline CRT, reloc-masked)
 
 #include <Gruntz/GruntzPlayer.h> // canonical GruntzPlayer (GetName)
 
@@ -161,7 +162,9 @@ void CMultiStartDlg::AppendChatLine(char* str) {
         strcat(buf, "\r\n");
     }
     strcat(buf, str);
-    ::SendMessageA(edit, 0xc2, 0, reinterpret_cast<LPARAM>(buf));
+    MsgParam text;
+    text.m_str = buf;
+    ::SendMessageA(edit, 0xc2, 0, text.m_lparam);
     ::SendMessageA(edit, 0xb6, 0, 0x270f);
 }
 

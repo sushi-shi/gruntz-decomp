@@ -98,7 +98,12 @@ public:
     // m_stride (0x312c0 `imul esi,[edi+0x18]`) - byte-forced, so the element type
     // can only go back on here; every typed accessor routes through this one line.
     static T* AsElem(char* p) {
-        return reinterpret_cast<T*>(p);
+        union {
+            char* m_bytes;
+            T* m_elem;
+        } band;
+        band.m_bytes = p;
+        return band.m_elem;
     }
 };
 SIZE_UNKNOWN();

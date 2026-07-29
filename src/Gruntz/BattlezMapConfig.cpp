@@ -60,7 +60,12 @@ i32 g_spawnState;
 // API leaves no way to avoid. One seam for this TU rather than a cast at every walk
 // (and kept LOCAL - adding it to a shared header shifts every including TU's codegen).
 static inline Coord** CoordArrayData(CPtrArray& a) {
-    return reinterpret_cast<Coord**>(a.GetData());
+    union {
+        void** m_untyped;
+        Coord** m_typed;
+    } band;
+    band.m_untyped = a.GetData();
+    return band.m_typed;
 }
 
 static inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {

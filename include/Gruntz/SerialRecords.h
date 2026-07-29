@@ -26,11 +26,11 @@ SIZE_UNKNOWN();
 // calling Serialize on it - the record is a view of those bytes, not a member, so
 // the overlay is inherent to the call. Keep it at these two seams.
 inline i32 SerTriRecord(void* band, CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
-    return reinterpret_cast<CTriRecord*>(band)->Serialize(ar, tag, c, d);
+    return static_cast<CTriRecord*>(band)->Serialize(ar, tag, c, d);
 }
 inline i32 SerPairRecord(void* band, CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     // the same member-band overlay as SerTriRecord above
-    return reinterpret_cast<CPairRecord*>(band)->Serialize(ar, tag, c, d);
+    return static_cast<CPairRecord*>(band)->Serialize(ar, tag, c, d);
 }
 
 // The 0x10-byte timer/clock BANDS the archive snapshots as two 8-byte blocks. The

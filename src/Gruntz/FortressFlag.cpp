@@ -265,8 +265,15 @@ CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
         m_errSink->Set(this, item, 0xc);
         r = m_spare;
     }
-    // the untyped byte pool named at the container's one seam
-    return reinterpret_cast<CActHandler*>(r);
+    // the untyped byte pool and its typed element - the band is addressed by a
+    // RUNTIME stride, which is byte math no element type can express, so both
+    // readings of the slot address are named
+    union {
+        char* m_bytes;
+        CActHandler* m_slot;
+    } band;
+    band.m_bytes = r;
+    return band.m_slot;
 }
 
 RVA(0x00046850, 0xf1)

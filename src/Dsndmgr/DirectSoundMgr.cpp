@@ -7,6 +7,7 @@
 #include <mmsystem.h>            // WAVEFORMATEX (dsound.h needs it predefined)
 #include <dsound.h> // real DirectSound SDK (IDirectSound/Buffer, DSBUFFERDESC, DSBCAPS)
 #include <rva.h>
+#include <Pix16.h>  // the byte-cursor unions (RecordBytes / Pix16Ptr)
 #include <math.h>   // acos / pow (intrinsic __CIacos / __CIpow) in the volume curves
 #include <stdio.h>  // engine sprintf (reloc-masked); FILE + fopen/fread/fclose (RIFF loaders)
 #include <io.h>     // _filelength (0x18c480) - the RIFF file-size query
@@ -700,8 +701,11 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
         if (n2 > 0) {
             char* d = static_cast<char*>(p2);
             // second half of a wrapped ring copy: n1 is a RUNTIME byte length from the
-            // DirectSound lock, so stepping the 16-bit source by it is byte-forced
-            i16* s = reinterpret_cast<i16*>((static_cast<char*>(src) + n1));
+            // DirectSound lock, so the 16-bit source is stepped by a BYTE count - both
+            // readings of the cursor are named (<Pix16.h>)
+            Pix16Ptr half2;
+            half2.m_chars = (static_cast<char*>(src) + n1);
+            i16* s = half2.m_swords;
             char* end = static_cast<char*>(p2) + n2;
             while (d < end) {
                 *d = static_cast<char>((static_cast<u32>((*s + 0x8000)) >> 8));
