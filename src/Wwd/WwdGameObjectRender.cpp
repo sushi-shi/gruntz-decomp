@@ -250,7 +250,7 @@ RVA(0x001665e0, 0x55)
 i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, AnimWorkerObj* tmpl) {
     POSITION pos = m_1dc.GetHeadPosition();
     while (pos != 0) {
-        CObject* p = static_cast<CObject*>(static_cast<void*>(m_1dc.GetNext(pos)));
+        CObject* p = m_1dc.GetNext(pos);
         if (p != 0) {
             delete p;
         }
@@ -290,9 +290,12 @@ CWwdGameObject::CreateObject(int a1, int a2, int a3, int a4, AnimWorkerObj* tmpl
         // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
         result->m_7c->m_notify(result);
     }
-    // the flat CWwdGameObject dispatch model and the CWwdGameObjectA family model are two
-    // reconstructions of the ONE retail object (offset-0 identity); the return reinterprets.
-    return static_cast<CWwdGameObject*>(static_cast<void*>(result));
+    // CWwdGameObject derives from CWwdGameObjectA, so this is the ordinary
+    // single-inheritance downcast - no void* hop. It is still a mis-model: the two
+    // classes are two reconstructions of the ONE retail object (offset-0 identity),
+    // and merging them is what retires the cast (@identity-TODO, see
+    // <Wwd/WwdGameObjectFamily.h>).
+    return static_cast<CWwdGameObject*>(result);
 }
 
 // CreateNamed (__thiscall, ret 0x18 => 6 args). Resolve `name` -> value; if

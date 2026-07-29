@@ -32,13 +32,18 @@ public:
         m_built = 0;
     }
 
-    i32 DelFromList1(void* data); // 0x116e60
+    // m_list1 stores CTileTriggerLogic leaves; the arg is always one of them
+    // (TriggerMgr passes a CGiantRockLogic*, TerrainTileLoader a FindInLists12
+    // result), so the parameter is the leaf type, not void*.
+    i32 DelFromList1(CTileTriggerLogic* elem); // 0x116e60
     // Scan m_list1 then m_list2 for the logic element with m_10 == a and
     // (b == 0 || m_typeTag == b).
     CTileTriggerLogic* FindInLists12(i32 a, i32 b); // 0x116f20
     i32 FilterList2(i32 arg);                       // 0x1170b0
     i32 MoveList1ToList2(void* data);               // 0x117150
-    i32 DelFromList3(void* data);                   // 0x117200
+    // m_list3 stores CTileActionEvent records; the only caller passes a
+    // FindByField0C result, so the parameter is that record type.
+    i32 DelFromList3(CTileActionEvent* evt); // 0x117200
 
     // The /GX dtor: runs DtorBase then destroys m_list3 / m_list2 / m_list1 /
     // m_base (auto member teardown, reverse declaration order).

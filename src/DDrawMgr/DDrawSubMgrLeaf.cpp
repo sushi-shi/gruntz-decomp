@@ -22,6 +22,7 @@
 #include <Gruntz/Enums.h>             // REZ_TAG_ANI (the walker's entry-tag filter)
 #include <stdio.h>                    // sprintf (the %s%s%s path-join, 0x11f890)
 #include <string.h>                   // strcpy inline CRT (rep movs / repnz scas)
+#include <Utils/MapTyped.h>           // typed MFC map walks (the void*& pun at one seam)
 
 VTBL(CAniElement, 0x001efba8); // ??_7 (5 slots; slot 1 = cl-auto ??_G @0x152e10)
 // The %s%s%s path-join format the walker sprintf's through (reloc-masked DIR32).
@@ -71,10 +72,10 @@ void CDDrawSubMgrLeaf::RemoveValue(CAniElement* target) {
     }
     POSITION pos = m_10.GetStartPosition();
     CString key;
-    void* val = 0;
+    CAniElement* val = 0;
     while (pos != 0) {
-        m_10.GetNextAssoc(pos, key, val);
-        if (static_cast<void*>(target) == val) {
+        MapGetNext(m_10, pos, key, val);
+        if (target == val) {
             m_10.RemoveKey(key);
             delete target;
             break;

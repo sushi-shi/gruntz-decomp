@@ -10,7 +10,7 @@
 static inline void ConstructRezElems(RezElem40* p, i32 n) {
     memset(p, 0, n * sizeof(RezElem40));
     for (; n--; p++) {
-        ::new (static_cast<void*>(p)) RezElem40;
+        ::new (p) RezElem40;
     }
 }
 

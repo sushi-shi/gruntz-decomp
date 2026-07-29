@@ -50,7 +50,7 @@ static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
     } else {
         void* sentinel = g_projActCache;
         g_retAddrBreadcrumb = GetRetAddr();
-        v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
+        v->m_errSink->Set(v, sentinel, 0xc);
         r = v->Scratch();
     }
     CString* slot = v->Slots();

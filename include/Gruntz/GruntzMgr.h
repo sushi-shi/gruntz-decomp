@@ -460,6 +460,10 @@ extern "C" i32 g_scoreTimeBase; // 0x00248ce8
 //   0x3193 -> 0x08b8c0 PumpIdleFrame              (this TU)
 // The address-take is reloc-masked, so naming the real proc is byte-neutral.)
 
+// The deferred per-frame pump, also registered as the lost-surface restore handler
+// (CDDrawSurfaceMgr::SetRestoreHandler) by both this TU and RezSync.
+i32 PumpIdleFrame(); // 0x08b8c0
+
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 // The clock/scroll/warp timer globals SaveState streams live in <Rez/FrameClock.h>.

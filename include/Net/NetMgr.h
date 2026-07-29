@@ -382,6 +382,34 @@ struct NetDPName {
 };
 SIZE(0x10); // DirectPlay DPNAME (only the two name pointers are used)
 
+// The three dplayx enumeration callback ABIs, at the shape the bodies in
+// NetMgr.cpp actually define (all __stdcall, manager-as-context). They are the
+// SDK's DPENUMDPCALLBACK / DPENUMSESSIONSCALLBACK2 / DPENUMPLAYERSCALLBACK2 -
+// the pairing follows the slot map documented on IDirectPlay4Z below (slot 12
+// "EnumGroupsCb" is really EnumPlayers, slot 13 "EnumPlayers" is really
+// EnumSessions). Naming them here is what lets the call sites pass the function
+// directly instead of laundering it through void*.
+typedef i32(__stdcall* NetEnumProvidersCallback)(
+    void* lpGuid,
+    char* lpName,
+    u32 dwMajor,
+    u32 dwMinor,
+    void* lpContext
+);
+typedef BOOL(__stdcall* NetEnumSessionsCallback)(
+    void* lpThisSD,
+    void* lpdwTimeout,
+    DWORD dwFlags,
+    CNetMgr* lpContext
+);
+typedef BOOL(__stdcall* NetEnumPlayersCallback)(
+    u32 dpId,
+    DWORD dwPlayerType,
+    NetDPName* lpName,
+    DWORD dwFlags,
+    CNetMgr* lpContext
+);
+
 struct IDirectPlay4Z {
     // External DirectPlay-shaped COM interface (abstract, __stdcall). STDMETHOD ==
     // `virtual HRESULT __stdcall`, so `dp->Method(args)` lowers to `mov eax,[dp];
@@ -410,12 +438,12 @@ struct IDirectPlay4Z {
     // arity => same `call [eax+N]`) but wide, so it is its own change.
     // Slots 0/1/2 are IUnknown's by the COM ABI (QueryInterface/AddRef/Release), which
     // is what CNetMgr::Destroy's teardown of m_directPlay dispatches (slot 4 then slot 2).
-    STDMETHOD(QueryInterface)(void* riid, void* out) PURE; // slot 0
-    STDMETHOD(AddRef)() PURE;                              // slot 1
-    STDMETHOD(Release)() PURE;                             // slot 2  (+0x08)
-    STDMETHOD(Open)(void* a, void* b, i32 c) PURE;         // slot 3  (+0x0c)
-    STDMETHOD(v04)() PURE;                                 // slot 4  (+0x10)
-    STDMETHOD(v05)() PURE;                                 // slot 5
+    STDMETHOD(QueryInterface)(const GUID* riid, void* out) PURE; // slot 0
+    STDMETHOD(AddRef)() PURE;                                    // slot 1
+    STDMETHOD(Release)() PURE;                                   // slot 2  (+0x08)
+    STDMETHOD(Open)(void* a, void* b, i32 c) PURE;               // slot 3  (+0x0c)
+    STDMETHOD(v04)() PURE;                                       // slot 4  (+0x10)
+    STDMETHOD(v05)() PURE;                                       // slot 5
     // slot 6 (+0x18) - IDENTIFIED (2026-07-28) as dplay.h's IDirectPlay4::CreatePlayer:
     // its one caller CNetMgr::CreatePlayer pushes SIX args (&idPlayer, &name, hEvent,
     // 0, 0, 0) and the 0x10-byte struct it fills is exactly DPNAME
@@ -435,14 +463,14 @@ struct IDirectPlay4Z {
     STDMETHOD(v0b)() PURE; // slot 11
     STDMETHOD(EnumGroupsCb)(
         void* desc,
-        void* callback,
+        NetEnumPlayersCallback callback,
         void* ctx,
         i32 flags
     ) PURE; // slot 12 (+0x30)
     STDMETHOD(EnumPlayers)(
         void* desc,
         void* a,
-        void* callback,
+        NetEnumSessionsCallback callback,
         void* ctx,
         void* flags
     ) PURE;                                                              // slot 13 (+0x34)
@@ -609,7 +637,10 @@ public:
 };
 SIZE(0x24); // AddSessionNode (NetMgr.cpp 0x178b30) RezAlloc(0x24)
 
-extern "C" void* g_netDirectPlayRiid; // 0x5f0588
+// The IDirectPlay4 interface id both QueryInterface sites pass BY ADDRESS
+// (retail `push 0x5f0588`, a DIR32 to the .rdata IID) - it is the 16-byte GUID
+// itself, not a pointer-sized slot holding one.
+extern "C" const GUID g_netDirectPlayRiid; // 0x5f0588  IID_IDirectPlay4A
 
 extern "C" BOOL __stdcall
 NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx);
@@ -621,11 +652,11 @@ struct INetReleasable {
     // External COM interface (IUnknown-shaped, abstract, __stdcall). STDMETHOD form
     // (== `virtual HRESULT __stdcall`); only Release (slot 2) and the slot-4 teardown
     // hook the Destroy path calls are pinned, everything else is placeholder.
-    STDMETHOD(QueryInterface)(void* riid, void* out) PURE; // slot 0
-    STDMETHOD(v01)() PURE;                                 // slot 1
-    STDMETHOD(Release)() PURE;                             // slot 2  (+0x08)
-    STDMETHOD(v03)() PURE;                                 // slot 3
-    STDMETHOD(Slot10)() PURE;                              // slot 4  (+0x10)
+    STDMETHOD(QueryInterface)(const GUID* riid, void* out) PURE; // slot 0
+    STDMETHOD(v01)() PURE;                                       // slot 1
+    STDMETHOD(Release)() PURE;                                   // slot 2  (+0x08)
+    STDMETHOD(v03)() PURE;                                       // slot 3
+    STDMETHOD(Slot10)() PURE;                                    // slot 4  (+0x10)
 };
 SIZE_UNKNOWN(); // external COM interface (opaque object); size TBD
 
@@ -766,7 +797,7 @@ public:
     i32 ReadPlayerSel(void* hList); // 0x178820  -> latch into +0x74 (count +0x44)
     // Two IDirectPlay4 enumeration wrappers: enumerate sessions/players into the
     // COM interface at +0x18 and, on a nonzero HRESULT, route it through ReportError.
-    i32 EnumPlayersInto(void* a, void* b); // 0x178610 (@early-stop, scheduling wall)
+    i32 EnumPlayersInto(void* a, void* b); // 0x178610
 
     // The 0x178xxx session-management wrapper run (continued). Each thin wrapper
     // fires one IDirectPlay4 slot on the m_18/+0x18 interface and, on a nonzero
@@ -1084,6 +1115,7 @@ extern "C" i32 g_activePlayerCount;
 // File-scope prototypes moved from the .cpp: an unqualified
 // declaration at file scope has EXTERNAL linkage, so it belongs in
 // the owner header.
-static i32 __stdcall EnumProviderCb(void* guid, char* name, u32 major, u32 minor, void* context);
+static i32 __stdcall
+EnumProviderCb(void* lpGuid, char* lpName, u32 dwMajor, u32 dwMinor, void* lpContext);
 
 #endif // NET_NETMGR_H

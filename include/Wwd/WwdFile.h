@@ -172,11 +172,11 @@ struct WwdTileDescTable {
 };
 SIZE_UNKNOWN();
 
-struct CPlaneDrawCtx {
-    u8 pad_0[0x2c];
-    CDDSurface* m_surface; // +0x2c  the blit target surface
-};
-SIZE_UNKNOWN();
+// (CPlaneDrawCtx DISSOLVED 2026-07-29: the "+0x2c is the blit target surface"
+// placeholder was CDDrawSurfacePair - its CDrawSubWorker base puts m_surface at
+// exactly +0x2c (<DDrawMgr/DDrawSubMgrPages.h>) - and every value that reaches
+// CDDrawWorkerHost::Draw is the m_drawTarget->m_backPair CGameLevel::VisitVisible
+// is handed.)
 
 // (CPlanePalOwner + CPlanePalArr DISSOLVED 2026-07-27 - the @identity-TODO closed.
 // The palette tail hanging off CDDrawWorkerMapSmall::m_cachedWorker (+0x64) is

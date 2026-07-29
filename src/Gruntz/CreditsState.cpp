@@ -302,14 +302,14 @@ i32 CCreditsState::InitAttractTitle() {
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     sprintf(stateName, "STATEZ_ATTRACT");
     sprintf(titleName, "TITLE%d", idx);
-    void* saved = static_cast<void*>(m_2c);
-    void* state = m_symParser->ResolvePath(stateName);
-    m_2c = static_cast<CSymTab*>(state);
+    CSymTab* saved = m_2c;
+    CSymTab* state = static_cast<CSymTab*>(m_symParser->ResolvePath(stateName));
+    m_2c = state;
     if (state == 0) {
         return 0;
     }
     i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
-    m_2c = static_cast<CSymTab*>(saved);
+    m_2c = saved;
     if (faded == 0) {
         return 0;
     }

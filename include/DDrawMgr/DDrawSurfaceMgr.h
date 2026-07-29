@@ -46,6 +46,13 @@ class SoundStream;          // +0x20 the Dsndmgr stream (<Dsndmgr/SoundStream.h>
 // invoke and the header-arg local.
 typedef i32(__cdecl* HP_Callback)(void*, void*, i32, i32, void*);
 
+// The lost-surface restore handler. SetRestoreHandler forwards straight into
+// SetSurfaceRestoreHandler (0x1437e0), which latches it in g_restoreHandler for
+// RestoreLostSurfaces to call - so the argument is a FUNCTION, never an HWND
+// (both call sites pass PumpIdleFrame @0x8b8c0; the old `SetHwnd(void*)` name and
+// type forced a fn-ptr-through-void* launder at each).
+typedef i32(__cdecl* SurfaceRestoreFn)();
+
 class CDDrawSurfaceMgr : public CObject {
 public:
     CDDrawSurfaceMgr();
@@ -61,14 +68,14 @@ public:
     // The real 8-slot retail vtable @0x1efc58 (== ??_7CDDrawSurfaceMgr@@6B@): CObject's
     // 5 slots (0-4, dtor override @1) + THREE CDDrawSurfaceMgr-own slots. The per-slot
     // vtable audit proves IsReady/Init/Cleanup are the ONLY new virtuals; FreeContext/
-    // SetDimensions/SetHwnd/InvokeCallback occupy NO retail slot -> plain methods.
+    // SetDimensions/SetRestoreHandler/InvokeCallback occupy NO retail slot -> plain methods.
     virtual ~CDDrawSurfaceMgr() OVERRIDE; // slot 1  0x1558b0 (scalar-del ??_G 0x155890)
     virtual i32 IsReady();                // slot 5  0x155f00
     // slot 6  0x155900 (@stub): the display/video-mode bring-up - heap-allocate the 11
     // owned sub-managers, validate each (m_lastError 0x3e9..0x3f1) and configure the
     // display. Retail `ret 0x14` = FIVE args (the old no-arg decl under-declared it);
     // CGruntzMgr::LoadWorldMode dispatches it as its "SetVideoMode" (slot 6, +0x18).
-    virtual i32 Init(void* hWnd, i32 w, i32 h, i32 bpp, i32 flags);
+    virtual i32 Init(HWND hWnd, i32 w, i32 h, i32 bpp, i32 flags);
     virtual void Cleanup(); // slot 7  0x155e20 (owned-child teardown; ~ calls it;
                             //         LoadWorldMode's pre-Init "Notify" dispatch)
 
@@ -76,12 +83,12 @@ public:
     void FreeContext();                                                // 0x155fc0
     i32 PlayDefaultSound();                                            // 0x155ff0
     i32 SetDimensions(i32 x, i32 y, i32 flags);                        // 0x155f60
-    void SetHwnd(void* hWnd);                                          // 0x155f50
+    void SetRestoreHandler(SurfaceRestoreFn handler);                  // 0x155f50
     i32 InvokeCallback(void* arg1, i32 arg2, i32 arg3, void* payload); // 0x156a90
 
     // The recursive child serializer / deserializer (owner-TU DDrawSurfaceMgrSerialize
     // holds the bodies; GameSave drives SnapshotChildren). Non-virtual __thiscall /GX.
-    i32 SnapshotChildren(HP_Callback cb, char* arg1, char* name, i32 arg3); // 0x156020
+    i32 SnapshotChildren(HP_Callback cb, char* path, char* name, i32 arg3); // 0x156020
     i32 RestoreChildren(HP_Callback cb, char* name, i32 arg3);              // 0x156530
 
     // +0x04  the page/child factory (front/back/overlay surfaces) - the game-side
@@ -119,7 +126,7 @@ SIZE_UNKNOWN();
 
 // TU-local thunk/table names this TU registers (moved from the .cpp; the
 // addresses are ILT thunk VAs, reloc-masked at every use).
-extern void __cdecl RelayHwnd(i32(__cdecl* callback)());
+extern void __cdecl SetSurfaceRestoreHandler(SurfaceRestoreFn handler);
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---

@@ -279,7 +279,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_strWorldFile.Empty(); // 0x1b9c69 (?Empty@CString@@ - the ex "Mfc" C_1b9c69)
     // ONE new-site, TWO header names: the world/surface manager (the settled
     // CDDrawSurfaceMgr == CDDrawSurfaceMgr dual view; the DDraw side carries the
-    // boot Init/SetHwnd virtuals, the game side is what m_world is typed as).
+    // boot Init/SetRestoreHandler virtuals, the game side is what m_world is typed as).
     CDDrawSurfaceMgr* world = new CDDrawSurfaceMgr;
     m_world = static_cast<CDDrawSurfaceMgr*>(world);
     i32 flags = (g_disableAudio || g_disableSound) ? 0xe5 : 0xe1;
@@ -287,7 +287,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         flags |= 0x10;
     }
     m_colorDepth = 0x10;
-    if (!world->Init(static_cast<void*>(m_gameWnd->m_hwnd), 0x280, 0x1e0, 0x10, flags)) {
+    if (!world->Init(m_gameWnd->m_hwnd, 0x280, 0x1e0, 0x10, flags)) {
         ReportWorldStatus(0x407);
         return 0;
     }
@@ -301,7 +301,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         m_modeH = 0x1e0;
         world->m_level->BuildAllPlanes(&rect);
     }
-    world->SetHwnd(static_cast<void*>(&cb_403193));
+    world->SetRestoreHandler(&PumpIdleFrame);
     world->m_level->m_maxStepX = 0xe;
     world->m_level->m_maxStepY = 0xe;
     world->m_drawTarget->CreateOverlay(0, 0x30000);

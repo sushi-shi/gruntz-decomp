@@ -537,12 +537,12 @@ CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32 a3, i32* block9, i32 a5, i
 // node via list1.RemoveAt.  Returns 1 on a hit, 0 otherwise.
 // ---------------------------------------------------------------------------
 RVA(0x00116e60, 0x59)
-i32 CTileTriggerContainer::DelFromList1(void* data) {
+i32 CTileTriggerContainer::DelFromList1(CTileTriggerLogic* want) {
     POSITION pos = m_list1.GetHeadPosition();
     while (pos != 0) {
         POSITION cur = pos;
         CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_list1.GetNext(pos));
-        if (elem == static_cast<CTileTriggerLogic*>(data)) {
+        if (elem == want) {
             // ~CTileTriggerLogic (non-virtual, inline) restamps the vptr
             // (??_7CTileTriggerLogic @0x5eaea4) + clears m_initGate, then ??3.
             delete elem;
@@ -690,12 +690,12 @@ CTileActionEvent* CTileTriggerContainer::FindByField0C(i32 key) {
 // list3.RemoveAt.  Returns 1 on a hit, 0 otherwise.
 // ---------------------------------------------------------------------------
 RVA(0x00117200, 0x53)
-i32 CTileTriggerContainer::DelFromList3(void* data) {
+i32 CTileTriggerContainer::DelFromList3(CTileActionEvent* want) {
     POSITION pos = m_list3.GetHeadPosition();
     while (pos != 0) {
         POSITION cur_node = pos;
         CTileActionEvent* elem = static_cast<CTileActionEvent*>(m_list3.GetNext(pos));
-        if (elem == static_cast<CTileActionEvent*>(data)) {
+        if (elem == want) {
             delete elem; // m_10 = 0 (no vtable -> no stamp), then ??3
             m_list3.RemoveAt(cur_node);
             return 1;

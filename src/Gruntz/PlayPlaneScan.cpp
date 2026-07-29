@@ -9,7 +9,8 @@
 #include <DDrawMgr/DDrawChildGroup.h> // renderer A - the real CDDrawChildGroup (the +0x10 list host)
 #include <Gruntz/String.h>
 
-#include <Gruntz/ImageSets.h>            // CImageSet1::GetCollisionAt (slot 8)
+#include <Gruntz/GameObjectFactory.h> // the real GameObjNotifyFn registrants (plane-type markers)
+#include <Gruntz/ImageSets.h>         // CImageSet1::GetCollisionAt (slot 8)
 #include <Gruntz/TileTriggerContainer.h> // the m_beginMarker sink (AddLogic/AddToList1)
 #include <Gruntz/UserLogic.h>            // CGameObject + AnimWorkerObj (the placed objects)
 #include <Gruntz/GameLevel.h>            // CGameLevel + CDDrawWorkerHost (the tile grid)
@@ -54,7 +55,7 @@ i32 CPlay::ScanBuildTiles() {
             p->m_clip.left = 0;
         }
         GameObjNotifyFn vf = p->m_7c->m_notify;
-        if (static_cast<void*>(vf) == static_cast<void*>(PlaneType_Rock)) {
+        if (vf == CreateGiantRock) {
             i32 buf[9]; // the extent/area/config bands as a 3x3 record
             buf[0] = p->m_extent.left;
             buf[1] = p->m_extent.top;
@@ -77,7 +78,7 @@ i32 CPlay::ScanBuildTiles() {
                 m_guts->InsertPtr(p->m_118, p->m_114);
             }
             p->m_flags |= 0x10000;
-        } else if (static_cast<void*>(vf) == static_cast<void*>(PlaneType_Covered)) {
+        } else if (vf == CreateCoveredPowerup) {
             CGameLevel* ds = v->m_level;
             i32 x = p->m_screenX;
             i32 y = p->m_screenY;
@@ -195,13 +196,10 @@ i32 CPlay::ScanShuffleQuads() {
             continue;
         }
         GameObjNotifyFn vf = p->m_7c->m_notify;
-        if (static_cast<void*>(vf) == static_cast<void*>(PlaneQuadA)
-            || static_cast<void*>(vf) == static_cast<void*>(PlaneQuadB)
-            || static_cast<void*>(vf) == static_cast<void*>(PlaneQuadC)
-            || static_cast<void*>(vf) == static_cast<void*>(PlaneQuadD)
-            || static_cast<void*>(vf) == static_cast<void*>(PlaneQuadE)) {
+        if (vf == CreateGruntCreationPoint || vf == CreateExitTrigger || vf == CreateFortressFlag
+            || vf == CreateWayPoint || vf == CreateGuardPoint) {
             p->m_124 = perm[p->m_124];
-        } else if (static_cast<void*>(vf) == static_cast<void*>(PlaneQuadF)) {
+        } else if (vf == CreateBrickz) {
             if (p->m_extent.left == static_cast<i32>(0x80000000)) {
                 p->m_extent.left = 0;
             }

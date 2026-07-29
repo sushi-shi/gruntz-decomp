@@ -698,17 +698,6 @@ extern "C" double g_scrollSpeedScale; // 0x5eaa10  (== 0.01)
 
 // --- C-linkage carriers for the TU's extern-C definitions (the defs
 // inherit the linkage from these decls; the .cpp wrappers are gone) ---
-extern "C" void PlaneType_Rock();
-extern "C" void PlaneType_Covered();
-extern "C" void PlaneQuadA();
-extern "C" void PlaneQuadB();
-extern "C" void PlaneQuadC();
-extern "C" void PlaneQuadD();
-extern "C" void PlaneQuadE();
-extern "C" void PlaneQuadF();
-
-// --- C-linkage carriers for the TU's extern-C definitions (the defs
-// inherit the linkage from these decls; the .cpp wrappers are gone) ---
 extern "C" u32 g_killCueClock;
 
 extern i32 g_lastLevelNum;

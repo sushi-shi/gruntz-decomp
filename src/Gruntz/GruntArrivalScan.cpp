@@ -516,7 +516,7 @@ i32 CGrunt::WanderStep() {
                                 node = *static_cast<void**>(node);
                                 Coord* data = cur->m_coord;
                                 if (data != 0) {
-                                    g_coordPool.Push(static_cast<void*>(data));
+                                    g_coordPool.Push(data);
                                 }
                             } while (node != 0);
                         }
