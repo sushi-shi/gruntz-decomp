@@ -1107,6 +1107,9 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* 
         }
         case 7: {
             ar->Read(tailName, 0x80);
+            // `== 0` here, unlike CWarlord::SerializeMove's eleven anim blocks which want
+            // `!= 0` - measured both ways on both functions; the arm cl puts on the
+            // fallthrough differs per function and only the diff says which.
             if (strlen(tailName) == 0) {
                 m_cue = 0;
             } else {
