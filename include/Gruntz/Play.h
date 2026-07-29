@@ -51,6 +51,13 @@ public:
     // /OPT:REF); receiver proven by its two field reads, [this+0x04] = CState::m_mgr and
     // [this+0x0c] = CState::m_world.
     void DrawCustomLevelBanner(); // 0x0cfc90
+
+    // 0x0cf0a0 - the DEV overlay: everything DrawDebugStats @0xcf770 prints plus the
+    // five collision-rect toggles off m_world->m_childGroup->m_08 (rcMove/rcAttack/
+    // rcHit/ptOrg/Z), an fps-limit line, and - under flag 0x8 - the eight
+    // <Gruntz/GameText.h> CString slots TextOut'd down the left edge at 16px pitch.
+    // Zero-ref in retail (kept without /OPT:REF).
+    void DrawDebugStatsFull(); // 0x0cf0a0
     // Construction is inlined into CGruntzMgr::TransitionState (no standalone retail
     // ctor); ~CPlay is the real 0x8c830 /GX dtor. Both defined out-of-class in their
     // owning TUs (GruntzMgrTransition.cpp / GruntzMgr.cpp).
