@@ -293,78 +293,96 @@ i32 CDDrawSurfacePair::RestoreIfLost() {
 // surface, fills the top + bottom edge rows then walks the left + right edge
 // columns, then unlocks. 8bpp (1 byte/pixel) and 16bpp (2 bytes/pixel) paths.
 // @early-stop
-// 52.74% - big function (574 B, 200 vs 196 instrs): logic/CFG/offsets/calls all
-// reproduced (the bounds checks, Lock, the 8/16-bpp byte-replication rep-stos row
-// fills, the per-row left/right column writes, Unlock). Residual is a regalloc /
-// stack-frame wall: retail keeps `this` spilled + `rect` in esi (sub esp,0x8)
-// while our build keeps `this` in esi + `rect` in ecx (sub esp,0x18), cascading
-// different [esp+N] slot choices through the body. Deferred to the final sweep.
+// 84.6% (was 52.74). The old "regalloc / stack-frame wall (sub esp,0x18 vs 0x8)" was
+// three source-shape bugs, and the frame size was the symptom, not the cause:
+//   * the four rect corners were latched into locals - retail re-reads rect->left/top/
+//     right/bottom at every use and CSEs m_width/m_height across the four bounds tests
+//     instead; four latched corners is exactly the 0x10 extra frame;
+//   * `CDDSurface* sv = m_surface;` collapsed a chain retail re-derives at every use
+//     (twice per vertical-loop iteration);
+//   * the memset destination OFFSET belongs in its own local outside the count guard
+//     (retail has the two imuls + add above `test <n>,<n> / jle`, only `add edi,<off>`
+//     inside) - and memset takes the `color` int, not the u8 (retail's expansion reads
+//     the arg byte, it does not mask).
+// Residual: the commutative imul accumulator pick on the two offsets, the `add edi,<off>`
+// slot, and one frame-slot number for `h` (retail reuses the w/n slot).
 RVA(0x00163f40, 0x23e)
 void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
-    i32 left = rect->left;
-    if (left < 0 || left >= m_width) {
+    // The four corners are NOT latched into locals. Retail re-reads rect->left/top/
+    // right/bottom from memory at every use and instead CSEs m_width (edx) and
+    // m_height (ecx) across all four bounds checks; four latched corners is what
+    // takes the frame from retail's `sub esp,0x8` to `sub esp,0x18`.
+    if (rect->left < 0 || rect->left >= m_width) {
         return;
     }
-    i32 top = rect->top;
-    if (top < 0 || top >= m_height) {
+    if (rect->top < 0 || rect->top >= m_height) {
         return;
     }
-    i32 right = rect->right;
-    if (right < 0 || right >= m_width) {
+    if (rect->right < 0 || rect->right >= m_width) {
         return;
     }
-    i32 bottom = rect->bottom;
-    if (bottom < 0 || bottom >= m_height) {
+    if (rect->bottom < 0 || rect->bottom >= m_height) {
         return;
     }
     char* base = static_cast<char*>(m_surface->Lock(0));
     if (base == 0) {
         return;
     }
-    CDDSurface* sv = m_surface;
+    // `m_surface` is re-derived at every use, not latched into an `sv` local: retail
+    // reloads [this+0x2c] before each pitch/bpp read (twice per loop iteration).
     u8 c = static_cast<u8>(color);
-    i32 w = right - left + 1;
+    i32 w = rect->right - rect->left + 1;
 
     // ---- top + bottom horizontal edges ----
+    // The row OFFSET is its own local, computed OUTSIDE the count guard: retail has the
+    // two imuls + add above `test <n>,<n> / jle` and only `add edi,<off>` inside.
     if (m_bpp == 0x10) {
         i32 n = 2 * w;
+        i32 offTop = m_surface->m_bytesPerPixel * rect->left + m_surface->m_pitch * rect->top;
         if (n > 0) {
-            memset(base + sv->m_bytesPerPixel * left + sv->m_pitch * top, c, n);
+            memset(base + offTop, color, n);
         }
+        i32 offBot = m_surface->m_bytesPerPixel * rect->left + m_surface->m_pitch * rect->bottom;
         if (n > 0) {
-            memset(base + sv->m_bytesPerPixel * left + sv->m_pitch * bottom, c, n);
+            memset(base + offBot, color, n);
         }
     } else {
+        i32 offTop = m_surface->m_bytesPerPixel * rect->left + m_surface->m_pitch * rect->top;
         if (w > 0) {
-            memset(base + sv->m_bytesPerPixel * left + sv->m_pitch * top, c, w);
+            memset(base + offTop, color, w);
         }
+        i32 offBot = m_surface->m_bytesPerPixel * rect->left + m_surface->m_pitch * rect->bottom;
         if (w > 0) {
-            memset(base + sv->m_bytesPerPixel * left + sv->m_pitch * bottom, c, w);
+            memset(base + offBot, color, w);
         }
     }
 
     // ---- left + right vertical edges ----
-    i32 h = bottom - top + 1;
-    if (h > 0) {
+    {
+        i32 h = rect->bottom - rect->top + 1;
         for (i32 y = 0; y < h; ++y) {
             if (m_bpp == 0x10) {
-                i32 lo = (top + y) * sv->m_pitch + sv->m_bytesPerPixel * left;
+                i32 lo =
+                    (rect->top + y) * m_surface->m_pitch + m_surface->m_bytesPerPixel * rect->left;
                 base[lo] = c;
                 base[lo + 1] = c;
-                i32 ro = (top + y) * sv->m_pitch + sv->m_bytesPerPixel * right;
+                i32 ro =
+                    (rect->top + y) * m_surface->m_pitch + m_surface->m_bytesPerPixel * rect->right;
                 base[ro] = c;
                 base[ro + 1] = c;
             } else {
-                i32 lo = (top + y) * sv->m_pitch + sv->m_bytesPerPixel * left;
+                i32 lo =
+                    (rect->top + y) * m_surface->m_pitch + m_surface->m_bytesPerPixel * rect->left;
                 base[lo] = c;
-                i32 ro = (top + y) * sv->m_pitch + sv->m_bytesPerPixel * right;
+                i32 ro =
+                    (rect->top + y) * m_surface->m_pitch + m_surface->m_bytesPerPixel * rect->right;
                 base[ro] = c;
             }
         }
     }
 
     // Unlock the held surface.
-    sv->m_ddSurface->Unlock(0);
+    m_surface->m_ddSurface->Unlock(0);
 }
 
 // ---------------------------------------------------------------------------
@@ -375,13 +393,14 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
 // the vertical loops (the base writes may alias the surface header), which is why
 // each iteration reloads m_surface->pitch. __thiscall, 2 stack args (ret 0x8).
 // @early-stop
-// 75.05% - logic/CFG/offsets/calls/the m_surface->pitch reloads all reproduced. Residual
-// is a regalloc coin-flip: retail pins x in ebx (delayed `push ebp` as a loop scratch
-// after the Lock), we pin x in ebp, which cascades the register operand through the
-// body; plus retail coalesces the two [off+1]/[off+2] zero stores into one word store
-// while we keep three byte stores. Not source-steerable; deferred to the final sweep.
-// (75.05->74.96 sub-0.1% wiggle when CSurfacePairBase gained its real CWapObj base:
-// TU-wide symbol-set/EH-state reshuffle, not a logic change - the regalloc wall stands.)
+// 99.56% (was 73.19). The old "regalloc coin-flip / not source-steerable" note was two
+// source-shape bugs: the three zero stores right of centre are a FILL LOOP (cl5 then
+// emits retail's `xor ecx,ecx / mov WORD [..+1],cx / mov BYTE [..+3],cl` -
+// docs/patterns/adjacent-same-value-stores-are-a-loop.md), and both vertical arms peel
+// their FIRST step (`up = off - pitch;` then a `{store; step}` body, 4 pitch reads and
+// 3 stores). Residual is 4 instructions: the commutative `imul` operand pick on
+// `bpp*x + pitch*y` (both orders compiled, identical - INDEX
+// commutative-imul-operand-in-eax.md) and the Unlock receiver register that follows it.
 RVA(0x00164180, 0xcd)
 void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     if (x - 4 < 0) {
@@ -409,25 +428,29 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
         *p = 0;
         --p;
     }
-    base[off + 1] = 0;
-    base[off + 2] = 0;
-    base[off + 3] = 0;
+    // The 3-byte run right of centre is a LOOP, not three assignments: cl5's fill
+    // expansion gives retail's `xor ecx,ecx / mov WORD [..+1],cx / mov BYTE [..+3],cl`
+    // (docs/patterns/adjacent-same-value-stores-are-a-loop.md).
+    for (i = 1; i <= 3; ++i) {
+        base[off + i] = 0;
+    }
 
-    // vertical arm up (0xff)
-    i32 up = off;
+    // vertical arm up (0xff). The first step is PEELED: retail's loop body is
+    // {store; step}, so the pitch is read once before the loop and again inside it
+    // (4 subs, 3 stores) - `{step; store}` gives 3 of each and the wrong rotation.
+    i32 up = off - m_surface->m_pitch;
     for (i = 0; i < 3; ++i) {
-        up -= m_surface->m_pitch;
         base[up] = static_cast<char>(0xff);
+        up -= m_surface->m_pitch;
     }
     // vertical arm down (0xff)
-    i32 down = off;
+    i32 down = off + m_surface->m_pitch;
     for (i = 0; i < 3; ++i) {
-        down += m_surface->m_pitch;
         base[down] = static_cast<char>(0xff);
+        down += m_surface->m_pitch;
     }
 
-    CDDSurface* sv = m_surface;
-    sv->m_ddSurface->Unlock(0);
+    m_surface->m_ddSurface->Unlock(0);
 }
 
 // ---------------------------------------------------------------------------

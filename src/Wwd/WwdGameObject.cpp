@@ -225,13 +225,10 @@ void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDD
 // BltEx. "Both armed" combine again via IntersectRect/UnionRect: one region over the
 // union {pos={left,top}, size={w,h}} when they overlap, else both records. Only one
 // armed -> that record. Arg `c` unused. __thiscall, 3 args (ret 0xc).
-// @early-stop
-// ~91% zero-register-pinning wall (twin of CWwdGameObjectC::Slot38 @99.7%): logic/CFG/
-// the union pos/size build + all four BlitDirtyRect sites byte-exact. Residual is the
-// callee-saved coloring of the two hoisted record bases (&m_dirty.m_lastX,&m_shadow) -> retail edi/ebx
-// vs cl ebx/edi, cascading a few push operands; the extra IntersectRect/UnionRect path
-// (absent in the twin) adds the register pressure that keeps this below the twin's 99.7%.
-// Permuter found no operand-order gain. docs/patterns/zero-register-pinning.md.
+// EXACT since 2026-07-29. The old "zero-register-pinning wall / callee-saved coloring"
+// note was wrong: the whole residual was the pos/size STORE ORDER in the union arm -
+// retail writes pos[0], pos[1], size[0], size[1], which is what loads ir.top before
+// ir.bottom and lets pos[1] and the height subtract share the one register.
 RVA(0x001508a0, 0x117)
 void CWwdGameObjectA::BltDirtyRegions(
     CDDrawSurfacePair* a,
@@ -244,10 +241,13 @@ void CWwdGameObjectA::BltDirtyRegions(
             UnionRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect);
             i32 pos[2];
             i32 size[2];
+            // Store order is pos[0], pos[1], size[0], size[1] (retail: [esp+0x14],
+            // [esp+0x18], [esp+0xc], [esp+0x10]) - which is also what makes `top` load
+            // before `bottom` and feed both pos[1] and the height subtract.
             pos[0] = ir.left;
+            pos[1] = ir.top;
             size[0] = ir.right - ir.left + 1;
             size[1] = ir.bottom - ir.top + 1;
-            pos[1] = ir.top;
             a->BlitDirtyRect(b, pos, size);
         } else {
             a->BlitDirtyRect(b, &m_dirty.m_lastX, &m_dirty.m_w);   // live record
@@ -266,20 +266,27 @@ void CWwdGameObjectA::BltDirtyRegions(
 // then bounds-check against either the camera rect (when the 0x40000 flag is set)
 // or the plane grid limits. __thiscall, 0 args.
 // @early-stop
-// regalloc wall (~73%): the four derived edges + m_layer/m_0c/m_flags want 4 callee-saved
-// regs where retail packs them into 3 (ebx/esi/edi, m_layer kept in edi, m_flags tested from
-// memory). No source spelling reproduces retail's exact edge-register assignment; both the
-// camera-rect and grid-extent bounds checks are byte-faithful.
+// 83.1% (was 73.25). The REAL residual under the old "regalloc wall" note was that the two
+// grid extents were read at their compare sites: retail hoists BOTH (`mov ecx,[eax+0x10];
+// mov eax,[eax+0x14]`) above the first bounds test, and naming the centre/anchor reads
+// (sx/ax/sy/ay) puts the screenX load first and fixes the lea operand order. What is left
+// IS a colouring: m_layer takes esi here and edi in retail, which cascades left->eax
+// (retail esi) and forces `mov edx,[ecx+8]` where retail tests m_flags straight from
+// memory. Dropping the `e` local and every declaration order were compiled; the pair
+// does not flip.
 RVA(0x001509c0, 0xab)
 i32 CWwdGameObjectA::Test() {
-    CImage* e = m_layer;
-    if (!e) {
+    if (m_layer == 0) {
         return 0;
     }
-    i32 right = m_screenX + e->m_anchorX;
-    i32 left = m_screenX - e->m_anchorX;
-    i32 top = m_screenY - e->m_anchorY;
-    i32 bottom = m_screenY + e->m_anchorY;
+    i32 sx = m_screenX;
+    i32 ax = m_layer->m_anchorX;
+    i32 right = sx + ax;
+    i32 left = sx - ax;
+    i32 sy = m_screenY;
+    i32 ay = m_layer->m_anchorY;
+    i32 top = sy - ay;
+    i32 bottom = sy + ay;
     if (m_flags & 0x40000) {
         // The camera cull rect is the main plane's +0x40 Win32 RECT (the level's +0x24
         // CGameLevel -> +0x5c CDDrawWorkerHost == the former WwdCamHolder->m_5c camera object).
@@ -298,16 +305,21 @@ i32 CWwdGameObjectA::Test() {
         // The non-camera cull bounds are the DRAW SURFACE's extent (front pair's
         // m_width/m_height) - the former "grid limits" view.
         CDDrawSurfaceChildA* g = OwnerMgr()->m_drawTarget->m_frontPair;
+        // Both extents are read into locals BEFORE the first bounds test: retail
+        // emits `mov ecx,[eax+0x10]; mov eax,[eax+0x14]` above the `test ebx,ebx`,
+        // where reading them at their use sites leaves each as a `cmp` memory operand.
+        i32 gw = g->m_width;
+        i32 gh = g->m_height;
         if (right < 0) {
             return 0;
         }
-        if (left >= g->m_width) {
+        if (left >= gw) {
             return 0;
         }
         if (bottom < 0) {
             return 0;
         }
-        return top < g->m_height;
+        return top < gh;
     }
 }
 
@@ -1332,33 +1344,29 @@ i32 CDDrawWorker::BuildFramesFromSymTab(CSymTab* tab) {
 // records matched than the count of live frames in [m_64, m_68]; else the match
 // count. __thiscall(tab), ret 4.
 // ===========================================================================
-// @early-stop
-// regalloc-coloring wall: body is byte-structure-exact but MSVC colors `this`->ebx
-// and coalesces cnt/tab->edi, whereas retail keeps `this`->edi and coalesces
-// cnt/tab->ebx (a consistent ebx<->edi swap) plus retail push-saves all 4 GPRs up
-// front where cl shrink-wraps them. Every mnemonic/operand-shape matches; only the
-// two callee-saved colors differ. permute (start 87.755%) found no better spelling.
+// EXACT since 2026-07-29: the old "regalloc-coloring wall (ebx<->edi swap)" was a
+// DUPLICATED loop guard - an outer `if (n > 0)` around the `for (i = 0; i < n; i++)`
+// makes cl emit `cmp edx,eax / jle` twice where retail has one `test edx,edx / jle`,
+// and the separate `cnt` temp cost the extra write-back. Both colors fell out.
 RVA(0x001522b0, 0xf7)
 i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
+    // ONE loop guard, not an outer `if (n > 0)` around a `for`: the extra `if` makes cl
+    // emit the `n > 0` test twice (retail has a single `test edx,edx / jle`), and the
+    // separate `cnt` temp costs the write-back that retail does straight from the
+    // enregistered counter.
     i32 matched = 0;
-    i32 liveFrames;
-    liveFrames = 0;
+    i32 liveFrames = 0;
     i32 n = m_items.GetSize();
-    if (n > 0) {
-        i32 cnt;
-        cnt = 0;
-        for (i32 i = 0; i < n; i++) {
-            CImage* el;
-            if (i >= m_minIndex && i <= m_maxIndex) {
-                el = static_cast<CImage*>(m_items.GetAt(i));
-            } else {
-                el = 0;
-            }
-            if (el != 0) {
-                cnt++;
-            }
+    for (i32 i = 0; i < n; i++) {
+        CImage* el;
+        if (i >= m_minIndex && i <= m_maxIndex) {
+            el = static_cast<CImage*>(m_items.GetAt(i));
+        } else {
+            el = 0;
         }
-        liveFrames = cnt;
+        if (el != 0) {
+            liveFrames++;
+        }
     }
     void* sym = tab->FirstSym();
     while (sym != 0) {

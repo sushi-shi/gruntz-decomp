@@ -1801,12 +1801,17 @@ L_moveDone:
 // re-arm the attack anim. __thiscall, ret 0x10; returns 1 on success, 0 on bail.
 //
 // @early-stop
-// large-state-machine + grid-regalloc plateau: the dispatch CFG, all three strcmp
-// type-code arms (the inline-strcmp setcc form), the combat-timer + 15-wide cell grid
-// index, the align-down/IsDropReady block, and the dual ArrivalRecycle finalize are
-// reconstructed in shape/order. Residue = the deep g_gameReg->m_tileGrid board chain modeled
-// by raw offset, the cross-arm regalloc (the neighbour `ebx` pinned across the tail),
-// and the strcmp-eq sentinel pinning. Deferred to the final sweep.
+// 94.7% (was 89.6). Three REAL bugs came out of the old "grid-regalloc plateau" note:
+//   * the move-config gate was `v = m_170; if (v > 0x16) v = m_19c;` - it fired
+//     RunMoveConfig whenever m_entranceReason itself was 1. Retail zeroes the flag up
+//     front and only assigns it inside the m_19c==1 arm (both conditions required);
+//   * the `if (redo)` arm was MISSING the `SetupTubeAnim(m_coordToggle)` call
+//     (0x5b32f -> ILT 0x1e47 -> CGrunt::SetupTubeAnim @0x50a50);
+//   * the two tile latches m_17c/m_180 are hoisted into registers before the compare.
+// Residue: cl constant-propagates `v = m_19c` inside the `m_19c == 1` arm (immediate
+// `mov eax,1` + a memory compare) where retail keeps the load and copies the register,
+// plus the arg-evaluation LOAD order (retail loads m_screenX before m_screenY, cl the
+// reverse - the same left-to-right-vs-push-order difference seen across this TU).
 RVA(0x0005b050, 0x40b)
 i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     if (a == m_tileOwnerHi && g_traitorMode == 0) {
@@ -1849,11 +1854,18 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     if (eq) {
         return 0;
     }
-    i32 v = m_entranceReason;
-    if (v > 0x16) {
-        v = m_19c;
+    // The move-config gate needs BOTH conditions: retail zeroes a flag up front
+    // (`xor ecx,ecx`) and only assigns it inside the m_19c==1 arm, so an
+    // m_entranceReason <= 0x16 never reaches RunMoveConfig. The old `v = m_170;
+    // if (v > 0x16) v = m_19c;` form ran it whenever m_entranceReason itself was 1.
+    i32 v = 0;
+    if (m_entranceReason > 0x16) {
+        i32 mode = m_19c; // named: retail compares the LOADED value and copies it
+        if (mode == 1) {
+            v = mode;
+        }
     }
-    if (v == 1) {
+    if (v != 0) {
         RunMoveConfig(c >> 5, d >> 5);
         return 1;
     }
@@ -1871,10 +1883,12 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     } else {
         eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeN) == 0);
         if (eq) {
+            i32 lastX = m_lastTilePxX;
+            i32 lastY = m_lastTilePxY; // retail hoists BOTH latches into registers
             i32 px = (m_object->m_screenX & ~0x1f) + 0x10;
             i32 py = (m_object->m_screenY & ~0x1f) + 0x10;
             i32 redo = 1;
-            if (px != m_lastTilePxX || py != m_lastTilePxY) {
+            if (px != lastX || py != lastY) {
                 if (IsDropReady(1)) {
                     m_coordToggle = (m_coordToggle == 0);
                     redo = 0;
@@ -1884,6 +1898,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
             if (redo) {
                 m_prevAnimSetNode = m_objAux->m_1c;
                 m_objAux->m_1c = ActFindId(s_codeD);
+                SetupTubeAnim(m_coordToggle); // 0x5b32f -> ILT 0x1e47 -> 0x50a50
             }
         }
     }
@@ -2089,87 +2104,77 @@ void RegisterActs_644af0() {
 // the unit/diagonal direction vectors (0, +-1.0, +-0.5, +-sqrt(2)/2), then resets the
 // grunt's spawn state: HUD anchor, health/stamina (100), the entrance flags, the latches.
 //
-// @early-stop
-// x87 FP instruction-scheduling wall (same family as ComputeFacing 0x57060): the integer
-// stores, the 9 unrolled direction records, the 3*lo+hi index math, and the trailing
-// stat/flag reset are reconstructed faithfully, but MSVC's fld/fst/fstp/fdivr/fdiv stack
-// juggling for sqrt(2.0) and the 1/sqrt2 diagonals (the `fld st(1)` scheduling) rarely
-// matches from C source. Deferred to the final sweep.
+// EXACT since 2026-07-29. The old "x87 FP instruction-scheduling wall" hid TWO real
+// value bugs and one shape bug:
+//   * `n = -1.0 / s` is -sqrt(2); retail's second divide is `fld -1.0 / fdiv <diag>`,
+//     i.e. -1.0/sqrt(2) - the old form doubled every negative diagonal component;
+//   * NorthEast's m_dirY was `s` (+0.707) where retail stores the NEGATIVE diagonal;
+//   * the per-record `CGruntCellRec* c` pointer collapsed 36 index computations into 9.
+// With the subscript spelled at every field and -1.0/diag left as an expression (so cl
+// computes it at its first use, where retail has it), the x87 schedule falls out exactly.
 RVA(0x0005caa0, 0x5e4)
 void CGrunt::Activate() {
     double diag = sqrt(2.0);
-    // the per-direction m_cells records (stride 0x68; retail index math is 13*(3*lo+hi)
-    // doubles == exactly &m_cells[3*lo+hi].m_dirX - the old "15-double stride" tbl was
-    // a mis-decode writing past the record for every index > 0)
-
+    // The two diagonal magnitudes are BOTH +-1.0/sqrt(2) (retail: `fdivr 1.0` and
+    // `fld -1.0; fdiv <diag>`, the two doubles at 0x5e9a30/0x5e9a38 over the saved
+    // sqrt). The old `n = -1.0 / s` spelling was -sqrt(2), i.e. TWICE the magnitude
+    // it should be, on every negative diagonal component.
+    // `n` is NOT a hoisted local: retail computes -1.0/diag at its FIRST USE (after
+    // the NorthEast m_dirX store) and CSEs it into the [esp+0x10] scratch from there.
+    // A `double n = ...;` declaration emits the fld/fdiv up at the declaration and
+    // forces an extra `fld st(1)` to get `s` back on top for that first store.
     double s = 1.0 / diag;
-    double n = -1.0 / s;
 
     // Each record: 4 doubles at the cell's +0/8/0x10/0x18. The 9 globals are processed
-    // in this fixed order (ab0,ae0,aa0,b28,ac0,b48,ad0,b18,b38).
-    {
-        CGruntCellRec* c = &m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column];
-        c->m_dirX = 0.0;
-        c->m_dirY = -1.0;
-        c->m_stepX = 0.0;
-        c->m_stepY = -0.5;
-    }
-    {
-        CGruntCellRec* c = &m_cells[3 * g_gruntDirNorthEast.row + g_gruntDirNorthEast.column];
-        c->m_dirX = s;
-        c->m_dirY = s;
-        c->m_stepX = 0.5;
-        c->m_stepY = -0.5;
-    }
-    {
-        CGruntCellRec* c = &m_cells[3 * g_gruntDirEast.row + g_gruntDirEast.column];
-        c->m_dirX = 1.0;
-        c->m_dirY = 0.0;
-        c->m_stepX = 0.5;
-        c->m_stepY = 0.0;
-    }
-    {
-        CGruntCellRec* c = &m_cells[3 * g_gruntDirSouthEast.row + g_gruntDirSouthEast.column];
-        c->m_dirX = s;
-        c->m_dirY = s;
-        c->m_stepX = 0.5;
-        c->m_stepY = 0.5;
-    }
-    {
-        CGruntCellRec* c = &m_cells[3 * g_gruntDirSouth.row + g_gruntDirSouth.column];
-        c->m_dirX = 0.0;
-        c->m_dirY = 1.0;
-        c->m_stepX = 0.0;
-        c->m_stepY = 0.5;
-    }
-    {
-        CGruntCellRec* c = &m_cells[3 * g_gruntDirSouthWest.row + g_gruntDirSouthWest.column];
-        c->m_dirX = n;
-        c->m_dirY = s;
-        c->m_stepX = -0.5;
-        c->m_stepY = 0.5;
-    }
-    {
-        CGruntCellRec* c = &m_cells[3 * g_gruntDirWest.row + g_gruntDirWest.column];
-        c->m_dirX = -1.0;
-        c->m_dirY = 0.0;
-        c->m_stepX = -0.5;
-        c->m_stepY = 0.0;
-    }
-    {
-        CGruntCellRec* c = &m_cells[3 * g_gruntDirNorthWest.row + g_gruntDirNorthWest.column];
-        c->m_dirX = n;
-        c->m_dirY = n;
-        c->m_stepX = -0.5;
-        c->m_stepY = -0.5;
-    }
-    {
-        CGruntCellRec* c = &m_cells[3 * g_gruntDirCenter.row + g_gruntDirCenter.column];
-        c->m_dirX = 0.0;
-        c->m_dirY = 0.0;
-        c->m_stepX = 0.0;
-        c->m_stepY = 0.0;
-    }
+    // in this fixed order (ab0,ae0,aa0,b28,ac0,b48,ad0,b18,b38). The cell subscript is
+    // SPELLED OUT at every field, not hoisted into a `CGruntCellRec*` local: retail
+    // reloads the direction pair and redoes the 13*(3*row+col) index math for each of
+    // the 36 stores (`mov [ecx+edx*8+0x4XX],..`), where a hoisted pointer collapses it
+    // into one `lea` per record.
+    m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_dirX = 0.0;
+    m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_dirY = -1.0;
+    m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_stepX = 0.0;
+    m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_stepY = -0.5;
+
+    m_cells[3 * g_gruntDirNorthEast.row + g_gruntDirNorthEast.column].m_dirX = s;
+    m_cells[3 * g_gruntDirNorthEast.row + g_gruntDirNorthEast.column].m_dirY = -1.0 / diag;
+    m_cells[3 * g_gruntDirNorthEast.row + g_gruntDirNorthEast.column].m_stepX = 0.5;
+    m_cells[3 * g_gruntDirNorthEast.row + g_gruntDirNorthEast.column].m_stepY = -0.5;
+
+    m_cells[3 * g_gruntDirEast.row + g_gruntDirEast.column].m_dirX = 1.0;
+    m_cells[3 * g_gruntDirEast.row + g_gruntDirEast.column].m_dirY = 0.0;
+    m_cells[3 * g_gruntDirEast.row + g_gruntDirEast.column].m_stepX = 0.5;
+    m_cells[3 * g_gruntDirEast.row + g_gruntDirEast.column].m_stepY = 0.0;
+
+    m_cells[3 * g_gruntDirSouthEast.row + g_gruntDirSouthEast.column].m_dirX = s;
+    m_cells[3 * g_gruntDirSouthEast.row + g_gruntDirSouthEast.column].m_dirY = s;
+    m_cells[3 * g_gruntDirSouthEast.row + g_gruntDirSouthEast.column].m_stepX = 0.5;
+    m_cells[3 * g_gruntDirSouthEast.row + g_gruntDirSouthEast.column].m_stepY = 0.5;
+
+    m_cells[3 * g_gruntDirSouth.row + g_gruntDirSouth.column].m_dirX = 0.0;
+    m_cells[3 * g_gruntDirSouth.row + g_gruntDirSouth.column].m_dirY = 1.0;
+    m_cells[3 * g_gruntDirSouth.row + g_gruntDirSouth.column].m_stepX = 0.0;
+    m_cells[3 * g_gruntDirSouth.row + g_gruntDirSouth.column].m_stepY = 0.5;
+
+    m_cells[3 * g_gruntDirSouthWest.row + g_gruntDirSouthWest.column].m_dirX = -1.0 / diag;
+    m_cells[3 * g_gruntDirSouthWest.row + g_gruntDirSouthWest.column].m_dirY = s;
+    m_cells[3 * g_gruntDirSouthWest.row + g_gruntDirSouthWest.column].m_stepX = -0.5;
+    m_cells[3 * g_gruntDirSouthWest.row + g_gruntDirSouthWest.column].m_stepY = 0.5;
+
+    m_cells[3 * g_gruntDirWest.row + g_gruntDirWest.column].m_dirX = -1.0;
+    m_cells[3 * g_gruntDirWest.row + g_gruntDirWest.column].m_dirY = 0.0;
+    m_cells[3 * g_gruntDirWest.row + g_gruntDirWest.column].m_stepX = -0.5;
+    m_cells[3 * g_gruntDirWest.row + g_gruntDirWest.column].m_stepY = 0.0;
+
+    m_cells[3 * g_gruntDirNorthWest.row + g_gruntDirNorthWest.column].m_dirX = -1.0 / diag;
+    m_cells[3 * g_gruntDirNorthWest.row + g_gruntDirNorthWest.column].m_dirY = -1.0 / diag;
+    m_cells[3 * g_gruntDirNorthWest.row + g_gruntDirNorthWest.column].m_stepX = -0.5;
+    m_cells[3 * g_gruntDirNorthWest.row + g_gruntDirNorthWest.column].m_stepY = -0.5;
+
+    m_cells[3 * g_gruntDirCenter.row + g_gruntDirCenter.column].m_dirX = 0.0;
+    m_cells[3 * g_gruntDirCenter.row + g_gruntDirCenter.column].m_dirY = 0.0;
+    m_cells[3 * g_gruntDirCenter.row + g_gruntDirCenter.column].m_stepX = 0.0;
+    m_cells[3 * g_gruntDirCenter.row + g_gruntDirCenter.column].m_stepY = 0.0;
 
     // --- spawn-state reset tail (integer field stores) ---
     CWwdGameObjectA* h = m_object;
