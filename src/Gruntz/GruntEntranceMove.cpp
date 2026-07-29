@@ -536,7 +536,7 @@ i32 CGrunt::RearmEntranceDrop() {
     if (m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) {
         m_22c = 0;
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup(m_poseItem2);
+        m_38->m_1a0.Setup(m_poseItem[GRUNT_ITEM2]);
 
         CAniElement* desc = m_38->m_1a0.m_14;
         CAniDesc* elem =
@@ -584,7 +584,7 @@ i32 CGrunt::RearmEntranceDrop() {
 // three, dead-stores `reason`; the prior "un-reproducible DCE miss" verdict was wrong
 // (a 3-explicit-locals source DCEs it, a struct copy does not). GruntStrGetBuffer is
 // the real __thiscall CString::GetBuffer (ecx=&cell). Residue = an edx<->ecx coin-flip
-// in the m_prevEntranceDesc/SetGeometry(m_poseItem) tail + the m_5c/m_60 load-order
+// in the m_prevEntranceDesc/SetGeometry(m_poseItem[GRUNT_ITEM1]) tail + the m_5c/m_60 load-order
 // schedule in the PlayMoveSoundAtTile block (pure regalloc, no source lever).
 RVA(0x00068520, 0x2a2)
 i32 CGrunt::StartBombGruntRun() {
@@ -661,7 +661,7 @@ i32 CGrunt::StartBombGruntRun() {
         }
     }
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup(m_poseItem);
+    m_38->m_1a0.Setup(m_poseItem[GRUNT_ITEM1]);
     GruntEntranceCell cell = m_entranceCell;
     i32 col = cell.row + cell.col * 2;
     i32 base = cell.col + col; // (the old +0xb folded the m_cells base into the index)
@@ -724,11 +724,11 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_poseWalk = _out;
         _out = 0;
         MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_WG_ITEM, _out);
-        m_poseIdle[2] = 0;
-        m_poseIdle[0] = _out;
-        m_poseIdle[1] = _out;
-        m_poseIdle4 = 0;
-        m_poseIdle5 = 0;
+        m_poseIdle[GRUNT_IDLE3] = 0;
+        m_poseIdle[GRUNT_IDLE1] = _out;
+        m_poseIdle[GRUNT_IDLE2] = _out;
+        m_poseIdle[GRUNT_IDLE4] = 0;
+        m_poseIdle[GRUNT_IDLE5] = 0;
 
         CGruntzMgr* g = g_gameReg;
         i32 y = m_object->m_screenY;
@@ -770,19 +770,19 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_poseWalk = _out;
         _out = 0;
         MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_WG_IDLE1, _out);
-        m_poseIdle[0] = _out;
+        m_poseIdle[GRUNT_IDLE1] = _out;
         _out = 0;
         MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_WG_IDLE2, _out);
-        m_poseIdle[1] = _out;
+        m_poseIdle[GRUNT_IDLE2] = _out;
         _out = 0;
         MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_WG_IDLE3, _out);
-        m_poseIdle[2] = _out;
+        m_poseIdle[GRUNT_IDLE3] = _out;
         _out = 0;
         MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_WG_IDLE4, _out);
-        m_poseIdle4 = _out;
+        m_poseIdle[GRUNT_IDLE4] = _out;
         _out = 0;
         MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, s_WG_IDLE5, _out);
-        m_poseIdle5 = _out;
+        m_poseIdle[GRUNT_IDLE5] = _out;
     }
 
     // Re-stamp the current entrance-cell frame keyed by the active anim type.
@@ -805,7 +805,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     GruntScratchTeardown();
     if (strcmp(*rec2, "A") == 0) {
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup(m_poseIdle[0]);
+        m_38->m_1a0.Setup(m_poseIdle[GRUNT_IDLE1]);
         CAniElement* desc = m_38->m_1a0.m_14;
         CAniDesc* elem =
             desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
@@ -848,7 +848,7 @@ i32 CGrunt::UpdateEntranceAnim() {
 
     if (m_entranceStamped == 0) {
         m_value = m_38->m_1a0.m_14;
-        m_38->m_1a0.Setup(m_poseToyBreak);
+        m_38->m_1a0.Setup(m_poseToy[GRUNT_TOY_BREAK]);
 
         CAniElement* desc = m_38->m_1a0.m_14;
         CAniDesc* elem =

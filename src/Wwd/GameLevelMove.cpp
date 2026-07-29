@@ -479,9 +479,17 @@ done_eq:
 // The scan reuses the incoming coordinate as the loop counter (retail's
 // `mov ebx,[esp+N]; dec ebx` inc-in-place form; a fresh `col` local hoists a
 // lea instead and caps the quartet at 93-97%).
+//
+// EXACT since 2026-07-29. The last two bytes were the `limit` sum's LOAD ORDER: cl
+// CANONICALISES `a + b` when both sides are plain member loads (it emits the higher
+// offset first REGARDLESS of source order - swapping the operands is a byte-identical
+// no-op, measured both ways). The lever is a named local for the FIRST operand: that
+// makes its load a statement of its own and it is emitted first, which is retail's
+// `mov eax,[t+0x5c]; mov ebx,[t+0x13c]`. A local on the SECOND operand does nothing.
 RVA(0x00167a20, 0x11b)
 i32 CGameLevel::ResolveRightX(CGameObject* t, i32 x, i32 y) {
-    i32 limit = t->m_screenX + t->m_extent.right;
+    i32 sx = t->m_screenX;
+    i32 limit = sx + t->m_extent.right;
     for (x--; x > limit; x--) {
         i32 result;
         PROBE_TILE(this, x, y, result);
@@ -494,7 +502,8 @@ i32 CGameLevel::ResolveRightX(CGameObject* t, i32 x, i32 y) {
 
 RVA(0x00167b40, 0x11b)
 i32 CGameLevel::ResolveLeftX(CGameObject* t, i32 x, i32 y) {
-    i32 limit = t->m_screenX + t->m_extent.left;
+    i32 limit = t->m_screenX;
+    limit += t->m_extent.left;
     for (x++; x < limit; x++) {
         i32 result;
         PROBE_TILE(this, x, y, result);
@@ -507,7 +516,8 @@ i32 CGameLevel::ResolveLeftX(CGameObject* t, i32 x, i32 y) {
 
 RVA(0x00167c60, 0x11b)
 i32 CGameLevel::ResolveBottomY(CGameObject* t, i32 x, i32 y) {
-    i32 limit = t->m_screenY + t->m_extent.bottom;
+    i32 sy = t->m_screenY;
+    i32 limit = sy + t->m_extent.bottom;
     for (y--; y > limit; y--) {
         i32 result;
         PROBE_TILE(this, x, y, result);
@@ -520,7 +530,9 @@ i32 CGameLevel::ResolveBottomY(CGameObject* t, i32 x, i32 y) {
 
 RVA(0x00167d80, 0x11b)
 i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
-    i32 limit = t->m_screenY + t->m_extent.top;
+    i32 sy = t->m_screenY;
+    i32 e = t->m_extent.top;
+    i32 limit = sy + e;
     for (y++; y < limit; y++) {
         i32 result;
         PROBE_TILE(this, x, y, result);

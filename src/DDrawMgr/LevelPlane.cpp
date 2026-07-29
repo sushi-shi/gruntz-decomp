@@ -1104,7 +1104,11 @@ i32 CDDrawWorkerHost::CenterScrollB() {
     if (flags & 0x4) {
         x = static_cast<i32>(m_scaledX);
     } else {
-        x = (m_viewRect.right + m_viewRect.left) / 2 + 1;
+        // the named local forces the high-edge load FIRST (retail reads +0x48 then
+        // +0x40 here, the mirror of A); a bare `right + left` is canonicalized to
+        // low-offset-first.
+        i32 right = m_viewRect.right;
+        x = (right + m_viewRect.left) / 2 + 1;
     }
 
     i32 y;
@@ -1112,7 +1116,8 @@ i32 CDDrawWorkerHost::CenterScrollB() {
         y = static_cast<i32>(m_scaledY);
         return scroll->Relocate(x, y);
     }
-    y = (m_viewRect.bottom + m_viewRect.top) / 2 + 1;
+    i32 bottom = m_viewRect.bottom;
+    y = (bottom + m_viewRect.top) / 2 + 1;
     return scroll->Relocate(x, y);
 }
 
@@ -1372,8 +1377,13 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     s->Write(&m_94, 4);
     s->Write(&m_98, 4);
 
-    // width FIRST here (Read/Load spell it the other way round): the multiply's operand
-    // order is byte-visible - cl leaves the first operand in the register for the `imul`.
+    // EXACT since 2026-07-29. The imul operand pick (`mov ecx,[+0x28]; imul ecx,[+0x2c]`)
+    // is NOT reachable from this expression - six spellings A/B'd against real cl in this
+    // TU (both source orders, one/two named locals, the `*=` compound chain, `(w*h) << 2`)
+    // all emitted `mov [+0x2c]` first. It closed on the ORIGINAL spelling once the two
+    // CenterScroll bodies above it changed: the pick is a function of the TU's cumulative
+    // optimizer state at this site, not of the expression. (`repne` vs `repnz` in an
+    // objdump diff is the same F2 AE byte - never a difference.)
     i32 gridSize = m_gridW * m_gridH * 4;
     s->Write(&gridSize, 4);
     s->Write(m_tileGrid, gridSize);

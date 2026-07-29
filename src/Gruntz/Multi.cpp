@@ -1630,23 +1630,29 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
         // which trips the reinterpret_casts ratchet (440 -> 441, FATAL). Reverted; apply
         // the shape where the duplicated argument needs no cast. See
         // docs/patterns/positive-gate-enables-shrink-wrap.md sec.5.
-        const char* str;
+        // The LB_ADDSTRING call is DUPLICATED into both arms (retail's `push ecx / jmp`
+        // vs `push edx`, then the tail-merged `push 0 / push 0x180 / push edi / call` at
+        // 0xb8a74): only the string push differs, so cl tail-merges the rest. The union
+        // carries the pointer into the LPARAM slot, so no second cast is needed.
         // `buf`, NOT `buf + 4`: retail's `lea eax,[esp+0x14]` (one push deep in a
         // 0x110-byte frame) resolves to buf[0]; the `+ 4` put our lea one dword high.
-        if (NetFormatKeyed(buf, player->m_desc.m_lpszName, "NAME")) {
-            str = buf;
-        } else {
-            str = player->m_desc.m_lpszName;
-        }
         MsgParam name;
-        i32 idx = static_cast<i32>(
-            ::SendMessageA(hList, LB_ADDSTRING, 0, (name.m_str = str, name.m_lparam))
-        );
+        i32 idx;
+        if (NetFormatKeyed(buf, player->m_desc.m_lpszName, "NAME")) {
+            name.m_str = buf;
+            idx = static_cast<i32>(::SendMessageA(hList, LB_ADDSTRING, 0, name.m_lparam));
+        } else {
+            name.m_str = player->m_desc.m_lpszName;
+            idx = static_cast<i32>(::SendMessageA(hList, LB_ADDSTRING, 0, name.m_lparam));
+        }
         if (idx != -1) {
             MsgParam cookie;
             cookie.m_ptr = player;
             ::SendMessageA(hList, LB_SETITEMDATA, idx, cookie.m_lparam);
         }
+        // @early-stop residue: retail reads m_playerSelId TWICE here (`mov eax,[ebp+0x80]`
+        // for the guard + GetAt, `mov ecx,[ebp+0x80]` for GetNext); cl CSEs the two into one
+        // load. A local copy feeding the guard/GetAt does NOT defeat the CSE (measured).
         if (sess->m_playerSelId != 0) {
             player = static_cast<CNetPlayerListNode*>(sess->m_players.GetAt(sess->m_playerSelId));
             sess->m_players.GetNext(sess->m_playerSelId);
@@ -3467,14 +3473,12 @@ i32 CMulti::CreateSession() {
 // then resets the slot to its empty state: zero the scalar header, drain the
 // queue (ClearCmds), zero the command fields and splat both command ranges.
 // The CObList member's dtor pulls in the /GX EH frame.
-// @early-stop
-// zero-register-pinning wall (78.8%): code bytes byte-faithful (EH frame, CObList
-// ctor, every field store, ClearCmds + both ResetTriple calls all match retail).
-// Retail re-materializes the splat 0 in eax (caller-saved, `xor eax,eax` after the
-// CObList ctor AND after ClearCmds) and pushes only esi; cl pins 0 in callee-saved
-// edi (one xor, an extra push/pop edi). Identical coin-flip to the sibling
-// CNetCmdSlot::ResetAll/Init in netcmdslot; not source-steerable. See
-// docs/patterns/zero-register-pinning.md. Final sweep.
+// EXACT since 2026-07-29. The recorded "zero-register-pinning wall (78.8%)" was a
+// mislabeled source bug: the four m_ackFlags zeros were four constant-index stores,
+// which cl folds into the SAME zero constant as the eight header stores - so the
+// constant has to live across ClearCmds and gets pinned in callee-saved edi (with the
+// extra push/pop edi). Writing that group as a LOOP gives it its own zero constant,
+// which is retail's second `xor eax,eax` after ClearCmds clobbers the first.
 RVA(0x000bbec0, 0x81)
 CNetCmdSlot::CNetCmdSlot() {
     m_state = 0;
@@ -3486,10 +3490,12 @@ CNetCmdSlot::CNetCmdSlot() {
     m_maxSeq = 0;
     m_owner = 0;
     ClearCmds();
-    m_ackFlags[0] = 0;
-    m_ackFlags[1] = 0;
-    m_ackFlags[2] = 0;
-    m_ackFlags[3] = 0;
+    // the four-slot zero fill is a LOOP: that gives the group its OWN zero constant
+    // (retail's second `xor eax,eax` after ClearCmds clobbers it) instead of sharing
+    // the pre-call zero, which is what forces cl's `push edi` / pinned-edi zero.
+    for (i32 i = 0; i < 4; i++) {
+        m_ackFlags[i] = 0;
+    }
     ResetTriple(m_rangeA);
     ResetTriple(m_rangeB);
 }
@@ -3502,10 +3508,11 @@ CNetCmdSlot::CNetCmdSlot() {
 // block, then zero all 0x80 resync entries.
 // ---------------------------------------------------------------------------
 // @early-stop
-// 75.20% (was 71.47). 2026-07-28: zeroing the ack array through a POINTER
-// (`i32* ack = slot->m_ackFlags; ack[0..3] = 0;`) instead of four constant-index
-// stores gives retail's `lea ecx,<array>` + `[ecx]/[ecx+4]/...` block, and with it
-// the spilled down-counter and the two-induction-variable slot loop. Residual: the
+// 79.91% (was 71.47 -> 75.20 -> 79.91). 2026-07-28: zeroing the ack array through a
+// POINTER instead of four constant-index stores gives retail's `lea ecx,<array>` +
+// `[ecx]/[ecx+4]/...` block. 2026-07-29: writing that group as a LOOP (the same fix
+// that took CNetCmdSlot's ctor to EXACT) gives it its own `xor eax,eax` after the
+// ClearCmds call, which is retail's. Residual: the
 // BIAS cl picks for the second induction variable - retail anchors it at slot+8 and
 // derives `this` as `[esi-8]`, cl anchors at slot+0x44 and advances both; the same
 // biased-cursor selection blocks Parse/BroadcastChannelTable (rows+1 vs rows+2) and
@@ -3533,14 +3540,12 @@ void CNetSession::ResetAll() {
         slot->m_maxSeq = 0;
         slot->m_owner = 0;
         slot->ClearCmds();
-        // Zeroed through a POINTER to the array (retail materializes
-        // `lea ecx,[slot+0x3c]` and stores `[ecx]`/`[ecx+4]`/... from a fresh
-        // `xor eax,eax`), not four constant-index stores off the slot pointer.
-        i32* ack = slot->m_ackFlags;
-        ack[0] = 0;
-        ack[1] = 0;
-        ack[2] = 0;
-        ack[3] = 0;
+        // The four-slot zero fill is a LOOP, exactly as in CNetCmdSlot's ctor: that
+        // gives the group its OWN zero constant (retail's `xor eax,eax` after the
+        // ClearCmds call clobbers the pre-call one).
+        for (i32 k = 0; k < 4; k++) {
+            slot->m_ackFlags[k] = 0;
+        }
         slot->ResetTriple(slot->m_rangeA);
         slot->ResetTriple(slot->m_rangeB);
         slot++;

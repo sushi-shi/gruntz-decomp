@@ -388,23 +388,20 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_object->m_moveMode = 1;
     m_430 = 0;
     m_42c = 0;
+    // The five pose ARRAYS are cleared with loops, the scalars individually - that is
+    // exactly what retail emits: `mov [esi+0x394],edi` (the pooled zero) for the three
+    // scalars, and a strength-reduced row pointer + its own `xor eax,eax` for each of
+    // the five runs (`lea edx,[esi+0x398] / mov [edx],eax / mov [edx+4],eax`, ...).
+    // Individual member assignments never get the fill expansion. See
+    // docs/patterns/adjacent-same-value-stores-are-a-loop.md.
     m_poseWalk = 0;
-    m_poseAttack1 = 0;
-    m_poseAttack2 = 0;
+    memset(m_poseAttack, 0, sizeof(m_poseAttack));
     m_poseAttackIdle = 0;
-    m_poseStruck1 = 0;
-    m_poseStruck2 = 0;
-    m_poseIdle[0] = 0;
-    m_poseIdle[1] = 0;
-    m_poseIdle[2] = 0;
-    m_poseIdle4 = 0;
-    m_poseIdle5 = 0;
-    m_poseItem = 0;
-    m_poseItem2 = 0;
+    memset(m_poseStruck, 0, sizeof(m_poseStruck));
+    memset(m_poseIdle, 0, sizeof(m_poseIdle));
+    memset(m_poseItem, 0, sizeof(m_poseItem));
     m_poseDeath = 0;
-    m_poseToy1 = 0;
-    m_poseToy2 = 0;
-    m_poseToyBreak = 0;
+    memset(m_poseToy, 0, sizeof(m_poseToy));
     m_pickupGeoSrc = 0;
     m_arrived = 0;
     m_38->m_collCategory = 0x100000;
@@ -773,18 +770,18 @@ RVA(0x00049c60, 0x8d1)
 void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
     if (kind == 0) {
         LOAD_POSE(m_poseWalk, s_pose_WALK);
-        LOAD_POSE(m_poseAttack1, s_pose_ATTACK1);
-        LOAD_POSE(m_poseAttack2, s_pose_ATTACK2);
+        LOAD_POSE(m_poseAttack[GRUNT_ATTACK1], s_pose_ATTACK1);
+        LOAD_POSE(m_poseAttack[GRUNT_ATTACK2], s_pose_ATTACK2);
         LOAD_POSE(m_poseAttackIdle, s_pose_ATTACKIDLE);
-        LOAD_POSE(m_poseStruck1, s_pose_STRUCK1);
-        LOAD_POSE(m_poseStruck2, s_pose_STRUCK2);
-        LOAD_POSE(m_poseIdle[0], s_pose_IDLE1);
-        LOAD_POSE(m_poseIdle[1], s_pose_IDLE2);
-        LOAD_POSE(m_poseIdle[2], s_pose_IDLE3);
-        LOAD_POSE(m_poseIdle4, s_pose_IDLE4);
-        LOAD_POSE(m_poseIdle5, s_pose_IDLE5);
-        LOAD_POSE(m_poseItem, s_pose_ITEM);
-        LOAD_POSE(m_poseItem2, s_pose_ITEM2);
+        LOAD_POSE(m_poseStruck[GRUNT_STRUCK1], s_pose_STRUCK1);
+        LOAD_POSE(m_poseStruck[GRUNT_STRUCK2], s_pose_STRUCK2);
+        LOAD_POSE(m_poseIdle[GRUNT_IDLE1], s_pose_IDLE1);
+        LOAD_POSE(m_poseIdle[GRUNT_IDLE2], s_pose_IDLE2);
+        LOAD_POSE(m_poseIdle[GRUNT_IDLE3], s_pose_IDLE3);
+        LOAD_POSE(m_poseIdle[GRUNT_IDLE4], s_pose_IDLE4);
+        LOAD_POSE(m_poseIdle[GRUNT_IDLE5], s_pose_IDLE5);
+        LOAD_POSE(m_poseItem[GRUNT_ITEM1], s_pose_ITEM);
+        LOAD_POSE(m_poseItem[GRUNT_ITEM2], s_pose_ITEM2);
         LOAD_POSE(m_poseDeath, s_pose_DEATH);
         return;
     }
@@ -792,13 +789,13 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
     if (toyOnly != 0) {
         LOAD_POSE(m_poseWalk, s_pose_WALK);
     } else {
-        LOAD_POSE(m_poseToy1, s_pose_TOY1);
+        LOAD_POSE(m_poseToy[GRUNT_TOY1], s_pose_TOY1);
         // +0x10 is CAniElement::m_records (a CObArray at +0x08) .m_nSize (at +0x08):
         // the pose's record count = its animation length (the ex-CAnimSetNode view
         // read the same dword raw)
-        i32 x = m_poseToy1->m_records.GetSize();
-        LOAD_POSE(m_poseToy2, s_pose_TOY2);
-        i32 y = m_poseToy2->m_records.GetSize();
+        i32 x = m_poseToy[GRUNT_TOY1]->m_records.GetSize();
+        LOAD_POSE(m_poseToy[GRUNT_TOY2], s_pose_TOY2);
+        i32 y = m_poseToy[GRUNT_TOY2]->m_records.GetSize();
         // the SHORTER pose is the if-BODY: retail's guard is `cmp x,y / jge <else>`, so the
         // fall-through arm is the `x < y` (100 - ratio) one.
         // The ratio goes through a LOCAL before the `100 -`: written as one expression, cl
@@ -820,7 +817,7 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
         }
     }
 
-    LOAD_POSE(m_poseToyBreak, s_pose_TOYBREAK);
+    LOAD_POSE(m_poseToy[GRUNT_TOY_BREAK], s_pose_TOYBREAK);
 }
 
 #undef LOAD_POSE
@@ -951,7 +948,7 @@ codeI:
     m_entranceCell.row = rec.column;
     m_entranceCell.reason = rec.direction;
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup(m_poseIdle[1]);
+    m_38->m_1a0.Setup(m_poseIdle[GRUNT_IDLE2]);
     ResetEntranceAnimation(1, 0, 0);
     return;
 
@@ -959,7 +956,7 @@ idle:
     // codes "A"/"K": drive the IDLE1 geometry (the forwarding setter), stamp the
     // cell frame from the incoming record (cell table base 0x474).
     m_value = m_38->m_1a0.m_14;
-    m_38->ApplyGeometryDirect(m_poseIdle[0], 0);
+    m_38->ApplyGeometryDirect(m_poseIdle[GRUNT_IDLE1], 0);
     {
         CAniElement* desc = m_38->m_1a0.m_14;
         CAniDesc* elem =
@@ -1011,6 +1008,15 @@ store:
 // owner; else it seeds the arrival defender block (m_arrivalRerollLo/m_arrivalRerollWindowLo/.., m_tileClaimed, m_arrivalState,
 // m_arrivalFlags &= mask) and records the entrance pos. Then runs the six HUD sprite
 // creators and latches m_arrived=1.
+// @early-stop
+// 99.33%: ONE instruction out of place - cl hoists the `m_arrivalFlags` load to the top
+// of the else-arm block, retail emits it between the four reroll-timer stores and the
+// m_tileClaimed/m_arrivalState pair. Measured 2026-07-29: all three spellings of the
+// read-modify-write (`i32 f = m & mask; ... m = f;` at either position, and the compound
+// `m &= mask;`) put the load at the block head; only a store cl cannot prove non-aliasing
+// for would pin it, which points at the four reroll stores being something other than four
+// direct member stores in retail (an inlined sub-object method ends a store run - see
+// docs/patterns/imm-store-floats-to-end-of-store-run.md). Needs that model, not a respell.
 RVA(0x0004b130, 0xc8)
 i32 CGrunt::CommitArrival() {
     if (m_arrived != 0) {
@@ -1025,10 +1031,9 @@ i32 CGrunt::CommitArrival() {
         m_arrivalRerollWindowLo = 0;
         m_arrivalRerollHi = 0;
         m_arrivalRerollWindowHi = 0;
-        i32 flags = m_arrivalFlags & 0xe7fbfbfd;
         m_tileClaimed = 0;
         m_arrivalState = 0;
-        m_arrivalFlags = flags;
+        m_arrivalFlags &= 0xe7fbfbfd;
         SetEntrancePos(1, 1);
     }
     CreateSelectedSprite();
