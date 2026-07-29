@@ -30,12 +30,11 @@ i32 CGruntzCommand::Parse(void*, i32) {
 }
 
 static inline i16 PeekI16(const void* p) {
-    // byte-forced (one seam): the command wire buffer is a packed byte stream
-    return *reinterpret_cast<const i16*>(p);
+    // the command wire buffer is a packed byte stream; the field is a word
+    return *static_cast<const i16*>(p);
 }
 static inline void PokeI16(void* p, i16 v) {
-    // byte-forced (one seam): the command wire buffer is a packed byte stream
-    *reinterpret_cast<i16*>(p) = v;
+    *static_cast<i16*>(p) = v;
 }
 
 RVA(0x000239d0, 0xf)

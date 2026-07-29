@@ -2068,18 +2068,17 @@ i32 CMulti::PollSession() {
 // esi<->edi recolor, store-order permutation). Not further source-steerable. Final sweep.
 RVA(0x000b9750, 0x74e)
 i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
-    // wire decode: the transport hands back BYTES, so naming the record at
-    // the receive boundary is language-forced (one seam per message type).
-    CNetMsg* msg = reinterpret_cast<CNetMsg*>(buf);
+    // the receive buffer at its wire shapes (see CNetWireMsg in <Net/NetMgr.h>)
+    CNetWireMsg wire;
+    wire.m_bytes = buf;
+    CNetMsg* msg = wire.m_msg;
     if (msg == 0) {
         return 0;
     }
     if (sender == 0) {
         // sender 0 = the DirectPlay SYSTEM channel - the same buffer carries the
-        // control-record wire format, decoded from the raw bytes
-        // wire decode: the transport hands back BYTES, so naming the record at
-        // the receive boundary is language-forced (one seam per message type).
-        return HandleControlMsg(reinterpret_cast<CNetCtrlMsg*>(buf), size);
+        // control-record wire format
+        return HandleControlMsg(wire.m_ctrl, size);
     }
 
     CNetSessionNode* pd = static_cast<CNetSessionNode*>(Peer()->GetPlayerData(sender));
@@ -2216,10 +2215,9 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (Mgr()->CountReadyOptionsSlots(1) >= 4) {
                 break;
             }
-            // one seam: the 0x3f9 arm's wire record IS the 0x28-byte channel-
-            // registration packet - RegisterChannelRec below reads the same bytes
-            // back through CNetChannelPacket, and +0x09 is its m_kind.
-            CNetChannelPacket* chan = reinterpret_cast<CNetChannelPacket*>(msg);
+            // the 0x3f9 arm's wire record IS the 0x28-byte channel-registration
+            // packet - RegisterChannelRec reads the same bytes back through it.
+            CNetChannelPacket* chan = wire.m_chan;
             if (ChannelSlots_Get(chan->m_kind) == 0) {
                 chan->m_kind = static_cast<u8>(ChannelSlots_FindFree());
             }
@@ -2379,9 +2377,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             break;
 
         case 0x417:
-            // wire decode: the transport hands back BYTES, so naming the record at
-            // the receive boundary is language-forced (one seam per message type).
-            HandleVersionCheck(reinterpret_cast<CNetVersionMsg*>(buf)); // wire decode
+            HandleVersionCheck(wire.m_version);
             break;
 
         case 0x418: {

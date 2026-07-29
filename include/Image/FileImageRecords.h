@@ -15,6 +15,22 @@ struct Bmp256Info {
 };
 SIZE(0x428);
 
+// BITMAPINFOHEADER as the BMP writers ZERO it: retail clears the header with a
+// `mov ecx,0xb; rep stosd` and the field-wise spelling reproduces it, which means
+// the biPlanes|biBitCount pair goes down as ONE dword. (An explicit memset measured
+// 14 points WORSE - 52.57 -> 38.40 - do not retry it.) Naming that dword here keeps
+// the store shape without a pun; the fields' own names stay on the SDK arm.
+union BmpInfoHeaderStamp {
+    BITMAPINFOHEADER m_ih; // the field view
+    struct {
+        DWORD m_biSize;
+        LONG m_biWidth;
+        LONG m_biHeight;
+        DWORD m_planesAndBitCount; // biPlanes | biBitCount<<16 - cleared as one dword
+    };
+};
+SIZE(0x28);
+
 // BITMAPFILEHEADER as every BMP writer here STAMPS it: retail inlines a strcpy off
 // the g_bmpHeaderTemplate / "BM" literal (`mov edi,<lit>; repnz scas al` then
 // `rep movs`) over the header's leading bytes - a bfType word store emits neither.

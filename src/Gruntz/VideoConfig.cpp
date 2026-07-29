@@ -98,7 +98,7 @@ i32 GetResolutionCode() {
 // WM_HSCROLL drives the resolution slider.
 //
 // @early-stop
-// ~92.5%: the full dialog logic + every handler dispatch is byte-exact. Residual is
+// 99.09%: the full dialog logic + every handler dispatch is byte-exact. Residual is
 // pure codegen shaping: (1) the IDOK resolution-store register allocation (retail
 // caches g_gameReg once and puts w/h in ecx/edx; cl reloads it and uses eax/ecx),
 // (2) IsInPlayState's inline-vs-call bool normalization (GruntzMgr.h defines it inline,
@@ -107,7 +107,10 @@ i32 GetResolutionCode() {
 // rets / retail 10; making the WM_COMMAND arm's trailing unrouted-notification exit a
 // `break` instead of `return FALSE` merges it with the switch default, which parks that
 // block at the bottom (retail 0x36564) and inverts the ladder's last compare so
-// WM_HSCROLL falls through. The
+// WM_HSCROLL falls through. Item (4) is FIXED TOO (2026-07-29, 96.05 -> 99.09): the
+// sending control's HWND is named ONCE per message arm instead of re-derived from
+// lParam at each of the eight uses - retail caches it in a register, which the
+// per-use spelling could not express. The
 // cross-view dispatch (m_curState's game-manager/net dual role via the CNetMgr
 // cross-cast) is reloc-masked scaffolding pending those classes' shared modeling.
 RVA(0x00036410, 0x366)
@@ -118,10 +121,13 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
         case WM_HSCROLL: { // 0x114
             i32 code = static_cast<i32>((wParam & 0xffff));
             i32 pos = static_cast<i32>((wParam >> 0x10));
-            if (reinterpret_cast<HWND>(lParam) == g_optHwndResSlider) {
-                SaveVideoResolutionConfig(hDlg, reinterpret_cast<HWND>(lParam), code, pos);
+            // WM_HSCROLL's lParam IS the scrollbar's window handle (Win32 ABI); it is
+            // named once here instead of at each of the three uses.
+            HWND bar = reinterpret_cast<HWND>(lParam);
+            if (bar == g_optHwndResSlider) {
+                SaveVideoResolutionConfig(hDlg, bar, code, pos);
             } else {
-                ScrollDialog(hDlg, reinterpret_cast<HWND>(lParam), code, pos);
+                ScrollDialog(hDlg, bar, code, pos);
             }
             return TRUE;
         }
@@ -161,28 +167,32 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     return TRUE;
                 }
             }
-            // control notifications: route each checkbox to its handler
-            if (g_optHwndMusic != 0 && reinterpret_cast<HWND>(lParam) == g_optHwndMusic) {
-                OnToggleMusicOption(hDlg);
-                return FALSE;
-            }
-            if (g_optHwndVoice != 0 && reinterpret_cast<HWND>(lParam) == g_optHwndVoice) {
-                OnToggleVoiceOption(hDlg);
-                return FALSE;
-            }
-            if (g_optHwndSpeech != 0 && reinterpret_cast<HWND>(lParam) == g_optHwndSpeech) {
-                OnToggleSpeechOption(hDlg);
-                return FALSE;
-            }
-            if (g_optHwndEasy != 0 && reinterpret_cast<HWND>(lParam) == g_optHwndEasy) {
-                OnToggleEasyModeOption(hDlg);
-                return FALSE;
-            }
-            // the LAST checkbox does not return: it falls through into the same
-            // `return FALSE` the unrouted-notification path uses (retail's 0x36520
-            // is reached by this block's two guards AND by its fallthrough)
-            if (g_optHwndResSlider != 0 && reinterpret_cast<HWND>(lParam) == g_optHwndResSlider) {
-                OnToggleCk5Option(hDlg);
+            // control notifications: route each checkbox to its handler. WM_COMMAND's
+            // lParam IS the sending control's window handle (Win32 ABI), named once.
+            {
+                HWND ctrl = reinterpret_cast<HWND>(lParam);
+                if (g_optHwndMusic != 0 && ctrl == g_optHwndMusic) {
+                    OnToggleMusicOption(hDlg);
+                    return FALSE;
+                }
+                if (g_optHwndVoice != 0 && ctrl == g_optHwndVoice) {
+                    OnToggleVoiceOption(hDlg);
+                    return FALSE;
+                }
+                if (g_optHwndSpeech != 0 && ctrl == g_optHwndSpeech) {
+                    OnToggleSpeechOption(hDlg);
+                    return FALSE;
+                }
+                if (g_optHwndEasy != 0 && ctrl == g_optHwndEasy) {
+                    OnToggleEasyModeOption(hDlg);
+                    return FALSE;
+                }
+                // the LAST checkbox does not return: it falls through into the same
+                // `return FALSE` the unrouted-notification path uses (retail's 0x36520
+                // is reached by this block's two guards AND by its fallthrough)
+                if (g_optHwndResSlider != 0 && ctrl == g_optHwndResSlider) {
+                    OnToggleCk5Option(hDlg);
+                }
             }
             // the unrouted-notification exit IS the switch default (retail 0x36564),
             // so the ladder's last compare inverts and WM_HSCROLL falls through

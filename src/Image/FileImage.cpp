@@ -425,19 +425,19 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, i32 flag) {
     }
 
     BmpFileHeaderStamp bfh;
-    BITMAPINFOHEADER bih;
-    bih.biSize = 0;
-    bih.biWidth = 0;
-    bih.biHeight = 0;
-    // Retail clears the header at 0x14468e (`mov ecx,0xb; rep stosd`); the field-wise
-    // spelling reproduces it, and an explicit memset measured 14 points WORSE
-    // (52.57 -> 38.40) - do not retry. This biPlanes|biBitCount dword is byte-forced.
-    *reinterpret_cast<i32*>(&bih.biPlanes) = 0;
-    bih.biSizeImage = 0;
-    bih.biXPelsPerMeter = 0;
-    bih.biYPelsPerMeter = 0;
-    bih.biClrUsed = 0;
-    bih.biClrImportant = 0;
+    // Retail clears the header at 0x14468e (`mov ecx,0xb; rep stosd`) and the
+    // field-wise spelling reproduces it - biPlanes|biBitCount go down as one dword,
+    // which is the arm BmpInfoHeaderStamp names.
+    BmpInfoHeaderStamp bih;
+    bih.m_biSize = 0;
+    bih.m_biWidth = 0;
+    bih.m_biHeight = 0;
+    bih.m_planesAndBitCount = 0;
+    bih.m_ih.biSizeImage = 0;
+    bih.m_ih.biXPelsPerMeter = 0;
+    bih.m_ih.biYPelsPerMeter = 0;
+    bih.m_ih.biClrUsed = 0;
+    bih.m_ih.biClrImportant = 0;
 
     // Retail INLINES strcpy here: `mov edi,0x61aabc; repnz scas al` then `rep movs`
     // into the 14-byte bfh at [esp+0x18]; a bfType word store emits neither.
@@ -447,12 +447,12 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, i32 flag) {
 
     i32 height = this->m_height; // dwHeight
     i32 width = this->m_width;   // dwWidth
-    bih.biHeight = height;
-    bih.biWidth = width;
+    bih.m_ih.biHeight = height;
+    bih.m_ih.biWidth = width;
     bfh.m_hdr.bfSize = 3 * width * height + 0x3a;
-    bih.biSize = 0x28;
-    bih.biPlanes = 1;
-    bih.biBitCount = 0x18;
+    bih.m_ih.biSize = 0x28;
+    bih.m_ih.biPlanes = 1;
+    bih.m_ih.biBitCount = 0x18;
     bfh.m_hdr.bfOffBits = 0x3a;
 
     u8* line = static_cast<u8*>(operator new(3 * width * height + 0x3a));
@@ -481,7 +481,7 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, i32 flag) {
 
     file.Seek(0, 2);
     file.Write(&bfh.m_hdr, 0xe);
-    file.Write(&bih, 0x2c);
+    file.Write(&bih.m_ih, 0x2c);
 
     for (i32 row = height - 1; row >= 0; row--) {
         u8* src = locked + row * this->m_pitch;

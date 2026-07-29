@@ -257,6 +257,19 @@ SIZE(0x410);
 
 class CGruntzCommand;
 struct CNetCtrlMsg; // the receive-buffer message header (ex the duplicate `LobbyMsg`)
+struct CNetMsg;     // <Net/NetPackets.h> - the per-player message header
+
+// The receive buffer at its wire shapes. DirectPlay hands the buffer back as raw
+// BYTES and the sender/opcode decides WHICH record it is, so all of these are real
+// readings of one pointer - named here instead of punned at every decode site.
+union CNetWireMsg {
+    char* m_bytes;             // what the transport fills
+    CNetMsg* m_msg;            // the per-player message header
+    CNetCtrlMsg* m_ctrl;       // the SYSTEM-channel control record
+    CNetChannelPacket* m_chan; // the 0x3f9 channel-registration record
+    CNetVersionMsg* m_version; // the 0x417 host-version record
+    CNetCmdHdr* m_cmdHdr;      // the reliable-command header
+};
 
 void* Unmatched_bf530(i32 zero); // bf530
 void RecycleCmd(void* cmd);      // bf580  __cdecl

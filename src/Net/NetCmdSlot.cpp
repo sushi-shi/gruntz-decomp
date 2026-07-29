@@ -189,10 +189,11 @@ i32 CNetSession::Poll(i32 delta) {
         received++;
         avail--;
         if (a != m_localDesc->m_id) {
-            // one seam: IDirectPlay4::Receive fills g_lobbyRecvBuf as an untyped
-            // 0x800-byte LPVOID blob (the SDK picks the type), and the control-message
-            // header is applied at this single dispatch boundary
-            Dispatch(a, reinterpret_cast<CNetCtrlMsg*>(g_lobbyRecvBuf), len);
+            // IDirectPlay4::Receive fills g_lobbyRecvBuf as an untyped 0x800-byte
+            // LPVOID blob; CNetWireMsg names its control-record reading.
+            CNetWireMsg wire;
+            wire.m_bytes = g_lobbyRecvBuf;
+            Dispatch(a, wire.m_ctrl, len);
         }
     }
     return received;
@@ -804,9 +805,10 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         p++;
         rem--;
     }
-    // wire decode: the transport hands back BYTES, so naming the record at
-    // the receive boundary is language-forced (one seam per message type).
-    CNetCmdHdr* h = reinterpret_cast<CNetCmdHdr*>(p);
+    // the reliable-command header at the byte cursor (see CNetWireMsg)
+    CNetWireMsg wire;
+    wire.m_bytes = p;
+    CNetCmdHdr* h = wire.m_cmdHdr;
     i32 seq = h->m_sequence;
     i32 base = h->m_windowBase;
     i32 checksum = h->m_checksum;

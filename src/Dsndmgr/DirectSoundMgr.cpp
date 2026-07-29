@@ -1478,15 +1478,15 @@ i32 DSoundVoice::Stop() {
 // blocks the +8 fold - and the ex "add-fold wall" was the p+=2 spelling.)
 RVA(0x00137110, 0x8d)
 i32 ParseWaveChunks(void* riff, WaveFormatX** fmtOut, void** dataOut, u32* sizeOut) {
-    // wire walk over the untyped RIFF buffer - byte-forced
-    u32* p = reinterpret_cast<u32*>((static_cast<char*>(riff) + 4));
-    u32 riffSize = *p;
-    p++;
-    u32 waveTag = *p;
-    p++;
-    // A RIFF walk over an untyped buffer: the chunk bounds and the pad-to-even
-    // advance below are BYTES, so the byte arithmetic IS the format - byte-forced.
-    char* end = reinterpret_cast<char*>(p) + riffSize - 4;
+    // The RIFF walk: dword reads, byte-granular bounds, and the 'fmt ' body typed at
+    // the cursor - all three readings are named on RiffCursor.
+    RiffCursor p;
+    p.m_b = static_cast<char*>(riff) + 4;
+    u32 riffSize = *p.m_w;
+    p.m_w++;
+    u32 waveTag = *p.m_w;
+    p.m_w++;
+    char* end = p.m_b + riffSize - 4;
     if (*static_cast<u32*>(riff) != mmioFOURCC('R', 'I', 'F', 'F')) {
         return 0;
     }
@@ -1495,21 +1495,18 @@ i32 ParseWaveChunks(void* riff, WaveFormatX** fmtOut, void** dataOut, u32* sizeO
     }
     *fmtOut = 0;
     *dataOut = 0;
-    // the chunk cursor is a BYTE position in the untyped RIFF buffer - byte-forced
-    while (reinterpret_cast<char*>(p) < end) {
-        u32 id = *p++;
-        u32 size = *p++;
+    while (p.m_b < end) {
+        u32 id = *p.m_w++;
+        u32 size = *p.m_w++;
         if (id == mmioFOURCC('f', 'm', 't', ' ')) {
-            // the chunk body typed at the format boundary - byte-forced
-            *fmtOut = reinterpret_cast<WaveFormatX*>(p);
+            *fmtOut = p.m_fmt;
         } else if (id == mmioFOURCC('d', 'a', 't', 'a')) {
-            *dataOut = p;
+            *dataOut = p.m_w;
             *sizeOut = size;
             return *fmtOut != 0;
         }
-        // the RIFF chunk walk: advance by the chunk's own size, word-aligned up. Chunks
-        // are variable-length by definition, so this cursor is byte-forced by the format
-        p = reinterpret_cast<u32*>((reinterpret_cast<char*>(p) + ((size + 1) & ~1)));
+        // the RIFF chunk walk: advance by the chunk's own size, word-aligned up
+        p.m_b += ((size + 1) & ~1);
     }
     return 0;
 }
