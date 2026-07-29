@@ -490,9 +490,19 @@ i32 CDDrawSurfaceMgr::InvokeCallback(void* arg1, i32 arg2, i32 arg3, i32 arg4) {
 // inlines nothing else). Ours are out-of-line in DDrawSubMgr.cpp, pinned at 0x157850 /
 // 0x1578b0 / 0x157980, so cl emits `call` where retail has the expansion. Moving them
 // in-class is the retail-faithful model - retail's own 0x157850/0x157980 bodies are then
-// the COMDAT copies cl emits for an inline it declined - but it re-homes three pinned
-// RVAs and reshapes every CFileMem user (SnapshotChildren 0x156020, RestoreChildren
-// 0x156530, the ddrawsubmgr block). Logic here is complete and byte-faithful; the
+// the COMDAT copies cl emits for an inline it declined.
+//
+// MEASURED 2026-07-29, and it does NOT work with this cl - do not re-try it blind. With
+// all four bodies moved in-class, cl emits the COMDAT copies into THIS obj
+// (ddrawsurfacemgr, the TU that owns the CFileMem locals) instead of ddrawsubmgr, so
+// ddrawsubmgr loses five labelled functions (??0CFileMemBase, ??1CFileMemBase,
+// ??1CFileMem and both ??_G thunks) and the FATAL labels gate fires; pinning them here
+// instead would break the TU linker-order invariant, since 0x1578xx sits past this
+// block. Worse, ??0CFileMemBase then has NO out-of-line copy anywhere: our cl inlines it
+// at all three call sites, where retail's declined it at SnapshotChildren/RestoreChildren
+// (both `call 0x157850`). So the inline-budget decision itself differs, and the in-class
+// form cannot reproduce retail's split. Closing this needs a lever over cl's per-site
+// inline decision, not a body move. Logic here is complete and byte-faithful; the
 // construction/teardown expansion is the whole residual.
 RVA(0x00156ad0, 0x1d2)
 i32 __stdcall
