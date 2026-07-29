@@ -15,7 +15,10 @@
 #include <Gruntz/Play.h>  // CPlay - m_curState real class (m_frameMarker timer)
 #include <Gruntz/Timer.h> // CTimer - the frame-marker (m_currentMs)
 
-#include <Bute/ButeTree.h> // the real CButeTree (g_buteTree @0x6bf620)
+#include <Io/FileMem.h> // CFileMemBase - SerializeMove's archive (Read +0x2c / Write +0x30)
+#include <Gruntz/SerialCounter.h> // g_serialCounter (bumped per serialized field)
+#include <Bute/ButeTree.h>        // the real CButeTree (g_buteTree @0x6bf620)
+#include <Gruntz/FontConfig.h>    // CFontConfig - g_gameReg->m_chatLog (AddItem @0x21c60)
 
 #include <rva.h>
 #include <new>      // placement new (the inlined ConstructElements grow loop)
@@ -337,21 +340,367 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 //   forward-Lookups a key (0x1b8438) and KeyOfValue (RVO CString) reverses it.
 //   Every callee/field/mode/chain above was verified against the retail disasm.
 //
-// FRAME WALL (why it is parked at STUB, not landed): retail's frame is 0x130 because
-// its /GX cl gives EACH of the eleven SAVE-side KeyOfValue CString temporaries its OWN
-// stack slot ([esp+0x14] + [esp+0x98..0xbc]) and holds two disjoint 0x80 stream
-// buffers ([esp+0x18] body + [esp+0xc0] mode-7 header). Our MSVC5 /O2 /GX COALESCES
-// those eleven destructible temporaries into one slot (their lifetimes are disjoint -
-// KeyOfValue -> inline strcpy -> ~CString, no throwing call spanning them), yielding a
-// 0x108 frame. No source spelling defeats the coalescing (tried: unnamed temporary,
-// eleven distinct named locals, function-scope buffers). The 0x28 frame delta shifts
-// EVERY [esp+N] operand + the arg-load offsets, so objdiff cannot align the base with
-// the target at all (match_percent = null, i.e. below the stub's own 0.14%). A complete
-// body was written + built green but REVERTED here because it scores under the stub -
-// committing it would regress. Needs a dedicated frame-exact pass that can reproduce
-// the per-temp slot allocation (or a permuter run seeded with the decode above).
+// The 0xc20 body, reconstructed 2026-07-29. The old note parked this at a stub over a
+// FRAME WALL: retail's frame is 0x130 because each of the eleven save-side KeyOfValue
+// CString temporaries gets its OWN slot, and it claimed "our MSVC5 /O2 /GX COALESCES
+// those eleven destructible temporaries into one slot ... No source spelling defeats the
+// coalescing (tried: unnamed temporary, eleven distinct named locals, function-scope
+// buffers)."
+//
+// The spelling that defeats it is the UNNAMED temporary consumed IN PLACE, and retail
+// says so itself: every one of those blocks ends `call KeyOfValue; mov edi,[eax]` -
+// reading the returned CString's m_pchData straight off the return-buffer pointer, which
+// is what an unnamed temporary compiles to. A NAMED local stores it and reloads
+// (`mov edi,[esp+N]`), and cl then coalesces the slots. Measured independently on
+// CInGameIcon::SerializeMove @0x98c90 this session: two named locals share one slot,
+// two unnamed temporaries take two. Frame accounting closes exactly:
+//   0x10 (2 dwords) + 0x18..0x97 (body buf 0x80) + 0x98..0xbf (10 temp slots)
+//   + 0xc0..0x13f (chain header buf 0x80) = 0x130.
+//
+// Structure, all read off the bytes: the CWapX::Chain half expanded in place (as in
+// CInGameIcon), then a three-way mode dispatch - 4 stores the name plus the eleven anim
+// keys, 7 loads them back through the anim registry, 8 re-seeds the bound object's fill
+// shade from the player's sprite row - then two cursor-walked 64-bit timer pairs shared
+// by both directions.
+//
+// Four more spellings were load-bearing, each measured:
+//   * the `ar == 0` gate and the STORE arm's `world == 0` gate share ONE exit (`goto
+//     fail`); the LOAD arm keeps its own, exactly as retail lays them out (91.8 -> 92.5);
+//   * the mode-8 arm hoists m_object into a local - spelled `m_object->` per statement,
+//     cl5 cannot rule out the stores aliasing the member and reloads before each of the
+//     three (92.5 -> 93.3);
+//   * the eleven LOAD blocks gate on `!= 0` so the lookup is on the fallthrough and the
+//     zero-store goes out of line - the MIRROR of the chain half above, which wants
+//     `== 0` (93.3 -> 99.5, the single biggest step);
+//   * the lookup's map address is taken into a local before the out-slot is zeroed, so
+//     the `0` store lands after both argument pushes as retail has it.
+// @early-stop
+// 99.52%. The only residue is the chain half's lookup block, and it is not this
+// function's: CWapX::Chain @0x8c00 - the same code, out of line - carries the identical
+// one at 92.65%. Whatever fixes it there fixes it here.
 RVA(0x00043670, 0xc20)
-i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
+i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj) {
+    // Two 0x80 buffers: the body buffer every per-anim block formats through, and the
+    // separate header buffer the chain half's READ arm fills.
+    char buf[0x80];
+    char hdr[0x80];
+
+    if (CUserLogic::SerializeMove(ar, mode, a3, obj) == 0) {
+        return 0;
+    }
+    if (ar == 0) {
+        // shares the STORE arm's `world == 0` exit - retail reaches one block from both
+        // (`test ebx,ebx; je 0x43c5c`); the LOAD arm keeps its own.
+        goto fail;
+    }
+
+    // --- the inlined CWapX::Chain half ---
+    switch (mode) {
+        case 7: {
+            ar->Read(hdr, 0x80);
+            ar->Read(m_blob, 0x10);
+            m_34 = obj;
+            m_38 = static_cast<CWwdGameObjectA*>(obj);
+            m_3c = obj->m_7c;
+            if (strlen(hdr) == 0) {
+                m_value = 0;
+            } else {
+                CMapStringToPtr* map = &m_3c->m_ownerCtx->m_animRegistry->m_10;
+                void* v = 0;
+                map->Lookup(hdr, v);
+                m_value = static_cast<CAniElement*>(v);
+            }
+            break;
+        }
+        case 4: {
+            memset(buf, 0, sizeof(buf));
+            if (m_value != 0) {
+                strcpy(
+                    buf,
+                    static_cast<const char*>(m_3c->m_ownerCtx->m_animRegistry->KeyOfValue(m_value))
+                );
+            }
+            ar->Write(buf, 0x80);
+            ar->Write(m_blob, 0x10);
+            break;
+        }
+    }
+
+    switch (mode) {
+        case 4: {
+            CDDrawSurfaceMgr* world = m_3c->m_ownerCtx;
+            if (world == 0) {
+                goto fail;
+            }
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            strcpy(buf, static_cast<const char*>(m_54));
+            ar->Write(buf, 0x80);
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            if (m_idleAnims[0] != 0) {
+                strcpy(
+                    buf,
+                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_idleAnims[0]))
+                );
+            }
+            ar->Write(buf, 0x80);
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            if (m_idleAnims[1] != 0) {
+                strcpy(
+                    buf,
+                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_idleAnims[1]))
+                );
+            }
+            ar->Write(buf, 0x80);
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            if (m_idleAnims[2] != 0) {
+                strcpy(
+                    buf,
+                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_idleAnims[2]))
+                );
+            }
+            ar->Write(buf, 0x80);
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            if (m_idleAnims[3] != 0) {
+                strcpy(
+                    buf,
+                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_idleAnims[3]))
+                );
+            }
+            ar->Write(buf, 0x80);
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            if (m_battlecryAnims[0] != 0) {
+                strcpy(
+                    buf,
+                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_battlecryAnims[0]))
+                );
+            }
+            ar->Write(buf, 0x80);
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            if (m_battlecryAnims[1] != 0) {
+                strcpy(
+                    buf,
+                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_battlecryAnims[1]))
+                );
+            }
+            ar->Write(buf, 0x80);
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            if (m_battlecryAnims[2] != 0) {
+                strcpy(
+                    buf,
+                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_battlecryAnims[2]))
+                );
+            }
+            ar->Write(buf, 0x80);
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            if (m_animJoy != 0) {
+                strcpy(buf, static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_animJoy)));
+            }
+            ar->Write(buf, 0x80);
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            if (m_animDeath != 0) {
+                strcpy(
+                    buf,
+                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_animDeath))
+                );
+            }
+            ar->Write(buf, 0x80);
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            if (m_animMoving != 0) {
+                strcpy(
+                    buf,
+                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_animMoving))
+                );
+            }
+            ar->Write(buf, 0x80);
+            g_serialCounter++;
+            memset(buf, 0, sizeof(buf));
+            if (m_animPanic != 0) {
+                strcpy(
+                    buf,
+                    static_cast<const char*>(world->m_animRegistry->KeyOfValue(m_animPanic))
+                );
+            }
+            ar->Write(buf, 0x80);
+            ar->Write(&m_a8, 4);
+            ar->Write(&m_ownerTag, 4);
+            break;
+        }
+        case 7: {
+            CDDrawSurfaceMgr* world = m_3c->m_ownerCtx;
+            if (world == 0) {
+                return 0;
+            }
+            g_serialCounter++;
+            ar->Read(buf, 0x80);
+            m_54 = buf;
+            // NOTE the eleven blocks below gate on `!= 0`, not `== 0` like the chain half
+            // above: retail puts the LOOKUP on the fallthrough here (`dec ecx; je <zero>`)
+            // and the zero-store out of line, the mirror of the chain half's shape.
+            g_serialCounter++;
+            ar->Read(buf, 0x80);
+            if (strlen(buf) != 0) {
+                void* v = 0;
+                world->m_animRegistry->m_10.Lookup(buf, v);
+                m_idleAnims[0] = static_cast<CAniElement*>(v);
+            } else {
+                m_idleAnims[0] = 0;
+            }
+            g_serialCounter++;
+            ar->Read(buf, 0x80);
+            if (strlen(buf) != 0) {
+                void* v = 0;
+                world->m_animRegistry->m_10.Lookup(buf, v);
+                m_idleAnims[1] = static_cast<CAniElement*>(v);
+            } else {
+                m_idleAnims[1] = 0;
+            }
+            g_serialCounter++;
+            ar->Read(buf, 0x80);
+            if (strlen(buf) != 0) {
+                void* v = 0;
+                world->m_animRegistry->m_10.Lookup(buf, v);
+                m_idleAnims[2] = static_cast<CAniElement*>(v);
+            } else {
+                m_idleAnims[2] = 0;
+            }
+            g_serialCounter++;
+            ar->Read(buf, 0x80);
+            if (strlen(buf) != 0) {
+                void* v = 0;
+                world->m_animRegistry->m_10.Lookup(buf, v);
+                m_idleAnims[3] = static_cast<CAniElement*>(v);
+            } else {
+                m_idleAnims[3] = 0;
+            }
+            g_serialCounter++;
+            ar->Read(buf, 0x80);
+            if (strlen(buf) != 0) {
+                void* v = 0;
+                world->m_animRegistry->m_10.Lookup(buf, v);
+                m_battlecryAnims[0] = static_cast<CAniElement*>(v);
+            } else {
+                m_battlecryAnims[0] = 0;
+            }
+            g_serialCounter++;
+            ar->Read(buf, 0x80);
+            if (strlen(buf) != 0) {
+                void* v = 0;
+                world->m_animRegistry->m_10.Lookup(buf, v);
+                m_battlecryAnims[1] = static_cast<CAniElement*>(v);
+            } else {
+                m_battlecryAnims[1] = 0;
+            }
+            g_serialCounter++;
+            ar->Read(buf, 0x80);
+            if (strlen(buf) != 0) {
+                void* v = 0;
+                world->m_animRegistry->m_10.Lookup(buf, v);
+                m_battlecryAnims[2] = static_cast<CAniElement*>(v);
+            } else {
+                m_battlecryAnims[2] = 0;
+            }
+            g_serialCounter++;
+            ar->Read(buf, 0x80);
+            if (strlen(buf) != 0) {
+                void* v = 0;
+                world->m_animRegistry->m_10.Lookup(buf, v);
+                m_animJoy = static_cast<CAniElement*>(v);
+            } else {
+                m_animJoy = 0;
+            }
+            g_serialCounter++;
+            ar->Read(buf, 0x80);
+            if (strlen(buf) != 0) {
+                void* v = 0;
+                world->m_animRegistry->m_10.Lookup(buf, v);
+                m_animDeath = static_cast<CAniElement*>(v);
+            } else {
+                m_animDeath = 0;
+            }
+            g_serialCounter++;
+            ar->Read(buf, 0x80);
+            if (strlen(buf) != 0) {
+                void* v = 0;
+                world->m_animRegistry->m_10.Lookup(buf, v);
+                m_animMoving = static_cast<CAniElement*>(v);
+            } else {
+                m_animMoving = 0;
+            }
+            g_serialCounter++;
+            ar->Read(buf, 0x80);
+            if (strlen(buf) != 0) {
+                void* v = 0;
+                world->m_animRegistry->m_10.Lookup(buf, v);
+                m_animPanic = static_cast<CAniElement*>(v);
+            } else {
+                m_animPanic = 0;
+            }
+            ar->Read(&m_a8, 4);
+            ar->Read(&m_ownerTag, 4);
+            break;
+        }
+        case 8: {
+            // Re-seed the bound sprite's fill shade from this player's sprite row; if the
+            // row has no table, fall back to row 1 and arm the decay fill-bar (cmd 0xa).
+            if (g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[m_object->m_124].m_008, 0)
+                == 0) {
+                CShadeTable* fallback = g_gameReg->m_spriteFactory->GetSel(1, 0);
+                // hoisted: retail loads m_object ONCE here and does all three stores off
+                // it. Spelled `m_object->` per statement, cl5 cannot rule out the stores
+                // aliasing the member itself and reloads before each - 8 bytes long.
+                CWwdGameObjectA* sprite = m_object;
+                sprite->m_drawActive = 1;
+                sprite->m_drawFillCmd = 0xa;
+                sprite->m_drawFillArg = fallback;
+            }
+            break;
+        }
+    }
+
+    // The two 64-bit timer pairs, each walked by ONE advancing cursor (retail hoists the
+    // `lea` above the mode compare and steps it with `add r,8`). Braced so the `goto
+    // fail` above does not jump past the cursor initialisations.
+    {
+        i32* cooldown = &m_cooldownStampLo;
+        switch (mode) {
+            case 7:
+                ar->Read(cooldown, 8);
+                cooldown += 2;
+                ar->Read(cooldown, 8);
+                break;
+            case 4:
+                ar->Write(cooldown, 8);
+                cooldown += 2;
+                ar->Write(cooldown, 8);
+                break;
+        }
+        i32* timer2 = &m_timer2StampLo;
+        switch (mode) {
+            case 7:
+                ar->Read(timer2, 8);
+                timer2 += 2;
+                ar->Read(timer2, 8);
+                break;
+            case 4:
+                ar->Write(timer2, 8);
+                timer2 += 2;
+                ar->Write(timer2, 8);
+                break;
+        }
+    }
+    return 1;
+fail:
     return 0;
 }
 
@@ -599,8 +948,73 @@ i32 CWarlord::ResolveMovingAnimation() {
     return 1;
 }
 
+// ===========================================================================
+// CWarlord::NotifyFortUnderAttack  (0x045270)  - the fort-under-attack alert
+// ===========================================================================
+// Skipped while the warlord is dead (m_a8) or already running act "D". Otherwise:
+// in the pre-game/attract mode (g_gameReg->m_134 == 1) just fire cue 0x436 and set a
+// flat 30 s cooldown; in play, once the alert rate-limiter (m_timer2*, seeded from
+// "Warlordz"/"NotifyTimer", default 6000 ms) has expired AND this warlord is the local
+// player's pending-fx warlord, fire cue 0x440, push the "Warlordz"/"NotifyString" text
+// into the chat log (type 0, data 0x11) and re-arm the limiter. Either way the moving
+// cooldown is re-rolled to (rand()%0x5dc1 + 0x1770)*10 ms, the "_PANIC" animation is
+// applied, and act "D" is latched. /GX EH frame from the two CString temporaries the
+// `"GRUNTZ_" + m_54 + "_PANIC"` concatenation builds.
+// @early-stop
+// 95.7% (from 0.55%): COMPLETE. The residual is ONE constant-materialisation choice -
+// cl5 ALSO enregisters the literal 1 (`mov ebx,0x1`, then `cmp [edx+0x134],ebx` /
+// `test bl,al` / `or al,bl` for the magic-static guard), which costs the extra
+// `push ebp` retail does not need because retail spells all four 1s as immediates and
+// pins only the 0. Nothing in C picks which literal MSVC5 enregisters
+// (docs/patterns/const-materialize-into-reg-vs-immediate.md); the guard's two uses are
+// compiler-generated, so the count cannot be reduced from source either.
 RVA(0x00045270, 0x2a8)
-void CWarlord::NotifyFortUnderAttack() {}
+i32 CWarlord::NotifyFortUnderAttack() {
+    // Both guards are written POSITIVELY around the whole body, not as early returns:
+    // retail has ONE shared `xor eax,eax` bail block and it sits PAST the success
+    // epilogue (0x45504), which is what the single trailing `return 0` produces. The
+    // early-return spelling duplicated the /GX teardown at each guard and cost a
+    // callee-saved push (docs/patterns/positive-gate-enables-shrink-wrap.md).
+    if (m_a8 == 0) {
+        bool alreadyPanicking = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), s_codeD) == 0);
+        if (!alreadyPanicking) {
+            if (g_gameReg->m_134 == 1) {
+                g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_188, 0x436, -1, -1, -1);
+                m_cooldownWindow64 = 0x7530;
+                m_cooldownStamp64 = static_cast<u32>(g_frameTime);
+            } else {
+                if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_timer2Stamp64
+                        >= m_timer2Window64
+                    && g_gameReg->m_cmdGrid->m_pendingFx == this) {
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_188, 0x440, -1, -1, -1);
+                    static CString s_alert("ALERT - Your Fort is under attack!");
+                    g_gameReg->m_chatLog->AddItem(
+                        static_cast<LPCTSTR>(
+                            *g_buteMgr.GetStringDef("Warlordz", "NotifyString", &s_alert)
+                        ),
+                        0,
+                        0x11
+                    );
+                    m_timer2Window64 =
+                        static_cast<u32>(g_buteMgr.GetIntDef("Warlordz", "NotifyTimer", 0x1770));
+                    m_timer2Stamp64 = static_cast<u32>(g_frameTime);
+                }
+                m_cooldownWindow64 = static_cast<u32>((GruntRand() % 0x5dc1 + 0x1770) * 10);
+                m_cooldownStamp64 = static_cast<u32>(g_frameTime);
+            }
+
+            m_value = m_38->m_1a0.m_14;
+            m_38->m_1a0.Setup(m_animPanic);
+
+            m_38->ApplyName(s_GRUNTZ_ + m_54 + s__PANIC);
+
+            m_prevAnimSetNode = m_objAux->m_1c;
+            m_objAux->m_1c = ActFindId(s_codeD);
+            return 1;
+        }
+    }
+    return 0;
+}
 
 RVA(0x000455f0, 0x15b)
 i32 CWarlord::ResolveDeathAnimation() {

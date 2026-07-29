@@ -256,22 +256,224 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
 // Re-homed from the ApiCaller backlog by RVA proximity (dead-centre of the
 // 0x11axxx-0x11cxxx CGruntSpawnConfig family).
 //
+// The percent gate's LCG is INLINE in both overloads (retail expands the seed test,
+// the timeGetTime lazy seed and the 214013/2531011 recurrence in place) where the
+// sibling LoadGruntSpawnConfig @0x11afb0 calls CGruntzMgr::Rand out of line.
+static __inline i32 GameRand() {
+    i32 seed;
+    if (!(g_randSeeded & 1)) {
+        g_randSeeded |= 1;
+        seed = static_cast<i32>(::timeGetTime());
+    } else {
+        seed = g_randSeed;
+    }
+    g_randSeed = seed * 214013 + 2531011;
+    return (g_randSeed >> 0x10) & 0x7fff;
+}
+
+// The six-argument overload takes the SUBJECT GRUNT (`?...@@QAEHPAXHHHHH@Z` says
+// void*, but the body dereferences it as `who->m_object->m_188` at +0x10/+0x188 and
+// every one of the 75 call sites passes a CGrunt `this` or 0). Compared with the
+// five-argument twin below it drops the "GruntPercent"/"GruntPriority" fallbacks and
+// the second CString, and derives the ducking object id from the grunt instead of
+// taking it as an argument.
 // @early-stop
-// /GX EH single-epilogue wall: the complete weighted-spawn body was reconstructed
-// and builds, but caps at ~47% because cl duplicates the frame-teardown per
-// return-site while retail funnels to one shared `jmp` epilogue. The return-0 stub
-// scores 73-83% via the smaller-fn normalization artifact, so the highest-% version
-// (this stub) is kept per the REVERT rule. Final-sweep candidates.
+// ~75% (from 0.73%). The prior note here claimed "the return-0 stub scores 73-83%" and
+// reverted a complete body on that basis - the stub actually scored 0.73/0.83%, a
+// decimal-point misreading, so the reconstruction was 60x better all along. Two residual
+// causes: (1) the callee-saved COLOURING is swapped - retail takes `this` into edi and
+// &m_voices[0] into ebx, cl5 does the reverse, which moves every ModRM byte; (2) retail
+// DUPLICATES the `~CString; xor eax,eax; jmp` scope-exit at each of the five early
+// returns where our cl5 cross-jumps them all to one shared copy (the same tail-merge the
+// sibling LoadGruntSpawnConfig @0x11afb0 hits).
 RVA(0x0011b3b0, 0x338)
-i32 CGruntSpawnConfig::SpawnVoiceDriver(void* /*spawner*/, i32, i32, i32, i32, i32) {
+i32 CGruntSpawnConfig::SpawnVoiceDriver(
+    CGrunt* who,
+    i32 voiceId,
+    i32 which,
+    i32 objId,
+    i32 priority,
+    i32 percent
+) {
+    CGruntVoice** voices = m_voices;
+    if (voices[0] == 0 && !LoadGruntVoices()) {
+        return 0;
+    }
+    if (who == 0 && objId == 0) {
+        return 0;
+    }
+    if (!IsReady()) {
+        return 0;
+    }
+    CString local_10;
+    local_10.Format("SG%i", voiceId);
+    if (percent == -1) {
+        percent = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(local_10), "Per", 100);
+    }
+    if (percent < 100 && GameRand() % 0x65 > percent) {
+        return 0;
+    }
+    if (priority == -1) {
+        priority = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(local_10), "Pri", 1);
+    }
+    for (i32 i = 0; i < 2; i++) {
+        if (voices[i]->m_playFlags >= priority) {
+            return 0;
+        }
+    }
+    i32 id = 0;
+    if (objId == 0 && who != 0) {
+        id = who->m_object->m_188;
+    }
+    CParseSource* src = PickWeighted(voiceId, which);
+    if (src == 0) {
+        return 0;
+    }
+    if (m_configTree->m_soundStream == 0) {
+        return 0;
+    }
+    CGruntVoice* v8 = voices[0];
+    CGruntVoice* v0c = m_voices[1];
+    i32 a = v8->m_playFlags;
+    i32 b = v0c->m_playFlags;
+    i32 c = v8->m_source;
+    i32 d = v0c->m_source;
+    i32 chosen;
+    if (a > b) {
+        chosen = 1;
+        if (c == id) {
+            chosen = 0;
+            if (b != 0 && m_streams[1] != 0) {
+                (static_cast<DirectSoundMgr*>(m_streams[1]))
+                    ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+            }
+        } else if (a != 0 && m_streams[0] != 0) {
+            (static_cast<DirectSoundMgr*>(m_streams[0]))
+                ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+        }
+    } else {
+        chosen = 0;
+        if (d == id) {
+            chosen = 1;
+            if (a != 0 && m_streams[0] != 0) {
+                (static_cast<DirectSoundMgr*>(m_streams[0]))
+                    ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+            }
+            // NOT a transcription slip of the twin below: retail gates this arm on the
+            // OBJECT ID (`test ebp,ebp` @0x11b5a6, ebp = id) where 0x11b7c0 gates the
+            // same arm on m_streams[1] - so this duck can run on a null stream.
+        } else if (b != 0 && id != 0) {
+            (static_cast<DirectSoundMgr*>(m_streams[1]))
+                ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+        }
+    }
+    if (m_streams[chosen] == 0) {
+        m_streams[chosen] =
+            m_configTree->m_soundStream->OpenStream(src, 0x5000, 0x1400, 0x100e0, 0, 0);
+        if (m_streams[chosen] == 0) {
+            return 0;
+        }
+    }
+    StreamVoice* stream = m_streams[chosen];
+    i32 vol = m_voiceVolume;
+    stream->m_feeder.Pause();
+    if (stream->SetSource(src) != 0 && stream->Configure(vol, 0, 0, 0) != 0) {
+        return m_voices[chosen]->Setup(id, stream, priority, 0) != 0;
+    }
     return 0;
 }
 
+// The five-argument twin: the caller supplies the ducking object id directly, so
+// there is no grunt to read it off, and CGruntVoice::Setup's trailing flag is 1 here
+// where the six-argument overload passes 0.
 // @early-stop
-// twin of 0x11b3b0: same /GX EH single-epilogue wall; five-argument member overload,
-// stub kept as the highest-% version (full body ~47% vs stub-artifact 73-83%).
+// ~76% (from 0.83%); same two residual causes as the six-argument overload above.
 RVA(0x0011b7c0, 0x304)
-i32 CGruntSpawnConfig::SpawnVoiceDriver(i32, i32, i32, i32, i32) {
+i32 CGruntSpawnConfig::SpawnVoiceDriver(
+    i32 objId,
+    i32 voiceId,
+    i32 which,
+    i32 priority,
+    i32 percent
+) {
+    CGruntVoice** voices = m_voices;
+    if (voices[0] == 0 && !LoadGruntVoices()) {
+        return 0;
+    }
+    if (objId == 0) {
+        return 0;
+    }
+    if (!IsReady()) {
+        return 0;
+    }
+    CString local_10;
+    local_10.Format("SG%i", voiceId);
+    if (percent == -1) {
+        percent = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(local_10), "Per", 100);
+    }
+    if (percent < 100 && GameRand() % 0x65 > percent) {
+        return 0;
+    }
+    if (priority == -1) {
+        priority = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(local_10), "Pri", 1);
+    }
+    for (i32 i = 0; i < 2; i++) {
+        if (voices[i]->m_playFlags >= priority) {
+            return 0;
+        }
+    }
+    CParseSource* src = PickWeighted(voiceId, which);
+    if (src == 0) {
+        return 0;
+    }
+    if (m_configTree->m_soundStream == 0) {
+        return 0;
+    }
+    CGruntVoice* v8 = voices[0];
+    CGruntVoice* v0c = m_voices[1];
+    i32 a = v8->m_playFlags;
+    i32 b = v0c->m_playFlags;
+    i32 c = v8->m_source;
+    i32 d = v0c->m_source;
+    i32 chosen;
+    if (a > b) {
+        chosen = 1;
+        if (c == objId) {
+            chosen = 0;
+            if (b != 0 && m_streams[1] != 0) {
+                (static_cast<DirectSoundMgr*>(m_streams[1]))
+                    ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+            }
+        } else if (a != 0 && m_streams[0] != 0) {
+            (static_cast<DirectSoundMgr*>(m_streams[0]))
+                ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+        }
+    } else {
+        chosen = 0;
+        if (d == objId) {
+            chosen = 1;
+            if (a != 0 && m_streams[0] != 0) {
+                (static_cast<DirectSoundMgr*>(m_streams[0]))
+                    ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+            }
+        } else if (b != 0 && m_streams[1] != 0) {
+            (static_cast<DirectSoundMgr*>(m_streams[1]))
+                ->SetVolumeByIndex(g_gameReg->m_voiceVolume / 2);
+        }
+    }
+    if (m_streams[chosen] == 0) {
+        m_streams[chosen] =
+            m_configTree->m_soundStream->OpenStream(src, 0x5000, 0x1400, 0x100e0, 0, 0);
+        if (m_streams[chosen] == 0) {
+            return 0;
+        }
+    }
+    StreamVoice* stream = m_streams[chosen];
+    i32 vol = m_voiceVolume;
+    stream->m_feeder.Pause();
+    if (stream->SetSource(src) != 0 && stream->Configure(vol, 0, 0, 0) != 0) {
+        return m_voices[chosen]->Setup(objId, stream, priority, 1) != 0;
+    }
     return 0;
 }
 

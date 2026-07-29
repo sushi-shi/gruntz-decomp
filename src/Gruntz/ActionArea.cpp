@@ -3,7 +3,8 @@
 #include <Wap32/zBitVec.h>            // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
 #include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/ActionArea.h>
-#include <Image/ImageSet.h> // CDDrawWorker::SetAllTypes (0x152480) / SetAllField18 (0x1524d0)
+#include <Gruntz/WorkerHandler.h> // the shared LOGIC_WORKER_PUMP (CreateActionArea IS one)
+#include <Image/ImageSet.h>       // CDDrawWorker::SetAllTypes (0x152480) / SetAllField18 (0x1524d0)
 #include <Bute/ButeTree.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/ObjTypeRegistrars.h> // CProjActObj registrar-shell decl (RegisterType @0x8240)
@@ -50,13 +51,13 @@ static inline CString* TypeLookup(i32 key) {
 // -> new CActionArea(obj) (RezAlloc 0x68, nothrow; ctor thunk 0x2478->0x7da0),
 // rec->Slot06(), m_7c->m_18 = rec; tag 0x1d->Slot11; 0x1e->Slot10; 0x50->Slot14;
 // 0x51->Slot13; 0x52->Slot12; 0x53->Slot15; 0x3e8->no-op; default->ProjTypeXfer
-// ((CXferArchive*)m_7c->m_18) [0x16e4f0]. ret 1. BLOCKER (body match, not identity):
-// canonical CUserLogic declares only slots 00..09; dispatching inherited slots 10-15
-// needs those 6 virtuals added to the shared CUserLogic base (a base-vtable reshape).
+// ((CXferArchive*)m_7c->m_18) [0x16e4f0]. ret 1. That IS the shared LOGIC_WORKER_PUMP
+// its ~20 siblings use - the old BLOCKER note here ("canonical CUserLogic declares only
+// slots 00..09; dispatching inherited slots 10-15 needs a base-vtable reshape") is stale:
+// CUserLogic carries all sixteen slots now (vtable_hierarchy --class CActionArea shows
+// 16, twelve of them inherited) and vtable-audit is clean.
 RVA(0x00007c60, 0xf1)
-i32 CreateActionArea(CGameObject* owner) {
-    return 0;
-}
+i32 CreateActionArea(CGameObject* owner){LOGIC_WORKER_PUMP(CActionArea)}
 
 // 0x87b0 - ??1CUserBase@@UAE@XZ: the out-of-line COMDAT copy of the inline
 // ~CUserBase (<Gruntz/UserLogic.h>), landed in the COMDAT pool right after this

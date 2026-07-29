@@ -33,7 +33,8 @@
 
 #include <DDrawMgr/DDrawChildGroup.h> // the shared object-collection manager class
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (DrawObjectCounts m_drawTarget->m_backPair)
-#include <Gruntz/SerialArchive.h>      // the shared CFileMemBase stream (level reader, Read @+0x2c)
+#include <DDrawMgr/DDSurface.h> // CDDSurface - the frame surface DrawObjectDebugGeometry GetCaps()
+#include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (level reader, Read @+0x2c)
 #include <Mfc.h> // CPtrList, CMapPtrToPtr (real afxcoll, for the m_10/m_map2c/m_map48 layout)
 #include <Gruntz/Sprite.h> // CDDrawWorker (frame-data template value)
 #include <DDrawMgr/AnimWorkerObj.h> // the canonical +0x7c worker/logic record (ex CWwdWorker/CLogicRecord views)
@@ -701,17 +702,227 @@ i32 __stdcall BoxesOverlap(CGameObject* a1, CGameObject* a2) {
     return ra.bottom >= rb.top;
 }
 
+// The surface-residency labels the geometry overlay stamps on each frame.
+// DrawLabel takes a mutable char* (it is the GDI DrawTextA argument), so these
+// are plain char arrays, not const.
+static char s_dbgRle[] = "RLE";
+static char s_dbgVid[] = "VID";
+static char s_dbgSys[] = "SYS";
+static char s_dbgUnknown[] = "???";
+
+// ---------------------------------------------------------------------------
+// 0x15a210 - the per-object debug-GEOMETRY overlay (twin of DrawObjectCounts below).
+// Five independent passes over the child list, one per debug flag bit:
+//   0x10000   box each object's activation area  (m_area)
+//   0x20000   box each object's tile-switch rect (m_switchRect)
+//   0x40000   box each object's collision extent (m_extent)
+//   0x100000  cross at each object's screen position
+//   0x1000000 label each A-kind sprite's cached frame with where its surface lives -
+//             "RLE" when the frame owns a shaded sprite, else the DirectDraw caps say
+//             "VID" (DDSCAPS_VIDEOMEMORY) or "SYS" (DDSCAPS_SYSTEMMEMORY), else "???".
+// The three box passes and the label pass call the plane's WrapCoord on both corners;
+// the cross pass INLINES the same wrap+translate on two scalars.
 // @early-stop
-// 0x15a210 (1074 B) = a CDDrawChildGroup-family debug OVERLAY, twin of
-// DrawObjectCounts (same subsystem, both dead-in-retail). __thiscall, gated
-// on a +0x08 debug flag; walks the +0x14 child list and per object draws debug
-// geometry via CDDrawWorkerHost::WrapCoord: CDDrawSurfacePair::DrawBox(RECT*,color) x3,
-// DrawCross(x,y), ResLoaders::DrawHost2_164420::DrawLabel(RECT*,char*) (falling
-// back to "???" @0x1f0a94). Draws gated by g_dbg61ab28/2c/30. Held pending
-// reconstruction (>512 B, novel per-object geometry).
+// 91.9% (from 0.58%). Two residues, both x3 across the box passes: retail compares the
+// unset sentinel straight against memory (`cmp [eax+0x144],imm`) and re-loads the field
+// afterwards where cl5 CSEs the two into one register, and retail reloads `this` only on
+// the loop's exit edge where cl5 reloads it every iteration. Plus one edx/edi naming swap
+// in the cross pass.
 RVA(0x0015a210, 0x432)
-i32 DrawObjectDebugGeometry(void) {
-    return 0;
+void CDDrawChildGroup::DrawObjectDebugGeometry() {
+    if (m_flags & 0x10000) {
+        POSITION pos = m_list.GetHeadPosition();
+        CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
+        CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
+        if (pos != 0) {
+            do {
+                CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
+                if (obj->m_area.left != static_cast<i32>(0x80000000)) {
+                    i32 ox = obj->m_screenX;
+                    RECT rc;
+                    rc.left = obj->m_area.left + ox;
+                    i32 oy = obj->m_screenY;
+                    rc.top = obj->m_area.top + oy;
+                    rc.right = obj->m_area.right + ox;
+                    rc.bottom = obj->m_area.bottom + oy;
+                    // language-forced (LONG* -> int*): see the same seam in DrawObjectCounts below
+                    view->WrapCoord(
+                        reinterpret_cast<i32*>(&rc.left),
+                        reinterpret_cast<i32*>(&rc.top)
+                    );
+                    view->WrapCoord(
+                        reinterpret_cast<i32*>(&rc.right),
+                        reinterpret_cast<i32*>(&rc.bottom)
+                    );
+                    drawHost->DrawBox(&rc, 0xff);
+                }
+            } while (pos != 0);
+        }
+    }
+    if (m_flags & 0x20000) {
+        POSITION pos = m_list.GetHeadPosition();
+        CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
+        CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
+        if (pos != 0) {
+            do {
+                CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
+                if (obj->m_switchRect.left != static_cast<i32>(0x80000000)) {
+                    i32 ox = obj->m_screenX;
+                    RECT rc;
+                    rc.left = obj->m_switchRect.left + ox;
+                    i32 oy = obj->m_screenY;
+                    rc.top = obj->m_switchRect.top + oy;
+                    rc.right = obj->m_switchRect.right + ox;
+                    rc.bottom = obj->m_switchRect.bottom + oy;
+                    // language-forced (LONG* -> int*): see the same seam in DrawObjectCounts below
+                    view->WrapCoord(
+                        reinterpret_cast<i32*>(&rc.left),
+                        reinterpret_cast<i32*>(&rc.top)
+                    );
+                    view->WrapCoord(
+                        reinterpret_cast<i32*>(&rc.right),
+                        reinterpret_cast<i32*>(&rc.bottom)
+                    );
+                    drawHost->DrawBox(&rc, 0xff);
+                }
+            } while (pos != 0);
+        }
+    }
+    if (m_flags & 0x40000) {
+        POSITION pos = m_list.GetHeadPosition();
+        CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
+        CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
+        if (pos != 0) {
+            do {
+                CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
+                if (obj->m_extent.left != static_cast<i32>(0x80000000)) {
+                    i32 ox = obj->m_screenX;
+                    RECT rc;
+                    rc.left = obj->m_extent.left + ox;
+                    i32 oy = obj->m_screenY;
+                    rc.top = obj->m_extent.top + oy;
+                    rc.right = obj->m_extent.right + ox;
+                    rc.bottom = obj->m_extent.bottom + oy;
+                    // language-forced (LONG* -> int*): see the same seam in DrawObjectCounts below
+                    view->WrapCoord(
+                        reinterpret_cast<i32*>(&rc.left),
+                        reinterpret_cast<i32*>(&rc.top)
+                    );
+                    view->WrapCoord(
+                        reinterpret_cast<i32*>(&rc.right),
+                        reinterpret_cast<i32*>(&rc.bottom)
+                    );
+                    drawHost->DrawBox(&rc, 0xff);
+                }
+            } while (pos != 0);
+        }
+    }
+    if (m_flags & 0x100000) {
+        POSITION pos = m_list.GetHeadPosition();
+        CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
+        CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
+        if (pos != 0) {
+            do {
+                CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
+                i32 x = obj->m_screenX;
+                if (x != static_cast<i32>(0x80000000)) {
+                    // WrapCoord expanded on scalars (it takes i32* and retail has no
+                    // rect here).
+                    i32 fl = view->m_flags;
+                    i32 y = obj->m_screenY;
+                    if (fl & 4) {
+                        i32 w = view->m_wrapW;
+                        if (x < 0) {
+                            x = x + w;
+                        } else if (x >= w) {
+                            x = x - w;
+                        }
+                        i32 farEdge = view->m_viewRect.right;
+                        if (farEdge >= w && x < view->m_viewRect.left && x <= farEdge - w) {
+                            x = x + w;
+                        }
+                    }
+                    if (fl & 8) {
+                        i32 h = view->m_wrapH;
+                        if (y < 0) {
+                            y = y + h;
+                        } else if (y >= h) {
+                            y = y - h;
+                        }
+                        i32 farEdge = view->m_viewRect.bottom;
+                        if (farEdge >= h && y < view->m_viewRect.top && y <= farEdge - h) {
+                            y = y + h;
+                        }
+                    }
+                    drawHost->DrawCross(
+                        view->m_bounds50.left - view->m_viewRect.left + x,
+                        view->m_bounds50.top - view->m_viewRect.top + y
+                    );
+                }
+            } while (pos != 0);
+        }
+    }
+    if (m_flags & 0x1000000) {
+        POSITION pos = m_list.GetHeadPosition();
+        CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
+        CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
+        if (pos != 0) {
+            do {
+                CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
+                if (obj->m_screenX == static_cast<i32>(0x80000000)) {
+                    continue;
+                }
+                if (obj->GetClassId() != CLASSID_SERIALREF) {
+                    continue;
+                }
+                CImage* fr = obj->m_layer;
+                if (fr == 0) {
+                    continue;
+                }
+                i32 x = obj->m_screenX;
+                i32 y = obj->m_screenY;
+                RECT box;
+                ::SetRect(&box, x - 0x20, y + 8, x + 0x20, y + 0x20);
+                RECT rc;
+                rc.left = box.left;
+                rc.top = box.top;
+                rc.right = box.right;
+                rc.bottom = box.bottom;
+                view->WrapCoord(reinterpret_cast<i32*>(&rc.left), reinterpret_cast<i32*>(&rc.top));
+                view->WrapCoord(
+                    reinterpret_cast<i32*>(&rc.right),
+                    reinterpret_cast<i32*>(&rc.bottom)
+                );
+                if (fr->m_owned != 0) {
+                    drawHost->DrawLabel(&rc, s_dbgRle);
+                } else {
+                    DDSCAPS caps;
+                    i32 vid = 0;
+                    if (fr->m_surface != 0) {
+                        if (fr->m_surface->m_ddSurface->GetCaps(&caps) == 0) {
+                            vid = caps.dwCaps & DDSCAPS_VIDEOMEMORY;
+                        }
+                    }
+                    if (vid != 0) {
+                        drawHost->DrawLabel(&rc, s_dbgVid);
+                    } else {
+                        DDSCAPS caps2;
+                        i32 sys = 0;
+                        if (fr->m_surface != 0) {
+                            if (fr->m_surface->m_ddSurface->GetCaps(&caps2) == 0) {
+                                sys = caps2.dwCaps & DDSCAPS_SYSTEMMEMORY;
+                            }
+                        }
+                        if (sys != 0) {
+                            drawHost->DrawLabel(&rc, s_dbgSys);
+                        } else {
+                            drawHost->DrawLabel(&rc, s_dbgUnknown);
+                        }
+                    }
+                }
+            } while (pos != 0);
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1034,14 +1245,14 @@ i32 CDDrawChildGroup::SumWeighted() {
 }
 
 RVA(0x0015ab30, 0x38)
-void CDDrawChildGroup::RemoveAll(POSITION pos, CWwdGameObject* obj) {
+void CDDrawChildGroup::RemoveAll(POSITION pos, CGameObject* obj) {
     m_list.RemoveAt(pos);
     m_map2c.RemoveKey(WwdKey(obj));
     m_map48.RemoveKey(WwdKey(obj));
 }
 
 RVA(0x0015ab70, 0x27)
-void CDDrawChildGroup::RemoveByPosition(POSITION pos, CWwdGameObject* obj) {
+void CDDrawChildGroup::RemoveByPosition(POSITION pos, CGameObject* obj) {
     m_list.RemoveAt(pos);
     m_map2c.RemoveKey(WwdKey(obj));
 }

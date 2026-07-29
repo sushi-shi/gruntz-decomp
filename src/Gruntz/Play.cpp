@@ -59,8 +59,9 @@
 #include <DinMgr2/DirectInputMgr2.h>  // DirectInputMgr2::ReadAll
 #include <DinMgr2/InputMgrPtr.h>      // g_inputMgr (DirectInputMgr2* view; the one decl)
 
-#include <Gruntz/GameText.h>   // g_brickText1 (ex .cpp extern)
-#include <Gruntz/SoundState.h> // ex Globals.h transitive
+#include <Gruntz/DrawDebugStats.h> // FormatElapsedTime (shared with the 0xcf770 twin)
+#include <Gruntz/GameText.h>       // g_brickText1 (ex .cpp extern)
+#include <Gruntz/SoundState.h>     // ex Globals.h transitive
 #include <Gruntz/String.h>
 #include <Bute/ButeMgr.h>
 #include <Wap32/EngStr.h>
@@ -6989,24 +6990,224 @@ i32 CPlay::SetEffectSpriteDurations() {
     return 1;
 }
 
-// @early-stop
-// 0x0cf0a0 (1.4 KB) - homed from src/Stub/GapFunctions.cpp (matcher-5); a large Play
-// worker in this TU's .text block, no vtable-ref. Homed pending leaf-first reconstruction.
+// ---------------------------------------------------------------------------
+// CPlay::DrawDebugStatsFull (0x0cf0a0) - the DEV twin of CPlay::DrawDebugStats
+// @0xcf770 (which is 100% EXACT in src/Gruntz/DrawDebugStats.cpp and is the template
+// for everything below). Same frame, same scratch/accumulator pair, same
+// GetDC/SetBkMode/SetTextColor/SetBkColor/PostSetup/DrawText/ReleaseDC bracket - it
+// just prints more: the Fps line is unconditional here, five collision-rect toggles
+// come off m_world->m_childGroup->m_08, there is an fps-limit line, and under flag 0x8
+// the eight <Gruntz/GameText.h> CString slots are TextOut'd down the left edge at a
+// 16-pixel pitch.
+//
+// Receiver proven by the field reads, as usual for a zero-ref body: [this+0x04] =
+// CState::m_mgr (m_fps @+0x18 and m_pacingGate @+0x1c off it), [this+0x0c] =
+// CState::m_world, [this+0x2d0]/[this+0x2d4] = CPlay::m_packetsRcvd/m_packetsSent, and
+// the two virtuals at vtbl+0x6c / +0x94 are CPlay::GetFrame / CPlay::PostSetup.
+//
+// The five rect toggles read m_childGroup's INHERITED CLoadable::m_flags (+0x08), and
+// <DDrawMgr/DDrawChildGroup.h> already had one bit of that word decoded independently -
+// "m_flags bit 0x200000 = draw per-object debug counts". This function reads exactly
+// that bit as its " Z = On" toggle, alongside 0x10000/0x20000/0x40000/0x100000, which
+// corroborates the field from the other direction: m_flags is the debug-draw bitfield.
 // @dead-code
-// zero-ref (gruntz sema xref --tree): a 1.4KB Play worker sitting after
-// CPlay::DrawWorldPresent, reached by nothing; retail kept it, no /OPT:REF.
+// zero-ref (gruntz sema xref --tree): the dev overlay, kept without /OPT:REF.
+// @early-stop
+// 99.10%. Everything is byte-identical except FOUR bytes in the rect block: retail
+// keeps exactly ONE of the `lr` copy's stores (lr.top, at scratch+4) and forwards the
+// other three straight into dr; our cl keeps TWO (lr.left and lr.top). The remaining
+// byte-compare rows past that point are the 4-byte shift it causes plus the
+// reloc-masked `mov ecx,ds:<CString>` operands, which objdiff scores as equal.
+// Writing only the store that survives would match, but that is transcribing cl's
+// dead-store elimination back into the source rather than the copy the dev wrote - so
+// the honest four-field copy stays. (Measured alternatives: CopyRect(&lr,..) emits a
+// real `call ds:[CopyRect]` retail does not have, 98.71%; a genuine `RECT lr` local
+// does not colour onto the dead scratch and costs 0x10 of frame, 94.72%.)
 RVA(0x000cf0a0, 0x567)
-i32 Gap_0cf0a0(void) {
-    return 0;
+void CPlay::DrawDebugStatsFull() {
+    if (g_debugDisplayFlags & 0x20) {
+        return;
+    }
+
+    // TWO 0x40 scratches, not one: retail's frame is 0x298 == 4 (hdc) + 4 (the CString)
+    // + 0x10 (dr) + 0x40 + 0x40 + 0x200 (buf), and the Fps line formats through the
+    // UPPER one (esp+0x68) while every later line uses the lower (esp+0x28). The `lr`
+    // rect copy below then colours onto the lower scratch, which is dead by then - that
+    // is where retail's otherwise-pointless `mov [esp+0x30],lr.top` store comes from.
+    char buf[0x200];
+    char fpsScratch[0x40];
+    char scratch[0x40];
+    buf[0] = 0;
+
+    sprintf(fpsScratch, "Fps = %i ", m_mgr->m_fps);
+    strcat(buf, fpsScratch);
+
+    CDDrawChildGroup* group = m_world->m_childGroup;
+    if (group->m_flags & 0x10000) {
+        strcat(buf, " rcMove ");
+    }
+    if (group->m_flags & 0x20000) {
+        strcat(buf, " rcAttack ");
+    }
+    if (group->m_flags & 0x40000) {
+        strcat(buf, " rcHit ");
+    }
+    if (group->m_flags & 0x100000) {
+        strcat(buf, " ptOrg ");
+    }
+    if (group->m_flags & 0x200000) {
+        strcat(buf, " Z = On");
+    }
+
+    if (g_debugDisplayFlags & 0x1) {
+        sprintf(scratch, " Sprites = %i ", m_world->m_childGroup->m_list.GetCount());
+        strcat(buf, scratch);
+    }
+    if (g_debugDisplayFlags & 0x4) {
+        CDDrawWorkerHost* p = m_world->m_level->m_mainPlane;
+        sprintf(scratch, " Pos = %i,%i", p->m_snappedX, p->m_snappedY);
+        strcat(buf, scratch);
+    }
+    if (g_debugDisplayFlags & 0x80) {
+        CString t = FormatElapsedTime(g_frameTime);
+        t += " ";
+        strcat(buf, t);
+        t += " ";
+    }
+    if (g_debugDisplayFlags & 0x2) {
+        sprintf(
+            scratch,
+            " Sent = %i, Rcvd = %i, Frame = %i Counter = %lu",
+            m_packetsSent,
+            m_packetsRcvd,
+            GetFrame(),
+            g_frameTime
+        );
+        strcat(buf, scratch);
+    }
+    if (g_debugDisplayFlags & 0x200) {
+        sprintf(scratch, " FpsLimit = %i ", m_mgr->m_pacingGate);
+        strcat(buf, scratch);
+    }
+
+    CDDSurface* host = m_world->m_drawTarget->m_backPair->m_surface;
+    HDC hdc = 0;
+    host->m_ddSurface->GetDC(&hdc);
+    if (hdc == 0) {
+        return;
+    }
+    SetBkMode(hdc, 1);
+    SetTextColor(hdc, 0xffffff);
+    SetBkColor(hdc, 0);
+    PostSetup(hdc);
+
+    // The query rect is the level's plane context, read in place (a real RECT -
+    // <DDrawMgr/DDrawWorkerHost.h> typedefs LevelCoordRect to tagRECT).
+    // Field-by-field, NOT CopyRect: retail inlines the four loads (a CopyRect call
+    // emits `push;push;call ds:[CopyRect]` instead). And `lr` must be a real local whose
+    // address is never taken - cl then colours it onto the by-now dead sprintf scratch,
+    // which is what keeps the frame at 0x298 and leaves the one surviving
+    // `mov [esp+0x30],top` store at scratch+4 (the other three forward into dr).
+    RECT* src = &m_world->m_level->m_planeCtx;
+    RECT* lr = reinterpret_cast<RECT*>(scratch);
+    lr->left = src->left;
+    lr->top = src->top;
+    lr->right = src->right;
+    lr->bottom = src->bottom;
+    RECT dr;
+    dr.left = lr->left;
+    dr.top = lr->bottom - 0x1c;
+    dr.right = lr->right;
+    dr.bottom = lr->bottom;
+    DrawTextA(hdc, buf, -1, &dr, 0x20);
+
+    if (g_debugDisplayFlags & 0x8) {
+        SetBkMode(hdc, 2);
+        if (g_brickText1.GetLength() != 0) {
+            TextOutA(hdc, 0, 0x00, g_brickText1, g_brickText1.GetLength());
+        }
+        if (g_brickText2.GetLength() != 0) {
+            TextOutA(hdc, 0, 0x10, g_brickText2, g_brickText2.GetLength());
+        }
+        if (g_str64552c.GetLength() != 0) {
+            TextOutA(hdc, 0, 0x20, g_str64552c, g_str64552c.GetLength());
+        }
+        if (g_str645530.GetLength() != 0) {
+            TextOutA(hdc, 0, 0x30, g_str645530, g_str645530.GetLength());
+        }
+        if (g_str645514.GetLength() != 0) {
+            TextOutA(hdc, 0, 0x40, g_str645514, g_str645514.GetLength());
+        }
+        if (g_str645518.GetLength() != 0) {
+            TextOutA(hdc, 0, 0x50, g_str645518, g_str645518.GetLength());
+        }
+        if (g_str64551c.GetLength() != 0) {
+            TextOutA(hdc, 0, 0x60, g_str64551c, g_str64551c.GetLength());
+        }
+        if (g_str645520.GetLength() != 0) {
+            TextOutA(hdc, 0, 0x70, g_str645520, g_str645520.GetLength());
+        }
+    }
+    host->m_ddSurface->ReleaseDC(hdc);
 }
 
-// @early-stop
-// 0x0cfc90 (465 B) - homed from src/Stub/GapFunctions.cpp (matcher-5); a Play leaf,
-// no vtable-ref. Homed pending leaf-first reconstruction.
+// ---------------------------------------------------------------------------
+// CPlay::DrawCustomLevelBanner (0x0cfc90) - the bottom-of-screen "Custom Level: <name>"
+// banner. The old stub called it "a Play leaf, no vtable-ref, pending reconstruction".
+// Receiver proven by its own two field reads: [this+0x04] is CState::m_mgr (it reads
+// m_strWorldFile @+0xc8 and the m_128/m_12c pair off it) and [this+0x0c] is
+// CState::m_world (walked ->m_drawTarget->m_frontPair->m_surface). Direct sibling of
+// CPlay::DrawDebugStats, which runs the identical GetDC/SetBkMode/DrawText/ReleaseDC
+// bracket on the BACK page instead of the front.
+//
+// The two CStrings live in an INNER SCOPE on purpose: retail destroys both (and the
+// second one first) BEFORE it touches the surface, so the dtors cannot be left to
+// function exit.
 // @dead-code
-// zero-ref (gruntz sema xref --tree): a Play leaf after CPlay::Vslot15, reached
-// by nothing; retail kept it, no /OPT:REF.
+// zero-ref (gruntz sema xref --tree): a dev banner retail kept without /OPT:REF.
+// The scratch the banner is formatted into (0x64c020). Bounded by its neighbours -
+// _g_scrollLoadFlags ends at 0x24c01d and the next symbol is 0x24c22c - so 0x200,
+// the same size as WwdFile::GetMapBaseName's own g_mapNameBuf scratch.
+DATA(0x0024c020)
+char g_customLevelText[0x200];
+
 RVA(0x000cfc90, 0x1d1)
-i32 Gap_0cfc90(void) {
-    return 0;
+void CPlay::DrawCustomLevelBanner() {
+    if (m_mgr->m_strWorldFile.IsEmpty()) {
+        return;
+    }
+    {
+        CString world = m_mgr->GetWorldFileName();
+        if (world.IsEmpty()) {
+            return;
+        }
+        CString base;
+        if (m_mgr->m_128 == 0 && m_mgr->m_12c == 0) {
+            base = WwdFile::GetMapBaseName(world);
+        } else {
+            base = world;
+        }
+        if (base.IsEmpty()) {
+            return;
+        }
+        sprintf(g_customLevelText, "Custom Level: %s", static_cast<const char*>(base));
+    }
+    CDDSurface* host = m_world->m_drawTarget->m_frontPair->m_surface;
+    if (host == 0) {
+        return;
+    }
+    HDC hdc = 0;
+    host->m_ddSurface->GetDC(&hdc);
+    if (hdc == 0) {
+        return;
+    }
+    SetBkMode(hdc, TRANSPARENT);
+    SetTextColor(hdc, 0);
+    RECT rc;
+    rc.left = 0;
+    rc.top = 0x1b8;
+    rc.right = 0x27f;
+    rc.bottom = 0x1d6;
+    DrawTextA(hdc, g_customLevelText, -1, &rc, DT_CENTER | DT_SINGLELINE);
+    host->m_ddSurface->ReleaseDC(hdc);
 }

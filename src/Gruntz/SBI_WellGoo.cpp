@@ -26,17 +26,122 @@ VTBL(CSBI_WellGoo, 0x001eadfc); // vtable_names -> code (RTTI game class)
 // "StubOwner_e6020" placeholder host is DISSOLVED (2026-07-16) onto the declared
 // override in <Gruntz/SBI_WellGoo.h> - same 10-dword arg shape (a1..a4 + the
 // by-value RECT + a9/a10), same ret 0x28.
+// Bind the widget: stash the geometry, allocate the goo scratch surface, resolve the
+// three frames (indices 4 / 2 / 3 of the worker registered under `key`) and rebind each
+// one's owned blitter to the local player's palette, then measure the source rect off
+// the resolved base frame. The SetRect scratch IS the incoming by-value RECT parameter
+// re-used after its four words have been copied into m_rect14 - which is why retail
+// needs no extra stack for it.
 // @early-stop
-// return-0 stub (the old ~86% score was a base-length normalization artifact of
-// the previous unit's epilogue alignment; in this unit it scores ~1% - equally
-// meaningless for a stub). A faithful full-body reconstruction (the 10-arg
-// setup: geometry stash + mgr-alloc + 3 bounded map lookups + SetRect) reaches
-// only ~42%: target keeps 4 callee-saved regs and reuses the dead incoming-arg
-// slots as SetRect/lookup scratch, while cl spills a fresh `sub esp,0x10` RECT
-// frame + drops ebp - a uniform frame shift that mismatches every [esp+X]
-// operand. Frame/regalloc wall; full reconstruction deferred to the final sweep.
+// 83.5% (from 0.86%). Residual is a callee-saved COLOURING swap: retail holds the
+// registry key in ebp and the resolved palette node in ebx, cl5 does the reverse,
+// which also flips where the `found = 0` store lands relative to the Lookup argument
+// pushes. Not source-steerable. (The prior note's "~42% ceiling" no longer applies -
+// it predated both the RECT layout fix and the shared-epilogue spelling.)
 RVA(0x000e6020, 0x288)
-i32 CSBI_WellGoo::Setup(CStatusBarMgr*, CDDrawSurfaceMgr*, i32, i32, RECT, i32, i32) {
+i32 CSBI_WellGoo::Setup(
+    CStatusBarMgr* owner,
+    CDDrawSurfaceMgr* host,
+    i32 cmd,
+    i32 tab,
+    RECT rc,
+    i32 key,
+    i32 fillScale
+) {
+    // Every bail is a `goto fail` onto ONE shared epilogue - retail has a single
+    // `xor eax,eax; pop..; ret 0x28` block at 0xe629f that all eight guards jump to,
+    // where per-guard `return 0;` statements made cl emit eight copies of it
+    // (docs/patterns/positive-gate-enables-shrink-wrap.md, the b_ret > t_ret test).
+    // Declarations are hoisted because cl 5.0 rejects a goto that skips an
+    // initialisation (C2362).
+    i32 sel;
+    CShadeTable* node;
+    CObject* found;
+    CDDrawWorker* set;
+    if (host == 0) {
+        goto fail;
+    }
+    if (owner == 0) {
+        goto fail;
+    }
+    m_2c = owner;
+    m_24 = host;
+    m_tab = tab;
+    m_28 = 0;
+    m_enabled = 1;
+    m_rect14 = rc;
+    m_cmd = cmd;
+    m_fillScale = fillScale;
+    m_dstRect.left = m_rect14.left;
+    m_dstRect.right = m_rect14.right + 1;
+    m_dstRect.bottom = m_rect14.bottom + 1;
+    if (key == 0) {
+        goto fail;
+    }
+    m_gooSrc = g_gameReg->m_world->m_ptrColl->MakeAndAddB(0x14, 5, 0x10, 0, -1);
+    if (m_gooSrc == 0) {
+        goto fail;
+    }
+    sel = g_gameReg->m_options[g_curPlayer].m_008;
+    node = g_gameReg->m_spriteFactory->GetSel(sel, 0);
+    if (node == 0) {
+        node = g_gameReg->m_spriteFactory->GetSel(1, 0);
+    }
+
+    // The registry key arrives as an i32 - retail's own mangling for this slot ends
+    // `UtagRECT@@HH@Z`, i.e. the two trailing parameters really are declared `int` - so
+    // the string type has to be re-applied at the one place it is used as one.
+    found = 0;
+    m_24->m_imageRegistry->m_10map.Lookup(reinterpret_cast<LPCTSTR>(key), found);
+    set = static_cast<CDDrawWorker*>(found);
+    m_frame = (set != 0) ? set->GetAt(4) : 0;
+    if (m_frame == 0) {
+        goto fail;
+    }
+    if (m_frame->m_owned != 0) {
+        m_frame->m_owned->Select(0xa, 0);
+    }
+    if (node != 0 && m_frame->m_owned != 0) {
+        m_frame->m_owned->m_palDescr = node;
+    }
+    m_blitter = m_frame->m_owned;
+    if (m_blitter == 0) {
+        goto fail;
+    }
+
+    found = 0;
+    m_24->m_imageRegistry->m_10map.Lookup(reinterpret_cast<LPCTSTR>(key), found);
+    set = static_cast<CDDrawWorker*>(found);
+    m_baseFrame = (set != 0) ? set->GetAt(2) : 0;
+    if (m_baseFrame == 0) {
+        goto fail;
+    }
+    if (m_baseFrame->m_owned != 0) {
+        m_baseFrame->m_owned->Select(0xa, 0);
+    }
+    if (node != 0 && m_baseFrame->m_owned != 0) {
+        m_baseFrame->m_owned->m_palDescr = node;
+    }
+
+    found = 0;
+    m_24->m_imageRegistry->m_10map.Lookup(reinterpret_cast<LPCTSTR>(key), found);
+    set = static_cast<CDDrawWorker*>(found);
+    m_fgFrame = (set != 0) ? set->GetAt(3) : 0;
+    if (m_fgFrame == 0) {
+        goto fail;
+    }
+    if (m_fgFrame->m_owned != 0) {
+        m_fgFrame->m_owned->Select(0xa, 0);
+    }
+    if (node != 0 && m_fgFrame->m_owned != 0) {
+        m_fgFrame->m_owned->m_palDescr = node;
+    }
+
+    ::SetRect(&rc, 0, 0, m_frame->m_width - 1, m_frame->m_height - 1);
+    m_srcRect = rc;
+    m_drawX = m_rect14.left + (m_rect14.right - m_rect14.left) / 2 + 1;
+    return 1;
+fail:
     return 0;
 }
 
@@ -44,10 +149,11 @@ i32 CSBI_WellGoo::Setup(CStatusBarMgr*, CDDrawSurfaceMgr*, i32, i32, RECT, i32, 
 // countdown is non-positive; then tick it down and idle again if no fill scale is
 // set; otherwise draw the base anim frame, compute the goo fill height as a
 // fraction of the (m_rect14.bottom - m_rect14.top) progress (FLOORED to 1.0, then ftol'd
-// into m_fgTop), shade-blit + BltEx the goo source for that height, and finally draw
-// the foreground anim frame whose top sits at m_dstRect.top - 2. The right/bottom
-// ++ ... -- around the BltEx is the inclusive->exclusive rect adjust (see the header:
-// the ex-"m_drawGuard/m_blitGuard" were m_srcRect's right and bottom).
+// into m_dstRect.top, the goo water line), shade-blit + BltEx the goo source for that
+// height, and finally draw the foreground anim frame whose top sits two pixels above
+// it. The inc/dec pair around the BltEx widens m_srcRect's far edges by one - the
+// inclusive->exclusive fixup DirectDraw wants - it is NOT a re-entrancy guard (that
+// was the old m_drawGuard/m_blitGuard mis-model; see the header).
 RVA(0x000e6360, 0x8)
 i32 CSBI_WellGoo::Refresh(i32) {
     return 1;
@@ -78,7 +184,10 @@ i32 CSBI_WellGoo::Render() {
 
     m_blitter->Blit(&m_srcRect, m_gooSrc, &m_srcRect, 0, 0);
 
-    m_srcRect.right++; // inclusive -> exclusive for the DirectDraw blit
+    // Inclusive -> exclusive: SetRect seeded m_srcRect with (0,0,w-1,h-1) in Setup, and
+    // DirectDraw wants the far edges one past. (These two were the phantom
+    // "m_drawGuard"/"m_blitGuard" counters - see the header.)
+    m_srcRect.right++;
     m_srcRect.bottom++;
     ctx->m_surface->BltEx(&m_dstRect, m_gooSrc, &m_srcRect, 0x1000000, 0);
     m_srcRect.right--;

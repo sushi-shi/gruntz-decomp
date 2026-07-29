@@ -404,16 +404,44 @@ i32 CDDSurface::Flip(CDDSurface* target) {
     return hr;
 }
 
+// ---------------------------------------------------------------------------
+// 0x13e8f0 - rebuild the global attached-surface cache. Scalar-delete the wrappers the
+// cache holds, empty this->m_elements and g_imageCache, re-enumerate the attached
+// surfaces through EnumSurfacesCallback (which refills g_imageCache), then copy the
+// fresh cache into m_elements and drop the cache again. Both walks compare UNSIGNED.
+// NOTE the first loop's asymmetry, which is retail's own: it bounds the walk with
+// THIS surface's element count but indexes the GLOBAL cache.
 // @early-stop
-// 0x13e8f0 (176 B) = a DIRSURF image-cache reload (__thiscall): scalar-deletes each
-// g_imageCache element, clears this->m_94 (CDdObArray) + g_imageCache, rebuilds via
-// this->m_8->EnumAttachedSurfaces(0, &EnumSurfacesCallback) (slot 9), reports through
-// CDDrawPtrCollections::GetErrorString, then repopulates m_94 from g_imageCache. Homed from
-// GapFunctions.cpp (matcher-5); lives in the DIRSURF block (DDSurface.cpp) by RVA.
-// Homed pending the owning class (m_8 vtable + m_94 array) + the Build PMF push modelled.
+// 95.0% (from 2.97%). The only residue is one addressing choice in the refill loop:
+// retail reads m_elements' size through the `lea edi,[ebx+0x94]` array pointer it
+// already materialised for SetSize (`mov eax,[edi+8]`) where cl5 goes back to the
+// this-relative `[ebx+0x9c]`, which also swaps the order of the two argument loads.
 RVA(0x0013e8f0, 0xb0)
-i32 ReloadImageCache(void) {
-    return 0;
+void CDDSurface::ReloadImageCache() {
+    u32 i = 0;
+    if (static_cast<u32>(m_elements.GetSize()) > 0) {
+        do {
+            CDDSurface* item = static_cast<CDDSurface*>(g_imageCache[i]);
+            if (item != 0) {
+                delete item; // slot 0 @+0x00  scalar-deleting dtor
+            }
+            i++;
+        } while (i < static_cast<u32>(m_elements.GetSize()));
+    }
+    m_elements.SetSize(0, -1);
+    g_imageCache.SetSize(0, -1);
+    i32 hr = m_ddSurface->EnumAttachedSurfaces(0, &EnumSurfacesCallback);
+    if (hr != 0) {
+        CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x2dd, hr);
+    }
+    u32 j = 0;
+    if (static_cast<u32>(g_imageCache.GetSize()) > 0) {
+        do {
+            m_elements.SetAtGrow(m_elements.GetSize(), g_imageCache[j]);
+            j++;
+        } while (j < static_cast<u32>(g_imageCache.GetSize()));
+    }
+    g_imageCache.SetSize(0, -1);
 }
 
 // ---------------------------------------------------------------------------
@@ -437,7 +465,7 @@ i32 ReloadImageCache(void) {
 // Refresh, SetAtGrow/delete, ret 0xc all disasm-verified). Residual is the /GX
 // ctor-in-flight EH-state index (the Create7f0_1/CreateA factory-EH family wall).
 RVA(0x0013e9a0, 0xcc)
-i32 __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* desc, void* ctx) {
+HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* desc, void* ctx) {
     void* payload = 0;
     if (surf->QueryInterface(IID_IDirectDrawSurface3, &payload) == 0) {
         CDDSurface* item = new CDDSurface;

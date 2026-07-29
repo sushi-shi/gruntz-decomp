@@ -459,15 +459,69 @@ i32 CDDrawSurfaceMgr::InvokeCallback(void* arg1, i32 arg2, i32 arg3, void* paylo
     return m_callback(this, arg1, arg2, arg3, payload) != 0;
 }
 
-// @identity-TODO (matcher-5): 0x156ad0 (466 B, free __stdcall 5 args, /GX) == a CFileMem
-// "load file into buffer" helper (RVA-adjacent to CFileMemBase @0x157850; belongs to
-// src/Io/FileMem.cpp once that TU carries an explicit inline CFileMem ctor). Homed here
-// from GapFunctions.cpp by RVA neighbourhood (immediately after this TU's 0x156a90 block).
-// DECODED: if(arg1==0) return 0; construct a local CFileMem (base+derived ctors inlined,
-// Reset()); CFileMemBase::SetName; CFileMem::Open; CFileMem::Read(header 0x120); if(readLen
-// && size) Read(buf2, size); Ready(); dtor; return 1. Byte-match BLOCKED on the inlined
-// CFileMem ctor (retail re-inits all fields via a Reset()-body ctor).
+// ---------------------------------------------------------------------------
+// LoadRecordFile (0x156ad0) - the READ counterpart of SnapshotChildren above: open a
+// snapshot file by name, pull its 0x120-byte CSnapshotHeader, then optionally slurp a
+// caller buffer behind it. Free __stdcall (`ret 0x14` = 5 dword args), /GX frame from
+// the local CFileMem. Homed here from GapFunctions.cpp by RVA neighbourhood (it sits
+// immediately after this TU's 0x156a90 block).
+//
+// The 0x120 length is not a magic number: it is sizeof(CSnapshotHeader), the exact
+// record SnapshotChildren writes 130 lines above (`S.Write(&header, sizeof(header))`).
+// That pins the whole shape - name -> SetName(name,1,0) -> Open -> Read(header) ->
+// Read(buf,len) -> Ready.
+//
+// RETAIL BUG, transcribed deliberately: the header destination is `&hdrOut`, the
+// ADDRESS OF THE POINTER PARAMETER, not the pointer. It is a `lea eax,[esp+0x4c]` on
+// the arg1 slot, not a `mov` - unambiguous once the frame is laid out (S+0x40 is the
+// trylevel the `mov [esp+0x40],N` stores prove, so S+0x44 is the return address and
+// S+0x48/S+0x4c are arg0/arg1). So retail reads 288 bytes over its own argument block,
+// which lands `buf`/`len` inside the region it just overwrote. That is a classic stray
+// `&`, and it is very likely WHY this function is a zero-ref orphan (gruntz sema xref
+// --tree: no direct call/jmp rel32 caller anywhere): written, found broken, abandoned.
+// Reconstructing it as `S.Read(hdrOut, ...)` would be a silent correction of retail.
+// @dead-code
+// zero-ref: no caller in .text. Kept and reconstructed rather than stubbed.
+// @early-stop
+// out-of-line ctor/dtor wall: retail INLINES the whole CFileMem construction (base vptr
+// + m_4/m_mode + m_name.Empty(), the CFile member ctor, the derived vptr + m_length/
+// m_offset, then the base field re-init) and both teardown ladders, which only happens
+// if ??0CFileMemBase / ??1CFileMemBase / ??1CFileMem have IN-CLASS bodies (cl 5.0 /Ob1
+// inlines nothing else). Ours are out-of-line in DDrawSubMgr.cpp, pinned at 0x157850 /
+// 0x1578b0 / 0x157980, so cl emits `call` where retail has the expansion. Moving them
+// in-class is the retail-faithful model - retail's own 0x157850/0x157980 bodies are then
+// the COMDAT copies cl emits for an inline it declined.
+//
+// MEASURED 2026-07-29, and it does NOT work with this cl - do not re-try it blind. With
+// all four bodies moved in-class, cl emits the COMDAT copies into THIS obj
+// (ddrawsurfacemgr, the TU that owns the CFileMem locals) instead of ddrawsubmgr, so
+// ddrawsubmgr loses five labelled functions (??0CFileMemBase, ??1CFileMemBase,
+// ??1CFileMem and both ??_G thunks) and the FATAL labels gate fires; pinning them here
+// instead would break the TU linker-order invariant, since 0x1578xx sits past this
+// block. Worse, ??0CFileMemBase then has NO out-of-line copy anywhere: our cl inlines it
+// at all three call sites, where retail's declined it at SnapshotChildren/RestoreChildren
+// (both `call 0x157850`). So the inline-budget decision itself differs, and the in-class
+// form cannot reproduce retail's split. Closing this needs a lever over cl's per-site
+// inline decision, not a body move. Logic here is complete and byte-faithful; the
+// construction/teardown expansion is the whole residual.
 RVA(0x00156ad0, 0x1d2)
-i32 LoadRecordFile(void) {
-    return 0;
+i32 __stdcall
+LoadRecordFile(const char* name, CSnapshotHeader* hdrOut, void* buf, u32 len, i32 unused) {
+    if (name == 0) {
+        return 0;
+    }
+    CFileMem S;
+    if (S.SetName(name, 1, 0) == 0) {
+        return 0;
+    }
+    if (S.Open() == 0) {
+        return 0;
+    }
+    // `&hdrOut` is retail's, not a typo of ours - see the RETAIL BUG note above.
+    S.Read(&hdrOut, sizeof(CSnapshotHeader));
+    if (buf != 0 && len > 0) {
+        S.Read(buf, len);
+    }
+    S.Ready();
+    return 1;
 }

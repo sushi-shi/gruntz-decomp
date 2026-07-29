@@ -57,15 +57,18 @@ public:
     CImage* m_baseFrame;        // +0x40  base frame record (first RenderFrame `this`)
     i32 m_fillScale;            // +0x44  fill scale factor (int, fimul); 0 => skip fill
     i32 m_drawX;                // +0x48  draw x origin
-    // SETTLED 2026-07-29 (the ex-"LAYOUT CONTRADICTION"): both ARE 16-byte RECTs.
-    // SerializeFields round-trips them as `arc->Write(&m_srcRect, 0x10)` /
-    // `(&m_dstRect, 0x10)` - two 16-byte blocks, which only fits if +0x54/+0x58 and
-    // +0x60 are rect fields. The ex-"m_drawGuard/m_blitGuard" inc-around-BltEx-dec is
-    // then `right++/bottom++ ... right--/bottom--`, i.e. the inclusive->exclusive rect
-    // adjust DirectDraw's Blt needs; and the ex-"m_fgTop" IS m_dstRect.top, the
-    // computed goo fill line (the foreground frame draws at that top - 2).
-    RECT m_srcRect; // +0x4c  goo source rect (Blit p0/clip, BltEx srcRect)
-    RECT m_dstRect; // +0x5c  goo dest rect; .top is the fill line
+    // The layout contradiction the old @identity-TODO parked here is SETTLED (2026-07-29,
+    // by reconstructing Setup @0xe6020): +0x4c and +0x5c are TWO REAL 16-byte RECTs.
+    //   * SerializeFields @0xe64c0 round-trips each with a single `Write(&r, 0x10)`;
+    //   * Setup fills m_srcRect with ONE ::SetRect(&rc, 0, 0, m_frame->m_width - 1,
+    //     m_frame->m_height - 1) followed by a four-dword struct copy, and seeds
+    //     m_dstRect's .left/.right/.bottom from the widget rect (+1 on the far edges).
+    // So the "m_drawGuard"/"m_blitGuard" counters that used to sit at +0x54/+0x58 were
+    // m_srcRect's .right/.bottom all along, and Render's inc-before-BltEx / dec-after
+    // pair is the INCLUSIVE->EXCLUSIVE rect fixup DirectDraw wants - not a re-entrancy
+    // guard. Likewise the ex "m_fgTop" at +0x60 is m_dstRect.top, the goo water line.
+    RECT m_srcRect; // +0x4c  source rect (SetRect-inclusive; Render widens it for the blit)
+    RECT m_dstRect; // +0x5c  destination rect; Setup seeds .left/.right/.bottom, Render .top
 };
 SIZE_UNKNOWN();
 

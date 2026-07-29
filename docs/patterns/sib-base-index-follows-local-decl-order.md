@@ -61,6 +61,14 @@ loop into `rep stos` (a much bigger change), so its one SIB byte is parked.
 - `CVariantSlot::Find` (0x16e1d0), 2026-07-28: the binary search's `lea eax,[esi+edi]`
   (`(hi + lo) / 2`). Declaring `lo` before `hi` - **not** writing `lo + hi` - flipped the
   SIB byte; 99.69 -> **100 EXACT**.
-- Still open in the same family, both with the pointer coming from a MEMBER rather than a
-  local: `CHashBase::Insert` 0x184a70 / `Remove` 0x184ab0 / `Last` 0x184b10 (one SIB byte
-  each; note Insert/Remove and Last want OPPOSITE roles, so it is not a global convention).
+- Still open in the same family, all with the pointer coming from a MEMBER rather than a
+  local: `CHashBase::Insert` 0x184a70 / `Remove` 0x184ab0 / `Lookup` 0x184b40 and
+  `CHashElement::Prev` 0x184900 (one SIB byte each; note Insert/Remove and Last want
+  OPPOSITE roles, so it is not a global convention). `Last` 0x184b10 has since gone EXACT.
+- `CHashElement::Prev` (0x184900), 2026-07-29, adds a THIRD non-lever to the list above:
+  the address there is strength-reduced into a loop-preheader `lea` rather than re-formed
+  per iteration, and neither declaration order flips it (counter-first and pointer-first
+  give the identical byte). Routing the subscript through the member (`coll->m_buckets[i]`
+  with no `b` local) DOES flip the roles - but simultaneously recolours `m_buckets` from
+  eax into ecx, so it trades one wrong byte for four. The pointer-from-a-member sub-family
+  still has no lever.

@@ -75,15 +75,26 @@ public:
     // Two overloaded weighted grunt-voice spawn drivers (0x11b3b0 / 0x11b7c0).
     // Both consume this in ecx and return with callee-cleaned stack arguments; the
     // five-argument overload was formerly mis-modeled as a free __stdcall sibling.
-    i32 SpawnVoiceDriver(void* spawner, i32, i32, i32, i32, i32); // 0x11b3b0
-    // SETTLED (0x11b7c0 read out, 2026-07-29): the first arg is an OBJECT ID, not a
-    // payload pointer. 0x11ba7a loads it and 0x11ba82 hands it to CGruntVoice::Setup
-    // as a0, which stores m_source (+0x68); Update (0x11a8e0) then uses m_source as
-    // the CMapPtrToPtr key into m_childGroup->m_map48 - the map WwdObjMgr fills with
-    // `m_map48[(void*)obj->m_188] = obj`. Hence CWarlord's m_object->m_188 is the
-    // correct spelling; the entrance path's `push esi` (0x63073) widens a raw CGrunt*
-    // into that id slot, which is retail's own pointer-as-id, not a modelling gap.
-    i32 SpawnVoiceDriver(i32 sourceId, i32 cue, i32 which, i32 priority, i32 percent); // 0x11b7c0
+    // The subject is a CGrunt, PROVEN by the body: it reads `who->m_object->m_188`
+    // (+0x10 then +0x188) to derive the ducking object id, and all 75 call sites pass a
+    // CGrunt `this` or 0. (Was `void* spawner` - the mangled PAX is retail's, but the
+    // RVA() binding is by address, so the real type costs nothing.)
+    i32 SpawnVoiceDriver(
+        CGrunt* who,
+        i32 voiceId,
+        i32 which,
+        i32 objId,
+        i32 priority,
+        i32 percent
+    ); // 0x11b3b0
+    // The five-argument twin takes the ducking object id DIRECTLY (settled two ways:
+    // 0x11b7c0's `cmp ecx,[esp+0x24]` against each voice's m_source; and 0x11ba82 hands
+    // the arg to CGruntVoice::Setup as a0, which stores m_source (+0x68), which Update
+    // (0x11a8e0) then uses as the CMapPtrToPtr key into m_childGroup->m_map48 - the map
+    // WwdObjMgr fills with `m_map48[(void*)obj->m_188] = obj`). The entrance path's
+    // `push esi` (0x63073) widens a raw CGrunt* into that id slot, which is retail's own
+    // pointer-as-id, not a modelling gap.
+    i32 SpawnVoiceDriver(i32 objId, i32 voiceId, i32 which, i32 priority, i32 percent); // 0x11b7c0
     CSpawnList* BuildVoiceSoundList(i32 i); // 0x11c210 (defined in VoiceSoundList.cpp)
     i32 AnyVoicePlaying();   // 0x11c6c0 (either slot m_08/m_0c has a non-zero m_playFlags)
     i32 VoicePlaying(i32 i); // 0x11c700 (slot i's m_playFlags is non-zero)
