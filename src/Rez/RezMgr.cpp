@@ -29,11 +29,17 @@ i32 g_timer500 = 0; // interval countdown, seed 0x1f4
 DATA(0x00245594)
 i32 g_timer100 = 0; // interval countdown, seed 0x64
 
+DATA(0x0020c674)
 static const char s_rezName[] = "Gruntz.REZ";
+DATA(0x0020c66c)
 static const char s_join[] = "%s\\%s";
+DATA(0x00211054)
 static const char s_dataPath[] = "%c:\\DATA\\%s";
+DATA(0x00211044)
 static const char s_fecName[] = "Gruntz.FEC";
+DATA(0x00211034)
 static const char s_fecLoName[] = "GruntzLo.FEC";
+DATA(0x00211024)
 static const char s_moviezPath[] = "%c:\\MOVIEZ\\%s";
 
 RVA(0x0008b740, 0x12d)

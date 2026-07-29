@@ -100,6 +100,13 @@ static CString g_statLabel[8] = {
     "Secretz:",
 };
 
+// DELIBERATELY UNBOUND. Reloc pairing off the byte-exact zErrHandling ctor puts this
+// 8-slot table at 0x2bf448..0x2bf464 - i.e. INSIDE TypeKeyColl.cpp's 0x2bf400 .bss band,
+// and three of its cells are the ones TypeKeyColl/GruntStartingPoint currently model as
+// g_projActName (0x2bf454), g_projActName2 (0x2bf45c) and g_projActCache (0x2bf464).
+// So the table (and this ctor) belong to the zErrHandling/zPTree obj, not GameText's,
+// and those three "globals" are cells of it. Binding them here would ratify the wrong
+// owner; the re-home + the three-way identity merge is its own pass.
 static char* g_errMsg_OutOfMem; // the lazy-init guard slot
 static char* g_errMsg_BadData;
 static char* g_errMsg_Overflow;

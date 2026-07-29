@@ -343,7 +343,9 @@ class TestUnnamedFunctionQueue(unittest.TestCase):
 
 
 # --------------------------------------------------------------------------- #
-# label extraction: clang and VC5 disagree on MFC message-entry array mangling #
+# label extraction: clang and VC5 disagree on static-data mangling.            #
+# The rewrites are MECHANICAL but never SPECULATIVE - a spelling is returned    #
+# only when the compiled object actually defines it, so a guess can never bind. #
 # --------------------------------------------------------------------------- #
 class TestMsvc5DataSymbols(unittest.TestCase):
     def test_message_entries_resolve_to_vc5_spelling_present_in_object(self):
@@ -356,10 +358,29 @@ class TestMsvc5DataSymbols(unittest.TestCase):
         self.assertIsNone(labels.msvc5_data_symbol(clang, set()))
         self.assertIsNone(labels.msvc5_data_symbol(clang, {"?unrelated@@3HA"}))
 
-    def test_unrelated_static_data_is_not_rewritten(self):
-        clang = "?value@CMultiHelpDlg@@0QBUOtherType@@B"
-        vc5 = "?value@CMultiHelpDlg@@0PBUOtherType@@B"
-        self.assertIsNone(labels.msvc5_data_symbol(clang, {vc5}))
+    def test_any_const_array_Q_resolves_to_the_vc5_P_in_the_object(self):
+        """THE ORIGINAL BUG: the Q->P rewrite was hard-coded to AFX_MSGMAP_ENTRY, so an
+        ordinary `const u8 g_guid1[16]` / `const char s_rb[]` DATA() bound NOTHING and
+        needed a hand-written DATA_SYMBOL. The storage-class difference is generic."""
+        for clang, vc5 in (("?g_guid1@@3QBEB", "?g_guid1@@3PBEB"),
+                           ("?s_rb@@3QBDB", "?s_rb@@3PBDB"),
+                           ("?value@CMultiHelpDlg@@0QBUOtherType@@B",
+                            "?value@CMultiHelpDlg@@0PBUOtherType@@B")):
+            self.assertEqual(labels.msvc5_data_symbol(clang, {vc5}), vc5)
+            self.assertIsNone(labels.msvc5_data_symbol(clang, {"?unrelated@@3HA"}))
+
+    def test_internal_linkage_static_resolves_its_volatile_pool_id(self):
+        """cl decorates every internal-linkage file-scope variable `_x$S<n>`; clang
+        reports the plain `_x`. Matched by prefix (the ordinal renumbers on any symbol
+        churn), and ONLY when exactly one symbol matches."""
+        self.assertEqual(
+            labels.msvc5_data_symbol("_s_fmtNotFound", {"_s_fmtNotFound$S19047"}),
+            "_s_fmtNotFound$S19047")
+        # a longer name is not a prefix hit: `_s_key` must not grab `_s_keyA$S..`
+        self.assertIsNone(labels.msvc5_data_symbol("_s_key", {"_s_keyA$S12"}))
+        # ambiguity is refused, never guessed
+        self.assertIsNone(
+            labels.msvc5_data_symbol("_s_x", {"_s_x$S1", "_s_x$S2"}))
 
 
 # --------------------------------------------------------------------------- #

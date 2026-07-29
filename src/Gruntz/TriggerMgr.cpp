@@ -65,8 +65,11 @@
 DATA(0x00244ca4)
 i32 g_groupSentinel;
 
+DATA(0x0020a5dc)
 static const char s_LightFx[] = "LightFx";
+DATA(0x0020dd20)
 static const char s_GAME_FLASH[] = "GAME_FLASH";
+DATA(0x0020dd08)
 static const char s_GAME_LIGHTING_FLASH[] = "GAME_LIGHTING_FLASH";
 static char s_Grunt[] = "Grunt";
 static char s_CombatTimeout[] = "CombatTimeout";

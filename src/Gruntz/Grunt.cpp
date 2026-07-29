@@ -48,12 +48,19 @@
 
 VTBL(CGrunt, 0x001e8754);
 
+DATA(0x0020a930)
 static const char s_GruntHealthSprite[] = "GruntHealthSprite";
+DATA(0x0020a904)
 static const char s_GruntToySprite[] = "GruntToySprite";
+DATA(0x0020a918)
 static const char s_GruntStaminaSprite[] = "GruntStaminaSprite";
+DATA(0x0020a8ec)
 static const char s_GruntToyTimeSprite[] = "GruntToyTimeSprite";
+DATA(0x0020a8d0)
 static const char s_GruntWingzTimeSprite[] = "GruntWingzTimeSprite";
+DATA(0x0020a8b8)
 static const char s_GruntPowerupSprite[] = "GruntPowerupSprite";
+DATA(0x0020a948)
 static const char s_GruntSelectedSprite[] = "GruntSelectedSprite";
 
 static const char s_GRUNTZ_[] = "GRUNTZ_";
@@ -90,10 +97,14 @@ static char s_BOMBGRUNT[] = "BOMBGRUNT";                   // 0x60dbd0
 static char s_RunningTimePerTile[] = "RunningTimePerTile"; // 0x60e264
 
 // XferName's bute keys (the per-frame step's tuning lookups).
-static char s_FadeTransparency[] = "FadeTransparency";                 // 0x60dfd0
-static char s_SafeFlashTime[] = "SafeFlashTime";                       // 0x60dfc0
-static char s_AccelerateFlash[] = "AccelerateFlash";                   // 0x60dfac
-static char s_Powerupz[] = "Powerupz";                                 // 0x60d9b4
+DATA(0x0020dfd0)
+static char s_FadeTransparency[] = "FadeTransparency"; // 0x60dfd0
+DATA(0x0020dfc0)
+static char s_SafeFlashTime[] = "SafeFlashTime"; // 0x60dfc0
+DATA(0x0020dfac)
+static char s_AccelerateFlash[] = "AccelerateFlash"; // 0x60dfac
+static char s_Powerupz[] = "Powerupz";               // 0x60d9b4
+DATA(0x0020d974)
 static char s_ConversionTime[] = "ConversionTime";                     // 0x60d974
 static char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 0x60d900
 
@@ -110,22 +121,34 @@ i32 g_traitorMode; // 0x6455b0 - DEFINED once here; GruntCombat.cpp defined it t
 static const char s_animKeyA[] = "A";
 static const char s_animKeyK[] = "K";
 
+DATA(0x0020bb64)
 static const char s_pose_WALK[] = "_WALK";
+DATA(0x0020d7e8)
 static const char s_pose_ATTACK1[] = "_ATTACK1";
+DATA(0x0020d7dc)
 static const char s_pose_ATTACK2[] = "_ATTACK2";
+DATA(0x0020d7cc)
 static const char s_pose_ATTACKIDLE[] = "_ATTACK-IDLE";
+DATA(0x0020d7c0)
 static const char s_pose_STRUCK1[] = "_STRUCK1";
+DATA(0x0020d7b4)
 static const char s_pose_STRUCK2[] = "_STRUCK2";
 static const char s_pose_IDLE1[] = "_IDLE1";
 static const char s_pose_IDLE2[] = "_IDLE2";
 static const char s_pose_IDLE3[] = "_IDLE3";
 static const char s_pose_IDLE4[] = "_IDLE4";
+DATA(0x0020d7ac)
 static const char s_pose_IDLE5[] = "_IDLE5";
+DATA(0x0020d7a4)
 static const char s_pose_ITEM[] = "_ITEM";
+DATA(0x0020d79c)
 static const char s_pose_ITEM2[] = "_ITEM2";
 static const char s_pose_DEATH[] = "_DEATH";
+DATA(0x0020d794)
 static const char s_pose_TOY1[] = "_TOY1";
+DATA(0x0020d78c)
 static const char s_pose_TOY2[] = "_TOY2";
+DATA(0x0020d77c)
 static const char s_pose_TOYBREAK[] = "_TOY-BREAK";
 
 #define LOAD_POSE(dst, sfx)                                                                        \
@@ -215,6 +238,7 @@ CGruntCellRec::CGruntCellRec() {}
 RVA(0x0000f430, 0x10)
 CGruntCellRec::~CGruntCellRec() {}
 
+DATA(0x0020d404)
 static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 
 // @early-stop
@@ -561,55 +585,104 @@ void CGrunt::ReadConfigFromButeMgr() {
     }
 }
 
+DATA(0x0020d768)
 static const char s_d48_NORTHWEST_WALK[] = "_NORTHWEST_WALK";
+DATA(0x0020d758)
 static const char s_d48_NORTH_WALK[] = "_NORTH_WALK";
+DATA(0x0020d744)
 static const char s_d48_NORTHEAST_WALK[] = "_NORTHEAST_WALK";
+DATA(0x0020d734)
 static const char s_d48_WEST_WALK[] = "_WEST_WALK";
+DATA(0x0020d724)
 static const char s_d48_EAST_WALK[] = "_EAST_WALK";
+DATA(0x0020d710)
 static const char s_d48_SOUTHWEST_WALK[] = "_SOUTHWEST_WALK";
+DATA(0x0020d700)
 static const char s_d48_SOUTH_WALK[] = "_SOUTH_WALK";
+DATA(0x0020d6ec)
 static const char s_d48_SOUTHEAST_WALK[] = "_SOUTHEAST_WALK";
+DATA(0x0020d6d4)
 static const char s_d48_NORTHWEST_STRUCK[] = "_NORTHWEST_STRUCK";
+DATA(0x0020d6c4)
 static const char s_d48_NORTH_STRUCK[] = "_NORTH_STRUCK";
+DATA(0x0020d6ac)
 static const char s_d48_NORTHEAST_STRUCK[] = "_NORTHEAST_STRUCK";
+DATA(0x0020d69c)
 static const char s_d48_WEST_STRUCK[] = "_WEST_STRUCK";
+DATA(0x0020d68c)
 static const char s_d48_EAST_STRUCK[] = "_EAST_STRUCK";
+DATA(0x0020d674)
 static const char s_d48_SOUTHWEST_STRUCK[] = "_SOUTHWEST_STRUCK";
+DATA(0x0020d664)
 static const char s_d48_SOUTH_STRUCK[] = "_SOUTH_STRUCK";
+DATA(0x0020d64c)
 static const char s_d48_SOUTHEAST_STRUCK[] = "_SOUTHEAST_STRUCK";
+DATA(0x0020d634)
 static const char s_d48_NORTHWEST_ATTACK[] = "_NORTHWEST_ATTACK";
+DATA(0x0020d624)
 static const char s_d48_NORTH_ATTACK[] = "_NORTH_ATTACK";
+DATA(0x0020d60c)
 static const char s_d48_NORTHEAST_ATTACK[] = "_NORTHEAST_ATTACK";
+DATA(0x0020d5fc)
 static const char s_d48_WEST_ATTACK[] = "_WEST_ATTACK";
+DATA(0x0020d5ec)
 static const char s_d48_EAST_ATTACK[] = "_EAST_ATTACK";
+DATA(0x0020d5d4)
 static const char s_d48_SOUTHWEST_ATTACK[] = "_SOUTHWEST_ATTACK";
+DATA(0x0020d5c4)
 static const char s_d48_SOUTH_ATTACK[] = "_SOUTH_ATTACK";
+DATA(0x0020d5ac)
 static const char s_d48_SOUTHEAST_ATTACK[] = "_SOUTHEAST_ATTACK";
+DATA(0x0020d598)
 static const char s_d48_NORTHWEST_IDLE[] = "_NORTHWEST_IDLE";
+DATA(0x0020d588)
 static const char s_d48_NORTH_IDLE[] = "_NORTH_IDLE";
+DATA(0x0020d574)
 static const char s_d48_NORTHEAST_IDLE[] = "_NORTHEAST_IDLE";
+DATA(0x0020d564)
 static const char s_d48_WEST_IDLE[] = "_WEST_IDLE";
+DATA(0x0020d554)
 static const char s_d48_EAST_IDLE[] = "_EAST_IDLE";
+DATA(0x0020d540)
 static const char s_d48_SOUTHWEST_IDLE[] = "_SOUTHWEST_IDLE";
+DATA(0x0020d530)
 static const char s_d48_SOUTH_IDLE[] = "_SOUTH_IDLE";
+DATA(0x0020d51c)
 static const char s_d48_SOUTHEAST_IDLE[] = "_SOUTHEAST_IDLE";
+DATA(0x0020d508)
 static const char s_d48_NORTHWEST_ITEM[] = "_NORTHWEST_ITEM";
+DATA(0x0020d4f8)
 static const char s_d48_NORTH_ITEM[] = "_NORTH_ITEM";
+DATA(0x0020d4e4)
 static const char s_d48_NORTHEAST_ITEM[] = "_NORTHEAST_ITEM";
+DATA(0x0020d4d4)
 static const char s_d48_WEST_ITEM[] = "_WEST_ITEM";
+DATA(0x0020d4c4)
 static const char s_d48_EAST_ITEM[] = "_EAST_ITEM";
+DATA(0x0020d4b0)
 static const char s_d48_SOUTHWEST_ITEM[] = "_SOUTHWEST_ITEM";
+DATA(0x0020d4a0)
 static const char s_d48_SOUTH_ITEM[] = "_SOUTH_ITEM";
+DATA(0x0020d48c)
 static const char s_d48_SOUTHEAST_ITEM[] = "_SOUTHEAST_ITEM";
 static const char s_d48_DEATH[] = "_DEATH";
+DATA(0x0020d47c)
 static const char s_d48_NORTHWEST[] = "_NORTHWEST";
+DATA(0x0020d474)
 static const char s_d48_NORTH[] = "_NORTH";
+DATA(0x0020d464)
 static const char s_d48_NORTHEAST[] = "_NORTHEAST";
+DATA(0x0020d45c)
 static const char s_d48_WEST[] = "_WEST";
+DATA(0x0020d454)
 static const char s_d48_EAST[] = "_EAST";
+DATA(0x0020d444)
 static const char s_d48_SOUTHWEST[] = "_SOUTHWEST";
+DATA(0x0020d43c)
 static const char s_d48_SOUTH[] = "_SOUTH";
+DATA(0x0020d42c)
 static const char s_d48_SOUTHEAST[] = "_SOUTHEAST";
+DATA(0x0020d424)
 static const char s_d48_BREAK[] = "_BREAK";
 
 RVA(0x00048470, 0x131b)

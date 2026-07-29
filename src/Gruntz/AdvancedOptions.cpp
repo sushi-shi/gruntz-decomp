@@ -15,7 +15,6 @@ typedef enum AdvancedOptionsDlgId {
 // source-level static name. Fresh COFF inspection proves MSVC emits it as
 // `_g_registryHelper$S17365`; bind by semantic prefix because only the `$S`
 // ordinal is unstable.
-DATA(0x002295d8)
 DATA_SYMBOL(0x002295d8, 0x21c, _g_registryHelper$S*)
 static Utils::RegistryHelper g_registryHelper;
 static HINSTANCE g_hInstance;

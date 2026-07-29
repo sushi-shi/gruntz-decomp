@@ -12,25 +12,23 @@ DATA(0x002bf840)
 i32 g_spEnumValidated = 0; // 0x6bf840 (owner def; C linkage from NetMgr.h)
 
 // GUIDs for the DirectPlay service-provider interface checks (IsInterfaceX). Given
-// EXTERNAL linkage (`extern const`) so cl emits a STABLE mangled name (internal `const`
-// gets a non-deterministic $S-suffixed local name that shifts every build). clang mangles
-// the const-array storage class as `Q` where cl5 uses `P`, so DATA() would miss; bind by
-// the exact cl name via DATA_SYMBOL (authority-checked against netmgr.obj).
-DATA_SYMBOL(0x00224d58, 0x0, ?g_guid1@@3PBEB)
-DATA_SYMBOL(0x00224d68, 0x0, ?g_guid2@@3PBEB)
-DATA_SYMBOL(0x00224d78, 0x0, ?g_guid3@@3PBEB)
-DATA_SYMBOL(0x00224d88, 0x0, ?g_guid4@@3PBEB)
-DATA_SYMBOL(0x00224d98, 0x0, ?g_guid5@@3PBEB)
+// EXTERNAL linkage (`extern const`, decls in <Net/NetGuids.h>) - the definitions drop
+// the `extern` keyword. Only g_guid1 opens the run; the four below are RVA-contiguous
+// 16-byte siblings (0x224d68/78/88/98).
 // clang-format off
-// decls in <Net/NetGuids.h> (owner-only) - definitions drop the `extern` keyword.
+DATA(0x00224d58)
 const u8 g_guid1[16] = {0x00, 0xc4, 0x5b, 0x68, 0x2c, 0x9d, 0xcf, 0x11,
                                    0xa9, 0xcd, 0x00, 0xaa, 0x00, 0x68, 0x86, 0xe3};
+DATA(0x00224d68)
 const u8 g_guid2[16] = {0xe0, 0x5e, 0xe9, 0x36, 0x77, 0x85, 0xcf, 0x11,
                                    0x96, 0x0c, 0x00, 0x80, 0xc7, 0x53, 0x4e, 0x82};
+DATA(0x00224d78)
 const u8 g_guid3[16] = {0x60, 0xa7, 0xea, 0x44, 0x68, 0xcb, 0xcf, 0x11,
                                    0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e};
+DATA(0x00224d88)
 const u8 g_guid4[16] = {0x60, 0x68, 0x1d, 0x0f, 0xd9, 0x88, 0xcf, 0x11,
                                    0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e};
+DATA(0x00224d98)
 const u8 g_guid5[16] = {0x00, 0xb4, 0x23, 0xd2, 0x7d, 0x0a, 0xd1, 0x11,
                                    0x90, 0xc3, 0x00, 0x60, 0x97, 0x72, 0x58, 0x40};
 

@@ -73,7 +73,9 @@ static const char s__DEATH[] = "_DEATH";
 static const char s__JOY[] = "_JOY";
 static const char s__IDLE[] = "_IDLE";
 static const char s__BATTLECRY[] = "_BATTLECRY";
+DATA(0x0020dd40)
 static const char s__LOSEITEM[] = "_LOSEITEM";
+DATA(0x0020a680)
 static const char s_SingleAnimation[] = "SingleAnimation";
 static const char s_keyB[] = "B";
 static const char s_keyC[] = "C";
@@ -118,14 +120,22 @@ static char s_IdleDelay[] = "IdleDelay";                       // s_IdleDelay_00
 static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius"; // s_PlayerDefenderRadius_0060e1ac
 static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeout_0060df84
 
+DATA(0x0020dd30)
 static const char s_GAME_ATTACK[] = "GAME_ATTACK";
 static char s_Spellz[] = "Spellz";
+DATA(0x0020dcf8)
 static char s_FreezeRadius[] = "FreezeRadius";
+DATA(0x0020dce8)
 static char s_HealthRadius[] = "HealthRadius";
+DATA(0x0020dcd0)
 static char s_RessurectionRadius[] = "RessurectionRadius";
+DATA(0x0020dcc0)
 static char s_ToyzRadius[] = "ToyzRadius";
+DATA(0x0020dcac)
 static char s_TeleportRadius[] = "TeleportRadius";
+DATA(0x0020dc78)
 static char s_RollingBallzSpeed[] = "RollingBallzSpeed";
+DATA(0x0020dc64)
 static char s_RollingBallzTime[] = "RollingBallzTime";
 
 enum SpellzEffect {
@@ -137,22 +147,38 @@ enum SpellzEffect {
     SPELLZ_ROLLINGBALL = 6,  // RollingBallzSpeed/Time (spawns 4 directional ballz)
 };
 
+DATA(0x0020df6c)
 static const char s_CONVERSIONHIT[] = "GAME_CONVERSIONHIT";
+DATA(0x0020df54)
 static const char s_DEATHTOUCHHIT[] = "GAME_DEATHTOUCHHIT";
+DATA(0x0020de1c)
 static const char s_IMPACTMM1[] = "GRUNTZ_NORMALGRUNT_IMPACTMM1";
+DATA(0x0020dd8c)
 static const char s_IMPACTMM2[] = "GRUNTZ_NORMALGRUNT_IMPACTMM2";
+DATA(0x0020df30)
 static const char s_IMPACTMM3[] = "GRUNTZ_NORMALGRUNT_IMPACTMM3";
+DATA(0x0020df0c)
 static const char s_IMPACTMM4[] = "GRUNTZ_NORMALGRUNT_IMPACTMM4";
+DATA(0x0020ddf8)
 static const char s_IMPACTWM1[] = "GRUNTZ_NORMALGRUNT_IMPACTWM1";
+DATA(0x0020ddb0)
 static const char s_IMPACTWM2[] = "GRUNTZ_NORMALGRUNT_IMPACTWM2";
+DATA(0x0020dd68)
 static const char s_IMPACTWM3[] = "GRUNTZ_NORMALGRUNT_IMPACTWM3";
+DATA(0x0020ddd4)
 static const char s_BLOCKBODY1[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY1";
+DATA(0x0020de40)
 static const char s_BLOCKBODY2[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY2";
+DATA(0x0020dee4)
 static const char s_BLOCKMETAL1[] = "GRUNTZ_NORMALGRUNT_BLOCKMETAL1";
+DATA(0x0020deb8)
 static const char s_SPRING2[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS2S1";
+DATA(0x0020de8c)
 static const char s_SPRING1[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS1S1";
+DATA(0x0020de64)
 static const char s_TOOBZ[] = "GRUNTZ_TOOBGRUNT_TOOBZGRUNTUI1B";
 static const char s_typeO[] = "O";
+DATA(0x0020dd4c)
 static const char s_knockKey[] = "KnockBackTimePerTile";
 static const char s_gruntSec[] = "Grunt";
 

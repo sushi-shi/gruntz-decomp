@@ -44,11 +44,9 @@ i32 g_volumeTable[100];
 DATA(0x00253c48)
 i32 g_panTable[8]; // 0x653c48 (0x20 B; up to g_activeGameWnd@0x653c68)
 
-// "rb" open-mode string the loader passes fopen (.data, rva 0x20b668). Bound via
-// DATA_SYMBOL, not DATA: clang mangles the const-char[] extern with a `Q` storage
-// class while cl 5.0 emits `P` (?s_rb@@3PBDB), so a DATA() label's clang mangledName
-// would miss the base obj's undefined external. The DATA_SYMBOL name is the exact
-// cl mangling and is authority-checked against the base obj.
+// "rb" open-mode string the loader passes fopen (.data, rva 0x20b668). clang mangles the
+// const-char[] extern's storage class `Q` where cl 5.0 emits `P` (?s_rb@@3PBDB);
+// labels.py applies that rewrite itself, authority-checked against the base obj.
 DATA(0x0020b668)
 const char s_rb[] = "rb";
 

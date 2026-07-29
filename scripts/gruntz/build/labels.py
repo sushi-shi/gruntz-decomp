@@ -749,22 +749,47 @@ def ms_c_symbol(candidate, obj_syms):
     return hits[0] if len(hits) == 1 else None
 
 
-def msvc5_data_symbol(candidate, obj_syms):
-    """Resolve a known clang-vs-VC5 static-data mangling difference.
+# clang mangles an ARRAY variable's storage class `Q`, VC5 spells the same thing
+# `P`: `?g_guid1@@3QBEB` (clang) == `?g_guid1@@3PBEB` (cl). The digit is the
+# access/storage code (`3` = a file-scope variable, `0` = a private static member,
+# which is the MFC `Class::_messageEntries[]` message-map case).
+CLANG_Q_ARRAY_RE = re.compile(r"@@([0-9])Q")
+# cl decorates every INTERNAL-LINKAGE file-scope variable (`static T x;` and, in
+# C++, a file-scope `const T x;`) `_x$S<n>` with a per-object CodeView ordinal;
+# clang's mangler reports the plain `_x`.
+POOL_ID_RE_TMPL = r"^%s\$S[0-9]+$"
 
-    For the ``const AFX_MSGMAP_ENTRY Class::_messageEntries[]`` emitted by the
-    official MFC message-map macros, clang's AST mangler reports
-    ``@@0QBUAFX_MSGMAP_ENTRY@@B`` while VC5 emits
-    ``@@0PBUAFX_MSGMAP_ENTRY@@B``.  Never accept the spelling speculatively:
-    return it only when that exact VC5 symbol is present in the compiled object.
+
+def msvc5_data_symbol(candidate, obj_syms):
+    """Resolve the known clang-vs-VC5 static-data NAME differences.
+
+    Two mechanical spellings, both AUTHORITY-CHECKED: a rewrite is returned only
+    when that exact symbol is present in the compiled object, so nothing is ever
+    accepted speculatively.
+
+      1. array storage class `Q` (clang) vs `P` (VC5) - `?s_rb@@3QBDB` ->
+         `?s_rb@@3PBDB`, `?g_guid1@@3QBEB` -> `?g_guid1@@3PBEB`, and the MFC
+         message-map `@@0QBUAFX_MSGMAP_ENTRY@@B` -> `@@0PBUAFX_MSGMAP_ENTRY@@B`.
+      2. internal-linkage file-scope variables, which cl decorates with a
+         volatile `$S<n>` CodeView ordinal - `_s_fmtNotFound` ->
+         `_s_fmtNotFound$S19047`. Matched by PREFIX (the ordinal renumbers on any
+         symbol churn in the TU) and accepted only when exactly one symbol
+         matches.
+
+    Without these a `DATA(rva)` on a perfectly ordinary `static const char x[]` /
+    `const double x` silently binds NOTHING: the label pass reports a MISS and the
+    datum stays unnamed, so the delinker never carves it.
     """
     if not candidate or not obj_syms:
         return None
-    suffix = "@@0QBUAFX_MSGMAP_ENTRY@@B"
-    if not candidate.endswith(suffix):
-        return None
-    vc5_candidate = candidate[:-len(suffix)] + "@@0PBUAFX_MSGMAP_ENTRY@@B"
-    return vc5_candidate if vc5_candidate in obj_syms else None
+    for cand in dict.fromkeys([CLANG_Q_ARRAY_RE.sub(r"@@\1P", candidate), candidate]):
+        if cand != candidate and cand in obj_syms:
+            return cand
+        pool = re.compile(POOL_ID_RE_TMPL % re.escape(cand))
+        hits = [s for s in obj_syms if pool.match(s)]
+        if len(hits) == 1:
+            return hits[0]
+    return None
 
 
 def units_from_toml(path):
