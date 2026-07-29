@@ -29,9 +29,9 @@ static inline CString* ActNameLookup(i32 id) {
     } else if (g_typeColl._zvec::GrowTo(id, 0) != 0) {
         slot = g_typeColl.Elem(id);
     } else {
-        void* item = g_projActCache;
+        char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetRetAddr();
-        g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
+        g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
         slot = g_typeColl.Scratch();
     }
     return slot;
@@ -49,7 +49,7 @@ static inline CString* ActNameLookupCallReport(i32 id) {
     } else if (g_typeColl._zvec::GrowTo(id, 0) != 0) {
         slot = g_typeColl.Elem(id);
     } else {
-        g_typeColl.Report(g_projActCache, 0xc);
+        g_typeColl.Report(g_errOutOfMem, 0xc);
         slot = g_typeColl.Scratch();
     }
     return slot;

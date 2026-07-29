@@ -6168,7 +6168,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     } else if (g_typeColl.GrowTo(ci, 0) != 0) {
         sel = g_typeColl.m_base + (ci - g_typeColl.m_lo) * g_typeColl.m_stride;
     } else {
-        g_typeColl.Report(g_projActCache, 0xc);
+        g_typeColl.Report(g_errOutOfMem, 0xc);
         sel = g_typeColl.m_spare;
     }
 

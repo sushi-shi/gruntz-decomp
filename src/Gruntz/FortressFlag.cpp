@@ -3,7 +3,7 @@
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Wap32/zBitVec.h> // GetRetAddr/g_errOutOfMem/g_retAddrBreadcrumb
 #include <Wap32/ZVec.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
@@ -260,9 +260,9 @@ CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
     } else if (GrowTo(id, 0)) { // 0x16da80 = _zvec::GrowTo (inherited)
         r = m_base + (id - m_lo) * m_stride;
     } else {
-        void* item = g_projActCache;
+        char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetRetAddr();
-        m_errSink->Set(this, item, 0xc);
+        m_errSink->Set(this, msg, 0xc);
         r = m_spare;
     }
     // the untyped byte pool named at the container's one seam

@@ -1,6 +1,6 @@
 #include <Gruntz/HaznColl.h> // shared coordinate/activation-registry collection
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Wap32/zBitVec.h> // GetRetAddr/g_errOutOfMem/g_retAddrBreadcrumb
 #include <Io/FileMem.h>    // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Wap32/ZVec.h>
 #include <Bute/ButeTree.h>
@@ -47,9 +47,9 @@ static inline CString* ActNameLookup(i32 id) {
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) {
         return g_typeColl.Elem(id);
     }
-    void* item = g_projActCache;
+    char* msg = g_errOutOfMem;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
+    g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
     return g_typeColl.Scratch();
 }
 
@@ -70,7 +70,7 @@ static inline CString* ActNameLookupCallReport(i32 id) {
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) { // _zvec::GrowTo @0x16da80
         return g_typeColl.Elem(id);
     }
-    g_typeColl.Report(g_projActCache, 0xc);
+    g_typeColl.Report(g_errOutOfMem, 0xc);
     return g_typeColl.Scratch();
 }
 

@@ -1,7 +1,7 @@
 #include <Gruntz/SimpleAnimation.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Image/CImage.h>       // the +0x198 cached frame (ex CGameObjLayer view)
-#include <Wap32/zBitVec.h>      // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Wap32/zBitVec.h>      // GetRetAddr/g_errOutOfMem/g_retAddrBreadcrumb
 #include <Gruntz/TypeKeyColl.h> // g_typeCounter (the shared type-id counter)
 #include <Gruntz/AniAdvanceCursor.h>
 
@@ -48,9 +48,9 @@ static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
     } else if (v->GrowTo(idx, 0)) {
         r = v->Elem(idx);
     } else {
-        void* sentinel = g_projActCache;
+        char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetRetAddr();
-        v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
+        v->m_errSink->Set(static_cast<void*>(v), msg, 0xc);
         r = v->Scratch();
     }
     CString* slot = v->Slots();

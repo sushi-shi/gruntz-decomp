@@ -12,16 +12,31 @@ extern CVariantSlot g_zBitSetErrorSlot;      // 0x6bf408 ("zBitSet: ")
 extern CVariantSlot g_globalErrorSlot;       // 0x6bf430 ("Global Error: ")
 extern CVariantSlot g_dynamicArrayErrorSlot; // 0x6bf468 ("Dynamic Array: ")
 extern i32 g_defaultProjActSize;             // 0x61ad28 (fallback capacity)
-extern void* g_projActCache;                 // 0x6bf464 (?g_projActCache@@3PAXA)
 extern void* g_retAddrBreadcrumb;            // 0x6bf428 (caller-IP breadcrumb)
-extern void* g_projActName;                  // 0x6bf454 (bad-arg diagnostic record cell)
+
+// The eight zErrHandling diagnostic MESSAGE STRINGS (0x6bf448..0x6bf467) - lazily
+// installed by the zErrHandling ctor (0x16d9c0) and handed to CVariantSlot::Set /
+// zErrHandling::Report as the `item` argument, which strncat's them onto the sink's
+// label. They exactly fill the .bss hole between g_globalErrorSlot (0x6bf430 +0x18)
+// and g_dynamicArrayErrorSlot (0x6bf468). Three of them used to be modelled as the
+// unrelated "projectile activation" globals; every site that loads one pairs its code
+// with the string the ctor installs there - 0xc is always the out-of-memory cell,
+// 0x16 always the null-argument / bad-argument cell.
+extern char* g_errDataInvalid; // 0x6bf448 "Data structure is invalid"
+extern char* g_errOverflow;    // 0x6bf44c "Overflow"
+extern char* g_errOutOfRange;  // 0x6bf450 "Out of range"
+extern char* g_errNullArg;     // 0x6bf454 "Null pointer argument"   (ex "g_projActName")
+extern char* g_errExists;      // 0x6bf458 "Target alrready exisits" (retail's typo)
+extern char* g_errBadArg;      // 0x6bf45c "Bad argument value"      (ex "g_projActName2")
+extern char* g_errNoFile;      // 0x6bf460 "No such file, handle or object"
+extern char* g_errOutOfMem;    // 0x6bf464 "Out of memory"           (ex "g_projActCache")
 
 void* GetRetAddr();       // 0x16d990
 void* GetCallerRetAddr(); // 0x16e0f0
 
 class zErrHandling {
 public:
-    zErrHandling(CVariantSlot* errSink); // 0x16d9c0 (defined in src/Gruntz/GameText.cpp)
+    zErrHandling(CVariantSlot* errSink); // 0x16d9c0 (src/Bute/TypeKeyColl.cpp)
     virtual ~zErrHandling();             // [0] the ONLY slot (??_G 0x16da40; real ~ at 0x16da60)
 
     // 0x034960: the OUTLINED overflow/OOM report path (defined in BattlezMapConfig.cpp,
@@ -63,6 +78,4 @@ SIZE(0x10);
 ostream& operator<<(ostream& accum, const zBitVec& bits); // 0x193080
 istream& operator>>(istream& accum, zBitVec& bits);       // 0x193140
 
-extern void* g_retAddrBreadcrumb;
-extern void* g_projActName;
 #endif // WAP32_ZBITVEC_H

@@ -54,9 +54,9 @@ static inline CString* ActNameLookup(i32 id) {
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) {
         return g_typeColl.Elem(id);
     }
-    void* item = g_projActCache;
+    char* msg = g_errOutOfMem;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
+    g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
     return g_typeColl.Scratch();
 }
 

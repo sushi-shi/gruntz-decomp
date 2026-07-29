@@ -3,7 +3,7 @@
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
-#include <Wap32/zBitVec.h> // GetRetAddr + g_projActCache/g_retAddrBreadcrumb (canonical owner)
+#include <Wap32/zBitVec.h> // GetRetAddr + g_errOutOfMem/g_retAddrBreadcrumb (canonical owner)
 
 #include <Mfc.h> // CObject base + <windows.h>
 

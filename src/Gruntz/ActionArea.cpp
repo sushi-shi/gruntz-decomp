@@ -1,6 +1,6 @@
 #include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
 #include <Mfc.h>                      // real MFC CString (the type-name record's +0x00 member)
-#include <Wap32/zBitVec.h>            // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Wap32/zBitVec.h>            // GetRetAddr/g_errOutOfMem/g_retAddrBreadcrumb
 #include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/ActionArea.h>
 #include <Gruntz/WorkerHandler.h> // the shared LOGIC_WORKER_PUMP (CreateActionArea IS one)
@@ -35,9 +35,9 @@ static inline CString* TypeLookup(i32 key) {
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
         return g_typeColl.Elem(key);
     }
-    void* item = g_projActCache;
+    char* msg = g_errOutOfMem;
     g_retAddrBreadcrumb = GetRetAddr();
-    (static_cast<CVariantSlot*>(g_typeColl.m_errSink))->Set(&g_typeColl, item, 0xc);
+    (static_cast<CVariantSlot*>(g_typeColl.m_errSink))->Set(&g_typeColl, msg, 0xc);
     return g_typeColl.Scratch(); // the slow-path element slot
 }
 

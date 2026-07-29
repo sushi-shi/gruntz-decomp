@@ -24,9 +24,9 @@ template<class T> inline T* zDArray<T>::ResolveEntry(i32 id) {
     if (GrowTo(id, 0)) {
         return AsElem(m_base + (id - m_lo) * m_stride);
     }
-    void* item = g_projActCache;
+    char* msg = g_errOutOfMem;
     g_retAddrBreadcrumb = GetRetAddr();
-    m_errSink->Set(this, item, 0xc);
+    m_errSink->Set(this, msg, 0xc);
     return AsElem(m_spare);
 }
 
@@ -41,7 +41,7 @@ template<class T> inline T* zDArray<T>::ResolveEntryCallReport(i32 id) {
     } else if (GrowTo(id, 0)) {
         r = m_base + (id - m_lo) * m_stride;
     } else {
-        Report(g_projActCache, 0xc);
+        Report(g_errOutOfMem, 0xc);
         r = m_spare;
     }
     return AsElem(r);

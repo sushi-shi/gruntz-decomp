@@ -1,5 +1,5 @@
 #include <Gruntz/GruntStartingPoint.h>
-#include <Wap32/zBitVec.h>        // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Wap32/zBitVec.h>        // GetRetAddr/g_errOutOfMem/g_retAddrBreadcrumb
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 
 #include <Bute/ButeMgr.h> // CButeTree
@@ -17,9 +17,6 @@
 VTBL(CGruntStartingPoint, 0x001e8284);
 template<> DATA(0x002446d8)
 CActReg CActRegPool<CGruntStartingPoint>::s_table(2000, 2010);
-
-DATA(0x002bf464)
-void* g_projActCache;
 
 RVA(0x000105d0, 0x47)
 i32 CGruntStartingPoint::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
@@ -65,9 +62,9 @@ static inline CString* TypeLookup(i32 key) {
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
         return g_typeColl.Elem(key);
     }
-    void* item = g_projActCache;
+    char* msg = g_errOutOfMem;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
+    g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
     return g_typeColl.Scratch(); // the slow-path element slot
 }
 

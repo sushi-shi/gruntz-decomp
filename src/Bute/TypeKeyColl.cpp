@@ -20,9 +20,6 @@
 #include <Gruntz/XferArchive.h>    // canonical CXferArchive/CXferField (ProjTypeXfer arg)
 #include <Wap32/ZVec.h>
 
-DATA(0x002bf454)
-void* g_projActName;
-
 DATA(0x002bf428)
 void* g_retAddrBreadcrumb;
 
@@ -59,6 +56,7 @@ DATA(0x002bf650)
 CTypeCollRuntime g_typeColl;
 
 VTBL(zBitVec, 0x001f04c8);
+VTBL(zErrHandling, 0x001f04cc); // ??_7CContainerErr@@6B@ - ONE slot (the dtor)
 VTBL(_zdvec, 0x001f04d0);
 VTBL(_zvec, 0x001f04d4);
 VTBL(CTypeCollRuntime, 0x001f04e4);
@@ -79,9 +77,6 @@ VTBL(CButeNodeEntry, 0x001f04d8); // the entry member's own (base) vtable
 // registries in GruntVoice.cpp), but they are referenced by ~20 TUs, so that is its own pass -
 // not a drive-by. Left undefined and honest until then.
 
-DATA(0x002bf45c)
-void* g_projActName2; // 0x6bf45c
-
 // g_defaultProjActSize (0x21ad28, i32 in zBitVec.h) - the fallback capacity the
 // default/HH zBitVec ctors size to.
 DATA(0x0021ad28)
@@ -101,10 +96,33 @@ i32 g_recCount23;
 DATA(0x002bf408)
 CVariantSlot g_zBitSetErrorSlot("zBitSet: ");
 // Retail's 0x16d9b0 helper constructs this complete 0x18-byte fallback error
-// slot. Its storage belongs to TypeKeyColl's contiguous 0x6bf400 data band;
-// zErrHandling's constructor in GameText.cpp only consumes it.
+// slot. Its storage belongs to TypeKeyColl's contiguous 0x6bf400 data band, and so
+// does zErrHandling's constructor (0x16d9c0, below), which selects it as the default.
 DATA(0x002bf430)
 CVariantSlot g_globalErrorSlot("Global Error: ");
+
+// The eight zErrHandling diagnostic message cells (declared in <Wap32/zBitVec.h>).
+// They exactly fill the .bss hole between g_globalErrorSlot (0x6bf430 + 0x18 =
+// 0x6bf448) and g_dynamicArrayErrorSlot (0x6bf468) - eight dwords, no slack - and the
+// zErrHandling ctor below installs a literal into each. Declared here in ADDRESS
+// order; the ctor assigns them in retail's own (different) store order.
+DATA(0x002bf448)
+char* g_errDataInvalid;
+DATA(0x002bf44c)
+char* g_errOverflow;
+DATA(0x002bf450)
+char* g_errOutOfRange;
+DATA(0x002bf454)
+char* g_errNullArg;
+DATA(0x002bf458)
+char* g_errExists;
+DATA(0x002bf45c)
+char* g_errBadArg;
+DATA(0x002bf460)
+char* g_errNoFile;
+DATA(0x002bf464)
+char* g_errOutOfMem;
+
 // The dynamic-array 0x18-byte error slot, initialized by the retail helper at 0x16de20.
 // Its complete extent is 0x6bf468..0x6bf47f; the former u8 "tag" was only its
 // first byte viewed through an incorrect declaration.
@@ -133,9 +151,9 @@ CVariantSlot g_symTabErrorSlot("zSymTab: ");
 RVA(0x0016d190, 0x101)
 void* zPTree::Find(const char* key) {
     if (key == 0) {
-        void* name = g_projActName;
+        char* msg = g_errNullArg;
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, name, 0x16);
+        m_errSink->Set(this, msg, 0x16);
         return 0;
     }
     CButeTreeNode* root = m_root;
@@ -201,9 +219,9 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
             if (static_cast<u32>(that.m_capacity) > 0x20) {
                 m_words = static_cast<u32*>(malloc((static_cast<u32>(that.m_capacity) >> 5) * 4));
                 if (!m_words) {
-                    void* cache = g_projActCache;
+                    char* msg = g_errOutOfMem;
                     g_retAddrBreadcrumb = GetCallerRetAddr();
-                    m_errSink->Set(this, cache, 0xc);
+                    m_errSink->Set(this, msg, 0xc);
                     m_capacity = 0x20;
                     return *this;
                 }
@@ -236,9 +254,9 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
     const char* start;
     const char* q;
     if (tokens == 0) {
-        void* name = g_projActName;
+        char* msg = g_errNullArg;
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, name, 0x16);
+        m_errSink->Set(this, msg, 0x16);
         return;
     }
     if (minSize == 0) {
@@ -347,24 +365,24 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
     return;
 
 oom: {
-    void* cache = g_projActCache;
+    char* msg = g_errOutOfMem;
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, cache, 0xc);
+    m_errSink->Set(this, msg, 0xc);
     return;
 }
 badchar: {
-    void* name = g_projActName2;
+    char* msg = g_errBadArg;
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, name, 0x16);
+    m_errSink->Set(this, msg, 0x16);
     return;
 }
 }
 
 inline zBitVec::zBitVec() : zErrHandling(&g_zBitSetErrorSlot) {
     if (!SetSize(g_defaultProjActSize)) {
-        void* cache = g_projActCache;
+        char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, cache, 0xc);
+        m_errSink->Set(this, msg, 0xc);
     }
 }
 
@@ -388,9 +406,9 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
         n = static_cast<u32>(idx) + 1;
     }
     if (!SetSize(static_cast<i32>(n))) {
-        void* cache = g_projActCache;
+        char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, cache, 0xc);
+        m_errSink->Set(this, msg, 0xc);
     } else {
         u32* base = (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
         u32* slot = base + (static_cast<u32>(idx) >> 5);
@@ -457,6 +475,51 @@ void CVariantSlot::Set(void* key, void* arg2, i32 arg3) {
         } else if (m_typeTag == 1) {
             g_recs23[idx].m_8 = static_cast<short>(arg3);
         }
+    }
+}
+
+// GetRetAddr (0x16d990, ex src/Bute/GetRetAddr.cpp) - the caller-IP breadcrumb
+// helper. It sat in a one-function TU of its own whose only body landed at
+// 0x16d990, i.e. between CVariantSlot::Set (0x16d850 + 0x11e) and the
+// zErrHandling ctor below - INSIDE this object's contiguous .text block, which no
+// separate retail .obj can be. Its sibling GetCallerRetAddr (0x16e0f0) was already
+// here.
+RVA(0x0016d990, 0x3)
+__declspec(naked) void* GetRetAddr() {
+    __asm {
+        pop  eax
+        push eax
+        ret
+    }
+}
+
+// ===========================================================================
+// zErrHandling::zErrHandling (0x16d9c0, ex GameText.cpp) - register with the
+// supplied error sink (or the constructed global one) and lazily install the
+// eight diagnostic message strings. Its RVA sits INSIDE this object's block
+// (between CVariantSlot::Set @0x16d850 and ~zErrHandling @0x16da60), it writes
+// the eight .bss cells that fill this object's 0x6bf448..0x6bf467 hole, and its
+// destructor was already here - so the ctor is this object's, not GameText's.
+// ===========================================================================
+RVA(0x0016d9c0, 0x75)
+RVA_COMPGEN(0x0016da40, 0x1e, ??_GzErrHandling@@UAEPAXI@Z)
+zErrHandling::zErrHandling(CVariantSlot* errSink)
+    // +0x04 is a member-INIT, which is why retail's implicit vptr stamp lands after it
+    // (the stamp is the init-list/body divider). The arg is the sink to register with, not
+    // a string: ~zErrHandling loads +0x04 into ecx as a __thiscall `this` (see
+    // <Wap32/zBitVec.h>). A null argument selects the constructed global sink.
+    : m_errSink(errSink ? errSink : &g_globalErrorSlot) {
+    // The out-of-memory cell (0x6bf464) doubles as the once-only guard; retail's
+    // store order is exactly this, and is NOT the cells' address order.
+    if (g_errOutOfMem == 0) {
+        g_errOutOfMem = "Out of memory";
+        g_errDataInvalid = "Data structure is invalid";
+        g_errOverflow = "Overflow";
+        g_errNoFile = "No such file, handle or object";
+        g_errOutOfRange = "Out of range";
+        g_errExists = "Target alrready exisits";
+        g_errNullArg = "Null pointer argument";
+        g_errBadArg = "Bad argument value";
     }
 }
 
@@ -552,9 +615,9 @@ void* zPTree::Insert(const char* key, void* value) {
     m_lookupPending = 0;
     m_keyBitLength = newbit;
     if (key == 0 || value == 0) {
-        void* name = g_projActName;
+        char* msg = g_errNullArg;
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, name, 0x16);
+        m_errSink->Set(this, msg, 0x16);
         return 0;
     }
 
@@ -637,9 +700,9 @@ void* zPTree::Insert(const char* key, void* value) {
         }
     }
 
-    void* cache = g_projActCache;
+    char* msg = g_errOutOfMem;
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, cache, 0xc);
+    m_errSink->Set(this, msg, 0xc);
     return 0;
 }
 
@@ -998,9 +1061,9 @@ static inline CString* TypeResolve(i32 key) {
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
         return g_typeColl.Elem(key); // the container's own typed view of the band
     }
-    void* item = g_projActCache;
+    char* msg = g_errOutOfMem;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
+    g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
     return g_typeColl.Scratch();
 }
 

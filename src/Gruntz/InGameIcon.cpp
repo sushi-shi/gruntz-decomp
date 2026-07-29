@@ -1,5 +1,5 @@
 #include <Mfc.h>              // real MFC CMapStringToOb (the icon registry map's Lookup @0x1b8438)
-#include <Wap32/zBitVec.h>    // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Wap32/zBitVec.h>    // GetRetAddr/g_errOutOfMem/g_retAddrBreadcrumb
 #include <Io/FileMem.h>       // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/GruntzMgr.h> // complete CGruntzMgr (g_gameReg real type)
 #include <Gruntz/InGameIcon.h>
@@ -49,9 +49,9 @@ static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
     } else if (v->GrowTo(idx, 0)) {
         r = v->Elem(idx);
     } else {
-        void* sentinel = g_projActCache;
+        char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetRetAddr();
-        v->m_errSink->Set(static_cast<void*>(v), sentinel, 0xc);
+        v->m_errSink->Set(static_cast<void*>(v), msg, 0xc);
         r = v->Scratch();
     }
     CString* slot = v->Slots();
@@ -78,7 +78,7 @@ static inline CString* ResolveNameSlotCallReport(CTypeCollRuntime* v, i32 idx) {
     } else if (v->GrowTo(idx, 0)) {
         r = v->Elem(idx);
     } else {
-        v->Report(g_projActCache, 0xc);
+        v->Report(g_errOutOfMem, 0xc);
         r = v->Scratch();
     }
     CString* slot = v->Slots();

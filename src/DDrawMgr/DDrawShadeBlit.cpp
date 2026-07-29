@@ -5,14 +5,32 @@
 #include <DDrawMgr/DDrawShadeBlit.h>
 
 #include <rva.h>
-#include <string.h>                   // inline rep-movs memcpy intrinsic
-#include <DDrawMgr/ShadeDescrTable.h> // ex Globals.h
+#include <string.h> // inline rep-movs memcpy intrinsic
 
+// The shade-descriptor table is ONE contiguous .bss run of this object: the 640-px
+// scratch line followed by the seven mode descriptors. The ex ShadeDescrTable.cpp
+// held six of the seven while g_blendDescr (0x6bf218) sat here, i.e. the two files
+// INTERLEAVED at dword granularity (0x6bf214 there, 0x6bf218 here, 0x6bf21c there) -
+// which one retail .obj's contribution cannot do. Their .text is likewise one run
+// (this file 0x149780..0x14dcc7, then 0x14dcf0/0x14dd90), and that file already
+// defined a CDDrawShadeBlit method. Folded 2026-07-29.
 DATA(0x002bed08)
 u8 g_scratch[1280]; // 0x6bed08 (0x500 B, up to g_shadeDescr208@0x6bf208; a 640-px 16bpp line)
 
+DATA(0x002bf208)
+CShadeTable* g_shadeDescr208 = 0;
+DATA(0x002bf20c)
+CShadeTable* g_shadeDescr20c = 0;
+DATA(0x002bf210)
+CShadeTable* g_shadeDescr210 = 0;
+DATA(0x002bf214)
+CShadeTable* g_shadeDescr214 = 0;
 DATA(0x002bf218)
 CShadeTable* g_blendDescr;
+DATA(0x002bf21c)
+CShadeTable* g_shadeDescr21c = 0;
+DATA(0x002bf220)
+CShadeTable* g_shadeDescr220 = 0;
 
 // The scratch line is read back as 8bpp bytes or RGB565 words depending on the
 // blit path - the one word-view of the buffer lives here.
@@ -1713,5 +1731,75 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
             }
             break;
         }
+    }
+}
+
+// @early-stop
+// Code bytes byte-exact (all 8 global stores + reloc-named globals pair); residual is
+// the switch-jumptable-separate-comdat wall — MSVC emits the jump table as a separate
+// $L symbol, the delinker inlines it at fn+0x6c, so only the jmpl table reloc differs.
+RVA(0x0014dcf0, 0x69)
+void SetShadeDescr(CShadeTable* v, int mode) {
+    switch (mode) {
+        case 2:
+            g_shadeDescr208 = v;
+            break;
+        case 3:
+            g_shadeDescr20c = v;
+            break;
+        case 4:
+            g_shadeDescr210 = v;
+            break;
+        case 6:
+            g_shadeDescr214 = v;
+            break;
+        case 7:
+            g_shadeDescr21c = v;
+            break;
+        case 10:
+            g_shadeDescr220 = v;
+            break;
+        case 11:
+            g_shadeDescr220 = v;
+            break;
+        case 9:
+            g_blendDescr = v;
+            break;
+    }
+}
+
+// @early-stop
+// Code bytes byte-exact (verified llvm-objdump base vs target: every byte pairs except
+// the single jmpl table displacement); residual is the switch-jumptable-separate-comdat
+// wall (MSVC $L table symbol vs delinker inline-at-fn+0x74).
+RVA(0x0014dd90, 0x74)
+void CDDrawShadeBlit::Select(i32 mode, CShadeTable* descr) {
+    m_drawType = mode;
+    if (descr == 0) {
+        switch (mode) {
+            case 2:
+                m_palDescr = g_shadeDescr208;
+                break;
+            case 3:
+                m_palDescr = g_shadeDescr20c;
+                break;
+            case 4:
+                m_palDescr = g_shadeDescr210;
+                break;
+            case 6:
+                m_palDescr = g_shadeDescr214;
+                break;
+            case 7:
+                m_palDescr = g_shadeDescr21c;
+                break;
+            case 10:
+                m_palDescr = g_shadeDescr220;
+                break;
+            case 11:
+                m_palDescr = g_shadeDescr220;
+                break;
+        }
+    } else {
+        m_palDescr = descr;
     }
 }

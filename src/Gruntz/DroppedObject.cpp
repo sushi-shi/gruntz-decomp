@@ -3,7 +3,7 @@
 #include <Rez/FrameClock.h>           // frame-clock band (g_frameDelta/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h>     // g_gameReg at its REAL type (CGruntzMgr)
 #include <Gruntz/GruntzMgr.h>
-#include <Wap32/zBitVec.h>        // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Wap32/zBitVec.h>        // GetRetAddr/g_errOutOfMem/g_retAddrBreadcrumb
 #include <Io/FileMem.h>           // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/DroppedObject.h> // CDroppedObject : CUserLogic (ctor 0xc68b0)
 #include <Gruntz/DroppedObjectShadow.h> // CDroppedObjectShadow : CUserLogic (ctor 0xc7490)
@@ -59,9 +59,9 @@ static inline CString* ActNameLookup(i32 id) {
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) {
         return g_typeColl.Elem(id);
     }
-    void* item = g_projActCache;
+    char* msg = g_errOutOfMem;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
+    g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
     return g_typeColl.Scratch();
 }
 
@@ -82,7 +82,7 @@ static inline CString* ActNameLookupCallReport(i32 id) {
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) {
         return g_typeColl.Elem(id);
     }
-    g_typeColl.Report(g_projActCache, 0xc);
+    g_typeColl.Report(g_errOutOfMem, 0xc);
     return g_typeColl.Scratch();
 }
 
