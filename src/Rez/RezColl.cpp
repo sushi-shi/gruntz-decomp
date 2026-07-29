@@ -75,6 +75,13 @@ CHashElement* CHashElement::Next() {
 // all produce the same byte - the last of those additionally recolours m_buckets into
 // ecx, so it is strictly worse). The pointer comes from a MEMBER, which is exactly the
 // sub-family that doc records as still open.
+// 2026-07-29, the real mechanism: this byte is decided by TU-CUMULATIVE COMPILER STATE,
+// not by the victim's own source. Two controlled A/B compiles prove it - dropping /GX
+// flips Insert's SIB (retail's form) with a byte-identical instruction stream otherwise,
+// and MOVING Insert to the top of the file flips it too. Deleting the fabricated
+// Gap_1849d0 stub (one preceding COMDAT) flipped Lookup and nothing else. /GX is not
+// available as a lever (Construct's EH frame needs it) and the RVA order is fixed, so
+// there is no legal knob left for these four - but stop looking for a local spelling.
 RVA(0x00184900, 0x43)
 CHashElement* CHashElement::Prev() {
     CHashElement* e = CHashBase::FromLink(m_link.m_prev);
@@ -132,24 +139,15 @@ CHashBase* CHashBase::Construct(i32 count) {
     return this;
 }
 
-// @early-stop
 // 0x1849d0 = CHashSlot's `vector deleting destructor' (??_ECHashSlot@@QAEPAXI@Z): the
 // COMPILER-GENERATED array-delete helper (flags&2 -> ehvec over the array with the no-op
 // element dtor 0x584a30 + RezFree the cookie; else run the element dtor + flags&1 free).
-// It is a ZERO-REF orphan COMDAT (full-binary VA byte-scan: no caller anywhere; CHashBase::
-// RemoveAll @0x184a40 inlines its OWN ehvec rather than call this). MSVC only emits ??_E
-// from a live `delete[] CHashSlot` site, which this TU does not have (RemoveAll uses a
-// direct Tm_DestroyArray, matching retail), so there is no source construct to regenerate
-// it at this RVA without spuriously reshaping RemoveAll. Homed as a stub (not a hand-written
-// method masquerading as the compiler thunk).
-// @dead-code
-// zero-ref (gruntz sema xref --tree): a CHashBase ??_E vector-dtor COMDAT retail
-// emitted but never referenced (RemoveAll inlines its own ehvec), so no live delete[]
-// site regenerates it - a dead compiler artifact.
-RVA(0x001849d0, 0x50)
-i32 Gap_1849d0(void) {
-    return 0;
-}
+// A ZERO-REF orphan COMDAT (RemoveAll @0x184a40 inlines its OWN ehvec rather than call it)
+// - but cl emits it ANYWAY from the `delete[] m_buckets` in RemoveAll, byte-for-byte, so
+// there is nothing to hand-write. The old `Gap_1849d0` stub was a fabricated duplicate of
+// a COMDAT the compiler already produces; RVA_COMPGEN names the real one at this RVA (same
+// device as ??_EBucketHead in WwdGrid.cpp).
+RVA_COMPGEN(0x001849d0, 0x50, ??_ECHashSlot@@QAEPAXI@Z)
 
 RVA(0x00184a20, 0xb)
 CHashSlot::CHashSlot() {
@@ -224,12 +222,12 @@ CHashElement* CHashBase::Last() {
 }
 
 // Lookup (0x184b40): chain head for bucket `idx`, biased back to the element, or 0.
-// (ex-wall note: this function is now EXACT - the text below is HISTORY, not a
-// current claim. Retired by the stale-marker sweep.)
-// SIB base/index coin-flip (99%; was 100% in the pre-merge Hash.cpp TU with identical
-// source): the pocket-TU merge flipped `mov eax,[eax+ecx+0x8]` to the ecx-base form +
-// the FromLink -4 add to the imm8 encoding. Same non-steerable family as Insert/Last
-// (local-slot spelling doesn't flip it back).
+// (ex-wall, RETIRED 2026-07-29 - EXACT. The old note called the SIB base/index byte a
+// "non-steerable" coin-flip that "local-slot spelling doesn't flip back". It is not a
+// coin-flip: it is TU-CUMULATIVE STATE. Deleting the fabricated `Gap_1849d0` stub above
+// - which duplicated the ??_E COMDAT cl already emits - flipped this one function back
+// to retail's `[eax+ecx+0x8]` with no change to its own source at all. The remaining
+// four in the family (Prev/Insert/Remove/Last) did not move.)
 RVA(0x00184b40, 0x1d)
 CHashElement* CHashBase::Lookup(u32 idx) {
     return FromLink(m_buckets[idx].m_chain.m_head);

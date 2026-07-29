@@ -251,9 +251,13 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
     if (!t->Set(steps << 8, 0)) {
         return 0;
     }
-    i32 idx = m_arr.m_nSize;
-    m_arr.SetSizeGrow(idx + 1, -1);
-    m_arr.m_pData[idx] = t;
+    // The array sub-object's address is materialised ONCE (retail `add esi,4`) and
+    // reused for both the grow call and the slot store - hence the reference, not
+    // `m_arr.` at each site (that spells `lea ecx,[this+4]` + `[this+8]`, -2 bytes).
+    CShadeTableArray& arr = m_arr;
+    i32 idx = arr.m_nSize;
+    arr.SetSizeGrow(idx + 1, -1);
+    arr.m_pData[idx] = t;
     u8* data = t->m_data;
     i32 base = baseArg & 0xff;
     double dGamma = static_cast<double>(gamma);
@@ -303,9 +307,13 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
     if (!t->Set(steps << 8, 0)) {
         return 0;
     }
-    i32 idx = m_arr.m_nSize;
-    m_arr.SetSizeGrow(idx + 1, -1);
-    m_arr.m_pData[idx] = t;
+    // The array sub-object's address is materialised ONCE (retail `add esi,4`) and
+    // reused for both the grow call and the slot store - hence the reference, not
+    // `m_arr.` at each site (that spells `lea ecx,[this+4]` + `[this+8]`, -2 bytes).
+    CShadeTableArray& arr = m_arr;
+    i32 idx = arr.m_nSize;
+    arr.SetSizeGrow(idx + 1, -1);
+    arr.m_pData[idx] = t;
     u8* data = t->m_data;
     i32 cr = packedColor & 0xff;
     i32 cg = (packedColor >> 8) & 0xff;
@@ -351,9 +359,13 @@ CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol)
     if (!t->Set(0x10000, 0)) {
         return 0;
     }
-    i32 idx = m_arr.m_nSize;
-    m_arr.SetSizeGrow(idx + 1, -1);
-    m_arr.m_pData[idx] = t;
+    // The array sub-object's address is materialised ONCE (retail `add esi,4`) and
+    // reused for both the grow call and the slot store - hence the reference, not
+    // `m_arr.` at each site (that spells `lea ecx,[this+4]` + `[this+8]`, -2 bytes).
+    CShadeTableArray& arr = m_arr;
+    i32 idx = arr.m_nSize;
+    arr.SetSizeGrow(idx + 1, -1);
+    arr.m_pData[idx] = t;
     u8* data = t->m_data;
     i32 div = (wRow + wCol) / 100;
     for (i32 i = 0; i < 0x100; i++) {
@@ -375,10 +387,6 @@ CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol)
 // then write the inverse permutation into bytes [0x100..0x1ff]. The active
 // palette is published to g_pal for the comparator. EH frame.
 // ===========================================================================
-// @early-stop
-// EH-frame wall (rezalloc-placement-new-no-eh-frame.md): the new+throwing-ctor
-// /GX frame is absent on MSVC5 (element ctor 0x150180 external); body + the two
-// remap loops byte-exact otherwise.
 RVA(0x0014ec00, 0x10f)
 CShadeTable* CShadeTableCache::LumaSortTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
@@ -388,9 +396,13 @@ CShadeTable* CShadeTableCache::LumaSortTable(PALETTEENTRY* pal) {
     if (!t->Set(0x200, 0)) {
         return 0;
     }
-    i32 idx = m_arr.m_nSize;
-    m_arr.SetSizeGrow(idx + 1, -1);
-    m_arr.m_pData[idx] = t;
+    // The array sub-object's address is materialised ONCE (retail `add esi,4`) and
+    // reused for both the grow call and the slot store - hence the reference, not
+    // `m_arr.` at each site (that spells `lea ecx,[this+4]` + `[this+8]`, -2 bytes).
+    CShadeTableArray& arr = m_arr;
+    i32 idx = arr.m_nSize;
+    arr.SetSizeGrow(idx + 1, -1);
+    arr.m_pData[idx] = t;
     u8* data = t->m_data;
     g_pal = pal;
     for (i32 i = 0; i < 0x100; i++) {
@@ -447,8 +459,6 @@ i32 __cdecl CShadeTableCache::CompareLuma(const void* a, const void* b) {
 // 0x14ede0 - HueSortTable: identical to LumaSortTable but the qsort comparator
 // is CompareHue (0x14fa60), so the palette is remapped in hue order. EH frame.
 // ===========================================================================
-// @early-stop
-// EH-frame wall (rezalloc-placement-new-no-eh-frame.md): see LumaSortTable.
 RVA(0x0014ede0, 0x10f)
 CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
@@ -458,9 +468,13 @@ CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
     if (!t->Set(0x200, 0)) {
         return 0;
     }
-    i32 idx = m_arr.m_nSize;
-    m_arr.SetSizeGrow(idx + 1, -1);
-    m_arr.m_pData[idx] = t;
+    // The array sub-object's address is materialised ONCE (retail `add esi,4`) and
+    // reused for both the grow call and the slot store - hence the reference, not
+    // `m_arr.` at each site (that spells `lea ecx,[this+4]` + `[this+8]`, -2 bytes).
+    CShadeTableArray& arr = m_arr;
+    i32 idx = arr.m_nSize;
+    arr.SetSizeGrow(idx + 1, -1);
+    arr.m_pData[idx] = t;
     u8* data = t->m_data;
     g_pal = pal;
     for (i32 i = 0; i < 0x100; i++) {
@@ -498,9 +512,13 @@ CShadeTable* CShadeTableCache::GreyTable() {
         ::operator delete(t);
         return 0;
     }
-    i32 idx = m_arr.m_nSize;
-    m_arr.SetSizeGrow(idx + 1, -1);
-    m_arr.m_pData[idx] = t;
+    // The array sub-object's address is materialised ONCE (retail `add esi,4`) and
+    // reused for both the grow call and the slot store - hence the reference, not
+    // `m_arr.` at each site (that spells `lea ecx,[this+4]` + `[this+8]`, -2 bytes).
+    CShadeTableArray& arr = m_arr;
+    i32 idx = arr.m_nSize;
+    arr.SetSizeGrow(idx + 1, -1);
+    arr.m_pData[idx] = t;
     u16* out = Pix16(t->m_data);
     if (g_rDown == 3 && g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
         for (i32 v = 0; v < 0x10000; v++) {
@@ -541,9 +559,13 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
         ::operator delete(t);
         return 0;
     }
-    i32 idx = m_arr.m_nSize;
-    m_arr.SetSizeGrow(idx + 1, -1);
-    m_arr.m_pData[idx] = t;
+    // The array sub-object's address is materialised ONCE (retail `add esi,4`) and
+    // reused for both the grow call and the slot store - hence the reference, not
+    // `m_arr.` at each site (that spells `lea ecx,[this+4]` + `[this+8]`, -2 bytes).
+    CShadeTableArray& arr = m_arr;
+    i32 idx = arr.m_nSize;
+    arr.SetSizeGrow(idx + 1, -1);
+    arr.m_pData[idx] = t;
     u16* out = Pix16(t->m_data);
     for (i32 v = 0; v < 0x100; v += 0x10) {
         for (i32 r = 8; r < 0x100; r += 0x10) {
@@ -597,9 +619,13 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
         ::operator delete(t);
         return 0;
     }
-    i32 idx = m_arr.m_nSize;
-    m_arr.SetSizeGrow(idx + 1, -1);
-    m_arr.m_pData[idx] = t;
+    // The array sub-object's address is materialised ONCE (retail `add esi,4`) and
+    // reused for both the grow call and the slot store - hence the reference, not
+    // `m_arr.` at each site (that spells `lea ecx,[this+4]` + `[this+8]`, -2 bytes).
+    CShadeTableArray& arr = m_arr;
+    i32 idx = arr.m_nSize;
+    arr.SetSizeGrow(idx + 1, -1);
+    arr.m_pData[idx] = t;
     u16* out = Pix16(t->m_data);
     i32 cr = color & 0xff;
     i32 cg = (color >> 8) & 0xff;
@@ -635,10 +661,15 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
 // with the RGB565 conversion of a 256-entry PALETTEENTRY palette (arg). EH frame.
 // ===========================================================================
 // @early-stop
-// mirror-register wall (92.6%): the /GX frame, the array grow, the RGB565 loop and
-// the epilogues are byte-faithful. Retail keeps `this` in esi and the grow index in
-// edi; cl mirrors the pair (edi/esi) and sinks `mov edi,0x100` two slots. Pure
-// regalloc coloring - docs/patterns/zero-register-pinning.md.
+// 99.977% - ONE instruction pair. The ex-"mirror-register wall (92.6%)" note is dead:
+// the esi/edi mirror was the `m_arr.` spelling (see the CShadeTableArray& below), not
+// register colouring. What is left is the ORDER of the two channel byte loads: retail
+// emits `mov dl,[eax-0x2]` (red) then `mov bl,[eax-0x1]` (green), cl the reverse - each
+// still paired with its OWN g_rDown/g_gDown (verified against the base obj's relocs, so
+// the code is semantically identical). /O2 canonicalises the `|` chain, so no operand
+// order, associativity or per-channel temp reaches it (7 spellings measured). It IS
+// state-dependent: without /GX cl emits retail's order - but this TU needs /GX for the
+// LumaSortTable/HueSortTable EH frames.
 RVA(0x0014f5b0, 0x10a)
 CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
@@ -650,9 +681,13 @@ CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
         ::operator delete(t);
         return 0;
     }
-    i32 idx = m_arr.m_nSize;
-    m_arr.SetSizeGrow(idx + 1, -1);
-    m_arr.m_pData[idx] = t;
+    // The array sub-object's address is materialised ONCE (retail `add esi,4`) and
+    // reused for both the grow call and the slot store - hence the reference, not
+    // `m_arr.` at each site (that spells `lea ecx,[this+4]` + `[this+8]`, -2 bytes).
+    CShadeTableArray& arr = m_arr;
+    i32 idx = arr.m_nSize;
+    arr.SetSizeGrow(idx + 1, -1);
+    arr.m_pData[idx] = t;
     u16* out = Pix16(t->m_data);
     PALETTEENTRY* p = pal;
     for (i32 i = 0x100; i != 0; i--) {
@@ -853,35 +888,31 @@ CShadeTable* CShadeTableCache::FindByKey(i32 key) {
     return 0;
 }
 
+// The plain member-subscript `for` is load-bearing: hoisting the walk into a local
+// `CShadeTable** w = m_arr.m_pData` before the loop makes cl emit the m_pData load
+// ABOVE the `test/jle` count guard and rotate the search test to the loop bottom
+// (`jge` exit + a duplicated `cmp`). Subscripting the member lets /O2 strength-reduce
+// into retail's `mov eax,edi` walker while the preheader load stays after the guard.
 RVA(0x0014fb80, 0x68)
 void CShadeTableCache::FindRemove(CShadeTable* key) {
     i32 n = m_arr.m_nSize;
-    i32 i = 0;
-    if (n > 0) {
-        CShadeTable** w = m_arr.m_pData;
-        for (;;) {
-            if (*w == key) {
-                break;
+    for (i32 i = 0; i < n; i++) {
+        if (m_arr.m_pData[i] == key) {
+            m_arr.m_pData[i]->Free();
+            CShadeTable* t = m_arr.m_pData[i];
+            if (t) {
+                t->Reset();
+                ::operator delete(t);
             }
-            i++;
-            w++;
-            if (i >= n) {
-                return;
+            i32 cnt = m_arr.m_nSize - i - 1;
+            CShadeTable** dst = &m_arr.m_pData[i];
+            if (cnt) {
+                CShadeTable** src = &m_arr.m_pData[i + 1];
+                memcpy(dst, src, cnt * sizeof(CShadeTable*));
             }
+            m_arr.m_nSize--;
+            return;
         }
-        m_arr.m_pData[i]->Free();
-        CShadeTable* t = m_arr.m_pData[i];
-        if (t) {
-            t->Reset();
-            ::operator delete(t);
-        }
-        i32 cnt = m_arr.m_nSize - i - 1;
-        CShadeTable** dst = &m_arr.m_pData[i];
-        if (cnt) {
-            CShadeTable** src = &m_arr.m_pData[i + 1];
-            memcpy(dst, src, cnt * sizeof(CShadeTable*));
-        }
-        m_arr.m_nSize--;
     }
 }
 

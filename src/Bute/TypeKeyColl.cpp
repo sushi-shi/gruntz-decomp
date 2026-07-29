@@ -869,7 +869,10 @@ RVA(0x0016e1a0, 0x23)
 CVariantSlot::CVariantSlot(char* label) {
     m_typeTag = 2;
     m_10 = 2;
-    // +0x00 (m_callback) is intentionally left unset here (the register path seeds it).
+    // NOT "intentionally left unset" (the old comment): retail's ctor stores the default
+    // handler outright - `mov DWORD PTR [eax],0x56e220`, i.e. &TmErrorHandler, the one
+    // instruction this body was missing.
+    m_callback = TmErrorHandler;
     m_valueWord = 0;
     m_label = label;
 }
@@ -909,19 +912,13 @@ i32 CVariantSlot::Find(i32 key) {
 // + the three Win32 imports (MessageBeep/MessageBoxA/FatalAppExitA) reloc-mask.
 // (re-homed from src/Stub/GapFunctions.cpp.)
 // ===========================================================================
-// @early-stop
-// 98.2%, frame-slot-displacement residue: every instruction MATCHES (the 0x60 frame,
-// the decimal itoa via idiv %10 + magic /10, the bounded prefix copy, the do-while
-// 4-digit hex loop with the ebp old-index save, and the three Win32 fatal-report calls
-// are all byte-faithful). The only difference is where MSVC5 seats the shared decimal/hex
-// scratch + the message buffer within the (matched-size) frame - retail puts them at
-// [esp+0x15]/[esp+0x18], this source at [esp+0x1b]/[esp+0x1c], shifting two lea/mov
-// displacement bytes. A pure stack-slot-assignment coin-flip (buffer size / decl-order
-// variations do not move it; the permuter finds no fix). Deferred to the final sweep.
+// (ex-wall, RETIRED 2026-07-29 - now EXACT. The old note read the [esp+0x15]-vs-
+// [esp+0x1b] shift as "a pure stack-slot-assignment coin-flip" that "buffer size ...
+// variations do not move". It was the buffer sizes: tmp was 16 bytes, retail's is 10.)
 RVA(0x0016e220, 0x139)
 void TmErrorHandler(char* prefix, i32 errNum) {
-    char tmp[16];
-    char* np = &tmp[15];
+    char tmp[10];
+    char* np = &tmp[9];
     *np = 0;
     if (errNum != 0) {
         do {
@@ -930,7 +927,12 @@ void TmErrorHandler(char* prefix, i32 errNum) {
         } while (errNum != 0);
     }
 
-    char msg[0x50];
+    // FRAME-PROVEN sizes, not guesses: retail's `sub esp,0x60` with `&tmp[last]` at
+    // esp1+0x09 and `&msg[0x40]` at esp1+0x4c pins tmp to 10 bytes at esp1+0x00 and msg
+    // to esp1+0x0c..0x5f. (They used to be tmp[16]/msg[0x50], which shifted EVERY frame
+    // reference by 6 and shrank the frame to 0x5c.) 0x51..0x54 all round to the same
+    // 0x60 frame, so 0x54 - the exact extent the region provides - is the reading here.
+    char msg[0x54];
     char* q = msg;
     while (0 != *prefix) {
         if (q >= &msg[0x40]) {
@@ -955,13 +957,17 @@ void TmErrorHandler(char* prefix, i32 errNum) {
     AddrWord bc;
     bc.m_addr = g_retAddrBreadcrumb;
     u32 v = 0xffff & bc.m_uword;
-    char* hp = &tmp[15];
+    char* hp = &tmp[9];
     *hp = 0;
     i32 i;
     i = 7;
     do {
+        // the cursor step is its own statement: retail sinks `dec edx` between the `mov
+        // ecx,esi` (read v) and the `and ecx,0xf` (the nibble), which the `*--hp = ...`
+        // combined form schedules after the whole digit computation instead.
+        --hp;
         i32 d = v & 0xf;
-        *--hp = static_cast<char>((d > 9 ? d + 0x37 : d + 0x30));
+        *hp = static_cast<char>((d > 9 ? d + 0x37 : d + 0x30));
         v >>= 4;
         if (4 == i) {
             break;
