@@ -3,6 +3,7 @@
 #include <Gruntz/ParseSource.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <rva.h>
+#include <Pix16.h> // the byte-cursor unions (RecordBytes / Pix16Ptr)
 #include <DDrawMgr/DDrawPtrCollections.h>
 
 #include <Gruntz/ResolveNode.h> // canonical CResolveNode (Init @0x1647e0, ctor @0x1549d0)
@@ -243,12 +244,14 @@ i32 CImage::Resolve(CParseSource* src, i32 arg) {
     }
     // The 3rd argument is the blob LENGTH (m_length) - the independent corroboration
     // that LoadDispatch's slot-10 `size` parameter is a byte count, not a pointer.
+    RecordBytes blob;
+    blob.m_chars = resolved;
     i32 result = this->LoadDispatch(
         // BeginParse is a PROVEN-heterogeneous slot - it yields a PID/BMP blob here, a
         // WWD block in CGameLevel::LoadFromSource and a raw size in DDrawSubMgrLeafScan -
         // so its return stays the generic handle <Gruntz/ParseSource.h> declares and each
         // consumer names the concrete record at its own seam. This is that one seam.
-        reinterpret_cast<PidHeader*>(resolved),
+        static_cast<PidHeader*>(blob.m_rec),
         static_cast<u32>(index),
         src->m_length,
         arg

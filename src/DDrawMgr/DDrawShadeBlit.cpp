@@ -5,6 +5,7 @@
 #include <DDrawMgr/DDrawShadeBlit.h>
 
 #include <rva.h>
+#include <Pix16.h>                    // the byte-cursor / 16bpp-value pointer pair
 #include <string.h>                   // inline rep-movs memcpy intrinsic
 #include <DDrawMgr/ShadeDescrTable.h> // ex Globals.h
 
@@ -20,15 +21,17 @@ CShadeTable* g_blendDescr;
 // while the pixels are 16bpp - that pun is forced by the API, so it lives in
 // these two accessors instead of at every store/load in the blit loops.
 static inline u16* Pix16(void* p) {
-    return reinterpret_cast<u16*>(p);
+    return static_cast<u16*>(p);
 }
 static inline void Store16(u8* p, u16 v) {
-    // byte-forced (one seam): byte cursor, 16bpp pixel
-    *reinterpret_cast<u16*>(p) = v;
+    Pix16Ptr c;
+    c.m_bytes = p;
+    *c.m_words = v;
 }
 static inline u16 Load16(const u8* p) {
-    // byte-forced (one seam): byte cursor, 16bpp pixel
-    return *reinterpret_cast<const u16*>(p);
+    Pix16CPtr c;
+    c.m_bytes = p;
+    return *c.m_words;
 }
 
 static inline u16* Scratch16() {

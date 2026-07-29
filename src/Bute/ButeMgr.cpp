@@ -49,6 +49,7 @@
 #include <EmptyString.h>      // g_emptyString
 #include <Bute/ButeTextBuf.h> // CButeTextBuf: the value-text accumulator host (ostream@+0xc)
 #include <rva.h>
+#include <AddrWord.h> // the object-address-in-a-char*-slot return
 
 #include <fstream.h> // the REAL CRT iostream/ios (the ??_Diostream emission carrier)
 #include <float.h>   // FLT_MIN / DBL_MIN - the GetFloat/GetDouble miss sentinels
@@ -1194,8 +1195,11 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
     } else {
         ReportError(s_fmtInvalidTag, tag);
     }
-    // byte-forced: retail ends here `mov eax,0x6bf698` == OFFSET s_empty, no load
-    return reinterpret_cast<char*>(&s_empty);
+    // retail ends here `mov eax,0x6bf698` == OFFSET s_empty with NO load, i.e. it
+    // returns the object's own address through the char* slot (<AddrWord.h>)
+    AddrWord empty;
+    empty.m_addr = &s_empty;
+    return static_cast<char*>(empty.m_addr);
 }
 
 RVA(0x00173720, 0x4e)
@@ -1641,13 +1645,10 @@ bool ButeMgr::ParseAttributeFile() {
             double x, y, z;
             sscanf(m_token, s_fmtRect3, &x, &y, &z);
             if (m_writeMode) {
-                // CButeRef7's six DWORDs are three doubles read whole - the same
-                // faithful {lo,hi}-pair spelling as the clock pairs; declaring
-                // doubles would change the ctor's store shape.
                 CButeRef7* r = GetRef7(m_tagName, m_str104);
-                double dx = *reinterpret_cast<double*>(&r->a);
-                double dy = *reinterpret_cast<double*>(&r->c); // faithful {lo,hi} pair
-                double dz = *reinterpret_cast<double*>(&r->e);
+                double dx = r->x;
+                double dy = r->y;
+                double dz = r->z;
                 (m_pText->accum << s_strLt) << static_cast<double>(dx);
                 (m_pText->accum << s_strComma) << static_cast<double>(dy);
                 (m_pText->accum << s_strComma) << static_cast<double>(dz);
@@ -1675,8 +1676,8 @@ bool ButeMgr::ParseAttributeFile() {
             sscanf(m_token, s_fmtRect2, &x, &y);
             if (m_writeMode) {
                 CButeRef8* r = GetRef8(m_tagName, m_str104);
-                double dx = *reinterpret_cast<double*>(&r->a);
-                double dy = *reinterpret_cast<double*>(&r->c); // faithful {lo,hi} pair
+                double dx = r->x;
+                double dy = r->y;
                 (m_pText->accum << s_strLBrack) << static_cast<double>(dx);
                 (m_pText->accum << s_strComma) << static_cast<double>(dy);
                 m_pText->accum << s_strRBrack;

@@ -62,6 +62,7 @@
 #include <Io/FileStream.h> // CFile (the engine file reader IsBattlezMapFile opens)
 #include <dplobby.h>       // real DirectPlay lobby SDK: IDirectPlayLobby + DirectPlayLobbyCreate.
 #include <rva.h>
+#include <Utils/MapTyped.h>       // typed MFC map lookups (the one forced void*& seam)
 #include <stdio.h>                // engine sprintf (reloc-masked) for the toggle-message formatter
 #include <string.h>               // engine strstr (reloc-masked) for the Battlez header probe
 #include <Utils/RegistryHelper.h> // Utils::RegistryHelper (the settings/registry writer)
@@ -151,11 +152,8 @@ i32 g_localVersion = 1; // extern "C" linkage inherited from <Net/NetMgr.h>
 DATA(0x0020fa74)
 i32 g_remoteVersion = 1; // the build's own protocol word; never written at runtime
 DATA(0x0020fab8)
-GUID g_dplayAppGuid = {
-    0xf41cf640,
-    0x91b2,
-    0x11d1,
-    {0x8d, 0xfc, 0x00, 0x60, 0x97, 0x9f, 0xa8, 0x1e}
+NetGuid g_dplayAppGuid = {
+    {0xf41cf640, 0x91b2, 0x11d1, {0x8d, 0xfc, 0x00, 0x60, 0x97, 0x9f, 0xa8, 0x1e}}
 }; // the DirectPlay app GUID CMulti::Open/StartTitle bind the session with
 DATA(0x0020fac8)
 i32 g_pendingFrame = 1;
@@ -3190,8 +3188,7 @@ void CGruntzMgr::AccrueScoreTime() {
         // m_134 == 3 is the "won" arm - the live state IS the PLAY state, so the
         // +0x3f4 frame-marker CTimer is reached by a plain derived downcast.
         CTimer* clk = (static_cast<CPlay*>(st))->m_frameMarker;
-        i64 d = static_cast<i64>(g_frameTime)
-                - *reinterpret_cast<i64*>(&clk->m_38); // the +0x38:+0x3c start stamp
+        i64 d = static_cast<i64>(g_frameTime) - clk->m_startStamp.m_v;
         g_gameReg->m_scoreHud->m_score += (d < 0) ? 0 : static_cast<i32>(d);
         TransitionState(0x12, 1, 0, 0);
         return;
@@ -3233,12 +3230,10 @@ void CGruntzMgr::DelayedQuit() {
     }
     m_a4 = 1;
     LeafCue* out = 0;
-    (static_cast<CMapStringToPtr*>(&m_world->m_soundRegistry->m_10))
-        ->Lookup("MENU_ACTIVATE", reinterpret_cast<void*&>(out));
+    MapLookup(m_world->m_soundRegistry->m_10, "MENU_ACTIVATE", out);
     i32 base;
     if (out != 0) {
-        (static_cast<CMapStringToPtr*>(&m_world->m_soundRegistry->m_10))
-            ->Lookup("MENU_ACTIVATE", reinterpret_cast<void*&>(out));
+        MapLookup(m_world->m_soundRegistry->m_10, "MENU_ACTIVATE", out);
         base = out->m_10->m_durationMs + 0x1f4; // cue duration + 500ms: wait out the cue
     } else {
         base = 0;

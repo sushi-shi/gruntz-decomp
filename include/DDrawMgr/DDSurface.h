@@ -10,6 +10,14 @@ struct CDDPalette;          // fwd (SetPalette takes a wrapper ptr; PAUCDDPalett
 class CDDrawPtrCollections; // fwd (the display/pool manager passed as the palette/init context)
 struct PcxHeader; // fwd (Decode's PCX source header; full def in <Image/FileImageRecords.h>)
 
+// DDBLTFX as CDDSurface::Clear builds it: retail zero-fills the opaque Win32 struct
+// with an explicit 25-dword store loop (a memset would emit `rep stos`), so the dword
+// view of the same 0x64 bytes is a named union arm rather than a pun at the loop.
+union BltFxWords {
+    DDBLTFX m_fx;
+    i32 m_words[0x19]; // 25 dwords == sizeof(DDBLTFX)
+};
+
 struct ClipRect16 {
     i32 a, b, c, d;
 };

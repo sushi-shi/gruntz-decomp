@@ -6,6 +6,7 @@
 
 #include <rva.h>
 #include <tlhelp32.h>
+#include <ProcAddr.h> // the FARPROC / real-prototype pair
 
 RVA(0x00118930, 0x15)
 void SetActiveAndFocus(HWND hWnd) {
@@ -174,19 +175,22 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
         return 0;
     }
 
-    // language-forced: GetProcAddress returns FARPROC
-    PFN_CreateSnapshot pCreate =
-        reinterpret_cast<PFN_CreateSnapshot>(GetProcAddress(hK32, "CreateToolhelp32Snapshot"));
+    // GetProcAddress hands the address back as a FARPROC; the caller knows the
+    // export's prototype (<ProcAddr.h>)
+    ProcAddr<PFN_CreateSnapshot> snapProc;
+    snapProc.m_raw = GetProcAddress(hK32, "CreateToolhelp32Snapshot");
+    PFN_CreateSnapshot pCreate = snapProc.m_fn;
     if (pCreate == 0) {
         return 0;
     }
-    // language-forced: GetProcAddress returns FARPROC
-    PFN_Process32 pFirst = reinterpret_cast<PFN_Process32>(GetProcAddress(hK32, "Process32First"));
+    ProcAddr<PFN_Process32> walkProc;
+    walkProc.m_raw = GetProcAddress(hK32, "Process32First");
+    PFN_Process32 pFirst = walkProc.m_fn;
     if (pFirst == 0) {
         return 0;
     }
-    // language-forced: GetProcAddress returns FARPROC
-    PFN_Process32 pNext = reinterpret_cast<PFN_Process32>(GetProcAddress(hK32, "Process32Next"));
+    walkProc.m_raw = GetProcAddress(hK32, "Process32Next");
+    PFN_Process32 pNext = walkProc.m_fn;
     if (pNext == 0) {
         return 0;
     }

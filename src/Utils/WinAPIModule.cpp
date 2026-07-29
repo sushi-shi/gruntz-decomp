@@ -3,6 +3,7 @@
 
 #include <Win32.h>
 #include <tlhelp32.h>
+#include <ProcAddr.h> // the FARPROC / real-prototype pair
 
 typedef HANDLE(WINAPI* PFNCREATESNAPSHOT)(DWORD dwFlags, DWORD th32ProcessID);
 typedef BOOL(WINAPI* PFNMODULEWALK)(HANDLE hSnapshot, MODULEENTRY32* lpme);
@@ -36,24 +37,24 @@ namespace Utils {
                 return 0;
             }
 
-            // language-forced: GetProcAddress returns FARPROC
-            PFNCREATESNAPSHOT pCreateSnapshot = reinterpret_cast<PFNCREATESNAPSHOT>(
-                GetProcAddress(k32, "CreateToolhelp32Snapshot")
-            );
+            // GetProcAddress hands the address back as a FARPROC; the caller knows
+            // the export's prototype (<ProcAddr.h>)
+            ProcAddr<PFNCREATESNAPSHOT> snapProc;
+            snapProc.m_raw = GetProcAddress(k32, "CreateToolhelp32Snapshot");
+            PFNCREATESNAPSHOT pCreateSnapshot = snapProc.m_fn;
             if (!pCreateSnapshot) {
                 return 0;
             }
 
-            // language-forced: GetProcAddress returns FARPROC
-            PFNMODULEWALK pModuleFirst =
-                reinterpret_cast<PFNMODULEWALK>(GetProcAddress(k32, "Module32First"));
+            ProcAddr<PFNMODULEWALK> walkProc;
+            walkProc.m_raw = GetProcAddress(k32, "Module32First");
+            PFNMODULEWALK pModuleFirst = walkProc.m_fn;
             if (!pModuleFirst) {
                 return 0;
             }
 
-            // language-forced: GetProcAddress returns FARPROC
-            PFNMODULEWALK pModuleNext =
-                reinterpret_cast<PFNMODULEWALK>(GetProcAddress(k32, "Module32Next"));
+            walkProc.m_raw = GetProcAddress(k32, "Module32Next");
+            PFNMODULEWALK pModuleNext = walkProc.m_fn;
             if (!pModuleNext) {
                 return 0;
             }

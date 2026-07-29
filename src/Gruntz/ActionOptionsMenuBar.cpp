@@ -221,7 +221,7 @@ i32 CActionOptionsMenuBar::Render() {
     if (!m_active) {
         return 1;
     }
-    LONG sx = m_screenX;
+    LONG sx = m_screenX; // LONG: WrapCoord's pair type (it also fills RECT fields)
     LONG sy = m_screenY;
     (g_gameReg->m_world->m_level->m_mainPlane)->WrapCoord(&sx, &sy);
 

@@ -3,7 +3,6 @@
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr (g_gameReg; m_isCheckpointPrompts)
 #include <Gruntz/GruntzCommand.h>
 #include <rva.h>
-#include <Gruntz/CheckpointDlg.h> // ex Globals.h
 
 template<> DATA(0x0022b5d0)
 CPtrList CPtrListPool<CGruntzSingleCommand>::s_freeList(0xa);
@@ -12,7 +11,16 @@ template<> DATA(0x0022b640)
 CPtrList CPtrListPool<CGruntzMultiCommand>::s_freeList(0xa);
 
 DATA(0x001e94b8)
-const i32 g_msgmap_CCheckpointDlg = 6205544;
+const AFX_MSGMAP CCheckpointDlg::messageMap = {
+    &CDialog::messageMap,
+    &CCheckpointDlg::_messageEntries[0],
+};
+
+DATA(0x001e94c0)
+const AFX_MSGMAP_ENTRY CCheckpointDlg::_messageEntries[] = {
+    ON_BN_CLICKED(0x53a, CCheckpointDlg::OnToggleCheckpointPrompts) // 0x23590
+    {0, 0, 0, 0, AfxSig_end, 0},
+};
 
 VTBL(CCheckpointDlg, 0x001e9504); // vtable_names -> code (RTTI game class)
 RVA(0x000234a0, 0x1e)
@@ -32,11 +40,7 @@ void CCheckpointDlg::DoDataExchange(CDataExchange* pDX) {
 
 RVA(0x00023570, 0x6)
 const AFX_MSGMAP* CCheckpointDlg::GetMessageMap() const {
-    // API-forced: MFC's message-map global is emitted as a raw datum and
-    // GetMessageMap's return type is fixed by CCmdTarget.
-    return reinterpret_cast<const AFX_MSGMAP*>(
-        &g_msgmap_CCheckpointDlg
-    ); // msgmap global still a placeholder type
+    return &messageMap;
 }
 
 // CCheckpointDlg::OnToggleCheckpointPrompts (0x23590): mirror the "disable prompts"

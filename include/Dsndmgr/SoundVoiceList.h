@@ -11,8 +11,17 @@ struct DSoundLink {
 };
 SIZE(0x8); // 2-word intrusive chain link
 
+// The container-of step every intrusive walk performs: the chain holds the LINK,
+// which sits at +4 of the element, so the element is a fixed step back.
+//
+// MEASURED 2026-07-29, do NOT "fold" this into a union: naming the three readings
+// on a union and stepping its byte arm costs ~400 points across twelve functions
+// (CHashElement::Next 100 -> 51, CHashBase::First 100 -> 62, SoundStream::Free
+// 100 -> 65, SoundDevice::StopAll 100 -> 68, ...) because cl materialises the union
+// as a stack temporary where the cast form stays a pure register expression. A
+// container-of is address ARITHMETIC, not two readings of stored data. C++ has no
+// CONTAINING_RECORD, so the step back is language-forced, at one seam, here.
 template<class T> inline T* elemOf(DSoundLink* link) {
-    // language-forced container-of, same shape as Bute/Hash.h: the link sits at +4 of T
     return link ? reinterpret_cast<T*>((reinterpret_cast<char*>(link) - 4)) : 0;
 }
 

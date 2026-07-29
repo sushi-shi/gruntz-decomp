@@ -7,9 +7,10 @@
 #include <Wap32/zBitVec.h>       // zErrHandling / zBitVec + the container-error globals
 #include <Gruntz/UserBaseLink.h> // CUserBaseLink (the +0x18 link sub-object; embeds a zBitVec)
 #include <rva.h>
-#include <ctype.h>  // isspace (0x12f8a0) / isdigit (0x12f840) - as FUNCTION calls
-#include <stdlib.h> // malloc (0x120b60) / realloc (0x125180) / free (0x120c30)
-#include <string.h> // memset (rep stos) / inline strcpy / strchr / memmove / memcpy
+#include <AddrWord.h> // the address-in-an-int-slot pair (the g_recs23 key column)
+#include <ctype.h>    // isspace (0x12f8a0) / isdigit (0x12f840) - as FUNCTION calls
+#include <stdlib.h>   // malloc (0x120b60) / realloc (0x125180) / free (0x120c30)
+#include <string.h>   // memset (rep stos) / inline strcpy / strchr / memmove / memcpy
 
 #undef isspace
 #undef isdigit
@@ -424,10 +425,11 @@ void CVariantSlot::Set(void* key, void* arg2, i32 arg3) {
     }
     i32 idx;
     if (g_recCount23 != 0) {
-        // g_recs23 keys on the CALLER'S ADDRESS, but its key column is a signed INT:
-        // ?Find@CVariantSlot@@QAEHH@Z takes H, and 0x16e1d0 probes with `sub edx,ebx;
-        // jns` - an integer compare. language-forced narrowing to that int key.
-        idx = this->Find(reinterpret_cast<i32>(key));
+        // g_recs23 keys on the CALLER'S ADDRESS through its signed-int key column
+        // (see <AddrWord.h>)
+        AddrWord k;
+        k.m_addr = key;
+        idx = this->Find(k.m_word);
     } else {
         idx = -1;
     }
@@ -448,12 +450,10 @@ void CVariantSlot::Set(void* key, void* arg2, i32 arg3) {
         }
     } else {
         if (m_typeTag == 2) {
-            // the g_recs23 key column is a signed int: ?Find@CVariantSlot@@QAEHH@Z takes H
-            // and 0x16e1d0 probes with `sub edx,ebx; jns`. language-forced narrowing.
-            (static_cast<void(__cdecl*)(i32, i32)>(g_recs23[idx].m_4))(
-                reinterpret_cast<i32>(arg2),
-                arg3
-            );
+            // the reported record's address rides the same int slot (<AddrWord.h>)
+            AddrWord rec;
+            rec.m_addr = arg2;
+            (static_cast<void(__cdecl*)(i32, i32)>(g_recs23[idx].m_4))(rec.m_word, arg3);
         } else if (m_typeTag == 1) {
             g_recs23[idx].m_8 = static_cast<short>(arg3);
         }
@@ -888,8 +888,10 @@ void TmErrorHandler(char* prefix, i32 errNum) {
         *q++ = *s++;
     }
 
-    // the return-address breadcrumb is a code pointer carried as a word - byte-forced
-    u32 v = 0xffff & reinterpret_cast<u32>(g_retAddrBreadcrumb);
+    // the return-address breadcrumb is a code pointer carried as a word
+    AddrWord bc;
+    bc.m_addr = g_retAddrBreadcrumb;
+    u32 v = 0xffff & bc.m_uword;
     char* hp = &tmp[15];
     *hp = 0;
     i32 i;
@@ -902,8 +904,9 @@ void TmErrorHandler(char* prefix, i32 errNum) {
             break;
         }
     } while (i-- != 0);
-    // the return-address breadcrumb is a code pointer carried as a word - byte-forced
-    g_retAddrBreadcrumb = reinterpret_cast<void*>(v);
+    AddrWord back;
+    back.m_uword = v;
+    g_retAddrBreadcrumb = back.m_addr;
     while (*hp != 0) {
         *q++ = *hp++;
     }
@@ -935,10 +938,10 @@ void* CVariantSlot::Add(void* key, void* val) {
     }
     int idx;
     if (count != 0) {
-        // g_recs23 keys on the CALLER'S ADDRESS, but its key column is a signed INT:
-        // ?Find@CVariantSlot@@QAEHH@Z takes H, and 0x16e1d0 probes with `sub edx,ebx;
-        // jns` - an integer compare. language-forced narrowing to that int key.
-        idx = Find(reinterpret_cast<i32>(key));
+        // g_recs23 keys on the CALLER'S ADDRESS through its signed-int key column
+        AddrWord k;
+        k.m_addr = key;
+        idx = Find(k.m_word);
     } else {
         idx = -1;
     }
@@ -954,10 +957,9 @@ void* CVariantSlot::Add(void* key, void* val) {
             );
         }
         g_recs23[m_04].m_4 = val;
-        // g_recs23 keys on the CALLER'S ADDRESS, but its key column is a signed INT:
-        // ?Find@CVariantSlot@@QAEHH@Z takes H, and 0x16e1d0 probes with `sub edx,ebx;
-        // jns` - an integer compare. language-forced narrowing to that int key.
-        g_recs23[m_04].m_key = reinterpret_cast<i32>(key);
+        AddrWord nk;
+        nk.m_addr = key;
+        g_recs23[m_04].m_key = nk.m_word;
         g_recCount23 = g_recCount23 + 1;
         g_recs23[m_04].m_8 = 0;
         return 0;

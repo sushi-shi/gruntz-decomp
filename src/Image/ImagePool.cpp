@@ -4,9 +4,11 @@
 #include <Image/ImagePool.h>        // the canonical CImagePool (this TU owns its bodies)
 #include <Rez/RezMgr.h>             // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
 #include <rva.h>
+#include <Pix16.h> // the byte-cursor / 16bpp-value pointer pair
 #include <string.h>
 #include <DDrawMgr/DDSurface.h>     // PidHeader - .PID and .RID share the header
 #include <Image/FileImageRecords.h> // the real on-disk PcxHeader
+#include <DDrawMgr/DirPal.h>        // LogPal256 - the 256-entry LOGPALETTE view
 
 DATA(0x002bf6e0)
 HINSTANCE g_hResModule = 0; // 0x6bf6e0
@@ -377,29 +379,11 @@ i32 CRezImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, i3
         for (i32 i = 0; i < 256; i++) {
             *pal++ = static_cast<u16>(i);
         }
-        m_dibSection = CreateDIBSection(
-            static_cast<HDC>(a2),
-            // API-forced: BITMAPINFO == BITMAPINFOHEADER + the colour table that
-            // follows it in the same buffer (m_bih at +0x00, m_pal at +0x28)
-            reinterpret_cast<BITMAPINFO*>(&m_bih),
-            DIB_PAL_COLORS,
-            // API-forced: CreateDIBSection's ppvBits out-param is void**
-            reinterpret_cast<void**>(&m_pixels),
-            0,
-            0
-        );
+        m_dibSection =
+            CreateDIBSection(static_cast<HDC>(a2), &m_bmi, DIB_PAL_COLORS, &m_pixelsBits, 0, 0);
     } else {
-        m_dibSection = CreateDIBSection(
-            static_cast<HDC>(a2),
-            // API-forced: BITMAPINFO == BITMAPINFOHEADER + the colour table that
-            // follows it in the same buffer (m_bih at +0x00, m_pal at +0x28)
-            reinterpret_cast<BITMAPINFO*>(&m_bih),
-            DIB_RGB_COLORS,
-            // API-forced: CreateDIBSection's ppvBits out-param is void**
-            reinterpret_cast<void**>(&m_pixels),
-            0,
-            0
-        );
+        m_dibSection =
+            CreateDIBSection(static_cast<HDC>(a2), &m_bmi, DIB_RGB_COLORS, &m_pixelsBits, 0, 0);
     }
     if (!m_dibSection) {
         return 0;
@@ -503,10 +487,12 @@ i32 CRezImage::Convert8To16(void* dc, CRezImage* src, void* pal) {
     }
     for (i32 y = 0; y < m_height; y++) {
         u8* sp = src->m_pixels + y * src->m_stride;
-        // byte-forced: m_pixels is the 8bpp byte plane, but DecodeBmpHeader(...,0x10,...)
-        // above just reconfigured `this` to 16bpp, so the same member now carries u16
-        // pixels at the m_stride*2 byte pitch (retail `lea edx,[edi+edx*2]`).
-        u16* dp = reinterpret_cast<u16*>((m_pixels + y * m_stride * 2));
+        // m_pixels is the 8bpp byte plane, but DecodeBmpHeader(...,0x10,...) above just
+        // reconfigured `this` to 16bpp, so the same member now carries u16 pixels at the
+        // m_stride*2 byte pitch (retail `lea edx,[edi+edx*2]`) - see <Pix16.h>.
+        Pix16Ptr row;
+        row.m_bytes = (m_pixels + y * m_stride * 2);
+        u16* dp = row.m_words;
         for (i32 x = 0; x < m_width; x++) {
             u32 c = palette[*sp];
             u32 r = c & 0xff;
@@ -1017,8 +1003,8 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
         }
     }
 
-    BITMAPFILEHEADER fileHdr; // real 0xe-byte packed file header ([esp+0x10])
-    Bmp256Info info;          // BITMAPINFOHEADER + the 256-entry RGBQUAD table ([esp+0x34])
+    BmpFileHeaderStamp fileHdr; // real 0xe-byte packed file header ([esp+0x10])
+    Bmp256Info info;            // BITMAPINFOHEADER + the 256-entry RGBQUAD table ([esp+0x34])
     memset(&info, 0, sizeof(info));
     info.bmiHeader.biSize = 0x28;
     info.bmiHeader.biWidth = m_width;
@@ -1049,16 +1035,15 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
     // bfSize / bfOffBits. Retail inlines a strcpy here (repnz scasb over the
     // 0x61aabc template, then rep movsd/movsb), not a 14-byte copy loop.
     memset(&fileHdr, 0, sizeof(fileHdr));
-    // API-forced: strcpy takes char*, and the target is a packed on-disk header.
-    strcpy(reinterpret_cast<char*>(&fileHdr), g_bmpHeaderTemplate);
-    fileHdr.bfSize = m_width * m_height + 0x436;
-    fileHdr.bfOffBits = 0x436;
+    strcpy(fileHdr.m_bytes, g_bmpHeaderTemplate);
+    fileHdr.m_hdr.bfSize = m_width * m_height + 0x436;
+    fileHdr.m_hdr.bfOffBits = 0x436;
 
     CFile file;
     if (file.Open(filename, 0x1001, 0) == 0) {
         return 0;
     }
-    file.Write(&fileHdr, 0xe);
+    file.Write(&fileHdr.m_hdr, 0xe);
     file.Write(&info, 0x428);
     for (i32 row = m_height - 1; row >= 0; row--) {
         file.Write(m_pixels + m_rowOffsets[row], m_width);
@@ -1232,20 +1217,20 @@ void ApiCallerStubs::CImagePaletteNode::Tune() {
 
 RVA(0x00177160, 0x81)
 void ApiCallerStubs::winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD() {
-    // API-forced: LOGPALETTE is a GDI variable-length header, so the SDK's own
-    // idiom is a byte buffer overlaid with it.
-    char buf[4 + 256 * sizeof(PALETTEENTRY)];
-    LOGPALETTE* lp = reinterpret_cast<LOGPALETTE*>(buf);
+    // The 256-entry logical palette: wingdi's LOGPALETTE declares its colour table
+    // `[1]`, so the full-size form is the LogPal256 union whose SDK arm IS the
+    // CreatePalette argument (was a raw byte buffer overlaid with a cast).
+    LogPal256 lp;
     HDC hdc = GetDC(0);
-    lp->palVersion = 0x300;
-    lp->palNumEntries = 256;
+    lp.palVersion = 0x300;
+    lp.palNumEntries = 256;
     for (i32 i = 0; i < 256; i++) {
-        lp->palPalEntry[i].peRed = 0;
-        lp->palPalEntry[i].peGreen = 0;
-        lp->palPalEntry[i].peBlue = 0;
-        lp->palPalEntry[i].peFlags = 4;
+        lp.palPalEntry[i].peRed = 0;
+        lp.palPalEntry[i].peGreen = 0;
+        lp.palPalEntry[i].peBlue = 0;
+        lp.palPalEntry[i].peFlags = 4;
     }
-    HPALETTE hpal = CreatePalette(lp);
+    HPALETTE hpal = CreatePalette(&lp.m_lp);
     if (hpal) {
         HPALETTE old = SelectPalette(hdc, hpal, FALSE);
         RealizePalette(hdc);

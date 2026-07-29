@@ -34,19 +34,20 @@ static const char s_playerDefenderRadius[] = "PlayerDefenderRadius"; // 0x60e1ac
 // identical suffixes). The 11-case logic + grunt-state resets + cell lookups are
 // byte-faithful. Final-sweep permuter candidate (pure /O2 regalloc residue).
 RVA(0x000d1b60, 0xc2f)
-// The *(i32*)&aN reads below are byte-forced, and VERIFIED 2026-07-29: retail's
-// case-3 probe call at 0xd1f6b pushes `lea edx,[esp+0x28]` (0xd1f44) and
-// `lea edx,[esp+0x24]` (0xd1f4b) - after the two intervening pushes those are the
-// a7 and a4 PARAMETER HOMES - so the probe writes its i32 outputs straight into
-// them and the code reads them back as i32. A `char` parameter still owns a whole
-// 4-byte slot (ret 0x1c proves the 7-dword arity), so this is retail's own
-// pointer-to-a-char-home pun, not a modelling gap.
-// The still-open modelling debt is the SLOT ASSIGNMENT, not the pun: at 0xd1fa0
-// retail's post-probe grid call takes FOUR args (a2&0xff, a3&0xff, and the two
-// spilled masked halves) where the body below passes five, and it reads a7's home
-// where the body reads a8's. That is a body-reconstruction job (this fn is ~24%),
-// not a cast job.
-i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char a8) {
+// The seven command words are i32, not the narrow char/i16 they used to be modelled
+// as (2026-07-29). PROOF: retail's case-3 probe call at 0xd1f6b pushes
+// `lea edx,[esp+0x28]` (0xd1f44) and `lea edx,[esp+0x24]` (0xd1f4b) - after the two
+// intervening pushes those are the a7 and a4 PARAMETER HOMES - so the probe writes
+// i32 OUTPUTS into them and the code reads them back whole. `ret 0x1c` pins the
+// 7-dword arity either way, and every narrow use is an explicit mask
+// (`static_cast<u8>(a2)` etc.) that still lowers to retail's `movzx`. The twelve
+// `*(i32*)&aN` puns the narrow model needed are gone, and the fn measured 21.63 ->
+// 22.19 on the change.
+// The still-open modelling debt is the SLOT ASSIGNMENT: at 0xd1fa0 retail's
+// post-probe grid call takes FOUR args (a2&0xff, a3&0xff, and the two spilled
+// masked halves) where the body below passes five, and it reads a7's home where the
+// body reads a8's. That is a body-reconstruction job, not a cast job.
+i32 CPlay::ExecCommand(i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8) {
     CGruntzMgr* mgr = m_mgr;
     if (mgr->m_frameGate != 0) {
         return 0;
@@ -184,17 +185,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                     }
                     return 1;
                 }
-                res = m_mgr->m_cmdGrid->ClearCell(
-                    player,
-                    // byte-forced ABI slot: a `char` param owns a whole 4-byte slot and retail
-                    // threads PathProbe's i32 outputs back through it (see ExecCommand's header).
-                    *reinterpret_cast<i32*>(&a4),
-                    // byte-forced ABI slot: a `char` param owns a whole 4-byte slot and retail
-                    // threads PathProbe's i32 outputs back through it (see ExecCommand's header).
-                    *reinterpret_cast<i32*>(&a8),
-                    0,
-                    (isB == 0) ? 2 : 3
-                );
+                res = m_mgr->m_cmdGrid->ClearCell(player, a4, a8, 0, (isB == 0) ? 2 : 3);
                 if (res != 0) {
                     if (player != static_cast<u32>(g_curPlayer)) {
                         return 1;
@@ -362,22 +353,10 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
             }
             CGameObject* m10 = g2->m_object;
             g->SetArrivalTarget(row, col, m10->m_screenX, m10->m_screenY);
-            // byte-forced ABI slot: a `char` param owns a whole 4-byte slot and retail
-            // threads PathProbe's i32 outputs back through it (see ExecCommand's header).
-            res = m_mgr->m_cmdGrid->ApplyTriggerA(player, *reinterpret_cast<i32*>(&a7), row, 0);
+            res = m_mgr->m_cmdGrid->ApplyTriggerA(player, a7, row, 0);
             if (res != 0) {
                 if (res == -1) {
-                    res = m_mgr->m_cmdGrid->ClearCell(
-                        player,
-                        // byte-forced ABI slot: a `char` param owns a whole 4-byte slot and retail
-                        // threads PathProbe's i32 outputs back through it (see ExecCommand's header).
-                        *reinterpret_cast<i32*>(&a8),
-                        // byte-forced ABI slot: a `char` param owns a whole 4-byte slot and retail
-                        // threads PathProbe's i32 outputs back through it (see ExecCommand's header).
-                        *reinterpret_cast<i32*>(&a2),
-                        0,
-                        2
-                    );
+                    res = m_mgr->m_cmdGrid->ClearCell(player, a8, a2, 0, 2);
                     if (res == 0) {
                         if (static_cast<u32>(g_curPlayer) != player
                             || g->m_entranceCommitted == 0) {
@@ -389,9 +368,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                     if (static_cast<u8>(a2) != static_cast<u32>(g_curPlayer)) {
                         return 1;
                     }
-                    // byte-forced ABI slot: a `char` param owns a whole 4-byte slot and retail
-                    // threads PathProbe's i32 outputs back through it (see ExecCommand's header).
-                    if (*reinterpret_cast<u32*>(&a4) != static_cast<u32>(g_curPlayer)
+                    if (static_cast<u32>(a4) != static_cast<u32>(g_curPlayer)
                         && g->m_entranceCommitted != 0) {
                         GruntCue(g, 0x325, -1, 0, -1, -1);
                     }
@@ -400,9 +377,7 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
                 if (static_cast<u8>(a2) != static_cast<u32>(g_curPlayer)) {
                     return 1;
                 }
-                // byte-forced ABI slot: a `char` param owns a whole 4-byte slot and retail
-                // threads PathProbe's i32 outputs back through it (see ExecCommand's header).
-                if (static_cast<u32>(g_curPlayer) != *reinterpret_cast<u32*>(&a8)
+                if (static_cast<u32>(g_curPlayer) != static_cast<u32>(a8)
                     && g->m_entranceCommitted != 0) {
                     GruntCue(g, 0x325, -1, 0, -1, -1);
                 }
@@ -443,40 +418,24 @@ i32 CPlay::ExecCommand(char a2, char a3, char a4, i16 a5, i16 a6, char a7, char 
             }
             CGameObject* m10 = g2->m_object;
             g->SetArrivalTarget(row, col, m10->m_screenX, m10->m_screenY);
-            // byte-forced ABI slot: a `char` param owns a whole 4-byte slot and retail
-            // threads PathProbe's i32 outputs back through it (see ExecCommand's header).
-            res = m_mgr->m_cmdGrid->ApplyTriggerB(player, *reinterpret_cast<i32*>(&a7), row, 0);
+            res = m_mgr->m_cmdGrid->ApplyTriggerB(player, a7, row, 0);
             if (res != 0) {
                 if (res != -1) {
                     if (static_cast<u8>(a2) != static_cast<u32>(g_curPlayer)) {
                         return 1;
                     }
-                    // byte-forced ABI slot: a `char` param owns a whole 4-byte slot and retail
-                    // threads PathProbe's i32 outputs back through it (see ExecCommand's header).
-                    if (*reinterpret_cast<u32*>(&a8) != static_cast<u32>(g_curPlayer)
+                    if (static_cast<u32>(a8) != static_cast<u32>(g_curPlayer)
                         && g->m_entranceCommitted != 0) {
                         GruntCue(g, 0x325, -1, 0, -1, -1);
                     }
                     return 1;
                 }
-                res = m_mgr->m_cmdGrid->ClearCell(
-                    player,
-                    // byte-forced ABI slot: a `char` param owns a whole 4-byte slot and retail
-                    // threads PathProbe's i32 outputs back through it (see ExecCommand's header).
-                    *reinterpret_cast<i32*>(&a8),
-                    // byte-forced ABI slot: a `char` param owns a whole 4-byte slot and retail
-                    // threads PathProbe's i32 outputs back through it (see ExecCommand's header).
-                    *reinterpret_cast<i32*>(&a2),
-                    0,
-                    3
-                );
+                res = m_mgr->m_cmdGrid->ClearCell(player, a8, a2, 0, 3);
                 if (res != 0) {
                     if (static_cast<u8>(a2) != static_cast<u32>(g_curPlayer)) {
                         return 1;
                     }
-                    // byte-forced ABI slot: a `char` param owns a whole 4-byte slot and retail
-                    // threads PathProbe's i32 outputs back through it (see ExecCommand's header).
-                    if (static_cast<u32>(g_curPlayer) != *reinterpret_cast<u32*>(&a4)
+                    if (static_cast<u32>(g_curPlayer) != static_cast<u32>(a4)
                         && g->m_entranceCommitted != 0) {
                         GruntCue(g, 0x325, -1, 0, -1, -1);
                     }

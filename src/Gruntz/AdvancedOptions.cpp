@@ -1,6 +1,7 @@
 #include <Mfc.h>
 #include <Utils/RegistryHelper.h>
 #include <rva.h>
+#include <MsgParam.h> // the window-message parameter's pointer/word pair
 
 typedef enum AdvancedOptionsDlgId {
     IDC_DISABLE_VIDEO = 0x46c,
@@ -84,7 +85,9 @@ INT_PTR CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wPara
             {
                 HICON hIcon = LoadIconA(g_hInstance, "GRUNTZ");
                 if (hIcon) {
-                    SendMessageA(hWnd, WM_SETICON, 1, reinterpret_cast<LPARAM>(hIcon));
+                    MsgParam icon;
+                    icon.m_ptr = hIcon;
+                    SendMessageA(hWnd, WM_SETICON, 1, icon.m_lparam);
                 }
             }
             if (IsIconic(hWnd)) {

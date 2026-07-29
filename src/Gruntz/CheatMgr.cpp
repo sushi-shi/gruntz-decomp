@@ -2,6 +2,7 @@
 #include <EmptyString.h> // g_emptyString
 
 #include <rva.h>
+#include <AddrWord.h> // the raw word view of the map out-param
 
 #include <Bute/ButeMgr.h>
 
@@ -112,9 +113,15 @@ void CCheatMgr::Empty() {
 RVA(0x00022be0, 0x71)
 BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
     void* existing = 0;
-    // byte-forced: retail ANDs the found-mask with the raw out-param word
-    // (docs/patterns/branchless-mask-and-explicit-vs-fused-test.md).
-    i32 found = (m_map.Lookup(code, existing) ? -1 : 0) & reinterpret_cast<i32>(existing);
+    // retail ANDs the found-mask with the raw out-param WORD. AddrWord names that
+    // word view; because assigning its arm is a real side effect it has to sit AFTER
+    // the lookup, which splits the mask into its own local - the known 97.76 variant
+    // in docs/patterns/branchless-mask-and-explicit-vs-fused-test.md (the one-
+    // expression comma form was measured at 90.61: cl orders the union write first).
+    i32 mask = m_map.Lookup(code, existing) ? -1 : 0;
+    AddrWord hit;
+    hit.m_addr = existing;
+    i32 found = mask & hit.m_word;
     if (found != 0) {
         return FALSE;
     }

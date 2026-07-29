@@ -41,7 +41,7 @@ namespace Utils {
         char* GetValueString(
             char* szValueName,
             char* szValueBuffer,
-            u32* pValueBufferSize,
+            DWORD* pValueBufferSize,
             char* szDefault
         );
         // The in/out byte count IS the registry API's LPDWORD - typed so `&size`

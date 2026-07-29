@@ -33,9 +33,18 @@ extern i32 g_dropPlayerId; // 0x611d88  saved dropped-player id
 // The session-identity trio. All three are DEFINED in src/Gruntz/GruntzMgr.cpp: they
 // are one contiguous retail .data run [0x20fa70,0x20fae0) together with g_pendingFrame
 // (0x20fac8), 8 KB below CMulti's own run [0x211d88,0x2121e0). CMulti only reads them.
-extern "C" i32 g_localVersion;  // 0x60fa70  rez-sync version; CGruntzMgr::Run reloads it
-extern i32 g_remoteVersion;     // 0x60fa74  the build's protocol word (never written)
-extern GUID g_dplayAppGuid;     // 0x60fab8  the DirectPlay app GUID CMulti binds with
+extern "C" i32 g_localVersion; // 0x60fa70  rez-sync version; CGruntzMgr::Run reloads it
+extern i32 g_remoteVersion;    // 0x60fa74  the build's protocol word (never written)
+// The DirectPlay application GUID. CNetMgr::Init copies it as FOUR DWORDS
+// interleaved with its selection-latch zeroing (retail stores [eax+0]/[eax+4]/
+// [eax+8]/[eax+0xc] between the m_groupSel/m_playerSel/m_sessionSel writes) while
+// every SDK hand-off takes the same 16 bytes whole - both readings are named.
+union NetGuid {
+    GUID m_guid;    // the SDK view (DPSESSIONDESC2::guidApplication)
+    i32 m_words[4]; // the four dwords Init threads through the store block
+};
+
+extern NetGuid g_dplayAppGuid;  // 0x60fab8  the DirectPlay app GUID CMulti binds with
 extern "C" i32 g_cfgWord;       // 0x645550
 extern "C" i32 g_buteMgrField4; // *(g_buteMgr + 4) - the CButeMgr config word
 
@@ -257,6 +266,19 @@ SIZE(0x410);
 
 class CGruntzCommand;
 struct CNetCtrlMsg; // the receive-buffer message header (ex the duplicate `LobbyMsg`)
+struct CNetMsg;     // <Net/NetPackets.h> - the per-player message header
+
+// The receive buffer at its wire shapes. DirectPlay hands the buffer back as raw
+// BYTES and the sender/opcode decides WHICH record it is, so all of these are real
+// readings of one pointer - named here instead of punned at every decode site.
+union CNetWireMsg {
+    char* m_bytes;             // what the transport fills
+    CNetMsg* m_msg;            // the per-player message header
+    CNetCtrlMsg* m_ctrl;       // the SYSTEM-channel control record
+    CNetChannelPacket* m_chan; // the 0x3f9 channel-registration record
+    CNetVersionMsg* m_version; // the 0x417 host-version record
+    CNetCmdHdr* m_cmdHdr;      // the reliable-command header
+};
 
 void* Unmatched_bf530(i32 zero); // bf530
 void RecycleCmd(void* cmd);      // bf580  __cdecl
@@ -750,7 +772,7 @@ public:
     // fires one IDirectPlay4 slot on the m_18/+0x18 interface and, on a nonzero
     // HRESULT, routes it through ReportError; the node factories operator-new a
     // list node and AddTail it onto one of the managed CObLists.
-    i32 Init(void* a, GUID appGuid); // 0x178170  Open + QueryInterface + reset selections
+    i32 Init(void* a, NetGuid appGuid); // 0x178170  Open + QueryInterface + reset selections
     //          (the app GUID by value - 4 dwords, like InitFromProvider)
     CNetPlayerListNode* AddPlayerNode(void* playerDesc); // 0x1786d0  new player node -> +0x38 list
     void PopulatePlayerList(void* hList);                // 0x178790  fill a Win32 player list box
@@ -958,7 +980,11 @@ public:
     // Init/InitFromProvider do `lea eax,[esi+4]` then store the by-value GUID arg's
     // four dwords at [eax+0/4/8/0xc]. The old m_4/m_8/m_c/pad quartet here was a
     // phantom split of this one field - nothing in CNetMgr ever read those slots.
-    GUID m_appGuid;
+    // Init copies it as FOUR DWORDS interleaved with the selection-latch zeroing
+    // (retail 0x1781.. stores [eax+0]/[eax+4]/[eax+8]/[eax+0xc] between the
+    // m_groupSel/m_playerSel/m_sessionSel writes), while EnumPlayers/CreateSession
+    // hand the same 16 bytes to the SDK whole - both readings are named.
+    NetGuid m_appGuid;
     INetReleasable* m_releaseIface; // +0x014  secondary COM interface Destroy releases (slot 2)
     IDirectPlay4Z* m_directPlay; // +0x018  the DirectPlay session interface (IDirectPlay4-shaped)
     // The three managed collections (by-value MFC CObList, 0x1c bytes each; head at

@@ -14,7 +14,7 @@
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/Play.h>         // CPlay (m_curState downcast; m_guts @+0x2dc)
 #include <Gruntz/StatusBarMgr.h> // CStatusBarMgr::GetActiveValue (the MEGAPHONE count path)
-#include <Utils/MapTyped.h> // typed MFC map lookups
+#include <Utils/MapTyped.h>      // typed MFC map lookups
 
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
@@ -219,10 +219,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         case PICKUP_MEGAPHONE: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
             geo = 0;
-            m_38->OwnerMgr()->m_animRegistry->m_10.Lookup(
-                "GRUNTZ_PICKUPS_MEGAPHONE",
-                reinterpret_cast<void*&>(geo)
-            );
+            MapLookup(m_38->OwnerMgr()->m_animRegistry->m_10, "GRUNTZ_PICKUPS_MEGAPHONE", geo);
             m_pickupGeoSrc = geo;
             i32 n = play->m_guts->GetActiveValue();
             if (a5 != 0) {

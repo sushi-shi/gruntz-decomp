@@ -1,5 +1,6 @@
 #include <Net/LatencyList.h> // CLatencyList / CLatencyItem (+ <Mfc.h>: CPtrList/CString/windows.h)
 #include <rva.h>
+#include <MsgParam.h> // the window-message parameter's pointer/word pair
 
 // The control lookup + the four combo messages go through the engine's cached USER32
 // function-pointer globals (::GetDlgItem / ::SendMessageA), not the raw imports:
@@ -22,11 +23,12 @@ i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
                 i32 data = ((rec->m_param & 0xffff) << 16) | (rec->m_id & 0xffff);
                 i32 idx;
                 {
+                    MsgParam name;
                     idx = ::SendMessageA(
                         combo,
                         CB_ADDSTRING,
                         0,
-                        reinterpret_cast<long>(static_cast<LPCTSTR>(rec->GetName()))
+                        (name.m_str = static_cast<LPCTSTR>(rec->GetName()), name.m_lparam)
                     );
                 }
                 if (idx != -1) {

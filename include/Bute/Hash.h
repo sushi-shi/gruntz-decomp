@@ -91,10 +91,10 @@ public:
 
     // Recover the containing element from a chain link (container_of, -4). Genuine
     // intrusive-list back-cast: the chain stores &element->m_link.
+    // The element's m_link sits at +4 exactly like DSoundElem's, so this shares the
+    // ONE container-of seam in <Dsndmgr/SoundVoiceList.h> instead of repeating it.
     static CHashElement* FromLink(DSoundLink* link) {
-        // language-forced container-of: the list holds the LINK, which sits at +4 of the
-        // element, so recovering the element is a fixed step back - not a class pun
-        return link ? reinterpret_cast<CHashElement*>((reinterpret_cast<char*>(link) - 4)) : 0;
+        return elemOf<CHashElement>(link);
     }
 
     u32 m_count;          // +0x00

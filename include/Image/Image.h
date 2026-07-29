@@ -108,21 +108,36 @@ public:
     // biSize..biClrImportant) and a 256-entry WORD color table (this+0x28);
     // DecodeBmpHeader fills these, CreateDIBSections the plane and builds the
     // bottom-up per-row offset table. The OFFSETS are load-bearing.
-    BITMAPINFOHEADER m_bih;       // +0x000  biSize/biWidth/biHeight/... (filled by setup)
-    u16 m_pal[256];               // +0x28  DIB_PAL_COLORS index table
+    // The header and the colour table ARE one GDI BITMAPINFO - CreateDIBSection and
+    // StretchDIBits take the pair as a single argument, while DecodeBmpHeader fills
+    // the two halves under their own names. Both readings of the same bytes are real,
+    // so the GDI view is a union arm and the API call needs no pun.
+    union {
+        BITMAPINFO m_bmi; // +0x000  the GDI argument view (header + colour table)
+        struct {
+            BITMAPINFOHEADER m_bih; // +0x000  biSize/biWidth/biHeight/... (filled by setup)
+            u16 m_pal[256];         // +0x28   DIB_PAL_COLORS index table
+        };
+    };
     char m_pad228[0x428 - 0x228]; // +0x228
     HBITMAP m_dibSection;         // +0x428  HBITMAP from CreateDIBSection (the DIB section)
-    u8* m_pixels;                 // +0x42c  decoded pixel plane (CreateDIBSection's bits)
-    i32* m_rowOffsets;            // +0x430  bottom-up per-row byte-offset table (operator new'd)
-    i32 m_434;                    // +0x434  0 (write-only; role unproven, decoded by DecodeBlit)
-    i32 m_width;                  // +0x438  image width (bytes/row of the source)
-    i32 m_height;                 // +0x43c  abs(height): number of rows
-    i32 m_bitCount;               // +0x440  bits per pixel
-    i32 m_stride;                 // +0x444  aligned destination row stride (bytes per row)
-    i32 m_rowPad;                 // +0x448  destination padding = m_stride - m_width
-    POSITION m_listPosition;      // +0x44c  pool: cached AddTail POSITION (surface list node)
-    i32 m_transparent;            // +0x450  flag (1 = transparent/RLE plane)
-    i32 m_paletteScalar;          // +0x454  associated palette scalar (SetPalette 2nd arg)
+    // +0x42c decoded pixel plane. CreateDIBSection fills it through its `void**`
+    // ppvBits out-param while every reader walks it as the byte plane - both
+    // readings of the same slot, so the GDI arm is named here.
+    union {
+        u8* m_pixels;
+        void* m_pixelsBits; // the CreateDIBSection out-param view
+    };
+    i32* m_rowOffsets;       // +0x430  bottom-up per-row byte-offset table (operator new'd)
+    i32 m_434;               // +0x434  0 (write-only; role unproven, decoded by DecodeBlit)
+    i32 m_width;             // +0x438  image width (bytes/row of the source)
+    i32 m_height;            // +0x43c  abs(height): number of rows
+    i32 m_bitCount;          // +0x440  bits per pixel
+    i32 m_stride;            // +0x444  aligned destination row stride (bytes per row)
+    i32 m_rowPad;            // +0x448  destination padding = m_stride - m_width
+    POSITION m_listPosition; // +0x44c  pool: cached AddTail POSITION (surface list node)
+    i32 m_transparent;       // +0x450  flag (1 = transparent/RLE plane)
+    i32 m_paletteScalar;     // +0x454  associated palette scalar (SetPalette 2nd arg)
     ApiCallerStubs::CImagePaletteNode* m_paletteNode; // +0x458  the pool's palette list node
 };
 SIZE_UNKNOWN();

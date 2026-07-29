@@ -1,8 +1,8 @@
 #include <Crypto/BlowfishCopy.h> // this TU's external declarations
+#include <Crypto/Blowfish.h>     // BlowfishBlock - the 8-byte block's dword/byte views
 #include <Ints.h>
 #include <rva.h>
 #include <iostream.h>
-
 
 // @early-stop
 // regalloc wall (topic:wall topic:regalloc, const-materialize-into-reg-vs-immediate):
@@ -14,16 +14,13 @@ RVA(0x0016f6e0, 0x76)
 void __stdcall BitStreamBlowfishEncode(istream* src, ostream* dst) {
     i32 last = 0;
     while (!src->eof()) {
-        unsigned int rec[2];
-        rec[0] = 0;
-        rec[1] = 0;
-        // istream/ostream read+write take a char* BYTE buffer; handing them the 8-byte
-        // two-dword cipher record is the stream interface's own boundary - language-forced.
-        src->read(reinterpret_cast<char*>(rec), 8);
+        BlowfishBlock rec;
+        rec.m_w[0] = 0;
+        rec.m_w[1] = 0;
+        src->read(rec.m_bytes, 8);
         last = src->gcount();
-        Blowfish_encipher(&rec[0], &rec[1]);
-        // language-forced by ostream::write's char* buffer, same as the read above
-        dst->write(reinterpret_cast<const char*>(rec), 8);
+        Blowfish_encipher(&rec.m_w[0], &rec.m_w[1]);
+        dst->write(rec.m_bytes, 8);
     }
     dst->put(static_cast<unsigned char>(last));
 }

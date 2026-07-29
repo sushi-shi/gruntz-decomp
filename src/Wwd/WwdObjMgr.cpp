@@ -27,6 +27,7 @@
 #define ANIMWORKEROBJ_OOL_CTOR
 
 #include <rva.h>
+#include <AddrWord.h> // the address-in-an-int-slot pair
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <Io/FileMem.h>   // the serialize stream (CFileMemBase == the real CFileMemBase)
@@ -63,11 +64,12 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-// m_188 is the object id; m_map2c/m_map48 are ::CMapPtrToPtr, whose key type IS void*.
-// Widening the id to the map's key type is API-forced by MFC, and this inline is the
-// ONE seam where it happens - every map call below goes through it.
+// m_188 is the object id; m_map2c/m_map48 are ::CMapPtrToPtr, whose key type IS void*
+// - the same word read both ways, which AddrWord names.
 inline void* WwdKey(CGameObject* o) {
-    return reinterpret_cast<void*>(o->m_188);
+    AddrWord k;
+    k.m_word = o->m_188;
+    return k.m_addr;
 }
 
 RVA(0x001591e0, 0x5)
@@ -1099,14 +1101,14 @@ void* CDDrawChildGroup::Find(i32 id, const char* key) {
 // ---------------------------------------------------------------------------
 // 0x15a940: the +0xe8-field twin of FindByWorker.
 RVA(0x0015a940, 0x52)
-CWwdGameObject* CDDrawChildGroup::FindByField(i32 type, void* key) {
+CWwdGameObject* CDDrawChildGroup::FindByField(i32 type, i32 key) {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != 0) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(m_list.GetNext(pos));
-        // same void*-key convention as WwdKey/FindByWorker (the class keys on
-        // CMapPtrToPtr's void*), applied here to the +0xe8 field - API-forced
+        // the probed field IS the i32 +0xe8 category word - the key is that word,
+        // not one of the class's CMapPtrToPtr void* keys (retail compares dwords)
         if (obj->GetClassId() == CLASSID_SERIALREF && obj->m_id == type
-            && reinterpret_cast<void*>(obj->m_collCategory) == key) {
+            && obj->m_collCategory == key) {
             return obj;
         }
     }

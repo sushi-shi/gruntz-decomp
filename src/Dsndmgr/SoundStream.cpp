@@ -6,6 +6,7 @@
 #include <Win32.h>                // windows.h base types (dsound.h needs them)
 #include <mmsystem.h>             // WAVEFORMATEX (dsound.h needs it predefined) + timeGetTime
 #include <dsound.h> // real DirectSound SDK (IDirectSound/Buffer, DSBUFFERDESC, DSBCAPS)
+#include <Dsndmgr/WaveFormatPtr.h> // the engine record / SDK LPWAVEFORMATEX pair
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked) in GetErrorString
 #include <string.h> // memset (rep stos) in FillBuffer; inline strcpy in GetErrorString
@@ -266,7 +267,9 @@ StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a,
     desc.dwFlags = a;
     desc.dwBufferBytes = bytes;
     desc.dwReserved = 0;
-    desc.lpwfxFormat = reinterpret_cast<LPWAVEFORMATEX>(&wf);
+    WaveFormatPtr fmtPtr;
+    fmtPtr.m_rec = &wf;
+    desc.lpwfxFormat = fmtPtr.m_sdk;
 
     hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {

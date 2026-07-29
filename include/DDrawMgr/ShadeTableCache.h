@@ -11,15 +11,17 @@ class CString;
 struct CShadeTable {
     i32 m_alloc; // +0x00  loaded/valid flag
     i32 m_size;  // +0x04
-    u8* m_data;  // +0x08  byte/pixel buffer (RezAlloc'd blob)
-    i32 m_key;   // +0x0c  id / lookup key
+    // +0x08 the RezAlloc'd table blob. It is 8bpp palette BYTES or RGB565 WORDS
+    // depending on the blit path - genuinely dual-width, so BOTH readings of the
+    // one pointer are named instead of punned at the word arm.
+    union {
+        u8* m_data;   // the 8bpp palette-byte view
+        u16* m_lut16; // the RGB565 word view
+    };
+    i32 m_key; // +0x0c  id / lookup key
 
-    // The table is 8bpp palette BYTES or RGB565 WORDS depending on the blit path -
-    // genuinely dual-width, so the one word-view lives here. (This absorbed the
-    // duplicate `CShadeTable` view of the same record: its m_data IS m_data.)
     u16* Lut16() const {
-        // byte-forced: m_data is the 8bpp palette-BYTE table; this is its RGB565 arm
-        return reinterpret_cast<u16*>(m_data);
+        return m_lut16;
     }
 
     CShadeTable();             // 0x150180

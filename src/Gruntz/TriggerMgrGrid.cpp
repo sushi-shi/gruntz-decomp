@@ -767,19 +767,20 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
 // score delta, zero the status fields, SetStat(0,0xbb7), re-arm the status item (SetMode 1)
 // and ClearRow(g_curPlayer). void - no path materialises a return value. (__stdcall: ret 0xc.)
 // @early-stop
-// inline-strcmp result-register coloring wall (~80%): void return + strcmp `!= 0` bool steer +
-// i64 score sub are byte-exact and size now matches retail (0x125). The residual is the inline
-// strcmp landing its sbb result in ecx (retail eax) with the `differ` bool in al vs retail's cl,
-// so the `setne`+null-test colors as `cmpb bl,al` vs retail `testb cl,cl`. Not source-steerable
-// (the `bool` local is required for the setne form but shifts the result register). topic:wall.
+// inline-strcmp result-register coloring wall (88.71%, up from ~80% when the dual-role
+// third parameter stopped being punned - see HitSpanArg). void return + strcmp `!= 0`
+// bool steer + i64 score sub are byte-exact and the size matches retail (0x125). The
+// residual is the inline strcmp landing its sbb result in ecx (retail eax) with the
+// `differ` bool in al vs retail's cl, so the `setne`+null-test colors as `cmpb bl,al`
+// vs retail `testb cl,cl`. Not source-steerable (the `bool` local is required for the
+// setne form but shifts the result register). topic:wall.
 RVA(0x0006ea00, 0x125)
-void CTriggerMgr::HitTestApply(i32 x, i32 y, RECT* span) {
-    // retail 0x6ea00 reads arg3 BOTH by value (as the span RECT*) and by address (as
-    // outCol): `mov edx,[esp+0xc]` and `lea ecx,[esp+0x20]` resolve to the same E+0xc
-    // slot, so the parameter is a RECT* in and an i32 out. byte-forced slot reuse - the
-    // pun is language-forced here and nowhere else.
-    CGrunt* cell = FindGruntAt(x, y, span, reinterpret_cast<i32*>(&span), &y, 0);
-    if (cell == 0 || reinterpret_cast<i32>(span) != g_curPlayer) {
+void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
+    // retail 0x6ea00 reads arg3 BOTH by value (the span rect) and by address (the
+    // out-column): `mov edx,[esp+0xc]` and `lea ecx,[esp+0x20]` resolve to the same
+    // E+0xc slot. HitSpanArg names both readings (see <Gruntz/TriggerMgr.h>).
+    CGrunt* cell = FindGruntAt(x, y, span.m_span, &span.m_outCol, &y, 0);
+    if (cell == 0 || span.m_outCol != g_curPlayer) {
         return;
     }
     const char* name = *g_typeColl.ScratchResolve(cell->m_objAux->m_1c);
@@ -799,8 +800,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, RECT* span) {
     // (m_38:m_3c) as the elapsed accumulator, credit the HUD score, then zero the
     // timer's accum/lap/running/current block.
     CTimer* sub = world->m_frameMarker;
-    i64 diff =
-        static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&sub->m_38);
+    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - sub->m_startStamp.m_v;
     if (diff < 0) {
         diff = 0;
     }

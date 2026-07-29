@@ -18,6 +18,7 @@
 #include <Gruntz/GameLevel.h>          // CGameLevel + CDDrawWorkerHost (ex LfxView/LfxWorldRect)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (ex LfxBorderCtx)
 #include <rva.h>
+#include <Pix16.h>          // the byte-cursor / 16bpp-value pointer pair
 #include <Rez/FrameClock.h> // g_timer100 (detail threshold)
 
 static inline u16 Pack(i32 r, i32 g, i32 b) {
@@ -29,7 +30,7 @@ static inline u16 Pack(i32 r, i32 g, i32 b) {
 // A locked surface row is BYTES with a byte pitch while the pixels are 16bpp - that
 // conversion is forced by the surface API, so it is named here.
 static inline u16* Pix16(void* p) {
-    return reinterpret_cast<u16*>(p);
+    return static_cast<u16*>(p);
 }
 
 RVA(0x000a32c0, 0x72)
@@ -197,9 +198,8 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                 // The combat clock/timeout i64 pairs are stored as lo/hi i32 halves
                 // (every writer stamps them as (lo, hi=0)); the 64-bit compare reads
                 // them as the i64 they are - the documented int-pair overlay.
-                if (static_cast<i64>(static_cast<u32>(g_frameTime))
-                            - *reinterpret_cast<i64*>(&desc->m_combatClockLo)
-                        >= *reinterpret_cast<i64*>(&desc->m_combatTimeoutLo)
+                if (static_cast<i64>(static_cast<u32>(g_frameTime)) - desc->m_combatClock64
+                        >= desc->m_combatTimeout64
                     || desc->m_tileOwnerHi != g_curPlayer) {
                     CSpriteRef* node = m_mgr->m_spriteFactory->GetA(desc->m_1f4_moveIcon);
                     if (node == 0) {
@@ -387,21 +387,23 @@ void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
     // The COLUMN term is added to `base` first here (`add base,bpp*left` then
     // `add pitch*top,...`) - the bottom edge below is the other way round; the two
     // edges really are spelled differently in retail.
-    // byte-forced: `base` is the locked surface cursor and the row/column steps are
-    // the surface's BYTE quantities (m_pitch, m_bytesPerPixel); the pixels are 16bpp.
-    u16* tp = reinterpret_cast<u16*>(
+    // `base` is the locked surface cursor and the row/column steps are the surface's
+    // BYTE quantities (m_pitch, m_bytesPerPixel); the pixels are 16bpp (<Pix16.h>).
+    Pix16Ptr top;
+    top.m_chars =
         (static_cast<char*>(base) + r->left * m_surface->m_bytesPerPixel
-         + r->top * m_surface->m_pitch)
-    );
+         + r->top * m_surface->m_pitch);
+    u16* tp = top.m_words;
     for (i32 t = 0; t < w; t++) {
         tp[t] = static_cast<u16>(color);
     }
     // Bottom edge.
-    // byte-forced: same m_pitch/m_bytesPerPixel byte arithmetic on the locked cursor.
-    u16* bp = reinterpret_cast<u16*>(
+    // same m_pitch/m_bytesPerPixel byte arithmetic on the locked cursor
+    Pix16Ptr bot;
+    bot.m_chars =
         (static_cast<char*>(base) + r->bottom * m_surface->m_pitch
-         + r->left * m_surface->m_bytesPerPixel)
-    );
+         + r->left * m_surface->m_bytesPerPixel);
+    u16* bp = bot.m_words;
     for (i32 b = 0; b < w; b++) {
         bp[b] = static_cast<u16>(color);
     }

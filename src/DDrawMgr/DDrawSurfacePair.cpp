@@ -1,4 +1,6 @@
 #include <rva.h>
+#include <Pix16.h>        // the byte-cursor unions
+#include <AddrWord.h>     // the parse-source-pointer-in-a-size-slot pair
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h> // the held CDDSurface (m_surface) full def (Lock/BltFast/IsValid/m_8/m_pitch/m_b0)
@@ -570,15 +572,12 @@ i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, i32 bpp) {
     }
     i32 hr;
     if (mgr->m_flags & 0x10) {
-        hr = pool->CreateDevice(
-            static_cast<void*>(mgr->m_hWnd),
-            // a sentinel code in the hwnd slot, not a window - byte-forced
-            reinterpret_cast<void*>(2),
-            w,
-            h,
-            bpp,
-            mode
-        );
+        // a sentinel CODE in the hwnd slot, not a window - a bare immediate riding a
+        // pointer parameter (<AddrWord.h>)
+        AddrWord windowSlot;
+        windowSlot.m_word = 2;
+        hr =
+            pool->CreateDevice(static_cast<void*>(mgr->m_hWnd), windowSlot.m_addr, w, h, bpp, mode);
     } else {
         hr = pool->CreateDevice(
             static_cast<void*>(mgr->m_hWnd),
@@ -864,11 +863,13 @@ i32 CAniElement::Build(void* ctx, CAniSource* src, i32 flags) {
     i32 i;
     for (i = 0; i < src->m_count; i++) {
         rec = new CAniRecordView;
-        // byte-forced: `cursor` walks the blob in BYTES (it is advanced by the runtime
-        // `g_aniParsedNameLen + 0x14` below and the name copy reads it a char at a time),
-        // while the record prefix Parse consumes is ten consecutive i16 fields. The width
-        // changes at this one seam because the stride either side of it differs.
-        if (rec->Parse(ctx, reinterpret_cast<const i16*>(cursor)) == 0) {
+        // `cursor` walks the blob in BYTES (it is advanced by the runtime
+        // `g_aniParsedNameLen + 0x14` below and the name copy reads it a char at a
+        // time) while the record prefix Parse consumes is ten consecutive i16 fields -
+        // both readings of the cursor are named (<Pix16.h>).
+        Pix16CPtr head;
+        head.m_chars = cursor;
+        if (rec->Parse(ctx, head.m_swords) == 0) {
             goto fail;
         }
         m_records.SetAtGrow(m_records.GetSize(), static_cast<CObject*>(rec));
@@ -1053,8 +1054,10 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CParseSource* a1, i32 a2, i32 a3) {
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
     // faithful: retail pushes the CParseSource POINTER itself into the slot-12
     // size argument here (0x165b0c `push ecx` = the a1 stack arg) - the slot is
-    // polymorphic across this factory's two kinds.
-    if (w->AllocBufMakeB3(data, reinterpret_cast<i32>(a1), a3) == 0) {
+    // polymorphic across this factory's two kinds (<AddrWord.h>).
+    AddrWord srcArg;
+    srcArg.m_addr = a1;
+    if (w->AllocBufMakeB3(data, srcArg.m_word, a3) == 0) {
         if (w != 0) {
             delete w;
         }

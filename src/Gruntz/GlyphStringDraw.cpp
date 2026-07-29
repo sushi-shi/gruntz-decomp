@@ -3,6 +3,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>    // the m_drawTarget pages (full def)
 #include <Ints.h>
 #include <rva.h>
+#include <AddrWord.h> // the glyph-handle-in-a-word slot
 
 #include <string.h>             // strlen
 #include <DDrawMgr/DDSurface.h> // CDDSurface (BltFast) + RECT/SetRect (via Mfc.h) for the layer-blit helper
@@ -42,9 +43,10 @@ i32 DrawGlyphString(
             // CreateWorkerB28's a3 lands in the SHARED virtual Vfunc2C(i32,i32,i32),
             // whose slot is PROVEN heterogeneous - CDDrawWorkerA @0x157110 stores it
             // as a char flag (`m_78b = (char)a3`) while CDDrawWorkerB @0x1572f0 stores
-            // the whole dword handle. The slot therefore cannot be typed CImage*:
-            // language-forced pun, at one seam.
-            glyph = reinterpret_cast<i32>(static_cast<CImage*>(font->m_items.GetAt(c)));
+            // the whole dword handle. So the glyph rides that slot as a word.
+            AddrWord g;
+            g.m_addr = static_cast<CImage*>(font->m_items.GetAt(c));
+            glyph = g.m_word;
         } else {
             glyph = 0;
         }

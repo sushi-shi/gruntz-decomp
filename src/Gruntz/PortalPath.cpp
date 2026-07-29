@@ -11,7 +11,7 @@ char g_nameFmt[] = "%s"; // owner def (retail .data bytes: 25 73 00 00)
 
 RVA(0x00090550, 0x1e6)
 i32 __stdcall LaunchPortalExe(char* outPath) {
-    u32 bufSize;
+    DWORD bufSize;
     char regBuf[0x100];
     Utils::RegistryHelper reg;
 

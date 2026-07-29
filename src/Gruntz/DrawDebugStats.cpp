@@ -15,6 +15,7 @@
 #include <string.h>                    // inline strcat/strlen intrinsics (/O2)
 
 #include <rva.h>
+#include <Pix16.h> // the byte-cursor unions (RecordBytes / Pix16Ptr)
 
 RVA(0x000cf770, 0x35e)
 void CPlay::DrawDebugStats() {
@@ -82,8 +83,10 @@ void CPlay::DrawDebugStats() {
         // The query rect IS the sprintf scratch buffer, and the frame PROVES it:
         // retail passes esp+0x38 - the very slot the format buffer occupies - and
         // sub esp,0x268 leaves no room for a third RECT. Dead storage by then (the
-        // last strcat is long past); byte-forced overlay at this one seam.
-        CopyRect(&lr, g_gameReg->GetRect(reinterpret_cast<RECT*>(scratch)));
+        // last strcat is long past); RecordBytes names the overlay at this one seam.
+        RecordBytes reuse;
+        reuse.m_chars = scratch;
+        CopyRect(&lr, g_gameReg->GetRect(static_cast<RECT*>(reuse.m_rec)));
         RECT dr;
         dr.left = lr.left;
         dr.top = lr.bottom - 0x1c;

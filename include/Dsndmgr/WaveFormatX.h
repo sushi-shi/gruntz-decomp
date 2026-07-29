@@ -30,4 +30,13 @@ struct WaveFormatX {
 };
 SIZE(0x14); // WAVEFORMATEX-shaped PCM header (u16 tail padded to a 4-byte multiple)
 
+// The RIFF chunk cursor. A RIFF walk reads DWORD ids/sizes but advances by a
+// BYTE count padded to even, and the 'fmt ' chunk body IS a WaveFormatX at the
+// cursor - three readings of one pointer, named here so the walk has no pun.
+union RiffCursor {
+    u32* m_w;           // the dword reads (id, size)
+    char* m_b;          // the byte advance / end compare
+    WaveFormatX* m_fmt; // the 'fmt ' chunk body at the cursor
+};
+
 #endif // DSNDMGR_WAVEFORMATX_H

@@ -5,6 +5,8 @@
 
 #include <Crypto/BlowfishPi.h>
 
+#include <string.h> // memcpy - retail's S-box reload is one inline `rep movsd` of 0x400 dwords
+
 DATA(0x0021aeb0)
 u32 g_bfP[18] = BF_PI_P_INIT;
 DATA(0x0021aef8)
@@ -14,17 +16,16 @@ u32 g_bfInitP[18] = BF_PI_P_INIT;
 DATA(0x0021bf40)
 u32 g_bfInitS[4][256] = BF_PI_S_INIT;
 
-// The S-boxes are ONE 1024-entry table the cipher indexes linearly; C++ has no
-// other way to flatten a u32[4][256], so the pun is language-forced.
-#define BF_S (reinterpret_cast<u32*>(g_bfS))
-
 #define BF_ENC(LL, R, P)                                                                           \
     (LL ^= (P),                                                                                    \
      LL ^=                                                                                         \
-     (((BF_S[0x000 + ((R) >> 24)] + BF_S[0x100 + (((R) >> 16) & 0xff)])                            \
-       ^ BF_S[0x200 + (((R) >> 8) & 0xff)])                                                        \
-      + BF_S[0x300 + ((R) & 0xff)]))
+     (((g_bfS[0][(R) >> 24] + g_bfS[1][((R) >> 16) & 0xff]) ^ g_bfS[2][((R) >> 8) & 0xff])         \
+      + g_bfS[3][(R) & 0xff]))
 
+// @early-stop
+// the other arm of the decipher mirror wall below (see its note): with the
+// memcpy S-box reload retail's decipher schedule is the one cl emits, so this
+// twin sits at 60.41. Its own MAX (100.00) is banked from the loop spelling.
 RVA(0x0016f7f0, 0x47b)
 void Blowfish_encipher(u32* xl, u32* xr) {
     u32 l = *xl;
@@ -54,10 +55,20 @@ void Blowfish_encipher(u32* xl, u32* xr) {
 }
 
 // @early-stop
-// 99.84% - mirror-function scheduling wall: identical macro to the (100%-exact)
-// encipher, but MSVC5 chose a different round-1 byte-extract regalloc here
-// (extra entry `xor ecx,ecx`, shr via eax not ecx). All 16 rounds' logic is
-// byte-exact; only the round-1 prologue schedule diverges. Not source-steerable.
+// 99.875 - mirror-function scheduling wall, and it is a ONE-OR-THE-OTHER wall:
+// encipher and decipher share this macro verbatim, but retail's two bodies chose
+// DIFFERENT round-1 byte-extract regallocs (which of eax/ecx is zeroed on entry
+// and which one takes the `shr ..,0x18`), and cl emits one schedule for both.
+// MEASURED 2026-07-29, four builds, all cast-free variants:
+//   S-box declared u32[1024] + the flat 1024-iteration copy loop
+//        -> encipher 100.00, decipher 61.51, InitializeBlowfish 99.89
+//   S-box declared u32[4][256] + memcpy (either subscript spelling)
+//        -> encipher  60.41, decipher 99.875, InitializeBlowfish 100.00
+// The subscript form (`g_bfS[1][x]` vs `g_bfS[0][0x100+x]`) is NOT the steer -
+// both give byte-identical output; the steer is the copy spelling above, i.e. a
+// TU-cumulative optimizer-state effect from a sibling function. The memcpy arm is
+// kept: it banks the higher decipher MAX, takes InitializeBlowfish to EXACT, and
+// is the shape retail's own `mov ecx,0x400; rep movsd` proves.
 // See docs/patterns/mirror-function-divergent-schedule.md.
 RVA(0x0016fc70, 0x48e)
 void Blowfish_decipher(u32* xl, u32* xr) {
@@ -88,25 +99,23 @@ void Blowfish_decipher(u32* xl, u32* xr) {
 }
 
 RVA(0x00170100, 0x104)
-i16 InitializeBlowfish(u8* key, i16 keybytes) {
+i16 InitializeBlowfish(const char* key, i16 keybytes) {
     i16 i, j;
     u32 data, datal, datar;
 
     for (i = 0; i < 18; i++) {
         g_bfP[i] = g_bfInitP[i];
     }
-    for (i = 0; i < 1024; i++) {
-        // language-forced, the same 2D->1D flatten as the BF_S macro above: the
-        // init table is a u32[4][256] (its brace-nested BF_PI_S_INIT pins the rank)
-        // copied into the ONE 1024-entry S-box the cipher indexes linearly
-        BF_S[i] = (reinterpret_cast<const u32*>(g_bfInitS))[i];
-    }
+    memcpy(g_bfS, g_bfInitS, sizeof(g_bfS));
 
     j = 0;
     for (i = 0; i < 18; i++) {
-        data = (static_cast<u32>(key[j]) << 24) | (static_cast<u32>(key[(j + 1) % keybytes]) << 16)
-               | (static_cast<u32>(key[(j + 2) % keybytes]) << 8)
-               | static_cast<u32>(key[(j + 3) % keybytes]);
+        // the schedule reads the key as UNSIGNED bytes (retail zero-extends each one:
+        // `xor eax,eax; mov al,BYTE PTR [...]`), so each byte is widened here.
+        data = (static_cast<u32>(static_cast<u8>(key[j])) << 24)
+               | (static_cast<u32>(static_cast<u8>(key[(j + 1) % keybytes])) << 16)
+               | (static_cast<u32>(static_cast<u8>(key[(j + 2) % keybytes])) << 8)
+               | static_cast<u32>(static_cast<u8>(key[(j + 3) % keybytes]));
         g_bfP[i] ^= data;
         j = (j + 4) % keybytes;
     }
@@ -130,8 +139,5 @@ i16 InitializeBlowfish(u8* key, i16 keybytes) {
 
 RVA(0x0016f6c0, 0x12)
 void __stdcall Blowfish_InitKey(const char* key) {
-    // byte-forced (one seam): the schedule indexes the key as UNSIGNED bytes (retail
-    // zero-extends each one - `xor eax,eax; mov al,BYTE PTR [...]`), so the caller's
-    // string key becomes u8* here rather than at every call site
-    InitializeBlowfish(reinterpret_cast<u8*>(const_cast<char*>(key)), 4);
+    InitializeBlowfish(key, 4);
 }

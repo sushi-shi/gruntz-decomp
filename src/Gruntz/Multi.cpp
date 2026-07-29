@@ -4,6 +4,7 @@
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
 #include <Net/LobbyDialogs.h>     // the four modal DlgProcs RunErrorDialog runs
 #include <rva.h>
+#include <MsgParam.h>         // the window-message parameter's pointer/word pair
 #include <Gruntz/CurPlayer.h> // g_curPlayer
 #include <Rez/FrameClock.h>   // the frame-clock/timer band the session loop reads/pumps
 #include <Gruntz/BattlezMapConfig.h>
@@ -804,9 +805,8 @@ i32 CMulti::PumpA() {
     g_killCueClock = g_lastNow;
     g_engineFrameDelta = 0x21;
     if (m_ambientInitDone == 0) {
-        if (static_cast<i64>(static_cast<u32>(g_frameTime))
-                - *reinterpret_cast<i64*>(&m_ambientTimerLo)
-            >= *reinterpret_cast<i64*>(&m_ambientInterval)) {
+        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_ambientTimer64.m_v
+            >= m_ambientInterval64.m_v) {
             char name[0x40];
             wsprintfA(name, "AMBIENT%d", GetAmbientId());
             if (g_gameReg->m_musicEnabled != 0) {
@@ -974,14 +974,12 @@ void CMulti::PumpB() {
         (mgr->m_level->m_mainPlane)->CenterScrollB();
     }
     if (m_region0Gate != 0) {
-        if (static_cast<i64>(g_frameTime) - *reinterpret_cast<i64*>(&m_region0TimerLo)
-            >= *reinterpret_cast<i64*>(&m_region0Interval)) {
+        if (static_cast<i64>(g_frameTime) - m_region0Timer64.m_v >= m_region0Interval64.m_v) {
             OnRegion2(0);
         }
     }
     if (m_region1Gate != 0) {
-        if (static_cast<i64>(g_frameTime) - *reinterpret_cast<i64*>(&m_region1TimerLo)
-            >= *reinterpret_cast<i64*>(&m_region1Interval)) {
+        if (static_cast<i64>(g_frameTime) - m_region1Timer64.m_v >= m_region1Interval64.m_v) {
             OnRegion1(0);
         }
     }
@@ -1094,7 +1092,7 @@ i32 CMulti::Open() {
     if (!descriptor) {
         return 0;
     }
-    if (!Peer()->InitFromProvider(descriptor, g_dplayAppGuid)) {
+    if (!Peer()->InitFromProvider(descriptor, g_dplayAppGuid.m_guid)) {
         return 0;
     }
     if (g_hostServicesMode) {
@@ -1214,7 +1212,7 @@ INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 ::SendMessageA(combo, 0x186, 0, 0);
             }
 
-            u32 cap = 0xa; // GetValueString takes u32* - declare it that way
+            DWORD cap = 0xa; // GetValueString's in/out count IS the registry LPDWORD
             g_gameReg->m_settings->GetValueString(
                 const_cast<char*>(static_cast<const char*>(("Player_Name"))),
                 nameBuf,
@@ -1640,10 +1638,14 @@ void FillPlayerList(HWND hList, CNetMgr* sess) {
         } else {
             str = player->m_desc.m_lpszName;
         }
-        i32 idx =
-            static_cast<i32>(::SendMessageA(hList, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(str)));
+        MsgParam name;
+        i32 idx = static_cast<i32>(
+            ::SendMessageA(hList, LB_ADDSTRING, 0, (name.m_str = str, name.m_lparam))
+        );
         if (idx != -1) {
-            ::SendMessageA(hList, LB_SETITEMDATA, idx, reinterpret_cast<LPARAM>(player));
+            MsgParam cookie;
+            cookie.m_ptr = player;
+            ::SendMessageA(hList, LB_SETITEMDATA, idx, cookie.m_lparam);
         }
         if (sess->m_playerSelId != 0) {
             player = static_cast<CNetPlayerListNode*>(sess->m_players.GetAt(sess->m_playerSelId));
@@ -2071,18 +2073,17 @@ i32 CMulti::PollSession() {
 // esi<->edi recolor, store-order permutation). Not further source-steerable. Final sweep.
 RVA(0x000b9750, 0x74e)
 i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
-    // wire decode: the transport hands back BYTES, so naming the record at
-    // the receive boundary is language-forced (one seam per message type).
-    CNetMsg* msg = reinterpret_cast<CNetMsg*>(buf);
+    // the receive buffer at its wire shapes (see CNetWireMsg in <Net/NetMgr.h>)
+    CNetWireMsg wire;
+    wire.m_bytes = buf;
+    CNetMsg* msg = wire.m_msg;
     if (msg == 0) {
         return 0;
     }
     if (sender == 0) {
         // sender 0 = the DirectPlay SYSTEM channel - the same buffer carries the
-        // control-record wire format, decoded from the raw bytes
-        // wire decode: the transport hands back BYTES, so naming the record at
-        // the receive boundary is language-forced (one seam per message type).
-        return HandleControlMsg(reinterpret_cast<CNetCtrlMsg*>(buf), size);
+        // control-record wire format
+        return HandleControlMsg(wire.m_ctrl, size);
     }
 
     CNetSessionNode* pd = static_cast<CNetSessionNode*>(Peer()->GetPlayerData(sender));
@@ -2219,10 +2220,9 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (Mgr()->CountReadyOptionsSlots(1) >= 4) {
                 break;
             }
-            // one seam: the 0x3f9 arm's wire record IS the 0x28-byte channel-
-            // registration packet - RegisterChannelRec below reads the same bytes
-            // back through CNetChannelPacket, and +0x09 is its m_kind.
-            CNetChannelPacket* chan = reinterpret_cast<CNetChannelPacket*>(msg);
+            // the 0x3f9 arm's wire record IS the 0x28-byte channel-registration
+            // packet - RegisterChannelRec reads the same bytes back through it.
+            CNetChannelPacket* chan = wire.m_chan;
             if (ChannelSlots_Get(chan->m_kind) == 0) {
                 chan->m_kind = static_cast<u8>(ChannelSlots_FindFree());
             }
@@ -2382,9 +2382,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             break;
 
         case 0x417:
-            // wire decode: the transport hands back BYTES, so naming the record at
-            // the receive boundary is language-forced (one seam per message type).
-            HandleVersionCheck(reinterpret_cast<CNetVersionMsg*>(buf)); // wire decode
+            HandleVersionCheck(wire.m_version);
             break;
 
         case 0x418: {
@@ -3038,7 +3036,9 @@ namespace NetLobby {
             strcat(buf, "\r\n");
         }
         strcat(buf, str);
-        SendMessageA(edit, 0xc2, 0, reinterpret_cast<LPARAM>(buf));
+        MsgParam text;
+        text.m_str = buf;
+        SendMessageA(edit, 0xc2, 0, text.m_lparam);
         SendMessageA(edit, 0xb6, 0, 0x270f);
     }
 } // namespace NetLobby

@@ -3,6 +3,7 @@
 #include <Bute/SymParser.h> // canonical CSymParser (pulls CSymTab)
 
 #include <rva.h>
+#include <AddrWord.h> // the signed-word view of the cheat-table bounds
 
 #include <string.h> // inline strcpy intrinsic (/O2) for the cheat-table copy
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -58,11 +59,13 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* a1, i32 a2, i32 a3) {
         CString text;
         CString desc;
         i32 i = 0;
-        // byte-forced: retail's end test is `cmp ebp,0x62aef0; jl` - a SIGNED
-        // compare (0x188cf/0x189bf relocs). A char* < char* lowers to `jb`.
-        for (char* p = g_cheatTable;
-             reinterpret_cast<i32>(p) < reinterpret_cast<i32>(g_cheatTableEnd);
-             p += 0xa0) {
+        // retail's end test is `cmp ebp,0x62aef0; jl` - a SIGNED compare
+        // (0x188cf/0x189bf relocs), so the two table addresses are compared as
+        // signed words; a char* < char* would lower to `jb` (<AddrWord.h>).
+        AddrWord cur;
+        AddrWord last;
+        last.m_addr = g_cheatTableEnd;
+        for (char* p = g_cheatTable; (cur.m_addr = p, cur.m_word) < last.m_word; p += 0xa0) {
             grp.Format("A%dC%d", i / 3 + 1, i % 3 + 1);
             i32 id = g_buteMgr.GetIntDef(bootyCheatz, grp, 1);
             grp.Format("Cheat%i", id);

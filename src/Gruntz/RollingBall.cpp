@@ -174,8 +174,7 @@ RVA(0x000afde0, 0x102)
 void CRollingBall::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CRollingBall>::s_table.ResolveEntry(id));
     if ((*e) != 0) {
-        (this
-             ->*(*((CActRegPool<CRollingBall>::s_table.ResolveEntry(id)))))();
+        (this->*(*((CActRegPool<CRollingBall>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -206,7 +205,8 @@ void CRollingBall::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CRollingBall>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CRollingBall::Update);
+    (*((CActRegPool<CRollingBall>::s_table.ResolveEntry(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CRollingBall::Update);
 }
 
 // CRollingBall::Update - the per-tick rolling-ball state machine (__thiscall).
@@ -360,19 +360,14 @@ i32 CRollingBall::Update() {
     }
 
     // ----- the direction sub-switch (state +0x12c -> NORTH/SOUTH/EAST/WEST) -----
-    // m_subX/m_subY are doubles; the direction arms zero/seed them (and m_moveDelta)
-    // as int pairs in this exact interleaved store order, so their halves are
-    // addressed as ints via ((i32*)&member)[0/1].
-    // byte-forced: retail stores [esi+0x60], [esi+0x68], [esi+0x64], [esi+0x6c] in
-    // that order - subX.lo / subY.lo / subX.hi / subY.hi INTERLEAVED, four dword
-    // stores of a zeroed register, which no `double = 0.0` pair emits. The {lo,hi}
-    // spelling is faithful (same call as the i64 timer pairs).
-    (reinterpret_cast<i32*>(&m_subX))[0] = 0;
-    // m_subY is a double and retail clears it with two dword stores; the {lo,hi} pair
-    // spelling is faithful, the same call as the i64 timer pairs
-    (reinterpret_cast<i32*>(&m_subY))[0] = 0;
-    (reinterpret_cast<i32*>(&m_subX))[1] = 0;
-    (reinterpret_cast<i32*>(&m_subY))[1] = 0;
+    // Retail stores [esi+0x60], [esi+0x68], [esi+0x64], [esi+0x6c] in that order -
+    // subX.lo / subY.lo / subX.hi / subY.hi INTERLEAVED, four dword stores of a
+    // zeroed register, which no `double = 0.0` pair emits. The dword halves are
+    // named union arms on the class (see <Gruntz/RollingBall.h>).
+    m_subXLo = 0;
+    m_subYLo = 0;
+    m_subXHi = 0;
+    m_subYHi = 0;
     CWwdGameObjectA* lg = m_object;
     switch (lg->m_12c) {
         case 1:

@@ -158,4 +158,16 @@ void BuildColorChannelTables();
 i32 __stdcall
 CreateDirectDrawVia(void* ctx, i32 a1, i32 a2, IDirectDraw2*(__cdecl* factory)(void*, i32, i32));
 
+// The two DirectDraw enumeration callbacks. Their reconstructions declare the
+// argument lists the retail BODIES actually use, which is not the SDK's prototype -
+// one code address, the SDK's reading and ours, both real.
+union DdDriverEnumFn {
+    LPDDENUMCALLBACKA m_sdk;
+    i32(__stdcall* m_body)(void*, i32, i32, IDirectDraw2*(__cdecl*)(void*, i32, i32));
+};
+union DdModeEnumFn {
+    LPDDENUMMODESCALLBACK m_sdk;
+    void(__cdecl* m_body)(); // the reconstruction reads none of its arguments
+};
+
 #endif // GRUNTZ_CDIRECTDRAWMGR_H

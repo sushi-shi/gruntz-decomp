@@ -3,6 +3,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Image/ImagePool.h> // g_hResModule (ex .cpp extern)
+#include <DDrawMgr/DirPal.h> // Palette256 - the 0x400-byte colour table's two views
 
 namespace ApiCallerStubs {
 
@@ -30,18 +31,17 @@ namespace ApiCallerStubs {
             return 0;
         }
 
-        u8 out[0x400];
-        for (i32 i = 0; i < 0x400; i += 4) {
-            out[i + 0] = raw[i + 2];
-            out[i + 1] = raw[i + 1];
-            out[i + 2] = raw[i + 0];
-            out[i + 3] = 0;
-        }
         // retail's swizzle @0x177575 is a FLAT byte loop over the 0x400-byte BMP colour
-        // table (`mov cl,[esp+eax+0x452]` ... `add eax,4; cmp eax,0x400`), so the
-        // staging buffer is byte-forced; the SDK's PALETTEENTRY* goes back on at the
-        // Build boundary, once.
-        return Build(reinterpret_cast<PALETTEENTRY*>(out), 0);
+        // table (`mov cl,[esp+eax+0x452]` ... `add eax,4; cmp eax,0x400`); Palette256
+        // names both readings of those bytes, so the Build hand-off needs no pun.
+        Palette256 out;
+        for (i32 i = 0; i < 0x400; i += 4) {
+            out.m_bytes[i + 0] = raw[i + 2];
+            out.m_bytes[i + 1] = raw[i + 1];
+            out.m_bytes[i + 2] = raw[i + 0];
+            out.m_bytes[i + 3] = 0;
+        }
+        return Build(out.m_entries, 0);
     }
 
     // __thiscall(path, arg): find/load/lock a PALETTE resource from the app resource

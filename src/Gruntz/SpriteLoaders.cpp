@@ -4,6 +4,7 @@
 #include <Gruntz/GruntzPlayer.h>
 #include <Utils/MapTyped.h> // MapLookupById - the id->void* key pun, at one seam
 #include <rva.h>
+#include <AddrWord.h>       // the id-word / object-address pair
 #include <Rez/FrameClock.h> // g_timer500 (draw-throttle counter)
 #include <Io/FileMem.h>     // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/Grunt.h>
@@ -139,8 +140,7 @@ i32 CTimer::Tick(i32 dt) {
         return 1;
     }
     // remaining = (m_accumLo:m_accumHi) - g_frameTime + (m_baseTimeLo:m_baseTimeHi), clamped at 0.
-    i64 rem = *reinterpret_cast<i64*>(&m_accumLo) - static_cast<u32>(g_frameTime)
-              + *reinterpret_cast<i64*>(&m_baseTimeLo);
+    i64 rem = m_accum.m_v - static_cast<u32>(g_frameTime) + m_baseTime.m_v;
     i32 v = (rem > 0) ? static_cast<i32>(rem) : 0;
     m_currentMs = v;
 
@@ -170,8 +170,11 @@ i32 CTimer::Tick(i32 dt) {
             // FindByKey WAS CMapPtrToPtr::Lookup @0x1b8760 on the embedded m_map48)
             CGameObject* obj = 0;
             found = MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, key, obj);
-            // faithful: on a miss retail uses the id itself as the object address
-            CGameObject* hit = found ? obj : reinterpret_cast<CGameObject*>(key);
+            // faithful: on a MISS retail uses the id word itself as the object
+            // address - the same slot read both ways (<AddrWord.h>)
+            AddrWord raw;
+            raw.m_word = key;
+            CGameObject* hit = found ? obj : static_cast<CGameObject*>(raw.m_addr);
             if (hit != 0 && hit->m_7c->m_logic != 0) {
                 static_cast<CWarlord*>(hit->m_7c->m_logic)->ResolveDeathAnimation();
             }
@@ -187,8 +190,11 @@ i32 CTimer::Tick(i32 dt) {
             // FindByKey WAS CMapPtrToPtr::Lookup @0x1b8760 on the embedded m_map48)
             CGameObject* obj = 0;
             found = MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, key, obj);
-            // faithful: on a miss retail uses the id itself as the object address
-            CGameObject* hit = found ? obj : reinterpret_cast<CGameObject*>(key);
+            // faithful: on a MISS retail uses the id word itself as the object
+            // address - the same slot read both ways (<AddrWord.h>)
+            AddrWord raw;
+            raw.m_word = key;
+            CGameObject* hit = found ? obj : static_cast<CGameObject*>(raw.m_addr);
             if (hit != 0 && hit->m_7c->m_logic != 0) {
                 static_cast<CWarlord*>(hit->m_7c->m_logic)->NotifyFortUnderAttack();
             }
@@ -300,7 +306,7 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
         secs = 0x63 - onClock - carry;
     }
     u32 total = (mins + secs * 60) * 1000;
-    *reinterpret_cast<u64*>(&m_accumLo) += total;
+    m_accum.m_v += total;
 }
 
 // ---------------------------------------------------------------------------

@@ -3,9 +3,10 @@
 
 #include <Ints.h>
 #include <rva.h>
+#include <Clock64.h>              // the {lo,hi} 64-bit clock pairs at +0x78/+0x80
 #include <Gruntz/StatusBarItem.h> // canonical frameless CStatusBarItem base (real RTTI base)
 #include <Gruntz/SbGeom.h> // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
-#include <Image/CImage.h>         // the glyph handles ARE CImage (RenderFrame @0x153790)
+#include <Image/CImage.h>  // the glyph handles ARE CImage (RenderFrame @0x153790)
 
 class CStatusBarMgr;
 class CDDrawSurfaceMgr;
@@ -104,10 +105,21 @@ public:
     CImage* m_timerGlyph;           // +0x6c  timer glyph (resolved by Update)
     i32 m_timerValue;               // +0x70  timer value (tracked)
     CDDrawWorker* m_glyphMap;       // +0x74  glyph map for the first four values (a CDDrawWorker)
-    i32 m_timerAnchorLo;            // +0x78  timer anchor lo (g_frameTime at last bump)
-    i32 m_timerAnchorHi;            // +0x7c  timer anchor hi
-    i32 m_timerWindowLo;            // +0x80  timer window lo
-    i32 m_timerWindowHi;            // +0x84  timer window hi
+    // Both pairs are compared 64-bit but seeded half by half - see <Clock64.h>.
+    union {
+        Clock64 m_timerAnchor; // +0x78  timer anchor (g_frameTime at last bump)
+        struct {
+            i32 m_timerAnchorLo; // +0x78
+            i32 m_timerAnchorHi; // +0x7c
+        };
+    };
+    union {
+        Clock64 m_timerWindow; // +0x80  timer window
+        struct {
+            i32 m_timerWindowLo; // +0x80
+            i32 m_timerWindowHi; // +0x84
+        };
+    };
 };
 SIZE_UNKNOWN();
 

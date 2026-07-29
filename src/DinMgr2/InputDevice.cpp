@@ -1,5 +1,6 @@
 #include <DinMgr2/DirectInputMgr2.h>
 #include <rva.h>
+#include <ComOutRef.h> // the COM out-parameter's void**/typed destination pair
 #include <Win32.h>
 
 #define INPUTDEVICE_FILE "C:\\Proj\\DinMgr2\\InputDevice.cpp"
@@ -23,8 +24,9 @@ i32 CInputDevRoot::Create(IDirectInputA* di, const void* deviceGuid, HWND hwnd) 
     if (m_device == 0) {
         return 0;
     }
-    // API-forced: COM QueryInterface's out-param is void**
-    hr = m_device->QueryInterface(IID_IDirectInputDevice2A, reinterpret_cast<void**>(&m_device2));
+    ComOutRef<IDirectInputDevice2A> devOut;
+    devOut.m_asTyped = &m_device2;
+    hr = m_device->QueryInterface(IID_IDirectInputDevice2A, devOut.m_asVoid);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x3e, hr);
         return 0;

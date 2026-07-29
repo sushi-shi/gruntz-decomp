@@ -3,17 +3,16 @@
 
 #include <Gruntz/MapMgr.h> // CMapMgr IS CMapMgr (a typedef now - a fwd decl
 #include <rva.h>
-#include <Mfc.h> // CPtrArray, CDWordArray (real afxcoll, 0x14 layout); DWORD
-
-
+#include <Clock64.h> // the {lo,hi} 64-bit clock pair at +0x078/+0x080
+#include <Mfc.h>     // CPtrArray, CDWordArray (real afxcoll, 0x14 layout); DWORD
 
 class CTriggerMgr;
 class CTileTriggerSwitchLogic; // FindChild's element type
-struct Coord; // <Gruntz/CoordNode.h> - m_0f0's element type
+struct Coord;                  // <Gruntz/CoordNode.h> - m_0f0's element type
 class CTileTriggerContainer; // +0x14 the tile-trigger container (FindChild/FindByField0C receiver)
 class CGrunt;                // <Gruntz/Grunt.h> - the grid units the spawn machine drives
 class CGruntzMgr;
-class CLevelInfo;      // real level record (m_levelInfo member)
+class CLevelInfo; // real level record (m_levelInfo member)
 
 class CBattlezMapConfig {
 public:
@@ -29,14 +28,14 @@ public:
     i32 EnterDefenderMode(CGrunt*, i32);
     i32 PathCrossesMarkedTile(CGrunt*);
     i32 IsCoordOccupied(CGrunt*, i32, i32);
-    i32 SerializeState(CFileMemBase * , i32, i32, i32);
+    i32 SerializeState(CFileMemBase*, i32, i32, i32);
     i32 PathToNearbyUnit(CGrunt*); // 0x02ed90
     i32 Serialize(void*);
     i32 Deserialize(void*);
     i32 ClaimCellFromRow(i32, i32, i32, i32);
     i32 TrySeedSpawnAt(i32, i32);
     i32 RepathToFreeCell(CGrunt*);
-    i32 ProbeUnoccupiedAt(i32, i32); // 0x035210  unoccupied-candidate-at-(x,y) probe
+    i32 ProbeUnoccupiedAt(i32, i32);    // 0x035210  unoccupied-candidate-at-(x,y) probe
     i32 ForcePlaceFromReserve(CGrunt*); // 0x035550  spend-reserve forced place
     void* PickSpawnCoord(void*, CGrunt*, i32);
     i32 RouteUnitTo(CGrunt*, i32, i32, i32, i32, i32);
@@ -125,31 +124,43 @@ public:
             i32 m_06c;                          // +0x06c
             i32 m_070;                          // +0x070
             i32 m_budgetMul;                    // +0x074  = 0x19
-            i32 m_scratch78;                    // +0x078  = 0
-            i32 m_scratch7c;                    // +0x07c  = 0
-            i32 m_scratch80;                    // +0x080  = 0
-            i32 m_scratch84;                    // +0x084  = 0
-            i32 m_088;                          // +0x088  = 0x32
-            i32 m_08c;                          // +0x08c  = 5
-            i32 m_090;                          // +0x090  = 5
-            i32 m_094;                          // +0x094  = 8
-            i32 m_098;                          // +0x098  = 8
-            i32 m_09c;                          // +0x09c  = 0x7d0
-            i32 m_0a0;                          // +0x0a0  = 0x7d0
-            i32 m_0a4;                          // +0x0a4  = 6
-            i32 m_0a8;                          // +0x0a8  = 0x32
-            i32 m_0ac;                          // +0x0ac  = 8
-            i32 m_0b0;                          // +0x0b0  = 8
-            i32 m_reserveBudget;                // +0x0b4  = 0x3e8
-            i32 m_0b8;                          // +0x0b8  = 0x7d0
-            i32 m_moveBudget;                   // +0x0bc  = 0x3e8
-            i32 m_0c0;                          // +0x0c0  = 0xa
-            i32 m_repathBudget;                 // +0x0c4  = 0xbb8
-            i32 m_0c8;                          // +0x0c8  = 0x7530
-            i32 m_0cc;                          // +0x0cc  = 0xbb8
-            i32 m_0d0;                          // +0x0d0  (8 B with m_0d4)
-            i32 m_0d4;                          // +0x0d4
-            i32 m_0d8;                          // +0x0d8
+            // +0x078/+0x080 are the route-debounce clock pair: compared 64-bit,
+            // written (and serialized) as their dword halves - see <Clock64.h>.
+            union {
+                Clock64 m_routeClock; // +0x078
+                struct {
+                    i32 m_scratch78; // +0x078  = 0
+                    i32 m_scratch7c; // +0x07c  = 0
+                };
+            };
+            union {
+                Clock64 m_routeWindow; // +0x080
+                struct {
+                    i32 m_scratch80; // +0x080  = 0
+                    i32 m_scratch84; // +0x084  = 0
+                };
+            };
+            i32 m_088;           // +0x088  = 0x32
+            i32 m_08c;           // +0x08c  = 5
+            i32 m_090;           // +0x090  = 5
+            i32 m_094;           // +0x094  = 8
+            i32 m_098;           // +0x098  = 8
+            i32 m_09c;           // +0x09c  = 0x7d0
+            i32 m_0a0;           // +0x0a0  = 0x7d0
+            i32 m_0a4;           // +0x0a4  = 6
+            i32 m_0a8;           // +0x0a8  = 0x32
+            i32 m_0ac;           // +0x0ac  = 8
+            i32 m_0b0;           // +0x0b0  = 8
+            i32 m_reserveBudget; // +0x0b4  = 0x3e8
+            i32 m_0b8;           // +0x0b8  = 0x7d0
+            i32 m_moveBudget;    // +0x0bc  = 0x3e8
+            i32 m_0c0;           // +0x0c0  = 0xa
+            i32 m_repathBudget;  // +0x0c4  = 0xbb8
+            i32 m_0c8;           // +0x0c8  = 0x7530
+            i32 m_0cc;           // +0x0cc  = 0xbb8
+            i32 m_0d0;           // +0x0d0  (8 B with m_0d4)
+            i32 m_0d4;           // +0x0d4
+            i32 m_0d8;           // +0x0d8
         };
         // Load-phase (LoadConfig) view.
         struct {
@@ -207,9 +218,11 @@ public:
     // rather than at each random-goal pick. No pun needed: void* -> Coord* is a plain
     // pointer conversion, and CPtrArray::GetAt is the inline m_pData[i] that
     // GetData()[i] also lowers to - same bytes, no reinterpret.
-    Coord* CoordAt(i32 index) { return static_cast<Coord*>(m_0f0.GetAt(index)); }
-    CDWordArray m_104;     // +0x104  CDWordArray
-    CDWordArray m_118;     // +0x118  CDWordArray
+    Coord* CoordAt(i32 index) {
+        return static_cast<Coord*>(m_0f0.GetAt(index));
+    }
+    CDWordArray m_104; // +0x104  CDWordArray
+    CDWordArray m_118; // +0x118  CDWordArray
 
     // ---- tail block 0x12c..0x1e8: two phase-views of the same bytes --------
     // AUDIT 2026-07-21: the run arm's ascending "band threshold" tables ARE the

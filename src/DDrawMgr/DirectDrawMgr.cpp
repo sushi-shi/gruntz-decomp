@@ -7,8 +7,10 @@
 #include <Image/Image.h>                  // CFileImageSurface (the a58 pool item's dtor pair)
 #include <ddraw.h> // real DirectDraw SDK (IDirectDraw/2, DirectDrawCreate, DirectDrawEnumerateA, DDCAPS, IID_IDirectDraw2)
 #include <rva.h>
-#include <stdio.h>  // engine sprintf (reloc-masked)
-#include <string.h> // inline strcpy / memcpy / memset (rep stos)
+#include <ComOutRef.h> // the COM out-parameter's void**/typed destination pair
+#include <AddrWord.h>  // the immediate-in-a-pointer-slot success code
+#include <stdio.h>     // engine sprintf (reloc-masked)
+#include <string.h>    // inline strcpy / memcpy / memset (rep stos)
 
 #include <Dsndmgr/SoundBankLoad.h> // g_dot (ex mislabeled .cpp extern)
 #include <DDrawMgr/DdCreateArg.h>
@@ -341,8 +343,9 @@ i32 CDDrawPtrCollections::CreateDevice(
             }
             return 0;
         }
-        // QueryInterface's out-param is void** by the COM ABI - API-forced
-        chr = m_dd1->QueryInterface(IID_IDirectDraw2, reinterpret_cast<void**>(&m_device));
+        ComOutRef<IDirectDraw2> devOut;
+        devOut.m_asTyped = &m_device;
+        chr = m_dd1->QueryInterface(IID_IDirectDraw2, devOut.m_asVoid);
         if (chr != 0) {
             CDDrawPtrCollections::GetErrorString(0, 0, chr);
             if (m_lastError == 0) {
@@ -411,8 +414,9 @@ i32 CDDrawPtrCollections::Init(void* factory, void* a1, i32 width, i32 height, i
         return 0;
     }
     g_ddCreateCtx = 0;
-    i32 hr =
-        DirectDrawEnumerateA(reinterpret_cast<LPDDENUMCALLBACKA>(CreateDirectDrawVia), factory);
+    DdDriverEnumFn cb;
+    cb.m_body = CreateDirectDrawVia;
+    i32 hr = DirectDrawEnumerateA(cb.m_sdk, factory);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0xf4, hr);
         return 0;
@@ -801,8 +805,10 @@ RVA(0x00143040, 0x7c)
 CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
     CDDPalette* item = new CDDPalette;
     // AllocBufCreate hands this the entry block as a bare i32 (retail 0x14306b pushes
-    // the arg dword straight through to 0x147390) - byte-forced int-to-pointer.
-    if (!item->Create(m_device, reinterpret_cast<PALETTEENTRY*>(a), b)) {
+    // the arg dword straight through to 0x147390) - the same word read both ways.
+    AddrWord entries;
+    entries.m_word = a;
+    if (!item->Create(m_device, static_cast<PALETTEENTRY*>(entries.m_addr), b)) {
         if (item) {
             item->Destroy();
             ::operator delete(item);
@@ -865,12 +871,9 @@ void CDDrawPtrCollections::SetupCaps() {
     }
     m_poolItems.SetSize(0, -1);
     g_modeArray.SetSize(0, -1);
-    i32 hr = m_device->EnumDisplayModes(
-        0,
-        0,
-        0,
-        reinterpret_cast<LPDDENUMMODESCALLBACK>(DdEnumModesCallback)
-    );
+    DdModeEnumFn modeCb;
+    modeCb.m_body = DdEnumModesCallback;
+    i32 hr = m_device->EnumDisplayModes(0, 0, 0, modeCb.m_sdk);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x507, hr);
     }
@@ -1213,9 +1216,11 @@ CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
     }
     m_hasPalette = 1;
     m_940 = z;
-    // byte-forced: retail sets eax=1 and returns it through the CDDPalette* slot
-    // this loader shares with its siblings - a bare imm, no reloc.
-    return reinterpret_cast<CDDPalette*>(1);
+    // retail sets eax=1 and returns it through the CDDPalette* slot this loader
+    // shares with its siblings - a bare imm, no reloc (<AddrWord.h>)
+    AddrWord ok;
+    ok.m_word = 1;
+    return static_cast<CDDPalette*>(ok.m_addr);
 }
 
 // ---------------------------------------------------------------------------

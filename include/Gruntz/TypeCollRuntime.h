@@ -33,11 +33,15 @@ public:
 
     // the key IS the act id (AnimWorkerObj::m_1c / ActFindId), not a pointer
     char** GetNameRecord(i32 key) {
-        // the pun: a CString's ONLY member is its char* (m_pchData), so the slot and
-        // the char* it holds are the same 4 bytes; MFC keeps m_pchData private, so
-        // `&slot->m_pchData` cannot be spelled - language-forced, and the SECOND
-        // (last) seam on this class after AsSlot below.
-        return reinterpret_cast<char**>(SlotOf(key));
+        // a CString's ONLY member is its char* (m_pchData), so the slot and the char*
+        // it holds are the same 4 bytes; MFC keeps m_pchData private, so
+        // `&slot->m_pchData` cannot be spelled - both readings are named instead.
+        union {
+            CString* m_slot;
+            char** m_buffer;
+        } view;
+        view.m_slot = SlotOf(key);
+        return view.m_buffer;
     }
     // Same CString element, reached through the BASE _zvec::IndexToPtr - so no
     // construction fixup runs and the caller tears the scratch down itself.
@@ -73,7 +77,12 @@ private:
     // `imul esi,[edi+0x18]`) - byte-forced, so the CString element type can only go
     // back on here, at this single line that every accessor above routes through.
     static CString* AsSlot(char* p) {
-        return reinterpret_cast<CString*>(p);
+        union {
+            char* m_bytes;
+            CString* m_elem;
+        } band;
+        band.m_bytes = p;
+        return band.m_elem;
     }
 };
 SIZE_UNKNOWN(); // _zdvec base (0x24) + no own fields; size not pinned

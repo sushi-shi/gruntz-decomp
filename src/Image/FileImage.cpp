@@ -10,6 +10,7 @@
 #include <string.h>          // memcpy / strlen (inlined to rep movs / repne scas)
 #include <Image/ImagePool.h> // ex Globals.h
 #include <Image/FileImage.h> // own exported globals (ex Globals.h)
+#include <Pix16.h>           // the byte-cursor unions (RecordBytes / Pix16Ptr)
 
 enum {
     PCX_HEADER_SIZE = 0x80
@@ -105,8 +106,10 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     }
 
     // bfOffBits is a RUNTIME offset the file itself carries (from the start of the
-    // image), so the bits sit at no fixed member - the byte cursor is byte-forced.
-    void* run = reinterpret_cast<u8*>(img) + img->fh.bfOffBits; // byte-forced
+    // image), so the bits sit at no fixed member - RecordBytes names the byte cursor.
+    RecordBytes base;
+    base.m_rec = img;
+    void* run = base.m_bytes + img->fh.bfOffBits;
     if (convert) {
         if (Blit(run, srcFmt, pal, 2) == 0) {
             return 0;
@@ -263,7 +266,9 @@ i32 CDDSurface::Load(CDDrawPtrCollections* a, char* name, i32 c) {
     // byte-evidenced: retail forms the bits pointer as base + biSize + 0x400 in one
     // lea - `mov ecx,[ebx]` (biSize) then `lea edx,[ebx+ecx*1+0x400]`. biSize is a
     // RUNTIME value, so the 256-entry RGBQUAD palette cannot be skipped by type.
-    BlitDirect(reinterpret_cast<u8*>(bih) + bih->biSize + 256 * sizeof(RGBQUAD), 2);
+    RecordBytes ib;
+    ib.m_rec = bih;
+    BlitDirect(ib.m_bytes + bih->biSize + 256 * sizeof(RGBQUAD), 2);
     return 1;
 }
 
@@ -355,12 +360,11 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
         } while (n != 0);
     }
 
-    BITMAPFILEHEADER fh;
+    BmpFileHeaderStamp fh;
     memset(&fh, 0, sizeof(fh));
-    // the BM magic written into the header's leading bytes - byte-forced
-    strcpy(reinterpret_cast<char*>(&fh), g_bmpHeaderTemplate);
-    fh.bfSize = info.bmiHeader.biSize * m_width + 0x436;
-    fh.bfOffBits = 0x436;
+    strcpy(fh.m_bytes, g_bmpHeaderTemplate); // the BM magic over the leading bytes
+    fh.m_hdr.bfSize = info.bmiHeader.biSize * m_width + 0x436;
+    fh.m_hdr.bfOffBits = 0x436;
 
     u8* buf = static_cast<u8*>(Lock(0));
     if (buf == 0) {
@@ -381,7 +385,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
         }
     }
 
-    file.Write(&fh, 0xe);
+    file.Write(&fh.m_hdr, 0xe);
     file.Write(&info, 0x428);
 
     i32 row = height - 1;
@@ -426,37 +430,36 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, i32 flag) {
         return 0;
     }
 
-    BITMAPFILEHEADER bfh;
-    BITMAPINFOHEADER bih;
-    bih.biSize = 0;
-    bih.biWidth = 0;
-    bih.biHeight = 0;
-    // Retail clears the header at 0x14468e (`mov ecx,0xb; rep stosd`); the field-wise
-    // spelling reproduces it, and an explicit memset measured 14 points WORSE
-    // (52.57 -> 38.40) - do not retry. This biPlanes|biBitCount dword is byte-forced.
-    *reinterpret_cast<i32*>(&bih.biPlanes) = 0;
-    bih.biSizeImage = 0;
-    bih.biXPelsPerMeter = 0;
-    bih.biYPelsPerMeter = 0;
-    bih.biClrUsed = 0;
-    bih.biClrImportant = 0;
+    BmpFileHeaderStamp bfh;
+    // Retail clears the header at 0x14468e (`mov ecx,0xb; rep stosd`) and the
+    // field-wise spelling reproduces it - biPlanes|biBitCount go down as one dword,
+    // which is the arm BmpInfoHeaderStamp names.
+    BmpInfoHeaderStamp bih;
+    bih.m_biSize = 0;
+    bih.m_biWidth = 0;
+    bih.m_biHeight = 0;
+    bih.m_planesAndBitCount = 0;
+    bih.m_ih.biSizeImage = 0;
+    bih.m_ih.biXPelsPerMeter = 0;
+    bih.m_ih.biYPelsPerMeter = 0;
+    bih.m_ih.biClrUsed = 0;
+    bih.m_ih.biClrImportant = 0;
 
     // Retail INLINES strcpy here: `mov edi,0x61aabc; repnz scas al` then `rep movs`
-    // into the 14-byte bfh at [esp+0x18]. A bfType word store emits neither, so the
-    // copy through a char* view of the header is byte-forced.
-    strcpy(reinterpret_cast<char*>(&bfh), "BM");
-    bfh.bfReserved1 = 0;
-    bfh.bfReserved2 = 0;
+    // into the 14-byte bfh at [esp+0x18]; a bfType word store emits neither.
+    strcpy(bfh.m_bytes, "BM");
+    bfh.m_hdr.bfReserved1 = 0;
+    bfh.m_hdr.bfReserved2 = 0;
 
     i32 height = this->m_height; // dwHeight
     i32 width = this->m_width;   // dwWidth
-    bih.biHeight = height;
-    bih.biWidth = width;
-    bfh.bfSize = 3 * width * height + 0x3a;
-    bih.biSize = 0x28;
-    bih.biPlanes = 1;
-    bih.biBitCount = 0x18;
-    bfh.bfOffBits = 0x3a;
+    bih.m_ih.biHeight = height;
+    bih.m_ih.biWidth = width;
+    bfh.m_hdr.bfSize = 3 * width * height + 0x3a;
+    bih.m_ih.biSize = 0x28;
+    bih.m_ih.biPlanes = 1;
+    bih.m_ih.biBitCount = 0x18;
+    bfh.m_hdr.bfOffBits = 0x3a;
 
     u8* line = static_cast<u8*>(operator new(3 * width * height + 0x3a));
     if (line == 0) {
@@ -483,15 +486,16 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, i32 flag) {
     }
 
     file.Seek(0, 2);
-    file.Write(&bfh, 0xe);
-    file.Write(&bih, 0x2c);
+    file.Write(&bfh.m_hdr, 0xe);
+    file.Write(&bih.m_ih, 0x2c);
 
     for (i32 row = height - 1; row >= 0; row--) {
         u8* src = locked + row * this->m_pitch;
         u8* dst = line;
         for (i32 x = 0; x < width; x++) {
-            // a 16bpp pixel read off the byte cursor - byte-forced
-            u16 px = *reinterpret_cast<u16*>(src);
+            Pix16Ptr sp;
+            sp.m_bytes = src;
+            u16 px = *sp.m_words;
             src += 2;
             dst[0] = static_cast<u8>((static_cast<u8>(px) << g_bDown));
             dst[1] = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
@@ -537,20 +541,19 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
     BITMAPINFOHEADER bi;
     memset(&bi, 0, 0x2c); // dev slop: 0x2c over the 0x28 struct (retail rep stos 0xb dwords)
     i32 height = m_height;
-    BITMAPFILEHEADER fh;
+    BmpFileHeaderStamp fh;
     memset(&fh, 0, sizeof(fh));
     i32 width = m_width;
-    // the BM magic written into the header's leading bytes - byte-forced
-    strcpy(reinterpret_cast<char*>(&fh), g_bmpHeaderTemplate);
+    strcpy(fh.m_bytes, g_bmpHeaderTemplate); // the BM magic over the leading bytes
     bi.biHeight = height;
     bi.biSize = 0x28;
     bi.biWidth = width;
-    fh.bfSize = height * width * 3 + 0x3a;
+    fh.m_hdr.bfSize = height * width * 3 + 0x3a;
     bi.biPlanes = 1;
     bi.biBitCount = 0x18;
     bi.biCompression = 0;
     bi.biSizeImage = 0;
-    fh.bfOffBits = 0x3a;
+    fh.m_hdr.bfOffBits = 0x3a;
 
     u8* buf = static_cast<u8*>(Lock(0));
     if (buf == 0) {
@@ -571,7 +574,7 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
         }
     }
 
-    file.Write(&fh, 0xe);
+    file.Write(&fh.m_hdr, 0xe);
     file.Write(&bi, 0x2c);
 
     for (i32 row = m_height - 1; row >= 0; row--) {
@@ -639,8 +642,10 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 
     if (convert) {
         if (srcFmt == 8) {
             // build the grayscale ramp from the source's trailing 0x300 palette
-            // PCX: the 0x300 palette trails the image data - byte-forced
-            u8* p = reinterpret_cast<u8*>(src) + len - 0x300;
+            // (PCX: the 0x300 palette trails the image data, at a RUNTIME offset)
+            RecordBytes sb;
+            sb.m_rec = src;
+            u8* p = sb.m_bytes + len - 0x300;
             i32 i = 0;
             do {
                 g_grayRamp[i] = *p++;
@@ -1090,8 +1095,10 @@ i32 CDDSurface::DecodePcxData(
         if (static_cast<u32>(size) <= 0x300) {
             return 0;
         }
-        // PID: the 0x300 palette trails the pixel data - byte-forced
-        u8* src = reinterpret_cast<u8*>(hdr) + size - 0x300;
+        // PID: the 0x300 palette trails the pixel data, at a RUNTIME offset
+        RecordBytes hb;
+        hb.m_rec = hdr;
+        u8* src = hb.m_bytes + size - 0x300;
         i32 i = 0;
         do {
             s_palPcxData[i].peRed = *src++;
@@ -1195,7 +1202,9 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u
                 return 0;
             }
             // PID: the 0x300 palette trails the pixel data - byte-forced
-            u8* src = reinterpret_cast<u8*>(hdr) + size - 0x300; // trailing palette
+            RecordBytes hb;
+            hb.m_rec = hdr;
+            u8* src = hb.m_bytes + size - 0x300; // trailing palette
             i32 i = 0;
             do {
                 s_palPidData[i] = *src++;

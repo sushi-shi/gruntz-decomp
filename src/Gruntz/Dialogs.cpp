@@ -5,7 +5,8 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Random.h> // g_randSeed/g_randSeeded (FlashCtrlD's swatch colour)
 #include <rva.h>
-#include <string.h> // inline strcmp (the empty-text WM_SETTEXT gate in the edit subclass)
+#include <string.h>   // inline strcmp (the empty-text WM_SETTEXT gate in the edit subclass)
+#include <MsgParam.h> // the window-message parameter's pointer/word pair
 
 // The retail bytes at 0x1e88b0 are an 8-byte AFX_MSGMAP {&CDialog::messageMap
 // (0x5eb068), &_messageEntries[0] (0x5e88b8)}, not the 4-byte `const i32` this TU
@@ -168,7 +169,9 @@ RVA(0x00015a10, 0x70)
 i32 CALLBACK WndProc_15a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {
         // API-forced: Win32 hands the item text through LPARAM
-        if (strcmp(g_emptyString, reinterpret_cast<const char*>(lParam)) == 0) {
+        MsgParam text;
+        text.m_lparam = lParam;
+        if (strcmp(g_emptyString, text.m_str) == 0) {
             return 0;
         }
     }
@@ -259,10 +262,11 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
                 rec++;
             }
             if (avail) {
-                long idx =
-                    // API-forced: LB_ADDSTRING carries the item text in the LPARAM word.
-                    pSend(lb->m_hWnd, 0x180, 0, reinterpret_cast<long>("Color")); // LB_ADDSTRING
-                pSend(lb->m_hWnd, 0x19a, idx, i);                                 // LB_SETITEMDATA
+                // LB_ADDSTRING carries the item text in the LPARAM word (<MsgParam.h>)
+                MsgParam name;
+                name.m_str = "Color";
+                long idx = pSend(lb->m_hWnd, 0x180, 0, name.m_lparam); // LB_ADDSTRING
+                pSend(lb->m_hWnd, 0x19a, idx, i);                      // LB_SETITEMDATA
             }
         }
         pSend(lb->m_hWnd, 0x186, 0, 0); // LB_SETCURSEL

@@ -4,7 +4,9 @@
 #include <Net/InterfaceObject.h> // Find() returns the InterfaceObject group-node
 #include <Font/Font.h> // CWapNodeB decl (a NetMgr node type, still homed here - 0x1794b0-0x179680
 #include <rva.h>
-#include <string.h> // memset (the inlined rep stos node/packet zeroing) + memcmp (IsInterfaceX)
+#include <MsgParam.h> // the window-message parameter's pointer/word pair
+#include <AddrWord.h> // the list-box item cookie's word/pointer pair
+#include <string.h>   // memset (the inlined rep stos node/packet zeroing) + memcmp (IsInterfaceX)
 
 VTBL(CNetPlayerListNode, 0x001f0760); // ??_7CNetPlayerListNode@@6B@ (5-slot CObject-derived)
 VTBL(CNetSessionNode, 0x001f0778);    // own (final) vtable
@@ -69,7 +71,7 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
     m_sessionSelId = 0;
     // the +0x4 block IS the app GUID (16-byte struct assign; the CGruntzMgr* m_4
     // claim conflicts with this write - @identity-TODO resolve the +0x4 model)
-    m_appGuid = appGuid;
+    m_appGuid.m_guid = appGuid;
     m_groupSel = a;
     m_playerSel = 0;
     m_sessionSel = 0;
@@ -92,7 +94,7 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
 // calls) where cl spills the iface to a stack slot and reloads it; the register
 // assignment is not steerable from C source. Final sweep.
 RVA(0x00178170, 0xba)
-i32 CNetMgr::Init(void* a, GUID appGuid) {
+i32 CNetMgr::Init(void* a, NetGuid appGuid) {
     IDirectPlay4Z* iface = static_cast<IDirectPlay4Z*>(a);
     void* out = a;
     i32 hr = iface->Open(0, &out, 0);
@@ -111,18 +113,14 @@ i32 CNetMgr::Init(void* a, GUID appGuid) {
     m_groupSelId = 0;
     m_playerSelId = 0;
     m_sessionSelId = 0;
-    // a GUID copied dword-wise: the SDK type is 16 bytes with no dword accessor,
-    // so walking it as 4 dwords is language-forced at this one boundary.
-    i32* base = reinterpret_cast<i32*>(&m_appGuid);
-    const i32* g =
-        reinterpret_cast<const i32*>(&appGuid); // the app GUID's 4 dwords -> the m_4 setup block
-    base[0] = g[0];
+    // the app GUID's four dwords, threaded through the selection-latch store block
+    m_appGuid.m_words[0] = appGuid.m_words[0];
     m_groupSel = 0;
     m_playerSel = 0;
-    base[1] = g[1];
+    m_appGuid.m_words[1] = appGuid.m_words[1];
     m_sessionSel = 0;
-    base[2] = g[2];
-    base[3] = g[3];
+    m_appGuid.m_words[2] = appGuid.m_words[2];
+    m_appGuid.m_words[3] = appGuid.m_words[3];
     return 1;
 }
 
@@ -256,14 +254,17 @@ void CNetMgr::PopulateGroupList(HWND hList, i32 flag) {
             // an unnamed TEMPORARY of the full-expression, not a scoped local: retail
             // reads the text out of GetName's returned pointer (`mov eax,[eax]`), not
             // back out of the temp's frame slot
+            MsgParam name;
             i32 idx = static_cast<i32>(SendMessageA(
                 hList,
                 LB_ADDSTRING,
                 0,
-                reinterpret_cast<LPARAM>(static_cast<LPCTSTR>(obj->GetName()))
+                (name.m_str = static_cast<LPCTSTR>(obj->GetName()), name.m_lparam)
             ));
             if (idx != -1) {
-                SendMessageA(hList, LB_SETITEMDATA, idx, reinterpret_cast<LPARAM>(obj));
+                MsgParam cookie;
+                cookie.m_ptr = obj;
+                SendMessageA(hList, LB_SETITEMDATA, idx, cookie.m_lparam);
             }
             if (m_groupSelId != 0) {
                 InterfaceObject* next = static_cast<InterfaceObject*>(m_groups.GetAt(m_groupSelId));
@@ -298,10 +299,12 @@ i32 CNetMgr::ReadGroupSel(void* hList) {
     if (data == 0) {
         return 0;
     }
-    // API-forced: LB_GETITEMDATA hands the item cookie back as an LRESULT (an integer by
-    // the Win32 ABI); the cookie IS the group node pointer the list box was populated with
-    // (LB_SETITEMDATA in PopulateGroupList), so the pointer type goes back on here.
-    m_groupSel = reinterpret_cast<InterfaceObject*>(data);
+    // LB_GETITEMDATA hands the item cookie back as an LRESULT (an integer by the Win32
+    // ABI); the cookie IS the group node pointer the list box was populated with
+    // (LB_SETITEMDATA in PopulateGroupList) - both readings of the word (<AddrWord.h>).
+    AddrWord cookie;
+    cookie.m_word = data;
+    m_groupSel = static_cast<InterfaceObject*>(cookie.m_addr);
     return data;
 }
 
@@ -320,7 +323,7 @@ i32 CNetMgr::EnumPlayersInto(void* a, void* b) {
     CNetSessionDesc desc;
     memset(&desc, 0, sizeof(desc));
     desc.m_dwSize = sizeof(desc);
-    desc.m_guidApplication = m_appGuid;
+    desc.m_guidApplication = m_appGuid.m_guid;
 
     IDirectPlay4Z* com = m_directPlay;
     i32 hr = com->EnumPlayers(&desc, a, static_cast<void*>(&NetEnumPlayerCb), this, b);
@@ -402,19 +405,17 @@ void CNetMgr::PopulatePlayerList(void* hList) {
         m_playerSelId != 0 ? static_cast<CNetPlayerListNode*>(m_players.GetNext(m_playerSelId)) : 0;
 
     while (payload != 0) {
+        MsgParam name;
         i32 r = static_cast<i32>(SendMessageA(
             static_cast<HWND>(hList),
             LB_ADDSTRING,
             0,
-            reinterpret_cast<LPARAM>(payload->m_desc.m_lpszName)
+            (name.m_str = payload->m_desc.m_lpszName, name.m_lparam)
         ));
         if (r != -1) {
-            SendMessageA(
-                static_cast<HWND>(hList),
-                LB_SETITEMDATA,
-                r,
-                reinterpret_cast<LPARAM>(payload)
-            );
+            MsgParam cookie;
+            cookie.m_ptr = payload;
+            SendMessageA(static_cast<HWND>(hList), LB_SETITEMDATA, r, cookie.m_lparam);
         }
         // GetAt's node is latched BEFORE the advance and assigned after: that is what
         // stops cl from CSEing the cursor load GetNext makes through its POSITION&
@@ -452,10 +453,10 @@ i32 CNetMgr::ReadPlayerSel(void* hList) {
     if (data == 0) {
         return 0;
     }
-    m_playerSel =
-        // wire decode: the transport hands back BYTES, so naming the record at
-        // the receive boundary is language-forced (one seam per message type).
-        reinterpret_cast<CNetPlayerListNode*>(data); // the LB item data IS the player node
+    // the LB item data IS the player node, handed back through the LRESULT word
+    AddrWord cookie;
+    cookie.m_word = data;
+    m_playerSel = static_cast<CNetPlayerListNode*>(cookie.m_addr);
     return data;
 }
 
@@ -477,7 +478,7 @@ CNetMgr::EnumGroupsInto(i32 maxPlayers, char* sessionName, i32 user1, const char
     memset(&buf, 0, sizeof(buf));
     buf.m_dwSize = sizeof(buf);
     buf.m_dwFlags = 0xa044;
-    buf.m_guidApplication = m_appGuid;
+    buf.m_guidApplication = m_appGuid.m_guid;
     buf.m_dwMaxPlayers = maxPlayers;
     buf.m_lpszName = sessionName;
     buf.m_dwUser1 = user1;
@@ -692,19 +693,17 @@ void CNetMgr::PopulateSessionList(void* hList) {
         m_sessionSelId != 0 ? static_cast<CNetSessionNode*>(m_sessions.GetNext(m_sessionSelId)) : 0;
 
     while (payload != 0) {
+        MsgParam name;
         i32 r = static_cast<i32>(SendMessageA(
             static_cast<HWND>(hList),
             LB_ADDSTRING,
             0,
-            reinterpret_cast<LPARAM>(static_cast<const char*>(payload->GetName()))
+            (name.m_str = static_cast<const char*>(payload->GetName()), name.m_lparam)
         ));
         if (r != -1) {
-            SendMessageA(
-                static_cast<HWND>(hList),
-                LB_SETITEMDATA,
-                r,
-                reinterpret_cast<LPARAM>(payload)
-            );
+            MsgParam cookie;
+            cookie.m_ptr = payload;
+            SendMessageA(static_cast<HWND>(hList), LB_SETITEMDATA, r, cookie.m_lparam);
         }
         // GetAt's node is latched BEFORE the advance and assigned after: that is what
         // stops cl from CSEing the cursor load GetNext makes through its POSITION&

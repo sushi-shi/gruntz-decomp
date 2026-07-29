@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Pix16.h> // the byte-cursor unions (RecordBytes / Pix16CPtr)
 
 #include <DDrawMgr/DDrawShadeBlit.h>
 #include <DDrawMgr/DDSurface.h> // CDDSurface src arg (Lock/m_width/m_height/m_pitch/m_8)
@@ -229,17 +230,16 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
             // src+m_rleLen as the base with i as the scaled index (see the note above),
             // so do not "simplify" these three reads. RE-TESTED 2026-07-28: hoisting
             // them to one `u8* tail` cursor costs 3.0% (79.7 -> 76.7).
+            RecordBytes blob;
+            blob.m_rec = src;
             i32 i = 0;
             i32 d = 0;
             do {
                 d++;
-                m_palette[d - 1].peRed =
-                    (reinterpret_cast<u8*>(src) + m_rleLen)[i + 0x20]; // byte-forced
+                m_palette[d - 1].peRed = (blob.m_bytes + m_rleLen)[i + 0x20];
                 i += 3;
-                m_palette[d - 1].peGreen =
-                    (reinterpret_cast<u8*>(src) + m_rleLen)[i + 0x1e]; // byte-forced
-                m_palette[d - 1].peBlue =
-                    (reinterpret_cast<u8*>(src) + m_rleLen)[i + 0x1f]; // byte-forced
+                m_palette[d - 1].peGreen = (blob.m_bytes + m_rleLen)[i + 0x1e];
+                m_palette[d - 1].peBlue = (blob.m_bytes + m_rleLen)[i + 0x1f];
             } while (i < 0x300);
         }
     }

@@ -625,9 +625,7 @@ i32 BlackoutSystemPalette() {
             lp.palPalEntry[i].peBlue = 0;
             lp.palPalEntry[i].peFlags = 4; // PC_NOCOLLAPSE
         }
-        // LOGPALETTE declares palPalEntry[1]; a 256-entry palette needs the larger
-        // local, and handing it to the SDK is the API-forced Win32 idiom
-        HPALETTE hpal = ::CreatePalette(reinterpret_cast<LOGPALETTE*>(&lp));
+        HPALETTE hpal = ::CreatePalette(&lp.m_lp);
         if (hpal != 0) {
             HPALETTE(WINAPI * pSelect)(HDC, HPALETTE, BOOL) = ::SelectPalette;
             HPALETTE old = pSelect(hdc, hpal, 0);

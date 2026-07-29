@@ -4,8 +4,9 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <io.h>     // _finddata_t / _findfirst / _findnext (the custom-level dir walk)
-#include <direct.h> // _getcwd (0x11fc10; the "game dir" resolver == current directory)
+#include <io.h>       // _finddata_t / _findfirst / _findnext (the custom-level dir walk)
+#include <direct.h>   // _getcwd (0x11fc10; the "game dir" resolver == current directory)
+#include <MsgParam.h> // the window-message parameter's pointer/word pair
 
 // The retail bytes at 0x1e8e98 are an 8-byte AFX_MSGMAP {&CDialog::messageMap
 // (0x5eb068), &_messageEntries[0] (0x5e8ea0)} - NOT the 4-byte `void*` this TU
@@ -50,11 +51,13 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
             if (h != -1) {
                 do {
                     if (g_gameReg->IsBattlezMapFile(s_custom + fd.name)) {
+                        MsgParam name;
                         ::SendMessageA(
                             item->m_hWnd,
                             0x180,
                             0,
-                            reinterpret_cast<LPARAM>(static_cast<const char*>((s_custom + fd.name)))
+                            (name.m_str = static_cast<const char*>((s_custom + fd.name)),
+                             name.m_lparam)
                         );
                     }
                 } while (_findnext(h, &fd) != -1);

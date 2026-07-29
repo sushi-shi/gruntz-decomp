@@ -2,6 +2,7 @@
 #define GRUNTZ_UTILS_MAPTYPED_H
 #include <Mfc.h>
 #include <Ints.h>
+#include <AddrWord.h> // the id-word / void*-key pair
 
 // Typed views over MFC's void*-out-param map API.
 //
@@ -10,29 +11,41 @@
 // These wrappers keep that ONE forced pun at the boundary instead of repeating
 // it at every lookup site, and they make the stored element type explicit.
 //
-// This is MFC's OWN spelling, not ours: afxtempl.h's CTypedPtrMap is literally
-//   BOOL Lookup(BASE_ARG_KEY key, VALUE& v) const
-//       { return BASE_CLASS::Lookup(key, *(void**)&v); }
-//   void GetNextAssoc(POSITION& p, KEY& k, VALUE& v) const
-//       { BASE_CLASS::GetNextAssoc(p, (BASE_KEY&)k, *(void**)&v); }
-// so adopting CTypedPtrMap would RELOCATE these casts into vendor MFC, not remove
-// them. The only cast-free rewrite - a `void* tmp; Lookup(key, tmp); out = (T*)tmp;`
-// - is strictly LESS faithful: retail passes the destination's own address to
-// Lookup (`lea eax,[esi+N]`), where the temp form inserts a stack slot plus a copy
-// retail does not have. Keep the pun; it is the boundary, byte-for-byte.
+// Adopting afxtempl.h's CTypedPtrMap would only RELOCATE the pun into vendor MFC -
+// its own body is `BASE_CLASS::Lookup(key, *(void**)&v)` - and the obvious cast-free
+// rewrite (`void* tmp; Lookup(key, tmp); out = (T*)tmp;`) is strictly LESS faithful:
+// retail passes the DESTINATION'S OWN ADDRESS to Lookup (`lea eax,[esi+N]`), where
+// the temp form inserts a stack slot plus a copy retail does not have.
+//
+// So the destination slot's ADDRESS is what carries two readings - MFC writes a
+// void* there, the caller reads a T* - and naming both keeps retail's shape with no
+// pun at all. MapOutRef does exactly that, once, for every wrapper below.
+template<class T> union MapOutRef {
+    void** m_asVoid; // what MFC's `void*&` out-parameter binds to
+    T** m_asTyped;   // the caller's own destination variable
+};
+
 template<class T> inline BOOL MapLookup(CMapStringToPtr& map, LPCTSTR key, T*& out) {
-    return map.Lookup(key, reinterpret_cast<void*&>(out));
+    MapOutRef<T> dst;
+    dst.m_asTyped = &out;
+    return map.Lookup(key, *dst.m_asVoid);
 }
 template<class T> inline BOOL MapLookup(CMapPtrToPtr& map, void* key, T*& out) {
-    return map.Lookup(key, reinterpret_cast<void*&>(out));
+    MapOutRef<T> dst;
+    dst.m_asTyped = &out;
+    return map.Lookup(key, *dst.m_asVoid);
 }
 template<class K, class T>
 inline void MapGetNext(CMapStringToPtr& map, POSITION& pos, K& key, T*& out) {
-    map.GetNextAssoc(pos, key, reinterpret_cast<void*&>(out));
+    MapOutRef<T> dst;
+    dst.m_asTyped = &out;
+    map.GetNextAssoc(pos, key, *dst.m_asVoid);
 }
 template<class K, class T>
 inline void MapGetNext(CMapPtrToPtr& map, POSITION& pos, K& key, T*& out) {
-    map.GetNextAssoc(pos, key, reinterpret_cast<void*&>(out));
+    MapOutRef<T> dst;
+    dst.m_asTyped = &out;
+    map.GetNextAssoc(pos, key, *dst.m_asVoid);
 }
 
 // The already-void* out-param needs no pun at all.
@@ -50,16 +63,26 @@ template<class K> inline void MapGetNext(CMapPtrToPtr& map, POSITION& pos, K& ke
 }
 
 // The object maps are keyed by the object's serial ID, which MFC stores in a void*
-// slot - the id->key pun is forced by CMapPtrToPtr's signature, so it lives here.
+// slot - the same word read both ways, which AddrWord names (<AddrWord.h>).
 inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, void*& out) {
-    return map.Lookup(reinterpret_cast<void*>(id), out);
+    AddrWord k;
+    k.m_word = id;
+    return map.Lookup(k.m_addr, out);
 }
 inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, CObject*& out) {
-    return map.Lookup(reinterpret_cast<void*>(id), reinterpret_cast<void*&>(out));
+    AddrWord k;
+    k.m_word = id;
+    MapOutRef<CObject> dst;
+    dst.m_asTyped = &out;
+    return map.Lookup(k.m_addr, *dst.m_asVoid);
 }
 // Same seam for the game-object maps, whose out-slot is a concrete class pointer.
 template<class T> inline BOOL MapLookupById(CMapPtrToPtr& map, i32 id, T*& out) {
-    return map.Lookup(reinterpret_cast<void*>(id), reinterpret_cast<void*&>(out));
+    AddrWord k;
+    k.m_word = id;
+    MapOutRef<T> dst;
+    dst.m_asTyped = &out;
+    return map.Lookup(k.m_addr, *dst.m_asVoid);
 }
 
 #endif // GRUNTZ_UTILS_MAPTYPED_H

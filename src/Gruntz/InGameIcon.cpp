@@ -166,14 +166,14 @@ RVA_COMPGEN(0x00011dc0, 0x44, ??1CInGameText@@UAE@XZ)
 RVA(0x00095b10, 0x15f0)
 CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     // --- CInGameIcon own-field zero-init (retail store order @0x95c00) ---
-    m_driftPos = 0;
-    m_driftThresh = 0;
-    m_driftPosHi = 0;
-    m_driftThreshHi = 0;
-    m_68 = 0;
-    m_70 = 0;
-    m_6c = 0;
-    m_74 = 0;
+    m_driftPos.m_lo = 0;
+    m_driftThresh.m_lo = 0;
+    m_driftPos.m_hi = 0;
+    m_driftThresh.m_hi = 0;
+    m_peekTimer.m_lo = 0;
+    m_peekWindow.m_lo = 0;
+    m_peekTimer.m_hi = 0;
+    m_peekWindow.m_hi = 0;
 
     // snap owner's screen pos to the 0x20 tile grid centre
     obj->m_screenX = (obj->m_screenX & ~0x1f) + 0x10;
@@ -196,10 +196,10 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     // second zero batch (retail @0x95ca1)
     m_glitterSprite = 0;
-    m_68 = 0;
-    m_70 = 0;
-    m_6c = 0;
-    m_74 = 0;
+    m_peekTimer.m_lo = 0;
+    m_peekWindow.m_lo = 0;
+    m_peekTimer.m_hi = 0;
+    m_peekWindow.m_hi = 0;
 
     i32 glitter = 0;
     char* rec = static_cast<CWwdGameObjectA*>(obj)->m_194; // the handed obj IS the A-kind sprite
@@ -640,9 +640,8 @@ i32 CInGameIcon::RefreshCell() {
     CWwdGameObjectA* obj = m_object;
     i32 tileY = obj->m_screenX >> 5;
     i32 tileX = (obj->m_screenY + 0x18) >> 5;
-    i64 delta =
-        static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_driftPos);
-    if (delta < *reinterpret_cast<i64*>(&m_driftThresh)) {
+    i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_driftPos.m_v;
+    if (delta < m_driftThresh.m_v) {
         CMapMgr* grid = g_gameReg->m_tileGrid;
         i32 cell;
         if (static_cast<u32>(tileY) < static_cast<u32>(grid->m_width)
@@ -668,9 +667,9 @@ i32 CInGameIcon::RefreshCell() {
 // command id. For the 0x55 (cursor) command, if the icon's tile cell carries any
 // action/occupancy flag (& 0x939 or & 2) it clears that cell's occupancy and flags the
 // +0x38 object dirty. For the 0x13/0x1e (peek) commands, once the peek timer
-// ({m_68} vs {m_70}) elapses it rolls a random pickup sprite (the inline LCG rand()%17
+// ({m_peekTimer} vs {m_peekWindow}) elapses it rolls a random pickup sprite (the inline LCG rand()%17
 // -> GetSel), publishes it into the bound object's draw fields, and re-arms the timer
-// ({m_70}=0xfa, {m_68}=g_frameTime). Returns 0.
+// ({m_peekWindow}=0xfa, {m_peekTimer}=g_frameTime). Returns 0.
 //
 // @early-stop
 // 88.2% - block topology is IDENTICAL (22 vs 22, every edge matching). Two of the five
@@ -720,8 +719,7 @@ i32 CInGameIcon::PeekCycle() {
     if (obj->m_130 != 0) {
         return 0;
     }
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_68)
-        >= *reinterpret_cast<i64*>(&m_70)) {
+    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_peekTimer.m_v >= m_peekWindow.m_v) {
         u32 x;
         if (!(g_randSeeded & 1)) {
             g_randSeeded |= 1;
@@ -738,10 +736,10 @@ i32 CInGameIcon::PeekCycle() {
         o->m_drawActive = 1;
         o->m_drawFillCmd = 0xa;
         o->m_drawFillArg = rec;
-        m_70 = 0xfa;
-        m_74 = 0;
-        m_68 = g_frameTime;
-        m_6c = 0;
+        m_peekWindow.m_lo = 0xfa;
+        m_peekWindow.m_hi = 0;
+        m_peekTimer.m_lo = g_frameTime;
+        m_peekTimer.m_hi = 0;
     }
     return 0;
 }
@@ -874,10 +872,10 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         m_prevAnimSetNode = aux->m_1c;
         aux->m_1c = ActFindId("B");
         owner = m_38;
-        m_driftPos = owner->m_120;
-        m_driftPosHi = 0;
-        m_driftThresh = g_frameTime;
-        m_driftThreshHi = 0;
+        m_driftPos.m_lo = owner->m_120;
+        m_driftPos.m_hi = 0;
+        m_driftThresh.m_lo = g_frameTime;
+        m_driftThresh.m_hi = 0;
         return 1;
     }
     CWwdGameObjectA* rend = m_glitterSprite;
@@ -924,9 +922,8 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
-    i64 delta =
-        static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_driftPos);
-    if (delta >= *reinterpret_cast<i64*>(&m_driftThresh)) {
+    i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_driftPos.m_v;
+    if (delta >= m_driftThresh.m_v) {
         CWwdGameObjectA* r = m_38;
         r->m_stateFlags &= ~1;
         m_prevAnimSetNode = m_objAux->m_1c;
@@ -1059,30 +1056,32 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* 
 
     // --- the two 64-bit timer pairs, each walked by ONE advancing cursor ---
     // Retail hoists a single `lea edi,[this+N]` ABOVE the mode compare and steps it with
-    // `add edi,8`; two separate `&member` expressions emit two leas instead.
-    i32* drift = &m_driftPos;
+    // `add edi,8`; two separate `&member` expressions emit two leas instead. The cursor is
+    // a Clock64* now that the members are typed: sizeof(Clock64) is 8, so `++` IS retail's
+    // `add edi,8` (this was an i32* stepping += 2 while the halves were untyped).
+    Clock64* drift = &m_driftPos;
     switch (mode) {
         case 7:
             ar->Read(drift, 8);
-            drift += 2;
+            drift++;
             ar->Read(drift, 8);
             break;
         case 4:
             ar->Write(drift, 8);
-            drift += 2;
+            drift++;
             ar->Write(drift, 8);
             break;
     }
-    i32* idle = &m_68;
+    Clock64* idle = &m_peekTimer;
     switch (mode) {
         case 7:
             ar->Read(idle, 8);
-            idle += 2;
+            idle++;
             ar->Read(idle, 8);
             break;
         case 4:
             ar->Write(idle, 8);
-            idle += 2;
+            idle++;
             ar->Write(idle, 8);
             break;
     }

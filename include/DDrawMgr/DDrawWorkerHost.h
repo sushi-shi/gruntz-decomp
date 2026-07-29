@@ -137,10 +137,10 @@ public:
     // `flags & 0x10` arm open-codes CDDrawWorker::GetAt's bounds check and then reads the
     // element's +0x10/+0x14 as CImage::m_width/m_height to feed SetTileSize.
     CDDrawWorker* FrameSetAt(u32 index) {
-        // language-forced, at this ONE seam: the pun is MFC's untyped CObject* element
-        // type (a static_cast downcast would need the complete CDDrawWorker here, which
-        // would drag <DDrawMgr/DDrawWorker.h> into every consumer of this header).
-        return reinterpret_cast<CDDrawWorker**>(m_frameSets.GetData())[index];
+        // MFC's CObArray element type is CObject*; CDDrawWorker derives from it (via
+        // CLoadable), so this is the plain derived downcast, not a pun. <DDrawMgr/
+        // DDrawWorker.h> is already included above, so the complete type is here.
+        return static_cast<CDDrawWorker*>(m_frameSets[static_cast<int>(index)]);
     }
 
     // --- layout (the union of every facet's proven members; offsets load-bearing).

@@ -4,6 +4,7 @@
 #include <Ints.h>
 #include <Wap32/zBitVec.h> // the canonical zErrHandling - _zvec's real {vptr, sink} head
 #include <rva.h>
+#include <AddrWord.h> // the immediate-in-a-pointer-slot sentinel
 
 struct CVariantSlot; // fwd (pointer member m_err; full def at the overflow call sites)
 
@@ -17,8 +18,11 @@ struct CVariantSlot; // fwd (pointer member m_err; full def at the overflow call
 // thing that ever looks at it is `if (m_spare != 0)` at 0x16decd.
 inline void* ZVecNoScratch() {
     // bare imm: retail pushes the literal 1 (zDArray's ctor @0x8717); never
-    // dereferenced, so no object exists to point at - this is the whole sentinel.
-    return reinterpret_cast<void*>(1);
+    // dereferenced, so no object exists to point at - this is the whole sentinel,
+    // an immediate riding a pointer slot (<AddrWord.h>).
+    AddrWord sentinel;
+    sentinel.m_word = 1;
+    return sentinel.m_addr;
 }
 
 class _zvec : public zErrHandling {
@@ -94,7 +98,12 @@ public:
     // m_stride (0x312c0 `imul esi,[edi+0x18]`) - byte-forced, so the element type
     // can only go back on here; every typed accessor routes through this one line.
     static T* AsElem(char* p) {
-        return reinterpret_cast<T*>(p);
+        union {
+            char* m_bytes;
+            T* m_elem;
+        } band;
+        band.m_bytes = p;
+        return band.m_elem;
     }
 };
 SIZE_UNKNOWN();

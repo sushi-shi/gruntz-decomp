@@ -8,6 +8,7 @@
 #include <Rez/RezMgr.h>
 #include <dplay.h> // real DirectPlay: CNetMgr::m_endpoint (+0x18) is IDirectPlay4
 #include <rva.h>
+#include <Pix16.h>          // the byte-cursor unions
 #include <string.h>         // memcpy / memset / strcat (see #pragma intrinsic below)
 #include <Net/NetCmdSlot.h> // own exported globals (ex Globals.h)
 
@@ -189,10 +190,11 @@ i32 CNetSession::Poll(i32 delta) {
         received++;
         avail--;
         if (a != m_localDesc->m_id) {
-            // one seam: IDirectPlay4::Receive fills g_lobbyRecvBuf as an untyped
-            // 0x800-byte LPVOID blob (the SDK picks the type), and the control-message
-            // header is applied at this single dispatch boundary
-            Dispatch(a, reinterpret_cast<CNetCtrlMsg*>(g_lobbyRecvBuf), len);
+            // IDirectPlay4::Receive fills g_lobbyRecvBuf as an untyped 0x800-byte
+            // LPVOID blob; CNetWireMsg names its control-record reading.
+            CNetWireMsg wire;
+            wire.m_bytes = g_lobbyRecvBuf;
+            Dispatch(a, wire.m_ctrl, len);
         }
     }
     return received;
@@ -284,14 +286,17 @@ i32 CNetSession::Tick() {
             if (obj) {
                 NoopSync(obj);
                 rec->m_count++;
-                // remaining room in the 0x410-byte record: language-forced, a pointer
-                // difference needs both sides at the same type
-                payload += obj->Pack(payload, reinterpret_cast<char*>(rec) - payload + 0x410);
+                // remaining room in the 0x410-byte record - the byte view of the
+                // record base makes the pointer difference type-correct (<Pix16.h>)
+                RecordBytes rb;
+                rb.m_rec = rec;
+                payload += obj->Pack(payload, rb.m_chars - payload + 0x410);
             }
         }
         m_session->WriteTag("[end]\n");
-        // language-forced: a pointer difference needs both sides at the same type
-        rec->m_payloadLen = static_cast<i32>((payload - reinterpret_cast<char*>(rec) - 0x10));
+        RecordBytes rb2;
+        rb2.m_rec = rec;
+        rec->m_payloadLen = static_cast<i32>((payload - rb2.m_chars - 0x10));
         m_snapshotDone = 1;
     }
     return SendBatch() + SendAll();
@@ -811,9 +816,10 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         p++;
         rem--;
     }
-    // wire decode: the transport hands back BYTES, so naming the record at
-    // the receive boundary is language-forced (one seam per message type).
-    CNetCmdHdr* h = reinterpret_cast<CNetCmdHdr*>(p);
+    // the reliable-command header at the byte cursor (see CNetWireMsg)
+    CNetWireMsg wire;
+    wire.m_bytes = p;
+    CNetCmdHdr* h = wire.m_cmdHdr;
     i32 seq = h->m_sequence;
     i32 base = h->m_windowBase;
     i32 checksum = h->m_checksum;
