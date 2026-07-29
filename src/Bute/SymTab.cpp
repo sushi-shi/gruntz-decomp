@@ -51,14 +51,12 @@ static __inline i32 IsTokenChar(const char* delims, char ch) {
 // 0x1396f0 - Init: initialize a fresh parse
 // slot - placement-construct the embedded hash-node (stamping its vptr @0x5ef740), null
 // the name/mapped/reader bookkeeping, self-link +0x30. Returns this. __thiscall.
-// @early-stop
-// placement-new-guard wall (topic:eh topic:wall, ~56.7%): the node's ctor now supplies
-// the vptr stamp + the m_record(+0x30) zero in retail's exact order (the ex `volatile`
-// pin is gone - see ParseSource.h), but cl's placement-new emits the documented null
-// guard `lea ecx,[this+0x1c]; cmp ecx,0; je` and then addresses the node off ecx, where
-// retail has NO guard and addresses everything off `this` (eax). Retail therefore did
-// not construct this node with placement new; the no-guard spelling is unrecovered
-// (an explicit ctor call is not legal C++). Logic + layout complete; ??_7 named via VTBL.
+// The node is constructed with MSVC 5's EXPLICIT CONSTRUCTOR CALL (`obj.T::T()`), not
+// placement new: `new (&m_node1c) T` makes cl emit a null guard on the placement
+// pointer (`lea ecx,[this+0x1c]; cmp ecx,0; je`) and then address the node off ecx,
+// which retail does not have. The explicit call inlines the same ctor with NO guard and
+// addresses everything off `this` (eax) - byte-exact. See
+// docs/patterns/explicit-ctor-call-has-no-placement-null-guard.md.
 // ===========================================================================
 // The serialized symbol-table records are a PACKED byte stream walked with a moving
 // cursor, so pulling a dword out of it is byte-forced; the pun lives here, once.
@@ -76,7 +74,9 @@ static inline i32 PeekI32(const char* p) {
 
 RVA(0x001396f0, 0x1a)
 CParseSource* CParseSource::Init() {
-    new (&m_node1c) CParseSlotHashNode; // stamps the vptr + zeroes m_record (+0x30)
+    // stamps the vptr + zeroes m_record (+0x30); explicit ctor call, NOT placement new
+    // (placement new adds a null guard retail has not) - MSVC5 extension.
+    m_node1c.CParseSlotHashNode::CParseSlotHashNode();
     m_reader = 0;
     m_owner = 0;
     m_name = 0;
@@ -282,7 +282,7 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
 
     u32 pos = static_cast<u32>(m_cursor);
     u32 want = len;
-    if (pos + want > m_length) {
+    if (want + pos > m_length) {
         want = m_length - pos;
     }
     // `> 0`, not `!= 0`: `test ebp,ebp / jbe` is the negation of an UNSIGNED `> 0` (CF is
@@ -290,7 +290,9 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
     if (want > 0) {
         CSymTab* sd = m_owner;
         if (sd->m_mappedBuf) {
-            const char* base = sd->m_mappedBuf + (m_base - sd->m_baseOffset + pos);
+            // retail folds `sub esi,[sd+0xc]` then adds the mapped base BEFORE pos:
+            // ((m_base - m_baseOffset) + m_mappedBuf) + pos, not (... + pos) + mapped.
+            const char* base = m_base - sd->m_baseOffset + sd->m_mappedBuf + pos;
             memcpy(dst, base, want);
             m_cursor += want;
             return want;
@@ -412,20 +414,25 @@ CSymTab::CSymTab(
 // immediate (0xb vs 0x0) is reloc-masked. A callee-saved coin-flip. Final sweep.
 RVA(0x00139ee0, 0x11e)
 CSymTab::~CSymTab() {
-    CHashElement* cur;
-    for (cur = m_symbols.First(); cur != 0;) {
-        CHashElement* next = cur->Next();
+    // The cursor is the LIVE variable and `cur` a copy taken at the top of the body
+    // (the MFC GetNext(pos) shape): retail keeps the cursor in esi and copies it into edi
+    // (`mov edi,esi`) before calling Next, then reuses edi for cur->m_record and re-zeroes
+    // it between the two walks. Hoisting `next` into its own local instead swaps both
+    // registers' roles and adds the `mov esi,edi` write-back at the latch.
+    CHashElement* e;
+    for (e = m_symbols.First(); e != 0;) {
+        CHashElement* cur = e;
+        e = cur->Next();
         m_symbols.Remove(cur);
         CSymRec* rec = static_cast<CSymRec*>(cur->m_record);
         delete rec; // ~CSymRec non-virtual; CSymRec::operator delete inlines to RezFree (0x1b9b82)
-        cur = next;
     }
-    for (cur = m_subTabs.First(); cur != 0;) {
-        CHashElement* next = cur->Next();
+    for (e = m_subTabs.First(); e != 0;) {
+        CHashElement* cur = e;
+        e = cur->Next();
         m_subTabs.Remove(cur);
         CSymTab* sub = static_cast<CSymTab*>(cur->m_record);
         delete sub; // ~CSymTab non-virtual; CSymTab::operator delete inlines to RezFree
-        cur = next;
     }
     if (m_name) {
         ::operator delete(m_name);
@@ -596,32 +603,33 @@ void* CSymTab::NextSym3(void* rec) {
 // m_subTabs walk hits), return 0; otherwise `new CSymTab` (Rez heap, ctor-throw
 // cleanup) a child inheriting the owner and parented at this, splice it into
 // m_subTabs via its +0x20 hash node, and grow the parser's longest-name counter.
-// @early-stop
-// EH/regalloc wall (~80%): logic complete (incl. the MakeSymSeed leftover-args ctor
-// trick). The /GX ctor-throw cleanup state around `new CSymTab` plus the callee-saved
-// register assignment diverge from retail; banked for the final sweep.
 RVA(0x0013a330, 0xce)
 CSymTab* CSymTab::CreateSub(const char* name) {
-    CSymParser* owner = m_owner;
-    if (m_subTabs.Walk(name, owner->m_68 == 0) != 0) {
+    // m_owner is RE-READ at each use, not cached in a local: retail's `mov ecx,[esi+0x18]`
+    // appears twice around the MakeSeed/ctor pair, which frees the callee-saved register
+    // it would otherwise pin (and lets &m_subTabs live in ebp across both calls).
+    if (m_subTabs.Walk(name, m_owner->m_68 == 0) != 0) {
         return 0;
     }
     CSymTab* child = new CSymTab(
-        owner,
+        m_owner,
         this,
         name,
         0,
         0,
-        owner->MakeSeed(),
-        owner->m_subTabBucketCount,
-        owner->m_symbolBucketCount
+        m_owner->MakeSeed(),
+        m_owner->m_subTabBucketCount,
+        m_owner->m_symbolBucketCount
     );
     if (!child) {
         return 0;
     }
     m_subTabs.Insert(&child->m_node20);
-    if (m_owner->m_longestScopeNameLen <= strlen(name)) {
-        m_owner->m_longestScopeNameLen = strlen(name) + 1;
+    // ONE strlen: retail computes it once and walks the value with `dec ecx` / `inc ecx`
+    // around the compare - two `strlen(name)` calls emit two inline `repne scasb` runs.
+    u32 len = strlen(name);
+    if (m_owner->m_longestScopeNameLen <= len) {
+        m_owner->m_longestScopeNameLen = len + 1;
     }
     return child;
 }
@@ -637,8 +645,8 @@ CSymTab* CSymTab::CreateSub(const char* name) {
 // --diff); the residual is the MSVC5 callee-save coin-flip - retail keeps `rec` in ebp
 // and re-`lea`s &rec->m_valTable + puts m_owner in edx, while cl keeps &m_valTable in
 // ebp + m_owner in ecx, cascading the reg names through the body. The permuter finds no
-// operand-order fix (not source-steerable); same wall its siblings CreateSub/
-// ApplyRecursive @early-stop on. Banked for the final sweep.
+// operand-order fix (not source-steerable); same wall its sibling ApplyRecursive
+// @early-stop on. Banked for the final sweep.
 RVA(0x0013a400, 0xa9)
 CParseSource* CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
     CSymRec* rec = FindOrAddSym(key);
@@ -714,31 +722,39 @@ i32 CSymTab::AddNodeSubEntry(void* rec, void* found) {
 // ApplyRecursive (0x13a580): a2 == 0 is a no-op returning 1. Otherwise null each
 // child scope's m_dataOff, run the big range pass (ApplyRange, 0x13a640) over this
 // scope, then recurse into every child whose extent the pass set, ANDing the results.
+// The size guard is an UNSIGNED `> 0` (`cmp a2,0 / jbe`, not `je`), and the ApplyRange
+// failure sets `ok = 0` and falls into the SHARED `return ok` - it is not a `return 0`.
+// Both are visible in the CFG: retail shrink-wraps `push edi` INSIDE the a2 > 0 branch
+// and the guard jumps straight to the 4-pop epilogue with eax already holding 1, which
+// only a single-exit `return ok` produces. That took it 70.47 -> 91.22.
 // @early-stop
-// regalloc wall (~70%): logic complete. Retail pins a2 in ebx and the shared 0
-// constant in ebp; the recompile swaps them (a2->ebp, 0->ebx), which cascades through
-// every null check + the recursion fourcc setup. Banked for the final sweep.
+// callee-saved ROLE swap (91.2%): every instruction now matches; retail pins a2 in ebx
+// and the shared 0 constant in ebp (then re-uses them for a1/a3 in the recursion push
+// block), the recompile pins them the other way round, which renames ebx<->ebp through
+// the whole body. Same pool-preference class as global-store-temp-alternates-ecx-edx.md;
+// no declaration/statement order tried moves the pick.
 RVA(0x0013a580, 0xb2)
 i32 CSymTab::ApplyRecursive(CRezItmBase* a0, i32 a1, i32 a2, i32 a3) {
     i32 ok = 1;
-    if (a2 != 0) {
+    if (static_cast<u32>(a2) > 0) {
         CHashElement* e = m_subTabs.First();
         while (e) {
             (static_cast<CSymTab*>(e->m_record))->m_dataOff = 0;
             e = e->Next();
         }
-        if (ApplyRange(a0, a1, a2, a3) == 0) {
-            return 0;
-        }
-        e = m_subTabs.First();
-        while (e) {
-            CSymTab* sub = static_cast<CSymTab*>(e->m_record);
-            if (sub->m_dataOff != 0) {
-                if (sub->ApplyRecursive(a0, sub->m_dataOff, sub->m_dataSize, a3) == 0) {
-                    ok = 0;
+        if (ApplyRange(a0, a1, a2, a3) != 0) {
+            e = m_subTabs.First();
+            while (e) {
+                CSymTab* sub = static_cast<CSymTab*>(e->m_record);
+                if (sub->m_dataOff != 0) {
+                    if (sub->ApplyRecursive(a0, sub->m_dataOff, sub->m_dataSize, a3) == 0) {
+                        ok = 0;
+                    }
                 }
+                e = e->Next();
             }
-            e = e->Next();
+        } else {
+            ok = 0;
         }
     }
     return ok;
@@ -875,24 +891,21 @@ i32 CSymTab::ApplyRange(CRezItmBase* a0, i32 a1, i32 a2, i32 a3) {
 // FindOrAddSym (0x13a940): look the int key up in m_symbols; if absent, `new CSymRec`
 // (Rez heap, ctor-throw cleanup) the right leaf-record flavor (4-fourcc when the parser's
 // m_6c is set, else 3-fourcc) and splice it into m_symbols via its +0x04 hash node.
-// @early-stop
-// regalloc wall (~86%): logic complete. Retail dedicates a 4th callee-saved register
-// (ebp via FPO) to hold &m_symbols live across the alloc + ctor calls; the recompile
-// uses only three and recomputes it, swapping key/&table register roles throughout.
-// Banked for the final sweep.
 RVA(0x0013a940, 0xc2)
 CSymRec* CSymTab::FindOrAddSym(i32 key) {
-    CSymRec* found = static_cast<CSymRec*>(m_symbols.FindInt(static_cast<u32>(key)));
-    if (found) {
-        return found;
-    }
-    CSymRec* rec;
-    if (m_owner->m_6c != 0) {
-        rec = new CSymRec(key, this, m_owner->m_74, m_owner->m_70);
-    } else {
-        rec = new CSymRec(key, this, m_owner->m_70);
-    }
-    if (rec) {
+    // ONE variable, ONE exit: retail keeps the lookup result live in a callee-saved
+    // register across the alloc + ctor (`mov edi,eax; test edi,edi`) and re-uses it as
+    // the zero for the EH-state store - an early `return found;` gives it no live range.
+    CSymRec* rec = static_cast<CSymRec*>(m_symbols.FindInt(static_cast<u32>(key)));
+    if (!rec) {
+        if (m_owner->m_6c != 0) {
+            rec = new CSymRec(key, this, m_owner->m_74, m_owner->m_70);
+        } else {
+            rec = new CSymRec(key, this, m_owner->m_70);
+        }
+        if (rec == 0) {
+            return 0;
+        }
         m_symbols.Insert(&rec->m_symNode);
     }
     return rec;

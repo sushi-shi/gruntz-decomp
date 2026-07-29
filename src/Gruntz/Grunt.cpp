@@ -1980,6 +1980,15 @@ i32 CGrunt::CreateStaminaSprite() {
 // steerable: explicit `i32` locals for the two values are copy-propagated away by cl and
 // the pick does not move, and match_variants --state-trials 48 --max-depth 3 exhausted 256
 // variants without a win. Same family as global-store-temp-alternates-ecx-edx.md.
+// 2026-07-29: a FAITHFUL standalone replica (same 6-arg thiscall CreateSprite + the cdecl
+// notify fn-ptr + the `inner`/`reg` chain) reproduces our exact bytes, and 22 further
+// spellings through it all emit the SAME ecx/edx pick - the cell pair passed as a
+// by-value 2-int struct (byte-identical to the two scalars), inline accessors on any
+// subset of the three args, the args pre-read into locals in either order or through a
+// stack array, `this->`-qualified reads, the receiver with/without the `inner` local
+// (dropping it moves the pick but breaks the surrounding chain), the result bound to a
+// local, the test inverted, the guard order flipped, and the failure block's stores
+// reordered. The pick is not reachable from the source.
 RVA(0x0004d3e0, 0xf5)
 i32 CGrunt::CreateToyTimeSprite() {
     if (m_toyTimeSprite || m_toyTime == 0) {

@@ -13,6 +13,7 @@
 #include <DDrawMgr/DDrawWorkerHost.h> // the REAL plane class (CDDrawWorkerHost == CDDrawWorkerHost)
 #include <rva.h>
 
+#include <stdlib.h> // abs - the /Oi intrinsic (cdq/xor/sub), NOT an `if (x<0) x=-x;` branch
 #include <string.h> // strcpy, memset
 
 static const i32 AXIS_UNSET = static_cast<i32>(0x80000000);
@@ -679,25 +680,29 @@ void CGameLevel::SyncAfterMainIndex(void* visitor) {
 // reported blocked.
 //
 // @early-stop
-// scheduling/spill wall: the stepping loop's six spilled locals (the per-axis step,
-// the running goal, the ok flag) and the abs() lowering schedule into a register
-// assignment MSVC reproduces only for one spill order; logic + offsets + CFG are
-// exact. Deferred to the final sweep.
+// ~70.8%, but the SKELETON is now 31 blocks against retail's 32 (was 37): the two
+// distance tests are the /Oi `abs()` intrinsic (`cdq/xor/sub`), not `if (d<0) d=-d;`
+// - see docs/patterns/abs-intrinsic-cdq-xor-sub-vs-hand-rolled-negate.md - and
+// t->m_screenX is read once and kept while m_maxStepY is read late, as retail does.
+// Residue is the callee-saved ASSIGNMENT: retail spills `this` to a stack home and keeps
+// sx/arg2/arg1 in ebx/edi/ecx (2 local dwords, `sub esp,8`), cl keeps `this` in ebx and
+// re-reads arg2 (1 local dword, `push ecx`), which re-colours the three early-return
+// blocks. Deferred to the final sweep.
 RVA(0x0015de40, 0x164)
 i32 CGameLevel::MoveToward(CGameObject* target, i32 arg1, i32 arg2, i32 arg3) {
     CGameObject* t = target;
     i32 limX = m_maxStepX;
-    i32 limY = m_maxStepY;
+    // t->m_screenX is read ONCE and kept (retail holds it in ebx from the prologue right
+    // through the `sx > arg1` step-sign test); m_maxStepY is read at the stepY point, not
+    // hoisted next to limX (retail's `mov ebp,[this+0x68]` sits inside the loop preamble).
+    i32 sx = t->m_screenX;
 
-    i32 dx = t->m_screenX - arg1;
-    if (dx < 0) {
-        dx = -dx;
-    }
+    // abs(), not `if (d < 0) d = -d;`: retail's `cdq / xor eax,edx / sub eax,edx` IS the
+    // /Oi abs intrinsic; the hand-rolled negate emits a `jns`/`neg` branch pair and splits
+    // the block skeleton.
+    i32 dx = abs(sx - arg1);
     if (dx <= limX) {
-        i32 dy = t->m_screenY - arg2;
-        if (dy < 0) {
-            dy = -dy;
-        }
+        i32 dy = abs(t->m_screenY - arg2);
         if (dy <= m_maxStepY) {
             return DispatchMove(target, arg1, arg2, arg3);
         }
@@ -715,10 +720,10 @@ i32 CGameLevel::MoveToward(CGameObject* target, i32 arg1, i32 arg2, i32 arg3) {
     // --- incremental stepping toward (arg1, arg2) ---------------------------
     i32 stepX = limX;
     i32 goalX = arg1;
-    if (t->m_screenX > arg1) {
+    if (sx > arg1) {
         stepX = -stepX;
     }
-    i32 stepY = limY;
+    i32 stepY = m_maxStepY;
     if (t->m_screenY > arg2) {
         stepY = -stepY;
     }
@@ -858,13 +863,15 @@ void CGameLevel::NotifyAllPlanes() {
 // a tile id and return 1/0. ret 0x10.
 //
 // @early-stop
-// switch jump-table-density wall (~48%): retail lowers the arg1 switch to a dense
-// .rdata jump table over kinds 3..8 (jmp [eax*4+tbl]); MSVC sees only 2 non-empty
-// cases (4 & 7) and emits a cmp/subtract chain instead (adding the empty 3/5/6/8
-// cases does NOT force the table - cl collapses same-as-default arms before the
-// jump-table decision). The strcpy/name-copy case bodies are byte-exact. The tail
-// ResolveLevelName arg list was a real bug - it passed arg2 twice, dropping arg1;
-// retail pushes arg1/arg2/arg3 (fixed). switch-cmpje-tree-vs-jumptable.md.
+// 92.55% (was 49.78 - the `default: goto tail;` below forces retail's dense 3..8 jump
+// table; the "density wall" was cl folding the empty arms into the default before the
+// decision, see docs/patterns/empty-switch-arms-fold-into-default-and-kill-the-jump-
+// table.md). Every code byte through the `jmp [eax*4+tbl]` now matches (llvm-objdump -dr,
+// base vs target: identical offsets, the `ja` lands on the same +0xb3). The residue is the
+// delinker's jump-table SYMBOL naming - base carries the table under its own `$L…`/`$tail$`
+// symbols where the delinked target packs it inside the function symbol
+// (jumptable-data-overlap). The tail ResolveLevelName arg list was a real bug - it passed
+// arg2 twice, dropping arg1; retail pushes arg1/arg2/arg3 (fixed earlier).
 RVA(0x00160f70, 0xfa)
 i32 CGameLevel::EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3) {
     EditSink* s = static_cast<EditSink*>(sink);
@@ -873,18 +880,36 @@ i32 CGameLevel::EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3) {
     }
 
     char buf[0x80];
+    // The empty 3/5/6/8 arms only reach the jump-table decision if `default` has a DISTINCT
+    // target - otherwise cl folds them into it and drops to a cmp/je chain (that is what
+    // made this function read as a "jump-table-density wall"). `default: goto tail;` is
+    // exactly distinct enough: cl keeps all six table entries AND still lands them on the
+    // single shared tail, giving retail's `add eax,-3 / cmp eax,5 / ja tail /
+    // jmp [eax*4+tbl]` with the 3/5/6/8 entries pointing at that tail. Spelling the tail
+    // out under `default` instead also builds the table but leaves a 50-byte duplicate.
     switch (arg1) {
+        case 3:
+            break;
         case 4:
             memset(buf, 0, sizeof(buf));
             strcpy(buf, m_levelName);
             s->Write(buf, 0x80);
             break;
+        case 5:
+            break;
+        case 6:
+            break;
         case 7:
             s->Read(buf, 0x80);
             strcpy(m_levelName, buf);
             break;
+        case 8:
+            break;
+        default:
+            goto tail;
     }
 
+tail:
     if (m_mainPlane == 0) {
         return 0;
     }
@@ -1561,9 +1586,11 @@ i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 a1, i32 a2, i32* outY, i32 a3) {
 // instruction-for-instruction identity.
 //
 // @early-stop
-// residue is purely which dead PARAMETER HOME each spilled local lands in: retail packs
-// sy/bottom/tLoA/boxL onto t/p/a1/a2's homes, ours rotates them by one. Every
-// declaration permutation tried is worse. Deferred to the final sweep.
+// 89.5%: residue is which dead PARAMETER HOME each spilled local lands in - retail packs
+// sy/bottom/tLoA/boxL onto t/p/a1/a2's homes, ours rotates them by one - plus the
+// else-arm block PLACEMENT (retail keeps it inline with a `jmp` over the commit block;
+// cl sinks it past the commit and inverts its branch). Every declaration permutation
+// tried is worse. Deferred to the final sweep.
 RVA(0x0015fe40, 0xd4)
 i32 CGameLevel::AltStepValidate(CGameObject* t, CGameObject* p, i32 a1, i32 a2, i32* outY, i32 a3) {
 
@@ -1602,12 +1629,16 @@ i32 CGameLevel::AltStepValidate(CGameObject* t, CGameObject* p, i32 a1, i32 a2, 
         if (tLoA > boxR) {
             goto fail;
         }
+        // `boxT - 1` is ONE local shared by both arms: retail hoists `lea eax,[edx-1]`
+        // above the cmpHi/tHi branch and both arms then `cmp tHi,stand` in that operand
+        // order (jne on the equal arm, jl on the other). 85.36 -> 89.49.
+        i32 stand = boxT - 1;
         if (cmpHi == tHi) {
-            if (boxT - 1 != tHi) {
+            if (tHi != stand) {
                 goto fail;
             }
         } else {
-            if (tHi < boxT - 1) {
+            if (tHi < stand) {
                 goto fail;
             }
         }
@@ -1626,6 +1657,10 @@ fail:
 // box (offset by a1) still overlaps the carrier's stand area and returns whether
 // the rider's feet (m_extent.bottom + a2) still sit exactly on the stand surface
 // (m_area.top-derived row - 1). All field reads; no calls. ret 0x14.
+// @early-stop
+// 99.98%: ONE pair - retail loads p->m_area.top (+0x148) before p->m_screenY (+0x60), we
+// do the reverse; the `add edx,ebx` that consumes them is byte-identical either way.
+// docs/patterns/two-member-add-load-order-is-canonicalized.md.
 RVA(0x0015ff20, 0xc0)
 i32 CGameLevel::HoldMove(CGameObject* et, CGameObject* p, i32 a1, i32 a2, i32 a3) {
     if (p == 0) {
@@ -1699,6 +1734,11 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
 // (== kTileSoft). The inlined PROBE_TILE shape; the result==1 test is shared by
 // both the tile-hit and empty-tile paths (retail merges the sete). ret 8.
 //
+// @early-stop
+// 99.98%: ONE pair - retail loads m_screenY (+0x60) before m_extent.top (+0x138), we do
+// the reverse; the `add eax,ebx` that consumes them is byte-identical either way. Same
+// canonicalization as ProbeFootSoft/ProbeFootBlocked/HoldMove;
+// docs/patterns/two-member-add-load-order-is-canonicalized.md.
 RVA(0x00160450, 0xd6)
 i32 CGameLevel::ProbeHeadSoft(CGameObject* t, i32 dy) {
     i32 px = t->m_screenX;
@@ -2208,11 +2248,13 @@ i32 CGameLevel::ProbeStepEdge(i32 x, i32 y) {
 //
 // @early-stop
 // 99.99% - ONE instruction pair: retail loads m_screenY (+0x60) into eax and
-// m_extent.bottom (+0x140) into esi, we do the reverse. cl canonicalizes the
-// commutative add to the HIGHER offset in eax; `bottom + screenY`, `screenY +
-// (bottom+1)` and two pre-declared locals in retail's order all emit the same pair.
-// docs/patterns/commutative-imul-operand-in-eax.md. Everything else is byte-exact
-// (the nested `!=` guards fixed the block order: 98.72 -> 99.99).
+// m_extent.bottom (+0x140) into esi, we do the reverse. The pick is NOT in the source -
+// ~35 expression and statement forms were tried (reversed operands, parenthesised,
+// third-term-first, either member pre-read into a local, compound `+=`, `++row` split
+// out) and all emit the same order; a standalone `struct AB : CGameLevel` replica of the
+// IDENTICAL source picks RETAIL's order here, so it is TU-cumulative back-end state.
+// docs/patterns/two-member-add-load-order-is-canonicalized.md. Everything else is
+// byte-exact (the nested `!=` guards fixed the block order: 98.72 -> 99.99).
 RVA(0x00160080, 0x187)
 i32 CGameLevel::ProbeFootSoft(CGameObject* t, i32 dx) {
     i32 row = t->m_screenY + t->m_extent.bottom + 1;
@@ -2238,8 +2280,9 @@ i32 CGameLevel::ProbeFootSoft(CGameObject* t, i32 dx) {
 //
 // @early-stop
 // 99.99% (was 99.07): the nested `!=` guards fixed the last probe's branch polarity
-// and both exit blocks' order. Residual is the same single commutative-add operand
-// pair as ProbeFootSoft - see its note.
+// and both exit blocks' order. Residual is the same single commutative-add LOAD-ORDER
+// pair as ProbeFootSoft - see its note and
+// docs/patterns/two-member-add-load-order-is-canonicalized.md.
 RVA(0x00160210, 0x234)
 i32 CGameLevel::ProbeFootBlocked(CGameObject* t, i32 dx) {
     i32 row = t->m_screenY + t->m_extent.bottom + 1;
