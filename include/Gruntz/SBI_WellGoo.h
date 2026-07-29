@@ -17,7 +17,6 @@ class CImage;
 class CDDSurface;
 class CDDrawShadeBlit;
 
-
 class CSBI_WellGoo : public CSBI_Image {
 public:
     // tag 7 (the Gruntz-tab WELLGOO widget).
@@ -58,19 +57,15 @@ public:
     CImage* m_baseFrame;        // +0x40  base frame record (first RenderFrame `this`)
     i32 m_fillScale;            // +0x44  fill scale factor (int, fimul); 0 => skip fill
     i32 m_drawX;                // +0x48  draw x origin
-    // @identity-TODO LAYOUT CONTRADICTION (2026-07-27). Blit takes ShadeRect*, and
-    // ShadeRect is `typedef struct tagRECT` - 16 bytes. So a rect based at +0x4c spans
-    // +0x4c..+0x5b, which swallows m_drawGuard (+0x54) and m_blitGuard (+0x58) below;
-    // likewise a rect at m_dstRect (+0x5c) would swallow m_fgTop (+0x60). Either those
-    // four "guard/top" members are rect fields, or the rect bases are elsewhere. The
-    // guards' inc/dec-around-BltEx behaviour argues they are real counters, so this needs
-    // the Blit-site disasm to settle - do not pick one and declare it.
-    i32 m_srcRect; // +0x4c  src-rect base (lea &m_srcRect: Blit p0/clip, BltEx srcRect)
-    char m_pad50[0x54 - 0x50];
-    i32 m_drawGuard; // +0x54  draw-depth guard counter (inc around BltEx, dec after)
-    i32 m_blitGuard; // +0x58  draw-depth guard counter (inc around BltEx, dec after)
-    i32 m_dstRect;   // +0x5c  dest-rect base (lea &m_dstRect: BltEx dstRect)
-    i32 m_fgTop;     // +0x60  ftol(fillTop - clampedFill); foreground y top (m_fgTop - 2)
+    // SETTLED 2026-07-29 (the ex-"LAYOUT CONTRADICTION"): both ARE 16-byte RECTs.
+    // SerializeFields round-trips them as `arc->Write(&m_srcRect, 0x10)` /
+    // `(&m_dstRect, 0x10)` - two 16-byte blocks, which only fits if +0x54/+0x58 and
+    // +0x60 are rect fields. The ex-"m_drawGuard/m_blitGuard" inc-around-BltEx-dec is
+    // then `right++/bottom++ ... right--/bottom--`, i.e. the inclusive->exclusive rect
+    // adjust DirectDraw's Blt needs; and the ex-"m_fgTop" IS m_dstRect.top, the
+    // computed goo fill line (the foreground frame draws at that top - 2).
+    RECT m_srcRect; // +0x4c  goo source rect (Blit p0/clip, BltEx srcRect)
+    RECT m_dstRect; // +0x5c  goo dest rect; .top is the fill line
 };
 SIZE_UNKNOWN();
 
