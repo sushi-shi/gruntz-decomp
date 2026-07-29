@@ -13,7 +13,7 @@ public:
     i32 m_1c;
     class CShadeTable* m_20; // the fader's shade table (null = none)
     CString m_24;            // +0x24
-    i32 m_28;     // +0x28
+    class CDDPalette* m_28;  // +0x28  the flash fader's palette (ctor 0; only reader casts it)
 };
 SIZE(0x2c);
 

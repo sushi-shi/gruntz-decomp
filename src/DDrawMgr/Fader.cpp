@@ -395,8 +395,7 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
     m_lightGate = d->m_10;
     m_centerX = d->m_18;
     m_centerY = d->m_1c;
-    // forced by the mode-tagged desc slot: the fader type picks the arm (FxModeDesc.h)
-    CDDPalette* pal = reinterpret_cast<CDDPalette*>(d->m_0c);
+    CDDPalette* pal = d->m_pal0c; // the mode tag selects this union arm
     m_palette = pal;
     i32 cnt = d->m_14;
     m_spanCount = cnt;
@@ -681,10 +680,8 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     if (cfg->m_10 == 0) {
         return 0;
     }
-    // forced by the mode-tagged desc slot: the fader type picks the arm (FxModeDesc.h)
-    m_primeSrc = reinterpret_cast<CDDSurface*>(cfg->m_0c);
-    // forced by the mode-tagged desc slot: the fader type picks the arm (FxModeDesc.h)
-    m_flipTarget = reinterpret_cast<CDDSurface*>(cfg->m_10);
+    m_primeSrc = cfg->m_surf0c; // the mode tag selects these union arms
+    m_flipTarget = cfg->m_surf10;
     m_48 = cfg->m_18;
     m_recOrderFlag = cfg->m_14;
     m_cols = cfg->m_1c;
@@ -950,8 +947,7 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
     if (cfg->m_14 == 0) {
         // build the fade shade table from the descriptor's palette (m_cache is the
         // CFader base's embedded CShadeTableCache at this+0x04)
-        // forced by the mode-tagged desc slot: the fader type picks the arm (FxModeDesc.h)
-        CDDPalette* pal = reinterpret_cast<CDDPalette*>(cfg->m_10);
+        CDDPalette* pal = cfg->m_pal10; // the mode tag selects this union arm
         m_table = m_cache.HueRampTable(pal->m_cacheA, 0x10, 0);
         m_flag = 1; // we own it: ~CFader will FindRemove it
     } else {
@@ -1103,8 +1099,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     if (m_surfB == 0) {
         goto fail;
     }
-    // forced by the mode-tagged desc slot: the fader type picks the arm (FxModeDesc.h)
-    m_surfC = pInit->m_0c ? reinterpret_cast<CDDSurface*>(pInit->m_0c) : m_surfB;
+    m_surfC = pInit->m_surf0c ? pInit->m_surf0c : m_surfB;
 
     if (!m_cache.Init()) {
         goto fail;
@@ -1180,8 +1175,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
                 m_useLut = 0;
             }
         } else {
-            // forced by the mode-tagged desc slot: the fader type picks the arm (FxModeDesc.h)
-            CDDPalette* pal = reinterpret_cast<CDDPalette*>(pInit->m_28);
+            CDDPalette* pal = pInit->m_28;
             m_table = m_cache.FlashTable(pal->m_cacheA, 0x20, 0x20, 0x32, 0xc8);
         }
 
