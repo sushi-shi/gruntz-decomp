@@ -11,6 +11,11 @@
 #include <Gruntz/TileTriggerLogic.h> // CTileTriggerLogic + the per-id leaves AddLogic news
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/TileTriggerWiring.h>
+#include <DDrawMgr/DDSurface.h>        // CDDSurface::m_ddSurface (the COM GetDC/ReleaseDC pair)
+#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages front/back pages + CDrawSubWorker
+#include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (m_backPair; needs the complete type to upcast)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // CDDrawSurfaceMgr::m_drawTarget
+#include <Gruntz/FontConfig.h>        // CFontConfig::Draw3DText (g_gameReg->m_chatLog)
 #include <Gruntz/GameLevel.h> // CGameLevel/CDDrawWorkerHost/CTileImageSet (the id-21 board latch)
 
 RVA(0x000c8640, 0x70)
@@ -20,47 +25,72 @@ CTileTriggerContainer::~CTileTriggerContainer() {
     // order) by the compiler-emitted /GX member teardown.
 }
 
-// @identity-TODO (arg0's class only - see BLOCKER; everything else below is PROVEN)
-// 0x115b60 (151 B) - a GDI "draw 3D text onto a plane's DirectDraw surface" helper. Homed
-// from GapFunctions.cpp (matcher-5) by RVA neighbourhood (this TU's .text brackets it).
+// ---------------------------------------------------------------------------
+// DrawPageDebugText (0x115b60) - the GDI "draw 3D text onto a draw-target page's
+// DirectDraw surface" debug helper. Free __cdecl (retail reads arg0 at [esp+0x4]
+// BEFORE any push and ends in a bare `ret`), 8 args, returns 0 on every null gate
+// and 1 on success. Homed from GapFunctions.cpp by RVA neighbourhood (this TU's
+// .text brackets it).
 //
-// The old note here was WRONG on two counts (GO1, corrected from retail bytes):
-//   * NOT a "__thiscall predicate": retail reads arg0 at [esp+0x4] BEFORE any push and ends
-//     in a bare `ret` (no `ret N`, no ecx receiver) -> a FREE __cdecl fn.
-//   * The "+0x44/+0x68 vtable slots" are not a game class's: the object is pushed as an
-//     explicit stack arg (`push &out; push pSurf; call [vtbl+0x44]`) = COM __stdcall. On
-//     IDirectDrawSurface, +0x44 is slot 17 GetDC(HDC*) and +0x68 is slot 26 ReleaseDC(HDC)
-//     (exact <ddraw.h> offsets) - i.e. this is a GetDC/draw/ReleaseDC bracket.
+// IDENTITY RESOLVED 2026-07-29 (was an @identity-TODO parked on "arg0's CLASS is
+// unrecoverable ... it is a ZERO-REF orphan, so there is no call site to type arg0
+// from"). arg0 never needed a caller - its own field chain names it. The three
+// offsets the body walks are `[arg0+0x04] -> [+0x10] / [+0x14] -> [+0x2c]`, and
+// exactly one chain in the tree has that shape:
+//   +0x04  CDDrawSurfaceMgr::m_drawTarget   (CDDrawSubMgrPages*)
+//   +0x10  CDDrawSubMgrPages::m_frontPair   (CDDrawSurfaceChildA*)
+//   +0x14  CDDrawSubMgrPages::m_backPair    (CDDrawSurfacePair*)
+//   +0x2c  CDrawSubWorker::m_surface        (CDDSurface*, the shared base of both)
+// so arg0 is a CDDrawSurfaceMgr* and arg4 is the front/back page selector. The +0x2c
+// read is legal on EITHER arm precisely because the two page classes are siblings on
+// CDrawSubWorker (see DDrawSubMgrPages.h) - no cast is needed, the upcast is implicit.
 //
-// DECODED (byte-exact; 8 args, returns 0 on every null-gate, 1 on success):
-//   f(obj, const CString* text, RECT* dst, i32 fontFlag, i32 useFront, i32 r, i32 g, i32 b)
-//     if (!obj) return 0;
-//     p = useFront ? obj->m_4->m_10 : obj->m_4->m_14;   if (!p) return 0;
-//     CDDSurface* s = p->m_2c;                          if (!s) return 0;
-//     HDC hdc = 0;                       // MSVC reuses the DEAD arg0 slot [esp+8] as this local
-//     s->m_8->GetDC(&hdc);               // m_8 is the IDirectDrawSurface* (DDSurface.h)
-//     g_gameReg->m_chatLog->Draw3DText(text, hdc, dst, fontFlag, r, g, b, 1, 2, 3);
-//     s->m_8->ReleaseDC(hdc);
-//     return 1;
-//   The Draw3DText binding is PROVEN, not inferred: the call is ILT 0x140b -> `jmp 0x22810`,
-//   and CFontConfig::Draw3DText @0x22810 (FontConfig.h) takes exactly the 10 args the push
-//   order yields - (strSrc, hdc, dst, fontFlag, r, g, b, shadow, dx, dy) with shadow/dx/dy
-//   the pushed literals 1/2/3. `g_gameReg->m_5c` IS CFontConfig* m_chatLog (GruntzMgr.h).
-//
-// BLOCKER (why this is not written out as code): arg0's CLASS is unrecoverable. Full chase
-// run and dead-ended - `sema xref 0x115b60` AND `--tree`: "(no direct call/jmp rel32 caller
-// in .text)"; it is a ZERO-REF orphan (dead debug helper, compiled in but never called), so
-// there is no call site to type arg0 from, and no vtable/data-ref either. Writing the
-// obj->m_4->m_10 chain would require FABRICATING a view of an un-xref-able receiver
-// (no-fake-view rule). Everything except arg0's type is settled; the moment any caller of
-// 0x115b60 is reconstructed, this is a ~20-line write-out.
+// The COM bracket is <ddraw.h>-exact: the surface is pushed as an explicit stack arg
+// (`push &out; push pSurf; call [vtbl+0x44]`), i.e. __stdcall, and on
+// IDirectDrawSurface +0x44 is slot 17 GetDC(HDC*) while +0x68 is slot 26 ReleaseDC(HDC).
+// The Draw3DText binding is likewise proven, not inferred: the call is ILT 0x140b ->
+// `jmp 0x22810` = CFontConfig::Draw3DText, whose ten parameters are exactly what the
+// push order yields, with shadow/dx/dy the pushed literals 1/2/3, on g_gameReg->m_5c
+// (CFontConfig* m_chatLog).
 // @dead-code
-// zero-ref (gruntz sema xref --tree, already noted below): a dead debug helper,
-// compiled in but never called; its un-typeable arg0 receiver cannot be recovered
-// from a caller that does not exist.
+// zero-ref (gruntz sema xref --tree): a debug helper retail compiled in and never
+// called. That cost it its identity for a while; it does not any more.
 RVA(0x00115b60, 0x97)
-i32 Gap_115b60(void) {
-    return 0;
+i32 DrawPageDebugText(
+    CDDrawSurfaceMgr* mgr,
+    const CString* text,
+    RECT* dst,
+    i32 fontFlag,
+    i32 useFrontPage,
+    i32 r,
+    i32 g,
+    i32 b
+) {
+    if (mgr == 0) {
+        return 0;
+    }
+    CDrawSubWorker* page;
+    if (useFrontPage != 0) {
+        page = mgr->m_drawTarget->m_frontPair;
+        if (page == 0) {
+            return 0;
+        }
+    } else {
+        page = mgr->m_drawTarget->m_backPair;
+        if (page == 0) {
+            return 0;
+        }
+    }
+    CDDSurface* surf = page->m_surface;
+    if (surf == 0) {
+        return 0;
+    }
+    // MSVC reuses the now-dead arg0 slot [esp+8] for this local.
+    HDC hdc = 0;
+    surf->m_ddSurface->GetDC(&hdc);
+    g_gameReg->m_chatLog->Draw3DText(text, hdc, dst, fontFlag, r, g, b, 1, 2, 3);
+    surf->m_ddSurface->ReleaseDC(hdc);
+    return 1;
 }
 
 RVA(0x00115f00, 0x13)

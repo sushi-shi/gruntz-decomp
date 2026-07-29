@@ -839,8 +839,8 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     // the main plane's coord wrap (thunk 0x295a -> ?WrapCoord@CDDrawWorkerHost@@ @0xa000;
     // receiver is level->m_mainPlane)
     CGameLevel* plane = g_gameReg->m_world->m_level;
-    i32 outR = col;
-    i32 outC = row;
+    LONG outR = col;
+    LONG outC = row;
     plane->m_mainPlane->WrapCoord(&outR, &outC);
     CStatusBarMgr* sbi = lvl->m_guts;
     if (sbi->m_hlBusy == 0) {

@@ -625,36 +625,60 @@ void CGameObject::AddLogicBump(char* key) {
 // through animation states 0x50..0x53 around the inner step.
 // ---------------------------------------------------------------------------
 // @early-stop
-// tail-merge wall (docs/patterns/identical-return-epilogue-tailmerge.md): retail
-// inlines a separate play-state dance per case (3,4 distinct; 7,8 share the
-// 0x15129b tail via fall-through) using different scratch regs (edx vs ecx for
-// the worker) per case context; our cl cross-jumps all four dances to one shared
-// tail. Logic complete; the per-case regalloc/tail-merge layout is a
-// compiler-internal choice not steerable from C.
+// cross-jump layout wall, 355 of 373 bytes. Two REAL bugs were fixed out of the old
+// "tail-merge wall" note first (it had called the whole residual non-steerable):
+//   * the notify ran on the held worker (`w->m_notify(this)`) where retail reloads
+//     (`mov <reg>,[esi+0x7c]; push esi; call [<reg>+0x10]`) - 4x3 bytes, -25 -> +3;
+//   * the four `m_7c == 0` gates each emitted their own 11-byte epilogue where retail
+//     jumps to ONE shared block - the `goto fail` spelling below, +3 -> -18.
+// What is left is purely cl's cross-jump/block-placement choice, and the byte
+// accounting closes exactly (ours | retail):
+//   prologue     48 | 44   (our switch-default `ja` is near, retail's is short)
+//   case 3       62 | 71   (retail keeps its own post-call tail and FALLS THROUGH
+//                           into the Dispatch tail, which retail places 2nd)
+//   case 4       50 | 70   (retail keeps its own; ours jmps to a shared tail)
+//   case 7       58 | 27   (retail jumps INTO case 8's dance at 0x15129b, sharing all
+//                           of it; ours emits a full copy)
+//   case 8       94 | 117  (retail leaves the two `m_carrier = 0` stores separate -
+//                           `mov [esi+0x98],eax` reusing the Lookup return on the
+//                           lookup-fail arm and `,edi` on the node==0 arm; ours
+//                           cross-jumps them into one)
+//   Dispatch tail 37 | 35, fail block 9 | 9
+// So retail has THREE dance copies (3, 4, and 7-into-8) where cl gives us two, and
+// keeps two stores cl merges. Measured: none of it is source-steerable - per-case
+// locals do not break the merge, and all eight source orders of the four cases were
+// compiled (best 360 at 3/4/8/7, worst 344; the natural 3/4/7/8 kept here gives 355).
+// Since objdiff refuses to score a length mismatch at all, no ordering scores either,
+// so the natural order stays. Logic is complete and every instruction is accounted for.
 RVA(0x00151150, 0x175)
 i32 CGameObject::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
     if (a1 == 0) {
         return 0;
     }
-    AnimWorkerObj* w;
-    i32 saved;
-    i32 node;
+    // Per-case locals ON PURPOSE (do not hoist them back out): retail's play-state
+    // dances are byte-distinct only in their scratch register (case 3 edx, case 4 eax,
+    // case 8 ecx), which is why retail's cl did not cross-jump them all into one tail.
     switch (type) {
         case 3: {
             m_184 = 0;
             if (m_carrier != 0) {
                 m_184 = m_carrier->m_188; // the linked object's +0x188 id
             }
-            w = m_7c;
-            if (w == 0) {
-                return 0;
+            AnimWorkerObj* w3 = m_7c;
+            if (w3 == 0) {
+                goto fail;
             }
-            saved = w->m_1c;
-            w->SetActKey(0x50);
-            w->m_notify(this);
-            w = m_7c;
-            if (w->ActKey() == 0x50) {
-                w->m_1c = saved;
+            i32 saved3 = w3->m_1c;
+            w3->SetActKey(0x50);
+            // the notify runs on a RELOADED m_7c, not on w3: retail emits
+            // `mov <reg>,[esi+0x7c]; push esi; call [<reg>+0x10]`. Calling it on the
+            // held pointer drops that reload and costs the function 4x3 bytes -
+            // enough to break the length match entirely. This was the real bug behind
+            // the old "tail-merge wall" note.
+            m_7c->m_notify(this);
+            w3 = m_7c;
+            if (w3->ActKey() == 0x50) {
+                w3->m_1c = saved3;
             }
             break;
         }
@@ -662,16 +686,21 @@ i32 CGameObject::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
             if (Serialize(a1) == 0) {
                 return 0;
             }
-            w = m_7c;
-            if (w == 0) {
-                return 0;
+            AnimWorkerObj* w4 = m_7c;
+            if (w4 == 0) {
+                goto fail;
             }
-            saved = w->m_1c;
-            w->SetActKey(0x51);
-            w->m_notify(this);
-            w = m_7c;
-            if (w->ActKey() == 0x51) {
-                w->m_1c = saved;
+            i32 saved4 = w4->m_1c;
+            w4->SetActKey(0x51);
+            // the notify runs on a RELOADED m_7c, not on w4: retail emits
+            // `mov <reg>,[esi+0x7c]; push esi; call [<reg>+0x10]`. Calling it on the
+            // held pointer drops that reload and costs the function 4x3 bytes -
+            // enough to break the length match entirely. This was the real bug behind
+            // the old "tail-merge wall" note.
+            m_7c->m_notify(this);
+            w4 = m_7c;
+            if (w4->ActKey() == 0x51) {
+                w4->m_1c = saved4;
             }
             break;
         }
@@ -679,21 +708,26 @@ i32 CGameObject::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
             if (SerializeObjectState(a1) == 0) {
                 return 0;
             }
-            w = m_7c;
-            if (w == 0) {
-                return 0;
+            AnimWorkerObj* w7 = m_7c;
+            if (w7 == 0) {
+                goto fail;
             }
-            saved = w->m_1c;
-            w->SetActKey(0x52);
-            w->m_notify(this);
-            w = m_7c;
-            if (w->ActKey() == 0x52) {
-                w->m_1c = saved;
+            i32 saved7 = w7->m_1c;
+            w7->SetActKey(0x52);
+            // the notify runs on a RELOADED m_7c, not on w7: retail emits
+            // `mov <reg>,[esi+0x7c]; push esi; call [<reg>+0x10]`. Calling it on the
+            // held pointer drops that reload and costs the function 4x3 bytes -
+            // enough to break the length match entirely. This was the real bug behind
+            // the old "tail-merge wall" note.
+            m_7c->m_notify(this);
+            w7 = m_7c;
+            if (w7->ActKey() == 0x52) {
+                w7->m_1c = saved7;
             }
             break;
         }
         case 8: {
-            node = m_184;
+            i32 node = m_184;
             if (node != 0) {
                 void* found = 0;
                 if (MapLookupById(OwnerMgr()->m_childGroup->m_map48, node, found) == 0) {
@@ -706,21 +740,32 @@ i32 CGameObject::Play(CFileMemBase* a1, i32 type, i32 a3, void* self) {
             } else {
                 m_carrier = 0;
             }
-            w = m_7c;
-            if (w == 0) {
-                return 0;
+            AnimWorkerObj* w8 = m_7c;
+            if (w8 == 0) {
+                goto fail;
             }
-            saved = w->m_1c;
-            w->SetActKey(0x53);
-            w->m_notify(this);
-            w = m_7c;
-            if (w->ActKey() == 0x53) {
-                w->m_1c = saved;
+            i32 saved8 = w8->m_1c;
+            w8->SetActKey(0x53);
+            // the notify runs on a RELOADED m_7c, not on w8: retail emits
+            // `mov <reg>,[esi+0x7c]; push esi; call [<reg>+0x10]`. Calling it on the
+            // held pointer drops that reload and costs the function 4x3 bytes -
+            // enough to break the length match entirely. This was the real bug behind
+            // the old "tail-merge wall" note.
+            m_7c->m_notify(this);
+            w8 = m_7c;
+            if (w8->ActKey() == 0x53) {
+                w8->m_1c = saved8;
             }
             break;
         }
     }
     return m_7c->Dispatch(a1, type, a3, self) != 0;
+fail:
+    // ONE shared `return 0` block, not four inline epilogues: retail reaches it with a
+    // near `je` from each case's `m_7c == 0` gate, and the merged tail even schedules
+    // the `xor eax,eax` between the pops (`pop edi; pop esi; pop ebp; xor eax,eax;
+    // pop ebx`). Spelled per case, cl emits a separate 11-byte epilogue at all four.
+    return 0;
 }
 
 RVA(0x00151320, 0x454)

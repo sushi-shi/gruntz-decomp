@@ -454,14 +454,304 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
 RVA(0x00180630, 0x1)
 void CFaderLight::SubFree() {}
 
+// Retail clamps a span edge into [0, width] with a DOUBLE-EVALUATED select - the
+// `(v < 0 ? 0 : v)` half is emitted twice, once for the width compare and once for each
+// arm - which is what `min(max(v,0), w)` looks like when min/max are the usual two-
+// argument macros. A helper function would evaluate it once and lose the shape.
+#define FADER_CLAMPW(v, w) (((v) < 0 ? 0 : (v)) >= (w) ? (w) : ((v) < 0 ? 0 : (v)))
+
+// CFaderLight::RenderFrame (0x180640, vtable slot 1, 2412 B) - the expanding light
+// circle. Both surfaces (and, in the lit mode, the pooled overlay) stay Lock()ed for the
+// frame. m_spanStarts[]/m_spanEnds[] remember the horizontal span each scanline had last
+// frame, so every row only has to touch what CHANGED.
+//   * lit mode (m_lightGate): the circle of radius `m_frameCount - frame` is the lit
+//     area. Rows the circle has left get blacked out wholesale; rows it still covers get
+//     their newly-exposed left/right margins zeroed, and the m_spanCount-wide rim is
+//     shaded through the CShadeTable LUT, reading the overlay copy and writing the live
+//     surface. The rim walk is the same four-variant, four-quadrant rasterizer as the
+//     out-of-line Render @0x180fb0 (mirrored horizontally about m_centerX always, and
+//     vertically about m_centerY when the mirror row is on-screen).
+//   * unlit mode: the circle of radius `frame` is the RESTORED area - the newly-covered
+//     margins are copied back from m_dstSurface instead of cleared - and the rim is
+//     shaded by calling Render out of line with radius `frame + m_spanCount - 1`.
+// m_20 latches the frame reached, then the three surfaces are unlocked.
 // @early-stop
-// CFaderLight::RenderFrame (0x180640, vtable slot 1, 2412 B): the light fader's per-frame
-// light/circle-shade blit. Identity recovered by data-ref: 0x180640 is ??_7CFaderLight
-// @@6B@+0x4 (vtable slot 1), the RenderFrame(i32 frame) the class already declares. Defined here
-// as the real virtual (was the mis-homed Gap_180640 free-fn stub) so ??_7CFaderLight
-// slot 1 binds to its own body; body parked (>512 B leaf-first reconstruction).
+// ~62% (from 0.12%): COMPLETE - both modes, all four rim-walk variants, the span
+// bookkeeping, the wholesale row clear and the out-of-line Render tail reconstruct, and
+// three shape levers are already banked (the NEGATED half-chord that feeds both edge
+// clamps, the right-edge double-evaluated clamp vs the single-evaluated left one, and
+// reading m_centerX from the MEMBER inside the rim loop while the pointer setup uses the
+// cached copy: 55.3 -> 57.6 -> 59.9 -> 62.0). The residue is register pressure: this body
+// keeps ~20 values live across a four-way branch, and retail parks m_spanCount in ebx and
+// m_centerX in ebp for the whole rim walk where cl5 spills both, which re-assigns every
+// stack slot downstream (frame 0x54 vs 0x50) - the same class of wall the out-of-line
+// twin CFaderLight::Render @0x180fb0 sits on at ~54%.
 RVA(0x00180640, 0x96c)
-void CFaderLight::RenderFrame(i32 frame) {}
+void CFaderLight::RenderFrame(i32 frame) {
+    i32 delta = frame - m_20;
+    if (m_surface != 0) {
+        m_srcBits = static_cast<u8*>(m_surface->Lock(0));
+    }
+    if (m_dstSurface != 0) {
+        m_dstBits = static_cast<u8*>(m_dstSurface->Lock(0));
+    }
+    i32 bpp = m_surface->m_bytesPerPixel;
+    u8* lut = 0;
+    if (m_table != 0) {
+        lut = m_table->m_data;
+    }
+    if (m_lightGate != 0) {
+        u8* ovlBits = 0;
+        if (m_overlay != 0) {
+            ovlBits = static_cast<u8*>(m_overlay->Lock(0));
+        }
+        i32 r = m_frameCount - frame;
+        i32 rr = r * r;
+        i32 v = m_centerY - r - delta;
+        i32 row = (v < 0) ? 0 : v;
+        for (;;) {
+            i32 stop = delta + r + m_centerY;
+            if (stop >= m_surfHeight) {
+                stop = m_surfHeight;
+            }
+            if (row >= stop) {
+                break;
+            }
+            if (row >= m_centerY - r + 1 && row <= r + m_centerY - 1) {
+                i32 dyv = row - m_centerY;
+                // NEGATED half-chord: retail `neg eax`s the sqrt and then reaches both
+                // edges from it - `sub cx,(-h)` for the right (which is what leaves the
+                // sign flag the first clamp reads directly) and `lea (-h)+cx+1` for the
+                // left. The RIGHT edge is the double-evaluated clamp; the LEFT edge is
+                // not - its `(v < 0 ? 0 : v)` select is computed once and then plainly
+                // capped at the width.
+                i32 hv = -static_cast<i32>(sqrt(static_cast<double>((rr - dyv * dyv))));
+                i32 right = FADER_CLAMPW(m_centerX - hv, m_surfWidth);
+                i32 lv = hv + m_centerX + 1;
+                i32 left = (lv < 0) ? 0 : lv;
+                if (left >= m_surfWidth) {
+                    left = m_surfWidth;
+                }
+                i32 oldStart = m_spanStarts[row];
+                i32 n1 = (left - oldStart) * bpp;
+                if (n1 > 0) {
+                    memset(m_srcBits + m_surface->m_pitch * row + oldStart * bpp, 0, n1);
+                }
+                i32 oldEnd = m_spanEnds[row];
+                i32 n2 = (oldEnd - right) * bpp;
+                if (n2 > 0) {
+                    memset(m_srcBits + m_surface->m_pitch * row + right * bpp, 0, n2);
+                }
+                i32 R = m_spanCount;
+                u8* bits = m_srcBits;
+                if (R > 0) {
+                    i32 cy = m_centerY;
+                    i32 dy = row - cy;
+                    i32 dy2 = dy * dy;
+                    i32 cx = m_centerX;
+                    i32 xcur = cx - static_cast<i32>(sqrt(static_cast<double>((rr - dy2)))) + 1;
+                    i32 dist = static_cast<i32>(
+                        sqrt(static_cast<double>(((xcur - cx) * (xcur - cx) + dy2)))
+                    );
+                    i32 srcpitch = m_surface->m_pitch;
+                    i32 srcCol = row * srcpitch;
+                    u8* rowLsrc = bits + xcur + srcCol;
+                    i32 dstpitch = m_dstSurface->m_pitch;
+                    i32 dstCol = row * dstpitch;
+                    u8* rowLdst = ovlBits + xcur + dstCol;
+                    u8* rowRsrc = (bits - xcur) + srcCol + 2 * cx;
+                    u8* rowRdst = (ovlBits - xcur) + dstCol + 2 * cx;
+                    i32 mid = m_surfHeight / 2;
+                    i32 mirSrc;
+                    i32 mirDst;
+                    if (cy >= mid && row <= cy) {
+                        i32 mirRow = 2 * (cy - row);
+                        if (mirRow + row < m_surfHeight) {
+                            // ---- both halves, mirror row BELOW (LOOP A) ----
+                            mirSrc = mirRow * srcpitch;
+                            mirDst = mirRow * dstpitch;
+                            if (dist >= r - R) {
+                                do {
+                                    if (xcur > cx) {
+                                        break;
+                                    }
+                                    i32 cl = dist - r + R;
+                                    if (xcur >= 0) {
+                                        i32 p = *rowLdst;
+                                        *rowLsrc = *(lut + p * R + cl);
+                                        i32 q = *(rowLdst + mirDst);
+                                        *(rowLsrc + mirSrc) = *(lut + q * m_spanCount + cl);
+                                    }
+                                    rowLsrc++;
+                                    rowLdst++;
+                                    if (2 * m_centerX - xcur < m_surfWidth) {
+                                        i32 p = *rowRdst;
+                                        *rowRsrc = *(lut + p * m_spanCount + cl);
+                                        i32 q = *(rowRdst + mirDst);
+                                        *(rowRsrc + mirSrc) = *(lut + q * m_spanCount + cl);
+                                    }
+                                    rowRsrc--;
+                                    rowRdst--;
+                                    xcur++;
+                                    dist = static_cast<i32>(
+                                        sqrt(static_cast<double>(((xcur - cx) * (xcur - cx) + dy2)))
+                                    );
+                                } while (dist >= r - m_spanCount);
+                            }
+                        } else if (dist >= r - R) {
+                            // ---- left/right only, mirror row off-screen (LOOP B) ----
+                            do {
+                                if (xcur > cx) {
+                                    break;
+                                }
+                                i32 cl = dist - r + R;
+                                if (xcur >= 0) {
+                                    i32 p = *rowLdst;
+                                    *rowLsrc = *(lut + p * R + cl);
+                                }
+                                rowLsrc++;
+                                rowLdst++;
+                                if (2 * m_centerX - xcur < m_surfWidth) {
+                                    i32 p = *rowRdst;
+                                    *rowRsrc = *(lut + p * m_spanCount + cl);
+                                }
+                                rowRsrc--;
+                                rowRdst--;
+                                xcur++;
+                                dist = static_cast<i32>(
+                                    sqrt(static_cast<double>(((xcur - cx) * (xcur - cx) + dy2)))
+                                );
+                            } while (dist >= r - m_spanCount);
+                        }
+                    } else if (cy < mid && row >= cy) {
+                        i32 mirRow = 2 * dy;
+                        if (row - mirRow < 0) {
+                            // ---- left/right only, mirror row above the top (LOOP D) ----
+                            if (dist >= r - R) {
+                                do {
+                                    if (xcur > cx) {
+                                        break;
+                                    }
+                                    i32 cl = dist - r + R;
+                                    if (xcur >= 0) {
+                                        i32 p = *rowLdst;
+                                        *rowLsrc = *(lut + p * R + cl);
+                                    }
+                                    rowLsrc++;
+                                    rowLdst++;
+                                    if (2 * m_centerX - xcur < m_surfWidth) {
+                                        i32 p = *rowRdst;
+                                        *rowRsrc = *(lut + p * m_spanCount + cl);
+                                    }
+                                    rowRsrc--;
+                                    rowRdst--;
+                                    xcur++;
+                                    dist = static_cast<i32>(
+                                        sqrt(static_cast<double>(((xcur - cx) * (xcur - cx) + dy2)))
+                                    );
+                                } while (dist >= r - m_spanCount);
+                            }
+                        } else {
+                            // ---- both halves, mirror row ABOVE (LOOP C) ----
+                            mirSrc = mirRow * srcpitch;
+                            mirDst = mirRow * dstpitch;
+                            if (dist >= r - R) {
+                                do {
+                                    if (xcur > cx) {
+                                        break;
+                                    }
+                                    i32 cl = dist - r + R;
+                                    if (xcur >= 0) {
+                                        i32 p = *rowLdst;
+                                        *rowLsrc = *(lut + p * R + cl);
+                                        i32 q = *(rowLdst - mirDst);
+                                        *(rowLsrc - mirSrc) = *(lut + q * m_spanCount + cl);
+                                    }
+                                    rowLsrc++;
+                                    rowLdst++;
+                                    if (2 * m_centerX - xcur < m_surfWidth) {
+                                        i32 p = *rowRdst;
+                                        *rowRsrc = *(lut + p * m_spanCount + cl);
+                                        i32 q = *(rowRdst - mirDst);
+                                        *(rowRsrc - mirSrc) = *(lut + q * m_spanCount + cl);
+                                    }
+                                    rowRsrc--;
+                                    rowRdst--;
+                                    xcur++;
+                                    dist = static_cast<i32>(
+                                        sqrt(static_cast<double>(((xcur - cx) * (xcur - cx) + dy2)))
+                                    );
+                                } while (dist >= r - m_spanCount);
+                            }
+                        }
+                    }
+                }
+                m_spanStarts[row] = left;
+                m_spanEnds[row] = right;
+            } else {
+                i32 w = m_surfWidth;
+                if (w > 0) {
+                    memset(m_srcBits + m_surface->m_pitch * row, 0, w);
+                }
+            }
+            row++;
+        }
+        if (m_overlay != 0) {
+            m_overlay->m_ddSurface->Unlock(0);
+        }
+    } else {
+        i32 fr2 = frame * frame;
+        i32 v = m_centerY - frame - delta - m_spanCount;
+        i32 row = (v < 0) ? 0 : v;
+        for (;;) {
+            i32 stop = delta + frame + m_spanCount + m_centerY;
+            if (stop >= m_surfHeight) {
+                stop = m_surfHeight;
+            }
+            if (row >= stop) {
+                break;
+            }
+            if (row > m_centerY - frame && row < frame + m_centerY) {
+                i32 dyv = row - m_centerY;
+                i32 hv = -static_cast<i32>(sqrt(static_cast<double>((fr2 - dyv * dyv))));
+                i32 right = FADER_CLAMPW(m_centerX - hv, m_surfWidth);
+                i32 lv = hv + m_centerX - 1;
+                i32 left = (lv < 0) ? 0 : lv;
+                if (left >= m_surfWidth) {
+                    left = m_surfWidth;
+                }
+                i32 j;
+                i32 n1 = (m_spanStarts[row] - left) * bpp;
+                u8* src = m_dstBits + m_dstSurface->m_pitch * row + left * bpp;
+                u8* dst = m_srcBits + m_surface->m_pitch * row + left * bpp;
+                for (j = 0; j < n1; j++) {
+                    dst[j] = src[j];
+                }
+                i32 oldEnd = m_spanEnds[row];
+                i32 n2 = (right - oldEnd) * bpp;
+                src = m_dstBits + m_dstSurface->m_pitch * row + oldEnd * bpp;
+                dst = m_srcBits + m_surface->m_pitch * row + oldEnd * bpp;
+                for (j = 0; j < n2; j++) {
+                    dst[j] = src[j];
+                }
+                m_spanStarts[row] = left;
+                m_spanEnds[row] = right;
+            }
+            if (row > m_centerY - frame - m_spanCount && row < frame + m_spanCount + m_centerY) {
+                i32 rad = frame + m_spanCount - 1;
+                Render(row, rad * rad, rad, lut, m_srcBits, m_dstBits);
+            }
+            row++;
+        }
+    }
+    m_20 = frame;
+    if (m_surface != 0) {
+        m_surface->m_ddSurface->Unlock(0);
+    }
+    if (m_dstSurface != 0) {
+        m_dstSurface->m_ddSurface->Unlock(0);
+    }
+}
 
 // CFaderLight::GetFrameCount (0x1814f0, vtable slot 2) - the fade frame count = the maximum
 // distance from the light centre to any active-surface corner (each squaring is
@@ -1578,17 +1868,373 @@ i32 CFaderShape::GetFrameCount() {
 // virtuals (were mis-homed Gap_* free-fn stubs from GapFunctions.cpp, matcher-5) so each
 // ??_7 slot 1 binds to its own body; bodies parked (>512 B leaf-first reconstructions).
 // ---------------------------------------------------------------------------
-// @early-stop
-// CFaderFlat::RenderFrame (0x17f660, vtable slot 1, 742 B): the flat fader's per-frame render.
+DATA(0x001f080c)
+const float g_faderHalfPi = 1.570795f; // 0x5f080c  PI/2 == 3.14159/2 (one quarter sine sweep)
+
+// CFaderFlat::RenderFrame (0x17f660, vtable slot 1, 742 B) - the "curtain" wipe. Both
+// surfaces are 16bpp and get Lock()ed for the whole frame (the raw lpSurface bases; the
+// row stride is m_pitch/2 u16s). The band of rows [base, base+span) is peeled open by a
+// quarter-sine: for each PAIR of rows the sine at that row gives two widths, and the pair
+// is copied outward in mirror image - the even row takes its left run from just LEFT of
+// the split column and its right run from just right of it, the odd row uses the
+// complementary column - so the picture appears to tear apart along a vertical seam. Every
+// row from the band down to `lastFrame` rows behind is then copied straight through, and
+// the frame index is latched in the base's m_20 so the next call knows where it left off.
 RVA(0x0017f660, 0x2e6)
-void CFaderFlat::RenderFrame(i32 frame) {}
+void CFaderFlat::RenderFrame(i32 frame) {
+    u16* srcBits = static_cast<u16*>(m_src->Lock(0));
+    u16* dstBits = static_cast<u16*>(m_desc04->Lock(0));
+    i32 h = m_src->m_height;
+    i32 w = m_src->m_width;
+    i32 span = m_percent * h / 100;
+    i32 base = h - frame - 1;
+    if (span + base > h) {
+        span = h - base;
+    }
+    i32 half = (m_desc14 * w / 100) / 2 + w / 2;
+    i32 rest = w - half;
+    i32 end = span + base;
+    i32 y = (base < 0) ? 0 : base;
+    while (y < end) {
+        double s = sin(static_cast<double>(y - base) / span * g_faderHalfPi);
+        i32 n1 = static_cast<i32>(s * half);
+        i32 n2 = static_cast<i32>(s * rest);
+        memcpy(
+            dstBits + m_desc04->m_pitch * y / 2,
+            srcBits + m_src->m_pitch * y / 2 + half - n1,
+            n1 * 2
+        );
+        memcpy(
+            dstBits + m_desc04->m_pitch * y / 2 + w - n2,
+            srcBits + m_src->m_pitch * y / 2 + half,
+            n2 * 2
+        );
+        y++;
+        memcpy(
+            dstBits + m_desc04->m_pitch * y / 2,
+            srcBits + m_src->m_pitch * y / 2 + rest - n2,
+            n2 * 2
+        );
+        memcpy(
+            dstBits + m_desc04->m_pitch * y / 2 + w - n1,
+            srcBits + m_src->m_pitch * y / 2 + rest,
+            n1 * 2
+        );
+        y++;
+    }
+    i32 lastRow = h - 1;
+    i32 y0 = lastRow;
+    if (y0 >= end) {
+        y0 = end;
+    }
+    i32 y2 = y0;
+    for (;;) {
+        i32 stop = y0 + frame - m_20;
+        if (lastRow < stop) {
+            stop = lastRow;
+        }
+        if (y2 >= stop) {
+            break;
+        }
+        memcpy(dstBits + m_desc04->m_pitch * y2 / 2, srcBits + m_src->m_pitch * y2 / 2, w * 2);
+        y2++;
+    }
+    m_20 = frame;
+    // The COM unlock, open-coded exactly as retail (both surfaces, source first).
+    m_src->m_ddSurface->Unlock(0);
+    m_desc04->m_ddSurface->Unlock(0);
+}
 
+DATA(0x001f0860)
+const float g_sineHalfPi = 1.570795f; // 0x5f0860  the sine sweep's quarter turn
+DATA(0x001f0864)
+const float g_sineOne = 1.0f; // 0x5f0864  the whole-pixel carry threshold
+
+// CFaderSine::RenderFrame (0x17ff30, vtable slot 1, 1218 B) - the "sine dissolve".
+// Both surfaces stay Lock()ed for the frame. m_scaledMag rows are in flight at any time
+// (the band [m_frameCount-frame, +m_scaledMag)); each row's TARGET pixel budget is a
+// quarter-sine of how far the row is through the band, scaled by the row width, and the
+// running total already spent lives in m_arr0[row]. The difference is spent this frame:
+// `whole` pixels immediately plus a fractional carry accumulated in m_arr2[row] (a float),
+// each pixel taken from the pre-shuffled permutation m_arr3[] through the per-row cursor
+// m_arr1[row], plus 2*step extra pixels at random positions. m_boxParam selects what a
+// "spent" pixel becomes: zeroed (fade to black) or copied from the destination surface
+// (cross-fade). Rows that have fully passed the band are finished off wholesale in the
+// trailing loop, and m_20 latches the frame reached.
 // @early-stop
-// CFaderSine::RenderFrame (0x17ff30, vtable slot 1, 1218 B): the sine fader's per-frame render.
+// ~75% (from 0.24%): COMPLETE and shape-correct - the band loop, both m_boxParam arms,
+// the unsigned phase (`fild QWORD` with a zeroed high half), the float carry in m_arr2,
+// the inlined FxRand top-up and the trailing wholesale finish all reconstruct, and the
+// frame is now the right size (0x24) with the counter/fidiv-temp slot sharing retail's.
+// The residual is which local lands in which of those slots (retail 0x10 row / 0x14
+// whole / 0x18 step, ours 0x18 / 0x14 / 0x10) plus the matching callee-saved colouring
+// (retail this=esi frame=edi, ours this=ebx frame=ebp) - a spill-ordering coin flip;
+// swapping the two declarations moved it 74.7 -> 73.6, i.e. the wrong way.
 RVA(0x0017ff30, 0x4c2)
-void CFaderSine::RenderFrame(i32 frame) {}
+void CFaderSine::RenderFrame(i32 frame) {
+    if (frame == 0) {
+        return;
+    }
+    if (m_srcBox != 0) {
+        m_srcBits = static_cast<u8*>(m_srcBox->Lock(0));
+    }
+    if (m_dstBox != 0) {
+        m_dstBits = static_cast<u8*>(m_dstBox->Lock(0));
+    }
+    i32 bpp = m_srcBox->m_bytesPerPixel;
+    float step = static_cast<float>(m_elemCount) / m_scaledMag;
+    i32 row = m_frameCount - frame;
+    while (row < m_frameCount - frame + m_scaledMag) {
+        if (row >= 0 && row < m_frameCount) {
+            u8* srcRow = m_srcBits + m_srcBox->m_pitch * row;
+            // The row's phase runs UNSIGNED (retail's `fild QWORD` with a zeroed high
+            // half), so a row that has not entered the band yet wraps to a huge phase
+            // rather than a negative one.
+            i32 delta = static_cast<i32>(
+                            sin(static_cast<double>(static_cast<u32>(row + frame - m_frameCount))
+                                / m_scaledMag * g_sineHalfPi)
+                            * m_elemCount / step
+                        )
+                        - m_arr0[row];
+            if (m_boxParam != 0) {
+                // ONE counter variable throughout - retail keeps the carry, the pixel
+                // count and the random top-up count in a SINGLE stack slot (0x24, shared
+                // with the m_scaledMag fidiv temp), which is what the reuse below gives.
+                i32 n = 0;
+                double want = delta * step;
+                i32 whole = static_cast<i32>(want);
+                if (whole < want) {
+                    m_arr2[row] = static_cast<float>(want - whole) + m_arr2[row];
+                }
+                if (m_arr2[row] >= g_sineOne) {
+                    n = static_cast<i32>(m_arr2[row]);
+                    m_arr2[row] = m_arr2[row] - n;
+                }
+                n += whole;
+                while (n > 0) {
+                    ++m_arr1[row];
+                    if (m_arr1[row] > m_elemCount) {
+                        m_arr1[row] = 0;
+                    }
+                    i32 pick = m_arr3[m_arr1[row]];
+                    if (bpp > 0) {
+                        memset(srcRow + pick * bpp, 0, bpp);
+                    }
+                    n--;
+                }
+                m_arr0[row] += delta;
+                n = static_cast<i32>(step + step);
+                while (n > 0) {
+                    i32 pick = FxRand(m_elemCount);
+                    if (bpp > 0) {
+                        memset(srcRow + pick * bpp, 0, bpp);
+                    }
+                    n--;
+                }
+            } else {
+                i32 n = 0;
+                u8* dstRow = m_dstBits + m_dstBox->m_pitch * row;
+                double want = delta * step;
+                i32 whole = static_cast<i32>(want);
+                if (whole < want) {
+                    m_arr2[row] = static_cast<float>(want - whole) + m_arr2[row];
+                }
+                if (m_arr2[row] >= g_sineOne) {
+                    n = static_cast<i32>(m_arr2[row]);
+                    m_arr2[row] = m_arr2[row] - n;
+                }
+                n += whole;
+                while (n > 0) {
+                    ++m_arr1[row];
+                    if (m_arr1[row] > m_elemCount) {
+                        m_arr1[row] = 0;
+                    }
+                    i32 pick = m_arr3[m_arr1[row]];
+                    if (bpp > 0) {
+                        u8* p = srcRow + pick * bpp;
+                        u8* q = dstRow + pick * bpp;
+                        for (i32 j = 0; j < bpp; j++) {
+                            p[j] = q[j];
+                        }
+                    }
+                    n--;
+                }
+                m_arr0[row] += delta;
+                n = static_cast<i32>(step + step);
+                while (n > 0) {
+                    i32 pick = FxRand(m_elemCount);
+                    if (bpp > 0) {
+                        u8* p = srcRow + pick * bpp;
+                        u8* q = dstRow + pick * bpp;
+                        for (i32 j = 0; j < bpp; j++) {
+                            p[j] = q[j];
+                        }
+                    }
+                    n--;
+                }
+            }
+        }
+        row++;
+    }
 
+    // Every row the band has already left is finished off in one go.
+    i32 y = m_20;
+    while (y < frame) {
+        i32 done = m_scaledMag - y + m_frameCount - 1;
+        if (done >= 0 && done < m_frameCount) {
+            if (m_boxParam != 0) {
+                i32 span = bpp * m_elemCount;
+                if (span > 0) {
+                    memset(m_srcBits + m_srcBox->m_pitch * done, 0, span);
+                }
+            } else {
+                u8* dst = m_dstBits + m_dstBox->m_pitch * done;
+                u8* src = m_srcBits + m_srcBox->m_pitch * done;
+                i32 span = bpp * m_elemCount;
+                for (i32 j = 0; j < span; j++) {
+                    src[j] = dst[j];
+                }
+            }
+        }
+        y++;
+    }
+    m_20 = frame;
+    if (m_srcBox != 0) {
+        m_srcBox->m_ddSurface->Unlock(0);
+    }
+    if (m_dstBox != 0) {
+        m_dstBox->m_ddSurface->Unlock(0);
+    }
+}
+
+// CFaderShape::RenderFrame (0x181b00, vtable slot 1, 847 B) - the per-frame driver of the
+// two scanline compositors. It Lock()s the three surfaces into m_dstBase/m_straightBase/
+// m_gatherBase (surface C shares B's lock when they are the same surface), and on the very
+// first frame of a zero-strip transition primes the destination with a straight row copy.
+// Then it picks ONE compositor - RenderTile while the seam is still inside the plain band,
+// RenderWarpTile once it has crossed into the (m_halfWidth * PI) arc region - and calls it
+// once per active edge: mode 1 = the leading edge at `frame`, mode 2 = the trailing edge at
+// `m_span - frame - stride`, mode 3 = BOTH, with m_mode temporarily forced to 1 then 2 so
+// the compositor takes the matching arm, and restored to 3 afterwards. `frame - m_20` is the
+// number of columns to advance since the previous call, so the base's m_20 latches `frame`
+// on the way out, just before the three COM unlocks.
 // @early-stop
-// CFaderShape::RenderFrame (0x181b00, vtable slot 1, 847 B): the shape fader's per-frame render.
+// ~79% (from 0.3%): COMPLETE and shape-correct - all four compositor groups, both band
+// tests (unsigned, hence `ja`/`jbe`), the first-frame row prime, the m_mode save/force/
+// restore and the three unlocks reconstruct, and the local stack homes now line up
+// (0x10 seam / 0x14 arc / 0x18 stride). The residual is ONE constant-materialisation
+// choice with a whole-function regalloc tail: retail dedicates the callee-saved ebp to
+// the literal 2 for the whole body (`mov ebp,0x2` @0x181bec, then `mov [esi+0x50],ebp`
+// at each of the four mode-3 arms) where cl5 emits `mov [esi+0x50],0x2` immediates and
+// keeps ebp as a scratch for m_20. See docs/patterns/const-materialize-into-reg-vs-
+// immediate: a named local folds straight back, and there is no MSVC5 spelling that
+// pins a callee-saved register to a literal.
 RVA(0x00181b00, 0x34f)
-void CFaderShape::RenderFrame(i32 frame) {}
+void CFaderShape::RenderFrame(i32 frame) {
+    m_dstBase = static_cast<u8*>(m_surfA->Lock(0));
+    u8* gather = static_cast<u8*>(m_surfB->Lock(0));
+    m_straightBase = gather;
+    if (m_surfB != m_surfC) {
+        gather = static_cast<u8*>(m_surfC->Lock(0));
+    }
+    m_gatherBase = gather;
+    // The seam position is carried unsigned - both band tests below are `ja`/`jbe`.
+    u32 seam = 0;
+    i32 stride = m_halfWidth * 2;
+    i32 arc = static_cast<i32>(static_cast<double>(m_halfWidth) * 3.14159);
+    if (m_mode == 3 && m_stripCopy != 0) {
+        seam = m_span / 2;
+    }
+    if (m_stripCopy == 0 && frame == 0) {
+        i32 n = m_surfB->m_pitch;
+        if (m_surfA->m_pitch < n) {
+            n = m_surfA->m_pitch;
+        }
+        i32 row = 0;
+        while (row < m_rowCount) {
+            u8* src = m_straightBase + m_rowOfsB[row];
+            u8* dst = m_dstBase + m_rowOfsA[row];
+            i32 x = 0;
+            while (x < n) {
+                *dst++ = *src++;
+                x++;
+            }
+            row++;
+        }
+    }
+    if (m_stripCopy != 0) {
+        if (seam + frame <= static_cast<u32>(m_span - arc - m_halfWidth)) {
+            switch (m_mode) {
+                case 1:
+                    RenderTile(frame, frame - m_20);
+                    break;
+                case 2:
+                    RenderTile(m_span - frame - stride, frame - m_20);
+                    break;
+                case 3:
+                    m_mode = 1;
+                    RenderTile(m_span / 2 + frame, frame - m_20);
+                    m_mode = 2;
+                    RenderTile(m_span / 2 - frame - stride, frame - m_20);
+                    m_mode = 3;
+                    break;
+            }
+        } else {
+            switch (m_mode) {
+                case 1:
+                    RenderWarpTile(frame, frame - m_20);
+                    break;
+                case 2:
+                    RenderWarpTile(m_span - frame - stride, frame - m_20);
+                    break;
+                case 3:
+                    m_mode = 1;
+                    RenderWarpTile(m_span / 2 + frame, frame - m_20);
+                    m_mode = 2;
+                    RenderWarpTile(m_span - m_span / 2 - frame - stride, frame - m_20);
+                    m_mode = 3;
+                    break;
+            }
+        }
+    } else {
+        if (seam + frame > static_cast<u32>(arc - m_halfWidth)) {
+            switch (m_mode) {
+                case 1:
+                    RenderTile(frame, frame - m_20);
+                    break;
+                case 2:
+                    RenderTile(m_span - frame - stride, frame - m_20);
+                    break;
+                case 3:
+                    m_mode = 1;
+                    RenderTile(frame, frame - m_20);
+                    m_mode = 2;
+                    RenderTile(m_span - frame - stride, frame - m_20);
+                    m_mode = 3;
+                    break;
+            }
+        } else {
+            switch (m_mode) {
+                case 1:
+                    RenderWarpTile(frame, frame - m_20);
+                    break;
+                case 2:
+                    RenderWarpTile(m_span - frame - stride, frame - m_20);
+                    break;
+                case 3:
+                    m_mode = 1;
+                    RenderWarpTile(frame, frame - m_20);
+                    m_mode = 2;
+                    RenderWarpTile(m_span - frame - stride, frame - m_20);
+                    m_mode = 3;
+                    break;
+            }
+        }
+    }
+    m_20 = frame;
+    m_surfA->m_ddSurface->Unlock(0);
+    m_surfB->m_ddSurface->Unlock(0);
+    if (m_surfB != m_surfC) {
+        m_surfC->m_ddSurface->Unlock(0);
+    }
+}

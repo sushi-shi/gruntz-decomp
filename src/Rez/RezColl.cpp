@@ -59,19 +59,48 @@ CHashElement* CHashElement::Next() {
     return n;
 }
 
-// @identity-TODO (matcher-5): 0x184900 is a hash reverse-iterator "current/last" method:
-// if the cached chain link @this+0x08 resolves (CHashBase::FromLink, container_of -4) return
-// its element; else scan the table (CHashBase* @this+0x0c, its m_buckets @+0x04) from the
-// highest bucket index (count @this+0x10) down, returning the tail element
-// (FromLink(slot.m_chain.m_tail)) of the first non-empty bucket, or 0. The receiver is a
-// 2-level iterator (NOT a bare 8-byte CHashBase) and is a ZERO-REF ORPHAN - no rel32/vtable/
-// data-ref caller anywhere in the image (full-binary VA byte-scan), so its class is
-// unrecoverable. Homed as a stub rather than fabricate a per-TU view of an un-xref-able
-// receiver (no-fake-view rule); the CHashBase::Insert/Last SIB coin-flip wall applies once
-// the real iterator class surfaces.
+// CHashElement::Prev (0x184900) - the exact reverse mirror of Next above. IDENTITY
+// RESOLVED (the old @identity-TODO called the receiver an unrecoverable "2-level
+// iterator"): the three offsets it reads are this class's own members. Retail reads
+// [ecx+0x08] = m_link.m_prev (DSoundLink is {m_next+0x00, m_prev+0x04} and m_link sits
+// at CHashElement+0x04), [ecx+0x0c] = m_owner, [ecx+0x10] = m_bucket - the same three
+// fields Next uses, only the backward halves. It then walks buckets m_bucket-1 DOWN to
+// 0 reading [slot+0x0c] = m_chain.m_tail (Next walks UP reading +0x08 = m_chain.m_head).
+// So it is CHashElement::Prev, and it pairs with CHashBase::Last exactly as Next pairs
+// with First. Zero-ref is expected: Last (0x184b10) is equally uncalled - retail emitted
+// the whole reverse-iteration family and the game only ever iterates forward.
+// @early-stop
+// ONE byte left (99.66%): the SIB base/index coin-flip this whole CHashBase family sits
+// on (Insert 0x184a70 99.55 / Remove 0x184ab0 99.23 / Lookup 0x184b40 99.00). Every
+// register is coloured exactly as retail; only the roles inside the preheader lea are
+// swapped - retail `lea ecx,[eax+ecx+0xc]` (SIB base = m_buckets), cl `[ecx+eax+0xc]`
+// (SIB base = i<<4). docs/patterns/sib-base-index-follows-local-decl-order.md says local
+// declaration order is the lever; it is NOT one here (measured: counter-first, pointer-
+// first, and routing the subscript through `coll->m_buckets[i]` instead of a `b` local
+// all produce the same byte - the last of those additionally recolours m_buckets into
+// ecx, so it is strictly worse). The pointer comes from a MEMBER, which is exactly the
+// sub-family that doc records as still open.
 RVA(0x00184900, 0x43)
-i32 FirstBucketElement(void) {
-    return 0;
+CHashElement* CHashElement::Prev() {
+    CHashElement* e = CHashBase::FromLink(m_link.m_prev);
+    if (e == 0) {
+        // `> 0` on a u32 is the load-bearing spelling: retail gates with `jbe` and
+        // closes the loop with `ja`, both unsigned.
+        if (m_bucket > 0) {
+            // Plain index walk, NOT a hand-rolled cursor: /O2 strength-reduces
+            // &b[i].m_chain.m_tail into retail's `lea ecx,[buckets+i*16+0xc]` seeded at
+            // the PRE-decrement i, then steps it with `sub ecx,0x10`. Writing the cursor
+            // by hand (`t -= 4`) instead emits `add ecx,0xfffffff0` - the induction
+            // variable has to be the compiler's for the `sub` encoding to appear.
+            CHashSlot* b = m_owner->m_buckets;
+            u32 i = m_bucket;
+            do {
+                --i;
+                e = CHashBase::FromLink(b[i].m_chain.m_tail);
+            } while (e == 0 && i > 0);
+        }
+    }
+    return e;
 }
 
 RVA(0x00184950, 0x10)
@@ -178,12 +207,10 @@ CHashElement* CHashBase::First() {
 
 // Last (0x184b10): reverse iteration - scan the bucket array from the highest index
 // down, return the tail element of the first non-empty bucket (or 0 when empty).
-// @early-stop
-// SAME SIB base/index coin-flip wall as CHashBase::Insert (above): retail folds the
-// bucket address into `mov ecx,[ecx+4]; lea ecx,[ecx+eax+0xc]` (m_buckets reuses the
-// `this` register), while cl loads m_buckets into eax -> `push esi; add eax,esi; lea
-// ecx,[eax+0xc]`. The loop body is byte-identical; the base-register pick is not
-// source-steerable (operand-typing/reorder do not flip it, per the Insert note).
+// (ex-wall note, RETIRED 2026-07-29: this is now 100% EXACT. It used to carry the same
+// SIB base/index @early-stop as Insert - `mov ecx,[ecx+4]; lea ecx,[ecx+eax+0xc]` vs a
+// `push esi; add eax,esi; lea ecx,[eax+0xc]` recompile. The tail-anchored-cursor spelling
+// below closed it; the text is history, not a current claim.)
 RVA(0x00184b10, 0x29)
 CHashElement* CHashBase::Last() {
     u32 i = m_count - 1;

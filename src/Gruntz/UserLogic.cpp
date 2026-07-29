@@ -181,8 +181,12 @@ i32 CWapX::Chain(CFileMemBase* arc, i32 mode, i32 unused, CGameObject* obj) {
                 m_value = 0;
                 return 1;
             }
+            // the map address is computed BEFORE the out-slot is zeroed: retail stores
+            // the 0 after both argument pushes (`add ecx,0x10; mov [esp+0x18],0; call`),
+            // which a plain `void* val = 0;` ahead of the whole expression schedules first.
+            CMapStringToPtr* map = &m_3c->m_ownerCtx->m_animRegistry->m_10;
             void* val = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
-            m_3c->m_ownerCtx->m_animRegistry->m_10.Lookup(name, val);
+            map->Lookup(name, val);
             m_value = static_cast<CAniElement*>(
                 val
             ); // the map stores void*; KeyOfValue takes the CObject* upcast

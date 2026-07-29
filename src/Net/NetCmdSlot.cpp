@@ -224,12 +224,19 @@ i32 CNetSession::Dispatch(i32 a, CNetCtrlMsg* b, i32 c) {
     return target->ProcessCmd(a, b, c);
 }
 
-// @early-stop
-// jump-table-placement wall (docs/patterns/switch-jumptable-separate-comdat.md):
-// code bytes byte-identical (proven llvm-objdump -dr base vs target); MSVC emits
-// the 0xff-byte index table + jump table as separate $L symbols while the delinker
-// folds them into the fn symbol, so the table region can't pair.
-RVA(0x000bf7c0, 0x95)
+// (ex-wall note, RETIRED 2026-07-29: this is 100% EXACT now. It used to carry an
+// @early-stop reading "code bytes byte-identical (proven llvm-objdump -dr base vs
+// target); MSVC emits the 0xff-byte index table + jump table as separate $L symbols
+// while the delinker folds them into the fn symbol, so the table region can't pair."
+// The bytes were never the problem - the SPAN was. Text kept as history.)
+// The span below is the BASE COMDAT size (0x1b0), not the 0x95 code length: objdiff
+// sizes a symbol by next-symbol-start, so with the code-only span the two sides
+// disagree on the length and the function is not scored AT ALL (a hard 0%). Growing
+// the annotation to cover the inline 258-byte index table + 5-entry jump table makes
+// synth_pdb carve the target the same way the /Gy COMDAT is laid out on our side.
+// Same device as CTileActionEvent::MorphByTool @0x113420 (RVA size 0x350). The next
+// annotated function is 0xbf9e0, so the grown span does not overlap it.
+RVA(0x000bf7c0, 0x1b0)
 i32 CNetSession::DispatchMsg(CNetCtrlMsg* m, i32 arg2) {
     if (!m) {
         return 0;

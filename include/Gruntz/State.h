@@ -170,8 +170,19 @@ public:
     // unit owns the 0xfa1f0.. RVAs) as CState:: methods; the callers stay cast-free
     // (CAttract is a sibling of CState, not a base). Reloc-masked.
     i32 FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa1f0
-    i32 RunTitle(const char* a, i32 b, i32 c, i32 d, i32 e);              // 0x0fa300
-    i32 RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d);        // 0x0fa350
+
+    // 0x0d5c10 - render the "\SCREENZ\<name>TEXT" PID page onto the back page at
+    // (0x140, 0x158) through a throwaway stack CImage. Identity recovered 2026-07-29
+    // from the field chain, not a caller (it has none): the body reads [this+0x2c] as
+    // the CSymTab it calls ResolveQualified on and [this+0x0c] as the CDDrawSurfaceMgr
+    // it seeds the CImage's m_ownerCtx with and walks ->m_drawTarget->m_backPair
+    // through - i.e. m_2c and m_world, and only CState pairs those two at those two
+    // offsets. Direct sibling of FadeInTitle above (same SymTab2c()->ResolveQualified
+    // on a sprintf'd "\SCREENZ\..." key). Body in src/Image/CImage.cpp, where the
+    // COMDAT pool put it.
+    i32 DrawScreenTextImage(const char* name);                     // 0x0d5c10
+    i32 RunTitle(const char* a, i32 b, i32 c, i32 d, i32 e);       // 0x0fa300
+    i32 RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d); // 0x0fa350
     // RetireScene (0xfa8f0): the two-channel screen-transition emitter every screen state
     // runs on its own `this` (xref: CBootyState/CMultiBootyState/CCreditsState/CAttract/
     // CPreviewState/CMulti/CPlay/... all call it). It reads the CState resource-chain facet

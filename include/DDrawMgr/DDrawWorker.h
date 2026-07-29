@@ -19,6 +19,19 @@ class CDDrawSurfaceMgr; // the +0x0c owning world manager handed to each frame
 
 class CDDrawWorker : public CLoadable {
 public:
+    // INLINE (owner, id) ctor - BYTE-PROVEN by CDDrawWorkerRegistry::DispatchKeyed38
+    // @0x154ae0 (and its three siblings 34/30/2C), which expand the whole
+    // `new CDDrawWorker` in place: `push 0x6c; call ??2@YAPAXI@Z`, then the CLoadable
+    // (owner, id) base inline (??_7CLoadable stamp + m_id/m_flags/m_ownerCtx), then the
+    // +0x10 CObArray member ctor, then the ??_7CDDrawWorker stamp, then this body's two
+    // sentinel stores (0x1869f = 99999 / 0). The arg ORDER is observable: cl5
+    // materializes actual arguments right-to-left even when inlining, and retail loads
+    // the registry's map COUNT (`mov eax,[edi+0x1c]`) BEFORE the owner
+    // (`mov edi,[edi+0xc]`) - so `id` is the RIGHTMOST parameter.
+    CDDrawWorker(CDDrawSurfaceMgr* owner, i32 id) : CLoadable(owner, id) {
+        m_minIndex = 99999;
+        m_maxIndex = 0;
+    }
     virtual ~CDDrawWorker() OVERRIDE; // slot 1 (scalar-deleting dtor)
     // slots 5/7/8: CDDrawWorker's own overrides of the CLoadable defaults (ground
     // truth = the retail 0x1efbe8 vtable): IsLoaded @0x155750, Unload @0x151eb0 =

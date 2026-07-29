@@ -43,6 +43,15 @@ public:
     // former RezNode::Next view folded onto this (wave5-F1). Body in RezColl.cpp.
     CHashElement* Next(); // 0x1848b0
 
+    // The mirror of Next (0x184900): the PREVIOUS live element in reverse iteration
+    // order - follow this element's backward chain link (container_of -4), else scan
+    // the owning table's EARLIER buckets (m_bucket-1 down to 0) for the last occupied
+    // chain TAIL. Pairs with CHashBase::Last the way Next pairs with First. Body in
+    // RezColl.cpp. (Was the FirstBucketElement @identity-TODO stub, filed as an
+    // unrecoverable "2-level iterator" receiver: the three offsets it reads,
+    // +0x08/+0x0c/+0x10, ARE m_link.m_prev / m_owner / m_bucket of THIS class.)
+    CHashElement* Prev(); // 0x184900
+
     DSoundLink m_link;  // +0x04  intrusive chain node { next, prev }
     CHashBase* m_owner; // +0x0c  owning table back-ptr (Insert stamps this)
     u32 m_bucket;       // +0x10  computed bucket (Insert stamps this)

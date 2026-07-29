@@ -87,8 +87,10 @@ public:
     // `xor eax,eax; ret` on every exit) - it is NOT void.
     i32 BuildFortSplashParticles();
 
-    // raise the fort alert when an enemy is inside the panic radius (0x45270).
-    void NotifyFortUnderAttack();
+    // raise the fort alert when an enemy is inside the panic radius (0x45270). Returns
+    // i32, not void: retail exits `mov eax,1` on the work path and `xor eax,eax` on both
+    // bails, exactly like its ResolveXxxAnimation siblings.
+    i32 NotifyFortUnderAttack();
 
     // Animation resolvers. Every caller is a CWarlord method, including the
     // constructor, and the accessed +0x38..+0xac fields map exactly to CWarlord's
@@ -137,12 +139,25 @@ public:
         };
     };
     // A second 64-bit stamp/window timer pair (zeroed in the ctor prologue and again
-    // just before the initial moving-anim resolve).
-    i32 m_timer2StampLo;  // +0x98
-    i32 m_timer2StampHi;  // +0x9c
-    i32 m_timer2WindowLo; // +0xa0
-    i32 m_timer2WindowHi; // +0xa4
-    i32 m_a8;             // +0xa8
+    // just before the initial moving-anim resolve) - the FORT-ALERT rate limiter:
+    // NotifyFortUnderAttack @0x45270 runs a genuine 64-bit `elapsed >= window` compare
+    // on it (sub/sbb + jl/jg/jb) and re-arms the window from the "Warlordz"/"NotifyTimer"
+    // bute int, so the pair is unioned like the cooldown above.
+    union {
+        i64 m_timer2Stamp64; // +0x98
+        struct {
+            i32 m_timer2StampLo; // +0x98
+            i32 m_timer2StampHi; // +0x9c
+        };
+    };
+    union {
+        i64 m_timer2Window64; // +0xa0
+        struct {
+            i32 m_timer2WindowLo; // +0xa0
+            i32 m_timer2WindowHi; // +0xa4
+        };
+    };
+    i32 m_a8; // +0xa8
     // +0xac  the warlord battle-event tag (0x442..0x445 per owner KING/NAPOLEAN/PATTON/VIKING)
     i32 m_ownerTag;
 };
