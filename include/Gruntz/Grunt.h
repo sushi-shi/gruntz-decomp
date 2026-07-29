@@ -266,6 +266,16 @@ extern "C" u32 g_frameTime;           // 0x645588 (the running game clock; Frame
 
 class CProjectile; // canonical full model in <Gruntz/Projectile.h> (MFC-full); pointer-only here
 
+// A CPtrList POSITION and the coord-list NODE it names are the same pointer: MFC's
+// CNode is {pNext, pPrev, data} and Coord* m_coord IS its +8 data slot. MFC keeps
+// CNode private, so the node view has to be declared separately (CoordNode) - but
+// both readings of the one pointer are real, so they are named here rather than
+// punned at the accessors that convert between them.
+union CoordPos {
+    POSITION m_pos;    // what MFC's GetHeadPosition/GetTailPosition/AddTail hand back
+    CoordNode* m_node; // the same node, with its +8 data slot typed Coord*
+};
+
 class CGrunt : public CMovingLogic, public CWapX {
 public:
     // vtable overrides in slot order (see the base chain above):
@@ -651,19 +661,19 @@ public:
 
     // Typed views of the two lists' interior. MFC's GetCount/GetHeadPosition/
     // GetTailPosition are inline, so these compile to the very same [esi+0x320] /
-    // [esi+0x324] / [esi+0x328] loads the hand-declared fields used to emit. The
-    // POSITION -> node cast is the one language-forced cast here: MFC keeps CNode
-    // private, and a CPtrList POSITION *is* that node ({pNext, pPrev, data}), whose
-    // +8 data slot is Coord* m_coord.
+    // [esi+0x324] / [esi+0x328] loads the hand-declared fields used to emit.
     CoordNode* CoordHead() const {
-        return reinterpret_cast<CoordNode*>(m_31c.GetHeadPosition());
+        CoordPos p;
+        p.m_pos = m_31c.GetHeadPosition();
+        return p.m_node;
     }
     CGruntCoordList* CoordListOps() {
         return static_cast<CGruntCoordList*>(&m_31c);
     }
     CoordNode* CoordTail() const {
-        // language-forced, same MFC POSITION-is-the-node pun as CoordHead above
-        return reinterpret_cast<CoordNode*>(m_31c.GetTailPosition());
+        CoordPos p;
+        p.m_pos = m_31c.GetTailPosition();
+        return p.m_node;
     }
     i32 CoordCount() const {
         return m_31c.GetCount();
@@ -1230,6 +1240,19 @@ SIZE(0x8d8);
 // option (MSVC5 rejects it: C2292 "single_inheritance declared but
 // multiple_inheritance required"), and no cast between the two representations is
 // legal, so the two readings of the same member-pointer are named here.
+// The worker NOTIFY slot and a member pointer to the CGrunt method it names. Retail
+// stores the method's BARE CODE ADDRESS in the slot, and the first dword of a member
+// pointer IS that address - so CTriggerMgr's "is this worker grunt logic?" test is a
+// word compare of the one thing both really hold. C++ can convert neither form to the
+// other, so both readings are named. (Declared HERE, after CGrunt, because forming a
+// CGrunt member-pointer type on an incomplete CGrunt would fix the wrong 4-byte
+// representation and then collide with the MI definition - C2292.)
+union NotifyWord {
+    GameObjNotifyFn m_fn;       // the slot's declared type
+    void (CGrunt::*m_method)(); // the method the stamp names
+    void* m_addr;               // the code address both really hold
+};
+
 union GruntActPmf {
     i32 (CGrunt::*m_pmf)(); // what `&CGrunt::Handler` yields (8 B under MI)
     struct {

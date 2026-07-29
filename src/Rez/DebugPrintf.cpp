@@ -1,5 +1,6 @@
 #include <Rez/DebugPrintf.h> // C-linkage decls for the ex-wrapped defs
 #include <rva.h>
+#include <Pix16.h> // the byte-cursor / 16bpp-cell pointer pair
 
 #include <stdarg.h>          // va_list / va_start - the real spelling of `(char*)(&fmt+1)`
 #include <stdlib.h>          // atol / getenv
@@ -19,7 +20,6 @@ DATA(0x002bf8dc)
 i32 g_debugPrintMode = 0;
 DATA(0x002bf8e0)
 FILE* g_debugLogFile = 0;
-
 
 DATA(0x002bf848)
 CDebugConfig g_debugConfig;
@@ -131,17 +131,22 @@ void MonoNewline() {
         do {
             i += 2;
             // The MDA text page is a byte-addressed 80x25 grid of 2-byte (char,attr)
-            // cells; the scroll runs on its 0xa0-byte LINE stride.
-            // byte-forced: retail indexes it *1 (`[ecx+eax*1-0xa2]`) where a u16[]
-            // byte-forced: model would emit *2 - so the cursor has to stay a byte cursor.
-            *reinterpret_cast<u16*>((g_monoBuffer + i - 0xa2)) =
-                *reinterpret_cast<u16*>((g_monoBuffer + i - 2));
+            // cells; the scroll runs on its 0xa0-byte LINE stride. Retail indexes it
+            // *1 (`[ecx+eax*1-0xa2]`) where a u16[] model would emit *2, so the
+            // cursor stays a byte cursor and Pix16Ptr names the cell it addresses.
+            Pix16Ptr dst;
+            Pix16Ptr src;
+            dst.m_chars = (g_monoBuffer + i - 0xa2);
+            src.m_chars = (g_monoBuffer + i - 2);
+            *dst.m_words = *src.m_words;
         } while (i < 0xfa0);
         i = 0xf00;
         do {
             i += 2;
-            // byte-forced: same byte-addressed 2-byte-cell page (retail `[ecx+eax*1-0x2]`)
-            *reinterpret_cast<u16*>((g_monoBuffer + i - 2)) = 0x720;
+            // same byte-addressed 2-byte-cell page (retail `[ecx+eax*1-0x2]`)
+            Pix16Ptr cell;
+            cell.m_chars = (g_monoBuffer + i - 2);
+            *cell.m_words = 0x720;
         } while (i < 0xfa0);
         g_monoRow--;
     }
@@ -157,14 +162,15 @@ RVA(0x00184db0, 0x28)
 void MonoClear() {
     i32 i = 0;
     do {
-        // byte-forced: byte-addressed MDA page, 2-byte cells, retail indexes *1
-        *reinterpret_cast<u16*>(g_monoBuffer + i) = 0x720;
+        // byte-addressed MDA page, 2-byte cells, retail indexes *1
+        Pix16Ptr cell;
+        cell.m_chars = g_monoBuffer + i;
+        *cell.m_words = 0x720;
         i += 2;
     } while (i < 0xfa0);
     g_monoRow = 0;
     g_monoCol = 0;
 }
-
 
 RVA(0x00184e00, 0x55)
 void RezAssertFail(char* fmt, ...) {

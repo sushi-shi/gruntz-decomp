@@ -10,6 +10,7 @@
 #include <Gruntz/AnimSink.h>
 #include <Wap32/ZVec.h>
 #include <rva.h>
+#include <AddrWord.h> // the address-in-an-int-slot pair
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/SerialArchive.h> // CFileMemBase (the inherited CWapX::Chain arg; ex SerialObjRef.h)
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
@@ -65,8 +66,10 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
         m_38->m_flags |= 0x10000;
         // faithful: retail reloads the ctor's own `obj` argument out of its spilled
         // slot here (0x3e6aa `mov ecx,[esp+0x30]` == entry+0x4) and pushes it as the
-        // selector index. A retail oddity, reproduced rather than corrected.
-        idx = reinterpret_cast<i32>(obj);
+        // selector index - a retail oddity, reproduced rather than corrected.
+        AddrWord sel;
+        sel.m_addr = obj;
+        idx = sel.m_word;
     }
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
 

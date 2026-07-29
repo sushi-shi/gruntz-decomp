@@ -3,6 +3,7 @@
 #include <Win32.h>           // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h>           // real IDirectDrawSurface dispatch (surf->m_8->Unlock)
 #include <rva.h>
+#include <Pix16.h>                  // the byte-cursor / 16bpp-value pointer pair
 #include <DDrawMgr/DDrawPolyFill.h> // ClipVtx (this TU owns the tables)
 
 #include <Image/WarpTextureBlit.h> // g_rasterDestPtr/Scale/ScaleNeg (ex .cpp externs; bound at their defs)
@@ -88,9 +89,11 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
             }
             i32 width = hi - lo;
             if (width > 0) {
-                // byte-forced: rowPtr came from Lock() stepped by the BYTE pitch
-                // (m_pitch * minYi); the pixels it addresses are 16bpp.
-                g_rasterDestPtr = reinterpret_cast<i16*>(rowPtr) + lo;
+                // rowPtr came from Lock() stepped by the BYTE pitch (m_pitch *
+                // minYi); the pixels it addresses are 16bpp (see <Pix16.h>).
+                Pix16Ptr row;
+                row.m_bytes = rowPtr;
+                g_rasterDestPtr = row.m_swords + lo;
                 i16* p = g_rasterDestPtr;
                 i32 w = width;
                 do {

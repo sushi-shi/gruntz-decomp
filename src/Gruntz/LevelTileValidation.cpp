@@ -51,6 +51,7 @@
 #include <Gruntz/ImageSets.h> // CImageSet1 - the tile-attrib class (GetCollisionAt, slot 8)
 #include <Wwd/WwdFile.h>      // CDDrawWorkerHost - the canonical plane (tile grid + transform)
 #include <rva.h>
+#include <AddrWord.h> // the rect-address-in-an-int-slot argument
 
 #include <Gruntz/FreeNodePool.h>      // the coord-node pool object @0x645540
 #include <Gruntz/GameObjectFactory.h> // the Create* registrants (the m_notify identities)
@@ -134,6 +135,8 @@ i32 CPlay::PlaceStartGruntz() {
             // compares the pointer against each registrant's address.
             GameObjNotifyFn who = aux->m_notify;
             if (who == CreateGruntStartingPoint) {
+                AddrWord extentArg;
+                extentArg.m_addr = &obj->m_extent.left;
                 i32 idx = reg->m_cmdGrid->PlaceObject(
                     obj->m_124,
                     (obj->m_screenX & ~0x1f) + 0x10,
@@ -149,8 +152,9 @@ i32 CPlay::PlaceStartGruntz() {
                     aux->m_30,
                     // byte-evidenced: PlaceObject's 13th slot is kind-dependent (the
                     // 0x6b6d0 body compares it to 0x12 for other kinds); at the grunt
-                    // kind retail pushes `lea edx,[obj+0x134]` - this RECT's address.
-                    reinterpret_cast<i32>(&obj->m_extent.left)
+                    // kind retail pushes `lea edx,[obj+0x134]` - this RECT's address,
+                    // riding the int slot (<AddrWord.h>).
+                    extentArg.m_word
                 );
                 if (idx == -1) {
                     CString s;

@@ -2237,7 +2237,9 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                                 CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
                                 fn->m_next = g_coordPool.m_freeHead;
                                 g_coordPool.m_freeHead = fn;
-                                coordList->RemoveAt(reinterpret_cast<POSITION>(cur));
+                                CoordPos cp;
+                                cp.m_node = cur;
+                                coordList->RemoveAt(cp.m_pos);
                             }
                         }
                         return 1;

@@ -4,6 +4,7 @@
 #include <Image/ImagePool.h>        // the canonical CImagePool (this TU owns its bodies)
 #include <Rez/RezMgr.h>             // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
 #include <rva.h>
+#include <Pix16.h> // the byte-cursor / 16bpp-value pointer pair
 #include <string.h>
 #include <DDrawMgr/DDSurface.h>     // PidHeader - .PID and .RID share the header
 #include <Image/FileImageRecords.h> // the real on-disk PcxHeader
@@ -486,10 +487,12 @@ i32 CRezImage::Convert8To16(void* dc, CRezImage* src, void* pal) {
     }
     for (i32 y = 0; y < m_height; y++) {
         u8* sp = src->m_pixels + y * src->m_stride;
-        // byte-forced: m_pixels is the 8bpp byte plane, but DecodeBmpHeader(...,0x10,...)
-        // above just reconfigured `this` to 16bpp, so the same member now carries u16
-        // pixels at the m_stride*2 byte pitch (retail `lea edx,[edi+edx*2]`).
-        u16* dp = reinterpret_cast<u16*>((m_pixels + y * m_stride * 2));
+        // m_pixels is the 8bpp byte plane, but DecodeBmpHeader(...,0x10,...) above just
+        // reconfigured `this` to 16bpp, so the same member now carries u16 pixels at the
+        // m_stride*2 byte pitch (retail `lea edx,[edi+edx*2]`) - see <Pix16.h>.
+        Pix16Ptr row;
+        row.m_bytes = (m_pixels + y * m_stride * 2);
+        u16* dp = row.m_words;
         for (i32 x = 0; x < m_width; x++) {
             u32 c = palette[*sp];
             u32 r = c & 0xff;

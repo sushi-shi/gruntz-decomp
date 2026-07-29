@@ -10,6 +10,7 @@
 #include <string.h>          // memcpy / strlen (inlined to rep movs / repne scas)
 #include <Image/ImagePool.h> // ex Globals.h
 #include <Image/FileImage.h> // own exported globals (ex Globals.h)
+#include <Pix16.h>           // the byte-cursor unions (RecordBytes / Pix16Ptr)
 
 enum {
     PCX_HEADER_SIZE = 0x80
@@ -104,8 +105,10 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     }
 
     // bfOffBits is a RUNTIME offset the file itself carries (from the start of the
-    // image), so the bits sit at no fixed member - the byte cursor is byte-forced.
-    void* run = reinterpret_cast<u8*>(img) + img->fh.bfOffBits; // byte-forced
+    // image), so the bits sit at no fixed member - RecordBytes names the byte cursor.
+    RecordBytes base;
+    base.m_rec = img;
+    void* run = base.m_bytes + img->fh.bfOffBits;
     if (convert) {
         if (Blit(run, srcFmt, pal, 2) == 0) {
             return 0;
@@ -262,7 +265,9 @@ i32 CDDSurface::Load(CDDrawPtrCollections* a, char* name, i32 c) {
     // byte-evidenced: retail forms the bits pointer as base + biSize + 0x400 in one
     // lea - `mov ecx,[ebx]` (biSize) then `lea edx,[ebx+ecx*1+0x400]`. biSize is a
     // RUNTIME value, so the 256-entry RGBQUAD palette cannot be skipped by type.
-    BlitDirect(reinterpret_cast<u8*>(bih) + bih->biSize + 256 * sizeof(RGBQUAD), 2);
+    RecordBytes ib;
+    ib.m_rec = bih;
+    BlitDirect(ib.m_bytes + bih->biSize + 256 * sizeof(RGBQUAD), 2);
     return 1;
 }
 
@@ -487,8 +492,9 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, i32 flag) {
         u8* src = locked + row * this->m_pitch;
         u8* dst = line;
         for (i32 x = 0; x < width; x++) {
-            // a 16bpp pixel read off the byte cursor - byte-forced
-            u16 px = *reinterpret_cast<u16*>(src);
+            Pix16Ptr sp;
+            sp.m_bytes = src;
+            u16 px = *sp.m_words;
             src += 2;
             dst[0] = static_cast<u8>((static_cast<u8>(px) << g_bDown));
             dst[1] = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
@@ -635,8 +641,10 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 
     if (convert) {
         if (srcFmt == 8) {
             // build the grayscale ramp from the source's trailing 0x300 palette
-            // PCX: the 0x300 palette trails the image data - byte-forced
-            u8* p = reinterpret_cast<u8*>(src) + len - 0x300;
+            // (PCX: the 0x300 palette trails the image data, at a RUNTIME offset)
+            RecordBytes sb;
+            sb.m_rec = src;
+            u8* p = sb.m_bytes + len - 0x300;
             i32 i = 0;
             do {
                 g_grayRamp[i] = *p++;
@@ -1086,8 +1094,10 @@ i32 CDDSurface::DecodePcxData(
         if (static_cast<u32>(size) <= 0x300) {
             return 0;
         }
-        // PID: the 0x300 palette trails the pixel data - byte-forced
-        u8* src = reinterpret_cast<u8*>(hdr) + size - 0x300;
+        // PID: the 0x300 palette trails the pixel data, at a RUNTIME offset
+        RecordBytes hb;
+        hb.m_rec = hdr;
+        u8* src = hb.m_bytes + size - 0x300;
         i32 i = 0;
         do {
             s_palPcxData[i].peRed = *src++;
@@ -1191,7 +1201,9 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u
                 return 0;
             }
             // PID: the 0x300 palette trails the pixel data - byte-forced
-            u8* src = reinterpret_cast<u8*>(hdr) + size - 0x300; // trailing palette
+            RecordBytes hb;
+            hb.m_rec = hdr;
+            u8* src = hb.m_bytes + size - 0x300; // trailing palette
             i32 i = 0;
             do {
                 s_palPidData[i] = *src++;

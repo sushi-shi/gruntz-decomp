@@ -1,4 +1,5 @@
 #include <DDrawMgr/DDSurface.h> // own extern surface
+#include <Pix16.h>              // the byte-cursor / 16bpp-value pointer pair
 #include <Io/FileStream.h>
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree
 
@@ -23,21 +24,23 @@ u8 g_clut[0x30000]; // 0x653c9e
 // The 3-bank CLUT is a BYTE array (the bank bases and the row deltas are byte
 // offsets) whose entries are 16-bit - that pun is inherent to the table, so it
 // lives here instead of at every lookup.
-// A locked surface hands back BYTES and its pitch is in bytes, but a 16bpp row is
-// u16 pixels - the conversion is forced by the DirectDraw API, so it lives here.
+// A locked surface hands back BYTES with a byte pitch while a 16bpp row is u16
+// pixels; the CLUT is the same shape. Pix16Ptr (<Pix16.h>) names both readings.
 static inline u16* Row16(u8* locked, i32 row, i32 pitch) {
-    return reinterpret_cast<u16*>(locked + row * pitch);
+    Pix16Ptr p;
+    p.m_bytes = locked + row * pitch;
+    return p.m_words;
 }
 
 static inline u16 Clut16(u32 byteOff) {
-    // byte-forced: g_clut is a u8 band indexed by BYTE offsets (DDrawShadeBlit's bank
-    // seeds keep the same byte-granular arithmetic). A typed seam here was measured and
-    // cost ShadeBlt/ShadeRect 3-7% - it re-associates the addend.
-    return *reinterpret_cast<const u16*>(g_clut + byteOff);
+    Pix16Ptr p;
+    p.m_bytes = g_clut + byteOff;
+    return *p.m_words;
 }
-static inline void ClutStore16(u32 byteOff, i16 v) {
-    // byte-forced, same band as the reader above
-    *reinterpret_cast<i16*>(g_clut + byteOff) = v;
+static inline void ClutStore16(u32 byteOff, u16 v) {
+    Pix16Ptr p;
+    p.m_bytes = g_clut + byteOff;
+    *p.m_words = v;
 }
 DATA(0x00283ca0)
 u16 g_lut16[256] = {0}; // 0x683ca0
@@ -810,22 +813,22 @@ i32 CDDSurface::ShadeBlt(
                     do {
                         u32 tp = *t;
                         u32 sp = *srcPtr;
-                        // the CLUT is a byte-addressed table read as 16-bit entries;
-                        // byte-forced - routing it through Clut16 re-associates
-                        // g_clut + (off) vs (g_clut + off) + bank and costs ShadeBlt/
-                        // ShadeRect ~3-7%.
-                        u16 v = *reinterpret_cast<u16*>(
-                            ((g_clut + 0x10002) + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2)
-                        );
-                        // byte-forced: same byte-addressed CLUT read as 16-bit entries
-                        v |= *reinterpret_cast<u16*>(
-                            ((g_clut + 0x20002) + bank + ((sp >> 0xa) + ((tp >> 5) & ~0x1f)) * 2)
-                        );
-                        // byte-forced: same byte-addressed CLUT read as 16-bit entries
-                        v |= *reinterpret_cast<u16*>(
+                        // The CLUT is byte-addressed and its entries are 16 bits;
+                        // Pix16Ptr names both readings. The byte expressions stay
+                        // VERBATIM - routing them through a converting accessor
+                        // re-associates g_clut + (off) into (g_clut + off) + bank and
+                        // cost ShadeBlt/ShadeRect ~3-7%.
+                        Pix16Ptr c;
+                        c.m_bytes =
+                            ((g_clut + 0x10002) + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2);
+                        u16 v = *c.m_words;
+                        c.m_bytes =
+                            ((g_clut + 0x20002) + bank + ((sp >> 0xa) + ((tp >> 5) & ~0x1f)) * 2);
+                        v |= *c.m_words;
+                        c.m_bytes =
                             ((g_clut + 0x2) + bank
-                             + ((((tp >> 5) & 0x1f) << 5) + (0x1f & (sp >> 5))) * 2)
-                        );
+                             + ((((tp >> 5) & 0x1f) << 5) + (0x1f & (sp >> 5))) * 2);
+                        v |= *c.m_words;
                         *dstPtr = v;
                         dstPtr++;
                         srcPtr++;
@@ -848,22 +851,22 @@ i32 CDDSurface::ShadeBlt(
                     do {
                         u32 tp = *t;
                         u32 sp = *srcPtr;
-                        // the CLUT is a byte-addressed table read as 16-bit entries;
-                        // byte-forced - routing it through Clut16 re-associates
-                        // g_clut + (off) vs (g_clut + off) + bank and costs ShadeBlt/
-                        // ShadeRect ~3-7%.
-                        u16 v = *reinterpret_cast<u16*>(
-                            ((g_clut + 0x10002) + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2)
-                        );
-                        // byte-forced: same byte-addressed CLUT read as 16-bit entries
-                        v |= *reinterpret_cast<u16*>(
-                            ((g_clut + 0x20002) + bank + ((sp >> 0xb) + ((tp >> 6) & ~0x1f)) * 2)
-                        );
-                        // byte-forced: same byte-addressed CLUT read as 16-bit entries
-                        v |= *reinterpret_cast<u16*>(
+                        // The CLUT is byte-addressed and its entries are 16 bits;
+                        // Pix16Ptr names both readings. The byte expressions stay
+                        // VERBATIM - routing them through a converting accessor
+                        // re-associates g_clut + (off) into (g_clut + off) + bank and
+                        // cost ShadeBlt/ShadeRect ~3-7%.
+                        Pix16Ptr c;
+                        c.m_bytes =
+                            ((g_clut + 0x10002) + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2);
+                        u16 v = *c.m_words;
+                        c.m_bytes =
+                            ((g_clut + 0x20002) + bank + ((sp >> 0xb) + ((tp >> 6) & ~0x1f)) * 2);
+                        v |= *c.m_words;
+                        c.m_bytes =
                             ((g_clut + 0x2) + bank
-                             + ((((tp >> 6) & 0x1f) << 5) + ((sp >> 6) & 0x1f)) * 2)
-                        );
+                             + ((((tp >> 6) & 0x1f) << 5) + ((sp >> 6) & 0x1f)) * 2);
+                        v |= *c.m_words;
                         *dstPtr = v;
                         dstPtr++;
                         srcPtr++;
@@ -1019,9 +1022,9 @@ void BuildColorChannelTables() {
                 do {
                     base += 2;
                     i32 sum = varD / 32 + bDiv;
-                    ClutStore16(0x20000 + base, static_cast<i16>((sum << 0xa)));
-                    ClutStore16(base, static_cast<i16>((sum << 5)));
-                    ClutStore16(0x10000 + base, static_cast<i16>((sum << bShift)));
+                    ClutStore16(0x20000 + base, static_cast<u16>((sum << 0xa)));
+                    ClutStore16(base, static_cast<u16>((sum << 5)));
+                    ClutStore16(0x10000 + base, static_cast<u16>((sum << bShift)));
                     varD += stepA;
                 } while (--k != 0);
                 varB += a;
@@ -1042,9 +1045,9 @@ void BuildColorChannelTables() {
                 do {
                     base += 2;
                     i32 sum = varD / 32 + bDiv;
-                    ClutStore16(0x20000 + base, static_cast<i16>((sum << g_rUp)));
-                    ClutStore16(base, static_cast<i16>(((sum << g_gUp) << 1)));
-                    ClutStore16(0x10000 + base, static_cast<i16>((sum << g_bUp)));
+                    ClutStore16(0x20000 + base, static_cast<u16>((sum << g_rUp)));
+                    ClutStore16(base, static_cast<u16>(((sum << g_gUp) << 1)));
+                    ClutStore16(0x10000 + base, static_cast<u16>((sum << g_bUp)));
                     varD += stepA;
                 } while (--k != 0);
                 varB += a;

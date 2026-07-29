@@ -46,6 +46,7 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/GameRegistry.h> // canonical CGameRegistry (the reconciled singleton view)
 #include <rva.h>
+#include <AddrWord.h> // retail's pointer-as-id widening at the voice-driver slot
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1096,10 +1097,12 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                         m_object->m_screenX,
                         m_object->m_screenY
                     )) {
-                    // byte-forced: retail 0x63073 `push esi` widens this raw CGrunt* into
-                    // SpawnVoiceDriver's i32 sourceId (-> CGruntVoice::m_source, the m_map48
-                    // object-id key). Retail's own pointer-as-id, not a modelling gap.
-                    g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 4, -1, -1, -1);
+                    // retail 0x63073 `push esi` widens this raw CGrunt* into
+                    // SpawnVoiceDriver's i32 sourceId (-> CGruntVoice::m_source, the
+                    // m_map48 object-id key) - retail's own pointer-as-id (<AddrWord.h>)
+                    AddrWord src;
+                    src.m_addr = this;
+                    g->m_cueSink->SpawnVoiceDriver(src.m_word, 4, -1, -1, -1);
                 }
             } else if (focused || m_entranceReason != 0) {
                 if (idx == 1) {
@@ -1108,10 +1111,10 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                             m_object->m_screenX,
                             m_object->m_screenY
                         )) {
-                        // byte-forced: retail 0x63073 `push esi` widens this raw CGrunt* into
-                        // SpawnVoiceDriver's i32 sourceId (-> CGruntVoice::m_source, the m_map48
-                        // object-id key). Retail's own pointer-as-id, not a modelling gap.
-                        g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 5, -1, -1, -1);
+                        // same pointer-as-id widening as above (<AddrWord.h>)
+                        AddrWord src;
+                        src.m_addr = this;
+                        g->m_cueSink->SpawnVoiceDriver(src.m_word, 5, -1, -1, -1);
                     }
                 } else if (idx == 2) {
                     if (CGameLevel::PointInBounds(
@@ -1119,10 +1122,10 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                             m_object->m_screenX,
                             m_object->m_screenY
                         )) {
-                        // byte-forced: retail 0x63073 `push esi` widens this raw CGrunt* into
-                        // SpawnVoiceDriver's i32 sourceId (-> CGruntVoice::m_source, the m_map48
-                        // object-id key). Retail's own pointer-as-id, not a modelling gap.
-                        g->m_cueSink->SpawnVoiceDriver(reinterpret_cast<i32>(this), 6, -1, -1, -1);
+                        // same pointer-as-id widening as above (<AddrWord.h>)
+                        AddrWord src;
+                        src.m_addr = this;
+                        g->m_cueSink->SpawnVoiceDriver(src.m_word, 6, -1, -1, -1);
                     }
                 }
             }
@@ -2254,8 +2257,11 @@ i32 CGrunt::StepEntranceRelatchB() {
         cellObj = 0;
     } else {
         // faithful: the board row IS an i32[] (7 ints per cell) and slot +2 parks the
-        // occupying object's address as a raw dword - the tilegrid pointer/DWORD store.
-        cellObj = reinterpret_cast<void*>(((grid->m_rowInts[ty]))[tx * 7 + 2]);
+        // occupying object's address as a raw dword - the tilegrid pointer/DWORD store,
+        // both readings of which AddrWord names.
+        AddrWord slot;
+        slot.m_word = ((grid->m_rowInts[ty]))[tx * 7 + 2];
+        cellObj = slot.m_addr;
     }
     if (cellObj == 0) {
         return 0;

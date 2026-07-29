@@ -65,8 +65,13 @@ public:
     i32 m_2c;            // +0x2c  owns-buffer flag (consume the draw value on read)
     i32 m_pendingDraw;   // +0x30  pending draw value
     i32 m_curDraw;       // +0x34  current draw value
-    float m_scale;       // +0x38  float speed/scale multiplier (Advance compares
-                         //        it as raw bits vs 0x3f800000 == 1.0f)
+    // +0x38 float speed/scale multiplier. Advance tests it against 1.0f with an
+    // INTEGER compare on 0x3f800000 (no FPU compare), so the same four bytes are read
+    // as a float and as a word - both readings are named.
+    union {
+        float m_scale;
+        i32 m_scaleBits;
+    };
 };
 SIZE_UNKNOWN();
 

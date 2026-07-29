@@ -152,11 +152,8 @@ i32 g_localVersion = 1; // extern "C" linkage inherited from <Net/NetMgr.h>
 DATA(0x0020fa74)
 i32 g_remoteVersion = 1; // the build's own protocol word; never written at runtime
 DATA(0x0020fab8)
-GUID g_dplayAppGuid = {
-    0xf41cf640,
-    0x91b2,
-    0x11d1,
-    {0x8d, 0xfc, 0x00, 0x60, 0x97, 0x9f, 0xa8, 0x1e}
+NetGuid g_dplayAppGuid = {
+    {0xf41cf640, 0x91b2, 0x11d1, {0x8d, 0xfc, 0x00, 0x60, 0x97, 0x9f, 0xa8, 0x1e}}
 }; // the DirectPlay app GUID CMulti::Open/StartTitle bind the session with
 DATA(0x0020fac8)
 i32 g_pendingFrame = 1;

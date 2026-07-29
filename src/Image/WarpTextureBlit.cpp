@@ -4,6 +4,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <Image/RasterVtx.h> // ClipVtx (the shared raster vertex) + WarpTextureBlit decl
 #include <rva.h>
+#include <Pix16.h> // the byte-cursor / 16bpp-value pointer pair
 
 // is-power-of-two gate (0x145e00): returns 1 iff exactly one bit of n is set
 // (popcount(x) == 1 over all 32 bits). Folded from Stub/BoundaryUpper.cpp
@@ -49,7 +50,9 @@ i16* g_rasterDestPtr = 0; // decl in Image/RasterVtx.h
 // 16bpp pixels - the byte-row -> word-span conversion is the surface API's, so it
 // lives at this one seam instead of at each of the three span loops below.
 static inline i16* Span16(u8* row) {
-    return reinterpret_cast<i16*>(row);
+    Pix16Ptr p;
+    p.m_bytes = row;
+    return p.m_swords;
 }
 DATA(0x002becfc)
 i16 g_warpColorkey = 0; // 0x6becfc

@@ -7,8 +7,9 @@
 #include <Image/Image.h>                  // CFileImageSurface (the a58 pool item's dtor pair)
 #include <ddraw.h> // real DirectDraw SDK (IDirectDraw/2, DirectDrawCreate, DirectDrawEnumerateA, DDCAPS, IID_IDirectDraw2)
 #include <rva.h>
-#include <stdio.h>  // engine sprintf (reloc-masked)
-#include <string.h> // inline strcpy / memcpy / memset (rep stos)
+#include <AddrWord.h> // the immediate-in-a-pointer-slot success code
+#include <stdio.h>    // engine sprintf (reloc-masked)
+#include <string.h>   // inline strcpy / memcpy / memset (rep stos)
 
 #include <Dsndmgr/SoundBankLoad.h> // g_dot (ex mislabeled .cpp extern)
 #include <DDrawMgr/DdCreateArg.h>
@@ -1213,9 +1214,11 @@ CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
     }
     m_hasPalette = 1;
     m_940 = z;
-    // byte-forced: retail sets eax=1 and returns it through the CDDPalette* slot
-    // this loader shares with its siblings - a bare imm, no reloc.
-    return reinterpret_cast<CDDPalette*>(1);
+    // retail sets eax=1 and returns it through the CDDPalette* slot this loader
+    // shares with its siblings - a bare imm, no reloc (<AddrWord.h>)
+    AddrWord ok;
+    ok.m_word = 1;
+    return static_cast<CDDPalette*>(ok.m_addr);
 }
 
 // ---------------------------------------------------------------------------

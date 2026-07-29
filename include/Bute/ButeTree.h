@@ -2,6 +2,7 @@
 #define SRC_BUTE_BUTETREE_H
 
 #include <rva.h>
+#include <AddrWord.h>       // the act-id-in-a-void*-slot pair
 #include <Bute/PTreeNode.h> // the RTTI-real zErrHandling/CButeNodeEntry/zPTree base hierarchy
 
 // The keyed error-handling slot: it is BOTH the variant slot (m_callback/word/tag/label,
@@ -10,10 +11,10 @@
 // Add IS this Add @0x16e360); that cast-based view is dissolved here
 // (m_index->m_04, m_owner->m_label).
 struct CVariantSlot {
-    CVariantSlot(char* label);         // 0x16e1a0 (cursor ctor: typeTag=2, m_10=2)
+    CVariantSlot(char* label);              // 0x16e1a0 (cursor ctor: typeTag=2, m_10=2)
     void Set(void* obj, void* item, i32 b); // 0x16d850  (item: the reported record/name)
-    i32 Find(i32 key);                 // 0x16e1d0 (binary-search the g_recs23 key table)
-    void* Add(void* key, void* val);   // 0x16e360 (keyed insert/update/remove; val==0 removes)
+    i32 Find(i32 key);                      // 0x16e1d0 (binary-search the g_recs23 key table)
+    void* Add(void* key, void* val);        // 0x16e360 (keyed insert/update/remove; val==0 removes)
     void(__cdecl* m_callback)(char* buf, i32 v); // +0x00 (call [this]; the error callback)
     i32 m_04;        // +0x04 probe/found index (Find writes it; ex m_index)
     u16 m_valueWord; // +0x08 word storage
@@ -61,14 +62,17 @@ extern CButeTree g_buteTree;
 // g_typeCounter and every reader feeds the result to ActNameLookup(id), which
 // INDEXES g_typeColl by it. So the boundary reinterpret belongs here, once, rather
 // than at each of the ~15 call sites.
+// PROVEN (see above): THIS tree instance stores small integer act ids in the void*
+// value slot, so the slot has both readings - AddrWord names them.
 static inline i32 ActFindId(const char* key) {
-    // PROVEN (see above): THIS tree instance stores small integer act ids in the
-    // void* value slot, so the boundary pun belongs here at one seam.
-    return reinterpret_cast<i32>(g_buteTree.Find(key));
+    AddrWord v;
+    v.m_addr = g_buteTree.Find(key);
+    return v.m_word;
 }
 static inline void ActInsertId(const char* key, i32 id) {
-    // API-forced: CMapStringToPtr's VALUE slot is void*; the act id is the value
-    g_buteTree.Insert(key, reinterpret_cast<void*>(id));
+    AddrWord v;
+    v.m_word = id;
+    g_buteTree.Insert(key, v.m_addr);
 }
 
 #endif // SRC_BUTE_BUTETREE_H

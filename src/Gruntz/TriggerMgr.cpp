@@ -22,6 +22,7 @@
 // donor view - the canonical-CGameRegistry fold that unifies them is deferred
 // cleanup work.
 #include <Gruntz/TriggerMgr.h>
+#include <AddrWord.h> // the code-address view of a notify slot / member pointer
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Io/FileMem.h> // the serialize stream (CFileMemBase == the real CFileMemBase)
 
@@ -2648,11 +2649,14 @@ void CTriggerMgr::DestroyAllAnims() {
             AnimWorkerObj* desc = obj->m_7c;
             // the grunt-notify stamp: workers bound to grunt logic carry
             // CGrunt::ReadConfigFromButeMgr as their raw notify fn (bit-compare)
-            void (CGrunt::*tag)() = &CGrunt::ReadConfigFromButeMgr;
-            // language-forced: C++ has no way to compare a plain function pointer with
-            // a member-function pointer, and retail stores the method's bare code address
-            // in the notify slot (MSVC5 single-inheritance PMF IS that address).
-            if (*reinterpret_cast<void**>(&desc->m_notify) == *reinterpret_cast<void**>(&tag)) {
+            // Retail stores the method's BARE CODE ADDRESS in the notify slot, and a
+            // 4-byte MSVC5 member pointer IS that address - so both are compared as the
+            // one word each really holds. NotifyWord names those readings.
+            NotifyWord slot;
+            NotifyWord want;
+            slot.m_fn = desc->m_notify;
+            want.m_method = &CGrunt::ReadConfigFromButeMgr;
+            if (slot.m_addr == want.m_addr) {
                 (static_cast<CGrunt*>(desc->m_logic))->m_neighborCol = 0;
             }
         }

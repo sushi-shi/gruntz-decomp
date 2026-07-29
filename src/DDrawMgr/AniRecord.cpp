@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Pix16.h>                        // the byte-cursor unions (RecordBytes / Pix16CPtr)
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // the record owner (m_ptrColl/m_drawTarget)
 #include <DDrawMgr/DDrawSubMgrPages.h>    // m_drawTarget full type (m_frontPair)
 #include <DDrawMgr/DDrawSurfacePair.h>    // the front pair (m_bpp/m_surface)
@@ -73,10 +74,12 @@ i32 CAniRecordView::Parse(void* ctx, const i16* src) {
     m_count = 0;
     g_aniParsedNameLen = 0;
     if (m_flags & 0x2) {
-        // byte-forced: the record's NUL-terminated name follows the fixed i16 header
-        // INLINE in the same blob (retail 0x168c60 walks the same cursor straight into
-        // strlen), so the word cursor becomes a byte cursor at the format's own boundary
-        const char* name = reinterpret_cast<const char*>(p);
+        // The record's NUL-terminated name follows the fixed i16 header INLINE in the
+        // same blob (retail 0x168c60 walks the same cursor straight into strlen), so the
+        // word cursor becomes a byte cursor at the format's own boundary (<Pix16.h>).
+        Pix16CPtr np;
+        np.m_swords = p;
+        const char* name = np.m_chars;
         g_aniParsedNameLen = static_cast<i32>(strlen(name)) + 1;
         ResolveIndices(static_cast<CDDrawSubMgrLeafScan*>(ctx), name);
     }

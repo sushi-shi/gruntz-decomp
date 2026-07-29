@@ -254,7 +254,15 @@ public:
     // arg3 is the tile-span RECT the caller (CExitTrigger::AdvanceAnim @0x3f64e, the only
     // one) hands in; the body ALSO reuses that same stack slot as FindGruntAt's outCol,
     // which is why the pun lives inside the body and not at the call.
-    void HitTestApply(i32 x, i32 y, RECT* span);
+    // HitTestApply's third parameter is a DUAL-ROLE slot: retail 0x6ea00 reads it by
+    // VALUE as the span rect (`mov edx,[esp+0xc]`) and by ADDRESS as the hit test's
+    // out-column (`lea ecx,[esp+0x20]` resolves to that same E+0xc slot). Both
+    // readings of the one argument word are named here.
+    union HitSpanArg {
+        RECT* m_span; // in:  the span rect
+        i32 m_outCol; // out: the hit-test column, written through &arg
+    };
+    void HitTestApply(i32 x, i32 y, HitSpanArg span);
 
     // 0x75af0: HitTestCell(x, y, outRow, outCol, exact) - sample the tile-attr index, map
     // it to (row,col), bounds-test the cell object, write (row,col). (ret 0x14.)

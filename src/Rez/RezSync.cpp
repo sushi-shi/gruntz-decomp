@@ -9,6 +9,7 @@
 #include <Gruntz/GameLevel.h>
 #include <Rez/FrameClock.h> // g_lastNow (the frame-clock now cell Init seeds)
 #include <rva.h>
+#include <AddrWord.h> // the swapped length/data slots of this parse-source kind
 #include <Ints.h>
 #include <Mfc.h> // CString + the MFC collection ctors/dtors (reloc-masked)
 #ifdef __clang__
@@ -516,13 +517,15 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         if (stream) {
             g_buteMgr.m_10e = 1;
             char* esz = stream->BeginParse();
-            // @identity-TODO / overlay: this entry kind swaps the pair - +0x0c carries
-            // the bytes and BeginParse hands back the LENGTH - so the raw width is
-            // preserved at this ONE seam instead of at both stream constructions.
-            i32 eszLen = reinterpret_cast<i32>(esz);
-            void* src = reinterpret_cast<void*>(
-                stream->m_length
-            ); // +0x0c doubles as the data ptr for this entry kind
+            // @identity-TODO / overlay: this entry kind SWAPS the pair - +0x0c carries
+            // the bytes and BeginParse hands back the LENGTH - so both slots are read
+            // through their word/address arms (<AddrWord.h>) rather than punned.
+            AddrWord lenSlot;
+            AddrWord dataSlot;
+            lenSlot.m_addr = esz;
+            dataSlot.m_word = stream->m_length;
+            i32 eszLen = lenSlot.m_word;
+            void* src = dataSlot.m_addr;
             // @identity-TODO: this entry kind carries the bytes in +0x0c and the
             // length through BeginParse - the two look swapped vs every other
             // caller, so the raw widths are preserved verbatim here.

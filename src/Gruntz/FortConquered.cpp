@@ -63,7 +63,9 @@ i32 CExitTrigger::AdvanceAnim() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     if (g_gameReg->m_134 == 1) {
         CWwdGameObjectA* trig = m_object;
-        g_gameReg->m_cmdGrid->HitTestApply(trig->m_screenX, trig->m_screenY, &trig->m_area);
+        CTriggerMgr::HitSpanArg span;
+        span.m_span = &trig->m_area;
+        g_gameReg->m_cmdGrid->HitTestApply(trig->m_screenX, trig->m_screenY, span);
     } else if (m_resolved != 0) {
         i32 hitPlayer;
         i32 hitRow;

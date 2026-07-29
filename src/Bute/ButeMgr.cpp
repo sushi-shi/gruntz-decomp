@@ -49,6 +49,7 @@
 #include <EmptyString.h>      // g_emptyString
 #include <Bute/ButeTextBuf.h> // CButeTextBuf: the value-text accumulator host (ostream@+0xc)
 #include <rva.h>
+#include <AddrWord.h> // the object-address-in-a-char*-slot return
 
 #include <fstream.h> // the REAL CRT iostream/ios (the ??_Diostream emission carrier)
 #include <float.h>   // FLT_MIN / DBL_MIN - the GetFloat/GetDouble miss sentinels
@@ -1182,8 +1183,11 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
     } else {
         ReportError(s_fmtInvalidTag, tag);
     }
-    // byte-forced: retail ends here `mov eax,0x6bf698` == OFFSET s_empty, no load
-    return reinterpret_cast<char*>(&s_empty);
+    // retail ends here `mov eax,0x6bf698` == OFFSET s_empty with NO load, i.e. it
+    // returns the object's own address through the char* slot (<AddrWord.h>)
+    AddrWord empty;
+    empty.m_addr = &s_empty;
+    return static_cast<char*>(empty.m_addr);
 }
 
 RVA(0x00173720, 0x4e)

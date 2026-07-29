@@ -1091,7 +1091,7 @@ i32 CMulti::Open() {
     if (!descriptor) {
         return 0;
     }
-    if (!Peer()->InitFromProvider(descriptor, g_dplayAppGuid)) {
+    if (!Peer()->InitFromProvider(descriptor, g_dplayAppGuid.m_guid)) {
         return 0;
     }
     if (g_hostServicesMode) {

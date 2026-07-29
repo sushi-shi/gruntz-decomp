@@ -18,6 +18,7 @@
 #include <Gruntz/GameLevel.h>          // CGameLevel + CDDrawWorkerHost (ex LfxView/LfxWorldRect)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (ex LfxBorderCtx)
 #include <rva.h>
+#include <Pix16.h>          // the byte-cursor / 16bpp-value pointer pair
 #include <Rez/FrameClock.h> // g_timer100 (detail threshold)
 
 static inline u16 Pack(i32 r, i32 g, i32 b) {
@@ -386,21 +387,23 @@ void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
     // The COLUMN term is added to `base` first here (`add base,bpp*left` then
     // `add pitch*top,...`) - the bottom edge below is the other way round; the two
     // edges really are spelled differently in retail.
-    // byte-forced: `base` is the locked surface cursor and the row/column steps are
-    // the surface's BYTE quantities (m_pitch, m_bytesPerPixel); the pixels are 16bpp.
-    u16* tp = reinterpret_cast<u16*>(
+    // `base` is the locked surface cursor and the row/column steps are the surface's
+    // BYTE quantities (m_pitch, m_bytesPerPixel); the pixels are 16bpp (<Pix16.h>).
+    Pix16Ptr top;
+    top.m_chars =
         (static_cast<char*>(base) + r->left * m_surface->m_bytesPerPixel
-         + r->top * m_surface->m_pitch)
-    );
+         + r->top * m_surface->m_pitch);
+    u16* tp = top.m_words;
     for (i32 t = 0; t < w; t++) {
         tp[t] = static_cast<u16>(color);
     }
     // Bottom edge.
-    // byte-forced: same m_pitch/m_bytesPerPixel byte arithmetic on the locked cursor.
-    u16* bp = reinterpret_cast<u16*>(
+    // same m_pitch/m_bytesPerPixel byte arithmetic on the locked cursor
+    Pix16Ptr bot;
+    bot.m_chars =
         (static_cast<char*>(base) + r->bottom * m_surface->m_pitch
-         + r->left * m_surface->m_bytesPerPixel)
-    );
+         + r->left * m_surface->m_bytesPerPixel);
+    u16* bp = bot.m_words;
     for (i32 b = 0; b < w; b++) {
         bp[b] = static_cast<u16>(color);
     }
