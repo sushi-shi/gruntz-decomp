@@ -591,7 +591,7 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
 // slot numbering also diverge. Logic + offsets + CFG byte-faithful; a leaf-first
 // regalloc grind is deferred to the final sweep.
 RVA(0x00162010, 0x8bd)
-void CDDrawWorkerHost::Draw(CPlaneDrawCtx* ctx) {
+void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     if ((m_flags & 2) != 0) {
         return;
     }

@@ -4171,8 +4171,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(CGrunt* unit) {
             RECT* hit = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
             if (lvl->m_screenX < hit->right && lvl->m_screenX >= hit->left
                 && lvl->m_screenY < hit->bottom && lvl->m_screenY >= hit->top) {
-                (static_cast<CGruntSpawnConfig*>(static_cast<void*>(g_gameReg->m_cueSink)))
-                    ->SpawnVoiceDriver(unit, 0x366, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(unit, 0x366, -1, 0, -1, -1);
             }
             m_routeClock.m_v = 0;
             m_scratch80 = 0x1388;
@@ -5406,7 +5405,7 @@ void* CBattlezMapConfig::PickSpawnCoord(void* out, CGrunt* unit, i32 kind) {
             CoordNode* cur = nd;                                                                   \
             nd = nd->m_next;                                                                       \
             if (cur->m_coord != 0) {                                                               \
-                g_coordPool.Push(static_cast<void*>(cur->m_coord));                                \
+                g_coordPool.Push(cur->m_coord);                                                    \
             }                                                                                      \
         }                                                                                          \
         (g)->m_31c.RemoveAll();                                                                    \
@@ -6194,7 +6193,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
 RVA(0x00034960, 0x24)
 void zErrHandling::Report(void* sentinel, i32 code) {
     g_retAddrBreadcrumb = GetRetAddr();
-    m_errSink->Set(static_cast<void*>(this), sentinel, code);
+    m_errSink->Set(this, sentinel, code);
 }
 
 // ===========================================================================

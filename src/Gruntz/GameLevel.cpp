@@ -547,8 +547,6 @@ i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
     return set->GetCollisionAt(subX, subY);
 }
 
-typedef CFileMemBase EditSink;
-
 RVA(0x0006b330, 0x2a)
 i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
     if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
@@ -659,24 +657,22 @@ i32 CGameLevel::SetExtentsAndBuildAll(i32 w, i32 h) {
 }
 
 RVA(0x0015dad0, 0x2c)
-void CGameLevel::SyncToMainIndex(void* visitor) {
+void CGameLevel::SyncToMainIndex(CDDrawSurfacePair* visitor) {
     i32 i = 0;
     if (m_mainIndex >= 0) {
         do {
-            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]))
-                ->Draw(static_cast<CPlaneDrawCtx*>(visitor)); // 0x162010
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]))->Draw(visitor); // 0x162010
             ++i;
         } while (i <= m_mainIndex);
     }
 }
 
 RVA(0x0015db00, 0x2e)
-void CGameLevel::SyncAfterMainIndex(void* visitor) {
+void CGameLevel::SyncAfterMainIndex(CDDrawSurfacePair* visitor) {
     i32 i = m_mainIndex + 1;
     if (i < m_planes.GetSize()) {
         do {
-            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]))
-                ->Draw(static_cast<CPlaneDrawCtx*>(visitor)); // 0x162010
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]))->Draw(visitor); // 0x162010
             ++i;
         } while (i < m_planes.GetSize());
     }
@@ -805,14 +801,14 @@ CDDrawWorkerHost* CGameLevel::FindPlaneByName(const char* name) {
 // render visitor every Sync/Draw/Hook receives; `ctx` (2nd param) is the chain.
 //
 RVA(0x0015dc90, 0x141)
-void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
+void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx) {
     // The engine lea's the +0x10 list record's ADDRESS and null-checks it (always
     // live) before loading the head - the CObList member keeps that byte shape.
     CObList* chain = &ctx->m_list;
 
     if ((m_flags & 1) && chain != 0 && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0) != 0) {
         (static_cast<CDDrawWorkerHost*>((m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0)))
-            ->Draw(static_cast<CPlaneDrawCtx*>(visitor));
+            ->Draw(visitor);
         POSITION pos = chain->GetHeadPosition();
 
         i32 i = 1;
@@ -827,7 +823,7 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
                     POSITION cur = pos;
                     CGameObject* pl = static_cast<CGameObject*>(chain->GetNext(pos));
                     if (pl->m_sortKey < zBound) { // z-key vs the plane's z bound
-                        pl->Render(static_cast<CDDrawSurfacePair*>(visitor));
+                        pl->Render(visitor);
                     } else {
                         pos = cur;
                         blocked = 1;
@@ -838,14 +834,13 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
                 (i >= 0 && i < m_planes.GetSize()
                      ? static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i])
                      : 0)
-                    ->Draw(static_cast<CPlaneDrawCtx*>(visitor));
+                    ->Draw(visitor);
                 ++i;
             } while (i < m_planes.GetSize());
         }
 
         while (pos != 0) {
-            static_cast<CGameObject*>(chain->GetNext(pos))
-                ->Render(static_cast<CDDrawSurfacePair*>(visitor));
+            static_cast<CGameObject*>(chain->GetNext(pos))->Render(visitor);
         }
         return;
     }
@@ -854,17 +849,15 @@ void CGameLevel::VisitVisible(void* visitor, CDDrawChildGroup* ctx) {
     i32 idx = 0;
     if (m_mainIndex >= 0) {
         do {
-            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[idx]))
-                ->Draw(static_cast<CPlaneDrawCtx*>(visitor));
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[idx]))->Draw(visitor);
             ++idx;
         } while (idx <= m_mainIndex);
     }
-    ctx->WalkDispatch2C(static_cast<CDDrawSurfacePair*>(visitor));
+    ctx->WalkDispatch2C(visitor);
     i32 j = m_mainIndex + 1;
     if (j < m_planes.GetSize()) {
         do {
-            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[j]))
-                ->Draw(static_cast<CPlaneDrawCtx*>(visitor));
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[j]))->Draw(visitor);
             ++j;
         } while (j < m_planes.GetSize());
     }
@@ -893,8 +886,7 @@ void CGameLevel::NotifyAllPlanes() {
 // (jumptable-data-overlap). The tail ResolveLevelName arg list was a real bug - it passed
 // typeId twice, dropping mode; retail pushes mode/typeId/pObj (fixed earlier).
 RVA(0x00160f70, 0xfa)
-i32 CGameLevel::EditDispatch(void* sink, i32 mode, i32 typeId, i32 pObj) {
-    EditSink* s = static_cast<EditSink*>(sink);
+i32 CGameLevel::EditDispatch(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj) {
     if (s == 0) {
         return 0;
     }
@@ -937,8 +929,7 @@ tail:
 }
 
 RVA(0x001610a0, 0x70)
-i32 CGameLevel::SaveName(void* sink) {
-    EditSink* s = static_cast<EditSink*>(sink);
+i32 CGameLevel::SaveName(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }
@@ -951,8 +942,7 @@ i32 CGameLevel::SaveName(void* sink) {
 }
 
 RVA(0x00161110, 0x64)
-i32 CGameLevel::LoadName(void* sink) {
-    EditSink* s = static_cast<EditSink*>(sink);
+i32 CGameLevel::LoadName(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }

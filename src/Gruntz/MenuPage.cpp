@@ -43,9 +43,8 @@ i32 CMenuPage::Configure(
     m_offsetY = 0;
     CObject* slot_ob = 0;
     m_owner->m_imageRegistry->m_10map.Lookup(key, slot_ob);
-    void* slot = static_cast<void*>(slot_ob);
     m_subPage = static_cast<CDDrawWorker*>(slot_ob);
-    return slot != 0;
+    return slot_ob != 0;
 }
 
 RVA(0x001833a0, 0x1a)
@@ -81,9 +80,8 @@ RVA(0x001833f0, 0x38)
 i32 CMenuPage::ResolveSubPage(const char* key) {
     CObject* slot_ob = 0;
     m_owner->m_imageRegistry->m_10map.Lookup(key, slot_ob);
-    void* slot = static_cast<void*>(slot_ob);
     m_subPage = static_cast<CDDrawWorker*>(slot_ob);
-    return slot != 0;
+    return slot_ob != 0;
 }
 
 RVA(0x00183430, 0x24)

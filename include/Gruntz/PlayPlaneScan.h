@@ -6,13 +6,12 @@
 #include <Ints.h>
 #include <rva.h>
 
-extern "C" void PlaneType_Rock();    // 0x40137a
-extern "C" void PlaneType_Covered(); // 0x403d0f
-extern "C" void PlaneQuadA(); // 0x4017e4
-extern "C" void PlaneQuadB(); // 0x40192e
-extern "C" void PlaneQuadC(); // 0x403148
-extern "C" void PlaneQuadD(); // 0x401087
-extern "C" void PlaneQuadE(); // 0x40164f
-extern "C" void PlaneQuadF(); // 0x4019bf (the 4-corner permute type)
+// The plane-type markers this TU compares m_notify against are the REAL
+// GameObjNotifyFn registrants (<Gruntz/GameObjectFactory.h>); the old
+// PlaneType_*/PlaneQuad* `void()` aliases were views of their ILT thunks:
+//   0x40137a CreateGiantRock   0x403d0f CreateCoveredPowerup
+//   0x4017e4 CreateGruntCreationPoint  0x40192e CreateExitTrigger
+//   0x403148 CreateFortressFlag        0x401087 CreateWayPoint
+//   0x40164f CreateGuardPoint          0x4019bf CreateBrickz
 
 #endif // GRUNTZ_PLAYPLANESCAN_H

@@ -58,6 +58,8 @@
 #include <Gruntz/TileTriggerSwitchLogic.h> // canonical CTileTriggerSwitchLogic (rock-break)
 #include <Gruntz/TileGridCommand.h>        // canonical CTileTriggerLogic (rock-break)
 
+#include <Gruntz/GameObjectFactory.h> // CreateInGameIcon/Text - the real notify markers
+
 #include <Gruntz/TriggerMgrViews.h>
 #include <Gruntz/SoundState.h>    // ex Globals.h transitive
 #include <Utils/MapTyped.h>       // typed MFC map lookups (the forced void*& pun at one boundary)
@@ -1107,9 +1109,8 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, i32 kind, i32 moveKind) {
     POSITION pos = fac->m_list.GetHeadPosition();
     while (pos != 0) {
         CGameObject* obj = static_cast<CGameObject*>(fac->m_list.GetNext(pos));
-        void* init = static_cast<void*>(obj->m_7c->m_notify);
-        if (init == static_cast<void*>(&IconClassInitA)
-            || init == static_cast<void*>(&IconClassInitB)) {
+        GameObjNotifyFn init = obj->m_7c->m_notify;
+        if (init == CreateInGameIcon || init == CreateInGameText) {
             i32 ox = obj->m_screenX >> 5;
             i32 oy = obj->m_screenY >> 5;
             if (tx == ox && ty == oy) {
@@ -1673,7 +1674,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             CTileTriggerLogic* lo = root->m_beginMarker->FindInLists12(ty + (tx << 8), 0x1a);
             if (lo != 0) {
                 lo->ApplyMove(type);
-                root->m_beginMarker->DelFromList1(static_cast<void*>(lo));
+                root->m_beginMarker->DelFromList1(lo);
             } else {
                 CDDrawWorkerHost* wg = g_gameReg->m_world->m_level->m_mainPlane;
                 i32 off = wg->m_colOffsets[ty];

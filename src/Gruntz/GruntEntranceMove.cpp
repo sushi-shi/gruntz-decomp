@@ -479,11 +479,10 @@ i32 CGrunt::LoadEntranceConfig() {
         }
 
         CWwdGameObjectA* p = m_38;
-        void* found_ob = 0;
-        void* cached = p->m_1a0.m_14;
-        p->OwnerMgr()->m_animRegistry->m_10.Lookup(s_GRUNTZ_ENTRANCEZ_DROP, found_ob);
-        CAniElement* found = static_cast<CAniElement*>(found_ob);
-        if (static_cast<void*>(found) == cached) {
+        CAniElement* found = 0;
+        CAniElement* cached = p->m_1a0.m_14;
+        MapLookup(p->OwnerMgr()->m_animRegistry->m_10, s_GRUNTZ_ENTRANCEZ_DROP, found);
+        if (found == cached) {
             if (m_tileOwnerHi == g_curPlayer) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x33f, -1, 0, -1, -1);
             }

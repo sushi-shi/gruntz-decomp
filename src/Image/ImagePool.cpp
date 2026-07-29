@@ -121,7 +121,7 @@ RVA(0x00174fe0, 0xfe)
 CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 flag) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
-    if (node->DecodeBmpHeader(static_cast<void*>(hdc), width, height, bitCount, flag) == 0) {
+    if (node->DecodeBmpHeader(hdc, width, height, bitCount, flag) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -147,7 +147,7 @@ RVA(0x001750e0, 0x103)
 CRezImage* CImagePool::AddSurfaceBlit(void* src, i32 width, i32 height, i32 bitCount, i32 flag) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
-    if (node->DecodeBlit(src, static_cast<void*>(hdc), width, height, bitCount, flag) == 0) {
+    if (node->DecodeBlit(src, hdc, width, height, bitCount, flag) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -173,7 +173,7 @@ RVA(0x001751f0, 0xf9)
 CRezImage* CImagePool::AddSurfaceOp(void* buf, i32 kind, i32 ctrl) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
-    if (node->DispatchDecode(buf, kind, static_cast<void*>(hdc), ctrl) == 0) {
+    if (node->DispatchDecode(buf, kind, hdc, ctrl) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -200,7 +200,7 @@ CRezImage* CImagePool::AddSurfaceRez(char* name, i32 ctrl) {
     HDC hdc = GetDC(m_sourceHwnd);
     g_hResModule = m_resourceModuleHandle;
     CRezImage* node = new CRezImage();
-    if (node->LoadFromRez(name, static_cast<void*>(hdc), ctrl) == 0) {
+    if (node->LoadFromRez(name, hdc, ctrl) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -226,7 +226,7 @@ RVA(0x001753f0, 0xf4)
 CRezImage* CImagePool::AddSurfaceConvert(CRezImage* src, void* pal) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
-    if (node->Convert8To16(static_cast<void*>(hdc), src, pal) == 0) {
+    if (node->Convert8To16(hdc, src, pal) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -346,7 +346,7 @@ void CImagePool::B(CRezImage* node, void* paletteNode, i32 b) {
 }
 
 RVA(0x001757c0, 0x16f)
-i32 CRezImage::DecodeBmpHeader(void* dc, i32 width, i32 height, i32 bitcount, i32 ctrl) {
+i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, i32 bitcount, i32 ctrl) {
     m_434 = 0;
     m_width = width;
     m_height = (height < 0) ? -height : height;
@@ -379,11 +379,9 @@ i32 CRezImage::DecodeBmpHeader(void* dc, i32 width, i32 height, i32 bitcount, i3
         for (i32 i = 0; i < 256; i++) {
             *pal++ = static_cast<u16>(i);
         }
-        m_dibSection =
-            CreateDIBSection(static_cast<HDC>(dc), &m_bmi, DIB_PAL_COLORS, &m_pixelsBits, 0, 0);
+        m_dibSection = CreateDIBSection(dc, &m_bmi, DIB_PAL_COLORS, &m_pixelsBits, 0, 0);
     } else {
-        m_dibSection =
-            CreateDIBSection(static_cast<HDC>(dc), &m_bmi, DIB_RGB_COLORS, &m_pixelsBits, 0, 0);
+        m_dibSection = CreateDIBSection(dc, &m_bmi, DIB_RGB_COLORS, &m_pixelsBits, 0, 0);
     }
     if (!m_dibSection) {
         return 0;
@@ -407,7 +405,7 @@ i32 CRezImage::DecodeBmpHeader(void* dc, i32 width, i32 height, i32 bitcount, i3
 // early-out (which restores just esi/ebx); cl pushes all four upfront. Not source-
 // steerable; docs/patterns/shrink-wrapped-callee-save-push.md. Final sweep.
 RVA(0x00175930, 0xc6)
-i32 CRezImage::DecodeBlit(void* src, void* dc, i32 width, i32 height, i32 bitcount, i32 ctrl) {
+i32 CRezImage::DecodeBlit(void* src, HDC dc, i32 width, i32 height, i32 bitcount, i32 ctrl) {
     if (!DecodeBmpHeader(dc, width, height, bitcount, ctrl)) {
         return 0;
     }
@@ -435,7 +433,7 @@ i32 CRezImage::DecodeBlit(void* src, void* dc, i32 width, i32 height, i32 bitcou
 // arg-forward schedule (regalloc). Dispatch + cases logically exact; relocs now align
 // to the real CRezImage decoders.
 RVA(0x00175a00, 0x74)
-i32 CRezImage::DispatchDecode(void* buf, i32 kind, void* dc, i32 ctrl) {
+i32 CRezImage::DispatchDecode(void* buf, i32 kind, HDC dc, i32 ctrl) {
     switch (kind) {
         case 2:
             return DecodePcxData(buf, dc, ctrl);
@@ -450,7 +448,7 @@ i32 CRezImage::DispatchDecode(void* buf, i32 kind, void* dc, i32 ctrl) {
 }
 
 RVA(0x00175a90, 0xee)
-i32 CRezImage::LoadFromRez(char* name, void* dc, i32 ctrl) {
+i32 CRezImage::LoadFromRez(char* name, HDC dc, i32 ctrl) {
     char* ext = strrchr(name, '.');
 
     if (ext && _strcmpi(ext, ".BMP") == 0) {
@@ -474,7 +472,7 @@ i32 CRezImage::LoadFromRez(char* name, void* dc, i32 ctrl) {
 // recompile spills it to the stack and reloads it in the inner loop; that cascades
 // into different register encodings throughout. Conversion logic is byte-faithful.
 RVA(0x00175b80, 0x105)
-i32 CRezImage::Convert8To16(void* dc, CRezImage* src, void* pal) {
+i32 CRezImage::Convert8To16(HDC dc, CRezImage* src, void* pal) {
     if (pal == 0) {
         return 0;
     }
@@ -521,7 +519,7 @@ void CRezImage::Free() {
 }
 
 RVA(0x00175ce0, 0x6b)
-i32 CRezImage::EnsureSize(void* dc, i32 w, i32 h, i32 bitCount, i32 flag) {
+i32 CRezImage::EnsureSize(HDC dc, i32 w, i32 h, i32 bitCount, i32 flag) {
     if (m_dibSection && m_pixels && m_rowOffsets && m_width == w && m_height == h) {
         return 1;
     }
@@ -577,7 +575,7 @@ void CRezImage::Fill(i32 value) {
 // bound recorded in docs/patterns/sib-base-index-follows-local-decl-order.md - with
 // only ONE named local in play (`src`) there is no declaration-order lever.
 RVA(0x00175e00, 0x3d)
-i32 CRezImage::DecodeResData(void* buf, void* dc, i32 ctrl) {
+i32 CRezImage::DecodeResData(void* buf, HDC dc, i32 ctrl) {
     BITMAPINFOHEADER* ih = static_cast<BITMAPINFOHEADER*>(buf);
     i32 width = ih->biWidth;
     i32 height = ih->biHeight;
@@ -599,7 +597,7 @@ i32 CRezImage::DecodeResData(void* buf, void* dc, i32 ctrl) {
 // plane. Returns 1 on a full read, 0 on any I/O / decode failure. The CFile
 // stack object's dtor runs on every exit -> the C++ EH frame.
 RVA(0x00175e40, 0x1b3)
-i32 CRezImage::LoadBmp(char* name, void* dc, i32 ctrl) {
+i32 CRezImage::LoadBmp(char* name, HDC dc, i32 ctrl) {
     CFile file;
     BITMAPFILEHEADER fh;
     BITMAPINFOHEADER ih;
@@ -630,7 +628,7 @@ i32 CRezImage::LoadBmp(char* name, void* dc, i32 ctrl) {
 }
 
 RVA(0x00176000, 0x18f)
-i32 CRezImage::DecodePcxData(void* buf, void* dc, i32 ctrl) {
+i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
     PcxHeader* hdr = static_cast<PcxHeader*>(buf);
     i32 width = hdr->m_xMax - hdr->m_xMin + 1;
     i32 height = hdr->m_yMax - hdr->m_yMin + 1;
@@ -688,7 +686,7 @@ i32 CRezImage::DecodePcxData(void* buf, void* dc, i32 ctrl) {
 }
 
 RVA(0x00176190, 0x126)
-i32 CRezImage::LoadPcx(char* name, void* dc, i32 ctrl) {
+i32 CRezImage::LoadPcx(char* name, HDC dc, i32 ctrl) {
     CFile file;
 
     if (!file.Open(name, 0, 0)) {
@@ -709,7 +707,7 @@ i32 CRezImage::LoadPcx(char* name, void* dc, i32 ctrl) {
 }
 
 RVA(0x001762c0, 0x42)
-i32 CRezImage::DecodeRidData(void* buf, void* dc, i32 ctrl) {
+i32 CRezImage::DecodeRidData(void* buf, HDC dc, i32 ctrl) {
     // .RID shares .PID's 0x20-byte header: width/height at +0x08/+0x0c and the pixel
     // stream immediately after it. The old RID_HEADER_SIZE = 0x20 was just
     // sizeof(PidHeader) spelled again, so it is gone with the offset arithmetic; only
@@ -727,7 +725,7 @@ i32 CRezImage::DecodeRidData(void* buf, void* dc, i32 ctrl) {
 }
 
 RVA(0x00176310, 0x126)
-i32 CRezImage::LoadRid(char* name, void* dc, i32 ctrl) {
+i32 CRezImage::LoadRid(char* name, HDC dc, i32 ctrl) {
     CFile file;
 
     if (!file.Open(name, 0, 0)) {
@@ -750,7 +748,7 @@ i32 CRezImage::LoadRid(char* name, void* dc, i32 ctrl) {
 // @early-stop
 // 72.8% is CODEGEN RESIDUE, NOT A LOGIC BUG - do not go hunting for one. Both
 // grammars were re-derived from the bytes and differentially tested against the
-// 29,798 shipped PID resources (tools/gruntz-oracle): the flag test, the token
+// 29,798 shipped PID resources (tools/gruntz-oracle): the ctrl test, the token
 // grammars, the row-end rule and the fill semantics below all reproduce retail
 // exactly. Two things here look like mistakes and are faithful:
 //
@@ -770,7 +768,7 @@ i32 CRezImage::LoadRid(char* name, void* dc, i32 ctrl) {
 // index in esi/ebp across both arms and re-derives `this` from the frame after
 // each rep-stos, where cl spills them.
 RVA(0x00176440, 0x25d)
-i32 CRezImage::DecodePidData(void* buf, void* dc, i32 ctrl) {
+i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
     PidHeader* hdr = static_cast<PidHeader*>(buf);
     // the pixel stream is the header's trailing member (+0x20). NOT `hdr + 1`: the
     // `u8 pixels[1]` tail pads sizeof(PidHeader) to 0x24, so that spelling skipped
@@ -847,7 +845,7 @@ i32 CRezImage::DecodePidData(void* buf, void* dc, i32 ctrl) {
 }
 
 RVA(0x001766a0, 0x126)
-i32 CRezImage::LoadPid(char* name, void* dc, i32 ctrl) {
+i32 CRezImage::LoadPid(char* name, HDC dc, i32 ctrl) {
     CFile file;
 
     if (!file.Open(name, 0, 0)) {
@@ -868,7 +866,7 @@ i32 CRezImage::LoadPid(char* name, void* dc, i32 ctrl) {
 }
 
 RVA(0x001767d0, 0x64)
-i32 CRezImage::LoadDefault(char* name, void* dc, i32 ctrl) {
+i32 CRezImage::LoadDefault(char* name, HDC dc, i32 ctrl) {
     HINSTANCE hModule = g_hResModule;
     if (!hModule) {
         return 0;

@@ -12,9 +12,10 @@ SIZE_UNKNOWN();
 
 struct CWwdSpatialMgr;
 
-class CDDrawSurfaceMgr; // the +0x0c world/display root (ex the CPlaneMapData view)
-struct CPlaneDrawCtx;   // Draw's render context (its +0x2c is the blit target surface)
-class CDDrawWorker;     // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
+class CDDrawSurfaceMgr;  // the +0x0c world/display root (ex the CPlaneMapData view)
+class CDDrawSurfacePair; // Draw's render target (its inherited +0x2c m_surface is the
+                         // blit dest); every caller threads m_drawTarget->m_backPair in
+class CDDrawWorker;      // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
 class CFileMemBase; // the abstract serialize stream (Read @+0x2c / Write @+0x30)
 
@@ -95,7 +96,7 @@ public:
     // TUs referenced it, which one obj cannot reproduce - so the definition stays in
     // LevelPlane.cpp and Read transcribes the inlined body.
     void SetTileSizeFromImageSet(CDDrawWorker* set); // 0x161fa0
-    void Draw(CPlaneDrawCtx* ctx);                   // 0x162010 the tile-grid render (ex "Sync")
+    void Draw(CDDrawSurfacePair* ctx);               // 0x162010 the tile-grid render (ex "Sync")
     i32 Prune();                                     // 0x1628d0 forward the grid's Prune
     i32 CenterScrollA();                             // 0x163300 (ex "QueryA")
     i32 CenterScrollB();                             // 0x163370 (ex "QueryB")

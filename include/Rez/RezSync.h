@@ -14,7 +14,6 @@ extern i32 g_dlgVal_64555c, g_dlgVal_645560, g_dlgVal_645564, g_dlgVal_645568;
 // RezAlloc(0x28) (its exact size), then ->Init(CGruntzMgr*), then RezFree on the
 // failure path. Typed, so the `(CGruntSpawnConfig*)` cast at the Init call is gone.
 extern "C" char* StrUpr(char*); // 0x18d330
-extern "C" void cb_403193();
 // The bute parse-error sink handed to CButeMgr::SetErrCallback. Its ARITY is proven
 // from the body the 0x1bc2 ILT thunk jumps to (RVA 0x119320, 0x15 B):
 //   mov ecx,[0x64556c]; test ecx,ecx; je ret; mov eax,[esp+4]; push eax; call <sink>

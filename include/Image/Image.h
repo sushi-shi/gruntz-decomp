@@ -48,15 +48,15 @@ public:
         m_paletteNode = 0;
     }
 
-    i32 LoadFromRez(char* name, void* dc, i32 ctrl);
+    i32 LoadFromRez(char* name, HDC dc, i32 ctrl);
 
     // The five per-extension loaders (bodies in Image.cpp). All __thiscall,
     // ret 0xc, taking the same (name, dc, ctrl) triple.
-    i32 LoadBmp(char* name, void* dc, i32 ctrl);
-    i32 LoadPcx(char* name, void* dc, i32 ctrl);
-    i32 LoadRid(char* name, void* dc, i32 ctrl);
-    i32 LoadPid(char* name, void* dc, i32 ctrl);
-    i32 LoadDefault(char* name, void* dc, i32 ctrl);
+    i32 LoadBmp(char* name, HDC dc, i32 ctrl);
+    i32 LoadPcx(char* name, HDC dc, i32 ctrl);
+    i32 LoadRid(char* name, HDC dc, i32 ctrl);
+    i32 LoadPid(char* name, HDC dc, i32 ctrl);
+    i32 LoadDefault(char* name, HDC dc, i32 ctrl);
 
     // Per-format decode helpers (bodies in Image.cpp). All __thiscall on CRezImage,
     // invoked by the loaders above with the decoded header fields / raw file
@@ -65,17 +65,17 @@ public:
     // BITMAPINFOHEADER at this+0, CreateDIBSections the plane (HBITMAP @+0x428,
     // bits @+0x42c) and operator-new's the per-row offset table @+0x430. The
     // Pcx/Rid/Pid/Res decoders call it, then blit the decoded pixels.
-    i32 DecodeBmpHeader(void* dc, i32 width, i32 height, i32 bitcount, i32 ctrl);
-    i32 DecodePcxData(void* buf, void* dc, i32 ctrl);
-    i32 DecodeRidData(void* buf, void* dc, i32 ctrl);
-    i32 DecodePidData(void* buf, void* dc, i32 ctrl);
-    i32 DecodeResData(void* buf, void* dc, i32 ctrl);
+    i32 DecodeBmpHeader(HDC dc, i32 width, i32 height, i32 bitcount, i32 ctrl);
+    i32 DecodePcxData(void* buf, HDC dc, i32 ctrl);
+    i32 DecodeRidData(void* buf, HDC dc, i32 ctrl);
+    i32 DecodePidData(void* buf, HDC dc, i32 ctrl);
+    i32 DecodeResData(void* buf, HDC dc, i32 ctrl);
 
     // The shared plane blitter (FUN_00575930): a __thiscall CRezImage method that
     // (re)allocates/decodes via DecodeBmpHeader then copies `src` into the plane
     // (flat rep-movs when m_rowPad==0, else row-by-row through m_rowOffsets).
     // External/no-body so its call reloc-masks. ret 0x18 = 6 stack args.
-    i32 DecodeBlit(void* src, void* dc, i32 width, i32 height, i32 bitcount, i32 ctrl);
+    i32 DecodeBlit(void* src, HDC dc, i32 width, i32 height, i32 bitcount, i32 ctrl);
 
     // The rest of the DIB-surface class (bodies in CScanlineSurface.cpp /
     // CScanlineSurfaceSave.cpp / ImagePool.cpp) - formerly the fragmented views
@@ -87,12 +87,12 @@ public:
     // via DecodeBmpHeader (the "Create" entry @0x1757c0); Free (0x175c90, == the pool's
     // node Cleanup) releases the DIB object + the operator-new'd row table; SetPalette
     // (0x176ad0) latches the associated palette node; SaveBmp writes the 8bpp plane out.
-    i32 DispatchDecode(void* buf, i32 kind, void* dc, i32 ctrl);    // 0x175a00
-    i32 Convert8To16(void* dc, CRezImage* src, void* pal);          // 0x175b80
-    i32 EnsureSize(void* dc, i32 w, i32 h, i32 bitCount, i32 flag); // 0x175ce0
-    void Fill(i32 value);                                           // 0x175d50
-    void Free();                                                    // 0x175c90 (pool: Cleanup)
-    void SetPalette(void* paletteNode, i32 scalar);                 // 0x176ad0
+    i32 DispatchDecode(void* buf, i32 kind, HDC dc, i32 ctrl);    // 0x175a00
+    i32 Convert8To16(HDC dc, CRezImage* src, void* pal);          // 0x175b80
+    i32 EnsureSize(HDC dc, i32 w, i32 h, i32 bitCount, i32 flag); // 0x175ce0
+    void Fill(i32 value);                                         // 0x175d50
+    void Free();                                                  // 0x175c90 (pool: Cleanup)
+    void SetPalette(void* paletteNode, i32 scalar);               // 0x176ad0
     i32 Save(const char* filename, void* paletteObj);    // 0x176b00 (8bpp-only dispatch to SaveBmp)
     i32 SaveBmp(const char* filename, void* paletteObj); // 0x176b30
     void FillRect(CRezFillRect* r, i32 color);           // 0x176d20 (8bpp scanline rect fill)

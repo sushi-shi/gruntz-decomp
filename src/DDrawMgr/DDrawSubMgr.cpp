@@ -32,6 +32,7 @@
 #include <Wap32/Object.h>
 #include <rva.h>
 #include <Gruntz/StateId.h>  // StateId (GetStateId return type)
+#include <Utils/MapTyped.h>  // typed MFC map walks (the void*& pun at one seam)
 #include <Gruntz/Loadable.h> // CLoadable - the 9-slot loadable base (3-arg ctor def below)
 #include <Mfc.h>             // real MFC CMapStringToPtr / CString / POSITION
 #include <Bute/SymParser.h>  // CSymParser::GetRoot (ProbeWorkerKey's probe chain)
@@ -989,10 +990,10 @@ LeafCue* CDDrawSubMgrLeafScan::GetFirstValue() {
     if (pos == 0) {
         return 0;
     }
-    void* val = 0;
+    LeafCue* val = 0;
     CString key;
-    m_10.GetNextAssoc(pos, key, val);
-    return static_cast<LeafCue*>(val);
+    MapGetNext(m_10, pos, key, val);
+    return val;
 }
 
 RVA(0x001582c0, 0xf6)
@@ -1007,17 +1008,17 @@ LeafCue* CDDrawSubMgrLeafScan::NextValueAfter(LeafCue* target) {
     if (pos == 0) {
         return 0;
     }
-    void* val = 0;
+    LeafCue* val = 0;
     CString key;
     while (pos != 0) {
-        m_10.GetNextAssoc(pos, key, val);
-        if (val == static_cast<void*>(target)) {
+        MapGetNext(m_10, pos, key, val);
+        if (val == target) {
             if (pos == 0) {
                 return 0;
             }
             val = 0;
-            m_10.GetNextAssoc(pos, key, val);
-            return static_cast<LeafCue*>(val);
+            MapGetNext(m_10, pos, key, val);
+            return val;
         }
     }
     return 0;
@@ -1086,11 +1087,11 @@ CString CDDrawSubMgrLeafScan::FindKeyOfValue(LeafCue* target) {
     if (target == 0) {
         return key;
     }
-    void* val = 0;
+    LeafCue* val = 0;
     POSITION pos = m_10.GetStartPosition();
     while (pos != 0) {
-        m_10.GetNextAssoc(pos, key, val);
-        if (val == static_cast<void*>(target)) {
+        MapGetNext(m_10, pos, key, val);
+        if (val == target) {
             return key;
         }
     }

@@ -306,11 +306,10 @@ i32 CGrunt::LoadVehicleGruntSprites(i32 kind) {
     }
 #undef REGION_INIT
 
-    (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
-        ->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, 0);
+    g_gameReg->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, 0);
 
-    i32 code = (((static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
-                     ->m_tileGrid->m_rowBytes[m_lastTilePxY >> 5]))[(m_lastTilePxX >> 5) * 7 + 4];
+    i32 code =
+        (g_gameReg->m_tileGrid->m_rowBytes[m_lastTilePxY >> 5])[(m_lastTilePxX >> 5) * 7 + 4];
     if (code == 0x41 || code == 0x42) {
         if (m_object->m_screenX == m_lastTilePxX && m_object->m_screenY == m_lastTilePxY) {
             // retail pushes (this, x, y) - ret 0xc.

@@ -1,4 +1,4 @@
-#include <Gruntz/PlayStateActivate.h> // this TU's external declarations
+#include <Gruntz/PlayStateActivate.h>     // this TU's external declarations
 #include <DDrawMgr/DDrawWorkerRegistry.h> // m_imageRegistry (full def)
 #include <Gruntz/GameRegMfcPtr.h>         // g_gameReg at its REAL type (CGruntzMgr)
 #include <Mfc.h>                          // ShowCursor (afx-first)
@@ -63,10 +63,7 @@ i32 CPlay::InputVirtual() {
     if (m_region1Gate != 0) {
         NotifyVisibleEntities(); // CPlay @0xd9050
     } else {
-        m_world->m_level->VisitVisible(
-            static_cast<void*>(m_world->m_drawTarget->m_backPair),
-            m_world->m_childGroup
-        );
+        m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
         m_world->m_workerList->PruneWorkers(
             m_world->m_drawTarget->m_backPair,
             m_world->m_drawTarget->m_overlayPair

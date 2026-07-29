@@ -3,6 +3,7 @@
 #include <DDrawMgr/PixelShift.h> // g_rUp/g_gUp/g_bUp/g_rDown/g_gDown/g_bDown
 
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>     // SurfaceRestoreFn + SetSurfaceRestoreHandler's decl
 #include <DDrawMgr/DDrawPtrCollections.h> // the pool half of this obj's manager (+ CPoolItem*)
 #include <Image/Image.h>                  // CFileImageSurface (the a58 pool item's dtor pair)
 #include <ddraw.h> // real DirectDraw SDK (IDirectDraw/2, DirectDrawCreate, DirectDrawEnumerateA, DDCAPS, IID_IDirectDraw2)
@@ -1114,7 +1115,7 @@ i32 CDDrawPtrCollections::GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp) {
 }
 
 RVA(0x001437e0, 0xa)
-void RelayHwnd(i32 (*handler)()) {
+void SetSurfaceRestoreHandler(SurfaceRestoreFn handler) {
     g_restoreHandler = handler;
 }
 

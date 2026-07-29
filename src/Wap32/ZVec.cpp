@@ -19,14 +19,14 @@ char* _zdvec::IndexToPtr(i32 i) {
     } else {
         char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetRetAddr();
-        m_errSink->Set(static_cast<void*>(this), msg, 0xc);
+        m_errSink->Set(this, msg, 0xc);
         r = m_spare;
     }
     char* slot = m_alloc;
     i32 n = m_grown;
     while (n-- != 0) {
         if (slot) {
-            new (static_cast<void*>(slot)) CString();
+            new (slot) CString();
         }
         slot += 4;
     }
@@ -53,7 +53,7 @@ char* _zvec::IndexToPtr(i32 idx) {
     } else {
         char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetRetAddr();
-        m_errSink->Set(static_cast<void*>(this), msg, 0xc);
+        m_errSink->Set(this, msg, 0xc);
         r = m_spare;
     }
     return r;

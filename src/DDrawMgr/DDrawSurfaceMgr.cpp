@@ -64,8 +64,8 @@ CDDrawSurfaceMgr::~CDDrawSurfaceMgr() {
 // allocate-then-construct ladder is one EH state machine; that falls out of the
 // `new` expressions, it is not hand-written.
 RVA(0x00155900, 0x519)
-i32 CDDrawSurfaceMgr::Init(void* hWnd, i32 w, i32 h, i32 bpp, i32 flags) {
-    m_hWnd = static_cast<HWND>(hWnd);
+i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, i32 bpp, i32 flags) {
+    m_hWnd = hWnd;
     m_flags = flags;
 
     m_drawTarget = new CDDrawSubMgrPages(this);
@@ -239,8 +239,8 @@ fail:
 }
 
 RVA(0x00155f50, 0x10)
-void CDDrawSurfaceMgr::SetHwnd(void* hWnd) {
-    RelayHwnd(static_cast<i32(__cdecl*)()>(hWnd));
+void CDDrawSurfaceMgr::SetRestoreHandler(SurfaceRestoreFn handler) {
+    SetSurfaceRestoreHandler(handler);
 }
 
 RVA(0x00155f60, 0x56)
@@ -290,9 +290,19 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
     return 1;
 }
 
+// @early-stop
+// big-SEH wall, same family as RestoreChildren below (docs/patterns/big-seh-fuzzy-desync.md
+// + gx-state-machine-scalar-delete-cleanup.md). 2026-07-29 the ARGUMENT BUG under it was
+// fixed - the guard/SetName argument is arg #2, the path, not the callback laundered
+// fn-ptr-through-void*-through-const char* (retail `mov esi,[esp+0x16c]`; our base read
+// [esp+0x164]) - and `this` now colours to ebp like retail (74.58 -> 76.27). What is left
+// is the /GX state machine: retail hoists the CFileMem vptr into edi and writes the
+// trylevel as a BYTE (`mov byte ptr [esp+0x164],1`) where cl re-materialises the vptr per
+// reject and writes dword states, so the long fail ladder desyncs. Not source-steerable;
+// final sweep with the serializer leaf-first redo.
 RVA(0x00156020, 0x505)
-i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* arg1, char* name, i32 arg3) {
-    if (cb == 0) {
+i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, i32 arg3) {
+    if (path == 0) {
         return 0;
     }
     m_callback = cb;
@@ -300,7 +310,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* arg1, char* name, i
     CFileMem S;
     S.Reset();
 
-    if (S.SetName(static_cast<const char*>(static_cast<void*>(cb)), 0, 0) == 0) {
+    if (S.SetName(path, 0, 0) == 0) {
         return 0;
     }
     if (S.Open() == 0) {
@@ -334,7 +344,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* arg1, char* name, i
     if (m_childGroup->ForEachDispatch(&S, 3, arg3) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch(static_cast<void*>(&S), 3, 0, 0) == 0) {
+    if (m_level->EditDispatch(&S, 3, 0, 0) == 0) {
         return 0;
     }
     if (m_callback && cb(this, &S, 4, 0, 0) == 0) {
@@ -343,7 +353,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* arg1, char* name, i
     if (m_childGroup->ForEachSerialize(&S, arg3) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch(static_cast<void*>(&S), 4, 0, 0) == 0) {
+    if (m_level->EditDispatch(&S, 4, 0, 0) == 0) {
         return 0;
     }
     if (m_callback && cb(this, &S, 5, 0, 0) == 0) {
@@ -352,7 +362,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* arg1, char* name, i
     if (m_childGroup->ForEachDispatch(&S, 5, arg3) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch(static_cast<void*>(&S), 5, 0, 0) == 0) {
+    if (m_level->EditDispatch(&S, 5, 0, 0) == 0) {
         return 0;
     }
 
@@ -421,7 +431,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_childGroup->ForEachDispatch(&S, 6, arg3) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch(static_cast<void*>(&S), 6, 0, 0) == 0) {
+    if (m_level->EditDispatch(&S, 6, 0, 0) == 0) {
         return 0;
     }
     if (m_callback == 0 || m_callback(this, &S, 7, arg3, headerArg) == 0) {
@@ -430,7 +440,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_childGroup->Deserialize(&S, header.m_childCount, arg3) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch(static_cast<void*>(&S), 7, 0, 0) == 0) {
+    if (m_level->EditDispatch(&S, 7, 0, 0) == 0) {
         return 0;
     }
     if (m_callback == 0 || m_callback(this, &S, 8, arg3, headerArg) == 0) {
@@ -439,7 +449,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     if (m_childGroup->ForEachDispatch(&S, 8, arg3) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch(static_cast<void*>(&S), 8, 0, 0) == 0) {
+    if (m_level->EditDispatch(&S, 8, 0, 0) == 0) {
         return 0;
     }
 

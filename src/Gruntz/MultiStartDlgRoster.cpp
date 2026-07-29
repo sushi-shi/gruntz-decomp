@@ -934,8 +934,7 @@ void CMultiStartDlg::OnOK() {
     if (g_multiState->Poll(token) == 0) {
         g_multiState->m_530 = 0;
         EnableWindow(0);
-        (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
-            ->EnterModalUI("Unable to verify custom level with other players");
+        g_gameReg->EnterModalUI("Unable to verify custom level with other players");
         EnableWindow(1);
     } else if (g_multiState->m_levelVerifyResult == 0) {
         g_multiState->m_530 = 1;
@@ -943,8 +942,7 @@ void CMultiStartDlg::OnOK() {
     } else {
         g_multiState->m_530 = 0;
         EnableWindow(0);
-        (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
-            ->EnterModalUI("Not all players have the (same) custom level.");
+        g_gameReg->EnterModalUI("Not all players have the (same) custom level.");
         EnableWindow(1);
     }
 }

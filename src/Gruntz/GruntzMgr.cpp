@@ -1125,7 +1125,7 @@ void CGruntzMgr::PushState(CState* s) {
         return;
     }
     CPtrArray* st = &m_stateStack;
-    st->SetAtGrow(st->GetSize(), static_cast<void*>(s));
+    st->SetAtGrow(st->GetSize(), s);
 }
 
 RVA(0x000909e0, 0x46)
@@ -1700,7 +1700,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         return 0;
     }
 
-    m_world->SetHwnd(static_cast<void*>(PumpIdleFrame));
+    m_world->SetRestoreHandler(&PumpIdleFrame);
     CGameLevel* view = m_world->m_level;
     view->m_maxStepX = 0xe;
     view->m_maxStepY = 0xe;
@@ -3002,7 +3002,7 @@ i32 CGruntzMgr::SyncOptionsState() {
 RVA(0x000855e0, 0x448)
 void CGruntzMgr::Close() {
     if (m_world) {
-        m_world->SetHwnd(0);
+        m_world->SetRestoreHandler(0);
     }
     FreeFontsMemory(); // 0x1158f0 (retail Close's second call; ex 'OpenSettingsStore')
     if (m_settings) {

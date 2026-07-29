@@ -568,8 +568,9 @@ SIZE_UNKNOWN();
 
 i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 anchorIndex);
 
-extern "C" void IconClassInitB(); // 0x402bad
-extern "C" void IconClassInitA(); // 0x40288d
+// (the icon/text placed-object markers are the REAL GameObjNotifyFn registrants
+//  CreateInGameIcon @0x40288d / CreateInGameText @0x402bad - see
+//  <Gruntz/GameObjectFactory.h>; the IconClassInitA/B `void()` aliases are gone)
 
 extern i32 g_groupSentinel;
 

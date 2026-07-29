@@ -51,7 +51,7 @@ static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
     } else {
         char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetRetAddr();
-        v->m_errSink->Set(static_cast<void*>(v), msg, 0xc);
+        v->m_errSink->Set(v, msg, 0xc);
         r = v->Scratch();
     }
     CString* slot = v->Slots();

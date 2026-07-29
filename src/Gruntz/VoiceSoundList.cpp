@@ -49,9 +49,8 @@ CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
                     static_cast<LPCTSTR>(sub)
                 );
             }
-            void* res = static_cast<void*>(
-                m_owner->m_symParser->ResolveQualified(static_cast<LPCTSTR>(name), REZ_TAG_WAV)
-            );
+            CParseSource* res =
+                m_owner->m_symParser->ResolveQualified(static_cast<LPCTSTR>(name), REZ_TAG_WAV);
             if (res != 0) {
                 // retail copy-ctors `name` straight into the by-value arg slot
                 // (push 0; push ecx; mov ecx,esp; copy-ctor) - no local temp.

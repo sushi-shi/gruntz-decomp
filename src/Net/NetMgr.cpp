@@ -59,7 +59,7 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
     // interface - it is the pre-QI object, which is exactly what m_releaseIface is
     // declared as. QueryInterface is slot 0 of both, so the ex-reinterpret was
     // pointless: call it on the pointer at its own type.
-    hr = m_releaseIface->QueryInterface(static_cast<void*>(&g_netDirectPlayRiid), &m_directPlay);
+    hr = m_releaseIface->QueryInterface(&g_netDirectPlayRiid, &m_directPlay);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x50, hr, 0);
         Destroy();
@@ -86,41 +86,46 @@ i32 CNetMgr::InitFromProvider(InterfaceObject* a, GUID appGuid) {
 // (NetMgr.cpp line 0x78 / 0x81) and tears the manager down (Destroy), returning
 // 0. On success it records the four caller setup dwords into the m_4 sub-object
 // (+0x4..+0x10) and zeroes the three list-box selection latch/id pairs, then 1.
-// @early-stop
-// regalloc/spill wall (~80%): the Open(slot 3) + QueryInterface(slot 0, riid
-// 0x5f0588) sequence, both ReportError+Destroy failure paths and the +0x4..+0x10
-// store + selection-latch zeroing are all reproduced, but retail pins this->esi,
-// the COM iface arg->edi and the 0 constant->ebx (callee-saved across the two COM
-// calls) where cl spills the iface to a stack slot and reloads it; the register
-// assignment is not steerable from C source. Final sweep.
+//
+// EXACT 2026-07-29. The long-standing "regalloc/spill wall (~80%)" was THREE source
+// bugs, none of them regalloc: (1) g_netDirectPlayRiid was declared `void*` and
+// passed BY VALUE, so cl emitted `mov ecx,[riid]; push ecx` where retail has
+// `push offset riid` - it is the 16-byte IID itself; (2) QueryInterface was
+// dispatched on the LOBBY, where retail reloads Open's out-slot and dispatches on
+// the OPENED interface; (3) the app GUID was copied word-by-word, which gives
+// this-relative displacements instead of retail's held `lea eax,[esi+4]` base.
 RVA(0x00178170, 0xba)
 i32 CNetMgr::Init(void* a, NetGuid appGuid) {
-    IDirectPlay4Z* iface = static_cast<IDirectPlay4Z*>(a);
-    void* out = a;
-    i32 hr = iface->Open(0, &out, 0);
+    IDirectPlay4Z* lobby = static_cast<IDirectPlay4Z*>(a);
+    // Open's 2nd arg is an OUT slot retail zeroes before the call (`mov [esp+0x18],edi`)
+    // and reloads afterwards to dispatch QueryInterface on - the opened interface, NOT
+    // the lobby the call was made through.
+    IDirectPlay4Z* opened = 0;
+    i32 hr = lobby->Open(0, &opened, 0);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x78, hr, 0);
         Destroy();
         return 0;
     }
-    hr = iface->QueryInterface(g_netDirectPlayRiid, &m_directPlay);
+    hr = opened->QueryInterface(&g_netDirectPlayRiid, &m_directPlay);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x81, hr, 0);
         Destroy();
         return 0;
     }
 
+    // A whole 16-byte GUID assignment, exactly like InitFromProvider's (which is
+    // EXACT): that is what makes cl hold the destination in `lea eax,[esi+4]` and
+    // schedule the four dword load/stores through it, interleaved with the
+    // selection-latch zeroing. Spelling the four words out gives this-relative
+    // displacements instead.
     m_groupSelId = 0;
     m_playerSelId = 0;
     m_sessionSelId = 0;
-    // the app GUID's four dwords, threaded through the selection-latch store block
-    m_appGuid.m_words[0] = appGuid.m_words[0];
+    m_appGuid.m_guid = appGuid.m_guid;
     m_groupSel = 0;
     m_playerSel = 0;
-    m_appGuid.m_words[1] = appGuid.m_words[1];
     m_sessionSel = 0;
-    m_appGuid.m_words[2] = appGuid.m_words[2];
-    m_appGuid.m_words[3] = appGuid.m_words[3];
     return 1;
 }
 
@@ -150,7 +155,7 @@ i32 CNetMgr::EnumServiceProviders(i32 validated) {
     ClearGroupList();
 
     g_spEnumValidated = validated;
-    i32 hr = DirectPlayEnumerate(static_cast<void*>(&EnumProviderCb), this);
+    i32 hr = DirectPlayEnumerate(&EnumProviderCb, this);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0xda, hr, 0);
         return hr;
@@ -159,15 +164,16 @@ i32 CNetMgr::EnumServiceProviders(i32 validated) {
 }
 
 RVA(0x001782d0, 0x86)
-static i32 __stdcall EnumProviderCb(void* guid, char* name, u32 major, u32 minor, void* context) {
-    CNetMgr* self = static_cast<CNetMgr*>(context);
+static i32 __stdcall
+EnumProviderCb(void* lpGuid, char* lpName, u32 dwMajor, u32 dwMinor, void* lpContext) {
+    CNetMgr* self = static_cast<CNetMgr*>(lpContext);
     if (self == 0) {
         return 0;
     }
 
     if (g_spEnumValidated == 0) {
         void* dp = 0;
-        i32 hr = DirectPlayCreate(guid, &dp, 0);
+        i32 hr = DirectPlayCreate(lpGuid, &dp, 0);
         if (hr != 0) {
             CNetMgr::ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0xfe, hr, 0);
             return 1;
@@ -178,7 +184,7 @@ static i32 __stdcall EnumProviderCb(void* guid, char* name, u32 major, u32 minor
         (static_cast<INetReleasable*>(dp))->Release();
     }
 
-    return self->AddGroupNode(guid, name) != 0;
+    return self->AddGroupNode(lpGuid, lpName) != 0;
 }
 
 inline void* operator new(u32, void* p) {
@@ -326,7 +332,7 @@ i32 CNetMgr::EnumPlayersInto(void* a, void* b) {
     desc.m_guidApplication = m_appGuid.m_guid;
 
     IDirectPlay4Z* com = m_directPlay;
-    i32 hr = com->EnumPlayers(&desc, a, static_cast<void*>(&NetEnumPlayerCb), this, b);
+    i32 hr = com->EnumPlayers(&desc, a, &NetEnumPlayerCb, this, b);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x1c9, hr, 0);
         return hr;
@@ -536,7 +542,7 @@ i32 CNetMgr::EnumGroupsAll() {
     ClearSessionList();
 
     IDirectPlay4Z* iface = m_directPlay;
-    i32 hr = iface->EnumGroupsCb(0, static_cast<void*>(&NetEnumCb), this, 0);
+    i32 hr = iface->EnumGroupsCb(0, &NetEnumCb, this, 0);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x30a, hr, 0);
         return hr;
@@ -558,7 +564,7 @@ i32 CNetMgr::EnumGroupsRange(void* rec, i32 flags) {
     GUID desc = (static_cast<CNetPlayerListNode*>(rec))->m_desc.m_guidInstance;
 
     IDirectPlay4Z* iface = m_directPlay;
-    i32 hr = iface->EnumGroupsCb(&desc, static_cast<void*>(&NetEnumCb), this, flags);
+    i32 hr = iface->EnumGroupsCb(&desc, &NetEnumCb, this, flags);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x327, hr, 0);
         return hr;

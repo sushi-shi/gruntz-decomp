@@ -1839,8 +1839,7 @@ i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
         g_connectRptMgr->m_levelVerifyResult = 0;
         if (g_connectRptMgr->Poll(token) == 0) {
             m_530 = 0;
-            (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
-                ->EnterModalUI("Unable to verify custom level with other players");
+            g_gameReg->EnterModalUI("Unable to verify custom level with other players");
             goto notVerified;
         }
         // Success-first: retail's `je` sends the mismatch report away and falls
@@ -1848,8 +1847,7 @@ i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
         if (g_connectRptMgr->m_levelVerifyResult != 0) {
             return 1;
         }
-        (static_cast<CGruntzMgr*>(static_cast<void*>(g_gameReg)))
-            ->EnterModalUI("Not all players have the (same) custom level.");
+        g_gameReg->EnterModalUI("Not all players have the (same) custom level.");
         m_530 = 0;
         goto notVerified;
     }
@@ -2039,7 +2037,7 @@ i32 CMulti::PollSession() {
         // lpidFrom is `&sender` - THAT is why retail keeps sender in a stack slot
         // ([esp+0x14], the `lea edx,[esp+0x24]` pushed 5th). Passing `&size` twice
         // dropped the out-param entirely.
-        i32 hr = dp->Receive(&sender, &idTo, 1, static_cast<void*>(g_recvBuffer), &size);
+        i32 hr = dp->Receive(&sender, &idTo, 1, g_recvBuffer, &size);
         // SIBLING guards, not nested: retail re-tests hr AFTER the report
         // (`test edi,edi; jne <end>`); nesting the break folds the report block
         // out of line into the exit.

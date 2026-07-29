@@ -9,6 +9,9 @@
 #include <Mfc.h> // CObArray (afxcoll)
 #include <Gruntz/Loadable.h>
 
+class CFileMemBase;      // the serialize stream EditDispatch/SaveName/LoadName run on
+class CDDrawSurfacePair; // the render visitor threaded through VisitVisible/SyncTo*
+
 // The tile collision-kind codes CTileImageSet::GetCollisionAt returns (and the
 // movement/scroll steppers compare against). Consolidated here from the former
 // per-TU #define copies in GameLevel.cpp / GameLevelMove.cpp. Values only ever live
@@ -176,9 +179,9 @@ public:
     // Build(&rect) on every plane; returns 1. (ret 8)
     i32 SetExtentsAndBuildAll(i32 w, i32 h);
     // Sync(visitor) across planes [0 .. m_mainIndex]. (ret 4)
-    void SyncToMainIndex(void* visitor);
+    void SyncToMainIndex(CDDrawSurfacePair* visitor);
     // Sync(visitor) across planes [m_mainIndex+1 .. size). (ret 4)
-    void SyncAfterMainIndex(void* visitor);
+    void SyncAfterMainIndex(CDDrawSurfacePair* visitor);
 
     // The movement-mode switch driver: when this level's m_08 & 4 it tails into
     // ApplyMove on `target`; otherwise runs `target`'s m_moveMode switch (kinds
@@ -242,23 +245,23 @@ public:
     // bound) interleaved with the plane Syncs; otherwise Sync every plane around
     // the main index and dispatch ctx's Hook. `visitor` is the render-visitor arg
     // every dispatch receives; `ctx` is the world object chain.
-    void VisitVisible(void* visitor, CDDrawChildGroup* ctx);
+    void VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx);
 
-    // String/state edit dispatch: `mode` selects a level-name get/set on `sink` (a
-    // serializer, the GameLevel.cpp-local EditSink view) - SERIAL_SAVE writes the name,
-    // SERIAL_LOAD reads it - then forwards (mode, typeId, pObj) to a level-resolve helper. `sink` is a generic void* here (see
-    // the fwd-decl note above) and cast to EditSink in the definition.
-    i32 EditDispatch(void* sink, i32 mode, i32 typeId, i32 pObj);
+    // String/state edit dispatch: arg1 selects a level-name get/set on `sink`, then
+    // forwards (arg2, arg2, arg3) to a level-resolve helper. `sink` is the real
+    // serialize stream: CDDrawSurfaceMgr's six call sites all pass the address of a
+    // stack CFileMem (a CFileMemBase), so the void* + EditSink typedef were two names
+    // for one class.
+    i32 EditDispatch(CFileMemBase* sink, i32 mode, i32 typeId, i32 pObj);
 
     // SaveName/LoadName (0x1610a0 / 0x161110, __thiscall ret 0x4): serialize just
     // this level's name (m_levelName@+0x6c) as a fixed 0x80-byte blob through the
     // EditSink stream - the standalone counterparts to EditDispatch cases 4 & 7.
     // Dead code in retail (no rel32 callers / no vtable slot); attributed to
     // CGameLevel by their COMDAT placement amid the CGameLevel cluster plus the
-    // +0x6c name field. `sink` is void* here (EditSink is the GameLevel.cpp-local
-    // serializer view), cast to EditSink in the definition.
-    i32 SaveName(void* sink);
-    i32 LoadName(void* sink);
+    // +0x6c name field.
+    i32 SaveName(CFileMemBase* sink);
+    i32 LoadName(CFileMemBase* sink);
 
     // MoveKindDispatch12 (@0x1671c0, __thiscall this=level): the per-axis move
     // resolver ApplyMove fans modes 1..2 into. For each axis, when the object's
@@ -414,7 +417,6 @@ i32 __stdcall ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c);
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
-// (EditSink is GameLevel.cpp's CFileMemBase typedef; spell the underlying type here)
 
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
