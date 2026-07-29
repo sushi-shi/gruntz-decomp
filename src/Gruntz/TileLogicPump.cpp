@@ -475,13 +475,16 @@ CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
     m_38->m_flags |= 1;
     m_38->m_stateFlags |= 1;
-    // the shifted coords go through LOCALS - retail reuses them for m_id (`shl eax,8;
-    // add eax,edx`); re-reading m_164/m_168 back out of the object costs two loads.
-    i32 tileX = m_object->m_screenX >> 5;
-    i32 tileY = m_object->m_screenY >> 5;
-    m_object->m_164 = tileX;
-    m_object->m_168 = tileY;
-    m_object->m_id = (tileX << 8) + tileY;
+    // the coord seed runs off ONE bound object pointer: that (and only that, out of ~30
+    // tail spellings) reproduces retail's callee-saved triple for the three m_38 RMWs
+    // above (ecx/ebp/edi with the late `pop edi`) and its tileY-in-edx tail. The shifted
+    // coords go through LOCALS - retail reuses them for m_id (`shl eax,8; add eax,edx`).
+    CWwdGameObjectA* o = m_object;
+    i32 tileX = o->m_screenX >> 5;
+    i32 tileY = o->m_screenY >> 5;
+    o->m_164 = tileX;
+    o->m_168 = tileY;
+    o->m_id = (tileX << 8) + tileY;
 }
 
 RVA(0x0010e4a0, 0x102)
@@ -525,10 +528,11 @@ void CTileTrigger::RegisterActs() {
 // the standard CUserLogic(obj) init plus the Brickz tail (cache the anim-set node off the "A"
 // bute key, raise the logic/collision flag bits, seed the tile-coordinate fields).
 // @early-stop
-// EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): the body is
-// byte-identical (the CUserLogic init, the "A" anim-set cache, the two separate m_38->m_08
-// RMW + the m_38->m_40 bit, the m_164/m_168/m_04 tile-coord seed); the residue is this ctor's
-// own __ehfuncinfo + a 1-slot pop-edi scheduling delta in the tail. Not source-steerable; ~88%.
+// regalloc: the three m_38 read-modify-writes land in a rotated callee-saved triple
+// (retail ecx/ebp/edi with a late `pop edi`, cl edi/edx/ecx with an early one), which
+// then flips tileY between edx and ecx in the coord tail. ~30 tail spellings measured;
+// only an `o = m_object` local reproduces retail's triple, and that elides the two
+// +0x10 reloads retail keeps. Identical body to CTileTrigger @0x10e220.
 RVA(0x0010e800, 0x17d)
 CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -536,13 +540,16 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 2;
     m_38->m_flags |= 1;
     m_38->m_stateFlags |= 1;
-    // the shifted coords go through LOCALS - retail reuses them for m_id (`shl eax,8;
-    // add eax,edx`); re-reading m_164/m_168 back out of the object costs two loads.
-    i32 tileX = m_object->m_screenX >> 5;
-    i32 tileY = m_object->m_screenY >> 5;
-    m_object->m_164 = tileX;
-    m_object->m_168 = tileY;
-    m_object->m_id = (tileX << 8) + tileY;
+    // the coord seed runs off ONE bound object pointer: that (and only that, out of ~30
+    // tail spellings) reproduces retail's callee-saved triple for the three m_38 RMWs
+    // above (ecx/ebp/edi with the late `pop edi`) and its tileY-in-edx tail. The shifted
+    // coords go through LOCALS - retail reuses them for m_id (`shl eax,8; add eax,edx`).
+    CWwdGameObjectA* o = m_object;
+    i32 tileX = o->m_screenX >> 5;
+    i32 tileY = o->m_screenY >> 5;
+    o->m_164 = tileX;
+    o->m_168 = tileY;
+    o->m_id = (tileX << 8) + tileY;
 }
 
 // RE-ATTRIBUTED (the ex @identity-TODO shift-by-one, executed): this cluster
@@ -610,16 +617,28 @@ i32 CTileTrigger::AdvanceAnim() {
     return 0;
 }
 
+// @early-stop
+// 94.23 -> 99.87. Three real corrections: the first-empty scan is a flag-terminated
+// `while` (not `for`+`break`), its NON-empty arm owns the fallthrough, and the z-key
+// block runs off one bound object pointer. The last 3 rows are the two-member
+// commutative add - cl canonicalises `A + B` to load the LOWER member offset into the
+// accumulator (proven with a standalone cl A/B over 9 spellings; only an intervening
+// aliasing STORE defeats it), and retail's is the other way round. Same wall as
+// ProbeColumn/ProbeFeetKind/ProbeHeadSoft/HoldMove/SumWeighted.
 RVA(0x0010ee20, 0x27d)
 CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("A");
     m_38->m_flags |= 2;
     m_38->m_flags |= 1;
-    i32 zk = m_object->m_layer->m_anchorY + m_object->m_screenY + 0x186a0;
-    if (m_object->m_sortKey != zk) {
-        m_object->m_sortKey = zk;
-        m_object->m_flags |= 0x20000;
+    // the z-key block runs off ONE bound object pointer (retail keeps it in eax across
+    // the compare, the store and the flag RMW); re-reading m_object per statement made
+    // cl reload +0x10 for the flag and pick the memory-form `or [eax+8],imm`.
+    CWwdGameObjectA* o = m_object;
+    i32 zk = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
+    if (o->m_sortKey != zk) {
+        o->m_sortKey = zk;
+        o->m_flags |= 0x20000;
     }
     memset(m_state, 0, sizeof(m_state));
     if (m_object->m_extent.left == 0x80000000) {
@@ -649,9 +668,19 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWap
     m_state[12] = m_object->m_clip.left;
     m_state[13] = m_object->m_clip.top;
     m_state[14] = m_object->m_clip.right;
-    for (m_firstEmpty = 0; m_firstEmpty < 15; m_firstEmpty++) {
-        if (m_state[m_firstEmpty] == 0) {
-            break;
+    // the scan is a flag-terminated `while`, not a `for`+`break`: retail tests the
+    // bound at the TOP (`jge` out) and the flag on the BACK EDGE (`cmp ecx,0 / je top`),
+    // which is what cl emits for `while (found == 0 && i < 15)` once it proves found==0
+    // on entry. The `for`/`break` spelling folded both tests into the bottom.
+    i32 found = 0;
+    m_firstEmpty = 0;
+    while (found == 0 && m_firstEmpty < 15) {
+        // the NON-empty arm owns the fallthrough (retail `je <found> / inc`), so the
+        // test is spelled `!= 0`, not `== 0` with an else.
+        if (m_state[m_firstEmpty] != 0) {
+            m_firstEmpty++;
+        } else {
+            found = 1;
         }
     }
 }

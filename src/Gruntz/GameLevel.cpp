@@ -614,19 +614,16 @@ void CGameLevel::BuildAllPlanes(LevelCoordRect* coords) {
 
 // ---------------------------------------------------------------------------
 // SetExtentsAndBuildAll: when both w and h are positive, build the half-open box
-// {0, 0, w-1, h-1} into BOTH m_planeCtx and a local LevelCoordRect, then drive
-// Build(&local) on every plane. Returns 1 (0 if either extent is non-positive).
+// {0, 0, w-1, h-1} into a local LevelCoordRect, PUBLISH it into m_planeCtx with a
+// whole-struct assignment, then drive Build(&local) on every plane. Returns 1
+// (0 if either extent is non-positive).
 //
-// @early-stop
-// regalloc/zero-pin wall (~70%): logic + offsets + CFG + the Build dispatch are
-// exact. Residue is the prologue register allocation - retail loads w(arg0) into
-// edx as the very first insn and `test edx,edx`/`test edi,edi` the guards, pins
-// &m_planeCtx in a 4th saved reg (ebx) and keeps w-1/h-1 live in the guard regs
-// for the interleaved member+local stores; our cl uses 3 saved regs, derives the
-// guard zero via `xor;cmp` (zero-register-pinning) and writes m_planeCtx directly
-// through [esi+0x10+N]. docs/patterns/zero-register-pinning.md +
-// pin-local-for-callee-saved-reg.md. Not steerable on a function this small;
-// deferred to the final sweep.
+// The struct assignment is what the old "zero-pin regalloc wall" note was really
+// looking at: `m_planeCtx = rect` is why retail dedicates a 4th callee-saved reg
+// to `lea ebx,[esi+0x10]` (the copy destination) and why the zero appears TWICE
+// (`xor eax,eax` for the local's stores, `xor ecx,ecx` for the copy) instead of
+// being pinned once. Spelling the eight fields as interleaved member+local stores
+// could not produce either. Now EXACT.
 RVA(0x0015d700, 0x81)
 i32 CGameLevel::SetExtentsAndBuildAll(i32 w, i32 h) {
     if (w <= 0) {
@@ -638,14 +635,11 @@ i32 CGameLevel::SetExtentsAndBuildAll(i32 w, i32 h) {
     i32 maxX = w - 1;
     i32 maxY = h - 1;
     LevelCoordRect rect;
-    m_planeCtx.left = 0;
     rect.left = 0;
-    rect.bottom = maxY;
-    m_planeCtx.top = 0;
     rect.top = 0;
     rect.right = maxX;
-    m_planeCtx.right = maxX;
-    m_planeCtx.bottom = maxY;
+    rect.bottom = maxY;
+    m_planeCtx = rect;
     i32 i = 0;
     if (m_planes.GetSize() > 0) {
         do {
@@ -1051,11 +1045,14 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
 // Both arms then converge on ONE bracket-commit block (0x15e58f) that re-tests
 // the cached moveFlags 0x10 bit, which is why `mid` is a separate local (the sibling
 // MoveHandlerB already spelled it that way).
-// Residual (base still 3 rets): cl tail-DUPLICATES the small commit block into all
-// three predecessors instead of keeping the one `goto commit` target, because the two
-// arms' `if (moveFlags&0x10) coord = mid; m_moveMode = 6;` tails come out with a different
-// instruction ORDER (the coord reload lands before vs after the store) and so fail its
-// identical-suffix merge. Not steerable from here. topic:tail-merge.
+// 71.47 -> 76.85: the two arms now `goto` ONE shared bracket block (retail 0x15e283),
+// carrying `mid` and the CACHED arg3 0x10 bit in function-scope locals - retail spills
+// that bit to [esp+0x1c] and re-tests it at the shared block, which is only expressible
+// with one `bracket` local, not two per-arm `if (a3 & 0x10)` copies.
+// @early-stop
+// residual: base 2 rets vs retail 1 (cl still inlines the commit into the bracket path)
+// and a whole-function esi<->edi role swap for this-vs-t. Block-order variants
+// (rebracket before the held tail, an explicit `goto commit`) are byte-identical.
 RVA(0x0015e130, 0x1bb)
 i32 CGameLevel::MoveHandlerA(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 result = 0;
@@ -1070,39 +1067,35 @@ i32 CGameLevel::MoveHandlerA(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
         destY = AdvanceA(t, destX, destY, moveFlags);
     }
 
+    i32 mid;
+    i32 bracket;
     if (moveFlags & 1) {
         i32 limit = t->m_extent.top + destY - 1;
         if (AxisProbe(destX, limit) == kTileHard) {
-            i32 mid = destX;
-            if (moveFlags & 0x10) {
+            mid = destX;
+            bracket = moveFlags & 0x10;
+            if (bracket != 0) {
                 i32 lo = destX;
                 i32 hi = destX;
                 if (ClampSpan(destX, limit, &lo, &hi) != 0) {
                     mid = (hi + lo) / 2;
                 }
             }
-            if (moveFlags & 0x10) {
-                destX = mid;
-            }
-            t->m_moveMode = 6;
-            goto commit;
+            goto rebracket;
         }
     } else if (moveFlags & 2) {
         i32 limit = t->m_extent.bottom + destY + 2;
         if (AxisProbe(destX, limit) == kTileHard) {
-            i32 mid = destX;
-            if (moveFlags & 0x10) {
+            mid = destX;
+            bracket = moveFlags & 0x10;
+            if (bracket != 0) {
                 i32 lo = destX;
                 i32 hi = destX;
                 if (ClampSpan(destX, limit, &lo, &hi) != 0) {
                     mid = (hi + lo) / 2;
                 }
             }
-            if (moveFlags & 0x10) {
-                destX = mid;
-            }
-            t->m_moveMode = 6;
-            goto commit;
+            goto rebracket;
         }
     }
 
@@ -1113,6 +1106,13 @@ i32 CGameLevel::MoveHandlerA(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
     } else {
         destY = FreeMove(t, destX, destY, moveFlags);
     }
+    goto commit;
+
+rebracket:
+    if (bracket != 0) {
+        destX = mid;
+    }
+    t->m_moveMode = 6;
 
 commit:
     t->m_screenX = destX;
@@ -1153,20 +1153,25 @@ i32 CGameLevel::MoveHandlerC(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
         destY = AdvanceB(t, destX, destY, moveFlags);
     }
 
+    // same shape as the MoveHandlerA sibling: ONE `mid` local + the cached arg3 0x10
+    // bit, so the bracket commit is a single block instead of two arms each with their
+    // own `m_moveMode = 6` (80.25 -> 81.78).
     if (moveFlags & 1) {
         i32 limit = t->m_extent.top + destY - 1;
-        i32 saved = destX;
         if (AxisProbe(destX, limit) == kTileHard) {
-            if (moveFlags & 0x10) {
-                i32 lo = saved;
-                i32 hi = saved;
-                if (ClampSpan(saved, limit, &lo, &hi) != 0) {
-                    destX = (hi + lo) / 2;
+            i32 mid = destX;
+            i32 bracket = moveFlags & 0x10;
+            if (bracket != 0) {
+                i32 lo = destX;
+                i32 hi = destX;
+                if (ClampSpan(destX, limit, &lo, &hi) != 0) {
+                    mid = (hi + lo) / 2;
                 }
-                t->m_moveMode = 6;
-            } else {
-                t->m_moveMode = 6;
             }
+            if (bracket != 0) {
+                destX = mid;
+            }
+            t->m_moveMode = 6;
         }
     }
 
@@ -1424,10 +1429,13 @@ i32 CGameLevel::FreeMove(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
 // down through AxisProbe gates; a clear low/high pair commits brush kind 1 and the
 // adjusted cursor. Returns the resolved cursor.
 //
+// The walk-off path returns destY (retail `mov eax,[esp+0x30]`), not moveFlags - same correction
+// as the AdvanceA sibling.
 // @early-stop
-// register-scheduling wall (large /O2 body): two inlined PROBE_TILE copies + two
-// AxisProbe gate loops + the strided walk pin the saved regs in an order MSVC
-// reproduces only for one spill order; logic + offsets + CFG exact. Deferred.
+// tail-merge wall: retail keeps THREE exits, cl folds two into one because both inner
+// loops' returns are the same value - `(y+1) - bottom - 1` and `y - bottom` - and cl
+// reassociates the first into the second. Four spellings of the `(y+1) - bottom - 1`
+// expression (a `row` local, explicit parens, `bottom + 1`, a split statement) all fold.
 RVA(0x0015ede0, 0x2a7)
 i32 CGameLevel::AdvanceB(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 lo = t->m_extent.left + destX;
@@ -1482,7 +1490,9 @@ i32 CGameLevel::AdvanceB(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
         } while (cur <= mid);
     }
 
-    return moveFlags;
+    // the walk-off path returns the INCOMING axis-2 cursor (destY), not moveFlags: retail's tail
+    // is `mov eax,[esp+0x30]` = destY's home. Same correction as the AdvanceA sibling.
+    return destY;
 }
 
 // ---------------------------------------------------------------------------
@@ -1490,10 +1500,13 @@ i32 CGameLevel::AdvanceB(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
 // strided walk; a hit gates an AxisProbe sweep up the +0x138 column, and on the
 // AxisProbe miss commits brush kind 4 and returns the adjusted cursor.
 //
+// 97.25 -> 97.40: the miss path returns destY, not moveFlags (see the tail). That was the
+// missing 5th local - retail's `sub esp,0x14`; with moveFlags returned, destY was dead after
+// `ceil` and cl reused destY's parameter home for it, coming out 4 bytes short.
 // @early-stop
-// register-scheduling wall: inlined PROBE_TILE + the AxisProbe gate loop pin the
-// saved regs in an order MSVC reproduces only for one spill order; logic + offsets +
-// CFG exact. Deferred to the final sweep.
+// residual: 4 rows in the hit-path epilogue - retail loads `t` into eax and subtracts
+// in place (`sub esi,ecx / mov eax,esi`), cl loads it into ecx and moves the cursor to
+// eax first. Four spellings of `y - t->m_extent.top` are byte-identical.
 RVA(0x0015f1c0, 0x171)
 i32 CGameLevel::AdvanceA(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 startCol = t->m_extent.left + destX;
@@ -1529,7 +1542,11 @@ i32 CGameLevel::AdvanceA(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
         } while (cur <= mid);
     }
 
-    return moveFlags;
+    // the miss path returns the INCOMING axis-2 cursor (destY), not moveFlags: retail's tail is
+    // `mov eax,[esp+0x30]` = destY's home, and moveFlags is never read at all. Returning moveFlags also
+    // cost the 5th local - with destY dead after `ceil`, cl reused destY's parameter home for
+    // `ceil` and the frame came out 4 bytes short of retail's `sub esp,0x14`.
+    return destY;
 }
 
 // ---------------------------------------------------------------------------

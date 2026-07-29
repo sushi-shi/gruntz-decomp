@@ -47,9 +47,10 @@ struct CParseSource {
     // `dst` (returned). Same +0x10 owner deref as CurrentScopeName above, so the
     // receiver is this class, not a separate scope-chain holder.
     char* CurrentScopePath(char* dst, i32 size);
-    // Parse-slot init (0x1396f0): stamp the embedded hash-node (m_node1c), null the
-    // bookkeeping fields, self-link m_selfLink. Returns this. (CSymParser::PopParseSlot.)
-    CParseSource* Init();
+    // The default ctor (0x1396f0): stamp the embedded hash-node (m_node1c), null the
+    // bookkeeping fields, self-link m_record. CSymParser::PopParseSlot builds its slot
+    // block with `new CParseSource[n]`, which is what emits it as the vector-ctor loop.
+    CParseSource();
     // The leaf-record fill/teardown pair (0x139710/0x1397a0, bodies in SymTab.cpp with
     // the rest of this class's band; the ex-CSymLeafBuilder methods).
     void Build(
