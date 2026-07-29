@@ -1309,9 +1309,13 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
                 h->m_10.Lookup("GAME_STATZTABTOGGLE", spr_ob);
                 LeafCue* spr = static_cast<LeafCue*>(spr_ob);
                 if (spr) {
-                    if (g_sndEnabled != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
+                    // the cue globals are read TOGETHER above the gate: retail loads
+                    // g_sndEnabled into ecx and g_sndCueTag into edx before the test.
+                    i32 gate = g_sndEnabled;
+                    i32 item = g_sndCueTag;
+                    if (gate != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
                         spr->m_14 = g_killCueClock;
-                        spr->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                        spr->m_10->ConfigureItem(item, 0, 0, 0);
                     }
                 }
             }
@@ -1329,17 +1333,16 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
 // the cooking-progress frame index from the elapsed clock / GruntOvenDelay, caps
 // at 0x1a (completion - flips m_state to 2 and runs the COOKINGCOMPLETE advance), and
 // pushes the new frame into the widget when it changes (the +0x30 virtual).
+// The old note claimed "no spelling of `d >= 0` can ask for the long form". REFUTED
+// (2026-07-29, 79.9 -> 99.8): spell the clamp on `< 0` instead. `(d < 0) ? 0 : (i32)d`
+// makes cl re-compare the hi word against the pinned zero (`cmp hi,ebx / jg / jl /
+// cmp lo,ebx / jae`) and branch-select, and it drops the hi spill slot too (frame 0xc,
+// not 0x10). The other half was the cue-global pair: read g_sndEnabled/g_sndCueTag
+// TOGETHER above the gate (retail loads both into ecx/edx before the test).
 // @early-stop
-// ~79.9%: logic + every store/offset/advance-tail is byte-faithful. Residual is the
-// 64-bit signed-clamp `elapsed = (d>=0)?(i32)d:0` codegen, and the MECHANISM is now
-// pinned (jcc_sieve OTHER `js->jg`, `jg->jl`): retail keeps the constant 0 PINNED IN EBX
-// (docs/patterns/zero-register-pinning.md - it is used all over this function), so the
-// clamp becomes a register compare `cmp hi,ebx / jg / jl / cmp lo,ebx / jae` plus a
-// branch-select. Comparing against the LITERAL 0, as C `d >= 0` does, lets cl take the
-// sbb sign-flag shortcut (`js`) and fuse lo straight into esi. The shortcut is correct
-// and unconditionally cheaper, so no spelling of `d >= 0` can ask for the long form -
-// only pinning 0 in a register would, and that is the allocator's call, not the source's.
-// Wall; deferred to the final sweep.
+// ~99.8%: the sole residual is the ecx/eax/edx naming of the
+// `g_gameReg->m_world->m_soundRegistry` chain temp (retail chains in eax off an edx
+// global temp; cl uses three registers). Five receiver spellings measured identical.
 RVA(0x00105310, 0x11a)
 void CStatusBarMgr::UpdateGruntOvenStatusBar() {
     // The 5 grunt-oven cooking tabs ARE this class's own +0x220 slot records
@@ -1354,7 +1357,10 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
         if (tab->m_state == 1) {
             i64 d = static_cast<i64>(static_cast<u32>(g_frameTime))
                     - *reinterpret_cast<i64*>(&tab->m_8);
-            i32 elapsed = (d >= 0) ? static_cast<i32>(d) : 0;
+            // the clamp is spelled on `< 0`, not `>= 0`: that is what makes cl
+            // re-compare the hi word (`cmp ecx,0; jg/jl; cmp lo,0; jae`) instead of
+            // reading the sbb sign, and keeps the hi in a register (frame 0xc).
+            i32 elapsed = (d < 0) ? 0 : static_cast<i32>(d);
             u32 delay = g_buteMgr.GetDwordDef("StatusBar", "GruntOvenDelay", 0xc8);
             i32 frame = static_cast<i32>((static_cast<u32>(elapsed) / delay)) + 1;
             if (frame >= 0x1a) {
@@ -1366,9 +1372,13 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
                     h->m_10.Lookup("GAME_COOKINGCOMPLETE", spr_ob);
                     LeafCue* spr = static_cast<LeafCue*>(spr_ob);
                     if (spr) {
-                        if (g_sndEnabled != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
+                        // the cue globals are read TOGETHER above the gate: retail loads
+                        // g_sndEnabled into ecx and g_sndCueTag into edx before the test.
+                        i32 gate = g_sndEnabled;
+                        i32 item = g_sndCueTag;
+                        if (gate != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
                             spr->m_14 = g_killCueClock;
-                            spr->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                            spr->m_10->ConfigureItem(item, 0, 0, 0);
                         }
                     }
                 }
@@ -1432,9 +1442,13 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
                         h->m_10.Lookup("GAME_REZGRINDING", spr_ob);
                         LeafCue* spr = static_cast<LeafCue*>(spr_ob);
                         if (spr) {
-                            if (g_sndEnabled != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
+                            // the cue globals are read TOGETHER above the gate: retail loads
+                            // g_sndEnabled into ecx and g_sndCueTag into edx before the test.
+                            i32 gate = g_sndEnabled;
+                            i32 item = g_sndCueTag;
+                            if (gate != 0 && g_killCueClock - spr->m_14 >= spr->m_18) {
                                 spr->m_14 = g_killCueClock;
-                                spr->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                                spr->m_10->ConfigureItem(item, 0, 0, 0);
                             }
                         }
                     }
@@ -1481,31 +1495,42 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
 // (a per-phase pixel offset off the tab base m_3c->m_10/m_14), the euclidean
 // distance to the source (srcX/srcY), and the per-axis fly velocity scaled by
 // FlyTime, then runs the GAME_WARPSTONEFLY status-bar advance. __thiscall ret 0x10.
-// @early-stop
-// ~81.2%: logic + the sqrt/fly-velocity FP block + the advance-tail are byte-faithful.
-// Residuals are two regalloc/scheduling coin-flips: (1) the prologue orders the
-// `mov [esp+X],0` stack-init vs the `lea ecx,[esp+X]` differently, and (2) the frame
-// lookup `(spr && n in range) ? spr->m_frames[n] : 0` keeps the loaded pointer in a
-// temp (eax) and branch-selects into edi in retail, where this toolchain fuses the
-// load directly into edi (`mov edi,[ecx+4*edi]`). Same select-register-fusion family
-// as the 64-bit clamp; not source-steerable; deferred to the final sweep.
+// The retail frame settles four things the ex-reconstruction had wrong:
+//   * the ARG ORDER is (owner, srcX, srcY, phase) - the switch and the frame index
+//     read arg4 (entry+0x10); the two subtractions read arg2/arg3;
+//   * the sprite map is the world's +0x10 IMAGE registry's m_10map (`mov ecx,[world+
+//     0x10]; add ecx,0x10` + the CMapStringToOb Lookup 0x1b8008), not the +0x28 sound
+//     registry's m_10 (that one is only the GAME_WARPSTONEFLY cue below, 0x1b8438);
+//   * `fdivr st,st(1)` is dist/flyTime, not flyTime/dist - and the two direction
+//     divisions take dxv and dyv (arg-home slots entry+0x10 / entry-0x14), not dist2;
+//   * the seeded current position is the SOURCE point (`fild srcY; fild srcX` off the
+//     untouched arg homes), not the deltas.
+// ...and the no-sprite path returns 0 (retail falls into the shared epilogue with eax
+// still holding the null frame), not 1.  81.2 -> 91.3.
 // 0x109bd0 IS CWarpStoneFly::Init - CStatusBarMgr::EnsureSub news a CWarpStoneFly and
 // calls o->Init(this,a,b,c) on it (the void* owner is the CStatusBarMgr back-ptr).
 // Typed against the canonical <Gruntz/WarpStoneFly.h> layout.
+// @early-stop
+// ~91.3%: the residual is frame packing - retail spills dxv into the DEAD arg4 (phase)
+// home so its locals fit `sub esp,0x14`, where cl allocates a fresh slot (0x18); every
+// esp displacement below shifts with it. Same "which local gets the dead parameter
+// home" allocator choice as CStatusBarMgr::Serialize.
 RVA(0x00109bd0, 0x1b5)
-i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
+i32 CWarpStoneFly::Init(void* owner, i32 srcX, i32 srcY, i32 phase) {
     m_owner = static_cast<CStatusBarMgr*>(owner);
 
-    void* spr_ob = 0;
+    CObject* spr_ob = 0;
     i32 n = phase + 1;
-    g_gameReg->m_world->m_soundRegistry->m_10.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", spr_ob);
+    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", spr_ob);
     CDDrawWorker* spr = static_cast<CDDrawWorker*>(spr_ob);
     CImage* frame = (spr && n >= spr->m_minIndex && n <= spr->m_maxIndex)
                         ? static_cast<CImage*>(spr->m_items.GetAt(n))
                         : 0;
     m_sprite = frame;
     if (frame == 0) {
-        return 1;
+        // retail falls into the shared epilogue with eax still holding the null
+        // frame - the no-sprite path returns 0, not 1.
+        return 0;
     }
 
     m_arrivalMode = phase;
@@ -1541,9 +1566,9 @@ i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
     double dist = sqrt(static_cast<double>(dist2));
     u32 flyTime = g_buteMgr.GetDwordDef("WarpStone", "FlyTime", 0x5dc);
 
-    m_velocityScale = static_cast<double>(flyTime) / dist;
-    m_xDirection = static_cast<double>(dist2) / dist;
-    m_yDirection = static_cast<double>(dxv) / dist;
+    m_velocityScale = dist / static_cast<double>(flyTime);
+    m_xDirection = static_cast<double>(dxv) / dist;
+    m_yDirection = static_cast<double>(dyv) / dist;
 
     CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
     if (h->m_emitGate == 0) {
@@ -1551,15 +1576,19 @@ i32 CWarpStoneFly::Init(void* owner, i32 phase, i32 srcX, i32 srcY) {
         h->m_10.Lookup("GAME_WARPSTONEFLY", fly_ob);
         LeafCue* fly = static_cast<LeafCue*>(fly_ob);
         if (fly) {
-            if (g_sndEnabled != 0 && g_killCueClock - fly->m_14 >= fly->m_18) {
+            // the cue globals are read TOGETHER above the gate: retail loads
+            // g_sndEnabled into ecx and g_sndCueTag into edx before the test.
+            i32 gate = g_sndEnabled;
+            i32 item = g_sndCueTag;
+            if (gate != 0 && g_killCueClock - fly->m_14 >= fly->m_18) {
                 fly->m_14 = g_killCueClock;
-                fly->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                fly->m_10->ConfigureItem(item, 0, 0, 0);
             }
         }
     }
 
-    m_currentX = static_cast<double>(dxv);
-    m_currentY = static_cast<double>(dyv);
+    m_currentX = static_cast<double>(srcX);
+    m_currentY = static_cast<double>(srcY);
     return 1;
 }
 
@@ -1883,12 +1912,15 @@ void CStatusBarMgr::ExitMode() {
 // Tear down the widgets owned by the active tab: notify+RemoveAll the active-tab
 // list, then (switch on the tab index) zero the per-tab field group. Bails when no
 // tab is active or the tab index is out of [1,5].
+// The per-case zeroing was NOT byte-identical: retail emits `rep stosd` for the
+// 15-element m_statObj group (case 2) and the 12-element m_hlNotify group (case 5) -
+// those are memsets, not unrolled per-element loops - and walks a base pointer for the
+// case-4 / case-5 pointer runs (`lea ecx,[this+0x204]` + [ecx+0..0x10]).
 // @early-stop
-// ~67%: instruction selection + scheduling are byte-identical (the list walk, the
-// RemoveAll, the jump-table dispatch, every per-case field zero), but MSVC pins
-// `this` in ebx and the zero constant in ebp (5 callee-saved pushes) where the
-// recompile uses esi/ebx (4 pushes) - a regalloc register-naming coin-flip not
-// steerable from C. Documented regalloc wall; deferred to the final sweep.
+// ~69%: objdiff cannot see the fix. cl /Gy emits each jump-table arm as its own COMDAT
+// label ($L....), so the base symbol for this function ENDS at `jmp [eax*4]` and only
+// the head is scored (the delinker jump-table dup-symbol undercount). The head's own
+// residual is the `this`/zero register naming (retail ebx/ebp, cl esi/ebx).
 RVA(0x00100b00, 0x139)
 void CStatusBarMgr::ClearTabGroup() {
     if (m_activeTab == 0) {
@@ -1913,12 +1945,11 @@ void CStatusBarMgr::ClearTabGroup() {
             m_tabSprite10 = 0;
             m_modeNotify = 0;
             break;
-        case 2: {
-            for (i32 i = 0; i < 15; i++) {
-                m_statObj[i] = 0;
-            }
+        case 2:
+            // retail: `mov ecx,0xf; xor eax,eax; lea edi,[this+0x18c]; rep stosd` -
+            // a memset, not an unrolled per-element loop.
+            memset(m_statObj, 0, sizeof(m_statObj));
             break;
-        }
         case 3: {
             CSBI_WarlordHead** p = m_warlordHead;
             p[0] = 0;
@@ -1928,23 +1959,27 @@ void CStatusBarMgr::ClearTabGroup() {
             break;
         }
         case 4: {
-            m_slotNotify[0] = 0;
-            m_slotNotify[1] = 0;
-            m_slotNotify[2] = 0;
-            m_slotNotify[3] = 0;
-            m_slotNotify[4] = 0;
+            // retail walks a base pointer (`lea ecx,[this+0x204]` + [ecx+0..0x10]),
+            // then the two trailing fields off `this` - same shape as case 3.
+            CSBI_ImageSet** q = m_slotNotify;
+            q[0] = 0;
+            q[1] = 0;
+            q[2] = 0;
+            q[3] = 0;
+            q[4] = 0;
             m_gaugeNotify = 0;
             m_gaugeSink = 0;
             break;
         }
         case 5: {
-            m_groupNotify[0] = 0;
-            m_groupNotify[1] = 0;
-            m_groupNotify[2] = 0;
+            // `lea eax,[this+0x308]` + [eax+0/4/8]: a base-pointer walk
+            CSBI_ImageSet** g = m_groupNotify;
+            g[0] = 0;
+            g[1] = 0;
+            g[2] = 0;
             m_machineDisplay = 0;
-            for (i32 i = 0; i < 12; i++) {
-                m_hlNotify[i] = 0;
-            }
+            // retail: `mov ecx,0xc; lea edi,[this+0x498]; rep stosd`
+            memset(m_hlNotify, 0, sizeof(m_hlNotify));
             m_notify0 = 0;
             m_notify2 = 0;
             m_notify3 = 0;

@@ -98,12 +98,12 @@ i32 GetResolutionCode() {
 // to its handler and IDOK/IDCANCEL commit + close (re-seeding the saved resolution);
 // WM_HSCROLL drives the resolution slider.
 //
-// @early-stop
-// 99.09%: the full dialog logic + every handler dispatch is byte-exact. Residual is
-// pure codegen shaping: (1) the IDOK resolution-store register allocation (retail
-// caches g_gameReg once and puts w/h in ecx/edx; cl reloads it and uses eax/ecx),
-// (2) IsInPlayState's inline-vs-call bool normalization (GruntzMgr.h defines it inline,
-// so cl folds a neg/sbb/neg where retail keeps the call's raw bool test). Item (3), the
+// Items (1) and (2) of the old note are GONE with the 0x36be0 phantom (2026-07-29,
+// 99.09 -> 100.00 EXACT): the IDCANCEL arm's `call 0x3f26` is a BARE call with no
+// receiver, and 0x36be0 opens `mov ecx,[g_gameReg]` without ever reading an incoming
+// ecx - it is a free, argument-less ApplyGameOptions(), not a CPlay __thiscall method.
+// Modelling it as a method emitted an 8-byte receiver load here that retail does not
+// have. Item (3), the
 // outer msg-switch default placement, is FIXED (2026-07-27, 96.05 -> 97.64): base 12
 // rets / retail 10; making the WM_COMMAND arm's trailing unrouted-notification exit a
 // `break` instead of `return FALSE` merges it with the switch default, which parks that
@@ -142,7 +142,7 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     if (g_gameReg->m_curState->Update() == GAMESTATE_NONE) {
                         (static_cast<CMulti*>(g_gameReg->m_curState))->SendChannelStat423();
                     }
-                    static_cast<CPlay*>(g_gameReg->m_curState)->ApplyGameOptions();
+                    ApplyGameOptions();
                     EndDialog(hDlg, 0);
                     return TRUE;
                 case 1: { // IDOK: commit
@@ -373,7 +373,7 @@ void ReadMenuOptionsDialog(HWND hDlg) {
 // pointer (retail pins it in ecx, our cl picks eax) which cascades into the temp
 // regs + the top videomode/lock-load schedule. See docs/patterns/zero-register-pinning.md.
 RVA(0x00036be0, 0xd3)
-void CPlay::ApplyGameOptions() {
+void ApplyGameOptions() {
     if (g_gameReg == 0) {
         return;
     }

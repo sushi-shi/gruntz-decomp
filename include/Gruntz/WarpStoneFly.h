@@ -15,7 +15,9 @@ public:
     // 0x109bd0 (body in SBI_RectOnly.cpp, its own RVA band): record the owner, resolve
     // the warp-tab fly frame + per-phase screen target, seed the fly velocity. Ex the
     // EngineLabelBacklog::UpdateWarpStoneStatusBar placeholder def (was CSbiMode54c::Init).
-    i32 Init(void* owner, i32 phase, i32 srcX, i32 srcY);
+    // ARG ORDER from the retail frame: the switch/frame index reads arg4 (entry+0x10),
+    // the two subtractions read arg2/arg3 - so it is (owner, srcX, srcY, phase).
+    i32 Init(void* owner, i32 srcX, i32 srcY, i32 phase);
     i32 Tick(i32 dt); // 0x10a0f0  integrate toward target, snap, notify on arrival
     i32 Draw();       // 0x10a2f0  blit the sprite at the rounded position
     // The fly's own serialize pass, dispatched from CStatusBarMgr::Sync.

@@ -29,8 +29,12 @@ void OnToggleCk5Option(HWND hDlg);                                 // 0x036df0 (
 void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, i32 nSel); // 0x036f30
 void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32 code, i32 pos); // 0x0370a0
 void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos);               // 0x037260
-void DialogInit(HWND hDlg);                                                // 0x037870
-void SaveVideoCheckboxes(HWND hDlg);                                       // 0x0378c0
+// 0x036be0: NOT a CPlay method - retail's IDCANCEL arm is a bare `call 0x3f26`
+// with no receiver, and the body opens `mov ecx,[g_gameReg]` (it never reads an
+// incoming ecx). A free, argument-less helper.
+void ApplyGameOptions();
+void DialogInit(HWND hDlg);          // 0x037870
+void SaveVideoCheckboxes(HWND hDlg); // 0x0378c0
 
 // The master game-options dialog proc (CGruntzMgr::HandleCommand's CONFIG_SETTINGS
 // modal pushes its ILT thunk 0x3ae4, which jmps here).

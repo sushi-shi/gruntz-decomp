@@ -163,11 +163,18 @@ i32 CMenuState::Vslot06() {
 // "\SCREENZ\<name>" fade page off m_2c (with the screen-type tag), then run the page
 // worker's fade (mode 2 when `e`, else 1); on `e` retry once with mode 1. ret 1 on a
 // started fade, else 0.
+// (The resolver callee is the REAL CSymTab::ResolveQualified @0x13be40 - the
+// ex-CAttractScreenObj::ResolveScreen "0x120120" was a misread; that rva is _strchr.)
+// The ex "frame-reservation wall" note was three source bugs, not a wall (75.37 ->
+// 99.88): the buffer is 0x40 (retail's `sub esp,0x40` reserves exactly it), the mode
+// argument is a BRANCHED select not `e ? 2 : 1` (which folds to xor/setne/inc), and the
+// three success paths share ONE bottom `return 1` epilogue instead of inlining two.
 // @early-stop
-// frame-reservation wall (~74%): logic + offsets byte-exact; retail reserves an 0x40
-// frame (0xc outgoing-arg scratch below the 0x34 buf) where our cl reserves only the
-// 0x34 buf. (The resolver callee is the REAL CSymTab::ResolveQualified @0x13be40 now -
-// the ex-CAttractScreenObj::ResolveScreen "0x120120" was a misread; that rva is _strchr.)
+// 99.88%: ONE modrm byte left - the second LoadPageImage's receiver chain takes edx in
+// retail (`mov edx,[esi+0xc]`) where cl reuses the dead `this` register esi. Seven
+// receiver spellings measured (menuRoot()/m_world/this->m_world/locals/&&-chain/a
+// re-assigned mode local); menuRoot() is the unique spelling that gets the FIRST call's
+// chain right, and none of them moves the second.
 RVA(0x000fa1f0, 0xc6)
 i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     static_cast<void>(a);
@@ -183,23 +190,29 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     if (!m_2c) {
         return 0;
     }
-    char buf[0x34];
+    // retail reserves `sub esp,0x40`: the path buffer is 0x40, not 0x34.
+    char buf[0x40];
     sprintf(buf, "\\SCREENZ\\%s", name);
     CParseSource* page = SymTab2c()->ResolveQualified(buf, IMGTAG_XCP); // 0x13be40
     if (page == 0) {
         return 0;
     }
-    CDDrawSubMgrPages* w = menuRoot()->m_drawTarget;
-    if (w->LoadPageImage(page, e != 0 ? 2 : 1) != 0) {
-        return 1;
+    // a BRANCHED select (`mov eax,1 / test / je / mov eax,2`), not `e ? 2 : 1`
+    // (which folds to xor/setne/inc) - boolarg-branch-push-not-sete.md.
+    i32 mode = 1;
+    if (e != 0) {
+        mode = 2;
     }
-    if (e == 0) {
-        return 1;
+    // the page worker is re-derived per call (retail reloads m_world->m_drawTarget),
+    // and all three success paths share ONE bottom `return 1` epilogue.
+    if (menuRoot()->m_drawTarget->LoadPageImage(page, mode) == 0) {
+        if (e != 0) {
+            if (menuRoot()->m_drawTarget->LoadPageImage(page, 1) == 0) {
+                return 0;
+            }
+        }
     }
-    if (w->LoadPageImage(page, 1) != 0) {
-        return 1;
-    }
-    return 0;
+    return 1;
 }
 
 // CState::RunTitle(...) (0x0fa300, 5 args, ret 0x14): the title-render entry.
@@ -529,11 +542,11 @@ i32 CState::InputVirtual() {
     if (g_playActive == 0) {
         SplashParams sp;
         sp.text.LoadString(0x81a9);
-        sp.rect.top = m_mgr->m_modeW;
-        sp.rect.right = m_mgr->m_modeH;
-        sp.rect.bottom = 0;
-        sp.m_14 = 0;
-        EngStr_DrawText(m_world, &sp.text, &sp.rect, 0x78, 1, 0xff, 0, 0xff, 1);
+        sp.rect.right = m_mgr->m_modeW;
+        sp.rect.bottom = m_mgr->m_modeH;
+        sp.rect.left = 0;
+        sp.rect.top = 0;
+        EngStr_DrawText(m_world, &sp.text, &sp.rect, 0x78, 1, 0xff, 0xff, 0, 1);
     }
     while (ShowCursor(0) >= 0)
         ;
