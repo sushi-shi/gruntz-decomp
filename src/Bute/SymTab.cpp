@@ -81,15 +81,13 @@ static inline i32 PeekI32(const char* p) {
 }
 
 RVA(0x001396f0, 0x1a)
-CParseSource* CParseSource::Init() {
-    // stamps the vptr + zeroes m_record (+0x30); explicit ctor call, NOT placement new
-    // (placement new adds a null guard retail has not) - MSVC5 extension.
-    m_node1c.CParseSlotHashNode::CParseSlotHashNode();
+CParseSource::CParseSource() {
+    // m_node1c's own ctor (vptr stamp + the +0x30 zero) runs implicitly ahead of this
+    // body - it is the leading `mov [eax+0x1c],??_7CParseSlotHashNode / mov [eax+0x30],0`.
     m_reader = 0;
     m_owner = 0;
     m_name = 0;
     m_node1c.m_record = this; // the element's record IS this source (key = m_name @+0)
-    return this;
 }
 
 // CParseSource::Build (0x139710): populate a freshly-popped leaf-record slot from a
@@ -278,10 +276,10 @@ i32 CParseSource::SetPos(i32 pos) {
 // vtable call). The "je-vs-jbe 1-byte branch encoding on the empty check" WAS steerable
 // (jcc_sieve 2026-07-28, 91.20 -> 92.72): `test ebp,ebp / jbe` is the negation of an
 // UNSIGNED `want > 0`, not `want != 0` - CF is always clear after `test`, so the two
-// branches are the same and only the source operator picks the encoding. Residue is
-// allocator/selection only: retail holds the mapped-source ptr in edx and folds
-// `sub esi,[edx+0xc]` (1 instr) where cl loads sd->m_baseOffset to a reg first.
-// SetPos is 100%.
+// branches are the same and only the source operator picks the encoding.
+// 92.72 -> 94.67: `base += pos` must be its OWN statement - as one expression cl
+// reassociates the mapped base past pos and stops folding `sub esi,[sd+0xc]`.
+// Residue is allocator/selection only. SetPos is 100%.
 RVA(0x00139af0, 0xcc)
 i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
     if (seekPos != -1) {
@@ -300,7 +298,8 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
         if (sd->m_mappedBuf) {
             // retail folds `sub esi,[sd+0xc]` then adds the mapped base BEFORE pos:
             // ((m_base - m_baseOffset) + m_mappedBuf) + pos, not (... + pos) + mapped.
-            const char* base = m_base - sd->m_baseOffset + sd->m_mappedBuf + pos;
+            const char* base = m_base - sd->m_baseOffset + sd->m_mappedBuf;
+            base += pos;
             memcpy(dst, base, want);
             m_cursor += want;
             return want;
@@ -333,7 +332,10 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
 // overload's spelling (which is 100%) does NOT transfer.
 // @early-stop
 // ~99.35%: the four remaining rows are a key<->owner GPR naming swap on the two
-// trailing arg reloads (retail edx/eax, cl eax/edx). Allocator coin-flip.
+// trailing arg reloads (retail edx/eax, cl eax/edx). Allocator coin-flip. The
+// 3-arg overload's body order (m_key / m_record / m_scope) fixes the GPR naming but
+// scores WORSE overall (95.55%) - objdiff weights the two extra store rows it costs
+// higher than the four it saves. Six body orders + four local-binding forms measured.
 RVA(0x00139bf0, 0x71)
 CSymRec::CSymRec(i32 key, CSymTab* owner, i32 c, i32 d) : m_keyTable(c), m_valTable(d) {
     m_symNode.m_record = this;
@@ -1646,46 +1648,42 @@ i32 CSymParser::Classify(char* name) {
     return (*reinterpret_cast<i32*>((rec.raw + 6)) & 0x4000) == 0x4000;
 }
 
-// PopParseSlot (0x13c0c0): see SymParser.h. The /GX frame guards the freshly Rez-
-// alloc'd slot block while its elements are being initialized + registered.
+// PopParseSlot (0x13c0c0): see SymParser.h. The slot block is `new CParseSource[n]` -
+// THAT is the whole of the ex "EH-state + regalloc wall". Array-new is what emits the
+// /GX frame, the trylevel 0/-1 bracket around the vector-ctor loop and the
+// `p ? (construct, p) : 0` null merge (`jmp` / `xor eax,eax`); spelling it as a manual
+// RezAlloc + hand-written ctor loop produced none of them, and the missing frame is
+// also what put node/this in the swapped callee-saved pair. CParseSource::Init was the
+// default CTOR (it returns `this`); it is declared as one now. The registration loop
+// re-reads `node->m_buffer[j]` for the Insert argument (retail reloads +0x8 after the
+// m_record store, which an `el` local elides).
 // @early-stop
-// EH-state + regalloc wall (~77%): logic complete. The node/array allocations land in
-// a swapped callee-saved register (ebx vs ebp), the operator-new trylevel transitions
-// + the slot-block down-counter init loop idiom diverge, and the hash-method reloc
-// operands are differently named. Banked for the final sweep.
+// 77.13 -> 98.22. One 3-instruction window left: retail materialises the Remove
+// argument into eax and sets ecx before pushing (`lea eax,[esi+0x1c] / mov ecx,edi /
+// push eax`), cl leas into ecx, pushes, then reloads ecx. Eleven spellings of the tail
+// (reuse of `e`, a typed `out` local, a CParserHash* receiver local, an early return,
+// hoisting the lea out of the guard) are byte-identical to each other.
 RVA(0x0013c0c0, 0x14b)
 CParseSource* CSymParser::PopParseSlot() {
+    void* rec = 0;
     CHashElement* e = m_hash.First();
-    void* rec = e ? e->m_record : 0;
+    if (e != 0) {
+        rec = e->m_record;
+    }
     if (rec == 0) {
         CSlotNode* node = static_cast<CSlotNode*>(RezAlloc(0xc));
         if (node == 0) {
             return 0;
         }
-        i32 n = m_parseSlotBlockCount;
-        CParseSource* arr = static_cast<CParseSource*>(RezAlloc(n * 0x3c));
-        if (arr) {
-            CParseSource* p = arr;
-            i32 i = n;
-            i--;
-            if (i >= 0) {
-                i++;
-                do {
-                    p->Init();
-                    p++;
-                    i--;
-                } while (i);
-            }
-        }
+        CParseSource* arr = new CParseSource[m_parseSlotBlockCount];
         node->m_buffer = arr;
         if (arr == 0) {
             ::operator delete(node);
             return 0;
         }
         for (i32 j = 0; static_cast<u32>(j) < static_cast<u32>(m_parseSlotBlockCount); j++) {
-            CParseSource* el = &node->m_buffer[j];
-            el->m_node1c.m_record = el;
-            m_hash.Insert(&el->m_node1c);
+            node->m_buffer[j].m_node1c.m_record = &node->m_buffer[j];
+            m_hash.Insert(&node->m_buffer[j].m_node1c);
         }
         m_nodes.InsertHead(node);
         e = m_hash.First();

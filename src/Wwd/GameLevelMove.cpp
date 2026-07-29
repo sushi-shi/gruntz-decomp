@@ -105,383 +105,386 @@ i32 CGameLevel::MoveKindDispatch12(CGameObject* t, i32 x, i32 y, i32 flags) {
 }
 
 // MoveStepXHi - 0x167260. Fixed X = high edge (x + axisMid); sweep Y, scan X down.
+// The sweep is a natural `while (cur <= limit)`, not the `if (>) goto helper; looptop:`
+// goto skeleton: the goto form put the loop-exit on the FALLTHROUGH and emitted
+// `jg helper / jmp looptop` where retail has `jle looptop` and falls through to the
+// helper (jcc_sieve POLARITY #17, all four of these). The equal-coord early return is
+// spelled inline for the same reason - the `goto done_eq` label got laid out ahead of
+// the helper block. Branch sequences agree now.
 // @early-stop
-// regalloc coin-flip: retail pins resolvedX in esi from prologue; MSVC5 reuses esi for the scan index (no source lever forces it)
+// regalloc: retail keeps the incoming coord in esi from the prologue (so `state = 0`
+// has no free register and lands as a direct immediate store, and this/state take the
+// swapped spill slots); cl frees esi, pins the zero there and rotates the two slots.
+// The x-as-local / decl-order / operand-order forms all measured worse.
 RVA(0x00167260, 0x1ef)
 i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
     i32 xEnd = x + t->m_extent.right;
     i32 yHi = t->m_extent.bottom + y;
     i32 yLo = t->m_extent.top + y;
     i32 state = 0;
-    if (yLo > yHi) {
-        goto helper;
-    }
-looptop: {
-    i32 result;
-    {
-        i32 cx = xEnd;
-        if (cx < 0) {
-            cx = 0;
-        } else {
-            CDDrawWorkerHost* pc = m_mainPlane;
-            if (cx >= pc->m_wrapW) {
-                cx = pc->m_wrapW - 1;
+    while (yLo <= yHi) {
+        i32 result;
+        {
+            i32 cx = xEnd;
+            if (cx < 0) {
+                cx = 0;
+            } else {
+                CDDrawWorkerHost* pc = m_mainPlane;
+                if (cx >= pc->m_wrapW) {
+                    cx = pc->m_wrapW - 1;
+                }
+            }
+            i32 cy = yLo;
+            if (cy < 0) {
+                cy = 0;
+            } else {
+                CDDrawWorkerHost* pc = m_mainPlane;
+                if (cy >= pc->m_wrapH) {
+                    cy = pc->m_wrapH - 1;
+                }
+            }
+            CDDrawWorkerHost* pl = m_mainPlane;
+            i32 qx = cx >> pl->m_shiftX;
+            i32 qy = cy >> pl->m_shiftY;
+            i32 col = qx;
+            i32 subX = cx - (qx << pl->m_shiftX);
+            i32 idx = pl->m_colOffsets[qy] + col;
+            i32 subY = cy - (qy << pl->m_shiftY);
+            i32 tile = pl->m_tileGrid[idx];
+            if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+                result = kTilePassable;
+            } else {
+                CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
+                result = set->GetCollisionAt(subX, subY);
             }
         }
-        i32 cy = yLo;
-        if (cy < 0) {
-            cy = 0;
-        } else {
-            CDDrawWorkerHost* pc = m_mainPlane;
-            if (cy >= pc->m_wrapH) {
-                cy = pc->m_wrapH - 1;
-            }
-        }
-        CDDrawWorkerHost* pl = m_mainPlane;
-        i32 qx = cx >> pl->m_shiftX;
-        i32 qy = cy >> pl->m_shiftY;
-        i32 col = qx;
-        i32 subX = cx - (qx << pl->m_shiftX);
-        i32 idx = pl->m_colOffsets[qy] + col;
-        i32 subY = cy - (qy << pl->m_shiftY);
-        i32 tile = pl->m_tileGrid[idx];
-        if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+        if (result == kTileSoft2 && (t->m_flags & 0x400)) {
             result = kTilePassable;
-        } else {
-            CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
-            result = set->GetCollisionAt(subX, subY);
         }
-    }
-    if (result == kTileSoft2 && (t->m_flags & 0x400)) {
-        result = kTilePassable;
-    }
-    if (result == kTileSoft || result == kTileSoft2) {
-        i32 lo = t->m_screenX + t->m_extent.right;
-        i32 j = xEnd - 1;
-        state |= 0x60000;
-        for (; j > lo; j--) {
-            if (AxisProbe(j, yLo) == kTilePassable) {
-                j -= t->m_extent.right;
-                goto have_x;
+        if (result == kTileSoft || result == kTileSoft2) {
+            i32 lo = t->m_screenX + t->m_extent.right;
+            i32 j = xEnd - 1;
+            state |= 0x60000;
+            for (; j > lo; j--) {
+                if (AxisProbe(j, yLo) == kTilePassable) {
+                    j -= t->m_extent.right;
+                    goto have_x;
+                }
+            }
+            j = t->m_screenX;
+        have_x:
+            x = j;
+            if (j == t->m_screenX) {
+                *px = t->m_screenX;
+                return state;
             }
         }
-        j = t->m_screenX;
-    have_x:
-        x = j;
-        if (j == t->m_screenX) {
-            goto done_eq;
+        if (yLo == yHi) {
+            yLo++;
+        } else {
+            yLo += t->m_strideY;
+            if (yLo > yHi) {
+                yLo = yHi;
+            }
         }
     }
-    if (yLo == yHi) {
-        yLo++;
-    } else {
-        yLo += t->m_strideY;
-        if (yLo <= yHi) {
-            goto looptop;
-        }
-        yLo = yHi;
-    }
-    if (yLo <= yHi) {
-        goto looptop;
-    }
-}
-helper:
     if (BroadPhase(t, x, y) != 0) {
         *px = t->m_screenX;
         return state | 0x22000000;
     }
     *px = x;
     return state;
-done_eq:
-    *px = t->m_screenX;
-    return state;
 }
 
 // MoveStepXLo - 0x167450. Fixed X = low edge (x + axisLoA); sweep Y, scan X up.
+// The sweep is a natural `while (cur <= limit)`, not the `if (>) goto helper; looptop:`
+// goto skeleton: the goto form put the loop-exit on the FALLTHROUGH and emitted
+// `jg helper / jmp looptop` where retail has `jle looptop` and falls through to the
+// helper (jcc_sieve POLARITY #17, all four of these). The equal-coord early return is
+// spelled inline for the same reason - the `goto done_eq` label got laid out ahead of
+// the helper block. Branch sequences agree now.
 // @early-stop
-// regalloc coin-flip: retail pins resolvedX in esi from prologue; MSVC5 reuses esi for the scan index (no source lever forces it)
+// regalloc: retail keeps the incoming coord in esi from the prologue (so `state = 0`
+// has no free register and lands as a direct immediate store, and this/state take the
+// swapped spill slots); cl frees esi, pins the zero there and rotates the two slots.
+// The x-as-local / decl-order / operand-order forms all measured worse.
 RVA(0x00167450, 0x1ef)
 i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
     i32 xEnd = x + t->m_extent.left;
     i32 yHi = t->m_extent.bottom + y;
     i32 yLo = t->m_extent.top + y;
     i32 state = 0;
-    if (yLo > yHi) {
-        goto helper;
-    }
-looptop: {
-    i32 result;
-    {
-        i32 cx = xEnd;
-        if (cx < 0) {
-            cx = 0;
-        } else {
-            CDDrawWorkerHost* pc = m_mainPlane;
-            if (cx >= pc->m_wrapW) {
-                cx = pc->m_wrapW - 1;
+    while (yLo <= yHi) {
+        i32 result;
+        {
+            i32 cx = xEnd;
+            if (cx < 0) {
+                cx = 0;
+            } else {
+                CDDrawWorkerHost* pc = m_mainPlane;
+                if (cx >= pc->m_wrapW) {
+                    cx = pc->m_wrapW - 1;
+                }
+            }
+            i32 cy = yLo;
+            if (cy < 0) {
+                cy = 0;
+            } else {
+                CDDrawWorkerHost* pc = m_mainPlane;
+                if (cy >= pc->m_wrapH) {
+                    cy = pc->m_wrapH - 1;
+                }
+            }
+            CDDrawWorkerHost* pl = m_mainPlane;
+            i32 qx = cx >> pl->m_shiftX;
+            i32 qy = cy >> pl->m_shiftY;
+            i32 col = qx;
+            i32 subX = cx - (qx << pl->m_shiftX);
+            i32 idx = pl->m_colOffsets[qy] + col;
+            i32 subY = cy - (qy << pl->m_shiftY);
+            i32 tile = pl->m_tileGrid[idx];
+            if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+                result = kTilePassable;
+            } else {
+                CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
+                result = set->GetCollisionAt(subX, subY);
             }
         }
-        i32 cy = yLo;
-        if (cy < 0) {
-            cy = 0;
-        } else {
-            CDDrawWorkerHost* pc = m_mainPlane;
-            if (cy >= pc->m_wrapH) {
-                cy = pc->m_wrapH - 1;
-            }
-        }
-        CDDrawWorkerHost* pl = m_mainPlane;
-        i32 qx = cx >> pl->m_shiftX;
-        i32 qy = cy >> pl->m_shiftY;
-        i32 col = qx;
-        i32 subX = cx - (qx << pl->m_shiftX);
-        i32 idx = pl->m_colOffsets[qy] + col;
-        i32 subY = cy - (qy << pl->m_shiftY);
-        i32 tile = pl->m_tileGrid[idx];
-        if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+        if (result == kTileSoft2 && (t->m_flags & 0x400)) {
             result = kTilePassable;
-        } else {
-            CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
-            result = set->GetCollisionAt(subX, subY);
         }
-    }
-    if (result == kTileSoft2 && (t->m_flags & 0x400)) {
-        result = kTilePassable;
-    }
-    if (result == kTileSoft || result == kTileSoft2) {
-        i32 lo = t->m_screenX + t->m_extent.left;
-        i32 j = xEnd + 1;
-        state |= 0xa0000;
-        for (; j < lo; j++) {
-            if (AxisProbe(j, yLo) == kTilePassable) {
-                j -= t->m_extent.left;
-                goto have_x;
+        if (result == kTileSoft || result == kTileSoft2) {
+            i32 lo = t->m_screenX + t->m_extent.left;
+            i32 j = xEnd + 1;
+            state |= 0xa0000;
+            for (; j < lo; j++) {
+                if (AxisProbe(j, yLo) == kTilePassable) {
+                    j -= t->m_extent.left;
+                    goto have_x;
+                }
+            }
+            j = t->m_screenX;
+        have_x:
+            x = j;
+            if (j == t->m_screenX) {
+                *px = t->m_screenX;
+                return state;
             }
         }
-        j = t->m_screenX;
-    have_x:
-        x = j;
-        if (j == t->m_screenX) {
-            goto done_eq;
+        if (yLo == yHi) {
+            yLo++;
+        } else {
+            yLo += t->m_strideY;
+            if (yLo > yHi) {
+                yLo = yHi;
+            }
         }
     }
-    if (yLo == yHi) {
-        yLo++;
-    } else {
-        yLo += t->m_strideY;
-        if (yLo <= yHi) {
-            goto looptop;
-        }
-        yLo = yHi;
-    }
-    if (yLo <= yHi) {
-        goto looptop;
-    }
-}
-helper:
     if (BroadPhase(t, x, y) != 0) {
         *px = t->m_screenX;
         return state | 0x82000000;
     }
     *px = x;
     return state;
-done_eq:
-    *px = t->m_screenX;
-    return state;
 }
 
 // MoveStepYHi - 0x167640. Fixed Y = high edge (y + axisHi); sweep X, scan Y down.
+// The sweep is a natural `while (cur <= limit)`, not the `if (>) goto helper; looptop:`
+// goto skeleton: the goto form put the loop-exit on the FALLTHROUGH and emitted
+// `jg helper / jmp looptop` where retail has `jle looptop` and falls through to the
+// helper (jcc_sieve POLARITY #17, all four of these). The equal-coord early return is
+// spelled inline for the same reason - the `goto done_eq` label got laid out ahead of
+// the helper block. Branch sequences agree now.
 // @early-stop
-// regalloc coin-flip: retail pins resolvedX in esi from prologue; MSVC5 reuses esi for the scan index (no source lever forces it)
+// regalloc: retail keeps the incoming coord in esi from the prologue (so `state = 0`
+// has no free register and lands as a direct immediate store, and this/state take the
+// swapped spill slots); cl frees esi, pins the zero there and rotates the two slots.
+// The x-as-local / decl-order / operand-order forms all measured worse.
 RVA(0x00167640, 0x1eb)
 i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
     i32 colHi = t->m_extent.right + x;
     i32 fixedY = y + t->m_extent.bottom;
     i32 col = t->m_extent.left + x;
     i32 state = 0;
-    if (col > colHi) {
-        goto helper;
-    }
-looptop: {
-    i32 result;
-    {
-        i32 cx = col;
-        if (cx < 0) {
-            cx = 0;
-        } else {
-            CDDrawWorkerHost* pc = m_mainPlane;
-            if (cx >= pc->m_wrapW) {
-                cx = pc->m_wrapW - 1;
+    while (col <= colHi) {
+        i32 result;
+        {
+            i32 cx = col;
+            if (cx < 0) {
+                cx = 0;
+            } else {
+                CDDrawWorkerHost* pc = m_mainPlane;
+                if (cx >= pc->m_wrapW) {
+                    cx = pc->m_wrapW - 1;
+                }
+            }
+            i32 cy = fixedY;
+            if (cy < 0) {
+                cy = 0;
+            } else {
+                CDDrawWorkerHost* pc = m_mainPlane;
+                if (cy >= pc->m_wrapH) {
+                    cy = pc->m_wrapH - 1;
+                }
+            }
+            CDDrawWorkerHost* pl = m_mainPlane;
+            i32 qx = cx >> pl->m_shiftX;
+            i32 qy = cy >> pl->m_shiftY;
+            i32 c = qx;
+            i32 subX = cx - (qx << pl->m_shiftX);
+            i32 idx = pl->m_colOffsets[qy] + c;
+            i32 subY = cy - (qy << pl->m_shiftY);
+            i32 tile = pl->m_tileGrid[idx];
+            if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+                result = kTilePassable;
+            } else {
+                CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
+                result = set->GetCollisionAt(subX, subY);
             }
         }
-        i32 cy = fixedY;
-        if (cy < 0) {
-            cy = 0;
-        } else {
-            CDDrawWorkerHost* pc = m_mainPlane;
-            if (cy >= pc->m_wrapH) {
-                cy = pc->m_wrapH - 1;
-            }
-        }
-        CDDrawWorkerHost* pl = m_mainPlane;
-        i32 qx = cx >> pl->m_shiftX;
-        i32 qy = cy >> pl->m_shiftY;
-        i32 c = qx;
-        i32 subX = cx - (qx << pl->m_shiftX);
-        i32 idx = pl->m_colOffsets[qy] + c;
-        i32 subY = cy - (qy << pl->m_shiftY);
-        i32 tile = pl->m_tileGrid[idx];
-        if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+        if (result == kTileSoft2 && (t->m_flags & 0x400)) {
             result = kTilePassable;
-        } else {
-            CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
-            result = set->GetCollisionAt(subX, subY);
         }
-    }
-    if (result == kTileSoft2 && (t->m_flags & 0x400)) {
-        result = kTilePassable;
-    }
-    if (result == kTileSoft || result == kTileSoft2) {
-        i32 lo = t->m_screenY + t->m_extent.bottom;
-        i32 j = fixedY - 1;
-        state |= 0x1020000;
-        for (; j > lo; j--) {
-            if (AxisProbe(col, j) == kTilePassable) {
-                j -= t->m_extent.bottom;
-                goto have_y;
+        if (result == kTileSoft || result == kTileSoft2) {
+            i32 lo = t->m_screenY + t->m_extent.bottom;
+            i32 j = fixedY - 1;
+            state |= 0x1020000;
+            for (; j > lo; j--) {
+                if (AxisProbe(col, j) == kTilePassable) {
+                    j -= t->m_extent.bottom;
+                    goto have_y;
+                }
+            }
+            j = t->m_screenY;
+        have_y:
+            y = j;
+            if (j == t->m_screenY) {
+                *py = t->m_screenY;
+                return state;
             }
         }
-        j = t->m_screenY;
-    have_y:
-        y = j;
-        if (j == t->m_screenY) {
-            goto done_eq;
+        if (col == colHi) {
+            col++;
+        } else {
+            col += t->m_strideX;
+            if (col > colHi) {
+                col = colHi;
+            }
         }
     }
-    if (col == colHi) {
-        col++;
-    } else {
-        col += t->m_strideX;
-        if (col <= colHi) {
-            goto looptop;
-        }
-        col = colHi;
-    }
-    if (col <= colHi) {
-        goto looptop;
-    }
-}
-helper:
     if (BroadPhase(t, x, y) != 0) {
         *py = t->m_screenY;
         return state | 0x42000000;
     }
     *py = y;
     return state;
-done_eq:
-    *py = t->m_screenY;
-    return state;
 }
 
 // MoveStepYLo - 0x167830. Fixed Y = low edge (y + axisLoB); sweep X, scan Y up.
+// The sweep is a natural `while (cur <= limit)`, not the `if (>) goto helper; looptop:`
+// goto skeleton: the goto form put the loop-exit on the FALLTHROUGH and emitted
+// `jg helper / jmp looptop` where retail has `jle looptop` and falls through to the
+// helper (jcc_sieve POLARITY #17, all four of these). The equal-coord early return is
+// spelled inline for the same reason - the `goto done_eq` label got laid out ahead of
+// the helper block. Branch sequences agree now.
 // @early-stop
-// regalloc coin-flip: retail pins resolvedX in esi from prologue; MSVC5 reuses esi for the scan index (no source lever forces it)
+// regalloc: retail keeps the incoming coord in esi from the prologue (so `state = 0`
+// has no free register and lands as a direct immediate store, and this/state take the
+// swapped spill slots); cl frees esi, pins the zero there and rotates the two slots.
+// The x-as-local / decl-order / operand-order forms all measured worse.
 RVA(0x00167830, 0x1eb)
 i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
     i32 colHi = t->m_extent.right + x;
     i32 fixedY = y + t->m_extent.top;
     i32 col = t->m_extent.left + x;
     i32 state = 0;
-    if (col > colHi) {
-        goto helper;
-    }
-looptop: {
-    i32 result;
-    {
-        i32 cx = col;
-        if (cx < 0) {
-            cx = 0;
-        } else {
-            CDDrawWorkerHost* pc = m_mainPlane;
-            if (cx >= pc->m_wrapW) {
-                cx = pc->m_wrapW - 1;
+    while (col <= colHi) {
+        i32 result;
+        {
+            i32 cx = col;
+            if (cx < 0) {
+                cx = 0;
+            } else {
+                CDDrawWorkerHost* pc = m_mainPlane;
+                if (cx >= pc->m_wrapW) {
+                    cx = pc->m_wrapW - 1;
+                }
+            }
+            i32 cy = fixedY;
+            if (cy < 0) {
+                cy = 0;
+            } else {
+                CDDrawWorkerHost* pc = m_mainPlane;
+                if (cy >= pc->m_wrapH) {
+                    cy = pc->m_wrapH - 1;
+                }
+            }
+            CDDrawWorkerHost* pl = m_mainPlane;
+            i32 qx = cx >> pl->m_shiftX;
+            i32 qy = cy >> pl->m_shiftY;
+            i32 c = qx;
+            i32 subX = cx - (qx << pl->m_shiftX);
+            i32 idx = pl->m_colOffsets[qy] + c;
+            i32 subY = cy - (qy << pl->m_shiftY);
+            i32 tile = pl->m_tileGrid[idx];
+            if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+                result = kTilePassable;
+            } else {
+                CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
+                result = set->GetCollisionAt(subX, subY);
             }
         }
-        i32 cy = fixedY;
-        if (cy < 0) {
-            cy = 0;
-        } else {
-            CDDrawWorkerHost* pc = m_mainPlane;
-            if (cy >= pc->m_wrapH) {
-                cy = pc->m_wrapH - 1;
-            }
-        }
-        CDDrawWorkerHost* pl = m_mainPlane;
-        i32 qx = cx >> pl->m_shiftX;
-        i32 qy = cy >> pl->m_shiftY;
-        i32 c = qx;
-        i32 subX = cx - (qx << pl->m_shiftX);
-        i32 idx = pl->m_colOffsets[qy] + c;
-        i32 subY = cy - (qy << pl->m_shiftY);
-        i32 tile = pl->m_tileGrid[idx];
-        if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
+        if (result == kTileSoft2 && (t->m_flags & 0x400)) {
             result = kTilePassable;
-        } else {
-            CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
-            result = set->GetCollisionAt(subX, subY);
         }
-    }
-    if (result == kTileSoft2 && (t->m_flags & 0x400)) {
-        result = kTilePassable;
-    }
-    if (result == kTileSoft || result == kTileSoft2) {
-        i32 lo = t->m_screenY + t->m_extent.top;
-        i32 j = fixedY + 1;
-        state |= 0x820000;
-        for (; j < lo; j++) {
-            if (AxisProbe(col, j) == kTilePassable) {
-                j -= t->m_extent.top;
-                goto have_y;
+        if (result == kTileSoft || result == kTileSoft2) {
+            i32 lo = t->m_screenY + t->m_extent.top;
+            i32 j = fixedY + 1;
+            state |= 0x820000;
+            for (; j < lo; j++) {
+                if (AxisProbe(col, j) == kTilePassable) {
+                    j -= t->m_extent.top;
+                    goto have_y;
+                }
+            }
+            j = t->m_screenY;
+        have_y:
+            y = j;
+            if (j == t->m_screenY) {
+                *py = t->m_screenY;
+                return state;
             }
         }
-        j = t->m_screenY;
-    have_y:
-        y = j;
-        if (j == t->m_screenY) {
-            goto done_eq;
+        if (col == colHi) {
+            col++;
+        } else {
+            col += t->m_strideX;
+            if (col > colHi) {
+                col = colHi;
+            }
         }
     }
-    if (col == colHi) {
-        col++;
-    } else {
-        col += t->m_strideX;
-        if (col <= colHi) {
-            goto looptop;
-        }
-        col = colHi;
-    }
-    if (col <= colHi) {
-        goto looptop;
-    }
-}
-helper:
     if (BroadPhase(t, x, y) != 0) {
         *py = t->m_screenY;
         return state | 0x12000000;
     }
     *py = y;
     return state;
-done_eq:
-    *py = t->m_screenY;
-    return state;
 }
 
 // The scan reuses the incoming coordinate as the loop counter (retail's
 // `mov ebx,[esp+N]; dec ebx` inc-in-place form; a fresh `col` local hoists a
 // lea instead and caps the quartet at 93-97%).
+//
+// The anchor coordinate is bound to a LOCAL before the limit add. That is the whole
+// of the ex "two-member commutative-add load order" wall: retail loads +0x5c/+0x60
+// FIRST and the extent second, and no spelling of the two-member sum reaches that
+// (cl canonicalises `a+b`), but a named local for the left operand does - it gives
+// the load its own statement. All four now EXACT.
 RVA(0x00167a20, 0x11b)
 i32 CGameLevel::ResolveRightX(CGameObject* t, i32 x, i32 y) {
-    i32 limit = t->m_screenX + t->m_extent.right;
+    i32 screenX = t->m_screenX;
+    i32 limit = screenX + t->m_extent.right;
     for (x--; x > limit; x--) {
         i32 result;
         PROBE_TILE(this, x, y, result);
@@ -494,7 +497,8 @@ i32 CGameLevel::ResolveRightX(CGameObject* t, i32 x, i32 y) {
 
 RVA(0x00167b40, 0x11b)
 i32 CGameLevel::ResolveLeftX(CGameObject* t, i32 x, i32 y) {
-    i32 limit = t->m_screenX + t->m_extent.left;
+    i32 screenX = t->m_screenX;
+    i32 limit = screenX + t->m_extent.left;
     for (x++; x < limit; x++) {
         i32 result;
         PROBE_TILE(this, x, y, result);
@@ -507,7 +511,8 @@ i32 CGameLevel::ResolveLeftX(CGameObject* t, i32 x, i32 y) {
 
 RVA(0x00167c60, 0x11b)
 i32 CGameLevel::ResolveBottomY(CGameObject* t, i32 x, i32 y) {
-    i32 limit = t->m_screenY + t->m_extent.bottom;
+    i32 screenY = t->m_screenY;
+    i32 limit = screenY + t->m_extent.bottom;
     for (y--; y > limit; y--) {
         i32 result;
         PROBE_TILE(this, x, y, result);
@@ -520,7 +525,8 @@ i32 CGameLevel::ResolveBottomY(CGameObject* t, i32 x, i32 y) {
 
 RVA(0x00167d80, 0x11b)
 i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
-    i32 limit = t->m_screenY + t->m_extent.top;
+    i32 screenY = t->m_screenY;
+    i32 limit = screenY + t->m_extent.top;
     for (y++; y < limit; y++) {
         i32 result;
         PROBE_TILE(this, x, y, result);
@@ -531,8 +537,14 @@ i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
     return t->m_screenY;
 }
 
+// The chain walk is a natural `while`, not `if (pos == 0) return 0; do {} while (pos)`:
+// the do-while spelling let cl TAIL-MERGE the loop-exit `return 0` onto the two guard
+// epilogues (2 rets where retail has 3) and inverted the back edge (`je exit` where
+// retail has `jne looptop`). jcc_sieve flagged it as POLARITY #17; the branch sequences
+// agree now.
 // @early-stop
-// regalloc coin-flip: retail pins resolvedX in esi from prologue; MSVC5 reuses esi for the scan index (no source lever forces it)
+// regalloc: retail pins the resolved coord in esi from the prologue; cl reuses esi for
+// the scan index. No source lever found (the local/param/decl-order forms are worse).
 RVA(0x00167ea0, 0x1b9)
 i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
     if (!(t->m_flags & 0x100)) {
@@ -540,10 +552,7 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
     }
     CObList& chain = OwnerMgr()->m_childGroup->m_list;
     POSITION pos = chain.GetHeadPosition();
-    if (pos == 0) {
-        return 0;
-    }
-    do {
+    while (pos != 0) {
         CGameObject* obj = static_cast<CGameObject*>(chain.GetNext(pos));
         if (obj != t && (obj->m_flags & 0x100) && (t->m_collMask & obj->m_collCategory)
             && t->m_extent.left != AXIS_UNSET && obj->m_extent.left != AXIS_UNSET) {
@@ -580,7 +589,7 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
                 }
             }
         }
-    } while (pos != 0);
+    }
     return 0;
 }
 
