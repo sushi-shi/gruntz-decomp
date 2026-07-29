@@ -32,32 +32,6 @@
 // content-addressed by canonicalize_data_symbols (paired by body and relocations,
 // not number). This TU's .text is multi-region, hence the distant family RVAs.
 
-// NOTE (2026-07-26): the ~89% score is the inline-jump-table measurement artifact
-// (both sides carry the 16-byte case table mid-function; objdiff desyncs across it
-// and the 5 duplicated ctor tails pair as retail-only). The dispatch + tails are
-// shape-correct; see the delinker-jumptable memory note for the pipeline fix.
-RVA(0x0001ec20, 0x8d)
-CString CMultiBootyState::GetWarlordName(i32 id) {
-    // The target reserves and zero-inits one dead stack dword (`push ecx; mov
-    // [esp+4],0; ...; pop ecx`) that no path reads - an MSVC5 return-slot/NRV
-    // bookkeeping artifact. A `volatile int = 0` reproduces it exactly (the
-    // zero-init survives DCE without emitting an address-store; scheduled after
-    // the cmp, matching the target's `mov [esp+4],0`).
-    volatile i32 slot = 0;
-    switch (id) {
-        case 0:
-            return CString("KING");
-        case 1:
-            return CString("NAPOLEAN");
-        case 2:
-            return CString("PATTON");
-        case 3:
-            return CString("VIKING");
-        default:
-            return CString("");
-    }
-}
-
 static CString g_worldName[8] = {
     "Rocky Roadz",
     "Gruntziclez",
@@ -126,6 +100,13 @@ static CString g_statLabel[8] = {
     "Secretz:",
 };
 
+// DELIBERATELY UNBOUND. Reloc pairing off the byte-exact zErrHandling ctor puts this
+// 8-slot table at 0x2bf448..0x2bf464 - i.e. INSIDE TypeKeyColl.cpp's 0x2bf400 .bss band,
+// and three of its cells are the ones TypeKeyColl/GruntStartingPoint currently model as
+// g_projActName (0x2bf454), g_projActName2 (0x2bf45c) and g_projActCache (0x2bf464).
+// So the table (and this ctor) belong to the zErrHandling/zPTree obj, not GameText's,
+// and those three "globals" are cells of it. Binding them here would ratify the wrong
+// owner; the re-home + the three-way identity merge is its own pass.
 static char* g_errMsg_OutOfMem; // the lazy-init guard slot
 static char* g_errMsg_BadData;
 static char* g_errMsg_Overflow;
@@ -134,6 +115,32 @@ static char* g_errMsg_OutOfRng;
 static char* g_errMsg_Exists;
 static char* g_errMsg_NullArg;
 static char* g_errMsg_BadArg;
+
+// NOTE (2026-07-26): the ~89% score is the inline-jump-table measurement artifact
+// (both sides carry the 16-byte case table mid-function; objdiff desyncs across it
+// and the 5 duplicated ctor tails pair as retail-only). The dispatch + tails are
+// shape-correct; see the delinker-jumptable memory note for the pipeline fix.
+RVA(0x0001ec20, 0x8d)
+CString CMultiBootyState::GetWarlordName(i32 id) {
+    // The target reserves and zero-inits one dead stack dword (`push ecx; mov
+    // [esp+4],0; ...; pop ecx`) that no path reads - an MSVC5 return-slot/NRV
+    // bookkeeping artifact. A `volatile int = 0` reproduces it exactly (the
+    // zero-init survives DCE without emitting an address-store; scheduled after
+    // the cmp, matching the target's `mov [esp+4],0`).
+    volatile i32 slot = 0;
+    switch (id) {
+        case 0:
+            return CString("KING");
+        case 1:
+            return CString("NAPOLEAN");
+        case 2:
+            return CString("PATTON");
+        case 3:
+            return CString("VIKING");
+        default:
+            return CString("");
+    }
+}
 
 RVA(0x0016d9c0, 0x75)
 RVA_COMPGEN(0x0016da40, 0x1e, ??_GzErrHandling@@UAEPAXI@Z)

@@ -73,7 +73,9 @@ static const char s__DEATH[] = "_DEATH";
 static const char s__JOY[] = "_JOY";
 static const char s__IDLE[] = "_IDLE";
 static const char s__BATTLECRY[] = "_BATTLECRY";
+DATA(0x0020dd40)
 static const char s__LOSEITEM[] = "_LOSEITEM";
+DATA(0x0020a680)
 static const char s_SingleAnimation[] = "SingleAnimation";
 static const char s_keyB[] = "B";
 static const char s_keyC[] = "C";
@@ -100,12 +102,85 @@ GruntDirectionCell g_gruntDirNorthWest = GruntDirectionCell(0, 0, 8);
 DATA(0x00244b38)
 GruntDirectionCell g_gruntDirCenter = GruntDirectionCell(1, 1, 0);
 
+DATA(0x0020d7fc)
+char s_codeH[] = "H";
+
+DATA(0x0020d2e8)
+char s_codeF[] = "F";
+
+// CActRegPool<CGrunt>::s_table (0x00244af0): CActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+template<> DATA(0x00244af0)
+CActReg CActRegPool<CGrunt>::s_table(2000, 2010);
+
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
 static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98
 static char s_IdleDelay[] = "IdleDelay";                       // s_IdleDelay_0060e1a0
 static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius"; // s_PlayerDefenderRadius_0060e1ac
 static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeout_0060df84
+
+DATA(0x0020dd30)
+static const char s_GAME_ATTACK[] = "GAME_ATTACK";
+static char s_Spellz[] = "Spellz";
+DATA(0x0020dcf8)
+static char s_FreezeRadius[] = "FreezeRadius";
+DATA(0x0020dce8)
+static char s_HealthRadius[] = "HealthRadius";
+DATA(0x0020dcd0)
+static char s_RessurectionRadius[] = "RessurectionRadius";
+DATA(0x0020dcc0)
+static char s_ToyzRadius[] = "ToyzRadius";
+DATA(0x0020dcac)
+static char s_TeleportRadius[] = "TeleportRadius";
+DATA(0x0020dc78)
+static char s_RollingBallzSpeed[] = "RollingBallzSpeed";
+DATA(0x0020dc64)
+static char s_RollingBallzTime[] = "RollingBallzTime";
+
+enum SpellzEffect {
+    SPELLZ_FREEZE = 1,       // FreezeRadius
+    SPELLZ_HEALTH = 2,       // HealthRadius
+    SPELLZ_RESURRECTION = 3, // RessurectionRadius
+    SPELLZ_TOYZ = 4,         // ToyzRadius
+    SPELLZ_TELEPORT = 5,     // TeleportRadius
+    SPELLZ_ROLLINGBALL = 6,  // RollingBallzSpeed/Time (spawns 4 directional ballz)
+};
+
+DATA(0x0020df6c)
+static const char s_CONVERSIONHIT[] = "GAME_CONVERSIONHIT";
+DATA(0x0020df54)
+static const char s_DEATHTOUCHHIT[] = "GAME_DEATHTOUCHHIT";
+DATA(0x0020de1c)
+static const char s_IMPACTMM1[] = "GRUNTZ_NORMALGRUNT_IMPACTMM1";
+DATA(0x0020dd8c)
+static const char s_IMPACTMM2[] = "GRUNTZ_NORMALGRUNT_IMPACTMM2";
+DATA(0x0020df30)
+static const char s_IMPACTMM3[] = "GRUNTZ_NORMALGRUNT_IMPACTMM3";
+DATA(0x0020df0c)
+static const char s_IMPACTMM4[] = "GRUNTZ_NORMALGRUNT_IMPACTMM4";
+DATA(0x0020ddf8)
+static const char s_IMPACTWM1[] = "GRUNTZ_NORMALGRUNT_IMPACTWM1";
+DATA(0x0020ddb0)
+static const char s_IMPACTWM2[] = "GRUNTZ_NORMALGRUNT_IMPACTWM2";
+DATA(0x0020dd68)
+static const char s_IMPACTWM3[] = "GRUNTZ_NORMALGRUNT_IMPACTWM3";
+DATA(0x0020ddd4)
+static const char s_BLOCKBODY1[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY1";
+DATA(0x0020de40)
+static const char s_BLOCKBODY2[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY2";
+DATA(0x0020dee4)
+static const char s_BLOCKMETAL1[] = "GRUNTZ_NORMALGRUNT_BLOCKMETAL1";
+DATA(0x0020deb8)
+static const char s_SPRING2[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS2S1";
+DATA(0x0020de8c)
+static const char s_SPRING1[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS1S1";
+DATA(0x0020de64)
+static const char s_TOOBZ[] = "GRUNTZ_TOOBGRUNT_TOOBZGRUNTUI1B";
+static const char s_typeO[] = "O";
+DATA(0x0020dd4c)
+static const char s_knockKey[] = "KnockBackTimePerTile";
+static const char s_gruntSec[] = "Grunt";
 
 // ===========================================================================
 // The 5 grunt movement / anim-name dispatch state machines (formerly the
@@ -135,44 +210,6 @@ static inline void GruntScratchTeardown() {
         cnt--;
     }
 }
-
-static const char s_GAME_ATTACK[] = "GAME_ATTACK";
-static char s_Spellz[] = "Spellz";
-static char s_FreezeRadius[] = "FreezeRadius";
-static char s_HealthRadius[] = "HealthRadius";
-static char s_RessurectionRadius[] = "RessurectionRadius";
-static char s_ToyzRadius[] = "ToyzRadius";
-static char s_TeleportRadius[] = "TeleportRadius";
-static char s_RollingBallzSpeed[] = "RollingBallzSpeed";
-static char s_RollingBallzTime[] = "RollingBallzTime";
-
-enum SpellzEffect {
-    SPELLZ_FREEZE = 1,       // FreezeRadius
-    SPELLZ_HEALTH = 2,       // HealthRadius
-    SPELLZ_RESURRECTION = 3, // RessurectionRadius
-    SPELLZ_TOYZ = 4,         // ToyzRadius
-    SPELLZ_TELEPORT = 5,     // TeleportRadius
-    SPELLZ_ROLLINGBALL = 6,  // RollingBallzSpeed/Time (spawns 4 directional ballz)
-};
-
-static const char s_CONVERSIONHIT[] = "GAME_CONVERSIONHIT";
-static const char s_DEATHTOUCHHIT[] = "GAME_DEATHTOUCHHIT";
-static const char s_IMPACTMM1[] = "GRUNTZ_NORMALGRUNT_IMPACTMM1";
-static const char s_IMPACTMM2[] = "GRUNTZ_NORMALGRUNT_IMPACTMM2";
-static const char s_IMPACTMM3[] = "GRUNTZ_NORMALGRUNT_IMPACTMM3";
-static const char s_IMPACTMM4[] = "GRUNTZ_NORMALGRUNT_IMPACTMM4";
-static const char s_IMPACTWM1[] = "GRUNTZ_NORMALGRUNT_IMPACTWM1";
-static const char s_IMPACTWM2[] = "GRUNTZ_NORMALGRUNT_IMPACTWM2";
-static const char s_IMPACTWM3[] = "GRUNTZ_NORMALGRUNT_IMPACTWM3";
-static const char s_BLOCKBODY1[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY1";
-static const char s_BLOCKBODY2[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY2";
-static const char s_BLOCKMETAL1[] = "GRUNTZ_NORMALGRUNT_BLOCKMETAL1";
-static const char s_SPRING2[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS2S1";
-static const char s_SPRING1[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS1S1";
-static const char s_TOOBZ[] = "GRUNTZ_TOOBGRUNT_TOOBZGRUNTUI1B";
-static const char s_typeO[] = "O";
-static const char s_knockKey[] = "KnockBackTimePerTile";
-static const char s_gruntSec[] = "Grunt";
 
 #define LK(key)                                                                                    \
     do {                                                                                           \
@@ -245,17 +282,6 @@ void CGrunt::EntranceTileOffset(i32* out) {
     out[0] = x;
     out[1] = y;
 }
-
-DATA(0x0020d7fc)
-char s_codeH[] = "H";
-
-DATA(0x0020d2e8)
-char s_codeF[] = "F";
-
-// CActRegPool<CGrunt>::s_table (0x00244af0): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-template<> DATA(0x00244af0)
-CActReg CActRegPool<CGrunt>::s_table(2000, 2010);
 
 // Re-clip the board dirty rect to the whole board. Retail 0x581ce/0x5813d/0x585db:
 // the clip rect is a real CRect LOCAL (direct ctor), the source rect a CRect

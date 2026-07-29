@@ -74,11 +74,16 @@ static char s_IdleDelay[] = "IdleDelay";                       // s_IdleDelay_00
 static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius"; // s_PlayerDefenderRadius_0060e1ac
 static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeout_0060df84
 
-static char s_ToyTiles[] = "ToyTiles";                     // s_ToyTiles_0060dbf8
+DATA(0x0020dbf8)
+static char s_ToyTiles[] = "ToyTiles"; // s_ToyTiles_0060dbf8
+DATA(0x0020da6c)
 static const char s_BABYWALKERGRUNT[] = "BABYWALKERGRUNT"; // s_..._0060da6c
-static const char s_BIGWHEELGRUNT[] = "BIGWHEELGRUNT";     // s_..._0060da48
-static const char s_GOKARTGRUNT[] = "GOKARTGRUNT";         // s_..._0060da38
-static const char s_POGOSTICKGRUNT[] = "POGOSTICKGRUNT";   // s_..._0060d9fc
+DATA(0x0020da48)
+static const char s_BIGWHEELGRUNT[] = "BIGWHEELGRUNT"; // s_..._0060da48
+DATA(0x0020da38)
+static const char s_GOKARTGRUNT[] = "GOKARTGRUNT"; // s_..._0060da38
+DATA(0x0020d9fc)
+static const char s_POGOSTICKGRUNT[] = "POGOSTICKGRUNT"; // s_..._0060d9fc
 
 // The tile records are 0x1c bytes walked with BYTE strides (the grid is exposed as
 // char** for exactly that), while each record's flag word is a dword at +0.

@@ -14,6 +14,16 @@
 #include <string.h>      // strcpy/strcat (inline CRT, reloc-masked)
 #include <stdio.h>       // sprintf (the drop-in banner)
 
+DATA(0x001ea448)
+const AFX_MSGMAP CMultiHelpDlg::messageMap = {
+    &CDialog::messageMap,
+    &CMultiHelpDlg::_messageEntries[0],
+};
+
+DATA(0x001ea450)
+const AFX_MSGMAP_ENTRY CMultiHelpDlg::_messageEntries[] = {
+    {0, 0, 0, 0, AfxSig_end, 0},
+};
 
 namespace NetLobby {
     // --- cluster-local globals (DATA home is HERE) ---
@@ -37,9 +47,6 @@ namespace NetLobby {
     // above their definitions can call them.
     // WM_INITDIALOG init helpers defined later in this TU (forward-declared so the
     // sibling wait/drop DlgProcs below can call them before their definitions).
-} // namespace NetLobby
-
-namespace NetLobby {
 
     // The pending drop-in player name is a real file-scope CString. MSVC emits
     // private construction/atexit/destruction _$E<n> helpers, but those suffixes
@@ -497,14 +504,3 @@ RVA(0x000bec00, 0x6)
 const AFX_MSGMAP* CMultiHelpDlg::GetMessageMap() const {
     return &messageMap;
 }
-
-DATA(0x001ea448)
-const AFX_MSGMAP CMultiHelpDlg::messageMap = {
-    &CDialog::messageMap,
-    &CMultiHelpDlg::_messageEntries[0],
-};
-
-DATA(0x001ea450)
-const AFX_MSGMAP_ENTRY CMultiHelpDlg::_messageEntries[] = {
-    {0, 0, 0, 0, AfxSig_end, 0},
-};

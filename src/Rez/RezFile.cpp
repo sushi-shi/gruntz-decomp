@@ -5,9 +5,9 @@
 #include <rva.h>
 
 // The two private fopen-mode literals referenced ONLY by Open@CRezItm + OpenFile@
-// CRezFile. cl mangles the `extern const char[]` reference with a `P` storage class,
-// which a DATA() label (clang's `Q` mangledName) misses; DATA_SYMBOL names the exact
-// cl mangling and is authority-checked against rezfile.obj's undefined externals.
+// CRezFile. cl mangles the `extern const char[]` reference with a `P` storage class
+// where clang's mangledName says `Q`; labels.py rewrites that (authority-checked
+// against rezfile.obj), so a plain DATA() binds.
 // (s_rb @0x20b668 is bound by DirectSoundMgr.cpp, which shares it.)
 DATA(0x0021a0a4)
 const char s_rPlusB[] = "r+b";

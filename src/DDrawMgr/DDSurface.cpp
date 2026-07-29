@@ -20,6 +20,22 @@ CPtrArray g_imageCache;
 DATA(0x00253c9e)
 u8 g_clut[0x30000]; // 0x653c9e
 
+DATA(0x00283ca0)
+u16 g_lut16[256] = {0}; // 0x683ca0
+DATA(0x00283ea0)
+i32 g_rUp; // 0x683ea0  (== ex g_rUp)
+DATA(0x00283ea4)
+i32 g_gUp; // 0x683ea4  (== ex g_gUp)
+DATA(0x00283ea8)
+i32 g_bUp; // 0x683ea8
+
+DATA(0x00283eac)
+i32 g_rDown; // 0x683eac  (== ex g_rDown)
+DATA(0x00283eb0)
+i32 g_gDown; // 0x683eb0  (== ex g_gDown)
+DATA(0x00283eb4)
+i32 g_bDown; // 0x683eb4  (== ex g_bDown)
+
 // The 3-bank CLUT is a BYTE array (the bank bases and the row deltas are byte
 // offsets) whose entries are 16-bit - that pun is inherent to the table, so it
 // lives here instead of at every lookup.
@@ -39,22 +55,6 @@ static inline void ClutStore16(u32 byteOff, i16 v) {
     // byte-forced, same band as the reader above
     *reinterpret_cast<i16*>(g_clut + byteOff) = v;
 }
-DATA(0x00283ca0)
-u16 g_lut16[256] = {0}; // 0x683ca0
-DATA(0x00283ea0)
-i32 g_rUp; // 0x683ea0  (== ex g_rUp)
-DATA(0x00283ea4)
-i32 g_gUp; // 0x683ea4  (== ex g_gUp)
-DATA(0x00283ea8)
-i32 g_bUp; // 0x683ea8
-
-DATA(0x00283eac)
-i32 g_rDown; // 0x683eac  (== ex g_rDown)
-DATA(0x00283eb0)
-i32 g_gDown; // 0x683eb0  (== ex g_gDown)
-DATA(0x00283eb4)
-i32 g_bDown; // 0x683eb4  (== ex g_bDown)
-
 // g_imageCache's file-scope construction/destruction family.
 
 RVA(0x0013e0a0, 0x27)

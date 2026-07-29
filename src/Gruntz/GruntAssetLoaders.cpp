@@ -27,23 +27,37 @@ static void GruntScratchTeardown() {
 }
 
 static const char s_dAnimKeyC[] = "C";
+DATA(0x0020e158)
 static const char s_DEATHZ_SQUASH[] = "GRUNTZ_DEATHZ_SQUASH";
+DATA(0x0020e140)
 static const char s_DEATHZ_SINK[] = "GRUNTZ_DEATHZ_SINK";
+DATA(0x0020e128)
 static const char s_DEATHZ_HOLE[] = "GRUNTZ_DEATHZ_HOLE";
+DATA(0x0020e10c)
 static const char s_DEATHZ_SHATTER[] = "GRUNTZ_DEATHZ_SHATTER";
 static const char s_DEATHZ_FREEZE[] = "GRUNTZ_DEATHZ_FREEZE";
+DATA(0x0020e0d8)
 static const char s_DEATHZ_BURN[] = "GRUNTZ_DEATHZ_BURN";
+DATA(0x0020e0bc)
 static const char s_DEATHZ_QUICKFALL[] = "GRUNTZ_DEATHZ_QUICKFALL";
+DATA(0x0020e0a4)
 static const char s_DEATHZ_FALL[] = "GRUNTZ_DEATHZ_FALL";
+DATA(0x0020e08c)
 static const char s_DEATHZ_FALL2[] = "GRUNTZ_DEATHZ_FALL2";
+DATA(0x0020e06c)
 static const char s_DEATHZ_QUICKFALL2[] = "GRUNTZ_DEATHZ_QUICKFALL2";
+DATA(0x0020e04c)
 static const char s_DEATHZ_ELECTROCUTE[] = "GRUNTZ_DEATHZ_ELECTROCUTE";
 static const char s_DEATHZ_MELT[] = "GRUNTZ_DEATHZ_MELT";
+DATA(0x0020e018)
 static const char s_DEATHZ_KAROKE[] = "GRUNTZ_DEATHZ_KAROKE";
+DATA(0x0020dffc)
 static const char s_DEATHZ_EXPLODE[] = "GRUNTZ_DEATHZ_EXPLODE";
+DATA(0x0020dfe4)
 static const char s_EXITZ_DRAIN[] = "GRUNTZ_EXITZ_DRAIN";
 static const char s_dEXITZ[] = "GRUNTZ_EXITZ";
 static const char s_dExitKeyB[] = "B";
+DATA(0x0020bcf4)
 static const char s_NORMALGRUNT_DEATH[] = "GRUNTZ_NORMALGRUNT_DEATH";
 
 enum GruntDeathType {
@@ -77,7 +91,7 @@ enum GruntDeathType {
                 m_object->m_screenX,                                                               \
                 m_object->m_screenY                                                                \
             )) {                                                                                   \
-            _g->m_cueSink->SpawnVoiceDriver(this, (tag), -1, 0, -1, -1);    \
+            _g->m_cueSink->SpawnVoiceDriver(this, (tag), -1, 0, -1, -1);                           \
         }                                                                                          \
     } while (0)
 
@@ -373,8 +387,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_38->ApplyName(static_cast<const char*>(m_44c));
             {
                 CGruntzMgr* g = g_gameReg;
-                CCueRect* r =
-                    &g->m_world->m_level->m_mainPlane->m_viewRect;
+                CCueRect* r = &g->m_world->m_level->m_mainPlane->m_viewRect;
                 i32 x = m_object->m_screenX;
                 i32 y = m_object->m_screenY;
                 if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {

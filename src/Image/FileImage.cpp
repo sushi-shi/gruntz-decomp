@@ -25,7 +25,8 @@ HINSTANCE g_resModule;
 DATA(0x00283ef0)
 PALETTEENTRY g_paletteRampBuf[0x100]; // 0x683ef0
 static PALETTEENTRY s_palBmp[0x100];  // 0x6842f0
-static PALETTEENTRY s_palPcx[0x100];  // 0x6846f0
+DATA(0x002846f0)
+static PALETTEENTRY s_palPcx[0x100]; // 0x6846f0
 DATA(0x00284af0)
 u8 g_grayRamp[0x401];                    // 0x684af0  (indices [1..0x400] written)
 static u8 s_palPidData[0x400];           // 0x684ef0 (CDDSurface::DecodePid)

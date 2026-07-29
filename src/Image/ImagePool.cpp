@@ -11,6 +11,9 @@
 DATA(0x002bf6e0)
 HINSTANCE g_hResModule = 0; // 0x6bf6e0
 
+DATA(0x0021aabc)
+char g_bmpHeaderTemplate[4] = "BM"; // 0x61aabc  = 42 4d 00 00
+
 namespace ApiCallerStubs {
     // The palette list node CImagePaletteNode is the ONE canonical class in
     // <Image/ImagePaletteNode.h> (included above): this TU owns its Build/ProcessPal*/
@@ -21,9 +24,6 @@ namespace ApiCallerStubs {
     // 0x1770a0 probes display-palette support; 0x177160 resets the screen
     // palette to all-black. __cdecl.
 } // namespace ApiCallerStubs
-
-DATA(0x0021aabc)
-char g_bmpHeaderTemplate[4] = "BM"; // 0x61aabc  = 42 4d 00 00
 
 RVA(0x00174e90, 0x1c)
 i32 CImagePool::SetHandles(HINSTANCE resModule, HWND src, i32 c) {

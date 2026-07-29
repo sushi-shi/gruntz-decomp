@@ -754,36 +754,48 @@ i16 g_transTable[97][49][3] = {
 
 static i16 g_tokenLen;
 
+DATA(0x002240d0)
 static const char s_fmtFormatError[] =
-    "ButeMgr (%d):  A formatting error in the attribute file was encountered";  // 0x2240d0
-static const char s_fmtBadSymbol[] = "ButeMgr (%d):  Bad symbol encountered.";  // 0x2240a8
-static const char s_fmtDupTag[] = "ButeMgr:  duplicate tag encountered - %s";   // 0x2241d4
-static const char s_fmtTypeMismatch[] = "ButeMgr:  Type mismatch - [%s]:%s";    // 0x224204
+    "ButeMgr (%d):  A formatting error in the attribute file was encountered"; // 0x2240d0
+DATA(0x002240a8)
+static const char s_fmtBadSymbol[] = "ButeMgr (%d):  Bad symbol encountered."; // 0x2240a8
+DATA(0x002241d4)
+static const char s_fmtDupTag[] = "ButeMgr:  duplicate tag encountered - %s"; // 0x2241d4
+DATA(0x00224204)
+static const char s_fmtTypeMismatch[] = "ButeMgr:  Type mismatch - [%s]:%s"; // 0x224204
+DATA(0x00224228)
 static const char s_fmtInvalidTag[] = "ButeMgr:  Invalid tag specified - [%s]"; // 0x224228
-static const char s_fmtNotFound[] = "ButeMgr:  Symbol not found - [%s]:%s";     // 0x224250
+DATA(0x00224250)
+static const char s_fmtNotFound[] = "ButeMgr:  Symbol not found - [%s]:%s"; // 0x224250
 
 static const float s_floatErr = FLT_MIN;
 static const double s_doubleErr = DBL_MIN;
 
-// Bind the error-reporter string/const pool cells to their retail .data/.rdata RVAs.
-// cl decorates each file-scope static `_<name>$S<n>`, where <n> is a per-OBJECT CodeView
-// symbol counter - it walks every symbol the TU emits, so the ids SHIFT whenever
-// ButeMgr.cpp gains or loses ANY symbol. Pinning a literal id rots on the next edit (it
-// did, twice), so these pins are WILDCARD: `$S*` is resolved by prefix against
-// butemgr.obj's actual symbols at label time. Nothing to re-pin when this TU changes.
+// The DATA() rows below bind the error-reporter string/const pool cells to their retail
+// .data/.rdata RVAs. cl decorates each file-scope static `_<name>$S<n>` with a per-OBJECT
+// CodeView counter that SHIFTS whenever this TU gains or loses any symbol, so labels.py
+// resolves the ordinal by prefix at label time (msvc5_data_symbol) - nothing to re-pin
+// here when the file changes.
 
+DATA(0x00224118)
 static const char s_fmtInvalidToken[] = "ButeMgr (%d):  Invalid token encountered.";
+DATA(0x002241a0)
 static const char s_strDword[] = "(DWORD)";
+DATA(0x00224198)
 static const char s_strFloat[] = "(FLOAT)";
 static const char s_strFloatSuffix[] = "f";
+DATA(0x00224180)
 static const char s_fmtPoint4[] = "(%d, %d, %d, %d)";
 static const char s_strOpen[] = "(";
 static const char s_strClose[] = ")";
 static const char s_strComma[] = ", ";
+DATA(0x00224168)
 static const char s_fmtPoint2[] = "(%d, %d)";
+DATA(0x00224158)
 static const char s_fmtRect3[] = "<%lf, %lf, %lf>";
 static const char s_strLt[] = "<";
 static const char s_strGt[] = ">";
+DATA(0x00224144)
 static const char s_fmtRect2[] = "[%lf, %lf]";
 static const char s_strLBrack[] = "[";
 static const char s_strRBrack[] = "]";

@@ -36,8 +36,11 @@ i32 g_clipRegionEnabled; // owner def (zero-init .bss)
 
 VTBL(CCreditsState, 0x001e9c64);
 
-static const double kScreenH = 480.0;    // 0x5e96f8  screen height
+DATA(0x001e96f8)
+static const double kScreenH = 480.0; // 0x5e96f8  screen height
+DATA(0x001e96f0)
 static const double kScrollRate = 0.025; // 0x5e96f0  scroll rate
+DATA(0x001e9708)
 static const double kStepScale = 1000.0; // 0x5e9708  scroll-step scale (m_scrollStep reseed)
 
 RVA(0x00038d20, 0x176)

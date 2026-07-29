@@ -12,6 +12,15 @@ VTBL(CBoomerang, 0x001e792c);
 DATA(0x001eaae8)
 const double g_projPhase0 = 3.1415927;
 
+DATA(0x001eaad8)
+const double g_boomHalf = 0.5; // midpoint scale (0.5) (decl in Boomerang.h)
+DATA(0x001eaae0)
+const double g_boomTimeScale = 0.03125;
+DATA(0x001eaaf0)
+const double g_boomRetC3 = 0.0625;
+DATA(0x001eaaf8)
+const double g_boomRetC4 = -500.0;
+
 RVA_COMPGEN(0x000129d0, 0x1e, ??_GCBoomerang@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012a00, 0x5, ??1CBoomerang@@UAE@XZ)
 
@@ -28,15 +37,6 @@ CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
     // vptr stamp is IMPLICIT (real polymorphic class).
     m_38->m_flags |= 0x2000002;
 }
-
-DATA(0x001eaad8)
-const double g_boomHalf = 0.5; // midpoint scale (0.5) (decl in Boomerang.h)
-DATA(0x001eaae0)
-const double g_boomTimeScale = 0.03125;
-DATA(0x001eaaf0)
-const double g_boomRetC3 = 0.0625;
-DATA(0x001eaaf8)
-const double g_boomRetC4 = -500.0;
 
 // CBoomerang::LoadProjectileSprites @0xe0690 - vtable slot 17. Forward to the base
 // CProjectile loader (bail on failure); then compute the boomerang RETURN trajectory:

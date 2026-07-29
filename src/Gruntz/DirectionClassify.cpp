@@ -11,6 +11,9 @@
 #include <Gruntz/DirectionClassify.h>
 #include <Gruntz/Grunt.h>
 
+// File-scope `const` has INTERNAL linkage in C++, so cl decorates each of these
+// `_<name>$S<n>` with a per-object ordinal - a plain DATA() label (clang's
+// undecorated mangledName) never matched the base obj and bound nothing.
 DATA(0x001e9750)
 const double g_slopeNegHalf = -0.5;
 

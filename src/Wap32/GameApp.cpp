@@ -5,6 +5,21 @@
 #include <stdio.h>
 #include <Wap32/GameApp.h> // own exported globals (ex Globals.h)
 
+VTBL(CGameMgr, 0x001e9b8c); // ??_7CGameMgr@@6B@ (RTTI-real, global-ns)
+DATA(0x00253c6c)
+i32 g_gameAppInstanceCount = 0; // CGameApp instance counter
+DATA(0x00253c70)
+i32 g_wap32Now = 0; // frame clock (timeGetTime latch)
+DATA(0x00253c74)
+i32 g_wap32FrameDelta = 0; // frame delta
+DATA(0x00253c78)
+i32 g_wap32ClockReset = 0; // 0x653c78
+DATA(0x00253c7c)
+i32 g_wap32Run7c = 0; // 0x653c7c  run-state countdown
+DATA(0x00253c80)
+i32 g_wap32Run80 = 0; // 0x653c80  run-state reload value
+VTBL(CGameApp, 0x001e9b0c);
+
 // CGameApp::~CGameApp @0x080cf0 - the STANDALONE out-of-line copy of the (inline,
 // header-defined) base dtor, referenced only by a /GX EH-unwind funclet (base-subobject
 // cleanup when a CGameApp-derived ctor's member throws). ??_GCGameApp above and
@@ -366,20 +381,6 @@ CGameMgr::CGameMgr() {
     InitializeTimeGlobal();
 }
 
-VTBL(CGameMgr, 0x001e9b8c); // ??_7CGameMgr@@6B@ (RTTI-real, global-ns)
-DATA(0x00253c6c)
-i32 g_gameAppInstanceCount = 0; // CGameApp instance counter
-DATA(0x00253c70)
-i32 g_wap32Now = 0; // frame clock (timeGetTime latch)
-DATA(0x00253c74)
-i32 g_wap32FrameDelta = 0; // frame delta
-DATA(0x00253c78)
-i32 g_wap32ClockReset = 0; // 0x653c78
-DATA(0x00253c7c)
-i32 g_wap32Run7c = 0; // 0x653c7c  run-state countdown
-DATA(0x00253c80)
-i32 g_wap32Run80 = 0; // 0x653c80  run-state reload value
-
 RVA(0x0013dd50, 0x54)
 i32 CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     if (!pGameWnd) {
@@ -531,5 +532,3 @@ void ForceEmitCGameAppDtor() {
     g_forceEmitCGameApp->CGameApp::~CGameApp();
 }
 #pragma inline_depth()
-
-VTBL(CGameApp, 0x001e9b0c);

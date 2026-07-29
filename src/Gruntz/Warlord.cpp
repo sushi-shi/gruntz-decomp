@@ -26,25 +26,38 @@
 #include <Wap32/ZVec.h>
 
 static const char s_GRUNTZ_[] = "GRUNTZ_";
+DATA(0x0020d220)
 static const char s__MOVING[] = "_MOVING";
 static const char s__DEATH[] = "_DEATH";
+DATA(0x0020d234)
 static const char s__JOY[] = "_JOY";
+DATA(0x0020d36c)
 static const char s__IDLE[] = "_IDLE";
+DATA(0x0020d374)
 static const char s__BATTLECRY[] = "_BATTLECRY";
 static const char s__IDLE1[] = "_IDLE1";
 static const char s__IDLE2[] = "_IDLE2";
 static const char s__IDLE3[] = "_IDLE3";
 static const char s__IDLE4[] = "_IDLE4";
+DATA(0x0020d25c)
 static const char s__BATTLECRY1[] = "_BATTLECRY1";
+DATA(0x0020d24c)
 static const char s__BATTLECRY2[] = "_BATTLECRY2";
+DATA(0x0020d23c)
 static const char s__BATTLECRY3[] = "_BATTLECRY3";
+DATA(0x0020d218)
 static const char s__PANIC[] = "_PANIC";
+DATA(0x0020d2d8)
 static const char s_WARLORDZ_KING[] = "WARLORDZ_KING";
+DATA(0x0020d2c0)
 static const char s_WARLORDZ_NAPOLEAN[] = "WARLORDZ_NAPOLEAN";
+DATA(0x0020d2ac)
 static const char s_WARLORDZ_PATTON[] = "WARLORDZ_PATTON";
+DATA(0x0020d298)
 static const char s_WARLORDZ_VIKING[] = "WARLORDZ_VIKING";
 static const char s_keyB[] = "B";
 static const char s_keyC[] = "C";
+DATA(0x0020d2ec)
 static const char s_keyE[] = "E";
 static const char s_keyA[] = "A";
 static const char s_keyF[] = "F";

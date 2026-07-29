@@ -10,6 +10,23 @@
 DATA(0x002bf224)
 PALETTEENTRY* g_pal = 0; // 0x6bf224  (owner-TU definition)
 
+DATA(0x001efb40)
+float g_one = 1.0f; // 0x5efb40
+DATA(0x001efb44)
+float g_255 = 255.0f; // 0x5efb44
+DATA(0x001efb48)
+float g_p01 = 0.01f; // 0x5efb48
+DATA(0x001efb4c)
+float g_lumaR = 0.5859375f; // 0x5efb4c
+DATA(0x001efb50)
+float g_lumaG = 0.296875f; // 0x5efb50
+DATA(0x001efb54)
+float g_lumaB = 0.109375f; // 0x5efb54
+DATA(0x001efb58)
+float g_inv255 = 0.003921568859368563f; // 0x5efb58  (1/255, exact float)
+DATA(0x001efb5c)
+float g_negone = -1.0f;
+
 void* ::operator new(u32); // matches ??2@YAPAXI@Z
 
 inline CShadeTableArray::CShadeTableArray() {
@@ -79,23 +96,6 @@ void CShadeTableCache::FreeNodes() {
     m_arr.m_nMaxSize = 0;
     m_arr.m_nSize = 0;
 }
-
-DATA(0x001efb40)
-float g_one = 1.0f; // 0x5efb40
-DATA(0x001efb44)
-float g_255 = 255.0f; // 0x5efb44
-DATA(0x001efb48)
-float g_p01 = 0.01f; // 0x5efb48
-DATA(0x001efb4c)
-float g_lumaR = 0.5859375f; // 0x5efb4c
-DATA(0x001efb50)
-float g_lumaG = 0.296875f; // 0x5efb50
-DATA(0x001efb54)
-float g_lumaB = 0.109375f; // 0x5efb54
-DATA(0x001efb58)
-float g_inv255 = 0.003921568859368563f; // 0x5efb58  (1/255, exact float)
-DATA(0x001efb5c)
-float g_negone = -1.0f;
 
 // ===========================================================================
 // 0x14df40 - FlashTable: a 256 x (nA+nB)-byte per-palette brightness-pulse ramp.

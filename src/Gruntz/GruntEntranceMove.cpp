@@ -65,7 +65,9 @@ static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeou
 
 static const char s_GRUNTZ_DEATHZ_FREEZE[] = "GRUNTZ_DEATHZ_FREEZE";
 
-static const char s_GRUNTZ_DEATHZ_SPARKLE[] = "GRUNTZ_DEATHZ_SPARKLE";   // 0x60ee48
+DATA(0x0020ee48)
+static const char s_GRUNTZ_DEATHZ_SPARKLE[] = "GRUNTZ_DEATHZ_SPARKLE"; // 0x60ee48
+DATA(0x0020ee1c)
 static const char s_GRUNTZ_DEATHZ_UNFREEZE[] = "GRUNTZ_DEATHZ_UNFREEZE"; // 0x60ee1c
 static char s_Spellz[] = "Spellz";                                       // 0x60cca8
 static char s_FreezeDelay[] = "FreezeDelay";                             // 0x60ee38
@@ -75,6 +77,104 @@ static char s_RunningTimePerTile[] = "RunningTimePerTile"; // 0x60e264
 
 static const char s_animKeyA[] = "A";
 static const char s_animKeyK[] = "K";
+
+DATA(0x0020edf4)
+static const char s_NW_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_ITEM";
+DATA(0x0020edd0)
+static const char s_N_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTH_ITEM";
+DATA(0x0020eda8)
+static const char s_NE_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_ITEM";
+DATA(0x0020ed84)
+static const char s_W_ITEM[] = "GRUNTZ_WINGZGRUNT_WEST_ITEM";
+DATA(0x0020ed60)
+static const char s_E_ITEM[] = "GRUNTZ_WINGZGRUNT_EAST_ITEM";
+DATA(0x0020ed38)
+static const char s_SW_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_ITEM";
+DATA(0x0020ed14)
+static const char s_S_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTH_ITEM";
+DATA(0x0020ecec)
+static const char s_SE_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_ITEM";
+DATA(0x0020eca8)
+static const char s_NW_WALK[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_WALK";
+DATA(0x0020ec84)
+static const char s_N_WALK[] = "GRUNTZ_WINGZGRUNT_NORTH_WALK";
+DATA(0x0020ec5c)
+static const char s_NE_WALK[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_WALK";
+DATA(0x0020ec38)
+static const char s_W_WALK[] = "GRUNTZ_WINGZGRUNT_WEST_WALK";
+DATA(0x0020ec14)
+static const char s_E_WALK[] = "GRUNTZ_WINGZGRUNT_EAST_WALK";
+DATA(0x0020ebec)
+static const char s_SW_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_WALK";
+DATA(0x0020ebc8)
+static const char s_S_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTH_WALK";
+DATA(0x0020eba0)
+static const char s_SE_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_WALK";
+DATA(0x0020eb78)
+static const char s_NW_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_IDLE";
+DATA(0x0020eb54)
+static const char s_N_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTH_IDLE";
+DATA(0x0020eb2c)
+static const char s_NE_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_IDLE";
+DATA(0x0020eb08)
+static const char s_W_IDLE[] = "GRUNTZ_WINGZGRUNT_WEST_IDLE";
+DATA(0x0020eae4)
+static const char s_E_IDLE[] = "GRUNTZ_WINGZGRUNT_EAST_IDLE";
+DATA(0x0020eabc)
+static const char s_SW_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_IDLE";
+DATA(0x0020ea98)
+static const char s_S_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTH_IDLE";
+DATA(0x0020ea70)
+static const char s_SE_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_IDLE";
+DATA(0x0020ecd0)
+static const char s_WG_ITEM[] = "GRUNTZ_WINGZGRUNT_ITEM";
+DATA(0x0020ea54)
+static const char s_WG_WALK[] = "GRUNTZ_WINGZGRUNT_WALK";
+DATA(0x0020ea38)
+static const char s_WG_IDLE1[] = "GRUNTZ_WINGZGRUNT_IDLE1";
+DATA(0x0020ea1c)
+static const char s_WG_IDLE2[] = "GRUNTZ_WINGZGRUNT_IDLE2";
+DATA(0x0020ea00)
+static const char s_WG_IDLE3[] = "GRUNTZ_WINGZGRUNT_IDLE3";
+DATA(0x0020e9e4)
+static const char s_WG_IDLE4[] = "GRUNTZ_WINGZGRUNT_IDLE4";
+DATA(0x0020e9c8)
+static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
+
+DATA(0x0020e998)
+static const char s_GRUNTZ_ENTRANCEZ[] = "GRUNTZ_ENTRANCEZ";
+DATA(0x0020e9ac)
+static const char s_GRUNTZ_ENTRANCEZ_ONE[] = "GRUNTZ_ENTRANCEZ_ONE";
+DATA(0x0020e97c)
+static const char s_GRUNTZ_ENTRANCEZ_TWO[] = "GRUNTZ_ENTRANCEZ_TWO";
+DATA(0x0020e960)
+static const char s_GRUNTZ_ENTRANCEZ_THREE[] = "GRUNTZ_ENTRANCEZ_THREE";
+DATA(0x0020e944)
+static const char s_GRUNTZ_ENTRANCEZ_DROP[] = "GRUNTZ_ENTRANCEZ_DROP";
+DATA(0x0020e924)
+static const char s_GRUNTZ_ENTRANCEZ_RESSURECT[] = "GRUNTZ_ENTRANCEZ_RESSURECT";
+static const char s_GRUNTZ_DEATHZ_MELT[] = "GRUNTZ_DEATHZ_MELT";
+
+static const char s_exitKeyB[] = "B";                            // 0x60d1bc
+static const char s_GRUNTZ_EXITZ[] = "GRUNTZ_EXITZ";             // 0x60bd28
+static const char s_GRUNTZ_EXITZ_ONE[] = "GRUNTZ_EXITZ_ONE";     // 0x60e250
+static const char s_GRUNTZ_EXITZ_TWO[] = "GRUNTZ_EXITZ_TWO";     // 0x60e23c
+static const char s_GRUNTZ_EXITZ_THREE[] = "GRUNTZ_EXITZ_THREE"; // 0x60e224
+
+static const char s_GRUNTZ_GOKARTGRUNT[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";       // 0x60e1f8
+static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNTLOOP"; // 0x60e1c8
+DATA(0x0020ee64)
+static char s_MovingDeathTime[] = "MovingDeathTime";
+static const char s_animKeyS[] = "S";
+
+i32 g_moveVecE[3];  // 0x644aa0
+i32 g_moveVecN[3];  // 0x644ab0
+i32 g_moveVecS[3];  // 0x644ac0
+i32 g_moveVecW[3];  // 0x644ad0
+i32 g_moveVecNE[3]; // 0x644ae0
+i32 g_moveVecNW[3]; // 0x644b18
+i32 g_moveVecSE[3]; // 0x644b28
+i32 g_moveVecSW[3]; // 0x644b48
 
 static __inline i32 s_TileFlags(CGruntzMapMgr* b, i32 tx, i32 ty) {
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
@@ -114,38 +214,6 @@ static void GruntScratchTeardown() {
         cnt--;
     }
 }
-
-static const char s_NW_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_ITEM";
-static const char s_N_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTH_ITEM";
-static const char s_NE_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_ITEM";
-static const char s_W_ITEM[] = "GRUNTZ_WINGZGRUNT_WEST_ITEM";
-static const char s_E_ITEM[] = "GRUNTZ_WINGZGRUNT_EAST_ITEM";
-static const char s_SW_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_ITEM";
-static const char s_S_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTH_ITEM";
-static const char s_SE_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_ITEM";
-static const char s_NW_WALK[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_WALK";
-static const char s_N_WALK[] = "GRUNTZ_WINGZGRUNT_NORTH_WALK";
-static const char s_NE_WALK[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_WALK";
-static const char s_W_WALK[] = "GRUNTZ_WINGZGRUNT_WEST_WALK";
-static const char s_E_WALK[] = "GRUNTZ_WINGZGRUNT_EAST_WALK";
-static const char s_SW_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_WALK";
-static const char s_S_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTH_WALK";
-static const char s_SE_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_WALK";
-static const char s_NW_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_IDLE";
-static const char s_N_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTH_IDLE";
-static const char s_NE_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_IDLE";
-static const char s_W_IDLE[] = "GRUNTZ_WINGZGRUNT_WEST_IDLE";
-static const char s_E_IDLE[] = "GRUNTZ_WINGZGRUNT_EAST_IDLE";
-static const char s_SW_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_IDLE";
-static const char s_S_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTH_IDLE";
-static const char s_SE_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_IDLE";
-static const char s_WG_ITEM[] = "GRUNTZ_WINGZGRUNT_ITEM";
-static const char s_WG_WALK[] = "GRUNTZ_WINGZGRUNT_WALK";
-static const char s_WG_IDLE1[] = "GRUNTZ_WINGZGRUNT_IDLE1";
-static const char s_WG_IDLE2[] = "GRUNTZ_WINGZGRUNT_IDLE2";
-static const char s_WG_IDLE3[] = "GRUNTZ_WINGZGRUNT_IDLE3";
-static const char s_WG_IDLE4[] = "GRUNTZ_WINGZGRUNT_IDLE4";
-static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
 
 // ---------------------------------------------------------------------------
 // CGrunt::RunEntranceMove()   @0x67850   (ret 0)
@@ -249,23 +317,6 @@ i32 CGrunt::GruntInRadius(i32 col, i32 row) {
     }
     return 0;
 }
-
-static const char s_GRUNTZ_ENTRANCEZ[] = "GRUNTZ_ENTRANCEZ";
-static const char s_GRUNTZ_ENTRANCEZ_ONE[] = "GRUNTZ_ENTRANCEZ_ONE";
-static const char s_GRUNTZ_ENTRANCEZ_TWO[] = "GRUNTZ_ENTRANCEZ_TWO";
-static const char s_GRUNTZ_ENTRANCEZ_THREE[] = "GRUNTZ_ENTRANCEZ_THREE";
-static const char s_GRUNTZ_ENTRANCEZ_DROP[] = "GRUNTZ_ENTRANCEZ_DROP";
-static const char s_GRUNTZ_ENTRANCEZ_RESSURECT[] = "GRUNTZ_ENTRANCEZ_RESSURECT";
-static const char s_GRUNTZ_DEATHZ_MELT[] = "GRUNTZ_DEATHZ_MELT";
-
-static const char s_exitKeyB[] = "B";                            // 0x60d1bc
-static const char s_GRUNTZ_EXITZ[] = "GRUNTZ_EXITZ";             // 0x60bd28
-static const char s_GRUNTZ_EXITZ_ONE[] = "GRUNTZ_EXITZ_ONE";     // 0x60e250
-static const char s_GRUNTZ_EXITZ_TWO[] = "GRUNTZ_EXITZ_TWO";     // 0x60e23c
-static const char s_GRUNTZ_EXITZ_THREE[] = "GRUNTZ_EXITZ_THREE"; // 0x60e224
-
-static const char s_GRUNTZ_GOKARTGRUNT[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";       // 0x60e1f8
-static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNTLOOP"; // 0x60e1c8
 
 RVA(0x00067bd0, 0x2ef)
 void CGrunt::BuildEntranceAnimation(i32 mode) {
@@ -1160,18 +1211,6 @@ i32 CGrunt::FinishEntranceMove() {
     m_38->m_flags |= 0x10000;
     return 0;
 }
-
-static char s_MovingDeathTime[] = "MovingDeathTime";
-static const char s_animKeyS[] = "S";
-
-i32 g_moveVecE[3];  // 0x644aa0
-i32 g_moveVecN[3];  // 0x644ab0
-i32 g_moveVecS[3];  // 0x644ac0
-i32 g_moveVecW[3];  // 0x644ad0
-i32 g_moveVecNE[3]; // 0x644ae0
-i32 g_moveVecNW[3]; // 0x644b18
-i32 g_moveVecSE[3]; // 0x644b28
-i32 g_moveVecSW[3]; // 0x644b48
 
 // @early-stop
 // jump-table-placement wall (0.4% stub -> 22%): logic is complete and correct -

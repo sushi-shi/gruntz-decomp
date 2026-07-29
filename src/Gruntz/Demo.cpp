@@ -34,6 +34,20 @@
 #include <Gruntz/Warlord.h>
 #include <Gruntz/Wormhole.h>
 
+DATA(0x0020d008)
+const i32 g_rotTableA_60d008[27] = {
+    0, 1, 1, 0, 2, 2, 1, 2, 3, 0, 0, 8, 1, 1, 0, 2, 2, 4, 1, 0, 7, 2, 0, 6, 2, 1, 5,
+}; // CW transitions
+DATA(0x0020d078)
+const i32 g_rotTableB_60d078[27] = {
+    1, 0, 7, 0, 0, 8, 0, 1, 1, 2, 0, 6, 1, 1, 0, 0, 2, 2, 2, 1, 5, 2, 2, 4, 1, 2, 3,
+}; // CCW transitions
+// The editor dialog's text buffer + length word (first-referenced here).
+DATA(0x0022c450)
+i32 g_buteEditLen;
+DATA(0x0022c458)
+char g_buteEditBuf[0x10000];
+
 RVA(0x0003bfa0, 0x42)
 i32 CDemo::LoadGameAssetNamespaces(CGruntzMgr* ctx, i32 a1, i32 a2) {
     ctx->m_strWorldFile.Empty();
@@ -187,15 +201,6 @@ bool SameCellTag(const GruntEntranceCell* a, const GruntDirectionCell* b) {
     return a->reason == b->direction;
 }
 
-DATA(0x0020d008)
-const i32 g_rotTableA_60d008[27] = {
-    0, 1, 1, 0, 2, 2, 1, 2, 3, 0, 0, 8, 1, 1, 0, 2, 2, 4, 1, 0, 7, 2, 0, 6, 2, 1, 5,
-}; // CW transitions
-DATA(0x0020d078)
-const i32 g_rotTableB_60d078[27] = {
-    1, 0, 7, 0, 0, 8, 0, 1, 1, 2, 0, 6, 1, 1, 0, 0, 2, 2, 2, 1, 5, 2, 2, 4, 1, 2, 3,
-}; // CCW transitions
-
 // @early-stop
 // Counter-register regalloc wall: retail pins the loop counter in edi (push edi at
 // entry, callee-saved) which frees edx for the m_4 temp + esi for the `e` pointer,
@@ -258,11 +263,6 @@ i32 CTriRecord::Serialize(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
 //     CButeMgr::Parse(CString, 1) on g_resButeMgr [thunk 0x38e6 -> 0x3cc20, below];
 //     EndDialog(hDlg,1). wParam==2 (Cancel): EndDialog(hDlg,0).
 // ---------------------------------------------------------------------------
-// The editor dialog's text buffer + length word (first-referenced here).
-DATA(0x0022c450)
-i32 g_buteEditLen;
-DATA(0x0022c458)
-char g_buteEditBuf[0x10000];
 
 // 0x3c990: the "Attributez.txt" editor dialog proc (edit control 0x435).
 // WM_INITDIALOG loads attributez.txt into the edit box through a SCOPED ifstream;

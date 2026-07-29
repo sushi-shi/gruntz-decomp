@@ -12,6 +12,52 @@
 #include <Gruntz/GameLevel.h>     // CGameLevel (m_world->m_level: m_planeCtx + m_mainPlane)
 #include <Rez/RezSync.h>          // g_dlgVal_645538
 #include <rva.h>
+// The 1<<i bit table (0x5e9608 = RVA 0x1e9608) the mask builder/scanner indexes.
+DATA(0x001e9608)
+const u16 g_cmdBitTable[16] = {
+    1,
+    2,
+    4,
+    8,
+    0x10,
+    0x20,
+    0x40,
+    0x80,
+    0x100,
+    0x200,
+    0x400,
+    0x800,
+    0x1000,
+    0x2000,
+    0x4000,
+    0x8000
+};
+
+VTBL(CGruntzSingleCommand, 0x001e9634); // vtable_names -> code (RTTI game class)
+VTBL(CGruntzCommand, 0x001e9674);
+VTBL(CGruntzMultiCommand, 0x001e96b4); // vtable_names -> code (RTTI game class)
+DATA(0x002451a4)
+i32 g_dlgVal_6451a4;
+DATA(0x00245268)
+i32 g_dlgVal_645268;
+DATA(0x0024526c)
+i32 g_dlgVal_64526c;
+DATA(0x002452a8)
+i32 g_dlgVal_6452a8;
+DATA(0x002452d0)
+i32 g_dlgVal_6452d0;
+DATA(0x002452d4)
+i32 g_dlgVal_6452d4;
+DATA(0x00245558)
+i32 g_dlgVal_645558;
+DATA(0x0024555c)
+i32 g_dlgVal_64555c;
+DATA(0x00245560)
+i32 g_dlgVal_645560;
+DATA(0x00245564)
+i32 g_dlgVal_645564;
+DATA(0x00245568)
+i32 g_dlgVal_645568;
 
 i32 CGruntzCommand::Serialize(CFileMemBase*, i32, i32, i32) {
     return 1;
@@ -678,56 +724,6 @@ CGruntzCmdMgr::~CGruntzCmdMgr() {
     ClearAndReset();
 }
 
-// The 1<<i bit table (0x5e9608 = RVA 0x1e9608) the mask builder/scanner indexes.
-// Bound via DATA_SYMBOL (not DATA): this const u16[] is DEFINED here, and clang
-// mangles a const array with the `Q` storage class while cl5's reloc/definition
-// uses `?g_cmdBitTable@@3PBGB` (PB) - DATA_SYMBOL names the exact cl5 symbol so the
-// three DIR32 mask-loop operands reloc-pair.
-DATA_SYMBOL(0x001e9608, 0x0, ?g_cmdBitTable@@3PBGB)
-const u16 g_cmdBitTable[16] = {
-    1,
-    2,
-    4,
-    8,
-    0x10,
-    0x20,
-    0x40,
-    0x80,
-    0x100,
-    0x200,
-    0x400,
-    0x800,
-    0x1000,
-    0x2000,
-    0x4000,
-    0x8000
-};
-
-VTBL(CGruntzSingleCommand, 0x001e9634); // vtable_names -> code (RTTI game class)
-VTBL(CGruntzCommand, 0x001e9674);
-VTBL(CGruntzMultiCommand, 0x001e96b4); // vtable_names -> code (RTTI game class)
-DATA(0x002451a4)
-i32 g_dlgVal_6451a4;
-DATA(0x00245268)
-i32 g_dlgVal_645268;
-DATA(0x0024526c)
-i32 g_dlgVal_64526c;
-DATA(0x002452a8)
-i32 g_dlgVal_6452a8;
-DATA(0x002452d0)
-i32 g_dlgVal_6452d0;
-DATA(0x002452d4)
-i32 g_dlgVal_6452d4;
-DATA(0x00245558)
-i32 g_dlgVal_645558;
-DATA(0x0024555c)
-i32 g_dlgVal_64555c;
-DATA(0x00245560)
-i32 g_dlgVal_645560;
-DATA(0x00245564)
-i32 g_dlgVal_645564;
-DATA(0x00245568)
-i32 g_dlgVal_645568;
 RVA(0x00092ab0, 0x20d)
 i32 CALLBACK winapi_092ab0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {

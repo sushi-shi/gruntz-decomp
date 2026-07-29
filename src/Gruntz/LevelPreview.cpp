@@ -26,6 +26,9 @@
 #include <Gruntz/LevelPreview.h>  // ex Globals.h
 #include <Image/ImageFormatTag.h> // IMGTAG_XCP - the screen-page format word
 
+DATA(0x0024c69c)
+i32 g_flag64c69c = 0; // DAT_0064c69c  (owner-TU definition)
+
 RVA(0x000de030, 0xc2)
 i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 a1, i32 a2) {
     // The base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9;
@@ -223,8 +226,6 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
     return 1;
 }
 
-DATA(0x0024c69c)
-i32 g_flag64c69c = 0; // DAT_0064c69c  (owner-TU definition)
 RVA(0x000de590, 0x2e)
 void CPreviewState::Cancel() {
     if (g_flag64c69c) {

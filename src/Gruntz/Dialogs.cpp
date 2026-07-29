@@ -73,6 +73,12 @@ const AFX_MSGMAP_ENTRY CBattlezDlg::_messageEntries[] = {
 DATA(0x001e8d10)
 const i32 g_msgmap_CBattlezDlgColors = 6205544;
 
+VTBL(CBattlezDlg, 0x001e8bac);       // vtable_names -> code (RTTI game class)
+VTBL(CBattlezDlgColors, 0x001e8d94); // vtable_names -> code (RTTI game class)
+VTBL(CBattlezDlgCustom, 0x001e8ee4); // vtable_names -> code (RTTI game class)
+DATA(0x00229d10)
+WNDPROC g_savedDlgWndProc; // the saved original proc (was i32; no writer in src - DATA-only)
+
 RVA(0x00014b10, 0x5)
 long CBattlezDlg::OnPaint() {
     return Default();
@@ -157,12 +163,6 @@ RVA_COMPGEN(0x00017980, 0x1e, ??_GCBattlezDlgColors@@UAEPAXI@Z)
 
 RVA(0x00018030, 0x56)
 CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
-
-VTBL(CBattlezDlg, 0x001e8bac);       // vtable_names -> code (RTTI game class)
-VTBL(CBattlezDlgColors, 0x001e8d94); // vtable_names -> code (RTTI game class)
-VTBL(CBattlezDlgCustom, 0x001e8ee4); // vtable_names -> code (RTTI game class)
-DATA(0x00229d10)
-WNDPROC g_savedDlgWndProc; // the saved original proc (was i32; no writer in src - DATA-only)
 
 RVA(0x00015a10, 0x70)
 i32 CALLBACK WndProc_15a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {

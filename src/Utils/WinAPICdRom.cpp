@@ -4,6 +4,8 @@
 #include <rva.h>
 #include <stdio.h>
 
+static char s_cdDriveLetter;
+
 RVA(0x0001fd50, 0xf)
 i32 IsGruntzCDInAnyDrive() {
     char letter = GetGruntzDriveLetter();
@@ -64,8 +66,6 @@ char CheckCdRomRegistry() {
     letter = 0;
     return letter;
 }
-
-static char s_cdDriveLetter;
 
 // -------------------------------------------------------------------------
 // GetGruntzDriveLetter (0x1ffe0)

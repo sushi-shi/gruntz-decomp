@@ -65,6 +65,15 @@
 DATA(0x00244ca4)
 i32 g_groupSentinel;
 
+DATA(0x0020a5dc)
+static const char s_LightFx[] = "LightFx";
+DATA(0x0020dd20)
+static const char s_GAME_FLASH[] = "GAME_FLASH";
+DATA(0x0020dd08)
+static const char s_GAME_LIGHTING_FLASH[] = "GAME_LIGHTING_FLASH";
+static char s_Grunt[] = "Grunt";
+static char s_CombatTimeout[] = "CombatTimeout";
+
 // 0x77f80: FindNearestInRow(g) - the grunt-to-cell proximity probe: scan the 15 cells
 // of grid row g->m_tileOwnerHi for the live cell whose display object (cell->m_10) is nearest g's
 // tile position, but only when that squared distance is below the cutoff 2*g->m_defenderRadius.
@@ -1701,12 +1710,6 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
     }
     return 1;
 }
-
-static const char s_LightFx[] = "LightFx";
-static const char s_GAME_FLASH[] = "GAME_FLASH";
-static const char s_GAME_LIGHTING_FLASH[] = "GAME_LIGHTING_FLASH";
-static char s_Grunt[] = "Grunt";
-static char s_CombatTimeout[] = "CombatTimeout";
 
 // @early-stop
 // prologue-scheduling + grid-pointer-register regalloc wall (~82%): the body is

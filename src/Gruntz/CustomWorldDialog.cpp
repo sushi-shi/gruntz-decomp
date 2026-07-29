@@ -42,6 +42,11 @@ HINSTANCE g_customWorldInst = 0; // 0x62c270  launcher instance exchange
 DATA(0x0022c274)
 HWND g_customLevelList = 0; // 0x62c274  the picker's level listbox (id 0x3fc)
 
+DATA(0x0020cf90)
+char g_dotDot[] = ".."; // 0x60cf90
+DATA(0x0020cf94)
+char g_customGlob[] = "*.WWD"; // 0x60cf94
+
 namespace m4 {}
 
 // The three file-scope CStrings each emit wrapper/constructor/registrar/
@@ -121,11 +126,6 @@ INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
     }
     return 0;
 }
-
-DATA(0x0020cf90)
-char g_dotDot[] = ".."; // 0x60cf90
-DATA(0x0020cf94)
-char g_customGlob[] = "*.WWD"; // 0x60cf94
 
 namespace m4 {
 

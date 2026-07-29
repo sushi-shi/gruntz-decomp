@@ -33,6 +33,9 @@
 DATA(0x0024e360)
 i32 g_suppress_64e360 = 0; // 0x24e360
 
+DATA(0x0024e35c)
+i32 g_playActive;
+
 RVA(0x00039160, 0x46)
 i32 CCreditsState::FrameSlot28(i32 unused) {
     owner()->m_sound->IsPlaying();
@@ -497,9 +500,6 @@ i32 CState::Vslot07() {
     EndPaint(m_mgr->m_gameWnd->m_hwnd, &ps);
     return 1;
 }
-
-DATA(0x0024e35c)
-i32 g_playActive;
 
 // @early-stop
 // /GX frame-packing artifact (~96%): the instruction stream is byte-faithful, but

@@ -35,6 +35,9 @@
 #include <Gruntz/AniAdvanceCursor.h>      // canonical CAniAdvanceCursor (Advance)
 #include <DDrawMgr/DDrawSubMgrLeaf.h> // OwnerMgr()->m_animRegistry (the +0x2c geometry-source catalog)
 #include <Utils/MapTyped.h> // typed MFC map lookups (the forced void*& pun at one boundary)
+DATA(0x002bf674)
+i32 g_logicTypesRegistered;
+
 // WwdGameObject.cpp - the 0x1504d0-0x152636 original TU (wave4-L dossier #15, block
 // S1): ONE first-link obj weaving the CWwdGameObject live methods + CWwdGameObjectA
 // render slots, the CGameObject sprite-resource/worker leaves (spriteresource +
@@ -1506,6 +1509,3 @@ i32 CDDrawWorker::FindFrame(CImage* frame, char* outName, i32* outIndex) {
     }
     return 0;
 }
-
-DATA(0x002bf674)
-i32 g_logicTypesRegistered;
