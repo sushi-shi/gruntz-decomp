@@ -725,11 +725,24 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
         i32 x = m_poseToy1->m_records.GetSize();
         LOAD_POSE(m_poseToy2, s_pose_TOY2);
         i32 y = m_poseToy2->m_records.GetSize();
-        if (x >= y) {
-            m_toyBlendPct = static_cast<i32>((100.0 / (static_cast<double>(x) / y - -1.0) - -0.5));
+        // the SHORTER pose is the if-BODY: retail's guard is `cmp x,y / jge <else>`, so the
+        // fall-through arm is the `x < y` (100 - ratio) one.
+        // The ratio goes through a LOCAL before the `100 -`: written as one expression, cl
+        // sinks the negation into the FP chain (it emits -100.0 / D and `fsubr 0.5` instead
+        // of retail's shared `fdivr 100.0` / `fsub -0.5`, and so allocates a second copy of
+        // both constants). Retail's `call __ftol / mov ecx,0x64 / sub ecx,eax` is the local.
+        // The ratio goes through a LOCAL before the `100 -`: written as one expression, cl
+        // sinks the negation into the FP chain (it emits `fdivr -100.0` + `fsubr 0.5`
+        // instead of retail's shared `fdivr 100.0` + the +-0.5 constant, allocating a second
+        // copy of both). Retail's `call __ftol / mov ecx,0x64 / sub ecx,eax` IS that local.
+        // The one residual byte is cl picking `fadd 0.5` over retail's `fsub -0.5` for this
+        // inlined copy of `- -0.5` (the sibling copy 30 bytes later picks `fsub`); no
+        // spelling, including a shared inline helper for both arms, moves it.
+        if (x < y) {
+            i32 pct = static_cast<i32>((100.0 / (static_cast<double>(y) / x - -1.0) - -0.5));
+            m_toyBlendPct = 100 - pct;
         } else {
-            m_toyBlendPct =
-                100 - static_cast<i32>((100.0 / (static_cast<double>(y) / x - -1.0) - -0.5));
+            m_toyBlendPct = static_cast<i32>((100.0 / (static_cast<double>(x) / y - -1.0) - -0.5));
         }
     }
 
@@ -1980,6 +1993,15 @@ i32 CGrunt::CreateStaminaSprite() {
 // steerable: explicit `i32` locals for the two values are copy-propagated away by cl and
 // the pick does not move, and match_variants --state-trials 48 --max-depth 3 exhausted 256
 // variants without a win. Same family as global-store-temp-alternates-ecx-edx.md.
+// 2026-07-29: a FAITHFUL standalone replica (same 6-arg thiscall CreateSprite + the cdecl
+// notify fn-ptr + the `inner`/`reg` chain) reproduces our exact bytes, and 22 further
+// spellings through it all emit the SAME ecx/edx pick - the cell pair passed as a
+// by-value 2-int struct (byte-identical to the two scalars), inline accessors on any
+// subset of the three args, the args pre-read into locals in either order or through a
+// stack array, `this->`-qualified reads, the receiver with/without the `inner` local
+// (dropping it moves the pick but breaks the surrounding chain), the result bound to a
+// local, the test inverted, the guard order flipped, and the failure block's stores
+// reordered. The pick is not reachable from the source.
 RVA(0x0004d3e0, 0xf5)
 i32 CGrunt::CreateToyTimeSprite() {
     if (m_toyTimeSprite || m_toyTime == 0) {

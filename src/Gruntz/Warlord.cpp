@@ -585,8 +585,9 @@ i32 CWarlord::ResolveMovingAnimation() {
 
     m_38->ApplyName(s_GRUNTZ_ + m_54 + s__MOVING);
 
+    CAniElement* anim = m_animMoving;
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup(m_animMoving);
+    m_38->m_1a0.Setup(anim);
 
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId(s_keyB);
@@ -621,8 +622,9 @@ i32 CWarlord::ResolveDeathAnimation() {
         g->m_cueSink->SpawnVoiceDriver(m_object->m_188, m_ownerTag, -1, -1, -1);
     }
 
+    CAniElement* anim = m_animDeath;
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup(m_animDeath);
+    m_38->m_1a0.Setup(anim);
 
     m_38->ApplyName(s_GRUNTZ_ + m_54 + s__DEATH);
 
@@ -650,8 +652,9 @@ i32 CWarlord::RaiseBattleAlert() {
         g->m_cueSink->SpawnVoiceDriver(m_object->m_188, 0x43f, -1, -1, -1);
     }
 
+    CAniElement* anim = m_animJoy;
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup(m_animJoy);
+    m_38->m_1a0.Setup(anim);
 
     m_38->ApplyName(s_GRUNTZ_ + m_54 + s__JOY);
 
@@ -660,6 +663,13 @@ i32 CWarlord::RaiseBattleAlert() {
     return 1;
 }
 
+// @early-stop
+// the voice-cue LOCAL is byte-evidenced (retail `push ebx` + `lea ebx,[edi+0x431]` hoisted
+// above the four viewport compares, and every [esp+N] home shifts by the extra push) and is
+// KEPT even though objdiff's alignment score fell 92.1 -> 83.7: the prologue, the saved-reg
+// set and the cue hoist now match retail exactly, and the residue is the same
+// ecx/edx Setup-pair pool phase as ResolveMovingAnimation @0x45100 plus the register
+// renames it cascades. MAX 92.06 is preserved by the ledger.
 RVA(0x00045960, 0x181)
 i32 CWarlord::ResolveIdleAnimation() {
     if (m_a8 != 0) {
@@ -671,18 +681,23 @@ i32 CWarlord::ResolveIdleAnimation() {
     CGruntzMgr* g = g_gameReg;
     if (g->m_134 == 1) {
         CWwdGameObjectA* h = m_object;
+        // the cue id is a LOCAL computed before the viewport test: retail hoists
+        // `lea ebx,[edi+0x431]` above the four compares (and pays a `push ebx` for it),
+        // exactly as in ResolveBattlecryAnimation.
+        i32 cue = idx + 0x431;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         if (x < g->m_viewBounds.right && x >= g->m_viewBounds.left && y < g->m_viewBounds.bottom
             && y >= g->m_viewBounds.top) {
-            g->m_cueSink->SpawnVoiceDriver(h->m_188, idx + 0x431, -1, -1, -1);
+            g->m_cueSink->SpawnVoiceDriver(h->m_188, cue, -1, -1, -1);
         }
     } else {
         g->m_cueSink->SpawnVoiceDriver(m_object->m_188, idx + 0x43b, -1, -1, -1);
     }
 
+    CAniElement* anim = m_idleAnims[idx];
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup(m_idleAnims[idx]);
+    m_38->m_1a0.Setup(anim);
 
     CAniElement* desc = m_38->m_1a0.m_14;
     CAniDesc* elem =
@@ -722,8 +737,9 @@ i32 CWarlord::ResolveBattlecryAnimation() {
         g->m_cueSink->SpawnVoiceDriver(m_object->m_188, idx + 0x438, -1, -1, -1);
     }
 
+    CAniElement* anim = m_battlecryAnims[idx];
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup(m_battlecryAnims[idx]);
+    m_38->m_1a0.Setup(anim);
 
     m_38->ApplyName(s_GRUNTZ_ + m_54 + s__BATTLECRY);
 
