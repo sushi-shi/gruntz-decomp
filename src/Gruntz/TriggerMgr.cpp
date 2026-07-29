@@ -2792,26 +2792,34 @@ i32 CTriggerMgr::ToggleRegionB() {
 // 0x7d6e0: EnqueueGroupCells - when armed (+0x400), collect the y-byte of every magic-group
 // record cell with a clear +0x1e4 flag, then post the group to the command mgr (+0x6c):
 // EnqueueSingle when exactly one, else EnqueueMulti with the y-byte buffer. ret 1.
+// The "stack-frame-size wall" was the buffer size (0x80, not 0x68) plus an extra
+// initialiser: `char x` is NOT zero-seeded in retail, and the x latch is stored
+// AFTER the cell index is folded.  89.59 -> 96.39.
 // @early-stop
-// stack-frame-size wall (~90%): the record scan (now with the matched byte counter, so the
-// cl/byte-store/dword-reload sequence matches) + the two CGruntzCmdMgr enqueue calls are
-// byte-exact; retail's frame is 0x88 vs our 0x6c (extra scratch slots) so every esp-relative
-// displacement shifts by a constant. topic:wall.
+// ~96.4%: three bytes left, the `and edx,0xff` that widens the u8 count for
+// EnqueueMulti's `i32` third parameter. Retail pushes the count slot as a raw dword
+// (`mov edx,[esp+0x1c]; push edx`), which only a `char` parameter permits - but
+// 0x23ca0's own body forwards all eight args as dwords and is EXACT with `i32`, so
+// re-typing the parameter trades one function for another. Left as declared.
 RVA(0x0007d6e0, 0xea)
 i32 CTriggerMgr::EnqueueGroupCells() {
     if (m_groupFlag == 0) {
         return 0;
     }
-    u8 buf[0x68];
+    // retail reserves `sub esp,0x88` = 0x80 buffer + the two byte locals, and it
+    // initialises only ONE of them (`mov byte [esp+0x10],cl`): `x` is left
+    // uninitialised, so an empty record list feeds the enqueue a garbage row.
+    u8 buf[0x80];
     u8 count = 0;
-    char x = 0;
+    char x;
     POSITION pos = m_recList.GetHeadPosition();
     if (pos != 0) {
         i32 magic = g_curPlayer;
         do {
             Coord* p = static_cast<Coord*>(m_recList.GetNext(pos));
-            x = static_cast<char>(p->m_x);
+            // the x latch is stored AFTER the cell index is folded (retail order)
             CGrunt* cell = m_grid[p->m_x * TM_GRID_COLS + p->m_y];
+            x = static_cast<char>(p->m_x);
             if (cell->m_tileOwnerHi == magic && cell->m_entranceActive == 0) {
                 buf[count] = static_cast<u8>(p->m_y);
                 count++;
