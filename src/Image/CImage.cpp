@@ -18,6 +18,9 @@
 #include <Win32.h>                     // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h>                     // real IDirectDrawSurface dispatch (m_8->IsLost/Restore)
 
+#include <Gruntz/State.h>         // CState (DrawScreenTextImage's receiver - see its note below)
+#include <Bute/SymTab.h>          // CSymTab::ResolveQualified
+#include <stdio.h>                // sprintf (the "\\SCREENZ\\%sTEXT" key)
 #include <Image/ImageFormatTag.h> // the shared 4-char format codes (ex this TU's local enum)
 
 // ===========================================================================
@@ -45,15 +48,64 @@
 // own methods. No split warranted; the flag is a false-positive (flag_outliers
 // _POOLED_RE does not recognise the GetClassId/Slot1N/IsLoaded pooled-virtual names).
 // ===========================================================================
+// ---------------------------------------------------------------------------
+// CState::DrawScreenTextImage (0x0d5c10) - render the "\SCREENZ\<name>TEXT" PID page
+// onto the back page at (0x140, 0x158) through a throwaway stack CImage. Homed here by
+// RVA neighbourhood (it sits between LevelTileValidation, which ends at 0xd5bdb, and
+// this file's low-RVA CImage COMDAT block at 0xd5e20+).
+//
+// IDENTITY RESOLVED 2026-07-29 - the old note said "its exact identity is TBD" and
+// guessed a "CImage-family leaf image-loader helper" from the callee list. It is not a
+// CImage method at all; CImage is what it USES. The receiver is named by its own two
+// field reads: [this+0x2c] is the CSymTab it calls ResolveQualified on, and [this+0x0c]
+// is the CDDrawSurfaceMgr it both seeds the stack CImage's m_ownerCtx with and walks
+// ->m_drawTarget(+0x04)->m_backPair(+0x14) through. Exactly one class in the tree pairs
+// a CSymTab at +0x2c with a CDDrawSurfaceMgr at +0x0c: CState (m_2c and m_world). Its
+// direct sibling CState::FadeInTitle @0xfa1f0 has the identical opening - sprintf a
+// "\SCREENZ\..." key into a stack buffer, then SymTab2c()->ResolveQualified(buf, tag).
+// No caller exists anywhere in the image, which is what stalled the earlier chase; the
+// callee/field direction settles it without one.
+//
+// The stack CImage's eight seed stores ARE the ordinary two-arg ctor with index 0:
+// CWapObj(0, world) writes m_id/m_flags/m_ownerCtx, then the derived vptr stamp, then
+// m_width/m_height/m_surface/m_owned - retail's exact order. The two later
+// vptr-restamp + FreeAll pairs at trylevel 1 and 2 are its inlined destructor on the
+// failure and success paths.
 // @early-stop
-// 0x0d5c10 (269 B) - homed from src/Stub/GapFunctions.cpp (matcher-5) by RVA
-// neighbourhood: it sits between LevelTileValidation (ends 0xd5bdb) and this file's
-// low-RVA CImage block (0xd5e20+). A CImage-family leaf image-loader helper (xref-
-// confirmed: calls CImage::Resolve/FreeAll/RenderFrame, CSymTab::ResolveQualified,
-// sprintf); homed pending leaf-first reconstruction (its exact identity is TBD).
+// 97.15%, and the whole residue is ONE instruction repeated twice. Retail INLINES
+// ~CImage at both teardown sites - `mov [img],??_7CImage; lea ecx,[img]; call FreeAll`
+// - with /O2 dead-storing the dtor's m_id/m_flags/m_ownerCtx resets and the ~CObject
+// grand restamp (all unobservable on a dying stack object; the vptr store survives
+// because cl never kills that one). Its EH trylevel therefore steps 0 -> 1 -> 2 through
+// the two partial-teardown states instead of dropping to -1. Ours declares
+// `virtual ~CImage()` out-of-line (0xd5e80, 91 bytes, correctly matched there), so cl
+// emits `lea ecx,[img]; call ??1CImage` and sets trylevel -1: same shape, one
+// instruction short at each site.
+// Closing it means giving ~CImage an IN-CLASS body and re-pinning 0xd5e80 as the COMDAT
+// copy. That is more tractable here than the CFileMem case (see the measured failure in
+// DDrawSurfaceMgr.cpp @0x156ad0): there, the COMDATs migrated out of the TU that owned
+// their RVAs; here the vtable, the ??_G thunk and this local all live in cimage.obj, so
+// the copy should stay put. It is still a shared-header change that reshapes every TU
+// destroying a CImage, so it is deferred rather than done for 8 bytes.
 RVA(0x000d5c10, 0x10d)
-i32 LoadImageHelper(void) {
-    return 0;
+i32 CState::DrawScreenTextImage(const char* name) {
+    char buf[0x40];
+    sprintf(buf, "\\SCREENZ\\%sTEXT", name);
+    CParseSource* src = SymTab2c()->ResolveQualified(buf, IMGTAG_DIP);
+    if (src == 0) {
+        return 0;
+    }
+    CDDrawSurfaceMgr* world = m_world;
+    CDDrawSurfacePair* page = world->m_drawTarget->m_backPair;
+    if (page == 0) {
+        return 0;
+    }
+    CImage img(0, world);
+    if (img.Resolve(src, 1) == 0) {
+        return 0;
+    }
+    img.RenderFrame(page, 0x140, 0x158, 0);
+    return 1;
 }
 
 // ---------------------------------------------------------------------------
