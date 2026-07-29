@@ -17,7 +17,7 @@ extern u32 g_defaultZ;              // 0x5f04e8
 class CMovingLogic : public CUserLogic {
 public:
     virtual i32 SerializeMove(CFileMemBase*, i32, i32, CGameObject*) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                        // slot 2
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                                 // slot 2
     // slot 5 (0x13c70; out-of-line body in Projectile.cpp - the deferred-callback
     // release + the MovingSlot16 tail; was bound as `CProjectile::ReleaseDeferred`,
     // but the slot lives in ??_7CMovingLogic @0x1e87ac - CProjectile INHERITS it).
@@ -72,6 +72,16 @@ inline CMovingLogic::CMovingLogic() {}
 inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
     // The member initializer phase constructs m_motion at +0x38.
 }
+
+// OPT-IN inline dtor. Retail's leaf dtors come in both flavours: most CALL the
+// standalone ??1CMovingLogic (0x13bd0, defined out of line in MovingLogic.cpp), but
+// ~CProjectile @0xdef60 FOLDS the whole chain in line (the ??_7CMovingLogic re-stamp,
+// the +0x18 ~EngStr call and the ??_7CUserBase re-stamp appear inside its own span).
+// A TU that needs the folded form #defines CMOVINGLOGIC_INLINE_DTOR before including
+// this header; every other TU is untouched and keeps calling the standalone.
+#ifdef CMOVINGLOGIC_INLINE_DTOR
+inline CMovingLogic::~CMovingLogic() {}
+#endif // CMOVINGLOGIC_INLINE_DTOR
 
 extern const double g_motionTimeScale;
 #endif // GRUNTZ_CMOVINGLOGIC_H

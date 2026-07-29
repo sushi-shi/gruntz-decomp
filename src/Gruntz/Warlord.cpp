@@ -232,7 +232,14 @@ typedef enum WarlordBattleTag {
 //     neutral CTileLogic intermediate (its ctor seeds the tail before the member
 //     ctor) recovers exactly this order and measured +1.4% (79.15 -> 80.53) - an
 //     inheritance change owned by the Fable lane; left as a hand-off (see report).
-RVA(0x00042d40, 0x73e)
+// Closed since: the sortKey test + flags RMW share ONE m_object read (retail reuses the
+// eax it already holds: `mov ecx,[eax+8] / or ecx,0x20000 / mov [eax+8],ecx`, not a
+// memory RMW through a reloaded pointer), and so do the three draw-state stores.
+// The COMDAT is code (0x73e) + a 2-byte align pad + the owner switch's 4-entry jump
+// table at 0x43480 (the `jmp [eax*4+0x443480]` reloc target), so the span is 0x750:
+// carved at 0x73e the delinked target obj lost the table and objdiff scored our 5 extra
+// rows (the `mov edi,edi` pad + 4 dwords) as inserts.
+RVA(0x00042d40, 0x750)
 CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     // Two 64-bit stamp/window cooldown timers, cleared.
@@ -249,9 +256,13 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     // anim id and mark the geometry z-key dirty.
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
-    if (m_object->m_sortKey != 0xc3500) {
-        m_object->m_sortKey = 0xc3500;
-        m_object->m_flags |= 0x20000;
+    // ONE m_object read serves the sortKey test AND the flags RMW (retail reuses the
+    // eax it already loaded: `mov ecx,[eax+8] / or ecx,0x20000 / mov [eax+8],ecx`);
+    // spelled as two `m_object->` chains cl re-loads and degrades to a memory RMW.
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != 0xc3500) {
+        o->m_sortKey = 0xc3500;
+        o->m_flags |= 0x20000;
     }
     m_38->m_flags |= 0x2000002;
 
@@ -266,9 +277,10 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     if (sel == 0) {
         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
-    m_object->m_drawActive = 1;
-    m_object->m_drawFillCmd = 0xa;
-    m_object->m_drawFillArg = sel;
+    CWwdGameObjectA* d = m_object; // one read for the three draw-state stores
+    d->m_drawActive = 1;
+    d->m_drawFillCmd = 0xa;
+    d->m_drawFillArg = sel;
 
     switch (owner) {
         case WARLORDZ_KING:
@@ -666,17 +678,22 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
         case 8: {
             // Re-seed the bound sprite's fill shade from this player's sprite row; if the
             // row has no table, fall back to row 1 and arm the decay fill-bar (cmd 0xa).
-            if (g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[m_object->m_124].m_008, 0)
-                == 0) {
-                CShadeTable* fallback = g_gameReg->m_spriteFactory->GetSel(1, 0);
-                // hoisted: retail loads m_object ONCE here and does all three stores off
-                // it. Spelled `m_object->` per statement, cl5 cannot rule out the stores
-                // aliasing the member itself and reloads before each - 8 bytes long.
-                CWwdGameObjectA* sprite = m_object;
-                sprite->m_drawActive = 1;
-                sprite->m_drawFillCmd = 0xa;
-                sprite->m_drawFillArg = fallback;
+            // The three draw stores are OUTSIDE the fallback `if` - retail's
+            // `test eax,eax / jne <stores>` takes the non-null path STRAIGHT to them
+            // with the first lookup's result, exactly like the ctor's selector block.
+            // Nesting them inside the if also made the seed conditional, which is wrong.
+            CShadeTable* sel =
+                g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[m_object->m_124].m_008, 0);
+            if (sel == 0) {
+                sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
             }
+            // hoisted: retail loads m_object ONCE here and does all three stores off
+            // it. Spelled `m_object->` per statement, cl5 cannot rule out the stores
+            // aliasing the member itself and reloads before each - 8 bytes long.
+            CWwdGameObjectA* sprite = m_object;
+            sprite->m_drawActive = 1;
+            sprite->m_drawFillCmd = 0xa;
+            sprite->m_drawFillArg = sel;
             break;
         }
     }
@@ -787,37 +804,34 @@ i32 CWarlord::LoadAttributes() {
 // while the level objective is open, else posts a fort battle event past the
 // cooldown window and re-arms a 0x7530 stamp. Returns int 0 on every path.
 //
-// @early-stop
-// regalloc wall (topic:regalloc, docs/patterns/zero-register-pinning.md +
-// pin-local-for-callee-saved-reg.md): structure/offsets/instruction-selection are
-// byte-exact, but retail keeps g_gameReg in edx (live in BOTH the multiplayer and
-// single-player branches, freeing ecx for the thiscall `this`) while cl parks it
-// in ecx, mirror-swapping g_frameTime into the other scratch reg. A pure scratch
-// ecx<->edx coin-flip - no source lever flips it (tried inline vs named helper,
-// m_2c-chain split; all no-change at the same ~91% plateau).
+// The old "scratch ecx<->edx coin-flip" note was wrong: there is no `reg` LOCAL here.
+// Retail reaches the registry as `g_gameReg->...` at each of the four use sites; cl
+// CSEs the global load into edx and keeps it live across BOTH branches, leaving ecx
+// free for the thiscall receiver. Binding it to a named local instead makes the local
+// the ecx tenant and the receiver load consume it - which is what mirror-swapped every
+// scratch register in the body.
 RVA(0x00044d10, 0x106)
 i32 CWarlord::LoadAttributes2() {
     if (m_38->m_1a0.Advance(g_engineFrameDelta) != 1) {
         return 0;
     }
 
-    CGruntzMgr* reg = g_gameReg;
-    if (reg->m_134 != 1) {
+    if (g_gameReg->m_134 != 1) {
         CWwdGameObjectA* o = m_object;
-        i32 dist = reg->m_cmdGrid->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
+        i32 dist = g_gameReg->m_cmdGrid->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
         if (dist >= g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             RaiseBattleAlert();
             return 0;
         }
     } else {
         // the play state's frame-marker timer: not yet running / expired
-        if ((static_cast<CPlay*>(reg->m_curState))->m_frameMarker->m_currentMs == 0) {
+        if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_frameMarker->m_currentMs == 0) {
             ResolveMovingAnimation();
             return 0;
         }
         if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_cooldownStamp64
             >= m_cooldownWindow64) {
-            reg->m_cueSink->SpawnVoiceDriver(m_object->m_188, 0x436, -1, -1, -1);
+            g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_188, 0x436, -1, -1, -1);
             m_cooldownWindow64 = 0x7530;
             m_cooldownStamp64 = static_cast<u32>(g_frameTime);
         }
@@ -933,12 +947,19 @@ i32 CWarlord::BuildFortSplashParticles() {
 }
 
 // @early-stop
-// 97.2%: the two cooldown halves are single i64 stores (the zero-extension IS retail's
-// `mov [hi],ebx`; two i32 stores let cl hoist the hi store above the divide). Residue is
-// the SetHealthGlyph-family ecx/edx temp phase in the `m_value = m_1a0.m_14; Setup(anim)`
-// pair - the identical block in RaiseBattleAlert @0x457b0 already matches, so the phase
-// differs by one pool temp somewhere upstream. See docs/patterns/
-// global-store-temp-alternates-ecx-edx.md.
+// The two cooldown halves are single i64 stores (the zero-extension IS retail's
+// `mov [hi],ebx`; two i32 stores let cl hoist the hi store above the divide).
+// FIXED 2026-07-29: the phase-start stamp read the WRONG GLOBAL - `g_movingSeed`
+// (an unbound `i32` in Grunt.cpp) where retail reads `_g_frameTime` @0x645588, the
+// same clock LoadAttributes2/NotifyFortUnderAttack stamp into this pair. objdiff's
+// reloc row named it outright.
+// Residue is now exactly TWO rows: the `m_value = m_1a0.m_14` store lands one slot
+// EARLY (before retail's `lea ecx,[m_38+0x1a0]` receiver setup instead of after it).
+// Six spellings tried (anim local / no local / prev-temp / cursor pointer / statement
+// swap / m_38 local) - all byte-identical bar the cursor-pointer form, which is worse.
+// The same one-slot store swap is the whole residue of ResolveDeathAnimation @0x455f0
+// and NotifyFortUnderAttack @0x45270, and it does NOT appear in the byte-identical
+// twins RaiseBattleAlert/ResolveIdleAnimation/ResolveBattlecryAnimation.
 RVA(0x00045100, 0x112)
 i32 CWarlord::ResolveMovingAnimation() {
     if (m_a8 != 0) {
@@ -947,9 +968,8 @@ i32 CWarlord::ResolveMovingAnimation() {
 
     m_38->ApplyName(s_GRUNTZ_ + m_54 + s__MOVING);
 
-    CAniElement* anim = m_animMoving;
     m_value = m_38->m_1a0.m_14;
-    m_38->m_1a0.Setup(anim);
+    m_38->m_1a0.Setup(m_animMoving);
 
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId(s_keyB);
@@ -957,7 +977,7 @@ i32 CWarlord::ResolveMovingAnimation() {
     // one i64 store per timer half: the zero-extension IS retail's `mov [hi],ebx`, and
     // spelling it as two i32 stores lets cl hoist the hi store above the divide.
     m_cooldownWindow64 = static_cast<u32>((GruntRand() % 0x5dc1 + 0x1770) * 10);
-    m_cooldownStamp64 = static_cast<u32>(g_movingSeed);
+    m_cooldownStamp64 = static_cast<u32>(g_frameTime);
     return 1;
 }
 
@@ -1029,6 +1049,9 @@ i32 CWarlord::NotifyFortUnderAttack() {
     return 0;
 }
 
+// @early-stop
+// One-slot store swap only (same as ResolveMovingAnimation @0x45100): retail emits
+// `lea ecx,[m_38+0x1a0]` before `mov [this+0x40],edx`, cl the other way round.
 RVA(0x000455f0, 0x15b)
 i32 CWarlord::ResolveDeathAnimation() {
     if (m_a8 != 0) {

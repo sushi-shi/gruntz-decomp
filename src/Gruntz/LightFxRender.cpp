@@ -494,12 +494,11 @@ void CLightFxRender::DrawBorder(RECT* r, CDDrawSurfacePair* ctx, i32 color) {
 // nonzero (or shape <= 0) clears m_438 and returns 1; a generator returning 0
 // fails (return 0). shape > 8 is rejected up front.
 // ===========================================================================
-// @early-stop
-// dispatch + all 8 case bodies are byte-identical; residual is the jump-table
-// DIR32 (llvm-objdump stops our symbol at the table, so the arms score as absent)
-// plus a 1-instr head schedule swap (lea edi before mov ecx,0xfa vs retail's
-// mov-ecx-first). Logic 100% correct.
-RVA(0x000a3c90, 0xc7)
+// The COMDAT is code (0xc7) + a 1-byte align pad + the 8-entry switch jump table at
+// 0xa3d58 (the `jmp [eax*4+0x4a3d58]` reloc target), so the RVA span is 0xe8, not 0xc7:
+// carved at 0xc7 the delinked target obj lost the table and objdiff scored our 9 extra
+// rows (nop + 8 dwords) as inserts. The code bytes were already identical.
+RVA(0x000a3c90, 0xe8)
 i32 CLightFxRender::BuildShape(i32 shape) {
     if (shape > 8) {
         return 0;
