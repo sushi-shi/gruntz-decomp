@@ -2,6 +2,10 @@
 #include <Wap32/Wap32.h>
 #include <rva.h>
 
+DATA(0x00253c68)
+CGameWnd* g_activeGameWnd; // 0x653c68
+VTBL(CGameWnd, 0x001ea344);
+
 // CGameWnd::~CGameWnd @0x094c10 - the STANDALONE out-of-line copy of the (inline,
 // header-defined) base dtor, referenced only by a /GX EH-unwind funclet (base-subobject
 // cleanup on a ctor throw). ??_GCGameWnd above keeps folding its own inline copy; this
@@ -21,9 +25,6 @@ CGameWnd::CGameWnd() {
     m_hwnd = 0;
     m_closeGuard = 0;
 }
-
-DATA(0x00253c68)
-CGameWnd* g_activeGameWnd; // 0x653c68
 
 RVA(0x0013cf20, 0x8f)
 i32 CGameWnd::CreateAndShow(CREATESTRUCTA* pParams, CGameApp* pOwner) {
@@ -351,5 +352,3 @@ i32 CGameWnd::OnLButtonDblClk(WPARAM, i32, i32) {
 i32 CGameWnd::OnRButtonDblClk(WPARAM, i32, i32) {
     return 0;
 }
-
-VTBL(CGameWnd, 0x001ea344);

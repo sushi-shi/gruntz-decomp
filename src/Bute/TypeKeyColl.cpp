@@ -95,6 +95,27 @@ TypeKeyRec g_recs23[32];
 DATA(0x002bf618)
 i32 g_recCount23;
 
+// Retail places this dynamic initializer immediately before the default zBitVec
+// constructor. The 0x18-byte object spans 0x6bf408..0x6bf41f; it was previously
+// mis-modeled as a char array containing the label.
+DATA(0x002bf408)
+CVariantSlot g_zBitSetErrorSlot("zBitSet: ");
+// Retail's 0x16d9b0 helper constructs this complete 0x18-byte fallback error
+// slot. Its storage belongs to TypeKeyColl's contiguous 0x6bf400 data band;
+// zErrHandling's constructor in GameText.cpp only consumes it.
+DATA(0x002bf430)
+CVariantSlot g_globalErrorSlot("Global Error: ");
+// The dynamic-array 0x18-byte error slot, initialized by the retail helper at 0x16de20.
+// Its complete extent is 0x6bf468..0x6bf47f; the former u8 "tag" was only its
+// first byte viewed through an incorrect declaration.
+DATA(0x002bf468)
+CVariantSlot g_dynamicArrayErrorSlot("Dynamic Array: ");
+// The adjacent zSymTab error slot is likewise one constructed CVariantSlot,
+// not the former void* placeholder. Retail's 0x16dfe0 helper supplies this
+// exact label immediately before the zPTree constructor.
+DATA(0x002bf480)
+CVariantSlot g_symTabErrorSlot("zSymTab: ");
+
 // ===========================================================================
 // CButeTree::Find (0x16d190) - descend the trie by the key's crit bits, then
 // strcmp the reached leaf's stored key; return the leaf value on a hit, else 0.
@@ -339,12 +360,6 @@ badchar: {
 }
 }
 
-// Retail places this dynamic initializer immediately before the default zBitVec
-// constructor. The 0x18-byte object spans 0x6bf408..0x6bf41f; it was previously
-// mis-modeled as a char array containing the label.
-DATA(0x002bf408)
-CVariantSlot g_zBitSetErrorSlot("zBitSet: ");
-
 inline zBitVec::zBitVec() : zErrHandling(&g_zBitSetErrorSlot) {
     if (!SetSize(g_defaultProjActSize)) {
         void* cache = g_projActCache;
@@ -444,12 +459,6 @@ void CVariantSlot::Set(void* key, void* arg2, i32 arg3) {
         }
     }
 }
-
-// Retail's 0x16d9b0 helper constructs this complete 0x18-byte fallback error
-// slot. Its storage belongs to TypeKeyColl's contiguous 0x6bf400 data band;
-// zErrHandling's constructor in GameText.cpp only consumes it.
-DATA(0x002bf430)
-CVariantSlot g_globalErrorSlot("Global Error: ");
 
 RVA(0x0016da60, 0x12)
 zErrHandling::~zErrHandling() {
@@ -644,12 +653,6 @@ RVA_COMPGEN(0x0016dde0, 0x1e, ??_G_zdvec@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x0016de00, 0x5, ??1_zdvec@@UAE@XZ)
 
-// The dynamic-array 0x18-byte error slot, initialized by the retail helper at 0x16de20.
-// Its complete extent is 0x6bf468..0x6bf47f; the former u8 "tag" was only its
-// first byte viewed through an incorrect declaration.
-DATA(0x002bf468)
-CVariantSlot g_dynamicArrayErrorSlot("Dynamic Array: ");
-
 // ===========================================================================
 // _zvec::_zvec (0x16de30) - the allocating vector ctor. Builds the
 // zErrHandling base (0x16d9c0, was
@@ -723,12 +726,6 @@ CButeNodeEntry::CButeNodeEntry(i32 n, void(__cdecl* teardown)(void*))
 RVA_COMPGEN(0x0016dfa0, 0x1e, ??_GCButeNodeEntry@@UAEPAXI@Z)
 RVA(0x0016dfc0, 0x7)
 CButeNodeEntry::~CButeNodeEntry() {}
-
-// The adjacent zSymTab error slot is likewise one constructed CVariantSlot,
-// not the former void* placeholder. Retail's 0x16dfe0 helper supplies this
-// exact label immediately before the zPTree constructor.
-DATA(0x002bf480)
-CVariantSlot g_symTabErrorSlot("zSymTab: ");
 
 // zPTree ctor (0x16dff0, ex ButeNode.cpp): run the zErrHandling primary base
 // ctor + the CButeNodeEntry second-base ctor, then cl auto-stamps the two

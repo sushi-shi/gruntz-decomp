@@ -29,6 +29,13 @@ i32 g_timer500 = 0; // interval countdown, seed 0x1f4
 DATA(0x00245594)
 i32 g_timer100 = 0; // interval countdown, seed 0x64
 
+static const char s_rezName[] = "Gruntz.REZ";
+static const char s_join[] = "%s\\%s";
+static const char s_dataPath[] = "%c:\\DATA\\%s";
+static const char s_fecName[] = "Gruntz.FEC";
+static const char s_fecLoName[] = "GruntzLo.FEC";
+static const char s_moviezPath[] = "%c:\\MOVIEZ\\%s";
+
 RVA(0x0008b740, 0x12d)
 i32 CGruntzMgr::PerFrameTick() {
     if (m_curState == 0) {
@@ -108,13 +115,6 @@ i32 CGruntzMgr::HandleDebugPosition() {
     }
     return r != 0;
 }
-
-static const char s_rezName[] = "Gruntz.REZ";
-static const char s_join[] = "%s\\%s";
-static const char s_dataPath[] = "%c:\\DATA\\%s";
-static const char s_fecName[] = "Gruntz.FEC";
-static const char s_fecLoName[] = "GruntzLo.FEC";
-static const char s_moviezPath[] = "%c:\\MOVIEZ\\%s";
 
 // ---------------------------------------------------------------------------
 // CGruntzMgr::MakeRezPath()

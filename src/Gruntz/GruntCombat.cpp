@@ -100,41 +100,23 @@ GruntDirectionCell g_gruntDirNorthWest = GruntDirectionCell(0, 0, 8);
 DATA(0x00244b38)
 GruntDirectionCell g_gruntDirCenter = GruntDirectionCell(1, 1, 0);
 
+DATA(0x0020d7fc)
+char s_codeH[] = "H";
+
+DATA(0x0020d2e8)
+char s_codeF[] = "F";
+
+// CActRegPool<CGrunt>::s_table (0x00244af0): CActReg - no provable static init (the type has no
+// default ctor / is runtime-Init'd), so the datum is named by symbol.
+template<> DATA(0x00244af0)
+CActReg CActRegPool<CGrunt>::s_table(2000, 2010);
+
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
 static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98
 static char s_IdleDelay[] = "IdleDelay";                       // s_IdleDelay_0060e1a0
 static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius"; // s_PlayerDefenderRadius_0060e1ac
 static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeout_0060df84
-
-// ===========================================================================
-// The 5 grunt movement / anim-name dispatch state machines (formerly the
-// CUserLogic_* stubs @0x4b370 / 0x4c170 / 0x52fb0 / 0x5f310 / 0x6a6d0). Each
-// resolves the grunt's current anim-set node name
-// (g_typeColl.GetNameRecord(m_objAux->m_1c), or the scratch-teardown
-// ScratchResolve form) and dispatches on its single-letter type code
-// (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's movement/arrival state, recycling
-// its occupied-coord nodes onto the shared freelist, and re-latching m_objAux->m_1c to
-// a new anim set via g_entranceAnimSrc.LookupAnimSet. The inline-strcmp `== bool` setcc
-// reject form is per docs/patterns/strcmp-eq-bool-local-setcc.md.
-//
-// These are the CGrunt analogues of CBattlezMapConfig::StepBoard /
-// ChooseIdleBehavior (the documented large-state-machine + grid-regalloc walls). Each is
-// reconstructed complete in shape/order; all carry @early-stop on those walls.
-// Raw-offset member access (the campaign style used by the cluster above) keeps the
-// giant ~0x46c layout tractable.
-
-static inline void GruntScratchTeardown() {
-    CString* slot = (g_typeColl.Slots());
-    i32 cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
-        if (slot != 0) {
-            slot->~CString();
-        }
-        slot++;
-        cnt--;
-    }
-}
 
 static const char s_GAME_ATTACK[] = "GAME_ATTACK";
 static char s_Spellz[] = "Spellz";
@@ -173,6 +155,35 @@ static const char s_TOOBZ[] = "GRUNTZ_TOOBGRUNT_TOOBZGRUNTUI1B";
 static const char s_typeO[] = "O";
 static const char s_knockKey[] = "KnockBackTimePerTile";
 static const char s_gruntSec[] = "Grunt";
+
+// ===========================================================================
+// The 5 grunt movement / anim-name dispatch state machines (formerly the
+// CUserLogic_* stubs @0x4b370 / 0x4c170 / 0x52fb0 / 0x5f310 / 0x6a6d0). Each
+// resolves the grunt's current anim-set node name
+// (g_typeColl.GetNameRecord(m_objAux->m_1c), or the scratch-teardown
+// ScratchResolve form) and dispatches on its single-letter type code
+// (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's movement/arrival state, recycling
+// its occupied-coord nodes onto the shared freelist, and re-latching m_objAux->m_1c to
+// a new anim set via g_entranceAnimSrc.LookupAnimSet. The inline-strcmp `== bool` setcc
+// reject form is per docs/patterns/strcmp-eq-bool-local-setcc.md.
+//
+// These are the CGrunt analogues of CBattlezMapConfig::StepBoard /
+// ChooseIdleBehavior (the documented large-state-machine + grid-regalloc walls). Each is
+// reconstructed complete in shape/order; all carry @early-stop on those walls.
+// Raw-offset member access (the campaign style used by the cluster above) keeps the
+// giant ~0x46c layout tractable.
+
+static inline void GruntScratchTeardown() {
+    CString* slot = (g_typeColl.Slots());
+    i32 cnt = g_typeColl.m_grown;
+    while (cnt != 0) {
+        if (slot != 0) {
+            slot->~CString();
+        }
+        slot++;
+        cnt--;
+    }
+}
 
 #define LK(key)                                                                                    \
     do {                                                                                           \
@@ -245,17 +256,6 @@ void CGrunt::EntranceTileOffset(i32* out) {
     out[0] = x;
     out[1] = y;
 }
-
-DATA(0x0020d7fc)
-char s_codeH[] = "H";
-
-DATA(0x0020d2e8)
-char s_codeF[] = "F";
-
-// CActRegPool<CGrunt>::s_table (0x00244af0): CActReg - no provable static init (the type has no
-// default ctor / is runtime-Init'd), so the datum is named by symbol.
-template<> DATA(0x00244af0)
-CActReg CActRegPool<CGrunt>::s_table(2000, 2010);
 
 // Re-clip the board dirty rect to the whole board. Retail 0x581ce/0x5813d/0x585db:
 // the clip rect is a real CRect LOCAL (direct ctor), the source rect a CRect

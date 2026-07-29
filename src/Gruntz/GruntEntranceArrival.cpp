@@ -62,18 +62,6 @@
 DATA(0x001e9a68)
 double s_fpZero = 0.0; // 0x5e9a68
 
-static void GruntPosScratchTeardown() {
-    CString* slot = (g_typeColl.Slots());
-    i32 cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
-        if (slot != 0) {
-            slot->~CString();
-        }
-        slot++;
-        cnt--;
-    }
-}
-
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
 static char s_EntranceSafeTime[] = "EntranceSafeTime";         // s_EntranceSafeTime_0060df98
@@ -86,6 +74,52 @@ static char s_RunningTimePerTile[] = "RunningTimePerTile"; // 0x60e264
 
 static const char s_animKeyA[] = "A";
 static const char s_animKeyK[] = "K";
+
+DATA(0x0020df94)
+char k_60df94[] = "S";
+
+DATA(0x0020dc0c)
+char s_codeO[] = "O";
+
+DATA(0x0020dc04)
+char s_codeN[] = "N";
+
+DATA(0x0020dc08)
+char s_codeQ[] = "Q"; // RVA-contiguous with s_codeN/s_codeO (ex GruntEntranceMove home)
+
+static char s_ToyTime[] = "ToyTime";
+static const char s_GRUNTZ_ENTRANCEZ[] = "GRUNTZ_ENTRANCEZ";
+static const char s_GRUNTZ_ENTRANCEZ_ONE[] = "GRUNTZ_ENTRANCEZ_ONE";
+static const char s_GRUNTZ_ENTRANCEZ_TWO[] = "GRUNTZ_ENTRANCEZ_TWO";
+static const char s_GRUNTZ_ENTRANCEZ_THREE[] = "GRUNTZ_ENTRANCEZ_THREE";
+static const char s_GRUNTZ_ENTRANCEZ_DROP[] = "GRUNTZ_ENTRANCEZ_DROP";
+static const char s_GRUNTZ_ENTRANCEZ_RESSURECT[] = "GRUNTZ_ENTRANCEZ_RESSURECT";
+static const char s_GRUNTZ_DEATHZ_MELT[] = "GRUNTZ_DEATHZ_MELT";
+
+static const char s_exitKeyB[] = "B";                            // 0x60d1bc
+static const char s_GRUNTZ_EXITZ[] = "GRUNTZ_EXITZ";             // 0x60bd28
+static const char s_GRUNTZ_EXITZ_ONE[] = "GRUNTZ_EXITZ_ONE";     // 0x60e250
+static const char s_GRUNTZ_EXITZ_TWO[] = "GRUNTZ_EXITZ_TWO";     // 0x60e23c
+static const char s_GRUNTZ_EXITZ_THREE[] = "GRUNTZ_EXITZ_THREE"; // 0x60e224
+
+static const char s_GRUNTZ_GOKARTGRUNT[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";       // 0x60e1f8
+static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNTLOOP"; // 0x60e1c8
+
+static i32 s_entrancePreset0[3]; // DAT_00644aa0
+static i32 s_entrancePreset1[3]; // DAT_00644ac0
+static i32 s_entrancePreset2[3]; // DAT_00644ad0
+
+static void GruntPosScratchTeardown() {
+    CString* slot = (g_typeColl.Slots());
+    i32 cnt = g_typeColl.m_grown;
+    while (cnt != 0) {
+        if (slot != 0) {
+            slot->~CString();
+        }
+        slot++;
+        cnt--;
+    }
+}
 
 static __inline i32 s_TileFlags(CMapMgr* b, i32 tx, i32 ty) {
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
@@ -124,17 +158,6 @@ static void GruntScratchTeardown() {
     }
 }
 
-DATA(0x0020df94)
-char k_60df94[] = "S";
-
-DATA(0x0020dc0c)
-char s_codeO[] = "O";
-
-DATA(0x0020dc04)
-char s_codeN[] = "N";
-
-DATA(0x0020dc08)
-char s_codeQ[] = "Q"; // RVA-contiguous with s_codeN/s_codeO (ex GruntEntranceMove home)
 // ---------------------------------------------------------------------------
 // CGrunt::FinalizeStep(arg)   @0x5ecd0   (ret 4, the settled vtable slot-5 override)
 // @early-stop
@@ -670,8 +693,6 @@ i32 CGrunt::StepAttackFire() {
     return 0;
 }
 
-static char s_ToyTime[] = "ToyTime";
-
 // ---------------------------------------------------------------------------
 // CGrunt::UpdateArrival(a1, a2)   @0x62110   (__thiscall, ret 0x8)
 // The per-frame arrival/entrance update step (sibling of UpdateEntranceAnim 0x690a0 and
@@ -1043,10 +1064,6 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
 
     return 0;
 }
-
-static i32 s_entrancePreset0[3]; // DAT_00644aa0
-static i32 s_entrancePreset1[3]; // DAT_00644ac0
-static i32 s_entrancePreset2[3]; // DAT_00644ad0
 
 RVA(0x00062e10, 0x47e)
 void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
@@ -1443,23 +1460,6 @@ i32 CGrunt::StepArrivalReroll() {
     }
     return 0;
 }
-
-static const char s_GRUNTZ_ENTRANCEZ[] = "GRUNTZ_ENTRANCEZ";
-static const char s_GRUNTZ_ENTRANCEZ_ONE[] = "GRUNTZ_ENTRANCEZ_ONE";
-static const char s_GRUNTZ_ENTRANCEZ_TWO[] = "GRUNTZ_ENTRANCEZ_TWO";
-static const char s_GRUNTZ_ENTRANCEZ_THREE[] = "GRUNTZ_ENTRANCEZ_THREE";
-static const char s_GRUNTZ_ENTRANCEZ_DROP[] = "GRUNTZ_ENTRANCEZ_DROP";
-static const char s_GRUNTZ_ENTRANCEZ_RESSURECT[] = "GRUNTZ_ENTRANCEZ_RESSURECT";
-static const char s_GRUNTZ_DEATHZ_MELT[] = "GRUNTZ_DEATHZ_MELT";
-
-static const char s_exitKeyB[] = "B";                            // 0x60d1bc
-static const char s_GRUNTZ_EXITZ[] = "GRUNTZ_EXITZ";             // 0x60bd28
-static const char s_GRUNTZ_EXITZ_ONE[] = "GRUNTZ_EXITZ_ONE";     // 0x60e250
-static const char s_GRUNTZ_EXITZ_TWO[] = "GRUNTZ_EXITZ_TWO";     // 0x60e23c
-static const char s_GRUNTZ_EXITZ_THREE[] = "GRUNTZ_EXITZ_THREE"; // 0x60e224
-
-static const char s_GRUNTZ_GOKARTGRUNT[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";       // 0x60e1f8
-static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNTLOOP"; // 0x60e1c8
 
 // ---------------------------------------------------------------------------
 // CGrunt::LoadVehicleGruntAnimations()   @0x63db0   (__thiscall, ret 0)

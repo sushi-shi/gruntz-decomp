@@ -32,32 +32,6 @@
 // content-addressed by canonicalize_data_symbols (paired by body and relocations,
 // not number). This TU's .text is multi-region, hence the distant family RVAs.
 
-// NOTE (2026-07-26): the ~89% score is the inline-jump-table measurement artifact
-// (both sides carry the 16-byte case table mid-function; objdiff desyncs across it
-// and the 5 duplicated ctor tails pair as retail-only). The dispatch + tails are
-// shape-correct; see the delinker-jumptable memory note for the pipeline fix.
-RVA(0x0001ec20, 0x8d)
-CString CMultiBootyState::GetWarlordName(i32 id) {
-    // The target reserves and zero-inits one dead stack dword (`push ecx; mov
-    // [esp+4],0; ...; pop ecx`) that no path reads - an MSVC5 return-slot/NRV
-    // bookkeeping artifact. A `volatile int = 0` reproduces it exactly (the
-    // zero-init survives DCE without emitting an address-store; scheduled after
-    // the cmp, matching the target's `mov [esp+4],0`).
-    volatile i32 slot = 0;
-    switch (id) {
-        case 0:
-            return CString("KING");
-        case 1:
-            return CString("NAPOLEAN");
-        case 2:
-            return CString("PATTON");
-        case 3:
-            return CString("VIKING");
-        default:
-            return CString("");
-    }
-}
-
 static CString g_worldName[8] = {
     "Rocky Roadz",
     "Gruntziclez",
@@ -134,6 +108,32 @@ static char* g_errMsg_OutOfRng;
 static char* g_errMsg_Exists;
 static char* g_errMsg_NullArg;
 static char* g_errMsg_BadArg;
+
+// NOTE (2026-07-26): the ~89% score is the inline-jump-table measurement artifact
+// (both sides carry the 16-byte case table mid-function; objdiff desyncs across it
+// and the 5 duplicated ctor tails pair as retail-only). The dispatch + tails are
+// shape-correct; see the delinker-jumptable memory note for the pipeline fix.
+RVA(0x0001ec20, 0x8d)
+CString CMultiBootyState::GetWarlordName(i32 id) {
+    // The target reserves and zero-inits one dead stack dword (`push ecx; mov
+    // [esp+4],0; ...; pop ecx`) that no path reads - an MSVC5 return-slot/NRV
+    // bookkeeping artifact. A `volatile int = 0` reproduces it exactly (the
+    // zero-init survives DCE without emitting an address-store; scheduled after
+    // the cmp, matching the target's `mov [esp+4],0`).
+    volatile i32 slot = 0;
+    switch (id) {
+        case 0:
+            return CString("KING");
+        case 1:
+            return CString("NAPOLEAN");
+        case 2:
+            return CString("PATTON");
+        case 3:
+            return CString("VIKING");
+        default:
+            return CString("");
+    }
+}
 
 RVA(0x0016d9c0, 0x75)
 RVA_COMPGEN(0x0016da40, 0x1e, ??_GzErrHandling@@UAEPAXI@Z)

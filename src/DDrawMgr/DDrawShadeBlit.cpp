@@ -11,6 +11,9 @@
 DATA(0x002bed08)
 u8 g_scratch[1280]; // 0x6bed08 (0x500 B, up to g_shadeDescr208@0x6bf208; a 640-px 16bpp line)
 
+DATA(0x002bf218)
+CShadeTable* g_blendDescr;
+
 // The scratch line is read back as 8bpp bytes or RGB565 words depending on the
 // blit path - the one word-view of the buffer lives here.
 // The surface cursor is a BYTE pointer (pitch and the row deltas are in bytes)
@@ -31,9 +34,6 @@ static inline u16 Load16(const u8* p) {
 static inline u16* Scratch16() {
     return Pix16(g_scratch);
 }
-
-DATA(0x002bf218)
-CShadeTable* g_blendDescr;
 
 RVA(0x00149780, 0x69)
 i32 CDDrawShadeBlit::BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 p4) {
@@ -89,12 +89,9 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* p0, CDDSurface* src, ShadeRect* clip, i32 s
     }
     if (drawType == 8 || drawType == 0xb) {
         i32 bank = (m_light >> 3) * 0x800;
-        m_lutBank0 =
-            Pix16(g_clut + 0x20002 + bank); // g_clut interior plane R (0x673ca0)
-        m_lutBank1 =
-            Pix16(g_clut + 0x2 + bank); // g_clut interior plane G (0x653ca0)
-        m_lutBank2 =
-            Pix16(g_clut + 0x10002 + bank); // g_clut interior plane B (0x663ca0)
+        m_lutBank0 = Pix16(g_clut + 0x20002 + bank); // g_clut interior plane R (0x673ca0)
+        m_lutBank1 = Pix16(g_clut + 0x2 + bank);     // g_clut interior plane G (0x653ca0)
+        m_lutBank2 = Pix16(g_clut + 0x10002 + bank); // g_clut interior plane B (0x663ca0)
     }
 
     if (sel) {

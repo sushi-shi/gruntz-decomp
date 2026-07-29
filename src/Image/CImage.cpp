@@ -20,6 +20,16 @@
 
 #include <Image/ImageFormatTag.h> // the shared 4-char format codes (ex this TU's local enum)
 
+DATA(0x002bf28c)
+i32 g_imageClipRect[4] = {0}; // 0x2bf28c  (owner-TU definition)
+DATA(0x002bf318)
+DDBLTFX g_bltFx = {0}; // 0x2bf318  (the ex-"g_bltFxScratch" i32[25] - it IS a DDBLTFX)
+DATA(0x002bf37c)
+i32 g_resourceInstallActive = 0; // 0x2bf37c
+DATA(0x002bf380)
+i32 g_surfaceColorKey = 0; // 0x2bf380
+VTBL(CImage, 0x001eaa2c);  // vtable_names -> code (RTTI game class)
+
 // ===========================================================================
 // wave4-L (dossier #15): the 0x0d5xxx block below are COMDAT-at-usage exiles of
 // this TU's class, kept at the play-region obj (which first-references the CImage
@@ -620,15 +630,6 @@ void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
         this->RenderImage(&clip, target);
     }
 }
-
-DATA(0x002bf28c)
-i32 g_imageClipRect[4] = {0}; // 0x2bf28c  (owner-TU definition)
-DATA(0x002bf318)
-DDBLTFX g_bltFx = {0}; // 0x2bf318  (the ex-"g_bltFxScratch" i32[25] - it IS a DDBLTFX)
-DATA(0x002bf37c)
-i32 g_resourceInstallActive = 0; // 0x2bf37c
-DATA(0x002bf380)
-i32 g_surfaceColorKey = 0; // 0x2bf380
 
 // The shared clip/resolve singleton is the canonical CResolveNode (class in
 // <Gruntz/ResolveNode.h>). Its default ctor (0x1549d0) + Init (0x1647e0) are external
@@ -1315,5 +1316,3 @@ void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     info->m_dirty.m_h = h;
     info->m_dirty.m_armed = 0;
 }
-
-VTBL(CImage, 0x001eaa2c); // vtable_names -> code (RTTI game class)

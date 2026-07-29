@@ -23,6 +23,30 @@ float g_fxBias = -50.0f; // 0x5f07ec
 DATA(0x001f07f4)
 float g_fxEps = 1.0f; // 0x5f07f4
 
+VTBL(CFaderFlat, 0x001f07f8);
+VTBL(CFaderRadial, 0x001f0810);
+VTBL(CFaderSine, 0x001f0848);
+VTBL(CFaderLight, 0x001f0870);
+VTBL(CFaderShape, 0x001f0890);
+DATA(0x002c279c)
+u8 g_fxRandSeeded; // 0x6c279c  seed-init flag (bit 0)
+DATA(0x002c27a8)
+i32 g_fxRandSeed; // 0x6c27a8  LCG seed
+DATA(0x001f085c)
+const float g_faderScale_5f085c = 0.01f;
+DATA(0x001f0888)
+const double g_faderPowK = 2.0;
+DATA(0x001f0828)
+const float g_faderHalf = 0.5f;
+DATA(0x001f0830)
+const double g_faderScale = 10000.0;
+DATA(0x001f0838)
+const double g_faderBiasR = -1.0;
+DATA(0x001f0840)
+const float g_faderBiasFade = -1.0f;
+DATA(0x001f0844)
+const float g_faderOne = 1.0f;
+
 RVA(0x0017e450, 0x23)
 CFader::CFader() {
     m_table = 0;
@@ -258,16 +282,6 @@ RVA_COMPGEN(0x0017fdd0, 0x1e, ??_GCFaderSine@@UAEPAXI@Z)
 RVA(0x0017fdf0, 0xb)
 CFaderSine::~CFaderSine() {}
 
-VTBL(CFaderFlat, 0x001f07f8);
-VTBL(CFaderRadial, 0x001f0810);
-VTBL(CFaderSine, 0x001f0848);
-VTBL(CFaderLight, 0x001f0870);
-VTBL(CFaderShape, 0x001f0890);
-DATA(0x002c279c)
-u8 g_fxRandSeeded; // 0x6c279c  seed-init flag (bit 0)
-DATA(0x002c27a8)
-i32 g_fxRandSeed; // 0x6c27a8  LCG seed
-
 static __inline i32 FxRand(i32 range) {
     u32 x;
     if (!(g_fxRandSeeded & 1)) {
@@ -279,9 +293,6 @@ static __inline i32 FxRand(i32 range) {
     g_fxRandSeed = x * 214013 + 2531011;
     return ((static_cast<i32>(g_fxRandSeed) >> 16) & 0x7fff) % range;
 }
-
-DATA(0x001f085c)
-const float g_faderScale_5f085c = 0.01f;
 
 // @early-stop
 // 87.07% (was 71.58). The "callee-saved coloring swap that touches every ModRM byte" was
@@ -365,9 +376,6 @@ RVA(0x00180450, 0x4f)
 CFaderLight::~CFaderLight() {
     SubFree();
 }
-
-DATA(0x001f0888)
-const double g_faderPowK = 2.0;
 
 // CFaderLight::ApplyInit (0x1804a0): capture the descriptor's surface/palette/centre,
 // clip the centre to the surface rect (early-out if outside), fill the per-scanline span
@@ -904,17 +912,6 @@ i32 CFaderFlat::GetFrameCount() {
     i32 n = m_src->m_height;
     return n + (m_percent * n) / 100;
 }
-
-DATA(0x001f0828)
-const float g_faderHalf = 0.5f;
-DATA(0x001f0830)
-const double g_faderScale = 10000.0;
-DATA(0x001f0838)
-const double g_faderBiasR = -1.0;
-DATA(0x001f0840)
-const float g_faderBiasFade = -1.0f;
-DATA(0x001f0844)
-const float g_faderOne = 1.0f;
 
 // @early-stop
 // Re-reconstructed 61.64%->73.70% by fixing three structural bugs the prior model

@@ -31,6 +31,13 @@ CFixedPtrArray32* g_actorList = 0;
 DATA(0x00245cc8)
 tagRECT g_versionRect; // .bss - zero at load
 
+DATA(0x00251608)
+i32 g_versionMajor = 0; // decl in <Gruntz/GameMode.h>
+DATA(0x0025160c)
+i32 g_versionMid = 0; // decl in <Gruntz/GameMode.h>
+DATA(0x00251610)
+i32 g_versionMinor = 0; // decl in <Gruntz/GameMode.h>
+
 static inline CGruntzMgr* Owner(CState* s) {
     return s->m_mgr;
 }
@@ -348,12 +355,6 @@ i32 CMenuState::Vslot07() {
     return Vslot06();
 }
 
-DATA(0x00251608)
-i32 g_versionMajor = 0; // decl in <Gruntz/GameMode.h>
-DATA(0x0025160c)
-i32 g_versionMid = 0; // decl in <Gruntz/GameMode.h>
-DATA(0x00251610)
-i32 g_versionMinor = 0; // decl in <Gruntz/GameMode.h>
 RVA(0x000a0d80, 0xd7)
 void CMenuState::BuildVersionString(tagRECT r) {
     CString str;

@@ -14,6 +14,13 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
+VTBL(CGruntStartingPoint, 0x001e8284);
+template<> DATA(0x002446d8)
+CActReg CActRegPool<CGruntStartingPoint>::s_table(2000, 2010);
+
+DATA(0x002bf464)
+void* g_projActCache;
+
 RVA(0x000105d0, 0x47)
 i32 CGruntStartingPoint::SerializeMove(CFileMemBase* ar, i32 tag, i32 c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
@@ -49,13 +56,6 @@ CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj) : CUserLogic(obj), CW
     m_38->m_flags |= 2;
     m_38->m_stateFlags |= 1;
 }
-
-VTBL(CGruntStartingPoint, 0x001e8284);
-template<> DATA(0x002446d8)
-CActReg CActRegPool<CGruntStartingPoint>::s_table(2000, 2010);
-
-DATA(0x002bf464)
-void* g_projActCache;
 
 static inline CString* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;

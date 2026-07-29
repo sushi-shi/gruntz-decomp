@@ -33,6 +33,9 @@ const double g_slimeSpeedNum = 32.0;
 template<> DATA(0x00246228)
 CActReg CActRegPool<CKitchenSlime>::s_table(2000, 2010);
 
+DATA(0x0021aea8)
+i32 g_typeCounter = 2000;
+
 static inline CActHandler* KSlimeLookup(i32 coord) {
     return (CActRegPool<CKitchenSlime>::s_table.ResolveEntry(coord));
 }
@@ -123,9 +126,6 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     o->m_area.top = 0;
     o->m_area.bottom = 0;
 }
-
-DATA(0x0021aea8)
-i32 g_typeCounter = 2000;
 
 static inline CString* TypeLookup(i32 key) {
     g_typeColl.m_grown = 0;

@@ -49,6 +49,17 @@ const double g_movingLogicMin = -2147483647.0;
 DATA(0x001f04b8)
 const double g_movingLogicMax = 2147483646.0;
 
+DATA(0x001eaa88)
+const double g_motionZScale = 0.0;
+DATA(0x001eab00)
+const double g_projPhase1 = 6.2831854; // 0x5eab00  2*pi phase wrap (m_phase > g_projPhase1)
+DATA(0x001f04e8)
+u32 g_defaultZ = 0;
+template<> DATA(0x0024c758)
+CActReg CActRegPool<CProjectile>::s_table(2000, 2010);
+template<> DATA(0x0024c780)
+CActReg CActRegPool<CTimeBomb>::s_table(2000, 2010);
+
 CMovingLogic::~CMovingLogic() {}
 
 // @confidence: high
@@ -85,13 +96,6 @@ void CMovingLogic::FinalizeStep(char*) {
     }
     MovingSlot16(); // virtual slot 16 (vtable offset 0x40) - CMovingLogic's one new virtual
 }
-
-DATA(0x001eaa88)
-const double g_motionZScale = 0.0;
-DATA(0x001eab00)
-const double g_projPhase1 = 6.2831854; // 0x5eab00  2*pi phase wrap (m_phase > g_projPhase1)
-DATA(0x001f04e8)
-u32 g_defaultZ = 0;
 
 // @confidence: med
 // @source: rtti-vptr / disasm
@@ -404,9 +408,6 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_objAux->m_1c = ActFindId("A");
     return 1;
 }
-
-template<> DATA(0x0024c758)
-CActReg CActRegPool<CProjectile>::s_table(2000, 2010);
 
 static inline CActHandler* ProjActLookup(i32 coord) {
     return (CActRegPool<CProjectile>::s_table.ResolveEntry(coord));
@@ -1061,9 +1062,6 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, CGameObject* a
     }
     return 1;
 }
-
-template<> DATA(0x0024c780)
-CActReg CActRegPool<CTimeBomb>::s_table(2000, 2010);
 
 static inline CActHandler* TBombLookup(i32 coord) {
     return (CActRegPool<CTimeBomb>::s_table.ResolveEntry(coord));
