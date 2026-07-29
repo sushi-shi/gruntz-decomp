@@ -4155,9 +4155,8 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(CGrunt* unit) {
         unit->m_254 = 0;
     }
     if (unit->m_390 != 0) {
-        __int64 elapsed = static_cast<__int64>(static_cast<u32>(g_frameTime))
-                          - *reinterpret_cast<i64*>(&m_scratch78);
-        if (elapsed >= *reinterpret_cast<i64*>(&m_scratch80)) {
+        __int64 elapsed = static_cast<__int64>(static_cast<u32>(g_frameTime)) - m_routeClock.m_v;
+        if (elapsed >= m_routeWindow.m_v) {
             unit->m_390 = 0;
             CGameObject* lvl = unit->m_object;
             // On-screen test against the main plane's tile origin/extent quad
@@ -4168,7 +4167,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(CGrunt* unit) {
                 (static_cast<CGruntSpawnConfig*>(static_cast<void*>(g_gameReg->m_cueSink)))
                     ->SpawnVoiceDriver(unit, 0x366, -1, 0, -1, -1);
             }
-            *reinterpret_cast<i64*>(&m_scratch78) = 0;
+            m_routeClock.m_v = 0;
             m_scratch80 = 0x1388;
             m_scratch84 = 0;
             m_scratch78 = g_frameTime;
@@ -6161,15 +6160,15 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
 
     // Map the candidate index, or grow/report a fresh slot.
     i32 ci = unit->m_objAux->ActKey();
-    char* sel;
+    CString* sel;
     g_typeColl.m_grown = 0;
     if (ci >= g_typeColl.m_lo && ci <= g_typeColl.m_hi) {
-        sel = g_typeColl.m_base + (ci - g_typeColl.m_lo) * g_typeColl.m_stride;
+        sel = g_typeColl.Elem(ci);
     } else if (g_typeColl.GrowTo(ci, 0) != 0) {
-        sel = g_typeColl.m_base + (ci - g_typeColl.m_lo) * g_typeColl.m_stride;
+        sel = g_typeColl.Elem(ci);
     } else {
         g_typeColl.Report(g_projActCache, 0xc);
-        sel = g_typeColl.m_spare;
+        sel = g_typeColl.Scratch();
     }
 
     // Tear down the scratch again, then compare the selected name to "R".
@@ -6182,8 +6181,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         slot++;
         cnt--;
     }
-    // the untyped byte pool named at the container's one seam
-    return strcmp(*reinterpret_cast<CString*>(sel), "R") != 0;
+    return strcmp(*sel, "R") != 0;
 }
 
 RVA(0x00034960, 0x24)

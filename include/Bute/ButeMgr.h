@@ -46,16 +46,49 @@ struct CButeRef6 { // 8 bytes
     DWORD a, b;
 };
 SIZE(0x8);
+// The <x,y,z> rect3 record: three doubles carried as their {lo,hi} DWORD halves.
+// The ctor writes six SEPARATE dword zeroes (plain doubles change that store shape),
+// while the writer reads each pair whole - both readings of the same 24 bytes are
+// real, so the double arms are named here instead of punned at the reader.
 struct CButeRef7 { // 24 bytes
     CButeRef7() : a(0), b(0), c(0), d(0), e(0), f(0) {}
     ~CButeRef7() {}
-    DWORD a, b, c, d, e, f;
+    union {
+        struct {
+            DWORD a, b;
+        };
+        double x;
+    };
+    union {
+        struct {
+            DWORD c, d;
+        };
+        double y;
+    };
+    union {
+        struct {
+            DWORD e, f;
+        };
+        double z;
+    };
 };
 SIZE(0x18);
+// The [x,y] rect2 record - same {lo,hi}-halves-of-a-double shape as CButeRef7.
 struct CButeRef8 { // 16 bytes
     CButeRef8() : a(0), b(0), c(0), d(0) {}
     ~CButeRef8() {}
-    DWORD a, b, c, d;
+    union {
+        struct {
+            DWORD a, b;
+        };
+        double x;
+    };
+    union {
+        struct {
+            DWORD c, d;
+        };
+        double y;
+    };
 };
 SIZE(0x10);
 

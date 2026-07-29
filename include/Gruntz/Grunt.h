@@ -1,5 +1,6 @@
 #include <Mfc.h> // the REAL MFC CPtrList (m_31c/m_338 are value members) + POSITION
 #include <Ints.h>
+#include <Clock64.h> // the {lo,hi} 64-bit clock pairs
 #include <Gruntz/LogicTypeId.h>
 // THE Coord {x,y} pair + CoordNode list node (this header used to redefine both
 // field-for-field under the names GruntCoord / GruntCoordNode).
@@ -929,8 +930,14 @@ public:
             i32 m_shimmerWindowHi; // +0x8bc
         };
     };
-    i32 m_8c0; // +0x8c0
-    i32 m_8c4; // +0x8c4
+    // +0x8c0 struck-cooldown anchor: written half by half, compared 64-bit.
+    union {
+        Clock64 m_struckClock; // +0x8c0
+        struct {
+            i32 m_8c0; // +0x8c0  lo
+            i32 m_8c4; // +0x8c4  hi
+        };
+    };
     i32 m_8c8; // +0x8c8
     i32 m_8cc; // +0x8cc
     i32 m_8d0; // +0x8d0

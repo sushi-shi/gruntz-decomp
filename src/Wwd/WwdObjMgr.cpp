@@ -776,17 +776,9 @@ void CDDrawChildGroup::DrawObjectCounts() {
         rc.top = wt - view->m_viewRect.top + view->m_bounds50.top;
         // Retail (0x15a712) hands WrapCoord `lea ecx,[esp+0x20]` / `lea eax,[esp+0x24]`
         // - i.e. &rc.right and &rc.bottom of the SAME rect it then passes to
-        // DrawCount(RECT*, n) - so the two out-params are genuinely this RECT's
-        // right/bottom fields. Nothing in the image names WrapCoord's parameter TYPE
-        // (no PDB; its mangled name here is our own label), and int*/long* are
-        // codegen-identical, so the choice is a source-side one: its other EIGHT call
-        // sites (CImage.cpp) pass plain `i32 x, y` locals with no cast, so the
-        // declaration is i32* and the LONG*->int* conversion - language-forced,
-        // C++ keeps int and long distinct at identical width - lands at THIS one site.
-        view->WrapCoord(
-            reinterpret_cast<i32*>(&rc.right), // language-forced (LONG* -> int*)
-            reinterpret_cast<i32*>(&rc.bottom) // language-forced (LONG* -> int*)
-        );
+        // DrawCount(RECT*, n). That pins the parameter type: WrapCoord takes LONG*,
+        // and its other call sites declare their coordinate pair LONG to match.
+        view->WrapCoord(&rc.right, &rc.bottom);
         drawHost->DrawCount(&rc, obj->m_sortKey);
     } while (pos != 0);
 }

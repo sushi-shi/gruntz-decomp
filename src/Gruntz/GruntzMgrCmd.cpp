@@ -25,6 +25,7 @@
 #include <Gruntz/Warlord.h>          // player-slot m_00c resolves to warlord logic
 #include <Gruntz/StatusBarMgr.h>     // CStatusBarMgr (the play state's +0x2dc guts receiver)
 #include <Dsndmgr/GruntzSoundZ.h>    // CGruntzSoundZ (m_sound)
+#include <Utils/MapTyped.h>          // typed MFC map lookups (the id->void* key seam)
 #include <Gruntz/WorldSoundSet.h>    // CWorldSoundSet (m_inputState @+0x54; Stop/Resume)
 
 #define PLAYCUE(TAG)                                                                               \
@@ -346,15 +347,10 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
                             return 0;
                         }
                         m_cmdGrid->ClearRowAndRefresh(5);
-                        // m_map48 is a ::CMapPtrToPtr, so its key type IS void* - widening
-                        // the slot's id word to it is API-forced by MFC
-                        void* _key = reinterpret_cast<void*>(
-                            g_gameReg->m_options[0].m_00c
-                        ); // death/monologo sprite key
+                        i32 _key = g_gameReg->m_options[0].m_00c; // death/monologo sprite key
                         if (_key) {
                             CGameObject* _dr = 0;
-                            if (g_gameReg->m_world->m_childGroup->m_map48
-                                    .Lookup(static_cast<void*>(_key), reinterpret_cast<void*&>(_dr))
+                            if (MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, _key, _dr)
                                 && _dr) {
                                 CWarlord* _d = static_cast<CWarlord*>(_dr->m_7c->m_logic);
                                 if (_d) {

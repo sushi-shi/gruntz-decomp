@@ -2,6 +2,7 @@
 #define GRUNTZ_GRUNTZ_CGRUNTVOICE_H
 
 #include <rva.h>
+#include <Clock64.h> // the {lo,hi} 64-bit clock pairs at +0x58/+0x60
 #include <Wap32/ZVec.h>
 #include <Wap32/zBitVec.h> // GetRetAddr + g_projActCache/g_retAddrBreadcrumb (canonical owner)
 
@@ -34,11 +35,22 @@ public:
 
     // --- CGruntVoice own fields (offsets load-bearing; roles from Setup/Reset) ---
     StreamVoice* m_sample; // +0x54  the play request's sample object (Setup stores, Reset clears)
-    i32 m_icon;            // +0x58  play-start stamp LO (an i64 pair w/ m_5c; the elapsed
-    //         check reads *(i64*)&m_icon - INTERLEAVED-zero keep, see task 23)
-    i32 m_5c;                  // +0x5c  play-start stamp HI
-    i32 m_durationMs;          // +0x60  sample play duration LO (i64 pair w/ m_64)
-    i32 m_64;                  // +0x64  sample play duration HI
+    // The two clock pairs are compared 64-bit but zeroed half by half (interleaved
+    // across both pairs), so each carries BOTH names - see <Clock64.h>.
+    union {
+        Clock64 m_startStamp; // +0x58  play-start stamp, 64-bit
+        struct {
+            i32 m_icon; // +0x58  lo
+            i32 m_5c;   // +0x5c  hi
+        };
+    };
+    union {
+        Clock64 m_duration; // +0x60  sample play duration, 64-bit
+        struct {
+            i32 m_durationMs; // +0x60  lo
+            i32 m_64;         // +0x64  hi
+        };
+    };
     i32 m_source;              // +0x68  the play request's source (Setup arg0, cleared by Reset)
     i32 m_playFlags;           // +0x6c  the play request's flag word (Setup arg2, cleared by Reset)
     i32 m_owner;               // +0x70  the play request's owner (Setup arg3)

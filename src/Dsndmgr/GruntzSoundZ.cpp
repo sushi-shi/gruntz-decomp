@@ -11,7 +11,10 @@ HMDIDRIVER g_ailMidiDriver = 0; // 0x653c5c  AIL/digital MIDI driver handle (0 =
 DATA(0x00253c60)
 i32 g_midiSeqCounter = 0; // 0x653c60  monotonic auto-name counter ("MIDI%i")
 DATA(0x00253c64)
-HMDIDRIVER g_ailDriver64 = 0; // 0x653c64  cached driver handle passed to Init
+// 0x653c64 - the app HINSTANCE, latched by Init and used ONLY as the resource
+// module for the embedded MIDI resources (FindResource/LoadResource/SizeofResource).
+// It was declared HMDIDRIVER, which is what made every use a pun.
+HINSTANCE g_midiResModule = 0;
 
 // ---------------------------------------------------------------------------
 // ~CGruntzSoundZ destructor: stop/flush everything via Shutdown, then the m_map
@@ -35,8 +38,7 @@ i32 CGruntzSoundZ::Init(HINSTANCE hInst, HWND hwnd, i32 noMidi) {
     m_ownerWnd = hwnd;
     m_pCurrent = 0;
     m_enabled = 1;
-    // Miles takes the app instance through its driver-handle slot - API-forced
-    g_ailDriver64 = reinterpret_cast<HMDIDRIVER>(hInst);
+    g_midiResModule = hInst;
     if (noMidi != 0) {
         m_enabled = 0;
     } else {
@@ -335,11 +337,11 @@ i32 CGruntzSoundInnerZ::DecodeBuf(const void* buf, u32 len, const char* name) {
 
 RVA(0x00138d50, 0x74)
 i32 CGruntzSoundInnerZ::LoadSpecial(const char* resName, const char* name) {
-    HRSRC rsrc = FindResourceA(reinterpret_cast<HMODULE>(g_ailDriver64), resName, "MIDI");
+    HRSRC rsrc = FindResourceA(g_midiResModule, resName, "MIDI");
     if (rsrc == 0) {
         return 0;
     }
-    HGLOBAL hRes = ::LoadResource(reinterpret_cast<HMODULE>(g_ailDriver64), rsrc);
+    HGLOBAL hRes = ::LoadResource(g_midiResModule, rsrc);
     if (hRes == 0) {
         return 0;
     }
@@ -347,7 +349,7 @@ i32 CGruntzSoundInnerZ::LoadSpecial(const char* resName, const char* name) {
     if (p == 0) {
         return 0;
     }
-    u32 size = SizeofResource(reinterpret_cast<HMODULE>(g_ailDriver64), rsrc);
+    u32 size = SizeofResource(g_midiResModule, rsrc);
     return DecodeBuf(p, size, name);
 }
 

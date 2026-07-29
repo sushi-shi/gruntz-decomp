@@ -20,8 +20,6 @@ struct tagDRAWITEMSTRUCT;    // windows.h owner-draw item    (CWnd::OnDrawItem a
 extern "C" HWND g_sharedFlag; // the cached dialog control window
 typedef LRESULT(WINAPI* WapSendMessageA)(HWND, UINT, WPARAM, LPARAM);
 
-
-
 class CLatencyList;
 
 class CBattlezDlg : public CDialog {
@@ -177,7 +175,6 @@ public:
     CString m_customName; // +0x5c  (default CString)
 
 protected:
-
 private:
     static const AFX_MSGMAP_ENTRY _messageEntries[]; // 0x1e8ea0 (1 handler + terminator)
 };
@@ -378,6 +375,15 @@ public:
     // the compiler-emitted vtable.
     // Checkbox handler (0x23590): mirror control 0x53a into m_isCheckpointPrompts.
     void OnToggleCheckpointPrompts();
+    // The REAL MFC message map (0x1e94b8 + its single entry at 0x1e94c0), modeled the
+    // way CBattlezDlg's is. The retail bytes pin every field: pBaseMap = 0x5eb068 =
+    // &CDialog::messageMap, then one row {WM_COMMAND, code 0 = BN_CLICKED, id/lastID
+    // 0x53a, nSig 0x0c, pfn 0x404471 = OnToggleCheckpointPrompts' ILT thunk -> 0x23590}
+    // and the AfxSig_end sentinel. (Was the placeholder `const i32 g_msgmap_...`.)
+    static const AFX_MSGMAP messageMap;
+
+private:
+    static const AFX_MSGMAP_ENTRY _messageEntries[]; // 0x1e94c0 (1 handler + terminator)
 };
 SIZE_UNKNOWN();
 

@@ -20,7 +20,6 @@ enum {
     NUM_PLAYER_SLOTS = 4
 };
 
-
 DATA(0x001ea578)
 const i32 g_msgmap_CMultiStartDlg = 6205544;
 VTBL(CMultiStartDlg, 0x001ea8ec); // vtable_names -> code (RTTI game class)
@@ -79,7 +78,7 @@ RVA(0x000c1a10, 0x70)
 i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {
         // API-forced: Win32 hands the item text through LPARAM
-    if (strcmp(g_emptyString, reinterpret_cast<const char*>(lParam)) == 0) {
+        if (strcmp(g_emptyString, reinterpret_cast<const char*>(lParam)) == 0) {
             return 0;
         }
     }
@@ -298,7 +297,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         i32 customFlag = reg->GetValueDword("CustomMultiMap", 2);
         if (g_multiState->m_isHost != 0 && customFlag != 2) {
             char mapName[0x100];
-            u32 size = 0x100;
+            DWORD size = 0x100;
             reg->GetValueString("LastMultiMap", mapName, &size, g_emptyString);
             m_6c = customFlag;
             if (customFlag != 0) {

@@ -15,6 +15,18 @@ struct Bmp256Info {
 };
 SIZE(0x428);
 
+// BITMAPFILEHEADER as every BMP writer here STAMPS it: retail inlines a strcpy off
+// the g_bmpHeaderTemplate / "BM" literal (`mov edi,<lit>; repnz scas al` then
+// `rep movs`) over the header's leading bytes - a bfType word store emits neither.
+// Both readings of the same 14 bytes are real, so the byte arm is named here rather
+// than punned at each writer. (No pragma pack: BITMAPFILEHEADER carries its own
+// 2-byte packing, and matching the union's alignment to it keeps the stack slot.)
+union BmpFileHeaderStamp {
+    BITMAPFILEHEADER m_hdr; // the field view
+    char m_bytes[0xe];      // the "BM" magic-stamp view
+};
+SIZE(0xe);
+
 #pragma pack(push, 1)
 // A whole 8bpp BMP file image as it sits in the read buffer: the file header, then
 // the info header and its full 256-entry colour table, then the bits at bfOffBits.

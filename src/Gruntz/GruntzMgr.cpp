@@ -3190,8 +3190,7 @@ void CGruntzMgr::AccrueScoreTime() {
         // m_134 == 3 is the "won" arm - the live state IS the PLAY state, so the
         // +0x3f4 frame-marker CTimer is reached by a plain derived downcast.
         CTimer* clk = (static_cast<CPlay*>(st))->m_frameMarker;
-        i64 d = static_cast<i64>(g_frameTime)
-                - *reinterpret_cast<i64*>(&clk->m_38); // the +0x38:+0x3c start stamp
+        i64 d = static_cast<i64>(g_frameTime) - clk->m_startStamp.m_v;
         g_gameReg->m_scoreHud->m_score += (d < 0) ? 0 : static_cast<i32>(d);
         TransitionState(0x12, 1, 0, 0);
         return;

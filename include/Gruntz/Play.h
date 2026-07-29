@@ -1,6 +1,7 @@
 #ifndef SRC_GRUNTZ_CPLAY_H
 #define SRC_GRUNTZ_CPLAY_H
-#include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
+#include <rva.h>
+#include <Clock64.h> // the {lo,hi} 64-bit timer pairs in the CPlay clock band // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 
 #include <Mfc.h>
 
@@ -474,9 +475,21 @@ public:
     char m_pad324[0x328 - 0x324];
     i32 m_bootyTimerLo, m_bootyTimerHi, m_bootyInterval,
         m_bootyIntervalHi; // +0x328  booty-region 64-bit timer
-    i32 m_ambientTimerLo, m_ambientTimerHi, m_ambientInterval,
-        m_ambientIntervalHi; // +0x338  ambient-init timer
-    i32 m_ambientInitDone;   // +0x348  ambient-init DONE latch
+    // +0x338 ambient-init timer: two 64-bit values compared whole, written as their
+    // dword halves. Both readings are named (see <Clock64.h>).
+    union {
+        Clock64 m_ambientTimer64; // +0x338
+        struct {
+            i32 m_ambientTimerLo, m_ambientTimerHi;
+        };
+    };
+    union {
+        Clock64 m_ambientInterval64; // +0x340
+        struct {
+            i32 m_ambientInterval, m_ambientIntervalHi;
+        };
+    };
+    i32 m_ambientInitDone; // +0x348  ambient-init DONE latch
     char m_pad34c[0x350 - 0x34c];
     i32 m_syncTimerLo, m_syncTimerHi, m_syncInterval,
         m_syncIntervalHi; // +0x350  play-state 64-bit sync timer (SyncState first block)
@@ -520,8 +533,31 @@ public:
     i32 m_418, m_41c, m_420, m_424; // +0x418
     i16 m_428;                      // +0x428
     char m_pad42a[0x430 - 0x42a];
-    i32 m_region0TimerLo, m_region0TimerHi, m_region0Interval, m_region0IntervalHi; // +0x430
-    i32 m_region1TimerLo, m_region1TimerHi, m_region1Interval, m_region1IntervalHi; // +0x440
+    // +0x430/+0x440 - the region timers, same {lo,hi}-of-a-64-bit-value shape.
+    union {
+        Clock64 m_region0Timer64; // +0x430
+        struct {
+            i32 m_region0TimerLo, m_region0TimerHi;
+        };
+    };
+    union {
+        Clock64 m_region0Interval64; // +0x438
+        struct {
+            i32 m_region0Interval, m_region0IntervalHi;
+        };
+    };
+    union {
+        Clock64 m_region1Timer64; // +0x440
+        struct {
+            i32 m_region1TimerLo, m_region1TimerHi;
+        };
+    };
+    union {
+        Clock64 m_region1Interval64; // +0x448
+        struct {
+            i32 m_region1Interval, m_region1IntervalHi;
+        };
+    };
     i32 m_region2TimerLo, m_region2TimerHi, m_region2Interval, m_region2IntervalHi; // +0x450
     i32 m_region3TimerLo, m_region3TimerHi, m_region3Interval, m_region3IntervalHi; // +0x460
     i32 m_region0Gate;   // +0x470  region-0 gate (OnRegion2 / extra HUD layer)

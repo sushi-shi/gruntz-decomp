@@ -197,9 +197,8 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                 // The combat clock/timeout i64 pairs are stored as lo/hi i32 halves
                 // (every writer stamps them as (lo, hi=0)); the 64-bit compare reads
                 // them as the i64 they are - the documented int-pair overlay.
-                if (static_cast<i64>(static_cast<u32>(g_frameTime))
-                            - *reinterpret_cast<i64*>(&desc->m_combatClockLo)
-                        >= *reinterpret_cast<i64*>(&desc->m_combatTimeoutLo)
+                if (static_cast<i64>(static_cast<u32>(g_frameTime)) - desc->m_combatClock64
+                        >= desc->m_combatTimeout64
                     || desc->m_tileOwnerHi != g_curPlayer) {
                     CSpriteRef* node = m_mgr->m_spriteFactory->GetA(desc->m_1f4_moveIcon);
                     if (node == 0) {

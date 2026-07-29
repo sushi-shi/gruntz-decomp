@@ -3548,25 +3548,24 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
     LoadCellAnimNames(fresh, defer);
     LoadAnimNameTable(fresh, defer);
     if (fresh == 0) {
-        char* rec;
+        CString* rec;
         {
             i32 key = m_objAux->ActKey();
             g_typeColl.m_grown = 0;
             if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-                rec = g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride;
+                rec = g_typeColl.Elem(key);
             } else if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
-                rec = g_typeColl.m_base + (key - g_typeColl.m_lo) * g_typeColl.m_stride;
+                rec = g_typeColl.Elem(key);
             } else {
                 void* item = g_projActCache;
                 g_retAddrBreadcrumb = GetRetAddr();
                 g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
-                rec = g_typeColl.m_spare;
+                rec = g_typeColl.Scratch();
             }
             ConstructGrownSlots();
         }
-        // the hand-inlined ScratchResolve tail: the untyped byte pool named at the
-        // container's one seam
-        eq = (strcmp(*reinterpret_cast<CString*>(rec), "H") == 0);
+        // the hand-inlined ScratchResolve tail, through the container's typed views
+        eq = (strcmp(*rec, "H") == 0);
         if (eq) {
             CAniElement* el = m_38->m_1a0.m_14;
             CAniDesc* first;
@@ -3589,25 +3588,24 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 m_poweredUp = 0;
                 ResetEntranceAnimation(1, 0, 0);
             }
-            char* rec2;
+            CString* rec2;
             {
                 i32 key2 = m_objAux->ActKey();
                 g_typeColl.m_grown = 0;
                 if (key2 >= g_typeColl.m_lo && key2 <= g_typeColl.m_hi) {
-                    rec2 = g_typeColl.m_base + (key2 - g_typeColl.m_lo) * g_typeColl.m_stride;
+                    rec2 = g_typeColl.Elem(key2);
                 } else if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key2, 0) != 0) {
-                    rec2 = g_typeColl.m_base + (key2 - g_typeColl.m_lo) * g_typeColl.m_stride;
+                    rec2 = g_typeColl.Elem(key2);
                 } else {
                     void* item2 = g_projActCache;
                     g_retAddrBreadcrumb = GetRetAddr();
                     g_typeColl.m_errSink->Set(&g_typeColl, item2, 0xc);
-                    rec2 = g_typeColl.m_spare;
+                    rec2 = g_typeColl.Scratch();
                 }
                 ConstructGrownSlots();
             }
-            // the hand-inlined ScratchResolve tail: the untyped byte pool named at the
-            // container's one seam
-            eq = (strcmp(*reinterpret_cast<CString*>(rec2), "D") == 0);
+            // the hand-inlined ScratchResolve tail, through the container's typed views
+            eq = (strcmp(*rec2, "D") == 0);
             if (eq) {
                 GruntEntranceCell cell2 = m_entranceCell;
                 m_38->ApplyName(m_cells[cell2.col * 3 + cell2.row].m_names[2].GetBuffer(0));

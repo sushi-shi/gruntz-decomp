@@ -31,7 +31,6 @@ const double g_spotRateNum = 3.1415927; // 0x5ea3f0
 DATA(0x001ea3f8)
 const double g_spotRateMul = -1.0; // 0x5ea3f8
 
-
 // CSpotLight::~CSpotLight @0x13040 - empty vtable-anchor dtor; folds the CUserLogic
 // teardown (the /GX leaf-dtor archetype). Gives CSpotLight a real vftable so the
 // ctor's vptr store falls out.
@@ -111,11 +110,9 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 RVA(0x000b1630, 0x102)
 void CSpotLight::FireActivation(i32 id) {
-    CActHandler* e =
-        (CActRegPool<CSpotLight>::s_table.ResolveEntry(id));
+    CActHandler* e = (CActRegPool<CSpotLight>::s_table.ResolveEntry(id));
     if ((*e) != 0) {
-        (this
-             ->*(*((CActRegPool<CSpotLight>::s_table.ResolveEntry(id)))))();
+        (this->*(*((CActRegPool<CSpotLight>::s_table.ResolveEntry(id)))))();
     }
 }
 
@@ -133,13 +130,7 @@ void CSpotLight::FireActivation(i32 id) {
 // callee-saved reg choice), not source-steerable under MSVC5 /O2.
 RVA(0x000b2050, 0x295)
 i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d) {
-    if (CUserLogic::SerializeMove(
-            arc,
-            mode,
-            c,
-            d
-        )
-        == 0) {
+    if (CUserLogic::SerializeMove(arc, mode, c, d) == 0) {
         return 0;
     }
     if (Chain(static_cast<CFileMemBase*>(arc), mode, c, d) == 0) {
@@ -184,13 +175,7 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, i32 mode, i32 c, CGameObject* d
                 s->Read(&id, 4);
                 CGameObject* out = 0;
                 CGameObject* resolved;
-                if (MapLookup(
-                        reg->m_world->m_childGroup->m_map48,
-                        // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
-                        reinterpret_cast<void*>(id),
-                        out
-                    )
-                    == 0) {
+                if (MapLookupById(reg->m_world->m_childGroup->m_map48, id, out) == 0) {
                     resolved = 0;
                 } else if (out == 0) {
                     resolved = 0;

@@ -25,7 +25,7 @@ i32 FileExistsCopy(char* szPath) {
 
 RVA(0x0001fde0, 0x189)
 char CheckCdRomRegistry() {
-    u32 valueSize;
+    DWORD valueSize;
     char value[32];
     char drivePath[32];
     char cwdPath[256];
@@ -83,7 +83,7 @@ static char s_cdDriveLetter;
 RVA(0x0001ffe0, 0x192)
 char GetGruntzDriveLetter() {
     if (s_cdDriveLetter == 0) {
-        u32 valueSize;
+        DWORD valueSize;
         char value[32];
         char drivePath[32];
         char exePath[256];

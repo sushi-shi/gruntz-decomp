@@ -39,6 +39,7 @@
 #include <Gruntz/SerialCounter.h> // g_serialCounter (SerializeMove's per-record bumps)
 #include <Gruntz/AniElement.h>    // CAniElement complete type (KeyOfValue's CObject* upcast)
 #include <Wap32/zBitVec.h>        // ex Globals.h
+#include <Utils/MapTyped.h>       // typed MFC map lookups (the id->void* key seam)
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
 
@@ -946,9 +947,7 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 a2, CGameObject* a
             s->Read(&key, 4);
             CGameObject* found = 0;
             CGameObject* r;
-            if (reg->m_childGroup->m_map48
-                    .Lookup(reinterpret_cast<void*>(key), reinterpret_cast<void*&>(found))
-                == 0) {
+            if (MapLookupById(reg->m_childGroup->m_map48, key, found) == 0) {
                 r = 0;
             } else if (found == 0) {
                 r = 0;

@@ -1376,7 +1376,7 @@ i32 CGrunt::StepEntranceReinit() {
 RVA(0x00063b60, 0x1cf)
 i32 CGrunt::StepArrivalReroll() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
-    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&m_8c0);
+    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_struckClock.m_v;
     u32 elapsed;
     if (diff >= 0) {
         elapsed = static_cast<u32>(diff);

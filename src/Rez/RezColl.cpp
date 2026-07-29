@@ -32,13 +32,10 @@
 // recovered as (link - 4). One seam per walk site; there is no member to name.
 RVA(0x001848b0, 0x47)
 CHashElement* CHashElement::Next() {
-    // byte-forced (retail 0x1848b0: `mov eax,[ecx+4]; test eax,eax; je +; add eax,-4`):
-    // the chain stores the address of the SUCCESSOR's +4 link field, so the element is
-    // recovered as (link - 4). C++ has no CONTAINING_RECORD without a cast; one seam
-    // per walk site, and there is no member whose address this is.
-    CHashElement* n =
-        m_link.m_next ? reinterpret_cast<CHashElement*>(reinterpret_cast<char*>(m_link.m_next) - 4)
-                      : 0;
+    // retail 0x1848b0: `mov eax,[ecx+4]; test eax,eax; je +; add eax,-4` - the chain
+    // stores the address of the SUCCESSOR's +4 link field, so the element is recovered
+    // through the table's one container-of seam.
+    CHashElement* n = CHashBase::FromLink(m_link.m_next);
     if (n == 0) {
         u32 i = m_bucket + 1;
         CHashBase* coll = m_owner;
@@ -46,9 +43,7 @@ CHashElement* CHashElement::Next() {
         if (i < count) {
             CHashSlot* b = coll->m_buckets;
             do {
-                void* link = b[i].m_chain.m_head;
-                // byte-forced: the same (link - 4) element recovery as Next() above
-                n = link ? reinterpret_cast<CHashElement*>((static_cast<char*>(link) - 4)) : 0;
+                n = CHashBase::FromLink(b[i].m_chain.m_head);
                 if (n) {
                     break;
                 }
@@ -168,9 +163,7 @@ CHashElement* CHashBase::First() {
     u32 i = 0;
     CHashElement* n;
     do {
-        void* link = m_buckets[i].m_chain.m_head;
-        // byte-forced: the same (link - 4) element recovery as Next() above
-        n = link ? reinterpret_cast<CHashElement*>((static_cast<char*>(link) - 4)) : 0;
+        n = FromLink(m_buckets[i].m_chain.m_head);
         i++;
     } while (n == 0 && i < m_count);
     return n;

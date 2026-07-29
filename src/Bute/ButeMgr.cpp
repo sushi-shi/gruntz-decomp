@@ -1629,13 +1629,10 @@ bool ButeMgr::ParseAttributeFile() {
             double x, y, z;
             sscanf(m_token, s_fmtRect3, &x, &y, &z);
             if (m_writeMode) {
-                // CButeRef7's six DWORDs are three doubles read whole - the same
-                // faithful {lo,hi}-pair spelling as the clock pairs; declaring
-                // doubles would change the ctor's store shape.
                 CButeRef7* r = GetRef7(m_tagName, m_str104);
-                double dx = *reinterpret_cast<double*>(&r->a);
-                double dy = *reinterpret_cast<double*>(&r->c); // faithful {lo,hi} pair
-                double dz = *reinterpret_cast<double*>(&r->e);
+                double dx = r->x;
+                double dy = r->y;
+                double dz = r->z;
                 (m_pText->accum << s_strLt) << static_cast<double>(dx);
                 (m_pText->accum << s_strComma) << static_cast<double>(dy);
                 (m_pText->accum << s_strComma) << static_cast<double>(dz);
@@ -1663,8 +1660,8 @@ bool ButeMgr::ParseAttributeFile() {
             sscanf(m_token, s_fmtRect2, &x, &y);
             if (m_writeMode) {
                 CButeRef8* r = GetRef8(m_tagName, m_str104);
-                double dx = *reinterpret_cast<double*>(&r->a);
-                double dy = *reinterpret_cast<double*>(&r->c); // faithful {lo,hi} pair
+                double dx = r->x;
+                double dy = r->y;
                 (m_pText->accum << s_strLBrack) << static_cast<double>(dx);
                 (m_pText->accum << s_strComma) << static_cast<double>(dy);
                 m_pText->accum << s_strRBrack;

@@ -799,8 +799,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, RECT* span) {
     // (m_38:m_3c) as the elapsed accumulator, credit the HUD score, then zero the
     // timer's accum/lap/running/current block.
     CTimer* sub = world->m_frameMarker;
-    i64 diff =
-        static_cast<i64>(static_cast<u32>(g_frameTime)) - *reinterpret_cast<i64*>(&sub->m_38);
+    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - sub->m_startStamp.m_v;
     if (diff < 0) {
         diff = 0;
     }

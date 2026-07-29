@@ -71,7 +71,7 @@ namespace Utils {
     char* RegistryHelper::GetValueString(
         char* szValueName,
         char* szValueBuffer,
-        u32* pValueBufferSize,
+        DWORD* pValueBufferSize,
         char* szDefault
     ) {
         DWORD dwType;
@@ -82,8 +82,8 @@ namespace Utils {
                     szValueName,
                     0,
                     &dwType,
-                    reinterpret_cast<LPBYTE>(szValueBuffer),
-                    reinterpret_cast<LPDWORD>(pValueBufferSize)
+                    reinterpret_cast<LPBYTE>(szValueBuffer), // win32-abi: REG_SZ data is BYTEs
+                    pValueBufferSize
                 ) == 0
                 && dwType == 1 /*REG_SZ*/) {
                 return szValueBuffer;

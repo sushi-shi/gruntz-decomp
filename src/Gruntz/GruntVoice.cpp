@@ -398,9 +398,7 @@ i32 CGruntVoice::IdleHidden() {
 // branch. A zero-register-pinning artifact; not source-steerable from this spelling.
 RVA(0x0011a8e0, 0x198)
 i32 CGruntVoice::Update() {
-    if (m_sample == 0
-        || static_cast<i64>(g_frameTime) - *reinterpret_cast<i64*>(&m_icon)
-               >= *reinterpret_cast<i64*>(&m_durationMs)) {
+    if (m_sample == 0 || static_cast<i64>(g_frameTime) - m_startStamp.m_v >= m_duration.m_v) {
         m_sample = 0;
         m_source = 0;
         m_object->m_stateFlags |= 1;
@@ -413,13 +411,7 @@ i32 CGruntVoice::Update() {
         CGameObject* out = 0;
         i32 src = m_source;
         CGameObject* resolved;
-        if (MapLookup(
-                g_gameReg->m_world->m_childGroup->m_map48,
-                // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
-                reinterpret_cast<void*>(src),
-                out
-            )
-            == 0) {
+        if (MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, src, out) == 0) {
             resolved = 0;
         } else if (out == 0) {
             resolved = 0;
@@ -440,13 +432,7 @@ i32 CGruntVoice::Update() {
         CGameObject* out = 0;
         i32 src = m_source;
         CGameObject* resolved;
-        if (MapLookup(
-                g_gameReg->m_world->m_childGroup->m_map48,
-                // API-forced: MFC's CMapPtrToPtr keys ARE void* - the id is the key
-                reinterpret_cast<void*>(src),
-                out
-            )
-            == 0) {
+        if (MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, src, out) == 0) {
             resolved = 0;
         } else if (out == 0) {
             resolved = 0;

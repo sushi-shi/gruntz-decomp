@@ -114,7 +114,9 @@ public:
     // advances it by the byte count ReadPlaneObjects returns.
     i32 RebuildPlanes(const char* base, i32 count);
     i32 ReadPlaneObjects(const PlaneObjectRecord* src);
-    void WrapCoord(i32* px, i32* py); // 0x00a000 wrap+transform a world coord
+    // The coordinate pair is Win32 LONG: retail hands it &rc.right/&rc.bottom of the
+    // very RECT it then passes to DrawCount (0x15a712), so the out-params ARE RECT fields.
+    void WrapCoord(LONG* px, LONG* py); // 0x00a000 wrap+transform a world coord
     // `out` is the {x,y} pair the body fills (out[0]/out[1]); its one caller hands it a
     // Coord, so the pair type goes on the declaration instead of at the call.
     void SnapToTileCenter(struct Coord* out, i32 x, i32 y); // 0x0311e0 snap (x,y) to tile centre
@@ -129,10 +131,10 @@ public:
     // `flags & 0x10` arm open-codes CDDrawWorker::GetAt's bounds check and then reads the
     // element's +0x10/+0x14 as CImage::m_width/m_height to feed SetTileSize.
     CDDrawWorker* FrameSetAt(u32 index) {
-        // language-forced, at this ONE seam: the pun is MFC's untyped CObject* element
-        // type (a static_cast downcast would need the complete CDDrawWorker here, which
-        // would drag <DDrawMgr/DDrawWorker.h> into every consumer of this header).
-        return reinterpret_cast<CDDrawWorker**>(m_frameSets.GetData())[index];
+        // MFC's CObArray element type is CObject*; CDDrawWorker derives from it (via
+        // CLoadable), so this is the plain derived downcast, not a pun. <DDrawMgr/
+        // DDrawWorker.h> is already included above, so the complete type is here.
+        return static_cast<CDDrawWorker*>(m_frameSets[static_cast<int>(index)]);
     }
 
     // --- layout (the union of every facet's proven members; offsets load-bearing).

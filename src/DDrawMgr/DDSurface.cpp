@@ -612,16 +612,17 @@ i32 CDDSurface::BlitDirect(void* src, i32 mode) {
 
 RVA(0x0013edb0, 0x78)
 void CDDSurface::Clear(i32 white) {
-    DDBLTFX fx;
-    // retail zero-fills the opaque Win32 struct with an explicit 25-dword loop, so
-    // walking it as dwords is byte-forced (a memset would emit rep stos instead).
-    i32* p = reinterpret_cast<i32*>(&fx);
+    // retail zero-fills the opaque Win32 struct with an explicit 25-dword loop (a
+    // memset would emit rep stos instead) - the dword arm is named on BltFxWords.
+    BltFxWords fx;
+    i32* p = fx.m_words;
     for (i32 i = 0x19; i != 0; i--) {
         *p++ = 0;
     }
-    fx.dwSize = 0x64;
-    fx.dwROP = white ? static_cast<i32>(0xff0062) : 0x42; // WHITENESS : BLACKNESS (DDBLT_ROP)
-    i32 hr = this->m_ddSurface->Blt(0, 0, 0, 0x1020000, &fx);
+    fx.m_fx.dwSize = 0x64;
+    // WHITENESS : BLACKNESS (DDBLT_ROP)
+    fx.m_fx.dwROP = white ? static_cast<i32>(0xff0062) : 0x42;
+    i32 hr = this->m_ddSurface->Blt(0, 0, 0, 0x1020000, &fx.m_fx);
     if (hr != 0) {
         if (white != 0) {
             Fill(0xff);

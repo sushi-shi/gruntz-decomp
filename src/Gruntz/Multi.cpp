@@ -804,9 +804,8 @@ i32 CMulti::PumpA() {
     g_killCueClock = g_lastNow;
     g_engineFrameDelta = 0x21;
     if (m_ambientInitDone == 0) {
-        if (static_cast<i64>(static_cast<u32>(g_frameTime))
-                - *reinterpret_cast<i64*>(&m_ambientTimerLo)
-            >= *reinterpret_cast<i64*>(&m_ambientInterval)) {
+        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_ambientTimer64.m_v
+            >= m_ambientInterval64.m_v) {
             char name[0x40];
             wsprintfA(name, "AMBIENT%d", GetAmbientId());
             if (g_gameReg->m_musicEnabled != 0) {
@@ -974,14 +973,12 @@ void CMulti::PumpB() {
         (mgr->m_level->m_mainPlane)->CenterScrollB();
     }
     if (m_region0Gate != 0) {
-        if (static_cast<i64>(g_frameTime) - *reinterpret_cast<i64*>(&m_region0TimerLo)
-            >= *reinterpret_cast<i64*>(&m_region0Interval)) {
+        if (static_cast<i64>(g_frameTime) - m_region0Timer64.m_v >= m_region0Interval64.m_v) {
             OnRegion2(0);
         }
     }
     if (m_region1Gate != 0) {
-        if (static_cast<i64>(g_frameTime) - *reinterpret_cast<i64*>(&m_region1TimerLo)
-            >= *reinterpret_cast<i64*>(&m_region1Interval)) {
+        if (static_cast<i64>(g_frameTime) - m_region1Timer64.m_v >= m_region1Interval64.m_v) {
             OnRegion1(0);
         }
     }
@@ -1214,7 +1211,7 @@ INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 ::SendMessageA(combo, 0x186, 0, 0);
             }
 
-            u32 cap = 0xa; // GetValueString takes u32* - declare it that way
+            DWORD cap = 0xa; // GetValueString's in/out count IS the registry LPDWORD
             g_gameReg->m_settings->GetValueString(
                 const_cast<char*>(static_cast<const char*>(("Player_Name"))),
                 nameBuf,

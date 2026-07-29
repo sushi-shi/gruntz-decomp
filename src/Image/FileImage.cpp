@@ -354,12 +354,11 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
         } while (n != 0);
     }
 
-    BITMAPFILEHEADER fh;
+    BmpFileHeaderStamp fh;
     memset(&fh, 0, sizeof(fh));
-    // the BM magic written into the header's leading bytes - byte-forced
-    strcpy(reinterpret_cast<char*>(&fh), g_bmpHeaderTemplate);
-    fh.bfSize = info.bmiHeader.biSize * m_width + 0x436;
-    fh.bfOffBits = 0x436;
+    strcpy(fh.m_bytes, g_bmpHeaderTemplate); // the BM magic over the leading bytes
+    fh.m_hdr.bfSize = info.bmiHeader.biSize * m_width + 0x436;
+    fh.m_hdr.bfOffBits = 0x436;
 
     u8* buf = static_cast<u8*>(Lock(0));
     if (buf == 0) {
@@ -380,7 +379,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
         }
     }
 
-    file.Write(&fh, 0xe);
+    file.Write(&fh.m_hdr, 0xe);
     file.Write(&info, 0x428);
 
     i32 row = height - 1;
@@ -425,7 +424,7 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, i32 flag) {
         return 0;
     }
 
-    BITMAPFILEHEADER bfh;
+    BmpFileHeaderStamp bfh;
     BITMAPINFOHEADER bih;
     bih.biSize = 0;
     bih.biWidth = 0;
@@ -441,21 +440,20 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, i32 flag) {
     bih.biClrImportant = 0;
 
     // Retail INLINES strcpy here: `mov edi,0x61aabc; repnz scas al` then `rep movs`
-    // into the 14-byte bfh at [esp+0x18]. A bfType word store emits neither, so the
-    // copy through a char* view of the header is byte-forced.
-    strcpy(reinterpret_cast<char*>(&bfh), "BM");
-    bfh.bfReserved1 = 0;
-    bfh.bfReserved2 = 0;
+    // into the 14-byte bfh at [esp+0x18]; a bfType word store emits neither.
+    strcpy(bfh.m_bytes, "BM");
+    bfh.m_hdr.bfReserved1 = 0;
+    bfh.m_hdr.bfReserved2 = 0;
 
     i32 height = this->m_height; // dwHeight
     i32 width = this->m_width;   // dwWidth
     bih.biHeight = height;
     bih.biWidth = width;
-    bfh.bfSize = 3 * width * height + 0x3a;
+    bfh.m_hdr.bfSize = 3 * width * height + 0x3a;
     bih.biSize = 0x28;
     bih.biPlanes = 1;
     bih.biBitCount = 0x18;
-    bfh.bfOffBits = 0x3a;
+    bfh.m_hdr.bfOffBits = 0x3a;
 
     u8* line = static_cast<u8*>(operator new(3 * width * height + 0x3a));
     if (line == 0) {
@@ -482,7 +480,7 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, i32 flag) {
     }
 
     file.Seek(0, 2);
-    file.Write(&bfh, 0xe);
+    file.Write(&bfh.m_hdr, 0xe);
     file.Write(&bih, 0x2c);
 
     for (i32 row = height - 1; row >= 0; row--) {
@@ -536,20 +534,19 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
     BITMAPINFOHEADER bi;
     memset(&bi, 0, 0x2c); // dev slop: 0x2c over the 0x28 struct (retail rep stos 0xb dwords)
     i32 height = m_height;
-    BITMAPFILEHEADER fh;
+    BmpFileHeaderStamp fh;
     memset(&fh, 0, sizeof(fh));
     i32 width = m_width;
-    // the BM magic written into the header's leading bytes - byte-forced
-    strcpy(reinterpret_cast<char*>(&fh), g_bmpHeaderTemplate);
+    strcpy(fh.m_bytes, g_bmpHeaderTemplate); // the BM magic over the leading bytes
     bi.biHeight = height;
     bi.biSize = 0x28;
     bi.biWidth = width;
-    fh.bfSize = height * width * 3 + 0x3a;
+    fh.m_hdr.bfSize = height * width * 3 + 0x3a;
     bi.biPlanes = 1;
     bi.biBitCount = 0x18;
     bi.biCompression = 0;
     bi.biSizeImage = 0;
-    fh.bfOffBits = 0x3a;
+    fh.m_hdr.bfOffBits = 0x3a;
 
     u8* buf = static_cast<u8*>(Lock(0));
     if (buf == 0) {
@@ -570,7 +567,7 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
         }
     }
 
-    file.Write(&fh, 0xe);
+    file.Write(&fh.m_hdr, 0xe);
     file.Write(&bi, 0x2c);
 
     for (i32 row = m_height - 1; row >= 0; row--) {
