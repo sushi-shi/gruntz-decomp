@@ -159,6 +159,22 @@ public:
 };
 SIZE_UNKNOWN(); // RTTI CImage (real-polymorphic; RTTI-vtable catalogued)
 
+// OPT-IN inline dtor. Retail's CState::DrawScreenTextImage @0xd5c10 FOLDS ~CImage
+// into its two teardown arms (the surviving ??_7 re-stamp + the trylevel stepping
+// 0 -> 1 -> 2 instead of dropping to -1) rather than calling 0xd5e80. A TU that needs
+// the folded form #defines CIMAGE_INLINE_DTOR before including this header and drops
+// its own out-of-line definition (the standalone at 0xd5e80 is then cl's COMDAT copy,
+// pinned with RVA_COMPGEN); every other TU is untouched and keeps calling it.
+#ifdef CIMAGE_INLINE_DTOR
+inline CImage::~CImage() {
+    FreeAll();
+    m_id = -1; // base-field resets (precede the folded ~CObject grand stamp)
+    m_flags = 0;
+    m_ownerCtx = 0;
+    // ~CObject() folds here: emits only the grand-base vptr re-stamp.
+}
+#endif // CIMAGE_INLINE_DTOR
+
 struct _DDBLTFX;
 extern _DDBLTFX g_bltFx;
 extern i32 g_surfaceColorKey;

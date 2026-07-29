@@ -1,3 +1,4 @@
+#define CIMAGE_INLINE_DTOR // DrawScreenTextImage folds ~CImage; see the header note
 #include <Mfc.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/ParseSource.h>
@@ -82,22 +83,16 @@ VTBL(CImage, 0x001eaa2c);  // vtable_names -> code (RTTI game class)
 // m_width/m_height/m_surface/m_owned - retail's exact order. The two later
 // vptr-restamp + FreeAll pairs at trylevel 1 and 2 are its inlined destructor on the
 // failure and success paths.
-// @early-stop
-// 97.15%, and the whole residue is ONE instruction repeated twice. Retail INLINES
-// ~CImage at both teardown sites - `mov [img],??_7CImage; lea ecx,[img]; call FreeAll`
-// - with /O2 dead-storing the dtor's m_id/m_flags/m_ownerCtx resets and the ~CObject
-// grand restamp (all unobservable on a dying stack object; the vptr store survives
-// because cl never kills that one). Its EH trylevel therefore steps 0 -> 1 -> 2 through
-// the two partial-teardown states instead of dropping to -1. Ours declares
-// `virtual ~CImage()` out-of-line (0xd5e80, 91 bytes, correctly matched there), so cl
-// emits `lea ecx,[img]; call ??1CImage` and sets trylevel -1: same shape, one
-// instruction short at each site.
-// Closing it means giving ~CImage an IN-CLASS body and re-pinning 0xd5e80 as the COMDAT
-// copy. That is more tractable here than the CFileMem case (see the measured failure in
-// DDrawSurfaceMgr.cpp @0x156ad0): there, the COMDATs migrated out of the TU that owned
-// their RVAs; here the vtable, the ??_G thunk and this local all live in cimage.obj, so
-// the copy should stay put. It is still a shared-header change that reshapes every TU
-// destroying a CImage, so it is deferred rather than done for 8 bytes.
+// EXACT. Retail INLINES ~CImage at both teardown sites - `mov [img],??_7CImage;
+// lea ecx,[img]; call FreeAll` - with /O2 dead-storing the dtor's m_id/m_flags/
+// m_ownerCtx resets and the ~CObject grand restamp (all unobservable on a dying stack
+// object; the vptr store survives because cl never kills that one), so its EH trylevel
+// steps 0 -> 1 -> 2 through the two partial-teardown states instead of dropping to -1.
+// The out-of-line `virtual ~CImage()` emitted `lea ecx,[img]; call ??1CImage` + trylevel
+// -1 instead. Closed by the OPT-IN inline dtor: <Image/CImage.h> carries the body under
+// `#ifdef CIMAGE_INLINE_DTOR`, this TU defines that macro (so only cimage.obj folds it -
+// no other TU is reshaped) and the standalone at 0xd5e80 is now cl's own COMDAT copy,
+// RVA_COMPGEN-pinned above and still byte-exact.
 RVA(0x000d5c10, 0x10d)
 i32 CState::DrawScreenTextImage(const char* name) {
     char buf[0x40];
@@ -161,14 +156,10 @@ void CImage::FlipBoth(void* arg) {
 }
 
 RVA_COMPGEN(0x000d5e50, 0x1e, ??_GCImage@@UAEPAXI@Z)
-RVA(0x000d5e80, 0x5b)
-CImage::~CImage() {
-    FreeAll();
-    m_id = -1; // base-field resets (precede the folded ~CObject grand stamp)
-    m_flags = 0;
-    m_ownerCtx = 0;
-    // ~CObject() folds here: emits only the grand-base vptr re-stamp.
-}
+// ~CImage's body is IN-CLASS (<Image/CImage.h>, CIMAGE_INLINE_DTOR): retail folds it
+// into DrawScreenTextImage's two teardown arms, so this TU takes the inline form and
+// the standalone at 0xd5e80 is cl's own COMDAT copy.
+RVA_COMPGEN(0x000d5e80, 0x5b, ??1CImage@@UAE@XZ)
 
 // ---------------------------------------------------------------------------
 // (vtable slot 12): Create. Load a surface BY FILE NAME: hand the path to the parent
@@ -804,9 +795,9 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     s.top = bottom - d.bottom;
     s.right = s.left + w;
     s.bottom = s.top + h;
+    g_bltFx.dwDDFX = DDBLTFX_MIRRORLEFTRIGHT | DDBLTFX_MIRRORUPDOWN; // 6
     d.right += 1;
     d.bottom += 1;
-    g_bltFx.dwDDFX = DDBLTFX_MIRRORLEFTRIGHT | DDBLTFX_MIRRORUPDOWN; // 6
     dst->m_surface->BltEx(&d, m_surface, &s, 0x8800, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;

@@ -1,5 +1,11 @@
-#define USERLOGIC_OOL_CTOR // retail CALLS ??0CUserLogic (0x58cd0) here; do not emit a
-                           // second, differently-inlined COMDAT copy of it (ODR)
+#define CMOVINGLOGIC_INLINE_DTOR // ~CProjectile @0xdef60 FOLDS the base dtor chain in
+                                 // line (vptr re-stamp / ~EngStr / vptr re-stamp),
+                                 // so this TU takes the header's inline ~CMovingLogic
+// NO USERLOGIC_OOL_CTOR here: retail's CTimeBomb::CTimeBomb(CGameObject*) @0xe1b90
+// INLINES the whole CUserLogic body (the two vptr stamps, the EngStr member ctor at
+// +0x18, the m_0c/m_10/m_14 binds, the three AddLogic* registrations and the
+// m_28=0x3e9/m_2c=2 seeds all appear in its own span). CProjectile's ctor is
+// unaffected - it chains CMovingLogic, which retail calls out of line either way.
 #include <Mfc.h>
 #include <Rez/FrameClock.h> // frame-clock band (g_frameDelta/g_frameTime/g_killCueClock/g_engineFrameDelta)
 #include <Gruntz/GameRegMfcPtr.h> // g_gameReg at its REAL type (CGruntzMgr)
@@ -61,8 +67,6 @@ CActReg CActRegPool<CProjectile>::s_table(2000, 2010);
 template<> DATA(0x0024c780)
 CActReg CActRegPool<CTimeBomb>::s_table(2000, 2010);
 
-CMovingLogic::~CMovingLogic() {}
-
 // @confidence: high
 // @source: rtti-vptr
 RVA(0x000126e0, 0x1fc)
@@ -105,20 +109,28 @@ void CMovingLogic::FinalizeStep(char*) {
 // ADDITIVELY (new overloaded ctors CProjectile(owner)/CMovingLogic(owner); the
 // byte-exact no-arg ctor 0x126e0 + its inline CMovingLogic are UNTOUCHED - verified
 // still 99.05%). The bounds/SetCoords/CProjectile-body region is byte-shaped.
-// DOMINANT wall (asm-level, llvm-objdump -dr base vs target): retail CALLS the
-// CUserLogic(owner) base init OUT-OF-LINE (`call 0x58cd0`, ~5 B), but MSVC here
-// INLINES the whole CUserLogic init (~160 B: CUserBase vptr, CUserBaseLink ctor,
-// EngStr temp, RegisterLogicTypesOnce, AddLogicHit/Attack/Bump). Cause: the
-// CUserLogic(owner) modeled in UserLogic.h is a SUBSET of retail's real init, so
-// it fits MSVC's inline budget when folded into this large ctor, whereas retail's
-// fuller init exceeds it and is emitted out-of-line. #pragma inline_depth(1) has
-// no effect on MSVC5's mem-init base-ctor inlining. Forcing it out-of-line needs
-// either the full CUserLogic(owner) body (a separate CUserLogic reconstruction,
-// risks the matched tile-trigger leaves that inline it) or making +0x38 a member-
-// with-ctor (would regress the banked 99% no-arg ctor - task-forbidden).
-// Secondary residues: +0x38 Init (0x136d0) emits after the CMovingLogic vptr
-// stamp vs retail's member-init position (EH state 0); the EH-state numbering
-// (retail 0/1/2/3 over +0x38 + CPtrList) and the m_hitList-vs-body order differ.
+// Two fixes landed 2026-07-29 (87.9% -> 88.6%): the three vmax slots are SEPARATE
+// assignments through the CMotionState cursor (retail stores +0xd8/+0xe0/+0xe8
+// ASCENDING off the `lea edi,[this+0x38]` it already holds - a chained `a = b = c = v`
+// runs them right-to-left off `this`), and the sortKey test + the m_flags RMW share ONE
+// m_object read.
+// THE REMAINING WALL IS STRUCTURAL AND CROSS-UNIT (proven, not guessed). The call SET
+// matches exactly; only the POSITION of the m_hitList CPtrList(10) ctor differs:
+//   retail: ??0CUserLogic, ??0CMotionState, [??_7CMovingLogic stamp], bounds/SetParams/
+//           vmax/m_148/m_14c/m_moveMode/CMovingLogic::MovingSlot16, m_150/m_154/m_158,
+//           CPtrList(10), [??_7CProjectile stamp], body
+//   ours  : ??0CUserLogic, ??0CMotionState, [??_7CMovingLogic stamp], CPtrList(10),
+//           [??_7CProjectile stamp], bounds/SetParams/... in the BODY
+// A member ctor cannot run after body code, and retail's CPtrList ctor runs AFTER the
+// bounds block and BEFORE the leaf vptr stamp - so in retail that whole block IS
+// `CMovingLogic::CMovingLogic(CGameObject*)`'s own body (inlined here), and the
+// m_150/m_154/m_158 stores are an inlined `CWapX(owner)` BASE ctor, not body assignments
+// (the note below assumed the preceding code was CProjectile's body; it is not).
+// CGrunt::CGrunt @0x47a10 carries a character-for-character copy of the same block,
+// which corroborates it.
+// FIX (deferred - crosses into the `grunt` unit): move the block into the inline
+// CMovingLogic(CGameObject*) in <Gruntz/MovingLogic.h>, spell this mem-init list
+// `: CMovingLogic(owner), CWapX(owner)`, and delete the duplicate from Grunt.cpp.
 RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     // CMovingLogic constructed the real m_motion member. This leaf applies its
@@ -162,7 +174,14 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
         static_cast<double>(g_frameTime) * g_motionZScale,
         0.0
     );
-    Motion()->m_d8 = Motion()->m_e0 = Motion()->m_e8 = static_cast<double>(g_defaultZ);
+    // The three vmax slots are SEPARATE assignments through the CMotionState cursor
+    // (retail stores +0xd8/+0xe0/+0xe8 in that order off the `lea edi,[this+0x38]` it
+    // already holds); a chained `a = b = c = v` runs them right-to-left off `this`.
+    CMotionState* m = Motion();
+    double z = static_cast<double>(g_defaultZ);
+    m->m_d8 = z;
+    m->m_e0 = z;
+    m->m_e8 = z;
     m_148 = 0;
     m_14c = 0;
     m_object->m_moveMode = 7;
@@ -180,9 +199,10 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     m_3c = owner->m_7c;
     m_38->m_flags |= 0x2000002;
     m_38->m_stateFlags |= 1;
-    if (m_object->m_sortKey != 0xcf850) {
-        m_object->m_sortKey = 0xcf850;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != 0xcf850) {
+        o->m_sortKey = 0xcf850;
+        o->m_flags |= 0x20000;
     }
     memset(&m_frames[0], 0, 0x1c); // zero the seven +0x1e0..+0x1fb sprite-frame slots
     m_sound = 0;
@@ -196,16 +216,14 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
 // CMovingLogic/CUserLogic/link base subobjects (the throwing link forces the /GX
 // frame). Field names are placeholders; the offsets are load-bearing.
 //
-// @early-stop
-// EH-state-numbering / base-dtor-inlining wall (docs/patterns/eh-state-numbering-base.md):
-// the body is byte-identical through `m_hitList.RemoveAll()` (the m_sound stop, the
-// free-list recycle walk, the AddTail/RemoveAll). The residue is the base-dtor
-// tail: retail INLINES the whole CMovingLogic/CUserLogic/CUserBaseLink chain (vptr
-// restamp 0x5e705c, ~EngStr on +0x18, vptr 0x5e70b4) and numbers the EH states
-// 2/1/3 in a `sub esp,8` frame; our recompile emits an out-of-line `~CMovingLogic`
-// call with states 1/0/-1 in a `push ecx` frame. Inlining the chain is not
-// reachable from this TU without un-emitting the standalone base dtors (matched
-// elsewhere) - the same per-function funcinfo wall the no-arg ctor hits. ~90%.
+// EXACT. The old note called the base-dtor tail unreachable "without un-emitting the
+// standalone base dtors (matched elsewhere)" - it is reachable with an OPT-IN inline:
+// <Gruntz/MovingLogic.h> carries `inline CMovingLogic::~CMovingLogic() {}` under
+// `#ifdef CMOVINGLOGIC_INLINE_DTOR`, this TU defines that macro (and no longer emits its
+// own unpinned out-of-line copy), so cl FOLDS the whole CMovingLogic/CUserLogic/
+// CUserBaseLink chain here exactly as retail does - the ??_7CMovingLogic re-stamp, the
+// ~EngStr call on +0x18 and the ??_7CUserBase re-stamp, with the EH states 2/1/3 in a
+// `sub esp,8` frame. Every other TU still calls the standalone 0x13bd0 unchanged.
 // ---------------------------------------------------------------------------
 RVA(0x000def60, 0xbc)
 CProjectile::~CProjectile() {
@@ -891,13 +909,21 @@ void CProjectile::ScanTargets(i32 impact) {
 // reinterpreted at use exactly like CUserLogic::SerializeMove does.
 // ---------------------------------------------------------------------------
 // @early-stop
-// scratch-slot scheduling tail (same family as CTriggerLoadRec/CTimer::Deserialize/
-// CGruntStateRec): the dual-mode switch, every Read/Write field+size, the
-// 7-entry name-ref loop, the type-code-gated map lookup, the g_coordPool
-// m_freeHead splice + AddTail, the inline strlen/strcpy KeyOfValue temps, the
-// g_serialCounter bumps, the base tail-chain and the embedded CWapX record are
-// byte-faithful; residual is the MSVC5 scratch-buffer slot assignment +
-// outparam zero-init store positions. Not source-steerable.
+// The dual-mode switch, every Read/Write field+size, the 7-entry name-ref loop, the
+// type-code-gated map lookup, the g_coordPool m_freeHead splice + AddTail, the inline
+// strlen/strcpy KeyOfValue temps, the g_serialCounter bumps, the base tail-chain and the
+// embedded CWapX record are byte-faithful. Two former "not source-steerable" residuals
+// were real source shapes and are now fixed: (a) ONE `void*` out-slot serves BOTH the
+// name-loop Lookup and the object-id Lookup (retail passes `lea ecx,[esp+0x14]` for both
+// and stores `found = 0` into that same slot); (b) the id ternary RE-READS `out` after
+// the GetClassId call (`mov ecx,[esp+0x14]`) instead of binding it to a local - binding
+// it pinned esi and cost retail's shared zero register (`xor esi,esi` + `cmp r,esi`
+// against `test r,r` at five sites). Likewise the write branch's loop counter and the
+// serialized shadow id are ONE variable (retail shares [esp+0x10]).
+// Residual: our read branch needs FOUR stack slots (out / key / cnt / the down-counter
+// temp) where retail needs three - retail coalesces the 7-down-counter temp with `key`
+// (both live at [esp+0x18]), which no declaration order or scope reproduces. That one
+// extra dword makes the frame 0x118 vs retail 0x114 and shifts every [esp+N] by 4.
 RVA(0x000e0d40, 0x6c2)
 i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObject* pObj) {
     CDDrawSurfaceMgr* reg = g_gameReg->m_world;
@@ -931,11 +957,14 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObjec
             s->Read(&m_targetId, 4);
             s->Read(&m_ownerId, 4);
 
+            // ONE `void*&` out-slot serves both lookups (retail shares the stack slot -
+            // two separate locals cost the frame an extra dword each).
+            void* out;
             for (i32 ni = 0; ni < 7; ni++) {
                 g_serialCounter++;
                 s->Read(buf, 0x80);
                 if (strlen(buf) != 0) {
-                    void* out = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
+                    out = 0; // CMapStringToPtr::Lookup (0x1b8438) takes a void&
                     reg->m_animRegistry->m_10.Lookup(buf, out);
                     m_frames[ni] = static_cast<CAniElement*>(out);
                 } else {
@@ -946,14 +975,19 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObjec
             g_serialCounter++;
             i32 key;
             s->Read(&key, 4);
-            CGameObject* found = 0;
+            out = 0;
             CGameObject* r;
-            if (MapLookupById(reg->m_childGroup->m_map48, key, found) == 0) {
+            if (MapLookupById(reg->m_childGroup->m_map48, key, out) == 0) {
                 r = 0;
-            } else if (found == 0) {
+            } else if (out == 0) {
                 r = 0;
             } else {
-                r = (found->GetClassId() == CLASSID_SERIALREF) ? found : 0;
+                // `out` is RE-READ for the ternary's value arm (retail
+                // `mov ecx,[esp+0x14]` after the GetClassId call): binding it to a
+                // local pins it in esi and costs the shared zero register.
+                r = (static_cast<CGameObject*>(out)->GetClassId() == CLASSID_SERIALREF)
+                        ? static_cast<CGameObject*>(out)
+                        : 0;
             }
             m_shadow = static_cast<CWwdGameObjectA*>(r);
             if (m_shadow == 0 && key != 0) {
@@ -997,21 +1031,22 @@ i32 CProjectile::SerializeMove(CFileMemBase* s, i32 mode, i32 typeId, CGameObjec
             s->Write(&m_targetId, 4);
             s->Write(&m_ownerId, 4);
 
-            for (i32 wi = 0; wi < 7; wi++) {
+            i32 n;
+            for (n = 0; n < 7; n++) {
                 g_serialCounter++;
                 memset(buf, 0, sizeof(buf));
-                if (m_frames[wi] != 0) {
-                    strcpy(buf, reg->m_animRegistry->KeyOfValue(m_frames[wi]));
+                if (m_frames[n] != 0) {
+                    strcpy(buf, reg->m_animRegistry->KeyOfValue(m_frames[n]));
                 }
                 s->Write(buf, 0x80);
             }
 
             g_serialCounter++;
-            i32 v = 0;
+            n = 0; // n is re-used as the shadow-object id
             if (m_shadow != 0) {
-                v = m_shadow->m_188;
+                n = m_shadow->m_188;
             }
-            s->Write(&v, 4);
+            s->Write(&n, 4);
 
             i32 v2 = m_hitList.GetCount();
             s->Write(&v2, 4);
@@ -1134,20 +1169,30 @@ void CTimeBomb::RegisterActs() {
 // bound object's per-tile-time gate (-1). Constructs a throwing CUserBaseLink, so
 // MSVC emits the /GX EH frame.
 //
-// @early-stop
-// EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): the body is
-// byte-identical to retail (the CUserLogic init, the two flag RMWs, the
-// ApplyName/anim-cache, the FAST/SLOW branch, the >>5 grid-cell mark, the m_124
-// arm); the residue is this ctor's own __ehfuncinfo state numbering + the 1-slot
-// callee-saved scheduling delta MSVC coin-flips. The SAME plateau as
-// CBrickz::CBrickz / CStaticHazard::CStaticHazard; not source-steerable. Parked
-// for the final sweep.
+// @early-stop  (53.7% -> 88.2%)
+// Three real defects fixed 2026-07-29:
+//  (1) The TU forced USERLOGIC_OOL_CTOR, so this ctor CALLED ??0CUserLogic where retail
+//      FOLDS the whole base init in line (both vptr stamps, the +0x18 EngStr member
+//      ctor, the m_0c/m_10/m_14 binds, the three AddLogic* registrations, m_28=0x3e9 /
+//      m_2c=2). The macro is gone: CProjectile's ctor is unaffected because it chains
+//      CMovingLogic, which retail calls out of line either way.
+//  (2) m_startTime/m_duration are ZERO-initialised in the mem-init list - retail's four
+//      `mov [this+0x58/0x60/0x5c/0x64],ebp` stores sit between the CWapX binds and the
+//      leaf vptr stamp, i.e. in the initialiser phase, not the body.
+//  (3) The sortKey test and the m_flags RMW share ONE m_object read (retail reuses eax:
+//      `mov ecx,[eax+8] / or ecx,0x20000 / mov [eax+8],ecx`); two `m_object->` chains
+//      made cl reload the pointer and emit a memory RMW.
+// Residue: three one-slot schedule swaps (the m_38 load hoisted above the zero-init
+// stores; the m_fastPhase constant store hoisted above the i64 stamp pair in BOTH
+// timer arms; the m_120 compare vs the m_value store).
 RVA(0x000e1b90, 0x23d)
-CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CTimeBomb::CTimeBomb(CGameObject* obj)
+    : CUserLogic(obj), CWapX(obj), m_startTime(0), m_duration(0) {
     m_38->m_flags |= 0x2000002;
-    if (m_object->m_sortKey != 0xf) {
-        m_object->m_sortKey = 0xf;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != 0xf) {
+        o->m_sortKey = 0xf;
+        o->m_flags |= 0x20000;
     }
     m_38->ApplyName("GAME_TIMEBOMB");
     m_prevAnimSetNode = m_objAux->m_1c;
@@ -1260,27 +1305,29 @@ i32 CTimeBomb::LoadAttributes() {
 // @+0x2c), then chain the shared CUserLogic serialize helper (SerializeMove,
 // 0x16e7f0) and the +0x34 CSerialObjRef sub-object's Chain (0x8c00). Same two-chain
 // archetype as CGruntPuddle::Serialize.
-// @early-stop
-// regalloc/hoist wall (~79%, docs/patterns/zero-register-pinning.md): logic is
-// byte-correct (the m_world gate, the m_58/m_60/m_54 round-trip, the SerializeMove
-// + CSerialObjRef Chain tail). Residue: retail pins `this` in ebx and hoists
-// `lea edi,[this+0x58]` above the mode branches (reusing edi via `add edi,8` for the
-// consecutive 8-byte fields), where cl keeps `this` in edi and recomputes each
-// field address - a callee-saved-register coloring choice not steerable from C.
+// The old "callee-saved coloring wall" note was wrong: retail's `lea edi,[this+0x58]`
+// hoisted above the mode branches + `add edi,8` between the two calls is an ordinary
+// POINTER WALK in the source (`i64* clock = &m_startTime; ... clock++;`). Spelled as
+// two independent `&m_startTime` / `&m_duration` operands the address has no cross-call
+// live range, so cl re-`lea`s per call and colors `this` into edi instead of ebx -
+// which is what cascaded through the whole body. EXACT.
 RVA(0x000e2080, 0xc1)
 i32 CTimeBomb::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObject* pObj) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
+    i64* clock = &m_startTime;
     switch (mode) {
         case 7:
-            sa->Read(&m_startTime, 8);
-            sa->Read(&m_duration, 8);
+            sa->Read(clock, 8);
+            clock++;
+            sa->Read(clock, 8);
             break;
         case 4:
-            sa->Write(&m_startTime, 8);
-            sa->Write(&m_duration, 8);
+            sa->Write(clock, 8);
+            clock++;
+            sa->Write(clock, 8);
             break;
     }
     switch (mode) {
@@ -1307,13 +1354,16 @@ i32 CTimeBomb::SerializeMove(CFileMemBase* arc, i32 mode, i32 typeId, CGameObjec
 // all five gates jump to; a per-gate `if (...) return 0` made cl emit the epilogue
 // inline per gate (the OLD note's "byte-exact reloc-artifact" claim was wrong - it
 // was a tail-merge structural miss). A shared `goto fail` reproduces the merged tail.
-// @early-stop
-// residual: cl still inlines the LAST gate's return-0 (jne play vs retail je fail)
-// and schedules the reg->m_world load mid-setup vs retail's hoist-first - MSVC5 /O2
-// block-layout coin-flips on the shared-tail's final arm; not source-steerable.
+// The last two residuals (the "not source-steerable block-layout coin-flip") were two
+// source bugs: (1) the FINAL gate is a positive `if (m_sound != 0) { play; return 1; }`
+// block - spelled as `if (== 0) goto fail;` cl inverts the branch and drops the shared
+// `return 0` epilogue inline between the gate and the play path; (2) `reg->m_world` is
+// its OWN local, hoisted right after the m_soundEnabled gate - inlined into the Lookup
+// receiver chain cl sinks the load past the arg setup. EXACT.
 RVA(0x000e2190, 0x83)
 i32 CProjectile::LaunchSound(const char* key) {
     CGruntzMgr* reg;
+    CDDrawSurfaceMgr* world;
     void* entry_ob;
     LeafCue* entry;
     if (m_sound != 0) {
@@ -1323,8 +1373,9 @@ i32 CProjectile::LaunchSound(const char* key) {
     if (reg->m_soundEnabled == 0) {
         goto fail;
     }
+    world = reg->m_world;
     entry_ob = 0;
-    reg->m_world->m_soundRegistry->m_10.Lookup(key, entry_ob);
+    world->m_soundRegistry->m_10.Lookup(key, entry_ob);
     entry = static_cast<LeafCue*>(entry_ob);
     if (entry == 0) {
         goto fail;
@@ -1335,11 +1386,10 @@ i32 CProjectile::LaunchSound(const char* key) {
     // GetItem returns the pooled DirectSound buffer (DirectSoundMgr in the cue-mgr
     // view); the projectile owns the same buffer as its m_sound sound sample.
     m_sound = static_cast<DirectSoundMgr*>(entry->m_10->GetItem());
-    if (m_sound == 0) {
-        goto fail;
+    if (m_sound != 0) {
+        m_sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
+        return 1;
     }
-    m_sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
-    return 1;
 fail:
     return 0;
 }
