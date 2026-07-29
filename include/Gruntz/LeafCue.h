@@ -36,6 +36,15 @@ struct LeafCue : public CLoadable {
     // The gated play entry (LeafCuePlay.cpp): when the throttle interval elapsed,
     // restamp the clock and forward the 4 args to the player's ConfigureItem.
     i32 PlayIfElapsed(i32 a0, i32 a1, i32 a2, i32 a3); // 0x1f940 (ret 0x10)
+    // The positional (panned) play entry, ex-`CAniBlitTrigger::TriggerBlit`: derive
+    // pan/volume from the cue's screen position against the view centre, then hand
+    // them to the same m_10 player. Same class - see the fold note in
+    // <DDrawMgr/AniAdvance.h>: identical CLoadable header + m_10 player slot,
+    // the same ds:0x61ab20 sound gate and the same `mov ecx,[this+0x10];
+    // call 0x1360d0` tail as PlayIfElapsed, and CDDrawSubMgrLeafScan::Fire
+    // dispatches it on a value out of the very map whose sibling accessor
+    // returns LeafCue*.
+    i32 TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2); // 0x1587f0 (ret 0x10)
 
     DSoundCloneInst* m_10; // +0x10  the acquired/pooled DirectSound buffer (0 = unloaded)
     i32 m_14;              // +0x14  last draw-clock (throttle stamp)
