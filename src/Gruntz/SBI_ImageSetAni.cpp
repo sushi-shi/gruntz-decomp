@@ -31,8 +31,8 @@ RVA(0x000e7980, 0x109)
 i32 CSBI_ImageSetAni::Init(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
-    i32 a2,
-    i32 a3,
+    i32 cmd,
+    i32 tab,
     RECT rc,
     const char* key,
     i32 b0,
@@ -43,7 +43,7 @@ i32 CSBI_ImageSetAni::Init(
 ) {
     if (host != 0 && owner != 0) {
         m_2c = owner;
-        m_tab = a3;
+        m_tab = tab;
         m_24 = host;
         m_28 = 0;
         m_enabled = 1;
@@ -51,7 +51,7 @@ i32 CSBI_ImageSetAni::Init(
         m_rect14.top = rc.top;
         m_rect14.right = rc.right;
         m_rect14.bottom = rc.bottom;
-        m_cmd = a2;
+        m_cmd = cmd;
         if (key != 0) {
             CObject* found = 0;
             host->m_imageRegistry->m_10map.Lookup(key, found);

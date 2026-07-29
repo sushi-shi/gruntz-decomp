@@ -110,23 +110,23 @@ void CDDrawChildGroup::DestroyChildren() {
 // ===========================================================================
 RVA(0x00159250, 0x185)
 CWwdGameObjectC* CDDrawChildGroup::CreateObject_159250(
-    int a1,
-    int a2,
-    int a3,
-    int a4,
+    int id,
+    int x,
+    int y,
+    int sortKey,
     AnimWorkerObj* tmpl,
-    int a6,
-    int a7
+    int dotColor,
+    int stateFlags
 ) {
-    CWwdGameObjectC* result = new CWwdGameObjectC(OwnerMgr(), a1, a7);
-    if (result->SetupFlagged(a2, a3, a4, tmpl, a6) == 0) {
+    CWwdGameObjectC* result = new CWwdGameObjectC(OwnerMgr(), id, stateFlags);
+    if (result->SetupFlagged(x, y, sortKey, tmpl, dotColor) == 0) {
         if (result != 0) {
             delete result; // virtual scalar-deleting dtor (slot 1)
         }
         return 0;
     }
     InsertSorted(result, 1);
-    if (a7 & 0x200000) {
+    if (stateFlags & 0x200000) {
         // retail fires the +0x10 FN POINTER (m_notify), never a vtable slot
         result->m_7c->m_notify(result);
     }
@@ -142,13 +142,13 @@ CWwdGameObjectC* CDDrawChildGroup::CreateObject_159250(
 // (permuter + map-hoist both tried). Shared with CreateNamed_1595b0/159a10/166780.
 RVA(0x001593e0, 0x53)
 CWwdGameObjectC* CDDrawChildGroup::CreateNamed_1593e0(
-    int a1,
-    int a2,
-    int a3,
-    int a4,
+    int id,
+    int x,
+    int y,
+    int sortKey,
     const char* name,
-    int a6,
-    int a7
+    int dotColor,
+    int stateFlags
 ) {
     CObject* val = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
@@ -156,7 +156,15 @@ CWwdGameObjectC* CDDrawChildGroup::CreateNamed_1593e0(
     // to the map's one real value type is language-forced: CDDrawWorkerCache::
     // CreateWorker @0x1652c0 is the ONLY writer and every value it stores is a
     // 0x17c-byte ??_7AnimWorkerObj@@6B@-stamped registration record.
-    return CreateObject_159250(a1, a2, a3, a4, static_cast<AnimWorkerObj*>(val), a6, a7);
+    return CreateObject_159250(
+        id,
+        x,
+        y,
+        sortKey,
+        static_cast<AnimWorkerObj*>(val),
+        dotColor,
+        stateFlags
+    );
 }
 
 // ===========================================================================
@@ -165,16 +173,16 @@ CWwdGameObjectC* CDDrawChildGroup::CreateNamed_1593e0(
 // ===========================================================================
 RVA(0x00159440, 0x170)
 CWwdGameObjectF*
-CDDrawChildGroup::CreateObject_159440(int a1, int a2, AnimWorkerObj* tmpl, int a4) {
-    CWwdGameObjectF* result = new CWwdGameObjectF(OwnerMgr(), a1, a4);
-    if (result->SetupDeferred(a2, tmpl) == 0) {
+CDDrawChildGroup::CreateObject_159440(int id, int sortKey, AnimWorkerObj* tmpl, int stateFlags) {
+    CWwdGameObjectF* result = new CWwdGameObjectF(OwnerMgr(), id, stateFlags);
+    if (result->SetupDeferred(sortKey, tmpl) == 0) {
         if (result != 0) {
             delete result; // virtual scalar-deleting dtor (slot 1)
         }
         return 0;
     }
     InsertSorted(result, 1);
-    if (a4 & 0x200000) {
+    if (stateFlags & 0x200000) {
         result->m_7c->m_notify(result);
     }
     return result;
@@ -185,10 +193,11 @@ CDDrawChildGroup::CreateObject_159440(int a1, int a2, AnimWorkerObj* tmpl, int a
 // @early-stop
 // 92% - logic byte-exact; same val=0 arg-push scheduling residual as CreateNamed_1593e0.
 RVA(0x001595b0, 0x44)
-CWwdGameObjectF* CDDrawChildGroup::CreateNamed_1595b0(int a1, int a2, const char* name, int a4) {
+CWwdGameObjectF*
+CDDrawChildGroup::CreateNamed_1595b0(int id, int sortKey, const char* name, int stateFlags) {
     CObject* val = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
-    return CreateObject_159440(a1, a2, static_cast<AnimWorkerObj*>(val), a4);
+    return CreateObject_159440(id, sortKey, static_cast<AnimWorkerObj*>(val), stateFlags);
 }
 
 // ===========================================================================
@@ -205,35 +214,41 @@ CWwdGameObjectF* CDDrawChildGroup::CreateNamed_1595b0(int a1, int a2, const char
 // ===========================================================================
 RVA(0x00159600, 0x1ab)
 CWwdGameObjectA* CDDrawChildGroup::CreateObject_159600(
-    i32 a1,
-    i32 a2,
-    i32 a3,
-    i32 a4,
+    i32 id,
+    i32 x,
+    i32 y,
+    i32 sortKey,
     AnimWorkerObj* tmpl,
-    i32 flags
+    i32 stateFlags
 ) {
-    CWwdGameObjectA* result = new CWwdGameObjectA(OwnerMgr(), a1, flags);
-    if (result->Setup(a2, a3, a4, tmpl) == 0) {
+    CWwdGameObjectA* result = new CWwdGameObjectA(OwnerMgr(), id, stateFlags);
+    if (result->Setup(x, y, sortKey, tmpl) == 0) {
         if (result != 0) {
             delete result; // virtual scalar-deleting dtor (slot 1)
         }
         return 0;
     }
     InsertSorted(result, 1);
-    if (flags & 0x200000) {
+    if (stateFlags & 0x200000) {
         result->m_7c->m_notify(result);
     }
     return result;
 }
 
+// CORRECTED 2026-07-29: args 2/3/4 were `geoB/geoA/hint`, three wrong names. 0x1597b0
+// forwards all six 1:1 to CreateObject_159600 (verified against the retail push order),
+// whose body hands args 2/3/4 to CGameObject::Setup(x, y, sortKey, tmpl) @0x150d60; the
+// game call sites pass the object's m_screenX/m_screenY there (Projectile.cpp,
+// Warlord.cpp, ExitTrigger.cpp) and TriggerMgrGrid passes (0, ax, ay, ay, "Grunt", ...),
+// i.e. the sort key is the screen y - the isometric depth order InsertSorted uses.
 RVA(0x001597b0, 0x57)
 CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
-    i32 kind,
-    i32 geoB,
-    i32 geoA,
-    i32 hint,
+    i32 id,
+    i32 x,
+    i32 y,
+    i32 sortKey,
     const char* name,
-    i32 flags
+    i32 stateFlags
 ) {
     CObject* tmpl_ob = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(name, tmpl_ob);
@@ -250,12 +265,12 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
     // 0x159600 is CDDrawChildGroup::CreateObject_159600 (the factory IS the manager); the
     // old ?CreateSpriteImpl@CDDrawChildGroup@ decl was a PHANTOM second name for it.
     return CreateObject_159600(
-        kind,
-        geoB,
-        geoA,
-        hint,
+        id,
+        x,
+        y,
+        sortKey,
         tmpl,
-        flags
+        stateFlags
     ); // the launder dies - one type now
 }
 
@@ -265,11 +280,11 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSprite(
 RVA(0x00159830, 0x92)
 i32 CDDrawChildGroup::AttachSprite(
     CWwdGameObject* obj,
-    i32 a1,
-    i32 a2,
-    i32 a3,
+    i32 x,
+    i32 y,
+    i32 sortKey,
     const char* name,
-    i32 flags
+    i32 stateFlags
 ) {
     if (!obj) {
         return 0;
@@ -282,14 +297,14 @@ i32 CDDrawChildGroup::AttachSprite(
     if (!tmpl) {
         return 0;
     }
-    obj->m_flags = flags;
-    if (!obj->Setup(a1, a2, a3, tmpl)) {
+    obj->m_flags = stateFlags;
+    if (!obj->Setup(x, y, sortKey, tmpl)) {
         return 0;
     }
     // 0x159e40 is CDDrawChildGroup::InsertSorted (the factory IS the object manager -
     // same `this`); bind the real method (reloc-masked ?InsertSorted@CDDrawChildGroup).
     this->InsertSorted(obj, 1);
-    if (flags & 0x200000) {
+    if (stateFlags & 0x200000) {
         // the worker fire callback - the same slot TickKillCues fires
         obj->m_7c->m_notify(static_cast<CGameObject*>(obj));
     }
@@ -311,17 +326,23 @@ i32 CDDrawChildGroup::AttachSprite(
 // noinline, so this one site cannot be spelled both ways.
 // ===========================================================================
 RVA(0x001598d0, 0x13d)
-CWwdGameObject*
-CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, AnimWorkerObj* tmpl, int a6) {
-    CWwdGameObject* result = new CWwdGameObject(OwnerMgr(), a1, a6);
-    if (result->Setup(a2, a3, a4, tmpl) == 0) {
+CWwdGameObject* CDDrawChildGroup::CreateObject_1598d0(
+    int id,
+    int x,
+    int y,
+    int sortKey,
+    AnimWorkerObj* tmpl,
+    int stateFlags
+) {
+    CWwdGameObject* result = new CWwdGameObject(OwnerMgr(), id, stateFlags);
+    if (result->Setup(x, y, sortKey, tmpl) == 0) {
         if (result != 0) {
             delete result; // virtual scalar-deleting dtor (slot 1)
         }
         return 0;
     }
     InsertSorted(result, 1);
-    if (a6 & 0x200000) {
+    if (stateFlags & 0x200000) {
         result->m_7c->m_notify(result);
     }
     return result;
@@ -332,14 +353,20 @@ CDDrawChildGroup::CreateObject_1598d0(int a1, int a2, int a3, int a4, AnimWorker
 // @early-stop
 // 94% - logic byte-exact; same val=0 arg-push scheduling residual as CreateNamed_1593e0.
 RVA(0x00159a10, 0x57)
-CWwdGameObject*
-CDDrawChildGroup::CreateNamed_159a10(int a1, int a2, int a3, int a4, const char* name, int a6) {
+CWwdGameObject* CDDrawChildGroup::CreateNamed_159a10(
+    int id,
+    int x,
+    int y,
+    int sortKey,
+    const char* name,
+    int stateFlags
+) {
     CObject* val = 0;
     OwnerMgr()->m_workerCache->m_10.Lookup(name, val);
     if (val == 0) {
         return 0;
     }
-    return CreateObject_1598d0(a1, a2, a3, a4, static_cast<AnimWorkerObj*>(val), a6);
+    return CreateObject_1598d0(id, x, y, sortKey, static_cast<AnimWorkerObj*>(val), stateFlags);
 }
 
 // ---------------------------------------------------------------------------
@@ -426,46 +453,46 @@ void CDDrawChildGroup::WalkDispatch2C(CDDrawSurfacePair* target) {
 }
 
 RVA(0x00159cc0, 0x2a)
-void CDDrawChildGroup::WalkDispatch30(CDDrawSurfacePair* a1, CDDrawSurfacePair* a2) {
+void CDDrawChildGroup::WalkDispatch30(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
     POSITION n = m_list.GetHeadPosition();
     if (n != 0) {
         do {
             CGameObject* cur_obj = NextChild(n);
-            cur_obj->BltDirty(a1, a2);
+            cur_obj->BltDirty(dst, src);
         } while (n != 0);
     }
 }
 
 RVA(0x00159cf0, 0x42)
 void CDDrawChildGroup::WalkDispatch34(
-    CDDrawSurfacePair* a1,
-    CDDrawSurfacePair* a2,
-    CDDrawSurfacePair* a3
+    CDDrawSurfacePair* dst,
+    CDDrawSurfacePair* src,
+    CDDrawSurfacePair* restoreSrc
 ) {
     POSITION n = m_list.GetHeadPosition();
     if (n != 0) {
         do {
             CGameObject* cur_obj = NextChild(n);
-            cur_obj->BltDirtyEx(a1, a2, a3);
+            cur_obj->BltDirtyEx(dst, src, restoreSrc);
         } while (n != 0);
     }
-    WalkDispatch30(a2, a3);
+    WalkDispatch30(src, restoreSrc);
 }
 
 RVA(0x00159d40, 0x42)
 void CDDrawChildGroup::WalkDispatch38(
-    CDDrawSurfacePair* a1,
-    CDDrawSurfacePair* a2,
-    CDDrawSurfacePair* a3
+    CDDrawSurfacePair* dst,
+    CDDrawSurfacePair* src,
+    CDDrawSurfacePair* restoreSrc
 ) {
     POSITION n = m_list.GetHeadPosition();
     if (n != 0) {
         do {
             CGameObject* cur_obj = NextChild(n);
-            cur_obj->BltDirtyRegions(a1, a2, a3);
+            cur_obj->BltDirtyRegions(dst, src, restoreSrc);
         } while (n != 0);
     }
-    WalkDispatch30(a2, a3);
+    WalkDispatch30(src, restoreSrc);
 }
 
 RVA(0x00159d90, 0x1c)
@@ -650,9 +677,13 @@ void CDDrawChildGroup::CollideBroadcast() {
 }
 
 // 0x15a130: bounding-box overlap test between two wide objects. Each box is its
-// screen pos (+0x5c/+0x60) plus a local AABB (a1: +0x144..+0x150; a2: +0x154..
-// +0x160). Either box invalid (its first AABB field == INT_MIN) -> no overlap.
-// __stdcall, 2 args (ret 0x8).
+// screen pos (+0x5c/+0x60) plus a local AABB, and the two sides are ASYMMETRIC -
+// arg1 contributes its activation box m_area (+0x144..+0x150), arg2 its tile-switch
+// registrar rect m_switchRect (+0x154..+0x160) - which is what the parameter names
+// record. The one caller, CollideBroadcast's BOX phase @0x159f00, calls
+// BoxesOverlap(oj, oi) with oj the RECEIVER of that phase (mask1b = oj->m_ec &
+// oi->m_collCategory, and oj->Notify(oi) on a hit). Either box invalid (its first
+// AABB field == INT_MIN) -> no overlap. __stdcall, 2 args (ret 0x8).
 // @early-stop
 // 76% - logic/CFG/offsets/compares byte-exact; the residual is a spill-frame
 // strategy difference: retail allocates a fresh `sub esp,0x20` local frame for the
@@ -671,27 +702,27 @@ void CDDrawChildGroup::CollideBroadcast() {
 // coord adds/stores differently and colours the a2.switchRect.left probe into ebp);
 // pure /O2 scheduling/regalloc, not source-steerable (caching the .left probes regressed).
 RVA(0x0015a130, 0xdc)
-i32 __stdcall BoxesOverlap(CGameObject* a1, CGameObject* a2) {
-    if (a2->m_switchRect.left == static_cast<i32>(0x80000000)) {
+i32 __stdcall BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj) {
+    if (switchObj->m_switchRect.left == static_cast<i32>(0x80000000)) {
         return 0;
     }
-    if (a1->m_area.left == static_cast<i32>(0x80000000)) {
+    if (areaObj->m_area.left == static_cast<i32>(0x80000000)) {
         return 0;
     }
     // retail materializes the two screen-space AABBs as 0x10-byte stack rects (0x20 frame)
     CDDrawRect ra, rb;
-    i32 xi = a1->m_screenX;
-    i32 yi = a1->m_screenY;
-    ra.left = a1->m_area.left + xi;
-    ra.top = a1->m_area.top + yi;
-    ra.right = a1->m_area.right + xi;
-    ra.bottom = a1->m_area.bottom + yi;
-    i32 xj = a2->m_screenX;
-    i32 yj = a2->m_screenY;
-    rb.left = a2->m_switchRect.left + xj;
-    rb.top = a2->m_switchRect.top + yj;
-    rb.right = a2->m_switchRect.right + xj;
-    rb.bottom = a2->m_switchRect.bottom + yj;
+    i32 xi = areaObj->m_screenX;
+    i32 yi = areaObj->m_screenY;
+    ra.left = areaObj->m_area.left + xi;
+    ra.top = areaObj->m_area.top + yi;
+    ra.right = areaObj->m_area.right + xi;
+    ra.bottom = areaObj->m_area.bottom + yi;
+    i32 xj = switchObj->m_screenX;
+    i32 yj = switchObj->m_screenY;
+    rb.left = switchObj->m_switchRect.left + xj;
+    rb.top = switchObj->m_switchRect.top + yj;
+    rb.right = switchObj->m_switchRect.right + xj;
+    rb.bottom = switchObj->m_switchRect.bottom + yj;
     if (ra.left > rb.right) {
         return 0;
     }
@@ -1251,8 +1282,8 @@ i32 CDDrawChildGroup::CountActive() {
 }
 
 RVA(0x0015ac20, 0x81)
-i32 CDDrawChildGroup::ForEachDispatch(CFileMemBase* a1, i32 a2, i32 a3) {
-    if (a1 == 0) {
+i32 CDDrawChildGroup::ForEachDispatch(CFileMemBase* ar, i32 mode, i32 typeId) {
+    if (ar == 0) {
         return 0;
     }
     POSITION pos = m_map48.GetStartPosition();
@@ -1262,7 +1293,7 @@ i32 CDDrawChildGroup::ForEachDispatch(CFileMemBase* a1, i32 a2, i32 a3) {
             CWwdGameObject* val = 0;
             MapGetNext(m_map48, pos, key, val);
             if (val != 0 && !(val->m_flags & 0x4000000)) {
-                val->Play(a1, a2, a3, val);
+                val->Play(ar, mode, typeId, val);
             }
         } while (pos != 0);
     }
@@ -1270,8 +1301,8 @@ i32 CDDrawChildGroup::ForEachDispatch(CFileMemBase* a1, i32 a2, i32 a3) {
 }
 
 RVA(0x0015acb0, 0x76)
-i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* a1, i32 a2) {
-    if (a1 == 0) {
+i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* ar, i32 typeId) {
+    if (ar == 0) {
         return 0;
     }
     POSITION pos = m_map48.GetStartPosition();
@@ -1281,7 +1312,8 @@ i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* a1, i32 a2) {
             CWwdGameObject* val = 0;
             MapGetNext(m_map48, pos, key, val);
             if (val != 0 && !(val->m_flags & 0x4000000)) {
-                val->WriteSnapshot(a1, a2);
+                // WriteSnapshot's 2nd slot is the one retail never reads (0x151c00)
+                val->WriteSnapshot(ar, typeId);
             }
         } while (pos != 0);
     }
@@ -1412,7 +1444,7 @@ i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
 // 0x15b020: for each active m_map48 object, write its key to the archive then run
 // its +0x3c virtual; bail to 0 on a 0 result, else 1. Returns 0 if ar==0.
 RVA(0x0015b020, 0xc0)
-i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, i32 a2) {
+i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, i32 typeId) {
     if (ar == 0) {
         return 0;
     }
@@ -1424,7 +1456,7 @@ i32 CDDrawChildGroup::ForEachSerialize(CFileMemBase* ar, i32 a2) {
         if (val != 0 && !(val->m_flags & 0x4000000)) {
             void* k = WwdKey(val);
             ar->Write(&k, 4);
-            if (val->Play(ar, 4, a2, val) == 0) {
+            if (val->Play(ar, 4, typeId, val) == 0) {
                 return 0;
             }
         }

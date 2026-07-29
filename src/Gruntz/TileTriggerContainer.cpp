@@ -137,12 +137,13 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
     i32 col,
     i32 row,
     i32 key,
-    RECT r134,
-    RECT r144,
-    RECT r154,
-    RECT r64,
-    RECT rF0,
-    RECT r100,
+    // the same six rect blocks AddLogic takes (see its declaration for the offsets)
+    RECT extent,
+    RECT area,
+    RECT switchRect,
+    RECT clip,
+    RECT switchRectA,
+    RECT switchRectB,
     i32 isMatch,
     i32 m120,
     i32 zero
@@ -175,12 +176,12 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
     }
 
     RECT local[6];
-    local[0] = r134;
-    local[1] = r144;
-    local[2] = r154;
-    local[3] = r64;
-    local[4] = rF0;
-    local[5] = r100;
+    local[0] = extent;
+    local[1] = area;
+    local[2] = switchRect;
+    local[3] = clip;
+    local[4] = switchRectA;
+    local[5] = switchRectB;
 
     if (obj->BuildSmall(this, tag, col, row, key, local, isMatch, m120, zero) == 0) {
         // inline ~CTileTriggerSwitchLogic (vptr restamp + m_initGate = 0) + ??3
@@ -313,12 +314,12 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
     i32 tileX,
     i32 tileY,
     i32 cellKey,
-    CTrigParam p1,
-    CTrigParam p2,
-    CTrigParam p3,
-    CTrigParam p4,
-    CTrigParam p5,
-    CTrigParam p6,
+    CTrigParam extent,
+    CTrigParam area,
+    CTrigParam switchRect,
+    CTrigParam clip,
+    CTrigParam switchRectA,
+    CTrigParam switchRectB,
     i32 tileToken,
     i32 dutyOnSpan,
     i32 leadInSpan,
@@ -345,12 +346,12 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
     }
 
     CTrigParam local[6];
-    local[0] = p1;
-    local[1] = p2;
-    local[2] = p3;
-    local[3] = p4;
-    local[4] = p5;
-    local[5] = p6;
+    local[0] = extent;
+    local[1] = area;
+    local[2] = switchRect;
+    local[3] = clip;
+    local[4] = switchRectA;
+    local[5] = switchRectB;
 
     i32 ok = 0;
     if (obj->m_initGate == 0) {

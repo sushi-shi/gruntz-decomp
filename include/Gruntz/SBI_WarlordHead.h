@@ -41,12 +41,12 @@ public:
     virtual i32 SetupImage(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
-        i32 a3,
-        i32 a4,
+        i32 cmd,
+        i32 tab,
         RECT rc,
         const char* key,
-        i32 a10,
-        i32 a11
+        i32 frame,
+        i32 extra
     ) OVERRIDE; // slot 11
     // Member teardown = the INHERITED CSBI_ImageSet::Reset (0xe7400); retail's
     // ~CSBI_WarlordHead calls it at its own level and again at the folded ImageSet level

@@ -235,7 +235,8 @@ void CFontConfig::Scroll(i32 delta) {
 // edi, 0 in ebx). A 1-instr phase shift through every =0 store / compare; not
 // source-steerable. Effectively matched.
 RVA(0x00021e20, 0x95)
-i32 CFontConfig::TypeChar(i32 ch, i32 a2) {
+// `flag` is the slot-11 key handler's second word; this body never reads it.
+i32 CFontConfig::TypeChar(i32 ch, i32 flag) {
     m_inputScrollTotal = 0;
     if (ch == 0xd) {
         if (m_inputActive != 0) {

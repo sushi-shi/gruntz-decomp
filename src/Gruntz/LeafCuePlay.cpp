@@ -16,13 +16,16 @@
 // reloc-masked (CStatusBarMgr vs LeafCuePlayer at the same 0x1360d0). Not source-
 // steerable (tried flat + nested guard forms). Logic complete.
 RVA(0x0001f940, 0x4c)
-i32 LeafCue::PlayIfElapsed(i32 a0, i32 a1, i32 a2, i32 a3) {
+// The four forwarded words are DSoundCloneInst::ConfigureItem's own (vol, pan, freqPct,
+// loop) @0x1360d0 - it hands them to SetVolumeByIndex / SetPanByIndex / SetField2 /
+// SetField3 in that order.
+i32 LeafCue::PlayIfElapsed(i32 vol, i32 pan, i32 freqPct, i32 loop) {
     if (g_sndEnabled == 0) {
         return 0;
     }
     if (g_killCueClock - static_cast<u32>(m_14) >= static_cast<u32>(m_18)) {
         m_14 = g_killCueClock;
-        return m_10->ConfigureItem(a0, a1, a2, a3);
+        return m_10->ConfigureItem(vol, pan, freqPct, loop);
     }
     return 0;
 }

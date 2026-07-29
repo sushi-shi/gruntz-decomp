@@ -923,6 +923,8 @@ public:
     i32 SendStatValue(i32 id, i32 statId, i32 value, i32 flag);                  // 0xb9570
     // Session-ready gate (0xb9180): with both args set, polls the session once if the
     // done-latch (m_534) is clear, then reports whether it is now set.
+    // a1/a2 are pure non-zero gates and 0xb9180 has no caller in .text - deliberately
+    // left positional (same note as <Gruntz/Multi.h>).
     i32 PollSessionGated(i32 a1, i32 a2); // 0xb9180
     // (GetConfigNameA @0xb6090 / GetConfigNameB @0xb60d0 moved to CMulti in the
     // netmgr-vs-cmulti split - they return CMulti's m_5b4/m_5b8 config-name CStrings.

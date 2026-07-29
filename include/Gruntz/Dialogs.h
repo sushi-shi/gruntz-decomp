@@ -24,7 +24,7 @@ class CLatencyList;
 
 class CBattlezDlg : public CDialog {
 public:
-    CBattlezDlg(class CGruntzMgr* a0, CWnd* pParent);
+    CBattlezDlg(class CGruntzMgr* mgr, CWnd* pParent); // mgr -> m_slots
     // NO DECLARED DESTRUCTOR - and that is a binary fact, not laziness. Retail's
     // ??1CBattlezDlg (0x14c90, 71 B) destroys the CString m_6c and chains ~CDialog with NO
     // `mov [esi],??_7CBattlezDlg` vptr re-stamp at entry. cl only emits that stamp for a
@@ -182,7 +182,9 @@ SIZE_UNKNOWN();
 
 class CBattlezDlgColors : public CDialog {
 public:
-    CBattlezDlgColors(class CGruntzMgr* a0, i32 a1, i32 a2, CWnd* pParent);
+    // (mgr -> m_slots, slotIndex -> m_slotIndex); the third lands in m_68, whose role
+    // is still unproven (every call site passes 0), so it stays positional.
+    CBattlezDlgColors(class CGruntzMgr* mgr, i32 slotIndex, i32 a2, CWnd* pParent);
     // No declared dtor: retail does contain the implicit compiler-generated
     // ??1CBattlezDlgColors and scalar-deleting wrapper. Their vtable/call xrefs prove
     // the class identity; RVA_COMPGEN pins both bodies in Dialogs.cpp.
@@ -207,7 +209,7 @@ SIZE_UNKNOWN();
 
 class CMultiStartDlg : public CDialog {
 public:
-    CMultiStartDlg(class CGruntzMgr* a0, CWnd* pParent);
+    CMultiStartDlg(class CGruntzMgr* mgr, CWnd* pParent); // mgr -> m_host
     // NO user-declared destructor: retail's ~CMultiStartDlg (0x0b8960) is the
     // COMPILER-GENERATED one (destroy CStringList m_74, CString m_70, chain
     // ~CDialog). cl 5.0 elides the most-derived vptr re-stamp in an IMPLICIT dtor

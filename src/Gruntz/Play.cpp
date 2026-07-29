@@ -1481,11 +1481,11 @@ void CPlay::PostSetup(void* dc) {
     }
 
 RVA(0x000d7520, 0x3b9)
-i32 CPlay::SyncState(CFileMemBase* ar, i32 mode, i32 a2, i32 a3) {
+i32 CPlay::SyncState(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj) {
     if (ar == 0) {
         return 0;
     }
-    if (!HeaderSerialize(ar, mode, a2, a3)) {
+    if (!HeaderSerialize(ar, mode, typeId, pObj)) {
         return 0;
     }
     switch (mode) {
@@ -1523,15 +1523,15 @@ i32 CPlay::SyncState(CFileMemBase* ar, i32 mode, i32 a2, i32 a3) {
     i32* p;
     p = &m_syncTimerLo;
     SYNC_PAIR(ar, mode, p);
-    if (!m_guts->Sync(ar, mode, a2, a3)) { // the status-bar sync driver @0x1084d0
+    if (!m_guts->Sync(ar, mode, typeId, pObj)) { // the status-bar sync driver @0x1084d0
         return 0;
     }
-    if (!m_frameMarker->HandleEvent(ar, mode, a2, a3)) { // CTimer's real serialize entry
+    if (!m_frameMarker->HandleEvent(ar, mode, typeId, pObj)) { // CTimer's real serialize entry
         return 0;
     }
     p = &m_cueTimerLo;
     SYNC_PAIR(ar, mode, p);
-    if (!m_beginMarker->Serialize(ar, mode, a2, a3)) { // 0x117280
+    if (!m_beginMarker->Serialize(ar, mode, typeId, pObj)) { // 0x117280
         return 0;
     }
     p = &m_region0TimerLo;
@@ -2351,7 +2351,16 @@ void CPlay::LoadSBITextEdges(char* name) {
 }
 
 RVA(0x000d1890, 0x1ba)
-void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, RECT* rectSrc) {
+void CPlay::PlayCueAt(
+    i32 cueId,
+    i32 fontSel,
+    i32 toBackPage,
+    i32 r,
+    i32 g,
+    i32 b,
+    i32 flag,
+    RECT* rectSrc
+) {
     RECT rect;
 
     if (cueId != m_lastCueId) {
@@ -2383,10 +2392,10 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
         SetRect(&rect, left, top, right, bottom);
     }
 
-    if (a3 != 0) {
-        ShowHudMessageAlt(m_world, &m_cueText, &rect, a2, 1, a4, a5, a6, a7);
+    if (toBackPage != 0) {
+        ShowHudMessageAlt(m_world, &m_cueText, &rect, fontSel, 1, r, g, b, flag);
     } else {
-        EngStr_DrawText(m_world, &m_cueText, &rect, a2, 1, a4, a5, a6, a7);
+        EngStr_DrawText(m_world, &m_cueText, &rect, fontSel, 1, r, g, b, flag);
     }
 }
 
@@ -3294,7 +3303,7 @@ i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
 }
 
 RVA(0x000dace0, 0x239)
-i32 GruntzPlayer::Serialize(CFileMemBase* ar, i32 kind, i32 a3, i32 a4) {
+i32 GruntzPlayer::Serialize(CFileMemBase* ar, i32 kind, i32 typeId, i32 pObj) {
     char tmp[0x80];
     // Retail lays the kind==4 (Save, [+0x30]) arm out of line and keeps the
     // kind==7 (Load, [+0x2c]) arm inline: `cmp 4; je SAVE / cmp 7; jne TAIL`.
@@ -3338,7 +3347,7 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, i32 kind, i32 a3, i32 a4) {
         ar->Write(&m_focusY, 4);
         ar->Write(&m_comboSel, 4);
     }
-    return (static_cast<CBattlezMapConfig*>(&m_038))->SerializeState(ar, kind, a3, a4) != 0;
+    return (static_cast<CBattlezMapConfig*>(&m_038))->SerializeState(ar, kind, typeId, pObj) != 0;
 }
 
 RVA(0x000dafb0, 0x71)
@@ -4054,9 +4063,9 @@ i32 CPlay::GetFrame() {
 }
 
 RVA(0x0008c970, 0x1c)
-i32 CPlay::SetBeginClearParams(i32 unused, i32 arg2, i32 arg3) {
-    m_cursorX = arg2;
-    m_cursorY = arg3;
+i32 CPlay::SetBeginClearParams(i32 unused, i32 cursorX, i32 cursorY) {
+    m_cursorX = cursorX;
+    m_cursorY = cursorY;
     return 1;
 }
 
@@ -5245,7 +5254,8 @@ i32 CPlay::LoadScrollSpeedOptions() {
 // via a 58-case jump table (NORMALGRUNT default), then register it through the shared
 // namespace-loader tail (BindWarlordName == the 0x2bc1 BuildAssetNamespacePrefixes thunk). The
 // TOOB case is special: it registers TOOBGRUNT first and, only if that succeeds, ALSO
-// registers TOOBWATERGRUNT (a separate `return`, not a `break`, so a2/a3/a4 stay in
+// registers TOOBWATERGRUNT (a separate `return`, not a `break`, so mode/lightGate/
+// finishGate stay in
 // edi/ebx/ebp local to the TOOB block instead of being hoisted for the whole fn). The
 // CString name temp forces the /GX EH frame.
 // @early-stop
@@ -5257,7 +5267,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 // at fn+0x218/+0x2a4; the table DATA + the 2 dispatch reloc operands never pair. Not
 // source-steerable (docs/patterns/jumptable-data-overlap.md, cf. LoadPowerupIconSprites).
 RVA(0x000dc6d0, 0x215)
-i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, CMulti* a4) {
+i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 mode, i32 lightGate, CMulti* finishGate) {
     CString name("NORMALGRUNT");
     switch (typeIdx) {
         case GRUNT_TYPE_BOMB:
@@ -5313,11 +5323,11 @@ i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, CMulti* a4) {
             break;
         case GRUNT_TYPE_TOOB:
             name = "TOOBGRUNT";
-            if (BuildAssetNamespacePrefixes(name, a2, a3, a4) == 0) {
+            if (BuildAssetNamespacePrefixes(name, mode, lightGate, finishGate) == 0) {
                 return 0;
             }
             name = "TOOBWATERGRUNT";
-            return BuildAssetNamespacePrefixes(name, a2, a3, a4);
+            return BuildAssetNamespacePrefixes(name, mode, lightGate, finishGate);
         case GRUNT_TYPE_WAND:
             name = "WANDGRUNT";
             break;
@@ -5367,7 +5377,7 @@ i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, CMulti* a4) {
             name = "REAPERGRUNT";
             break;
     }
-    return BuildAssetNamespacePrefixes(name, a2, a3, a4);
+    return BuildAssetNamespacePrefixes(name, mode, lightGate, finishGate);
 }
 
 RVA(0x000cffe0, 0x3c)

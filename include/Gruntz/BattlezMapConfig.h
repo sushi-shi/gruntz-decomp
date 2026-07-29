@@ -38,14 +38,20 @@ public:
     i32 ProbeUnoccupiedAt(i32, i32);    // 0x035210  unoccupied-candidate-at-(x,y) probe
     i32 ForcePlaceFromReserve(CGrunt*); // 0x035550  spend-reserve forced place
     void* PickSpawnCoord(void*, CGrunt*, i32);
-    i32 RouteUnitTo(CGrunt*, i32, i32, i32, i32, i32);
-    i32 RouteUnitToGoal(CGrunt*, i32, i32, i32, i32);
+    // The trailing three are CMapMgr::SearchEdge's own (clearFlag, maskA, maskC)
+    // slots, forwarded untouched; call sites pass masks like 0xd87 / 0x2000098b.
+    i32 RouteUnitTo(CGrunt* unit, i32 gx, i32 gy, i32 maskA, i32 maskC, i32 clearFlag);
+    // The GetCoord-fronted twin: same two masks, clearFlag pinned to 0.
+    i32 RouteUnitToGoal(CGrunt* unit, i32 gx, i32 gy, i32 maskA, i32 maskC);
     i32 StepRowSpawn(i32 allowReserved); // 0x026470 (arg read at [esp+0x38]; callers pass 0/1)
     i32 CanPlaySpecialAnim(CGrunt*);
     i32 StepBoard();
     i32 ChooseIdleBehavior(CGrunt*);
     i32 ValidateUnitPath(CGrunt*);
-    i32 ClaimTilesAround(CGrunt*, i32, i32, i32);
+    // requireUnoccupied: on a 0x4000 tile, nonzero REJECTS a cell already claimed by
+    // m_curCell outright; zero still admits it when its action code is one of the
+    // twelve special ids (0x12f..0x149).
+    i32 ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied);
     i32 PathToNearestCandidate(CGrunt*, i32, i32, i32);
     i32 PathToNearestGoal(CGrunt*, i32, i32);
     void* PickRandomIdleUnit(i32); // 0x02ad40  pick a random idle (m_busy==0) unit from a band row
@@ -57,7 +63,8 @@ public:
     CGrunt* FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH); // 0x2ab80
     i32 winapi_02ae00_IntersectRect(CGrunt*, CGrunt*);
     i32 winapi_02c140_IntersectRect_PtInRect(CGrunt*);
-    i32 winapi_02dfa0_IntersectRect(CGrunt*, i32, i32, i32);
+    // (col, row, requireUnoccupied) are handed straight to ClaimTilesAround.
+    i32 winapi_02dfa0_IntersectRect(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied);
     i32 winapi_02e3a0_PtInRect(CGrunt*);
     i32 winapi_031ca0_IntersectRect(CGrunt*);
     i32 winapi_032060_IntersectRect(CGrunt*);

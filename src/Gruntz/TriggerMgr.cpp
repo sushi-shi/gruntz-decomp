@@ -627,15 +627,13 @@ RVA(0x00079520, 0x2e3)
 i32 CTriggerMgr::ResetGroup(
     i32 x,
     i32 y,
-    i32 a1c,
-    i32 a20,
-    i32 a24,
+    i32 worldX,
+    i32 worldY,
+    i32 unused5,
     i32 selector,
     i32 spawnCursor
 ) {
-    static_cast<void>(a1c);
-    static_cast<void>(a20);
-    static_cast<void>(a24);
+    static_cast<void>(unused5);
     if (m_groupFlag == 0) {
         return 0;
     }
@@ -663,7 +661,11 @@ i32 CTriggerMgr::ResetGroup(
             m_pendingFxKind = 0;
             (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(0, 0);
             CGameObject* o = hit->m_object;
-            this->DestroyGroup(o->m_screenX, o->m_screenY, y, x);
+            // ARGS CORRECTED 2026-07-29: this passed (y, x) - ResetGroup's OWN snapped
+            // pair. Retail @0x795bc reads [esp+0x20] and [esp+0x1c] (args 4 and 3, esp at
+            // base) and pushes them as DestroyGroup's last two, so the UNSNAPPED pair the
+            // caller hands in is what travels. That is also why args 3/4 looked unread.
+            this->DestroyGroup(o->m_screenX, o->m_screenY, worldX, worldY);
             return 1;
         } else {
             sel = 2;
@@ -764,13 +766,24 @@ reportError:
 // (the /GX frame guards the partially-constructed object); if its assets fail to load,
 // tear it back down and ReportError(0x800a). When it already exists, initialize it from
 // the selected cell and place the overlay. ret 1 on placement.
+// ARGUMENT SLOTS CORRECTED 2026-07-29 (three defects, all byte-read off 0x798d0 with the
+// frame at entry-0x18, so arg1..arg4 live at [base+0x1c/0x20/0x24/0x28]):
+//   * `screenX` was declared "accepted but never read" - it IS read. @0x79a10 the overlay
+//     Init call materialises `mov eax,[esp+0x20]` (one push in, so base+0x1c == arg1) and
+//     `mov edx,[esp+0x28]` (two pushes in, base+0x20 == arg2), i.e. Init(0, 0, screenX,
+//     screenY, hi, lo). The old spelling passed (screenY, worldX).
+//   * args 3/4 are worldX then worldY, not worldY then worldX: @0x79a54 the tail reads
+//     base+0x28 (arg4) into the `[mainPlane+0x44] - [level+0x14] + _` (top/top) term and
+//     base+0x24 (arg3) into the `[mainPlane+0x40] - [level+0x10] + _` (left/left) term.
+//   * the old body crossed those terms (left paired with .top, top with .left) and then
+//     called PlaceObjectFull(oy, ox); retail pushes the Y term first, so the X term is the
+//     FIRST parameter - PlaceObjectFull(ox, oy), matching its own (i32 x, i32 y) decl.
 // @early-stop
 // /GX new+ctor wall: the placement-new lifetime + the teardown-on-failure path carry the EH
 // frame whose state numbering + partial-object cleanup diverge from retail; the alloc/ctor/
 // teardown shape is faithful. topic:wall topic:eh.
 RVA(0x000798d0, 0x1b6)
-i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldY, i32 worldX) {
-    static_cast<void>(screenX); // accepted but never read
+i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY) {
     CActionOptionsMenuBar* ov = m_overlay;
     if (ov == 0) {
         m_overlay = new CActionOptionsMenuBar;
@@ -793,14 +806,14 @@ i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldY, i32 worldX) 
     if (cellp == 0 || cellp->m_tileOwnerHi != g_curPlayer) {
         return 0;
     }
-    if (ov->Init(0, 0, screenY, worldX, cellp->m_tileOwnerHi, cellp->m_tileOwnerLo) == 0) {
+    if (ov->Init(0, 0, screenX, screenY, cellp->m_tileOwnerHi, cellp->m_tileOwnerLo) == 0) {
         return 0;
     }
     CGameLevel* view = m_world->m_level;
     CDDrawWorkerHost* pl = view->m_mainPlane;
-    i32 ox = pl->m_viewRect.left - view->m_planeCtx.top + worldX;
-    i32 oy = pl->m_viewRect.top - view->m_planeCtx.left + worldY;
-    this->PlaceObjectFull(oy, ox);
+    i32 ox = pl->m_viewRect.left - view->m_planeCtx.left + worldX;
+    i32 oy = pl->m_viewRect.top - view->m_planeCtx.top + worldY;
+    this->PlaceObjectFull(ox, oy);
     return 1;
 }
 
@@ -1258,9 +1271,9 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     do {
         i32 cnt2 = list->GetCount();
         ar->Write(&cnt2, 4);
-        POSITION p2 = list->GetHeadPosition();
-        while (p2 != 0) {
-            ar->Write(list->GetNext(p2), 8);
+        POSITION selPos = list->GetHeadPosition();
+        while (selPos != 0) {
+            ar->Write(list->GetNext(selPos), 8);
         }
         list++;
         k--;

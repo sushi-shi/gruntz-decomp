@@ -351,18 +351,20 @@ i32 CVoiceTrigger::Tick() {
 // m_14 local -> 70%, m_6c hoist -> 83%); the in-order spelling at 85% is the best.
 // Deferred to the final sweep.
 RVA(0x0011a7e0, 0x6e)
-i32 CGruntVoice::Setup(i32 a0, StreamVoice* sample, i32 a2, i32 a3) {
+// The three scalars are the members the body snapshots them into, already named in
+// <Gruntz/GruntVoice.h>: m_source (+0x68), m_playFlags (+0x6c), m_owner (+0x70).
+i32 CGruntVoice::Setup(i32 source, StreamVoice* sample, i32 playFlags, i32 owner) {
     if (sample == 0) {
         return 0;
     }
-    m_source = a0;
-    m_owner = a3;
+    m_source = source;
+    m_owner = owner;
     m_sample = sample;
     m_durationMs = sample->ComputeRatio();
     m_64 = 0;
     m_icon = g_frameTime;
     m_5c = 0;
-    m_playFlags = a2;
+    m_playFlags = playFlags;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = ActFindId("B");
     return 1;

@@ -599,7 +599,7 @@ void CWwdGridShell::OnFound(WwdRegion* r) {
 // CWwdSpatialMgr::Init (0x168080, __thiscall, ret 0x20 = 8 args): bring up the
 // 0xb8-byte plane grid/scroll worker. Allocate three concrete CWwdGridShells,
 // initialize their inherited CWwdGrid storage with Setup(*rc, cellW, cellH),
-// then seed each plane's dimensions and scroll origin. `a1` becomes m_mgr.
+// then seed each plane's dimensions and scroll origin. `owner` becomes m_mgr.
 //
 // 1:1 - m_0=m_mgr, m_4/8/c=grids, rects @0x10/0x30/0x20, origins @0x40/0x48/0x50, bbox
 // @0x58, scroll @0x68]; the fake `?Init@Builder_168080@@` name also left RebuildPlanes'
@@ -607,32 +607,45 @@ void CWwdGridShell::OnFound(WwdRegion* r) {
 //
 RVA(0x00168080, 0x1f6)
 RVA_COMPGEN(0x00168280, 0x1e, ??_GCWwdGridShell@@UAEPAXI@Z)
-i32 CWwdSpatialMgr::Init(void* a1, RECT* rc, i32* p3, i32* p4, i32* p5, i32* p6, i32* p7, i32* p8) {
-    if (a1) {
+// The six geometry pairs come straight off CGameLevel in the one caller,
+// CDDrawWorkerHost::RebuildPlanes @0x1628f0: cellA/B/C are its m_pairA/m_pairB/m_pairC
+// (each a {cellW, cellH} pair for one grid's Setup) and sizeA/B/C its
+// m_rectA/m_rectB/m_rectC {w, h} (each becomes a plane's 0..n-1 rect and its n/2 origin).
+i32 CWwdSpatialMgr::Init(
+    void* owner,
+    RECT* rc,
+    i32* cellA,
+    i32* cellB,
+    i32* cellC,
+    i32* sizeA,
+    i32* sizeB,
+    i32* sizeC
+) {
+    if (owner) {
         m_grid0 = new CWwdGridShell;
         m_grid1 = new CWwdGridShell;
         m_grid2 = new CWwdGridShell;
-        if (m_grid0 && m_grid1 && m_grid2 && m_grid0->Setup(*rc, p3[0], p3[1])
-            && m_grid1->Setup(*rc, p4[0], p4[1]) && m_grid2->Setup(*rc, p5[0], p5[1])) {
+        if (m_grid0 && m_grid1 && m_grid2 && m_grid0->Setup(*rc, cellA[0], cellA[1])
+            && m_grid1->Setup(*rc, cellB[0], cellB[1]) && m_grid2->Setup(*rc, cellC[0], cellC[1])) {
             m_rect0.left = 0;
             m_rect0.top = 0;
-            m_rect0.right = p6[0] - 1;
-            m_rect0.bottom = p6[1] - 1;
-            m_org0x = p6[0] / 2;
-            m_org0y = p6[1] / 2;
+            m_rect0.right = sizeA[0] - 1;
+            m_rect0.bottom = sizeA[1] - 1;
+            m_org0x = sizeA[0] / 2;
+            m_org0y = sizeA[1] / 2;
             m_rect1.left = 0;
             m_rect1.top = 0;
-            m_rect1.right = p7[0] - 1;
-            m_rect1.bottom = p7[1] - 1;
-            m_org1x = p7[0] / 2;
-            m_org1y = p7[1] / 2;
+            m_rect1.right = sizeB[0] - 1;
+            m_rect1.bottom = sizeB[1] - 1;
+            m_org1x = sizeB[0] / 2;
+            m_org1y = sizeB[1] / 2;
             m_rect2.left = 0;
             m_rect2.top = 0;
-            m_rect2.right = p8[0] - 1;
-            m_rect2.bottom = p8[1] - 1;
-            m_org2x = p8[0] / 2;
-            m_org2y = p8[1] / 2;
-            m_mgr = static_cast<CDDrawChildGroup*>(a1);
+            m_rect2.right = sizeC[0] - 1;
+            m_rect2.bottom = sizeC[1] - 1;
+            m_org2x = sizeC[0] / 2;
+            m_org2y = sizeC[1] / 2;
+            m_mgr = static_cast<CDDrawChildGroup*>(owner);
             SetRect(&m_bounds, rc->left, rc->top, rc->right, rc->bottom);
             m_scrollX = static_cast<i32>(0xffffa932);
             m_scrollY = static_cast<i32>(0xffffa932);

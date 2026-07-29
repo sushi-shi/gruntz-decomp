@@ -784,9 +784,12 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
 // effects for cl to have to place. Left in the literal `if (A && B && C) return 0;`
 // form, which is what retail's branch structure spells.
 RVA(0x000986b0, 0x30c)
-i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
+// Both callers (CGrunt @Grunt.cpp / GruntEntranceArrival.cpp) pass
+// (m_tileOwnerHi, m_tileOwnerLo), and the body's `idx = hi * 15 + lo` is the same
+// 15-wide grid index CTriggerMgr uses.
+i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_134 == 1 && arg0 != g_curPlayer && m_object->m_124 != 0x55) {
+    if (reg->m_134 == 1 && tileOwnerHi != g_curPlayer && m_object->m_124 != 0x55) {
         return 0;
     }
     CWwdGameObjectA* obj = m_object;
@@ -795,12 +798,12 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         i32 param = obj->m_118;
         i32 matchActive = 0;
         i32 flag = 1;
-        if (obj->m_114 == arg0) {
+        if (obj->m_114 == tileOwnerHi) {
             matchActive = 1;
             flag = 0;
         }
         i32 sub = obj->m_130;
-        i32 idx = arg0 * 15 + arg1;
+        i32 idx = tileOwnerHi * 15 + tileOwnerLo;
         CGrunt* cell = reg->m_cmdGrid->m_grid[idx];
         i32 ok;
         if (cell == 0 || cell->m_entranceCommitted == 0) {
@@ -836,7 +839,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
     // ---- full place path (cmd != 0x55) ----
     i32 sub = obj->m_130;
     i32 cmd = obj->m_124;
-    i32 idx = arg0 * 15 + arg1;
+    i32 idx = tileOwnerHi * 15 + tileOwnerLo;
     CGrunt* cell = reg->m_cmdGrid->m_grid[idx];
     i32 ok;
     if (cell == 0 || cell->m_entranceCommitted == 0) {
@@ -1009,7 +1012,7 @@ i32 CInGameIcon::Reposition() {
 // the two call sites separate 4-byte slots where retail shares one, costing more frame
 // than it saves (measured: 87.47% vs 87.13% at the time).
 RVA(0x00098c90, 0x382)
-i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj) {
+i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 typeId, CGameObject* obj) {
     // TWO 0x80 key buffers, not one - retail's frame is 0x10c and holds both (the
     // inlined-Chain half formats through the upper one at esp+0x9c, the icon tail
     // through the lower at esp+0x1c). Sharing one costs 0x80 of frame and shifts every
@@ -1021,7 +1024,7 @@ i32 CInGameIcon::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* 
     if (ar == 0) {
         return 0;
     }
-    if (CUserLogic::SerializeMove(ar, mode, a3, obj) == 0) {
+    if (CUserLogic::SerializeMove(ar, mode, typeId, obj) == 0) {
         return 0;
     }
 

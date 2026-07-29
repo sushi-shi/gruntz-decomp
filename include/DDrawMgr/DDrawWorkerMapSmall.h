@@ -26,7 +26,7 @@ public:
     // gap; body defined at the dtor pocket). The old "GetStateId 0x157600"
     // plain-method claim was a misbinding (that is CDDrawChildGroup.s id 0x10).
     virtual i32 GetClassId() OVERRIDE; // [8]  0x156cf0 -> CLASSID_WORKERMAPSMALL (0x14)
-    virtual void* Factory_1658c0(CParseSource* a1, const char* key, i32 a3); // [9] 0x1658c0
+    virtual void* Factory_1658c0(CParseSource* src, const char* key, i32 flags); // [9] 0x1658c0
     // [10] vs [11]: same body shape, but they dispatch DIFFERENT worker slots, so
     // their first args differ. [10] -> the worker's +0x28 (AllocBufMakeB -> MakeB,
     // whose loader @0x1474d0 reads 256 RGB triples) = an in-memory palette blob;
@@ -35,7 +35,8 @@ public:
     // key in both (its only use is the m_map1 subscript), not a rival name.
     virtual void* CreateWorker28(void* data, const char* key, i32 flags); // [10] 0x165990
     virtual void* CreateWorker2C(char* path, const char* key, i32 flags); // [11] 0x165a10
-    virtual void* Factory_165a90(CParseSource* a1, i32 a2, i32 a3);       // [12] 0x165a90
+    // arg2 is the KEY STRING in an int slot (retail mangles it H); see the body.
+    virtual void* Factory_165a90(CParseSource* src, i32 key, i32 flags); // [12] 0x165a90
     virtual ~CDDrawWorkerMapSmall() OVERRIDE; // overrides slot [1]; 0x156d20 (G obj)
 
     CMapStringToOb m_map1; // +0x10  worker-by-key map 1 (0x10..0x2b)

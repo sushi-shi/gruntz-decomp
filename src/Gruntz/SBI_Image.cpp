@@ -40,8 +40,8 @@ i32 CSBI_Image::SetupImage(
     i32 tab,
     RECT rc,
     const char* key,
-    i32 a10,
-    i32 a11
+    i32 frame,
+    i32 extra
 ) {
     if (host == 0) {
         return 0;

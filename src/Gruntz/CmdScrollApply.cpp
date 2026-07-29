@@ -5,15 +5,15 @@
 #include <Gruntz/MgrAutoScroll.h> // ex Globals.h
 
 RVA(0x000ec1c0, 0x43)
-void Cmd_ApplyScrollParams(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
-    i32 t = a0 + g_frameTime;
+void Cmd_ApplyScrollParams(i32 durationMs, i32 jitterX, i32 jitterY, i32 panMinX, i32 panMaxX) {
+    i32 t = durationMs + g_frameTime;
     if (g_scrollClock <= static_cast<u32>(t)) {
         g_scrollClock = t;
     }
-    g_jitterX = a1;
-    g_jitterY = a2;
-    g_panMinX = a3;
-    g_panMaxX = a4;
+    g_jitterX = jitterX;
+    g_jitterY = jitterY;
+    g_panMinX = panMinX;
+    g_panMaxX = panMaxX;
 }
 
 RVA(0x000ebd30, 0x21)

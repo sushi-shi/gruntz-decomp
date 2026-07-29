@@ -30,11 +30,13 @@ DATA(0x0024c69c)
 i32 g_flag64c69c = 0; // DAT_0064c69c  (owner-TU definition)
 
 RVA(0x000de030, 0xc2)
-i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 a1, i32 a2) {
+// The three slots are the slot-1 virtual's own (CState::LoadGameAssetNamespaces
+// @0xf9ea0, which this chains directly); its third is still unnamed there too.
+i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 a2) {
     // The base default (0xf9ea0) - qualified -> direct rel32 (retail ILT 0x43a9;
     // CState::LoadGameAssetNamespaces is the slot-1 virtual now, and retail calls
     // the default body direct here).
-    if (CState::LoadGameAssetNamespaces(mgr, a1, a2) == 0) {
+    if (CState::LoadGameAssetNamespaces(mgr, areaArg, a2) == 0) {
         return 0;
     }
     while (ShowCursor(FALSE) >= 0) {
@@ -201,7 +203,9 @@ void CPreviewState::LoadLevelPreviewScreen() {
 // externs (sprintf, g_screenTag, ResolveQualified, LoadPageImage, Flip) byte-exact.
 // Final sweep.
 RVA(0x000fab90, 0xaa)
-i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
+// args 3/4 are never read: the frame is entry-0x44 and retail touches only
+// [esp+0x48] (name) and [esp+0x4c] (doFlip), never the +0x50/+0x54 homes.
+i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) {
     if (m_world == 0) {
         return 0;
     }

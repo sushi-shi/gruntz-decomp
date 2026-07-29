@@ -34,8 +34,8 @@ public:
     i32 Start(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
-        i32 a2,
-        i32 a3,
+        i32 cmd,
+        i32 tab,
         RECT rc,
         const char* key,
         i32 b0,

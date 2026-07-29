@@ -199,15 +199,20 @@ public:
     // hold 0x0cbcc0 at slot 12 (+0x30). Body still in GameKeyHandler.cpp.)
     // (ViewPreStep/ViewPostStep are GONE - fabricated; retail's per-frame view
     // pre/post calls are StepGridWalk (0x2e2d) + DrawCursorSaveUnder (0x1519).)
-    // PlayCueAt: (cueId,a2,a3,a4,a5,a6,a7,rectSrc)
+    // PlayCueAt: the trailing five are the text-draw call's own (fontSel, r, g, b, flag)
+    // slots - the body forwards them straight into EngStr_DrawText / ShowHudMessageAlt
+    // (<Wap32/EngStr.h>, <Gruntz/GlyphStringDraw.h>), whose `shadow` slot it pins to 1.
+    // `toBackPage` picks between the two: 0 -> EngStr_DrawText (m_drawTarget->m_frontPair),
+    // nonzero -> ShowHudMessageAlt (m_drawTarget->m_backPair). Every call site in this TU
+    // passes (cueId, 0x78, 0, 0xff, 0xff, 0, 1, 0) - yellow cue text on the front page.
     void PlayCueAt(
         i32 cueId,
-        i32 a2,
-        i32 a3,
-        i32 a4,
-        i32 a5,
-        i32 a6,
-        i32 a7,
+        i32 fontSel,
+        i32 toBackPage,
+        i32 r,
+        i32 g,
+        i32 b,
+        i32 flag,
         RECT* rectSrc
     ); // (THIS TU)
     // PostActionCue (0x0d7220): pause-and-post a cue by string-resource id - load
@@ -331,13 +336,25 @@ public:
     // 0x0d1b60 (ret 0x1c; body in PlayerCommandStep.cpp) - the player-command
     // executor (the CGruntzCommand::ApplyOne/ApplyMask thunk 0x21e4 dispatches it on
     // this play
-    // state). Switches on (u8)a4 over the mgr's m_cmdGrid board.
-    // PACKED param types (char/i16): the Apply* callers push the command's byte/word fields
-    // UNEXTENDED (mov dl,[eax+6]; push edx), which only a narrow-param decl
-    // reproduces - and MSVC5 reads a narrow stack param as its full dword slot +
-    // AND mask ((u8)aN => `mov reg,[esp+N]; and reg,0xff`), which is exactly the
-    // retail body's read pattern, so ONE honest signature serves both sides.
-    i32 ExecCommand(i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8);
+    // state). Switches on (u8)cmdKind over the mgr's m_cmdGrid board.
+    // The seven words are ONE queued CGruntzCommand unpacked: both Select overrides
+    // (CGruntzSingleCommand @0x24140, CGruntzMultiCommand @0x24190) call this as
+    // ExecCommand(m_targetIndex, m_10, m_5, m_8, m_a, m_11, m_targetType), and
+    // CGruntzCommand::SetParamsEx @0x23e60 is where those seven fields get their names.
+    // targetIndex is the grid ROW (stride 0xf, the word compared to g_curPlayer),
+    // gruntIndex the column, cmdKind the switch selector, posX/posY the u16 pixel pair.
+    // MSVC5 reads a narrow use of a dword slot as slot + AND mask
+    // ((u8)targetIndex => `mov reg,[esp+N]; and reg,0xff`), which is exactly the
+    // retail body's read pattern, so ONE honest all-i32 signature serves both sides.
+    i32 ExecCommand(
+        i32 targetIndex,
+        i32 gruntIndex,
+        i32 cmdKind,
+        i32 posX,
+        i32 posY,
+        i32 extraByte,
+        i32 targetType
+    );
     i32 Flip(); // 0x0da200
     // Level-lifecycle steps (the +0x3a4/+0x2dc/+0x4fc/+0x1cc offsets pin them to CPlay):
     i32 ReleaseLevelOverlay(i32 unused); // 0x0d6560  drop the overlay + restore the clock
@@ -431,13 +448,34 @@ public:
     // state's 64-bit timer blocks + three child sync sub-objects (guts / frame
     // marker / begin marker); mode 8 (re)inits the ambient-sound cue. mode 4 =
     // write (archive vtbl[0x30]), mode 7 = read (archive vtbl[0x2c]).
-    i32 SyncState(CFileMemBase* ar, i32 mode, i32 a2, i32 a3); // 0x0d7520
+    // (mode, typeId, pObj) is the whole family's serialize ABI, and all four slots are
+    // plain ints in retail: ?SyncState@CPlay@@QAEHPAVCFileMemBase@@HHH@Z. The names are
+    // the ROLE, taken one hop up and one hop down, not a type claim -
+    //   * `typeId` is read at the BOTTOM of the chain: the object-factory arm of
+    //     SerialObjectFactory @0x0d2a0 switches on typeId-1000 to pick the class to new,
+    //     and CDDrawChildGroup::LoadObjects reaches it as InvokeCallback(reader, 0xa,
+    //     desc.m_0c, &out);
+    //   * `pObj` is the same chain's trailing slot (the callback boundary spells it as a
+    //     `void**` out-param). NOTHING between here and there reads it - SyncState only
+    //     forwards it - so the `p` is inherited from the sibling declarations
+    //     (CTileTriggerContainer::Serialize @0x117280, CTimer::HandleEvent @0x9c1c0,
+    //     CGruntzMgr::BroadcastCmd @0x93460, GruntzCommand/AniPlayer/BattlezData), all of
+    //     which mangle `H` too. The int-vs-pointer question is a RETYPE question for the
+    //     whole family, not a per-TU one.
+    // CGruntzMgr::BroadcastCmd calls this as `SyncState(ar, cmd, typeId, pObj)` in the
+    // same run that drives GruntzPlayer::Serialize / CTileGrid::Visit; SyncState forwards
+    // the pair untouched to CStatusBarMgr::Sync @0x1084d0, CTimer::HandleEvent @0x9c1c0
+    // and CTileTriggerContainer::Serialize @0x117280.
+    i32 SyncState(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj); // 0x0d7520
     // The header serialize/mode pre-step SyncState runs first (thunk 0x4016;
     // body @0x0fafa0 in Attract.cpp, the 0xfa.. state-serialize band - it
     // dispatches mode 4/7 into the CState HeaderWrite/HeaderRead passes).
-    i32 HeaderSerialize(CFileMemBase* ar, i32 mode, i32 a2, i32 a3); // 0x0fafa0
-    i32 SyncWrite19fb(CFileMemBase* ar);                             // 0x19fb thunk (mode-4)
-    i32 SyncRead2f7c(CFileMemBase* ar);                              // 0x2f7c thunk (mode-7)
+    // (the body @0x0fafa0 in Attract.cpp reads neither typeId nor pObj - it only
+    // switches on `mode` - but it carries the family's 4-slot ABI, and SyncState
+    // forwards its own pair straight in.)
+    i32 HeaderSerialize(CFileMemBase* ar, i32 mode, i32 typeId, i32 pObj); // 0x0fafa0
+    i32 SyncWrite19fb(CFileMemBase* ar);                                   // 0x19fb thunk (mode-4)
+    i32 SyncRead2f7c(CFileMemBase* ar);                                    // 0x2f7c thunk (mode-7)
 
     // ---- CPlay-specific members (offsets pinned by the Render disasm) ----
     // (m_inputWarmup1/2 + m_inputHalfSel @+0x1a8..+0x1b0 are CState base fields:
@@ -636,7 +674,7 @@ public:
     i32 DrawCursorSaveUnder(CDDrawSurfacePair* pair);
     i32 LoadCursorSprites(i32 frame, i32 flag);
     i32 LoadScrollSpeedOptions();
-    i32 BuildGruntTypeNameTable(i32, i32, i32, CMulti*);
+    i32 BuildGruntTypeNameTable(i32 typeIdx, i32 mode, i32 lightGate, CMulti* finishGate);
 
     // (HandleMousePress 0x0ce660 folded onto the slot-16 virtual Vslot10 - the
     // "vtable slot 16 (+0x40)" note here was always right, it was just declared
@@ -711,7 +749,9 @@ extern "C" i32 g_profAccB;
 // File-scope prototypes moved from the .cpp: an unqualified
 // declaration at file scope has EXTERNAL linkage, so it belongs in
 // the owner header.
-void Cmd_ApplyScrollParams(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
+// (durationMs is added to g_frameTime to arm g_scrollClock; the other four land
+// directly in g_jitterX/g_jitterY/g_panMinX/g_panMaxX - body in CmdScrollApply.cpp)
+void Cmd_ApplyScrollParams(i32 durationMs, i32 jitterX, i32 jitterY, i32 panMinX, i32 panMaxX);
 CString GetColorName(i32 colorIdx, i32 upper);
 CString GetDifficultyName(i32 diffIdx, i32 upper);
 

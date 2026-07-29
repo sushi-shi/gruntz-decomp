@@ -70,12 +70,18 @@ public:
         i32 tileX,
         i32 tileY,
         i32 cellKey,
-        CTrigParam p1,
-        CTrigParam p2,
-        CTrigParam p3,
-        CTrigParam p4,
-        CTrigParam p5,
-        CTrigParam p6,
+        // The six by-value blocks are ONE object's rect set, byte-aligned across both
+        // call sites: CPlay's covered-powerup scan (PlayPlaneScan.cpp) passes
+        // p->m_extent / m_area / m_switchRect / m_clip / m_7c->m_switchRectA /
+        // m_7c->m_switchRectB, and AddLogicFromRecord passes rec->m_134 / m_144 / m_154 /
+        // m_64 / m_7c->m_f0 / m_7c->m_100 - the same six offsets (+0x134/+0x144/+0x154 on
+        // CGameObject, +0x64 on CResolveNode, +0xf0/+0x100 on AnimWorkerObj).
+        CTrigParam extent,
+        CTrigParam area,
+        CTrigParam switchRect,
+        CTrigParam clip,
+        CTrigParam switchRectA,
+        CTrigParam switchRectB,
         i32 tileToken,
         i32 dutyOnSpan,
         i32 leadInSpan,
@@ -165,12 +171,13 @@ public:
         i32 col,
         i32 row,
         i32 key,
-        RECT r134,
-        RECT r144,
-        RECT r154,
-        RECT r64,
-        RECT rF0,
-        RECT r100,
+        // the same six rect blocks AddLogic takes (see its declaration above)
+        RECT extent,
+        RECT area,
+        RECT switchRect,
+        RECT clip,
+        RECT switchRectA,
+        RECT switchRectB,
         i32 isMatch,
         i32 m120,
         i32 zero

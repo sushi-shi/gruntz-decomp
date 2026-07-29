@@ -24,9 +24,9 @@ public:
     // NO user-declared dtor: retail's is COMPILER-GENERATED (implicit
     // elides the leaf-vptr restamp; RVA_COMPGEN pin in the home TU).
 
-    virtual void FireActivation(i32 id) OVERRIDE;           // 0x119e40
-    i32 Setup(i32 a0, StreamVoice* sample, i32 a2, i32 a3); // 0x11a7e0
-    void Reset();                                           // 0x11a870
+    virtual void FireActivation(i32 id) OVERRIDE;                         // 0x119e40
+    i32 Setup(i32 source, StreamVoice* sample, i32 playFlags, i32 owner); // 0x11a7e0
+    void Reset();                                                         // 0x11a870
     // The act-"A" (idle) slot: keep the voice sprite hidden and report "not running".
     // It is the registrar's first CActHandler (RegisterActs_6514d8 stores ILT 0x4037bf
     // -> 0x11a8c0), and Reset/Update switch m_objAux->m_1c to "A" to select it.

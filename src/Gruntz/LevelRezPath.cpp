@@ -21,13 +21,16 @@
 // differs by 4 throughout; the only other residual is the demangled-vs-mangled EH/
 // CString reloc names. Documented, not source-steerable: docs/patterns/zero-register-pinning.md.
 RVA(0x00093d40, 0x473)
-i32 CGruntzMgr::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) {
+// Slot names from the declaration in <Gruntz/GruntzMgr.h>, which the two SaveGame call
+// sites confirm: BuildLevelRezPath(pathHi == 0, slot->m_pathHi, slot->m_pathLo,
+// slot->m_levelId, name).
+i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString name) {
     char scratch[16];
     LevelRezData buf;
-    if (a3 != 0) {
+    if (lo != 0) {
         CFile file;
         CString path;
-        if (a1 == 0 && a2 == 0) {
+        if (isEmpty == 0 && hi == 0) {
             path = "custom\\" + name;
         } else {
             path = name;
@@ -45,16 +48,16 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) 
 
     // Namespace path. Retail writes the Insert/BeginParse/memcpy/EndParse tail out
     // inline per sub-path (no factoring), so it is duplicated here to match.
-    if (a1 != 0) {
-        sprintf(scratch, "AREA%i_WORLDZ", ((a4 - 1) % 0x24) / 4 + 1);
+    if (isEmpty != 0) {
+        sprintf(scratch, "AREA%i_WORLDZ", ((id - 1) % 0x24) / 4 + 1);
         CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath(scratch));
         if (node == 0) {
             return 0;
         }
-        if (a4 > 0x24) {
-            sprintf(scratch, "TRAINING%i", a4 % 0x24);
+        if (id > 0x24) {
+            sprintf(scratch, "TRAINING%i", id % 0x24);
         } else {
-            sprintf(scratch, "LEVEL%i", a4);
+            sprintf(scratch, "LEVEL%i", id);
         }
         CParseSource* sub = node->Insert(scratch, 0x575744);
         if (sub == 0) {
@@ -68,7 +71,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name) 
         sub->EndParse();
         return buf.m_2ec;
     }
-    if (a2 == 0) {
+    if (hi == 0) {
         CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME_MULTI"));
         if (node == 0) {
             return 0;

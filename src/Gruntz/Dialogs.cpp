@@ -86,8 +86,8 @@ long CBattlezDlg::OnPaint() {
 }
 
 RVA(0x00014b30, 0x64)
-CBattlezDlg::CBattlezDlg(CGruntzMgr* a0, CWnd* pParent) : CDialog(0xc0, pParent) {
-    m_slots = a0;
+CBattlezDlg::CBattlezDlg(CGruntzMgr* mgr, CWnd* pParent) : CDialog(0xc0, pParent) {
+    m_slots = mgr;
     m_customNameFlag = 0;
 }
 
@@ -220,10 +220,10 @@ void CBattlezDlg::ShowCustomDlg() {
 }
 
 RVA(0x00017930, 0x3a)
-CBattlezDlgColors::CBattlezDlgColors(CGruntzMgr* a0, i32 a1, i32 a2, CWnd* pParent)
+CBattlezDlgColors::CBattlezDlgColors(CGruntzMgr* mgr, i32 slotIndex, i32 a2, CWnd* pParent)
     : CDialog(0xc2, pParent) {
-    m_slots = a0;
-    m_slotIndex = a1;
+    m_slots = mgr;
+    m_slotIndex = slotIndex;
     m_pickedColor = 0;
     m_68 = a2;
 }

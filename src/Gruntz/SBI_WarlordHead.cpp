@@ -22,14 +22,14 @@ RVA(0x000eb6b0, 0x67)
 i32 CSBI_WarlordHead::SetupImage(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
-    i32 a3,
-    i32 a4,
+    i32 cmd,
+    i32 tab,
     RECT rc,
     const char* key,
-    i32 a10,
-    i32 a11
+    i32 frame,
+    i32 extra
 ) {
-    if (CSBI_ImageSet::SetupImage(owner, host, a3, a4, rc, key, a10, a11) == 0) {
+    if (CSBI_ImageSet::SetupImage(owner, host, cmd, tab, rc, key, frame, extra) == 0) {
         return 0;
     }
     SetState(0);

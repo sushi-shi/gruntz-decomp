@@ -53,7 +53,8 @@ public:
     // The registered per-type notify/factory callback: the body hands it straight to
     // AnimWorkerObj::Init as the worker's GameObjNotifyFn (a1 was `i32` - every one
     // of the 82 call sites passed reinterpret_cast<i32>(&Factory)).
-    virtual void* CreateWorker(GameObjNotifyFn factory, const char* key, i32 a3); // [9] 0x1652c0
+    // `flags` is AnimWorkerObj::Init's own second slot (it lands in the record's m_flags).
+    virtual void* CreateWorker(GameObjNotifyFn factory, const char* key, i32 flags); // [9] 0x1652c0
 
     // 0x9cab0 (body in StreamRecordLoaders.cpp - spatially adjacent at retail): the
     // out-param wrapper over m_10.Lookup (CMapStringToOb::Lookup @0x1b8008); returns

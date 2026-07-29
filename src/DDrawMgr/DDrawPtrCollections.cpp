@@ -110,7 +110,7 @@ i32 CFileImageSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 fla
 }
 
 // CPoolItemA88::Blit7 (0x148a50, slot 9): build a 0x6c-byte DDSURFACEDESC on the
-// stack (mode 7, ddsCaps = a4|0x80, pitch fields), then run the base surface init
+// stack (mode 7, ddsCaps = caps|0x80, pitch fields), then run the base surface init
 // (CDDSurface::Init1 @0x13e0a0, the descriptor-driven Apply) and return success.
 // __thiscall, 4 args. (Re-homed from src/Stub/BoundaryUpper2.cpp; ImgOwnedY view
 // dissolved onto the real CPoolItemA88.)
@@ -119,12 +119,12 @@ i32 CFileImageSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 fla
 // a stack-local descriptor; retail hoists the a4 load (or al,0x80) ahead of a2 while MSVC
 // loads a2 first, swapping the eax/ecx assignment + a couple store slots. Logic complete.
 RVA(0x00148a50, 0x6b)
-i32 CPoolItemA88::Blit7(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4) {
+i32 CPoolItemA88::Blit7(CDDrawPtrCollections* info, i32 width, i32 height, i32 caps) {
     DDSURFACEDESC desc;
     memset(&desc, 0, sizeof(desc));
-    desc.dwWidth = a2;
-    desc.ddsCaps.dwCaps = a4 | DDSCAPS_OVERLAY;
-    desc.dwHeight = a3;
+    desc.dwWidth = width;
+    desc.ddsCaps.dwCaps = caps | DDSCAPS_OVERLAY;
+    desc.dwHeight = height;
     desc.ddckCKSrcBlt.dwColorSpaceLowValue = 1;
     desc.ddckCKSrcBlt.dwColorSpaceHighValue = 1;
     desc.dwSize = sizeof(desc);
@@ -150,12 +150,12 @@ i32 CPoolItemA88::UpdateOverlay(
 }
 
 RVA(0x00148af0, 0x58)
-i32 CPoolItemAB8::Setup(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4) {
+i32 CPoolItemAB8::Setup(CDDrawPtrCollections* info, i32 caps, i32 flags, i32 backBufferCount) {
     memset(m_descWords, 0, sizeof(DDSURFACEDESC));
     m_descSize = sizeof(DDSURFACEDESC);
-    m_surfaceCaps = a2 | 0x200;
-    m_descFlags = a3;
-    m_backBufferCount = a4;
+    m_surfaceCaps = caps | 0x200;
+    m_descFlags = flags;
+    m_backBufferCount = backBufferCount;
     if (!CDDSurface::Init1(info, 0)) {
         return 0;
     }
@@ -243,8 +243,9 @@ i32 CPoolItemAB8::InstallColorFormat() {
 
 // ---------------------------------------------------------------------------
 // CPoolItemAE8::Blit47 (0x148c40, slot 9): build a 0x6c-byte DDSURFACEDESC on the
-// stack (mode 0x47, ddsCaps = a5|a4|0x20000, [+0x18]=a7), then run the base surface init
-// (CDDSurface::Init1 @0x13e0a0) and return success. __thiscall, 7 args (a6 unused).
+// stack (mode 0x47, ddsCaps = capsExtra|caps|0x20000, dwZBufferBitDepth), then run the
+// base surface init (CDDSurface::Init1 @0x13e0a0) and return success. __thiscall,
+// 7 args (slot 6 unused - retail never reads its home).
 // (Re-homed from src/Stub/BoundaryUpper2.cpp; ImgOwnedY view dissolved onto the real
 // CPoolItemAE8.)
 // @early-stop
@@ -253,20 +254,20 @@ i32 CPoolItemAB8::InstallColorFormat() {
 RVA(0x00148c40, 0x75)
 i32 CPoolItemAE8::Blit47(
     CDDrawPtrCollections* info,
-    i32 a2,
-    i32 a3,
-    i32 a4,
-    i32 a5,
-    i32 a6,
-    i32 a7
+    i32 width,
+    i32 height,
+    i32 caps,
+    i32 capsExtra,
+    i32 unused6,
+    i32 zBufferBitDepth
 ) {
-    static_cast<void>(a6);
+    static_cast<void>(unused6);
     DDSURFACEDESC desc;
     memset(&desc, 0, sizeof(desc));
-    desc.dwWidth = a2;
-    desc.ddsCaps.dwCaps = a5 | a4 | DDSCAPS_ZBUFFER;
-    desc.dwZBufferBitDepth = a7;
-    desc.dwHeight = a3;
+    desc.dwWidth = width;
+    desc.ddsCaps.dwCaps = capsExtra | caps | DDSCAPS_ZBUFFER;
+    desc.dwZBufferBitDepth = zBufferBitDepth;
+    desc.dwHeight = height;
     desc.dwSize = sizeof(desc);
     desc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_ZBUFFERBITDEPTH;
     return CDDSurface::Init1(info, &desc) != 0;

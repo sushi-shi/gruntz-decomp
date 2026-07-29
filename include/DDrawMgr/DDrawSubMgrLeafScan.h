@@ -45,8 +45,10 @@ public:
     // redeclared (the old "GetTypeId" was a phantom own-decl of that shared body).
 
     i32 RefreshAsset(const char* key);
-    LeafCue* CreateEntry(const char* key, void* arg2);
-    LeafCue* CreateEntry2(const char* key, void* arg2);
+    // `src` is the CParseSource the new cue is Configure'd / LoadSoundB'd from -
+    // both definitions in DDrawSubMgr.cpp already spell it that way.
+    LeafCue* CreateEntry(const char* key, void* src);
+    LeafCue* CreateEntry2(const char* key, void* src);
     LeafCue* AddFromSource(CParseSource* src);     // 0x157e90
     void AddEntry(LeafCue* elem, const char* key); // 0x157ec0
     // The recursive asset-tree walker. `tree` is a Bute CSymTab scope: the walker calls
@@ -63,7 +65,7 @@ public:
     i32 ProbeFirst(i32 arg);
     i32 HasKeyEqual(const char* str);
     CString FindKeyOfValue(LeafCue* target);
-    i32 MatchSub(LeafCue* arg1, i32 arg2);
+    i32 MatchSub(LeafCue* cue, i32 startPrimary); // definition names, DDrawSubMgr.cpp
 
     // These two landed in the SIBLING CDDrawSubMgrLeaf.cpp (name-preserving union):
     void ClearMap(); // 0x157bc0 (non-virtual map teardown; void - retail never loads eax)

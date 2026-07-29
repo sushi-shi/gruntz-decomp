@@ -432,13 +432,13 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
 // is the canonical one in <Bute/ButeTree.h>; Set (0x16d850) is defined here.
 
 RVA(0x0016d850, 0x11e)
-// `key` and `arg2` really are POINTERS at every call site (the reporting object,
+// `key` and `name` really are POINTERS at every call site (the reporting object,
 // a name/cache buffer) - the error registry keys entries by the reporter's ADDRESS
 // and binary-searches g_recs23 on it, so the pointer->i32 conversions below are the
 // language-forced half of a pointer-as-key table, not a mis-typed parameter.
-void CVariantSlot::Set(void* key, void* arg2, i32 arg3) {
+void CVariantSlot::Set(void* key, void* name, i32 value) {
     if (m_typeTag == 4) {
-        m_valueWord = static_cast<u16>(arg3);
+        m_valueWord = static_cast<u16>(value);
         return;
     }
     i32 idx;
@@ -461,19 +461,19 @@ void CVariantSlot::Set(void* key, void* arg2, i32 arg3) {
             // reported record's NAME is appended to the label, capped at 79 chars.
             // The void*->char* cast is language-forced: retail's own mangled name
             // ?Set@CVariantSlot@@QAEXPAX0H@Z pins the 2nd parameter as PAX.
-            strncat(buf, static_cast<const char*>(arg2), 0x4f);
-            m_callback(buf, arg3);
+            strncat(buf, static_cast<const char*>(name), 0x4f);
+            m_callback(buf, value);
         } else if (m_typeTag == 1) {
-            m_valueWord = static_cast<u16>(arg3);
+            m_valueWord = static_cast<u16>(value);
         }
     } else {
         if (m_typeTag == 2) {
             // the reported record's address rides the same int slot (<AddrWord.h>)
             AddrWord rec;
-            rec.m_addr = arg2;
-            (static_cast<void(__cdecl*)(i32, i32)>(g_recs23[idx].m_4))(rec.m_word, arg3);
+            rec.m_addr = name;
+            (static_cast<void(__cdecl*)(i32, i32)>(g_recs23[idx].m_4))(rec.m_word, value);
         } else if (m_typeTag == 1) {
-            g_recs23[idx].m_8 = static_cast<short>(arg3);
+            g_recs23[idx].m_8 = static_cast<short>(value);
         }
     }
 }

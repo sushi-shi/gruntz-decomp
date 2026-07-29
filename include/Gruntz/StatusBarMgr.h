@@ -1,10 +1,10 @@
 #include <Ints.h>
 #include <rva.h>
-#include <Mfc.h>                  // CPtrList (the eight embedded tab lists) / CPtrArray
-#include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
-#include <Gruntz/GameRegistry.h>  // canonical CGameRegistry (the one *0x24556c singleton)
-#include <Gruntz/SbGeom.h> // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
-#include <Gruntz/SbiConfig.h>     // canonical config-host family (one shape)
+#include <Mfc.h>                 // CPtrList (the eight embedded tab lists) / CPtrArray
+#include <Bute/ButeMgr.h>        // canonical CButeMgr (one shape)
+#include <Gruntz/GameRegistry.h> // canonical CGameRegistry (the one *0x24556c singleton)
+#include <Gruntz/SbGeom.h>    // RECT + SbGeom() - the by-value geometry rect (was SbRect/SbiRect)
+#include <Gruntz/SbiConfig.h> // canonical config-host family (one shape)
 #include <Gruntz/SerialArchive.h> // the shared CFileMemBase stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/StatusBarItem.h>
 #ifndef GRUNTZ_CSTATUSBARMGR_H
@@ -16,7 +16,6 @@ class CWarpStoneFly;
 class CSBI_MenuItem;
 class CSBI_GruntMachine; // <Gruntz/SBI_GruntMachine.h> - m_machineDisplay's real type
 class DirectSoundMgr; // <Dsndmgr/DirectSoundMgr.h> - the DirectSound clone (destruct-button voice)
-
 
 struct CSbiSlot {
     // Inline default ctor (retail inlines it as the 5-iteration loop at +0x228).
@@ -194,7 +193,8 @@ public:
     // The state-sync serialize driver (0x1084d0, SBI_RectOnly.cpp): op 4 = write,
     // 7 = read, 8 = reset - streams the timer/slot blocks and SerializeFields()-walks
     // every owned widget. Ex the "CLevelSync" fake view of this manager (m_guts).
-    i32 Sync(CFileMemBase* s, i32 op, i32 p4, i32 p5); // 0x1084d0
+    // CPlay::SyncState @0xd7520 forwards its own (typeId, pObj) pair straight in here.
+    i32 Sync(CFileMemBase* s, i32 op, i32 typeId, i32 pObj); // 0x1084d0
     // 0x10bbe0: the rez-machine active-value getter (body in SBI_RectOnly.cpp -
     // m_extraNotifyArg0 / m_ptrPool active cell).
     i32 GetActiveValue();
@@ -284,10 +284,10 @@ public:
     // (`(RECT*)&m_guts->m_10` at 0x4092/0x4139/0x4237), and the tab builder's
     // "tab base x/y" are exactly its left/top. The old m_10 + RECT m_rect14 pair
     // split that rect one dword early.
-    RECT m_rect10;    // +0x10
-    i32 m_20;         // +0x20  (was m_rect14.bottom)
-    i32 m_24;         // +0x24
-    i32 m_28;         // +0x28
+    RECT m_rect10; // +0x10
+    i32 m_20;      // +0x20  (was m_rect14.bottom)
+    i32 m_24;      // +0x24
+    i32 m_28;      // +0x28
     // +0x2c: EIGHT CPtrLists, built by the EH-vector-ctor in CPlay::LoadGameAssetNamespaces
     // (`lea edx,[esi+0x2c]; push 0x1c; push 8`; 0x1c == sizeof(CPtrList)). Elements
     // [1]..[5] are the per-tab widget lists the tab selector (m_activeTab, 1..5) picks:
@@ -517,7 +517,7 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_tabSprite14 = 0;
     m_barSprite = 0;                             // +0x08
     m_c = 0;                                     // +0x0c
-    m_20 = 0;                            // +0x20  (the rect block's 4th int; only this one)
+    m_20 = 0;                                    // +0x20  (the rect block's 4th int; only this one)
     m_activeTab = 0;                             // +0x10c
     m_hitTestDisabled = 0;                       // +0x354
     m_tabsBuilt = 0;                             // +0x358

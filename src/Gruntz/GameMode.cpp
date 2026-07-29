@@ -169,10 +169,10 @@ i32 CBootyState::LoadGruntEffectSprites() {
         g_gameReg->m_logicPump->m_tables[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)];
     m_icons[7]->ApplyName("GAME_WORMHOLE");
     m_icons[7]->ApplyLookupGeometry("GAME_TELEPORTER", 0);
-    CWwdGameObjectA* p318 = m_icons[7];
-    p318->m_drawActive = 1;
-    p318->m_drawFillCmd = 7;
-    p318->m_drawFillArg = tint;
+    CWwdGameObjectA* icon7 = m_icons[7];
+    icon7->m_drawActive = 1;
+    icon7->m_drawFillCmd = 7;
+    icon7->m_drawFillArg = tint;
 
     CWwdGameObjectA* ex =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
@@ -182,10 +182,10 @@ i32 CBootyState::LoadGruntEffectSprites() {
     }
     ex->ApplyName("GRUNTZ_EXITZ");
     m_icons[1]->ApplyLookupGeometry("GAME_GRUNTFLEX", 0);
-    CWwdGameObjectA* p300 = m_icons[1];
-    p300->m_drawActive = 1;
-    p300->m_drawFillCmd = 0xa;
-    p300->m_drawFillArg = handleA;
+    CWwdGameObjectA* icon1 = m_icons[1];
+    icon1->m_drawActive = 1;
+    icon1->m_drawFillCmd = 0xa;
+    icon1->m_drawFillArg = handleA;
     m_icons[1]->m_stateFlags |= 1;
 
     CWwdGameObjectA* dt =
@@ -196,10 +196,10 @@ i32 CBootyState::LoadGruntEffectSprites() {
     }
     dt->ApplyName("GRUNTZ_NORMALGRUNT_DEATH");
     m_icons[2]->ApplyLookupGeometry("GAME_GRUNTTWITCH", 0);
-    CWwdGameObjectA* p304 = m_icons[2];
-    p304->m_drawActive = 1;
-    p304->m_drawFillCmd = 0xa;
-    p304->m_drawFillArg = handleA;
+    CWwdGameObjectA* icon2 = m_icons[2];
+    icon2->m_drawActive = 1;
+    icon2->m_drawFillCmd = 0xa;
+    icon2->m_drawFillArg = handleA;
     m_icons[2]->m_stateFlags |= 1;
 
     CWwdGameObjectA* gl =
@@ -210,10 +210,10 @@ i32 CBootyState::LoadGruntEffectSprites() {
     }
     gl->ApplyName("GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ");
     m_icons[3]->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    CWwdGameObjectA* p308 = m_icons[3];
-    p308->m_drawActive = 1;
-    p308->m_drawFillCmd = 0xa;
-    p308->m_drawFillArg = handleA;
+    CWwdGameObjectA* icon3 = m_icons[3];
+    icon3->m_drawActive = 1;
+    icon3->m_drawFillCmd = 0xa;
+    icon3->m_drawFillArg = handleA;
     m_icons[3]->m_stateFlags |= 1;
 
     CWwdGameObjectA* bb =
@@ -238,10 +238,10 @@ i32 CBootyState::LoadGruntEffectSprites() {
     }
     rz->ApplyName("GAME_INGAMEICONZ_POWERUPZ_ROIDZ");
     m_icons[5]->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    CWwdGameObjectA* p310 = m_icons[5];
-    p310->m_drawActive = 1;
-    p310->m_drawFillCmd = 0xa;
-    p310->m_drawFillArg = handleA;
+    CWwdGameObjectA* icon5 = m_icons[5];
+    icon5->m_drawActive = 1;
+    icon5->m_drawFillCmd = 0xa;
+    icon5->m_drawFillArg = handleA;
     m_icons[5]->m_stateFlags |= 1;
 
     CWwdGameObjectA* cn =
@@ -252,10 +252,10 @@ i32 CBootyState::LoadGruntEffectSprites() {
     }
     cn->ApplyName("GAME_INGAMEICONZ_POWERUPZ_COIN");
     m_icons[6]->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    CWwdGameObjectA* p314 = m_icons[6];
-    p314->m_drawActive = 1;
-    p314->m_drawFillCmd = 0xa;
-    p314->m_drawFillArg = handleA;
+    CWwdGameObjectA* icon6 = m_icons[6];
+    icon6->m_drawActive = 1;
+    icon6->m_drawFillCmd = 0xa;
+    icon6->m_drawFillArg = handleA;
     m_icons[6]->m_stateFlags |= 1;
 
     // The three per-direction sprite arrays sit contiguously (bomb/go-kart/explosion),

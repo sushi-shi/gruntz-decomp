@@ -301,7 +301,18 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
 // reject and writes dword states, so the long fail ladder desyncs. Not source-steerable;
 // final sweep with the serializer leaf-first redo.
 RVA(0x00156020, 0x505)
-i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, i32 arg3) {
+// ARGUMENT SLOTS CORRECTED 2026-07-29 (found while naming; frame is entry-0x164 after
+// the 3 EH pushes + `sub esp,0x14c` + ebx/ebp/esi, so arg1..arg4 sit at
+// [base+0x168/0x16c/0x170/0x174]):
+//   * the entry null-check is on arg2, not arg1 - retail @0x15603e loads [esp+0x16c]
+//     (base+0x168 is arg1; with esi pushed the +0x16c form IS arg2) and tests THAT;
+//     `m_callback = arg1` only happens after the check passes (@0x156053).
+//   * SetName's string is arg2 as well (@0x156098 `push esi`), not the callback pointer
+//     reinterpreted as a char* - which is what the old body did, using `cb` twice and
+//     never reading arg2 at all.
+//   * arg3 is the header name (@0x15619a the strlen/rep-movs source) and arg4 the
+//     typeId every ForEach* below forwards.
+i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, i32 typeId) {
     if (path == 0) {
         return 0;
     }
@@ -335,13 +346,13 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, i
     if (m_callback && cb(this, &S, 1, 0, 0) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachProbe(&S, arg3) == 0) {
+    if (m_childGroup->ForEachProbe(&S, typeId) == 0) {
         return 0;
     }
     if (m_callback && cb(this, &S, 3, 0, 0) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachDispatch(&S, 3, arg3) == 0) {
+    if (m_childGroup->ForEachDispatch(&S, 3, typeId) == 0) {
         return 0;
     }
     if (m_level->EditDispatch(&S, 3, 0, 0) == 0) {
@@ -350,7 +361,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, i
     if (m_callback && cb(this, &S, 4, 0, 0) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachSerialize(&S, arg3) == 0) {
+    if (m_childGroup->ForEachSerialize(&S, typeId) == 0) {
         return 0;
     }
     if (m_level->EditDispatch(&S, 4, 0, 0) == 0) {
@@ -359,7 +370,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, i
     if (m_callback && cb(this, &S, 5, 0, 0) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachDispatch(&S, 5, arg3) == 0) {
+    if (m_childGroup->ForEachDispatch(&S, 5, typeId) == 0) {
         return 0;
     }
     if (m_level->EditDispatch(&S, 5, 0, 0) == 0) {
@@ -393,7 +404,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, i
 // desyncs and the trylevel state numbers diverge. Not source-steerable; deferred to the
 // final sweep once the serializer + child classes are fully modeled (leaf-first redo).
 RVA(0x00156530, 0x557)
-i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
+i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 typeId) {
     if (name == 0) {
         return 0;
     }
@@ -417,36 +428,36 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
     // it - widened once here instead of at each of the four dispatches.
     void* headerArg = &header; // HP_Callback's last word is a pointer, not an i32
 
-    if (m_callback == 0 || m_callback(this, &S, 2, arg3, headerArg) == 0) {
+    if (m_callback == 0 || m_callback(this, &S, 2, typeId, headerArg) == 0) {
         return 0;
     }
     g_wwdObjIdCounter = header.m_objIdCounter;
     m_childGroup->DestroyChildren_159ef0();
-    if (m_childGroup->LoadObjects(&S, header.m_childCount, arg3) == 0) {
+    if (m_childGroup->LoadObjects(&S, header.m_childCount, typeId) == 0) {
         return 0;
     }
-    if (m_callback == 0 || m_callback(this, &S, 6, arg3, headerArg) == 0) {
+    if (m_callback == 0 || m_callback(this, &S, 6, typeId, headerArg) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachDispatch(&S, 6, arg3) == 0) {
+    if (m_childGroup->ForEachDispatch(&S, 6, typeId) == 0) {
         return 0;
     }
     if (m_level->EditDispatch(&S, 6, 0, 0) == 0) {
         return 0;
     }
-    if (m_callback == 0 || m_callback(this, &S, 7, arg3, headerArg) == 0) {
+    if (m_callback == 0 || m_callback(this, &S, 7, typeId, headerArg) == 0) {
         return 0;
     }
-    if (m_childGroup->Deserialize(&S, header.m_childCount, arg3) == 0) {
+    if (m_childGroup->Deserialize(&S, header.m_childCount, typeId) == 0) {
         return 0;
     }
     if (m_level->EditDispatch(&S, 7, 0, 0) == 0) {
         return 0;
     }
-    if (m_callback == 0 || m_callback(this, &S, 8, arg3, headerArg) == 0) {
+    if (m_callback == 0 || m_callback(this, &S, 8, typeId, headerArg) == 0) {
         return 0;
     }
-    if (m_childGroup->ForEachDispatch(&S, 8, arg3) == 0) {
+    if (m_childGroup->ForEachDispatch(&S, 8, typeId) == 0) {
         return 0;
     }
     if (m_level->EditDispatch(&S, 8, 0, 0) == 0) {
@@ -459,14 +470,17 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
 }
 
 RVA(0x00156a90, 0x3a)
-i32 CDDrawSurfaceMgr::InvokeCallback(void* arg1, i32 arg2, i32 arg3, void* payload) {
-    if (!arg1) {
+// The four slots are the installed callback's own (ar, mode, typeId, ppObj): the
+// callback is SerialObjectFactory @0x0d2a0, whose mode-9 arm switches on typeId-1000 to
+// pick the class it news and writes the result back through the last slot.
+i32 CDDrawSurfaceMgr::InvokeCallback(void* ar, i32 mode, i32 typeId, void* payload) {
+    if (!ar) {
         return 0;
     }
     if (!m_callback) {
         return 0;
     }
-    return m_callback(this, arg1, arg2, arg3, payload) != 0;
+    return m_callback(this, ar, mode, typeId, payload) != 0;
 }
 
 // ---------------------------------------------------------------------------

@@ -120,8 +120,8 @@ void CDDrawWorkerList::ClearWorkers() {
 // an inverted arm; all >= the current spelling, and `gruntz permute variants` found no
 // AST win in 250 candidates).
 RVA(0x00163c90, 0x116)
-i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
-    m_flags = a3;
+i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 flags) {
+    m_flags = flags;
     if (w <= 0 || h <= 0) {
         // NO locals here: retail re-reads m_id for the branch and lets the CSE'd
         // OwnerMgr() land in esi (`this` is dead) - hoisting either into a named local
@@ -797,14 +797,14 @@ void CDDrawWorkerCache::Unload() {
 }
 
 RVA(0x001652c0, 0x92)
-void* CDDrawWorkerCache::CreateWorker(GameObjNotifyFn factory, const char* key, i32 a3) {
+void* CDDrawWorkerCache::CreateWorker(GameObjNotifyFn factory, const char* key, i32 flags) {
     // the REAL 2-arg AnimWorkerObj ctor, inlined by the `new` (the invented
     // MakeAnimWorker/ReadWorkerCacheField1c .cpp helpers cl refused to inline are gone):
     // retail's `push 0x17c; call operator new; cmp eax,0; je; <mem-init + vptr>;
     // mov edi,eax; jmp; xor edi,edi` IS scalar-new-with-initializer-null-join.
     AnimWorkerObj* w = new AnimWorkerObj(OwnerMgr(), m_10.GetCount());
 
-    if (w->Init(factory, a3) == 0) {
+    if (w->Init(factory, flags) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -928,7 +928,7 @@ i32 CAniElement::Configure(void* ctx, void* entry, i32 flags) {
 // hand it to Build(ctx, buf, 0), free the buffer, and return the build
 // result (the reader local is destroyed on every exit).  __thiscall, ret 0xc.
 RVA(0x00165620, 0x101)
-i32 CAniElement::LoadFile(void* ctx, void* filename, i32 a3) {
+i32 CAniElement::LoadFile(void* ctx, void* filename, i32 unused) {
     CFile fr;
     if (fr.Open(static_cast<const char*>(filename), 0, 0) == 0) {
         return 0;
@@ -983,25 +983,25 @@ void CDDrawWorkerMapSmall::Unload() {
 // on `key` - not a ternary into a named pointer, which makes cl stage the arg through
 // eax (`mov eax,[esp+0x68]; test; mov edi,eax`) instead of loading it straight to edi.
 RVA(0x001658c0, 0xcc)
-void* CDDrawWorkerMapSmall::Factory_1658c0(CParseSource* a1, const char* key, i32 a3) {
-    char* data = a1->BeginParse();
+void* CDDrawWorkerMapSmall::Factory_1658c0(CParseSource* src, const char* key, i32 flags) {
+    char* data = src->BeginParse();
     if (data == 0) {
         return 0;
     }
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
-    if (w->AllocBufMakeB(data, a3) == 0) {
-        a1->EndParse();
+    if (w->AllocBufMakeB(data, flags) == 0) {
+        src->EndParse();
         if (w != 0) {
             delete w;
         }
         return 0;
     }
-    a1->EndParse();
+    src->EndParse();
     char buf[0x50];
     if (key != 0) {
         strcpy(buf, key);
     } else {
-        strcpy(buf, a1->m_name);
+        strcpy(buf, src->m_name);
     }
     m_map1[buf] = static_cast<CObject*>(w);
     return w;
@@ -1048,27 +1048,39 @@ void* CDDrawWorkerMapSmall::CreateWorker2C(char* path, const char* key, i32 flag
 }
 
 // 0x165a90: require the surface's format id to be 0x504358; lock it, bail on 0.
-// Build a worker, dispatch its +0x30 virtual with (data, a1, a3).
+// Build a worker, dispatch its +0x30 virtual with (data, src->m_keyHandle, flags).
+//
+// TWO SLOT DEFECTS CORRECTED 2026-07-29, both found while naming arg2. Frame is
+// entry-0x64 (sub esp,0x54 + 4 pushes), so arg1/arg2/arg3 live at base+0x68/0x6c/0x70.
+//   * the slot-12 size argument is src->m_keyHandle, NOT the CParseSource pointer. The
+//     old note read `mov ecx,[esp+0x68]` @0x165b0b as "the a1 stack arg", but @0x165ad4
+//     retail has already done `mov eax,[edi+0xc]` / `mov [esp+0x6c],eax` ONE PUSH IN -
+//     i.e. it overwrote arg1's home with m_keyHandle and that is what it re-loads.
+//   * arg2 is the KEY STRING, exactly like the twin Factory_1658c0's `key`: @0x165b3a
+//     retail loads base+0x6c (arg2), and on zero falls back to `mov edi,[edi]` ==
+//     src->m_name (+0x00) - the same `key ? key : src->m_name` shape. The body used
+//     src->m_keyHandle for that test instead and never read arg2 at all.
+// It is declared i32 because retail's mangled name is
+// ?Factory_165a90@CDDrawWorkerMapSmall@@UAEPAXPAUCParseSource@@HH@Z; the slot carries a
+// char*, which is what <AddrWord.h> is for.
 // @early-stop
-// vptr-scheduler wall (~93%, twin of Factory_1658c0): real ctor fixed the regalloc;
+// vptr-scheduler wall (twin of Factory_1658c0): real ctor fixed the regalloc;
 // residual is the vptr store position (cl 1st vs retail 4th) + the /GX EH-state schedule.
 RVA(0x00165a90, 0xf4)
-void* CDDrawWorkerMapSmall::Factory_165a90(CParseSource* a1, i32 a2, i32 a3) {
-    if (a1->GetEntryTag() != IMGTAG_XCP) {
+void* CDDrawWorkerMapSmall::Factory_165a90(CParseSource* src, i32 key, i32 flags) {
+    if (src->GetEntryTag() != IMGTAG_XCP) {
         return 0;
     }
-    char* data = a1->BeginParse();
+    char* data = src->BeginParse();
     if (data == 0) {
         return 0;
     }
-    const char* keyHandle = a1->m_keyHandle; // +0x0c's XCP arm (see <Gruntz/ParseSource.h>)
+    // +0x0c's XCP arm (see <Gruntz/ParseSource.h>) - the entry's key string, handed to
+    // the slot-12 virtual whose own parameter is declared i32 (<AddrWord.h>).
+    AddrWord handle;
+    handle.m_addr = const_cast<char*>(src->m_keyHandle);
     CAniRecordBase2* w = new CAniRecordBase2(m_map1.GetCount(), m_ownerCtx);
-    // faithful: retail pushes the CParseSource POINTER itself into the slot-12
-    // size argument here (0x165b0c `push ecx` = the a1 stack arg) - the slot is
-    // polymorphic across this factory's two kinds (<AddrWord.h>).
-    AddrWord srcArg;
-    srcArg.m_addr = a1;
-    if (w->AllocBufMakeB3(data, srcArg.m_word, a3) == 0) {
+    if (w->AllocBufMakeB3(data, handle.m_word, flags) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -1076,11 +1088,13 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CParseSource* a1, i32 a2, i32 a3) {
     }
     // 0x50-byte key buffer (retail `sub esp,0x54`), if/else fallback - same shape as
     // the Factory_1658c0 twin.
+    AddrWord keyArg;
+    keyArg.m_word = key;
     char buf[0x50];
-    if (keyHandle != 0) {
-        strcpy(buf, keyHandle);
+    if (keyArg.m_addr != 0) {
+        strcpy(buf, static_cast<const char*>(keyArg.m_addr));
     } else {
-        strcpy(buf, a1->m_name);
+        strcpy(buf, src->m_name);
     }
     m_map1[buf] = static_cast<CObject*>(w);
     return w;

@@ -17,7 +17,8 @@
 // while (pos); }`) reproduces that and drops the third callee-saved register with it.
 // Residual is the remaining tileX/tileY register colouring.
 RVA(0x000f0db0, 0x48)
-i32 MgrListFind(i32 a1, i32 a2) {
+// The two words are compared against a CGruntPuddle's m_tileX/m_tileY below.
+i32 MgrListFind(i32 tileX, i32 tileY) {
     CPtrList& list = g_gameReg->m_cmdGrid->m_baseList;
     POSITION pos = list.GetHeadPosition();
     // ONE miss exit (retail 0xf0df3): the empty-list gate and the walk's bottom test
@@ -28,7 +29,7 @@ i32 MgrListFind(i32 a1, i32 a2) {
             if (p->m_pending == 0) {
                 i32 v54 = p->m_tileX;
                 i32 v58 = p->m_tileY;
-                if (v54 == a1 && v58 == a2) {
+                if (v54 == tileX && v58 == tileY) {
                     return 1;
                 }
             }

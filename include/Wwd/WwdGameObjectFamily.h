@@ -263,7 +263,9 @@ public:
                   // 7 -> SerializeSpriteName - then the base Play body)
 
     // The created-sprite frame-cache method set (this kind's +0x194/+0x198 tail).
-    void ApplyLookupSprite(const char* key, i32 flag);                  // 0x1504d0
+    // the 2nd slot is a FRAME index, not a flag: the body @0x1504d0 range-checks it
+    // against the resolved sprite's m_minIndex/m_maxIndex and subscripts m_items with it.
+    void ApplyLookupSprite(const char* key, i32 frame);                 // 0x1504d0
     void ApplyName(const char* name);                                   // 0x150540
     i32 ApplyLookupGeometry(const char* key, i32 flag);                 // 0x1505b0
     i32 LookupAnimSprite(const char* name);                             // 0x150610

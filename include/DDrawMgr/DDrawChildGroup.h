@@ -49,19 +49,28 @@ public:
     // delta, then slot 16 below.
     virtual void TickKillCues(i32 advance);                       // slot 9  +0x24
     virtual void WalkDispatch2C(class CDDrawSurfacePair* target); // slot 10 0x159c90 (child Render)
+    // The page arguments are BLIT ROLES, byte-proven by the child slot each walker
+    // fires: CWwdGameObjectA::BltDirty @0x150660 does `dst->m_surface->BltFast(...,
+    // src->m_surface, ...)`, so the first page is the destination and the second the
+    // source. CDDrawSubMgrPages::FlipAndNotify @0x158b90 - WalkDispatch30's one caller -
+    // passes (m_backPair, m_overlayPair): restore the flipped back page's dirty rects
+    // from the clean overlay page.
     virtual void WalkDispatch30(
-        CDDrawSurfacePair* a1,
-        CDDrawSurfacePair* a2
+        CDDrawSurfacePair* dst,
+        CDDrawSurfacePair* src
     ); // slot 11 0x159cc0 (child BltDirty)
+    // Three pages chained: pass 1 blits src->dst per child, then the tail
+    // WalkDispatch30(src, restoreSrc) blits restoreSrc->src (the child slot itself
+    // ignores its third argument - CWwdGameObjectA::BltDirtyEx @0x1506b0 never reads it).
     virtual void WalkDispatch34(
-        CDDrawSurfacePair* a1,
-        CDDrawSurfacePair* a2,
-        CDDrawSurfacePair* a3
+        CDDrawSurfacePair* dst,
+        CDDrawSurfacePair* src,
+        CDDrawSurfacePair* restoreSrc
     ); // slot 12 0x159cf0 (child BltDirtyEx)
     virtual void WalkDispatch38(
-        CDDrawSurfacePair* a1,
-        CDDrawSurfacePair* a2,
-        CDDrawSurfacePair* a3
+        CDDrawSurfacePair* dst,
+        CDDrawSurfacePair* src,
+        CDDrawSurfacePair* restoreSrc
     );                               // slot 13 0x159d40 (child BltDirtyRegions)
     virtual void ResetChildD8();     // slot 14 0x159d90
     virtual void DestroyChildren();  // slot 15 0x1591f0
@@ -79,31 +88,71 @@ public:
     // The return type is the CONCRETE kind each factory news - retyped from the
     // blanket CWwdGameObject* (the B kind, an unrelated branch of the family) that
     // used to force a cross-cast on every `return`.
-    CWwdGameObjectC*
-    CreateObject_159250(int a1, int a2, int a3, int a4, AnimWorkerObj* tmpl, int a6, int a7);
-    CWwdGameObjectF* CreateObject_159440(int a1, int a2, AnimWorkerObj* tmpl, int a4);
+    //
+    // Every factory has the SAME argument spine, and each name below is the name of
+    // the slot the argument actually lands in (byte-traced through the two calls each
+    // body makes):
+    //   id         -> the kind ctor's 2nd arg == CWapObj::m_id (+0x04)
+    //   x, y       -> CGameObject::Setup @0x150d60 args 1/2 (SetPosition -> m_screenX/Y)
+    //   sortKey    -> Setup arg 3 == m_sortKey (+0x74), what InsertSorted orders on
+    //   stateFlags -> the ctor's 3rd arg == CWapObj::m_flags (+0x08); the `& 0x200000`
+    //                 test each factory ends with reads that same word back
+    //   dotColor   -> CWwdGameObjectC::SetupFlagged @0x15c1d0 arg 5, stored straight
+    //                 into the C kind's m_dotColor byte (+0x18c)
+    // The F kind takes no x/y at all: SetupDeferred @0x15bc30 calls Setup(0, 0, sortKey, tmpl).
+    CWwdGameObjectC* CreateObject_159250(
+        int id,
+        int x,
+        int y,
+        int sortKey,
+        AnimWorkerObj* tmpl,
+        int dotColor,
+        int stateFlags
+    );
+    CWwdGameObjectF* CreateObject_159440(int id, int sortKey, AnimWorkerObj* tmpl, int stateFlags);
     CWwdGameObjectA*
-    CreateObject_159600(int a1, int a2, int a3, int a4, AnimWorkerObj* tmpl, int flags);
+    CreateObject_159600(int id, int x, int y, int sortKey, AnimWorkerObj* tmpl, int stateFlags);
     CWwdGameObject*
-    CreateObject_1598d0(int a1, int a2, int a3, int a4, AnimWorkerObj* tmpl, int a6);
+    CreateObject_1598d0(int id, int x, int y, int sortKey, AnimWorkerObj* tmpl, int stateFlags);
     // Name-resolving factory front-ends: resolve `name` through the owner's
     // worker-cache name map (OwnerMgr()->m_workerCache->m_10, the Ob-band Lookup
     // 0x1b8008) to an id, then forward it as the matching CreateObject argument.
-    CWwdGameObjectC*
-    CreateNamed_1593e0(int a1, int a2, int a3, int a4, const char* name, int a6, int a7);
-    CWwdGameObjectF* CreateNamed_1595b0(int a1, int a2, const char* name, int a4); // 0x1595b0
-    CWwdGameObject*
-    CreateNamed_159a10(int a1, int a2, int a3, int a4, const char* name, int a6); // 0x159a10
+    CWwdGameObjectC* CreateNamed_1593e0(
+        int id,
+        int x,
+        int y,
+        int sortKey,
+        const char* name,
+        int dotColor,
+        int stateFlags
+    );
+    CWwdGameObjectF*
+    CreateNamed_1595b0(int id, int sortKey, const char* name, int stateFlags); // 0x1595b0
+    CWwdGameObject* CreateNamed_159a10(
+        int id,
+        int x,
+        int y,
+        int sortKey,
+        const char* name,
+        int stateFlags
+    ); // 0x159a10
 
     // The game-side sprite front-ends (the ex "CSpriteFactory" role): CreateSprite
     // (@0x1597b0) looks a sprite TEMPLATE up by class-NAME in the owner's
     // worker-cache table and forwards the build args + the resolved template to
     // CreateObject_159600, which `new`s the 0x1dc game-sprite instance
     // (CGameObject, <Gruntz/UserLogic.h>). __thiscall, ret 0x18.
+    // CORRECTED 2026-07-29: these were `kind, geoB, geoA, hint` - three wrong names.
+    // 0x1597b0's push order (byte-read) forwards them 1:1 to CreateObject_159600, whose
+    // body feeds args 2/3/4 to CGameObject::Setup(x, y, sortKey, tmpl); every game call
+    // site agrees - Projectile/Warlord/Wormhole/ExitTrigger all pass
+    // (0, obj->m_screenX, obj->m_screenY, <z>, "Name", flags) and TriggerMgrGrid passes
+    // (0, ax, ay, ay, "Grunt", ...) - the sort key IS the screen y there.
     CWwdGameObjectA*
-    CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
+    CreateSprite(i32 id, i32 x, i32 y, i32 sortKey, const char* name, i32 stateFlags);
     // Initialise an already-allocated sprite against a named template (@0x159830).
-    i32 AttachSprite(CWwdGameObject* obj, i32 a1, i32 a2, i32 a3, const char* name, i32 flags);
+    i32
+    AttachSprite(CWwdGameObject* obj, i32 x, i32 y, i32 sortKey, const char* name, i32 stateFlags);
 
     // Level-load path (reader = the shared CFileMemBase == CFileMemBase).
     i32 LoadObjects(class CFileMemBase* reader, u32 count, i32 unused);
@@ -118,9 +167,15 @@ public:
     void AddToMap48(CWwdGameObject* obj);
     void PruneList();
     i32 CountActive();
-    i32 ForEachDispatch(CFileMemBase* a1, i32 a2, i32 a3);
-    i32 ForEachProbe(CFileMemBase* a1, i32 a2);
-    i32 ForEachSerialize(class CFileMemBase* ar, i32 a2);
+    // The three active-set (m_map48) walkers CDDrawSurfaceMgr::SnapshotChildren @0x156020
+    // drives in order. `mode`/`typeId` are the 2nd/3rd arguments of the child slot-15
+    // virtual they forward to, CGameObject::Play(ar, mode, typeId, self) @0x151150 -
+    // SnapshotChildren issues ForEachDispatch(&S, 3, arg3) / (&S, 5, arg3), so the mode
+    // is the literal and the pass-through is the typeId. ForEachProbe forwards the same
+    // caller word to CGameObject::WriteSnapshot's second slot, which retail never reads.
+    i32 ForEachDispatch(CFileMemBase* ar, i32 mode, i32 typeId);
+    i32 ForEachProbe(CFileMemBase* ar, i32 typeId);
+    i32 ForEachSerialize(class CFileMemBase* ar, i32 typeId);
     i32 Deserialize(class CFileMemBase* ar, u32 count, i32 flag);
     i32 PruneOrphans();
     void RemoveAndDelete(CWwdGameObject* obj);   // 0x159db0

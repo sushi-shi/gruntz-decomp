@@ -24,6 +24,12 @@ SIZE_UNKNOWN();
 // PID_FILL_IS_WORD. The pixel payload begins one header past `src`.
 struct PidHeader;
 
+// This is field-for-field <DDrawMgr/DDSurface.h>'s PidHeader (formatTag, flags, width,
+// height, offsetX, offsetY, fill, unk1) - DecodeFrame @0x149250 writes it out as the
+// 0x20-byte header in front of the RLE stream, and Rebuild @0x1493b0 fills f2/f3 from
+// m_width/m_height, f4/f5 from its two arguments and f6 from m_colorKey. Folding the
+// two would be the right cleanup (it is a duplicate definition of one retail struct);
+// left as a lead because it changes DecodeFrame's mangled parameter type.
 struct CImageFrameRebuildDesc {
     i32 f0;
     i32 f1;
@@ -59,14 +65,18 @@ public:
     void* EncodeRle16(const u8* src);
     void Teardown();                                            // 0x148d10
     i32 DecodeFrame(CString name, CImageFrameRebuildDesc desc); // 0x149250 (body: ImageSaveBmp.cpp)
-    i32 Rebuild(CString name, i32 a1, i32 a2);                  // 0x1493b0
-    i32 Decompress(void* dest);                                 // 0x1494b0 (RLE expand)
+    // the two arguments are the PID draw-anchor pair: they land in the descriptor's
+    // f4/f5, which are PidHeader::offsetX/offsetY.
+    i32 Rebuild(CString name, i32 offsetX, i32 offsetY); // 0x1493b0
+    i32 Decompress(void* dest);                          // 0x1494b0 (RLE expand)
 
     // --- blit side (src/DDrawMgr/DDrawShadeBlit.cpp) -----------------------------
     // Position the sprite at (x,y) on `dstSurf`: build a {x,y,x+w-1,y+h-1} destination
     // rect + a {0,0,w-1,h-1} clip rect from m_width/m_height, then forward to Blit.
-    i32 BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 p4);              // 0x149780
-    i32 Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 sel, i32 p4); // 0x1497f0
+    // `vflip` is the flag every BlitMode_* sibling below already spells that way -
+    // Blit forwards it untouched into whichever of them m_drawType selects.
+    i32 BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 vflip);              // 0x149780
+    i32 Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 sel, i32 vflip); // 0x1497f0
     // 0x14dd90 - latch the draw type and select the shade/palette descriptor: writes
     // m_drawType (+0x14) = mode, then m_palDescr (+0x1c) = descr, or, when descr is null,
     // the mode's global default from g_shadeDescr208..220. This is the REAL owner of that
@@ -82,7 +92,7 @@ public:
     // the Lock'd destination surface, clipping x to [clip->left, clip->right].
     void BlitMode_149950(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip); // 0x149950
     void BlitMode_149d00(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip); // 0x149d00
-    void BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 p4);            // 0x14a200
+    void BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 vflip);         // 0x14a200
     void BlitMode_14b770(ShadeRect* dst, CDDSurface* surf, ShadeRect* clip, i32 vflip); // 0x14b770
     // The per-row format converter the inner blit loops call: dispatches on
     // (m_drawType - 2) to one of nine palette/blend conversions over a row.
