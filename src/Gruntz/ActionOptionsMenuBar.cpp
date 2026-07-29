@@ -142,7 +142,14 @@ i32 CActionOptionsMenuBar::Activate(i32 a) {
 // our cl picks edi for `this` and ecx for the walk-pointer, plus an earlier
 // g_gameReg load - the choice cascades through every [this+off] encoding and the
 // frame is 6 bytes short of 310 (size mismatch -> no per-fn %). Logic exact.
-RVA(0x00009330, 0x136)
+// SPAN NOTE (2026-07-29): the 0x190 below is the true retail extent 0x9330..0x94c0
+// (where Render starts), not the 0x136 code length. 90 bytes of switch index LUT +
+// jump table follow the `ret`, and objdiff sizes a symbol by next-symbol-start - with
+// the code-only span the two sides disagreed on the length and the function scored a
+// flat 0 (objdiff omits fuzzy_match_percent when it is 0.0, which reads as "unscored").
+// With the real span it scores 32.9%. Same device as CNetSession::DispatchMsg @0xbf7c0
+// and MorphByTool @0x113420.
+RVA(0x00009330, 0x190)
 i32 CActionOptionsMenuBar::Refresh() {
     i32 cell = m_gridY + m_gridX * TM_GRID_COLS;
     CGrunt* grunt = g_gameReg->m_cmdGrid->m_grid[cell];

@@ -17,14 +17,18 @@
 // clear its 0x1000 bit and re-set it when one of the four opposite neighbour pairs
 // is both passable (no 0x939 bit).
 // @early-stop
-// dense-switch + 8-neighbour spill wall (objdiff 0% scoring artifact): the bute-id
-// lookup + the 0x99-case jump table (cases written in retail .text body order, so
-// the byte index LUT + jump table + the per-case `mov [cell],flagval` bodies all
-// align) are byte-correct, but the deep 8-neighbour walk's pointer/spill schedule
-// diverges from retail's stack-slot-heavy neighbour layout, and the big jump-table
-// data region (REL32 vs cl's $L self-relocs) drags the whole-symbol % to 0 (the
-// jumptable-data-overlap scoring artifact). Logic complete; parked for the sweep.
-RVA(0x00077790, 0x37d)
+// dense-switch + 8-neighbour spill wall. The old note here blamed the hard 0% on the
+// "jumptable-data-overlap scoring artifact"; the real cause was the SPAN. The code
+// ends at `ret 0xc` after 0x37d bytes, but 691 more bytes of switch index LUT + jump
+// table follow before the next real function (SetCell @0x77dc0), and objdiff sizes a
+// symbol by next-symbol-start - with a code-only annotation the two sides disagreed on
+// the length and the function was not scored AT ALL. The span below is the true retail
+// extent 0x77790..0x77dc0 (0x630), which is what the delinker must carve for the sides
+// to be comparable; it scores 42.95%. (Measured alternatives: 0x37d = unscored,
+// 0x450 = our base COMDAT = 24.5%, 0x630 = 43.0%.) The remaining residue IS a real
+// divergence - the deep 8-neighbour walk's pointer/spill schedule against retail's
+// stack-slot-heavy neighbour layout - not a measurement artifact any more.
+RVA(0x00077790, 0x630)
 void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     // The target cell pointer is computed first and held in a callee-saved register
     // across the whole body (retail's esi).
