@@ -230,11 +230,11 @@ CTileMultiTriggerSwitchLogic::CTileMultiTriggerSwitchLogic() {}
 // ack 0x44d on miss; then validate each nonzero block key resolves (FindChild
 // (key, 3)) to a gated child, acking 0x44e on a lookup miss.
 // ---------------------------------------------------------------------------
-// @early-stop
-// this-spill frame wall (~86%, same as VerifyBlockLinks 0x112c70): body
-// byte-identical; retail reserves a `push ecx` stack local for `this` + reloads it
-// to seed the `child` loop cursor, the recompile seeds it from a register. Dead seed
-// value, non-steerable frame choice. See docs/patterns/this-spilled-to-local-for-loop-seed.md
+// EXACT since 2026-07-29. The old "this-spill frame wall" note was wrong twice over:
+// the `push ecx` dword is the UNINITIALIZED `child` local (spelling `= 0` emits
+// `xor edi,edi` and deletes the slot), and the hand-rolled `i32* p` block cursor stole
+// the callee-saved register the loop COUNTER wants - subscripting `child->m_block[i]`
+// lets strength reduction build the cursor and restores retail's `xor ebx,ebx` first.
 // @interleaver CTileTriggerSwitchLogic::VerifyBlockLinksB emitted-in <boundary:
 // GruntzMgr2.cpp SetCellHeight @0x111ec0 (before) + GroupOps.cpp Broadcast @0x112080
 // (after)>. A /Gy first-use COMDAT the linker scattered between two OTHER units.
@@ -247,7 +247,10 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
     // CTileTriggerLogic children live there.
     POSITION pos = m_owner->m_list1.GetHeadPosition();
     i32 found = 0;
-    CTileTriggerLogic* child = 0;
+    // `child` is deliberately UNINITIALIZED: retail reserves a `push ecx` dword for it
+    // and seeds the enregistered cursor from that (garbage) slot (`mov edi,[esp+0x10]`).
+    // Spelling `= 0` emits `xor edi,edi` and drops the slot + all four `pop ecx`.
+    CTileTriggerLogic* child;
     while (pos != 0) {
         if (found != 0) {
             break;
@@ -261,9 +264,11 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
         g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_LINKSB_NO_OWNER);
         return 0;
     }
-    i32* p = &child->m_block[0]; // child+0x3c (the child is a 0x9c CTileTriggerLogic)
+    // Subscripted, not a hand-rolled `i32* p` cursor: retail inits the COUNTER first
+    // (`xor ebx,ebx`) and lets strength reduction make the esi cursor - a user `p`
+    // takes the callee-saved register and pushes the counter onto the dead child reg.
     for (i32 i = 0; i < 24; i++) {
-        i32 key = *p;
+        i32 key = child->m_block[i]; // child+0x3c (the child is a 0x9c CTileTriggerLogic)
         if (key == 0) {
             return 1;
         }
@@ -275,7 +280,6 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
         if (c->m_linkGate == 0) {
             return 0;
         }
-        p++;
     }
     return 0;
 }
@@ -296,23 +300,32 @@ CTileExclusiveTriggerSwitchLogic::CTileExclusiveTriggerSwitchLogic() {}
 // interval 0x110430..0x1140e2 - first-link contiguity says it was defined here).
 // ---------------------------------------------------------------------------
 // @early-stop
-// 84% - regalloc wall: the 0-terminated key-array walk, per-key map Find, the
-// inner match/destroy list loop and both diagnostic exits are byte-faithful; the
-// residual is loop-induction / counter register colouring.  No EH frame.
+// 99.82% (was 84%). The old "loop-induction / counter register colouring" note was
+// three separate source-shape bugs: (1) the hand-rolled `i32* p` block cursor - retail
+// subscripts and lets strength reduction build the cursor, anchored on `m_block[i]`
+// (so the sentinel read must be `i++; if (m_block[i] == 0)`, NOT `p[1]` / `m_block[i+1]`,
+// which anchors the IV one element late); (2) `done`/`counter` are declared BEFORE the
+// base::SwitchDown() call, which is where retail's two zero stores sit; (3) the loop is a
+// `while (done == 0)`, not a `do/while` - the do-while form lets cl rotate the
+// `i >= 0x18` guard to the bottom and merge it with the back edge, where retail keeps
+// it at the top with the back edge jumping to it.
+// Residue: ONE 2-byte register coin-flip - retail loads node->m_key1 into ecx and
+// this->m_key1 into eax (`cmp ecx,eax`), cl picks eax then ecx. Both operand orders and
+// a named-local form were compiled; the register pair does not flip.
 RVA(0x00112080, 0x138)
 i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
     // retail: a DIRECT `call 0x2e0f` (the base slot-2 body's ILT thunk) - the
     // qualified base chain.
-    CTileTriggerSwitchLogic::SwitchDown();
-    i32 counter = 0;
-    i32* p = &m_block[0];
-    i32 i = 0;
     i32 done = 0;
-    do {
+    i32 counter = 0;
+    CTileTriggerSwitchLogic::SwitchDown();
+    i32 i = 0;
+    while (done == 0) {
         if (i >= 0x18) {
             return 1;
         }
-        CTileTriggerSwitchLogic* node = m_owner->FindChild(*p, TRIGID_EXCLUSIVE_SWITCH_4);
+        i32 key = m_block[i];
+        CTileTriggerSwitchLogic* node = m_owner->FindChild(key, TRIGID_EXCLUSIVE_SWITCH_4);
         if (node == 0) {
             g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_BCAST_KEY_MISS);
             return 0;
@@ -335,13 +348,11 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
                 return 0;
             }
         }
-        i32 next = p[1];
-        p++;
         i++;
-        if (next == 0) {
+        if (m_block[i] == 0) {
             done = 1;
         }
-    } while (!done);
+    }
     return 1;
 }
 
@@ -355,17 +366,14 @@ RVA(0x00112270, 0x12)
 CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 
 // @early-stop
-// loop-body regalloc wall (~69%): complete + correct reconstruction - the frame
-// (0x14, 5 locals), the PtInRect gate, and ALL of steps 3-5 (the m_cmdGrid Fire, the
-// InGameText sprite + m_124 stamp, the view-rect bounds cascade, the sound-registry
-// Lookup + kill-cue-clock cooldown Play) are byte-exact. The residual is confined to
-// the 3x3 loop body: retail spills BOTH counters i (edi) and j (ebx) to the frame and
-// reloads them, chaining the plane through a 2nd register so g_gameReg stays live in
-// edi for the +0x70 tileGrid read; MSVC5 here keeps i in ebx and re-loads g_gameReg,
-// which also duplicates the inner-tail (an extra jmp + a 2nd copy). Source nudges
-// (read-order swap, an explicit g_gameReg loop local, px/py caching) all leave the
-// i->edi / j->ebx spill-and-reload assignment unmoved - a non-steerable regalloc pick
-// inside the hottest block. Deferred to the final sweep.
+// 74.5% (was 69.6): the hand-rolled `i32* cursor = &m_matrix[0]` walk is gone (subscript
+// `m_matrix[j*3+i]`, so the cursor is a strength-reduced IV - see
+// docs/patterns/array-cursor-bias-from-row-pointer-local.md). The rest of the old
+// "loop-body regalloc wall" note still stands: retail spills BOTH counters i (edi) and
+// j (ebx) to the frame and chains the plane through a 2nd register so g_gameReg stays
+// live in edi for the +0x70 tileGrid read; MSVC5 here keeps i in ebx and re-loads
+// g_gameReg, duplicating the inner tail. Same CSE-strength gap as the SwitchDown
+// family in this TU. Deferred to the final sweep.
 RVA(0x001122a0, 0x241)
 void CGiantRockLogic::BuildRockBreakInGameText() {
     // The world holder: the ex-CWorldZ view IS CDDrawSurfaceMgr (one object at +0x30;
@@ -383,10 +391,9 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
 
     // (2) 3x3 neighborhood: write each saved cell value into the level plane + notify
     // the tile grid; when in-rect, spawn a Particlez/LEVEL_ROCKBREAK sprite per cell.
-    i32* cursor = &m_matrix[0];
     for (i32 j = 0; j <= 2; j++) {
         for (i32 i = 0; i <= 2; i++) {
-            i32 value = *cursor;
+            i32 value = m_matrix[j * 3 + i];
             i32 px = i + m_tileX - 1;
             i32 py = j + m_tileY - 1;
             CDDrawWorkerHost* plane = g_gameReg->m_world->m_level->m_mainPlane;
@@ -406,7 +413,6 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
                     spr->ApplyLookupGeometry("LEVEL_ROCKBREAK", 0);
                 }
             }
-            cursor++;
         }
     }
 
@@ -674,9 +680,13 @@ ret1:
 // Slot 2: reads the active tile layer's cell at (col,row), stores value+1 back, republishes
 // it through the tile grid, and SETS the +0x14 flag.  Returns 1.
 // @early-stop
-// addressing-mode wall (~73%): logic identical; retail indexes the row table with
-// a scale-4 address mode (`[rowtbl+y*4]`), the recompile pre-shifts y (shl 2) and
-// uses scale-1, propagating through both cell accesses.
+// 73.1% - CSE-strength wall (re-diagnosed 2026-07-29, was "addressing-mode wall"). Retail
+// re-reads the whole m_world->m_level->m_mainPlane chain for the SECOND cell access and
+// uses `[base+key*4]` twice; our cl CSEs the chain into one read and materialises `key*4`
+// once (`shl ecx,2` + scale-1). Spelling the chain inline at both sites was compiled and
+// is WORSE (46%) - cl CSEs it anyway. The same gap caps ApplyMove/SetActionCode/
+// Tick@CTileSecretTriggerLogic; it is the SP-level optimizer difference this TU keeps
+// hitting (see the SetActionCode note), not an addressing-mode pick.
 RVA(0x00112b70, 0x5a)
 i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     CGruntzMgr* reg = g_gameReg;
@@ -692,9 +702,7 @@ i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
 // Slot 3: the decrement sibling - same cell read/write path, value-1, and CLEARS the +0x14
 // flag.  Returns 1.
 // @early-stop
-// strength-reduction wall (~73%): cl materializes row<<2 (shl ecx,2) and reuses
-// scale-1 addressing where retail keeps the row in a scale-4 address mode in both cell
-// stores; the shift vs scaled-index pick is not steerable.
+// 73.1% - same CSE-strength wall as SwitchDown above; see the note there.
 RVA(0x00112bf0, 0x5e)
 i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     CGruntzMgr* reg = g_gameReg;
@@ -718,12 +726,9 @@ i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
 // m_linkGate is set (else fail, acking 0x453 when the lookup itself misses).
 // Returns 1 on the early empty-slot success, 0 otherwise.
 // ---------------------------------------------------------------------------
-// @early-stop
-// this-spill frame wall (~86%): body byte-identical; retail reserves a `push ecx`
-// stack local for `this` + reloads it (`mov edi,[esp+0x10]`) to seed the `child`
-// loop cursor, the recompile seeds it from a register (`mov edi,ebp`) with no slot.
-// Dead seed value, non-steerable frame choice. See
-// docs/patterns/this-spilled-to-local-for-loop-seed.md
+// EXACT since 2026-07-29 (twin of VerifyBlockLinksB 0x111f40): the `push ecx` dword is
+// the UNINITIALIZED `child` local, and the block walk is a SUBSCRIPT, not a hand-rolled
+// `i32* p` cursor - see the note there.
 RVA(0x00112c70, 0xc4)
 i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
     if (m_linkGate == 0) {
@@ -733,7 +738,10 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
     // CTileTriggerLogic children live there.
     POSITION pos = m_owner->m_list1.GetHeadPosition();
     i32 found = 0;
-    CTileTriggerLogic* child = 0;
+    // `child` is deliberately UNINITIALIZED: retail reserves a `push ecx` dword for it
+    // and seeds the enregistered cursor from that (garbage) slot (`mov edi,[esp+0x10]`).
+    // Spelling `= 0` emits `xor edi,edi` and drops the slot + all four `pop ecx`.
+    CTileTriggerLogic* child;
     while (pos != 0) {
         if (found != 0) {
             break;
@@ -747,9 +755,11 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
         g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_LINKS_NO_OWNER);
         return 0;
     }
-    i32* p = &child->m_block[0]; // child+0x3c (the child is a 0x9c CTileTriggerLogic)
+    // Subscripted, not a hand-rolled `i32* p` cursor: retail inits the COUNTER first
+    // (`xor ebx,ebx`) and lets strength reduction make the esi cursor - a user `p`
+    // takes the callee-saved register and pushes the counter onto the dead child reg.
     for (i32 i = 0; i < 24; i++) {
-        i32 key = *p;
+        i32 key = child->m_block[i]; // child+0x3c (the child is a 0x9c CTileTriggerLogic)
         if (key == 0) {
             return 1;
         }
@@ -761,7 +771,6 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
         if (c->m_linkGate == 0) {
             return 0;
         }
-        p++;
     }
     return 0;
 }
@@ -771,6 +780,14 @@ CTileActionEvent::CTileActionEvent() {
     m_live = 0;
 }
 
+// @early-stop
+// 66.9% - the cell block is now retail's shape (m_tileX/m_tileY latched into registers
+// before the compare, so the ComputeCellFlags args come from registers instead of three
+// re-reads). Residue is the SAME CSE-strength gap as SwitchDown/ApplyMove in this TU:
+// retail re-reads the whole m_world->m_level->m_mainPlane chain AND recomputes the cell
+// address for the store block, where our cl CSEs the `lea <cell>` across the `jne` and
+// re-reads g_gameReg/m_tileX/m_tileY instead. Spelling the chain inline at both sites
+// (done, kept - it IS retail's source shape) does not stop the address CSE.
 RVA(0x00112da0, 0xf0) // span includes the inline switch jump table (base COMDAT 0xf0)
 i32 CTileActionEvent::SetActionCode(i32 code) {
     m_actionCode = code;
@@ -811,16 +828,22 @@ i32 CTileActionEvent::SetActionCode(i32 code) {
                 break;
         }
     }
-    {
-        CDDrawWorkerHost* grid = g_gameReg->m_world->m_level->m_mainPlane;
-        i32* cell = &grid->m_tileGrid[grid->m_colOffsets[m_tileY] + m_tileX];
-        if (*cell == code) {
-            return 0;
-        }
-        *cell = code;
-        g_gameReg->m_tileGrid->ComputeCellFlags(m_tileX, m_tileY, code);
-        return 1;
+    // The plane chain is re-derived in EACH statement, not bound to a `grid` local:
+    // MSVC5's CSE keeps the g_gameReg global load and the this-relative m_tileX/m_tileY
+    // across the branch, but does NOT CSE a load through a loaded pointer - so retail
+    // reads m_world->m_level->m_mainPlane->{m_colOffsets,m_tileGrid} once for the
+    // compare and again for the store.
+    i32 ty = m_tileY;
+    i32 tx = m_tileX;
+    if (g_gameReg->m_world->m_level->m_mainPlane
+            ->m_tileGrid[g_gameReg->m_world->m_level->m_mainPlane->m_colOffsets[ty] + tx]
+        == code) {
+        return 0;
     }
+    g_gameReg->m_world->m_level->m_mainPlane
+        ->m_tileGrid[g_gameReg->m_world->m_level->m_mainPlane->m_colOffsets[ty] + tx] = code;
+    g_gameReg->m_tileGrid->ComputeCellFlags(tx, ty, code);
+    return 1;
 }
 
 // ===========================================================================
@@ -1409,10 +1432,9 @@ i32 CGiantRockLogic::ApplyByType(void* archive, i32 mode, i32 typeId, i32 pObj) 
 // owner's array run to m_block[38] and overrun its 0x8c allocation - the contradiction that
 // blocked the layout fix. They are CGiantRockLogic's own tail (0x9c base + 0x24 matrix + 8).
 // ---------------------------------------------------------------------------
-// @early-stop
-// regalloc wall (~95%): whole body byte-identical; retail pins this->esi /
-// stream->edi (pushes all 4 callee regs, then loads args) vs our this->edi /
-// stream->esi (arg load interleaved with the pushes). Reg-pair swap only.
+// EXACT since 2026-07-29: the old "esi/edi regalloc wall" was the hand-rolled `i32* p`
+// matrix cursor - retail subscripts, so the cursor is a strength-reduced IV coalesced
+// with `this`, and that is what decides which callee-saved register each of this/stream gets.
 RVA(0x00113dd0, 0x7b)
 i32 CGiantRockLogic::SerializeMatrix(CFileMemBase* s) {
     if (s == 0) {
@@ -1423,11 +1445,12 @@ i32 CGiantRockLogic::SerializeMatrix(CFileMemBase* s) {
     }
     s->Write(&m_powerupType, 4);
     s->Write(&m_textId, 4);
-    i32* p = m_matrix;
+    // Subscripted, not a hand-rolled `i32* p`: retail's cursor is a strength-reduced
+    // IV coalesced with `this` (`add esi,0x9c` / `add esi,4`), which is what decides
+    // the this/stream callee-saved pair.
     for (i32 r = 0; r < 3; r++) {
         for (i32 c = 0; c < 3; c++) {
-            s->Write(p, 4);
-            p++;
+            s->Write(&m_matrix[r * 3 + c], 4);
         }
     }
     return 1;
@@ -1438,9 +1461,8 @@ i32 CGiantRockLogic::SerializeMatrix(CFileMemBase* s) {
 // streams two header dwords (+0xc0, +0xc4) then the 3x3 dword matrix (+0x9c..) via the
 // stream's Read slot. Returns 0 if the stream or the active game-manager (g_gameReg+0x30)
 // is null, else 1. This is the type-7 (load) apply ApplyByType dispatches to (thunk 0x3cd3).
-// @early-stop
-// esi/edi regalloc wall (~95%, same as SerializeMatrix): whole body byte-identical;
-// retail pins this->esi / stream->edi vs our this->edi / stream->esi. Reg-pair swap.
+// EXACT since 2026-07-29 (twin of SerializeMatrix): the residual was the hand-rolled
+// `i32* p` cursor, not a register wall - see the note there.
 RVA(0x00113e70, 0x7b)
 i32 CGiantRockLogic::DeserializeMatrix(CFileMemBase* s) {
     if (s == 0) {
@@ -1451,11 +1473,12 @@ i32 CGiantRockLogic::DeserializeMatrix(CFileMemBase* s) {
     }
     s->Read(&m_powerupType, 4);
     s->Read(&m_textId, 4);
-    i32* p = m_matrix;
+    // Subscripted, not a hand-rolled `i32* p`: retail's cursor is a strength-reduced
+    // IV coalesced with `this` (`add esi,0x9c` / `add esi,4`), which is what decides
+    // the this/stream callee-saved pair.
     for (i32 r = 0; r < 3; r++) {
         for (i32 c = 0; c < 3; c++) {
-            s->Read(p, 4);
-            p++;
+            s->Read(&m_matrix[r * 3 + c], 4);
         }
     }
     return 1;
