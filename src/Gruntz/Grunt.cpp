@@ -725,11 +725,24 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
         i32 x = m_poseToy1->m_records.GetSize();
         LOAD_POSE(m_poseToy2, s_pose_TOY2);
         i32 y = m_poseToy2->m_records.GetSize();
-        if (x >= y) {
-            m_toyBlendPct = static_cast<i32>((100.0 / (static_cast<double>(x) / y - -1.0) - -0.5));
+        // the SHORTER pose is the if-BODY: retail's guard is `cmp x,y / jge <else>`, so the
+        // fall-through arm is the `x < y` (100 - ratio) one.
+        // The ratio goes through a LOCAL before the `100 -`: written as one expression, cl
+        // sinks the negation into the FP chain (it emits -100.0 / D and `fsubr 0.5` instead
+        // of retail's shared `fdivr 100.0` / `fsub -0.5`, and so allocates a second copy of
+        // both constants). Retail's `call __ftol / mov ecx,0x64 / sub ecx,eax` is the local.
+        // The ratio goes through a LOCAL before the `100 -`: written as one expression, cl
+        // sinks the negation into the FP chain (it emits `fdivr -100.0` + `fsubr 0.5`
+        // instead of retail's shared `fdivr 100.0` + the +-0.5 constant, allocating a second
+        // copy of both). Retail's `call __ftol / mov ecx,0x64 / sub ecx,eax` IS that local.
+        // The one residual byte is cl picking `fadd 0.5` over retail's `fsub -0.5` for this
+        // inlined copy of `- -0.5` (the sibling copy 30 bytes later picks `fsub`); no
+        // spelling, including a shared inline helper for both arms, moves it.
+        if (x < y) {
+            i32 pct = static_cast<i32>((100.0 / (static_cast<double>(y) / x - -1.0) - -0.5));
+            m_toyBlendPct = 100 - pct;
         } else {
-            m_toyBlendPct =
-                100 - static_cast<i32>((100.0 / (static_cast<double>(y) / x - -1.0) - -0.5));
+            m_toyBlendPct = static_cast<i32>((100.0 / (static_cast<double>(x) / y - -1.0) - -0.5));
         }
     }
 

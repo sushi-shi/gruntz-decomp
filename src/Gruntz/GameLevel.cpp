@@ -140,7 +140,10 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     // --- plane loop ---------------------------------------------------------
     char* cursor = block + hdr->planesOffset;
     u32 i = 0;
-    if (hdr->numPlanes != 0) {
+    // `> 0` on the UNSIGNED count, not `!= 0`: retail's guard is `test eax,eax / jbe`,
+    // which is the negation of an unsigned `> 0` (CF is always clear after `test`, so the
+    // encoding is the only difference and only the source operator picks it).
+    if (hdr->numPlanes > 0) {
         do {
             // byte-forced by the on-disk format: the plane records are packed 0xa0
             // apart inside the mapped main block, located by a RUNTIME dword offset
@@ -680,14 +683,16 @@ void CGameLevel::SyncAfterMainIndex(void* visitor) {
 // reported blocked.
 //
 // @early-stop
-// ~70.8%, but the SKELETON is now 31 blocks against retail's 32 (was 37): the two
-// distance tests are the /Oi `abs()` intrinsic (`cdq/xor/sub`), not `if (d<0) d=-d;`
-// - see docs/patterns/abs-intrinsic-cdq-xor-sub-vs-hand-rolled-negate.md - and
-// t->m_screenX is read once and kept while m_maxStepY is read late, as retail does.
-// Residue is the callee-saved ASSIGNMENT: retail spills `this` to a stack home and keeps
-// sx/arg2/arg1 in ebx/edi/ecx (2 local dwords, `sub esp,8`), cl keeps `this` in ebx and
-// re-reads arg2 (1 local dword, `push ecx`), which re-colours the three early-return
-// blocks. Deferred to the final sweep.
+// 76.0% (was 70.8) and the basic-block SKELETON is now IDENTICAL to retail - 32 blocks,
+// every edge matching, three of them instruction-for-instruction. Two real bugs were
+// fixed: the distance tests are the /Oi `abs()` intrinsic (`cdq/xor/sub`), not
+// `if (d<0) d=-d;` (docs/patterns/abs-intrinsic-cdq-xor-sub-vs-hand-rolled-negate.md,
+// which alone cost 5 extra blocks), and the four loop-exit conditions were an inverted
+// nested test that CONTINUED when the move mode changed and when DispatchMove reported
+// "the scroll did not move" (0x400000) - i.e. it could spin. Residue is the callee-saved
+// ASSIGNMENT: retail spills `this` to a stack home and keeps sx/arg2/arg1 in ebx/edi/ecx
+// (2 local dwords + three parameter homes reused for ok/stepX/goalX), cl keeps `this` in
+// ebx and spills less. Deferred to the final sweep.
 RVA(0x0015de40, 0x164)
 i32 CGameLevel::MoveToward(CGameObject* target, i32 arg1, i32 arg2, i32 arg3) {
     CGameObject* t = target;
@@ -753,13 +758,19 @@ i32 CGameLevel::MoveToward(CGameObject* target, i32 arg1, i32 arg2, i32 arg3) {
 
         i32 flags = DispatchMove(target, nx, ny, arg3);
 
-        ok = 1;
-        if (t->m_moveMode == kind && (flags & 0x10000) == 0) {
-            if (t->m_screenX == goalX && t->m_screenY == arg2) {
-                ok = 0;
-            } else if ((flags & 0x400000) == 0) {
-                ok = 0;
-            }
+        // Four INDEPENDENT stop conditions, each `ok = 0` (retail: `jne <ok=0>` twice, then
+        // the goal pair, then `test eax,0x400000 / je <skip the store>`). `ok` is seeded to
+        // 1 once BEFORE the loop and is never re-raised inside it. The old nested form had
+        // the first and last arms inverted - it CONTINUED when the move mode changed and
+        // when DispatchMove reported "the scroll did not move" (0x400000), i.e. it spun.
+        if (t->m_moveMode != kind) {
+            ok = 0;
+        } else if ((flags & 0x10000) != 0) {
+            ok = 0;
+        } else if (t->m_screenX == goalX && t->m_screenY == arg2) {
+            ok = 0;
+        } else if ((flags & 0x400000) != 0) {
+            ok = 0;
         }
     } while (ok != 0);
     return ok;
