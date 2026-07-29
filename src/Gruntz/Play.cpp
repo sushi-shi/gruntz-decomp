@@ -1985,22 +1985,21 @@ i32 CPlay::ResetViewport() {
     return 1;
 }
 
-// @early-stop
-// tail-merge tie-break (85.5%): retail lays the `mode == IDLE` early return out inline
-// (`jne next; ret`), cl folds it into the function's trailing `ret` (`je end`) - 4 B.
-// Every spelling tried (if-chain, explicit per-arm returns, switch) picks the fold;
-// the switch form is strictly worse (it lowers to `sub 0; je; dec; je`).
+// NOT a tail-merge wall - the function returns i32, not void (85.45 -> 100.00 EXACT).
+// Retail's guard `ret` is inline with no `xor eax,eax` because cl knows eax already
+// holds the zero it just tested, and the two arms are `return ClampViewport*(4);` (the
+// callee's result IS the return value), which is what keeps the three epilogues apart
+// (docs/patterns/void-vs-bool-return-epilogue-split.md).
 RVA(0x000d8d90, 0x1e)
-void CPlay::StepC() {
+i32 CPlay::StepC() {
     i32 mode = m_viewMode;
     if (mode == VIEW_MODE_IDLE) {
-        return;
+        return 0;
     }
     if (mode == VIEW_MODE_A) {
-        ClampViewport(4);
-        return;
+        return ClampViewport(4);
     }
-    ClampViewport2(4);
+    return ClampViewport2(4);
 }
 
 // ===========================================================================

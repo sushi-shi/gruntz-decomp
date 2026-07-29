@@ -805,17 +805,17 @@ i32 CTriggerMgr::OverlayRelease() {
 
 // 0x79b30: ByteTableHas(b) - linear search the byte table (+0x264, count +0x268)
 // for `b`; ret 1 on hit, 0 otherwise.
-// @early-stop
-// register-coloring wall (~85%): the un-peeled indexed loop now matches retail (plain for-loop,
-// no explicit n<=0 guard so the count is tested once). The residual is pure regalloc - retail
-// colors count in esi and the table in ecx (SIB `[eax+ecx]`, dl temp); our cl parks count in edx
-// and the table in esi (SIB `[esi+eax]`, cl temp). Not source-steerable. topic:wall.
+// The ex "regalloc wall" was a hoisted `GetData()` local: it forces the table pointer
+// to be loaded BEFORE the count guard, which is what re-coloured the whole loop.
+// Retail loads it after (`jle` then `mov ecx,[this+0x264]`) - the element read is
+// SUBSCRIPTED (`m_byteArr[i]`), so cl sinks the base into the loop preheader.
 RVA(0x00079b30, 0x3e)
 i32 CTriggerMgr::ByteTableHas(i32 b) {
+    // the element read stays SUBSCRIPTED: retail loads m_264 AFTER the count guard
+    // (`jle` then `mov ecx,[ecx+0x264]`), which a hoisted `GetData()` local cannot do.
     i32 n = m_byteArr.GetSize();
-    u8* tbl = m_byteArr.GetData();
     for (i32 i = 0; i < n; i++) {
-        if (b == tbl[i]) {
+        if (b == m_byteArr[i]) {
             return 1;
         }
     }
@@ -2012,17 +2012,15 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
 // 0x7c2e0: CycleMoveIcons(skipRow, enable) - for grid rows 0..3 except `skipRow`, either
 // roll a random move-icon onto each live cell (stashing the prior +0x1f8 when -1) and tick
 // the world's region-4, or restore each cell's stashed icon. ret 1.
-// @early-stop
-// scheduling residual (~96%): logic + offsets + externs byte-exact. Declaring `r`
-// before `grid` recovered retail's `xor eax,eax; lea edi` order (93->96). The residual
-// is a spill-slot-OFFSET assignment: retail puts the row counter at [esp+0x10] and the
-// grid ptr at [esp+0x14]; cl assigns them the opposite offsets (register roles r->eax,
-// grid->edi already match). Not source-steerable. topic:wall topic:regalloc.
+// The spill-slot assignment was NOT a coin flip: the row cursor must advance in the
+// for-INCREMENT (`r++, grid += 15`), not at the bottom of the body. That one move puts
+// `inc eax` before `add edi,0x3c` AND swaps the two spill slots to retail's
+// [esp+0x10]=counter / [esp+0x14]=grid (96.43 -> 100.00 EXACT).
 RVA(0x0007c2e0, 0xb5)
 i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
     i32 r = 0;
     CGrunt** grid = m_grid;
-    for (; r < 4; r++) {
+    for (; r < 4; r++, grid += 15) {
         if (r != skipRow) {
             CGrunt** cell = grid;
             i32 i = 15;
@@ -2046,7 +2044,6 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
                 i--;
             } while (i != 0);
         }
-        grid += 15;
     }
     return 1;
 }

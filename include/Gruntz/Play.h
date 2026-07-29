@@ -227,7 +227,7 @@ public:
     // (0xdca70, State.h) - reached directly (CPlay inherits it from CState).
     // (MarkerBegin is GONE - it is m_beginMarker->FilterList2 (0x1170b0, a
     // CTileTriggerContainer sub-object thiscall), not a CPlay-this method.)
-    void StepC(); // (THIS TU)
+    i32 StepC(); // (THIS TU)
     i32 GetAmbientId();
     void StepScroll();    // (THIS TU)
     i32 OnRegion1(i32 z); // (THIS TU)
@@ -262,7 +262,6 @@ public:
     // m_lightFx: Resize(delta,0) + ComputeRect(m_c->m_drawTarget->m_backPair, &rc).
 
     // --- the trace-discovered CPlay sub-steps reconstructed in this TU ---
-    void ApplyGameOptions(); // 0x036be0 (options-dialogs TU: VideoConfig.cpp)
     // The two timeGetTime-instrumented frame variants (the dev profiler builds the
     // "Delta=.." / "Input=.." timing lines via the cached g_pTimeGetTime fn-ptr).
     i32 ProfileDeltaFrame(); // 0x0ca0a0 (THIS TU)
