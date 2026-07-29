@@ -11,6 +11,14 @@
 #include <ddraw.h>
 #include <Rez/RezAlloc.h> // RezAlloc/RezFree (the global allocator pair)
 
+// SmackOpen's first argument is DUAL-USE by the RAD API's own design: a .SMK path,
+// or an already-open file HANDLE when the flags say so (CFecFile::Lookup hands back
+// m_stream.m_hFile). Both readings of the one word are named here.
+union SmackSource {
+    const char* m_path;
+    i32 m_handle;
+};
+
 struct SmackTag;   // the RAD Smacker stream handle (<smack.h>'s `Smack` typedef tag)
 class CWnd;        // real MFC CWnd (<afxwin.h> in the dispatching TU)
 struct DDModeInfo; // Init's {w,h,bpp} mode arg (<DDrawMgr/DirectDrawMgr.h>; pointer-only)

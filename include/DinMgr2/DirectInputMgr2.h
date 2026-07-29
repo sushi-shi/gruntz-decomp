@@ -252,6 +252,13 @@ SIZE_UNKNOWN();
 // VAs are reloc-masked at use) ---
 extern "C" i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref); // 0x132fc0
 
+// The enumeration callback's two readings of one code address: the SDK's prototype
+// and the argument list the retail BODY actually uses.
+union DinDeviceEnumFn {
+    LPDIENUMDEVICESCALLBACKA m_sdk;
+    i32(__stdcall* m_body)(const void*, void*);
+};
+
 // --- the TU's extern surface (moved out of the .cpp; addresses/thunk
 // VAs are reloc-masked at use) ---
 extern "C" const GUID IID_IDirectInputDevice2A;

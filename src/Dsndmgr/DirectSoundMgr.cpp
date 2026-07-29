@@ -6,6 +6,7 @@
 #include <Win32.h>               // windows.h base types (dsound.h needs them)
 #include <mmsystem.h>            // WAVEFORMATEX (dsound.h needs it predefined)
 #include <dsound.h> // real DirectSound SDK (IDirectSound/Buffer, DSBUFFERDESC, DSBCAPS)
+#include <Dsndmgr/WaveFormatPtr.h> // the engine record / SDK LPWAVEFORMATEX pair
 #include <rva.h>
 #include <Pix16.h>  // the byte-cursor unions (RecordBytes / Pix16Ptr)
 #include <math.h>   // acos / pow (intrinsic __CIacos / __CIpow) in the volume curves
@@ -1031,7 +1032,9 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     desc.dwFlags = flags;
     desc.dwBufferBytes = bytes;
     desc.dwReserved = 0;
-    desc.lpwfxFormat = reinterpret_cast<LPWAVEFORMATEX>(&wf);
+    WaveFormatPtr fmtPtr;
+    fmtPtr.m_rec = &wf;
+    desc.lpwfxFormat = fmtPtr.m_sdk;
 
     hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {

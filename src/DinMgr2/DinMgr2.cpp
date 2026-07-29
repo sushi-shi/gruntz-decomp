@@ -180,12 +180,9 @@ i32 DirectInputMgr2::EnumGameControllers(u32) {
     if (di == 0) {
         return 0;
     }
-    i32 hr = di->EnumDevices(
-        DIDEVTYPE_JOYSTICK,
-        reinterpret_cast<LPDIENUMDEVICESCALLBACKA>(DinEnumDevicesCallback),
-        this,
-        DIEDFL_ATTACHEDONLY
-    );
+    DinDeviceEnumFn cb;
+    cb.m_body = DinEnumDevicesCallback;
+    i32 hr = di->EnumDevices(DIDEVTYPE_JOYSTICK, cb.m_sdk, this, DIEDFL_ATTACHEDONLY);
     if (hr != 0) {
         GetErrorString(DINMGR2_FILE, 0xfb, hr);
         return 0;

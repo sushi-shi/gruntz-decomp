@@ -298,9 +298,11 @@ i32 CMoviePlayer::OpenHi(i32 srcHandle, i32 a2, i32 useDS, POINT* origin, RECT* 
         flags = 0;
     }
     flags |= 0xff000;
-    // API-forced: CFecFile::Lookup hands back m_stream.m_hFile (a Win32 file HANDLE),
-    // and Smack's first arg is dual-use - a path, or a handle when the flags say so.
-    m_smackHandle = SmackOpen(reinterpret_cast<const char*>(srcHandle), flags, -1);
+    // CFecFile::Lookup hands back m_stream.m_hFile (a Win32 file HANDLE) and Smack's
+    // first argument is dual-use - a path, or a handle when the flags say so.
+    SmackSource src;
+    src.m_handle = srcHandle;
+    m_smackHandle = SmackOpen(src.m_path, flags, -1);
     if (!m_smackHandle) {
         return 0;
     }

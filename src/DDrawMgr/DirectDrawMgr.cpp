@@ -414,8 +414,9 @@ i32 CDDrawPtrCollections::Init(void* factory, void* a1, i32 width, i32 height, i
         return 0;
     }
     g_ddCreateCtx = 0;
-    i32 hr =
-        DirectDrawEnumerateA(reinterpret_cast<LPDDENUMCALLBACKA>(CreateDirectDrawVia), factory);
+    DdDriverEnumFn cb;
+    cb.m_body = CreateDirectDrawVia;
+    i32 hr = DirectDrawEnumerateA(cb.m_sdk, factory);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0xf4, hr);
         return 0;
@@ -870,12 +871,9 @@ void CDDrawPtrCollections::SetupCaps() {
     }
     m_poolItems.SetSize(0, -1);
     g_modeArray.SetSize(0, -1);
-    i32 hr = m_device->EnumDisplayModes(
-        0,
-        0,
-        0,
-        reinterpret_cast<LPDDENUMMODESCALLBACK>(DdEnumModesCallback)
-    );
+    DdModeEnumFn modeCb;
+    modeCb.m_body = DdEnumModesCallback;
+    i32 hr = m_device->EnumDisplayModes(0, 0, 0, modeCb.m_sdk);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x507, hr);
     }
