@@ -6967,13 +6967,63 @@ i32 Gap_0cf0a0(void) {
     return 0;
 }
 
-// @early-stop
-// 0x0cfc90 (465 B) - homed from src/Stub/GapFunctions.cpp (matcher-5); a Play leaf,
-// no vtable-ref. Homed pending leaf-first reconstruction.
+// ---------------------------------------------------------------------------
+// CPlay::DrawCustomLevelBanner (0x0cfc90) - the bottom-of-screen "Custom Level: <name>"
+// banner. The old stub called it "a Play leaf, no vtable-ref, pending reconstruction".
+// Receiver proven by its own two field reads: [this+0x04] is CState::m_mgr (it reads
+// m_strWorldFile @+0xc8 and the m_128/m_12c pair off it) and [this+0x0c] is
+// CState::m_world (walked ->m_drawTarget->m_frontPair->m_surface). Direct sibling of
+// CPlay::DrawDebugStats, which runs the identical GetDC/SetBkMode/DrawText/ReleaseDC
+// bracket on the BACK page instead of the front.
+//
+// The two CStrings live in an INNER SCOPE on purpose: retail destroys both (and the
+// second one first) BEFORE it touches the surface, so the dtors cannot be left to
+// function exit.
 // @dead-code
-// zero-ref (gruntz sema xref --tree): a Play leaf after CPlay::Vslot15, reached
-// by nothing; retail kept it, no /OPT:REF.
+// zero-ref (gruntz sema xref --tree): a dev banner retail kept without /OPT:REF.
+// The scratch the banner is formatted into (0x64c020). Bounded by its neighbours -
+// _g_scrollLoadFlags ends at 0x24c01d and the next symbol is 0x24c22c - so 0x200,
+// the same size as WwdFile::GetMapBaseName's own g_mapNameBuf scratch.
+DATA(0x0024c020)
+char g_customLevelText[0x200];
+
 RVA(0x000cfc90, 0x1d1)
-i32 Gap_0cfc90(void) {
-    return 0;
+void CPlay::DrawCustomLevelBanner() {
+    if (m_mgr->m_strWorldFile.IsEmpty()) {
+        return;
+    }
+    {
+        CString world = m_mgr->GetWorldFileName();
+        if (world.IsEmpty()) {
+            return;
+        }
+        CString base;
+        if (m_mgr->m_128 == 0 && m_mgr->m_12c == 0) {
+            base = WwdFile::GetMapBaseName(world);
+        } else {
+            base = world;
+        }
+        if (base.IsEmpty()) {
+            return;
+        }
+        sprintf(g_customLevelText, "Custom Level: %s", static_cast<const char*>(base));
+    }
+    CDDSurface* host = m_world->m_drawTarget->m_frontPair->m_surface;
+    if (host == 0) {
+        return;
+    }
+    HDC hdc = 0;
+    host->m_ddSurface->GetDC(&hdc);
+    if (hdc == 0) {
+        return;
+    }
+    SetBkMode(hdc, TRANSPARENT);
+    SetTextColor(hdc, 0);
+    RECT rc;
+    rc.left = 0;
+    rc.top = 0x1b8;
+    rc.right = 0x27f;
+    rc.bottom = 0x1d6;
+    DrawTextA(hdc, g_customLevelText, -1, &rc, DT_CENTER | DT_SINGLELINE);
+    host->m_ddSurface->ReleaseDC(hdc);
 }

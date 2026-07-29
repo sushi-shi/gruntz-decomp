@@ -43,6 +43,14 @@ class CDDrawWorker; // CDDrawWorker IS CDDrawWorker (<DDrawMgr/DDrawWorker.h>);
 
 class CPlay : public CState {
 public:
+    // 0x0cfc90 - the bottom-of-screen "Custom Level: <name>" banner: resolve the
+    // world file's base name, sprintf it into g_customLevelText, then GDI-draw it into
+    // the FRONT page's surface (rect {0, 0x1b8, 0x27f, 0x1d6}, DT_CENTER|DT_SINGLELINE).
+    // Sibling of DrawDebugStats, which does the same GetDC/SetBkMode/DrawText/ReleaseDC
+    // bracket on the BACK page. Zero-ref in retail (a debug/dev banner kept without
+    // /OPT:REF); receiver proven by its two field reads, [this+0x04] = CState::m_mgr and
+    // [this+0x0c] = CState::m_world.
+    void DrawCustomLevelBanner(); // 0x0cfc90
     // Construction is inlined into CGruntzMgr::TransitionState (no standalone retail
     // ctor); ~CPlay is the real 0x8c830 /GX dtor. Both defined out-of-class in their
     // owning TUs (GruntzMgrTransition.cpp / GruntzMgr.cpp).
