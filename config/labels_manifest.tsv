@@ -2,7 +2,7 @@
 # floor for the build-integrity denominator gate (labels.py). A unit whose
 # count DROPS fails the build; see check_labels_manifest(). Regenerate a
 # deliberate drop with GRUNTZ_LABELS_ACK=1.
-# units: 363  functions: 4435
+# units: 356  functions: 4435
 actionarea	15
 actionoptionsmenubar	12
 adler32	1
@@ -67,9 +67,8 @@ databuffer	8
 ddpagemgr	18
 ddpalette	23
 ddrawblterrthunk	1
-ddrawpolyfill	1
 ddrawptrcollections	10
-ddrawshadeblit	10
+ddrawshadeblit	12
 ddrawsubmgr	126
 ddrawsubmgrleaf	13
 ddrawsurfacemgr	19
@@ -119,9 +118,8 @@ gamemode	3
 gameobjectfactory	1
 gamesave	1
 gamestaterecordload	1
-gametext	3
+gametext	1
 gamewnd	17
-getretaddr	1
 glyphstr	4
 goowellmgr	1
 grunt	30
@@ -171,11 +169,10 @@ heapdiag	8
 helpstate	33
 iconloaders	2
 imageowned	8
-imagepolyclip	3
+imagepolyclip	8
 imagepool	53
 imageprobe	1
 imagerle16encode	1
-imagerotate	1
 imagesavebmp	1
 imageset1	14
 imageset2	14
@@ -249,7 +246,6 @@ playercommandstep	1
 playmessageimage	2
 playplanescan	2
 playstateactivate	1
-polyclipraster	1
 portalpath	2
 projactcache	1
 projectile	23
@@ -286,7 +282,6 @@ secretteleportertrigger	17
 serializesyncmarker	1
 serialobjectfactory	2
 sfselectdevice	1
-shadedescrtable	2
 shadetablecache	25
 simpleanimation	8
 singleanimation	8
@@ -334,7 +329,7 @@ triggermgr	49
 triggermgrgrid	18
 triggermgrhittest	6
 trirecordserialize	1
-typekeycoll	33
+typekeycoll	36
 ufo	7
 uncompr	1
 unknownfileioctor	1
@@ -342,12 +337,10 @@ userlogic	18
 userlogicctoremit	2
 videoconfig	19
 voicesoundlist	1
-wallproject	1
 wap32rect	3
 wapuncompress	1
 warlord	19
 warpstonefly	3
-warptextureblit	1
 waypoint	5
 winapicdrom	4
 winapimodule	1

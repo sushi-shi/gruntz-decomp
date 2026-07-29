@@ -11,10 +11,7 @@
 #include <Mfc.h> // real CString (CActName was a fake view over it)
 
 class CVariantSlot; // folded CActColl2
-struct CString; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
-
-
-
+struct CString;     // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
 // The grow-scratch CString array base (the dtor sweeps walk it).
 static inline CString* ActNameSlots() {
@@ -29,9 +26,9 @@ static inline CString* ActNameLookup(i32 id) {
     } else if (g_typeColl._zvec::GrowTo(id, 0) != 0) {
         slot = g_typeColl.Elem(id);
     } else {
-        void* item = g_projActCache;
+        char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetRetAddr();
-        g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
+        g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
         slot = g_typeColl.Scratch();
     }
     return slot;
@@ -49,7 +46,7 @@ static inline CString* ActNameLookupCallReport(i32 id) {
     } else if (g_typeColl._zvec::GrowTo(id, 0) != 0) {
         slot = g_typeColl.Elem(id);
     } else {
-        g_typeColl.Report(g_projActCache, 0xc);
+        g_typeColl.Report(g_errOutOfMem, 0xc);
         slot = g_typeColl.Scratch();
     }
     return slot;

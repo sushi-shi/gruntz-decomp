@@ -1272,7 +1272,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
             if (g_typeColl.GrowTo(coord, 0) != 0) {
                 rec = g_typeColl.Elem(coord);
             } else {
-                g_typeColl.Report(g_projActCache, 0xc);
+                g_typeColl.Report(g_errOutOfMem, 0xc);
                 rec = g_typeColl.Scratch();
             }
         } else {
@@ -1293,9 +1293,9 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
             if (g_typeColl.GrowTo(coord, 0) != 0) {
                 rec = g_typeColl.Elem(coord);
             } else {
-                void* item = g_projActCache;
+                char* msg = g_errOutOfMem;
                 g_retAddrBreadcrumb = GetRetAddr();
-                g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
+                g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
                 rec = g_typeColl.Scratch();
             }
         } else {

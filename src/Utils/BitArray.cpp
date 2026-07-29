@@ -27,8 +27,7 @@ zBitVec* zBitVec::Or(zBitVec* o) {
         }
     }
     i32 nwords = static_cast<i32>((static_cast<u32>((o->m_capacity + 1)) >> 5));
-    u32* obuf =
-        static_cast<u32>(o->m_capacity) > 0x20 ? o->m_words : &o->m_inline;
+    u32* obuf = static_cast<u32>(o->m_capacity) > 0x20 ? o->m_words : &o->m_inline;
     u32* tbuf = static_cast<u32>(m_capacity) > 0x20 ? m_words : &m_inline;
     for (i32 i = 0; i < nwords; i++) {
         tbuf[i] |= obuf[i];
@@ -60,8 +59,8 @@ i32 zBitVec::EnsureSize(i32 nbits) {
     m_capacity = ndwords * 32;
     return 1;
 fail:
-    void* cache = g_projActCache;
+    char* msg = g_errOutOfMem;
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, cache, 0xc);
+    m_errSink->Set(this, msg, 0xc);
     return 0;
 }

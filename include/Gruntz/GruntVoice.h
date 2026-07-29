@@ -4,7 +4,7 @@
 #include <rva.h>
 #include <Clock64.h> // the {lo,hi} 64-bit clock pairs at +0x58/+0x60
 #include <Wap32/ZVec.h>
-#include <Wap32/zBitVec.h> // GetRetAddr + g_projActCache/g_retAddrBreadcrumb (canonical owner)
+#include <Wap32/zBitVec.h> // GetRetAddr + g_errOutOfMem/g_retAddrBreadcrumb (canonical owner)
 
 #include <Mfc.h> // CObject base + <windows.h>
 

@@ -2,10 +2,3 @@
 # TU's same-storage band (known scattered singletons / accepted homes).
 # Regenerate: python -m gruntz.audit.data_tu_order --write-baseline
 # rva	name	owner_cpp	container_cpp	storage
-0x001efb18	g_rasterScale	WarpTextureBlit.cpp	WallProject.cpp	rdata
-0x001efb1c	g_rasterScaleNeg	WarpTextureBlit.cpp	WallProject.cpp	rdata
-0x002a1708	g_rasterVtxA	ImagePolyClip.cpp	WarpTextureBlit.cpp	bss
-0x002a21f8	g_rasterVtxB	ImagePolyClip.cpp	WarpTextureBlit.cpp	bss
-0x002becf8	g_rasterVtxCount	ImagePolyClip.cpp	WarpTextureBlit.cpp	bss
-0x002bf218	g_blendDescr	DDrawShadeBlit.cpp	ShadeDescrTable.cpp	bss
-0x002bf464	g_projActCache	GruntStartingPoint.cpp	TypeKeyColl.cpp	bss

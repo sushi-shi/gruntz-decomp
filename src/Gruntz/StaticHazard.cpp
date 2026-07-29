@@ -1,6 +1,6 @@
 #include <Gruntz/HaznColl.h> // shared coordinate/activation-registry collection
 #include <Gruntz/GameRegMfcPtr.h>
-#include <Wap32/zBitVec.h> // GetRetAddr/g_projActCache/g_retAddrBreadcrumb
+#include <Wap32/zBitVec.h> // GetRetAddr/g_errOutOfMem/g_retAddrBreadcrumb
 #include <Io/FileMem.h>    // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Wap32/ZVec.h>
 #include <Bute/ButeTree.h>
@@ -33,7 +33,6 @@ RVA_COMPGEN(0x00012b30, 0x44, ??1CStaticHazard@@UAE@XZ)
 
 struct CString; // canonical g_typeColl.m_spare slot record (<Gruntz/TypeNameEntry.h>)
 
-
 static inline CString* ActNameSlots() {
     return g_typeColl.Slots();
 }
@@ -47,9 +46,9 @@ static inline CString* ActNameLookup(i32 id) {
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) {
         return g_typeColl.Elem(id);
     }
-    void* item = g_projActCache;
+    char* msg = g_errOutOfMem;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
+    g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
     return g_typeColl.Scratch();
 }
 
@@ -70,7 +69,7 @@ static inline CString* ActNameLookupCallReport(i32 id) {
     if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != 0) { // _zvec::GrowTo @0x16da80
         return g_typeColl.Elem(id);
     }
-    g_typeColl.Report(g_projActCache, 0xc);
+    g_typeColl.Report(g_errOutOfMem, 0xc);
     return g_typeColl.Scratch();
 }
 
@@ -190,7 +189,8 @@ void CStaticHazard::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id)) = static_cast<CActHandler>(&CStaticHazard::LoadAttributes2);
+    (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id)) =
+        static_cast<CActHandler>(&CStaticHazard::LoadAttributes2);
 
     i32 id2 = ActFindId("B");
     if (id2 == 0) {
@@ -208,7 +208,8 @@ void CStaticHazard::RegisterActs() {
         *slot = "B";
         g_typeCounter++;
     }
-    (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id2)) = static_cast<CActHandler>(&CStaticHazard::LoadAttributes);
+    (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id2)) =
+        static_cast<CActHandler>(&CStaticHazard::LoadAttributes);
 }
 
 // ---------------------------------------------------------------------------
@@ -390,7 +391,6 @@ dispatch:
     return 0;
 }
 
-
 RVA(0x000fc5b0, 0xf5)
 i32 CStaticHazard::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* a4) {
     CFileMemBase* arc = ar;
@@ -412,12 +412,7 @@ i32 CStaticHazard::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject
             arc->Read(&m_tileRow, 4);
             break;
     }
-    if (!CUserLogic::SerializeMove(
-            ar,
-            mode,
-            a3,
-            a4
-        )) {
+    if (!CUserLogic::SerializeMove(ar, mode, a3, a4)) {
         return 0;
     }
     return Chain(arc, mode, a3, a4) != 0;

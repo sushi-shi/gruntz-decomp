@@ -4,7 +4,6 @@
 #include <Ints.h>
 #include <DDrawMgr/ShadeTableCache.h> // CShadeTable - the shade/LUT record (was duplicated here as CShadeTable)
 #include <rva.h>
-#include <DDrawMgr/ShadeDescrTable.h> // ex Globals.h
 
 class CString;    // real MFC CString (4-byte ptr); completed via <Mfc.h> in the .cpp
 class CDDSurface; // the held DirectDraw surface (Blit's src arg); <DDrawMgr/DDSurface.h>
@@ -126,7 +125,15 @@ public:
 };
 SIZE(0x3c);
 
-extern CShadeTable* g_blendDescr; // 0x002bf218
+// The shade-descriptor table (src/DDrawMgr/DDrawShadeBlit.cpp) - ONE contiguous
+// .bss run: the scratch line then the seven per-mode descriptors.
+extern u8 g_scratch[];               // 0x002bed08
+extern CShadeTable* g_shadeDescr208; // 0x002bf208
+extern CShadeTable* g_shadeDescr20c; // 0x002bf20c
+extern CShadeTable* g_shadeDescr210; // 0x002bf210
+extern CShadeTable* g_shadeDescr214; // 0x002bf214
+extern CShadeTable* g_blendDescr;    // 0x002bf218
+extern CShadeTable* g_shadeDescr21c; // 0x002bf21c
+extern CShadeTable* g_shadeDescr220; // 0x002bf220
 
-extern u8 g_scratch[];
 #endif // GRUNTZ_CDDRAWSHADEBLIT_H

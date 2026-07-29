@@ -43,7 +43,6 @@ static CString g_worldName[8] = {
     "Gruntz in Space",
 };
 
-VTBL(zErrHandling, 0x001f04cc); // ??_7CContainerErr@@6B@ - ONE slot (the dtor)
 DATA(0x002451a8)
 CWinApp g_gruntzWinApp("Gruntz");
 
@@ -100,22 +99,6 @@ static CString g_statLabel[8] = {
     "Secretz:",
 };
 
-// DELIBERATELY UNBOUND. Reloc pairing off the byte-exact zErrHandling ctor puts this
-// 8-slot table at 0x2bf448..0x2bf464 - i.e. INSIDE TypeKeyColl.cpp's 0x2bf400 .bss band,
-// and three of its cells are the ones TypeKeyColl/GruntStartingPoint currently model as
-// g_projActName (0x2bf454), g_projActName2 (0x2bf45c) and g_projActCache (0x2bf464).
-// So the table (and this ctor) belong to the zErrHandling/zPTree obj, not GameText's,
-// and those three "globals" are cells of it. Binding them here would ratify the wrong
-// owner; the re-home + the three-way identity merge is its own pass.
-static char* g_errMsg_OutOfMem; // the lazy-init guard slot
-static char* g_errMsg_BadData;
-static char* g_errMsg_Overflow;
-static char* g_errMsg_NoFile;
-static char* g_errMsg_OutOfRng;
-static char* g_errMsg_Exists;
-static char* g_errMsg_NullArg;
-static char* g_errMsg_BadArg;
-
 // NOTE (2026-07-26): the ~89% score is the inline-jump-table measurement artifact
 // (both sides carry the 16-byte case table mid-function; objdiff desyncs across it
 // and the 5 duplicated ctor tails pair as retail-only). The dispatch + tails are
@@ -139,25 +122,5 @@ CString CMultiBootyState::GetWarlordName(i32 id) {
             return CString("VIKING");
         default:
             return CString("");
-    }
-}
-
-RVA(0x0016d9c0, 0x75)
-RVA_COMPGEN(0x0016da40, 0x1e, ??_GzErrHandling@@UAEPAXI@Z)
-zErrHandling::zErrHandling(CVariantSlot* errSink)
-    // +0x04 is a member-INIT, which is why retail's implicit vptr stamp lands after it
-    // (the stamp is the init-list/body divider). The arg is the sink to register with, not
-    // a string: ~zErrHandling loads +0x04 into ecx as a __thiscall `this` (see
-    // <Wap32/zBitVec.h>). A null argument selects the constructed global sink.
-    : m_errSink(errSink ? errSink : &g_globalErrorSlot) {
-    if (g_errMsg_OutOfMem == 0) {
-        g_errMsg_OutOfMem = "Out of memory";
-        g_errMsg_BadData = "Data structure is invalid";
-        g_errMsg_Overflow = "Overflow";
-        g_errMsg_NoFile = "No such file, handle or object";
-        g_errMsg_OutOfRng = "Out of range";
-        g_errMsg_Exists = "Target alrready exisits";
-        g_errMsg_NullArg = "Null pointer argument";
-        g_errMsg_BadArg = "Bad argument value";
     }
 }

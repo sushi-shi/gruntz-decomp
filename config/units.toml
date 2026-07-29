@@ -784,13 +784,6 @@ source = "src/Gruntz/GruntDataRecord.cpp"
 flags = "base"
 
 [[unit]]
-# trace-discovered ShadeDescr* global selector pair (re-homed from Discovered.cpp).
-unit = "shadedescrtable"
-source = "src/DDrawMgr/ShadeDescrTable.cpp"
-flags = "base"
-
-
-[[unit]]
 unit = "gruntzcmdmgr"
 source = "src/Gruntz/GruntzCmdMgr.cpp"
 flags = "eh"
@@ -999,11 +992,6 @@ flags = "eh"
 [[unit]]
 unit = "gametext"
 source = "src/Gruntz/GameText.cpp"
-flags = "base"
-
-[[unit]]
-unit = "getretaddr"
-source = "src/Bute/GetRetAddr.cpp"
 flags = "base"
 
 [[unit]]
@@ -1240,10 +1228,6 @@ source = "src/Gruntz/MgrAutoScroll.cpp"
 flags = "base"
 
 
-[[unit]]
-unit = "polyclipraster"
-source = "src/Image/PolyClipRaster.cpp"
-flags = "base"
 
 [[unit]]
 unit = "ddrawsurfacemgr"
@@ -1837,15 +1821,6 @@ unit = "circleshadeblit"
 source = "src/DDrawMgr/CircleShadeBlit.cpp"
 flags = "base"
 [[unit]]
-# retail kept the ebp frame here (push ebp;mov ebp,esp;locals via [ebp-N]) -> /Oy-.
-unit = "warptextureblit"
-source = "src/Image/WarpTextureBlit.cpp"
-flags = "framed"
-[[unit]]
-unit = "imagerotate"
-source = "src/Image/ImageRotate.cpp"
-flags = "base"
-[[unit]]
 unit = "palettebmp"
 source = "src/Image/PaletteBmp.cpp"
 flags = "eh"
@@ -1860,20 +1835,12 @@ source = "src/Image/ImagePolyClip.cpp"
 flags = "base"
 
 [[unit]]
-unit = "ddrawpolyfill"
-source = "src/DDrawMgr/DDrawPolyFill.cpp"
-flags = "framed"
-[[unit]]
 unit = "grunttubeanim"
 source = "src/Gruntz/GruntTubeAnim.cpp"
 flags = "base"
 [[unit]]
 unit = "imagerle16encode"
 source = "src/Image/ImageRle16Encode.cpp"
-flags = "base"
-[[unit]]
-unit = "wallproject"
-source = "src/DDrawMgr/WallProject.cpp"
 flags = "base"
 [[unit]]
 unit = "gruntmovestep"

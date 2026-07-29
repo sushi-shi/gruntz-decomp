@@ -4,7 +4,7 @@
 #include <Bute/ButeTree.h>
 #include <Gruntz/ToobSpikez.h>
 #include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
-#include <Gruntz/ActReg.h> // CActReg (CActRegPool<CToobSpikez>::s_table); ResolveEntry + GetRetAddr/g_projActCache
+#include <Gruntz/ActReg.h> // CActReg (CActRegPool<CToobSpikez>::s_table); ResolveEntry + GetRetAddr/g_errOutOfMem
 #include <Gruntz/ActNameRegistry.h> // the shared name registry: g_typeColl/g_typeCounter/s_codeA/ActNameLookup/g_buteTree
 #include <Rez/FrameClock.h> // g_engineFrameDelta (the anim-advance clock)
 #include <rva.h>
@@ -57,7 +57,6 @@ VTBL(CToobSpikez, 0x001e7774);
 template<> DATA(0x0024e978)
 CActReg CActRegPool<CToobSpikez>::s_table(2000, 2010);
 
-
 RVA(0x001145c0, 0x18e)
 CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_value = m_38->m_1a0.m_14;
@@ -94,11 +93,9 @@ i32 CToobSpikez::SerializeMove(CFileMemBase* a, i32 b, i32 c, CGameObject* d) {
 
 RVA(0x00114860, 0x102)
 void CToobSpikez::FireActivation(i32 coord) {
-    CActHandler* e =
-        (CActRegPool<CToobSpikez>::s_table.ResolveEntry(coord));
+    CActHandler* e = (CActRegPool<CToobSpikez>::s_table.ResolveEntry(coord));
     if (*e != 0) {
-        CActHandler* e2 =
-            (CActRegPool<CToobSpikez>::s_table.ResolveEntry(coord));
+        CActHandler* e2 = (CActRegPool<CToobSpikez>::s_table.ResolveEntry(coord));
         (this->*(*e2))();
     }
 }

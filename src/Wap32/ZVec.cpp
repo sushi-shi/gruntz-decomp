@@ -1,5 +1,5 @@
 #include <Wap32/ZVec.h>
-#include <Wap32/zBitVec.h> // GetRetAddr / g_projActCache / g_retAddrBreadcrumb (grow-fail breadcrumb)
+#include <Wap32/zBitVec.h> // GetRetAddr / g_errOutOfMem / g_retAddrBreadcrumb (grow-fail breadcrumb)
 #include <rva.h>
 #include <Mfc.h> // CString (0x1b9b93 default ctor)
 #include <new>   // placement CString ctor
@@ -17,9 +17,9 @@ char* _zdvec::IndexToPtr(i32 i) {
     } else if (GrowTo(i, 0)) {
         r = m_base + (i - m_lo) * m_stride;
     } else {
-        void* sentinel = g_projActCache;
+        char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetRetAddr();
-        m_errSink->Set(static_cast<void*>(this), sentinel, 0xc);
+        m_errSink->Set(static_cast<void*>(this), msg, 0xc);
         r = m_spare;
     }
     char* slot = m_alloc;
@@ -51,9 +51,9 @@ char* _zvec::IndexToPtr(i32 idx) {
     } else if (GrowTo(idx, 0)) {
         r = m_base + (idx - m_lo) * m_stride;
     } else {
-        void* sentinel = g_projActCache;
+        char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetRetAddr();
-        m_errSink->Set(static_cast<void*>(this), sentinel, 0xc);
+        m_errSink->Set(static_cast<void*>(this), msg, 0xc);
         r = m_spare;
     }
     return r;

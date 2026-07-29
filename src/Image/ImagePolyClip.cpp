@@ -1,25 +1,104 @@
-#include <Image/WarpTextureBlit.h> // WarpIsPow2 (rehomed here by birth position)
+// ===========================================================================
+// The polygon / texture rasterizer object - retail .text 0x145e00..0x147384,
+// eight functions, one contiguous run with no foreign body in it:
+//   0x145e00 WarpIsPow2   0x145e30 PolyIsConvexCW   0x145f60 ImageRotateBlit
+//   0x1461b0 ImagePolyClipRect   0x146550 RotateRasterize   0x146a20 WarpTextureBlit
+//   0x146fe0 FillPolygon   0x1471d0 ProjectWallQuad
+//
+// It used to be SIX .cpp files (ImagePolyClip / ImageRotate / PolyClipRaster /
+// WarpTextureBlit / DDrawPolyFill / WallProject). They are one retail object, proven
+// by data, not by RVA proximity:
+//
+//   .rdata 0x1efb10..0x1efb28 is ONE six-float constant pool -
+//     0.0 / -0.01745329 (-pi/180, still unclaimed) / 16384.0 / -16384.0 / 0.5 /
+//     -3.1415927 - and the ex WallProject.cpp owned floats 1,5,6 while the ex
+//     WarpTextureBlit.cpp owned floats 3,4. Interleaved at DWORD granularity.
+//
+//   .bss  likewise: ...g_warpUMask(0x6becf0) g_rasterDestPtr(0x6becf4)
+//     g_rasterVtxCount(0x6becf8) g_warpColorkey(0x6becfc)... where the third dword
+//     came from ex ImagePolyClip.cpp and the others from ex WarpTextureBlit.cpp; and
+//     the two big vertex arrays nest exactly inside the warp scratch run
+//     (g_rasterEdgeR ends AT g_warpTexBase; g_rasterVtxB ends AT g_rasterDestRow).
+//
+// One .obj contributes ONE contiguous run per section, so a dword of file A between
+// two dwords of file B cannot be two objects. All six units also selected `base`
+// except warptextureblit / ddrawpolyfill, which selected `framed` (/Oy-) - a per-unit
+// flag that retail cannot have used here, because within this one object retail is
+// frameless in WarpIsPow2 / ProjectWallQuad and framed in WarpTextureBlit. That is
+// cl's per-function FPO heuristic under plain /O2, not a compiland flag; splitting
+// the object to give each function its own /Oy setting was the thing to remove.
+// ===========================================================================
+
+#include <Mfc.h> // afx-first (this TU pulls MFC downstream; Mfc.h supersets Win32.h)
 #include <Ints.h>
-
-#include <Image/RasterVtx.h> // ClipVtx + g_rasterVtx* + ImagePolyClipRect decl
-#include <rva.h>
+#include <math.h>   // atan2/sin/cos/sqrt/fabs (intrinsified below, at ProjectWallQuad)
 #include <string.h> // inline rep-movs struct copy
+#include <ddraw.h>  // real IDirectDrawSurface dispatch (surf->m_8->Unlock)
 
+#include <DDrawMgr/DDSurface.h>     // CDDSurface - every entry point's surface argument
+#include <DDrawMgr/DirectDrawMgr.h> // FillPolygon's manager-side decls
+#include <DDrawMgr/DDrawPolyFill.h> // FillPolygon decl
+#include <DDrawMgr/WallProject.h>   // ProjectWallQuad decl + the shared float constants
+#include <Image/RasterVtx.h>        // ClipVtx + the g_raster* workspace decls
+#include <Image/WarpTextureBlit.h>  // WarpIsPow2 / WarpTextureBlit decls
+#include <rva.h>
+#include <Pix16.h> // the byte-cursor / 16bpp-value pointer pair
+
+// ---------------------------------------------------------------------------
+// The object's data, in retail address order.
+//
+// .rdata 0x1efb10..0x1efb28 - one six-float constant pool. 0x1efb14 (-pi/180, the
+// degrees->radians factor) has no reader in the reconstructed bodies yet, so it is
+// left UNCLAIMED rather than invented into a global.
+// ---------------------------------------------------------------------------
+DATA(0x001efb10)
+const float g_c10 = 0.0f;
+DATA(0x001efb18)
+const float g_rasterScale = 16384.0f; // C linkage from WarpTextureBlit.h
+DATA(0x001efb1c)
+const float g_rasterScaleNeg = -16384.0f; // C linkage from WarpTextureBlit.h
+DATA(0x001efb20)
+const float g_c20 = 0.5f;
+DATA(0x001efb24)
+float g_c24 = -3.1415927f; // -pi (len = sqrt(dx*dx + dy*dy - g_c24))
+
+// The raster scratch workspace - one .bss run. g_rasterEdgeR ends exactly at
+// g_warpTexBase, g_rasterVtxB exactly at g_rasterDestRow, g_rasterEdgeL exactly at
+// g_warpUMask; the sizes are load-bearing, not guessed.
+DATA(0x002856f0)
+i32 g_warpU = 0; // 0x6856f0  (u accumulator)
+DATA(0x002856f4)
+i32 g_warpV = 0; // 0x6856f4  (v accumulator)
+DATA(0x002856f8)
+ClipVtx g_rasterEdgeR[4096]; // C linkage inherited from <Image/RasterVtx.h>
+DATA(0x002a16f8)
+// this blitter is 16bpp throughout - texture, span and dest are all i16
+i16* g_warpTexBase = 0; // 0x6a16f8  (locked texture base)
+DATA(0x002a16fc)
+i32 g_warpUStep = 0; // 0x6a16fc  (u per-pixel step)
+DATA(0x002a1700)
+i32 g_warpVStep = 0; // 0x6a1700  (v per-pixel step)
 DATA(0x002a1708)
 ClipVtx g_rasterVtxA[100]; // C linkage inherited from <Image/RasterVtx.h>
 DATA(0x002a21f8)
 ClipVtx g_rasterVtxB[100]; // C linkage inherited from <Image/RasterVtx.h>
+DATA(0x002a2ce8)
+u8* g_rasterDestRow = 0; // decl in Image/RasterVtx.h
+DATA(0x002a2cf0)
+ClipVtx g_rasterEdgeL[4096]; // C linkage inherited from <Image/RasterVtx.h>
+DATA(0x002becf0)
+i32 g_warpUMask = 0; // 0x6becf0  (texture index row-mask)
+DATA(0x002becf4)
+i16* g_rasterDestPtr = 0; // decl in Image/RasterVtx.h
 DATA(0x002becf8)
 i32 g_rasterVtxCount = 0; // decl in Image/RasterVtx.h
+DATA(0x002becfc)
+i16 g_warpColorkey = 0; // 0x6becfc
 
-// ===========================================================================
-// PolyIsConvexCW (0x145e30, __cdecl) - winding-consistency test over a `count`-
-// vertex polygon. For every vertex triple (i, i+1, i+2 mod count) compute the 2D
-// cross product of the two edge vectors; classify its sign (0 unchanged / 1 CCW /
-// 2 CW), and bail (return 0) the moment two triples disagree. Returns 1 only when
-// every non-degenerate triple is clockwise (dir==2). The loop deliberately runs
-// i=0..count inclusive (the closing triple re-checks vertex 0's fan).
-// ===========================================================================
+static i32 warpFtol(double v) {
+    return static_cast<i32>(v);
+}
+
 RVA(0x00145e00, 0x26)
 i32 WarpIsPow2(i32 x) {
     i32 c = 0;
@@ -32,6 +111,15 @@ i32 WarpIsPow2(i32 x) {
     } while (--i);
     return c == 1;
 }
+
+// ===========================================================================
+// PolyIsConvexCW (0x145e30, __cdecl) - winding-consistency test over a `count`-
+// vertex polygon. For every vertex triple (i, i+1, i+2 mod count) compute the 2D
+// cross product of the two edge vectors; classify its sign (0 unchanged / 1 CCW /
+// 2 CW), and bail (return 0) the moment two triples disagree. Returns 1 only when
+// every non-degenerate triple is clockwise (dir==2). The loop deliberately runs
+// i=0..count inclusive (the closing triple re-checks vertex 0's fan).
+// ===========================================================================
 
 RVA(0x00145e30, 0x125)
 i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
@@ -61,6 +149,95 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
         }
     }
     return dir == 2;
+}
+
+// @early-stop
+// regalloc + x87-schedule wall (~36%, complete + correct - signature and structure
+// recovered from the retail callee + its three real callers, 2026-07-12). The pivot
+// resolution, the centered-box extents, the per-corner 2D rotation+scale+translate,
+// the source-quad texel assignment, and the 10-arg RotateRasterize hand-off (clip
+// default -1,-1,-1,-1) are all faithful: the prod[4]/mtx[4] ClipVtx pair reproduces
+// retail's twin 0x1c-stride scratch arrays and lifts the frame to sub esp,0x104 (vs
+// retail 0x100). The residual is two coupled MSVC5 codegen walls not source-steerable:
+// (1) retail colours the hot loop over FOUR callee-saved regs (ebx/ebp/esi/edi) on a
+// 0x100 frame; cl uses one fewer + a 0x104 frame, shifting every [esp+N] local/arg
+// offset by 4 across the whole body; (2) the software-pipelined fld/fxch/fstp corner
+// schedule (retail recomputes products and re-fxch's per store; cl hoists) - the same
+// x87 wall as the sibling RotateRasterize 0x146550 and CFaderRadial::Build. permute
+// cannot grow the frame or recolour, so it does not apply.
+RVA(0x00145f60, 0x242)
+void ImageRotateBlit(
+    i32 a1,
+    i32 a2,
+    i32* pivot,
+    CDDSurface* dst,
+    CDDSurface* src,
+    float rot,
+    float scale,
+    i32 mode,
+    i32 colorkey
+) {
+    // NB retail (0x145f63/0x145f66) takes the x/u extent from the source surface's
+    // +0x18 and the y/v extent from +0x1c - i.e. transposed against the embedded
+    // DDSURFACEDESC's own dwHeight/dwWidth naming. The offsets are what is
+    // load-bearing; `src` IS a CDDSurface (RotateRasterize forwards it into
+    // WarpTextureBlit's CDDSurface* src, which WarpIsPow2's the same +0x1c).
+    i32 h = src->m_width;  // +0x1c
+    i32 w = src->m_height; // +0x18
+
+    // The source quad corners, stored straight into the transform's texel slots.
+    i32 sq[4];
+    if (pivot != 0) {
+        sq[0] = pivot[0];
+        sq[1] = pivot[1];
+        sq[2] = pivot[2];
+        sq[3] = pivot[3];
+    } else {
+        sq[0] = 0;
+        sq[1] = 0;
+        sq[2] = h - 1;
+        sq[3] = w - 1;
+    }
+
+    float rad = rot * 0.01745329238f; // K(0x5efb14)  deg->rad
+    float sn = static_cast<float>(sin(rad));
+    float cs = static_cast<float>(cos(rad));
+
+    // Centered half-extents of the source box (kept as ints, fild'd per corner).
+    i32 hy = h >> 1;
+    i32 hx = w >> 1;
+    i32 ex[2] = {-hx, w - hx};
+    i32 ey[2] = {-hy, h - hy};
+
+    float tx = static_cast<float>(a1);
+    float ty = static_cast<float>(a2);
+
+    // Pass 1: the scaled centered corner products.
+    ClipVtx prod[4];
+    i32 k = 0;
+    i32 iy, ix;
+    for (iy = 0; iy < 2; iy++) {
+        for (ix = 0; ix < 2; ix++) {
+            prod[k].x = static_cast<float>(ex[ix]) * scale;
+            prod[k].y = static_cast<float>(ey[iy]) * scale;
+            k++;
+        }
+    }
+
+    // Pass 2: rotate + translate into the screen x/y, texel coords into u/v.
+    ClipVtx mtx[4];
+    k = 0;
+    for (iy = 0; iy < 2; iy++) {
+        for (ix = 0; ix < 2; ix++) {
+            mtx[k].x = prod[k].x * cs - prod[k].y * sn + tx;
+            mtx[k].y = prod[k].x * sn + prod[k].y * cs + ty;
+            mtx[k].u = static_cast<float>(sq[ix != 0 ? 3 : 0]);
+            mtx[k].v = static_cast<float>(sq[iy != 0 ? 2 : 1]);
+            k++;
+        }
+    }
+
+    RotateRasterize(mtx, 4, dst, src, mode, colorkey, -1, -1, -1, -1);
 }
 
 // ===========================================================================
@@ -199,5 +376,570 @@ i32 ImagePolyClipRect(ClipVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
         return 0;
     }
     g_rasterVtxCount = n4;
+    return 1;
+}
+
+// @early-stop
+// x87 scheduling wall (~53%, complete + correct; RE-PROVEN 2026-07-05 - the old
+// "25-35%" note was stale). Dominant residual confirmed via --diff: retail's per-edge
+// crossing lerp RE-COMPUTES the division (cur->x - prev->x) and reloads cur->x/prev->x
+// for EACH of the three interpolated attributes (x87 stack pressure won't hold `t`),
+// emitting its own fld/fld/fsub/fxch/fsub/fdivp/fmulp/fadd interleave per attribute;
+// this build computes `t` once and reuses it (fdivp once + fmul st,st(1)). MSVC5 does
+// not expose that x87 recompute/fxch schedule to source ordering - same wall as the
+// sibling ImageRotateBlit 0x145f60 and CFaderRadial::Build. Secondary steerable diffs
+// (the clip-crossing `(A>=B)!=(C>=B)` materializes a 0/1 bool where retail re-branches
+// on fcom; the clipFlag `-1` compares against a memory operand not an imm) are below
+// the x87 ceiling and not worth chasing per the x87 re-prove-and-move doctrine.
+RVA(0x00146550, 0x4ca)
+i32 RotateRasterize(
+    ClipVtx* verts,
+    i32 n,
+    CDDSurface* dst,
+    CDDSurface* src,
+    i32 a5,
+    i32 a6,
+    i32 clipFlag,
+    i32 clipB,
+    i32 clipC,
+    i32 clipD
+) {
+    float bound0, clip0, clip1, clip2;
+    if (clipFlag == -1) {
+        // clipFlag == -1 means "clip to the whole destination": +0x1c/+0x18 are the
+        // dest surface's DDSURFACEDESC dwWidth/dwHeight (the ex RotateSrcImage view).
+        clip1 = 0.0f;
+        clip0 = static_cast<float>(dst->m_width);
+        clip2 = static_cast<float>(dst->m_height);
+        bound0 = 0.0f;
+    } else {
+        bound0 = static_cast<float>(clipFlag);
+        clip0 = static_cast<float>(clipB);
+        clip1 = static_cast<float>(clipC);
+        clip2 = static_cast<float>(clipD);
+    }
+
+    // Pass 1: clip x >= bound0   (verts -> g_rasterVtxA)
+    ClipVtx* out = g_rasterVtxA;
+    if (n > 0) {
+        ClipVtx* prev = &verts[n - 1];
+        ClipVtx* cur = verts;
+        i32 j = n;
+        do {
+            if (prev->x >= bound0) {
+                *out++ = *prev;
+            }
+            if ((prev->x >= bound0) != (cur->x >= bound0)) {
+                float t = (bound0 - prev->x) / (cur->x - prev->x);
+                out->x = bound0;
+                out->y = prev->y + (cur->y - prev->y) * t;
+                out->u = prev->u + (cur->u - prev->u) * t;
+                out->v = prev->v + (cur->v - prev->v) * t;
+                out++;
+            }
+            prev = cur;
+            cur++;
+        } while (--j);
+    }
+    n = static_cast<i32>((out - g_rasterVtxA));
+    if (n == 0) {
+        return 0;
+    }
+
+    // Pass 2: clip x < clip0   (g_rasterVtxA -> g_rasterVtxB)
+    out = g_rasterVtxB;
+    if (n > 0) {
+        ClipVtx* prev = &g_rasterVtxA[n - 1];
+        ClipVtx* cur = g_rasterVtxA;
+        i32 j = n;
+        do {
+            if (cur->x < clip0) {
+                *out++ = *cur;
+            }
+            if ((cur->x < clip0) != (prev->x < clip0)) {
+                float t = (clip0 - cur->x) / (prev->x - cur->x);
+                out->x = clip0;
+                out->y = cur->y + (prev->y - cur->y) * t;
+                out->u = cur->u + (prev->u - cur->u) * t;
+                out->v = cur->v + (prev->v - cur->v) * t;
+                out++;
+            }
+            prev = cur;
+            cur++;
+        } while (--j);
+    }
+    n = static_cast<i32>((out - g_rasterVtxB));
+    if (n == 0) {
+        return 0;
+    }
+
+    // Pass 3: clip y >= clip1   (g_rasterVtxB -> g_rasterVtxA)
+    out = g_rasterVtxA;
+    if (n > 0) {
+        ClipVtx* prev = &g_rasterVtxB[n - 1];
+        ClipVtx* cur = g_rasterVtxB;
+        i32 j = n;
+        do {
+            if (cur->y >= clip1) {
+                *out++ = *cur;
+            }
+            if ((cur->y >= clip1) != (prev->y >= clip1)) {
+                float t = (clip1 - cur->y) / (prev->y - cur->y);
+                out->y = clip1;
+                out->x = cur->x + (prev->x - cur->x) * t;
+                out->u = cur->u + (prev->u - cur->u) * t;
+                out->v = cur->v + (prev->v - cur->v) * t;
+                out++;
+            }
+            prev = cur;
+            cur++;
+        } while (--j);
+    }
+    n = static_cast<i32>((out - g_rasterVtxA));
+    if (n == 0) {
+        return 0;
+    }
+
+    // Pass 4: clip y < clip2   (g_rasterVtxA -> g_rasterVtxB)
+    out = g_rasterVtxB;
+    if (n > 0) {
+        ClipVtx* prev = &g_rasterVtxA[n - 1];
+        ClipVtx* cur = g_rasterVtxA;
+        i32 j = n;
+        do {
+            if (cur->y < clip2) {
+                *out++ = *cur;
+            }
+            if ((cur->y < clip2) != (prev->y < clip2)) {
+                float t = (clip2 - cur->y) / (prev->y - cur->y);
+                out->y = clip2;
+                out->x = cur->x + (prev->x - cur->x) * t;
+                out->u = cur->u + (prev->u - cur->u) * t;
+                out->v = cur->v + (prev->v - cur->v) * t;
+                out++;
+            }
+            prev = cur;
+            cur++;
+        } while (--j);
+    }
+    n = static_cast<i32>((out - g_rasterVtxB));
+    if (n == 0) {
+        return 0;
+    }
+
+    // retail 0x1469ee pushes a3 THEN a4 (dst, src) - we pushed a4 twice.
+    WarpTextureBlit(g_rasterVtxB, n, dst, src, a5, a6);
+    return 1;
+}
+
+// @early-stop
+// x87/regalloc scheduling wall (~50%). Retail keeps the ebp frame here (push ebp;
+// mov ebp,esp; locals via [ebp-N]) - that is cl's own per-function FPO decision under
+// plain /O2, NOT a compiland flag: the same object is frameless in WarpIsPow2 and
+// ProjectWallQuad. The ex per-unit `framed` (/Oy-) profile this body used to get was
+// only possible while it sat in a one-function TU of its own, and it is gone with the
+// merge (2026-07-29): 49.45 framed -> 50.50 base, so it was not even buying anything.
+// Residual is regalloc + x87: retail
+// keeps minY/maxY MEMORY-resident ([ebp-8]/[ebp-4], immediate stores) under the edge-
+// build's x87 register pressure while this /O2 build registers minY in esi, and the
+// per-edge fixed-point gradient build is the same MSVC x87 fild/fmul/__ftol pipeline
+// interleave + ~15 global-scratch reloc operands as the sibling FP rasterizers - not
+// source-steerable from clean C. The three inner pixel loops (copy/skip-zero/skip-
+// colorkey), the surface lock/unlock and the span u/v interpolation match by shape.
+
+// The row cursor advances by the surface PITCH (bytes) while the span is written as
+// 16bpp pixels - the byte-row -> word-span conversion is the surface API's, so it
+// lives at this one seam instead of at each of the three span loops below.
+static inline i16* Span16(u8* row) {
+    Pix16Ptr p;
+    p.m_bytes = row;
+    return p.m_swords;
+}
+
+RVA(0x00146a20, 0x5b7)
+i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mode, i32 colorkey) {
+    i32 minY = 0x1001;
+    i32 maxY = -1;
+    if (WarpIsPow2(src->m_width) == 0) {
+        return 0;
+    }
+    g_warpColorkey = static_cast<i16>(colorkey);
+
+    // log2(width): the shift used to fold v into the high texture index bits.
+    i32 shift = 0;
+    {
+        i32 m = 1;
+        for (i32 b = 0; b < 0x20; b++) {
+            if (src->m_width & m) {
+                shift = b;
+                break;
+            }
+            m <<= 1;
+        }
+    }
+
+    ClipVtx* prev = &va[n - 1]; // last vertex
+    if (n > 0) {
+        ClipVtx* cur = va;
+        i32 count = n;
+        do {
+            i32 prevYi = warpFtol(prev->y);
+            i32 curYi = warpFtol(cur->y);
+            if (prevYi != curYi) {
+                ClipVtx* top;
+                ClipVtx* bot;
+                ClipVtx* table;
+                if (prev->y >= cur->y) {
+                    top = prev;
+                    bot = cur;
+                    table = g_rasterEdgeL;
+                } else {
+                    top = cur;
+                    bot = prev;
+                    table = g_rasterEdgeR;
+                }
+
+                i32 topU = warpFtol(static_cast<double>(top->u) * g_rasterScale);
+                i32 topV = warpFtol(static_cast<double>(top->v) * g_rasterScale);
+                i32 topX = warpFtol(static_cast<double>(top->x) * g_rasterScale);
+                i32 topYi = warpFtol(static_cast<double>(top->y) * g_rasterScale) >> 0xe;
+                i32 botYi = warpFtol(static_cast<double>(bot->y) * g_rasterScale) >> 0xe;
+                i32 h = botYi - topYi;
+
+                ClipVtx* rec = &table[topYi];
+                i32 dx = (-topX - warpFtol(static_cast<double>(bot->x) * g_rasterScaleNeg)) / h;
+                i32 du = (-topU - warpFtol(static_cast<double>(bot->u) * g_rasterScaleNeg)) / h;
+                i32 dv = (-topV - warpFtol(static_cast<double>(bot->v) * g_rasterScaleNeg)) / h;
+
+                i32 x = topX;
+                i32 u = topU;
+                i32 vv = topV;
+                for (i32 s = 0; s < h; s++) {
+                    rec->fx = x;
+                    rec->fu = u;
+                    rec->fv = vv;
+                    x += dx;
+                    u += du;
+                    vv += dv;
+                    rec++;
+                }
+            }
+            i32 vy = warpFtol(prev->y); // [ebp+8] (the current prev vertex) y
+            if (vy < minY) {
+                minY = vy;
+            }
+            if (vy > maxY) {
+                maxY = vy;
+            }
+            prev = cur;
+            cur++;
+        } while (--count);
+    }
+
+    g_warpTexBase = static_cast<i16*>(src->Lock(0));
+    u8* destBase = static_cast<u8*>(dst->Lock(0));
+    i32 dstPitch = dst->m_pitch;
+    g_rasterDestRow = destBase + dstPitch * minY;
+    g_warpUMask = ((src->m_width + 0x3ffff) << 0xe) << shift;
+
+    i32 rows = maxY - minY;
+    if (mode == 0) {
+        // ---- copy-all ----
+        ClipVtx* lrow = &g_rasterEdgeL[minY];
+        ClipVtx* rrow = &g_rasterEdgeR[minY];
+        for (; rows > 0; rows--) {
+            i32 rx = rrow->fx >> 0xe;
+            i32 lx = lrow->fx >> 0xe;
+            i32 span = lx - rx;
+            if (span > 0) {
+                i32 u = rrow->fu;
+                i32 vv = rrow->fv;
+                g_warpU = u;
+                g_warpV = vv;
+                g_warpUStep = (lrow->fu - u) / span;
+                i32 dv = (lrow->fv - vv) / span;
+                g_warpV = vv << shift;
+                g_warpVStep = dv << shift;
+                // the row cursor advances by the surface PITCH (bytes) while the span
+                // is written as 16bpp pixels - the u8*->i16* step is that byte-forced seam
+                g_rasterDestPtr = Span16(g_rasterDestRow) + rx;
+                i16* d = g_rasterDestPtr;
+                i16* tex = g_warpTexBase;
+                i32 uu = g_warpU;
+                i32 va2 = g_warpV;
+                for (i32 c = span; c != 0; c--) {
+                    i32 idx = ((va2 & g_warpUMask) | uu) >> 0xe;
+                    va2 += g_warpVStep;
+                    uu += g_warpUStep;
+                    *d++ = tex[idx];
+                }
+            }
+            lrow++;
+            rrow++;
+            g_rasterDestRow += dst->m_pitch;
+        }
+    } else if (g_warpColorkey == 0) {
+        // ---- skip-zero ----
+        ClipVtx* lrow = &g_rasterEdgeL[minY];
+        ClipVtx* rrow = &g_rasterEdgeR[minY];
+        for (; rows > 0; rows--) {
+            i32 rx = rrow->fx >> 0xe;
+            i32 lx = lrow->fx >> 0xe;
+            i32 span = lx - rx;
+            if (span > 0) {
+                i32 u = rrow->fu;
+                i32 vv = rrow->fv;
+                g_warpU = u;
+                g_warpV = vv;
+                g_warpUStep = (lrow->fu - u) / span;
+                i32 dv = (lrow->fv - vv) / span;
+                g_warpV = vv << shift;
+                g_warpVStep = dv << shift;
+                // the row cursor advances by the surface PITCH (bytes) while the span
+                // is written as 16bpp pixels - the u8*->i16* step is that byte-forced seam
+                g_rasterDestPtr = Span16(g_rasterDestRow) + rx;
+                i16* d = g_rasterDestPtr;
+                i16* tex = g_warpTexBase;
+                i32 uu = g_warpU;
+                i32 va2 = g_warpV;
+                for (i32 c = span; c != 0; c--) {
+                    i32 idx = ((va2 & g_warpUMask) | uu) >> 0xe;
+                    va2 += g_warpVStep;
+                    uu += g_warpUStep;
+                    i16 t = tex[idx];
+                    if (t != 0) {
+                        *d = t;
+                    }
+                    d++;
+                }
+            }
+            lrow++;
+            rrow++;
+            g_rasterDestRow += dst->m_pitch;
+        }
+    } else {
+        // ---- skip-colorkey ----
+        ClipVtx* lrow = &g_rasterEdgeL[minY];
+        ClipVtx* rrow = &g_rasterEdgeR[minY];
+        for (; rows > 0; rows--) {
+            i32 rx = rrow->fx >> 0xe;
+            i32 lx = lrow->fx >> 0xe;
+            i32 span = lx - rx;
+            if (span > 0) {
+                i32 u = rrow->fu;
+                i32 vv = rrow->fv;
+                g_warpU = u;
+                g_warpV = vv;
+                g_warpUStep = (lrow->fu - u) / span;
+                i32 dv = (lrow->fv - vv) / span;
+                g_warpV = vv << shift;
+                g_warpVStep = dv << shift;
+                // the row cursor advances by the surface PITCH (bytes) while the span
+                // is written as 16bpp pixels - the u8*->i16* step is that byte-forced seam
+                g_rasterDestPtr = Span16(g_rasterDestRow) + rx;
+                i16* d = g_rasterDestPtr;
+                i16* tex = g_warpTexBase;
+                i32 uu = g_warpU;
+                i32 va2 = g_warpV;
+                for (i32 c = span; c != 0; c--) {
+                    i32 idx = ((va2 & g_warpUMask) | uu) >> 0xe;
+                    va2 += g_warpVStep;
+                    uu += g_warpUStep;
+                    i16 t = tex[idx];
+                    if (t != g_warpColorkey) {
+                        *d = t;
+                    }
+                    d++;
+                }
+            }
+            lrow++;
+            rrow++;
+            g_rasterDestRow += dst->m_pitch;
+        }
+    }
+
+    src->m_ddSurface->Unlock(0);
+    dst->m_ddSurface->Unlock(0);
+    return 1;
+}
+
+// FillPolygon (0x146fe0, __cdecl) - scanline-fill a polygon into a CDDSurface. Pass 1
+// walks each edge (prev->cur, wrapping), ftol's the endpoints, picks the asc/desc edge
+// table by edge direction and writes the per-row interpolated x (slope = (-topX-botX)/h),
+// while tracking the y bounding box. Pass 2 Locks the surface and, for each row minYi..
+// maxYi, reads the two edge x's, orders them and `rep stosw`s the span with `color`,
+// stepping the row base by the surface pitch. Finally Unlocks the held surface. ret 1.
+// @early-stop
+// FRAME + FP-scheduling + stack-slot wall (~57%): logic, offsets and the reloc-masked
+// Lock/Unlock/ftol are faithful. Retail keeps an ebp frame here and reuses the two
+// incoming arg slots ([ebp+8]/[ebp+0xc]) as the prev/cur temps, where our cl (a) picks
+// FPO for this body and (b) spills to fresh negative locals; the x87 endpoint
+// evaluation and the edge-slope idiv also schedule differently. The frame used to be
+// forced with a per-unit `framed` (/Oy-) profile on a one-function TU (60.10); that TU
+// was a shard of THIS object, which retail compiled at plain /O2 (WarpIsPow2 and
+// ProjectWallQuad in it are frameless), so the flag was buying 3 points with a false
+// partition. Merged 2026-07-29, 60.10 -> 57.03. The remaining lever is a source
+// spelling that makes cl keep the frame, not a compiland flag. topic:wall.
+RVA(0x00146fe0, 0x1e2)
+i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
+    ClipVtx* prev = &verts[count - 1];
+    ClipVtx* cur = verts;
+    i32 minYi = 0x1001;
+    i32 maxYi = -1;
+    if (count > 0) {
+        i32 n = count;
+        do {
+            if (static_cast<i32>(prev->y) != static_cast<i32>(cur->y)) {
+                ClipVtx* top = prev;
+                ClipVtx* table;
+                ClipVtx* bottom;
+                if (prev->y > cur->y) {
+                    bottom = cur;
+                    table = g_rasterEdgeL;
+                } else {
+                    top = cur;
+                    bottom = prev;
+                    table = g_rasterEdgeR;
+                }
+                i32 topX = static_cast<i32>((top->x * g_rasterScale));
+                i32 topYi = static_cast<i32>((top->y * g_rasterScale));
+                i32 botYi = static_cast<i32>((bottom->y * g_rasterScale));
+                i32 topRow = topYi >> 0xe;
+                ClipVtx* entry = &table[topRow];
+                i32 botRow = botYi >> 0xe;
+                i32 height = botRow - topRow;
+                i32 botX = static_cast<i32>((bottom->x * g_rasterScaleNeg));
+                i32 xSlope = (-topX - botX) / height;
+                if (topRow < botRow) {
+                    i32 x = topX;
+                    do {
+                        entry->fx = x;
+                        x += xSlope;
+                        entry++;
+                    } while (--height != 0);
+                }
+            }
+            i32 py = static_cast<i32>(prev->y);
+            if (py < minYi) {
+                minYi = py;
+            }
+            if (py > maxYi) {
+                maxYi = py;
+            }
+            prev = cur;
+            cur++;
+        } while (--n != 0);
+    }
+    i32 stride = surf->m_pitch;
+    u8* bits = static_cast<u8*>(surf->Lock(0));
+    u8* rowPtr = bits + stride * minYi;
+    g_rasterDestRow = rowPtr;
+    if (minYi < maxYi) {
+        i32 rowCount = maxYi - minYi;
+        ClipVtx* pDesc = &g_rasterEdgeL[minYi];
+        ClipVtx* pAsc = &g_rasterEdgeR[minYi];
+        do {
+            i32 xB = pAsc->fx >> 0xe;
+            i32 xA = pDesc->fx >> 0xe;
+            i32 lo = xB;
+            i32 hi = xA;
+            if (xB > xA) {
+                lo = xA;
+                hi = xB;
+            }
+            i32 width = hi - lo;
+            if (width > 0) {
+                // rowPtr came from Lock() stepped by the BYTE pitch (m_pitch * minYi);
+                // the pixels it addresses are 16bpp. Same seam as the warp spans above.
+                g_rasterDestPtr = Span16(rowPtr) + lo;
+                i16* p = g_rasterDestPtr;
+                i32 w = width;
+                do {
+                    *p++ = color;
+                } while (--w != 0);
+                rowPtr = g_rasterDestRow;
+            }
+            rowPtr += surf->m_pitch;
+            g_rasterDestRow = rowPtr;
+            pAsc++;
+            pDesc++;
+        } while (--rowCount != 0);
+    }
+    surf->m_ddSurface->Unlock(0);
+    return 1;
+}
+
+// Retail inlined the transcendentals (/Oi alone does not intrinsify them in cl5;
+// the pragma does). Placed HERE, immediately before their only user, so the
+// earlier bodies compile exactly as they did in their own TUs.
+#pragma intrinsic(atan2, sin, cos, sqrt, fabs)
+
+// @early-stop
+// x87-spill wall (37.46). CORRECTNESS FIX 2026-07-28 (jcc_sieve OTHER): both vertex
+// passes rewrite each record IN PLACE and the translate pass STARTS OVER at record 0 -
+// we were storing to `v[-8]/v[-7]`, i.e. 32 bytes BEFORE the (x,y) just read (out of
+// bounds on the first iteration), and letting the translate pass run over records 3..6.
+// Both loop guards now match retail's strength-reduced signed `cmp eax,g_rasterVtxB+0x74
+// / jl`. The transcendentals inline (the #pragma intrinsic above - fpatan/fsin/fcos/fsqrt
+// match retail). Remaining: our 7 double locals spill to an 8-aligned ebp frame
+// (`and esp,-8`) while retail keeps the whole transform on the x87 stack, frameless.
+// Needs the FP-temp restructure (fewer live doubles across statements).
+RVA(0x001471d0, 0x1b4)
+i32 ProjectWallQuad(
+    CDDSurface* surface,
+    i32 p1,
+    i32 p2,
+    i32 p3,
+    i32 p4,
+    i32 p5,
+    i32 p6,
+    i32 p7,
+    i32 p8,
+    i32 p9,
+    i32 p10
+) {
+    i32 dx = p3 - p1;
+    i32 dy = p4 - p2;
+    double ang = atan2(static_cast<double>(dy), static_cast<double>(dx));
+    double adx = fabs(static_cast<double>(dx));
+    double ady = fabs(static_cast<double>(dy));
+    double len = sqrt(adx * adx + ady * ady - g_c24);
+    double s = sin(ang);
+    double c = cos(ang);
+    double hw = static_cast<double>(p5);
+
+    // The workspace is written as a flat float grid (7 floats == one ClipVtx record),
+    // walked from the first record's leading float member - no cast.
+    float* w = &g_rasterVtxB[0].x;
+    w[0] = static_cast<float>((-s));
+    w[1] = static_cast<float>(len);
+    w[5] = static_cast<float>(c);
+    w[6] = static_cast<float>((c + len));
+
+    // Both passes rewrite each record IN PLACE, and the second STARTS OVER at record 0.
+    // Retail's stores land at [eax-0x20]/[eax-0x1c] AFTER `add eax,0x1c`, i.e. at the very
+    // (x,y) the iteration just read at [eax-4]/[eax]; and the translate pass re-loads the
+    // cursor (`mov eax,g_rasterVtxB+4`) instead of continuing from the rotate pass's end.
+    // Writing `v[-8]/v[-7]` stored 32 bytes BEFORE the read - out of bounds on the first
+    // iteration - and let the translate pass run over records 3..6 instead of 0..3.
+    // The index must also be the ONLY induction variable: retail's guard is the SIGNED
+    // `cmp eax,g_rasterVtxB+0x74 / jl` a strength-reduced `i < 4` leaves behind, where a
+    // hand-advanced cursor alongside `i` makes cl emit `dec ecx / jne`.
+    for (i32 i = 0; i < 4; i++) {
+        float* v = &w[i * 7 + 1];
+        double bx = static_cast<double>(v[-1]);
+        double by = -static_cast<double>(v[0]);
+        v[-1] = static_cast<float>((bx * c * hw - by * s * hw));
+        v[0] = static_cast<float>((bx * s * hw + by * c * hw));
+    }
+    for (i32 j = 0; j < 4; j++) {
+        float* v = &w[j * 7 + 1];
+        v[-1] = static_cast<float>((static_cast<double>(p1) + static_cast<double>(v[-1])));
+        v[0] = static_cast<float>((static_cast<double>(p2) + static_cast<double>(v[0])));
+    }
+
+    if (ImagePolyClipRect(g_rasterVtxB, 4, p8, p8, p9, p10) != 0) {
+        FillPolygon(g_rasterVtxB, g_rasterVtxCount, surface, static_cast<i16>(p6));
+    }
     return 1;
 }

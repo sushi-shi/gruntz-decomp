@@ -42,7 +42,7 @@
 #include <Gruntz/StatusBarMgr.h> // CStatusBarMgr (the kind-0x32 rez-machine wake arm)
 #include <Gruntz/Timer.h>        // CTimer::AddTime (the stopwatch arm)
 #include <Gruntz/CurPlayer.h>    // g_curPlayer (region/pending-fx gates)
-#include <Wap32/zBitVec.h>       // GetRetAddr/g_projActCache/g_retAddrBreadcrumb (zvec grow path)
+#include <Wap32/zBitVec.h>       // GetRetAddr/g_errOutOfMem/g_retAddrBreadcrumb (zvec grow path)
 #include <DDrawMgr/AniAdvance.h> // CAniDesc (the "H" health-pose record)
 #include <new>                   // placement new (the g_typeColl slot construction)
 
@@ -3653,9 +3653,9 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             } else if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != 0) {
                 rec = g_typeColl.Elem(key);
             } else {
-                void* item = g_projActCache;
+                char* msg = g_errOutOfMem;
                 g_retAddrBreadcrumb = GetRetAddr();
-                g_typeColl.m_errSink->Set(&g_typeColl, item, 0xc);
+                g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
                 rec = g_typeColl.Scratch();
             }
             ConstructGrownSlots();
@@ -3693,9 +3693,9 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 } else if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key2, 0) != 0) {
                     rec2 = g_typeColl.Elem(key2);
                 } else {
-                    void* item2 = g_projActCache;
+                    char* msg2 = g_errOutOfMem;
                     g_retAddrBreadcrumb = GetRetAddr();
-                    g_typeColl.m_errSink->Set(&g_typeColl, item2, 0xc);
+                    g_typeColl.m_errSink->Set(&g_typeColl, msg2, 0xc);
                     rec2 = g_typeColl.Scratch();
                 }
                 ConstructGrownSlots();
