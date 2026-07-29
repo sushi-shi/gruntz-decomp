@@ -678,17 +678,22 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, i32 mode, i32 a3, CGameObject* obj
         case 8: {
             // Re-seed the bound sprite's fill shade from this player's sprite row; if the
             // row has no table, fall back to row 1 and arm the decay fill-bar (cmd 0xa).
-            if (g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[m_object->m_124].m_008, 0)
-                == 0) {
-                CShadeTable* fallback = g_gameReg->m_spriteFactory->GetSel(1, 0);
-                // hoisted: retail loads m_object ONCE here and does all three stores off
-                // it. Spelled `m_object->` per statement, cl5 cannot rule out the stores
-                // aliasing the member itself and reloads before each - 8 bytes long.
-                CWwdGameObjectA* sprite = m_object;
-                sprite->m_drawActive = 1;
-                sprite->m_drawFillCmd = 0xa;
-                sprite->m_drawFillArg = fallback;
+            // The three draw stores are OUTSIDE the fallback `if` - retail's
+            // `test eax,eax / jne <stores>` takes the non-null path STRAIGHT to them
+            // with the first lookup's result, exactly like the ctor's selector block.
+            // Nesting them inside the if also made the seed conditional, which is wrong.
+            CShadeTable* sel =
+                g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[m_object->m_124].m_008, 0);
+            if (sel == 0) {
+                sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
             }
+            // hoisted: retail loads m_object ONCE here and does all three stores off
+            // it. Spelled `m_object->` per statement, cl5 cannot rule out the stores
+            // aliasing the member itself and reloads before each - 8 bytes long.
+            CWwdGameObjectA* sprite = m_object;
+            sprite->m_drawActive = 1;
+            sprite->m_drawFillCmd = 0xa;
+            sprite->m_drawFillArg = sel;
             break;
         }
     }
