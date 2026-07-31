@@ -5,7 +5,7 @@ Replaces the hand-maintained config/symbol_names.csv. The only manual input is
 the address annotation on each matched function/global; everything else is
 derived. See docs/build-system.md.
 
-ANNOTATIONS (src/rva.h macros, compiled out under MSVC):
+ANNOTATIONS (include/rva.h macros, compiled out under MSVC):
 
     RVA(0x13dc70, 0x1d)        // a matched FUNCTION: rva + (optional) byte size
     DATA(0x253c70)             // the DATA symbol a matched `extern` global uses
@@ -21,7 +21,7 @@ How the map is built per TU:
 
   2. DATA comes from the clang AST. An `extern` declaration is not a definition,
      so clang DROPS its annotation from IR (measured: `used` does not rescue it,
-     even when the global is referenced - see src/rva.h). So DATA addresses are
+     even when the global is referenced - see include/rva.h). So DATA addresses are
      scanned from the `DATA(...)` macro text and bound to the AST VarDecl
      mangledName below them. A file-scope/extern variable carries a linkage
      mangledName (`?g_foo@@3...`, or `_g_foo` for extern "C"); locals do not, so
@@ -50,7 +50,7 @@ that clang DROPS from IR when unused, so neither attributes nor a source join ca
 carry their labels. Instead their rva->symbol map lives in config/zlib_labels.csv
 (a static table - the retail binary never changes - generated once) and is emitted
 directly, authority-checked against the base obj: no source parsing, no positional
-join. A TU is routed to the config path iff it carries NO src/rva.h macro.
+join. A TU is routed to the config path iff it carries NO include/rva.h macro.
 
 Output: build/gen/symbol_names.csv  (rva,name,unit,size,kind) - for synth_pdb.
 `kind` is func or data; `size` is the RVA size (hex) or empty.
@@ -83,7 +83,7 @@ GLOBALS_UNIT = "globals"
 # DATA(0x...) macro invocation - scanned from source text (IR drops extern
 # annotations). The address is bound to the AST VarDecl below it.
 DATA_MACRO_RE = re.compile(r"\bDATA\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
-# VTBL(Class, 0x...) macro (src/rva.h) - the single-source-of-truth vtable-catalog
+# VTBL(Class, 0x...) macro (include/rva.h) - the single-source-of-truth vtable-catalog
 # annotation placed atop a class. It expands (under clang) to a `gruntz_clsmeta_*`
 # annotate carrier that DOES reach the IR, but it is read from source text
 # TREE-WIDE (src/ + include/) in the merge step rather than per-TU IR: the scan is
@@ -136,7 +136,7 @@ def resolve_pool_id(sym, all_syms):
     pref = sym.replace("$S*", "$S")
     cands = [s for s in all_syms if s.startswith(pref) and s[len(pref):].isdigit()]
     return cands[0] if len(cands) == 1 else sym
-# Annotation strings carried in @llvm.global.annotations (emitted by src/rva.h).
+# Annotation strings carried in @llvm.global.annotations (emitted by include/rva.h).
 ANN_RVA_RE = re.compile(r"^rva:(0x[0-9a-fA-F]+)(?:\s+size:(0x[0-9a-fA-F]+|\d+))?$")
 # Macro annotation markers (presence of any -> a migrated TU; functions come
 # from IR for these). A TU with none is a vendored C TU (config-table path).
@@ -286,7 +286,7 @@ def collect_vars(ast, main_file):
         if isinstance(node, dict):
             update_file(node)
             # `gruntz_clsmeta_*` are the SIZE/SIZE_UNKNOWN/VTBL class-metadata
-            # carriers (src/rva.h): file-scope `used` statics that DO carry a
+            # carriers (include/rva.h): file-scope `used` statics that DO carry a
             # mangledName. Skip them so a carrier written between a DATA(...) and
             # its extern can never steal the DATA binding (data_labels picks the
             # first VarDecl below the macro).
@@ -1150,7 +1150,7 @@ def main():
         all_syms = nm_all_symbols(args.obj[i], args.nm) if have_obj else None
         cl_flags = compdb.get(os.path.realpath(tu))
 
-        # A TU with no src/rva.h macro is a vendored C TU with pristine source;
+        # A TU with no include/rva.h macro is a vendored C TU with pristine source;
         # its rva->symbol map comes from config/zlib_labels.csv (static, emitted
         # directly - no parse, no join). zlib's static/K&R functions drop from IR
         # when unused, so labels can't live in the source; src/ uses the macros.

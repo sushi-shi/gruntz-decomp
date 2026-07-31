@@ -3,7 +3,7 @@
 
 The source tree is the single source of truth for labeled-but-unmatched code:
 each stub carries a compact `// @...` comment block ending in `// @stub`, with
-its retail address on an RVA() macro (src/rva.h) above the definition:
+its retail address on an RVA() macro (include/rva.h) above the definition:
 
     // @confidence: high
     // @source: rtti-vptr
