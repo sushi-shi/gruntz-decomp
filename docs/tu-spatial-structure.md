@@ -79,6 +79,37 @@ survived long enough to name three examples that had all since dissolved).
 3. **Lone far methods** — ~102 plain methods >0x4000 from any same-class sibling,
    mostly the only matched method of a class so far (resolves as coverage grows).
 
+### The 3%: intermingled methods (`--intermingled`)
+
+The leave-one-out rule misses 55 of 2183 (3%). **Every miss is a method sitting
+inside another class's contiguous run** — which makes the miss list a matching
+worklist, not noise. `python -m gruntz.audit.tu_layout --intermingled` regenerates it,
+grouped by TU and tagged.
+
+Read a row as one of three things:
+
+| cause | what it means | tell |
+|---|---|---|
+| **Mis-modelled owner** | the method really belongs to the surrounding class; our class label is wrong | often DIFF-TU; confirm by vtable slot / caller `this`, never by proximity alone |
+| **Not inlined** | an inline accessor of a small helper class that `cl` emitted out-of-line into whichever TU used it | a lone accessor-shaped name (`GetName`, `Reset`, `Hash`) inside a big foreign run |
+| **Written in the same place** | two classes genuinely co-authored in one `.cpp` | a CLUSTER of ≥3 alternating rows, usually same-family; **not a defect** |
+
+**SAME-TU vs DIFF-TU is the first discriminator.** 45 are SAME-TU — we already put the
+body in the host's `.cpp`, so retail's placement and ours agree and only the *class
+label* is in question. The 10 DIFF-TU rows are the stronger signal: our TU partition
+disagrees with where retail put the code.
+
+The clusters are the "written in the same place" case and need no fixing:
+`ButeMgr.cpp` (8 rows, `CButeMgr` ↔ `CButeValue` alternating), `GruntzCmdMgr.cpp`
+(7, `CGruntzMultiCommand` ↔ `CGruntzSingleCommand` in matched `Parse`/`Pack`/`Select`/
+`FreeAll` pairs), `Attract.cpp` (4, the state-class soup), `Multi.cpp` (4).
+
+`Multi.cpp` is the clearest **not-inlined** cluster: `CNetPlayerListNode::GroupName`,
+`CNetSessionNode::GetName`, `CNetSession::ResetAll` and `CNetCmdSlot::BuildHostName`
+each sit alone inside a long `CMulti` run — four small node-class accessors emitted
+out-of-line at their use site. Same shape as `docs/exe-map/interleaved-comdats.md`,
+which has the reproduction and the fix recipe.
+
 **Do classes intermingle?** Mostly no, and the answer has strengthened. At the
 method-block level (pools excluded): **2467** same-class adjacent pairs vs **523**
 boundaries, and only **55** true A-B-A splices. And the splices are almost all

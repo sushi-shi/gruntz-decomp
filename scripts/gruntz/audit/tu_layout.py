@@ -16,9 +16,10 @@ The measured answer (see docs/tu-spatial-structure.md):
     neighbours are its siblings, ready to batch.
   * Destructors are the EXCEPTION - MSVC emits the vtable-referenced deleting
     destructor as a COMDAT, and the linker pools those into shared low-address runs
-    (e.g. 0x10000-0x14000) far from each class's own block. ~40% of dtors sit far
-    from any sibling, so proximity does NOT find them; they come in by class
-    identity (leaked name / vtable / RTTI) instead.
+    (e.g. 0x10000-0x14000) far from each class's own block. TU re-homing has since
+    pulled most dtors back beside their siblings (~9% still sit in a pool region);
+    for those, proximity does NOT find them - they come in by class identity
+    (leaked name / vtable / RTTI) instead.
 
 Report sections + queries:
 
@@ -33,16 +34,21 @@ Report sections + queries:
      the State family, ...). Classes split into DENSE (one contiguous run) vs
      SCATTERED (conflated TUs / COMDAT-heavy families like the State classes).
   --neighbors 0xRVA    - the probable class siblings of one matched function.
+  --intermingled       - the leave-one-out MISSES: every method that sits inside
+     another class's contiguous run. Three causes, and the list separates them:
+     a MIS-MODELLED owner, an inline accessor cl emitted out-of-line (the
+     interleaved-COMDAT case), or two classes genuinely written in one .cpp.
   --attribute          - tie classless functions to a class by same-class bracketing.
      Targets the still-unclaimed FUN_ bodies (from the Ghidra boundary export, minus
      current RVA/RVA_COMPGEN source claims); `--emit` writes them as a worklist. The
-     both-sides HIGH rule is validated at ~91% exact / 94% same-family by
-     leave-one-out on matched methods.
+     both-sides HIGH rule is validated at 97% exact / 98% same-family by
+     leave-one-out on matched methods; `--intermingled` lists the 3% that miss.
 
 Usage:
     python3 -m gruntz.audit.tu_layout
     python3 -m gruntz.audit.tu_layout --neighbors 0xb4020
     python3 -m gruntz.audit.tu_layout --attribute [--emit attributions.csv]
+    python3 -m gruntz.audit.tu_layout --intermingled
 """
 from __future__ import annotations
 
@@ -449,22 +455,68 @@ def boundary_targets(funcs, target_rvas, near=DEFAULT_NEAR):
     return out
 
 
-def validate_loo(funcs, gap):
+def validate_loo(funcs, gap, collect_misses=False):
     """Leave-one-out precision of the both-sides bracket on KNOWN methods.
 
     Hide each matched method; if its two matched neighbours agree on a class within
     --gap, that's the bracket's prediction - compare to the held-out method's real
-    class. Returns (n_both, n_exact, n_family).
+    class. Returns (n_both, n_exact, n_family[, misses]).
+
+    A MISS is a method sandwiched between two methods of a DIFFERENT class - i.e. a
+    genuinely INTERMINGLED method. Those are the interesting ones (see --intermingled
+    and docs/exe-map/interleaved-comdats.md), so optionally collect them.
     """
     seq = _matched_seq(funcs, methods_only=True, drop_pooled=True)
     both = exact = fam_ok = 0
+    misses = []
     for i in range(1, len(seq) - 1):
         lo, mid, hi = seq[i - 1], seq[i], seq[i + 1]
         if lo.cls == hi.cls and max(mid.rva - lo.rva, hi.rva - mid.rva) <= gap:
             both += 1
-            exact += (lo.cls == mid.cls)
+            hit = lo.cls == mid.cls
+            exact += hit
             fam_ok += (family(lo.cls) == family(mid.cls))
-    return both, exact, fam_ok
+            if not hit and collect_misses:
+                misses.append((mid, lo, hi))
+    return (both, exact, fam_ok, misses) if collect_misses else (both, exact, fam_ok)
+
+
+def report_intermingled(funcs, gap):
+    """The leave-one-out MISSES: every method that sits inside another class's run.
+
+    Each row is one of three things, and the SAME-TU/DIFF-TU split is the first
+    discriminator:
+      * MIS-MODELLED OWNER - the method really belongs to the surrounding class (our
+        class label is wrong). Check the vtable slot / caller `this`.
+      * NOT INLINED - an inline accessor of a small helper class that cl emitted
+        out-of-line into whichever TU used it (the interleaved-COMDAT case).
+      * WRITTEN IN THE SAME PLACE - two classes genuinely co-authored in one .cpp
+        (CButeMgr/CButeValue, the Command pair). Not a defect; nothing to fix.
+    """
+    _, _, _, misses = validate_loo(funcs, gap, collect_misses=True)
+    same_tu = [m for m in misses if m[0].tu == m[1].tu]
+    diff_tu = [m for m in misses if m[0].tu != m[1].tu]
+    print("=" * 72)
+    print("INTERMINGLED METHODS  (the leave-one-out misses - a method inside another")
+    print("                       class's contiguous run)")
+    print("=" * 72)
+    print(f"  {len(misses)} total: {len(same_tu)} SAME-TU (our TU already agrees with the "
+          f"host - the CLASS label is the question),")
+    print(f"  {len(diff_tu)} DIFF-TU (our TU partition disagrees with retail's placement - "
+          f"the stronger signal).\n")
+    by_tu = defaultdict(list)
+    for m in misses:
+        by_tu[m[0].tu].append(m)
+    for tu, rows in sorted(by_tu.items(), key=lambda kv: (-len(kv[1]), kv[0])):
+        note = "  <- a CLUSTER: likely two classes written in one .cpp" if len(rows) >= 3 else ""
+        print(f"  {tu}.cpp  ({len(rows)}){note}")
+        for mid, lo, hi in rows:
+            tag = "SAME-TU" if mid.tu == lo.tu else "DIFF-TU"
+            fam = " fam" if family(lo.cls) == family(mid.cls) else "    "
+            print(f"     0x{mid.rva:06x} {tag}{fam}  {mid.cls}::{mid.meth}")
+            print(f"              inside {lo.cls}'s run "
+                  f"(0x{lo.rva:06x} [{lo.tu}] .. 0x{hi.rva:06x} [{hi.tu}])")
+        print()
 
 
 def report_attribution(funcs, functions_csv: Path, gap: int, emit) -> None:
@@ -518,6 +570,9 @@ def main() -> None:
                     help="Ghidra boundary export for --attribute (functions.csv)")
     ap.add_argument("--attribute", action="store_true",
                     help="tie unnamed FUN_ bodies to a class by same-class bracketing")
+    ap.add_argument("--intermingled", action="store_true",
+                    help="list the leave-one-out MISSES: methods sitting inside another "
+                         "class's run (mis-modelled owner / not-inlined / co-authored)")
     ap.add_argument("--emit", type=Path, default=None, metavar="CSV",
                     help="with --attribute, write rva,class,confidence to this file")
     args = ap.parse_args()
@@ -525,6 +580,9 @@ def main() -> None:
     funcs = load_funcs()
     if args.neighbors is not None:
         report_neighbors(funcs, args.neighbors, args.near)
+        return
+    if args.intermingled:
+        report_intermingled(funcs, args.gap)
         return
     if args.attribute:
         report_attribution(funcs, args.functions, args.gap, args.emit)
