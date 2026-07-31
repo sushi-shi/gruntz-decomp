@@ -4,7 +4,7 @@
 
 **Ground truth**: placements are first-link birth positions (demo-oracle: 170/181 outliers identically placed in GruntDem.exe; only 3 ilink moves in the whole EXE), and every obj's contribution is contiguous at first link. So retail `.text` order faithfully records the ORIGINAL TU composition, and the CRT init-table gives the original obj LINK ORDER.
 
-Outlier mechanisms: REHOME-CANDIDATE 66, COMDAT-AT-USAGE 8.
+Outlier mechanisms: REHOME-CANDIDATE 22, COMDAT-AT-USAGE 4.
 
 
 ## MERGE candidates — multi-core intervals (VERIFY per group)
@@ -13,17 +13,20 @@ Outlier mechanisms: REHOME-CANDIDATE 66, COMDAT-AT-USAGE 8.
 
 | interval | fns | verdict | weave | combine/verify these units |
 |---|---|---|---|---|
-| `0x184610-0x185a0e` | 40 | seam-glued | 0.03 | rezcoll (13), debugprintf (13), menuitem (7), rezlist (5) |
-| `0x163bf0-0x1660a6` | 27 | seam-glued | 0.04 | ddrawsurfacepair (22), logicrecord (5) |
+| `0x104d60-0x10bc14` | 59 | mixed | 0.06 | sbi_rectonly (53), warpstonefly (3) |
+| `0x184610-0x185a0e` | 37 | seam-glued | 0.03 | debugprintf (12), rezcoll (11), menuitem (7), rezlist (5) |
+| `0x163c60-0x1660a6` | 23 | seam-glued | 0.05 | ddrawsurfacepair (18), logicrecord (5) |
+| `0x019540-0x01c1c5` | 13 | seam-glued | 0.17 | bootystateactivate (5), gamemode (3) |
 
 ## SPLIT — units with core presence in several intervals (conflated)
 
 | unit | intervals (lo, fns) |
 |---|---|
-| battlezmapconfig | `0x24dc0` (7), `0x29a30` (33), `0x343f0` (8) |
-| play | `0xc8700` (12), `0xcdb10` (25), `0xd5960` (60) |
-| bootystateactivate | `0x19540` (3), `0x1c0f0` (6) |
-| sbi_rectonly | `0xfdc00` (25), `0x104d60` (58) |
+| battlezmapconfig | `0x24dc0` (7), `0x29a30` (32), `0x343f0` (8) |
+| bootystateactivate | `0x19540` (5), `0x1ecf0` (3) |
+| play | `0xcedf0` (17), `0xd5960` (63) |
+| gruntarrivalscan | `0xec670` (10), `0xf60f0` (3) |
+| sbi_rectonly | `0xfdc00` (25), `0x104d60` (53) |
 
 ## MOVE — lone strays inside a foreign interval
 
@@ -31,21 +34,15 @@ Function-level re-homes; target = the interval's dominant unit.
 
 | rva | function | from unit | to interval (dominant) |
 |---|---|---|---|
-| `0x007c20` | `?ApplyToRange@@YGXPAVApplyElem@@HHP81@AEXXZ@Z` | applyrange | `0x7c20` ? |
-| `0x008710` | `?Construct@CZDArrayDerived@@QAEPAU1@HH@Z` | zdarrayderived | `0x8710` ? |
-| `0x008750` | `?Destroy@zDArray@@QAEHXZ` | zvec | `0x8750` ? |
-| `0x008a40` | `?BuildLogicTypeTable@@YGXPAUCLogicTypeBuilder@@@Z` | logictypetable | `0x8a40` ? |
-| `0x008b90` | `?Finalize@CFinalize8b90@@QAEXH@Z` | logictypetable | `0x8b90` ? |
-| `0x008c00` | `?Chain@CSerialObjRef@@QAEHPAUCSerialArchive@@HHPAVCSerialObj` | serialobjref | `0x8c00` ? |
-| `0x009bb0` | `?Deserialize@CTriggerLoadRec@@QAEHPAUCSerialArchive@@@Z` | triggerloadrec | `0x9bb0` ? |
-| `0x00a000` | `?WrapCoord@CPlaneRender@@QAEXPAH0@Z` | wwdfile | `0xa000` ? |
-| `0x00a3b0` | `?RegisterGameObjectTypes@@YAXPAUGameObjFactoryCtx@@@Z` | gameobjectfactory | `0xa3b0` ? |
-| `0x00af50` | `?ResetDat6295d8@@YAXXZ` | gameobjectfactory | `0xaf50` ? |
-| `0x00cd00` | `?Next@Rng@@YAHXZ` | gruntzrandom | `0xcd00` ? |
-| `0x00cd70` | `?Roll@RangeBox@Rng@@QAEXHHHH@Z` | gruntzrandom | `0xcd70` ? |
+| `0x008710` | `??0?$zDArray@P8CUserLogic@@AEHXZ@@QAE@HH@Z` | zdarrayderived | `0x8710` ? |
+| `0x008a40` | `?BuildLogicTypeTable@CUserLogic@@QAEXPAUCGameObject@@@Z` | userlogic | `0x8a40` ? |
+| `0x008c00` | `?Chain@CWapX@@QAEHPAVCFileMemBase@@HHPAUCGameObject@@@Z` | userlogic | `0x8c00` ? |
+| `0x00a000` | `?WrapCoord@CDDrawWorkerHost@@QAEXPAJ0@Z` | wwdfile | `0xa000` ? |
+| `0x00a3b0` | `?RegisterGameObjectTypes@@YAXPAVCDDrawSurfaceMgr@@@Z` | gameobjectfactory | `0xa3b0` ? |
 | `0x00d170` | `?SaveGame@@YAHPAUCGameSaveHost@@PAD@Z` | gamesave | `0xd170` ? |
-| `0x00d210` | `?ParseSerial@@YAHPAUCGameRegistry@@PAD@Z` | serialobjectfactory | `0xd210` ? |
-| `0x00d2a0` | `?SerialObjectFactory@@YAHPAX0HHPAPAX@Z` | serialobjectfactory | `0xd2a0` ? |
+| `0x00d210` | `?ParseSerial@@YAHPAVCGruntzMgr@@PAD@Z` | serialobjectfactory | `0xd210` ? |
+| `0x00d2a0` | `?SerialObjectFactory@@YAHPAX0HH0@Z` | serialobjectfactory | `0xd2a0` ? |
+| `0x00f400` | `??0CGruntCellRec@@QAE@XZ` | grunt | `0xf400` ? |
 | `0x010b20` | `??0CSecretLevelTrigger@@QAE@XZ` | secretteleportertrigger | `0x10b20` ? |
 | `0x011160` | `??0CTileTrigger@@QAE@XZ` | tilelogicpump | `0x11160` ? |
 | `0x011ef0` | `??0CGruntHealthSprite@@QAE@XZ` | grunthealthsprite | `0x11ef0` ? |
@@ -55,37 +52,32 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x0136d0` | `??0CMotionState@@QAE@XZ` | motionstate | `0x136d0` ? |
 | `0x0138d0` | `??0CUserLogic@@QAE@XZ` | userlogicctoremit | `0x138d0` ? |
 | `0x013940` | `??0CMovingLogic@@QAE@XZ` | movinglogic | `0x13940` ? |
-| `0x013c70` | `?ReleaseDeferred@CProjectile@@QAEXH@Z` | projectile | `0x13c70` ? |
-| `0x013fb0` | `?EnterAttractMode@CAttract@@QAEHHHH@Z` | attractstate | `0x13fb0` ? |
-| `0x015fe0` | `?ToggleRow@CBattlezDlg@@QAEHH@Z` | battlezdlgrow | `0x14b10` dialogs |
-| `0x0160f0` | `?FlashRect160f0@FlashHost@m4@@QAEXXZ` | flashrect | `0x14b10` dialogs |
-| `0x0180e0` | `?Populate180e0@CustomLevelDlg@m4dlg@@QAEHPAH@Z` | customleveldlg | `0x180e0` ? |
-| `0x018740` | `_$E4` | gametext | `0x18740` ? |
-| `0x018830` | `?LoadAssets@CBootyCheatState@@QAEHHHH@Z` | bootycheatstate | `0x18830` ? |
-| `0x018f00` | `?ShowSecretBonusMessage@BzState@@QAEHXZ` | bootymessages | `0x18f00` ? |
-| `0x019920` | `?BuildGruntSprintAnimation@CGruntSprintAnim@@QAEHXZ` | gruntsprintanim | `0x19540` bootystateactivate |
-| `0x019f50` | `?RangeStd@Rng@@YGHHH@Z` | gruntzrandom | `0x19cd0` gamemode |
-| `0x01af70` | `?FormatHudText@CMenuState@@QAEXPAVCString@@H@Z` | menustate | `0x1af70` ? |
-| `0x01b450` | `?BuildBootyWalkingGruntz@BzState@@QAEHXZ` | bootywalkanim | `0x1b450` ? |
-| `0x01b690` | `?UpdateBootyWalkingGruntz@BzState@@QAEHXZ` | bootywalkanim | `0x1b690` ? |
-| `0x01c070` | `?BuildBootyPerfectAnimation@EngineLabelBacklog@@QAEHXZ` | iconloaders | `0x1c070` ? |
-| `0x01c9d0` | `?ShowLevelCompleteMessage@BzState@@QAEXXZ` | bootymessages | `0x1c0f0` bootystateactivate |
-| `0x01ce60` | `?BuildBootyGruntIdleAnimation@BzState@@QAEHXZ` | bootymessages | `0x1c0f0` bootystateactivate |
-| `0x01e720` | `?BuildPowerupIconKeys@@YGXPAVPowerupKeyRegistry@@H@Z` | iconloaders | `0x1c0f0` bootystateactivate |
-| `0x01f940` | `?PlayIfElapsed_01f940@LeafCue@@QAEHHHHH@Z` | leafcueplay | `0x1f940` ? |
+| `0x015fe0` | `?ToggleRow@CBattlezDlg@@QAEXH@Z` | battlezdlgrow | `0x14b10` dialogs |
+| `0x018f00` | `?ShowSecretBonusMessage@CBootyState@@QAEHXZ` | bootymessages | `0x18f00` ? |
+| `0x019920` | `?BuildGruntSprintAnimation@CBootyState@@QAEHXZ` | gruntsprintanim | `0x19540` bootystateactivate |
+| `0x019f50` | `?RandRange@CGruntzMgr@@QAEHHH@Z` | gruntzrandom | `0x19540` bootystateactivate |
+| `0x01b450` | `?BuildBootyWalkingGruntz@CBootyState@@QAEHXZ` | bootywalkanim | `0x19540` bootystateactivate |
+| `0x01b690` | `?UpdateBootyWalkingGruntz@CBootyState@@QAEHXZ` | bootywalkanim | `0x19540` bootystateactivate |
+| `0x01c070` | `?BuildBootyPerfectAnimation@CBootyState@@QAEHXZ` | iconloaders | `0x19540` bootystateactivate |
+| `0x01c9d0` | `?ShowLevelCompleteMessage@CBootyState@@QAEXXZ` | bootymessages | `0x1c9d0` ? |
+| `0x01ce60` | `?BuildBootyGruntIdleAnimation@CBootyState@@QAEHXZ` | bootymessages | `0x1ce60` ? |
+| `0x01e720` | `?BuildPowerupIconKeys@CMultiBootyState@@QAEXPAVCString@@H@Z` | iconloaders | `0x1e720` ? |
+| `0x01ec20` | `?GetWarlordName@CMultiBootyState@@QAE?AVCString@@H@Z` | gametext | `0x1ec20` ? |
+| `0x01f450` | `?GetName@GruntzPlayer@@QAE?AVCString@@XZ` | multistartdlgroster | `0x1ecf0` bootystateactivate |
+| `0x01f940` | `?PlayIfElapsed@LeafCue@@QAEHHHHH@Z` | leafcueplay | `0x1f940` ? |
 | `0x01f9b0` | `?StartUpPrompt@@YAHPAUHWND__@@@Z` | startupprompt | `0x1f9b0` ? |
-| `0x0212a0` | `?Reset@CButeStore212a0@@QAEXXZ` | butestoreclear | `0x212a0` ? |
-| `0x0213a0` | `?GetVBaseField@CVBaseFieldHost@@QAEHXZ` | butemgr | `0x213a0` ? |
+| `0x0212a0` | `?ResetCopy@CButeStoreResetCopyClear@@QAEXXZ` | butestoreclear | `0x212a0` ? |
 | `0x029ac0` | `??0CRect@@QAE@HHHH@Z` | wap32rect | `0x29a30` battlezmapconfig |
-| `0x029af0` | `?TileSwitch29af0@@YGXHHHHHH@Z` | gruntmovestep | `0x29a30` battlezmapconfig |
-| `0x02b340` | `?Clip@CBrickzGrid@@QAEXPBUtagRECT@@@Z` | brickzclip | `0x29a30` battlezmapconfig |
-| `0x0310f0` | `?IndexToPtr@zDArray@@QAEHH@Z` | zvec | `0x29a30` battlezmapconfig |
+| `0x029af0` | `?TileSwitch@@YGXPAVCGrunt@@HHHHH@Z` | gruntmovestep | `0x29a30` battlezmapconfig |
+| `0x02b340` | `?Clip@CMapMgr@@QAEXPBUtagRECT@@@Z` | brickzclip | `0x29a30` battlezmapconfig |
+| `0x0310f0` | `?IndexToPtr@_zdvec@@QAEPADH@Z` | zvec | `0x29a30` battlezmapconfig |
 | `0x0311b0` | `?Push@FreeNodePool@@QAEXPAX@Z` | freenodepool | `0x29a30` battlezmapconfig |
-| `0x031250` | `?Drain_031250@CQueueDrainHost@@QAEPAXXZ` | queuedrainhost | `0x29a30` battlezmapconfig |
-| `0x0312a0` | `?IndexToPtr@_zvec@@QAEHH@Z` | zvec | `0x29a30` battlezmapconfig |
-| `0x032ce0` | `?ScanRegion32ce0@CScanMgr@@QAEHPAVCGrunt@@@Z` | grunttilescan | `0x32ce0` ? |
-| `0x033520` | `?Step33520@CStepMgr@@QAEHPAVCGrunt@@@Z` | gruntstatestep | `0x33520` ? |
-| `0x035f10` | `?Scan@CTileScan@@QAEHPAUCScanArg@@@Z` | tilescan | `0x35f10` ? |
+| `0x0311e0` | `?SnapToTileCenter@CDDrawWorkerHost@@QAEXPAUCoord@@HH@Z` | wwdfile | `0x29a30` battlezmapconfig |
+| `0x031250` | `?Drain@CDDrawChildGroup@@QAEPAUCGameObject@@XZ` | queuedrainhost | `0x29a30` battlezmapconfig |
+| `0x0312a0` | `?IndexToPtr@_zvec@@QAEPADH@Z` | zvec | `0x29a30` battlezmapconfig |
+| `0x032ce0` | `?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z` | grunttilescan | `0x32ce0` ? |
+| `0x033520` | `?Step33520@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z` | gruntstatestep | `0x33520` ? |
+| `0x035f10` | `?Scan@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z` | tilescan | `0x35f10` ? |
 | `0x037910` | `?Dispatch@CLatencyList@@QAEHH@Z` | bzkinddispatch | `0x37910` ? |
 | `0x0379a0` | `?Clear@CKeyedList@@QAEXXZ` | keyedlist | `0x379a0` ? |
 | `0x037a70` | `?AddNode@CKeyedList@@QAEPAUCKeyedNode@@PBDHH@Z` | keyedlist | `0x37a70` ? |
@@ -94,185 +86,135 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x038220` | `?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z` | multistartdlgroster | `0x38220` ? |
 | `0x0387c0` | `?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z` | inputdeviceconfig | `0x387c0` ? |
 | `0x0388e0` | `?PopulateInputDeviceCombo@@YAHPAUHWND__@@HH@Z` | inputdeviceconfig | `0x388e0` ? |
-| `0x039160` | `?RefreshTitle@CAttract@@QAEHH@Z` | attract | `0x38d20` creditsstate |
 | `0x039dc0` | `?LoadCreditzAssets@CCreditsState@@QAEXXZ` | creditzassets | `0x39dc0` ? |
 | `0x03a1d0` | `?BltSelf@CDDrawSurfacePair@@QAEXPAV1@@Z` | ddrawsurfacepair | `0x3a1d0` ? |
-| `0x03a530` | `?ConstructLogicActRange_62bfa0@@YAXXZ` | cursorsnapactreg | `0x3a200` cursorsnapsprite |
+| `0x03a200` | `?CursorSnapWorkerPump@@YAHPAUCGameObject@@@Z` | cursorsnapsprite | `0x3a200` ? |
+| `0x03a340` | `??0CCursorSnapSprite@@QAE@PAUCGameObject@@@Z` | cursorsnapsprite | `0x3a340` ? |
 | `0x03a710` | `?RegisterXLogic_62bfa0@@YAXXZ` | cursorsnapactreg | `0x3a710` ? |
+| `0x03a910` | `?AdvanceAnim@CCursorSnapSprite@@QAEHXZ` | cursorsnapactreg | `0x3a910` ? |
 | `0x03ecf0` | `??0CExitTrigger@@QAE@PAUCGameObject@@@Z` | exittrigger | `0x3ecf0` ? |
+| `0x03f3f0` | `?RegisterActs@CExitTrigger@@SAXXZ` | wormholeacts | `0x3f3f0` ? |
 | `0x03f5f0` | `?AdvanceAnim@CExitTrigger@@QAEHXZ` | fortconquered | `0x3f5f0` ? |
-| `0x0476b0` | `?Update@RbEffect@@QAEHXZ` | rockbreakeffectupdate | `0x476b0` ? |
+| `0x0476b0` | `?Update@CExplosion@@QAEHXZ` | rockbreakeffectupdate | `0x476b0` ? |
 | `0x04a780` | `?Classify@MotionEntity@@QAEPAUGruntDirectionCell@@PAU1@D@Z` | directionclassify | `0x47a10` grunt |
-| `0x04d800` | `?winapi_04d800_CopyRect@CUserLogic@@QAEHHHHHHHHHHHHH@Z` | userlogic | `0x4d800` ? |
-| `0x04dd50` | `?LoadGruntTypeTable@CUserLogic@@QAEXHHHH@Z` | userlogic | `0x4dd50` ? |
-| `0x050a50` | `?SetupTubeAnim@CGruntTube@@QAEHH@Z` | grunttubeanim | `0x50a50` ? |
-| `0x0555e0` | `?Load@CGameStateRecord@@QAEHPAUCSerialArchive@@@Z` | gamestaterecordload | `0x555e0` ? |
-| `0x056eb0` | `?DeserializeStrings@GruntDataRecord@@QAEHPAUCSerialArchive@@` | gruntdatarecord | `0x56eb0` ? |
-| `0x058b60` | `?ApplyGeometryDirect@CGameObject@@QAEXHH@Z` | wwdgameobject | `0x56f80` gruntcombat |
+| `0x050a50` | `?SetupTubeAnim@CGrunt@@QAEHH@Z` | grunttubeanim | `0x50a50` ? |
+| `0x0555e0` | `?LoadStateRecord@CGrunt@@QAEHPAVCFileMemBase@@@Z` | gamestaterecordload | `0x555e0` ? |
+| `0x056eb0` | `?DeserializeStrings@CGruntCellRec@@QAEHPAVCFileMemBase@@@Z` | gruntdatarecord | `0x56eb0` ? |
+| `0x058b60` | `?ApplyGeometryDirect@CWwdGameObjectA@@QAEXPAVCAniElement@@H@` | wwdgameobject | `0x56f80` gruntcombat |
 | `0x058bc0` | `?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z` | motionstate | `0x56f80` gruntcombat |
 | `0x058ca0` | `?SetZ@CMotionState@@QAEXN@Z` | motionstate | `0x56f80` gruntcombat |
 | `0x058cd0` | `??0CUserLogic@@QAE@PAUCGameObject@@@Z` | userlogicctoremit | `0x56f80` gruntcombat |
-| `0x05d210` | `?LoadGruntTuningConstants@CUserLogic@@QAEXH@Z` | userlogic | `0x5d210` ? |
-| `0x05ecd0` | `?RunPositionInterpStep@CGrunt@@QAEHH@Z` | gruntentrancearrival | `0x5ecd0` ? |
 | `0x060150` | `?LoadGruntDeathAnimations@CGrunt@@QAEHHH@Z` | gruntassetloaders | `0x60150` ? |
-| `0x0612a0` | `?LoadGruntDecayConfig@CGruntBehaviorLeaf@@QAEHXZ` | gruntbehaviorleaf | `0x612a0` ? |
-| `0x061570` | `?LoadGruntDecayConfig2@CGruntBehaviorLeaf@@QAEHXZ` | gruntbehaviorleaf | `0x61570` ? |
+| `0x0612a0` | `?LoadGruntDecayConfig@CGrunt@@QAEHXZ` | gruntbehaviorleaf | `0x612a0` ? |
+| `0x061570` | `?LoadGruntDecayConfig2@CGrunt@@QAEHXZ` | gruntbehaviorleaf | `0x61570` ? |
 | `0x065e80` | `?LoadPickupSprites@CGrunt@@QAEHHHHHH@Z` | gruntpickupload | `0x65e80` ? |
-| `0x06b270` | `?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@Z` | ddrawsurfacepair | `0x6b270` ? |
-| `0x06b2a0` | `?LookupValue_06b2a0@CDDrawSubMgrLeaf@@QAEPAVCObject@@PBD@Z` | ddrawsubmgrleaf | `0x6b2a0` ? |
-| `0x06b2e0` | `?Apply@CEffect6b@@QAEXHH@Z` | orphanmethods | `0x6b2e0` ? |
-| `0x06b330` | `?PointInBounds@CGameLevel@@SAHPBULevelCoordRect@@HH@Z` | gamelevel | `0x6b330` ? |
-| `0x06eb80` | `?LoadTeleporterGooConfig@CGooWellMgr@@QAEHH@Z` | goowellmgr | `0x6eb80` ? |
-| `0x075e90` | `?Load@CTerrainTileLoader@@QAEHHHHHHH@Z` | terraintileloader | `0x75e90` ? |
+| `0x06b270` | `?AtChecked@CAniElement@@QBEPAVCObject@@H@Z` | ddrawsurfacepair | `0x6b270` ? |
+| `0x06b2a0` | `?LookupValue@CDDrawSubMgrLeaf@@QAEPAVCObject@@PBD@Z` | ddrawsubmgrleaf | `0x6b2a0` ? |
+| `0x06b2e0` | `?Apply@CWapX@@QAEXPAVCAniElement@@H@Z` | gruntentrancearrival | `0x6b2e0` ? |
+| `0x06b330` | `?PointInBounds@CGameLevel@@SAHPBUtagRECT@@HH@Z` | gamelevel | `0x6b330` ? |
+| `0x06eb80` | `?LoadTeleporterGooConfig@CTriggerMgr@@QAEHH@Z` | goowellmgr | `0x6eb80` ? |
+| `0x075e90` | `?LoadTileArrivalFx@CTriggerMgr@@QAEHHHHHHH@Z` | terraintileloader | `0x75e90` ? |
 | `0x07d810` | `?SetBute@CGruntPuddle@@QAEXPAD@Z` | gruntpuddle | `0x7d810` ? |
 | `0x07fae0` | `??0CGruntStaminaSprite@@QAE@PAUCGameObject@@@Z` | gruntstaminasprite | `0x7fae0` ? |
-| `0x07fbb0` | `?GetStaminaTime@@YGHPAVCGrunt@@@Z` | gruntstaminasprite | `0x7fbb0` ? |
 | `0x07fbd0` | `??0CGruntToyTimeSprite@@QAE@PAUCGameObject@@@Z` | grunttoytimesprite | `0x7fbd0` ? |
-| `0x07fca0` | `?GetToyTime@@YGHPAVCGrunt@@@Z` | grunttoytimesprite | `0x7fca0` ? |
 | `0x07fcc0` | `??0CGruntWingzTimeSprite@@QAE@PAUCGameObject@@@Z` | gruntwingztimesprite | `0x7fcc0` ? |
-| `0x07fd90` | `?GetWingzTime@@YGHPAVCGrunt@@@Z` | gruntwingztimesprite | `0x7fd90` ? |
-| `0x0810f0` | `?LoadAttributes@CBrickz@@QAEHHH@Z` | brickzload | `0x810f0` ? |
+| `0x0810f0` | `?LoadAttributes@CGruntzMapMgr@@QAEHHH@Z` | brickzload | `0x810f0` ? |
 | `0x082600` | `?LookupTile@CGameLevel@@QAEHHH@Z` | gamelevel | `0x82600` ? |
 | `0x083030` | `??0CGruntzMgr@@QAE@XZ` | gruntzmgr | `0x83030` ? |
-| `0x0853f0` | `?IsCellClear@CBrickzGrid@@QAEHHH@Z` | brickz | `0x83450` rezsync |
-| `0x085480` | `?FreeNodes@CMapLogic@@QAEXXZ` | maplogic | `0x83450` rezsync |
+| `0x0853d0` | `?RezFreeStdcall@@YGXPAX@Z` | rezsync | `0x853d0` ? |
+| `0x085500` | `?GetRezPath@CGruntzMgr@@QAE?AVCString@@XZ` | rezsync | `0x85500` ? |
 | `0x0860b0` | `?UpdateScoreHud@CGruntzMgr@@QAEXXZ` | gruntzmgr | `0x860b0` ? |
 | `0x0861e0` | `?AccrueScoreTime@CGruntzMgr@@QAEXXZ` | gruntzmgr | `0x861e0` ? |
+| `0x08c380` | `?SetRect@CRect@@QAEXHHHH@Z` | wap32rect | `0x8b8c0` gruntzmgr |
 | `0x08c750` | `??0CState@@QAE@XZ` | state | `0x8b8c0` gruntzmgr |
-| `0x08c970` | `?SetBeginClearParams@CState@@QAEHHHH@Z` | play | `0x8b8c0` gruntzmgr |
-| `0x08dd80` | `?BltChecked@DDrawBltHost@@QAEHXZ` | ddrawblterrthunk | `0x8b8c0` gruntzmgr |
-| `0x08e470` | `?HandleDebugPosition@RezMgr@@QAEHXZ` | rezmgr | `0x8b8c0` gruntzmgr |
-| `0x08fea0` | `??0FileIOOwner@@QAE@XZ` | unknownfileioctor | `0x8b8c0` gruntzmgr |
+| `0x08c9d0` | `??0CPlay@@QAE@XZ` | play | `0x8b8c0` gruntzmgr |
+| `0x08dd80` | `?GetCapsChecked@CDDrawPtrCollections@@QAEHXZ` | ddrawblterrthunk | `0x8b8c0` gruntzmgr |
+| `0x08e470` | `?HandleDebugPosition@CGruntzMgr@@QAEHXZ` | rezmgr | `0x8b8c0` gruntzmgr |
+| `0x08fea0` | `??0CFecFile@@QAE@XZ` | unknownfileioctor | `0x8b8c0` gruntzmgr |
 | `0x090550` | `?LaunchPortalExe@@YGHPAD@Z` | portalpath | `0x8b8c0` gruntzmgr |
-| `0x090860` | `?LaunchProcessInDir@@YGHPAD0@Z` | portalpath | `0x8b8c0` gruntzmgr |
-| `0x091670` | `?MakeRezPath@RezMgr@@QAEHXZ` | rezmgr | `0x8b8c0` gruntzmgr |
+| `0x090860` | `?LaunchProcessInDir@CGruntzMgr@@QAEHPAD0@Z` | portalpath | `0x8b8c0` gruntzmgr |
+| `0x091670` | `?MakeRezPath@CGruntzMgr@@QAEHXZ` | rezmgr | `0x8b8c0` gruntzmgr |
 | `0x0928c0` | `?GetWorldFileName@CGruntzMgr@@QAE?AVCString@@XZ` | worldlevelpath | `0x8b8c0` gruntzmgr |
 | `0x092ab0` | `?winapi_092ab0_EndDialog@@YGHPAUHWND__@@IIJ@Z` | gruntzcmdmgr | `0x8b8c0` gruntzmgr |
-| `0x093d40` | `?BuildLevelRezPath@LevelRezLoader@@QAEHHHHHVCString@@@Z` | levelrezpath | `0x93d40` ? |
+| `0x093d40` | `?BuildLevelRezPath@CGruntzMgr@@QAEHHHHHVCString@@@Z` | levelrezpath | `0x93d40` ? |
+| `0x094340` | `??0?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@QAE@XZ` | arrayserialize | `0x94340` ? |
 | `0x094640` | `??0CGruntzWnd@@QAE@XZ` | gruntzwnd | `0x94640` ? |
-| `0x094bc0` | `?Validate@ValidateHost@@QAEHXZ` | terraintileloader | `0x94bc0` ? |
-| `0x095090` | `?LoadAssets@CHelpState@@QAEHHHH@Z` | helpstate | `0x95090` ? |
-| `0x095140` | `?Step@CState95@@QAEHH@Z` | orphanmethods | `0x95140` ? |
 | `0x098140` | `??0CToyPeek@@QAE@PAUCGameObject@@@Z` | toypeek | `0x95b10` ingameicon |
 | `0x0997c0` | `?Update@CInGameText@@QAEHXZ` | ingametextupdate | `0x95b10` ingameicon |
 | `0x09b770` | `?StateDispatch@@YAHPAUCGameObject@@@Z` | statedispatch | `0x9b770` ? |
 | `0x09b8b0` | `??0CLevelTime@@QAE@PAUCGameObject@@@Z` | leveltimedtor | `0x9b8b0` ? |
-| `0x09c650` | `?Load@CEventLoadRec@@QAEHPAUCSerialArchive@@@Z` | streamrecordloaders | `0x9c650` ? |
-| `0x09cab0` | `?LookupPtr@C9cab0@@QAEHH@Z` | streamrecordloaders | `0x9cab0` ? |
-| `0x09fe50` | `?LoadAssets@CMenuState@@QAEHHHH@Z` | menustateassets | `0x9fe50` ? |
-| `0x0a0280` | `?Init@CChatBox@@QAEXXZ` | chatbox | `0xa0280` ? |
-| `0x0a03f0` | `?LoadTitleConfig@CAttract@@QAEHH@Z` | attract | `0xa03f0` ? |
-| `0x0a09a0` | `?LoadStateImages@CImageState@@QAEHXZ` | stateimages | `0xa05a0` menustate |
-| `0x0a0a30` | `?Activate@CAttract@@QAEHXZ` | attract | `0xa05a0` menustate |
+| `0x09c650` | `?Deserialize@CTimer@@QAEHPAVCFileMemBase@@@Z` | streamrecordloaders | `0x9c650` ? |
+| `0x09cab0` | `?Find@CDDrawWorkerCache@@QAEPAVCObject@@PBD@Z` | streamrecordloaders | `0x9cab0` ? |
 | `0x0a1190` | `?SetMenuTextRect@@YAXXZ` | mainmenubuilder | `0xa1190` ? |
-| `0x0a11d0` | `?BuildMainMenuTree@@YAXPAX@Z` | mainmenubuilder | `0xa11d0` ? |
+| `0x0a11d0` | `?BuildMainMenuTree@@YAHPAVCChatBox@@H@Z` | mainmenubuilder | `0xa11d0` ? |
 | `0x0ac1d0` | `??0CDoNothing@@QAE@PAUCGameObject@@@Z` | donothing | `0xabfa0` frontcandyani |
 | `0x0ac3f0` | `??0CBehindCandy@@QAE@PAUCGameObject@@@Z` | behindcandy | `0xabfa0` frontcandyani |
 | `0x0ac620` | `??0CEyeCandy@@QAE@PAUCGameObject@@@Z` | eyecandy | `0xabfa0` frontcandyani |
-| `0x0acb30` | `?InitLogicDispatch_646060@@YAXXZ` | logicdispatchinit | `0xabfa0` frontcandyani |
-| `0x0adbe0` | `??0CMenuSparkle@@QAE@PAUCGameObject@@@Z` | menusparkle | `0xadbe0` ? |
-| `0x0ae2a0` | `?AdvanceAnim@CMenuSparkle@@QAEHXZ` | menusparkle | `0xae2a0` ? |
 | `0x0ae360` | `?GameIconFlashEffect@@YAHPAUCGameObject@@@Z` | gameiconflasheffect | `0xae360` ? |
 | `0x0ae3f0` | `??0CWayPoint@@QAE@PAUCGameObject@@@Z` | waypoint | `0xae3f0` ? |
 | `0x0ae5f0` | `??0CGuardPoint@@QAE@PAUCGameObject@@@Z` | guardpoint | `0xae5f0` ? |
-| `0x0b15b0` | `?ConstructActRange_646188@@YAXXZ` | spotlightactreg | `0xb1200` spotlightctor |
-| `0x0b1790` | `?RegisterActs_646188@@YAXXZ` | spotlightactreg | `0xb1200` spotlightctor |
-| `0x0b1ee0` | `?Update_0b1ee0@CSpotLight@@QAEHXZ` | spotlight | `0xb1ee0` ? |
-| `0x0b3ae0` | `?ConstructActRange_646250@@YAXXZ` | pathhazardactreg | `0xb35a0` pathhazard |
+| `0x0b1200` | `??0CSpotLight@@QAE@PAUCGameObject@@@Z` | spotlightctor | `0xb1200` ? |
+| `0x0b1790` | `?RegisterActs_646188@@YAXXZ` | spotlightactreg | `0xb1790` ? |
+| `0x0b1af0` | `?Tick@CSpotLight@@QAEHXZ` | spotlightctor | `0xb1af0` ? |
+| `0x0b1ee0` | `?Update@CSpotLight@@QAEHXZ` | spotlight | `0xb1ee0` ? |
 | `0x0b3cc0` | `?RegisterActs_646250@@YAXXZ` | pathhazardactreg | `0xb35a0` pathhazard |
-| `0x0b4350` | `?Tick@CStrikeEffect@@QAEHXZ` | orphanmethods | `0xb35a0` pathhazard |
 | `0x0b49b0` | `??0CRainCloud@@QAE@PAUCGameObject@@@Z` | raincloud | `0xb35a0` pathhazard |
 | `0x0b4a90` | `??0CUFO@@QAE@PAUCGameObject@@@Z` | ufo | `0xb35a0` pathhazard |
-| `0x0b4cb0` | `?Method_b4cb0@CUFO@@QAEHPAXHHH@Z` | ufo | `0xb35a0` pathhazard |
-| `0x0bef10` | `?Unmatched_bef10@@YAXXZ` | packetpool | `0xbef10` ? |
-| `0x0bf1d0` | `?BuildGruntzCrcInfo@CrcOwner@@QAEXXZ` | buildgruntzcrcinfo | `0xbef80` netcmdslot |
+| `0x0bf1d0` | `?BuildGruntzCrcInfo@CNetSession@@QAEXXZ` | buildgruntzcrcinfo | `0xbef80` netcmdslot |
 | `0x0bf530` | `?Unmatched_bf530@@YAPAXH@Z` | packetpool | `0xbef80` netcmdslot |
-| `0x0c03f0` | `?Set@GlyphTable@@QAEXHH@Z` | glyphtable | `0xbef80` netcmdslot |
-| `0x0c0430` | `?Get@GlyphTable@@QAEHH@Z` | glyphtable | `0xbef80` netcmdslot |
-| `0x0c0590` | `?ComputeSignature@CGameSyncSig@@QAEHXZ` | gamechecksum | `0xbef80` netcmdslot |
-| `0x0c2e20` | `?FlashRectC2e20@FlashHost@m4@@QAEHXZ` | flashrect | `0xc2980` multistartdlgroster |
-| `0x0c4b60` | `?SelectColor@CNetSessHost@@QAEHHH@Z` | netcmdmgr | `0xc2980` multistartdlgroster |
-| `0x0c8980` | `?DtorMembers@CSBI_RectOnly@@QAEXXZ` | sbi_rectonly | `0xc8700` play |
-| `0x0cb800` | `?OnActivate@CPlay@@QAEHXZ` | playstateactivate | `0xc8700` play |
-| `0x0cbcc0` | `?DispatchKey@CGamePlayInput@@QAEHHH@Z` | gamekeyhandler | `0xcbcc0` ? |
-| `0x0cf770` | `?DrawDebugStats@CPlay@@QAEXXZ` | drawdebugstats | `0xcdb10` play |
-| `0x0d00a0` | `?Show@BlitHost@@QAEXH@Z` | savegame | `0xcdb10` play |
-| `0x0d1650` | `?DrawMessageFrame@CPlay@@QAEXHH@Z` | playmessageimage | `0xcdb10` play |
-| `0x0d1b60` | `?Dispatch@CCmdHandler@@QAEHIIIIIII@Z` | playercommandstep | `0xd1b60` ? |
-| `0x0d2b20` | `?PlaceStartGruntz@CLevelValidator@@QAEHXZ` | leveltilevalidation | `0xd2b20` ? |
-| `0x0d2dd0` | `?ValidateLevelTiles@CLevelValidator@@QAEHXZ` | leveltilevalidation | `0xd2dd0` ? |
-| `0x0d53a0` | `?GetTileHandle@CPlaneRender@@QAEHHH@Z` | wwdfile | `0xd53a0` ? |
+| `0x0c0590` | `?Checksum@CNetSession@@QAEHXZ` | gamechecksum | `0xbef80` netcmdslot |
+| `0x0c4b60` | `?SelectColor@CMultiStartDlg@@QAEHHH@Z` | netcmdmgr | `0xc2980` multistartdlgroster |
+| `0x0c86d0` | `??0CSbiHlRow@@QAE@XZ` | modeobjinit | `0xc86d0` ? |
+| `0x0c9e40` | `?ProfileInputFrame@CPlay@@QAEHXZ` | play | `0xc9e40` ? |
+| `0x0ca0a0` | `?ProfileDeltaFrame@CPlay@@QAEHXZ` | play | `0xca0a0` ? |
+| `0x0cf770` | `?DrawDebugStats@CPlay@@QAEXXZ` | drawdebugstats | `0xcedf0` play |
+| `0x0d1650` | `?DrawMessageFrame@CPlay@@QAEXHH@Z` | playmessageimage | `0xcedf0` play |
+| `0x0d1b60` | `?ExecCommand@CPlay@@QAEHHHHHHHH@Z` | playercommandstep | `0xd1b60` ? |
+| `0x0d2b20` | `?PlaceStartGruntz@CPlay@@QAEHXZ` | leveltilevalidation | `0xd2b20` ? |
+| `0x0d2dd0` | `?ValidateLevelTiles@CPlay@@QAEHXZ` | leveltilevalidation | `0xd2dd0` ? |
+| `0x0d53a0` | `?GetTileHandle@CDDrawWorkerHost@@QAEHHH@Z` | wwdfile | `0xd53a0` ? |
 | `0x0d53d0` | `?ScanBuildTiles@CPlay@@QAEHXZ` | playplanescan | `0xd53d0` ? |
-| `0x0d5b20` | `?PositionBridgeToggle@CLevelValidator@@QAEHHH@Z` | leveltilevalidation | `0xd5960` play |
-| `0x0d5c10` | `?Gap_0d5c10@@YAHXZ` | cimage | `0xd5960` play |
-| `0x0d7220` | `?Begin@ActionBeginHost@@QAEHH@Z` | actionbeginhost | `0xd5960` play |
+| `0x0d5b20` | `?PositionBridgeToggle@CPlay@@QAEHHH@Z` | leveltilevalidation | `0xd5960` play |
+| `0x0d5c10` | `?DrawScreenTextImage@CState@@QAEHPBD@Z` | cimage | `0xd5960` play |
 | `0x0d9290` | `?ScanShuffleQuads@CPlay@@QAEHXZ` | playplanescan | `0xd5960` play |
-| `0x0da790` | `??0CGruntSpawnLevel@@QAE@XZ` | gruntspawnlevel | `0xd5960` play |
-| `0x0dbc80` | `?BuildWorldLevelPath@CWorldState@@QAEHH@Z` | worldlevelpath | `0xd5960` play |
-| `0x0de140` | `?ResetPreview@CGameModeBase@@QAEXXZ` | gamemode | `0xde030` levelpreview |
 | `0x0e0650` | `??0CBoomerang@@QAE@PAUCGameObject@@@Z` | boomerang | `0xdec60` projectile |
-| `0x0e0d40` | `?Load@CProjLoadRec@@QAEHPAUCSerialArchive@@HHPAVCSerialObj@@` | projloadrec | `0xdec60` projectile |
-| `0x0e6020` | `?winapi_0e6020_SetRect@StubOwner_e6020@@QAEHHHHHHHHHHH@Z` | sbi_wellgoo | `0xe6020` ? |
-| `0x0e6380` | `?Tick@CSBI_WellGoo@@QAEHXZ` | sbi_wellgoo | `0xe6380` ? |
-| `0x0e6d90` | `?ClearFrame@CSBI_Image@@QAEXXZ` | sbi_image | `0xe6d90` ? |
-| `0x0e6dd0` | `?TickRenderCurrent_0e6dd0@CSBI_Image@@QAEHXZ` | sbi_image | `0xe6dd0` ? |
-| `0x0e7400` | `?ResetCounters@CSBI_ImageSet@@QAEXXZ` | sbi_imageset | `0xe7400` ? |
-| `0x0e7440` | `?TickRenderFrame_0e7440@CSBI_ImageSet@@QAEHXZ` | sbi_imageset | `0xe7440` ? |
-| `0x0ea990` | `?Load@CGruntStateRec@@QAEHPAUCSerialArchive@@HHH@Z` | gruntstaterec | `0xea990` ? |
-| `0x0ebd30` | `?Cmd_ResetScroll_0ebd30@@YAXXZ` | cmdscrollapply | `0xebd30` ? |
-| `0x0ebd70` | `?UpdateMgrScroll@@YAXPAVCGruntzMgr@@PAHH@Z` | mgrautoscroll | `0xebd70` ? |
-| `0x0ec1c0` | `?Cmd_ApplyScrollParams_0ec1c0@@YAXHHHHH@Z` | cmdscrollapply | `0xec1c0` ? |
-| `0x0ec670` | `?ResolveArrivalReposition@CGrunt@@QAEHXZ` | grunt | `0xec670` ? |
-| `0x0ecc90` | `?ArrivalScanA@CGrunt@@QAEHXZ` | gruntarrivalscan | `0xecc90` ? |
-| `0x0ed9f0` | `?WanderStep@CGrunt@@QAEHXZ` | wanderidlestep | `0xed9f0` ? |
-| `0x0ee800` | `?ArrivalReticleScan@CGrunt@@QAEHXZ` | gruntreticle | `0xee800` ? |
-| `0x0ef6b0` | `?ChargeStep@Grunt@@QAEHXZ` | gruntchargestep | `0xef6b0` ? |
-| `0x0f0130` | `?UpdateArrival@CGrunt@@QAEHXZ` | gruntupdatestep | `0xf0130` ? |
-| `0x0f0db0` | `?MgrListFind@@YAHHH@Z` | mgrlistfind | `0xf0db0` ? |
-| `0x0f0e20` | `?ArrivalScanB@CGrunt@@QAEHXZ` | gruntarrivalscan | `0xf0e20` ? |
-| `0x0f1c70` | `?StepArrivalDefenseAlt@CGrunt@@QAEHXZ` | gruntarrivalstep | `0xf1c70` ? |
-| `0x0f26f0` | `?ResolveArrivalNeighbor@CGrunt@@QAEHXZ` | grunt | `0xf26f0` ? |
-| `0x0f2b20` | `?StepArrivalDefense@CGrunt@@QAEHXZ` | grunt | `0xf2b20` ? |
-| `0x0f36a0` | `?ArrivalScanC@CGrunt@@QAEHXZ` | gruntarrivalscan | `0xf36a0` ? |
-| `0x0f42f0` | `?ScanNearestTarget@CGruntScan@@QAEHXZ` | grunttargetscan | `0xf42f0` ? |
-| `0x0f60f0` | `?PhaseStep@CGrunt@@QAEHXZ` | gruntphasestep | `0xf60f0` ? |
-| `0x0f71c0` | `?SeekTarget@CGrunt@@QAEHXZ` | gruntupdatestep | `0xf71c0` ? |
-| `0x0f7d90` | `?Update_0f7d90@Obj0f7d90@@QAEHXZ` | obj0f7d90 | `0xf7d90` ? |
-| `0x0f8240` | `?StepArrivalDefenseLean@CGrunt@@QAEHXZ` | grunt | `0xf8240` ? |
+| `0x0e2df0` | `?Build@CSpriteRef@@QAEHPAVCShadeTableCache@@PAXH@Z` | spriteref | `0xe2df0` ? |
+| `0x0e32e0` | `?Free@CSpriteRef@@QAEXXZ` | spriteref | `0xe32e0` ? |
+| `0x0ea6c0` | `?Update@CSBI_StatzTabGruntBar@@QAEHXZ` | sbi_statztabgruntbar | `0xea6c0` ? |
+| `0x0eb740` | `?ShowFrames@CSBI_WarlordHead@@QAEHHPAUCShadeTable@@@Z` | sbi_warlordhead | `0xeb740` ? |
+| `0x0eb830` | `?SetState@CSBI_WarlordHead@@QAEHH@Z` | sbi_warlordhead | `0xeb830` ? |
+| `0x0ebd30` | `?Cmd_ResetScroll@@YAXXZ` | cmdscrollapply | `0xebd30` ? |
+| `0x0ebd70` | `?UpdateMgrScroll@@YAXPAVCGruntzMgr@@PAVCStatusBarMgr@@H@Z` | mgrautoscroll | `0xebd70` ? |
+| `0x0ec1c0` | `?Cmd_ApplyScrollParams@@YAXHHHHH@Z` | cmdscrollapply | `0xec1c0` ? |
+| `0x0ef6b0` | `?ChargeStep@CGrunt@@QAEHXZ` | gruntchargestep | `0xec670` gruntarrivalscan |
+| `0x0f0db0` | `?MgrListFind@@YAHHH@Z` | mgrlistfind | `0xec670` gruntarrivalscan |
+| `0x0f42f0` | `?ScanNearestTarget@CGrunt@@QAEHXZ` | grunttargetscan | `0xf42f0` ? |
+| `0x0f7d90` | `?StepPeerTracking@CGrunt@@QAEHXZ` | objecttracker | `0xf60f0` gruntarrivalscan |
 | `0x0f8970` | `?SFManager_SelectBestDevice@@YAHXZ` | sfselectdevice | `0xf8970` ? |
 | `0x0f9160` | `?ExtractBracketValue@@YAHPAD00@Z` | bracketvalue | `0xf9160` ? |
 | `0x0f9280` | `?MakeButeSectionKey@@YAHPADPBD1@Z` | fxmodedesc | `0xf9280` ? |
 | `0x0f93b0` | `?AppendInt@@YAXPADPBDH@Z` | netsession | `0xf93b0` ? |
-| `0x0f9710` | `?NetPollE25c@@YAHXZ` | netmgrmisc | `0xf9710` ? |
-| `0x0f9780` | `?LoadSounds@CSplashState@@QAEHHHH@Z` | splashstate | `0xf9780` ? |
-| `0x0f9840` | `?Reset@CGameModeBase@@QAEXXZ` | gamemode | `0xf9840` ? |
-| `0x0f9880` | `?OnStart@CTitleApp@@QAEHH@Z` | titleappstart | `0xf9880` ? |
-| `0x0f9ea0` | `?LoadGameAssetNamespaces@CAssetLoader@@QAEXPAUAssetMgr@@HH@Z` | gameassetnamespaces | `0xf9ea0` ? |
-| `0x0fa150` | `?BaseCleanup@CGameModeBase@@QAEXXZ` | gamemodebase | `0xfa150` ? |
 | `0x0fab90` | `?LoadScreen@CPreviewState@@QAEHPADHHH@Z` | levelpreview | `0xfa1f0` attract |
-| `0x0fb660` | `?LogicDispatchA@@YAHPAULogicDispatchOwner@@@Z` | logicrecorddispatch | `0xfb660` ? |
+| `0x0fb660` | `?LogicDispatchA@@YAHPAUCGameObject@@@Z` | logicrecorddispatch | `0xfb660` ? |
 | `0x1005d0` | `??0CStatusBarItem@@QAE@XZ` | statusbaritem | `0xfdc00` sbi_rectonly |
-| `0x101580` | `?BuildGameMenu@CGameMenuMgr@@QAEXXZ` | statusbargamemenu | `0xfdc00` sbi_rectonly |
+| `0x101580` | `?BuildGameMenu@CStatusBarMgr@@QAEXXZ` | statusbargamemenu | `0xfdc00` sbi_rectonly |
+| `0x101fa0` | `??0CSBI_RectOnly@@QAE@XZ` | sbi_rectonlybase | `0xfdc00` sbi_rectonly |
 | `0x102250` | `?LoadTabSprites@CStatusBarMgr@@QAEHXZ` | statusbarmgr | `0x102250` ? |
-| `0x104c80` | `?Free@CSBI_WellGoo@@QAEXXZ` | sbi_wellgoo | `0x104c80` ? |
-| `0x10bc30` | `?UpdateDestructButton@CSBI_RectOnly@@QAEXH@Z` | destructbutton | `0x10bc30` ? |
-| `0x10bfa0` | `?DtorStatus@CStatusBarItem@@QAEXXZ` | sbi_menuitem | `0x10bfa0` ? |
-| `0x110460` | `?Accept@CVtEmitRecv@@QAEHHHHHHPAHHHH@Z` | vtblforward | `0x110430` tileswitchlogic |
-| `0x110570` | `?LoadSwitchDownSprite@EngineLabelBacklog@@QAEHXZ` | statusbarupdaters | `0x110430` tileswitchlogic |
-| `0x1106b0` | `?LoadSwitchUpSprite@EngineLabelBacklog@@QAEHXZ` | statusbarupdaters | `0x110430` tileswitchlogic |
-| `0x110860` | `?LoadBridgeMove@CPlayLevelLoad@@QAEXH@Z` | bridgemovesprites | `0x110430` tileswitchlogic |
+| `0x105070` | `?BuildSideTabs@CStatusBarMgr@@QAEHXZ` | sbi_sidetab_build | `0x104d60` sbi_rectonly |
+| `0x109e00` | `?Sync@CWarpStoneFly@@QAEHPAVCFileMemBase@@HHH@Z` | mgrsettings | `0x104d60` sbi_rectonly |
+| `0x10a340` | `?BuildTabzDialog@CStatusBarMgr@@QAEHXZ` | sbi_tabzdialog_eh | `0x104d60` sbi_rectonly |
+| `0x10bc30` | `?UpdateDestructButton@CStatusBarMgr@@QAEXH@Z` | destructbutton | `0x10bc30` ? |
+| `0x110860` | `?LoadBridgeMove@CTileTriggerLogic@@QAEXH@Z` | bridgemovesprites | `0x110430` tileswitchlogic |
 | `0x111ec0` | `?SetCellHeight@CGruntzMgr@@QAEXHHH@Z` | gruntzmgr2 | `0x110430` tileswitchlogic |
-| `0x112080` | `?Broadcast@CGroupBroadcast@@QAEHXZ` | groupops | `0x110430` tileswitchlogic |
-| `0x1128b0` | `?DoSwap@CSlotHolder@@QAEHXZ` | mgrslotswap | `0x110430` tileswitchlogic |
-| `0x112a50` | `?BuildSmall@CCheckpointTriggerSwitchLogic@@QAEHHHHHHPAUCStat` | checkpointswitchbuild | `0x110430` tileswitchlogic |
-| `0x114120` | `?RefreshAsset_114120@CDDrawSubMgrLeafScan@@QAEHPBD@Z` | ddrawsubmgr | `0x114120` ? |
-| `0x114ec0` | `?Fwd114ec0@@YAXHHHHHH@Z` | fwd114ec0 | `0x114ec0` ? |
-| `0x114f00` | `?Fwd114f00@@YAXHHHHHH@Z` | fwd114ec0 | `0x114f00` ? |
-| `0x114f50` | `?ChainForward14@@YAXHPAUChainRoot@@HHHH@Z` | chainforward | `0x114f50` ? |
-| `0x114fa0` | `?ChainForward@@YAXHPAUChainRoot@@HHHH@Z` | chainforward | `0x114fa0` ? |
-| `0x114ff0` | `?SaveScreenshot@@YAHHPAUScrConfig@@PAUScrOwner@@HHPADH@Z` | savescreenshot | `0x114ff0` ? |
-| `0x115440` | `?EngStr_DrawText@@YAXPAUEngStrRenderObj@@HHHHHHHH@Z` | engstr | `0x115220` glyphstr |
-| `0x1155b0` | `?Unmatched_1155b0@@YAXXZ` | wapmisc | `0x1155b0` ? |
+| `0x114120` | `?RefreshAsset@CDDrawSubMgrLeafScan@@QAEHPBD@Z` | ddrawsubmgr | `0x114120` ? |
+| `0x114ec0` | `?SaveFrontBufferShot@@YAXPAVRegistryHelper@Utils@@PAVCGruntz` | savefrontbuffershot | `0x114ec0` ? |
+| `0x114f00` | `?SaveFrontBufferShotImpl@@YAXPAVRegistryHelper@Utils@@PAVCGr` | savefrontbuffershot | `0x114f00` ? |
+| `0x114f50` | `?ChainForward14@@YAXPAVRegistryHelper@Utils@@PAVCGruntzMgr@@` | chainforward | `0x114f50` ? |
+| `0x114fa0` | `?ChainForward@@YAXPAVRegistryHelper@Utils@@PAVCGruntzMgr@@HH` | chainforward | `0x114fa0` ? |
+| `0x114ff0` | `?SaveScreenshot@@YAHPAVCDDSurface@@PAVRegistryHelper@Utils@@` | savescreenshot | `0x114ff0` ? |
+| `0x115440` | `?EngStr_DrawText@@YAXPAVCDDrawSurfaceMgr@@PAVCString@@PAUtag` | engstr | `0x115220` glyphstr |
+| `0x115810` | `?InitializeFonts@@YAHXZ` | fonts | `0x115810` ? |
+| `0x1158f0` | `?FreeFontsMemory@@YAHXZ` | fonts | `0x1158f0` ? |
 | `0x115930` | `_EngStr_RenderText` | engstrrendertext | `0x115930` ? |
 | `0x115b30` | `??4CRect@@QAEAAU0@ABUtagRECT@@@Z` | wap32rect | `0x115b30` ? |
 | `0x118f60` | `?LegacyFindModule@WinAPI@Utils@@YAHKKPAXK@Z` | winapimodule | `0x118f60` ? |
@@ -283,87 +225,68 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x11c210` | `?BuildVoiceSoundList@CGruntSpawnConfig@@QAEPAVCSpawnList@@H@` | voicesoundlist | `0x11adc0` gruntspawnconfig |
 | `0x11c630` | `??0CSpawnEntry@@QAE@VCString@@H@Z` | cspawnentry | `0x11adc0` gruntspawnconfig |
 | `0x11c860` | `_WinMain@16` | winmain | `0x11c860` ? |
-| `0x11d100` | `?Stamp@CNoTrackObjectStamp@@QAEXXZ` | wapmisc | `0x11d100` ? |
-| `0x133380` | `?vector_deleting_destructor@CGameMgr@WAP32@@QAEPAXI@Z` | gameapp | `0x132ce0` directinputmgr2 |
 | `0x13dfe0` | `?ActiveWait@@YAXI@Z` | debugtiming | `0x13dfe0` ? |
 | `0x13e010` | `?DebugTrace@@YAXPBDZZ` | debugtiming | `0x13e010` ? |
-| `0x145e00` | `?WarpIsPow2@@YAHH@Z` | warptextureblit | `0x145e00` ? |
-| `0x145e30` | `?PolyIsConvexCW@@YAHPAUPolyVtx@@H@Z` | imagepolyclip | `0x145e30` ? |
-| `0x145f60` | `?ImageRotateBlit@@YAXHHPAHPAX1MMHH@Z` | imagerotate | `0x145f60` ? |
-| `0x1461b0` | `?ImagePolyClipRect@@YAHPAUPolyVtx@@HHHHH@Z` | imagepolyclip | `0x1461b0` ? |
-| `0x146550` | `?RotateRasterize@@YAHPAUClipVtx@@HHHHHHHHH@Z` | polyclipraster | `0x146550` ? |
-| `0x146a20` | `?WarpTextureBlit@@YAHPAUWarpVtx@@HPAVCDDSurface@@1HH@Z` | warptextureblit | `0x146a20` ? |
-| `0x146fe0` | `?FillPolygon@@YAHPAUFillVert@@HPAVCDDSurface@@F@Z` | ddrawpolyfill | `0x146fe0` ? |
-| `0x1471d0` | `?ProjectWallQuad@@YAHHHHHHHHHHHH@Z` | wallproject | `0x1471d0` ? |
-| `0x149250` | `?SaveBmp@CImageSaver@@QAEHVCString@@HHHHHHHH@Z` | imagesavebmp | `0x148ce0` imageowned |
-| `0x1495d0` | `?EncodeRle16@CImageRle16@@QAEPAXPBE@Z` | imagerle16encode | `0x1495d0` ? |
-| `0x14dcf0` | `?SetShadeDescr@@YAXPAUShadeDescr@@H@Z` | shadedescrtable | `0x14dcf0` ? |
-| `0x14dd90` | `?Select@ShadeSelector@@QAEXHPAUShadeDescr@@@Z` | shadedescrtable | `0x14dd90` ? |
-| `0x14fcc0` | `?RgbToHsv@@YAXPAUColorHSV@@I@Z` | colorhsv | `0x14de30` shadetablecache |
+| `0x149250` | `?DecodeFrame@CDDrawShadeBlit@@QAEHVCString@@UCImageFrameRebu` | imagesavebmp | `0x148ce0` imageowned |
+| `0x1495d0` | `?EncodeRle16@CDDrawShadeBlit@@QAEPAXPBE@Z` | imagerle16encode | `0x1495d0` ? |
+| `0x14fcc0` | `?RgbToHsv@@YAPAUColorHSV@@PAU1@I@Z` | colorhsv | `0x14de30` shadetablecache |
 | `0x1549d0` | `??0CResolveNode@@QAE@XZ` | cremusnode | `0x1549d0` ? |
-| `0x1586e0` | `?LoadSoundA@LeafElementObj@@QAEHPAX@Z` | leafelementobj | `0x156cb0` ddrawsubmgr |
-| `0x158720` | `?LoadSoundB@LeafElementObj@@QAEHPAX@Z` | leafelementobj | `0x156cb0` ddrawsubmgr |
-| `0x15cbe0` | `?Next2@Rng@@YAHXZ` | gruntzrandom | `0x15b2c0` wwdfactoryobject |
-| `0x166e00` | `?ScanRunLeft_166e00@CImageSet3@@QAEHHHPAH0@Z` | imageset3 | `0x166e00` ? |
-| `0x16b230` | `?Gap_16b230@@YAHXZ` | anirecord | `0x16b230` ? |
+| `0x15cbe0` | `?Next2@Rng@@YAHXZ` | gruntzrandom | `0x15b2b0` wwdfactoryobject |
 | `0x16cdd0` | `?WriteCurve@@YAAAVostream@@AAV1@ABVCMotionState@@@Z` | movinglogic | `0x16cdd0` ? |
-| `0x16d990` | `?GetRetAddr@@YAPAXXZ` | getretaddr | `0x16d000` typekeycoll |
-| `0x16ea20` | `?ScalarDelete@CTypeCollRuntime@@QAEPAXI@Z` | typecollruntime | `0x16ea20` ? |
-| `0x16f6e0` | `?Copy_16f6e0@@YGXPAVistream@@PAVostream@@@Z` | blowfishcopy | `0x16f6c0` blowfish |
+| `0x16d000` | `?ReadCurve@@YAAAVistream@@AAV1@AAVCMotionState@@@Z` | movinglogic | `0x16d000` ? |
+| `0x16f680` | `??0CButeTail@@QAE@XZ` | bsecobj10fctor | `0x16f680` ? |
+| `0x16f6e0` | `?BitStreamBlowfishEncode@@YGXPAVistream@@PAVostream@@@Z` | blowfishcopy | `0x16f6c0` blowfish |
 | `0x16f760` | `?BitStreamBlowfishDecode@@YGXPAVistream@@PAVostream@@@Z` | bitstreamblowfish | `0x16f6c0` blowfish |
-| `0x170210` | `??0CButeSection@@QAE@XZ` | butesectionctor | `0x170210` ? |
-| `0x174d00` | `??0CButeCfgNode174d@@QAE@H@Z` | butenode | `0x174d00` ? |
+| `0x170210` | `??0CButeMgr@@QAE@XZ` | butesectionctor | `0x170210` ? |
 | `0x177480` | `?LoadBmpFile@CImagePaletteNode@ApiCallerStubs@@QAEHPADH@Z` | palettebmp | `0x177480` ? |
 | `0x1775f0` | `?Apply@CImagePaletteNode@ApiCallerStubs@@QAEHPADH@Z` | palettebmp | `0x1775f0` ? |
 | `0x177670` | `?SetReportMode@CNetMgr@@SAXHHHH@Z` | netmgrerror | `0x177670` ? |
 | `0x1776a0` | `?ReportError@CNetMgr@@SAXPADHHPAX@Z` | netmgrerror | `0x1776a0` ? |
-| `0x178470` | `?PopulateGroupList@CLobbyGroupMgr@@QAEXPAUHWND__@@H@Z` | lobbygrouplist | `0x1780b0` netmgr |
 | `0x179300` | `?GetName@InterfaceObject@@QAE?AVCString@@XZ` | interfaceobject | `0x1780b0` netmgr |
 | `0x1795a0` | `?Init@CNetPlayerListNode@@QAEHPAUCNetSessionDesc@@@Z` | netsessionnode | `0x1780b0` netmgr |
-| `0x17c6f0` | `?Open@CMoviePlayer@@QAEHHHHHHH@Z` | movieplayer | `0x17c040` ddpagemgr |
-| `0x17ca10` | `?UploadPalette@CDDScreen@@QAEXXZ` | palettecopy | `0x17c040` ddpagemgr |
-| `0x17ca60` | `?ResetPalette@CDDScreen@@QAEXXZ` | surfacepalette | `0x17c040` ddpagemgr |
-| `0x17cbe0` | `?Init@CImageProbe@@QAEHXZ` | imageprobe | `0x17c040` ddpagemgr |
-| `0x17cd90` | `?Snapshot@CDDScreen@@QAEXPAUHWND__@@@Z` | palettesnapshot | `0x17c040` ddpagemgr |
+| `0x17ca10` | `?UploadPalette@CMoviePlayer@@QAEXXZ` | palettecopy | `0x17c040` ddpagemgr |
+| `0x17ca60` | `?ResetPalette@CMoviePlayer@@QAEXXZ` | surfacepalette | `0x17c040` ddpagemgr |
+| `0x17cbe0` | `?CheckGrid@CMoviePlayer@@QAEHXZ` | imageprobe | `0x17c040` ddpagemgr |
+| `0x17cd90` | `?Snapshot@CMoviePlayer@@QAEXPAUHWND__@@@Z` | palettesnapshot | `0x17c040` ddpagemgr |
+| `0x17f300` | `??0RezElem40@@QAE@XZ` | rezbufferobjectdtor | `0x17e450` fader |
 | `0x17f500` | `?ZeroRecords@@YGXPAXH@Z` | recordfill | `0x17e450` fader |
-| `0x180fb0` | `?Render@CircleShadeBlit@@QAEXHHHHHH@Z` | circleshadeblit | `0x17e450` fader |
+| `0x180fb0` | `?Render@CFaderLight@@QAEXHHHPAE00@Z` | circleshadeblit | `0x17e450` fader |
 | `0x182940` | `?ScatterSamples@@YAXPAHHHH@Z` | scattersamples | `0x182940` ? |
 | `0x182a80` | `?IsPrime@@YAHH@Z` | scattersamples | `0x182a80` ? |
-| `0x182ab0` | `?Init@TileRegion@@QAEHPAUTileSrcHost@@HPAUtagRECT@@HHH@Z` | menustateassets | `0x182ab0` ? |
-| `0x185320` | `_uncompress` | uncompr | `0x184610` rezcoll |
-| `0x1853b0` | `?WapUncompress@@YAHPAEPAK0K@Z` | wapuncompress | `0x184610` rezcoll |
+| `0x185320` | `_uncompress` | uncompr | `0x184610` debugprintf |
+| `0x1853b0` | `?WapUncompress@@YAHPAEPAK0K@Z` | wapuncompress | `0x184610` debugprintf |
 | `0x1882d0` | `_adler32` | adler32 | `0x1882d0` ? |
 | `0x188410` | `_zcalloc` | zutil | `0x188410` ? |
 | `0x188430` | `_zcfree` | zutil | `0x188430` ? |
 | `0x18b300` | `_inflate_flush` | infutil | `0x18b300` ? |
 | `0x18b440` | `_inflate_fast` | inffast | `0x18b440` ? |
-| `0x193340` | `?Walk@CButeTree@@QAEXP6AXPADPAX1@Z1PAUCButeTreeNode@@@Z` | butetree | `0x193340` ? |
-| `0x193640` | `?SetBit@zBitVec@@QAEPAV1@I@Z` | bitarray | `0x1933b0` projactcache |
+| `0x193080` | `??6@YAAAVostream@@AAV0@ABVzBitVec@@@Z` | bitarraystream | `0x193080` ? |
+| `0x193140` | `??5@YAAAVistream@@AAV0@AAVzBitVec@@@Z` | bitarraystream | `0x193140` ? |
+| `0x193340` | `?Walk@zPTree@@QAEXP6AXPADPAX1@Z1PAUCButeTreeNode@@@Z` | butetree | `0x193340` ? |
+| `0x1933b0` | `?Insert@CProjActMap@@QAEPAXPBDPAX@Z` | projactcache | `0x1933b0` ? |
 
 ## FLAGS — compiler-profile fixes the partition implies
 
 The original build had per-.dsp (plus rare per-file) settings; one obj = ONE flag set. Rules: an interval with inline EH-registration sites (`push offset __ehhandler` -> ___CxxFrameHandler) was /GX — flip its base members to `eh`; zero sites does NOT prove /GX off. Every merge below must land on a single profile.
 
-**Hard errors — EH evidence but no /GX profile:**
-- `0x1591f0-0x15b2be` (4 EH sites): wwdobjmgr (base)
 
 **Mixed-profile merge groups (unify; EH evidence decides):**
-- `0x184610-0x185a0e` (3 EH sites): menuitem (eh), rezcoll (base), debugprintf (base), rezlist (base)
+- `0x184610-0x185a0e` (3 EH sites): menuitem (eh), rezcoll (eh), debugprintf (base), rezlist (base)
 
 **Singleton profile overrides — re-derive, may mask wrong shape/TU composition:**
 - filestream (`mfc`) — src/Io/FileStream.cpp
-- warptextureblit (`framed`) — src/Image/WarpTextureBlit.cpp
-- ddrawpolyfill (`framed`) — src/DDrawMgr/DDrawPolyFill.cpp
 
 ## ORACLES — /GR map, vtable order, private globals
 
 - **RTTI = /GR per project**: 222/295 vtables carry RTTI; the engine band (0x130000-0x180000) has 18/78 — and the non-iostream RTTI'd classes there are GAME-project (/GR) files sitting inside the band: CGameApp, CGameMgr, CGameWnd, CImage. Use RTTI-vs-not to assign mega-interval files to their project.
 - **Vtable .rdata order** is 73% monotone with the methods' .text order — a third link-order witness (vtables are COMDATs kept at the first-constructing obj and never move); use it to order fragment-less TUs and cluster no-RTTI engine vtables.
-- **Private globals**: 6200/21112 code-referenced data targets are private to one interval (file-scope statics/consts); .data contribution order is 99% monotone with TU order. A private global decides a seam function's membership; 465 annotated globals should carry `static` in src (worklist in deep_layout.json oracles.privates.static_worklist).
+- **Private globals**: 6359/21112 code-referenced data targets are private to one interval (file-scope statics/consts); .data contribution order is 99% monotone with TU order. A private global decides a seam function's membership; 675 annotated globals should carry `static` in src (worklist in deep_layout.json oracles.privates.static_worklist).
 - **Extent-overlap merge evidence** (two neighbor intervals whose private .data extents interleave are ONE obj):
   - `0x7c60` (actionarea) + `0x9090` (actionoptionsmenubar)
-  - `0x19cd0` (gamemode) + `0x18740` (?)
-  - `0x1c0f0` (bootystateactivate) + `0x18f00` (?)
+  - `0x19540` (bootystateactivate,gamemode) + `0x1ecf0` (bootystateactivate)
+  - `0x1ecf0` (bootystateactivate) + `0x1ce60` (?)
+  - `0x1ce60` (?) + `0x18f00` (?)
+  - `0x8b8c0` (gruntzmgr) + `0x93d40` (?)
   - `0x186180` (deflate) + `0x187490` (infblock)
 
 ## ANCHORED facts (__FILE__ strings)
@@ -383,35 +306,28 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 
 ## Original link order (init-table skeleton)
 
-Compressed unit sequence of the 978 attributed $E initializer fragments (of 1075 live; 501 slots zeroed by relinks). This is the obj order of the original project files:
+Compressed unit sequence of the 1050 attributed $E initializer fragments (of 1075 live; 501 slots zeroed by relinks). This is the obj order of the original project files:
 
 ```
-?x5 | actionareax10 | actionoptionsmenubarx2 | play | actionoptionsmenubarx14 | worldsoundsetx10 |
-gameobjectfactory | worldsoundsetx18 | attractstatex9 | dialogsx19 | customleveldlg | dialogsx8 |
-bootywalkanim | dialogsx6 | globals | gametext | bootystateactivatex9 | fontconfigx9 |
-gruntzcmdmgrx18 | checkpointdlgx2 | gruntzcmdmgr | battlezmapconfig | gruntzcmdmgrx7 |
-battlezmapconfigx56 | videoconfigx35 | creditsstatex9 | cursorsnapactreg | customworlddialogx12 |
-demox27 | gruntstartingpoint | gruntcreationpoint | wormholeacts | wormholex3 |
-secretteleportertriggerx2 | warlord | fortressflagx12 | gruntstepsx8 | directionclassify |
+?x5 | userlogicx8 | actionarea | userlogicx3 | play | userlogicx8 | actionoptionsmenubarx5 |
+worldsoundsetx30 | attractstatex9 | dialogsx19 | customleveldlg | dialogsx8 | bootywalkanim |
+dialogsx6 | bootycheatstate | dialogs | bootystateactivatex9 | fontconfigx9 | gruntzcmdmgrx21 |
+battlezmapconfig | gruntzcmdmgrx7 | battlezmapconfigx56 | videoconfigx35 | creditsstatex18 |
+customworlddialogx4 | demox29 | wormholex6 | warlord | fortressflagx12 | gruntstepsx9 |
 gruntcombatx19 | triggermgrgrid | triggermgr | triggermgrgridx7 | triggermgr | gruntselectedsprite |
-triggermgrx7 | gruntselectedsprite | grunthealthsprite | grunttoysprite | gruntpowerupsprite |
-gruntzappx18 | gametext | play | gametextx6 | gruntzcmdmgr | gametextx12 | gruntzwndx19 | ingameicon
-| gruntzwndx7 | ingameiconx3 | areamgrx10 | spriteloaders | lightfx | spriteloadersx7 | lightfx |
-mapmgrx27 | menustatex3 | mainmenubuilder | menustatex6 | mainmenubuilder | lightfxrenderx9 |
-logicworkerhandlersa | behindcandyani | singleframemessage | logicworkerhandlersax6 | anicycle |
-singleframemessage | simpleanimation | logicdispatchinit | frontcandyani | behindcandyani |
-logicactreg646010 | singleanimation | logicworkerhandlersb | rollingball | logicworkerhandlersbx7 |
-rollingball | spotlightactreg | kitchenslime | pathhazardactreg | multix13 | netlobbydialogs |
-multix3 | netlobbydialogsx13 | netcmdslotx9 | packetpool | netcmdslotx10 | multistartdlgroster |
-netcmdslotx7 | multistartdlg | multistartdlgrosterx8 | droppedobjectx11 | gruntzrandom |
-droppedobject | playx18 | levelpreviewx18 | projectilex2 | spritereftable | savegame |
-spritereftablex5 | savegamex38 | sbi_menuitemx26 | statusbartabbuildersx28 | sbi_warlordheadx9 |
-maplogic | sbi_warlordheadx18 | ?x45 | gruntx9 | gruntarrivalscanx7 | gruntx20 | ?x27 |
-soundfontpathx18 | attract | splashstate | attractx7 | netmgrmisc | attractx10 | statichazard |
-attractx7 | statichazard | battlezdatax18 | sbi_rectonlyx9 | statusbarspriteacts | tilelogicpumpx24
-| tileswitchlogic | toobspikez | tileswitchlogicx7 | toobspikez | tileswitchlogicx9 | wapmisc |
-fonts | tiletriggercontainer | fontsx2 | tiletriggercontainerx18 | gruntvoicex20 | ?x19 | ddsurface
-| directdrawmgr | typekeycollx7 | debugprintf | ?
+triggermgrx8 | gruntindicatorworkerhandlers | gruntzappx20 | gruntzmgr | play | gruntzmgrx6 |
+gruntzcmdmgr | gruntzmgrx12 | gruntzwndx19 | ingameicon | gruntzwndx7 | ingameiconx2 | areamgrx12 |
+lightfx | spriteloadersx8 | mapmgrx27 | menustatex3 | mainmenubuilder | menustatex6 |
+mainmenubuilder | lightfxrenderx9 | logicworkerhandlersa | behindcandyani | singleframemessage |
+logicworkerhandlersax8 | frontcandyanix5 | logicworkerhandlersbx2 | rollingball |
+logicworkerhandlersbx8 | rollingball | kitchenslime | pathhazard | multix11 | netlobbydialogsx20 |
+netcmdslotx19 | multistartdlgroster | netcmdslotx8 | multistartdlgrosterx8 | droppedobjectx11 | play
+| droppedobject | playx18 | levelpreviewx18 | projectilex2 | spritereftable | savegamex44 |
+sbi_menuitemx26 | statusbartabbuildersx28 | sbi_warlordheadx9 | mgrautoscroll | sbi_warlordheadx18 |
+gruntarrivalscanx108 | soundfontpathx18 | attract | splashstate | attractx18 | statichazard |
+attractx7 | battlezdatax19 | sbi_rectonlyx9 | tilelogicpumpx25 | tileswitchlogic | toobspikez |
+tileswitchlogicx17 | tiletriggercontainerx23 | gruntvoicex20 | ?x19 | ddsurface | directdrawmgr |
+typekeycollx7 | menuitem | ?
 ```
 
 *Caveats: the engine-resource mega-interval (0x1396f0+) is glued by our own coarse units and needs per-function re-attribution before it splits (DIRSURF/DDRAWMGR/DIRPAL anchors mark three distinct files inside it). Splits invisible to layout (adjacent objs, e.g. DinMgr2.cpp + InputDevice.cpp inside our directinputmgr2) are only visible via anchors/init-frags.*
