@@ -418,6 +418,17 @@ wrapper, still runnable as `python -m gruntz.<...>`):
     control flow by hand is wasted effort when this exists. Go to `--rich` once
     the shape is right and you are chasing which STATEMENT produced which
     instructions.
+  - `--branches` — **the view `--diff` structurally CANNOT give you.** `--diff` and
+    `--blocks --diff` mask address operands, and that masking also hides
+    intra-function branch DISPLACEMENTS. So a pure control-flow divergence prints
+    "identical" in both while the function sits below 100%. `--branches --diff` emits
+    the ordered conditional-branch sequence with each target named by branch INDEX
+    (a uniform displacement shift therefore compares equal) plus the ret counts.
+    **Whenever the block/diff view is clean but the score is not 100, this is where
+    the signal is** — ten of the twelve functions in the 2026-07-28 sieve campaign
+    were invisible to the first look. See
+    `docs/patterns/masked-diff-hides-branch-target.md`. The tool self-hints on that
+    path; believe the hint.
 - the Ghidra decomp + its xrefs — field readers/writers, new-sites, vtable slots.
 An identity/ownership/aliasing judgment backed only by a name-pattern grep is a GUESS —
 cite the `sema` evidence for it in your report instead.

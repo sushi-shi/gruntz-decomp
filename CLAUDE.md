@@ -87,6 +87,16 @@ FLIRT + leaked names) → exports. Not part of the build loop.
   `gruntz clean && gruntz init` is a few minutes; `gruntz build` (incremental) is faster.
   Run them in the foreground and verify changes with a real build — don't background out of
   fear or skip verification. `--fast` skips the gate tail; run one full build before a commit.
+- **Read the target with `gruntz sema disasm`, and START with `--blocks`.**
+  `--blocks --diff --lite` gives the basic-block topology (in-edges, branch arrows,
+  loop back-edges, shared ret tails) — getting the CONTROL-FLOW STRUCTURE right is
+  what makes a reconstruction match. Rebuilding the shape by hand from jump targets
+  is wasted effort. `--rich` once the shape is right and you're chasing which
+  *statement* produced which instructions. **Trap:** `--diff` and `--blocks --diff`
+  MASK address operands, so a pure control-flow divergence prints "identical" while
+  the function is <100% — then use **`--branches --diff`**, which names each target by
+  branch index (`docs/patterns/masked-diff-hides-branch-target.md`). The Ghidra
+  decompiler is banned; assembly only.
 - **Every body lives in its real owner TU** — owner proven by xref / vtable-slot, never by RVA
   proximity (`docs/tu-partition-brief.md`; a contribution must be contiguous).
 - **Game semantics** (what WWD fields/ids/logic MEAN): `docs/domain/` (distilled) over

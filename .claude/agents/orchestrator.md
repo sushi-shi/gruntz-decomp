@@ -107,6 +107,16 @@ Spawn a **matcher** agent (subagent_type `matcher`), **`run_in_background: true`
 6. **NO file-exclusion list** (see the section below — this is the #1 brief defect).
    Say instead: *take whatever files the job needs; the orchestrator resolves any
    same-file collision at integration.*
+6b. **Name the `sema` structure tools in EVERY brief — do not assume the lane
+   remembers.** Getting the CONTROL-FLOW SHAPE right is what makes a reconstruction
+   match, so the brief says: first look is
+   `gruntz sema disasm <rva> --blocks --diff --lite` (basic-block topology: in-edges,
+   branch arrows, loop back-edges, shared ret tails) — never rebuild the shape by hand
+   from jump targets; `--rich` only once the shape is right. And carry the trap:
+   `--diff`/`--blocks --diff` MASK address operands, hiding intra-function branch
+   displacements, so a control-flow divergence reads "identical" at <100% — that is
+   what **`--branches --diff`** is for (targets named by branch index). Ten of twelve
+   functions in the 2026-07-28 sieve were invisible to the first look.
 7. **Never fabricate an identity.** Recover the real class/symbol from the binary
    (RTTI, vtable, xrefs, disasm) or say you couldn't. A wrong-shape hack that scores
    higher is a FAILURE; an honest gap is not. Explicitly invite the agent to **refute
