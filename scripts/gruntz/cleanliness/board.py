@@ -341,9 +341,10 @@ METRICS = (
 )
 
 
-# The RATCHET set: metrics that only go DOWN (main-tree). The stub backlog (src/Stub/ TUs) and
-# their *Views.h view-scaffolding are reconstruction machinery, NOT main-tree code - their
-# fake-view/placeholder shells (and their casts) are EXPECTED, so they don't count here. A view
+# The RATCHET set: metrics that only go DOWN (main-tree). The *Views.h view-scaffolding is
+# reconstruction machinery, NOT main-tree code - its fake-view/placeholder shells (and their
+# casts) are EXPECTED, so they don't count here. (The src/Stub/ backlog that this also used to
+# exempt is gone.) A view
 # (or a `)this`/`)m_` cast that props a view) only counts once it lands in a real main-tree TU,
 # where it must resolve to a proper class. Includes the two cast VECTORS of fake-view propagation:
 # `)this casts` (always) and `)m_ casts` (string-cast-excluded). Other metrics (m_<hex>, string
@@ -353,7 +354,7 @@ _VIEW_METRICS = {"placeholder classes", ".cpp-local views", "placeholder vtable 
 
 
 def _is_scaffolding(path) -> bool:
-    return "/Stub/" in path.as_posix() or path.name.endswith("Views.h")
+    return path.name.endswith("Views.h")
 
 
 # The caller_callee FAKE-VIEW metric: our source calls an ALREADY-RECONSTRUCTED callee through

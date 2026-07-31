@@ -225,22 +225,6 @@ def ranges_overlap(first_start: int, first_end: int, second_start: int, second_e
     return first_start < second_end and second_start < first_end
 
 
-def render_variant(original: bytes, axes: tuple[Axis, ...], choices) -> bytes:
-    replacements = sorted(
-        ((axis.start, axis.end, replacement) for axis, (_name, replacement) in zip(axes, choices)),
-        reverse=True,
-    )
-    candidate = original
-    for start, end, replacement in replacements:
-        candidate = candidate[:start] + replacement + candidate[end:]
-    return candidate
-
-
-def render_candidate(original: bytes, candidate: Candidate) -> bytes:
-    rendered = original
-    for edit in reversed(candidate.edits):
-        rendered = rendered[:edit.start] + edit.replacement + rendered[edit.end:]
-    return rendered
 
 
 def render_combined(original: bytes, axes: tuple[Axis, ...], choices, candidate: Candidate | None):

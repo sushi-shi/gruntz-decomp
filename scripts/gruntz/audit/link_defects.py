@@ -267,7 +267,6 @@ def is_exempt(sym, libs):
     return sym.startswith(_EXEMPT_PREFIX) or sym in libs or sym.lstrip("_") in libs
 
 
-_CLASS_RE = re.compile(r"^\?\?[01][A-Za-z_]\w*@@|^\?\w+@(\w+)@@")
 
 
 def owning_class(sym):

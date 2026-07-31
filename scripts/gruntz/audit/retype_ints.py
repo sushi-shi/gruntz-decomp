@@ -88,7 +88,6 @@ IDENT_RE = re.compile(r"[A-Za-z_]\w*")
 MULTI_WORD_SEQS = [(tuple(seq), repl) for seq, repl in MULTI_WORD]
 SINGLE_WORD_MAP = dict(SINGLE_WORD)
 ALL_FROM_WORDS = {"int", "long", "short", "signed", "unsigned", "__int64", "char"}
-ALIAS_NAMES = {"i8", "u8", "i16", "u16", "i32", "u32", "i64", "u64"}
 
 
 def mask_spans(text: str):

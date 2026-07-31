@@ -783,18 +783,6 @@ def _deepest_base(slots, self_rva, known, inter):
     return best
 
 
-_SRCBASE_RE = re.compile(r"\bclass\s+\w+\s*:\s*(?:public\s+|protected\s+|private\s+|virtual\s+)*([\w:]+)")
-
-
-def _source_base(bodies):
-    """The base our SOURCE actually writes (`class X : public Y`), or None."""
-    for b in bodies:
-        m = _SRCBASE_RE.search(b)
-        if m:
-            return m.group(1).split("::")[-1]
-    return None
-
-
 def _body_counts(bodies):
     """(max virtual-decl count, max OVERRIDE-macro count) across the class's per-TU
     bodies. Take each maximum INDEPENDENTLY: a class can be declared fully in one TU

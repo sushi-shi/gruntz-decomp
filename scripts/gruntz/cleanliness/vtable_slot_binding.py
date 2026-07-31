@@ -340,8 +340,10 @@ def main() -> int:
             print(f"  0x{r:06x}  {cls}[{k}]  {vs.fn_label(r)}   ({rel(path)}:{ln})")
         print()
 
-    strict = "--strict" in sys.argv
-    base = set() if strict else load_baseline()
+    # Normally the empty set: the baseline file was deleted when the backlog hit 0 and
+    # must stay gone, so this is a pure fail-closed gate. (load_baseline() still parses
+    # a file when one exists - gate_selftest covers that path.)
+    base = load_baseline()
     fresh = [v for v in violations if key_of(v) not in base]
     known = [v for v in violations if key_of(v) in base]
     stale = base - {key_of(v) for v in violations}   # baselined rows now fixed

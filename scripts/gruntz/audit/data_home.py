@@ -41,7 +41,6 @@ from gruntz.audit.globals_attribute import build_db, _sec_of, _rva_to_off
 DATA_LO = 0x208000                       # start of .data (mutable + .bss tail)
 SRC = REPO / "src"
 DATA_LINE = re.compile(r"^\s*DATA\(0x([0-9a-fA-F]+)\)")
-ARRAY_DIM = re.compile(r"\[\s*(0x[0-9a-fA-F]+|\d+)\s*\]")
 
 
 def _src_to_unit():

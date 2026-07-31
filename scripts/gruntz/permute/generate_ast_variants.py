@@ -982,11 +982,6 @@ def direct_assignment(stmt, accepted: set[str]):
     return (left, right, token) if token is not None else None
 
 
-def referenced_variable(node):
-    refs = [cursor for cursor in node.walk_preorder() if cursor.kind == ci.CursorKind.DECL_REF_EXPR]
-    return refs[0].referenced if len(refs) == 1 else None
-
-
 def unwrap_single_expression(node):
     while node.kind in (ci.CursorKind.UNEXPOSED_EXPR, ci.CursorKind.PAREN_EXPR):
         children = list(node.get_children())

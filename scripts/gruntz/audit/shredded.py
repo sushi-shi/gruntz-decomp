@@ -36,7 +36,6 @@ DECL = re.compile(
 )
 
 WINDOW = 0x40  # an object big enough to be worth shredding, small enough to stay specific
-MIN_MEMBERS = 4  # a base + 3 interior fields; below that a run is just adjacent globals
 
 
 def data_globals() -> dict:

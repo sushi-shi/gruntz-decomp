@@ -594,17 +594,13 @@ def cmd_labels(args) -> None:
 def cmd_structs(args) -> None:
     """Regenerate build/gen/structs.json + enums.json via clang record layouts.
 
-    Sources: matched src/ layouts (the clangd compdb) PLUS the converted
-    comprehension headers under src/Stub/types/ (each wrapped as a .cpp TU). src/
-    wins on overlapping names, so apply_ghidra.py's hardcoded fallback is unneeded
-    for anything covered here.
+    Source: matched src/ layouts (the clangd compdb); headers come in through their
+    own #includes. (The src/Stub/types/ comprehension layer is gone.)
     """
     clang = _clang()
     cmd = [sys.executable, str(BUILD / "ghidra_metadata_generate.py"), "--clang", clang]
     for t in args.tu:
         cmd += ["--tu", t]
-    if (REPO / "src/Stub/types").is_dir():
-        cmd += ["--header", "src/Stub/types"]     # comprehension layouts
     run(cmd)
 
 
@@ -617,8 +613,8 @@ def cmd_ghidra_refresh(args) -> None:
     """Part-2 loop: push generated names/structs/enums into the Ghidra DB, then
     re-export the functions.csv/symbols.csv the delink consumes.
 
-      1. ghidra_metadata_generate -> build/gen/structs.json + enums.json (clang layouts of
-         src/ + the converted src/Stub/types/ comprehension headers)
+      1. ghidra_metadata_generate -> build/gen/structs.json + enums.json (clang layouts
+         of the src/ TUs)
       2. PyGhidra driver (ghidra_metadata_apply.py): re-open the already-analyzed
          build/ghidra-named program (--no-analyze) and run apply.py (names from
          build/gen/symbol_names.csv, prototypes, struct this-types, enums) then

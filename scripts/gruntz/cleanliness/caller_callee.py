@@ -317,11 +317,6 @@ class Recon:
                 if (F, R) not in self.tgt and F in self.func_rvas and R in self.func_rvas]
 
 
-def _demangle_member(mangled):
-    pm = parse_mangled(mangled)
-    return pm[1] if pm else None
-
-
 # minimal MSVC type-code tokenizer, enough to split a member-function signature's
 # RETURN token from its ARG list so a return-type-only mismatch (safe, matching-
 # neutral to fix) is told apart from an arg-count/type mismatch (needs disasm).

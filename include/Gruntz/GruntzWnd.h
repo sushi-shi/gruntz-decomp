@@ -34,6 +34,6 @@ public:
         return static_cast<CGruntzMgr*>(m_owner->m_gameMgr);
     }
 };
-SIZE(0x10); // recovered from the operator-new site (gruntz.analysis.news)
+SIZE(0x10); // recovered from its `push <size>; call ??2@YAPAXI@Z` operator-new site
 
 #endif // GRUNTZ_GRUNTZWND_H

@@ -561,7 +561,7 @@ public:
     // ctor 0x1b4f0b DIR32s ??_7CPtrArray@@6B@ (0x1ec2dc).  CByteArray's dtor is 0x1b52b1
     // (band head 0x1b527e, vtable 0x1ed28c) and retail never calls it here.  The four
     // MFC array classes are byte-identical, so every FID row there is AMBIG.
-    //     python -m gruntz.analysis.mfc_class 0x1b4f3e
+    //     python -m gruntz.audit.mfc_class 0x1b4f3e
     CPtrArray m_startMarkers; // +0x370  (data@+4 = marker-ptr array, count@+8 = marker count)
     // +0x384: the 4 world fx-spawn anchors (stride 8). SpawnTileFx (0x79ea0) maps the
     // (a3-1) tile-effect id into m_anchors[idx] and spawns at {m_x, m_y}. (Ex the

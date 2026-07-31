@@ -4,10 +4,9 @@
 Answers: how far apart in retail RVA space are the functions of one class/TU, and
 does that layout give us a usable notion of which methods are "related"?
 
-It parses the matched `src/` directly - every RVA() macro is a function we
-have placed at a known retail address (src/Stub/ is skipped: those are the
-not-yet-matched backlog). No build artifacts are needed; this runs in the default
-`nix develop`.
+It parses the matched `src/` directly - every RVA() macro is a function we have
+placed at a known retail address. No build artifacts are needed; this runs in the
+default `nix develop`.
 
 The measured answer (see docs/tu-spatial-structure.md):
 
@@ -35,12 +34,10 @@ Report sections + queries:
      SCATTERED (conflated TUs / COMDAT-heavy families like the State classes).
   --neighbors 0xRVA    - the probable class siblings of one matched function.
   --attribute          - tie classless functions to a class by same-class bracketing.
-     Two target sets: (a) still-unclaimed FUN_ bodies (from the Ghidra boundary
-     export, minus current RVA/RVA_COMPGEN source claims) -> new class stubs
-     (gen_attributed_stubs); (b) already-labeled CATCH-ALL stubs
-     (ApiCallers/Backlog/EngineExternFns + placeholder classes) -> a RELOCATION
-     worklist (move the typed stub to that class's TU). The both-sides HIGH rule is
-     validated at ~91% exact / 94% same-family by leave-one-out on matched methods.
+     Targets the still-unclaimed FUN_ bodies (from the Ghidra boundary export, minus
+     current RVA/RVA_COMPGEN source claims); `--emit` writes them as a worklist. The
+     both-sides HIGH rule is validated at ~91% exact / 94% same-family by
+     leave-one-out on matched methods.
 
 Usage:
     python3 -m gruntz.audit.tu_layout
@@ -135,11 +132,9 @@ def _parse_size(s: str) -> int:
 
 
 def load_funcs(src: Path = SRC) -> list[Func]:
-    """Every non-stub RVA/RVA_COMPGEN function claim in src/, sorted by RVA."""
+    """Every RVA/RVA_COMPGEN function claim in src/, sorted by RVA."""
     out: list[Func] = []
     for path in sorted(src.rglob("*.cpp")):
-        if "Stub" in path.parts[len(src.parts):]:  # skip src/Stub/ backlog
-            continue
         tu = path.stem
         lines = path.read_text(errors="replace").splitlines()
         for i, ln in enumerate(lines):
@@ -392,14 +387,6 @@ def load_boundaries(path: Path):
     return out
 
 
-# catch-all stub homes: functions parked in a classless / placeholder unit, NOT yet
-# tied to their real class. These are ALREADY labeled (typed @stub bodies), so they
-# are a RELOCATION worklist - move the typed stub into the attributed class's TU -
-# not new-stub material. ApiCallers.cpp is generated (docs/api-caller-name-plan.tsv).
-CATCHALL_FILES = {"ApiCallers.cpp", "Backlog.cpp", "EngineExternFns.cpp"}
-CATCHALL_CLASSES = {"EngineLabelBacklog", "ThisStubOwnerUnknown"}
-
-
 def _attribute_targets(seq, back, fwd, gap, target_rvas):
     """Assign each target RVA the class of a same-class matched bracket it falls in."""
     import bisect
@@ -438,41 +425,6 @@ def attribute(funcs, boundaries, gap, claimed_extents=None):
                if b[2].startswith("FUN_") and not is_thunk(b[2], b[1])
                and not is_claimed(b[0])]
     return _attribute_targets(seq, back, fwd, gap, unnamed), len(unnamed)
-
-
-def load_catchall_stubs(src: Path = SRC):
-    """Classless / placeholder stubs (already labeled) that want relocating to a real
-    class: every RVA stub in a catch-all file, plus any stub classed as a placeholder.
-    Returns [(rva, current_class_or_None, file)]."""
-    out = []
-    for p in sorted((src / "Stub").glob("*.cpp")):
-        catchall_file = p.name in CATCHALL_FILES
-        lines = p.read_text(errors="replace").splitlines()
-        for i, ln in enumerate(lines):
-            m = RVA_RE.search(ln)
-            if not m:
-                continue
-            rva = int(m.group(1), 16)
-            cur = None
-            for j in range(i, min(i + 3, len(lines))):
-                sm = SIG_RE.search(lines[j])
-                if sm:
-                    cur = sm.group(1)
-                    break
-            if catchall_file or cur in CATCHALL_CLASSES:
-                out.append((rva, cur, p.name))
-    return out
-
-
-def attribute_catchall(funcs, gap, src: Path = SRC):
-    """Proximity class for each catch-all stub (a relocation worklist).
-    Returns ({rva: (cls, conf, current_class, file)}, n_catchall)."""
-    seq = _matched_seq(funcs)
-    back, fwd = _run_bounds(seq)
-    stubs = load_catchall_stubs(src)
-    hit = _attribute_targets(seq, back, fwd, gap, [r for r, _, _ in stubs])
-    meta = {r: (cur, f) for r, cur, f in stubs}
-    return ({r: (c, conf, *meta[r]) for r, (c, conf) in hit.items()}, len(stubs))
 
 
 def boundary_targets(funcs, target_rvas, near=DEFAULT_NEAR):
@@ -540,19 +492,6 @@ def report_attribution(funcs, functions_csv: Path, gap: int, emit) -> None:
     for c, n in gained.most_common(12):
         print(f"     {c:24} +{n}")
 
-    # ---- catch-all relocation worklist (already-labeled classless stubs) --------
-    cattr, n_cat = attribute_catchall(funcs, gap)
-    c_hi = sum(1 for v in cattr.values() if v[1] == "HIGH")
-    print(f"\n  catch-all stubs (ApiCallers/Backlog/EngineExternFns + placeholder "
-          f"classes): {n_cat}")
-    print(f"  of those, proximity ties to a real class: {len(cattr)} "
-          f"-> HIGH {c_hi}, MED {len(cattr) - c_hi}.  These already carry a typed @stub")
-    print("  body, so this is a RELOCATION worklist (move the stub to that class's TU),")
-    print("  not new stubs. sample (rva  current -> proximity):")
-    for rva in sorted(cattr)[:10]:
-        cls, conf, cur, f = cattr[rva]
-        print(f"     0x{rva:06x}  {str(cur):20} -> {cls:22} {conf:4} [{f}]")
-
     if emit:
         import csv
         with open(emit, "w", newline="") as fh:
@@ -561,11 +500,7 @@ def report_attribution(funcs, functions_csv: Path, gap: int, emit) -> None:
             for rva in sorted(attr):
                 c, conf = attr[rva]
                 w.writerow((f"0x{rva:06x}", c, conf, "new-stub", "", ""))
-            for rva in sorted(cattr):
-                c, conf, cur, f = cattr[rva]
-                w.writerow((f"0x{rva:06x}", c, conf, "relocate", cur or "", f))
-        print(f"\n  wrote {len(attr)} new-stub + {len(cattr)} relocate "
-              f"attributions -> {emit}")
+        print(f"\n  wrote {len(attr)} new-stub attributions -> {emit}")
 
 
 def main() -> None:

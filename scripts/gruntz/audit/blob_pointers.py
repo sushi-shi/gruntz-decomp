@@ -70,7 +70,6 @@ TYPE_IN_COMMENT = re.compile(
     r"DPNAME|RECT|POINT|AFX_MSGMAP\w*|[A-Z]\w+Header|[A-Z]\w+Record|[A-Z]\w+Entry|"
     r"[A-Z]\w+Cell|[A-Z]\w+Vtx)\b")
 SIZED = re.compile(r"0x[0-9a-fA-F]{2,}\s*(?:B\b|bytes)|\b(?:\d+)\s*(?:B\b|bytes)")
-STRIDED = re.compile(r"\[\s*\w+\s*\*\s*([2-9]|1[0-9])\s*(?:\+\s*\d+\s*)?\]")
 
 
 def scan():

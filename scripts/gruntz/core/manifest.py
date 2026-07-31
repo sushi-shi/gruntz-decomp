@@ -39,8 +39,3 @@ def unit_names() -> set:
 def by_unit() -> dict:
     """unit stem -> its [[unit]] block."""
     return {u["unit"]: u for u in units()}
-
-
-def source_to_unit() -> dict:
-    """src path (as written in the manifest) -> unit stem."""
-    return {u["source"]: u["unit"] for u in units() if u.get("source")}

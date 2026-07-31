@@ -2,8 +2,7 @@
 """ghidra_metadata_generate.py - derive Ghidra struct + enum definitions from the source.
 
 The single source of truth for a class layout is its *compilable* declaration in
-`src/**/*.h` (matched, authoritative) and the converted `src/Stub/types/**/*.h`
-(unmatched comprehension) - both written in the placeholder style
+the headers the `src/` TUs include - written in the placeholder style
 (`int`/`void*`/`char[]` members, explicit padding, real bases + `virtual`). There
 are NO `@offset` annotations: clang computes every field offset from the
 declaration. This script runs clang as a *reader* and emits the JSON that
@@ -17,7 +16,7 @@ For each translation unit:
            i686-pc-windows-msvc / -fms-compatibility-version=1100 = MSVC 5.0).
   * `clang ... -Xclang -ast-dump=json -fsyntax-only`
         -> enum definitions (name + members) and, when present, the source path
-           of each record so `src/` can win over `src/Stub/types/` on overlap.
+           of each record so `src/` can win on any name overlap.
 
 Outputs (default --out-dir build/gen):
     structs.json : [{name, size, fields:[{offset,type,name}], source}]
@@ -26,7 +25,7 @@ Outputs (default --out-dir build/gen):
 Flags come from the clangd compilation database (build/clangd/compile_commands.json,
 the clang-friendly clang-cl DB from gen_clangd.py) when available; those entries are
 clang-cl form (/imsvc, /D...), so they run under clang's `--driver-mode=cl`. The
-`--tu`/`--header` paths carry clang-style MS_FLAGS and use the plain driver. Pass
+`--tu` path carries clang-style MS_FLAGS and uses the plain driver. Pass
 `--tu FILE` + `--flag ...` directly for self-contained TUs that parse with only the
 target/ms flags, no toolchain headers.
 """
@@ -181,8 +180,8 @@ def parse_enums(ast_json):
 def run_clang(clang, args, tu, extra, driver="plain"):
     # compdb flags are clang-cl form (/imsvc, /D...): the plain clang driver
     # treats "/imsvc" as an input file ("no such file or directory: '/imsvc'"),
-    # so those units must run in cl driver mode. The src/Stub/types/ header
-    # wrappers carry clang-style MS_FLAGS and use the plain driver.
+    # so those units must run in cl driver mode. Explicit --tu units carry
+    # clang-style MS_FLAGS and use the plain driver.
     pre = ["--driver-mode=cl"] if driver == "cl" else []
     cmd = [clang, *pre, *args, tu, "-fsyntax-only", *extra]
     res = subprocess.run(cmd, capture_output=True, text=True)
@@ -202,41 +201,6 @@ def compdb_entries(path):
     return out
 
 
-def header_units(globs):
-    """Wrap each .h under `globs` (dirs or globs) in a one-line .cpp TU.
-
-    ghidra_metadata_generate needs C++ TUs (a bare .h parses as C and `extern "C"` fails), and
-    a single combined TU clashes on the placeholder MFC types each comprehension
-    header defines locally - so each header gets its OWN wrapper .cpp, processed
-    as a separate clang invocation. Returns (wrapper_cpp, MS_FLAGS, header) triples.
-    """
-    import glob as _glob
-    import tempfile
-    headers = []
-    for g in globs:
-        p = Path(g)
-        headers += (sorted(str(h) for h in p.rglob("*.h")) if p.is_dir()
-                    else sorted(_glob.glob(g, recursive=True)))
-    if not headers:
-        return []
-    tmp = Path(tempfile.mkdtemp(prefix="gruntz-structwrap-"))
-    # -I include lets a comprehension header reach the repo's macro-only headers
-    # (e.g. <rva.h> for OVERRIDE) under the plain driver, without pulling MFC in -
-    # comprehension headers otherwise stay self-contained placeholders.
-    # TODO: remove this -I once every stub is matched and src/Stub/types/ is empty
-    # (the comprehension layer shrinks toward empty - see src/Stub/types/README.md);
-    # at that point nothing here needs <rva.h> and the plain driver can go back to
-    # bare MS_FLAGS.
-    flags = [*MS_FLAGS, "-I", str(REPO / "include")]
-    out = []
-    for i, h in enumerate(headers):
-        hp = Path(h).resolve()
-        w = tmp / ("%03d_%s.cpp" % (i, hp.stem))
-        w.write_text('#include "%s"\n' % hp)
-        out.append((str(w), list(flags), h))
-    return out
-
-
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--clang", default=os.environ.get("GRUNTZ_CLANG") or "clang",
@@ -246,26 +210,20 @@ def main():
                     help="explicit TU(s) to read (bypasses --compdb).")
     ap.add_argument("--flag", action="append", default=[],
                     help="extra clang flag(s) used with --tu (repeatable).")
-    ap.add_argument("--header", action="append", default=[],
-                    help="comprehension header dir/glob (e.g. src/Stub/types/): each .h "
-                         "is wrapped in a one-line .cpp TU and laid out with MS flags. "
-                         "Combine with --compdb/--tu; src/ wins on overlapping names.")
     ap.add_argument("--out-dir", default=str(REPO / "build/gen"))
     args = ap.parse_args()
 
     # units: (tu_path, clang_flags, source_label, driver). compdb TUs carry
-    # clang-cl flags -> "cl" driver; --tu and src/Stub/types/ header wrappers carry
-    # clang-style MS_FLAGS -> "plain" driver.
+    # clang-cl flags -> "cl" driver; --tu carries clang-style MS_FLAGS -> "plain".
     units = []
     if args.tu:
         units += [(tu, [*MS_FLAGS, *args.flag], tu, "plain") for tu in args.tu]
     elif Path(args.compdb).exists():
         units += [(tu, flags, tu, "cl") for (tu, flags) in compdb_entries(args.compdb)]
-    units += [(w, flags, h, "plain") for (w, flags, h) in header_units(args.header)]
     if not units:
-        ap.error(f"no --tu/--header given and no compdb at {args.compdb}")
+        ap.error(f"no --tu given and no compdb at {args.compdb}")
 
-    structs = {}   # name -> {name,size,fields,source}; src/ wins over src/Stub/types/
+    structs = {}   # name -> {name,size,fields,source}; src/ wins on name overlap
     enums = {}
     failures = []  # (source, stage, detail) - a non-zero clang rc means the unit
                    # did NOT compile cleanly. clang's layout/AST dumps RECOVER from
@@ -273,11 +231,8 @@ def main():
                    # silently contribute WRONG layouts (e.g. a class missing its
                    # base). Refuse to emit anything until every unit is clean.
     for tu, flags, source, driver in units:
-        # src/Stub/types/ is the comprehension layer (unmatched type headers), so
-        # it stays LOWER priority than the authoritative matched src/ layouts even
-        # though it lives under src/ - matched src/ must win on any name overlap.
-        is_stub_types = "/src/Stub/types/" in source or source.startswith("src/Stub/types/")
-        src_priority = 0 if ("/src/" in source or source.startswith("src/")) and not is_stub_types else 1
+        # matched src/ layouts are authoritative and win any name overlap.
+        src_priority = 0 if ("/src/" in source or source.startswith("src/")) else 1
         lo_out, lo_err, lo_rc = run_clang(
             args.clang, flags, tu, ["-Xclang", "-fdump-record-layouts-complete"], driver)
         if lo_rc != 0:
