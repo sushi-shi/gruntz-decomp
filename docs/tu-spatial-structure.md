@@ -2,7 +2,7 @@
 
 **Question.** How far apart in retail RVA space are the functions of one class/TU,
 and does that layout let us say which methods are *related* — even attribute
-*unnamed* functions to a class? Measured over the matched `src/` (1.5k+ RVA-annotated
+*unnamed* functions to a class? Measured over the matched `src/` (4.2k+ RVA-annotated
 functions) joined with the Ghidra boundary export. Companion to
 `docs/link-order-investigation.md` (intra-TU source order + cross-TU link order);
 this doc covers what sits *inside* one TU's block and how to exploit it.
@@ -17,49 +17,74 @@ Distance from each matched function to its nearest same-TU sibling, by kind:
 
 | kind | n | median | p90 | within 8 KB |
 |---|---|---|---|---|
-| **method** (ordinary *and* virtual overrides) | ~1300 | `0xa0` | `0xb10` | **93%** |
-| constructor | ~90 | `0x160` | `0xf90` | 92% |
-| **destructor** | ~110 | `0x7b0` | **`0x9dac0`** (~645 KB) | **57%** |
+| **method** (ordinary *and* virtual overrides) | 3381 | `0x50` | `0x1c0` | **99%** |
+| constructor | 182 | `0x50` | `0x540` | 95% |
+| destructor | 138 | `0x30` | `0x950` | **91%** |
+| other | 300 | `0xc0` | `0x1b0` | 98% |
+
+**The destructor exile has largely CLOSED in this metric.** It was the headline
+finding — dtor p90 `0x9dac0` (~645 KB), only 57% within 8 KB — and it now reads p90
+`0x950`, 91% within 8 KB. The linker still pools deleting-destructors (section 3 is
+unchanged: 24 distinct classes in the `0x80000-0x90000` run), but only **23 of 141**
+dtors now sit in a pool region, and TU re-homing put the rest beside their siblings,
+so *same-TU* distance no longer shows the exile. Read section 3, not this table, for
+the pooling itself.
 
 The structuring axis is **not** virtual-vs-simple. Virtual overrides (`Tick`,
-`GetTypeTag`, slot methods) cluster right next to the plain methods. The outlier is
-the **destructor**: MSVC emits the vtable-referenced *deleting* destructor as a
-COMDAT, and the linker pools those into shared low-address runs — `0x10000-0x14000`
-(~35 classes) and `0x80000-0x90000` (~17 classes) — alternating
-`scalar_deleting_destructor` thunks and `~Class` bodies from *unrelated* classes.
+`GetTypeTag`, slot methods) cluster right next to the plain methods. The mechanism
+behind the pools is unchanged: MSVC emits the vtable-referenced *deleting* destructor
+as a COMDAT, and the linker pools those into shared low-address runs —
+`0x10000-0x14000` (8 distinct ctor/dtor classes) and `0x80000-0x90000` (24) —
+alternating `scalar_deleting_destructor` thunks and `~Class` bodies from *unrelated*
+classes. Note both runs are now mostly ordinary **methods** (262 of the 305 pooled
+functions); only 23 dtors remain inside a pool region.
 
 **Mechanism.** Out-of-line methods written in one `.cpp` land as a contiguous
 source-order block (the linker keeps an object's COMDATs together — see the
 link-order doc). Special members and other implicitly/inline-emitted functions are
-COMDATs the linker pools elsewhere. So a class's *own block* is tight; its dtor is
-exiled.
+COMDATs the linker pools elsewhere. So a class's *own block* is tight; a special
+member may be exiled — though far fewer are than when this was written.
 
 ## Relatedness model
 
 - **Proximity ⇒ same class/TU** holds cleanly for ordinary + virtual methods: a
   matched method's tight RVA neighbours are its siblings (the "batch siblings"
   matching lever). `tu_layout --neighbors 0xRVA` lists them.
-- **Destructors are the exception** — pooled, so proximity can't tie them to a
-  class; recover them by leaked name / vtable / RTTI (which `gruntz.match.residual_queue`
-  already does).
+- **Pooled special members are the exception** — for a dtor that *is* in a pool
+  region (23 of 141 today), proximity can't tie it to a class; recover those by leaked
+  name / vtable / RTTI (which `gruntz.match.residual_queue` already does). The
+  majority of dtors are no longer pool-exiled and behave like ordinary methods.
 
 ## Exceptions & intermingling
 
-1. **Special-member pools** (above) — the dominant exception.
-2. **Scattered classes** — ~20 of ~72 multi-method classes have <50% of methods in
-   their longest contiguous run. Two flavours: *conflated TUs* (engine base + game
-   glue under one name: `CNetMgr`, `CGameLevel`, `CFileIO`) and *COMDAT-heavy
-   families*. **`CAttract` is the worked example**: virtual-slot overrides at
-   `0x14xxx`, EH dtor pooled at `0x8cxxx`, and a `LoadTitleConfig`/`Activate` pair at
-   `0xa0xxx` *interleaved with `CMenuState`* — a state-class soup.
-3. **Lone far methods** — ~68 plain methods >0x4000 from any sibling, mostly the
-   only matched method of a class so far (resolves as coverage grows).
+Figures below are from `python -m gruntz.audit.tu_layout` — **re-run it rather than
+trusting these**; re-homing waves move them (an earlier revision of this section
+survived long enough to name three examples that had all since dissolved).
 
-**Do classes intermingle?** Mostly no. At the method-block level (pools excluded):
-~832 same-class adjacent pairs vs ~412 boundaries, and only ~62 true A-B-A splices
-(~5%). And the splices are almost all between **sibling classes** of one family
-(`CButeMgr`/`CButeValue`, the State family, DDraw/Trigger/Command pairs) — so a
-mis-attribution lands on a same-family neighbour, not a random class.
+1. **Special-member pools** (above) — still the dominant exception, and the only one
+   of these three that has not moved. Two runs, ~150 functions each; the
+   `0x80000-0x90000` run alone pools dtors from 24 distinct classes.
+2. **Scattered classes** — 17 of 226 multi-method classes have <50% of methods in
+   their longest contiguous run. Note the *rate* has collapsed as re-homing landed:
+   this was ~20 of ~72 (≈28%) when first measured, now ≈7.5%. The surviving flavours
+   are *conflated TUs* and *COMDAT-heavy families* — see the tool's own SCATTERED
+   list for the current membership (`CBattlezMapConfig`, `CButeMgr`/`CButeValue`,
+   `CGrunt`, `CPlay`, `CState`, the Multi/Single-Command pair, …).
+   **Worked example — `CMenuState`, a state-class soup that is real today**: 16
+   functions whose dtor is pooled at `0x8ce60`, whose main block sits at
+   `0x9fxxx-0xa0xxx`, and whose `Vslot09`/`Vslot06` bodies are compiled into
+   **`Attract.cpp`** while `InputVirtual` sits in `StateImages.cpp` — three TUs for
+   one class. `CGameLevel` is the other live case: 83% dense, but spread over
+   `GameLevel.cpp` (67), `GameLevelMove.cpp` (10) and `Play.cpp` (2).
+3. **Lone far methods** — ~102 plain methods >0x4000 from any same-class sibling,
+   mostly the only matched method of a class so far (resolves as coverage grows).
+
+**Do classes intermingle?** Mostly no, and the answer has strengthened. At the
+method-block level (pools excluded): **2467** same-class adjacent pairs vs **523**
+boundaries, and only **55** true A-B-A splices. And the splices are almost all
+between **sibling classes** of one family (`CGruntzMultiCommand`/`CGruntzSingleCommand`
+and `CButeMgr`/`CButeValue` lead at 7 each) — so a mis-attribution lands on a
+same-family neighbour, not a random class.
 
 ## Attribution: tie unnamed functions to a class
 
@@ -88,13 +113,15 @@ Two target sets:
   boundary rather than inside a block.
 
 **Validation (leave-one-out on matched methods):** hide each known method and predict
-from its neighbours — the HIGH (both-sides) rule is **~91% exact, ~94% same-family**.
+from its neighbours — the HIGH (both-sides) rule is **97% exact, 98% same-family**
+(2128/2183; it was ~91%/~94% when first measured).
 That precision is measured against ground truth, independent of any runtime trace
 (the old dynamic-trace labels were loose, especially single-observation, so they were
 *not* used as an oracle here; that tooling is archived).
 
-97% of unnamed bodies have a matched function within `0x4000`, so attribution
-coverage rises automatically as matching progresses.
+Coverage rises automatically as matching progresses: the tool currently reports 219
+remaining unnamed `FUN_` bodies (non-thunk, source claims excluded), of which 93 (42%)
+get a same-class bracket — 73 HIGH, 20 MED. Run `--attribute` for the live figures.
 
 ### Consuming the attributions
 
@@ -106,7 +133,7 @@ attributed class's real TU, and moves it if the proximity class turns out slight
 
 ## Limits
 
-- HIGH is ~91% precise, so ~1 in 11 lands on the wrong (usually same-family) class —
+- HIGH is 97% precise, so ~1 in 33 lands on the wrong (usually same-family) class —
   acceptable for a backlog worklist a matcher re-checks, not for silent ground truth.
 - Pool regions and scattered/COMDAT-heavy families (the State classes) are where
   proximity is weakest; gate on purity and cross-check vtable/RTTI there.
