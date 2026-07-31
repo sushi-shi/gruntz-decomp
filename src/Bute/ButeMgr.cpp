@@ -1836,7 +1836,7 @@ void EmitIostreamVbaseDtor(streambuf* b) { // non-static: cl elides unreferenced
 // `new u32(val)` - scalar new WITH an initializer. The initializer only runs when
 // the allocation succeeded, and the new-expression's value is NULL on failure, so
 // cl materializes that NULL into the join register (`xor eax,eax`) instead of
-// storing an immediate. See docs/patterns/scalar-new-with-initializer.md.
+// storing an immediate. See docs/patterns/scalar-new-with-initializer-null-join.md.
 RVA(0x00172000, 0x31)
 CButeValue* CButeValue::SetDword(i32 type, u32 val) {
     this->type = type;

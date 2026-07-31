@@ -169,7 +169,7 @@ construct instead:
   literal to a `char*` parameter is fine under MSVC 5.
 
 - **Global / static / const / vtable** — declare a named `extern` with a
-  `DATA(0xRVA)` macro (`src/rva.h`) on the line ABOVE it (RVA = VA − 0x400000),
+  `DATA(0xRVA)` macro (`include/rva.h`) on the line ABOVE it (RVA = VA − 0x400000),
   then use the name:
 
       DATA(0x2453d8)

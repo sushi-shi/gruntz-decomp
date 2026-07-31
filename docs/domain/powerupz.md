@@ -92,7 +92,7 @@ $ strings GRUNTZ.EXE | grep -oE 'GAME_INGAMEICONZ_SECRET[WARP]'   # 90-93
   object IDs — the per-powerup update handler table). `Serialize` re-resolves the
   powerup's bute-set record from `g_gameReg->m_78`.
 - **`CCoveredPowerupLogic`** — the CoveredPowerup logic (id 26 in the tile-trigger
-  factory, `??0CCoveredPowerupLogic @0x112240`, `src/Gruntz/TileTriggerFactory.cpp`).
+  factory, `??0CCoveredPowerupLogic @0x112240`, `src/Gruntz/TileTriggerSwitchLogic.cpp`).
 - Zap Cola / health restore, timed-powerup duration, and Megaphone call-for logic live
   in the CGrunt powerup paths (`src/Gruntz/Grunt.cpp`, **matcher-2**) — worklist only.
 - **Worklist:** a `PowerupId`/`CurseId`/`MiscId` enum from the tables above, applied to

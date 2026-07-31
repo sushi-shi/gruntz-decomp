@@ -15,19 +15,22 @@ Columns:
   *order* only), `name` (name-only stub).
 - **From** — source-of-knowledge: `rtti`, `tomalla`, `strings`, `srcpath`.
 
-Scaffold file column: where the stub lives under `src/Stub/types/` (or `graduated:`
-/ `src/ (header removed; layout in src/)` once the class is byte-matched in `src/`).
+Header column: the class's real home under `include/`. The old `src/Stub/types/`
+scaffold is **retired** (the directory is gone — every class either graduated to a
+real header or was folded into one). A `—` means no proven home: the RTTI name is
+real (it is in the binary) but its identity is not yet recovered. Never fill one in
+by guesswork — recover it by xref/vtable-slot first.
 
 ## Game-specific classes (the decomp targets)
 
-| Name | Kind | Source file | RTTI mangled | Known | From | Scaffold |
+| Name | Kind | Source file | RTTI mangled | Known | From | Header |
 |---|---|---|---|---|---|---|
 | CGruntzApp | game | C:\Proj\Gruntz | `.?AVCGruntzApp@@` | layout | rtti+tomalla | graduated: src/Gruntz/GruntzApp.cpp |
 | CGruntzWnd | game | C:\Proj\Gruntz | `.?AVCGruntzWnd@@` | layout | rtti+tomalla | src/Gruntz/GruntzWnd.cpp (matched ctor) |
-| CGruntzMgr | game | C:\Proj\Gruntz\GruntzMgr.cpp | `.?AVCGruntzMgr@@` | layout | rtti+tomalla | src/Stub/types/cgruntzmgr.h |
+| CGruntzMgr | game | C:\Proj\Gruntz\GruntzMgr.cpp | `.?AVCGruntzMgr@@` | layout | rtti+tomalla | include/Gruntz/GruntzMgr.h |
 | CGruntzMapMgr | game | C:\Proj\Gruntz | `.?AVCGruntzMapMgr@@` | name | rtti+strings | src/ (header removed; layout in src/) |
 | CMapMgr | game/wap32 | (engine) | `.?AVCMapMgr@@` | name | rtti | src/ (header removed; layout in src/) |
-| CNetMgr | game | C:\Proj\NetMgr\NetMgr.cpp | `.?AVCNetMgr@@` | layout(partial) | rtti+tomalla | src/Net/NetMgr.h (matched) |
+| CNetMgr | game | C:\Proj\NetMgr\NetMgr.cpp | `.?AVCNetMgr@@` | layout(partial) | rtti+tomalla | include/Net/NetMgr.h (matched) |
 | CGrunt | game | C:\Proj\Gruntz | `.?AVCGrunt@@` | fields-order | rtti+strings | src/ (header removed; layout in src/) |
 | CGruntVoice | game | C:\Proj\Gruntz | `.?AVCGruntVoice@@` | name | rtti | src/ (header removed; layout in src/) |
 | CGruntPuddle | game | C:\Proj\Gruntz | `.?AVCGruntPuddle@@` | name | rtti | src/ (header removed; layout in src/) |
@@ -47,7 +50,7 @@ Scaffold file column: where the stub lives under `src/Stub/types/` (or `graduate
 | CBootyState | game | C:\Proj\Gruntz | `.?AVCBootyState@@` | name | rtti+strings | src/ (header removed; layout in src/) |
 | CMultiBootyState | game | C:\Proj\Gruntz | `.?AVCMultiBootyState@@` | name | rtti+strings | src/ (header removed; layout in src/) |
 | CTileTrigger | game | C:\Proj\Gruntz | `.?AVCTileTrigger@@` | name | rtti+strings | src/ (header removed; layout in src/) |
-| CTileTriggerLogic | game | C:\Proj\Gruntz | `.?AVCTileTriggerLogic@@` | layout | rtti+matched | graduated: src/Gruntz/TileTriggerLogic.h |
+| CTileTriggerLogic | game | C:\Proj\Gruntz | `.?AVCTileTriggerLogic@@` | layout | rtti+matched | graduated: include/Gruntz/TileTriggerLogic.h |
 | CTileTriggerSwitch | game | C:\Proj\Gruntz | `.?AVCTileTriggerSwitch@@` | name | rtti+strings | src/ (header removed; layout in src/) |
 | CTileTriggerSwitchLogic | game | C:\Proj\Gruntz | `.?AVCTileTriggerSwitchLogic@@` | name | rtti+strings | src/ (header removed; layout in src/) |
 | CTileTriggerTransition | game | C:\Proj\Gruntz | `.?AVCTileTriggerTransition@@` | name | rtti | src/ (header removed; layout in src/) |
@@ -101,7 +104,7 @@ Scaffold file column: where the stub lives under `src/Stub/types/` (or `graduate
 | CAmbientSound | game | C:\Proj\Gruntz | `.?AVCAmbientSound@@` | name | rtti+strings | src/ (header removed; layout in src/) |
 | CAmbientPosSound | game | C:\Proj\Gruntz | `.?AVCAmbientPosSound@@` | name | rtti | src/ (header removed; layout in src/) |
 | CRandomAmbientSound | game | C:\Proj\Gruntz | `.?AVCRandomAmbientSound@@` | name | rtti | src/ (header removed; layout in src/) |
-| CStatusBarItem | game | C:\Proj\Gruntz | `.?AVCStatusBarItem@@` | layout | rtti+matched | graduated: src/Gruntz/StatusBarItem.h |
+| CStatusBarItem | game | C:\Proj\Gruntz | `.?AVCStatusBarItem@@` | layout | rtti+matched | graduated: include/Gruntz/StatusBarItem.h |
 | CSBI_Image | game | C:\Proj\Gruntz | `.?AVCSBI_Image@@` | name | rtti | src/ (header removed; layout in src/) |
 | CSBI_ImageSet | game | C:\Proj\Gruntz | `.?AVCSBI_ImageSet@@` | name | rtti | src/ (header removed; layout in src/) |
 | CSBI_ImageSetAni | game | C:\Proj\Gruntz | `.?AVCSBI_ImageSetAni@@` | name | rtti | src/ (header removed; layout in src/) |
@@ -148,11 +151,11 @@ Scaffold file column: where the stub lives under `src/Stub/types/` (or `graduate
 
 ## Engine substrate (WAP32) classes
 
-| Name | Kind | Source file | RTTI mangled | Known | From | Scaffold |
+| Name | Kind | Source file | RTTI mangled | Known | From | Header |
 |---|---|---|---|---|---|---|
-| CGameApp | wap32 | (engine, shared) | `.?AVCGameApp@@` | layout | rtti+tomalla | graduated: src/Wap32/Wap32.h |
-| CGameMgr | wap32 | (engine, shared) | `.?AVCGameMgr@@` | layout | rtti+tomalla | src/Net/NetMgr.h (matched) |
-| CGameWnd | wap32 | (engine, shared) | `.?AVCGameWnd@@` | layout | rtti+tomalla | graduated: src/Wap32/Wap32.h |
+| CGameApp | wap32 | (engine, shared) | `.?AVCGameApp@@` | layout | rtti+tomalla | graduated: include/Wap32/Wap32.h |
+| CGameMgr | wap32 | (engine, shared) | `.?AVCGameMgr@@` | layout | rtti+tomalla | include/Net/NetMgr.h (matched) |
+| CGameWnd | wap32 | (engine, shared) | `.?AVCGameWnd@@` | layout | rtti+tomalla | graduated: include/Wap32/Wap32.h |
 | CWapObj | wap32 | (engine) | `.?AVCWapObj@@` | name | rtti | src/ (header removed; layout in src/) |
 | CWapX | wap32 | (engine) | `.?AVCWapX@@` | name | rtti | src/ (header removed; layout in src/) |
 | zErrHandling | wap32 | (z-runtime) | `.?AVzErrHandling@@` | name | rtti | src/ (header removed; layout in src/) |
@@ -163,7 +166,7 @@ Scaffold file column: where the stub lives under `src/Stub/types/` (or `graduate
 
 ## Template instantiations
 
-| Name | Kind | Source file | RTTI mangled | Known | From | Scaffold |
+| Name | Kind | Source file | RTTI mangled | Known | From | Header |
 |---|---|---|---|---|---|---|
 | zDArray< int(CUserLogic::*)() > | template/wap32 | (z-runtime) | `.?AV?$zDArray@P8CUserLogic@@AEHXZ@@` | element type | rtti | src/ (header removed; layout in src/) + src/ (header removed; layout in src/) |
 | CArray<PLAYLISTINFOSTRUCT*> | template/mfc | C:\Proj\Dsndmgr | `.?AV?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@` | element type | rtti+strings | src/ (header removed; layout in src/) |
@@ -175,7 +178,7 @@ These primary manager classes are mined from strings + leaked source paths; they
 companion classes (DirPal/DirSurf/InputDevice/DSndMgSR/SFManager/CRezDir/RezSync/
 ButeMgr) are likewise name-only.
 
-| Name | Kind | Source file | Known | From | Scaffold |
+| Name | Kind | Source file | Known | From | Header |
 |---|---|---|---|---|---|
 | CDirectDrawMgr | manager | C:\Proj\DDrawMgr\DDRAWMGR.CPP | name | strings | src/ (header removed; layout in src/) |
 | DirPal | manager | C:\Proj\DDrawMgr\DIRPAL.CPP | name | srcpath | src/ (header removed; layout in src/) |
@@ -186,8 +189,8 @@ ButeMgr) are likewise name-only.
 | PLAYLISTINFOSTRUCT | struct | C:\Proj\Dsndmgr | name (held in CArray) | rtti(template)+strings | src/ (header removed; layout in src/) |
 | DirectInputMgr2 | manager | C:\Proj\DinMgr2\DinMgr2.cpp | name | strings | src/ (header removed; layout in src/) |
 | InputDevice | manager | C:\Proj\DinMgr2\InputDevice.cpp | name | srcpath | src/ (header removed; layout in src/) |
-| RezSync | manager | (REZ/VRZ loader) | name | strings | graduated: src/Rez/RezMgr.h |
-| CRezDir | manager | (REZ/VRZ loader) | name | strings | graduated: src/Rez/RezMgr.h |
+| RezSync | manager | (REZ/VRZ loader) | name | strings | graduated: include/Rez/RezMgr.h |
+| CRezDir | manager | (REZ/VRZ loader) | name | strings | graduated: include/Rez/RezMgr.h |
 | ButeMgr | manager | (attributez.txt/dwrects.txt) | name | strings | src/ (header removed; layout in src/) |
 
 ## Reconstructed util classes (tomalla-derived, NOT in RTTI)
@@ -196,14 +199,14 @@ tomalla-invented names for real binary classes with matched layouts.
 `@approx tomalla 1.0.1.77` — offsets version-independent; function addresses
 deferred to the re-anchor.
 
-| Name | Kind | Source file | Known | From | Scaffold |
+| Name | Kind | Source file | Known | From | Header |
 |---|---|---|---|---|---|
-| Utils::RegistryHelper | util | C:\Proj\Gruntz (util TU?) | layout (0x21C) | tomalla | graduated: src/Utils/RegistryHelper.h |
-| Utils::MemoryPool<T> | util/template | C:\Proj\Gruntz (util TU?) | layout (0x10) | tomalla | src/Stub/types/memory_pool.h |
-| Font | util | C:\Proj\Gruntz\font.cpp | layout (0x14) + .fnt format | tomalla | src/Stub/types/font.h |
-| Pair | struct | C:\Proj\Gruntz | layout {int;int} | tomalla | src/Stub/types/cgruntzmgr.h |
-| UnknownClassArrays | nested | C:\Proj\Gruntz\GruntzMgr.cpp | layout (~0x144) | tomalla | src/Stub/types/cgruntzmgr.h |
-| UnknownClassInCGruntzMgr | nested | C:\Proj\Gruntz\GruntzMgr.cpp | layout (0x238) | tomalla | src/Stub/types/cgruntzmgr.h |
+| Utils::RegistryHelper | util | C:\Proj\Gruntz (util TU?) | layout (0x21C) | tomalla | graduated: include/Utils/RegistryHelper.h |
+| Utils::MemoryPool<T> | util/template | C:\Proj\Gruntz (util TU?) | layout (0x10) | tomalla | — |
+| Font | util | C:\Proj\Gruntz\font.cpp | layout (0x14) + .fnt format | tomalla | include/Font/Font.h |
+| Pair | struct | C:\Proj\Gruntz | layout {int;int} | tomalla | — |
+| UnknownClassArrays | nested | C:\Proj\Gruntz\GruntzMgr.cpp | layout (~0x144) | tomalla | include/Gruntz/BattlezMapConfig.h |
+| UnknownClassInCGruntzMgr | nested | C:\Proj\Gruntz\GruntzMgr.cpp | layout (0x238) | tomalla | — |
 
 ## HYPOTHESIZED CDirectDrawMgr surface/page-manager family (placeholder-named)
 
@@ -212,33 +215,33 @@ family, C:\Proj\DDrawMgr) is a HYPOTHESIS; offsets/sizes/inheritance are high
 confidence. `@approx tomalla 1.0.1.77`. Held in CGruntzMgr @0x30. Method addresses
 (~120 stubs) deferred to the re-anchor.
 
-| Name (placeholder) | Size | Base | Notes | Scaffold |
+| Name (placeholder) | Size | Base | Notes | Header |
 |---|---|---|---|---|
-| CDDrawSurfaceMgrLayout | 0x40 | CObject | family manager; UnknownVirtualMethod18 = 640x480x16 init | src/Stub/types/ddrawmgr_surface_family.h |
-| UnknownCGruntzMgrHogwarts | 0x8 | CObject | common base | src/Stub/types/ddrawmgr_surface_family.h |
-| UnknownCGruntzMgrLucius | 0x10 | …Hogwarts | shared sub-manager base | src/Stub/types/ddrawmgr_surface_family.h |
-| CDDrawSubMgrPagesLayout | 0x1c | …Lucius | owns trio of surface-pair children | src/Stub/types/ddrawmgr_surface_family.h |
-| UnknownHermiona | 0x6c | …Lucius | CObList + 2×CMapPtrToPtr | src/Stub/types/ddrawmgr_surface_family.h |
-| CDDrawWorkerListLayout | 0x2c | …Lucius | CObList | src/Stub/types/ddrawmgr_surface_family.h |
-| UnknownSeverus | 0x2c | …Lucius | static DDSURFACEDESC-shaped struct | src/Stub/types/ddrawmgr_surface_family.h |
-| UnknownSirius | 0x2c | …Lucius | CMapStringToOb | src/Stub/types/ddrawmgr_surface_family.h |
-| UnknownAlbus | 0x68 | …Lucius | 3×CMapStringToOb | src/Stub/types/ddrawmgr_surface_family.h |
-| UnknownRemus | 0x6d4 | …Lucius | resolution ladder; 3×CObArray + buffer | src/Stub/types/ddrawmgr_surface_family.h |
-| UnknownMinerva | 0x38 | …Lucius | CMapStringToPtr | src/Stub/types/ddrawmgr_surface_family.h |
-| UnknownPettigrew | 0x2c | …Lucius | CMapStringToPtr | src/Stub/types/ddrawmgr_surface_family.h |
-| UnknownFilch | 0x948 | (none) | 2×CPtrList + CPtrArray | src/Stub/types/ddrawmgr_surface_family.h |
-| UnknownSalazar | 0x94 | (vtable) | 101-entry volume→attenuation table | src/Stub/types/ddrawmgr_surface_family.h |
-| UnknownVoldemort | 0x9c | UnknownSalazar | | src/Stub/types/ddrawmgr_surface_family.h |
+| CDDrawSurfaceMgrLayout | 0x40 | CObject | family manager; UnknownVirtualMethod18 = 640x480x16 init | include/DDrawMgr/DDrawSurfaceMgr.h |
+| UnknownCGruntzMgrHogwarts | 0x8 | CObject | common base | — |
+| UnknownCGruntzMgrLucius | 0x10 | …Hogwarts | shared sub-manager base | — |
+| CDDrawSubMgrPagesLayout | 0x1c | …Lucius | owns trio of surface-pair children | include/DDrawMgr/DDrawSubMgrPages.h |
+| UnknownHermiona | 0x6c | …Lucius | CObList + 2×CMapPtrToPtr | — |
+| CDDrawWorkerListLayout | 0x2c | …Lucius | CObList | include/DDrawMgr/DDrawWorkerList.h |
+| UnknownSeverus | 0x2c | …Lucius | static DDSURFACEDESC-shaped struct | — |
+| UnknownSirius | 0x2c | …Lucius | CMapStringToOb | — |
+| UnknownAlbus | 0x68 | …Lucius | 3×CMapStringToOb | — |
+| UnknownRemus | 0x6d4 | …Lucius | resolution ladder; 3×CObArray + buffer | — |
+| UnknownMinerva | 0x38 | …Lucius | CMapStringToPtr | — |
+| UnknownPettigrew | 0x2c | …Lucius | CMapStringToPtr | — |
+| UnknownFilch | 0x948 | (none) | 2×CPtrList + CPtrArray | — |
+| UnknownSalazar | 0x94 | (vtable) | 101-entry volume→attenuation table | — |
+| UnknownVoldemort | 0x9c | UnknownSalazar | | — |
 
 ## Version-independent on-disk data formats (shared editor<->game)
 
 Not classes — on-disk record formats. Field SET high confidence (editor labels /
 loader asserts); byte layout @todo. See docs/editor-notes.md.
 
-| Name | Kind | Source | Known | From | Scaffold |
+| Name | Kind | Source | Known | From | Header |
 |---|---|---|---|---|---|
-| WwdObject | format | .WWD world file | field set + flag enums | editor strings | src/Stub/types/wwd_object.h |
-| RezDirEntry | format | .REZ/.VRZ "RezMgr" archive | field set {Type,Name,Size,ID} + sorted invariant | editor strings + game assert | src/Stub/types/rez.h |
+| WwdObject | format | .WWD world file | field set + flag enums | editor strings | include/Wwd/WwdFile.h |
+| RezDirEntry | format | .REZ/.VRZ "RezMgr" archive | field set {Type,Name,Size,ID} + sorted invariant | editor strings + game assert | include/Rez/RezMgr.h |
 
 ## Library link-artifacts (statically-linked MFC / CRT / COM / AFX — NOT targets)
 

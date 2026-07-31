@@ -254,7 +254,7 @@ i32 CMapMgr::IsCellClear(i32 x, i32 y) {
 // nothing in .rdata/.data points at it either, and no ILT thunk jmps to it).
 //
 // So the `@early-stop` "arg-forwarding-via-uninitialised-callee-saved-regs wall (~38%)"
-// was a misdiagnosis, and docs/patterns/serialize-wrapper-reg-forward.md invented an ABI
+// was a misdiagnosis, and a since-deleted serialize-wrapper-reg-forward pattern doc invented an ABI
 // to explain it ("the forwarded values arrive already in the callee-saved registers";
 // "no natural C++ signature reproduces the register-resident-args ABI"). MSVC5 invents
 // no conventions: the args arrive in those registers because BROADCASTCMD'S OWN EARLIER

@@ -7,13 +7,16 @@ compiler emits storage bound to `rva` (linkable).
 It makes a *reference* resolve reloc-masked (so a function matches) but the linker
 has nothing to point at. It is a reconstruction-incompleteness placeholder.
 
-## Taxonomy of the 232 `DATA_SYMBOL` uses
+## Taxonomy of the `DATA_SYMBOL` uses
 
-| kind | count | retire by |
-| --- | --- | --- |
-| **POD / scalar / const global** (`?g@@3H/M/N/PAD/PBD/PAX…`, `_g_…`) | ~139 | **convert to a real `DATA(rva) type name;` def** — this gate |
-| **ctor'd-object global** (`?g@@3U/V<Class>@@A`) | ~68 | reconstruct the class's ctor + static-init (matching campaign) |
-| **compiler-generated** (`$S` local statics, `??_7/8` MI vtables, `??_R` RTTI) | ~25 | reconstruct the emitting construct |
+The backlog started at ~232 and is nearly drained — the live count is the row count
+of `config/data-symbol-baseline.tsv` (read it; don't trust a number written here).
+
+| kind | retire by |
+| --- | --- |
+| **POD / scalar / const global** (`?g@@3H/M/N/PAD/PBD/PAX…`, `_g_…`) | **convert to a real `DATA(rva) type name;` def** — this gate |
+| **ctor'd-object global** (`?g@@3U/V<Class>@@A`) | reconstruct the class's ctor + static-init (matching campaign) |
+| **compiler-generated** (`$S` local statics, `??_7/8` MI vtables, `??_R` RTTI) | reconstruct the emitting construct |
 
 ### Why the last two categories cannot be mechanically converted
 

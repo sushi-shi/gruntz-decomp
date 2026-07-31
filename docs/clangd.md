@@ -6,13 +6,13 @@ over `src/` and the vendored sources - parsed against the project's real
 **MSVC 5.0 / MFC 4.2 / DirectX 6** headers.
 
 It runs **alongside** the matching build and does not touch it. The Wine
-MSVC 5.0 build (`configure.py` -> `build.ninja` -> `scripts/gruntz/build/cc_wrap.py`) remains
+MSVC 5.0 build (`configure.py` -> `build.ninja` -> `scripts/gruntz/core/cc_wrap.py`) remains
 the **sole verdict on correctness**; clangd is only a *reader* of the code.
 
 ## The wrinkle: clangd can't use the real compiler
 
 The matching build compiles each unit with **MSVC 5.0's `CL.EXE` run under Wine**
-(via `scripts/gruntz/build/cc_wrap.py`). clangd is clang-based and cannot invoke that wrapper.
+(via `scripts/gruntz/core/cc_wrap.py`). clangd is clang-based and cannot invoke that wrapper.
 So we maintain a **separate** compilation database, in **clang-cl driver form**,
 that points clang at the toolchain's MSVC/MFC/DirectX headers and asks it to
 *emulate* MSVC 5.0. clang reads those headers as plain files - **no Wine and no

@@ -327,7 +327,8 @@ nothing important lives only in the `.gpr` blob — it is all reproducible:
   `apply.py` injects them as named stack variables (they surface in the on-demand
   decompiler). The harvest runs before every `apply.py` (in `_ghidra_metadata_apply`).
 - `build/gen/structs.json` + `build/gen/enums.json` (`ghidra_metadata_generate.py`):
-  clang record layouts / enums over `src/` + `src/Stub/types/`, defined in the DTM;
+  clang record layouts / enums over the `src/` TUs (headers reach it through their
+  own `#include`s — the old `src/Stub/types/` comprehension layer is gone), defined in the DTM;
   each struct is applied as the `this` type on its class's methods.
 
 ### Name precedence (src wins) and the apply report
@@ -483,7 +484,7 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
 1. add an `[[unit]]` block to `config/units.toml` (`unit`, `source`, and a
    `flags` profile — `base` unless the TU needs `/GX`/`/O1`);
 2. `#include "../rva.h"` and annotate **each** matched function with an `RVA()`
-   macro (`src/rva.h`) directly above the definition, after the description. A
+   macro (`include/rva.h`) directly above the definition, after the description. A
    real example from `src/Gruntz/SBI_RectOnly.cpp`:
 
    ```cpp
@@ -498,7 +499,7 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
    }
    ```
 
-   The macros (`src/rva.h`, compiled to nothing under MSVC 5.0 — it predates
+   The macros (`include/rva.h`, compiled to nothing under MSVC 5.0 — it predates
    `__attribute__` and C99 variadic macros, so each macro is FIXED-arity):
    - `RVA(addr, size)` — a matched function;
    - `DATA(addr)` — on an `extern` decl of a matched global (the DATA symbol it
@@ -523,7 +524,7 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
 ## Generated vs. tracked
 
 Tracked: `config/units.toml`, the `src/` sources (incl. their `RVA()`/`DATA()`
-annotation macros and `src/rva.h`), `configure.py`, and the whole `scripts/gruntz/`
+annotation macros and `include/rva.h`), `configure.py`, and the whole `scripts/gruntz/`
 package, one sub-package per role: the pipeline `{build,ghidra,init}/`, the
 shared engine library `core/`, match scoring + integrity gates `match/`, the
 cleanliness board + quality gates `cleanliness/`, the permuter climbers

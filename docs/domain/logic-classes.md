@@ -18,8 +18,8 @@ per-leaf id the engine's logic dispatch keys off.
 | `GruntPuddlez` | `CGruntPuddle` | (roster) | — |
 | `Teleporterz` | `CTeleporter` | `include/Gruntz/Teleporter.h` | `LOGIC_TELEPORTER 0x3fc` |
 | `WarpstonePad` / wormhole | `CWarpStonePad`, `CWormhole` | `UserLogic.cpp`, `include/Gruntz/Wormhole.h` | — |
-| `RainCloud` | `CRainCloud` | `src/Gruntz/GameObjectCtors.cpp` | — |
-| `UFO` | `CUFO` | `src/Gruntz/GameObjectCtors.cpp` | — |
+| `RainCloud` | `CRainCloud` | `src/Gruntz/RainCloud.cpp / src/Gruntz/Ufo.cpp` | — |
+| `UFO` | `CUFO` | `src/Gruntz/RainCloud.cpp / src/Gruntz/Ufo.cpp` | — |
 | `WayPoint` | `CWayPoint` | `include/Gruntz/WayPoint.h` | `LOGIC_WAYPOINT 0x420` |
 | `ObjectDropper` | `CObjectDropper` | `include/Gruntz/ObjectDropper.h` | `LOGIC_OBJECTDROPPER 0x40f` |
 | `Spotlight` | `CSpotLight` | `src/Gruntz/SpotLight.cpp` | — |
@@ -65,6 +65,6 @@ The status sprites floating over a Grunt are logic leaves too — several alread
 - The unpinned `LOGIC_TAG_3EF/41D/428/429` tags in `LogicTypeId.h` (owner classes
   COMDAT-folded) are candidates to attribute to the still-tagless Logic pages above.
 - The `Logic:` string → factory dispatch is the WWD loader's class-registry
-  (`src/Gruntz/TileTriggerFactory.cpp`, `WwdObjMgrFactories.cpp`) — a good place to
+  (`src/Gruntz/TileTriggerSwitchLogic.cpp`, `WwdObjMgrFactories.cpp`) — a good place to
   confirm each string maps to the class in this table.
 </content>

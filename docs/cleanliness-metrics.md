@@ -10,9 +10,13 @@ in the **`gruntz build` report** right under the match summary, each with a **de
 vs the committed baseline** (`config/cleanliness-baseline.tsv`) — `down = good`. So a
 matcher sees its own cast/placeholder/view change the moment it builds and steers on
 it. Bless a new baseline with `python -m gruntz.cleanliness.board --update` (the
-orchestrator refreshes it at integration, like `match_baseline.tsv`). The counts in
-the tables below are a **snapshot** (2026-07-05, comment-stripped) — the report is
-authoritative.
+orchestrator refreshes it at integration, like `match_baseline.tsv`).
+
+**No counts are written down here.** The tables below name each metric's row key in
+`config/cleanliness-baseline.tsv` — read the live number there or from the build
+report. A pasted snapshot silently rots (this doc once carried figures that were off
+by 2×–30×), and the `rg` commands are *approximations* of the board's
+comment-/string-stripped count, kept only to show what each metric looks for.
 
 The **hard rule** these encode: *there should be no casts, no `void*` members, no
 `m_<hex>`/`Unknown`/`g_<hex>`/`Method<N>` placeholders, and no per-TU/fabricated
@@ -27,52 +31,55 @@ directly where `const char*` is expected, no cast (and no helper).
 
 ## Naming (target 0 where provable)
 
-| metric | command | current | target |
+| metric | baseline row | what it looks for | target |
 |---|---|---|---|
-| `m_<hex>` fields | `rg -oN '\bm_[0-9a-f]{2,}\b' src include \| rg -v 'm_[0-9]+[g-z]' \| wc -l` | 22413 | provable→named; only genuinely-unknowable remain |
-| `Unknown` identifiers (class/method/field/vslot) | `rg -oN '\w*[Uu]nknown\w*' src include \| wc -l` | 835 | **0** |
-| — `ClassUnknown_N` (distinct) | `rg -oN 'ClassUnknown_[0-9]+' src include \| sort -u \| wc -l` | 86 | 0 (name by xref/RTTI) |
-| — `VirtualMethodUnknownNN`/`UnknownVirtualMethodNN` | `rg -oN '(Virtual[Mm]ethodUnknown\|Unknown[Vv]irtual[Mm]ethod)\w*' src include \| wc -l` | 186 | 0 (name the vtable slot by xref) |
-| `g_<hex>` globals (distinct) | `rg -oN '\bg_[0-9a-f]{4,}\b' src include \| sort -u \| wc -l` | 441 | 0 (name by usage) |
-| `Method<N>`/`Stub_`/`vfunc_`/`FUN_` | `rg -oN '\b(Method[0-9a-f]{3,}\|Stub_[0-9a-f]+\|vfunc_[0-9]+\|FUN_[0-9a-f]+)\b' src include \| wc -l` | 742 | 0 |
+| `m_<hex>` fields | `m_<hex> fields` | `\bm_[0-9a-f]{2,}\b` (minus `m_<n><g-z>`) | provable→named; only genuinely-unknowable remain. **Renames come LAST** — model first |
+| `Unknown` identifiers (class/method/field/vslot) | `Unknown ids` | `\w*[Uu]nknown\w*` | **0** — name by xref/RTTI |
+| `g_<hex>` globals | `g_<hex> globals` | `\bg_[0-9a-f]{4,}\b` | 0 (name by usage) |
+| `Method<N>`/`Stub_`/`vfunc_`/`FUN_` | `Method/Stub/FUN/Gap` | placeholder function names | 0 |
+| virtual-slot placeholders | `virtual slot placeholders` | unnamed vtable slots | 0 (name the slot by xref) |
+| positional arg placeholders | `positional arg placeholders` | `a1`/`arg0`-style params | 0 (name by use) |
 
 ## Casts (target 0 where affordable — type the member/param/local/return)
 
-| metric | command | current | target |
-|---|---|---|---|
-| `)this` casts | `rg -N '\)this' src include \| wc -l` | 468 | ~0 (raw-offset→field; keep only load-bearing byte-arith) |
-| `)m_` casts | `rg -N '\)m_' src include \| wc -l` | 1429 | ~0 (type the member) |
-| `(char*)` casts | `rg -N '\(char\*\)' src include \| wc -l` | 1400 | ~0 (name +N field / type buffer) |
-| `(const char*)` casts | `rg -N '\(const char\*\)' src include \| wc -l` | 204 | ~0 (drop — implicit `LPCTSTR` conversion) |
-| `void* m_` members | `rg -N 'void\* m_' src include \| wc -l` | 657 | ~0 (type the member) |
+Policy and the named-cast rules live in `docs/cast-metric-policy.md`; offset-casts
+`(char*)x + N` are **banned outright** in every form.
+
+| metric | baseline row | target |
+|---|---|---|
+| C-style casts | `C-style casts` | 0 — named cast, or (better) fix the type |
+| `reinterpret_cast`s | `reinterpret_casts` | drive down; every survivor needs a reason |
+| casts with no recorded reason | `unexplained casts` | **0** (the OPEN-drain metric) |
+| offset-cast macros | `offset-cast macros` | 0 (banned) |
+| `void* m_` members | `void* m_ members` | 0 (type the member) |
 
 ## Structure / views (target: no fabricated or per-TU views; classes in headers)
 
-| metric | command | current | target |
-|---|---|---|---|
-| classes/structs declared in `.cpp` | `rg -c '^(class\|struct) [A-Z]' src/**/*.cpp \| awk -F: '{s+=$2} END{print s}'` | 2744 | cross-TU-called ones → headers (WS4); no per-TU re-decls |
-| `src/Stub/ApiCallers.cpp` fns | `rg -c 'RVA\(0x' src/Stub/ApiCallers.cpp` | 126 | 0 (re-home by xref, WS7) |
-| `src/Stub/types/*.h` files | `ls src/Stub/types/*.h \| wc -l` | 9 | 0 (consume→real homes, WS6) |
+| metric | baseline row | target |
+|---|---|---|
+| classes/structs declared in a `.cpp` | `.cpp-local views` | 0 — cross-TU classes belong in headers; no per-TU re-decls |
+| fabricated placeholder classes | `placeholder classes` | 0 (recover the real class; never invent a view) |
+| view classes in `*Views.h` | `view classes (*Views.h)` | 0 (fold into the real class) |
+| fake-view caller/callee edges | `caller-callee FAKE-VIEW` | 0 |
+| hand-rolled vtables | `*Vtbl structs`, `->vtbl accesses`, `g_*Vtbl globals`, `m_vtbl/m_vptr members`, `placeholder vtable slots` | 0 — model real virtuals |
+| `.cpp` extern decls / external prototypes | `cpp extern decls`, `cpp external prototypes` | 0 (declare in the owning header) |
 
 ## Build gates (fatal at 0)
 
-| metric | command | current | state |
-|---|---|---|---|
-| SIZE missing | `python -m gruntz.cleanliness.class_sizes` | 0 | **FATAL** (enforced) |
-| VTBL missing | `python -m gruntz.cleanliness.class_vtables` | 333 | reporting → fatal at 0 |
-| src claims ∩ library_labels.csv | `python -m gruntz.match.verify_library_overlap` | 0 | **FATAL** (enforced, no allowlist) — FULL generated symbol set: rva-macro + RVA_COMPGEN + DATA (vendored zlib excluded by source, not allowlist) |
-| stub metadata / dup / stub-vs-matched | `python -m gruntz.match.verify_stubs` | 0 | **FATAL** (enforced) |
+| metric | command | state |
+|---|---|---|
+| SIZE missing | `python -m gruntz.cleanliness.class_sizes` | **FATAL** (`--full` tier) |
+| VTBL missing | `python -m gruntz.cleanliness.class_vtables --assert-unique` | **FATAL** — catalogue is complete (proven-absent `??_7` carry `VTBL_ABSENT`) |
+| src claims ∩ library_labels.csv | `python -m gruntz.match.verify_library_overlap` | **FATAL** (no allowlist) — FULL generated symbol set: rva-macro + RVA_COMPGEN + DATA (vendored zlib excluded by source, not allowlist) |
+| stub metadata / dup / stub-vs-matched | `python -m gruntz.match.verify_stubs` | **FATAL** |
 
 ## Match (the binary-matching goal)
 
-| metric | command | current |
-|---|---|---|
-| exact / fuzzy | `python -m gruntz.match.status --report build/objdiff/report.json summary` | 1829/3279 (55.78%) · 68.51% fuzzy |
+`python -m gruntz.match.status --report build/objdiff/report.json summary`, or just
+`gruntz status`. Never write the number down — see the note at the top of this file.
 
-## Workstreams (see task tracker)
+## Workstreams
 
 WS1 de-hack casts · WS2 name backlog (incl. **no `Unknown`**) · WS3 fold
 fabricated/MFC views into real classes · WS4 promote cross-TU classes to headers +
-reconstruct real calls · WS5 caller-audit tool (header-promotion / orphan /
-access-mismatch worklists) · WS6 consume+axe `src/Stub/types/` · WS7 re-home
-`ApiCallers.cpp` by xref.
+reconstruct real calls.

@@ -91,7 +91,7 @@ D* mkD() { return new D; }
 
 ```sh
 # inside `nix develop .#build`
-python3 scripts/gruntz/build/cc_wrap.py --out e1.obj --src e1_virtdtor_nooverride.cpp -- /nologo /c /O2 /MT
+python3 scripts/gruntz/core/cc_wrap.py --out e1.obj --src e1_virtdtor_nooverride.cpp -- /nologo /c /O2 /MT
 llvm-nm e1.obj | grep -oE '\?\?_7[A-Za-z0-9]+'           # -> ??_7B AND ??_7D
 llvm-objdump -r e1.obj | grep -E '\?\?_(7|G)'            # ??_7B[0]->??_GB, ??_7D[0]->??_GD
 ```

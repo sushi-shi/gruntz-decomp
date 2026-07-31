@@ -93,7 +93,7 @@ all, confirming this.)
 **Conclusion: the global compile flags are `cl /c /O2 /MT` (cdecl). No `/Gy`, `/GF`, or
 `/Zp` override is needed — `/O2` already forces COMDAT, default packing is `/Zp8`, and
 `/GF` has no effect.** The build's `CL_FLAGS = ["/nologo","/c","/O2","/MT"]`
-(`scripts/gruntz/build/cc_wrap.py`) is correct and unchanged.
+(`scripts/gruntz/core/cc_wrap.py`) is correct and unchanged.
 
 Artifacts: `build/zlib-cal/` (per-flag `.obj` + extracted `code_*.bin` + disasms +
 `compare-table.txt`); objdiff project `build/objdiff/adler32-only/` (target
@@ -110,7 +110,7 @@ unconstrained (no effect). Remaining roll-forward: the deflate front-end
 (`_tr_init`, `_tr_static_init`, `_tr_align`, `_bi_flush`) that Ghidra did not carve as
 distinct functions in the contiguous zlib region — locate via xref/byte-search and
 add their `rva,name,unit` rows to `config/zlib_labels.csv`. The vendored zlib C source
-stays PRISTINE — no labels in it at all (NOT the `src/rva.h` `RVA()` macros that `src/`
+stays PRISTINE — no labels in it at all (NOT the `include/rva.h` `RVA()` macros that `src/`
 uses): their static/K&R functions are dropped from IR when unused, so labels can't ride
 attributes/IR. `labels.py` emits each zlib unit's rows straight from that static config
 (authority-checked against the base obj — no source parse, no positional join), which

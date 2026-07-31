@@ -1,10 +1,11 @@
 # Gruntz editor — data-model notes (decomp RE)
 
 Notes on the standalone WAP32 world editor (`GruntzEdit.exe`, and its WAP32-engine
-siblings `WapWorld.exe` / `GMEdit.exe` for Get Medieval). String dumps live in
-`build/editor-strings/`. These notes back the version-independent type knowledge
-ported into `src/Stub/types/` and document what is editor-only and therefore
-**deliberately NOT in the game `src/Stub/types/`**.
+siblings `WapWorld.exe` / `GMEdit.exe` for Get Medieval). The string dumps came from a
+one-off manual pass over the editor binaries — not reproducible from this repo, so the
+tables below are the surviving record. These notes back the version-independent type
+knowledge ported into the game headers under `include/`, and document what is
+editor-only and therefore **deliberately NOT in the game model**.
 
 ## Why the editor is useful for the GAME decomp
 
@@ -15,11 +16,11 @@ game's loader also parses:
 - **WWD object record** — the editor's Object-Properties / Object-Rectangles /
   Object-Points / Object-Flags / Object-User-Values / Object-Misc-Values /
   Object-Hit-Info dialogs expose every field of the world-object record. Modeled in
-  `src/Stub/types/wwd_object.h` (game-side; the game's `CObject` and all gameplay
+  `include/Wwd/WwdFile.h` (game-side; the game's `CObject` and all gameplay
   subclasses are built from this record).
 - **REZ/VRZ archive** — the editor and game share the Monolith "RezMgr Version 1"
   archive code. Directory-entry schema `{ Type (FOURCC), Name, Size, ID }` + the
-  sorted-directory invariant modeled in `src/Stub/types/rez.h`.
+  sorted-directory invariant modeled in `include/Rez/RezMgr.h`.
 
 ### Hard evidence the WWD struct is byte-shared editor <-> game
 
@@ -30,16 +31,15 @@ editor binaries:
 > `Plane %s: Bad map image set value (%i) at %i,%i`
 
 Same validation code => same plane/object data model on both sides. This is the
-strongest available evidence that the `src/Stub/types/` structs are real and
+strongest available evidence that these structs are real and
 version-independent.
 
 ## Editor-ONLY MFC classes — NOT part of the game
 
 These classes exist only in the editor (an MFC SDI/MDI doc/view app). They are
-mined from the editor's class-name + RTTI dumps (`build/editor-strings/
-GruntzEdit.cnames.txt`, `GruntzEdit.rtti.txt`). They must **NOT** be added to the
-game `src/Stub/types/` — the game (`GRUNTZ.EXE`) is not an MFC doc/view app and contains
-none of these:
+mined from the editor's class-name + RTTI dumps (that same one-off pass). They must
+**NOT** be added to the game model — the game (`GRUNTZ.EXE`) is not an MFC doc/view
+app and contains none of these:
 
 | Editor class | Role (MFC doc/view editor scaffolding) |
 |---|---|

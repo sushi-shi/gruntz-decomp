@@ -130,7 +130,7 @@ Evidence:
 - **Member-layout identity**: the drawtext hosts ARE `CFontConfig`.
   `m4::PwdHost` = `+0x1c` edit-text CString + `+0x38` control HFONT ≡
   `CFontConfig::m_inputText` (+0x1c) + `m_arialFont` (+0x38)
-  (include/Gruntz/FontConfig.h vs src/Gruntz/DrawText.cpp). The renderers
+  (include/Gruntz/FontConfig.h vs src/Gruntz/GameText.cpp). The renderers
   render the very string `TypeChar` accumulates.
 - The single fontconfig fn inside the drawtext run (`0x22360`) is an
   unreconstructed `@stub` whose only signal is its winapi fingerprint
@@ -780,7 +780,7 @@ in `0x1504d0-0x166100` (no static ctors in any of these TUs); no __FILE__ anchor
 | S1 | wwd game-object core + worker frames | `0x1504d0-0x152636` | ONE obj (WOVEN, strong) | src/Wwd/WwdGameObject.cpp | eh |
 | S2 | submgr leaf/ani catalog | `0x152640-0x152e83` | ONE obj (A-B-A, strong) | src/DDrawMgr/DDrawSubMgrLeaf.cpp | eh |
 | C | CImage impl (Create/Render/Blit*) | `0x152e90-0x1549c5` | ONE obj (single class, strong) | src/Image/CImage.cpp | eh |
-| D | CResolveNode/base-slot COMDAT pocket | `0x1549d0-0x154a90` | E's leading COMDATs (high) | src/Gruntz/ResolveNode.cpp (held) | eh |
+| D | CResolveNode/base-slot COMDAT pocket | `0x1549d0-0x154a90` | E's leading COMDATs (high) | src/Image/ResolveNode.cpp (held) | eh |
 | E | CDDrawWorkerRegistry + ~CDDrawWorker | `0x154aa0-0x155833` | block held (#9 boundary 1 @0x155840) | src/DDrawMgr/DDrawWorkerRegistry.cpp | eh |
 | F | CDDrawSurfaceMgr (+Snapshot/Restore) | `0x155840-0x156ca2` | block held (#9 boundary 2 @0x156cb0); LEANS F==G | src/DDrawMgr/DDrawSurfaceMgr.cpp | eh |
 | G | submgr worker-family (quartets+meat) | `0x156cb0-0x1591c9` | ONE block (WOVEN internally); #9's ~0x157a80/~0x1588f0 sub-splits REFUTED | src/DDrawMgr/DDrawSubMgr.cpp | eh |
@@ -870,7 +870,7 @@ in `0x1504d0-0x166100` (no static ctors in any of these TUs); no __FILE__ anchor
 ### #15 execution notes (wave4-L, as landed)
 
 * **Executed:** S1 -> `src/Wwd/WwdGameObject.cpp`; S2 -> `src/DDrawMgr/DDrawSubMgrLeaf.cpp`;
-  C -> `src/Image/CImage.cpp` (Blit family merged in); D pocket -> `src/Gruntz/ResolveNode.cpp`
+  C -> `src/Image/CImage.cpp` (Blit family merged in); D pocket -> `src/Image/ResolveNode.cpp`
   (ctor/dtor only); E -> `src/DDrawMgr/DDrawWorkerRegistry.cpp`; F -> `src/DDrawMgr/DDrawSurfaceMgr.cpp`
   (reordered ascending); G -> `src/DDrawMgr/DDrawSubMgr.cpp` (~90 fns, woven); H -> `src/Wwd/WwdObjMgr.cpp`;
   I -> `src/Wwd/WwdFactoryObject.cpp` (NEW unit); T -> `src/DDrawMgr/DDrawSurfacePair.cpp`;

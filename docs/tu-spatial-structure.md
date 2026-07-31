@@ -7,8 +7,9 @@ functions) joined with the Ghidra boundary export. Companion to
 `docs/link-order-investigation.md` (intra-TU source order + cross-TU link order);
 this doc covers what sits *inside* one TU's block and how to exploit it.
 
-Tooling: `python -m gruntz.audit.tu_layout` (the analysis) and
-`python -m gruntz.analysis.gen_attributed_stubs` (turns attributions into stubs).
+Tooling: `python -m gruntz.audit.tu_layout` (the analysis). The stub *generators*
+that once turned attributions into backlog TUs are retired (`scripts/archive/
+stub-generators/`) — that backlog is fully drained and `src/Stub/` is gone.
 
 ## The core finding
 
@@ -39,7 +40,7 @@ exiled.
   matched method's tight RVA neighbours are its siblings (the "batch siblings"
   matching lever). `tu_layout --neighbors 0xRVA` lists them.
 - **Destructors are the exception** — pooled, so proximity can't tie them to a
-  class; recover them by leaked name / vtable / RTTI (which `config/match-queue.md`
+  class; recover them by leaked name / vtable / RTTI (which `gruntz.match.residual_queue`
   already does).
 
 ## Exceptions & intermingling
@@ -77,53 +78,31 @@ eligible only when its start lies outside every current source claim. Confidence
 
 Two target sets:
 
-- **Unnamed `FUN_` bodies** (Ghidra boundary export) → attributed candidates for
-  new class stubs via `gen_attributed_stubs` (the `engine_attributed` unit below).
-- **Already-labeled catch-all stubs** — `ApiCallers.cpp` (generated from
-  `docs/api-caller-name-plan.tsv`), `Backlog.cpp`, `EngineExternFns.cpp`, and any
-  stub under a placeholder class (`EngineLabelBacklog`, `ThisStubOwnerUnknown`). Of
-  343, proximity ties ~80 (56 HIGH) to a real class — e.g. `0x0143e0` (a
-  `PostMessageA` caller) → `CAttract`, the `ThisStubOwnerUnknown` run → `CBattlezDlg`.
-  These already carry a typed `@stub` body, so they are a **relocation worklist**
-  (move the stub into that class's TU — for `ApiCallers.cpp` via its generator
-  input), *not* new stubs; emitted with `kind=relocate` in `--emit`.
+- **Unnamed `FUN_` bodies** (Ghidra boundary export) → attributed candidates, emitted
+  by `--emit` with `kind=new-stub`.
 - **Class-boundary functions** — where the two matched neighbours are *different*
   classes, the both-sides rule abstains (picking the nearer class is only ~58%
   exact). These are not dropped: `boundary_targets()` records **both** adjacent
-  classes, and `gen_boundary_stubs` emits them as the **`engine_boundary`** unit —
-  neutral `void Boundary_<rva>()` free-function stubs trailed by
-  `// proximity: <below>@-0xN | <above>@+0xM`, plus an inline `@proximity` notice on
-  the hand-maintained `Backlog.cpp` boundary stubs. ~628 of them; a verify-then-pick
-  worklist, deliberately *not* committed to one class. Why so many: catch-all/free
-  helpers cluster at TU-block edges, so most sit at a boundary rather than inside a
-  block.
+  classes as a verify-then-pick worklist, deliberately *not* committed to one class.
+  Why so many: catch-all/free helpers cluster at TU-block edges, so most sit at a
+  boundary rather than inside a block.
 
 **Validation (leave-one-out on matched methods):** hide each known method and predict
 from its neighbours — the HIGH (both-sides) rule is **~91% exact, ~94% same-family**.
 That precision is measured against ground truth, independent of any runtime trace
-(the trace's `Discovered.cpp` labels are loose, especially single-observation, so
-they are *not* used as an oracle here).
+(the old dynamic-trace labels were loose, especially single-observation, so they were
+*not* used as an oracle here; that tooling is archived).
 
 97% of unnamed bodies have a matched function within `0x4000`, so attribution
 coverage rises automatically as matching progresses.
 
-### From attributions to backlog stubs
+### Consuming the attributions
 
-`python -m gruntz.analysis.gen_attributed_stubs` emits the HIGH attributions as
-class-tied stubs, modelled exactly on `gen_class_stubs` (the trace integrator):
-
-- `include/Stub/attributed.h` — minimal `class C { void C_<rva>(); }` decls.
-- `src/Stub/Attributed.cpp` — `RVA(rva,size) void C::C_<rva>() {}` empty `__thiscall`
-  stubs, the **`engine_attributed`** unit (registered in `config/units.toml`).
-
-The build-side duplicate-RVA guard is honoured (RVAs already labeled anywhere,
-incl. the trace's `Discovered.cpp`, are skipped). Each stub is then delinked and
-tracked in objdiff like any backlog entry (initially ~0% — the worklist). A matcher
-reconstructs it and, if the proximity class was slightly off, moves it to the right
-TU. The proximity and trace signals are **complementary**: in practice their function
-sets are disjoint (trace reaches runtime-called functions; proximity reaches
-bracketed ones). Current run: **258 stubs across 47 classes**, zero overlap with the
-127 trace-discovered stubs.
+`--emit <csv>` writes `rva,class,confidence,kind,current,file` for the HIGH/MED
+attributions. Historically these were auto-generated into a backlog TU; that stage is
+retired (the backlog drained and `src/Stub/` was deleted). Today the CSV is a
+**worklist**: a matcher takes an attributed RVA, reconstructs the body directly in the
+attributed class's real TU, and moves it if the proximity class turns out slightly off.
 
 ## Limits
 

@@ -2,13 +2,13 @@
 
 Tree-wide classification of **every** surviving `g_*Vtbl` / `m_vtbl` / `m_vptr` /
 `struct *Vtbl` form in `src/` + `include/`, produced by the final vtable mop-up
-pass (2026-07-02). This is the companion to `docs/vtable-conversion-log.md` (the
-per-class decision log) and `docs/vtable-map.md`; it answers the campaign's
-open question **"when are vtables DONE?"**
+pass (2026-07-02). Its companion per-class conversion log has been deleted — see git
+history if you need a specific class's decision. Read alongside `docs/vtable-map.md`;
+this answers the campaign's open question **"when are vtables DONE?"**
 
 Method: grep the tree for the three form families, then classify each hit against
 the retail `.rdata` (VA = RVA + 0x400000), `config/vtable_names.csv` (the realized
-`??_7` catalog), `include/UnknownVTables.h` (the non-RTTI vtable catalog), and the
+`??_7` catalog; the old `include/UnknownVTables.h` tracking header is retired), and the
 Ghidra/delinker symbol names. Categories:
 
 1. **realized `??_7` DATA name** — a manual `extern g_*Vtbl` that merely *names*
@@ -48,14 +48,17 @@ modeled real-polymorphic first and regresses the vptr shape if forced — they s
 cat-4 until the base class + full vtable are modeled (a leaf-first final-sweep
 task, not a mop-up conversion).
 
-The raw greps still report large counts, but they are all terminal:
+Since this audit was written the whole family has been driven to **0 in code** — every
+form below is now a gated cleanliness metric sitting at zero (see
+`config/cleanliness-baseline.tsv`; the `class_vtables --assert-unique` gate is FATAL):
 
-| Form family (tree-wide grep)                 | count | disposition |
-| :------------------------------------------- | ----: | :---------- |
-| distinct `g_*Vtbl` externs                    | ~124  | cat 1/3/4 (78 active in code; rest are `UnknownVTables.h` tracking catalog) |
-| `struct/class *Vtbl` declarations            | ~61   | cat 2 (foreign COM/PMF dispatch views) |
-| `void* m_vtbl` / `void* m_vptr` +0x00 fields | ~15   | cat 2/3/4 (dispatch-view holders, engine-base vptr, foreign-base walls) |
-| **genuine convertible (cat 5)**              | **0** | — |
+| Form family | baseline row | state |
+| :--- | :--- | :--- |
+| distinct `g_*Vtbl` externs | `g_*Vtbl globals` | 0 — surviving mentions are prose in comments |
+| `struct/class *Vtbl` declarations | `*Vtbl structs` | 0 |
+| `void* m_vtbl` / `void* m_vptr` +0x00 fields | `m_vtbl/m_vptr members` | 0 |
+| placeholder slots | `placeholder vtable slots` | 0 |
+| **genuine convertible (cat 5)** | — | **0** (the original verdict, unchanged) |
 
 ## Conversions done this pass
 
@@ -91,7 +94,7 @@ the *success* of the campaign (real `virtual` + `VTBL()`/`OVERRIDE`, `cl` emits
 
 ## Category 2 — faithful external / COM `__stdcall` + engine `__thiscall`-PMF dispatch views (keep)
 
-~61 `struct *Vtbl` declarations, each a typed slot-view onto a **foreign** object
+At the time of the audit, ~61 `struct *Vtbl` declarations, each a typed slot-view onto a **foreign** object
 (class in another TU or a COM interface). A real virtual would emit a divergent
 `??_7` in the wrong TU. Representative (all keep):
 
@@ -153,7 +156,7 @@ vtables (`g_netMgrVtbl`/`g_net*NodeVtbl`/`g_net*NodeDtorVtbl`), `g_resolveNodeVt
 | :---- | :----- | :--- |
 | `CLogicRecord` | own 0x1efb80 (non-RTTI) + `CObject` base 0x1e8cb4 | eh-dtor-needs-base-subobject: /GX frame needs a non-trivial `CObject` base + full (unmatched) vtable modeled. Borderline cat-5 — a leaf-first sweep item. |
 | `CDDSurface` | foreign `CPoolItemA` base 0x1ef7f0 | eh-dtor-vptr-stamp-vs-trylevel-order: base vtable owned by another TU; a `cl`-emitted `??_7CPoolItemA` would diverge. |
-| `CContainerErr` | own vtable | vptr-last (retail stores `m_msg` before the vptr); a real `virtual` forces vptr-first. Empirically tested → reverted (`vtable-conversion-log.md`). |
+| `CContainerErr` | own vtable | vptr-last (retail stores `m_msg` before the vptr); a real `virtual` forces vptr-first. Empirically tested → reverted. |
 | `CGruntzCommand` | own realized 0x1e9674 | stamp lives in two standalone out-of-line thunks (real retail fns, not a ctor) `cl` can't auto-emit. |
 
 **Not-a-vtable:** `g_keyFinderVtbl` @ 0x16e220 is a `.text` callback fn mislabeled

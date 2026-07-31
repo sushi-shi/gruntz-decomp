@@ -576,7 +576,7 @@ shared-base edit), record that trigger too — so the next worker `@early-stop`s
 instead of re-grinding.
 
     // @early-stop
-    // regalloc wall — MSVC pins the loop counter in edi; see docs/patterns/regalloc-zero-pin.md
+    // regalloc wall — MSVC pins the loop counter in edi; see docs/patterns/zero-register-pinning.md
     RVA(0x000457b0, 0x180)
     int CGrunt::ResolveAnimation() { /* complete body */ }
 

@@ -12,9 +12,10 @@ change that is NOT to that function's own body (a neighbor added to the same
 aggregate TU, a shared base/grand-base edit, a calling-convention or type-model
 change elsewhere, a reloc-name change, a /GR or /GX flag flip), DOCUMENT BOTH:
 
-1. **The unrelated trigger** — exactly what changed. e.g. *"added `vfunc_16`'s
-   866 B body to the `engine_label_stubs` aggregate (`src/Stub/All.cpp`)"*;
-   *"made `AlbusMapBase` polymorphic"*; *"renamed extern `g_x`"*.
+1. **The unrelated trigger** — exactly what changed. e.g. *"swapped a `struct X;`
+   forward declaration in a shared header"* (see
+   `docs/patterns/header-fwd-decl-count-regalloc-butterfly.md`); *"made a base class
+   polymorphic"*; *"renamed extern `g_x`"*; *"added an enum header to the TU"*.
 2. **The assembly-level effect** — what diverged in THIS function's codegen,
    verified with `llvm-objdump -dr` (base obj vs target obj). Name the mechanism:
    regalloc / spill-slot recoloring, frame-size shift (every `[esp+N]` +k),

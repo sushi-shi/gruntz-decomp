@@ -41,8 +41,10 @@ omission disabled). The registry/COM helper module (`0x1bf*`-`0x1d5*`:
 above: a bailout keeps EVERY local at `[ebp-N]` with no regalloc; this variant
 register-allocates normally and only retains the ebp frame.
 
-MEASURED (matcher-6): adding a `framed = [/O2 /MT /Oy-]` profile and a
-`src/Gruntz/ConfigStore.cpp` TU **does reproduce the ebp frame** (the missing-frame
+MEASURED (matcher-6): adding a `framed = [/O2 /MT /Oy-]` profile and putting the
+function in its own TU (a `ConfigStore.cpp` since dissolved; the `framed` profile
+still exists in `config/units.toml`, currently unselected) **does reproduce the ebp
+frame** (the missing-frame
 half of the wall is genuinely cleared — `push ebp; mov ebp,esp` now matches). But
 `/Oy-` is **NECESSARY, NOT SUFFICIENT**: a residual remains from the optimizer's
 constant-hoisting / CSE / regalloc STATE, which `/Oy-` does not control —

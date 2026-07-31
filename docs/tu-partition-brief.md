@@ -93,9 +93,9 @@ reports ~70-80% clean where the truth is ~9%. That error is why this brief exist
 
 Aggregates (`globals`, `vtables`) span by construction and are not compilands — exclude
 them from band analysis, but they must drain eventually too. (`src/Stub/All.cpp` /
-`engine_label_stubs` is **gone** — that backlog is fully drained; only prose references
-survive in `config/units.toml` comments and in `CLAUDE.md`, which is stale on this
-point. Excluding it changes nothing: 8/86 clean either way.)
+`engine_label_stubs` is **gone** — that backlog is fully drained; only provenance
+prose survives in `config/units.toml` comments. Excluding it changes nothing: 8/86
+clean either way.)
 
 ## Instruments already in place
 

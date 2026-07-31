@@ -43,11 +43,14 @@ Each step writes its output (JSON + HTML) into this directory. Intermediate data
 
 ## Files
 
-- `build_site.py` — driver (runs the four generators in order).
-- `scatter.py` — per-file fragment stats → `scatter*.json`.
+- `build_site.py` — driver (runs every generator below, in `STEPS` order).
+- `scatter.py` — per-file fragment stats → `scatter.json`, `scatter_methods.json`,
+  `scatter_core.json`.
 - `flag_outliers.py` — cluster/outlier/conflated detection → `flags.json`.
-- `make_chart.py` — builds the two scatter pages.
-- `make_dashboard.py` — builds the misplacement dashboard.
+- `make_chart.py` — builds `scatter.html`, `scatter_methods.html`, `scatter_core.html`.
+- `make_dashboard.py` — builds `misplacement.html`.
+- `split_plan.py` — actionable split/move worklist → `SPLIT_PLAN.md` (its category
+  letters are cited from `docs/patterns/`).
 - `homm2_baseline.py` — **read-only** extract of the HoMM2 ground-truth VAs from
   `/home/sheep/Projects/homm2/homm2-decomp` (its CodeView-derived `symbol_names.csv`
   + `units.toml`) into `homm2_va.csv`; skips cleanly if that project is absent.

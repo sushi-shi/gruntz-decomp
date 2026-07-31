@@ -15,7 +15,7 @@
 
 Cutting each run at `{COL starts} ∪ {code-referenced starts}` **de-merges**
 adjacent vtables (a raw run glues them — nothing separates them in memory) and
-gives the per-vtable size. Output: `build/analysis/vtable_map.csv`.
+gives the per-vtable size. Output: stdout, or `--csv <path>` for the machine-readable form.
 
 ## Counts (retail v1.0, MD5 `81c7f648…`)
 
@@ -50,17 +50,19 @@ The remaining **39 strong non-RTTI starts are not yet annotated** — see the CS
 (`in_src_data=0`, `confidence=code-ref`); several sit *between* vtables the source
 already knows (e.g. `0x1ef640`/`0x1ef658` between the DinMgr2 device-config set).
 
-## `include/UnknownVTables.h` — named catalog of the non-RTTI vtables
+## Cataloguing the non-RTTI vtables
 
-The 75 strong non-RTTI vtables are catalogued as `ClassWithUnknownVTableN`, each a
-struct **named** by its `src/` `g_*Vtbl` name (32) or its RVA (`Vtbl_<rva>`, the
-rest), with **every slot a named member** carrying its target RVA + function name
-(scalar/vector-deleting dtor, `__purecall`, matched fn, or `sub_<rva>` for the 419
-still-un-reconstructed engine virtuals). Slots are `UnkVfn` (`void(void)`) — tracking
-only; the header emits no code, is not `#include`d, and is matching-neutral.
-Regenerate with `gruntz.core.vtable_scan`. "Unknown" = no recoverable *class*
-name (no COL/symbol); the address is always known, so families are visible (e.g.
-`DeviceConfigVtblA` and its two unnamed RVA-named siblings share inherited slots).
+`include/UnknownVTables.h` — a tracking header of `ClassWithUnknownVTableN` structs —
+is **retired and deleted**. It was scaffolding from when vtables had no recoverable
+class name; the `Unknown ids` metric is now 0, so there is nothing left for it to
+track.
+
+The live catalog is `config/vtable_names.csv` (the realized `??_7` names) plus the
+`VTBL(Class, 0x…)` macros in `src/`, cross-checked by
+`python -m gruntz.cleanliness.class_vtables --assert-unique` (a **FATAL** gate — every
+vtable-bearing class is catalogued, with proven-absent `??_7` carrying `VTBL_ABSENT`).
+Regenerate the address map with `python -m gruntz.core.vtable_scan`;
+`docs/rtti-vtable-catalog.tsv` is the RTTI-side census.
 
 ## Why the manual stamps can't just flip to real virtuals
 
@@ -76,7 +78,7 @@ it) are real per-TU levers to *finish* such a class, but are necessary-not-suffi
 
 RTTI-backed classes are *also* sometimes stamped manually (incomplete recon: real
 class in RTTI but virtuals not all reconstructed) — the `CSBI_*` status-bar item
-family, the `src/Stub/` trigger-logic classes, CUserBase, CMulti/CPlay/CState.
+family, the trigger-logic classes, CUserBase, CMulti/CPlay/CState.
 That's a transitional artifact; the end state is a real C++ class with declared
 virtuals. See [correctness-not-artifacts].
 
@@ -99,7 +101,7 @@ shared base once, then the derived classes), not one-off:
   CSBI_RectOnly ← CSBI_Image ← CSBI_MenuItem (+ ImageSet/WarlordHead/WellGoo/
   SideTab/StatzTabGruntBar/GruntMachine). Multi-vtable **EH-dtor** restamps
   (`docs/patterns/eh-dtor-*`) — model the chain + virtual dtors.
-- **Trigger-logic family** (`src/Stub/CTile*Logic.cpp`, CGiantRockLogic,
+- **Trigger-logic family** (`src/Gruntz/TileTriggerSwitchLogic.cpp` + siblings, CGiantRockLogic,
   CCoveredPowerupLogic, CCheckpointTriggerSwitchLogic; RTTI): size-1 vtables over
   the (graduated) `CTileTriggerLogic` base. **Blocked on measurability** — they
   aggregate into `engine_label_stubs` (0/519 oracle); graduate each to its own
