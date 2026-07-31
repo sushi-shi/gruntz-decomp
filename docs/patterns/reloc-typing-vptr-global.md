@@ -37,7 +37,7 @@ NOT by symbol name. Consequence for the near-100% pool: a code-byte-exact near-m
 body-shape reconstruction, not a name), NEVER by an unnamed data referent's name. **Do NOT run
 name-only "flip" passes on the near-100% pool** — they yield 0 flips (measured: 7 TUs of global
 unification → 0 exact delta; this pass → 0 exact delta). The `REL32`/import half of the older note
-stands (those are masked too). See `docs/matching-patterns.md` §215 and `docs/wall-instructions.md`.
+stands (those are masked too). See `docs/matching-patterns.md` §215.
 
 **UPDATE (2026-07, measured — largely OBSOLETE; its DIR32 half is now REFUTED, see CORRECTION above):**
 The vtable/global **DIR32** half is
@@ -47,8 +47,7 @@ pooled string via the `coff_oracle`) now scores exact; an unnamed one is fixed b
 names and `call [disp32]` import operands, so those never cap the score (measured: renaming 5909
 call/thunk relocs + adding 788 `__imp__` relocs → 0.0% delta). Net: this is **no longer a standing
 wall**. A code-byte-exact function that still caps is an UNNAMED DIR32 data referent (→ name it) or
-a REAL codegen diff — never a call/import/thunk-name artifact. See `docs/matching-patterns.md` §215
-and `docs/wall-instructions.md`.
+a REAL codegen diff — never a call/import/thunk-name artifact. See `docs/matching-patterns.md` §215.
 
 A function that stores a vtable pointer (`mov [this], offset ??_7Class@@6B@`), a global, or
 calls an import (`FF15 [IAT]`) plateaus at ~99.5% **fuzzy** but is byte-exact in CODE. The

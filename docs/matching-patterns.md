@@ -232,8 +232,8 @@ pooled strings are named (`config/vtable_names.csv`, `labels.py` `DATA_SYMBOL`, 
 relocs moved the score **0.0%**). Therefore a code-byte-exact function that STILL caps
 below 100% is EITHER an unnamed DIR32 data referent (→ name it) OR a **real codegen diff**
 (regalloc/scheduling/inlining) — it is **NEVER** a call/import/ILT-thunk name artifact.
-Do not build a thunk/import-name delinker fix (one was prototyped: 0 delta). See
-`docs/wall-instructions.md`.
+Do not build a thunk/import-name delinker fix (one was prototyped: 0 delta). A real
+codegen diff is the `permute` skill's job, not an early-stop.
 
 ---
 

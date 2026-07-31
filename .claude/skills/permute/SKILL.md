@@ -1,17 +1,37 @@
 ---
 name: permute
-description: Use when a Gruntz function is a COMPLETE, correct reconstruction (right types, right control-flow shape) but plateaus below 100% on MSVC /O2 codegen residue - operand-load order, a spill/materialization point, instruction scheduling. Trigger phrases: "climb to 100%", "hit a wall / plateau", "permute", "source permutation", "objdiff won't reach 100", "@early-stop but structure is correct". Runs a semantics-preserving source-permutation hill-climber (real wine cl + objdiff-cli). NOT for wrong structure/types/control-flow - fix those by hand first.
-version: 0.1.0
+description: THE way Gruntz breaks a codegen wall - forests x islands, banked by MAX. Use when a function is a COMPLETE, correct reconstruction (right types, right control-flow shape) but plateaus below 100% on MSVC 5.0 /O2 residue - operand-load order, a spill/materialization point, register coloring, instruction scheduling - AND whenever a sibling/neighbour function drops after a correct change (that dip is this skill's job to reclaim, never a reason to revert). Trigger phrases: "climb to 100%", "hit a wall / plateau", "permute", "source permutation", "objdiff won't reach 100", "sibling cratered", "@early-stop but structure is correct". NOT for wrong structure/types/control-flow - fix those by hand first.
+version: 0.2.0
 ---
 
-# Permuter — climb a correct reconstruction to 100%
+# Permuter — break the wall: FORESTS × ISLANDS, banked by MAX
 
-A source-permutation hill-climber for the MSVC 5.0 `/O2` codegen wall. It applies
-**semantics-preserving** text mutations to the real `.cpp` (commutative-operand
-swaps, independent-line reorders, additive reassociation, decl splits), recompiles
-each variant with the REAL `wine cl`, scores the COFF against the delinked retail
-target with `objdiff-cli`, and keeps improvements. Every mutation is value-preserving
-by construction, so a higher byte-score can never come from a wrong program.
+**Walls get BROKEN, not documented.** A plateau on a correct reconstruction is a
+search problem, and this is the search. `@early-stop` is the rare exception you reach
+*after* the search stalls — never the opening move, and never a substitute for running
+it. Likewise a **sibling drop is not a problem**: land the byte-evidenced shape and let
+this skill reclaim the percent (see the MAX convention in `CLAUDE.md`).
+
+The three pieces, crossed:
+
+- **FORESTS** — the variant tree. Legitimate source *transformations* of the function
+  (the AST families: relational/commutative order, statement reorder, decl
+  split/merge/hoist, inline extraction, identifier renames — renames steer stack-slot
+  and coloring order, automating the hand slot-guess). Each family is a tree of
+  spellings; together they are the forest the search walks.
+- **ISLANDS** — for EVERY variant, ~32–120 deterministic TU-state permutations
+  (`--state-trials N --state-seed S`, families from `tu_state_noise.py`). Each island
+  is a different *compiler-state context* for the same source.
+- **PERMUTER** — the engine: recompile each cell with the REAL `wine cl`, score the
+  COFF against the delinked retail target with `objdiff-cli`. Every mutation is
+  semantics-preserving by construction, so a higher byte-score can never come from a
+  wrong program.
+
+Score every (transformation, island) cell — **FIRST EXACT WINS** — then **bank the MAX
+and restore the cleanest source** (see PRIME SOURCE RULE below).
+
+Why the cross matters: islands ALONE are structurally immune to intra-function
+regalloc, and forests alone miss cross-function composition. Crossed, they reach both.
 
 ## When to use it (and when NOT)
 
@@ -39,15 +59,15 @@ spill/width wall; a pure island sweep of the unchanged source cannot re-color it
 see the CROSSED search below — islands multiplied against source transformations are
 a different animal from islands alone.
 
-## The homm2 endgame method: TRANSFORMATION × ISLANDS, banked by MAX
+## Running the crossed search, step by step
 
-The sibling homm2 campaign closed its residual tail with a Cartesian search
-(homm2/RECOVERY.md "THE METHOD"), and its mechanics apply here verbatim:
+The sibling homm2 campaign closed its residual tail with exactly this Cartesian
+search (homm2/RECOVERY.md "THE METHOD"); its mechanics apply here verbatim.
 
-1. **Axes**: a set of LEGITIMATE source transformations of the function (the AST
-   families: relational/commutative order, statement reorder, decl split/merge/hoist,
-   inline extraction, identifier renames — renames steer stack-slot/coloring order and
-   are exactly the axis that automates hand slot-guessing).
+1. **Forests (the axes)**: enumerate LEGITIMATE source transformations of the function
+   (the AST families: relational/commutative order, statement reorder, decl
+   split/merge/hoist, inline extraction, identifier renames — renames steer
+   stack-slot/coloring order and are exactly the axis that automates hand slot-guessing).
 2. **Islands**: for EVERY transformation, ~32-120 deterministic TU-state permutations
    (`--state-trials N --state-seed S`, families from `tu_state_noise.py`) — each island
    is a different compiler-state context for the SAME variant.

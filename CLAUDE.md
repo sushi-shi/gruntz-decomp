@@ -80,6 +80,9 @@ FLIRT + leaked names) → exports. Not part of the build loop.
   preserves best-ever; a byte-evidenced change (shape seen in the target disasm) is
   KEPT even if its fn's current-% stalls, a sibling craters, or Overall drops. Revert
   only when the change's OWN evidence fails or the build breaks. Gate on BUILD, not %.
+  **A sibling drop is NOT a problem and never a reason to stop** — the `permute` skill
+  (forests × islands, banked by MAX) is what recovers those, so land the correct shape
+  and let the search reclaim the percent.
 - **Builds are FAST — don't engineer around build time.** A full from-scratch
   `gruntz clean && gruntz init` is a few minutes; `gruntz build` (incremental) is faster.
   Run them in the foreground and verify changes with a real build — don't background out of
