@@ -47,4 +47,33 @@ identity fold first. So SetCellHeight → TileTriggerSwitchLogic.cpp waits on th
 **Contrast with real splits.** A *run of ≥2* foreign methods, or a lone block at the
 BOUNDARY between two units, IS a separate obj → its own `.cpp` (the normal drain).
 Only a lone method with the SAME unit on BOTH sides is an interleaved COMDAT.
-See `docs/exe-map/holding-tu-drain.md` rule (c).
+
+## Classifying a cluster before you carve it
+
+Each original `.obj` is one contiguous strictly-ascending `.text` run, so a `.cpp`
+whose functions sit in ≥2 widely-separated RVA blocks conflates ≥2 objs. Before
+splitting a cluster out, decide which of three things it is:
+
+- **(a) pooled member → LEAVE in place.** A COMDAT-pooled dtor (`??1`/`??_G`/`??_E`/
+  ScalarDeletingDtor), a GetTypeTag/Vslot/Serialize virtual, or a CRT dynamic-init
+  fragment (`_$E`/`??__E`/`InitStr…`/small `Register…`/`Construct…` in the
+  0x082000–0x08d000 init pool that inits THIS TU's own globals). The linker pools
+  these away from the TU block by construction — that is not conflation. One `_$E<n>`
+  thunk heading a contiguous init run == one obj.
+- **(b) foreign obj → SPLIT out.** A contiguous run of real methods belonging to a
+  different class than the file's main cluster. Carve into its own `.cpp`, then chase
+  its owner.
+- **(c) lone method interleaved in another unit → NOT a separate obj.** The case this
+  document covers: model it as above, never as a standalone `.cpp`.
+
+Distinguish (b) from (c) by neighbours: a run of ≥2 foreign methods, or a lone block
+at a boundary between two units, is (b); a lone method with the SAME unit on both
+sides is (c).
+
+**Splitting doctrine — do both.** Split by RVA gap *always* (it never blocks, and the
+structural win lands immediately); name each split file by its RVA / registry-table
+address (e.g. `ConstructActRange_646188` — an RVA-address name invents nothing).
+*Then* try to pin the real owning class via caller `this`, vtable DATA-ref, RTTI, or
+field usage. If it cracks, rename the file and its functions and dissolve any fake
+view standing in for the class. If it does not crack, keep the RVA-address name and
+move on — never fabricate a placeholder class to "resolve" identity.

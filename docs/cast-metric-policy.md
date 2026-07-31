@@ -54,4 +54,16 @@ the existing type cannot express the operation.
 All of the above is matching-neutral: a C++ named cast compiles to the same bytes as the C-style cast,
 a named member access to the same bytes as the offset-cast, a renamed member/method to the same bytes
 under /O2. Verify per change (`gruntz build --fast`, touched unit % unchanged) and gate on
-MAX-fuzzy — see [max-fuzzy gate](../README.md) and `docs/cleanup-plan.md`.
+MAX-fuzzy — see [max-fuzzy gate](../README.md).
+
+## Clean-room mandate
+
+**(user, 2026-07-04, reaffirmed)** The goal is a clean-room implementation. When a
+cleanup change is byte-*affecting* rather than byte-neutral — regalloc churn,
+reordering, header-fattening — the % drop is **ACCEPTED**: report and bless it, never
+revert correct work or skip it to protect the score. A % drop must not deter the work;
+a change stops only on **build failure or wrong evidence**, never on a current-%
+dip. The match % is pushed back up afterwards, once the source is clean.
+
+Reconstruction/matching work is the exception — there the push-to-100% doctrine
+applies. See the MAX-match convention in `CLAUDE.md`.

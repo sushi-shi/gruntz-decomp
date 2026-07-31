@@ -1,5 +1,5 @@
 # single-view baseline: globals declared with >1 (type, linkage) - a
 # datum wearing two types. Frozen backlog; recover the real extern and
-# delete the view (docs/cleanup-plan.md). Regenerate: python -m
+# delete the view (docs/cast-metric-policy.md). Regenerate: python -m
 # gruntz.audit.single_view --write-baseline
 # name	signature (linkage:type | ...)

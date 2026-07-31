@@ -5,7 +5,7 @@ is a SPLIT VIEW - two names/types for one datum at one RVA. Only one can match
 retail's actual symbol; the other is a fake alias (a `void*` placeholder, a
 cross-class reinterpret, or a stale linkage) that mis-models the datum and, worse,
 emits a symbol that does not exist in the real image (so a candidate link would
-leave it unresolved). The clean-room rule (docs/cleanup-plan.md,
+leave it unresolved). The clean-room rule (docs/cast-metric-policy.md,
 no-cross-casts-nothing-is-a-keep): recover the ONE real class/type and delete the
 view.
 
@@ -87,7 +87,7 @@ def main():
         with open(os.path.join(root, BASELINE), "w") as fh:
             fh.write("# single-view baseline: globals declared with >1 (type, linkage) - a\n")
             fh.write("# datum wearing two types. Frozen backlog; recover the real extern and\n")
-            fh.write("# delete the view (docs/cleanup-plan.md). Regenerate: python -m\n")
+            fh.write("# delete the view (docs/cast-metric-policy.md). Regenerate: python -m\n")
             fh.write("# gruntz.audit.single_view --write-baseline\n")
             fh.write("# name\tsignature (linkage:type | ...)\n")
             for k in sorted(keys):

@@ -3,8 +3,8 @@
 
 `cast_ledger` answers "how many are left"; this answers "what do I do next, and in
 what order". It re-classifies the ledger's OPEN set every run, so it reflects the tree
-rather than a snapshot someone pasted into a doc (docs/cast-open-drain-plan.md holds the
-tier rationale; this holds the rows).
+rather than a snapshot someone pasted into a doc (docs/cast-metric-policy.md holds the
+cast policy; the tier rationale is below).
 
 Tiers, in execution order:
 

@@ -734,8 +734,8 @@ def cmd_check(args) -> int:
               f"  DOCTRINE (structure-recovery phase): recover the ORIGINAL structure; do NOT "
               f"protect match %. A dip from moving a function/global/view to its true home is "
               f"EXPECTED and RECOVERS as more structure lands - gate on BUILD INTEGRITY, never "
-              f"revert a correct move for a %-drop (reloc-fidelity + view debt outrank %; "
-              f"docs/exe-map/reloc.html).\n"
+              f"revert a correct move for a %-drop (reloc fidelity + view debt outrank %; "
+              f"check with `gruntz audit reloc`).\n"
               f"  Bless when reviewed: python -m gruntz.match.status update --accept-regressions")
     else:
         extra = ""
