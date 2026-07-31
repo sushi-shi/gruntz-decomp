@@ -4,15 +4,12 @@
 #include <Ints.h>
 #include <rva.h>
 
-class CDDrawSurfaceMgr; // <DDrawMgr/DDrawSurfaceMgr.h> - the bound surface manager (+0x30)
+// The save host IS the game-manager singleton: the sole caller
+// (CSaveGame::Save @0xe4ea0) passes g_gameReg, and the one field the body reads,
+// +0x30, is CGruntzMgr::m_world. (The ex `CGameSaveHost` 0x30-pad view is gone.)
+class CGruntzMgr;
 
-struct CGameSaveHost {
-    char m_head[0x30];
-    CDDrawSurfaceMgr* m_surfaceMgr; // +0x30  bound surface manager
-};
-SIZE_UNKNOWN();
-
-i32 SaveGame(CGameSaveHost* host, char* name);
+i32 SaveGame(CGruntzMgr* host, char* name);
 
 // C linkage: the C++ array-global mangling diverges clang vs MSVC5 (the
 // data-binding gotcha); the owner def in GameSave.cpp inherits it from here.

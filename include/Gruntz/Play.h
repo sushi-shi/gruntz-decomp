@@ -226,8 +226,12 @@ public:
     // `index`, and blit it centered in the active viewport (LayerBlitFrame @0x115300).
     // Body in PlayMessageImage.cpp.
     void DrawMessageFrame(i32 index, i32 useFront); // 0x0d1650
-    void LoadSBITextEdges(char* name);              // 0x0d1710 (THIS TU)
-    i32 BuildGruntNamespaceList(CMulti* arg);       // 0x0dd050 (THIS TU)
+    // The argument is a STRING-RESOURCE ID, not a char*: retail feeds it straight to
+    // CString::LoadStringA (?LoadStringA@CString@@QAEHI@Z @0x1bedde), and the sole
+    // caller (CSaveGame::Save @0xe4ea0) forwards its own `msgId` arg (0x81a7 from
+    // CGruntzMgr::Quicksave).
+    void LoadSBITextEdges(i32 msgId);         // 0x0d1710 (THIS TU)
+    i32 BuildGruntNamespaceList(CMulti* arg); // 0x0dd050 (THIS TU)
     // The namespace-register op IS CState::BuildAssetNamespacePrefixes
     // (0xdca70, State.h) - reached directly (CPlay inherits it from CState).
     // (MarkerBegin is GONE - it is m_beginMarker->FilterList2 (0x1170b0, a

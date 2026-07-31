@@ -2326,14 +2326,16 @@ i32 CPlay::StepInputA() {
 }
 
 // ===========================================================================
-// CPlay::LoadSBITextEdges (0x0d1710) - draw the status-bar text `name` clamped to
-// the viewport rect inset by the "Font" Text{Left,Top,Right,Bottom}Edge margins,
-// then arm a 2-frame step countdown. /GX EH frame (the CString local).
+// CPlay::LoadSBITextEdges (0x0d1710) - load string resource `msgId` and draw it
+// clamped to the viewport rect inset by the "Font" Text{Left,Top,Right,Bottom}Edge
+// margins, then arm a 2-frame step countdown. /GX EH frame (the CString local).
+// The arg is an ID, not a char*: retail's call at 0xd1748 is CString::LoadStringA
+// (?LoadStringA@CString@@QAEHI@Z), whose parameter is a UINT.
 // ===========================================================================
 RVA(0x000d1710, 0x122)
-void CPlay::LoadSBITextEdges(char* name) {
+void CPlay::LoadSBITextEdges(i32 msgId) {
     CString s;
-    s = name;
+    s.LoadString(msgId);
 
     RECT rect;
     // frame-slot-holes-prove-a-local-aggregate.md: retail's frame is 0xc BIGGER than

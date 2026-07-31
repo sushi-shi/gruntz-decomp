@@ -1,12 +1,20 @@
 #include <Io/SaveGame.h>
+#ifdef __clang__
+#undef _AFX_ENABLE_INLINES
+#endif
+#include <afxwin.h> // AfxGetApp() -> CWinApp (CCmdTarget::Begin/EndWaitCursor in Save)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/FontConfig.h>
-#include <Image/ImagePool.h>  // the canonical CImagePool (g_previewMgr)
-#include <Image/Image.h>      // CRezImage (g_previewImage; the DIB StretchDIBits reads)
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr (RunModalDialog/FillSaveInfo, DrawSaveGameMenu)
-#include <Gruntz/Play.h>      // CPlay - m_curState real class (m_levelIndex)
-#include <Gruntz/CheatMgr.h>  // CCheatMgr - m_124 "a cheat was used" latch
-#include <stdio.h>            // sprintf (reloc-masked)
+#include <Image/ImagePool.h>           // the canonical CImagePool (g_previewMgr)
+#include <Image/Image.h>               // CRezImage (g_previewImage; the DIB StretchDIBits reads)
+#include <Gruntz/GruntzMgr.h>          // CGruntzMgr (RunModalDialog/FillSaveInfo, DrawSaveGameMenu)
+#include <Gruntz/Play.h>               // CPlay - m_curState real class (m_levelIndex)
+#include <Gruntz/CheatMgr.h>           // CCheatMgr - m_124 "a cheat was used" latch
+#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages::TransEnter (the Save page flip)
+#include <Gruntz/ChainForward.h>       // ChainForward (the Save thumbnail grab)
+#include <Io/GameSave.h>               // SaveGame (the object-graph snapshot writer)
+#include <Utils/RegistryHelper.h>      // Utils::RegistryHelper (CGruntzMgr::m_settings)
+#include <stdio.h>                     // sprintf (reloc-masked)
 #include <rva.h>
 
 #include <stdlib.h> // _itoa
@@ -645,29 +653,41 @@ i32 CSaveGame::Load() {
 }
 
 // ---------------------------------------------------------------------------
-// CSaveGame::Save  (0x000e4ea0)
-// @early-stop
-// Wait-cursor (AfxGetThreadState()->...->BeginWaitCursor/EndWaitCursor) around a
-// create+write+close sequence with two g_gameReg error/notify branches. The MFC
-// wait-cursor / module-state internals and the two divergent error paths are not
-// yet modeled; logic outline below, byte-match deferred to the final sweep.
+// CSaveGame::Save  (0x000e4ea0) - rewrite the .sav file, then (when `path` is
+// non-null) also write the matching screenshot/quicksave bundle: page-flip the
+// draw target, put the `msgId` string resource on the status line, run the
+// object-graph SaveGame(), and grab the 0x140x0xf0 thumbnail via ChainForward.
+// An MFC CWaitCursor brackets the whole thing: its inlined ctor/dtor are exactly
+// retail's AfxGetApp()->Begin/EndWaitCursor pair, and it is the EH state-0 object
+// (the CFile is state 1) - see the `mov [esp+0x24],0` before the CFile ctor and the
+// `state=-1` store that precedes the inlined EndWaitCursor at both exits.
 RVA(0x000e4ea0, 0x18c)
-i32 CSaveGame::Save(char* path, i32 b) {
+i32 CSaveGame::Save(char* path, i32 msgId) {
+    CWaitCursor wait;
     CFile file;
-    i32 ok = 0;
-    if (file.Open(m_name, 0x1000, 0)) {
-        file.Close();
-        if (file.Open(m_name, 1, 0)) {
-            ComputeAll();
-            file.Write(m_header, 0xa1c);
-            file.Write(m_slots, 0xa00);
-            file.Close();
-            ok = 1;
+    if (!file.Open(m_name, 0x1000, 0)) {
+        return 0;
+    }
+    file.Close();
+    if (!file.Open(m_name, 1, 0)) {
+        return 0;
+    }
+    ComputeAll();
+    file.Write(m_header, 0xa1c);
+    file.Write(m_slots, 0xa00);
+    file.Close();
+    Verify();
+    if (path != 0) {
+        CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
+        g_gameReg->m_world->m_drawTarget->TransEnter();
+        state->LoadSBITextEdges(msgId);
+        if (!SaveGame(g_gameReg, path)) {
+            return 0;
+        }
+        if (!ChainForward(g_gameReg->m_settings, g_gameReg, 0x140, 0xf0, path, 1)) {
+            return 0;
         }
     }
-    static_cast<void>(path);
-    static_cast<void>(b);
-    static_cast<void>(ok);
     return 1;
 }
 
