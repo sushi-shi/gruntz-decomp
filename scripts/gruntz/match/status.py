@@ -127,8 +127,8 @@ def engine_universe():
     categories = [
         ("EH unwind funclets", counts.get("eh", 0), code.get("eh", 0),
          "compiler /GX EH; match with their parent function"),
-        ("compiler-generated helpers", counts.get("compiler", 0),
-         code.get("compiler", 0), "static-object and forwarding helpers"),
+        ("private lifecycle/cleanup helpers", counts.get("compiler", 0),
+         code.get("compiler", 0), "volatile `$E<n>` families and anonymous cleanup forwards"),
         ("CRT/MFC library", counts.get("library", 0), code.get("library", 0),
          "FID-identified, statically linked"),
         ("jump thunks", counts.get("thunk", 0), code.get("thunk", 0),
@@ -780,7 +780,8 @@ def render_report(overall, mods, started_fzw, started_code) -> str:
         "",
         "_Totals are vs the whole engine = every in-`.text` reconstruction-target "
         "function; the generated/library categories tabled below (compiler EH "
-        "funclets and helpers, CRT/MFC library, jump thunks) are excluded from the denominator. "
+        "funclets, private lifecycle/cleanup helpers, CRT/MFC library, jump thunks) "
+        "are excluded from the denominator. "
         "Any unclaimed reconstruction targets appear in an `(unmatched)` row. "
         "`Fuzzy` = code-weighted partial credit (how close); `Fuzzy Max` = the same with every "
         "function at its best-ever fuzzy% - a gap above `Fuzzy` is entropy churn "

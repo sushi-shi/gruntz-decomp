@@ -74,7 +74,7 @@ CATEGORIES = {
     "zlib":    ("ZLIB",  "zlib, statically linked"),
     "asm":     ("ASM",   "hand-written game asm (FID GAME-ASM)"),
     "eh":      ("EH",    "compiler /GX EH unwind funclet"),
-    "compiler":("COMP",  "compiler-generated static-object/forwarding helper"),
+    "compiler":("COMP",  "private static-object lifecycle/cleanup helper"),
     "thunk":   ("THUNK", "linker ILT jmp-table / import glue"),
 }
 
@@ -82,7 +82,7 @@ CATEGORIES = {
 OWNER_WORD = {
     "unknown": "unknown (unreconstructed)", "mfc": "MFC library", "crt": "CRT library",
     "zlib": "zlib", "asm": "game asm", "eh": "EH funclet",
-    "compiler": "compiler-generated helper", "thunk": "linker jump-thunk",
+    "compiler": "private lifecycle/cleanup helper", "thunk": "linker jump-thunk",
 }
 
 
