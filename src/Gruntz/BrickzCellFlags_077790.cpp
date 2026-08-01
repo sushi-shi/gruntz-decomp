@@ -55,39 +55,128 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
         case 0:
             cell->m_0 = 0x1;
             break;
+        case 3:
+            cell->m_0 = 0x2;
+            break;
         case 9:
             cell->m_0 = 0x100;
             break;
-        case 113:
-            cell->m_0 = 0x300;
+        case 10:
+            cell->m_0 = 0x80;
+            break;
+        case 11:
+            cell->m_0 = 0x80;
+            break;
+        case 12:
+            cell->m_0 = 0x80;
+            break;
+        case 13:
+            cell->m_0 = 0x80;
+            break;
+        case 14:
+            cell->m_0 = 0x80;
+            break;
+        case 15:
+            cell->m_0 = 0x80;
+            break;
+        case 16:
+            cell->m_0 = 0x80;
+            break;
+        case 17:
+            cell->m_0 = 0x80;
+            break;
+        case 18:
+            cell->m_0 = 0x80;
+            break;
+        case 29:
+            cell->m_0 = 0x2021;
+            break;
+        case 30:
+            cell->m_0 = 0x2021;
+            break;
+        case 31:
+            cell->m_0 = 0x400;
+            break;
+        case 32:
+            cell->m_0 = 0x2021;
+            break;
+        case 33:
+            cell->m_0 = 0x10000;
+            break;
+        case 34:
+            cell->m_0 = 0x42;
             break;
         case 35:
             cell->m_0 = 0x800;
             break;
+        case 50:
+            cell->m_0 = 0x4;
+            break;
+        case 51:
+            cell->m_0 = 0x4;
+            break;
+        case 52:
+            cell->m_0 = 0x4;
+            break;
+        case 53:
+            cell->m_0 = 0x4;
+            break;
+        case 54:
+            cell->m_0 = 0x4;
+            break;
+        case 55:
+            cell->m_0 = 0x4;
+            break;
+        case 56:
+            cell->m_0 = 0x4;
+            break;
+        case 57:
+            cell->m_0 = 0x4;
+            break;
+        case 58:
+            cell->m_0 = 0x4;
+            break;
+        case 59:
+            cell->m_0 = 0x4;
+            break;
+        case 60:
+            cell->m_0 = 0x4;
+            break;
+        case 61:
+            cell->m_0 = 0x4;
+            break;
+        case 62:
+            cell->m_0 = 0x4;
+            break;
+        case 63:
+            cell->m_0 = 0x4;
+            break;
+        case 64:
+            cell->m_0 = 0x4;
+            break;
+        case 65:
+            cell->m_0 = 0x4;
+            break;
         case 92:
-        case 94:
-        case 96:
-        case 98:
-        case 100:
-        case 102:
-        case 104:
             cell->m_0 = 0x4002008;
             break;
-        case 29:
-        case 30:
-        case 32:
-            cell->m_0 = 0x2021;
+        case 94:
+            cell->m_0 = 0x4002008;
             break;
-        case 150:
-        case 151:
-        case 152:
-            cell->m_0 = 0x6021;
+        case 96:
+            cell->m_0 = 0x4002008;
             break;
-        case 149:
-            cell->m_0 = 0x8000;
+        case 98:
+            cell->m_0 = 0x4002008;
             break;
-        case 153:
-            cell->m_0 = 0x2001;
+        case 100:
+            cell->m_0 = 0x4002008;
+            break;
+        case 102:
+            cell->m_0 = 0x4002008;
+            break;
+        case 104:
+            cell->m_0 = 0x4002008;
             break;
         case 107:
             cell->m_0 = 0x108;
@@ -95,49 +184,26 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
         case 109:
             cell->m_0 = 0xa;
             break;
-        case 3:
-            cell->m_0 = 0x2;
-            break;
-        case 34:
-            cell->m_0 = 0x42;
-            break;
-        case 33:
-            cell->m_0 = 0x10000;
+        case 113:
+            cell->m_0 = 0x300;
             break;
         case 115:
             cell->m_0 = 0x202;
             break;
-        case 50:
-        case 51:
-        case 52:
-        case 53:
-        case 54:
-        case 55:
-        case 56:
-        case 57:
-        case 58:
-        case 59:
-        case 60:
-        case 61:
-        case 62:
-        case 63:
-        case 64:
-        case 65:
-            cell->m_0 = 0x4;
+        case 149:
+            cell->m_0 = 0x8000;
             break;
-        case 10:
-        case 11:
-        case 12:
-        case 13:
-        case 14:
-        case 15:
-        case 16:
-        case 17:
-        case 18:
-            cell->m_0 = 0x80;
+        case 150:
+            cell->m_0 = 0x6021;
             break;
-        case 31:
-            cell->m_0 = 0x400;
+        case 151:
+            cell->m_0 = 0x6021;
+            break;
+        case 152:
+            cell->m_0 = 0x6021;
+            break;
+        case 153:
+            cell->m_0 = 0x2001;
             break;
         default:
             cell->m_0 = (id3 == -1) ? 2 : 0;
