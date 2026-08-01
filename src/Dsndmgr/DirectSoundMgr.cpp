@@ -1058,10 +1058,15 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     wf.cbSize = fmt->cbSize;
 
     out = 0;
+    // Retail ZEROES the whole DSBUFFERDESC and then fills four fields: 0x136765 emits
+    // five `mov [desc+N],ecx` with ecx=0 across +0x00..+0x10 and only afterwards
+    // stores dwFlags, lpwfxFormat, dwSize and dwBufferBytes, leaving dwReserved at
+    // its zero. Assigning the five fields once each (with an explicit
+    // `desc.dwReserved = 0`) emits five stores where retail has nine.
+    memset(&desc, 0, sizeof(DSBUFFERDESC));
     desc.dwSize = DSBUFFERDESC_SIZE;
     desc.dwFlags = flags;
     desc.dwBufferBytes = bytes;
-    desc.dwReserved = 0;
     WaveFormatPtr fmtPtr;
     fmtPtr.m_rec = &wf;
     desc.lpwfxFormat = fmtPtr.m_sdk;
