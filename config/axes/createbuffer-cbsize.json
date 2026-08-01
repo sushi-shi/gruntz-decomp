@@ -1,0 +1,36 @@
+{
+ "schema": 1,
+ "source": "src/Dsndmgr/DirectSoundMgr.cpp",
+ "rva": "0x1366f0",
+ "axes": [
+  {
+   "name": "cbsize_placement",
+   "find": "    wf.cbSize = fmt->cbSize;\n\n    out = 0;\n    // Retail ZEROES the whole DSBUFFERDESC and then fills four fields: 0x136765 emits\n    // five `mov [desc+N],ecx` with ecx=0 across +0x00..+0x10 and only afterwards\n    // stores dwFlags, lpwfxFormat, dwSize and dwBufferBytes, leaving dwReserved at\n    // its zero. Assigning the five fields once each (with an explicit\n    // `desc.dwReserved = 0`) emits five stores where retail has nine.\n    memset(&desc, 0, sizeof(DSBUFFERDESC));\n    desc.dwSize = DSBUFFERDESC_SIZE;\n    desc.dwFlags = flags;\n    desc.dwBufferBytes = bytes;\n    WaveFormatPtr fmtPtr;\n    fmtPtr.m_rec = &wf;\n    desc.lpwfxFormat = fmtPtr.m_sdk;\n",
+   "options": [
+    {
+     "name": "baseline"
+    },
+    {
+     "name": "cb0_after_escape",
+     "replace": "    wf.cbSize = fmt->cbSize;\n\n    out = 0;\n    memset(&desc, 0, sizeof(DSBUFFERDESC));\n    desc.dwSize = DSBUFFERDESC_SIZE;\n    desc.dwFlags = flags;\n    desc.dwBufferBytes = bytes;\n    WaveFormatPtr fmtPtr;\n    fmtPtr.m_rec = &wf;\n    desc.lpwfxFormat = fmtPtr.m_sdk;\n    wf.cbSize = 0;\n"
+    },
+    {
+     "name": "retail_order",
+     "replace": "    wf.cbSize = fmt->cbSize;\n\n    out = 0;\n    memset(&desc, 0, sizeof(DSBUFFERDESC));\n    desc.dwFlags = flags;\n    WaveFormatPtr fmtPtr;\n    fmtPtr.m_rec = &wf;\n    desc.lpwfxFormat = fmtPtr.m_sdk;\n    wf.cbSize = 0;\n    desc.dwSize = DSBUFFERDESC_SIZE;\n    desc.dwBufferBytes = bytes;\n"
+    },
+    {
+     "name": "retail_order_nocb",
+     "replace": "    wf.cbSize = fmt->cbSize;\n\n    out = 0;\n    memset(&desc, 0, sizeof(DSBUFFERDESC));\n    desc.dwFlags = flags;\n    WaveFormatPtr fmtPtr;\n    fmtPtr.m_rec = &wf;\n    desc.lpwfxFormat = fmtPtr.m_sdk;\n    desc.dwSize = DSBUFFERDESC_SIZE;\n    desc.dwBufferBytes = bytes;\n"
+    },
+    {
+     "name": "cb0_flags_ptr_last",
+     "replace": "    wf.cbSize = fmt->cbSize;\n\n    out = 0;\n    memset(&desc, 0, sizeof(DSBUFFERDESC));\n    desc.dwSize = DSBUFFERDESC_SIZE;\n    desc.dwBufferBytes = bytes;\n    desc.dwFlags = flags;\n    WaveFormatPtr fmtPtr;\n    fmtPtr.m_rec = &wf;\n    desc.lpwfxFormat = fmtPtr.m_sdk;\n    wf.cbSize = 0;\n"
+    },
+    {
+     "name": "ptr_first_cb0",
+     "replace": "    wf.cbSize = fmt->cbSize;\n\n    out = 0;\n    memset(&desc, 0, sizeof(DSBUFFERDESC));\n    WaveFormatPtr fmtPtr;\n    fmtPtr.m_rec = &wf;\n    desc.lpwfxFormat = fmtPtr.m_sdk;\n    wf.cbSize = 0;\n    desc.dwFlags = flags;\n    desc.dwSize = DSBUFFERDESC_SIZE;\n    desc.dwBufferBytes = bytes;\n"
+    }
+   ]
+  }
+ ]
+}

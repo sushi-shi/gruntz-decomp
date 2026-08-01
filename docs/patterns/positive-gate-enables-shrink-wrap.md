@@ -357,3 +357,48 @@ layout choice. `CDDrawWorkerRegistry::DispatchKeyed{2C,30,34,38}` @0x156xxx read
 retail inlines `operator new(0x6c)` + the field stores + an inner ctor under a `/GX` frame
 where the base just calls a factory. No layout edit can close that; screen it out by looking
 for the EH prologue the base does not have.
+
+## The inverse is REAL: a measured counter-instance (2026-08-01)
+
+The rule above is not symmetric and must not be applied blind. `SoundDevice::FreeSamples`
+@0x136ed0 is the counter-instance: **retail does NOT shrink-wrap and we DO**, from the early-
+return form on both sides.
+
+```asm
+; retail: all four saved in the prologue, the gate pops all four
+    mov   eax,[ecx+0x78]
+    push  ebx
+    push  ebp
+    push  esi
+    test  eax,eax
+    push  edi
+    jne   0x136ee2
+    xor   eax,eax
+    pop   edi / pop esi / pop ebp / pop ebx
+    ret
+```
+
+The loop body is **byte-identical** (including the `neg/sbb/and` null-mask landing in eax);
+only the prologue placement differs. A 4-cell matrix over the guard
+(`config/axes/freesamples.json`) refutes the rule here:
+
+| spelling | score |
+|---|---|
+| `if (m_initialized == 0) return 0;` (early return) | **77.31** |
+| `if (!m_initialized) return 0;` | 77.31 |
+| `if (m_initialized) { loop; return 1; } return 0;` (positive) | 72.13 |
+| `i32 ok = 0; if (m_initialized) { loop; ok = 1; } return ok;` | 71.39 |
+
+The positive form *costs* 5 points. And retail's own polarity is the early return
+(`jne body`, the `return 0` as the fallthrough), so both sides already agree on the gate — the
+gate was never the variable.
+
+**The screen.** Its sibling `DSoundCloneInst::GetItem` @0x135d70 needs the OPPOSITE shrink-wrap
+decision (retail saves only `edi` at entry and defers `push esi`/`push ebx` past the guard,
+where cl pushes all three up front) from the *same* guard shape, and all four of its guard
+spellings tie at 90.31 (`config/axes/getitem.json`). Two functions in one TU, one guard shape,
+opposite required outcomes ⇒ the decision is the allocator's, not the source's.
+
+So before reaching for the positive form, check that retail's exit actually lands **below** a
+`pop` (the proof quoted at the top of this doc). If retail's early exit pops *everything*, the
+rule does not apply and the positive form will cost you points.

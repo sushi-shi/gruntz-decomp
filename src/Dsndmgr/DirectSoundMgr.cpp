@@ -1070,6 +1070,12 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     WaveFormatPtr fmtPtr;
     fmtPtr.m_rec = &wf;
     desc.lpwfxFormat = fmtPtr.m_sdk;
+    // cbSize is copied with the rest of the header and then FORCED to 0 (retail
+    // 0x1367a2 `mov WORD PTR [esp+0x28],si`) - DirectSound requires cbSize==0 for
+    // PCM. It has to sit AFTER `&wf` escapes into desc.lpwfxFormat: spelled adjacent
+    // to the copy cl dead-store-eliminates the pair and the function LOSES points.
+    // 66.73 -> 70.36 (config/axes/createbuffer-cbsize.json).
+    wf.cbSize = 0;
 
     hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {

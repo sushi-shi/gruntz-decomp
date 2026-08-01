@@ -268,12 +268,20 @@ StreamVoice* SoundStream::CreateStreamBuffer(
     // its zero. Assigning the five fields once each (with an explicit
     // `desc.dwReserved = 0`) emits five stores where retail has nine.
     memset(&desc, 0, sizeof(DSBUFFERDESC));
-    desc.dwSize = 0x14;
     desc.dwFlags = dsFlags;
-    desc.dwBufferBytes = bytes;
     WaveFormatPtr fmtPtr;
     fmtPtr.m_rec = &wf;
     desc.lpwfxFormat = fmtPtr.m_sdk;
+    desc.dwSize = 0x14;
+    desc.dwBufferBytes = bytes;
+    // MISSING, KNOWINGLY: retail also forces `wf.cbSize = 0` here (0x137832
+    // `mov WORD PTR [esp+0x28],si`, the same store its CreateBuffer twin has). Every
+    // placement tried COSTS points in THIS function - after the escape 64.82, in
+    // retail's emission order 65.26, with flags/ptr last 65.26, escape-first 66.80,
+    // against 66.82 for this spelling with no zero at all
+    // (config/axes/createstreambuffer2.json). Its twin gains +3.63 from the very same
+    // line, so this is a placement we have not found, NOT evidence the store is
+    // absent. Open lead - do not read the omission as a decision.
 
     hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {
