@@ -70,6 +70,24 @@ void Blowfish_encipher(u32* xl, u32* xr) {
 // kept: it banks the higher decipher MAX, takes InitializeBlowfish to EXACT, and
 // is the shape retail's own `mov ecx,0x400; rep movsd` proves.
 // See docs/patterns/mirror-function-divergent-schedule.md.
+//
+// NEGATIVE RESULT 2026-08-01 - do not re-try this one. The reference Blowfish source
+// extracts the four bytes through a `union aword { u32 word; u8 byte[4]; struct {
+// u32 byte3:8; byte2:8; byte1:8; byte0:8; } w; }`, with `S(x,i) == SB[i][x.w.byte##i]`
+// and `ROUND(a,b,n) == (a.word ^= bf_F(b) ^ P[n])`, and retail LOOKS like it: round 1
+// gives the word a stack home and reads byte 1 back out of memory
+// (`mov [esp+0x14],edx` then `mov al,BYTE PTR [esp+0x16]`), which is not what
+// shift-and-mask on a register value suggests. It is not evidence for the union.
+// Transcribing the reference verbatim - union, bitfields, ROUND, both bodies - compiles
+// BYTE-IDENTICAL to the macro above: 60.4148 / 99.8750 to four decimals, unchanged.
+// cl already spills the word and already picks the memory byte for bits 16-23 out of
+// `((R) >> 16) & 0xff`, so the union buys nothing and stays unproven; the simpler
+// spelling is kept.
+// The residual really is ONLY the round-1 register swap, and retail's two bodies
+// disagree with EACH OTHER:
+//   retail encipher   xor eax,eax / mov ecx,edx / mov al,[esp+0x16] / shr ecx,0x18
+//   retail decipher   xor ecx,ecx / mov eax,edx / mov cl,[esp+0x16] / shr eax,0x18
+// One macro can only emit one of the two, and everything downstream follows the choice.
 RVA(0x0016fc70, 0x48e)
 void Blowfish_decipher(u32* xl, u32* xr) {
     u32 l = *xl;

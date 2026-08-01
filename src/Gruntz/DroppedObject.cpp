@@ -627,7 +627,19 @@ void CDroppedObject::RegisterActs() {
 // modrm register field through the landing block. Not source-steerable (tried
 // reordering the x/grid declarations - identical codegen). Parked for the final
 // sweep.
-RVA(0x000c7090, 0x230)
+//
+// The extent is DELIBERATELY short of this function's switch tables, which is the one
+// exception to docs/patterns/rva-extent-must-include-switch-tables.md. Claiming them
+// (0x21b -> 0x230, the base COMDAT) really does take this function 92.55 -> 96.45, but
+// it makes the DELINKER drop an unrelated relocation elsewhere in this same unit:
+// CDroppedObject::UserLogicVfunc5 @0xc7350 loses the DIR32 on its
+// `mov eax,ds:_g_engineFrameDelta` (the delinked byte becomes `a1 00 00 00 00` with no
+// reloc, so the reference is simply lost), and `assert_relocs` then reports our base as
+// referencing a global "retail never does" - which is backwards, retail's 0xc7351 plainly
+// does. Reproduced both directions: 0x230 -> 1 defect, 0x21b -> 0 defects, nothing else
+// changed. Reloc fidelity outranks match %, so the short extent stays until the delinker
+// is fixed; the 3.9 points are waiting behind that.
+RVA(0x000c7090, 0x21b)
 i32 CDroppedObject::ActA() {
     m_38->m_1a0.Advance(g_engineFrameDelta);
     m_fallY = static_cast<double>(g_frameDelta) * m_timePerTile + m_fallY;

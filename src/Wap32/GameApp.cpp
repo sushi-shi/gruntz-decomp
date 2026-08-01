@@ -72,6 +72,23 @@ CGameApp::CGameApp() {
     g_gameAppInstanceCount++;
 }
 
+// @early-stop
+// 97.28%, relocs 7/7, and the whole residual is SIX bytes with one cause: cl treats
+// `pCreateStruct` as a register variable and retail treats it as memory.
+//   retail  reads it fresh into the scratch eax for the hInstance guard
+//           (`mov eax,[esp+0x1c] / cmp / je / mov eax,[eax+0x4]`), throws it away, and
+//           loads `mov esi,[esp+0x1c]` ONCE at the merge below the wndclass copy.
+//   cl      pins it in esi from inside the guard. `rep movsd` for the WNDCLASS copy
+//           then clobbers esi, so it has to re-establish it - which costs a duplicated
+//           `mov esi,[esp+0x1c]` (4 B) plus a `jmp` (2 B) to skip that copy on the other
+//           path. 473 B vs retail's 467, 36 blocks vs 34.
+// Not steerable from the guard: four spellings (the flat `&&` chain, fully nested ifs,
+// explicit `== 0` comparisons, and the last clause split into its own if/goto pair) are
+// BYTE-IDENTICAL at 97.283950 / 473, on top of the 16-cell guard-site matrix a previous
+// lane ran (also all 97.284). Negating the create-struct if/else costs 4.8 points.
+// Hoisting the read into a local is not writable here at all: the function's `goto Fail`
+// chain means MSVC5 rejects any initialised declaration after the first goto (C2362), and
+// the declare-then-assign form just re-creates the same live range.
 RVA(0x0013d5d0, 0x1d3)
 i32 CGameApp::InitInstance(
     GameInfo* pGameInfo,

@@ -75,6 +75,21 @@ Overall 3214 -> 3240 exact, MAX fuzzy 80.59 -> 80.91.
 what this artifact costs. Do not read a low score on a `switch`-heavy function as evidence
 that the body is wrong until you have checked the extent.
 
+## The one measured exception: check `assert_relocs` after the sweep
+
+Extending a claim re-carves the whole unit, and on one function that made the **delinker
+drop an unrelated relocation**. `CDroppedObject::ActA` @0xc7090 goes 92.55 -> 96.45 at the
+correct extent (0x21b -> 0x230), but then `CDroppedObject::UserLogicVfunc5` @0xc7350 loses
+the DIR32 on its `mov eax,ds:_g_engineFrameDelta` — the delinked byte becomes
+`a1 00 00 00 00` with no reloc at all, so the reference vanishes and `assert_relocs`
+reports our base as referencing a global *"retail never does"*, which is backwards.
+Reproduced in both directions, nothing else in the unit changed.
+
+So: **run `python -m gruntz.audit.assert_relocs` after an extent sweep**, and if a unit you
+touched grows a WRONG whose base side is provably right, revert that one claim. Reloc
+fidelity outranks match %. It is a delinker bug, not a source one — the points are waiting
+behind a fix.
+
 ## Bound
 
 The `<= 3` slop is load-bearing. When the gap between the claim and the first `$L` is
