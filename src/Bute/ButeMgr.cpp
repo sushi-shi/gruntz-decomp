@@ -2031,8 +2031,64 @@ i32 Gap_171640(void) {
     return 0;
 }
 
+// ---------------------------------------------------------------------------
+// CButeMgr::SetValue (0x173dd0) - store `val` at (tag, key).
+//
+// Retail walks the three keyed stores in a shape that is asymmetric on purpose:
+// the FIRST store (m_tree) is only ever read - a hit updates the existing value
+// in place and returns. A tag hit with a key MISS falls through to the second
+// store (m_tree48); a tag MISS in the first store goes to the third (m_tree74).
+// Both of those two stores are read-write: a value hit updates, a key miss
+// inserts a fresh boxed value under the existing group, and a tag miss allocates
+// a `new CButeNode(2)` group, inserts it, and inserts the value under that.
+//
+// Every stored value is `CButeValue(6, val)` - the type-6 (kButeRef6) box whose
+// ctor op-news an 8-byte CButeValue and copies `val`'s {type, pValue} pair into
+// it. The three update sites are the same two statements; cl inlined the
+// ctor/CopyValue/dtor trio at the m_tree and m_tree48 sites (the type tag is the
+// literal 6 there, so ~CButeValue's ButeType jump table folds to a bare
+// `operator delete`) and left the m_tree74 site as three out-of-line calls.
+//
+// The destructible CButeValue temporaries give it the /GX frame (nine trylevels,
+// 0..8, one per allocation site).
 // @early-stop
 RVA(0x00173dd0, 0x38f)
-i32 LoadProjActMap(void) {
-    return 0;
+void CButeMgr::SetValue(const char* tag, const char* key, CButeValue* val) {
+    CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
+    if (grp) {
+        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        if (hit) {
+            CButeValue box(6, val);
+            hit->CopyValue(&box);
+            return;
+        }
+        CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
+        if (g48) {
+            CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
+            if (hit48) {
+                CButeValue box(6, val);
+                hit48->CopyValue(&box);
+                return;
+            }
+            g48->Insert(key, new CButeValue(6, val));
+            return;
+        }
+        CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
+        made->Insert(key, new CButeValue(6, val));
+        return;
+    }
+
+    CButeNode* g74 = static_cast<CButeNode*>(m_tree74.Find(tag));
+    if (g74) {
+        CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
+        if (hit74) {
+            CButeValue box(6, val);
+            hit74->CopyValue(&box);
+            return;
+        }
+        g74->Insert(key, new CButeValue(6, val));
+        return;
+    }
+    CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
+    made74->Insert(key, new CButeValue(6, val));
 }

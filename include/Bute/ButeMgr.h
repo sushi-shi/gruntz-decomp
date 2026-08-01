@@ -167,6 +167,19 @@ public:
     bool SkipToTag();
     // Recursive group parser (the per-tag descent).
     bool ParseGroup();
+    // 0x173dd0: box `val` as a type-6 CButeValue and store it at (tag, key),
+    // walking the three keyed stores. `this` is proven by the three zPTree
+    // receivers the body uses - `lea ecx,[this+0x18]` / `+0x48` / `+0x74` are
+    // exactly m_tree / m_tree48 / m_tree74, and the callees are zPTree::Find
+    // (0x16d190), zPTree::Insert (0x16db90), CButeNode::CButeNode(i32)
+    // (0x174d00), CButeValue::CButeValue(i32,CButeValue*) (0x1741b0),
+    // CButeValue::CopyValue (0x172040) and ~CButeValue (0x172160). `ret 0xc`
+    // pins the three-dword arity; every path leaves eax holding a callee's
+    // leftover, so the return type is void. No caller in retail (dead code:
+    // `sema xref` finds neither a call/jmp nor a data reference), which is why
+    // it carried a fabricated `LoadProjActMap` name.
+    void SetValue(const char* tag, const char* key, struct CButeValue* val);
+
     // Key existence probe: Find(tag); if no key requested, hit on the group;
     // else require the key under it.
     bool Exists(const char* tag, const char* key);
