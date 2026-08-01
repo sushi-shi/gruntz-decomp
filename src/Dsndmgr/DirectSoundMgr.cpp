@@ -53,12 +53,20 @@ DATA(0x0020b668)
 const char s_rb[] = "rb";
 
 // ---------------------------------------------------------------------------
+// The two volume-curve functions are compiled UNOPTIMIZED in retail while the rest
+// of this TU (starting with BuildVolumeTable right after them) is /O2 - so the
+// original source wraps exactly this pair in a pragma optimize off/on region.
+// Proof, from the retail bytes: both keep an ebp frame with a shared `jmp` epilogue,
+// both reload the incoming parameter off [ebp+8] at every use instead of caching it,
+// ConvertVolumeToPercent divides by 100 with `mov ecx,0x64 / idiv ecx` (no magic-
+// number strength reduction, which /O1 and /O2 both always apply), and every x87
+// intermediate is spilled to [ebp-N]. BuildVolumeTable at 0x1351a0 is frameless with
+// a strength-reduced esi/edi induction pair, i.e. fully optimized.
+#pragma optimize("", off)
+
+// ---------------------------------------------------------------------------
 // VolumeToAttenuation (static __cdecl, x87): 0..100 volume -> centi-dB attenuation.
 // 100->0, 0->-10000, else -acos(pow(1/(v/100),10))/acos(2)*100, floored via __ftol.
-// @early-stop
-// x87-fp-stack-schedule wall (docs/patterns/x87-fp-stack-schedule.md, 58%): retail spills
-// `ratio` to [ebp-8] (push ebp frame + shared jmp epilogue); MSVC5 keeps it in st0
-// (frameless) + an extra fxch. Not source-steerable; logic complete.
 RVA(0x001350b0, 0x5d)
 i32 SoundDevice::VolumeToAttenuation(i32 value) {
     if (value == 100) {
@@ -67,8 +75,9 @@ i32 SoundDevice::VolumeToAttenuation(i32 value) {
     if (value == 0) {
         return -10000;
     }
-    double t = static_cast<double>(value) / c_volScale;
-    double ratio = acos(pow(c_volNum / t, c_powExp)) / acos(c_acosNorm);
+    // One expression, no `t` local: retail divides in place (`fild / fdiv c_volScale
+    // / fdivr c_volNum`) and only `ratio` gets a stack slot ([ebp-8]).
+    double ratio = acos(pow(c_volNum / (value / c_volScale), c_powExp)) / acos(c_acosNorm);
     return static_cast<i32>((-(ratio * c_volScale)));
 }
 
@@ -80,13 +89,6 @@ i32 SoundDevice::VolumeToAttenuation(i32 value) {
 // inputs. Shares the volume-curve constant pool with VolumeToAttenuation above.
 // (Dossier seam re-home: was the mis-homed "ComputeCmdPercent" singleton unit
 // gruntcmdpercent, compiled /Odi.)
-// @early-stop
-// compile-profile wall (33.96%, was 100% under the /Odi singleton crutch): the body
-// needs /O1-style codegen (ebp frame retained, idiv-by-100 with no magic-number
-// strength reduction, x87 spill schedule) that this TU's real /O2 /GX profile does
-// not emit. Logic complete + previously byte-proven; placement per the dossier is
-// authoritative (never revert placement) - a per-fn #pragma optimize probe is the
-// final-sweep lead.
 RVA(0x00135110, 0x8e)
 i32 ConvertVolumeToPercent(i32 v) {
     if (v == 0) {
@@ -104,6 +106,8 @@ i32 ConvertVolumeToPercent(i32 v) {
     }
     return static_cast<i32>((-r));
 }
+
+#pragma optimize("", on)
 
 RVA(0x001351a0, 0x23)
 void SoundDevice::BuildVolumeTable() {
