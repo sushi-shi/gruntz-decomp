@@ -5038,8 +5038,8 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
 // CBattlezMapConfig::ClaimCellFromRow  @0x030730
 // Cell-claim scan: for the (cellX,cellY) source unit, walk the 15 unit slots of
 // the CURRENT cell-row (m_curCell) and, for each candidate whose mode is 3 (or a
-// 2/3-of-the-time random pick) and whose per-level record lands within distance
-// 0x19 of the candidate's geometry, claim it - mark mode 3 / state 2, stamp the
+// 2/3-of-the-time random pick) and whose per-level record lands FARTHER than
+// distance 0x19 from the candidate's geometry, claim it - mark mode 3 / state 2, stamp the
 // target coord (cellX,cellY) and seed m_250 = 0xd87.
 // ===========================================================================
 // @early-stop
@@ -5067,7 +5067,11 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
     if (src->m_2d8 == 4) {
         i32 sx = src->m_arrivalCol;
         i32 sy = src->m_arrivalRow;
-        if (sx == m_curCell) {
+        // NOT-equal: retail 0x307ae is `cmp ecx,edx / je 0x307bc`, i.e. it skips the
+        // `return 0` when the arrival column MATCHES m_curCell (edx is m_curCell -
+        // loaded at 0x3074e and compared against cellX at 0x30755). A mode-4 source
+        // unit that is already heading somewhere ELSE stops the claim.
+        if (sx != m_curCell) {
             return 0;
         }
     }
@@ -5103,7 +5107,11 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
             i32 dy = bundle->m_markerY - ly;
             dx = abs(dx);
             dy = abs(dy);
-            if (dx * dx + dy * dy > 0x19) {
+            // <=, not >: retail 0x30899 is `cmp edx,0x19 / jg`, so the `xor ebp,ebp`
+            // that clears `ok` runs when the squared distance is WITHIN 0x19. The
+            // candidate is rejected for being too CLOSE to its own level-record
+            // marker, not for being too far.
+            if (dx * dx + dy * dy <= 0x19) {
                 ok = 0;
             }
         }
