@@ -1745,7 +1745,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
 // spills `this` to esp+0x10 and reuses ecx via `add 0x1c,ecx` (pointer in ecx) - a
 // one-slot shift that cascades displacement bytes through the whole prologue + loop
 // control. Source-invariant; deferred to the final sweep.
-RVA(0x0007b930, 0x3b7)
+RVA(0x0007b930, 0x3e0)
 i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
     i32 r = radius << 5;
     i32 xLo = x - r - 7;

@@ -83,7 +83,7 @@ i32 QueryToken(i32 arg) {
 // tail-merges them.  Result-var idiom didn't help (regresses the tail-return cases).
 // See docs/patterns/identical-return-epilogue-tailmerge.md +
 // docs/patterns/switch-pointer-default-result-var.md + jumptable-data-overlap.md
-RVA(0x00099d40, 0x21c)
+RVA(0x00099d40, 0x2c0)
 i32 CAreaMgr::Dispatch(i32 index) {
     if (index <= 0 || index > 0x28) {
         return 0;

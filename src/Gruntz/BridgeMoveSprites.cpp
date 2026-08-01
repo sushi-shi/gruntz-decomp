@@ -20,7 +20,7 @@
 // jump+index tables are emitted inline in the base .text but delinked as separate
 // symbols. Both documented: docs/patterns/switch-jumptable-separate-comdat.md +
 // jumptable-data-overlap.md. Logic complete; not source-steerable.
-RVA(0x00110860, 0x25f)
+RVA(0x00110860, 0x2a0)
 void CTileTriggerLogic::LoadBridgeMove(i32 type) {
     i32 px, py;
     CGruntzMgr* r;
@@ -43,8 +43,8 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
             py = (m_tileY << 5) + 0x10;
             px = (m_tileX << 5) + 0x10;
             r = g_gameReg;
-            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left && py < r->m_viewBounds.bottom
-                && py >= r->m_viewBounds.top) {
+            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
+                && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
                 set = r->m_world->m_soundRegistry;
                 if (set->m_emitGate == 0) {
                     LeafCue* e = static_cast<LeafCue*>(set->Lookup("GAME_PYRAMIDMOVE"));
@@ -59,8 +59,8 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
             py = (m_tileY << 5) + 0x10;
             px = (m_tileX << 5) + 0x10;
             r = g_gameReg;
-            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left && py < r->m_viewBounds.bottom
-                && py >= r->m_viewBounds.top) {
+            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
+                && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
                 set = r->m_world->m_soundRegistry;
                 if (set->m_emitGate == 0) {
                     LeafCue* e = static_cast<LeafCue*>(set->Lookup("LEVEL_WATERBRIDGEMOVE"));
@@ -75,8 +75,8 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
             py = (m_tileY << 5) + 0x10;
             px = (m_tileX << 5) + 0x10;
             r = g_gameReg;
-            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left && py < r->m_viewBounds.bottom
-                && py >= r->m_viewBounds.top) {
+            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
+                && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
                 r->m_world->m_soundRegistry->RefreshAsset("LEVEL_WATERBRIDGEMOVE");
             }
             return;
@@ -85,8 +85,8 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
             py = (m_tileY << 5) + 0x10;
             px = (m_tileX << 5) + 0x10;
             r = g_gameReg;
-            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left && py < r->m_viewBounds.bottom
-                && py >= r->m_viewBounds.top) {
+            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
+                && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
                 r->m_world->m_soundRegistry->RefreshAsset("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
@@ -95,8 +95,8 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
             py = (m_tileY << 5) + 0x10;
             px = (m_tileX << 5) + 0x10;
             r = g_gameReg;
-            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left && py < r->m_viewBounds.bottom
-                && py >= r->m_viewBounds.top) {
+            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
+                && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
                 r->m_world->m_soundRegistry->RefreshAsset("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
@@ -105,8 +105,8 @@ void CTileTriggerLogic::LoadBridgeMove(i32 type) {
             py = (m_tileY << 5) + 0x10;
             px = (m_tileX << 5) + 0x10;
             r = g_gameReg;
-            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left && py < r->m_viewBounds.bottom
-                && py >= r->m_viewBounds.top) {
+            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
+                && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
                 r->m_world->m_soundRegistry->RefreshAsset("LEVEL_CRUMBLE");
             }
             return;

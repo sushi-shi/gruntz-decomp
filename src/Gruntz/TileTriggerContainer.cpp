@@ -307,7 +307,7 @@ void CTileTriggerContainer::AddLogicFromRecord(
 // prologue/arg-load operand shifts.  Compounded by MSVC5 tail-merging the four
 // independent operator-new EH trylevel state machines differently.  Logic complete;
 // byte-match parked for the final sweep.
-RVA(0x00116610, 0x32c)
+RVA(0x00116610, 0x350)
 CTileTriggerLogic* CTileTriggerContainer::AddLogic(
     i32 tileType,
     i32 logicType,

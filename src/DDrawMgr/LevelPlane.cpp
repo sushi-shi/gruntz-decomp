@@ -1332,7 +1332,7 @@ void CDDrawWorkerHost::ResolveColorKey() {
 // objdiff pairs only the first 0x1e bytes of our symbol against retail's whole 0x42.
 // Same artifact as CGameObject::Play @0x151150 (scored 0.00%). MAX 79.27 was the
 // WRONG (compare-ladder) shape; do not revert to it.
-RVA(0x00163710, 0x42)
+RVA(0x00163710, 0x60)
 i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* s, i32 kind, i32, i32) {
     if (!s) {
         return 0;

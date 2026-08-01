@@ -491,7 +491,7 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
 // objdiff scores ~73% only because the inline `.text` jump-table region carries a
 // base reloc against a $L label vs the target's switchdataD self-reloc. The code
 // IS matched; the % undercounts it. No source change applies - stop chasing.
-RVA(0x0011bba0, 0x1f4)
+RVA(0x0011bba0, 0x280)
 i32 CGruntSpawnConfig::GetButeSlot(CGrunt* config, i32 cue) {
     if (config == 0) {
         return 0;

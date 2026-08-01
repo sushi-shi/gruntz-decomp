@@ -1741,7 +1741,7 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
 // Code bytes byte-exact (all 8 global stores + reloc-named globals pair); residual is
 // the switch-jumptable-separate-comdat wall — MSVC emits the jump table as a separate
 // $L symbol, the delinker inlines it at fn+0x6c, so only the jmpl table reloc differs.
-RVA(0x0014dcf0, 0x69)
+RVA(0x0014dcf0, 0xa0)
 void SetShadeDescr(CShadeTable* v, int mode) {
     switch (mode) {
         case 2:
@@ -1775,7 +1775,7 @@ void SetShadeDescr(CShadeTable* v, int mode) {
 // Code bytes byte-exact (verified llvm-objdump base vs target: every byte pairs except
 // the single jmpl table displacement); residual is the switch-jumptable-separate-comdat
 // wall (MSVC $L table symbol vs delinker inline-at-fn+0x74).
-RVA(0x0014dd90, 0x74)
+RVA(0x0014dd90, 0xa0)
 void CDDrawShadeBlit::Select(i32 mode, CShadeTable* descr) {
     m_drawType = mode;
     if (descr == 0) {

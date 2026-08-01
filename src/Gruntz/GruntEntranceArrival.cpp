@@ -408,7 +408,7 @@ i32 CGrunt::UpdateGruntStatus() {
 // byte-faithful. Residue = the switch index register (ecx vs edx), the rand()%2 mask
 // (and eax,1 vs the CSE'd ebx=1), the dead cell[2] read retail spills into a scratch
 // frame, and the cross-arm regalloc; source-invariant. Deferred to the final sweep.
-RVA(0x00061940, 0x1cf)
+RVA(0x00061940, 0x200)
 i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     if (m_entranceReason >= 0x17) {
         return 0;

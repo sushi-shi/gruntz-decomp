@@ -5268,7 +5268,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 // which cl emits as separate $L symbols vs the delinker inlining it into the fn symbol
 // at fn+0x218/+0x2a4; the table DATA + the 2 dispatch reloc operands never pair. Not
 // source-steerable (docs/patterns/jumptable-data-overlap.md, cf. LoadPowerupIconSprites).
-RVA(0x000dc6d0, 0x215)
+RVA(0x000dc6d0, 0x2e0)
 i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 mode, i32 lightGate, CMulti* finishGate) {
     CString name("NORMALGRUNT");
     switch (typeIdx) {

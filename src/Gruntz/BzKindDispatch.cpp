@@ -8,7 +8,7 @@
 // inlines the table into the Dispatch symbol at +0x5c (+ `90 90` filler), so the
 // jmp's table reloc + the table data don't pair. See docs/patterns/switch-jumptable-
 // separate-comdat.md - a delinker artifact, not source-fixable.
-RVA(0x00037910, 0x5a)
+RVA(0x00037910, 0x70)
 i32 CLatencyList::Dispatch(i32 mode) {
     m_mode = mode;
     switch (mode) {

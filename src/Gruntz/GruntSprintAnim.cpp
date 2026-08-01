@@ -31,7 +31,7 @@
 // strength-reduction form ((i-1)<8 vs i<=8) are documented scoring/scheduling
 // walls. See docs/patterns/pin-local-for-callee-saved-reg.md +
 // jumptable-data-overlap.md + zero-register-pinning.md.
-RVA(0x00019920, 0x1c2)
+RVA(0x00019920, 0x1f0)
 i32 CBootyState::BuildGruntSprintAnimation() {
     CShadeTable* h = g_gameReg->m_spriteFactory->GetSel(0, 0);
     if (!h) {

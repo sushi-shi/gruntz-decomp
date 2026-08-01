@@ -408,7 +408,7 @@ const AFX_MSGMAP* CMultiStartDlg::GetMessageMap() const {
 // @early-stop
 // jump-table-data scoring artifact (code byte-exact) -
 // docs/patterns/jumptable-data-overlap.md.
-RVA(0x000c2640, 0x46)
+RVA(0x000c2640, 0x60)
 CWnd* CMultiStartDlg::GetCtrlE(i32 index) {
     CWnd* result = 0;
     switch (index) {
@@ -434,7 +434,7 @@ CWnd* CMultiStartDlg::GetCtrlE(i32 index) {
 // CBattlezDlg::GetCtrlA..D; the inline .rdata jump table reloc-masks.
 // @early-stop
 // jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
-RVA(0x000c26c0, 0x46)
+RVA(0x000c26c0, 0x60)
 CWnd* CMultiStartDlg::GetCtrlA(i32 index) {
     CWnd* result = 0;
     switch (index) {
@@ -456,7 +456,7 @@ CWnd* CMultiStartDlg::GetCtrlA(i32 index) {
 
 // @early-stop
 // jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
-RVA(0x000c2740, 0x46)
+RVA(0x000c2740, 0x60)
 CWnd* CMultiStartDlg::GetCtrlB(i32 index) {
     CWnd* result = 0;
     switch (index) {
@@ -478,7 +478,7 @@ CWnd* CMultiStartDlg::GetCtrlB(i32 index) {
 
 // @early-stop
 // jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
-RVA(0x000c27c0, 0x46)
+RVA(0x000c27c0, 0x60)
 CWnd* CMultiStartDlg::GetCtrlC(i32 index) {
     CWnd* result = 0;
     switch (index) {
@@ -500,7 +500,7 @@ CWnd* CMultiStartDlg::GetCtrlC(i32 index) {
 
 // @early-stop
 // jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
-RVA(0x000c2840, 0x46)
+RVA(0x000c2840, 0x60)
 CWnd* CMultiStartDlg::GetCtrlD(i32 index) {
     CWnd* result = 0;
     switch (index) {

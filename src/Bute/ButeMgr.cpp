@@ -999,7 +999,7 @@ CButeValue* CButeValue::CopyValue(CButeValue* other) {
 // `operator delete` arm into a different scratch register (eax / ecx / edx), which
 // is not source-steerable from the switch body. Logic 100% correct; deferred to the
 // final sweep (documented switch/regalloc wall).
-RVA(0x00172160, 0x52)
+RVA(0x00172160, 0x80)
 CButeValue::~CButeValue() {
     switch (type) {
         case kButeString:

@@ -49,7 +49,7 @@
 // (locals-both 78.5 / host-inline+level-local 75.9 / both-inline 74.1); locals
 // banked. Deferred to the final sweep. See docs/patterns/
 // megafunction-cached-locals-vs-reload-regalloc.md.
-RVA(0x000cbcc0, 0x16da)
+RVA(0x000cbcc0, 0x1770)
 i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
     CPlay* self = this;
 
@@ -575,8 +575,7 @@ i32 CPlay::Vslot0c(i32 vk, i32 lparam) {
         CGameLevel* q = h->m_world->m_level;
         CDDrawWorkerHost* g = q->m_mainPlane;
         i32 by = ((g->m_viewRect.top - q->m_planeCtx.top + my) & ~0x1f) + 0x10;
-        i32 bx =
-            ((self->m_cursorX - q->m_planeCtx.left + g->m_viewRect.left) & ~0x1f) + 0x10;
+        i32 bx = ((self->m_cursorX - q->m_planeCtx.left + g->m_viewRect.left) & ~0x1f) + 0x10;
         g_gameReg->m_cmdGrid->LoadExplosionSprites(bx, by, -1, 1);
         return 1;
     }

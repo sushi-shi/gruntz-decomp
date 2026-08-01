@@ -303,7 +303,7 @@ void CBattlezDlgColors::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
 // ---------------------------------------------------------------------------
 // @early-stop
 // jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
-RVA(0x00015ac0, 0x46)
+RVA(0x00015ac0, 0x60)
 CWnd* CBattlezDlg::GetCtrlA(i32 index) {
     CWnd* result = 0;
     switch (index) {
@@ -325,7 +325,7 @@ CWnd* CBattlezDlg::GetCtrlA(i32 index) {
 
 // @early-stop
 // jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
-RVA(0x00015b40, 0x46)
+RVA(0x00015b40, 0x60)
 CWnd* CBattlezDlg::GetCtrlB(i32 index) {
     CWnd* result = 0;
     switch (index) {
@@ -347,7 +347,7 @@ CWnd* CBattlezDlg::GetCtrlB(i32 index) {
 
 // @early-stop
 // jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
-RVA(0x00015bc0, 0x46)
+RVA(0x00015bc0, 0x60)
 CWnd* CBattlezDlg::GetCtrlC(i32 index) {
     CWnd* result = 0;
     switch (index) {
@@ -369,7 +369,7 @@ CWnd* CBattlezDlg::GetCtrlC(i32 index) {
 
 // @early-stop
 // jump-table-data scoring artifact (code byte-exact) - docs/patterns/jumptable-data-overlap.md
-RVA(0x00015c40, 0x46)
+RVA(0x00015c40, 0x60)
 CWnd* CBattlezDlg::GetCtrlD(i32 index) {
     CWnd* result = 0;
     switch (index) {

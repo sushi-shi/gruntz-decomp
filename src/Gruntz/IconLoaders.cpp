@@ -40,7 +40,7 @@ i32 CBootyState::BuildBootyPerfectAnimation() {
 // jump-table-data-overlap scoring wall (~53%): code bytes byte-exact vs retail
 // (verified by raw byte-compare; only the index-table/jump-table base reloc
 // operands + $L labels differ). See docs/patterns/jumptable-data-overlap.md.
-RVA(0x0001e720, 0x2fe)
+RVA(0x0001e720, 0x400)
 void CMultiBootyState::BuildPowerupIconKeys(CString* reg, i32 key) {
     *reg = "GAME_INGAMEICONZ";
     switch (key) {

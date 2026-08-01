@@ -505,7 +505,7 @@ i32 CBootyState::CheckPerfectBonus() {
 // table pair lands in a `$L` COMDAT whose reloc operands can never match the delinked
 // self-relocs, and it is counted against the function (same artifact caps
 // CBootyState::FormatHudText in this TU).
-RVA(0x0001c210, 0x4b5)
+RVA(0x0001c210, 0x540)
 i32 CBootyState::Render() {
     IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (frameSurf == 0 || frameSurf->IsLost() != 0) {
