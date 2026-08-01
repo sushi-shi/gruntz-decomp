@@ -323,7 +323,8 @@ void CGrunt::ComputeFacing(double dt) {
     double dx = static_cast<double>(m_lastTilePxX) - static_cast<double>(h->m_screenX);
     double dy = static_cast<double>(m_lastTilePxY) - static_cast<double>(h->m_screenY);
     // retail zero-extends m_timePerTile to 64-bit before fild (unsigned->double)
-    m_400 = (sqrt(dx * dx + dy * dy) / static_cast<double>(static_cast<u32>(m_timePerTile))) * dt;
+    m_moveSpeed =
+        (sqrt(dx * dx + dy * dy) / static_cast<double>(static_cast<u32>(m_timePerTile))) * dt;
     m_408 = static_cast<double>(h->m_screenX);
     m_410 = static_cast<double>(h->m_screenY);
 }
@@ -1698,7 +1699,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         double ddy = static_cast<double>(newY) - this->m_object->m_screenY;
         double dist = sqrt(ddx * ddx + ddy * ddy);
         u32 kb = g_buteMgr.GetDwordDef(s_gruntSec, s_knockKey, 200);
-        m_400 = dist / static_cast<double>(kb);
+        m_moveSpeed = dist / static_cast<double>(kb);
         m_408 = static_cast<double>((this->m_object->m_screenX));
         m_410 = static_cast<double>((this->m_object->m_screenY));
 

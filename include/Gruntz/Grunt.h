@@ -72,6 +72,18 @@ extern GruntDirectionCell g_gruntDirNorthWest; // 0x00244b18
 extern GruntDirectionCell g_gruntDirCenter;    // 0x00244b38
 
 struct GruntEntranceCell {
+    // The +0x43c triple holds a compass-table entry, so it takes a whole
+    // GruntDirectionCell by assignment (retail's per-arm latch is one inlined
+    // operator= - `lea <base>,[this+0x43c]` then [base+4]/[base+8] - not three
+    // separate field stores). The name skew is this view's, not retail's:
+    // col/row/reason ARE the table's row/column/direction (3*row+column indexes
+    // the 3x3 compass grid; `reason` is the 1..8 direction code).
+    GruntEntranceCell& operator=(const GruntDirectionCell& d) {
+        col = d.row;
+        row = d.column;
+        reason = d.direction;
+        return *this;
+    }
     i32 col;
     i32 row;
     i32 reason;
@@ -745,7 +757,11 @@ public:
     i32 m_toyTime;   // +0x3f4
     i32 m_wingzTime; // +0x3f8
     char m_pad3fc[0x400 - 0x3fc];
-    double m_400;      // +0x400
+    // +0x400 the per-tick movement RATE (board units per frame tick). Every write is
+    // a distance/time quotient - LoadGruntMovingDeathConfig seeds it 16.0/MovingDeathTime,
+    // the combat path sqrt(dx^2+dy^2)/m_timePerTile*dt, the knockback path dist/kb - and
+    // both readers integrate it as `m_408/m_410 += frameDelta * dir * m_moveSpeed`.
+    double m_moveSpeed;
     double m_408;      // +0x408
     double m_410;      // +0x410
     i32 m_418;         // +0x418
@@ -1045,7 +1061,7 @@ public:
     // @0x597a0 (ret 0x20) - the combat-hit megahandler (GruntCombat.cpp): conversion
     // hit / death-touch damage, the hit/block launch-cue resolve, the knockback
     // direction-octant resolver + occupied-coord recycle. (Every offset it touches is
-    // this layout - m_31c, m_400..m_410.)
+    // this layout - m_31c, m_moveSpeed..m_410.)
     i32 LoadGruntCombatAnimations(
         i32 attackKind,
         i32 struckPose,

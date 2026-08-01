@@ -1470,7 +1470,7 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     ar->Write(&m_stamina, 4);
     ar->Write(&m_toyTime, 4);
     ar->Write(&m_wingzTime, 4);
-    ar->Write(&m_400, 8);
+    ar->Write(&m_moveSpeed, 8);
     ar->Write(&m_418, 4);
     ar->Write(&m_42c, 4);
     ar->Write(&m_430, 4);

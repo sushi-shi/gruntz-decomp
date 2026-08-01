@@ -167,14 +167,11 @@ DATA(0x0020ee64)
 static char s_MovingDeathTime[] = "MovingDeathTime";
 static const char s_animKeyS[] = "S";
 
-i32 g_moveVecE[3];  // 0x644aa0
-i32 g_moveVecN[3];  // 0x644ab0
-i32 g_moveVecS[3];  // 0x644ac0
-i32 g_moveVecW[3];  // 0x644ad0
-i32 g_moveVecNE[3]; // 0x644ae0
-i32 g_moveVecNW[3]; // 0x644b18
-i32 g_moveVecSE[3]; // 0x644b28
-i32 g_moveVecSW[3]; // 0x644b48
+// (the ex g_moveVec{E,N,S,W,NE,NW,SE,SW} i32[3] arrays were a SECOND, untyped
+// definition of the compass table already defined in GruntCombat.cpp as
+// g_gruntDir* - the addresses coincide exactly (E 0x644aa0, N 0x644ab0,
+// S 0x644ac0, W 0x644ad0, NE 0x644ae0, NW 0x644b18, SE 0x644b28, SW 0x644b48)
+// and retail's relocs here name the g_gruntDir* symbols. Dissolved.)
 
 static __inline i32 s_TileFlags(CGruntzMapMgr* b, i32 tx, i32 ty) {
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
@@ -1168,7 +1165,8 @@ i32 CGrunt::FinishEntranceMove() {
 // @early-stop
 RVA(0x0006a060, 0x43d)
 i32 CGrunt::LoadGruntMovingDeathConfig() {
-    m_400 = 16.0 / static_cast<double>(g_buteMgr.GetDwordDef(s_Grunt, s_MovingDeathTime, 0x3e8));
+    m_moveSpeed =
+        16.0 / static_cast<double>(g_buteMgr.GetDwordDef(s_Grunt, s_MovingDeathTime, 0x3e8));
 
     CGruntzMgr* g = g_gameReg;
     CState* state = g->m_curState;
@@ -1190,40 +1188,92 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 // Latch the compass velocity triple into m_entranceCell[0..2] + step the last-tile
 // pixel position. Case groups are laid out so cl emits the distinct (tail-merged)
 // blocks in retail's .text order (docs/patterns/switch-cases-source-order.md).
-#define MV_VEC(V)                                                                                  \
-    m_entranceCell.col = g_moveVec##V[0];                                                          \
-    m_entranceCell.row = g_moveVec##V[1];                                                          \
-    m_entranceCell.reason = g_moveVec##V[2]
+#define MV_VEC(V) m_entranceCell = g_gruntDir##V
 #define MV_N                                                                                       \
-    MV_VEC(N);                                                                                     \
+    MV_VEC(North);                                                                                 \
     m_lastTilePxY -= 0x10
 #define MV_S                                                                                       \
-    MV_VEC(S);                                                                                     \
+    MV_VEC(South);                                                                                 \
     m_lastTilePxY += 0x10
 #define MV_E                                                                                       \
-    MV_VEC(E);                                                                                     \
+    MV_VEC(East);                                                                                  \
     m_lastTilePxX += 0x10
 #define MV_W                                                                                       \
-    MV_VEC(W);                                                                                     \
+    MV_VEC(West);                                                                                  \
     m_lastTilePxX -= 0x10
 #define MV_NE                                                                                      \
-    MV_VEC(NE);                                                                                    \
+    MV_VEC(NorthEast);                                                                             \
     m_lastTilePxX += 0x10;                                                                         \
     m_lastTilePxY -= 0x10
 #define MV_NW                                                                                      \
-    MV_VEC(NW);                                                                                    \
+    MV_VEC(NorthWest);                                                                             \
     m_lastTilePxX -= 0x10;                                                                         \
     m_lastTilePxY -= 0x10
 #define MV_SE                                                                                      \
-    MV_VEC(SE);                                                                                    \
+    MV_VEC(SouthEast);                                                                             \
     m_lastTilePxX += 0x10;                                                                         \
     m_lastTilePxY += 0x10
 #define MV_SW                                                                                      \
-    MV_VEC(SW);                                                                                    \
+    MV_VEC(SouthWest);                                                                             \
     m_lastTilePxX -= 0x10;                                                                         \
     m_lastTilePxY += 0x10
 
-    if (sel >= 5) {
+    // retail branches `jge` on m_levelType and falls into the < 5 table, so the
+    // pre-5 (104..139) switch is the THEN arm; the >= 5 (99..138) table follows it.
+    if (sel < 5) {
+        switch (dir) {
+            case 0x69:
+            case 0x6a:
+                MV_S;
+                break;
+            case 0x6b:
+                MV_SW;
+                break;
+            case 0x78:
+                MV_W;
+                break;
+            case 0x86:
+            case 0x87:
+                MV_NW;
+                break;
+            case 0x89:
+            case 0x8a:
+                MV_N;
+                break;
+            case 0x82:
+            case 0x83:
+                MV_NE;
+                break;
+            case 0x73:
+                MV_E;
+                break;
+            case 0x68:
+                MV_SE;
+                break;
+            case 0x6c:
+            case 0x6d:
+                MV_SE;
+                break;
+            case 0x70:
+            case 0x71:
+                MV_SW;
+                break;
+            case 0x7b:
+                MV_E;
+                break;
+            case 0x80:
+                MV_W;
+                break;
+            case 0x88:
+                MV_NE;
+                break;
+            case 0x8b:
+                MV_NW;
+                break;
+            default:
+                return 0;
+        }
+    } else {
         switch (dir) {
             case 0x86:
             case 0x87:
@@ -1295,59 +1345,6 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
                 MV_NE;
                 break;
             case 0x8a:
-                MV_NW;
-                break;
-            default:
-                return 0;
-        }
-    } else {
-        switch (dir) {
-            case 0x69:
-            case 0x6a:
-                MV_S;
-                break;
-            case 0x6b:
-                MV_SW;
-                break;
-            case 0x78:
-                MV_W;
-                break;
-            case 0x86:
-            case 0x87:
-                MV_NW;
-                break;
-            case 0x89:
-            case 0x8a:
-                MV_N;
-                break;
-            case 0x82:
-            case 0x83:
-                MV_NE;
-                break;
-            case 0x73:
-                MV_E;
-                break;
-            case 0x68:
-                MV_SE;
-                break;
-            case 0x6c:
-            case 0x6d:
-                MV_SE;
-                break;
-            case 0x70:
-            case 0x71:
-                MV_SW;
-                break;
-            case 0x7b:
-                MV_E;
-                break;
-            case 0x80:
-                MV_W;
-                break;
-            case 0x88:
-                MV_NE;
-                break;
-            case 0x8b:
                 MV_NW;
                 break;
             default:

@@ -21,6 +21,10 @@
 // Naming both readings here keeps each of those slots honest without a pun at the site.
 union AddrWord {
     void* m_addr;
+    // The tile-span RECT the trigger grid rides through PlaceObject's 13th int slot
+    // and hands to CGrunt::Place's `span` parameter (LevelTileValidation builds it as
+    // `lea edx,[obj+0x134]`, i.e. &obj->m_extent.left).
+    struct tagRECT* m_rect;
     i32 m_word;
     u32 m_uword;
 };

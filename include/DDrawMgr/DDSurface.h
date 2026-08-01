@@ -284,6 +284,9 @@ public:
         i32 mode,
         i32 colorkey
     ); // 0x141240
+    // 0x141080 - the axis-aligned stretch blit: quad-from-two-rects onto
+    // RotateRasterize (a null srcRect means the whole source, inclusive).
+    i32 StretchBlit(CDDSurface* src, RECT* srcRect, RECT* dstRect, i32 mode, i32 colorkey);
 
     // 0x141280. The trailing 4 dwords are ONE by-value clip RECT, not four loose ints:
     // the sole retail call site (CPlay::DrawCursorSaveUnder @0xd0b30) sets it up with

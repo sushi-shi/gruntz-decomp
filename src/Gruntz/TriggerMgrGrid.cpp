@@ -42,6 +42,7 @@
 #include <Wwd/WwdFile.h>                   // CDDrawWorkerHost - the canonical plane (dims here)
 #include <Gruntz/Grunt.h>                  // real CGrunt (the grid cells)
 #include <Gruntz/GruntPuddle.h>            // the m_baseList element (ApplyTriggerA case 7)
+#include <AddrWord.h>                      // PlaceObject spanWord: a RECT address in an int slot
 
 #include <Gruntz/TriggerMgrViews.h> // the shared CTm* views + singleton externs
 
@@ -69,92 +70,237 @@ void CTriggerMgr::Cleanup() {
     ClearSelections();
 }
 
-// 0x6b6d0: PlaceObject - the tile-object placer/factory. Validates the (col,row) against the
-// plane bounds + the tile attribute mask (0x4000911), finds the first free grid column, then
-// by the supplied kind (a dense jump table mapping kind->internal id, with Wormhole/Entrance
-// special-cases that CreateSprite from the level factory + read the EntranceColor config),
-// stashes the new cell into the grid (+0x1c) and bumps the per-row/level counters. ret the
-// placed column (or -1). (__stdcall: ret 0x34.) Reconstructed to plateau.
+// 0x6b6d0 PlaceObject(row, x, y, z, mode, kindDefault, ...) - the trigger-grid
+// object placer. Validates the pixel position against the tile-grid attribute word,
+// finds the first free cell of `row`, creates the "Grunt" sprite through the level's
+// child-group factory and hands its LOGIC leaf to CGrunt::Place. Retail's kind table
+// only runs while g_gameReg->m_134 == 1 (the battlez-setup mode); otherwise, and for
+// any unlisted aiType, the caller's `kindDefault` passes through untouched. Returns the
+// placed column, or -1. (__thiscall, ret 0x34 = 13 stack args.)
+//
+// The 13th slot carries a tile-span RECT address riding an int (see <AddrWord.h> and
+// the LevelTileValidation call site) - it lands in Place's `span` parameter.
 // @early-stop
 RVA(0x0006b6d0, 0x3f4)
 i32 CTriggerMgr::PlaceObject(
-    i32 a8,
-    i32 ax,
-    i32 ay,
-    i32 col,
     i32 row,
-    i32 kind,
-    i32 a18,
-    i32 a1c,
-    i32 a20,
-    i32 a24,
-    i32 a28,
-    i32 a2c,
-    i32 a30
+    i32 x,
+    i32 y,
+    i32 z,
+    i32 mode,
+    i32 kindDefault,
+    i32 typeKind,
+    i32 vehicleKind,
+    i32 aiType,
+    i32 aiRadius,
+    i32 placeArg9,
+    i32 placeArg10,
+    i32 spanWord
 ) {
-    static_cast<void>(a8);
-    static_cast<void>(a18);
-    static_cast<void>(a24);
-    static_cast<void>(a28);
-    static_cast<void>(a2c);
-    if (m_world == 0) {
-        return -1;
-    }
-    i32 special = 0;
-    i32 wantSlot = 0;
-    if (a30 == 0x12) {
-        special = 0x100;
-        wantSlot = 1;
-    }
-    CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
-    i32 attr;
-    if ((ax >> 5) >= plane->m_width || (ay >> 5) >= plane->m_height) {
-        attr = 1;
-    } else {
-        attr = plane->m_rowInts[ay >> 5][(ax >> 5) * 7];
-    }
-    if ((attr & 0x4000911) != 0 && (special & attr) == 0) {
-        return -1;
-    }
-    if ((attr & 0x82) != 0 || (attr & 0x400) != 0) {
-        return -1;
-    }
-    if (wantSlot == 0 || (attr & 0x100) == 0) {
-        return -1;
-    }
-    if (a20 != 0) {
-        return -1;
-    }
-    // find the first free grid column of row `row`
-    CGrunt** rowBase = &m_grid[row * TM_GRID_COLS];
-    i32 free = 0;
-    if (*rowBase != 0) {
-        CGrunt** p = rowBase;
-        while (free < 15 && *p != 0) {
-            p++;
-            free++;
+    // retail reaches ONE shared `or eax,-1` epilogue from every pre-creation reject
+    // (cl does not cross-jump return blocks - the merge is a source-level single exit;
+    // the extra scope only lets the gotos jump OUT past the locals' initializers).
+    {
+        CDDrawSurfaceMgr* world = m_world;
+        if (world == 0) {
+            goto fail;
         }
+        i32 wantSlot = 0;
+        i32 special = 0;
+        if (typeKind == 0x12) {
+            special = 0x100;
+            wantSlot = 1;
+        }
+        CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
+        i32 tx = x >> 5;
+        i32 ty = y >> 5;
+        i32 attr;
+        if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_width)
+            || static_cast<u32>(ty) >= static_cast<u32>(plane->m_height)) {
+            attr = 1;
+        } else {
+            attr = plane->m_rowInts[ty][tx * 7];
+        }
+        if ((attr & 0x4000911) != 0 && (special & attr) == 0) {
+            goto fail;
+        }
+        if ((attr & 0x82) != 0) {
+            goto fail;
+        }
+        if ((attr & 0x400) != 0) {
+            goto fail;
+        }
+        // `col` is live from here on and doubles as retail's zero register for the
+        // two tests below (`cmp edi,ebx` / `cmp eax,ebx`, not `test`).
+        i32 col = 0;
+        i32 onSpecialTile;
+        if (wantSlot != col && (attr & 0x100) != 0) {
+            onSpecialTile = 1;
+            if (mode != col) {
+                goto fail;
+            }
+        } else {
+            onSpecialTile = 0;
+        }
+
+        // first free cell of `row`. The scan looks one cell AHEAD, so an empty head
+        // cell short-circuits it entirely; the col>=15 exit threads straight into the
+        // shared reject.
+        i32 base = row * TM_GRID_COLS;
+        if (m_grid[base] != 0) {
+            // retail re-derives the cell pointer from `row` here rather than reusing
+            // the cached `base` (`lea` x2 off edi, not off the stored product).
+            CGrunt** cells = &m_grid[row * TM_GRID_COLS];
+            do {
+                if (col >= TM_GRID_COLS) {
+                    goto fail;
+                }
+                cells++;
+                col++;
+            } while (*cells != 0);
+        }
+        if (col >= TM_GRID_COLS) {
+            goto fail;
+        }
+
+        CWwdGameObjectA* sprite = m_world->m_childGroup->CreateSprite(0, x, y, z, "Grunt", 0x40003);
+        if (sprite == 0) {
+            goto fail;
+        }
+        sprite->m_7c->m_notify(sprite);
+        CGrunt* logic = static_cast<CGrunt*>(sprite->m_7c->m_logic);
+
+        // The battlez-setup kind table. Emission order is source order and is load-bearing
+        // (retail's arms run 1..8, 10, 11, 9, 13, 14, 12, 15, 16).
+        i32 kindId;
+        if (g_gameReg->m_134 == 1) {
+            switch (aiType) {
+                case 1:
+                    kindId = 1;
+                    break;
+                case 2:
+                    kindId = 9;
+                    break;
+                case 3:
+                    kindId = 5;
+                    break;
+                case 4:
+                    kindId = 4;
+                    break;
+                case 5:
+                    kindId = 12;
+                    break;
+                case 6:
+                    kindId = 6;
+                    break;
+                case 7:
+                    kindId = 3;
+                    typeKind = 1;
+                    break;
+                case 8:
+                    kindId = 8;
+                    typeKind = 3;
+                    break;
+                case 10:
+                    kindId = 15;
+                    typeKind = 7;
+                    break;
+                case 11:
+                    kindId = 10;
+                    typeKind = 13;
+                    break;
+                case 9:
+                    kindId = 2;
+                    typeKind = 5;
+                    break;
+                case 13:
+                    kindId = 7;
+                    break;
+                case 14:
+                    kindId = 16;
+                    break;
+                case 12:
+                    kindId = 11;
+                    typeKind = 17;
+                    break;
+                case 15:
+                    kindId = 13;
+                    typeKind = 19;
+                    break;
+                case 16:
+                    kindId = 13;
+                    vehicleKind = 30;
+                    break;
+                default:
+                    kindId = kindDefault;
+                    break;
+            }
+        } else {
+            kindId = kindDefault;
+        }
+
+        GruntzPlayer* slot = &g_gameReg->m_options[row];
+        if (m_rowCount[row] >= slot->m_comboSel) {
+            goto fail;
+        }
+        if (slot->m_liveGate != 0
+            || (row != g_curPlayer && kindId == g_gameReg->m_options[g_curPlayer].m_008)) {
+            kindId = slot->m_008;
+        }
+        if (row == g_curPlayer && aiType != 0) {
+            aiType = 0;
+        }
+
+        AddrWord span;
+        span.m_word = spanWord;
+        if (logic->Place(
+                this,
+                row,
+                col,
+                kindId,
+                typeKind,
+                vehicleKind,
+                aiType,
+                aiRadius,
+                placeArg9,
+                placeArg10,
+                span.m_rect,
+                mode
+            )
+            == 0) {
+            logic->m_38->m_flags |= 0x10000;
+            return -1;
+        }
+
+        if (mode == 1) {
+            CWwdGameObjectA* hole =
+                m_world->m_childGroup->CreateSprite(0, x, y, 0, "Wormhole", 0x40003);
+            if (hole == 0) {
+                logic->m_38->m_flags |= 0x10000;
+                return -1;
+            }
+            hole->m_124 = g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 0xe);
+        } else if (mode == 3 || mode == 2) {
+            // retail threads the `== 3` arm past this re-test; the `== 2` arm reaches it
+            // and falls straight through to the tail.
+            if (mode == 3) {
+                logic->m_health = 0x19;
+            }
+        } else {
+            if (onSpecialTile != 0) {
+                logic->SetupTubeAnim(1);
+            }
+            WireTileSwitchLogic(logic, x, y);
+        }
+
+        m_grid[base + col] = logic;
+        m_rowCount[row] += 1;
+        m_cellFlag[base + col] = 0;
+        g_gameReg->m_scoreHud->m_counts[row] += 1;
+        return col;
     }
-    if (free >= 15) {
-        return -1;
-    }
-    CDDrawChildGroup* fac = m_world->m_childGroup;
-    CWwdGameObjectA* sprite = fac->CreateSprite(0, ax, ay, ay, "Grunt", 0x40003);
-    if (sprite == 0) {
-        return -1;
-    }
-    sprite->m_7c->m_notify(sprite);
-    // Same shape as CTriggerMgr::SpawnGrunt (0x7c110), and the same correction: the grid
-    // holds the sprite's LOGIC leaf, not the CreateSprite result (retail reassigns the
-    // register to aux->m_logic before the `mov [grid],reg`). It stored the sprite here too.
-    CGrunt* logic = static_cast<CGrunt*>(sprite->m_7c->m_logic);
-    // (the dense kind jump table -> internal id + the Wormhole / Entrance sub-ctors elide
-    // here; reconstructed to plateau)
-    m_grid[row * TM_GRID_COLS + free] = logic;
-    m_rowCount[row] += 1;
-    m_cellFlag[(row * TM_GRID_COLS + free)] = 0;
-    g_gameReg->m_scoreHud->m_counts[row] += 1;
-    return free;
+fail:
+    return -1;
 }
 
 RVA(0x0006bc20, 0x6f)

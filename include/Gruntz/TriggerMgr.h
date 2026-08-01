@@ -214,20 +214,25 @@ public:
     //   * arg7 is the KIND - @0x6b6ee `mov eax,[esp+0x38]; cmp eax,0x12`. But `kind` is
     //     declared on arg6, so every name from `col` rightwards is shifted by one.
     // The body is at ~28%, so it cannot arbitrate. Naming this now would cement the shift.
+    // 0x6b6d0 - place a new grid object in `row` at pixel (x,y). `mode` selects the
+    // post-placement wiring (1 = spawn a Wormhole entrance, 3 = seed health 0x19,
+    // 2 = nothing, otherwise tube-anim + WireTileSwitchLogic); `kindDefault` is the
+    // kind used unless the battlez-setup table (g_gameReg->m_134 == 1) remaps aiType.
+    // spanWord is a tile-span RECT address riding an int slot (<AddrWord.h>).
     i32 PlaceObject(
-        i32 a8,
-        i32 ax,
-        i32 ay,
-        i32 col,
         i32 row,
-        i32 kind,
-        i32 a18,
-        i32 a1c,
-        i32 a20,
-        i32 a24,
-        i32 a28,
-        i32 a2c,
-        i32 a30
+        i32 x,
+        i32 y,
+        i32 z,
+        i32 mode,
+        i32 kindDefault,
+        i32 typeKind,
+        i32 vehicleKind,
+        i32 aiType,
+        i32 aiRadius,
+        i32 placeArg9,
+        i32 placeArg10,
+        i32 spanWord
     );
 
     // 0x6bfd0: ResetCell(col, row, force) - if grid[col*15+row] (+0x1c) is a live cell,

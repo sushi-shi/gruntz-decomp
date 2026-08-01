@@ -13,6 +13,7 @@
 #include <string.h> // inline strcpy / memcpy / memset
 
 #include <Image/ImageRotate.h> // ImageRotateBlit (ex .cpp extern)
+#include <Image/RasterVtx.h>   // ClipVtx + RotateRasterize (StretchBlit's quad)
 #include <DDrawMgr/WallProject.h>
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
 
@@ -1919,10 +1920,47 @@ i32 CDDSurface::RotateBlit(
     return 1;
 }
 
-// @early-stop
+// StretchBlit (0x141080): the axis-aligned stretch path onto the polygon rasterizer.
+// It builds the CW quad {dst.tl, dst.tr, dst.br, dst.bl} whose (u,v) are the matching
+// corners of the source rect, then hands it to RotateRasterize with n=4 and the four
+// trailing clip args pinned to -1 (== "no clip rect", the arm RotateRasterize answers by
+// deriving the clip from dst->m_width/m_height itself). A null srcRect means the whole
+// source surface, INCLUSIVE: {0, 0, width-1, height-1}. The rasterizer's return is
+// discarded - retail always reports success.
 RVA(0x00141080, 0x174)
-i32 BuildRotateBlitTransform(void) {
-    return 0;
+i32 CDDSurface::StretchBlit(CDDSurface* src, RECT* srcRect, RECT* dstRect, i32 mode, i32 colorkey) {
+    RECT sr;
+    ClipVtx v[4];
+    // retail loads both extents into esi/edi ABOVE the null test and only decrements
+    // them in the else arm - the two reads are unconditional, the -1 is not.
+    i32 srcW = src->m_width;
+    i32 srcH = src->m_height;
+    if (srcRect != 0) {
+        sr = *srcRect;
+    } else {
+        sr.left = 0;
+        sr.right = srcW - 1;
+        sr.top = 0;
+        sr.bottom = srcH - 1;
+    }
+    v[0].x = static_cast<float>(dstRect->left);
+    v[0].y = static_cast<float>(dstRect->top);
+    v[0].u = static_cast<float>(sr.left);
+    v[0].v = static_cast<float>(sr.top);
+    v[1].x = static_cast<float>(dstRect->right);
+    v[1].y = static_cast<float>(dstRect->top);
+    v[1].u = static_cast<float>(sr.right);
+    v[1].v = static_cast<float>(sr.top);
+    v[2].x = static_cast<float>(dstRect->right);
+    v[2].y = static_cast<float>(dstRect->bottom);
+    v[2].u = static_cast<float>(sr.right);
+    v[2].v = static_cast<float>(sr.bottom);
+    v[3].x = static_cast<float>(dstRect->left);
+    v[3].y = static_cast<float>(dstRect->bottom);
+    v[3].u = static_cast<float>(sr.left);
+    v[3].v = static_cast<float>(sr.bottom);
+    RotateRasterize(v, 4, this, src, mode, colorkey, -1, -1, -1, -1);
+    return 1;
 }
 
 RVA(0x00141200, 0x39)
