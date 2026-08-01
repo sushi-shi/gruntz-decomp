@@ -545,11 +545,16 @@ TextExtent FontRenderer::MeasureText(CString text) {
     i32 i = 0;
     i32 width = 0;
     if (m_font == 0) {
-        ext.width = 0;
+        // Axes-matrix optimum (48 cells): the null-path stores go height-then-width
+        // AND `i` keeps its declaration initialiser instead of being re-zeroed in the
+        // for-init. Neither wins alone - the for-init change on its own REGRESSES
+        // (71.6); only the pair reaches 72.5, because retail coalesces the loop
+        // counter's initial 0 with the constant 0 those stores need (esi).
         ext.height = 0;
+        ext.width = 0;
         return ext;
     }
-    for (i = 0; i < text.GetLength(); i++) {
+    for (; i < text.GetLength(); i++) {
         Glyph g;
         u8 c = text[i];
         // retail reads the advance back through GetGlyph's RETURNED reference
