@@ -1,0 +1,36 @@
+{
+ "schema": 1,
+ "source": "src/Image/ImagePool.cpp",
+ "rva": "0x176840",
+ "axes": [
+  {
+   "name": "loop_shape",
+   "find": "    i32 wid = m_width;\n    i32 pairs = m_height / 2;\n    i32 x;\n    for (i32 i = 0; i < pairs; i++) {\n        for (x = 0; x < wid; x++) {\n            scratch[x] = m_pixels[i * wid + x];\n        }\n        // Formed HERE, between loop 1 and loop 2, and shared by loops 2 and 3 -\n        // retail computes it once per outer pass (`sub ecx,edi; dec ecx; imul\n        // ecx,esi`) and loop 3's preheader just reuses the register. m_height\n        // stays a member read: hoisting it to a local lets cl strength-reduce\n        // the bottom row into a -wid accumulator, which eliminates `i` outright\n        // and turns the outer latch into `dec/jne` where retail has `cmp/jl`.\n        i32 botOff = (m_height - i - 1) * wid;\n        for (x = 0; x < wid; x++) {\n            m_pixels[i * wid + x] = m_pixels[botOff + x];\n        }\n        for (x = 0; x < wid; x++) {\n            m_pixels[botOff + x] = scratch[x];\n        }\n    }\n",
+   "options": [
+    {
+     "name": "baseline_members_botoff_local"
+    },
+    {
+     "name": "no_botoff_local",
+     "replace": "    i32 wid = m_width;\n    i32 pairs = m_height / 2;\n    i32 x;\n    for (i32 i = 0; i < pairs; i++) {\n        for (x = 0; x < wid; x++) {\n            scratch[x] = m_pixels[i * wid + x];\n        }\n        for (x = 0; x < wid; x++) {\n            m_pixels[i * wid + x] = m_pixels[(m_height - i - 1) * wid + x];\n        }\n        for (x = 0; x < wid; x++) {\n            m_pixels[(m_height - i - 1) * wid + x] = scratch[x];\n        }\n    }\n"
+    },
+    {
+     "name": "hgt_hoisted_local",
+     "replace": "    i32 hgt = m_height;\n    i32 wid = m_width;\n    i32 pairs = hgt / 2;\n    i32 x;\n    for (i32 i = 0; i < pairs; i++) {\n        for (x = 0; x < wid; x++) {\n            scratch[x] = m_pixels[i * wid + x];\n        }\n        i32 botOff = (hgt - i - 1) * wid;\n        for (x = 0; x < wid; x++) {\n            m_pixels[i * wid + x] = m_pixels[botOff + x];\n        }\n        for (x = 0; x < wid; x++) {\n            m_pixels[botOff + x] = scratch[x];\n        }\n    }\n"
+    },
+    {
+     "name": "topoff_local_too",
+     "replace": "    i32 wid = m_width;\n    i32 pairs = m_height / 2;\n    i32 x;\n    for (i32 i = 0; i < pairs; i++) {\n        i32 topOff = i * wid;\n        for (x = 0; x < wid; x++) {\n            scratch[x] = m_pixels[topOff + x];\n        }\n        i32 botOff = (m_height - i - 1) * wid;\n        for (x = 0; x < wid; x++) {\n            m_pixels[topOff + x] = m_pixels[botOff + x];\n        }\n        for (x = 0; x < wid; x++) {\n            m_pixels[botOff + x] = scratch[x];\n        }\n    }\n"
+    },
+    {
+     "name": "botoff_before_loop1",
+     "replace": "    i32 wid = m_width;\n    i32 pairs = m_height / 2;\n    i32 x;\n    for (i32 i = 0; i < pairs; i++) {\n        i32 botOff = (m_height - i - 1) * wid;\n        for (x = 0; x < wid; x++) {\n            scratch[x] = m_pixels[i * wid + x];\n        }\n        for (x = 0; x < wid; x++) {\n            m_pixels[i * wid + x] = m_pixels[botOff + x];\n        }\n        for (x = 0; x < wid; x++) {\n            m_pixels[botOff + x] = scratch[x];\n        }\n    }\n"
+    },
+    {
+     "name": "botoff_row_times_wid",
+     "replace": "    i32 wid = m_width;\n    i32 pairs = m_height / 2;\n    i32 x;\n    for (i32 i = 0; i < pairs; i++) {\n        for (x = 0; x < wid; x++) {\n            scratch[x] = m_pixels[i * wid + x];\n        }\n        i32 botRow = m_height - i - 1;\n        for (x = 0; x < wid; x++) {\n            m_pixels[i * wid + x] = m_pixels[botRow * wid + x];\n        }\n        for (x = 0; x < wid; x++) {\n            m_pixels[botRow * wid + x] = scratch[x];\n        }\n    }\n"
+    }
+   ]
+  }
+ ]
+}
