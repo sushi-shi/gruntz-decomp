@@ -3,7 +3,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Wap32/ZVec.h> // _zvec::GrowTo (Find 0x16da80)
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/Grunt.h> // CGrunt - HitTestCell returns the placed cell (ex CTrigger pad view)
+#include <Gruntz/Grunt.h>     // CGrunt - HitTestCell returns the placed cell (ex CTrigger pad view)
 #include <Gruntz/GameLevel.h> // canonical CGameLevel/CDDrawWorkerHost (m_world->m_level visible rect)      // CTriggerMgr::HitTestCell (0x75af0) / CellDispatch (0x6bcb0)
 #include <Gruntz/GruntSpawnConfig.h>  // CGruntSpawnConfig::SpawnVoiceDriver (the cue)
 #include <Gruntz/GameRegistry.h>      // the canonical *0x24556c singleton (m_world/m_cmdGrid/
@@ -76,7 +76,12 @@ RVA_COMPGEN(0x00010c50, 0x44, ??1CSecretLevelTrigger@@UAE@XZ)
 
 RVA(0x00041e90, 0x1ac)
 CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    if (g_gameReg->m_isEasyMode == 0 && g_gameReg->m_134 == 1) {
+    // `!= 0`, not `== 0`: retail gates this with `cmp [g_gameReg+0x118],ebx / je <else>`
+    // (jcc_sieve POLARITY #1, base jne -> target je). Every other site in the tree already
+    // spells the same predicate this way - PathHazard.cpp:299 and GruntCombat.cpp:1362
+    // as `m_isEasyMode != 0 && m_134 == 1`, and SpotLightCtor/PathHazard:166/KitchenSlime
+    // as its negation `m_isEasyMode == 0 || m_134 != 1`. This ctor was the odd one out.
+    if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
         m_38->m_flags |= 0x10000;
     } else {
         m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
@@ -189,14 +194,16 @@ void CSecretLevelTrigger::RegisterActs() {
         *slot = "A";
         g_typeCounter++;
     }
-    (*((CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(id)))) = static_cast<i32 (CUserLogic::*)()>(&CSecretLevelTrigger::Tick);
+    (*((CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CSecretLevelTrigger::Tick);
 }
 
 RVA(0x00042ac0, 0x90)
 i32 CSecretLevelTrigger::Tick() {
     i32 outA, outB;
     CWwdGameObjectA* spr = m_object;
-    CGrunt* hit = g_gameReg->m_cmdGrid->HitTestCell(spr->m_screenX, spr->m_screenY, &outB, &outA, 1);
+    CGrunt* hit =
+        g_gameReg->m_cmdGrid->HitTestCell(spr->m_screenX, spr->m_screenY, &outB, &outA, 1);
     if (hit) {
         spr = m_object;
         i32 ok = 1;
@@ -247,8 +254,8 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             i32 ey = eo->m_screenY;
             i32 ex = eo->m_screenX;
             CDDrawWorkerHost* rc = g->m_world->m_level->m_mainPlane;
-            if (ex < rc->m_viewRect.right && ex >= rc->m_viewRect.left
-                && ey < rc->m_viewRect.bottom && ey >= rc->m_viewRect.top) {
+            if (ex < rc->m_viewRect.right && ex >= rc->m_viewRect.left && ey < rc->m_viewRect.bottom
+                && ey >= rc->m_viewRect.top) {
                 g->m_cueSink->SpawnVoiceDriver(hit, 0x3fc, -1, 0, -1, -1);
             }
         }
