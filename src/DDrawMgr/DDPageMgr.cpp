@@ -245,20 +245,33 @@ void CMoviePlayer::Teardown() {
     ShowCursor(1);
 }
 
+// @early-stop
+// 70.73 -> 82.32 (jcc sieve, 2026-08-01): two source-shape bugs - `flags` is
+// assign-then-override (retail hoists the 0 above the compare) and m_514 is latched
+// BEFORE the sound-mode call, not after it. Residual: retail duplicates BOTH guard
+// exits inline (`jne` over its own `pop/pop/pop; ret 0x14`) where cl cross-jumps
+// them onto the shared tail, and it keeps the Configure result live in edi
+// (`mov edi,eax; test edi,edi` ... `mov eax,edi`) where cl folds it to a literal 0
+// on the cleanup path. Same residual in the OpenHi twin below.
 RVA(0x0017c570, 0xc0)
 i32 CMoviePlayer::OpenLo(const char* src, i32 mode, i32 useDS, POINT* origin, RECT* rect) {
     if (!m_initialized) {
         return 0;
     }
-    SmackSoundUseDirectSound(m_directSound);
+    // m_514 is latched BEFORE the sound-mode call: retail's `mov [esi+0x514],edi`
+    // sits inside the call's argument setup, not after the call returns.
     m_514 = mode;
-    u32 flags;
+    SmackSoundUseDirectSound(m_directSound);
+    // ASSIGN-then-override: retail hoists `flags = 0` above the compare
+    // (`xor eax,eax / cmp ebx,1 / jne`), so the else arm only stores m_useDS and
+    // does it with an immediate. Zeroing `flags` inside the else arm instead makes
+    // cl reuse that register for the m_538 store.
+    u32 flags = 0;
     if (useDS == 1) {
         m_useDS = useDS;
         flags = 0x100000;
     } else {
         m_useDS = 0;
-        flags = 0;
     }
     flags |= 0xfe000;
     m_smackHandle = SmackOpen(src, flags, -1);
@@ -287,15 +300,17 @@ i32 CMoviePlayer::OpenHi(i32 srcHandle, i32 mode, i32 useDS, POINT* origin, RECT
     if (!m_initialized) {
         return 0;
     }
-    SmackSoundUseDirectSound(m_directSound);
+    // m_514 is latched BEFORE the sound-mode call: retail's `mov [esi+0x514],edi`
+    // sits inside the call's argument setup, not after the call returns.
     m_514 = mode;
-    u32 flags;
+    SmackSoundUseDirectSound(m_directSound);
+    // ASSIGN-then-override, as in OpenLo above.
+    u32 flags = 0;
     if (useDS == 1) {
         flags = 0x100000;
         m_useDS = useDS;
     } else {
         m_useDS = 0;
-        flags = 0;
     }
     flags |= 0xff000;
     // CFecFile::Lookup hands back m_stream.m_hFile (a Win32 file HANDLE) and Smack's

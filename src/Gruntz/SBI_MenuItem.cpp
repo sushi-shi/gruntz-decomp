@@ -25,12 +25,11 @@ VTBL(CSBI_MenuItem, 0x001eab4c); // vtable_names -> code (RTTI game class)
 // CSBI_MenuItem::InitItem - configure the menu entry from its config record,
 // then resolve its initial frame (ResolveFrame). 11-arg __thiscall (ret 0x2c).
 // @early-stop
-// scheduling/regalloc wall (~61%): logic + arg count byte-correct (ret 0x2c, the
-// 13 field stores, the neg/sbb/neg bool-normalized ResolveFrame tail). The
-// residual is MSVC's store schedule: retail CSEs `lea edx,[ecx+0x14]` and writes
-// the m_14..m_20 block through edx, and inlines the first guard's return (sharing
-// only the last two); the recompile writes the fields directly + shares one fail
-// tail. Not steerable from C; deferred to the final sweep.
+// 61 -> 67.8 -> 92.17. The `lea edx,[ecx+0x14]` block was NOT a schedule artifact:
+// the rect is copied as a WHOLE STRUCT (`m_rect14 = rc;`), which is what makes cl
+// CSE the destination into edx. Residual is ONE block: retail duplicates the
+// key-null guard's `xor eax,eax; pop esi; ret 0x2c` inline (jne over it) where cl
+// cross-jumps it onto the shared tail the other two guards use.
 RVA(0x000e80e0, 0x8c)
 i32 CSBI_MenuItem::SetupImage(
     CStatusBarMgr* owner,
@@ -54,11 +53,11 @@ i32 CSBI_MenuItem::SetupImage(
     m_tab = tab;
     m_kind = 2;
     m_frame = 0;
-    m_rect14.left = rc.left;
+    // WHOLE-struct assignment: retail CSEs the destination into `lea edx,[ecx+0x14]`
+    // and writes [edx]/[edx+4]/[edx+8]/[edx+0xc], which only a struct copy gives -
+    // field-by-field stores keep the disp8 [ecx+N] forms.
+    m_rect14 = rc;
     m_28 = 0;
-    m_rect14.top = rc.top;
-    m_rect14.right = rc.right;
-    m_rect14.bottom = rc.bottom;
     m_cmd = cmd;
     m_state = 1;
     m_enabled = 1;

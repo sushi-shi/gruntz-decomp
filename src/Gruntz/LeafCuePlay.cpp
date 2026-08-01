@@ -6,26 +6,21 @@
 #include <Gruntz/LeafCue.h>         // LeafCue (the sound-cue leaf)
 #include <Dsndmgr/DirectSoundMgr.h> // DSoundCloneInst::ConfigureItem (0x1360d0)
 
-// @early-stop
-// 66% -- split-epilogue wall (twin of RefreshAsset's 100% idiom, but 4-arg):
-// the gate/interval guards, the wrap-safe clock compare, the clock restamp, and the
-// identical 4-arg push sequence into ConfigureItem all match. MSVC5 here MERGES the
-// two guard-failure `return 0` exits into one shared `pop esi; ret 0x10` tail
-// (je/jb to a shared epilogue) where retail emits each failure as its own inline
-// `xor eax; pop esi; ret 0x10` (jne/jae split). The ConfigureItem callee is
-// reloc-masked (CStatusBarMgr vs LeafCuePlayer at the same 0x1360d0). Not source-
-// steerable (tried flat + nested guard forms). Logic complete.
 RVA(0x0001f940, 0x4c)
 // The four forwarded words are DSoundCloneInst::ConfigureItem's own (vol, pan, freqPct,
 // loop) @0x1360d0 - it hands them to SetVolumeByIndex / SetPanByIndex / SetField2 /
 // SetField3 in that order.
+// BOTH guards are EARLY RETURNS. Retail gives each failure its own inline
+// `xor eax,eax; pop esi; ret 0x10` because each `return 0` is the taken-branch
+// fallthrough of its own guard; wrapping the tail in `if (elapsed >= window) {...}`
+// with one trailing `return 0` makes cl share a single epilogue instead.
 i32 LeafCue::PlayIfElapsed(i32 vol, i32 pan, i32 freqPct, i32 loop) {
     if (g_sndEnabled == 0) {
         return 0;
     }
-    if (g_killCueClock - static_cast<u32>(m_14) >= static_cast<u32>(m_18)) {
-        m_14 = g_killCueClock;
-        return m_10->ConfigureItem(vol, pan, freqPct, loop);
+    if (g_killCueClock - static_cast<u32>(m_14) < static_cast<u32>(m_18)) {
+        return 0;
     }
-    return 0;
+    m_14 = g_killCueClock;
+    return m_10->ConfigureItem(vol, pan, freqPct, loop);
 }

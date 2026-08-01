@@ -188,27 +188,35 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 flags) {
 // reused as the geometry base, stored to m_surface LAST); MSVC on this identical
 // source pins src in eax and schedules the m_surface store early. Same values/order.
 // Not source-steerable (permuter 180-iter marginal). docs/patterns/zero-register-pinning.md.
+// 2026-08-01: retail has 3 rets to our 2 - it duplicates the null guard's exit
+// inline where cl cross-jumps it onto the geometry guard's shared tail. Rewriting
+// the body to early-return + one `||` (retail's exact statement shape, below) is
+// BYTE-IDENTICAL to the old nested form, so the merge is cl's, not the source's.
 RVA(0x00163db0, 0x64)
 i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
-    if (src != 0) {
-        i32 w = src->m_width;
-        i32 bpp = src->m_bitDepth;
-        i32 h = src->m_height;
-        if (w > 0 && h > 0) {
-            m_width = w;
-            m_srcRect[2] = w;
-            m_height = h; // retail stores m_height BEFORE m_bpp (0x14 then 0x18)
-            m_bpp = bpp;
-            m_srcRect[0] = 0;
-            m_srcRect[1] = 0;
-            m_srcRect[3] = h;
-            m_id = 0x63;
-            m_surface = src;
-            m_ownsSurface = 0;
-            return 1;
-        }
+    // Early return with its OWN inline block (retail `jne`), then the geometry
+    // pair as ONE `||` sharing the tail block - retail has 3 rets, the nested
+    // `if (src) { if (w>0 && h>0) {...} } return 0;` shape only 2.
+    if (src == 0) {
+        return 0;
     }
-    return 0;
+    i32 w = src->m_width;
+    i32 bpp = src->m_bitDepth;
+    i32 h = src->m_height;
+    if (w <= 0 || h <= 0) {
+        return 0;
+    }
+    m_width = w;
+    m_srcRect[2] = w;
+    m_height = h; // retail stores m_height BEFORE m_bpp (0x14 then 0x18)
+    m_bpp = bpp;
+    m_srcRect[0] = 0;
+    m_srcRect[1] = 0;
+    m_srcRect[3] = h;
+    m_id = 0x63;
+    m_surface = src;
+    m_ownsSurface = 0;
+    return 1;
 }
 
 // The slot-7 Unload override (ex "TeardownSurface"): release the owned surface

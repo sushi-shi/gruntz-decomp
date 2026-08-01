@@ -318,30 +318,20 @@ i32 CChatBox::Draw(CDDrawSurfacePair* target, CMenuItem* sprite, i32 x0, i32 y0)
     }
     if (m_row0Frame) {
         i32 x = -(sprite->GetFrameWidth() / 2) - m_row0Offset + anchorX;
-        m_row0Frame->RenderFrame(
-            target,
-            x,
-            anchorY,
-            0
-        );
+        m_row0Frame->RenderFrame(target, x, anchorY, 0);
     }
     if (m_row1Frame) {
         i32 x = sprite->GetFrameWidth() / 2 + m_row1Offset + anchorX;
-        m_row1Frame->RenderFrame(
-            target,
-            x,
-            anchorY,
-            0
-        );
+        m_row1Frame->RenderFrame(target, x, anchorY, 0);
     }
     return 1;
 }
 
 // @early-stop
-// shrink-wrap + scheduling wall: body byte-exact, but retail DEFERS the
-// `push edi/esi` past the empty-key guard (and uses 2 callee-saved regs for the
-// elapsed-time compare); MSVC saves them in the prologue, shifting the whole BB
-// layout. Logic complete. ~63%.
+// shrink-wrap wall: retail DEFERS the `push edi/esi` past the empty-key guard,
+// giving that guard its own one-pop epilogue; cl saves both in the prologue and
+// shares one exit. The play tail RETURNS the ConfigureItem result (retail leaves
+// the callee's eax alone - no `xor eax,eax` before the epilogue).
 // scroll row0's sprite one tick if its scroll interval has elapsed.
 RVA(0x00183030, 0x7b)
 i32 CChatBox::ScrollRow0() {
@@ -349,32 +339,25 @@ i32 CChatBox::ScrollRow0() {
         return 0;
     }
     CDDrawSubMgrLeafScan* roster = m_page->m_soundRegistry;
-    if (roster->m_emitGate) {
-        return 0;
+    if (!roster->m_emitGate) {
+        void* t_ob = 0;
+        roster->m_10.Lookup(static_cast<const char*>(m_row0Key), t_ob);
+        LeafCue* t = static_cast<LeafCue*>(t_ob);
+        if (t != 0 && g_sndEnabled != 0) {
+            i32 delta = g_sndCueTag;
+            i32 clock = g_killCueClock;
+            u32 elapsed = static_cast<u32>(clock) - static_cast<u32>(t->m_14);
+            if (elapsed >= static_cast<u32>(t->m_18)) {
+                t->m_14 = clock;
+                return t->m_10->ConfigureItem(delta, 0, 0, 0);
+            }
+        }
     }
-    void* t_ob = 0;
-    roster->m_10.Lookup(static_cast<const char*>(m_row0Key), t_ob);
-    LeafCue* t = static_cast<LeafCue*>(t_ob);
-    if (!t) {
-        return 0;
-    }
-    if (!g_sndEnabled) {
-        return 0;
-    }
-    i32 delta = g_sndCueTag;
-    i32 clock = g_killCueClock;
-    u32 elapsed = static_cast<u32>(clock) - static_cast<u32>(t->m_14);
-    if (elapsed < static_cast<u32>(t->m_18)) {
-        return 0;
-    }
-    t->m_14 = clock;
-    t->m_10->ConfigureItem(delta, 0, 0, 0);
     return 0;
 }
 
 // @early-stop
-// shrink-wrap + scheduling wall (same as ScrollRow0): body byte-exact, retail
-// defers the `push edi/esi` past the empty-key guard. Logic complete. ~63%.
+// shrink-wrap wall, twin of ScrollRow0 (same play tail, same deferred pushes).
 // scroll row1's sprite one tick if its scroll interval has elapsed.
 RVA(0x001830b0, 0x7b)
 i32 CChatBox::ScrollRow1() {
@@ -382,26 +365,20 @@ i32 CChatBox::ScrollRow1() {
         return 0;
     }
     CDDrawSubMgrLeafScan* roster = m_page->m_soundRegistry;
-    if (roster->m_emitGate) {
-        return 0;
+    if (!roster->m_emitGate) {
+        void* t_ob = 0;
+        roster->m_10.Lookup(static_cast<const char*>(m_row1Key), t_ob);
+        LeafCue* t = static_cast<LeafCue*>(t_ob);
+        if (t != 0 && g_sndEnabled != 0) {
+            i32 delta = g_sndCueTag;
+            i32 clock = g_killCueClock;
+            u32 elapsed = static_cast<u32>(clock) - static_cast<u32>(t->m_14);
+            if (elapsed >= static_cast<u32>(t->m_18)) {
+                t->m_14 = clock;
+                return t->m_10->ConfigureItem(delta, 0, 0, 0);
+            }
+        }
     }
-    void* t_ob = 0;
-    roster->m_10.Lookup(static_cast<const char*>(m_row1Key), t_ob);
-    LeafCue* t = static_cast<LeafCue*>(t_ob);
-    if (!t) {
-        return 0;
-    }
-    if (!g_sndEnabled) {
-        return 0;
-    }
-    i32 delta = g_sndCueTag;
-    i32 clock = g_killCueClock;
-    u32 elapsed = static_cast<u32>(clock) - static_cast<u32>(t->m_14);
-    if (elapsed < static_cast<u32>(t->m_18)) {
-        return 0;
-    }
-    t->m_14 = clock;
-    t->m_10->ConfigureItem(delta, 0, 0, 0);
     return 0;
 }
 
