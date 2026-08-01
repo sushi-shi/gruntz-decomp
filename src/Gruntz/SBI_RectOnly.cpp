@@ -1834,7 +1834,7 @@ void CStatusBarMgr::ExitMode() {
 // those are memsets, not unrolled per-element loops - and walks a base pointer for the
 // case-4 / case-5 pointer runs (`lea ecx,[this+0x204]` + [ecx+0..0x10]).
 // @early-stop
-RVA(0x00100b00, 0x139)
+RVA(0x00100b00, 0x150)
 void CStatusBarMgr::ClearTabGroup() {
     if (m_activeTab == 0) {
         return;
@@ -1909,7 +1909,7 @@ void CStatusBarMgr::ClearTabGroup() {
 // rest, gated per case by m_hlBusy (busy => early-return 1). Banks A (1-5), B
 // (0x1f4-0x1fa), C (0x324/0x325), D (0x327/0x328). `state` is the sprite index arg.
 // @early-stop
-RVA(0x00100d70, 0x519)
+RVA(0x00100d70, 0x548)
 i32 CStatusBarMgr::SetTabState(i32 tab, i32 state) {
     if (m_tabSprite0 == 0 || m_tabSprite1 == 0 || m_tabSprite2 == 0 || m_tabSprite3 == 0
         || m_tabSprite4 == 0) {
@@ -3059,7 +3059,7 @@ static __inline void HiPost(i32 cmdId) {
 // resource/gruntz/game tabs gate on m_354 + the active object's tab-highlight-enable
 // flag (m_68->m_400). Returns 1 (0 on an out-of-range command).
 // @early-stop
-RVA(0x000fe910, 0xb8e)
+RVA(0x000fe910, 0xc2c)
 i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
     CStatusBarItem* w = HitTestRects(a2, a3);
     if (w == 0) {
@@ -3446,7 +3446,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
 // the REZBELTRETURN/REZBELTBACKUP cues on the gauge tab. After the switch each slot's
 // notifier is fired with the current counter.
 // @early-stop
-RVA(0x00105990, 0x398)
+RVA(0x00105990, 0x3b4)
 void CStatusBarMgr::UpdateRezConveyorStatusBar() {
     i32 count = 3;
     CSBI_ImageSet** notify = m_groupNotify;
@@ -3580,7 +3580,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
 // found) or DROP (full), arming m_groupSlots[col] + playing the cue. Then set the
 // conveyor-belt timer, feed the snooze/lever stat, and refresh the display object.
 // @early-stop
-RVA(0x00105e40, 0x62c)
+RVA(0x00105e40, 0x63c)
 void CStatusBarMgr::LoadRezMachineConfig() {
     CSbiHlRow* pA = &m_machineB;
     CSbiHlRow* pB = &m_machineA;
@@ -3800,7 +3800,7 @@ void CStatusBarMgr::UpdateRezMachineSnoozeStatusBar() {
 // latched per phase; the tail pushes the composed rect into the falling-item notifier
 // and fires the fall-rect refresh.
 // @early-stop
-RVA(0x00106bb0, 0x7bc)
+RVA(0x00106bb0, 0x7d8)
 void CStatusBarMgr::LoadChipMachineConfig() {
     i32 refreshFlag = 0;
     i32 rectFlag = 0;

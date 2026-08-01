@@ -602,6 +602,14 @@ void CDroppedObject::RegisterActs() {
 // all landed cases apply the LEVEL_DROPPEDOBJECTHIT geometry, intern the "B"
 // activation key, and post the tile-hit event to the registry's tile-manager.
 //
+// The 0x21b claim is SHORT on purpose. Retail's `jmp [eax*4+0x4c7...]` jump table sits
+// at 0xc72ac (five entries, ending 0xc72c0) and is genuinely part of this COMDAT, so
+// the true extent is 0x230; claiming it scores this function 92.55 -> 96.45. But the
+// delinker then drops the DIR32 on CDroppedObject::UserLogicVfunc5 @0xc7350, whose
+// first instruction is `mov eax,[0x6bf3bc]` (_g_engineFrameDelta) - assert_relocs goes
+// 0 -> 1 WRONG. Reloc fidelity outranks the 3.9 points, so the table stays outside
+// until the delinker handles a carve that ends this close to a 144-byte int3 gap.
+//
 // @early-stop
 RVA(0x000c7090, 0x21b)
 i32 CDroppedObject::ActA() {

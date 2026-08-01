@@ -99,7 +99,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
 // advances m_stepIndex across the players, seeding an inline-RNG cue on completion.
 // ===========================================================================
 // @early-stop
-RVA(0x0001b690, 0x7bf)
+RVA(0x0001b690, 0x7e0)
 i32 CBootyState::UpdateBootyWalkingGruntz() {
     CBattlezData* rec = g_gameReg->m_scoreHud;
     if (rec->m_08 != 0) {

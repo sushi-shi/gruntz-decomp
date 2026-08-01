@@ -82,7 +82,7 @@ void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32
 // to the main window (WM_COMMAND 0x807e) and closes.
 //
 // @early-stop
-RVA(0x0009e390, 0x243)
+RVA(0x0009e390, 0x2bc)
 i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
     i32 idx = -1;
     switch (cmdId) {

@@ -1957,7 +1957,7 @@ i32 CMulti::PollSession() {
 }
 
 // @early-stop
-RVA(0x000b9750, 0x74e)
+RVA(0x000b9750, 0x810)
 i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
     // the receive buffer at its wire shapes (see CNetWireMsg in <Net/NetMgr.h>)
     CNetWireMsg wire;

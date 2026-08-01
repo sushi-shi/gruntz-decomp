@@ -1256,7 +1256,7 @@ i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* ar, i32 typeId) {
 // the matching factory; then build + link each object's child record.
 // ===========================================================================
 // @early-stop
-RVA(0x0015ad30, 0x2be)
+RVA(0x0015ad30, 0x2ec)
 i32 CDDrawChildGroup::LoadObjects(CFileMemBase* reader, u32 count, i32 unused) {
     i32 savedCounter = 0;
     if (reader == 0) {

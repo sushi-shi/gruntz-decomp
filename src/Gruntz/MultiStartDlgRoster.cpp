@@ -751,7 +751,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
 }
 
 // @early-stop
-RVA(0x000c46b0, 0x371)
+RVA(0x000c46b0, 0x384)
 void CMultiStartDlg::Watchdog() {
     if (g_watchBusy != 0) {
         return;

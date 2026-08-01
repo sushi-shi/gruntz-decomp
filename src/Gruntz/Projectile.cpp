@@ -227,7 +227,7 @@ enum ProjectileKind {
 };
 
 // @early-stop
-RVA(0x000df050, 0x6ba)
+RVA(0x000df050, 0x6ed)
 i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1) {
     CString key;
     m_srcRow = a;
@@ -458,7 +458,7 @@ void CProjectile::RegisterType() {
 // (WINGZ, kind 0x16, additionally loops its flight sound while over the level.)
 //
 // @early-stop
-RVA(0x000dfd00, 0x6f5)
+RVA(0x000dfd00, 0x70c)
 void CProjectile::MovingSlot16() {
     if (m_arrived != 0) {
         return;

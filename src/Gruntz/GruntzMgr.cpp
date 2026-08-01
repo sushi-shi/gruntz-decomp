@@ -281,7 +281,7 @@ CMulti::CMulti() {
 // ===========================================================================
 // CGruntzMgr::TransitionState (0x8b960) - see the file header.
 // @early-stop
-RVA(0x0008b960, 0x7c4)
+RVA(0x0008b960, 0x808)
 i32 CGruntzMgr::TransitionState(i32 stateId, i32 areaArg, i32 keepCurrent, i32 unused) {
     static_cast<void>(unused);
     CState* cur = m_curState;

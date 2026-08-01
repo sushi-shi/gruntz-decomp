@@ -319,7 +319,7 @@ i32 CKitchenSlime::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObje
 }
 
 // @early-stop
-RVA(0x000b3160, 0x339)
+RVA(0x000b3160, 0x35c)
 i32 CKitchenSlime::LoadSprites() {
     i32 savedDir = Level()->m_124;
 

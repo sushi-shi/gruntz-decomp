@@ -10,7 +10,7 @@
 // fold every team object's fields into a 32-bit game-state signature.
 //
 // @early-stop
-RVA(0x000c0590, 0x1c3)
+RVA(0x000c0590, 0x21c)
 i32 CNetSession::Checksum() {
     i32 sum = 0;
     i32 idx = 0;

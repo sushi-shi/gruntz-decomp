@@ -432,7 +432,7 @@ typedef enum TextColorRef {
 // bottom so the next line stacks below. Text color is reset to white each line.
 // -------------------------------------------------------------------------
 // @early-stop
-RVA(0x00022360, 0x2f4)
+RVA(0x00022360, 0x338)
 i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
     if (hdc == 0) {
         return 0;

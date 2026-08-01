@@ -6,7 +6,7 @@
 #include <DinMgr2/InputMgrPtr.h> // g_inputMgr (DirectInputMgr2* view; the one decl)
 #include <MsgParam.h> // the window-message parameter's pointer/word pair (after the MFC umbrella)
 
-RVA(0x000387c0, 0xc0)
+RVA(0x000387c0, 0xd4)
 CString CInputConfig::LoadInputDeviceConfig(i32 unused) {
     CString name("None");
     switch (m_deviceId) {

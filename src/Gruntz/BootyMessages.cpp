@@ -212,7 +212,7 @@ i32 CBootyState::ShowSecretBonusMessage() {
 // idiom) reusing the shared CBootyState helpers above.
 // ===========================================================================
 // @early-stop
-RVA(0x0001ce60, 0x450)
+RVA(0x0001ce60, 0x460)
 i32 CBootyState::BuildBootyGruntIdleAnimation() {
     i32 state = m_activation;
     if (state != 0xc7 && state != 0xc8) {

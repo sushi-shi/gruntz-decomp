@@ -423,7 +423,7 @@ CTileActionEvent* CTileTriggerContainer::AddToList3(
 // appends it to m_list3.  Returns the mark, or 0 on alloc/double-init failure.
 // ---------------------------------------------------------------------------
 // @early-stop
-RVA(0x00116b80, 0x105)
+RVA(0x00116b80, 0x120)
 CTileActionEvent* CTileTriggerContainer::AddToList3Switch(
     i32 actionCode,
     i32 tileX,
@@ -820,9 +820,15 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pO
 // on the ELEMENT - retail: `mov ecx,edi; call 0x277f`); returns whether the apply
 // succeeded (0 for the null object or an out-of-range tag).  __stdcall helper of
 // the container's serialize walk (117280).
+// Retail lowers the tag test as a JUMP TABLE: `lea eax,[ecx-1]; cmp eax,7; ja
+// 0x1176ab; jmp [eax*4+0x5176b4]`, and that eight-entry table at 0x1176b4 is part of
+// this COMDAT - hence the 0xa4 extent. cl5 merges our two identical arms and emits a
+// `cmp eax,7 / cmp eax,8` range test with no table at all; retail keeps the arms
+// distinct (the 1-7 arm `jne`s forward to the shared `mov eax,1`, the 8 arm falls
+// into it and so inverts to `je`). Keeping the arms unmergeable is what is left.
 // ---------------------------------------------------------------------------
 // @early-stop
-RVA(0x00117630, 0x82)
+RVA(0x00117630, 0xa4)
 i32 __stdcall
 SerializeApplyA(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerSwitchLogic* o) {
     if (o == 0) {
@@ -861,7 +867,7 @@ SerializeApplyA(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerSwi
 // 0x113a90); returns success.  __stdcall helper of the serialize walk (117280).
 // ---------------------------------------------------------------------------
 // @early-stop
-RVA(0x00117710, 0xa6)
+RVA(0x00117710, 0xc0)
 i32 __stdcall
 SerializeApplyB(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerLogic* o) {
     if (o == 0) {
@@ -920,7 +926,7 @@ static void* RegLogicTail(
 }
 
 // @early-stop
-RVA(0x00117800, 0x47f)
+RVA(0x00117800, 0x4d6)
 void* CTileTriggerContainer::LoadElement(CFileMemBase* reader, i32 kind, i32 typeId, i32 pObj) {
     if (reader == 0) {
         return 0;

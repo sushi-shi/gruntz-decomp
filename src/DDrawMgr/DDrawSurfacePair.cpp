@@ -537,7 +537,7 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
 // ---------------------------------------------------------------------------
 // The attached surface's readiness predicate is CDDSurface::IsValid (slot 5, @0x14).
 // @early-stop
-RVA(0x001644a0, 0x19b)
+RVA(0x001644a0, 0x1b0)
 i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, i32 bpp) {
     CDDrawSurfaceMgr* mgr = OwnerMgr();
     m_width = w;

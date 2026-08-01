@@ -11,7 +11,7 @@
 
 // @source: decomp-xref
 // @early-stop
-RVA(0x000bf1d0, 0x249)
+RVA(0x000bf1d0, 0x2a4)
 void CNetSession::BuildGruntzCrcInfo() {
     char szLine[0x100];
     szLine[0] = g_emptyString[0];

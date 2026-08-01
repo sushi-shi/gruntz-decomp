@@ -15,7 +15,7 @@
 // Then, when a sub-record is present, forward to its per-frame step
 // (m_logic->SerializeMove, CUserBase slot 1); a falsey result short-circuits.
 // @early-stop
-RVA(0x00164830, 0xd3)
+RVA(0x00164830, 0xec)
 i32 AnimWorkerObj::Dispatch(CFileMemBase* a, i32 mode, i32 c, void* d) {
     if (a == 0) {
         return 0;

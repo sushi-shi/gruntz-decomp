@@ -5,7 +5,7 @@
 #include <Font/Font.h> // canonical FontRenderer + CRect (RenderText IS DrawWrapped @0x17a460)
 
 // @early-stop
-RVA(0x00115930, 0x15b)
+RVA(0x00115930, 0x18f)
 i32 EngStr_RenderText(
     void* self,
     CString* text,

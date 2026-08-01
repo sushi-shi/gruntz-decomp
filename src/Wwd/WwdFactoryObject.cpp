@@ -471,7 +471,7 @@ void CAniAdvanceCursor::Recompute(i32 resetGate) {
 // 0x15c360: advance the animation cursor by `elapsed` ticks. __thiscall, 1 arg
 // (ret 4).
 // @early-stop
-RVA(0x0015c360, 0x555)
+RVA(0x0015c360, 0x59c)
 i32 CAniAdvanceCursor::Advance(u32 elapsed) {
     if (m_14 == 0) {
         return -1;
@@ -847,8 +847,14 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 // 0x15c900: dispatch on `type` - type 4 serializes, type 7 deserializes (both
 // via the named sibling), every other type is a no-op that returns 1. A
 // serialize/deserialize that returns 0 propagates the 0.
+// Retail lowers this as a JUMP TABLE, not a compare chain: `add eax,-3; cmp eax,5;
+// ja 0x15c93a; jmp [eax*4+0x55c944]`, and the six-entry table at 0x15c944 (cases
+// 3..8) is part of this COMDAT - hence the 0x5c extent. Four of its six slots point
+// at the shared `mov eax,1; ret 0x10` tail, i.e. retail did NOT fold the empty arms
+// into the default; cl5 folds ours, so we emit sub/je/dec/je/sub/jne instead and the
+// table is missing. That fold is what is left to steer.
 // @early-stop
-RVA(0x0015c900, 0x42)
+RVA(0x0015c900, 0x5c)
 i32 CAniAdvanceCursor::Find(CFileMemBase* ar, i32 type, i32 typeId, void* self) {
     if (ar == 0) {
         return 0;

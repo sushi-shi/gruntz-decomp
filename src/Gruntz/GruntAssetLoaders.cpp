@@ -96,7 +96,7 @@ enum GruntDeathType {
     } while (0)
 
 // @early-stop
-RVA(0x00060150, 0xd90)
+RVA(0x00060150, 0xdd0)
 i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 killerSlot) {
     if (m_deathAnimStarted != 0) {
         return 0;

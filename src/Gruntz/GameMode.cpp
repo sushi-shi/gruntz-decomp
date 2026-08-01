@@ -49,7 +49,7 @@ i32 g_levelMsgIconPos[16] = {
 // RandRange(0,N) = uniform [0,N).
 // @early-stop
 #include <Gruntz/GlyphStringDraw.h> // ShowHudMessage (ex .cpp extern)
-RVA(0x00019cd0, 0x1df)
+RVA(0x00019cd0, 0x200)
 void CBootyState::GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
     if (!outX || !outY) {
         return;

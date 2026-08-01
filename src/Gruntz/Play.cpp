@@ -645,7 +645,7 @@ u32 g_killCueClock = 0; // 0x2bf3c0  draw-CLOCK mirror (= g_lastNow)
 // Genuine __cdecl engine helpers (reloc-masked rel32).
 // ---------------------------------------------------------------------------
 
-RVA(0x000ca200, 0xe34)
+RVA(0x000ca200, 0xe54)
 i32 CPlay::LoadByMode(i32 level, i32) {
     CPlay* self = this;
     CGruntzMgr* gameReg;
@@ -4676,7 +4676,7 @@ i32 CPlay::Vslot15() {
 // @confidence: med
 // @source: string-xref
 // @early-stop
-RVA(0x000d0120, 0x5d8)
+RVA(0x000d0120, 0x65c)
 i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
     if (this->m_levelId == frame && flag == this->m_dragEndNotify) {
         return 1;
@@ -6344,7 +6344,7 @@ i32 CPlay::BuildWarlordNameTable(CMulti* arg) {
 // `sub esp` for locals) while the recompile allocates a fresh frame, so the
 // cleanup/dtor tail shifts + a few esi/edx/ecx spill recolors. Code shape + every
 // data/marker reloc match.
-RVA(0x000d65d0, 0x7a4)
+RVA(0x000d65d0, 0x7cc)
 i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
     if (g_gameReg->m_134 != 1) {
         for (i32 id = GRUNT_TYPE_BOOMERANG; id <= GRUNT_TYPE_YOYO; id++) {

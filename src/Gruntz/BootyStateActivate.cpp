@@ -295,7 +295,7 @@ i32 CBootyState::StepGlitterAnim() {
 // letters one cell (+/-4 px) along its compass direction (an 8-way jump table), flagging
 // any that leave the [0,0x280]x[0,0x1e0] play field.
 // @early-stop
-RVA(0x00019b90, 0xd7)
+RVA(0x00019b90, 0xf8)
 void CBootyState::MoveLettersByDir() {
     if (m_initGate) {
         CWwdGameObjectA** p = m_sprintSprites;
@@ -1149,7 +1149,7 @@ static __inline i32 sumRun(i32* p, i32 n) {
 
 // @source: string-xref
 // @early-stop
-RVA(0x0001ed30, 0x549)
+RVA(0x0001ed30, 0x5ac)
 void CMultiBootyState::DrawBattleStats() {
     CString s;
     RECT rc;

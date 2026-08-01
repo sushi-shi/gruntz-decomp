@@ -156,7 +156,7 @@
 // than retail, and retail's ebx=1 constant pin (push ebx) never appears (my writes
 // use immediate 'mov [mem],1').  These are source-uncontrollable MSVC5 stack-packing
 // + regalloc coin-flips, same class as CGamePlayInput::DispatchKey's 78.5% cap.
-RVA(0x000862f0, 0x3d5a)
+RVA(0x000862f0, 0x4369)
 i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommand nID, i32 lParam) {
     switch (nID) {
         case kCmdNewGame:

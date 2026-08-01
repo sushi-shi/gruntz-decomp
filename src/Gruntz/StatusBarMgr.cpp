@@ -25,7 +25,7 @@ VTBL(CSBI_GruntMachine, 0x001eadbc); // vtable_names -> code (RTTI game class)
 // frame (the just-created item is EH-rolled-back if a later Configure throws).
 //
 // @early-stop
-RVA(0x00102250, 0x1dcd)
+RVA(0x00102250, 0x1de4)
 RVA_COMPGEN(0x00104cb0, 0x1e, ??_GCSBI_GruntMachine@@UAEPAXI@Z)
 i32 CStatusBarMgr::LoadTabSprites() {
     CDDrawSurfaceMgr* code = m_c; // the setup arg2 config host (spilled to [esp+0x10] in retail)
