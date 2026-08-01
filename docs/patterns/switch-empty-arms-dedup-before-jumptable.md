@@ -43,3 +43,33 @@ Evidence (2026-07-28): `CDDrawWorkerHost::SerializeDispatch` @0x163710 — filed
 the `return 1` on the inactive arms. All 66 bytes now agree with retail (the objdiff score
 *drops* to 68% because the jump table splits our symbol into `$L<n>` pieces — see
 jumptable-data-overlap.md).
+
+## It is not about EMPTY arms — it is about IDENTICAL arms, including a label RUN
+
+The fold is on body equality, so the same failure hits two shapes with nothing empty in them:
+
+* **a run of fall-through labels sharing one body.** `case 0x33: … case 0x40: special = 1; break;`
+  is already ONE arm when the density test runs, so cl emits a `sub/cmp/ja` range check.
+  Fourteen labels each carrying their own `special = 1; break;` keep the count and the table
+  comes out — `CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect` 58.26 → 63.71, and its
+  retail table at 0x42c528 is the proof: **14 entries, every one on 0x2c32e**. A single-target
+  table cannot be written any other way.
+* **two ACTIVE arms with the same body.** Both spelled `return o->Validate(...) != 0;` merge, and
+  the table dies. Retail keeps them apart because they are the same logic spelled two ways, and
+  which way is readable off the branch polarity: the arm that `jne`s forward into the shared
+  `mov eax,1` with its zero exit falling through locally (reusing the call's eax) is
+  `if (v) break; return 0;`, while the arm sitting immediately ABOVE that shared tail inverts to
+  `je <shared xor eax,eax>` and is `if (!v) return 0; break;`. `SerializeApplyA` 57.31 → 100 EXACT
+  and `SerializeApplyB` 63.26 → 100 EXACT (both had notes saying cl5 folds every spelling back).
+
+**Count the entries against the distinct targets before you write anything.** More entries than
+targets is the whole signal — it tells you how many labels the source had AND that they
+tail-merged, i.e. that the duplicated-arm spelling is the right one.
+`gruntz sema disasm <rva> --switch` prints both.
+
+**Finding them tree-wide is one census**, no disassembly reading: count `FF 24 8x`
+(`jmp [reg*4+disp32]`) in each retail body and in the same function's base COMDAT. Retail > base
+means a table we are not emitting — either this fold, or a missing inline expansion
+(count-jump-tables-to-find-missing-inline-expansions.md); the fold is the one where retail's own
+table has duplicate targets. Do the span fix first, or the census reads the wrong retail bytes
+(rva-extent-must-include-switch-tables.md).

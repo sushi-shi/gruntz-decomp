@@ -92,11 +92,50 @@ behind a fix.
 
 ## Bound
 
-The `<= 3` slop is load-bearing. When the gap between the claim and the first `$L` is
-larger, **our code is a different length from retail's** — that is real matching work, and
-extending the extent then claims the wrong retail bytes. Those stay on the ordinary
-worklist (`_EngStr_RenderText` @0x115930 is one: 21 bytes of slop, and the residual really
-is code). Equally, this says nothing about `.rdata` string or float constants, which live
-in their own sections and are scored separately.
+The `<= 3` slop is load-bearing *for the base-side test*. When the gap between the claim and
+the first `$L` is larger, our code may be a different length from retail's, and extending the
+extent would then claim the wrong retail bytes. This says nothing about `.rdata` string or
+float constants, which live in their own sections and are scored separately.
+
+## Read RETAIL instead — the base-side test has two blind spots
+
+The `$L`-offset test asks *our* COMDAT where the table is. That fails whenever **our source
+does not emit the table**, which is exactly the population most worth finding, and it stops at
+the FIRST table. Scan the retail bytes directly instead — no base obj involved:
+
+1. from the claim end, skip to the next 4-aligned offset;
+2. count DWORDs that fall inside `[imagebase+rva, imagebase+rva+size]` — that run is the jump
+   table (a pointer back into the function's own code is not a coincidence);
+3. then count bytes `< run length` — the sparse index table;
+4. **repeat**, because a function can carry several switches;
+5. stop when step 2 finds nothing; the extent is where you stopped.
+
+Confirm each hit before touching it: the function body must literally contain the table's VA
+(the `disp32` of its own `jmp [reg*4+TBL]` / `mov r8,[reg+IDX]`), i.e.
+`struct.pack("<I", imagebase + tbl_rva) in body_bytes`. That is a 4-byte needle in a few
+hundred bytes and it turns "these DWORDs look like pointers" into proof of ownership. In the
+2026-08-01 second sweep it confirmed **65 of 65** candidates and rejected none, and every
+extent it produced landed exactly on `0x90`/`0xcc` padding or exactly on the next function
+start (`CDDrawSurfaceChildA::SetGeometry`'s table runs right up to 0x164650 with no padding).
+
+What the base-side test missed, measured on the same tree after its 43-function sweep:
+
+* **`_EngStr_RenderText` @0x115930 — filed above as "21 bytes of slop, the residual really is
+  code".** It is not. Retail has a 5-entry table at 0x115a8c followed by 31 index bytes;
+  347 → 399 takes it **61.40 → 90.55**. The slop was large because our body is a different
+  length, which is true and irrelevant — the table is still ours.
+* **three multi-table functions**, invisible to a first-table test:
+  `CStatusBarMgr::UpdateStatusBarTabHighlight` (3 tables, +158) and
+  `CGruntzMgr::HandleCommand` (3 tables, +1551, 71.16 → 94.70).
+* **functions emitting no table at all**, where the short claim was *inflating* the score:
+  `CAniAdvanceCursor::Find` and `SerializeApplyA` both went DOWN at the correct extent. That
+  is the claim telling the truth, not the extension being wrong — see
+  switch-empty-arms-dedup-before-jumptable.md, which took both to 100 EXACT.
+
+Second sweep: 65 confirmed tree-wide, 38 applied (26 in units another lane held, 1 held back
+by the `ActA` delinker bug above), started-units MAX 81.73% → 82.30%.
+
+**A drop after extending is therefore not a signal to revert** when the body references the
+table VA. Judge the extension by that reference, and judge the score afterwards.
 
 related: bss-symbol-size-inference-hole.md, delinker-jumptable-dup-symbol-undercount.md
