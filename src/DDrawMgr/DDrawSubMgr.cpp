@@ -20,6 +20,7 @@
 #include <Dsndmgr/SoundDevice.h>
 #include <Dsndmgr/SoundStream.h>      // the +0x2c held stream full def (base SoundDevice methods)
 #include <stdio.h>                    // sprintf (the %s%s%s path walkers)
+#include <stdlib.h>                   // abs (branchless cdq/xor/sub)
 #include <DDrawMgr/DDrawWorkerNode.h> // CDDrawWorkerBase/A/B (the list-spawned workers)
 #include <DDrawMgr/DDrawWorkerList.h> // CDDrawWorkerList (hoisted; factories here)
 #include <DDrawMgr/DDrawWorkerMapSmall.h> // CDDrawWorkerMapSmall (hoisted; quartet here)
@@ -211,6 +212,12 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymParser* parser, const char* key) {
 // 0x156ec0: Lookup `key` in the map; if found, RemoveKey it and run the value's
 // scalar-deleting destructor (vtbl +0x4, arg 1).
 // @early-stop
+// ~77.5% - register-allocation + store/load-scheduling entropy: the logic, CFG,
+// the val=0 init, both library calls, their args, and the dtor dispatch are all
+// reproduced; only the register schedule differs (retail holds `key` in EDI and
+// keeps `val` purely on the stack; MSVC5 caches key in EBX and val in EDI).
+// Every source form tried produced the identical schedule; the surrounding
+// symbol-set is what re-rolls the allocation. Left as the plateau.
 RVA(0x00156ec0, 0x40)
 void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
     CObject* val = 0;
@@ -600,6 +607,10 @@ CFileMemBase::CFileMemBase() {
 
 // ~CFileMemBase (0x1578b0) - base teardown.
 // @early-stop
+// EH-dtor virtual-dispatch wall (~89%): the base teardown logic is byte-faithful,
+// but retail dispatches Reset as an absolute indirect through the base vtable
+// slot 3 - a virtual dispatch inside a dtor that MSVC5 devirtualizes to a direct
+// call from clean C++.
 RVA(0x001578b0, 0x51)
 CFileMemBase::~CFileMemBase() {
     Reset();
@@ -734,6 +745,10 @@ void CDDrawSubMgrLeafScan::Unload() { // slot 7 (CLoadable::Unload override; cle
 // sound-res map neighborhood - dossier #15).
 // ===========================================================================
 // @early-stop
+// 99.85: the natural `while (pos)` killed the peel (do-while echo was the bug;
+// see the DelFromList1 lesson) and `p == value` fixed the compare order; the
+// sole residue is the key/pos stack-slot SWAP (0x8 vs 0x20) - decl-order
+// permutations tried, all regress (stack-slot-coalesce-frame-4b.md).
 RVA(0x00157b00, 0xb2)
 void CDDrawSubMgrLeafScan::RemoveByValue(LeafCue* p) {
     if (p == 0) {
@@ -927,6 +942,12 @@ i32 CDDrawSubMgrLeafScan::ScanTree(CSymTab* tree, const char* prefix, const char
 // its count unconditionally, else add it only when the key strncmp-matches `str`
 // over strlen(str). Returns the accumulated count. /GX EH frame for the local key.
 // @early-stop
+// zero-register-pin wall (~70%): map-scan idiom applied (top-tested while + real
+// GetStartPosition kills the peel, docs/patterns/mfc-map-walk-while-not-guard-
+// dowhile.md), body/CFG/calls/args/offsets reproduced. Residue: retail pins 0 in
+// ebx (xor ebx,ebx) and uses cmp ebx,X / cmpb bl,(esi) for all 7 null/zero checks
+// where our cl emits test/cmp-imm - regalloc coin-flip, docs/patterns/zero-
+// register-pinning.md. No source lever.
 RVA(0x001580b0, 0xf6)
 i32 CDDrawSubMgrLeafScan::SumField(const char* str) {
     if (m_emitGate != 0) {
@@ -1120,6 +1141,12 @@ i32 LeafCue::LoadSoundB(void* src) {
 // acquire a buffer for the blob into m_10. EndParse always runs; returns whether a
 // buffer was acquired (0 when the device is down). 1 stack arg (ret 4).
 // @early-stop
+// 41% -- regalloc-pinning wall (docs/patterns/zero-register-pinning.md): the CFG,
+// all three calls (BeginParse/Acquire/EndParse), all field stores, and the result
+// merge are reproduced. MSVC5 homes the `src` param into a 3rd callee-saved register
+// (ebx) and carries the return value differently than retail (which pins this->esi,
+// src->edi and reuses esi as the return carrier, computing ok eagerly before
+// EndParse). Tried 3 result/store spellings; no source lever flips the homing. Logic complete.
 RVA(0x00158760, 0x59)
 i32 LeafCue::Configure(CParseSource* src) {
     char* blob = src->BeginParse();
@@ -1162,7 +1189,11 @@ void LeafCue::Unload() {
 // (pos-center) to +/-min(range1,range2), scales it to a [-100,100] pan, derives
 // the volume, and hands both to the +0x10 sound player. __thiscall, 4 args
 // (ret 0x10). No-op (0) when sound is disabled.
-// @early-stop
+// EXACT. The old "no source lever picks ebp for `this`" note was wrong on all three
+// counts: the clamp writes back into the OFFSET variable (a separate `pan` costs a
+// mov per in-range arm), the negative arm uses abs() not a negate, and the volume
+// level is abs(neutral) - an opaque int with a memory home, not a folded literal.
+// Fixing those three made cl choose retail's allocation on its own.
 RVA(0x001587f0, 0xf1)
 i32 LeafCue::TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2) {
     if (g_sndEnabled == 0) {
@@ -1177,31 +1208,38 @@ i32 LeafCue::TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2) {
     if (range2 <= 0) {
         range2 = OwnerMgr()->m_drawTarget->m_frontPair->m_width / 3;
     }
-    i32 d = pos - center;
-    i32 pan;
-    if (d >= 0) {
-        if (d < range1 && d < range2) {
-            pan = d;
-        } else {
-            pan = range1 >= range2 ? range2 : range1;
+    // The clamp writes back into the OFFSET, it is not a second variable: retail
+    // keeps the result in the register the offset already occupies (ecx), so the
+    // in-range case needs no move at all and simply falls through to the join.
+    // A separate `pan` costs a `mov` per in-range arm and rotates the allocation.
+    i32 pan = pos - center;
+    if (pan >= 0) {
+        // The OUT-of-range test is the `if` (retail `cmp ecx,edi; jge <clamp>;
+        // cmp ecx,esi; jl <join>`), so the clamp body owns the fall-through.
+        if (pan >= range1 || pan >= range2) {
+            // Same min() spelling as the negative arm: retail's `cmp edi,esi; jge
+            // <range2>` leaves the range1 assignment as the fall-through, which is
+            // `range1 < range2 ? range1 : range2`.
+            pan = range1 < range2 ? range1 : range2;
         }
     } else {
-        i32 ad = -d;
-        if (ad < range1 && ad < range2) {
-            pan = d;
-        } else {
-            pan = range1 < range2 ? range1 : range2;
-            pan = -pan;
+        // abs(), not a plain negate: retail spells the branchless `cdq; xor; sub`
+        // here even though the offset is known negative (`-x` gives `neg`).
+        i32 ad = abs(pan);
+        if (ad >= range1 || ad >= range2) {
+            pan = -(range1 < range2 ? range1 : range2);
         }
     }
     i32 vol = (pan * 100) / range2;
-    i32 cue = g_sndCueTag;
-    i32 amp = 100;
-    i32 vscale;
-    if (cue == SND_CUE_NEUTRAL) {
-        vscale = amp;
-    } else {
-        vscale = static_cast<i32>((amp * (cue * g_sndPanScale)));
+    // retail: `mov eax,0x64; cdq; xor eax,edx; sub eax,edx` - abs() of the neutral
+    // (full) level. MSVC5's abs intrinsic does NOT constant-fold, so the level stays
+    // an opaque runtime int with a memory home and the float path loads it with
+    // `fild [slot]`; a plain `100` folds into an `fmul <float const>` instead.
+    // The scaled value is an OVERWRITE inside `!= neutral` (retail `cmp ecx,0x64;
+    // je <join>` leaves the float path as the fall-through), not an if/else.
+    i32 vscale = abs(SND_CUE_NEUTRAL);
+    if (g_sndCueTag != SND_CUE_NEUTRAL) {
+        vscale = static_cast<i32>(vscale * (g_sndCueTag * g_sndPanScale));
     }
     return m_10->ConfigureItem(vscale, vol, 0, 0);
 }
@@ -1210,6 +1248,9 @@ i32 LeafCue::TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2) {
 // their per-stage init; on any failure stamp the root's m_lastError
 // (0x7d1/0x7d2/0x7d3 if not already set) and return 0. /GX EH frame.
 // @early-stop
+// vptr-position / worker-ctor-shape wall: retail stamps each child's derived
+// vtable AFTER the base ctor + field seeds (vptr-last); the placement `new`
+// model stamps vptr-first. Logic/CFG/offsets/error-codes reproduced.
 RVA(0x001588f0, 0x1c5)
 i32 CDDrawSubMgrPages::CreateChildren(i32 w, i32 h, i32 bpp, i32 flags) {
     // The real inline derived ctor: retail emits `call 0x158f30` (the out-of-line
@@ -1385,6 +1426,13 @@ void CDDrawSubMgrPages::ClearAllPages(u32 color) {
 // 0x158dc0: blt m_backPair's surface <- m_frontPair's surface; if the m_worker flag
 // bit1 is set, flip m_frontPair and re-blt.
 // @early-stop
+// ~84% - init `ok=0` up front + only deref m_backPair->m_surface INSIDE the front
+// guard (was 71%: caching a `p14=m_backPair` local + an else{ok=0} made cl pin
+// m_backPair in edi across the front checks and hoist/share the ok=0). Residual:
+// retail keeps the m_backPair pointer in ecx (loaded early) + inlines the ok=0
+// block after the checks, where cl loads m_backPair late + hoists ok=0 to the
+// prologue - a regalloc/branch-layout coin-flip (flat &&-else regressed to 68%).
+// docs/patterns/zero-register-pinning.md.
 RVA(0x00158dc0, 0x7d)
 i32 CDDrawSubMgrPages::PresentBackPage() {
     CDDrawSurfaceChildA* front = m_frontPair;
@@ -1423,6 +1471,16 @@ i32 CDDrawSubMgrPages::PresentBackPage() {
 // 0x158e40: if m_overlayPair->IsLoaded(): blt m_overlayPair's surface <-
 // m_frontPair's surface, return (==0).
 // @early-stop
+// ~88% - flattened the nested `if(overlay && IsLoaded){...} return 0` into a flat
+// guard chain (each `if(!x) return 0`), matching retail's per-guard inline return-0
+// (was 50%: the nesting made cl share ONE return-0 via `je`). Residual is a single
+// tail-merge coin-flip: retail shares the FIRST guard's return-0 with the IsLoaded test
+// (both `je 0x158e53` / fall into one `xor eax,eax / pop / ret`) while inlining the rest;
+// cl inlines the first and lets the second reuse the call's zero eax (a bare `pop / ret`).
+// Hoisting `a=m_overlayPair` before the guards regressed to 57% (regalloc), and folding the
+// two into one `||` - which is exactly retail's edge structure - regressed to 50.13
+// (retested 2026-07-28, jcc_sieve DUP-EXIT): the `||` makes cl re-share ALL the exits, the
+// state this function started from. Not steerable. docs/patterns/zero-register-pinning.md.
 RVA(0x00158e40, 0x4c)
 i32 CDDrawSubMgrPages::TransEnter() {
     if (!m_overlayPair) {

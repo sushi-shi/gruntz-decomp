@@ -1,0 +1,45 @@
+{
+ "schema": 1,
+ "source": "src/Gruntz/Multi.cpp",
+ "rva": "0xbc460",
+ "axes": [
+  {
+   "name": "decl_order",
+   "find": "    m_hostIndex = LocalPlayer()->m_id;\n    i32 chField = ch0->m_008;",
+   "options": [
+    {
+     "name": "baseline"
+    },
+    {
+     "name": "chfield_first",
+     "replace": "    i32 chField = ch0->m_008;\n    m_hostIndex = LocalPlayer()->m_id;"
+    },
+    {
+     "name": "id_local",
+     "replace": "    i32 id = LocalPlayer()->m_id;\n    m_hostIndex = id;\n    i32 chField = ch0->m_008;"
+    },
+    {
+     "name": "name_local",
+     "replace": "    m_hostIndex = LocalPlayer()->m_id;\n    GruntzPlayer* ch1 = ch0;\n    i32 chField = ch1->m_008;"
+    }
+   ]
+  },
+  {
+   "name": "call_form",
+   "find": "    if (RegisterChannelFrom(ch0->GetName(), chField, -1, m_hostIndex) == 0) {",
+   "options": [
+    {
+     "name": "baseline"
+    },
+    {
+     "name": "chfield_inline",
+     "replace": "    if (RegisterChannelFrom(ch0->GetName(), ch0->m_008, -1, m_hostIndex) == 0) {"
+    },
+    {
+     "name": "ne_zero",
+     "replace": "    if (!(RegisterChannelFrom(ch0->GetName(), chField, -1, m_hostIndex) != 0)) {"
+    }
+   ]
+  }
+ ]
+}

@@ -70,6 +70,13 @@ void CMultiStartDlg::ReconcileChannel3() {
 }
 
 // @early-stop
+// regalloc / const-materialize wall (~69%): the control flow is byte-faithful, but
+// retail pins `this` in esi and `ch` in edi (this cl swaps them), and materializes
+// 0 into the dead `ch` register to drive the `cmp` against the slot flags where
+// this cl re-tests; the swap + 0-in-reg-vs-`test` cascade the register renames.
+// reconcile one channel's player slot after a join/leave: poll the owner
+// window, drop or assign the channel's logical slot, and toggle the two controls.
+// (0xc2ab0; also reached as the roster's per-row reconcile via ILT thunk 0x3ffd.)
 RVA(0x000c2ab0, 0x161)
 void CMultiStartDlg::SyncChannelSlot(i32 ch) {
     CWnd* owner = GetCtrlE(ch); // 0x1929  the list whose selection drives the slot
@@ -174,6 +181,15 @@ static __inline i32 GameRand() {
 }
 
 // @early-stop
+// EH frame-size wall (~95%). Complete correct reconstruction (the twin of
+// CBattlezDlg::FlashCtrlD @0x160f0 in Dialogs.cpp, minus the rect-deflate,
+// returning 1): walks the 4-entry GetCtrlD swatch family, maps each child's
+// client rect into the host dialog's client coords, builds a random-gray
+// (enabled) or fixed 0x808080 (disabled) solid brush and FillRects it. Residual
+// is MSVC5's 0x70 vs 0x20 frame reservation shifting the dc-handle / EH-state
+// stack slots - not steerable from source. (Formerly split out into a
+// name-grouped FlashRect.cpp; 0xc2e20 sits inside THIS TU's 0xc2980..0xc5333
+// block, so it is reunited here.)
 RVA(0x000c2e20, 0x21d)
 i32 CMultiStartDlg::FlashCtrlD() {
     CPaintDC dc(this);
@@ -556,7 +572,12 @@ void CMultiStartDlg::OnColorSlot3() {
 // modal CBattlezDlgCustom name dialog, and on IDOK with a non-empty name uppercase it
 // into the combo's edit child and commit it as the game's custom world/host name.
 // ---------------------------------------------------------------------------
-// @early-stop
+// EXACT. The former "/GX trylevel numbering + esi shrink-wrap wall" was a source bug
+// after all: the child==0 path is an early RETURN (its own trylevel store, and it owns
+// the fall-through of retail's `jne <continue>`), not the negative arm of an
+// `if (child != 0) { ... }` wrapper - and the GetDlgItem lookup is its own statement,
+// which is why retail calls it BEFORE pushing GW_CHILD (an inline arg list makes cl
+// push the constant first). Both trylevels and the esi save fell out on their own.
 RVA(0x000c3cb0, 0x128)
 void CMultiStartDlg::OnCustomWorld() {
     if (g_multiState->m_isHost == 0) {
@@ -564,16 +585,24 @@ void CMultiStartDlg::OnCustomWorld() {
     }
     CBattlezDlgCustom dlg(0);
     if (dlg.DoModal() == 1 && dlg.m_customName.GetLength() != 0) {
-        CWnd* child = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, GW_CHILD));
-        if (child != 0) {
-            dlg.m_customName.MakeUpper();
-            child->SetWindowTextA(static_cast<LPCTSTR>(dlg.m_customName));
-            m_6c = 1;
-            g_multiState->m_5b0 = 1;
-            g_multiState->m_5b8 = static_cast<LPCTSTR>(dlg.m_customName);
-            g_multiState->m_5b4 = g_emptyString;
-            g_multiState->SaveConfig(0);
+        // GetDlgItem runs BEFORE the GW_CHILD push (retail `push 0x4ff; call
+        // GetDlgItem; push 0x5; push edx`), so the lookup is its own statement -
+        // inline in the arg list, cl pushes the constant first.
+        CWnd* item = GetDlgItem(0x4ff);
+        CWnd* child = CWnd::FromHandle(::GetWindow(item->m_hWnd, GW_CHILD));
+        // Early RETURN, not a positive `if (child != 0)` wrapper: retail's
+        // `jne <continue>` leaves the child==0 block as the FALL-THROUGH, and that
+        // block is an early return with its own /GX trylevel store.
+        if (child == 0) {
+            return;
         }
+        dlg.m_customName.MakeUpper();
+        child->SetWindowTextA(static_cast<LPCTSTR>(dlg.m_customName));
+        m_6c = 1;
+        g_multiState->m_5b0 = 1;
+        g_multiState->m_5b8 = static_cast<LPCTSTR>(dlg.m_customName);
+        g_multiState->m_5b4 = g_emptyString;
+        g_multiState->SaveConfig(0);
     }
 }
 
@@ -634,6 +663,12 @@ void CMultiStartDlg::Drive() {
 }
 
 // @early-stop
+// /GX EH-frame representation wall (~84%): the code stream is byte-faithful (all
+// GetDlgItem/EnableWindow calls + the g_optCfg load pair), but the delinker emits
+// the scope-table push addend (0x8 vs 0x0) and the fs:0 handler-registration relocs
+// differently than the MSVC base obj, so the EH prologue/epilogue can't pair.
+// re-enable the four player-config controls, then (when no custom level
+// name is set) build and discard an empty caption string.
 RVA(0x000c4120, 0xc2)
 i32 CMultiStartDlg::EnableControls() {
     GetDlgItem(2)->EnableWindow(1);
@@ -649,6 +684,9 @@ i32 CMultiStartDlg::EnableControls() {
 
 // __thiscall(force): refresh every player row from the roster + selection owner.
 // @early-stop
+// EH-representation wall: /GX frame (CString `name` temp) - the per-branch EH
+// state-index stamps ([esp+EHstate] = N) and the aggregate-TU regalloc/spill recolor
+// diverge from retail; code shape + all DIR32 data refs match. ~62%.
 RVA(0x000c4230, 0x38e)
 i32 CMultiStartDlg::UpdatePlayers(i32 force) {
     CWnd::FromHandle(::GetFocus());
@@ -738,6 +776,11 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
 }
 
 // @early-stop
+// ~94% regalloc-coloring wall (all control flow + calls + the DIR32 globals pair):
+// retail re-materializes the zero constant into ebx after the roster loop and reuses
+// it for the state-chain `push 0` + the m_58c store, whereas MSVC5 colors the m_hWnd
+// KillTimer temps into ecx/edx; plus a 2-instr timeGetTime `this`-load schedule. Not
+// source-steerable. docs/patterns/zero-register-pinning.md.
 RVA(0x000c46b0, 0x371)
 void CMultiStartDlg::Watchdog() {
     if (g_watchBusy != 0) {
@@ -873,6 +916,13 @@ i32 CMultiStartDlg::GetSlotIndex() {
 }
 
 // @early-stop
+// /GX CString cleanup-state-machine wall (~52%): the branch logic + the merged
+// BuildRezPath / by-value caption copy are reconstructed, but two retail early
+// guards test the relocatable addresses of CTileExclusiveTriggerSwitchLogic /
+// ReleaseResources (a pointer-to-member null check this cl can't re-spell), which
+// shifts the layout, and the a/b CString destruct-state numbering is EH residue.
+// before the match starts, confirm every player has the same custom
+// level; otherwise re-enable the dialog and pop the appropriate error modal.
 RVA(0x000c4c00, 0x190)
 void CMultiStartDlg::OnOK() {
     CMulti* mgr = g_multiState;
@@ -937,6 +987,12 @@ void CMultiStartDlg::OnSlotSelect3() {
 // 0x527) selection into its lo/hi words; if either is set, commit them into the CMulti
 // session config (m_5a4 / m_drainReload) and re-save, else flag "none selected" (m_600).
 // @early-stop
+// dead-member-read wall (~92%): retail emits a DEAD `mov ecx,[this+0x60]` (m_slotList)
+// right after the GetSafe1c hwnd load - it occupies ecx, forcing both GetSelItemData
+// out-arg `lea`s into edx (retail `lea (esp),edx; push; lea 8(esp),edx` vs our `lea
+// (esp),ecx; lea 4(esp),edx; push`). MSVC5 emitted that dead read; /O2 reconstruction
+// DCEs any discarded `m_slotList;` access, so the read + its register/offset cascade are
+// the only residual. Logic + every other byte faithful.
 RVA(0x000c5020, 0x95)
 void CMultiStartDlg::CommitLatencyOption() {
     if (g_multiState->m_isHost == 0) {

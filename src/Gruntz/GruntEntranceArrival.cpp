@@ -1157,6 +1157,26 @@ latch:
     m_38->ApplyLookupSprite(key, elem->m_param);
 }
 
+// ---------------------------------------------------------------------------
+// CGrunt::ResolveEntranceArrival()   @0x633e0   (__thiscall, ret 0)
+// The per-tick entrance-arrival step: drop the entrance latch when the last tile
+// loses its 0x80 attribute, advance the entrance cursor, and once the idle window
+// has elapsed either announce the arrival (co-op) or claim the tile - seeding the
+// defender anchor, the re-roll timer and the per-tool defender radius - then re-arm
+// the entrance animation from the cursor state.
+// @early-stop
+// Two BEHAVIOUR bugs fixed here (2026-08-01), both proven off the binary:
+//   * the defender-radius switch had only `case 2`. Retail's jump table (index bytes
+//     at 0x4636bc, targets at 0x4636ac) sends 2 / 9,10,11 / 21,22 to the fixed-radius
+//     arm - three contiguous case runs, hence three identical dword entries.
+//   * the armed-but-not-running gate was inverted on BOTH terms: retail is
+//     `m_1a0.m_28 != 0 && m_1a0.m_20 == 0` (`je <ret>` then `jne <ret>`), matching
+//     the identical gate documented in LoadVehicleGruntAnimations below.
+// Current 77.3% vs a former 86.6% MAX: adding the jump table rotated cl's three
+// callee-saved registers by one (retail edi=zero / ebp=g_curPlayer / ebx=mode, ours
+// ebp / ebx / edi), which is ~50 single-byte ModRM diffs, plus retail pools the
+// constant 1 into ebx for `cmp ecx,ebx` + `m_420 = 1` where ours spells immediates.
+// That is docs/patterns/zero-register-pinning.md; the correct case set stays.
 RVA(0x000633e0, 0x2ca)
 i32 CGrunt::ResolveEntranceArrival() {
     if (m_entranceActive != 0 && m_object->m_screenX == m_lastTilePxX
@@ -1201,8 +1221,20 @@ i32 CGrunt::ResolveEntranceArrival() {
                     m_defenderY = m_lastTilePxY;
                     m_tileClaimed = 1;
                     i32 kind = m_entranceReason;
+                    // SIX tool kinds take the fixed radius, not one: retail dispatches
+                    // through a jump table (`cmp eax,0x14; ja default; movzx dl,
+                    // [eax+0x4636bc]; jmp [edx*4+0x4636ac]`) whose byte-index table
+                    // sends 2 / 9,10,11 / 21,22 to the same arm - three contiguous case
+                    // RUNS, hence three identical dword entries plus the default.
+                    // (The `Tool` enum in Enums.h has unverified integer values, so the
+                    // proven raw ids stay raw rather than be given invented names.)
                     switch (kind) {
                         case 2:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 21:
+                        case 22:
                             m_defenderRadius = 1;
                             break;
                         default:
@@ -1228,7 +1260,10 @@ i32 CGrunt::ResolveEntranceArrival() {
 
 tail:
     if (m_38->m_1a0.m_14 != m_poseIdle[GRUNT_IDLE1]) {
-        if (m_38->m_1a0.m_28 == 0 && m_38->m_1a0.m_20 != 0) {
+        // The armed-but-not-running gate, same as LoadVehicleGruntAnimations':
+        // retail `cmp [eax+0x1c8],edi; je <ret>` then `cmp [eax+0x1c0],edi; jne <ret>`
+        // = m_28 != 0 && m_20 == 0. Both terms were inverted here.
+        if (m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) {
             ResetEntranceAnimation(0, 0, 0);
         }
         return 0;

@@ -62,48 +62,65 @@ RVA_COMPGEN(0x00013100, 0x44, ??1CKitchenSlime@@UAE@XZ)
 // cycle geometry, and clear the bound sprite's rect.
 //
 // @early-stop
+// 97.0% (was 81.0). The defect was a cached `CWwdGameObjectA* o = m_object` local:
+// every store THROUGH the bound object kills cl's cached `this->m_object`, so retail
+// re-loads `mov e?x,[esi+0x10]` before each access - twelve reloads, one per store,
+// down to the four m_area clears. A local pins it in a callee-saved register and
+// drops all of them. The source record (`Anim()->m_194`) is likewise hoisted once.
+// Residual: the /GX leaf-vptr re-stamp position (one slot early) and the load order
+// inside three of the four min/max clamps. The clamp is NOT condition-spelling
+// steerable - all 64 cells tie within 0.013% (config/axes/kitchenslime-clamp.json).
 RVA(0x000b23a0, 0x3f8)
 CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 0x2000002;
 
-    CWwdGameObjectA* o = m_object;
-    i32 snapX = (o->m_screenX & ~0x1f) + 0x10;
-    i32 snapY = (o->m_screenY & ~0x1f) + 0x10;
-    o->m_screenX = snapX;
+    // NO cached `CWwdGameObjectA* o = m_object` local: every store THROUGH the bound
+    // object kills cl's cached `this->m_object`, so retail re-loads `mov e?x,[esi+0x10]`
+    // before each access - twelve reloads across the body, incl. one per m_area store.
+    // A local pins the pointer in a callee-saved register and drops all of them.
+    i32 snapX = (m_object->m_screenX & ~0x1f) + 0x10;
+    i32 snapY = (m_object->m_screenY & ~0x1f) + 0x10;
+    m_object->m_screenX = snapX;
     m_posX = static_cast<double>(snapX);
-    o->m_screenY = snapY;
+    m_object->m_screenY = snapY;
     m_posY = static_cast<double>(snapY);
-    if (o->m_sortKey != 0x13) {
-        o->m_sortKey = 0x13;
-        o->m_flags |= 0x20000;
+    if (m_object->m_sortKey != 0x13) {
+        m_object->m_sortKey = 0x13;
+        m_object->m_flags |= 0x20000;
     }
     m_tileY = snapY;
     m_tileX = snapX;
 
-    o->m_164 = (o->m_164 << 5) + 0x10;
-    o->m_168 = (o->m_168 << 5) + 0x10;
-    if (o->m_screenX == o->m_164 && o->m_screenY == o->m_168) {
+    m_object->m_164 = (m_object->m_164 << 5) + 0x10;
+    m_object->m_168 = (m_object->m_168 << 5) + 0x10;
+    if (m_object->m_screenX == m_object->m_164 && m_object->m_screenY == m_object->m_168) {
         m_38->m_flags |= 0x10000;
         return;
     }
-    o->m_extent.left = (o->m_screenX < o->m_164) ? o->m_screenX : o->m_164;
-    o->m_extent.right = (o->m_screenX <= o->m_164) ? o->m_164 : o->m_screenX;
-    o->m_extent.top = (o->m_screenY >= o->m_168) ? o->m_168 : o->m_screenY;
-    o->m_extent.bottom = (o->m_screenY <= o->m_168) ? o->m_168 : o->m_screenY;
+    m_object->m_extent.left =
+        (m_object->m_screenX < m_object->m_164) ? m_object->m_screenX : m_object->m_164;
+    m_object->m_extent.right =
+        (m_object->m_screenX <= m_object->m_164) ? m_object->m_164 : m_object->m_screenX;
+    m_object->m_extent.top =
+        (m_object->m_screenY >= m_object->m_168) ? m_object->m_168 : m_object->m_screenY;
+    m_object->m_extent.bottom =
+        (m_object->m_screenY <= m_object->m_168) ? m_object->m_168 : m_object->m_screenY;
 
-    CWwdGameObjectA* obj38 = Anim();
-    if (obj38->m_194 != 0) {
+    // The source record IS hoisted (retail loads `[ecx+0x194]` once into edi and
+    // reuses it for the `+0x24` - the CString ctor call would kill a re-read).
+    char* rec = Anim()->m_194;
+    if (rec != 0) {
         CString name;
-        name = obj38->m_194 + 0x24;
+        name = rec + 0x24;
         const char* s = static_cast<LPCTSTR>(name);
         if (strcmp(s, "LEVEL_KITCHENSLIME_NORTH") == 0) {
-            o->m_124 = 1;
+            m_object->m_124 = 1;
         } else if (strcmp(s, "LEVEL_KITCHENSLIME_EAST") == 0) {
-            o->m_124 = 2;
+            m_object->m_124 = 2;
         } else if (strcmp(s, "LEVEL_KITCHENSLIME_SOUTH") == 0) {
-            o->m_124 = 3;
+            m_object->m_124 = 3;
         } else if (strcmp(s, "LEVEL_KITCHENSLIME_WEST") == 0) {
-            o->m_124 = 4;
+            m_object->m_124 = 4;
         }
     }
 
@@ -115,10 +132,10 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_1c = ActFindId("A");
     m_value = m_38->m_1a0.m_14;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    o->m_area.left = 0;
-    o->m_area.right = 0;
-    o->m_area.top = 0;
-    o->m_area.bottom = 0;
+    m_object->m_area.left = 0;
+    m_object->m_area.right = 0;
+    m_object->m_area.top = 0;
+    m_object->m_area.bottom = 0;
 }
 
 static inline CString* TypeLookup(i32 key) {
@@ -180,6 +197,10 @@ void CKitchenSlime::FireActivation(i32 coord) {
 // the target tile on overshoot and writing the new grid position back to m_10.
 // The integer scaffolding + visibility/already-arrived blocks are byte-exact.
 // @early-stop
+// x87 FP movement-integrator wall (docs/patterns/x87-fp-stack-schedule.md): the
+// residual is a stack-slot swap (MSVC parks `step` at [esp+8] vs retail's
+// [esp+0x10], swapping the per-iter temp) plus the dead x-clamp redundant-jump
+// schedule. Logic byte-for-byte correct; ~95%, above the documented 60-75% range.
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
     m_38->m_1a0.Advance(static_cast<i32>(g_engineFrameDelta));
@@ -296,6 +317,10 @@ i32 CKitchenSlime::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObje
 }
 
 // @early-stop
+// Returns int (1 on success, 0 when no walkable tile was found) - the true
+// signature, needed by Tick's `LoadSprites() == 0` test. Residual is the same FP
+// /jump-table stack-frame schedule wall it has carried (retail reserves 0x1c vs
+// our 0x14 - an extra direction-magnitude stack temp). ~69%, logic exact.
 RVA(0x000b3160, 0x339)
 i32 CKitchenSlime::LoadSprites() {
     i32 savedDir = Level()->m_124;

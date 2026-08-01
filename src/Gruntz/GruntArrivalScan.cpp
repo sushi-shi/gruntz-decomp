@@ -117,6 +117,15 @@
 // inside the HUD scroll region (m_134..m_140) and tile-switch onto it, escalating to
 // SetEntrancePos when the spread exceeds CoordCount(). Returns 1.
 // @early-stop
+// 95.2% (was 66.7). The old "idiv scheduling / ebx zero-register" note was wrong: the
+// two real defects were (a) the timer compare spelled `>= window` + `goto`, which
+// hoisted the reset block into the fall-through and duplicated the epilogue, and
+// (b) the re-roll declaration order. Both fixed; the function is now retail's exact
+// SIZE (664 B) with all 14 relocations in order. What is left is the frame packer:
+// retail homes outX at [esp+0x14] and outY at [esp+0x10] over a 3-dword frame with
+// the top slot unused, ours packs them into 2 dwords the other way round. All five
+// declaration permutations lose (config/axes/resolvearrivalreposition-origin.json),
+// so the slot pair is not declaration-steerable.
 RVA(0x000ec670, 0x298)
 i32 CGrunt::ResolveArrivalReposition() {
     CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
@@ -158,30 +167,48 @@ i32 CGrunt::ResolveArrivalReposition() {
     {
         u32 dwell = static_cast<u32>(m_dwell);
         if (dwell > 0x3e8 && m_resetApplied == 0 && m_318 != 0 && dwell > 0xbb8) {
+            // The re-roll body is the THEN arm and the timer reset is the ELSE arm:
+            // retail's 64-bit compare is `jg <reset> / jl <reroll> / cmp lo / jae
+            // <reset>`, i.e. the reroll block is the FALL-THROUGH, so the condition
+            // is `elapsed < window`. Spelling it `>= window` + `goto` hoists the
+            // reset block inline and duplicates the epilogue (DUP-EXIT).
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_arrivalReroll64
-                >= m_arrivalRerollWindow64) {
-                goto L8b5;
-            }
-            CWwdGameObjectA* h = m_object;
-            i32 baseX = h->m_extent.left;
-            i32 spanX = abs(h->m_extent.right - baseX);
-            i32 baseY = h->m_extent.top;
-            i32 spanY = abs(h->m_extent.bottom - baseY);
-            i32 outX = baseX;
-            if (spanX != 0) {
-                outX += GruntRand() % spanX;
-            }
-            i32 outY = baseY;
-            if (spanY != 0) {
-                outY += GruntRand() % spanY;
-            }
-            TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
-            i32 m328 = CoordCount();
-            if (m328 != 0) {
-                i32 mx = spanX > spanY ? spanX : spanY;
-                if (m328 > mx) {
-                    SetEntrancePos(1, 1);
+                < m_arrivalRerollWindow64) {
+                // BOTH spans, THEN both origins - and the origin IS the rolled point
+                // (no separate baseX/baseY). That declaration order is what gives
+                // retail's frame (`sub esp,0xc`, 664 B) and the `add DWORD PTR
+                // [esp+0x14],edx` memory-add; interleaving span/origin per axis
+                // enregisters outY and drops the frame to one dword.
+                // config/axes/resolvearrivalreposition.json: 91.31 -> 95.21.
+                CWwdGameObjectA* h = m_object;
+                i32 spanX = abs(h->m_extent.right - h->m_extent.left);
+                i32 spanY = abs(h->m_extent.bottom - h->m_extent.top);
+                i32 outX = h->m_extent.left;
+                i32 outY = h->m_extent.top;
+                if (spanX != 0) {
+                    outX += GruntRand() % spanX;
                 }
+                if (spanY != 0) {
+                    outY += GruntRand() % spanY;
+                }
+                TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
+                i32 m328 = CoordCount();
+                if (m328 != 0) {
+                    i32 mx = spanX > spanY ? spanX : spanY;
+                    if (m328 > mx) {
+                        SetEntrancePos(1, 1);
+                    }
+                }
+            } else {
+                ResetEntranceAnimation(1, 1, 0);
+                m_arrivalRerollLo = 0;
+                m_arrivalRerollWindowLo = 0;
+                m_arrivalRerollHi = 0;
+                m_arrivalRerollWindowHi = 0;
+                m_arrivalRerollWindowLo = GruntRand() % 0x7530 + 0x7530;
+                m_arrivalRerollWindowHi = 0;
+                m_arrivalRerollLo = static_cast<i32>(g_frameTime);
+                m_arrivalRerollHi = 0;
             }
             m_390 = 1;
             goto L8a2;
@@ -192,23 +219,14 @@ i32 CGrunt::ResolveArrivalReposition() {
 L8a2:
     m_dwell = 0;
     return 1;
-
-L8b5:
-    ResetEntranceAnimation(1, 1, 0);
-    m_arrivalRerollLo = 0;
-    m_arrivalRerollWindowLo = 0;
-    m_arrivalRerollHi = 0;
-    m_arrivalRerollWindowHi = 0;
-    m_arrivalRerollWindowLo = GruntRand() % 0x7530 + 0x7530;
-    m_arrivalRerollWindowHi = 0;
-    m_arrivalRerollLo = static_cast<i32>(g_frameTime);
-    m_arrivalRerollHi = 0;
-    m_390 = 1;
-    goto L8a2;
 }
 
 // ===========================================================================
 // @early-stop
+// Deep per-tick arrival/scan step (non-"I" grunt types). Logic reconstructed fully;
+// same deep-regalloc + slot-recycle + cold-block wall family as GruntUpdateStep.cpp's
+// UpdateArrival/SeekTarget and GruntArrivalStep.cpp's StepArrivalDefenseAlt.
+// Final-sweep candidate.
 RVA(0x000ecc90, 0x86a)
 i32 CGrunt::ArrivalScanA() {
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0) {
@@ -430,6 +448,19 @@ L_ed153:
 
 // ===========================================================================
 // @early-stop
+// Deep per-tick idle/wander AI step: ~18 reloc-masked engine calls (mixed __thiscall
+// receivers on this/other-grunt + the on-screen cue + __cdecl frees), the manager-grid
+// chain, the free-list splice/drop, a 6-way phase jump table and a PtInRect box-clip.
+// Logic reconstructed in full from the disasm. Banked at ~74% fuzzy (stub was 28.6%).
+// Two propagating codegen walls, same family as the GruntUpdateStep siblings:
+//   (1) frame-size shift: cl reserves `sub esp,0x14`, retail `sub esp,0x18` (retail keeps
+//       one extra 4-byte local slot for the CommitNeighbor m_17c/m_180 spill), which
+//       offsets every [esp+N] displacement + the epilogue `add esp,N`;
+//   (2) prologue zero-register colouring swap: retail zeroes ebx (the CSE'd 0 used by all
+//       the `cmp field,0` / `mov field,0`) before ebp (the atTarget flag); cl picks the
+//       opposite, so every `cmp X,ebx` <-> `cmp X,ebp` flips downstream.
+// Both are cl register-allocator / stack-slot tie-breaks structured C++ cannot force.
+// Final-sweep candidate.
 RVA(0x000ed9f0, 0x8dd)
 i32 CGrunt::WanderStep() {
     m_defenderX = m_lastTilePxX;
@@ -850,6 +881,16 @@ i32 CGrunt::ArrivalReticleScan() {
 
 // ===========================================================================
 // @early-stop
+// 23%->34% (2026-07-05): the phase dispatch is a `switch (m_defenderState)`, not
+// if/else - that produced retail's `sub eax; je phase0; dec; je phase1; dec; jne tail;
+// [phase2 fall-through]` ladder and the phase2/phase1/phase0 reverse layout, and the
+// `goto tail`s became `break`s. Residual walls (final sweep):
+//   * phase-2 powered-up recheck (~78 insns, retail 0x1cb-0x24d) is DEAD in-source (the
+//     switch runs only with m_220==0, which the top powered-up early-out proves) so THIS
+//     cl dead-code-eliminates it while retail emits it - the same DCE artifact as
+//     GruntChargeStep's state-2 recheck; no clean C spelling forces the dead block.
+//   * `if (!strcmp(name,"I"))` sete-bool vs my `!=0` branch, and the deep regalloc across
+//     the grunt-under-HUD pointer / clock / grid bases.
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::UpdateArrival() {
     char* name = *g_typeColl.GetNameRecord(m_objAux->m_1c);
@@ -1092,6 +1133,10 @@ i32 CGrunt::UpdateArrival() {
 
 // ===========================================================================
 // @early-stop
+// Sibling of ArrivalScanA with a __cdecl board test (CellTargetable 0xf0db0) instead
+// of the inlined point-in-rect, and a live-grunt-LIST scan (m_tileMgr->m_4, PtInRect
+// membership) instead of the grid-cell box scan. Logic reconstructed fully; same
+// deep-regalloc + slot-recycle wall family. Final-sweep candidate.
 RVA(0x000f0e20, 0x928)
 i32 CGrunt::ArrivalScanB() {
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0) {
@@ -1326,6 +1371,17 @@ L_scanb:
 }
 
 // @early-stop
+// arrival-defender regalloc/redundant-recheck wall (~big body): the prologue (m_248
+// dirty stamp, GetOccupant settle + RectContains in-range latch), the powered-up release
+// gate (FindGridNeighbor + the m_220/m_21c/m_218/m_1e4 clear-state with its cached
+// ecx=m_220/eax=m_21c re-reads), and every m_defenderState (0/1/2/3) case (the grid-occupant
+// CommitNeighbor commits, the 4-way StepArrivalDrop tile-walk toward m_defenderX/Y, the
+// on-screen CueA 0x366) are byte-faithful in shape/offsets/symbols/constants. Residue:
+// retail caches m_220/m_21c in callee-saved regs across the GetOccupant call and folds
+// the switch-bound 3 into the m_defenderState=3 store (ebx pin); structured C++ re-reads the members
+// + materializes the immediate, permuting the register pins across the redundant arrival
+// re-checks. Source-invariant (the documented regalloc/recheck wall); deferred to the
+// final sweep.
 RVA(0x000f1c70, 0x60d)
 i32 CGrunt::StepArrivalDefenseAlt() {
     m_arrivalFlags |= 0x40000;
@@ -1567,6 +1623,11 @@ tail:
 // tile and on-screen (RectContains) - commits a neighbour link to it. __thiscall,
 // ret 0, always returns 1.
 // @early-stop
+// regalloc wall: logic/CFG/cue-paths exact, the m_defenderState dispatch is the retail
+// switch subtract-chain (sub 0/sub 2, see switch-subtract-chain-vs-ifelse). Residue
+// = retail pins `this` in edi + occupant in esi (mine flips them) and pre-stages
+// the CommitNeighbor stack args (sub esp,8; redundant [esp+8]/[esp+1c] copies) -
+// pure register/scheduling placement, no source lever flips it. ~75%.
 RVA(0x000f26f0, 0x106)
 i32 CGrunt::ResolveArrivalNeighbor() {
     switch (m_defenderState) {
@@ -1630,6 +1691,12 @@ i32 CGrunt::ResolveArrivalNeighbor() {
 //            (dwell elapsed) tile-switch to the occupant + advance to state 1 + cue,
 //            or (no occupant) reset the idle timer / re-roll a random in-region target.
 // @early-stop
+// shared ResolveArrivalReposition wall: the m_defenderState switch subtract-chain, the grid
+// index math, the in-radius/settled/on-screen gates, the CommitTileSlot/CommitNeighbor
+// paths, the 64-bit sbb idle-timer, the idiv/rand re-roll + abs spans and the
+// structure-1 cue are all reconstructed in shape/order. Residue is the MSVC /O2
+// idiv/rand scheduling, the shared-tail zero-register sharing and the redundant
+// CommitNeighbor stack spills - pure regalloc/scheduling placement. Final sweep.
 RVA(0x000f2b20, 0x6e1)
 i32 CGrunt::StepArrivalDefense() {
     m_defenderX = m_lastTilePxX;
@@ -1882,6 +1949,10 @@ i32 CGrunt::StepArrivalDefense() {
 
 // ===========================================================================
 // @early-stop
+// Sibling of ArrivalScanA: stamps m_300/m_304 AFTER the atTarget probe, duplicates
+// the powered-up reset per branch, gates the box scan on m_220==0 too, and matches
+// grid cells by flag 0x10000 (active-move by 0x40|0x10000). Logic reconstructed fully;
+// same deep-regalloc + slot-recycle wall family. Final-sweep candidate.
 RVA(0x000f36a0, 0x78e)
 i32 CGrunt::ArrivalScanC() {
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_1c), "I") == 0) {
@@ -2088,6 +2159,16 @@ L_tailc:
 }
 
 // @early-stop
+// regalloc + region-build wall. Complete reconstruction folded onto the canonical
+// CGrunt: the type-name gate (inline strcmp of g_typeColl.Lookup(m_objAux->m_1c) vs "F"),
+// the m_defenderState state dispatch (0x19/0x1a re-mark, 0/2/4), the 5x5-border
+// 16-point accumulator build + random-free-cell relocation with tile marking
+// (TileSwitch), the state-0 neighbour resolve (GetOccupant + RectContains/CommitNeighbor/
+// GruntInRadius + m_cueSink->CueA on-screen cue), and the common tail's coord recycle +
+// CommitTileSlot2 arrival commit all align by shape (llvm-objdump -dr). Residual: MSVC5
+// pins the tile coords/loop indices across esi/edi/ebp/ebx and schedules the 16 unrolled
+// packed-point stores + IntersectRect rect temporaries at [esp+N] slots a source
+// transcription can't reproduce exactly.
 RVA(0x000f60f0, 0xb30)
 i32 CGrunt::PhaseStep() {
     ::CDWordArray acc;
@@ -2335,6 +2416,10 @@ common: {
 
 // ===========================================================================
 // @early-stop
+// Seek variant of UpdateArrival (scan the 15 grid slots for the nearest live
+// target, drop the queued move nodes, re-probe). Same reloc-masked engine-call set +
+// the deep regalloc / cold-block wall. Logic reconstructed faithfully. Final-sweep
+// candidate.
 RVA(0x000f71c0, 0x721)
 i32 CGrunt::SeekTarget() {
     this->m_defenderX = this->m_lastTilePxX;
@@ -2609,6 +2694,12 @@ i32 CGrunt::SeekTarget() {
 // on-screen cue. State 0 commits the occupant's tile slot on a rand%100 roll, else
 // (dwell elapsed) re-rolls a random in-region target / resets the idle timer.
 // @early-stop
+// shared StepArrivalDefense regalloc/scheduling wall: the m_defenderState subtract-chain
+// switch, the 15-wide grid index, the in-radius/committed/settled/on-screen gates,
+// the dual cue blocks (store-before vs store-after), the 64-bit sbb idle-timer, the
+// idiv/rand in-region re-roll + abs spans and the max-spread SetEntrancePos
+// escalation are reconstructed in shape/order. Residue is the MSVC /O2 idiv/rand
+// scheduling + the ebx zero-register tail sharing (same family as the twin).
 RVA(0x000f8240, 0x5b9)
 i32 CGrunt::StepArrivalDefenseLean() {
     m_defenderX = m_lastTilePxX;

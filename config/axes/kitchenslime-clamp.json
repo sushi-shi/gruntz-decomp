@@ -1,0 +1,70 @@
+{
+ "schema": 1,
+ "source": "src/Gruntz/KitchenSlime.cpp",
+ "rva": "0xb23a0",
+ "axes": [
+  {
+   "name": "right",
+   "find": "    m_object->m_extent.right =\n        (m_object->m_screenX <= m_object->m_164) ? m_object->m_164 : m_object->m_screenX;",
+   "options": [
+    {
+     "name": "baseline"
+    },
+    {
+     "name": "ge_swapped",
+     "replace": "    m_object->m_extent.right =\n        (m_object->m_164 >= m_object->m_screenX) ? m_object->m_164 : m_object->m_screenX;"
+    },
+    {
+     "name": "lt_elsefirst",
+     "replace": "    m_object->m_extent.right =\n        (m_object->m_164 < m_object->m_screenX) ? m_object->m_screenX : m_object->m_164;"
+    },
+    {
+     "name": "gt_thenfirst",
+     "replace": "    m_object->m_extent.right =\n        (m_object->m_screenX > m_object->m_164) ? m_object->m_screenX : m_object->m_164;"
+    }
+   ]
+  },
+  {
+   "name": "top",
+   "find": "    m_object->m_extent.top =\n        (m_object->m_screenY >= m_object->m_168) ? m_object->m_168 : m_object->m_screenY;",
+   "options": [
+    {
+     "name": "baseline"
+    },
+    {
+     "name": "le_swapped",
+     "replace": "    m_object->m_extent.top =\n        (m_object->m_168 <= m_object->m_screenY) ? m_object->m_168 : m_object->m_screenY;"
+    },
+    {
+     "name": "gt_elsefirst",
+     "replace": "    m_object->m_extent.top =\n        (m_object->m_168 > m_object->m_screenY) ? m_object->m_screenY : m_object->m_168;"
+    },
+    {
+     "name": "lt_thenfirst",
+     "replace": "    m_object->m_extent.top =\n        (m_object->m_screenY < m_object->m_168) ? m_object->m_screenY : m_object->m_168;"
+    }
+   ]
+  },
+  {
+   "name": "bottom",
+   "find": "    m_object->m_extent.bottom =\n        (m_object->m_screenY <= m_object->m_168) ? m_object->m_168 : m_object->m_screenY;",
+   "options": [
+    {
+     "name": "baseline"
+    },
+    {
+     "name": "ge_swapped",
+     "replace": "    m_object->m_extent.bottom =\n        (m_object->m_168 >= m_object->m_screenY) ? m_object->m_168 : m_object->m_screenY;"
+    },
+    {
+     "name": "lt_elsefirst",
+     "replace": "    m_object->m_extent.bottom =\n        (m_object->m_168 < m_object->m_screenY) ? m_object->m_screenY : m_object->m_168;"
+    },
+    {
+     "name": "gt_thenfirst",
+     "replace": "    m_object->m_extent.bottom =\n        (m_object->m_screenY > m_object->m_168) ? m_object->m_screenY : m_object->m_168;"
+    }
+   ]
+  }
+ ]
+}

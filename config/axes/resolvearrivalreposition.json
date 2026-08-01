@@ -1,0 +1,36 @@
+{
+ "schema": 1,
+ "source": "src/Gruntz/GruntArrivalScan.cpp",
+ "rva": "0xec670",
+ "axes": [
+  {
+   "name": "reroll_decls",
+   "find": "                CWwdGameObjectA* h = m_object;\n                i32 outX = h->m_extent.left;\n                i32 spanX = abs(h->m_extent.right - outX);\n                i32 outY = h->m_extent.top;\n                i32 spanY = abs(h->m_extent.bottom - outY);\n                if (spanX != 0) {\n                    outX += GruntRand() % spanX;\n                }\n                if (spanY != 0) {\n                    outY += GruntRand() % spanY;\n                }",
+   "options": [
+    {
+     "name": "baseline"
+    },
+    {
+     "name": "outY_first",
+     "replace": "                CWwdGameObjectA* h = m_object;\n                i32 outY = h->m_extent.top;\n                i32 spanY = abs(h->m_extent.bottom - outY);\n                i32 outX = h->m_extent.left;\n                i32 spanX = abs(h->m_extent.right - outX);\n                if (spanX != 0) {\n                    outX += GruntRand() % spanX;\n                }\n                if (spanY != 0) {\n                    outY += GruntRand() % spanY;\n                }"
+    },
+    {
+     "name": "spans_then_outs",
+     "replace": "                CWwdGameObjectA* h = m_object;\n                i32 spanX = abs(h->m_extent.right - h->m_extent.left);\n                i32 spanY = abs(h->m_extent.bottom - h->m_extent.top);\n                i32 outX = h->m_extent.left;\n                i32 outY = h->m_extent.top;\n                if (spanX != 0) {\n                    outX += GruntRand() % spanX;\n                }\n                if (spanY != 0) {\n                    outY += GruntRand() % spanY;\n                }"
+    },
+    {
+     "name": "spanY_before_outY",
+     "replace": "                CWwdGameObjectA* h = m_object;\n                i32 outX = h->m_extent.left;\n                i32 spanX = abs(h->m_extent.right - outX);\n                i32 spanY = abs(h->m_extent.bottom - h->m_extent.top);\n                i32 outY = h->m_extent.top;\n                if (spanX != 0) {\n                    outX += GruntRand() % spanX;\n                }\n                if (spanY != 0) {\n                    outY += GruntRand() % spanY;\n                }"
+    },
+    {
+     "name": "no_h_local",
+     "replace": "                i32 outX = m_object->m_extent.left;\n                i32 spanX = abs(m_object->m_extent.right - outX);\n                i32 outY = m_object->m_extent.top;\n                i32 spanY = abs(m_object->m_extent.bottom - outY);\n                if (spanX != 0) {\n                    outX += GruntRand() % spanX;\n                }\n                if (spanY != 0) {\n                    outY += GruntRand() % spanY;\n                }"
+    },
+    {
+     "name": "base_pair",
+     "replace": "                CWwdGameObjectA* h = m_object;\n                i32 baseX = h->m_extent.left;\n                i32 spanX = abs(h->m_extent.right - baseX);\n                i32 baseY = h->m_extent.top;\n                i32 spanY = abs(h->m_extent.bottom - baseY);\n                i32 outX = baseX;\n                i32 outY = baseY;\n                if (spanX != 0) {\n                    outX += GruntRand() % spanX;\n                }\n                if (spanY != 0) {\n                    outY += GruntRand() % spanY;\n                }"
+    }
+   ]
+  }
+ ]
+}
