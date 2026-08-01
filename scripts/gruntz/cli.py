@@ -1255,6 +1255,11 @@ def _add_sema(sub) -> None:
     sd.add_argument("--dot", action="store_true",
                     help="with --blocks: emit the CFG as graphviz DOT (with --diff: "
                          "target graph, differing blocks filled red)")
+    sd.add_argument("--switch", action="store_true",
+                    help="dereference the jump table(s) behind an indirect `jmp` and print "
+                         "case -> target, reading the bytes out of GRUNTZ.EXE. Cases that "
+                         "share a target are ONE source arm. Enumerating a switch by "
+                         "inference is how missing case runs got shipped.")
     sd.add_argument("--branches", action="store_true",
                     help="the ordered CONDITIONAL-BRANCH sequence, with each target named "
                          "by branch index (so a uniform displacement shift compares equal) "

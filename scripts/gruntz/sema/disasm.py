@@ -511,6 +511,92 @@ def rich(rva: str, want_lite: bool) -> str:
     return "\n".join(out) + "\n"
 
 
+def switch_tables(rva: str) -> str:
+    """Dereference the jump table(s) behind an indirect `jmp` and print case -> target.
+
+    `--diff`/`--blocks` already SHOW the tables' addresses, and that is where three lanes
+    stopped and went to read the image by hand - each time finding a real defect: a
+    21-arm switch entirely absent from our source, a case run whose omission left five
+    tool kinds taking the wrong value, and a pair of cases proven to reach byte-identical
+    blocks (so a sieve row was lowering, not a missing handler). Enumerating a switch by
+    INFERENCE is the step that was getting it wrong; these bytes are ground truth.
+
+    MSVC 5.0 emits two shapes:
+      dense    cmp r,N / ja <default> / jmp [r*4 + TARGETS]
+      sparse   cmp r,N / ja <default> / mov dl,[r + INDEX] / jmp [edx*4 + TARGETS]
+    The sparse INDEX byte maps case -> slot, so several cases share one slot; that
+    sharing IS the information - it is what proves a case RUN reaches one arm.
+
+    Two things this must get right, both learned from real output:
+      * the `cmp`/`ja` pair is routinely INTERLEAVED by the scheduler, so the bound is
+        not on the line before the branch;
+      * the selector is usually BIASED first (`add eax,0xfffffffe` = -2), so table index
+        0 is source `case 2`. Printing table indices as case labels would be a lie.
+    """
+    import re
+    from gruntz.core import get_context
+    from gruntz.core import pe as _pe
+    img = get_context().pe
+    lines = [ln.strip() for ln in target_text(rva).splitlines()]
+    ji = next((i for i, ln in enumerate(lines)
+               if re.search(r"jmp\s+DWORD PTR \[e[a-z]{2}\*4\+0x[0-9a-f]+\]", ln)), None)
+    if ji is None:
+        return "[no indirect `jmp [reg*4+TABLE]` here - not a jump-table switch]\n"
+    tva = int(re.search(r"\*4\+0x([0-9a-f]+)\]", lines[ji]).group(1), 16)
+
+    iva = bias = n = None
+    for ln in reversed(lines[max(0, ji - 14):ji]):
+        m = re.search(r"mov\s+[a-z]l,BYTE PTR \[e[a-z]{2}\+0x([0-9a-f]+)\]", ln)
+        if m and iva is None:
+            iva = int(m.group(1), 16)
+        m = re.search(r"cmp\s+e[a-z]{2},0x([0-9a-f]+)", ln)
+        if m and n is None:
+            n = int(m.group(1), 16) + 1
+        m = re.search(r"add\s+e[a-z]{2},0x([0-9a-f]+)", ln)
+        if m and bias is None:
+            v = int(m.group(1), 16)
+            bias = -(0x100000000 - v) if v > 0x7fffffff else v
+        m = re.search(r"sub\s+e[a-z]{2},0x([0-9a-f]+)", ln)
+        if m and bias is None:
+            bias = -int(m.group(1), 16)
+        # `lea eax,[ecx-0x1]` is the third bias spelling and the one that was missed:
+        # it reported source cases 1..8 as 0..7 until this matched.
+        m = re.search(r"lea\s+e[a-z]{2},\[e[a-z]{2}([+-])0x([0-9a-f]+)\]", ln)
+        if m and bias is None:
+            bias = (1 if m.group(1) == "+" else -1) * int(m.group(2), 16)
+    lo = -bias if bias else 0          # source case value of table index 0
+
+    head = f"[switch @ {rva}: targets 0x{tva:x}"
+    if iva:
+        head += f", index bytes 0x{iva:x}"
+    if n is not None:
+        head += f", {n} case slot(s)"
+    if bias:
+        head += f", selector biased by {bias} -> first case is {lo}"
+    out = [head + "]"]
+    if n is None:
+        return "\n".join(out + ["  (no `cmp reg,N` bound found - read the guard by hand)"]) + "\n"
+
+    rv = lambda va: va - _pe.IMAGEBASE
+    runs = {}
+    for k in range(n):
+        # pe exposes u32 only; little-endian, so the low byte IS the byte here.
+        slot = (img.u32(rv(iva) + k) & 0xff) if iva else k
+        t = img.u32(rv(tva) + slot * 4) - _pe.IMAGEBASE
+        # Dense form has no index table, so slot == k and keying on it would put every
+        # case in its own group; key on the TARGET alone there so a run still shows.
+        runs.setdefault((slot, t) if iva else (None, t), []).append(k + lo)
+    for (slot, t), cases in sorted(runs.items(), key=lambda kv: kv[1][0]):
+        cs = ",".join(str(c) for c in cases)
+        out.append(f"  case {cs:<24} -> 0x{t:06x}"
+                   + (f"   [slot {slot}]" if iva else "")
+                   + ("   <- ONE arm, shared by a run" if len(cases) > 1 else ""))
+    out.append("  (cases sharing a target are ONE source arm; keeping them as separate "
+               "case labels in EMISSION order is load-bearing - merging groups retail "
+               "keeps apart collapses jump-table slots)")
+    return "\n".join(out) + "\n"
+
+
 def hint_branches(rva: str) -> None:
     """Print the `--branches` pointer when a diff view has nothing to show but the
     function is NOT matched.
@@ -659,6 +745,9 @@ def branch_view(rva: str, want_diff: bool, want_target: bool = False) -> int:
 
 
 def run(args) -> None:
+    if getattr(args, "switch", False):
+        print(switch_tables(args.rva), end="")
+        sys.exit(0)
     if getattr(args, "branches", False):
         sys.exit(branch_view(args.rva, bool(args.diff),
                              bool(getattr(args, "target", False))))
