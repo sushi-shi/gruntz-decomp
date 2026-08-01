@@ -718,8 +718,10 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
             }
         }
 
-        TextExtent e = MeasureText(text);
-        if (e.width + x <= right && !nl) {
+        // Site-local optimum from the 48-cell axes matrix: LayoutWrapped wants the
+        // outer extent read INLINE but keeps the whole-struct head copy and the
+        // fresh Right() count - a third distinct optimum over the same five sites.
+        if (MeasureText(text).width + x <= right && !nl) {
             line += text;
             text = "";
             if (m_font->GetMaxHeight() + y <= bottom) {
