@@ -434,14 +434,17 @@ void FontRenderer::DrawWrapped(
         } else {
             i32 i = 0;
             i32 breakNL = 0;
-            while (i < len) {
+            // text.GetLength() again, not the outer `len`: retail re-loads it here
+            // (0x17ae3a `mov edx,[ecx-8]`) and CSEs it with the newline test below,
+            // which is why the entry guard folds straight past that test.
+            while (i < text.GetLength()) {
                 u8 ch = text[i];
                 if (ch == ' ' || ch == '\n') {
                     break;
                 }
                 i++;
             }
-            if (i < len && text[i] == '\n') {
+            if (i < text.GetLength() && text[i] == '\n') {
                 breakNL = 1;
             }
             CString head;
@@ -605,14 +608,17 @@ TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right
         } else {
             i32 i = 0;
             i32 breakNL = 0;
-            while (i < len) {
+            // text.GetLength() again, not the outer `len`: retail re-loads it here
+            // (0x17ae3a `mov edx,[ecx-8]`) and CSEs it with the newline test below,
+            // which is why the entry guard folds straight past that test.
+            while (i < text.GetLength()) {
                 u8 ch = text[i];
                 if (ch == ' ' || ch == '\n') {
                     break;
                 }
                 i++;
             }
-            if (i < len && text[i] == '\n') {
+            if (i < text.GetLength() && text[i] == '\n') {
                 breakNL = 1;
             }
             CString head = text.Left(i + 1);
@@ -716,14 +722,17 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
         } else {
             i32 i = 0;
             i32 breakNL = 0;
-            while (i < len) {
+            // text.GetLength() again, not the outer `len`: retail re-loads it here
+            // (0x17ae3a `mov edx,[ecx-8]`) and CSEs it with the newline test below,
+            // which is why the entry guard folds straight past that test.
+            while (i < text.GetLength()) {
                 u8 ch = text[i];
                 if (ch == ' ' || ch == '\n') {
                     break;
                 }
                 i++;
             }
-            if (i < len && text[i] == '\n') {
+            if (i < text.GetLength() && text[i] == '\n') {
                 breakNL = 1;
             }
             CString head = text.Left(i + 1);
