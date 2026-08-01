@@ -175,12 +175,23 @@ i32 CFecFile::CreateArchive(const char* name) {
 // the colouring agreed; what was missing was that FecEncode is a __thiscall MEMBER
 // (retail sets `mov ecx,this` right before the call; see the header note), and the
 // name-padding loop is a do-while (retail has no zero-trip skip).
-// Real residuals, all verified against retail's bytes:
-//   - our /GX frame is 4 B short (0x38 vs 0x3c) - retail keeps one more 4-byte local,
-//     and every [esp+N] slot below it is shifted;
-//   - retail does NOT tail-merge the two early-fail arms: the `file.Open` failure and
-//     the `file.Seek(0,0)` failure each get their own inline epilogue, ours jump to a
-//     shared one (`negated-condition-far-block` did not reproduce it: 80.5%);
+// 82.9 -> 96.9 (2026-08-01): the cancel arm had a SPURIOUS `m_nextIndex--`. It is a
+// behaviour bug, not a codegen one, and `--branches --diff` is what exposed it - branch
+// #6 read `base jne -> target je`, i.e. our fail block owned the wrong side of the
+// fallthrough. Retail keeps `&m_nextIndex` (this+0x134) in a stack slot and the two
+// bail-outs enter the SAME teardown at different points: the `file.Seek(0,0)` failure at
+// 0x17bb05 runs `mov eax,[esp+0x18] / dec DWORD PTR [eax]` first, while `*pCancel` jumps
+// to 0x17bb0b - one instruction PAST the `dec`. Only the seek failure rolls the counter
+// back; a cancel leaves it. Ours decremented on both, so cl merged the two exits into one
+// block and every branch below it inverted. That single statement was worth 14 points,
+// and the branch sequences now AGREE end to end.
+// (The old note's "retail does NOT tail-merge the two early-fail arms" was reading this
+// same thing from the wrong end - retail DOES merge them, it just enters at two offsets.)
+// Remaining residual, verified against retail's bytes:
+//   - our /GX frame is 4 B short (0x38 vs 0x3c) - retail spills the `&m_nextIndex`
+//     address CSE to a slot where cl rematerializes it, and every [esp+N] below shifts.
+//     Not source-reachable: writing the pointer out as `i32* pIndex = &m_nextIndex;` and
+//     routing the dec and/or the Write through it is byte-identical (96.504, size 886);
 //   - the padding loop's `and edx,0xff` + `mov dh,dl` byte-duplication residue;
 //   - the `[edi+esi-1]` vs `[esi+edi-1]` SIB base/index coin-flip (see MonoClear).
 RVA(0x0017b950, 0x380)
@@ -249,8 +260,10 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
                 DispatchMessageA(&msg);
             }
         }
+        // NO `m_nextIndex--` here: retail's cancel arm branches to 0x17bb0b, which is
+        // one instruction PAST the `dec DWORD PTR [eax]` at 0x17bb09 that the
+        // file.Seek(0,0) failure arm runs. Only the seek failure rolls the counter back.
         if (*pCancel != 0) {
-            m_nextIndex--;
             return 0;
         }
         u32 chunk = 0x8000;
