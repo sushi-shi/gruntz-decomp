@@ -1436,17 +1436,14 @@ void DSoundList::RemoveMatching(void* key, u32 tag) {
 // volume-ramp play params. The stamp arg == -1 means "start now" -> latch the
 // global-clock reading (_g_pTimeGetTime @ 0x6c4650); otherwise use it verbatim.
 // CloneAndPlay's `new DSoundVoice(...)` binds here.
-// @early-stop
-// /GX ctor-EH-frame wall: the class has a class-specific operator delete (the
-// PureSoundElem RezFree base), so cl wraps construction in an SEH scope (push -1 /
-// handler / state var) to run operator delete if the body throws; the field-store
-// + vptr-stamp + timeGetTime body is byte-exact, the EH scaffold is the residual.
+// The vptr stamp SPLITS the init list from the body: retail stores +0xc/+0x10/+0x14
+// /+0x1c BEFORE `mov [esi],??_7DSoundVoice` and +0x18/+0x20/+0x24 after. That order
+// is declaration order with m_rampEndVolume (+0x18) SKIPPED, which is exactly a
+// member-init list that omits it - so the ramp-end/duration/start-time stores are
+// the body.
 RVA(0x00136fe0, 0x7b)
-DSoundVoice::DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 slot, i32 stamp) {
-    m_live = 1;
-    m_buffer = owner;
-    m_stopAndRewind = slot;
-    m_rampStartVolume = pct;
+DSoundVoice::DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 slot, i32 stamp)
+    : m_live(1), m_buffer(owner), m_stopAndRewind(slot), m_rampStartVolume(pct) {
     m_rampEndVolume = key;
     m_rampDurationMs = mode;
     m_rampStartTime = (stamp == -1) ? ::timeGetTime() : stamp;

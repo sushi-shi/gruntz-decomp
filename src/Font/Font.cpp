@@ -338,10 +338,13 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
                 u16* dst = bits + ((row - rc.top + y) * pitch) / 2 + destX;
                 for (i32 col = startCol; col < clippedW; col++) {
                     u8 cover = glyphBuf[row * gw + col];
+                    // Negative form: retail's `cmp al,0xff / je 0x17a34f` jumps AWAY
+                    // to the opaque store and falls into the blend, so the blend is
+                    // the `if` arm. Spelt `== 0xff` first, cl makes the opaque store
+                    // the fallthrough and inverts the branch (the one polarity flip
+                    // `--branches --diff` reports for this function).
                     if (cover == 0) {
-                    } else if (cover == 0xff) {
-                        *dst = static_cast<u16>(packedColor);
-                    } else {
+                    } else if (cover != 0xff) {
                         i32 inv = 255 - cover;
                         u16 dp = *dst;
                         i32 dr = static_cast<u8>((static_cast<u8>((dp >> g_rUp)) << g_rDown));
@@ -357,6 +360,8 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
                              | (static_cast<u8>((static_cast<u8>(gB) >> static_cast<u8>(g_gDown)))
                                 << g_gUp))
                         );
+                    } else {
+                        *dst = static_cast<u16>(packedColor);
                     }
                     dst++;
                 }
@@ -483,29 +488,32 @@ void FontRenderer::DrawWrapped(
                     x = headW + rc.left;
                 }
             } else {
-                if (head.GetLength() > 0) {
-                    while (y < rc.bottom) {
-                        i32 chW = MeasureText(CString(head.GetAt(0), 1)).width;
-                        if (chW + x > rc.right) {
-                            if (hcenter) {
-                                i32 cx = rc.left + rc.Width() / 2 - MeasureText(line).width / 2;
-                                DrawLine(line, surf, cx, y, z);
-                            } else {
-                                DrawLine(line, surf, rc.left, y, z);
-                            }
-                            y = y + lineAdvance;
-                            x = rc.left;
-                            line = "";
-                        }
-                        if (lineAdvance + y >= rc.bottom) {
-                            break;
-                        }
-                        line += head[0];
-                        x += chW;
-                        if (head.GetLength() <= 0) {
-                            break;
-                        }
+                // The LOOP CONDITION is the remaining head length; `y < rc.bottom` is
+                // a plain in-body break. cl rotates the CONDITION only, so retail's
+                // back-edge (0x17aa5d) lands on the y-test block at 0x17a925 - the
+                // loop HEAD. `while (y < rc.bottom)` makes cl rotate on the y-test
+                // instead and duplicate it at the bottom (one extra branch).
+                while (head.GetLength() > 0) {
+                    if (y >= rc.bottom) {
+                        break;
                     }
+                    i32 chW = MeasureText(CString(head.GetAt(0), 1)).width;
+                    if (chW + x > rc.right) {
+                        if (hcenter) {
+                            i32 cx = rc.left + rc.Width() / 2 - MeasureText(line).width / 2;
+                            DrawLine(line, surf, cx, y, z);
+                        } else {
+                            DrawLine(line, surf, rc.left, y, z);
+                        }
+                        y = y + lineAdvance;
+                        x = rc.left;
+                        line = "";
+                    }
+                    if (lineAdvance + y >= rc.bottom) {
+                        break;
+                    }
+                    line += head[0];
+                    x += chW;
                 }
             }
             if (breakNL) {
@@ -660,28 +668,30 @@ TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right
                     x = headW + x0;
                 }
             } else {
-                i32 j = 0;
-                if (head.GetLength() > 0) {
-                    while (y < bottom) {
-                        i32 chW = MeasureText(CString(head.GetAt(j), 1)).width;
-                        if (chW + x > right) {
-                            y = y + m_font->GetMaxHeight();
-                            x = x0;
-                            i32 w = MeasureText(line).width;
-                            if (maxWidth <= w) {
-                                maxWidth = w;
-                            }
-                        }
-                        if (m_font->GetMaxHeight() + y >= bottom) {
-                            break;
-                        }
-                        line += head[j];
-                        x += chW;
-                        j++;
-                        if (j >= head.GetLength()) {
-                            break;
+                // The LOOP CONDITION is `j < head.GetLength()`; `y < bottom` is a
+                // plain in-body break. cl rotates the CONDITION only - with j==0 the
+                // peeled entry test folds to `test ecx,ecx / jle` (0x17af96) and the
+                // back-edge (0x17b064 `jl 0x17af9e`) lands ON the y-test, the loop
+                // HEAD. `while (y < bottom) { ...; if (j >= len) break; }` makes cl
+                // rotate on the y-test and duplicate it at the bottom instead.
+                for (i32 j = 0; j < head.GetLength(); j++) {
+                    if (y >= bottom) {
+                        break;
+                    }
+                    i32 chW = MeasureText(CString(head.GetAt(j), 1)).width;
+                    if (chW + x > right) {
+                        y = y + m_font->GetMaxHeight();
+                        x = x0;
+                        i32 w = MeasureText(line).width;
+                        if (maxWidth <= w) {
+                            maxWidth = w;
                         }
                     }
+                    if (m_font->GetMaxHeight() + y >= bottom) {
+                        break;
+                    }
+                    line += head[j];
+                    x += chW;
                 }
             }
             if (breakNL) {
@@ -777,24 +787,29 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
                     x = headW + x0;
                 }
             } else {
-                if (head.GetLength() > 0) {
-                    while (y < bottom) {
-                        i32 chW = MeasureText(CString(head.GetAt(0), 1)).width;
-                        if (chW + x > right) {
-                            y = y + m_font->GetMaxHeight();
-                            x = x0;
-                            totalChars += line.GetLength();
-                            line = "";
-                        }
-                        if (m_font->GetMaxHeight() + y >= bottom) {
-                            break;
-                        }
-                        line += head[0];
-                        x += chW;
-                        if (head.GetLength() <= 0) {
-                            break;
-                        }
+                // The LOOP CONDITION is the remaining head length; `y < bottom` is a
+                // plain in-body break. cl rotates the CONDITION (peeling it to the
+                // 0x17b351 entry guard) and lands the back-edge (0x17b410 `jg
+                // 0x17b360`) on the y-test - so the y-test is the loop HEAD. Written
+                // the other way round (`while (y < bottom)` / a hand-rotated
+                // `do..while`) cl rotates on the y-test instead and duplicates it at
+                // the bottom, which is the one extra branch this function carried.
+                while (head.GetLength() > 0) {
+                    if (y >= bottom) {
+                        break;
                     }
+                    i32 chW = MeasureText(CString(head.GetAt(0), 1)).width;
+                    if (chW + x > right) {
+                        y = y + m_font->GetMaxHeight();
+                        x = x0;
+                        totalChars += line.GetLength();
+                        line = "";
+                    }
+                    if (m_font->GetMaxHeight() + y >= bottom) {
+                        break;
+                    }
+                    line += head[0];
+                    x += chW;
                 }
             }
             if (breakNL) {
