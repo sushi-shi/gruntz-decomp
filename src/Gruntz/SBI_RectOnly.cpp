@@ -3800,6 +3800,22 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
 // complete reconstruction; residual is the 64-bit draw-clock gates + MSVC cross-jump/
 // tail-merge of the shared GetIntDef/SetStatBar sequences + zero-register pinning +
 // shared-global DIR32 naming (g_gameReg/g_frameTime/g_buteMgr/g_sndEnabled). Walls.
+//
+// FALSE ALARM, resolved 2026-08-01 - do not re-open it. Counting call sites makes this
+// body look structurally wrong: retail issues TWELVE `call CButeMgr::GetDwordDef`
+// instructions and we issue FOURTEEN, with `LeftMachineSnoozingDelay` appearing once in
+// retail against three times here. It is not a missing/extra statement. Retail hoists
+// each arm-pair's shared `push 0x64 / push <key> / push StatusBar / mov ecx,g_buteMgr`
+// block ABOVE the branch and then CROSS-JUMPS the two arms into other blocks' calls:
+//   case 1 `>8`   `jmp 0x106404`  lands in the 0x2a block's call, because both arms are
+//                                 the identical `SetHudRectA(1, 1, GetDwordDef(...
+//                                 "LeftMachineSnoozingDelay", 0x64))`
+//   case 1 else   `jle 0x10616e`  lands PAST case 2's else-arm `push` of
+//                                 LeftMachineWakingDelay, straight onto its call, and
+//                                 consumes case 1's own already-pushed arguments
+// So retail's source has fourteen call sites too; cl merged two pairs and ours did not.
+// Both of our sites are already byte-for-byte the same expression (verified), which is
+// the precondition for the merge - there is nothing left to change in the source.
 RVA(0x00105e40, 0x62c)
 void CStatusBarMgr::LoadRezMachineConfig() {
     CSbiHlRow* pA = &m_machineB;

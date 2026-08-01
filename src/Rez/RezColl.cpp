@@ -167,6 +167,12 @@ void CHashBase::RemoveAll() {
 // @early-stop
 // SIB base/index coin-flip (99.55%): retail `lea [eax+ecx+8]` (idx<<4 as base) vs
 // cl `lea [ecx+eax+8]` (m_buckets as base); operand-typing/reorder do not flip it.
+// 2026-08-01, the obvious remaining idea also fails: the SIB base is NOT the left
+// operand of the address addition. Writing the addition backwards so the scaled index
+// comes first - `CHashSlot* s = idx + m_buckets;`, `(*(idx + m_buckets))`, and even the
+// commuted subscript `idx[m_buckets]` - is BYTE-IDENTICAL to `m_buckets[idx]`, all four
+// at 99.545456 / size 52. cl canonicalises the tree long before the encoder, so no
+// source spelling can reach this byte. It really is the TU-cumulative state above.
 RVA(0x00184a70, 0x34)
 void CHashBase::Insert(CHashElement* node) {
     node->m_owner = this;
