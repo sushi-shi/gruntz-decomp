@@ -303,7 +303,11 @@ i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     m_cellCount = m_rows * m_cols;
     BucketHead* arr = new BucketHead[m_cellCount];
     m_buckets = arr;
-    if (!arr) {
+    // retail duplicates the /GX epilogue instead of sharing it: the failure exit at
+    // 0x1916eb restores fs:0 BEFORE the pops, the success exit at 0x191700 restores it
+    // between `pop ebp` and `pop ebx`, and the guard is `jne` over the inline failure.
+    // cl5 merges the two exits into one and inverts the guard from every spelling.
+    if (arr == 0) {
         return 0;
     }
     m_allocated = 1;

@@ -366,12 +366,16 @@ CImage* CMenuItem2::GetCurrentFrame() {
     if (!s) {
         return 0;
     }
+    // ONE `f` carried in edx to a single `mov eax,edx` exit (0x1859b8), shared by the
+    // first hit and by the retry's out-of-range zero; the retry's HIT gets a duplicated
+    // copy of that exit with `pop edi` scheduled into it (0x1859ab). Two separate
+    // `return`s give two independent epilogues instead.
     CImage* f = s->GetAt(m_frameIdx);
-    if (f) {
-        return f;
+    if (f == 0) {
+        m_frameIdx = s->m_minIndex;
+        f = s->GetAt(m_frameIdx);
     }
-    m_frameIdx = s->m_minIndex;
-    return s->GetAt(m_frameIdx);
+    return f;
 }
 RVA(0x001859c0, 0x4e)
 i32 CMenuItem2::NextFrame() {

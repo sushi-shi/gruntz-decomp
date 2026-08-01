@@ -26,12 +26,17 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
     m_2a4 = 0;
     m_2a8 = 0;
     m_2ac = 0;
-    m_animSetName = isWater ? "TOOBWATERGRUNT" : "TOOBGRUNT";
+    // retail: `je` -> push 'TOOBGRUNT' (0x60dac0); the FALLTHROUGH arm pushes
+    // 'TOOBWATERGRUNT' (0x60dbe4), so the zero test owns the taken branch.
+    m_animSetName = (isWater == 0) ? "TOOBGRUNT" : "TOOBWATERGRUNT";
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_animSetName, 1, 1, 0);
     ReadConfigFromButeMgr();
     LoadCellAnimNames(0, 0);
     LoadAnimNameTable(0, 0);
-    if (m_poweredUp == 0 && m_neighborValid == 0) {
+    // retail 0x50ae5: `cmp [esi+0x220],ebp; je skip` then `cmp [esi+0x21c],ebp;
+    // jne skip` - the block runs when m_poweredUp is NON-zero and m_neighborValid
+    // is zero. The old `m_poweredUp == 0` guard inverted the first test.
+    if (m_poweredUp != 0 && m_neighborValid == 0) {
         m_entranceActive = 0;
         m_combatActive = 0;
         m_neighborValid = 0;

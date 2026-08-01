@@ -91,12 +91,26 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     m_object->m_extent.left =
         (m_object->m_screenX < m_object->m_164) ? m_object->m_screenX : m_object->m_164;
-    m_object->m_extent.right =
-        (m_object->m_screenX <= m_object->m_164) ? m_object->m_164 : m_object->m_screenX;
-    m_object->m_extent.top =
-        (m_object->m_screenY >= m_object->m_168) ? m_object->m_168 : m_object->m_screenY;
-    m_object->m_extent.bottom =
-        (m_object->m_screenY <= m_object->m_168) ? m_object->m_168 : m_object->m_screenY;
+    // right/top/bottom are if-WIDEN forms, not ternaries: retail materializes the
+    // far edge FIRST (`mov ecx,[eax+0x164]` / `[eax+0x168]`), loads the screen coord
+    // second into edx, then `cmp edx,ecx` + a 2-byte skip (`jle`/`jge`) over
+    // `mov ecx,edx`. A ternary loads the CONDITION's left operand first and inverts
+    // the branch, which is what the three flipped guards were.
+    i32 exRight = m_object->m_164;
+    if (m_object->m_screenX > exRight) {
+        exRight = m_object->m_screenX;
+    }
+    m_object->m_extent.right = exRight;
+    i32 exTop = m_object->m_168;
+    if (m_object->m_screenY < exTop) {
+        exTop = m_object->m_screenY;
+    }
+    m_object->m_extent.top = exTop;
+    i32 exBottom = m_object->m_168;
+    if (m_object->m_screenY > exBottom) {
+        exBottom = m_object->m_screenY;
+    }
+    m_object->m_extent.bottom = exBottom;
 
     // The source record IS hoisted (retail loads `[ecx+0x194]` once into edi and
     // reuses it for the `+0x24` - the CString ctor call would kill a re-read).

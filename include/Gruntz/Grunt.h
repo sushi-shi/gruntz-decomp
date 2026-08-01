@@ -558,7 +558,7 @@ public:
     i32 m_214;               // +0x214
     i32 m_combatActive; // +0x218 (combat/attack-active latch; set with m_poweredUp on attack, gates stamina display)
     i32 m_neighborValid;   // +0x21c (grid-neighbor: cleared on miss)
-    i32 m_poweredUp;       // +0x220 (powered-up gate; 0 = run entrance reset)
+    i32 m_poweredUp;       // +0x220 (powered-up gate; NON-zero = run the entrance reset)
     i32 m_224;             // +0x224 (serialized)
     i32 m_entranceStamped; // +0x228 (one-time entrance/toy-break stamp latch; set 1 at rest)
     i32 m_22c;             // +0x22c (entrance-drop: latched anim re-init gate)

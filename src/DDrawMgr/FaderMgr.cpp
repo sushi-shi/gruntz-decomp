@@ -48,8 +48,10 @@ void CFaderMgr::FreeAll() {
 // m_timerArgA/m_timerArgB, Set2c from m_sharedPtrColl), default- or copy-init it, validate, and append it
 // to the array - tracing + deleting the fader on any failure. /GX EH frame; the
 // SetAtGrow(GetSize(), pNew) append is inlined.
+// The RVA span includes the trailing jump table: code ends 0x17e146 (`jmp 0x17dace`),
+// 2 pad bytes (`8b ff`), then 6 dwords at 0x17e148..0x17e160 all targeting inside Add.
 // @early-stop
-RVA(0x0017d9c0, 0x786)
+RVA(0x0017d9c0, 0x7a0)
 CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
     CFader* fader = 0;
 

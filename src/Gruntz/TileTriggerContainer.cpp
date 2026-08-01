@@ -838,6 +838,13 @@ SerializeApplyA(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerSwi
         case 5:
         case 6:
         case 7:
+            // retail keeps tags 1-7 and tag 8 as TWO jump-table arms (table 0x5176b4)
+            // and materializes the result branchily: one shared `mov eax,1; ret` at
+            // 0x1176a1 that arm 1-7 `jne`s forward to (its failure exit is a local
+            // `pop edi; pop esi; ret 0x14` reusing the call's zero), while arm 8 falls
+            // INTO it and so inverts to `je 0x1176ab` (the shared `xor eax,eax`).
+            // cl5 folds every `if (c) return 1; return 0;` spelling back to neg/sbb/neg
+            // and then cross-jumps the two arms into one range-tested block.
             return o->ValidateByType(s, mode, typeId, pObj) != 0;
         case 8:
             return o->ValidateByType(s, mode, typeId, pObj) != 0;
@@ -864,6 +871,9 @@ SerializeApplyB(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerLog
     s->Write(&tag, 4);
     switch (tag) {
         case 0x16:
+            // as in ApplyA: retail shares one `mov eax,1; ret` at 0x1177a5; arms 0x16
+            // and 0x15/17/18/19 `jne` to it with a local zero-return fallthrough, and
+            // arm 0x1a falls into it so its guard inverts to `je 0x1177af`.
             return (static_cast<CGiantRockLogic*>(o))->ApplyByType(s, mode, typeId, pObj) != 0;
         case 0x15:
         case 0x17:

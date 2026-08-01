@@ -118,6 +118,8 @@ void ShowHudMessage(
     i32 flag
 ) {
     CDDrawSurfacePair* page = sink->m_drawTarget->m_overlayPair;
+    // same 4-byte residual as EngStr_DrawText: retail's early exit is an INLINE
+    // `jne +1; ret`, cl5's is `je` to the tail ret past the `add esp,0x28`.
     if (page == 0) {
         return;
     }

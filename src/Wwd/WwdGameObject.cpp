@@ -596,15 +596,19 @@ void CGameObject::AddLogicBump(char* key) {
 // Play (0x151150, vtbl +0x3c): switch on `type` (3..8); drive the worker
 // through animation states 0x50..0x53 around the inner step.
 // ---------------------------------------------------------------------------
+// The RVA span includes the trailing jump table: code ends 0x1512c5 (`ret 0x10`), 3 pad
+// bytes (`8d 49 00`), then the 6 dwords at 0x1512c8..0x1512e0 for cases 3..8:
+//   3 -> 0x15117c   4 -> 0x1511e8   5,6 -> 0x1511c3 (the default/merge tail)
+//   7 -> 0x151228   8 -> 0x15124c
 // @early-stop
-RVA(0x00151150, 0x175)
+RVA(0x00151150, 0x190)
 i32 CGameObject::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
     if (ar == 0) {
         return 0;
     }
-    // Per-case locals ON PURPOSE (do not hoist them back out): retail's play-state
-    // dances are byte-distinct only in their scratch register (case 3 edx, case 4 eax,
-    // case 8 ecx), which is why retail's cl did not cross-jump them all into one tail.
+    // retail keeps THREE copies of the post-notify restore tail: case 3 (falls into the
+    // shared dispatch tail at 0x1511c3), case 4 (`jmp` back to it), and one shared by
+    // cases 7+8 (merged from `mov [eax+0x1c],ebx` at 0x15129b onward).
     switch (mode) {
         case 3: {
             m_184 = 0;
@@ -617,11 +621,8 @@ i32 CGameObject::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
             }
             i32 saved3 = w3->m_1c;
             w3->SetActKey(0x50);
-            // the notify runs on a RELOADED m_7c, not on w3: retail emits
-            // `mov <reg>,[esi+0x7c]; push esi; call [<reg>+0x10]`. Calling it on the
-            // held pointer drops that reload and costs the function 4x3 bytes -
-            // enough to break the length match entirely. This was the real bug behind
-            // the old "tail-merge wall" note.
+            // retail reloads m_7c for the notify: `mov <reg>,[esi+0x7c]; push esi;
+            // call [<reg>+0x10]` (edx here in case 3, eax in 4, ecx in 7/8).
             m_7c->m_notify(this);
             w3 = m_7c;
             if (w3->ActKey() == 0x50) {
@@ -639,11 +640,8 @@ i32 CGameObject::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
             }
             i32 saved4 = w4->m_1c;
             w4->SetActKey(0x51);
-            // the notify runs on a RELOADED m_7c, not on w4: retail emits
-            // `mov <reg>,[esi+0x7c]; push esi; call [<reg>+0x10]`. Calling it on the
-            // held pointer drops that reload and costs the function 4x3 bytes -
-            // enough to break the length match entirely. This was the real bug behind
-            // the old "tail-merge wall" note.
+            // retail reloads m_7c for the notify: `mov <reg>,[esi+0x7c]; push esi;
+            // call [<reg>+0x10]` (edx here in case 3, eax in 4, ecx in 7/8).
             m_7c->m_notify(this);
             w4 = m_7c;
             if (w4->ActKey() == 0x51) {
@@ -661,11 +659,8 @@ i32 CGameObject::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
             }
             i32 saved7 = w7->m_1c;
             w7->SetActKey(0x52);
-            // the notify runs on a RELOADED m_7c, not on w7: retail emits
-            // `mov <reg>,[esi+0x7c]; push esi; call [<reg>+0x10]`. Calling it on the
-            // held pointer drops that reload and costs the function 4x3 bytes -
-            // enough to break the length match entirely. This was the real bug behind
-            // the old "tail-merge wall" note.
+            // retail reloads m_7c for the notify: `mov <reg>,[esi+0x7c]; push esi;
+            // call [<reg>+0x10]` (edx here in case 3, eax in 4, ecx in 7/8).
             m_7c->m_notify(this);
             w7 = m_7c;
             if (w7->ActKey() == 0x52) {
@@ -680,9 +675,8 @@ i32 CGameObject::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
                 if (MapLookupById(OwnerMgr()->m_childGroup->m_map48, node, found) == 0) {
                     m_carrier = 0;
                 } else {
-                    m_carrier = static_cast<CWwdGameObject*>(
-                        found
-                    ); // CMapPtrToPtr value (void*) -> the linked object
+                    // CMapPtrToPtr value (void*) -> the linked object
+                    m_carrier = static_cast<CWwdGameObject*>(found);
                 }
             } else {
                 m_carrier = 0;
@@ -693,11 +687,8 @@ i32 CGameObject::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
             }
             i32 saved8 = w8->m_1c;
             w8->SetActKey(0x53);
-            // the notify runs on a RELOADED m_7c, not on w8: retail emits
-            // `mov <reg>,[esi+0x7c]; push esi; call [<reg>+0x10]`. Calling it on the
-            // held pointer drops that reload and costs the function 4x3 bytes -
-            // enough to break the length match entirely. This was the real bug behind
-            // the old "tail-merge wall" note.
+            // retail reloads m_7c for the notify: `mov <reg>,[esi+0x7c]; push esi;
+            // call [<reg>+0x10]` (edx here in case 3, eax in 4, ecx in 7/8).
             m_7c->m_notify(this);
             w8 = m_7c;
             if (w8->ActKey() == 0x53) {
@@ -708,10 +699,6 @@ i32 CGameObject::Play(CFileMemBase* ar, i32 mode, i32 typeId, void* self) {
     }
     return m_7c->Dispatch(ar, mode, typeId, self) != 0;
 fail:
-    // ONE shared `return 0` block, not four inline epilogues: retail reaches it with a
-    // near `je` from each case's `m_7c == 0` gate, and the merged tail even schedules
-    // the `xor eax,eax` between the pops (`pop edi; pop esi; pop ebp; xor eax,eax;
-    // pop ebx`). Spelled per case, cl emits a separate 11-byte epilogue at all four.
     return 0;
 }
 

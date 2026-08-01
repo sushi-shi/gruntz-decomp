@@ -24,6 +24,10 @@ void EngStr_DrawText(
 ) {
     CDDrawSurfaceChildA* pair =
         obj->m_drawTarget->m_frontPair; // the real chain (ex the Sub/Cfg facets)
+    // retail spends a byte here that cl5 will not: `test eax,eax; jne +1; ret` - an
+    // INLINE 1-byte early ret, where cl5 jumps past the `add esp,0x28` to the tail ret
+    // (`74 35`) from every spelling tried (early return / positive if / if-else).
+    // Those 4 bytes are the whole residual; the 0x35-byte body is byte-identical.
     if (pair == 0) {
         return;
     }
