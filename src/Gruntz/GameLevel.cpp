@@ -1035,24 +1035,33 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
 // whose [lo,hi] midpoint replaces the new coord (gated by the moveFlags 0x10 bit). The
 // no-block tail drives Hold/FreeMove off the target's +0x10 held flag.
 //
-// @early-stop
-// 64.96 -> 70.04 (measured 2026-07-27). The old note called this a pure
-// "register-scheduling wall"; it was a CONTROL-FLOW bug the exit-count screen exposed
-// (base 4 rets / retail 1). Two real corrections, both byte-evidenced:
+// 64.96 -> 70.04 -> 76.85 -> 97.61. Every step was a source-shape bug the old
+// "register-scheduling wall" note hid:
 // The held-flag tail is NOT an `else` arm: retail 0x15e207/0x15e276 jump the
 // probe-MISS of both bit0 and bit1 arms straight into it (0x15e5a7), so it runs
 // whenever no hard tile blocked - only a hard tile (m_moveMode = 6) skips it.
 // Both arms then converge on ONE bracket-commit block (0x15e58f) that re-tests
-// the cached moveFlags 0x10 bit, which is why `mid` is a separate local (the sibling
-// MoveHandlerB already spelled it that way).
-// 71.47 -> 76.85: the two arms now `goto` ONE shared bracket block (retail 0x15e283),
+// the cached moveFlags 0x10 bit, which is why `mid` is a separate local.
+// 71.47 -> 76.85: the two arms `goto` ONE shared bracket block (retail 0x15e283),
 // carrying `mid` and the CACHED arg3 0x10 bit in function-scope locals - retail spills
-// that bit to [esp+0x1c] and re-tests it at the shared block, which is only expressible
-// with one `bracket` local, not two per-arm `if (a3 & 0x10)` copies.
+// that bit and re-tests it at the shared block, which is only expressible with one
+// `bracket` local, not two per-arm `if (a3 & 0x10)` copies.
+// 76.85 -> 88.64: `mid = destX` must be written in BOTH arms of the bracket test,
+// NOT hoisted above it - hoisting stores `mid` to the frame eagerly and swaps the
+// two locals' register/frame homes (retail keeps `mid` in ebx across ClampSpan and
+// spills the bracket bit). See docs/patterns/default-hoists-into-destination-no-jmp.md,
+// whose INVERSE this is: here the default must stay inside the arms.
+// 88.64 -> 97.61: each arm latches `i32 col = destX;` BEFORE the probe (retail's
+// `mov [esp+0x28],eax` at 0x15e1a7/0x15e221) and the bracket block's `lo`/`hi`/`mid`
+// all read `col`; cl overlays `lo` on the dead `col` slot, which is where retail's
+// otherwise-inexplicable redundant `mov [esp+0x38],ebx` store comes from.
 // @early-stop
-// residual: base 2 rets vs retail 1 (cl still inlines the commit into the bracket path)
-// and a whole-function esi<->edi role swap for this-vs-t. Block-order variants
-// (rebracket before the held tail, an explicit `goto commit`) are byte-identical.
+// residual: (a) cl cross-jumps the two `mid = destX` else-arms into one block where
+// retail keeps a copy per arm (the branch #5 topology hit); (b) the bit1 limit is
+// `lea ecx,[ecx+ebp+1]; inc ecx` in retail vs our folded `lea +2`; (c) which dead
+// PARAMETER HOME each of bracket/col/hi lands on is a 3-cycle versus retail
+// (bracket<->t, hi<->destY, col/lo<->moveFlags) - not reachable from declaration
+// order, measured over both decl permutations.
 RVA(0x0015e130, 0x1bb)
 i32 CGameLevel::MoveHandlerA(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 result = 0;
@@ -1067,33 +1076,43 @@ i32 CGameLevel::MoveHandlerA(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
         destY = AdvanceA(t, destX, destY, moveFlags);
     }
 
-    i32 mid;
     i32 bracket;
+    i32 mid;
+    // `mid = destX` is written in BOTH arms, never hoisted above the bracket test:
+    // that is what keeps `mid` in the callee-saved register across ClampSpan
+    // (retail's ebx) and spills the bracket bit instead. Hoisting it stores `mid`
+    // eagerly to the frame and swaps the two locals' homes.
     if (moveFlags & 1) {
+        i32 col = destX; // latched BEFORE the probe - cl reuses its slot for `lo`
         i32 limit = t->m_extent.top + destY - 1;
         if (AxisProbe(destX, limit) == kTileHard) {
-            mid = destX;
             bracket = moveFlags & 0x10;
             if (bracket != 0) {
-                i32 lo = destX;
-                i32 hi = destX;
-                if (ClampSpan(destX, limit, &lo, &hi) != 0) {
+                i32 lo = col;
+                i32 hi = col;
+                mid = col;
+                if (ClampSpan(col, limit, &lo, &hi) != 0) {
                     mid = (hi + lo) / 2;
                 }
+            } else {
+                mid = destX;
             }
             goto rebracket;
         }
     } else if (moveFlags & 2) {
+        i32 col = destX; // latched BEFORE the probe - cl reuses its slot for `lo`
         i32 limit = t->m_extent.bottom + destY + 2;
         if (AxisProbe(destX, limit) == kTileHard) {
-            mid = destX;
             bracket = moveFlags & 0x10;
             if (bracket != 0) {
-                i32 lo = destX;
-                i32 hi = destX;
-                if (ClampSpan(destX, limit, &lo, &hi) != 0) {
+                i32 lo = col;
+                i32 hi = col;
+                mid = col;
+                if (ClampSpan(col, limit, &lo, &hi) != 0) {
                     mid = (hi + lo) / 2;
                 }
+            } else {
+                mid = destX;
             }
             goto rebracket;
         }
