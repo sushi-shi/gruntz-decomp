@@ -1,0 +1,41 @@
+{
+ "schema": 1,
+ "source": "src/DDrawMgr/LevelPlane.cpp",
+ "rva": "0x162af0",
+ "axes": [
+  {
+   "name": "dynflags_or",
+   "find": "    obj->m_flags |= static_cast<u32>(*p++); // dynamicFlags       (+0x08)",
+   "options": [
+    {
+     "name": "baseline"
+    },
+    {
+     "name": "selfassign",
+     "replace": "    obj->m_flags = obj->m_flags | static_cast<u32>(*p++); // dynamicFlags  (+0x08)"
+    },
+    {
+     "name": "temp_first",
+     "replace": "    u32 dynFlags = static_cast<u32>(*p++);\n    obj->m_flags |= dynFlags; // dynamicFlags       (+0x08)"
+    },
+    {
+     "name": "signed_or",
+     "replace": "    obj->m_flags |= *p++; // dynamicFlags       (+0x08)"
+    }
+   ]
+  },
+  {
+   "name": "rect_fixups",
+   "find": "    if (obj->m_area.left == 0 && obj->m_area.right == 0) {\n        obj->m_area.left = static_cast<i32>(0x80000000);\n    }",
+   "options": [
+    {
+     "name": "baseline"
+    },
+    {
+     "name": "area_last",
+     "replace": "    if (obj->m_area.right == 0 && obj->m_area.left == 0) {\n        obj->m_area.left = static_cast<i32>(0x80000000);\n    }"
+    }
+   ]
+  }
+ ]
+}

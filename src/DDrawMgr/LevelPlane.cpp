@@ -963,9 +963,10 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     // Scatter the trailing record fields; the same cursor continues from +0x24.
     p++; // skip m_addFlags @+0x24 -> record +0x28
 
-    obj->m_flags |= static_cast<u32>(*p++); // dynamicFlags       (+0x08)
-    obj->m_stateFlags = *p++;               // drawFlags          (+0x40)
-    anim->m_28 = *p++;                      // userFlags
+    u32 dynFlags = static_cast<u32>(*p++);
+    obj->m_flags |= dynFlags; // dynamicFlags       (+0x08)
+    obj->m_stateFlags = *p++; // drawFlags          (+0x40)
+    anim->m_28 = *p++;        // userFlags
     // The six-int "user-value" union (+0x114..+0x128). These are the WWD object
     // record's canonical Score/Points/Powerup/Damage/Smarts/Health fields (the
     // names the Gruntz Level Editor's Edit-Objects "Attributes" dialog uses), each
