@@ -62,14 +62,6 @@ RVA_COMPGEN(0x00013100, 0x44, ??1CKitchenSlime@@UAE@XZ)
 // cycle geometry, and clear the bound sprite's rect.
 //
 // @early-stop
-// 97.0% (was 81.0). The defect was a cached `CWwdGameObjectA* o = m_object` local:
-// every store THROUGH the bound object kills cl's cached `this->m_object`, so retail
-// re-loads `mov e?x,[esi+0x10]` before each access - twelve reloads, one per store,
-// down to the four m_area clears. A local pins it in a callee-saved register and
-// drops all of them. The source record (`Anim()->m_194`) is likewise hoisted once.
-// Residual: the /GX leaf-vptr re-stamp position (one slot early) and the load order
-// inside three of the four min/max clamps. The clamp is NOT condition-spelling
-// steerable - all 64 cells tie within 0.013% (config/axes/kitchenslime-clamp.json).
 RVA(0x000b23a0, 0x3f8)
 CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_38->m_flags |= 0x2000002;
@@ -197,10 +189,6 @@ void CKitchenSlime::FireActivation(i32 coord) {
 // the target tile on overshoot and writing the new grid position back to m_10.
 // The integer scaffolding + visibility/already-arrived blocks are byte-exact.
 // @early-stop
-// x87 FP movement-integrator wall (docs/patterns/x87-fp-stack-schedule.md): the
-// residual is a stack-slot swap (MSVC parks `step` at [esp+8] vs retail's
-// [esp+0x10], swapping the per-iter temp) plus the dead x-clamp redundant-jump
-// schedule. Logic byte-for-byte correct; ~95%, above the documented 60-75% range.
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
     m_38->m_1a0.Advance(static_cast<i32>(g_engineFrameDelta));
@@ -317,10 +305,6 @@ i32 CKitchenSlime::SerializeMove(CFileMemBase* stream, i32 tag, i32 c, CGameObje
 }
 
 // @early-stop
-// Returns int (1 on success, 0 when no walkable tile was found) - the true
-// signature, needed by Tick's `LoadSprites() == 0` test. Residual is the same FP
-// /jump-table stack-frame schedule wall it has carried (retail reserves 0x1c vs
-// our 0x14 - an extra direction-magnitude stack temp). ~69%, logic exact.
 RVA(0x000b3160, 0x339)
 i32 CKitchenSlime::LoadSprites() {
     i32 savedDir = Level()->m_124;
