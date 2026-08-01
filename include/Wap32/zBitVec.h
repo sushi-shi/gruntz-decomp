@@ -72,6 +72,30 @@ public:
         u32* m_words; // heap word band (capacity > 0x20 bits)
         u32 m_inline; // the single inline word when the vector fits in the slot
     };
+
+    // Inline bit read. Proven by its expansion inside operator<< (0x193080): a
+    // bounds test against m_capacity that yields 0 (`cmp esi,eax / jb / xor eax,eax`),
+    // the same small-buffer arm select every other accessor uses, and the
+    // `neg/sbb/neg` 0-or-1 normalisation of the masked word.
+    i32 GetBit(u32 idx) const {
+        if (idx >= static_cast<u32>(m_capacity)) {
+            return 0;
+        }
+        const u32* words = static_cast<u32>(m_capacity) > 0x20 ? m_words : &m_inline;
+        return (words[idx >> 5] & (1 << (idx & 0x1f))) != 0;
+    }
+
+    // The in-range fast path over SetBit. operator>> (0x193140) expands it twice
+    // (`cmp idx,m_capacity / jb <inline set>` else `call ?SetBit@zBitVec@@QAEPAV1@I@Z`),
+    // so the grow branch stays the out-of-line SetBit while the common case is inline.
+    zBitVec* Set(u32 idx) {
+        if (idx >= static_cast<u32>(m_capacity)) {
+            return SetBit(idx);
+        }
+        u32* words = static_cast<u32>(m_capacity) > 0x20 ? m_words : &m_inline;
+        words[idx >> 5] |= 1 << (idx & 0x1f);
+        return this;
+    }
 };
 SIZE(0x10);
 
