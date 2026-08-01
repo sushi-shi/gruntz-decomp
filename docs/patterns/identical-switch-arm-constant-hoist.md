@@ -1,29 +1,65 @@
-# Identical switch arms sharing constants: cl hoists them to callee-saved regs above the body, retail re-materializes per-arm
-tags: cpp:switch cpp:local | asm:mov asm:or asm:lea | topic:wall topic:regalloc
-symptoms: switch/jump-table where every arm writes the SAME constant block; `mov [esi+N],ebx`(held -1) vs `lea ebx,[esi+N];or eax,-1;mov [ebx],eax`; `mov [m],-1` immediate vs register; arm bodies structurally smaller in recompile; ~37%
-confidence: 7/10
+# REFUTED: "identical switch arms sharing constants" is a 16-byte STRUCT ASSIGNMENT, not a hoist wall
+tags: cpp:switch cpp:struct cpp:local | asm:mov asm:or asm:lea | topic:codegen-idiom topic:scoring-artifact
+symptoms: switch/jump-table where every arm writes the SAME constant block; retail `lea ebx,[esi+N]; or eax,-1; or ecx,-1; mov edx,1; mov [ebx],eax; …` with the four value registers then recycled to 0 for a second block at `[esi+N+0x10]`; recompile instead hoists `-1`/`1`/`0` into callee-saved ebx/ebp/edi above the switch and emits 6-byte `mov [esi+0x2b0],ebx` stores per arm
+confidence: 9/10
 
-A jump-table switch whose arms all store an identical constant block (e.g.
-`{-1,-1,1,1}`/`{0,0,0,0}` into two member regions) differing only in a per-arm
-string/value. This cl build hoists the shared constants (`-1`,`1`,`0`) into
-callee-saved `ebx/ebp/edi` ABOVE an intervening call (the CString ctor), so each
-arm shrinks to one esi-relative `mov reg,[esi+N]` store; retail instead leaves the
-`m_x=-1` member init as an immediate store and RE-MATERIALIZES the constants
-inside each arm (`lea ebx,[esi+N]; or eax,-1; or ecx,-1; mov edx,1; mov [ebx],eax;
-…`), keeping `kind`/`this` in `edi`/`esi`.
+**This entry used to claim a cl build-8034 constant-CSE/LICM wall ("not steerable
+from source"). That was wrong.** The shape is the ordinary MSVC5 16-byte
+struct-assignment idiom, and the recompile diverged only because the destination
+members were modelled as eight separate `i32`s instead of two 4-int aggregates.
+
+Retail's per-arm sequence is a *block copy of a fully-constant aggregate*:
 
 ```asm
-; retail arm (per-case rematerialize, region reached via a pointer):
-lea  ebx,[esi+0x2b0]
-or   eax,-1
-or   ecx,-1
+lea  ebx,[esi+0x2b0]   ; &m_toyRectA - a BASE REGISTER, because a 0x2b0 displacement
+or   eax,0xffffffff    ;               costs 6 bytes per store and [ebx+N] costs 2
+or   ecx,0xffffffff
 mov  edx,1
-mov  [ebx],eax        ; vs recompile: mov [esi+0x2b0],ebx  (ebx=-1 hoisted at entry)
-; and the member init: retail `mov dword [esi+0x1a0],0xffffffff` (immediate)
-;                       recompile `mov [esi+0x1a0],ebx`        (register, hoisted)
+mov  [ebx],eax         ; the four SRA'd fields of the source aggregate
+mov  edi,edx
+xor  eax,eax           ; ...the SAME four registers recycled to 0...
+mov  [ebx+0x4],ecx
+xor  ecx,ecx
+mov  [ebx+0x8],edx
+xor  edx,edx
+mov  [ebx+0xc],edi
+lea  ebx,[esi+0x2c0]   ; &m_toyRectB
+xor  edi,edi
+mov  [ebx],eax
+mov  [ebx+0x4],ecx
+mov  [ebx+0x8],edx
+mov  [ebx+0xc],edi
 ```
-WALL — same /O2 /Oy /GX frame; pointer-vs-index source spellings normalize to the
-SAME bytes (so neither defeats the hoist), and /O1 only swaps in a wrong ebp
-frame. A cl build-8034 constant-CSE/LICM heuristic, not steerable from source.
-CGruntCmdObj::LoadVehicleGruntSprites 0x050ce0 ~37% (@early-stop). Cousin of
-[[blowfish-feistel-unroll-regalloc]] / [[loop-invariant-multiply-strength-reduce-vs-memreread]].
+
+The tell is the **register recycling**: the same four registers carry
+`{-1,-1,1,1}` and then `{0,0,0,0}`. That is what SRA of one aggregate temp
+assigned twice looks like - not four independent immediates.
+
+FIX - model the destination as a real 16-byte struct and assign it:
+
+```cpp
+RECT m_toyRectA; // +0x2b0
+RECT m_toyRectB; // +0x2c0
+...
+RECT a;
+a.left = -1; a.top = -1; a.right = 1; a.bottom = 1;
+m_toyRectA = a;
+a.left = 0;  a.top = 0;  a.right = 0; a.bottom = 0;
+m_toyRectB = a;
+```
+
+Written as eight scalar stores, cl sees ten identical constant stores across ten
+arms and hoists `-1`/`1`/`0` into callee-saved registers above the switch; written
+as two struct assignments it emits retail's `lea` + register-recycled block copy in
+each arm. `CGrunt::LoadVehicleGruntSprites` 0x050ce0: **34 -> 97.4%** (the other
+half of that function's gap was [[rva-extent-must-include-switch-tables]] - its
+declared span stopped at the last `ret`, excluding the switch's jump table).
+
+Corroboration that the members really are aggregates, not scalars: `Serialize`
+moves them as `Write(&m_toyRectA, 16)` / `Read(&m_toyRectA, 0x10)`, and
+`CGrunt::RectContainsGated` 0x51a20 builds a `CRect` out of each 4-int group.
+
+General rule: **a `lea` of a member's address followed by short `[reg+0/4/8/c]`
+stores is the struct-copy signature.** If your source spells that member group as
+scalars you will never reproduce it, and the difference reads exactly like a
+regalloc wall.
