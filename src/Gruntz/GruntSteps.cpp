@@ -586,26 +586,6 @@ i32 CGrunt::StepCompassMove() {
         // The current tile carries a move command at field +0x10 (4th dword).
         i32 cmd = board->m_rowInts[ty][tx * 7 + 4];
         switch (cmd - 0xb) {
-            case 0:
-            case 4:
-                moveY = y - 0x20;
-                voice = g_gruntMoveDirNorth;
-                break;
-            case 1:
-            case 5:
-                moveY = y + 0x20;
-                voice = g_gruntMoveDirSouth;
-                break;
-            case 2:
-            case 6:
-                moveX = x - 0x20;
-                voice = g_gruntMoveDirWest;
-                break;
-            case 3:
-            case 7:
-                moveX = x + 0x20;
-                voice = g_gruntMoveDirEast;
-                break;
             case 8:
                 switch (m_entranceCell.reason - 1) {
                     case 0:
@@ -645,6 +625,26 @@ i32 CGrunt::StepCompassMove() {
                         voice = g_gruntMoveDirNorthWest;
                         break;
                 }
+                break;
+            case 0:
+            case 4:
+                moveY = y - 0x20;
+                voice = g_gruntMoveDirNorth;
+                break;
+            case 3:
+            case 7:
+                moveX = x + 0x20;
+                voice = g_gruntMoveDirEast;
+                break;
+            case 1:
+            case 5:
+                moveY = y + 0x20;
+                voice = g_gruntMoveDirSouth;
+                break;
+            case 2:
+            case 6:
+                moveX = x - 0x20;
+                voice = g_gruntMoveDirWest;
                 break;
         }
         i32 mtx = moveX >> 5;

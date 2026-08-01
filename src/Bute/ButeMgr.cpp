@@ -1446,8 +1446,8 @@ bool ButeMgr::ParseAttributeFile() {
     }
 
     switch (m_tokType) {
-        case 5:
-        case 6: { // signed int -> type 0
+        case 6:
+        case 7: { // signed int -> type 0
             vi = atoi(m_token);
             if (m_writeMode) {
                 m_pText->accum << static_cast<int>(GetInt(m_tagName, m_str104));
@@ -1467,7 +1467,7 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 13: { // dword -> type 1
+        case 14: { // dword -> type 1
             if (!ScanToken(6)) {
                 return false;
             }
@@ -1491,7 +1491,7 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 14: { // float (FLOAT-tagged) -> type 3
+        case 15: { // float (FLOAT-tagged) -> type 3
             if (!ScanToken(8)) {
                 return false;
             }
@@ -1515,7 +1515,7 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 15: { // float ('f'-tagged) -> type 3
+        case 16: { // float ('f'-tagged) -> type 3
             vf = static_cast<float>(ButeRead_Float(m_token));
             if (m_writeMode) {
                 m_pText->accum << static_cast<double>(GetFloat(m_tagName, m_str104));
@@ -1536,7 +1536,7 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 7: { // double -> type 2
+        case 8: { // double -> type 2
             double dv = ButeRead_Float(m_token);
             if (m_writeMode) {
                 m_pText->accum << static_cast<double>(GetDouble(m_tagName, m_str104));
@@ -1556,7 +1556,7 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 9: { // (a, b, c, d) point4 -> type 5
+        case 10: { // (a, b, c, d) point4 -> type 5
             i32 a, b, c, d;
             sscanf(m_token, s_fmtPoint4, &a, &b, &c, &d);
             if (m_writeMode) {
@@ -1585,7 +1585,7 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 10: { // (a, b) point -> type 6
+        case 11: { // (a, b) point -> type 6
             i32 a, b;
             sscanf(m_token, s_fmtPoint2, &a, &b);
             if (m_writeMode) {
@@ -1610,7 +1610,7 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 11: { // <x, y, z> rect3 -> type 7
+        case 12: { // <x, y, z> rect3 -> type 7
             double x, y, z;
             sscanf(m_token, s_fmtRect3, &x, &y, &z);
             if (m_writeMode) {
@@ -1640,7 +1640,7 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 12: { // [x, y] rect2 -> type 8
+        case 13: { // [x, y] rect2 -> type 8
             double x, y;
             sscanf(m_token, s_fmtRect2, &x, &y);
             if (m_writeMode) {
@@ -1667,7 +1667,7 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 8: { // quoted string -> type 4
+        case 9: { // quoted string -> type 4
             if (m_writeMode) {
                 CString tmp(GetString(m_tagName, m_str104));
                 m_pText->accum << static_cast<unsigned char>(0x22);
