@@ -756,11 +756,17 @@ static char s_dbgNoCaps[] = "???"; // neither VIDEOMEMORY nor SYSTEMMEMORY in th
 // The three box passes and the label pass call the plane's WrapCoord on both corners;
 // the cross pass INLINES the same wrap+translate on two scalars.
 // @early-stop
-// 91.9% (from 0.58%). Two residues, both x3 across the box passes: retail compares the
-// unset sentinel straight against memory (`cmp [eax+0x144],imm`) and re-loads the field
-// afterwards where cl5 CSEs the two into one register, and retail reloads `this` only on
-// the loop's exit edge where cl5 reloads it every iteration. Plus one edx/edi naming swap
-// in the cross pass.
+// 0.58% -> 91.9 -> 93.73. The label pass's VID/SYS caps probes are JOINS, not hoisted
+// zero-inits: retail branches both failure edges (null surface / nonzero GetCaps
+// HRESULT) to a shared `xor eax,eax` that merges with `caps.dwCaps & DDSCAPS_*`,
+// which is only the `if (surf != 0 && GetCaps(..) == 0) v = ...; else v = 0;` form -
+// seeding `i32 vid = 0;` above the guard pins the zero in a callee-saved register.
+// (docs/patterns/default-hoists-into-destination-no-jmp.md, inverse direction.)
+// Residual, all x3 across the box passes: retail compares the unset sentinel straight
+// against memory (`cmp [eax+0x144],imm`) and re-loads the field afterwards where cl5
+// CSEs the two into one register, and retail reloads `this` only on the loop's exit
+// edge where cl5 reloads it every iteration. Plus an edx/edi naming swap in the cross
+// pass (y vs farEdge) that is otherwise instruction-for-instruction identical.
 RVA(0x0015a210, 0x432)
 void CDDrawChildGroup::DrawObjectDebugGeometry() {
     if (m_flags & 0x10000) {
@@ -905,22 +911,28 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                 if (fr->m_owned != 0) {
                     drawHost->DrawLabel(&rc, s_dbgRle);
                 } else {
+                    // The zero arm is a JOIN, not a hoisted initialiser: retail
+                    // emits `xor eax,eax; test eax,eax` at a merge the two failure
+                    // edges branch to (`je`/`jne` on the null surface and the
+                    // GetCaps HRESULT). Seeding `vid = 0` above the guard makes cl
+                    // pin the zero in a callee-saved register instead.
                     DDSCAPS caps;
-                    i32 vid = 0;
-                    if (fr->m_surface != 0) {
-                        if (fr->m_surface->m_ddSurface->GetCaps(&caps) == 0) {
-                            vid = caps.dwCaps & DDSCAPS_VIDEOMEMORY;
-                        }
+                    i32 vid;
+                    if (fr->m_surface != 0 && fr->m_surface->m_ddSurface->GetCaps(&caps) == 0) {
+                        vid = caps.dwCaps & DDSCAPS_VIDEOMEMORY;
+                    } else {
+                        vid = 0;
                     }
                     if (vid != 0) {
                         drawHost->DrawLabel(&rc, s_dbgVid);
                     } else {
                         DDSCAPS caps2;
-                        i32 sys = 0;
-                        if (fr->m_surface != 0) {
-                            if (fr->m_surface->m_ddSurface->GetCaps(&caps2) == 0) {
-                                sys = caps2.dwCaps & DDSCAPS_SYSTEMMEMORY;
-                            }
+                        i32 sys;
+                        if (fr->m_surface != 0
+                            && fr->m_surface->m_ddSurface->GetCaps(&caps2) == 0) {
+                            sys = caps2.dwCaps & DDSCAPS_SYSTEMMEMORY;
+                        } else {
+                            sys = 0;
                         }
                         if (sys != 0) {
                             drawHost->DrawLabel(&rc, s_dbgSys);

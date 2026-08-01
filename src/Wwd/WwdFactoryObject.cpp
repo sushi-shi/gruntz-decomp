@@ -962,7 +962,10 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
 // ebx,ebx`, 0x15cb8f) on both incoming paths, where our cl value-propagates through the
 // preceding `m_element = e` store and threads the `e != 0` branch straight into the body.
 // A compiler-analysis difference, not a source shape - the C is already `m_element = e;
-// ... if (m_element != 0)`. docs/patterns/pin-local-for-callee-saved-reg.md /
+// ... if (m_element != 0)`. RE-CONFIRMED 2026-08-01: binding it to a fresh local
+// (`CAniDesc* cur = m_element; if (cur != 0) ... cur->m_drawValue`) is BYTE-IDENTICAL -
+// cl value-propagates through the store either way, so the re-read is not reachable
+// from C. docs/patterns/pin-local-for-callee-saved-reg.md /
 // zero-register-pinning.md / reread-member-view-pointer.md.
 RVA(0x0015ca70, 0x15b)
 i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
