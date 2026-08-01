@@ -8,10 +8,6 @@
 
 VTBL(CFaderArray, 0x001f0790); // own vftable @0x5f0790 (uncatalogued -> ??_7CFaderArray)
 
-static inline i32 InitTypeId(CFxModeDesc* pInit) {
-    return pInit->m_type;
-}
-
 RVA(0x0017d8f0, 0x1e)
 CFaderMgr::CFaderMgr() {
     m_active = 0;
@@ -43,13 +39,33 @@ void CFaderMgr::FreeAll() {
 }
 
 // ===========================================================================
-// 0x17d9c0 - Add(nFaderType, pInit): 7-way fader factory. Validate pInit's type-id
-// against nFaderType, allocate the concrete subtype, prime it (SetTimers from
-// m_timerArgA/m_timerArgB, Set2c from m_sharedPtrColl), default- or copy-init it, validate, and append it
-// to the array - tracing + deleting the fader on any failure. /GX EH frame; the
-// SetAtGrow(GetSize(), pNew) append is inlined.
+// 0x17d9c0 - Add(nFaderType, pInit): the 6-way fader factory, and the biggest body in
+// the TU (0x786 B) because retail duplicates the whole failure epilogue into every arm.
+//
+// Per arm: reject a pInit whose descriptor tag is not the arm's own (trace + return 0);
+// `new` the concrete subtype; prime it from the manager's two default surfaces
+// (SetTimers) and the shared pointer pool (Set2c); then apply either the caller's
+// descriptor or a default-constructed CFxModeT<n> built on the stack. A rejected
+// descriptor traces, deletes the half-built fader and returns 0 - and that trace/delete/
+// return trio is emitted TWICE per arm (once per init branch), which is why the retail
+// bytes hold twelve copies of the "Invalid init class" literal.
+//
+// Only case 0's CFxModeT1 has a non-trivial destructor (a CString at +0x24), so only
+// that arm carries EH states 0 and 1 and an inlined ~CString; the other five arms get a
+// single `new`-cleanup state each (2..6) and no init teardown.
+//
+// An out-of-range nFaderType traces a DIFFERENT message ("nFaderType is invalid") and
+// falls into the shared tail with fader still null, so the append is skipped and 0 is
+// returned - it is a `break`, not a `return`.
+//
+// The tail is CObArray::SetAtGrow(GetSize(), pNew) fully inlined: the four-way resize
+// (empty / first alloc / fits in the current capacity / grow-with-copy under the
+// m_nSize/8 clamped-[4,0x400] heuristic) followed by the element store.
+// /GX EH frame.
+//
 // The RVA span includes the trailing jump table: code ends 0x17e146 (`jmp 0x17dace`),
 // 2 pad bytes (`8b ff`), then 6 dwords at 0x17e148..0x17e160 all targeting inside Add.
+// ===========================================================================
 // @early-stop
 RVA(0x0017d9c0, 0x7a0)
 CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
@@ -57,140 +73,179 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFxModeDesc* pInit) {
 
     switch (nFaderType) {
         case 0: {
-            if (pInit && InitTypeId(pInit) != 1) {
-                goto wrongclass;
+            if (pInit != 0 && pInit->m_type != 1) {
+                Trace(
+                    "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
+                    "class"
+                );
+                return 0;
             }
             CFaderShape* f = new CFaderShape;
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedPtrColl);
-            if (!pInit) {
+            if (pInit == 0) {
                 CFxModeT1 init;
-                if (!f->ApplyInit(&init)) {
-                    goto badinit;
+                if (f->ApplyInit(&init) == 0) {
+                    Trace("CFaderMgr::Add (...) - Invalid init class");
+                    delete fader;
+                    return 0;
                 }
             } else {
-                if (!f->ApplyInit(pInit)) {
-                    goto append;
+                if (f->ApplyInit(pInit) == 0) {
+                    Trace("CFaderMgr::Add (...) - Invalid init class");
+                    delete fader;
+                    return 0;
                 }
             }
-            goto append;
+            break;
         }
         case 1: {
-            if (pInit && InitTypeId(pInit) != 2) {
-                goto wrongclass;
+            if (pInit != 0 && pInit->m_type != 2) {
+                Trace(
+                    "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
+                    "class"
+                );
+                return 0;
             }
             CFaderLight* f = new CFaderLight;
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedPtrColl);
-            if (!pInit) {
+            if (pInit == 0) {
                 CFxModeT2 init;
-                if (!f->ApplyInit(&init)) {
-                    goto badinit;
+                if (f->ApplyInit(&init) == 0) {
+                    Trace("CFaderMgr::Add (...) - Invalid init class");
+                    delete fader;
+                    return 0;
                 }
             } else {
-                if (!f->ApplyInit(pInit)) {
-                    goto append;
+                if (f->ApplyInit(pInit) == 0) {
+                    Trace("CFaderMgr::Add (...) - Invalid init class");
+                    delete fader;
+                    return 0;
                 }
             }
-            goto append;
+            break;
         }
         case 2: {
-            if (pInit && InitTypeId(pInit) != 3) {
-                goto wrongclass;
+            if (pInit != 0 && pInit->m_type != 3) {
+                Trace(
+                    "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
+                    "class"
+                );
+                return 0;
             }
             CFaderSine* f = new CFaderSine;
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedPtrColl);
-            if (!pInit) {
+            if (pInit == 0) {
                 CFxModeT3 init;
-                if (!f->ApplyInit(&init)) {
-                    goto badinit;
+                if (f->ApplyInit(&init) == 0) {
+                    Trace("CFaderMgr::Add (...) - Invalid init class");
+                    delete fader;
+                    return 0;
                 }
             } else {
-                if (!f->ApplyInit(pInit)) {
-                    goto append;
+                if (f->ApplyInit(pInit) == 0) {
+                    Trace("CFaderMgr::Add (...) - Invalid init class");
+                    delete fader;
+                    return 0;
                 }
             }
-            goto append;
+            break;
         }
         case 3: {
-            if (pInit && InitTypeId(pInit) != 4) {
-                goto wrongclass;
+            if (pInit != 0 && pInit->m_type != 4) {
+                Trace(
+                    "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
+                    "class"
+                );
+                return 0;
             }
             CFaderRadial* f = new CFaderRadial;
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedPtrColl);
-            if (!pInit) {
+            if (pInit == 0) {
                 CFxModeT4 init;
-                if (!f->ApplyInit(&init)) {
-                    goto badinit;
+                if (f->ApplyInit(&init) == 0) {
+                    Trace("CFaderMgr::Add (...) - Invalid init class");
+                    delete fader;
+                    return 0;
                 }
             } else {
-                if (!f->ApplyInit(pInit)) {
-                    goto append;
+                if (f->ApplyInit(pInit) == 0) {
+                    Trace("CFaderMgr::Add (...) - Invalid init class");
+                    delete fader;
+                    return 0;
                 }
             }
-            goto append;
+            break;
         }
         case 4: {
-            if (pInit && InitTypeId(pInit) != 5) {
-                goto wrongclass;
+            if (pInit != 0 && pInit->m_type != 5) {
+                Trace(
+                    "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
+                    "class"
+                );
+                return 0;
             }
             CFaderFlat* f = new CFaderFlat;
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedPtrColl);
-            if (!pInit) {
+            if (pInit == 0) {
                 CFxModeT5 init;
-                if (!f->ApplyInit(&init)) {
-                    goto badinit;
+                if (f->ApplyInit(&init) == 0) {
+                    Trace("CFaderMgr::Add (...) - Invalid init class");
+                    delete fader;
+                    return 0;
                 }
             } else {
-                if (!f->ApplyInit(pInit)) {
-                    goto append;
+                if (f->ApplyInit(pInit) == 0) {
+                    Trace("CFaderMgr::Add (...) - Invalid init class");
+                    delete fader;
+                    return 0;
                 }
             }
-            goto append;
+            break;
         }
         case 5: {
-            if (pInit && InitTypeId(pInit) != 6) {
-                goto wrongclass;
+            if (pInit != 0 && pInit->m_type != 6) {
+                Trace(
+                    "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived "
+                    "class"
+                );
+                return 0;
             }
             CFaderMesh* f = new CFaderMesh;
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedPtrColl);
-            if (!pInit) {
+            if (pInit == 0) {
                 CFxModeT6 init;
-                if (!f->ApplyInit(&init)) {
-                    goto badinit;
+                if (f->ApplyInit(&init) == 0) {
+                    Trace("CFaderMgr::Add (...) - Invalid init class");
+                    delete fader;
+                    return 0;
                 }
             } else {
-                if (!f->ApplyInit(pInit)) {
-                    goto append;
+                if (f->ApplyInit(pInit) == 0) {
+                    Trace("CFaderMgr::Add (...) - Invalid init class");
+                    delete fader;
+                    return 0;
                 }
             }
-            goto append;
+            break;
         }
         default:
-        wrongclass:
-            Fader_Trace(
-                "CFaderMgr::Add (..., pInit ) - pInit does not point to the correct derived class"
-            );
-            return 0;
+            Trace("CFaderMgr::Add (...) - nFaderType is invalid");
+            break;
     }
 
-badinit:
-    Fader_Trace("CFaderMgr::Add (...) - Invalid init class");
-    delete fader;
-    return 0;
-
-append:
-    if (fader) {
+    if (fader != 0) {
         i32 idx = m_arr.m_nSize;
         i32 newSize = idx + 1;
         if (newSize == 0) {
@@ -294,7 +349,7 @@ void CFaderMgr::DeleteAll() {
 }
 
 RVA(0x0017e230, 0xc)
-void __stdcall Fader_TraceStr(CString s) {
+void CFaderMgr::Trace(CString s) {
     static_cast<void>(s);
 }
 

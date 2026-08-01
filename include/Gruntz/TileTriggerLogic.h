@@ -29,16 +29,47 @@ typedef enum TrigLogicId {
 // Tile collision kinds - the CTileImageSet/CImageSet1::GetCollisionAt (slot 8) result for
 // the tile under an object. The space is dense (~0xb..0x74) and mostly unrecovered; ONLY
 // the arms proven from the binary are enumerated here, never a filled-in range.
+//
+// The 0x5d..0x74 band IS recovered, from CTileTriggerLogic::Tick's jump table (0x110c10,
+// tables at 0x511a50/0x511a98): each arm names its own sprite key literal, so the kind is
+// read straight off the string, and every kind but the two crumble bridges owns a
+// consecutive (DOWN, UP) pair whose UP member is the value the arm compares against
+// before selecting "GAME_PYRAMIDUP" / "LEVEL_BRIDGEUP".
 typedef enum TileCollisionKind {
+    TILEKIND_CHECKPOINTPYRAMID_DOWN = 0x5d, // "GAME_CHECKPOINTPYRAMIDZ"
+    TILEKIND_CHECKPOINTPYRAMID_UP = 0x5e,
+    TILEKIND_WHITEPYRAMID_DOWN = 0x5f, // "GAME_WHITEPYRAMIDZ"
+    TILEKIND_WHITEPYRAMID_UP = 0x60,
+    TILEKIND_ORANGEPYRAMID_DOWN = 0x61, // "GAME_ORANGEPYRAMIDZ"
+    TILEKIND_ORANGEPYRAMID_UP = 0x62,
+    TILEKIND_BLACKPYRAMID_DOWN = 0x63, // "GAME_BLACKPYRAMIDZ"
+    TILEKIND_BLACKPYRAMID_UP = 0x64,
+    TILEKIND_GREENPYRAMID_DOWN = 0x65, // "GAME_GREENPYRAMIDZ"
+    TILEKIND_GREENPYRAMID_UP = 0x66,
     // The two PYRAMID-band kinds (the whole 0x5d..0x6a band plays GAME_PYRAMIDMOVE in
     // CTileTriggerLogic::LoadBridgeMove @0x110860) that make an id-21 trigger the level's
     // single latched leaf: AddLogic (0x116610) and LoadElement (0x117800) both stamp
     // CTileTriggerContainer::m_latchedLeaf on exactly {0x67, 0x68}, and
     // CBattlezMapConfig::PathToNearestGoal (0x30b20) reads that latch in place of a
-    // per-cell FindInLists12 when a board cell's marker is 0x67. Which pyramid state each
-    // of the pair denotes is NOT recovered, so they are not named up/down.
+    // per-cell FindInLists12 when a board cell's marker is 0x67. Which state each denotes
+    // IS now recovered: Tick's whole-grid red sweep plays "GAME_PYRAMIDUP" on 0x68 and
+    // "GAME_PYRAMIDDOWN" otherwise.
     TILEKIND_PYRAMID_LATCH_A = 0x67,
     TILEKIND_PYRAMID_LATCH_B = 0x68,
+    TILEKIND_REDPYRAMID_DOWN = 0x67,    // "GAME_REDPYRAMIDZ" (== TILEKIND_PYRAMID_LATCH_A)
+    TILEKIND_REDPYRAMID_UP = 0x68,      //                    (== TILEKIND_PYRAMID_LATCH_B)
+    TILEKIND_PURPLEPYRAMID_DOWN = 0x69, // "GAME_PURPLEPYRAMIDZ"
+    TILEKIND_PURPLEPYRAMID_UP = 0x6a,
+    TILEKIND_WATERBRIDGE_DOWN = 0x6b, // "LEVEL_WATERBRIDGE"
+    TILEKIND_WATERBRIDGE_UP = 0x6c,
+    TILEKIND_DEATHBRIDGE_DOWN = 0x6d, // "LEVEL_DEATHBRIDGE"
+    TILEKIND_DEATHBRIDGE_UP = 0x6e,
+    TILEKIND_CRUMBLEWATERBRIDGE = 0x6f,     // "LEVEL_CRUMBLEWATERBRIDGE" (single state)
+    TILEKIND_CRUMBLEDEATHBRIDGE = 0x70,     // "LEVEL_CRUMBLEDEATHBRIDGE" (single state)
+    TILEKIND_TOGGLEWATERBRIDGE_DOWN = 0x71, // "LEVEL_TOGGLEWATERBRIDGE"
+    TILEKIND_TOGGLEWATERBRIDGE_UP = 0x72,
+    TILEKIND_TOGGLEDEATHBRIDGE_DOWN = 0x73, // "LEVEL_TOGGLEDEATHBRIDGE"
+    TILEKIND_TOGGLEDEATHBRIDGE_UP = 0x74,
 } TileCollisionKind;
 
 typedef enum TrigErrClass {
