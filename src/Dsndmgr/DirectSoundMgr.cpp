@@ -1022,19 +1022,22 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     IDirectSoundBuffer* out;
     DSBUFFERDESC desc;
     i32 hr;
-    DSoundCloneInst* voice;
+    // ONE exit: retail's six gates each emit `xor eax,eax / jmp 0x136843` into a
+    // single fs:0-restoring epilogue, i.e. the result is a variable returned once,
+    // not a second `return 0` with its own inlined unwind.
+    DSoundCloneInst* voice = 0;
 
     if (m_initialized == 0) {
-        goto fail;
+        goto done;
     }
     if (bytes == 0) {
-        goto fail;
+        goto done;
     }
     if (fmt == 0) {
-        goto fail;
+        goto done;
     }
     if (fmt->wFormatTag != 1) {
-        goto fail;
+        goto done;
     }
 
     // The 16-byte header copy: retail moves it as dword@0, dword@4, dword@8, dword@0xc,
@@ -1058,10 +1061,10 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x422, hr);
-        goto fail;
+        goto done;
     }
     if (out == 0) {
-        goto fail;
+        goto done;
     }
 
     // Global operator new is RezAlloc; the constructor call gives MSVC the
@@ -1073,9 +1076,8 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     voice->m_sampleRate = fmt->nAvgBytesPerSec; // +0x3c  duration divisor
     voice->m_sampleCount = bytes;               // +0x2c  byte count
     voice->ComputeDuration();
+done:
     return voice; // DSoundCloneInst* -> DirectSoundMgr* base view (CreateBuffer's return)
-fail:
-    return 0;
 }
 
 RVA(0x00136860, 0xa9)
