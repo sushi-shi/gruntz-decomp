@@ -521,11 +521,15 @@ void FontRenderer::DrawWrapped(
 // line-height. With no font loaded the extent is {0,0}. The CString arg is
 // taken by value (the EH frame destroys it); the result is returned by value.
 // @early-stop
-// zero-register-pinning wall (docs/patterns/zero-register-pinning.md): retail
-// pins esi=0 and reuses it for the null-branch result stores, the EH-state
-// writes and the length compares (+ one dead `mov [esp+0x10],esi` spill); cl
-// allocates ecx for the zero, cascading a 1-instr regalloc shift. Body/offsets
-// byte-exact; logic complete.
+// zero-register-pinning wall (docs/patterns/zero-register-pinning.md, 71.8%): the
+// loop is now byte-identical. Retail coalesces the loop counter's initial 0 with the
+// 0 constant into esi (`xor esi,esi` before the m_font gate, then `cmp eax,esi` /
+// `mov al,[esi+eax]` / `inc esi`), so on the null path esi is busy and cl picks ebx
+// for the sret pointer - which makes retail's two epilogues differ and stops them
+// tail-merging. Ours puts the zero in ecx and the sret in esi on BOTH paths, so cl
+// merges them (-12 insns). Tried: hoisting `i = 0` out of the for-init (71.6),
+// `g.height = 0` in the loop as a source for retail's dead `mov [esp+0x10],esi`
+// store (66.3). Both regressed.
 RVA(0x0017ac50, 0xbd)
 TextExtent FontRenderer::MeasureText(CString text) {
     TextExtent ext;
