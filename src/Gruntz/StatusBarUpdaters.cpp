@@ -28,12 +28,12 @@
 RVA(0x00110570, 0xfb)
 i32 CTileTriggerSwitchLogic::SwitchDown() {
     CDDrawWorkerHost* g = g_gameReg->m_world->m_level->m_mainPlane;
-    i32 v = g->m_tileGrid[g->m_colOffsets[m_key0c] + m_08] + 1;
+    i32 v = g->m_tileGrid[g->m_colOffsets[m_key0c] + m_tileX] + 1;
     CDDrawWorkerHost* g2 = g_gameReg->m_world->m_level->m_mainPlane;
-    g2->m_tileGrid[g2->m_colOffsets[m_key0c] + m_08] = v;
-    g_gameReg->m_tileGrid->ComputeCellFlags(m_08, m_key0c, v);
+    g2->m_tileGrid[g2->m_colOffsets[m_key0c] + m_tileX] = v;
+    g_gameReg->m_tileGrid->ComputeCellFlags(m_tileX, m_key0c, v);
 
-    i32 px = (m_08 << 5) + 0x10;
+    i32 px = (m_tileX << 5) + 0x10;
     i32 py = (m_key0c << 5) + 0x10;
     if (px < g_gameReg->m_viewBounds.right && px >= g_gameReg->m_viewBounds.left
         && py < g_gameReg->m_viewBounds.bottom && py >= g_gameReg->m_viewBounds.top) {
@@ -66,12 +66,12 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
 RVA(0x001106b0, 0xf4)
 i32 CTileTriggerSwitchLogic::SwitchUp() {
     CDDrawWorkerHost* g = g_gameReg->m_world->m_level->m_mainPlane;
-    i32 v = g->m_tileGrid[g->m_colOffsets[m_key0c] + m_08] - 1;
+    i32 v = g->m_tileGrid[g->m_colOffsets[m_key0c] + m_tileX] - 1;
     CDDrawWorkerHost* g2 = g_gameReg->m_world->m_level->m_mainPlane;
-    g2->m_tileGrid[g2->m_colOffsets[m_key0c] + m_08] = v;
-    g_gameReg->m_tileGrid->ComputeCellFlags(m_08, m_key0c, v);
+    g2->m_tileGrid[g2->m_colOffsets[m_key0c] + m_tileX] = v;
+    g_gameReg->m_tileGrid->ComputeCellFlags(m_tileX, m_key0c, v);
 
-    i32 px = (m_08 << 5) + 0x10;
+    i32 px = (m_tileX << 5) + 0x10;
     i32 py = (m_key0c << 5) + 0x10;
     if (px < g_gameReg->m_viewBounds.right && px >= g_gameReg->m_viewBounds.left
         && py < g_gameReg->m_viewBounds.bottom && py >= g_gameReg->m_viewBounds.top) {

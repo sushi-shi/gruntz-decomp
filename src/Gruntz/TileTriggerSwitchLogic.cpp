@@ -88,7 +88,7 @@ i32 CTileTriggerSwitchLogic::Setup(
         return 0;
     }
     m_typeId = typeId;
-    m_08 = tileX;
+    m_tileX = tileX;
     m_key0c = tileY;
     m_key1 = cellKey;
     m_owner = owner;
@@ -996,10 +996,10 @@ RVA(0x00112b70, 0x5a)
 i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     CGruntzMgr* reg = g_gameReg;
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
-    i32 v = layer->m_tileGrid[m_08 + layer->m_colOffsets[m_key0c]] + 1;
+    i32 v = layer->m_tileGrid[m_tileX + layer->m_colOffsets[m_key0c]] + 1;
     CDDrawWorkerHost* layer2 = reg->m_world->m_level->m_mainPlane;
-    layer2->m_tileGrid[m_08 + layer2->m_colOffsets[m_key0c]] = v;
-    (reg->m_tileGrid)->ComputeCellFlags(m_08, m_key0c, v);
+    layer2->m_tileGrid[m_tileX + layer2->m_colOffsets[m_key0c]] = v;
+    (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_key0c, v);
     m_linkGate = 1;
     return 1;
 }
@@ -1011,10 +1011,10 @@ RVA(0x00112bf0, 0x5e)
 i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     CGruntzMgr* reg = g_gameReg;
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
-    i32 v = layer->m_tileGrid[m_08 + layer->m_colOffsets[m_key0c]] - 1;
+    i32 v = layer->m_tileGrid[m_tileX + layer->m_colOffsets[m_key0c]] - 1;
     CDDrawWorkerHost* layer2 = reg->m_world->m_level->m_mainPlane;
-    layer2->m_tileGrid[m_08 + layer2->m_colOffsets[m_key0c]] = v;
-    (reg->m_tileGrid)->ComputeCellFlags(m_08, m_key0c, v);
+    layer2->m_tileGrid[m_tileX + layer2->m_colOffsets[m_key0c]] = v;
+    (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_key0c, v);
     m_linkGate = 0;
     return 1;
 }
@@ -1539,7 +1539,7 @@ i32 CTileTriggerSwitchLogic::SaveState(CFileMemBase* ar) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    ar->Write(&m_08, 4);
+    ar->Write(&m_tileX, 4);
     ar->Write(&m_key0c, 4);
     ar->Write(&m_key1, 4);
     ar->Write(&m_linkGate, 4);
@@ -1564,7 +1564,7 @@ i32 CTileTriggerSwitchLogic::LoadState(CFileMemBase* s) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    s->Read(&m_08, 4);
+    s->Read(&m_tileX, 4);
     s->Read(&m_key0c, 4);
     s->Read(&m_key1, 4);
     s->Read(&m_linkGate, 4);

@@ -5060,7 +5060,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
             if (node != 0) {
                 CTileTriggerSwitchLogic* rec = m_cellQuery->FindChild(node, 0);
                 if (rec != 0) {
-                    i32 cx = rec->m_08;    // the record's tile coords (the m_tileX/m_tileY
+                    i32 cx = rec->m_tileX; // the record's tile coords (the m_tileX/m_tileY
                     i32 cy = rec->m_key0c; // slots of the logic-record family)
                     if (IsCoordOccupied(unit, cx, cy) != 0) {
                         return 1;
@@ -5074,7 +5074,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
             if (node != 0) {
                 CTileTriggerSwitchLogic* rec = m_cellQuery->FindChild(node, 0);
                 if (rec != 0) {
-                    i32 cx = rec->m_08;
+                    i32 cx = rec->m_tileX;
                     i32 cy = rec->m_key0c;
                     i32 dx = cx - goalX;
                     i32 dy = cy - goalY;

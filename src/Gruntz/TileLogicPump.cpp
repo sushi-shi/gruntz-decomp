@@ -812,7 +812,7 @@ i32 CCheckpointTrigger::Act() {
     }
 
     i32 gy = pad->m_key0c;
-    i32 gx = pad->m_08;
+    i32 gx = pad->m_tileX;
     CMapMgr* grid = g_gameReg->m_tileGrid;
     i32 owner;
     if (static_cast<u32>(gx) < grid->m_width && static_cast<u32>(gy) < grid->m_height) {

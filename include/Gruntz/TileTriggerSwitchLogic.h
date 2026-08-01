@@ -20,7 +20,7 @@ public:
     // arg0 is the owning CONTAINER (Setup stamps it into m_owner - the same object
     // LoadElement stamps there).
     // Setup / BuildSmall slot map (proven by Setup's own stores + the one caller,
-    // CTileTriggerContainer::AddSwitchLogic): typeId->m_typeId, tileX->m_08,
+    // CTileTriggerContainer::AddSwitchLogic): typeId->m_typeId, tileX->m_tileX,
     // tileY->m_key0c, cellKey->m_key1 (the (x<<8)|y FindChild key), linkGate->m_linkGate.
     // a8/a9 land in m_18/m_28, which nothing in the tree READS - left unnamed.
     virtual i32 Setup(
@@ -98,7 +98,7 @@ public:
     // +0x00  implicit vptr (real virtuals above; was an explicit m_vptr struct stamp)
     i32 m_typeId;   // +0x04  type id (the factory switch id 1..8; LoadElement stamps it,
                     //        Setup seeds it; CTileTriggerContainer::FindChild matches on it)
-    i32 m_08;       // +0x08  (serialized in LoadState)
+    i32 m_tileX;    // +0x08  (serialized in LoadState)
     i32 m_key0c;    // +0x0c  secondary key
     i32 m_key1;     // +0x10  primary key (the container's FindChild/RemoveByKeys match key)
     i32 m_linkGate; // +0x14  link-check gate (VerifyBlockLinks guard)

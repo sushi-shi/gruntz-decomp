@@ -75,6 +75,9 @@ static const char s_keyB[] = "B";
 static const char s_keyC[] = "C";
 static const char s_keyE[] = "E";
 static const char s_keyA[] = "A";
+// The "L" act code (retail 0x0060cc98). Unlike D/M its defining TU is not recovered,
+// so it is a TU-local constant here; the reference is a masked DIR32 either way.
+static char s_codeL[] = "L";
 static const char s_keyF[] = "F";
 
 i32 g_movingSeed;
@@ -192,7 +195,7 @@ void GruntRecycleCoords(CGrunt* g) {
     g->m_31c.RemoveAll();
 }
 
-static void GruntScratchTeardown() {
+static __inline void GruntScratchTeardown() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -4418,12 +4421,33 @@ void CGrunt::MovingSlot16() {
             }
         }
     }
-    // The scratch-resolver D-code reject cascade (each via ScratchResolve + the
-    // scratch CString teardown).
+    // The scratch-resolver reject cascade. Each probe is ScratchResolve(m_1c) -> tear
+    // the scratch CString table down -> compare the resolved name against one act code;
+    // the D and N codes fall straight through to the shared continuation, L and M first
+    // consult their own latch, and any OTHER code leaves the slot entirely.
+    CString* code = g_typeColl.ScratchResolve(m_objAux->m_1c);
     GruntScratchTeardown();
-    bool eq2;
-    eq2 = (strcmp(*g_typeColl.ScratchResolve(m_objAux->m_1c), s_codeD) == 0);
-    static_cast<void>(eq2);
-    GruntScratchTeardown();
+    if (strcmp(*code, s_codeD) != 0) {
+        code = g_typeColl.ScratchResolve(m_objAux->m_1c);
+        GruntScratchTeardown();
+        if (strcmp(*code, s_codeN) != 0) {
+            code = g_typeColl.ScratchResolve(m_objAux->m_1c);
+            GruntScratchTeardown();
+            if (strcmp(*code, s_codeL) == 0) {
+                if (m_entranceStamped != 0) {
+                    return;
+                }
+            } else {
+                code = g_typeColl.ScratchResolve(m_objAux->m_1c);
+                GruntScratchTeardown();
+                if (strcmp(*code, s_codeM) != 0) {
+                    return;
+                }
+                if (m_22c != 0) {
+                    return;
+                }
+            }
+        }
+    }
     LoadWingzGruntSprites(0);
 }

@@ -66,6 +66,17 @@
 #include <Wwd/WwdFile.h>                 // CDDrawWorkerHost - the canonical plane (cell lookup)
 #include <rva.h>
 
+// The `reason` dispatch is a 16-slot jump table at 0x4771bc (index bytes 0x4771d8,
+// selector biased by -3). Retail has SIX real arms and a default; only the reason-13
+// one below is reconstructed so far. Case set and EMISSION order, straight from the
+// table (`sema disasm 0x00075e90 --switch`):
+//     reason 13 -> 0x075f99      reason 5  -> 0x076121
+//     default   -> 0x0762da  (reasons 4, 6, 8..12, 14, 16, 17 all reach it)
+//     reason 7  -> 0x076497      reason 15 -> 0x07655f
+//     reason 3  -> 0x076f2a      reason 18 -> 0x07706c
+// The default block sits BETWEEN the reason-5 and reason-7 arms, so the source writes
+// `default:` there and not at the end.
+// @early-stop
 RVA(0x00075e90, 0x1329)
 i32 CTriggerMgr::LoadTileArrivalFx(
     i32 ownerHi,
