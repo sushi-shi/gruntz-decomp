@@ -218,9 +218,14 @@ void SoundStream::Free() {
 // rezalloc-placement-new-no-eh-frame.md) fell with the real StreamVoice :
 // DSoundCloneInst derivation: plain `new T` over the ::operator-new(==RezAlloc)
 // allocator now emits the retail /GX frame (byte-identical prologue).
-// ONE exit: retail's six gates each emit `xor eax,eax / jmp` into a single
-// fs:0-restoring epilogue and the success path `mov eax,<reg>` right above it, i.e.
-// the result is a variable returned once - not a `fail:` label with its own unwind.
+// @early-stop
+// ONE exit, and it must stay a `goto done`: retail's six gates each emit
+// `xor eax,eax / jmp` into a single fs:0-restoring epilogue (1 ret). Spelling them
+// as six `return 0;` MEASURED 65.38 -> 40.70 - under /GX cl5 duplicates the WHOLE
+// epilogue (fs:0 restore + 4 pops + add esp) at every return, giving 7 rets vs
+// retail's 1. The per-gate `xor eax,eax` is cl's own return-value materialization
+// into the shared exit, NOT evidence of a per-gate return. Residual is the
+// callee-saved count/order (same family as SoundDevice::CreateBuffer).
 RVA(0x00137780, 0x171)
 StreamVoice* SoundStream::CreateStreamBuffer(
     WaveFormatX* fmt,
@@ -292,11 +297,15 @@ done:
 // create a streaming buffer for it, seed the voice's feeder window, then arm the
 // feeder; on a feeder failure, destroy the voice.
 // @early-stop
-// regalloc wall: retail pins `src` in ebp across the ParseWave/CreateStreamBuffer
-// calls; MSVC here pins it in ebx, shifting the prologue load + the callee-saved
-// cascade (one register choice, body otherwise exact). See
-// docs/patterns/zero-register-pinning.md / pin-local-for-callee-saved-reg.md.
-// Logic complete, deferred to the final sweep.
+// zero-materialization + out-param-slot wall (2026-08-01 re-audit; branch sequences
+// AGREE). Two coupled residuals: (a) the two ParseWave out-params land in the
+// opposite stack slots (retail dataOff@[esp+0x10] / dataLen@[esp+0x2c], we have
+// them swapped) - swapping the DECLARATION order is a measured NO-OP, so the slots
+// are assigned by address-taken order in the call, not by declaration; (b) we
+// materialize the constant 0 into eax BEFORE the voice null test (`xor eax,eax /
+// cmp esi,eax` where retail has `test esi,esi`) so cl can reuse it for the
+// m_loop/m_sourceOffset zero stores, which also hoists those two stores above
+// m_windowLength. Retail keeps the zeros as late immediates.
 RVA(0x00137900, 0xc6)
 StreamVoice* SoundStream::OpenStream(
     CParseSource* src,

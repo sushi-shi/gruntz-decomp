@@ -1011,11 +1011,15 @@ void SoundDevice::Shutdown() {
 // DSoundCloneInst leaf, thread it on the +0x04 list, and seed its format,
 // avg-bytes, byte-count, and duration.
 // @early-stop
-// 35.6 -> 53.5: every early-out is a `goto fail` onto ONE shared bottom epilogue,
-// which is retail's shape (a single fs:0-restoring exit all six gates jmp into;
-// the per-return spelling inlined the whole unwind at each - 7 rets vs retail's 1).
-// docs/patterns/positive-gate-enables-shrink-wrap.md (shared-exit half). Residual
-// is the callee-saved count (same family as SoundStream::CreateStreamBuffer).
+// ONE exit, and it must stay a `goto done`: retail's six gates each emit
+// `xor eax,eax / jmp 0x136843` into a single fs:0-restoring epilogue (1 ret). Six
+// `return 0;` instead MEASURED 61.35 -> 35.61 - under /GX cl5 duplicates the WHOLE
+// epilogue (fs:0 restore + pops + add esp) at every return, giving 7 rets. The
+// per-gate `xor eax,eax` is cl's own return-value materialization into the shared
+// exit, NOT evidence of a per-gate return (re-confirmed 2026-08-01; the earlier
+// 35.6 -> 53.5 note recorded the same experiment). docs/patterns/
+// positive-gate-enables-shrink-wrap.md (shared-exit half). Residual is the
+// callee-saved count (same family as SoundStream::CreateStreamBuffer).
 RVA(0x001366f0, 0x168)
 DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags) {
     WaveFormatX wf;
@@ -1404,11 +1408,6 @@ i32 SoundDevice::FreeSamples() {
 // does not advance (it re-tests the current element) - retail's structure; the
 // elements that reach here never trip it, but the source must reproduce the
 // codegen, so spell it as a no-advance `continue`.
-// @early-stop
-// select-zero-mask-dest-register wall (docs/patterns/select-zero-mask-dest-register.md):
-// byte-exact except the `e ? node : 0` mask (neg/sbb/and) lands in edx (ours) vs eax
-// (retail) - a free-list pick the four obvious source spellings don't move. 99.3%,
-// logic complete; deferred to the final sweep.
 RVA(0x00136f60, 0x74)
 void DSoundList::RemoveMatching(void* key, u32 tag) {
     DSoundElem* e = elemOf<DSoundElem>(m_head);
@@ -1420,7 +1419,11 @@ void DSoundList::RemoveMatching(void* key, u32 tag) {
             continue;
         }
         if (e->m_key == key) {
-            Unlink(e ? node : 0);
+            // The link address must be re-formed AT the call, not reused from `node`:
+            // through the `node` temp cl lands the neg/sbb/and null-mask in edx,
+            // through the inline `&e->m_link` in eax as retail does (99.30 -> 99.90,
+            // 6-cell matrix in config/axes/removematching.json).
+            Unlink(e ? &e->m_link : 0);
             if (e) {
                 PureSoundElem* pure = e; // up-cast: teardown resets to the pure base
                 delete pure;
@@ -1436,14 +1439,21 @@ void DSoundList::RemoveMatching(void* key, u32 tag) {
 // volume-ramp play params. The stamp arg == -1 means "start now" -> latch the
 // global-clock reading (_g_pTimeGetTime @ 0x6c4650); otherwise use it verbatim.
 // CloneAndPlay's `new DSoundVoice(...)` binds here.
-// The vptr stamp SPLITS the init list from the body: retail stores +0xc/+0x10/+0x14
-// /+0x1c BEFORE `mov [esi],??_7DSoundVoice` and +0x18/+0x20/+0x24 after. That order
-// is declaration order with m_rampEndVolume (+0x18) SKIPPED, which is exactly a
-// member-init list that omits it - so the ramp-end/duration/start-time stores are
-// the body.
+// @early-stop
+// store-SCHEDULING wall, NOT the vptr-stamp-splits-meminit divider. Retail stores
+// +0xc/+0x10/+0x14/+0x1c before `mov [esi],??_7DSoundVoice` and +0x18/+0x20/+0x24
+// after; we emit +0x10/+0x14/+0x18 before and +0xc/+0x1c after. Spelling retail's
+// pre-stamp set as a member-init list (`: m_live(1), m_buffer(owner),
+// m_stopAndRewind(slot), m_rampStartVolume(pct)`) MEASURED 87.94 -> 87.76 and moved
+// NEITHER a list member up nor the body member down - the stamp is not a barrier
+// here. PureSoundElem is an abstract base with no ctor, so there is no base-ctor
+// call to anchor the stamp and cl schedules it freely among the stores.
 RVA(0x00136fe0, 0x7b)
-DSoundVoice::DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 slot, i32 stamp)
-    : m_live(1), m_buffer(owner), m_stopAndRewind(slot), m_rampStartVolume(pct) {
+DSoundVoice::DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 slot, i32 stamp) {
+    m_live = 1;
+    m_buffer = owner;
+    m_stopAndRewind = slot;
+    m_rampStartVolume = pct;
     m_rampEndVolume = key;
     m_rampDurationMs = mode;
     m_rampStartTime = (stamp == -1) ? ::timeGetTime() : stamp;
@@ -1462,6 +1472,14 @@ DSoundVoice::DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 
 // three buffer calls, the done/!done epilogue). The only residual is the esi<->edi
 // coin-flip: retail pins this->esi + elapsed->edi, MSVC5 here pins elapsed->esi +
 // this->edi (same values, mirrored register file). Logic complete.
+// @early-stop
+// this-vs-arg callee-saved pick (95.70): retail loads `mov esi,ecx` (this) first and
+// puts `now` in edi; we load `now` into esi first and this into edi. Every
+// instruction is otherwise identical. A 6-cell matrix over the elapsed computation
+// (config/axes/dsoundvoicetick.json - dur/start hoisted to locals, both hoisted,
+// negated-member LHS, `done` split from its declaration) scored ALL SIX identical to
+// baseline, so the statement site is not the lever; the pick is made by the
+// allocator, not by first-use order in the source.
 RVA(0x00137060, 0x6b)
 i32 DSoundVoice::Tick(i32 now) {
     i32 done = 0;

@@ -260,11 +260,18 @@ i32 CGruntzSoundZ::SetXMidiVolume(i32 volume) {
 // GetXMidiVolume: read the AIL XMIDI master volume and rescale 0..127 -> 0..100.
 // __thiscall (reached as m_sound->GetXMidiVolume), `this` unused.
 // @early-stop
-// divide-by-127 scheduling wall (~91%): logic byte-faithful (the g_ailMidiDriver
-// gate, the AIL read, the 0/0x64 clamps, and the v*100/127 magic-multiply are all
-// correct); the residual is MSVC's register/scheduling choice inside the reciprocal
-// divide (the lea/lea/shl v*100 chain and the 0x81020409 imul). Re-homing to a
-// __thiscall method is byte-neutral (`this` unused).
+// magic-divide ACCUMULATOR-register pick (91.30). Same instruction multiset; retail
+// keeps the quotient in edx to the end (`add edx,ecx / sar edx,6 / mov eax,edx /
+// shr eax,0x1f / add edx,eax / mov eax,edx`, eax as the sign-fix scratch), we move
+// it to eax immediately (`mov eax,edx / add eax,ecx / sar eax,6 / mov ecx,eax /
+// shr ecx,0x1f / add eax,ecx`, ecx as the scratch). One root decision - when the
+// quotient migrates to the return register - and it is inside cl's reciprocal-divide
+// expander. An 8-cell matrix over the divide expression
+// (config/axes/getxmidivolume.json: named result, split multiply, both named,
+// const-LHS multiply, parenthesised, result declared at the top) scored ALL SEVEN
+// identical to baseline; only restructuring the clamps into a nested `if` moved it,
+// to 64.44. Per docs/patterns/same-sites-different-per-function-optimum.md an
+// all-cells-tie is the allocator, not the site.
 RVA(0x001389c0, 0x47)
 i32 CGruntzSoundZ::GetXMidiVolume() {
     if (g_ailMidiDriver == 0) {

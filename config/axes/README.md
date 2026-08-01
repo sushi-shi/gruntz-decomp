@@ -28,3 +28,6 @@ See docs/patterns/same-sites-different-per-function-optimum.md.
 | layoutwrapped.json | FontRenderer::LayoutWrapped 0x17b120 | 48 | 86.5 -> 86.7, a third distinct optimum |
 | parsewave.json | SoundStream::ParseWave 0x137b70 | 72 | NEGATIVE - every cell identical; frame packer, not declaration sites |
 | buildleveltitlestring.json | BuildLevelTitleString 0xe44e0 | 24 | NEGATIVE - see the doc; the EH-object slot order is not declaration-steerable |
+| getxmidivolume.json | CGruntzSoundZ::GetXMidiVolume 0x1389c0 | 8 | NEGATIVE - all 7 divide-expression spellings tie at 91.30; the 8th (nested clamps) craters to 64.44. The residual is which register cl's reciprocal-divide expander keeps the quotient in |
+| removematching.json | DSoundList::RemoveMatching 0x136f60 | 6 | 99.30 -> **99.90**: `Unlink(e ? &e->m_link : 0)` beats `Unlink(e ? node : 0)`; re-forming the address AT the call lands the neg/sbb/and null-mask in eax (retail) instead of edx |
+| dsoundvoicetick.json | DSoundVoice::Tick 0x137060 | 6 | NEGATIVE - all 6 tie at 95.70. The residual is which of `this`/`now` gets esi; hoisting m_rampDurationMs / m_rampStartTime to locals, negating the LHS and splitting `done`'s declaration all score identically |
