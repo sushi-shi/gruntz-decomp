@@ -56,6 +56,61 @@ Hard-won traps that cost real time. Grouped by area. The deeper codegen idioms l
   above — **their current % is not a proxy for byte-correctness.** This is a delinker/carve
   fix, not a source fix; MAX-fuzzy already records 0.0000 for them, so they cost nothing.
 
+## Header axes: the transitive cone, and the `$S<n>` counter (2026-08-01, measured)
+
+A **header** edit is not a `.cpp` edit with a bigger blast radius — it is a different kind of
+change, and a search harness must treat it differently.
+
+- **The cone is TRANSITIVE, not direct.** `include/Bute/ObjListBase.h` has exactly two direct
+  includers, yet adding one empty inline `~CObjListBase() {}` moved five functions in units
+  that include it only transitively (`Rez/RezList.h` → `Rez/RezMgr.h` → `Net/NetCmdSlot.cpp`).
+  **Not one moved unit includes the header directly.** Measured A/B (dtor OFF → ON), reproduced
+  independently:
+
+      100.000 -> 89.535  netcmdslot|?Verify@CNetSession@@QAEHH@Z      <- the whole cost
+       99.825 -> 99.614  sbi_rectonly|?LoadMainStatusBarSprite@...
+       90.000 -> 89.975  play|?DrawCursorSaveUnder@...
+       65.395 -> 65.429  imagerle16encode|?EncodeRle16@...   (+)
+       56.000 -> 56.008  gamechecksum|?Checksum@CNetSession@@QAEHXZ    (+)
+      exact 3215 -> 3214
+
+  `netcmdslot`'s BASE obj md5 changed while its delinked TARGET obj stayed byte-identical, and
+  `CNetSession::Verify`'s single reloc is the same on both sides — so this is purely the /O2
+  declaration butterfly, not a reloc or pairing effect.
+
+- **A header edit shifts MSVC's per-compiland symbol counter**, and file-scope statics embed it
+  in their mangled name (`_kScrollRate$S41595` → `$S41607`, `_s_join$S29067` → `$S29079` —
+  exactly +12 in every affected TU). Those names flow base obj → `symbol_names.csv` → synth PDB
+  → delink, so they stay self-consistent for ANNOTATED statics; an unannotated `$S` symbol has
+  no such guarantee. Same mechanism as the `<new>`/`<new.h>` swap
+  (`_s_FreezeRadius$S33024` → `$S32890`) — a general property of header edits, not one header's quirk.
+
+- **Therefore, for a header axis the objective is TREE-WIDE, not per-symbol** — plus the reloc
+  audit. Here the target became byte-exact (`~CRezList` = retail's 7-byte
+  `mov [ecx],??_7CObjListBase@@6B@ / ret`) while the tree lost one exact elsewhere. A searcher
+  optimizing only the target symbol takes that for the wrong reason; one optimizing only
+  tree-exact rejects a change that fixed **4 link-breaking reloc defects**. `%` is structurally
+  blind to relocs, so `assert_relocs` has to be part of the objective.
+
+- **Proposed cheap pre-oracle (plausible, not yet verified):** diff `symbol_names.csv`. If a
+  candidate shifts any `$S<n>` it disturbed the cone and needs the whole-tree rescore; if the
+  CSV is byte-identical, a single-unit score should be sound. Sub-second gate in front of a ~40 s
+  one — worth validating before relying on it.
+
+- **Never write into `build/objdiff/base/` outside ninja.** An ad-hoc scoring harness that does
+  leaves ninja unable to see the obj is stale, desynchronizing `report.json` from the source
+  tree. Compile to a temp path and restore the source, the way `batch_source_variants` already
+  does. This corrupted one lane's measurements and produced a mis-attributed ripple report.
+
+- **REFUTED — the build DOES converge in one incremental pass.** A lane reported that after a
+  header change the first build differs from the second on identical source (7 functions moving)
+  and concluded a searcher must build to a fixed point before scoring. **Not reproducible.**
+  Measured on a clean tree: three consecutive builds on unchanged source moved **0** functions,
+  and two consecutive builds *after* a real header edit (removing the `~CObjListBase` dtor) also
+  moved **0**. The non-convergence was a downstream symptom of the `build/objdiff/base/`
+  corruption above, in the same lane's own harness. **Do not double-build before scoring** — one
+  `gruntz build` is authoritative.
+
 ## Build / worktree state (pool worktrees carry stale build state across resets)
 
 - **`build/` stale after a unit was REMOVED from `units.toml`** → `vostok-delinker` fails
