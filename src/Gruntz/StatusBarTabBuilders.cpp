@@ -55,14 +55,16 @@ namespace StatusBarTabBuilders {
 // by the call site (`new CSBI_GruntMachine` immediately before) and the field map is
 // exact: m_parent/m_owner/m_geom ARE the CStatusBarItem base slots m_2c/m_24/m_rect14,
 // and the view's CSbImageSet is the canonical CDDrawWorker (frame table + index gates).
+// 73.0 -> 85.9 (2026-08-01). The old note claimed "the geometry block groups via the
+// struct-copy idiom" - it did NOT; the source stored the four rect coords field-by-field,
+// which is exactly why retail's `lea edx,[esi+0x14]` block never appeared. And the "tail-
+// merges all 5 guards" symptom was caused by the `||` in the ENTRY guard, which puts cl in
+// cross-jump mode for the whole function.
 // @early-stop
-// identical-return-epilogue tail-merge wall (docs/patterns/identical-return-epilogue-tailmerge.md,
-// topic:wall): prologue + body are byte-exact (the geometry block groups via the struct-copy
-// idiom, struct-copy-block-store-base-reg.md; the variable-index range checks emit retail's
-// `cmp idx,[hi]; jg` from spelling them `idx > m_68`). Residual: (1) the 3 mid `return 0`
-// guards inline `jne;pop;pop;ret` in retail (eax already 0) but my compile tail-merges all 5
-// guards into one shared `pop;xor;pop;ret`; (2) the final range-check lands m_30/m_40 in the
-// opposite regs (eax<->ecx free-list coin-flip). Both are non-steerable walls; logic complete.
+// Residual: the two ENTRY guards now inline their epilogues where retail jumps both to the
+// final one, the second Lookup's receiver lands in a different register (`lea ecx,[eax+0x10]`
+// vs `mov ecx,..; add ecx,0x10`), and the final range check lands m_config/m_frameIdxB in the
+// opposite regs. Allocator/layout coin-flips; logic complete.
 RVA(0x000e8a70, 0x18c)
 i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     CStatusBarMgr* owner,
@@ -74,7 +76,14 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     i32 idxA,
     i32 idxB
 ) {
-    if (host == 0 || owner == 0) {
+    // TWO separate guards: a single `||` puts cl in cross-jump mode for the WHOLE
+    // function (measured on the twin BuildMultiplayerTabStatusBar: 88.6 -> 71.0), where
+    // retail duplicates the mid `return 0` epilogues inline - and each inline copy then
+    // drops its `xor eax,eax` because the tested value already left 0 in eax.
+    if (host == 0) {
+        return 0;
+    }
+    if (owner == 0) {
         return 0;
     }
     CDDrawSurfaceMgr* h = host;
@@ -83,15 +92,14 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     m_24 = h;
     m_28 = 0;
     m_enabled = 1;
-    m_rect14.left = g.left;
-    m_rect14.top = g.top;
-    m_rect14.right = g.right;
-    m_rect14.bottom = g.bottom;
-    CDDrawWorker* rec = 0;
-    CObject* recOb = 0;
+    // WHOLE-struct assignment - retail's `lea edx,[esi+0x14]` + [edx+N] block.
+    m_rect14 = g;
+    // ONE reused Lookup out-param: retail stages BOTH lookups through the same
+    // stack slot ([esp+0x10] each time); two separate locals give two slots.
+    CObject* found = 0;
     m_cmd = cmd;
-    h->m_imageRegistry->m_10map.Lookup("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND", recOb);
-    rec = static_cast<CDDrawWorker*>(recOb);
+    h->m_imageRegistry->m_10map.Lookup("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND", found);
+    CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
     CImage* spr;
     if (rec == 0 || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
         spr = 0;
@@ -102,10 +110,9 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     if (spr == 0) {
         return 0;
     }
-    CDDrawWorker* cfg = 0;
-    CObject* cfgOb = 0;
-    m_24->m_imageRegistry->m_10map.Lookup(key, cfgOb);
-    cfg = static_cast<CDDrawWorker*>(cfgOb);
+    found = 0;
+    m_24->m_imageRegistry->m_10map.Lookup(key, found);
+    CDDrawWorker* cfg = static_cast<CDDrawWorker*>(found);
     m_config = cfg;
     if (cfg == 0) {
         return 0;
@@ -406,10 +413,18 @@ namespace StatusBarTabBuilders {} // namespace StatusBarTabBuilders
 // CStatzTabBuilder's geometry anchors. The caller-side view typed that param CSBI_SideTab*
 // purely to compile, forcing a cross-cast of a CStatzTabBuilder. The view's CSbImageSet is
 // the canonical CSbiConfigRecord.
+// 65.4 -> 75.4 (2026-08-01, opportunistic - same construct family as the two Build*
+// above). Three swapped-arm bugs the old "tail-merge wall" note hid, all found with
+// `sema disasm --branches --diff`: (1) the m_enabled gate is `enabled != 0` (retail's
+// `je` sends the ZERO case to the sunk block); (2) the onLeft gate is `onLeft != 0`
+// (the ON-LEFT arm is retail's fallthrough); (3) the frame-resolve null test is its
+// OWN `if`, not the first term of a 3-way `||` - retail's `test eax,eax; jne <range
+// check>` puts the null case in the fallthrough with the range check sunk (+5 pts).
+// The (right-left)/2 sites here ARE signed divides (retail `cdq; sub eax,edx; sar`),
+// unlike CSBI_WellGoo::Setup's bare `sar` - do not "unify" them.
 // @early-stop
-// identical-return-epilogue tail-merge wall (topic:wall) + the left/right callee-saved
-// register reuse (they stay in ebx/ebp for the (right-left)/2 arithmetic, so the geometry
-// block can't use the struct-copy idiom). Body logic byte-faithful; ~65%. Deferred.
+// Residual: the final m_topFrame guard's success/fail blocks are the opposite way round
+// (a positive gate compiles identically - tested, no change), plus lea/register naming.
 RVA(0x000e9600, 0x18c)
 i32 CSBI_SideTab::BuildStatzTabStatusBar(
     CStatusBarMgr* parent,
@@ -439,32 +454,19 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     m_rect14.right = right;
     m_rect14.bottom = bottom;
     m_cmd = cmd;
-    if (enabled == 0) {
-        m_enabled = 0;
-    } else {
+    // Arm order is retail's: `cmp enabled,ecx; je <zero arm>` puts the ENABLED store in
+    // the fallthrough, so the gate reads `enabled != 0`.
+    if (enabled != 0) {
         m_enabled = 1;
+    } else {
+        m_enabled = 0;
     }
     m_rowIndex = rowIndex;
     m_colIndex = colIndex;
     m_onLeft = onLeft;
-    if (onLeft == 0) {
-        CDDrawWorker* n = 0;
-        CObject* nOb = 0;
-        g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
-            "GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT",
-            nOb
-        );
-        n = static_cast<CDDrawWorker*>(nOb);
-        CImage* v;
-        if (n == 0 || n->m_minIndex > 1 || n->m_maxIndex < 1) {
-            v = 0;
-        } else {
-            v = static_cast<CImage*>(n->m_items.GetAt(1));
-        }
-        m_topFrame = v;
-        m_bottomFrameDy = -1;
-        m_drawX = (right - left) / 2 + parent->m_rect10.right;
-    } else {
+    // Arm order is retail's: the ON-LEFT arm is the FALLTHROUGH (`cmp onLeft,ecx;
+    // je <on-right arm>`), so the gate reads `onLeft != 0`.
+    if (onLeft != 0) {
         CDDrawWorker* n = 0;
         CObject* nOb = 0;
         g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
@@ -473,7 +475,9 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         );
         n = static_cast<CDDrawWorker*>(nOb);
         CImage* v;
-        if (n == 0 || n->m_minIndex > 1 || n->m_maxIndex < 1) {
+        if (n == 0) {
+            v = 0;
+        } else if (n->m_minIndex > 1 || n->m_maxIndex < 1) {
             v = 0;
         } else {
             v = static_cast<CImage*>(n->m_items.GetAt(1));
@@ -481,6 +485,25 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         m_topFrame = v;
         m_bottomFrameDy = 1;
         m_drawX = parent->m_rect10.left - (right - left) / 2;
+    } else {
+        CDDrawWorker* n = 0;
+        CObject* nOb = 0;
+        g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
+            "GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT",
+            nOb
+        );
+        n = static_cast<CDDrawWorker*>(nOb);
+        CImage* v;
+        if (n == 0) {
+            v = 0;
+        } else if (n->m_minIndex > 1 || n->m_maxIndex < 1) {
+            v = 0;
+        } else {
+            v = static_cast<CImage*>(n->m_items.GetAt(1));
+        }
+        m_topFrame = v;
+        m_bottomFrameDy = -1;
+        m_drawX = (right - left) / 2 + parent->m_rect10.right;
     }
     m_drawY = colIndex * 0x12 + 0xd1;
     if (m_topFrame == 0) {
@@ -741,10 +764,16 @@ void CSBI_StatzTabArrow::SetDirectionAlt(i32 position, i32 animate) {
 // configure. Re-homed off the `CSbTab` view (the same conflation that held
 // BuildResourceTabStatusBar; `this` is proven by the call site's `new
 // CSBI_StatzTabGruntBar`). The view's CSbImageSet is the canonical CDDrawWorker (the glyph map).
+// 71.8 -> 88.6 (2026-08-01). Same two fixes as its twin above: the geometry block is a
+// WHOLE-STRUCT `m_rect14 = g` copy (retail `lea edx,[esi+0x14]`), and the six fail-path
+// epilogues stopped merging once the entry guard went back to two separate `if`s - an
+// A/B here measured the `||` form at 71.0 against 88.6 for the split. The two selMode
+// arms were also swapped relative to retail's block layout (retail's FALLTHROUGH is the
+// STATZ arm, so the gate is spelled `selMode != 0`); the string-to-arm binding was
+// already correct.
 // @early-stop
-// identical-return-epilogue tail-merge wall (topic:wall): prologue + body byte-exact
-// (geometry block grouped via the struct-copy idiom), residual is the many fail-path
-// `return 0` sites tail-merging to one shared epilogue. ~78%. Logic complete.
+// Residual: the two entry guards inline their epilogues where retail jumps both to the
+// last one; the per-arm Lookup receivers land in different registers.
 RVA(0x000ea1f0, 0x1fa)
 i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     CStatusBarMgr* owner,
@@ -757,6 +786,8 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     i32 unitCol,
     i32 selMode
 ) {
+    // TWO separate guards: with a single `||` cl cross-jumps EVERY `return 0` in the
+    // function onto one shared epilogue, where retail duplicates six of them inline.
     if (host == 0) {
         return 0;
     }
@@ -769,15 +800,14 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     m_24 = h;
     m_28 = 0;
     m_enabled = 1;
-    m_rect14.left = g.left;
-    m_rect14.top = g.top;
-    m_rect14.right = g.right;
-    m_rect14.bottom = g.bottom;
-    CDDrawWorker* head = 0;
-    CObject* headOb = 0;
+    // WHOLE-struct assignment - retail's `lea edx,[esi+0x14]` + [edx+N] block.
+    m_rect14 = g;
+    // ONE reused Lookup out-param: retail stages every lookup in this function
+    // through the same stack slot ([esp+0x14]); separate locals give separate slots.
+    CObject* found = 0;
     m_cmd = cmd;
-    h->m_imageRegistry->m_10map.Lookup(key, headOb);
-    head = static_cast<CDDrawWorker*>(headOb);
+    h->m_imageRegistry->m_10map.Lookup(key, found);
+    CDDrawWorker* head = static_cast<CDDrawWorker*>(found);
     m_glyphMap = head;
     if (head == 0) {
         return 0;
@@ -802,29 +832,14 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     if (w == 0) {
         return 0;
     }
+    // Arm order is retail's: the STATZ (selMode != 0) arm is the FALLTHROUGH
+    // (`cmp [esp+0x3c],edi; je <multiplayer arm>`), the multiplayer arm is the
+    // sunk block. Spelling the gate `selMode == 0` inverts both blocks.
     CImage* val;
-    if (selMode == 0) {
-        CDDrawWorker* sel = 0;
-        CObject* selOb = 0;
-        m_24->m_imageRegistry->m_10map.Lookup(
-            "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR",
-            selOb
-        );
-        sel = static_cast<CDDrawWorker*>(selOb);
-        m_timerGlyphMap = sel;
-        if (sel == 0) {
-            return 0;
-        }
-        if (m_glyphMap->m_minIndex > 0x23 || m_glyphMap->m_maxIndex < 0x23) {
-            val = 0;
-        } else {
-            val = static_cast<CImage*>(m_glyphMap->m_items.GetAt(0x23));
-        }
-    } else {
-        CDDrawWorker* sel = 0;
-        CObject* selOb = 0;
-        m_24->m_imageRegistry->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", selOb);
-        sel = static_cast<CDDrawWorker*>(selOb);
+    if (selMode != 0) {
+        found = 0;
+        m_24->m_imageRegistry->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", found);
+        CDDrawWorker* sel = static_cast<CDDrawWorker*>(found);
         m_timerGlyphMap = sel;
         if (sel == 0) {
             return 0;
@@ -843,6 +858,22 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
             val = 0;
         } else {
             val = static_cast<CImage*>(m_glyphMap->m_items.GetAt(0x22));
+        }
+    } else {
+        found = 0;
+        m_24->m_imageRegistry->m_10map.Lookup(
+            "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR",
+            found
+        );
+        CDDrawWorker* sel = static_cast<CDDrawWorker*>(found);
+        m_timerGlyphMap = sel;
+        if (sel == 0) {
+            return 0;
+        }
+        if (m_glyphMap->m_minIndex > 0x23 || m_glyphMap->m_maxIndex < 0x23) {
+            val = 0;
+        } else {
+            val = static_cast<CImage*>(m_glyphMap->m_items.GetAt(0x23));
         }
     }
     m_overrideGlyph = val;

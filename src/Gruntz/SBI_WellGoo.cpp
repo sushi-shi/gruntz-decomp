@@ -32,12 +32,18 @@ VTBL(CSBI_WellGoo, 0x001eadfc); // vtable_names -> code (RTTI game class)
 // the resolved base frame. The SetRect scratch IS the incoming by-value RECT parameter
 // re-used after its four words have been copied into m_rect14 - which is why retail
 // needs no extra stack for it.
+// 83.5 -> 87.6 (2026-08-01). Two real bugs the old "callee-saved COLOURING swap" note
+// hid: (1) `m_drawX` used `/ 2` where retail emits a bare `sar ecx,1` - a SHIFT; a
+// signed divide would have brought the `cdq; sub eax,edx` fixup (the two `/2` sites in
+// CSBI_SideTab::BuildStatzTabStatusBar DO carry it, so the difference is deliberate).
+// (2) the palette-rebind guards read the frame handle back from the member BEFORE
+// testing `node` (retail `mov eax,[esi+0x30]; cmp ebx,edi; je`), at the MERGE of the
+// Select if/endif - not inside the node!=0 arm. Fixing (2) also settled the ebx/ebp
+// colouring by itself: it was a symptom, not the wall.
 // @early-stop
-// 83.5% (from 0.86%). Residual is a callee-saved COLOURING swap: retail holds the
-// registry key in ebp and the resolved palette node in ebx, cl5 does the reverse,
-// which also flips where the `found = 0` store lands relative to the Lookup argument
-// pushes. Not source-steerable. (The prior note's "~42% ceiling" no longer applies -
-// it predated both the RECT layout fix and the shared-epilogue spelling.)
+// Residual: the `found = 0` store schedules BEFORE the two Lookup argument pushes
+// where retail sinks it after them (3 sites), cl duplicates the m_fgFrame guard's
+// epilogue that retail shares, and it shrink-wraps `pop edi` into the m_srcRect copy.
 RVA(0x000e6020, 0x288)
 i32 CSBI_WellGoo::Setup(
     CStatusBarMgr* owner,
@@ -58,6 +64,10 @@ i32 CSBI_WellGoo::Setup(
     CShadeTable* node;
     CObject* found;
     CDDrawWorker* set;
+    // The palette-rebind guard reads the frame handle BACK from the member BEFORE
+    // testing `node`: retail is `mov eax,[esi+0x30]; cmp ebx,edi; je ...` at the merge
+    // of the Select if/endif, not inside the node!=0 arm.
+    CImage* f;
     if (host == 0) {
         goto fail;
     }
@@ -98,8 +108,9 @@ i32 CSBI_WellGoo::Setup(
     if (m_frame->m_owned != 0) {
         m_frame->m_owned->Select(0xa, 0);
     }
-    if (node != 0 && m_frame->m_owned != 0) {
-        m_frame->m_owned->m_palDescr = node;
+    f = m_frame;
+    if (node != 0 && f->m_owned != 0) {
+        f->m_owned->m_palDescr = node;
     }
     m_blitter = m_frame->m_owned;
     if (m_blitter == 0) {
@@ -116,8 +127,9 @@ i32 CSBI_WellGoo::Setup(
     if (m_baseFrame->m_owned != 0) {
         m_baseFrame->m_owned->Select(0xa, 0);
     }
-    if (node != 0 && m_baseFrame->m_owned != 0) {
-        m_baseFrame->m_owned->m_palDescr = node;
+    f = m_baseFrame;
+    if (node != 0 && f->m_owned != 0) {
+        f->m_owned->m_palDescr = node;
     }
 
     found = 0;
@@ -130,13 +142,16 @@ i32 CSBI_WellGoo::Setup(
     if (m_fgFrame->m_owned != 0) {
         m_fgFrame->m_owned->Select(0xa, 0);
     }
-    if (node != 0 && m_fgFrame->m_owned != 0) {
-        m_fgFrame->m_owned->m_palDescr = node;
+    f = m_fgFrame;
+    if (node != 0 && f->m_owned != 0) {
+        f->m_owned->m_palDescr = node;
     }
 
     ::SetRect(&rc, 0, 0, m_frame->m_width - 1, m_frame->m_height - 1);
     m_srcRect = rc;
-    m_drawX = m_rect14.left + (m_rect14.right - m_rect14.left) / 2 + 1;
+    // SHIFT, not a division: retail is a bare `sar ecx,1`. A signed `/ 2` forces the
+    // round-toward-zero fixup (`cdq; sub eax,edx; sar eax,1`), which is what we emitted.
+    m_drawX = m_rect14.left + ((m_rect14.right - m_rect14.left) >> 1) + 1;
     return 1;
 fail:
     return 0;

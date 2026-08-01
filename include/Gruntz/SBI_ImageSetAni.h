@@ -13,7 +13,7 @@ public:
         m_frame = 0;
         m_kind = 8;
         m_34 = 0;
-        m_step = 0;
+        m_loop = 0; // retail `mov [ebp+0x44],edi` - the LOOP flag, not the step
         m_interval = 0x64;
     }
     // Real vtable shape (sema class: vtbl@0x1ead6c, 15 slots; overrides 0/1/4/5,
@@ -61,12 +61,21 @@ public:
     // slot-5 body (vtbl 0x1ead6c slot [5], thunk 0x2dfb): the timeGetTime-driven cel
     // advance within [m_frameStart, m_frameEnd]. Ex CAniPlayer::Tick (dossier #16 identity fold).
 
+    // Binary-proven layout (2026-08-01). m_step/m_loop and m_frameStart/m_frameEnd
+    // were SWAPPED here, which mis-addressed all four bodies below:
+    //   Render 0xe7b00 : `mov eax,[esi+0x48]; test eax,eax; jle` and
+    //                    `mov ecx,[esi+0x48]; add m_38,ecx` => +0x48 IS the step;
+    //                    `mov ecx,[esi+0x44]; test; je` (a pure gate) => +0x44 is loop;
+    //                    `mov edx,[esi+0x50]; mov [esi+0x38],edx` => +0x50 is the start.
+    //   SetRange 0xe7c30: arg2 (step) -> +0x48, arg3 (loop) -> +0x44,
+    //                    arg0 (start) -> +0x50, arg1 (end) -> +0x4c.
+    //   the inline ctor : `mov [ebp+0x44],edi` (0) => the ctor seeds m_loop, not m_step.
     i32 m_interval;   // +0x3c  persistent serialized ints (Serialize save/load block)
     i32 m_lastTime;   // +0x40
-    i32 m_step;       // +0x44
-    i32 m_loop;       // +0x48
-    i32 m_frameStart; // +0x4c
-    i32 m_frameEnd;   // +0x50
+    i32 m_loop;       // +0x44
+    i32 m_step;       // +0x48
+    i32 m_frameEnd;   // +0x4c
+    i32 m_frameStart; // +0x50
 };
 SIZE_UNKNOWN();
 

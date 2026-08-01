@@ -24,13 +24,18 @@ VTBL(CSBI_ImageSet, 0x001eac4c);
 // map and, if found, resolve the start frame from the record's frame range/table.
 // Re-attributed from the SBI_RectOnly host TU's "ConfigureRect" (dossier #16:
 // vtbl 0x1eac4c slot [11] thunk 0x263a -> 0xe72f0; the fields are the thin chain's).
+// 52.2 -> 68.2 (2026-08-01). The old note's "reused edx = this+0x14 pointer" was NOT a
+// scheduling artifact - it is the WHOLE-STRUCT `m_rect14 = rect` copy (see below).
 // @early-stop
-// ~62%: the gate, every field latch (same statement order as retail), the map
-// lookup and the frame-range resolution are byte-correct in instruction selection,
-// but retail stages the four rect coords through a reused `edx = this+0x14`
-// pointer where the recompile addresses them as direct `[this+0x14..]` offsets,
-// and the surrounding store schedule + register naming diverge accordingly. An
-// addressing-mode/scheduling wall, not steerable from C; deferred.
+// ONE root cause left, and it is an allocator coin-flip, not a source shape: cl hoists
+// `mov eax,[esp+0x8]` ABOVE the `push esi`, so the load happens while ecx still holds
+// `this` and host is forced into EAX. Retail emits `push esi; mov esi,ecx;
+// mov ecx,[esp+0xc]` - `this` vacates ecx FIRST, host takes ecx and owner takes eax.
+// Every remaining diff row follows from that one swap, including the key guard's
+// epilogue: retail's `pop esi; ret 0x2c` drops its `xor eax,eax` only because EAX
+// already holds key==0, which makes that block unmergeable and keeps it inline.
+// 36-cell matrix (config/axes/sbi-imageset-setupimage.json: guard form x lookup
+// receiver x frame resolve) is FLAT at 68.23 - none of those sites move the hoist.
 RVA(0x000e72f0, 0xc4)
 i32 CSBI_ImageSet::SetupImage(
     CStatusBarMgr* owner,
@@ -43,6 +48,11 @@ i32 CSBI_ImageSet::SetupImage(
     i32 extra
 ) {
     static_cast<void>(extra);
+    // ONE `||`: retail sends host, owner AND the record guard to a single shared
+    // `xor eax,eax; pop esi; ret 0x2c`. (Two separate `if`s inline all four exits
+    // and cost a point - the OPPOSITE of the sibling CSBI_ImageSetAni::Init, whose
+    // retail shape keeps a private epilogue per guard. Same site, different optimum:
+    // docs/patterns/same-sites-different-per-function-optimum.md.)
     if (host == 0 || owner == 0) {
         return 0;
     }
@@ -51,10 +61,10 @@ i32 CSBI_ImageSet::SetupImage(
     m_24 = host;
     m_28 = 0;
     m_enabled = 1;
-    m_rect14.left = rect.left;
-    m_rect14.top = rect.top;
-    m_rect14.right = rect.right;
-    m_rect14.bottom = rect.bottom;
+    // WHOLE-struct assignment: retail CSEs the destination into `lea edx,[esi+0x14]`
+    // and writes [edx]/[edx+4]/[edx+8]/[edx+0xc]; field-by-field stores keep the
+    // disp8 [esi+N] forms (the same fix that took CSBI_MenuItem::SetupImage 67->92).
+    m_rect14 = rect;
     m_cmd = cmd;
     if (key == 0) {
         return 0;
@@ -71,11 +81,16 @@ i32 CSBI_ImageSet::SetupImage(
         f = rec->m_minIndex;
     }
     m_38 = f;
+    // ONE common `cel` register that both arms fill: retail's out-of-range arm is
+    // `xor ecx,ecx; mov [esi+0x30],ecx` (register), not an immediate store - which
+    // only a shared destination variable gives.
+    CImage* cel;
     if (f >= rec->m_minIndex && f <= rec->m_maxIndex) {
-        m_frame = static_cast<CImage*>(rec->m_items.GetAt(f));
+        cel = static_cast<CImage*>(rec->m_items.GetAt(f));
     } else {
-        m_frame = 0;
+        cel = 0;
     }
+    m_frame = cel;
     return 1;
 }
 
