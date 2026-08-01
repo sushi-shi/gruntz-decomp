@@ -274,7 +274,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
 
     // Left clip: skip glyphs entirely left of rc.left; firstCol is the sub-glyph
     // column offset into the first partly-visible glyph.
-    i32 startChar = 0;
+    i32 startChar;
     i32 acc = 0;
     if (rc.left != 0) {
         i32 prev = 0;
@@ -287,14 +287,16 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         }
         startChar = i - 1;
         firstCol = rc.left - prev;
+    } else {
+        startChar = 0;
     }
 
     // Right clip: find the end char index + the right overshoot of the last glyph.
     i32 endChar;
     i32 w = 0;
-    if (rc.right == m.width) {
-        endChar = text.GetLength();
-    } else {
+    // Negative form: retail's `cmp eax,ecx / je 0x17a108` jumps to the
+    // endChar = GetLength() arm and falls into the scan, so the scan is the `if`.
+    if (rc.right != m.width) {
         i32 j = 0;
         endChar = 0;
         if (rc.right >= 0) {
@@ -306,6 +308,8 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
             endChar = j;
         }
         rightPartial = w - rc.right;
+    } else {
+        endChar = text.GetLength();
     }
 
     // Blit each visible glyph's coverage buffer as 16bpp pixels.
