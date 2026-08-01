@@ -359,9 +359,9 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
     m_8cc = 0;
 
     // Second-phase field inits (post CGrunt vptr restamp).
-    m_entranceCell.col = g_gruntMoveDirSouth.row;
-    m_entranceCell.row = g_gruntMoveDirSouth.column;
-    m_entranceCell.reason = g_gruntMoveDirSouth.direction;
+    m_entranceCell.row = g_gruntMoveDirSouth.row;
+    m_entranceCell.column = g_gruntMoveDirSouth.column;
+    m_entranceCell.direction = g_gruntMoveDirSouth.direction;
     m_434 = m_object->m_11c;
     m_438 = g_frameTicks;
     m_object->m_moveMode = 1;
@@ -875,9 +875,9 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
                                  ? static_cast<CAniDesc*>(desc->m_records.GetAt(0))
                                  : 0;
             i32 frame = elem->m_param;
-            i32 col = m_entranceCell.col;
             i32 row = m_entranceCell.row;
-            i32 index = 3 * col + row;
+            i32 column = m_entranceCell.column;
+            i32 index = 3 * row + column;
             // 0x4ae3a -> 0x4af8e: `push 0; lea ecx,[edi+eax*8+0x468]; call 0x1ba11c`.
             // 0x1ba11c is ??0/GetBuffer - ?GetBuffer@CString@@QAEPADH@Z (it walks the
             // CStringData header at [m_pchData-0xc/-0x8/-0x4] and calls AllocBeforeWrite
@@ -900,9 +900,9 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
 codeI:
     // code "I": latch the record first, drive the IDLE2 geometry, reseed the idle
     // timer. Returns directly (no cell-frame stamp).
-    m_entranceCell.col = rec.row;
-    m_entranceCell.row = rec.column;
-    m_entranceCell.reason = rec.direction;
+    m_entranceCell.row = rec.row;
+    m_entranceCell.column = rec.column;
+    m_entranceCell.direction = rec.direction;
     m_value = m_38->m_1a0.m_14;
     m_38->m_1a0.Setup(m_poseIdle[GRUNT_IDLE2]);
     ResetEntranceAnimation(1, 0, 0);
@@ -918,9 +918,9 @@ idle:
         CAniDesc* elem =
             desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
         i32 frame = elem->m_param;
-        i32 col = rec.row;
-        i32 row = rec.column;
-        i32 index = 3 * col + row;
+        i32 row = rec.row;
+        i32 column = rec.column;
+        i32 index = 3 * row + column;
         // 0x4af87: `lea ecx,[edi+eax*8+0x474]` (= m_names[3], IdleName) then
         // `call 0x1ba11c` = CString::GetBuffer(0), not _zdvec::IndexToPtr.
         const char* nm = m_cells[index].IdleName().GetBuffer(0);
@@ -934,9 +934,9 @@ walk:
     m_value = m_38->m_1a0.m_14;
     m_38->m_1a0.Setup(m_poseWalk);
     {
-        i32 col = rec.row;
-        i32 row = rec.column;
-        i32 index = 3 * col + row;
+        i32 row = rec.row;
+        i32 column = rec.column;
+        i32 index = 3 * row + column;
         // 0x4afdb: `lea ecx,[edi+edx*8+0x470]` (= m_names[2], WalkName) then
         // `call 0x1ba11c` = CString::GetBuffer(0), not _zdvec::IndexToPtr.
         const char* nm = m_cells[index].WalkName().GetBuffer(0);
@@ -944,9 +944,9 @@ walk:
     }
 
 store:
-    m_entranceCell.col = rec.row;
-    m_entranceCell.row = rec.column;
-    m_entranceCell.reason = rec.direction;
+    m_entranceCell.row = rec.row;
+    m_entranceCell.column = rec.column;
+    m_entranceCell.direction = rec.direction;
 }
 
 // @early-stop
@@ -3557,9 +3557,9 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
                 first = 0;
             }
             i32 handle = first->m_param;
-            GruntEntranceCell cell = m_entranceCell;
+            GruntDirectionCell cell = m_entranceCell;
             m_38->ApplyLookupSprite(
-                m_cells[cell.col * 3 + cell.row].m_names[1].GetBuffer(0),
+                m_cells[cell.row * 3 + cell.column].m_names[1].GetBuffer(0),
                 handle
             );
         } else {
@@ -3589,8 +3589,8 @@ i32 CGrunt::LoadGruntTypeTable(i32 kind, i32 fresh, i32 variant, i32 defer) {
             // the hand-inlined ScratchResolve tail, through the container's typed views
             eq = (strcmp(*rec2, "D") == 0);
             if (eq) {
-                GruntEntranceCell cell2 = m_entranceCell;
-                m_38->ApplyName(m_cells[cell2.col * 3 + cell2.row].m_names[2].GetBuffer(0));
+                GruntDirectionCell cell2 = m_entranceCell;
+                m_38->ApplyName(m_cells[cell2.row * 3 + cell2.column].m_names[2].GetBuffer(0));
                 m_value = m_38->m_1a0.m_14;
                 m_38->m_1a0.Setup(m_poseWalk);
             } else {

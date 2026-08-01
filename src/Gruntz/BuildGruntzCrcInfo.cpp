@@ -110,7 +110,7 @@ void CNetSession::BuildGruntzCrcInfo() {
                 grunt->m_health,
                 grunt->m_object->m_screenX,
                 grunt->m_object->m_screenY,
-                grunt->m_entranceCell.reason,
+                grunt->m_entranceCell.direction,
                 grunt->m_stamina,
                 grunt->m_toyTime,
                 tool,

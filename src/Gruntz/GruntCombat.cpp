@@ -220,9 +220,9 @@ static inline void GruntScratchTeardown() {
 
 #define SETDIR(k, nx, ny)                                                                          \
     do {                                                                                           \
-        this->m_entranceCell.col = g_dirVec[k][0];                                                 \
-        this->m_entranceCell.row = g_dirVec[k][1];                                                 \
-        this->m_entranceCell.reason = g_dirVec[k][2];                                              \
+        this->m_entranceCell.row = g_dirVec[k][0];                                                 \
+        this->m_entranceCell.column = g_dirVec[k][1];                                              \
+        this->m_entranceCell.direction = g_dirVec[k][2];                                           \
         newX = (nx);                                                                               \
         newY = (ny);                                                                               \
     } while (0)
@@ -233,7 +233,7 @@ static inline void GruntScratchTeardown() {
 //  declared there; the "enemy" grid elements below are placed CGruntz.)
 // CGrunt::EntranceTileOffset(out) @0x56f80 - the pixel position of the tile adjacent
 // to the grunt's last occupied tile (m_lastTilePxX/Y) in the entrance-cell direction
-// (m_entranceCell.reason, a 1..8 compass code: 1=N, 2=NE, 3=E, 4=SE, 5=S, 6=SW, 7=W, 8=NW;
+// (m_entranceCell.direction, a 1..8 compass code: 1=N, 2=NE, 3=E, 4=SE, 5=S, 6=SW, 7=W, 8=NW;
 // any other value leaves the position unchanged). One tile step is 0x20 px. Writes the
 // (x, y) pair through `out`. __thiscall, ret 4.
 // @early-stop
@@ -241,7 +241,7 @@ RVA(0x00056f80, 0x8e)
 void CGrunt::EntranceTileOffset(i32* out) {
     i32 x = m_lastTilePxX;
     i32 y = m_lastTilePxY;
-    switch (m_entranceCell.reason) {
+    switch (m_entranceCell.direction) {
         case 1:
             y -= 0x20;
             break;

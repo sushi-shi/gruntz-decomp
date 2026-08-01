@@ -57,8 +57,8 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
     }
 
     if (strcmp(*node, "D") == 0) {
-        GruntEntranceCell cell = m_entranceCell;
-        i32 idx = cell.col * 3 + cell.row;
+        GruntDirectionCell cell = m_entranceCell;
+        i32 idx = cell.row * 3 + cell.column;
         char* buf = m_cells[idx].WalkName().GetBuffer(0);
         m_38->ApplyName(buf); // 0x1504d0 (the player IS the created game object)
         m_value = m_38->m_1a0.m_14;

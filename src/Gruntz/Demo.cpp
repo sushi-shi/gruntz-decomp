@@ -1,6 +1,6 @@
 #include <Gruntz/GameObjectFactory.h> // C linkage for the definitions below (inherited, not restated)
 #include <Gruntz/Demo.h>
-#include <Gruntz/Grunt.h>       // the GruntEntranceCell / GruntDirectionCell triples
+#include <Gruntz/Grunt.h>       // GruntDirectionCell (the compass-table triple)
 #include <Gruntz/DemoHelpers.h> // CDemoSetup / Orient3 (the TU's helper types)
 #include <Io/FileMem.h>         // the serialize stream (CFileMemBase == the real CFileMemBase)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr / CGameMgr::m_gameWnd -> CGameWnd::m_hwnd (Render's exit post)
@@ -192,8 +192,8 @@ i32 DemoAutoScrollStep(CGameObject* owner) {
 }
 
 RVA(0x0003c7f0, 0x18)
-bool SameCellTag(const GruntEntranceCell* a, const GruntDirectionCell* b) {
-    return a->reason == b->direction;
+bool SameCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b) {
+    return a->direction == b->direction;
 }
 
 // @early-stop

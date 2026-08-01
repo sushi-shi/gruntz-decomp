@@ -71,24 +71,6 @@ extern GruntDirectionCell g_gruntDirWest;      // 0x00244ad0
 extern GruntDirectionCell g_gruntDirNorthWest; // 0x00244b18
 extern GruntDirectionCell g_gruntDirCenter;    // 0x00244b38
 
-struct GruntEntranceCell {
-    // The +0x43c triple holds a compass-table entry, so it takes a whole
-    // GruntDirectionCell by assignment (retail's per-arm latch is one inlined
-    // operator= - `lea <base>,[this+0x43c]` then [base+4]/[base+8] - not three
-    // separate field stores). The name skew is this view's, not retail's:
-    // col/row/reason ARE the table's row/column/direction (3*row+column indexes
-    // the 3x3 compass grid; `reason` is the 1..8 direction code).
-    GruntEntranceCell& operator=(const GruntDirectionCell& d) {
-        col = d.row;
-        row = d.column;
-        reason = d.direction;
-        return *this;
-    }
-    i32 col;
-    i32 row;
-    i32 reason;
-};
-SIZE(0xc);
 struct GruntSoundEntry; // map value: per-effect sound entry (factory at +0x10)
 
 struct GruntSoundEntry {
@@ -769,14 +751,14 @@ public:
     i32 m_tileClaimed; // +0x420 (arrival-claimed latch)
     DirectSoundMgr* m_struckSlotSound; // +0x424 (struck-slot sound sample; freed via StopAndRewind)
     DirectSoundMgr*
-        m_struckVoiceSound;           // +0x428 (struck-voice sound sample; freed via StopAndRewind)
-    i32 m_42c;                        // +0x42c
-    i32 m_430;                        // +0x430
-    i32 m_434;                        // +0x434
-    i32 m_438;                        // +0x438
-    GruntEntranceCell m_entranceCell; // +0x43c (entrance-cell triple {col, row, reason})
-    CString m_448;                    // +0x448 (real CString; ex the GruntStrSub shell)
-    CString m_44c;                    // +0x44c (real CString; ex the GruntStrSub shell)
+        m_struckVoiceSound; // +0x428 (struck-voice sound sample; freed via StopAndRewind)
+    i32 m_42c;              // +0x42c
+    i32 m_430;              // +0x430
+    i32 m_434;              // +0x434
+    i32 m_438;              // +0x438
+    GruntDirectionCell m_entranceCell; // +0x43c  the grunt's latched compass-table entry
+    CString m_448;                     // +0x448 (real CString; ex the GruntStrSub shell)
+    CString m_44c;                     // +0x44c (real CString; ex the GruntStrSub shell)
     i32 m_arrivalPhase;    // +0x450 (arrival/update dispatch phase: 2 = in-flight, 3 = committing)
     i32 m_454;             // +0x454 (serialized)
     i32 m_458;             // +0x458 (serialized)
@@ -1332,9 +1314,9 @@ typedef i32 (CGrunt::*GruntActHandler)();
 SIZE(0x4);
 
 // 0x3c7f0: compare the THIRD dword of two cell triples. The only call site hands it
-// a GruntEntranceCell and a GruntDirectionCell (both {i32,i32,i32}), so the +8 it
+// a GruntDirectionCell and a GruntDirectionCell (both {i32,i32,i32}), so the +8 it
 // reads is reason-vs-direction; the old CGrunt* declaration had no caller behind it.
-bool SameCellTag(const GruntEntranceCell* a, const GruntDirectionCell* b);
+bool SameCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b);
 
 void GruntRecycleCoords(CGrunt* g); // 0x343f0
 void __stdcall

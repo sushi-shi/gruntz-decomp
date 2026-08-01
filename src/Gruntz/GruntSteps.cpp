@@ -587,7 +587,7 @@ i32 CGrunt::StepCompassMove() {
         i32 cmd = board->m_rowInts[ty][tx * 7 + 4];
         switch (cmd - 0xb) {
             case 8:
-                switch (m_entranceCell.reason - 1) {
+                switch (m_entranceCell.direction - 1) {
                     case 0:
                         moveY = y - 0x20;
                         voice = g_gruntMoveDirNorth;
@@ -687,7 +687,7 @@ i32 CGrunt::StepCompassMove() {
         i32 toyCount =
             g_buteMgr.GetIntDef(const_cast<char*>(static_cast<LPCTSTR>(str)), s_ToyTiles, 1);
         if (m_toyTileIndex < toyCount) {
-            switch (m_entranceCell.reason - 1) {
+            switch (m_entranceCell.direction - 1) {
                 case 0:
                     moveY = y - 0x20;
                     voice = g_gruntMoveDirNorth;
@@ -834,7 +834,7 @@ commit:
 
 // ---------------------------------------------------------------------------
 // CGrunt::ClaimSwitchTile()   @0x52c70   (__thiscall, ret 0)
-// Pick a neighbour tile by the entrance-cell direction code (m_entranceCell.reason,
+// Pick a neighbour tile by the entrance-cell direction code (m_entranceCell.direction,
 // 1..8 -> the 8 compass deltas; anything else keeps the current tile), test the
 // level board's occupancy flags there; if the tile is clear of the blocking bits
 // (0x20000939 / 0x80), apply the tile switch (tile mgr), move the occupancy record
@@ -848,7 +848,7 @@ RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
     i32 x = m_lastTilePxX;
     i32 y = m_lastTilePxY;
-    switch (m_entranceCell.reason - 1) {
+    switch (m_entranceCell.direction - 1) {
         case 0:
             y -= 0x20;
             break;
@@ -1037,10 +1037,10 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(m_poseWalk);
         // Stamp the first entrance-cell frame from m_cells[base].WalkName(). The by-value
-        // cell copy dead-spills `reason` (esp+0x1c) -> `sub esp,0xc`; base = 3*col+row.
-        GruntEntranceCell cell = m_entranceCell;
-        i32 col = cell.row + cell.col * 2;
-        i32 base = cell.col + col;
+        // cell copy dead-spills `direction` (esp+0x1c) -> `sub esp,0xc`; base = 3*row+column.
+        GruntDirectionCell cell = m_entranceCell;
+        i32 col = cell.column + cell.row * 2;
+        i32 base = cell.row + col;
         char* nm = m_cells[base].WalkName().GetBuffer(0);
         m_38->ApplyName(nm);
         goto modeDispatch;

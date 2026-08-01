@@ -197,10 +197,10 @@ void CGrunt::FinalizeStep(char* name) {
         if (m_object->m_screenX == m_lastTilePxX && m_object->m_screenY == m_lastTilePxY) {
             return;
         }
-        GruntEntranceCell c = m_entranceCell;
-        i32 col = (c.col == 0) ? 2 : (c.col == 2 ? 0 : c.col);
+        GruntDirectionCell c = m_entranceCell;
         i32 row = (c.row == 0) ? 2 : (c.row == 2 ? 0 : c.row);
-        i32 base = 3 * col + row;
+        i32 column = (c.column == 0) ? 2 : (c.column == 2 ? 0 : c.column);
+        i32 base = 3 * row + column;
         CGruntCellRec* cell = &m_cells[base];
         double d48 = cell->m_dirX;
         double d50 = cell->m_dirY;
@@ -231,8 +231,8 @@ void CGrunt::FinalizeStep(char* name) {
         if (m_object->m_screenX == m_lastTilePxX && m_object->m_screenY == m_lastTilePxY) {
             return;
         }
-        GruntEntranceCell c = m_entranceCell;
-        i32 base = 3 * c.col + c.row;
+        GruntDirectionCell c = m_entranceCell;
+        i32 base = 3 * c.row + c.column;
         CGruntCellRec* cell = &m_cells[base];
         double d48 = cell->m_dirX;
         double d50 = cell->m_dirY;
@@ -270,10 +270,11 @@ i32 CGrunt::ResetGeometry() {
         desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
     i32 frame = elem->m_param;
 
-    GruntEntranceCell cell = m_entranceCell; // retail copies the whole triple; `reason` dead-spills
-    i32 col = cell.col;
+    GruntDirectionCell cell =
+        m_entranceCell; // retail copies the whole triple; `direction` dead-spills
     i32 row = cell.row;
-    i32 index = 3 * col + row;
+    i32 column = cell.column;
+    i32 index = 3 * row + column;
     // 0x61749: `lea ecx,[esi+eax*8+0x468]; call 0x1ba11c` = CString::GetBuffer(0) on
     // m_cells[index].m_names[0] (AttackName) - 0x1ba11c is ?GetBuffer@CString@@QAEPADH@Z,
     // not _zdvec::IndexToPtr @0x310f0 (same PADH@Z shape, different callee).
@@ -426,10 +427,10 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
         desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
     i32 frame = el->m_param;
 
-    GruntEntranceCell cell = m_entranceCell;
-    i32 cc = cell.col;
-    i32 cr = cell.row;
-    i32 base = cc + (cr + 2 * cc);
+    GruntDirectionCell cell = m_entranceCell;
+    i32 cellRow = cell.row;
+    i32 cellColumn = cell.column;
+    i32 base = cellRow + (cellColumn + 2 * cellRow);
     char* buf = m_cells[base].AttackName().GetBuffer(0);
     m_38->ApplyLookupSprite(buf, frame);
     m_214 = 1;
@@ -456,10 +457,10 @@ i32 CGrunt::RearmAttackAnim2() {
         desc->m_records.GetSize() > 0 ? static_cast<CAniDesc*>(desc->m_records.GetAt(0)) : 0;
     i32 frame = el->m_param;
 
-    GruntEntranceCell cell = m_entranceCell;
-    i32 col = cell.col;
+    GruntDirectionCell cell = m_entranceCell;
     i32 row = cell.row;
-    i32 base = col + (row + 2 * col);
+    i32 column = cell.column;
+    i32 base = row + (column + 2 * row);
     char* buf = m_cells[base].AttackName().GetBuffer(0);
     m_38->ApplyLookupSprite(buf, frame);
     m_214 = 1;
@@ -768,9 +769,9 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         m_objAux->m_1c = ActFindId("L");
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(m_poseWalk);
-        GruntEntranceCell cell = m_entranceCell;
-        i32 colv = cell.row + cell.col * 2;
-        i32 basev = cell.col + colv;
+        GruntDirectionCell cell = m_entranceCell;
+        i32 colv = cell.column + cell.row * 2;
+        i32 basev = cell.row + colv;
         char* nm = m_cells[basev].WalkName().GetBuffer(0);
         m_38->ApplyName(nm);
 
@@ -1121,35 +1122,35 @@ latch:
     }
 
     // Rebuild the per-cell entrance key string + first frame. The cell is the
-    // per-grunt triple {col,row,reason}, unless a non-default entrance reason
+    // per-grunt compass entry, unless a non-default entrance reason
     // selects a preset triple.
-    i32 col = m_entranceCell.col;
     i32 row = m_entranceCell.row;
-    i32 reason = m_entranceCell.reason;
+    i32 column = m_entranceCell.column;
+    i32 direction = m_entranceCell.direction;
     if (m_38->m_1a0.m_14 != m_poseIdle[GRUNT_IDLE1]) {
-        switch (reason) {
+        switch (direction) {
             case 2:
             case 3:
-                col = s_entrancePreset0[0];
-                row = s_entrancePreset0[1];
+                row = s_entrancePreset0[0];
+                column = s_entrancePreset0[1];
                 break;
             case 4:
             case 5:
-                col = s_entrancePreset1[0];
-                row = s_entrancePreset1[1];
+                row = s_entrancePreset1[0];
+                column = s_entrancePreset1[1];
                 break;
             case 6:
             case 7:
             case 8:
-                col = s_entrancePreset2[0];
-                row = s_entrancePreset2[1];
+                row = s_entrancePreset2[0];
+                column = s_entrancePreset2[1];
                 break;
             default:
                 break;
         }
     }
 
-    CString key = static_cast<const char*>(m_cells[3 * col + row].IdleName());
+    CString key = static_cast<const char*>(m_cells[3 * row + column].IdleName());
 
     CAniElement* desc = m_38->m_1a0.m_14;
     CAniDesc* elem =
@@ -1345,9 +1346,9 @@ i32 CGrunt::StepEntranceReinit() {
         m_value = m_38->m_1a0.m_14;
         m_38->m_1a0.Setup(m_poseWalk);
     }
-    GruntEntranceCell cell = m_entranceCell;
-    i32 col = cell.row + cell.col * 2;
-    i32 base = cell.col + col;
+    GruntDirectionCell cell = m_entranceCell;
+    i32 col = cell.column + cell.row * 2;
+    i32 base = cell.row + col;
     // &m_cells[base].WalkName() == this + base*0x68 + 0x470: cl strength-reduces base*0x68
     // (sizeof CGruntCellRec) to the same lea chain the raw offset produced (verified
     // byte-identical) - no imul, so the real member access is faithful.
@@ -1776,9 +1777,9 @@ i32 CGrunt::StepCombatReaction(
             m_objAux->m_1c = ActFindId(s_codeD);
             m_value = m_38->m_1a0.m_14;
             m_38->m_1a0.Setup(m_poseWalk);
-            GruntEntranceCell cell = m_entranceCell;
-            i32 col = cell.row + cell.col * 2;
-            i32 base = cell.col + col;
+            GruntDirectionCell cell = m_entranceCell;
+            i32 col = cell.column + cell.row * 2;
+            i32 base = cell.row + col;
             char* cn = m_cells[base].WalkName().GetBuffer(0);
             m_38->ApplyName(cn);
         } else {
@@ -1909,9 +1910,9 @@ tail:
         frame = elem->m_param;
     }
     {
-        GruntEntranceCell cell = m_entranceCell;
-        i32 col = cell.row + cell.col * 2;
-        i32 base = cell.col + col;
+        GruntDirectionCell cell = m_entranceCell;
+        i32 col = cell.column + cell.row * 2;
+        i32 base = cell.row + col;
         char* cn = m_cells[base].StruckName().GetBuffer(0);
         m_38->ApplyLookupSprite(cn, frame);
     }
@@ -2110,9 +2111,9 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     m_value = m_38->m_1a0.m_14;
     m_38->m_1a0.Setup(m_poseItem[poseIdx]);
 
-    GruntEntranceCell cell = m_entranceCell;
-    i32 col = cell.row + cell.col * 2;
-    i32 base = cell.col + col; // (the old +0xb folded the m_cells base into the index)
+    GruntDirectionCell cell = m_entranceCell;
+    i32 col = cell.column + cell.row * 2;
+    i32 base = cell.row + col; // (the old +0xb folded the m_cells base into the index)
     char* name = m_cells[base].ItemName().GetBuffer(0);
     m_38->ApplyName(name);
 }
