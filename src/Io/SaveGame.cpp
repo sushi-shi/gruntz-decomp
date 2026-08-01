@@ -283,14 +283,15 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
 }
 
 // @early-stop
-// jump-table scoring wall: the code bytes match the retail dispatch (the four
-// dense-case jump tables, the deferred-command latch, the GAME_INFO/DELETE/
-// OVERWRITE/save arms, EnableWindow/GetDlgItemText/EndDialog gates and the two
-// return tails), but MSVC emits each switch's jump table as its own `$Lnnn` COMDAT
-// while the delinker inlines the four `switchdataD_*` tables into the function body,
-// so the four `jmp [id*4+table]` base relocs + the table data don't pair (see
-// docs/patterns/switch-jumptable-separate-comdat.md + jumptable-data-overlap.md).
-RVA(0x000e3f40, 0x3d6)
+// 98.7%. The RVA span covers the four inline jump tables (retail's code is 0x3d6 and
+// the switchdataD_ tables run 0xe4318..0xe43b8, so the true extent is 0x478 - see
+// docs/patterns/rva-span-must-cover-inline-jump-tables.md); that alone was worth
+// 84.6 -> 98.7. Residual: retail's frame is `sub esp,0x24`, ours `sub esp,0x20` -
+// retail reserves one unused 4-byte slot ABOVE `name` (name sits at the bottom of the
+// locals at esp+0x10 in both), which costs the frame constant in the prologue and in
+// the five epilogues. No declared local reproduces it (i32-before/after `name` tested,
+// both enregister and leave the frame at 0x20).
+RVA(0x000e3f40, 0x478)
 i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     i32 c;
     if (cmd == 1) {
@@ -303,8 +304,8 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     }
 
     // Latch a pending command from a control notification.
-    if ((static_cast<u32>(c) >> 16) == 0x100) {
-        switch (c & 0xffff) {
+    if (HIWORD(c) == 0x100) {
+        switch (LOWORD(c)) {
             case 0x435:
                 g_savedMenuCmd = 0x490;
                 break;
@@ -339,7 +340,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     }
 
     // GAME_INFO buttons.
-    i32 info;
+    i32 info = -1;
     switch (c) {
         case 0x49a:
             info = 0;
@@ -371,9 +372,6 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         case 0x4a3:
             info = 9;
             break;
-        default:
-            info = -1;
-            break;
     }
     if (info != -1) {
         g_slotState = obj->GetSlot(info);
@@ -387,7 +385,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     }
 
     // GAME_DELETE buttons.
-    i32 del;
+    i32 del = -1;
     switch (c) {
         case 0x4a4:
             del = 0;
@@ -419,9 +417,6 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         case 0x4ad:
             del = 9;
             break;
-        default:
-            del = -1;
-            break;
     }
     if (del != -1) {
         g_slotState = obj->GetSlot(del);
@@ -438,67 +433,82 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         return 0;
     }
 
-    // Save / overwrite buttons.
+    // Save / overwrite buttons. Each arm sets BOTH the slot index and the matching
+    // name-edit control id: retail materializes `mov esi,n` + `mov eax,0x435+n` in
+    // every arm (0xe4179..0xe41e7), not a `lea eax,[esi+0x435]` at the merge.
     i32 slot = -1;
+    i32 nameId;
     switch (c) {
         case 0x490:
             slot = 0;
+            nameId = 0x435;
             break;
         case 0x491:
             slot = 1;
+            nameId = 0x436;
             break;
         case 0x492:
             slot = 2;
+            nameId = 0x437;
             break;
         case 0x493:
             slot = 3;
+            nameId = 0x438;
             break;
         case 0x494:
             slot = 4;
+            nameId = 0x439;
             break;
         case 0x495:
             slot = 5;
+            nameId = 0x43a;
             break;
         case 0x496:
             slot = 6;
+            nameId = 0x43b;
             break;
         case 0x497:
             slot = 7;
+            nameId = 0x43c;
             break;
         case 0x498:
             slot = 8;
+            nameId = 0x43d;
             break;
         case 0x499:
             slot = 9;
+            nameId = 0x43e;
             break;
     }
-    if (slot == -1) {
-        return 0;
-    }
-
-    char name[0x20];
-    GetDlgItemTextA(hDlg, 0x435 + slot, name, 0x20);
-    if (_strcmpi(name, "(Empty)") == 0) {
-        sprintf(name, "Saved Game #%i", slot + 1);
-    }
-    if (TempFileExists(obj->GetSlot(slot))) {
-        g_slotState = obj->GetSlot(slot);
-        if (g_slotState != 0) {
-            EnableWindow(hDlg, FALSE);
-            i32 ok = g_gameReg->RunModalDialog("GAME_OVERWRITE", InfoLineDialogProc, 0);
-            EnableWindow(hDlg, TRUE);
-            if (ok == 0) {
-                return 1;
+    // The trailing `return 0` is the function's ONE shared failure tail: retail
+    // funnels six sites into the last block (0xe430c), so the save arm is the
+    // positive `if`, not an early-out.
+    if (slot != -1) {
+        char name[0x20];
+        GetDlgItemTextA(hDlg, nameId, name, 0x20);
+        if (_strcmpi(name, "(Empty)") == 0) {
+            sprintf(name, "Saved Game #%i", slot + 1);
+        }
+        if (TempFileExists(obj->GetSlot(slot))) {
+            g_slotState = obj->GetSlot(slot);
+            if (g_slotState != 0) {
+                EnableWindow(hDlg, FALSE);
+                i32 ok = g_gameReg->RunModalDialog("GAME_OVERWRITE", InfoLineDialogProc, 0);
+                EnableWindow(hDlg, TRUE);
+                if (ok == 0) {
+                    return 1;
+                }
             }
         }
+        obj->FillSlotByIndex(slot, name, g_gameReg);
+        g_gameReg->FillSaveInfo(obj->GetSlot(slot), static_cast<void*>(name));
+        EndDialog(hDlg, 1);
+        if (!obj->Save(obj->GetSlot(slot)->m_savePath, 0x81a6)) {
+            g_gameReg->EnterModalUI("ERROR - Cannot Save Game.");
+        }
+        return 1;
     }
-    obj->FillSlotByIndex(slot, name, g_gameReg);
-    g_gameReg->FillSaveInfo(obj->GetSlot(slot), static_cast<void*>(name));
-    EndDialog(hDlg, 1);
-    if (!obj->Save(obj->GetSlot(slot)->m_savePath, 0x81a6)) {
-        g_gameReg->EnterModalUI("ERROR - Cannot Save Game.");
-    }
-    return 1;
+    return 0;
 }
 
 // @early-stop  (94.46% - logic/frame/branches all faithful)
@@ -540,8 +550,10 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
             (n > 0x24 && n < 0x29) ? static_cast<const char*>(CString("Training"))
                                    : g_areaNames[(n - 1) / 4]
         );
-    } else if (lev->m_isCustom == 0) {
-        // Battlez level (named).
+    } else if (lev->m_isBattlez != 0 && lev->m_isCustom == 0) {
+        // Battlez level (named). BOTH fields are tested again here - retail's
+        // 0xe45ee/0xe45f2 pair is the two-test else-if, entered mid-way when the
+        // first `if` already proved m_isBattlez != 0.
         wsprintfA(title, "Battlez: %s", lev->m_levelName);
     } else {
         // Custom level: format "Custom <mode> Level[: <basename>]". The mode-keyed
