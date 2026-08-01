@@ -507,16 +507,14 @@ void CTriggerMgr::OverlayTick() {
 // hit-test the (x,y) target (HitTest5) and run the dense per-kind jump table over the two
 // coordinate sub-tables (DAT_00683ea0..eb4), building/dispatching the per-kind object and
 // stashing the rebuilt cell. ret 1. (__thiscall: ret 0x8.) Reconstructed to plateau.
-// @early-stop  (8.3% -> 18.3%)
-// largest driver (0x845 B): the common path (record decode, overlay/fx fast-paths,
-// CellHitTest, the viewport cell-type resolve, and the pending-fx>=0xdf tile-attr branch)
-// is reconstructed faithfully. FRAME WALL: retail allocates all the tail's spill slots
-// up front (`sub esp,0x18`, spilling this@[esp+0x18]/world@[esp+0x10]/cell@[esp+0x1c]/
-// hitFlag@[esp+0x20]/kind@[esp+0x14]) for the dense per-kind jump table (0x78e09: kind-1
-// -> the 0x4792cc byte table -> 0x479298 jumps, ~12 stanzas incl. the WrapCoord write-back
-// to cell+0x414..0x428). The stubbed tail here uses fewer locals (`sub esp,0xc`), so the
-// head's esp offsets + this-in-edi-vs-ebx regalloc shift wholesale - fully matching the
-// head requires reconstructing that jump table. Deferred to the final sweep. topic:wall.
+// @early-stop
+// The BLOCK-H TAIL IS STILL A STUB - this is unfinished reconstruction, not a wall. Retail's
+// dense per-kind dispatch at 0x78e09 (kind-1 -> the 0x4792cc byte table -> the 0x479298 jump
+// table, ~12 stanzas including the WrapCoord write-back to cell+0x414..0x428) has no
+// counterpart here, which is also why the head's frame differs (`sub esp,0xc` vs retail's
+// 0x18 of pre-allocated tail spill slots). The span now covers the two tables (0x845 ->
+// 0x8a0, the real extent); until the tail exists that costs ~1% of current fuzzy, which is
+// the correct trade - the extent is a fact about retail, not a tuning knob. topic:wall.
 RVA(0x00078a50, 0x8a0)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     // Decode the single record cell (row*15 + col into the placed grid).

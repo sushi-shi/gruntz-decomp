@@ -491,19 +491,15 @@ void CDDrawShadeBlit::BlitMode_149d00(
 // m_data), RGB565 channel-split blends via m_lutBank0/1/2, the m_light fill/lerp.
 // ===========================================================================
 // @early-stop
-// ~23% (0.06 -> 23.3, complete + correct). Full reconstruction: prepass, v-flip
-// row start, 3 horizontal-clip loops, the vertical-2x interlace, and the inlined
-// full-width blend (all 14 draw-type cases) match retail's control flow. Three
-// stacked walls cap it: (1) the whole-function REGALLOC pins `this` in ebp here
-// vs ebx in retail (frame sub esp,0x2c vs 0x34) - the zero-register-pinning
-// family (see BlitMode_149950 @early-stop) renames the modrm byte of every one of
-// the ~200 member reads; (2) retail INLINES the vertical-double blend in the
-// left-clip path (jump tables 0x54b738/0x54b754) but this reconstruction CALLS
-// ConvertRowDoubleFwd there (the out-of-line/inline split is an MSVC5 /Ob1
-// heuristic that can't be steered from source), so the clip locals + regalloc
-// diverge; (3) the two inlined full-width jump tables (0x54b6f4/0x54b710) hit the
-// .rdata jump-table-data-overlap scoring artifact (docs/patterns/jumptable-data-
-// overlap.md). Deferred to the final sweep.
+// The old note's wall (2) - "retail INLINES the vertical-double blend in the left-clip
+// path ... an MSVC5 /Ob1 heuristic that can't be steered from source" - was wrong: you
+// steer it by WRITING THE CODE INLINE. Retail has FOUR jump tables here (0x54b6f4 and
+// 0x54b710 for the full-width pair, 0x54b738 and 0x54b754 for the two left-clip
+// vertical-double runs); the reconstruction had two. Expanding both left-clip
+// ConvertRowDoubleFwd calls into the switch takes the base to four tables and its code
+// length to within 36 B of retail's 0x14f3. Wall (1) survives: `this` sits in ebp here
+// and ebx in retail, which renames the modrm byte of ~200 member reads. Its span also
+// used to stop at the last `ret`, excluding all four tables.
 RVA(0x0014a200, 0x1570)
 void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 vflip) {
     i32 pitch = src->m_pitch;
@@ -566,7 +562,86 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                     u8* ss = &m_rleData[pos] - vis * m_srcBpp;
                     if (m_00) {
                         if ((dst->top + row) % 2) {
-                            ConvertRowDoubleFwd(dd, ss, vis, pitch);
+                            // Retail INLINES the vertical-double blend here (BlitLoop jump tables
+                            // 0x54b738 / 0x54b754); only the plain ConvertRow stays an out-of-line call.
+                            i32 i;
+                            u8* d = dd;
+                            u8* s = ss;
+                            switch (m_drawType) {
+                                case 2: {
+                                    u8* pal = m_palDescr->m_data;
+                                    memcpy(g_scratch, d, vis);
+                                    u8* sc = g_scratch;
+                                    for (i = vis; i > 0; i--) {
+                                        d[0] = pal[(*sc << 8) + *s];
+                                        d[pitch] = pal[(*sc << 8) + *s];
+                                        d++;
+                                        sc++;
+                                        s++;
+                                    }
+                                    break;
+                                }
+                                case 3: {
+                                    u8* pal = m_palDescr->m_data;
+                                    memcpy(g_scratch, d, vis);
+                                    u8* sc = g_scratch;
+                                    for (i = vis; i > 0; i--) {
+                                        d[0] = pal[(*sc << 8) + m_light];
+                                        d[pitch] = pal[(*sc << 8) + m_light];
+                                        d++;
+                                        sc++;
+                                    }
+                                    break;
+                                }
+                                case 7: {
+                                    u16* pal1 = m_palDescr->Lut16();
+                                    u16* pal2 = g_blendDescr->Lut16();
+                                    memcpy(g_scratch, d, vis * 2);
+                                    u16* sc = Scratch16();
+                                    i32 rd = pitch & ~1;
+                                    for (i = vis; i > 0; i--) {
+                                        u32 idx = pal2[*sc++];
+                                        idx += (*s++ >> 4) << 12;
+                                        u16 v = pal1[idx];
+                                        Store16(d, static_cast<u16>(v));
+                                        Store16(d + rd, static_cast<u16>(v));
+                                        d += 2;
+                                    }
+                                    break;
+                                }
+                                case 8: {
+                                    memcpy(g_scratch, d, vis * 2);
+                                    u16* sc = Scratch16();
+                                    u16* ss2 = Pix16(s);
+                                    i32 rd = pitch & ~1;
+                                    if (m_blendVariant) {
+                                        for (i = vis; i > 0; i--) {
+                                            u32 dv = *sc++;
+                                            u32 a = *ss2++;
+                                            u32 r = (m_lutBank0)[(a >> 0xa) + ((dv >> 5) & 0xffe0)];
+                                            r |= (m_lutBank1)
+                                                [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)];
+                                            r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
+                                            Store16(d, static_cast<u16>(static_cast<u16>(r)));
+                                            Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
+                                            d += 2;
+                                        }
+                                    } else {
+                                        for (i = vis; i > 0; i--) {
+                                            u32 dv = *sc++;
+                                            u32 a = *ss2++;
+                                            u32 r = (m_lutBank0)[(a >> 0xb) + ((dv >> 6) & 0xffe0)];
+                                            r |= (m_lutBank1)
+                                                [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)];
+                                            r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
+                                            Store16(d, static_cast<u16>(static_cast<u16>(r)));
+                                            Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
+                                            d += 2;
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
                         }
                     } else {
                         ConvertRow(dd, ss, vis);
@@ -588,7 +663,86 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
                     i32 count = b;
                     if (m_00) {
                         if ((dst->top + row) % 2) {
-                            ConvertRowDoubleFwd(dd, ss, count, pitch);
+                            // Retail INLINES the vertical-double blend here (BlitLoop jump tables
+                            // 0x54b738 / 0x54b754); only the plain ConvertRow stays an out-of-line call.
+                            i32 i;
+                            u8* d = dd;
+                            u8* s = ss;
+                            switch (m_drawType) {
+                                case 2: {
+                                    u8* pal = m_palDescr->m_data;
+                                    memcpy(g_scratch, d, count);
+                                    u8* sc = g_scratch;
+                                    for (i = count; i > 0; i--) {
+                                        d[0] = pal[(*sc << 8) + *s];
+                                        d[pitch] = pal[(*sc << 8) + *s];
+                                        d++;
+                                        sc++;
+                                        s++;
+                                    }
+                                    break;
+                                }
+                                case 3: {
+                                    u8* pal = m_palDescr->m_data;
+                                    memcpy(g_scratch, d, count);
+                                    u8* sc = g_scratch;
+                                    for (i = count; i > 0; i--) {
+                                        d[0] = pal[(*sc << 8) + m_light];
+                                        d[pitch] = pal[(*sc << 8) + m_light];
+                                        d++;
+                                        sc++;
+                                    }
+                                    break;
+                                }
+                                case 7: {
+                                    u16* pal1 = m_palDescr->Lut16();
+                                    u16* pal2 = g_blendDescr->Lut16();
+                                    memcpy(g_scratch, d, count * 2);
+                                    u16* sc = Scratch16();
+                                    i32 rd = pitch & ~1;
+                                    for (i = count; i > 0; i--) {
+                                        u32 idx = pal2[*sc++];
+                                        idx += (*s++ >> 4) << 12;
+                                        u16 v = pal1[idx];
+                                        Store16(d, static_cast<u16>(v));
+                                        Store16(d + rd, static_cast<u16>(v));
+                                        d += 2;
+                                    }
+                                    break;
+                                }
+                                case 8: {
+                                    memcpy(g_scratch, d, count * 2);
+                                    u16* sc = Scratch16();
+                                    u16* ss2 = Pix16(s);
+                                    i32 rd = pitch & ~1;
+                                    if (m_blendVariant) {
+                                        for (i = count; i > 0; i--) {
+                                            u32 dv = *sc++;
+                                            u32 a = *ss2++;
+                                            u32 r = (m_lutBank0)[(a >> 0xa) + ((dv >> 5) & 0xffe0)];
+                                            r |= (m_lutBank1)
+                                                [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)];
+                                            r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
+                                            Store16(d, static_cast<u16>(static_cast<u16>(r)));
+                                            Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
+                                            d += 2;
+                                        }
+                                    } else {
+                                        for (i = count; i > 0; i--) {
+                                            u32 dv = *sc++;
+                                            u32 a = *ss2++;
+                                            u32 r = (m_lutBank0)[(a >> 0xb) + ((dv >> 6) & 0xffe0)];
+                                            r |= (m_lutBank1)
+                                                [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)];
+                                            r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
+                                            Store16(d, static_cast<u16>(static_cast<u16>(r)));
+                                            Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
+                                            d += 2;
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
                         }
                     } else {
                         ConvertRow(dd, ss, count);
@@ -887,14 +1041,13 @@ void CDDrawShadeBlit::BlitLoop(ShadeRect* dst, CDDSurface* src, ShadeRect* clip,
 // ConvertRowDouble doubled); the CLIPPED paths call the out-of-line helpers.
 // ===========================================================================
 // @early-stop
-// Complete + correct h-flipped reconstruction (mirror of BlitLoop 0x14a200; same
-// walls). Full-width inlines the reversed blend (all 14 draw-type cases); the two
-// clip loops call ConvertRowFlip / ConvertRowDouble. Capped by the same three
-// stacked walls as BlitLoop: (1) whole-function regalloc / this-pinning; (2)
-// retail inlines the vertical-double blend in one clip path (jump table 0x54c9d4)
-// where this calls it (uncontrollable MSVC5 /Ob1 inline split); (3) the two
-// full-width jump tables (0x54c990/0x54c9ac) hit the jump-table-data-overlap
-// scoring artifact (docs/patterns/jumptable-data-overlap.md). Deferred to sweep.
+// Same correction as BlitLoop: the "uncontrollable MSVC5 /Ob1 inline split" is steered
+// by writing the code inline. Retail has THREE jump tables (0x54c990 first - the
+// LEFT-clip vertical-double run - then 0x54c9ac/0x54c9d4 for the full-width pair);
+// the reconstruction had two, and the missing one is the left-clip
+// ConvertRowDouble call, now expanded. Residual: `this` sits in ebp here and ebx in
+// retail (frame 0x2c vs 0x30) and the base is still ~160 B short of retail's 0x121d,
+// so one more inline/CSE difference remains in the clip loops.
 RVA(0x0014b770, 0x1280)
 void CDDrawShadeBlit::BlitMode_14b770(
     ShadeRect* dst,
@@ -957,7 +1110,88 @@ void CDDrawShadeBlit::BlitMode_14b770(
                 u8* dd = base + (x - clip->left) * m_dstBpp;
                 if (m_00) {
                     if ((dst->top + row) % 2) {
-                        ConvertRowDouble(dd, ss, vis, pitch);
+                        // Retail INLINES the vertical-double blend in the LEFT-clip path (BlitMode's
+                        // first jump table, 0x54c990); only ConvertRowFlip stays an out-of-line call.
+                        i32 i;
+                        u8* d = dd;
+                        u8* s = ss;
+                        switch (m_drawType) {
+                            case 2: {
+                                u8* pbase = m_palDescr->m_data;
+                                memcpy(g_scratch, d - vis + 1, vis);
+                                u8* sc = &g_scratch[vis - 1];
+                                for (i = vis; i > 0; i--) {
+                                    d[0] = pbase[(*sc << 8) + *s];
+                                    d[pitch] = pbase[(*sc << 8) + *s];
+                                    d--;
+                                    sc--;
+                                    s++;
+                                }
+                                break;
+                            }
+                            case 3: {
+                                u8* pbase = m_palDescr->m_data;
+                                memcpy(g_scratch, d - vis + 1, vis);
+                                u8* sc = &g_scratch[vis - 1];
+                                for (i = vis; i > 0; i--) {
+                                    d[0] = pbase[(*sc << 8) + m_light];
+                                    d[pitch] = pbase[(*sc << 8) + *s];
+                                    d--;
+                                    sc--;
+                                }
+                                break;
+                            }
+                            case 7: {
+                                u16* pal1 = m_palDescr->Lut16();
+                                u16* pal2 = g_blendDescr->Lut16();
+                                memcpy(g_scratch, d - vis * 2 - 2, vis * 2);
+                                u16* sc = (Scratch16() + vis - 1);
+                                i32 rd = pitch & ~1;
+                                for (i = vis; i > 0; i--) {
+                                    u32 idx = pal2[*sc--];
+                                    idx += (*s++ >> 4) << 12;
+                                    u16 v = pal1[idx];
+                                    Store16(d, static_cast<u16>(v));
+                                    Store16(d + rd, static_cast<u16>(v));
+                                    d -= 2;
+                                }
+                                break;
+                            }
+                            case 8: {
+                                memcpy(g_scratch, d - vis * 2 - 2, vis * 2);
+                                u16* sc = (Scratch16() + vis - 1);
+                                u16* ss2 = Pix16(s);
+                                i32 rd = pitch & ~1;
+                                if (m_blendVariant) {
+                                    for (i = vis; i > 0; i--) {
+                                        u32 a = *ss2++;
+                                        u32 dv = *sc--;
+                                        u32 r =
+                                            (m_lutBank0)[(a >> 0xa) + (((dv >> 0xa) & 0x1f) << 5)];
+                                        r |= (m_lutBank1)
+                                            [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)];
+                                        r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
+                                        Store16(d, static_cast<u16>(static_cast<u16>(r)));
+                                        Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
+                                        d -= 2;
+                                    }
+                                } else {
+                                    for (i = vis; i > 0; i--) {
+                                        u32 a = *ss2++;
+                                        u32 dv = *sc--;
+                                        u32 r =
+                                            (m_lutBank0)[(a >> 0xb) + (((dv >> 0xb) & 0x1f) << 5)];
+                                        r |= (m_lutBank1)
+                                            [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)];
+                                        r |= (m_lutBank2)[(a & 0x1f) + ((dv & 0x1f) << 5)];
+                                        Store16(d, static_cast<u16>(static_cast<u16>(r)));
+                                        Store16(d + rd, static_cast<u16>(static_cast<u16>(r)));
+                                        d -= 2;
+                                    }
+                                }
+                                break;
+                            }
+                        }
                     }
                 } else {
                     ConvertRowFlip(dd, ss, vis);
