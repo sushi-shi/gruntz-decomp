@@ -195,6 +195,31 @@ void CRollingBall::RegisterActs() {
 }
 
 // CRollingBall::Update - the per-tick rolling-ball state machine (__thiscall).
+//
+// RETAIL SHAPE (0xb0140, 0xa7a B). Three gates, then an arrival-only action /
+// direction machine, then the x87 sub-tile interpolation:
+//
+//   * 0xb0195 `mov eax,[esi+0x80]; test eax,eax; jne <epilogue>` - the explosion
+//     latch RETURNS the whole tick, it does not merely skip a block; and the
+//     latch is SET at 0xb0246 (fuse blown) or 0xb0b90 (an action fired), never
+//     unconditionally.
+//   * 0xb02e7/0xb02f5 - if the object is not yet ON its target cell the tick
+//     jumps straight to 0xb089c, i.e. it skips the whole action + direction
+//     machine AND the m_subX/m_subY re-base; only the interpolation runs.
+//   * the action switch at 0xb0444 is the tile's resolved action id biased by -4
+//     over 0..0x70 with a BYTE index table at 0x4b0be0 into a NINE-slot target
+//     table at 0x4b0bbc: {4},{10},{35},{36},{108},{110},{114},{116} each own a
+//     slot (three distinct bodies) plus the default. Every arm except the
+//     `act == 4` continuation latches and returns 0.
+//   * the sink switch at 0x4b0c68/0x4b0ca4 (tile field -0x68 over 0..0x23) nudges
+//     the target cell by +-0x10 on each axis; its default slot (14) is the
+//     latch-and-return block, not a fallthrough.
+//   * ApplyName takes the FIRST-constructed CString ([esp+0x14]) and
+//     ApplyLookupGeometry the second ([esp+0x10]) - 0xb0543 reads them in that
+//     order.
+//
+// It is a /GX EH-framed routine: the two CString temps ([esp+0x10]/[esp+0x14],
+// default-constructed at 0xb03a5/0xb03ba) give it the exception frame.
 // @early-stop
 RVA(0x000b0140, 0xa7a)
 i32 CRollingBall::Update() {
@@ -205,226 +230,443 @@ i32 CRollingBall::Update() {
         anim->m_flags |= 0x10000;
         return 0;
     }
+    if (m_explodeLatch != 0) {
+        return 0;
+    }
 
-    // The explosion latch (+0x80): the explosion sound + cell-clear fire once.
-    if (m_explodeLatch == 0) {
-        CWwdGameObjectA* logic = m_object;
-        i32 lo = g_frameTime - m_explodeStartLo;
-        i32 hi = 0 - m_explodeStartHi;
-        i32 lim = m_explodeWindowHi;
-        if (hi < lim || (hi == lim && static_cast<u32>(lo) < static_cast<u32>(m_explodeWindowLo))) {
+    // The fuse: armed by the object's +0x118 mode gate, fires when the 64-bit
+    // clock delta has REACHED the window (retail branches away on `<`).
+    CWwdGameObjectA* logic = m_object;
+    if (logic->m_118 > 0) {
+        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_explodeStart64
+            >= m_explodeWindow64) {
             m_38->ApplyName("LEVEL_ROLLINGBALL_EXPLOSION");
             m_value = m_38->m_1a0.m_14;
             m_38->ApplyLookupGeometry("LEVEL_ROLLINGBALLEXPLOSION", 0);
             CMapMgr* map = g_gameReg->m_tileGrid;
-            i32 cx = logic->m_screenX >> 5;
-            i32 cy = logic->m_screenY >> 5;
+            CWwdGameObjectA* lg = m_object;
+            i32 cx = lg->m_screenX >> 5;
+            i32 cy = lg->m_screenY >> 5;
             if (static_cast<u32>(cx) < map->m_width && static_cast<u32>(cy) < map->m_height) {
-                i32** row = map->m_rowInts;
-                i32 ix = cx * 7;
-                row[cy][ix] &= 0xefffffff;
+                map->m_rowInts[cy][cx * 7] &= 0xefffffff;
             }
+            m_explodeLatch = 1;
         }
-        m_explodeLatch = 1;
     }
 
-    // The fall latch (+0x84): grid-side death flag + rect re-mark.
+    // The fall latch (+0x84): grid-side "a ball wants servicing" flag + the
+    // squash test against whatever grunt is standing on the ball's cell.
     if (m_fallLatch == 0) {
-        CWwdGameObjectA* logic = m_object;
-        i32 cx = logic->m_screenX;
-        i32 cy = logic->m_screenY;
-        if (cx < g_gameReg->m_viewBounds.right && cx >= g_gameReg->m_viewBounds.left
-            && cy < g_gameReg->m_viewBounds.bottom && cy >= g_gameReg->m_viewBounds.top) {
+        CWwdGameObjectA* lg = m_object;
+        i32 sx = lg->m_screenX;
+        i32 sy = lg->m_screenY;
+        if (sx < g_gameReg->m_viewBounds.right && sx >= g_gameReg->m_viewBounds.left
+            && sy < g_gameReg->m_viewBounds.bottom && sy >= g_gameReg->m_viewBounds.top) {
             g_gameReg->m_cmdGrid->m_rollingballWanted = 1;
         }
-        CWwdGameObjectA* logic2 = m_object;
-        i32 outA, outB;
-        if (g_gameReg->m_cmdGrid->FindGruntAt(
-                logic2->m_screenX,
-                logic2->m_screenY,
-                &logic2->m_area,
-                &outB,
-                &outA,
-                0
-            )) {
-            g_gameReg->m_cmdGrid->CellDispatch(outA, outB, 2, -1);
+        CWwdGameObjectA* lg2 = m_object;
+        i32 hitA;
+        i32 hitB;
+        if (g_gameReg->m_cmdGrid
+                ->FindGruntAt(lg2->m_screenX, lg2->m_screenY, &lg2->m_area, &hitA, &hitB, 0)) {
+            g_gameReg->m_cmdGrid->CellDispatch(hitA, hitB, 2, -1);
         }
     }
 
-    // ----- the sub-tile-snapped move + action switch -----
-    CWwdGameObjectA* logic = m_object;
-    if (logic->m_screenX == m_targetX && m_targetY == logic->m_screenY) {
-        // arrived at the target cell: clear the cell, read its terrain id and
-        // dispatch on the rolling-ball action.
+    CWwdGameObjectA* cur = m_object;
+    if (cur->m_screenX == m_targetX && cur->m_screenY == m_targetY) {
+        // ---- arrived on the target cell ----
+        g_gameReg->m_cmdGrid->WireTileSwitchLogic(0, m_targetX, m_targetY);
         g_gameReg->m_cmdGrid->ApplySwitch(0, m_targetX, m_targetY);
 
+        i32 tx = m_targetX >> 5;
+        i32 ty = m_targetY >> 5;
         CMapMgr* map = g_gameReg->m_tileGrid;
-        i32 cx = m_targetX >> 5;
-        i32 cy = m_targetY >> 5;
+        if (static_cast<u32>(tx) < map->m_width && static_cast<u32>(ty) < map->m_height) {
+            map->m_rowInts[ty][tx * 7] &= 0xefffffff;
+        }
+        CMapMgr* map2 = g_gameReg->m_tileGrid;
         i32 terrain;
-        if (static_cast<u32>(cx) < map->m_width && static_cast<u32>(cy) < map->m_height) {
-            i32** row = map->m_rowInts;
-            i32 ix = cx * 7;
-            terrain = row[cy][ix];
+        if (static_cast<u32>(tx) < map2->m_width && static_cast<u32>(ty) < map2->m_height) {
+            terrain = map2->m_rowInts[ty][tx * 7];
         } else {
             terrain = 1;
         }
 
         if ((terrain & 0x939) != 0 || (terrain & 2) != 0) {
-            CString fall;      // [esp+0x14]
-            CString explosion; // [esp+0x10]
-            // Resolve the action id from the level's main-plane tile graph - the
-            // SAME walk GameLevel's collision macro does typed. DISASM NOTE: the old
-            // raw-offset spelling read the attr grid off LVL+0x20; retail reads it
-            // off the PLANE (+0x20 m_tileGrid, same edi as the +0x24 column read) -
-            // a mis-based recon offset, fixed by the typed spelling.
+            CString fall;      // [esp+0x14] - the ApplyName string
+            CString explosion; // [esp+0x10] - the ApplyLookupGeometry string
+
+            // Resolve the target cell's action id off the level's main plane
+            // (m_tileGrid[m_colOffsets[col] + row]); the X coordinate is clamped
+            // against m_gridW FIRST, then Y against m_gridH.
             CGameLevel* lvl = g_gameReg->m_world->m_level;
-            i32 ax = m_targetY >> 5;
-            i32 ay = m_targetX >> 5;
-            if (ax < 0) {
-                ax = 0;
+            i32 col = m_targetY >> 5;
+            i32 row = m_targetX >> 5;
+            if (row < 0) {
+                row = 0;
             } else {
                 i32 w = lvl->m_mainPlane->m_gridW;
-                if (ax >= w) {
-                    ax = w - 1;
+                if (row >= w) {
+                    row = w - 1;
                 }
             }
-            if (ay < 0) {
-                ay = 0;
+            if (col < 0) {
+                col = 0;
             } else {
                 i32 h = lvl->m_mainPlane->m_gridH;
-                if (ay >= h) {
-                    ay = h - 1;
+                if (col >= h) {
+                    col = h - 1;
                 }
             }
             CDDrawWorkerHost* pl = lvl->m_mainPlane;
-            i32 idx = pl->m_colOffsets[ay] + ax;
-            i32 raw = pl->m_tileGrid[idx];
-            i32 obj = 0;
+            i32 raw = pl->m_tileGrid[pl->m_colOffsets[col] + row];
+            i32 act = 0;
             if (raw != static_cast<i32>(0xeeeeeeee) && raw != -1) {
-                obj = VtblResolve(lvl->m_imageSets[raw & 0xffff]);
+                act = VtblResolve(lvl->m_imageSets[raw & 0xffff]);
             }
 
-            // The action switch (obj's terrain id, near-dense range): FALL,
-            // EXPLOSION, SINK and their neighbours collapse to a few sound pairs.
-            // Spelled as a natural switch so cl emits its own jump table.
-            switch (obj) {
-                case 0xa: // FALL group
-                case 0x24:
-                    fall = "LEVEL_ROLLINGBALL_FALL";
-                    explosion = "LEVEL_ROLLINGBALLFALL";
+            switch (act) {
+                case 4:
+                case 110:
+                case 116: {
+                    // The FALL/EXPLOSION/SINK trio, selected by the level's
+                    // terrain class (CState::m_levelType, biased -4 over 4..8).
+                    switch (g_gameReg->m_curState->m_levelType) {
+                        case 4:
+                        case 5:
+                        case 8:
+                            fall = "LEVEL_ROLLINGBALL_FALL";
+                            explosion = "LEVEL_ROLLINGBALLFALL";
+                            break;
+                        case 6:
+                            fall = "LEVEL_ROLLINGBALL_EXPLOSION";
+                            explosion = "LEVEL_ROLLINGBALLEXPLOSION";
+                            act = 1;
+                            break;
+                        default: {
+                            fall = "LEVEL_ROLLINGBALL_SINK";
+                            explosion = "LEVEL_ROLLINGBALLSINKDEATH";
+                            CWwdGameObjectA* o = m_object;
+                            i32 px = o->m_screenX;
+                            i32 py = o->m_screenY;
+                            if (px < g_gameReg->m_viewBounds.right
+                                && px >= g_gameReg->m_viewBounds.left
+                                && py < g_gameReg->m_viewBounds.bottom
+                                && py >= g_gameReg->m_viewBounds.top) {
+                                CWwdGameObjectA* fx =
+                                    g_gameReg->m_world->m_childGroup
+                                        ->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
+                                if (fx != 0) {
+                                    fx->ApplyName("LEVEL_DEATHSPLASH");
+                                    fx->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    m_38->ApplyName(fall);
+                    m_value = m_38->m_1a0.m_14;
+                    m_38->ApplyLookupGeometry(explosion, 0);
+                    if (act != 4) {
+                        m_explodeLatch = 1;
+                        return 0;
+                    }
+                    DWORD perTile =
+                        g_buteMgr.GetDwordDef("Hazardz", "RollingBallTimePerTile", 0x3e8);
+                    m_moveSpeed = kMsPerSecond / static_cast<double>(perTile);
+
+                    // The sink nudge: the ball's CURRENT cell record (+0xc) picks a
+                    // +-0x10 offset pair for the target cell. The default arm latches
+                    // and returns.
+                    CMapMgr* board = g_gameReg->m_tileGrid;
+                    CWwdGameObjectA* o2 = m_object;
+                    i32 bx = o2->m_screenX >> 5;
+                    i32 by = o2->m_screenY >> 5;
+                    i32 sink;
+                    if (static_cast<u32>(bx) < board->m_width
+                        && static_cast<u32>(by) < board->m_height) {
+                        sink = board->m_rowInts[by][bx * 7 + 3];
+                    } else {
+                        sink = 0;
+                    }
+                    switch (sink) {
+                        case 0x68:
+                            m_targetX += 0x10;
+                            m_targetY += 0x10;
+                            break;
+                        case 0x69:
+                        case 0x6a:
+                            m_targetY += 0x10;
+                            break;
+                        case 0x6b:
+                            m_targetX -= 0x10;
+                            m_targetY += 0x10;
+                            break;
+                        case 0x6c:
+                            m_targetX += 0x10;
+                            m_targetY += 0x10;
+                            break;
+                        case 0x71:
+                            m_targetX -= 0x10;
+                            m_targetY += 0x10;
+                            break;
+                        case 0x73:
+                            m_targetX += 0x10;
+                            break;
+                        case 0x78:
+                            m_targetX -= 0x10;
+                            break;
+                        case 0x7b:
+                            m_targetX += 0x10;
+                            break;
+                        case 0x80:
+                            m_targetX -= 0x10;
+                            break;
+                        case 0x82:
+                            m_targetX += 0x10;
+                            m_targetY -= 0x10;
+                            break;
+                        case 0x87:
+                            m_targetX -= 0x10;
+                            m_targetY -= 0x10;
+                            break;
+                        case 0x88:
+                            m_targetX += 0x10;
+                            m_targetY -= 0x10;
+                            break;
+                        case 0x89:
+                        case 0x8a:
+                            m_targetY -= 0x10;
+                            break;
+                        case 0x8b:
+                            m_targetX -= 0x10;
+                            m_targetY -= 0x10;
+                            break;
+                        default:
+                            m_explodeLatch = 1;
+                            return 0;
+                    }
                     break;
-                case 0x10: // EXPLOSION
-                    fall = "LEVEL_ROLLINGBALL_EXPLOSION";
-                    explosion = "LEVEL_ROLLINGBALLEXPLOSION";
-                    obj = 1;
+                }
+
+                case 10:
+                case 36:
+                case 108:
+                case 114: {
+                    m_38->ApplyName("LEVEL_ROLLINGBALL_SINK");
+                    m_value = m_38->m_1a0.m_14;
+                    m_38->ApplyLookupGeometry("LEVEL_ROLLINGBALLSINKWATER", 0);
+                    CWwdGameObjectA* o = m_object;
+                    i32 px = o->m_screenX;
+                    i32 py = o->m_screenY;
+                    if (px < g_gameReg->m_viewBounds.right && px >= g_gameReg->m_viewBounds.left
+                        && py < g_gameReg->m_viewBounds.bottom
+                        && py >= g_gameReg->m_viewBounds.top) {
+                        CWwdGameObjectA* fx =
+                            g_gameReg->m_world->m_childGroup
+                                ->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
+                        if (fx != 0) {
+                            fx->ApplyName("GAME_WATER");
+                            fx->ApplyLookupGeometry("GAME_WATER", 0);
+                        }
+                    }
+                    m_explodeLatch = 1;
+                    return 0;
+                }
+
+                case 35: {
+                    i32 kind = g_gameReg->m_curState->m_levelType;
+                    if (kind >= 4 && (kind <= 5 || kind == 8)) {
+                        m_38->ApplyName("LEVEL_ROLLINGBALL_FALL");
+                        m_value = m_38->m_1a0.m_14;
+                        m_38->ApplyLookupGeometry("LEVEL_ROLLINGBALLFALL", 0);
+                    } else {
+                        m_38->ApplyName("LEVEL_ROLLINGBALL_SINK");
+                        m_value = m_38->m_1a0.m_14;
+                        m_38->ApplyLookupGeometry("LEVEL_ROLLINGBALLSINKHOLE", 0);
+                    }
+                    m_explodeLatch = 1;
+                    return 0;
+                }
+
+                default: {
+                    m_38->ApplyName("LEVEL_ROLLINGBALL_EXPLOSION");
+                    m_value = m_38->m_1a0.m_14;
+                    m_38->ApplyLookupGeometry("LEVEL_ROLLINGBALLEXPLOSION", 0);
+                    m_explodeLatch = 1;
+                    return 0;
+                }
+            }
+        }
+
+        // ---- the direction machine ----
+        // 0xb0651: the OLD roll direction is captured before the resolve, and the
+        // tile's own action id (11..18 -> N/E/S/W) re-aims the ball, but only when
+        // the terrain word carries bit 7.
+        CWwdGameObjectA* dirObj = m_object;
+        i32 oldDir = dirObj->m_12c;
+        if ((terrain & 0x80) != 0) {
+            CGameLevel* lvl2 = g_gameReg->m_world->m_level;
+            i32 col2 = m_targetY >> 5;
+            i32 row2 = m_targetX >> 5;
+            if (row2 < 0) {
+                row2 = 0;
+            } else {
+                i32 w = lvl2->m_mainPlane->m_gridW;
+                if (row2 >= w) {
+                    row2 = w - 1;
+                }
+            }
+            if (col2 < 0) {
+                col2 = 0;
+            } else {
+                i32 h = lvl2->m_mainPlane->m_gridH;
+                if (col2 >= h) {
+                    col2 = h - 1;
+                }
+            }
+            CDDrawWorkerHost* pl2 = lvl2->m_mainPlane;
+            i32 raw2 = pl2->m_tileGrid[pl2->m_colOffsets[col2] + row2];
+            i32 act2 = 0;
+            if (raw2 != static_cast<i32>(0xeeeeeeee) && raw2 != -1) {
+                act2 = VtblResolve(lvl2->m_imageSets[raw2 & 0xffff]);
+            }
+            switch (act2) {
+                case 11:
+                case 15:
+                    m_object->m_12c = 1;
                     break;
-                default: // SINK and the rest collapse onto the sink temps
-                    fall = "LEVEL_ROLLINGBALL_SINK";
-                    explosion = "LEVEL_ROLLINGBALLSINKDEATH";
+                case 14:
+                case 18:
+                    m_object->m_12c = 2;
+                    break;
+                case 12:
+                case 16:
+                    m_object->m_12c = 3;
+                    break;
+                case 13:
+                case 17:
+                    m_object->m_12c = 4;
                     break;
             }
-            m_38->ApplyName(explosion);
-            m_value = m_38->m_1a0.m_14;
-            m_38->ApplyLookupGeometry(fall, 0);
-            if (obj == 4) {
-                i32 t = g_buteMgr.GetDwordDef("Hazardz", "RollingBallTimePerTile", 0x3e8);
-                m_moveSpeed = kMsPerSecond / static_cast<double>(t);
-            }
+        }
+
+        // 0xb072f - retail stores [esi+0x60], [esi+0x68], [esi+0x64], [esi+0x6c] in
+        // that order: subX.lo / subY.lo / subX.hi / subY.hi INTERLEAVED, four dword
+        // stores of a zeroed register, which no `double = 0.0` pair emits.
+        CWwdGameObjectA* dirObj2 = m_object;
+        m_subXLo = 0;
+        m_subYLo = 0;
+        m_subXHi = 0;
+        m_subYHi = 0;
+        switch (dirObj2->m_12c) {
+            case 1: // north
+                m_subY = -m_moveDelta;
+                m_stepDirX = 0;
+                m_stepDirY = -1;
+                m_targetY -= 0x20;
+                if (oldDir != dirObj2->m_12c) {
+                    m_38->ApplyName("LEVEL_ROLLINGBALL_NORTH");
+                }
+                break;
+            case 2: // east
+                m_subX = m_moveDelta;
+                m_stepDirX = 1;
+                m_stepDirY = 0;
+                m_targetX += 0x20;
+                if (oldDir != dirObj2->m_12c) {
+                    m_38->ApplyName("LEVEL_ROLLINGBALL_EAST");
+                }
+                break;
+            case 4: // west
+                m_subX = -m_moveDelta;
+                m_stepDirX = -1;
+                m_stepDirY = 0;
+                m_targetX -= 0x20;
+                if (oldDir != dirObj2->m_12c) {
+                    m_38->ApplyName("LEVEL_ROLLINGBALL_WEST");
+                }
+                break;
+            default: // south (3 and everything else)
+                m_subY = m_moveDelta;
+                m_stepDirX = 0;
+                m_stepDirY = 1;
+                m_targetY += 0x20;
+                if (oldDir != dirObj2->m_12c) {
+                    m_38->ApplyName("LEVEL_ROLLINGBALL_SOUTH");
+                }
+                break;
+        }
+
+        // 0xb0842 - re-base the sub-tile position on the object's current pixel
+        // position and clear the per-step delta, then mark the target cell.
+        CWwdGameObjectA* out = m_object;
+        m_subX = static_cast<double>(out->m_screenX) + m_subX;
+        m_moveDeltaLo = 0;
+        m_moveDeltaHi = 0;
+        m_subY = static_cast<double>(out->m_screenY) + m_subY;
+        CMapMgr* board2 = g_gameReg->m_tileGrid;
+        i32 mtx = m_targetX >> 5;
+        i32 mty = m_targetY >> 5;
+        if (static_cast<u32>(mtx) < board2->m_width && static_cast<u32>(mty) < board2->m_height) {
+            board2->m_rowInts[mty][mtx * 7] |= 0x10000000;
         }
     }
 
-    // ----- the direction sub-switch (state +0x12c -> NORTH/SOUTH/EAST/WEST) -----
-    // Retail stores [esi+0x60], [esi+0x68], [esi+0x64], [esi+0x6c] in that order -
-    // subX.lo / subY.lo / subX.hi / subY.hi INTERLEAVED, four dword stores of a
-    // zeroed register, which no `double = 0.0` pair emits. The dword halves are
-    // named union arms on the class (see <Gruntz/RollingBall.h>).
-    m_subXLo = 0;
-    m_subYLo = 0;
-    m_subXHi = 0;
-    m_subYHi = 0;
-    CWwdGameObjectA* lg = m_object;
-    switch (lg->m_12c) {
-        case 1:
-            m_subY = -m_moveDelta;
-            m_targetX -= 0x20;
-            m_stepDirX = -1;
-            m_stepDirY = -1;
-            break;
-        case 2:
-            m_subX = m_moveDelta;
-            m_targetX += 0x20;
-            m_stepDirX = 1;
-            m_stepDirY = 0;
-            break;
-        case 4:
-            m_subY = m_moveDelta;
-            m_targetX += 0x20;
-            m_stepDirX = 0;
-            m_stepDirY = 1;
-            break;
-        case 3:
-            m_subX = -m_moveDelta;
-            m_targetX -= 0x20;
-            m_stepDirX = -1;
-            m_stepDirY = 0;
-            break;
-    }
-
-    // ----- the x87 sub-tile interpolation tail -----
-    CWwdGameObjectA* lg2 = m_object;
-    m_subX = static_cast<double>(lg2->m_screenX) + m_subX;
-    m_subY = static_cast<double>(lg2->m_screenY) + m_subY;
-    m_moveDeltaLo = 0;
-    m_moveDeltaHi = 0;
-
-    double dt = static_cast<double>(g_frameDelta) * m_moveSpeed;
-    i32 nx = m_targetX >> 5;
+    // ---- the x87 sub-tile interpolation tail (0xb089c) ----
+    double dt = static_cast<double>(static_cast<u32>(g_frameDelta)) * m_moveSpeed;
+    i32 nx;
     if (m_stepDirX > 0) {
         double v = dt + m_subX;
         m_subX = v;
         nx = __ftol(ceil(v));
-        if (nx >= (m_targetX >> 5)) {
-            nx = m_targetX >> 5;
+        m_moveDelta = fabs(static_cast<double>(nx) - static_cast<double>(m_targetX));
+        if (nx > m_targetX) {
+            nx = m_targetX;
         }
     } else if (m_stepDirX < 0) {
         double v = m_subX - dt;
         m_subX = v;
         nx = __ftol(floor(v));
-        if (nx < (m_targetX >> 5)) {
-            nx = m_targetX >> 5;
+        m_moveDelta = fabs(static_cast<double>(nx) - static_cast<double>(m_targetX));
+        if (nx < m_targetX) {
+            nx = m_targetX;
         }
     } else {
-        nx = __ftol(floor(m_subX));
+        nx = __ftol(ceil(m_subX));
     }
 
-    i32 ny = m_targetY >> 5;
+    i32 ny;
     if (m_stepDirY > 0) {
         double v = dt + m_subY;
         m_subY = v;
         ny = __ftol(ceil(v));
-        if (ny >= (m_targetY >> 5)) {
-            ny = m_targetY >> 5;
+        m_moveDelta = fabs(static_cast<double>(ny) - static_cast<double>(m_targetY));
+        if (ny > m_targetY) {
+            ny = m_targetY;
         }
     } else if (m_stepDirY < 0) {
         double v = m_subY - dt;
         m_subY = v;
         ny = __ftol(floor(v));
-        if (ny < (m_targetY >> 5)) {
-            ny = m_targetY >> 5;
+        m_moveDelta = fabs(static_cast<double>(ny) - static_cast<double>(m_targetY));
+        if (ny < m_targetY) {
+            ny = m_targetY;
         }
     } else {
-        ny = __ftol(floor(m_subY));
+        ny = __ftol(ceil(m_subY));
     }
 
-    CWwdGameObjectA* out = m_object;
-    out->m_screenX = nx;
-    out->m_screenY = ny;
-    CWwdGameObjectA* out2 = m_object;
-    i32 next = out2->m_screenY + 0x186a0;
-    if (out2->m_sortKey != next) {
-        out2->m_sortKey = next;
-        out2->m_flags |= 0x20000;
+    CWwdGameObjectA* fin = m_object;
+    fin->m_screenX = nx;
+    CWwdGameObjectA* fin2 = m_object;
+    fin2->m_screenY = ny;
+    CWwdGameObjectA* fin3 = m_object;
+    i32 next = fin3->m_screenY + 0x186a0;
+    if (fin3->m_sortKey != next) {
+        fin3->m_sortKey = next;
+        fin3->m_flags |= 0x20000;
     }
     return 0;
 }

@@ -56,16 +56,30 @@ public:
             i32 m_subYHi;
         };
     };
-    i32 m_stepDirX;        // +0x70  X step direction (-1/0/1)
-    i32 m_stepDirY;        // +0x74  Y step direction (-1/0/1)
-    i32 m_targetX;         // +0x78  target tile X (<<5)
-    i32 m_targetY;         // +0x7c  target tile Y (<<5)
-    i32 m_explodeLatch;    // +0x80  explosion one-shot latch
-    i32 m_fallLatch;       // +0x84  fall one-shot latch
-    i32 m_explodeStartLo;  // +0x88  explosion start clock (i64 lo)
-    i32 m_explodeStartHi;  // +0x8c  explosion start clock (i64 hi)
-    i32 m_explodeWindowLo; // +0x90  explosion window (i64 lo)
-    i32 m_explodeWindowHi; // +0x94  explosion window (i64 hi)
+    i32 m_stepDirX;     // +0x70  X step direction (-1/0/1)
+    i32 m_stepDirY;     // +0x74  Y step direction (-1/0/1)
+    i32 m_targetX;      // +0x78  target tile X (<<5)
+    i32 m_targetY;      // +0x7c  target tile Y (<<5)
+    i32 m_explodeLatch; // +0x80  explosion one-shot latch
+    i32 m_fallLatch;    // +0x84  fall one-shot latch
+    // The fuse clock pair. Update compares them as ONE 64-bit value
+    // (`xor eax,eax; sub edx,lo; sbb eax,hi` then the jl/jg/jb triple at 0xb01d7),
+    // while the ctor zeroes each half with its own dword store - both readings of
+    // the same eight bytes are real, so both are named. Both are 8-aligned.
+    union {
+        i64 m_explodeStart64; // +0x88
+        struct {
+            i32 m_explodeStartLo;
+            i32 m_explodeStartHi;
+        };
+    };
+    union {
+        i64 m_explodeWindow64; // +0x90
+        struct {
+            i32 m_explodeWindowLo;
+            i32 m_explodeWindowHi;
+        };
+    };
     // +0x98  the per-step move delta. It is READ as a double (the direction arms
     // assign it straight into the m_subX/m_subY doubles), and the class is already
     // 8-aligned from m_subX, so declaring it double is layout-free. The dword arms
