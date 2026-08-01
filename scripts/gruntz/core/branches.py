@@ -250,6 +250,16 @@ def compare(bi, ti, max_flips=4):
         tt_f = [sym_target(tb, t) for _, _, t in tb]
         res["same_dest"] = [i for i, _, _ in flips if bt_f[i] == tt_f[i]]
         res["flip_dests"] = [(i, bt_f[i], tt_f[i]) for i, _, _ in flips]
+        # The converse blind spot: a branch whose MNEMONIC matches on both sides but
+        # whose TARGET differs is invisible once any flip exists, because the target
+        # comparison below only runs on the all-mnemonics-equal path. Measured cost of
+        # that gap: on CGrunt::PathScan the reported flip was the small half, while the
+        # unreported same-mnemonic row (`je` on both sides, far exit in retail vs a short
+        # local block in ours) was what actually explained the function. Report them.
+        flipped = {i for i, _, _ in flips}
+        res["moved_same_mnem"] = [(i, bt_f[i], tt_f[i])
+                                  for i in range(len(bb))
+                                  if i not in flipped and bt_f[i] != tt_f[i]]
         return res
     # Same mnemonics everywhere: the only thing left that a masked diff can hide is a
     # branch landing on a different block.
