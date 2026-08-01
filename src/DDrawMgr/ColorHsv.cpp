@@ -30,14 +30,6 @@
 // two of them, is a struct assignment, not three FP stores.
 //
 // @early-stop
-// The branch sequence now AGREES with retail (and the spurious second `ret` is
-// gone - the v==0 arm joins the common store tail instead of owning an epilogue).
-// Residual is a register-pressure split: retail keeps all three channels live in
-// whole registers for the whole body (ebx = color, masked down to b0 in place;
-// ecx = the 16-bit green shift; edx = color>>16) and masks with `and r,0xff` at
-// each int use, so its frame is 0x10. cl narrows the three `u8` locals and spills
-// b1/b2 to byte slots, taking the frame to 0x18, and grabs green as `mov al,ch`
-// rather than GetGValue's 16-bit `mov cx,bx; shr cx,8`.
 RVA(0x0014fcc0, 0x16d)
 ColorHSV* RgbToHsv(ColorHSV* out, u32 color) {
     ColorHSV hsv;

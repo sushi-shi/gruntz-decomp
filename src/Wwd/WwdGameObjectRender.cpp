@@ -59,10 +59,6 @@ inline void* operator new(u32, void* p) {
 // onto rejectB, leaving retail's two copies.
 //
 // @early-stop
-// The branch sequence now AGREES with retail. Residual is the x/y colouring
-// across the one free callee-saved pair (retail x->ebx, y->ebp; cl the reverse),
-// which renames every x/y modrm in the body.
-// ---------------------------------------------------------------------------
 RVA(0x001660f0, 0xd1)
 void CWwdGameObjectC::Render(CDDrawSurfacePair* a) {
     i32 m64 = m_clip.left;
@@ -104,14 +100,6 @@ void CWwdGameObjectC::Render(CDDrawSurfacePair* a) {
 // read it from the back pair `b`'s surface and write it onto the front pair `a`'s,
 // then disarm the live flag (m_38 = -1). __thiscall, 2 ptr args (ret 0x8).
 // @early-stop
-// ~73% zero-register-pinning regalloc wall. Logic/CFG/offsets/the 9-dword rep-movs
-// snapshot/both lock-read-unlock + lock-write-unlock pixel ops/m_38 disarm all
-// reproduced. Residual: retail dedicates the callee-saved ebp to `this` for the whole
-// body (surviving the rep-movs + both Lock calls) and spills the restored pixel to a
-// stack local (ebx is reused for the shadow x); our cl keeps `this` in caller-saved eax and
-// spills IT instead, keeping the pixel in bl - so the register operands differ
-// throughout. Same values/stores. The permuter found no source spelling that flips
-// the this/pixel spill choice. docs/patterns/zero-register-pinning.md.
 RVA(0x001661d0, 0xc2)
 void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     // the live +0x18 record snapshotted onto the shadow +0xb8 one - the SAME
@@ -147,16 +135,6 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 // BltEx (one per record). Only one armed -> just that record's rect. Each rect is
 // {x, y, x+w, y+h}. Arg `c` unused. __thiscall, 3 args (ret 0xc).
 // @early-stop
-// ~76% tail-merge + regalloc wall (twin of Slot38 which hits 99.7%). Logic/CFG/the
-// abs+min bbox/the four BltEx sites + their {x,y,x+w,y+h} rect builds all reproduced,
-// AND the single reused rect buffer gives retail's `sub esp,0x14` frame. Residual:
-// because every region calls the IDENTICAL `BltEx(rc, b->m_surface, rc, ...)` on the
-// one shared `rc` buffer, our cl CROSS-JUMPS (tail-merges) block-C's BltEx to a shared
-// copy (a `jmp`) where retail keeps each inline; plus a callee-saved shadow-x/m_1c coloring
-// swap cascading from the extra BltEx register pressure. Slot38's twin avoids this
-// because its four dispatch calls take DIFFERENT pointer args (no merge). Not source-
-// steerable (separate rc buffers fix the merge but re-inflate the frame; permuter
-// no-op). docs/patterns/zero-register-pinning.md / tail-merge layout.
 RVA(0x001662a0, 0x1fa)
 void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
     i32 rc[4];                                             // one reused src+dst rect buffer
@@ -258,8 +236,6 @@ i32 CWwdGameObject::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
 // is now exactly what this TU emits (the CGAMEOBJECT_OOL_CTOR guard at the top of
 // the file; 42.4 -> 71.7 %).
 // @early-stop
-// residual regalloc/scheduling only - the ctor CALL half is reproduced.
-// ===========================================================================
 RVA(0x00166640, 0x13b)
 CWwdGameObject* CWwdGameObject::CreateObject(
     int id,
@@ -298,7 +274,6 @@ CWwdGameObject* CWwdGameObject::CreateObject(
 // CreateNamed (__thiscall, ret 0x18 => 6 args). Resolve `name` -> value; if
 // nothing resolved, bail; else create the 0x1dc-byte kind with the value as arg5.
 // @early-stop
-// 94% - logic byte-exact; same val=0 arg-push scheduling residual as CreateNamed_1593e0.
 RVA(0x00166780, 0x57)
 CWwdGameObject*
 CWwdGameObject::CreateNamed(int id, int x, int y, int sortKey, const char* name, int stateFlags) {
