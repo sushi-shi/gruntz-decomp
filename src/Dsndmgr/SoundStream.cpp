@@ -420,6 +420,12 @@ i32 SoundStream::TickSubManagers(i32 time) {
 // dead once esi holds it), so retail needs only `sub esp,0xc`. cl gives each of ours its
 // own local (sub esp,0x10) and never writes over an arg slot, which shifts every [esp+N]
 // by 4. Body + control flow byte-exact.
+// Declaration-site axes matrix RULED OUT as the lever (config/axes/parsewave.json,
+// 72 cells: every permutation of the three header-buffer declarations, merged-vs-
+// separate declarations, three `end` spellings, three chunk-local spellings). EVERY
+// cell scored identically to baseline - the argument-slot reuse is an MSVC frame
+// packer decision, not a source one. See
+// docs/patterns/same-sites-different-per-function-optimum.md.
 RVA(0x00137b70, 0x159)
 i32 SoundStream::ParseWave(
     CParseSource* src,

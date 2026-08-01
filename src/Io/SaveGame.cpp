@@ -526,6 +526,13 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
 //   (4) frame slot order in the 0x18-byte block below `title`: retail is
 //       CFile@+0x10 / temp-flag@+0x20 / CString-temp@+0x24, ours is flag@+0x10 /
 //       CString@+0x14 / CFile@+0x18. `title`@+0x28 and `readBuf`@+0xa8 agree.
+//       Declaration-site axes matrix RULED THIS OUT as source-steerable
+//       (config/axes/buildleveltitlestring.json, 24 cells): all twelve cells that
+//       keep `CFile f;` where it is score IDENTICALLY, whatever the buffer order or
+//       an added 4-byte scalar, and all twelve that hoist it crater to 77% because
+//       hoisting the declaration hoists the constructor past the null guards. MSVC
+//       lays the destructible-object block out in source order, so retail's order
+//       is unreachable without moving the ctor. Frame packer, not source.
 RVA(0x000e44e0, 0x2b2)
 void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     char title[0x80];

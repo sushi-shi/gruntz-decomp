@@ -1,0 +1,70 @@
+{
+ "schema": 1,
+ "source": "src/Font/Font.cpp",
+ "rva": "0x17ac50",
+ "axes": [
+  {
+   "name": "decls",
+   "find": "TextExtent FontRenderer::MeasureText(CString text) {\n    TextExtent ext;\n    i32 i = 0;\n    i32 width = 0;\n    if (m_font == 0) {\n        ext.width = 0;\n        ext.height = 0;\n        return ext;\n    }\n",
+   "options": [
+    {
+     "name": "base"
+    },
+    {
+     "name": "i_in_for",
+     "replace": "TextExtent FontRenderer::MeasureText(CString text) {\n    TextExtent ext;\n    i32 width = 0;\n    if (m_font == 0) {\n        ext.width = 0;\n        ext.height = 0;\n        return ext;\n    }\n"
+    },
+    {
+     "name": "zero_order",
+     "replace": "TextExtent FontRenderer::MeasureText(CString text) {\n    TextExtent ext;\n    i32 i = 0;\n    i32 width = 0;\n    if (m_font == 0) {\n        ext.height = 0;\n        ext.width = 0;\n        return ext;\n    }\n"
+    },
+    {
+     "name": "i_in_for_zero_order",
+     "replace": "TextExtent FontRenderer::MeasureText(CString text) {\n    TextExtent ext;\n    i32 width = 0;\n    if (m_font == 0) {\n        ext.height = 0;\n        ext.width = 0;\n        return ext;\n    }\n"
+    }
+   ]
+  },
+  {
+   "name": "loop",
+   "find": "    for (i = 0; i < text.GetLength(); i++) {\n        Glyph g;\n        u8 c = text[i];\n        // retail reads the advance back through GetGlyph's RETURNED reference\n        // (`call GetGlyph / mov ecx,[eax] / add edi,ecx`), not off the local.\n        width += m_font->GetGlyph(g, c).width;\n    }\n",
+   "options": [
+    {
+     "name": "base"
+    },
+    {
+     "name": "no_i_init",
+     "replace": "    for (; i < text.GetLength(); i++) {\n        Glyph g;\n        u8 c = text[i];\n        // retail reads the advance back through GetGlyph's RETURNED reference\n        // (`call GetGlyph / mov ecx,[eax] / add edi,ecx`), not off the local.\n        width += m_font->GetGlyph(g, c).width;\n    }\n"
+    },
+    {
+     "name": "decl_i",
+     "replace": "    for (i32 i = 0; i < text.GetLength(); i++) {\n        Glyph g;\n        u8 c = text[i];\n        // retail reads the advance back through GetGlyph's RETURNED reference\n        // (`call GetGlyph / mov ecx,[eax] / add edi,ecx`), not off the local.\n        width += m_font->GetGlyph(g, c).width;\n    }\n"
+    },
+    {
+     "name": "c_inline",
+     "replace": "    for (i = 0; i < text.GetLength(); i++) {\n        Glyph g;\n        width += m_font->GetGlyph(g, text[i]).width;\n    }\n"
+    },
+    {
+     "name": "g_hoisted",
+     "replace": "    Glyph g;\n    for (i = 0; i < text.GetLength(); i++) {\n        u8 c = text[i];\n        width += m_font->GetGlyph(g, c).width;\n    }\n"
+    },
+    {
+     "name": "g_height_zero",
+     "replace": "    for (i = 0; i < text.GetLength(); i++) {\n        Glyph g;\n        g.height = 0;\n        u8 c = text[i];\n        width += m_font->GetGlyph(g, c).width;\n    }\n"
+    }
+   ]
+  },
+  {
+   "name": "tail",
+   "find": "    ext.width = width;\n    ext.height = m_font->GetMaxHeight();\n    return ext;\n",
+   "options": [
+    {
+     "name": "base"
+    },
+    {
+     "name": "height_first",
+     "replace": "    ext.height = m_font->GetMaxHeight();\n    ext.width = width;\n    return ext;\n"
+    }
+   ]
+  }
+ ]
+}
