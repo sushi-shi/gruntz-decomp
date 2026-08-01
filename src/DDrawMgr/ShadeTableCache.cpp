@@ -543,11 +543,17 @@ CShadeTable* CShadeTableCache::GreyTable() {
 // channels go through __ftol after a 255 ceiling clamp. EH frame. @early-stop
 // ===========================================================================
 // @early-stop
-// EH-frame wall (rezalloc-placement-new-no-eh-frame.md) + x87 fxch schedule
-// (x87-fp-stack-schedule.md): body reconstructed (4-deep v/r/g/b loop, the factor
-// recomputed per innermost iter to match retail's structure), but the /GX
-// ctor-in-flight frame is absent on MSVC5 and retail fuses the first (r) channel
-// into the factor build via fxch (uniform fild;fmul here); ~60%.
+// 60 -> 74.23 -> 92.21. The old "x87 schedule + EH frame" note hid three source
+// bugs the jcc sieve's three `jl -> jne` flips pointed straight at:
+//   (1) the THREE INNER levels are trip-counted (`dec <n>; jne`) with the channel
+//       value advanced separately; only the outer alpha level is `v < 0x100`;
+//   (2) the float constants are the NAMED file globals retail references
+//       (g_inv255 / g_negone / g_255) - literals make cl mint its own $T pool
+//       entries, and `+ 1.0f` against a private temp is not `- g_negone`;
+//   (3) the three __ftol results are BYTES (`mov bl,al`), not i32 locals.
+// Residual: cl hoists the per-iteration factor `f` out of the r/g/b nest (retail
+// rebuilds it inside the innermost loop, fusing the first channel's fild via fxch)
+// and spends one extra frame dword on it.
 RVA(0x0014f080, 0x283)
 CShadeTable* CShadeTableCache::AddTable(float scale) {
     CShadeTable* t = new CShadeTable;
@@ -567,20 +573,34 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
     arr.SetSizeGrow(idx + 1, -1);
     arr.m_pData[idx] = t;
     u16* out = Pix16(t->m_data);
+    // The three INNER levels are trip-counted (`dec <n>; jne`, retail 0x14f29d /
+    // 0x14f2af / 0x14f2c5) with the channel value advanced separately; only the
+    // outer alpha level is the `v < 0x100` form. Spelling all four as
+    // `for (c = 8; c < 0x100; c += 0x10)` gives four `cmp 0x100; jl` back-edges -
+    // the three `jl -> jne` flips jcc_sieve reports.
     for (i32 v = 0; v < 0x100; v += 0x10) {
-        for (i32 r = 8; r < 0x100; r += 0x10) {
-            for (i32 g = 8; g < 0x100; g += 0x10) {
-                for (i32 b = 8; b < 0x100; b += 0x10) {
+        i32 r = 8;
+        for (i32 nr = 0x10; nr != 0; nr--) {
+            i32 g = 8;
+            for (i32 ng = 0x10; ng != 0; ng--) {
+                i32 b = 8;
+                for (i32 nb = 0x10; nb != 0; nb--) {
                     u8 rc = static_cast<u8>((r < 0xff ? r : 0xff));
                     u8 gc = static_cast<u8>((g < 0xff ? g : 0xff));
                     u8 bc = static_cast<u8>((b < 0xff ? b : 0xff));
-                    float f = static_cast<float>(v) * scale * (1.0f / 255.0f) + 1.0f;
+                    // The three float constants are the NAMED file globals retail
+                    // references (`?g_inv255@@3MA` / `?g_negone@@3MA` / `?g_255@@3MA`),
+                    // not literals - a literal makes cl mint its own $T pool entry.
+                    float f = static_cast<float>(v) * scale * g_inv255 - g_negone;
+                    // The three __ftol results are BYTES (retail `mov bl,al` /
+                    // `mov dl,al`), not i32 - an i32 local costs a frame dword and
+                    // a dword register apiece.
                     float fr = static_cast<float>(static_cast<i32>(rc)) * f;
-                    i32 rn = static_cast<i32>((fr < 255.0f ? fr : 255.0f));
+                    u8 rn = static_cast<u8>(static_cast<i32>((fr < g_255 ? fr : g_255)));
                     float fg = static_cast<float>(static_cast<i32>(gc)) * f;
-                    i32 gn = static_cast<i32>((fg < 255.0f ? fg : 255.0f));
+                    u8 gn = static_cast<u8>(static_cast<i32>((fg < g_255 ? fg : g_255)));
                     float fb = static_cast<float>(static_cast<i32>(bc)) * f;
-                    i32 bn = static_cast<i32>((fb < 255.0f ? fb : 255.0f));
+                    u8 bn = static_cast<u8>(static_cast<i32>((fb < g_255 ? fb : g_255)));
                     *out++ = static_cast<u16>(
                         ((static_cast<u8>((static_cast<u8>(rn) >> static_cast<u8>(g_rDown)))
                           << g_rUp)
@@ -588,8 +608,11 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
                             << g_gUp)
                          | static_cast<u8>((static_cast<u8>(bn) >> static_cast<u8>(g_bDown))))
                     );
+                    b += 0x10;
                 }
+                g += 0x10;
             }
+            r += 0x10;
         }
     }
     return t;

@@ -1441,11 +1441,15 @@ RVA(0x00063b60, 0x1cf)
 i32 CGrunt::StepArrivalReroll() {
     m_38->m_1a0.Advance(static_cast<u32>(g_engineFrameDelta));
     i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_struckClock.m_v;
+    // The NEGATIVE test is the `if`: retail's 64-bit compare is `jg <take> /
+    // jl <zero> / test lo,lo / jae <take>` with the ZERO arm as the fall-through,
+    // which is `diff < 0`. Spelling it `diff >= 0` puts `js` first and swaps both
+    // blocks.
     u32 elapsed;
-    if (diff >= 0) {
-        elapsed = static_cast<u32>(diff);
-    } else {
+    if (diff < 0) {
         elapsed = 0;
+    } else {
+        elapsed = static_cast<u32>(diff);
     }
     if (elapsed <= 0x2710) {
         return 0;

@@ -868,6 +868,11 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, i32 op, i32 typeId, i32 pO
 // switch jump-table-vs-cmp-tree wall (~57%): logic identical; retail lowers the
 // 8-tag switch to a jmp[tbl+(tag-1)*4] table, the recompile to a range-check tree
 // (the two identical case bodies collapse).  See docs/patterns/switch-cmpje-tree-vs-jumptable.md
+// Measured 2026-08-01: retail's two table bodies are spelled with OPPOSITE gates
+// (`test eax,eax / jne <ret 1>` vs `test eax,eax / je <ret 0>`), but writing the
+// arms that way to stop cl merging them does NOT buy the table - it emits two
+// cmp-tree bodies instead and costs 18 points (57.31 -> 39.02). The table is cl's
+// lowering decision, not a source shape.
 RVA(0x00117630, 0x82)
 i32 __stdcall
 SerializeApplyA(CFileMemBase* s, i32 mode, i32 typeId, i32 pObj, CTileTriggerSwitchLogic* o) {
